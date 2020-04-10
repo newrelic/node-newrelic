@@ -1,5 +1,6 @@
 'use strict'
 const tap = require('tap')
+const sinon = require('sinon')
 
 const safeRequire = (id) => {
   let tmp
@@ -15,6 +16,9 @@ const connectionStates = require('../../../lib/grpc/connection/states')
 const MetricAggregator = require('../../../lib/metrics/metric-aggregator')
 const MetricMapper = require('../../../lib/metrics/mapper')
 const MetricNormalizer = require('../../../lib/metrics/normalizer')
+
+const grpcApi = require('../../../lib/proxy/grpc')
+const protoLoader = require('@grpc/proto-loader')
 
 const createMetricAggregatorForTests = () => {
   const mapper = new MetricMapper()
@@ -131,3 +135,38 @@ tap.test(
     test.end()
   }
 )
+
+tap.test('grpc connection error handling', (test) => {
+  test.test('should catch error when proto loader fails', (t) => {
+    const metrics = createMetricAggregatorForTests()
+  
+    const stub = sinon.stub(protoLoader, 'loadSync').returns({})
+  
+    const connection = new GrpcConnection(metrics)
+    connection.connectSpans()
+
+    connection.on('disconnected', () => {
+      t.equal(connection._state, connectionStates.disconnected)
+      stub.restore()
+      t.end()
+    })
+  })
+
+  test.test('should catch error when loadPackageDefinition returns invalid service definition',
+    (t) => {
+      const metrics = createMetricAggregatorForTests()
+
+      const stub = sinon.stub(grpcApi, 'loadPackageDefinition').returns({})
+
+      const connection = new GrpcConnection(metrics)
+      connection.connectSpans()
+
+      connection.on('disconnected', () => {
+        t.equal(connection._state, connectionStates.disconnected)
+        stub.restore()
+        t.end()
+      })
+    })
+
+  test.end()
+})
