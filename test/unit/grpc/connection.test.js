@@ -142,7 +142,7 @@ tap.test('grpc connection error handling', (test) => {
   
     const stub = sinon.stub(protoLoader, 'loadSync').returns({})
   
-    const connection = new GrpcConnection(metrics, [0])
+    const connection = new GrpcConnection(metrics)
     connection.connectSpans()
 
     connection.on('disconnected', () => {
@@ -158,7 +158,7 @@ tap.test('grpc connection error handling', (test) => {
 
       const stub = sinon.stub(grpcApi, 'loadPackageDefinition').returns({})
 
-      const connection = new GrpcConnection(metrics, [0])
+      const connection = new GrpcConnection(metrics)
       connection.connectSpans()
 
       connection.on('disconnected', () => {
