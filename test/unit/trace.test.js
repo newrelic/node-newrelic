@@ -755,7 +755,8 @@ const isGrpcSupportedVersion = semver.satisfies(process.version, '>=10.10.0')
 tap.test('infinite tracing', {skip: !isGrpcSupportedVersion}, (t) => {
   t.autoend()
 
-  const VALID_URL = 'https://infinite_tracing.test:443'
+  const VALID_HOST = 'https://infinite_tracing.test'
+  const VALID_PORT = 443
 
   let agent = null
 
@@ -768,7 +769,10 @@ tap.test('infinite tracing', {skip: !isGrpcSupportedVersion}, (t) => {
         enabled: true
       },
       infinite_tracing: {
-        trace_observer_url: VALID_URL
+        trace_observer: {
+          host: VALID_HOST,
+          port: VALID_PORT
+        }
       },
       feature_flag: {
         infinite_tracing: true
@@ -800,7 +804,7 @@ tap.test('infinite tracing', {skip: !isGrpcSupportedVersion}, (t) => {
   })
 
   t.test('should not generate spans if infinite not configured, transaction not sampled', (t) => {
-    agent.config.infinite_tracing.trace_observer_url = ''
+    agent.config.infinite_tracing.trace_observer.host = ''
 
     const spy = sinon.spy(agent.spanEventAggregator, 'addSegment')
 

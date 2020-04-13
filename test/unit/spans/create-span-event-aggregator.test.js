@@ -10,8 +10,9 @@ const createSpanEventAggregator = require('../../../lib/spans/create-span-event-
 
 const NAMES = require('../../../lib/metrics/names')
 
-const VALID_URL = 'https://infinite_tracing.test:443'
-const INVALID_URL = '//infinite_tracing.test:443'
+const VALID_HOST = 'https://infinite_tracing.test'
+const INVALID_HOST = '//infinite_tracing.test'
+const INVALID_PORT = 'pjørt'
 
 const isGrpcSupportedVersion = semver.satisfies(process.version, '>=10.10.0')
 
@@ -42,7 +43,7 @@ tap.test('should return standard when trace observer not configured', (t) => {
 })
 
 tap.test(
-  'should return standard when trace observer not valid',
+  'should return standard when trace observer host not valid',
   {skip: !isGrpcSupportedVersion},
   (t) => {
     const stubbedMetrics = createMetricAggregatorStub()
@@ -51,7 +52,32 @@ tap.test(
       feature_flag: {
         infinite_tracing: true
       },
-      infinite_tracing: { trace_observer_url: INVALID_URL }
+      infinite_tracing: { trace_observer: {
+        host: INVALID_HOST
+      }}
+    })
+
+    const aggregator = createSpanEventAggregator(config, null, stubbedMetrics)
+    assertStandardSpanAggregator(t, aggregator)
+
+    t.end()
+  }
+)
+
+tap.test(
+  'should return standard when trace observer port not valid',
+  {skip: !isGrpcSupportedVersion},
+  (t) => {
+    const stubbedMetrics = createMetricAggregatorStub()
+
+    const config = Config.initialize({
+      feature_flag: {
+        infinite_tracing: true
+      },
+      infinite_tracing: { trace_observer: {
+        host: VALID_HOST,
+        port: INVALID_PORT
+      }}
     })
 
     const aggregator = createSpanEventAggregator(config, null, stubbedMetrics)
@@ -71,11 +97,13 @@ tap.test(
       feature_flag: {
         infinite_tracing: true
       },
-      infinite_tracing: { trace_observer_url: INVALID_URL }
+      infinite_tracing: { trace_observer: {
+        host: INVALID_HOST
+      }}
     })
 
     createSpanEventAggregator(config, null, stubbedMetrics)
-    t.equal(config.infinite_tracing.trace_observer_url, '')
+    t.equal(config.infinite_tracing.trace_observer.host, '')
 
     t.end()
   }
@@ -89,7 +117,9 @@ tap.test(
       feature_flag: {
         infinite_tracing: true
       },
-      infinite_tracing: { trace_observer_url: INVALID_URL }
+      infinite_tracing: { trace_observer: {
+        host: INVALID_HOST
+      }}
     })
 
     const stubbedMetrics = createMetricAggregatorStub((incrementedMetricName) => {
@@ -111,7 +141,9 @@ tap.test(
         infinite_tracing: true
       },
       serverless_mode: { enabled: true },
-      infinite_tracing: { trace_observer_url: VALID_URL }
+      infinite_tracing: { trace_observer: {
+        host: VALID_HOST
+      }}
     })
 
     const aggregator = createSpanEventAggregator(config)
@@ -128,7 +160,9 @@ tap.test('should return standard aggregator when node version < gprc minimum', (
     feature_flag: {
       infinite_tracing: true
     },
-    infinite_tracing: { trace_observer_url: VALID_URL }
+    infinite_tracing: { trace_observer: {
+      host: VALID_HOST
+    } }
   })
 
   const aggregator = createSpanEventAggregator(config)
@@ -144,11 +178,13 @@ tap.test('should reset/disable trace observer when node version < gprc minimum',
     feature_flag: {
       infinite_tracing: true
     },
-    infinite_tracing: { trace_observer_url: VALID_URL }
+    infinite_tracing: { trace_observer: {
+      host: VALID_HOST
+    }}
   })
 
   createSpanEventAggregator(config)
-  t.equal(config.infinite_tracing.trace_observer_url, '')
+  t.equal(config.infinite_tracing.trace_observer.host, '')
 
   t.end()
 })
@@ -162,7 +198,9 @@ tap.test(
       feature_flag: {
         infinite_tracing: true
       },
-      infinite_tracing: { trace_observer_url: VALID_URL }
+      infinite_tracing: { trace_observer: {
+        host: VALID_HOST
+      }}
     })
 
     const aggregator = createSpanEventAggregator(config)

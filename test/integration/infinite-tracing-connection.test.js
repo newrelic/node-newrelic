@@ -181,7 +181,10 @@ tap.test('Inifinite tracing - Connection Handling', (t) => {
             explain_threshold: Number.MIN_VALUE // force SQL traces
           },
           infinite_tracing: {
-            trace_observer_url: 'https://ssl.lvh.me:' + port
+            trace_observer: {
+              host: 'https://ssl.lvh.me',
+              port: port
+            }
           },
           feature_flag: {
             infinite_tracing: true
