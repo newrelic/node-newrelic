@@ -133,19 +133,3 @@ function assertStandardSpanAggregator(t, aggregator) {
   t.ok(isSpanEventAggregator)
   t.notOk(isStreamingAggregator)
 }
-
-function createMetricAggregatorStub(onMetricIncremented) {
-  const stubbedMetricAggregator = {
-    getOrCreateMetric: (name) => {
-      return {
-        incrementCallCount: () => {
-          if (onMetricIncremented) {
-            onMetricIncremented(name)
-          }
-        }
-      }
-    }
-  }
-
-  return stubbedMetricAggregator
-}
