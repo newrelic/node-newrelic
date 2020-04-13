@@ -60,26 +60,6 @@ tap.test(
       t.end()
     })
 
-    test.test('tests url formatting', (t) => {
-      const connection = new GrpcConnection(metrics)
-      const fixtures = [
-        {input:'http://foo.com:300/bar?science=hello',output:'foo.com:300/bar?science=hello'},
-        {input:'http://foo.com:300/bar',output:'foo.com:300/bar'},
-        {input:'http://foo.com:300',output:'foo.com:300'},
-        {input:'http://foo.com:300/',output:'foo.com:300'},
-        {input:'http://foo.com:80/',output:'foo.com:80'},
-        {input:'http://foo.com:443/',output:'foo.com:443'},
-        {input:'https://foo.com:80/',output:'foo.com:80'},
-        {input:'https://foo.com:443/',output:'foo.com:443'},
-      ]
-
-      for (const [,fixture] of fixtures.entries()) {
-        t.equals(fixture.output, connection._formatTraceObserverUrl(fixture.input))
-      }
-
-      t.end()
-    })
-
     test.test('test metadata generation', (t) => {
       const connection = new GrpcConnection(metrics)
 

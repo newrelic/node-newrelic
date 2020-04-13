@@ -118,7 +118,7 @@ tap.test(
         return grpcApi.credentials.createInsecure()
       }).bind(connection)
 
-      const args = ['http://127.0.0.1:' + port, null, null]
+      const args = ['127.0.0.1:' + port, null, null]
       connection.setConnectionDetails(...args).connectSpans()
       connection.on('connected', (callStream) => {
         t.equals(
