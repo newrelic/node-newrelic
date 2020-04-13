@@ -8,6 +8,7 @@ const API = require('../../../api')
 
 const DESTS = require('../../../lib/config/attribute-filter').DESTINATIONS
 const TEST_ARN = 'test:arn'
+const TEST_FUNC_VERSION = '$LATEST'
 const TEST_EX_ENV = 'test-AWS_Lambda_nodejs8.10'
 const PROTOCOL_VERSION = 16
 
@@ -29,6 +30,7 @@ tap.test('Serverless mode harvest', (t) => {
       license_key: 'd67afc830dab717fd163bfcb0b8b88423e9a1a3b'
     })
     agent.setLambdaArn(TEST_ARN)
+    agent.setLambdaFunctionVersion(TEST_FUNC_VERSION)
 
     agent.start(done)
   })
@@ -69,6 +71,7 @@ tap.test('Serverless mode harvest', (t) => {
           decoded.metadata,
           {
             arn: TEST_ARN,
+            function_version: TEST_FUNC_VERSION,
             execution_environment: TEST_EX_ENV,
             protocol_version: PROTOCOL_VERSION,
             agent_version: agent.version
