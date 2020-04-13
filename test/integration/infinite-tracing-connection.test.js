@@ -85,8 +85,6 @@ tap.test('Inifinite tracing - Connection Handling', (t) => {
 
       // the agent start is currently a lie due to how the span streamer connects
       agent.spanEventAggregator.stream.connection.on('connected', () => {
-        // TODO: if we didn't have to be "connected" to write to stream
-        // wouldn't need to wait here.
         createTestData(agent, EXPECTED_SEGMENT_NAME)
       })
     })
