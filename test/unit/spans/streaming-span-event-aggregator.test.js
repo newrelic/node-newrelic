@@ -8,9 +8,13 @@ const METRIC_NAMES = require('../../../lib/metrics/names')
 const Metrics = require('../../../lib/metrics')
 const StreamingSpanEvent = require('../../../lib/spans/streaming-span-event')
 
-sinon.stub(StreamingSpanEvent, 'fromSegment').callsFake(() => {})
 
 tap.test('Should increment SEEN and SENT metrics on successful write', (t) => {
+  const stub = sinon.stub(StreamingSpanEvent, 'fromSegment').callsFake(() => {})
+  t.teardown(() => {
+    stub.restore()
+  })
+
   const MockedStream = {
     write: () => true,
     connect: () => {}
@@ -20,7 +24,6 @@ tap.test('Should increment SEEN and SENT metrics on successful write', (t) => {
     span_streamer: MockedStream
   }
 
-  sinon.mock(StreamingSpanEvent)
   const metrics = new Metrics(5, {}, {})
   const metricsSpy = sinon.spy(metrics, 'getOrCreateMetric')
 
@@ -36,7 +39,12 @@ tap.test('Should increment SEEN and SENT metrics on successful write', (t) => {
   t.end()
 })
 
-tap.test('Should increment SEEN metric and not SEND metric if stream.write fails', (t) => {
+tap.test('Should increment SEEN metric and not SENT metric if stream.write fails', (t) => {
+  const stub = sinon.stub(StreamingSpanEvent, 'fromSegment').callsFake(() => {})
+  t.teardown(() => {
+    stub.restore()
+  })
+
   const MockedStream = {
     write: () => false,
     connect: () => {}
@@ -46,7 +54,6 @@ tap.test('Should increment SEEN metric and not SEND metric if stream.write fails
     span_streamer: MockedStream
   }
 
-  sinon.mock(StreamingSpanEvent)
   const metrics = new Metrics(5, {}, {})
   const metricsSpy = sinon.spy(metrics, 'getOrCreateMetric')
 
@@ -61,25 +68,24 @@ tap.test('Should increment SEEN metric and not SEND metric if stream.write fails
   t.end()
 })
 
-tap.test('Should increment SEEN metric and not SEND metric if aggregator not started', (t) => {
-  const opts = {
-    span_streamer: {
-      connect: () => {},
-      write: () => { return false }
-    }
+tap.test('Should not increment SEEN or SENT metrics if aggregator not started', (t) => {
+  const MockedStream = {
+    write: () => true,
+    connect: () => {}
   }
 
-  sinon.mock(StreamingSpanEvent)
+  const opts = {
+    span_streamer: MockedStream
+  }
+
   const metrics = new Metrics(5, {}, {})
   const metricsSpy = sinon.spy(metrics, 'getOrCreateMetric')
 
   const aggregator = new StreamingSpanEventAggregator(opts, () => {}, metrics)
-  aggregator.start()
 
   aggregator.addSegment({}, 'fake', true)
 
-  t.equal(metricsSpy.callCount, 1, 'should have incremented only one metrics')
-  t.ok(metricsSpy.firstCall.calledWith(METRIC_NAMES.INFINITE_TRACING.SEEN), 'SEEN metric')
+  t.equal(metricsSpy.callCount, 0)
 
   t.end()
 })
