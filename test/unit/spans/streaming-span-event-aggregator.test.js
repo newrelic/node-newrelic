@@ -6,9 +6,9 @@ const sinon = require('sinon')
 const StreamingSpanEventAggregator = require('../../../lib/spans/streaming-span-event-aggregator')
 const METRIC_NAMES = require('../../../lib/metrics/names')
 const Metrics = require('../../../lib/metrics')
-const streamingSpanEvent = require('../../../lib/spans/streaming-span-event')
+const StreamingSpanEvent = require('../../../lib/spans/streaming-span-event')
 
-sinon.stub(streamingSpanEvent, 'fromSegment').callsFake(() => {})
+sinon.stub(StreamingSpanEvent, 'fromSegment').callsFake(() => {})
 
 tap.test('Should increment SEEN and SENT metrics on successful write', (t) => {
   const MockedStream = {
@@ -20,7 +20,7 @@ tap.test('Should increment SEEN and SENT metrics on successful write', (t) => {
     span_streamer: MockedStream
   }
 
-  sinon.mock(streamingSpanEvent)
+  sinon.mock(StreamingSpanEvent)
   const metrics = new Metrics(5, {}, {})
   const metricsSpy = sinon.spy(metrics, 'getOrCreateMetric')
 
@@ -46,7 +46,7 @@ tap.test('Should increment SEEN metric and not SEND metric if stream.write fails
     span_streamer: MockedStream
   }
 
-  sinon.mock(streamingSpanEvent)
+  sinon.mock(StreamingSpanEvent)
   const metrics = new Metrics(5, {}, {})
   const metricsSpy = sinon.spy(metrics, 'getOrCreateMetric')
 
@@ -69,7 +69,7 @@ tap.test('Should increment SEEN metric and not SEND metric if aggregator not sta
     }
   }
 
-  sinon.mock(streamingSpanEvent)
+  sinon.mock(StreamingSpanEvent)
   const metrics = new Metrics(5, {}, {})
   const metricsSpy = sinon.spy(metrics, 'getOrCreateMetric')
 
@@ -80,6 +80,69 @@ tap.test('Should increment SEEN metric and not SEND metric if aggregator not sta
 
   t.equal(metricsSpy.callCount, 1, 'should have incremented only one metrics')
   t.ok(metricsSpy.firstCall.calledWith(METRIC_NAMES.INFINITE_TRACING.SEEN), 'SEEN metric')
+
+  t.end()
+})
+
+tap.test('Should only attempt to connect on first start() call', (t) => {
+  let connectCount = 0
+
+  const opts = {
+    span_streamer: {
+      connect: () => { connectCount++ }
+    }
+  }
+
+  const streamingSpanAggregator = new StreamingSpanEventAggregator(opts)
+
+  streamingSpanAggregator.start()
+  t.equal(connectCount, 1)
+
+  streamingSpanAggregator.start()
+  t.equal(connectCount, 1)
+
+  t.end()
+})
+
+tap.test('Should only attempt to disconnect on first stop() call', (t) => {
+  let disonnectCount = 0
+
+  const opts = {
+    span_streamer: {
+      connect: () => {},
+      disconnect: () => { disonnectCount++ }
+    }
+  }
+
+  const streamingSpanAggregator = new StreamingSpanEventAggregator(opts)
+  streamingSpanAggregator.start()
+
+  streamingSpanAggregator.stop()
+  t.equal(disonnectCount, 1)
+
+  streamingSpanAggregator.stop()
+  t.equal(disonnectCount, 1)
+
+  t.end()
+})
+
+tap.test('Should attempt to connect on start() after stop() call', (t) => {
+  let connectCount = 0
+
+  const opts = {
+    span_streamer: {
+      connect: () => { connectCount++ },
+      disconnect: () => {}
+    }
+  }
+
+  const streamingSpanAggregator = new StreamingSpanEventAggregator(opts)
+
+  streamingSpanAggregator.start()
+  streamingSpanAggregator.stop()
+
+  streamingSpanAggregator.start()
+  t.equal(connectCount, 2)
 
   t.end()
 })

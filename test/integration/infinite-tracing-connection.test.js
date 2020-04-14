@@ -142,6 +142,33 @@ tap.test('Inifinite tracing - Connection Handling', (t) => {
     })
   })
 
+  t.test('should start immediately not wait for harvest when immediate harvest true', (t) => {
+    agent.config.no_immediate_harvest = false
+
+    let connectedCount = 0
+    agent.spanEventAggregator.stream.connection.on('connected', () => {
+      connectedCount++
+    })
+
+    let initialHarvestCalled = false
+
+    const origForceHarvestAll = agent.forceHarvestAll
+    agent.forceHarvestAll = function stubForceHarvestAll() {
+      t.equal(connectedCount, 1, 'should have connected prior to initial harvest')
+      initialHarvestCalled = true
+      return origForceHarvestAll.apply(this, arguments)
+    }
+
+    agent.start((error) => {
+      verifyAgentStart(t, error, startingEndpoints)
+
+      // ensure test valid / hit the import assertion
+      t.ok(initialHarvestCalled)
+
+      t.end()
+    })
+  })
+
   function testSetup(callback, t) {
     nock.disableNetConnect()
     startingEndpoints = setupConnectionEndpoints(INITIAL_RUN_ID)
