@@ -755,7 +755,7 @@ const isGrpcSupportedVersion = semver.satisfies(process.version, '>=10.10.0')
 tap.test('infinite tracing', {skip: !isGrpcSupportedVersion}, (t) => {
   t.autoend()
 
-  const VALID_HOST = 'infinite_tracing.test'
+  const VALID_HOST = 'infinite-tracing.test'
   const VALID_PORT = '443'
 
   let agent = null

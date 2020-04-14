@@ -8,7 +8,7 @@ const SpanEventAggregator = require('../../../lib/spans/span-event-aggregator')
 const StreamingSpanEventAggregator = require('../../../lib/spans/streaming-span-event-aggregator')
 const createSpanEventAggregator = require('../../../lib/spans/create-span-event-aggregator')
 
-const VALID_HOST = 'infinite_tracing.test'
+const VALID_HOST = 'infinite-tracing.test'
 
 const isGrpcSupportedVersion = semver.satisfies(process.version, '>=10.10.0')
 
@@ -95,6 +95,70 @@ tap.test('should reset/disable trace observer when node version < gprc minimum',
   t.end()
 })
 
+tap.test('should reset/disable trace observer with invalid character host name', (t) => {
+  const config = Config.initialize({
+    feature_flag: {
+      infinite_tracing: true
+    },
+    infinite_tracing: { trace_observer: {
+      host: 'infinite_tracing.test'
+    }}
+  })
+
+  createSpanEventAggregator(config)
+  t.equal(config.infinite_tracing.trace_observer.host, '')
+
+  t.end()
+})
+
+tap.test('should reset/disable trace observer with port in host name', (t) => {
+  const config = Config.initialize({
+    feature_flag: {
+      infinite_tracing: true
+    },
+    infinite_tracing: { trace_observer: {
+      host: 'infinite-tracing.test:666'
+    }}
+  })
+
+  createSpanEventAggregator(config)
+  t.equal(config.infinite_tracing.trace_observer.host, '')
+
+  t.end()
+})
+
+tap.test('should reset/disable trace observer when port NaN', (t) => {
+  const config = Config.initialize({
+    feature_flag: {
+      infinite_tracing: true
+    },
+    infinite_tracing: { trace_observer: {
+      host: VALID_HOST,
+      port: 'dogs'
+    }}
+  })
+
+  createSpanEventAggregator(config)
+  t.equal(config.infinite_tracing.trace_observer.host, '')
+
+  t.end()
+})
+
+tap.test('should reset/disable trace observer when port is empty string', (t) => {
+  const config = Config.initialize({
+    feature_flag: {
+      infinite_tracing: true
+    },
+    infinite_tracing: { trace_observer: {
+      host: VALID_HOST,
+      port: ''
+    }}
+  })
+  createSpanEventAggregator(config)
+  t.equal(config.infinite_tracing.trace_observer.host, '')
+
+  t.end()
+})
 
 tap.test(
   'should return streaming when trace observer configured',
