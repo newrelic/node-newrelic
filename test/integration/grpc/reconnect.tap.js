@@ -101,9 +101,14 @@ tap.test(
     setupServer(t).then((port)=>{
       const metrics = createMetricAggregatorForTests()
 
+      const traceObserverConfig = {
+        host: '127.0.0.1',
+        port: port 
+      }
+
       // very short backoff to trigger the reconnect in 1 second
       const backoffs = {initialSeconds: 0, seconds:1}
-      const connection = new GrpcConnection(metrics, backoffs)
+      const connection = new GrpcConnection(traceObserverConfig, metrics, backoffs)
 
       let countDisconnects = 0
 
@@ -118,7 +123,7 @@ tap.test(
         return grpcApi.credentials.createInsecure()
       }).bind(connection)
 
-      const args = ['127.0.0.1:' + port, null, null]
+      const args = [null, null]
       connection.setConnectionDetails(...args).connectSpans()
       connection.on('connected', (callStream) => {
         t.equals(
