@@ -14,7 +14,7 @@ const sinon = require('sinon')
 const Config = require('../../../lib/config')
 const securityPolicies = require('../../lib/fixtures').securityPolicies
 
-const VALID_HOST = 'infinite_tracing.test'
+const VALID_HOST = 'infinite-tracing.test'
 const VALID_PORT = '443'
 
 function idempotentEnv(envConfig, initialConfig, callback) {
