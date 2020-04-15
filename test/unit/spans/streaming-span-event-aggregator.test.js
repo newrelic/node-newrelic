@@ -30,8 +30,8 @@ tap.test('Should increment SEEN and SENT metrics on successful write', (t) => {
   aggregator.addSegment({}, 'fake', true)
 
   t.equal(metricsSpy.callCount, 2, 'should have incremented two metrics')
-  t.ok(metricsSpy.firstCall.calledWith(METRIC_NAMES.STREAMING_SPAN_EVENTS.SEEN), 'SEEN metric')
-  t.ok(metricsSpy.secondCall.calledWith(METRIC_NAMES.STREAMING_SPAN_EVENTS.SENT), 'SENT metric')
+  t.ok(metricsSpy.firstCall.calledWith(METRIC_NAMES.INFINITE_TRACING.SEEN), 'SEEN metric')
+  t.ok(metricsSpy.secondCall.calledWith(METRIC_NAMES.INFINITE_TRACING.SENT), 'SENT metric')
 
   t.end()
 })
@@ -45,7 +45,7 @@ tap.test('Should increment SEEN metric and not SEND metric if stream.write fails
   const opts = {
     span_streamer: MockedStream
   }
-  
+
   sinon.mock(streamingSpanEvent)
   const metrics = new Metrics(5, {}, {})
   const metricsSpy = sinon.spy(metrics, 'getOrCreateMetric')
@@ -56,14 +56,17 @@ tap.test('Should increment SEEN metric and not SEND metric if stream.write fails
   aggregator.addSegment({}, 'fake', true)
 
   t.equal(metricsSpy.callCount, 1, 'should have incremented only one metrics')
-  t.ok(metricsSpy.firstCall.calledWith(METRIC_NAMES.STREAMING_SPAN_EVENTS.SEEN), 'SEEN metric')
+  t.ok(metricsSpy.firstCall.calledWith(METRIC_NAMES.INFINITE_TRACING.SEEN), 'SEEN metric')
 
   t.end()
 })
 
 tap.test('Should increment SEEN metric and not SEND metric if aggregator not started', (t) => {
   const opts = {
-    span_streamer: () => {}
+    span_streamer: {
+      connect: () => {},
+      write: () => { return false }
+    }
   }
 
   sinon.mock(streamingSpanEvent)
@@ -71,11 +74,12 @@ tap.test('Should increment SEEN metric and not SEND metric if aggregator not sta
   const metricsSpy = sinon.spy(metrics, 'getOrCreateMetric')
 
   const aggregator = new StreamingSpanEventAggregator(opts, () => {}, metrics)
+  aggregator.start()
 
   aggregator.addSegment({}, 'fake', true)
 
   t.equal(metricsSpy.callCount, 1, 'should have incremented only one metrics')
-  t.ok(metricsSpy.firstCall.calledWith(METRIC_NAMES.STREAMING_SPAN_EVENTS.SEEN), 'SEEN metric')
+  t.ok(metricsSpy.firstCall.calledWith(METRIC_NAMES.INFINITE_TRACING.SEEN), 'SEEN metric')
 
   t.end()
 })
