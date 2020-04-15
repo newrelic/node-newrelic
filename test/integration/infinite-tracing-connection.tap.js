@@ -180,7 +180,7 @@ tap.test('Inifinite tracing - Connection Handling', (t) => {
           },
           infinite_tracing: {
             trace_observer: {
-              host: 'https://ssl.lvh.me',
+              host: 'ssl.lvh.me',
               port: port
             }
           },
