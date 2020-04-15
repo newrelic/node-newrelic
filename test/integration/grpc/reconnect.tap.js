@@ -20,7 +20,108 @@ const MetricAggregator = require('../../../lib/metrics/metric-aggregator')
 const MetricMapper = require('../../../lib/metrics/mapper')
 const MetricNormalizer = require('../../../lib/metrics/normalizer')
 
-const setupServer = (t) => {
+const helper = require('../../lib/agent_helper')
+
+const isUnsupportedNodeVersion =
+  GrpcConnection.message === '@grpc/grpc-js only works on Node ^8.13.0 || >=10.10.0'
+
+tap.test(
+  'test that connection class reconnects',
+  {skip:isUnsupportedNodeVersion},
+  async t => {
+    // one assert for the initial connection
+    // a second assert for the disconnect
+    // a third assert for the reconnection
+    // a fourth assert for the disconnect
+    // a fifth assert for server connection count
+    t.plan(5)
+
+    let serverConnections = 0
+
+    /**
+     * Implements the recordSpan RPC method, used below.
+     *
+     * While the test functions correctly with a valid connection,
+     * we ensure proper connection / OK status handling for this case.
+     */
+    const recordSpan = (stream) => {
+      serverConnections++
+
+      // drain reads to make sure everything finishes properly
+      stream.on('data', () => {})
+
+      // detach as soon as we connect
+      // end the stream -- sends back a STATUS OK
+      stream.end()
+    }
+
+    const sslOpts = await setupSsl()
+    const port = await setupServer(t, sslOpts, recordSpan)
+
+    // Currently test-only configuration
+    const origEnv = process.env.NEWRELIC_GRPCCONNECTION_CA
+    process.env.NEWRELIC_GRPCCONNECTION_CA = sslOpts.ca
+    t.teardown(() => {
+      process.env.NEWRELIC_GRPCCONNECTION_CA = origEnv
+    })
+
+    return new Promise((resolve) => {
+      const metrics = createMetricAggregatorForTests()
+
+      // very short backoff to trigger the reconnect in 1 second
+      const backoffs = {initialSeconds: 0, seconds:1}
+      const connection = new GrpcConnection(metrics, backoffs)
+
+      let countDisconnects = 0
+
+      const args = ['https://ssl.lvh.me:' + port, null, null]
+      connection.setConnectionDetails(...args).connectSpans()
+      connection.on('connected', (callStream) => {
+        t.equals(
+          callStream.constructor.name,
+          'ClientDuplexStreamImpl',
+          'connected and received ClientDuplexStreamImpl'
+        )
+      })
+
+      connection.on('disconnected', () => {
+        countDisconnects++
+        t.ok(true, 'disconnected')
+
+        // if we've disconnected twice, the test is done
+        // mark the state as permanantly closed in order to
+        // avoid further automatic reconnects (skipping
+        // _setState to avoid an additional disconnect event)
+        if (countDisconnects > 1) {
+          connection._state = 3 // replace with actual fake enum
+
+          t.equals(serverConnections, 2)
+          // Ends the test
+          resolve()
+        }
+      })
+    })
+  }
+)
+
+function setupSsl() {
+  return new Promise((resolve, reject) => {
+    helper.withSSL((error, key, certificate, ca) => {
+      if (error) {
+        return reject(error)
+      }
+
+      const sslOpts = {
+        ca: ca,
+        authPairs: [{private_key : key, cert_chain : certificate}]
+      }
+
+      resolve(sslOpts)
+    })
+  })
+}
+
+function setupServer(t, sslOpts, recordSpan) {
   const packageDefinition = protoLoader.loadSync(
     __dirname + '/../../../lib/grpc/endpoints/infinite-tracing/v1.proto',
     {keepCase: true,
@@ -31,28 +132,18 @@ const setupServer = (t) => {
     })
   const infiniteTracingService = grpc.loadPackageDefinition(packageDefinition).com.newrelic.trace.v1
 
-  /**
-   * Implements the recordSpan RPC method, used below
-   */
-  const recordSpan = (stream) => {
-    // detach as soon as we connect
-
-    // drain reads to make sure everything finishes properly
-    stream.on('data', () => {})
-
-    // end the stream -- sends back a STATUS OK
-    stream.end()
-  }
-
   const server = new grpc.Server()
   server.addService(
     infiniteTracingService.IngestService.service,
     {recordSpan: recordSpan}
   )
+
+  const {ca, authPairs} = sslOpts
+
   return new Promise((resolve, reject)=>{
     server.bindAsync(
       'localhost:0',
-      grpc.ServerCredentials.createInsecure(),
+      grpc.ServerCredentials.createSsl(ca, authPairs, false),
       (err, port) => {
         if (err) {
           reject(err)
@@ -69,7 +160,7 @@ const setupServer = (t) => {
   })
 }
 
-const createMetricAggregatorForTests = () => {
+function createMetricAggregatorForTests() {
   const mapper = new MetricMapper()
   const normalizer = new MetricNormalizer({}, 'metric name')
 
@@ -83,65 +174,3 @@ const createMetricAggregatorForTests = () => {
   )
   return metrics
 }
-
-const isUnsupportedNodeVersion =
-  GrpcConnection.message === '@grpc/grpc-js only works on Node ^8.13.0 || >=10.10.0'
-
-tap.test(
-  'test that connection class reconnects',
-  {skip:isUnsupportedNodeVersion},
-  (t) => {
-    // one assert for the initial connection
-    // a second assert for the disconnect
-    // a third assert for the reconnection
-    // a fourth assert for the disconnect
-    t.plan(4)
-
-    // starts the server
-    setupServer(t).then((port)=>{
-      const metrics = createMetricAggregatorForTests()
-
-      // very short backoff to trigger the reconnect in 1 second
-      const backoffs = {initialSeconds: 0, seconds:1}
-      const connection = new GrpcConnection(metrics, backoffs)
-
-      let countDisconnects = 0
-
-      // do a little monkey patching to get our non SSL/HTTP
-      // credentials in there for this test.  This replaces
-      // the _generateCredentials method on the GrpcConnection
-      // object.  The .bind at the end isn't technically
-      // necessary, but it ensures if we ever _did_ use the
-      // this variable in out _generateCredentials that it
-      // would be bound correctly.
-      connection._generateCredentials = ((grpcApi) => {
-        return grpcApi.credentials.createInsecure()
-      }).bind(connection)
-
-      const args = ['http://127.0.0.1:' + port, null, null]
-      connection.setConnectionDetails(...args).connectSpans()
-      connection.on('connected', (callStream) => {
-        t.equals(
-          callStream.constructor.name,
-          'ClientDuplexStreamImpl',
-          'connected and received ClientDuplexStreamImpl'
-        )
-        callStream.end()
-      })
-
-      connection.on('disconnected', () => {
-        countDisconnects++
-        t.ok(true, 'disconnected')
-
-        // if we've disconnected twice, the test is done
-        // mark the state as permanantly closed in order to
-        // avoid further automatic reconnects (skipping
-        // _setState to avoid an additional disconnect event)
-        if (countDisconnects > 1) {
-          connection._state = 3 // replace with actual fake enum
-          return
-        }
-      })
-    })
-  }
-)
