@@ -127,6 +127,23 @@ tap.test('should reset/disable trace observer with port in host name', (t) => {
   t.end()
 })
 
+
+tap.test('should reset/disable trace observer with route in host name', (t) => {
+  const config = Config.initialize({
+    feature_flag: {
+      infinite_tracing: true
+    },
+    infinite_tracing: { trace_observer: {
+      host: 'infinite-tracing.test/trace'
+    }}
+  })
+
+  createSpanEventAggregator(config)
+  t.equal(config.infinite_tracing.trace_observer.host, '')
+
+  t.end()
+})
+
 tap.test('should reset/disable trace observer when port NaN', (t) => {
   const config = Config.initialize({
     feature_flag: {
