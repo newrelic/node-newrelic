@@ -12,25 +12,8 @@ const VALID_HOST = 'infinite-tracing.test'
 
 const isGrpcSupportedVersion = semver.satisfies(process.version, '>=10.10.0')
 
-tap.test('should return standard when infinite feature flag disabled', (t) => {
-  const config = Config.initialize({
-    feature_flag: {
-      infinite_tracing: false
-    }
-  })
-
-  const aggregator = createSpanEventAggregator(config)
-  assertStandardSpanAggregator(t, aggregator)
-
-  t.end()
-})
-
 tap.test('should return standard when trace observer not configured', (t) => {
-  const config = Config.initialize({
-    feature_flag: {
-      infinite_tracing: true
-    }
-  })
+  const config = Config.initialize({})
 
   const aggregator = createSpanEventAggregator(config)
   assertStandardSpanAggregator(t, aggregator)
@@ -43,9 +26,6 @@ tap.test(
   {skip: !isGrpcSupportedVersion},
   (t) => {
     const config = Config.initialize({
-      feature_flag: {
-        infinite_tracing: true
-      },
       serverless_mode: { enabled: true },
       infinite_tracing: { trace_observer: {
         host: VALID_HOST
@@ -63,9 +43,6 @@ tap.test('should return standard aggregator when node version < gprc minimum', (
   tempOverrideNodeVersion(t, 'v10.0.0')
 
   const config = Config.initialize({
-    feature_flag: {
-      infinite_tracing: true
-    },
     infinite_tracing: { trace_observer: {
       host: VALID_HOST
     } }
@@ -81,9 +58,6 @@ tap.test('should reset/disable trace observer when node version < gprc minimum',
   tempOverrideNodeVersion(t, 'v10.0.0')
 
   const config = Config.initialize({
-    feature_flag: {
-      infinite_tracing: true
-    },
     infinite_tracing: { trace_observer: {
       host: VALID_HOST
     }}
@@ -97,9 +71,6 @@ tap.test('should reset/disable trace observer when node version < gprc minimum',
 
 tap.test('should reset/disable trace observer with invalid character host name', (t) => {
   const config = Config.initialize({
-    feature_flag: {
-      infinite_tracing: true
-    },
     infinite_tracing: { trace_observer: {
       host: 'infinite_tracing.test'
     }}
@@ -113,9 +84,6 @@ tap.test('should reset/disable trace observer with invalid character host name',
 
 tap.test('should reset/disable trace observer with port in host name', (t) => {
   const config = Config.initialize({
-    feature_flag: {
-      infinite_tracing: true
-    },
     infinite_tracing: { trace_observer: {
       host: 'infinite-tracing.test:666'
     }}
@@ -130,9 +98,6 @@ tap.test('should reset/disable trace observer with port in host name', (t) => {
 
 tap.test('should reset/disable trace observer with route in host name', (t) => {
   const config = Config.initialize({
-    feature_flag: {
-      infinite_tracing: true
-    },
     infinite_tracing: { trace_observer: {
       host: 'infinite-tracing.test/trace'
     }}
@@ -146,9 +111,6 @@ tap.test('should reset/disable trace observer with route in host name', (t) => {
 
 tap.test('should reset/disable trace observer when port NaN', (t) => {
   const config = Config.initialize({
-    feature_flag: {
-      infinite_tracing: true
-    },
     infinite_tracing: { trace_observer: {
       host: VALID_HOST,
       port: 'dogs'
@@ -163,9 +125,6 @@ tap.test('should reset/disable trace observer when port NaN', (t) => {
 
 tap.test('should reset/disable trace observer when port is empty string', (t) => {
   const config = Config.initialize({
-    feature_flag: {
-      infinite_tracing: true
-    },
     infinite_tracing: { trace_observer: {
       host: VALID_HOST,
       port: ''
@@ -182,9 +141,6 @@ tap.test(
   {skip: !isGrpcSupportedVersion},
   (t) => {
     const config = Config.initialize({
-      feature_flag: {
-        infinite_tracing: true
-      },
       infinite_tracing: { trace_observer: {
         host: VALID_HOST
       }}

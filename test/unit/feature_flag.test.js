@@ -28,8 +28,7 @@ var used = [
   'send_request_uri_attribute',
   'synthetics',
   'dt_format_w3c',
-  'unreleased',
-  'infinite_tracing'
+  'unreleased'
 ]
 
 describe('feature flags', function() {

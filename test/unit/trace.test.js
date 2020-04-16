@@ -773,9 +773,6 @@ tap.test('infinite tracing', {skip: !isGrpcSupportedVersion}, (t) => {
           host: VALID_HOST,
           port: VALID_PORT
         }
-      },
-      feature_flag: {
-        infinite_tracing: true
       }
     })
 
