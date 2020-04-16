@@ -13,6 +13,7 @@ const safeRequire = (id) => {
 }
 const GrpcConnection = safeRequire('../../../lib/grpc/connection')
 const connectionStates = require('../../../lib/grpc/connection/states')
+const NAMES = require('../../../lib/metrics/names')
 const MetricAggregator = require('../../../lib/metrics/metric-aggregator')
 const MetricMapper = require('../../../lib/metrics/mapper')
 const MetricNormalizer = require('../../../lib/metrics/normalizer')
@@ -149,7 +150,13 @@ tap.test('grpc connection error handling', (test) => {
 
       connection.on('disconnected', () => {
         t.equal(connection._state, connectionStates.disconnected)
+
+        const metric = metrics.getOrCreateMetric(NAMES.INFINITE_TRACING.SPAN_RESPONSE_ERROR)
+
+        t.equal(metric.callCount, 1, 'incremented SPAN_RESPONSE_ERROR metric')
+
         stub.restore()
+
         t.end()
       })
     })

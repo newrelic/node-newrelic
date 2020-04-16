@@ -6,6 +6,7 @@ const MetricAggregator = require('../../../lib/metrics/metric-aggregator')
 const MetricMapper = require('../../../lib/metrics/mapper')
 const MetricNormalizer = require('../../../lib/metrics/normalizer')
 const EventEmitter = require('events').EventEmitter
+const NAMES = require('../../../lib/metrics/names')
 
 /**
  * A mocked connection object
@@ -139,11 +140,16 @@ tap.test('write(span) should return false when stream.write throws error', (t) =
   const fakeSpan = {
     toStreamingFormat: () => {}
   }
+  const metrics = createMetricAggregatorForTests()
 
-  const spanStreamer = new SpanStreamer('fake-license-key', fakeConnection)
+  const spanStreamer = new SpanStreamer('fake-license-key', fakeConnection, metrics)
   spanStreamer.connect(1)
 
   t.notOk(spanStreamer.write(fakeSpan))
+
+  const metric = metrics.getOrCreateMetric(NAMES.INFINITE_TRACING.SPAN_RESPONSE_ERROR)
+
+  t.equal(metric.callCount, 1, 'incremented SPAN_RESPONSE_ERROR metric')
 
   t.end()
 })
