@@ -5,6 +5,7 @@ const nock = require('nock')
 const path = require('path')
 const grpc = require('@grpc/grpc-js')
 const protoLoader = require('@grpc/proto-loader')
+const semver = require('semver')
 
 const helper = require('../lib/agent_helper')
 
@@ -36,7 +37,9 @@ const packageDefinition = protoLoader.loadSync(
 
 const infiniteTracingService = grpc.loadPackageDefinition(packageDefinition).com.newrelic.trace.v1
 
-tap.test('Inifinite tracing - Connection Handling', (t) => {
+const isGrpcSupportedVersion = semver.satisfies(process.version, '>=10.10.0')
+
+tap.test('Inifinite tracing - Connection Handling', { skip: !isGrpcSupportedVersion },  (t) => {
   t.autoend()
 
   let server = null
@@ -179,7 +182,10 @@ tap.test('Inifinite tracing - Connection Handling', (t) => {
             explain_threshold: Number.MIN_VALUE // force SQL traces
           },
           infinite_tracing: {
-            trace_observer_url: 'https://ssl.lvh.me:' + port
+            trace_observer: {
+              host: 'ssl.lvh.me',
+              port: port
+            }
           },
           feature_flag: {
             infinite_tracing: true

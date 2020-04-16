@@ -20,6 +20,11 @@ const MetricNormalizer = require('../../../lib/metrics/normalizer')
 const grpcApi = require('../../../lib/proxy/grpc')
 const protoLoader = require('@grpc/proto-loader')
 
+const fakeTraceObserverConfig = {
+  host: 'host.com',
+  port: '443'
+}
+
 const createMetricAggregatorForTests = () => {
   const mapper = new MetricMapper()
   const normalizer = new MetricNormalizer({}, 'metric name')
@@ -47,12 +52,13 @@ tap.test(
 
     // test backoff
     test.test('tests backoff logic', (t)=>{
-      const connection = new GrpcConnection(metrics)
+      const connection = new GrpcConnection(fakeTraceObserverConfig, metrics)
       t.equals(connection._streamBackoffSeconds, 0, 'initial stream backoff is 0 seconds')
       connection._setStreamBackoffAfterInitialStreamSetup()
       t.equals(connection._streamBackoffSeconds, 15, 'future stream backoff is 15 seconds')
 
-      const connection2 = new GrpcConnection(metrics, {initialSeconds:1, seconds:2})
+      const connection2 = 
+        new GrpcConnection(fakeTraceObserverConfig, metrics, {initialSeconds:1, seconds:2})
       t.equals(connection2._streamBackoffSeconds, 1, 'injected initial value used')
       connection2._setStreamBackoffAfterInitialStreamSetup()
       t.equals(connection2._streamBackoffSeconds, 2, 'injected future value used')
@@ -60,28 +66,8 @@ tap.test(
       t.end()
     })
 
-    test.test('tests url formatting', (t) => {
-      const connection = new GrpcConnection(metrics)
-      const fixtures = [
-        {input:'http://foo.com:300/bar?science=hello',output:'foo.com:300/bar?science=hello'},
-        {input:'http://foo.com:300/bar',output:'foo.com:300/bar'},
-        {input:'http://foo.com:300',output:'foo.com:300'},
-        {input:'http://foo.com:300/',output:'foo.com:300'},
-        {input:'http://foo.com:80/',output:'foo.com:80'},
-        {input:'http://foo.com:443/',output:'foo.com:443'},
-        {input:'https://foo.com:80/',output:'foo.com:80'},
-        {input:'https://foo.com:443/',output:'foo.com:443'},
-      ]
-
-      for (const [,fixture] of fixtures.entries()) {
-        t.equals(fixture.output, connection._formatTraceObserverUrl(fixture.input))
-      }
-
-      t.end()
-    })
-
     test.test('test metadata generation', (t) => {
-      const connection = new GrpcConnection(metrics)
+      const connection = new GrpcConnection(fakeTraceObserverConfig, metrics)
 
       // only sets the license and run id
       const metadataFirst = connection._getMetadata(
@@ -141,8 +127,8 @@ tap.test('grpc connection error handling', (test) => {
     const metrics = createMetricAggregatorForTests()
   
     const stub = sinon.stub(protoLoader, 'loadSync').returns({})
-  
-    const connection = new GrpcConnection(metrics)
+    
+    const connection = new GrpcConnection(fakeTraceObserverConfig, metrics)
     connection.connectSpans()
 
     connection.on('disconnected', () => {
@@ -158,7 +144,7 @@ tap.test('grpc connection error handling', (test) => {
 
       const stub = sinon.stub(grpcApi, 'loadPackageDefinition').returns({})
 
-      const connection = new GrpcConnection(metrics)
+      const connection = new GrpcConnection(fakeTraceObserverConfig, metrics)
       connection.connectSpans()
 
       connection.on('disconnected', () => {

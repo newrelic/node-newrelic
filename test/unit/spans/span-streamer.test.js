@@ -53,9 +53,8 @@ const createMetricAggregatorForTests = () => {
 tap.test((t)=>{
   const metrics = createMetricAggregatorForTests()
   const spanStreamer = new SpanStreamer(
-    'nr-internal.aws-us-east-2.tracing.staging-edge.nr-data.net:443',
-    'abc123',
-    new GrpcConnection(metrics)
+    'fake-license-key',
+    new GrpcConnection({}, metrics)
   )
 
   t.ok(spanStreamer, "instantiated the object")
@@ -64,7 +63,7 @@ tap.test((t)=>{
 
 tap.test('write(span) should return false with no stream set', (t) => {
   const fakeConnection = createFakeConnection()
-  const spanStreamer = new SpanStreamer('nowhere.horse', 'abc123', fakeConnection)
+  const spanStreamer = new SpanStreamer('fake-license-key', fakeConnection)
 
   t.notOk(spanStreamer.write({}))
 
@@ -75,7 +74,7 @@ tap.test('write(span) should return false when not writeable', (t) => {
   const fakeConnection = createFakeConnection()
   fakeConnection.connectSpans = () => {}
 
-  const spanStreamer = new SpanStreamer('nowhere.horse', 'abc123', fakeConnection)
+  const spanStreamer = new SpanStreamer('fake-license-key', fakeConnection)
   spanStreamer._writable = false
 
   t.notOk(spanStreamer.write({}))
@@ -97,7 +96,7 @@ tap.test('write(span) should return true when able to write to stream', (t) => {
     toStreamingFormat: () => {}
   }
 
-  const spanStreamer = new SpanStreamer('noWhere.horse', 'abc123', fakeConnection)
+  const spanStreamer = new SpanStreamer('fake-license-key', fakeConnection)
   spanStreamer.connect(1)
 
   t.ok(spanStreamer.write(fakeSpan))
@@ -118,7 +117,7 @@ tap.test('write(span) should return true with backpressure', (t) => {
     toStreamingFormat: () => {}
   }
 
-  const spanStreamer = new SpanStreamer('noWhere.horse', 'abc123', fakeConnection)
+  const spanStreamer = new SpanStreamer('fake-license-key', fakeConnection)
   spanStreamer.connect(1)
 
   t.ok(spanStreamer.write(fakeSpan))
@@ -141,7 +140,7 @@ tap.test('write(span) should return false when stream.write throws error', (t) =
     toStreamingFormat: () => {}
   }
 
-  const spanStreamer = new SpanStreamer('noWhere.horse', 'abc123', fakeConnection)
+  const spanStreamer = new SpanStreamer('fake-license-key', fakeConnection)
   spanStreamer.connect(1)
 
   t.notOk(spanStreamer.write(fakeSpan))
