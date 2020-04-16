@@ -14,7 +14,8 @@ const sinon = require('sinon')
 const Config = require('../../../lib/config')
 const securityPolicies = require('../../lib/fixtures').securityPolicies
 
-const VALID_URL = 'https://infinite_tracing.test:443'
+const VALID_HOST = 'infinite-tracing.test'
+const VALID_PORT = '443'
 
 function idempotentEnv(envConfig, initialConfig, callback) {
   let saved = {}
@@ -792,10 +793,13 @@ describe('the agent configuration', function() {
           infinite_tracing: true
         },
         serverless_mode: { enabled: true },
-        infinite_tracing: { trace_observer_url: VALID_URL }
+        infinite_tracing: { trace_observer: {
+          host: VALID_HOST,
+          port: VALID_PORT
+        }}
       })
 
-      expect(config.infinite_tracing.trace_observer_url).to.equal('')
+      expect(config.infinite_tracing.trace_observer.host).to.equal('')
     })
 
     it('should pick up trusted_account_key', () => {
@@ -1948,11 +1952,24 @@ describe('the agent configuration', function() {
 
 tap.test('should pick up on infinite tracing env vars', (t) => {
   const env = {
-    NEW_RELIC_INFINITE_TRACING_TRACE_OBSERVER_URL: VALID_URL
+    NEW_RELIC_INFINITE_TRACING_TRACE_OBSERVER_HOST: VALID_HOST,
+    NEW_RELIC_INFINITE_TRACING_TRACE_OBSERVER_PORT: VALID_PORT
   }
 
   idempotentEnv(env, (config) => {
-    t.equal(config.infinite_tracing.trace_observer_url, VALID_URL)
+    t.equal(config.infinite_tracing.trace_observer.host, VALID_HOST)
+    t.equal(config.infinite_tracing.trace_observer.port, VALID_PORT)
+    t.end()
+  })
+})
+
+tap.test('should default infinite tracing port to 443', (t) => {
+  const env = {
+    NEW_RELIC_INFINITE_TRACING_TRACE_OBSERVER_HOST: VALID_HOST
+  }
+
+  idempotentEnv(env, (config) => {
+    t.equal(config.infinite_tracing.trace_observer.port, VALID_PORT)
     t.end()
   })
 })

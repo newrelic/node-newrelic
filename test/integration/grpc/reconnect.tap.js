@@ -68,14 +68,19 @@ tap.test(
     return new Promise((resolve) => {
       const metrics = createMetricAggregatorForTests()
 
+      const traceObserverConfig = {
+        host: 'ssl.lvh.me',
+        port: port
+      }
+
       // very short backoff to trigger the reconnect in 1 second
       const backoffs = {initialSeconds: 0, seconds:1}
-      const connection = new GrpcConnection(metrics, backoffs)
+      const connection = new GrpcConnection(traceObserverConfig, metrics, backoffs)
 
       let countDisconnects = 0
 
-      const args = ['https://ssl.lvh.me:' + port, null, null]
-      connection.setConnectionDetails(...args).connectSpans()
+      // const args = ['https://ssl.lvh.me:' + port, null, null]
+      connection.setConnectionDetails().connectSpans()
       connection.on('connected', (callStream) => {
         t.equals(
           callStream.constructor.name,
