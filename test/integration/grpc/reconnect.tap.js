@@ -79,7 +79,6 @@ tap.test(
 
       let countDisconnects = 0
 
-      // const args = ['https://ssl.lvh.me:' + port, null, null]
       connection.setConnectionDetails().connectSpans()
       connection.on('connected', (callStream) => {
         t.equals(
