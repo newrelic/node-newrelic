@@ -789,9 +789,6 @@ describe('the agent configuration', function() {
 
     it('should explicitly disable infinite tracing', () => {
       const config = Config.initialize({
-        feature_flag: {
-          infinite_tracing: true
-        },
         serverless_mode: { enabled: true },
         infinite_tracing: { trace_observer: {
           host: VALID_HOST,

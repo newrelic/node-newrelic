@@ -186,9 +186,6 @@ tap.test('Inifinite tracing - Connection Handling', { skip: !isGrpcSupportedVers
               host: 'ssl.lvh.me',
               port: port
             }
-          },
-          feature_flag: {
-            infinite_tracing: true
           }
         })
 
