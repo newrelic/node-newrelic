@@ -17,6 +17,8 @@ const NAMES = require('../../../lib/metrics/names')
 const MetricAggregator = require('../../../lib/metrics/metric-aggregator')
 const MetricMapper = require('../../../lib/metrics/mapper')
 const MetricNormalizer = require('../../../lib/metrics/normalizer')
+const EventEmitter = require('events').EventEmitter
+const util = require('util')
 
 const grpcApi = require('../../../lib/proxy/grpc')
 const protoLoader = require('@grpc/proto-loader')
@@ -24,6 +26,16 @@ const protoLoader = require('@grpc/proto-loader')
 const fakeTraceObserverConfig = {
   host: 'host.com',
   port: '443'
+}
+
+class FakeStreamer extends EventEmitter {
+  constructor() {
+    super()
+  }
+
+  emitStatus(status) {
+    this.emit('status', status)
+  }
 }
 
 const createMetricAggregatorForTests = () => {
@@ -125,11 +137,9 @@ tap.test(
 
 tap.test('grpc connection error handling', (test) => {
   test.test('should catch error when proto loader fails', (t) => {
-    const metrics = createMetricAggregatorForTests()
-  
     const stub = sinon.stub(protoLoader, 'loadSync').returns({})
     
-    const connection = new GrpcConnection(fakeTraceObserverConfig, metrics)
+    const connection = new GrpcConnection(fakeTraceObserverConfig)
     connection.connectSpans()
 
     connection.on('disconnected', () => {
@@ -141,25 +151,110 @@ tap.test('grpc connection error handling', (test) => {
 
   test.test('should catch error when loadPackageDefinition returns invalid service definition',
     (t) => {
-      const metrics = createMetricAggregatorForTests()
-
       const stub = sinon.stub(grpcApi, 'loadPackageDefinition').returns({})
 
-      const connection = new GrpcConnection(fakeTraceObserverConfig, metrics)
+      const connection = new GrpcConnection(fakeTraceObserverConfig)
       connection.connectSpans()
 
       connection.on('disconnected', () => {
         t.equal(connection._state, connectionStates.disconnected)
-
-        const metric = metrics.getOrCreateMetric(NAMES.INFINITE_TRACING.SPAN_RESPONSE_ERROR)
-
-        t.equal(metric.callCount, 1, 'incremented SPAN_RESPONSE_ERROR metric')
 
         stub.restore()
 
         t.end()
       })
     })
+
+  test.end()
+})
+
+tap.test('grpc stream event handling', (test) => {
+  test.test('should do nothing with OK status', (t) => {
+    const metrics = createMetricAggregatorForTests()
+    const fakeStream = new FakeStreamer()
+
+    const calledMetrics = false
+
+    metrics.getOrCreateMetric = () => {
+      calledMetrics = true
+    }
+
+    const connection = new GrpcConnection(fakeTraceObserverConfig, metrics)
+    connection._reconnect = () => {}
+    connection._disconnectWithoutReconnect = () => {}
+
+    const status = {
+      code: grpcApi.status.OK
+    }
+
+    connection._setupSpanStreamObservers(fakeStream)
+
+    fakeStream.emitStatus(status)
+
+    fakeStream.removeAllListeners()
+
+    t.notOk(calledMetrics, 'grpc status OK - no metric incremented')
+
+    t.end()
+  })
+
+  test.test('should increment UNIMPLEMENTED metric on UNIMPLEMENTED status', (t) => {
+    const metrics = createMetricAggregatorForTests()
+    const fakeStream = new FakeStreamer()
+
+    const connection = new GrpcConnection(fakeTraceObserverConfig, metrics)
+    connection._reconnect = () => {}
+    connection._disconnectWithoutReconnect = () => {}
+
+    const status = {
+      code: grpcApi.status.UNIMPLEMENTED
+    }
+
+    connection._setupSpanStreamObservers(fakeStream)
+
+    fakeStream.emitStatus(status)
+
+    fakeStream.removeAllListeners()
+
+    const metric = 
+      metrics.getOrCreateMetric(NAMES.INFINITE_TRACING.SPAN_RESPONSE_GRPC_UNIMPLEMENTED)
+
+    t.equal(metric.callCount, 1, 'incremented metric')
+
+    t.end()
+  })
+
+  test
+    .test('should increment SPAN_RESPONSE_GRPC_STATUS metric when status not UNPLIMENTED or OK',
+      (t) => {
+        const metrics = createMetricAggregatorForTests()
+        const fakeStream = new FakeStreamer()
+
+        const connection = new GrpcConnection(fakeTraceObserverConfig, metrics)
+        connection._reconnect = () => {}
+        connection._disconnectWithoutReconnect = () => {}
+
+        const statusName = 'DEADLINE_EXCEEDED'
+
+        const status = {
+          code: grpcApi.status[statusName]
+        }
+
+        connection._setupSpanStreamObservers(fakeStream)
+
+        fakeStream.emitStatus(status)
+
+        fakeStream.removeAllListeners()
+
+        const metric = 
+          metrics
+            .getOrCreateMetric(util
+              .format(NAMES.INFINITE_TRACING.SPAN_RESPONSE_GRPC_STATUS, statusName))
+
+        t.equal(metric.callCount, 1, 'incremented metric')
+
+        t.end()
+      })
 
   test.end()
 })
