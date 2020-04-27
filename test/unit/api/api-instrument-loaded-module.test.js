@@ -1,22 +1,19 @@
 'use strict'
 
-// TODO: convert to normal tap style.
-// Below allows use of mocha DSL with tap runner.
-require('tap').mochaGlobals()
-
-const chai = require('chai')
-const expect = chai.expect
+const tap = require('tap')
 const API = require('../../../api')
 const agentHelper = require('../../lib/agent_helper')
 const Shim = require('../../../lib/shim/shim')
 
-describe('API.instrumentLoadedModule', function() {
-  var agent
-  var api
-  var expressMock
-  var shimHelper
+tap.test('Agent API - instrumentLoadedModule', (t) => {
+  t.autoend()
 
-  beforeEach(function() {
+  let agent
+  let api
+  let expressMock
+  let shimHelper
+
+  t.beforeEach((done) => {
     agent = agentHelper.instrumentMockedAgent()
 
     api = new API(agent)
@@ -28,27 +25,40 @@ describe('API.instrumentLoadedModule', function() {
     expressMock.Router = {}
 
     shimHelper = new Shim(agent, 'fake')
+
+    done()
   })
 
-  afterEach(function() {
+  t.afterEach((done) => {
     agentHelper.unloadAgent(agent)
     agent = null
     api = null
     expressMock = null
+
+    done()
   })
 
-  it('should be callable without an error', function() {
-    api.instrumentLoadedModule('express', expressMock)
-  })
-
-  it('should return true when a function is instrumented', function() {
-    expect(api.instrumentLoadedModule('express', expressMock)).equal(true)
-  })
-
-  it('should wrap express.application.use', function() {
+  t.test('should be callable without an error', (t) => {
     api.instrumentLoadedModule('express', expressMock)
 
-    expect(expressMock).is.an('object')
-    expect(shimHelper.isWrapped(expressMock.application.use)).equal(true)
+    t.end()
+  })
+
+  t.test('should return true when a function is instrumented', (t) => {
+    const didInstrument = api.instrumentLoadedModule('express', expressMock)
+    t.equal(didInstrument, true)
+
+    t.end()
+  })
+
+  t.test('should wrap express.application.use', (t) => {
+    api.instrumentLoadedModule('express', expressMock)
+
+    t.type(expressMock, 'object')
+
+    const isWrapped = shimHelper.isWrapped(expressMock.application.use)
+    t.ok(isWrapped)
+
+    t.end()
   })
 })
