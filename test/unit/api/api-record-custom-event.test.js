@@ -1,85 +1,113 @@
 'use strict'
 
-// TODO: convert to normal tap style.
-// Below allows use of mocha DSL with tap runner.
-require('tap').mochaGlobals()
-
-var chai   = require('chai')
-var expect = chai.expect
-var helper = require('../../lib/agent_helper.js')
-var API    = require('../../../api.js')
+const tap = require('tap')
+const helper = require('../../lib/agent_helper.js')
+const API    = require('../../../api.js')
 
 const MAX_CUSTOM_EVENTS = 2
 
-describe('The custom events API', function() {
-  var agent
-  var api
+tap.test('Agent API - recordCustomEvent', (t) => {
+  t.autoend()
 
-  beforeEach(function() {
+  let agent = null
+  let api = null
+
+  t.beforeEach((done) => {
     agent = helper.loadMockedAgent({
       custom_insights_events: {
         max_samples_stored: MAX_CUSTOM_EVENTS
       }
     })
     api = new API(agent)
+
+    done()
   })
 
-  afterEach(function() {
+  t.afterEach((done) => {
     helper.unloadAgent(agent)
+    agent = null
+    api = null
+
+    done()
   })
 
-  it('can be called without exploding', function() {
-    expect(function() {
+  t.test('can be called without exploding', (t) => {
+    t.doesNotThrow(() => {
       api.recordCustomEvent('EventName', {key: 'value'})
-    }).not.throws()
+    })
+
+    t.end()
   })
 
-  it('does not throw an exception on invalid name', function() {
-    expect(function() {
+  t.test('does not throw an exception on invalid name', (t) => {
+    t.doesNotThrow(() => {
       api.recordCustomEvent('éventñame', {key: 'value'})
-    }).not.throws()
+    })
+
+    t.end()
   })
 
-  it('pushes the event into the customEvents pool', function() {
+  t.test('pushes the event into the customEvents pool', (t) => {
     api.recordCustomEvent('EventName', {key: 'value'})
-    var myEvent = popTopCustomEvent(agent)
-    expect(myEvent).to.exist
+    const myEvent = popTopCustomEvent(agent)
+    t.ok(myEvent)
+
+    t.end()
   })
 
-  it('does not collect events when high security mode is on', function() {
+  t.test('does not collect events when high security mode is on', (t) => {
     agent.config.high_security = true
     api.recordCustomEvent('EventName', {key: 'value'})
-    expect(getCustomEvents(agent).length).to.equal(0)
+
+    const events = getCustomEvents(agent)
+    t.equal(events.length, 0)
+
+    t.end()
   })
 
-  it('does not collect events when the endpoint is disabled in the config', function() {
+  t.test('does not collect events when the endpoint is disabled in the config', (t) => {
     agent.config.api.custom_events_enabled = false
     api.recordCustomEvent('EventName', {key: 'value'})
-    expect(getCustomEvents(agent).length).to.equal(0)
+
+    const events = getCustomEvents(agent)
+    t.equal(events.length, 0)
+
+    t.end()
   })
 
-  it('creates the proper intrinsic values when recorded', function() {
-    var when = Date.now()
+  t.test('creates the proper intrinsic values when recorded', (t) => {
+    const when = Date.now()
+
     api.recordCustomEvent('EventName', {key: 'value'})
-    var myEvent = popTopCustomEvent(agent)
-    expect(myEvent[0]).to.exist
-    expect(myEvent[0].type).to.equal('EventName')
-    expect(myEvent[0].timestamp).to.be.at.least(when)
+
+    const myEvent = popTopCustomEvent(agent)
+    const [intrinsics] = myEvent
+
+    t.ok(intrinsics)
+    t.equal(intrinsics.type, 'EventName')
+    t.ok(intrinsics.timestamp >= when)
+
+    t.end()
   })
 
-  it('adds the attributes the user asks for', function() {
-    var data = {
+  t.test('adds the attributes the user asks for', (t) => {
+    const data = {
       string: 'value',
       bool: true,
       number: 1
     }
+
     api.recordCustomEvent('EventName', data)
-    var myEvent = popTopCustomEvent(agent)
-    expect(myEvent[1]).to.deep.equal(data)
+
+    const myEvent = popTopCustomEvent(agent)
+    const userAttributes = myEvent[1]
+    t.deepEqual(userAttributes, data)
+
+    t.end()
   })
 
-  it('filters object type values from user attributes', function() {
-    var data = {
+  t.test('filters object type values from user attributes', (t) => {
+    const data = {
       string: 'value',
       object: {},
       array: [],
@@ -87,109 +115,180 @@ describe('The custom events API', function() {
       function: function() {},
       symbol: Symbol('test')
     }
+
     api.recordCustomEvent('EventName', data)
-    var myEvent = popTopCustomEvent(agent)
-    expect(myEvent[1].string).to.equal('value')
-    expect(myEvent[1]).to.not.have.property('object')
-    expect(myEvent[1]).to.not.have.property('array')
-    expect(myEvent[1]).to.not.have.property('function')
-    expect(myEvent[1]).to.not.have.property('undef')
-    expect(myEvent[1]).to.not.have.property('symbol')
+
+    const myEvent = popTopCustomEvent(agent)
+    const userAttributes = myEvent[1]
+
+    t.equal(userAttributes.string, 'value')
+
+    const hasOwnAttribute = Object.hasOwnProperty.bind(userAttributes)
+
+    t.notOk(hasOwnAttribute('object'))
+    t.notOk(hasOwnAttribute('array'))
+    t.notOk(hasOwnAttribute('function'))
+    t.notOk(hasOwnAttribute('undef'))
+    t.notOk(hasOwnAttribute('symbol'))
+
+    t.end()
   })
 
-  it('does not add events with invalid names', function() {
+  t.test('does not add events with invalid names', (t) => {
     api.recordCustomEvent('éventñame', {key: 'value'})
-    var myEvent = popTopCustomEvent(agent)
-    expect(myEvent).to.not.exist
+
+    const myEvent = popTopCustomEvent(agent)
+    t.notOk(myEvent)
+
+    t.end()
   })
 
-  it('does not collect events when disabled', function() {
+  t.test('does not collect events when disabled', (t) => {
     agent.config.custom_insights_events = false
+
     api.recordCustomEvent('SomeEvent', {key: 'value'})
-    var myEvent = popTopCustomEvent(agent)
-    expect(myEvent).to.not.exist
+
+    const myEvent = popTopCustomEvent(agent)
+    t.notOk(myEvent)
+
     agent.config.custom_insights_events = true
+    t.end()
   })
 
-  it('should sample after the limit of events', function() {
+  t.test('should sample after the limit of events', (t) => {
     api.recordCustomEvent('MaybeBumped', {a: 1})
     api.recordCustomEvent('MaybeBumped', {b: 2})
     api.recordCustomEvent('MaybeBumped', {c: 3})
-    expect(getCustomEvents(agent)).to.have.length(MAX_CUSTOM_EVENTS)
+
+    const customEvents = getCustomEvents(agent)
+    t.equal(customEvents.length, MAX_CUSTOM_EVENTS)
+
+    t.end()
   })
 
-  it('should not throw an exception with too few arguments', function() {
-    expect(function() {
+  t.test('should not throw an exception with too few arguments', (t) => {
+    t.doesNotThrow(() => {
       api.recordCustomEvent()
-    }).not.throws()
+    })
 
-    expect(function() {
+    t.doesNotThrow(() => {
       api.recordCustomEvent('SomeThing')
-    }).not.throws()
+    })
+
+    t.end()
   })
 
-  it('should reject events with object first arg', function() {
+  t.test('should reject events with object first arg', (t) => {
     api.recordCustomEvent({}, {alpha: 'beta'})
-    expect(popTopCustomEvent(agent)).to.not.exist
+
+    const customEvent = popTopCustomEvent(agent)
+    t.notOk(customEvent)
+
+    t.end()
   })
 
-  it('should reject events with array first arg', function() {
+  t.test('should reject events with array first arg', (t) => {
     api.recordCustomEvent([], {alpha: 'beta'})
-    expect(popTopCustomEvent(agent)).to.not.exist
+
+    const customEvent = popTopCustomEvent(agent)
+    t.notOk(customEvent)
+
+    t.end()
   })
 
-  it('should reject events with number first arg', function() {
+  t.test('should reject events with number first arg', (t) => {
     api.recordCustomEvent(1, {alpha: 'beta'})
-    expect(popTopCustomEvent(agent)).to.not.exist
+
+    const customEvent = popTopCustomEvent(agent)
+    t.notOk(customEvent)
+
+    t.end()
   })
 
-  it('should reject events with undfined first arg', function() {
+  t.test('should reject events with undfined first arg', (t) => {
     api.recordCustomEvent(undefined, {alpha: 'beta'})
-    expect(popTopCustomEvent(agent)).to.not.exist
+
+    const customEvent = popTopCustomEvent(agent)
+    t.notOk(customEvent)
+
+    t.end()
   })
 
-  it('should reject events with null first arg', function() {
+  t.test('should reject events with null first arg', (t) => {
     api.recordCustomEvent(null, {alpha: 'beta'})
-    expect(popTopCustomEvent(agent)).to.not.exist
+
+    const customEvent = popTopCustomEvent(agent)
+    t.notOk(customEvent)
+
+    t.end()
   })
 
-  it('should reject events with string second arg', function() {
+  t.test('should reject events with string second arg', (t) => {
     api.recordCustomEvent('EventThing', 'thing')
-    expect(popTopCustomEvent(agent)).to.not.exist
+
+    const customEvent = popTopCustomEvent(agent)
+    t.notOk(customEvent)
+
+    t.end()
   })
 
-  it('should reject events with array second arg', function() {
+  t.test('should reject events with array second arg', (t) => {
     api.recordCustomEvent('EventThing', [])
-    expect(popTopCustomEvent(agent)).to.not.exist
+
+    const customEvent = popTopCustomEvent(agent)
+    t.notOk(customEvent)
+
+    t.end()
   })
 
-  it('should reject events with number second arg', function() {
+  t.test('should reject events with number second arg', (t) => {
     api.recordCustomEvent('EventThing', 1)
-    expect(popTopCustomEvent(agent)).to.not.exist
+
+    const customEvent = popTopCustomEvent(agent)
+    t.notOk(customEvent)
+
+    t.end()
   })
 
-  it('should reject events with undefined second arg', function() {
+  t.test('should reject events with undefined second arg', (t) => {
     api.recordCustomEvent('EventThing', undefined)
-    expect(popTopCustomEvent(agent)).to.not.exist
+
+    const customEvent = popTopCustomEvent(agent)
+    t.notOk(customEvent)
+
+    t.end()
   })
 
-  it('should reject events with null second arg', function() {
+  t.test('should reject events with null second arg', (t) => {
     api.recordCustomEvent('EventThing', null)
-    expect(popTopCustomEvent(agent)).to.not.exist
+
+    const customEvent = popTopCustomEvent(agent)
+    t.notOk(customEvent)
+
+    t.end()
   })
 
-  it('should reject events with a type greater than 255 chars', function() {
-    var badType = new Array(257).join('a')
+  t.test('should reject events with a type greater than 255 chars', (t) => {
+    const badType = new Array(257).join('a')
     api.recordCustomEvent(badType, {ship: 'every week'})
-    expect(popTopCustomEvent(agent)).to.not.exist
+
+    const customEvent = popTopCustomEvent(agent)
+    t.notOk(customEvent)
+
+    t.end()
   })
 
-  it('should reject events with an attribute key greater than 255 chars', function() {
-    var badKey = new Array(257).join('b')
-    var attributes = {}
+  t.test('should reject events with an attribute key greater than 255 chars', (t) => {
+    const badKey = new Array(257).join('b')
+    const attributes = {}
     attributes[badKey] = true
+
     api.recordCustomEvent('MyType', attributes)
-    expect(popTopCustomEvent(agent)).to.not.exist
+
+    const customEvent = popTopCustomEvent(agent)
+    t.notOk(customEvent)
+
+    t.end()
   })
 })
 
