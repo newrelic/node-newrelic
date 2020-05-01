@@ -101,7 +101,7 @@ tap.test((t)=>{
   t.end()
 })
 
-tap.test('Should increment SENT metric on write', (t) => {
+tap.test('Should increment SEEN metric on write', (t) => {
   const metrics = createMetricAggregatorForTests()
   const metricsSpy = sinon.spy(metrics, 'getOrCreateMetric')
 
@@ -230,6 +230,12 @@ tap.test('Should drain span queue on stream drain event', (t) => {
   fakeStream.emit('drain', fakeStream.write = () => true)
 
   t.equals(spanStreamer.spans.length, 0, 'drained spans')
+  t.equals(
+    metrics.getOrCreateMetric
+    (METRIC_NAMES.INFINITE_TRACING.DRAIN_DURATION).callCount, 1, 'DRAIN_DURATION metric')
+
+  t.equals(metrics
+    .getOrCreateMetric(METRIC_NAMES.INFINITE_TRACING.SENT).callCount, 2, 'SENT metric incremented')
 
   fakeStream.destroy()
 
