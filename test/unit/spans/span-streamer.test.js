@@ -1,11 +1,38 @@
 'use strict'
 const tap = require('tap')
-const SpanStreamer = require('../../../lib/spans/span-streamer')
+const sinon = require('sinon')
 const GrpcConnection = require('../../../lib/grpc/connection')
 const MetricAggregator = require('../../../lib/metrics/metric-aggregator')
 const MetricMapper = require('../../../lib/metrics/mapper')
 const MetricNormalizer = require('../../../lib/metrics/normalizer')
 const EventEmitter = require('events').EventEmitter
+const METRIC_NAMES = require('../../../lib/metrics/names')
+const loggerParent = require('../../../lib/logger')
+
+const fakeLogger = {
+  info: () => {},
+  trace: () => {},
+  error: () => {},
+  warnOnce: () => {},
+  infoOncePer: () => {},
+  options: {
+    _level: 100
+  }
+}
+
+/**
+ * return fakeLogger from loggerParent dependency and must be setup before
+ * requiring span-streamer
+ */
+sinon.stub(loggerParent, 'child').returns(fakeLogger)
+
+const SpanStreamer = require('../../../lib/spans/span-streamer')
+
+
+const realStream = require('stream')
+const mockedStream = realStream.Writable
+
+mockedStream._write = () => true
 
 /**
  * A mocked connection object
@@ -20,7 +47,20 @@ class MockConnection extends EventEmitter {
    *
    * Mocked here to ensure calls to connect don't crash
    */
-  setConnectionDetails() {
+  setConnectionDetails() {}
+
+  connectSpans() {
+    this.stream = this.stream ? this.stream : mockedStream
+    this.emit('connected', this.stream)
+  }
+
+  disconnect() {
+    this.emit('disconnected')
+  }
+
+  /* method for testing only */
+  setStream(stream) {
+    this.stream = stream
   }
 }
 
@@ -61,89 +101,137 @@ tap.test((t)=>{
   t.end()
 })
 
-tap.test('write(span) should return false with no stream set', (t) => {
-  const fakeConnection = createFakeConnection()
-  const spanStreamer = new SpanStreamer('fake-license-key', fakeConnection)
+tap.test('Should increment SENT metric on write', (t) => {
+  const metrics = createMetricAggregatorForTests()
+  const metricsSpy = sinon.spy(metrics, 'getOrCreateMetric')
 
-  t.notOk(spanStreamer.write({}))
+  const spanStreamer = new SpanStreamer(
+    'fake-license-key',
+    createFakeConnection(),
+    metrics
+  )
+
+  spanStreamer.write({})
+
+  t.ok(metricsSpy.firstCall.calledWith(METRIC_NAMES.INFINITE_TRACING.SEEN), 'SEEN metric')
 
   t.end()
 })
 
-tap.test('write(span) should return false when not writeable', (t) => {
+tap.test('Should log when disconnected and stream not available', (t) => {
+  const loggerSpy = sinon.spy(fakeLogger, 'warnOnce')
   const fakeConnection = createFakeConnection()
-  fakeConnection.connectSpans = () => {}
 
-  const spanStreamer = new SpanStreamer('fake-license-key', fakeConnection)
+  const spanStreamer = new SpanStreamer(
+    'fake-license-key',
+    fakeConnection,
+    createMetricAggregatorForTests()
+  )
+
+  fakeConnection.disconnect()
+
+  spanStreamer.write({})
+
+  t.equals(loggerSpy.callCount, 1)
+
+  t.end()
+})
+
+tap.test('Should add span to queue on backpressure and log at trace level', (t) => {
+  const loggerSpy = sinon.spy(fakeLogger, 'trace')
+  const fakeConnection = createFakeConnection()
+
+  const spanStreamer = new SpanStreamer(
+    'fake-license-key',
+    fakeConnection,
+    createMetricAggregatorForTests(),
+    2
+  )
+    
+  fakeConnection.connectSpans()
+
   spanStreamer._writable = false
+  
+  t.equals(spanStreamer.spans.length, 0, 'no spans queued')
 
-  t.notOk(spanStreamer.write({}))
+  spanStreamer.write({})
 
-  t.end()
-})
+  t.equals(spanStreamer.spans.length, 1, 'one span queued')
 
-tap.test('write(span) should return true when able to write to stream', (t) => {
-  const fakeStream = {
-    write: () => true
-  }
-
-  const fakeConnection = createFakeConnection()
-  fakeConnection.connectSpans = () => {
-    fakeConnection.emit('connected', fakeStream)
-  }
-
-  const fakeSpan = {
-    toStreamingFormat: () => {}
-  }
-
-  const spanStreamer = new SpanStreamer('fake-license-key', fakeConnection)
-  spanStreamer.connect(1)
-
-  t.ok(spanStreamer.write(fakeSpan))
+  t.equals(loggerSpy.callCount, 1, 'logger.trace')
 
   t.end()
 })
 
-tap.test('write(span) should return true with backpressure', (t) => {
-  const fakeStream = {
-    write: () => false,
-    once: () => {}
-  }
+tap.test('Should increment DROPPED metric when queue full and backpressure', (t) => {
   const fakeConnection = createFakeConnection()
-  fakeConnection.connectSpans = () => {
-    fakeConnection.emit('connected', fakeStream)
-  }
-  const fakeSpan = {
-    toStreamingFormat: () => {}
-  }
+  const metrics = createMetricAggregatorForTests()
 
-  const spanStreamer = new SpanStreamer('fake-license-key', fakeConnection)
-  spanStreamer.connect(1)
+  const spanStreamer = new SpanStreamer(
+    'fake-license-key',
+    fakeConnection,
+    metrics,
+    1
+  )
+    
+  fakeConnection.connectSpans()
 
-  t.ok(spanStreamer.write(fakeSpan))
+  spanStreamer._writable = false
+  
+  t.equals(spanStreamer.spans.length, 0, 'no spans queued')
+
+  spanStreamer.write({})
+  spanStreamer.write({})
+  spanStreamer.write({}) /* too many spans */
+
+  t.equals(spanStreamer.spans.length, 2, 'two spans queued')
+
+  t.equal(metrics
+    .getOrCreateMetric(METRIC_NAMES.INFINITE_TRACING.DROPPED)
+    .callCount, 1, 'Increment DROPPED metric')
 
   t.end()
 })
 
-tap.test('write(span) should return false when stream.write throws error', (t) => {
-  const fakeStream = {
-    write: () => {
-      throw new Error('whoa!')
-    },
-    once: () => {}
-  }
+tap.test('Should drain span queue on stream drain event', (t) => {
   const fakeConnection = createFakeConnection()
-  fakeConnection.connectSpans = () => {
-    fakeConnection.emit('connected', fakeStream)
-  }
+  const metrics = createMetricAggregatorForTests()
+
+  /* use PassThrough stream for drain emit */
+  const { PassThrough } = require('stream')
+  const fakeStream = new PassThrough()
+
+  /* simulate backpressure */
+  fakeStream.write = () => false
+
+  fakeConnection.setStream(fakeStream)
+
+  const spanStreamer = new SpanStreamer(
+    'fake-license-key',
+    fakeConnection,
+    metrics,
+    1
+  )
+
+  fakeConnection.connectSpans()
+
+  t.equals(spanStreamer.spans.length, 0, 'no spans queued')
+  
   const fakeSpan = {
     toStreamingFormat: () => {}
   }
 
-  const spanStreamer = new SpanStreamer('fake-license-key', fakeConnection)
-  spanStreamer.connect(1)
+  spanStreamer.write(fakeSpan)
+  spanStreamer.write(fakeSpan)
 
-  t.notOk(spanStreamer.write(fakeSpan))
+  t.equals(spanStreamer.spans.length, 1, 'one span queued')
+
+  /* emit drain event and allow writes */
+  fakeStream.emit('drain', fakeStream.write = () => true)
+
+  t.equals(spanStreamer.spans.length, 0, 'drained spans')
+
+  fakeStream.destroy()
 
   t.end()
 })
