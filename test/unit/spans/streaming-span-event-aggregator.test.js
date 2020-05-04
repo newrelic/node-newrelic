@@ -1,7 +1,6 @@
 'use strict'
 
 const tap = require('tap')
-const sinon = require('sinon')
 
 const StreamingSpanEventAggregator = require('../../../lib/spans/streaming-span-event-aggregator')
 
