@@ -52,8 +52,21 @@ tap.test('API.instrumentLoadedModule', function(t) {
     t.end()
   })
 
-  t.test('should not throw if supported module is not loaded', function(t) {
-    api.instrumentLoadedModule('express', {})
+  t.test('should not throw if supported module is not installed', function(t) {
+    // we need a supported module in our test
+    let awsSdk = false
+    try {
+      awsSdk = require('aws-sdk')
+    } catch (e) {
+    }
+    t.ok(awsSdk === false, 'aws-sdk is not installed')
+
+    // attempt to instrument -- if nothing throws we're good
+    try {
+      api.instrumentLoadedModule('aws-sdk', awsSdk)
+    } catch (e) {
+      t.error(e)
+    }
     t.end()
   })
 
