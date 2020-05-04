@@ -1,22 +1,17 @@
 'use strict'
 
-// TODO: convert to normal tap style.
-// Below allows use of mocha DSL with tap runner.
-require('tap').mochaGlobals()
-
-const chai = require('chai')
-const expect = chai.expect
+const tap = require('tap')
 const API = require('../../../api')
 const agentHelper = require('../../lib/agent_helper')
 const Shim = require('../../../lib/shim/shim')
 
-describe('API.instrumentLoadedModule', function() {
-  var agent
-  var api
-  var expressMock
-  var shimHelper
+tap.test('API.instrumentLoadedModule', function(t) {
+  let agent
+  let api
+  let expressMock
+  let shimHelper
 
-  beforeEach(function() {
+  t.beforeEach(function(done) {
     agent = agentHelper.instrumentMockedAgent()
 
     api = new API(agent)
@@ -28,27 +23,39 @@ describe('API.instrumentLoadedModule', function() {
     expressMock.Router = {}
 
     shimHelper = new Shim(agent, 'fake')
+    done()
   })
 
-  afterEach(function() {
+  t.afterEach(function(done) {
     agentHelper.unloadAgent(agent)
     agent = null
     api = null
     expressMock = null
+    done()
   })
 
-  it('should be callable without an error', function() {
+  t.test('should be callable without an error', function(t) {
+    t.ok(api.instrumentLoadedModule('express', expressMock))
+    t.end()
+  })
+
+  t.test('should return true when a function is instrumented', function(t) {
+    t.ok(api.instrumentLoadedModule('express', expressMock))
+    t.end()
+  })
+
+  t.test('should wrap express.application.use', function(t) {
     api.instrumentLoadedModule('express', expressMock)
+
+    t.ok((typeof expressMock) === 'object')
+    t.ok(shimHelper.isWrapped(expressMock.application.use))
+    t.end()
   })
 
-  it('should return true when a function is instrumented', function() {
-    expect(api.instrumentLoadedModule('express', expressMock)).equal(true)
+  t.test('should not throw if supported module is not loaded', function(t) {
+    api.instrumentLoadedModule('express', {})
+    t.end()
   })
 
-  it('should wrap express.application.use', function() {
-    api.instrumentLoadedModule('express', expressMock)
-
-    expect(expressMock).is.an('object')
-    expect(shimHelper.isWrapped(expressMock.application.use)).equal(true)
-  })
+  t.autoend()
 })
