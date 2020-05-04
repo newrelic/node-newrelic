@@ -163,36 +163,6 @@ tap.test('Should add span to queue on backpressure and log at trace level', (t) 
   t.end()
 })
 
-tap.test('Should increment DROPPED metric when queue full and backpressure', (t) => {
-  const fakeConnection = createFakeConnection()
-  const metrics = createMetricAggregatorForTests()
-
-  const spanStreamer = new SpanStreamer(
-    'fake-license-key',
-    fakeConnection,
-    metrics,
-    1
-  )
-    
-  fakeConnection.connectSpans()
-
-  spanStreamer._writable = false
-  
-  t.equals(spanStreamer.spans.length, 0, 'no spans queued')
-
-  spanStreamer.write({})
-  spanStreamer.write({})
-  spanStreamer.write({}) /* too many spans */
-
-  t.equals(spanStreamer.spans.length, 2, 'two spans queued')
-
-  t.equal(metrics
-    .getOrCreateMetric(METRIC_NAMES.INFINITE_TRACING.DROPPED)
-    .callCount, 1, 'Increment DROPPED metric')
-
-  t.end()
-})
-
 tap.test('Should drain span queue on stream drain event', (t) => {
   const fakeConnection = createFakeConnection()
   const metrics = createMetricAggregatorForTests()
