@@ -118,27 +118,7 @@ tap.test('Should increment SEEN metric on write', (t) => {
   t.end()
 })
 
-tap.test('Should log when disconnected and stream not available', (t) => {
-  const loggerSpy = sinon.spy(fakeLogger, 'warnOnce')
-  const fakeConnection = createFakeConnection()
-
-  const spanStreamer = new SpanStreamer(
-    'fake-license-key',
-    fakeConnection,
-    createMetricAggregatorForTests()
-  )
-
-  fakeConnection.disconnect()
-
-  spanStreamer.write({})
-
-  t.equals(loggerSpy.callCount, 1)
-
-  t.end()
-})
-
-tap.test('Should add span to queue on backpressure and log at trace level', (t) => {
-  const loggerSpy = sinon.spy(fakeLogger, 'trace')
+tap.test('Should add span to queue on backpressure', (t) => {
   const fakeConnection = createFakeConnection()
 
   const spanStreamer = new SpanStreamer(
@@ -157,8 +137,6 @@ tap.test('Should add span to queue on backpressure and log at trace level', (t) 
   spanStreamer.write({})
 
   t.equals(spanStreamer.spans.length, 1, 'one span queued')
-
-  t.equals(loggerSpy.callCount, 1, 'logger.trace')
 
   t.end()
 })
