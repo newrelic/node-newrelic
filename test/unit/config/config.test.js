@@ -16,6 +16,7 @@ const securityPolicies = require('../../lib/fixtures').securityPolicies
 
 const VALID_HOST = 'infinite-tracing.test'
 const VALID_PORT = '443'
+const VALID_QUEUE_SIZE = 10000
 
 function idempotentEnv(envConfig, initialConfig, callback) {
   let saved = {}
@@ -1950,12 +1951,14 @@ describe('the agent configuration', function() {
 tap.test('should pick up on infinite tracing env vars', (t) => {
   const env = {
     NEW_RELIC_INFINITE_TRACING_TRACE_OBSERVER_HOST: VALID_HOST,
-    NEW_RELIC_INFINITE_TRACING_TRACE_OBSERVER_PORT: VALID_PORT
+    NEW_RELIC_INFINITE_TRACING_TRACE_OBSERVER_PORT: VALID_PORT,
+    NEW_RELIC_INFINITE_TRACING_QUEUE_SIZE: VALID_QUEUE_SIZE
   }
 
   idempotentEnv(env, (config) => {
     t.equal(config.infinite_tracing.trace_observer.host, VALID_HOST)
     t.equal(config.infinite_tracing.trace_observer.port, VALID_PORT)
+    t.equal(config.infinite_tracing.queue_size, VALID_QUEUE_SIZE)
     t.end()
   })
 })
