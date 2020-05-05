@@ -61,4 +61,23 @@ tap.test('Agent API - instrumentLoadedModule', (t) => {
 
     t.end()
   })
+
+  t.test('should not throw if supported module is not installed', function(t) {
+    // We need a supported module in our test. We need that module _not_ to be
+    // installed. We'll use aws-sdk.  This first bit ensures
+    let awsSdk = false
+    try {
+      awsSdk = require('aws-sdk')
+    } catch (e) {
+    }
+    t.ok(awsSdk === false, 'aws-sdk is not installed')
+
+    // attempt to instrument -- if nothing throws we're good
+    try {
+      api.instrumentLoadedModule('aws-sdk', awsSdk)
+    } catch (e) {
+      t.error(e)
+    }
+    t.end()
+  })
 })
