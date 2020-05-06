@@ -1958,7 +1958,7 @@ tap.test('should pick up on infinite tracing env vars', (t) => {
   idempotentEnv(env, (config) => {
     t.equal(config.infinite_tracing.trace_observer.host, VALID_HOST)
     t.equal(config.infinite_tracing.trace_observer.port, VALID_PORT)
-    t.equal(config.infinite_tracing.queue_size, VALID_QUEUE_SIZE)
+    t.equal(config.infinite_tracing.span_events.queue_size, VALID_QUEUE_SIZE)
     t.end()
   })
 })
