@@ -84,7 +84,7 @@ tap.test('synthetics outbound header', (t) => {
   t.end()
 })
 
-tap.test('synthetics inbound header with distributed tracing enabled', (t) => {
+tap.test('should add synthetics inbound header to transaction', (t) => {
   let http
   let server
   let agent
@@ -118,7 +118,7 @@ tap.test('synthetics inbound header with distributed tracing enabled', (t) => {
       'curly' // synthetics monitor id
     ]
     agent = helper.instrumentMockedAgent({
-      distributed_tracing: {enabled: true},
+      distributed_tracing: {enabled: false},
       trusted_account_ids: [23, 567],
       encoding_key: ENCODING_KEY
     })
@@ -186,83 +186,6 @@ tap.test('synthetics inbound header with distributed tracing enabled', (t) => {
         t.match(res._headers, {
           'x-newrelic-synthetics': synthHeader
         })
-        t.end()
-      }
-    )
-  })
-
-  t.end()
-})
-
-tap.test('synthetics inbound header with CAT enabled', (t) => {
-  let http
-  let server
-  let agent
-  let synthData
-
-  const ENCODING_KEY = 'Old Spice'
-
-  const PORT = 9873
-  const CONNECT_PARAMS = {
-    hostname: 'localhost',
-    port: PORT
-  }
-
-  function createServer(done, requestHandler) {
-    http = require('http')
-    const s = http.createServer(function(req, res) {
-      requestHandler(req, res)
-      res.end()
-      req.resume()
-    })
-    s.listen(PORT, done)
-    return s
-  }
-
-  t.beforeEach((done) => {
-    synthData = [
-      1, // version
-      567, // account id
-      'moe', // synthetics resource id
-      'larry', // synthetics job id
-      'curly' // synthetics monitor id
-    ]
-    agent = helper.instrumentMockedAgent({
-      cross_application_tracer: {enabled: true},
-      trusted_account_ids: [23, 567],
-      encoding_key: ENCODING_KEY
-    })
-
-    http = require('http')
-    done()
-  })
-
-  t.afterEach((done) => {
-    helper.unloadAgent(agent)
-    server.close(done)
-  })
-
-  t.test('should exist if account id and version are ok', (t) => {
-    const synthHeader = hashes.obfuscateNameUsingKey(
-      JSON.stringify(synthData),
-      ENCODING_KEY
-    )
-    const options = Object.assign({}, CONNECT_PARAMS)
-    options.headers = {
-      'X-NewRelic-Synthetics': synthHeader
-    }
-    server = createServer(
-      function onListen() {
-        http.get(options, function(res) {
-          res.resume()
-        })
-      },
-      function onRequest() {
-        const tx = agent.getTransaction()
-        t.ok(tx)
-        t.match(tx, {
-          syntheticsHeader: synthHeader
-        }, 'synthetics header added to intrinsics with CAT enabled')
         t.end()
       }
     )
