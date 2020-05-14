@@ -1,3 +1,9 @@
+### 6.7.1 (2020-05-14):
+
+* Added synthetics headers to transaction event intrinsics for DT
+
+* Fixed stale comment documentation with regards to segment recording
+
 ### 6.7.0 (2020-05-06):
 
 * Added a configurable-length span queue to Infinite Tracing:
