@@ -75,6 +75,9 @@ jobs:
       run: npm run services
     - name: Run Integration Tests
       run: npm run integration
+      env:
+        LASP_LICENSE: ${{ secrets.LASP_LICENSE }}
+        LASP_SECURE_LICENSE: ${{ secrets.LASP_SECURE_LICENSE }}
 
   versioned:
     runs-on: ubuntu-latest
