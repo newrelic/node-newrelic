@@ -83,6 +83,21 @@
       "name": "Michael Goin",
       "email": "mgoin@newrelic.com",
       "web": "https://newrelic.com"
+    },
+    {
+      "name": "Alan Storm",
+      "email": "astorm@newrelic.com",
+      "web": "https://newrelic.com"
+    },
+    {
+      "name": "Carlo Pearson",
+      "email": "cpearson@newrelic.com",
+      "web": "https://newrelic.com"
+    },
+    {
+      "name": "Nick Tzaperas",
+      "email": "ntzaperas@newrelic.com",
+      "web": "https://newrelic.com"
     }
   ],
   "description": "New Relic agent",
