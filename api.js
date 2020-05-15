@@ -342,13 +342,13 @@ API.prototype.addCustomAttributes = function addCustomAttributes(atts) {
 
 /**
  * Add custom span attributes in an object to the current segment/span.
- * 
+ *
  * See documentation for newrelic.addCustomSpanAttribute for more information.
- * 
+ *
  * An example of setting a custom span attribute:
- * 
+ *
  *    newrelic.addCustomSpanAttribute({test: 'value', test2: 'value2'})
- * 
+ *
  * @param {object} [atts]
  * @param {string} [atts.KEY] The name you want displayed in the RPM UI.API.
  * @param {string} [atts.KEY.VALUE] The value you want displayed.  Must be serializable.
@@ -396,7 +396,7 @@ API.prototype.addCustomSpanAttribute = function addCustomSpanAttribute(key, valu
   }
 
   const segment = this.agent.tracer.getSegment()
-  
+
   if (!segment) {
     return logger.debug(
       'Could not add attribute %s. No available span/segment.',
@@ -1344,31 +1344,37 @@ function instrumentLoadedModule(moduleName, module) {
     NAMES.SUPPORTABILITY.API + '/instrumentLoadedModule'
   )
   metric.incrementCallCount()
+  try {
+    const instrumentationName = shimmer.getInstrumentationNameFromModuleName(moduleName)
+    if (!shimmer.registeredInstrumentations[instrumentationName]) {
+      logger.warn("No instrumentation registered for '%s'.", instrumentationName)
+      return false
+    }
 
-  const instrumentationName = shimmer.getInstrumentationNameFromModuleName(moduleName)
-  if (!shimmer.registeredInstrumentations[instrumentationName]) {
-    logger.warn("No instrumentation registered for '%s'.", instrumentationName)
-    return false
+    const instrumentation = shimmer.registeredInstrumentations[instrumentationName]
+    if (!instrumentation.onRequire) {
+      logger.warn("No onRequire function registered for '%s'.", instrumentationName)
+      return false
+    }
+
+    const resolvedName = require.resolve(moduleName)
+
+    const shim = shims.createShimFromType(
+      instrumentation.type,
+      this.agent,
+      moduleName,
+      resolvedName
+    )
+
+    instrumentation.onRequire(shim, module, moduleName)
+
+    return true
+  } catch (error) {
+    logger.error(
+      'instrumentLoadedModule encountered an error, module not instrumentend: %s',
+      error
+    )
   }
-
-  const instrumentation = shimmer.registeredInstrumentations[instrumentationName]
-  if (!instrumentation.onRequire) {
-    logger.warn("No onRequire function registered for '%s'.", instrumentationName)
-    return false
-  }
-
-  const resolvedName = require.resolve(moduleName)
-
-  const shim = shims.createShimFromType(
-    instrumentation.type,
-    this.agent,
-    moduleName,
-    resolvedName
-  )
-
-  instrumentation.onRequire(shim, module, moduleName)
-
-  return true
 }
 
 /**

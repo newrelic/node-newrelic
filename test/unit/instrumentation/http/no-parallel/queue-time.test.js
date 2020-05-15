@@ -1,10 +1,6 @@
 'use strict'
 
-// TODO: convert to normal tap style.
-// Below allows use of mocha DSL with tap runner.
-require('tap').mochaGlobals()
-
-const assert = require('assert')
+const tap = require('tap')
 const http = require('http')
 const helper = require('../../../../lib/agent_helper')
 
@@ -14,31 +10,34 @@ const helper = require('../../../../lib/agent_helper')
  * That can be easily thrwarted during a parallel run which can double time
  * for these to execute.
  */
-describe('built-in http queueTime', () => {
+tap.test('built-in http queueTime', (t) => {
   let agent = null
   let testDate = null
   let PORT = null
   let THRESHOLD = null
 
-  before(() => {
+  t.beforeEach((done) => {
     agent = helper.instrumentMockedAgent()
 
     testDate = Date.now()
     PORT = 0
     THRESHOLD = 200
+
+    done()
   })
 
-  after(() => {
+  t.afterEach((done) => {
     helper.unloadAgent(agent)
+    done()
   })
 
-  it('header should allow t=${time} style headers', (done) => {
+  t.test('header should allow t=${time} style headers', (t) => {
     let server = null
 
     server = http.createServer(function cb_createServer(request, response) {
       const transTime = agent.getTransaction().queueTime
-      assert(transTime > 0, 'must be positive')
-      assert(
+      t.ok(transTime > 0, 'must be positive')
+      t.ok(
         transTime < THRESHOLD,
         `should be less than ${THRESHOLD}ms (${transTime}ms)`
       )
@@ -56,17 +55,17 @@ describe('built-in http queueTime', () => {
       }
       http.get(opts, () => {
         server.close()
-        return done()
+        return t.end()
       })
     })
   })
 
-  it('bad header should log a warning', (done) => {
+  t.test('bad header should log a warning', (t) => {
     let server = null
 
     server = http.createServer(function cb_createServer(request, response) {
       const transTime = agent.getTransaction().queueTime
-      assert.equal(transTime, 0, 'queueTime is not added')
+      t.equal(transTime, 0, 'queueTime is not added')
       response.end()
     })
 
@@ -81,18 +80,18 @@ describe('built-in http queueTime', () => {
       }
       http.get(opts, () => {
         server.close()
-        return done()
+        return t.end()
       })
     })
   })
 
-  it('x-request should verify milliseconds', (done) => {
+  t.test('x-request should verify milliseconds', (t) => {
     let server = null
 
     server = http.createServer(function cb_createServer(request, response) {
       const transTime = agent.getTransaction().queueTime
-      assert(transTime > 0, 'must be positive')
-      assert(
+      t.ok(transTime > 0, 'must be positive')
+      t.ok(
         transTime < THRESHOLD,
         `should be less than ${THRESHOLD}ms (${transTime}ms)`
       )
@@ -110,18 +109,18 @@ describe('built-in http queueTime', () => {
       }
       http.get(opts, () => {
         server.close()
-        return done()
+        return t.end()
       })
     })
   })
 
-  it('x-queue should verify milliseconds', (done) => {
+  t.test('x-queue should verify milliseconds', (t) => {
     let server = null
 
     server = http.createServer(function cb_createServer(request, response) {
       const transTime = agent.getTransaction().queueTime
-      assert(transTime > 0, 'must be positive')
-      assert(
+      t.ok(transTime > 0, 'must be positive')
+      t.ok(
         transTime < THRESHOLD,
         `should be less than ${THRESHOLD}ms (${transTime}ms)`
       )
@@ -139,18 +138,18 @@ describe('built-in http queueTime', () => {
       }
       http.get(opts, () => {
         server.close()
-        return done()
+        return t.end()
       })
     })
   })
 
-  it('x-request should verify microseconds', (done) => {
+  t.test('x-request should verify microseconds', (t) => {
     let server = null
 
     server = http.createServer(function cb_createServer(request, response) {
       const transTime = agent.getTransaction().queueTime
-      assert(transTime > 0, 'must be positive')
-      assert(
+      t.ok(transTime > 0, 'must be positive')
+      t.ok(
         transTime < THRESHOLD,
         `should be less than ${THRESHOLD}ms (${transTime}ms)`
       )
@@ -168,18 +167,18 @@ describe('built-in http queueTime', () => {
       }
       http.get(opts, () => {
         server.close()
-        return done()
+        return t.end()
       })
     })
   })
 
-  it('x-queue should verify nanoseconds', (done) => {
+  t.test('x-queue should verify nanoseconds', (t) => {
     let server = null
 
     server = http.createServer(function cb_createServer(request, response) {
       const transTime = agent.getTransaction().queueTime
-      assert(transTime > 0, 'must be positive')
-      assert(
+      t.ok(transTime > 0, 'must be positive')
+      t.ok(
         transTime < THRESHOLD,
         `should be less than ${THRESHOLD}ms (${transTime}ms)`
       )
@@ -197,18 +196,18 @@ describe('built-in http queueTime', () => {
       }
       http.get(opts, () => {
         server.close()
-        return done()
+        return t.end()
       })
     })
   })
 
-  it('x-request should verify seconds', (done) => {
+  t.test('x-request should verify seconds', (t) => {
     let server = null
 
     server = http.createServer(function cb_createServer(request, response) {
       const transTime = agent.getTransaction().queueTime
-      assert(transTime > 0, 'must be positive')
-      assert(
+      t.ok(transTime > 0, 'must be positive')
+      t.ok(
         transTime < THRESHOLD,
         `should be less than ${THRESHOLD}ms (${transTime}ms)`
       )
@@ -226,8 +225,9 @@ describe('built-in http queueTime', () => {
       }
       http.get(opts, () => {
         server.close()
-        return done()
+        return t.end()
       })
     })
   })
+  t.end()
 })
