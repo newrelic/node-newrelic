@@ -5,10 +5,10 @@ const configurator = require('../../lib/config')
 const Agent = require('../../lib/agent')
 const CollectorAPI = require('../../lib/collector/api')
 
-tap.test('no proxy set should not use proxy agent', (t) => {
+tap.test('no proxy set should not use proxy agent [SECRETS]', (t) => {
   const config = configurator.initialize({
     app_name: 'node.js Tests',
-    license_key: 'd67afc830dab717fd163bfcb0b8b88423e9a1a3b',
+    license_key: process.env.BENDER_LICENSE,
     host: 'staging-collector.newrelic.com',
     port: 443,
     ssl: true,
