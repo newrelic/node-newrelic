@@ -8,7 +8,7 @@ var setup = require('./setup')
 var DBNAME = 'agent_integration'
 var DBTABLE = 'test'
 
-tap.test('MySQL2 instrumentation with a connection pool', {timeout: 30000}, function(t) {
+tap.test('MySQL2 instrumentation with a connection pool', {timeout: 60000}, function(t) {
   // set up the instrumentation before loading MySQL
   var poolLogger = logger.child({component: 'pool'})
   var agent = helper.instrumentMockedAgent()
