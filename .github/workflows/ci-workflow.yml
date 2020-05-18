@@ -106,6 +106,8 @@ jobs:
   versioned:
     runs-on: ubuntu-latest
 
+    if: github.repository == 'newrelic/node-newrelic'
+
     strategy:
       matrix:
         node-version: [8.x, 10.x, 12.x]
