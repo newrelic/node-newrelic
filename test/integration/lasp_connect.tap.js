@@ -5,7 +5,7 @@ const configurator = require('../../lib/config')
 const Agent = require('../../lib/agent')
 const CollectorAPI = require('../../lib/collector/api')
 
-tap.test('connecting with a LASP token should not error', function(t) {
+tap.test('connecting with a LASP token should not error [SECRETS]', function(t) {
   const config = configurator.initialize({
     app_name: 'node.js Tests',
     license_key: process.env.LASP_LICENSE,
@@ -41,7 +41,7 @@ tap.test('connecting with a LASP token should not error', function(t) {
   })
 })
 
-tap.test('missing required policies should result in shutdown', function(t) {
+tap.test('missing required policies should result in shutdown [SECRETS]', function(t) {
   const config = configurator.initialize({
     app_name: 'node.js Tests',
     license_key: process.env.LASP_SECURE_LICENSE,
