@@ -102,6 +102,9 @@ jobs:
         COLLECTOR_LICENSE: ${{ secrets.COLLECTOR_LICENSE }}
         LASP_LICENSE: ${{ secrets.LASP_LICENSE }}
         LASP_SECURE_LICENSE: ${{ secrets.LASP_SECURE_LICENSE }}
+        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
 
   versioned:
     runs-on: ubuntu-latest
