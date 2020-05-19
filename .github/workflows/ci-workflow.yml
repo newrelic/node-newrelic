@@ -98,11 +98,9 @@ jobs:
     - name: Run Versioned Tests
       run: npm run secrets
       env:
+        TEST_LICENSE: ${{ secrets.TEST_LICENSE }}
         LASP_LICENSE: ${{ secrets.LASP_LICENSE }}
         LASP_SECURE_LICENSE: ${{ secrets.LASP_SECURE_LICENSE }}
-        BENDER_LICENSE: ${{ secrets.BENDER_LICENSE }}
-        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
   versioned:
     runs-on: ubuntu-latest

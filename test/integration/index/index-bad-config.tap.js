@@ -7,7 +7,7 @@ tap.test('loading the app with invalid config [SECRETS]', (t) => {
 
   process.env.AWS_LAMBDA_FUNCTION_NAME = 'lambdaName'
   process.env.NEW_RELIC_DISTRIBUTED_TRACING_ENABLED = true
-  process.env.NEW_RELIC_LICENSE_KEY = process.env.BENDER_LICENSE
+  process.env.NEW_RELIC_LICENSE_KEY = process.env.TEST_LICENSE
   process.env.NEW_RELIC_NO_CONFIG_FILE = true
 
   let api = null

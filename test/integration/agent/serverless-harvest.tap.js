@@ -27,7 +27,7 @@ tap.test('Serverless mode harvest [SECRETS]', (t) => {
         enabled: true
       },
       app_name: 'serverless mode tests',
-      license_key: process.env.BENDER_LICENSE
+      license_key: process.env.TEST_LICENSE
     })
     agent.setLambdaArn(TEST_ARN)
     agent.setLambdaFunctionVersion(TEST_FUNC_VERSION)

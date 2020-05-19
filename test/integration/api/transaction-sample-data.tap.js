@@ -5,10 +5,10 @@ var configurator = require('../../../lib/config')
 var Agent = require('../../../lib/agent')
 
 
-tap.test('Collector API should send errors to newrelic.com', function(t) {
+tap.test('Collector API should send errors to newrelic.com [SECRETS]', function(t) {
   var config = configurator.initialize({
     app_name: 'node.js Tests',
-    license_key: 'ed2a0ac637297d08c5592c0200050fe234802223',
+    license_key: process.env.TEST_LICENSE,
     port: 443,
     ssl: true,
     utilization: {

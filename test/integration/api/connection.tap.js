@@ -8,7 +8,7 @@ var Agent = require('../../../lib/agent')
 tap.test('Collector API should connect to staging-collector.newrelic.com [SECRETS]', function(t) {
   var config = configurator.initialize({
     app_name: 'node.js Tests',
-    license_key: process.env.BENDER_LICENSE,
+    license_key: process.env.TEST_LICENSE,
     host: 'staging-collector.newrelic.com',
     port: 443,
     ssl: true,
