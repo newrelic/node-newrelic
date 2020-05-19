@@ -21,23 +21,6 @@ jobs:
     - name: Run Linting
       run: npm run lint
 
-  smoke:
-    runs-on: ubuntu-latest
-
-    strategy:
-      matrix:
-        node-version: [8.x, 10.x, 12.x]
-
-    steps:
-    - uses: actions/checkout@v2
-    - name: Use Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v1
-      with:
-        node-version: ${{ matrix.node-version }}
-    # Smoke tests do own install
-    - name: Run Smoke Tests
-      run: npm run smoke
-
   unit:
     runs-on: ubuntu-latest
 
