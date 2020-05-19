@@ -75,28 +75,6 @@ jobs:
       run: npm run services
     - name: Run Integration Tests
       run: npm run integration
-
-  secrets:
-    runs-on: ubuntu-latest
-
-    if: github.repository == 'newrelic/node-newrelic'
-
-    strategy:
-      matrix:
-        node-version: [8.x, 10.x, 12.x]
-
-    steps:
-    - uses: actions/checkout@v2
-    - name: Use Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v1
-      with:
-        node-version: ${{ matrix.node-version }}
-    - name: Install Dependencies
-      run: npm ci
-    - name: Run Docker Services
-      run: npm run services
-    - name: Run Versioned Tests
-      run: npm run secrets
       env:
         TEST_LICENSE: ${{ secrets.TEST_LICENSE }}
         COLLECTOR_LICENSE: ${{ secrets.COLLECTOR_LICENSE }}
@@ -105,8 +83,6 @@ jobs:
 
   versioned:
     runs-on: ubuntu-latest
-
-    if: github.repository == 'newrelic/node-newrelic'
 
     strategy:
       matrix:

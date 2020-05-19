@@ -5,7 +5,8 @@ var configurator = require('../../../lib/config')
 var Agent = require('../../../lib/agent')
 
 
-tap.test('Collector API should send errors to newrelic.com [SECRETS]', function(t) {
+const skip = !Boolean(process.env.COLLECTOR_LICENSE)
+tap.test('Collector API should send errors to newrelic.com', {skip}, function(t) {
   var config = configurator.initialize({
     app_name: 'node.js Tests',
     license_key: process.env.COLLECTOR_LICENSE,

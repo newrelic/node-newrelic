@@ -15,7 +15,9 @@ const SSL_CONFIG = {
   cert: read(join(__dirname, '../lib/self-signed-test-certificate.crt')),
 }
 
-tap.test('support ssl to the proxy [SECRETS]', (t) => {
+const skip = !Boolean(process.env.TEST_LICENSE)
+
+tap.test('support ssl to the proxy', {skip}, (t) => {
   const server = proxySetup(https.createServer(SSL_CONFIG))
 
   server.listen(0, () => {

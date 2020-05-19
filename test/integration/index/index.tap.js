@@ -3,7 +3,8 @@
 var test = require('tap').test
 
 
-test('loading the application via index.js [SECRETS]', {timeout: 15000}, function(t) {
+const skip = !Boolean(process.env.TEST_LICENSE)
+test('loading the application via index.js', {timeout: 15000, skip}, function(t) {
   var agent = null
 
   process.env.NEW_RELIC_HOME = __dirname + '/..'

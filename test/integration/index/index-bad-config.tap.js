@@ -2,7 +2,8 @@
 
 const tap = require('tap')
 
-tap.test('loading the app with invalid config [SECRETS]', (t) => {
+const skip = !Boolean(process.env.TEST_LICENSE)
+tap.test('loading the app with invalid config', {skip}, (t) => {
   t.plan(3)
 
   process.env.AWS_LAMBDA_FUNCTION_NAME = 'lambdaName'

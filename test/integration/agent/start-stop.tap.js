@@ -5,7 +5,8 @@ const configurator = require('../../../lib/config')
 const Agent = require('../../../lib/agent')
 
 
-tap.test('Collector API should connect to staging-collector.newrelic.com [SECRETS]', (t) => {
+const skip = !Boolean(process.env.TEST_LICENSE)
+tap.test('Collector API should connect to staging-collector.newrelic.com', {skip}, (t) => {
   const config = configurator.initialize({
     app_name: 'node.js Tests',
     license_key: process.env.TEST_LICENSE,
