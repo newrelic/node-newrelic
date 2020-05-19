@@ -45,6 +45,8 @@ test('should all be accounted for in LICENSES object', {timeout: 5000}, (t) => {
       return obj
     }, {})
 
+    console.log(depLicenses)
+    console.log(licenses)
     t.deepEqual(depLicenses, licenses, LICENSE_MESSAGE)
     t.end()
   })
