@@ -44,6 +44,7 @@ test('should all be accounted for in LICENSES object', {timeout: 5000}, (t) => {
       obj[dep[0]] = dep[1]
       return obj
     }, {})
+
     t.deepEqual(depLicenses, licenses, LICENSE_MESSAGE)
     t.end()
   })
