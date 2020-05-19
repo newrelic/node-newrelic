@@ -14,7 +14,7 @@ exports.config = {
   /**
    * Your New Relic license key.
    */
-  license_key: 'd67afc830dab717fd163bfcb0b8b88423e9a1a3b',
+  license_key: process.env.BENDER_LICENSE,
   logging: {
     /**
      * Level at which to log. 'trace' is most useful to New Relic when diagnosing

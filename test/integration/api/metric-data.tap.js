@@ -6,10 +6,10 @@ var Agent = require('../../../lib/agent')
 var CollectorAPI = require('../../../lib/collector/api')
 
 
-test('Collector API should send metrics to staging-collector.newrelic.com', function(t) {
+test('Collector API should send metrics to staging-collector.newrelic.com [SECRETS]', function(t) {
   var config = configurator.initialize({
     app_name: 'node.js Tests',
-    license_key: 'd67afc830dab717fd163bfcb0b8b88423e9a1a3b',
+    license_key: process.env.BENDER_LICENSE,
     host: 'staging-collector.newrelic.com',
     port: 443,
     ssl: true,
