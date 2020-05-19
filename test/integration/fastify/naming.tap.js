@@ -1,6 +1,6 @@
 'use strict'
 const tap = require('tap')
-const request = require('request')
+const requestClient = require('request')
 const helper  = require('../../lib/agent_helper')
 
 /**
@@ -12,14 +12,14 @@ const configureFastifyServer = (fastify) => {
   /**
    * Route's callback is an async function, and response is returned
    */
-  fastify.get('/async-return', async (request, reply) => {
+  fastify.get('/async-return', async() => {
     return { called: '/async-return' }
   })
 
   /**
    * Route's callback is an async function, and response is sent via reply
    */
-  fastify.get('/async-reply-send', async (request, reply) => {
+  fastify.get('/async-reply-send', async(request, reply) => {
     reply.send( { called: '/async-reply-send' } )
   })
 
@@ -34,8 +34,8 @@ const configureFastifyServer = (fastify) => {
    * Register a route via plugin to make sure our wrapper catches these
    */
   fastify.register(
-    function(fastify, options, done) {
-      fastify.get('/plugin-registered', async (request, reply) => {
+    function(fastifyInstance, options, done) {
+      fastifyInstance.get('/plugin-registered', async() => {
         return { called: '/plugin-registered' }
       })
       done()
@@ -53,7 +53,7 @@ const testUri = (uri, agent, test, port) => {
     )
   })
 
-  request.get(`http://127.0.0.1:${port}${uri}`, function(error, response, body) {
+  requestClient.get(`http://127.0.0.1:${port}${uri}`, function(error, response, body) {
     const result = body = JSON.parse(body)
     test.equals(result.called ,uri, `${uri} url did not error`)
   })

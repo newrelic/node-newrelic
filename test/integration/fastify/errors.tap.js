@@ -5,11 +5,7 @@ const helper  = require('../../lib/agent_helper')
 const httpErrors = require('http-errors')
 
 const testErrorHandled = (agent, test, uri, port) => {
-  agent.on('transactionFinished', (transaction) => {
-
-  })
-
-  request.get(`http://127.0.0.1:${port}${uri}`, function(error, response, body) {
+  request.get(`http://127.0.0.1:${port}${uri}`, function() {
     test.end()
   })
 }
@@ -19,6 +15,7 @@ tap.test('Test Errors', (test)=>{
   const fastify = require('fastify')()
 
   fastify.use((req, res, next) => {
+    // eslint-disable-next-line new-cap
     next(httpErrors.NotFound())
   })
 
