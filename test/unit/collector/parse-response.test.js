@@ -1,25 +1,25 @@
 'use strict'
 
+const tap = require('tap')
 // TODO: convert to normal tap style.
 // Below allows use of mocha DSL with tap runner.
-require('tap').mochaGlobals()
+tap.mochaGlobals()
 
 const chai = require('chai')
 const expect = chai.expect
 const should = chai.should()
 const parse = require('../../../lib/collector/parse-response')
 
+tap.test('should call back with an error if called with no collector method name', (t) => {
+  parse(null, {statusCode: 200}, (err) => {
+    t.ok(err)
+    t.equal(err.message, 'collector method name required!')
+
+    t.end()
+  })
+})
 
 describe('collector response parser', () => {
-  it('should call back with an error if called with no collector method name', (done) => {
-    parse(null, {statusCode: 200}, (err) => {
-      expect(err)
-        .to.be.an.instanceOf(Error)
-        .and.have.property('message', 'collector method name required!')
-      done()
-    })
-  })
-
   it('should call back with an error if called without a response', (done) => {
     parse('TEST', null, (err) => {
       expect(err)
