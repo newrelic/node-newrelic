@@ -83,6 +83,14 @@ describe('the agent configuration', function() {
       })
     })
 
+    it('should trim spaces from license key', function() {
+      idempotentEnv({'NEW_RELIC_LICENSE_KEY': ' license '}, function(tc) {
+        should.exist(tc.license_key)
+        expect(tc.license_key).to.equal('license')
+        expect(tc.host).to.equal('collector.newrelic.com')
+      })
+    })
+
     it('should pick up the apdex_t', function() {
       idempotentEnv({'NEW_RELIC_APDEX_T': '111'}, function(tc) {
         should.exist(tc.apdex_t)
@@ -1306,6 +1314,11 @@ describe('the agent configuration', function() {
         error_collector: options
       })
       expect(config.error_collector.ignore_messages).eql(options.ignore_messages)
+    })
+
+    it('should trim should trim spaces from license key', () => {
+      const config = new Config({ license_key: ' license '})
+      expect(config.license_key).equals('license')
     })
   })
 
