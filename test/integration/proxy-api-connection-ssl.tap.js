@@ -22,7 +22,7 @@ tap.test('support ssl to the proxy [SECRETS]', (t) => {
     port = server.address().port
     const config = configurator.initialize({
       app_name: 'node.js Tests',
-      license_key: process.env.BENDER_LICENSE,
+      license_key: process.env.TEST_LICENSE,
       host: 'staging-collector.newrelic.com',
       proxy: `https://ssl.lvh.me:${port}`,
       ssl: true,

@@ -8,7 +8,7 @@ test('loading the application via index.js [SECRETS]', {timeout: 15000}, functio
 
   process.env.NEW_RELIC_HOME = __dirname + '/..'
   process.env.NEW_RELIC_HOST = 'staging-collector.newrelic.com'
-  process.env.NEW_RELIC_LICENSE_KEY = process.env.BENDER_LICENSE
+  process.env.NEW_RELIC_LICENSE_KEY = process.env.TEST_LICENSE
 
   t.doesNotThrow(function() {
     var api = require('../../../index.js')

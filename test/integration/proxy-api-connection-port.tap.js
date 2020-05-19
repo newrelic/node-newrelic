@@ -22,7 +22,7 @@ tap.test('setting proxy_port should use the proxy agent [SECRETS]', (t) => {
     port = server.address().port
     const config = configurator.initialize({
       app_name: 'node.js Tests',
-      license_key: process.env.BENDER_LICENSE,
+      license_key: process.env.TEST_LICENSE,
       host: 'staging-collector.newrelic.com',
       port: 443,
       proxy_host: 'ssl.lvh.me',

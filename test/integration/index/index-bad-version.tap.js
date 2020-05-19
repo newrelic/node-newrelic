@@ -8,7 +8,7 @@ tap.test('loading the agent with a bad version [SECRETS]', {timeout: 20000}, fun
 
   process.env.NEW_RELIC_HOME = __dirname + '/..'
   process.env.NEW_RELIC_HOST = 'staging-collector.newrelic.com'
-  process.env.NEW_RELIC_LICENSE_KEY = process.env.BENDER_LICENSE
+  process.env.NEW_RELIC_LICENSE_KEY = process.env.TEST_LICENSE
 
   t.doesNotThrow(function() {
     var _version = process.version
