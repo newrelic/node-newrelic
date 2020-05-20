@@ -21,7 +21,7 @@ fi
 
 export AGENT_PATH=`pwd`
 
-# I think we're skipping koa because a new version was breaking tests
+# @koa/router 8.03+ breaks segment naming for nested routes
 skip="koa"
 
 # Don't run the aws-sdk tests if we don't have the keys set
