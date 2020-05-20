@@ -15,14 +15,15 @@ const SSL_CONFIG = {
   cert: read(join(__dirname, '../lib/self-signed-test-certificate.crt')),
 }
 
-tap.test('setting proxy_port should use the proxy agent [SECRETS]', (t) => {
+const skip = !Boolean(process.env.TEST_LICENSE)
+tap.test('setting proxy_port should use the proxy agent', {skip}, (t) => {
   const server = proxySetup(https.createServer(SSL_CONFIG))
 
   server.listen(0, () => {
     port = server.address().port
     const config = configurator.initialize({
       app_name: 'node.js Tests',
-      license_key: process.env.BENDER_LICENSE,
+      license_key: process.env.TEST_LICENSE,
       host: 'staging-collector.newrelic.com',
       port: 443,
       proxy_host: 'ssl.lvh.me',

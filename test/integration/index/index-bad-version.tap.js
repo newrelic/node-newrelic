@@ -3,12 +3,13 @@
 var tap = require('tap')
 
 
-tap.test('loading the agent with a bad version [SECRETS]', {timeout: 20000}, function(t) {
+const skip = !Boolean(process.env.TEST_LICENSE)
+tap.test('loading the agent with a bad version', {timeout: 20000, skip}, function(t) {
   var agent = null
 
   process.env.NEW_RELIC_HOME = __dirname + '/..'
   process.env.NEW_RELIC_HOST = 'staging-collector.newrelic.com'
-  process.env.NEW_RELIC_LICENSE_KEY = process.env.BENDER_LICENSE
+  process.env.NEW_RELIC_LICENSE_KEY = process.env.TEST_LICENSE
 
   t.doesNotThrow(function() {
     var _version = process.version

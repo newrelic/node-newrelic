@@ -3,12 +3,13 @@
 var test = require('tap').test
 
 
-test('loading the application via index.js [SECRETS]', {timeout: 15000}, function(t) {
+const skip = !Boolean(process.env.TEST_LICENSE)
+test('loading the application via index.js', {timeout: 15000, skip}, function(t) {
   var agent = null
 
   process.env.NEW_RELIC_HOME = __dirname + '/..'
   process.env.NEW_RELIC_HOST = 'staging-collector.newrelic.com'
-  process.env.NEW_RELIC_LICENSE_KEY = process.env.BENDER_LICENSE
+  process.env.NEW_RELIC_LICENSE_KEY = process.env.TEST_LICENSE
 
   t.doesNotThrow(function() {
     var api = require('../../../index.js')

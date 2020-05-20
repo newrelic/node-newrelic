@@ -6,9 +6,9 @@ const configurator = require('../../lib/config')
 const Agent = require('../../lib/agent')
 const CollectorAPI = require('../../lib/collector/api')
 
-let port = 0
 
-tap.test('proxy authentication should set headers [SECRETS]', (t) => {
+const skip = !process.env.TEST_LICENSE
+tap.test('proxy authentication should set headers', {skip}, (t) => {
   t.plan(2)
 
   const server = net.createServer()
@@ -24,10 +24,10 @@ tap.test('proxy authentication should set headers [SECRETS]', (t) => {
   })
 
   server.listen(0, () => {
-    port = server.address().port
+    const port = server.address().port
     const config = configurator.initialize({
       app_name: 'node.js Tests',
-      license_key: process.env.BENDER_LICENSE,
+      license_key: process.env.TEST_LICENSE,
       host: 'staging-collector.newrelic.com',
       port: 443,
       proxy: `http://a:b@localhost:${port}`,

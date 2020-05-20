@@ -12,7 +12,9 @@ const TEST_FUNC_VERSION = '$LATEST'
 const TEST_EX_ENV = 'test-AWS_Lambda_nodejs8.10'
 const PROTOCOL_VERSION = 16
 
-tap.test('Serverless mode harvest [SECRETS]', (t) => {
+
+const skip = !Boolean(process.env.TEST_LICENSE)
+tap.test('Serverless mode harvest', {skip}, (t) => {
   t.autoend()
 
   let agent = null
@@ -27,7 +29,7 @@ tap.test('Serverless mode harvest [SECRETS]', (t) => {
         enabled: true
       },
       app_name: 'serverless mode tests',
-      license_key: process.env.BENDER_LICENSE
+      license_key: process.env.TEST_LICENSE
     })
     agent.setLambdaArn(TEST_ARN)
     agent.setLambdaFunctionVersion(TEST_FUNC_VERSION)
