@@ -1,21 +1,23 @@
 'use strict'
 
-var tap = require('tap')
-var configurator = require('../../../lib/config')
-var Agent = require('../../../lib/agent')
-var API = require('../../../api')
+const tap = require('tap')
+const configurator = require('../../../lib/config')
+const Agent = require('../../../lib/agent')
+const API = require('../../../api')
+const {getTestSecret, shouldSkipTest} = require('../../helpers/secrets')
 
 
-const skip = !Boolean(process.env.LASP_LICENSE)
-tap.test('LASP-enabled agent', {skip}, function(t) {
-  var agent = null
-  var api = null
-  var config = null
+const license = getTestSecret('LASP_LICENSE')
+const skip = shouldSkipTest(license)
+tap.test('LASP-enabled agent', {skip}, (t) => {
+  let agent = null
+  let api = null
+  let config = null
 
   t.beforeEach(function(done) {
     config = configurator.initialize({
       app_name: 'node.js Tests',
-      license_key: process.env.LASP_LICENSE,
+      license_key: license,
       security_policies_token: 'ffff-ffff-ffff-ffff',
       host: 'staging-collector.newrelic.com',
       port: 443,
