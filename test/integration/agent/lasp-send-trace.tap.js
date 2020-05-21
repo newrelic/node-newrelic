@@ -5,7 +5,9 @@ var configurator = require('../../../lib/config')
 var Agent = require('../../../lib/agent')
 var API = require('../../../api')
 
-tap.test('LASP-enabled agent', function(t) {
+
+const skip = !Boolean(process.env.LASP_LICENSE)
+tap.test('LASP-enabled agent', {skip}, function(t) {
   var agent = null
   var api = null
   var config = null
