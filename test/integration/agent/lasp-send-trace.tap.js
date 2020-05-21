@@ -13,7 +13,7 @@ tap.test('LASP-enabled agent', function(t) {
   t.beforeEach(function(done) {
     config = configurator.initialize({
       app_name: 'node.js Tests',
-      license_key: '1cccc807e3eb81266a3f30d9a58cfbbe9d613049',
+      license_key: process.env.LASP_LICENSE,
       security_policies_token: 'ffff-ffff-ffff-ffff',
       host: 'staging-collector.newrelic.com',
       port: 443,
