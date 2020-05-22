@@ -1,15 +1,17 @@
 'use strict'
 
-var tap = require('tap')
+const tap = require('tap')
+const {getTestSecret, shouldSkipTest} = require('../../helpers/secrets')
 
 
-const skip = !Boolean(process.env.TEST_LICENSE)
-tap.test('loading the agent with a bad version', {timeout: 20000, skip}, function(t) {
-  var agent = null
+const license = getTestSecret('TEST_LICENSE')
+const skip = shouldSkipTest(license)
+tap.test('loading the agent with a bad version', {timeout: 20000, skip}, (t) => {
+  let agent = null
 
   process.env.NEW_RELIC_HOME = __dirname + '/..'
   process.env.NEW_RELIC_HOST = 'staging-collector.newrelic.com'
-  process.env.NEW_RELIC_LICENSE_KEY = process.env.TEST_LICENSE
+  process.env.NEW_RELIC_LICENSE_KEY = license
 
   t.doesNotThrow(function() {
     var _version = process.version

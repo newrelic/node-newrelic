@@ -1,15 +1,17 @@
 'use strict'
 
-var test = require('tap').test
-var configurator = require('../../../lib/config')
-var Agent = require('../../../lib/agent')
+const test = require('tap').test
+const configurator = require('../../../lib/config')
+const Agent = require('../../../lib/agent')
+const {getTestSecret, shouldSkipTest} = require('../../helpers/secrets')
 
 
-const skip = !Boolean(process.env.TEST_LICENSE)
-test('Collector API should send errors to staging-collector.newrelic.com', {skip}, function(t) {
-  var config = configurator.initialize({
+const license = getTestSecret('TEST_LICENSE')
+const skip = shouldSkipTest(license)
+test('Collector API should send errors to staging-collector.newrelic.com', {skip}, (t) => {
+  const config = configurator.initialize({
     app_name: 'node.js Tests',
-    license_key: process.env.TEST_LICENSE,
+    license_key: license,
     host: 'staging-collector.newrelic.com',
     port: 443,
     ssl: true,
