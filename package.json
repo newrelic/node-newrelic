@@ -154,7 +154,7 @@
     "esprima": "^4.0.1",
     "https-proxy-agent": "^4.0.0",
     "json-stringify-safe": "^5.0.0",
-    "readable-stream": "^3.1.1",
+    "readable-stream": "^3.6.0",
     "semver": "^5.3.0"
   },
   "optionalDependencies": {
