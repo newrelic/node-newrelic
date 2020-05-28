@@ -368,6 +368,16 @@ describe('AwsLambda.patchLambdaHandler', () => {
           '200'
         )
 
+        expect(spanAttributes).to.have.property(
+          'httpResponseCode',
+          '200'
+        )
+
+        expect(spanAttributes).to.have.property(
+          'response.status',
+          '200'
+        )
+
         done()
       }
     })
