@@ -21,7 +21,7 @@
             "httpMethod",
             "path",
             "requestContext",
-            "resource"
+            "requestContext.stage"
         ]
     },
     "cloudFront": {
