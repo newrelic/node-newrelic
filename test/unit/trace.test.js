@@ -359,6 +359,9 @@ describe('Trace', function() {
 
     expect(trace.attributes.get(DESTINATIONS.TRANS_TRACE))
       .deep.equal({'host.displayName': 'test-value'})
+
+    expect(trace.root.attributes.get(DESTINATIONS.SPAN_EVENT))
+      .deep.equal({'host.displayName': 'test-value'})
   })
 
   it('should not send host display name when not set by user', function() {
