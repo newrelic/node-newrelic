@@ -125,11 +125,11 @@ test('Redis instrumentation', {timeout : 10000}, function(t) {
     helper.runInTransaction(agent, function(tx) {
       client.set('testKey', 'testvalue')
       setTimeout(function() {
+        transaction = tx
+
         // This will generate an error because `testKey` is not a hash.
         client.hset('testKey', 'hashKey', 'foobar')
-
-        transaction = tx
-      }, 100) // Redis calls should never take 100 ms
+      }, 200) // Wait for client.set('testKey', 'testvalue') to complete
     })
 
     client.on('error', function(err) {
