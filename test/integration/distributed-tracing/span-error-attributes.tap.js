@@ -60,6 +60,46 @@ tap.test('span error attributes', (t) => {
     t.end()
   })
 
+  t.test('should not add error attributes to spans when errors disabled', (t) => {
+    const agent = helper.instrumentMockedAgent({
+      distributed_tracing: {
+        enabled: true
+      },
+      error_collector: {
+        enabled: false
+      }
+    })
+
+    t.tearDown(() => {
+      helper.unloadAgent(agent)
+    })
+
+    const api = new API(agent)
+
+    let spanId = null
+
+    agent.on('transactionFinished', () => {
+      const spanEvent = agent.spanEventAggregator.getEvents()[0]
+
+      t.equal(spanEvent.intrinsics.guid, spanId)
+
+      const hasAttribute = Object.hasOwnProperty.bind(spanEvent.attributes)
+      t.notOk(hasAttribute('error.message'))
+
+      t.end()
+    })
+
+    helper.runInTransaction(agent, (tx) => {
+      api.startSegment('segment', true, () => {
+        const segment = api.shim.getSegment()
+        spanId = segment.id
+        api.noticeError(new Error('test'))
+      })
+
+      tx.end()
+    })
+  })
+
   t.test("Span error attributes aren't added with LASP/HSM", (t) => {
     const config = {
       distributed_tracing: { enabled: true },
