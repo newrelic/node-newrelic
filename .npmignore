@@ -2,3 +2,10 @@ test
 examples
 out
 Makefile
+package-lock.json
+newrelic_agent.log
+**/node_modules/**
+.nyc_output
+.vscode
+.eslint*
+.github
