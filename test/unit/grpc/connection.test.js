@@ -59,25 +59,9 @@ const isUnsupportedNodeVersion =
 
 tap.test(
   'GrpcConnection logic tests',
-  {skip:isUnsupportedNodeVersion},
+  {skip: isUnsupportedNodeVersion},
   (test) => {
     const metrics = createMetricAggregatorForTests()
-
-    // test backoff
-    test.test('tests backoff logic', (t)=>{
-      const connection = new GrpcConnection(fakeTraceObserverConfig, metrics)
-      t.equals(connection._streamBackoffSeconds, 0, 'initial stream backoff is 0 seconds')
-      connection._setStreamBackoffAfterInitialStreamSetup()
-      t.equals(connection._streamBackoffSeconds, 15, 'future stream backoff is 15 seconds')
-
-      const connection2 = 
-        new GrpcConnection(fakeTraceObserverConfig, metrics, {initialSeconds:1, seconds:2})
-      t.equals(connection2._streamBackoffSeconds, 1, 'injected initial value used')
-      connection2._setStreamBackoffAfterInitialStreamSetup()
-      t.equals(connection2._streamBackoffSeconds, 2, 'injected future value used')
-
-      t.end()
-    })
 
     test.test('test metadata generation', (t) => {
       const connection = new GrpcConnection(fakeTraceObserverConfig, metrics)
@@ -138,15 +122,16 @@ tap.test(
 tap.test('grpc connection error handling', (test) => {
   test.test('should catch error when proto loader fails', (t) => {
     const stub = sinon.stub(protoLoader, 'loadSync').returns({})
-    
+
     const connection = new GrpcConnection(fakeTraceObserverConfig)
-    connection.connectSpans()
 
     connection.on('disconnected', () => {
       t.equal(connection._state, connectionStates.disconnected)
       stub.restore()
       t.end()
     })
+
+    connection.connectSpans()
   })
 
   test.test('should catch error when loadPackageDefinition returns invalid service definition',
@@ -154,7 +139,6 @@ tap.test('grpc connection error handling', (test) => {
       const stub = sinon.stub(grpcApi, 'loadPackageDefinition').returns({})
 
       const connection = new GrpcConnection(fakeTraceObserverConfig)
-      connection.connectSpans()
 
       connection.on('disconnected', () => {
         t.equal(connection._state, connectionStates.disconnected)
@@ -163,13 +147,120 @@ tap.test('grpc connection error handling', (test) => {
 
         t.end()
       })
+
+      connection.connectSpans()
     })
 
   test.end()
 })
 
 tap.test('grpc stream event handling', (test) => {
-  test.test('should do nothing with OK status', (t) => {
+  test.test('should immediately reconnect with OK status', (t) => {
+    const metrics = createMetricAggregatorForTests()
+    const fakeStream = new FakeStreamer()
+
+    metrics.getOrCreateMetric = () => {}
+
+    const connection = new GrpcConnection(fakeTraceObserverConfig, metrics)
+
+
+    connection._reconnect = (delay) => {
+      t.notOk(delay, 'should not have delay')
+      t.end()
+    }
+
+    const status = {
+      code: grpcApi.status.OK
+    }
+
+    connection._setupSpanStreamObservers(fakeStream)
+
+    fakeStream.emitStatus(status)
+
+    fakeStream.removeAllListeners()
+  })
+
+  test.test('should disconnect, no reconnect, with UNIMPLEMENTED status', (t) => {
+    const metrics = createMetricAggregatorForTests()
+    const fakeStream = new FakeStreamer()
+
+    const connection = new GrpcConnection(fakeTraceObserverConfig, metrics)
+
+    connection._reconnect = () => {
+      t.fail('should not call reconnect')
+    }
+
+    let disconnectCalled = false
+    connection._disconnect = () => {
+      disconnectCalled = true
+    }
+
+    const status = {
+      code: grpcApi.status.UNIMPLEMENTED
+    }
+
+    connection._setupSpanStreamObservers(fakeStream)
+
+    fakeStream.emitStatus(status)
+
+    fakeStream.removeAllListeners()
+
+    t.ok(disconnectCalled)
+
+    t.end()
+  })
+
+  test.test('should delay reconnect when status not UNPLIMENTED or OK', (t) => {
+    const metrics = createMetricAggregatorForTests()
+    const fakeStream = new FakeStreamer()
+
+    const expectedDelayMs = 5
+    const connection = new GrpcConnection(fakeTraceObserverConfig, metrics, expectedDelayMs)
+
+    connection._reconnect = (delay) => {
+      t.equal(delay, expectedDelayMs)
+      t.end()
+    }
+
+    const statusName = 'DEADLINE_EXCEEDED'
+
+    const status = {
+      code: grpcApi.status[statusName]
+    }
+
+    connection._setupSpanStreamObservers(fakeStream)
+
+    fakeStream.emitStatus(status)
+
+    fakeStream.removeAllListeners()
+  })
+
+  test.test('should default delay 15 second reconnect when status not UNPLIMENTED or OK', (t) => {
+    const metrics = createMetricAggregatorForTests()
+    const fakeStream = new FakeStreamer()
+
+    const expectedDelayMs = 15 * 1000
+    const connection = new GrpcConnection(fakeTraceObserverConfig, metrics)
+
+    connection._reconnect = (delay) => {
+      t.equal(delay, expectedDelayMs)
+      t.end()
+    }
+
+    const statusName = 'DEADLINE_EXCEEDED'
+
+    const status = {
+      code: grpcApi.status[statusName]
+    }
+
+    connection._setupSpanStreamObservers(fakeStream)
+
+    fakeStream.emitStatus(status)
+
+    fakeStream.removeAllListeners()
+  })
+
+  test.test('should not generate metric with OK status', (t) => {
     const metrics = createMetricAggregatorForTests()
     const fakeStream = new FakeStreamer()
 
@@ -216,7 +307,7 @@ tap.test('grpc stream event handling', (test) => {
 
     fakeStream.removeAllListeners()
 
-    const metric = 
+    const metric =
       metrics.getOrCreateMetric(NAMES.INFINITE_TRACING.SPAN_RESPONSE_GRPC_UNIMPLEMENTED)
 
     t.equal(metric.callCount, 1, 'incremented metric')
@@ -246,7 +337,7 @@ tap.test('grpc stream event handling', (test) => {
 
         fakeStream.removeAllListeners()
 
-        const metric = 
+        const metric =
           metrics
             .getOrCreateMetric(util
               .format(NAMES.INFINITE_TRACING.SPAN_RESPONSE_GRPC_STATUS, statusName))
