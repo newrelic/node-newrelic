@@ -16,6 +16,7 @@ tap.test('Agent API - custom attributes', (t) => {
   t.beforeEach((done) => {
     agent = helper.loadMockedAgent()
     agent.config.attributes.enabled = true
+    agent.config.distributed_tracing.enabled = true
 
     api = new API(agent)
 

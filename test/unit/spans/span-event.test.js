@@ -43,7 +43,11 @@ tap.test('fromSegment()', (t) => {
   let agent = null
 
   t.beforeEach((done) => {
-    agent = helper.instrumentMockedAgent()
+    agent = helper.instrumentMockedAgent({
+      distributed_tracing: {
+        enabled: true
+      }
+    })
     done()
   })
 
@@ -169,7 +173,6 @@ tap.test('fromSegment()', (t) => {
   })
 
   t.test('should create an datastore span with an datastore segment', (t) => {
-    agent.config.distributed_tracing.enabled = true
     agent.config.transaction_tracer.record_sql = 'raw'
 
     const shim = new DatastoreShim(agent, 'test-data-store', '', 'TestStore')
@@ -261,7 +264,7 @@ tap.test('fromSegment()', (t) => {
   t.test('should serialize intrinsics to proper format with toJSON method', (t) => {
     helper.runInTransaction(agent, (transaction) => {
       transaction.priority = 42
-      transaction.sample = true
+      transaction.sampled = true
 
       setTimeout(() => {
         const segment = agent.tracer.getSegment()
@@ -280,6 +283,30 @@ tap.test('fromSegment()', (t) => {
         t.equal(intrinsics.category, 'generic')
         t.ok(intrinsics.timestamp)
         t.ok(intrinsics.duration)
+
+        t.end()
+      }, 10)
+    })
+  })
+
+  t.test('should populate intrinsics from span context', (t) => {
+    helper.runInTransaction(agent, (transaction) => {
+      transaction.priority = 42
+      transaction.sampled = true
+
+      setTimeout(() => {
+        const segment = agent.tracer.getSegment()
+        const spanContext = segment.getSpanContext()
+        spanContext.addIntrinsicAttribute('intrinsic.1', 1)
+        spanContext.addIntrinsicAttribute('intrinsic.2', 2)
+
+        const span = SpanEvent.fromSegment(segment, 'parent')
+
+        const serializedSpan = span.toJSON()
+        const [intrinsics] = serializedSpan
+
+        t.equal(intrinsics['intrinsic.1'], 1)
+        t.equal(intrinsics['intrinsic.2'], 2)
 
         t.end()
       }, 10)

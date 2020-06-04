@@ -568,3 +568,76 @@ test('when serialized', (t) => {
     t.end()
   })
 })
+
+test('getSpanContext', (t) => {
+  t.autoend()
+
+  let agent = null
+  let transaction = null
+  let segment = null
+
+  t.beforeEach((done) => {
+    agent = helper.loadMockedAgent({
+      distributed_tracing: {
+        enabled: true
+      }
+    })
+
+    transaction = new Transaction(agent)
+    segment = new TraceSegment(transaction, 'UnitTest')
+
+    done()
+  })
+
+  t.afterEach((done) => {
+    helper.unloadAgent(agent)
+    agent = null
+    transaction = null
+    segment = null
+
+    done()
+  })
+
+  t.test('should not initialize with a span context', (t) => {
+    t.notOk(segment._spanContext)
+
+    t.end()
+  })
+
+  t.test('should create a new context when empty', (t) => {
+    const spanContext = segment.getSpanContext()
+
+    t.ok(spanContext)
+
+    t.end()
+  })
+
+  t.test('should not create a new context when empty and DT disabled', (t) => {
+    agent.config.distributed_tracing.enabled = false
+
+    const spanContext = segment.getSpanContext()
+
+    t.notOk(spanContext)
+
+    t.end()
+  })
+
+  t.test('should not create a new context when empty and Spans disabled', (t) => {
+    agent.config.span_events.enabled = false
+
+    const spanContext = segment.getSpanContext()
+
+    t.notOk(spanContext)
+
+    t.end()
+  })
+
+  t.test('should return existing span context', (t) => {
+    const originalContext = segment.getSpanContext()
+    const secondContext = segment.getSpanContext()
+
+    t.equal(originalContext, secondContext)
+
+    t.end()
+  })
+})
