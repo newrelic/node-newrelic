@@ -120,13 +120,16 @@ test('Redis instrumentation', {timeout : 10000}, function(t) {
   t.test('when called without a callback', function(t) {
     t.plan(4)
 
+    let transaction = null
+
     helper.runInTransaction(agent, function(tx) {
       client.set('testKey', 'testvalue')
       setTimeout(function() {
+        transaction = tx
+
         // This will generate an error because `testKey` is not a hash.
         client.hset('testKey', 'hashKey', 'foobar')
-        setTimeout(tx.end.bind(tx), 100)
-      }, 100) // Redis calls should never take 100 ms
+      }, 200) // Wait for client.set('testKey', 'testvalue') to complete
     })
 
     client.on('error', function(err) {
@@ -136,6 +139,10 @@ test('Redis instrumentation', {timeout : 10000}, function(t) {
           'WRONGTYPE Operation against a key holding the wrong kind of value',
           'errors should have the expected error message'
         )
+
+        // Ensure error triggering operation has completed before
+        // continuing test assertions.
+        transaction.end()
       }
     })
 
