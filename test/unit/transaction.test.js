@@ -1,8 +1,9 @@
 'use strict'
 
+const tap = require('tap')
 // TODO: convert to normal tap style.
 // Below allows use of mocha DSL with tap runner.
-require('tap').mochaGlobals()
+tap.mochaGlobals()
 
 var chai = require('chai')
 var should = chai.should()
@@ -223,102 +224,6 @@ describe('Transaction', function() {
       agent.config.emit('attributes.include')
 
       trans = new Transaction(agent)
-    })
-
-    describe('with finalizeNameFromUri', function() {
-      it('should throw when called with no parameters', function() {
-        expect(function() { trans.finalizeNameFromUri() }).to.throw()
-      })
-
-      it('should ignore a request path when told to by a rule', function() {
-        var api = new API(agent)
-        api.addIgnoringRule('^/test/')
-        trans.finalizeNameFromUri('/test/string?do=thing&another=thing', 200)
-        expect(trans.isIgnored()).to.be.true
-      })
-
-      it('should ignore a transaction when told to by a rule', function() {
-        agent.transactionNameNormalizer.addSimple('^WebTransaction/NormalizedUri')
-        trans.finalizeNameFromUri('/test/string?do=thing&another=thing', 200)
-        expect(trans.isIgnored()).to.be.true
-      })
-
-      it('should pass through a name when told to by a rule', function() {
-        agent.userNormalizer.addSimple('^/config', '/foobar')
-        trans.finalizeNameFromUri('/config', 200)
-        expect(trans.name).to.equal('WebTransaction/NormalizedUri/foobar')
-      })
-
-      describe('when tx.nameState is populated', function() {
-        beforeEach(function() {
-          trans.baseSegment = trans.trace.root.add('basesegment')
-          trans.nameState.setPrefix('Restify')
-          trans.nameState.setVerb('COOL')
-          trans.nameState.setDelimiter('/')
-          trans.nameState.appendPath('/foo/:foo', {foo: 'biz'})
-          trans.nameState.appendPath('/bar/:bar', {bar: 'bang'})
-        })
-
-        it('should name the transaction using the name stack', function() {
-          trans.finalizeNameFromUri('/some/random/path', 200)
-          expect(trans.name)
-            .to.equal('WebTransaction/Restify/COOL//foo/:foo/bar/:bar')
-        })
-
-        it('should copy parameters from the name stack', function() {
-          trans.finalizeNameFromUri('/some/random/path', 200)
-          var attrs = trans.trace.attributes.get(AttributeFilter.DESTINATIONS.TRANS_TRACE)
-          expect(attrs).to.deep.equal({
-            'request.parameters.foo': 'biz',
-            'request.parameters.bar': 'bang'
-          })
-        })
-
-        describe('and high_security is on', function() {
-          beforeEach(function() {
-            agent.config.high_security = true
-            agent.config._applyHighSecurity()
-            agent.config.emit('attributes.include')
-          })
-
-          it('should still name the transaction using the name stack', function() {
-            trans.finalizeNameFromUri('/some/random/path', 200)
-            expect(trans.name)
-              .to.equal('WebTransaction/Restify/COOL//foo/:foo/bar/:bar')
-          })
-
-          it('should not copy parameters from the name stack', function() {
-            trans.finalizeNameFromUri('/some/random/path', 200)
-            var attrs = trans.trace.attributes.get(
-              AttributeFilter.DESTINATIONS.TRANS_TRACE
-            )
-            expect(attrs).to.deep.equal({})
-          })
-        })
-      })
-    })
-
-    describe('with finalizeName', function() {
-      it('should call finalizeNameFromUri if no name is given for a web tx', function() {
-        var called = false
-        trans.finalizeNameFromUri = function() { called = true }
-        trans.type = 'web'
-        trans.url = '/foo/bar'
-        trans.finalizeName()
-        expect(called).to.be.true
-      })
-
-      it('should apply ignore rules', function() {
-        agent.transactionNameNormalizer.addSimple('foo') // Ignore foo
-        trans.finalizeName('foo')
-        expect(trans.isIgnored()).to.be.true
-      })
-
-      it('should not apply user naming rules', function() {
-        agent.userNormalizer.addSimple('^/config', '/foobar')
-        trans.finalizeName('/config')
-        expect(trans.getFullName()).to.equal('WebTransaction//config')
-      })
     })
 
     describe('getName', function() {
@@ -1633,6 +1538,201 @@ describe('Transaction', function() {
     })
   })
 })
+
+tap.test('when being named with finalizeNameFromUri', (t) => {
+  t.autoend()
+
+  let agent = null
+  let transaction = null
+
+  t.beforeEach((done) => {
+    agent = helper.loadMockedAgent({
+      attributes: {
+        enabled: true,
+        include: ['request.parameters.*']
+      }
+    })
+
+    transaction = new Transaction(agent)
+
+    done()
+  })
+
+  t.afterEach((done) => {
+    helper.unloadAgent(agent)
+
+    agent = null
+    transaction = null
+
+    done()
+  })
+
+  t.test('should throw when called with no parameters', (t) => {
+    t.throws(() => transaction.finalizeNameFromUri())
+
+    t.end()
+  })
+
+  t.test('should ignore a request path when told to by a rule', (t) => {
+    const api = new API(agent)
+    api.addIgnoringRule('^/test/')
+
+    transaction.finalizeNameFromUri('/test/string?do=thing&another=thing', 200)
+
+    t.equal(transaction.isIgnored(), true)
+
+    t.end()
+  })
+
+  t.test('should ignore a transaction when told to by a rule', (t) => {
+    agent.transactionNameNormalizer.addSimple('^WebTransaction/NormalizedUri')
+
+    transaction.finalizeNameFromUri('/test/string?do=thing&another=thing', 200)
+
+    t.equal(transaction.isIgnored(), true)
+
+    t.end()
+  })
+
+  t.test('should pass through a name when told to by a rule', (t) => {
+    agent.userNormalizer.addSimple('^/config', '/foobar')
+
+    transaction.finalizeNameFromUri('/config', 200)
+
+    t.equal(transaction.name, 'WebTransaction/NormalizedUri/foobar')
+
+    t.end()
+  })
+
+  t.test('when namestate populated should use name stack', (t) => {
+    setupNameState(transaction)
+
+    transaction.finalizeNameFromUri('/some/random/path', 200)
+    t.equal(transaction.name, 'WebTransaction/Restify/COOL//foo/:foo/bar/:bar')
+
+    t.end()
+  })
+
+  t.test('when namestate populated should copy parameters from the name stack', (t) => {
+    setupNameState(transaction)
+
+    transaction.finalizeNameFromUri('/some/random/path', 200)
+
+    const attrs = transaction.trace.attributes.get(AttributeFilter.DESTINATIONS.TRANS_TRACE)
+    t.match(attrs, {
+      'request.parameters.foo': 'biz',
+      'request.parameters.bar': 'bang'
+    })
+
+    t.end()
+  })
+
+  t.test('when namestate populated and high_security enabled, should use name stack', (t) => {
+    setupNameState(transaction)
+    setupHighSecurity(agent)
+
+    transaction.finalizeNameFromUri('/some/random/path', 200)
+
+    t.equal(transaction.name, 'WebTransaction/Restify/COOL//foo/:foo/bar/:bar')
+
+    t.end()
+  })
+
+  t.test(
+    'when namestate populated and high_security enabled,' +
+    'should not copy parameters from the name stack',
+    (t) => {
+      setupNameState(transaction)
+      setupHighSecurity(agent)
+
+      transaction.finalizeNameFromUri('/some/random/path', 200)
+
+      const attrs = transaction.trace.attributes.get(
+        AttributeFilter.DESTINATIONS.TRANS_TRACE
+      )
+      expect(attrs).to.deep.equal({})
+
+      t.end()
+    }
+  )
+})
+
+tap.test('when being named with finalizeName', (t) => {
+  t.autoend()
+
+  let agent = null
+  let transaction = null
+
+  t.beforeEach((done) => {
+    agent = helper.loadMockedAgent({
+      attributes: {
+        enabled: true,
+        include: ['request.parameters.*']
+      }
+    })
+
+    transaction = new Transaction(agent)
+
+    done()
+  })
+
+  t.afterEach((done) => {
+    helper.unloadAgent(agent)
+
+    agent = null
+    transaction = null
+
+    done()
+  })
+
+  t.test('should call finalizeNameFromUri if no name is given for a web tx', (t) => {
+    let called = false
+
+    transaction.finalizeNameFromUri = function() { called = true }
+    transaction.type = 'web'
+    transaction.url = '/foo/bar'
+    transaction.finalizeName()
+
+    t.ok(called)
+
+    t.end()
+  })
+
+  t.test('should apply ignore rules', (t) => {
+    agent.transactionNameNormalizer.addSimple('foo') // Ignore foo
+
+    transaction.finalizeName('foo')
+
+    t.equal(transaction.isIgnored(), true)
+
+    t.end()
+  })
+
+  t.test('should not apply user naming rules', (t) => {
+    agent.userNormalizer.addSimple('^/config', '/foobar')
+
+    transaction.finalizeName('/config')
+
+    t.equal(transaction.getFullName(), 'WebTransaction//config')
+
+    t.end()
+  })
+})
+
+function setupNameState(transaction) {
+  transaction.baseSegment = transaction.trace.root.add('basesegment')
+  transaction.nameState.setPrefix('Restify')
+  transaction.nameState.setVerb('COOL')
+  transaction.nameState.setDelimiter('/')
+  transaction.nameState.appendPath('/foo/:foo', {foo: 'biz'})
+  transaction.nameState.appendPath('/bar/:bar', {bar: 'bang'})
+}
+
+function setupHighSecurity(agent) {
+  agent.config.high_security = true
+  agent.config._applyHighSecurity()
+  agent.config.emit('attributes.include')
+}
 
 function getMetrics(agent) {
   return agent.metrics._metrics
