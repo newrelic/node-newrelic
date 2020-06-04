@@ -193,5 +193,64 @@ tap.test('span error attributes', (t) => {
     t.end()
   })
 
+  t.test("should propogate expected error attribute to span", (t) => {
+    const agent = helper.instrumentMockedAgent({
+      distributed_tracing: {
+        enabled: true
+      },
+      error_collector: {
+        expected_classes: ['CustomError']
+      }
+    })
+
+    t.tearDown(() => {
+      helper.unloadAgent(agent)
+    })
+
+    const api = new API(agent)
+
+    let expectedSpanId
+    let notExpectedSpanId
+
+    agent.on('transactionFinished', () => {
+      const errorEvents = agent.errors.eventAggregator.getEvents()
+      const spanEvents = agent.spanEventAggregator.getEvents()
+      const expectedSpanEvent = spanEvents.filter(s => s.intrinsics.guid === expectedSpanId)[0]
+      const spanEvent = spanEvents.filter(s => s.intrinsics.guid === notExpectedSpanId)[0]
+
+      t.equal(errorEvents.length, 2)
+
+      t.equal(expectedSpanEvent.attributes['error.expected'], true)
+
+      const hasAttribute = Object.hasOwnProperty.bind(spanEvent.attributes)
+      t.equal(hasAttribute('error.expected'), false)
+
+      t.end()
+    })
+
+    helper.runInTransaction(agent, (tx) => {
+      class CustomError extends Error {
+        constructor() {
+          super(...arguments)
+          this.name = 'CustomError'
+        }
+      }
+
+      api.startSegment('segment1', true, () => {
+        const segment = api.shim.getSegment()
+        expectedSpanId = segment.id
+        agent.errors.add(tx, new CustomError('expected'))
+      })
+
+      api.startSegment('segment2', true, () => {
+        const segment = api.shim.getSegment()
+        notExpectedSpanId = segment.id
+        agent.errors.add(tx, new Error('not expected'))
+      })
+
+      tx.end()
+    })
+  })
+
   t.end()
 })
