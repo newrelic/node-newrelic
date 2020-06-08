@@ -67,29 +67,26 @@ tap.test('Inifinite tracing - Connection Handling', { skip: !isGrpcSupportedVers
   })
 
   t.test('should successfully send span after startup', (t) => {
+    spanReceivedListener = (span, metadata) => {
+      t.ok(span)
+
+      const {name} = span.intrinsics
+
+      t.deepEqual(name.string_value, EXPECTED_SEGMENT_NAME)
+
+      const [licenseKey] = metadata.get('license_key')
+      t.equal(licenseKey, EXPECTED_LICENSE_KEY)
+
+      const [runId] = metadata.get('agent_run_token')
+      t.equal(runId, INITIAL_RUN_ID)
+
+      t.end()
+    }
+
     agent.start((error) => {
       verifyAgentStart(t, error, startingEndpoints)
 
-      spanReceivedListener = (span, metadata) => {
-        t.ok(span)
-
-        const {name} = span.intrinsics
-
-        t.deepEqual(name.string_value, EXPECTED_SEGMENT_NAME)
-
-        const [licenseKey] = metadata.get('license_key')
-        t.equal(licenseKey, EXPECTED_LICENSE_KEY)
-
-        const [runId] = metadata.get('agent_run_token')
-        t.equal(runId, INITIAL_RUN_ID)
-
-        t.end()
-      }
-
-      // the agent start is currently a lie due to how the span streamer connects
-      agent.spanEventAggregator.stream.connection.on('connected', () => {
-        createTestData(agent, EXPECTED_SEGMENT_NAME)
-      })
+      createTestData(agent, EXPECTED_SEGMENT_NAME)
     })
   })
 
@@ -101,31 +98,30 @@ tap.test('Inifinite tracing - Connection Handling', { skip: !isGrpcSupportedVers
     // 409 response will trigger a restart
     const restartMetricEndpoint = nockRequest('metric_data', INITIAL_RUN_ID).reply(409)
 
+    spanReceivedListener = (span, metadata) => {
+      t.ok(span)
+
+      const {name} = span.intrinsics
+
+      t.deepEqual(name.string_value, EXPECTED_SEGMENT_NAME)
+
+      const [licenseKey] = metadata.get('license_key')
+      t.equal(licenseKey, EXPECTED_LICENSE_KEY)
+
+      const [runId] = metadata.get('agent_run_token')
+      t.notEqual(runId, INITIAL_RUN_ID)
+      t.equal(runId, RESTARTED_RUN_ID)
+
+      t.end()
+    }
+
     agent.start((error) => {
       verifyAgentStart(t, error, startingEndpoints)
-
-      spanReceivedListener = (span, metadata) => {
-        t.ok(span)
-
-        const {name} = span.intrinsics
-
-        t.deepEqual(name.string_value, EXPECTED_SEGMENT_NAME)
-
-        const [licenseKey] = metadata.get('license_key')
-        t.equal(licenseKey, EXPECTED_LICENSE_KEY)
-
-        const [runId] = metadata.get('agent_run_token')
-        t.notEqual(runId, INITIAL_RUN_ID)
-        t.equal(runId, RESTARTED_RUN_ID)
-
-        t.end()
-      }
 
       agent.on('connecting', () => {
         t.equal(agent.spanEventAggregator.started, false)
 
-        // the agent start is currently a lie due to how the span streamer connects
-        agent.spanEventAggregator.stream.connection.on('connected', () => {
+        agent.spanEventAggregator.once('started', () => {
           // if new endpoints weren't hit, something else went wrong with test.
           verifyAgentStart(t, null, restartEndpoints)
 
@@ -133,14 +129,12 @@ tap.test('Inifinite tracing - Connection Handling', { skip: !isGrpcSupportedVers
         })
       })
 
-      agent.spanEventAggregator.stream.connection.once('connected', () => {
-        restartEndpoints = setupConnectionEndpoints(RESTARTED_RUN_ID)
+      restartEndpoints = setupConnectionEndpoints(RESTARTED_RUN_ID)
 
-        // forces metric harvest which will result in restart
-        agent.forceHarvestAll(() => {
-          // if this wasn't hit, something else went wrong with the test
-          t.ok(restartMetricEndpoint.isDone())
-        })
+      // forces metric harvest which will result in restart
+      agent.forceHarvestAll(() => {
+        // if this wasn't hit, something else went wrong with the test
+        t.ok(restartMetricEndpoint.isDone())
       })
     })
   })

@@ -79,7 +79,6 @@ tap.test(
 
       let countDisconnects = 0
 
-      connection.setConnectionDetails().connectSpans()
       connection.on('connected', (callStream) => {
         t.equals(
           callStream.constructor.name,
@@ -104,6 +103,8 @@ tap.test(
           resolve()
         }
       })
+
+      connection.setConnectionDetails().connectSpans()
     })
   }
 )
