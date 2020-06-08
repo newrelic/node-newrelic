@@ -14,6 +14,7 @@ var AttributeFilter = require('../../lib/config/attribute-filter')
 var Metrics = require('../../lib/metrics')
 var Trace = require('../../lib/transaction/trace')
 var Transaction = require('../../lib/transaction')
+const Segment = require('../../lib/transaction/trace/segment')
 var hashes = require('../../lib/util/hashes')
 const sinon = require('sinon')
 
@@ -1550,6 +1551,9 @@ tap.test('when being named with finalizeNameFromUri', (t) => {
       attributes: {
         enabled: true,
         include: ['request.parameters.*']
+      },
+      distributed_tracing: {
+        enabled: true
       }
     })
 
@@ -1604,10 +1608,28 @@ tap.test('when being named with finalizeNameFromUri', (t) => {
     t.end()
   })
 
+  t.test('should add finalized via rule transaction name to active span intrinsics', (t) => {
+    agent.userNormalizer.addSimple('^/config', '/foobar')
+
+    // force a segment in context
+    agent.tracer.segment = new Segment(transaction, 'test segment')
+
+    transaction.finalizeNameFromUri('/config', 200)
+
+    const spanContext = agent.tracer.getSpanContext()
+    const intrinsics = spanContext.intrinsicAttributes
+
+    t.ok(intrinsics)
+    t.equal(intrinsics['transaction.name'], 'WebTransaction/NormalizedUri/foobar')
+
+    t.end()
+  })
+
   t.test('when namestate populated should use name stack', (t) => {
     setupNameState(transaction)
 
     transaction.finalizeNameFromUri('/some/random/path', 200)
+
     t.equal(transaction.name, 'WebTransaction/Restify/COOL//foo/:foo/bar/:bar')
 
     t.end()
@@ -1627,6 +1649,26 @@ tap.test('when being named with finalizeNameFromUri', (t) => {
     t.end()
   })
 
+  t.test(
+    'when namestate populated, ' +
+    'should add finalized via rule transaction name to active span intrinsics',
+    (t) => {
+      setupNameState(transaction)
+      // force a segment in context
+      agent.tracer.segment = new Segment(transaction, 'test segment')
+
+      transaction.finalizeNameFromUri('/some/random/path', 200)
+
+      const spanContext = agent.tracer.getSpanContext()
+      const intrinsics = spanContext.intrinsicAttributes
+
+      t.ok(intrinsics)
+      t.equal(intrinsics['transaction.name'], 'WebTransaction/Restify/COOL//foo/:foo/bar/:bar')
+
+      t.end()
+    }
+  )
+
   t.test('when namestate populated and high_security enabled, should use name stack', (t) => {
     setupNameState(transaction)
     setupHighSecurity(agent)
@@ -1639,7 +1681,7 @@ tap.test('when being named with finalizeNameFromUri', (t) => {
   })
 
   t.test(
-    'when namestate populated and high_security enabled,' +
+    'when namestate populated and high_security enabled, ' +
     'should not copy parameters from the name stack',
     (t) => {
       setupNameState(transaction)
@@ -1668,6 +1710,9 @@ tap.test('when being named with finalizeName', (t) => {
       attributes: {
         enabled: true,
         include: ['request.parameters.*']
+      },
+      distributed_tracing: {
+        enabled: true
       }
     })
 
@@ -1714,6 +1759,21 @@ tap.test('when being named with finalizeName', (t) => {
     transaction.finalizeName('/config')
 
     t.equal(transaction.getFullName(), 'WebTransaction//config')
+
+    t.end()
+  })
+
+  t.test('should add finalized transaction name to active span intrinsics', (t) => {
+    // force a segment in context
+    agent.tracer.segment = new Segment(transaction, 'test segment')
+
+    transaction.finalizeName('/config')
+
+    const spanContext = agent.tracer.getSpanContext()
+    const intrinsics = spanContext.intrinsicAttributes
+
+    t.ok(intrinsics)
+    t.equal(intrinsics['transaction.name'], 'WebTransaction//config')
 
     t.end()
   })

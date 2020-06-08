@@ -267,7 +267,7 @@ describe('Errors', function() {
       expect(error[error.length - 2]).equal(testError.name)
     })
 
-    it('should not gather errors if it is switched off by user config', function() {
+    it('should not gather appliction errors if it is switched off by user config', function() {
       var error = new Error('this error will never be seen')
       agent.config.error_collector.enabled = false
 
@@ -275,6 +275,20 @@ describe('Errors', function() {
       expect(errorTraces.length).equal(0)
 
       errorCollector.add(null, error)
+
+      expect(errorTraces.length).equal(0)
+
+      agent.config.error_collector.enabled = true
+    })
+
+    it('should not gather user errors if it is switched off by user config', function() {
+      var error = new Error('this error will never be seen')
+      agent.config.error_collector.enabled = false
+
+      const errorTraces = getErrorTraces(errorCollector)
+      expect(errorTraces.length).equal(0)
+
+      errorCollector.addUserError(null, error)
 
       expect(errorTraces.length).equal(0)
 
