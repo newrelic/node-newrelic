@@ -58,7 +58,9 @@ tap.test('fromSegment()', (t) => {
 
       setTimeout(() => {
         const segment = agent.tracer.getTransaction().trace.root.children[0]
-        segment.addCustomSpanAttribute('Span Lee', 'no prize')
+        const spanContext = segment.getSpanContext()
+        spanContext.addCustomAttribute('Span Lee', 'no prize')
+
         const span = StreamingSpanEvent.fromSegment(segment, 'parent')
 
         // Should have all the normal properties.
@@ -271,8 +273,10 @@ tap.test('fromSegment()', (t) => {
 
       setTimeout(() => {
         const segment = agent.tracer.getSegment()
-        segment.addCustomSpanAttribute('customKey', 'customValue')
         segment.addAttribute('anAgentAttribute', true)
+
+        const spanContext = agent.tracer.getSpanContext()
+        spanContext.addCustomAttribute('customKey', 'customValue')
 
         const span = StreamingSpanEvent.fromSegment(segment, 'parent')
 

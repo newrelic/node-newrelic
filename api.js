@@ -395,11 +395,11 @@ API.prototype.addCustomSpanAttribute = function addCustomSpanAttribute(key, valu
     return false
   }
 
-  const segment = this.agent.tracer.getSegment()
+  const spanContext = this.agent.tracer.getSpanContext()
 
-  if (!segment) {
+  if (!spanContext) {
     return logger.debug(
-      'Could not add attribute %s. No available span/segment.',
+      'Could not add attribute %s. No available span.',
       key
     )
   }
@@ -408,7 +408,7 @@ API.prototype.addCustomSpanAttribute = function addCustomSpanAttribute(key, valu
     return logger.warn('Not overwriting value of NR-only attribute %s.', key)
   }
 
-  segment.addCustomSpanAttribute(key, value)
+  spanContext.addCustomAttribute(key, value)
 }
 
 API.prototype.setIgnoreTransaction = util.deprecate(
