@@ -21,6 +21,7 @@ const TEST_COLLECTOR_URL = `https://${TEST_DOMAIN}`
 // This key is hardcoded in the agent helper
 const EXPECTED_LICENSE_KEY = 'license key here'
 const INITIAL_RUN_ID = 'initial_run_id'
+const INITIAL_SESSION_ID = 'initial_session_id'
 
 const EXPECTED_SEGMENT_NAME = 'Test Segment'
 
@@ -80,6 +81,9 @@ tap.test('Inifinite tracing - Connection Handling', { skip: !isGrpcSupportedVers
       const [runId] = metadata.get('agent_run_token')
       t.equal(runId, INITIAL_RUN_ID)
 
+      const [sessionId] = metadata.get('session_id')
+      t.equal(sessionId, INITIAL_SESSION_ID, 'should persist request_header_map keys on metadata')
+
       t.end()
     }
 
@@ -90,8 +94,9 @@ tap.test('Inifinite tracing - Connection Handling', { skip: !isGrpcSupportedVers
     })
   })
 
-  t.test('should successfully send span, with correct run_id, after restart', (t) => {
+  t.test('should suceed, with updated run_id and request header metadata, after restart', (t) => {
     const RESTARTED_RUN_ID = 'restarted_run_id'
+    const RESTARTED_SESSION_ID = 'restarted session id'
 
     let restartEndpoints = null
 
@@ -112,6 +117,10 @@ tap.test('Inifinite tracing - Connection Handling', { skip: !isGrpcSupportedVers
       t.notEqual(runId, INITIAL_RUN_ID)
       t.equal(runId, RESTARTED_RUN_ID)
 
+      const [sessionId] = metadata.get('session_id')
+      t.notEqual(sessionId, INITIAL_SESSION_ID)
+      t.equal(sessionId, RESTARTED_SESSION_ID, 'should persist new request_headers_map on metadata')
+
       t.end()
     }
 
@@ -129,7 +138,7 @@ tap.test('Inifinite tracing - Connection Handling', { skip: !isGrpcSupportedVers
         })
       })
 
-      restartEndpoints = setupConnectionEndpoints(RESTARTED_RUN_ID)
+      restartEndpoints = setupConnectionEndpoints(RESTARTED_RUN_ID, RESTARTED_SESSION_ID)
 
       // forces metric harvest which will result in restart
       agent.forceHarvestAll(() => {
@@ -168,7 +177,7 @@ tap.test('Inifinite tracing - Connection Handling', { skip: !isGrpcSupportedVers
 
   function testSetup(callback, t) {
     nock.disableNetConnect()
-    startingEndpoints = setupConnectionEndpoints(INITIAL_RUN_ID)
+    startingEndpoints = setupConnectionEndpoints(INITIAL_RUN_ID, INITIAL_SESSION_ID)
 
     helper.withSSL((error, key, certificate, ca) => {
       t.error(error)
@@ -254,10 +263,17 @@ function createTestData(agent, segmentName, callback) {
   })
 }
 
-function setupConnectionEndpoints(runId) {
+function setupConnectionEndpoints(runId, sessionId) {
   return {
     preconnect: nockRequest('preconnect').reply(200, {return_value: TEST_DOMAIN}),
-    connect: nockRequest('connect').reply(200, {return_value: {agent_run_id: runId}}),
+    connect: nockRequest('connect').reply(200, {
+      return_value: {
+        agent_run_id: runId,
+        request_headers_map: {
+          SESSION_ID: sessionId
+        }
+      }
+    }),
     settings: nockRequest('agent_settings', runId).reply(200, {return_value: []})
   }
 }
