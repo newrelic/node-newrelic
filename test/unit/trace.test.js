@@ -699,8 +699,8 @@ function makeTrace(agent, callback) {
         DURATION,
         'WebTransaction/NormalizedUri/*',
         {
-          'request.uri': '/test?test=value',
           'request.parameters.test': 'value',
+          'request.uri': '/test?test=value',
           'nr_exclusive_duration_millis': 8
         },
         [

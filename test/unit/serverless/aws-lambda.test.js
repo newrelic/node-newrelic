@@ -238,6 +238,32 @@ describe('AwsLambda.patchLambdaHandler', () => {
       }
     })
 
+    it('should capture request parameters in Span Attributes', (done) => {
+      agent.on('transactionFinished', confirmAgentAttribute)
+
+      agent.config.attributes.enabled = true
+      agent.config.span_events.attributes.include = ['request.parameters.*']
+      agent.config.emit('span_events.attributes.include')
+
+      const apiGatewayProxyEvent = lambdaSampleEvents.apiGatewayProxyEvent
+
+      const wrappedHandler = awsLambda.patchLambdaHandler((event, context, callback) => {
+        callback(null, validResponse)
+      })
+
+      wrappedHandler(apiGatewayProxyEvent, stubContext, stubCallback)
+
+      function confirmAgentAttribute(transaction) {
+        const rootSpan = transaction.trace.root
+        const spanAttributes = rootSpan.attributes.get(ATTR_DEST.SPAN_EVENT)
+
+        expect(spanAttributes).to.have.property('request.parameters.name', 'me')
+        expect(spanAttributes).to.have.property('request.parameters.team', 'node agent')
+
+        done()
+      }
+    })
+
     it('should capture request headers', (done) => {
       agent.on('transactionFinished', confirmAgentAttribute)
 

@@ -1641,6 +1641,7 @@ tap.test('when being named with finalizeNameFromUri', (t) => {
     transaction.finalizeNameFromUri('/some/random/path', 200)
 
     const attrs = transaction.trace.attributes.get(AttributeFilter.DESTINATIONS.TRANS_TRACE)
+
     t.match(attrs, {
       'request.parameters.foo': 'biz',
       'request.parameters.bar': 'bang'
@@ -1697,6 +1698,55 @@ tap.test('when being named with finalizeNameFromUri', (t) => {
       t.end()
     }
   )
+})
+
+tap.test('requestd', (t) => {
+  t.autoend()
+
+  let agent = null
+  let transaction = null
+
+  t.beforeEach((done) => {
+    agent = helper.loadMockedAgent({
+      span_events: {
+        enabled: true,
+        attributes: {
+          include: ['request.parameters.*']
+        }
+      },
+      distributed_tracing: {
+        enabled: true
+      }
+    })
+
+    transaction = new Transaction(agent)
+
+    done()
+  })
+
+  t.afterEach((done) => {
+    helper.unloadAgent(agent)
+
+    agent = null
+    transaction = null
+
+    done()
+  })
+
+  t.test('when namestate populated should copy parameters from the name stack', (t) => {
+    setupNameState(transaction)
+
+    transaction.finalizeNameFromUri('/some/random/path', 200)
+
+    const baseSegment = transaction.baseSegment
+
+    t.match(baseSegment.attributes.get(AttributeFilter.DESTINATIONS.SPAN_EVENT), {
+      'request.parameters.foo': 'biz',
+      'request.parameters.bar': 'bang'
+    })
+
+    t.end()
+  })
 })
 
 tap.test('when being named with finalizeName', (t) => {
