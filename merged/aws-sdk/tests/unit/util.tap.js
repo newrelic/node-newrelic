@@ -20,7 +20,7 @@ tap.test('Utility Functions', (t) => {
     {
       input: NaN,
       output: 'NaN'
-    },
+    }
   ]
 
   for (const [, fixture] of fixtures.entries()) {
