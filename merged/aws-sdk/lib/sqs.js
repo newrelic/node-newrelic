@@ -1,5 +1,6 @@
 'use strict'
 
+const {grabLastUrlSegment} = require('./util')
 module.exports = {
   name: 'sqs',
   type: 'message',
@@ -40,9 +41,4 @@ function recordMessageApi(shim, original, name, args) {
   }
 }
 
-function grabLastUrlSegment(url) {
-  const lastSlashIndex = url.lastIndexOf('/')
-  const lastItem = url.substr(lastSlashIndex + 1)
 
-  return lastItem
-}
