@@ -1,10 +1,7 @@
 'use strict'
 
-// TODO: convert to normal tap style.
-// Below allows use of mocha DSL with tap runner.
-require('tap').mochaGlobals()
+const tap = require('tap')
 
-const {expect} = require('chai')
 const helper = require('../lib/agent_helper')
 const {Attributes} = require('../../lib/attributes')
 const AttributeFilter = require('../../lib/config/attribute-filter')
@@ -12,152 +9,225 @@ const AttributeFilter = require('../../lib/config/attribute-filter')
 const DESTINATIONS = AttributeFilter.DESTINATIONS
 const TRANSACTION_SCOPE = 'transaction'
 
-describe('Attributes', () => {
+tap.test('#addAttribute', (t) => {
+  t.autoend()
+
   let agent = null
-  beforeEach(() => {
-    // Load agent to get a config instance.
+
+  t.beforeEach((done) => {
     agent = helper.loadMockedAgent()
+    done()
   })
-  afterEach(() => {
+
+  t.afterEach((done) => {
     helper.unloadAgent(agent)
+    done()
   })
 
+  t.test('adds an attribute to instance', (t) => {
+    const inst = new Attributes(TRANSACTION_SCOPE)
+    inst.addAttribute(DESTINATIONS.TRANS_SCOPE, 'test', 'success')
+    const attributes = inst.get(DESTINATIONS.TRANS_SCOPE)
 
-  describe('#addAttribute', () => {
-    it('adds an attribute to instance', () => {
-      const inst = new Attributes(TRANSACTION_SCOPE)
-      inst.addAttribute(DESTINATIONS.TRANS_SCOPE, 'test', 'success')
-      const attributes = inst.get(DESTINATIONS.TRANS_SCOPE)
-      expect(attributes).to.have.property('test', 'success')
-    })
+    t.equal(attributes.test, 'success')
 
-    it('does not add attribute if key length limit is exceeded', () => {
-      const  tooLong = [
-        'Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
-        'Cras id lacinia erat. Suspendisse mi nisl, sodales vel est eu,',
-        'rhoncus lacinia ante. Nulla tincidunt efficitur diam, eget vulputate',
-        'lectus facilisis sit amet. Morbi hendrerit commodo quam, in nullam.'
-      ].join(' ')
-
-      const inst = new Attributes(TRANSACTION_SCOPE)
-      inst.addAttribute(DESTINATIONS.TRANS_SCOPE, tooLong, 'will fail')
-      const attributes = Object.keys(inst.attributes)
-      expect(attributes.length).to.equal(0)
-    })
+    t.end()
   })
 
-  describe('#addAttributes', () => {
-    it('adds multiple attributes to instance', () => {
-      const inst = new Attributes(TRANSACTION_SCOPE)
-      inst.addAttributes(
-        DESTINATIONS.TRANS_SCOPE,
-        {one: '1', two: '2'}
-      )
-      const attributes = inst.get(DESTINATIONS.TRANS_SCOPE)
-      expect(attributes).to.have.property('one', '1')
-      expect(attributes).to.have.property('two', '2')
-    })
+  t.test('does not add attribute if key length limit is exceeded', (t) => {
+    const tooLong = [
+      'Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
+      'Cras id lacinia erat. Suspendisse mi nisl, sodales vel est eu,',
+      'rhoncus lacinia ante. Nulla tincidunt efficitur diam, eget vulputate',
+      'lectus facilisis sit amet. Morbi hendrerit commodo quam, in nullam.'
+    ].join(' ')
 
-    it('only allows non-null-type primitive attribute values', () => {
-      const inst = new Attributes(TRANSACTION_SCOPE, 10)
-      const attributes = {
-        first: 'first',
-        second: [ 'second' ],
-        third: { key: 'third' },
-        fourth: 4,
-        fifth: true,
-        sixth: undefined,
-        seventh: null,
-        eighth: Symbol('test'),
-        ninth: function() {}
-      }
+    const inst = new Attributes(TRANSACTION_SCOPE)
+    inst.addAttribute(DESTINATIONS.TRANS_SCOPE, tooLong, 'will fail')
+    const attributes = Object.keys(inst.attributes)
 
-      inst.addAttributes(
-        DESTINATIONS.TRANS_SCOPE,
-        attributes
-      )
+    t.equal(attributes.length, 0)
 
-      const res = inst.get(DESTINATIONS.TRANS_SCOPE)
-      expect(Object.keys(res).length).to.equal(3)
-      expect(res.second).to.be.undefined
-      expect(res.third).to.be.undefined
-      expect(res.sixth).to.be.undefined
-      expect(res.seventh).to.be.undefined
-      expect(res.eighth).to.be.undefined
-      expect(res.ninth).to.be.undefined
-    })
+    t.end()
+  })
+})
 
-    it('disallows adding more than maximum allowed attributes', () => {
-      const inst = new Attributes(TRANSACTION_SCOPE, 3)
-      const attributes = {
-        first: 1,
-        second: 2,
-        portishead: 3,
-        so: 4
-      }
+tap.test('#addAttributes', (t) => {
+  t.autoend()
 
-      inst.addAttributes(
-        DESTINATIONS.TRANS_SCOPE,
-        attributes
-      )
-      const res = inst.get(DESTINATIONS.TRANS_SCOPE)
-      expect(Object.keys(res).length).to.equal(3)
-    })
+  let agent = null
 
-    it('Overwrites value of added attribute with same key', () => {
-      const inst = new Attributes(TRANSACTION_SCOPE, 2)
-      inst.addAttribute(0x01, 'Roboto', 1)
-      inst.addAttribute(0x01, 'Roboto', 99)
-
-      const res = inst.get(0x01)
-      expect(Object.keys(res).length).to.equal(1)
-      expect(res.Roboto).to.equal(99)
-    })
+  t.beforeEach((done) => {
+    agent = helper.loadMockedAgent()
+    done()
   })
 
-  describe('#get', () => {
-    it('gets attributes by destination, truncating values if necessary', () => {
-      const longVal = [
-        'Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
-        'Cras id lacinia erat. Suspendisse mi nisl, sodales vel est eu,',
-        'rhoncus lacinia ante. Nulla tincidunt efficitur diam, eget vulputate',
-        'lectus facilisis sit amet. Morbi hendrerit commodo quam, in nullam.',
-        'Lorem ipsum dolor sit amet, consectetur adipiscing elit.'
-      ].join(' ')
-
-      const inst = new Attributes(TRANSACTION_SCOPE)
-      inst.addAttribute(0x01, 'valid', 50)
-      inst.addAttribute(0x01, 'tooLong', longVal)
-      inst.addAttribute(0x08, 'wrongDest', 'hello')
-
-      expect(Buffer.byteLength(longVal)).to.be.above(255)
-      const res = inst.get(0x01)
-      expect(res.valid).to.equal(50)
-      expect(Buffer.byteLength(res.tooLong)).to.equal(255)
-    })
-
-    it('only returns attributes up to specified limit', () => {
-      const inst = new Attributes(TRANSACTION_SCOPE, 2)
-      inst.addAttribute(0x01, 'first', 'first')
-      inst.addAttribute(0x01, 'second', 'second')
-      inst.addAttribute(0x01, 'third', 'third')
-
-      const res = inst.get(0x01)
-      expect(Object.keys(res).length).to.equal(2)
-      expect(res.third).to.be.undefined
-    })
+  t.afterEach((done) => {
+    helper.unloadAgent(agent)
+    done()
   })
 
-  describe('#reset', () => {
-    it('resets instance attributes', () => {
-      const inst = new Attributes(TRANSACTION_SCOPE)
-      inst.addAttribute(0x01, 'first', 'first')
-      inst.addAttribute(0x01, 'second', 'second')
-      inst.addAttribute(0x01, 'third', 'third')
+  t.test('adds multiple attributes to instance', (t) => {
+    const inst = new Attributes(TRANSACTION_SCOPE)
+    inst.addAttributes(
+      DESTINATIONS.TRANS_SCOPE,
+      {one: '1', two: '2'}
+    )
+    const attributes = inst.get(DESTINATIONS.TRANS_SCOPE)
 
-      inst.reset()
+    t.equal(attributes.one, '1')
+    t.equal(attributes.two, '2')
 
-      expect(inst.attributes).to.deep.equal({})
-    })
+    t.end()
+  })
+
+  t.test('only allows non-null-type primitive attribute values', (t) => {
+    const inst = new Attributes(TRANSACTION_SCOPE, 10)
+    const attributes = {
+      first: 'first',
+      second: [ 'second' ],
+      third: { key: 'third' },
+      fourth: 4,
+      fifth: true,
+      sixth: undefined,
+      seventh: null,
+      eighth: Symbol('test'),
+      ninth: function() {}
+    }
+
+    inst.addAttributes(
+      DESTINATIONS.TRANS_SCOPE,
+      attributes
+    )
+
+    const res = inst.get(DESTINATIONS.TRANS_SCOPE)
+    t.equal(Object.keys(res).length, 3)
+
+    const hasAttribute = Object.hasOwnProperty.bind(res)
+    t.notOk(hasAttribute('second'))
+    t.notOk(hasAttribute('third'))
+    t.notOk(hasAttribute('sixth'))
+    t.notOk(hasAttribute('seventh'))
+    t.notOk(hasAttribute('eighth'))
+    t.notOk(hasAttribute('ninth'))
+
+    t.end()
+  })
+
+  t.test('disallows adding more than maximum allowed attributes', (t) => {
+    const inst = new Attributes(TRANSACTION_SCOPE, 3)
+    const attributes = {
+      first: 1,
+      second: 2,
+      portishead: 3,
+      so: 4
+    }
+
+    inst.addAttributes(
+      DESTINATIONS.TRANS_SCOPE,
+      attributes
+    )
+    const res = inst.get(DESTINATIONS.TRANS_SCOPE)
+
+    t.equal(Object.keys(res).length, 3)
+
+    t.end()
+  })
+
+  t.test('Overwrites value of added attribute with same key', (t) => {
+    const inst = new Attributes(TRANSACTION_SCOPE, 2)
+    inst.addAttribute(0x01, 'Roboto', 1)
+    inst.addAttribute(0x01, 'Roboto', 99)
+
+    const res = inst.get(0x01)
+
+    t.equal(Object.keys(res).length, 1)
+    t.equal(res.Roboto, 99)
+
+    t.end()
+  })
+})
+
+tap.test('#get', (t) => {
+  t.autoend()
+
+  let agent = null
+
+  t.beforeEach((done) => {
+    agent = helper.loadMockedAgent()
+    done()
+  })
+
+  t.afterEach((done) => {
+    helper.unloadAgent(agent)
+    done()
+  })
+
+  t.test('gets attributes by destination, truncating values if necessary', (t) => {
+    const longVal = [
+      'Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
+      'Cras id lacinia erat. Suspendisse mi nisl, sodales vel est eu,',
+      'rhoncus lacinia ante. Nulla tincidunt efficitur diam, eget vulputate',
+      'lectus facilisis sit amet. Morbi hendrerit commodo quam, in nullam.',
+      'Lorem ipsum dolor sit amet, consectetur adipiscing elit.'
+    ].join(' ')
+
+    const inst = new Attributes(TRANSACTION_SCOPE)
+    inst.addAttribute(0x01, 'valid', 50)
+    inst.addAttribute(0x01, 'tooLong', longVal)
+    inst.addAttribute(0x08, 'wrongDest', 'hello')
+
+    t.ok(Buffer.byteLength(longVal) > 255)
+
+    const res = inst.get(0x01)
+    t.equal(res.valid, 50)
+
+    t.equal(Buffer.byteLength(res.tooLong), 255)
+
+    t.end()
+  })
+
+  t.test('only returns attributes up to specified limit', (t) => {
+    const inst = new Attributes(TRANSACTION_SCOPE, 2)
+    inst.addAttribute(0x01, 'first', 'first')
+    inst.addAttribute(0x01, 'second', 'second')
+    inst.addAttribute(0x01, 'third', 'third')
+
+    const res = inst.get(0x01)
+    const hasAttribute = Object.hasOwnProperty.bind(res)
+
+    t.equal(Object.keys(res).length, 2)
+    t.notOk(hasAttribute('third'))
+
+    t.end()
+  })
+})
+
+tap.test('#reset', (t) => {
+  t.autoend()
+
+  let agent = null
+
+  t.beforeEach((done) => {
+    agent = helper.loadMockedAgent()
+    done()
+  })
+
+  t.afterEach((done) => {
+    helper.unloadAgent(agent)
+    done()
+  })
+
+  t.test('resets instance attributes', (t) => {
+    const inst = new Attributes(TRANSACTION_SCOPE)
+    inst.addAttribute(0x01, 'first', 'first')
+    inst.addAttribute(0x01, 'second', 'second')
+    inst.addAttribute(0x01, 'third', 'third')
+
+    inst.reset()
+
+    t.deepEqual(inst.attributes, {})
+
+    t.end()
   })
 })
