@@ -11,7 +11,7 @@ tap.test('Utility Functions', (t) => {
     },
     {
       input: null,
-      output: 'null'
+      output: ''
     },
     {
       input: undefined,
@@ -19,7 +19,7 @@ tap.test('Utility Functions', (t) => {
     },
     {
       input: NaN,
-      output: 'NaN'
+      output: ''
     }
   ]
 
