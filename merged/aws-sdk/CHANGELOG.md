@@ -1,3 +1,7 @@
+### 1.1.3 (2020-06-12):
+
+* Fixed issue where instrumentation would produce a `TypeError: Cannot read property 'lastIndexOf' of undefined` error if a program called `sqs.receiveMessage` without a `QueueUrl` parameter.
+
 ### 1.1.2 (2020-02-20):
 
 * Fixed issue where instrumentation would crash pulling `host` and `port` values when `AmazonDaxClient` was used as the service for `DocumentClient.`
