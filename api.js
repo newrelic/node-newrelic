@@ -316,7 +316,8 @@ API.prototype.addCustomAttribute = function addCustomAttribute(key, value) {
   const spanContext = this.agent.tracer.getSpanContext()
   if (!spanContext) {
     logger.debug('No span found for custom attributes.')
-    return false
+    // success/failure is ambiguous here. since at least 1 attempt tried, not returning false
+    return
   }
 
   spanContext.addCustomAttribute(key, value, spanContext.ATTRIBUTE_PRIORITY.LOW)
