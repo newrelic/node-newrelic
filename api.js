@@ -272,7 +272,7 @@ API.prototype.setControllerName = function setControllerName(name, action) {
  * @param {string} value The value you want displayed. Must be serializable.
  */
 API.prototype.addCustomAttribute = function addCustomAttribute(key, value) {
-  var metric = this.agent.metrics.getOrCreateMetric(
+  const metric = this.agent.metrics.getOrCreateMetric(
     NAMES.SUPPORTABILITY.API + '/addCustomAttribute'
   )
   metric.incrementCallCount()
@@ -291,24 +291,35 @@ API.prototype.addCustomAttribute = function addCustomAttribute(key, value) {
     return false
   }
 
-  var transaction = this.agent.tracer.getTransaction()
+  const transaction = this.agent.tracer.getTransaction()
   if (!transaction) {
-    return logger.warn('No transaction found for custom attributes.')
+    logger.warn('No transaction found for custom attributes.')
+    return false
   }
 
-  var trace = transaction.trace
+  const trace = transaction.trace
   if (!trace.custom) {
-    return logger.warn(
+    logger.warn(
       'Could not add attribute %s to nonexistent custom attributes.',
       key
     )
+    return false
   }
 
   if (CUSTOM_DENYLIST.has(key)) {
-    return logger.warn('Not overwriting value of NR-only attribute %s.', key)
+    logger.warn('Not overwriting value of NR-only attribute %s.', key)
+    return false
   }
 
   trace.addCustomAttribute(key, value)
+
+  const spanContext = this.agent.tracer.getSpanContext()
+  if (!spanContext) {
+    logger.debug('No span found for custom attributes.')
+    return false
+  }
+
+  spanContext.addCustomAttribute(key, value, spanContext.ATTRIBUTE_PRIORITY.LOW)
 }
 
 /**
@@ -398,14 +409,16 @@ API.prototype.addCustomSpanAttribute = function addCustomSpanAttribute(key, valu
   const spanContext = this.agent.tracer.getSpanContext()
 
   if (!spanContext) {
-    return logger.debug(
+    logger.debug(
       'Could not add attribute %s. No available span.',
       key
     )
+    return false
   }
 
   if (CUSTOM_DENYLIST.has(key)) {
-    return logger.warn('Not overwriting value of NR-only attribute %s.', key)
+    logger.warn('Not overwriting value of NR-only attribute %s.', key)
+    return false
   }
 
   spanContext.addCustomAttribute(key, value)
