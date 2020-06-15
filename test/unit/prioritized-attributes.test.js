@@ -174,6 +174,41 @@ tap.test('#addAttribute - high priority', (t) => {
 
     t.end()
   })
+
+  t.test(
+    'should not drop low priority attribute overwritten by high priority, when at maximum',
+    (t) => {
+      const maxAttributeCount = 4
+      const inst = new PrioritizedAttributes(TRANSACTION_SCOPE, maxAttributeCount)
+      inst.addAttribute(0x01, 'old-low', 1, false, ATTRIBUTE_PRIORITY.LOW)
+      inst.addAttribute(0x01, 'overwritten', 1, false, ATTRIBUTE_PRIORITY.LOW)
+      inst.addAttribute(0x01, 'old-high', 1, false, ATTRIBUTE_PRIORITY.HIGH)
+      inst.addAttribute(0x01, 'new-low', 'low', false, ATTRIBUTE_PRIORITY.LOW)
+
+      // should drop new-low
+      inst.addAttribute(0x01, 'newish-high', 50, false, ATTRIBUTE_PRIORITY.HIGH)
+
+      // makes overwritten a high priority attribute
+      inst.addAttribute(0x01, 'overwritten', 'high', false, ATTRIBUTE_PRIORITY.HIGH)
+
+      // should not drop 'overwritten' which should be high priority now
+      inst.addAttribute(0x01, 'new-high', 99, false, ATTRIBUTE_PRIORITY.HIGH)
+
+
+      const res = inst.get(0x01)
+      const hasAttribute = Object.hasOwnProperty.bind(res)
+
+      t.equal(Object.keys(res).length, maxAttributeCount)
+      t.equal(res['old-high'], 1)
+      t.equal(res['newish-high'], 50)
+      t.equal(res['new-high'], 99)
+
+      t.equal(res.overwritten, 'high')
+      t.notOk(hasAttribute('old-low'))
+
+      t.end()
+    }
+  )
 })
 
 tap.test('#addAttribute - low priority', (t) => {
