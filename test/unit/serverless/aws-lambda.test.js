@@ -120,6 +120,7 @@ describe('AwsLambda.patchLambdaHandler', () => {
 
       const wrappedHandler = awsLambda.patchLambdaHandler((event, context, callback) => {
         const transaction = agent.tracer.getTransaction()
+
         expect(transaction).to.exist
         expect(transaction.type).to.equal('web')
         expect(transaction.getFullName()).to.equal(expectedWebTransactionName)
@@ -132,17 +133,14 @@ describe('AwsLambda.patchLambdaHandler', () => {
 
       function confirmAgentAttribute(transaction) {
         const agentAttributes = transaction.trace.attributes.get(ATTR_DEST.TRANS_EVENT)
-        const segment = transaction.agent.tracer.getSegment()
+        const segment = transaction.baseSegment
         const spanAttributes = segment.attributes.get(ATTR_DEST.SPAN_EVENT)
-
-        const rootSegment = transaction.trace.root
-        const rootSpanAttributes = rootSegment.attributes.get(ATTR_DEST.SPAN_EVENT)
 
         expect(agentAttributes).to.have.property('request.method', 'GET')
         expect(agentAttributes).to.have.property('request.uri', '/test/hello')
 
         expect(spanAttributes).to.have.property('request.method', 'GET')
-        expect(rootSpanAttributes).to.have.property('request.uri', '/test/hello')
+        expect(spanAttributes).to.have.property('request.uri', '/test/hello')
 
         done()
       }
@@ -254,8 +252,8 @@ describe('AwsLambda.patchLambdaHandler', () => {
       wrappedHandler(apiGatewayProxyEvent, stubContext, stubCallback)
 
       function confirmAgentAttribute(transaction) {
-        const rootSpan = transaction.trace.root
-        const spanAttributes = rootSpan.attributes.get(ATTR_DEST.SPAN_EVENT)
+        const segment = transaction.baseSegment
+        const spanAttributes = segment.attributes.get(ATTR_DEST.SPAN_EVENT)
 
         expect(spanAttributes).to.have.property('request.parameters.name', 'me')
         expect(spanAttributes).to.have.property('request.parameters.team', 'node agent')

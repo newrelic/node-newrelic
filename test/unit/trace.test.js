@@ -351,7 +351,7 @@ describe('Trace', function() {
     expect(events.length).to.equal(0)
   })
 
-  it('should send host display name when set by user', function() {
+  it('should send host display name on transaction when set by user', function() {
     agent.config.attributes.enabled = true
     agent.config.process_host.display_name = 'test-value'
 
@@ -359,8 +359,25 @@ describe('Trace', function() {
 
     expect(trace.attributes.get(DESTINATIONS.TRANS_TRACE))
       .deep.equal({'host.displayName': 'test-value'})
+  })
 
-    expect(trace.root.attributes.get(DESTINATIONS.SPAN_EVENT))
+  it('should send host display name attribute on span', function() {
+    agent.config.attributes.enabled = true
+    agent.config.distributed_tracing.enabled = true
+    agent.config.process_host.display_name = 'test-value'
+    const transaction = new Transaction(agent)
+    transaction.sampled = true
+
+    const trace = new Trace(transaction)
+
+    // add a child segment
+    const child = transaction.baseSegment = trace.add('test')
+    child.start()
+    child.end()
+
+    trace.generateSpanEvents()
+
+    expect(child.attributes.get(DESTINATIONS.SPAN_EVENT))
       .deep.equal({'host.displayName': 'test-value'})
   })
 
@@ -699,8 +716,8 @@ function makeTrace(agent, callback) {
         DURATION,
         'WebTransaction/NormalizedUri/*',
         {
-          'request.parameters.test': 'value',
           'request.uri': '/test?test=value',
+          'request.parameters.test': 'value',
           'nr_exclusive_duration_millis': 8
         },
         [

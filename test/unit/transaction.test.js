@@ -1736,11 +1736,14 @@ tap.test('requestd', (t) => {
   t.test('when namestate populated should copy parameters from the name stack', (t) => {
     setupNameState(transaction)
 
+    // force a segment in context
+    agent.tracer.segment = new Segment(transaction, 'test segment')
+    
     transaction.finalizeNameFromUri('/some/random/path', 200)
 
-    const baseSegment = transaction.baseSegment
+    const segment = transaction.agent.tracer.getSegment()
 
-    t.match(baseSegment.attributes.get(AttributeFilter.DESTINATIONS.SPAN_EVENT), {
+    t.match(segment.attributes.get(AttributeFilter.DESTINATIONS.SPAN_EVENT), {
       'request.parameters.foo': 'biz',
       'request.parameters.bar': 'bang'
     })
