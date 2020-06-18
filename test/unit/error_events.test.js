@@ -69,8 +69,8 @@ test('Error events', (t) => {
 
         const spanAttributes = segment.attributes.get(DESTINATIONS.SPAN_EVENT)
 
-        expect(spanAttributes['error.class']).to.equal('Error')
-        expect(spanAttributes['error.message']).to.equal('some error')
+        t.equal(spanAttributes['error.class'], 'Error')
+        t.equal(spanAttributes['error.message'], 'some error')
 
         tx.end()
         const attributes = agent.errors.eventAggregator.getEvents()[0][0]
