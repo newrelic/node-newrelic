@@ -70,6 +70,7 @@ tap.test(
       const metadataFirst = connection._getMetadata(
         'fake-license',
         'fake-run-id',
+        {},
         {}
       )
       t.equals(metadataFirst.get('license_key').shift(), 'fake-license', 'license key set')
@@ -81,11 +82,13 @@ tap.test(
       const metadataSecond = connection._getMetadata(
         'fake-license',
         'fake-run-id',
+        {},
         {
           NEWRELIC_GRPCCONNECTION_METADATA_FLAKY:10,
           NEWRELIC_GRPCCONNECTION_METADATA_DELAY:20,
         }
       )
+
       t.equals(metadataSecond.get('license_key').shift(), 'fake-license', 'license key set')
       t.equals(metadataSecond.get('agent_run_token').shift(), 'fake-run-id', 'run id set')
       t.equals(metadataSecond.get('flaky').shift(), 10, 'flaky set')
@@ -95,11 +98,13 @@ tap.test(
       const metadataThird = connection._getMetadata(
         'fake-license',
         'fake-run-id',
+        {},
         {
           NEWRELIC_GRPCCONNECTION_METADATA_FLAKY:'sdfdsfsdfsdfds',
           NEWRELIC_GRPCCONNECTION_METADATA_DELAY:{'foo':'bar'},
         }
       )
+
       t.equals(metadataThird.get('license_key').shift(), 'fake-license', 'license key set')
       t.equals(metadataThird.get('agent_run_token').shift(), 'fake-run-id', 'run id set')
       t.equals(metadataThird.get('flaky').length, 0, 'flaky not set')
@@ -112,6 +117,28 @@ tap.test(
         /* eslint-disable-next-line eqeqeq */
         t.ok(key == connectionStates[value], 'found paired value for ' + key)
       }
+      t.end()
+    })
+
+    test.test('should apply request headers map with lowercase keys', (t) => {
+      const connection = new GrpcConnection(fakeTraceObserverConfig, metrics)
+
+      const requestHeadersMap = {
+        KEY_1: 'VALUE 1',
+        KEY_2: 'VALUE 2'
+      }
+
+      // only sets the license and run id
+      const metadata = connection._getMetadata(
+        'fake-license',
+        'fake-run-id',
+        requestHeadersMap,
+        {}
+      )
+
+      t.deepEqual(metadata.get('key_1'), ['VALUE 1'])
+      t.deepEqual(metadata.get('key_2'), ['VALUE 2'])
+
       t.end()
     })
 
