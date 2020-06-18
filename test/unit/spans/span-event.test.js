@@ -63,8 +63,10 @@ tap.test('fromSegment()', (t) => {
 
       setTimeout(() => {
         const segment = agent.tracer.getTransaction().trace.root.children[0]
-        segment.addCustomSpanAttribute('Span Lee', 'no prize')
         segment.addSpanAttribute('SpiderSpan', 'web')
+
+        const spanContext = segment.getSpanContext()
+        spanContext.addCustomAttribute('Span Lee', 'no prize')
 
         const span = SpanEvent.fromSegment(segment, 'parent')
 
@@ -98,7 +100,7 @@ tap.test('fromSegment()', (t) => {
 
         t.ok(span.attributes)
         const attributes = span.attributes
-        
+
         const hasOwnAttribute = Object.hasOwnProperty.bind(attributes)
 
         t.ok(hasOwnAttribute('SpiderSpan'), 'Should have attribute added through segment')
