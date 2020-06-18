@@ -12,6 +12,7 @@ var instrumentOutbound = require('../../../../lib/instrumentation/core/http-outb
 var hashes = require('../../../../lib/util/hashes')
 var nock = require('nock')
 var Segment = require('../../../../lib/transaction/trace/segment')
+const { DESTINATIONS } = require('../../../../lib/config/attribute-filter')
 
 
 tap.test('instrumentOutbound', (t) => {
@@ -93,14 +94,14 @@ tap.test('instrumentOutbound', (t) => {
     helper.runInTransaction(agent, function(transaction) {
       agent.config.attributes.enabled = true
       instrumentOutbound(agent, {host: HOSTNAME, port: PORT}, makeFakeRequest)
-      t.same(transaction.trace.root.children[0].getAttributes(), {
+      t.same(transaction.trace.root.children[0].attributes.get(DESTINATIONS.SPAN_EVENT), {
         'url': `http://${HOSTNAME}:${PORT}/asdf`,
         'procedure': 'GET',
         'request.parameters.a': 'b',
         'request.parameters.another': 'yourself',
         'request.parameters.thing': true,
         'request.parameters.grownup': 'true'
-      })
+      }, 'adds attributes to spans')
 
       function makeFakeRequest() {
         req.path = '/asdf?a=b&another=yourself&thing&grownup=true'
