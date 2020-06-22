@@ -21,7 +21,7 @@
       * `request.uri`
   * Custom Attributes
     * Custom transaction attributes added via `API.addCustomAttribute` or `API.addCustomAttributes` will now be propagated to the currently active span, if available.
-  * Security Recommendation:
+  * **Security Recommendation:**
     * Review your Transaction Event attributes configuration. Any attribute include or exclude setting specific to Transaction Events should be applied to your Span Attributes configuration or global attributes configuration. Please see [Node.js agent attributes](https://docs.newrelic.com/docs/agents/nodejs-agent/attributes/nodejs-agent-attributes#configure-attributes) for more on how to configure.
 * Upgraded @grpc/grpc-js from 1.0.3 to 1.0.4
 * Modified redis callback-less versioned test to use `commandQueueLength` as indicator redis command has completed and test can continue. This is in effort to further reduce these test flickers. Additionally, added wait for client 'ready' before moving on to tests.
