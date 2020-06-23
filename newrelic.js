@@ -15,7 +15,7 @@ exports.config = {
    */
   license_key: 'license key here',
   /**
-   * Controls the method of cross agent tracing in the agent.
+   * This setting controls distributed tracing.
    * Distributed tracing lets you see the path that a request takes through your
    * distributed system. Enabling distributed tracing changes the behavior of some
    * New Relic features, so carefully consult the transition guide before you enable
@@ -28,7 +28,8 @@ exports.config = {
      *
      * @env NEW_RELIC_DISTRIBUTED_TRACING_ENABLED
      */
-    enabled: false,
+    enabled: false
+  },
   logging: {
     /**
      * Level at which to log. 'trace' is most useful to New Relic when diagnosing
