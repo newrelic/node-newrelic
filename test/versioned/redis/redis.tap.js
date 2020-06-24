@@ -21,23 +21,28 @@ test('Redis instrumentation', {timeout : 10000}, function(t) {
 
   t.beforeEach(function(done) {
     helper.bootstrapRedis(DB_INDEX, function cb_bootstrapRedis(error) {
-      if (error) return t.fail(error)
+      if (error) {
+        return t.fail(error)
+      }
+
       agent = helper.instrumentMockedAgent()
-      var redis = require('redis')
+
+      const redis = require('redis')
       client = redis.createClient(params.redis_port, params.redis_host)
+      client.once('ready', () => {
+        client.select(DB_INDEX, function(err) {
+          METRIC_HOST_NAME = urltils.isLocalhost(params.redis_host)
+            ? agent.config.getHostnameSafe()
+            : params.redis_host
+          HOST_ID = METRIC_HOST_NAME + '/' + params.redis_port
 
-      client.select(DB_INDEX, function(err) {
-        METRIC_HOST_NAME = urltils.isLocalhost(params.redis_host)
-          ? agent.config.getHostnameSafe()
-          : params.redis_host
-        HOST_ID = METRIC_HOST_NAME + '/' + params.redis_port
+          // need to capture attributes
+          agent.config.attributes.enabled = true
 
-        // need to capture attributes
-        agent.config.attributes.enabled = true
-
-        // Start testing!
-        t.notOk(agent.getTransaction(), "no transaction should be in play")
-        done(err)
+          // Start testing!
+          t.notOk(agent.getTransaction(), "no transaction should be in play")
+          done(err)
+        })
       })
     })
   })
@@ -120,13 +125,29 @@ test('Redis instrumentation', {timeout : 10000}, function(t) {
   t.test('when called without a callback', function(t) {
     t.plan(4)
 
+    let transaction = null
+
     helper.runInTransaction(agent, function(tx) {
+      transaction = tx
+
       client.set('testKey', 'testvalue')
-      setTimeout(function() {
+
+      triggerError()
+
+      function triggerError() {
+        // When the redis service responds, the command is dequeued and then
+        // the command callback is executed, if exists. Since we don't have a callback,
+        // we wait for the command to be removed from the queue.
+        if (client.commandQueueLength > 0) {
+          t.comment('set command still in command queue. scheduling retry')
+
+          setTimeout(triggerError, 100)
+          return
+        }
+
         // This will generate an error because `testKey` is not a hash.
         client.hset('testKey', 'hashKey', 'foobar')
-        setTimeout(tx.end.bind(tx), 100)
-      }, 100) // Redis calls should never take 100 ms
+      }
     })
 
     client.on('error', function(err) {
@@ -136,6 +157,10 @@ test('Redis instrumentation', {timeout : 10000}, function(t) {
           'WRONGTYPE Operation against a key holding the wrong kind of value',
           'errors should have the expected error message'
         )
+
+        // Ensure error triggering operation has completed before
+        // continuing test assertions.
+        transaction.end()
       }
     })
 

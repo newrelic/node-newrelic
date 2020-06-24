@@ -21,23 +21,6 @@ jobs:
     - name: Run Linting
       run: npm run lint
 
-  smoke:
-    runs-on: ubuntu-latest
-
-    strategy:
-      matrix:
-        node-version: [8.x, 10.x, 12.x]
-
-    steps:
-    - uses: actions/checkout@v2
-    - name: Use Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v1
-      with:
-        node-version: ${{ matrix.node-version }}
-    # Smoke tests do own install
-    - name: Run Smoke Tests
-      run: npm run smoke
-
   unit:
     runs-on: ubuntu-latest
 
@@ -75,39 +58,15 @@ jobs:
       run: npm run services
     - name: Run Integration Tests
       run: npm run integration
-
-  secrets:
-    runs-on: ubuntu-latest
-
-    if: github.repository == 'newrelic/node-newrelic'
-
-    strategy:
-      matrix:
-        node-version: [8.x, 10.x, 12.x]
-
-    steps:
-    - uses: actions/checkout@v2
-    - name: Use Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v1
-      with:
-        node-version: ${{ matrix.node-version }}
-    - name: Install Dependencies
-      run: npm ci
-    - name: Run Docker Services
-      run: npm run services
-    - name: Run Versioned Tests
-      run: npm run secrets
       env:
+        TEST_LICENSE: ${{ secrets.TEST_LICENSE }}
+        COLLECTOR_LICENSE: ${{ secrets.COLLECTOR_LICENSE }}
         LASP_LICENSE: ${{ secrets.LASP_LICENSE }}
         LASP_SECURE_LICENSE: ${{ secrets.LASP_SECURE_LICENSE }}
-        BENDER_LICENSE: ${{ secrets.BENDER_LICENSE }}
-        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        FORCE_RUN_TESTS_WITH_SECRETS: ${{ github.repository_owner == 'newrelic' && github.event_name == 'push' }}
 
   versioned:
     runs-on: ubuntu-latest
-
-    if: github.repository == 'newrelic/node-newrelic'
 
     strategy:
       matrix:

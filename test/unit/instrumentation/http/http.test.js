@@ -284,6 +284,8 @@ test('built-in http module instrumentation', (t) => {
 
         function finish() {
           const attributes = transaction.trace.attributes.get(DESTINATIONS.TRANS_TRACE)
+          const segment = transaction.baseSegment
+          const spanAttributes = segment.attributes.get(DESTINATIONS.SPAN_EVENT)
 
           t.notOk(attributes['request.headers.x-filtered-out'])
           t.notOk(attributes['request.headers.xFilteredOut'])
@@ -292,6 +294,12 @@ test('built-in http module instrumentation', (t) => {
             'request.headers.referer': 'valid-referer',
             'request.headers.contentType': 'valid-type'
           })
+
+          t.match(spanAttributes, {
+            'request.headers.valid': 'header',
+            'request.headers.referer': 'valid-referer',
+            'request.headers.contentType': 'valid-type'
+          }, 'attributes added to span')
 
           t.end()
         }
@@ -315,6 +323,8 @@ test('built-in http module instrumentation', (t) => {
       
       function finish(err, statusCode, body) {
         const attributes = transaction.trace.attributes.get(DESTINATIONS.TRANS_TRACE)
+        const segment = transaction.baseSegment
+        const spanAttributes = segment.attributes.get(DESTINATIONS.SPAN_EVENT)
         const callStats = agent.metrics.getOrCreateMetric('WebTransaction/NormalizedUri/*')
         const dispatcherStats = agent.metrics.getOrCreateMetric('HttpDispatcher')
         const reqStats = transaction.metrics.getOrCreateMetric(
@@ -328,10 +338,19 @@ test('built-in http module instrumentation', (t) => {
         t.equal(attributes['request.headers.referer'], 'https://www.google.com/search/cats', 'headers.referer')
         t.match(attributes, {
           'request.headers.referer': 'https://www.google.com/search/cats',
-          'response.status': '200',
+          'http.statusCode': '200',
           'http.statusText': 'OK',
           'request.headers.userAgent': userAgent
         }, 'transaction attributes')
+
+        t.match(spanAttributes, {
+          'request.headers.referer': 'https://www.google.com/search/cats',
+          'request.uri': '/path',
+          'http.statusCode': '200',
+          'http.statusText': 'OK',
+          'request.method': 'GET',
+          'request.headers.userAgent': userAgent
+        }, 'span attributes')
         t.equal(callStats.callCount, 2, 'records unscoped path stats after a normal request')
         t.ok(dispatcherStats.callCount, 2,
           'record unscoped HTTP dispatcher stats after a normal request')

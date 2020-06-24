@@ -8,21 +8,24 @@ const read = require('fs').readFileSync
 const configurator = require('../../lib/config')
 const Agent = require('../../lib/agent')
 const CollectorAPI = require('../../lib/collector/api')
+const {getTestSecret, shouldSkipTest} = require('../helpers/secrets')
 
 let port = 0
 const SSL_CONFIG = {
   key: read(join(__dirname, '../lib/test-key.key')),
   cert: read(join(__dirname, '../lib/self-signed-test-certificate.crt')),
 }
+const license = getTestSecret('TEST_LICENSE')
+const skip = shouldSkipTest(license)
 
-tap.test('setting proxy_port should use the proxy agent [SECRETS]', (t) => {
+tap.test('setting proxy_port should use the proxy agent', {skip}, (t) => {
   const server = proxySetup(https.createServer(SSL_CONFIG))
 
   server.listen(0, () => {
     port = server.address().port
     const config = configurator.initialize({
       app_name: 'node.js Tests',
-      license_key: process.env.BENDER_LICENSE,
+      license_key: license,
       host: 'staging-collector.newrelic.com',
       port: 443,
       proxy_host: 'ssl.lvh.me',

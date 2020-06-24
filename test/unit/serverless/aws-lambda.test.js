@@ -120,6 +120,7 @@ describe('AwsLambda.patchLambdaHandler', () => {
 
       const wrappedHandler = awsLambda.patchLambdaHandler((event, context, callback) => {
         const transaction = agent.tracer.getTransaction()
+
         expect(transaction).to.exist
         expect(transaction.type).to.equal('web')
         expect(transaction.getFullName()).to.equal(expectedWebTransactionName)
@@ -132,9 +133,14 @@ describe('AwsLambda.patchLambdaHandler', () => {
 
       function confirmAgentAttribute(transaction) {
         const agentAttributes = transaction.trace.attributes.get(ATTR_DEST.TRANS_EVENT)
+        const segment = transaction.baseSegment
+        const spanAttributes = segment.attributes.get(ATTR_DEST.SPAN_EVENT)
 
         expect(agentAttributes).to.have.property('request.method', 'GET')
         expect(agentAttributes).to.have.property('request.uri', '/test/hello')
+
+        expect(spanAttributes).to.have.property('request.method', 'GET')
+        expect(spanAttributes).to.have.property('request.uri', '/test/hello')
 
         done()
       }
@@ -225,6 +231,32 @@ describe('AwsLambda.patchLambdaHandler', () => {
 
         expect(agentAttributes).to.have.property('request.parameters.name', 'me')
         expect(agentAttributes).to.have.property('request.parameters.team', 'node agent')
+
+        done()
+      }
+    })
+
+    it('should capture request parameters in Span Attributes', (done) => {
+      agent.on('transactionFinished', confirmAgentAttribute)
+
+      agent.config.attributes.enabled = true
+      agent.config.span_events.attributes.include = ['request.parameters.*']
+      agent.config.emit('span_events.attributes.include')
+
+      const apiGatewayProxyEvent = lambdaSampleEvents.apiGatewayProxyEvent
+
+      const wrappedHandler = awsLambda.patchLambdaHandler((event, context, callback) => {
+        callback(null, validResponse)
+      })
+
+      wrappedHandler(apiGatewayProxyEvent, stubContext, stubCallback)
+
+      function confirmAgentAttribute(transaction) {
+        const segment = transaction.baseSegment
+        const spanAttributes = segment.attributes.get(ATTR_DEST.SPAN_EVENT)
+
+        expect(spanAttributes).to.have.property('request.parameters.name', 'me')
+        expect(spanAttributes).to.have.property('request.parameters.team', 'node agent')
 
         done()
       }
@@ -347,6 +379,8 @@ describe('AwsLambda.patchLambdaHandler', () => {
 
       function confirmAgentAttribute(transaction) {
         const agentAttributes = transaction.trace.attributes.get(ATTR_DEST.TRANS_EVENT)
+        const segment = transaction.agent.tracer.getSegment()
+        const spanAttributes = segment.attributes.get(ATTR_DEST.SPAN_EVENT)
 
         expect(agentAttributes).to.have.property(
           'httpResponseCode',
@@ -354,6 +388,16 @@ describe('AwsLambda.patchLambdaHandler', () => {
         )
 
         expect(agentAttributes).to.have.property(
+          'response.status',
+          '200'
+        )
+
+        expect(spanAttributes).to.have.property(
+          'httpResponseCode',
+          '200'
+        )
+
+        expect(spanAttributes).to.have.property(
           'response.status',
           '200'
         )
@@ -421,6 +465,8 @@ describe('AwsLambda.patchLambdaHandler', () => {
 
       function confirmAgentAttribute(transaction) {
         const agentAttributes = transaction.trace.attributes.get(ATTR_DEST.TRANS_EVENT)
+        const segment = transaction.agent.tracer.getSegment()
+        const spanAttributes = segment.attributes.get(ATTR_DEST.SPAN_EVENT)
 
         expect(agentAttributes).to.have.property(
           'aws.lambda.eventSource.accountId',
@@ -447,6 +493,30 @@ describe('AwsLambda.patchLambdaHandler', () => {
           'test'
         )
 
+        expect(spanAttributes).to.have.property(
+          'aws.lambda.eventSource.accountId',
+          '123456789012'
+        )
+
+        expect(spanAttributes).to.have.property(
+          'aws.lambda.eventSource.apiId',
+          'wt6mne2s9k'
+        )
+
+        expect(spanAttributes).to.have.property(
+          'aws.lambda.eventSource.resourceId',
+          'us4z18'
+        )
+
+        expect(spanAttributes).to.have.property(
+          'aws.lambda.eventSource.resourcePath',
+          '/{proxy+}'
+        )
+
+        expect(spanAttributes).to.have.property(
+          'aws.lambda.eventSource.stage',
+          'test'
+        )
 
         done()
       }
@@ -543,7 +613,10 @@ describe('AwsLambda.patchLambdaHandler', () => {
     function confirmNoAdditionalColdStart(transaction) {
       if (transactionNum > 1) {
         const attributes = transaction.trace.attributes.get(ATTR_DEST.TRANS_EVENT)
+        const segment = transaction.agent.tracer.getSegment()
+        const spanAttributes = segment.attributes.get(ATTR_DEST.SPAN_EVENT)
         expect(attributes['aws.lambda.coldStart']).to.not.exist
+        expect(spanAttributes['aws.lambda.coldStart']).to.not.exist
       }
 
       transactionNum++
@@ -605,9 +678,13 @@ describe('AwsLambda.patchLambdaHandler', () => {
 
     function confirmAgentAttribute(transaction) {
       const agentAttributes = transaction.trace.attributes.get(ATTR_DEST.TRANS_TRACE)
+      const segment = transaction.agent.tracer.getSegment()
+      const spanAttributes = segment.attributes.get(ATTR_DEST.SPAN_EVENT)
 
       expect(agentAttributes[EVENTSOURCE_ARN]).to.be.undefined
       expect(agentAttributes[EVENTSOURCE_TYPE]).to.be.undefined
+      expect(spanAttributes[EVENTSOURCE_ARN]).to.be.undefined
+      expect(spanAttributes[EVENTSOURCE_TYPE]).to.be.undefined
       done()
     }
   })
@@ -625,10 +702,18 @@ describe('AwsLambda.patchLambdaHandler', () => {
 
     function confirmAgentAttribute(transaction) {
       const agentAttributes = transaction.trace.attributes.get(ATTR_DEST.TRANS_TRACE)
+      const segment = transaction.agent.tracer.getSegment()
+      const spanAttributes = segment.attributes.get(ATTR_DEST.SPAN_EVENT)
 
       expect(agentAttributes[EVENTSOURCE_ARN])
         .to.equal('kinesis:eventsourcearn')
+      expect(spanAttributes[EVENTSOURCE_ARN])
+        .to.equal('kinesis:eventsourcearn')
       expect(agentAttributes).to.have.property(
+        EVENTSOURCE_TYPE,
+        'kinesis'
+      )
+      expect(spanAttributes).to.have.property(
         EVENTSOURCE_TYPE,
         'kinesis'
       )
@@ -649,12 +734,21 @@ describe('AwsLambda.patchLambdaHandler', () => {
 
     function confirmAgentAttribute(transaction) {
       const agentAttributes = transaction.trace.attributes.get(ATTR_DEST.TRANS_TRACE)
+      const segment = transaction.agent.tracer.getSegment()
+      const spanAttributes = segment.attributes.get(ATTR_DEST.SPAN_EVENT)
 
       expect(agentAttributes[EVENTSOURCE_ARN]).to.equal('bucketarn')
       expect(agentAttributes).to.have.property(
         EVENTSOURCE_TYPE,
         's3'
       )
+
+      expect(spanAttributes[EVENTSOURCE_ARN]).to.equal('bucketarn')
+      expect(spanAttributes).to.have.property(
+        EVENTSOURCE_TYPE,
+        's3'
+      )
+
       done()
     }
   })
@@ -672,10 +766,19 @@ describe('AwsLambda.patchLambdaHandler', () => {
 
     function confirmAgentAttribute(transaction) {
       const agentAttributes = transaction.trace.attributes.get(ATTR_DEST.TRANS_TRACE)
+      const segment = transaction.agent.tracer.getSegment()
+      const spanAttributes = segment.attributes.get(ATTR_DEST.SPAN_EVENT)
 
       expect(agentAttributes[EVENTSOURCE_ARN])
         .to.equal('eventsubscriptionarn')
       expect(agentAttributes).to.have.property(
+        EVENTSOURCE_TYPE,
+        'sns'
+      )
+
+      expect(spanAttributes[EVENTSOURCE_ARN])
+        .to.equal('eventsubscriptionarn')
+      expect(spanAttributes).to.have.property(
         EVENTSOURCE_TYPE,
         'sns'
       )
@@ -696,8 +799,12 @@ describe('AwsLambda.patchLambdaHandler', () => {
 
     function confirmAgentAttribute(transaction) {
       const agentAttributes = transaction.trace.attributes.get(ATTR_DEST.TRANS_TRACE)
+      const segment = transaction.agent.tracer.getSegment()
+      const spanAttributes = segment.attributes.get(ATTR_DEST.SPAN_EVENT)
 
       expect(agentAttributes[EVENTSOURCE_ARN])
+        .to.equal('dynamodb:eventsourcearn')
+      expect(spanAttributes[EVENTSOURCE_ARN])
         .to.equal('dynamodb:eventsourcearn')
       done()
     }
@@ -716,8 +823,12 @@ describe('AwsLambda.patchLambdaHandler', () => {
 
     function confirmAgentAttribute(transaction) {
       const agentAttributes = transaction.trace.attributes.get(ATTR_DEST.TRANS_TRACE)
+      const segment = transaction.agent.tracer.getSegment()
+      const spanAttributes = segment.attributes.get(ATTR_DEST.SPAN_EVENT)
 
       expect(agentAttributes[EVENTSOURCE_ARN])
+        .to.equal('arn:aws:codecommit:us-west-2:123456789012:my-repo')
+      expect(spanAttributes[EVENTSOURCE_ARN])
         .to.equal('arn:aws:codecommit:us-west-2:123456789012:my-repo')
       done()
     }
@@ -736,9 +847,16 @@ describe('AwsLambda.patchLambdaHandler', () => {
 
     function confirmAgentAttribute(transaction) {
       const agentAttributes = transaction.trace.attributes.get(ATTR_DEST.TRANS_TRACE)
+      const segment = transaction.agent.tracer.getSegment()
+      const spanAttributes = segment.attributes.get(ATTR_DEST.SPAN_EVENT)
 
       expect(agentAttributes[EVENTSOURCE_ARN]).to.be.undefined
       expect(agentAttributes).to.have.property(
+        EVENTSOURCE_TYPE,
+        'cloudFront'
+      )
+      expect(spanAttributes[EVENTSOURCE_ARN]).to.be.undefined
+      expect(spanAttributes).to.have.property(
         EVENTSOURCE_TYPE,
         'cloudFront'
       )
@@ -759,9 +877,17 @@ describe('AwsLambda.patchLambdaHandler', () => {
 
     function confirmAgentAttribute(transaction) {
       const agentAttributes = transaction.trace.attributes.get(ATTR_DEST.TRANS_TRACE)
+      const segment = transaction.agent.tracer.getSegment()
+      const spanAttributes = segment.attributes.get(ATTR_DEST.SPAN_EVENT)
 
       expect(agentAttributes[EVENTSOURCE_ARN]).to.equal('aws:lambda:events')
       expect(agentAttributes).to.have.property(
+        EVENTSOURCE_TYPE,
+        'firehose'
+      )
+
+      expect(spanAttributes[EVENTSOURCE_ARN]).to.equal('aws:lambda:events')
+      expect(spanAttributes).to.have.property(
         EVENTSOURCE_TYPE,
         'firehose'
       )
@@ -782,6 +908,8 @@ describe('AwsLambda.patchLambdaHandler', () => {
 
     function confirmAgentAttribute(transaction) {
       const agentAttributes = transaction.trace.attributes.get(ATTR_DEST.TRANS_TRACE)
+      const segment = transaction.agent.tracer.getSegment()
+      const spanAttributes = segment.attributes.get(ATTR_DEST.SPAN_EVENT)
 
       expect(agentAttributes[EVENTSOURCE_ARN]).to.equal(
         'arn:aws:elasticloadbalancing:us-east-2:123456789012:targetgroup/lambda-279XGJDqGZ5rsrHC2Fjr/49e9d65c45c6791a') // eslint-disable-line max-len
@@ -791,6 +919,13 @@ describe('AwsLambda.patchLambdaHandler', () => {
         'alb'
       )
 
+      expect(spanAttributes[EVENTSOURCE_ARN]).to.equal(
+        'arn:aws:elasticloadbalancing:us-east-2:123456789012:targetgroup/lambda-279XGJDqGZ5rsrHC2Fjr/49e9d65c45c6791a') // eslint-disable-line max-len
+
+      expect(spanAttributes).to.have.property(
+        EVENTSOURCE_TYPE,
+        'alb'
+      )
       done()
     }
   })
@@ -808,10 +943,19 @@ describe('AwsLambda.patchLambdaHandler', () => {
 
     function confirmAgentAttribute(transaction) {
       const agentAttributes = transaction.trace.attributes.get(ATTR_DEST.TRANS_TRACE)
+      const segment = transaction.agent.tracer.getSegment()
+      const spanAttributes = segment.attributes.get(ATTR_DEST.SPAN_EVENT)
 
       expect(agentAttributes[EVENTSOURCE_ARN]).to.equal(
         'arn:aws:events:us-west-2:123456789012:rule/ExampleRule')
       expect(agentAttributes).to.have.property(
+        EVENTSOURCE_TYPE,
+        'cloudWatch_scheduled'
+      )
+
+      expect(spanAttributes[EVENTSOURCE_ARN]).to.equal(
+        'arn:aws:events:us-west-2:123456789012:rule/ExampleRule')
+      expect(spanAttributes).to.have.property(
         EVENTSOURCE_TYPE,
         'cloudWatch_scheduled'
       )
@@ -832,8 +976,14 @@ describe('AwsLambda.patchLambdaHandler', () => {
 
     function confirmAgentAttribute(transaction) {
       const agentAttributes = transaction.trace.attributes.get(ATTR_DEST.TRANS_TRACE)
+      const segment = transaction.agent.tracer.getSegment()
+      const spanAttributes = segment.attributes.get(ATTR_DEST.SPAN_EVENT)
 
       expect(agentAttributes).to.have.property(
+        EVENTSOURCE_TYPE,
+        'ses'
+      )
+      expect(spanAttributes).to.have.property(
         EVENTSOURCE_TYPE,
         'ses'
       )

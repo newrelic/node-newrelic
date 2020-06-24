@@ -243,9 +243,11 @@ describe('high security mode', function() {
     })
 
     it('should not affect addCustomAttribute if high_security is off', function() {
-      agent.config.high_security = false
-      var success = api.addCustomAttribute('key', 'value')
-      should.not.exist(success)
+      helper.runInTransaction(agent, () => {
+        agent.config.high_security = false
+        const success = api.addCustomAttribute('key', 'value')
+        should.not.exist(success)
+      })
     })
   })
 })

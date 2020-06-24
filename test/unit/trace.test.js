@@ -13,8 +13,11 @@ const expect = chai.expect
 const helper = require('../lib/agent_helper')
 const codec = require('../../lib/util/codec')
 const Segment = require('../../lib/transaction/trace/segment')
+const DTPayload = require('../../lib/transaction/dt-payload')
 const Trace = require('../../lib/transaction/trace')
 const Transaction = require('../../lib/transaction')
+
+const NEWRELIC_TRACE_HEADER = 'newrelic'
 
 describe('Trace', function() {
   var agent = null
@@ -351,13 +354,80 @@ describe('Trace', function() {
     expect(events.length).to.equal(0)
   })
 
-  it('should send host display name when set by user', function() {
+  it('parent.* attributes should be present on generated spans', function() {
+    // Setup DT
+    const encKey = 'gringletoes'
+    agent.config.encoding_key = encKey
+    agent.config.attributes.enabled = true
+    agent.config.distributed_tracing.enabled = true
+    agent.config.trusted_account_key = 111
+
+    const dtInfo = {
+      ty: 'App',       // type
+      ac: 111,         // accountId
+      ap: 222,         // appId
+      tx: 333,         // transactionId
+      tr: 444,         // traceId
+      pr: 1,           // priority
+      sa: true,        // sampled
+      // timestamp, if in the future, duration will always be 0
+      ti: Date.now() + 10000
+    }
+    const dtPayload = new DTPayload(dtInfo)
+    const headers = { [NEWRELIC_TRACE_HEADER]: dtPayload.httpSafe() }
+    const transaction = new Transaction(agent)
+    transaction.sampled = true
+
+    // Get the parent attributes on the transaction
+    transaction.acceptDistributedTraceHeaders('HTTP', headers)
+
+    // Create at least one segment
+    const trace = new Trace(transaction)
+    const child = transaction.baseSegment = trace.add('test')
+    child.start()
+    child.end()
+
+    // This should add the parent attributes onto a child span event
+    trace.generateSpanEvents()
+
+    // Test that a child span event has the attributes
+    const attrs = child.attributes.get(DESTINATIONS.SPAN_EVENT)
+    expect(attrs).deep.equal({
+      'parent.type': 'App',
+      'parent.app': 222,
+      'parent.account': 111,
+      'parent.transportType': 'HTTP',
+      'parent.transportDuration': 0
+    })
+  })
+
+  it('should send host display name on transaction when set by user', function() {
     agent.config.attributes.enabled = true
     agent.config.process_host.display_name = 'test-value'
 
     var trace = new Trace(new Transaction(agent))
 
     expect(trace.attributes.get(DESTINATIONS.TRANS_TRACE))
+      .deep.equal({'host.displayName': 'test-value'})
+  })
+
+  it('should send host display name attribute on span', function() {
+    agent.config.attributes.enabled = true
+    agent.config.distributed_tracing.enabled = true
+    agent.config.process_host.display_name = 'test-value'
+    const transaction = new Transaction(agent)
+    transaction.sampled = true
+
+    const trace = new Trace(transaction)
+
+    // add a child segment
+    const child = transaction.baseSegment = trace.add('test')
+    child.start()
+    child.end()
+
+    trace.generateSpanEvents()
+
+    expect(child.attributes.get(DESTINATIONS.SPAN_EVENT))
       .deep.equal({'host.displayName': 'test-value'})
   })
 

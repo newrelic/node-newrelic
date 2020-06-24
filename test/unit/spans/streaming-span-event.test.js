@@ -38,7 +38,11 @@ tap.test('fromSegment()', (t) => {
   let agent = null
 
   t.beforeEach((done) => {
-    agent = helper.instrumentMockedAgent()
+    agent = helper.instrumentMockedAgent({
+      distributed_tracing: {
+        enabled: true
+      }
+    })
     done()
   })
 
@@ -54,7 +58,9 @@ tap.test('fromSegment()', (t) => {
 
       setTimeout(() => {
         const segment = agent.tracer.getTransaction().trace.root.children[0]
-        segment.addCustomSpanAttribute('Span Lee', 'no prize')
+        const spanContext = segment.getSpanContext()
+        spanContext.addCustomAttribute('Span Lee', 'no prize')
+
         const span = StreamingSpanEvent.fromSegment(segment, 'parent')
 
         // Should have all the normal properties.
@@ -166,7 +172,6 @@ tap.test('fromSegment()', (t) => {
   })
 
   t.test('should create an datastore span with an datastore segment', (t) => {
-    agent.config.distributed_tracing.enabled = true
     agent.config.transaction_tracer.record_sql = 'raw'
 
     const shim = new DatastoreShim(agent, 'test-data-store', '', 'TestStore')
@@ -264,12 +269,14 @@ tap.test('fromSegment()', (t) => {
   t.test('should serialize to proper format with toStreamingFormat()', (t) => {
     helper.runInTransaction(agent, (transaction) => {
       transaction.priority = 42
-      transaction.sample = true
+      transaction.sampled = true
 
       setTimeout(() => {
         const segment = agent.tracer.getSegment()
-        segment.addCustomSpanAttribute('customKey', 'customValue')
         segment.addAttribute('anAgentAttribute', true)
+
+        const spanContext = agent.tracer.getSpanContext()
+        spanContext.addCustomAttribute('customKey', 'customValue')
 
         const span = StreamingSpanEvent.fromSegment(segment, 'parent')
 
@@ -290,6 +297,30 @@ tap.test('fromSegment()', (t) => {
         t.deepEqual(userAttributes.customKey, {[STRING_TYPE]: 'customValue'})
 
         t.deepEqual(agentAttributes.anAgentAttribute, {[BOOL_TYPE]: true})
+
+        t.end()
+      }, 10)
+    })
+  })
+
+  t.test('should populate intrinsics from span context', (t) => {
+    helper.runInTransaction(agent, (transaction) => {
+      transaction.priority = 42
+      transaction.sampled = true
+
+      setTimeout(() => {
+        const segment = agent.tracer.getSegment()
+        const spanContext = segment.getSpanContext()
+        spanContext.addIntrinsicAttribute('intrinsic.1', 1)
+        spanContext.addIntrinsicAttribute('intrinsic.2', 2)
+
+        const span = StreamingSpanEvent.fromSegment(segment, 'parent')
+
+        const serializedSpan = span.toStreamingFormat()
+        const {intrinsics} = serializedSpan
+
+        t.deepEqual(intrinsics['intrinsic.1'], {[INT_TYPE]: 1})
+        t.deepEqual(intrinsics['intrinsic.2'], {[INT_TYPE]: 2})
 
         t.end()
       }, 10)

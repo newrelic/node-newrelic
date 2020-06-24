@@ -1,6 +1,6 @@
 {
   "name": "newrelic",
-  "version": "6.7.1",
+  "version": "6.10.0",
   "author": "New Relic Node.js agent team <nodejs@newrelic.com>",
   "license": "SEE LICENSE IN LICENSE",
   "contributors": [
@@ -123,12 +123,11 @@
     "clean": "./bin/clean.sh",
     "docker-env": "./bin/docker-env-vars.sh",
     "docs": "npm ci && jsdoc -c ./jsdoc-conf.json --private -r .",
-    "integration": "npm run prepare-test && npm run sub-install && time tap -ig SECRETS --no-esm test/integration/**/**/*.tap.js --timeout=180 --no-coverage",
+    "integration": "npm run prepare-test && npm run sub-install && time tap --no-esm test/integration/**/**/*.tap.js --timeout=180 --no-coverage",
     "prepare-test": "npm ci && npm run ca-gen && npm run ssl && npm run docker-env",
     "lint": "eslint ./*.js lib test",
     "public-docs": "npm ci && jsdoc -c ./jsdoc-conf.json --tutorials examples/shim api.js lib/shim/ lib/transaction/handle.js && cp examples/shim/*.png out/",
     "publish-docs": "./bin/publish-docs.sh",
-    "secrets": "npm run prepare-test && npm run sub-install && time tap -g SECRETS --no-esm test/integration/**/**/*.tap.js --timeout=180 --no-coverage",
     "services": "./bin/docker-services.sh",
     "smoke": "npm run clean && ./bin/smoke.sh",
     "ssl": "./bin/ssl.sh",
@@ -143,27 +142,27 @@
     "newrelic-naming-rules": "./bin/test-naming-rules.js"
   },
   "dependencies": {
-    "@grpc/grpc-js": "1.0.3",
-    "@grpc/proto-loader": "^0.5.3",
+    "@grpc/grpc-js": "1.0.4",
+    "@grpc/proto-loader": "^0.5.4",
     "@newrelic/aws-sdk": "^1.1.1",
     "@newrelic/koa": "^3.0.0",
     "@newrelic/superagent": "^2.0.1",
     "@tyriar/fibonacci-heap": "^2.0.7",
     "async": "^2.1.4",
     "concat-stream": "^2.0.0",
-    "escodegen": "^1.11.1",
+    "escodegen": "^1.14.1",
     "esprima": "^4.0.1",
     "https-proxy-agent": "^4.0.0",
     "json-stringify-safe": "^5.0.0",
-    "readable-stream": "^3.1.1",
+    "readable-stream": "^3.6.0",
     "semver": "^5.3.0"
   },
   "optionalDependencies": {
-    "@newrelic/native-metrics": "^5.0.0"
+    "@newrelic/native-metrics": "^5.1.0"
   },
   "devDependencies": {
     "@newrelic/proxy": "^2.0.0",
-    "@newrelic/test-utilities": "^3.1.0",
+    "@newrelic/test-utilities": "^3.3.0",
     "JSV": "~4.0.2",
     "architect": "*",
     "benchmark": "^2.1.4",

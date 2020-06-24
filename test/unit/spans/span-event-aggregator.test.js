@@ -23,7 +23,11 @@ describe('SpanAggregator', () => {
       runId: RUN_ID,
       limit: LIMIT
     }, {}, new Metrics(5, {}, {}))
-    agent = helper.instrumentMockedAgent()
+    agent = helper.instrumentMockedAgent({
+      distributed_tracing: {
+        enabled: true
+      }
+    })
   })
 
   afterEach(() => {

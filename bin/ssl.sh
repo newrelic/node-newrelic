@@ -8,7 +8,7 @@ set -x  # be chatty and show the lines we're running
 # that are mysterious and not understood, so let
 # bail early if we detect that's the case
 ENGINE_OPENSSL=`openssl version | awk '{print $(1)}'`
-if [ "$ENGINE_OPENSSL" == "LibreSSL" ]
+if [ "$ENGINE_OPENSSL" = "LibreSSL" ]
 then
     echo "LibreSSL is not supported, please install a stock openssl and \n"
     echo "make sure that openssl binary is in your PATH"
@@ -25,7 +25,7 @@ CERTIFICATE="test/lib/self-signed-test-certificate.crt"
 
 # USAGE: ./bin/ssl.sh clear
 # a sub command to remove all the generated files and start over
-if [ "$1" == "clear" ]
+if [ "$1" = "clear" ]
 then
     rm $SSLKEY
     rm $CACERT
@@ -37,7 +37,7 @@ fi
 
 # if there's already a certificate, then exit, but
 # exit with a success code so build continue
-if [ -a $CERTIFICATE ]; then
+if [ -e $CERTIFICATE ]; then
   exit 0;
 fi
 

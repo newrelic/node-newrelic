@@ -1,11 +1,6 @@
 'use strict'
 
 const tap = require('tap')
-
-// TODO: convert to normal tap style.
-// Below allows use of mocha DSL with tap runner.
-tap.mochaGlobals()
-
 const os = require('os')
 const hostname = os.hostname
 const networkInterfaces = os.networkInterfaces
@@ -57,77 +52,81 @@ const DISABLE_ALL_DETECTIONS = {
 }
 
 
-describe('fun facts about apps that New Relic is interested in include', () => {
+tap.test('fun facts about apps that New Relic is interested in include', (t) => {
+  t.autoend()
+
   let agent = null
 
-  beforeEach(() => {
+  t.beforeEach((done) => {
     agent = helper.loadMockedAgent(DISABLE_ALL_DETECTIONS)
+    done()
   })
 
-  afterEach(() => {
+  t.afterEach((done) => {
     helper.unloadAgent(agent)
     os.networkInterfaces = networkInterfaces
+    done()
   })
 
-  it("the current process ID as 'pid'", (done) => {
+  t.test("the current process ID as 'pid'", (t) => {
     facts(agent, function getFacts(factsed) {
       expect(factsed.pid).equal(process.pid)
-      done()
+      t.end()
     })
   })
 
-  it("the current hostname as 'host' (hope it's not 'localhost' lol)", (done) => {
+  t.test("the current hostname as 'host' (hope it's not 'localhost' lol)", (t) => {
     facts(agent, function getFacts(factsed) {
       expect(factsed.host).equal(hostname())
       expect(factsed.host).not.equal('localhost')
       expect(factsed.host).not.equal('localhost.local')
       expect(factsed.host).not.equal('localhost.localdomain')
-      done()
+      t.end()
     })
   })
 
-  it("the agent's language (as 'language') to be 'nodejs'", (done) => {
+  t.test("the agent's language (as 'language') to be 'nodejs'", (t) => {
     facts(agent, function getFacts(factsed) {
       expect(factsed.language).equal('nodejs')
-      done()
+      t.end()
     })
   })
 
-  it("an array of one or more application names as 'app_name' (sic)", (done) => {
+  t.test("an array of one or more application names as 'app_name' (sic)", (t) => {
     facts(agent, function getFacts(factsed) {
       expect(factsed.app_name).an('array')
       expect(factsed.app_name).length.above(0)
-      done()
+      t.end()
     })
   })
 
-  it("the module's version as 'agent_version'", (done) => {
+  t.test("the module's version as 'agent_version'", (t) => {
     facts(agent, function getFacts(factsed) {
       expect(factsed.agent_version).equal(agent.version)
-      done()
+      t.end()
     })
   })
 
-  it('the environment (see environment.test.js) as crazy nested arrays', (done) => {
+  t.test('the environment (see environment.test.js) as crazy nested arrays', (t) => {
     facts(agent, function getFacts(factsed) {
       expect(factsed.environment).to.be.an('array')
       expect(factsed.environment).to.have.length.above(1)
-      done()
+      t.end()
     })
   })
 
-  it("an 'identifier' for this agent", (done) => {
+  t.test("an 'identifier' for this agent", (t) => {
     facts(agent, function(factsed) {
       expect(factsed).to.have.property('identifier')
       const identifier = factsed.identifier
       expect(identifier).to.contain('nodejs')
       expect(identifier).to.contain(factsed.host)
       expect(identifier).to.contain(factsed.app_name.sort().join(','))
-      done()
+      t.end()
     })
   })
 
-  it("'metadata' with NEW_RELIC_METADATA_-prefixed env vars", (done) => {
+  t.test("'metadata' with NEW_RELIC_METADATA_-prefixed env vars", (t) => {
     process.env.NEW_RELIC_METADATA_STRING = 'hello'
     process.env.NEW_RELIC_METADATA_BOOL = true
     process.env.NEW_RELIC_METADATA_NUMBER = 42
@@ -141,26 +140,26 @@ describe('fun facts about apps that New Relic is interested in include', () => {
       delete process.env.NEW_RELIC_METADATA_STRING
       delete process.env.NEW_RELIC_METADATA_BOOL
       delete process.env.NEW_RELIC_METADATA_NUMBER
-      done()
+      t.end()
     })
   })
 
-  it("empty 'metadata' object if no metadata env vars found", (done) => {
+  t.test("empty 'metadata' object if no metadata env vars found", (t) => {
     facts(agent, (data) => {
       expect(data).to.have.property('metadata')
       expect(data.metadata).to.deep.equal({})
-      done()
+      t.end()
     })
   })
 
-  it('and nothing else', (done) => {
+  t.test('and nothing else', (t) => {
     facts(agent, function getFacts(factsed) {
       expect(Object.keys(factsed).sort()).eql(EXPECTED.sort())
-      done()
+      t.end()
     })
   })
 
-  it('should convert label object to expected format', (done) => {
+  t.test('should convert label object to expected format', (t) => {
     const long_key = Array(257).join('€')
     const long_value = Array(257).join('𝌆')
     agent.config.labels = {}
@@ -174,11 +173,11 @@ describe('fun facts about apps that New Relic is interested in include', () => {
       })
 
       expect(factsed.labels).deep.equal(expected)
-      done()
+      t.end()
     })
   })
 
-  it('should convert label string to expected format', (done) => {
+  t.test('should convert label string to expected format', (t) => {
     const long_key = Array(257).join('€')
     const long_value = Array(257).join('𝌆')
     agent.config.labels = 'a: b; ' + long_key + ' : ' + long_value
@@ -190,11 +189,11 @@ describe('fun facts about apps that New Relic is interested in include', () => {
       })
 
       expect(factsed.labels).deep.equal(expected)
-      done()
+      t.end()
     })
   })
 
-  it('should add harvest_limits from local or default config', (done) => {
+  t.test('should add harvest_limits from local or default config', (t) => {
     const expectedValue = 10
     agent.config.transaction_events.max_samples_stored = expectedValue
     agent.config.custom_insights_events.max_samples_stored = expectedValue
@@ -211,12 +210,14 @@ describe('fun facts about apps that New Relic is interested in include', () => {
 
     facts(agent, (factsResult) => {
       expect(factsResult.event_harvest_config).deep.equal(expectedHarvestConfig)
-      done()
+      t.end()
     })
   })
 })
 
-describe('utilization', () => {
+tap.test('utilization', (t) => {
+  t.autoend()
+
   let agent = null
   const awsInfo = require('../../lib/utilization/aws-info')
   const azureInfo = require('../../lib/utilization/azure-info')
@@ -231,8 +232,7 @@ describe('utilization', () => {
   let startingCommonRequest = null
   let startingCommonReadProc = null
 
-
-  beforeEach(() => {
+  t.beforeEach((done) => {
     startingEnv = {}
     Object.keys(process.env).forEach((key) => {
       startingEnv[key] = process.env[key]
@@ -252,9 +252,10 @@ describe('utilization', () => {
     azureInfo.clearCache()
     gcpInfo.clearCache()
     kubernetesInfo.clearCache()
+    done()
   })
 
-  afterEach(() => {
+  t.afterEach((done) => {
     if (agent) {
       helper.unloadAgent(agent)
     }
@@ -277,10 +278,11 @@ describe('utilization', () => {
     awsInfo.clearCache()
     azureInfo.clearCache()
     gcpInfo.clearCache()
+    done()
   })
 
   utilTests.forEach((test) => {
-    it(test.testname, (done) => {
+    t.test(test.testname, (t) => {
       let mockHostname = false
       let mockRam = false
       let mockProc = false
@@ -402,7 +404,7 @@ describe('utilization', () => {
       }
       facts(agent, function getFacts(factsed) {
         expect(factsed.utilization).to.deep.equal(expected)
-        done()
+        t.end()
       })
     })
   })
@@ -435,7 +437,8 @@ describe('utilization', () => {
   }
 })
 
-describe('boot_id', () => {
+tap.test('boot_id', (t) => {
+  t.autoend()
   let agent = null
   const common = require('../../lib/utilization/common')
 
@@ -445,8 +448,7 @@ describe('boot_id', () => {
   let startingCommonReadProc = null
   let startingOsPlatform = null
 
-
-  beforeEach(() => {
+  t.beforeEach((done) => {
     startingGetMemory = sysInfo._getMemoryStats
     startingGetProcessor = sysInfo._getProcessorStats
     startingDockerInfo = sysInfo._getDockerContainerId
@@ -454,9 +456,10 @@ describe('boot_id', () => {
     startingOsPlatform = os.platform
 
     os.platform = () => 'linux'
+    done()
   })
 
-  afterEach(() => {
+  t.afterEach((done) => {
     if (agent) {
       helper.unloadAgent(agent)
     }
@@ -472,10 +475,11 @@ describe('boot_id', () => {
     startingDockerInfo = null
     startingCommonReadProc = null
     startingOsPlatform = null
+    done()
   })
 
   bootIdTests.forEach((test) => {
-    it(test.testname, (done) => {
+    t.test(test.testname, (t) => {
       let mockHostname = false
       let mockRam = false
       let mockProc = false
@@ -543,7 +547,7 @@ describe('boot_id', () => {
           expect(factsed.utilization[key]).to.equal(expected[key])
         })
         checkMetrics(test.expected_metrics)
-        done()
+        t.end()
       })
     })
   })
@@ -700,7 +704,6 @@ tap.test('display_host', {timeout: 20000}, (t) => {
     facts(agent, function getFacts(factsed) {
       os.networkInterfaces = original_NI
       t.equal(factsed.display_host, 'UNKNOWN_BOX')
-
       t.end()
     })
   })

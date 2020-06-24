@@ -1,217 +1,219 @@
+/* eslint dot-notation: off */
 'use strict'
 
 const tap = require('tap')
-const test = tap.test
-
-// TODO: convert to normal tap style.
-// Below allows use of mocha DSL with tap runner.
-tap.mochaGlobals()
-
-const chai = require('chai')
 const DESTINATIONS = require('../../lib/config/attribute-filter').DESTINATIONS
-const should = chai.should()
-const expect = chai.expect
 const sinon = require('sinon')
 const helper = require('../lib/agent_helper')
 const TraceSegment = require('../../lib/transaction/trace/segment')
 const Transaction = require('../../lib/transaction')
 
-describe('TraceSegment', function() {
-  var agent = null
+tap.test('TraceSegment', (t) => {
+  t.autoend()
+  let agent = null
 
-  beforeEach(function() {
-    agent = helper.loadMockedAgent()
+  t.beforeEach((done) => {
+    if (agent === null) {
+      agent = helper.loadMockedAgent()
+    }
+    done()
   })
 
-  afterEach(function() {
-    helper.unloadAgent(agent)
-    agent = null
+  t.afterEach((done) => {
+    if (agent) {
+      helper.unloadAgent(agent)
+      agent = null
+    }
+    done()
   })
 
-  it('should be bound to a Trace', function() {
-    var segment = null
-    var trans = new Transaction(agent)
-    expect(function noTrace() {
+  t.test('should be bound to a Trace', (t) => {
+    let segment = null
+    let trans = new Transaction(agent)
+    t.throws(function noTrace() {
       segment = new TraceSegment(null, 'UnitTest')
-    }).to.throw()
-    expect(segment).to.be.null
+    })
+    t.equal(segment, null)
 
-    var success = new TraceSegment(trans, 'UnitTest')
-    expect(success.transaction).equal(trans)
+    let success = new TraceSegment(trans, 'UnitTest')
+    t.equal(success.transaction, trans)
     trans.end()
+    t.end()
   })
 
-  it('should not add new children when marked as opaque', function() {
-    var trans = new Transaction(agent)
-    var segment = new TraceSegment(trans, 'UnitTest')
-    expect(segment.opaque).to.be.false
+  t.test('should not add new children when marked as opaque', (t) => {
+    let trans = new Transaction(agent)
+    let segment = new TraceSegment(trans, 'UnitTest')
+    t.notOk(segment.opaque)
     segment.opaque = true
     segment.add('child')
-    expect(segment.children.length).to.equal(0)
+    t.equal(segment.children.length, 0)
     segment.opaque = false
     segment.add('child')
-    expect(segment.children.length).to.equal(1)
+    t.equal(segment.children.length, 1)
     trans.end()
+    t.end()
   })
 
-  it('should call an optional callback function', function(done) {
-    var trans = new Transaction(agent)
-    expect(function noCallback() {
+  t.test('should call an optional callback function', (t) => {
+    let trans = new Transaction(agent)
+    t.doesNotThrow(function noCallback() {
       new TraceSegment(trans, 'UnitTest') // eslint-disable-line no-new
-    }).not.throws()
-
-    var working = new TraceSegment(trans, 'UnitTest', callback)
-
-    function callback() {
-      return done()
-    }
-
+    })
+    let working = new TraceSegment(trans, 'UnitTest', t.end)
     working.end()
     trans.end()
   })
 
-  it('has a name', function() {
-    var trans = new Transaction(agent)
-
-    var success = new TraceSegment(trans, 'UnitTest')
-    expect(success.name).equal('UnitTest')
+  t.test('has a name', (t) => {
+    let trans = new Transaction(agent)
+    let success = new TraceSegment(trans, 'UnitTest')
+    t.equal(success.name, 'UnitTest')
+    t.end()
   })
 
-  it('is created with no children', function() {
-    var trans = new Transaction(agent)
-    var segment = new TraceSegment(trans, 'UnitTest')
-    expect(segment.children.length).equal(0)
+  t.test('is created with no children', (t) => {
+    let trans = new Transaction(agent)
+    let segment = new TraceSegment(trans, 'UnitTest')
+    t.equal(segment.children.length, 0)
+    t.end()
   })
 
-  it('has a timer', function() {
-    var trans = new Transaction(agent)
-    var segment = new TraceSegment(trans, 'UnitTest')
-    should.exist(segment.timer)
+  t.test('has a timer', (t) => {
+    let trans = new Transaction(agent)
+    let segment = new TraceSegment(trans, 'UnitTest')
+    t.ok(segment.timer)
+    t.end()
   })
 
-  it('does not start its timer on creation', function() {
-    var trans = new Transaction(agent)
-    var segment = new TraceSegment(trans, 'UnitTest')
-    expect(segment.timer.isRunning()).equal(false)
+  t.test('does not start its timer on creation', (t) => {
+    let trans = new Transaction(agent)
+    let segment = new TraceSegment(trans, 'UnitTest')
+    t.equal(segment.timer.isRunning(), false)
+    t.end()
   })
 
-  it('allows the timer to be updated without ending it', function() {
-    var trans = new Transaction(agent)
-
-    var segment = new TraceSegment(trans, 'UnitTest')
+  t.test('allows the timer to be updated without ending it', (t) => {
+    let trans = new Transaction(agent)
+    let segment = new TraceSegment(trans, 'UnitTest')
     segment.start()
     segment.touch()
-    expect(segment.timer.isRunning()).equal(true)
-    expect(segment.getDurationInMillis()).above(0)
+    t.equal(segment.timer.isRunning(), true)
+    t.ok(segment.getDurationInMillis() > 0)
+    t.end()
   })
 
-  it('accepts a callback that records metrics for this segment', function(done) {
-    var trans = new Transaction(agent)
-    var segment = new TraceSegment(trans, 'Test', function(insider) {
-      expect(insider).equal(segment)
-      return done()
+  t.test('accepts a callback that records metrics for this segment', (t) => {
+    let trans = new Transaction(agent)
+    let segment = new TraceSegment(trans, 'Test', (insider) => {
+      t.equal(insider, segment)
+      return t.end()
     })
-
     segment.end()
     trans.end()
   })
 
-  describe('#getSpanId', function() {
-    it('should return the segment id when dt and spans are enabled', function() {
+  t.test('#getSpanId', (t) => {
+    t.autoend()
+
+    t.test('should return the segment id when dt and spans are enabled', (t) => {
       const trans = new Transaction(agent)
       const segment = new TraceSegment(trans, 'Test')
       agent.config.distributed_tracing.enabled = true
       agent.config.span_events.enabled = true
-      expect(segment.getSpanId()).to.equal(segment.id)
+      t.equal(segment.getSpanId(), segment.id)
+      t.end()
     })
 
-    it('should return null when dt is disabled', function() {
+    t.test('should return null when dt is disabled', (t) => {
       const trans = new Transaction(agent)
       const segment = new TraceSegment(trans, 'Test')
       agent.config.distributed_tracing.enabled = false
       agent.config.span_events.enabled = true
-      expect(segment.getSpanId()).to.be.null
+      t.equal(segment.getSpanId(), null)
+      t.end()
     })
 
-    it('should return null when spans are disabled', function() {
+    t.test('should return null when spans are disabled', (t) => {
       const trans = new Transaction(agent)
       const segment = new TraceSegment(trans, 'Test')
       agent.config.distributed_tracing.enabled = true
       agent.config.span_events.enabled = false
-      expect(segment.getSpanId()).to.be.null
+      t.ok(segment.getSpanId() === null)
+      t.end()
     })
   })
 
-  it('updates root segment timer when end() is called', function(done) {
-    var trans = new Transaction(agent)
-    var trace = trans.trace
-    var segment = new TraceSegment(trans, 'Test')
+  t.test('updates root segment timer when end() is called', (t) => {
+    let trans = new Transaction(agent)
+    let trace = trans.trace
+    let segment = new TraceSegment(trans, 'Test')
 
     segment.setDurationInMillis(10, 0)
 
-    setTimeout(function() {
-      expect(trace.root.timer.hrDuration).equal(null)
+    setTimeout(() => {
+      t.equal(trace.root.timer.hrDuration, null)
       segment.end()
-      expect(trace.root.timer.getDurationInMillis())
-        .to.be.above(segment.timer.getDurationInMillis() - 1) // alow for slop
-      done()
+      t.ok(trace.root.timer.getDurationInMillis() >
+        segment.timer.getDurationInMillis() - 1) // alow for slop
+      t.end()
     }, 10)
   })
 
-  it('properly tracks the number of active or harvested segments', function(done) {
-    expect(agent.activeTransactions).to.equal(0)
-    expect(agent.totalActiveSegments).to.equal(0)
-    expect(agent.segmentsCreatedInHarvest).to.equal(0)
+  t.test('properly tracks the number of active or harvested segments', (t) => {
+    t.equal(agent.activeTransactions, 0)
+    t.equal(agent.totalActiveSegments, 0)
+    t.equal(agent.segmentsCreatedInHarvest, 0)
 
     const tx = new Transaction(agent)
-    expect(agent.totalActiveSegments).to.equal(1)
-    expect(agent.segmentsCreatedInHarvest).to.equal(1)
-    expect(tx.numSegments).to.equal(1)
-    expect(agent.activeTransactions).to.equal(1)
+    t.equal(agent.totalActiveSegments, 1)
+    t.equal(agent.segmentsCreatedInHarvest, 1)
+    t.equal(tx.numSegments, 1)
+    t.equal(agent.activeTransactions, 1)
 
     const segment = new TraceSegment(tx, 'Test') // eslint-disable-line no-unused-vars
-    expect(agent.totalActiveSegments).to.equal(2)
-    expect(agent.segmentsCreatedInHarvest).to.equal(2)
-    expect(tx.numSegments).to.equal(2)
+    t.equal(agent.totalActiveSegments, 2)
+    t.equal(agent.segmentsCreatedInHarvest, 2)
+    t.equal(tx.numSegments, 2)
     tx.end()
 
-    expect(agent.activeTransactions).to.equal(0)
+    t.equal(agent.activeTransactions, 0)
 
     setTimeout(function() {
-      expect(agent.totalActiveSegments).to.equal(0)
-      expect(agent.segmentsClearedInHarvest).to.equal(2)
+      t.equal(agent.totalActiveSegments, 0)
+      t.equal(agent.segmentsClearedInHarvest, 2)
 
       agent.forceHarvestAll(() => {
-        expect(agent.totalActiveSegments).to.equal(0)
-        expect(agent.segmentsClearedInHarvest).to.equal(0)
-        expect(agent.segmentsCreatedInHarvest).to.equal(0)
-        done()
+        t.equal(agent.totalActiveSegments, 0)
+        t.equal(agent.segmentsClearedInHarvest, 0)
+        t.equal(agent.segmentsCreatedInHarvest, 0)
+        t.end()
       })
     }, 10)
   })
 
-  it('toJSON should not modify attributes', () => {
+  t.test('toJSON should not modify attributes', (t) => {
     const transaction = new Transaction(agent)
     const segment = new TraceSegment(transaction, 'TestSegment')
-
     segment.toJSON()
-
-    expect(segment.getAttributes()).to.eql({})
+    t.deepEqual(segment.getAttributes(), {})
+    t.end()
   })
 
-  describe('with children created from URLs', function() {
-    var webChild
+  t.test('with children created from URLs', (t) => {
+    t.autoend()
+    let webChild
 
-    beforeEach(function() {
+    t.beforeEach((done) => {
       agent.config.attributes.enabled = true
       agent.config.attributes.include.push('request.parameters.*')
       agent.config.emit('attributes.include')
 
-      var transaction = new Transaction(agent)
-      var trace = transaction.trace
+      const transaction = new Transaction(agent)
+      const trace = transaction.trace
       const segment = trace.add('UnitTest')
 
-      var url = '/test?test1=value1&test2&test3=50&test4='
+      const url = '/test?test1=value1&test2&test3=50&test4='
 
       webChild = segment.add(url)
       transaction.baseSegment = webChild
@@ -221,32 +223,39 @@ describe('TraceSegment', function() {
       webChild.setDurationInMillis(1, 0)
 
       trace.end()
+
+      done()
     })
 
-    it('should return the URL minus any query parameters', function() {
-      expect(webChild.name).equal('WebTransaction/NormalizedUri/*')
+    t.test('should return the URL minus any query parameters', (t) => {
+      t.equal(webChild.name, 'WebTransaction/NormalizedUri/*')
+      t.end()
     })
 
-    it('should have attributes on the child segment', function() {
-      should.exist(webChild.getAttributes())
+    t.test('should have attributes on the child segment', (t) => {
+      t.ok(webChild.getAttributes())
+      t.end()
     })
 
-    it('should have the parameters that were passed in the query string', function() {
+    t.test('should have the parameters that were passed in the query string', (t) => {
       const attributes = webChild.getAttributes()
-      expect(attributes).to.have.property('request.parameters.test1', 'value1')
-      expect(attributes).to.have.property('request.parameters.test3', '50')
+      t.equal(attributes['request.parameters.test1'], 'value1')
+      t.equal(attributes['request.parameters.test3'], '50')
+      t.end()
     })
 
-    it('should set bare parameters to true (as in present)', function() {
-      expect(webChild.getAttributes()).to.have.property('request.parameters.test2', true)
+    t.test('should set bare parameters to true (as in present)', (t) => {
+      t.equal(webChild.getAttributes()['request.parameters.test2'], true)
+      t.end()
     })
 
-    it('should set parameters with empty values to ""', function() {
-      expect(webChild.getAttributes()).to.have.property('request.parameters.test4', '')
+    t.test('should set parameters with empty values to ""', (t) => {
+      t.equal(webChild.getAttributes()['request.parameters.test4'], '')
+      t.end()
     })
 
-    it('should serialize the segment with the parameters', function() {
-      expect(webChild.toJSON()).to.deep.equal([
+    t.test('should serialize the segment with the parameters', (t) => {
+      t.deepEqual(webChild.toJSON(), [
         0,
         1,
         'WebTransaction/NormalizedUri/*', {
@@ -258,23 +267,25 @@ describe('TraceSegment', function() {
         },
         []
       ])
+      t.end()
     })
   })
 
-  describe('with parameters parsed out by framework', function() {
-    var webChild, trace
+  t.test('with parameters parsed out by framework', (t) => {
+    t.autoend()
+    let webChild, trace
 
-    beforeEach(function() {
+    t.beforeEach((done) => {
       agent.config.attributes.enabled = true
 
-      var transaction = new Transaction(agent)
+      const transaction = new Transaction(agent)
       trace = transaction.trace
       trace.mer = 6
 
       const segment = trace.add('UnitTest')
 
-      var url = '/test'
-      var params = {}
+      const url = '/test'
+      let params = {}
 
       // Express uses positional parameters sometimes
       params[0] = 'first'
@@ -293,29 +304,33 @@ describe('TraceSegment', function() {
       webChild.setDurationInMillis(1, 0)
 
       trace.end()
+      done()
     })
 
-    it('should return the URL minus any query parameters', function() {
-      expect(webChild.name).equal('WebTransaction/NormalizedUri/*')
+    t.test('should return the URL minus any query parameters', (t) => {
+      t.equal(webChild.name, 'WebTransaction/NormalizedUri/*')
+      t.end()
     })
 
-    it('should have attributes on the trace', function() {
-      expect(trace.attributes.get(DESTINATIONS.TRANS_TRACE)).to.exist
+    t.test('should have attributes on the trace', (t) => {
+      t.ok(trace.attributes.get(DESTINATIONS.TRANS_TRACE))
+      t.end()
     })
 
-    it('should have the positional parameters from the params array', function() {
-      var attributes = trace.attributes.get(DESTINATIONS.TRANS_TRACE)
-      expect(attributes[0]).equal('first')
-      expect(attributes[1]).equal('another')
+    t.test('should have the positional parameters from the params array', (t) => {
+      let attributes = trace.attributes.get(DESTINATIONS.TRANS_TRACE)
+      t.equal(attributes[0], 'first')
+      t.equal(attributes[1], 'another')
+      t.end()
     })
 
-    it('should have the named parameter from the params array', function() {
-      expect(trace.attributes.get(DESTINATIONS.TRANS_TRACE))
-        .to.have.property('test3', '50')
+    t.test('should have the named parameter from the params array', (t) => {
+      t.equal(trace.attributes.get(DESTINATIONS.TRANS_TRACE)['test3'], '50')
+      t.end()
     })
 
-    it('should serialize the segment with the parameters', function() {
-      var expected = [
+    t.test('should serialize the segment with the parameters', (t) => {
+      let expected = [
         0,
         1,
         'WebTransaction/NormalizedUri/*',
@@ -327,21 +342,22 @@ describe('TraceSegment', function() {
         },
         []
       ]
-      expect(webChild.toJSON()).deep.equal(expected)
+      t.deepEqual(webChild.toJSON(), expected)
+      t.end()
     })
   })
 
-  describe('with attributes.enabled set to false', function() {
-    var webChild
+  t.test('with attributes.enabled set to false', (t) => {
+    t.autoend()
+    let webChild
 
-    beforeEach(function() {
+    t.beforeEach((done) => {
       agent.config.attributes.enabled = false
 
-      var transaction = new Transaction(agent)
-      var trace = transaction.trace
-      var segment = new TraceSegment(transaction, 'UnitTest')
-      var url = '/test?test1=value1&test2&test3=50&test4='
-
+      const transaction = new Transaction(agent)
+      const trace = transaction.trace
+      const segment = new TraceSegment(transaction, 'UnitTest')
+      const url = '/test?test1=value1&test2&test3=50&test4='
 
       webChild = segment.add(url)
       webChild.addAttribute('test', 'non-null value')
@@ -350,33 +366,38 @@ describe('TraceSegment', function() {
 
       trace.setDurationInMillis(1, 0)
       webChild.setDurationInMillis(1, 0)
+      done()
     })
 
-    it('should return the URL minus any query parameters', function() {
-      expect(webChild.name).equal('WebTransaction/NormalizedUri/*')
+    t.test('should return the URL minus any query parameters', (t) => {
+      t.equal(webChild.name, 'WebTransaction/NormalizedUri/*')
+      t.end()
     })
 
-    it('should have no attributes on the child segment', function() {
-      expect(webChild.getAttributes()).eql({})
+    t.test('should have no attributes on the child segment', (t) => {
+      t.deepEqual(webChild.getAttributes(), {})
+      t.end()
     })
 
-    it('should serialize the segment without the parameters', function() {
-      var expected = [
+    t.test('should serialize the segment without the parameters', (t) => {
+      const expected = [
         0,
         1,
         'WebTransaction/NormalizedUri/*',
         {},
         []
       ]
-      expect(webChild.toJSON()).deep.equal(expected)
+      t.deepEqual(webChild.toJSON(), expected)
+      t.end()
     })
   })
 
-  describe('with attributes.enabled set', function() {
-    var webChild
+  t.test('with attributes.enabled set', (t) => {
+    t.autoend()
+    let webChild
     let attributes = null
 
-    beforeEach(function() {
+    t.beforeEach((done) => {
       agent.config.attributes.enabled = true
       agent.config.attributes.include = ['request.parameters.*']
       agent.config.attributes.exclude = [
@@ -385,11 +406,11 @@ describe('TraceSegment', function() {
       ]
       agent.config.emit('attributes.exclude')
 
-      var transaction = new Transaction(agent)
-      var trace = transaction.trace
+      const transaction = new Transaction(agent)
+      const trace = transaction.trace
       const segment = trace.add('UnitTest')
 
-      var url = '/test?test1=value1&test2&test3=50&test4='
+      const url = '/test?test1=value1&test2&test3=50&test4='
 
       webChild = segment.add(url)
       transaction.baseSegment = webChild
@@ -401,34 +422,39 @@ describe('TraceSegment', function() {
       attributes = webChild.getAttributes()
 
       trace.end()
+      done()
     })
 
-    it('should return the URL minus any query parameters', function() {
-      expect(webChild.name).equal('WebTransaction/NormalizedUri/*')
+    t.test('should return the URL minus any query parameters', (t) => {
+      t.equal(webChild.name, 'WebTransaction/NormalizedUri/*')
+      t.end()
     })
 
-    it('should have attributes on the child segment', function() {
-      should.exist(attributes)
+    t.test('should have attributes on the child segment', (t) => {
+      t.ok(attributes)
+      t.end()
     })
 
-    it('should filter the parameters that were passed in the query string', function() {
-      expect(attributes).to.not.have.property('test1')
-      expect(attributes).to.not.have.property('request.parameters.test1')
+    t.test('should filter the parameters that were passed in the query string', (t) => {
+      t.equal(attributes['test1'], undefined)
+      t.equal(attributes['request.parameters.test1'], undefined)
 
-      expect(attributes).to.not.have.property('test3')
-      expect(attributes).to.have.property('request.parameters.test3', '50')
+      t.equal(attributes['test3'], undefined)
+      t.equal(attributes['request.parameters.test3'], '50')
 
-      expect(attributes).to.not.have.property('test4')
-      expect(attributes).to.not.have.property('request.parameters.test4')
+      t.equal(attributes['test4'], undefined)
+      t.equal(attributes['request.parameters.test4'], undefined)
+      t.end()
     })
 
-    it('should set bare parameters to true (as in present)', function() {
-      expect(attributes).to.not.have.property('test2')
-      expect(attributes).to.have.property('request.parameters.test2', true)
+    t.test('should set bare parameters to true (as in present)', (t) => {
+      t.equal(attributes['test2'], undefined)
+      t.equal(attributes['request.parameters.test2'], true)
+      t.end()
     })
 
-    it('should serialize the segment with the parameters', function() {
-      expect(webChild.toJSON()).deep.equal([
+    t.test('should serialize the segment with the parameters', (t) => {
+      t.deepEqual(webChild.toJSON(), [
         0,
         1,
         'WebTransaction/NormalizedUri/*', {
@@ -438,19 +464,22 @@ describe('TraceSegment', function() {
         },
         []
       ])
+      t.end()
     })
   })
 
-  describe('when ended', function() {
-    it('stops its timer', function() {
-      var trans = new Transaction(agent)
+  t.test('when ended', (t) => {
+    t.autoend()
 
-      var segment = new TraceSegment(trans, 'UnitTest')
+    t.test('stops its timer', (t) => {
+      const trans = new Transaction(agent)
+      const segment = new TraceSegment(trans, 'UnitTest')
       segment.end()
-      expect(segment.timer.isRunning()).equal(false)
+      t.equal(segment.timer.isRunning(), false)
+      t.end()
     })
 
-    it('should produce JSON that conforms to the collector spec', function() {
+    t.test('should produce JSON that conforms to the collector spec', (t) => {
       const transaction = new Transaction(agent)
       const trace = transaction.trace
       const segment = trace.add('DB/select/getSome')
@@ -461,31 +490,35 @@ describe('TraceSegment', function() {
       trace.end()
 
       // See documentation on TraceSegment.toJSON for what goes in which field.
-      expect(segment.toJSON()).deep.equal([
+      t.deepEqual(segment.toJSON(), [
         3,
         17,
         'DB/select/getSome',
         {nr_exclusive_duration_millis : 14},
         []
       ])
+      t.end()
     })
   })
 
-  describe('#finalize', () => {
-    it('should add nr_exclusive_duration_millis attribute', () => {
+  t.test('#finalize', (t) => {
+    t.autoend()
+
+    t.test('should add nr_exclusive_duration_millis attribute', (t) => {
       const transaction = new Transaction(agent)
       const segment = new TraceSegment(transaction, 'TestSegment')
 
       segment._setExclusiveDurationInMillis(1)
 
-      expect(segment.getAttributes()).to.eql({})
+      t.deepEqual(segment.getAttributes(), {})
 
       segment.finalize()
 
-      expect(segment.getAttributes()).to.have.property('nr_exclusive_duration_millis', 1)
+      t.equal(segment.getAttributes()['nr_exclusive_duration_millis'], 1)
+      t.end()
     })
 
-    it('should truncate when timer still running', () => {
+    t.test('should truncate when timer still running', (t) => {
       const segmentName = 'TestSegment'
 
       const transaction = new Transaction(agent)
@@ -504,14 +537,15 @@ describe('TraceSegment', function() {
 
       segment.finalize()
 
-      expect(segment.name).to.equal(`Truncated/${segmentName}`)
-      expect(root.getDurationInMillis()).to.equal(4)
+      t.equal(segment.name, `Truncated/${segmentName}`)
+      t.equal(root.getDurationInMillis(), 4)
+      t.end()
     })
   })
 })
 
 
-test('when serialized', (t) => {
+tap.test('when serialized', (t) => {
   t.autoend()
 
   let agent = null
@@ -565,6 +599,65 @@ test('when serialized', (t) => {
       segment.toJSON()
     })
 
+    t.end()
+  })
+})
+
+tap.test('getSpanContext', (t) => {
+  t.autoend()
+
+  let agent = null
+  let transaction = null
+  let segment = null
+
+  t.beforeEach((done) => {
+    agent = helper.loadMockedAgent({
+      distributed_tracing: {
+        enabled: true
+      }
+    })
+    transaction = new Transaction(agent)
+    segment = new TraceSegment(transaction, 'UnitTest')
+    done()
+  })
+
+  t.afterEach((done) => {
+    helper.unloadAgent(agent)
+    agent = null
+    transaction = null
+    segment = null
+    done()
+  })
+
+  t.test('should not initialize with a span context', (t) => {
+    t.notOk(segment._spanContext)
+    t.end()
+  })
+
+  t.test('should create a new context when empty', (t) => {
+    const spanContext = segment.getSpanContext()
+    t.ok(spanContext)
+    t.end()
+  })
+
+  t.test('should not create a new context when empty and DT disabled', (t) => {
+    agent.config.distributed_tracing.enabled = false
+    const spanContext = segment.getSpanContext()
+    t.notOk(spanContext)
+    t.end()
+  })
+
+  t.test('should not create a new context when empty and Spans disabled', (t) => {
+    agent.config.span_events.enabled = false
+    const spanContext = segment.getSpanContext()
+    t.notOk(spanContext)
+    t.end()
+  })
+
+  t.test('should return existing span context', (t) => {
+    const originalContext = segment.getSpanContext()
+    const secondContext = segment.getSpanContext()
+    t.equal(originalContext, secondContext)
     t.end()
   })
 })

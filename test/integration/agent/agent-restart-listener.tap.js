@@ -3,12 +3,15 @@
 const tap = require('tap')
 const configurator = require('../../../lib/config')
 const Agent = require('../../../lib/agent')
+const {getTestSecret, shouldSkipTest} = require('../../helpers/secrets')
 
 
-tap.test('Collector API should connect to staging-collector.newrelic.com [SECRETS]', (t) => {
+const license = getTestSecret('TEST_LICENSE')
+const skip = shouldSkipTest(license)
+tap.test('Collector API should connect to staging-collector.newrelic.com', {skip}, (t) => {
   const config = configurator.initialize({
     app_name: 'node.js Tests',
-    license_key: process.env.BENDER_LICENSE,
+    license_key: license,
     host: 'staging-collector.newrelic.com',
     port: 443,
     ssl: true,

@@ -108,6 +108,35 @@ describe('header-attributes', () => {
           expect(attributes).to.not.have.property('request.headers.invalid')
           expect(attributes).to.have.property('request.headers.referer', 'valid-referer')
           expect(attributes).to.have.property('request.headers.contentType', 'valid-type')
+
+          done()
+        })
+      })
+    })
+
+    describe('with allow_all_headers set to false', () => {
+      it('should collect allowed headers as span attributes', (done) => {
+        agent.config.allow_all_headers = false
+
+        const headers = {
+          'invalid': 'header',
+          'referer': 'valid-referer',
+          'content-type': 'valid-type'
+        }
+
+        helper.runInTransaction(agent, (transaction) => {
+          headerAttributes.collectRequestHeaders(headers, transaction)
+
+          const attributes = transaction.trace.attributes.get(DESTINATIONS.TRANS_TRACE)
+          expect(attributes).to.not.have.property('request.headers.invalid')
+          expect(attributes).to.have.property('request.headers.referer', 'valid-referer')
+          expect(attributes).to.have.property('request.headers.contentType', 'valid-type')
+
+          const segment = transaction.agent.tracer.getSegment()
+          const spanAttributes = segment.attributes.get(DESTINATIONS.SPAN_EVENT)
+
+          expect(spanAttributes).to.have.property('request.headers.referer', 'valid-referer')
+          expect(spanAttributes).to.have.property('request.headers.contentType', 'valid-type')
           done()
         })
       })
