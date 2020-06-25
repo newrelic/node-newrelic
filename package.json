@@ -150,7 +150,7 @@
     "@tyriar/fibonacci-heap": "^2.0.7",
     "async": "^2.1.4",
     "concat-stream": "^2.0.0",
-    "escodegen": "^1.14.1",
+    "escodegen": "^1.14.2",
     "esprima": "^4.0.1",
     "https-proxy-agent": "^4.0.0",
     "json-stringify-safe": "^5.0.0",
