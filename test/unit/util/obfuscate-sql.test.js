@@ -1,36 +1,36 @@
 'use strict'
 
-// TODO: convert to normal tap style.
-// Below allows use of mocha DSL with tap runner.
-require('tap').mochaGlobals()
+const tap = require('tap')
+const tests = require('../../lib/cross_agent_tests/sql_obfuscation/sql_obfuscation')
+const obfuscate = require('../../../lib/util/sql/obfuscate')
 
-var tests = require('../../lib/cross_agent_tests/sql_obfuscation/sql_obfuscation')
-var obfuscate = require('../../../lib/util/sql/obfuscate')
-var chai = require('chai')
-var expect = chai.expect
-
-describe('sql obfuscation', function testObfuscation() {
-  tests.forEach(function load(test) {
-    describe(test.name, function() {
-      for (var i = 0; i < test.dialects.length; ++i) {
+tap.test('sql obfuscation', (t) => {
+  tests.forEach((test) => {
+    t.test(test.name, (t) => {
+      for (let i = 0; i < test.dialects.length; ++i) {
         runTest(test, test.dialects[i])
       }
+      t.end()
     })
   })
 
   function runTest(test, dialect) {
-    it(dialect, function() {
-      var obfuscated = obfuscate(test.sql, dialect)
+    t.test(dialect, (t) => {
+      const obfuscated = obfuscate(test.sql, dialect)
       if (test.obfuscated.length === 1) {
-        expect(obfuscated).to.equal(test.obfuscated[0])
+        t.equal(obfuscated, test.obfuscated[0])
       } else {
-        expect(test.obfuscated).to.contain(obfuscated)
+        t.ok(test.obfuscated.includes(obfuscated))
       }
+      t.end()
     })
   }
 
-  it('should handle line endings', function lineEndings() {
-    var result = obfuscate('select * from foo where --abc\r\nbar=5', 'mysql')
-    expect(result).equal('select * from foo where ?\r\nbar=?')
+  t.test('should handle line endings', (t) => {
+    const result = obfuscate('select * from foo where --abc\r\nbar=5', 'mysql')
+    t.equal(result, 'select * from foo where ?\r\nbar=?')
+    t.end()
   })
+
+  t.end()
 })
