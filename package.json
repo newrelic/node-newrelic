@@ -2,7 +2,7 @@
   "name": "newrelic",
   "version": "6.10.0",
   "author": "New Relic Node.js agent team <nodejs@newrelic.com>",
-  "license": "SEE LICENSE IN LICENSE",
+  "license": "Apache-2.0",
   "contributors": [
     {
       "name": "Saxon D'Aubin",
