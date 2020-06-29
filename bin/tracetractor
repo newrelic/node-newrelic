@@ -1,5 +1,10 @@
 #!/usr/bin/env node
 
+/*
+ * Copyright 2020 New Relic Corporation. All rights reserved.
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 /**
  * Use this script to extract the transaction traces from newrelic_agent.log.
  * It spits out annotated JSON objects that should make it easier to figure out

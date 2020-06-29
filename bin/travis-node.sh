@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# Copyright 2020 New Relic Corporation. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+
 # https://stackoverflow.com/questions/16989598/bash-comparing-version-numbers/24067243
 # tests version strings using `sort`'s -V option
 function version_gt() { test "$(printf '%s\n' "$@" | sort -V | head -n 1)" != "$1"; }
