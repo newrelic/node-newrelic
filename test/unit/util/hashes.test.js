@@ -1,37 +1,42 @@
+/*
+ * Copyright 2020 New Relic Corporation. All rights reserved.
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 'use strict'
 
-// TODO: convert to normal tap style.
-// Below allows use of mocha DSL with tap runner.
-require('tap').mochaGlobals()
-
-const expect = require('chai').expect
+const tap = require('tap')
 const hashes = require('../../../lib/util/hashes')
 
-describe('hashes', () => {
-  describe('#makeId', () => {
-    it('always returns the correct length', () => {
+tap.test('hashes', (t) => {
+  t.test('#makeId', (t) => {
+    t.test('always returns the correct length', (t) => {
       for (let length = 4; length < 64; length++) {
         for (let attempts = 0; attempts < 500; attempts++) {
           const id = hashes.makeId(length)
-          expect(id.length).to.equal(length)
+          t.equal(id.length, length)
         }
       }
+      t.end()
     })
 
-    it('always unique', () => {
+    t.test('always unique', (t) => {
       let ids = {}
       for (let length = 16; length < 64; length++) {
         for (let attempts = 0; attempts < 500; attempts++) {
           const id = hashes.makeId(length)
 
           // Should be unique
-          expect(ids[id]).to.be.undefined
+          t.equal(ids[id], undefined)
           ids[id] = true
 
           // and the correct length
-          expect(id.length).to.equal(length)
+          t.equal(id.length, length)
         }
       }
+      t.end()
     })
+    t.end()
   })
+  t.end()
 })

@@ -1,3 +1,8 @@
+/*
+ * Copyright 2020 New Relic Corporation. All rights reserved.
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 'use strict'
 
 const tap = require('tap')
@@ -198,13 +203,6 @@ describe('the agent configuration', function() {
           .to.deep.equal(['one', 'two', 'three'])
         expect(tc.transaction_segments.attributes.exclude)
           .to.deep.equal(['four', 'five', 'six'])
-      })
-    })
-
-    it('should pick up on diagnostics code injection', function() {
-      idempotentEnv({'NEW_RELIC_DIAGNOSTICS_CODE_INJECTOR_ENABLED': true}, function(tc) {
-        should.exist(tc.diagnostics.code_injector.enabled)
-        expect(tc.diagnostics.code_injector.enabled).to.equal(true)
       })
     })
 

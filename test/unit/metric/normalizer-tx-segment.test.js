@@ -1,43 +1,51 @@
+/*
+ * Copyright 2020 New Relic Corporation. All rights reserved.
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 'use strict'
 
-// TODO: convert to normal tap style.
-// Below allows use of mocha DSL with tap runner.
-require('tap').mochaGlobals()
+const tap = require('tap')
 
-var expect = require('chai').expect
-var TxSegmentNormalizer = require('../../../lib/metrics/normalizer/tx_segment')
-var txTestData = require('../../lib/cross_agent_tests/transaction_segment_terms')
+const TxSegmentNormalizer = require('../../../lib/metrics/normalizer/tx_segment')
+const txTestData = require('../../lib/cross_agent_tests/transaction_segment_terms')
 
-describe('The TxSegmentNormalizer', function() {
+tap.test('The TxSegmentNormalizer', (t) => {
   // iterate over the cross_agent_tests
   for (var i = 0; i < txTestData.length; i++) {
     // create the test and bind the test data to it.
-    it('should be ' + txTestData[i].testname, runTest.bind(null, txTestData[i]))
+    t.test('should be ' + txTestData[i].testname, (t) => { runTest(t, txTestData[i]) })
   }
 
-  it('should reject non array to load', function() {
-    var normalizer = new TxSegmentNormalizer()
+  t.test('should reject non array to load', (t) => {
+    const normalizer = new TxSegmentNormalizer()
     normalizer.load(1)
-    expect(normalizer.terms).to.be.an('array')
+    t.ok(Array.isArray(normalizer.terms))
+    t.end()
   })
 
-  it('should accept arrays to load', function() {
-    var input = [{
+  t.test('should accept arrays to load', (t) => {
+    const input = [{
       prefix: 'WebTrans/foo',
       terms: ['one', 'two']
     }]
-    var normalizer = new TxSegmentNormalizer()
+    const normalizer = new TxSegmentNormalizer()
     normalizer.load(input)
-    expect(normalizer.terms).to.deep.equal(input)
+    t.deepEqual(normalizer.terms, input)
+    t.end()
   })
+
+  t.end()
 })
 
-function runTest(data) {
-  var normalizer = new TxSegmentNormalizer()
+function runTest(t, data) {
+  const normalizer = new TxSegmentNormalizer()
   normalizer.load(data.transaction_segment_terms)
 
   for (var j = 0; j < data.tests.length; j++) {
-    var test = data.tests[j]
-    expect(normalizer.normalize(test.input)).to.have.property('value', test.expected)
+    const test = data.tests[j]
+    t.hasStrict(normalizer.normalize(test.input), { 'value': test.expected })
   }
+
+  t.end()
 }

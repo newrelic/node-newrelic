@@ -1,5 +1,8 @@
 #! /bin/sh
 
+# Copyright 2020 New Relic Corporation. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+
 # https://www.gnu.org/software/bash/manual/html_node/The-Set-Builtin.html
 set -e  # exit if any command fails
 set -x  # be chatty and show the lines we're running

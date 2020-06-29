@@ -1,5 +1,8 @@
 #! /bin/bash
 
+# Copyright 2020 New Relic Corporation. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+
 set -x # echo commands as executed
 
 sudo apt-get install -qq gcc-5 g++-5

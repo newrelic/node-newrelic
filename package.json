@@ -2,7 +2,7 @@
   "name": "newrelic",
   "version": "6.10.0",
   "author": "New Relic Node.js agent team <nodejs@newrelic.com>",
-  "license": "SEE LICENSE IN LICENSE",
+  "license": "Apache-2.0",
   "contributors": [
     {
       "name": "Saxon D'Aubin",
@@ -142,7 +142,7 @@
     "newrelic-naming-rules": "./bin/test-naming-rules.js"
   },
   "dependencies": {
-    "@grpc/grpc-js": "1.0.4",
+    "@grpc/grpc-js": "1.0.5",
     "@grpc/proto-loader": "^0.5.4",
     "@newrelic/aws-sdk": "^1.1.1",
     "@newrelic/koa": "^3.0.0",
@@ -150,8 +150,6 @@
     "@tyriar/fibonacci-heap": "^2.0.7",
     "async": "^2.1.4",
     "concat-stream": "^2.0.0",
-    "escodegen": "^1.14.1",
-    "esprima": "^4.0.1",
     "https-proxy-agent": "^4.0.0",
     "json-stringify-safe": "^5.0.0",
     "readable-stream": "^3.6.0",

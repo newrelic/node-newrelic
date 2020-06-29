@@ -1,35 +1,42 @@
+/*
+ * Copyright 2020 New Relic Corporation. All rights reserved.
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 'use strict'
 
-// TODO: convert to normal tap style.
-// Below allows use of mocha DSL with tap runner.
-require('tap').mochaGlobals()
+const tap = require('tap')
+const test_data = require('../lib/obfuscation-data')
+const hashes = require('../../lib/util/hashes')
 
-var test_data = require('../lib/obfuscation-data')
-var hashes = require('../../lib/util/hashes')
-var expect = require('chai').expect
-
-describe('obfuscation', function() {
-  it('should objuscate strings correctly', function() {
+tap.test('obfuscation', (t) => {
+  t.test('should objuscate strings correctly', (t) => {
     test_data.forEach(function(test) {
-      expect(hashes.obfuscateNameUsingKey(test.input, test.key)).equal(test.output)
+      t.equal(hashes.obfuscateNameUsingKey(test.input, test.key), test.output)
     })
+    t.end()
   })
+  t.end()
 })
 
-describe('deobfuscation', function() {
-  it('should deobjuscate strings correctly', function() {
+tap.test('deobfuscation', (t) => {
+  t.test('should deobjuscate strings correctly', (t) => {
     test_data.forEach(function(test) {
-      expect(hashes.deobfuscateNameUsingKey(test.output, test.key)).equal(test.input)
+      t.equal(hashes.deobfuscateNameUsingKey(test.output, test.key), test.input)
     })
+    t.end()
   })
+  t.end()
 })
 
-describe('getHash', function() {
-  it('should not crash when changing the DEFAULT_ENCODING key on crypto', function() {
-    var crypto = require('crypto')
-    var oldEncoding = crypto.DEFAULT_ENCODING
+tap.test('getHash', (t) => {
+  t.test('should not crash when changing the DEFAULT_ENCODING key on crypto', (t) => {
+    const crypto = require('crypto')
+    const oldEncoding = crypto.DEFAULT_ENCODING
     crypto.DEFAULT_ENCODING = 'utf-8'
-    expect(hashes.getHash.bind(null, 'TEST_APP', 'TEST_TXN')).to.not.throw()
+    t.doesNotThrow(hashes.getHash.bind(null, 'TEST_APP', 'TEST_TXN'))
     crypto.DEFAULT_ENCODING = oldEncoding
+    t.end()
   })
+  t.end()
 })

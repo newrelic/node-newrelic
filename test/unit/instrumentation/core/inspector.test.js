@@ -1,26 +1,31 @@
+/*
+ * Copyright 2020 New Relic Corporation. All rights reserved.
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 'use strict'
 
-// TODO: convert to normal tap style.
-// Below allows use of mocha DSL with tap runner.
-require('tap').mochaGlobals()
+const tap = require('tap')
+const helper = require('../../../lib/agent_helper')
+const inspectorInstrumentation = require('../../../../lib/instrumentation/core/inspector')
 
-var chai = require('chai')
-var helper = require('../../../lib/agent_helper')
-var inspectorInstrumentation = require('../../../../lib/instrumentation/core/inspector')
+tap.test('Inspector instrumentation', (t) => {
+  let agent = null
 
-var expect = chai.expect
-
-describe('Inspector instrumentation', function() {
-  var agent = null
-  before(function() {
+  t.beforeEach((done) => {
     agent = helper.loadMockedAgent()
+    done()
   })
 
-  after(function() {
+  t.afterEach((done) => {
     helper.unloadAgent(agent)
+    done()
   })
 
-  it('should not throw when passed null for the module', function() {
-    expect(inspectorInstrumentation.bind(null, agent, null)).to.not.throw()
+  t.test('should not throw when passed null for the module', (t) => {
+    t.doesNotThrow(inspectorInstrumentation.bind(null, agent, null))
+    t.end()
   })
+
+  t.end()
 })

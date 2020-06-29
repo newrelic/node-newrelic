@@ -1,38 +1,48 @@
+/*
+ * Copyright 2020 New Relic Corporation. All rights reserved.
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 'use strict'
 
-// TODO: convert to normal tap style.
-// Below allows use of mocha DSL with tap runner.
-require('tap').mochaGlobals()
+const tap = require('tap')
 
-var chai = require('chai')
-var expect = chai.expect
-var helper = require('../lib/agent_helper')
-var RemoteMethod = require('../../lib/collector/remote-method')
+const helper = require('../lib/agent_helper')
+const RemoteMethod = require('../../lib/collector/remote-method')
 
-describe('errors', function() {
-  var agent
-  beforeEach(function() {
+tap.test('errors', (t) => {
+  let agent
+
+  t.beforeEach((done) => {
     agent = helper.loadMockedAgent()
     agent.config.attributes.enabled = true
     agent.config.run_id = 1
 
     agent.errors.reconfigure(agent.config)
+
+    done()
   })
-  afterEach(function() {
+
+  t.afterEach((done) => {
     helper.unloadAgent(agent)
+    done()
   })
-  it('should serialize down to match the protocol', function(done) {
-    var error = new Error('test')
+
+  t.test('should serialize down to match the protocol', (t) => {
+    const error = new Error('test')
     error.stack = 'test stack'
     agent.errors.add(null, error)
-    var payload = agent.errors.traceAggregator._toPayloadSync()
-    RemoteMethod.prototype.serialize(payload, function serializeErrors(err, errors) {
-      expect(err).equals(null)
-      expect(errors).deep.equals(
+
+    const payload = agent.errors.traceAggregator._toPayloadSync()
+    RemoteMethod.prototype.serialize(payload, (err, errors) => {
+      t.equal(err, null)
+      t.deepEqual(errors,
         '[1,[[0,"Unknown","test","Error",{"userAttributes":{},"agentAttributes":{},' +
         '"intrinsics":{"error.expected":false},"stack_trace":["test stack"]}]]]'
       )
-      done()
+      t.end()
     })
   })
+
+  t.end()
 })

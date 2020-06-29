@@ -1,22 +1,24 @@
+/*
+ * Copyright 2020 New Relic Corporation. All rights reserved.
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 'use strict'
 
-// TODO: convert to normal tap style.
-// Below allows use of mocha DSL with tap runner.
-require('tap').mochaGlobals()
+const tap = require('tap')
+const test_data = require('../../lib/cross_agent_tests/labels.json')
+const parse = require('../../../lib/util/label-parser').fromString
 
-var test_data = require('../../lib/cross_agent_tests/labels.json')
-var parse = require('../../../lib/util/label-parser').fromString
-var chai = require('chai')
-var expect = chai.expect
-
-describe('label praser', function() {
-  it('should pass cross-agent tests', function() {
-    test_data.forEach(function(example) {
-      var result = parse(example.labelString)
-      expect(result.labels.sort(by_type)).deep.equal(example.expected.sort(by_type))
-      expect(!!result.warnings.length).deep.equal(example.warning)
+tap.test('label praser', (t) => {
+  t.test('should pass cross-agent tests', (t) => {
+    test_data.forEach((example) => {
+      const result = parse(example.labelString)
+      t.deepEqual(result.labels.sort(by_type), example.expected.sort(by_type))
+      t.deepEqual(!!result.warnings.length, example.warning)
     })
+    t.end()
   })
+  t.end()
 })
 
 function by_type(a, b) {
