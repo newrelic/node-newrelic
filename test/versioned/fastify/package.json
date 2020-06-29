@@ -1,0 +1,18 @@
+{
+  "name": "fastify-tests",
+  "version": "0.0.0",
+  "private": true,
+  "tests": [
+    {
+      "engines": {
+        "node": ">=8"
+      },
+      "dependencies": {
+        "fastify": ">=2.0.0"
+      },
+      "files": [
+        "integration.tap.js"
+      ]
+    }
+  ]
+}
