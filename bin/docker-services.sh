@@ -1,5 +1,8 @@
 #! /bin/bash
 
+# Copyright 2020 New Relic Corporation. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+
 if docker ps -a | grep -q "nr_node_memcached"; then
   docker start nr_node_memcached;
 else

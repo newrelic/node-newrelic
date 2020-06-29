@@ -1,5 +1,8 @@
 #! /bin/sh
 
+# Copyright 2020 New Relic Corporation. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+
 SSLKEY="test/lib/test-key.key"
 CACERT="test/lib/ca-certificate.crt"
 CAINDEX="test/lib/ca-index"

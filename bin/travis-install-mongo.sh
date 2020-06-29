@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# Copyright 2020 New Relic Corporation. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+
 set -xev # -x echo commands as executed
          # -e exit as soon as something goes wrong
          # -v when considering whether to say something or not say something
