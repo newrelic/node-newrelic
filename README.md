@@ -14,7 +14,7 @@ As with any instrumentation tool, please test before using in production.
 
 To use New Relic's NodeJS agent, you'll need to
 
-1. Install the `newrelic` package
+1. Install [the `newrelic` package](https://www.npmjs.com/package/newrelic)
 2. Create a base configuration file
 3. Require the agent in your program
 
