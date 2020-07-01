@@ -85,7 +85,7 @@ and you'll be all set to start programming.
 
 To run the test suite
 
-1. Install [install Docker](https://www.docker.com/products/docker-desktop)
+1. [Install Docker](https://www.docker.com/products/docker-desktop)
 2. Start the docker services: `$ npm run services`
 3. Run all the tests via `$ npm run test`
 
