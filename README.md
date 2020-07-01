@@ -22,7 +22,7 @@ To install the agent for performance monitoring, use your favorite NPM based pac
 
     $ npm install newrelic
 
-Then, copy a configuration file to your program's base folder, and add your New Relic license key and application/service name.
+Then, copy the stock configuration file to your program's base folder, and add your New Relic license key and application/service name.
 
     $ cp node_modules/newrelic/newrelic.js
 
