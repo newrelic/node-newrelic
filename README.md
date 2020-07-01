@@ -22,11 +22,14 @@ To install the agent for performance monitoring, use your favorite NPM based pac
 
     $ npm install newrelic
 
-Then, copy the stock configuration file to your program's base folder, and add your New Relic license key and application/service name.
+Then, copy the stock configuration file to your program's base folder.
 
     $ cp node_modules/newrelic/newrelic.js
 
-    # File: newrelic.js
+After you copy the stock configuration file to your program's base folder, add your New Relic license key and application/service name to that file
+
+```js
+    /* File: newrelic.js */
     'use strict'
     /**
      * New Relic agent configuration.
@@ -39,12 +42,15 @@ Then, copy the stock configuration file to your program's base folder, and add y
       license_key: 'your new relic license key',
       /* ... rest of configuration .. */
     }
+```
 
 Finally, load the `newrelic` module _before any other module_ in your program.
 
+```js
     const newrelic = require('newrelic')
 
     /* ... the rest of your program ... */
+```
 
 If you are compiling your javascript and can't control the final `require` order, the NodeJS agent will work with node's `-r/--require` flag.
 
@@ -57,10 +63,12 @@ For more information on getting started, [check the official docs](https://docs.
 
 The `newrelic` module returns an object with the Node Agent's API methods attached.
 
+```js
     const newrelic = require('newrelic')
 
     /* ... */
     newrelic.addCustomAttribute('some-attribute', 'some-value')
+```
 
 You can read more about using the API over on the [New Relic Documentation](https://docs.newrelic.com/docs/agents/nodejs-agent/api-guides/guide-using-nodejs-agent-api) site.
 
