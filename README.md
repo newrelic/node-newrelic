@@ -1,6 +1,6 @@
 [![Community Project header](https://github.com/newrelic/opensource-website/raw/master/src/images/categories/Community_Project.png)](https://opensource.newrelic.com/oss-category/#community-project)
 
-# New Relic's NodeJS Agent
+# New Relic's NodeJS Agent ![Server Smoke Tests](https://github.com/newrelic/node-newrelic/workflows/Server%20Smoke%20Tests/badge.svg) ![Node Agent CI](https://github.com/newrelic/node-newrelic/workflows/Node%20Agent%20CI/badge.svg)
 
 [![npm status badge][1]][2]
 
