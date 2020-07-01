@@ -1,745 +1,140 @@
+[![Community Project header](https://github.com/newrelic/opensource-website/raw/master/src/images/categories/Community_Project.png)](https://opensource.newrelic.com/oss-category/#community-project)
+
+# New Relic's NodeJS Agent
+
 [![npm status badge][1]][2]
 
-# New Relic for Node.js
+This package instruments your application for performance monitoring with [New Relic][https://newrelic.com].
 
-This package instruments your application for performance monitoring
-with [New Relic][4].
-
-Make sure you have a [New Relic account][4] before starting. To see all the
-features, such as slow transaction traces, you will need a [New Relic Pro][5]
-subscription (or equivalent).
+In order to take full advantage of this package, make sure you have a [New Relic account][https://newrelic.com] before starting. Available features, such as slow transaction traces, will vary [based on account level](https://newrelic.com/application-monitoring/features).
 
 As with any instrumentation tool, please test before using in production.
 
-## Table of contents
-
-* [Getting started](#getting-started)
-* [Security](#security)
-* [Configuration](#configuring-the-module)
-* [RUM / browser timings](#browser-timings-rum--real-user-monitoring)
-* [Transactions and request naming](#transactions-and-request-naming)
-* [Licensing](#license)
-* [Contributions](#contributions)
-* [Known issues](#known-issues)
-
-## Getting started
-
-1. [Install node](https://nodejs.org/#download). The agent runs on v4 and
-  higher. Development work on this module is done with the latest stable
-  release of Node.
-2. Install this module via `npm install newrelic` for the application you want
-  to monitor.
-3. Copy `newrelic.js` from `node_modules/newrelic` into the root directory of
-  your application.
-4. Edit `newrelic.js` and replace `license_key`'s value with the license key
-  for your account.
-5. Add `require('newrelic')` as the first line of the app's main module.
-
-If you wish to keep the configuration for the module separate from your
-application, the module will look for `newrelic.js` in the directory referenced
-by the environment variable `NEW_RELIC_HOME` if it's set.
-
-When you start your app, New Relic should start up with it and start reporting
-data that will appear within [the New Relic UI](https://rpm.newrelic.com/)
-after a few minutes. Because the agent minimizes the amount of bandwidth it
-consumes, it only reports data once a minute, so if you require the module in
-tests that take less than a minute to run, it won't have time to report data to
-New Relic. The module will write its log to a file named `newrelic_agent.log`
-in the application directory. If New Relic doesn't send data or crashes your
-app, the log can help New Relic determine what went wrong, so be sure to send
-it along with any bug reports or support requests.
-
-## Security
-
-We take security (and the protection of your and your users' privacy) very
-seriously. See [SECURITY.md](SECURITY.md) for details, but the brief version is
-that if you feel you've found a security issue, contact us at security@newrelic.com.
-
-## Configuring the module
-
-The module can be tailored to your app's requirements, both from the server and
-via the `newrelic.js` configuration file you created. For complete details on
-what can be configured, refer to [`lib/config/default.js`][6], which documents
-the available variables and their default values.
-
-In addition, for those of you running in PaaS environments like Heroku or
-Microsoft Azure, all of the configuration variables in `newrelic.js` have
-counterparts that can be set via environment variables. You can mix and match
-variables in the configuration file and environment variables freely;
-environment variables take precedence.
-
-Here's the list of the most important variables and their values:
-
-* `NEW_RELIC_LICENSE_KEY`: Your New Relic license key. This is a required
-  setting with no default value.
-* `NEW_RELIC_APP_NAME`: The name of this application, for reporting to New
-  Relic's servers. This value can be also be a comma-delimited, or
-  semicolon-delimited, list of names.  This is a required setting with no
-  default value. (NOTE: as a convenience to Azure users, the module will use
-  `APP_POOL_ID` as the application name if it's set, so you can use the name
-  you chose for your Azure Web Server without setting it twice.)
-* `NEW_RELIC_NO_CONFIG_FILE`: Inhibit loading of the configuration file
-  altogether. Use with care. This presumes that all important configuration
-  will be available via environment variables, and some log messages assume
-  that a config file exists.
-* `NEW_RELIC_HOME`: path to the directory in which you've placed `newrelic.js`.
-* `NEW_RELIC_LOG`: Complete path to the New Relic agent log, including the
-  filename. The agent will shut down the process if it can't create this file,
-  and it creates the log file with the same umask of the process. Setting this
-  to `stdout` will write all logging to stdout, and `stderr` will write all
-  logging to stderr.
-* `NEW_RELIC_LOG_LEVEL`: Logging priority for the New Relic agent. Can be one
-  of `error`, `warn`, `info`, `debug`, or `trace`. `debug` and `trace` are
-  pretty chatty; unless you're helping New Relic figure out irregularities with
-  the module, you're probably best off using `info` or higher.
-
-For a complete list of environment variables and other configuration options see
-[Node.js agent configuration][7] on our documentation site.
-
-## Browser timings (RUM / Real User Monitoring)
-
-New Relic's instrumentation can extend beyond your application into the client's
-browser. The `newrelic` module can generate `<script>` headers which, when
-inserted into your HTML templates, will capture client-side page load times.
-
-Headers must be manually injected, but no extra configuration is necessary to
-enable browser timings.
-
-### Basics
-
-- Insert the result of `newrelic.getBrowserTimingHeader()` into your html page.
-- The browser timing headers should be placed in the beginning of your `<head>` tag.
-  - As an exception to the above, for maximum IE compatibility, the results of
-    `getBrowserTimingHeader()` should be placed *after* any
-    `X-UA-COMPATIBLE HTTP-EQUIV` meta tags.
-- Do *not* cache the header, call it once for every request.
-
-### Example
-
-Below is an example using `express` and `pug`; Express is a popular web
-application framework, and `pug` is a popular template module. Although the
-specifics are different for other frameworks, the general approach described
-below should work in most cases.
-
-The simplest way to insert browser timing headers is to pass the `newrelic`
-module into your template, and call `newrelic.getBrowserTimingHeader()` from
-within the template.
-
-*app.js:*
-
-```js
-var newrelic = require('newrelic');
-var app = require('express')();
-
-// In Express, this lets you call newrelic from within a template.
-app.locals.newrelic = newrelic;
-
-app.get('/user/:id', function (req, res) {
-  res.render('user');
-});
-app.listen(process.env.PORT);
-```
-
-*layout.pug:*
-
-```pug
-doctype html
-html
-  head
-    != newrelic.getBrowserTimingHeader()
-    title= title
-    link(rel='stylesheet', href='/stylesheets/style.css')
-  body
-    block content
-```
-
-By defaults calls to `newrelic.getBrowserTimingHeader()` should return valid
-headers. You can disable header generation *without* removing your template
-code. In your `newrelic.js` file, add the following to disable header generation.
-
-```js
-exports.config = {
-  // ... other config
-  browser_monitoring : {
-    enable : false
-  }
-};
-```
-
-You can also set the environment variable `NEW_RELIC_BROWSER_MONITOR_ENABLE=false`.
-
-It is safe to leave the header generation code in place even when you're not
-using it. If browser timings are disabled, or there is an error such that
-working headers cannot be generated, the `newrelic` module will generate an
-innocuous HTML comment. If the `newrelic` module is disabled entirely no content
-will be generated.
-
-## Transactions and request naming
-
-In order to get the most value out of New Relic for Node.js, you may have to do
-a little work to help us figure out how your application is structured. New
-Relic works on the assumption that it can group requests to your application
-into transactions, which are defined by giving one or more request paths a
-name. These names are used to visualize where your app is spending its time (in
-transaction breakdowns), to identify slow requests, and to group scoped
-metrics. For example, this can identify slow database queries by showing which
-requests are spending a long time waiting on the database.
-
-If you're using Express, Restify or Hapi with their default routers and are
-satisfied with your application being represented by those frameworks' route
-matchers, you may not need to do anything. However, if you want more specific
-names than are provided by your framework, you may want to use one or more of
-the tools described further on.
-
-The simplest way to tell that you need to read further in this document is if
-you feel too many of your requests are being lumped together under the
-catch-all name `/*`. All requests that aren't otherwise named by the module
-will end up grouped under `/*`.
-
-### Background
-
-If you've been working with Node for a while, you're probably accustomed to
-thinking of your application's requests in terms of raw URLs. One of the great
-things about Node is that it makes it so easy and simple to work with HTTP, and
-that extends to things like parsing URLs and creating your own strategies for
-naming and routing requests for services like RESTful APIs. This presents a
-challenge for New Relic, because we need to keep the number of names we're
-tracking small enough that we can keep the New Relic user experience snappy,
-and also so we don't overwhelm you with so much data that it's difficult for
-you to see the problem spots in your applications. URLs are not a good fit for
-how New Relic sees performance.
-
-Another of Node's great strengths is that it provides a lot of tools that build
-on top of the `http` module to simplify writing web services. Unfortunately,
-that variety greatly complicates things for us, with our limited resources, and
-so we offer a few different tools to help you give us the information we need
-to provide you useful metrics about your application:
-
-* we can read the route names from the Express, Restify, and Hapi routers, if
-  you're using them (and as said above, for many of you, this may be all you
-  need)
-* we offer an API for naming the current request, either with simple names or,
-  if you prefer, grouped into controllers with actions
-* and we support rules stored in your module's configuration that can mark
-  requests to be renamed or ignored based on regular expressions matched
-  against the request's raw URLs (also available as API calls)
-
-Requests are mapped to transaction names using a deterministic process:
-
-1. On an incoming request, the module creates a New Relic transaction that
-   includes the HTTP request method and other metadata. As a fallback (for use
-   in the error tracer), each transaction is named after its raw request URL.
-2. When a framework using a supported router is in use, the agent copies the
-   framework name, route path and request method onto the transaction as its
-   transaction name.
-3. Within handlers, you can make calls to the module's API to explicitly set
-   the name of the route to whatever you want, or mark the route to be ignored
-   (or explicitly not ignored, see the below discussion of rules). As noted
-   below, the last API call wins when there is more than one.
-4. When the transaction is finished (i.e. the response has been completely
-   streamed out to the client), any naming or ignoring rules you have specified
-   in your configuration are applied. **NOTE:** Older versions of the module
-   only applied these rules if nothing else had named the transaction, which
-   made using rules with router-based automatic naming impossible. You must be
-   using the latest version of New Relic to combine naming and ignoring rules
-   with naming set by the router instrumentation.
-5. Finally, New Relic may have its own rules that it applies to the transaction
-   name, either because the request is for something New Relic rolls up by
-   default (i.e. static assets like images or CSS files), or because New Relic
-   is applying rules to remedy metric grouping issues.
-6. If nothing has named the transaction after steps 1-5, the transaction is
-   named `/*`, which puts that request in the undifferentiated, default bucket
-   for requests. This will typically only happen in situations where your
-   application uses either no framework, or a framework with a router that
-   isn't currently supported by New Relic.
-
-Let's go through the naming tools one at a time.
-
-### Router introspection
-
-Express is the most popular web framework in use within the Node community, and
-a number of important services are also using Restify. Both frameworks map
-routes to handlers, and both use a similar pattern to do so: they match one or
-more HTTP methods (e.g. `GET` or the ever-popular `OPTIONS` – let's hear it for
-CORS) along with a potentially parameterized path (e.g. `/user/:id`) or a
-regular expression (e.g. `/^/user/([-0-9a-f]+)$/`). New Relic will capture both
-those pieces of information in the request name. If you have support for slow
-transaction traces and have included `request.parameters.*` attributes, the
-transaction trace will also have the request's parameters and their values
-attached to it. Likewise, request parameters and their values will be attached
-to any errors recorded by the agent.
-
-The only important thing to know about New Relic's support for Express, Restify,
-or Hapi is that if you're dissatisfied with the names it comes up with, you can
-use the API calls described below to come up with more descriptive names. Also,
-if you use a different web framework or router and would like to see support
-for it added, please check out
-[custom intrumentation](https://newrelic.github.io/node-newrelic/docs/tutorial-Webframework-Simple.html).
-
-### Request naming with the module API
-
-The API is what's handed back from `require('newrelic')`, so
-
-```js
-var newrelic = require('newrelic');
-```
-
-is all you need. Please note that you still need to ensure that loading the New
-Relic module is the first thing your application does, as it needs to bootstrap
-itself before the rest of your application loads, but you can safely require
-the module from multiple modules in your application – it will only initialize
-itself once.
-
-#### newrelic.setTransactionName(name)
-
-Name the current request. You can call this function anywhere within the
-context of an HTTP request handler, at any time after handling of the request
-has started, but before the request has finished. A good rule of thumb is that
-if the request and response objects are in scope, you can set the name.
-
-Explicitly calling `newrelic.setTransactionName()` will override any names set
-by Express, Restify or Hapi routes. Calls to `newrelic.setTransactionName()` and
-`newrelic.setControllerName()` will overwrite each other. The last call made
-before the request ends wins.
-
-**VERY IMPORTANT NOTE:** Do not include highly variable information like GUIDs,
-numerical IDs, or timestamps in the request names you create. If your request
-is slow enough to generate a transaction trace, that trace will contain the
-original URL. If you enable parameter capture, the parameters will also be
-attached to the trace. The request names are used to group requests for New
-Relic's many charts and tables, and those visualizations' value drops as the
-number of different request names increases. If you have 50 or so different
-transaction names, you're probably pushing it. If you have more than a couple
-hundred, you need to rethink your naming strategy.
-
-#### newrelic.setControllerName(name, [action])
-
-Name the current request using a controller-style pattern, optionally including
-the current controller action. If the action is omitted, New Relic will include
-the HTTP method (e.g. `GET`, `POST`) as the action. The rules for when you can
-call `newrelic.setControllerName()` are the same as they are for
-`newrelic.setTransactionName()`.
-
-Explicitly calling `newrelic.setControllerName()` will override any names set by
-Express, Restify, or Hapi routes. Calls to `newrelic.setTransactionName()` and
-`newrelic.setControllerName()` will overwrite each other. The last one to run
-before the request ends wins.
-
-See the above note on `newrelic.setTransactionName()`, which also applies to
-this function.
-
-### Rules for naming and ignoring requests
-
-If you don't feel like putting calls to the New Relic module directly into your
-application code, you can use pattern-based rules to name requests. There are
-two sets of rules: one for renaming requests, and one to mark requests to be
-ignored by New Relic.
-
-If you're using socket.io, you will have a use case for ignoring rules right
-out of the box. You'll probably want to add a rule like the following:
-
-```js
-// newrelic.js
-exports.config = {
-  // other configuration
-  rules : {
-    ignore : [
-      '^/socket.io/.*/xhr-polling'
-    ]
-  }
-};
-```
-
-This will keep socket.io long-polling from dominating your response-time
-metrics and blowing out the apdex metrics for your application.
-
-#### rules.name
-
-A list of rules used to set the name of the transaction to `name` when the URL
-matches `pattern`.
-
-Can also be set via the environment variable `NEW_RELIC_NAMING_RULES`, with
-multiple rules passed in as a list of comma-delimited JSON object literals:
-`NEW_RELIC_NAMING_RULES='{"pattern":"^t","name":"u"},{"pattern":"^u","name":"t"}'`
-
-Each rule is defined using the following format:
-
-```
-{
-  // required
-  pattern : "pattern",
-  name : "name",
-
-  // optional
-  precedence: 1,
-  terminate_chain: true,
-  replace_all: false
-}
-```
-
-Additional attributes are ignored.
-
-Note: these rules take precedence over automatic naming from router
-instrumentations and are applied to the URL path, not the name returned by the
-router instrumentation.
-
-##### pattern (required)
-
-The pattern used to match the URL. It can be set as either a string or a
-JavaScript regular expression literal. For example, `"^/abc/123$"` is equivalent
-to `/^\/abc\/123$/`.
-
-The pattern can be written to match the complete URL, or just a part of it.
-
-##### name (required)
-
-The value that is used to replace the URL (or part of it) that matches the pattern.
-It is also possible to use regular expression group references. See examples below.
-
-##### rules.precedence (optional)
-
-By default the rules are evaluated in reverse order (from last to first). If you
-find this behavior counterintuitive, the execution order can be reversed by
-setting the feature flag `reverse_naming_rules` to false. Furthermore, if you
-prefer to have complete control over the order, each rule can be given a
-`precedence` attribute. The precedence is an integer number, and rules are
-evaluated in ascending order. If precedence is not explicitly defined, it will
-be set to 500 by default.
-
-##### rules.terminate_chain (optional)
-
-When set to true, no further rules will be evaluated if this rule is a match.
-The default is true.
-
-Setting this to false is useful when multiple rules should be used together. For
-example, one rule could be replacing a common pattern in many different URLs,
-while subsequent rule(s) would be more specific.
-
-##### rules.replace_all (optional)
-
-When set to true, all matches of the pattern will be replaced. Otherwise, only
-the first match will be replaced. The default is false. Using the `g` flag with
-regular expression literal will have the same effect. For example:
-
-```
-  pattern: '[0-9]+',
-  replace_all: true
-```
-
-will have the same effect as
-
-```
-  pattern: /[0-9]+/g
-```
-
-##### Testing
-
-The agent comes with a command-line tool for testing naming rules. For more
-information run the following command in terminal window in a directory where
-your app is installed.
-
-`node node_modules/.bin/newrelic-naming-rules`
-
-##### Examples
-
-Match full URL:
-
-```
-  pattern: "^/items/[0-9]+$",
-  name: "/items/:id"
-```
-
-Replace the first match in any URL:
-
-```
-  pattern: "[0-9]+",
-  name: ":id"
-```
-
-will result in:
-
-`/orders/123` => `/orders/:id`
-
-`/items/123` => `/items/:id`
-
-`/orders/123/items/123` => `/orders/:id/items/123`
-
-Replace all matches in any URL:
-
-```
-  pattern: "[0-9]+",
-  name: ":id",
-  replace_all: true
-```
-
-will result in:
-
-`/orders/123/items/123` => `/orders/:id/items/:id`
-
-Using regular expression match group references:
-
-```
-  pattern: '^/(items|orders)/[0-9]+$',
-  name: '/\\1/:id'
-```
-
-will result in:
-
-`/orders/123` => `/orders/:id`
-
-`/items/123` => `/items/:id`
-
-
-#### rules.ignore
-
-A list of patterns for matching incoming request URLs to be ignored. When using
-ignoring rules with instrumented routers, the matches are still made against
-the URL paths, not the name returned by the router instrumentation. Patterns may
-be strings or regular expressions.
-
-Can also be set via the environment variable `NEW_RELIC_IGNORING_RULES`, with
-multiple rules passed in as a list of comma-delimited patterns:
-`NEW_RELIC_IGNORING_RULES='^/socket\.io/\*/xhr-polling,ignore_me'` Note that
-currently there is no way to escape commas in patterns.
-
-### API for adding naming and ignoring rules
-
-#### newrelic.addNamingRule(pattern, name)
-
-Programmatic version of `rules.name` above. Naming rules can not be removed
-until the Node process is restarted. They can also be added via the module's
-configuration. Both parameters are mandatory.
-
-#### newrelic.addIgnoringRule(pattern)
-
-Programmatic version of `rules.ignore` above. Ignoring rules can not be removed
-until the Node process is restarted. They can also be added via the module's
-configuration. The pattern is mandatory.
-
-### Other API calls
-
-#### newrelic.addCustomAttribute(name, value)
-
-Set a custom attribute value to be attached to a transaction trace and/or error
-in the New Relic UI. This must be called within the context of a transaction,
-so it has a place to set the custom attributes.
-
-#### newrelic.addCustomAttributes(params)
-
-Set multiple custom attribute values to be attached to a transaction trace and/or
-error in the New Relic UI. This must be called within the context of a transaction,
-so it has a place to set the custom attribute.
-
-Example of setting multiple custom attribute at once:
-
-```js
-newrelic.addCustomAttributes({test: 'value', test2: 'value2'});
-```
-
-#### newrelic.setIgnoreTransaction(ignored)
-
-Tell the module explicitly whether or not a given request should be ignored.
-Allows you to explicitly filter out long-polling routes or requests you know
-are going to be time-consuming in an uninteresting way, and also allows you
-to gather metrics for requests that would otherwise be ignored. Note that
-to prevent a transaction from being ignored with this function, you **must**
-pass `false` as the parameter – in this case `null` or `undefined` will be
-ignored.
-
-#### newrelic.noticeError(error, customParameters)
-
-If your app is doing its own error handling with domains or try/catch clauses,
-but you want all of the information about how many errors are coming out of the
-app to be centrally managed, use this call. Unlike most of the calls here, this
-function can be used outside of route handlers, but will have additional
-context if called from within transaction scope. If custom parameters are
-passed in on an object literal, they will be passed back to New Relic for
-display.
-
-#### newrelic.shutdown([options], callback)
-
-Use this method to gracefully shut down the agent. When called with
-`options.collectPendingData` set to true, the agent will send any pending data
-to the New Relic servers before shutting down. This is useful when you want to
-shut down the Node process and make sure that all transactions and/or errors are
-captured by New Relic.
-
-Example of collecting pending data before shutting down the process:
-
-```js
-newrelic.shutdown({ collectPendingData: true }, function(error) {
-  process.exit()
-})
-```
-
-### Custom Instrumentation
-
-Custom transaction should be used for instrumenting `socket.io` or other
-varieties of socket servers, and background jobs. These are things that the
-agent can't automatically instrument because without your knowledge of your
-application, the agent can't tell when they should begin and end.
-
-Read more at:
-https://docs.newrelic.com/docs/agents/nodejs-agent/supported-features/nodejs-custom-instrumentation
-
-#### newrelic.startWebTransaction(url, handle)
-
-`url` is the name of the web transaction. It should be pretty static, not
-including anything like user ids or any other data that is very specific to the
-request. `handle` is the function you'd like to wrap in the web transaction.
-Both custom and auto instrumentation will be captured as part of the
-transaction.
-
-If called within an active web transaction, it will act as a nested tracer. If
-called within an active background transaction, it will create a new,
-independent transaction and any calls within the `handle` will be bound to the
-new web transaction.
-
-Custom transactions can be ended within the `handle` in one of three ways:
-
-1. Call `transaction.end()`. The `transaction` can be received by calling
-  `newrelic.getTransaction()` first thing in the handler function. Then,
-  when you call `transaction.end()` timing will stop.
-2. Return a promise. The transaction will end when the promise resolves or
-  rejects.
-3. Do neither. If no promise is returned, and `getTransaction()` isn't
-  called, the transaction will end immediately after the handle returns.
-
-#### newrelic.startBackgroundTransaction(name [, group], handle)
-
-`name` is the name of the job. It should be pretty static, and not include job
-ids or anything very specific to that run of the job. `group` is optional, and
-allows you to group types of jobs together. This should follow similar rules as
-the `name`. `handle` is a function that encompasses your background job. Both
-custom and auto instrumentation will be captured as part of the transaction.
-
-If called within an active background transaction, it will act as a nested
-tracer. If called within an active web transaction, it will create a new
-transaction and any calls within the `handle` will be bound to the new,
-independent background transaction.
-
-1. Call `transaction.end()`. The `transaction` can be received by calling
-  `newrelic.getTransaction()` first thing in the handler function. Then,
-  when you call `transaction.end()` timing will stop.
-2. Return a promise. The transaction will end when the promise resolves or
-  rejects.
-3. Do neither. If no promise is returned, and `getTransaction()` isn't
-  called, the transaction will end immediately after the handle returns.
-
-#### newrelic.getTransaction()
-
-This takes no arguments and returns the currently active transaction. If the
-returned transaction is a custom one, started with either `startWebTransaction`
-or `startBackgroundTransaction`, then `transaction.end()` must be called to
-end the transaction.
-
-#### newrelic.startSegment(name, record, handler, callback)
-
-`name` is the name of the segment. `record` is a boolean value signalling
-whether or not to record the segment as a metric. `handler` is the function
-being recorded. `callback` is an optional function that is passed to the
-handler and fired after all other work is complete.
-
-Timing is from when `startSegment` is called until the `handler` is done
-executing, or when the `callback` is fired, if it's supplied. This method
-should be called inside of a transaction to get data. If it is called outside
-of a transaction it will just pass through.
-
-#### newrelic.recordMetric(name, value)
-
-`name` is the metric name to record. it must be a string and may be prepended
-with segments for `category` and `label`. (eg. `/my_category/my_label/my_name`).
-Custom metrics are automatically prepended with `Custom`, resulting in metrics of
-the form: `Custom/${name}`.
-
-`value` is either a numerical value to associate with the metric sample,
-or an object representing multiple samples for the metric. If `value` is
-an object, it must include keys for `count`, `total`, `min`, `max`, and
-`sumOfSquares`.
-
-#### newrelic.incrementMetric(name[, amount])
-
-`name` is the metric name to record, it must be a string that beings with
-`Custom/` typically followed by segments for `category` and `label`.
-(eg. `Custom/my_category/my_label`).
-
-`amount` is optional, but must be an integer if provided. `amount` is
-the number of times to increment the metrics `count`, it defaults to 1.
-
-### The fine print
-
-This is the Node-specific version of New Relic's transaction naming API
-documentation. The naming API exists to help us deal with the very real problem
-that trying to handle too many metrics will make New Relic slow for everybody,
-not just the account with too many metrics. If, in conversation with New Relic
-Support, you see discussion of "metric explosion", this is what they're talking
-about.
-
-While we have a variety of strategies for dealing with these issues, the most
-severe is simply to block offending applications. The main reason for you
-to be careful in using our request-naming tools is to prevent that from
-happening to your applications. We will do everything in our power to ensure
-that you have a good experience with New Relic even if your application is
-causing us trouble, but sometimes this will require manual intervention on the
-part of our team, and this can take a little while.
-
-## Contributions
-
-We owe a debt to all of the beta testers and users who have provided us with
-feedback, and in some cases significant pieces of code. (If you wish to
-contribute, please see [CONTRIBUTING.md](CONTRIBUTING.md) in this directory.) In particular, we're
-indebted to these people:
-
-* Hernan Silberman, for his work on the memcached instrumentation.
-* Jeff Howell &lt;jhowell@kabam.com&gt;, for coming up with a much simpler way
-  to instrument node-mongodb-native, as well as pointing out a problem with the
-  Connect instrumentation.
-
-## Recent changes
-
-Information about changes to the module are in [NEWS.md](NEWS.md).
-
-### Known issues:
-
-* New Relic for Node is only supported on Node.js 6 and newer. Some features
-  may behave differently between the supported versions of Node. The agent is
-  optimized for newer versions of Node.
-* There are irregularities around transaction trace capture and display. If you
-  notice missing or incorrect information from transaction traces, let us know.
-* There are <del>over 20,000</del> <del>30,000</del> <del>40,000</del> <ins>*A
-  LOT* of</ins> modules on npm. We can only instrument a tiny number of them.
-  Even for the modules we support, there are a very large number of ways to use
-  them. If you see data you don't expect on New Relic and have the time to
-  produce a reduced version of the code that is producing the strange data, it
-  will be used to improve the module and you will have the Node team's
-  gratitude.
-* The CPU and memory overhead incurred by New Relic for Node is relatively
-  minor (~1-10%, depending on how much of the instrumentation your apps end up
-  using). GC activity is significantly increased while the agent is active, due
-  to the large number of ephemeral objects created by metrics gathering.
-* When using Node's included clustering support, each worker process will open
-  its own connection to New Relic's servers, and will incur its own overhead
-  costs.
-
-### New Relic features available for other platforms not yet in Node.js
-
-* explain plans
-* thread profiling
-* X-ray transactions (depends on thread profiling)
-* capacity planning
+## Installation and Getting Started
+
+To use New Relic's NodeJS agent, you'll need to
+
+1. Install the `newrelic` package
+2. Create a base configuration file
+3. Require the agent in your program
+
+To install the agent for performance monitoring, use your favorite NPM based package manager to install the `newrelic` package into your application
+
+    $ npm install newrelic
+
+Then, copy a configuration file to your program's base folder, and add your New Relic license key and application/service name.
+
+    $ cp node_modules/newrelic/newrelic.js
+
+    # File: newrelic.js
+    'use strict'
+    /**
+     * New Relic agent configuration.
+     *
+     * See lib/config/default.js in the agent distribution for a more complete
+     * description of configuration variables and their potential values.
+     */
+    exports.config = {
+      app_name: ['Your application or service name'],
+      license_key: 'your new relic license key',
+      /* ... rest of configuration .. */
+    }
+
+Finally, load the `newrelic` module _before any other module_ in your program.
+
+    const newrelic = require('newrelic')
+
+    /* ... the rest of your program ... */
+
+If you are compiling your javascript and can't control the final `require` order, the NodeJS agent will work with node's `-r/--require` flag.
+
+    $ node -r newrelic your-program.js
+    $ node --require newrelic your-program.js
+
+For more information on getting started, [check the official docs](https://docs.newrelic.com/docs/agents/nodejs-agent/getting-started/introduction-new-relic-nodejs).
+
+## Using the API
+
+The `newrelic` module returns an object with the Node Agent's API methods attached.
+
+    const newrelic = require('newrelic')
+
+    /* ... */
+    newrelic.addCustomAttribute('some-attribute', 'some-value')
+
+You can read more about using the API over on the [New Relic Documentation](https://docs.newrelic.com/docs/agents/nodejs-agent/api-guides/guide-using-nodejs-agent-api) site.
+
+## Core Agent Development and Tests
+
+To work on core agent features, you'll want to
+
+1. Fork the Agent
+2. Install its Dependencies
+3. Run tests via `npm`
+
+[Fork](https://github.com/newrelic/node-newrelic/fork) and clone this GitHub repository
+
+    $ git clone git@github.com:your-user-name/node-newrelic.git
+    $ cd node-newrelic
+
+Install the project's dependences
+
+    $ npm install
+
+and you'll be all set to start programming.
+
+To run the test suite
+
+1. Install [install Docker](https://www.docker.com/products/docker-desktop)
+2. Start the docker services: `$ npm run services`
+3. Run all the tests via `$ npm run test`
+
+Available test suites include
+
+    $ npm run unit
+    $ npm run integration
+    $ npm run versioned
+    $ npm run lint
+    $ npm run smoke
+
+## Further Reading
+
+Here's some resources for learning more about the Agent
+
+- [New Relic's official NodeJS Agent Documentation](https://docs.newrelic.com/docs/agents/nodejs-agent)
+
+- [Developer Docs](http://newrelic.github.io/node-newrelic/docs/)
+
+- [Configuring the Agent (via `newrelic.js` or environment variables)](https://docs.newrelic.com/docs/agents/nodejs-agent/installation-configuration/nodejs-agent-configuration)
+
+- [Use the Node Agent to add the Browser and SPA Monitoring](https://docs.newrelic.com/docs/agents/nodejs-agent/supported-features/new-relic-browser-nodejs-agent)
+
+- [API Transaction Naming](https://docs.newrelic.com/docs/agents/nodejs-agent/api-guides/nodejs-agent-api#request-names) and [Rules Based Transaction Naming](https://docs.newrelic.com/docs/agents/nodejs-agent/api-guides/nodejs-agent-api#ignoring)
+
+- [Custom Instrumentation/Transactions](https://docs.newrelic.com/docs/agents/nodejs-agent/api-guides/guide-using-nodejs-agent-api#creating-transactions)
+
+- [The Changelog](/node-newrelic/blob/main/NEWS.md)
+
+## Support
+
+New Relic hosts and moderates an online forum where customers can interact with New Relic employees as well as other customers to get help and share best practices. Like all official New Relic open source projects, there's a related Community topic in the New Relic Explorers Hub. You can find this project's topic/threads here:
+
+https://discuss.newrelic.com/c/support-products-agents/node-js-agent/
+
+## Contributing
+
+We encourage your contributions to improve the NodeJS Agent. Keep in mind when you submit your pull request, you'll need to sign the CLA via the click-through using CLA-Assistant.
+
+You only have to sign the CLA one time per project.
+
+If you have any questions or need to execute our corporate CLA, (required if your contribution is on behalf of a company),  please drop us an email at opensource@newrelic.com.
 
 ## License
 
-New Relic for Node is licensed under the [Apache 2.0](http://apache.org/licenses/LICENSE-2.0.txt) License.
-> New Relic for Node also uses source code from third-party libraries. Full details on which libraries are used and the terms under which they are licensed can be found in the third-party notices document.
+The NodeJS Agent is licensed under the [Apache 2.0](http://apache.org/licenses/LICENSE-2.0.txt) License.
+
+The NodeJS Agent also uses source code from third-party libraries. You can find full details on which libraries are used and the terms under which they are licensed in [the third-party notices document](/node-newrelic/blob/main/THIRD_PARTY_NOTICES.md).
+
 
 [1]: https://nodei.co/npm/newrelic.png
 [2]: https://nodei.co/npm/newrelic
-[3]: https://www.npmjs.com/package/newrelic
-[4]: https://newrelic.com
-[5]: https://newrelic.com/application-monitoring/features
-[6]: https://github.com/newrelic/node-newrelic/blob/master/lib/config/default.js
-[7]: https://docs.newrelic.com/docs/agents/nodejs-agent/installation-configuration/nodejs-agent-configuration
-
-
-
