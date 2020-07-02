@@ -36,8 +36,8 @@
       },
       "dependencies": {
         "koa": ">=2.0.0",
-        "@koa/router": ">=8.0.0",
-        "koa-router": ">=7.1.0"
+        "@koa/router": ">=8.0.0 <=8.0.2",
+        "koa-router": ">=7.1.0 <=8.0.2"
       },
       "files": [
         "koa-router.tap.js"
