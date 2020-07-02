@@ -1,9 +1,21 @@
 {
-  "lastUpdated": "Wed Jul 01 2020 15:53:54 GMT-0700 (Pacific Daylight Time)",
+  "lastUpdated": "Thu Jul 02 2020 10:06:22 GMT-0700 (Pacific Daylight Time)",
   "projectName": "New Relic Node Agent",
   "projectUrl": "https://github.com/newrelic/node-newrelic",
   "includeDev": true,
   "dependencies": {
+    "@grpc/grpc-js@1.0.5": {
+      "name": "@grpc/grpc-js",
+      "version": "1.0.5",
+      "range": "1.0.5",
+      "licenses": "Apache-2.0",
+      "repoUrl": "https://github.com/grpc/grpc-node/tree/master/packages/grpc-js",
+      "versionedRepoUrl": "https://github.com/grpc/grpc-node/tree/master/packages/grpc-js/tree/v1.0.5",
+      "licenseFile": "node_modules/@grpc/grpc-js/LICENSE",
+      "licenseUrl": "https://github.com/grpc/grpc-node/tree/master/packages/grpc-js/blob/v1.0.5/LICENSE",
+      "licenseTextSource": "file",
+      "publisher": "Google Inc."
+    },
     "@grpc/proto-loader@0.5.4": {
       "name": "@grpc/proto-loader",
       "version": "0.5.4",
@@ -271,6 +283,19 @@
       "publisher": "TJ Holowaychuk",
       "email": "tj@vision-media.ca"
     },
+    "fastify@2.14.1": {
+      "name": "fastify",
+      "version": "2.14.1",
+      "range": "^2.14.1",
+      "licenses": "MIT",
+      "repoUrl": "https://github.com/fastify/fastify",
+      "versionedRepoUrl": "https://github.com/fastify/fastify/tree/v2.14.1",
+      "licenseFile": "node_modules/fastify/LICENSE",
+      "licenseUrl": "https://github.com/fastify/fastify/blob/v2.14.1/LICENSE",
+      "licenseTextSource": "file",
+      "publisher": "Matteo Collina",
+      "email": "hello@matteocollina.com"
+    },
     "generic-pool@3.7.1": {
       "name": "generic-pool",
       "version": "3.7.1",
@@ -308,6 +333,20 @@
       "licenseFile": "node_modules/got/license",
       "licenseUrl": "https://github.com/sindresorhus/got/blob/v8.3.2/license",
       "licenseTextSource": "file"
+    },
+    "http-errors@1.7.3": {
+      "name": "http-errors",
+      "version": "1.7.3",
+      "range": "^1.7.3",
+      "licenses": "MIT",
+      "repoUrl": "https://github.com/jshttp/http-errors",
+      "versionedRepoUrl": "https://github.com/jshttp/http-errors/tree/v1.7.3",
+      "licenseFile": "node_modules/http-errors/LICENSE",
+      "licenseUrl": "https://github.com/jshttp/http-errors/blob/v1.7.3/LICENSE",
+      "licenseTextSource": "file",
+      "publisher": "Jonathan Ong",
+      "email": "me@jongleberry.com",
+      "url": "http://jongleberry.com"
     },
     "jsdoc@3.6.3": {
       "name": "jsdoc",
