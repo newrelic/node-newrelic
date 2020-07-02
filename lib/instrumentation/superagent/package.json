@@ -12,13 +12,13 @@
   "author": "New Relic Node.js Agent Team <nodejs@newrelic.com>",
   "license": "SEE LICENSE IN LICENSE",
   "devDependencies": {
-    "@newrelic/test-utilities": "^3.0.0",
+    "@newrelic/test-utilities": "^3.3.0",
     "coveralls": "^3.0.2",
-    "eslint": "^5.1.0",
+    "eslint": "^6.8.0",
     "newrelic": "^4.3.0",
     "semver": "^5.5.0",
     "superagent": "^3.8.3",
-    "tap": "^11.0.0"
+    "tap": "^14.10.7"
   },
   "engines": {
     "node": ">=8.0"
