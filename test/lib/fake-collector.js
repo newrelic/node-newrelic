@@ -308,7 +308,7 @@ function bootstrap(options, callback) {
   server.use(restify.plugins.bodyParser({mapParams: false}))
 
   restify.defaultResponseHeaders = function() {
-    // LOL -- the collector *always* leaves the content-type set to text/plain
+    // the collector *always* leaves the content-type set to text/plain
     this.header('Content-Type', 'text/plain')
   }
 

@@ -340,7 +340,7 @@ tap.test('should add data from cat header to segment', (t) => {
       }
       return emit.apply(this, arguments)
     }
-    // This is really fucking gross.
+
     t.afterEach((done) => {
       events.EventEmitter.prototype.emit = emit
       done()
