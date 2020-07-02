@@ -519,7 +519,6 @@ const runTestCase = function(testCase, parentTest) {
           })
         }
 
-        // As of the in-progress PR https://source.datanerd.us/agents/cross_agent_tests/pull/136
         // Priority is asserted to have 1-less precision than the incoming, which is not an agent
         // requirement and not something we do. Adjusting so we can have the test in the repository.
         if (testCase.test_name === 'newrelic_origin_trace_id_correctly_transformed_for_w3c') {
