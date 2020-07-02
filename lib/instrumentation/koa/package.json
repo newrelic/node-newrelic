@@ -35,5 +35,9 @@
   },
   "peerDependencies": {
     "newrelic": ">=5.13.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/newrelic/node-newrelic-koa.git"
   }
 }
