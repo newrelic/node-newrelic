@@ -9,6 +9,8 @@ assignees: ''
 
 [NOTE]: # ( ^^ Provide a general summary of the issue in the title above. ^^ )
 
+For time-sensitive or in-depth troubleshooting support, we recommend starting with [support.newrelic.com](https://support.newrelic.com). The [Node Agent topic](https://discuss.newrelic.com/c/support-products-agents/node-js-agent/) in the Explorer's Hub is another great resource for finding or starting related discussions.
+
 ## Description
 
 [NOTE]: # ( Describe the problem you're encountering. )
