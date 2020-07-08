@@ -1,15 +1,53 @@
-# Guidelines for contributing code
+# Guidelines for Contributing Code
 
 New Relic welcomes code contributions by the Node community to this module, and
 have taken effort to make this process easy for both contributors and our
 development team.
 
-When contributing, keep in mind that New Relic customers (that's you!) are
-running many different versions of Node, some of them pretty old. Changes that
-depend on the newest version of Node will probably be rejected, with prejudice
-if they replace something backwards compatible.
+## Process
 
-## Testing
+### Feature Requests
+
+Feature requests should be submitted in the [Issue tracker](../../issues), with
+a description of the expected behavior & use case. Before submitting an Issue,
+please search for similar ones in the [closed
+issues](../../issues?q=is%3Aissue+is%3Aclosed+label%3Aenhancement).
+
+### Pull Requests
+
+We can only accept PRs for version v3.1.0 or greater due to open source
+licensing restrictions.
+
+### Code of Conduct
+
+Before contributing please read the [code of conduct](./CODE_OF_CONDUCT.md)
+
+Note that our [code of conduct](./CODE_OF_CONDUCT.md) applies to all platforms
+and venues related to this project; please follow it in all your interactions
+with the project and its participants.
+
+### Contributor License Agreement
+
+Keep in mind that when you submit your Pull Request, you'll need to sign the
+CLA via the click-through using CLA-Assistant. If you'd like to execute our
+corporate CLA, or if you have any questions, please drop us an email at
+opensource@newrelic.com.
+
+For more information about CLAs, please check out Alex Russell’s excellent
+post, [“Why Do I Need to Sign
+This?”](https://infrequently.org/2008/06/why-do-i-need-to-sign-this/).
+
+### Slack
+
+We host a public Slack with a dedicated channel for contributors and
+maintainers of open source projects hosted by New Relic. If you are
+contributing to this project, you're welcome to request access to the
+\#oss-contributors channel in the newrelicusers.slack.com workspace. To request
+access, see https://newrelicusers-signup.herokuapp.com/.
+
+## The Code
+
+### Testing
 
 The module includes a suite of unit and functional tests which should be used to
 verify your changes don't break existing functionality.
@@ -21,7 +59,7 @@ Running the test suite is simple.  Just run:
 
     npm test
 
-### Writing tests
+#### Writing tests
 
 For most contributions it is strongly recommended to add additional tests which
 exercise your changes. This helps us efficiently incorporate your changes into
@@ -35,11 +73,3 @@ There are some rare cases where code changes do not result in changed
 functionality (e.g. a performance optimization) and new tests are not required.
 In general, including tests with your pull request dramatically increases the
 chances it will be accepted.
-
-## And finally...
-
-You are welcome to send pull requests to us - however, by doing so you agree
-that you are granting New Relic a non-exclusive, non-revokable, no-cost license
-to use the code, algorithms, patents, and ideas in that code in our products if
-we so choose. You also agree the code is provided as-is and you provide no
-warranties as to its fitness or correctness for any purpose.
