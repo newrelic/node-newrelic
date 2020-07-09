@@ -863,18 +863,86 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 ### @newrelic/test-utilities
 
-This product includes source derived from [@newrelic/test-utilities](https://github.com/newrelic/node-test-utilities) ([v3.3.0](https://github.com/newrelic/node-test-utilities/tree/v3.3.0)), distributed under the [proprietary License](https://github.com/newrelic/node-test-utilities/blob/v3.3.0/README.md):
+This product includes source derived from [@newrelic/test-utilities](https://github.com/newrelic/node-test-utilities) ([v3.3.0](https://github.com/newrelic/node-test-utilities/tree/v3.3.0)), distributed under the [proprietary License](https://github.com/newrelic/node-newrelic/blob/v6.10.0/LICENSE):
 
 ```
-undefined
+All components of this product are Copyright (c) 2016 New Relic, Inc.  All
+rights reserved.
+
+Certain inventions disclosed in this file may be claimed within patents owned or
+patent applications filed by New Relic, Inc. or third parties.
+
+Subject to the terms of this notice, New Relic grants you a nonexclusive,
+nontransferable license, without the right to sublicense, to (a) install and
+execute one copy of these files on any number of workstations owned or
+controlled by you and (b) distribute verbatim copies of these files to third
+parties.  You may install, execute, and distribute these files and their
+contents only in conjunction with your direct use of New Relic’s services.
+These files and their contents shall not be used in conjunction with any other
+product or software, including but not limited to those that may compete with
+any New Relic product, feature, or software. As a condition to the foregoing
+grant, you must provide this notice along with each copy you distribute and you
+must not remove, alter, or obscure this notice.  In the event you submit or
+provide any feedback, code, pull requests, or suggestions to New Relic you
+hereby grant New Relic a worldwide, non-exclusive, irrevocable, transferrable,
+fully paid-up license to use the code, algorithms, patents, and ideas therein in
+our products.
+
+All other use, reproduction, modification, distribution, or other exploitation
+of these files is strictly prohibited, except as may be set forth in a separate
+written license agreement between you and New Relic.  The terms of any such
+license agreement will control over this notice.  The license stated above will
+be automatically terminated and revoked if you exceed its scope or violate any
+of the terms of this notice.
+
+This License does not grant permission to use the trade names, trademarks,
+service marks, or product names of New Relic, except as required for reasonable
+and customary use in describing the origin of this file and reproducing the
+content of this notice.  You may not mark or brand this file with any trade
+name, trademarks, service marks, or product names other than the original brand
+(if any) provided by New Relic.
+
+Unless otherwise expressly agreed by New Relic in a separate written license
+agreement, these files are provided AS IS, WITHOUT WARRANTY OF ANY KIND,
+including without any implied warranties of MERCHANTABILITY, FITNESS FOR A
+PARTICULAR PURPOSE, TITLE, or NON-INFRINGEMENT.  As a condition to your use of
+these files, you are solely responsible for such use. New Relic will have no
+liability to you for direct, indirect, consequential, incidental, special, or
+punitive damages or for lost profits or data.
+
 ```
 
 ### JSV
 
-This product includes source derived from [JSV](https://github.com/garycourt/JSV) ([v4.0.2](https://github.com/garycourt/JSV/tree/v4.0.2)), distributed under the [FreeBSD License](https://github.com/garycourt/JSV/blob/v4.0.2/README.md):
+This product includes source derived from [JSV](https://github.com/garycourt/JSV) ([v4.0.2](https://github.com/garycourt/JSV/tree/v4.0.2)), distributed under the [FreeBSD License](https://github.com/garycourt/JSV/tree/v4.0.2#license):
 
 ```
-undefined
+Copyright 2010 Gary Court. All rights reserved.
+
+Redistribution and use in source and binary forms, with or without modification, are
+permitted provided that the following conditions are met:
+
+   1. Redistributions of source code must retain the above copyright notice, this list of
+      conditions and the following disclaimer.
+
+   2. Redistributions in binary form must reproduce the above copyright notice, this list
+      of conditions and the following disclaimer in the documentation and/or other materials
+      provided with the distribution.
+
+THIS SOFTWARE IS PROVIDED BY GARY COURT ``AS IS'' AND ANY EXPRESS OR IMPLIED
+WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND
+FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL GARY COURT OR
+CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON
+ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
+ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+The views and conclusions contained in the software and documentation are those of the
+authors and should not be interpreted as representing official policies, either expressed
+or implied, of Gary Court or the JSON Schema specification.
+
 ```
 
 ### architect
