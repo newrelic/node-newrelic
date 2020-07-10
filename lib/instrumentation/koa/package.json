@@ -14,7 +14,7 @@
     "lint": "eslint *.js lib tests"
   },
   "author": "New Relic Node.js agent team <nodejs@newrelic.com>",
-  "license": "SEE LICENSE IN LICENSE",
+  "license": "Apache-2.0",
   "engines": {
     "node": ">=8.0.0"
   },
