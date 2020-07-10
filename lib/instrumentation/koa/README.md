@@ -27,7 +27,7 @@ require('@newrelic/koa')
 For more information, please see the agent [installation guide][3], and
 [compatibility and requirements][4].
 
-[1]: https://coveralls.io/repos/github/newrelic/node-newrelic-koa/badge.svg?branch=master
-[2]: https://coveralls.io/github/newrelic/node-newrelic-koa?branch=master
+[1]: https://coveralls.io/repos/github/newrelic/node-newrelic-koa/badge.svg?branch=main
+[2]: https://coveralls.io/github/newrelic/node-newrelic-koa?branch=main
 [3]: https://docs.newrelic.com/docs/agents/nodejs-agent/installation-configuration/install-nodejs-agent
 [4]: https://docs.newrelic.com/docs/agents/nodejs-agent/getting-started/compatibility-requirements-nodejs-agent
