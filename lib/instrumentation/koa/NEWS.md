@@ -33,7 +33,7 @@
 
 ### 1.0.6 (2018-09-12):
 
-* Fixed coveralls link in readme to point at master branch.
+* Fixed coveralls link in readme to point at default branch.
 
 * Removed testing on Node 4 and 5 for Koa and dependent modules.
 
