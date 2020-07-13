@@ -20,7 +20,6 @@ code, the source code can be found at [https://github.com/newrelic/node-newrelic
 
 * [@koa/router](#koarouter)
 * [@newrelic/test-utilities](#newrelictest-utilities)
-* [coveralls](#coveralls)
 * [eslint](#eslint)
 * [koa-route](#koa-route)
 * [koa-router](#koa-router)
@@ -69,7 +68,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 ### @koa/router
 
-This product includes source derived from [@koa/router](https://github.com/koajs/koa-router) ([v8.0.5](https://github.com/koajs/koa-router/tree/v8.0.5)), distributed under the [MIT License](https://github.com/koajs/koa-router/blob/v8.0.5/LICENSE):
+This product includes source derived from [@koa/router](https://github.com/koajs/koa-router) ([v8.0.8](https://github.com/koajs/koa-router/tree/v8.0.8)), distributed under the [MIT License](https://github.com/koajs/koa-router/blob/v8.0.8/LICENSE):
 
 ```
 The MIT License (MIT)
@@ -98,7 +97,7 @@ THE SOFTWARE.
 
 ### @newrelic/test-utilities
 
-This product includes source derived from [@newrelic/test-utilities](https://github.com/newrelic/node-test-utilities) ([v3.0.0](https://github.com/newrelic/node-test-utilities/tree/v3.0.0)), distributed under the [proprietary License](https://github.com/newrelic/node-newrelic/blob/v6.10.0/LICENSE):
+This product includes source derived from [@newrelic/test-utilities](https://github.com/newrelic/node-test-utilities) ([v3.3.0](https://github.com/newrelic/node-test-utilities/tree/v3.3.0)), distributed under the [proprietary License](https://github.com/newrelic/node-newrelic/blob/v6.10.0/LICENSE):
 
 ```
 All components of this product are Copyright (c) 2016 New Relic, Inc.  All
@@ -144,41 +143,6 @@ PARTICULAR PURPOSE, TITLE, or NON-INFRINGEMENT.  As a condition to your use of
 these files, you are solely responsible for such use. New Relic will have no
 liability to you for direct, indirect, consequential, incidental, special, or
 punitive damages or for lost profits or data.
-
-```
-
-### coveralls
-
-This product includes source derived from [coveralls](https://github.com/nickmerwin/node-coveralls) ([v3.1.0](https://github.com/nickmerwin/node-coveralls/tree/v3.1.0)), distributed under the [BSD-2-Clause License](https://github.com/nickmerwin/node-coveralls/blob/v3.1.0/LICENSE):
-
-```
-Copyright (c) 2013, Coveralls, Inc.
-All rights reserved.
-
-Redistribution and use in source and binary forms, with or without
-modification, are permitted provided that the following conditions are met:
-
-1. Redistributions of source code must retain the above copyright notice, this
-   list of conditions and the following disclaimer.
-2. Redistributions in binary form must reproduce the above copyright notice,
-   this list of conditions and the following disclaimer in the documentation
-   and/or other materials provided with the distribution.
-
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
-ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
-ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
-The views and conclusions contained in the software and documentation are those
-of the authors and should not be interpreted as representing official policies,
-either expressed or implied, of Coveralls, LLC.
-
 ```
 
 ### eslint
@@ -253,7 +217,7 @@ THE SOFTWARE.
 
 ### koa
 
-This product includes source derived from [koa](https://github.com/koajs/koa) ([v2.7.0](https://github.com/koajs/koa/tree/2.7.0)), distributed under the [MIT License](https://github.com/koajs/koa/blob/2.7.0/LICENSE):
+This product includes source derived from [koa](https://github.com/koajs/koa) ([v2.13.0](https://github.com/koajs/koa/tree/v2.13.0)), distributed under the [MIT License](https://github.com/koajs/koa/blob/v2.13.0/LICENSE):
 
 ```
 (The MIT License)
