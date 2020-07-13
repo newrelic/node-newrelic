@@ -1,3 +1,21 @@
+### 4.0.0 (2019-07-13)
+
+* Updated to Apache 2.0 license.
+* Bumped minimum peer dependency (and dev dependency) of newrelic (agent) to 6.11 for license matching.
+* Added code of conduct file.
+* Updated readme with more detail.
+* Updated pull request template.
+* Added issue templates for bugs and enhancements.
+* Updated contributing guide.
+* Migrated CI to GitHub Actions.
+* Added copyright headers to all source files.
+* Removed Coveralls integration.
+* Added third party notices file and metadata for dependencies.
+* Bumped minimum versions of tap, coveralls and semver.
+* Added repository property to package.json.
+* Limited koa-router and @koa/router tests to below versions with known naming issues (8.0.3+).
+* Modified router-instrumentation.js to fully conform with linting rules.
+
 ### 3.0.0 (2019-10-18):
 * add @koa/router instrumentation
 
