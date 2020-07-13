@@ -1,0 +1,148 @@
+{
+  "lastUpdated": "Thu Jul 09 2020 14:58:40 GMT-0700 (Pacific Daylight Time)",
+  "projectName": "New Relic Koa Instrumentation",
+  "projectUrl": "https://github.com/newrelic/node-newrelic-koa",
+  "includeDev": true,
+  "dependencies": {
+    "methods@1.1.2": {
+      "name": "methods",
+      "version": "1.1.2",
+      "range": "^1.1.2",
+      "licenses": "MIT",
+      "repoUrl": "https://github.com/jshttp/methods",
+      "versionedRepoUrl": "https://github.com/jshttp/methods/tree/v1.1.2",
+      "licenseFile": "node_modules/methods/LICENSE",
+      "licenseUrl": "https://github.com/jshttp/methods/blob/v1.1.2/LICENSE",
+      "licenseTextSource": "file"
+    }
+  },
+  "devDependencies": {
+    "@koa/router@8.0.5": {
+      "name": "@koa/router",
+      "version": "8.0.5",
+      "range": "^8.0.0",
+      "licenses": "MIT",
+      "repoUrl": "https://github.com/koajs/koa-router",
+      "versionedRepoUrl": "https://github.com/koajs/koa-router/tree/v8.0.5",
+      "licenseFile": "node_modules/@koa/router/LICENSE",
+      "licenseUrl": "https://github.com/koajs/koa-router/blob/v8.0.5/LICENSE",
+      "licenseTextSource": "file",
+      "publisher": "Alex Mingoia",
+      "email": "talk@alexmingoia.com"
+    },
+    "@newrelic/test-utilities@3.0.0": {
+      "name": "@newrelic/test-utilities",
+      "version": "3.0.0",
+      "range": "^3.0.0",
+      "licenses": "proprietary",
+      "repoUrl": "https://github.com/newrelic/node-test-utilities",
+      "versionedRepoUrl": "https://github.com/newrelic/node-test-utilities/tree/v3.0.0",
+      "licenseFile": "node_modules/@newrelic/test-utilities/README.md",
+      "licenseUrl": "https://github.com/newrelic/node-newrelic/blob/v6.10.0/LICENSE",
+      "licenseTextSource": "UNKNOWN",
+      "publisher": "New Relic Node.js agent team",
+      "email": "nodejs@newrelic.com",
+      "FOR_REVIEW": [
+        "Unable to determine source for license text."
+      ]
+    },
+    "coveralls@3.1.0": {
+      "name": "coveralls",
+      "version": "3.1.0",
+      "range": "^3.0.0",
+      "licenses": "BSD-2-Clause",
+      "repoUrl": "https://github.com/nickmerwin/node-coveralls",
+      "versionedRepoUrl": "https://github.com/nickmerwin/node-coveralls/tree/v3.1.0",
+      "licenseFile": "node_modules/tap/node_modules/coveralls/LICENSE",
+      "licenseUrl": "https://github.com/nickmerwin/node-coveralls/blob/v3.1.0/LICENSE",
+      "licenseTextSource": "file",
+      "publisher": "Gregg Caines"
+    },
+    "eslint@5.16.0": {
+      "name": "eslint",
+      "version": "5.16.0",
+      "range": "^5.8.0",
+      "licenses": "MIT",
+      "repoUrl": "https://github.com/eslint/eslint",
+      "versionedRepoUrl": "https://github.com/eslint/eslint/tree/v5.16.0",
+      "licenseFile": "node_modules/eslint/LICENSE",
+      "licenseUrl": "https://github.com/eslint/eslint/blob/v5.16.0/LICENSE",
+      "licenseTextSource": "file",
+      "publisher": "Nicholas C. Zakas",
+      "email": "nicholas+npm@nczconsulting.com"
+    },
+    "koa-route@3.2.0": {
+      "name": "koa-route",
+      "version": "3.2.0",
+      "range": "^3.2.0",
+      "licenses": "MIT",
+      "repoUrl": "https://github.com/koajs/route",
+      "versionedRepoUrl": "https://github.com/koajs/route/tree/3.2.0",
+      "licenseFile": "node_modules/koa-route/Readme.md",
+      "licenseUrl": "https://github.com/koajs/route/blob/3.2.0/Readme.md",
+      "licenseTextSource": "spdx"
+    },
+    "koa-router@7.4.0": {
+      "name": "koa-router",
+      "version": "7.4.0",
+      "range": "^7.4.0",
+      "licenses": "MIT",
+      "repoUrl": "https://github.com/alexmingoia/koa-router",
+      "versionedRepoUrl": "https://github.com/alexmingoia/koa-router/tree/v7.4.0",
+      "licenseFile": "node_modules/koa-router/LICENSE",
+      "licenseUrl": "https://github.com/alexmingoia/koa-router/blob/v7.4.0/LICENSE",
+      "licenseTextSource": "file",
+      "publisher": "Alex Mingoia",
+      "email": "talk@alexmingoia.com"
+    },
+    "koa@2.7.0": {
+      "name": "koa",
+      "version": "2.7.0",
+      "range": "^2.6.1",
+      "licenses": "MIT",
+      "repoUrl": "https://github.com/koajs/koa",
+      "versionedRepoUrl": "https://github.com/koajs/koa/tree/2.7.0",
+      "licenseFile": "node_modules/koa/LICENSE",
+      "licenseUrl": "https://github.com/koajs/koa/blob/2.7.0/LICENSE",
+      "licenseTextSource": "file"
+    },
+    "newrelic@6.11.0": {
+      "name": "newrelic",
+      "version": "6.11.0",
+      "range": "^6.11.0",
+      "licenses": "Apache-2.0",
+      "repoUrl": "https://github.com/newrelic/node-newrelic",
+      "versionedRepoUrl": "https://github.com/newrelic/node-newrelic/tree/v6.11.0",
+      "licenseFile": "node_modules/newrelic/LICENSE",
+      "licenseUrl": "https://github.com/newrelic/node-newrelic/blob/v6.11.0/LICENSE",
+      "licenseTextSource": "file",
+      "publisher": "New Relic Node.js agent team",
+      "email": "nodejs@newrelic.com"
+    },
+    "semver@5.7.1": {
+      "name": "semver",
+      "version": "5.7.1",
+      "range": "^5.6.0",
+      "licenses": "ISC",
+      "repoUrl": "https://github.com/npm/node-semver",
+      "versionedRepoUrl": "https://github.com/npm/node-semver/tree/v5.7.1",
+      "licenseFile": "node_modules/tap/node_modules/semver/LICENSE",
+      "licenseUrl": "https://github.com/npm/node-semver/blob/v5.7.1/LICENSE",
+      "licenseTextSource": "file"
+    },
+    "tap@14.10.7": {
+      "name": "tap",
+      "version": "14.10.7",
+      "range": "^14.10.7",
+      "licenses": "ISC",
+      "repoUrl": "https://github.com/tapjs/node-tap",
+      "versionedRepoUrl": "https://github.com/tapjs/node-tap/tree/v14.10.7",
+      "licenseFile": "node_modules/tap/LICENSE",
+      "licenseUrl": "https://github.com/tapjs/node-tap/blob/v14.10.7/LICENSE",
+      "licenseTextSource": "file",
+      "publisher": "Isaac Z. Schlueter",
+      "email": "i@izs.me",
+      "url": "http://blog.izs.me"
+    }
+  }
+}

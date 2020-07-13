@@ -9,32 +9,32 @@
   },
   "scripts": {
     "test": "npm run unit && npm run versioned",
-    "unit": "tap tests/unit/**/*.tap.js",
+    "unit": "tap tests/unit/**/*.tap.js --no-coverage",
     "versioned": "versioned-tests --minor -i 2 'tests/versioned/*.tap.js'",
     "lint": "eslint *.js lib tests"
   },
   "author": "New Relic Node.js agent team <nodejs@newrelic.com>",
-  "license": "SEE LICENSE IN LICENSE",
+  "license": "Apache-2.0",
   "engines": {
     "node": ">=8.0.0"
   },
   "devDependencies": {
     "@koa/router": "^8.0.0",
     "@newrelic/test-utilities": "^3.0.0",
-    "coveralls": "^3.0.0",
+    "coveralls": "^3.1.0",
     "eslint": "^5.8.0",
     "koa": "^2.6.1",
     "koa-route": "^3.2.0",
     "koa-router": "^7.4.0",
-    "newrelic": "^5.13.0",
-    "semver": "^5.6.0",
-    "tap": "^14.7.1"
+    "newrelic": "^6.11.0",
+    "semver": "^5.7.1",
+    "tap": "^14.10.7"
   },
   "dependencies": {
     "methods": "^1.1.2"
   },
   "peerDependencies": {
-    "newrelic": ">=5.13.0"
+    "newrelic": ">=6.11.0"
   },
   "repository": {
     "type": "git",
