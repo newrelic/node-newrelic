@@ -55,9 +55,7 @@ verify your changes don't break existing functionality.
 All tests are stored in `tests/` and are written using
 [Tap](https://www.npmjs.com/package/tap) with the extension `.tap.js`.
 
-Running the test suite is simple.  Just run:
-
-    npm test
+To run the full suite, run: `npm test`.
 
 #### Writing tests
 
