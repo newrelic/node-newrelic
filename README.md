@@ -1,6 +1,6 @@
 [![Community Project header](https://github.com/newrelic/opensource-website/raw/master/src/images/categories/Community_Project.png)](https://opensource.newrelic.com/oss-category/#community-project)
 
-# New Relic's Node.js agent ![Server Smoke Tests](https://github.com/newrelic/node-newrelic/workflows/Server%20Smoke%20Tests/badge.svg) ![Node Agent CI](https://github.com/newrelic/node-newrelic/workflows/Node%20Agent%20CI/badge.svg)
+# New Relic's Node.js agent [![Server Smoke Tests][3]][4] [![Node Agent CI][5]][6]
 
 [![npm status badge][1]][2]
 
@@ -146,3 +146,7 @@ The Node.js agent also uses source code from third-party libraries. You can find
 
 [1]: https://nodei.co/npm/newrelic.png
 [2]: https://nodei.co/npm/newrelic
+[3]: https://github.com/newrelic/node-newrelic/workflows/Server%20Smoke%20Tests/badge.svg
+[4]: https://github.com/newrelic/node-newrelic/actions?query=workflow%3A%22Server+Smoke+Tests%22
+[5]: https://github.com/newrelic/node-newrelic/workflows/Node%20Agent%20CI/badge.svg
+[6]: https://github.com/newrelic/node-newrelic/actions?query=workflow%3A%22Node+Agent+CI%22
