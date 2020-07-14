@@ -15,7 +15,7 @@
     "@newrelic/test-utilities": "^3.3.0",
     "coveralls": "^3.0.2",
     "eslint": "^6.8.0",
-    "newrelic": "^4.3.0",
+    "newrelic": "^6.11.0",
     "semver": "^5.5.0",
     "superagent": "^3.8.3",
     "tap": "^14.10.7"
@@ -24,7 +24,7 @@
     "node": ">=8.0"
   },
   "peerDependencies": {
-    "newrelic": ">=6"
+    "newrelic": ">=6.11.0"
   },
   "dependencies": {
     "methods": "^1.1.2"
