@@ -1,5 +1,3 @@
-[![Coverage Status](https://coveralls.io/repos/github/newrelic/node-newrelic-superagent/badge.svg?branch=main)](https://coveralls.io/github/newrelic/node-newrelic-superagent?branch=main)
-
 New Relic's official `superagent` instrumentation for use with the
 [Node agent](https://github.com/newrelic/node-newrelic). This module is a
 dependency of the agent and is installed with it by running:

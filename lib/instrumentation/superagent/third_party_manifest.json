@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "Tue Jul 14 2020 10:10:36 GMT-0700 (Pacific Daylight Time)",
+  "lastUpdated": "Tue Jul 14 2020 14:53:21 GMT-0700 (Pacific Daylight Time)",
   "projectName": "New Relic SuperAgent Instrumentation",
   "projectUrl": "https://github.com/newrelic/node-newrelic-superagent",
   "includeDev": true,
@@ -32,18 +32,6 @@
       "FOR_REVIEW": [
         "Unable to determine source for license text."
       ]
-    },
-    "coveralls@3.1.0": {
-      "name": "coveralls",
-      "version": "3.1.0",
-      "range": "^3.0.2",
-      "licenses": "BSD-2-Clause",
-      "repoUrl": "https://github.com/nickmerwin/node-coveralls",
-      "versionedRepoUrl": "https://github.com/nickmerwin/node-coveralls/tree/v3.1.0",
-      "licenseFile": "node_modules/coveralls/LICENSE",
-      "licenseUrl": "https://github.com/nickmerwin/node-coveralls/blob/v3.1.0/LICENSE",
-      "licenseTextSource": "file",
-      "publisher": "Gregg Caines"
     },
     "eslint@6.8.0": {
       "name": "eslint",
