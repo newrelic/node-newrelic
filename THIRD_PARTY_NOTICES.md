@@ -865,25 +865,25 @@ The MIT License
 
 Copyright (c) 2013 Max Ogden
 
-Permission is hereby granted, free of charge, 
-to any person obtaining a copy of this software and 
-associated documentation files (the "Software"), to 
-deal in the Software without restriction, including 
-without limitation the rights to use, copy, modify, 
-merge, publish, distribute, sublicense, and/or sell 
-copies of the Software, and to permit persons to whom 
-the Software is furnished to do so, 
+Permission is hereby granted, free of charge,
+to any person obtaining a copy of this software and
+associated documentation files (the "Software"), to
+deal in the Software without restriction, including
+without limitation the rights to use, copy, modify,
+merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom
+the Software is furnished to do so,
 subject to the following conditions:
 
-The above copyright notice and this permission notice 
+The above copyright notice and this permission notice
 shall be included in all copies or substantial portions of the Software.
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, 
-EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES 
-OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. 
-IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR 
-ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, 
-TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE 
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR
+ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ```
 
@@ -1930,7 +1930,7 @@ SOFTWARE.
 This product includes source derived from [proxyquire](https://github.com/thlorenz/proxyquire) ([v1.8.0](https://github.com/thlorenz/proxyquire/tree/v1.8.0)), distributed under the [MIT License](https://github.com/thlorenz/proxyquire/blob/v1.8.0/LICENSE):
 
 ```
-Copyright 2013 Thorsten Lorenz. 
+Copyright 2013 Thorsten Lorenz.
 All rights reserved.
 
 Permission is hereby granted, free of charge, to any person
@@ -2388,7 +2388,7 @@ ROOT CERTIFICATE TERMS AND CONDITIONS
 "Certificate" means an electronic file that, at least, states a name or identifies the issuing Certificate
 Authority, identifies the subscriber, contains the subscriber's public key, identifies the Certificate's
 operational period, contains a Certificate serial number, and contains a digital signature of the issuing
-Certificate Authority. 
+Certificate Authority.
 “Certificate Authority” or “CA” means a person or entity authorized to issue, suspend, or revoke
 Certificates.
 “Intermediate CA” means a CA Certificate signed by a Root Certificate Intermediate that issues
@@ -2465,7 +2465,7 @@ Guide (http://www.symantec.com/about/profile/policies/trademarks.jsp) and any ot
 procedures of Symantec.
 7. NO WARRANTIES. THE ROOT CERTIFICATES, INCLUDING UPDATES, ARE PROVIDED "AS IS"
 WITHOUT ANY WARRANTY WHATSOEVER. SYMANTEC HEREBY DISCLAIMS ALL WARRANTIES,
-WHETHER EXPRESS, IMPLIED, OR STATUTORY, INCLUDING WITHOUT LIMITATION, ANY 
+WHETHER EXPRESS, IMPLIED, OR STATUTORY, INCLUDING WITHOUT LIMITATION, ANY
 IMPLIED WARRANTY OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, OR
 NONINFRINGEMENT OF THIRD PARTY RIGHTS.
 8. LIMITATION OF LIABILITY. UNDER NO CIRCUMSTANCES AND UNDER NO LEGAL THEORY WILL
@@ -2506,7 +2506,7 @@ shall survive termination of this Agreement.
 10.1. Governing Laws. This Agreement and any disputes relating to the services provided hereunder shall
 be governed and interpreted according to each of the following laws, respectively, without regard to its
 conflicts of law provisions: (a) the laws of the State of California, if You are located in North America or
-Latin America; or (b) the law of England, if You are located in Europe, Middle East or Africa; or (c) the 
+Latin America; or (b) the law of England, if You are located in Europe, Middle East or Africa; or (c) the
 laws of Singapore, if You are located in Asia Pacific including Japan. The United Nations Convention on
 Contracts for the International Sale of Goods shall not apply to this Agreement.
 10.2. Binding Upon Successors; Assignment. This Agreement shall be binding upon, and inure to the
@@ -2548,7 +2548,7 @@ View, California 94043, USA. Notices shall be effective on the date received (un
 later date) only if it is sent by a courier service that confirms delivery in writing or if sent by certified or
 registered mail, postage prepaid, return receipt requested. Symantec may post notices and updates
 regarding the Agreement or the Root Certificates at the URL provided to You for the Root Certificates.
-You shall be responsible for regularly checking the applicable URL for notices from Symantec regarding 
+You shall be responsible for regularly checking the applicable URL for notices from Symantec regarding
 the Agreement or the Root Certificates. No notices, demands, or requests to Symantec with respect to
 this Agreement may be delivered by electronic mail. You shall immediately notify Symantec of any legal
 notices served on You that might affect Symantec, and shall promptly forward the original or a copy of
@@ -2559,3 +2559,10 @@ or joint venturers of the other party, nor do they have any authority to bind th
 otherwise to any obligation.
 Root Certificate License Agreement v3.0 (January 2014)
 ```
+
+-----
+
+Portions copyright Node.js contributors. Depending on your existing libraries and package management settings,
+your systems may call externally maintained libraries in addition to those listed above.
+See [here](https://nodejs.org/en/docs/meta/topics/dependencies/) and [here](https://github.com/nodejs/node/blob/v4.3.1/LICENSE)
+for additional details regarding externally maintained libraries and certain related licenses and notices.”
