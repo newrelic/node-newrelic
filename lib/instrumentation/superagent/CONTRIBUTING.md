@@ -13,7 +13,7 @@ issues](../../issues?q=is%3Aissue+is%3Aclosed+label%3Aenhancement).
 
 ## Pull Requests
 
-We can only accept PRs for version v2.1.0 or greater due to open source
+We can only accept PRs for version v3.0.0 or greater due to open source
 licensing restrictions.
 
 ## Code of Conduct
