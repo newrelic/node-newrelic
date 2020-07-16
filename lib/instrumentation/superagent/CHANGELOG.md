@@ -1,3 +1,21 @@
+### 3.0.0 (2020-07-16):
+
+* Updated to Apache 2.0 license.
+* Bumped minimum peer dependency (and dev dependency) of newrelic (agent) to 6.11 for license matching.
+* Added third party notices file and metadata for dependencies.
+* Updated readme with more detail.
+* Added issue templates for bugs and enhancements.
+* Added code of conduct file.
+* Added contributing guide.
+* Added pull request template.
+* Migrated CI to GitHub Actions.
+* Added copyright headers to all source files.
+* Added repository property to package.json.
+* Removed Coveralls integration.
+* Bumped minimum versions of tap, eslint and @newrelic/test-utilities.
+* Added .vscode to .gitignore.
+* Added additional items to .npmignore.
+
 ### 2.0.1 (2020-02-26):
 
 * Support the fixed segment naming in Node 8
