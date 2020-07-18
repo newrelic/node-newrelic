@@ -9,7 +9,7 @@
       },
       "dependencies": {
         "restify": ">=5.0.0 <7",
-        "express": "4.16",
+        "express": "4.17.1",
         "restify-errors": "6.1"
       },
       "files": [
