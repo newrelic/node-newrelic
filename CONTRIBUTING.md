@@ -49,7 +49,7 @@ access, see https://newrelicusers-signup.herokuapp.com/.
 
 ### Version Support
 
-When contributing, keep in mind that New Relic customers (that's you!) are running many different versions of the Node.js agent, some of them pretty old. Changes that depend on the newest version of the Node.js agent will probably be rejected, especially if they replace something backwards compatible.
+When contributing, keep in mind that New Relic customers (that's you!) are running many different versions of Node, some of them pretty old. Changes that depend on the newest version of Node will probably be rejected, especially if they replace something backwards compatible.
 
 Be aware that the instrumentation needs to work with a wide range of versions of the instrumented modules, and that code that looks nonsensical or overcomplicated may be that way for compatibility-related reasons. Read all the comments and check the related tests before deciding whether existing code is incorrect.
 
