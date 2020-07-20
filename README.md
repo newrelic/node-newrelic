@@ -1,6 +1,6 @@
 [![Community Project header](https://github.com/newrelic/opensource-website/raw/master/src/images/categories/Community_Project.png)](https://opensource.newrelic.com/oss-category/#community-project)
 
-# New Relic's Node.js agent ![Server Smoke Tests](https://github.com/newrelic/node-newrelic/workflows/Server%20Smoke%20Tests/badge.svg) ![Node Agent CI](https://github.com/newrelic/node-newrelic/workflows/Node%20Agent%20CI/badge.svg)
+# New Relic's Node.js agent [![Server Smoke Tests][3]][4] [![Node Agent CI][5]][6]
 
 [![npm status badge][1]][2]
 
@@ -145,6 +145,10 @@ We define “Personal Data” as any information relating to an identified or id
 
 Please review [New Relic’s General Data Privacy Notice](https://newrelic.com/termsandconditions/privacy) for more information.
 
+## Roadmap
+
+See our [roadmap](./ROADMAP_Node.md), to learn more about our product vision, understand our plans, and provide us valuable feedback. Remove this section if it’s not needed.
+
 ## Contributing
 
 We encourage your contributions to improve Node.js agent! Keep in mind when you submit your pull request, you'll need to sign the CLA via the click-through using CLA-Assistant. You only have to sign the CLA one time per project.
@@ -165,3 +169,7 @@ The Node.js agent also uses source code from third-party libraries. You can find
 
 [1]: https://nodei.co/npm/newrelic.png
 [2]: https://nodei.co/npm/newrelic
+[3]: https://github.com/newrelic/node-newrelic/workflows/Server%20Smoke%20Tests/badge.svg
+[4]: https://github.com/newrelic/node-newrelic/actions?query=workflow%3A%22Server+Smoke+Tests%22
+[5]: https://github.com/newrelic/node-newrelic/workflows/Node%20Agent%20CI/badge.svg
+[6]: https://github.com/newrelic/node-newrelic/actions?query=workflow%3A%22Node+Agent+CI%22

@@ -4,14 +4,19 @@ New Relic welcomes code contributions by the Node community to this module, and
 have taken effort to make this process easy for both contributors and our
 development team.
 
-## Processes
+## Process
 
-## Feature Requests
+### Feature Requests
 
 Feature requests should be submitted in the [Issue tracker](../../issues), with
 a description of the expected behavior & use case. Before submitting an Issue,
 please search for similar ones in the [closed
 issues](../../issues?q=is%3Aissue+is%3Aclosed+label%3Aenhancement).
+
+### Pull Requests
+
+We can only accept PRs for version v6.11.0 or greater due to open source
+licensing restrictions.
 
 ### Code of Conduct
 

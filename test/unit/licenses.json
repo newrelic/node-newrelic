@@ -1,7 +1,7 @@
 {
   "@newrelic/aws-sdk": "SEE LICENSE IN LICENSE",
-  "@newrelic/koa": "SEE LICENSE IN LICENSE",
-  "@newrelic/superagent": "SEE LICENSE IN LICENSE",
+  "@newrelic/koa": "Apache-2.0",
+  "@newrelic/superagent": "Apache-2.0",
   "@newrelic/native-metrics": "SEE LICENSE IN LICENSE",
   "@tyriar/fibonacci-heap": "MIT",
   "async": "MIT",
