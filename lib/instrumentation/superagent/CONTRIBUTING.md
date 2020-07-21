@@ -63,7 +63,7 @@ We use eslint to enforce certain coding standards. Please see our [.eslintrc](./
 
 ### Testing Guidelines
 
-The superagent module includes a suite of unit and functional tests which should be used to
+The superagent instrumentation module includes a suite of unit and functional tests which should be used to
 verify your changes don't break existing functionality.
 
 Unit tests are stored in `test/`. They're written in
