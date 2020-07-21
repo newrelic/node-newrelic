@@ -45,19 +45,50 @@ contributing to this project, you're welcome to request access to the
 \#oss-contributors channel in the newrelicusers.slack.com workspace. To request
 access, see https://newrelicusers-signup.herokuapp.com/.
 
-## The Code
+## PR Guidelines
 
-### Testing
+### Version Support
 
-The module includes a suite of unit and functional tests which should be used to
+When contributing, keep in mind that New Relic customers (that's you!) are running many different versions of Node, some of them pretty old. Changes that depend on the newest version of Node will probably be rejected, especially if they replace something backwards compatible.
+
+Be aware that the instrumentation needs to work with a wide range of versions of the instrumented modules, and that code that looks nonsensical or overcomplicated may be that way for compatibility-related reasons. Read all the comments and check the related tests before deciding whether existing code is incorrect.
+
+If you’re planning on contributing a new feature or an otherwise complex contribution, we kindly ask you to start a conversation with the maintainer team by opening up an Github issue first. 
+
+### General Guidelines
+
+In general, we try to limit adding third-party production dependencies. If one is necessary, please be prepared to make a clear case for the need.
+
+### Coding Style Guidelines/Conventions
+
+We use eslint to enforce certain coding standards. Please see our [.eslintrc](./.eslintrc.js) file for specific rule configuration.
+
+### Testing Guidelines
+
+The koa instrumentation module includes a suite of unit and functional tests which should be used to
 verify your changes don't break existing functionality.
 
-All tests are stored in `tests/` and are written using
-[Tap](https://www.npmjs.com/package/tap) with the extension `.tap.js`.
+Unit tests are stored in `test/`. They're written in
+[node-tap](https://github.com/isaacs/node-tap), and have the extension `.test.js`.
 
-To run the full suite, run: `npm test`.
+Functional tests against specific versions of instrumented modules are stored
+in `test/versioned/`. They are also written in `node-tap`.
 
-#### Writing tests
+#### Running Tests
+
+Running the test suite is simple. Just run:
+
+    npm test
+
+This will install all the necessary modules and run the unit tests in standalone mode, followed by
+the functional tests if all of the unit tests pass.
+
+If you don't feel like dealing with the hassle of setting up the servers, just
+the unit tests can be run with:
+
+    npm run unit
+
+#### Writing Tests
 
 For most contributions it is strongly recommended to add additional tests which
 exercise your changes. This helps us efficiently incorporate your changes into
