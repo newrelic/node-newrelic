@@ -2,23 +2,23 @@
 name: Feature request
 about: Suggest an idea for this project
 title: ''
-labels: ''
+labels: 'feature-request, needs-triage'
 assignees: ''
 priority: '' 
 ---
 
-### Is your feature request related to a problem? Please describe.
+## Is your feature request related to a problem? Please describe.
 A clear and concise description of what the problem is. Ex. I'm always frustrated when [...]
 
-### Feature Description
+## Feature Description
 A clear and concise description of the feature you want or need.
 
-### Describe Alternatives
+## Describe Alternatives
 A clear and concise description of any alternative solutions or features you've considered. Are there examples you could link us to?
 
-### Additional context
+## Additional context
 Add any other context here.
 
-### Priority
+## Priority
 Please help us better understand this feature request by choosing a priority from the following options: 
 [Nice to Have, Really Want, Must Have, Blocker] 
