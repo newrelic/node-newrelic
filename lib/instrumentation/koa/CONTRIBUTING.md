@@ -68,7 +68,7 @@ We use eslint to enforce certain coding standards. Please see our [.eslintrc](./
 The koa instrumentation module includes a suite of unit and functional tests which should be used to
 verify your changes don't break existing functionality.
 
-Unit tests are stored in `test/`. They're written in
+Unit tests are stored in `tests/`. They're written in
 [node-tap](https://github.com/isaacs/node-tap), and have the extension `.test.js`.
 
 Functional tests against specific versions of instrumented modules are stored
@@ -83,8 +83,7 @@ Running the test suite is simple. Just run:
 This will install all the necessary modules and run the unit tests in standalone mode, followed by
 the functional tests if all of the unit tests pass.
 
-If you don't feel like dealing with the hassle of setting up the servers, just
-the unit tests can be run with:
+To just run unit tests, run the following:
 
     npm run unit
 
