@@ -160,7 +160,7 @@
   },
   "devDependencies": {
     "@newrelic/proxy": "^2.0.0",
-    "@newrelic/test-utilities": "^3.3.0",
+    "@newrelic/test-utilities": "^4.0.0",
     "JSV": "~4.0.2",
     "architect": "*",
     "benchmark": "^2.1.4",
