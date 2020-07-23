@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "Tue Jul 14 2020 14:53:21 GMT-0700 (Pacific Daylight Time)",
+  "lastUpdated": "Thu Jul 23 2020 09:51:38 GMT-0700 (Pacific Daylight Time)",
   "projectName": "New Relic SuperAgent Instrumentation",
   "projectUrl": "https://github.com/newrelic/node-newrelic-superagent",
   "includeDev": true,
@@ -17,21 +17,18 @@
     }
   },
   "devDependencies": {
-    "@newrelic/test-utilities@3.3.0": {
+    "@newrelic/test-utilities@4.0.0": {
       "name": "@newrelic/test-utilities",
-      "version": "3.3.0",
-      "range": "^3.3.0",
-      "licenses": "proprietary",
+      "version": "4.0.0",
+      "range": "^4.0.0",
+      "licenses": "Apache-2.0",
       "repoUrl": "https://github.com/newrelic/node-test-utilities",
-      "versionedRepoUrl": "https://github.com/newrelic/node-test-utilities/tree/v3.3.0",
-      "licenseFile": "node_modules/@newrelic/test-utilities/README.md",
-      "licenseUrl": "https://github.com/newrelic/node-newrelic/blob/v6.10.0/LICENSE",
-      "licenseTextSource": "UNKNOWN",
+      "versionedRepoUrl": "https://github.com/newrelic/node-test-utilities/tree/v4.0.0",
+      "licenseFile": "node_modules/@newrelic/test-utilities/LICENSE",
+      "licenseUrl": "https://github.com/newrelic/node-test-utilities/blob/v4.0.0/LICENSE",
+      "licenseTextSource": "file",
       "publisher": "New Relic Node.js agent team",
-      "email": "nodejs@newrelic.com",
-      "FOR_REVIEW": [
-        "Unable to determine source for license text."
-      ]
+      "email": "nodejs@newrelic.com"
     },
     "eslint@6.8.0": {
       "name": "eslint",
