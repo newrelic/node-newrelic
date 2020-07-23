@@ -1,6 +1,6 @@
 [![Community Project header](https://github.com/newrelic/opensource-website/raw/master/src/images/categories/Community_Project.png)](https://opensource.newrelic.com/oss-category/#community-project)
 
-# New Relic AWS SDK instrumentation [![Coverage Status][1]][2]
+# New Relic AWS SDK instrumentation
 New Relic's official AWS-SDK package instrumentation for use with the
 [Node agent](https://github.com/newrelic/node-newrelic).
 
@@ -15,8 +15,8 @@ npm install @newrelic/aws-sdk
 require('@newrelic/aws-sdk')
 ```
 
-For more information, please see the agent [installation guide][3], and
-[compatibility and requirements][4].
+For more information, please see the agent [installation guide][1], and
+[compatibility and requirements][2].
 
 ## Testing
 The module includes a suite of unit and functional tests which should be used to
@@ -47,7 +47,5 @@ New Relic AWS SDK instrumentation is licensed under the [Apache 2.0](http://apac
 
 New Relic AWS SDK instrumentation also uses source code from third-party libraries. You can find full details on which libraries are used and the terms under which they are licensed in the third-party notices document.
 
-[1]: https://coveralls.io/repos/github/newrelic/node-newrelic-aws-sdk/badge.svg?branch=master
-[2]: https://coveralls.io/github/newrelic/node-newrelic-aws-sdk?branch=master
-[3]: https://docs.newrelic.com/docs/agents/nodejs-agent/installation-configuration/install-nodejs-agent
-[4]: https://docs.newrelic.com/docs/agents/nodejs-agent/getting-started/compatibility-requirements-nodejs-agent
+[1]: https://docs.newrelic.com/docs/agents/nodejs-agent/installation-configuration/install-nodejs-agent
+[2]: https://docs.newrelic.com/docs/agents/nodejs-agent/getting-started/compatibility-requirements-nodejs-agent
