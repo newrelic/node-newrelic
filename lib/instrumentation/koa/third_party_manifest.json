@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "Mon Jul 13 2020 12:05:29 GMT-0700 (Pacific Daylight Time)",
+  "lastUpdated": "Thu Jul 23 2020 09:09:18 GMT-0700 (Pacific Daylight Time)",
   "projectName": "New Relic Koa Instrumentation",
   "projectUrl": "https://github.com/newrelic/node-newrelic-koa",
   "includeDev": true,
@@ -30,21 +30,18 @@
       "publisher": "Alex Mingoia",
       "email": "talk@alexmingoia.com"
     },
-    "@newrelic/test-utilities@3.3.0": {
+    "@newrelic/test-utilities@4.0.0": {
       "name": "@newrelic/test-utilities",
-      "version": "3.3.0",
-      "range": "^3.0.0",
-      "licenses": "proprietary",
+      "version": "4.0.0",
+      "range": "^4.0.0",
+      "licenses": "Apache-2.0",
       "repoUrl": "https://github.com/newrelic/node-test-utilities",
-      "versionedRepoUrl": "https://github.com/newrelic/node-test-utilities/tree/v3.3.0",
-      "licenseFile": "node_modules/@newrelic/test-utilities/README.md",
-      "licenseUrl": "https://github.com/newrelic/node-test-utilities/blob/v3.3.0/README.md",
-      "licenseTextSource": "UNKNOWN",
+      "versionedRepoUrl": "https://github.com/newrelic/node-test-utilities/tree/v4.0.0",
+      "licenseFile": "node_modules/@newrelic/test-utilities/LICENSE",
+      "licenseUrl": "https://github.com/newrelic/node-test-utilities/blob/v4.0.0/LICENSE",
+      "licenseTextSource": "file",
       "publisher": "New Relic Node.js agent team",
-      "email": "nodejs@newrelic.com",
-      "FOR_REVIEW": [
-        "Unable to determine source for license text."
-      ]
+      "email": "nodejs@newrelic.com"
     },
     "eslint@5.16.0": {
       "name": "eslint",
@@ -118,15 +115,15 @@
       "licenseUrl": "https://github.com/npm/node-semver/blob/v5.7.1/LICENSE",
       "licenseTextSource": "file"
     },
-    "tap@14.10.7": {
+    "tap@14.10.8": {
       "name": "tap",
-      "version": "14.10.7",
+      "version": "14.10.8",
       "range": "^14.10.7",
       "licenses": "ISC",
       "repoUrl": "https://github.com/tapjs/node-tap",
-      "versionedRepoUrl": "https://github.com/tapjs/node-tap/tree/v14.10.7",
+      "versionedRepoUrl": "https://github.com/tapjs/node-tap/tree/v14.10.8",
       "licenseFile": "node_modules/tap/LICENSE",
-      "licenseUrl": "https://github.com/tapjs/node-tap/blob/v14.10.7/LICENSE",
+      "licenseUrl": "https://github.com/tapjs/node-tap/blob/v14.10.8/LICENSE",
       "licenseTextSource": "file",
       "publisher": "Isaac Z. Schlueter",
       "email": "i@izs.me",

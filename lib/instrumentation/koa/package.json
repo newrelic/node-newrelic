@@ -20,7 +20,7 @@
   },
   "devDependencies": {
     "@koa/router": "^8.0.0",
-    "@newrelic/test-utilities": "^3.0.0",
+    "@newrelic/test-utilities": "^4.0.0",
     "eslint": "^5.8.0",
     "koa": "^2.6.1",
     "koa-route": "^3.2.0",
