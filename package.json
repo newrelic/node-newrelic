@@ -148,7 +148,7 @@
     "@newrelic/koa": "^4.0.0",
     "@newrelic/superagent": "^3.0.0",
     "@tyriar/fibonacci-heap": "^2.0.7",
-    "async": "^2.1.4",
+    "async": "^3.2.0",
     "concat-stream": "^2.0.0",
     "https-proxy-agent": "^4.0.0",
     "json-stringify-safe": "^5.0.0",
