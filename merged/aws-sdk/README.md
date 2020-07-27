@@ -80,10 +80,8 @@ If you would like to contribute to this project, please review [these guidelines
 
 To [all contributors](https://github.com/newrelic/node-newrelic-aws-sdk/graphs/contributors), we thank you!  Without your contribution, this project would not be what it is today.
 
-<!-- TODO: add when this is live
 We also host a community project page dedicated to
-the [PROJECT NAME](<LINK TO https://opensource.newrelic.com/projects/... PAGE>).
--->
+[the New Relic AWS SDK Instrumentation package](https://opensource.newrelic.com/newrelic/node-newrelic-aws-sdk).
 
 ## License
 The New Relic AWS SDK Instrumentation package is licensed under the [Apache 2.0](http://apache.org/licenses/LICENSE-2.0.txt) License.
