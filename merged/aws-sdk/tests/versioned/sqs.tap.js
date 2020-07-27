@@ -4,9 +4,11 @@
 */
 'use strict'
 
-const common = require('./common')
 const tap = require('tap')
+const { createSqsServer } = require('./aws-server-stubs')
 const utils = require('@newrelic/test-utilities')
+
+const common = require('./common')
 
 const AWS_REGION = 'us-east-1'
 
@@ -23,38 +25,54 @@ tap.test('SQS API', (t) => {
   let sendMessageBatchRequestId = null
   let receiveMessageRequestId = null
 
+  let server = null
+
   t.beforeEach((done) => {
-    helper = utils.TestAgent.makeInstrumented()
-    helper.registerInstrumentation({
-      moduleName: 'aws-sdk',
-      type: 'conglomerate',
-      onRequire: require('../../lib/instrumentation')
-    })
-    AWS = require('aws-sdk')
-    sqs = new AWS.SQS({apiVersion: '2012-11-05', region: AWS_REGION})
+    server = createSqsServer()
+    server.listen(0, () => {
+      helper = utils.TestAgent.makeInstrumented()
+      helper.registerInstrumentation({
+        moduleName: 'aws-sdk',
+        type: 'conglomerate',
+        onRequire: require('../../lib/instrumentation')
+      })
 
-    queueName = 'delete-aws-sdk-test-queue-' + Math.floor(Math.random() * 100000)
+      AWS = require('aws-sdk')
+      const creds = {
+        accessKeyId: 'test id',
+        secretAccessKey: 'test key'
+      }
+      const endpoint = `http://localhost:${server.address().port}`
+      sqs = new AWS.SQS({
+        credentials: creds,
+        endpoint: endpoint,
+        apiVersion: '2012-11-05',
+        region: AWS_REGION
+      })
 
-    done()
-  })
-
-  t.afterEach((done) => {
-    deleteQueue(sqs, queueUrl, (err) => {
-      t.error(err)
-
-      helper && helper.unload()
-      helper = null
-      sqs = null
-      AWS = null
-
-      queueName = null
-      queueUrl = null
-      sendMessageRequestId = null
-      sendMessageBatchRequestId = null
-      receiveMessageRequestId = null
+      queueName = 'delete-aws-sdk-test-queue-' + Math.floor(Math.random() * 100000)
 
       done()
     })
+  })
+
+  t.afterEach((done) => {
+    helper && helper.unload()
+
+    server.close()
+    server = null
+
+    helper = null
+    sqs = null
+    AWS = null
+
+    queueName = null
+    queueUrl = null
+    sendMessageRequestId = null
+    sendMessageBatchRequestId = null
+    receiveMessageRequestId = null
+
+    done()
   })
 
   t.test('commands with callback', (t) => {
@@ -173,17 +191,6 @@ tap.test('SQS API', (t) => {
     t.end()
   }
 })
-
-function deleteQueue(sqs, queueUrl, cb) {
-  // Cleanup queue after test
-  const deleteParams = {
-    QueueUrl: queueUrl
-  }
-
-  sqs.deleteQueue(deleteParams, function(err) {
-      cb(err)
-  })
-}
 
 function checkName(t, name, action, queueName) {
   const specificName = `/${action}/Named/${queueName}`
