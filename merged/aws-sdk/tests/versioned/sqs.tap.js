@@ -5,10 +5,10 @@
 'use strict'
 
 const tap = require('tap')
-const { createSqsServer } = require('./aws-server-stubs')
 const utils = require('@newrelic/test-utilities')
 
 const common = require('./common')
+const { createSqsServer } = require('./aws-server-stubs')
 
 const AWS_REGION = 'us-east-1'
 
