@@ -17,7 +17,7 @@
     "url": "git+https://github.com/newrelic/node-newrelic-aws-sdk.git"
   },
   "author": "New Relic Node.js agent team <nodejs@newrelic.com>",
-  "license": "SEE LICENSE IN LICENSE",
+  "license": "Apache-2.0",
   "devDependencies": {
     "@newrelic/test-utilities": "^4.0.0",
     "async": "^2.6.1",
