@@ -1,6 +1,6 @@
 [![Community Project header](https://github.com/newrelic/open-source-office/raw/master/examples/categories/images/Community_Project.png)](https://github.com/newrelic/open-source-office/blob/master/examples/categories/index.md#community-project)
 
-# New Relic AWS SDK Instrumentation <!-- TODO: Build Badges -->
+# New Relic AWS SDK Instrumentation [![AWS SDK Instrumentation CI][1]][2]
 
 New Relic's official AWS-SDK package instrumentation for use with [the Node agent](https://github.com/newrelic/node-newrelic). Provides instrumentation for [the AWS SDK (`aws-sdk`) NPM package](https://www.npmjs.com/package/aws-sdk).
 
@@ -85,3 +85,6 @@ We also host a community project page dedicated to
 
 ## License
 The New Relic AWS SDK Instrumentation package is licensed under the [Apache 2.0](http://apache.org/licenses/LICENSE-2.0.txt) License.
+
+[1]: https://github.com/newrelic/node-newrelic-aws-sdk/workflows/koa%20Instrumentation%20CI/badge.svg
+[2]: https://github.com/newrelic/node-newrelic-aws-sdk/actions
