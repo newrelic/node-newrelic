@@ -9,7 +9,7 @@ const utils = require('@newrelic/test-utilities')
 const async = require('async')
 
 const common = require('./common')
-const { createEmptyResponseServer } = require('./aws-server-stubs')
+const { createEmptyResponseServer, FAKE_CREDENTIALS } = require('./aws-server-stubs')
 
 tap.test('DynamoDB', (t) => {
   t.autoend()
@@ -33,18 +33,15 @@ tap.test('DynamoDB', (t) => {
       })
 
       AWS = require('aws-sdk')
-      const creds = {
-        accessKeyId: 'test id',
-        secretAccessKey: 'test key'
-      }
+
       const endpoint = `http://localhost:${server.address().port}`
       const ddb = new AWS.DynamoDB({
-        credentials: creds,
+        credentials: FAKE_CREDENTIALS,
         endpoint: endpoint,
         region: 'us-east-1'
       })
       const docClient = new AWS.DynamoDB.DocumentClient({
-        credentials: creds,
+        credentials: FAKE_CREDENTIALS,
         endpoint: endpoint,
         region: 'us-east-1'
       })

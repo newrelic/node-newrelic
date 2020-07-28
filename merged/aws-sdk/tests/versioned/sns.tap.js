@@ -8,7 +8,7 @@ const tap = require('tap')
 const utils = require('@newrelic/test-utilities')
 
 const common = require('./common')
-const { createEmptyResponseServer } = require('./aws-server-stubs')
+const { createEmptyResponseServer, FAKE_CREDENTIALS } = require('./aws-server-stubs')
 
 tap.test('SNS', (t) => {
   t.autoend()
@@ -30,12 +30,9 @@ tap.test('SNS', (t) => {
         onRequire: require('../../lib/instrumentation')
       })
       AWS = require('aws-sdk')
-      const credentials = {
-        accessKeyId: 'test id',
-        secretAccessKey: 'test key'
-      }
+
       sns = new AWS.SNS({
-        credentials: credentials,
+        credentials: FAKE_CREDENTIALS,
         endpoint: `http://localhost:${server.address().port}`,
         region: 'us-east-1'
       })

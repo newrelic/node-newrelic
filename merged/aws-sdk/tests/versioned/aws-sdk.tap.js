@@ -9,7 +9,7 @@ const tap = require('tap')
 const utils = require('@newrelic/test-utilities')
 utils.assert.extendTap(tap)
 
-const { createEmptyResponseServer } = require('./aws-server-stubs')
+const { createEmptyResponseServer, FAKE_CREDENTIALS } = require('./aws-server-stubs')
 
 tap.test('aws-sdk', (t) => {
   t.autoend()
@@ -18,10 +18,6 @@ tap.test('aws-sdk', (t) => {
   let AWS = null
 
   let server = null
-  let credentials = {
-    accessKeyId: 'test id',
-    secretAccessKey: 'test key'
-  }
   let endpoint = null
 
   t.beforeEach((done) => {
@@ -64,7 +60,7 @@ tap.test('aws-sdk', (t) => {
 
     const s3 = new AWS.S3({
       apiVersion: '2006-03-01',
-      credentials: credentials,
+      credentials: FAKE_CREDENTIALS,
       endpoint: endpoint,
       // allows using generic endpoint, instead of needing a
       // bucket.endpoint server setup.
@@ -88,7 +84,7 @@ tap.test('aws-sdk', (t) => {
 
   t.test('should maintain transaction state in promises', (t) => {
     const service = new AWS.SES({
-      credentials: credentials,
+      credentials: FAKE_CREDENTIALS,
       endpoint: endpoint
     })
     helper.runInTransaction((tx) => {

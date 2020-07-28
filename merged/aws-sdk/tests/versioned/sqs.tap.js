@@ -8,7 +8,7 @@ const tap = require('tap')
 const utils = require('@newrelic/test-utilities')
 
 const common = require('./common')
-const { createSqsServer } = require('./aws-server-stubs')
+const { createSqsServer, FAKE_CREDENTIALS } = require('./aws-server-stubs')
 
 const AWS_REGION = 'us-east-1'
 
@@ -38,13 +38,10 @@ tap.test('SQS API', (t) => {
       })
 
       AWS = require('aws-sdk')
-      const creds = {
-        accessKeyId: 'test id',
-        secretAccessKey: 'test key'
-      }
+
       const endpoint = `http://localhost:${server.address().port}`
       sqs = new AWS.SQS({
-        credentials: creds,
+        credentials: FAKE_CREDENTIALS,
         endpoint: endpoint,
         apiVersion: '2012-11-05',
         region: AWS_REGION

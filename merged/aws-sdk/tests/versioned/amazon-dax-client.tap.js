@@ -6,7 +6,9 @@
 
 const tap = require('tap')
 const utils = require('@newrelic/test-utilities')
+
 const common = require('./common')
+const { FAKE_CREDENTIALS } = require('./aws-server-stubs')
 
 // This will not resolve / allow web requests. Even with real ones, requests
 // have to execute within the same VPC as the DAX configuration. When adding DAX support,
@@ -37,6 +39,7 @@ tap.test('amazon-dax-client', (t) => {
     const AmazonDaxClient = require('amazon-dax-client')
 
     daxClient = new AmazonDaxClient({
+      credentials: FAKE_CREDENTIALS,
       endpoints: DAX_ENDPOINTS,
       maxRetries: 0 // fail fast
     })

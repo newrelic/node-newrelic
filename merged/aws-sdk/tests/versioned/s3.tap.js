@@ -8,7 +8,7 @@ const tap = require('tap')
 const utils = require('@newrelic/test-utilities')
 
 const common = require('./common')
-const { createEmptyResponseServer } = require('./aws-server-stubs')
+const { createEmptyResponseServer, FAKE_CREDENTIALS } = require('./aws-server-stubs')
 
 tap.test('S3 buckets', (t) => {
   t.autoend()
@@ -18,10 +18,6 @@ tap.test('S3 buckets', (t) => {
   let S3 = null
 
   let server = null
-  let credentials = {
-    accessKeyId: 'test id',
-    secretAccessKey: 'test key'
-  }
 
   t.beforeEach((done) => {
     server = createEmptyResponseServer()
@@ -34,7 +30,7 @@ tap.test('S3 buckets', (t) => {
       })
       AWS = require('aws-sdk')
       S3 = new AWS.S3({
-        credentials: credentials,
+        credentials: FAKE_CREDENTIALS,
         endpoint: `http://localhost:${server.address().port}`,
         // allows using generic endpoint, instead of needing a
         // bucket.endpoint server setup.

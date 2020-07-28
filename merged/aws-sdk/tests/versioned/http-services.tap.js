@@ -8,7 +8,7 @@ const tap = require('tap')
 const utils = require('@newrelic/test-utilities')
 
 const common = require('./common')
-const { createEmptyResponseServer } = require('./aws-server-stubs')
+const { createEmptyResponseServer, FAKE_CREDENTIALS } = require('./aws-server-stubs')
 
 tap.test('AWS HTTP Services', (t) => {
   t.autoend()
@@ -17,10 +17,6 @@ tap.test('AWS HTTP Services', (t) => {
   let AWS = null
 
   let server = null
-  let credentials = {
-    accessKeyId: 'test id',
-    secretAccessKey: 'test key'
-  }
   let endpoint = null
 
   t.beforeEach((done) => {
@@ -51,7 +47,7 @@ tap.test('AWS HTTP Services', (t) => {
   t.test('APIGateway', (t) => {
     helper.runInTransaction((tx) => {
       const service = new AWS.APIGateway({
-        credentials: credentials,
+        credentials: FAKE_CREDENTIALS,
         endpoint: endpoint
       })
       service.createApiKey({
@@ -77,7 +73,7 @@ tap.test('AWS HTTP Services', (t) => {
   t.test('ELB', (t) => {
     helper.runInTransaction((tx) => {
       const service = new AWS.ELB({
-        credentials: credentials,
+        credentials: FAKE_CREDENTIALS,
         endpoint: endpoint
       })
       service.addTags({
@@ -101,7 +97,7 @@ tap.test('AWS HTTP Services', (t) => {
   t.test('ElastiCache', (t) => {
     helper.runInTransaction((tx) => {
       const service = new AWS.ElastiCache({
-        credentials: credentials,
+        credentials: FAKE_CREDENTIALS,
         endpoint: endpoint
       })
       service.addTagsToResource({
@@ -122,7 +118,7 @@ tap.test('AWS HTTP Services', (t) => {
   t.test('Lambda', (t) => {
     helper.runInTransaction((tx) => {
       const service = new AWS.Lambda({
-        credentials: credentials,
+        credentials: FAKE_CREDENTIALS,
         endpoint: endpoint
       })
       service.addLayerVersionPermission({
@@ -143,7 +139,7 @@ tap.test('AWS HTTP Services', (t) => {
   t.test('RDS', (t) => {
     helper.runInTransaction((tx) => {
       const service = new AWS.RDS({
-        credentials: credentials,
+        credentials: FAKE_CREDENTIALS,
         endpoint: endpoint
       })
       service.addRoleToDBCluster({
@@ -159,7 +155,7 @@ tap.test('AWS HTTP Services', (t) => {
   t.test('Redshift', (t) => {
     helper.runInTransaction((tx) => {
       const service = new AWS.Redshift({
-        credentials: credentials,
+        credentials: FAKE_CREDENTIALS,
         endpoint: endpoint
       })
       service.acceptReservedNodeExchange({
@@ -175,7 +171,7 @@ tap.test('AWS HTTP Services', (t) => {
   t.test('Rekognition', (t) => {
     helper.runInTransaction((tx) => {
       const service = new AWS.Rekognition({
-        credentials: credentials,
+        credentials: FAKE_CREDENTIALS,
         endpoint: endpoint
       })
       service.compareFaces({
@@ -202,7 +198,7 @@ tap.test('AWS HTTP Services', (t) => {
   t.test('SES', (t) => {
     helper.runInTransaction((tx) => {
       const service = new AWS.SES({
-        credentials: credentials,
+        credentials: FAKE_CREDENTIALS,
         endpoint: endpoint
       })
       service.cloneReceiptRuleSet({
