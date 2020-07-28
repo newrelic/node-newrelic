@@ -4,11 +4,11 @@
 */
 'use strict'
 
-const common = require('./common')
 const tap = require('tap')
 const utils = require('@newrelic/test-utilities')
 
-const TOPIC_NAME = `delete-aws-sdk-test-topic-${Math.floor(Math.random() * 100000)}`
+const common = require('./common')
+const { createEmptyResponseServer } = require('./aws-server-stubs')
 
 tap.test('SNS', (t) => {
   t.autoend()
@@ -18,24 +18,39 @@ tap.test('SNS', (t) => {
   let sns = null
   let TopicArn = null
 
+  let server = null
+
   t.beforeEach((done) => {
-    helper = utils.TestAgent.makeInstrumented()
-    helper.registerInstrumentation({
-      moduleName: 'aws-sdk',
-      type: 'conglomerate',
-      onRequire: require('../../lib/instrumentation')
-    })
-    AWS = require('aws-sdk')
-    sns = new AWS.SNS({region: 'us-east-1'})
-    sns.createTopic({Name: TOPIC_NAME}, (err, data) => {
-      TopicArn = data.TopicArn
+    server = createEmptyResponseServer()
+    server.listen(0, () => {
+      helper = utils.TestAgent.makeInstrumented()
+      helper.registerInstrumentation({
+        moduleName: 'aws-sdk',
+        type: 'conglomerate',
+        onRequire: require('../../lib/instrumentation')
+      })
+      AWS = require('aws-sdk')
+      const credentials = {
+        accessKeyId: 'test id',
+        secretAccessKey: 'test key'
+      }
+      sns = new AWS.SNS({
+        credentials: credentials,
+        endpoint: `http://localhost:${server.address().port}`,
+        region: 'us-east-1'
+      })
+
       done()
     })
   })
 
   t.afterEach((done) => {
+    server.close()
+    server = null
+
     helper && helper.unload()
-    sns.deleteTopic({TopicArn}, () => done())
+
+    done()
   })
 
   t.test('publish with callback', (t) => {
@@ -43,9 +58,7 @@ tap.test('SNS', (t) => {
       const params = {TopicArn, Message: 'Hello!'}
 
       sns.publish(params, (err) => {
-        if (err) {
-          t.error(err)
-        }
+        t.error(err)
         tx.end()
 
         const args = [t, tx]
@@ -61,7 +74,7 @@ tap.test('SNS', (t) => {
       try {
         await sns.publish(params).promise()
       } catch (error) {
-        t.error()
+        t.error(error)
       }
 
       tx.end()
