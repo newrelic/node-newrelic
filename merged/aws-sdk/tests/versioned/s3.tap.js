@@ -4,9 +4,11 @@
 */
 'use strict'
 
-const common = require('./common')
 const tap = require('tap')
 const utils = require('@newrelic/test-utilities')
+
+const common = require('./common')
+const { createEmptyResponseServer } = require('./aws-server-stubs')
 
 tap.test('S3 buckets', (t) => {
   t.autoend()
@@ -15,42 +17,54 @@ tap.test('S3 buckets', (t) => {
   let AWS = null
   let S3 = null
 
+  let server = null
+  let credentials = {
+    accessKeyId: 'test id',
+    secretAccessKey: 'test key'
+  }
+
   t.beforeEach((done) => {
-    helper = utils.TestAgent.makeInstrumented()
-    helper.registerInstrumentation({
-      moduleName: 'aws-sdk',
-      type: 'conglomerate',
-      onRequire: require('../../lib/instrumentation')
+    server = createEmptyResponseServer()
+    server.listen(0, () => {
+      helper = utils.TestAgent.makeInstrumented()
+      helper.registerInstrumentation({
+        moduleName: 'aws-sdk',
+        type: 'conglomerate',
+        onRequire: require('../../lib/instrumentation')
+      })
+      AWS = require('aws-sdk')
+      S3 = new AWS.S3({
+        credentials: credentials,
+        endpoint: `http://localhost:${server.address().port}`,
+        // allows using generic endpoint, instead of needing a
+        // bucket.endpoint server setup.
+        s3ForcePathStyle: true,
+        apiVersion: '2006-03-01'
+      })
+      done()
     })
-    AWS = require('aws-sdk')
-    S3 = new AWS.S3({apiVersion: '2006-03-01'})
-    done()
   })
 
   t.afterEach((done) => {
+    server.close()
+    server = null
+
     helper && helper.unload()
     done()
   })
 
   t.test('commands with callbacks', (t) => {
     const Bucket = 'delete-aws-sdk-test-bucket-' + Math.floor(Math.random() * 100000)
-    t.tearDown(() => {
-      // Ensure bucket gets deleted even if test goes awry.
-      S3.deleteBucket({Bucket}, () => {})
-    })
 
     helper.runInTransaction((tx) => {
       S3.headBucket({Bucket}, (err) => {
-        t.matches(err, {code: 'NotFound'}, 'should get not found for bucket')
-        S3.createBucket({Bucket}, (err, data) => {
+        t.error(err)
+
+        S3.createBucket({Bucket}, (err) => {
           t.error(err)
-          t.matches(data, {Location: `/${Bucket}`}, 'should have matching location')
+
           S3.deleteBucket({Bucket}, (err) => {
-            // Sometimes S3 doesn't make the bucket quickly enough. The cleanup
-            // in `t.tearDown` should get it after we do all our checks.
-            if (err && err.code !== 'NoSuchBucket') {
-              t.error(err)
-            }
+            t.error(err)
             tx.end()
 
             const args = [t, tx]
@@ -63,37 +77,26 @@ tap.test('S3 buckets', (t) => {
 
   t.test('commands with promises', (t) => {
     const Bucket = 'delete-aws-sdk-test-bucket-' + Math.floor(Math.random() * 100000)
-    t.tearDown(() => {
-      // Ensure bucket gets deleted even if test goes awry.
-      S3.deleteBucket({Bucket}, () => {})
-    })
 
     helper.runInTransaction(async tx => {
-      const bucketParams = {Bucket}
-      let headBucketError = null
       try {
-        await S3.headBucket(bucketParams).promise()
-      } catch (err) {
-        headBucketError = err
-      } finally {
-        t.matches(headBucketError, {code: 'NotFound'}, 'should get not found for bucket')
-      }
-
-      try {
-        const createData = await S3.createBucket(bucketParams).promise()
-        t.matches(createData, {Location: `/${Bucket}`}, 'should have matching location')
+        await S3.headBucket({Bucket}).promise()
       } catch (err) {
         t.error(err)
       }
 
       try {
-        await S3.deleteBucket(bucketParams).promise()
+        // using pathstyle will result in the params being mutated due to this call,
+        // which is why the params are manually pasted in each call.
+        await S3.createBucket({Bucket}).promise()
       } catch (err) {
-        // Sometimes S3 doesn't make the bucket quickly enough. The cleanup
-        // in `t.tearDown` should get it after we do all our checks.
-        if (err && err.code !== 'NoSuchBucket') {
-          t.error(err)
-        }
+        t.error(err)
+      }
+
+      try {
+        await S3.deleteBucket({Bucket}).promise()
+      } catch (err) {
+        t.error(err)
       }
 
       tx.end()
