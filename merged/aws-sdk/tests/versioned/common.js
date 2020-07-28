@@ -5,7 +5,7 @@
 'use strict'
 
 const DATASTORE_PATTERN = /^Datastore/
-const EXTERN_PATTERN = /^External\/.*?amazonaws\.com/
+const EXTERN_PATTERN = /^External\/.*/
 const SNS_PATTERN = /^MessageBroker\/SNS\/Topic/
 const SQS_PATTERN = /^MessageBroker\/SQS\/Queue/
 

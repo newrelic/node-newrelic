@@ -2,10 +2,10 @@
 
 const http = require('http')
 
-function createDynamoDbServer() {
+function createEmptyResponseServer() {
   const server = http.createServer(function(req, res) {
     if (req.method === 'POST') {
-      handleDdbPost(req, res)
+      handlePost(req, res)
       return
     }
 
@@ -16,7 +16,7 @@ function createDynamoDbServer() {
   return server
 }
 
-function handleDdbPost(req, res) {
+function handlePost(req, res) {
   let body = ''
 
   req.on('data', chunk => {
@@ -29,10 +29,10 @@ function handleDdbPost(req, res) {
     // eslint-disable-next-line no-console
     console.log(body)
 
-    // currently, the tests do not rely on real responses back.
-    // it is enough to return something valid to the client
+    // currently, some tests do not rely on real responses back.
+    // it is enough to return something valid to the client.
     res.end()
   })
 }
 
-module.exports = createDynamoDbServer
+module.exports = createEmptyResponseServer

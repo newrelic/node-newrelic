@@ -1,9 +1,9 @@
 'use strict'
 
 const createSqsServer = require('./sqs-server')
-const createDynamoDbServer = require('./dynamodb-server')
+const createEmptyResponseServer = require('./empty-response-server')
 
 module.exports = {
   createSqsServer,
-  createDynamoDbServer
+  createEmptyResponseServer
 }

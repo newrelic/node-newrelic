@@ -9,7 +9,7 @@ const utils = require('@newrelic/test-utilities')
 const async = require('async')
 
 const common = require('./common')
-const { createDynamoDbServer } = require('./aws-server-stubs')
+const { createEmptyResponseServer } = require('./aws-server-stubs')
 
 tap.test('DynamoDB', (t) => {
   t.autoend()
@@ -23,7 +23,7 @@ tap.test('DynamoDB', (t) => {
   let server = null
 
   t.beforeEach((done) => {
-    server = createDynamoDbServer()
+    server = createEmptyResponseServer()
     server.listen(0, () => {
       helper = utils.TestAgent.makeInstrumented()
       helper.registerInstrumentation({
