@@ -103,7 +103,7 @@ function getCreateQueueResponse(endpoint, queueName, callback) {
 }
 
 function replaceQueueUrl(xml, endpoint, queueName) {
-  const modifiedResponse = createQueueResponse.replace(
+  const modifiedResponse = xml.replace(
     '<QueueUrl></QueueUrl>',
     `<QueueUrl>${endpoint}/queue/${queueName}</QueueUrl>`
   )
