@@ -5,6 +5,7 @@ const http = require('http')
 function createEmptyResponseServer() {
   const server = http.createServer(function(req, res) {
     if (
+      req.method === 'GET' ||
       req.method === 'POST' ||
       req.method === 'PUT' ||
       req.method === 'HEAD' ||
@@ -17,7 +18,7 @@ function createEmptyResponseServer() {
     // sometimes the aws-sdk will obfuscate this error
     // so logging out.
     // eslint-disable-next-line no-console
-    console.log('Unhandled request method')
+    console.log('Unhandled request method: ', req.method)
 
     res.statusCode = 500
     res.end('Unhandled request method')
