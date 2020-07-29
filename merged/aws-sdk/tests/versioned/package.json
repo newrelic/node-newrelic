@@ -31,7 +31,9 @@
         "dynamodb.tap.js",
         "http-services.tap.js",
         "instrumentation-supported.tap.js",
-        "s3.tap.js"
+        "s3.tap.js",
+        "sqs.tap.js",
+        "sns.tap.js"
       ]
     },
     {
