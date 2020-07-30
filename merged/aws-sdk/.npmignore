@@ -1,4 +1,7 @@
 package-lock.json
+newrelic_agent.log
 **/node_modules/**
+.eslint*
 .nyc_output
 .vscode
+.github
