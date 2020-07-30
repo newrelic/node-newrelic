@@ -1,17 +1,17 @@
 [![Community Project header](https://github.com/newrelic/open-source-office/raw/master/examples/categories/images/Community_Project.png)](https://github.com/newrelic/open-source-office/blob/master/examples/categories/index.md#community-project)
 
-# New Relic AWS SDK Instrumentation [![AWS SDK CI][1]][2]
+# New Relic AWS SDK Instrumentation [![aws-sdk Instrumentation CI][1]][2]
 
-New Relic's official AWS-SDK package instrumentation for use with [the Node agent](https://github.com/newrelic/node-newrelic). Provides instrumentation for [the AWS SDK (`aws-sdk`) NPM package](https://www.npmjs.com/package/aws-sdk).
+New Relic's official AWS SDK package instrumentation for use with [the Node.js agent](https://github.com/newrelic/node-newrelic). Provides instrumentation for the [AWS SDK (`aws-sdk`)](https://www.npmjs.com/package/aws-sdk) npm package.
 
 ## Installation
 
 This package is [a dependency of the the Node Agent](https://github.com/newrelic/node-newrelic/blob/2121ffdc5001ea1bf9ab473138b9446c1f2a7eef/package.json#L147), and the average user should not need to install it manually.
 
-If you are not the average user, you can add this package to your projet using your package manager of choice (`npm` below), and then `require` the module into your project.
+If you are not the average user, you can add this package to your project using your package manager of choice (`npm` below), and then `require` the module into your project.
 
 ```
-    $ npm install @newrelic/aws-sdk
+$ npm install @newrelic/aws-sdk
 ```
 
 ```javascript
@@ -21,11 +21,11 @@ require('@newrelic/aws-sdk')
 
 ## Getting Started
 
-The library provides automatic instrumentation for the following services of the AWS SDK
+Our instrumentation automatically tracks all SDK calls as "external" activities. In addition, the following have more specific instrumentation to capture additional data store or queue information.
 
-- DynamoDB
-- Simple Notification Service
-- Amazon Simple Queue Service
+- Amazon DynamoDB
+- Amazon Simple Notification Service (SNS)
+- Amazon Simple Queue Service (SQS)
 
 ## Testing
 
@@ -38,21 +38,20 @@ You may also run individual test suites with the following commands
     $ npm run unit
     $ npm run versioned
 
-Some of these tests require [that AWS Credentials](https://docs.aws.amazon.com/amazonswf/latest/awsrbflowguide/set-up-creds.html) be set.
-
-    export AWS_ACCESS_KEY_ID=your_access_key_id
-    export AWS_SECRET_ACCESS_KEY=your_secret_access_key
-
 ## Support
 
 Should you need assistance with New Relic products, you are in good hands with several support channels.
 
+If the issue has been confirmed as a bug or is a feature request, please file a GitHub issue.
+
 **Support Channels**
 
-* [New Relic and AWS](https://docs.newrelic.com/docs/accounts/install-new-relic/partner-based-installation/new-relic-aws-amazon-web-services)
+* [New Relic and AWS](https://docs.newrelic.com/docs/accounts/install-new-relic/partner-based-installation/new-relic-aws-amazon-web-services). AWS specific agent documentation
+* [New Relic Documentation](https://docs.newrelic.com/docs/agents/nodejs-agent/getting-started/introduction-new-relic-nodejs): Comprehensive guidance for using our platform
 * [New Relic Community](https://discuss.newrelic.com/c/support-products-agents/node-js-agent/): The best place to engage in troubleshooting questions
 * [New Relic Developer](https://developer.newrelic.com/): Resources for building a custom observability applications
 * [New Relic University](https://learn.newrelic.com/): A range of online training for New Relic users of every level
+* [New Relic Technical Support](https://support.newrelic.com/) 24/7/365 ticketed support. Read more about our [Technical Support Offerings](https://docs.newrelic.com/docs/licenses/license-information/general-usage-licenses/support-plan).
 
 ## Privacy
 
@@ -63,28 +62,29 @@ We define "Personal Data" as any information relating to an identified or identi
 Please review [New Relic’s General Data Privacy Notice](https://newrelic.com/termsandconditions/privacy) for more information.
 
 ## Roadmap
-See our [roadmap](https://github.com/newrelic/node-newrelic/blob/main/ROADMAP_Node.md), to learn more about our product vision, understand our plans, and provide us valuable feedback. Remove this section if it’s not needed.
+See our [roadmap](https://github.com/newrelic/node-newrelic/blob/main/ROADMAP_Node.md), to learn more about our product vision, understand our plans, and provide us valuable feedback.
 
 ## Contributing
 
 We encourage your contributions to improve New Relic's AWS SDK Instrumentation! Keep in mind when you submit your pull request, you'll need to sign the CLA via the click-through using CLA-Assistant. You only have to sign the CLA one time per project.
-If you have any questions, or to execute our corporate CLA, required if your contribution is on behalf of a company,  please drop us an email at opensource@newrelic.com.
 
-**A note about vulnerabilities**
+If you have any questions, or to execute our corporate CLA, required if your contribution is on behalf of a company, please drop us an email at opensource@newrelic.com.
 
-As noted in our [security policy](https://github.com/newrelic/.github/blob/master/SECURITY.md), New Relic is committed to the privacy and security of our customers and their data. We believe that providing coordinated disclosure by security researchers and engaging with the security community are important means to achieve our security goals.
+To [all contributors](https://github.com/newrelic/node-newrelic-aws-sdk/graphs/contributors), we thank you! Without your contribution, this project would not be what it is today.
 
-If you believe you have found a security vulnerability in this project or any of New Relic's products or websites, we welcome and greatly appreciate you reporting it to New Relic through [HackerOne](https://hackerone.com/newrelic).
+We also host a community project page dedicated to
+the [New Relic AWS SDK Instrumentation](https://opensource.newrelic.com/newrelic/node-newrelic-aws-sdk) package.
 
 If you would like to contribute to this project, please review [these guidelines](https://github.com/newrelic/node-newrelic-aws-sdk/blob/main/CONTRIBUTING.md).
 
-To [all contributors](https://github.com/newrelic/node-newrelic-aws-sdk/graphs/contributors), we thank you!  Without your contribution, this project would not be what it is today.
+**A note about vulnerabilities**
 
-We also host a community project page dedicated to
-[the New Relic AWS SDK Instrumentation package](https://opensource.newrelic.com/newrelic/node-newrelic-aws-sdk).
+As noted in our [security policy](https://github.com/newrelic/node-newrelic-aws-sdk/security/policy), New Relic is committed to the privacy and security of our customers and their data. We believe that providing coordinated disclosure by security researchers and engaging with the security community are important means to achieve our security goals.
+
+If you believe you have found a security vulnerability in this project or any of New Relic's products or websites, we welcome and greatly appreciate you reporting it to New Relic through [HackerOne](https://hackerone.com/newrelic).
 
 ## License
 The New Relic AWS SDK Instrumentation package is licensed under the [Apache 2.0](http://apache.org/licenses/LICENSE-2.0.txt) License.
 
-[1]: https://github.com/newrelic/node-newrelic-aws-sdk/workflows/AWS%20SDK%20CI/badge.svg
-[2]: https://github.com/newrelic/node-newrelic-aws-sdk/actions
+[1]: https://github.com/newrelic/node-newrelic-aws-sdk/workflows/aws-sdk%20Instrumentation%20CI/badge.svg
+[2]: https://github.com/newrelic/node-newrelic-aws-sdk/actions?query=workflow%3A%22aws-sdk+Instrumentation+CI%22
