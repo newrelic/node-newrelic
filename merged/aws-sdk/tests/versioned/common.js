@@ -1,7 +1,11 @@
+/*
+* Copyright 2020 New Relic Corporation. All rights reserved.
+* SPDX-License-Identifier: Apache-2.0
+*/
 'use strict'
 
 const DATASTORE_PATTERN = /^Datastore/
-const EXTERN_PATTERN = /^External\/.*?amazonaws\.com/
+const EXTERN_PATTERN = /^External\/.*/
 const SNS_PATTERN = /^MessageBroker\/SNS\/Topic/
 const SQS_PATTERN = /^MessageBroker\/SQS\/Queue/
 

@@ -1,0 +1,99 @@
+{
+  "lastUpdated": "Thu Jul 23 2020 15:24:55 GMT-0700 (Pacific Daylight Time)",
+  "projectName": "New Relic AWS-SDK Instrumentation",
+  "projectUrl": "https://github.com/newrelic/node-newrelic-aws-sdk",
+  "includeDev": true,
+  "dependencies": {},
+  "devDependencies": {
+    "@newrelic/test-utilities@4.0.0": {
+      "name": "@newrelic/test-utilities",
+      "version": "4.0.0",
+      "range": "^4.0.0",
+      "licenses": "Apache-2.0",
+      "repoUrl": "https://github.com/newrelic/node-test-utilities",
+      "versionedRepoUrl": "https://github.com/newrelic/node-test-utilities/tree/v4.0.0",
+      "licenseFile": "node_modules/@newrelic/test-utilities/LICENSE",
+      "licenseUrl": "https://github.com/newrelic/node-test-utilities/blob/v4.0.0/LICENSE",
+      "licenseTextSource": "file",
+      "publisher": "New Relic Node.js agent team",
+      "email": "nodejs@newrelic.com"
+    },
+    "async@2.6.3": {
+      "name": "async",
+      "version": "2.6.3",
+      "range": "^2.6.1",
+      "licenses": "MIT",
+      "repoUrl": "https://github.com/caolan/async",
+      "versionedRepoUrl": "https://github.com/caolan/async/tree/v2.6.3",
+      "licenseFile": "node_modules/async/LICENSE",
+      "licenseUrl": "https://github.com/caolan/async/blob/v2.6.3/LICENSE",
+      "licenseTextSource": "file",
+      "publisher": "Caolan McMahon"
+    },
+    "aws-sdk@2.719.0": {
+      "name": "aws-sdk",
+      "version": "2.719.0",
+      "range": "^2.403.0",
+      "licenses": "Apache-2.0",
+      "repoUrl": "https://github.com/aws/aws-sdk-js",
+      "versionedRepoUrl": "https://github.com/aws/aws-sdk-js/tree/v2.719.0",
+      "licenseFile": "node_modules/aws-sdk/LICENSE.txt",
+      "licenseUrl": "https://github.com/aws/aws-sdk-js/blob/v2.719.0/LICENSE.txt",
+      "licenseTextSource": "file",
+      "publisher": "Amazon Web Services",
+      "url": "https://aws.amazon.com/"
+    },
+    "eslint@5.16.0": {
+      "name": "eslint",
+      "version": "5.16.0",
+      "range": "^5.12.1",
+      "licenses": "MIT",
+      "repoUrl": "https://github.com/eslint/eslint",
+      "versionedRepoUrl": "https://github.com/eslint/eslint/tree/v5.16.0",
+      "licenseFile": "node_modules/eslint/LICENSE",
+      "licenseUrl": "https://github.com/eslint/eslint/blob/v5.16.0/LICENSE",
+      "licenseTextSource": "file",
+      "publisher": "Nicholas C. Zakas",
+      "email": "nicholas+npm@nczconsulting.com"
+    },
+    "newrelic@6.11.0": {
+      "name": "newrelic",
+      "version": "6.11.0",
+      "range": "^6.11.0",
+      "licenses": "Apache-2.0",
+      "repoUrl": "https://github.com/newrelic/node-newrelic",
+      "versionedRepoUrl": "https://github.com/newrelic/node-newrelic/tree/v6.11.0",
+      "licenseFile": "node_modules/newrelic/LICENSE",
+      "licenseUrl": "https://github.com/newrelic/node-newrelic/blob/v6.11.0/LICENSE",
+      "licenseTextSource": "file",
+      "publisher": "New Relic Node.js agent team",
+      "email": "nodejs@newrelic.com"
+    },
+    "sinon@7.5.0": {
+      "name": "sinon",
+      "version": "7.5.0",
+      "range": "^7.2.3",
+      "licenses": "BSD-3-Clause",
+      "repoUrl": "https://github.com/sinonjs/sinon",
+      "versionedRepoUrl": "https://github.com/sinonjs/sinon/tree/v7.5.0",
+      "licenseFile": "node_modules/sinon/LICENSE",
+      "licenseUrl": "https://github.com/sinonjs/sinon/blob/v7.5.0/LICENSE",
+      "licenseTextSource": "file",
+      "publisher": "Christian Johansen"
+    },
+    "tap@12.7.0": {
+      "name": "tap",
+      "version": "12.7.0",
+      "range": "^12.4.0",
+      "licenses": "ISC",
+      "repoUrl": "https://github.com/tapjs/node-tap",
+      "versionedRepoUrl": "https://github.com/tapjs/node-tap/tree/v12.7.0",
+      "licenseFile": "node_modules/tap/LICENSE",
+      "licenseUrl": "https://github.com/tapjs/node-tap/blob/v12.7.0/LICENSE",
+      "licenseTextSource": "file",
+      "publisher": "Isaac Z. Schlueter",
+      "email": "i@izs.me",
+      "url": "http://blog.izs.me"
+    }
+  }
+}

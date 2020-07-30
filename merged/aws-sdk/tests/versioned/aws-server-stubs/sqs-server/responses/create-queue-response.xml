@@ -1,0 +1,8 @@
+<CreateQueueResponse>
+  <CreateQueueResult>
+      <QueueUrl></QueueUrl>
+  </CreateQueueResult>
+  <ResponseMetadata>
+      <RequestId>cb919c0a-9bce-4afe-9b48-9bdf2412bb67</RequestId>
+  </ResponseMetadata>
+</CreateQueueResponse>

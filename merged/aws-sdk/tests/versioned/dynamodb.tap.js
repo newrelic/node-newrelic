@@ -1,64 +1,70 @@
+/*
+* Copyright 2020 New Relic Corporation. All rights reserved.
+* SPDX-License-Identifier: Apache-2.0
+*/
 'use strict'
 
-const common = require('./common')
 const tap = require('tap')
 const utils = require('@newrelic/test-utilities')
 const async = require('async')
 
-const RETRY_MS = 1500
-const RETRY_MAX_MS = 30000
+const common = require('./common')
+const { createEmptyResponseServer, FAKE_CREDENTIALS } = require('./aws-server-stubs')
 
-// NOTE: these take a while to run and can trigger tap CLI file timeout
-// This can be avoided via --no-timeout or --timeout=<value>
-tap.test('DynamoDB', {timeout: 90000}, (t) => {
+tap.test('DynamoDB', (t) => {
   t.autoend()
 
   let helper = null
   let AWS = null
-  let notInstrumentedDdb = null
 
   let tableName = null
   let tests = null
 
+  let server = null
+
   t.beforeEach((done) => {
-    // For administrative tasks we don't want to impact metrics or risk breaking
-    const notInstrumentedAws = require('aws-sdk')
-    notInstrumentedDdb = new notInstrumentedAws.DynamoDB({region: 'us-east-1'})
+    server = createEmptyResponseServer()
+    server.listen(0, () => {
+      helper = utils.TestAgent.makeInstrumented()
+      helper.registerInstrumentation({
+        moduleName: 'aws-sdk',
+        type: 'conglomerate',
+        onRequire: require('../../lib/instrumentation')
+      })
 
-    // Cleanup require cache so instrumentation will work afterwards.
-    const awsPath = require.resolve('aws-sdk')
-    delete require.cache[awsPath]
+      AWS = require('aws-sdk')
 
-    helper = utils.TestAgent.makeInstrumented()
-    helper.registerInstrumentation({
-      moduleName: 'aws-sdk',
-      type: 'conglomerate',
-      onRequire: require('../../lib/instrumentation')
-    })
+      const endpoint = `http://localhost:${server.address().port}`
+      const ddb = new AWS.DynamoDB({
+        credentials: FAKE_CREDENTIALS,
+        endpoint: endpoint,
+        region: 'us-east-1'
+      })
+      const docClient = new AWS.DynamoDB.DocumentClient({
+        credentials: FAKE_CREDENTIALS,
+        endpoint: endpoint,
+        region: 'us-east-1'
+      })
 
-    AWS = require('aws-sdk')
-    const ddb = new AWS.DynamoDB({region: 'us-east-1'})
-    const docClient = new AWS.DynamoDB.DocumentClient({region: 'us-east-1'})
-
-    tableName = `delete-aws-sdk-test-table-${Math.floor(Math.random() * 100000)}`
-    tests = createTests(ddb, docClient, tableName)
-
-    done()
-  })
-
-  t.afterEach((done) => {
-    deleteTableIfNeeded(t, notInstrumentedDdb, tableName, () => {
-      helper && helper.unload()
-
-      helper = null
-
-      notInstrumentedDdb = null
-      AWS = null
-      tests = null
-      tableName = null
+      tableName = `delete-aws-sdk-test-table-${Math.floor(Math.random() * 100000)}`
+      tests = createTests(ddb, docClient, tableName)
 
       done()
     })
+  })
+
+  t.afterEach((done) => {
+    server.close()
+    server = null
+
+    helper && helper.unload()
+    helper = null
+
+    AWS = null
+    tests = null
+    tableName = null
+
+    done()
   })
 
   t.test('commands with callback', (t) => {
@@ -67,15 +73,6 @@ tap.test('DynamoDB', {timeout: 90000}, (t) => {
         t.comment(`Testing ${cfg.method}`)
         cfg.api[cfg.method](cfg.params, (err) => {
           t.error(err)
-
-          if (cfg.method === 'createTable') {
-            const segment = helper.agent.tracer.getSegment()
-
-            return waitTableCreated(t, notInstrumentedDdb, tableName, segment)
-              .then(() => {
-                setImmediate(cb)
-              })
-          }
 
           return setImmediate(cb)
         })
@@ -99,11 +96,6 @@ tap.test('DynamoDB', {timeout: 90000}, (t) => {
 
         try {
           await cfg.api[cfg.method](cfg.params).promise()
-
-          if (cfg.method === 'createTable') {
-            const segment = helper.agent.tracer.getSegment()
-            await waitTableCreated(t, notInstrumentedDdb, tableName, segment)
-          }
         } catch (err) {
           t.error(err)
         }
@@ -151,81 +143,6 @@ function finish(t, tests, tx) {
   })
 
   t.end()
-}
-
-async function waitTableCreated(t, ddb, tableName, segment, started) {
-  // A hack to avoid this showing via outbound http instrumentation.
-  forceOpaqueSegment(segment)
-
-  let data = null
-  try {
-    data = await ddb.describeTable({ TableName: tableName }).promise()
-  } catch (err) {
-    t.error(err)
-  }
-
-  if (data && data.Table.TableStatus === 'ACTIVE') {
-    segment.__NR_test_restoreOpaque()
-
-    t.comment('Table is active.')
-    return
-  }
-
-  const currentTime = Date.now()
-  const startTime = started || currentTime
-  const elapsed = currentTime - startTime
-
-  if (elapsed > RETRY_MAX_MS) {
-    segment.__NR_test_restoreOpaque()
-
-    t.ok(false, `Should not take longer than ${RETRY_MAX_MS}ms for table create.`)
-    return
-  }
-
-  t.comment(`Table does not yet exist, scheduling ${RETRY_MS}ms out.`)
-  await delay(RETRY_MS)
-  await waitTableCreated(t, ddb, tableName, segment, startTime)
-}
-
-function deleteTableIfNeeded(t, api, tableName, cb) {
-  api.describeTable({ TableName: tableName }, (err, data) => {
-    const tableExists = !(err && err.code === 'ResourceNotFoundException')
-
-    if (!tableExists || (data && data.Table.TableStatus === 'DELETING')) {
-      // table deleted or in process of deleting, all is good.
-      return setImmediate(cb)
-    }
-
-    t.error(err)
-
-    t.comment('Attempting to manually delete table')
-    const deleteTableParams = getDeleteTableParams(tableName)
-    return api.deleteTable(deleteTableParams, (err) => {
-      t.error(err)
-      cb()
-    })
-  })
-}
-
-/**
- * Manually sets segment.opaque to true.
- * Adds __NR_test_restoreOpaque to restore state.
- * @param {*} segment
- */
-function forceOpaqueSegment(segment) {
-  const originalOpaque = segment.opaque
-  // Our promise instrumentation will reset opaque status each call
-  // so we always need to set this.
-  segment.opaque = true
-
-  if (segment.__NR_test_restoreOpaque != null) {
-    return
-  }
-
-  segment.__NR_test_restoreOpaque = function restoreOpaque() {
-    segment.opaque = originalOpaque
-    delete segment.__NR_test_restoreOpaque
-  }
 }
 
 function createTests(ddb, docClient, tableName) {
@@ -363,10 +280,4 @@ function getDocQueryParams(tableName, uniqueArtist) {
   }
 
   return params
-}
-
-function delay(delayms) {
-  return new Promise(function(resolve) {
-    setTimeout(resolve, delayms)
-  })
 }
