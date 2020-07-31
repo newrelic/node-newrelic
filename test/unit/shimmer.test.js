@@ -53,7 +53,7 @@ describe('shimmer', function() {
             ++counter
             onRequireArgs = arguments
             if (throwsError) {
-                throw new Error('This threw an error! Oh no!')
+              throw new Error('This threw an error! Oh no!')
             }
           },
           onError: function() {}
