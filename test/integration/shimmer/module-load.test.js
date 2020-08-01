@@ -39,9 +39,7 @@ tap.test('Test Module Instrumentation Loading', (t) => {
     shimmer.registerInstrumentation({
       moduleName: modulePathFromShimmer,
       type: null,
-      onRequire: () => {
-        // throw new Error('our instrumentation errors')
-      }
+      onRequire: () => {}
     })
 
     // use reinstrument helper method to
@@ -53,6 +51,40 @@ tap.test('Test Module Instrumentation Loading', (t) => {
     t.ok(module, 'loaded module')
     t.equals(module(), 'hello world', 'module behaves as expected')
     t.ok(module.__NR_instrumented, '__NR_instrumented set and true')
+    t.end()
+  })
+
+  t.test("__NR_instrumented_errored set correctly", (t) => {
+    // path to our module fixture from this file
+    const modulePathLocal = './module-load-fixture-errored'
+
+    // path to our module fixture from the shimmer --
+    // needed since `reinstrument` results in a call
+    // to require _from_ from the shimmer
+    const modulePathFromShimmer = '../test/integration/shimmer/module-load-fixture-errored'
+
+    // register our instrumentation == onRequire will be
+    // the code that's normally in the "instrument" function
+    // that a instrumentation module exports
+    shimmer.registerInstrumentation({
+      moduleName: modulePathFromShimmer,
+      type: null,
+      onRequire: () => {
+        console.log('errored?')
+        throw new Error('our instrumentation errors')
+      }
+    })
+
+    // use reinstrument helper method to
+    // manually instrument our module
+    shimmer.reinstrument(agent, modulePathFromShimmer)
+
+    const module = require(modulePathLocal)
+
+console.log('module', module);
+    t.ok(module, 'loaded module')
+    t.equals(module(), 'hello world', 'module behaves as expected')
+    t.ok(module.__NR_instrumented_errored, '__NR_instrumented_errored set and true')
     t.end()
   })
 })
