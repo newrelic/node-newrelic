@@ -70,7 +70,6 @@ tap.test('Test Module Instrumentation Loading', (t) => {
       moduleName: modulePathFromShimmer,
       type: null,
       onRequire: () => {
-        console.log('errored?')
         throw new Error('our instrumentation errors')
       }
     })
@@ -81,7 +80,6 @@ tap.test('Test Module Instrumentation Loading', (t) => {
 
     const module = require(modulePathLocal)
 
-console.log('module', module);
     t.ok(module, 'loaded module')
     t.equals(module(), 'hello world', 'module behaves as expected')
     t.ok(module.__NR_instrumented_errored, '__NR_instrumented_errored set and true')
