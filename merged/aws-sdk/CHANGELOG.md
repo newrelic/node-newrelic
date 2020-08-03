@@ -1,3 +1,20 @@
+### 2.0.0 (2020-08-03):
+
+* Updated to Apache 2.0 license.
+* Bumped minimum peer dependency (and dev dependency) of newrelic (agent) to 6.11 for license matching.
+* Added third party notices file and metadata for dependencies.
+* Updated README with more detail.
+* Added issue templates for bugs and enhancements.
+* Added code of conduct file.
+* Added contributing guide.
+* Added pull request template.
+* Migrated CI to GitHub Actions.
+* Added copyright headers to all source files.
+* Bumped @newrelic/test-utils to 4.0.0
+* Added additional items to .npmignore.
+* Removed AWS servers as dependency for versioned tests.
+  Enables versioned test to run successfully for forked repo PRs.
+
 ### 1.1.3 (2020-06-12):
 
 * Fixed issue where instrumentation would produce a `TypeError: Cannot read property 'lastIndexOf' of undefined` error if a program called `sqs.receiveMessage` without a `QueueUrl` parameter.
