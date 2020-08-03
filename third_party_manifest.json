@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "Thu Jul 23 2020 09:25:10 GMT-0700 (Pacific Daylight Time)",
+  "lastUpdated": "Mon Aug 03 2020 12:31:39 GMT-0700 (Pacific Daylight Time)",
   "projectName": "New Relic Node Agent",
   "projectUrl": "https://github.com/newrelic/node-newrelic",
   "includeDev": true,
@@ -28,15 +28,15 @@
       "licenseTextSource": "file",
       "publisher": "Google Inc."
     },
-    "@newrelic/aws-sdk@1.1.2": {
+    "@newrelic/aws-sdk@2.0.0": {
       "name": "@newrelic/aws-sdk",
-      "version": "1.1.2",
-      "range": "^1.1.1",
-      "licenses": "Custom: https://github.com/newrelic/node-newrelic",
+      "version": "2.0.0",
+      "range": "^2.0.0",
+      "licenses": "Apache-2.0",
       "repoUrl": "https://github.com/newrelic/node-newrelic-aws-sdk",
-      "versionedRepoUrl": "https://github.com/newrelic/node-newrelic-aws-sdk/tree/v1.1.2",
+      "versionedRepoUrl": "https://github.com/newrelic/node-newrelic-aws-sdk/tree/v2.0.0",
       "licenseFile": "node_modules/@newrelic/aws-sdk/LICENSE",
-      "licenseUrl": "https://github.com/newrelic/node-newrelic-aws-sdk/blob/v1.1.2/LICENSE",
+      "licenseUrl": "https://github.com/newrelic/node-newrelic-aws-sdk/blob/v2.0.0/LICENSE",
       "licenseTextSource": "file",
       "publisher": "New Relic Node.js agent team",
       "email": "nodejs@newrelic.com"
