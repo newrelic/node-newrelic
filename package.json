@@ -174,7 +174,7 @@
     "got": "^8.0.1",
     "http-errors": "^1.7.3",
     "jsdoc": "^3.6.3",
-    "lodash": "^4.17.14",
+    "lodash": "^4.17.19",
     "memcached": ">=0.2.8",
     "minami": "^1.1.1",
     "mongodb": "^3.3.3",
