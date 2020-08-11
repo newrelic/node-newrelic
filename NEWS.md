@@ -3,7 +3,7 @@
 * Fixes obfuscation of SQL queries with large data inserts.  
 Special thanks to Tomáš Hanáček (@tomashanacek) for tracking down the issue and providing the fix.
 * On failed instrumentation, prevent multiple requires from re-wrapping shims.
-Special thanks to Ryan Copley (@RyanCopely) for the contribution. 
+Special thanks to Ryan Copley (@RyanCopley) for the contribution. 
 * Upgrade `async` to `v3.2.0`. Special thanks to Yohan Siguret (@Crow-EH) for the contribution
 * Bumped `@newrelic/native-metrics` to `^5.3.0`.
 * Bumped `@newrelic/aws-sdk` to `^2.0.0`.
