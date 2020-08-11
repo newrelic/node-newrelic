@@ -1,3 +1,18 @@
+### 6.12.0 (2020-08-11):
+
+* Fixes obfuscation of SQL queries with large data inserts.  
+Special thanks to Tomáš Hanáček (@tomashanacek) for tracking down the issue and providing the fix.
+* On failed instrumentation, prevent multiple requires from re-wrapping shims.
+Special thanks to Ryan Copley (@RyanCopley) for the contribution. 
+* Upgrade `async` to `v3.2.0`. Special thanks to Yohan Siguret (@Crow-EH) for the contribution
+* Bumped `@newrelic/native-metrics` to `^5.3.0`.
+* Bumped `@newrelic/aws-sdk` to `^2.0.0`.
+* Bumped `node-test-utilities` to `^4.0.0`.
+* Bumped `@newrelic/superagent` to `^3.0.0`.
+* Bumps `@newrelic/koa` to `^4.0.0`.
+* Updated `SECURITY.md` with coordinated disclosure program link.
+* Updated guidelines and templates for contributing to the project.
+
 ### 6.11.0 (2020-07-07):
 
 * Updated to Apache 2.0 license
