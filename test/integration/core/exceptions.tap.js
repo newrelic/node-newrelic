@@ -10,6 +10,9 @@ const cp = require('child_process')
 const path = require('path')
 const helper = require('../../lib/agent_helper')
 const helpersDir = path.join(path.resolve(__dirname, '../../'), 'helpers')
+const fs = require('fs')
+const pipePath = '/tmp/newrelic-telemetry'
+const shouldUsePipe = fs.existsSync(pipePath)
 
 tap.test('Uncaught exceptions', (t) => {
   var proc = startProc()
@@ -83,13 +86,30 @@ tap.test('Triggers harvest while in serverless mode', (t) => {
   var message = 'I am a test error'
   var messageReceived = false
   var payload = ''
-  proc.stdout.on('data', function bufferData(data) {
-    payload += data.toString('utf8')
-  })
+  if (!shouldUsePipe) {
+    proc.stdout.on('data', function bufferData(data) {
+      payload += data.toString('utf8')
+    })
+  }
 
-  proc.on('message', function(errors) {
+  const getPayloadFromPipe = function() {
+    return fs.promises.readFile(pipePath)
+      .then(data => {
+        payload += data.toString('utf8')
+        return payload
+      })
+      .catch(err => {
+        throw err
+      }).finally(() => payload)
+  }
+
+  proc.on('message', async function(errors) {
     messageReceived = true
     t.equal(errors.count, 0, 'should have harvested the error')
+
+    if (shouldUsePipe) {
+      await getPayloadFromPipe()
+    }
 
     const lambdaPayload = findLambdaPayload(payload)
     t.ok(lambdaPayload, 'should find lambda payload log line')
