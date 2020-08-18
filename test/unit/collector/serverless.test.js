@@ -18,9 +18,9 @@ const fs = require('fs')
 const helper = require('../../lib/agent_helper')
 const API = require('../../../lib/collector/serverless')
 const serverfulAPI = require('../../../lib/collector/api')
-
-const pipePath = '/tmp/newrelic-telemetry'
-const shouldUsePipe = fs.existsSync(pipePath)
+const path = require('path')
+const NEWRELIC_PIPE_PATH = path.resolve('/tmp', 'newrelic-telemetry')
+const shouldUsePipe = fs.existsSync(NEWRELIC_PIPE_PATH)
 
 describe('ServerlessCollector API', () => {
   let api = null
@@ -168,13 +168,8 @@ describe('ServerlessCollector API', () => {
     let logStub = null
 
     beforeEach(() => {
-      if (shouldUsePipe) {
-        logStub = sinon.stub(fs, 'writeFileSync').callsFake(() => {
-        })
-      } else {
-        logStub = sinon.stub(process.stdout, 'write').callsFake(() => {
-        })
-      }
+      logStub = sinon.stub(process.stdout, 'write').callsFake(() => {
+      })
     })
 
     afterEach(() => {
@@ -186,11 +181,8 @@ describe('ServerlessCollector API', () => {
       api.flushPayload(() => {
         let logPayload = null
 
-        if (shouldUsePipe) {
-          logPayload = JSON.parse(logStub.args[0][1])
-        } else {
-          logPayload = JSON.parse(logStub.args[0][0])
-        }
+        logPayload = JSON.parse(logStub.args[0][0])
+
         expect(logPayload).to.be.an('array')
         expect(logPayload[0]).to.be.a('number')
 
@@ -233,11 +225,11 @@ describe('ServerlessCollector API', () => {
 describe('ServerlessCollector with constructor-injected pipe', () => {
   let api = null
   let agent = null
-  const customPath = '/tmp/custom-output'
+  const customPath = path.resolve('/tmp', 'custom-output')
 
   before(async function() {
     // create a placeholder file so we can test custom paths
-    process.env.pipePath = customPath
+    process.env.NEWRELIC_PIPE_PATH = customPath
     await fs.open(customPath, 'w', (err, fd) => {
       expect(err).to.be.null
       expect(fd).to.be.ok
@@ -261,7 +253,7 @@ describe('ServerlessCollector with constructor-injected pipe', () => {
       },
       app_name: ['TEST'],
       license_key: 'license key here',
-      pipePath: customPath
+      NEWRELIC_PIPE_PATH: customPath
     })
     agent.reconfigure = () => {}
     agent.setState = () => {}
@@ -273,7 +265,7 @@ describe('ServerlessCollector with constructor-injected pipe', () => {
     helper.unloadAgent(agent)
   })
 
-  describe('#flushPayload', () => {
+  describe('#flushPayloadToPipe', () => {
     let logStub = null
 
     beforeEach(() => {
