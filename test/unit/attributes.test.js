@@ -208,6 +208,65 @@ tap.test('#get', (t) => {
   })
 })
 
+tap.test('#hasValidDestination', (t) => {
+  t.autoend()
+
+  let agent = null
+
+  t.beforeEach((done) => {
+    agent = helper.loadMockedAgent()
+    done()
+  })
+
+  t.afterEach((done) => {
+    helper.unloadAgent(agent)
+    done()
+  })
+
+  t.test('should return true if single destination valid', (t) => {
+    const attributes = new Attributes(TRANSACTION_SCOPE)
+    const hasDestination = attributes.hasValidDestination(DESTINATIONS.TRANS_EVENT, 'testAttr')
+
+    t.equal(hasDestination, true)
+    t.end()
+  })
+
+  t.test('should return true if all destinations valid', (t) => {
+    const attributes = new Attributes(TRANSACTION_SCOPE)
+    const destinations = DESTINATIONS.TRANS_EVENT | DESTINATIONS.TRANS_TRACE
+    const hasDestination = attributes.hasValidDestination(destinations, 'testAttr')
+
+    t.equal(hasDestination, true)
+    t.end()
+  })
+
+  t.test('should return true if only one destination valid', (t) => {
+    const attributeName = 'testAttr'
+    agent.config.transaction_events.attributes.exclude = [attributeName]
+    agent.config.emit('transaction_events.attributes.exclude')
+
+    const attributes = new Attributes(TRANSACTION_SCOPE)
+    const destinations = DESTINATIONS.TRANS_EVENT | DESTINATIONS.TRANS_TRACE
+    const hasDestination = attributes.hasValidDestination(destinations, attributeName)
+
+    t.equal(hasDestination, true)
+    t.end()
+  })
+
+  t.test('should return false if no valid destinations', (t) => {
+    const attributeName = 'testAttr'
+    agent.config.attributes.exclude = [attributeName]
+    agent.config.emit('attributes.exclude')
+
+    const attributes = new Attributes(TRANSACTION_SCOPE)
+    const destinations = DESTINATIONS.TRANS_EVENT | DESTINATIONS.TRANS_TRACE
+    const hasDestination = attributes.hasValidDestination(destinations, attributeName)
+
+    t.equal(hasDestination, false)
+    t.end()
+  })
+})
+
 tap.test('#reset', (t) => {
   t.autoend()
 
