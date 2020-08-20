@@ -87,7 +87,7 @@ tap.test('Triggers harvest while in serverless mode', (t) => {
     payload += data.toString('utf8')
   })
 
-  proc.on('message', async function(errors) {
+  proc.on('message', function(errors) {
     messageReceived = true
     t.equal(errors.count, 0, 'should have harvested the error')
 

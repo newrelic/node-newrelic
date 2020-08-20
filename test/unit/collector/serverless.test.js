@@ -19,8 +19,6 @@ const helper = require('../../lib/agent_helper')
 const API = require('../../../lib/collector/serverless')
 const serverfulAPI = require('../../../lib/collector/api')
 const path = require('path')
-const NEWRELIC_PIPE_PATH = path.resolve('/tmp', 'newrelic-telemetry')
-const shouldUsePipe = fs.existsSync(NEWRELIC_PIPE_PATH)
 
 describe('ServerlessCollector API', () => {
   let api = null
@@ -201,11 +199,7 @@ describe('ServerlessCollector API', () => {
       api.flushPayload(() => {
         let logPayload = null
 
-        if (shouldUsePipe) {
-          logPayload = JSON.parse(logStub.getCall(0).args[1])
-        } else {
-          logPayload = JSON.parse(logStub.getCall(0).args[0])
-        }
+        logPayload = JSON.parse(logStub.getCall(0).args[0])
 
         const buf = Buffer.from(logPayload[2], 'base64')
 
@@ -222,7 +216,7 @@ describe('ServerlessCollector API', () => {
 })
 
 
-describe('ServerlessCollector with constructor-injected pipe', () => {
+describe('ServerlessCollector with output to custom pipe', () => {
   let api = null
   let agent = null
   const customPath = path.resolve('/tmp', 'custom-output')
@@ -266,24 +260,24 @@ describe('ServerlessCollector with constructor-injected pipe', () => {
   })
 
   describe('#flushPayloadToPipe', () => {
-    let logStub = null
+    let writeFileSyncStub = null
 
     beforeEach(() => {
-      logStub = sinon.stub(fs, 'writeFileSync').callsFake(() => {})
+      writeFileSyncStub = sinon.stub(fs, 'writeFileSync').callsFake(() => {})
     })
 
     afterEach(() => {
-      logStub.restore()
+      writeFileSyncStub.restore()
     })
 
     it('compresses full payload and writes formatted to stdout', (done) => {
       api.payload = {type: 'test payload'}
       api.flushPayload(() => {
-        const logPayload = JSON.parse(logStub.args[0][1])
-        expect(logPayload).to.be.an('array')
-        expect(logPayload[0]).to.be.a('number')
-        expect(logPayload[1]).to.equal('NR_LAMBDA_MONITORING')
-        expect(logPayload[2]).to.be.a('string')
+        const writtenPayload = JSON.parse(writeFileSyncStub.args[0][1])
+        expect(writtenPayload).to.be.an('array')
+        expect(writtenPayload[0]).to.be.a('number')
+        expect(writtenPayload[1]).to.equal('NR_LAMBDA_MONITORING')
+        expect(writtenPayload[2]).to.be.a('string')
 
         done()
       })
@@ -295,8 +289,8 @@ describe('ServerlessCollector with constructor-injected pipe', () => {
       }
 
       api.flushPayload(() => {
-        const logPayload = JSON.parse(logStub.getCall(0).args[1])
-        const buf = Buffer.from(logPayload[2], 'base64')
+        const writtenPayload = JSON.parse(writeFileSyncStub.getCall(0).args[1])
+        const buf = Buffer.from(writtenPayload[2], 'base64')
 
         zlib.gunzip(buf, (err, unpack) => {
           expect(err).to.be.null
