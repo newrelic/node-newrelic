@@ -1,9 +1,15 @@
+### 6.12.1 (2020-08-20):
+
+* **Security fix:** Resolves an issue where transaction traces will still capture the request URI when the Node.js agent is configured to exclude the 'request.uri' attribute. This can be problematic for certain customers in environments where sensitive information is included in the URI. See security bulletin [NR20-02](https://docs.newrelic.com/docs/security/new-relic-security/security-bulletins/security-bulletin-nr20-02).
+
+  The request URI will now be excluded from transaction traces if the 'request.uri' attribute has been set to be excluded at either the top-level 'attributes.exclude' configuration or at the 'transaction_tracer.attributes.exclude' configuration.
+
 ### 6.12.0 (2020-08-11):
 
-* Fixes obfuscation of SQL queries with large data inserts.  
+* Fixes obfuscation of SQL queries with large data inserts.
 Special thanks to Tomáš Hanáček (@tomashanacek) for tracking down the issue and providing the fix.
 * On failed instrumentation, prevent multiple requires from re-wrapping shims.
-Special thanks to Ryan Copley (@RyanCopley) for the contribution. 
+Special thanks to Ryan Copley (@RyanCopley) for the contribution.
 * Upgrade `async` to `v3.2.0`. Special thanks to Yohan Siguret (@Crow-EH) for the contribution
 * Bumped `@newrelic/native-metrics` to `^5.3.0`.
 * Bumped `@newrelic/aws-sdk` to `^2.0.0`.
