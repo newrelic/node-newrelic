@@ -14,9 +14,11 @@ const nock = require('nock')
 const chai = require('chai')
 const expect = chai.expect
 const sinon = require('sinon')
+const fs = require('fs')
 const helper = require('../../lib/agent_helper')
 const API = require('../../../lib/collector/serverless')
 const serverfulAPI = require('../../../lib/collector/api')
+const path = require('path')
 
 describe('ServerlessCollector API', () => {
   let api = null
@@ -175,11 +177,16 @@ describe('ServerlessCollector API', () => {
     it('compresses full payload and writes formatted to stdout', (done) => {
       api.payload = {type: 'test payload'}
       api.flushPayload(() => {
-        const logPayload = JSON.parse(logStub.args[0][0])
+        let logPayload = null
+
+        logPayload = JSON.parse(logStub.args[0][0])
+
         expect(logPayload).to.be.an('array')
         expect(logPayload[0]).to.be.a('number')
+
         expect(logPayload[1]).to.equal('NR_LAMBDA_MONITORING')
         expect(logPayload[2]).to.be.a('string')
+
         done()
       })
     })
@@ -190,8 +197,101 @@ describe('ServerlessCollector API', () => {
       }
 
       api.flushPayload(() => {
-        const logPayload = JSON.parse(logStub.getCall(0).args[0])
+        let logPayload = null
+
+        logPayload = JSON.parse(logStub.getCall(0).args[0])
+
         const buf = Buffer.from(logPayload[2], 'base64')
+
+        zlib.gunzip(buf, (err, unpack) => {
+          expect(err).to.be.null
+          const payload = JSON.parse(unpack)
+          expect(payload.data).to.be.ok
+          expect(Object.keys(payload.data)).to.have.lengthOf.above(4000)
+          done()
+        })
+      })
+    })
+  })
+})
+
+
+describe('ServerlessCollector with output to custom pipe', () => {
+  let api = null
+  let agent = null
+  const customPath = path.resolve('/tmp', 'custom-output')
+
+  before(async function() {
+    // create a placeholder file so we can test custom paths
+    process.env.NEWRELIC_PIPE_PATH = customPath
+    await fs.open(customPath, 'w', (err, fd) => {
+      expect(err).to.be.null
+      expect(fd).to.be.ok
+      return fd
+    })
+  })
+
+  after(async function() {
+    // remove the placeholder file
+    await fs.unlink(customPath, (err ) => {
+      expect(err).to.be.null
+      return
+    })
+  })
+
+  beforeEach(() => {
+    nock.disableNetConnect()
+    agent = helper.loadMockedAgent({
+      serverless_mode: {
+        enabled: true
+      },
+      app_name: ['TEST'],
+      license_key: 'license key here',
+      NEWRELIC_PIPE_PATH: customPath
+    })
+    agent.reconfigure = () => {}
+    agent.setState = () => {}
+    api = new API(agent)
+  })
+
+  afterEach(() => {
+    nock.enableNetConnect()
+    helper.unloadAgent(agent)
+  })
+
+  describe('#flushPayloadToPipe', () => {
+    let writeFileSyncStub = null
+
+    beforeEach(() => {
+      writeFileSyncStub = sinon.stub(fs, 'writeFileSync').callsFake(() => {})
+    })
+
+    afterEach(() => {
+      writeFileSyncStub.restore()
+    })
+
+    it('compresses full payload and writes formatted to stdout', (done) => {
+      api.payload = {type: 'test payload'}
+      api.flushPayload(() => {
+        const writtenPayload = JSON.parse(writeFileSyncStub.args[0][1])
+        expect(writtenPayload).to.be.an('array')
+        expect(writtenPayload[0]).to.be.a('number')
+        expect(writtenPayload[1]).to.equal('NR_LAMBDA_MONITORING')
+        expect(writtenPayload[2]).to.be.a('string')
+
+        done()
+      })
+    })
+    it('handles very large payload and writes formatted to stdout', done => {
+      api.payload = {type: 'test payload'}
+      for (let i = 0; i < 4096; i++) {
+        api.payload[`customMetric${i}`] = Math.floor(Math.random() * 100000)
+      }
+
+      api.flushPayload(() => {
+        const writtenPayload = JSON.parse(writeFileSyncStub.getCall(0).args[1])
+        const buf = Buffer.from(writtenPayload[2], 'base64')
+
         zlib.gunzip(buf, (err, unpack) => {
           expect(err).to.be.null
           const payload = JSON.parse(unpack)
