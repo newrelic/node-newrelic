@@ -1,3 +1,7 @@
+### 6.13.0 (2020-08-25):
+
+* Added ability for the agent to write to a named pipe, instead of stdout, when in serverless mode.
+
 ### 6.12.1 (2020-08-20):
 
 * **Security fix:** Resolves an issue where transaction traces will still capture the request URI when the Node.js agent is configured to exclude the 'request.uri' attribute. This can be problematic for certain customers in environments where sensitive information is included in the URI. See security bulletin [NR20-02](https://docs.newrelic.com/docs/security/new-relic-security/security-bulletins/security-bulletin-nr20-02).
