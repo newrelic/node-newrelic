@@ -20,11 +20,11 @@ To use New Relic's Node.js agent entails these three steps, which are described 
 
 1. To install the agent for performance monitoring, use your favorite npm-based package manager and install the `newrelic` package into your application:
 
-    $ npm install newrelic
+    `$ npm install newrelic`
 
 2. Then, copy the stock configuration file to your program's base folder:
 
-    $ cp node_modules/newrelic/newrelic.js
+    `$ cp ./node_modules/newrelic/newrelic.js ./<your destination>`
 
 3. Now, add your New Relic license key and application/service name to that file:
 
