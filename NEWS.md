@@ -1,3 +1,17 @@
+## 6.13.1 (2020-09-24):
+
+* Fixed named-pipe check for lambda invocations to avoid race-condition.
+
+  Named-pipe existence will now be checked just prior to first write and then cached.
+
+* Updated README with community-plus header.
+
+* Updated README config copy example.
+
+* Added Open Source Policy workflow.
+
+* Removed repository CoC in favor of centralized CoC at org root.
+
 ### 6.13.0 (2020-08-25):
 
 * Added ability for the agent to write to a named pipe, instead of stdout, when in serverless mode.
