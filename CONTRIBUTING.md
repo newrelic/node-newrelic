@@ -20,9 +20,9 @@ licensing restrictions.
 
 ### Code of Conduct
 
-Before contributing please read the [code of conduct](./CODE_OF_CONDUCT.md)
+Before contributing please read the [code of conduct](https://github.com/newrelic/.github/blob/main/CODE_OF_CONDUCT.md)
 
-Note that our [code of conduct](./CODE_OF_CONDUCT.md) applies to all platforms
+Note that our [code of conduct](https://github.com/newrelic/.github/blob/main/CODE_OF_CONDUCT.md) applies to all platforms
 and venues related to this project; please follow it in all your interactions
 with the project and its participants.
 
@@ -53,7 +53,7 @@ When contributing, keep in mind that New Relic customers (that's you!) are runni
 
 Be aware that the instrumentation needs to work with a wide range of versions of the instrumented modules, and that code that looks nonsensical or overcomplicated may be that way for compatibility-related reasons. Read all the comments and check the related tests before deciding whether existing code is incorrect.
 
-If you’re planning on contributing a new feature or an otherwise complex contribution, we kindly ask you to start a conversation with the maintainer team by opening up an Github issue first. 
+If you’re planning on contributing a new feature or an otherwise complex contribution, we kindly ask you to start a conversation with the maintainer team by opening up an Github issue first.
 
 ### General Guidelines
 
