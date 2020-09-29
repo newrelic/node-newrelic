@@ -11,10 +11,10 @@ similar concepts to popular web frameworks such as Express or Restify.
 Here is an example of how the web framework would be used in a user's code:
 
 ```js
-var myWebFramework = require('my-web-framework')
+const myWebFramework = require('my-web-framework')
 
 // create server
-var server = new myWebFramework.Server()
+let server = new myWebFramework.Server()
 
 server.all(function authenticate(req, res, next) {
   if (authenticate()) {
@@ -55,7 +55,7 @@ code. The function must be registered with the agent by calling {@link
 API#instrumentWebframework}.
 
 ```js
-var newrelic = require('newrelic')
+const newrelic = require('newrelic')
 newrelic.instrumentWebframework('my-web-framework', instrumentMyWebFramework)
 ```
 
@@ -138,7 +138,7 @@ endpoint middleware that responds to a specific request. Here is what the instru
 would look like:
 
 ```js
-var Server = myWebFramework.Server
+let Server = myWebFramework.Server
 
 shim.wrapMiddlewareMounter(Server.prototype, ['all', 'get'], {
   route: shim.FIRST,
@@ -217,7 +217,7 @@ the generated content. In order to record this work as the View metric, we will
 do the following in our instrumentation:
 
 ```js
-var Server = myWebFramework.Server
+let Server = myWebFramework.Server
 
 shim.recordRender(Server.prototype, 'render', {
   view: shim.FIRST,
