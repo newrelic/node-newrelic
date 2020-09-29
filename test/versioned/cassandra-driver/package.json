@@ -8,7 +8,7 @@
         "node": ">=10"
       },
       "dependencies": {
-        "cassandra-driver": ">=4.6.0"
+        "cassandra-driver": ">=3.4.0 <4"
       },
       "files": [
         "query.tap.js"
