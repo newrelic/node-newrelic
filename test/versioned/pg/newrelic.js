@@ -6,7 +6,7 @@
 'use strict'
 
 exports.config = {
-  app_name: ['pg@4 test'],
+  app_name: ['pg test'],
   license_key: 'license key here',
   utilization: {
     detect_aws: false,

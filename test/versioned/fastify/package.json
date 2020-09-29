@@ -5,10 +5,10 @@
   "tests": [
     {
       "engines": {
-        "node": ">=8"
+        "node": ">=10"
       },
       "dependencies": {
-        "fastify": ">=2.0.0"
+        "fastify": ">=3.4.1"
       },
       "files": [
         "integration.tap.js"

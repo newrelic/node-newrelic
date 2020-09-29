@@ -5,10 +5,10 @@
   "tests": [
     {
       "engines": {
-        "node": ">=8"
+        "node": ">=10"
       },
       "dependencies": {
-        "cassandra-driver": ">=3.4.0 <4"
+        "cassandra-driver": ">=4.6.0"
       },
       "files": [
         "query.tap.js"

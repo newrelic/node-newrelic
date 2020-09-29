@@ -5,7 +5,7 @@
   "tests": [
     {
       "engines": {
-        "node": ">=6"
+        "node": ">=10"
       },
       "dependencies": {
         "restify": ">=7.0.0 <8",
@@ -24,7 +24,7 @@
     },
     {
       "engines": {
-        "node": ">7"
+        "node": ">=10"
       },
       "dependencies": {
         "restify": ">=8.0.0 <9",

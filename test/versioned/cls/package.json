@@ -5,10 +5,10 @@
   "tests": [
     {
       "engines": {
-        "node": ">=8"
+        "node": ">=10"
       },
       "dependencies": {
-        "continuation-local-storage": ">=1.0.0"
+        "continuation-local-storage": ">=3.2.1"
       },
       "files": [
         "cls.tap.js"

@@ -1,15 +1,15 @@
 {
-  "name": "pg-post-7-tests",
+  "name": "pg-tests",
   "version": "0.0.0",
   "private": true,
   "tests": [
     {
       "engines": {
-        "node": ">=8"
+        "node": ">=10"
       },
       "dependencies": {
-        "pg": ">=7",
-        "pg-native": "2.x"
+        "pg": ">=8",
+        "pg-native": "3.x"
       },
       "files": [
         "force-native.tap.js",
@@ -19,7 +19,7 @@
     }
   ],
   "dependencies": {
-    "pg": "^7.4.0",
-    "pg-native": "^1.10.1"
+    "pg": "^8.3.3",
+    "pg-native": "^3.0.0"
   }
 }

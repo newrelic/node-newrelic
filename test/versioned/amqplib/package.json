@@ -5,10 +5,10 @@
   "tests": [
     {
       "engines": {
-        "node": ">=8"
+        "node": ">=10"
       },
       "dependencies": {
-        "amqplib": ">=0.5.0"
+        "amqplib": ">=0.6.0"
       },
       "files": [
         "callback.tap.js",
@@ -17,6 +17,6 @@
     }
   ],
   "dependencies": {
-    "amqplib": "^0.5.2"
+    "amqplib": "^0.6.0"
   }
 }
