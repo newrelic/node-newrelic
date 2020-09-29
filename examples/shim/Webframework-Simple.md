@@ -12,11 +12,12 @@ Here is an example of how the web framework would be used in a user's code:
 
 ```js
 const myWebFramework = require('my-web-framework')
+const authenticate = require('./lib/authenticate')
 
 // create server
 let server = new myWebFramework.Server()
 
-server.all(function authenticate(req, res, next) {
+server.all(function authenticateMiddleware(req, res, next) {
   if (authenticate()) {
     next()
   } else {
