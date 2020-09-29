@@ -23,7 +23,8 @@ var COL = 'test_column'
 var client = new cassandra.Client({
   contactPoints: [params.cassandra_host],
   protocolOptions: params.cassandra_port,
-  keyspace: KS
+  keyspace: KS,
+  localDataCenter: params.cassandra_local_data_center,
 })
 
 /**

@@ -20,6 +20,8 @@ module.exports = {
 
   cassandra_host: process.env.NR_NODE_TEST_CASSANDRA_HOST || 'localhost',
   cassandra_port: process.env.NR_NODE_TEST_CASSANDRA_PORT || 9042,
+  cassandra_local_data_center: process.env.NR_NODE_TEST_CASSANDRA_LOCAL_DATA_CENTER
+    || 'datacenter1',
 
   postgres_host: process.env.NR_NODE_TEST_POSTGRES_HOST || 'localhost',
   postgres_port: process.env.NR_NODE_TEST_POSTGRES_PORT || 5432,
