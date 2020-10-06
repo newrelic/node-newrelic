@@ -5,7 +5,6 @@
 
 'use strict'
 
-var _ = require('lodash')
 var Config = require('../../../lib/config')
 var helper = require('../../lib/agent_helper')
 var tap = require('tap')
@@ -18,6 +17,17 @@ var DEST_TO_ID = {
   browser_monitoring: 0x08,
   span_events: 0x10,
   transaction_segments: 0x20
+}
+
+// simplified version of lodash set()
+function setPath(obj, path, value) {
+  let paths = path.split('.')
+  while (paths.length - 1) {
+    let key = paths.shift()
+    if (!(key in obj)) { obj[key] = {} }
+    obj = obj[key]
+  }
+  obj[paths[0]] = value
 }
 
 tap.test('Attribute include/exclude configurations', function(t) {
@@ -39,7 +49,8 @@ function runTest(t, test) {
   // deep object in order for our config to load it as though it came from the
   // `newrelic.js` file.
   var config = Object.keys(test.config).reduce(function(conf, key) {
-    return _.set(conf, key, test.config[key])
+    setPath(conf, key, test.config[key])
+    return conf
   }, {})
   config = new Config(config)
 
