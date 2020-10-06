@@ -9,16 +9,36 @@
 // Below allows use of mocha DSL with tap runner.
 require('tap').mochaGlobals()
 
-var _ = require('lodash')
 var chai   = require('chai')
 var helper = require('../lib/agent_helper')
 var facts = require('../../lib/collector/facts')
 var API = require('../../api')
 var Config = require('../../lib/config')
 
-
 var should = chai.should()
 var expect = chai.expect
+
+
+// simplified version of lodash set()
+function setPath(obj, path, value) {
+  let paths = path.split('.')
+  while (paths.length - 1) {
+    let key = paths.shift()
+    if (!(key in obj)) { obj[key] = {} }
+    obj = obj[key]
+  }
+  obj[paths[0]] = value
+}
+
+// simplified version of lodash get()
+function getPath(obj, path) {
+  let paths = path.split('.')
+  while (paths.length - 1) {
+    let key = paths.shift()
+    obj = obj[key]
+  }
+  return obj[paths[0]]
+}
 
 describe('high security mode', function() {
   describe('config to be sent during connect', function() {
@@ -96,15 +116,15 @@ describe('high security mode', function() {
       })
 
       function check(key, expected, server) {
-        _.set(config, key, _.isArray(expected) ? _.slice(expected) : expected)
+        setPath(config, key, expected)
         var fromServer = {high_security: true}
-        fromServer[key] = _.isArray(server) ? _.slice(server) : server
+        fromServer[key] = server
 
-        expect(_.get(config, key)).to.deep.equal(expected)
+        expect(getPath(config, key)).to.deep.equal(expected)
         expect(fromServer).property(key).to.deep.equal(server)
 
         config.onConnect(fromServer)
-        expect(_.get(config, key)).to.deep.equal(expected)
+        expect(getPath(config, key)).to.deep.equal(expected)
       }
     })
 
@@ -221,10 +241,10 @@ describe('high security mode', function() {
 
     function check(key, before, after) {
       var fromFile = {high_security: true}
-      _.set(fromFile, key, before)
+      setPath(fromFile, key, before)
 
       var config = new Config(fromFile)
-      expect(_.get(config, key)).to.deep.equal(after)
+      expect(getPath(config, key)).to.deep.equal(after)
     }
   })
 
