@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "Mon Aug 03 2020 12:31:39 GMT-0700 (Pacific Daylight Time)",
+  "lastUpdated": "Tue Oct 13 2020 14:24:25 GMT-0700 (Pacific Daylight Time)",
   "projectName": "New Relic Node Agent",
   "projectUrl": "https://github.com/newrelic/node-newrelic",
   "includeDev": true,
@@ -357,19 +357,6 @@
       "licenseTextSource": "file",
       "publisher": "Michael Mathews",
       "email": "micmath@gmail.com"
-    },
-    "lodash@4.17.15": {
-      "name": "lodash",
-      "version": "4.17.15",
-      "range": "^4.17.14",
-      "licenses": "MIT",
-      "repoUrl": "https://github.com/lodash/lodash",
-      "versionedRepoUrl": "https://github.com/lodash/lodash/tree/v4.17.15",
-      "licenseFile": "node_modules/lodash/LICENSE",
-      "licenseUrl": "https://github.com/lodash/lodash/blob/v4.17.15/LICENSE",
-      "licenseTextSource": "file",
-      "publisher": "John-David Dalton",
-      "email": "john.david.dalton@gmail.com"
     },
     "memcached@2.2.2": {
       "name": "memcached",
