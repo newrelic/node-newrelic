@@ -1,4 +1,34 @@
-### 4.0.0 (2019-07-13)
+### 4.1.0 (2020-10-13)
+
+* Fixed bug where _matchedRoute instrumentation would throw if there was
+  no active transaction.
+
+  Thank you to @jgeurts for the contribution!
+
+* Added Node 14 testing to CI.
+
+  Thank you to @jgeurts for the contribution!
+
+  Node 14 appears safe to use with this package based on existing testing. Official
+  sign-off on Node 14 support for the Node.js agent all supporting packages will come
+  in a future release.
+
+* Bumped node-test-utilities to ^4.0.0.
+
+* Added additional dependency language to bottom of third party notices.
+
+* Updated README, contrib guidelines and templates to better match new open
+  by default standards.
+
+* Updated readme with community-plus header.
+
+* Updated README as part of the repo consistency project.
+
+* Added additional files to npm ignore.
+
+* Added open source policy workflow to repository.
+
+### 4.0.0 (2020-07-13)
 
 * Updated to Apache 2.0 license.
 * Bumped minimum peer dependency (and dev dependency) of newrelic (agent) to 6.11 for license matching.
