@@ -64,24 +64,22 @@ Please review [New Relic’s General Data Privacy Notice](https://newrelic.com/t
 ## Roadmap
 See our [roadmap](https://github.com/newrelic/node-newrelic/blob/main/ROADMAP_Node.md), to learn more about our product vision, understand our plans, and provide us valuable feedback.
 
-## Contributing
+## Contribute
 
 We encourage your contributions to improve New Relic's AWS SDK Instrumentation! Keep in mind when you submit your pull request, you'll need to sign the CLA via the click-through using CLA-Assistant. You only have to sign the CLA one time per project.
 
 If you have any questions, or to execute our corporate CLA, required if your contribution is on behalf of a company, please drop us an email at opensource@newrelic.com.
-
-To [all contributors](https://github.com/newrelic/node-newrelic-aws-sdk/graphs/contributors), we thank you! Without your contribution, this project would not be what it is today.
-
-We also host a community project page dedicated to
-the [New Relic AWS SDK Instrumentation](https://opensource.newrelic.com/newrelic/node-newrelic-aws-sdk) package.
-
-If you would like to contribute to this project, please review [these guidelines](https://github.com/newrelic/node-newrelic-aws-sdk/blob/main/CONTRIBUTING.md).
 
 **A note about vulnerabilities**
 
 As noted in our [security policy](https://github.com/newrelic/node-newrelic-aws-sdk/security/policy), New Relic is committed to the privacy and security of our customers and their data. We believe that providing coordinated disclosure by security researchers and engaging with the security community are important means to achieve our security goals.
 
 If you believe you have found a security vulnerability in this project or any of New Relic's products or websites, we welcome and greatly appreciate you reporting it to New Relic through [HackerOne](https://hackerone.com/newrelic).
+
+If you would like to contribute to this project, please review [these guidelines](https://github.com/newrelic/node-newrelic-aws-sdk/blob/main/CONTRIBUTING.md).
+
+To [all contributors](https://github.com/newrelic/node-newrelic-aws-sdk/graphs/contributors), we thank you! Without your contribution, this project would not be what it is today. We also host a community project page dedicated to
+the [New Relic AWS SDK Instrumentation](https://opensource.newrelic.com/newrelic/node-newrelic-aws-sdk) package.
 
 ## License
 The New Relic AWS SDK Instrumentation package is licensed under the [Apache 2.0](http://apache.org/licenses/LICENSE-2.0.txt) License.
