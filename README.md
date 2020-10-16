@@ -63,6 +63,8 @@ For more information on getting started, [check the Node.js docs](https://docs.n
 
 ## Usage
 
+### Using the API
+
 The `newrelic` module returns an object with the Node agent's API methods attached.
 
 ```js
