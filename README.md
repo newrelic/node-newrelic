@@ -10,7 +10,7 @@ In order to take full advantage of this package, make sure you have a [New Relic
 
 As with any instrumentation tool, please test before using in production.
 
-## Installation and getting started
+## Installation
 
 To use New Relic's Node.js agent entails these three steps, which are described in detail below:
 
@@ -57,9 +57,13 @@ If you're compiling your JavaScript and can't control the final `require` order,
     $ node -r newrelic your-program.js
     $ node --require newrelic your-program.js
 
+## Getting Started
+
 For more information on getting started, [check the Node.js docs](https://docs.newrelic.com/docs/agents/nodejs-agent/getting-started/introduction-new-relic-nodejs).
 
-## Using the API
+## Usage
+
+### Using the API
 
 The `newrelic` module returns an object with the Node agent's API methods attached.
 
@@ -72,7 +76,7 @@ The `newrelic` module returns an object with the Node agent's API methods attach
 
 You can read more about using the API over on the [New Relic documentation](https://docs.newrelic.com/docs/agents/nodejs-agent/api-guides/guide-using-nodejs-agent-api) site.
 
-## Core agent development and tests
+## Testing
 
 These are the steps to work on core agent features, with more detail below:
 
@@ -149,16 +153,21 @@ Please review [New Relic’s General Data Privacy Notice](https://newrelic.com/t
 
 See our [roadmap](./ROADMAP_Node.md), to learn more about our product vision, understand our plans, and provide us valuable feedback.
 
-## Contributing
+## Contribute
 
 We encourage your contributions to improve the Node.js agent! Keep in mind when you submit your pull request, you'll need to sign the CLA via the click-through using CLA-Assistant. You only have to sign the CLA one time per project.
+
 If you have any questions, or to execute our corporate CLA, required if your contribution is on behalf of a company,  please drop us an email at opensource@newrelic.com.
 
 **A note about vulnerabilities**
 
-As noted in our [security policy](https://github.com/newrelic/node-newrelic/security/policy), New Relic is committed to the privacy and security of our customers and their data. We believe that providing coordinated disclosure by security researchers and engaging with the security community are important means to achieve our security goals.
+As noted in our [security policy](../../security/policy), New Relic is committed to the privacy and security of our customers and their data. We believe that providing coordinated disclosure by security researchers and engaging with the security community are important means to achieve our security goals.
 
 If you believe you have found a security vulnerability in this project or any of New Relic's products or websites, we welcome and greatly appreciate you reporting it to New Relic through [HackerOne](https://hackerone.com/newrelic).
+
+If you would like to contribute to this project, review [these guidelines](./CONTRIBUTING.md).
+
+To [all contributors](https://github.com/newrelic/node-newrelic/graphs/contributors), we thank you!  Without your contribution, this project would not be what it is today.  We also host a community project page dedicated to [New Relic Node Agent](https://opensource.newrelic.com/projects/newrelic/node-newrelic).
 
 ## License
 
