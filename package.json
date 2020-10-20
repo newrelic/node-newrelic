@@ -1,6 +1,6 @@
 {
   "name": "newrelic",
-  "version": "6.13.1",
+  "version": "6.13.2",
   "author": "New Relic Node.js agent team <nodejs@newrelic.com>",
   "license": "Apache-2.0",
   "contributors": [
@@ -142,8 +142,8 @@
     "newrelic-naming-rules": "./bin/test-naming-rules.js"
   },
   "dependencies": {
-    "@grpc/grpc-js": "1.0.5",
-    "@grpc/proto-loader": "^0.5.4",
+    "@grpc/grpc-js": "1.1.7",
+    "@grpc/proto-loader": "^0.5.5",
     "@newrelic/aws-sdk": "^2.0.0",
     "@newrelic/koa": "^4.0.0",
     "@newrelic/superagent": "^3.0.0",
@@ -174,7 +174,6 @@
     "got": "^8.0.1",
     "http-errors": "^1.7.3",
     "jsdoc": "^3.6.3",
-    "lodash": "^4.17.14",
     "memcached": ">=0.2.8",
     "minami": "^1.1.1",
     "mongodb": "^3.3.3",
