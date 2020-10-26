@@ -198,6 +198,43 @@ tap.test('Ignored Errors', (t) => {
     })
   })
 
+  t.test('Ignore status code should ignore when status set after collecting errors', (t) => {
+    helper.runInTransaction(agent, function(tx) {
+      const errorAggr = agent.errors
+      agent.config.error_collector.capture_events = true
+      agent.config.error_collector.ignore_status_codes = [500]
+
+      const error1 = new Error('ignore')
+      const error2 = new Error('ignore me too')
+      const error3 = new ReferenceError('i will also be ignored')
+
+      errorAggr.add(tx, error1)
+      errorAggr.add(tx, error2)
+      errorAggr.add(tx, error3)
+
+      // important: set code after collecting errors for test case
+      tx.statusCode = 500
+      tx.end()
+
+      t.equal(errorAggr.traceAggregator.errors.length, 0)
+
+      const transactionErrorMetric
+        = agent.metrics.getMetric(NAMES.ERRORS.PREFIX + tx.getFullName())
+
+      const allErrorMetric = agent.metrics.getMetric(NAMES.ERRORS.ALL)
+      const webErrorMetric = agent.metrics.getMetric(NAMES.ERRORS.WEB)
+      const otherErrorMetric = agent.metrics.getMetric(NAMES.ERRORS.OTHER)
+
+      t.notOk(transactionErrorMetric)
+
+      t.notOk(allErrorMetric)
+      t.notOk(webErrorMetric)
+      t.notOk(otherErrorMetric)
+
+      t.end()
+    })
+  })
+
   t.test('Ignore status code should trump expected status code', (t) => {
     helper.runInTransaction(agent, function(tx) {
       const errorAggr = agent.errors
