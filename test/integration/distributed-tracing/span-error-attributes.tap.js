@@ -139,7 +139,7 @@ tap.test('span error attributes', (t) => {
     t.end()
   })
 
-  t.test("Span error attributes aren't added with ignored errors", (t) => {
+  t.test("Span error attributes aren't added with ignored classes errors", (t) => {
     const config = {
       distributed_tracing: { enabled: true },
       error_collector: { ignore_classes: ['CustomError'] }
@@ -162,11 +162,11 @@ tap.test('span error attributes', (t) => {
       )
 
       t.ok(spanEvent.attributes['error.message'] === 'not ignored',
-        'There non-ignored error should be reported'
+        'The non-ignored error should be reported'
       )
 
       t.notOk(ignoredSpanEvent.attributes['error.message'],
-        'There ignored error should not be reported'
+        'The ignored error should not be reported'
       )
     })
 
@@ -190,6 +190,56 @@ tap.test('span error attributes', (t) => {
         agent.errors.add(tx, new Error('not ignored'))
       })
 
+      tx.end()
+    })
+
+    helper.unloadAgent(agent)
+
+    t.end()
+  })
+
+  t.test("Span error attributes aren't added with ignored status errors", (t) => {
+    const config = {
+      distributed_tracing: { enabled: true },
+      error_collector: { ignore_status_codes: [404, 422] }
+    }
+
+    const agent = helper.instrumentMockedAgent(config)
+    const api = new API(agent)
+
+    let ignoredSpanId = null
+
+    agent.on('transactionFinished', () => {
+      const errorEvents = agent.errors.eventAggregator.getEvents()
+      const spanEvents = agent.spanEventAggregator.getEvents()
+      const ignoredSpanEvent = spanEvents.filter(s => s.intrinsics.guid === ignoredSpanId)[0]
+
+      t.equal(
+        errorEvents.length,
+        0,
+        'There should not be any errors reported because of status code'
+      )
+
+      t.notOk(ignoredSpanEvent.attributes['error.message'],
+        'The ignored error should not be added to span.'
+      )
+    })
+
+    helper.runInTransaction(agent, (tx) => {
+      class CustomError extends Error {
+        constructor() {
+          super(...arguments)
+          this.name = 'CustomError'
+        }
+      }
+
+      api.startSegment('segment1', true, () => {
+        const segment = api.shim.getSegment()
+        ignoredSpanId = segment.id
+        agent.errors.add(tx, new CustomError('ignored'))
+      })
+
+      tx.statusCode = 422
       tx.end()
     })
 
