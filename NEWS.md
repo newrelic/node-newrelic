@@ -1,4 +1,4 @@
-## 6.13.2 (2020-10-13):
+### 6.13.2 (2020-10-13):
 
 * Removed lodash as a development dependency
 
@@ -10,7 +10,7 @@
 
   Thank you to @ronen-e for the contribution!
 
-## 6.13.1 (2020-09-24):
+### 6.13.1 (2020-09-24):
 
 * Fixed named-pipe check for lambda invocations to avoid race-condition.
 
