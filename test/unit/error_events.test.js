@@ -9,7 +9,6 @@ const tap = require('tap')
 const test = tap.test
 
 const helper = require('../lib/agent_helper')
-const { DESTINATIONS } = require('../../lib/config/attribute-filter')
 const Exception = require('../../lib/errors').Exception
 
 test('Error events', (t) => {
@@ -70,13 +69,6 @@ test('Error events', (t) => {
         const exception = new Exception({error, customAttributes, timestamp})
         tx.addException(exception)
 
-        const segment = tx.agent.tracer.getSegment()
-
-        const spanAttributes = segment.attributes.get(DESTINATIONS.SPAN_EVENT)
-
-        t.equal(spanAttributes['error.class'], 'Error')
-        t.equal(spanAttributes['error.message'], 'some error')
-
         tx.end()
         const attributes = agent.errors.eventAggregator.getEvents()[0][0]
 
@@ -91,6 +83,33 @@ test('Error events', (t) => {
         t.equal(attributes['nr.transactionGuid'], tx.id)
         t.notOk(attributes.parentId)
         t.notOk(attributes.parentSpanId)
+
+        t.end()
+      })
+    })
+
+    t.test('should include spanId agent attribute', (t) => {
+      agent.config.distributed_tracing.enabled = true
+      agent.config.primary_application_id = 'test'
+      agent.config.account_id = 1
+      helper.runInTransaction(agent, function(tx) {
+        const payload = tx.createDistributedTracePayload().text()
+        tx.isDistributedTrace = null
+        tx.acceptDistributedTracePayload(payload)
+        const error = new Error('some error')
+        const customAttributes = {}
+        const timestamp = 0
+        const exception = new Exception({error, customAttributes, timestamp})
+        tx.addException(exception)
+
+        const segment = tx.agent.tracer.getSegment()
+
+        tx.end()
+
+
+        const {2: agentAttributes} = agent.errors.eventAggregator.getEvents()[0]
+
+        t.equal(agentAttributes.spanId, segment.id)
 
         t.end()
       })
