@@ -5,7 +5,7 @@
   "tests": [
     {
       "engines": {
-        "node": ">=8"
+        "node": ">=8 <14"
       },
       "dependencies": {
         "director": ">=1.2",
