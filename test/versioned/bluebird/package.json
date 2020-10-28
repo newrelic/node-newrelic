@@ -5,7 +5,7 @@
   "tests": [
     {
       "engines": {
-        "node": ">=8"
+        "node": ">=10"
       },
       "dependencies": {
         "bluebird": ">=2"
@@ -17,7 +17,7 @@
     },
     {
       "engines": {
-        "node": ">=8 <10 || >10"
+        "node": ">10"
       },
       "dependencies": {
         "bluebird": ">=3"

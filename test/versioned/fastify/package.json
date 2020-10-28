@@ -5,7 +5,7 @@
   "tests": [
     {
       "engines": {
-        "node": ">=8"
+        "node": ">=10"
       },
       "dependencies": {
         "fastify": ">=2.0.0"
