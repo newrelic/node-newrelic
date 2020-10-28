@@ -76,7 +76,7 @@ code, the source code can be found at [https://github.com/newrelic/node-newrelic
 
 ### @grpc/grpc-js
 
-This product includes source derived from [@grpc/grpc-js](https://github.com/grpc/grpc-node/tree/master/packages/grpc-js) ([v1.0.5](https://github.com/grpc/grpc-node/tree/master/packages/grpc-js/tree/v1.0.5)), distributed under the [Apache-2.0 License](https://github.com/grpc/grpc-node/tree/master/packages/grpc-js/blob/v1.0.5/LICENSE):
+This product includes source derived from [@grpc/grpc-js](https://github.com/grpc/grpc-node/tree/master/packages/grpc-js) ([v1.1.7](https://github.com/grpc/grpc-node/tree/master/packages/grpc-js/tree/v1.1.7)), distributed under the [Apache-2.0 License](https://github.com/grpc/grpc-node/tree/master/packages/grpc-js/blob/v1.1.7/LICENSE):
 
 ```
                                  Apache License
@@ -285,7 +285,7 @@ This product includes source derived from [@grpc/grpc-js](https://github.com/grp
 
 ### @grpc/proto-loader
 
-This product includes source derived from [@grpc/proto-loader](https://github.com/grpc/grpc-node) ([v0.5.4](https://github.com/grpc/grpc-node/tree/v0.5.4)), distributed under the [Apache-2.0 License](https://github.com/grpc/grpc-node/blob/v0.5.4/LICENSE):
+This product includes source derived from [@grpc/proto-loader](https://github.com/grpc/grpc-node) ([v0.5.5](https://github.com/grpc/grpc-node/tree/v0.5.5)), distributed under the [Apache-2.0 License](https://github.com/grpc/grpc-node/blob/v0.5.5/LICENSE):
 
 ```
                                  Apache License
