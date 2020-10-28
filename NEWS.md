@@ -1,3 +1,29 @@
+### 6.14.0 (2020-10-28):
+
+* Updated README for consistency.
+
+* Fixed issue where gRPC connection used for infinite tracing could throw if the server
+  shutdown during disconnect of an existing connection.
+
+* Bumped @grpc/grpc-js to 1.1.7.
+
+* Bumped @grpc/proto-loader to ^0.5.5.
+
+* Infinite tracing logging and support metric improvements.
+
+  * Increased logging level of certain infinite tracing / gRPC errors.
+  * Decreased logging interval of dropped span warning for infinite tracing.
+  * Added additional support metrics and logging for infinite tracing.
+
+* Fixed bug where errors would still be collected for transactions with ignored error
+  status codes in certain situations.
+
+* Converted errors ignore unit tests to tap API.
+
+* Added Node 14 to CI test coverage.
+
+  Many thanks to @jgeurts for the contribution.
+
 ### 6.13.2 (2020-10-13):
 
 * Removed lodash as a development dependency
