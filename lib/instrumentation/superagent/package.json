@@ -20,7 +20,7 @@
     "tap": "^14.10.7"
   },
   "engines": {
-    "node": ">=8.0"
+    "node": ">=10.0"
   },
   "peerDependencies": {
     "newrelic": ">=6.11.0"
