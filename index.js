@@ -48,14 +48,16 @@ function initialize() {
       preAgentTime
     )
 
-    // TODO: Update this check when Node v8 is deprecated.
+    // TODO: Update this check when Node v10 is deprecated.
     if (psemver.satisfies('<10.0.0')) {
       message = 'New Relic for Node.js requires a version of Node equal to or\n' +
                 'greater than 8.0.0. Not starting!'
 
       logger.error(message)
       throw new Error(message)
-    } else if (!psemver.satisfies(pkgJSON.engines.node)) {
+
+      // TODO: Update this check when Node v16 support is added
+    } else if (!psemver.satisfies(pkgJSON.engines.node) || psemver.satisfies('>=15.0.0')) { 
       logger.warn(
         'New Relic for Node.js %s has not been tested on Node.js %s. Please ' +
         'update the agent or downgrade your version of Node.js',
