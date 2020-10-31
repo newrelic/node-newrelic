@@ -5,7 +5,7 @@
   "tests": [
     {
       "engines": {
-        "node": ">=8"
+        "node": ">=10"
       },
       "dependencies": {
         "continuation-local-storage": ">=1.0.0"

@@ -5,7 +5,7 @@
   "tests": [
     {
       "engines": {
-        "node": ">=8"
+        "node": ">=10"
       },
       "dependencies": {
         "generic-pool": ">=3.0.0"
@@ -16,7 +16,7 @@
     },
     {
       "engines": {
-        "node": ">=8"
+        "node": ">=10"
       },
       "dependencies": {
         "generic-pool": ">=2.4 <3"

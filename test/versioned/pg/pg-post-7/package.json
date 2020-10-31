@@ -16,7 +16,7 @@
     },
     {
       "engines": {
-        "node": ">=8 <14"
+        "node": ">=10 <14"
       },
       "dependencies": {
         "pg": ">=7",
