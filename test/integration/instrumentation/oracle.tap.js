@@ -365,8 +365,8 @@ function nextRowsTest(t) {
       // insert 5 rows
       async.whilst(for5, insert, testRead)
 
-      function for5() {
-        return insertCount < 5
+      function for5(cb) {
+        return cb(null, insertCount < 5)
       }
 
       function insert(callback) {

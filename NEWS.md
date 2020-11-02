@@ -1,3 +1,80 @@
+### 6.14.0 (2020-10-28):
+
+* Updated README for consistency.
+
+* Fixed issue where gRPC connection used for infinite tracing could throw if the server
+  shutdown during disconnect of an existing connection.
+
+* Bumped @grpc/grpc-js to 1.1.7.
+
+* Bumped @grpc/proto-loader to ^0.5.5.
+
+* Infinite tracing logging and support metric improvements.
+
+  * Increased logging level of certain infinite tracing / gRPC errors.
+  * Decreased logging interval of dropped span warning for infinite tracing.
+  * Added additional support metrics and logging for infinite tracing.
+
+* Fixed bug where errors would still be collected for transactions with ignored error
+  status codes in certain situations.
+
+* Converted errors ignore unit tests to tap API.
+
+* Added Node 14 to CI test coverage.
+
+  Many thanks to @jgeurts for the contribution.
+
+### 6.13.2 (2020-10-13):
+
+* Removed lodash as a development dependency
+
+* Check for named pipe existence before each flush
+
+  This removes the cached value used in 6.13.1
+
+* Update shim documentation
+
+  Thank you to @ronen-e for the contribution!
+
+### 6.13.1 (2020-09-24):
+
+* Fixed named-pipe check for lambda invocations to avoid race-condition.
+
+  Named-pipe existence will now be checked just prior to first write and then cached.
+
+* Updated README with community-plus header.
+
+* Updated README config copy example.
+
+* Added Open Source Policy workflow.
+
+* Removed repository CoC in favor of centralized CoC at org root.
+
+### 6.13.0 (2020-08-25):
+
+* Added ability for the agent to write to a named pipe, instead of stdout, when in serverless mode.
+
+### 6.12.1 (2020-08-20):
+
+* **Security fix:** Resolves an issue where transaction traces will still capture the request URI when the Node.js agent is configured to exclude the 'request.uri' attribute. This can be problematic for certain customers in environments where sensitive information is included in the URI. See security bulletin [NR20-02](https://docs.newrelic.com/docs/security/new-relic-security/security-bulletins/security-bulletin-nr20-02).
+
+  The request URI will now be excluded from transaction traces if the 'request.uri' attribute has been set to be excluded at either the top-level 'attributes.exclude' configuration or at the 'transaction_tracer.attributes.exclude' configuration.
+
+### 6.12.0 (2020-08-11):
+
+* Fixes obfuscation of SQL queries with large data inserts.
+Special thanks to Tomáš Hanáček (@tomashanacek) for tracking down the issue and providing the fix.
+* On failed instrumentation, prevent multiple requires from re-wrapping shims.
+Special thanks to Ryan Copley (@RyanCopley) for the contribution.
+* Upgrade `async` to `v3.2.0`. Special thanks to Yohan Siguret (@Crow-EH) for the contribution
+* Bumped `@newrelic/native-metrics` to `^5.3.0`.
+* Bumped `@newrelic/aws-sdk` to `^2.0.0`.
+* Bumped `node-test-utilities` to `^4.0.0`.
+* Bumped `@newrelic/superagent` to `^3.0.0`.
+* Bumps `@newrelic/koa` to `^4.0.0`.
+* Updated `SECURITY.md` with coordinated disclosure program link.
+* Updated guidelines and templates for contributing to the project.
+
 ### 6.11.0 (2020-07-07):
 
 * Updated to Apache 2.0 license

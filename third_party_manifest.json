@@ -1,42 +1,42 @@
 {
-  "lastUpdated": "Thu Jul 16 2020 14:54:54 GMT-0700 (Pacific Daylight Time)",
+  "lastUpdated": "Wed Oct 28 2020 11:06:05 GMT-0700 (Pacific Daylight Time)",
   "projectName": "New Relic Node Agent",
   "projectUrl": "https://github.com/newrelic/node-newrelic",
   "includeDev": true,
   "dependencies": {
-    "@grpc/grpc-js@1.0.5": {
+    "@grpc/grpc-js@1.1.7": {
       "name": "@grpc/grpc-js",
-      "version": "1.0.5",
-      "range": "1.0.5",
+      "version": "1.1.7",
+      "range": "1.1.7",
       "licenses": "Apache-2.0",
       "repoUrl": "https://github.com/grpc/grpc-node/tree/master/packages/grpc-js",
-      "versionedRepoUrl": "https://github.com/grpc/grpc-node/tree/master/packages/grpc-js/tree/v1.0.5",
+      "versionedRepoUrl": "https://github.com/grpc/grpc-node/tree/master/packages/grpc-js/tree/v1.1.7",
       "licenseFile": "node_modules/@grpc/grpc-js/LICENSE",
-      "licenseUrl": "https://github.com/grpc/grpc-node/tree/master/packages/grpc-js/blob/v1.0.5/LICENSE",
+      "licenseUrl": "https://github.com/grpc/grpc-node/tree/master/packages/grpc-js/blob/v1.1.7/LICENSE",
       "licenseTextSource": "file",
       "publisher": "Google Inc."
     },
-    "@grpc/proto-loader@0.5.4": {
+    "@grpc/proto-loader@0.5.5": {
       "name": "@grpc/proto-loader",
-      "version": "0.5.4",
-      "range": "^0.5.4",
+      "version": "0.5.5",
+      "range": "^0.5.5",
       "licenses": "Apache-2.0",
       "repoUrl": "https://github.com/grpc/grpc-node",
-      "versionedRepoUrl": "https://github.com/grpc/grpc-node/tree/v0.5.4",
+      "versionedRepoUrl": "https://github.com/grpc/grpc-node/tree/v0.5.5",
       "licenseFile": "node_modules/@grpc/proto-loader/LICENSE",
-      "licenseUrl": "https://github.com/grpc/grpc-node/blob/v0.5.4/LICENSE",
+      "licenseUrl": "https://github.com/grpc/grpc-node/blob/v0.5.5/LICENSE",
       "licenseTextSource": "file",
       "publisher": "Google Inc."
     },
-    "@newrelic/aws-sdk@1.1.2": {
+    "@newrelic/aws-sdk@2.0.0": {
       "name": "@newrelic/aws-sdk",
-      "version": "1.1.2",
-      "range": "^1.1.1",
-      "licenses": "Custom: https://github.com/newrelic/node-newrelic",
+      "version": "2.0.0",
+      "range": "^2.0.0",
+      "licenses": "Apache-2.0",
       "repoUrl": "https://github.com/newrelic/node-newrelic-aws-sdk",
-      "versionedRepoUrl": "https://github.com/newrelic/node-newrelic-aws-sdk/tree/v1.1.2",
+      "versionedRepoUrl": "https://github.com/newrelic/node-newrelic-aws-sdk/tree/v2.0.0",
       "licenseFile": "node_modules/@newrelic/aws-sdk/LICENSE",
-      "licenseUrl": "https://github.com/newrelic/node-newrelic-aws-sdk/blob/v1.1.2/LICENSE",
+      "licenseUrl": "https://github.com/newrelic/node-newrelic-aws-sdk/blob/v2.0.0/LICENSE",
       "licenseTextSource": "file",
       "publisher": "New Relic Node.js agent team",
       "email": "nodejs@newrelic.com"
@@ -80,15 +80,15 @@
       "publisher": "Daniel Imms",
       "url": "http://www.growingwiththeweb.com"
     },
-    "async@2.6.3": {
+    "async@3.2.0": {
       "name": "async",
-      "version": "2.6.3",
-      "range": "^2.1.4",
+      "version": "3.2.0",
+      "range": "^3.2.0",
       "licenses": "MIT",
       "repoUrl": "https://github.com/caolan/async",
-      "versionedRepoUrl": "https://github.com/caolan/async/tree/v2.6.3",
+      "versionedRepoUrl": "https://github.com/caolan/async/tree/v3.2.0",
       "licenseFile": "node_modules/async/LICENSE",
-      "licenseUrl": "https://github.com/caolan/async/blob/v2.6.3/LICENSE",
+      "licenseUrl": "https://github.com/caolan/async/blob/v3.2.0/LICENSE",
       "licenseTextSource": "file",
       "publisher": "Caolan McMahon"
     },
@@ -171,21 +171,18 @@
       "email": "nathan@tootallnate.net",
       "url": "http://n8.io/"
     },
-    "@newrelic/test-utilities@3.3.0": {
+    "@newrelic/test-utilities@4.0.0": {
       "name": "@newrelic/test-utilities",
-      "version": "3.3.0",
-      "range": "^3.3.0",
-      "licenses": "proprietary",
+      "version": "4.0.0",
+      "range": "^4.0.0",
+      "licenses": "Apache-2.0",
       "repoUrl": "https://github.com/newrelic/node-test-utilities",
-      "versionedRepoUrl": "https://github.com/newrelic/node-test-utilities/tree/v3.3.0",
-      "licenseFile": "node_modules/@newrelic/test-utilities/README.md",
-      "licenseUrl": "https://github.com/newrelic/node-newrelic/blob/v6.10.0/LICENSE",
-      "licenseTextSource": "UNKNOWN",
+      "versionedRepoUrl": "https://github.com/newrelic/node-test-utilities/tree/v4.0.0",
+      "licenseFile": "node_modules/@newrelic/test-utilities/LICENSE",
+      "licenseUrl": "https://github.com/newrelic/node-test-utilities/blob/v4.0.0/LICENSE",
+      "licenseTextSource": "file",
       "publisher": "New Relic Node.js agent team",
-      "email": "nodejs@newrelic.com",
-      "FOR_REVIEW": [
-        "Unable to determine source for license text."
-      ]
+      "email": "nodejs@newrelic.com"
     },
     "JSV@4.0.2": {
       "name": "JSV",
@@ -360,19 +357,6 @@
       "licenseTextSource": "file",
       "publisher": "Michael Mathews",
       "email": "micmath@gmail.com"
-    },
-    "lodash@4.17.15": {
-      "name": "lodash",
-      "version": "4.17.15",
-      "range": "^4.17.14",
-      "licenses": "MIT",
-      "repoUrl": "https://github.com/lodash/lodash",
-      "versionedRepoUrl": "https://github.com/lodash/lodash/tree/v4.17.15",
-      "licenseFile": "node_modules/lodash/LICENSE",
-      "licenseUrl": "https://github.com/lodash/lodash/blob/v4.17.15/LICENSE",
-      "licenseTextSource": "file",
-      "publisher": "John-David Dalton",
-      "email": "john.david.dalton@gmail.com"
     },
     "memcached@2.2.2": {
       "name": "memcached",

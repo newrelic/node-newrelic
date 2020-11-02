@@ -718,6 +718,98 @@ describe('Trace', function() {
   })
 })
 
+tap.test('should set URI to null when request.uri attribute is excluded globally', (t) => {
+  const URL = '/test'
+
+  const agent = helper.loadMockedAgent({
+    attributes: {
+      exclude: ['request.uri']
+    }
+  })
+
+  t.tearDown(() => {
+    helper.unloadAgent(agent)
+  })
+
+  const transaction = new Transaction(agent)
+  transaction.url  = URL
+  transaction.verb = 'GET'
+
+  const trace = transaction.trace
+
+  trace.end()
+
+  trace.generateJSON(function(err, traceJSON) {
+    if (err) {
+      t.error(err)
+    }
+
+    const {3: requestUri} = traceJSON
+    t.notOk(requestUri)
+
+    t.end()
+  })
+})
+
+tap.test('should set URI to null when request.uri attribute is exluded from traces', (t) => {
+  const URL = '/test'
+
+  const agent = helper.loadMockedAgent({
+    transaction_tracer: {
+      attributes: {
+        exclude: ['request.uri']
+      }
+    }
+  })
+
+  t.tearDown(() => {
+    helper.unloadAgent(agent)
+  })
+
+  const transaction = new Transaction(agent)
+  transaction.url  = URL
+  transaction.verb = 'GET'
+
+  const trace = transaction.trace
+
+  trace.end()
+
+  trace.generateJSON(function(err, traceJSON) {
+    if (err) {
+      t.error(err)
+    }
+
+    const {3: requestUri} = traceJSON
+    t.notOk(requestUri)
+
+    t.end()
+  })
+})
+
+tap.test('should set URI to /Unknown when URL is not known/set on transaction', (t) => {
+  const agent = helper.loadMockedAgent()
+
+  t.tearDown(() => {
+    helper.unloadAgent(agent)
+  })
+
+  const transaction = new Transaction(agent)
+  const trace = transaction.trace
+
+  trace.end()
+
+  trace.generateJSON(function(err, traceJSON) {
+    if (err) {
+      t.error(err)
+    }
+
+    const {3: requestUri} = traceJSON
+    t.equal(requestUri, '/Unknown')
+
+    t.end()
+  })
+})
+
 function makeTrace(agent, callback) {
   var DURATION = 33
   var URL = '/test?test=value'

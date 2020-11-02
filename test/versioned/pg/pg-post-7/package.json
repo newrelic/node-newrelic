@@ -5,7 +5,18 @@
   "tests": [
     {
       "engines": {
-        "node": ">=8"
+        "node": ">=10"
+      },
+      "dependencies": {
+        "pg": ">=8"
+      },
+      "files": [
+        "pg.tap.js"
+      ]
+    },
+    {
+      "engines": {
+        "node": ">=10 <14"
       },
       "dependencies": {
         "pg": ">=7",

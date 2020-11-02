@@ -32,10 +32,11 @@ describe('shimmer', function() {
   describe('custom instrumentation', function() {
     describe('of relative modules', makeModuleTests('../helpers/module'))
     describe('of modules', makeModuleTests('chai'))
+    describe('of modules, where instrumentation fails', makeModuleTests('chai', true))
     describe('of deep modules', makeModuleTests('chai/lib/chai'))
   })
 
-  function makeModuleTests(moduleName) {
+  function makeModuleTests(moduleName, throwsError) {
     return function moduleTests() {
       var agent = null
       var onRequireArgs = null
@@ -51,6 +52,9 @@ describe('shimmer', function() {
             instrumentedModule = module
             ++counter
             onRequireArgs = arguments
+            if (throwsError) {
+              throw new Error('This threw an error! Oh no!')
+            }
           },
           onError: function() {}
         }
@@ -92,7 +96,6 @@ describe('shimmer', function() {
         require(moduleName)
         expect(counter).to.equal(1)
       })
-
 
       it('should clean up NR added properties', () => {
         const nrKeys =

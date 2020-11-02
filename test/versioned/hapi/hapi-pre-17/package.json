@@ -5,7 +5,7 @@
   "tests": [
     {
       "engines": {
-        "node": ">=8"
+        "node": ">=10 <14"
       },
       "dependencies": {
         "hapi": ">=2.0.0 <6",
@@ -20,7 +20,7 @@
     },
     {
       "engines": {
-        "node": ">=8"
+        "node": ">=10 <14"
       },
       "dependencies": {
         "hapi": ">=6.0.0 <7"
@@ -35,7 +35,7 @@
     },
     {
       "engines": {
-        "node": ">=6"
+        "node": ">=6 <14"
       },
       "dependencies": {
         "hapi": ">=7.0.0 <8.3 || >=8.8 <9"
@@ -50,7 +50,7 @@
     },
     {
       "engines": {
-        "node": ">=6"
+        "node": ">=6 <14"
       },
       "dependencies": {
         "hapi": ">=9.0 <10.2 || >=10.4 <16",
@@ -68,7 +68,7 @@
     },
     {
       "engines": {
-        "node": ">=6"
+        "node": ">=6 <14"
       },
       "dependencies": {
         "hapi": ">=16.0.0 <17",
