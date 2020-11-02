@@ -1,3 +1,10 @@
+### 4.0.0 (2020-11-02):
+
+* Added Node v14.x to CI.
+* Removed Node v8.x from CI.
+* Updates to README, guidelines, and templates to match New Relic OSS template.
+* Bumped node-test-utilities version to ^4.0.0.
+
 ### 3.0.0 (2020-07-16):
 
 * Updated to Apache 2.0 license.
