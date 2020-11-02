@@ -65,7 +65,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 ### @newrelic/test-utilities
 
-This product includes source derived from [@newrelic/test-utilities](https://github.com/newrelic/node-test-utilities) ([v4.0.0](https://github.com/newrelic/node-test-utilities/tree/v4.0.0)), distributed under the [Apache-2.0 License](https://github.com/newrelic/node-test-utilities/blob/v4.0.0/LICENSE):
+This product includes source derived from [@newrelic/test-utilities](https://github.com/newrelic/node-test-utilities) ([v4.1.2](https://github.com/newrelic/node-test-utilities/tree/v4.1.2)), distributed under the [Apache-2.0 License](https://github.com/newrelic/node-test-utilities/blob/v4.1.2/LICENSE):
 
 ```
                                  Apache License
@@ -301,7 +301,7 @@ THE SOFTWARE.
 
 ### newrelic
 
-This product includes source derived from [newrelic](https://github.com/newrelic/node-newrelic) ([v6.11.0](https://github.com/newrelic/node-newrelic/tree/v6.11.0)), distributed under the [Apache-2.0 License](https://github.com/newrelic/node-newrelic/blob/v6.11.0/LICENSE):
+This product includes source derived from [newrelic](https://github.com/newrelic/node-newrelic) ([v6.14.0](https://github.com/newrelic/node-newrelic/tree/v6.14.0)), distributed under the [Apache-2.0 License](https://github.com/newrelic/node-newrelic/blob/v6.14.0/LICENSE):
 
 ```
                                  Apache License
@@ -562,7 +562,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 ### tap
 
-This product includes source derived from [tap](https://github.com/tapjs/node-tap) ([v14.10.7](https://github.com/tapjs/node-tap/tree/v14.10.7)), distributed under the [ISC License](https://github.com/tapjs/node-tap/blob/v14.10.7/LICENSE):
+This product includes source derived from [tap](https://github.com/tapjs/node-tap) ([v14.10.8](https://github.com/tapjs/node-tap/tree/v14.10.8)), distributed under the [ISC License](https://github.com/tapjs/node-tap/blob/v14.10.8/LICENSE):
 
 ```
 The ISC License

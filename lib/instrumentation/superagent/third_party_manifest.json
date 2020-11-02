@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "Thu Jul 23 2020 09:51:38 GMT-0700 (Pacific Daylight Time)",
+  "lastUpdated": "Mon Nov 02 2020 14:46:12 GMT-0800 (Pacific Standard Time)",
   "projectName": "New Relic SuperAgent Instrumentation",
   "projectUrl": "https://github.com/newrelic/node-newrelic-superagent",
   "includeDev": true,
@@ -17,15 +17,15 @@
     }
   },
   "devDependencies": {
-    "@newrelic/test-utilities@4.0.0": {
+    "@newrelic/test-utilities@4.1.2": {
       "name": "@newrelic/test-utilities",
-      "version": "4.0.0",
+      "version": "4.1.2",
       "range": "^4.0.0",
       "licenses": "Apache-2.0",
       "repoUrl": "https://github.com/newrelic/node-test-utilities",
-      "versionedRepoUrl": "https://github.com/newrelic/node-test-utilities/tree/v4.0.0",
+      "versionedRepoUrl": "https://github.com/newrelic/node-test-utilities/tree/v4.1.2",
       "licenseFile": "node_modules/@newrelic/test-utilities/LICENSE",
-      "licenseUrl": "https://github.com/newrelic/node-test-utilities/blob/v4.0.0/LICENSE",
+      "licenseUrl": "https://github.com/newrelic/node-test-utilities/blob/v4.1.2/LICENSE",
       "licenseTextSource": "file",
       "publisher": "New Relic Node.js agent team",
       "email": "nodejs@newrelic.com"
@@ -43,15 +43,15 @@
       "publisher": "Nicholas C. Zakas",
       "email": "nicholas+npm@nczconsulting.com"
     },
-    "newrelic@6.11.0": {
+    "newrelic@6.14.0": {
       "name": "newrelic",
-      "version": "6.11.0",
+      "version": "6.14.0",
       "range": "^6.11.0",
       "licenses": "Apache-2.0",
       "repoUrl": "https://github.com/newrelic/node-newrelic",
-      "versionedRepoUrl": "https://github.com/newrelic/node-newrelic/tree/v6.11.0",
+      "versionedRepoUrl": "https://github.com/newrelic/node-newrelic/tree/v6.14.0",
       "licenseFile": "node_modules/newrelic/LICENSE",
-      "licenseUrl": "https://github.com/newrelic/node-newrelic/blob/v6.11.0/LICENSE",
+      "licenseUrl": "https://github.com/newrelic/node-newrelic/blob/v6.14.0/LICENSE",
       "licenseTextSource": "file",
       "publisher": "New Relic Node.js agent team",
       "email": "nodejs@newrelic.com"
@@ -80,15 +80,15 @@
       "publisher": "TJ Holowaychuk",
       "email": "tj@vision-media.ca"
     },
-    "tap@14.10.7": {
+    "tap@14.10.8": {
       "name": "tap",
-      "version": "14.10.7",
+      "version": "14.10.8",
       "range": "^14.10.7",
       "licenses": "ISC",
       "repoUrl": "https://github.com/tapjs/node-tap",
-      "versionedRepoUrl": "https://github.com/tapjs/node-tap/tree/v14.10.7",
+      "versionedRepoUrl": "https://github.com/tapjs/node-tap/tree/v14.10.8",
       "licenseFile": "node_modules/tap/LICENSE",
-      "licenseUrl": "https://github.com/tapjs/node-tap/blob/v14.10.7/LICENSE",
+      "licenseUrl": "https://github.com/tapjs/node-tap/blob/v14.10.8/LICENSE",
       "licenseTextSource": "file",
       "publisher": "Isaac Z. Schlueter",
       "email": "i@izs.me",
