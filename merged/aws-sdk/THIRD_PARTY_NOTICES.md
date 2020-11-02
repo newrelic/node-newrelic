@@ -33,7 +33,7 @@ code, the source code can be found at [https://github.com/newrelic/node-newrelic
 
 ### @newrelic/test-utilities
 
-This product includes source derived from [@newrelic/test-utilities](https://github.com/newrelic/node-test-utilities) ([v4.0.0](https://github.com/newrelic/node-test-utilities/tree/v4.0.0)), distributed under the [Apache-2.0 License](https://github.com/newrelic/node-test-utilities/blob/v4.0.0/LICENSE):
+This product includes source derived from [@newrelic/test-utilities](https://github.com/newrelic/node-test-utilities) ([v4.1.2](https://github.com/newrelic/node-test-utilities/tree/v4.1.2)), distributed under the [Apache-2.0 License](https://github.com/newrelic/node-test-utilities/blob/v4.1.2/LICENSE):
 
 ```
                                  Apache License
@@ -269,7 +269,7 @@ THE SOFTWARE.
 
 ### aws-sdk
 
-This product includes source derived from [aws-sdk](https://github.com/aws/aws-sdk-js) ([v2.719.0](https://github.com/aws/aws-sdk-js/tree/v2.719.0)), distributed under the [Apache-2.0 License](https://github.com/aws/aws-sdk-js/blob/v2.719.0/LICENSE.txt):
+This product includes source derived from [aws-sdk](https://github.com/aws/aws-sdk-js) ([v2.561.0](https://github.com/aws/aws-sdk-js/tree/v2.561.0)), distributed under the [Apache-2.0 License](https://github.com/aws/aws-sdk-js/blob/v2.561.0/LICENSE.txt):
 
 ```
 
@@ -506,10 +506,10 @@ THE SOFTWARE.
 
 ### newrelic
 
-This product includes source derived from [newrelic](https://github.com/newrelic/node-newrelic) ([v6.11.0](https://github.com/newrelic/node-newrelic/tree/v6.11.0)), distributed under the [Apache-2.0 License](https://github.com/newrelic/node-newrelic/blob/v6.11.0/LICENSE):
+This product includes source derived from [newrelic](https://github.com/newrelic/node-newrelic) ([v6.14.0](https://github.com/newrelic/node-newrelic/tree/v6.14.0)), distributed under the [Apache-2.0 License](https://github.com/newrelic/node-newrelic/blob/v6.14.0/LICENSE):
 
 ```
-Apache License
+                                 Apache License
                            Version 2.0, January 2004
                         http://www.apache.org/licenses/
 
