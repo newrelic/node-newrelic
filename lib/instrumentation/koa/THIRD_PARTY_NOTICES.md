@@ -97,7 +97,7 @@ THE SOFTWARE.
 
 ### @newrelic/test-utilities
 
-This product includes source derived from [@newrelic/test-utilities](https://github.com/newrelic/node-test-utilities) ([v4.0.0](https://github.com/newrelic/node-test-utilities/tree/v4.0.0)), distributed under the [Apache-2.0 License](https://github.com/newrelic/node-test-utilities/blob/v4.0.0/LICENSE):
+This product includes source derived from [@newrelic/test-utilities](https://github.com/newrelic/node-test-utilities) ([v4.1.1](https://github.com/newrelic/node-test-utilities/tree/v4.1.1)), distributed under the [Apache-2.0 License](https://github.com/newrelic/node-test-utilities/blob/v4.1.1/LICENSE):
 
 ```
                                  Apache License
@@ -406,10 +406,10 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 ### newrelic
 
-This product includes source derived from [newrelic](https://github.com/newrelic/node-newrelic) ([v6.11.0](https://github.com/newrelic/node-newrelic/tree/v6.11.0)), distributed under the [Apache-2.0 License](https://github.com/newrelic/node-newrelic/blob/v6.11.0/LICENSE):
+This product includes source derived from [newrelic](https://github.com/newrelic/node-newrelic) ([v6.13.1](https://github.com/newrelic/node-newrelic/tree/v6.13.1)), distributed under the [Apache-2.0 License](https://github.com/newrelic/node-newrelic/blob/v6.13.1/LICENSE):
 
 ```
-Apache License
+                                 Apache License
                            Version 2.0, January 2004
                         http://www.apache.org/licenses/
 

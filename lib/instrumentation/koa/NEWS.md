@@ -1,3 +1,7 @@
+### 5.0.0 (2020-11-02)
+
+* Removed Node v8.x from CI
+
 ### 4.1.0 (2020-10-13)
 
 * Fixed bug where _matchedRoute instrumentation would throw if there was
