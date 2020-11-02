@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "Thu Jul 23 2020 09:09:18 GMT-0700 (Pacific Daylight Time)",
+  "lastUpdated": "Mon Nov 02 2020 14:05:46 GMT-0800 (Pacific Standard Time)",
   "projectName": "New Relic Koa Instrumentation",
   "projectUrl": "https://github.com/newrelic/node-newrelic-koa",
   "includeDev": true,
@@ -30,15 +30,15 @@
       "publisher": "Alex Mingoia",
       "email": "talk@alexmingoia.com"
     },
-    "@newrelic/test-utilities@4.0.0": {
+    "@newrelic/test-utilities@4.1.1": {
       "name": "@newrelic/test-utilities",
-      "version": "4.0.0",
+      "version": "4.1.1",
       "range": "^4.0.0",
       "licenses": "Apache-2.0",
       "repoUrl": "https://github.com/newrelic/node-test-utilities",
-      "versionedRepoUrl": "https://github.com/newrelic/node-test-utilities/tree/v4.0.0",
+      "versionedRepoUrl": "https://github.com/newrelic/node-test-utilities/tree/v4.1.1",
       "licenseFile": "node_modules/@newrelic/test-utilities/LICENSE",
-      "licenseUrl": "https://github.com/newrelic/node-test-utilities/blob/v4.0.0/LICENSE",
+      "licenseUrl": "https://github.com/newrelic/node-test-utilities/blob/v4.1.1/LICENSE",
       "licenseTextSource": "file",
       "publisher": "New Relic Node.js agent team",
       "email": "nodejs@newrelic.com"
@@ -91,15 +91,15 @@
       "licenseUrl": "https://github.com/koajs/koa/blob/v2.13.0/LICENSE",
       "licenseTextSource": "file"
     },
-    "newrelic@6.11.0": {
+    "newrelic@6.13.1": {
       "name": "newrelic",
-      "version": "6.11.0",
+      "version": "6.13.1",
       "range": "^6.11.0",
       "licenses": "Apache-2.0",
       "repoUrl": "https://github.com/newrelic/node-newrelic",
-      "versionedRepoUrl": "https://github.com/newrelic/node-newrelic/tree/v6.11.0",
+      "versionedRepoUrl": "https://github.com/newrelic/node-newrelic/tree/v6.13.1",
       "licenseFile": "node_modules/newrelic/LICENSE",
-      "licenseUrl": "https://github.com/newrelic/node-newrelic/blob/v6.11.0/LICENSE",
+      "licenseUrl": "https://github.com/newrelic/node-newrelic/blob/v6.13.1/LICENSE",
       "licenseTextSource": "file",
       "publisher": "New Relic Node.js agent team",
       "email": "nodejs@newrelic.com"
