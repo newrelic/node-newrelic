@@ -261,15 +261,8 @@ describe('Transaction', function() {
     })
 
     describe('isIgnored', function() {
-      it('should return true if a transaction is ignored through the api', function() {
-        var api = new API(agent)
-        helper.runInTransaction(agent, function(txn) {
-          api.setIgnoreTransaction(true)
-          expect(txn.isIgnored()).to.be.true
-        })
-      })
       it ('should return true if a transaction is ignored by a rule', function() {
-        var api = new API(agent)
+        const api = new API(agent)
         api.addIgnoringRule('^/test/')
         trans.finalizeNameFromUri('/test/string?do=thing&another=thing', 200)
         expect(trans.isIgnored()).true

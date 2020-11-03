@@ -430,38 +430,6 @@ API.prototype.addCustomSpanAttribute = function addCustomSpanAttribute(key, valu
   spanContext.addCustomAttribute(key, value)
 }
 
-API.prototype.setIgnoreTransaction = util.deprecate(
-  setIgnoreTransaction, [
-    'API#setIgnoreTransaction is being deprecated!',
-    'Please use TransactionHandle#ignore to ignore a transaction.',
-    'Use API#getTransaction to create a new TransactionHandle instance.'
-  ].join(' ')
-)
-
-/**
- * Tell the tracer whether to ignore the current transaction. The most common
- * use for this will be to mark a transaction as ignored (maybe it's handling
- * a websocket polling channel, or maybe it's an external call you don't care
- * is slow), but it's also useful when you want a transaction that would
- * otherwise be ignored due to URL or transaction name normalization rules
- * to *not* be ignored.
- *
- * @param {boolean} ignored Ignore, or don't ignore, the current transaction.
- */
-function setIgnoreTransaction(ignored) {
-  var metric = this.agent.metrics.getOrCreateMetric(
-    NAMES.SUPPORTABILITY.API + '/setIgnoreTransaction'
-  )
-  metric.incrementCallCount()
-
-  var transaction = this.agent.tracer.getTransaction()
-  if (!transaction) {
-    return logger.warn("No transaction found to ignore.")
-  }
-
-  transaction.setForceIgnore(ignored)
-}
-
 /**
  * Send errors to New Relic that you've already handled yourself. Should be an
  * `Error` or one of its subtypes, but the API will handle strings and objects
