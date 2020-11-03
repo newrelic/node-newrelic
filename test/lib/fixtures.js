@@ -10,8 +10,8 @@ module.exports = {
   httpAttributes: [
     'request.headers.host',
     'request.method',
-    'response.status',
-    'httpResponseCode'
+    'http.statusCode',
+    'http.statusText'
   ],
   // Default security policies
   securityPolicies: function() {

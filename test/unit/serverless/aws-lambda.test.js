@@ -388,22 +388,12 @@ describe('AwsLambda.patchLambdaHandler', () => {
         const spanAttributes = segment.attributes.get(ATTR_DEST.SPAN_EVENT)
 
         expect(agentAttributes).to.have.property(
-          'httpResponseCode',
-          '200'
-        )
-
-        expect(agentAttributes).to.have.property(
-          'response.status',
+          'http.statusCode',
           '200'
         )
 
         expect(spanAttributes).to.have.property(
-          'httpResponseCode',
-          '200'
-        )
-
-        expect(spanAttributes).to.have.property(
-          'response.status',
+          'http.statusCode',
           '200'
         )
 
