@@ -44,8 +44,7 @@ test("Restify router introspection", function(t) {
   })
 
   server.get('/polling/:id', function(req, res, next) {
-    api.setIgnoreTransaction(true)
-
+    api.addIgnoringRule(/poll/)
     res.send(400, {status : 'pollpollpoll'})
     next()
   })

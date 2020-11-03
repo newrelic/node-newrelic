@@ -49,8 +49,7 @@ test("ignoring an Express route", function(t) {
   })
 
   app.get('/polling/:id', function(req, res) {
-    api.setIgnoreTransaction(true)
-
+    api.addIgnoringRule(/poll/)
     res.status(400).send({status : 'pollpollpoll'})
     res.end()
   })

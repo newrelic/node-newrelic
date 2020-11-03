@@ -58,8 +58,8 @@ describe('the RUM API', function() {
   })
 
   it('should issue a warning if the transaction was ignored', function() {
-    helper.runInTransaction(agent, function() {
-      api.setIgnoreTransaction(true)
+    helper.runInTransaction(agent, function(tx) {
+      tx.ignore = true
       api.getBrowserTimingHeader()
         .should.equal('<!-- NREUM: (1) -->')
     })
