@@ -64,14 +64,6 @@ describe('Logger', function() {
 
   describe('when logging', function() {
     it('should not throw for huge messages', function(done) {
-      // In Node 7 there is a bug around the relation of the heap size to the rss. If
-      // this test runs then the sampler will fail when checking `Memory/NonHeap/Used`
-      // because the `max` value will be negative.
-      // TODO: Remove this skip check when Node 7 is deprecated.
-      if (semver.satisfies(process.version, '7')) {
-        return this.skip()
-      }
-
       process.once('warning', (warning) => {
         expect(warning).to.have.property('name', 'NewRelicWarning')
         expect(warning).to.have.property('message')
