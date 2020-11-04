@@ -14,8 +14,6 @@ const cp = require('child_process')
 const expect = chai.expect
 const Logger = require('../../lib/util/logger')
 const path = require('path')
-const semver = require('semver')
-
 
 describe('Logger', function() {
   var logger = null
