@@ -569,8 +569,7 @@ tap.test('when working with http.request', (t) => {
   t.end()
 })
 
-// TODO: seems like should probably be versioned test(s)?
-tap.test('node >= v10 api', {skip: !global.URL}, (t) => {
+tap.test('Should properly handle http(s) get and request signatures', (t) => {
   t.autoend()
 
   let agent = null
