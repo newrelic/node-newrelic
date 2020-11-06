@@ -24,14 +24,9 @@ fi
 
 export AGENT_PATH=`pwd`
 
-# @koa/router 8.03+ breaks segment naming for nested routes
-skip="koa"
-
 # Don't run the aws-sdk tests if we don't have the keys set
 if [[ -z "$AWS_ACCESS_KEY_ID" ]]; then
-  skip="${skip},aws-sdk"
+  time ./node_modules/.bin/versioned-tests $VERSIONED_MODE -i 2 -s aws-sdk ${directories[@]}
+else
+  time ./node_modules/.bin/versioned-tests $VERSIONED_MODE -i 2 ${directories[@]}
 fi
-
-
-# This is meant to be temporary. Remove once new major version with fixes rolled into agent.
-time ./node_modules/.bin/versioned-tests $VERSIONED_MODE -i 2 -s $skip ${directories[@]}
