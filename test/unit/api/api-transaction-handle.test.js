@@ -41,17 +41,9 @@ tap.test('Agent API - transaction handle', (t) => {
     t.type(handle.end, 'function')
     t.type(handle.ignore, 'function')
 
-    // Deprecated.
-    t.type(handle.createDistributedTracePayload, 'function')
-    t.type(handle.acceptDistributedTracePayload, 'function')
-
     t.type(handle.acceptDistributedTraceHeaders, 'function')
     t.type(handle.insertDistributedTraceHeaders, 'function')
     t.type(handle.isSampled, 'function')
-
-    const payload = handle.createDistributedTracePayload()
-    t.type(payload.httpSafe, 'function')
-    t.type(payload.text, 'function')
 
     t.end()
   })
@@ -84,26 +76,26 @@ tap.test('Agent API - transaction handle', (t) => {
     })
   })
 
-  t.test("should have a method to create a distributed trace payload", (t) => {
+  t.test("should have a method to insert distributed trace headers", (t) => {
     helper.runInTransaction(agent, function() {
       const handle = api.getTransaction()
 
-      t.type(handle.createDistributedTracePayload, 'function')
+      t.type(handle.insertDistributedTraceHeaders, 'function')
       agent.config.cross_process_id = '1234#5678'
 
-      const distributedTracePayload = handle.createDistributedTracePayload()
+      const headers = {}
+      handle.insertDistributedTraceHeaders(headers)
 
-      t.type(distributedTracePayload.text, 'function')
-      t.type(distributedTracePayload.httpSafe, 'function')
+      t.type(headers.traceparent, 'string')
 
       t.end()
     })
   })
 
-  t.test("should have a method for accepting a distributed trace payload", (t) => {
+  t.test("should have a method for accepting distributed trace headers", (t) => {
     helper.runInTransaction(agent, function() {
       const handle = api.getTransaction()
-      t.type(handle.acceptDistributedTracePayload, 'function')
+      t.type(handle.acceptDistributedTraceHeaders, 'function')
       t.end()
     })
   })

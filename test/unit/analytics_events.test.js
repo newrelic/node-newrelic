@@ -154,9 +154,9 @@ describe('Analytics events', function() {
       agent.config.primary_application_id = 'test'
       agent.config.account_id = 1
       trans = new Transaction(agent)
-      const payload = trans.createDistributedTracePayload().text()
+      const payload = trans._createDistributedTracePayload().text()
       trans.isDistributedTrace = null
-      trans.acceptDistributedTracePayload(payload)
+      trans._acceptDistributedTracePayload(payload)
       trans.end()
 
       const events = getTransactionEvents(agent)

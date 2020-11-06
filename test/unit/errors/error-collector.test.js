@@ -1336,10 +1336,10 @@ describe('Errors', function() {
         agent.config.distributed_tracing.enabled = true
         agent.config.primary_application_id = 'test'
         agent.config.account_id = 1
-        var transaction = createTransaction(agent, 200)
-        var payload = transaction.createDistributedTracePayload().text()
+        let transaction = createTransaction(agent, 200)
+        let payload = transaction._createDistributedTracePayload().text()
         transaction.isDistributedTrace = null
-        transaction.acceptDistributedTracePayload(payload)
+        transaction._acceptDistributedTracePayload(payload)
 
         var error = new Error('some error')
         aggregator.add(transaction, error)

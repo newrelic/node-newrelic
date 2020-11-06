@@ -80,9 +80,9 @@ describe("recordWeb", function() {
         agent.config.primary_application_id = '5677',
         agent.config.trusted_account_key = '1234'
 
-        const payload = trans.createDistributedTracePayload().text()
+        const payload = trans._createDistributedTracePayload().text()
         trans.isDistributedTrace = null
-        trans.acceptDistributedTracePayload(payload, 'HTTP')
+        trans._acceptDistributedTracePayload(payload, 'HTTP')
 
         record({
           transaction: trans,
