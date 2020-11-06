@@ -144,9 +144,9 @@
   "dependencies": {
     "@grpc/grpc-js": "1.1.7",
     "@grpc/proto-loader": "^0.5.5",
-    "@newrelic/aws-sdk": "^2.0.0",
-    "@newrelic/koa": "^4.0.0",
-    "@newrelic/superagent": "^3.0.0",
+    "@newrelic/aws-sdk": "^3.0.0",
+    "@newrelic/koa": "^5.0.0",
+    "@newrelic/superagent": "^4.0.0",
     "@tyriar/fibonacci-heap": "^2.0.7",
     "async": "^3.2.0",
     "concat-stream": "^2.0.0",
@@ -156,11 +156,11 @@
     "semver": "^5.3.0"
   },
   "optionalDependencies": {
-    "@newrelic/native-metrics": "^5.3.0"
+    "@newrelic/native-metrics": "^6.0.0"
   },
   "devDependencies": {
     "@newrelic/proxy": "^2.0.0",
-    "@newrelic/test-utilities": "^4.0.0",
+    "@newrelic/test-utilities": "^5.0.0",
     "JSV": "~4.0.2",
     "architect": "*",
     "benchmark": "^2.1.4",
