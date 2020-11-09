@@ -234,9 +234,9 @@ describe('Trace', function() {
     agent.config.primary_application_id = 'test'
     agent.config.account_id = 1
     helper.runInTransaction(agent, function(tx) {
-      const payload = tx.createDistributedTracePayload().text()
+      const payload = tx._createDistributedTracePayload().text()
       tx.isDistributedTrace = null
-      tx.acceptDistributedTracePayload(payload)
+      tx._acceptDistributedTracePayload(payload)
       tx.end()
       const attributes = tx.trace.intrinsics
       expect(attributes.traceId).to.equal(tx.traceId)

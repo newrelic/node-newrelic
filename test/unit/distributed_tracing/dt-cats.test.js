@@ -54,7 +54,11 @@ describe('distributed tracing', function() {
           testCase.inbound_payloads = [testCase.inbound_payloads]
         }
         testCase.inbound_payloads.forEach((payload) => {
-          tx.acceptDistributedTracePayload(payload, testCase.transport_type)
+          let headers = { newrelic: '' }
+          if (payload) {
+            headers.newrelic = JSON.stringify(payload)
+          }
+          tx.acceptDistributedTraceHeaders(testCase.transport_type, headers)
           if (testCase.intrinsics.target_events.indexOf('TransactionError') > -1) {
             const error = new Error('uh oh')
             const exception = new Exception({error})
@@ -64,7 +68,10 @@ describe('distributed tracing', function() {
 
         if (testCase.outbound_payloads) {
           testCase.outbound_payloads.forEach((outbound) => {
-            const created = JSON.parse(tx.createDistributedTracePayload().text())
+            let headers = {}
+            tx.insertDistributedTraceHeaders(headers)
+            const payload = headers.newrelic
+            const created = tx._getParsedPayload(payload)
             const exact = outbound.exact
             const keyRegex = /^d\.(.{2})$/
             Object.keys(exact).forEach((key) => {
