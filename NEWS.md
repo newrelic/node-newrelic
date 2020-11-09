@@ -1,10 +1,13 @@
 ### 7.0.0 (2020-11-09):
 
-* Drop Node v8.x support and add Node v14.x
-  * Removed Node v8.x and added v14.x to CI
-  * Adds check that minimum Node version is >= 10
-  * Sets Node engine to >= 10 and < 15
-  * BREAKING Dropped support for Node v8.x HTTP get() function signature
+* Added official parity support for Node 14
+
+* Dropped Node v8.x support. For further information on our support policy,
+  see: https://docs.newrelic.com/docs/agents/nodejs-agent/getting-started/compatibility-requirements-nodejs-agent.
+  * Removed Node v8.x from CI
+  * Adds check that minimum Node version is >=10 and warns if >=15
+  * Sets Node engine to >=10
+  * **BREAKING** Dropped support for Node v8.x HTTP get() function signature
     * strictly uses global.URL class in http core instrumentation
     * removes Nodejs 8.x - 9.x checks
   * Update New Relic Dependencies to versions with updated Node version support
