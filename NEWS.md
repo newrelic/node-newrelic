@@ -1,3 +1,37 @@
+### 7.0.0 (2020-11-09):
+
+* Drop Node v8.x support and add Node v14.x
+  * Removed Node v8.x and added v14.x to CI
+  * Adds check that minimum Node version is >= 10
+  * Sets Node engine to >= 10 and < 15
+  * BREAKING Dropped support for Node v8.x HTTP get() function signature
+    * strictly uses global.URL class in http core instrumentation
+    * removes Nodejs 8.x - 9.x checks
+  * Update New Relic Dependencies to versions with updated Node version support
+    * @newrelic/aws-sdk v3.0.0
+    * @newrelic/koa v5.0.0
+    * @newrelic/native-metrics v6.0.0
+    * @newrelic/superagent v4.0.0
+    * @newrelic/test-utilities v5.0.0
+
+* BREAKING Removed deprecated setIgnoreTransaction API method
+
+* BREAKING Removed deprecated httpResponseCode, response.status and
+  httpResponseMessage http response attributes
+
+* BREAKING Removed the api.custom_parameters_enabled configuration item and
+  associated environment variable NEW_RELIC_API_CUSTOM_PARAMETERS. Please use
+  api.custom_attributes_enabled instead
+
+* BREAKING Removed deprecated Distributed Tracing API methods
+
+* Removed deprecation warning for invalid config items, ignored_params and
+  capture_params. Use attributes.exclude and attributes.enabled instead
+
+* Added additional logging to W3C Trace Context header creation.
+
+* Upgrade @newrelic/koa from 4.0.0 to 4.1.0
+
 ### 6.14.0 (2020-10-28):
 
 * Updated README for consistency.
