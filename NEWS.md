@@ -14,16 +14,16 @@
     * @newrelic/superagent v4.0.0
     * @newrelic/test-utilities v5.0.0
 
-* BREAKING Removed deprecated setIgnoreTransaction API method
+* **BREAKING** Removed deprecated setIgnoreTransaction API method
 
-* BREAKING Removed deprecated httpResponseCode, response.status and
+* **BREAKING** Removed deprecated httpResponseCode, response.status and
   httpResponseMessage http response attributes
 
-* BREAKING Removed the api.custom_parameters_enabled configuration item and
+* **BREAKING** Removed the api.custom_parameters_enabled configuration item and
   associated environment variable NEW_RELIC_API_CUSTOM_PARAMETERS. Please use
   api.custom_attributes_enabled instead
 
-* BREAKING Removed deprecated Distributed Tracing API methods,
+* **BREAKING** Removed deprecated Distributed Tracing API methods,
   createDistributedTracePayload() and acceptDistributedTracePayload()
 
 * Finalized removal of ignored_params and capture_params
