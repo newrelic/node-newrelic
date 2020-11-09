@@ -14,7 +14,7 @@ const {getTestSecret, shouldSkipTest} = require('../../helpers/secrets')
 
 const license = getTestSecret('LASP_LICENSE')
 const skip = shouldSkipTest(license)
-tap.test('LASP-enabled agent', {skip}, (t) => {
+tap.skip('LASP-enabled agent', {skip}, (t) => {
   let agent = null
   let api = null
   let config = null
