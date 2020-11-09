@@ -30,8 +30,6 @@
 
 * Added additional logging to W3C Trace Context header creation.
 
-* Upgrade @newrelic/koa from 4.0.0 to 4.1.0
-
 ### 6.14.0 (2020-10-28):
 
 * Updated README for consistency.
