@@ -25,10 +25,9 @@
 
 * BREAKING Removed deprecated Distributed Tracing API methods
 
-* Removed deprecation warning for invalid config items, ignored_params and
-  capture_params. Use attributes.exclude and attributes.enabled instead
+* Finalized removal of ignored_params and capture_params
 
-* Added additional logging to W3C Trace Context header creation.
+* Added additional logging to W3C Trace Context header creation
 
 ### 6.14.0 (2020-10-28):
 
