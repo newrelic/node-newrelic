@@ -7,7 +7,7 @@
 const tap = require('tap')
 const sinon = require('sinon')
 const GrpcConnection = require('../../../lib/grpc/connection')
-const spanStreamerEvent = require('../../../lib/spans/streaming-span-event.js')
+const SpanStreamerEvent = require('../../../lib/spans/streaming-span-event.js')
 const MetricAggregator = require('../../../lib/metrics/metric-aggregator')
 const MetricMapper = require('../../../lib/metrics/mapper')
 const MetricNormalizer = require('../../../lib/metrics/normalizer')
@@ -216,8 +216,8 @@ tap.test('Should properly format spans sent from the queue', (t) => {
 
   t.equals(spanStreamer.spans.length, 0, 'no spans queued')
 
-  const fakeSpan = new spanStreamerEvent('sandwich', {}, {})
-  const fakeSpan_queued = new spanStreamerEvent('porridge', {}, {})
+  const fakeSpan = new SpanStreamerEvent('sandwich', {}, {})
+  const fakeSpan_queued = new SpanStreamerEvent('porridge', {}, {})
 
   spanStreamer.write(fakeSpan)
   spanStreamer.write(fakeSpan_queued)
