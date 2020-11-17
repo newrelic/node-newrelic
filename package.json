@@ -139,7 +139,7 @@
     "versioned": "npm run prepare-test && time ./bin/run-versioned-tests.sh"
   },
   "bin": {
-    "newrelic-naming-rules": "bin/test-naming-rules.js"
+    "newrelic-naming-rules": "./bin/test-naming-rules.js"
   },
   "dependencies": {
     "@grpc/grpc-js": "1.2.0",
