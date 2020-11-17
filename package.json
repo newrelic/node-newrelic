@@ -139,13 +139,14 @@
     "versioned": "npm run prepare-test && time ./bin/run-versioned-tests.sh"
   },
   "bin": {
-    "newrelic-naming-rules": "./bin/test-naming-rules.js"
+    "newrelic-naming-rules": "bin/test-naming-rules.js"
   },
   "dependencies": {
-    "@grpc/grpc-js": "1.1.8",
+    "@grpc/grpc-js": "^1.2.0",
     "@grpc/proto-loader": "^0.5.5",
     "@newrelic/aws-sdk": "^3.0.0",
     "@newrelic/koa": "^5.0.0",
+    "@newrelic/native-metrics": "^6.0.0",
     "@newrelic/superagent": "^4.0.0",
     "@tyriar/fibonacci-heap": "^2.0.7",
     "async": "^3.2.0",
@@ -161,7 +162,6 @@
   "devDependencies": {
     "@newrelic/proxy": "^2.0.0",
     "@newrelic/test-utilities": "^5.0.0",
-    "JSV": "~4.0.2",
     "architect": "*",
     "benchmark": "^2.1.4",
     "bluebird": "^3.4.7",
@@ -174,6 +174,7 @@
     "got": "^8.0.1",
     "http-errors": "^1.7.3",
     "jsdoc": "^3.6.3",
+    "JSV": "~4.0.2",
     "memcached": ">=0.2.8",
     "minami": "^1.1.1",
     "mongodb": "^3.3.3",
