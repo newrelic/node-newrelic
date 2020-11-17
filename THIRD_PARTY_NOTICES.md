@@ -68,15 +68,12 @@ code, the source code can be found at [https://github.com/newrelic/node-newrelic
 * [through](#through)
 * [when](#when)
 
-**[additional-licenses](#additional-licenses)**
-
-* [symantec](#symantec)
 
 ## dependencies
 
 ### @grpc/grpc-js
 
-This product includes source derived from [@grpc/grpc-js](https://github.com/grpc/grpc-node/tree/master/packages/grpc-js) ([v1.1.7](https://github.com/grpc/grpc-node/tree/master/packages/grpc-js/tree/v1.1.7)), distributed under the [Apache-2.0 License](https://github.com/grpc/grpc-node/tree/master/packages/grpc-js/blob/v1.1.7/LICENSE):
+This product includes source derived from [@grpc/grpc-js](https://github.com/grpc/grpc-node/tree/master/packages/grpc-js) ([v1.2.0](https://github.com/grpc/grpc-node/tree/master/packages/grpc-js/tree/v1.2.0)), distributed under the [Apache-2.0 License](https://github.com/grpc/grpc-node/tree/master/packages/grpc-js/blob/v1.2.0/LICENSE):
 
 ```
                                  Apache License
@@ -2888,7 +2885,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ### tap
 
-This product includes source derived from [tap](https://github.com/tapjs/node-tap) ([v14.10.7](https://github.com/tapjs/node-tap/tree/v14.10.7)), distributed under the [ISC License](https://github.com/tapjs/node-tap/blob/v14.10.7/LICENSE):
+This product includes source derived from [tap](https://github.com/tapjs/node-tap) ([v14.10.8](https://github.com/tapjs/node-tap/tree/v14.10.8)), distributed under the [ISC License](https://github.com/tapjs/node-tap/blob/v14.10.8/LICENSE):
 
 ```
 The ISC License
@@ -2999,6 +2996,7 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ```
+
 
 ## additional-licenses
 

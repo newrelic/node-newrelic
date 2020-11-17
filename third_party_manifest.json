@@ -1,18 +1,18 @@
 {
-  "lastUpdated": "Mon Nov 09 2020 13:48:47 GMT-0800 (Pacific Standard Time)",
+  "lastUpdated": "Tue Nov 17 2020 14:58:13 GMT-0800 (Pacific Standard Time)",
   "projectName": "New Relic Node Agent",
   "projectUrl": "https://github.com/newrelic/node-newrelic",
   "includeDev": true,
   "dependencies": {
-    "@grpc/grpc-js@1.1.7": {
+    "@grpc/grpc-js@1.2.0": {
       "name": "@grpc/grpc-js",
-      "version": "1.1.7",
-      "range": "1.1.7",
+      "version": "1.2.0",
+      "range": "1.2.0",
       "licenses": "Apache-2.0",
       "repoUrl": "https://github.com/grpc/grpc-node/tree/master/packages/grpc-js",
-      "versionedRepoUrl": "https://github.com/grpc/grpc-node/tree/master/packages/grpc-js/tree/v1.1.7",
+      "versionedRepoUrl": "https://github.com/grpc/grpc-node/tree/master/packages/grpc-js/tree/v1.2.0",
       "licenseFile": "node_modules/@grpc/grpc-js/LICENSE",
-      "licenseUrl": "https://github.com/grpc/grpc-node/tree/master/packages/grpc-js/blob/v1.1.7/LICENSE",
+      "licenseUrl": "https://github.com/grpc/grpc-node/tree/master/packages/grpc-js/blob/v1.2.0/LICENSE",
       "licenseTextSource": "file",
       "publisher": "Google Inc."
     },
@@ -552,15 +552,15 @@
       "licenseTextSource": "file",
       "publisher": "Christian Johansen"
     },
-    "tap@14.10.7": {
+    "tap@14.10.8": {
       "name": "tap",
-      "version": "14.10.7",
-      "range": "^14.10.7",
+      "version": "14.10.8",
+      "range": "^14.10.8",
       "licenses": "ISC",
       "repoUrl": "https://github.com/tapjs/node-tap",
-      "versionedRepoUrl": "https://github.com/tapjs/node-tap/tree/v14.10.7",
+      "versionedRepoUrl": "https://github.com/tapjs/node-tap/tree/v14.10.8",
       "licenseFile": "node_modules/tap/LICENSE",
-      "licenseUrl": "https://github.com/tapjs/node-tap/blob/v14.10.7/LICENSE",
+      "licenseUrl": "https://github.com/tapjs/node-tap/blob/v14.10.8/LICENSE",
       "licenseTextSource": "file",
       "publisher": "Isaac Z. Schlueter",
       "email": "i@izs.me",
