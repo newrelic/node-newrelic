@@ -330,7 +330,7 @@ Special thanks to Ryan Copley (@RyanCopley) for the contribution.
   object from API#getLinkingMetadata().
 
   This issue would cause the `@newrelic/winston-enricher` module to crash when
-  attempting to inject log metatdata.
+  attempting to inject log metadata.
 
 * Reduced logging level of raw `x-queue-start` or `x-request-start` header values
   to avoid logging very large values at default logging levels.
@@ -3282,7 +3282,7 @@ Special thanks to Ryan Copley (@RyanCopley) for the contribution.
 
 * Fixed a bug where custom events weren't being sent.
 
-  In a refactor of our data collection cycle, we omited the custom
+  In a refactor of our data collection cycle, we omitted the custom
   events from the list of commands, this is now fixed.
 
 * Fixed a very rare bug where the custom event pool could be set to 10
@@ -3506,7 +3506,7 @@ Special thanks to Ryan Copley (@RyanCopley) for the contribution.
   ended when the view ended.
 
 * Added a configuration option to completely disable logging. `logger.enabled`
-  defaults to true, if set to false it wont try to create the log file.
+  defaults to true, if set to false it won't try to create the log file.
 
 ### v1.16.2 (2015-02-13):
 
@@ -4277,7 +4277,7 @@ Special thanks to Ryan Copley (@RyanCopley) for the contribution.
   too many times. Thanks to José F. Romaniello for confirming the fix.
 * Changed how requests handled by Express and Restify routes are named. This
   change is being rolled out both in this module and on the New Relic website,
-  so there is a chance you will see the same route (or very similiar routes)
+  so there is a chance you will see the same route (or very similar routes)
   show up twice in aggregated metrics.
 * Dropped the default apdex tolerating value from 500 milliseconds to 100
   milliseconds. This means that transactions slower than 400 milliseconds will
@@ -4514,7 +4514,7 @@ Special thanks to Ryan Copley (@RyanCopley) for the contribution.
   crash.
 * Some metric normalization rules were not being interpreted correctly, leading
   to malformed normalized metric names.
-* Metric normalization rules that specifed that matching metrics were to be
+* Metric normalization rules that specified that matching metrics were to be
   ignored were not being enforced.
 
 ### v0.9.12-91 / beta-12 (2012-12-28):

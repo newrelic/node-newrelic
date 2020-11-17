@@ -15,7 +15,7 @@ This roadmap project is broken down into the following sections:
 - **Next**:
     - This section contains work planned within the next three months. These features may still be deprioritized and moved to Future.
 - **Future**:
-    - This section is for ideas for future work that is alined with the product vision and possible opportunities for community contribution. It contains a list of features that anyone can implement. No guarantees can be provided on if or when these features will be completed.
+    - This section is for ideas for future work that is aligned with the product vision and possible opportunities for community contribution. It contains a list of features that anyone can implement. No guarantees can be provided on if or when these features will be completed.
      
 
 **The roadmap project is found [here](https://github.com/orgs/newrelic/projects/11)**
