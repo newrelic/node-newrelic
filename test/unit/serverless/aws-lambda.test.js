@@ -401,6 +401,47 @@ describe('AwsLambda.patchLambdaHandler', () => {
       }
     })
 
+    it('should capture response status code in async lambda', (done) => {
+      agent.on('transactionFinished', confirmAgentAttribute)
+
+      const apiGatewayProxyEvent = lambdaSampleEvents.apiGatewayProxyEvent
+
+      const wrappedHandler = awsLambda.patchLambdaHandler(() => {
+
+        return new Promise((resolve, reject) => {
+          resolve(
+            {
+              status: 200,
+              statusCode: 200,
+              statusDescription: "Success",
+              isBase64Encoded: false,
+              headers: {}
+            }
+          )
+        })
+      })
+
+      wrappedHandler(apiGatewayProxyEvent, stubContext, stubCallback)
+
+      function confirmAgentAttribute(transaction) {
+        const agentAttributes = transaction.trace.attributes.get(ATTR_DEST.TRANS_EVENT)
+        const segment = transaction.baseSegment
+        const spanAttributes = segment.attributes.get(ATTR_DEST.SPAN_EVENT)
+
+        expect(agentAttributes).to.have.property(
+          'http.statusCode',
+          '200'
+        )
+
+        expect(spanAttributes).to.have.property(
+          'http.statusCode',
+          '200'
+        )
+
+        done()
+      }
+    })
+
     it('should capture response headers', (done) => {
       agent.on('transactionFinished', confirmAgentAttribute)
 
