@@ -407,8 +407,7 @@ describe('AwsLambda.patchLambdaHandler', () => {
       const apiGatewayProxyEvent = lambdaSampleEvents.apiGatewayProxyEvent
 
       const wrappedHandler = awsLambda.patchLambdaHandler(() => {
-
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve) => {
           resolve(
             {
               status: 200,
