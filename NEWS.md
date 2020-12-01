@@ -1,4 +1,10 @@
-### 7.0.1 (2020-11-07):
+### 7.0.2 (2020-12-01):
+
+* Fixes a bug where the `http.statusCode` attribute was not being captured for an async invoked lambda.
+* Fixed typos in code comments, documentation, and debugging logger messages.
+  Thank you @TysonAndre for the contribution.
+
+### 7.0.1 (2020-11-17):
 
 * Fixed a bug where spans queued up during backpressure situations would be improperly formatted and ultimately dropped when sent to an Infinite Tracing trace observer.
 * Updated @grpc/grpc-js to version v1.2.0.
