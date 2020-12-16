@@ -45,7 +45,7 @@
           "versions": ">=2.380.0",
           "samples": 10
         },
-        "amazon-dax-client": ">=1.0.2"
+        "amazon-dax-client": ">=1.2.5"
       },
       "files": [
         "amazon-dax-client.tap.js"
