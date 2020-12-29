@@ -5,17 +5,15 @@
 
 'use strict'
 
-// TODO: convert to normal tap style.
-// Below allows use of mocha DSL with tap runner.
-require('tap').mochaGlobals()
-
-const expect = require('chai').expect
+const tap = require('tap')
 const sinon = require('sinon')
 const QuerySample = require('../../../lib/db/query-sample')
 const codec = require('../../../lib/util/codec')
 
-describe('Query Sample', function testQuerySample() {
-  it('should set trace to query with longest duration', () => {
+tap.test('Query Sample', (t) => {
+  t.autoend()
+
+  t.test('should set trace to query with longest duration', (t) => {
     const trace = {
       duration: 3
     }
@@ -27,10 +25,12 @@ describe('Query Sample', function testQuerySample() {
     const querySample = new QuerySample(tracer, trace)
     querySample.aggregate(slowQuery)
 
-    expect(querySample.trace.duration).to.equal(30)
+    t.equal(querySample.trace.duration, 30)
+
+    t.end()
   })
 
-  it('should not set trace to query with shorter duration', () => {
+  t.test('should not set trace to query with shorter duration', (t) => {
     const trace = {
       duration: 30
     }
@@ -42,10 +42,12 @@ describe('Query Sample', function testQuerySample() {
     const querySample = new QuerySample(tracer, trace)
     querySample.aggregate(slowQuery)
 
-    expect(querySample.trace.duration).to.equal(30)
+    t.equal(querySample.trace.duration, 30)
+
+    t.end()
   })
 
-  it('should merge sample with longer duration', () => {
+  t.test('should merge sample with longer duration', (t) => {
     const slowSample = {
       trace: {
         duration: 30
@@ -59,10 +61,12 @@ describe('Query Sample', function testQuerySample() {
     const querySample = new QuerySample(tracer, trace)
     querySample.merge(slowSample)
 
-    expect(querySample.trace.duration).to.equal(30)
+    t.equal(querySample.trace.duration, 30)
+
+    t.end()
   })
 
-  it('should not merge sample with shorter duration', () => {
+  t.test('should not merge sample with shorter duration', (t) => {
     const slowSample = {
       trace: {
         duration: 3
@@ -76,10 +80,12 @@ describe('Query Sample', function testQuerySample() {
     const querySample = new QuerySample(tracer, trace)
     querySample.merge(slowSample)
 
-    expect(querySample.trace.duration).to.equal(30)
+    t.equal(querySample.trace.duration, 30)
+
+    t.end()
   })
 
-  it('should encode json when simple_compression is disabled', () => {
+  t.test('should encode json when simple_compression is disabled', (t) => {
     const fakeTracer = {
       config: {
         simple_compression: false
@@ -102,13 +108,15 @@ describe('Query Sample', function testQuerySample() {
 
     querySample.prepareJSON(() => {})
 
-    expect(codecCalled).to.be.true
+    t.ok(codecCalled)
 
     QuerySample.prototype.getParams.restore()
     codec.encode.restore()
+
+    t.end()
   })
 
-  it('should call _getJSON when simple_compression is enabled', () => {
+  t.test('should call _getJSON when simple_compression is enabled', (t) => {
     const fakeTracer = {
       config: {
         simple_compression: true,
@@ -143,13 +151,15 @@ describe('Query Sample', function testQuerySample() {
 
     clock.runAll()
 
-    expect(getFullNameCalled).to.be.true
+    t.ok(getFullNameCalled)
 
     clock.restore()
     QuerySample.prototype.getParams.restore()
+
+    t.end()
   })
 
-  it('should return segment attributes as params if present', () => {
+  t.test('should return segment attributes as params if present', (t) => {
     const expectedParams = {
       host: 'host',
       port_path_or_id: 1,
@@ -177,12 +187,14 @@ describe('Query Sample', function testQuerySample() {
 
     const result = querySample.getParams()
 
-    expect(result.host).to.equal(expectedParams.host)
-    expect(result.port_path_or_id).to.equal(expectedParams.port_path_or_id)
-    expect(result.database_name).to.equal(expectedParams.database_name)
+    t.equal(result.host, expectedParams.host)
+    t.equal(result.port_path_or_id, expectedParams.port_path_or_id)
+    t.equal(result.database_name, expectedParams.database_name)
+
+    t.end()
   })
 
-  it('should add DT intrinsics when DT enabled', () => {
+  t.test('should add DT intrinsics when DT enabled', (t) => {
     let addDtIntrinsicsCalled = false
     const fakeTracer = {
       config: {
@@ -207,10 +219,12 @@ describe('Query Sample', function testQuerySample() {
 
     querySample.getParams()
 
-    expect(addDtIntrinsicsCalled).to.be.true
+    t.equal(addDtIntrinsicsCalled, true)
+
+    t.end()
   })
 
-  it('should not add DT intrinsics when DT disabled', () => {
+  t.test('should not add DT intrinsics when DT disabled', (t) => {
     let addDtIntrinsicsCalled = false
     const fakeTracer = {
       config: {
@@ -235,6 +249,8 @@ describe('Query Sample', function testQuerySample() {
 
     querySample.getParams()
 
-    expect(addDtIntrinsicsCalled).to.be.false
+    t.equal(addDtIntrinsicsCalled, false)
+
+    t.end()
   })
 })
