@@ -8,7 +8,7 @@ const helper  = require('../../lib/agent_helper')
  *
  * @todo Would this be better closer to test, or is it good here
  */
-const configureFastifyServer = (fastify) => {
+const configureFastifyServer = async(fastify) => {
   /**
    * Route's callback is an async function, and response is returned
    */
@@ -42,10 +42,31 @@ const configureFastifyServer = (fastify) => {
     },
     {}
   )
+
+  await loadMiddleware(fastify)
 }
 
+let callCount = 0
+const loadMiddleware = async(fastify) => {
+  function testMiddleware(req, res, next) {
+    callCount++
+    next()
+  }
+
+  // If fastify version is >=3, .use() will fail unless a plugin adds it
+  try {
+    fastify.use((_,__,next) => next())
+  } catch (_) {
+    await fastify.register(require('fastify-express'))
+  }
+
+  fastify.use(testMiddleware)
+}
+
+let testCount = 0
 const testUri = (uri, agent, test, port) => {
   agent.on('transactionFinished', (transaction) => {
+    testCount++
     test.equals(
       `WebFrameworkUri/Fastify/GET/${uri}`,
       transaction.getName(),
@@ -59,8 +80,9 @@ const testUri = (uri, agent, test, port) => {
   })
 }
 
-tap.test('Test Transaction Naming', (test)=>{
+tap.test('Test Transaction Naming', (test) => {
   test.autoend()
+
   const routesToTest = [
     '/async-return',
     '/async-reply-send',
@@ -71,14 +93,14 @@ tap.test('Test Transaction Naming', (test)=>{
   let agent
   let fastify
 
-  test.beforeEach((done) => {
+  test.beforeEach(async(done) => {
     agent = helper.instrumentMockedAgent({
       feature_flag: {
         fastify_instrumentation: true
       }
     })
     fastify = require('fastify')()
-    configureFastifyServer(fastify)
+    await configureFastifyServer(fastify)
     done()
   })
 
@@ -97,4 +119,6 @@ tap.test('Test Transaction Naming', (test)=>{
       })
     })
   }
+
+  test.equals(testCount, callCount, 'middleware was called')
 })
