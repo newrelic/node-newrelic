@@ -303,7 +303,7 @@ tap.test('recording slow queries', (t) => {
         'MySql',
         'select',
         'foo',
-        'select * from foo where a=1'
+        'select * from foo where b=1'
       )
 
       transaction = new Transaction(agent)
@@ -317,7 +317,7 @@ tap.test('recording slow queries', (t) => {
         'MySql',
         'select',
         'foo',
-        'select * from foo where a=2'
+        'select * from foo where b=2'
       )
 
       let segment2 = transaction.trace.add('test')
@@ -351,10 +351,10 @@ tap.test('recording slow queries', (t) => {
       t.equal(sample.max, 503)
       t.equal(sample.sumOfSquares, 504010)
       t.equal(sample.callCount, 2)
-      t.equal(trace.obfuscated, 'select * from foo where a=?')
-      t.equal(trace.normalized, 'select*fromfoowherea=?')
-      t.equal(trace.id, 374780417029088500)
-      t.equal(trace.query, 'select * from foo where a=1')
+      t.equal(trace.obfuscated, 'select * from foo where b=?')
+      t.equal(trace.normalized, 'select*fromfoowhereb=?')
+      t.equal(trace.id, 13910388457965238000)
+      t.equal(trace.query, 'select * from foo where b=1')
       t.equal(trace.metric, 'Datastore/statement/MySql/foo/select')
       t.equal(typeof trace.trace, 'string')
 
@@ -381,7 +381,7 @@ tap.test('recording slow queries', (t) => {
         'MySql',
         'select',
         null,
-        'select * from foo where a=1'
+        'select * from foo where b=1'
       )
 
       transaction = new Transaction(agent)
@@ -394,7 +394,7 @@ tap.test('recording slow queries', (t) => {
         'MySql',
         'select',
         null,
-        'select * from foo where a=2'
+        'select * from foo where b=2'
       )
 
       let segment2 = transaction.trace.add('test')
@@ -417,6 +417,15 @@ tap.test('recording slow queries', (t) => {
       t.end()
     })
 
+    t.test('should have IDs that fit a signed long', (t) => {
+      let sample = agent.queries.samples.values().next().value
+      let trace = sample.trace
+
+      t.ok(trace.id <= (2**63 - 1))
+
+      t.end()
+    })
+
     t.test('should capture queries', (t) => {
       t.equal(agent.queries.samples.size, 1)
 
@@ -429,10 +438,10 @@ tap.test('recording slow queries', (t) => {
       t.equal(sample.max, 503)
       t.equal(sample.sumOfSquares, 504010)
       t.equal(sample.callCount, 2)
-      t.equal(trace.obfuscated, 'select * from foo where a=?')
-      t.equal(trace.normalized, 'select*fromfoowherea=?')
-      t.equal(trace.id, 374780417029088500)
-      t.equal(trace.query, 'select * from foo where a=1')
+      t.equal(trace.obfuscated, 'select * from foo where b=?')
+      t.equal(trace.normalized, 'select*fromfoowhereb=?')
+      t.equal(trace.id, 13910388457965238000)
+      t.equal(trace.query, 'select * from foo where b=1')
       t.equal(trace.metric, 'Datastore/operation/MySql/select')
       t.equal(typeof trace.trace, 'string')
 
