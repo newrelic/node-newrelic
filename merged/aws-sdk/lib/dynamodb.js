@@ -20,6 +20,10 @@ const DOC_CLIENT_OPERATIONS = [
   'put',
   'update',
   'delete',
+  'batchGet',
+  'batchWrite',
+  'transactGet',
+  'transactWrite',
   'query',
   'scan'
 ]
