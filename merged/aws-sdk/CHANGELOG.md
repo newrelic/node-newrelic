@@ -1,3 +1,8 @@
+### 3.1.0 (2021-01-05):
+
+* Properly instrument dynamodb batchGet, batchWrite, transactGet, and transactWrite calls as database
+  operations instead of External service calls.
+
 ### 3.0.0 (2020-11-02):
 
 * Removed Node v8.x from CI.
