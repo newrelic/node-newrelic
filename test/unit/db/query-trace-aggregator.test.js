@@ -310,7 +310,7 @@ describe('Query Trace Aggregator', function testQueryTracer() {
           var sample = data[0]
           assert.equal(sample[0], 'FakeTransaction', 'should match transaction name')
           assert.equal(sample[1], '/abc', 'should match transaction url')
-          assert.equal(sample[2], 2680623426242782700, 'should match query id')
+          assert.equal(sample[2], 374780417029088500, 'should match query id')
           assert.equal(sample[3], 'select * from foo where a=2', 'should match raw query')
           assert.equal(sample[4], 'FakeSegment', 'should match segment name')
           assert.equal(sample[5], 1, 'should have 1 call')
@@ -345,7 +345,7 @@ describe('Query Trace Aggregator', function testQueryTracer() {
           var sample = data[0]
           assert.equal(sample[0], 'FakeTransaction', 'should match transaction name')
           assert.equal(sample[1], '/abc', 'should match transaction url')
-          assert.equal(sample[2], 2680623426242782700, 'should match query id')
+          assert.equal(sample[2], 374780417029088500, 'should match query id')
           assert.equal(sample[3], 'select * from foo where a=2', 'should match raw query')
           assert.equal(sample[4], 'FakeSegment', 'should match segment name')
           assert.equal(sample[5], 2, 'should have 1 call')
@@ -383,7 +383,7 @@ describe('Query Trace Aggregator', function testQueryTracer() {
           var sample = data[0]
           assert.equal(sample[0], 'FakeTransaction', 'should match transaction name')
           assert.equal(sample[1], '/abc', 'should match transaction url')
-          assert.equal(sample[2], 2680623426242782700, 'should match query id')
+          assert.equal(sample[2], 374780417029088500, 'should match query id')
           assert.equal(sample[3], 'select * from foo where a=2', 'should match raw query')
           assert.equal(sample[4], 'FakeSegment', 'should match segment name')
           assert.equal(sample[5], 1, 'should have 1 call')
@@ -406,7 +406,7 @@ describe('Query Trace Aggregator', function testQueryTracer() {
 
             assert.equal(sample2[0], 'FakeTransaction', 'should match transaction name')
             assert.equal(sample2[1], '/abc', 'should match transaction url')
-            assert.equal(sample2[2], 13169739137589120000, 'should match query id')
+            assert.equal(sample2[2], 487602586913804700, 'should match query id')
             assert.equal(sample2[3], 'drop table users', 'should match raw query')
             assert.equal(sample2[4], 'FakeSegment', 'should match segment name')
             assert.equal(sample2[5], 1, 'should have 1 call')
@@ -465,7 +465,7 @@ describe('Query Trace Aggregator', function testQueryTracer() {
           var sample = data[0]
           assert.equal(sample[0], 'FakeTransaction', 'should match transaction name')
           assert.equal(sample[1], '/abc', 'should match transaction url')
-          assert.equal(sample[2], 2680623426242782700, 'should match query id')
+          assert.equal(sample[2], 374780417029088500, 'should match query id')
           assert.equal(sample[3], 'select * from foo where a=?', 'should match raw query')
           assert.equal(sample[4], 'FakeSegment', 'should match segment name')
           assert.equal(sample[5], 1, 'should have 1 call')
@@ -509,7 +509,7 @@ describe('Query Trace Aggregator', function testQueryTracer() {
           var sample = data[0]
           assert.equal(sample[0], 'FakeTransaction', 'should match transaction name')
           assert.equal(sample[1], '/abc', 'should match transaction url')
-          assert.equal(sample[2], 2680623426242782700, 'should match query id')
+          assert.equal(sample[2], 374780417029088500, 'should match query id')
           assert.equal(sample[3], 'select * from foo where a=?', 'should match raw query')
           assert.equal(sample[4], 'FakeSegment', 'should match segment name')
           assert.equal(sample[5], 2, 'should have 1 call')
@@ -556,7 +556,7 @@ describe('Query Trace Aggregator', function testQueryTracer() {
           var sample = data[0]
           assert.equal(sample[0], 'FakeTransaction', 'should match transaction name')
           assert.equal(sample[1], '/abc', 'should match transaction url')
-          assert.equal(sample[2], 2680623426242782700, 'should match query id')
+          assert.equal(sample[2], 374780417029088500, 'should match query id')
           assert.equal(sample[3], 'select * from foo where a=?', 'should match raw query')
           assert.equal(sample[4], 'FakeSegment', 'should match segment name')
           assert.equal(sample[5], 1, 'should have 1 call')
@@ -578,7 +578,7 @@ describe('Query Trace Aggregator', function testQueryTracer() {
             var sample2 = data[1]
             assert.equal(sample2[0], 'FakeTransaction', 'should match transaction name')
             assert.equal(sample2[1], '/abc', 'should match transaction url')
-            assert.equal(sample2[2], 13169739137589120000, 'should match query id')
+            assert.equal(sample2[2], 487602586913804700, 'should match query id')
             assert.equal(sample2[3], 'drop table users', 'should match raw query')
             assert.equal(sample2[4], 'FakeSegment', 'should match segment name')
             assert.equal(sample2[5], 1, 'should have 1 call')
@@ -637,7 +637,7 @@ describe('Query Trace Aggregator', function testQueryTracer() {
           var sample = data[0]
           assert.equal(sample[0], 'FakeTransaction', 'should match transaction name')
           assert.equal(sample[1], '<unknown>', 'should match transaction url')
-          assert.equal(sample[2], 2680623426242782700, 'should match query id')
+          assert.equal(sample[2], 374780417029088500, 'should match query id')
           assert.equal(sample[3], 'select * from foo where a=2', 'should match raw query')
           assert.equal(sample[4], 'FakeSegment', 'should match segment name')
           assert.equal(sample[5], 1, 'should have 1 call')
@@ -681,7 +681,7 @@ describe('Query Trace Aggregator', function testQueryTracer() {
           var sample = data[0]
           assert.equal(sample[0], 'FakeTransaction', 'should match transaction name')
           assert.equal(sample[1], '<unknown>', 'should match transaction url')
-          assert.equal(sample[2], 2680623426242782700, 'should match query id')
+          assert.equal(sample[2], 374780417029088500, 'should match query id')
           assert.equal(sample[3], 'select * from foo where a=2', 'should match raw query')
           assert.equal(sample[4], 'FakeSegment', 'should match segment name')
           assert.equal(sample[5], 2, 'should have 1 call')
@@ -728,7 +728,7 @@ describe('Query Trace Aggregator', function testQueryTracer() {
           var sample = data[0]
           assert.equal(sample[0], 'FakeTransaction', 'should match transaction name')
           assert.equal(sample[1], '<unknown>', 'should match transaction url')
-          assert.equal(sample[2], 2680623426242782700, 'should match query id')
+          assert.equal(sample[2], 374780417029088500, 'should match query id')
           assert.equal(sample[3], 'select * from foo where a=2', 'should match raw query')
           assert.equal(sample[4], 'FakeSegment', 'should match segment name')
           assert.equal(sample[5], 1, 'should have 1 call')
@@ -750,7 +750,7 @@ describe('Query Trace Aggregator', function testQueryTracer() {
             var sample2 = data[1]
             assert.equal(sample2[0], 'FakeTransaction', 'should match transaction name')
             assert.equal(sample2[1], '<unknown>', 'should match transaction url')
-            assert.equal(sample2[2], 13169739137589120000, 'should match query id')
+            assert.equal(sample2[2], 487602586913804700, 'should match query id')
             assert.equal(sample2[3], 'drop table users', 'should match raw query')
             assert.equal(sample2[4], 'FakeSegment', 'should match segment name')
             assert.equal(sample2[5], 1, 'should have 1 call')
@@ -809,7 +809,7 @@ describe('Query Trace Aggregator', function testQueryTracer() {
           var sample = data[0]
           assert.equal(sample[0], 'FakeTransaction', 'should match transaction name')
           assert.equal(sample[1], '<unknown>', 'should match transaction url')
-          assert.equal(sample[2], 2680623426242782700, 'should match query id')
+          assert.equal(sample[2], 374780417029088500, 'should match query id')
           assert.equal(sample[3], 'select * from foo where a=?', 'should match raw query')
           assert.equal(sample[4], 'FakeSegment', 'should match segment name')
           assert.equal(sample[5], 1, 'should have 1 call')
@@ -853,7 +853,7 @@ describe('Query Trace Aggregator', function testQueryTracer() {
           var sample = data[0]
           assert.equal(sample[0], 'FakeTransaction', 'should match transaction name')
           assert.equal(sample[1], '<unknown>', 'should match transaction url')
-          assert.equal(sample[2], 2680623426242782700, 'should match query id')
+          assert.equal(sample[2], 374780417029088500, 'should match query id')
           assert.equal(sample[3], 'select * from foo where a=?', 'should match raw query')
           assert.equal(sample[4], 'FakeSegment', 'should match segment name')
           assert.equal(sample[5], 2, 'should have 1 call')
@@ -900,7 +900,7 @@ describe('Query Trace Aggregator', function testQueryTracer() {
           var sample = data[0]
           assert.equal(sample[0], 'FakeTransaction', 'should match transaction name')
           assert.equal(sample[1], '<unknown>', 'should match transaction url')
-          assert.equal(sample[2], 2680623426242782700, 'should match query id')
+          assert.equal(sample[2], 374780417029088500, 'should match query id')
           assert.equal(sample[3], 'select * from foo where a=?', 'should match raw query')
           assert.equal(sample[4], 'FakeSegment', 'should match segment name')
           assert.equal(sample[5], 1, 'should have 1 call')
@@ -922,7 +922,7 @@ describe('Query Trace Aggregator', function testQueryTracer() {
             var sample2 = data[1]
             assert.equal(sample2[0], 'FakeTransaction', 'should match transaction name')
             assert.equal(sample2[1], '<unknown>', 'should match transaction url')
-            assert.equal(sample2[2], 13169739137589120000, 'should match query id')
+            assert.equal(sample2[2], 487602586913804700, 'should match query id')
             assert.equal(sample2[3], 'drop table users', 'should match raw query')
             assert.equal(sample2[4], 'FakeSegment', 'should match segment name')
             assert.equal(sample2[5], 1, 'should have 1 call')
@@ -1064,7 +1064,7 @@ function verifySample(sample, count, segment) {
 function verifyTrace(trace, segment) {
   assert.equal(trace.duration, segment.getDurationInMillis(), 'should save duration')
   assert.equal(trace.segment, segment, 'should hold onto segment')
-  assert.equal(trace.id, 2680623426242782700, 'should have correct id')
+  assert.equal(trace.id, 374780417029088500, 'should have correct id')
   assert.equal(trace.metric, segment.name, 'metric and segment name should match')
   assert.equal(trace.normalized, 'select*fromfoowherea=?', 'should set normalized')
   assert.equal(trace.obfuscated, 'select * from foo where a=?', 'should set obfuscated')

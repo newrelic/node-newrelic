@@ -5,140 +5,167 @@
 
 'use strict'
 
-// TODO: convert to normal tap style.
-// Below allows use of mocha DSL with tap runner.
-require('tap').mochaGlobals()
+const tap = require('tap')
 
-var chai = require('chai')
-var expect = chai.expect
-var helper = require('../lib/agent_helper')
-var Transaction = require('../../lib/transaction')
-var ParsedStatement = require('../../lib/db/parsed-statement')
+const helper = require('../lib/agent_helper')
+const Transaction = require('../../lib/transaction')
+const ParsedStatement = require('../../lib/db/parsed-statement')
 
 
-function checkMetric(metrics, name, scope) {
-  expect(metrics.getMetric(name, scope)).to.have.property('total', 0.333)
+function checkMetric(t, metrics, name, scope) {
+  t.match(metrics.getMetric(name, scope), {'total': 0.333})
 }
 
-describe('recording database metrics', function() {
-  var agent
-  var metrics
+tap.test('recording database metrics', (t) => {
+  t.autoend()
 
+  let agent = null
+  let metrics = null
 
-  before(function() {
+  t.test('setup', (t) => {
     agent = helper.loadMockedAgent()
+    t.end()
   })
 
-  after(function() {
+  t.test('on scoped transactions with parsed statements - with collection', (t) => {
+    t.test('with collection', (t) => {
+      t.beforeEach((done) => {
+        let ps          = new ParsedStatement('NoSQL', 'select', 'test_collection')
+        let transaction = new Transaction(agent)
+        let segment     = transaction.trace.add('test')
+
+        transaction.type = Transaction.TYPES.BG
+        segment.setDurationInMillis(333)
+        ps.recordMetrics(segment, 'TEST')
+        transaction.end()
+
+        metrics = transaction.metrics
+
+        done()
+      })
+
+      t.test('should find 1 scoped metric', (t) => {
+        t.equal(metrics._toScopedData().length, 1)
+        t.end()
+      })
+
+      t.test('should find 6 unscoped metrics', (t) => {
+        t.equal(metrics._toUnscopedData().length, 6)
+        t.end()
+      })
+
+      t.test('should find a scoped metric on the table and operation', (t) => {
+        checkMetric(t, metrics, 'Datastore/statement/NoSQL/test_collection/select', 'TEST')
+        t.end()
+      })
+
+      t.test('should find an unscoped metric on the table and operation', (t) => {
+        checkMetric(t, metrics, 'Datastore/statement/NoSQL/test_collection/select')
+        t.end()
+      })
+
+      t.test('should find an unscoped rollup metric on the operation', (t) => {
+        checkMetric(t, metrics, 'Datastore/operation/NoSQL/select')
+        t.end()
+      })
+
+      t.test('should find a database rollup metric', (t) => {
+        checkMetric(t, metrics, 'Datastore/all')
+        t.end()
+      })
+
+      t.test('should find a database rollup metric of type `Other`', (t) => {
+        checkMetric(t, metrics, 'Datastore/allOther')
+        t.end()
+      })
+
+      t.test('should find a database type rollup metric of type `All`', (t) => {
+        checkMetric(t, metrics, 'Datastore/NoSQL/all')
+        t.end()
+      })
+
+      t.test('should find a database type rollup metric of type `Other`', (t) => {
+        checkMetric(t, metrics, 'Datastore/NoSQL/allOther')
+        t.end()
+      })
+
+      t.end()
+    })
+
+    t.test('without collection', (t) => {
+      t.beforeEach((done) => {
+        let ps          = new ParsedStatement('NoSQL', 'select')
+        let transaction = new Transaction(agent)
+        let segment     = transaction.trace.add('test')
+
+        transaction.type = Transaction.TYPES.BG
+        segment.setDurationInMillis(333)
+        ps.recordMetrics(segment, 'TEST')
+        transaction.end()
+
+        metrics = transaction.metrics
+
+        done()
+      })
+
+      t.test('should find 1 scoped metric', (t) => {
+        t.equal(metrics._toScopedData().length, 1)
+        t.end()
+      })
+
+      t.test('should find 5 unscoped metrics', (t) => {
+        t.equal(metrics._toUnscopedData().length, 5)
+        t.end()
+      })
+
+      t.test('should find a scoped metric on the operation', (t) => {
+        checkMetric(t, metrics, 'Datastore/operation/NoSQL/select', 'TEST')
+        t.end()
+      })
+
+      t.test('should find an unscoped metric on the operation', (t) => {
+        checkMetric(t, metrics, 'Datastore/operation/NoSQL/select')
+        t.end()
+      })
+
+      t.test('should find a database rollup metric', (t) => {
+        checkMetric(t, metrics, 'Datastore/all')
+        t.end()
+      })
+
+      t.test('should find a database rollup metric of type `Other`', (t) => {
+        checkMetric(t, metrics, 'Datastore/allOther')
+        t.end()
+      })
+
+      t.test('should find a database type rollup metric of type `All`', (t) => {
+        checkMetric(t, metrics, 'Datastore/NoSQL/all')
+        t.end()
+      })
+
+      t.test('should find a database type rollup metric of type `Other`', (t) => {
+        checkMetric(t, metrics, 'Datastore/NoSQL/allOther')
+        t.end()
+      })
+
+      t.end()
+    })
+
+    t.end()
+  })
+
+  t.test('reset', (t) => {
     helper.unloadAgent(agent)
+    agent = helper.loadMockedAgent()
+    t.end()
   })
 
-  describe('on scoped transactions with parsed statements', function() {
-    describe('with collection', function() {
-      before(function() {
-        var ps          = new ParsedStatement('NoSQL', 'select', 'test_collection')
-        var transaction = new Transaction(agent)
-        var segment     = transaction.trace.add('test')
-
-        transaction.type = Transaction.TYPES.BG
-        segment.setDurationInMillis(333)
-        ps.recordMetrics(segment, 'TEST')
-        transaction.end()
-
-        metrics = transaction.metrics
-      })
-
-      it('should find 1 scoped metric', function() {
-        expect(metrics._toScopedData().length).to.equal(1)
-      })
-
-      it('should find 6 unscoped metrics', function() {
-        expect(metrics._toUnscopedData().length).to.equal(6)
-      })
-
-      it('should find a scoped metric on the table and operation', function() {
-        checkMetric(metrics, 'Datastore/statement/NoSQL/test_collection/select', 'TEST')
-      })
-
-      it('should find an unscoped metric on the table and operation', function() {
-        checkMetric(metrics, 'Datastore/statement/NoSQL/test_collection/select')
-      })
-
-      it('should find an unscoped rollup metric on the operation', function() {
-        checkMetric(metrics, 'Datastore/operation/NoSQL/select')
-      })
-
-      it('should find a database rollup metric', function() {
-        checkMetric(metrics, 'Datastore/all')
-      })
-
-      it('should find a database rollup metric of type `Other`', function() {
-        checkMetric(metrics, 'Datastore/allOther')
-      })
-
-      it('should find a database type rollup metric of type `All`', function() {
-        checkMetric(metrics, 'Datastore/NoSQL/all')
-      })
-
-      it('should find a database type rollup metric of type `Other`', function() {
-        checkMetric(metrics, 'Datastore/NoSQL/allOther')
-      })
-    })
-
-    describe('without collection', function() {
-      before(function() {
-        var ps          = new ParsedStatement('NoSQL', 'select')
-        var transaction = new Transaction(agent)
-        var segment     = transaction.trace.add('test')
-
-        transaction.type = Transaction.TYPES.BG
-        segment.setDurationInMillis(333)
-        ps.recordMetrics(segment, 'TEST')
-        transaction.end()
-
-        metrics = transaction.metrics
-      })
-
-      it('should find 1 scoped metric', function() {
-        expect(metrics._toScopedData().length).to.equal(1)
-      })
-
-      it('should find 5 unscoped metrics', function() {
-        expect(metrics._toUnscopedData().length).to.equal(5)
-      })
-
-      it('should find a scoped metric on the operation', function() {
-        checkMetric(metrics, 'Datastore/operation/NoSQL/select', 'TEST')
-      })
-
-      it('should find an unscoped metric on the operation', function() {
-        checkMetric(metrics, 'Datastore/operation/NoSQL/select')
-      })
-
-      it('should find a database rollup metric', function() {
-        checkMetric(metrics, 'Datastore/all')
-      })
-
-      it('should find a database rollup metric of type `Other`', function() {
-        checkMetric(metrics, 'Datastore/allOther')
-      })
-
-      it('should find a database type rollup metric of type `All`', function() {
-        checkMetric(metrics, 'Datastore/NoSQL/all')
-      })
-
-      it('should find a database type rollup metric of type `Other`', function() {
-        checkMetric(metrics, 'Datastore/NoSQL/allOther')
-      })
-    })
-  })
-
-  describe('on unscoped transactions with parsed statements', function() {
-    describe('with collection', function() {
-      before(function() {
-        var ps          = new ParsedStatement('NoSQL', 'select', 'test_collection')
-        var transaction = new Transaction(agent)
-        var segment     = transaction.trace.add('test')
+  t.test('on unscoped transactions with parsed statements', (t) => {
+    t.test('with collection', (t) => {
+      t.beforeEach((done) => {
+        let ps          = new ParsedStatement('NoSQL', 'select', 'test_collection')
+        let transaction = new Transaction(agent)
+        let segment     = transaction.trace.add('test')
 
         transaction.type = Transaction.TYPES.BG
         segment.setDurationInMillis(333)
@@ -146,46 +173,58 @@ describe('recording database metrics', function() {
         transaction.end()
 
         metrics = transaction.metrics
+
+        done()
       })
 
-      it('should find 0 unscoped metrics', function() {
-        expect(metrics._toScopedData().length).to.equal(0)
+      t.test('should find 0 unscoped metrics', (t) => {
+        t.equal(metrics._toScopedData().length, 0)
+        t.end()
       })
 
-      it('should find 6 unscoped metrics', function() {
-        expect(metrics._toUnscopedData().length).to.equal(6)
+      t.test('should find 6 unscoped metrics', (t) => {
+        t.equal(metrics._toUnscopedData().length, 6)
+        t.end()
       })
 
-      it('should find an unscoped metric on the table and operation', function() {
-        checkMetric(metrics, 'Datastore/statement/NoSQL/test_collection/select')
+      t.test('should find an unscoped metric on the table and operation', (t) => {
+        checkMetric(t, metrics, 'Datastore/statement/NoSQL/test_collection/select')
+        t.end()
       })
 
-      it('should find an unscoped rollup metric on the operation', function() {
-        checkMetric(metrics, 'Datastore/operation/NoSQL/select')
+      t.test('should find an unscoped rollup metric on the operation', (t) => {
+        checkMetric(t, metrics, 'Datastore/operation/NoSQL/select')
+        t.end()
       })
 
-      it('should find an unscoped rollup DB metric', function() {
-        checkMetric(metrics, 'Datastore/all')
+      t.test('should find an unscoped rollup DB metric', (t) => {
+        checkMetric(t, metrics, 'Datastore/all')
+        t.end()
       })
 
-      it('should find an unscoped rollup DB metric of type `Other`', function() {
-        checkMetric(metrics, 'Datastore/allOther')
+      t.test('should find an unscoped rollup DB metric of type `Other`', (t) => {
+        checkMetric(t, metrics, 'Datastore/allOther')
+        t.end()
       })
 
-      it('should find a database type rollup metric of type `All`', function() {
-        checkMetric(metrics, 'Datastore/NoSQL/all')
+      t.test('should find a database type rollup metric of type `All`', (t) => {
+        checkMetric(t, metrics, 'Datastore/NoSQL/all')
+        t.end()
       })
 
-      it('should find a database type rollup metric of type `Other`', function() {
-        checkMetric(metrics, 'Datastore/NoSQL/allOther')
+      t.test('should find a database type rollup metric of type `Other`', (t) => {
+        checkMetric(t, metrics, 'Datastore/NoSQL/allOther')
+        t.end()
       })
+
+      t.end()
     })
 
-    describe('without collection', function() {
-      before(function() {
-        var ps          = new ParsedStatement('NoSQL', 'select')
-        var transaction = new Transaction(agent)
-        var segment     = transaction.trace.add('test')
+    t.test('without collection', (t) => {
+      t.beforeEach((done) => {
+        let ps          = new ParsedStatement('NoSQL', 'select')
+        let transaction = new Transaction(agent)
+        let segment     = transaction.trace.add('test')
 
         transaction.type = Transaction.TYPES.BG
         segment.setDurationInMillis(333)
@@ -193,46 +232,66 @@ describe('recording database metrics', function() {
         transaction.end()
 
         metrics = transaction.metrics
+
+        done()
       })
 
-      it('should find 0 unscoped metrics', function() {
-        expect(metrics._toScopedData().length).to.equal(0)
+      t.test('should find 0 unscoped metrics', (t) => {
+        t.equal(metrics._toScopedData().length, 0)
+        t.end()
       })
 
-      it('should find 5 unscoped metrics', function() {
-        expect(metrics._toUnscopedData().length).to.equal(5)
+      t.test('should find 5 unscoped metrics', (t) => {
+        t.equal(metrics._toUnscopedData().length, 5)
+        t.end()
       })
 
-      it('should find an unscoped metric on the operation', function() {
-        checkMetric(metrics, 'Datastore/operation/NoSQL/select')
+      t.test('should find an unscoped metric on the operation', (t) => {
+        checkMetric(t, metrics, 'Datastore/operation/NoSQL/select')
+        t.end()
       })
 
-      it('should find an unscoped rollup DB metric', function() {
-        checkMetric(metrics, 'Datastore/all')
+      t.test('should find an unscoped rollup DB metric', (t) => {
+        checkMetric(t, metrics, 'Datastore/all')
+        t.end()
       })
 
-      it('should find an unscoped rollup DB metric of type `Other`', function() {
-        checkMetric(metrics, 'Datastore/allOther')
+      t.test('should find an unscoped rollup DB metric of type `Other`', (t) => {
+        checkMetric(t, metrics, 'Datastore/allOther')
+        t.end()
       })
 
-      it('should find a database type rollup metric of type `All`', function() {
-        checkMetric(metrics, 'Datastore/NoSQL/all')
+      t.test('should find a database type rollup metric of type `All`', (t) => {
+        checkMetric(t, metrics, 'Datastore/NoSQL/all')
+        t.end()
       })
 
-      it('should find a database type rollup metric of type `Other`', function() {
-        checkMetric(metrics, 'Datastore/NoSQL/allOther')
+      t.test('should find a database type rollup metric of type `Other`', (t) => {
+        checkMetric(t, metrics, 'Datastore/NoSQL/allOther')
+        t.end()
       })
+
+      t.end()
     })
+
+    t.end()
+  })
+
+  t.test('teardown', (t) => {
+    helper.unloadAgent(agent)
+    t.end()
   })
 })
 
-describe('recording slow queries', function() {
-  describe('with collection', function() {
-    var transaction
-    var segment
-    var agent
+tap.test('recording slow queries', (t) => {
+  t.autoend()
 
-    before(function() {
+  t.test('with collection', (t) => {
+    let transaction
+    let segment
+    let agent
+
+    t.beforeEach((done) => {
       agent = helper.loadMockedAgent({
         slow_sql: {enabled: true},
         transaction_tracer: {
@@ -240,11 +299,11 @@ describe('recording slow queries', function() {
         }
       })
 
-      var ps = new ParsedStatement(
+      let ps = new ParsedStatement(
         'MySql',
         'select',
         'foo',
-        'select * from foo where a=1'
+        'select * from foo where b=1'
       )
 
       transaction = new Transaction(agent)
@@ -254,55 +313,63 @@ describe('recording slow queries', function() {
       segment.setDurationInMillis(503)
       ps.recordMetrics(segment, 'TEST')
 
-      var ps2 = new ParsedStatement(
+      let ps2 = new ParsedStatement(
         'MySql',
         'select',
         'foo',
-        'select * from foo where a=2'
+        'select * from foo where b=2'
       )
 
-      var segment2 = transaction.trace.add('test')
+      let segment2 = transaction.trace.add('test')
       segment2.setDurationInMillis(501)
       ps2.recordMetrics(segment2, 'TEST')
 
       transaction.end()
+
+      done()
     })
 
-    after(function() {
+    t.afterEach((done) => {
       helper.unloadAgent(agent)
+      done()
     })
 
-    it('should update segment names', function() {
-      expect(segment.name).equal('Datastore/statement/MySql/foo/select')
+    t.test('should update segment names', (t) => {
+      t.equal(segment.name, 'Datastore/statement/MySql/foo/select')
+      t.end()
     })
 
-    it('should capture queries', function() {
-      expect(agent.queries.samples).to.have.property('size', 1)
+    t.test('should capture queries', (t) => {
+      t.equal(agent.queries.samples.size, 1)
 
-      var sample = agent.queries.samples.values().next().value
-      var trace = sample.trace
+      let sample = agent.queries.samples.values().next().value
+      let trace = sample.trace
 
-      expect(sample.total).equal(1004)
-      expect(sample.totalExclusive).equal(1004)
-      expect(sample.min).equal(501)
-      expect(sample.max).equal(503)
-      expect(sample.sumOfSquares).equal(504010)
-      expect(sample.callCount).equal(2)
-      expect(trace.obfuscated).equal('select * from foo where a=?')
-      expect(trace.normalized).equal('select*fromfoowherea=?')
-      expect(trace.id).equal(2680623426242782700)
-      expect(trace.query).equal('select * from foo where a=1')
-      expect(trace.metric).equal('Datastore/statement/MySql/foo/select')
-      expect(typeof trace.trace).equal('string')
+      t.equal(sample.total, 1004)
+      t.equal(sample.totalExclusive, 1004)
+      t.equal(sample.min, 501)
+      t.equal(sample.max, 503)
+      t.equal(sample.sumOfSquares, 504010)
+      t.equal(sample.callCount, 2)
+      t.equal(trace.obfuscated, 'select * from foo where b=?')
+      t.equal(trace.normalized, 'select*fromfoowhereb=?')
+      t.equal(trace.id, 75330402683074160)
+      t.equal(trace.query, 'select * from foo where b=1')
+      t.equal(trace.metric, 'Datastore/statement/MySql/foo/select')
+      t.equal(typeof trace.trace, 'string')
+
+      t.end()
     })
+
+    t.end()
   })
 
-  describe('without collection', function() {
-    var transaction
-    var segment
-    var agent
+  t.test('without collection', (t) => {
+    let transaction
+    let segment
+    let agent
 
-    before(function() {
+    t.beforeEach((done) => {
       agent = helper.loadMockedAgent({
         slow_sql: {enabled: true},
         transaction_tracer: {
@@ -310,11 +377,11 @@ describe('recording slow queries', function() {
         }
       })
 
-      var ps = new ParsedStatement(
+      let ps = new ParsedStatement(
         'MySql',
         'select',
         null,
-        'select * from foo where a=1'
+        'select * from foo where b=1'
       )
 
       transaction = new Transaction(agent)
@@ -323,55 +390,73 @@ describe('recording slow queries', function() {
       segment.setDurationInMillis(503)
       ps.recordMetrics(segment, 'TEST')
 
-      var ps2 = new ParsedStatement(
+      let ps2 = new ParsedStatement(
         'MySql',
         'select',
         null,
-        'select * from foo where a=2'
+        'select * from foo where b=2'
       )
 
-      var segment2 = transaction.trace.add('test')
+      let segment2 = transaction.trace.add('test')
       segment2.setDurationInMillis(501)
       ps2.recordMetrics(segment2, 'TEST')
 
       transaction.end()
+
+      done()
     })
 
-    after(function() {
+    t.afterEach((done) => {
       helper.unloadAgent(agent)
+      agent = null
+      done()
     })
 
-    it('should update segment names', function() {
-      expect(segment.name).equal('Datastore/operation/MySql/select')
+    t.test('should update segment names', (t) => {
+      t.equal(segment.name, 'Datastore/operation/MySql/select')
+      t.end()
     })
 
-    it('should capture queries', function() {
-      expect(agent.queries.samples).to.have.property('size', 1)
+    t.test('should have IDs that fit a signed long', (t) => {
+      let sample = agent.queries.samples.values().next().value
+      let trace = sample.trace
 
-      var sample = agent.queries.samples.values().next().value
-      var trace = sample.trace
+      t.ok(trace.id <= (2 ** 63 - 1))
 
-      expect(sample.total).equal(1004)
-      expect(sample.totalExclusive).equal(1004)
-      expect(sample.min).equal(501)
-      expect(sample.max).equal(503)
-      expect(sample.sumOfSquares).equal(504010)
-      expect(sample.callCount).equal(2)
-      expect(trace.obfuscated).equal('select * from foo where a=?')
-      expect(trace.normalized).equal('select*fromfoowherea=?')
-      expect(trace.id).equal(2680623426242782700)
-      expect(trace.query).equal('select * from foo where a=1')
-      expect(trace.metric).equal('Datastore/operation/MySql/select')
-      expect(typeof trace.trace).equal('string')
+      t.end()
     })
+
+    t.test('should capture queries', (t) => {
+      t.equal(agent.queries.samples.size, 1)
+
+      let sample = agent.queries.samples.values().next().value
+      let trace = sample.trace
+
+      t.equal(sample.total, 1004)
+      t.equal(sample.totalExclusive, 1004)
+      t.equal(sample.min, 501)
+      t.equal(sample.max, 503)
+      t.equal(sample.sumOfSquares, 504010)
+      t.equal(sample.callCount, 2)
+      t.equal(trace.obfuscated, 'select * from foo where b=?')
+      t.equal(trace.normalized, 'select*fromfoowhereb=?')
+      t.equal(trace.id, 75330402683074160)
+      t.equal(trace.query, 'select * from foo where b=1')
+      t.equal(trace.metric, 'Datastore/operation/MySql/select')
+      t.equal(typeof trace.trace, 'string')
+
+      t.end()
+    })
+
+    t.end()
   })
 
-  describe('without query', function() {
-    var transaction
-    var segment
-    var agent
+  t.test('without query', (t) => {
+    let transaction
+    let segment
+    let agent
 
-    before(function() {
+    t.beforeEach((done) => {
       agent = helper.loadMockedAgent({
         slow_sql: {enabled: true},
         transaction_tracer: {
@@ -379,7 +464,7 @@ describe('recording slow queries', function() {
         }
       })
 
-      var ps = new ParsedStatement('MySql', 'select', null, null)
+      let ps = new ParsedStatement('MySql', 'select', null, null)
 
       transaction = new Transaction(agent)
       segment = transaction.trace.add('test')
@@ -387,25 +472,32 @@ describe('recording slow queries', function() {
       segment.setDurationInMillis(503)
       ps.recordMetrics(segment, 'TEST')
 
-      var ps2 = new ParsedStatement('MySql', 'select', null, null)
+      let ps2 = new ParsedStatement('MySql', 'select', null, null)
 
-      var segment2 = transaction.trace.add('test')
+      let segment2 = transaction.trace.add('test')
       segment2.setDurationInMillis(501)
       ps2.recordMetrics(segment2, 'TEST')
 
       transaction.end()
+
+      done()
     })
 
-    after(function() {
+    t.afterEach((done) => {
       helper.unloadAgent(agent)
+      done()
     })
 
-    it('should update segment names', function() {
-      expect(segment.name).equal('Datastore/operation/MySql/select')
+    t.test('should update segment names', (t) => {
+      t.equal(segment.name, 'Datastore/operation/MySql/select')
+      t.end()
     })
 
-    it('should not capture queries', function() {
-      expect(agent.queries.samples).to.have.property('size', 0)
+    t.test('should not capture queries', (t) => {
+      t.match(agent.queries.samples.size, 0)
+      t.end()
     })
+
+    t.end()
   })
 })
