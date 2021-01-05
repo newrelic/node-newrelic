@@ -1,18 +1,18 @@
 {
-  "lastUpdated": "Tue Nov 17 2020 14:58:13 GMT-0800 (Pacific Standard Time)",
+  "lastUpdated": "Tue Jan 05 2021 10:10:23 GMT-0800 (Pacific Standard Time)",
   "projectName": "New Relic Node Agent",
   "projectUrl": "https://github.com/newrelic/node-newrelic",
   "includeDev": true,
   "dependencies": {
-    "@grpc/grpc-js@1.2.0": {
+    "@grpc/grpc-js@1.2.2": {
       "name": "@grpc/grpc-js",
-      "version": "1.2.0",
-      "range": "1.2.0",
+      "version": "1.2.2",
+      "range": "1.2.2",
       "licenses": "Apache-2.0",
       "repoUrl": "https://github.com/grpc/grpc-node/tree/master/packages/grpc-js",
-      "versionedRepoUrl": "https://github.com/grpc/grpc-node/tree/master/packages/grpc-js/tree/v1.2.0",
+      "versionedRepoUrl": "https://github.com/grpc/grpc-node/tree/master/packages/grpc-js/tree/v1.2.2",
       "licenseFile": "node_modules/@grpc/grpc-js/LICENSE",
-      "licenseUrl": "https://github.com/grpc/grpc-node/tree/master/packages/grpc-js/blob/v1.2.0/LICENSE",
+      "licenseUrl": "https://github.com/grpc/grpc-node/tree/master/packages/grpc-js/blob/v1.2.2/LICENSE",
       "licenseTextSource": "file",
       "publisher": "Google Inc."
     },

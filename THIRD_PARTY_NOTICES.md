@@ -73,7 +73,7 @@ code, the source code can be found at [https://github.com/newrelic/node-newrelic
 
 ### @grpc/grpc-js
 
-This product includes source derived from [@grpc/grpc-js](https://github.com/grpc/grpc-node/tree/master/packages/grpc-js) ([v1.2.0](https://github.com/grpc/grpc-node/tree/master/packages/grpc-js/tree/v1.2.0)), distributed under the [Apache-2.0 License](https://github.com/grpc/grpc-node/tree/master/packages/grpc-js/blob/v1.2.0/LICENSE):
+This product includes source derived from [@grpc/grpc-js](https://github.com/grpc/grpc-node/tree/master/packages/grpc-js) ([v1.2.2](https://github.com/grpc/grpc-node/tree/master/packages/grpc-js/tree/v1.2.2)), distributed under the [Apache-2.0 License](https://github.com/grpc/grpc-node/tree/master/packages/grpc-js/blob/v1.2.2/LICENSE):
 
 ```
                                  Apache License

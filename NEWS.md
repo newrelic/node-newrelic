@@ -1,6 +1,15 @@
+### 7.1.0 (2021-01-05):
+
+* Fixed SQL traces being generated with invalid ID.
+* Fixed log message for minimum supported Node.js version.
+* Added Fastify v3 support.
+* Fixed empty log message for Infinite Tracing connections.
+* Upgraded grpc version.
+* Fixed bug that prevented users from changing Infinite Tracing queue size.
+
 ### 7.0.2 (2020-12-01):
 
-* Fixes a bug where the `http.statusCode` attribute was not being captured for an async invoked lambda.
+* Fixed a bug where the `http.statusCode` attribute was not being captured for an async invoked lambda.
 * Fixed typos in code comments, documentation, and debugging logger messages.
   Thank you @TysonAndre for the contribution.
 
