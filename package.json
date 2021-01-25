@@ -161,6 +161,8 @@
   "devDependencies": {
     "@newrelic/proxy": "^2.0.0",
     "@newrelic/test-utilities": "^5.0.0",
+    "@octokit/rest": "^18.0.15",
+    "JSV": "~4.0.2",
     "architect": "*",
     "benchmark": "^2.1.4",
     "bluebird": "^3.4.7",
@@ -173,7 +175,6 @@
     "got": "^8.0.1",
     "http-errors": "^1.7.3",
     "jsdoc": "^3.6.3",
-    "JSV": "~4.0.2",
     "memcached": ">=0.2.8",
     "minami": "^1.1.1",
     "mongodb": "^3.3.3",
