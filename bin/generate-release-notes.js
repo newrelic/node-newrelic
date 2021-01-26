@@ -37,12 +37,14 @@ async function generateReleaseNotes() {
 
     const finalData = releaseNoteData.reduce((result, currentValue) => {
       result.notes += '\n\n' + currentValue.notes.trim()
-      result.links += `* PR: ${currentValue.url}\n`
+      result.links += `\n\n* PR: ${currentValue.url}\n`
       return result
     }, {
       notes: '',
       links: ''
     })
+
+    console.log('Final data: ', JSON.stringify(finalData))
 
     await updateReleaseNotes(FILE_NAME, finalData.notes)
 
