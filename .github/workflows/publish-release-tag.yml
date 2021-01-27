@@ -6,7 +6,8 @@ on:
       - 'v*' # Push events to matching v*, e.g. v1.0, v20.15.10
   workflow_dispatch:
     # Allow manual trigger for non-standard cases.
-    # Unfortunately only allows branches are refs, currently (Jan 2021).
+    # (Jan 2021): Currently only allows branches as refs,
+    # so cannot specify a tag (or arbitrary sha).
 
 jobs:
   npm-publish:
