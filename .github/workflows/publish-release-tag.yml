@@ -1,0 +1,31 @@
+name: Publish Release Tag
+
+on:
+  push:
+    tags:
+      - 'v*' # Push events to matching v*, e.g. v1.0, v20.15.10
+  workflow_dispatch:
+    # Allow manual trigger for non-standard cases.
+    # (Jan 2021): Currently only allows branches as refs,
+    # so cannot specify a tag (or arbitrary sha).
+
+jobs:
+  npm-publish:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [14.x]
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v1 # https://github.com/actions/setup-node
+      with:
+        node-version: ${{ matrix.node-version }}
+        registry-url: 'https://registry.npmjs.org'
+    - name: Install Dependencies
+      run: npm ci
+    - run: npm publish
+      env:
+        NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
