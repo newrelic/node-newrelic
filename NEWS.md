@@ -1,4 +1,4 @@
-### v7.1.1 (2021-02-01)
+### vNext (TBD):
 
 * Upgrade @grpc/grpc-js to v1.2.5 to fix non-propagation of internal http2 errors
   Now allows minor and patch auto-updates.
