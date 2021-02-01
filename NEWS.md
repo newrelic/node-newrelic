@@ -1,3 +1,12 @@
+### vNext (TBD):
+
+* Upgrade @grpc/grpc-js to v1.2.5 to fix non-propagation of internal http2 errors
+  Now allows minor and patch auto-updates.
+
+* Added workflow for publishing to npm when a v* tag is pushed to the repo.
+
+* Fixes resolveMx test by using example.com for a valid exchange.
+
 ### 7.1.0 (2021-01-05):
 
 * Fixed SQL traces being generated with invalid ID.
