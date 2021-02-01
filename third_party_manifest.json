@@ -1,18 +1,18 @@
 {
-  "lastUpdated": "Tue Jan 05 2021 10:10:23 GMT-0800 (Pacific Standard Time)",
+  "lastUpdated": "Mon Feb 01 2021 09:58:16 GMT-0800 (Pacific Standard Time)",
   "projectName": "New Relic Node Agent",
   "projectUrl": "https://github.com/newrelic/node-newrelic",
   "includeDev": true,
   "dependencies": {
-    "@grpc/grpc-js@1.2.2": {
+    "@grpc/grpc-js@1.2.5": {
       "name": "@grpc/grpc-js",
-      "version": "1.2.2",
-      "range": "1.2.2",
+      "version": "1.2.5",
+      "range": "^1.2.5",
       "licenses": "Apache-2.0",
       "repoUrl": "https://github.com/grpc/grpc-node/tree/master/packages/grpc-js",
-      "versionedRepoUrl": "https://github.com/grpc/grpc-node/tree/master/packages/grpc-js/tree/v1.2.2",
+      "versionedRepoUrl": "https://github.com/grpc/grpc-node/tree/master/packages/grpc-js/tree/v1.2.5",
       "licenseFile": "node_modules/@grpc/grpc-js/LICENSE",
-      "licenseUrl": "https://github.com/grpc/grpc-node/tree/master/packages/grpc-js/blob/v1.2.2/LICENSE",
+      "licenseUrl": "https://github.com/grpc/grpc-node/tree/master/packages/grpc-js/blob/v1.2.5/LICENSE",
       "licenseTextSource": "file",
       "publisher": "Google Inc."
     },
@@ -183,6 +183,17 @@
       "licenseTextSource": "file",
       "publisher": "New Relic Node.js agent team",
       "email": "nodejs@newrelic.com"
+    },
+    "@octokit/rest@18.0.15": {
+      "name": "@octokit/rest",
+      "version": "18.0.15",
+      "range": "^18.0.15",
+      "licenses": "MIT",
+      "repoUrl": "https://github.com/octokit/rest.js",
+      "versionedRepoUrl": "https://github.com/octokit/rest.js/tree/v18.0.15",
+      "licenseFile": "node_modules/@octokit/rest/LICENSE",
+      "licenseUrl": "https://github.com/octokit/rest.js/blob/v18.0.15/LICENSE",
+      "licenseTextSource": "file"
     },
     "JSV@4.0.2": {
       "name": "JSV",
