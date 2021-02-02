@@ -146,7 +146,7 @@
   "dependencies": {
     "@grpc/grpc-js": "^1.2.5",
     "@grpc/proto-loader": "^0.5.5",
-    "@newrelic/aws-sdk": "^3.0.0",
+    "@newrelic/aws-sdk": "^3.1.0",
     "@newrelic/koa": "^5.0.0",
     "@newrelic/superagent": "^4.0.0",
     "@tyriar/fibonacci-heap": "^2.0.7",
