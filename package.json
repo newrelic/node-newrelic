@@ -169,6 +169,7 @@
     "benchmark": "^2.1.4",
     "bluebird": "^3.4.7",
     "chai": "^4.1.2",
+    "commander": "^7.0.0",
     "eslint": "^6.8.0",
     "express": "*",
     "fastify": "^2.14.1",

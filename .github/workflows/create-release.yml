@@ -1,0 +1,33 @@
+name: Create Release
+
+on:
+  workflow_dispatch: # Manual trigger only
+    inputs:
+        release_type:
+          description: 'Type of release. patch or minor (major not allowed with workflow)'
+          required: true
+          default: 'patch'
+
+jobs:
+  create-release:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [14.x]
+
+    # pass in branch, repository owner and repo to script
+    steps:
+    - uses: actions/checkout@v2
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v1 # https://github.com/actions/setup-node
+      with:
+        node-version: ${{ matrix.node-version }}
+    - name: Install Dependencies
+      run: npm ci
+    - name: Setup github credentials
+      run: |
+        git config user.name $GITHUB_ACTOR
+        git config user.email gh-actions-${GITHUB_ACTOR}@github.com
+    - name: Create Release
+      run: node bin/create-release.js -r ${{ github.event.inputs.release_type }} -b ${{ github.event.inputs.branch }} -o ${{ github.repository_owner }}

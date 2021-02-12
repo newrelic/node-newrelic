@@ -25,6 +25,8 @@ async function updateChangelogVersion() {
   } catch (err) {
     console.log(FAIL_MSG)
     console.error(err)
+
+    process.exit(1)
   }
 }
 

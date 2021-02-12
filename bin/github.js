@@ -2,9 +2,6 @@
 
 const { Octokit } = require("@octokit/rest")
 
-const repoOwner = 'newrelic'
-const repository = 'node-newrelic'
-
 if (!process.env.GITHUB_TOKEN) {
   console.log('GITHUB_TOKEN recommended to be set in ENV')
 }
@@ -13,94 +10,110 @@ const octokit = new Octokit({
   auth: process.env.GITHUB_TOKEN,
 })
 
-async function getLatestRelease() {
-  const result = await octokit.repos.getLatestRelease({
-    owner: repoOwner,
-    repo: repository
-  })
+class Github {
+  constructor(repoOwner, repository) {
+    // Default to node agent repo for now
+    this.repoOwner = repoOwner ? repoOwner : 'newrelic'
+    this.repository = repository ? repository : 'node-newrelic'
+  }
 
-  return result.data
-}
-
-async function getTagByName(name) {
-  const perPage = 100
-
-  let pageNum = 1
-
-  let result = null
-  do {
-    result = await octokit.repos.listTags({
-      owner: repoOwner,
-      repo: repository,
-      per_page: perPage,
-      page: pageNum
+  async getLatestRelease() {
+    const result = await octokit.repos.getLatestRelease({
+      owner: this.repoOwner,
+      repo: this.repository
     })
 
-    const found = result.data.find((tag) => {
-      return tag.name === name
+    return result.data
+  }
+
+  async getTagByName(name) {
+    const perPage = 100
+
+    let pageNum = 1
+
+    let result = null
+    do {
+      result = await octokit.repos.listTags({
+        owner: this.repoOwner,
+        repo: this.repository,
+        per_page: perPage,
+        page: pageNum
+      })
+
+      const found = result.data.find((tag) => {
+        return tag.name === name
+      })
+
+      if (found) {
+        return found
+      }
+
+      pageNum++
+    } while (result.data.length === perPage) // there *might* be more data
+
+    return null
+  }
+
+  async getCommit(sha) {
+    const result = await octokit.repos.getCommit({
+      owner: this.repoOwner,
+      repo: this.repository,
+      ref: sha
     })
 
-    if (found) {
-      return found
-    }
+    return result.data
+  }
 
-    pageNum++
-  } while (result.data.length === perPage) // there *might* be more data
+  async getMergedPullRequestsSince(date) {
+    const perPage = 50
 
-  return null
-}
+    const comparisonDate = new Date(date)
 
-async function getCommit(sha) {
-  const result = await octokit.repos.getCommit({
-    owner: repoOwner,
-    repo: repository,
-    ref: sha
-  })
+    let pageNum = 1
+    const mergedPullRequests = []
+    let result = null
+    let hadData = false
 
-  return result.data
-}
+    do {
+      result = await octokit.pulls.list({
+        owner: this.repoOwner,
+        repo: this.repository,
+        state: 'closed',
+        sort: 'updated',
+        direction: 'desc',
+        per_page: perPage,
+        page: pageNum
+      })
 
-async function getMergedPullRequestsSince(date) {
-  const perPage = 50
+      const mergedPrs = result.data.filter((pr) => {
+        return pr.merged_at && new Date(pr.merged_at) > comparisonDate
+      })
 
-  const comparisonDate = new Date(date)
+      mergedPullRequests.push(...mergedPrs)
+      // Since we are going by 'updated' on query but merged on filter,
+      // there's a chance some boundaries are off. While in super extreme
+      // cases we could still miss some it is unlikely given we are grabbing
+      // large pages.
+      hadData = mergedPrs.length > 0
 
-  let pageNum = 1
-  const mergedPullRequests = []
-  let result = null
-  let hadData = false
+      pageNum++
+    } while (result.data.length === perPage && hadData) // might be more in next batch
 
-  do {
-    result = await octokit.pulls.list({
-      owner: repoOwner,
-      repo: repository,
-      state: 'closed',
-      sort: 'updated',
-      direction: 'desc',
-      per_page: perPage,
-      page: pageNum
+    return mergedPullRequests
+  }
+
+  async getLatestWorkflowRun(nameOrId, branch) {
+    // Appears to return in latest order.
+    const runs = await octokit.actions.listWorkflowRuns({
+      owner: this.repoOwner,
+      repo: this.repository,
+      workflow_id: nameOrId,
+      branch: branch,
+      per_page: 5
     })
 
-    const mergedPrs = result.data.filter((pr) => {
-      return pr.merged_at && new Date(pr.merged_at) > comparisonDate
-    })
-
-    mergedPullRequests.push(...mergedPrs)
-    // Since we are going by 'updated' on query but merged on filter,
-    // there's a chance some boundaries are off. While in super extreme
-    // cases we could still miss some it is unlikely given we are grabbing
-    // large pages.
-    hadData = mergedPrs.length > 0
-
-    pageNum++
-  } while (result.data.length === perPage && hadData) // might be more in next batch
-
-  return mergedPullRequests
+    return runs.data.workflow_runs[0]
+  }
 }
 
-module.exports = {
-  getLatestRelease,
-  getTagByName,
-  getCommit,
-  getMergedPullRequestsSince
-}
+module.exports = Github
