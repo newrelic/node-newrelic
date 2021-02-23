@@ -13,8 +13,8 @@ const octokit = new Octokit({
 class Github {
   constructor(repoOwner, repository) {
     // Default to node agent repo for now
-    this.repoOwner = repoOwner ? repoOwner : 'newrelic'
-    this.repository = repository ? repository : 'node-newrelic'
+    this.repoOwner = repoOwner || 'newrelic'
+    this.repository = repository || 'node-newrelic'
   }
 
   async getLatestRelease() {

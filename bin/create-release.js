@@ -6,16 +6,18 @@ const {program, Option} = require('commander')
 
 const ERROR_MSG = '! [ERROR] !\n'
 
+// Add command line options
+program.option('-b, --branch <branch>', 'release branch', 'main')
+
+program.addOption(new Option('-r, --release-type <releaseType>', 'release type')
+  .choices(['patch', 'minor', 'major']))
+
+program.option('-m, --major-release', 'create a major release. (release-type option must be set to \'major\')')
+
+program.option('-o, --repo-owner <repoOwner>', 'repository owner', 'newrelic')
+
 async function createRelease() {
-  program.option('-b, --branch <branch>', 'release branch', 'main')
-
-  program.addOption(new Option('-r, --release-type <releaseType>', 'release type')
-    .choices(['patch', 'minor', 'major']))
-
-  program.option('-m, --major-release', 'create a major release. (release-type option must be set to \'major\')')
-
-  program.option('-o, --repo-owner <repoOwner>', 'repository owner', 'newrelic')
-
+  // Parse commandline options inputs
   program.parse()
 
   const options = program.opts()
@@ -51,6 +53,7 @@ async function createRelease() {
     process.exit(1)
   }
 
+  console.log('Starting npm version and pushing tags')
   exec(`npm version ${releaseType} && git push origin ${branch} && git push --tags`, (err, stdout) => {
     if (err) {
       console.log(ERROR_MSG, err)
