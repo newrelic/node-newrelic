@@ -30,4 +30,4 @@ jobs:
         git config user.name $GITHUB_ACTOR
         git config user.email gh-actions-${GITHUB_ACTOR}@github.com
     - name: Create Release
-      run: node bin/create-release.js --release-type ${{ github.event.inputs.release_type }} --branch ${{ github.event.inputs.branch }} --repo-owner ${{ github.repository_owner }}
+      run: node bin/create-release.js --release-type ${{ github.event.inputs.release_type }} --branch ${{ github.ref }} --repo-owner ${{ github.repository_owner }}
