@@ -1,3 +1,13 @@
+### vNext (TBD):
+
+* Fixed bug where the agent failed to reconnect to Infinite Tracing gRPC streams on Status OK at higher log levels.
+
+  Node streams require all data be consumed for the end/status events to fire. We were only reading data at lower log levels where we'd use/log the data. This resulted in a failure to reconnect and 'ERR_STREAM_WRITE_AFTER_END' errors. The agent now always listens to the 'data' event, even if not logging, and will also reconnect (with 15 second delay) on any 'ERR_STREAM_WRITE_AFTER_END' error.
+
+* Removed initial harvest send() call on streaming span event aggregator to prevent warning in logs.
+
+* Bumped @newrelic/aws-sdk to ^3.1.0.
+
 ### v7.1.1 (2021-02-01)
 
 * Upgrade @grpc/grpc-js to v1.2.5 to fix non-propagation of internal http2 errors
