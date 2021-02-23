@@ -27,6 +27,15 @@ async function generateReleaseNotes() {
 
     const releaseNoteData = mergedPullRequests.map((pr) => {
       const parts = pr.body.split(/(?:^|\n)##\s*/g)
+
+      // If only has one part, not in appropriate format.
+      if (parts.length === 1) {
+        return {
+          notes: generateUnformattedNotes(pr.body),
+          url: pr.html_url
+        }
+      }
+
       const {1: proposedReleaseNotes} = parts
 
       const titleRemoved = proposedReleaseNotes.replace(PROPOSED_NOTES_HEADER, '')
@@ -54,6 +63,26 @@ async function generateReleaseNotes() {
     console.log('! [FAILURE] !')
     console.error(err)
   }
+}
+
+function generateUnformattedNotes(originalNotes) {
+  let unformattedNotes = originalNotes
+
+  // Drop extra snyk details and just keep high-level summary.
+  if (originalNotes.indexOf('snyk:metadata') >= 0) {
+    const snykParts = originalNotes.split('<details>')
+    const {0: snykDescription} = snykParts
+
+    unformattedNotes = snykDescription.trim()
+  }
+
+  const needsReviewNotes = [
+    '--- NOTES NEEDS REVIEW ---',
+    unformattedNotes,
+    '--------------------------'
+  ].join('\n')
+
+  return needsReviewNotes
 }
 
 function updateReleaseNotes(file, newNotes) {
