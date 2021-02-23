@@ -1,7 +1,7 @@
 'use strict'
 
 const fs = require('fs')
-const github = require('./github')
+const Github = require('./github')
 
 const FILE_NAME = 'NEWS.md'
 const PROPOSED_NOTES_HEADER = 'Proposed Release Notes'
@@ -9,6 +9,7 @@ const NEXT_VERSION_HEADER = '### vNext (TBD):'
 
 async function generateReleaseNotes() {
   try {
+    const github = new Github()
     const latestRelease = await github.getLatestRelease()
     console.log(`The latest release is: ${latestRelease.name} published: ${latestRelease.published_at}`)
     console.log(`Tag: ${latestRelease.tag_name}, Target: ${latestRelease.target_commitish}`)
