@@ -38,7 +38,7 @@ async function createRelease() {
   }
 
   const releaseType = options.releaseType
-  const branch = options.branch ? options.branch : null
+  const branch = options.branch ? options.branch.replace('refs/heads/', '') : null
   const repoOwner = options.repoOwner ? options.repoOwner : null
 
   try {

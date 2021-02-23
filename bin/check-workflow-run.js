@@ -3,7 +3,6 @@
 const Github = require('./github')
 
 const SUCCESS_MSG = '*** [OK] ***'
-const FAIL_MSG = '! [ERROR] !'
 
 const formatRun = (run) => {
   return {
@@ -56,14 +55,12 @@ async function checkWorkflowRun(repoOwner, branch) {
       return true
     }
 
-    console.log(FAIL_MSG)
-
     if (!results.ci) {
-      console.log('Latest ci workflow run failed.')
+      console.log('Latest ci workflow run result was not \'completed\' and \'success\'.')
     }
 
     if (!results.smokeTest) {
-      console.log('Latest smoke-test workflow run failed.')
+      console.log('Latest smoke-test workflow run result was not \'completed\' and \'success\'.')
     }
 
     return false
