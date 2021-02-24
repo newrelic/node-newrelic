@@ -1,4 +1,4 @@
-### vNext (TBD):
+### v7.1.2 (2021-02-24)
 
 * Fixed bug where the agent failed to reconnect to Infinite Tracing gRPC streams on Status OK at higher log levels.
 
