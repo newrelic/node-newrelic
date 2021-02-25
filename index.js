@@ -76,8 +76,10 @@ function initialize() {
     // just pipes to stdout.
     logger = require('./lib/logger')
 
-    if (!config || !config.agent_enabled) {
-      logger.info('Module not enabled in configuration; not starting.')
+    if (!config) {
+      logger.info('No configuration detected. Not starting.')
+    } else if (!config.agent_enabled) {
+      logger.info('Module disabled in configuration. Not starting.')
     } else {
       agent = createAgent(config)
       addStartupSupportabilities(agent)
