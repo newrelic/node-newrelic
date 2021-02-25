@@ -1139,6 +1139,30 @@ describe('Transaction', function() {
       })
     })
 
+    it('should not throw error when headers is a string', () => {
+      const trustedAccountKey = '123'
+
+      agent.config.distributed_tracing.enabled = true
+      agent.config.trusted_account_key = trustedAccountKey
+      agent.config.span_events.enabled = true
+
+      helper.runInTransaction(agent, function(txn) {
+        var childSegment = txn.trace.add('child')
+        childSegment.start()
+
+        const headers = 'JUST A STRING'
+
+        expect(function() {
+          txn.acceptDistributedTraceHeaders('HTTP', headers)
+        }).not.throws()
+
+        expect(txn.isDistributedTrace).to.be.null
+        expect(txn.acceptedDistributedTrace).to.be.null
+
+        txn.end()
+      })
+    })
+
     it('should only accept the first tracecontext', () => {
       agent.config.distributed_tracing.enabled = true
       agent.config.trusted_account_key = '1'
@@ -1729,7 +1753,7 @@ tap.test('requestd', (t) => {
 
     // force a segment in context
     agent.tracer.segment = new Segment(transaction, 'test segment')
-    
+
     transaction.finalizeNameFromUri('/some/random/path', 200)
 
     const segment = transaction.agent.tracer.getSegment()
