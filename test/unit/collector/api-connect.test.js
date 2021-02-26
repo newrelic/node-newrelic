@@ -171,7 +171,7 @@ tap.test('succeeds when given a different port number for redirect', (t) => {
       Object.keys(methods).filter((key) => {
         return key !== 'preconnect'
       }).forEach((key) => {
-        t.equal(methods[key]._host, REDIRECT_HOST)
+        t.equal(methods[key].endpoint.host, REDIRECT_HOST)
       })
 
       t.end()
@@ -192,7 +192,7 @@ tap.test('succeeds when given a different port number for redirect', (t) => {
       Object.keys(methods).filter((key) => {
         return key !== 'preconnect'
       }).forEach((key) => {
-        t.equal(methods[key]._port, '8089')
+        t.equal(methods[key].endpoint.port, '8089')
       })
 
       t.end()
@@ -201,8 +201,8 @@ tap.test('succeeds when given a different port number for redirect', (t) => {
 
   t.test('should not update preconnect endpoint', (t) => {
     collectorApi.connect(() => {
-      t.equal(collectorApi._methods.preconnect._host, HOST)
-      t.equal(collectorApi._methods.preconnect._port, 443)
+      t.equal(collectorApi._methods.preconnect.endpoint.host, HOST)
+      t.equal(collectorApi._methods.preconnect.endpoint.port, 443)
 
       t.end()
     })
