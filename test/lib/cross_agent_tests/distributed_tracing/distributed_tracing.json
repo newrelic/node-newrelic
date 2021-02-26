@@ -988,7 +988,9 @@
         "major_version": 0,
         "minor_version": 1,
         "transport_type": "HTTP",
-        "inbound_payloads": null,
+        "inbound_payloads": [
+            null
+        ],
         "intrinsics": {
             "target_events": ["Transaction"],
             "common":{
