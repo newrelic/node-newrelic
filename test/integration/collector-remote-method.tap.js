@@ -15,18 +15,22 @@ const RemoteMethod = require('../../lib/collector/remote-method')
 
 tap.test('DataSender (callback style) talking to fake collector', (t) => {
   const config = {
-    host: 'ssl.lvh.me',
-    port: 8765,
     run_id: 1337,
     ssl: true,
     license_key: 'whatever',
     version: '0',
     max_payload_size_in_bytes: 1000000
   }
+
+  const endpoint = {
+    host: 'ssl.lvh.me',
+    port: 8765
+  }
+
   config.certificates = [
     read(join(__dirname, '../lib/ca-certificate.crt'), 'utf8')
   ]
-  const method = new RemoteMethod('preconnect', config)
+  const method = new RemoteMethod('preconnect', config, endpoint)
 
   collector({port: 8765}, (error, server) => {
     // set a reasonable server timeout for cleanup
@@ -83,17 +87,20 @@ tap.test('remote method to preconnect', (t) => {
 
   function createRemoteMethod() {
     const config = {
-      host: 'ssl.lvh.me',
-      port: 9876,
       ssl: true,
       max_payload_size_in_bytes: 1000000
+    }
+
+    const endpoint = {
+      host: 'ssl.lvh.me',
+      port: 9876
     }
 
     config.certificates = [
       read(join(__dirname, '../lib/ca-certificate.crt'), 'utf8')
     ]
 
-    const method = new RemoteMethod('preconnect', config)
+    const method = new RemoteMethod('preconnect', config, endpoint)
     return method
   }
 

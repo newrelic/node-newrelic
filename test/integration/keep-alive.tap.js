@@ -98,16 +98,19 @@ tap.test("RemoteMethod makes two requests with one connection", (t) => {
 
 function createRemoteMethod(port) {
   const config = {
-    host: 'ssl.lvh.me',
-    port: port,
     ssl: true,
     max_payload_size_in_bytes: 1000000
+  }
+
+  const endpoint = {
+    host: 'ssl.lvh.me',
+    port: port
   }
 
   config.certificates = [
     read(join(__dirname, '../lib/ca-certificate.crt'), 'utf8')
   ]
 
-  const method = new RemoteMethod('fake', config)
+  const method = new RemoteMethod('fake', config, endpoint)
   return method
 }

@@ -98,7 +98,7 @@ describe('RemoteMethod', () => {
     let options
 
     beforeEach(() => {
-      method = new RemoteMethod('test', {max_payload_size_in_bytes: 100})
+      method = new RemoteMethod('test', {max_payload_size_in_bytes: 100}, {})
       options = {
         host: 'collector.newrelic.com',
         port: 80,
@@ -159,7 +159,7 @@ describe('RemoteMethod', () => {
 
   describe('when calling a method on the collector', () => {
     it('should not throw when dealing with compressed data', (done) => {
-      const method = new RemoteMethod('test', {host: 'localhost'})
+      const method = new RemoteMethod('test', {}, {host: 'localhost'})
       method._shouldCompress = () => true
       method._safeRequest = (options) => {
         expect(options.body.readUInt8(0)).equal(120)
@@ -172,7 +172,7 @@ describe('RemoteMethod', () => {
     })
 
     it('should not throw when preparing uncompressed data', (done) => {
-      const method = new RemoteMethod('test', {host: 'localhost'})
+      const method = new RemoteMethod('test', {}, {host: 'localhost'})
       method._safeRequest = (options) => {
         expect(options.body).equal('"data"')
 
@@ -185,11 +185,16 @@ describe('RemoteMethod', () => {
 
   describe('when the connection fails', () => {
     it('should return the connection failure', (done) => {
-      const method = new RemoteMethod('TEST', {
-        host: 'localhost',
-        port: 8765,
+      const config = {
         max_payload_size_in_bytes: 100000
-      })
+      }
+
+      const endpoint = {
+        host: 'localhost',
+        port: 8765
+      }
+
+      const method = new RemoteMethod('TEST', config, endpoint)
       method.invoke({message: 'none'}, mockHeaders, (error) => {
         should.exist(error)
         expect(error.message).equal('connect ECONNREFUSED 127.0.0.1:8765')
@@ -199,11 +204,14 @@ describe('RemoteMethod', () => {
     })
 
     it('should correctly handle a DNS lookup failure', (done) => {
-      const method = new RemoteMethod('TEST', {
-        host: 'failed.domain.cxlrg',
-        port: 80,
+      const config = {
         max_payload_size_in_bytes: 100000
-      })
+      }
+      const endpoint = {
+        host: 'failed.domain.cxlrg',
+        port: 80
+      }
+      const method = new RemoteMethod('TEST', config, endpoint)
       method.invoke([], mockHeaders, (error) => {
         should.exist(error)
 
@@ -237,13 +245,17 @@ describe('RemoteMethod', () => {
 
     beforeEach(() => {
       config = new Config({
-        host: 'collector.newrelic.com',
-        port: 443,
         ssl: true,
         run_id: RUN_ID,
         license_key: 'license key here'
       })
-      method = new RemoteMethod('metric_data', config)
+
+      const endpoint = {
+        host: 'collector.newrelic.com',
+        port: 443
+      }
+
+      method = new RemoteMethod('metric_data', config, endpoint)
     })
 
     afterEach(() => {
@@ -253,7 +265,7 @@ describe('RemoteMethod', () => {
     })
 
     it('should pass through error when compression fails', (done) => {
-      method = new RemoteMethod('test', {host: 'localhost'})
+      method = new RemoteMethod('test', {}, {host: 'localhost'})
       method._shouldCompress = () => true
       // zlib.deflate really wants a stringlike entity
       method._post(-1, mockHeaders, (error) => {
@@ -397,12 +409,16 @@ describe('RemoteMethod', () => {
 
         beforeEach(() => {
           config = new Config({
-            host: 'collector.newrelic.com',
-            port: 443,
             ssl: true,
             license_key: 'license key here'
           })
-          method = new RemoteMethod('preconnect', config)
+
+          const endpoint = {
+            host: 'collector.newrelic.com',
+            port: 443
+          }
+
+          method = new RemoteMethod('preconnect', config, endpoint)
 
           nock(URL)
             .post(generate('preconnect'))
@@ -453,12 +469,16 @@ describe('RemoteMethod', () => {
 
     beforeEach(() => {
       const config = new Config({
-        host: 'collector.newrelic.com',
-        port: '80',
         run_id: 12
       })
+
+      const endpoint = {
+        host: 'collector.newrelic.com',
+        port: '80',
+      }
+
       const body = 'test☃'
-      method = new RemoteMethod(body, config)
+      method = new RemoteMethod(body, config, endpoint)
 
       options = {
         body,
@@ -511,12 +531,16 @@ describe('RemoteMethod', () => {
 
     beforeEach(() => {
       const config = new Config({
-        host: 'collector.newrelic.com',
-        port: '80',
         run_id: 12
       })
+
+      const endpoint = {
+        host: 'collector.newrelic.com',
+        port: '80',
+      }
+
       const body = 'test☃'
-      const method = new RemoteMethod(body, config)
+      const method = new RemoteMethod(body, config, endpoint)
 
       const options = {
         body,
@@ -555,8 +579,9 @@ describe('RemoteMethod', () => {
     const TEST_RUN_ID = Math.floor(Math.random() * 3000) + 1
     const TEST_METHOD = 'TEST_METHOD'
     const TEST_LICENSE = 'hamburtson'
-    let config
-    let parsed
+    let config = null
+    let endpoint = null
+    let parsed = null
 
     function reconstitute(generated) {
       return url.parse(generated, true, false)
@@ -564,11 +589,15 @@ describe('RemoteMethod', () => {
 
     beforeEach(() => {
       config = new Config({
-        host: 'collector.newrelic.com',
-        port: 80,
         license_key: TEST_LICENSE
       })
-      const method = new RemoteMethod(TEST_METHOD, config)
+
+      endpoint = {
+        host: 'collector.newrelic.com',
+        port: 80
+      }
+
+      const method = new RemoteMethod(TEST_METHOD, config, endpoint)
       parsed = reconstitute(method._path())
     })
 
@@ -589,14 +618,14 @@ describe('RemoteMethod', () => {
     })
 
     it('should not include the agent run ID when not set', () => {
-      const method = new RemoteMethod(TEST_METHOD, config)
+      const method = new RemoteMethod(TEST_METHOD, config, endpoint)
       parsed = reconstitute(method._path())
       should.not.exist(parsed.query.run_id)
     })
 
     it('should include the agent run ID when set', () => {
       config.run_id = TEST_RUN_ID
-      const method = new RemoteMethod(TEST_METHOD, config)
+      const method = new RemoteMethod(TEST_METHOD, config, endpoint)
       parsed = reconstitute(method._path())
       expect(parsed.query.run_id).equal('' + TEST_RUN_ID)
     })
@@ -617,7 +646,7 @@ describe('RemoteMethod', () => {
       version = pkg.version
       pkg.version = TEST_VERSION
       const config = new Config({})
-      const method = new RemoteMethod('test', config)
+      const method = new RemoteMethod('test', config, {})
 
       ua = method._userAgent()
     })
