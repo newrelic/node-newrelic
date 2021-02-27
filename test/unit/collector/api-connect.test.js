@@ -14,8 +14,10 @@ const CollectorResponse = require('../../../lib/collector/response')
 const securityPolicies = require('../../lib/fixtures').securityPolicies
 
 const HOST = 'collector.newrelic.com'
+const REDIRECT_HOST = 'unique.newrelic.com'
 const PORT = 443
 const URL = 'https://' + HOST
+const CONNECT_URL = `https://${REDIRECT_HOST}`
 const RUN_ID = 1337
 
 const timeout = global.setTimeout
@@ -56,8 +58,9 @@ tap.test('receiving 200 response, with valid data', (t) => {
 
     redirection = nock(URL + ':443')
       .post(helper.generateCollectorPath('preconnect'))
-      .reply(200, {return_value: {redirect_host: HOST, security_policies: {}}})
-    connection = nock(URL)
+      .reply(200, {return_value: {redirect_host: REDIRECT_HOST, security_policies: {}}})
+
+    connection = nock(CONNECT_URL)
       .post(helper.generateCollectorPath('connect'))
       .reply(200, response)
 
@@ -128,9 +131,9 @@ tap.test('succeeds when given a different port number for redirect', (t) => {
 
     redirection = nock(URL + ':443')
       .post(helper.generateCollectorPath('preconnect'))
-      .reply(200, {return_value: {redirect_host: HOST + ':8089', security_policies: {}}})
+      .reply(200, {return_value: {redirect_host: REDIRECT_HOST + ':8089', security_policies: {}}})
 
-    connection = nock(URL + ':8089')
+    connection = nock(CONNECT_URL + ':8089')
       .post(helper.generateCollectorPath('connect'))
       .reply(200, response)
 
@@ -164,15 +167,50 @@ tap.test('succeeds when given a different port number for redirect', (t) => {
 
   t.test('should have the correct hostname', (t) => {
     collectorApi.connect(() => {
+      const methods = collectorApi._methods
+      Object.keys(methods).filter((key) => {
+        return key !== 'preconnect'
+      }).forEach((key) => {
+        t.equal(methods[key].endpoint.host, REDIRECT_HOST)
+      })
+
+      t.end()
+    })
+  })
+
+  t.test('should not change config host', (t) => {
+    collectorApi.connect(() => {
       t.equal(collectorApi._agent.config.host, HOST)
 
       t.end()
     })
   })
 
-  t.test('should have the correct port number', (t) => {
+  t.test('should update endpoints with correct port number', (t) => {
     collectorApi.connect(() => {
-      t.equal(collectorApi._agent.config.port, '8089')
+      const methods = collectorApi._methods
+      Object.keys(methods).filter((key) => {
+        return key !== 'preconnect'
+      }).forEach((key) => {
+        t.equal(methods[key].endpoint.port, '8089')
+      })
+
+      t.end()
+    })
+  })
+
+  t.test('should not update preconnect endpoint', (t) => {
+    collectorApi.connect(() => {
+      t.equal(collectorApi._methods.preconnect.endpoint.host, HOST)
+      t.equal(collectorApi._methods.preconnect.endpoint.port, 443)
+
+      t.end()
+    })
+  })
+
+  t.test('should not change config port number', (t) => {
+    collectorApi.connect(() => {
+      t.equal(collectorApi._agent.config.port, 443)
 
       t.end()
     })
