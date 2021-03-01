@@ -92,6 +92,20 @@ tap.test('setImmediate', function testSetImmediate(t) {
       })
     })
   })
+
+  t.test('should not propagate segments for ended transaction', (t) => {
+    const agent = setupAgent(t)
+
+    t.notOk(agent.getTransaction(), 'should not start in a transaction')
+    helper.runInTransaction(agent, (transaction) => {
+      transaction.end()
+
+      setImmediate(() => {
+        t.notOk(agent.tracer.segment, 'should not have segment for ended transaction')
+        t.end()
+      })
+    })
+  })
 })
 
 tap.test('setInterval', function testSetInterval(t) {
