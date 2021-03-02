@@ -581,6 +581,24 @@ describe('the agent configuration', function() {
       })
     })
 
+    it('should pick up ignored error classes', function() {
+      idempotentEnv(
+        {'NEW_RELIC_ERROR_COLLECTOR_IGNORE_ERRORS': 'Error, AnotherError'},
+        (tc) => {
+          should.exist(tc.error_collector.ignore_classes)
+          expect(tc.error_collector.ignore_classes).eql(['Error', 'AnotherError'])
+        })
+    })
+
+    it('should pick up expected error classes', function() {
+      idempotentEnv(
+        {'NEW_RELIC_ERROR_COLLECTOR_EXPECTED_ERRORS': 'QError, AnotherError'},
+        (tc) => {
+          should.exist(tc.error_collector.expected_classes)
+          expect(tc.error_collector.expected_classes).eql(['QError', 'AnotherError'])
+        })
+    })
+
     describe('serverless mode', () => {
       it('should should disable when feature flag false', () => {
         idempotentEnv({
@@ -648,22 +666,21 @@ describe('the agent configuration', function() {
         }
       )
 
-      it('should pick up ignored error classes', function() {
-        idempotentEnv(
-          {'NEW_RELIC_ERROR_COLLECTOR_IGNORE_ERRORS': 'Error, AnotherError'},
-          (tc) => {
-            should.exist(tc.error_collector.ignore_classes)
-            expect(tc.error_collector.ignore_classes).eql(['Error', 'AnotherError'])
-          })
+      it('should pick app name from AWS_LAMBDA_FUNCTION_NAME', function() {
+        idempotentEnv({
+          NEW_RELIC_SERVERLESS_MODE_ENABLED: true,
+          AWS_LAMBDA_FUNCTION_NAME: 'MyLambdaFunc'
+        }, function(tc) {
+          should.exist(tc.app_name)
+          expect(tc.applications()).eql(['MyLambdaFunc'])
+        })
       })
 
-      it('should pick up expected error classes', function() {
-        idempotentEnv(
-          {'NEW_RELIC_ERROR_COLLECTOR_EXPECTED_ERRORS': 'QError, AnotherError'},
-          (tc) => {
-            should.exist(tc.error_collector.expected_classes)
-            expect(tc.error_collector.expected_classes).eql(['QError', 'AnotherError'])
-          })
+      it('should default generic app name when no AWS_LAMBDA_FUNCTION_NAME', function() {
+        idempotentEnv({NEW_RELIC_SERVERLESS_MODE_ENABLED: true}, function(tc) {
+          should.exist(tc.app_name)
+          expect(tc.applications()).eql(['Serverless Application'])
+        })
       })
     })
   })
