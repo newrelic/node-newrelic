@@ -1,6 +1,7 @@
 'use strict'
 
 const { Octokit } = require("@octokit/rest")
+const { option } = require("commander")
 
 if (!process.env.GITHUB_TOKEN) {
   console.log('GITHUB_TOKEN recommended to be set in ENV')
@@ -11,10 +12,9 @@ const octokit = new Octokit({
 })
 
 class Github {
-  constructor(repoOwner, repository) {
-    // Default to node agent repo for now
-    this.repoOwner = repoOwner || 'newrelic'
-    this.repository = repository || 'node-newrelic'
+  constructor(repoOwner = 'newrelic', repository = 'node-newrelic') {
+    this.repoOwner = repoOwner
+    this.repository = repository
   }
 
   async getLatestRelease() {
@@ -113,6 +113,20 @@ class Github {
     })
 
     return runs.data.workflow_runs[0]
+  }
+
+  async createPR(options) {
+    const {head, base, title, body, draft} = options
+
+    await octokit.pulls.create({
+      owner: this.repoOwner,
+      repo: this.repository,
+      head: head,
+      base: base,
+      title: title,
+      body: body,
+      draft: draft
+    })
   }
 }
 
