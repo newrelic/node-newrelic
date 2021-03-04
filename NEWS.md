@@ -1,3 +1,43 @@
+### vNext (TBD):
+
+* Removed index-bad-config test which tested a no-longer possible use-case.
+
+* Removed license-key test logic from serverless-harvest test.
+  
+  Serverless mode does not require a license key as data transfer is handled by the integration.
+
+* Added support metric to be able to track usage of cert bundle via usage of custom certificates.
+
+--- NOTES NEEDS REVIEW ---
+<h3>Snyk has created this PR to upgrade @grpc/grpc-js from 1.2.5 to 1.2.6.</h3>
+
+![merge advice](https://app.snyk.io/badges/merge-advice/?package_manager=npm&package_name=@grpc/grpc-js&from_version=1.2.5&to_version=1.2.6&pr_id=da2345b6-6300-4fdd-bf3f-eb1cb86b6b56&visibility=true&has_feature_flag=false)
+:information_source: Keep your dependencies up-to-date. This makes it easier to fix existing vulnerabilities and to more quickly identify and fix newly disclosed vulnerabilities when they affect your project.
+--------------------------
+
+* Removed requirement to configure application name when running in AWS Lambda (serverless mode).
+
+  Application name is not currently leveraged by New Relic for Lambda invocations. The agent now defaults the application name in serverless mode to remove the requirement of end-user configuration while handling cases if it were to be leveraged in the future.
+
+* Stopped binding/propagating segments via `setImmediate` for ended transactions.
+
+* Fixed bug where agent would attempt to call the 'preconnect' endpoint on the redirect host returned by the previous 'preconnect' call when reconnecting to the New Relic servers.
+
+  The 'preconnect' calls will now always use the original agent configuration value. Subsequent endpoints (connect, harvest endpoints, etc.) will continue to leverage the new redirect host value returned by 'preconnect.' The original config values are no-longer overridden.
+
+* Fixed issue where a call to `transaction.acceptDistributedTraceHeaders` would throw an error when the `headers` parameter is a string.
+
+* Improved clarity of logging between 'no log file' or disabled agent startup issues.
+
+  * Logs no-config file error to initialized logger (stdout) in addition to existing console.error() logging. 
+  * Adds specific message to no config file separate from being disabled.
+
+* Removed aws-sdk versioned test filtering.
+
+* Removed unused Travis CI scripts.
+
+
+
 ### v7.1.2 (2021-02-24)
 
 * Fixed bug where the agent failed to reconnect to Infinite Tracing gRPC streams on Status OK at higher log levels.
