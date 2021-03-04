@@ -1,7 +1,6 @@
 'use strict'
 
 const { Octokit } = require("@octokit/rest")
-const { option } = require("commander")
 
 if (!process.env.GITHUB_TOKEN) {
   console.log('GITHUB_TOKEN recommended to be set in ENV')
