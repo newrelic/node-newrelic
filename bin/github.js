@@ -25,6 +25,18 @@ class Github {
     return result.data
   }
 
+  async createRelease(tag, name, body) {
+    const result = await octokit.repos.createRelease({
+      owner: this.repoOwner,
+      repo: this.repository,
+      tag_name: tag,
+      name: name,
+      body: body
+    })
+
+    return result.data
+  }
+
   async getTagByName(name) {
     const perPage = 100
 
