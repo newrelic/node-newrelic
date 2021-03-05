@@ -50,10 +50,12 @@ async function prepareReleaseNotes() {
     console.log('--force set. Skipping validation logic')
   }
 
+  const startingBranch = options.branch.replace('refs/heads/', '')
+
   const isValid = options.force || (
     await validateRemote(options.remote) &&
     await validateLocalChanges() &&
-    await validateCurrentBranch(options.branch)
+    await validateCurrentBranch(startingBranch)
   )
 
   if (!isValid) {
