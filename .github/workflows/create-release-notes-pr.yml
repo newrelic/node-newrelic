@@ -20,5 +20,11 @@ jobs:
         node-version: ${{ matrix.node-version }}
     - name: Install Dependencies
       run: npm ci
+    - name: Setup github credentials
+      run: |
+        git config user.name $GITHUB_ACTOR
+        git config user.email gh-actions-${GITHUB_ACTOR}@github.com
     - name: Create Release Notes
       run: node ./bin/generate-release-notes.js --branch ${{ github.ref }} --repo-owner ${{ github.repository_owner }}
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
