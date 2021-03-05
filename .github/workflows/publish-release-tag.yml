@@ -10,7 +10,7 @@ on:
     # so cannot specify a tag (or arbitrary sha).
 
 jobs:
-  npm-publish:
+  publish:
     runs-on: ubuntu-latest
 
     strategy:
@@ -29,3 +29,8 @@ jobs:
     - run: npm publish
       env:
         NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+    ## Not currently compat with workflow_dispatch because dispatch is branch only
+    - name: Create GitHub Release
+      run: node ./bin/create-github-release.js --tag ${{ github.ref }} --repo-owner ${{ github.repository_owner }}
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

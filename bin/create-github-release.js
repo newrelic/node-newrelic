@@ -26,21 +26,24 @@ async function createRelease() {
   const github = new Github(options.repoOwner)
 
   try {
+    const tagName = options.tag.replace('refs/tags/', '')
+    console.log('Using tag name: ', tagName)
+
     logStep('Validation')
     if (options.force) {
       console.log('--force set. Skipping validation logic')
     }
 
-    if (!options.force && !TAG_VALID_REGEX.exec(options.tag)) {
-      console.log('Tag arg invalid (%s). Valid tags in form: v#.#.# (e.g. v7.2.1)', options.tag)
+    if (!options.force && !TAG_VALID_REGEX.exec(tagName)) {
+      console.log('Tag arg invalid (%s). Valid tags in form: v#.#.# (e.g. v7.2.1)', tagName)
       stopOnError()
     }
 
     logStep('Get Release Notes from File')
-    const body = await getReleaseNotes(options.tag, options.releaseNotesFile)
+    const body = await getReleaseNotes(tagName, options.releaseNotesFile)
 
     logStep('Create Release')
-    await github.createRelease(options.tag, options.tag, body)
+    await github.createRelease(tagName, tagName, body)
 
     console.log('*** Full Run Successful ***')
   } catch (err) {
