@@ -1,3 +1,36 @@
+### v7.1.3 (2021-03-09)
+
+* Bumped @grpc/grpc-js to ^1.2.7.
+
+* Removed index-bad-config test which tested a no-longer possible use-case.
+
+* Removed license-key test logic from serverless-harvest test.
+
+  Serverless mode does not require a license key as data transfer is handled by the integration.
+
+* Added support metric to be able to track usage of cert bundle via usage of custom certificates.
+
+* Removed requirement to configure application name when running in AWS Lambda (serverless mode).
+
+  Application name is not currently leveraged by New Relic for Lambda invocations. The agent now defaults the application name in serverless mode to remove the requirement of end-user configuration while handling cases if it were to be leveraged in the future.
+
+* Stopped binding/propagating segments via `setImmediate` for ended transactions.
+
+* Fixed bug where agent would attempt to call the 'preconnect' endpoint on the redirect host returned by the previous 'preconnect' call when reconnecting to the New Relic servers.
+
+  The 'preconnect' calls will now always use the original agent configuration value. Subsequent endpoints (connect, harvest endpoints, etc.) will continue to leverage the new redirect host value returned by 'preconnect.' The original config values are no-longer overridden.
+
+* Fixed issue where a call to `transaction.acceptDistributedTraceHeaders` would throw an error when the `headers` parameter is a string.
+
+* Improved clarity of logging between 'no log file' or disabled agent startup issues.
+
+  * Logs no-config file error to initialized logger (stdout) in addition to existing console.error() logging.
+  * Adds specific message to no config file separate from being disabled.
+
+* Removed aws-sdk versioned test filtering.
+
+* Removed unused Travis CI scripts.
+
 ### v7.1.2 (2021-02-24)
 
 * Fixed bug where the agent failed to reconnect to Infinite Tracing gRPC streams on Status OK at higher log levels.
