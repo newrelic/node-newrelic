@@ -1,4 +1,4 @@
-name: Create Release Notes PR
+name: Prepare Release PR
 
 # Manual trigger only
 on:
