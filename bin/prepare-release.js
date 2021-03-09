@@ -138,7 +138,7 @@ async function prepareReleaseNotes() {
 
     console.log('Creating draft PR with new release notes for repo owner: ', options.repoOwner)
     const remoteApi = new Github(options.repoOwner)
-    const title = 'Updates release notes for next release'
+    const title = `Release ${version}`
     const body = getFormattedPrBody(releaseData)
     const prOptions = {
       head: newBranchName,
