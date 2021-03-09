@@ -3,6 +3,11 @@ name: Prepare Release PR
 # Manual trigger only
 on:
   workflow_dispatch:
+  inputs:
+    release_type:
+      description: 'Type of release. patch or minor (major not yet supported)'
+      required: true
+      default: 'patch'
 
 jobs:
   generate-release-notes:
@@ -25,6 +30,6 @@ jobs:
         git config user.name $GITHUB_ACTOR
         git config user.email gh-actions-${GITHUB_ACTOR}@github.com
     - name: Create Release Notes
-      run: node ./bin/prepare-release.js --branch ${{ github.ref }} --repo-owner ${{ github.repository_owner }}
+      run: node ./bin/prepare-release.js --release-type ${{ github.event.inputs.release_type }} --branch ${{ github.ref }} --repo-owner ${{ github.repository_owner }}
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
