@@ -18,8 +18,8 @@ async function createReleaseTag() {
 
   console.log('Script running with following options: ', JSON.stringify(options))
 
-  const branch = options.branch ? options.branch.replace('refs/heads/', '') : null
-  const repoOwner = options.repoOwner ? options.repoOwner : null
+  const branch = options.branch.replace('refs/heads/', '')
+  const repoOwner = options.repoOwner
 
   if (options.force) {
     console.log('--force set. Skipping validation logic')
