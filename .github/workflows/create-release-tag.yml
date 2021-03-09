@@ -1,4 +1,4 @@
-name: Create Release Notes PR
+name: Create Release Tag
 
 # Manual trigger only
 on:
@@ -24,7 +24,7 @@ jobs:
       run: |
         git config user.name $GITHUB_ACTOR
         git config user.email gh-actions-${GITHUB_ACTOR}@github.com
-    - name: Create Release Notes
-      run: node ./bin/prepare-release.js --branch ${{ github.ref }} --repo-owner ${{ github.repository_owner }}
+    - name: Create Release tag
+      run: node ./bin/create-release-tag.js --branch ${{ github.ref }} --repo-owner ${{ github.repository_owner }}
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
