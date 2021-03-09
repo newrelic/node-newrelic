@@ -3,11 +3,11 @@ name: Prepare Release PR
 # Manual trigger only
 on:
   workflow_dispatch:
-  inputs:
-    release_type:
-      description: 'Type of release. patch or minor (major not yet supported)'
-      required: true
-      default: 'patch'
+    inputs:
+      release_type:
+        description: 'Type of release. patch or minor (major not yet supported)'
+        required: true
+        default: 'patch'
 
 jobs:
   generate-release-notes:
