@@ -67,6 +67,20 @@ async function pushToRemote(remote, branchName) {
   return output
 }
 
+async function createAnnotatedTag(name, message) {
+  const stdout = await execAsPromise(`git tag -a ${name} -m ${message}`)
+  const output = stdout.trim()
+
+  return output
+}
+
+async function pushTags() {
+  const stdout = await execAsPromise('git push --tags')
+  const output = stdout.trim()
+
+  return output
+}
+
 function execAsPromise(command) {
   const promise = new Promise((resolve, reject) => {
     console.log(`Executing: '${command}'`)
@@ -90,5 +104,7 @@ module.exports = {
   checkoutNewBranch,
   addAllFiles,
   commit,
-  pushToRemote
+  pushToRemote,
+  createAnnotatedTag,
+  pushTags
 }
