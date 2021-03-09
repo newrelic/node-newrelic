@@ -2,20 +2,24 @@
 
 const fs = require('fs')
 
-const {program} = require('commander')
+const {program, Option} = require('commander')
 
 const Github = require('./github')
 const git = require('./git-commands')
-const logger = require('../lib/logger')
+const npm = require('./npm-commands')
 
 const FILE_NAME = 'NEWS.md'
 const PROPOSED_NOTES_HEADER = 'Proposed Release Notes'
-const NEXT_VERSION_HEADER = '### vNext (TBD):'
 
 const FORCE_RUN_DEAFULT_REMOTE = 'origin'
-const DEFAULT_NEW_BRANCH_NAME = 'update-release-notes'
 
 // Add command line options
+program.addOption(
+  new Option('--release-type <releaseType>', 'release type')
+  .choices(['patch', 'minor', 'major'])
+  .makeOptionMandatory()
+)
+program.option('--major-release', 'create a major release. (release-type option must be set to \'major\')')
 program.option('--remote <remote>', 'remote to push branch to', 'origin')
 program.option('--branch <branch>', 'branch to generate notes from', 'main')
 program.option('--repo-owner <repoOwner>', 'repository owner', 'newrelic')
@@ -53,6 +57,7 @@ async function prepareReleaseNotes() {
   const startingBranch = options.branch.replace('refs/heads/', '')
 
   const isValid = options.force || (
+    await validateReleaseType(options.releaseType, options.majorRelease) &&
     await validateRemote(options.remote) &&
     await validateLocalChanges() &&
     await validateCurrentBranch(startingBranch)
@@ -67,9 +72,20 @@ async function prepareReleaseNotes() {
   console.log('Using remote: ', remote)
 
   try {
+    logStep('Increment Version')
+
+    await npm.version(options.releaseType, false)
+
+    const packagePath = '../package.json'
+    console.log('Extracting new version from package.json here: ', )
+    const packageInfo = require(packagePath)
+
+    const version = `v${packageInfo.version}`
+    console.log('New version is: ', version)
+
     logStep('Branch Creation')
 
-    const newBranchName = `${Date.now()}-${DEFAULT_NEW_BRANCH_NAME}`
+    const newBranchName = `release/${version}`
 
     if (options.dryRun) {
       console.log('Dry run indicated (--dry-run), not creating branch.')
@@ -78,21 +94,35 @@ async function prepareReleaseNotes() {
       await git.checkoutNewBranch(newBranchName)
     }
 
+    logStep('Commit Package Files')
+
+    if (options.dryRun) {
+      console.log('Dry run indicated (--dry-run), not committing package files.')
+    } else {
+      console.log('Adding and committing package files.')
+      await git.addAllFiles()
+      await git.commit(`Setting version to ${version}.`)
+    }
+
     logStep('Create Release Notes')
 
     const releaseData = await generateReleaseNotes()
-    await updateReleaseNotesFile(FILE_NAME, releaseData.notes)
+    await updateReleaseNotesFile(FILE_NAME, version, releaseData.notes)
 
     if (options.dryRun) {
       console.log('\nDry run indicated (--dry-run), skipping remaining steps.')
       return
     }
 
-    logStep('Commit and Push Branch')
+    logStep('Commit Release Notes')
 
-    console.log('Adding, committing and pushing branch to remote: ', remote)
+    console.log('Adding and committing release notes.')
     await git.addAllFiles()
     await git.commit('Adds auto-generated release notes.')
+
+    logStep('Push Branch')
+
+    console.log('Pushing branch to remote: ', remote)
     await git.pushToRemote(remote, newBranchName)
 
     logStep('Create Pull Request')
@@ -124,6 +154,20 @@ async function prepareReleaseNotes() {
   } catch (err) {
     stopOnError(err)
   }
+}
+
+async function validateReleaseType(releaseType, majorFlag) {
+  if (releaseType === 'major' && !majorFlag) {
+    console.log('WARNING: you must set the \'-m\' flag to create a major release.')
+    return false
+  }
+
+  if (majorFlag && releaseType !== 'major') {
+    console.log(`WARNING: ignoring \'-m, --major-release\' option as release type set to ${options.rel}.`)
+    return false
+  }
+
+  return true
 }
 
 async function validateRemote(remote) {
@@ -222,7 +266,10 @@ async function generateReleaseNotes() {
   })
 
   const finalData = releaseNoteData.reduce((result, currentValue) => {
-    result.notes += '\n\n' + currentValue.notes.trim()
+    const trimmedNotes = currentValue.notes.trim()
+    if (trimmedNotes) { // avoid adding lines for empty notes
+      result.notes += '\n\n' + trimmedNotes
+    }
     result.links += `\n* PR: ${currentValue.url}`
     return result
   }, {
@@ -253,24 +300,28 @@ function generateUnformattedNotes(originalNotes) {
   return needsReviewNotes
 }
 
-function updateReleaseNotesFile(file, newNotes) {
+function updateReleaseNotesFile(file, version, newNotes) {
   const promise = new Promise((resolve, reject) => {
     fs.readFile(file, 'utf8', function (err, data) {
       if (err) {
         return reject(err)
       }
 
-      if (data.startsWith(NEXT_VERSION_HEADER)) {
+      if (data.startsWith(`### ${version}`)) {
         const errMessage = [
-          `${file} already contains '${NEXT_VERSION_HEADER}'`,
-          'Delete existing vNext release notes (if desired) and run again'
+          `${file} already contains '${version}'`,
+          `Delete existing ${version} release notes (if desired) and run again`
         ].join('\n')
 
         return reject(new Error(errMessage))
       }
 
+      // toISOString() will always return UTC time
+      const todayFormatted = new Date().toISOString().split('T')[0]
+      const newVersionHeader = `### ${version} (${todayFormatted})`
+
       const newContent = [
-        NEXT_VERSION_HEADER,
+        newVersionHeader,
         newNotes,
         '\n\n',
         data
@@ -281,7 +332,7 @@ function updateReleaseNotesFile(file, newNotes) {
           return reject(err)
         }
 
-        console.log(`Added new release notes to ${file} under the ${NEXT_VERSION_HEADER}`)
+        console.log(`Added new release notes to ${file} under ${newVersionHeader}`)
 
         resolve()
       })

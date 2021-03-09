@@ -2,127 +2,95 @@
 
 const { exec } = require('child_process')
 
-function getPushRemotes() {
-  const promise = new Promise((resolve, reject) => {
-    exec('git remote -v', (err, stdout) => {
-      if (err) {
-        return reject(err)
-      }
+async function getPushRemotes() {
+  const stdout = await execAsPromise('git remote -v')
 
-      const remotes = stdout.split('\n')
-      const processedRemotes = remotes.reduce((remotePairs, currentRemote) => {
-        const parts = currentRemote.split('\t')
-        if (parts.length < 2) {
-          return remotePairs
-        }
+  const remotes = stdout.split('\n')
+  const processedRemotes = remotes.reduce((remotePairs, currentRemote) => {
+    const parts = currentRemote.split('\t')
+    if (parts.length < 2) {
+      return remotePairs
+    }
 
-        const [name, url] = parts
-        if (url.indexOf('(push)') >= 0) {
-          remotePairs[name] = url
-        }
+    const [name, url] = parts
+    if (url.indexOf('(push)') >= 0) {
+      remotePairs[name] = url
+    }
 
-        return remotePairs
-      }, {})
+    return remotePairs
+  }, {})
 
-      resolve(processedRemotes)
-    })
-  })
-
-  return promise
+  return processedRemotes
 }
 
-function getLocalChanges() {
-  const promise = new Promise((resolve, reject) => {
-    exec('git status --short --porcelain', (err, stdout) => {
-      if (err) {
-        return reject(err)
-      }
-
-      const changes = stdout.split('\n').filter((line) => {
-        return line.length > 0
-      })
-
-      resolve(changes)
-    })
+async function getLocalChanges() {
+  const stdout = await execAsPromise('git status --short --porcelain')
+  const changes = stdout.split('\n').filter((line) => {
+    return line.length > 0
   })
 
-  return promise
+  return changes
 }
 
-function getCurrentBranch() {
+async function getCurrentBranch() {
+  const stdout = await execAsPromise('git branch --show-current')
+  const branch = stdout.trim()
+
+  return branch
+}
+
+async function checkoutNewBranch(name) {
+  const stdout = await execAsPromise(`git checkout -b ${name}`)
+  const output = stdout.trim()
+
+  return output
+}
+
+async function addAllFiles() {
+  const stdout = await execAsPromise(`git add .`)
+  const output = stdout.trim()
+
+  return output
+}
+
+async function commit(message) {
+  const stdout = await execAsPromise(`git commit -m "${message}"`)
+  const output = stdout.trim()
+
+  return output
+}
+
+async function pushToRemote(remote, branchName) {
+  const stdout = await execAsPromise(`git push --set-upstream ${remote} ${branchName}`)
+  const output = stdout.trim()
+
+  return output
+}
+
+async function createAnnotatedTag(name, message) {
+  const stdout = await execAsPromise(`git tag -a ${name} -m ${message}`)
+  const output = stdout.trim()
+
+  return output
+}
+
+async function pushTags() {
+  const stdout = await execAsPromise('git push --tags')
+  const output = stdout.trim()
+
+  return output
+}
+
+function execAsPromise(command) {
   const promise = new Promise((resolve, reject) => {
-    exec('git branch --show-current', (err, stdout) => {
+    console.log(`Executing: '${command}'`)
+
+    exec(command, (err, stdout) => {
       if (err) {
         return reject(err)
       }
 
-      const branch = stdout.trim()
-
-      resolve(branch)
-    })
-  })
-
-  return promise
-}
-
-function checkoutNewBranch(name) {
-  const promise = new Promise((resolve, reject) => {
-    exec(`git checkout -b ${name}`, (err, stdout) => {
-      if (err) {
-        return reject(err)
-      }
-
-      const output = stdout.trim()
-
-      resolve(output)
-    })
-  })
-
-  return promise
-}
-
-function addAllFiles() {
-  const promise = new Promise((resolve, reject) => {
-    exec(`git add .`, (err, stdout) => {
-      if (err) {
-        return reject(err)
-      }
-
-      const output = stdout.trim()
-
-      resolve(output)
-    })
-  })
-
-  return promise
-}
-
-function commit(message) {
-  const promise = new Promise((resolve, reject) => {
-    exec(`git commit -m "${message}"`, (err, stdout) => {
-      if (err) {
-        return reject(err)
-      }
-
-      const output = stdout.trim()
-
-      resolve(output)
-    })
-  })
-
-  return promise
-}
-
-function pushToRemote(remote, branchName) {
-  const promise = new Promise((resolve, reject) => {
-    exec(`git push --set-upstream ${remote} ${branchName}`, (err, stdout) => {
-      if (err) {
-        return reject(err)
-      }
-
-      const output = stdout.trim()
-
-      resolve(output)
+      resolve(stdout)
     })
   })
 
@@ -136,5 +104,7 @@ module.exports = {
   checkoutNewBranch,
   addAllFiles,
   commit,
-  pushToRemote
+  pushToRemote,
+  createAnnotatedTag,
+  pushTags
 }
