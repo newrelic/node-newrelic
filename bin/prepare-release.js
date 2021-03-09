@@ -266,7 +266,10 @@ async function generateReleaseNotes() {
   })
 
   const finalData = releaseNoteData.reduce((result, currentValue) => {
-    result.notes += '\n\n' + currentValue.notes.trim()
+    const trimmedNotes = currentValue.notes.trim()
+    if (trimmedNotes) { // avoid adding lines for empty notes
+      result.notes += '\n\n' + trimmedNotes
+    }
     result.links += `\n* PR: ${currentValue.url}`
     return result
   }, {
