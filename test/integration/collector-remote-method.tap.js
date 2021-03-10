@@ -19,7 +19,8 @@ tap.test('DataSender (callback style) talking to fake collector', (t) => {
     ssl: true,
     license_key: 'whatever',
     version: '0',
-    max_payload_size_in_bytes: 1000000
+    max_payload_size_in_bytes: 1000000,
+    feature_flag: {}
   }
 
   const endpoint = {
@@ -88,7 +89,8 @@ tap.test('remote method to preconnect', (t) => {
   function createRemoteMethod() {
     const config = {
       ssl: true,
-      max_payload_size_in_bytes: 1000000
+      max_payload_size_in_bytes: 1000000,
+      feature_flag: {}
     }
 
     const endpoint = {

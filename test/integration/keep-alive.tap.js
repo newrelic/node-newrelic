@@ -99,7 +99,8 @@ tap.test("RemoteMethod makes two requests with one connection", (t) => {
 function createRemoteMethod(port) {
   const config = {
     ssl: true,
-    max_payload_size_in_bytes: 1000000
+    max_payload_size_in_bytes: 1000000,
+    feature_flag: {}
   }
 
   const endpoint = {
