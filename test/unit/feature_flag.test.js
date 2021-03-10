@@ -34,7 +34,8 @@ var used = [
   'synthetics',
   'dt_format_w3c',
   'unreleased',
-  'fastify_instrumentation'
+  'fastify_instrumentation',
+  'certificate_bundle'
 ]
 
 describe('feature flags', function() {
