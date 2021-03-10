@@ -324,4 +324,41 @@ tap.test('fromSegment()', (t) => {
       }, 10)
     })
   })
+
+  t.test('should handle truncated http spans', (t) => {
+    helper.runInTransaction(agent, (transaction) => {
+      https.get('https://example.com?foo=bar', (res) => {
+        transaction.end() // prematurely end to truncate
+
+        res.resume()
+        res.on('end', () => {
+          const segment = transaction.trace.root.children[0]
+          t.ok(segment.name.startsWith('Truncated'))
+
+          const span = SpanEvent.fromSegment(segment)
+          t.ok(span)
+          t.ok(span instanceof SpanEvent)
+          t.ok(span instanceof SpanEvent.HttpSpanEvent)
+
+          t.end()
+        })
+      })
+    })
+  })
+
+  t.test('should handle truncated datastore spans', (t) => {
+    helper.runInTransaction(agent, (transaction) => {
+      const segment = transaction.trace.root.add('Datastore/operation/something')
+      transaction.end() // end before segment to trigger truncate
+
+      t.ok(segment.name.startsWith('Truncated'))
+
+      const span = SpanEvent.fromSegment(segment)
+      t.ok(span)
+      t.ok(span instanceof SpanEvent)
+      t.ok(span instanceof SpanEvent.DatastoreSpanEvent)
+
+      t.end()
+    })
+  })
 })
