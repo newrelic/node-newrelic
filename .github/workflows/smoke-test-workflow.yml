@@ -8,6 +8,7 @@ on:
     # Last commit on default branch.
     # https://help.github.com/en/actions/reference/events-that-trigger-workflows#scheduled-events-schedule
     - cron:  '0 16 * * 1-5'
+  workflow_dispatch:
 
 jobs:
   smoke:
@@ -15,7 +16,7 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [8.x, 10.x, 12.x]
+        node-version: [10.x, 12.x, 14.x]
 
     steps:
     - uses: actions/checkout@v2
