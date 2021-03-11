@@ -29,6 +29,8 @@ All work is landed to the default branch which we deploy from. Deployments occur
 
 The instrumentation team primarily works via GitHub issues. In progress work can be tracked via the [Node.js Engineering Board](https://github.com/orgs/newrelic/projects/41).
 
+See the [CONTRIBUTING](../CONTRIBUTING.md) doc for further information submitting issues and pull requests, running tests, etc.
+
 ### Forking
 
 GitHub has a getting started guide on forking a repository here: https://docs.github.com/en/github/getting-started-with-github/fork-a-repo.
