@@ -2,14 +2,14 @@
 
 ## Machine Setup (Mac)
 
-[ ] Docker for Mac
-[ ] XCode or command-line tools for Xcode or however Mac OS does this in the future (installs git too)
-[ ] Git setup - prob SSL key/cert, username, etc.
-[ ] NVM
-[ ] Node through NVM
-[ ] Text Editor / IDE
-[ ] `brew install postgresql` (c library required for pg-native tests)
-[ ] Swap OpenSSL (if necessary)
+- [ ] Docker for Mac
+- [ ] XCode or command-line tools for Xcode or however Mac OS does this in the future (installs git too)
+- [ ] Git setup - prob SSL key/cert, username, etc.
+- [ ] NVM
+- [ ] Node through NVM
+- [ ] Text Editor / IDE
+- [ ] `brew install postgresql` (c library required for pg-native tests)
+- [ ] Swap OpenSSL (if necessary)
 
 ### Swapping OpenSSL for LibreSSL
 
@@ -39,5 +39,5 @@ Don't forget to add your upstream remote!
 
 There are a variety of ways to get the latest changes into your local branches. Here's one way for quick reference:
 
-`git checkout main`
-`git pull upstream main`
+1. `git checkout main`
+2. `git pull upstream main`
