@@ -42,9 +42,15 @@ async function checkWorkflowRun(repoOwner, branch) {
     if (latestSmokeTestRun === undefined) {
       console.log('No smoke test workflow run found.')
     } else {
-      console.log('Smoke-test workflow run details: ', JSON.stringify(formatRun(latestSmokeTestRun)))
+      console.log(
+        'Smoke-test workflow run details: ',
+        JSON.stringify(formatRun(latestSmokeTestRun))
+      )
 
-      if (latestSmokeTestRun.status === 'completed' && latestSmokeTestRun.conclusion === 'success') {
+      if (
+        latestSmokeTestRun.status === 'completed' &&
+        latestSmokeTestRun.conclusion === 'success'
+      ) {
         results.smokeTest = true
       }
     }

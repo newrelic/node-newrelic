@@ -15,13 +15,13 @@ var urltils = require('../lib/util/urltils')
 var MetricNormalizer = require('../lib/metrics/normalizer')
 
 var cwd = process.cwd()
-var opts = null
+var options = null
 if (arrayContainsAny(process.argv, '-h', '-?', '--help')) {
   printHelp()
 } else if (process.argv.length === 3) {
-  opts = {rules: null, urls: path.resolve(cwd, process.argv[2])}
+  options = {rules: null, urls: path.resolve(cwd, process.argv[2])}
 } else if (process.argv.length === 4) {
-  opts = {
+  options = {
     rules: path.resolve(cwd, process.argv[2]),
     urls: path.resolve(cwd, process.argv[3])
   }
@@ -29,7 +29,7 @@ if (arrayContainsAny(process.argv, '-h', '-?', '--help')) {
   printHelp()
 }
 
-run(opts)
+run(options)
 
 function printHelp() {
   console.log('Usage:')
