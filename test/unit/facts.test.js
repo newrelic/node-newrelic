@@ -56,6 +56,7 @@ const DISABLE_ALL_DETECTIONS = {
   }
 }
 
+const APP_NAMES = ['a', 'c', 'b']
 
 tap.test('fun facts about apps that New Relic is interested in include', (t) => {
   t.autoend()
@@ -63,7 +64,14 @@ tap.test('fun facts about apps that New Relic is interested in include', (t) => 
   let agent = null
 
   t.beforeEach((done) => {
-    agent = helper.loadMockedAgent(DISABLE_ALL_DETECTIONS)
+    const config = {
+      app_name: [...APP_NAMES]
+    }
+    agent = helper.loadMockedAgent(Object.assign(config, DISABLE_ALL_DETECTIONS))
+    // Undo agent helper override.
+    agent.config.applications = () => {
+      return config.app_name
+    }
     done()
   })
 
@@ -100,7 +108,7 @@ tap.test('fun facts about apps that New Relic is interested in include', (t) => 
   t.test("an array of one or more application names as 'app_name' (sic)", (t) => {
     facts(agent, function getFacts(factsed) {
       expect(factsed.app_name).an('array')
-      expect(factsed.app_name).length.above(0)
+      t.equal(factsed.app_name.length, APP_NAMES.length)
       t.end()
     })
   })
@@ -125,8 +133,9 @@ tap.test('fun facts about apps that New Relic is interested in include', (t) => 
       expect(factsed).to.have.property('identifier')
       const identifier = factsed.identifier
       expect(identifier).to.contain('nodejs')
-      expect(identifier).to.contain(factsed.host)
-      expect(identifier).to.contain(factsed.app_name.sort().join(','))
+      // Including the host has negative consequences on the server.
+      expect(identifier).to.not.contain(factsed.host)
+      expect(identifier).to.contain([...APP_NAMES].sort().join(','))
       t.end()
     })
   })
