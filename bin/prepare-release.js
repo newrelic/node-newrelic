@@ -1,3 +1,8 @@
+/*
+ * Copyright 2021 New Relic Corporation. All rights reserved.
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 'use strict'
 
 const fs = require('fs')
@@ -16,8 +21,12 @@ const FORCE_RUN_DEAFULT_REMOTE = 'origin'
 // Add command line options
 program.addOption(
   new Option('--release-type <releaseType>', 'release type')
-  .choices(['patch', 'minor', 'major'])
-  .makeOptionMandatory()
+    .choices(['patch', 'minor', 'major'])
+    .makeOptionMandatory()
+)
+program.option(
+  '--major-release',
+  'create a major release. (release-type option must be set to \'major\')'
 )
 program.option('--remote <remote>', 'remote to push branch to', 'origin')
 program.option('--branch <branch>', 'branch to generate notes from', 'main')
@@ -196,7 +205,7 @@ async function validateCurrentBranch(branch) {
   try {
     const currentBranch = await git.getCurrentBranch()
 
-    if (branch != currentBranch) {
+    if (branch !== currentBranch) {
       console.log(
         'Current checked-out branch (%s) does not match expected (%s)',
         currentBranch,
@@ -215,7 +224,9 @@ async function validateCurrentBranch(branch) {
 async function generateReleaseNotes() {
   const github = new Github()
   const latestRelease = await github.getLatestRelease()
-  console.log(`The latest release is: ${latestRelease.name} published: ${latestRelease.published_at}`)
+  console.log(
+    `The latest release is: ${latestRelease.name} published: ${latestRelease.published_at}`
+  )
   console.log(`Tag: ${latestRelease.tag_name}, Target: ${latestRelease.target_commitish}`)
 
   const tag = await github.getTagByName(latestRelease.tag_name)
@@ -286,7 +297,7 @@ function generateUnformattedNotes(originalNotes) {
 
 function updateReleaseNotesFile(file, version, newNotes) {
   const promise = new Promise((resolve, reject) => {
-    fs.readFile(file, 'utf8', function (err, data) {
+    fs.readFile(file, 'utf8', (err, data) => {
       if (err) {
         return reject(err)
       }
@@ -311,7 +322,7 @@ function updateReleaseNotesFile(file, version, newNotes) {
         data
       ].join('')
 
-      fs.writeFile(file, newContent, 'utf8', function (err) {
+      fs.writeFile(file, newContent, 'utf8', (err) => {
         if (err) {
           return reject(err)
         }

@@ -1,3 +1,8 @@
+/*
+ * Copyright 2021 New Relic Corporation. All rights reserved.
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 'use strict'
 
 const {program} = require('commander')
@@ -76,7 +81,7 @@ async function validateCurrentBranch(branch) {
   try {
     const currentBranch = await git.getCurrentBranch()
 
-    if (branch != currentBranch) {
+    if (branch !== currentBranch) {
       console.log(
         'Current checked-out branch (%s) does not match expected (%s)',
         currentBranch,

@@ -1,10 +1,14 @@
+/*
+ * Copyright 2021 New Relic Corporation. All rights reserved.
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 'use strict'
 
 const fs = require('fs')
 const {program} = require('commander')
 
 const Github = require('./github')
-const { indexOf } = require('benchmark')
 
 const DEFAULT_FILE_NAME = 'NEWS.md'
 /** e.g. v7.2.1 */
@@ -12,7 +16,11 @@ const TAG_VALID_REGEX = /v\d+\.\d+\.\d+/
 
 program.requiredOption('--tag <tag>', 'tag name to create GitHub release for')
 program.option('--repo-owner <repoOwner>', 'repository owner', 'newrelic')
-program.option('--release-notes-file <releaseNotesFile>', 'path to release notes file', DEFAULT_FILE_NAME)
+program.option(
+  '--release-notes-file <releaseNotesFile>',
+  'path to release notes file',
+  DEFAULT_FILE_NAME
+)
 program.option('-f --force', 'bypass validation')
 
 async function createRelease() {
@@ -81,7 +89,7 @@ async function getReleaseNotes(tagName, releaseNotesFile) {
 
 async function readReleaseNoteFile(file) {
   const promise = new Promise((resolve, reject) => {
-    fs.readFile(file, 'utf8', function (err, data) {
+    fs.readFile(file, 'utf8', (err, data) => {
       if (err) {
         return reject(err)
       }

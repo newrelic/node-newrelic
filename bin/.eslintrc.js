@@ -1,0 +1,67 @@
+module.exports = {
+  "env": {
+    "es6": true,
+    "node": true,
+    "browser": false
+  },
+  "parserOptions": {
+    "ecmaVersion": 8
+  },
+  "ignorePatterns": ["invalid-json/"],
+  "rules": {
+    "indent": ["warn", 2, {"SwitchCase": 1}],
+    "brace-style": "error",
+    "comma-dangle": "off",
+    "comma-style": ["error", "last"],
+    "consistent-return": "off",
+    "curly": "off",
+    "eol-last": "error",
+    "eqeqeq": ["error", "smart"],
+    "camelcase": ["off", {"properties": "never"}],
+    "dot-notation": "error",
+    "func-names": "error",
+    "guard-for-in": "error",
+    "key-spacing": ["off", { "beforeColon": false }],
+    "max-len": ["error", 100, { "ignoreUrls": true }],
+    "max-nested-callbacks": ["error", 3],
+    "max-params": ["error", 5],
+    "new-cap": "error",
+    "no-console": "off",
+    "no-debugger": "error",
+    "no-else-return": "error",
+    "no-floating-decimal": "error",
+    "no-lonely-if": "error",
+    "no-mixed-requires": "error",
+    "no-multiple-empty-lines": "error",
+    "no-multi-spaces": ["off", { "ignoreEOLComments": true }],
+    "no-new": "error",
+    "no-new-func": "warn",
+    "no-shadow": ["warn", {"allow": ["cb", "error", "err"]}],
+    "no-undef": "error",
+    "no-unused-vars": "error",
+    "no-use-before-define": ["off", {"functions": false}],
+    "one-var": ["off", "never"],
+    "padded-blocks": ["error", "never"],
+    "radix": "error",
+    "semi": ["error", "never"],
+    "space-before-function-paren": ["error", "never"],
+    "keyword-spacing": "error",
+    "space-before-blocks": "error",
+    "space-infix-ops": "error",
+    "spaced-comment": "error",
+    "space-unary-ops": "error",
+    "strict": "error",
+    "quote-props": [ "off", "consistent-as-needed" ],
+    "quotes": ["off", "single"],
+    "use-isnan": "error",
+    "wrap-iife": "error"
+  },
+  "overrides": [
+    {
+        "files": ["test/integration/*.tap.js", "test/integration/*/*.tap.js", "test/integration/core/exec-me.js"],
+        "rules": {
+            "no-console": ["off"]
+        }
+    }
+  ]
+}
