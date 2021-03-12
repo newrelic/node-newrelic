@@ -65,7 +65,6 @@ async function prepareReleaseNotes() {
   const startingBranch = options.branch.replace('refs/heads/', '')
 
   const isValid = options.force || (
-    await validateReleaseType(options.releaseType, options.majorRelease) &&
     await validateRemote(options.remote) &&
     await validateLocalChanges() &&
     await validateCurrentBranch(startingBranch)
@@ -162,22 +161,6 @@ async function prepareReleaseNotes() {
   } catch (err) {
     stopOnError(err)
   }
-}
-
-async function validateReleaseType(releaseType, majorFlag) {
-  if (releaseType === 'major' && !majorFlag) {
-    console.log('WARNING: you must set the \'-m\' flag to create a major release.')
-    return false
-  }
-
-  if (majorFlag && releaseType !== 'major') {
-    console.log(
-      `WARNING: ignoring \'-m, --major-release\' option as release type set to ${releaseType}.`
-    )
-    return false
-  }
-
-  return true
 }
 
 async function validateRemote(remote) {
