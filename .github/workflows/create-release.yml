@@ -1,4 +1,4 @@
-name: Create Release Tag
+name: Create Release
 
 # Manual trigger only
 on:
