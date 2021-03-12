@@ -26,12 +26,12 @@ jobs:
         git config user.name $GITHUB_ACTOR
         git config user.email gh-actions-${GITHUB_ACTOR}@github.com
     - name: Create Release tag
-      run: node ./bin/create-release-tag.js --branch ${{ github.ref }} --repo-owner ${{ github.repository_owner }}
+      run: node ./bin/create-release-tag.js -f --branch ${{ github.ref }} --repo-owner ${{ github.repository_owner }}
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-    - run: npm publish
-      env:
-        NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+    # - run: npm publish
+    #   env:
+    #     NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
     - name: Get Created Tag
       id: get_tag
       run: echo "::set-output name=latest_tag::$(git describe --tags --abbrev=0)"
