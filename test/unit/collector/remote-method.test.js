@@ -5,248 +5,420 @@
 
 'use strict'
 
-// TODO: convert to normal tap style.
-// Below allows use of mocha DSL with tap runner.
-require('tap').mochaGlobals()
+const tap = require('tap')
 
 const url = require('url')
-const chai = require('chai')
-const expect = chai.expect
-const should = chai.should()
 const Config = require('../../../lib/config')
 const RemoteMethod = require('../../../lib/collector/remote-method')
 
-
 function generate(method, runID, protocolVersion) {
   protocolVersion = protocolVersion || 17
-  var fragment = '/agent_listener/invoke_raw_method?' +
+  let fragment = '/agent_listener/invoke_raw_method?' +
     `marshal_format=json&protocol_version=${protocolVersion}&` +
     `license_key=license%20key%20here&method=${method}`
 
-  if (runID) fragment += `&run_id=${runID}`
+  if (runID) {
+    fragment += `&run_id=${runID}`
+  }
 
   return fragment
 }
 
-describe('RemoteMethod', () => {
-  let mockHeaders
+tap.test('should require a name for the method to call', (t) => {
+  t.throws(() => {
+    new RemoteMethod() // eslint-disable-line no-new
+  })
+  t.end()
+})
 
-  beforeEach(() => {
-    mockHeaders = {}
+tap.test('should expose a call method as its public API', (t) => {
+  t.type(new RemoteMethod('test').invoke, 'function')
+  t.end()
+})
+
+tap.test('should expose its name', (t) => {
+  t.equal(new RemoteMethod('test').name, 'test')
+  t.end()
+})
+
+tap.test('should default to protocol 17', (t) => {
+  t.equal(new RemoteMethod('test')._protocolVersion, 17)
+  t.end()
+})
+
+tap.test('serialize', (t) => {
+  t.autoend()
+
+  let method = null
+
+  t.beforeEach((done) => {
+    method = new RemoteMethod('test')
+    done()
   })
 
-  it('should require a name for the method to call', () => {
-    expect(() => {
-      new RemoteMethod() // eslint-disable-line no-new
-    }).throws()
+  t.test('should JSON-encode the given payload', (t) => {
+    method.serialize({foo: 'bar'}, (err, encoded) => {
+      t.error(err)
+
+      t.equal(encoded, '{"foo":"bar"}')
+      t.end()
+    })
   })
 
-  it('should expose a call method as its public API', () => {
-    expect(new RemoteMethod('test').invoke).a('function')
+  t.test('should not error with circular payloads', (t) => {
+    const obj = {foo: 'bar'}
+    obj.obj = obj
+    method.serialize(obj, (err, encoded) => {
+      t.error(err)
+
+      t.equal(encoded, '{"foo":"bar","obj":"[Circular ~]"}')
+      t.end()
+    })
   })
 
-  it('should expose its name', () => {
-    expect(new RemoteMethod('test').name).equal('test')
+  t.test('should catch serialization errors', (t) => {
+    method.serialize({toJSON: () => {
+      throw new Error('fake serialization error')
+    }}, (err, encoded) => {
+      t.ok(err)
+      t.equal(err.message, 'fake serialization error')
+
+      t.notOk(encoded)
+      t.end()
+    })
+  })
+})
+
+tap.test('_safeRequest', (t) => {
+  t.autoend()
+
+  let method = null
+  let options = null
+
+  t.beforeEach((done) => {
+    method = new RemoteMethod('test', {max_payload_size_in_bytes: 100}, {})
+    options = {
+      host: 'collector.newrelic.com',
+      port: 80,
+      onError: () => {},
+      onResponse: () => {},
+      body: [],
+      path: '/nonexistent'
+    }
+    done()
   })
 
-  it('should default to protocol 17', function() {
-    expect(new RemoteMethod('test')._protocolVersion).equal(17)
+  t.test('requires an options hash', (t) => {
+    t.throws(() => { method._safeRequest() }, 'Must include options to make request!')
+    t.end()
   })
 
-  describe('serialize', function() {
-    var method = null
+  t.test('requires a collector hostname', (t) => {
+    delete options.host
+    t.throws(() => { method._safeRequest(options) }, 'Must include collector hostname!')
+    t.end()
+  })
 
-    beforeEach(() => {
-      method = new RemoteMethod('test')
+  t.test('requires a collector port', (t) => {
+    delete options.port
+    t.throws(() => { method._safeRequest(options) }, 'Must include collector port!')
+    t.end()
+  })
+
+  t.test('requires an error callback', (t) => {
+    delete options.onError
+    t.throws(() => { method._safeRequest(options) }, 'Must include error handler!')
+    t.end()
+  })
+
+  t.test('requires a response callback', (t) => {
+    delete options.onResponse
+    t.throws(() => { method._safeRequest(options) }, 'Must include response handler!')
+    t.end()
+  })
+
+  t.test('requires a request body', (t) => {
+    delete options.body
+    t.throws(() => { method._safeRequest(options) }, 'Must include body to send to collector!')
+    t.end()
+  })
+
+  t.test('requires a request URL', (t) => {
+    delete options.path
+    t.throws(() => { method._safeRequest(options) }, 'Must include URL to request!')
+    t.end()
+  })
+
+  t.test('requires a request body within the maximum payload size limit', (t) => {
+    options.body = 'a'.repeat(method._config.max_payload_size_in_bytes + 1)
+    t.throws(() => { method._safeRequest(options) }, 'Maximum payload size exceeded')
+    t.end()
+  })
+})
+
+tap.test('when calling a method on the collector', (t) => {
+  t.autoend()
+
+  t.test('should not throw when dealing with compressed data', (t) => {
+    const method = new RemoteMethod('test', {}, {host: 'localhost'})
+    method._shouldCompress = () => true
+    method._safeRequest = (options) => {
+      t.equal(options.body.readUInt8(0), 120)
+      t.equal(options.body.length, 14)
+
+      t.end()
+    }
+
+    method.invoke('data', {})
+  })
+
+  t.test('should not throw when preparing uncompressed data', (t) => {
+    const method = new RemoteMethod('test', {}, {host: 'localhost'})
+    method._safeRequest = (options) => {
+      t.equal(options.body, '"data"')
+
+      t.end()
+    }
+
+    method.invoke('data', {})
+  })
+})
+
+tap.test('when the connection fails', (t) => {
+  t.autoend()
+
+  t.test('should return the connection failure', (t) => {
+    const config = {
+      max_payload_size_in_bytes: 100000
+    }
+
+    const endpoint = {
+      host: 'localhost',
+      port: 8765
+    }
+
+    const method = new RemoteMethod('TEST', config, endpoint)
+    method.invoke({message: 'none'}, {}, (error) => {
+      t.ok(error)
+      t.equal(error.message, 'connect ECONNREFUSED 127.0.0.1:8765')
+
+      t.end()
+    })
+  })
+
+  t.test('should correctly handle a DNS lookup failure', (t) => {
+    const config = {
+      max_payload_size_in_bytes: 100000
+    }
+    const endpoint = {
+      host: 'failed.domain.cxlrg',
+      port: 80
+    }
+    const method = new RemoteMethod('TEST', config, endpoint)
+    method.invoke([], {}, (error) => {
+      t.ok(error)
+
+      // https://github.com/joyent/node/commit/7295bb9435c
+      t.match(
+        error.message,
+        /^getaddrinfo E(NOENT|NOTFOUND)( failed.domain.cxlrg)?( failed.domain.cxlrg:80)?$/ // eslint-disable-line max-len
+      )
+
+      t.end()
+    })
+  })
+})
+
+tap.test('when posting to collector', (t) => {
+  t.autoend()
+
+  const RUN_ID = 1337
+  const URL = 'https://collector.newrelic.com'
+  let nock = null
+  let config = null
+  let method = null
+
+  t.beforeEach((done) => {
+    // TODO: is this true?
+    // order dependency: requiring nock at the top of the file breaks other tests
+    nock = require('nock')
+    nock.disableNetConnect()
+
+    config = new Config({
+      ssl: true,
+      run_id: RUN_ID,
+      license_key: 'license key here'
     })
 
-    it('should JSON-encode the given payload', (done) => {
-      method.serialize({foo: 'bar'}, (err, encoded) => {
-        expect(err).to.not.exist
-        expect(encoded).to.equal('{"foo":"bar"}')
-        done()
+    const endpoint = {
+      host: 'collector.newrelic.com',
+      port: 443
+    }
+
+    method = new RemoteMethod('metric_data', config, endpoint)
+    done()
+  })
+
+  t.afterEach((done) => {
+    config = null
+    method = null
+    nock.cleanAll()
+    nock.enableNetConnect()
+    done()
+  })
+
+  t.test('should pass through error when compression fails', (t) => {
+    method = new RemoteMethod('test', {}, {host: 'localhost'})
+    method._shouldCompress = () => true
+    // zlib.deflate really wants a stringlike entity
+    method._post(-1, {}, (error) => {
+      t.ok(error)
+
+      t.end()
+    })
+  })
+
+  t.test('successfully', (t) => {
+    t.autoend()
+
+    function nockMetricDataUncompressed() {
+      return nock(URL)
+        .post(generate('metric_data', RUN_ID))
+        .matchHeader('Content-Encoding', 'identity')
+        .reply(200, {return_value: []})
+    }
+
+    t.test('should invoke the callback without error', (t) => {
+      nockMetricDataUncompressed()
+      method._post('[]', {}, (error) => {
+        t.error(error)
+        t.end()
       })
     })
 
-    it('should not error with circular payloads', (done) => {
-      const obj = {foo: 'bar'}
-      obj.obj = obj
-      method.serialize(obj, (err, encoded) => {
-        expect(err).to.not.exist
-        expect(encoded).to.equal('{"foo":"bar","obj":"[Circular ~]"}')
-        done()
+    t.end('should use the right URL', (t) => {
+      const sendMetrics = nockMetricDataUncompressed()
+      method._post('[]', {}, (error) => {
+        t.error(error)
+        t.ok(sendMetrics.isDone())
+        t.end
       })
     })
 
-    describe('with a bad payload', () => {
-      it('should catch serialization errors', (done) => {
-        method.serialize({toJSON: () => {
-          throw new Error('fake serialization error')
-        }}, (err, encoded) => {
-          expect(err)
-            .to.exist
-            .and.have.property('message', 'fake serialization error')
-          expect(encoded).to.not.exist
-          done()
-        })
+    t.end('should respect the put_for_data_send config', (t) => {
+      const putMetrics = nock(URL)
+        .put(generate('metric_data', RUN_ID))
+        .reply(200, {return_value: []})
+
+      config.put_for_data_send = true
+      method._post('[]', {}, (error) => {
+        t.error(error)
+        t.ok(putMetrics.isDone())
+
+        t.end()
       })
     })
-  })
 
-  describe('_safeRequest', () => {
-    let method
-    let options
+    t.test('should default to deflated compression', (t) => {
+      const sendDeflatedMetrics = nock(URL)
+        .post(generate('metric_data', RUN_ID))
+        .matchHeader('Content-Encoding', 'deflate')
+        .reply(200, {return_value: []})
 
-    beforeEach(() => {
-      method = new RemoteMethod('test', {max_payload_size_in_bytes: 100}, {})
-      options = {
-        host: 'collector.newrelic.com',
-        port: 80,
-        onError: () => {},
-        onResponse: () => {},
-        body: [],
-        path: '/nonexistent'
-      }
-    })
-
-    it('requires an options hash', () => {
-      expect(() => { method._safeRequest() })
-        .throws('Must include options to make request!')
-    })
-
-    it('requires a collector hostname', () => {
-      delete options.host
-      expect(() => { method._safeRequest(options) })
-        .throws('Must include collector hostname!')
-    })
-
-    it('requires a collector port', () => {
-      delete options.port
-      expect(() => { method._safeRequest(options) })
-        .throws('Must include collector port!')
-    })
-
-    it('requires an error callback', () => {
-      delete options.onError
-      expect(() => { method._safeRequest(options) })
-        .throws('Must include error handler!')
-    })
-
-    it('requires a response callback', () => {
-      delete options.onResponse
-      expect(() => { method._safeRequest(options) })
-        .throws('Must include response handler!')
-    })
-
-    it('requires a request body', () => {
-      delete options.body
-      expect(() => { method._safeRequest(options) })
-        .throws('Must include body to send to collector!')
-    })
-
-    it('requires a request URL', () => {
-      delete options.path
-      expect(() => { method._safeRequest(options) })
-        .throws('Must include URL to request!')
-    })
-
-    it('requires a request body within the maximum payload size limit', () => {
-      options.body = 'a'.repeat(method._config.max_payload_size_in_bytes + 1)
-      expect(() => { method._safeRequest(options) })
-        .throws('Maximum payload size exceeded')
-    })
-  })
-
-  describe('when calling a method on the collector', () => {
-    it('should not throw when dealing with compressed data', (done) => {
-      const method = new RemoteMethod('test', {}, {host: 'localhost'})
       method._shouldCompress = () => true
-      method._safeRequest = (options) => {
-        expect(options.body.readUInt8(0)).equal(120)
-        expect(options.body.length).equal(14)
+      method._post('[]', {}, (error) => {
+        t.error(error)
 
-        return done()
-      }
+        t.ok(sendDeflatedMetrics.isDone())
 
-      method.invoke('data', mockHeaders)
-    })
-
-    it('should not throw when preparing uncompressed data', (done) => {
-      const method = new RemoteMethod('test', {}, {host: 'localhost'})
-      method._safeRequest = (options) => {
-        expect(options.body).equal('"data"')
-
-        return done()
-      }
-
-      method.invoke('data', mockHeaders)
-    })
-  })
-
-  describe('when the connection fails', () => {
-    it('should return the connection failure', (done) => {
-      const config = {
-        max_payload_size_in_bytes: 100000
-      }
-
-      const endpoint = {
-        host: 'localhost',
-        port: 8765
-      }
-
-      const method = new RemoteMethod('TEST', config, endpoint)
-      method.invoke({message: 'none'}, mockHeaders, (error) => {
-        should.exist(error)
-        expect(error.message).equal('connect ECONNREFUSED 127.0.0.1:8765')
-
-        done()
+        t.end()
       })
     })
 
-    it('should correctly handle a DNS lookup failure', (done) => {
-      const config = {
-        max_payload_size_in_bytes: 100000
-      }
-      const endpoint = {
-        host: 'failed.domain.cxlrg',
-        port: 80
-      }
-      const method = new RemoteMethod('TEST', config, endpoint)
-      method.invoke([], mockHeaders, (error) => {
-        should.exist(error)
+    t.test('should respect the compressed_content_encoding config', (t) => {
+      const sendGzippedMetrics = nock(URL)
+        .post(generate('metric_data', RUN_ID))
+        .matchHeader('Content-Encoding', 'gzip')
+        .reply(200, {return_value: []})
 
-        // https://github.com/joyent/node/commit/7295bb9435c
-        expect(error.message).match(
-          /^getaddrinfo E(NOENT|NOTFOUND)( failed.domain.cxlrg)?( failed.domain.cxlrg:80)?$/ // eslint-disable-line max-len
-        )
+      config.compressed_content_encoding = 'gzip'
+      method._shouldCompress = () => true
+      method._post('[]', {}, (error) => {
+        t.error(error)
 
-        done()
+        t.ok(sendGzippedMetrics.isDone())
+        t.end()
       })
     })
   })
 
-  describe('when posting to collector', () => {
-    const RUN_ID = 1337
-    const URL = 'https://collector.newrelic.com'
-    let nock = null
-    let config = null
-    let method = null
-    let sendMetrics = null
+  t.test('unsuccessfully', (t) => {
+    t.autoend()
 
-    before(() => {
-      // order dependency: requiring nock at the top of the file breaks other tests
-      nock = require('nock')
-      nock.disableNetConnect()
+    function nockMetric500() {
+      return nock(URL)
+        .post(generate('metric_data', RUN_ID))
+        .reply(500, {return_value: []})
+    }
+
+    t.test('should invoke the callback without error', (t) => {
+      nockMetric500()
+      method._post('[]', {}, (error) => {
+        t.error(error)
+        t.end()
+      })
     })
 
-    after(() => {
-      nock.enableNetConnect()
+    t.test('should include status code in response', (t) => {
+      const sendMetrics = nockMetric500()
+      method._post('[]', {}, (error, response) => {
+        t.error(error)
+        t.equal(response.status, 500)
+        t.ok(sendMetrics.isDone())
+
+        t.end()
+      })
+    })
+  })
+
+  t.test('with an error', (t) => {
+    t.autoend()
+
+    let thrown = null
+    let originalSafeRequest = null
+
+    t.beforeEach((done) => {
+      thrown = new Error('whoops!')
+      originalSafeRequest = method._safeRequest
+      method._safeRequest = () => {throw thrown}
+
+      done()
     })
 
-    beforeEach(() => {
-      config = new Config({
+    t.afterEach((done) => {
+      method._safeRequest = originalSafeRequest
+
+      done()
+    })
+
+    t.test('should not allow the error to go uncaught', (t) => {
+      method._post('[]', null, (caught) => {
+        t.equal(caught, thrown)
+        t.end()
+      })
+    })
+  })
+
+  t.test('parsing successful response', (t) => {
+    t.autoend()
+
+    const response = {
+      return_value: 'collector-42.newrelic.com'
+    }
+
+    t.beforeEach((done) => {
+      const successConfig = new Config({
         ssl: true,
-        run_id: RUN_ID,
         license_key: 'license key here'
       })
 
@@ -255,420 +427,301 @@ describe('RemoteMethod', () => {
         port: 443
       }
 
-      method = new RemoteMethod('metric_data', config, endpoint)
+      method = new RemoteMethod('preconnect', successConfig, endpoint)
+
+      nock(URL)
+        .post(generate('preconnect'))
+        .reply(200, response)
+
+      done()
     })
 
-    afterEach(() => {
-      config = null
-      method = null
-      nock.cleanAll()
-    })
+    t.test('should not error', (t) => {
+      method.invoke(null, {}, (error) => {
+        t.error(error)
 
-    it('should pass through error when compression fails', (done) => {
-      method = new RemoteMethod('test', {}, {host: 'localhost'})
-      method._shouldCompress = () => true
-      // zlib.deflate really wants a stringlike entity
-      method._post(-1, mockHeaders, (error) => {
-        should.exist(error)
-
-        done()
+        t.end()
       })
     })
 
-    describe('successfully', () => {
-      beforeEach(() => {
-        // nock ensures the correct URL is requested
-        sendMetrics = nock(URL)
-          .post(generate('metric_data', RUN_ID))
-          .matchHeader('Content-Encoding', 'identity')
-          .reply(200, {return_value: []})
-      })
+    t.test('should find the expected value', (t) => {
+      method.invoke(null, {}, (error, res) => {
+        t.equal(res.payload, 'collector-42.newrelic.com')
 
-      it('should invoke the callback without error', (done) => {
-        method._post('[]', mockHeaders, (error) => {
-          should.not.exist(error)
-          done()
-        })
-      })
-
-      it('should use the right URL', (done) => {
-        method._post('[]', mockHeaders, (error) => {
-          should.not.exist(error)
-          expect(sendMetrics.isDone()).to.be.true
-          done()
-        })
-      })
-
-      it('should respect the put_for_data_send config', (done) => {
-        nock.cleanAll()
-        const putMetrics = nock(URL)
-          .put(generate('metric_data', RUN_ID))
-          .reply(200, {return_value: []})
-
-        config.put_for_data_send = true
-        method._post('[]', mockHeaders, (error) => {
-          should.not.exist(error)
-          expect(putMetrics.isDone()).to.be.true
-          done()
-        })
-      })
-
-      describe('with compression', () => {
-        let sendDeflatedMetrics
-        let sendGzippedMetrics
-
-        beforeEach(() => {
-          sendDeflatedMetrics = nock(URL)
-            .post(generate('metric_data', RUN_ID))
-            .matchHeader('Content-Encoding', 'deflate')
-            .reply(200, {return_value: []})
-
-          sendGzippedMetrics = nock(URL)
-            .post(generate('metric_data', RUN_ID))
-            .matchHeader('Content-Encoding', 'gzip')
-            .reply(200, {return_value: []})
-        })
-
-        it('should default to deflated compression', (done) => {
-          method._shouldCompress = () => true
-          method._post('[]', mockHeaders, (error) => {
-            should.not.exist(error)
-            expect(sendMetrics.isDone()).to.be.false
-            expect(sendDeflatedMetrics.isDone()).to.be.true
-            expect(sendGzippedMetrics.isDone()).to.be.false
-            done()
-          })
-        })
-
-        it('should respect the compressed_content_encoding config', (done) => {
-          config.compressed_content_encoding = 'gzip'
-          method._shouldCompress = () => true
-          method._post('[]', mockHeaders, (error) => {
-            should.not.exist(error)
-            expect(sendMetrics.isDone()).to.be.false
-            expect(sendDeflatedMetrics.isDone()).to.be.false
-            expect(sendGzippedMetrics.isDone()).to.be.true
-            done()
-          })
-        })
-      })
-    })
-
-    describe('unsuccessfully', () => {
-      beforeEach(() => {
-        // nock ensures the correct URL is requested
-        sendMetrics = nock(URL)
-          .post(generate('metric_data', RUN_ID))
-          .reply(500, {return_value: []})
-      })
-
-      it('should invoke the callback without error', (done) => {
-        method._post('[]', mockHeaders, (error) => {
-          should.not.exist(error)
-          done()
-        })
-      })
-
-      it('should include status code in response', (done) => {
-        method._post('[]', mockHeaders, (error, response) => {
-          should.not.exist(error)
-          expect(response.status).to.equal(500)
-          expect(sendMetrics.isDone()).to.be.true
-          done()
-        })
-      })
-    })
-
-    describe('with an error', () => {
-      let thrown = null
-      let originalSafeRequest = null
-
-      beforeEach(() => {
-        thrown = new Error('whoops!')
-        originalSafeRequest = method._safeRequest
-        method._safeRequest = () => {throw thrown}
-      })
-
-      afterEach(() => {
-        method._safeRequest = originalSafeRequest
-      })
-
-      it('should not allow the error to go uncaught', (done) => {
-        method._post('[]', null, (caught) => {
-          expect(caught).to.equal(thrown)
-          done()
-        })
-      })
-    })
-
-    describe('and parsing response', () => {
-      describe('that indicated success', () => {
-        const response = {
-          return_value: 'collector-42.newrelic.com'
-        }
-
-        beforeEach(() => {
-          config = new Config({
-            ssl: true,
-            license_key: 'license key here'
-          })
-
-          const endpoint = {
-            host: 'collector.newrelic.com',
-            port: 443
-          }
-
-          method = new RemoteMethod('preconnect', config, endpoint)
-
-          nock(URL)
-            .post(generate('preconnect'))
-            .reply(200, response)
-        })
-
-        it('should not error', (done) => {
-          method.invoke(null, mockHeaders, (error) => {
-            should.not.exist(error)
-
-            done()
-          })
-        })
-
-        it('should find the expected value', (done) => {
-          method.invoke(null, mockHeaders, (error, res) => {
-            expect(res.payload).equal('collector-42.newrelic.com')
-
-            done()
-          })
-        })
-      })
-
-      describe('that indicated a New Relic error', () => {
-        const response = {}
-
-        beforeEach(() => {
-          nock(URL)
-            .post(generate('metric_data', RUN_ID))
-            .reply(409, response)
-        })
-
-        it('should include status in callback response', (done) => {
-          method.invoke([], mockHeaders, (error, res) => {
-            expect(error).to.be.null
-            expect(res.status).equal(409)
-            done()
-          })
-        })
+        t.end()
       })
     })
   })
 
-  describe('when generating headers for a plain request', () => {
-    let headers
-    let options
-    let method
+  t.test('parsing error response', (t) => {
+    t.autoend()
 
-    beforeEach(() => {
-      const config = new Config({
-        run_id: 12
-      })
+    const response = {}
 
-      const endpoint = {
-        host: 'collector.newrelic.com',
-        port: '80',
-      }
+    t.beforeEach((done) => {
+      nock(URL)
+        .post(generate('metric_data', RUN_ID))
+        .reply(409, response)
 
-      const body = 'test☃'
-      method = new RemoteMethod(body, config, endpoint)
-
-      options = {
-        body,
-        compressed: false
-      }
-
-      headers = method._headers(options)
+      done()
     })
 
-    it('should use the content type from the parameter', () => {
-      expect(headers['CONTENT-ENCODING']).equal('identity')
-    })
+    t.test('should include status in callback response', (t) => {
+      method.invoke([], {}, (error, res) => {
+        t.error(error)
+        t.equal(res.status, 409)
 
-    it('should generate the content length from the body parameter', () => {
-      expect(headers['Content-Length']).equal(7)
-    })
-
-    it('should use a keepalive connection', () => {
-      expect(headers.Connection).equal('Keep-Alive')
-    })
-
-    it('should have the host from the configuration', () => {
-      expect(headers.Host).equal('collector.newrelic.com')
-    })
-
-    it('should tell the server we are sending JSON', () => {
-      expect(headers['Content-Type']).equal('application/json')
-    })
-
-    it('should have a user-agent string', () => {
-      expect(headers['User-Agent']).not.equal(undefined)
-    })
-
-    describe('with stored NR request headers', () => {
-      it('should include store NR headers in outgoing request headers', () => {
-        options.nrHeaders = {
-          'X-NR-Run-Token': 'AFBE4546FEADDEAD1243',
-          'X-NR-Metadata': '12BAED78FC89BAFE1243'
-        }
-        headers = method._headers(options)
-
-        expect(headers['X-NR-Run-Token']).to.equal('AFBE4546FEADDEAD1243')
-        expect(headers['X-NR-Metadata']).to.equal('12BAED78FC89BAFE1243')
+        t.end()
       })
     })
   })
+})
 
-  describe('when generating headers for a compressed request', () => {
-    let headers
+tap.test('when generating headers for a plain request', (t) => {
+  t.autoend()
 
-    beforeEach(() => {
-      const config = new Config({
-        run_id: 12
-      })
+  let headers = null
+  let options = null
+  let method = null
 
-      const endpoint = {
-        host: 'collector.newrelic.com',
-        port: '80',
-      }
-
-      const body = 'test☃'
-      const method = new RemoteMethod(body, config, endpoint)
-
-      const options = {
-        body,
-        compressed: true
-      }
-
-      headers = method._headers(options)
+  t.beforeEach((done) => {
+    const config = new Config({
+      run_id: 12
     })
 
-    it('should use the content type from the parameter', () => {
-      expect(headers['CONTENT-ENCODING']).equal('deflate')
-    })
-
-    it('should generate the content length from the body parameter', () => {
-      expect(headers['Content-Length']).equal(7)
-    })
-
-    it('should use a keepalive connection', () => {
-      expect(headers.Connection).equal('Keep-Alive')
-    })
-
-    it('should have the host from the configuration', () => {
-      expect(headers.Host).equal('collector.newrelic.com')
-    })
-
-    it('should tell the server we are sending JSON', () => {
-      expect(headers['Content-Type']).equal('application/json')
-    })
-
-    it('should have a user-agent string', () => {
-      expect(headers['User-Agent']).not.equal(undefined)
-    })
-  })
-
-  describe('when generating a request URL', () => {
-    const TEST_RUN_ID = Math.floor(Math.random() * 3000) + 1
-    const TEST_METHOD = 'TEST_METHOD'
-    const TEST_LICENSE = 'hamburtson'
-    let config = null
-    let endpoint = null
-    let parsed = null
-
-    function reconstitute(generated) {
-      return url.parse(generated, true, false)
+    const endpoint = {
+      host: 'collector.newrelic.com',
+      port: '80',
     }
 
-    beforeEach(() => {
-      config = new Config({
-        license_key: TEST_LICENSE
-      })
+    const body = 'test☃'
+    method = new RemoteMethod(body, config, endpoint)
 
-      endpoint = {
-        host: 'collector.newrelic.com',
-        port: 80
-      }
+    options = {
+      body,
+      compressed: false
+    }
 
-      const method = new RemoteMethod(TEST_METHOD, config, endpoint)
-      parsed = reconstitute(method._path())
-    })
-
-    it('should say that it supports protocol 17', () => {
-      expect(parsed.query.protocol_version).equal('17')
-    })
-
-    it('should tell the collector it is sending JSON', () => {
-      expect(parsed.query.marshal_format).equal('json')
-    })
-
-    it('should pass through the license key', () => {
-      expect(parsed.query.license_key).equal(TEST_LICENSE)
-    })
-
-    it('should include the method', () => {
-      expect(parsed.query.method).equal(TEST_METHOD)
-    })
-
-    it('should not include the agent run ID when not set', () => {
-      const method = new RemoteMethod(TEST_METHOD, config, endpoint)
-      parsed = reconstitute(method._path())
-      should.not.exist(parsed.query.run_id)
-    })
-
-    it('should include the agent run ID when set', () => {
-      config.run_id = TEST_RUN_ID
-      const method = new RemoteMethod(TEST_METHOD, config, endpoint)
-      parsed = reconstitute(method._path())
-      expect(parsed.query.run_id).equal('' + TEST_RUN_ID)
-    })
-
-    it('should start with the (old-style) path', () => {
-      expect(parsed.pathname.indexOf('/agent_listener/invoke_raw_method')).equal(0)
-    })
+    headers = method._headers(options)
+    done()
   })
 
-  describe('when generating the User-Agent string', () => {
-    const TEST_VERSION = '0-test'
-    let ua
-    let version
-    let pkg
+  t.test('should use the content type from the parameter', (t) => {
+    t.equal(headers['CONTENT-ENCODING'], 'identity')
+    t.end()
+  })
 
-    before(() => {
-      pkg = require('../../../package.json')
-      version = pkg.version
-      pkg.version = TEST_VERSION
-      const config = new Config({})
-      const method = new RemoteMethod('test', config, {})
+  t.test('should generate the content length from the body parameter', (t) => {
+    t.equal(headers['Content-Length'], 7)
+    t.end()
+  })
 
-      ua = method._userAgent()
+  t.test('should use a keepalive connection', (t) => {
+    t.equal(headers.Connection, 'Keep-Alive')
+    t.end()
+  })
+
+  t.test('should have the host from the configuration', (t) => {
+    t.equal(headers.Host, 'collector.newrelic.com')
+    t.end()
+  })
+
+  t.test('should tell the server we are sending JSON', (t) => {
+    t.equal(headers['Content-Type'], 'application/json')
+    t.end()
+  })
+
+  t.test('should have a user-agent string', (t) => {
+    t.ok(headers['User-Agent'])
+    t.end()
+  })
+
+  t.test('should include stored NR headers in outgoing request headers', (t) => {
+    options.nrHeaders = {
+      'X-NR-Run-Token': 'AFBE4546FEADDEAD1243',
+      'X-NR-Metadata': '12BAED78FC89BAFE1243'
+    }
+    headers = method._headers(options)
+
+    t.equal(headers['X-NR-Run-Token'], 'AFBE4546FEADDEAD1243')
+    t.equal(headers['X-NR-Metadata'], '12BAED78FC89BAFE1243')
+
+    t.end()
+  })
+})
+
+tap.test('when generating headers for a compressed request', (t) => {
+  t.autoend()
+
+  let headers = null
+
+  t.beforeEach((done) => {
+    const config = new Config({
+      run_id: 12
     })
 
-    after(() => {
-      pkg.version = version
+    const endpoint = {
+      host: 'collector.newrelic.com',
+      port: '80',
+    }
+
+    const body = 'test☃'
+    const method = new RemoteMethod(body, config, endpoint)
+
+    const options = {
+      body,
+      compressed: true
+    }
+
+    headers = method._headers(options)
+    done()
+  })
+
+  t.test('should use the content type from the parameter', (t) => {
+    t.equal(headers['CONTENT-ENCODING'], 'deflate')
+    t.end()
+  })
+
+  t.test('should generate the content length from the body parameter', (t) => {
+    t.equal(headers['Content-Length'], 7)
+    t.end()
+  })
+
+  t.test('should use a keepalive connection', (t) => {
+    t.equal(headers.Connection, 'Keep-Alive')
+    t.end()
+  })
+
+  t.test('should have the host from the configuration', (t) => {
+    t.equal(headers.Host, 'collector.newrelic.com')
+    t.end()
+  })
+
+  t.test('should tell the server we are sending JSON', (t) => {
+    t.equal(headers['Content-Type'], 'application/json')
+    t.end()
+  })
+
+  t.test('should have a user-agent string', (t) => {
+    t.ok(headers['User-Agent'])
+    t.end()
+  })
+})
+
+tap.test('when generating a request URL', (t) => {
+  t.autoend()
+
+  const TEST_RUN_ID = Math.floor(Math.random() * 3000) + 1
+  const TEST_METHOD = 'TEST_METHOD'
+  const TEST_LICENSE = 'hamburtson'
+  let config = null
+  let endpoint = null
+  let parsed = null
+
+  function reconstitute(generated) {
+    return url.parse(generated, true, false)
+  }
+
+  t.beforeEach((done) => {
+    config = new Config({
+      license_key: TEST_LICENSE
     })
 
-    it('should clearly indicate it is New Relic for Node', () => {
-      expect(ua).include('NewRelic-NodeAgent')
-    })
+    endpoint = {
+      host: 'collector.newrelic.com',
+      port: 80
+    }
 
-    it('should include the agent version', () => {
-      expect(ua).include(TEST_VERSION)
-    })
+    const method = new RemoteMethod(TEST_METHOD, config, endpoint)
+    parsed = reconstitute(method._path())
 
-    it('should include node version', () => {
-      expect(ua).include(process.versions.node)
-    })
+    done()
+  })
 
-    it('should include node platform and architecture', () => {
-      expect(ua).include(process.platform + '-' + process.arch)
-    })
+  t.test('should say that it supports protocol 17', (t) => {
+    t.equal(parsed.query.protocol_version, '17')
+    t.end()
+  })
+
+  t.test('should tell the collector it is sending JSON', (t) => {
+    t.equal(parsed.query.marshal_format, 'json')
+    t.end()
+  })
+
+  t.test('should pass through the license key', (t) => {
+    t.equal(parsed.query.license_key, TEST_LICENSE)
+    t.end()
+  })
+
+  t.test('should include the method', (t) => {
+    t.equal(parsed.query.method, TEST_METHOD)
+    t.end()
+  })
+
+  t.test('should not include the agent run ID when not set', (t) => {
+    const method = new RemoteMethod(TEST_METHOD, config, endpoint)
+    parsed = reconstitute(method._path())
+    t.notOk(parsed.query.run_id)
+
+    t.end()
+  })
+
+  t.test('should include the agent run ID when set', (t) => {
+    config.run_id = TEST_RUN_ID
+    const method = new RemoteMethod(TEST_METHOD, config, endpoint)
+    parsed = reconstitute(method._path())
+    t.equal(parsed.query.run_id, '' + TEST_RUN_ID)
+
+    t.end()
+  })
+
+  t.test('should start with the (old-style) path', (t) => {
+    t.equal(parsed.pathname.indexOf('/agent_listener/invoke_raw_method'), 0)
+    t.end()
+  })
+})
+
+tap.test('when generating the User-Agent string', (t) => {
+  t.autoend()
+
+  const TEST_VERSION = '0-test'
+  let userAgent = null
+  let version = null
+  let pkg = null
+
+  t.beforeEach((done) => {
+    pkg = require('../../../package.json')
+    version = pkg.version
+    pkg.version = TEST_VERSION
+    const config = new Config({})
+    const method = new RemoteMethod('test', config, {})
+
+    userAgent = method._userAgent()
+    done()
+  })
+
+  t.afterEach((done) => {
+    pkg.version = version
+    done()
+  })
+
+  t.test('should clearly indicate it is New Relic for Node', (t) => {
+    t.includes(userAgent, 'NewRelic-NodeAgent')
+    t.end()
+  })
+
+  t.test('should include the agent version', (t) => {
+    t.includes(userAgent, TEST_VERSION)
+    t.end()
+  })
+
+  t.test('should include node version', (t) => {
+    t.includes(userAgent, process.versions.node)
+    t.end()
+  })
+
+  t.test('should include node platform and architecture', (t) => {
+    t.includes(userAgent, process.platform + '-' + process.arch)
+    t.end()
   })
 })
