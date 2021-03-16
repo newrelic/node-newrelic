@@ -198,5 +198,17 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/newrelic/node-newrelic.git"
-  }
+  },
+  "files": [
+    "index.js",
+    "api.js",
+    "stub_api.js",
+    "newrelic.js",
+    "LICENSE",
+    "NEWS.md",
+    "THIRD_PARTY_NOTICES.md",
+    "lib/",
+    "bin/tracetractor",
+    "bin/test-naming-rules.js"
+  ]
 }
