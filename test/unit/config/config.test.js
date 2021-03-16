@@ -1287,23 +1287,6 @@ describe('the agent configuration', function() {
       var configuration = Config.initialize()
       expect(configuration.newrelic_home).equal(DESTDIR)
     })
-
-    it('should ignore the configuration file completely when so directed', function() {
-      process.env.NEW_RELIC_NO_CONFIG_FILE = 'true'
-      process.env.NEW_RELIC_HOME = '/xxxnoexist/nofile'
-
-      var configuration
-      expect(function envTest() {
-        configuration = Config.initialize()
-      }).not.throws()
-
-      should.not.exist(configuration.newrelic_home)
-      expect(configuration.error_collector &&
-             configuration.error_collector.enabled).equal(true)
-
-      delete process.env.NEW_RELIC_NO_CONFIG_FILE
-      delete process.env.NEW_RELIC_HOME
-    })
   })
 
   describe('when loading options via constructor', function() {

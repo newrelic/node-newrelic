@@ -38,7 +38,6 @@ tap.test('logger', function(t) {
       process.chdir(DIRNAME)
 
       process.env.NEW_RELIC_LOG = 'stdout'
-      process.env.NEW_RELIC_NO_CONFIG_FILE = 'true'
 
       t.doesNotThrow(function() {
         t.ok(require('../../lib/logger'), 'requiring logger returned a logging object')
