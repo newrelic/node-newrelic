@@ -5,17 +5,43 @@
 
 'use strict'
 
-// TODO: convert to normal tap style.
-// Below allows use of mocha DSL with tap runner.
-require('tap').mochaGlobals()
+const tap = require('tap')
 
-var expect = require('chai').expect
-var Config = require('../../../lib/config')
+const Config = require('../../../lib/config')
+const keyTests = require('../../lib/cross_agent_tests/collector_hostname.json')
 
-var keyTests = require('../../lib/cross_agent_tests/collector_hostname.json')
+const keyMapping = {
+  'config_file_key': 'license_key',
+  'config_override_host': 'host',
+  'env_key': 'NEW_RELIC_LICENSE_KEY',
+  'env_override_host': 'NEW_RELIC_HOST'
+}
+
+tap.test('collector host name', (t) => {
+  t.autoend()
+
+  keyTests.forEach(function runTest(testCase) {
+    t.test(testCase.name, (t) => {
+      const confSettings = {}
+      const envSettings = {}
+      Object.keys(testCase).forEach(function assignConfValues(key) {
+        if (/^env_/.test(key)) {
+          envSettings[keyMapping[key]] = testCase[key]
+        } else if (/^config_/.test(key)) {
+          confSettings[keyMapping[key]] = testCase[key]
+        }
+      })
+
+      runWithEnv(confSettings, envSettings, (config) => {
+        t.equal(config.host, testCase.hostname)
+        t.end()
+      })
+    })
+  })
+})
 
 function runWithEnv(conf, envObj, callback) {
-  var saved = {}
+  let saved = {}
 
   Object.keys(envObj).forEach(function envKey(name) {
     // process.env is not a normal object
@@ -23,11 +49,11 @@ function runWithEnv(conf, envObj, callback) {
       saved = process.env[name]
     }
 
-    var value = envObj[name]
+    const value = envObj[name]
     process.env[name] = value
   })
   try {
-    var tc = Config.initialize(conf)
+    const tc = Config.initialize(conf)
     callback(tc)
   } finally {
     Object.keys(envObj).forEach(function restoreEnv(name) {
@@ -39,30 +65,3 @@ function runWithEnv(conf, envObj, callback) {
     })
   }
 }
-
-var keyMapping = {
-  'config_file_key': 'license_key',
-  'config_override_host': 'host',
-  'env_key': 'NEW_RELIC_LICENSE_KEY',
-  'env_override_host': 'NEW_RELIC_HOST'
-}
-
-describe('collector host name', function() {
-  keyTests.forEach(function runTest(testCase) {
-    it(testCase.name, function() {
-      var confSettings = {}
-      var envSettings = {}
-      Object.keys(testCase).forEach(function assignConfValues(key) {
-        if (/^env_/.test(key)) {
-          envSettings[keyMapping[key]] = testCase[key]
-        } else if (/^config_/.test(key)) {
-          confSettings[keyMapping[key]] = testCase[key]
-        }
-      })
-      runWithEnv(confSettings, envSettings, checkValues)
-    })
-    function checkValues(conf) {
-      expect(conf.host).to.equal(testCase.hostname)
-    }
-  })
-})
