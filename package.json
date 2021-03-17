@@ -204,6 +204,7 @@
     "api.js",
     "stub_api.js",
     "newrelic.js",
+    "README.md",
     "LICENSE",
     "NEWS.md",
     "THIRD_PARTY_NOTICES.md",
