@@ -109,14 +109,6 @@ tap.test('when overriding configuration values via environment variables', (t) =
     })
   })
 
-  t.test('should pick up the security policies token', (t) => {
-    idempotentEnv({'NEW_RELIC_SECURITY_POLICIES_TOKEN': 'super secure'}, (tc) => {
-      t.ok(tc.security_policies_token)
-      t.equal(tc.security_policies_token, 'super secure')
-      t.end()
-    })
-  })
-
   t.test('should take an explicit host over the license key parsed host', (t) => {
     idempotentEnv({'NEW_RELIC_LICENSE_KEY': 'eu01xxhambulance'}, function() {
       idempotentEnv({'NEW_RELIC_HOST': 'localhost'}, (tc) => {
