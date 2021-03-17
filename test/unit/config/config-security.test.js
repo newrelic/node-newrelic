@@ -6,15 +6,11 @@
 'use strict'
 
 const tap = require('tap')
-// TODO: convert to normal tap style.
-// Below allows use of mocha DSL with tap runner.
-tap.mochaGlobals()
 
-const chai = require('chai')
-const expect = chai.expect
 const sinon = require('sinon')
 const Config = require('../../../lib/config')
 const securityPolicies = require('../../lib/fixtures').securityPolicies
+const {idempotentEnv} = require('./helper')
 
 tap.test('should pick up the security policies token', (t) => {
   idempotentEnv({'NEW_RELIC_SECURITY_POLICIES_TOKEN': 'super secure'}, (tc) => {
@@ -54,37 +50,44 @@ tap.test('should enable high security mode (HSM) with non-bool truthy HSM settin
   t.end()
 })
 
-describe('#_getMostSecure', function() {
-  var config
+tap.test('#_getMostSecure', (t) => {
+  t.autoend()
 
-  beforeEach(function(done) {
+  let config = null
+
+  t.beforeEach((done) => {
     config = new Config()
     config.security_policies_token = 'TEST-TEST-TEST-TEST'
     done()
   })
 
-  it('returns the new value if the current one is undefined', function() {
-    var val = config._getMostSecure('record_sql', undefined, 'off')
-    expect(val).to.equal('off')
+  t.test('returns the new value if the current one is undefined', (t) => {
+    const val = config._getMostSecure('record_sql', undefined, 'off')
+    t.equal(val, 'off')
+    t.end()
   })
 
-  it('returns the most strict if it does not know either value', function() {
-    var val = config._getMostSecure('record_sql', undefined, 'dunno')
-    expect(val).to.equal('off')
+  t.test('returns the most strict if it does not know either value', (t) => {
+    const val = config._getMostSecure('record_sql', undefined, 'dunno')
+    t.equal(val, 'off')
+    t.end()
   })
 
-  it('should work as a pass through for unknown config options', function() {
-    var val = config._getMostSecure('unknown.option', undefined, 'dunno')
-    expect(val).to.equal('dunno')
+  t.test('should work as a pass through for unknown config options', (t) => {
+    const val = config._getMostSecure('unknown.option', undefined, 'dunno')
+    t.equal(val, 'dunno')
+    t.end()
   })
 })
 
-describe('#applyLasp', function() {
+tap.test('#applyLasp', (t) => {
+  t.autoend()
+
   let config = null
   let policies = null
   let agent = null
 
-  beforeEach(function(done) {
+  t.beforeEach(function(done) {
     agent = {
       _resetErrors: sinon.spy(),
       _resetCustomEvents: sinon.spy(),
@@ -99,22 +102,24 @@ describe('#applyLasp', function() {
     done()
   })
 
-  it('returns null if LASP is not enabled', () => {
+  t.test('returns null if LASP is not enabled', (t) => {
     config.security_policies_token = ''
 
     const res = config.applyLasp(agent, {})
-    expect(res.payload).to.be.null
+    t.equal(res.payload, null)
+    t.end()
   })
 
-  it('returns fatal response if required policy is not implemented or unknown', () => {
+  t.test('returns fatal response if required policy is not implemented or unknown', (t) => {
     policies.job_arguments = { enabled: true, required: true }
     policies.test = { enabled: true, required: true }
 
     const response = config.applyLasp(agent, policies)
-    expect(response.shouldShutdownRun()).to.be.true
+    t.equal(response.shouldShutdownRun(), true)
+    t.end()
   })
 
-  it('takes the most secure from local', () => {
+  t.test('takes the most secure from local', (t) => {
     config.transaction_tracer.record_sql = 'off'
     config.attributes.include_enabled = false
     config.strip_exception_messages.enabled = true
@@ -128,21 +133,23 @@ describe('#applyLasp', function() {
     const response = config.applyLasp(agent, policies)
     const payload = response.payload
 
-    expect(config.transaction_tracer.record_sql).to.equal('off')
-    expect(agent._resetQueries.callCount).to.equal(0)
-    expect(config.attributes.include_enabled).to.equal(false)
-    expect(agent.traces.clear.callCount).to.equal(0)
-    expect(config.strip_exception_messages.enabled).to.equal(true)
-    expect(agent._resetErrors.callCount).to.equal(0)
-    expect(config.api.custom_events_enabled).to.equal(false)
-    expect(agent._resetCustomEvents.callCount).to.equal(0)
-    expect(config.api.custom_attributes_enabled).to.equal(false)
+    t.equal(config.transaction_tracer.record_sql, 'off')
+    t.equal(agent._resetQueries.callCount, 0)
+    t.equal(config.attributes.include_enabled, false)
+    t.equal(agent.traces.clear.callCount, 0)
+    t.equal(config.strip_exception_messages.enabled, true)
+    t.equal(agent._resetErrors.callCount, 0)
+    t.equal(config.api.custom_events_enabled, false)
+    t.equal(agent._resetCustomEvents.callCount, 0)
+    t.equal(config.api.custom_attributes_enabled, false)
     Object.keys(payload).forEach(function checkPolicy(key) {
-      expect(payload[key].enabled).to.be.false
+      t.equal(payload[key].enabled, false)
     })
+
+    t.end()
   })
 
-  it('takes the most secure from lasp', () => {
+  t.test('takes the most secure from lasp', (t) => {
     config.transaction_tracer.record_sql = 'obfuscated'
     config.attributes.include_enabled = true
     config.strip_exception_messages.enabled = false
@@ -156,22 +163,24 @@ describe('#applyLasp', function() {
     const response = config.applyLasp(agent, policies)
     const payload = response.payload
 
-    expect(config.transaction_tracer.record_sql).to.equal('off')
-    expect(agent._resetQueries.callCount).to.equal(1)
-    expect(config.attributes.include_enabled).to.equal(false)
-    expect(config.attributes.exclude).to.deep.equal(['request.parameters.*'])
-    expect(config.strip_exception_messages.enabled).to.equal(true)
-    expect(agent._resetErrors.callCount).to.equal(1)
-    expect(config.api.custom_events_enabled).to.equal(false)
-    expect(agent._resetCustomEvents.callCount).to.equal(1)
-    expect(config.api.custom_attributes_enabled).to.equal(false)
-    expect(agent.traces.clear.callCount).to.equal(1)
+    t.equal(config.transaction_tracer.record_sql, 'off')
+    t.equal(agent._resetQueries.callCount, 1)
+    t.equal(config.attributes.include_enabled, false)
+    t.deepEqual(config.attributes.exclude, ['request.parameters.*'])
+    t.equal(config.strip_exception_messages.enabled, true)
+    t.equal(agent._resetErrors.callCount, 1)
+    t.equal(config.api.custom_events_enabled, false)
+    t.equal(agent._resetCustomEvents.callCount, 1)
+    t.equal(config.api.custom_attributes_enabled, false)
+    t.equal(agent.traces.clear.callCount, 1)
     Object.keys(payload).forEach(function checkPolicy(key) {
-      expect(payload[key].enabled).to.be.false
+      t.equal(payload[key].enabled, false)
     })
+
+    t.end()
   })
 
-  it('allow permissive settings', () => {
+  t.test('allows permissive settings', (t) => {
     config.transaction_tracer.record_sql = 'obfuscated'
     config.attributes.include_enabled = true
     config.strip_exception_messages.enabled = false
@@ -185,64 +194,37 @@ describe('#applyLasp', function() {
     const response = config.applyLasp(agent, policies)
     const payload = response.payload
 
-    expect(config.transaction_tracer.record_sql).to.equal('obfuscated')
-    expect(config.attributes.include_enabled).to.equal(true)
-    expect(config.strip_exception_messages.enabled).to.equal(false)
-    expect(config.api.custom_events_enabled).to.equal(true)
-    expect(config.api.custom_attributes_enabled).to.equal(true)
+    t.equal(config.transaction_tracer.record_sql, 'obfuscated')
+    t.equal(config.attributes.include_enabled, true)
+    t.equal(config.strip_exception_messages.enabled, false)
+    t.equal(config.api.custom_events_enabled, true)
+    t.equal(config.api.custom_attributes_enabled, true)
     Object.keys(payload).forEach(function checkPolicy(key) {
-      expect(payload[key].enabled).to.be.true
+      t.equal(payload[key].enabled, true)
     })
+
+    t.end()
   })
 
-  it('returns fatal response if expected policy is not received', () => {
+  t.test('returns fatal response if expected policy is not received', (t) => {
     delete policies.record_sql
 
     const response = config.applyLasp(agent, policies)
-    expect(response.shouldShutdownRun()).to.be.true
+    t.equal(response.shouldShutdownRun(), true)
+
+    t.end()
   })
 
-  it('should return known policies', () => {
+  t.test('should return known policies', (t) => {
     const response = config.applyLasp(agent, policies)
-    expect(response.payload).to.deep.equal({
+    t.deepEqual(response.payload, {
       record_sql: { enabled: false, required: false },
       attributes_include: { enabled: false, required: false },
       allow_raw_exception_messages: { enabled: false, required: false },
       custom_events: { enabled: false, required: false },
       custom_parameters: { enabled: false, required: false }
     })
+
+    t.end()
   })
 })
-
-
-// TODO: move to an env helper for import/reuse
-function idempotentEnv(envConfig, initialConfig, callback) {
-  let saved = {}
-
-  // Allow idempotentEnv to be called w/o initialConfig
-  if (typeof initialConfig === 'function') {
-    callback = initialConfig
-    initialConfig = {}
-  }
-
-  Object.keys(envConfig).forEach((key) => {
-    // process.env is not a normal object
-    if (Object.hasOwnProperty.call(process.env, key)) {
-      saved[key] = process.env[key]
-    }
-
-    process.env[key] = envConfig[key]
-  })
-  try {
-    const tc = Config.initialize(initialConfig)
-    callback(tc)
-  } finally {
-    Object.keys(envConfig).forEach((finalKey) => {
-      if (saved[finalKey]) {
-        process.env[finalKey] = saved[finalKey]
-      } else {
-        delete process.env[finalKey]
-      }
-    })
-  }
-}

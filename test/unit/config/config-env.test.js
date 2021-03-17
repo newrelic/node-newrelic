@@ -7,12 +7,11 @@
 
 const tap = require('tap')
 
-const Config = require('../../../lib/config')
+const {idempotentEnv} = require('./helper')
 
 const VALID_HOST = 'infinite-tracing.test'
 const VALID_PORT = '443'
 const VALID_QUEUE_SIZE = 20000 // should not be 10k which is the default
-
 
 tap.test('when overriding configuration values via environment variables', (t) => {
   t.autoend()
@@ -686,34 +685,3 @@ tap.test('when overriding configuration values via environment variables', (t) =
     })
   })
 })
-
-function idempotentEnv(envConfig, initialConfig, callback) {
-  let saved = {}
-
-  // Allow idempotentEnv to be called w/o initialConfig
-  if (typeof initialConfig === 'function') {
-    callback = initialConfig
-    initialConfig = {}
-  }
-
-  Object.keys(envConfig).forEach((key) => {
-    // process.env is not a normal object
-    if (Object.hasOwnProperty.call(process.env, key)) {
-      saved[key] = process.env[key]
-    }
-
-    process.env[key] = envConfig[key]
-  })
-  try {
-    const tc = Config.initialize(initialConfig)
-    callback(tc)
-  } finally {
-    Object.keys(envConfig).forEach((finalKey) => {
-      if (saved[finalKey]) {
-        process.env[finalKey] = saved[finalKey]
-      } else {
-        delete process.env[finalKey]
-      }
-    })
-  }
-}
