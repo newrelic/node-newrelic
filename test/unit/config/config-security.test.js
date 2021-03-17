@@ -55,10 +55,9 @@ tap.test('#_getMostSecure', (t) => {
 
   let config = null
 
-  t.beforeEach((done) => {
+  t.beforeEach(() => {
     config = new Config()
     config.security_policies_token = 'TEST-TEST-TEST-TEST'
-    done()
   })
 
   t.test('returns the new value if the current one is undefined', (t) => {
@@ -87,7 +86,7 @@ tap.test('#applyLasp', (t) => {
   let policies = null
   let agent = null
 
-  t.beforeEach(function(done) {
+  t.beforeEach(() => {
     agent = {
       _resetErrors: sinon.spy(),
       _resetCustomEvents: sinon.spy(),
@@ -99,7 +98,6 @@ tap.test('#applyLasp', (t) => {
     agent.config = config = new Config()
     config.security_policies_token = 'TEST-TEST-TEST-TEST'
     policies = securityPolicies()
-    done()
   })
 
   t.test('returns null if LASP is not enabled', (t) => {
