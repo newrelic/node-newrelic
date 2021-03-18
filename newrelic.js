@@ -28,7 +28,7 @@ exports.config = {
      *
      * @env NEW_RELIC_DISTRIBUTED_TRACING_ENABLED
      */
-    enabled: false
+    enabled: true
   },
   logging: {
     /**

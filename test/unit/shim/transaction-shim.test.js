@@ -22,7 +22,12 @@ describe('TransactionShim', function() {
   var wrappable = null
 
   beforeEach(function() {
-    agent = helper.loadMockedAgent()
+    // implicitly disabling distributed tracing to match original config base settings
+    agent = helper.loadMockedAgent({
+      distributed_tracing: {
+        enabled: false
+      }
+    })
     shim = new TransactionShim(agent, 'test-module')
     wrappable = {
       name: 'this is a name',

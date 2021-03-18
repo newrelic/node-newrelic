@@ -16,7 +16,12 @@ tap.test('Agent API - getLinkingMetadata', (t) => {
   let api = null
 
   t.beforeEach((done) => {
-    agent = helper.loadMockedAgent()
+    // implicitly disabling distributed tracing to match original config base settings
+    agent = helper.instrumentMockedAgent({
+      distributed_tracing: {
+        enabled: false
+      }
+    })
     api = new API(agent)
 
     done()

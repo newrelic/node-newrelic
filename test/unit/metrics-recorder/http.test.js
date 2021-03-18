@@ -42,7 +42,12 @@ describe("recordWeb", function() {
 
 
   beforeEach(function() {
-    agent = helper.loadMockedAgent()
+    // implicitly disabling distributed tracing to match original config base settings
+    agent = helper.instrumentMockedAgent({
+      distributed_tracing: {
+        enabled: false
+      }
+    })
     trans = new Transaction(agent)
   })
 
