@@ -1287,6 +1287,49 @@ describe('the agent configuration', function() {
       var configuration = Config.initialize()
       expect(configuration.newrelic_home).equal(DESTDIR)
     })
+
+    it('should ignore the configuration file completely when so directed', function() {
+      process.env.NEW_RELIC_NO_CONFIG_FILE = 'true'
+      process.env.NEW_RELIC_HOME = '/xxxnoexist/nofile'
+
+      var configuration
+      expect(function envTest() {
+        configuration = Config.initialize()
+      }).not.throws()
+
+      should.not.exist(configuration.newrelic_home)
+      expect(configuration.error_collector &&
+             configuration.error_collector.enabled).equal(true)
+
+      delete process.env.NEW_RELIC_NO_CONFIG_FILE
+      delete process.env.NEW_RELIC_HOME
+    })
+  })
+
+  describe('when loading invalid configuration file', function() {
+    let realpathSyncStub
+    const fsUnwrapped = require('../../../lib/util/unwrapped-core').fs
+
+    beforeEach(function() {
+      realpathSyncStub = sinon.stub(fsUnwrapped, 'realpathSync').callsFake(() => {
+        return 'BadPath'
+      })
+    })
+
+    afterEach(function() {
+      realpathSyncStub.restore()
+    })
+
+    it('should continue agent startup with config.newrelic_home property removed',
+      function() {
+        const Cornfig = require('../../../lib/config')
+        let configuration
+        expect(function envTest() {
+          configuration = Cornfig.initialize()
+        }).not.throws()
+
+        should.not.exist(configuration.newrelic_home)
+      })
   })
 
   describe('when loading options via constructor', function() {
