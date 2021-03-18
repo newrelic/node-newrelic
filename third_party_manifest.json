@@ -1,18 +1,18 @@
 {
-  "lastUpdated": "Tue Feb 23 2021 13:40:18 GMT-0800 (Pacific Standard Time)",
+  "lastUpdated": "Thu Mar 18 2021 10:24:40 GMT-0700 (Pacific Daylight Time)",
   "projectName": "New Relic Node Agent",
   "projectUrl": "https://github.com/newrelic/node-newrelic",
   "includeDev": true,
   "dependencies": {
-    "@grpc/grpc-js@1.2.5": {
+    "@grpc/grpc-js@1.2.7": {
       "name": "@grpc/grpc-js",
-      "version": "1.2.5",
-      "range": "^1.2.5",
+      "version": "1.2.7",
+      "range": "^1.2.7",
       "licenses": "Apache-2.0",
       "repoUrl": "https://github.com/grpc/grpc-node/tree/master/packages/grpc-js",
-      "versionedRepoUrl": "https://github.com/grpc/grpc-node/tree/master/packages/grpc-js/tree/v1.2.5",
+      "versionedRepoUrl": "https://github.com/grpc/grpc-node/tree/master/packages/grpc-js/tree/v1.2.7",
       "licenseFile": "node_modules/@grpc/grpc-js/LICENSE",
-      "licenseUrl": "https://github.com/grpc/grpc-node/tree/master/packages/grpc-js/blob/v1.2.5/LICENSE",
+      "licenseUrl": "https://github.com/grpc/grpc-node/tree/master/packages/grpc-js/blob/v1.2.7/LICENSE",
       "licenseTextSource": "file",
       "publisher": "Google Inc."
     },
@@ -264,6 +264,19 @@
       "licenseTextSource": "file",
       "publisher": "Jake Luer",
       "email": "jake@alogicalparadox.com"
+    },
+    "commander@7.0.0": {
+      "name": "commander",
+      "version": "7.0.0",
+      "range": "^7.0.0",
+      "licenses": "MIT",
+      "repoUrl": "https://github.com/tj/commander.js",
+      "versionedRepoUrl": "https://github.com/tj/commander.js/tree/v7.0.0",
+      "licenseFile": "node_modules/commander/LICENSE",
+      "licenseUrl": "https://github.com/tj/commander.js/blob/v7.0.0/LICENSE",
+      "licenseTextSource": "file",
+      "publisher": "TJ Holowaychuk",
+      "email": "tj@vision-media.ca"
     },
     "eslint@6.8.0": {
       "name": "eslint",
