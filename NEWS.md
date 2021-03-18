@@ -1,7 +1,16 @@
 ### v7.2.0 (2021-03-18)
 
+* Added feature flag to allow disabling of certificate bundle usage.
+
+  **Deprecation Warning:** The certificate bundle included by New Relic will be disabled by default and then fully removed in later major versions. We recommend testing with the certificate_bundle feature flag set to `false` to determine if you will need to modify your environment or setup your own appropriate bundle. Example configuration: `feature_flag: { certificate_bundle: false }`
+
 * The `NEW_RELIC_NO_CONFIG_FILE` environment variable is no longer needed to run the agent without a configuration file.
+
   * If a configuration file is used with agent configuration environment variables, the environment variables will override the corresponding configuration file settings.
+
+* Fixed bug where applications with multiple names on a dynamically named host (UUID like) would have instances consolidated, losing per-host breakdowns.
+
+  Removed 'host' from agent 'identifier' override to prevent server safety mechanism from kicking in. Host will still be used to identify unique agent instances, so was unnecessary to include as part of the identifier. This also resulted in additional processing overhead on the back-end. The identifier override is still kept in place with multiple application names to continue to allow uniquely identifying instances on the same host with multiple application names where the first name may be identical. For example `app_name['myName', 'unique1']` and `app_name['myName', 'unique2']`. These names would consolidate down into a single instance on the same host without the identifier override.
 
 * Added module root to shim.require() logging to aid debugging.
 
@@ -18,10 +27,6 @@
 * Added new developer documentation to /docs folder.
 
   This information is ported over from private GHE wiki used prior to going open source. S/O @astorm for original versions of the function wrapping and module instrumentation docs.
-
-* Added feature flag to allow disabling of certificate bundle usage.
-
-  **Deprecation Warning:** The certificate bundle included by New Relic will be disabled by default and then fully removed in later major versions. We recommend testing with the certificate_bundle feature flag set to `false` to determine if you will need to modify your environment or setup your own appropriate bundle. Example configuration: `feature_flag: { certificate_bundle: false }`
 
 * Fixed bug where truncated http (external) or datastore segments would generate generic spans instead of appropriate http or datastore spans.
 
