@@ -5,7 +5,7 @@ on:
   workflow_dispatch:
     inputs:
       release_type:
-        description: 'Type of release. patch or minor (major not yet supported)'
+        description: 'Type of release. patch or minor (major if breaking)'
         required: true
         default: 'patch'
 
