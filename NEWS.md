@@ -1,3 +1,30 @@
+### v7.2.0 (2021-03-18)
+
+* The `NEW_RELIC_NO_CONFIG_FILE` environment variable is no longer needed to run the agent without a configuration file.
+  * If a configuration file is used with agent configuration environment variables, the environment variables will override the corresponding configuration file settings.
+
+* Added module root to shim.require() logging to aid debugging.
+
+* Migrated from .npmignore to 'files' list in package.json to control which files are packaged.
+
+  Thank you to @JamesPeiris for the initial nudge via PR to move in this direction.
+
+* Converted remaining collector unit tests to use tap API.
+
+* Added linting to scripts in /bin folder.
+
+  Linting rules added are slightly more permissive than production rules and allow full ecma 8.
+
+* Added new developer documentation to /docs folder.
+
+  This information is ported over from private GHE wiki used prior to going open source. S/O @astorm for original versions of the function wrapping and module instrumentation docs.
+
+* Added feature flag to allow disabling of certificate bundle usage.
+
+  **Deprecation Warning:** The certificate bundle included by New Relic will be disabled by default and then fully removed in later major versions. We recommend testing with the certificate_bundle feature flag set to `false` to determine if you will need to modify your environment or setup your own appropriate bundle. Example configuration: `feature_flag: { certificate_bundle: false }`
+
+* Fixed bug where truncated http (external) or datastore segments would generate generic spans instead of appropriate http or datastore spans.
+
 ### v7.1.3 (2021-03-09)
 
 * Bumped @grpc/grpc-js to ^1.2.7.
