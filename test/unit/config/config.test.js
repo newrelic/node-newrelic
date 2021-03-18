@@ -1306,6 +1306,32 @@ describe('the agent configuration', function() {
     })
   })
 
+  describe('when loading invalid configuration file', function() {
+    let realpathSyncStub
+    const fsUnwrapped = require('../../../lib/util/unwrapped-core').fs
+
+    beforeEach(function() {
+      realpathSyncStub = sinon.stub(fsUnwrapped, 'realpathSync').callsFake(() => {
+        return 'BadPath'
+      })
+    })
+
+    afterEach(function() {
+      realpathSyncStub.restore()
+    })
+
+    it('should continue agent startup with config.newrelic_home property removed',
+      function() {
+        const Cornfig = require('../../../lib/config')
+        let configuration
+        expect(function envTest() {
+          configuration = Cornfig.initialize()
+        }).not.throws()
+
+        should.not.exist(configuration.newrelic_home)
+      })
+  })
+
   describe('when loading options via constructor', function() {
     it('should properly pick up on expected_messages', function() {
       const options = {
