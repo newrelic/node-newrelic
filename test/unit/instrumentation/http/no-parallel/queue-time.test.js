@@ -22,12 +22,7 @@ tap.test('built-in http queueTime', (t) => {
   let THRESHOLD = null
 
   t.beforeEach((done) => {
-    // implicitly disabling distributed tracing to match original config base settings
-    agent = helper.instrumentMockedAgent({
-      distributed_tracing: {
-        enabled: false
-      }
-    })
+    agent = helper.instrumentMockedAgent()
 
     testDate = Date.now()
     PORT = 0
