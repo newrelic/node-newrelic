@@ -1555,6 +1555,64 @@ describe('Transaction', function() {
   })
 })
 
+tap.test('transaction end', (t) => {
+  t.autoend()
+
+  let agent = null
+  let transaction = null
+
+  t.beforeEach((done) => {
+    agent = helper.loadMockedAgent({
+      attributes: {
+        enabled: true,
+        include: ['request.parameters.*']
+      },
+      distributed_tracing: {
+        enabled: true
+      }
+    })
+
+    transaction = new Transaction(agent)
+
+    done()
+  })
+
+  t.afterEach((done) => {
+    helper.unloadAgent(agent)
+
+    agent = null
+    transaction = null
+
+    done()
+  })
+
+  t.test('should clear errors', (t) => {
+    transaction.userErrors.push(new Error('user sadness'))
+    transaction.exceptions.push(new Error('things went bad'))
+
+    transaction.end()
+
+    t.equal(transaction.userErrors, null)
+    t.equal(transaction.exceptions, null)
+
+    t.end()
+  })
+
+  t.test('should not clear errors until after transactionFinished event', (t) => {
+    transaction.userErrors.push(new Error('user sadness'))
+    transaction.exceptions.push(new Error('things went bad'))
+
+    agent.on('transactionFinished', (endedTransaction) => {
+      t.equal(endedTransaction.userErrors.length, 1)
+      t.equal(endedTransaction.exceptions.length, 1)
+
+      t.end()
+    })
+
+    transaction.end()
+  })
+})
+
 tap.test('when being named with finalizeNameFromUri', (t) => {
   t.autoend()
 
