@@ -15,6 +15,24 @@ exports.findSegment = findSegment
 exports.getMetricHostName = getMetricHostName
 exports.tapAssertMetrics = tapAssertMetrics
 
+/**
+ * @param {Metrics} metrics         metrics under test
+ * @param {Array} expected          Array of metric data where metric data is in this form:
+ *                                  [
+ *                                    {
+ *                                      “name”:”name of metric”,
+ *                                      “scope”:”scope of metric”,
+ *                                    },
+ *                                    [count,
+ *                                      total time,
+ *                                      exclusive time,
+ *                                      min time,
+ *                                      max time,
+ *                                      sum of squares]
+ *                                  ]
+ * @param {boolean} exclusive       When true, found and expected metric lengths should match
+ * @param {boolean} assertValues    When true, metric values must match expected
+ */
 function assertMetrics(metrics, expected, exclusive, assertValues) {
   // Assertions about arguments because maybe something returned undefined
   // unexpectedly and is passed in, or a return type changed. This will
@@ -64,6 +82,24 @@ function assertMetrics(metrics, expected, exclusive, assertValues) {
   }
 }
 
+/**
+ * @param {Test} tap                tap test object
+ * @param {Transaction} transaction Nodejs agent transaction
+ * @param {Array} expected          Array of metric data where metric data is in this form:
+ *                                  [
+ *                                    {
+ *                                      “name”:”name of metric”,
+ *                                      “scope”:”scope of metric”,
+ *                                    },
+ *                                    [count,
+ *                                      total time,
+ *                                      exclusive time,
+ *                                      min time,
+ *                                      max time,
+ *                                      sum of squares]
+ *                                  ]
+ * @param {boolean} exact           When true, found and expected metric lengths should match
+ */
 function tapAssertMetrics(tap, transaction, expected, exact) {
   var metrics = transaction.metrics
 
@@ -81,9 +117,9 @@ function tapAssertMetrics(tap, transaction, expected, exact) {
     }
 
     const metric = metrics.getMetric(name, scope)
-    tap.ok(metric, 'should create expected metric name')
+    tap.ok(metric, 'should have expected metric name')
 
-    tap.same(metric.toJSON(), expectedMetric[1],
+    tap.strictSame(metric.toJSON(), expectedMetric[1],
       'metric values should match')
   }
 
