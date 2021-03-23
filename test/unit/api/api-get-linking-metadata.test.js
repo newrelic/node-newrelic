@@ -48,6 +48,8 @@ tap.test('Agent API - getLinkingMetadata', (t) => {
   })
 
   t.test('should return available fields, no DT data, when DT enabled - no transaction', (t) => {
+    agent.config.distributed_tracing.enabled = true
+
     const metadata = api.getLinkingMetadata()
 
     // Trace and span id are omitted when there is no active transaction

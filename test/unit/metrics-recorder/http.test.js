@@ -372,6 +372,7 @@ describe("recordWeb", function() {
     })
 
     it("should handle non-ignored codes for the whole transaction", function() {
+      agent.config.distributed_tracing.enabled = false
       record({
         transaction: trans,
         apdexT: 0.2,
@@ -391,18 +392,6 @@ describe("recordWeb", function() {
         [{name: 'WebTransactionTotalTime'}, [1, 0.001, 0.001, 0.001, 0.001, 0.000001]],
         [
           {name: 'WebTransactionTotalTime/NormalizedUri/*'},
-          [1, 0.001, 0.001, 0.001, 0.001, 0.000001]
-        ],
-        [{name: 'DurationByCaller/Unknown/Unknown/Unknown/Unknown/all'},
-          [1, 0.001, 0.001, 0.001, 0.001, 0.000001]
-        ],
-        [{name: 'ErrorsByCaller/Unknown/Unknown/Unknown/Unknown/all'},
-          [1, 0.001, 0.001, 0.001, 0.001, 0.000001]
-        ],
-        [{name: 'DurationByCaller/Unknown/Unknown/Unknown/Unknown/allWeb'},
-          [1, 0.001, 0.001, 0.001, 0.001, 0.000001]
-        ],
-        [{name: 'ErrorsByCaller/Unknown/Unknown/Unknown/Unknown/allWeb'},
           [1, 0.001, 0.001, 0.001, 0.001, 0.000001]
         ],
         [{name: 'Apdex/NormalizedUri/*'}, [0, 0, 1, 0.2, 0.2, 0]],
