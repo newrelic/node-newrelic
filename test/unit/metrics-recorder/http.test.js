@@ -42,7 +42,7 @@ describe("recordWeb", function() {
 
 
   beforeEach(function() {
-    agent = helper.loadMockedAgent()
+    agent = helper.instrumentMockedAgent()
     trans = new Transaction(agent)
   })
 
@@ -174,6 +174,8 @@ describe("recordWeb", function() {
 
     describe("with normal requests", function() {
       it("should infer a satisfying end-user experience", function() {
+        agent.config.distributed_tracing.enabled = false
+
         record({
           transaction: trans,
           apdexT: 0.06,
@@ -202,6 +204,8 @@ describe("recordWeb", function() {
       })
 
       it("should infer a tolerable end-user experience", function() {
+        agent.config.distributed_tracing.enabled = false
+
         record({
           transaction: trans,
           apdexT: 0.05,
@@ -233,6 +237,8 @@ describe("recordWeb", function() {
       })
 
       it("should infer a frustrating end-user experience", function() {
+        agent.config.distributed_tracing.enabled = false
+
         record({
           transaction: trans,
           apdexT: 0.01,
@@ -281,6 +287,8 @@ describe("recordWeb", function() {
 
     describe("with exceptional requests", function() {
       it("should handle internal server errors", function() {
+        agent.config.distributed_tracing.enabled = false
+
         record({
           transaction: trans,
           apdexT: 0.01,
@@ -323,7 +331,9 @@ describe("recordWeb", function() {
     })
 
     it("should handle ignored codes for the whole transaction", function() {
+      agent.config.distributed_tracing.enabled = false
       agent.config.error_collector.ignore_status_codes = [404, 500]
+
       record({
         transaction: trans,
         apdexT: 0.2,
@@ -362,6 +372,7 @@ describe("recordWeb", function() {
     })
 
     it("should handle non-ignored codes for the whole transaction", function() {
+      agent.config.distributed_tracing.enabled = false
       record({
         transaction: trans,
         apdexT: 0.2,
@@ -417,6 +428,14 @@ describe("recordWeb", function() {
           [1, 1.2, 1.2, 1.2, 1.2, 1.44]
         ],
         [{name: 'WebTransactionTotalTime'}, [1, 1.2, 1.2, 1.2, 1.2, 1.44]],
+        [
+          {name: 'DurationByCaller/Unknown/Unknown/Unknown/Unknown/all'},
+          [1, 1.2, 1.2, 1.2, 1.2, 1.44]
+        ],
+        [
+          {name: 'DurationByCaller/Unknown/Unknown/Unknown/Unknown/allWeb'},
+          [1, 1.2, 1.2, 1.2, 1.2, 1.44]
+        ],
         [
           {name: 'Apdex/WebFrameworkUri/TestJS//key/:id'},
           [0, 1, 0, 0.667, 0.667, 0]

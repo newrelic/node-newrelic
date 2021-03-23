@@ -5,15 +5,34 @@
 
 'use strict'
 
-var assert = require('chai').assert
-var format = require('util').format
-var urltils = require('../../lib/util/urltils')
+const assert = require('chai').assert
+const format = require('util').format
+const urltils = require('../../lib/util/urltils')
 
 exports.assertMetrics = assertMetrics
 exports.assertSegments = assertSegments
 exports.findSegment = findSegment
 exports.getMetricHostName = getMetricHostName
+exports.tapAssertMetrics = tapAssertMetrics
 
+/**
+ * @param {Metrics} metrics         metrics under test
+ * @param {Array} expected          Array of metric data where metric data is in this form:
+ *                                  [
+ *                                    {
+ *                                      “name”:”name of metric”,
+ *                                      “scope”:”scope of metric”,
+ *                                    },
+ *                                    [count,
+ *                                      total time,
+ *                                      exclusive time,
+ *                                      min time,
+ *                                      max time,
+ *                                      sum of squares]
+ *                                  ]
+ * @param {boolean} exclusive       When true, found and expected metric lengths should match
+ * @param {boolean} assertValues    When true, metric values must match expected
+ */
 function assertMetrics(metrics, expected, exclusive, assertValues) {
   // Assertions about arguments because maybe something returned undefined
   // unexpectedly and is passed in, or a return type changed. This will
@@ -27,8 +46,8 @@ function assertMetrics(metrics, expected, exclusive, assertValues) {
   }
 
   for (var i = 0, len = expected.length; i < len; i++) {
-    var expectedMetric = expected[i]
-    var metric = metrics.getMetric(
+    const expectedMetric = expected[i]
+    const metric = metrics.getMetric(
       expectedMetric[0].name,
       expectedMetric[0].scope
     )
@@ -50,7 +69,7 @@ function assertMetrics(metrics, expected, exclusive, assertValues) {
   }
 
   if (exclusive) {
-    var metricsList = metrics.toJSON()
+    const metricsList = metrics.toJSON()
     assert.equal(
       metricsList.length,
       expected.length,
@@ -60,6 +79,54 @@ function assertMetrics(metrics, expected, exclusive, assertValues) {
         expected
       )
     )
+  }
+}
+
+/**
+ * @param {Test} tap                tap test object
+ * @param {Transaction} transaction Nodejs agent transaction
+ * @param {Array} expected          Array of metric data where metric data is in this form:
+ *                                  [
+ *                                    {
+ *                                      “name”:”name of metric”,
+ *                                      “scope”:”scope of metric”,
+ *                                    },
+ *                                    [count,
+ *                                      total time,
+ *                                      exclusive time,
+ *                                      min time,
+ *                                      max time,
+ *                                      sum of squares]
+ *                                  ]
+ * @param {boolean} exact           When true, found and expected metric lengths should match
+ */
+function tapAssertMetrics(tap, transaction, expected, exact) {
+  var metrics = transaction.metrics
+
+  for (let i = 0; i < expected.length; ++i) {
+    const expectedMetric = Object.assign({}, expected[i])
+    let name = null
+    let scope = null
+
+    if (typeof expectedMetric === 'string') {
+      name = expectedMetric
+      expectedMetric = {}
+    } else {
+      name = expectedMetric[0].name
+      scope = expectedMetric[0].scope
+    }
+
+    const metric = metrics.getMetric(name, scope)
+    tap.ok(metric, 'should have expected metric name')
+
+    tap.strictSame(metric.toJSON(), expectedMetric[1],
+      'metric values should match')
+  }
+
+  if (exact) {
+    const metricsJSON = metrics.toJSON()
+    tap.equal(metricsJSON.length, expected.length,
+      'metrics length should match')
   }
 }
 
@@ -78,11 +145,11 @@ function assertMetrics(metrics, expected, exclusive, assertValues) {
  *                                  directly under test.  Only used when `exact` is true.
  */
 function assertSegments(parent, expected, options) {
-  var child
-  var childCount = 0
+  let child
+  let childCount = 0
 
   // rather default to what is more likely to fail than have a false test
-  var exact = true
+  let exact = true
   if (options && options.exact === false) {
     exact = options.exact
   } else if (options === false) {
@@ -98,10 +165,10 @@ function assertSegments(parent, expected, options) {
     })
   }
 
-  var children = getChildren(parent)
+  let children = getChildren(parent)
   if (exact) {
-    for (var i = 0; i < expected.length; ++i) {
-      var sequenceItem = expected[i]
+    for (let i = 0; i < expected.length; ++i) {
+      let sequenceItem = expected[i]
 
       if (typeof sequenceItem === 'string') {
         child = children[childCount++]
@@ -134,12 +201,12 @@ function assertSegments(parent, expected, options) {
       )
     )
   } else {
-    for (var i = 0; i < expected.length; i++) {
-      var sequenceItem = expected[i]
-      var child
+    for (let i = 0; i < expected.length; i++) {
+      let sequenceItem = expected[i]
+
       if (typeof sequenceItem === 'string') {
         // find corresponding child in parent
-        for (var j = 0; j < parent.children.length; j++) {
+        for (let j = 0; j < parent.children.length; j++) {
           if (parent.children[j].name === sequenceItem) {
             child = parent.children[j]
           }
@@ -158,9 +225,9 @@ function findSegment(root, name) {
   if (root.name === name) {
     return root
   } else if (root.children && root.children.length) {
-    for (var i = 0; i < root.children.length; i++) {
-      var child = root.children[i]
-      var found = findSegment(child, name)
+    for (let i = 0; i < root.children.length; i++) {
+      let child = root.children[i]
+      let found = findSegment(child, name)
       if (found) {
         return found
       }
