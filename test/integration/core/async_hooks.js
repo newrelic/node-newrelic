@@ -211,6 +211,30 @@ test("the agent's async hook", function(t) {
     })
   })
 
+  t.test('stops propagation on transaction end', function(t) {
+    const agent = setupAgent(t)
+
+    helper.runInTransaction(agent, function(txn) {
+      t.ok(txn, 'transaction should not be null')
+      const segment = txn.trace.root
+      agent.tracer.bindFunction(one, segment)()
+
+      function one() {
+        return new Promise((done) => {
+          const currentSegment = agent.tracer.segment
+          t.ok(currentSegment, 'should have propagated a segment')
+          txn.end()
+
+          done()
+        }).then(() => {
+          const currentSegment = agent.tracer.segment
+          t.notOk(currentSegment, 'should not have a propagated segment')
+          t.end()
+        })
+      }
+    })
+  })
+
   t.test('loses transaction context', function(t) {
     var agent = setupAgent(t)
     var tasks = []
