@@ -1,3 +1,21 @@
+### v7.2.1 (2021-03-29)
+
+* Dev-only sub-dependency bump of 'y18n' to clear npm audit warnings.
+
+* Bumped @grpc/grpc-js to ^1.2.11.
+
+* Bumped @grpc/proto-loader to ^0.5.6.
+
+* Agent no longer propagates segments for promises via async-hooks when the transaction associated with the parentSegment has ended.
+
+  This change reduces the amount of context tracking work needed for certain rare edge-case scenarios involving promises.
+
+* Fixed issue where capturing axios request errors could result in a memory leak.
+
+  The agent now clears error references on transaction end, which are not used for later processing. Errors returned from 'axios' requests contain a reference to the request object which deeper down has a handle to a promise in `handleRequestError`. The TraceSegment associated with that promise has a handle to the transaction, which through the error capture ultimately kept the promise in memory and prevented it from being destroyed to free-up the TraceSegment from the segment map. This change also has the benefit of  freeing up some memory early for transactions held onto for transaction traces.
+
+* Added active transaction check to `wrappedResEnd` to prevent unecessary work for ended transactions in the case of multiple `Response.prototype.end()` invocations.
+
 ### v7.2.0 (2021-03-23)
 
 * Added feature flag to allow disabling of certificate bundle usage.
