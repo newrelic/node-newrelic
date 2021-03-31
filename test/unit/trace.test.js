@@ -918,6 +918,7 @@ function makeTrace(agent, callback) {
   })
 }
 
+// TODO: remove unsupported checks when Node 10 support dropped.
 const isGrpcSupportedVersion = semver.satisfies(process.version, '>=10.10.0')
 tap.test('infinite tracing', {skip: !isGrpcSupportedVersion}, (t) => {
   t.autoend()
