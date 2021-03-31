@@ -59,6 +59,7 @@ const createMetricAggregatorForTests = () => {
   return metrics
 }
 
+// TODO: remove unsupported checks when Node 10 support dropped.
 const isUnsupportedNodeVersion =
   GrpcConnection.message === '@grpc/grpc-js only works on Node ^8.13.0 || >=10.10.0'
 
@@ -155,11 +156,14 @@ tap.test('grpc connection error handling', (test) => {
   test.test('should catch error when proto loader fails', (t) => {
     const stub = sinon.stub(protoLoader, 'loadSync').returns({})
 
+    t.tearDown(() => {
+      stub.restore()
+    })
+
     const connection = new GrpcConnection(fakeTraceObserverConfig)
 
     connection.on('disconnected', () => {
       t.equal(connection._state, connectionStates.disconnected)
-      stub.restore()
       t.end()
     })
 
@@ -169,13 +173,14 @@ tap.test('grpc connection error handling', (test) => {
   test.test('should catch error when loadPackageDefinition returns invalid service definition',
     (t) => {
       const stub = sinon.stub(grpcApi, 'loadPackageDefinition').returns({})
+      t.tearDown(() => {
+        stub.restore()
+      })
 
       const connection = new GrpcConnection(fakeTraceObserverConfig)
 
       connection.on('disconnected', () => {
         t.equal(connection._state, connectionStates.disconnected)
-
-        stub.restore()
 
         t.end()
       })

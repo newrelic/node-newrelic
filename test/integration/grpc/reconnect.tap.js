@@ -28,6 +28,7 @@ const StreamingSpanEvent = require('../../../lib/spans/streaming-span-event')
 
 const helper = require('../../lib/agent_helper')
 
+// TODO: Remove test version check when Node 10 support dropped.
 const isUnsupportedNodeVersion =
   GrpcConnection.message === '@grpc/grpc-js only works on Node ^8.13.0 || >=10.10.0'
 

@@ -43,6 +43,7 @@ const packageDefinition = protoLoader.loadSync(
 
 const infiniteTracingService = grpc.loadPackageDefinition(packageDefinition).com.newrelic.trace.v1
 
+// TODO: remove unsupported checks when Node 10 support dropped.
 const isGrpcSupportedVersion = semver.satisfies(process.version, '>=10.10.0')
 
 tap.test('Inifinite tracing - Connection Handling', { skip: !isGrpcSupportedVersion },  (t) => {
