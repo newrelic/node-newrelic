@@ -20,8 +20,6 @@ test('await', function(t) {
       'should start in a transaction'
     )
 
-    // await Promise.resolve("i'll be back")
-
     const segmentMap = require('../../../lib/instrumentation/core/async_hooks').segmentMap
 
     const promise = new Promise((resolve) => {
@@ -77,9 +75,9 @@ test("the agent's async hook", function(t) {
     const agent = setupAgent(t)
     helper.runInTransaction(agent, function() {
       t.doesNotThrow(function() {
-        new Promise(function(res) {
-          res()
-          res()
+        new Promise(function(resolve) {
+          resolve()
+          resolve()
         }).then(t.end)
       })
     })
@@ -89,14 +87,14 @@ test("the agent's async hook", function(t) {
     'does not restore a segment for a resource created outside a transaction',
     function(t) {
       const agent = setupAgent(t)
-      const res = new TestResource(1)
+      const testResource = new TestResource(1)
       helper.runInTransaction(agent, function() {
         const root = agent.tracer.segment
         const segmentMap =
           require('../../../lib/instrumentation/core/async_hooks').segmentMap
 
         t.equal(segmentMap.size, 0, 'no segments should be tracked')
-        res.doStuff(function() {
+        testResource.doStuff(function() {
           t.ok(agent.tracer.segment, 'should be in a transaction')
           t.equal(
             agent.tracer.segment.name,
@@ -112,10 +110,10 @@ test("the agent's async hook", function(t) {
   t.test('restores context in inactive transactions', function(t) {
     const agent = setupAgent(t)
     helper.runInTransaction(agent, function(txn) {
-      const res = new TestResource(1)
+      const testResource = new TestResource(1)
       const root = agent.tracer.segment
       txn.end()
-      res.doStuff(function() {
+      testResource.doStuff(function() {
         t.equal(
           agent.tracer.segment,
           root,
@@ -546,8 +544,8 @@ test('promise hooks', function(t) {
   hook.enable()
 
   t.test('are only called once during the lifetime of a promise', function(t) {
-    new Promise(function(res) {
-      setTimeout(res, 10)
+    new Promise(function(resolve) {
+      setTimeout(resolve, 10)
     }).then(function() {
       setImmediate(checkCallMetrics, t, testMetrics)
     })
