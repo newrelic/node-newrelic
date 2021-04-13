@@ -171,7 +171,7 @@
     "commander": "^7.0.0",
     "eslint": "^6.8.0",
     "express": "*",
-    "fastify": "^2.14.1",
+    "fastify": "^2.15.3",
     "generic-pool": "^3.6.1",
     "glob": "^7.1.2",
     "got": "^8.0.1",
