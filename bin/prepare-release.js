@@ -238,9 +238,17 @@ async function generateReleaseNotes() {
   console.log(`Finding merged pull requests since: ${commitDate}`)
 
   const mergedPullRequests = await github.getMergedPullRequestsSince(commitDate)
-  console.log(`Found ${mergedPullRequests.length}`)
 
-  const releaseNoteData = mergedPullRequests.map((pr) => {
+  const filteredPullRequests = mergedPullRequests.filter((pr) => {
+    // Sometimes the commit for the PR the tag is set to has an earlier time than
+    // the PR merge time and we'll pull in release note PRs. Filters those out.
+
+    return pr.merge_commit_sha !== tag.commit.sha
+  })
+
+  console.log(`Found ${filteredPullRequests.length}`)
+
+  const releaseNoteData = filteredPullRequests.map((pr) => {
     const parts = pr.body.split(/(?:^|\n)##\s*/g)
 
     // If only has one part, not in appropriate format.
