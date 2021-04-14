@@ -1,3 +1,7 @@
+### v7.3.1 (2021-04-14)
+
+* Fixed issue with 'new_promise_tracking' feature flag functionality where segments for ended transactions would get propagated in certain cases by promises that had no continuations scheduled (via await or manually).
+
 ### v7.3.0 (2021-04-06)
 
 * Added new feature-flag 'new_promise_tracking' which enables cleaning up of segment references on native promise resolve instead of destroy. Includes usage of async-await. This can be enabled via `feature_flag: { new_promise_tracking: true }` in the config file or `NEW_RELIC_FEATURE_FLAG_NEW_PROMISE_TRACKING=1` in your ENV vars.
