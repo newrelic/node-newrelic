@@ -14,11 +14,10 @@ const expect = chai.expect
 const helper = require('../lib/agent_helper')
 const sinon = require('sinon')
 const proxyquire = require('proxyquire')
-const logger = require('../../lib/logger')
 const loggerMock = {
   trace: sinon.stub(),
   debug: sinon.stub()
-};
+}
 const facts = proxyquire('../../lib/collector/facts', {
   '../logger': {
     child: sinon.stub().callsFake(() => loggerMock)
@@ -76,7 +75,7 @@ tap.test('fun facts about apps that New Relic is interested in include', (t) => 
   let agent = null
 
   t.beforeEach((done) => {
-    loggerMock.debug.reset();
+    loggerMock.debug.reset()
     const config = {
       app_name: [...APP_NAMES]
     }
