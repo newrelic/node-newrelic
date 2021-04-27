@@ -164,7 +164,7 @@ tap.test('fun facts about apps that New Relic is interested in include', (t) => 
       expect(data.metadata).to.have.property('NEW_RELIC_METADATA_NUMBER', '42')
       t.deepEqual(loggerMock.debug.args, [
         [
-          'New relic metadata %o',
+          'New Relic metadata %o',
           {
             NEW_RELIC_METADATA_STRING: 'hello',
             NEW_RELIC_METADATA_BOOL: 'true',
