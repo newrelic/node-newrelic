@@ -12,7 +12,18 @@ const networkInterfaces = os.networkInterfaces
 const chai = require('chai')
 const expect = chai.expect
 const helper = require('../lib/agent_helper')
-const facts = require('../../lib/collector/facts')
+const sinon = require('sinon')
+const proxyquire = require('proxyquire')
+const loggerMock = {
+  trace: sinon.stub(),
+  debug: sinon.stub()
+}
+const facts = proxyquire('../../lib/collector/facts', {
+  '../logger': {
+    child: sinon.stub().callsFake(() => loggerMock)
+  }
+})
+
 const sysInfo = require('../../lib/system-info')
 const utilTests = require('../lib/cross_agent_tests/utilization/utilization_json')
 const bootIdTests = require('../lib/cross_agent_tests/utilization/boot_id')
@@ -64,6 +75,7 @@ tap.test('fun facts about apps that New Relic is interested in include', (t) => 
   let agent = null
 
   t.beforeEach((done) => {
+    loggerMock.debug.reset()
     const config = {
       app_name: [...APP_NAMES]
     }
@@ -150,6 +162,16 @@ tap.test('fun facts about apps that New Relic is interested in include', (t) => 
       expect(data.metadata).to.have.property('NEW_RELIC_METADATA_STRING', 'hello')
       expect(data.metadata).to.have.property('NEW_RELIC_METADATA_BOOL', 'true')
       expect(data.metadata).to.have.property('NEW_RELIC_METADATA_NUMBER', '42')
+      t.deepEqual(loggerMock.debug.args, [
+        [
+          'New Relic metadata %o',
+          {
+            NEW_RELIC_METADATA_STRING: 'hello',
+            NEW_RELIC_METADATA_BOOL: 'true',
+            NEW_RELIC_METADATA_NUMBER: '42'
+          }
+        ]
+      ], 'New relic metadata not logged properly')
 
       delete process.env.NEW_RELIC_METADATA_STRING
       delete process.env.NEW_RELIC_METADATA_BOOL
