@@ -94,7 +94,7 @@ tap.test(
         {
           NEWRELIC_GRPCCONNECTION_METADATA_FLAKY:10,
           NEWRELIC_GRPCCONNECTION_METADATA_DELAY:20,
-          NEWRELIC_GRPCCONNECTION_METADATA_FLAKY_CODE:403,
+          NEWRELIC_GRPCCONNECTION_METADATA_FLAKY_CODE:7,
           NEWRELIC_GRPCCONNECTION_METADATA_SUCCESS_DELAY_MS:400,
         }
       )
@@ -103,7 +103,7 @@ tap.test(
       t.equals(metadataSecond.get('agent_run_token').shift(), 'fake-run-id', 'run id set')
       t.equals(metadataSecond.get('flaky').shift(), 10, 'flaky set')
       t.equals(metadataSecond.get('delay').shift(), 20, 'delay set')
-      t.equals(metadataSecond.get('flaky_code').shift(), 403, 'flaky_code set')
+      t.equals(metadataSecond.get('flaky_code').shift(), 7, 'flaky_code set')
       t.equals(metadataSecond.get('success_delay_ms').shift(), 400, 'success_delay_ms set')
 
       // tests that env based params get set
