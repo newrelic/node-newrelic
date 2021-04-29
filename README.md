@@ -52,7 +52,7 @@ To use New Relic's Node.js agent entails these three steps, which are described 
     /* ... the rest of your program ... */
 ```
 
-If you're compiling your JavaScript and can't control the final `require` order, the Node,js agent will work with node's `-r/--require` flag.
+If you're compiling your JavaScript and can't control the final `require` order, the Node.js agent will work with node's `-r/--require` flag.
 
     $ node -r newrelic your-program.js
     $ node --require newrelic your-program.js
@@ -61,11 +61,26 @@ If you're compiling your JavaScript and can't control the final `require` order,
 
 For more information on getting started, [check the Node.js docs](https://docs.newrelic.com/docs/agents/nodejs-agent/getting-started/introduction-new-relic-nodejs).
 
+### External Modules
+
+There are several modules that can be installed and configured to accompany the Node.js agent:
+
+ * [@newrelic/apollo-server-plugin](https://github.com/newrelic/newrelic-node-apollo-server-plugin): New Relic's official Apollo Server plugin for use with the Node.js agent.
+ * [@newrelic/winston-enricher](https://github.com/newrelic/newrelic-winston-logenricher-node): Provides distributed trace and span information output as JSON-formatted log messages.  This is most commonly used with the New Relic Logs product.
+ * [@newrelic/mysql](https://github.com/newrelic/node-newrelic-mysql)(**Experimental**): Standalone instrumentation for [mysql2](https://github.com/sidorares/node-mysql2#readme) and [mysql2/promise](https://github.com/sidorares/node-mysql2/blob/master/documentation/Promise-Wrapper.md) as well as the same instrumentation for [mysql](https://github.com/mysqljs/mysql#readme) within the Node.js agent.
+
+There are several modules included within the Node.js agent to add more instrumentation for 3rd party modules:
+
+ * [@newrelic/aws-sdk](https://github.com/newrelic/node-newrelic-aws-sdk):  Provides instrumentation for the [AWS SDK](https://www.npmjs.com/package/aws-sdk) npm package.
+ * [@newrelic/koa](https://github.com/newrelic/node-newrelic-koa): Provides instrumentation for [koa](https://koajs.com/), [koa-router](https://github.com/ZijianHe/koa-router), [@koa/router](https://github.com/koajs/router), and [koa-route](https://github.com/koajs/route) npm packages.
+ * [@newrelic/superagent](https://github.com/newrelic/node-newrelic-superagent): Provides instrumentation for [superagent](https://github.com/visionmedia/superagent) npm package.
+ * [@newrelic/native-metrics](https://github.com/newrelic/node-native-metrics): Provides hooks into the native v8 layer of Node.js to provide metrics to the Node.js agent.
+
 ## Usage
 
 ### Using the API
 
-The `newrelic` module returns an object with the Node agent's API methods attached.
+The `newrelic` module returns an object with the Node.js agent's API methods attached.
 
 ```js
     const newrelic = require('newrelic')
