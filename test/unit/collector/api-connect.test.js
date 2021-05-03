@@ -688,10 +688,10 @@ tap.test('retries on misconfigured proxy', (t) => {
 
   t.test('should log warning when proxy is misconfigured', (t) => {
     testConnect(t, () => {
-      const expectErrorMsg = 'Your proxy server appears to be configured to accept connections over http. \
-When setting `proxy_host` and `proxy_port` New Relic attempts to connect over SSL(https). If your \
-proxy is configured to accept connections over http, try setting `proxy` to a fully qualified URL\
-(e.g http://proxy-host:8080).'
+      const expectErrorMsg = 'Your proxy server appears to be configured to accept connections \
+over http. When setting `proxy_host` and `proxy_port` New Relic attempts to connect over \
+SSL(https). If your proxy is configured to accept connections over http, try setting `proxy` \
+to a fully qualified URL(e.g http://proxy-host:8080).'
 
       t.deepEqual(loggerMock.warn.args, [
         [
