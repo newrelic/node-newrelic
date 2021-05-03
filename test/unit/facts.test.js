@@ -14,7 +14,7 @@ const expect = chai.expect
 const helper = require('../lib/agent_helper')
 const sinon = require('sinon')
 const proxyquire = require('proxyquire')
-const loggerMock = require('./mocks/logger')();
+const loggerMock = require('./mocks/logger')()
 const facts = proxyquire('../../lib/collector/facts', {
   '../logger': {
     child: sinon.stub().callsFake(() => loggerMock)

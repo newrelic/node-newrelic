@@ -628,7 +628,7 @@ tap.test('retries on receiving invalid license key (401)', (t) => {
   }
 })
 
-tap('retries on misconfigured proxy', (t) => {
+tap.test('retries on misconfigured proxy', (t) => {
   const sandbox = sinon.createSandbox()
   const loggerMock = require('../mocks/logger')(sandbox)
   const CollectorApiTest = proxyquire('../../../lib/collector/api', {
@@ -686,19 +686,24 @@ tap('retries on misconfigured proxy', (t) => {
     done()
   })
 
-  t('should log warning when proxy is misconfigured', (t) => {
+  t.test('should log warning when proxy is misconfigured', (t) => {
     testConnect(t, () => {
+      const expectErrorMsg = 'Your proxy server appears to be configured to accept connections over http. \
+When setting `proxy_host` and `proxy_port` New Relic attempts to connect over SSL(https). If your \
+proxy is configured to accept connections over http, try setting `proxy` to a fully qualified URL\
+(e.g http://proxy-host:8080).'
+
       t.deepEqual(loggerMock.warn.args, [
         [
           error,
-          'Your proxy server appears to be configured to accept connections over http. When setting `proxy_host` and `proxy_port` New Relic attempts to connect over SSL(https). If your proxy is configured to accept connections over http, try setting `proxy` to a fully qualified URL(e.g http://proxy-host:8080).'
+          expectErrorMsg
         ]
       ], 'Proxy misconfigured message correct')
       t.end()
     })
   })
 
-  t('should not log warning when proxy is configured properly but still get EPROTO', (t) => {
+  t.test('should not log warning when proxy is configured properly but still get EPROTO', (t) => {
     collectorApi._agent.config.proxy = 'http://test-proxy-server:8080'
     testConnect(t, () => {
       t.deepEqual(loggerMock.warn.args, [], 'Proxy misconfigured message not logged')
