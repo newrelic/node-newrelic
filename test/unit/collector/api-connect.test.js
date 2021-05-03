@@ -7,6 +7,8 @@
 
 const tap = require('tap')
 const nock = require('nock')
+const sinon = require('sinon')
+const proxyquire = require('proxyquire')
 
 const helper = require('../../lib/agent_helper')
 const CollectorApi = require('../../../lib/collector/api')
@@ -571,13 +573,6 @@ tap.test('retries on receiving invalid license key (401)', (t) => {
   let collectorApi = null
   let agent = null
 
-  const error = {
-    exception: {
-      message: 'Invalid license key. Please contact support@newrelic.com.',
-      error_type: 'NewRelic::Agent::LicenseException'
-    }
-  }
-
   let failure = null
   let success = null
   let connect = null
@@ -591,7 +586,7 @@ tap.test('retries on receiving invalid license key (401)', (t) => {
     collectorApi = new CollectorApi(agent)
 
     const preconnectURL = helper.generateCollectorPath('preconnect')
-    failure = nock(URL).post(preconnectURL).times(5).reply(401, error)
+    failure = nock(URL).post(preconnectURL).times(5).reply(401)
     success = nock(URL).post(preconnectURL).reply(200, {return_value: {}})
     connect = nock(URL)
       .post(helper.generateCollectorPath('connect'))
@@ -628,6 +623,99 @@ tap.test('retries on receiving invalid license key (401)', (t) => {
       t.ok(success.isDone())
       t.ok(connect.isDone())
 
+      cb()
+    })
+  }
+})
+
+tap.test('retries on misconfigured proxy', (t) => {
+  const sandbox = sinon.createSandbox()
+  const loggerMock = require('../mocks/logger')(sandbox)
+  const CollectorApiTest = proxyquire('../../../lib/collector/api', {
+    '../logger': {
+      child: sandbox.stub().callsFake(() => loggerMock)
+    }
+  })
+  t.autoend()
+
+  let collectorApi = null
+  let agent = null
+
+  const error = {
+    code: 'EPROTO'
+  }
+
+  let failure = null
+  let success = null
+  let connect = null
+
+  t.beforeEach((done) => {
+    fastSetTimeoutIncrementRef()
+
+    nock.disableNetConnect()
+
+    agent = setupMockedAgent()
+    agent.config.proxy_port = '8080'
+    agent.config.proxy_host = 'test-proxy-server'
+    collectorApi = new CollectorApiTest(agent)
+
+    const preconnectURL = helper.generateCollectorPath('preconnect')
+    failure = nock(URL).post(preconnectURL).times(1).replyWithError(error)
+    success = nock(URL).post(preconnectURL).reply(200, {return_value: {}})
+    connect = nock(URL)
+      .post(helper.generateCollectorPath('connect'))
+      .reply(200, {return_value: {agent_run_id: 31338}})
+
+    done()
+  })
+
+  t.afterEach((done) => {
+    sandbox.resetHistory()
+    restoreSetTimeout()
+
+    if (!nock.isDone()) {
+      /* eslint-disable no-console */
+      console.error('Cleaning pending mocks: %j', nock.pendingMocks())
+      /* eslint-enable no-console */
+      nock.cleanAll()
+    }
+
+    nock.enableNetConnect()
+    helper.unloadAgent(agent)
+
+    done()
+  })
+
+  t.test('should log warning when proxy is misconfigured', (t) => {
+    testConnect(t, () => {
+      const expectErrorMsg = 'Your proxy server appears to be configured to accept connections \
+over http. When setting `proxy_host` and `proxy_port` New Relic attempts to connect over \
+SSL(https). If your proxy is configured to accept connections over http, try setting `proxy` \
+to a fully qualified URL(e.g http://proxy-host:8080).'
+
+      t.deepEqual(loggerMock.warn.args, [
+        [
+          error,
+          expectErrorMsg
+        ]
+      ], 'Proxy misconfigured message correct')
+      t.end()
+    })
+  })
+
+  t.test('should not log warning when proxy is configured properly but still get EPROTO', (t) => {
+    collectorApi._agent.config.proxy = 'http://test-proxy-server:8080'
+    testConnect(t, () => {
+      t.deepEqual(loggerMock.warn.args, [], 'Proxy misconfigured message not logged')
+      t.end()
+    })
+  })
+
+  function testConnect(t, cb) {
+    collectorApi.connect(() => {
+      t.ok(failure.isDone())
+      t.ok(success.isDone())
+      t.ok(connect.isDone())
       cb()
     })
   }

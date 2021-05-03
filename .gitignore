@@ -13,6 +13,7 @@ out
 .vscode
 .nyc_output
 test/**/package-lock.json
+coverage/
 
 # Needed for testing
 !test/integration/moduleLoading/node_modules
