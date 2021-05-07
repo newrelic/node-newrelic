@@ -15,7 +15,7 @@ var urltils = require('../../../lib/util/urltils')
 // CONSTANTS
 var DB_INDEX = 2
 
-test('Redis instrumentation', {timeout : 10000}, function(t) {
+test('Redis instrumentation', {timeout: 20000}, function(t) {
   t.autoend()
 
   var METRIC_HOST_NAME = null
@@ -144,12 +144,13 @@ test('Redis instrumentation', {timeout : 10000}, function(t) {
         // the command callback is executed, if exists. Since we don't have a callback,
         // we wait for the command to be removed from the queue.
         if (client.commandQueueLength > 0) {
-          t.comment('set command still in command queue. scheduling retry')
+          t.comment('set command still in command queue. scheduling retry in 100ms')
 
           setTimeout(triggerError, 100)
           return
         }
 
+        t.comment('executing hset which should error')
         // This will generate an error because `testKey` is not a hash.
         client.hset('testKey', 'hashKey', 'foobar')
       }
