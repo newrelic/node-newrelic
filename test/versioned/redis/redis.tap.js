@@ -130,12 +130,15 @@ test('Redis instrumentation', {timeout: 20000}, function(t) {
   t.test('when called without a callback', function(t) {
     t.plan(4)
 
+    const KEY = '___testKey___'
+
     let transaction = null
 
     helper.runInTransaction(agent, function(tx) {
       transaction = tx
 
-      client.set('testKey', 'testvalue')
+      t.comment(`writing ${KEY}, which is not a hash`)
+      client.set(KEY, 'testvalue')
 
       triggerError()
 
@@ -150,27 +153,48 @@ test('Redis instrumentation', {timeout: 20000}, function(t) {
           return
         }
 
-        t.comment('executing hset which should error')
-        // This will generate an error because `testKey` is not a hash.
-        client.hset('testKey', 'hashKey', 'foobar')
+        t.comment('scheduling hset call in 2s to give time for server to process command')
+        setTimeout(() => {
+          // seeing if the value exists
+          client.get(KEY, (err, res) => {
+            console.log(err)
+            console.log(res)
+          })
+
+          t.comment('executing hset which should error')
+          // This will generate an error because `testKey` is not a hash.
+          client.hset(KEY, 'hashKey', 'foobar')
+        }, 3000)
       }
+    })
+
+    client.on('reconnecting', (result) => {
+      t.comment(JSON.stringify(result))
+    })
+
+    client.on('end', () => {
+      t.comment('end')
     })
 
     client.on('error', function(err) {
-      if (t.ok(err, 'should emit errors on the client')) {
-        t.equal(
-          err.message,
-          'WRONGTYPE Operation against a key holding the wrong kind of value',
-          'errors should have the expected error message'
-        )
+      t.comment('in error handler')
 
-        // Ensure error triggering operation has completed before
-        // continuing test assertions.
-        transaction.end()
-      }
+      t.ok(err, 'should emit errors on the client')
+
+      t.equal(
+        err.message,
+        'WRONGTYPE Operation against a key holding the wrong kind of value',
+        'errors should have the expected error message'
+      )
+
+      // Ensure error triggering operation has completed before
+      // continuing test assertions.
+      transaction.end()
     })
 
     agent.on('transactionFinished', function(tx) {
+      t.comment('in transactionFinished')
+
       var redSeg = tx.trace.root.children[0]
       t.equal(
         redSeg.name, 'Datastore/operation/Redis/set',
