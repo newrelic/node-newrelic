@@ -27,7 +27,7 @@ test('Redis instrumentation', {timeout: 20000}, function(t) {
   t.beforeEach(function(done) {
     helper.flushRedisDb(DB_INDEX, (error) => {
       if (error) {
-        return t.fail(error)
+        return done(error)
       }
 
       agent = helper.instrumentMockedAgent()
@@ -53,8 +53,8 @@ test('Redis instrumentation', {timeout: 20000}, function(t) {
   })
 
   t.afterEach(function(done) {
-    client.end({flush: false})
-    helper.unloadAgent(agent)
+    client && client.end({flush: false})
+    agent && helper.unloadAgent(agent)
     done()
   })
 

@@ -37,8 +37,8 @@ tap.test('ioredis instrumentation', (t) => {
   })
 
   t.afterEach((done) => {
-    helper.unloadAgent(agent)
-    redisClient.disconnect()
+    agent && helper.unloadAgent(agent)
+    redisClient && redisClient.disconnect()
     done()
   })
 

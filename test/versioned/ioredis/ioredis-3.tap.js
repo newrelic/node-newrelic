@@ -17,16 +17,20 @@ tap.test('ioredis instrumentation', function(t) {
   var agent, redisClient
 
   t.beforeEach(function(done) {
-    setup(t, function(a, client) {
-      agent = a
-      redisClient = client
+    setup(t, function(error, result) {
+      if (error) {
+        return done(error)
+      }
+
+      agent = result.agent
+      redisClient = result.client
       done()
     })
   })
 
   t.afterEach(function(done) {
-    helper.unloadAgent(agent)
-    redisClient.disconnect()
+    agent && helper.unloadAgent(agent)
+    redisClient && redisClient.disconnect()
     done()
   })
 
@@ -100,7 +104,10 @@ tap.test('ioredis instrumentation', function(t) {
 
 function setup(t, callback) {
   helper.flushRedisDb(DB_INDEX, (error) => {
-    t.error(error)
+    if (error) {
+      return callback(error)
+    }
+
     var agent = helper.instrumentMockedAgent()
 
     // remove from cache, so that the bluebird library that ioredis uses gets
@@ -111,6 +118,6 @@ function setup(t, callback) {
     var Redis = require('ioredis')
     var client = new Redis(params.redis_port, params.redis_host)
 
-    callback(agent, client)
+    callback(null, {agent, client})
   })
 }
