@@ -13,7 +13,7 @@ var urltils = require('../../../lib/util/urltils')
 
 
 // CONSTANTS
-var DB_INDEX = 2
+var DB_INDEX = 3
 
 test('Redis instrumentation', {timeout: 20000}, function(t) {
   t.autoend()
