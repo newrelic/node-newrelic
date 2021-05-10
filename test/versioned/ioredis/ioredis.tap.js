@@ -26,13 +26,24 @@ tap.test('ioredis instrumentation', (t) => {
 
       agent = helper.instrumentMockedAgent()
 
+      let Redis = null
       try {
-        const Redis = require('ioredis')
-        redisClient = new Redis(params.redis_port, params.redis_host)
+        Redis = require('ioredis')
       } catch (err) {
         return done(err)
       }
-      done()
+
+      redisClient = new Redis(params.redis_port, params.redis_host)
+
+      redisClient.once('ready', () => {
+        redisClient.select(DB_INDEX, (err) => {
+          if (err) {
+            return done(err)
+          }
+
+          done()
+        })
+      })
     })
   })
 

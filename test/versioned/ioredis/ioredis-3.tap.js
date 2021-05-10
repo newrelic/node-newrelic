@@ -108,16 +108,41 @@ function setup(t, callback) {
       return callback(error)
     }
 
-    var agent = helper.instrumentMockedAgent()
+    const agent = helper.instrumentMockedAgent()
 
     // remove from cache, so that the bluebird library that ioredis uses gets
     // re-instrumented
-    var name = require.resolve('ioredis')
-    delete require.cache[name]
+    clearLoadedModules(t)
 
-    var Redis = require('ioredis')
-    var client = new Redis(params.redis_port, params.redis_host)
+    let Redis = null
+    try {
+      Redis = require('ioredis')
+    } catch (err) {
+      return callback(err)
+    }
 
-    callback(null, {agent, client})
+    const client = new Redis(params.redis_port, params.redis_host)
+
+    client.once('ready', () => {
+      client.select(DB_INDEX, (err) => {
+        if (err) {
+          return callback(err)
+        }
+
+        callback(null, {agent, client})
+      })
+    })
   })
+}
+
+function clearLoadedModules(t) {
+  let deletedCount = 0
+  Object.keys(require.cache).forEach((key) => {
+    if (key.indexOf('/ioredis/node_modules/ioredis/') >= 0) {
+      delete require.cache[key]
+      deletedCount++
+    }
+  })
+
+  t.comment(`Cleared ${deletedCount} modules matching '*/ioredis/node_modules/ioredis/*'`)
 }
