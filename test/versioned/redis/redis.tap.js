@@ -5,15 +5,15 @@
 
 'use strict'
 
-var tap = require('tap')
-var test = tap.test
-var helper = require('../../lib/agent_helper')
-var params = require('../../lib/params')
-var urltils = require('../../../lib/util/urltils')
+const tap = require('tap')
+const test = tap.test
+const helper = require('../../lib/agent_helper')
+const params = require('../../lib/params')
+const urltils = require('../../../lib/util/urltils')
 
 
 // CONSTANTS
-var DB_INDEX = 2
+const DB_INDEX = 2
 
 test('Redis instrumentation', {timeout: 20000}, function(t) {
   t.autoend()

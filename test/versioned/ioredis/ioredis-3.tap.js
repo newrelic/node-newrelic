@@ -5,14 +5,14 @@
 
 'use strict'
 
-var tap = require('tap')
-var helper = require('../../lib/agent_helper')
-var assertMetrics = require('../../lib/metrics_helper').assertMetrics
-var params = require('../../lib/params')
+const tap = require('tap')
+const helper = require('../../lib/agent_helper')
+const assertMetrics = require('../../lib/metrics_helper').assertMetrics
+const params = require('../../lib/params')
 
 
 // CONSTANTS
-var DB_INDEX = 2
+const DB_INDEX = 4
 
 
 tap.test('ioredis instrumentation', function(t) {

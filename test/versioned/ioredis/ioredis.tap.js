@@ -10,7 +10,7 @@ const helper = require('../../lib/agent_helper')
 const assertMetrics = require('../../lib/metrics_helper').assertMetrics
 const params = require('../../lib/params')
 
-const DB_INDEX = 2
+const DB_INDEX = 3
 
 tap.test('ioredis instrumentation', (t) => {
   let agent = null
