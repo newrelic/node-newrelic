@@ -5,30 +5,32 @@
 
 'use strict'
 
-var tap = require('tap')
-var helper = require('../../lib/agent_helper')
-var assertMetrics = require('../../lib/metrics_helper').assertMetrics
-var params = require('../../lib/params')
+const tap = require('tap')
+const helper = require('../../lib/agent_helper')
+const assertMetrics = require('../../lib/metrics_helper').assertMetrics
+const params = require('../../lib/params')
 
-
-// CONSTANTS
-var DB_INDEX = 2
-
+// Indicates unique database in Redis. 0-15 supported.
+const DB_INDEX = 4
 
 tap.test('ioredis instrumentation', function(t) {
   var agent, redisClient
 
   t.beforeEach(function(done) {
-    setup(t, function(a, client) {
-      agent = a
-      redisClient = client
+    setup(t, function(error, result) {
+      if (error) {
+        return done(error)
+      }
+
+      agent = result.agent
+      redisClient = result.client
       done()
     })
   })
 
   t.afterEach(function(done) {
-    helper.unloadAgent(agent)
-    redisClient.disconnect()
+    agent && helper.unloadAgent(agent)
+    redisClient && redisClient.disconnect()
     done()
   })
 
@@ -101,18 +103,46 @@ tap.test('ioredis instrumentation', function(t) {
 
 
 function setup(t, callback) {
-  helper.bootstrapRedis(DB_INDEX, function cb_bootstrapRedis(error) {
-    t.error(error)
-    var agent = helper.instrumentMockedAgent()
+  helper.flushRedisDb(DB_INDEX, (error) => {
+    if (error) {
+      return callback(error)
+    }
+
+    const agent = helper.instrumentMockedAgent()
 
     // remove from cache, so that the bluebird library that ioredis uses gets
     // re-instrumented
-    var name = require.resolve('ioredis')
-    delete require.cache[name]
+    clearLoadedModules(t)
 
-    var Redis = require('ioredis')
-    var client = new Redis(params.redis_port, params.redis_host)
+    let Redis = null
+    try {
+      Redis = require('ioredis')
+    } catch (err) {
+      return callback(err)
+    }
 
-    callback(agent, client)
+    const client = new Redis(params.redis_port, params.redis_host)
+
+    client.once('ready', () => {
+      client.select(DB_INDEX, (err) => {
+        if (err) {
+          return callback(err)
+        }
+
+        callback(null, {agent, client})
+      })
+    })
   })
+}
+
+function clearLoadedModules(t) {
+  let deletedCount = 0
+  Object.keys(require.cache).forEach((key) => {
+    if (key.indexOf('/ioredis/node_modules/ioredis/') >= 0) {
+      delete require.cache[key]
+      deletedCount++
+    }
+  })
+
+  t.comment(`Cleared ${deletedCount} modules matching '*/ioredis/node_modules/ioredis/*'`)
 }

@@ -10,7 +10,8 @@ const helper = require('../../lib/agent_helper')
 const assertMetrics = require('../../lib/metrics_helper').assertMetrics
 const params = require('../../lib/params')
 
-const DB_INDEX = 2
+// Indicates unique database in Redis. 0-15 supported.
+const DB_INDEX = 3
 
 tap.test('ioredis instrumentation', (t) => {
   let agent = null
@@ -18,26 +19,37 @@ tap.test('ioredis instrumentation', (t) => {
 
   t.autoend()
   t.beforeEach((done) => {
-    helper.bootstrapRedis(DB_INDEX, function(error) {
+    helper.flushRedisDb(DB_INDEX, (error) => {
       if (error) {
         return done(error)
       }
 
       agent = helper.instrumentMockedAgent()
 
+      let Redis = null
       try {
-        const Redis = require('ioredis')
-        redisClient = new Redis(params.redis_port, params.redis_host)
+        Redis = require('ioredis')
       } catch (err) {
         return done(err)
       }
-      done()
+
+      redisClient = new Redis(params.redis_port, params.redis_host)
+
+      redisClient.once('ready', () => {
+        redisClient.select(DB_INDEX, (err) => {
+          if (err) {
+            return done(err)
+          }
+
+          done()
+        })
+      })
     })
   })
 
   t.afterEach((done) => {
-    helper.unloadAgent(agent)
-    redisClient.disconnect()
+    agent && helper.unloadAgent(agent)
+    redisClient && redisClient.disconnect()
     done()
   })
 

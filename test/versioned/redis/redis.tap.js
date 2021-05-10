@@ -5,15 +5,15 @@
 
 'use strict'
 
-var tap = require('tap')
-var test = tap.test
-var helper = require('../../lib/agent_helper')
-var params = require('../../lib/params')
-var urltils = require('../../../lib/util/urltils')
+const tap = require('tap')
+const test = tap.test
+const helper = require('../../lib/agent_helper')
+const params = require('../../lib/params')
+const urltils = require('../../../lib/util/urltils')
 
 
-// CONSTANTS
-var DB_INDEX = 2
+// Indicates unique database in Redis. 0-15 supported.
+const DB_INDEX = 2
 
 test('Redis instrumentation', {timeout: 20000}, function(t) {
   t.autoend()
@@ -25,9 +25,9 @@ test('Redis instrumentation', {timeout: 20000}, function(t) {
   var client
 
   t.beforeEach(function(done) {
-    helper.bootstrapRedis(DB_INDEX, function cb_bootstrapRedis(error) {
+    helper.flushRedisDb(DB_INDEX, (error) => {
       if (error) {
-        return t.fail(error)
+        return done(error)
       }
 
       agent = helper.instrumentMockedAgent()
@@ -53,8 +53,8 @@ test('Redis instrumentation', {timeout: 20000}, function(t) {
   })
 
   t.afterEach(function(done) {
-    client.end({flush: false})
-    helper.unloadAgent(agent)
+    client && client.end({flush: false})
+    agent && helper.unloadAgent(agent)
     done()
   })
 
