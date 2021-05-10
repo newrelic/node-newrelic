@@ -153,18 +153,9 @@ test('Redis instrumentation', {timeout: 20000}, function(t) {
           return
         }
 
-        t.comment('scheduling hset call in 2s to give time for server to process command')
-        setTimeout(() => {
-          // seeing if the value exists
-          client.get(KEY, (err, res) => {
-            console.log(err)
-            console.log(res)
-
-            t.comment('executing hset which should error')
-            // This will generate an error because `testKey` is not a hash.
-            client.hset(KEY, 'hashKey', 'foobar')
-          })
-        }, 5000)
+        t.comment('executing hset which should error')
+        // This will generate an error because `testKey` is not a hash.
+        client.hset(KEY, 'hashKey', 'foobar')
       }
     })
 
