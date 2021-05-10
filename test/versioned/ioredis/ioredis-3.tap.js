@@ -10,10 +10,8 @@ const helper = require('../../lib/agent_helper')
 const assertMetrics = require('../../lib/metrics_helper').assertMetrics
 const params = require('../../lib/params')
 
-
-// CONSTANTS
+// Indicates unique database in Redis. 0-15 supported.
 const DB_INDEX = 4
-
 
 tap.test('ioredis instrumentation', function(t) {
   var agent, redisClient
@@ -101,7 +99,7 @@ tap.test('ioredis instrumentation', function(t) {
 
 
 function setup(t, callback) {
-  helper.bootstrapRedis(DB_INDEX, function cb_bootstrapRedis(error) {
+  helper.flushRedisDb(DB_INDEX, (error) => {
     t.error(error)
     var agent = helper.instrumentMockedAgent()
 

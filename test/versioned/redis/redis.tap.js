@@ -12,7 +12,7 @@ const params = require('../../lib/params')
 const urltils = require('../../../lib/util/urltils')
 
 
-// CONSTANTS
+// Indicates unique database in Redis. 0-15 supported.
 const DB_INDEX = 2
 
 test('Redis instrumentation', {timeout: 20000}, function(t) {
@@ -25,7 +25,7 @@ test('Redis instrumentation', {timeout: 20000}, function(t) {
   var client
 
   t.beforeEach(function(done) {
-    helper.bootstrapRedis(DB_INDEX, function cb_bootstrapRedis(error) {
+    helper.flushRedisDb(DB_INDEX, (error) => {
       if (error) {
         return t.fail(error)
       }

@@ -246,9 +246,9 @@ const helper = module.exports = {
    * @param {function} callback
    *  The operations to be performed while the server is running.
    */
-  bootstrapRedis: (redis, dbIndex, callback) => {
+  flushRedisDb: (redis, dbIndex, callback) => {
     if (!callback) {
-      // bootstrapRedis(dbIndex, callback)
+      // flushRedisDb(dbIndex, callback)
       callback = dbIndex
       dbIndex = redis
       redis = require('redis')
