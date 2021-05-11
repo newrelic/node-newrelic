@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "Mon Mar 29 2021 11:19:58 GMT-0700 (Pacific Daylight Time)",
+  "lastUpdated": "Tue May 11 2021 14:52:29 GMT-0400 (Eastern Daylight Time)",
   "projectName": "New Relic Node Agent",
   "projectUrl": "https://github.com/newrelic/node-newrelic",
   "includeDev": true,
@@ -265,15 +265,15 @@
       "publisher": "Jake Luer",
       "email": "jake@alogicalparadox.com"
     },
-    "commander@7.0.0": {
+    "commander@7.2.0": {
       "name": "commander",
-      "version": "7.0.0",
+      "version": "7.2.0",
       "range": "^7.0.0",
       "licenses": "MIT",
       "repoUrl": "https://github.com/tj/commander.js",
-      "versionedRepoUrl": "https://github.com/tj/commander.js/tree/v7.0.0",
-      "licenseFile": "node_modules/commander/LICENSE",
-      "licenseUrl": "https://github.com/tj/commander.js/blob/v7.0.0/LICENSE",
+      "versionedRepoUrl": "https://github.com/tj/commander.js/tree/v7.2.0",
+      "licenseFile": "node_modules/lint-staged/node_modules/commander/LICENSE",
+      "licenseUrl": "https://github.com/tj/commander.js/blob/v7.2.0/LICENSE",
       "licenseTextSource": "file",
       "publisher": "TJ Holowaychuk",
       "email": "tj@vision-media.ca"
@@ -304,15 +304,15 @@
       "publisher": "TJ Holowaychuk",
       "email": "tj@vision-media.ca"
     },
-    "fastify@2.14.1": {
+    "fastify@2.15.3": {
       "name": "fastify",
-      "version": "2.14.1",
-      "range": "^2.14.1",
+      "version": "2.15.3",
+      "range": "^2.15.3",
       "licenses": "MIT",
       "repoUrl": "https://github.com/fastify/fastify",
-      "versionedRepoUrl": "https://github.com/fastify/fastify/tree/v2.14.1",
+      "versionedRepoUrl": "https://github.com/fastify/fastify/tree/v2.15.3",
       "licenseFile": "node_modules/fastify/LICENSE",
-      "licenseUrl": "https://github.com/fastify/fastify/blob/v2.14.1/LICENSE",
+      "licenseUrl": "https://github.com/fastify/fastify/blob/v2.15.3/LICENSE",
       "licenseTextSource": "file",
       "publisher": "Matteo Collina",
       "email": "hello@matteocollina.com"
@@ -369,6 +369,19 @@
       "email": "me@jongleberry.com",
       "url": "http://jongleberry.com"
     },
+    "husky@6.0.0": {
+      "name": "husky",
+      "version": "6.0.0",
+      "range": "^6.0.0",
+      "licenses": "MIT",
+      "repoUrl": "https://github.com/typicode/husky",
+      "versionedRepoUrl": "https://github.com/typicode/husky/tree/v6.0.0",
+      "licenseFile": "node_modules/husky/LICENSE",
+      "licenseUrl": "https://github.com/typicode/husky/blob/v6.0.0/LICENSE",
+      "licenseTextSource": "file",
+      "publisher": "Typicode",
+      "email": "typicode@gmail.com"
+    },
     "jsdoc@3.6.3": {
       "name": "jsdoc",
       "version": "3.6.3",
@@ -381,6 +394,19 @@
       "licenseTextSource": "file",
       "publisher": "Michael Mathews",
       "email": "micmath@gmail.com"
+    },
+    "lint-staged@11.0.0": {
+      "name": "lint-staged",
+      "version": "11.0.0",
+      "range": "^11.0.0",
+      "licenses": "MIT",
+      "repoUrl": "https://github.com/okonet/lint-staged",
+      "versionedRepoUrl": "https://github.com/okonet/lint-staged/tree/v11.0.0",
+      "licenseFile": "node_modules/lint-staged/LICENSE",
+      "licenseUrl": "https://github.com/okonet/lint-staged/blob/v11.0.0/LICENSE",
+      "licenseTextSource": "file",
+      "publisher": "Andrey Okonetchnikov",
+      "email": "andrey@okonet.ru"
     },
     "memcached@2.2.2": {
       "name": "memcached",
