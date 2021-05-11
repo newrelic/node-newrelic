@@ -1306,6 +1306,81 @@ describe('the agent configuration', function() {
     })
   })
 
+  describe('Selecting config file path', () => {
+    let origHome
+    let originalWorkingDirectory
+    const DESTDIR = path.join(__dirname, 'test_NEW_RELIC_CONFIG_FILENAME')
+    const NOPLACEDIR = path.join(__dirname, 'test_NEW_RELIC_CONFIG_FILENAME_dummy')
+    let CONFIG_PATH
+
+    beforeEach(() => {
+      if (process.env.NEW_RELIC_HOME) {
+        origHome = process.env.NEW_RELIC_HOME
+      }
+
+      process.env.NEW_RELIC_HOME = DESTDIR
+
+      originalWorkingDirectory = process.cwd()
+
+      fs.mkdirSync(DESTDIR)
+      fs.mkdirSync(NOPLACEDIR)
+
+      process.chdir(NOPLACEDIR)
+    })
+
+    afterEach(() => {
+      if (origHome) {
+        process.env.NEW_RELIC_HOME = origHome
+      } else {
+        delete process.env.NEW_RELIC_HOME
+      }
+      origHome = null
+
+      if (CONFIG_PATH) {
+        fs.unlinkSync(CONFIG_PATH)
+        CONFIG_PATH = undefined
+      }
+
+      fs.rmdirSync(DESTDIR) 
+      fs.rmdirSync(NOPLACEDIR)
+
+      process.chdir(originalWorkingDirectory)
+    })
+
+    const createSampleConfig = (filename) => {
+      CONFIG_PATH = path.join(DESTDIR, filename)
+
+      var config = fs.readFileSync(
+        path.join(__dirname, '../../../lib/config/default.js')
+      )
+
+      fs.writeFileSync(CONFIG_PATH, config)
+    }
+
+    it('should load the default newrelic.js config file', function() {
+      createSampleConfig("newrelic.js")
+
+      const configuration = Config.initialize()
+      expect(configuration.newrelic_home).equal(DESTDIR)
+    })
+
+    it('should load the default newrelic.cjs config file', function() {
+      createSampleConfig("newrelic.cjs")
+
+      const configuration = Config.initialize()
+      expect(configuration.newrelic_home).equal(DESTDIR)
+    })
+
+    it('should load config when overriding the default with NEW_RELIC_CONFIG_FILENAME', function() {
+      const filename =  'some-file-name.js'
+      process.env.NEW_RELIC_CONFIG_FILENAME = filename
+      createSampleConfig(filename)
+
+      const configuration = Config.initialize()
+      expect(configuration.newrelic_home).equal(DESTDIR)
+    })
+  })
+
   describe('when loading invalid configuration file', function() {
     let realpathSyncStub
     const fsUnwrapped = require('../../../lib/util/unwrapped-core').fs
