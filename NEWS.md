@@ -1,3 +1,25 @@
+### v7.4.0 (2021-05-11)
+
+* Updated third party notices and manifest for husky and lint-staged
+
+* Updated redis versioned tests to use unique DB indexes per file to avoid collisions and flushing of in-progress tests.
+
+* Properly pinned hapi 17 versioned tests to only minor/patch versions within 17.x
+
+* Bumped timeout for redis versioned tests.
+
+* wired up husky + lint staged to execute linting on all changed files on commit
+
+* Handle a proxy misconfiguration of collector and log an actionable warning message
+
+* Adds flaky_code and success_delay_ms handling of flaky grpc connections to infinite tracing
+
+* Add resources to README to highlight external modules that customers should be aware of and possibly use for their applications.
+
+* Log all New Relic metadata env vars at startup
+
+- Fix images for improved reader experience.
+
 ### v7.3.1 (2021-04-14)
 
 * Fixed issue with 'new_promise_tracking' feature flag functionality where segments for ended transactions would get propagated in certain cases by promises that had no continuations scheduled (via await or manually).
