@@ -1350,25 +1350,27 @@ describe('the agent configuration', function() {
     const createSampleConfig = (filename) => {
       CONFIG_PATH = path.join(DESTDIR, filename)
 
-      var config = fs.readFileSync(
-        path.join(__dirname, '../../../lib/config/default.js')
-      )
+      const config = {
+        app_name: filename
+      }
 
-      fs.writeFileSync(CONFIG_PATH, config)
+      fs.writeFileSync(CONFIG_PATH, `exports.config = ${JSON.stringify(config)}`)
     }
 
     it('should load the default newrelic.js config file', function() {
-      createSampleConfig("newrelic.js")
+      const filename = "newrelic.js"
+      createSampleConfig(filename)
 
       const configuration = Config.initialize()
-      expect(configuration.newrelic_home).equal(DESTDIR)
+      expect(configuration.app_name).equal(filename)
     })
 
     it('should load the default newrelic.cjs config file', function() {
-      createSampleConfig("newrelic.cjs")
+      const filename = "newrelic.cjs"
+      createSampleConfig(filename)
 
       const configuration = Config.initialize()
-      expect(configuration.newrelic_home).equal(DESTDIR)
+      expect(configuration.app_name).equal(filename)
     })
 
     it('should load config when overriding the default with NEW_RELIC_CONFIG_FILENAME', function() {
@@ -1377,7 +1379,7 @@ describe('the agent configuration', function() {
       createSampleConfig(filename)
 
       const configuration = Config.initialize()
-      expect(configuration.newrelic_home).equal(DESTDIR)
+      expect(configuration.app_name).equal(filename)
     })
   })
 
