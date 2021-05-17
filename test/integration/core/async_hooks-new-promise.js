@@ -480,6 +480,32 @@ test("the agent's async hook", function(t) {
       })
     })
   })
+
+  t.test('cleans up unresolved promises on destroy', (t) => {
+    const agent = setupAgent(t)
+    const segmentMap = require('../../../lib/instrumentation/core/async_hooks').segmentMap
+
+    helper.runInTransaction(agent, () => {
+      /* eslint-disable no-unused-vars */
+      let promise = unresolvedPromiseFunc()
+
+      t.equal(segmentMap.size, 1)
+
+      promise = null
+
+      global.gc && global.gc()
+
+      setImmediate(() => {
+        t.equal(segmentMap.size, 0)
+
+        t.end()
+      })
+    })
+
+    function unresolvedPromiseFunc() {
+      return new Promise(() => {})
+    }
+  })
 })
 
 function checkCallMetrics(t, testMetrics) {
