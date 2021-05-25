@@ -137,7 +137,8 @@
     "update-cross-agent-tests": "./bin/update-cats.sh",
     "versioned-tests": "./bin/run-versioned-tests.sh",
     "update-changelog-version": "node ./bin/update-changelog-version",
-    "versioned": "npm run prepare-test && time ./bin/run-versioned-tests.sh"
+    "versioned": "npm run prepare-test && time ./bin/run-versioned-tests.sh",
+    "prepare": "husky install"
   },
   "bin": {
     "newrelic-naming-rules": "./bin/test-naming-rules.js"
