@@ -12,7 +12,7 @@
   "author": "New Relic Node.js Agent Team <nodejs@newrelic.com>",
   "license": "Apache-2.0",
   "devDependencies": {
-    "@newrelic/test-utilities": "^4.0.0",
+    "@newrelic/test-utilities": "^5.1.0",
     "eslint": "^6.8.0",
     "newrelic": "^6.11.0",
     "semver": "^5.5.0",
