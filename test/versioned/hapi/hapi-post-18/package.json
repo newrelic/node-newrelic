@@ -5,7 +5,7 @@
   "tests": [
     {
       "engines": {
-        "node": ">=10"
+        "node": ">=10 <16"
       },
       "dependencies": {
         "ejs": "2.5.5",
