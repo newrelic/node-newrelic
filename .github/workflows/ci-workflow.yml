@@ -26,7 +26,7 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [12.x, 14.x]
+        node-version: [12.x, 14.x, 16x]
 
     steps:
     - uses: actions/checkout@v2
@@ -44,7 +44,7 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [12.x, 14.x]
+        node-version: [12.x, 14.x, 16x]
 
     steps:
     - uses: actions/checkout@v2
@@ -64,7 +64,7 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [12.x, 14.x]
+        node-version: [12.x, 14.x, 16x]
 
     steps:
     - uses: actions/checkout@v2
@@ -76,8 +76,9 @@ jobs:
       run: npm ci
     - name: Run Docker Services
       run: npm run services
-    - name: Run Versioned Tests
-      run: npm run versioned
-      env:
-        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+    - name: Run Versioned Tests (npm v6 / Node 10-14)
+      if: ${{ matrix.node-version != '16.x' }}
+      run: npm run versioned:npm6
+    - name: Run Versioned Tests (npm v7 / Node 16)
+      if: ${{ matrix.node-version == '16.x' }}
+      run: npm run versioned:npm7

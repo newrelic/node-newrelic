@@ -21,4 +21,11 @@ fi
 
 export AGENT_PATH=`pwd`
 
-time ./node_modules/.bin/versioned-tests $VERSIONED_MODE -i 2 ${directories[@]}
+echo "${NPM7}"
+
+if [[ "${NPM7}" = 1 ]];
+then
+  time ./node_modules/.bin/versioned-tests $VERSIONED_MODE -i 2 --all ${directories[@]}
+else
+  time ./node_modules/.bin/versioned-tests $VERSIONED_MODE -i 2 ${directories[@]}
+fi
