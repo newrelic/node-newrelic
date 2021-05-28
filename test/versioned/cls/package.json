@@ -5,7 +5,18 @@
   "tests": [
     {
       "engines": {
-        "node": ">=10"
+        "node": ">=16"
+      },
+      "dependencies": {
+        "continuation-local-storage": ">=3.0.0"
+      },
+      "files": [
+        "cls.tap.js"
+      ]
+    },
+    {
+      "engines": {
+        "node": ">=10 < 16"
       },
       "dependencies": {
         "continuation-local-storage": ">=1.0.0"
