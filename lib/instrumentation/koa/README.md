@@ -34,6 +34,7 @@ In addition to the Koa framework, we support additional specific routing modules
 
 ### Supported Routing Modules
 
+- @koa/router
 - koa-router
 - koa-route
 
