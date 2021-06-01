@@ -1,20 +1,26 @@
 ### v7.5.0 (2021-06-01)
 
-- default support for config files named `newrelic.js` and `newrelic.cjs`. Config file name can also be specified with the NEW_RELIC_CONFIG_FILENAME environment variable.
+* Added default support for config files with a 'cjs' extension (`newrelic.cjs`) in addition to `newrelic.js`.
 
-* Bumped `@newrelic/test-utilities` to ^5.1.0.
+  Thank you to @Maddemacher for the contribution!
 
-* Replaced deprecated `util.isArray` with `Array.isArray`
+* Added ability to specify a custom config file name with the `NEW_RELIC_CONFIG_FILENAME` environment variable.
 
-* removes unused `listenerCount` method on `Shim`.
-
-* Properly bootstrap husky as a `prepare` script
-
-* Removed commented-out console log from fastify instrumentation.
+  Thank you to @Maddemacher for the contribution!
 
 * Fixed issue when using the 'new_promise_tracking' feature flag where segment mapping may not get cleaned up for promises which never resolve but have all references removed (and thus get cleaned up by GC).
 
-  Adds segment cleanup on 'destroy' when using 'new_promise_tracking' feature flag in addition to the existing 'promiseResolve' hook. Unfortunately, preventing leaks for this edge-case does come with a small amount of additional overhead due to adding another hook. Memory gains from feature flag usage should still be worth the trade-off and reduced garbage collection may offset perf/CPU impacts or event still result in net gain, depending on the application.
+  Adds segment cleanup on 'destroy' when using 'new_promise_tracking' feature flag in addition to the existing 'promiseResolve' hook. Unfortunately, preventing leaks for this edge-case does come with additional overhead due to adding another hook. Memory gains from feature flag usage should still be worth the trade-off and reduced garbage collection may offset perf/CPU impacts or event still result in net gain, depending on the application.
+
+* Bumped `@newrelic/test-utilities` to ^5.1.0.
+
+* Replaced deprecated `util.isArray` with `Array.isArray`.
+
+* Removed unused `listenerCount` method on `Shim`.
+
+* Properly bootstraped husky as a `prepare` script.
+
+* Removed commented-out console log from fastify instrumentation.
 
 ### v7.4.0 (2021-05-11)
 
