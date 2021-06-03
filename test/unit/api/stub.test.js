@@ -15,9 +15,8 @@ tap.test('Agent API - Stubbed Agent API', (t) => {
 
   let api = null
 
-  t.beforeEach((done) => {
+  t.beforeEach(() => {
     api = new API()
-    done()
   })
 
   t.test('should export 29 API calls', (t) => {

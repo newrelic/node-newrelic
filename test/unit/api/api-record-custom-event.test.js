@@ -17,23 +17,19 @@ tap.test('Agent API - recordCustomEvent', (t) => {
   let agent = null
   let api = null
 
-  t.beforeEach((done) => {
+  t.beforeEach(() => {
     agent = helper.loadMockedAgent({
       custom_insights_events: {
         max_samples_stored: MAX_CUSTOM_EVENTS
       }
     })
     api = new API(agent)
-
-    done()
   })
 
-  t.afterEach((done) => {
+  t.afterEach(() => {
     helper.unloadAgent(agent)
     agent = null
     api = null
-
-    done()
   })
 
   t.test('can be called without exploding', (t) => {

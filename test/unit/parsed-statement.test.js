@@ -29,7 +29,7 @@ tap.test('recording database metrics', (t) => {
 
   t.test('on scoped transactions with parsed statements - with collection', (t) => {
     t.test('with collection', (t) => {
-      t.beforeEach((done) => {
+      t.beforeEach(() => {
         let ps          = new ParsedStatement('NoSQL', 'select', 'test_collection')
         let transaction = new Transaction(agent)
         let segment     = transaction.trace.add('test')
@@ -40,8 +40,6 @@ tap.test('recording database metrics', (t) => {
         transaction.end()
 
         metrics = transaction.metrics
-
-        done()
       })
 
       t.test('should find 1 scoped metric', (t) => {
@@ -93,7 +91,7 @@ tap.test('recording database metrics', (t) => {
     })
 
     t.test('without collection', (t) => {
-      t.beforeEach((done) => {
+      t.beforeEach(() => {
         let ps          = new ParsedStatement('NoSQL', 'select')
         let transaction = new Transaction(agent)
         let segment     = transaction.trace.add('test')
@@ -104,8 +102,6 @@ tap.test('recording database metrics', (t) => {
         transaction.end()
 
         metrics = transaction.metrics
-
-        done()
       })
 
       t.test('should find 1 scoped metric', (t) => {
@@ -162,7 +158,7 @@ tap.test('recording database metrics', (t) => {
 
   t.test('on unscoped transactions with parsed statements', (t) => {
     t.test('with collection', (t) => {
-      t.beforeEach((done) => {
+      t.beforeEach(() => {
         let ps          = new ParsedStatement('NoSQL', 'select', 'test_collection')
         let transaction = new Transaction(agent)
         let segment     = transaction.trace.add('test')
@@ -173,8 +169,6 @@ tap.test('recording database metrics', (t) => {
         transaction.end()
 
         metrics = transaction.metrics
-
-        done()
       })
 
       t.test('should find 0 unscoped metrics', (t) => {
@@ -221,7 +215,7 @@ tap.test('recording database metrics', (t) => {
     })
 
     t.test('without collection', (t) => {
-      t.beforeEach((done) => {
+      t.beforeEach(() => {
         let ps          = new ParsedStatement('NoSQL', 'select')
         let transaction = new Transaction(agent)
         let segment     = transaction.trace.add('test')
@@ -232,8 +226,6 @@ tap.test('recording database metrics', (t) => {
         transaction.end()
 
         metrics = transaction.metrics
-
-        done()
       })
 
       t.test('should find 0 unscoped metrics', (t) => {
@@ -291,7 +283,7 @@ tap.test('recording slow queries', (t) => {
     let segment
     let agent
 
-    t.beforeEach((done) => {
+    t.beforeEach(() => {
       agent = helper.loadMockedAgent({
         slow_sql: {enabled: true},
         transaction_tracer: {
@@ -325,13 +317,10 @@ tap.test('recording slow queries', (t) => {
       ps2.recordMetrics(segment2, 'TEST')
 
       transaction.end()
-
-      done()
     })
 
-    t.afterEach((done) => {
+    t.afterEach(() => {
       helper.unloadAgent(agent)
-      done()
     })
 
     t.test('should update segment names', (t) => {
@@ -369,7 +358,7 @@ tap.test('recording slow queries', (t) => {
     let segment
     let agent
 
-    t.beforeEach((done) => {
+    t.beforeEach(() => {
       agent = helper.loadMockedAgent({
         slow_sql: {enabled: true},
         transaction_tracer: {
@@ -402,14 +391,11 @@ tap.test('recording slow queries', (t) => {
       ps2.recordMetrics(segment2, 'TEST')
 
       transaction.end()
-
-      done()
     })
 
-    t.afterEach((done) => {
+    t.afterEach(() => {
       helper.unloadAgent(agent)
       agent = null
-      done()
     })
 
     t.test('should update segment names', (t) => {
@@ -456,7 +442,7 @@ tap.test('recording slow queries', (t) => {
     let segment
     let agent
 
-    t.beforeEach((done) => {
+    t.beforeEach(() => {
       agent = helper.loadMockedAgent({
         slow_sql: {enabled: true},
         transaction_tracer: {
@@ -479,13 +465,10 @@ tap.test('recording slow queries', (t) => {
       ps2.recordMetrics(segment2, 'TEST')
 
       transaction.end()
-
-      done()
     })
 
-    t.afterEach((done) => {
+    t.afterEach(() => {
       helper.unloadAgent(agent)
-      done()
     })
 
     t.test('should update segment names', (t) => {

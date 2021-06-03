@@ -17,19 +17,17 @@ tap.test('TraceSegment', (t) => {
   t.autoend()
   let agent = null
 
-  t.beforeEach((done) => {
+  t.beforeEach(() => {
     if (agent === null) {
       agent = helper.loadMockedAgent()
     }
-    done()
   })
 
-  t.afterEach((done) => {
+  t.afterEach(() => {
     if (agent) {
       helper.unloadAgent(agent)
       agent = null
     }
-    done()
   })
 
   t.test('should be bound to a Trace', (t) => {
@@ -209,7 +207,7 @@ tap.test('TraceSegment', (t) => {
     t.autoend()
     let webChild
 
-    t.beforeEach((done) => {
+    t.beforeEach(() => {
       agent.config.attributes.enabled = true
       agent.config.attributes.include.push('request.parameters.*')
       agent.config.emit('attributes.include')
@@ -228,8 +226,6 @@ tap.test('TraceSegment', (t) => {
       webChild.setDurationInMillis(1, 0)
 
       trace.end()
-
-      done()
     })
 
     t.test('should return the URL minus any query parameters', (t) => {
@@ -280,7 +276,7 @@ tap.test('TraceSegment', (t) => {
     t.autoend()
     let webChild, trace
 
-    t.beforeEach((done) => {
+    t.beforeEach(() => {
       agent.config.attributes.enabled = true
 
       const transaction = new Transaction(agent)
@@ -309,7 +305,6 @@ tap.test('TraceSegment', (t) => {
       webChild.setDurationInMillis(1, 0)
 
       trace.end()
-      done()
     })
 
     t.test('should return the URL minus any query parameters', (t) => {
@@ -356,7 +351,7 @@ tap.test('TraceSegment', (t) => {
     t.autoend()
     let webChild
 
-    t.beforeEach((done) => {
+    t.beforeEach(() => {
       agent.config.attributes.enabled = false
 
       const transaction = new Transaction(agent)
@@ -371,7 +366,6 @@ tap.test('TraceSegment', (t) => {
 
       trace.setDurationInMillis(1, 0)
       webChild.setDurationInMillis(1, 0)
-      done()
     })
 
     t.test('should return the URL minus any query parameters', (t) => {
@@ -402,7 +396,7 @@ tap.test('TraceSegment', (t) => {
     let webChild
     let attributes = null
 
-    t.beforeEach((done) => {
+    t.beforeEach(() => {
       agent.config.attributes.enabled = true
       agent.config.attributes.include = ['request.parameters.*']
       agent.config.attributes.exclude = [
@@ -427,7 +421,6 @@ tap.test('TraceSegment', (t) => {
       attributes = webChild.getAttributes()
 
       trace.end()
-      done()
     })
 
     t.test('should return the URL minus any query parameters', (t) => {
@@ -557,21 +550,17 @@ tap.test('when serialized', (t) => {
   let trans = null
   let segment = null
 
-  t.beforeEach((done) => {
+  t.beforeEach(() => {
     agent = helper.loadMockedAgent()
     trans = new Transaction(agent)
     segment = new TraceSegment(trans, 'UnitTest')
-
-    done()
   })
 
-  t.afterEach((done) => {
+  t.afterEach(() => {
     helper.unloadAgent(agent)
     agent = null
     trans = null
     segment = null
-
-    done()
   })
 
   t.test('should create a plain JS array', (t) => {
@@ -615,7 +604,7 @@ tap.test('getSpanContext', (t) => {
   let transaction = null
   let segment = null
 
-  t.beforeEach((done) => {
+  t.beforeEach(() => {
     agent = helper.loadMockedAgent({
       distributed_tracing: {
         enabled: true
@@ -623,15 +612,13 @@ tap.test('getSpanContext', (t) => {
     })
     transaction = new Transaction(agent)
     segment = new TraceSegment(transaction, 'UnitTest')
-    done()
   })
 
-  t.afterEach((done) => {
+  t.afterEach(() => {
     helper.unloadAgent(agent)
     agent = null
     transaction = null
     segment = null
-    done()
   })
 
   t.test('should not initialize with a span context', (t) => {

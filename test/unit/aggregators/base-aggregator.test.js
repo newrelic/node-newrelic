@@ -23,7 +23,7 @@ tap.test('scheduling', (t) => {
   let sendInvocation = 0
   let clock = null
 
-  t.beforeEach((done) => {
+  t.beforeEach(() => {
     fakeCollectorApi = {}
     fakeCollectorApi[METHOD] = () => {}
 
@@ -39,11 +39,9 @@ tap.test('scheduling', (t) => {
     baseAggregator.send = () => sendInvocation++
 
     clock = sinon.useFakeTimers()
-
-    done()
   })
 
-  t.afterEach((done) => {
+  t.afterEach(() => {
     baseAggregator = null
     fakeCollectorApi = null
 
@@ -51,8 +49,6 @@ tap.test('scheduling', (t) => {
     clock = null
 
     sendInvocation = 0
-
-    done()
   })
 
   t.test('should consistently invoke send on period', (t) => {
@@ -125,7 +121,7 @@ tap.test('send', (t) => {
   let baseAggregator = null
   let fakeCollectorApi = null
 
-  t.beforeEach((done) => {
+  t.beforeEach(() => {
     fakeCollectorApi = {}
     fakeCollectorApi[METHOD] = () => {}
 
@@ -135,15 +131,11 @@ tap.test('send', (t) => {
       limit: LIMIT,
       method: METHOD
     }, fakeCollectorApi)
-
-    done()
   })
 
-  t.afterEach((done) => {
+  t.afterEach(() => {
     baseAggregator = null
     fakeCollectorApi = null
-
-    done()
   })
 
   t.test('should emit proper message with method for starting send', (t) => {
@@ -363,7 +355,7 @@ tap.test('reconfigure() should update runid', (t) => {
   let baseAggregator = null
   let fakeCollectorApi = null
 
-  t.beforeEach((done) => {
+  t.beforeEach(() => {
     fakeCollectorApi = {}
     fakeCollectorApi[METHOD] = () => {}
 
@@ -373,15 +365,11 @@ tap.test('reconfigure() should update runid', (t) => {
       limit: LIMIT,
       method: METHOD
     }, fakeCollectorApi)
-
-    done()
   })
 
-  t.afterEach((done) => {
+  t.afterEach(() => {
     baseAggregator = null
     fakeCollectorApi = null
-
-    done()
   })
 
   t.test('reconfigure() should update runid', (t) => {

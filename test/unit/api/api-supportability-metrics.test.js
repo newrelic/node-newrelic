@@ -19,16 +19,13 @@ tap.test('The API supportability metrics', (t) => {
 
   const apiCalls = Object.keys(API.prototype)
 
-  t.beforeEach((done) => {
+  t.beforeEach(() => {
     agent = helper.loadMockedAgent()
     api = new API(agent)
-
-    done()
   })
 
-  t.afterEach((done) => {
+  t.afterEach(() => {
     helper.unloadAgent(agent)
-    done()
   })
 
   for (var i = 0; i < apiCalls.length; i++) {

@@ -13,19 +13,16 @@ const RemoteMethod = require('../../lib/collector/remote-method')
 tap.test('errors', (t) => {
   let agent
 
-  t.beforeEach((done) => {
+  t.beforeEach(() => {
     agent = helper.loadMockedAgent()
     agent.config.attributes.enabled = true
     agent.config.run_id = 1
 
     agent.errors.reconfigure(agent.config)
-
-    done()
   })
 
-  t.afterEach((done) => {
+  t.afterEach(() => {
     helper.unloadAgent(agent)
-    done()
   })
 
   t.test('should serialize down to match the protocol', (t) => {

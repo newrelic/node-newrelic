@@ -16,24 +16,16 @@ tap.test('Agent API - shutdown', (t) => {
   let agent = null
   let api = null
 
-  function setupAgentApi(cb) {
+  function setupAgentApi() {
     agent = helper.loadMockedAgent()
     api = new API(agent)
 
     agent.config.attributes.enabled = true
-
-    if (cb) {
-      cb()
-    }
   }
 
-  function cleanupAgentApi(cb) {
+  function cleanupAgentApi() {
     helper.unloadAgent(agent)
     agent = null
-
-    if (cb) {
-      cb()
-    }
   }
 
   t.test('exports a shutdown function', (t) => {
@@ -213,21 +205,21 @@ tap.test('Agent API - shutdown', (t) => {
   })
 
   t.test('calls stop when timeout is reached and does not forceHarvestAll', (t) => {
+    setupAgentApi()
+
     const originalSetTimeout = setTimeout
     let timeoutHandle = null
-    setupAgentApi(() => {
-      global.setTimeout = function patchedSetTimeout() {
-        timeoutHandle = originalSetTimeout.apply(this, arguments)
+    global.setTimeout = function patchedSetTimeout() {
+      timeoutHandle = originalSetTimeout.apply(this, arguments)
 
-        // This is a hack to keep tap from shutting down test early.
-        // Is there a better way to do this?
-        setImmediate(() => {
-          timeoutHandle.ref()
-        })
+      // This is a hack to keep tap from shutting down test early.
+      // Is there a better way to do this?
+      setImmediate(() => {
+        timeoutHandle.ref()
+      })
 
-        return timeoutHandle
-      }
-    })
+      return timeoutHandle
+    }
 
     t.tearDown(() => {
       timeoutHandle.unref()
@@ -343,4 +335,3 @@ tap.test('Agent API - shutdown', (t) => {
     agent.setState('started')
   })
 })
-

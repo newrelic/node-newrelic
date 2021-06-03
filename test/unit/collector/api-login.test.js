@@ -23,18 +23,16 @@ tap.test('when high_security: true', (t) => {
   let agent = null
   let collectorApi = null
 
-  t.beforeEach((done) => {
+  t.beforeEach(() => {
     agent = setupMockedAgent()
     agent.config.high_security = true
 
     collectorApi = new CollectorApi(agent)
 
     nock.disableNetConnect()
-
-    done()
   })
 
-  t.afterEach((done) => {
+  t.afterEach(() => {
     if (!nock.isDone()) {
       /* eslint-disable no-console */
       console.error('Cleaning pending mocks: %j', nock.pendingMocks())
@@ -47,8 +45,6 @@ tap.test('when high_security: true', (t) => {
     helper.unloadAgent(agent)
     agent = null
     collectorApi = null
-
-    done()
   })
 
   t.test('should send high_security:true in preconnect payload', (t) => {
@@ -84,18 +80,16 @@ tap.test('when high_security: false', (t) => {
   let agent = null
   let api = null
 
-  t.beforeEach((done) => {
+  t.beforeEach(() => {
     agent = setupMockedAgent()
     agent.config.high_security = false
 
     api = new CollectorApi(agent)
 
     nock.disableNetConnect()
-
-    done()
   })
 
-  t.afterEach((done) => {
+  t.afterEach(() => {
     if (!nock.isDone()) {
       /* eslint-disable no-console */
       console.error('Cleaning pending mocks: %j', nock.pendingMocks())
@@ -108,8 +102,6 @@ tap.test('when high_security: false', (t) => {
     helper.unloadAgent(agent)
     agent = null
     api = null
-
-    done()
   })
 
   t.test('should send high_security:true in preconnect payload', (t) => {
@@ -148,7 +140,7 @@ tap.test('in a LASP-enabled agent', (t) => {
   let collectorApi = null
   let policies = null
 
-  t.beforeEach((done) => {
+  t.beforeEach(() => {
     agent = setupMockedAgent()
     agent.config.security_policies_token = SECURITY_POLICIES_TOKEN
 
@@ -157,11 +149,9 @@ tap.test('in a LASP-enabled agent', (t) => {
     policies = securityPolicies()
 
     nock.disableNetConnect()
-
-    done()
   })
 
-  t.afterEach((done) => {
+  t.afterEach(() => {
     if (!nock.isDone()) {
       /* eslint-disable no-console */
       console.error('Cleaning pending mocks: %j', nock.pendingMocks())
@@ -175,8 +165,6 @@ tap.test('in a LASP-enabled agent', (t) => {
     agent = null
     collectorApi = null
     policies = null
-
-    done()
   })
 
   // HSM should never be true when LASP/CSP enabled but payload should still be sent.
@@ -310,7 +298,7 @@ tap.test('receiving 200 response, with valid data', (t) => {
     agent_run_id: RUN_ID
   }
 
-  t.beforeEach((done) => {
+  t.beforeEach(() => {
     agent = setupMockedAgent()
     collectorApi = new CollectorApi(agent)
 
@@ -324,11 +312,9 @@ tap.test('receiving 200 response, with valid data', (t) => {
     connection = nock(URL)
       .post(helper.generateCollectorPath('connect'))
       .reply(200, response)
-
-    done()
   })
 
-  t.afterEach((done) => {
+  t.afterEach(() => {
     if (!nock.isDone()) {
       /* eslint-disable no-console */
       console.error('Cleaning pending mocks: %j', nock.pendingMocks())
@@ -341,8 +327,6 @@ tap.test('receiving 200 response, with valid data', (t) => {
     helper.unloadAgent(agent)
     agent = null
     collectorApi = null
-
-    done()
   })
 
   t.test('should not error out', (t) => {
@@ -389,7 +373,7 @@ tap.test('receiving 503 response from preconnect', (t) => {
 
   let redirection = null
 
-  t.beforeEach((done) => {
+  t.beforeEach(() => {
     agent = setupMockedAgent()
     collectorApi = new CollectorApi(agent)
 
@@ -398,11 +382,9 @@ tap.test('receiving 503 response from preconnect', (t) => {
     redirection = redirection = nock(URL + ':8080')
       .post(helper.generateCollectorPath('preconnect'))
       .reply(503)
-
-    done()
   })
 
-  t.afterEach((done) => {
+  t.afterEach(() => {
     if (!nock.isDone()) {
       /* eslint-disable no-console */
       console.error('Cleaning pending mocks: %j', nock.pendingMocks())
@@ -415,8 +397,6 @@ tap.test('receiving 503 response from preconnect', (t) => {
     helper.unloadAgent(agent)
     agent = null
     collectorApi = null
-
-    done()
   })
 
   t.test('should not have gotten an error', (t) => {
@@ -453,7 +433,7 @@ tap.test('receiving no hostname from preconnect', (t) => {
     agent_run_id: RUN_ID
   }
 
-  t.beforeEach((done) => {
+  t.beforeEach(() => {
     agent = setupMockedAgent()
     collectorApi = new CollectorApi(agent)
 
@@ -468,11 +448,9 @@ tap.test('receiving no hostname from preconnect', (t) => {
     connection = nock(URL + ':8080')
       .post(helper.generateCollectorPath('connect'))
       .reply(200, response)
-
-    done()
   })
 
-  t.afterEach((done) => {
+  t.afterEach(() => {
     if (!nock.isDone()) {
       /* eslint-disable no-console */
       console.error('Cleaning pending mocks: %j', nock.pendingMocks())
@@ -485,8 +463,6 @@ tap.test('receiving no hostname from preconnect', (t) => {
     helper.unloadAgent(agent)
     agent = null
     collectorApi = null
-
-    done()
   })
 
   t.test('should not error out', (t) => {
@@ -537,7 +513,7 @@ tap.test('receiving a weirdo redirect name from preconnect', (t) => {
     agent_run_id: RUN_ID
   }
 
-  t.beforeEach((done) => {
+  t.beforeEach(() => {
     agent = setupMockedAgent()
     collectorApi = new CollectorApi(agent)
 
@@ -557,11 +533,9 @@ tap.test('receiving a weirdo redirect name from preconnect', (t) => {
     connection = nock(URL + ':8080')
       .post(helper.generateCollectorPath('connect'))
       .reply(200, response)
-
-    done()
   })
 
-  t.afterEach((done) => {
+  t.afterEach(() => {
     if (!nock.isDone()) {
       /* eslint-disable no-console */
       console.error('Cleaning pending mocks: %j', nock.pendingMocks())
@@ -574,8 +548,6 @@ tap.test('receiving a weirdo redirect name from preconnect', (t) => {
     helper.unloadAgent(agent)
     agent = null
     collectorApi = null
-
-    done()
   })
 
   t.test('should not error out', (t) => {
@@ -634,7 +606,7 @@ tap.test('receiving no config back from connect', (t) => {
   let connection = null
 
 
-  t.beforeEach((done) => {
+  t.beforeEach(() => {
     agent = setupMockedAgent()
     collectorApi = new CollectorApi(agent)
 
@@ -647,11 +619,9 @@ tap.test('receiving no config back from connect', (t) => {
     connection = nock(URL)
       .post(helper.generateCollectorPath('connect'))
       .reply(200, {return_value: null})
-
-    done()
   })
 
-  t.afterEach((done) => {
+  t.afterEach(() => {
     if (!nock.isDone()) {
       /* eslint-disable no-console */
       console.error('Cleaning pending mocks: %j', nock.pendingMocks())
@@ -664,8 +634,6 @@ tap.test('receiving no config back from connect', (t) => {
     helper.unloadAgent(agent)
     agent = null
     collectorApi = null
-
-    done()
   })
 
   t.test('should have gotten an error', (t) => {
@@ -713,7 +681,7 @@ tap.test('receiving 503 response from connect', (t) => {
   let connection = null
 
 
-  t.beforeEach((done) => {
+  t.beforeEach(() => {
     agent = setupMockedAgent()
     collectorApi = new CollectorApi(agent)
 
@@ -726,11 +694,9 @@ tap.test('receiving 503 response from connect', (t) => {
     connection = nock(URL)
       .post(helper.generateCollectorPath('connect'))
       .reply(503)
-
-    done()
   })
 
-  t.afterEach((done) => {
+  t.afterEach(() => {
     if (!nock.isDone()) {
       /* eslint-disable no-console */
       console.error('Cleaning pending mocks: %j', nock.pendingMocks())
@@ -743,8 +709,6 @@ tap.test('receiving 503 response from connect', (t) => {
     helper.unloadAgent(agent)
     agent = null
     collectorApi = null
-
-    done()
   })
 
   t.test('should not have gotten an error', (t) => {
@@ -781,7 +745,7 @@ tap.test('receiving 200 response to connect but no data', (t) => {
   let connection = null
 
 
-  t.beforeEach((done) => {
+  t.beforeEach(() => {
     agent = setupMockedAgent()
     collectorApi = new CollectorApi(agent)
 
@@ -794,11 +758,9 @@ tap.test('receiving 200 response to connect but no data', (t) => {
     connection = nock(URL)
       .post(helper.generateCollectorPath('connect'))
       .reply(200)
-
-    done()
   })
 
-  t.afterEach((done) => {
+  t.afterEach(() => {
     if (!nock.isDone()) {
       /* eslint-disable no-console */
       console.error('Cleaning pending mocks: %j', nock.pendingMocks())
@@ -811,8 +773,6 @@ tap.test('receiving 200 response to connect but no data', (t) => {
     helper.unloadAgent(agent)
     agent = null
     collectorApi = null
-
-    done()
   })
 
   t.test('should have gotten an error', (t) => {

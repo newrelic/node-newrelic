@@ -18,7 +18,7 @@ tap.test('Agent API - instrumentLoadedModule', (t) => {
   let expressMock
   let shimHelper
 
-  t.beforeEach((done) => {
+  t.beforeEach(() => {
     agent = agentHelper.instrumentMockedAgent()
 
     api = new API(agent)
@@ -30,17 +30,13 @@ tap.test('Agent API - instrumentLoadedModule', (t) => {
     expressMock.Router = {}
 
     shimHelper = new Shim(agent, 'fake')
-
-    done()
   })
 
-  t.afterEach((done) => {
+  t.afterEach(() => {
     agentHelper.unloadAgent(agent)
     agent = null
     api = null
     expressMock = null
-
-    done()
   })
 
   t.test('should be callable without an error', (t) => {
