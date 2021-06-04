@@ -191,7 +191,7 @@ tap.test('send', (t) => {
 
     baseAggregator.send()
 
-    t.deepEqual(invokedPayload, expectedPayload)
+    t.same(invokedPayload, expectedPayload)
 
     t.end()
   })
@@ -235,7 +235,7 @@ tap.test('send', (t) => {
 
     baseAggregator.send()
 
-    t.deepEqual(mergeData, expectedData)
+    t.same(mergeData, expectedData)
 
     t.end()
   })

@@ -99,7 +99,7 @@ tap.test('ServerlessCollector API', (t) => {
     t.test('adds metric_data to the payload object', (t) => {
       const metricData = {type: 'metric_data'}
       api.metric_data(metricData, () => {
-        t.deepEqual(api.payload.metric_data, metricData)
+        t.same(api.payload.metric_data, metricData)
         t.end()
       })
     })
@@ -114,7 +114,7 @@ tap.test('ServerlessCollector API', (t) => {
     t.test('adds error_data to the payload object', (t) => {
       const errorData = {type: 'error_data'}
       api.error_data(errorData, () => {
-        t.deepEqual(api.payload.error_data, errorData)
+        t.same(api.payload.error_data, errorData)
         t.end()
       })
     })
@@ -129,7 +129,7 @@ tap.test('ServerlessCollector API', (t) => {
     t.test('adds transaction_sample_data to the payload object', (t) => {
       const transactionSampleData = {type: 'transaction_sample_data'}
       api.transaction_sample_data(transactionSampleData, () => {
-        t.deepEqual(api.payload.transaction_sample_data, transactionSampleData)
+        t.same(api.payload.transaction_sample_data, transactionSampleData)
         t.end()
       })
     })
@@ -144,7 +144,7 @@ tap.test('ServerlessCollector API', (t) => {
     t.test('adds analytic_event_data to the payload object', (t) => {
       const analyticsEvents = {type: 'analytic_event_data'}
       api.analytic_event_data(analyticsEvents, () => {
-        t.deepEqual(api.payload.analytic_event_data, analyticsEvents)
+        t.same(api.payload.analytic_event_data, analyticsEvents)
 
         t.end()
       })
@@ -160,7 +160,7 @@ tap.test('ServerlessCollector API', (t) => {
     t.test('adds custom_event_data to the payload object', (t) => {
       const customEvents = {type: 'custom_event_data'}
       api.custom_event_data(customEvents, () => {
-        t.deepEqual(api.payload.custom_event_data, customEvents)
+        t.same(api.payload.custom_event_data, customEvents)
         t.end()
       })
     })
@@ -175,7 +175,7 @@ tap.test('ServerlessCollector API', (t) => {
     t.test('adds error_event_data to the payload object', (t) => {
       const errorEvents = {type: 'error_event_data'}
       api.error_event_data(errorEvents, () => {
-        t.deepEqual(api.payload.error_event_data, errorEvents)
+        t.same(api.payload.error_event_data, errorEvents)
         t.end()
       })
     })
@@ -190,7 +190,7 @@ tap.test('ServerlessCollector API', (t) => {
     t.test('adds span_event_data to the payload object', (t) => {
       const spanEvents = {type: 'span_event_data'}
       api.span_event_data(spanEvents, () => {
-        t.deepEqual(api.payload.span_event_data, spanEvents)
+        t.same(api.payload.span_event_data, spanEvents)
         t.end()
       })
     })
@@ -213,7 +213,7 @@ tap.test('ServerlessCollector API', (t) => {
         const decoded = JSON.parse(zlib.gunzipSync(Buffer.from(data, 'base64')))
         t.ok(decoded.metadata)
         t.ok(decoded.data)
-        t.deepEqual(decoded.data, testPayload)
+        t.same(decoded.data, testPayload)
       }
       api.flushPayloadSync()
       t.equal(Object.keys(api.payload).length, 0)

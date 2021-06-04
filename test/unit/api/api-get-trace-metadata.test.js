@@ -51,7 +51,7 @@ tap.test('Agent API - trace metadata', (t) => {
       const metadata = api.getTraceMetadata()
       t.type(metadata, 'object')
 
-      t.deepEqual(metadata, {})
+      t.same(metadata, {})
       t.end()
     })
   })

@@ -50,7 +50,7 @@ test('should all be accounted for in LICENSES object', {timeout: 5000}, (t) => {
       return obj
     }, {})
 
-    t.deepEqual(depLicenses, licenses, LICENSE_MESSAGE)
+    t.same(depLicenses, licenses, LICENSE_MESSAGE)
     t.end()
   })
 })

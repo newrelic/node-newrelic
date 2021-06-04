@@ -13,8 +13,8 @@ tap.test('label praser', (t) => {
   t.test('should pass cross-agent tests', (t) => {
     test_data.forEach((example) => {
       const result = parse(example.labelString)
-      t.deepEqual(result.labels.sort(by_type), example.expected.sort(by_type))
-      t.deepEqual(!!result.warnings.length, example.warning)
+      t.same(result.labels.sort(by_type), example.expected.sort(by_type))
+      t.same(!!result.warnings.length, example.warning)
     })
     t.end()
   })

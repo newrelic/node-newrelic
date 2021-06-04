@@ -30,7 +30,7 @@ tap.test('Agent API - shutdown', (t) => {
 
   t.test('exports a shutdown function', (t) => {
     setupAgentApi()
-    t.tearDown(() => {
+    t.teardown(() => {
       cleanupAgentApi()
     })
 
@@ -42,7 +42,7 @@ tap.test('Agent API - shutdown', (t) => {
 
   t.test('calls agent stop', (t) => {
     setupAgentApi()
-    t.tearDown(() => {
+    t.teardown(() => {
       cleanupAgentApi()
     })
 
@@ -56,7 +56,7 @@ tap.test('Agent API - shutdown', (t) => {
 
   t.test('accepts callback as second argument', (t) => {
     setupAgentApi()
-    t.tearDown(cleanupAgentApi)
+    t.teardown(cleanupAgentApi)
 
     agent.stop = function(cb) {
       cb()
@@ -71,7 +71,7 @@ tap.test('Agent API - shutdown', (t) => {
 
   t.test('accepts callback as first argument', (t) => {
     setupAgentApi()
-    t.tearDown(cleanupAgentApi)
+    t.teardown(cleanupAgentApi)
 
     agent.stop = function(cb) {
       cb()
@@ -86,7 +86,7 @@ tap.test('Agent API - shutdown', (t) => {
 
   t.test('does not error when no callback is provided', (t) => {
     setupAgentApi()
-    t.tearDown(cleanupAgentApi)
+    t.teardown(cleanupAgentApi)
 
     // should not throw
     api.shutdown()
@@ -192,7 +192,7 @@ tap.test('Agent API - shutdown', (t) => {
 
   t.test('calls forceHarvestAll when a timeout is given and not reached', (t) => {
     setupAgentApi()
-    t.tearDown(cleanupAgentApi)
+    t.teardown(cleanupAgentApi)
 
     const mock = sinon.mock(agent)
     agent.setState('starting')
@@ -221,7 +221,7 @@ tap.test('Agent API - shutdown', (t) => {
       return timeoutHandle
     }
 
-    t.tearDown(() => {
+    t.teardown(() => {
       timeoutHandle.unref()
       timeoutHandle = null
       global.setTimeout = originalSetTimeout
@@ -253,7 +253,7 @@ tap.test('Agent API - shutdown', (t) => {
 
   t.test('calls forceHarvestAll when timeout is not a number', (t) => {
     setupAgentApi()
-    t.tearDown(cleanupAgentApi)
+    t.teardown(cleanupAgentApi)
 
     agent.setState('starting')
 
@@ -280,7 +280,7 @@ tap.test('Agent API - shutdown', (t) => {
 
   t.test('calls stop after harvest', (t) => {
     setupAgentApi()
-    t.tearDown(cleanupAgentApi)
+    t.teardown(cleanupAgentApi)
 
     agent.setState('starting')
 
@@ -307,7 +307,7 @@ tap.test('Agent API - shutdown', (t) => {
 
   t.test('calls stop when harvest errors', (t) => {
     setupAgentApi()
-    t.tearDown(cleanupAgentApi)
+    t.teardown(cleanupAgentApi)
 
     agent.setState('starting')
 

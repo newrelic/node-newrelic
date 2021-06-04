@@ -277,7 +277,7 @@ tap.test('should copy request headers', (t) => {
     .reply(200, response)
 
   collectorApi._login(function test() {
-    t.deepEqual(collectorApi._reqHeadersMap, reqHeaderMap)
+    t.same(collectorApi._reqHeadersMap, reqHeaderMap)
     redirection.done()
     connection.done()
 
@@ -355,7 +355,7 @@ tap.test('receiving 200 response, with valid data', (t) => {
   t.test('should pass through server-side configuration untouched', (t) => {
     collectorApi._login(function test(error, res) {
       const ssc = res.payload
-      t.deepEqual(ssc, validSsc)
+      t.same(ssc, validSsc)
 
       redirection.done()
       connection.done()

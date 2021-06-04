@@ -55,7 +55,7 @@ tap.test('Agent API - noticeError', (t) => {
 
     t.equal(agent.errors.traceAggregator.errors.length, 1)
     const attributes = agent.errors.traceAggregator.errors[0][4]
-    t.deepEqual(attributes.userAttributes, {})
+    t.same(attributes.userAttributes, {})
     agent.config.api.custom_attributes_enabled = true
 
     t.end()
@@ -69,7 +69,7 @@ tap.test('Agent API - noticeError', (t) => {
 
     t.equal(agent.errors.traceAggregator.errors.length, 1)
     const attributes = agent.errors.traceAggregator.errors[0][4]
-    t.deepEqual(attributes.userAttributes, {})
+    t.same(attributes.userAttributes, {})
     agent.config.high_security = false
 
     t.end()

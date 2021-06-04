@@ -157,7 +157,7 @@ tap.test('fun facts about apps that New Relic is interested in include', (t) => 
       expect(data.metadata).to.have.property('NEW_RELIC_METADATA_STRING', 'hello')
       expect(data.metadata).to.have.property('NEW_RELIC_METADATA_BOOL', 'true')
       expect(data.metadata).to.have.property('NEW_RELIC_METADATA_NUMBER', '42')
-      t.deepEqual(loggerMock.debug.args, [
+      t.same(loggerMock.debug.args, [
         [
           'New Relic metadata %o',
           {
@@ -632,15 +632,15 @@ tap.test('display_host', {timeout: 20000}, (t) => {
       agent.config.process_host.display_name = 'test-value2'
 
       facts(agent, function getFacts2(factsed2) {
-        t.deepEqual(factsed2.display_host, displayHost1)
-        t.deepEqual(factsed2.host, host1)
+        t.same(factsed2.display_host, displayHost1)
+        t.same(factsed2.host, host1)
 
         agent.config.clearHostnameCache()
         agent.config.clearDisplayHostCache()
 
         facts(agent, function getFacts3(factsed3) {
-          t.deepEqual(factsed3.display_host, 'test-value2')
-          t.deepEqual(factsed3.host, os.hostname())
+          t.same(factsed3.display_host, 'test-value2')
+          t.same(factsed3.host, os.hostname())
 
           t.end()
         })

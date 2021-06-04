@@ -28,7 +28,7 @@ tap.test('requires a callback', (t) => {
   const agent = setupMockedAgent()
   const collectorApi = new CollectorApi(agent)
 
-  t.tearDown(() => {
+  t.teardown(() => {
     helper.unloadAgent(agent)
   })
 
@@ -96,7 +96,7 @@ tap.test('receiving 200 response, with valid data', (t) => {
   t.test('should pass through server-side configuration untouched', (t) => {
     collectorApi.connect((error, res) => {
       const ssc = res.payload
-      t.deepEqual(ssc, validSsc)
+      t.same(ssc, validSsc)
 
       redirection.done()
       connection.done()
@@ -225,7 +225,7 @@ tap.test('succeeds when given a different port number for redirect', (t) => {
   t.test('should pass through server-side configuration untouched', (t) => {
     collectorApi.connect(function test(error, res) {
       const ssc = res.payload
-      t.deepEqual(ssc, validSsc)
+      t.same(ssc, validSsc)
 
       redirection.done()
       connection.done()
@@ -304,7 +304,7 @@ tap.test('succeeds after one 503 on preconnect', (t) => {
 
   t.test('should pass through server-side configuration untouched', (t) => {
     testConnect(t, () => {
-      t.deepEqual(ssc, valid)
+      t.same(ssc, valid)
       t.end()
     })
   })
@@ -394,7 +394,7 @@ tap.test('succeeds after five 503s on preconnect', (t) => {
 
   t.test('should pass through server-side configuration untouched', (t) => {
     testConnect(t, () => {
-      t.deepEqual(ssc, valid)
+      t.same(ssc, valid)
       t.end()
     })
   })
@@ -661,7 +661,7 @@ over http. When setting `proxy_host` and `proxy_port` New Relic attempts to conn
 SSL(https). If your proxy is configured to accept connections over http, try setting `proxy` \
 to a fully qualified URL(e.g http://proxy-host:8080).'
 
-      t.deepEqual(loggerMock.warn.args, [
+      t.same(loggerMock.warn.args, [
         [
           error,
           expectErrorMsg
@@ -674,7 +674,7 @@ to a fully qualified URL(e.g http://proxy-host:8080).'
   t.test('should not log warning when proxy is configured properly but still get EPROTO', (t) => {
     collectorApi._agent.config.proxy = 'http://test-proxy-server:8080'
     testConnect(t, () => {
-      t.deepEqual(loggerMock.warn.args, [], 'Proxy misconfigured message not logged')
+      t.same(loggerMock.warn.args, [], 'Proxy misconfigured message not logged')
       t.end()
     })
   })
@@ -747,7 +747,7 @@ tap.test('in a LASP/CSP enabled agent', (t) => {
       .reply(200, response)
 
     collectorApi.connect(function test(error, res) {
-      t.deepEqual(res.payload, valid)
+      t.same(res.payload, valid)
 
       redirection.done()
       connection.done()
@@ -783,7 +783,7 @@ tap.test('in a LASP/CSP enabled agent', (t) => {
       .reply(200, response)
 
     collectorApi.connect(function test(error, res) {
-      t.deepEqual(res.payload, valid)
+      t.same(res.payload, valid)
 
       t.equal(agent.customEventAggregator.length, 0)
 

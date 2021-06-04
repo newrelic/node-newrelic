@@ -136,10 +136,10 @@ tap.test('Should add span to queue on backpressure', (t) => {
   fakeConnection.connectSpans()
 
   spanStreamer._writable = false
-  t.equals(spanStreamer.spans.length, 0, 'no spans queued')
+  t.equal(spanStreamer.spans.length, 0, 'no spans queued')
   spanStreamer.write({})
 
-  t.equals(spanStreamer.spans.length, 1, 'one span queued')
+  t.equal(spanStreamer.spans.length, 1, 'one span queued')
 
   t.end()
 })
@@ -166,7 +166,7 @@ tap.test('Should drain span queue on stream drain event', (t) => {
 
   fakeConnection.connectSpans()
 
-  t.equals(spanStreamer.spans.length, 0, 'no spans queued')
+  t.equal(spanStreamer.spans.length, 0, 'no spans queued')
   const fakeSpan = {
     toStreamingFormat: () => {}
   }
@@ -174,17 +174,17 @@ tap.test('Should drain span queue on stream drain event', (t) => {
   spanStreamer.write(fakeSpan)
   spanStreamer.write(fakeSpan)
 
-  t.equals(spanStreamer.spans.length, 1, 'one span queued')
+  t.equal(spanStreamer.spans.length, 1, 'one span queued')
 
   /* emit drain event and allow writes */
   fakeStream.emit('drain', fakeStream.write = () => true)
 
-  t.equals(spanStreamer.spans.length, 0, 'drained spans')
-  t.equals(
+  t.equal(spanStreamer.spans.length, 0, 'drained spans')
+  t.equal(
     metrics.getOrCreateMetric
     (METRIC_NAMES.INFINITE_TRACING.DRAIN_DURATION).callCount, 1, 'DRAIN_DURATION metric')
 
-  t.equals(metrics
+  t.equal(metrics
     .getOrCreateMetric(METRIC_NAMES.INFINITE_TRACING.SENT).callCount, 2, 'SENT metric incremented')
 
   fakeStream.destroy()
@@ -214,7 +214,7 @@ tap.test('Should properly format spans sent from the queue', (t) => {
 
   fakeConnection.connectSpans()
 
-  t.equals(spanStreamer.spans.length, 0, 'no spans queued')
+  t.equal(spanStreamer.spans.length, 0, 'no spans queued')
 
   const fakeSpan = new SpanStreamerEvent('sandwich', {}, {})
   const fakeSpan_queued = new SpanStreamerEvent('porridge', {}, {})
@@ -222,7 +222,7 @@ tap.test('Should properly format spans sent from the queue', (t) => {
   spanStreamer.write(fakeSpan)
   spanStreamer.write(fakeSpan_queued)
 
-  t.equals(spanStreamer.spans.length, 1, 'one span queued')
+  t.equal(spanStreamer.spans.length, 1, 'one span queued')
 
   /* emit drain event, allow writes and check for span.trace_id */
   fakeStream.emit('drain', fakeStream.write = (span) => {
@@ -231,12 +231,12 @@ tap.test('Should properly format spans sent from the queue', (t) => {
     return true
   })
 
-  t.equals(spanStreamer.spans.length, 0, 'drained spans')
-  t.equals(
+  t.equal(spanStreamer.spans.length, 0, 'drained spans')
+  t.equal(
     metrics.getOrCreateMetric
     (METRIC_NAMES.INFINITE_TRACING.DRAIN_DURATION).callCount, 1, 'DRAIN_DURATION metric')
 
-  t.equals(metrics
+  t.equal(metrics
     .getOrCreateMetric(METRIC_NAMES.INFINITE_TRACING.SENT).callCount, 2, 'SENT metric incremented')
 
   fakeStream.destroy()

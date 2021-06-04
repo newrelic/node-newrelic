@@ -199,7 +199,7 @@ tap.test('TraceSegment', (t) => {
     const transaction = new Transaction(agent)
     const segment = new TraceSegment(transaction, 'TestSegment')
     segment.toJSON()
-    t.deepEqual(segment.getAttributes(), {})
+    t.same(segment.getAttributes(), {})
     t.end()
   })
 
@@ -256,7 +256,7 @@ tap.test('TraceSegment', (t) => {
     })
 
     t.test('should serialize the segment with the parameters', (t) => {
-      t.deepEqual(webChild.toJSON(), [
+      t.same(webChild.toJSON(), [
         0,
         1,
         'WebTransaction/NormalizedUri/*', {
@@ -342,7 +342,7 @@ tap.test('TraceSegment', (t) => {
         },
         []
       ]
-      t.deepEqual(webChild.toJSON(), expected)
+      t.same(webChild.toJSON(), expected)
       t.end()
     })
   })
@@ -374,7 +374,7 @@ tap.test('TraceSegment', (t) => {
     })
 
     t.test('should have no attributes on the child segment', (t) => {
-      t.deepEqual(webChild.getAttributes(), {})
+      t.same(webChild.getAttributes(), {})
       t.end()
     })
 
@@ -386,7 +386,7 @@ tap.test('TraceSegment', (t) => {
         {},
         []
       ]
-      t.deepEqual(webChild.toJSON(), expected)
+      t.same(webChild.toJSON(), expected)
       t.end()
     })
   })
@@ -452,7 +452,7 @@ tap.test('TraceSegment', (t) => {
     })
 
     t.test('should serialize the segment with the parameters', (t) => {
-      t.deepEqual(webChild.toJSON(), [
+      t.same(webChild.toJSON(), [
         0,
         1,
         'WebTransaction/NormalizedUri/*', {
@@ -488,7 +488,7 @@ tap.test('TraceSegment', (t) => {
       trace.end()
 
       // See documentation on TraceSegment.toJSON for what goes in which field.
-      t.deepEqual(segment.toJSON(), [
+      t.same(segment.toJSON(), [
         3,
         17,
         'DB/select/getSome',
@@ -508,7 +508,7 @@ tap.test('TraceSegment', (t) => {
 
       segment._setExclusiveDurationInMillis(1)
 
-      t.deepEqual(segment.getAttributes(), {})
+      t.same(segment.getAttributes(), {})
 
       segment.finalize()
 

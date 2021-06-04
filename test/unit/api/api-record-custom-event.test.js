@@ -102,7 +102,7 @@ tap.test('Agent API - recordCustomEvent', (t) => {
 
     const myEvent = popTopCustomEvent(agent)
     const userAttributes = myEvent[1]
-    t.deepEqual(userAttributes, data)
+    t.same(userAttributes, data)
 
     t.end()
   })

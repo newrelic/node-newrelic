@@ -280,7 +280,7 @@ tap.test('#reset', (t) => {
 
     inst.reset()
 
-    t.deepEqual(inst.attributes, {})
+    t.same(inst.attributes, {})
 
     t.end()
   })

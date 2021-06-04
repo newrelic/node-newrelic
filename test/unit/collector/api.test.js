@@ -67,7 +67,7 @@ tap.test('reportSettings', (t) => {
 
   t.test('should return the expected `empty` response', (t) => {
     collectorApi.reportSettings((error, res) => {
-      t.deepEqual(res.payload, emptySettingsPayload.return_value)
+      t.same(res.payload, emptySettingsPayload.return_value)
 
       settings.done()
 
@@ -83,7 +83,7 @@ tap.test('error_data', (t) => {
     const agent = setupMockedAgent()
     const collectorApi = new CollectorApi(agent)
 
-    t.tearDown(() => {
+    t.teardown(() => {
       helper.unloadAgent(agent)
     })
 
@@ -99,7 +99,7 @@ tap.test('error_data', (t) => {
     const agent = setupMockedAgent()
     const collectorApi = new CollectorApi(agent)
 
-    t.tearDown(() => {
+    t.teardown(() => {
       helper.unloadAgent(agent)
     })
 
@@ -185,7 +185,7 @@ tap.test('sql_trace_data', (t) => {
     const agent = setupMockedAgent()
     const collectorApi = new CollectorApi(agent)
 
-    t.tearDown(() => {
+    t.teardown(() => {
       helper.unloadAgent(agent)
     })
 
@@ -201,7 +201,7 @@ tap.test('sql_trace_data', (t) => {
     const agent = setupMockedAgent()
     const collectorApi = new CollectorApi(agent)
 
-    t.tearDown(() => {
+    t.teardown(() => {
       helper.unloadAgent(agent)
     })
 
@@ -292,7 +292,7 @@ tap.test('analytic_event_data (transaction events)', (t) => {
     const agent = setupMockedAgent()
     const collectorApi = new CollectorApi(agent)
 
-    t.tearDown(() => {
+    t.teardown(() => {
       helper.unloadAgent(agent)
     })
 
@@ -308,7 +308,7 @@ tap.test('analytic_event_data (transaction events)', (t) => {
     const agent = setupMockedAgent()
     const collectorApi = new CollectorApi(agent)
 
-    t.tearDown(() => {
+    t.teardown(() => {
       helper.unloadAgent(agent)
     })
 
@@ -402,7 +402,7 @@ tap.test('metric_data', (t) => {
     const agent = setupMockedAgent()
     const collectorApi = new CollectorApi(agent)
 
-    t.tearDown(() => {
+    t.teardown(() => {
       helper.unloadAgent(agent)
     })
 
@@ -418,7 +418,7 @@ tap.test('metric_data', (t) => {
     const agent = setupMockedAgent()
     const collectorApi = new CollectorApi(agent)
 
-    t.tearDown(() => {
+    t.teardown(() => {
       helper.unloadAgent(agent)
     })
 
@@ -508,7 +508,7 @@ tap.test('transaction_sample_data (transaction trace)', (t) => {
     const agent = setupMockedAgent()
     const collectorApi = new CollectorApi(agent)
 
-    t.tearDown(() => {
+    t.teardown(() => {
       helper.unloadAgent(agent)
     })
 
@@ -524,7 +524,7 @@ tap.test('transaction_sample_data (transaction trace)', (t) => {
     const agent = setupMockedAgent()
     const collectorApi = new CollectorApi(agent)
 
-    t.tearDown(() => {
+    t.teardown(() => {
       helper.unloadAgent(agent)
     })
 
@@ -607,7 +607,7 @@ tap.test('shutdown', (t) => {
     const agent = setupMockedAgent()
     const collectorApi = new CollectorApi(agent)
 
-    t.tearDown(() => {
+    t.teardown(() => {
       helper.unloadAgent(agent)
     })
 

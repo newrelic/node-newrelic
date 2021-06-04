@@ -31,7 +31,7 @@ tap.test('The TxSegmentNormalizer', (t) => {
     }]
     const normalizer = new TxSegmentNormalizer()
     normalizer.load(input)
-    t.deepEqual(normalizer.terms, input)
+    t.same(normalizer.terms, input)
     t.end()
   })
 

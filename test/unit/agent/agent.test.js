@@ -210,7 +210,7 @@ tap.test('#startAggregators should start all aggregators', (t) => {
   let agent = helper.loadMockedAgent(null, false)
   agent.config.distributed_tracing.enabled = true // for span events
 
-  t.tearDown(() => {
+  t.teardown(() => {
     helper.unloadAgent(agent)
   })
 
@@ -231,7 +231,7 @@ tap.test('#startAggregators should start all aggregators', (t) => {
   let agent = helper.loadMockedAgent(null, false)
   agent.config.distributed_tracing.enabled = true // for span events
 
-  t.tearDown(() => {
+  t.teardown(() => {
     helper.unloadAgent(agent)
   })
 
@@ -252,7 +252,7 @@ tap.test('#stopAggregators should stop all aggregators', (t) => {
   let agent = helper.loadMockedAgent(null, false)
   agent.config.distributed_tracing.enabled = true // for span events
 
-  t.tearDown(() => {
+  t.teardown(() => {
     helper.unloadAgent(agent)
   })
 
@@ -276,7 +276,7 @@ tap.test('#onConnect should reconfigure all the aggregators', (t) => {
   let agent = helper.loadMockedAgent(null, false)
   agent.config.distributed_tracing.enabled = true // for span events
 
-  t.tearDown(() => {
+  t.teardown(() => {
     helper.unloadAgent(agent)
   })
 
@@ -758,7 +758,7 @@ tap.test('when connected', (t) => {
       t.equal(agent._state, 'started')
       t.equal(agent.config.run_id, 404)
       t.equal(agent.metrics._apdexT, 0.742)
-      t.deepEqual(agent.urlNormalizer.rules, [])
+      t.same(agent.urlNormalizer.rules, [])
 
       agent.stop(function cb_stop() {
         t.ok(settings.isDone())
@@ -887,7 +887,7 @@ tap.test('when sampling_target changes', (t) => {
   })
 
   t.test('should adjust the current sampling target', (t) => {
-    t.notEqual(agent.transactionSampler.samplingTarget, 5)
+    t.not(agent.transactionSampler.samplingTarget, 5)
     agent.config.onConnect({sampling_target: 5})
     t.equal(agent.transactionSampler.samplingTarget, 5)
 
@@ -895,7 +895,7 @@ tap.test('when sampling_target changes', (t) => {
   })
 
   t.test('should adjust the sampling period', (t) => {
-    t.notEqual(agent.transactionSampler.samplingPeriod, 100)
+    t.not(agent.transactionSampler.samplingPeriod, 100)
     agent.config.onConnect({sampling_target_period_in_seconds: 0.1})
     t.equal(agent.transactionSampler.samplingPeriod, 100)
 
