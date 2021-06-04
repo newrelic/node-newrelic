@@ -26,7 +26,7 @@ tap.test('amazon-dax-client', (t) => {
   let daxClient = null
   let docClient = null
 
-  t.beforeEach((done) => {
+  t.beforeEach(() => {
     helper = utils.TestAgent.makeInstrumented()
     helper.registerInstrumentation({
       moduleName: 'aws-sdk',
@@ -44,19 +44,15 @@ tap.test('amazon-dax-client', (t) => {
       maxRetries: 0 // fail fast
     })
     docClient = new AWS.DynamoDB.DocumentClient({ service: daxClient })
-
-    done()
   })
 
-  t.afterEach((done) => {
+  t.afterEach(() => {
     helper && helper.unload()
 
     helper = null
     AWS = null
     daxClient = null
     docClient = null
-
-    done()
   })
 
   t.test('should not crash when using DAX', (t) => {
