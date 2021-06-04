@@ -28,7 +28,7 @@ tap.test('reportSettings', (t) => {
     return_value: []
   }
 
-  t.beforeEach((done) => {
+  t.beforeEach(() => {
     agent = setupMockedAgent()
     agent.config.run_id = RUN_ID
     collectorApi = new CollectorApi(agent)
@@ -38,11 +38,9 @@ tap.test('reportSettings', (t) => {
     settings = nock(URL)
       .post(helper.generateCollectorPath('agent_settings', RUN_ID))
       .reply(200, emptySettingsPayload)
-
-    done()
   })
 
-  t.afterEach((done) => {
+  t.afterEach(() => {
     if (!nock.isDone()) {
       /* eslint-disable no-console */
       console.error('Cleaning pending mocks: %j', nock.pendingMocks())
@@ -55,8 +53,6 @@ tap.test('reportSettings', (t) => {
     helper.unloadAgent(agent)
     agent = null
     collectorApi = null
-
-    done()
   })
 
   t.test('should not error out', (t) => {
@@ -129,7 +125,7 @@ tap.test('error_data', (t) => {
       ]
     ]
 
-    t.beforeEach((done) => {
+    t.beforeEach(() => {
       agent = setupMockedAgent()
       agent.config.run_id = RUN_ID
       collectorApi = new CollectorApi(agent)
@@ -141,11 +137,9 @@ tap.test('error_data', (t) => {
       errorDataEndpoint = nock(URL)
         .post(helper.generateCollectorPath('error_data', RUN_ID))
         .reply(200, response)
-
-      done()
     })
 
-    t.afterEach((done) => {
+    t.afterEach(() => {
       if (!nock.isDone()) {
         /* eslint-disable no-console */
         console.error('Cleaning pending mocks: %j', nock.pendingMocks())
@@ -158,8 +152,6 @@ tap.test('error_data', (t) => {
       helper.unloadAgent(agent)
       agent = null
       collectorApi = null
-
-      done()
     })
 
     t.test('should not error out', (t) => {
@@ -240,7 +232,7 @@ tap.test('sql_trace_data', (t) => {
       ]
     ]
 
-    t.beforeEach((done) => {
+    t.beforeEach(() => {
       agent = setupMockedAgent()
       agent.config.run_id = RUN_ID
       collectorApi = new CollectorApi(agent)
@@ -252,11 +244,9 @@ tap.test('sql_trace_data', (t) => {
       sqlTraceEndpoint = nock(URL)
         .post(helper.generateCollectorPath('sql_trace_data', RUN_ID))
         .reply(200, response)
-
-      done()
     })
 
-    t.afterEach((done) => {
+    t.afterEach(() => {
       if (!nock.isDone()) {
         /* eslint-disable no-console */
         console.error('Cleaning pending mocks: %j', nock.pendingMocks())
@@ -269,8 +259,6 @@ tap.test('sql_trace_data', (t) => {
       helper.unloadAgent(agent)
       agent = null
       collectorApi = null
-
-      done()
     })
 
     t.test('should not error out', (t) => {
@@ -354,7 +342,7 @@ tap.test('analytic_event_data (transaction events)', (t) => {
       }]
     ]
 
-    t.beforeEach((done) => {
+    t.beforeEach(() => {
       agent = setupMockedAgent()
       agent.config.run_id = RUN_ID
       collectorApi = new CollectorApi(agent)
@@ -366,11 +354,9 @@ tap.test('analytic_event_data (transaction events)', (t) => {
       analyticEventEndpoint = nock(URL)
         .post(helper.generateCollectorPath('analytic_event_data', RUN_ID))
         .reply(200, response)
-
-      done()
     })
 
-    t.afterEach((done) => {
+    t.afterEach(() => {
       if (!nock.isDone()) {
         /* eslint-disable no-console */
         console.error('Cleaning pending mocks: %j', nock.pendingMocks())
@@ -383,8 +369,6 @@ tap.test('analytic_event_data (transaction events)', (t) => {
       helper.unloadAgent(agent)
       agent = null
       collectorApi = null
-
-      done()
     })
 
     t.test('should not error out', (t) => {
@@ -464,7 +448,7 @@ tap.test('metric_data', (t) => {
       }
     }
 
-    t.beforeEach((done) => {
+    t.beforeEach(() => {
       agent = setupMockedAgent()
       agent.config.run_id = RUN_ID
       collectorApi = new CollectorApi(agent)
@@ -476,11 +460,9 @@ tap.test('metric_data', (t) => {
       metricsEndpoint = nock(URL)
         .post(helper.generateCollectorPath('metric_data', RUN_ID))
         .reply(200, response)
-
-      done()
     })
 
-    t.afterEach((done) => {
+    t.afterEach(() => {
       if (!nock.isDone()) {
         /* eslint-disable no-console */
         console.error('Cleaning pending mocks: %j', nock.pendingMocks())
@@ -493,8 +475,6 @@ tap.test('metric_data', (t) => {
       helper.unloadAgent(agent)
       agent = null
       collectorApi = null
-
-      done()
     })
 
     t.test('should not error out', (t) => {
@@ -567,7 +547,7 @@ tap.test('transaction_sample_data (transaction trace)', (t) => {
     // imagine this is a serialized transaction trace
     const trace = []
 
-    t.beforeEach((done) => {
+    t.beforeEach(() => {
       agent = setupMockedAgent()
       agent.config.run_id = RUN_ID
       collectorApi = new CollectorApi(agent)
@@ -579,11 +559,9 @@ tap.test('transaction_sample_data (transaction trace)', (t) => {
       transactionTraceEndpoint = nock(URL)
         .post(helper.generateCollectorPath('transaction_sample_data', RUN_ID))
         .reply(200, response)
-
-      done()
     })
 
-    t.afterEach((done) => {
+    t.afterEach(() => {
       if (!nock.isDone()) {
         /* eslint-disable no-console */
         console.error('Cleaning pending mocks: %j', nock.pendingMocks())
@@ -596,8 +574,6 @@ tap.test('transaction_sample_data (transaction trace)', (t) => {
       helper.unloadAgent(agent)
       agent = null
       collectorApi = null
-
-      done()
     })
 
     t.test('should not error out', (t) => {
@@ -651,7 +627,7 @@ tap.test('shutdown', (t) => {
 
     let shutdownEndpoint = null
 
-    t.beforeEach((done) => {
+    t.beforeEach(() => {
       agent = setupMockedAgent()
       agent.config.run_id = RUN_ID
       collectorApi = new CollectorApi(agent)
@@ -663,11 +639,9 @@ tap.test('shutdown', (t) => {
       shutdownEndpoint = nock(URL)
         .post(helper.generateCollectorPath('shutdown', RUN_ID))
         .reply(200, response)
-
-      done()
     })
 
-    t.afterEach((done) => {
+    t.afterEach(() => {
       if (!nock.isDone()) {
         /* eslint-disable no-console */
         console.error('Cleaning pending mocks: %j', nock.pendingMocks())
@@ -680,8 +654,6 @@ tap.test('shutdown', (t) => {
       helper.unloadAgent(agent)
       agent = null
       collectorApi = null
-
-      done()
     })
 
     t.test('should not error out', (t) => {
@@ -713,7 +685,7 @@ tap.test('shutdown', (t) => {
 
     let shutdownEndpoint = null
 
-    t.beforeEach((done) => {
+    t.beforeEach(() => {
       agent = setupMockedAgent()
       agent.config.run_id = RUN_ID
       collectorApi = new CollectorApi(agent)
@@ -723,11 +695,9 @@ tap.test('shutdown', (t) => {
       shutdownEndpoint = nock(URL)
         .post(helper.generateCollectorPath('shutdown', RUN_ID))
         .reply(503)
-
-      done()
     })
 
-    t.afterEach((done) => {
+    t.afterEach(() => {
       if (!nock.isDone()) {
         /* eslint-disable no-console */
         console.error('Cleaning pending mocks: %j', nock.pendingMocks())
@@ -740,8 +710,6 @@ tap.test('shutdown', (t) => {
       helper.unloadAgent(agent)
       agent = null
       collectorApi = null
-
-      done()
     })
 
     t.test('should not error out', (t) => {

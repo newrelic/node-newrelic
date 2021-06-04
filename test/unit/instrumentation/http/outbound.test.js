@@ -26,14 +26,12 @@ tap.test('instrumentOutbound', (t) => {
   const PORT = 8890
 
 
-  t.beforeEach((done) => {
+  t.beforeEach(() => {
     agent = helper.loadMockedAgent()
-    done()
   })
 
-  t.afterEach((done) => {
+  t.afterEach(() => {
     helper.unloadAgent(agent)
-    done()
   })
 
   t.test('should omit query parameters from path if attributes.enabled is false', (t) => {
@@ -119,7 +117,7 @@ tap.test('instrumentOutbound', (t) => {
   t.test('should not accept an undefined path', (t) => {
     const req = new events.EventEmitter()
     helper.runInTransaction(agent, function() {
-      t.throws(() => 
+      t.throws(() =>
         instrumentOutbound(agent, {host: HOSTNAME, port: PORT}, makeFakeRequest), Error)
     })
 
@@ -258,7 +256,7 @@ tap.test('should add data from cat header to segment', (t) => {
     'xyz'
   ]
 
-  t.beforeEach((done) => {
+  t.beforeEach(() => {
     agent = helper.instrumentMockedAgent({
       cross_application_tracer: {enabled: true},
       encoding_key: encKey,
@@ -271,14 +269,18 @@ tap.test('should add data from cat header to segment', (t) => {
       req.resume()
     })
 
-    helper.randomPort((port) => {
-      server.listen(port, done)
+    return new Promise((resolve) => {
+      helper.randomPort((port) => {
+        server.listen(port, resolve)
+      })
     })
   })
 
-  t.afterEach((done) => {
+  t.afterEach(() => {
     helper.unloadAgent(agent)
-    server.close(done)
+    return new Promise((resolve) => {
+      server.close(resolve)
+    })
   })
 
   function addSegment() {
@@ -341,9 +343,8 @@ tap.test('should add data from cat header to segment', (t) => {
       return emit.apply(this, arguments)
     }
 
-    t.afterEach((done) => {
+    t.afterEach(() => {
       events.EventEmitter.prototype.emit = emit
-      done()
     })
 
     helper.runInTransaction(agent, handled)
@@ -383,16 +384,14 @@ tap.test('should add data from cat header to segment', (t) => {
 tap.test('when working with http.request', (t) => {
   let agent
 
-  t.beforeEach((done) => {
+  t.beforeEach(() => {
     agent = helper.instrumentMockedAgent()
     nock.disableNetConnect()
-    done()
   })
 
-  t.afterEach((done) => {
+  t.afterEach(() => {
     nock.enableNetConnect()
     helper.unloadAgent(agent)
-    done()
   })
 
   t.test('should accept port and hostname', (t) => {
@@ -574,18 +573,14 @@ tap.test('Should properly handle http(s) get and request signatures', (t) => {
 
   let agent = null
 
-  function beforeTest(cb) {
+  function beforeTest() {
     agent = helper.instrumentMockedAgent()
     nock.disableNetConnect()
-
-    cb()
   }
 
-  function afterTest(cb) {
+  function afterTest() {
     nock.enableNetConnect()
     helper.unloadAgent(agent)
-
-    cb()
   }
 
   t.test('http.get', (t) => {

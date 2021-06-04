@@ -19,20 +19,17 @@ test('Unhandled rejection', (t) => {
 
   let agent = null
 
-  t.beforeEach((done, t) => {
+  t.beforeEach((t) => {
     // Once on node 10+ only, may be able to replace with below.
     // t.expectUncaughtException(fn, [expectedError], message, extra)
     // https://node-tap.org/docs/api/asserts/#texpectuncaughtexceptionfn-expectederror-message-extra
     helper.temporarilyOverrideTapUncaughtBehavior(tap, t)
 
     agent = helper.instrumentMockedAgent()
-
-    done()
   })
 
-  t.afterEach((done) => {
+  t.afterEach(() => {
     helper.unloadAgent(agent)
-    done()
   })
 
   t.test('should not report it if there is another handler', (t) => {

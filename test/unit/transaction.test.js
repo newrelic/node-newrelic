@@ -1561,7 +1561,7 @@ tap.test('transaction end', (t) => {
   let agent = null
   let transaction = null
 
-  t.beforeEach((done) => {
+  t.beforeEach(() => {
     agent = helper.loadMockedAgent({
       attributes: {
         enabled: true,
@@ -1573,17 +1573,13 @@ tap.test('transaction end', (t) => {
     })
 
     transaction = new Transaction(agent)
-
-    done()
   })
 
-  t.afterEach((done) => {
+  t.afterEach(() => {
     helper.unloadAgent(agent)
 
     agent = null
     transaction = null
-
-    done()
   })
 
   t.test('should clear errors', (t) => {
@@ -1619,7 +1615,7 @@ tap.test('when being named with finalizeNameFromUri', (t) => {
   let agent = null
   let transaction = null
 
-  t.beforeEach((done) => {
+  t.beforeEach(() => {
     agent = helper.loadMockedAgent({
       attributes: {
         enabled: true,
@@ -1631,17 +1627,13 @@ tap.test('when being named with finalizeNameFromUri', (t) => {
     })
 
     transaction = new Transaction(agent)
-
-    done()
   })
 
-  t.afterEach((done) => {
+  t.afterEach(() => {
     helper.unloadAgent(agent)
 
     agent = null
     transaction = null
-
-    done()
   })
 
   t.test('should throw when called with no parameters', (t) => {
@@ -1779,7 +1771,7 @@ tap.test('requestd', (t) => {
   let agent = null
   let transaction = null
 
-  t.beforeEach((done) => {
+  t.beforeEach(() => {
     agent = helper.loadMockedAgent({
       span_events: {
         enabled: true,
@@ -1793,17 +1785,13 @@ tap.test('requestd', (t) => {
     })
 
     transaction = new Transaction(agent)
-
-    done()
   })
 
-  t.afterEach((done) => {
+  t.afterEach(() => {
     helper.unloadAgent(agent)
 
     agent = null
     transaction = null
-
-    done()
   })
 
   t.test('when namestate populated should copy parameters from the name stack', (t) => {
@@ -1831,7 +1819,7 @@ tap.test('when being named with finalizeName', (t) => {
   let agent = null
   let transaction = null
 
-  t.beforeEach((done) => {
+  t.beforeEach(() => {
     agent = helper.loadMockedAgent({
       attributes: {
         enabled: true,
@@ -1843,17 +1831,13 @@ tap.test('when being named with finalizeName', (t) => {
     })
 
     transaction = new Transaction(agent)
-
-    done()
   })
 
-  t.afterEach((done) => {
+  t.afterEach(() => {
     helper.unloadAgent(agent)
 
     agent = null
     transaction = null
-
-    done()
   })
 
   t.test('should call finalizeNameFromUri if no name is given for a web tx', (t) => {

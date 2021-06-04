@@ -1779,18 +1779,16 @@ test('When using the async listener', (t) => {
   let active = null
   let json = null
 
-  t.beforeEach((done, t) => {
+  t.beforeEach((t) => {
     agent = helper.instrumentMockedAgent()
 
     // Once on node 10+ only, may be able to replace with below.
     // t.expectUncaughtException(fn, [expectedError], message, extra)
     // https://node-tap.org/docs/api/asserts/#texpectuncaughtexceptionfn-expectederror-message-extra
     helper.temporarilyOverrideTapUncaughtBehavior(tap, t)
-
-    done()
   })
 
-  t.afterEach(function(done) {
+  t.afterEach(function() {
     transaction.end()
 
     helper.unloadAgent(agent)
@@ -1798,8 +1796,6 @@ test('When using the async listener', (t) => {
     transaction = null
     active = null
     json = null
-
-    done()
   })
 
   t.test('should not have a domain active', (t) => {

@@ -51,9 +51,8 @@ tap.test('serialize', (t) => {
 
   let method = null
 
-  t.beforeEach((done) => {
+  t.beforeEach(() => {
     method = new RemoteMethod('test')
-    done()
   })
 
   t.test('should JSON-encode the given payload', (t) => {
@@ -95,7 +94,7 @@ tap.test('_safeRequest', (t) => {
   let method = null
   let options = null
 
-  t.beforeEach((done) => {
+  t.beforeEach(() => {
     method = new RemoteMethod('test', {max_payload_size_in_bytes: 100}, {})
     options = {
       host: 'collector.newrelic.com',
@@ -105,7 +104,6 @@ tap.test('_safeRequest', (t) => {
       body: [],
       path: '/nonexistent'
     }
-    done()
   })
 
   t.test('requires an options hash', (t) => {
@@ -238,7 +236,7 @@ tap.test('when posting to collector', (t) => {
   let config = null
   let method = null
 
-  t.beforeEach((done) => {
+  t.beforeEach(() => {
     // TODO: is this true?
     // order dependency: requiring nock at the top of the file breaks other tests
     nock = require('nock')
@@ -256,15 +254,13 @@ tap.test('when posting to collector', (t) => {
     }
 
     method = new RemoteMethod('metric_data', config, endpoint)
-    done()
   })
 
-  t.afterEach((done) => {
+  t.afterEach(() => {
     config = null
     method = null
     nock.cleanAll()
     nock.enableNetConnect()
-    done()
   })
 
   t.test('should pass through error when compression fails', (t) => {
@@ -387,18 +383,14 @@ tap.test('when posting to collector', (t) => {
     let thrown = null
     let originalSafeRequest = null
 
-    t.beforeEach((done) => {
+    t.beforeEach(() => {
       thrown = new Error('whoops!')
       originalSafeRequest = method._safeRequest
       method._safeRequest = () => {throw thrown}
-
-      done()
     })
 
-    t.afterEach((done) => {
+    t.afterEach(() => {
       method._safeRequest = originalSafeRequest
-
-      done()
     })
 
     t.test('should not allow the error to go uncaught', (t) => {
@@ -416,7 +408,7 @@ tap.test('when posting to collector', (t) => {
       return_value: 'collector-42.newrelic.com'
     }
 
-    t.beforeEach((done) => {
+    t.beforeEach(() => {
       const successConfig = new Config({
         ssl: true,
         license_key: 'license key here'
@@ -432,8 +424,6 @@ tap.test('when posting to collector', (t) => {
       nock(URL)
         .post(generate('preconnect'))
         .reply(200, response)
-
-      done()
     })
 
     t.test('should not error', (t) => {
@@ -458,12 +448,10 @@ tap.test('when posting to collector', (t) => {
 
     const response = {}
 
-    t.beforeEach((done) => {
+    t.beforeEach(() => {
       nock(URL)
         .post(generate('metric_data', RUN_ID))
         .reply(409, response)
-
-      done()
     })
 
     t.test('should include status in callback response', (t) => {
@@ -484,7 +472,7 @@ tap.test('when generating headers for a plain request', (t) => {
   let options = null
   let method = null
 
-  t.beforeEach((done) => {
+  t.beforeEach(() => {
     const config = new Config({
       run_id: 12
     })
@@ -503,7 +491,6 @@ tap.test('when generating headers for a plain request', (t) => {
     }
 
     headers = method._headers(options)
-    done()
   })
 
   t.test('should use the content type from the parameter', (t) => {
@@ -555,7 +542,7 @@ tap.test('when generating headers for a compressed request', (t) => {
 
   let headers = null
 
-  t.beforeEach((done) => {
+  t.beforeEach(() => {
     const config = new Config({
       run_id: 12
     })
@@ -574,7 +561,6 @@ tap.test('when generating headers for a compressed request', (t) => {
     }
 
     headers = method._headers(options)
-    done()
   })
 
   t.test('should use the content type from the parameter', (t) => {
@@ -622,7 +608,7 @@ tap.test('when generating a request URL', (t) => {
     return url.parse(generated, true, false)
   }
 
-  t.beforeEach((done) => {
+  t.beforeEach(() => {
     config = new Config({
       license_key: TEST_LICENSE
     })
@@ -634,8 +620,6 @@ tap.test('when generating a request URL', (t) => {
 
     const method = new RemoteMethod(TEST_METHOD, config, endpoint)
     parsed = reconstitute(method._path())
-
-    done()
   })
 
   t.test('should say that it supports protocol 17', (t) => {
@@ -689,7 +673,7 @@ tap.test('when generating the User-Agent string', (t) => {
   let version = null
   let pkg = null
 
-  t.beforeEach((done) => {
+  t.beforeEach(() => {
     pkg = require('../../../package.json')
     version = pkg.version
     pkg.version = TEST_VERSION
@@ -697,12 +681,10 @@ tap.test('when generating the User-Agent string', (t) => {
     const method = new RemoteMethod('test', config, {})
 
     userAgent = method._userAgent()
-    done()
   })
 
-  t.afterEach((done) => {
+  t.afterEach(() => {
     pkg.version = version
-    done()
   })
 
   t.test('should clearly indicate it is New Relic for Node', (t) => {

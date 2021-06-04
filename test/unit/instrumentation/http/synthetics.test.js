@@ -40,7 +40,7 @@ tap.test('synthetics outbound header', (t) => {
     port: PORT
   }
 
-  t.beforeEach((done) => {
+  t.beforeEach(() => {
     agent = helper.instrumentMockedAgent({
       cross_application_tracer: {enabled: true},
       trusted_account_ids: [23, 567],
@@ -51,13 +51,16 @@ tap.test('synthetics outbound header', (t) => {
       req.resume()
       res.end()
     })
-    server.listen(PORT, done)
+
+    return new Promise((resolve) => {
+      server.listen(PORT, resolve)
+    })
   })
 
-  t.afterEach((done) => {
+  t.afterEach(() => {
     helper.unloadAgent(agent)
-    server.close(function() {
-      done()
+    return new Promise((resolve) => {
+      server.close(resolve)
     })
   })
 
@@ -103,18 +106,18 @@ tap.test('should add synthetics inbound header to transaction', (t) => {
     port: PORT
   }
 
-  function createServer(done, requestHandler) {
+  function createServer(cb, requestHandler) {
     http = require('http')
     const s = http.createServer(function(req, res) {
       requestHandler(req, res)
       res.end()
       req.resume()
     })
-    s.listen(PORT, done)
+    s.listen(PORT, cb)
     return s
   }
 
-  t.beforeEach((done) => {
+  t.beforeEach(() => {
     synthData = [
       1, // version
       567, // account id
@@ -129,12 +132,13 @@ tap.test('should add synthetics inbound header to transaction', (t) => {
     })
 
     http = require('http')
-    done()
   })
 
-  t.afterEach((done) => {
+  t.afterEach(() => {
     helper.unloadAgent(agent)
-    server.close(done)
+    return new Promise((resolve) => {
+      server.close(resolve)
+    })
   })
 
   t.test('should exist if account id and version are ok', (t) => {
@@ -188,7 +192,7 @@ tap.test('should add synthetics inbound header to transaction', (t) => {
       },
       function onRequest(req, res) {
         res.writeHead(200)
-        t.match(res._headers, {
+        t.match(res.getHeaders(), {
           'x-newrelic-synthetics': synthHeader
         })
         t.end()

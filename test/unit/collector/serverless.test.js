@@ -7,12 +7,15 @@
 
 const tap = require('tap')
 
+const util = require('util')
 const zlib = require('zlib')
 const nock = require('nock')
 const chai = require('chai')
 const expect = chai.expect
 const sinon = require('sinon')
 const fs = require('fs')
+const fsOpenAsync = util.promisify(fs.open)
+const fsUnlinkAsync = util.promisify(fs.unlink)
 const helper = require('../../lib/agent_helper')
 const API = require('../../../lib/collector/serverless')
 const serverfulAPI = require('../../../lib/collector/api')
@@ -24,7 +27,7 @@ tap.test('ServerlessCollector API', (t) => {
   let api = null
   let agent = null
 
-  function beforeTest(done) {
+  function beforeTest() {
     nock.disableNetConnect()
     agent = helper.loadMockedAgent({
       serverless_mode: {
@@ -36,15 +39,11 @@ tap.test('ServerlessCollector API', (t) => {
     agent.reconfigure = () => {}
     agent.setState = () => {}
     api = new API(agent)
-
-    done()
   }
 
-  function afterTest(done) {
+  function afterTest() {
     nock.enableNetConnect()
     helper.unloadAgent(agent)
-
-    done()
   }
 
   t.test('has all expected methods shared with the serverful API', (t) => {
@@ -229,17 +228,17 @@ tap.test('ServerlessCollector API', (t) => {
 
     let stdOutSpy = null
 
-    t.beforeEach((done) => {
+    t.beforeEach(() => {
       // Need to allow output for tap to function correctly
       stdOutSpy = sinon.spy(process.stdout, 'write')
 
-      beforeTest(done)
+      beforeTest()
     })
 
-    t.afterEach((done) => {
+    t.afterEach(() => {
       stdOutSpy.restore()
 
-      afterTest(done)
+      afterTest()
     })
 
     t.test('compresses full payload and writes formatted to stdout', (t) => {
@@ -292,50 +291,37 @@ tap.test('ServerlessCollector with output to custom pipe', (t) => {
   let agent = null
   let writeFileSyncStub = null
 
-  t.beforeEach((done) => {
+  t.beforeEach(async() => {
     nock.disableNetConnect()
 
     process.env.NEWRELIC_PIPE_PATH = customPath
-    fs.open(customPath, 'w', (err, fd) => {
-      if (err) {
-        throw err
-      }
+    const fd = await fsOpenAsync(customPath, 'w')
+    if (!fd) {
+      throw new Error('fd is null')
+    }
 
-      if (!fd) {
-        throw new Error('fd is null')
-      }
-
-      agent = helper.loadMockedAgent({
-        serverless_mode: {
-          enabled: true
-        },
-        app_name: ['TEST'],
-        license_key: 'license key here',
-        NEWRELIC_PIPE_PATH: customPath
-      })
-      agent.reconfigure = () => {}
-      agent.setState = () => {}
-      api = new API(agent)
-
-      writeFileSyncStub = sinon.stub(fs, 'writeFileSync').callsFake(() => {})
-
-      done()
+    agent = helper.loadMockedAgent({
+      serverless_mode: {
+        enabled: true
+      },
+      app_name: ['TEST'],
+      license_key: 'license key here',
+      NEWRELIC_PIPE_PATH: customPath
     })
+    agent.reconfigure = () => {}
+    agent.setState = () => {}
+    api = new API(agent)
+
+    writeFileSyncStub = sinon.stub(fs, 'writeFileSync').callsFake(() => {})
   })
 
-  t.afterEach((done) => {
+  t.afterEach(async() => {
     nock.enableNetConnect()
     helper.unloadAgent(agent)
 
     writeFileSyncStub.restore()
 
-    fs.unlink(customPath, (err) => {
-      if (err) {
-        throw err
-      }
-
-      done()
-    })
+    await fsUnlinkAsync(customPath)
   })
 
   t.test('compresses full payload and writes formatted to stdout', (t) => {
