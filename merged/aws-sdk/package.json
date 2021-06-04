@@ -25,7 +25,7 @@
     "eslint": "^5.12.1",
     "newrelic": "^6.11.0",
     "sinon": "^7.2.3",
-    "tap": "^12.4.0"
+    "tap": "^15.0.9"
   },
   "peerDependencies": {
     "newrelic": ">=6.11.0"
