@@ -19,34 +19,35 @@ tap.test('S3 buckets', (t) => {
 
   let server = null
 
-  t.beforeEach((done) => {
+  t.beforeEach(async() => {
     server = createEmptyResponseServer()
-    server.listen(0, () => {
-      helper = utils.TestAgent.makeInstrumented()
-      helper.registerInstrumentation({
-        moduleName: 'aws-sdk',
-        type: 'conglomerate',
-        onRequire: require('../../lib/instrumentation')
-      })
-      AWS = require('aws-sdk')
-      S3 = new AWS.S3({
-        credentials: FAKE_CREDENTIALS,
-        endpoint: `http://localhost:${server.address().port}`,
-        // allows using generic endpoint, instead of needing a
-        // bucket.endpoint server setup.
-        s3ForcePathStyle: true,
-        apiVersion: '2006-03-01'
-      })
-      done()
+
+    await new Promise((resolve) => {
+      server.listen(0, resolve)
+    })
+
+    helper = utils.TestAgent.makeInstrumented()
+    helper.registerInstrumentation({
+      moduleName: 'aws-sdk',
+      type: 'conglomerate',
+      onRequire: require('../../lib/instrumentation')
+    })
+    AWS = require('aws-sdk')
+    S3 = new AWS.S3({
+      credentials: FAKE_CREDENTIALS,
+      endpoint: `http://localhost:${server.address().port}`,
+      // allows using generic endpoint, instead of needing a
+      // bucket.endpoint server setup.
+      s3ForcePathStyle: true,
+      apiVersion: '2006-03-01'
     })
   })
 
-  t.afterEach((done) => {
+  t.afterEach(() => {
     server.close()
     server = null
 
     helper && helper.unload()
-    done()
   })
 
   t.test('commands with callbacks', (t) => {

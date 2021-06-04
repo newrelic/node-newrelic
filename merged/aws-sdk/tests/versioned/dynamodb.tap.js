@@ -22,38 +22,39 @@ tap.test('DynamoDB', (t) => {
 
   let server = null
 
-  t.beforeEach((done) => {
+  t.beforeEach(async() => {
     server = createEmptyResponseServer()
-    server.listen(0, () => {
-      helper = utils.TestAgent.makeInstrumented()
-      helper.registerInstrumentation({
-        moduleName: 'aws-sdk',
-        type: 'conglomerate',
-        onRequire: require('../../lib/instrumentation')
-      })
 
-      AWS = require('aws-sdk')
-
-      const endpoint = `http://localhost:${server.address().port}`
-      const ddb = new AWS.DynamoDB({
-        credentials: FAKE_CREDENTIALS,
-        endpoint: endpoint,
-        region: 'us-east-1'
-      })
-      const docClient = new AWS.DynamoDB.DocumentClient({
-        credentials: FAKE_CREDENTIALS,
-        endpoint: endpoint,
-        region: 'us-east-1'
-      })
-
-      tableName = `delete-aws-sdk-test-table-${Math.floor(Math.random() * 100000)}`
-      tests = createTests(ddb, docClient, tableName)
-
-      done()
+    await new Promise((resolve) => {
+      server.listen(0, resolve)
     })
+
+    helper = utils.TestAgent.makeInstrumented()
+    helper.registerInstrumentation({
+      moduleName: 'aws-sdk',
+      type: 'conglomerate',
+      onRequire: require('../../lib/instrumentation')
+    })
+
+    AWS = require('aws-sdk')
+
+    const endpoint = `http://localhost:${server.address().port}`
+    const ddb = new AWS.DynamoDB({
+      credentials: FAKE_CREDENTIALS,
+      endpoint: endpoint,
+      region: 'us-east-1'
+    })
+    const docClient = new AWS.DynamoDB.DocumentClient({
+      credentials: FAKE_CREDENTIALS,
+      endpoint: endpoint,
+      region: 'us-east-1'
+    })
+
+    tableName = `delete-aws-sdk-test-table-${Math.floor(Math.random() * 100000)}`
+    tests = createTests(ddb, docClient, tableName)
   })
 
-  t.afterEach((done) => {
+  t.afterEach(() => {
     server.close()
     server = null
 
@@ -63,8 +64,6 @@ tap.test('DynamoDB', (t) => {
     AWS = null
     tests = null
     tableName = null
-
-    done()
   })
 
   t.test('commands with callback', (t) => {

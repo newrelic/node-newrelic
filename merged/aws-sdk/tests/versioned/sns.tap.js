@@ -20,34 +20,33 @@ tap.test('SNS', (t) => {
 
   let server = null
 
-  t.beforeEach((done) => {
+  t.beforeEach(async() => {
     server = createEmptyResponseServer()
-    server.listen(0, () => {
-      helper = utils.TestAgent.makeInstrumented()
-      helper.registerInstrumentation({
-        moduleName: 'aws-sdk',
-        type: 'conglomerate',
-        onRequire: require('../../lib/instrumentation')
-      })
-      AWS = require('aws-sdk')
 
-      sns = new AWS.SNS({
-        credentials: FAKE_CREDENTIALS,
-        endpoint: `http://localhost:${server.address().port}`,
-        region: 'us-east-1'
-      })
+    await new Promise((resolve) => {
+      server.listen(0, resolve)
+    })
 
-      done()
+    helper = utils.TestAgent.makeInstrumented()
+    helper.registerInstrumentation({
+      moduleName: 'aws-sdk',
+      type: 'conglomerate',
+      onRequire: require('../../lib/instrumentation')
+    })
+    AWS = require('aws-sdk')
+
+    sns = new AWS.SNS({
+      credentials: FAKE_CREDENTIALS,
+      endpoint: `http://localhost:${server.address().port}`,
+      region: 'us-east-1'
     })
   })
 
-  t.afterEach((done) => {
+  t.afterEach(() => {
     server.close()
     server = null
 
     helper && helper.unload()
-
-    done()
   })
 
   t.test('publish with callback', (t) => {
@@ -101,4 +100,3 @@ function finish(t, tx) {
 
   t.end()
 }
-

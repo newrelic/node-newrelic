@@ -27,33 +27,34 @@ tap.test('SQS API', (t) => {
 
   let server = null
 
-  t.beforeEach((done) => {
+  t.beforeEach(async() => {
     server = createSqsServer()
-    server.listen(0, () => {
-      helper = utils.TestAgent.makeInstrumented()
-      helper.registerInstrumentation({
-        moduleName: 'aws-sdk',
-        type: 'conglomerate',
-        onRequire: require('../../lib/instrumentation')
-      })
 
-      AWS = require('aws-sdk')
-
-      const endpoint = `http://localhost:${server.address().port}`
-      sqs = new AWS.SQS({
-        credentials: FAKE_CREDENTIALS,
-        endpoint: endpoint,
-        apiVersion: '2012-11-05',
-        region: AWS_REGION
-      })
-
-      queueName = 'delete-aws-sdk-test-queue-' + Math.floor(Math.random() * 100000)
-
-      done()
+    await new Promise((resolve) => {
+      server.listen(0, resolve)
     })
+
+    helper = utils.TestAgent.makeInstrumented()
+    helper.registerInstrumentation({
+      moduleName: 'aws-sdk',
+      type: 'conglomerate',
+      onRequire: require('../../lib/instrumentation')
+    })
+
+    AWS = require('aws-sdk')
+
+    const endpoint = `http://localhost:${server.address().port}`
+    sqs = new AWS.SQS({
+      credentials: FAKE_CREDENTIALS,
+      endpoint: endpoint,
+      apiVersion: '2012-11-05',
+      region: AWS_REGION
+    })
+
+    queueName = 'delete-aws-sdk-test-queue-' + Math.floor(Math.random() * 100000)
   })
 
-  t.afterEach((done) => {
+  t.afterEach(() => {
     helper && helper.unload()
 
     server.close()
@@ -68,8 +69,6 @@ tap.test('SQS API', (t) => {
     sendMessageRequestId = null
     sendMessageBatchRequestId = null
     receiveMessageRequestId = null
-
-    done()
   })
 
   t.test('commands with callback', (t) => {
