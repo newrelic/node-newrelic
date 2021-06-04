@@ -21,15 +21,13 @@ test('agent instrumentation of Hapi', function(t) {
   var agent = null
   var server = null
 
-  t.beforeEach(function(done) {
+  t.beforeEach(function() {
     agent = helper.instrumentMockedAgent()
-
-    done()
   })
 
-  t.afterEach(function(done) {
+  t.afterEach(function() {
     helper.unloadAgent(agent)
-    server.stop(done)
+    return server.stop()
   })
 
   t.test('for a normal request', {timeout: 5000}, function(t) {

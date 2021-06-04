@@ -168,7 +168,7 @@ const helper = module.exports = {
 
   loadTestAgent: (t, conf, setState = true) => {
     let agent = helper.instrumentMockedAgent(conf, setState)
-    t.tearDown(() => {
+    t.teardown(() => {
       helper.unloadAgent(agent)
     })
 
@@ -361,7 +361,7 @@ const helper = module.exports = {
 
     t.comment('Removing listeners for %s', evnt)
     let listeners = emitter.listeners(evnt)
-    t.tearDown(() => {
+    t.teardown(() => {
       t.comment('Re-adding listeners for %s', evnt)
       listeners.forEach((fn) => {
         emitter.on(evnt, fn)

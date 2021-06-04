@@ -1927,7 +1927,7 @@ function _testPromiseContext(t, agent, factory) {
     })
 
     helper.runInTransaction(agent, function(txB) {
-      t.tearDown(function() {
+      t.teardown(function() {
         ctxA.transaction.end()
         txB.end()
       })
@@ -1946,7 +1946,7 @@ function _testPromiseContext(t, agent, factory) {
     t.plan(2)
 
     var ctxA = helper.runInTransaction(agent, function(tx) {
-      t.tearDown(function() {
+      t.teardown(function() {
         tx.end()
       })
 
@@ -1991,7 +1991,7 @@ function _testPromiseContext(t, agent, factory) {
 
     ctxA.transaction.end()
     helper.runInTransaction(agent, function(txB) {
-      t.tearDown(function() {
+      t.teardown(function() {
         ctxA.transaction.end()
         txB.end()
       })

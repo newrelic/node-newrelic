@@ -55,7 +55,7 @@ function runTest(t) {
     oracleSetup(preparedTest)
   )
 
-  t.tearDown(function() {
+  t.teardown(function() {
     helper.unloadAgent(agent)
   })
 }

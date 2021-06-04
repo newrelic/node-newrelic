@@ -38,7 +38,7 @@ function test(title, options, callback) {
   }
   options.timeout = 15000 // Allow for a slow file system.
   tapTest(title, options, function(t) {
-    t.tearDown(function() {
+    t.teardown(function() {
       if (++done === tasks) {
         process.umask(mask)
       }
@@ -938,8 +938,8 @@ test('watchFile', function(t) {
 })
 
 function setupAgent(t) {
-  const agent = helper.instrumentMockedAgent()
-  t.tearDown(function() {
+  var agent = helper.instrumentMockedAgent()
+  t.teardown(function() {
     helper.unloadAgent(agent)
   })
 

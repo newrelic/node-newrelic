@@ -76,7 +76,7 @@ test('custom naming rules should be applied early for RUM', function(t) {
     }
   })
 
-  t.tearDown(function cb_tearDown() {
+  t.teardown(function cb_tearDown() {
     external.close()
     helper.unloadAgent(agent)
   })
@@ -124,7 +124,7 @@ test('custom web transactions should have rules applied for RUM', function(t) {
     t.end()
   })
 
-  t.tearDown(function cb_tearDown() {
+  t.teardown(function cb_tearDown() {
     helper.unloadAgent(agent)
   })
 })

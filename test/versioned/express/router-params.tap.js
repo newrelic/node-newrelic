@@ -32,7 +32,7 @@ test("Express router introspection", function(t) {
   })
   app.use('/a/:param1', router)
 
-  t.tearDown(function cb_tearDown() {
+  t.teardown(function cb_tearDown() {
     server.close(function cb_close() {
       helper.unloadAgent(agent)
     })

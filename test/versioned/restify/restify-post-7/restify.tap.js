@@ -17,23 +17,21 @@ tap.test('Restify', (t) => {
 
   let agent = null
   let restify = null
-  t.beforeEach((done) => {
+  t.beforeEach(() => {
     agent = helper.instrumentMockedAgent()
 
     restify = require('restify')
-    done()
   })
 
-  t.afterEach((done) => {
+  t.afterEach(() => {
     helper.unloadAgent(agent)
-    done()
   })
 
   t.test('should not crash when handling a connection', function(t) {
     t.plan(7)
 
     var server  = restify.createServer()
-    t.tearDown(() => server.close())
+    t.teardown(() => server.close())
 
     agent.on('transactionFinished', () => {
       var metric = agent.metrics.getMetric(METRIC)
@@ -79,7 +77,7 @@ tap.test('Restify', (t) => {
 
     helper.withSSL().then(([ key, certificate, ca ]) => {
       var server  = restify.createServer({key : key, certificate : certificate})
-      t.tearDown(() => server.close())
+      t.teardown(() => server.close())
 
       server.get('/hello/:name', function sayHello(req, res) {
         t.ok(agent.getTransaction(), 'transaction should be available in handler')

@@ -15,7 +15,7 @@ test('promisify', {skip: !util.promisify}, function(t) {
   t.test('should work on setTimeout', function(t) {
     t.plan(2)
     var agent = helper.instrumentMockedAgent()
-    t.tearDown(function() {
+    t.teardown(function() {
       helper.unloadAgent(agent)
     })
     let asyncTimeout = util.promisify(setTimeout)
@@ -32,7 +32,7 @@ test('promisify', {skip: !util.promisify}, function(t) {
   t.test('should work on setImmediate', function(t) {
     t.plan(2)
     var agent = helper.instrumentMockedAgent()
-    t.tearDown(function() {
+    t.teardown(function() {
       helper.unloadAgent(agent)
     })
     let asyncImmediate = util.promisify(setImmediate)
@@ -49,7 +49,7 @@ test('promisify', {skip: !util.promisify}, function(t) {
   t.test('should work on child_process.exec', function(t) {
     t.plan(3)
     var agent = helper.instrumentMockedAgent()
-    t.tearDown(function() {
+    t.teardown(function() {
       helper.unloadAgent(agent)
     })
     let asyncExec = util.promisify(require('child_process').exec)
@@ -66,7 +66,7 @@ test('promisify', {skip: !util.promisify}, function(t) {
   t.test('should work on child_process.execFile', function(t) {
     t.plan(3)
     var agent = helper.instrumentMockedAgent()
-    t.tearDown(function() {
+    t.teardown(function() {
       helper.unloadAgent(agent)
     })
     let asyncExec = util.promisify(require('child_process').execFile)
@@ -85,7 +85,7 @@ test('promisify', {skip: !util.promisify}, function(t) {
     t.plan(1)
 
     var agent = helper.instrumentMockedAgent()
-    t.tearDown(function() {
+    t.teardown(function() {
       helper.unloadAgent(agent)
     })
 

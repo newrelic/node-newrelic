@@ -37,7 +37,7 @@ tap.test('pricing pcf info', function(t) {
 function makeTest(testCase, getInfo) {
   return function(t) {
     var agent = helper.loadMockedAgent()
-    t.tearDown(function() {
+    t.teardown(function() {
       helper.unloadAgent(agent)
     })
 

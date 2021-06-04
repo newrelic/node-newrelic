@@ -37,36 +37,29 @@ function collectionTest(name, run) {
 
     t.test('remote connection', function(t) {
       t.autoend()
-      t.beforeEach(function(done) {
+      t.beforeEach(function() {
         agent = helper.instrumentMockedAgent()
 
         var mongodb = require('mongodb')
 
-        dropTestCollections(mongodb, collections, function(err) {
-          if (err) {
-            return done(err)
-          }
-
-          METRIC_HOST_NAME = common.getHostName(agent)
-          METRIC_HOST_PORT = common.getPort()
-          common.connect(mongodb, null, function(err, res) {
-            if (err) {
-              return done(err)
-            }
-
+        return dropTestCollections(mongodb, collections)
+          .then(() => {
+            METRIC_HOST_NAME = common.getHostName(agent)
+            METRIC_HOST_PORT = common.getPort()
+            return common.connect(mongodb)
+          })
+          .then((res) => {
             client = res.client
             db = res.db
             collection = db.collection('testCollection')
-            populate(db, collection, done)
+            return populate(db, collection)
           })
-        })
       })
 
-      t.afterEach(function(done) {
-        common.close(client, db, function(err) {
+      t.afterEach(function() {
+        return common.close(client, db).then(() => {
           helper.unloadAgent(agent)
           agent = null
-          done(err)
         })
       })
 
@@ -204,37 +197,29 @@ function collectionTest(name, run) {
     var shouldTestDomain = domainPath || process.env.TRAVIS
     t.test('domain socket', {skip: !shouldTestDomain}, function(t) {
       t.autoend()
-      t.beforeEach(function(done) {
+      t.beforeEach(function() {
         agent = helper.instrumentMockedAgent()
         METRIC_HOST_NAME = agent.config.getHostnameSafe()
         METRIC_HOST_PORT = domainPath
 
         var mongodb = require('mongodb')
 
-        dropTestCollections(mongodb, collections, function(err) {
-          if (err) {
-            return done(err)
-          }
-
-          common.connect(mongodb, domainPath, function(err, res) {
-            if (err) {
-              return done(err)
-            }
-
+        return dropTestCollections(mongodb, collections)
+          .then(() => {
+            return common.connect(mongodb, domainPath)
+          })
+          .then((res) => {
             client = res.client
             db = res.db
-
             collection = db.collection('testCollection')
-            populate(db, collection, done)
+            return populate(db, collection)
           })
-        })
       })
 
-      t.afterEach(function(done) {
-        common.close(client, db, function(err) {
+      t.afterEach(function() {
+        return common.close(client, db).then(() => {
           helper.unloadAgent(agent)
           agent = null
-          done(err)
         })
       })
 
@@ -278,26 +263,28 @@ function checkSegmentParams(t, segment) {
   t.equal(attributes.port_path_or_id, METRIC_HOST_PORT, 'should have correct port')
 }
 
-function populate(db, collection, done) {
-  var items = []
-  for (var i = 0; i < 30; ++i) {
-    items.push({
-      i: i,
-      next3: [i + 1, i + 2, i + 3],
-      data: Math.random().toString(36).slice(2),
-      mod10: i % 10,
-      // spiral out
-      loc: [
-        (i % 4 && (i + 1) % 4 ? i : -i),
-        ((i + 1) % 4 && (i + 2) % 4 ? i : -i)
-      ]
-    })
-  }
+function populate(db, collection) {
+  return new Promise((resolve, reject) => {
+    var items = []
+    for (var i = 0; i < 30; ++i) {
+      items.push({
+        i: i,
+        next3: [i + 1, i + 2, i + 3],
+        data: Math.random().toString(36).slice(2),
+        mod10: i % 10,
+        // spiral out
+        loc: [
+          (i % 4 && (i + 1) % 4 ? i : -i),
+          ((i + 1) % 4 && (i + 2) % 4 ? i : -i)
+        ]
+      })
+    }
 
-  db.collection('testCollection2').drop(function() {
-    collection.deleteMany({}, function(err) {
-      if (err) return done(err)
-      collection.insert(items, done)
+    db.collection('testCollection2').drop(function() {
+      collection.deleteMany({}, function(err) {
+        if (err) reject(err)
+        collection.insert(items, resolve)
+      })
     })
   })
 }
@@ -307,15 +294,9 @@ function populate(db, collection, done) {
  * by tests.
  * @param {*} mongodb MongoDB module to execute commands on.
  * @param {*} collections Collections to drop for test.
- * @param {Function} callback The operations to be performed while the server
- *                     is running.
  */
-function dropTestCollections(mongodb, collections, callback) {
-  common.connect(mongodb, null, function(err, res) {
-    if (err) {
-      return callback(err)
-    }
-
+function dropTestCollections(mongodb, collections) {
+  return common.connect(mongodb).then((res) => {
     const client = res.client
     const db = res.db
 
@@ -329,9 +310,10 @@ function dropTestCollections(mongodb, collections, callback) {
         cb(err)
       })
     }, (err) => {
-      common.close(client, db, (err2) => {
-        callback(err || err2)
-      })
+      return common.close(client, db)
+        .catch((err2) => {
+          throw err || err2
+        })
     })
   })
 }

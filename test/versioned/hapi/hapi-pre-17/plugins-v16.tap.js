@@ -26,20 +26,19 @@ tap.test('Hapi Plugins', function(t) {
     }
   }, 10)
 
-  t.tearDown(function() {
+  t.teardown(function() {
     clearInterval(intervalId)
   })
 
-  t.beforeEach(function(done) {
+  t.beforeEach(function() {
     agent = helper.instrumentMockedAgent()
 
     server = utils.getServer()
-    done()
   })
 
-  t.afterEach(function(done) {
+  t.afterEach(function() {
     helper.unloadAgent(agent)
-    server.stop(done)
+    return server.stop()
   })
 
   t.test('maintains transaction state', function(t) {

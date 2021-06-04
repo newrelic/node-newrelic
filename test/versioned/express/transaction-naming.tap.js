@@ -53,7 +53,7 @@ function runTests(flags) {
     var server = app.listen(function() {
       makeRequest(server, endpoint)
     })
-    t.tearDown(function cb_tearDown() {
+    t.teardown(function cb_tearDown() {
       server.close()
     })
   })
@@ -370,7 +370,7 @@ function runTests(flags) {
       numTests
     )
     var server = app.listen(function() {
-      t.tearDown(function cb_tearDown() {
+      t.teardown(function cb_tearDown() {
         server.close()
       })
       for (var i = 0; i < numTests; i++) {
@@ -427,7 +427,7 @@ function runTests(flags) {
       t.equal(tx.name, 'WebTransaction/Expressjs/GET//test')
     })
 
-    t.tearDown(function cb_tearDown() {
+    t.teardown(function cb_tearDown() {
       server.close()
     })
   })
@@ -453,7 +453,7 @@ function runTests(flags) {
       http.request({ port: server.address().port, path: '/test' }).end()
     })
 
-    t.tearDown(function() {
+    t.teardown(function() {
       server.close()
     })
   })
@@ -520,7 +520,7 @@ function runTests(flags) {
         })
       }, 100)
     })
-    t.tearDown(function() {
+    t.teardown(function() {
       server.close()
       clearInterval(interval)
     })
@@ -531,7 +531,7 @@ function runTests(flags) {
 
     express = require('express')
     app = express()
-    t.tearDown(function cb_tearDown() {
+    t.teardown(function cb_tearDown() {
       helper.unloadAgent(agent)
     })
   }
@@ -566,7 +566,7 @@ function runTests(flags) {
     var server = app.listen(function() {
       makeRequest(server, endpoint)
     })
-    t.tearDown(function cb_tearDown() {
+    t.teardown(function cb_tearDown() {
       server.close()
     })
   }

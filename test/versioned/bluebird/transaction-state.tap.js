@@ -27,7 +27,7 @@ function setupAgent(t, enableSegments) {
   var agent = helper.instrumentMockedAgent({
     feature_flag: {promise_segments: enableSegments}
   })
-  t.tearDown(function tearDown() {
+  t.teardown(function tearDown() {
     helper.unloadAgent(agent)
   })
   return agent

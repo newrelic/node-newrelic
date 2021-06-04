@@ -34,7 +34,7 @@ tap.test('Attribute include/exclude configurations', function(t) {
   t.plan(tests.length)
 
   var agent = helper.loadMockedAgent()
-  t.tearDown(function() {
+  t.teardown(function() {
     helper.unloadAgent(agent)
   })
 

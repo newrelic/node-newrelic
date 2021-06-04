@@ -15,7 +15,7 @@ test('Express route param', function(t) {
   const express = require('express')
   const server = createServer(express)
 
-  t.tearDown(function() {
+  t.teardown(function() {
     server.close(function() {
       helper.unloadAgent(agent)
     })

@@ -87,7 +87,7 @@ test(
       req.end()
     })
 
-    t.tearDown(function cb_tearDown() {
+    t.teardown(function cb_tearDown() {
       external.close()
       server.close()
       helper.unloadAgent(agent)
@@ -201,7 +201,7 @@ test('built-in http instrumentation should not swallow errors', function(t) {
 
   let server = null
 
-  t.tearDown(function cb_tearDown() {
+  t.teardown(function cb_tearDown() {
     server.close()
     helper.unloadAgent(agent)
   })
@@ -279,7 +279,7 @@ test("built-in http instrumentation making outbound requests", function(t) {
     res.end(body)
   })
 
-  t.tearDown(function cb_tearDown() {
+  t.teardown(function cb_tearDown() {
     server.close()
     helper.unloadAgent(agent)
   })
@@ -350,7 +350,7 @@ test("built-in http instrumentation should not crash for requests that are in pr
 
   var agent = helper.instrumentMockedAgent()
 
-  t.tearDown(function cb_tearDown() {
+  t.teardown(function cb_tearDown() {
     helper.unloadAgent(agent)
   })
 
@@ -411,7 +411,7 @@ test(
 
     var agent = helper.instrumentMockedAgent()
 
-    t.tearDown(function cb_tearDown() {
+    t.teardown(function cb_tearDown() {
       helper.unloadAgent(agent)
       server.close()
     })

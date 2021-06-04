@@ -183,7 +183,7 @@ test('when debug API', function(t) {
       return originalEmit.call(process, event, ...args)
     }
 
-    t.tearDown(() => {
+    t.teardown(() => {
       process.emit = asyncHookDomainEmit
     })
 
@@ -873,7 +873,7 @@ function setupAgent(t, enableSegments) {
   var agent = helper.instrumentMockedAgent({
     feature_flag: {promise_segments: enableSegments}
   })
-  t.tearDown(function tearDown() {
+  t.teardown(function tearDown() {
     helper.unloadAgent(agent)
   })
   return agent

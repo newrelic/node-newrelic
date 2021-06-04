@@ -1055,7 +1055,7 @@ module.exports = function runTests(flags) {
     }
 
     var agent = helper.loadTestAgent(t, {feature_flag: flags})
-    t.tearDown(function() {
+    t.teardown(function() {
       global.Promise = OriginalPromise
     })
 
@@ -1077,7 +1077,7 @@ module.exports = function runTests(flags) {
     util.inherits(WrappedPromise, Promise)
     global.Promise = WrappedPromise
 
-    t.tearDown(function() {
+    t.teardown(function() {
       global.Promise = OriginalPromise
     })
 

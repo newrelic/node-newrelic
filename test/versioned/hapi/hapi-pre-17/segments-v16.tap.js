@@ -20,16 +20,15 @@ var port
 tap.test('Hapi v16 segments', function(t) {
   t.autoend()
 
-  t.beforeEach(function(done) {
+  t.beforeEach(function() {
     agent = helper.instrumentMockedAgent()
 
     server = utils.getServer()
-    done()
   })
 
-  t.afterEach(function(done) {
+  t.afterEach(function() {
     helper.unloadAgent(agent)
-    server.stop(done)
+    return server.stop()
   })
 
   t.test('route handler is recorded as middleware', function(t) {

@@ -18,7 +18,7 @@ test('ignoring a Hapi route', function(t) {
   const api = new API(agent)
   const server = utils.getServer()
 
-  t.tearDown(function() {
+  t.teardown(function() {
     helper.unloadAgent(agent)
     return server.stop()
   })

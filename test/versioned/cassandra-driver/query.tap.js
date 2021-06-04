@@ -191,7 +191,7 @@ test('Cassandra instrumentation', {timeout: 5000}, function testInstrumentation(
       }
     })
 
-    t.tearDown(function tearDown() {
+    t.teardown(function tearDown() {
       helper.unloadAgent(agent)
       client.shutdown()
     })

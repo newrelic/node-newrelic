@@ -33,15 +33,14 @@ tap.test('Hapi v17 ext', function(t) {
     })
   }
 
-  t.tearDown(function() {
+  t.teardown(function() {
     clearInterval(intervalId)
   })
 
-  t.beforeEach(function(done) {
+  t.beforeEach(function() {
     agent = helper.instrumentMockedAgent()
 
     server = utils.getServer()
-    done()
   })
 
   t.afterEach(function() {

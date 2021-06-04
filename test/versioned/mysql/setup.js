@@ -12,8 +12,8 @@ var params = require('../../lib/params')
 module.exports = exports = setup
 exports.pool = setupPool
 
-function setup(mysql, cb) {
-  a.series([
+function setup(mysql) {
+  return a.series([
     // 1. Create the user and database as root.
     function(cb) {
       var client = mysql.createConnection({
@@ -70,7 +70,7 @@ function setup(mysql, cb) {
         cb(err)
       })
     }
-  ], cb)
+  ])
 }
 
 function setupPool(mysql, logger) {

@@ -30,38 +30,37 @@ module.exports = function runTests(name, clientFactory) {
   /**
    * Deletion of testing table if already exists,
    * then recreation of a testing table
-   *
-   *
-   * @param Callback function to set off running the tests
    */
-  function postgresSetup(runTest) {
+  function postgresSetup() {
     var pg = clientFactory()
     var setupClient = new pg.Client(CON_OBJ)
 
-    setupClient.connect(function(err) {
-      if (err) {
-        throw err
-      }
-      var tableDrop = 'DROP TABLE IF EXISTS ' + TABLE_PREPARED
-
-      var tableCreate =
-        'CREATE TABLE ' + TABLE_PREPARED + ' (' +
-          PK + ' integer PRIMARY KEY, ' +
-          COL + ' text' +
-        ');'
-
-      a.eachSeries([
-        'set client_min_messages=\'warning\';', // supress PG notices
-        tableDrop,
-        tableCreate
-      ], function(query, cb) {
-        setupClient.query(query, cb)
-      }, function(err) {
+    return new Promise((resolve, reject) => {
+      setupClient.connect(function(err) {
         if (err) {
-          throw err
+          reject(err)
         }
-        setupClient.end()
-        runTest()
+        var tableDrop = 'DROP TABLE IF EXISTS ' + TABLE_PREPARED
+
+        var tableCreate =
+          'CREATE TABLE ' + TABLE_PREPARED + ' (' +
+            PK + ' integer PRIMARY KEY, ' +
+            COL + ' text' +
+          ');'
+
+        a.eachSeries([
+          'set client_min_messages=\'warning\';', // supress PG notices
+          tableDrop,
+          tableCreate
+        ], function(query, cb) {
+          setupClient.query(query, cb)
+        }, function(err) {
+          if (err) {
+            reject(err)
+          }
+          setupClient.end()
+          resolve()
+        })
       })
     })
   }
@@ -237,7 +236,7 @@ module.exports = function runTests(name, clientFactory) {
     var agent = null
     var pg = null
 
-    t.beforeEach(function(done) {
+    t.beforeEach(function() {
       // the pg module has `native` lazy getter that is removed after first call,
       // so in order to re-instrument, we need to remove the pg module from the cache
       var pgResolved = require.resolve('pg')
@@ -246,20 +245,19 @@ module.exports = function runTests(name, clientFactory) {
       agent = helper.instrumentMockedAgent()
       pg = clientFactory()
 
-      postgresSetup(done)
+      return postgresSetup()
     })
 
-    t.afterEach(function(done) {
+    t.afterEach(function() {
       helper.unloadAgent(agent)
       agent = null
       pg = null
-      done()
     })
 
     t.test('simple query with prepared statement', function(t) {
       var client = new pg.Client(CON_OBJ)
 
-      t.tearDown(function() {
+      t.teardown(function() {
         client.end()
       })
 
@@ -311,7 +309,7 @@ module.exports = function runTests(name, clientFactory) {
       t.plan(36)
       var client = new pg.Client(CON_OBJ)
 
-      t.tearDown(function() {
+      t.teardown(function() {
         client.end()
       })
 
@@ -367,7 +365,7 @@ module.exports = function runTests(name, clientFactory) {
       t.plan(36)
       var client = new pg.Client(CON_OBJ)
 
-      t.tearDown(function() {
+      t.teardown(function() {
         client.end()
       })
 
@@ -525,7 +523,7 @@ module.exports = function runTests(name, clientFactory) {
       t.plan(3)
       var client = new pg.Client(CON_OBJ)
 
-      t.tearDown(function() {
+      t.teardown(function() {
         client.end()
       })
 
@@ -579,7 +577,7 @@ module.exports = function runTests(name, clientFactory) {
 
       var client = new pg.Client(CON_OBJ)
 
-      t.tearDown(function() {
+      t.teardown(function() {
         client.end()
       })
 
@@ -612,7 +610,7 @@ module.exports = function runTests(name, clientFactory) {
 
       var client = new pg.Client(CON_OBJ)
 
-      t.tearDown(function() {
+      t.teardown(function() {
         client.end()
       })
 
@@ -651,7 +649,7 @@ module.exports = function runTests(name, clientFactory) {
 
       var client = new pg.Client(CON_OBJ)
 
-      t.tearDown(function() {
+      t.teardown(function() {
         client.end()
       })
 
@@ -696,7 +694,7 @@ module.exports = function runTests(name, clientFactory) {
       t.plan(2)
       var client = new pg.Client(CON_OBJ)
 
-      t.tearDown(function() {
+      t.teardown(function() {
         client.end()
       })
 
@@ -719,7 +717,7 @@ module.exports = function runTests(name, clientFactory) {
     t.test('query.on should create one segment for row events', function(t) {
       helper.runInTransaction(agent, function transactionInScope(tx) {
         var client = new pg.Client(CON_OBJ)
-        t.tearDown(function() {
+        t.teardown(function() {
           client.end()
         })
 
@@ -747,7 +745,7 @@ module.exports = function runTests(name, clientFactory) {
       helper.runInTransaction(agent, function transactionInScope(tx) {
         var client = new pg.Client(CON_OBJ)
 
-        t.tearDown(function() {
+        t.teardown(function() {
           client.end()
         })
 
@@ -783,7 +781,7 @@ module.exports = function runTests(name, clientFactory) {
         helper.runInTransaction(agent, function transactionInScope(tx) {
           var client = new pg.Client(CON_OBJ)
 
-          t.tearDown(function() {
+          t.teardown(function() {
             client.end()
           })
 
@@ -829,7 +827,7 @@ module.exports = function runTests(name, clientFactory) {
         helper.runInTransaction(agent, function transactionInScope(tx) {
           var client = new pg.Client(CON_OBJ)
 
-          t.tearDown(function() {
+          t.teardown(function() {
             client.end()
           })
 

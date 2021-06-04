@@ -17,16 +17,14 @@ tap.test('generic-pool', function(t) {
   var pool = null
   var PoolClass = require('generic-pool').Pool
 
-  t.beforeEach(function(done) {
+  t.beforeEach(function() {
     agent = helper.instrumentMockedAgent()
     pool = require('generic-pool')
-    done()
   })
 
-  t.afterEach(function(done) {
+  t.afterEach(function() {
     helper.unloadAgent(agent)
     pool = null
-    done()
   })
 
   var tasks = []
@@ -36,7 +34,7 @@ tap.test('generic-pool', function(t) {
     }
   }, 10)
 
-  t.tearDown(function() {
+  t.teardown(function() {
     clearInterval(decontextInterval)
   })
 

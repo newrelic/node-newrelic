@@ -16,22 +16,16 @@ const DB_INDEX = 4
 tap.test('ioredis instrumentation', function(t) {
   var agent, redisClient
 
-  t.beforeEach(function(done) {
-    setup(t, function(error, result) {
-      if (error) {
-        return done(error)
-      }
-
+  t.beforeEach(function() {
+    return setup(t).then((result) => {
       agent = result.agent
       redisClient = result.client
-      done()
     })
   })
 
-  t.afterEach(function(done) {
+  t.afterEach(function() {
     agent && helper.unloadAgent(agent)
     redisClient && redisClient.disconnect()
-    done()
   })
 
   t.test('creates expected metrics', {timeout : 5000}, function(t) {
@@ -102,34 +96,36 @@ tap.test('ioredis instrumentation', function(t) {
 })
 
 
-function setup(t, callback) {
-  helper.flushRedisDb(DB_INDEX, (error) => {
-    if (error) {
-      return callback(error)
-    }
+function setup(t) {
+  return new Promise((resolve, reject) => {
+    helper.flushRedisDb(DB_INDEX, (error) => {
+      if (error) {
+        return reject(error)
+      }
 
-    const agent = helper.instrumentMockedAgent()
+      const agent = helper.instrumentMockedAgent()
 
-    // remove from cache, so that the bluebird library that ioredis uses gets
-    // re-instrumented
-    clearLoadedModules(t)
+      // remove from cache, so that the bluebird library that ioredis uses gets
+      // re-instrumented
+      clearLoadedModules(t)
 
-    let Redis = null
-    try {
-      Redis = require('ioredis')
-    } catch (err) {
-      return callback(err)
-    }
+      let Redis = null
+      try {
+        Redis = require('ioredis')
+      } catch (err) {
+        return reject(err)
+      }
 
-    const client = new Redis(params.redis_port, params.redis_host)
+      const client = new Redis(params.redis_port, params.redis_host)
 
-    client.once('ready', () => {
-      client.select(DB_INDEX, (err) => {
-        if (err) {
-          return callback(err)
-        }
+      client.once('ready', () => {
+        client.select(DB_INDEX, (err) => {
+          if (err) {
+            return reject(err)
+          }
 
-        callback(null, {agent, client})
+          resolve({agent, client})
+        })
       })
     })
   })

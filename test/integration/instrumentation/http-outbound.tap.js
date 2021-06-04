@@ -63,7 +63,7 @@ tap.test('external requests', function(t) {
       req.resume()
       res.end('ok')
     })
-    t.tearDown(function() {
+    t.teardown(function() {
       server.close()
     })
 
@@ -151,7 +151,7 @@ tap.test('external requests', function(t) {
     var got = require('got')
     helper.runInTransaction(agent, function() {
       var req = got('https://example.com/')
-      t.tearDown(function() { req.cancel() })
+      t.teardown(function() { req.cancel() })
       req.then(
         function() { t.end() },
         function(e) { t.error(e); t.end() }

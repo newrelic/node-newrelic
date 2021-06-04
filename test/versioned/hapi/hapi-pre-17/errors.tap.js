@@ -17,16 +17,15 @@ var port
 tap.test('Hapi v16 error handling', function(t) {
   t.autoend()
 
-  t.beforeEach(function(done) {
+  t.beforeEach(function() {
     agent = helper.instrumentMockedAgent()
 
     server = utils.getServer()
-    done()
   })
 
-  t.afterEach(function(done) {
+  t.afterEach(function() {
     helper.unloadAgent(agent)
-    server.stop(done)
+    return server.stop()
   })
 
   t.test('does not report error when reply is called with a string', function(t) {

@@ -16,7 +16,7 @@ tap.test('Restify router', function(t) {
   var agent = null
   var server = null
 
-  t.beforeEach(function(done) {
+  t.beforeEach(function() {
     agent = helper.instrumentMockedAgent({
       attributes: {
         enabled: true,
@@ -25,13 +25,14 @@ tap.test('Restify router', function(t) {
     })
 
     server = require('restify').createServer()
-    done()
   })
 
-  t.afterEach(function(done) {
-    server.close(function() {
-      helper.unloadAgent(agent)
-      done()
+  t.afterEach(function() {
+    return new Promise((resolve) => {
+      server.close(function() {
+        helper.unloadAgent(agent)
+        resolve()
+      })
     })
   })
 
@@ -192,5 +193,5 @@ tap.test('Restify router', function(t) {
         t.deepEqual(body, {status : 'ok'}, 'got expected response')
       })
     })
-  } 
+  }
 })

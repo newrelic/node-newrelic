@@ -30,50 +30,60 @@ exports.getHostName = getHostName
 exports.getPort = getPort
 exports.getDomainSocketPath = getDomainSocketPath
 
-function connectV2(mongodb, path, cb) {
-  var server = null
-  if (path) {
-    server = new mongodb.Server(path)
-  } else {
-    server = new mongodb.Server(params.mongodb_host, params.mongodb_port, {
-      socketOptions: {
-        connectionTimeoutMS: 30000,
-        socketTimeoutMS: 30000
-      }
-    })
-  }
-
-  var db = new mongodb.Db(DB_NAME, server)
-
-  db.open(function(err) {
-    cb(err, {db: db, client: null})
-  })
-}
-
-function connectV3(mongodb, host, cb) {
-  if (host) {
-    host = encodeURIComponent(host)
-  } else {
-    host = params.mongodb_host + ':' + params.mongodb_port
-  }
-  mongodb.MongoClient.connect('mongodb://' + host, function(err, client) {
-    if (err) {
-      return cb(err)
+function connectV2(mongodb, path) {
+  return new Promise((resolve, reject) => {
+    var server = null
+    if (path) {
+      server = new mongodb.Server(path)
+    } else {
+      server = new mongodb.Server(params.mongodb_host, params.mongodb_port, {
+        socketOptions: {
+          connectionTimeoutMS: 30000,
+          socketTimeoutMS: 30000
+        }
+      })
     }
 
-    var db = client.db(DB_NAME)
-    cb(null, {db: db, client: client})
+    var db = new mongodb.Db(DB_NAME, server)
+
+    db.open(function(err) {
+      if (err) {
+        reject(err)
+      }
+
+      resolve({ db, client: null })
+    })
   })
 }
 
-function close(client, db, cb) {
-  if (db && typeof db.close === 'function') {
-    db.close(cb)
-  } else if (client) {
-    client.close(true, cb)
-  } else {
-    cb()
-  }
+function connectV3(mongodb, host) {
+  return new Promise((resolve, reject) => {
+    if (host) {
+      host = encodeURIComponent(host)
+    } else {
+      host = params.mongodb_host + ':' + params.mongodb_port
+    }
+    mongodb.MongoClient.connect('mongodb://' + host, function(err, client) {
+      if (err) {
+        reject(err)
+      }
+
+      var db = client.db(DB_NAME)
+      resolve({ db, client })
+    })
+  })
+}
+
+function close(client, db) {
+  return new Promise((resolve) => {
+    if (db && typeof db.close === 'function') {
+      db.close(resolve)
+    } else if (client) {
+      client.close(true, resolve)
+    } else {
+      resolve()
+    }
+  })
 }
 
 function getHostName(agent) {

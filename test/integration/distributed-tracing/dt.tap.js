@@ -36,7 +36,7 @@ tap.test('distributed tracing full integration', (t) => {
   agent.config.account_id = ACCOUNT_ID
   agent.config.trusted_account_key = ACCOUNT_ID
 
-  t.tearDown(() => {
+  t.teardown(() => {
     helper.unloadAgent(agent)
   })
 
@@ -90,7 +90,7 @@ tap.test('distributed tracing full integration', (t) => {
     res.end()
   })
 
-  t.tearDown(() => {
+  t.teardown(() => {
     start.close()
     middle.close()
     end.close()

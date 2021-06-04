@@ -18,7 +18,7 @@ tap.test('Should properly track module paths to enable shim.require()', function
 
   let agent = helper.instrumentMockedAgent()
 
-  t.tearDown(() => {
+  t.teardown(() => {
     helper.unloadAgent(agent)
     agent = null
   })
@@ -52,7 +52,7 @@ tap.test('shim.require() should play well with multiple test runs', (t) => {
     moduleName: customPackagePath
   })
 
-  t.tearDown(() => {
+  t.teardown(() => {
     helper.unloadAgent(agent)
     agent = null
   })

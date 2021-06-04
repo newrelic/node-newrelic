@@ -14,7 +14,7 @@ test('app should be at top of stack when mounted', function(t) {
   var agent = helper.instrumentMockedAgent()
   var express = require('express')
 
-  t.tearDown(function cb_tearDown() {
+  t.teardown(function cb_tearDown() {
     helper.unloadAgent(agent)
   })
 
@@ -45,7 +45,7 @@ test('app should be at top of stack when mounted', function(t) {
   var router2 = new express.Router()
   var server = http.createServer(main)
 
-  t.tearDown(function() {
+  t.teardown(function() {
     helper.unloadAgent(agent)
     server.close()
   })
@@ -138,7 +138,7 @@ test('should not pass wrong args when transaction is not present', function(t) {
   main.use('/', router)
   main.use('/', router2)
 
-  t.tearDown(function() {
+  t.teardown(function() {
     helper.unloadAgent(agent)
     server.close()
   })

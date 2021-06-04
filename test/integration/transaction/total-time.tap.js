@@ -185,7 +185,7 @@ test(
 function getAgent(t) {
   var agent = helper.loadMockedAgent()
 
-  t.tearDown(function() {
+  t.teardown(function() {
     helper.unloadAgent(agent)
   })
 

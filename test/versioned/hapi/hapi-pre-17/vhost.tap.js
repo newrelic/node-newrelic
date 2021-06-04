@@ -24,7 +24,7 @@ tap.test('Hapi vhost support', function(t) {
     // disabled by default
     agent.config.attributes.enabled = true
 
-    t.tearDown(function() {
+    t.teardown(function() {
       server.stop(function() {
         helper.unloadAgent(agent)
       })

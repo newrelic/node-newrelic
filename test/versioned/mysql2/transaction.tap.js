@@ -14,15 +14,13 @@ var DBUSER = 'test_user'
 var DBNAME = 'agent_integration'
 
 tap.test('MySQL transactions', {timeout: 30000}, function(t) {
-  t.plan(4)
+  t.plan(3)
 
   // set up the instrumentation before loading MySQL
   var agent = helper.instrumentMockedAgent()
   var mysql = require('mysql2')
 
-  setup(mysql, function(error) {
-    t.error(error, 'should not error setting up database')
-
+  setup(mysql).then(() => {
     var client = mysql.createConnection({
       user: DBUSER,
       database: DBNAME,
@@ -30,7 +28,7 @@ tap.test('MySQL transactions', {timeout: 30000}, function(t) {
       port: params.mysql_port
     })
 
-    t.tearDown(function() {
+    t.teardown(function() {
       helper.unloadAgent(agent)
       client.end()
     })

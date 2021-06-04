@@ -26,7 +26,7 @@ tap.test('should not crash when Restify handles a connection', function(t) {
   const restify = require('restify')
   const server  = restify.createServer()
 
-  t.tearDown(function cb_tearDown() {
+  t.teardown(function cb_tearDown() {
     helper.unloadAgent(agent)
     server.close()
   })
@@ -89,7 +89,7 @@ tap.test('Restify should still be instrumented when run with SSL', function(t) {
     const restify = require('restify')
     const server  = restify.createServer({key, certificate})
 
-    t.tearDown(function cb_tearDown() {
+    t.teardown(function cb_tearDown() {
       helper.unloadAgent(agent)
       server.close()
     })
@@ -141,7 +141,7 @@ tap.test('Restify should generate middleware metrics', function(t) {
   const restify = require('restify')
   const server = restify.createServer()
 
-  t.tearDown(function() {
+  t.teardown(function() {
     helper.unloadAgent(agent)
     server.close()
   })

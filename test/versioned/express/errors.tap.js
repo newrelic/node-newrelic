@@ -231,7 +231,7 @@ function runTests(flags) {
       })
     })
 
-    t.tearDown(function() {
+    t.teardown(function() {
       server.close()
     })
   })
@@ -241,7 +241,7 @@ function runTests(flags) {
 
     express = require('express')
     app = express()
-    t.tearDown(function() {
+    t.teardown(function() {
       helper.unloadAgent(agent)
     })
   }
@@ -267,7 +267,7 @@ function runTests(flags) {
         response.resume()
       })
     })
-    t.tearDown(function() {
+    t.teardown(function() {
       server.close()
     })
   }

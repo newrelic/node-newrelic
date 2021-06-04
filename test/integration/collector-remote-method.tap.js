@@ -43,7 +43,7 @@ tap.test('DataSender (callback style) talking to fake collector', (t) => {
       return t.end()
     }
 
-    t.tearDown(() => {
+    t.teardown(() => {
       server.close()
     })
 
@@ -125,7 +125,7 @@ tap.test('remote method to preconnect', (t) => {
       startedCallback(err, this)
     })
 
-    t.tearDown(() => {
+    t.teardown(() => {
       server.close()
     })
 

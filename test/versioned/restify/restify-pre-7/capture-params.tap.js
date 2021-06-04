@@ -17,7 +17,7 @@ test("Restify capture params introspection", function(t) {
 
   var agent = null
 
-  t.beforeEach(function(done) {
+  t.beforeEach(function() {
     agent = helper.instrumentMockedAgent({
       allow_all_headers: false,
       attributes: {
@@ -25,20 +25,17 @@ test("Restify capture params introspection", function(t) {
         include: ['request.parameters.*']
       }
     })
-
-    done()
   })
 
-  t.afterEach(function(done) {
+  t.afterEach(function() {
     helper.unloadAgent(agent)
-    done()
   })
 
   t.test('simple case with no params', function(t) {
     var server = require('restify').createServer()
     var port = null
 
-    t.tearDown(function() {
+    t.teardown(function() {
       server.close()
     })
 
@@ -79,7 +76,7 @@ test("Restify capture params introspection", function(t) {
     var server = require('restify').createServer()
     var port = null
 
-    t.tearDown(function() {
+    t.teardown(function() {
       server.close()
     })
 
@@ -114,7 +111,7 @@ test("Restify capture params introspection", function(t) {
     var server = require('restify').createServer()
     var port = null
 
-    t.tearDown(function() {
+    t.teardown(function() {
       server.close()
     })
 
@@ -150,7 +147,7 @@ test("Restify capture params introspection", function(t) {
     var server = require('restify').createServer()
     var port = null
 
-    t.tearDown(function() {
+    t.teardown(function() {
       server.close()
     })
 

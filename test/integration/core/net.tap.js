@@ -86,7 +86,7 @@ test('connect', function connectTest(t) {
     })
   })
 
-  t.tearDown(function() {
+  t.teardown(function() {
     server.close()
   })
 
@@ -250,7 +250,7 @@ test('createServer and connect', function createServerTest(t) {
 
 function setupAgent(t) {
   var agent = helper.instrumentMockedAgent()
-  t.tearDown(function tearDown() {
+  t.teardown(function tearDown() {
     helper.unloadAgent(agent)
   })
   return agent

@@ -25,7 +25,7 @@ tap.test('MySQL instrumentation with a connection pool', {timeout : 30000}, func
   var mysql = require('mysql')
   var pool = setup.pool(mysql, poolLogger)
 
-  t.tearDown(function() {
+  t.teardown(function() {
     pool.drain(function() {
       pool.destroyAllNow()
       helper.unloadAgent(agent)
@@ -80,8 +80,7 @@ tap.test('MySQL instrumentation with a connection pool', {timeout : 30000}, func
     }
   }
 
-  setup(mysql, function(err) {
-    t.error(err, 'should not error setting up test')
+  setup(mysql).then(() => {
     t.notOk(agent.getTransaction(), 'no transaction should be in play yet')
     helper.runInTransaction(agent, function transactionInScope() {
       var context = {

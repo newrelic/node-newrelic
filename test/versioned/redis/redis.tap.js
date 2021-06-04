@@ -24,38 +24,43 @@ test('Redis instrumentation', {timeout: 20000}, function(t) {
   var agent
   var client
 
-  t.beforeEach(function(done) {
-    helper.flushRedisDb(DB_INDEX, (error) => {
-      if (error) {
-        return done(error)
-      }
+  t.beforeEach(function() {
+    return new Promise((resolve, reject) => {
+      helper.flushRedisDb(DB_INDEX, (error) => {
+        if (error) {
+          reject(error)
+        }
 
-      agent = helper.instrumentMockedAgent()
+        agent = helper.instrumentMockedAgent()
 
-      const redis = require('redis')
-      client = redis.createClient(params.redis_port, params.redis_host)
-      client.once('ready', () => {
-        client.select(DB_INDEX, function(err) {
-          METRIC_HOST_NAME = urltils.isLocalhost(params.redis_host)
-            ? agent.config.getHostnameSafe()
-            : params.redis_host
-          HOST_ID = METRIC_HOST_NAME + '/' + params.redis_port
+        const redis = require('redis')
+        client = redis.createClient(params.redis_port, params.redis_host)
+        client.once('ready', () => {
+          client.select(DB_INDEX, function(err) {
+            if (err) {
+              reject(err)
+            }
 
-          // need to capture attributes
-          agent.config.attributes.enabled = true
+            METRIC_HOST_NAME = urltils.isLocalhost(params.redis_host)
+              ? agent.config.getHostnameSafe()
+              : params.redis_host
+            HOST_ID = METRIC_HOST_NAME + '/' + params.redis_port
 
-          // Start testing!
-          t.notOk(agent.getTransaction(), "no transaction should be in play")
-          done(err)
+            // need to capture attributes
+            agent.config.attributes.enabled = true
+
+            // Start testing!
+            t.notOk(agent.getTransaction(), "no transaction should be in play")
+            resolve()
+          })
         })
       })
     })
   })
 
-  t.afterEach(function(done) {
+  t.afterEach(function() {
     client && client.end({flush: false})
     agent && helper.unloadAgent(agent)
-    done()
   })
 
   t.test('should find Redis calls in the transaction trace', function(t) {

@@ -15,7 +15,7 @@ test('should name middleware correctly', function(t) {
   var app = require('express')()
   var server
 
-  t.tearDown(function() {
+  t.teardown(function() {
     server.close()
     helper.unloadAgent(agent)
   })

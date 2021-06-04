@@ -35,10 +35,8 @@ function getConfig(extras) {
 }
 
 tap.test('See if mysql is running', function(t) {
-  setup(require('mysql'), function(err) {
-    t.error(err, 'should not fail to set up mysql database')
-    t.end()
-  })
+  t.resolves(setup(require('mysql')))
+  t.end()
 })
 
 tap.test('bad config', function(t) {
@@ -55,7 +53,7 @@ tap.test('bad config', function(t) {
 
   t.test(function(t) {
     var poolCluster = mysql.createPoolCluster()
-    t.tearDown(function() { poolCluster.end() })
+    t.teardown(function() { poolCluster.end() })
 
     poolCluster.add(badConfig) // anonymous group
     poolCluster.getConnection(function(err) {
@@ -75,7 +73,7 @@ tap.test('bad config', function(t) {
     })
   })
 
-  t.tearDown(function() {
+  t.teardown(function() {
     helper.unloadAgent(agent)
   })
 })
@@ -90,20 +88,22 @@ tap.test('mysql built-in connection pools', {timeout : 30 * 1000}, function(t) {
   var mysql = null
   var pool = null
 
-  t.beforeEach(function(done) {
+  t.beforeEach(function() {
     agent = helper.instrumentMockedAgent()
     mysql = require('mysql')
     pool = mysql.createPool(config)
-    setup(mysql, done)
+    return setup(mysql)
   })
 
-  t.afterEach(function(done) {
-    helper.unloadAgent(agent)
-    pool.end(done)
+  t.afterEach(function() {
+    return new Promise((resolve) => {
+      helper.unloadAgent(agent)
+      pool.end(resolve)
 
-    agent = null
-    mysql = null
-    pool = null
+      agent = null
+      mysql = null
+      pool = null
+    })
   })
 
   // make sure a connection exists in the pool before any tests are run
@@ -345,7 +345,7 @@ tap.test('mysql built-in connection pools', {timeout : 30 * 1000}, function(t) {
       pool.getConnection(function shouldBeWrapped(err, connection) {
         t.ifError(err, 'should not have error')
         t.ok(agent.getTransaction(), 'transaction should exit')
-        t.tearDown(function() { connection.release() })
+        t.teardown(function() { connection.release() })
 
         connection.query('SELECT 1 + 1 AS solution', function(err) {
           var transxn = agent.getTransaction()
@@ -369,7 +369,7 @@ tap.test('mysql built-in connection pools', {timeout : 30 * 1000}, function(t) {
       pool.getConnection(function shouldBeWrapped(err, connection) {
         t.ifError(err, 'should not have error')
         t.ok(agent.getTransaction(), 'transaction should exit')
-        t.tearDown(function() { connection.release() })
+        t.teardown(function() { connection.release() })
 
         connection.query('SELECT ? + ? AS solution', [1,1], function(err) {
           var transxn = agent.getTransaction()
@@ -447,19 +447,17 @@ tap.test('poolCluster', {timeout : 30 * 1000}, function(t) {
   var agent = null
   var mysql = null
 
-  t.beforeEach(function(done) {
+  t.beforeEach(function() {
     agent = helper.instrumentMockedAgent()
     mysql = require('mysql')
-    setup(mysql, done)
+    return setup(mysql)
   })
 
-  t.afterEach(function(done) {
+  t.afterEach(function() {
     helper.unloadAgent(agent)
 
     agent = null
     mysql = null
-
-    done()
   })
 
   t.test('primer', function(t) {

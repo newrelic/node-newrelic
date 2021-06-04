@@ -128,7 +128,7 @@ test('q.then rejections', function testQNInvoke(t) {
 
 function setupAgent(t) {
   var agent = helper.instrumentMockedAgent()
-  t.tearDown(function tearDown() {
+  t.teardown(function tearDown() {
     helper.unloadAgent(agent)
   })
 
