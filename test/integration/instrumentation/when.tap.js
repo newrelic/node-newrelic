@@ -587,19 +587,17 @@ test('all', function(t) {
   var agent, when, Promise
   var p1, p2
 
-  t.beforeEach(function(done) {
+  t.beforeEach(() => {
     agent = helper.instrumentMockedAgent({feature_flag: {promise_segments: false}})
     when = require('when')
     Promise = when.Promise
 
     p1 = new Promise(function(resolve) { resolve(1) })
     p2 = new Promise(function(resolve) { resolve(2) })
-    done()
   })
 
-  t.afterEach(function(done) {
+  t.afterEach(() => {
     helper.unloadAgent(agent)
-    done()
   })
 
   t.test('on library', function(t) {
@@ -625,16 +623,14 @@ test('any', function(t) {
   t.autoend()
   var agent, when, Promise
 
-  t.beforeEach(function(done) {
+  t.beforeEach(() => {
     agent = helper.instrumentMockedAgent({feature_flag: {promise_segments: false}})
     when = require('when')
     Promise = when.Promise
-    done()
   })
 
-  t.afterEach(function(done) {
+  t.afterEach(() => {
     helper.unloadAgent(agent)
-    done()
   })
 
   t.test('on library', function(t) {
@@ -668,16 +664,14 @@ test('some', function(t) {
   t.autoend()
   var agent, when, Promise
 
-  t.beforeEach(function(done) {
+  t.beforeEach(() => {
     agent = helper.instrumentMockedAgent({feature_flag: {promise_segments: false}})
     when = require('when')
     Promise = when.Promise
-    done()
   })
 
-  t.afterEach(function(done) {
+  t.afterEach(() => {
     helper.unloadAgent(agent)
-    done()
   })
 
   t.test('on library', function(t) {
@@ -717,16 +711,14 @@ test('map', function(t) {
   t.autoend()
   var agent, when, Promise
 
-  t.beforeEach(function(done) {
+  t.beforeEach(() => {
     agent = helper.instrumentMockedAgent({feature_flag: {promise_segments: false}})
     when = require('when')
     Promise = when.Promise
-    done()
   })
 
-  t.afterEach(function(done) {
+  t.afterEach(() => {
     helper.unloadAgent(agent)
-    done()
   })
 
   t.test('on library', function(t) {
@@ -762,16 +754,14 @@ test('reduce', function(t) {
   t.autoend()
   var agent, when, Promise
 
-  t.beforeEach(function(done) {
+  t.beforeEach(() => {
     agent = helper.instrumentMockedAgent({feature_flag: {promise_segments: false}})
     when = require('when')
     Promise = when.Promise
-    done()
   })
 
-  t.afterEach(function(done) {
+  t.afterEach(() => {
     helper.unloadAgent(agent)
-    done()
   })
 
   t.test('on library', function(t) {
@@ -807,16 +797,14 @@ test('filter', function(t) {
   t.autoend()
   var agent, when, Promise
 
-  t.beforeEach(function(done) {
+  t.beforeEach(() => {
     agent = helper.instrumentMockedAgent({feature_flag: {promise_segments: false}})
     when = require('when')
     Promise = when.Promise
-    done()
   })
 
-  t.afterEach(function(done) {
+  t.afterEach(() => {
     helper.unloadAgent(agent)
-    done()
   })
 
   t.test('on library', function(t) {

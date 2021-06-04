@@ -14,15 +14,13 @@ tap.test('external requests', function(t) {
 
   let agent = null
   let http = null
-  t.beforeEach((done) => {
+  t.beforeEach(() => {
     agent = helper.instrumentMockedAgent()
     http = require('http')
-    done()
   })
 
-  t.afterEach((done) => {
+  t.afterEach(() => {
     helper.unloadAgent(agent)
-    done()
   })
 
   t.test('segments should end on error', function(t) {

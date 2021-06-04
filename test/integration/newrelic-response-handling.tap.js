@@ -64,7 +64,7 @@ function createStatusCodeTest(testCase) {
 
     let agent = null
 
-    statusCodeTest.beforeEach((done) => {
+    statusCodeTest.beforeEach(async() => {
       nock.disableNetConnect()
 
       testClock = sinon.useFakeTimers({
@@ -94,12 +94,12 @@ function createStatusCodeTest(testCase) {
       // We don't want any harvests before our manually triggered harvest
       agent.config.no_immediate_harvest = true
 
-      createTestData(agent, () => {
-        done()
+      await new Promise((resolve) => {
+        createTestData(agent, resolve)
       })
     })
 
-    statusCodeTest.afterEach((done) => {
+    statusCodeTest.afterEach(() => {
       helper.unloadAgent(agent)
       agent = null
       testClock.restore()
@@ -114,8 +114,6 @@ function createStatusCodeTest(testCase) {
       }
 
       nock.enableNetConnect()
-
-      done()
     })
 
     // Test behavior for this status code against every endpoint
@@ -169,7 +167,7 @@ function createStatusCodeTest(testCase) {
             verifyRunBehavior()
             verifyDataRetention()
 
-            subTest.done()
+            subTest.end()
           })
         })
 
@@ -230,7 +228,7 @@ function whenAllAggregatorsSend(agent) {
       }
     )
   })
-  
+
   const spanPromise = new Promise((resolve) => {
     agent.spanEventAggregator.once(
       'finished span_event_data data send.',
@@ -295,13 +293,13 @@ function whenAllAggregatorsSend(agent) {
   })
 
   const promises = [
-    metricPromise, 
-    spanPromise, 
-    customEventPromise, 
-    transactionEventPromise, 
-    transactionTracePromise, 
-    sqlTracePromise, 
-    errorTracePromise, 
+    metricPromise,
+    spanPromise,
+    customEventPromise,
+    transactionEventPromise,
+    transactionTracePromise,
+    sqlTracePromise,
+    errorTracePromise,
     errorEventPromise
   ]
 

@@ -15,9 +15,8 @@ var testTransactionState = require(genericTestDir + 'transaction-state')
 
 module.exports = function runTests(flags) {
   var RealPromise = global.Promise
-  tap.afterEach(function(done) {
+  tap.afterEach(() => {
     Promise = global.Promise = RealPromise
-    done()
   })
 
   tap.test('transaction state', function(t) {

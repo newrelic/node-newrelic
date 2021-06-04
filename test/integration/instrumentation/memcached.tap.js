@@ -13,6 +13,7 @@ var findSegment = require('../../lib/metrics_helper').findSegment
 var getMetricHostName = require('../../lib/metrics_helper').getMetricHostName
 var util = require('util')
 
+const bootstrapMemcached = util.promisify(helper.bootstrapMemcached)
 
 var METRICS_ASSERTIONS = 10
 
@@ -27,27 +28,21 @@ test('memcached instrumentation', {timeout : 5000}, function(t) {
   t.test('generates correct metrics and trace segments', function(t) {
     t.autoend()
 
-    t.beforeEach(function(done) {
-      helper.bootstrapMemcached(function cb_bootstrapMemcached(error) {
-        if (error) {
-          return done(error)
-        }
-        agent = helper.instrumentMockedAgent()
+    t.beforeEach(async() => {
+      await bootstrapMemcached()
 
-        Memcached = require('memcached')
-        memcached = new Memcached(params.memcached_host + ':' + params.memcached_port)
+      agent = helper.instrumentMockedAgent()
 
-        var hostName = getMetricHostName(agent, params.memcached_host)
-        HOST_ID = hostName + '/' + params.memcached_port
+      Memcached = require('memcached')
+      memcached = new Memcached(params.memcached_host + ':' + params.memcached_port)
 
-        done()
-      })
+      var hostName = getMetricHostName(agent, params.memcached_host)
+      HOST_ID = hostName + '/' + params.memcached_port
     })
 
-    t.afterEach(function(done) {
-      helper.unloadAgent(agent)
-      memcached.end()
-      done()
+    t.afterEach(() => {
+      agent && helper.unloadAgent(agent)
+      memcached && memcached.end()
     })
 
     t.test('touch()', function(t) {
@@ -443,26 +438,21 @@ test('memcached instrumentation', {timeout : 5000}, function(t) {
   t.test('captures attributes', function(t) {
     t.autoend()
 
-    t.beforeEach(function(done) {
-      helper.bootstrapMemcached(function cb_bootstrapMemcached(error) {
-        if (error) {
-          return done(error)
-        }
-        agent = helper.instrumentMockedAgent()
+    t.beforeEach(async() => {
+      await bootstrapMemcached()
 
-        // capture attributes
-        agent.config.attributes.enabled = true
+      agent = helper.instrumentMockedAgent()
 
-        Memcached = require('memcached')
-        memcached = new Memcached(params.memcached_host + ':' + params.memcached_port)
-        done()
-      })
+      // capture attributes
+      agent.config.attributes.enabled = true
+
+      Memcached = require('memcached')
+      memcached = new Memcached(params.memcached_host + ':' + params.memcached_port)
     })
 
-    t.afterEach(function(done) {
+    t.afterEach(() => {
       helper.unloadAgent(agent)
       memcached.end()
-      done()
     })
 
     t.test('get()', function(t) {
@@ -541,23 +531,18 @@ test('memcached instrumentation', {timeout : 5000}, function(t) {
   t.test('captures datastore instance attributes', function(t) {
     t.autoend()
 
-    t.beforeEach(function(done) {
-      helper.bootstrapMemcached(function cb_bootstrapMemcached(error) {
-        if (error) {
-          return done(error)
-        }
-        agent = helper.instrumentMockedAgent()
+    t.beforeEach(async() => {
+      await bootstrapMemcached()
 
-        Memcached = require('memcached')
-        memcached = new Memcached(params.memcached_host + ':' + params.memcached_port)
-        done()
-      })
+      agent = helper.instrumentMockedAgent()
+
+      Memcached = require('memcached')
+      memcached = new Memcached(params.memcached_host + ':' + params.memcached_port)
     })
 
-    t.afterEach(function(done) {
+    t.afterEach(() => {
       helper.unloadAgent(agent)
       memcached.end()
-      done()
     })
 
     t.test('get()', function(t) {
@@ -620,26 +605,21 @@ test('memcached instrumentation', {timeout : 5000}, function(t) {
   t.test('does not capture datastore instance attributes when disabled', function(t) {
     t.autoend()
 
-    t.beforeEach(function(done) {
-      helper.bootstrapMemcached(function cb_bootstrapMemcached(error) {
-        if (error) {
-          return done(error)
-        }
-        agent = helper.instrumentMockedAgent()
+    t.beforeEach(async() => {
+      await bootstrapMemcached()
 
-        // disable
-        agent.config.datastore_tracer.instance_reporting.enabled = false
+      agent = helper.instrumentMockedAgent()
 
-        Memcached = require('memcached')
-        memcached = new Memcached(params.memcached_host + ':' + params.memcached_port)
-        done()
-      })
+      // disable
+      agent.config.datastore_tracer.instance_reporting.enabled = false
+
+      Memcached = require('memcached')
+      memcached = new Memcached(params.memcached_host + ':' + params.memcached_port)
     })
 
-    t.afterEach(function(done) {
+    t.afterEach(() => {
       helper.unloadAgent(agent)
       memcached.end()
-      done()
     })
 
     t.test('get()', function(t) {
@@ -704,43 +684,34 @@ test('memcached instrumentation', {timeout : 5000}, function(t) {
     var origCommand = null
     var realServer = params.memcached_host + ':' + params.memcached_port
 
-    t.beforeEach(function(done) {
-      helper.bootstrapMemcached(function(error) {
-        if (error) {
-          return done(error)
-        }
+    t.beforeEach(async() => {
+      await bootstrapMemcached()
 
-        // Load memcached and replace the command func with our own that will
-        // use a real server address.
-        Memcached = require('memcached')
-        origCommand = Memcached.prototype.command
-        /* eslint-disable no-unused-vars */
-        Memcached.prototype.command = function stubbedCommand(queryCompiler, server) {
-          /* eslint-enable no-unused-vars */
-          origCommand.call(this, queryCompiler, realServer)
-        }
+      Memcached = require('memcached')
+      origCommand = Memcached.prototype.command
+      /* eslint-disable no-unused-vars */
+      Memcached.prototype.command = function stubbedCommand(queryCompiler, server) {
+        /* eslint-enable no-unused-vars */
+        origCommand.call(this, queryCompiler, realServer)
+      }
 
-        // Then load the agent and reload memcached to ensure it gets instrumented.
-        agent = helper.instrumentMockedAgent()
-        Memcached = require('memcached')
-        memcached = new Memcached(['server1:1111', 'server2:2222'])
+      // Then load the agent and reload memcached to ensure it gets instrumented.
+      agent = helper.instrumentMockedAgent()
+      Memcached = require('memcached')
+      memcached = new Memcached(['server1:1111', 'server2:2222'])
 
-        // Finally, change the hashring to something controllable.
-        memcached.HashRing.get = function(key) {
-          return key === 'foo' ? 'server1:1111' : 'server2:2222'
-        }
-
-        done()
-      })
+      // Finally, change the hashring to something controllable.
+      memcached.HashRing.get = function(key) {
+        return key === 'foo' ? 'server1:1111' : 'server2:2222'
+      }
     })
 
-    t.afterEach(function(done) {
+    t.afterEach(() => {
       helper.unloadAgent(agent)
       memcached.end()
       if (origCommand) {
         Memcached.prototype.command = origCommand
       }
-      done()
     })
 
     function checkParams(segment, host, port) {

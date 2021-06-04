@@ -17,7 +17,7 @@ tap.test('LASP-enabled agent', (t) => {
   let api = null
   let config = null
 
-  t.beforeEach(function(done) {
+  t.beforeEach(function() {
     config = configurator.initialize({
       app_name: 'node.js Tests',
       license_key: license,
@@ -41,8 +41,6 @@ tap.test('LASP-enabled agent', (t) => {
 
     // Agent cannot create transactions from initial 'stopped' state
     agent.setState('started')
-
-    done()
   })
 
   t.test('drops full trace if custom attributes are disabled by LASP', function(t) {

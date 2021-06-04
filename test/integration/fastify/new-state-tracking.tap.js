@@ -18,7 +18,7 @@ tap.test('fastify with new state tracking', (t) => {
   let agent = null
   let fastify = null
 
-  t.beforeEach((done) => {
+  t.beforeEach(() => {
     agent = helper.instrumentMockedAgent({
       feature_flag: {
         fastify_instrumentation: true,
@@ -27,15 +27,11 @@ tap.test('fastify with new state tracking', (t) => {
     })
 
     fastify = require('fastify')()
-
-    done()
   })
 
-  t.afterEach((done) => {
+  t.afterEach(() => {
     helper.unloadAgent(agent)
     fastify.close()
-
-    done()
   })
 
   t.test('should not reuse transactions via normal usage', async(t) => {

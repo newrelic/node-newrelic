@@ -10,6 +10,7 @@ const helper = require('../../lib/agent_helper')
 const tap = require('tap')
 const sinon = require('sinon')
 const API = require('../../../api')
+const util = require('util')
 
 const DESTS = require('../../../lib/config/attribute-filter').DESTINATIONS
 const TEST_ARN = 'test:arn'
@@ -25,7 +26,7 @@ tap.test('Serverless mode harvest', (t) => {
 
   process.env.AWS_EXECUTION_ENV = TEST_EX_ENV
 
-  t.beforeEach((done) => {
+  t.beforeEach(async() => {
     logSpy = sinon.spy(fs, 'writeSync')
     agent = helper.instrumentMockedAgent({
       serverless_mode: {
@@ -37,15 +38,16 @@ tap.test('Serverless mode harvest', (t) => {
     agent.setLambdaArn(TEST_ARN)
     agent.setLambdaFunctionVersion(TEST_FUNC_VERSION)
 
-    agent.start(done)
+    const agentStart = util.promisify(agent.start).bind(agent)
+    await agentStart()
   })
 
-  t.afterEach((done) => {
+  t.afterEach(async() => {
     logSpy && logSpy.restore()
     helper.unloadAgent(agent)
-    agent.stop((err) => {
-      done(err)
-    })
+
+    const agentStop = util.promisify(agent.stop).bind(agent)
+    await agentStop()
   })
 
   t.test('simple harvest', (t) => {

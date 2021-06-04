@@ -43,9 +43,6 @@ tap.test('Should properly track module paths to enable shim.require()', function
   t.equal(shimLoadedCustom.name, 'customFunction', 'Should grab correct module')
 })
 
-
-// This test requires the --no-esm flag for tap
-// to run in a way it will trigger the failure.
 tap.test('shim.require() should play well with multiple test runs', (t) => {
   simulateTestLoadAndUnload()
 
