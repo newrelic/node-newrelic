@@ -688,22 +688,22 @@ tap.test('when generating the User-Agent string', (t) => {
   })
 
   t.test('should clearly indicate it is New Relic for Node', (t) => {
-    t.includes(userAgent, 'NewRelic-NodeAgent')
+    t.match(userAgent, 'NewRelic-NodeAgent')
     t.end()
   })
 
   t.test('should include the agent version', (t) => {
-    t.includes(userAgent, TEST_VERSION)
+    t.match(userAgent, TEST_VERSION)
     t.end()
   })
 
   t.test('should include node version', (t) => {
-    t.includes(userAgent, process.versions.node)
+    t.match(userAgent, process.versions.node)
     t.end()
   })
 
   t.test('should include node platform and architecture', (t) => {
-    t.includes(userAgent, process.platform + '-' + process.arch)
+    t.match(userAgent, process.platform + '-' + process.arch)
     t.end()
   })
 })
