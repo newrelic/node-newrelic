@@ -27,7 +27,7 @@
     "koa-router": "^7.4.0",
     "newrelic": "^6.11.0",
     "semver": "^5.7.1",
-    "tap": "^14.10.7"
+    "tap": "^15.0.9"
   },
   "dependencies": {
     "methods": "^1.1.2"
