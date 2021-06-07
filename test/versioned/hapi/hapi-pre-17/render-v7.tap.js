@@ -195,7 +195,7 @@ tap.test('agent instrumentation of Hapi', function(t) {
 
         var first = errors[0]
         t.ok(first, 'have the first error')
-        t.contains(first[2], 'ohno', 'got the expected error')
+        t.match(first[2], 'ohno', 'got the expected error')
 
         t.end()
       })
