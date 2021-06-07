@@ -95,7 +95,7 @@ tap.test('Restify', (t) => {
         var port = server.address().port
         t.notOk(agent.getTransaction(), 'transaction should not leak into server')
 
-        var opts = {url : 'https://ssl.lvh.me:' + port + '/hello/friend', ca : ca}
+        var opts = {url : 'https://localhost:' + port + '/hello/friend', ca : ca}
         request.get(opts, function(error, response, body) {
           if (error) {
             t.fail(error)

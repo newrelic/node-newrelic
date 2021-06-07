@@ -14,7 +14,7 @@ var restify = require('restify')
 var codec = require('../../lib/util/codec')
 var logger = require('../../lib/logger').child({component: 'fake_collector'})
 
-var DEFAULT_HOST = 'ssl.lvh.me'
+var DEFAULT_HOST = 'localhost'
 var ACTUAL_HOST = 'collector-1.lvh.me'
 var PORT = 8089
 var PATHS = {

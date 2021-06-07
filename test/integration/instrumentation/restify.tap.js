@@ -109,7 +109,7 @@ tap.test('Restify should still be instrumented when run with SSL', function(t) {
       t.notOk(agent.getTransaction(), "transaction shouldn't leak into server")
 
       const options = {
-        url : 'https://ssl.lvh.me:8443/hello/friend',
+        url : 'https://localhost:8443/hello/friend',
         ca : ca
       }
 

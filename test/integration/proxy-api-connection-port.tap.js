@@ -33,7 +33,7 @@ tap.test('setting proxy_port should use the proxy agent', {skip}, (t) => {
       license_key: license,
       host: 'staging-collector.newrelic.com',
       port: 443,
-      proxy_host: 'ssl.lvh.me',
+      proxy_host: 'localhost',
       proxy_port: port,
       ssl: true,
       utilization: {

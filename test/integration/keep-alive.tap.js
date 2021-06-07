@@ -104,7 +104,7 @@ function createRemoteMethod(port) {
   }
 
   const endpoint = {
-    host: 'ssl.lvh.me',
+    host: 'localhost',
     port: port
   }
 

@@ -28,6 +28,8 @@ const StreamingSpanEvent = require('../../../lib/spans/streaming-span-event')
 
 const helper = require('../../lib/agent_helper')
 
+const SSL_HOST = 'localhost'
+
 // TODO: Remove test version check when Node 10 support dropped.
 const isUnsupportedNodeVersion =
   GrpcConnection.message === '@grpc/grpc-js only works on Node ^8.13.0 || >=10.10.0'
@@ -76,7 +78,7 @@ tap.test(
       const metrics = createMetricAggregatorForTests()
 
       const traceObserverConfig = {
-        host: 'ssl.lvh.me',
+        host: SSL_HOST,
         port: port
       }
 
@@ -161,7 +163,7 @@ tap.test(
       const metrics = createMetricAggregatorForTests()
 
       const traceObserverConfig = {
-        host: 'ssl.lvh.me',
+        host: SSL_HOST,
         port: port
       }
 

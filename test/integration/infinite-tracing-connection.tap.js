@@ -219,7 +219,7 @@ tap.test('Inifinite tracing - Connection Handling', { skip: !isGrpcSupportedVers
           },
           infinite_tracing: {
             trace_observer: {
-              host: 'ssl.lvh.me',
+              host: 'localhost',
               port: port
             }
           }
@@ -320,7 +320,6 @@ function createGrpcServer(sslOptions, services, callback) {
   const credentials = grpc.ServerCredentials.createSsl(ca, authPairs, false)
 
   // Select a random port
-  // A request to 'ssl.lvh.me:<port>' will resolve to localhost:<port>
   server.bindAsync('localhost:0', credentials, (err, port) => {
     if (err) {
       callback(err)

@@ -32,7 +32,7 @@ tap.test('support ssl to the proxy', {skip}, (t) => {
       app_name: 'node.js Tests',
       license_key: license,
       host: 'staging-collector.newrelic.com',
-      proxy: `https://ssl.lvh.me:${port}`,
+      proxy: `https://localhost:${port}`,
       ssl: true,
       utilization: {
         detect_aws: false,

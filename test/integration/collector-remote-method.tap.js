@@ -13,6 +13,8 @@ const url = require('url')
 const collector = require('../lib/fake-collector')
 const RemoteMethod = require('../../lib/collector/remote-method')
 
+const SSL_HOST = 'localhost'
+
 tap.test('DataSender (callback style) talking to fake collector', (t) => {
   const config = {
     run_id: 1337,
@@ -24,7 +26,7 @@ tap.test('DataSender (callback style) talking to fake collector', (t) => {
   }
 
   const endpoint = {
-    host: 'ssl.lvh.me',
+    host: SSL_HOST,
     port: 8765
   }
 
@@ -94,7 +96,7 @@ tap.test('remote method to preconnect', (t) => {
     }
 
     const endpoint = {
-      host: 'ssl.lvh.me',
+      host: SSL_HOST,
       port: 9876
     }
 
