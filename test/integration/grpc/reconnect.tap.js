@@ -28,8 +28,6 @@ const StreamingSpanEvent = require('../../../lib/spans/streaming-span-event')
 
 const helper = require('../../lib/agent_helper')
 
-const SSL_HOST = 'localhost'
-
 // TODO: Remove test version check when Node 10 support dropped.
 const isUnsupportedNodeVersion =
   GrpcConnection.message === '@grpc/grpc-js only works on Node ^8.13.0 || >=10.10.0'
@@ -78,7 +76,7 @@ tap.test(
       const metrics = createMetricAggregatorForTests()
 
       const traceObserverConfig = {
-        host: SSL_HOST,
+        host: helper.SSL_HOST,
         port: port
       }
 
@@ -163,7 +161,7 @@ tap.test(
       const metrics = createMetricAggregatorForTests()
 
       const traceObserverConfig = {
-        host: SSL_HOST,
+        host: helper.SSL_HOST,
         port: port
       }
 
@@ -205,21 +203,17 @@ tap.test(
   }
 )
 
-function setupSsl() {
-  return new Promise((resolve, reject) => {
-    helper.withSSL((error, key, certificate, ca) => {
-      if (error) {
-        return reject(error)
+async function setupSsl() {
+  const [key, certificate, ca] = await helper.withSSL()
+  return {
+    ca,
+    authPairs: [
+      {
+        private_key : key,
+        cert_chain : certificate
       }
-
-      const sslOpts = {
-        ca: ca,
-        authPairs: [{private_key : key, cert_chain : certificate}]
-      }
-
-      resolve(sslOpts)
-    })
-  })
+    ]
+  }
 }
 
 function setupServer(t, sslOpts, recordSpan) {

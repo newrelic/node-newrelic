@@ -12,8 +12,7 @@ const https = require('https')
 const url = require('url')
 const collector = require('../lib/fake-collector')
 const RemoteMethod = require('../../lib/collector/remote-method')
-
-const SSL_HOST = 'localhost'
+const { SSL_HOST } = require('../lib/agent_helper')
 
 tap.test('DataSender (callback style) talking to fake collector', (t) => {
   const config = {
@@ -56,7 +55,7 @@ tap.test('DataSender (callback style) talking to fake collector', (t) => {
 
       t.equal(
         results.payload,
-        'collector-1.lvh.me:8089',
+        'collector-1.integration-test:8089',
         'parsed result should come through'
       )
       t.ok(results.status, 'response status code should come through')

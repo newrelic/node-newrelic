@@ -44,7 +44,7 @@ tap.test('Restify', (t) => {
       var port = server.address().port
       t.notOk(agent.getTransaction(), 'transaction should not leak into server')
 
-      var url = 'http://localhost:' + port + '/hello/friend'
+      var url = `http://localhost:${port}/hello/friend`
       request.get(url, function(error, response, body) {
         if (error) return t.fail(error)
         t.notOk(
@@ -66,12 +66,7 @@ tap.test('Restify', (t) => {
   t.test('should still be instrumented when run with SSL', function(t) {
     t.plan(7)
 
-    helper.withSSL(function cb_withSSL(error, key, certificate, ca) {
-      if (error) {
-        t.fail('unable to set up SSL: ' + error)
-        t.end()
-      }
-
+    helper.withSSL().then(([key, certificate, ca]) => {
       var server  = restify.createServer({key : key, certificate : certificate})
       t.tearDown(() => server.close())
 
@@ -84,7 +79,7 @@ tap.test('Restify', (t) => {
         var port = server.address().port
         t.notOk(agent.getTransaction(), 'transaction should not leak into server')
 
-        var opts = {url : 'https://localhost:' + port + '/hello/friend', ca : ca}
+        var opts = { url : `https://${helper.SSL_HOST}:${port}/hello/friend`, ca }
         request.get(opts, function(error, response, body) {
           if (error) {
             t.fail(error)
@@ -106,5 +101,9 @@ tap.test('Restify', (t) => {
         })
       })
     })
+      .catch((error) => {
+        t.fail('unable to set up SSL: ' + error)
+        t.end()
+      })
   })
 })

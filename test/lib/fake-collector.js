@@ -14,8 +14,7 @@ var restify = require('restify')
 var codec = require('../../lib/util/codec')
 var logger = require('../../lib/logger').child({component: 'fake_collector'})
 
-var DEFAULT_HOST = 'localhost'
-var ACTUAL_HOST = 'collector-1.lvh.me'
+var ACTUAL_HOST = 'collector-1.integration-test'
 var PORT = 8089
 var PATHS = {
   connect: path.join(__dirname, 'schemas/connect.json'),
@@ -26,6 +25,7 @@ var PATHS = {
   sql: path.join(__dirname, 'schemas/sql_trace_data.json'),
   sqlParams: path.join(__dirname, 'schemas/sql_params.json')
 }
+const { SSL_HOST } = require('./agent_helper')
 
 
 var schemas = {}
@@ -78,7 +78,7 @@ var validators = {
 
     validations.host_name_errors = []
 
-    if (host !== DEFAULT_HOST) {
+    if (host !== SSL_HOST) {
       validations.host_name_errors.push('not connecting to root collector')
     }
 

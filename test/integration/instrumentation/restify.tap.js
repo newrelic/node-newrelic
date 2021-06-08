@@ -84,12 +84,7 @@ tap.test('should not crash when Restify handles a connection', function(t) {
 tap.test('Restify should still be instrumented when run with SSL', function(t) {
   t.plan(7)
 
-  helper.withSSL(function cb_withSSL(error, key, certificate, ca) {
-    if (error) {
-      t.fail("unable to set up SSL: " + error)
-      t.end()
-    }
-
+  helper.withSSL().then(([ key, certificate, ca ]) => {
     const agent   = helper.instrumentMockedAgent()
     const restify = require('restify')
     const server  = restify.createServer({key, certificate})
@@ -109,7 +104,7 @@ tap.test('Restify should still be instrumented when run with SSL', function(t) {
       t.notOk(agent.getTransaction(), "transaction shouldn't leak into server")
 
       const options = {
-        url : 'https://localhost:8443/hello/friend',
+        url : `https://${helper.SSL_HOST}:8443/hello/friend`,
         ca : ca
       }
 
@@ -133,6 +128,10 @@ tap.test('Restify should still be instrumented when run with SSL', function(t) {
       })
     })
   })
+    .catch((error) => {
+      t.fail("unable to set up SSL: " + error)
+      t.end()
+    })
 })
 
 tap.test('Restify should generate middleware metrics', function(t) {

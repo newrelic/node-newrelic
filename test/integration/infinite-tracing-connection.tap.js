@@ -185,9 +185,7 @@ tap.test('Inifinite tracing - Connection Handling', { skip: !isGrpcSupportedVers
     nock.disableNetConnect()
     startingEndpoints = setupConnectionEndpoints(INITIAL_RUN_ID, INITIAL_SESSION_ID)
 
-    helper.withSSL((error, key, certificate, ca) => {
-      t.error(error)
-
+    helper.withSSL().then(([ key, certificate, ca ]) => {
       const sslOpts = {
         ca: ca,
         authPairs: [{private_key : key, cert_chain : certificate}]
@@ -219,7 +217,7 @@ tap.test('Inifinite tracing - Connection Handling', { skip: !isGrpcSupportedVers
           },
           infinite_tracing: {
             trace_observer: {
-              host: 'localhost',
+              host: helper.SSL_HOST,
               port: port
             }
           }
@@ -239,6 +237,9 @@ tap.test('Inifinite tracing - Connection Handling', { skip: !isGrpcSupportedVers
         }
       })
     })
+      .catch((err) => {
+        t.error(err)
+      })
   }
 
   function recordSpan(stream) {

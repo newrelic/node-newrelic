@@ -10,6 +10,7 @@ const read = require('fs').readFileSync
 const join = require('path').join
 const https = require('https')
 const RemoteMethod = require('../../lib/collector/remote-method')
+const { SSL_HOST } = require('../lib/agent_helper')
 
 const MAX_PORT_ATTEMPTS = 5
 
@@ -104,7 +105,7 @@ function createRemoteMethod(port) {
   }
 
   const endpoint = {
-    host: 'localhost',
+    host: SSL_HOST,
     port: port
   }
 
