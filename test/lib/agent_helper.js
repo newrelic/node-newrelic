@@ -6,7 +6,7 @@
 'use strict'
 
 const path = require('path')
-const fs = require('fs')
+const fs = require('fs').promises
 const shimmer = require('../../lib/shimmer')
 const Agent = require('../../lib/agent')
 const params = require('../lib/params')
@@ -29,6 +29,7 @@ setInterval(() => {
 }, 25).unref()
 
 const helper = module.exports = {
+  SSL_HOST: 'localhost',
   getAgent: () => _agent,
 
   /**
@@ -267,26 +268,12 @@ const helper = module.exports = {
     })
   },
 
-  withSSL: (callback) => {
-    fs.readFile(KEYPATH, (error, key) => {
-      if (error) {
-        return callback(error)
-      }
-
-      fs.readFile(CERTPATH, (error, certificate) => {
-        if (error) {
-          return callback(error)
-        }
-
-        fs.readFile(CAPATH, (error, ca) => {
-          if (error) {
-            return callback(error)
-          }
-
-          callback(null, key, certificate, ca)
-        })
-      })
-    })
+  withSSL: () => {
+    return Promise.all([
+      fs.readFile(KEYPATH),
+      fs.readFile(CERTPATH),
+      fs.readFile(CAPATH)
+    ])
   },
 
   // FIXME: I long for the day I no longer need this gross hack

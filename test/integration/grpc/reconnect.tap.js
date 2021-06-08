@@ -76,7 +76,7 @@ tap.test(
       const metrics = createMetricAggregatorForTests()
 
       const traceObserverConfig = {
-        host: 'ssl.lvh.me',
+        host: helper.SSL_HOST,
         port: port
       }
 
@@ -161,7 +161,7 @@ tap.test(
       const metrics = createMetricAggregatorForTests()
 
       const traceObserverConfig = {
-        host: 'ssl.lvh.me',
+        host: helper.SSL_HOST,
         port: port
       }
 
@@ -203,21 +203,17 @@ tap.test(
   }
 )
 
-function setupSsl() {
-  return new Promise((resolve, reject) => {
-    helper.withSSL((error, key, certificate, ca) => {
-      if (error) {
-        return reject(error)
+async function setupSsl() {
+  const [key, certificate, ca] = await helper.withSSL()
+  return {
+    ca,
+    authPairs: [
+      {
+        private_key : key,
+        cert_chain : certificate
       }
-
-      const sslOpts = {
-        ca: ca,
-        authPairs: [{private_key : key, cert_chain : certificate}]
-      }
-
-      resolve(sslOpts)
-    })
-  })
+    ]
+  }
 }
 
 function setupServer(t, sslOpts, recordSpan) {

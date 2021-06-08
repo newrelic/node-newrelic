@@ -67,7 +67,7 @@ openssl req \
 # this generates a "certificate signing request" file
 openssl req \
   -new \
-  -subj "/O=testsuite/OU=Node.js agent team/CN=ssl.lvh.me" \
+  -subj "/O=testsuite/OU=Node.js agent team/CN=localhost" \
   -key $SSLKEY \
   -out server.csr
 

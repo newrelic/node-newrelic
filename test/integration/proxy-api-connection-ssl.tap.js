@@ -14,6 +14,7 @@ const configurator = require('../../lib/config')
 const Agent = require('../../lib/agent')
 const CollectorAPI = require('../../lib/collector/api')
 const {getTestSecret, shouldSkipTest} = require('../helpers/secrets')
+const { SSL_HOST } = require('../lib/agent_helper')
 
 let port = 0
 const SSL_CONFIG = {
@@ -32,7 +33,7 @@ tap.test('support ssl to the proxy', {skip}, (t) => {
       app_name: 'node.js Tests',
       license_key: license,
       host: 'staging-collector.newrelic.com',
-      proxy: `https://ssl.lvh.me:${port}`,
+      proxy: `https://${SSL_HOST}:${port}`,
       ssl: true,
       utilization: {
         detect_aws: false,
