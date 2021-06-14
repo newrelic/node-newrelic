@@ -9,12 +9,11 @@ const tap = require('tap')
 const configurator = require('../../lib/config')
 const Agent = require('../../lib/agent')
 const CollectorAPI = require('../../lib/collector/api')
-const { getTestSecret, shouldSkipTest } = require('../helpers/secrets')
+const { getTestSecret} = require('../helpers/secrets')
+const lasp_license = getTestSecret('LASP_LICENSE')
+const lasp_secure_license = getTestSecret('LASP_SECURE_LICENSE')
 
-
-let lasp_license = getTestSecret('LASP_LICENSE')
-let skip = shouldSkipTest(lasp_license)
-tap.test('connecting with a LASP token should not error', {skip}, (t) => {
+tap.test('connecting with a LASP token should not error', (t) => {
   const config = configurator.initialize({
     app_name: 'node.js Tests',
     license_key: lasp_license,
@@ -50,9 +49,7 @@ tap.test('connecting with a LASP token should not error', {skip}, (t) => {
   })
 })
 
-let lasp_secure_license = getTestSecret('LASP_SECURE_LICENSE')
-skip = shouldSkipTest(lasp_secure_license)
-tap.test('missing required policies should result in shutdown', {skip}, (t) => {
+tap.test('missing required policies should result in shutdown', (t) => {
   const config = configurator.initialize({
     app_name: 'node.js Tests',
     license_key: lasp_secure_license,

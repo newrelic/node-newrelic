@@ -9,12 +9,10 @@ const tap = require('tap')
 const configurator = require('../../../lib/config')
 const Agent = require('../../../lib/agent')
 const API = require('../../../api')
-const {getTestSecret, shouldSkipTest} = require('../../helpers/secrets')
-
-
+const {getTestSecret} = require('../../helpers/secrets')
 const license = getTestSecret('LASP_LICENSE')
-const skip = shouldSkipTest(license)
-tap.test('LASP-enabled agent', {skip}, (t) => {
+
+tap.test('LASP-enabled agent', (t) => {
   let agent = null
   let api = null
   let config = null

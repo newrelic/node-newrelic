@@ -8,12 +8,11 @@
 const test = require('tap').test
 const configurator = require('../../../lib/config')
 const Agent = require('../../../lib/agent')
-const {getTestSecret, shouldSkipTest} = require('../../helpers/secrets')
+const {getTestSecret} = require('../../helpers/secrets')
 
 
 const license = getTestSecret('TEST_LICENSE')
-const skip = shouldSkipTest(license)
-test('Collector API should send errors to staging-collector.newrelic.com', {skip}, (t) => {
+test('Collector API should send errors to staging-collector.newrelic.com', (t) => {
   const config = configurator.initialize({
     app_name: 'node.js Tests',
     license_key: license,

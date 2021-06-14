@@ -58,12 +58,6 @@ jobs:
       run: npm run services
     - name: Run Integration Tests
       run: npm run integration
-      env:
-        TEST_LICENSE: ${{ secrets.TEST_LICENSE }}
-        COLLECTOR_LICENSE: ${{ secrets.COLLECTOR_LICENSE }}
-        LASP_LICENSE: ${{ secrets.LASP_LICENSE }}
-        LASP_SECURE_LICENSE: ${{ secrets.LASP_SECURE_LICENSE }}
-        FORCE_RUN_TESTS_WITH_SECRETS: ${{ github.repository_owner == 'newrelic' && github.event_name == 'push' }}
 
   versioned:
     runs-on: ubuntu-latest

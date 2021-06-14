@@ -9,12 +9,11 @@ const test = require('tap').test
 const configurator = require('../../../lib/config')
 const Agent = require('../../../lib/agent')
 const CollectorAPI = require('../../../lib/collector/api')
-const {getTestSecret, shouldSkipTest} = require('../../helpers/secrets')
+const {getTestSecret} = require('../../helpers/secrets')
 
 
 const license = getTestSecret('TEST_LICENSE')
-const skip = shouldSkipTest(license)
-test('Collector API should send metrics to staging-collector.newrelic.com', {skip}, (t) => {
+test('Collector API should send metrics to staging-collector.newrelic.com', (t) => {
   const config = configurator.initialize({
     app_name: 'node.js Tests',
     license_key: license,
@@ -57,7 +56,7 @@ test('Collector API should send metrics to staging-collector.newrelic.com', {ski
       t.notOk(error, 'sent metrics without error')
       t.ok(command, 'got a response')
 
-      t.deepEqual(command, {retainData: false})
+      t.same(command, {retainData: false})
 
       t.end()
     })

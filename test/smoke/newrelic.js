@@ -5,28 +5,25 @@
 
 'use strict'
 
-/**
- * New Relic agent configuration.
- *
- * See lib/config/default.js in the agent distribution for a more complete
- * description of configuration variables and their potential values.
- */
 exports.config = {
-  /**
-   * Array of application names.
-   */
-  app_name: ['express smoke test'],
-  /**
-   * Your New Relic license key.
-   */
-  license_key: process.env.TEST_LICENSE,
-  logging: {
-    /**
-     * Level at which to log. 'trace' is most useful to New Relic when diagnosing
-     * issues with the agent, 'info' and higher will impose the least overhead on
-     * production applications.
-     */
-    level: 'info'
+  app_name           : ['My Application'],
+  license_key        : 'license key here',
+  logging            : {
+    level : 'trace',
+    filepath : '../../newrelic_agent.log'
   },
-  host: 'staging-collector.newrelic.com'
+  utilization: {
+    detect_aws: false,
+    detect_pcf: false,
+    detect_azure: false,
+    detect_gcp: false,
+    detect_docker: false
+  },
+  transaction_tracer : {
+    enabled : true
+  },
+  feature_flag: {
+    await_support: false,
+    express5: true
+  }
 }

@@ -5,12 +5,11 @@
 
 'use strict'
 
-const test = require('tap').test
-const {getTestSecret, shouldSkipTest} = require('../../helpers/secrets')
+const { test } = require('tap')
+const { getTestSecret } = require('../../helpers/secrets')
 
 const license = getTestSecret('TEST_LICENSE')
-const skip = shouldSkipTest(license)
-test('loading the application via index.js', {timeout: 15000, skip}, (t) => {
+test('loading the application via index.js', {timeout: 15000}, (t) => {
   let agent = null
 
   process.env.NEW_RELIC_HOME = __dirname + '/..'
