@@ -24,8 +24,11 @@ jobs:
       uses: actions/setup-node@v1
       with:
         node-version: ${{ matrix.node-version }}
-    # Smoke tests do own install
+    - name: Install Dependencies
+      run: npm ci
     - name: Run Smoke Tests
       run: npm run smoke
       env:
         TEST_LICENSE: ${{ secrets.TEST_LICENSE }}
+        LASP_LICENSE: ${{ secrets.LASP_LICENSE }}
+        LASP_SECURE_LICENSE: ${{ secrets.LASP_SECURE_LICENSE }}

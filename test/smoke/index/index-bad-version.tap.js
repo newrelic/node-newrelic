@@ -6,12 +6,11 @@
 'use strict'
 
 const tap = require('tap')
-const {getTestSecret, shouldSkipTest} = require('../../helpers/secrets')
+const {getTestSecret} = require('../../helpers/secrets')
 
 
 const license = getTestSecret('TEST_LICENSE')
-const skip = shouldSkipTest(license)
-tap.test('loading the agent with a bad version', {timeout: 20000, skip}, (t) => {
+tap.test('loading the agent with a bad version', {timeout: 20000}, (t) => {
   let agent = null
 
   process.env.NEW_RELIC_HOME = __dirname + '/..'
