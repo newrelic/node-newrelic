@@ -1311,7 +1311,9 @@ describe('the agent configuration', function() {
     let originalWorkingDirectory
     const DESTDIR = path.join(__dirname, 'test_NEW_RELIC_CONFIG_FILENAME')
     const NOPLACEDIR = path.join(__dirname, 'test_NEW_RELIC_CONFIG_FILENAME_dummy')
+    const MAIN_MODULE_DIR = path.join(__dirname, 'test_NEW_RELIC_CONFIG_FILENAME_MAIN_MODULE')
     let CONFIG_PATH
+    let processMainModuleStub
 
     beforeEach(() => {
       if (process.env.NEW_RELIC_HOME) {
@@ -1322,8 +1324,13 @@ describe('the agent configuration', function() {
 
       originalWorkingDirectory = process.cwd()
 
+      processMainModuleStub = sinon.stub(process, 'mainModule').value({
+        filename: `${MAIN_MODULE_DIR}/index.js`
+      })
+
       fs.mkdirSync(DESTDIR)
       fs.mkdirSync(NOPLACEDIR)
+      fs.mkdirSync(MAIN_MODULE_DIR)
 
       process.chdir(NOPLACEDIR)
     })
@@ -1341,14 +1348,17 @@ describe('the agent configuration', function() {
         CONFIG_PATH = undefined
       }
 
+      processMainModuleStub.resetBehavior()
+
       fs.rmdirSync(DESTDIR) 
       fs.rmdirSync(NOPLACEDIR)
+      fs.rmdirSync(MAIN_MODULE_DIR)
 
       process.chdir(originalWorkingDirectory)
     })
 
-    const createSampleConfig = (filename) => {
-      CONFIG_PATH = path.join(DESTDIR, filename)
+    const createSampleConfig = (dir, filename) => {
+      CONFIG_PATH = path.join(dir, filename)
 
       const config = {
         app_name: filename
@@ -1359,7 +1369,7 @@ describe('the agent configuration', function() {
 
     it('should load the default newrelic.js config file', function() {
       const filename = "newrelic.js"
-      createSampleConfig(filename)
+      createSampleConfig(DESTDIR, filename)
 
       const configuration = Config.initialize()
       expect(configuration.app_name).equal(filename)
@@ -1367,7 +1377,7 @@ describe('the agent configuration', function() {
 
     it('should load the default newrelic.cjs config file', function() {
       const filename = "newrelic.cjs"
-      createSampleConfig(filename)
+      createSampleConfig(DESTDIR, filename)
 
       const configuration = Config.initialize()
       expect(configuration.app_name).equal(filename)
@@ -1376,7 +1386,15 @@ describe('the agent configuration', function() {
     it('should load config when overriding the default with NEW_RELIC_CONFIG_FILENAME', function() {
       const filename =  'some-file-name.js'
       process.env.NEW_RELIC_CONFIG_FILENAME = filename
-      createSampleConfig(filename)
+      createSampleConfig(DESTDIR, filename)
+
+      const configuration = Config.initialize()
+      expect(configuration.app_name).equal(filename)
+    })
+
+    it('should load config from the main module\'s filepath', function() {
+      const filename = 'newrelic.js'
+      createSampleConfig(MAIN_MODULE_DIR, filename)
 
       const configuration = Config.initialize()
       expect(configuration.app_name).equal(filename)
