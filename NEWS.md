@@ -1,3 +1,15 @@
+### v7.5.1 (2021-06-21)
+
+* Moved all integration tests that required secrets to the smoke folder
+
+- Fix loading config from the main module's directory.
+
+* Fixed LASP/CSP tests so they don't skip on runs where secrets are available.
+
+* Modified self-signed SSL cert to use 'localhost' instead of 'ssl.lvh.me' for SSL testing.
+
+* Removed unnecessary trace observer configuration validation for host and port.
+
 ### v7.5.0 (2021-06-01)
 
 * Added default support for config files with a 'cjs' extension (`newrelic.cjs`) in addition to `newrelic.js`.
