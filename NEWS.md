@@ -1,8 +1,8 @@
 ### v7.5.1 (2021-06-21)
 
-* Moved all integration tests that required secrets to the smoke folder
+* Fixed loading config from the main module's directory. Thank you @alexpls for the contribution.
 
-- Fix loading config from the main module's directory.
+* Moved all integration tests that required secrets to the smoke folder.
 
 * Fixed LASP/CSP tests so they don't skip on runs where secrets are available.
 
