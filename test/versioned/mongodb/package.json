@@ -16,6 +16,7 @@
         "collection-misc.tap.js",
         "collection-update.tap.js",
         "cursor.tap.js",
+        "cursor-duration.tap.js",
         "db.tap.js"
       ]
     },
@@ -31,8 +32,24 @@
         "collection-index.tap.js",
         "collection-misc.tap.js",
         "collection-update.tap.js",
+        "cursor-duration.tap.js",
         "cursor.tap.js",
         "db.tap.js"
+      ]
+    },
+    {
+      "engines": {
+        "node": ">=10"
+      },
+      "dependencies": {
+        "mongodb": ">=3.3.0"
+      },
+      "files": [
+        "collection-find.tap.js",
+        "collection-index.tap.js",
+        "collection-update.tap.js",
+        "cursor-duration.tap.js",
+        "cursor.tap.js"
       ]
     }
   ],
