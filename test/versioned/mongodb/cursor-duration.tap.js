@@ -51,12 +51,11 @@ tap.test('cursor duration tests', function(t) {
     helper.runInTransaction(agent, function() {
       collection.find({}).toArray(function onToArray(err, data) {
         const segment = agent.tracer.getSegment()
-        const cbTime = segment.getExclusiveDurationInMillis()
         // current segment is this callback, must get its parent and parent's parent
         const mongoTime = segment.parent.getExclusiveDurationInMillis()
         const parentTime = segment.parent.parent.getExclusiveDurationInMillis()
-        console.log('mongoTime', mongoTime, 'parentTime', parentTime, 'cbTime', cbTime)
-        t.ok(mongoTime > parentTime, 'toArray duration should be longer than its parent')
+        const percentDuration = mongoTime / parentTime * 100
+        t.ok(percentDuration >= 35, 'toArray duration should be at least 35% of its parent')
         t.notOk(err)
         t.equal(data[0].i, 0)
         t.end()
@@ -68,12 +67,11 @@ tap.test('cursor duration tests', function(t) {
     helper.runInTransaction(agent, async function() {
       const data = await collection.find({}).toArray()
       const segment = agent.tracer.getSegment()
-      // asserts the toArray promise execution is longer than its parent
       // see https://github.com/newrelic/node-newrelic/issues/788
       const parentTime = segment.getExclusiveDurationInMillis()
       const mongoTime = segment.children[0].getExclusiveDurationInMillis()
-      console.log('mongoTime', mongoTime, 'parentTime', parentTime)
-      t.ok(mongoTime > parentTime, 'toArray promise duration should be longer than its parent')
+      const percentDuration = mongoTime / parentTime * 100
+      t.ok(percentDuration >= 35, 'toArray duration should be at least 35% of its parent')
 
       t.equal(data[0].i, 0)
       t.end()
