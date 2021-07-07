@@ -1,3 +1,7 @@
+### v7.5.2 (2021-07-07)
+
+* Binds cursor methods when they are promises to properly measure the duration of execution
+
 ### v7.5.1 (2021-06-21)
 
 * Fixed loading config from the main module's directory. Thank you @alexpls for the contribution.
