@@ -1,3 +1,7 @@
+### v7.5.2 (2021-07-07)
+
+* Fixed bug where promise-based cursor methods would not properly measure the duration of execution.
+
 ### v7.5.1 (2021-06-21)
 
 * Fixed loading config from the main module's directory. Thank you @alexpls for the contribution.
