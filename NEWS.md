@@ -1,6 +1,6 @@
 ### v7.5.2 (2021-07-07)
 
-* Binds cursor methods when they are promises to properly measure the duration of execution
+* Fixed bug where promise-based cursor methods would not properly measure the duration of execution.
 
 ### v7.5.1 (2021-06-21)
 
