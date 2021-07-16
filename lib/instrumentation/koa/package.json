@@ -9,8 +9,10 @@
   },
   "scripts": {
     "test": "npm run unit && npm run versioned",
-    "unit": "tap tests/unit/**/*.tap.js --no-coverage",
-    "versioned": "versioned-tests --minor -i 2 'tests/versioned/*.tap.js'",
+    "unit": "tap tests/unit/**/*.tap.js --no-coverage --reporter classic",
+    "versioned": "npm run versioned:npm7",
+    "versioned:npm6": "versioned-tests --minor -i 2 'tests/versioned/*.tap.js'",
+    "versioned:npm7": "versioned-tests --minor --all -i 2 'tests/versioned/*.tap.js'",
     "lint": "eslint *.js lib tests"
   },
   "author": "New Relic Node.js agent team <nodejs@newrelic.com>",
