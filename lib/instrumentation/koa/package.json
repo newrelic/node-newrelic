@@ -37,9 +37,7 @@
     "semver": "^5.7.1",
     "tap": "^15.0.9"
   },
-  "dependencies": {
-    "methods": "^1.1.2"
-  },
+  "dependencies": {},
   "peerDependencies": {
     "newrelic": ">=6.11.0"
   },
