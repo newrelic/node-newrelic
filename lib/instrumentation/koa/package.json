@@ -7,6 +7,12 @@
     "lib": "lib",
     "test": "tests"
   },
+  "files": [
+    "/lib/**",
+    "nr-hooks.js",
+    "index.js",
+    "*.md"
+  ],
   "scripts": {
     "test": "npm run unit && npm run versioned",
     "unit": "tap tests/unit/**/*.tap.js --no-coverage --reporter classic",
@@ -27,7 +33,7 @@
     "koa": "^2.6.1",
     "koa-route": "^3.2.0",
     "koa-router": "^7.4.0",
-    "newrelic": "^6.11.0",
+    "newrelic": "^7.5.2",
     "semver": "^5.7.1",
     "tap": "^15.0.9"
   },
