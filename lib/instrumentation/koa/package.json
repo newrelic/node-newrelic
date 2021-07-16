@@ -27,13 +27,11 @@
     "koa": "^2.6.1",
     "koa-route": "^3.2.0",
     "koa-router": "^7.4.0",
-    "newrelic": "^6.11.0",
+    "newrelic": "^7.5.2",
     "semver": "^5.7.1",
     "tap": "^15.0.9"
   },
-  "dependencies": {
-    "methods": "^1.1.2"
-  },
+  "dependencies": {},
   "peerDependencies": {
     "newrelic": ">=6.11.0"
   },
