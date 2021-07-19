@@ -14,7 +14,6 @@ code, the source code can be found at [https://github.com/newrelic/node-newrelic
 
 **[dependencies](#dependencies)**
 
-* [methods](#methods)
 
 **[devDependencies](#devDependencies)**
 
@@ -28,44 +27,12 @@ code, the source code can be found at [https://github.com/newrelic/node-newrelic
 
 ## dependencies
 
-### methods
-
-This product includes source derived from [methods](https://github.com/jshttp/methods) ([v1.1.2](https://github.com/jshttp/methods/tree/v1.1.2)), distributed under the [MIT License](https://github.com/jshttp/methods/blob/v1.1.2/LICENSE):
-
-```
-(The MIT License)
-
-Copyright (c) 2013-2014 TJ Holowaychuk <tj@vision-media.ca>
-Copyright (c) 2015-2016 Douglas Christopher Wilson <doug@somethingdoug.com>
-
-Permission is hereby granted, free of charge, to any person obtaining
-a copy of this software and associated documentation files (the
-'Software'), to deal in the Software without restriction, including
-without limitation the rights to use, copy, modify, merge, publish,
-distribute, sublicense, and/or sell copies of the Software, and to
-permit persons to whom the Software is furnished to do so, subject to
-the following conditions:
-
-The above copyright notice and this permission notice shall be
-included in all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND,
-EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
-IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
-CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
-TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
-SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-
-
-```
-
 
 ## devDependencies
 
 ### @newrelic/test-utilities
 
-This product includes source derived from [@newrelic/test-utilities](https://github.com/newrelic/node-test-utilities) ([v4.1.2](https://github.com/newrelic/node-test-utilities/tree/v4.1.2)), distributed under the [Apache-2.0 License](https://github.com/newrelic/node-test-utilities/blob/v4.1.2/LICENSE):
+This product includes source derived from [@newrelic/test-utilities](https://github.com/newrelic/node-test-utilities) ([v5.1.0](https://github.com/newrelic/node-test-utilities/tree/v5.1.0)), distributed under the [Apache-2.0 License](https://github.com/newrelic/node-test-utilities/blob/v5.1.0/LICENSE):
 
 ```
                                  Apache License
@@ -301,7 +268,7 @@ THE SOFTWARE.
 
 ### newrelic
 
-This product includes source derived from [newrelic](https://github.com/newrelic/node-newrelic) ([v6.14.0](https://github.com/newrelic/node-newrelic/tree/v6.14.0)), distributed under the [Apache-2.0 License](https://github.com/newrelic/node-newrelic/blob/v6.14.0/LICENSE):
+This product includes source derived from [newrelic](https://github.com/newrelic/node-newrelic) ([v7.5.2](https://github.com/newrelic/node-newrelic/tree/v7.5.2)), distributed under the [Apache-2.0 License](https://github.com/newrelic/node-newrelic/blob/v7.5.2/LICENSE):
 
 ```
                                  Apache License
@@ -562,7 +529,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 ### tap
 
-This product includes source derived from [tap](https://github.com/tapjs/node-tap) ([v14.10.8](https://github.com/tapjs/node-tap/tree/v14.10.8)), distributed under the [ISC License](https://github.com/tapjs/node-tap/blob/v14.10.8/LICENSE):
+This product includes source derived from [tap](https://github.com/tapjs/node-tap) ([v15.0.9](https://github.com/tapjs/node-tap/tree/v15.0.9)), distributed under the [ISC License](https://github.com/tapjs/node-tap/blob/v15.0.9/LICENSE):
 
 ```
 The ISC License
