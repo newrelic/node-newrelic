@@ -36,7 +36,7 @@ class Certificate {
     const rawPEM = this.body.split('\n')
 
     for (let i = 0; i < rawPEM.length; i++) {
-      const line = rawPEM[i]
+      let line = rawPEM[i]
       // some Thawte certificates have Windows line endings
       line = line.replace('\r', '')
       if (line.match(/END CERTIFICATE/)) {

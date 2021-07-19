@@ -104,7 +104,7 @@ function tapAssertMetrics(tap, transaction, expected, exact) {
   var metrics = transaction.metrics
 
   for (let i = 0; i < expected.length; ++i) {
-    const expectedMetric = Object.assign({}, expected[i])
+    let expectedMetric = Object.assign({}, expected[i])
     let name = null
     let scope = null
 

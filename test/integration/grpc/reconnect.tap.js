@@ -6,18 +6,8 @@
 'use strict'
 const tap = require('tap')
 
-const safeRequire = (id) => {
-  let tmp
-  try {
-    tmp = require(id)
-  } catch (error) {
-    tmp = error
-  }
-  return tmp
-}
-
-const GrpcConnection = safeRequire('../../../lib/grpc/connection')
-const grpc = safeRequire('../../../lib/proxy/grpc')
+const GrpcConnection = require('../../../lib/grpc/connection')
+const grpc = require('../../../lib/proxy/grpc')
 
 const protoLoader = require('@grpc/proto-loader')
 
@@ -28,13 +18,8 @@ const StreamingSpanEvent = require('../../../lib/spans/streaming-span-event')
 
 const helper = require('../../lib/agent_helper')
 
-// TODO: Remove test version check when Node 10 support dropped.
-const isUnsupportedNodeVersion =
-  GrpcConnection.message === '@grpc/grpc-js only works on Node ^8.13.0 || >=10.10.0'
-
 tap.test(
   'test that connection class reconnects',
-  {skip:isUnsupportedNodeVersion},
   async t => {
     // one assert for the initial connection
     // a second assert for the disconnect
@@ -123,7 +108,6 @@ tap.test(
  */
 tap.test(
   'Should reconnect even when data sent back',
-  {skip:isUnsupportedNodeVersion},
   async t => {
     // one assert for the initial connection
     // a second assert for the disconnect

@@ -8,9 +8,6 @@
 const tap = require('tap')
 const test = tap.test
 const helper = require('../../../lib/agent_helper')
-const semver = require('semver')
-
-const isNode12Plus = semver.satisfies(process.version, '>=12')
 
 test('Unhandled rejection', (t) => {
   t.autoend()
@@ -36,21 +33,6 @@ test('Unhandled rejection', (t) => {
   t.afterEach((done) => {
     helper.unloadAgent(agent)
     done()
-  })
-
-  // As of node 12, the promise which triggered the init async hook will no longer
-  // be propagated to the hook, so this linkage is no longer possible.
-  t.test('should be associated with the transction if there is one', {skip: isNode12Plus}, (t) => {
-    helper.runInTransaction(agent, function(transaction) {
-      Promise.reject('test rejection')
-
-      setTimeout(function() {
-        t.equal(transaction.exceptions.length, 1)
-        t.equal(transaction.exceptions[0].error, 'test rejection')
-
-        t.end()
-      }, 15)
-    })
   })
 
   t.test('should not report it if there is another handler', (t) => {

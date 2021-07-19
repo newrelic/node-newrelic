@@ -139,48 +139,45 @@ tap.test('Do not report domained exceptions', (t) => {
   proc.send({name: 'domainUncaughtException', args: message})
 })
 
-// only available on Node >=9.3
-if (process.setUncaughtExceptionCaptureCallback) {
-  tap.test('Report exceptions handled in setUncaughtExceptionCaptureCallback', (t) => {
-    t.plan(3)
-    const proc = startProc()
-    let messageReceived = false
+tap.test('Report exceptions handled in setUncaughtExceptionCaptureCallback', (t) => {
+  t.plan(3)
+  const proc = startProc()
+  let messageReceived = false
 
-    proc.on('message', (errors) => {
-      messageReceived = true
-      t.equal(errors.count, 0, 'should not have collected an error')
-      t.same(errors.messages, [], 'should have no error messages')
-      proc.kill()
-    })
-
-    proc.on('exit', () => {
-      t.ok(messageReceived, 'should receive message')
-      t.end()
-    })
-
-    proc.send({ name: 'setUncaughtExceptionCallback' })
+  proc.on('message', (errors) => {
+    messageReceived = true
+    t.equal(errors.count, 0, 'should not have collected an error')
+    t.same(errors.messages, [], 'should have no error messages')
+    proc.kill()
   })
 
-  tap.test('Report exceptions handled in setUncaughtExceptionCaptureCallback', (t) => {
-    t.plan(3)
-    const proc = startProc()
-    let messageReceived = false
-
-    proc.on('message', (errors) => {
-      messageReceived = true
-      t.equal(errors.count, 1, 'should have collected an error')
-      t.same(errors.messages, ['nothing can keep me down'], 'should have error messages')
-      proc.kill()
-    })
-
-    proc.on('exit', () => {
-      t.ok(messageReceived, 'should receive message')
-      t.end()
-    })
-
-    proc.send({ name: 'unsetUncaughtExceptionCallback' })
+  proc.on('exit', () => {
+    t.ok(messageReceived, 'should receive message')
+    t.end()
   })
-}
+
+  proc.send({ name: 'setUncaughtExceptionCallback' })
+})
+
+tap.test('Report exceptions handled in setUncaughtExceptionCaptureCallback', (t) => {
+  t.plan(3)
+  const proc = startProc()
+  let messageReceived = false
+
+  proc.on('message', (errors) => {
+    messageReceived = true
+    t.equal(errors.count, 1, 'should have collected an error')
+    t.same(errors.messages, ['nothing can keep me down'], 'should have error messages')
+    proc.kill()
+  })
+
+  proc.on('exit', () => {
+    t.ok(messageReceived, 'should receive message')
+    t.end()
+  })
+
+  proc.send({ name: 'unsetUncaughtExceptionCallback' })
+})
 
 function startProc(env) {
   return cp.fork(path.join(helpersDir, 'exceptions.js'), {

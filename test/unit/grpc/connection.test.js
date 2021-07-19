@@ -6,17 +6,7 @@
 'use strict'
 const tap = require('tap')
 const sinon = require('sinon')
-
-const safeRequire = (id) => {
-  let tmp
-  try {
-    tmp = require(id)
-  } catch (error) {
-    tmp = error
-  }
-  return tmp
-}
-const GrpcConnection = safeRequire('../../../lib/grpc/connection')
+const GrpcConnection = require('../../../lib/grpc/connection')
 const connectionStates = require('../../../lib/grpc/connection/states')
 const NAMES = require('../../../lib/metrics/names')
 const MetricAggregator = require('../../../lib/metrics/metric-aggregator')
@@ -59,13 +49,8 @@ const createMetricAggregatorForTests = () => {
   return metrics
 }
 
-// TODO: remove unsupported checks when Node 10 support dropped.
-const isUnsupportedNodeVersion =
-  GrpcConnection.message === '@grpc/grpc-js only works on Node ^8.13.0 || >=10.10.0'
-
 tap.test(
   'GrpcConnection logic tests',
-  {skip: isUnsupportedNodeVersion},
   (test) => {
     const metrics = createMetricAggregatorForTests()
 
@@ -311,7 +296,7 @@ tap.test('grpc stream event handling', (test) => {
     const metrics = createMetricAggregatorForTests()
     const fakeStream = new FakeStreamer()
 
-    const calledMetrics = false
+    let calledMetrics = false
 
     metrics.getOrCreateMetric = () => {
       calledMetrics = true
