@@ -600,15 +600,6 @@ describe('the agent configuration', function() {
     })
 
     describe('serverless mode', () => {
-      it('should should disable when feature flag false', () => {
-        idempotentEnv({
-          NEW_RELIC_FEATURE_FLAG_SERVERLESS_MODE: false,
-          NEW_RELIC_SERVERLESS_MODE_ENABLED: true,
-        }, (tc) => {
-          expect(tc.serverless_mode.enabled).to.be.false
-        })
-      })
-
       it('should pick up serverless_mode', () => {
         idempotentEnv({
           NEW_RELIC_SERVERLESS_MODE_ENABLED: true
@@ -716,19 +707,16 @@ describe('the agent configuration', function() {
 
   describe('when loading from a file', () => {
     describe('serverless mode', () => {
-      it('should be false when the feature flag is false', () => {
+      it('should be false when config false', () => {
         const conf = Config.initialize({
           serverless_mode: {
-            enabled: true
+            enabled: false
           },
-          feature_flag: {
-            serverless_mode: false
-          }
         })
         expect(conf.serverless_mode.enabled).to.be.false
       })
 
-      it('should be true when config true and feature flag defaulting true', () => {
+      it('should be true when config true', () => {
         const conf = Config.initialize({
           serverless_mode: {
             enabled: true
@@ -1350,7 +1338,7 @@ describe('the agent configuration', function() {
 
       processMainModuleStub.resetBehavior()
 
-      fs.rmdirSync(DESTDIR) 
+      fs.rmdirSync(DESTDIR)
       fs.rmdirSync(NOPLACEDIR)
       fs.rmdirSync(MAIN_MODULE_DIR)
 
