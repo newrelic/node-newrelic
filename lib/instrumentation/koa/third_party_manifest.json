@@ -1,21 +1,9 @@
 {
-  "lastUpdated": "Mon Nov 02 2020 14:05:46 GMT-0800 (Pacific Standard Time)",
+  "lastUpdated": "Mon Jul 19 2021 13:14:52 GMT-0700 (Pacific Daylight Time)",
   "projectName": "New Relic Koa Instrumentation",
   "projectUrl": "https://github.com/newrelic/node-newrelic-koa",
   "includeDev": true,
-  "dependencies": {
-    "methods@1.1.2": {
-      "name": "methods",
-      "version": "1.1.2",
-      "range": "^1.1.2",
-      "licenses": "MIT",
-      "repoUrl": "https://github.com/jshttp/methods",
-      "versionedRepoUrl": "https://github.com/jshttp/methods/tree/v1.1.2",
-      "licenseFile": "node_modules/methods/LICENSE",
-      "licenseUrl": "https://github.com/jshttp/methods/blob/v1.1.2/LICENSE",
-      "licenseTextSource": "file"
-    }
-  },
+  "dependencies": {},
   "devDependencies": {
     "@koa/router@8.0.8": {
       "name": "@koa/router",
@@ -30,15 +18,28 @@
       "publisher": "Alex Mingoia",
       "email": "talk@alexmingoia.com"
     },
-    "@newrelic/test-utilities@4.1.1": {
+    "@newrelic/test-utilities@5.1.0": {
       "name": "@newrelic/test-utilities",
-      "version": "4.1.1",
-      "range": "^4.0.0",
+      "version": "5.1.0",
+      "range": "^5.1.0",
       "licenses": "Apache-2.0",
       "repoUrl": "https://github.com/newrelic/node-test-utilities",
-      "versionedRepoUrl": "https://github.com/newrelic/node-test-utilities/tree/v4.1.1",
+      "versionedRepoUrl": "https://github.com/newrelic/node-test-utilities/tree/v5.1.0",
       "licenseFile": "node_modules/@newrelic/test-utilities/LICENSE",
-      "licenseUrl": "https://github.com/newrelic/node-test-utilities/blob/v4.1.1/LICENSE",
+      "licenseUrl": "https://github.com/newrelic/node-test-utilities/blob/v5.1.0/LICENSE",
+      "licenseTextSource": "file",
+      "publisher": "New Relic Node.js agent team",
+      "email": "nodejs@newrelic.com"
+    },
+    "newrelic@6.13.1": {
+      "name": "newrelic",
+      "version": "6.13.1",
+      "range": "^6.11.0",
+      "licenses": "Apache-2.0",
+      "repoUrl": "https://github.com/newrelic/node-newrelic",
+      "versionedRepoUrl": "https://github.com/newrelic/node-newrelic/tree/v6.13.1",
+      "licenseFile": "node_modules/newrelic/LICENSE",
+      "licenseUrl": "https://github.com/newrelic/node-newrelic/blob/v6.13.1/LICENSE",
       "licenseTextSource": "file",
       "publisher": "New Relic Node.js agent team",
       "email": "nodejs@newrelic.com"
@@ -80,29 +81,16 @@
       "publisher": "Alex Mingoia",
       "email": "talk@alexmingoia.com"
     },
-    "koa@2.13.0": {
+    "koa@2.13.1": {
       "name": "koa",
-      "version": "2.13.0",
+      "version": "2.13.1",
       "range": "^2.6.1",
       "licenses": "MIT",
       "repoUrl": "https://github.com/koajs/koa",
-      "versionedRepoUrl": "https://github.com/koajs/koa/tree/v2.13.0",
+      "versionedRepoUrl": "https://github.com/koajs/koa/tree/v2.13.1",
       "licenseFile": "node_modules/koa/LICENSE",
-      "licenseUrl": "https://github.com/koajs/koa/blob/v2.13.0/LICENSE",
+      "licenseUrl": "https://github.com/koajs/koa/blob/v2.13.1/LICENSE",
       "licenseTextSource": "file"
-    },
-    "newrelic@6.13.1": {
-      "name": "newrelic",
-      "version": "6.13.1",
-      "range": "^6.11.0",
-      "licenses": "Apache-2.0",
-      "repoUrl": "https://github.com/newrelic/node-newrelic",
-      "versionedRepoUrl": "https://github.com/newrelic/node-newrelic/tree/v6.13.1",
-      "licenseFile": "node_modules/newrelic/LICENSE",
-      "licenseUrl": "https://github.com/newrelic/node-newrelic/blob/v6.13.1/LICENSE",
-      "licenseTextSource": "file",
-      "publisher": "New Relic Node.js agent team",
-      "email": "nodejs@newrelic.com"
     },
     "semver@5.7.1": {
       "name": "semver",
@@ -115,15 +103,15 @@
       "licenseUrl": "https://github.com/npm/node-semver/blob/v5.7.1/LICENSE",
       "licenseTextSource": "file"
     },
-    "tap@14.10.8": {
+    "tap@15.0.9": {
       "name": "tap",
-      "version": "14.10.8",
-      "range": "^14.10.7",
+      "version": "15.0.9",
+      "range": "^15.0.9",
       "licenses": "ISC",
       "repoUrl": "https://github.com/tapjs/node-tap",
-      "versionedRepoUrl": "https://github.com/tapjs/node-tap/tree/v14.10.8",
+      "versionedRepoUrl": "https://github.com/tapjs/node-tap/tree/v15.0.9",
       "licenseFile": "node_modules/tap/LICENSE",
-      "licenseUrl": "https://github.com/tapjs/node-tap/blob/v14.10.8/LICENSE",
+      "licenseUrl": "https://github.com/tapjs/node-tap/blob/v15.0.9/LICENSE",
       "licenseTextSource": "file",
       "publisher": "Isaac Z. Schlueter",
       "email": "i@izs.me",
