@@ -10,7 +10,6 @@ const nock = require('nock')
 const path = require('path')
 const grpc = require('@grpc/grpc-js')
 const protoLoader = require('@grpc/proto-loader')
-const semver = require('semver')
 
 const helper = require('../lib/agent_helper')
 
@@ -43,10 +42,7 @@ const packageDefinition = protoLoader.loadSync(
 
 const infiniteTracingService = grpc.loadPackageDefinition(packageDefinition).com.newrelic.trace.v1
 
-// TODO: remove unsupported checks when Node 10 support dropped.
-const isGrpcSupportedVersion = semver.satisfies(process.version, '>=10.10.0')
-
-tap.test('Inifinite tracing - Connection Handling', { skip: !isGrpcSupportedVersion },  (t) => {
+tap.test('Inifinite tracing - Connection Handling', (t) => {
   t.autoend()
 
   let server = null

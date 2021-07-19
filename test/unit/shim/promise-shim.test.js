@@ -21,7 +21,6 @@ describe('PromiseShim', () => {
   let TestPromise = null
 
   beforeEach(() => {
-    // TODO: Convert this test to use ES6 class after deprecating Node <5.
     TestPromise = function(executor) {
       this.executorCaller(executor)
     }

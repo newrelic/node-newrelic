@@ -8,7 +8,6 @@
 var test = require('tap').test
 var dns = require('dns')
 var helper = require('../../lib/agent_helper')
-var semver = require('semver')
 var verifySegments = require('./verify.js')
 
 test('lookup', function(t) {
@@ -31,9 +30,7 @@ test('resolve', function(t) {
       t.equal(ips.length, 1)
       t.ok(ips[0].match(/^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$/))
 
-      var children =
-        semver.satisfies(process.version, '>=7.7.2') ? [] : ['dns.resolve4']
-
+      const children = []
       verifySegments(t, agent, 'dns.resolve', children)
     })
   })
