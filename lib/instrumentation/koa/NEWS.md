@@ -2,7 +2,7 @@
 
 * **BREAKING** Removed support for Node 10.
 
-  The minimum supported version is now Node v10. For further information on our support policy, see: https://docs.newrelic.com/docs/agents/nodejs-agent/getting-started/compatibility-requirements-nodejs-agent.
+  The minimum supported version is now Node v12. For further information on our support policy, see: https://docs.newrelic.com/docs/agents/nodejs-agent/getting-started/compatibility-requirements-nodejs-agent.
 
 * Added support for Node 16.
 * Updated module to use files array instead of publishing all except `.npmignore`.
