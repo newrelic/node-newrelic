@@ -1,3 +1,17 @@
+### 6.0.0 (2021-07-19)
+
+* **BREAKING** Removed support for Node 10.
+
+  The minimum supported version is now Node v12. For further information on our support policy, see: https://docs.newrelic.com/docs/agents/nodejs-agent/getting-started/compatibility-requirements-nodejs-agent.
+
+* Added support for Node 16.
+* Updated module to use files array instead of publishing all except `.npmignore`.
+* Removed the `methods` package as a dependency and updated code to just lowercase http methods.
+* Upgraded tap to v15.
+* Removed deprecated tap methods.
+* Added @koa/router to the list of supported routing modules in README.
+* Bumped `@newrelic/test-utilities` to ^5.1.0.
+
 ### 5.0.0 (2020-11-02)
 
 * Removed Node v8.x from CI
