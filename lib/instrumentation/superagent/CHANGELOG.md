@@ -1,4 +1,4 @@
-### 5.0.0 (2020-07-19)
+### 5.0.0 (2020-07-20)
 
 * **BREAKING** Removed support for Node 10.
 
