@@ -1,4 +1,7 @@
-### 5.0.0 (2020-07-20)
+### 5.0.1 (2021-07-20)
+* Added versioned tests to the files list within package.json
+
+### 5.0.0 (2021-07-20)
 
 * **BREAKING** Removed support for Node 10.
 
