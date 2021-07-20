@@ -36,6 +36,8 @@
     "index.js",
     "nr-hooks.js",
     "lib/**",
-    "*.md"
+    "*.md",
+    "tests/versioned/*.js",
+    "tests/versioned/aws-server-stubs/**"
   ]
 }
