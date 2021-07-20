@@ -33,7 +33,7 @@ code, the source code can be found at [https://github.com/newrelic/node-newrelic
 
 ### @newrelic/test-utilities
 
-This product includes source derived from [@newrelic/test-utilities](https://github.com/newrelic/node-test-utilities) ([v4.1.2](https://github.com/newrelic/node-test-utilities/tree/v4.1.2)), distributed under the [Apache-2.0 License](https://github.com/newrelic/node-test-utilities/blob/v4.1.2/LICENSE):
+This product includes source derived from [@newrelic/test-utilities](https://github.com/newrelic/node-test-utilities) ([v5.1.0](https://github.com/newrelic/node-test-utilities/tree/v5.1.0)), distributed under the [Apache-2.0 License](https://github.com/newrelic/node-test-utilities/blob/v5.1.0/LICENSE):
 
 ```
                                  Apache License
@@ -269,7 +269,7 @@ THE SOFTWARE.
 
 ### aws-sdk
 
-This product includes source derived from [aws-sdk](https://github.com/aws/aws-sdk-js) ([v2.561.0](https://github.com/aws/aws-sdk-js/tree/v2.561.0)), distributed under the [Apache-2.0 License](https://github.com/aws/aws-sdk-js/blob/v2.561.0/LICENSE.txt):
+This product includes source derived from [aws-sdk](https://github.com/aws/aws-sdk-js) ([v2.682.0](https://github.com/aws/aws-sdk-js/tree/v2.682.0)), distributed under the [Apache-2.0 License](https://github.com/aws/aws-sdk-js/blob/v2.682.0/LICENSE.txt):
 
 ```
 
@@ -749,7 +749,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ### tap
 
-This product includes source derived from [tap](https://github.com/tapjs/node-tap) ([v12.7.0](https://github.com/tapjs/node-tap/tree/v12.7.0)), distributed under the [ISC License](https://github.com/tapjs/node-tap/blob/v12.7.0/LICENSE):
+This product includes source derived from [tap](https://github.com/tapjs/node-tap) ([v15.0.9](https://github.com/tapjs/node-tap/tree/v15.0.9)), distributed under the [ISC License](https://github.com/tapjs/node-tap/blob/v15.0.9/LICENSE):
 
 ```
 The ISC License
