@@ -16,7 +16,6 @@
         "collection-misc.tap.js",
         "collection-update.tap.js",
         "cursor.tap.js",
-        "cursor-duration.tap.js",
         "db.tap.js"
       ]
     },
@@ -32,7 +31,6 @@
         "collection-index.tap.js",
         "collection-misc.tap.js",
         "collection-update.tap.js",
-        "cursor-duration.tap.js",
         "cursor.tap.js",
         "db.tap.js"
       ]
@@ -48,7 +46,6 @@
         "collection-find.tap.js",
         "collection-index.tap.js",
         "collection-update.tap.js",
-        "cursor-duration.tap.js",
         "cursor.tap.js"
       ]
     }
