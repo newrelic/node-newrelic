@@ -13,15 +13,13 @@ tap.test('Test Module Instrumentation Loading', (t) => {
   t.autoend()
   let agent = null
 
-  t.beforeEach((done) => {
+  t.beforeEach(() => {
     agent = helper.loadMockedAgent()
-    done()
   })
 
-  t.afterEach((done) => {
+  t.afterEach(() => {
     helper.unloadAgent(agent)
     agent = null
-    done()
   })
 
   t.test("__NR_instrumented set correctly", (t) => {

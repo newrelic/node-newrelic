@@ -36,17 +36,14 @@ tap.test('when loaded with defaults', (t) => {
 
   let agent = null
 
-  t.beforeEach((done) => {
+  t.beforeEach(() => {
     // Load agent with default 'stopped' state
     agent = helper.loadMockedAgent(null, false)
-    done()
   })
 
-  t.afterEach((done) => {
+  t.afterEach(() => {
     helper.unloadAgent(agent)
     agent = null
-
-    done()
   })
 
   t.test('bootstraps its configuration', (t) => {
@@ -161,19 +158,17 @@ tap.test('when forcing transaction ignore status', (t) => {
 
   let agentInstance = null
 
-  t.beforeEach((done) => {
+  t.beforeEach(() => {
     const config = configurator.initialize({
       rules: {ignore: [
         /^\/ham_snadwich\/ignore/
       ]}
     })
     agentInstance = new Agent(config)
-    done()
   })
 
-  t.afterEach((done) => {
+  t.afterEach(() => {
     agentInstance = null
-    done()
   })
 
   t.test('should not error when forcing an ignore', (t) => {
@@ -215,7 +210,7 @@ tap.test('#startAggregators should start all aggregators', (t) => {
   let agent = helper.loadMockedAgent(null, false)
   agent.config.distributed_tracing.enabled = true // for span events
 
-  t.tearDown(() => {
+  t.teardown(() => {
     helper.unloadAgent(agent)
   })
 
@@ -236,7 +231,7 @@ tap.test('#startAggregators should start all aggregators', (t) => {
   let agent = helper.loadMockedAgent(null, false)
   agent.config.distributed_tracing.enabled = true // for span events
 
-  t.tearDown(() => {
+  t.teardown(() => {
     helper.unloadAgent(agent)
   })
 
@@ -257,7 +252,7 @@ tap.test('#stopAggregators should stop all aggregators', (t) => {
   let agent = helper.loadMockedAgent(null, false)
   agent.config.distributed_tracing.enabled = true // for span events
 
-  t.tearDown(() => {
+  t.teardown(() => {
     helper.unloadAgent(agent)
   })
 
@@ -281,7 +276,7 @@ tap.test('#onConnect should reconfigure all the aggregators', (t) => {
   let agent = helper.loadMockedAgent(null, false)
   agent.config.distributed_tracing.enabled = true // for span events
 
-  t.tearDown(() => {
+  t.teardown(() => {
     helper.unloadAgent(agent)
   })
 
@@ -307,15 +302,14 @@ tap.test('when starting', (t) => {
 
   let agent = null
 
-  t.beforeEach((done) => {
+  t.beforeEach(() => {
     nock.disableNetConnect()
 
     // Load agent with default 'stopped' state
     agent = helper.loadMockedAgent(null, false)
-    done()
   })
 
-  t.afterEach((done) => {
+  t.afterEach(() => {
     helper.unloadAgent(agent)
     agent = null
 
@@ -326,8 +320,6 @@ tap.test('when starting', (t) => {
     }
 
     nock.enableNetConnect()
-
-    done()
   })
 
   t.test('should require a callback', (t) => {
@@ -466,7 +458,7 @@ tap.test('initial harvest', (t) => {
   let connect = null
   let settings = null
 
-  t.beforeEach((done) => {
+  t.beforeEach(() => {
     nock.disableNetConnect()
 
     global.setInterval = (callback) => {
@@ -503,11 +495,9 @@ tap.test('initial harvest', (t) => {
     settings = nock(URL)
       .post(helper.generateCollectorPath('agent_settings', RUN_ID))
       .reply(200, {return_value: []})
-
-    done()
   })
 
-  t.afterEach((done) => {
+  t.afterEach(() => {
     global.setInterval = origInterval
 
     helper.unloadAgent(agent)
@@ -520,8 +510,6 @@ tap.test('initial harvest', (t) => {
     }
 
     nock.enableNetConnect()
-
-    done()
   })
 
   t.test('should not blow up when harvest cycle runs', (t) => {
@@ -583,17 +571,14 @@ tap.test('when stopping', (t) => {
 
   let agent = null
 
-  t.beforeEach((done) => {
+  t.beforeEach(() => {
     // Load agent with default 'stopped' state
     agent = helper.loadMockedAgent(null, false)
-    done()
   })
 
-  t.afterEach((done) => {
+  t.afterEach(() => {
     helper.unloadAgent(agent)
     agent = null
-
-    done()
   })
 
   t.test('should require a callback', (t) => {
@@ -632,15 +617,14 @@ tap.test('when stopping after connected', (t) => {
 
   let agent = null
 
-  t.beforeEach((done) => {
+  t.beforeEach(() => {
     nock.disableNetConnect()
 
     // Load agent with default 'stopped' state
     agent = helper.loadMockedAgent(null, false)
-    done()
   })
 
-  t.afterEach((done) => {
+  t.afterEach(() => {
     helper.unloadAgent(agent)
     agent = null
 
@@ -651,8 +635,6 @@ tap.test('when stopping after connected', (t) => {
     }
 
     nock.enableNetConnect()
-
-    done()
   })
 
   t.test('should call shutdown', (t) => {
@@ -691,7 +673,7 @@ tap.test('when connected', (t) => {
 
   let agent = null
 
-  t.beforeEach((done) => {
+  t.beforeEach(() => {
     nock.disableNetConnect()
 
     // Load agent with default 'stopped' state
@@ -705,11 +687,9 @@ tap.test('when connected', (t) => {
       detect_gcp: false,
       detect_docker: false
     }
-
-    done()
   })
 
-  t.afterEach((done) => {
+  t.afterEach(() => {
     helper.unloadAgent(agent)
     agent = null
 
@@ -720,8 +700,6 @@ tap.test('when connected', (t) => {
     }
 
     nock.enableNetConnect()
-
-    done()
   })
 
   t.test('should update the metric apdexT value after connect', (t) => {
@@ -780,7 +758,7 @@ tap.test('when connected', (t) => {
       t.equal(agent._state, 'started')
       t.equal(agent.config.run_id, 404)
       t.equal(agent.metrics._apdexT, 0.742)
-      t.deepEqual(agent.urlNormalizer.rules, [])
+      t.same(agent.urlNormalizer.rules, [])
 
       agent.stop(function cb_stop() {
         t.ok(settings.isDone())
@@ -798,18 +776,14 @@ tap.test('when handling finished transactions', (t) => {
 
   let agent = null
 
-  t.beforeEach((done) => {
+  t.beforeEach(() => {
     // Load agent with default 'stopped' state
     agent = helper.loadMockedAgent(null, false)
-
-    done()
   })
 
-  t.afterEach((done) => {
+  t.afterEach(() => {
     helper.unloadAgent(agent)
     agent = null
-
-    done()
   })
 
   t.test('should capture the trace off a finished transaction', (t) => {
@@ -902,22 +876,18 @@ tap.test('when sampling_target changes', (t) => {
 
   let agent = null
 
-  t.beforeEach((done) => {
+  t.beforeEach(() => {
     // Load agent with default 'stopped' state
     agent = helper.loadMockedAgent(null, false)
-
-    done()
   })
 
-  t.afterEach((done) => {
+  t.afterEach(() => {
     helper.unloadAgent(agent)
     agent = null
-
-    done()
   })
 
   t.test('should adjust the current sampling target', (t) => {
-    t.notEqual(agent.transactionSampler.samplingTarget, 5)
+    t.not(agent.transactionSampler.samplingTarget, 5)
     agent.config.onConnect({sampling_target: 5})
     t.equal(agent.transactionSampler.samplingTarget, 5)
 
@@ -925,7 +895,7 @@ tap.test('when sampling_target changes', (t) => {
   })
 
   t.test('should adjust the sampling period', (t) => {
-    t.notEqual(agent.transactionSampler.samplingPeriod, 100)
+    t.not(agent.transactionSampler.samplingPeriod, 100)
     agent.config.onConnect({sampling_target_period_in_seconds: 0.1})
     t.equal(agent.transactionSampler.samplingPeriod, 100)
 
@@ -947,20 +917,16 @@ tap.test('when event_harvest_config updated on connect with a valid config', (t)
 
   let agent = null
 
-  t.beforeEach((done) => {
+  t.beforeEach(() => {
     // Load agent with default 'stopped' state
     agent = helper.loadMockedAgent(null, false)
 
     agent.config.onConnect({event_harvest_config: validHarvestConfig})
-
-    done()
   })
 
-  t.afterEach((done) => {
+  t.afterEach(() => {
     helper.unloadAgent(agent)
     agent = null
-
-    done()
   })
 
   t.test('should generate ReportPeriod supportability', (t) => {

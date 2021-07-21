@@ -7,12 +7,15 @@
 
 const tap = require('tap')
 
+const util = require('util')
 const zlib = require('zlib')
 const nock = require('nock')
 const chai = require('chai')
 const expect = chai.expect
 const sinon = require('sinon')
 const fs = require('fs')
+const fsOpenAsync = util.promisify(fs.open)
+const fsUnlinkAsync = util.promisify(fs.unlink)
 const helper = require('../../lib/agent_helper')
 const API = require('../../../lib/collector/serverless')
 const serverfulAPI = require('../../../lib/collector/api')
@@ -24,7 +27,7 @@ tap.test('ServerlessCollector API', (t) => {
   let api = null
   let agent = null
 
-  function beforeTest(done) {
+  function beforeTest() {
     nock.disableNetConnect()
     agent = helper.loadMockedAgent({
       serverless_mode: {
@@ -36,15 +39,11 @@ tap.test('ServerlessCollector API', (t) => {
     agent.reconfigure = () => {}
     agent.setState = () => {}
     api = new API(agent)
-
-    done()
   }
 
-  function afterTest(done) {
+  function afterTest() {
     nock.enableNetConnect()
     helper.unloadAgent(agent)
-
-    done()
   }
 
   t.test('has all expected methods shared with the serverful API', (t) => {
@@ -100,7 +99,7 @@ tap.test('ServerlessCollector API', (t) => {
     t.test('adds metric_data to the payload object', (t) => {
       const metricData = {type: 'metric_data'}
       api.metric_data(metricData, () => {
-        t.deepEqual(api.payload.metric_data, metricData)
+        t.same(api.payload.metric_data, metricData)
         t.end()
       })
     })
@@ -115,7 +114,7 @@ tap.test('ServerlessCollector API', (t) => {
     t.test('adds error_data to the payload object', (t) => {
       const errorData = {type: 'error_data'}
       api.error_data(errorData, () => {
-        t.deepEqual(api.payload.error_data, errorData)
+        t.same(api.payload.error_data, errorData)
         t.end()
       })
     })
@@ -130,7 +129,7 @@ tap.test('ServerlessCollector API', (t) => {
     t.test('adds transaction_sample_data to the payload object', (t) => {
       const transactionSampleData = {type: 'transaction_sample_data'}
       api.transaction_sample_data(transactionSampleData, () => {
-        t.deepEqual(api.payload.transaction_sample_data, transactionSampleData)
+        t.same(api.payload.transaction_sample_data, transactionSampleData)
         t.end()
       })
     })
@@ -145,7 +144,7 @@ tap.test('ServerlessCollector API', (t) => {
     t.test('adds analytic_event_data to the payload object', (t) => {
       const analyticsEvents = {type: 'analytic_event_data'}
       api.analytic_event_data(analyticsEvents, () => {
-        t.deepEqual(api.payload.analytic_event_data, analyticsEvents)
+        t.same(api.payload.analytic_event_data, analyticsEvents)
 
         t.end()
       })
@@ -161,7 +160,7 @@ tap.test('ServerlessCollector API', (t) => {
     t.test('adds custom_event_data to the payload object', (t) => {
       const customEvents = {type: 'custom_event_data'}
       api.custom_event_data(customEvents, () => {
-        t.deepEqual(api.payload.custom_event_data, customEvents)
+        t.same(api.payload.custom_event_data, customEvents)
         t.end()
       })
     })
@@ -176,7 +175,7 @@ tap.test('ServerlessCollector API', (t) => {
     t.test('adds error_event_data to the payload object', (t) => {
       const errorEvents = {type: 'error_event_data'}
       api.error_event_data(errorEvents, () => {
-        t.deepEqual(api.payload.error_event_data, errorEvents)
+        t.same(api.payload.error_event_data, errorEvents)
         t.end()
       })
     })
@@ -191,7 +190,7 @@ tap.test('ServerlessCollector API', (t) => {
     t.test('adds span_event_data to the payload object', (t) => {
       const spanEvents = {type: 'span_event_data'}
       api.span_event_data(spanEvents, () => {
-        t.deepEqual(api.payload.span_event_data, spanEvents)
+        t.same(api.payload.span_event_data, spanEvents)
         t.end()
       })
     })
@@ -214,7 +213,7 @@ tap.test('ServerlessCollector API', (t) => {
         const decoded = JSON.parse(zlib.gunzipSync(Buffer.from(data, 'base64')))
         t.ok(decoded.metadata)
         t.ok(decoded.data)
-        t.deepEqual(decoded.data, testPayload)
+        t.same(decoded.data, testPayload)
       }
       api.flushPayloadSync()
       t.equal(Object.keys(api.payload).length, 0)
@@ -229,17 +228,17 @@ tap.test('ServerlessCollector API', (t) => {
 
     let stdOutSpy = null
 
-    t.beforeEach((done) => {
+    t.beforeEach(() => {
       // Need to allow output for tap to function correctly
       stdOutSpy = sinon.spy(process.stdout, 'write')
 
-      beforeTest(done)
+      beforeTest()
     })
 
-    t.afterEach((done) => {
+    t.afterEach(() => {
       stdOutSpy.restore()
 
-      afterTest(done)
+      afterTest()
     })
 
     t.test('compresses full payload and writes formatted to stdout', (t) => {
@@ -292,50 +291,37 @@ tap.test('ServerlessCollector with output to custom pipe', (t) => {
   let agent = null
   let writeFileSyncStub = null
 
-  t.beforeEach((done) => {
+  t.beforeEach(async() => {
     nock.disableNetConnect()
 
     process.env.NEWRELIC_PIPE_PATH = customPath
-    fs.open(customPath, 'w', (err, fd) => {
-      if (err) {
-        throw err
-      }
+    const fd = await fsOpenAsync(customPath, 'w')
+    if (!fd) {
+      throw new Error('fd is null')
+    }
 
-      if (!fd) {
-        throw new Error('fd is null')
-      }
-
-      agent = helper.loadMockedAgent({
-        serverless_mode: {
-          enabled: true
-        },
-        app_name: ['TEST'],
-        license_key: 'license key here',
-        NEWRELIC_PIPE_PATH: customPath
-      })
-      agent.reconfigure = () => {}
-      agent.setState = () => {}
-      api = new API(agent)
-
-      writeFileSyncStub = sinon.stub(fs, 'writeFileSync').callsFake(() => {})
-
-      done()
+    agent = helper.loadMockedAgent({
+      serverless_mode: {
+        enabled: true
+      },
+      app_name: ['TEST'],
+      license_key: 'license key here',
+      NEWRELIC_PIPE_PATH: customPath
     })
+    agent.reconfigure = () => {}
+    agent.setState = () => {}
+    api = new API(agent)
+
+    writeFileSyncStub = sinon.stub(fs, 'writeFileSync').callsFake(() => {})
   })
 
-  t.afterEach((done) => {
+  t.afterEach(async() => {
     nock.enableNetConnect()
     helper.unloadAgent(agent)
 
     writeFileSyncStub.restore()
 
-    fs.unlink(customPath, (err) => {
-      if (err) {
-        throw err
-      }
-
-      done()
-    })
+    await fsUnlinkAsync(customPath)
   })
 
   t.test('compresses full payload and writes formatted to stdout', (t) => {

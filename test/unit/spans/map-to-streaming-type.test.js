@@ -16,7 +16,7 @@ tap.test('should corectly convert strings', (t) => {
   }
 
   const result = mapToStreamingType(stringValue)
-  t.deepEqual(result, expected)
+  t.same(result, expected)
   t.end()
 })
 
@@ -27,7 +27,7 @@ tap.test('should not drop empty strings', (t) => {
   }
 
   const result = mapToStreamingType(stringValue)
-  t.deepEqual(result, expected)
+  t.same(result, expected)
   t.end()
 })
 
@@ -38,7 +38,7 @@ tap.test('should correctly convert bools when true', (t) => {
   }
 
   const result = mapToStreamingType(boolValue)
-  t.deepEqual(result, expected)
+  t.same(result, expected)
   t.end()
 })
 
@@ -49,7 +49,7 @@ tap.test('should correctly convert bools when false', (t) => {
   }
 
   const result = mapToStreamingType(boolValue)
-  t.deepEqual(result, expected)
+  t.same(result, expected)
   t.end()
 })
 
@@ -60,7 +60,7 @@ tap.test('should correctly convert integers', (t) => {
   }
 
   const result = mapToStreamingType(intValue)
-  t.deepEqual(result, expected)
+  t.same(result, expected)
   t.end()
 })
 
@@ -71,7 +71,7 @@ tap.test('should correctly convert doubles', (t) => {
   }
 
   const result = mapToStreamingType(doubleValue)
-  t.deepEqual(result, expected)
+  t.same(result, expected)
   t.end()
 })
 

@@ -20,7 +20,7 @@ test('pricing docker info', function(t) {
   var os = require('os')
   var originalPlatform = os.platform
   os.platform = function() { return 'linux' }
-  t.tearDown(function() {
+  t.teardown(function() {
     os.platform = originalPlatform
   })
 
@@ -44,7 +44,7 @@ test('pricing docker info', function(t) {
 function makeTest(testCase) {
   return function(t) {
     var agent = helper.loadMockedAgent()
-    t.tearDown(function() {
+    t.teardown(function() {
       helper.unloadAgent(agent)
       dockerInfo.clearVendorCache()
     })
@@ -73,7 +73,7 @@ function makeTest(testCase) {
 
 function mockProcRead(t, testFile) {
   var original = common.readProc
-  t.tearDown(function() {
+  t.teardown(function() {
     common.readProc = original
   })
 

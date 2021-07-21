@@ -35,7 +35,7 @@ tap.test("basic director test", function(t) {
 
   var router = new director.http.Router(routes).configure({ recurse: 'forward' })
 
-  t.tearDown(function() {
+  t.teardown(function() {
     helper.unloadAgent(agent)
     server.close(function() {})
   })
@@ -123,7 +123,7 @@ tap.test("backward recurse director test", function(t) {
 
   var router = new director.http.Router(routes).configure({ recurse: 'backward' })
 
-  t.tearDown(function() {
+  t.teardown(function() {
     helper.unloadAgent(agent)
     server.close(function() {})
   })
@@ -173,7 +173,7 @@ tap.test("two routers with same URI director test", function(t) {
 
   var router = new director.http.Router()
 
-  t.tearDown(function() {
+  t.teardown(function() {
     helper.unloadAgent(agent)
     server.close(function() {})
   })
@@ -230,7 +230,7 @@ tap.test("director async routes test", function(t) {
 
   var router = new director.http.Router().configure({ async: true })
 
-  t.tearDown(function() {
+  t.teardown(function() {
     helper.unloadAgent(agent)
     server.close(function() {})
   })
@@ -318,7 +318,7 @@ tap.test("express w/ director subrouter test", function(t) {
   }
   var router = new director.http.Router(routes)
 
-  t.tearDown(function() {
+  t.teardown(function() {
     helper.unloadAgent(agent)
     server.close(function() {})
   })

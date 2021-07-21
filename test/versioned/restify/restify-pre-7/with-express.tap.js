@@ -64,7 +64,7 @@ tap.test("restify shouldn't affect express query parsing middleware", function(t
     })
   })
 
-  t.tearDown(function cb_tearDown() {
+  t.teardown(function cb_tearDown() {
     server.close()
     helper.unloadAgent(agent)
   })

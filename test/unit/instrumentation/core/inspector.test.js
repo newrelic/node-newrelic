@@ -12,14 +12,12 @@ const inspectorInstrumentation = require('../../../../lib/instrumentation/core/i
 tap.test('Inspector instrumentation', (t) => {
   let agent = null
 
-  t.beforeEach((done) => {
+  t.beforeEach(() => {
     agent = helper.loadMockedAgent()
-    done()
   })
 
-  t.afterEach((done) => {
+  t.afterEach(() => {
     helper.unloadAgent(agent)
-    done()
   })
 
   t.test('should not throw when passed null for the module', (t) => {

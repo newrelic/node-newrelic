@@ -16,7 +16,7 @@ tap.test('should apply transaction name as active span intrinsic on transaction 
     }
   })
 
-  t.tearDown(() => {
+  t.teardown(() => {
     helper.unloadAgent(agent)
   })
 

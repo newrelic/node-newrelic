@@ -23,7 +23,7 @@ tap.test('does not mark files with known module names as uninstrumented', functi
 
   const agent = helper.instrumentMockedAgent()
 
-  t.tearDown(() => {
+  t.teardown(() => {
     helper.unloadAgent(agent)
   })
 
@@ -68,7 +68,7 @@ tap.test('all instrumented modules should be detected when uninstrumented', func
 
   const agent = helper.instrumentMockedAgent()
 
-  t.tearDown(() => {
+  t.teardown(() => {
     helper.unloadAgent(agent)
   })
 

@@ -32,7 +32,7 @@ tap.test('amqplib promise instrumentation', function(t) {
   var agent = null
   var api = null
 
-  t.beforeEach(function(done) {
+  t.beforeEach(function() {
     // In promise mode, amqplib loads bluebird. In our tests we unwrap the
     // instrumentation after each one. This is fine for first-order modules
     // which the test itself re-requires, but second-order modules (deps of
@@ -64,23 +64,22 @@ tap.test('amqplib promise instrumentation', function(t) {
     api.instrumentMessages('amqplib', instrumentation.instrumentPromiseAPI)
 
     amqplib = require('amqplib')
-    amqpUtils.getChannel(amqplib)
+    return amqpUtils.getChannel(amqplib)
       .then(function(result) {
         conn = result.connection
         channel = result.channel
         return channel.assertQueue('testQueue')
       })
-      .then(function() { done() }, done)
   })
 
-  t.afterEach(function(done) {
+  t.afterEach(function() {
     helper.unloadAgent(agent)
 
     if (!conn) {
-      return done()
+      return
     }
 
-    conn.close().then(done, done)
+    return conn.close()
   })
 
   t.test('connect in a transaction', function(t) {

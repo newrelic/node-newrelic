@@ -99,7 +99,7 @@ tap.test('Test Transaction Naming', (test) => {
   let agent
   let fastify
 
-  test.beforeEach(async(done) => {
+  test.beforeEach(async() => {
     agent = helper.instrumentMockedAgent({
       feature_flag: {
         fastify_instrumentation: true
@@ -107,13 +107,11 @@ tap.test('Test Transaction Naming', (test) => {
     })
     fastify = require('fastify')()
     await configureFastifyServer(fastify)
-    done()
   })
 
-  test.afterEach((done) => {
+  test.afterEach(() => {
     helper.unloadAgent(agent)
     fastify.close()
-    done()
   })
 
   for (const [,uri] of routesToTest.entries()) {

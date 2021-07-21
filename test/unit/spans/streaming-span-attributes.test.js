@@ -21,7 +21,7 @@ tap.test('addAttribute() should add a valid value', (t) => {
   const attributes = new StreamingSpanAttributes()
   attributes.addAttribute(testKey, testValue)
 
-  t.deepEqual(attributes, expected)
+  t.same(attributes, expected)
   t.end()
 })
 
@@ -33,7 +33,7 @@ tap.test('addAttribute() should drp an invalid value', (t) => {
   const attributes = new StreamingSpanAttributes()
   attributes.addAttribute(testKey, testValue)
 
-  t.deepEqual(attributes, expected)
+  t.same(attributes, expected)
   t.end()
 })
 
@@ -55,7 +55,7 @@ tap.test('addAttributes() should add all valid values', (t) => {
   const attributes = new StreamingSpanAttributes()
   attributes.addAttributes(incomingAttributes)
 
-  t.deepEqual(attributes, expected)
+  t.same(attributes, expected)
   t.end()
 })
 
@@ -76,7 +76,7 @@ tap.test('addAttributes() should drop all invalid values', (t) => {
   const attributes = new StreamingSpanAttributes()
   attributes.addAttributes(incomingAttributes)
 
-  t.deepEqual(attributes, expected)
+  t.same(attributes, expected)
   t.end()
 })
 
@@ -97,7 +97,7 @@ tap.test('constructor should add all valid values', (t) => {
 
   const attributes = new StreamingSpanAttributes(incomingAttributes)
 
-  t.deepEqual(attributes, expected)
+  t.same(attributes, expected)
   t.end()
 })
 
@@ -117,6 +117,6 @@ tap.test('addAttributes() should drop all invalid values', (t) => {
 
   const attributes = new StreamingSpanAttributes(incomingAttributes)
 
-  t.deepEqual(attributes, expected)
+  t.same(attributes, expected)
   t.end()
 })

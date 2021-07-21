@@ -20,19 +20,15 @@ tap.test('when CAT is disabled', (t) => {
 
   let agent = null
 
-  t.beforeEach((done) => {
+  t.beforeEach(() => {
     agent = helper.loadMockedAgent({
       cross_application_tracer: {enabled: false}
     })
-
-    done()
   })
 
-  t.afterEach((done) => {
+  t.afterEach(() => {
     helper.unloadAgent(agent)
     agent = null
-
-    done()
   })
 
   crossAgentTests.forEach(function(test) {
@@ -146,7 +142,7 @@ tap.test('when CAT is enabled', (t) => {
 
   let agent = null
 
-  t.beforeEach((done) => {
+  t.beforeEach(() => {
     // App name from test data
     agent = helper.loadMockedAgent({
       apdex_t: 0.050,
@@ -155,15 +151,11 @@ tap.test('when CAT is enabled', (t) => {
     agent.config.applications = function newFake() {
       return ['testAppName']
     }
-
-    done()
   })
 
-  t.afterEach((done) => {
+  t.afterEach(() => {
     helper.unloadAgent(agent)
     agent = null
-
-    done()
   })
 
   const expectedDurationsInSeconds = [0.030, 0.150, 0.500]

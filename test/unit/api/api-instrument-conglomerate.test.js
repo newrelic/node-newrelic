@@ -17,22 +17,18 @@ tap.test('Agent API - instrumentConglomerate', (t) => {
   let agent = null
   let api = null
 
-  t.beforeEach((done) => {
+  t.beforeEach(() => {
     agent = helper.loadMockedAgent()
     api = new API(agent)
 
     sinon.spy(shimmer, 'registerInstrumentation')
-
-    done()
   })
 
-  t.afterEach((done) => {
+  t.afterEach(() => {
     helper.unloadAgent(agent)
     agent = null
 
     shimmer.registerInstrumentation.restore()
-
-    done()
   })
 
   t.test('should register the instrumentation with shimmer', (t) => {

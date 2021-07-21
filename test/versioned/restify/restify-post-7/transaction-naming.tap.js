@@ -17,22 +17,23 @@ tap.test('Restify transaction naming', (t) => {
   let restifyPkg = null
   let server = null
 
-  t.beforeEach((done) => {
+  t.beforeEach(() => {
     agent = helper.instrumentMockedAgent()
 
     restify = require('restify')
     restifyPkg = require('restify/package.json')
     server = restify.createServer()
-    done()
   })
 
-  t.afterEach((done) => {
-    helper.unloadAgent(agent)
-    if (server) {
-      server.close(done)
-    } else {
-      done()
-    }
+  t.afterEach(() => {
+    return new Promise((resolve) => {
+      helper.unloadAgent(agent)
+      if (server) {
+        server.close(resolve)
+      } else {
+        resolve()
+      }
+    })
   })
 
   t.test('transaction name with single route', (t) => {

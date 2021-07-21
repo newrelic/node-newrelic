@@ -16,17 +16,20 @@ var DIRNAME = 'XXXNOCONFTEST'
 tap.test('logger', function(t) {
   t.autoend()
 
-  t.afterEach(function(done) {
+  t.afterEach(async() => {
     if (path.basename(process.cwd()) === DIRNAME) {
       process.chdir('..')
     }
 
     var dirPath = path.join(process.cwd(), DIRNAME)
-    if (fs.existsSync(dirPath)) {
-      rimraf(dirPath, done)
-    } else {
-      done()
-    }
+
+    await new Promise((resolve) => {
+      if (fs.existsSync(dirPath)) {
+        rimraf(dirPath, resolve)
+      } else {
+        resolve()
+      }
+    })
   })
 
   t.test('configuration from environment', function(t) {

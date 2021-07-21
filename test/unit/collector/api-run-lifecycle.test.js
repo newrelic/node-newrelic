@@ -20,7 +20,7 @@ tap.test('should bail out if disconnected', (t) => {
   const agent = setupMockedAgent()
   const collectorApi = new CollectorApi(agent)
 
-  t.tearDown(() => {
+  t.teardown(() => {
     helper.unloadAgent(agent)
   })
 
@@ -42,7 +42,7 @@ tap.test('should discard HTTP 413 errors', (t) => {
 
   nock.disableNetConnect()
 
-  t.tearDown(() => {
+  t.teardown(() => {
     if (!nock.isDone()) {
       /* eslint-disable no-console */
       console.error('Cleaning pending mocks: %j', nock.pendingMocks())
@@ -78,7 +78,7 @@ tap.test('should discard HTTP 415 errors', (t) => {
 
   nock.disableNetConnect()
 
-  t.tearDown(() => {
+  t.teardown(() => {
     if (!nock.isDone()) {
       /* eslint-disable no-console */
       console.error('Cleaning pending mocks: %j', nock.pendingMocks())
@@ -114,7 +114,7 @@ tap.test('should retain after HTTP 500 errors', (t) => {
 
   nock.disableNetConnect()
 
-  t.tearDown(() => {
+  t.teardown(() => {
     if (!nock.isDone()) {
       /* eslint-disable no-console */
       console.error('Cleaning pending mocks: %j', nock.pendingMocks())
@@ -150,7 +150,7 @@ tap.test('should retain after HTTP 503 errors', (t) => {
 
   nock.disableNetConnect()
 
-  t.tearDown(() => {
+  t.teardown(() => {
     if (!nock.isDone()) {
       /* eslint-disable no-console */
       console.error('Cleaning pending mocks: %j', nock.pendingMocks())
@@ -186,7 +186,7 @@ tap.test('should indicate a restart and discard data after 401 errors', (t) => {
 
   nock.disableNetConnect()
 
-  t.tearDown(() => {
+  t.teardown(() => {
     if (!nock.isDone()) {
       /* eslint-disable no-console */
       console.error('Cleaning pending mocks: %j', nock.pendingMocks())
@@ -223,7 +223,7 @@ tap.test('should indicate a restart and discard data after 409 errors', (t) => {
 
   nock.disableNetConnect()
 
-  t.tearDown(() => {
+  t.teardown(() => {
     if (!nock.isDone()) {
       /* eslint-disable no-console */
       console.error('Cleaning pending mocks: %j', nock.pendingMocks())
@@ -260,7 +260,7 @@ tap.test('should stop the agent on 410 (force disconnect)', (t) => {
 
   nock.disableNetConnect()
 
-  t.tearDown(() => {
+  t.teardown(() => {
     if (!nock.isDone()) {
       /* eslint-disable no-console */
       console.error('Cleaning pending mocks: %j', nock.pendingMocks())
@@ -303,7 +303,7 @@ tap.test('should discard unexpected HTTP errors (501)', (t) => {
 
   nock.disableNetConnect()
 
-  t.tearDown(() => {
+  t.teardown(() => {
     if (!nock.isDone()) {
       /* eslint-disable no-console */
       console.error('Cleaning pending mocks: %j', nock.pendingMocks())

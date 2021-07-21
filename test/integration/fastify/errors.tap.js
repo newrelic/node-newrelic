@@ -34,7 +34,7 @@ tap.test('Test Errors', (test)=>{
     )
   })
 
-  test.tearDown(() => {
+  test.teardown(() => {
     helper.unloadAgent(agent)
     fastify.close()
   })

@@ -21,11 +21,10 @@ tap.test('agent instrumentation of Hapi', function(t) {
   var server = null
   var port = null
 
-  t.beforeEach(function(done) {
+  t.beforeEach(function() {
     agent = helper.instrumentMockedAgent()
 
     server = utils.getServer()
-    done()
   })
 
   t.afterEach(function() {
@@ -54,7 +53,7 @@ tap.test('agent instrumentation of Hapi', function(t) {
           /application\/json/.test(response.headers['content-type']),
           'got correct content type'
         )
-        t.deepEqual(JSON.parse(body), { yep: true }, 'response survived')
+        t.same(JSON.parse(body), { yep: true }, 'response survived')
 
         var stats
 
@@ -214,7 +213,7 @@ tap.test('agent instrumentation of Hapi', function(t) {
 
         var first = errors[0]
         t.ok(first, 'have the first error')
-        t.contains(first[2], 'ohno', 'got the expected error')
+        t.match(first[2], 'ohno', 'got the expected error')
 
         t.end()
       })

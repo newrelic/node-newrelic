@@ -736,7 +736,7 @@ function setup(t) {
 
   express = require('express')
   app = express()
-  t.tearDown(function cb_tearDown() {
+  t.teardown(function cb_tearDown() {
     helper.unloadAgent(agent)
   })
 }
@@ -775,7 +775,7 @@ function runTest(t, options, callback) {
     })
   })
 
-  t.tearDown(function cb_tearDown() {
+  t.teardown(function cb_tearDown() {
     server.close()
   })
 }

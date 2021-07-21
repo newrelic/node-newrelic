@@ -14,15 +14,13 @@ tap.test('external requests', function(t) {
 
   let agent = null
   let http = null
-  t.beforeEach((done) => {
+  t.beforeEach(() => {
     agent = helper.instrumentMockedAgent()
     http = require('http')
-    done()
   })
 
-  t.afterEach((done) => {
+  t.afterEach(() => {
     helper.unloadAgent(agent)
-    done()
   })
 
   t.test('segments should end on error', function(t) {
@@ -65,7 +63,7 @@ tap.test('external requests', function(t) {
       req.resume()
       res.end('ok')
     })
-    t.tearDown(function() {
+    t.teardown(function() {
       server.close()
     })
 
@@ -153,7 +151,7 @@ tap.test('external requests', function(t) {
     var got = require('got')
     helper.runInTransaction(agent, function() {
       var req = got('https://example.com/')
-      t.tearDown(function() { req.cancel() })
+      t.teardown(function() { req.cancel() })
       req.then(
         function() { t.end() },
         function(e) { t.error(e); t.end() }

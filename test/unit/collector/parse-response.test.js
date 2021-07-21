@@ -42,7 +42,7 @@ tap.test('when initialized properly and response status is 200', (t) => {
 
   t.test('should pass through return value', (t) => {
     function callback(error, res) {
-      t.deepEqual(res.payload, [1,1,2,3,5,8])
+      t.same(res.payload, [1,1,2,3,5,8])
 
       t.end()
     }
@@ -157,7 +157,7 @@ tap.test('when initialized properly and response status is 503', (t) => {
     function callback(error, res) {
       t.error(error)
 
-      t.deepEqual(res.payload, [1,1,2,3,5,8])
+      t.same(res.payload, [1,1,2,3,5,8])
       t.equal(res.status, 503)
 
       t.end()

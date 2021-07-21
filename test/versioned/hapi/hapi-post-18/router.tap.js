@@ -18,7 +18,7 @@ tap.test('Hapi router introspection', function(t) {
   var server = null
   var port = null
 
-  t.beforeEach(function(done) {
+  t.beforeEach(function() {
     agent = helper.instrumentMockedAgent({
       attributes: {
         enabled: true,
@@ -27,8 +27,6 @@ tap.test('Hapi router introspection', function(t) {
     })
 
     server = utils.getServer()
-
-    done()
   })
 
   t.afterEach(function() {

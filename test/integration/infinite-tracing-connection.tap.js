@@ -50,9 +50,13 @@ tap.test('Inifinite tracing - Connection Handling', (t) => {
   let startingEndpoints = null
   let spanReceivedListener = null
 
-  t.beforeEach(testSetup)
+  t.beforeEach(async(t) => {
+    await new Promise((resolve) => {
+      testSetup(t, resolve)
+    })
+  })
 
-  t.afterEach((done) => {
+  t.afterEach(async() => {
     helper.unloadAgent(agent)
 
     if (!nock.isDone()) {
@@ -64,8 +68,8 @@ tap.test('Inifinite tracing - Connection Handling', (t) => {
 
     nock.enableNetConnect()
 
-    server.tryShutdown(() => {
-      done()
+    await new Promise((resolve) => {
+      server.tryShutdown(resolve)
     })
   })
 
@@ -177,7 +181,7 @@ tap.test('Inifinite tracing - Connection Handling', (t) => {
     })
   })
 
-  function testSetup(callback, t) {
+  function testSetup(t, callback) {
     nock.disableNetConnect()
     startingEndpoints = setupConnectionEndpoints(INITIAL_RUN_ID, INITIAL_SESSION_ID)
 

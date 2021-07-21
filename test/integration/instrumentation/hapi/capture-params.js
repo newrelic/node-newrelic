@@ -5,12 +5,14 @@
 
 'use strict'
 
+// TODO: this only seems used by hapi-pre-17 now. confirm and move code directly in there.
+// If used in multiple places but only versioned, move under versioned hapi folder.
+
 var DESTINATIONS = require('../../../../lib/config/attribute-filter').DESTINATIONS
 var helper = require('../../../lib/agent_helper')
 var HTTP_ATTRS = require('../../../lib/fixtures').httpAttributes
 var request = require('request')
 var tap = require('tap')
-
 
 module.exports = runTests
 
@@ -22,7 +24,7 @@ function runTests(createServer) {
     var server = null
     var port = null
 
-    t.beforeEach(function(done) {
+    t.beforeEach(() => {
       agent = helper.instrumentMockedAgent({
         allow_all_headers: false,
         attributes: {
@@ -32,12 +34,20 @@ function runTests(createServer) {
       })
 
       server = createServer()
-      done()
     })
 
-    t.afterEach(function(done) {
+    t.afterEach(async() => {
       helper.unloadAgent(agent)
-      server.stop(done)
+
+      await new Promise((resolve, reject) => {
+        server.stop((err) => {
+          if (err) {
+            return reject(err)
+          }
+
+          resolve()
+        })
+      })
     })
 
     t.test("simple case with no params", function(t) {

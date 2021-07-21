@@ -17,16 +17,12 @@ test('Error events', (t) => {
   t.test('when error events are disabled', (t) => {
     let agent
 
-    t.beforeEach((done) => {
+    t.beforeEach(() => {
       agent = helper.loadMockedAgent()
-
-      done()
     })
 
-    t.afterEach((done) => {
+    t.afterEach(() => {
       helper.unloadAgent(agent)
-
-      done()
     })
 
     t.test('collector can override', (t) => {
@@ -43,16 +39,12 @@ test('Error events', (t) => {
   t.test('attributes', (t) => {
     let agent
 
-    t.beforeEach((done) => {
+    t.beforeEach(() => {
       agent = helper.loadMockedAgent()
-
-      done()
     })
 
-    t.afterEach((done) => {
+    t.afterEach(() => {
       helper.unloadAgent(agent)
-
-      done()
     })
 
     t.test('should include DT intrinsics', (t) => {
@@ -147,17 +139,13 @@ test('Error events', (t) => {
   t.test('when error events are enabled', (t) => {
     let agent
 
-    t.beforeEach((done) => {
+    t.beforeEach(() => {
       agent = helper.loadMockedAgent()
       agent.config.error_collector.capture_events = true
-
-      done()
     })
 
-    t.afterEach((done) => {
+    t.afterEach(() => {
       helper.unloadAgent(agent)
-
-      done()
     })
 
     t.test('collector can override', (t) => {

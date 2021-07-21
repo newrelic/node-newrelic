@@ -23,7 +23,7 @@ tap.test('test attributes.enabled for express', function(t) {
   t.autoend()
 
   var agent = null
-  t.beforeEach(function(done) {
+  t.beforeEach(function() {
     agent = helper.instrumentMockedAgent({
       apdex_t: 1,
       allow_all_headers: false,
@@ -32,14 +32,10 @@ tap.test('test attributes.enabled for express', function(t) {
         include: ['request.parameters.*']
       }
     })
-
-
-    done()
   })
 
-  t.afterEach(function(done) {
+  t.afterEach(function() {
     helper.unloadAgent(agent)
-    done()
   })
 
   t.test('no variables', function(t) {
@@ -47,7 +43,7 @@ tap.test('test attributes.enabled for express', function(t) {
     var server = require('http').createServer(app)
     var port = null
 
-    t.tearDown(function() {
+    t.teardown(function() {
       server.close()
     })
 
@@ -97,7 +93,7 @@ tap.test('test attributes.enabled for express', function(t) {
     var server = require('http').createServer(app)
     var port = null
 
-    t.tearDown(function() {
+    t.teardown(function() {
       server.close()
     })
 
@@ -141,7 +137,7 @@ tap.test('test attributes.enabled for express', function(t) {
     var server = require('http').createServer(app)
     var port = null
 
-    t.tearDown(function() {
+    t.teardown(function() {
       server.close()
     })
 
@@ -185,7 +181,7 @@ tap.test('test attributes.enabled for express', function(t) {
     var server = require('http').createServer(app)
     var port = null
 
-    t.tearDown(function() {
+    t.teardown(function() {
       server.close()
     })
 
@@ -233,7 +229,7 @@ tap.test('test attributes.enabled for express', function(t) {
     var server = require('http').createServer(app)
     var port = null
 
-    t.tearDown(function() {
+    t.teardown(function() {
       server.close()
     })
 

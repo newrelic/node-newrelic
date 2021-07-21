@@ -20,7 +20,7 @@ tap.test('ignoring a Hapi route', function(t) {
   var server = utils.getServer()
   var port = null
 
-  t.tearDown(function() {
+  t.teardown(function() {
     server.stop(function() {
       helper.unloadAgent(agent)
     })

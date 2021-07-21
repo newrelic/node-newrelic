@@ -37,16 +37,13 @@ test('built-in http module instrumentation', (t) => {
 
     let initialize
 
-    t.beforeEach((done) => {
+    t.beforeEach(() => {
       agent = helper.loadMockedAgent()
       initialize = require('../../../../lib/instrumentation/core/http')
-
-      done()
     })
 
-    t.afterEach((done) => {
+    t.afterEach(() => {
       helper.unloadAgent(agent)
-      done()
     })
 
     t.test('when passed no module', (t) => {
@@ -65,14 +62,12 @@ test('built-in http module instrumentation', (t) => {
   t.test('after loading', (t) => {
     t.autoend()
 
-    t.beforeEach((done) => {
+    t.beforeEach(() => {
       agent = helper.instrumentMockedAgent()
-      done()
     })
 
-    t.afterEach((done) => {
+    t.afterEach(() => {
       helper.unloadAgent(agent)
-      done()
     })
 
     t.test('should not have changed createServer\'s declared parameter names', (t) => {
@@ -92,7 +87,7 @@ test('built-in http module instrumentation', (t) => {
 
     let options
 
-    t.beforeEach((done) => {
+    t.beforeEach(() => {
       agent = helper.loadMockedAgent()
       const initialize = require('../../../../lib/instrumentation/core/http')
       http = {
@@ -108,14 +103,10 @@ test('built-in http module instrumentation', (t) => {
       }
 
       initialize(agent, http, 'http', new Shim(agent, 'http'))
-
-      done()
     })
 
-    t.afterEach((done) => {
+    t.afterEach(() => {
       helper.unloadAgent(agent)
-
-      done()
     })
 
     t.test('should not crash when called with undefined host', (t) => {
@@ -144,7 +135,7 @@ test('built-in http module instrumentation', (t) => {
     let server = null
     let external = null
 
-    t.beforeEach((done) => {
+    t.beforeEach(() => {
       agent = helper.instrumentMockedAgent()
 
       http = require('http')
@@ -196,22 +187,22 @@ test('built-in http module instrumentation', (t) => {
         hookCalled = true
       }
 
-      external.listen(8321, 'localhost', function() {
-        server.listen(8123, 'localhost', function() {
-          // The transaction doesn't get created until after the instrumented
-          // server handler fires.
-          t.notOk(agent.getTransaction())
-          done()
+      return new Promise((resolve) => {
+        external.listen(8321, 'localhost', function() {
+          server.listen(8123, 'localhost', function() {
+            // The transaction doesn't get created until after the instrumented
+            // server handler fires.
+            t.notOk(agent.getTransaction())
+            resolve()
+          })
         })
       })
     })
 
-    t.afterEach((done) => {
+    t.afterEach(() => {
       external.close()
       server.close()
       helper.unloadAgent(agent)
-
-      done()
     })
 
     function makeRequest(params, cb) {
@@ -325,7 +316,7 @@ test('built-in http module instrumentation', (t) => {
           'User-Agent': userAgent
         }
       }, finish)
-      
+
       function finish(err, statusCode, body) {
         const attributes = transaction.trace.attributes.get(DESTINATIONS.TRANS_TRACE)
         const segment = transaction.baseSegment
@@ -377,18 +368,15 @@ test('built-in http module instrumentation', (t) => {
     const encKey = 'gringletoes'
     let agent2
 
-    t.beforeEach((done) => {
+    t.beforeEach(() => {
       agent2 = helper.instrumentMockedAgent({
         cross_application_tracer: {enabled: true},
         encoding_key: encKey
       })
-
-      done()
     })
 
-    t.afterEach((done) => {
+    t.afterEach(() => {
       helper.unloadAgent(agent2)
-      done()
     })
 
     t.test('should add cat headers from request to transaction', (t) => {
@@ -436,7 +424,7 @@ test('built-in http module instrumentation', (t) => {
         req.socket.end()
         server.close(t.end())
       })
-  
+
       const transactionHeader = [
         '789',
         false,
@@ -448,12 +436,12 @@ test('built-in http module instrumentation', (t) => {
         JSON.stringify(transactionHeader),
         encKey
       )
-  
+
       server.on('listening', function() {
         const port = server.address().port
         http.get({host: 'localhost', port: port, headers: headers})
       })
-  
+
       helper.startServerWithRandomPortRetry(server)
     })
 
@@ -484,17 +472,15 @@ test('built-in http module instrumentation', (t) => {
   t.test('inbound http requests when cat is disabled', (t) => {
     const encKey = 'gringletoes'
 
-    t.beforeEach((done) => {
+    t.beforeEach(() => {
       agent = helper.instrumentMockedAgent({
         cross_application_tracer: {enabled: false},
         encoding_key: encKey
       })
-      done()
     })
 
-    t.afterEach((done) => {
+    t.afterEach(() => {
       helper.unloadAgent(agent)
-      done()
     })
 
     t.test('should ignore cat headers', (t) => {
@@ -539,19 +525,17 @@ test('built-in http module instrumentation', (t) => {
   t.test('response headers for inbound requests when cat is enabled', (t) => {
     const encKey = 'gringletoes'
 
-    t.beforeEach((done) => {
+    t.beforeEach(() => {
       agent = helper.instrumentMockedAgent({
         cross_application_tracer: {enabled: true},
         encoding_key: encKey,
         trusted_account_ids: [123],
         cross_process_id: '456'
       })
-      done()
     })
 
-    t.afterEach((done) => {
+    t.afterEach(() => {
       helper.unloadAgent(agent)
-      done()
     })
 
     t.test('should set header correctly when all data is present', (t) => {
@@ -660,7 +644,7 @@ test('built-in http module instrumentation', (t) => {
 
   t.test('Should accept w3c traceparent header when present on request',
     (t) => {
-      t.beforeEach((done) => {
+      t.beforeEach(() => {
         agent = helper.instrumentMockedAgent({
           distributed_tracing: {
             enabled: true
@@ -668,12 +652,10 @@ test('built-in http module instrumentation', (t) => {
           feature_flag: {
           }
         })
-        done()
       })
 
-      t.afterEach((done) => {
+      t.afterEach(() => {
         helper.unloadAgent(agent)
-        done()
       })
 
       t.test('should set header correctly when all data is present', (t) => {
@@ -781,7 +763,7 @@ test('built-in http module instrumentation', (t) => {
     const encKey = 'gringletoes'
     let server
 
-    t.beforeEach((done) => {
+    t.beforeEach(() => {
       agent = helper.instrumentMockedAgent({
         cross_application_tracer: {enabled: true},
         encoding_key: encKey,
@@ -793,14 +775,16 @@ test('built-in http module instrumentation', (t) => {
         req.resume()
       })
 
-      helper.randomPort((port) => {
-        server.listen(port, done)
+      return new Promise((resolve) => {
+        helper.randomPort((port) => {
+          server.listen(port, resolve)
+        })
       })
     })
 
-    t.afterEach((done) => {
+    t.afterEach(() => {
       helper.unloadAgent(agent)
-      server.close(done)
+      server.close()
     })
 
     function addSegment() {
@@ -1047,9 +1031,7 @@ test('http.createServer should trace errors in top-level handlers', (t) => {
     // abort request to close connection and
     // allow server to close fast instead of after timeout
     request.abort()
-    server.close(() => {
-      t.end()
-    })
+    server.close(t.end)
   })
 
   server = http.createServer(function cb_createServer() {

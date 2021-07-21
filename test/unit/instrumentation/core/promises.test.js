@@ -15,22 +15,18 @@ test('Promise trace', (t) => {
 
   let agent = null
 
-  t.beforeEach((done) => {
+  t.beforeEach(() => {
     agent = helper.instrumentMockedAgent({
       feature_flag: {
         promise_segments: true,
         await_support: false
       }
     })
-
-    done()
   })
 
-  t.afterEach((done) => {
+  t.afterEach(() => {
     helper.unloadAgent(agent)
     agent = null
-
-    done()
   })
 
   t.test('should handle straight chains', (t) => {

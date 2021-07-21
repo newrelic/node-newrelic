@@ -26,7 +26,7 @@ tap.test('Event Aggregator', (t) => {
   let metrics = null
   let eventAggregator = null
 
-  function beforeTest(cb) {
+  function beforeTest() {
     metrics = new Metrics(5, {}, {})
 
     eventAggregator = new EventAggregator({
@@ -34,13 +34,10 @@ tap.test('Event Aggregator', (t) => {
       limit: LIMIT,
       metricNames: METRIC_NAMES
     }, {}, metrics)
-
-    cb()
   }
 
-  function afterTest(cb) {
+  function afterTest() {
     eventAggregator = null
-    cb()
   }
 
   t.test('add()', (t) => {

@@ -126,7 +126,7 @@ test('scryptSync', (t) => {
 
 function setupAgent(t) {
   var agent = helper.instrumentMockedAgent()
-  t.tearDown(function() {
+  t.teardown(function() {
     helper.unloadAgent(agent)
   })
 

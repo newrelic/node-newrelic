@@ -10,12 +10,15 @@ const tap = require('tap')
 // Below allows use of mocha DSL with tap runner.
 tap.mochaGlobals()
 
+const util = require('util')
 const sinon = require('sinon')
 const chai = require('chai')
 const DESTINATIONS = require('../../lib/config/attribute-filter').DESTINATIONS
 const expect = chai.expect
 const helper = require('../lib/agent_helper')
 const codec = require('../../lib/util/codec')
+const codecEncodeAsync = util.promisify(codec.encode)
+const codecDecodeAsync = util.promisify(codec.decode)
 const Segment = require('../../lib/transaction/trace/segment')
 const DTPayload = require('../../lib/transaction/dt-payload')
 const Trace = require('../../lib/transaction/trace')
@@ -59,30 +62,20 @@ describe('Trace', function() {
   })
 
   describe('when serializing synchronously', () => {
-    var details
+    let details
 
-    beforeEach(function(done) {
-      makeTrace(agent, function(err, _details) {
-        details = _details
-        done(err)
-      })
+    beforeEach(async() => {
+      details = await makeTrace(agent)
     })
 
-    it('should produce a transaction trace in the expected format', function(done) {
+    it('should produce a transaction trace in the expected format', async function() {
       const traceJSON = details.trace.generateJSONSync()
-      codec.decode(traceJSON[4], function(derr, reconstituted) {
-        if (derr) {
-          return done(derr)
-        }
+      const reconstituted = await codecDecodeAsync(traceJSON[4])
+      expect(traceJSON, 'full trace JSON')
+        .to.deep.equal(details.expectedEncoding)
 
-        expect(traceJSON, 'full trace JSON')
-          .to.deep.equal(details.expectedEncoding)
-
-        expect(reconstituted, 'reconstituted trace segments')
-          .to.deep.equal(details.rootNode)
-
-        return done()
-      })
+      expect(reconstituted, 'reconstituted trace segments')
+        .to.deep.equal(details.rootNode)
     })
 
     it('should send response time', function() {
@@ -95,20 +88,14 @@ describe('Trace', function() {
     })
 
     describe('when `simple_compression` is `false`', function() {
-      it('should compress the segment arrays', function(done) {
+      it('should compress the segment arrays', async function() {
         const json = details.trace.generateJSONSync()
 
         expect(json[4])
           .to.match(/^[a-zA-Z0-9\+\/]+={0,2}$/, 'should be base64 encoded')
 
-        codec.decode(json[4], function(err, data) {
-          if (err) {
-            return done(err)
-          }
-
-          expect(data).to.deep.equal(details.rootNode)
-          done()
-        })
+        const data = await codecDecodeAsync(json[4])
+        expect(data).to.deep.equal(details.rootNode)
       })
     })
 
@@ -125,69 +112,52 @@ describe('Trace', function() {
   })
 
   describe('when serializing asynchronously', () => {
-    var details
+    let details
 
-    beforeEach(function(done) {
-      makeTrace(agent, function(err, _details) {
-        details = _details
-        done(err)
-      })
+    beforeEach(async() => {
+      details = await makeTrace(agent)
     })
 
-    it('should produce a transaction trace in the expected format', function(done) {
-      details.trace.generateJSON(function(err, traceJSON) {
-        if (err) {
-          return done(err)
-        }
+    it('should produce a transaction trace in the expected format', async function() {
+      const traceJSON = await details.trace.generateJSONAsync()
+      const reconstituted = await codecDecodeAsync(traceJSON[4])
 
-        codec.decode(traceJSON[4], function(derr, reconstituted) {
-          if (derr) {
-            return done(derr)
-          }
+      expect(traceJSON, 'full trace JSON')
+        .to.deep.equal(details.expectedEncoding)
 
-          expect(traceJSON, 'full trace JSON')
-            .to.deep.equal(details.expectedEncoding)
-
-          expect(reconstituted, 'reconstituted trace segments')
-            .to.deep.equal(details.rootNode)
-
-          return done()
-        })
-      })
+      expect(reconstituted, 'reconstituted trace segments')
+        .to.deep.equal(details.rootNode)
     })
 
-    it('should send response time', function(done) {
+    it('should send response time', function() {
       details.transaction.getResponseTimeInMillis = function() {
         return 1234
       }
 
-      details.trace.generateJSON(function(err, json, trace) {
-        expect(err).to.not.exist
-        expect(json[1]).to.equal(1234)
-        expect(trace).to.equal(details.trace)
-        done()
+      // not using `trace.generateJSONAsync` because
+      // util.promisify only returns 1st arg in callback
+      // see: https://github.com/nodejs/node/blob/master/lib/internal/util.js#L332
+      return new Promise((resolve, reject) => {
+        details.trace.generateJSON((err, json, trace) => {
+          if (err) {
+            reject(err)
+          }
+
+          expect(json[1]).to.equal(1234)
+          expect(trace).to.equal(details.trace)
+          resolve()
+        })
       })
     })
 
     describe('when `simple_compression` is `false`', function() {
-      it('should compress the segment arrays', function(done) {
-        details.trace.generateJSON(function(err, json) {
-          if (err) {
-            return done(err)
-          }
+      it('should compress the segment arrays', async function() {
+        const json = await details.trace.generateJSONAsync()
+        expect(json[4])
+          .to.match(/^[a-zA-Z0-9\+\/]+={0,2}$/, 'should be base64 encoded')
 
-          expect(json[4])
-            .to.match(/^[a-zA-Z0-9\+\/]+={0,2}$/, 'should be base64 encoded')
-
-          codec.decode(json[4], function(err, data) {
-            if (err) {
-              return done(err)
-            }
-
-            expect(data).to.deep.equal(details.rootNode)
-            done()
-          })
-        })
+        const data = await codecDecodeAsync(json[4])
+        expect(data).to.deep.equal(details.rootNode)
       })
     })
 
@@ -196,15 +166,9 @@ describe('Trace', function() {
         agent.config.simple_compression = true
       })
 
-      it('should not compress the segment arrays', function(done) {
-        details.trace.generateJSON(function(err, json) {
-          if (err) {
-            return done(err)
-          }
-
-          expect(json[4]).to.deep.equal(details.rootNode)
-          done()
-        })
+      it('should not compress the segment arrays', async function() {
+        const json = await details.trace.generateJSONAsync()
+        expect(json[4]).to.deep.equal(details.rootNode)
       })
     })
   })
@@ -717,7 +681,7 @@ describe('Trace', function() {
   })
 })
 
-tap.test('should set URI to null when request.uri attribute is excluded globally', (t) => {
+tap.test('should set URI to null when request.uri attribute is excluded globally', async(t) => {
   const URL = '/test'
 
   const agent = helper.loadMockedAgent({
@@ -726,7 +690,7 @@ tap.test('should set URI to null when request.uri attribute is excluded globally
     }
   })
 
-  t.tearDown(() => {
+  t.teardown(() => {
     helper.unloadAgent(agent)
   })
 
@@ -735,22 +699,17 @@ tap.test('should set URI to null when request.uri attribute is excluded globally
   transaction.verb = 'GET'
 
   const trace = transaction.trace
+  trace.generateJSON = util.promisify(trace.generateJSON)
 
   trace.end()
 
-  trace.generateJSON(function(err, traceJSON) {
-    if (err) {
-      t.error(err)
-    }
-
-    const {3: requestUri} = traceJSON
-    t.notOk(requestUri)
-
-    t.end()
-  })
+  const traceJSON = await trace.generateJSON()
+  const {3: requestUri} = traceJSON
+  t.notOk(requestUri)
+  t.end()
 })
 
-tap.test('should set URI to null when request.uri attribute is exluded from traces', (t) => {
+tap.test('should set URI to null when request.uri attribute is exluded from traces', async(t) => {
   const URL = '/test'
 
   const agent = helper.loadMockedAgent({
@@ -761,7 +720,7 @@ tap.test('should set URI to null when request.uri attribute is exluded from trac
     }
   })
 
-  t.tearDown(() => {
+  t.teardown(() => {
     helper.unloadAgent(agent)
   })
 
@@ -770,46 +729,36 @@ tap.test('should set URI to null when request.uri attribute is exluded from trac
   transaction.verb = 'GET'
 
   const trace = transaction.trace
+  trace.generateJSON = util.promisify(trace.generateJSON)
 
   trace.end()
 
-  trace.generateJSON(function(err, traceJSON) {
-    if (err) {
-      t.error(err)
-    }
-
-    const {3: requestUri} = traceJSON
-    t.notOk(requestUri)
-
-    t.end()
-  })
+  const traceJSON = await trace.generateJSON()
+  const {3: requestUri} = traceJSON
+  t.notOk(requestUri)
+  t.end()
 })
 
-tap.test('should set URI to /Unknown when URL is not known/set on transaction', (t) => {
+tap.test('should set URI to /Unknown when URL is not known/set on transaction', async(t) => {
   const agent = helper.loadMockedAgent()
 
-  t.tearDown(() => {
+  t.teardown(() => {
     helper.unloadAgent(agent)
   })
 
   const transaction = new Transaction(agent)
   const trace = transaction.trace
+  trace.generateJSON = util.promisify(trace.generateJSON)
 
   trace.end()
 
-  trace.generateJSON(function(err, traceJSON) {
-    if (err) {
-      t.error(err)
-    }
-
-    const {3: requestUri} = traceJSON
-    t.equal(requestUri, '/Unknown')
-
-    t.end()
-  })
+  const traceJSON = await trace.generateJSON()
+  const {3: requestUri} = traceJSON
+  t.equal(requestUri, '/Unknown')
+  t.end()
 })
 
-function makeTrace(agent, callback) {
+async function makeTrace(agent) {
   var DURATION = 33
   var URL = '/test?test=value'
   agent.config.attributes.enabled = true
@@ -828,6 +777,10 @@ function makeTrace(agent, callback) {
   transaction.timer.setDurationInMillis(DURATION)
 
   var trace = transaction.trace
+
+  // promisifying `trace.generateJSON` so tests do not have to call done
+  // and instead use async/await
+  trace.generateJSONAsync = util.promisify(trace.generateJSON)
   var start = trace.root.timer.start
   expect(start, 'root segment\'s start time').above(0)
   trace.setDurationInMillis(DURATION, 0)
@@ -891,6 +844,26 @@ function makeTrace(agent, callback) {
     []  // FIXME: parameter groups
   ]
 
+  const encoded = await codecEncodeAsync(rootNode)
+  return {
+    transaction,
+    trace,
+    rootSegment,
+    rootNode,
+    expectedEncoding: [
+      0,
+      DURATION,
+      'WebTransaction/NormalizedUri/*', // scope
+      '/test',  // URI path
+      encoded,  // compressed segment / segment data
+      transaction.id, // guid
+      null,     // reserved, always NULL
+      false,    // FIXME: RUM2 session persistence, not worrying about it for now
+      null,     // FIXME: xraysessionid
+      null      // syntheticsResourceId
+    ]
+  }
+  /*
   codec.encode(rootNode, function(err, encoded) {
     if (err) {
       return callback(err)
@@ -914,7 +887,7 @@ function makeTrace(agent, callback) {
         null      // syntheticsResourceId
       ]
     })
-  })
+  })*/
 }
 
 tap.test('infinite tracing', (t) => {
@@ -925,7 +898,7 @@ tap.test('infinite tracing', (t) => {
 
   let agent = null
 
-  t.beforeEach((done) => {
+  t.beforeEach(() => {
     agent = helper.loadMockedAgent({
       distributed_tracing: {
         enabled: true
@@ -940,13 +913,10 @@ tap.test('infinite tracing', (t) => {
         }
       }
     })
-
-    done()
   })
 
-  t.afterEach((done) => {
+  t.afterEach(() => {
     helper.unloadAgent(agent)
-    done()
   })
 
   t.test('should generate spans if infinite configured, transaction not sampled', (t) => {

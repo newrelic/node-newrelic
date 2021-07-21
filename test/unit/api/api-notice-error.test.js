@@ -15,20 +15,16 @@ tap.test('Agent API - noticeError', (t) => {
   let agent = null
   let api = null
 
-  t.beforeEach((done) => {
+  t.beforeEach(() => {
     agent = helper.loadMockedAgent()
     api = new API(agent)
 
     agent.config.attributes.enabled = true
-
-    done()
   })
 
-  t.afterEach((done) => {
+  t.afterEach(() => {
     helper.unloadAgent(agent)
     agent = null
-
-    done()
   })
 
   t.test("should add the error even without a transaction", (t) => {
@@ -59,7 +55,7 @@ tap.test('Agent API - noticeError', (t) => {
 
     t.equal(agent.errors.traceAggregator.errors.length, 1)
     const attributes = agent.errors.traceAggregator.errors[0][4]
-    t.deepEqual(attributes.userAttributes, {})
+    t.same(attributes.userAttributes, {})
     agent.config.api.custom_attributes_enabled = true
 
     t.end()
@@ -73,7 +69,7 @@ tap.test('Agent API - noticeError', (t) => {
 
     t.equal(agent.errors.traceAggregator.errors.length, 1)
     const attributes = agent.errors.traceAggregator.errors[0][4]
-    t.deepEqual(attributes.userAttributes, {})
+    t.same(attributes.userAttributes, {})
     agent.config.high_security = false
 
     t.end()

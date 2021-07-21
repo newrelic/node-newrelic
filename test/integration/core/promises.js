@@ -15,9 +15,8 @@ var testTransactionState = require(genericTestDir + 'transaction-state')
 
 module.exports = function runTests(flags) {
   var RealPromise = global.Promise
-  tap.afterEach(function(done) {
+  tap.afterEach(() => {
     Promise = global.Promise = RealPromise
-    done()
   })
 
   tap.test('transaction state', function(t) {
@@ -1056,7 +1055,7 @@ module.exports = function runTests(flags) {
     }
 
     var agent = helper.loadTestAgent(t, {feature_flag: flags})
-    t.tearDown(function() {
+    t.teardown(function() {
       global.Promise = OriginalPromise
     })
 
@@ -1078,7 +1077,7 @@ module.exports = function runTests(flags) {
     util.inherits(WrappedPromise, Promise)
     global.Promise = WrappedPromise
 
-    t.tearDown(function() {
+    t.teardown(function() {
       global.Promise = OriginalPromise
     })
 

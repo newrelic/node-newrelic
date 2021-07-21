@@ -18,7 +18,7 @@ test("new relic should not break route iteration", function(t) {
   var childB = new express.Router()
 
 
-  t.tearDown(function cb_tearDown() {
+  t.teardown(function cb_tearDown() {
     helper.unloadAgent(agent)
   })
 

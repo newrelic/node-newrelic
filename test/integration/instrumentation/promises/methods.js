@@ -5,20 +5,25 @@
 
 'use strict'
 
+// TODO: seems like this may only be ran by the bluebird versioned test methods.tap.js
+// Confirm and move logic there, if true. If used by multiple but only versioned,
+// move under versioned folder.
+
 var helper = require('../../../lib/agent_helper')
 var testTransactionState = require('./transaction-state')
-
+const util = require('util')
 
 var runMultiple = testTransactionState.runMultiple
 var tasks = []
 var interval = null
 
+const setImmediatePromisified = util.promisify(setImmediate)
 
 module.exports = function(t, library, loadLibrary) {
   loadLibrary = loadLibrary || function() { return require(library) }
   var ptap = new PromiseTap(t, loadLibrary())
 
-  t.beforeEach(function(done) {
+  t.beforeEach(async() => {
     if (interval) {
       clearInterval(interval)
     }
@@ -27,13 +32,15 @@ module.exports = function(t, library, loadLibrary) {
         tasks.pop()()
       }
     }, 25)
-    setImmediate(done)
+
+    await setImmediatePromisified()
   })
 
-  t.afterEach(function(done) {
+  t.afterEach(async() => {
     clearInterval(interval)
     interval = null
-    setImmediate(done)
+
+    await setImmediatePromisified()
   })
 
   ptap.test('new Promise() throw', function(t) {
@@ -1920,7 +1927,7 @@ function _testPromiseContext(t, agent, factory) {
     })
 
     helper.runInTransaction(agent, function(txB) {
-      t.tearDown(function() {
+      t.teardown(function() {
         ctxA.transaction.end()
         txB.end()
       })
@@ -1939,7 +1946,7 @@ function _testPromiseContext(t, agent, factory) {
     t.plan(2)
 
     var ctxA = helper.runInTransaction(agent, function(tx) {
-      t.tearDown(function() {
+      t.teardown(function() {
         tx.end()
       })
 
@@ -1984,7 +1991,7 @@ function _testPromiseContext(t, agent, factory) {
 
     ctxA.transaction.end()
     helper.runInTransaction(agent, function(txB) {
-      t.tearDown(function() {
+      t.teardown(function() {
         ctxA.transaction.end()
         txB.end()
       })

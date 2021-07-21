@@ -91,30 +91,27 @@ tap.test('piping cursor stream hides internal calls', function(t) {
   var db = null
   var collection = null
 
-  t.tearDown(function() {
-    common.close(client, db, function() {})
-    helper.unloadAgent(agent)
-    agent = null
+  t.teardown(function() {
+    return common.close(client, db)
+      .then(() => {
+        helper.unloadAgent(agent)
+        agent = null
+      })
   })
 
   var mongodb = require('mongodb')
-  common.dropTestCollections(mongodb, ['testCollection'], function(err) {
-    if (!t.error(err)) {
-      return t.end()
-    }
-
-    common.connect(mongodb, null, function(err, res) {
-      if (!t.error(err)) {
-        return t.end()
-      }
-
+  common.dropTestCollections(mongodb, ['testCollection'])
+    .then(() => {
+      return common.connect(mongodb)
+    })
+    .then((res) => {
       client = res.client
       db = res.db
 
       collection = db.collection('testCollection')
-      common.populate(db, collection, runTest)
+      return common.populate(db, collection)
     })
-  })
+    .then(runTest)
 
   function runTest() {
     helper.runInTransaction(agent, function(transaction) {

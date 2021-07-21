@@ -20,11 +20,10 @@ var port
 tap.test('Hapi segments', function(t) {
   t.autoend()
 
-  t.beforeEach(function(done) {
+  t.beforeEach(function() {
     agent = helper.instrumentMockedAgent()
 
     server = utils.getServer()
-    done()
   })
 
   t.afterEach(function() {

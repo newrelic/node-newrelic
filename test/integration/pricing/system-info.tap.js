@@ -37,7 +37,7 @@ test('pricing system-info aws', function(t) {
       detect_docker: false
     }
   })
-  t.tearDown(function() {
+  t.teardown(function() {
     helper.unloadAgent(agent)
   })
 
@@ -83,7 +83,7 @@ test('pricing system-info azure', function(t) {
       detect_docker: false
     }
   })
-  t.tearDown(function() {
+  t.teardown(function() {
     helper.unloadAgent(agent)
   })
 
@@ -112,7 +112,7 @@ test('pricing system-info azure', function(t) {
 test('pricing system-info gcp', function(t) {
   nock.disableNetConnect()
 
-  t.tearDown(function() {
+  t.teardown(function() {
     nock.enableNetConnect()
   })
 
@@ -137,7 +137,7 @@ test('pricing system-info gcp', function(t) {
       detect_docker: false
     }
   })
-  t.tearDown(function() {
+  t.teardown(function() {
     helper.unloadAgent(agent)
   })
 
@@ -169,7 +169,7 @@ test('pricing system-info pcf', function(t) {
       detect_docker: false
     }
   })
-  t.tearDown(function() {
+  t.teardown(function() {
     helper.unloadAgent(agent)
   })
 
@@ -211,7 +211,7 @@ test('pricing system-info docker', function(t) {
       detect_docker: true
     }
   })
-  t.tearDown(function() {
+  t.teardown(function() {
     helper.unloadAgent(agent)
   })
 

@@ -32,7 +32,7 @@ tap.test('amqplib callback instrumentation', function(t) {
   var agent = null
   var api = null
 
-  t.beforeEach(function(done) {
+  t.beforeEach(function() {
     agent = helper.instrumentMockedAgent({
       attributes: {
         enabled: true
@@ -53,25 +53,27 @@ tap.test('amqplib callback instrumentation', function(t) {
     api.instrumentMessages('amqplib/callback_api', instrumentation.instrumentCallbackAPI)
 
     amqplib = require('amqplib/callback_api')
-    amqpUtils.getChannel(amqplib, function(err, result) {
-      if (err) {
-        return done(err)
-      }
+    return new Promise((resolve, reject) => {
+      amqpUtils.getChannel(amqplib, function(err, result) {
+        if (err) {
+          reject(err)
+        }
 
-      conn = result.connection
-      channel = result.channel
-      channel.assertQueue('testQueue', null, done)
+        conn = result.connection
+        channel = result.channel
+        channel.assertQueue('testQueue', null, resolve)
+      })
     })
   })
 
-  t.afterEach(function(done) {
+  t.afterEach(function() {
     helper.unloadAgent(agent)
 
     if (!conn) {
-      return done()
+      return
     }
 
-    conn.close(done)
+    return conn.close()
   })
 
   t.test('connect in a transaction', function(t) {

@@ -38,17 +38,13 @@ tap.test("when recording queueTime", (test) => {
   let agent
   let trans
 
-  test.beforeEach((done) => {
+  test.beforeEach(() => {
     agent = helper.instrumentMockedAgent()
     trans = new Transaction(agent)
-
-    done()
   })
 
-  test.afterEach((done) => {
+  test.afterEach(() => {
     helper.unloadAgent(agent)
-
-    done()
   })
 
   test.test("non zero times should record a metric", (t) => {

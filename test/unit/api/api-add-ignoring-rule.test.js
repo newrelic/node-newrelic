@@ -18,18 +18,14 @@ tap.test('Agent API - addIgnoringRule', (t) => {
   const TEST_URL = '/test/path/31337'
   const NAME = 'WebTransaction/Uri/test/path/31337'
 
-  t.beforeEach((done) => {
+  t.beforeEach(() => {
     agent = helper.loadMockedAgent()
     api = new API(agent)
-
-    done()
   })
 
-  t.afterEach((done) => {
+  t.afterEach(() => {
     helper.unloadAgent(agent)
     agent = null
-
-    done()
   })
 
   t.test("exports a function for ignoring certain URLs", (t) => {

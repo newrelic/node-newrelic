@@ -164,7 +164,7 @@ function testStream(t, method, src, out) {
 
 function setupAgent(t) {
   var agent = helper.instrumentMockedAgent()
-  t.tearDown(function() {
+  t.teardown(function() {
     helper.unloadAgent(agent)
   })
 

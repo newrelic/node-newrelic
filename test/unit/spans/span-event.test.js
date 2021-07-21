@@ -47,18 +47,16 @@ tap.test('fromSegment()', (t) => {
 
   let agent = null
 
-  t.beforeEach((done) => {
+  t.beforeEach(() => {
     agent = helper.instrumentMockedAgent({
       distributed_tracing: {
         enabled: true
       }
     })
-    done()
   })
 
-  t.afterEach((done) => {
+  t.afterEach(() => {
     helper.unloadAgent(agent)
-    done()
   })
 
   t.test('should create a generic span with a random segment', (t) => {

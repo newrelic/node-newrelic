@@ -14,7 +14,7 @@ module.exports = function(t, loadLibrary) {
     // promise instrumentation.
 
     var agent = helper.loadMockedAgent()
-    t.tearDown(function() {
+    t.teardown(function() {
       helper.unloadAgent(agent)
     })
     var Promise = loadLibrary()

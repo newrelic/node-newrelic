@@ -230,7 +230,7 @@ function setupServer(t, sslOpts, recordSpan) {
         server.start()
         resolve(port)
         // shutdown server when tests finish
-        t.tearDown(()=>{
+        t.teardown(()=>{
           server.tryShutdown(()=>{
           })
         })

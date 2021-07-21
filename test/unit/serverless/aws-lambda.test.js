@@ -1259,7 +1259,7 @@ test('AwsLambda.patchLambdaHandler', (t) => {
 
   let error
 
-  function beforeTest(cb) {
+  function beforeTest() {
     agent = helper.loadMockedAgent({
       allow_all_headers: true,
       attributes: {
@@ -1293,11 +1293,9 @@ test('AwsLambda.patchLambdaHandler', (t) => {
     error = new SyntaxError(errorMessage)
 
     agent.setState('started')
-
-    cb()
   }
 
-  function afterTest(cb) {
+  function afterTest() {
     stubEvent = null
     stubContext = null
     stubCallback = null
@@ -1314,8 +1312,6 @@ test('AwsLambda.patchLambdaHandler', (t) => {
 
     agent = null
     awsLambda = null
-
-    cb()
   }
 
   t.test('when invoked with a non web event', (t) => {

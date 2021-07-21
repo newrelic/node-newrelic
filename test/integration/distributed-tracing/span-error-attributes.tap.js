@@ -75,7 +75,7 @@ tap.test('span error attributes', (t) => {
       }
     })
 
-    t.tearDown(() => {
+    t.teardown(() => {
       helper.unloadAgent(agent)
     })
 
@@ -258,7 +258,7 @@ tap.test('span error attributes', (t) => {
       }
     })
 
-    t.tearDown(() => {
+    t.teardown(() => {
       helper.unloadAgent(agent)
     })
 

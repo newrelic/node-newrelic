@@ -64,12 +64,12 @@ tap.test(
         {},
         {}
       )
-      t.equals(metadataFirst.get('license_key').shift(), 'fake-license', 'license key set')
-      t.equals(metadataFirst.get('agent_run_token').shift(), 'fake-run-id', 'run id set')
-      t.equals(metadataFirst.get('flaky').length, 0, 'flaky not set')
-      t.equals(metadataFirst.get('delay').length, 0, 'delay not set')
-      t.equals(metadataFirst.get('flaky_code').length, 0, 'flaky_code not set')
-      t.equals(metadataFirst.get('success_delay_ms').length, 0, 'success_delay_ms not set')
+      t.equal(metadataFirst.get('license_key').shift(), 'fake-license', 'license key set')
+      t.equal(metadataFirst.get('agent_run_token').shift(), 'fake-run-id', 'run id set')
+      t.equal(metadataFirst.get('flaky').length, 0, 'flaky not set')
+      t.equal(metadataFirst.get('delay').length, 0, 'delay not set')
+      t.equal(metadataFirst.get('flaky_code').length, 0, 'flaky_code not set')
+      t.equal(metadataFirst.get('success_delay_ms').length, 0, 'success_delay_ms not set')
 
       // tests that env based params get set
       const metadataSecond = connection._getMetadata(
@@ -84,12 +84,12 @@ tap.test(
         }
       )
 
-      t.equals(metadataSecond.get('license_key').shift(), 'fake-license', 'license key set')
-      t.equals(metadataSecond.get('agent_run_token').shift(), 'fake-run-id', 'run id set')
-      t.equals(metadataSecond.get('flaky').shift(), 10, 'flaky set')
-      t.equals(metadataSecond.get('delay').shift(), 20, 'delay set')
-      t.equals(metadataSecond.get('flaky_code').shift(), 7, 'flaky_code set')
-      t.equals(metadataSecond.get('success_delay_ms').shift(), 400, 'success_delay_ms set')
+      t.equal(metadataSecond.get('license_key').shift(), 'fake-license', 'license key set')
+      t.equal(metadataSecond.get('agent_run_token').shift(), 'fake-run-id', 'run id set')
+      t.equal(metadataSecond.get('flaky').shift(), 10, 'flaky set')
+      t.equal(metadataSecond.get('delay').shift(), 20, 'delay set')
+      t.equal(metadataSecond.get('flaky_code').shift(), 7, 'flaky_code set')
+      t.equal(metadataSecond.get('success_delay_ms').shift(), 400, 'success_delay_ms set')
 
       // tests that env based params get set
       const metadataThird = connection._getMetadata(
@@ -104,12 +104,12 @@ tap.test(
         }
       )
 
-      t.equals(metadataThird.get('license_key').shift(), 'fake-license', 'license key set')
-      t.equals(metadataThird.get('agent_run_token').shift(), 'fake-run-id', 'run id set')
-      t.equals(metadataThird.get('flaky').length, 0, 'flaky not set')
-      t.equals(metadataThird.get('delay').length, 0, 'delay not set')
-      t.equals(metadataFirst.get('flaky_code').length, 0, 'flaky_code not set')
-      t.equals(metadataFirst.get('success_delay_ms').length, 0, 'success_delay_ms not set')
+      t.equal(metadataThird.get('license_key').shift(), 'fake-license', 'license key set')
+      t.equal(metadataThird.get('agent_run_token').shift(), 'fake-run-id', 'run id set')
+      t.equal(metadataThird.get('flaky').length, 0, 'flaky not set')
+      t.equal(metadataThird.get('delay').length, 0, 'delay not set')
+      t.equal(metadataFirst.get('flaky_code').length, 0, 'flaky_code not set')
+      t.equal(metadataFirst.get('success_delay_ms').length, 0, 'success_delay_ms not set')
       t.end()
     })
 
@@ -137,8 +137,8 @@ tap.test(
         {}
       )
 
-      t.deepEqual(metadata.get('key_1'), ['VALUE 1'])
-      t.deepEqual(metadata.get('key_2'), ['VALUE 2'])
+      t.same(metadata.get('key_1'), ['VALUE 1'])
+      t.same(metadata.get('key_2'), ['VALUE 2'])
 
       t.end()
     })
@@ -151,7 +151,7 @@ tap.test('grpc connection error handling', (test) => {
   test.test('should catch error when proto loader fails', (t) => {
     const stub = sinon.stub(protoLoader, 'loadSync').returns({})
 
-    t.tearDown(() => {
+    t.teardown(() => {
       stub.restore()
     })
 
@@ -168,7 +168,7 @@ tap.test('grpc connection error handling', (test) => {
   test.test('should catch error when loadPackageDefinition returns invalid service definition',
     (t) => {
       const stub = sinon.stub(grpcApi, 'loadPackageDefinition').returns({})
-      t.tearDown(() => {
+      t.teardown(() => {
         stub.restore()
       })
 

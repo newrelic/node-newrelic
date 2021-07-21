@@ -18,21 +18,17 @@ tap.test('Agent API - custom attributes', (t) => {
   let agent = null
   let api = null
 
-  t.beforeEach((done) => {
+  t.beforeEach(() => {
     agent = helper.loadMockedAgent()
     agent.config.attributes.enabled = true
     agent.config.distributed_tracing.enabled = true
 
     api = new API(agent)
-
-    done()
   })
 
-  t.afterEach((done) => {
+  t.afterEach(() => {
     helper.unloadAgent(agent)
     agent = null
-
-    done()
   })
 
   t.test("exports a function for adding multiple custom attributes at once", (t) => {

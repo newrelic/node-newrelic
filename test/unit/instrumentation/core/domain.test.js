@@ -18,7 +18,7 @@ test('Domains', (t) => {
   let tasks = []
   let interval = null
 
-  t.beforeEach((done, t) => {
+  t.beforeEach((t) => {
     // Once on node 10+ only, may be able to replace with below.
     // t.expectUncaughtException(fn, [expectedError], message, extra)
     // https://node-tap.org/docs/api/asserts/#texpectuncaughtexceptionfn-expectederror-message-extra
@@ -33,17 +33,13 @@ test('Domains', (t) => {
       while (tasks.length) {
         tasks.pop()()
       }
-
-      done()
     }, 10)
   })
 
-  t.afterEach((done) => {
+  t.afterEach(() => {
     d && d.exit()
     clearInterval(interval)
     helper.unloadAgent(agent)
-
-    done()
   })
 
   t.test('should not be loaded just from loading the agent', (t) => {

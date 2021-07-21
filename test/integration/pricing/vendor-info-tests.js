@@ -22,7 +22,7 @@ module.exports = function(t, vendor) {
   var getInfo = require('../../../lib/utilization/' + vendor + '-info')
 
   nock.disableNetConnect()
-  t.tearDown(function() {
+  t.teardown(function() {
     nock.enableNetConnect()
   })
 
@@ -48,7 +48,7 @@ function makeTest(testCase, vendor, getInfo) {
   var agent = null
   return function(t) {
     agent = helper.loadMockedAgent()
-    t.tearDown(function() {
+    t.teardown(function() {
       helper.unloadAgent(agent)
       getInfo.clearCache()
       nock.cleanAll()

@@ -18,7 +18,7 @@ test("Restify router introspection", function(t) {
   const api    = new API(agent)
   const server = require('restify').createServer()
 
-  t.tearDown(function() {
+  t.teardown(function() {
     server.close(function() {
       helper.unloadAgent(agent)
     })

@@ -26,7 +26,7 @@ tap.test('Hapi vhost support', function(t) {
     var server = utils.getServer()
     var port
 
-    t.tearDown(function() {
+    t.teardown(function() {
       return server.stop()
     })
 

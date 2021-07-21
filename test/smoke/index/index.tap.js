@@ -34,8 +34,8 @@ test('loading the application via index.js', {timeout: 15000}, (t) => {
 
   function shutdown() {
     t.equal(agent._state, 'started', "agent didn't error connecting to staging")
-    t.deepEquals(agent.config.applications(), ['My Application'], "app name is valid")
-    t.equals(agent.config.agent_enabled, true, "the agent is still enabled")
+    t.same(agent.config.applications(), ['My Application'], "app name is valid")
+    t.equal(agent.config.agent_enabled, true, "the agent is still enabled")
 
     agent.stop(function cb_stop(err) {
       t.notOk(err, 'should not error when stopping')

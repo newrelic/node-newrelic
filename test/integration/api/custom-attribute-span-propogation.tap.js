@@ -19,19 +19,17 @@ tap.test('#addAttribute', (t) => {
   let agent = null
   let api = null
 
-  t.beforeEach((done) => {
+  t.beforeEach(() => {
     agent = helper.loadMockedAgent({
       distributed_tracing: {
         enabled: true
       }
     })
     api = new API(agent)
-    done()
   })
 
-  t.afterEach((done) => {
+  t.afterEach(() => {
     helper.unloadAgent(agent)
-    done()
   })
 
   t.test('should add attribute to current span', (t) => {
@@ -102,19 +100,17 @@ tap.test('#addCustomSpanAttribute', (t) => {
   let agent = null
   let api = null
 
-  t.beforeEach((done) => {
+  t.beforeEach(() => {
     agent = helper.loadMockedAgent({
       distributed_tracing: {
         enabled: true
       }
     })
     api = new API(agent)
-    done()
   })
 
-  t.afterEach((done) => {
+  t.afterEach(() => {
     helper.unloadAgent(agent)
-    done()
   })
 
   t.test('should not add attribute to transaction', (t) => {

@@ -22,7 +22,7 @@ test("intercepting errors with connect 2", function(t) {
     var app = connect()
 
 
-    t.tearDown(function cb_tearDown() {
+    t.teardown(function cb_tearDown() {
       helper.unloadAgent(agent)
     })
 
@@ -49,7 +49,7 @@ test("intercepting errors with connect 2", function(t) {
     var app     = connect()
 
 
-    t.tearDown(function cb_tearDown() {
+    t.teardown(function cb_tearDown() {
       helper.unloadAgent(agent)
     })
 
@@ -83,7 +83,7 @@ test("intercepting errors with connect 2", function(t) {
       t.end()
     })
 
-    t.tearDown(function cb_tearDown() {
+    t.teardown(function cb_tearDown() {
       helper.unloadAgent(agent)
     })
 

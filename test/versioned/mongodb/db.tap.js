@@ -34,7 +34,7 @@ if (semver.satisfies(mongoPackage.version, '<3')) {
     helper.runInTransaction(agent, function inTransaction(transaction) {
       db.open(function onOpen(err, _db) {
         var segment = agent.tracer.getSegment()
-        t.error(err)
+        t.error(err, 'db.open should not error')
         t.equal(db, _db, 'should pass through the arguments correctly')
         t.equal(agent.getTransaction(), transaction, 'should not lose tx state')
         t.equal(segment.name, 'Callback: onOpen', 'should create segments')
@@ -44,7 +44,7 @@ if (semver.satisfies(mongoPackage.version, '<3')) {
           parent.name, 'Datastore/operation/MongoDB/open',
           'should name segment correctly'
         )
-        t.notEqual(parent.children.indexOf(segment), -1, 'should have callback as child')
+        t.not(parent.children.indexOf(segment), -1, 'should have callback as child')
         db.close()
         t.end()
       })
@@ -292,19 +292,17 @@ function dbTest(name, collections, run) {
 
     t.test('remote connection', function(t) {
       t.autoend()
-      t.beforeEach(function(done) {
+      t.beforeEach(async function() {
         MONGO_HOST = common.getHostName(agent)
         MONGO_PORT = common.getPort()
 
-        common.connect(mongodb, null, function(err, res) {
-          client = res.client
-          db = res.db
-          done(err)
-        })
+        const res = await common.connect(mongodb)
+        client = res.client
+        db = res.db
       })
 
-      t.afterEach(function(done) {
-        common.close(client, db, done)
+      t.afterEach(function() {
+        return common.close(client, db)
       })
 
       t.test('without transaction', function(t) {
@@ -331,21 +329,20 @@ function dbTest(name, collections, run) {
     // the same box as these tests. This should always be the case on Travis,
     // but just to be sure they're running there check for the environment flag.
     var shouldTestDomain = domainPath || process.env.TRAVIS
+
     t.test('domain socket', {skip: !shouldTestDomain}, function(t) {
       t.autoend()
-      t.beforeEach(function(done) {
+      t.beforeEach(async function() {
         MONGO_HOST = LOCALHOST
         MONGO_PORT = domainPath
 
-        common.connect(mongodb, domainPath, function(err, res) {
-          client = res.client
-          db = res.db
-          done(err)
-        })
+        const res = await common.connect(mongodb, domainPath)
+        client = res.client
+        db = res.db
       })
 
-      t.afterEach(function(done) {
-        common.close(client, db, done)
+      t.afterEach(function() {
+        return common.close(client, db)
       })
 
       t.test('with transaction', function(t) {
@@ -365,11 +362,7 @@ function dbTest(name, collections, run) {
 function mongoTest(name, collections, run) {
   tap.test(name, function testWrap(t) {
     const mongodb = require('mongodb')
-    collectionCommon.dropTestCollections(mongodb, collections, (err) => {
-      if (!t.error(err)) {
-        return t.end()
-      }
-
+    collectionCommon.dropTestCollections(mongodb, collections).then(() => {
       run(t, helper.loadTestAgent(t))
     })
   })

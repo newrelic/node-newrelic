@@ -36,7 +36,7 @@ tap.test("RemoteMethod makes two requests with one connection", (t) => {
   })
 
   // close server when test ends
-  t.tearDown(() => {
+  t.teardown(() => {
     server.close()
   })
 

@@ -23,7 +23,7 @@ test("Express + express-enrouten compatibility test", function(t) {
 
   app.use(enrouten({directory: './fixtures'}))
 
-  t.tearDown(function cb_tearDown() {
+  t.teardown(function cb_tearDown() {
     server.close(function cb_close() {
       helper.unloadAgent(agent)
     })

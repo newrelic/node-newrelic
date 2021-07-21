@@ -24,19 +24,21 @@ tap.test('Basic run through mysql functionality', {timeout : 30 * 1000}, functio
   var poolLogger = logger.child({component : 'pool'})
   var pool = null
 
-  t.beforeEach(function(done) {
+  t.beforeEach(function() {
     agent = helper.instrumentMockedAgent()
     mysql = require('mysql')
     pool = setup.pool(mysql, poolLogger)
 
-    setup(mysql, done)
+    return setup(mysql)
   })
 
-  t.afterEach(function(done) {
-    pool.drain(function() {
-      pool.destroyAllNow()
-      helper.unloadAgent(agent)
-      done()
+  t.afterEach(function() {
+    return new Promise((resolve) => {
+      pool.drain(function() {
+        pool.destroyAllNow()
+        helper.unloadAgent(agent)
+        resolve()
+      })
     })
   })
 

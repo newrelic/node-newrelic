@@ -15,20 +15,16 @@ tap.test('Agent API - dispatch setter', (t) => {
   let agent = null
   let api = null
 
-  t.beforeEach((done) => {
+  t.beforeEach(() => {
     agent = helper.loadMockedAgent()
     api = new API(agent)
-
-    done()
   })
 
-  t.afterEach((done) => {
+  t.afterEach(() => {
     agent.environment.clearDispatcher()
 
     helper.unloadAgent(agent)
     agent = null
-
-    done()
   })
 
   t.test("exports a dispatcher setter", (t) => {

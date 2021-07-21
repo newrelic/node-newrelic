@@ -21,19 +21,16 @@ tap.test('built-in http queueTime', (t) => {
   let PORT = null
   let THRESHOLD = null
 
-  t.beforeEach((done) => {
+  t.beforeEach(() => {
     agent = helper.instrumentMockedAgent()
 
     testDate = Date.now()
     PORT = 0
     THRESHOLD = 200
-
-    done()
   })
 
-  t.afterEach((done) => {
+  t.afterEach(() => {
     helper.unloadAgent(agent)
-    done()
   })
 
   t.test('header should allow t=${time} style headers', (t) => {

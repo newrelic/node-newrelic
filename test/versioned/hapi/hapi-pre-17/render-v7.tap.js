@@ -21,15 +21,13 @@ tap.test('agent instrumentation of Hapi', function(t) {
   var agent = null
   var server = null
 
-  t.beforeEach(function(done) {
+  t.beforeEach(function() {
     agent = helper.instrumentMockedAgent()
-
-    done()
   })
 
-  t.afterEach(function(done) {
+  t.afterEach(function() {
     helper.unloadAgent(agent)
-    server.stop(done)
+    return new Promise((resolve) => server.stop(resolve))
   })
 
   t.test('for a normal request', {timeout: 5000}, function(t) {
@@ -197,7 +195,7 @@ tap.test('agent instrumentation of Hapi', function(t) {
 
         var first = errors[0]
         t.ok(first, 'have the first error')
-        t.contains(first[2], 'ohno', 'got the expected error')
+        t.match(first[2], 'ohno', 'got the expected error')
 
         t.end()
       })

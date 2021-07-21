@@ -18,7 +18,7 @@ test("Express router introspection", function(t) {
   var app = express()
   var server  = require('http').createServer(app)
 
-  t.tearDown(function cb_tearDown() {
+  t.teardown(function cb_tearDown() {
     server.close(function cb_close() {
       helper.unloadAgent(agent)
     })

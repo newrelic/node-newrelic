@@ -15,20 +15,16 @@ tap.test('Agent API - trace metadata', (t) => {
   let agent = null
   let api = null
 
-  t.beforeEach((done) => {
+  t.beforeEach(() => {
     agent = helper.loadMockedAgent()
     agent.config.distributed_tracing.enabled = true
 
     api = new API(agent)
-
-    done()
   })
 
-  t.afterEach((done) => {
+  t.afterEach(() => {
     helper.unloadAgent(agent)
     agent = null
-
-    done()
   })
 
   t.test("exports a trace metadata function", (t) => {
@@ -55,7 +51,7 @@ tap.test('Agent API - trace metadata', (t) => {
       const metadata = api.getTraceMetadata()
       t.type(metadata, 'object')
 
-      t.deepEqual(metadata, {})
+      t.same(metadata, {})
       t.end()
     })
   })

@@ -19,7 +19,7 @@ test("asynchronous state propagation", function(t) {
 
     var agent = helper.instrumentMockedAgent()
 
-    t.tearDown(function cb_tearDown() {
+    t.teardown(function cb_tearDown() {
       // FIXME: why does CLS keep the transaction?
       if (agent.getTransaction()) agent.getTransaction().end()
       helper.unloadAgent(agent)
@@ -40,7 +40,7 @@ test("asynchronous state propagation", function(t) {
     const agent = helper.instrumentMockedAgent()
     let handle
 
-    t.tearDown(function cb_tearDown() {
+    t.teardown(function cb_tearDown() {
       // FIXME: why does CLS keep the transaction?
       if (agent.getTransaction()) agent.getTransaction().end()
       helper.unloadAgent(agent)
@@ -61,7 +61,7 @@ test("asynchronous state propagation", function(t) {
 
     var agent = helper.instrumentMockedAgent()
 
-    t.tearDown(function cb_tearDown() {
+    t.teardown(function cb_tearDown() {
       // FIXME: why does CLS keep the transaction?
       if (agent.getTransaction()) agent.getTransaction().end()
       helper.unloadAgent(agent)
@@ -84,7 +84,7 @@ test("asynchronous state propagation", function(t) {
       var agent = helper.instrumentMockedAgent()
       const ee = new EventEmitter()
 
-      t.tearDown(function cb_tearDown() {
+      t.teardown(function cb_tearDown() {
         // FIXME: why does CLS keep the transaction?
         if (agent.getTransaction()) agent.getTransaction().end()
         helper.unloadAgent(agent)
@@ -113,7 +113,7 @@ test("asynchronous state propagation", function(t) {
       var agent = helper.instrumentMockedAgent()
 
 
-      t.tearDown(function cb_tearDown() {
+      t.teardown(function cb_tearDown() {
         // FIXME: why does CLS keep the transaction?
         if (agent.getTransaction()) agent.getTransaction().end()
         helper.unloadAgent(agent)
@@ -147,7 +147,7 @@ test("asynchronous state propagation", function(t) {
 
       var agent = helper.instrumentMockedAgent()
 
-      t.tearDown(function cb_tearDown() {
+      t.teardown(function cb_tearDown() {
         // FIXME: why does CLS keep the transaction?
         if (agent.getTransaction()) agent.getTransaction().end()
         helper.unloadAgent(agent)
@@ -189,7 +189,7 @@ test("asynchronous state propagation", function(t) {
       let second
       const agent = helper.instrumentMockedAgent()
 
-      t.tearDown(function cb_tearDown() {
+      t.teardown(function cb_tearDown() {
         // FIXME: why does CLS keep the transaction?
         if (agent.getTransaction()) agent.getTransaction().end()
         helper.unloadAgent(agent)
@@ -226,7 +226,7 @@ test("asynchronous state propagation", function(t) {
       let ee = new EventEmitter()
 
 
-      t.tearDown(function cb_tearDown() {
+      t.teardown(function cb_tearDown() {
         // FIXME: why does CLS keep the transaction?
         if (agent.getTransaction()) agent.getTransaction().end()
         helper.unloadAgent(agent)
@@ -254,7 +254,7 @@ test("asynchronous state propagation", function(t) {
 
       var agent = helper.instrumentMockedAgent()
 
-      t.tearDown(function cb_tearDown() {
+      t.teardown(function cb_tearDown() {
         // FIXME: why does CLS keep the transaction?
         if (agent.getTransaction()) agent.getTransaction().end()
         helper.unloadAgent(agent)
@@ -292,7 +292,7 @@ test("asynchronous state propagation", function(t) {
       let innerHandle
 
 
-      t.tearDown(function cb_tearDown() {
+      t.teardown(function cb_tearDown() {
         // FIXME: why does CLS keep the transaction?
         if (agent.getTransaction()) agent.getTransaction().end()
         helper.unloadAgent(agent)
@@ -329,7 +329,7 @@ test("asynchronous state propagation", function(t) {
 
       var agent = helper.instrumentMockedAgent()
 
-      t.tearDown(function cb_tearDown() {
+      t.teardown(function cb_tearDown() {
         // FIXME: why does CLS keep the transaction?
         if (agent.getTransaction()) agent.getTransaction().end()
         helper.unloadAgent(agent)
@@ -371,7 +371,7 @@ test("asynchronous state propagation", function(t) {
       const outer = new EventEmitter()
       const inner = new EventEmitter()
 
-      t.tearDown(function cb_tearDown() {
+      t.teardown(function cb_tearDown() {
         // FIXME: why does CLS keep the transaction?
         if (agent.getTransaction()) agent.getTransaction().end()
         helper.unloadAgent(agent)

@@ -132,7 +132,7 @@ test("the agent's async hook", function(t) {
       }
     }, 10)
 
-    t.tearDown(() => {
+    t.teardown(() => {
       clearInterval(intervalId)
     })
 
@@ -160,7 +160,7 @@ test("the agent's async hook", function(t) {
       }
     }, 10)
 
-    t.tearDown(() => {
+    t.teardown(() => {
       clearInterval(intervalId)
     })
 
@@ -244,7 +244,7 @@ test("the agent's async hook", function(t) {
       }
     }, 10)
 
-    t.tearDown(() => {
+    t.teardown(() => {
       clearInterval(intervalId)
     })
 
@@ -419,7 +419,7 @@ function setupAgent(t) {
   var agent = helper.instrumentMockedAgent({
     feature_flag: {await_support: true}
   })
-  t.tearDown(function() {
+  t.teardown(function() {
     helper.unloadAgent(agent)
   })
 

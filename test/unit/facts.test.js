@@ -71,7 +71,7 @@ tap.test('fun facts about apps that New Relic is interested in include', (t) => 
 
   let agent = null
 
-  t.beforeEach((done) => {
+  t.beforeEach(() => {
     loggerMock.debug.reset()
     const config = {
       app_name: [...APP_NAMES]
@@ -81,13 +81,11 @@ tap.test('fun facts about apps that New Relic is interested in include', (t) => 
     agent.config.applications = () => {
       return config.app_name
     }
-    done()
   })
 
-  t.afterEach((done) => {
+  t.afterEach(() => {
     helper.unloadAgent(agent)
     os.networkInterfaces = networkInterfaces
-    done()
   })
 
   t.test("the current process ID as 'pid'", (t) => {
@@ -159,7 +157,7 @@ tap.test('fun facts about apps that New Relic is interested in include', (t) => 
       expect(data.metadata).to.have.property('NEW_RELIC_METADATA_STRING', 'hello')
       expect(data.metadata).to.have.property('NEW_RELIC_METADATA_BOOL', 'true')
       expect(data.metadata).to.have.property('NEW_RELIC_METADATA_NUMBER', '42')
-      t.deepEqual(loggerMock.debug.args, [
+      t.same(loggerMock.debug.args, [
         [
           'New Relic metadata %o',
           {
@@ -265,7 +263,7 @@ tap.test('utilization', (t) => {
   let startingCommonRequest = null
   let startingCommonReadProc = null
 
-  t.beforeEach((done) => {
+  t.beforeEach(() => {
     startingEnv = {}
     Object.keys(process.env).forEach((key) => {
       startingEnv[key] = process.env[key]
@@ -285,10 +283,9 @@ tap.test('utilization', (t) => {
     azureInfo.clearCache()
     gcpInfo.clearCache()
     kubernetesInfo.clearCache()
-    done()
   })
 
-  t.afterEach((done) => {
+  t.afterEach(() => {
     if (agent) {
       helper.unloadAgent(agent)
     }
@@ -311,7 +308,6 @@ tap.test('utilization', (t) => {
     awsInfo.clearCache()
     azureInfo.clearCache()
     gcpInfo.clearCache()
-    done()
   })
 
   utilTests.forEach((test) => {
@@ -481,7 +477,7 @@ tap.test('boot_id', (t) => {
   let startingCommonReadProc = null
   let startingOsPlatform = null
 
-  t.beforeEach((done) => {
+  t.beforeEach(() => {
     startingGetMemory = sysInfo._getMemoryStats
     startingGetProcessor = sysInfo._getProcessorStats
     startingDockerInfo = sysInfo._getDockerContainerId
@@ -489,10 +485,9 @@ tap.test('boot_id', (t) => {
     startingOsPlatform = os.platform
 
     os.platform = () => 'linux'
-    done()
   })
 
-  t.afterEach((done) => {
+  t.afterEach(() => {
     if (agent) {
       helper.unloadAgent(agent)
     }
@@ -508,7 +503,6 @@ tap.test('boot_id', (t) => {
     startingDockerInfo = null
     startingCommonReadProc = null
     startingOsPlatform = null
-    done()
   })
 
   bootIdTests.forEach((test) => {
@@ -605,23 +599,19 @@ tap.test('display_host', {timeout: 20000}, (t) => {
 
   let agent = null
 
-  t.beforeEach((done) => {
+  t.beforeEach(() => {
     agent = helper.loadMockedAgent(DISABLE_ALL_DETECTIONS)
     agent.config.utilization = null
     os.hostname = () => {
       throw ('BROKEN')
     }
-
-    done()
   })
 
-  t.afterEach((done) => {
+  t.afterEach(() => {
     os.hostname = original_hostname
     helper.unloadAgent(agent)
 
     agent = null
-
-    done()
   })
 
   t.test('should be set to what the user specifies (happy path)', (t) => {
@@ -642,15 +632,15 @@ tap.test('display_host', {timeout: 20000}, (t) => {
       agent.config.process_host.display_name = 'test-value2'
 
       facts(agent, function getFacts2(factsed2) {
-        t.deepEqual(factsed2.display_host, displayHost1)
-        t.deepEqual(factsed2.host, host1)
+        t.same(factsed2.display_host, displayHost1)
+        t.same(factsed2.host, host1)
 
         agent.config.clearHostnameCache()
         agent.config.clearDisplayHostCache()
 
         facts(agent, function getFacts3(factsed3) {
-          t.deepEqual(factsed3.display_host, 'test-value2')
-          t.deepEqual(factsed3.host, os.hostname())
+          t.same(factsed3.display_host, 'test-value2')
+          t.same(factsed3.host, os.hostname())
 
           t.end()
         })

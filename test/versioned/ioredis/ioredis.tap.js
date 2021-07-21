@@ -18,39 +18,40 @@ tap.test('ioredis instrumentation', (t) => {
   let redisClient = null
 
   t.autoend()
-  t.beforeEach((done) => {
-    helper.flushRedisDb(DB_INDEX, (error) => {
-      if (error) {
-        return done(error)
-      }
+  t.beforeEach(() => {
+    return new Promise((resolve, reject) => {
+      helper.flushRedisDb(DB_INDEX, (error) => {
+        if (error) {
+          return reject(error)
+        }
 
-      agent = helper.instrumentMockedAgent()
+        agent = helper.instrumentMockedAgent()
 
-      let Redis = null
-      try {
-        Redis = require('ioredis')
-      } catch (err) {
-        return done(err)
-      }
+        let Redis = null
+        try {
+          Redis = require('ioredis')
+        } catch (err) {
+          return reject(err)
+        }
 
-      redisClient = new Redis(params.redis_port, params.redis_host)
+        redisClient = new Redis(params.redis_port, params.redis_host)
 
-      redisClient.once('ready', () => {
-        redisClient.select(DB_INDEX, (err) => {
-          if (err) {
-            return done(err)
-          }
+        redisClient.once('ready', () => {
+          redisClient.select(DB_INDEX, (err) => {
+            if (err) {
+              return reject(err)
+            }
 
-          done()
+            resolve()
+          })
         })
       })
     })
   })
 
-  t.afterEach((done) => {
+  t.afterEach(() => {
     agent && helper.unloadAgent(agent)
     redisClient && redisClient.disconnect()
-    done()
   })
 
   t.test('creates expected metrics', {timeout: 5000}, (t) => {
@@ -119,3 +120,4 @@ tap.test('ioredis instrumentation', (t) => {
     })
   })
 })
+

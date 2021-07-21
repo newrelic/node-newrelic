@@ -75,7 +75,7 @@ tap.test('LASP/CSP - Cross Agent Tests', (t) => {
     }
   }
 
-  t.afterEach((done) => {
+  t.afterEach(() => {
     helper.unloadAgent(agent)
     agent = null
     preconnect = null
@@ -88,8 +88,6 @@ tap.test('LASP/CSP - Cross Agent Tests', (t) => {
     }
 
     nock.enableNetConnect()
-
-    done()
   })
 
   testCases.forEach((testCase) => {
