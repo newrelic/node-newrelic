@@ -283,8 +283,6 @@ test('built-in http module instrumentation', (t) => {
           const segment = transaction.baseSegment
           const spanAttributes = segment.attributes.get(DESTINATIONS.SPAN_EVENT)
 
-          // TODO: these attrs aren't getting filtered
-          // not familiar with code so trying to trace where this is supposed to be removed
           t.notOk(attributes['request.headers.x-filtered-out'])
           t.notOk(attributes['request.headers.xFilteredOut'])
           t.match(attributes, {

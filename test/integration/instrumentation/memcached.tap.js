@@ -36,7 +36,7 @@ test('memcached instrumentation', {timeout : 5000}, function(t) {
       Memcached = require('memcached')
       memcached = new Memcached(params.memcached_host + ':' + params.memcached_port)
 
-      var hostName = getMetricHostName(agent, params.memcached_host)
+      const hostName = getMetricHostName(agent, params.memcached_host)
       HOST_ID = hostName + '/' + params.memcached_port
     })
 
