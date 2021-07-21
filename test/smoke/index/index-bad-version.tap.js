@@ -17,12 +17,11 @@ tap.test('load agent with bad versions should load stub agent', (t) => {
   process.env.NEW_RELIC_HOST = 'staging-collector.newrelic.com'
   process.env.NEW_RELIC_LICENSE_KEY = license
 
-  t.afterEach((done) => {
+  t.afterEach(() => {
     // must delete both of these to force a reload
     // of the index.js file
     delete require.cache.__NR_cache
     delete require.cache[require.resolve('../../../index.js')]
-    done()
   })
 
   VERSIONS.forEach((version) => {

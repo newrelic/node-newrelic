@@ -53,7 +53,7 @@ tap.test('LASP-enabled agent', (t) => {
       api.addCustomAttribute('foo', 'bar')
       api.addCustomAttribute('fizz', 'buzz')
       var attributes = transaction.trace.custom.attributes
-      t.deepEqual(
+      t.same(
         Object.keys(attributes),
         ['foo', 'fizz'],
         'transaction trace has custom attributes'
@@ -88,7 +88,7 @@ tap.test('LASP-enabled agent', (t) => {
       api.addCustomAttribute('foo', 'bar')
       api.addCustomAttribute('fizz', 'buzz')
       var attributes = transaction.trace.custom.attributes
-      t.deepEqual(
+      t.same(
         Object.keys(attributes),
         ['foo', 'fizz'],
         'transaction trace has custom attributes'
