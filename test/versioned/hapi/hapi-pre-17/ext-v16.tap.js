@@ -38,7 +38,7 @@ tap.test('Hapi.ext', function(t) {
 
   t.afterEach(function() {
     helper.unloadAgent(agent)
-    return server.stop()
+    return new Promise((resolve) => server.stop(resolve))
   })
 
   t.test('maintains transaction state', function(t) {

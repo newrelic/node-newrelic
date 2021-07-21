@@ -28,7 +28,7 @@ tap.test('Hapi v16 segments', function(t) {
 
   t.afterEach(function() {
     helper.unloadAgent(agent)
-    return server.stop()
+    return new Promise((resolve) => server.stop(resolve))
   })
 
   t.test('route handler is recorded as middleware', function(t) {

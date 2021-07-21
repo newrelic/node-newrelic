@@ -25,7 +25,7 @@ tap.test('Hapi v16 error handling', function(t) {
 
   t.afterEach(function() {
     helper.unloadAgent(agent)
-    return server.stop()
+    return new Promise((resolve) => server.stop(resolve))
   })
 
   t.test('does not report error when reply is called with a string', function(t) {

@@ -27,7 +27,7 @@ tap.test('agent instrumentation of Hapi', function(t) {
 
   t.afterEach(function() {
     helper.unloadAgent(agent)
-    return server.stop()
+    return new Promise((resolve) => server.stop(resolve))
   })
 
   t.test('for a normal request', {timeout: 5000}, function(t) {
