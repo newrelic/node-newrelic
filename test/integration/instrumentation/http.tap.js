@@ -190,9 +190,6 @@ test(
 )
 
 test('built-in http instrumentation should not swallow errors', function(t) {
-  // Once on node 10+ only, may be able to replace with below.
-  // t.expectUncaughtException(fn, [expectedError], message, extra)
-  // https://node-tap.org/docs/api/asserts/#texpectuncaughtexceptionfn-expectederror-message-extra
   helper.temporarilyOverrideTapUncaughtBehavior(tap, t)
 
   t.plan(8)
@@ -205,11 +202,6 @@ test('built-in http instrumentation should not swallow errors', function(t) {
     server.close()
     helper.unloadAgent(agent)
   })
-
-  // These don't really do anything with newest tap but leaving
-  // for now in cases changes in future.
-  helper.temporarilyRemoveListeners(t, process, 'uncaughtException')
-  helper.temporarilyRemoveListeners(t, t.domain, 'error')
 
   var pin = setTimeout(function() {}, 1000)
   helper.runOutOfContext(function() {
@@ -226,11 +218,6 @@ test('built-in http instrumentation should not swallow errors', function(t) {
 
       res.end()
     })
-
-    // Node 8.16 registers a domain listener inside the request
-    if (process.domain) {
-      delete process.domain
-    }
 
     // this is gonna blow up
     var x = x.dieshere.ohno

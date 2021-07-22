@@ -12,17 +12,9 @@ const helper = require('../../../lib/agent_helper')
 test('Unhandled rejection', (t) => {
   t.autoend()
 
-  // Once on node 10+ only, may be able to replace with below.
-  // t.expectUncaughtException(fn, [expectedError], message, extra)
-  // https://node-tap.org/docs/api/asserts/#texpectuncaughtexceptionfn-expectederror-message-extra
-  helper.temporarilyOverrideTapUncaughtBehavior(tap, t)
-
   let agent = null
 
   t.beforeEach((t) => {
-    // Once on node 10+ only, may be able to replace with below.
-    // t.expectUncaughtException(fn, [expectedError], message, extra)
-    // https://node-tap.org/docs/api/asserts/#texpectuncaughtexceptionfn-expectederror-message-extra
     helper.temporarilyOverrideTapUncaughtBehavior(tap, t)
 
     agent = helper.instrumentMockedAgent()
