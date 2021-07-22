@@ -148,9 +148,6 @@ test('when.defer', function(t) {
 })
 
 test('when debug API', function(t) {
-  // Once on node 10+ only, may be able to replace with below.
-  // t.expectUncaughtException(fn, [expectedError], message, extra)
-  // https://node-tap.org/docs/api/asserts/#texpectuncaughtexceptionfn-expectederror-message-extra
   helper.temporarilyOverrideTapUncaughtBehavior(tap, t)
 
   t.plan(2)

@@ -1009,9 +1009,6 @@ test('built-in http module instrumentation', (t) => {
 })
 
 test('http.createServer should trace errors in top-level handlers', (t) => {
-  // Once on node 10+ only, may be able to replace with below.
-  // t.expectUncaughtException(fn, [expectedError], message, extra)
-  // https://node-tap.org/docs/api/asserts/#texpectuncaughtexceptionfn-expectederror-message-extra
   helper.temporarilyOverrideTapUncaughtBehavior(tap, t)
 
   const http = require('http')
@@ -1051,9 +1048,6 @@ test('http.createServer should trace errors in top-level handlers', (t) => {
 })
 
 test('http.request should trace errors in listeners', (t) => {
-  // Once on node 10+ only, may be able to replace with below.
-  // t.expectUncaughtException(fn, [expectedError], message, extra)
-  // https://node-tap.org/docs/api/asserts/#texpectuncaughtexceptionfn-expectederror-message-extra
   helper.temporarilyOverrideTapUncaughtBehavior(tap, t)
 
   const http = require('http')

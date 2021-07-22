@@ -113,9 +113,6 @@ test('bind + throw', function testThrows(t) {
 })
 
 test('bind + capture error', function testThrows(t) {
-  // Once on node 10+ only, may be able to replace with below.
-  // t.expectUncaughtException(fn, [expectedError], message, extra)
-  // https://node-tap.org/docs/api/asserts/#texpectuncaughtexceptionfn-expectederror-message-extra
   helper.temporarilyOverrideTapUncaughtBehavior(tap, t)
 
   var agent = helper.loadTestAgent(t)
