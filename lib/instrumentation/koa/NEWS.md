@@ -1,3 +1,7 @@
+### 6.0.1 (2021-07-20)
+
+* Added versioned tests to the files list within package.json
+
 ### 6.0.0 (2021-07-19)
 
 * **BREAKING** Removed support for Node 10.
