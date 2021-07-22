@@ -8,7 +8,8 @@
         "node": ">=10"
       },
       "dependencies": {
-        "pg": ">=8"
+        "pg": ">=8",
+        "pg-native": "2.x"
       },
       "files": [
         "pg.tap.js"
