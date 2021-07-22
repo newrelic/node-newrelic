@@ -24,6 +24,28 @@
         "segments.tap.js",
         "vhost.tap.js"
       ]
+    },
+    {
+      "engines": {
+        "node": ">=16"
+      },
+      "dependencies": {
+        "ejs": "2.5.5",
+        "@hapi/hapi": "^20.1.2",
+        "vision": "^5.0.0"
+      },
+      "files": [
+        "capture-params.tap.js",
+        "errors.tap.js",
+        "ext.tap.js",
+        "hapi.tap.js",
+        "ignoring.tap.js",
+        "plugins.tap.js",
+        "render.tap.js",
+        "router.tap.js",
+        "segments.tap.js",
+        "vhost.tap.js"
+      ]
     }
   ],
   "dependencies": {
