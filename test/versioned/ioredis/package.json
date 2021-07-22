@@ -5,7 +5,7 @@
   "tests": [
     {
       "engines": {
-        "node": ">=10"
+        "node": ">=12"
       },
       "dependencies": {
         "ioredis": "3.x"
@@ -16,7 +16,7 @@
     },
     {
       "engines": {
-        "node": ">=10"
+        "node": ">=12"
       },
       "dependencies": {
         "ioredis": ">=4"

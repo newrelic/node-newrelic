@@ -5,7 +5,7 @@
   "tests": [
     {
       "engines": {
-        "node": ">=10"
+        "node": ">=12"
       },
       "dependencies": {
         "redis": ">=2.0.0"

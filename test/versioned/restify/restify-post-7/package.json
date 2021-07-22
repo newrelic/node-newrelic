@@ -5,29 +5,10 @@
   "tests": [
     {
       "engines": {
-        "node": ">=6"
+        "node": ">=12"
       },
       "dependencies": {
-        "restify": ">=7.0.0 <8",
-        "express": "4.16",
-        "restify-errors": "6.1"
-      },
-      "files": [
-        "capture-params.tap.js",
-        "ignoring.tap.js",
-        "restify.tap.js",
-        "rum.tap.js",
-        "router.tap.js",
-        "transaction-naming.tap.js",
-        "with-express.tap.js"
-      ]
-    },
-    {
-      "engines": {
-        "node": ">7"
-      },
-      "dependencies": {
-        "restify": ">=8.0.0 <9",
+        "restify": ">=7.0.0 <9",
         "express": "4.16",
         "restify-errors": "6.1"
       },

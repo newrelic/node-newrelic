@@ -5,7 +5,7 @@
   "tests": [
     {
       "engines": {
-        "node": ">=10"
+        "node": ">=12"
       },
       "dependencies": {
         "pg": ">=8",
@@ -17,7 +17,7 @@
     },
     {
       "engines": {
-        "node": ">=10 <14"
+        "node": ">=12 <14"
       },
       "dependencies": {
         "pg": ">=7",

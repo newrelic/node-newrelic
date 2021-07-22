@@ -16,7 +16,7 @@
     },
     {
       "engines": {
-        "node": ">=10 < 16"
+        "node": ">=12 < 16"
       },
       "dependencies": {
         "continuation-local-storage": ">=1.0.0"
