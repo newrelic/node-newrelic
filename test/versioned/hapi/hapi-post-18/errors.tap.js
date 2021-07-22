@@ -189,7 +189,7 @@ tap.test('Hapi v17 error handling', function(t) {
 
     runTest(t, (errors, statusCode) => {
       t.equals(errors.length, 0, 'has no reported errors')
-      t.equals(statusCode, 200, 'has expected 200 status')
+      t.ok([200, 204].includes(statusCode), 'has expected 200 or 204 status code')
       t.end()
     })
   })
