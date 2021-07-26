@@ -495,7 +495,7 @@ This product includes source derived from [@grpc/proto-loader](https://github.co
 
 ### @newrelic/aws-sdk
 
-This product includes source derived from [@newrelic/aws-sdk](https://github.com/newrelic/node-newrelic-aws-sdk) ([v3.1.0](https://github.com/newrelic/node-newrelic-aws-sdk/tree/v3.1.0)), distributed under the [Apache-2.0 License](https://github.com/newrelic/node-newrelic-aws-sdk/blob/v3.1.0/LICENSE):
+This product includes source derived from [@newrelic/aws-sdk](https://github.com/newrelic/node-newrelic-aws-sdk) ([v4.0.1](https://github.com/newrelic/node-newrelic-aws-sdk/tree/v4.0.1)), distributed under the [Apache-2.0 License](https://github.com/newrelic/node-newrelic-aws-sdk/blob/v4.0.1/LICENSE):
 
 ```
                                  Apache License
@@ -703,7 +703,7 @@ This product includes source derived from [@newrelic/aws-sdk](https://github.com
 
 ### @newrelic/koa
 
-This product includes source derived from [@newrelic/koa](https://github.com/newrelic/node-newrelic-koa) ([v5.0.0](https://github.com/newrelic/node-newrelic-koa/tree/v5.0.0)), distributed under the [Apache-2.0 License](https://github.com/newrelic/node-newrelic-koa/blob/v5.0.0/LICENSE):
+This product includes source derived from [@newrelic/koa](https://github.com/newrelic/node-newrelic-koa) ([v6.0.1](https://github.com/newrelic/node-newrelic-koa/tree/v6.0.1)), distributed under the [Apache-2.0 License](https://github.com/newrelic/node-newrelic-koa/blob/v6.0.1/LICENSE):
 
 ```
 Apache License
@@ -912,7 +912,7 @@ Apache License
 
 ### @newrelic/superagent
 
-This product includes source derived from [@newrelic/superagent](https://github.com/newrelic/node-newrelic-superagent) ([v4.0.0](https://github.com/newrelic/node-newrelic-superagent/tree/v4.0.0)), distributed under the [Apache-2.0 License](https://github.com/newrelic/node-newrelic-superagent/blob/v4.0.0/LICENSE):
+This product includes source derived from [@newrelic/superagent](https://github.com/newrelic/node-newrelic-superagent) ([v5.0.1](https://github.com/newrelic/node-newrelic-superagent/tree/v5.0.1)), distributed under the [Apache-2.0 License](https://github.com/newrelic/node-newrelic-superagent/blob/v5.0.1/LICENSE):
 
 ```
                                  Apache License
@@ -1208,7 +1208,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 ### https-proxy-agent
 
-This product includes source derived from [https-proxy-agent](https://github.com/TooTallNate/node-https-proxy-agent) ([v4.0.0](https://github.com/TooTallNate/node-https-proxy-agent/tree/v4.0.0)), distributed under the [MIT License](https://github.com/TooTallNate/node-https-proxy-agent/blob/v4.0.0/README.md):
+This product includes source derived from [https-proxy-agent](https://github.com/TooTallNate/node-https-proxy-agent) ([v5.0.0](https://github.com/TooTallNate/node-https-proxy-agent/tree/v5.0.0)), distributed under the [MIT License](https://github.com/TooTallNate/node-https-proxy-agent/blob/v5.0.0/README.md):
 
 ```
 MIT License
@@ -1553,7 +1553,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 ### @newrelic/test-utilities
 
-This product includes source derived from [@newrelic/test-utilities](https://github.com/newrelic/node-test-utilities) ([v5.0.0](https://github.com/newrelic/node-test-utilities/tree/v5.0.0)), distributed under the [Apache-2.0 License](https://github.com/newrelic/node-test-utilities/blob/v5.0.0/LICENSE):
+This product includes source derived from [@newrelic/test-utilities](https://github.com/newrelic/node-test-utilities) ([v6.0.0](https://github.com/newrelic/node-test-utilities/tree/v6.0.0)), distributed under the [Apache-2.0 License](https://github.com/newrelic/node-test-utilities/blob/v6.0.0/LICENSE):
 
 ```
                                  Apache License
@@ -2066,7 +2066,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 ### glob
 
-This product includes source derived from [glob](https://github.com/isaacs/node-glob) ([v7.1.6](https://github.com/isaacs/node-glob/tree/v7.1.6)), distributed under the [ISC License](https://github.com/isaacs/node-glob/blob/v7.1.6/LICENSE):
+This product includes source derived from [glob](https://github.com/isaacs/node-glob) ([v7.1.7](https://github.com/isaacs/node-glob/tree/v7.1.7)), distributed under the [ISC License](https://github.com/isaacs/node-glob/blob/v7.1.7/LICENSE):
 
 ```
 The ISC License
@@ -3003,7 +3003,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ### tap
 
-This product includes source derived from [tap](https://github.com/tapjs/node-tap) ([v14.10.8](https://github.com/tapjs/node-tap/tree/v14.10.8)), distributed under the [ISC License](https://github.com/tapjs/node-tap/blob/v14.10.8/LICENSE):
+This product includes source derived from [tap](https://github.com/tapjs/node-tap) ([v15.0.9](https://github.com/tapjs/node-tap/tree/v15.0.9)), distributed under the [ISC License](https://github.com/tapjs/node-tap/blob/v15.0.9/LICENSE):
 
 ```
 The ISC License
