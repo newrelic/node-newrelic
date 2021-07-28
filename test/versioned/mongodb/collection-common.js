@@ -90,6 +90,9 @@ function collectionTest(name, run) {
             var current = transaction.trace.root
 
             for (var i = 0, l = segments.length; i < l; ++i) {
+              current.children = current.children.filter((seg) => {
+                return seg.name !== 'timers.setTimeout'
+              })
               t.equal(current.children.length, 1, 'should have one child')
               current = current.children[0]
               t.equal(current.name, segments[i], 'child should be named ' + segments[i])

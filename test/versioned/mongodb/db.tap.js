@@ -122,16 +122,30 @@ dbTest('addUser, authenticate, removeUser', [], function addUserTest(t, db, veri
   }
 })
 
-dbTest('collection', ['testCollection'], function collectionTest(t, db, verify) {
-  db.collection('testCollection', function gotCollection(err, collection) {
-    t.error(err, 'should not have error')
-    t.ok(collection, 'collection is not null')
-    verify([
-      'Datastore/operation/MongoDB/collection',
-      'Callback: gotCollection',
-    ])
+// removed in v4 https://github.com/mongodb/node-mongodb-native/pull/2817
+if (semver.satisfies(mongoPackage.version, '<4')) {
+  dbTest('collection', ['testCollection'], function collectionTest(t, db, verify) {
+    db.collection('testCollection', function gotCollection(err, collection) {
+      t.error(err, 'should not have error')
+      t.ok(collection, 'collection is not null')
+      verify([
+        'Datastore/operation/MongoDB/collection',
+        'Callback: gotCollection',
+      ])
+    })
   })
-})
+
+  dbTest('eval', [], function evalTest(t, db, verify) {
+    db.eval('function (x) {return x;}', [3], function evaled(err, result) {
+      t.error(err, 'should not have error')
+      t.equal(3, result, 'should produce the right result')
+      verify([
+        'Datastore/operation/MongoDB/eval',
+        'Callback: evaled',
+      ])
+    })
+  })
+}
 
 dbTest('collections', [], function collectionTest(t, db, verify) {
   db.collections(function gotCollections(err2, collections) {
@@ -147,7 +161,7 @@ dbTest('collections', [], function collectionTest(t, db, verify) {
 dbTest('command', [], function commandTest(t, db, verify) {
   db.command({ping: 1}, function onCommand(err, result) {
     t.error(err, 'should not have error')
-    t.deepEqual(result, {ok: 1}, 'got correct result')
+    t.same(result, {ok: 1}, 'got correct result')
     verify([
       'Datastore/operation/MongoDB/command',
       'Callback: onCommand',
@@ -206,44 +220,52 @@ dbTest('dropDatabase', ['testCollection'], function dropDbTest(t, db, verify) {
   })
 })
 
-dbTest('ensureIndex', ['testCollection'], function ensureIndexTest(t, db, verify) {
-  db.ensureIndex('testCollection', 'foo', function ensuredIndex(err, result) {
-    t.error(err, 'should not have error')
-    t.equal(result, 'foo_1')
-    verify([
-      'Datastore/operation/MongoDB/ensureIndex',
-      'Callback: ensuredIndex',
-    ])
-  })
-})
-
-dbTest('eval', [], function evalTest(t, db, verify) {
-  db.eval('function (x) {return x;}', [3], function evaled(err, result) {
-    t.error(err, 'should not have error')
-    t.equal(3, result, 'should produce the right result')
-    verify([
-      'Datastore/operation/MongoDB/eval',
-      'Callback: evaled',
-    ])
-  })
-})
-
-dbTest('indexInformation', ['testCollection'], function indexInfoTest(t, db, verify) {
-  db.ensureIndex('testCollection', 'foo', function ensuredIndex(err) {
-    t.error(err, 'ensureIndex should not have error')
-    db.indexInformation('testCollection', function gotInfo(err2, result) {
-      t.error(err2, 'indexInformation should not have error')
-      t.deepEqual(result, { _id_: [ [ '_id', 1 ] ], foo_1: [ [ 'foo', 1 ] ] },
-        'result is the expected object')
+if (semver.satisfies(mongoPackage.version, '<4')) {
+  dbTest('ensureIndex', ['testCollection'], function ensureIndexTest(t, db, verify) {
+    db.ensureIndex('testCollection', 'foo', function ensuredIndex(err, result) {
+      t.error(err, 'should not have error')
+      t.equal(result, 'foo_1')
       verify([
         'Datastore/operation/MongoDB/ensureIndex',
         'Callback: ensuredIndex',
-        'Datastore/operation/MongoDB/indexInformation',
-        'Callback: gotInfo',
       ])
     })
   })
-})
+
+  dbTest('indexInformation', ['testCollection'], function indexInfoTest(t, db, verify) {
+    db.ensureIndex('testCollection', 'foo', function ensuredIndex(err) {
+      t.error(err, 'ensureIndex should not have error')
+      db.indexInformation('testCollection', function gotInfo(err2, result) {
+        t.error(err2, 'indexInformation should not have error')
+        t.same(result, { _id_: [ [ '_id', 1 ] ], foo_1: [ [ 'foo', 1 ] ] },
+          'result is the expected object')
+        verify([
+          'Datastore/operation/MongoDB/ensureIndex',
+          'Callback: ensuredIndex',
+          'Datastore/operation/MongoDB/indexInformation',
+          'Callback: gotInfo',
+        ])
+      })
+    })
+  })
+} else {
+  dbTest('indexInformation', ['testCollection'], function indexInfoTest(t, db, verify) {
+    db.createIndex('testCollection', 'foo', function createdIndex(err) {
+      t.error(err, 'createIndex should not have error')
+      db.indexInformation('testCollection', function gotInfo(err2, result) {
+        t.error(err2, 'indexInformation should not have error')
+        t.same(result, { _id_: [ [ '_id', 1 ] ], foo_1: [ [ 'foo', 1 ] ] },
+          'result is the expected object')
+        verify([
+          'Datastore/operation/MongoDB/createIndex',
+          'Callback: createdIndex',
+          'Datastore/operation/MongoDB/indexInformation',
+          'Callback: gotInfo',
+        ])
+      })
+    })
+  })
+}
 
 dbTest('renameCollection', ['testColl', 'testColl2'], function(t, db, verify) {
   db.createCollection('testColl', function gotCollection(err) {

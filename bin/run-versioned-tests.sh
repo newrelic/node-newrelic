@@ -5,7 +5,7 @@
 
 set -x
 
-VERSIONED_MODE="${VERSIONED_MODE:---major}"
+VERSIONED_MODE="${VERSIONED_MODE:---minor}"
 if [[ $TRAVIS_BRANCH == `git describe --tags --always HEAD` ]]; then
   VERSIONED_MODE=--minor
 fi

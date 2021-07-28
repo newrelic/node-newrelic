@@ -3,9 +3,6 @@
     "es6": true,
     "mocha": true
   },
-  "parserOptions": {
-    "ecmaVersion": 8
-  },
   "rules": {
     "max-nested-callbacks": "off",
     "func-names": "off",
