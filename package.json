@@ -98,6 +98,11 @@
       "name": "Nick Tzaperas",
       "email": "ntzaperas@newrelic.com",
       "web": "https://newrelic.com"
+    },
+    {
+      "name": "Bob Evans",
+      "email": "revans@newrelic.com",
+      "web": "https://newrelic.com"
     }
   ],
   "description": "New Relic agent",
