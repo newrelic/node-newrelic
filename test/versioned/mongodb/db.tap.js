@@ -5,25 +5,25 @@
 
 'use strict'
 
-var common = require('./common')
+const common = require('./common')
 const collectionCommon = require('./collection-common')
-var helper = require('../../lib/agent_helper')
-var mongoPackage = require('mongodb/package.json')
-var params = require('../../lib/params')
-var semver = require('semver')
-var tap = require('tap')
+const helper = require('../../lib/agent_helper')
+const mongoPackage = require('mongodb/package.json')
+const params = require('../../lib/params')
+const semver = require('semver')
+const tap = require('tap')
 
-var MONGO_HOST = null
-var MONGO_PORT = null
-var BAD_MONGO_COMMANDS = [
+let MONGO_HOST = null
+let MONGO_PORT = null
+const BAD_MONGO_COMMANDS = [
   'collection'
 ]
 
 if (semver.satisfies(mongoPackage.version, '<3')) {
   mongoTest('open', [], function openTest(t, agent) {
-    var mongodb = require('mongodb')
-    var server = new mongodb.Server(params.mongodb_host, params.mongodb_port)
-    var db = new mongodb.Db(common.DB_NAME, server)
+    const mongodb = require('mongodb')
+    const server = new mongodb.Server(params.mongodb_host, params.mongodb_port)
+    const db = new mongodb.Db(common.DB_NAME, server)
 
     // TODO: Tighten this semver check once mongo resolves this bug:
     // https://jira.mongodb.org/browse/NODE-826
@@ -33,13 +33,13 @@ if (semver.satisfies(mongoPackage.version, '<3')) {
 
     helper.runInTransaction(agent, function inTransaction(transaction) {
       db.open(function onOpen(err, _db) {
-        var segment = agent.tracer.getSegment()
+        const segment = agent.tracer.getSegment()
         t.error(err, 'db.open should not error')
         t.equal(db, _db, 'should pass through the arguments correctly')
         t.equal(agent.getTransaction(), transaction, 'should not lose tx state')
         t.equal(segment.name, 'Callback: onOpen', 'should create segments')
         t.equal(transaction.trace.root.children.length, 1, 'should only create one')
-        var parent = transaction.trace.root.children[0]
+        const parent = transaction.trace.root.children[0]
         t.equal(
           parent.name, 'Datastore/operation/MongoDB/open',
           'should name segment correctly'
@@ -63,20 +63,18 @@ if (semver.satisfies(mongoPackage.version, '<3')) {
 }
 
 dbTest('addUser, authenticate, removeUser', [], function addUserTest(t, db, verify) {
-  var user = null
-  var userName = 'user-test'
-  var userPass = 'user-test-pass'
+  const userName = 'user-test'
+  const userPass = 'user-test-pass'
 
   db.removeUser(userName, function preRemove() {
     // Don't care if this first remove fails, it's just to ensure a clean slate.
     db.addUser(userName, userPass, {roles: ['readWrite']}, added)
   })
 
-  function added(err, _user) {
+  function added(err) {
     if (!t.error(err, 'addUser should not have error')) {
       return t.end()
     }
-    user = _user
 
     if (typeof db.authenticate === 'function') {
       db.authenticate(userName, userPass, authed)
@@ -97,7 +95,6 @@ dbTest('addUser, authenticate, removeUser', [], function addUserTest(t, db, veri
     if (!t.error(err, 'removeUser should not have error')) {
       return t.end()
     }
-    t.equal(user[0].user, userName)
     verify([
       'Datastore/operation/MongoDB/removeUser',
       'Callback: preRemove',
@@ -114,7 +111,6 @@ dbTest('addUser, authenticate, removeUser', [], function addUserTest(t, db, veri
     if (!t.error(err, 'removeUser should not have error')) {
       return t.end()
     }
-    t.equal(user[0].user, userName)
     verify([
       'Datastore/operation/MongoDB/removeUser',
       'Callback: preRemove',
@@ -162,7 +158,7 @@ dbTest('command', [], function commandTest(t, db, verify) {
 dbTest('createCollection', ['testCollection'], function createTest(t, db, verify) {
   db.createCollection('testCollection', function gotCollection(err, collection) {
     t.error(err, 'should not have error')
-    t.equal(collection.s.name, 'testCollection',
+    t.equal(collection.collectionName || collection.s.name, 'testCollection',
       'new collection should have the right name')
     verify([
       'Datastore/operation/MongoDB/createCollection',
@@ -282,17 +278,22 @@ dbTest('stats', [], function statsTest(t, db, verify) {
 
 function dbTest(name, collections, run) {
   mongoTest(name, collections, function init(t, agent) {
-    var LOCALHOST = agent.config.getHostnameSafe()
-    var domainPath = common.getDomainSocketPath()
-    var mongodb = require('mongodb')
-    var db = null
-    var client = null
+    const LOCALHOST = agent.config.getHostnameSafe()
+    const domainPath = common.getDomainSocketPath()
+    const mongodb = require('mongodb')
+    let db = null
+    let client = null
 
     t.autoend()
 
     t.test('remote connection', function(t) {
       t.autoend()
       t.beforeEach(async function() {
+        // mongo >= 3.6.9 fails if you try to create an existing collection
+        // drop before executing tests
+        if (name === 'createCollection') {
+          await collectionCommon.dropTestCollections(mongodb, collections)
+        }
         MONGO_HOST = common.getHostName(agent)
         MONGO_PORT = common.getPort()
 
@@ -328,11 +329,16 @@ function dbTest(name, collections, run) {
     // to connect to, which only happens if there is a Mongo instance running on
     // the same box as these tests. This should always be the case on Travis,
     // but just to be sure they're running there check for the environment flag.
-    var shouldTestDomain = domainPath || process.env.TRAVIS
+    const shouldTestDomain = domainPath || process.env.TRAVIS
 
     t.test('domain socket', {skip: !shouldTestDomain}, function(t) {
       t.autoend()
       t.beforeEach(async function() {
+        // mongo >= 3.6.9 fails if you try to create an existing collection
+        // drop before executing tests
+        if (name === 'createCollection') {
+          await collectionCommon.dropTestCollections(mongodb, collections)
+        }
         MONGO_HOST = LOCALHOST
         MONGO_PORT = domainPath
 
@@ -372,10 +378,10 @@ function verifyMongoSegments(t, agent, transaction, names) {
   t.ok(agent.getTransaction(), 'should not lose transaction state')
   t.equal(agent.getTransaction().id, transaction.id, 'transaction is correct')
 
-  var segment = agent.tracer.getSegment()
-  var current = transaction.trace.root
+  const segment = agent.tracer.getSegment()
+  let current = transaction.trace.root
 
-  for (var i = 0, l = names.length; i < l; ++i) {
+  for (let i = 0, l = names.length; i < l; ++i) {
     t.equal(current.children.length, 1, 'should have one child segment')
     current = current.children[0]
     t.equal(current.name, names[i], 'segment should be named ' + names[i])
@@ -392,12 +398,12 @@ function verifyMongoSegments(t, agent, transaction, names) {
       // database regardless of the DB the connection is actually connected to.
       // This is apparently by design.
       // https://jira.mongodb.org/browse/NODE-827
-      var dbName = common.DB_NAME
+      let dbName = common.DB_NAME
       if (/\/renameCollection$/.test(current.name)) {
         dbName = 'admin'
       }
 
-      var attributes = current.getAttributes()
+      const attributes = current.getAttributes()
       t.equal(attributes.database_name, dbName, 'should have correct db name')
       t.equal(attributes.host, MONGO_HOST, 'should have correct host name')
       t.equal(attributes.port_path_or_id, MONGO_PORT, 'should have correct port')
@@ -411,9 +417,9 @@ function verifyMongoSegments(t, agent, transaction, names) {
 }
 
 function isBadSegment(segment) {
-  var nameParts = segment.name.split('/')
-  var command = nameParts[nameParts.length - 1]
-  var attributes = segment.getAttributes()
+  const nameParts = segment.name.split('/')
+  const command = nameParts[nameParts.length - 1]
+  const attributes = segment.getAttributes()
 
   return (
     BAD_MONGO_COMMANDS.indexOf(command) !== -1 && // Is in the list of bad commands
