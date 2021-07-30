@@ -49,11 +49,7 @@ if (semver.satisfies(mongoPackage.version, '<4')) {
     })
   })
 } else {
-  // TODO: this is failing the "should generate the correct metrics and segments"
-  // test because the segments are both children of root not nested as children
-  // this would happen for any cursor but our cursor tests use find which we do not
-  // instrument
-  /* common.test('aggregate v4', async function aggregateTest(t, collection, verify) {
+  common.test('aggregate v4', async function aggregateTest(t, collection, verify) {
     const data = await collection.aggregate([
       {$sort: {i: 1}},
       {$match: {mod10: 5}},
@@ -64,8 +60,8 @@ if (semver.satisfies(mongoPackage.version, '<4')) {
     verify(null, [
       'Datastore/statement/MongoDB/testCollection/aggregate',
       'Datastore/statement/MongoDB/testCollection/toArray',
-    ], ['aggregate', 'toArray'])
-  }) */
+    ], ['aggregate', 'toArray'], 2)
+  })
 }
 
 common.test('bulkWrite', function bulkWriteTest(t, collection, verify) {

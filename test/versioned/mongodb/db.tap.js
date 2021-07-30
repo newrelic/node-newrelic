@@ -1,4 +1,4 @@
-/*
+/**
  * Copyright 2020 New Relic Corporation. All rights reserved.
  * SPDX-License-Identifier: Apache-2.0
  */
@@ -25,8 +25,6 @@ if (semver.satisfies(mongoPackage.version, '<3')) {
     const server = new mongodb.Server(params.mongodb_host, params.mongodb_port)
     const db = new mongodb.Db(common.DB_NAME, server)
 
-    // TODO: Tighten this semver check once mongo resolves this bug:
-    // https://jira.mongodb.org/browse/NODE-826
     if (semver.satisfies(mongoPackage.version, '2.2.x')) {
       BAD_MONGO_COMMANDS.push('authenticate', 'logout')
     }

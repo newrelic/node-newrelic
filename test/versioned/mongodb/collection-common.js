@@ -75,7 +75,7 @@ function collectionTest(name, run) {
       t.test('should generate the correct metrics and segments', function(t) {
         helper.runInTransaction(agent, function(transaction) {
           transaction.name = common.TRANSACTION_NAME
-          run(t, collection, function(err, segments, metrics) {
+          run(t, collection, function(err, segments, metrics, childrenLength = 1) {
             if (
               !t.error(err, 'running test should not error') ||
               !t.ok(agent.getTransaction(), 'should maintain tx state')
@@ -89,19 +89,54 @@ function collectionTest(name, run) {
             var segment = agent.tracer.getSegment()
             var current = transaction.trace.root
 
-            for (var i = 0, l = segments.length; i < l; ++i) {
-              current.children = current.children.filter((seg) => {
+            /**
+             * In v4+ commands are executed in a queue
+             * with a timer. exclude these segments during
+             * assertion
+             * See: https://github.com/mongodb/node-mongodb-native/blob/4.0/src/sdam/topology.ts#L581
+             */
+            function filterTimerSegments(children) {
+              return children.filter((seg) => {
                 return seg.name !== 'timers.setTimeout'
               })
-              t.equal(current.children.length, 1, 'should have one child')
-              current = current.children[0]
-              t.equal(current.name, segments[i], 'child should be named ' + segments[i])
-              if (common.MONGO_SEGMENT_RE.test(current.name)) {
-                checkSegmentParams(t, current)
-              }
             }
 
-            t.equal(current.children.length, 0, 'should have no more children')
+            // this logic is just for the collection.aggrate v4+
+            // aggregate no longer returns a callback with cursor
+            // it just returns a cursor. so the segments on the
+            // transaction are not nested but both on the trace
+            // root. instead of traversing the children, just
+            // iterate over the expected segments and compare
+            // against the corresponding child on trace root
+            if (childrenLength === 2) {
+              current.children = filterTimerSegments(current.children)
+              t.equal(current.children.length, childrenLength, 'should have one child')
+
+              segments.forEach((expectedSegment, i) => {
+                const child = current.children[i]
+
+                t.equal(child.name, expectedSegment, `child should be named ${expectedSegment}`)
+                if (common.MONGO_SEGMENT_RE.test(child.name)) {
+                  checkSegmentParams(t, child)
+                }
+
+                child.children = filterTimerSegments(child.children)
+                t.equal(child.children.length, 0, 'should have no more children')
+              })
+            } else {
+              for (var i = 0, l = segments.length; i < l; ++i) {
+                current.children = filterTimerSegments(current.children)
+                t.equal(current.children.length, childrenLength, 'should have one child')
+                current = current.children[0]
+                t.equal(current.name, segments[i], 'child should be named ' + segments[i])
+                if (common.MONGO_SEGMENT_RE.test(current.name)) {
+                  checkSegmentParams(t, current)
+                }
+              }
+
+              t.equal(current.children.length, 0, 'should have no more children')
+            }
+
             t.ok(current === segment, 'should test to the current segment')
 
             transaction.end()
