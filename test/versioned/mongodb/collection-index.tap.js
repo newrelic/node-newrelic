@@ -49,6 +49,8 @@ common.test('indexes', function indexesTest(t, collection, verify) {
   collection.indexes(function done(err, data) {
     t.error(err)
     var result = data && data[0]
+    // this will fail if running mongodb > 4.3.1
+    // https://jira.mongodb.org/browse/SERVER-41696
     t.same(result, {
       v: result && result.v,
       key: {_id: 1},

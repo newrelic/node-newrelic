@@ -89,18 +89,6 @@ function collectionTest(name, run) {
             var segment = agent.tracer.getSegment()
             var current = transaction.trace.root
 
-            /**
-             * In v4+ commands are executed in a queue
-             * with a timer. exclude these segments during
-             * assertion
-             * See: https://github.com/mongodb/node-mongodb-native/blob/4.0/src/sdam/topology.ts#L581
-             */
-            function filterTimerSegments(children) {
-              return children.filter((seg) => {
-                return seg.name !== 'timers.setTimeout'
-              })
-            }
-
             // this logic is just for the collection.aggrate v4+
             // aggregate no longer returns a callback with cursor
             // it just returns a cursor. so the segments on the
@@ -109,7 +97,6 @@ function collectionTest(name, run) {
             // iterate over the expected segments and compare
             // against the corresponding child on trace root
             if (childrenLength === 2) {
-              current.children = filterTimerSegments(current.children)
               t.equal(current.children.length, childrenLength, 'should have one child')
 
               segments.forEach((expectedSegment, i) => {
@@ -120,12 +107,10 @@ function collectionTest(name, run) {
                   checkSegmentParams(t, child)
                 }
 
-                child.children = filterTimerSegments(child.children)
                 t.equal(child.children.length, 0, 'should have no more children')
               })
             } else {
               for (var i = 0, l = segments.length; i < l; ++i) {
-                current.children = filterTimerSegments(current.children)
                 t.equal(current.children.length, childrenLength, 'should have one child')
                 current = current.children[0]
                 t.equal(current.name, segments[i], 'child should be named ' + segments[i])

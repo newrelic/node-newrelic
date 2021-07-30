@@ -186,7 +186,7 @@ common.test('mapReduce', function mapReduceTest(t, collection, verify) {
 
   function done(err, data) {
     t.error(err)
-    t.same(data, [
+    const expectedData = [
       {_id: 0, value: 30},
       {_id: 1, value: 33},
       {_id: 2, value: 36},
@@ -197,7 +197,12 @@ common.test('mapReduce', function mapReduceTest(t, collection, verify) {
       {_id: 7, value: 51},
       {_id: 8, value: 54},
       {_id: 9, value: 57}
-    ])
+    ]
+
+    // data is not sorted depending on speed of
+    // db calls, sort to compare vs expected collection
+    data.sort((a, b) => a._id - b._id)
+    t.same(data, expectedData)
 
     verify(
       null,
