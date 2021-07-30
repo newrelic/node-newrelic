@@ -291,10 +291,11 @@ tap.test('#onConnect should reconfigure all the aggregators', (t) => {
     }
   }
   mock.expects('reconfigure').exactly(EXPECTED_AGG_COUNT)
-  agent.onConnect()
-  mock.verify()
+  agent.onConnect(false, () => {
+    mock.verify()
 
-  t.end()
+    t.end()
+  })
 })
 
 tap.test('when starting', (t) => {
@@ -705,7 +706,8 @@ tap.test('when connected', (t) => {
   t.test('should update the metric apdexT value after connect', (t) => {
     t.equal(agent.metrics._apdexT, 0.1)
 
-    process.nextTick(function cb_nextTick() {
+    agent.config.apdex_t = 0.666
+    agent.onConnect(false, () => {
       t.ok(agent.metrics._apdexT)
 
       t.equal(agent.metrics._apdexT, 0.666)
@@ -713,9 +715,6 @@ tap.test('when connected', (t) => {
 
       t.end()
     })
-
-    agent.config.apdex_t = 0.666
-    agent.onConnect()
   })
 
   t.test('should reset the config and metrics normalizer on connection', (t) => {
@@ -930,56 +929,56 @@ tap.test('when event_harvest_config updated on connect with a valid config', (t)
   })
 
   t.test('should generate ReportPeriod supportability', (t) => {
-    agent.onConnect()
+    agent.onConnect(false, () => {
+      const expectedMetricName = 'Supportability/EventHarvest/ReportPeriod'
 
-    const expectedMetricName = 'Supportability/EventHarvest/ReportPeriod'
+      const metric = agent.metrics.getMetric(expectedMetricName)
 
-    const metric = agent.metrics.getMetric(expectedMetricName)
+      t.ok(metric)
+      t.equal(metric.total, validHarvestConfig.report_period_ms)
 
-    t.ok(metric)
-    t.equal(metric.total, validHarvestConfig.report_period_ms)
-
-    t.end()
+      t.end()
+    })
   })
 
   t.test('should generate AnalyticEventData/HarvestLimit supportability', (t) => {
-    agent.onConnect()
+    agent.onConnect(false, () => {
+      const expectedMetricName =
+        'Supportability/EventHarvest/AnalyticEventData/HarvestLimit'
 
-    const expectedMetricName =
-      'Supportability/EventHarvest/AnalyticEventData/HarvestLimit'
+      const metric = agent.metrics.getMetric(expectedMetricName)
 
-    const metric = agent.metrics.getMetric(expectedMetricName)
+      t.ok(metric)
+      t.equal(metric.total, validHarvestConfig.harvest_limits.analytic_event_data)
 
-    t.ok(metric)
-    t.equal(metric.total, validHarvestConfig.harvest_limits.analytic_event_data)
-
-    t.end()
+      t.end()
+    })
   })
 
   t.test('should generate CustomEventData/HarvestLimit supportability', (t) => {
-    agent.onConnect()
+    agent.onConnect(false, () => {
+      const expectedMetricName =
+        'Supportability/EventHarvest/CustomEventData/HarvestLimit'
 
-    const expectedMetricName =
-      'Supportability/EventHarvest/CustomEventData/HarvestLimit'
+      const metric = agent.metrics.getMetric(expectedMetricName)
 
-    const metric = agent.metrics.getMetric(expectedMetricName)
+      t.ok(metric)
+      t.equal(metric.total, validHarvestConfig.harvest_limits.custom_event_data)
 
-    t.ok(metric)
-    t.equal(metric.total, validHarvestConfig.harvest_limits.custom_event_data)
-
-    t.end()
+      t.end()
+    })
   })
 
   t.test('should generate ErrorEventData/HarvestLimit supportability', (t) => {
-    agent.onConnect()
+    agent.onConnect(false, () => {
+      const expectedMetricName =
+        'Supportability/EventHarvest/ErrorEventData/HarvestLimit'
 
-    const expectedMetricName =
-      'Supportability/EventHarvest/ErrorEventData/HarvestLimit'
+      const metric = agent.metrics.getMetric(expectedMetricName)
 
-    const metric = agent.metrics.getMetric(expectedMetricName)
-
-    t.ok(metric)
-    t.equal(metric.total, validHarvestConfig.harvest_limits.error_event_data)
-    t.end()
+      t.ok(metric)
+      t.equal(metric.total, validHarvestConfig.harvest_limits.error_event_data)
+      t.end()
+    })
   })
 })
