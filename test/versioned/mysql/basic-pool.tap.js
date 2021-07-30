@@ -392,10 +392,9 @@ tap.test('mysql built-in connection pools', {timeout : 30 * 1000}, function(t) {
 
   // The domain socket tests should only be run if there is a domain socket
   // to connect to, which only happens if there is a MySQL instance running on
-  // the same box as these tests. This should always be the case on Travis,
-  // but just to be sure they're running there check for the environment flag.
+  // the same box as these tests.
   getDomainSocketPath(function(socketPath) {
-    var shouldTestDomain = socketPath || process.env.TRAVIS
+    var shouldTestDomain = socketPath
     t.test(
       'ensure host and port are set on segment when using a domain socket',
       {skip: !shouldTestDomain},

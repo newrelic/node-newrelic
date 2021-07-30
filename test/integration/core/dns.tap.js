@@ -120,7 +120,7 @@ test('reverse', function(t) {
     dns.reverse('127.0.0.1', function(err, names) {
       t.notOk(err, 'should not error')
       var expected = []
-      if (process.env.TRAVIS && names.length > 0) {
+      if (names.length > 0) {
         if (process.env.DOCKERIZED) {
           if (names.length === 2) {
             expected = ['127.0.0.1', 'localhost']
