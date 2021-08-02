@@ -1,3 +1,10 @@
+/*
+ * Copyright 2020 New Relic Corporation. All rights reserved.
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+'use strict'
+
 module.exports = {
   "env": {
     "es6": true,
@@ -7,9 +14,11 @@ module.exports = {
   "parserOptions": {
     "ecmaVersion": "2019"
   },
+  "plugins": [
+    "header"
+  ],
   "ignorePatterns": ["invalid-json/"],
   "rules": {
-    "indent": ["warn", 2, {"SwitchCase": 1}],
     "brace-style": "error",
     "comma-dangle": "off",
     "comma-style": ["error", "last"],
@@ -21,7 +30,15 @@ module.exports = {
     "dot-notation": "error",
     "func-names": "error",
     "guard-for-in": "error",
+    "header/header": ["error", "block", [
+      "",
+      {"pattern": " * Copyright \\d{4} New Relic Corporation. All rights reserved."},
+      " * SPDX-License-Identifier: Apache-2.0",
+      " "
+    ], 2],
+    "indent": ["warn", 2, {"SwitchCase": 1}],
     "key-spacing": ["off", { "beforeColon": false }],
+    "keyword-spacing": "error",
     "max-len": ["error", 100, { "ignoreUrls": true }],
     "max-nested-callbacks": ["error", 3],
     "max-params": ["error", 5],
@@ -46,7 +63,6 @@ module.exports = {
     "radix": "error",
     "semi": ["error", "never"],
     "space-before-function-paren": ["error", "never"],
-    "keyword-spacing": "error",
     "space-before-blocks": "error",
     "space-infix-ops": "error",
     "spaced-comment": "error",
@@ -59,10 +75,14 @@ module.exports = {
   },
   "overrides": [
     {
-        "files": ["test/integration/*.tap.js", "test/integration/*/*.tap.js", "test/integration/core/exec-me.js"],
-        "rules": {
-            "no-console": ["off"]
-        }
+      "files": [
+        "test/integration/*.tap.js",
+        "test/integration/*/*.tap.js",
+        "test/integration/core/exec-me.js"
+      ],
+      "rules": {
+        "no-console": ["off"]
+      }
     }
   ]
 }
