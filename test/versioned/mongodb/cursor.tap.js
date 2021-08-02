@@ -85,51 +85,53 @@ common.test('toArray', function toArrayTest(t, collection, verify) {
   })
 })
 
-tap.test('piping cursor stream hides internal calls', function(t) {
-  var agent = helper.instrumentMockedAgent()
-  var client = null
-  var db = null
-  var collection = null
+if (semver.satisfies(mongoPackage.version, '<4')) {
+  tap.test('piping cursor stream hides internal calls', function(t) {
+    var agent = helper.instrumentMockedAgent()
+    var client = null
+    var db = null
+    var collection = null
 
-  t.teardown(function() {
-    return common.close(client, db)
+    t.teardown(function() {
+      return common.close(client, db)
+        .then(() => {
+          helper.unloadAgent(agent)
+          agent = null
+        })
+    })
+
+    var mongodb = require('mongodb')
+    common.dropTestCollections(mongodb, ['testCollection'])
       .then(() => {
-        helper.unloadAgent(agent)
-        agent = null
+        return common.connect(mongodb)
       })
+      .then((res) => {
+        client = res.client
+        db = res.db
+
+        collection = db.collection('testCollection')
+        return common.populate(db, collection)
+      })
+      .then(runTest)
+
+    function runTest() {
+      helper.runInTransaction(agent, function(transaction) {
+        transaction.name = common.TRANSACTION_NAME
+        var destination = concat(function() {})
+
+        destination.on('finish', function() {
+          transaction.end()
+          t.equal(transaction.trace.root.children[0].name,
+            'Datastore/operation/MongoDB/pipe', 'should have pipe segment')
+          t.equal(0, transaction.trace.root.children[0].children.length,
+            'pipe should not have any children')
+          t.end()
+        })
+
+        collection
+          .find({})
+          .pipe(destination)
+      })
+    }
   })
-
-  var mongodb = require('mongodb')
-  common.dropTestCollections(mongodb, ['testCollection'])
-    .then(() => {
-      return common.connect(mongodb)
-    })
-    .then((res) => {
-      client = res.client
-      db = res.db
-
-      collection = db.collection('testCollection')
-      return common.populate(db, collection)
-    })
-    .then(runTest)
-
-  function runTest() {
-    helper.runInTransaction(agent, function(transaction) {
-      transaction.name = common.TRANSACTION_NAME
-      var destination = concat(function() {})
-
-      destination.on('finish', function() {
-        transaction.end()
-        t.equal(transaction.trace.root.children[0].name,
-          'Datastore/operation/MongoDB/pipe', 'should have pipe segment')
-        t.equal(0, transaction.trace.root.children[0].children.length,
-          'pipe should not have any children')
-        t.end()
-      })
-
-      collection
-        .find({})
-        .pipe(destination)
-    })
-  }
-})
+}

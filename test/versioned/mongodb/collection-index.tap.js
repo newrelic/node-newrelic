@@ -5,7 +5,9 @@
 
 'use strict'
 
-var common = require('./collection-common')
+const common = require('./collection-common')
+const semver = require('semver')
+const mongoPackage = require('mongodb/package.json')
 
 
 common.test('createIndex', function createIndexTest(t, collection, verify) {
@@ -19,21 +21,6 @@ common.test('createIndex', function createIndexTest(t, collection, verify) {
         'Callback: onIndex'
       ],
       ['createIndex']
-    )
-  })
-})
-
-common.test('dropAllIndexes', function dropAllIndexesTest(t, collection, verify) {
-  collection.dropAllIndexes(function done(err, data) {
-    t.error(err)
-    t.equal(data, true)
-    verify(
-      null,
-      [
-        'Datastore/statement/MongoDB/testCollection/dropAllIndexes',
-        'Callback: done'
-      ],
-      ['dropAllIndexes']
     )
   })
 })
@@ -58,26 +45,13 @@ common.test('dropIndex', function dropIndexTest(t, collection, verify) {
   })
 })
 
-common.test('ensureIndex', function ensureIndexTest(t, collection, verify) {
-  collection.ensureIndex('i', function done(err, data) {
-    t.error(err)
-    t.equal(data, 'i_1')
-    verify(
-      null,
-      [
-        'Datastore/statement/MongoDB/testCollection/ensureIndex',
-        'Callback: done'
-      ],
-      ['ensureIndex']
-    )
-  })
-})
-
 common.test('indexes', function indexesTest(t, collection, verify) {
   collection.indexes(function done(err, data) {
     t.error(err)
     var result = data && data[0]
-    t.deepEqual(result, {
+    // this will fail if running mongodb > 4.3.1
+    // https://jira.mongodb.org/browse/SERVER-41696
+    t.same(result, {
       v: result && result.v,
       key: {_id: 1},
       name: '_id_',
@@ -114,7 +88,7 @@ common.test('indexExists', function indexExistsTest(t, collection, verify) {
 common.test('indexInformation', function indexInformationTest(t, collection, verify) {
   collection.indexInformation(function done(err, data) {
     t.error(err)
-    t.deepEqual(data && data._id_, [['_id', 1]], 'should have expected results')
+    t.same(data && data._id_, [['_id', 1]], 'should have expected results')
 
     verify(
       null,
@@ -127,18 +101,50 @@ common.test('indexInformation', function indexInformationTest(t, collection, ver
   })
 })
 
-common.test('reIndex', function reIndexTest(t, collection, verify) {
-  collection.reIndex(function done(err, data) {
-    t.error(err)
-    t.equal(data, true)
-
-    verify(
-      null,
-      [
-        'Datastore/statement/MongoDB/testCollection/reIndex',
-        'Callback: done'
-      ],
-      ['reIndex']
-    )
+if (semver.satisfies(mongoPackage.version, '<4')) {
+  common.test('dropAllIndexes', function dropAllIndexesTest(t, collection, verify) {
+    collection.dropAllIndexes(function done(err, data) {
+      t.error(err)
+      t.equal(data, true)
+      verify(
+        null,
+        [
+          'Datastore/statement/MongoDB/testCollection/dropAllIndexes',
+          'Callback: done'
+        ],
+        ['dropAllIndexes']
+      )
+    })
   })
-})
+
+  common.test('ensureIndex', function ensureIndexTest(t, collection, verify) {
+    collection.ensureIndex('i', function done(err, data) {
+      t.error(err)
+      t.equal(data, 'i_1')
+      verify(
+        null,
+        [
+          'Datastore/statement/MongoDB/testCollection/ensureIndex',
+          'Callback: done'
+        ],
+        ['ensureIndex']
+      )
+    })
+  })
+
+  common.test('reIndex', function reIndexTest(t, collection, verify) {
+    collection.reIndex(function done(err, data) {
+      t.error(err)
+      t.equal(data, true)
+
+      verify(
+        null,
+        [
+          'Datastore/statement/MongoDB/testCollection/reIndex',
+          'Callback: done'
+        ],
+        ['reIndex']
+      )
+    })
+  })
+}

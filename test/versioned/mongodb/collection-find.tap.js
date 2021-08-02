@@ -4,44 +4,52 @@
  */
 
 'use strict'
+const common = require('./collection-common')
+const semver = require('semver')
+const mongoPackage = require('mongodb/package.json')
 
-var common = require('./collection-common')
+let findOpt = { returnOriginal: false }
+// 4.0.0 changed this opt https://github.com/mongodb/node-mongodb-native/pull/2803/files
+if (semver.satisfies(mongoPackage.version, '>=4')) {
+  findOpt = { returnDocument: 'after' }
+}
 
+if (semver.satisfies(mongoPackage.version, '<4')) {
+  common.test('findAndModify', function findAndModifyTest(t, collection, verify) {
+    collection.findAndModify({i: 1}, [['i', 1]], {$set: {a: 15}}, {new: true}, done)
 
-common.test('findAndModify', function findAndModifyTest(t, collection, verify) {
-  collection.findAndModify({i: 1}, [['i', 1]], {$set: {a: 15}}, {new: true}, done)
-
-  function done(err, data) {
-    t.error(err)
-    t.equal(data.value.a, 15)
-    t.equal(data.value.i, 1)
-    t.equal(data.ok, 1)
-    verify(
-      null,
-      [
-        'Datastore/statement/MongoDB/testCollection/findAndModify',
-        'Callback: done'
-      ],
-      ['findAndModify']
-    )
-  }
-})
-
-common.test('findAndRemove', function findAndRemoveTest(t, collection, verify) {
-  collection.findAndRemove({i: 1}, [['i', 1]], function done(err, data) {
-    t.error(err)
-    t.equal(data.value.i, 1)
-    t.equal(data.ok, 1)
-    verify(
-      null,
-      [
-        'Datastore/statement/MongoDB/testCollection/findAndRemove',
-        'Callback: done'
-      ],
-      ['findAndRemove']
-    )
+    function done(err, data) {
+      t.error(err)
+      t.equal(data.value.a, 15)
+      t.equal(data.value.i, 1)
+      t.equal(data.ok, 1)
+      verify(
+        null,
+        [
+          'Datastore/statement/MongoDB/testCollection/findAndModify',
+          'Callback: done'
+        ],
+        ['findAndModify']
+      )
+    }
   })
-})
+
+  common.test('findAndRemove', function findAndRemoveTest(t, collection, verify) {
+    collection.findAndRemove({i: 1}, [['i', 1]], function done(err, data) {
+      t.error(err)
+      t.equal(data.value.i, 1)
+      t.equal(data.ok, 1)
+      verify(
+        null,
+        [
+          'Datastore/statement/MongoDB/testCollection/findAndRemove',
+          'Callback: done'
+        ],
+        ['findAndRemove']
+      )
+    })
+  })
+}
 
 common.test('findOne', function findOneTest(t, collection, verify) {
   collection.findOne({i: 15}, function done(err, data) {
@@ -75,7 +83,7 @@ common.test('findOneAndDelete', function findOneAndDeleteTest(t, collection, ver
 })
 
 common.test('findOneAndReplace', function findAndReplaceTest(t, collection, verify) {
-  collection.findOneAndReplace({i: 15}, {b: 15}, {returnOriginal: false}, done)
+  collection.findOneAndReplace({i: 15}, {b: 15}, findOpt, done)
 
   function done(err, data) {
     t.error(err)
@@ -93,7 +101,7 @@ common.test('findOneAndReplace', function findAndReplaceTest(t, collection, veri
 })
 
 common.test('findOneAndUpdate', function findOneAndUpdateTest(t, collection, verify) {
-  collection.findOneAndUpdate({i: 15}, {$set: {a: 15}}, {returnOriginal: false}, done)
+  collection.findOneAndUpdate({i: 15}, {$set: {a: 15}}, findOpt, done)
 
   function done(err, data) {
     t.error(err)
