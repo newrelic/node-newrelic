@@ -5,7 +5,7 @@ module.exports = {
     "browser": false
   },
   "parserOptions": {
-    "ecmaVersion": 11
+    "ecmaVersion": "2019"
   },
   "ignorePatterns": ["invalid-json/"],
   "rules": {
