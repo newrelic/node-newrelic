@@ -51,6 +51,17 @@ tap.test('#shutdown', (t) => {
     nock.enableNetConnect()
   })
 
+  /**
+   * Tests fix for a bug where the agent stayed in a 'connected' state and
+   * never hit a 'started' state after a restart. This prevented ever triggering
+   * a final harvest, the shutdown callback would never be invoked and the process
+   * would not be held open.
+   *
+   * When broken, the callback is not invoked. The test ends prematurely and the metric_data
+   * and shutdown endpoints are left pending in nock.
+   *   x test unfinished
+   *   x Failed to hit all expected endpoints.
+   */
   t.test('should force harvest and callback after agent restart', (t) => {
     setupConnectionEndpoints('run-id-1')
     agent.start((error) => {
@@ -58,9 +69,12 @@ tap.test('#shutdown', (t) => {
 
       setupConnectionEndpoints('run-id-2')
       agent.collector.restart(() => {
-        setupShutdownEndpoints('run-id-2')
+        const endpoints = setupShutdownEndpoints('run-id-2')
         api.shutdown({ collectPendingData: true }, (error) => {
           t.error(error)
+
+          t.ok(endpoints.metric_data.isDone())
+          t.ok(endpoints.shutdown.isDone())
           t.end()
         })
       })
@@ -71,9 +85,10 @@ tap.test('#shutdown', (t) => {
 
 function setupShutdownEndpoints(runId) {
   // Final harvest
-  nockRequest('metric_data', runId).reply(200)
-
-  nockRequest('shutdown', runId).reply(200)
+  return {
+    metric_data: nockRequest('metric_data', runId).reply(200),
+    shutdown: nockRequest('shutdown', runId).reply(200)
+  }
 }
 
 function setupConnectionEndpoints(runId) {
