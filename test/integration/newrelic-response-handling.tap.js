@@ -61,6 +61,7 @@ function createStatusCodeTest(testCase) {
 
     let disconnected = false
     let connecting = false
+    let started = false
 
     let agent = null
 
@@ -74,6 +75,7 @@ function createStatusCodeTest(testCase) {
       startEndpoints = setupConnectionEndpoints()
       disconnected = false
       connecting = false
+      started = false
 
       agent = helper.loadMockedAgent({
         license_key: 'license key here',
@@ -144,6 +146,10 @@ function createStatusCodeTest(testCase) {
             connecting = true
           })
 
+          agent.on('started', () => {
+            started = true
+          })
+
           if (testCase.restart) {
             restartEndpoints = setupConnectionEndpoints()
           }
@@ -190,6 +196,7 @@ function createStatusCodeTest(testCase) {
           } else if (testCase.restart) {
             subTest.ok(disconnected, 'should have disconnected')
             subTest.ok(connecting, 'should have started reconnecting')
+            subTest.ok(started, 'should have set agent to started')
 
             subTest.ok(restartEndpoints.preconnect.isDone(), 'requested preconnect')
             subTest.ok(restartEndpoints.connect.isDone(), 'requested connect')
