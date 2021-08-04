@@ -2,7 +2,7 @@
 
 ---
 
-<!-- licence -->
+<!-- license -->
 ### Symantec
 
 This product includes certificates from Symantec which are used under the
@@ -199,4 +199,4 @@ or joint venturers of the other party, nor do they have any authority to bind th
 otherwise to any obligation.
 Root Certificate License Agreement v3.0 (January 2014)
 ```
-<!-- licencestop -->
+<!-- licensestop -->
