@@ -104,14 +104,14 @@ module.exports = function runTests(name, clientFactory) {
     expectedNames.forEach(function(expectedName) {
       t.ok(unscoped[expectedName], 'should have unscoped metric ' + expectedName)
       if (unscoped[expectedName]) {
-        t.equals(
+        t.equal(
           unscoped[expectedName].callCount, expected[expectedName],
           'metric ' + expectedName + ' should have correct callCount'
         )
       }
     })
 
-    t.equals(
+    t.equal(
       unscopedNames.length, expectedNames.length,
       'should have correct number of unscoped metrics'
     )
@@ -140,7 +140,7 @@ module.exports = function runTests(name, clientFactory) {
 
     if (!getSegment) return
 
-    t.equals(
+    t.equal(
       getSegment.name,
       'Datastore/statement/Postgres/' + selectTable + '/select',
       'should register the query call'
@@ -161,22 +161,22 @@ module.exports = function runTests(name, clientFactory) {
     const attributes = setSegment.getAttributes()
 
     const metricHostName = getMetricHostName(agent, params.postgres_host)
-    t.equals(
+    t.equal(
       attributes.host,
       metricHostName,
       'should add the host parameter'
     )
-    t.equals(
+    t.equal(
       attributes.port_path_or_id,
       String(params.postgres_port),
       'should add the port parameter'
     )
-    t.equals(
+    t.equal(
       attributes.database_name,
       params.postgres_db,
       'should add the database name parameter'
     )
-    t.equals(
+    t.equal(
       attributes.product,
       'Postgres',
       'should add the product attribute'
@@ -186,7 +186,7 @@ module.exports = function runTests(name, clientFactory) {
   function verifySlowQueries(t, agent) {
     const metricHostName = getMetricHostName(agent, params.postgres_host)
 
-    t.equals(agent.queries.samples.size, 1, 'should have one slow query')
+    t.equal(agent.queries.samples.size, 1, 'should have one slow query')
     for (let sample of agent.queries.samples.values()) {
       const queryParams = sample.getParams()
 
@@ -276,7 +276,7 @@ module.exports = function runTests(name, clientFactory) {
               }
 
               t.ok(agent.getTransaction(), 'transaction should still still be visible')
-              t.equals(value.rows[0][COL], colVal, 'Postgres client should still work')
+              t.equal(value.rows[0][COL], colVal, 'Postgres client should still work')
 
               transaction.end()
               verify(t, agent.tracer.getSegment())
@@ -333,7 +333,7 @@ module.exports = function runTests(name, clientFactory) {
       })
     })
 
-    t.test('Submittable style Query', function(t) {
+    t.test('Submittable style Query timings', function(t) {
       // see bottom of this page https://node-postgres.com/guides/upgrading
       const client = new pg.Client(CON_OBJ)
 
@@ -347,40 +347,36 @@ module.exports = function runTests(name, clientFactory) {
         t.ok(transaction, 'transaction should be visible')
         t.equal(tx, transaction, 'We got the same transaction')
 
-        const colVal = 'Hello'
-        const pkVal = 111
-        let insQuery = 'INSERT INTO ' + TABLE_PREPARED + ' (' + PK + ',' +  COL
-        insQuery += ') VALUES($1, $2);'
+        const selQuery = 'SELECT pg_sleep(2), now() as sleep;'
 
         client.connect(function(error) {
           if (!t.error(error)) {
             return t.end()
           }
 
-          client.query(new pg.Query(insQuery, [pkVal, colVal], function(error, ok) {
-            if (!t.error(error)) {
-              return t.end()
-            }
+          const pgQuery = client.query(new pg.Query(selQuery))
 
+          pgQuery.on('error', () =>  {
+            t.error(error)
+            t.end()
+          })
+
+          pgQuery.on('end', () => {
             t.ok(agent.getTransaction(), 'transaction should still be visible')
-            t.ok(ok, 'everything should be peachy after setting')
 
-            let selQuery = 'SELECT * FROM ' + TABLE_PREPARED + ' WHERE '
-            selQuery += PK + '=' + pkVal + ';'
+            transaction.end()
 
-            client.query(new pg.Query(selQuery), function(error, value) {
-              if (!t.error(error)) {
-                return t.end()
-              }
+            const segment = agent.tracer.getSegment()
 
-              t.ok(agent.getTransaction(), 'transaction should still still be visible')
-              t.equals(value.rows[0][COL], colVal, 'Postgres client should still work')
+            const finalTx = segment.transaction
 
-              transaction.end()
-              verify(t, agent.tracer.getSegment())
-              t.end()
-            })
-          }))
+            const metrics = finalTx.metrics.getMetric('Datastore/operation/Postgres/select')
+
+            t.ok(metrics.total > 2.0,
+              'Submittable style Query pg_sleep of 2 seconds should result in near 2 sec timing')
+
+            t.end()
+          })
         })
       })
     })
@@ -404,7 +400,7 @@ module.exports = function runTests(name, clientFactory) {
         }
 
         try {
-          const selQuery = 'SELECT pg_sleep(2), now() as peep;'
+          const selQuery = 'SELECT pg_sleep(2), now() as sleep;'
 
           const selectResults = await client.query(selQuery)
 
@@ -418,13 +414,56 @@ module.exports = function runTests(name, clientFactory) {
           const metrics = finalTx.metrics.getMetric('Datastore/operation/Postgres/select')
 
           t.ok(metrics.total > 2.0,
-            'pg_sleep of 2 seconds should result in near 2 sec timing')
+            'Promise style query pg_sleep of 2 seconds should result in near 2 sec timing')
 
           t.end()
         } catch (err) {
           t.error(err)
           t.end()
         }
+      })
+    })
+
+    t.test('Callback style query timings', function(t) {
+      const client = new pg.Client(CON_OBJ)
+
+      t.teardown(function() {
+        client.end()
+      })
+
+      helper.runInTransaction(agent, async function transactionInScope(tx) {
+        const transaction = agent.getTransaction()
+        t.ok(transaction, 'transaction should be visible')
+        t.equal(tx, transaction, 'We got the same transaction')
+
+        client.connect(function(error) {
+          if (!t.error(error)) {
+            return t.end()
+          }
+
+          const selQuery = 'SELECT pg_sleep(2), now() as sleep;'
+
+          client.query(selQuery, function(error, ok) {
+            if (!t.error(error)) {
+              return t.end()
+            }
+
+            t.ok(agent.getTransaction(), 'transaction should still be visible')
+            t.ok(ok, 'everything should be peachy after setting')
+
+            transaction.end()
+            const segment = agent.tracer.getSegment()
+
+            const finalTx = segment.transaction
+
+            const metrics = finalTx.metrics.getMetric('Datastore/operation/Postgres/select')
+
+            t.ok(metrics.total > 2.0,
+              'Callback style query pg_sleep of 2 seconds should result in near 2 sec timing')
+
+            t.end()
+          })
+        })
       })
     })
 
@@ -458,7 +497,7 @@ module.exports = function runTests(name, clientFactory) {
             }
 
             t.ok(agent.getTransaction(), 'transaction should still still be visible')
-            t.equals(value.rows[0][COL], colVal, 'Postgres client should still work')
+            t.equal(value.rows[0][COL], colVal, 'Postgres client should still work')
 
             transaction.end()
             pool.end()
@@ -511,7 +550,7 @@ module.exports = function runTests(name, clientFactory) {
               }
 
               t.ok(agent.getTransaction(), 'transaction should still still be visible')
-              t.equals(value.rows[0][COL], colVal, 'Postgres client should still work')
+              t.equal(value.rows[0][COL], colVal, 'Postgres client should still work')
 
               transaction.end()
               if (pool.end instanceof Function) {
