@@ -373,7 +373,7 @@ module.exports = function runTests(name, clientFactory) {
             const metrics = finalTx.metrics.getMetric('Datastore/operation/Postgres/select')
 
             t.ok(metrics.total > 2.0,
-              'Submittable style Query pg_sleep of 2 seconds should result in near 2 sec timing')
+              'Submittable style Query pg_sleep of 2 seconds should result in > 2 sec timing')
 
             t.end()
           })
@@ -414,7 +414,7 @@ module.exports = function runTests(name, clientFactory) {
           const metrics = finalTx.metrics.getMetric('Datastore/operation/Postgres/select')
 
           t.ok(metrics.total > 2.0,
-            'Promise style query pg_sleep of 2 seconds should result in near 2 sec timing')
+            'Promise style query pg_sleep of 2 seconds should result in > 2 sec timing')
 
           t.end()
         } catch (err) {
@@ -459,7 +459,7 @@ module.exports = function runTests(name, clientFactory) {
             const metrics = finalTx.metrics.getMetric('Datastore/operation/Postgres/select')
 
             t.ok(metrics.total > 2.0,
-              'Callback style query pg_sleep of 2 seconds should result in near 2 sec timing')
+              'Callback style query pg_sleep of 2 seconds should result in > 2 sec timing')
 
             t.end()
           })
