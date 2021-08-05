@@ -24,21 +24,21 @@ for (var i = 0; i < 20; ++i) {
 
 suite.add({
   name: 'truncate (smaller than limit)',
-  fn: function() {
+  fn: function () {
     truncate(shortString, 10)
   }
 })
 
 suite.add({
   name: 'truncate (equal to limit)',
-  fn: function() {
+  fn: function () {
     truncate(equalString, 10)
   }
 })
 
 suite.add({
   name: 'truncate (longer than limit)',
-  fn: function() {
+  fn: function () {
     truncate(longString, 1023)
   }
 })

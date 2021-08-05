@@ -13,24 +13,23 @@ var API = require('../../../../api')
 var utils = require('./hapi-utils')
 var fixtures = require('../fixtures')
 
-
-tap.test('agent instrumentation of Hapi', function(t) {
+tap.test('agent instrumentation of Hapi', function (t) {
   t.plan(4)
 
   var port = null
   var agent = null
   var server = null
 
-  t.beforeEach(function() {
+  t.beforeEach(function () {
     agent = helper.instrumentMockedAgent()
   })
 
-  t.afterEach(function() {
+  t.afterEach(function () {
     helper.unloadAgent(agent)
     return new Promise((resolve) => server.stop(resolve))
   })
 
-  t.test('for a normal request', {timeout: 5000}, function(t) {
+  t.test('for a normal request', { timeout: 5000 }, function (t) {
     server = utils.getServer()
 
     // set apdexT so apdex stats will be recorded
@@ -39,21 +38,18 @@ tap.test('agent instrumentation of Hapi', function(t) {
     server.route({
       method: 'GET',
       path: '/test',
-      handler: function(req, reply) {
-        reply({yep: true})
+      handler: function (req, reply) {
+        reply({ yep: true })
       }
     })
 
-    server.start(function() {
+    server.start(function () {
       port = server.info.port
-      request.get('http://localhost:' + port + '/test', function(error, response, body) {
+      request.get('http://localhost:' + port + '/test', function (error, response, body) {
         t.error(error, 'should not error making request')
 
-        t.ok(
-          /application\/json/.test(response.headers['content-type']),
-          'got correct content type'
-        )
-        t.deepEqual(JSON.parse(body), {yep: true}, 'response survived')
+        t.ok(/application\/json/.test(response.headers['content-type']), 'got correct content type')
+        t.deepEqual(JSON.parse(body), { yep: true }, 'response survived')
 
         var stats = agent.metrics.getMetric('WebTransaction/Hapi/GET//test')
         t.ok(stats, 'found unscoped stats for request path')
@@ -84,7 +80,7 @@ tap.test('agent instrumentation of Hapi', function(t) {
     })
   })
 
-  t.test('using EJS templates', {timeout: 1000}, function(t) {
+  t.test('using EJS templates', { timeout: 1000 }, function (t) {
     var config = {
       options: {
         views: {
@@ -101,19 +97,19 @@ tap.test('agent instrumentation of Hapi', function(t) {
     server.route({
       method: 'GET',
       path: '/test',
-      handler: function(req, reply) {
-        reply.view('index', {title: 'yo dawg'})
+      handler: function (req, reply) {
+        reply.view('index', { title: 'yo dawg' })
       }
     })
 
-    agent.once('transactionFinished', function() {
+    agent.once('transactionFinished', function () {
       var stats = agent.metrics.getMetric('View/index/Rendering')
       t.equal(stats.callCount, 1, 'should note the view rendering')
     })
 
-    server.start(function() {
+    server.start(function () {
       port = server.info.port
-      request('http://localhost:' + port + '/test', function(error, response, body) {
+      request('http://localhost:' + port + '/test', function (error, response, body) {
         if (error) t.fail(error)
 
         t.equal(response.statusCode, 200, 'response code should be 200')
@@ -124,7 +120,7 @@ tap.test('agent instrumentation of Hapi', function(t) {
     })
   })
 
-  t.test('should generate rum headers', {timeout: 1000}, function(t) {
+  t.test('should generate rum headers', { timeout: 1000 }, function (t) {
     var api = new API(agent)
 
     agent.config.application_id = '12345'
@@ -147,21 +143,21 @@ tap.test('agent instrumentation of Hapi', function(t) {
     server.route({
       method: 'GET',
       path: '/test',
-      handler: function(req, reply) {
+      handler: function (req, reply) {
         var rum = api.getBrowserTimingHeader()
-        t.equal(rum.substr(0,7), '<script')
-        reply.view('index', {title: 'yo dawg', rum: rum})
+        t.equal(rum.substr(0, 7), '<script')
+        reply.view('index', { title: 'yo dawg', rum: rum })
       }
     })
 
-    agent.once('transactionFinished', function() {
+    agent.once('transactionFinished', function () {
       var stats = agent.metrics.getMetric('View/index/Rendering')
       t.equal(stats.callCount, 1, 'should note the view rendering')
     })
 
-    server.start(function() {
+    server.start(function () {
       port = server.info.port
-      request('http://localhost:' + port + '/test', function(error, response, body) {
+      request('http://localhost:' + port + '/test', function (error, response, body) {
         if (error) t.fail(error)
 
         t.equal(response.statusCode, 200, 'response code should be 200')
@@ -172,24 +168,24 @@ tap.test('agent instrumentation of Hapi', function(t) {
     })
   })
 
-  t.test('should trap errors correctly', function(t) {
+  t.test('should trap errors correctly', function (t) {
     // Prevent tap from noticing the ohno failure.
     helper.temporarilyOverrideTapUncaughtBehavior(tap, t)
 
-    server = utils.getServer({ options: {debug: false} })
+    server = utils.getServer({ options: { debug: false } })
 
     server.route({
       method: 'GET',
       path: '/test',
-      handler: function() {
+      handler: function () {
         var hmm
         hmm.ohno.failure.is.terrible()
       }
     })
 
-    server.start(function() {
+    server.start(function () {
       port = server.info.port
-      request.get('http://localhost:' + port + '/test', function(error, response, body) {
+      request.get('http://localhost:' + port + '/test', function (error, response, body) {
         if (error) t.fail(error)
 
         t.ok(response, 'got a response from Express')

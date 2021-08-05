@@ -8,7 +8,7 @@
 const tap = require('tap')
 const test = tap.test
 
-const helper  = require('../../../lib/agent_helper')
+const helper = require('../../../lib/agent_helper')
 
 test('Domains', (t) => {
   t.autoend()
@@ -26,7 +26,7 @@ test('Domains', (t) => {
     // Starting on 9.3.0, calling `domain.exit` does not stop assertions in later
     // tests from being caught in this domain. In order to get around that we
     // are breaking out of the domain via a manual tasks queue.
-    interval = setInterval(function() {
+    interval = setInterval(function () {
       while (tasks.length) {
         tasks.pop()()
       }
@@ -45,11 +45,12 @@ test('Domains', (t) => {
   })
 
   t.test('should retain transaction scope on error events', (t) => {
+    // eslint-disable-next-line node/no-deprecated-api
     const domain = require('domain')
     d = domain.create()
 
     let checkedTransaction = null
-    d.once('error', function(err) {
+    d.once('error', function (err) {
       // Asserting in a try catch because Domain will
       // handle the errors resulting in an infinite loop
       try {
@@ -65,10 +66,10 @@ test('Domains', (t) => {
       tasks.push(t.end)
     })
 
-    helper.runInTransaction(agent, function(transaction) {
+    helper.runInTransaction(agent, function (transaction) {
       checkedTransaction = transaction
-      d.run(function() {
-        setTimeout(function() {
+      d.run(function () {
+        setTimeout(function () {
           throw new Error('whole new error!')
         }, 50)
       })

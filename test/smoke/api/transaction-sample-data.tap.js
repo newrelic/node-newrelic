@@ -8,8 +8,7 @@
 const tap = require('tap')
 const configurator = require('../../../lib/config')
 const Agent = require('../../../lib/agent')
-const {getTestSecret} = require('../../helpers/secrets')
-
+const { getTestSecret } = require('../../helpers/secrets')
 
 const license = getTestSecret('TEST_LICENSE')
 tap.test('Collector API should send transaction traces to staging-collector.newrelic.com', (t) => {
@@ -32,12 +31,11 @@ tap.test('Collector API should send transaction traces to staging-collector.newr
   var agent = new Agent(config)
   var api = agent.collector
 
-
-  api.connect(function(error) {
+  api.connect(function (error) {
     t.error(error, 'connected without error')
 
     var transaction
-    var proxy = agent.tracer.transactionProxy(function() {
+    var proxy = agent.tracer.transactionProxy(function () {
       transaction = agent.getTransaction()
       transaction.finalizeNameFromUri('/nonexistent', 200)
     })
@@ -52,12 +50,9 @@ tap.test('Collector API should send transaction traces to staging-collector.newr
       t.error(err, 'should encode trace without error')
       t.ok(encoded, 'have the encoded trace')
 
-      var payload = [
-        agent.config.run_id,
-        [encoded]
-      ]
+      var payload = [agent.config.run_id, [encoded]]
 
-      api.transaction_sample_data(payload, function(error, command) {
+      api.transaction_sample_data(payload, function (error, command) {
         t.error(error, 'sent transaction trace without error')
         t.notOk(command.returned, 'return value is null')
 

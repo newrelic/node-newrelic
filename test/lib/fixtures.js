@@ -7,14 +7,9 @@
 
 module.exports = {
   // Common http transaction trace attributes
-  httpAttributes: [
-    'request.headers.host',
-    'request.method',
-    'http.statusCode',
-    'http.statusText'
-  ],
+  httpAttributes: ['request.headers.host', 'request.method', 'http.statusCode', 'http.statusText'],
   // Default security policies
-  securityPolicies: function() {
+  securityPolicies: function () {
     return {
       record_sql: { enabled: false, required: false },
       attributes_include: { enabled: false, required: false },

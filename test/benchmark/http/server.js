@@ -8,7 +8,7 @@
 const benchmark = require('../../lib/benchmark')
 const http = require('http')
 
-const suite = benchmark.createBenchmark({name: 'http', runs: 5000})
+const suite = benchmark.createBenchmark({ name: 'http', runs: 5000 })
 
 let server = null
 const PORT = 3000
@@ -45,5 +45,5 @@ function closeServer() {
 }
 
 function makeRequest(cb) {
-  http.request({port: PORT}, cb).end()
+  http.request({ port: PORT }, cb).end()
 }

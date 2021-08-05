@@ -27,8 +27,8 @@ tap.test('Agent API - trace metadata', (t) => {
     agent = null
   })
 
-  t.test("exports a trace metadata function", (t) => {
-    helper.runInTransaction(agent, function(txn) {
+  t.test('exports a trace metadata function', (t) => {
+    helper.runInTransaction(agent, function (txn) {
       t.type(api.getTraceMetadata, 'function')
 
       const metadata = api.getTraceMetadata()
@@ -44,10 +44,10 @@ tap.test('Agent API - trace metadata', (t) => {
     })
   })
 
-  t.test("should return empty object with DT disabled", (t) => {
+  t.test('should return empty object with DT disabled', (t) => {
     agent.config.distributed_tracing.enabled = false
 
-    helper.runInTransaction(agent, function() {
+    helper.runInTransaction(agent, function () {
       const metadata = api.getTraceMetadata()
       t.type(metadata, 'object')
 
@@ -56,10 +56,10 @@ tap.test('Agent API - trace metadata', (t) => {
     })
   })
 
-  t.test("should not include spanId property with span events disabled", (t) => {
+  t.test('should not include spanId property with span events disabled', (t) => {
     agent.config.span_events.enabled = false
 
-    helper.runInTransaction(agent, function(txn) {
+    helper.runInTransaction(agent, function (txn) {
       const metadata = api.getTraceMetadata()
       t.type(metadata, 'object')
 

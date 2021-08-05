@@ -8,7 +8,7 @@
 const tap = require('tap')
 
 const Config = require('../../../lib/config')
-const {idempotentEnv} = require('./helper')
+const { idempotentEnv } = require('./helper')
 
 const VALID_HOST = 'infinite-tracing.test'
 const VALID_PORT = '443'
@@ -28,7 +28,7 @@ tap.test('serverless_mode via configuration input', (t) => {
 
   t.test('should explicitly disable cross_application_tracer', (t) => {
     const config = Config.initialize({
-      cross_application_tracer: {enabled: true},
+      cross_application_tracer: { enabled: true },
       serverless_mode: {
         enabled: true
       }
@@ -40,10 +40,12 @@ tap.test('serverless_mode via configuration input', (t) => {
   t.test('should explicitly disable infinite tracing', (t) => {
     const config = Config.initialize({
       serverless_mode: { enabled: true },
-      infinite_tracing: { trace_observer: {
-        host: VALID_HOST,
-        port: VALID_PORT
-      }}
+      infinite_tracing: {
+        trace_observer: {
+          host: VALID_HOST,
+          port: VALID_PORT
+        }
+      }
     })
 
     t.equal(config.infinite_tracing.trace_observer.host, '')
@@ -58,7 +60,7 @@ tap.test('serverless_mode via configuration input', (t) => {
           enabled: false
         },
         plugins: {
-          native_metrics: {enabled: false}
+          native_metrics: { enabled: false }
         }
       })
       t.equal(config.plugins.native_metrics.enabled, false)
@@ -88,9 +90,9 @@ tap.test('serverless_mode via configuration input', (t) => {
 
   t.test('should enable native_metrics when both enabled explicitly', (t) => {
     const config = Config.initialize({
-      serverless_mode: {enabled: true},
+      serverless_mode: { enabled: true },
       plugins: {
-        native_metrics: {enabled: true}
+        native_metrics: { enabled: true }
       }
     })
 
@@ -102,7 +104,7 @@ tap.test('serverless_mode via configuration input', (t) => {
     const config = Config.initialize({
       account_id: '1234',
       primary_application_id: '2345',
-      serverless_mode: {enabled: true}
+      serverless_mode: { enabled: true }
     })
 
     t.equal(config.account_id, '1234')
@@ -114,7 +116,7 @@ tap.test('serverless_mode via configuration input', (t) => {
     const config = Config.initialize({
       account_id: '1234',
       primary_application_id: '2345',
-      trusted_account_key: '3456',
+      trusted_account_key: '3456'
     })
 
     t.equal(config.account_id, null)
@@ -126,7 +128,7 @@ tap.test('serverless_mode via configuration input', (t) => {
 
   t.test('should default logging to disabled', (t) => {
     const config = Config.initialize({
-      serverless_mode: {enabled: true}
+      serverless_mode: { enabled: true }
     })
 
     t.equal(config.logging.enabled, false)
@@ -135,8 +137,8 @@ tap.test('serverless_mode via configuration input', (t) => {
 
   t.test('should allow logging to be enabled from configuration input', (t) => {
     const config = Config.initialize({
-      serverless_mode: {enabled: true},
-      logging: {enabled: true}
+      serverless_mode: { enabled: true },
+      logging: { enabled: true }
     })
     t.equal(config.logging.enabled, true)
     t.end()
@@ -144,7 +146,7 @@ tap.test('serverless_mode via configuration input', (t) => {
 
   t.test('should allow logging to be enabled from env ', (t) => {
     const inputConfig = {
-      serverless_mode: {enabled: true}
+      serverless_mode: { enabled: true }
     }
 
     const envVariables = {
@@ -162,42 +164,54 @@ tap.test('serverless mode via ENV variables', (t) => {
   t.autoend()
 
   t.test('should pick up serverless_mode', (t) => {
-    idempotentEnv({
-      NEW_RELIC_SERVERLESS_MODE_ENABLED: true
-    }, (tc) => {
-      t.equal(tc.serverless_mode.enabled, true)
-      t.end()
-    })
+    idempotentEnv(
+      {
+        NEW_RELIC_SERVERLESS_MODE_ENABLED: true
+      },
+      (tc) => {
+        t.equal(tc.serverless_mode.enabled, true)
+        t.end()
+      }
+    )
   })
 
   t.test('should pick up trusted_account_key', (t) => {
-    idempotentEnv({
-      NEW_RELIC_SERVERLESS_MODE_ENABLED: true,
-      NEW_RELIC_TRUSTED_ACCOUNT_KEY: '1234'
-    }, (tc) => {
-      t.equal(tc.trusted_account_key, '1234')
-      t.end()
-    })
+    idempotentEnv(
+      {
+        NEW_RELIC_SERVERLESS_MODE_ENABLED: true,
+        NEW_RELIC_TRUSTED_ACCOUNT_KEY: '1234'
+      },
+      (tc) => {
+        t.equal(tc.trusted_account_key, '1234')
+        t.end()
+      }
+    )
   })
 
   t.test('should pick up primary_application_id', (t) => {
-    idempotentEnv({
-      NEW_RELIC_SERVERLESS_MODE_ENABLED: true,
-      NEW_RELIC_PRIMARY_APPLICATION_ID: '5678'
-    }, (tc) => {
-      t.equal(tc.primary_application_id, '5678')
-      t.end()
-    })
+    idempotentEnv(
+      {
+        NEW_RELIC_SERVERLESS_MODE_ENABLED: true,
+        NEW_RELIC_PRIMARY_APPLICATION_ID: '5678'
+      },
+      (tc) => {
+        t.equal(tc.primary_application_id, '5678')
+        t.end()
+      }
+    )
   })
 
   t.test('should pick up account_id', (t) => {
-    idempotentEnv({
-      NEW_RELIC_SERVERLESS_MODE_ENABLED: true,
-      NEW_RELIC_ACCOUNT_ID: '91011'
-    }, (tc) => {
-      t.equal(tc.account_id, '91011')
-      t.end()
-    })
+    idempotentEnv(
+      {
+        NEW_RELIC_SERVERLESS_MODE_ENABLED: true,
+        NEW_RELIC_ACCOUNT_ID: '91011'
+      },
+      (tc) => {
+        t.equal(tc.account_id, '91011')
+        t.end()
+      }
+    )
   })
 
   t.test('should clear serverless_mode DT config options when serverless_mode disabled', (t) => {
@@ -217,24 +231,30 @@ tap.test('serverless mode via ENV variables', (t) => {
   })
 
   t.test('should explicitly disable cross_application_tracer in serverless_mode', (t) => {
-    idempotentEnv({
-      NEW_RELIC_SERVERLESS_MODE_ENABLED: true
-    }, (tc) => {
-      t.equal(tc.serverless_mode.enabled, true)
-      t.equal(tc.cross_application_tracer.enabled, false)
-      t.end()
-    })
+    idempotentEnv(
+      {
+        NEW_RELIC_SERVERLESS_MODE_ENABLED: true
+      },
+      (tc) => {
+        t.equal(tc.serverless_mode.enabled, true)
+        t.equal(tc.cross_application_tracer.enabled, false)
+        t.end()
+      }
+    )
   })
 
   t.test('should allow distributed tracing to be enabled from env', (t) => {
-    idempotentEnv({
-      NEW_RELIC_SERVERLESS_MODE_ENABLED: true,
-      NEW_RELIC_DISTRIBUTED_TRACING_ENABLED: true,
-      NEW_RELIC_ACCOUNT_ID: '12345'
-    }, (config) => {
-      t.equal(config.distributed_tracing.enabled, true)
-      t.end()
-    })
+    idempotentEnv(
+      {
+        NEW_RELIC_SERVERLESS_MODE_ENABLED: true,
+        NEW_RELIC_DISTRIBUTED_TRACING_ENABLED: true,
+        NEW_RELIC_ACCOUNT_ID: '12345'
+      },
+      (config) => {
+        t.equal(config.distributed_tracing.enabled, true)
+        t.end()
+      }
+    )
   })
 
   t.test('should allow distributed tracing to be enabled from configuration ', (t) => {
@@ -244,7 +264,7 @@ tap.test('serverless mode via ENV variables', (t) => {
     }
 
     const inputConfig = {
-      distributed_tracing: {enabled: true}
+      distributed_tracing: { enabled: true }
     }
 
     idempotentEnv(envVariables, inputConfig, (config) => {
@@ -254,64 +274,76 @@ tap.test('serverless mode via ENV variables', (t) => {
   })
 
   t.test('should enable DT in serverless_mode when account_id has been set', (t) => {
-    idempotentEnv({
-      NEW_RELIC_SERVERLESS_MODE_ENABLED: true,
-      NEW_RELIC_ACCOUNT_ID: '12345'
-    }, (tc) => {
-      t.equal(tc.serverless_mode.enabled, true)
-      t.equal(tc.distributed_tracing.enabled, true)
-      t.end()
-    })
+    idempotentEnv(
+      {
+        NEW_RELIC_SERVERLESS_MODE_ENABLED: true,
+        NEW_RELIC_ACCOUNT_ID: '12345'
+      },
+      (tc) => {
+        t.equal(tc.serverless_mode.enabled, true)
+        t.equal(tc.distributed_tracing.enabled, true)
+        t.end()
+      }
+    )
   })
 
   t.test('should not enable distributed tracing when account_id has not been set', (t) => {
-    idempotentEnv({
-      NEW_RELIC_SERVERLESS_MODE_ENABLED: true
-    }, (tc) => {
-      t.equal(tc.serverless_mode.enabled, true)
-      t.equal(tc.distributed_tracing.enabled, false)
-      t.end()
-    })
+    idempotentEnv(
+      {
+        NEW_RELIC_SERVERLESS_MODE_ENABLED: true
+      },
+      (tc) => {
+        t.equal(tc.serverless_mode.enabled, true)
+        t.equal(tc.distributed_tracing.enabled, false)
+        t.end()
+      }
+    )
   })
 
   t.test('should default primary_application_id to Unknown when not set', (t) => {
-    idempotentEnv({
-      NEW_RELIC_SERVERLESS_MODE_ENABLED: true,
-      NEW_RELIC_ACCOUNT_ID: '12345'
-    }, (tc) => {
-      t.equal(tc.serverless_mode.enabled, true)
-      t.equal(tc.distributed_tracing.enabled, true)
+    idempotentEnv(
+      {
+        NEW_RELIC_SERVERLESS_MODE_ENABLED: true,
+        NEW_RELIC_ACCOUNT_ID: '12345'
+      },
+      (tc) => {
+        t.equal(tc.serverless_mode.enabled, true)
+        t.equal(tc.distributed_tracing.enabled, true)
 
-      t.equal(tc.primary_application_id, 'Unknown')
-      t.end()
-    })
+        t.equal(tc.primary_application_id, 'Unknown')
+        t.end()
+      }
+    )
   })
 
-  t.test(
-    'should set serverless_mode from lambda-specific env var if not set by user',
-    (t) => {
-      idempotentEnv({
+  t.test('should set serverless_mode from lambda-specific env var if not set by user', (t) => {
+    idempotentEnv(
+      {
         AWS_LAMBDA_FUNCTION_NAME: 'someFunc'
-      }, (tc) => {
+      },
+      (tc) => {
         t.equal(tc.serverless_mode.enabled, true)
         t.end()
-      })
-    }
-  )
+      }
+    )
+  })
 
   t.test('should pick app name from AWS_LAMBDA_FUNCTION_NAME', (t) => {
-    idempotentEnv({
-      NEW_RELIC_SERVERLESS_MODE_ENABLED: true,
-      AWS_LAMBDA_FUNCTION_NAME: 'MyLambdaFunc'
-    }, (tc) => {
-      t.ok(tc.app_name)
-      t.same(tc.applications(), ['MyLambdaFunc'])
-      t.end()
-    })
+    idempotentEnv(
+      {
+        NEW_RELIC_SERVERLESS_MODE_ENABLED: true,
+        AWS_LAMBDA_FUNCTION_NAME: 'MyLambdaFunc'
+      },
+      (tc) => {
+        t.ok(tc.app_name)
+        t.same(tc.applications(), ['MyLambdaFunc'])
+        t.end()
+      }
+    )
   })
 
   t.test('should default generic app name when no AWS_LAMBDA_FUNCTION_NAME', (t) => {
-    idempotentEnv({NEW_RELIC_SERVERLESS_MODE_ENABLED: true}, (tc) => {
+    idempotentEnv({ NEW_RELIC_SERVERLESS_MODE_ENABLED: true }, (tc) => {
       t.ok(tc.app_name)
       t.same(tc.applications(), ['Serverless Application'])
 
@@ -320,22 +352,28 @@ tap.test('serverless mode via ENV variables', (t) => {
   })
 
   t.test('should default logging to disabled', (t) => {
-    idempotentEnv({
-      NEW_RELIC_SERVERLESS_MODE_ENABLED: true
-    }, (config) => {
-      t.equal(config.logging.enabled, false)
-      t.end()
-    })
+    idempotentEnv(
+      {
+        NEW_RELIC_SERVERLESS_MODE_ENABLED: true
+      },
+      (config) => {
+        t.equal(config.logging.enabled, false)
+        t.end()
+      }
+    )
   })
 
   t.test('should allow logging to be enabled from env', (t) => {
-    idempotentEnv({
-      NEW_RELIC_SERVERLESS_MODE_ENABLED: true,
-      NEW_RELIC_LOG_ENABLED: true
-    }, (config) => {
-      t.equal(config.logging.enabled, true)
-      t.end()
-    })
+    idempotentEnv(
+      {
+        NEW_RELIC_SERVERLESS_MODE_ENABLED: true,
+        NEW_RELIC_LOG_ENABLED: true
+      },
+      (config) => {
+        t.equal(config.logging.enabled, true)
+        t.end()
+      }
+    )
   })
 
   t.test('should allow logging to be enabled from configuration ', (t) => {
@@ -344,7 +382,7 @@ tap.test('serverless mode via ENV variables', (t) => {
     }
 
     const inputConfig = {
-      logging: {enabled: true}
+      logging: { enabled: true }
     }
 
     idempotentEnv(envVariables, inputConfig, (config) => {
@@ -379,7 +417,7 @@ tap.test('when distributed_tracing manually set in serverless_mode', (t) => {
 
   t.test('disables DT if missing required account_id', (t) => {
     const config = Config.initialize({
-      distributed_tracing: {enabled: true},
+      distributed_tracing: { enabled: true },
       serverless_mode: {
         enabled: true
       },
@@ -391,10 +429,10 @@ tap.test('when distributed_tracing manually set in serverless_mode', (t) => {
 
   t.test('disables DT when DT set to false', (t) => {
     const config = Config.initialize({
-      distributed_tracing: {enabled: false},
+      distributed_tracing: { enabled: false },
       serverless_mode: {
         enabled: true
-      },
+      }
     })
     t.equal(config.distributed_tracing.enabled, false)
     t.end()
@@ -403,10 +441,10 @@ tap.test('when distributed_tracing manually set in serverless_mode', (t) => {
   t.test('disables DT when DT set to false and account_id is set', (t) => {
     const config = Config.initialize({
       account_id: '1234',
-      distributed_tracing: {enabled: false},
+      distributed_tracing: { enabled: false },
       serverless_mode: {
         enabled: true
-      },
+      }
     })
     t.equal(config.distributed_tracing.enabled, false)
     t.end()

@@ -31,8 +31,8 @@ tap.test('#constructor() should construct an empty span event', (t) => {
   t.same(span._agentAttributes, attrs)
 
   t.ok(span._intrinsicAttributes)
-  t.same(span._intrinsicAttributes.type, {[STRING_TYPE]: 'Span'})
-  t.same(span._intrinsicAttributes.category, {[STRING_TYPE]: CATEGORIES.GENERIC})
+  t.same(span._intrinsicAttributes.type, { [STRING_TYPE]: 'Span' })
+  t.same(span._intrinsicAttributes.category, { [STRING_TYPE]: CATEGORIES.GENERIC })
 
   t.end()
 })
@@ -71,17 +71,17 @@ tap.test('fromSegment()', (t) => {
         t.ok(span instanceof StreamingSpanEvent)
 
         t.ok(span._intrinsicAttributes)
-        t.same(span._intrinsicAttributes.type, {[STRING_TYPE]: 'Span'})
-        t.same(span._intrinsicAttributes.category, {[STRING_TYPE]: CATEGORIES.GENERIC})
+        t.same(span._intrinsicAttributes.type, { [STRING_TYPE]: 'Span' })
+        t.same(span._intrinsicAttributes.category, { [STRING_TYPE]: CATEGORIES.GENERIC })
 
-        t.same(span._intrinsicAttributes.traceId, {[STRING_TYPE]: transaction.traceId})
-        t.same(span._intrinsicAttributes.guid, {[STRING_TYPE]: segment.id})
-        t.same(span._intrinsicAttributes.parentId, {[STRING_TYPE]: 'parent'})
-        t.same(span._intrinsicAttributes.transactionId, {[STRING_TYPE]: transaction.id})
-        t.same(span._intrinsicAttributes.sampled, {[BOOL_TYPE]: true})
-        t.same(span._intrinsicAttributes.priority, {[INT_TYPE]: 42})
-        t.same(span._intrinsicAttributes.name, {[STRING_TYPE]: 'timers.setTimeout'})
-        t.same(span._intrinsicAttributes.timestamp, {[INT_TYPE]: segment.timer.start})
+        t.same(span._intrinsicAttributes.traceId, { [STRING_TYPE]: transaction.traceId })
+        t.same(span._intrinsicAttributes.guid, { [STRING_TYPE]: segment.id })
+        t.same(span._intrinsicAttributes.parentId, { [STRING_TYPE]: 'parent' })
+        t.same(span._intrinsicAttributes.transactionId, { [STRING_TYPE]: transaction.id })
+        t.same(span._intrinsicAttributes.sampled, { [BOOL_TYPE]: true })
+        t.same(span._intrinsicAttributes.priority, { [INT_TYPE]: 42 })
+        t.same(span._intrinsicAttributes.name, { [STRING_TYPE]: 'timers.setTimeout' })
+        t.same(span._intrinsicAttributes.timestamp, { [INT_TYPE]: segment.timer.start })
 
         t.ok(span._intrinsicAttributes.duration)
         t.ok(span._intrinsicAttributes.duration[DOUBLE_TYPE])
@@ -93,11 +93,10 @@ tap.test('fromSegment()', (t) => {
 
         const customAttributes = span._customAttributes
         t.ok(customAttributes)
-        t.same(customAttributes['Span Lee'], {[STRING_TYPE]: 'no prize'})
+        t.same(customAttributes['Span Lee'], { [STRING_TYPE]: 'no prize' })
 
         const agentAttributes = span._agentAttributes
         t.ok(agentAttributes)
-
 
         // Should have no http properties.
         const hasOwnAttribute = Object.hasOwnProperty.bind(agentAttributes)
@@ -132,34 +131,34 @@ tap.test('fromSegment()', (t) => {
           t.ok(span instanceof StreamingSpanEvent)
 
           t.ok(span._intrinsicAttributes)
-          t.same(span._intrinsicAttributes.type, {[STRING_TYPE]: 'Span'})
-          t.same(span._intrinsicAttributes.category, {[STRING_TYPE]: CATEGORIES.HTTP})
+          t.same(span._intrinsicAttributes.type, { [STRING_TYPE]: 'Span' })
+          t.same(span._intrinsicAttributes.category, { [STRING_TYPE]: CATEGORIES.HTTP })
 
-          t.same(span._intrinsicAttributes.traceId, {[STRING_TYPE]: transaction.traceId})
-          t.same(span._intrinsicAttributes.guid, {[STRING_TYPE]: segment.id})
-          t.same(span._intrinsicAttributes.parentId, {[STRING_TYPE]: 'parent'})
-          t.same(span._intrinsicAttributes.transactionId, {[STRING_TYPE]: transaction.id})
-          t.same(span._intrinsicAttributes.sampled, {[BOOL_TYPE]: true})
-          t.same(span._intrinsicAttributes.priority, {[INT_TYPE]: 42})
+          t.same(span._intrinsicAttributes.traceId, { [STRING_TYPE]: transaction.traceId })
+          t.same(span._intrinsicAttributes.guid, { [STRING_TYPE]: segment.id })
+          t.same(span._intrinsicAttributes.parentId, { [STRING_TYPE]: 'parent' })
+          t.same(span._intrinsicAttributes.transactionId, { [STRING_TYPE]: transaction.id })
+          t.same(span._intrinsicAttributes.sampled, { [BOOL_TYPE]: true })
+          t.same(span._intrinsicAttributes.priority, { [INT_TYPE]: 42 })
 
-          t.same(span._intrinsicAttributes.name, {[STRING_TYPE]: 'External/example.com:443/'})
-          t.same(span._intrinsicAttributes.timestamp, {[INT_TYPE]: segment.timer.start})
+          t.same(span._intrinsicAttributes.name, { [STRING_TYPE]: 'External/example.com:443/' })
+          t.same(span._intrinsicAttributes.timestamp, { [INT_TYPE]: segment.timer.start })
 
           t.ok(span._intrinsicAttributes.duration)
           t.ok(span._intrinsicAttributes.duration[DOUBLE_TYPE])
 
           // Should have type-specific intrinsics
-          t.same(span._intrinsicAttributes.component, {[STRING_TYPE]: 'http'})
-          t.same(span._intrinsicAttributes['span.kind'], {[STRING_TYPE]: 'client'})
+          t.same(span._intrinsicAttributes.component, { [STRING_TYPE]: 'http' })
+          t.same(span._intrinsicAttributes['span.kind'], { [STRING_TYPE]: 'client' })
 
           const agentAttributes = span._agentAttributes
           t.ok(agentAttributes)
 
           // Should have (most) http properties.
-          t.same(agentAttributes['http.url'], {[STRING_TYPE]: 'https://example.com:443/'})
+          t.same(agentAttributes['http.url'], { [STRING_TYPE]: 'https://example.com:443/' })
           t.ok(agentAttributes['http.method'])
-          t.same(agentAttributes['http.statusCode'], {[INT_TYPE]:  200})
-          t.same(agentAttributes['http.statusText'], {[STRING_TYPE]: 'OK'})
+          t.same(agentAttributes['http.statusCode'], { [INT_TYPE]: 200 })
+          t.same(agentAttributes['http.statusText'], { [STRING_TYPE]: 'OK' })
 
           // Should have no datastore properties.
           const hasOwnAttribute = Object.hasOwnProperty.bind(agentAttributes)
@@ -179,7 +178,7 @@ tap.test('fromSegment()', (t) => {
 
     const shim = new DatastoreShim(agent, 'test-data-store', '', 'TestStore')
 
-    const dsConn = {myDbOp: (query, cb) => setTimeout(cb, 50)}
+    const dsConn = { myDbOp: (query, cb) => setTimeout(cb, 50) }
     let longQuery = ''
     while (Buffer.byteLength(longQuery, 'utf8') < 2001) {
       longQuery += 'a'
@@ -217,29 +216,28 @@ tap.test('fromSegment()', (t) => {
         t.ok(span instanceof StreamingSpanEvent)
 
         t.ok(span._intrinsicAttributes)
-        t.same(span._intrinsicAttributes.type, {[STRING_TYPE]: 'Span'})
-        t.same(span._intrinsicAttributes.category, {[STRING_TYPE]: CATEGORIES.DATASTORE})
+        t.same(span._intrinsicAttributes.type, { [STRING_TYPE]: 'Span' })
+        t.same(span._intrinsicAttributes.category, { [STRING_TYPE]: CATEGORIES.DATASTORE })
 
-        t.same(span._intrinsicAttributes.traceId, {[STRING_TYPE]: transaction.traceId})
-        t.same(span._intrinsicAttributes.guid, {[STRING_TYPE]: segment.id})
-        t.same(span._intrinsicAttributes.parentId, {[STRING_TYPE]: 'parent'})
-        t.same(span._intrinsicAttributes.transactionId, {[STRING_TYPE]: transaction.id})
-        t.same(span._intrinsicAttributes.sampled, {[BOOL_TYPE]: true})
-        t.same(span._intrinsicAttributes.priority, {[INT_TYPE]: 42})
+        t.same(span._intrinsicAttributes.traceId, { [STRING_TYPE]: transaction.traceId })
+        t.same(span._intrinsicAttributes.guid, { [STRING_TYPE]: segment.id })
+        t.same(span._intrinsicAttributes.parentId, { [STRING_TYPE]: 'parent' })
+        t.same(span._intrinsicAttributes.transactionId, { [STRING_TYPE]: transaction.id })
+        t.same(span._intrinsicAttributes.sampled, { [BOOL_TYPE]: true })
+        t.same(span._intrinsicAttributes.priority, { [INT_TYPE]: 42 })
 
-        t.same(
-          span._intrinsicAttributes.name,
-          {[STRING_TYPE]: 'Datastore/statement/TestStore/test/test'}
-        )
+        t.same(span._intrinsicAttributes.name, {
+          [STRING_TYPE]: 'Datastore/statement/TestStore/test/test'
+        })
 
-        t.same(span._intrinsicAttributes.timestamp, {[INT_TYPE]: segment.timer.start})
+        t.same(span._intrinsicAttributes.timestamp, { [INT_TYPE]: segment.timer.start })
 
         t.ok(span._intrinsicAttributes.duration)
         t.ok(span._intrinsicAttributes.duration[DOUBLE_TYPE])
 
         // Should have (most) type-specific intrinsics
-        t.same(span._intrinsicAttributes.component, {[STRING_TYPE]: 'TestStore'})
-        t.same(span._intrinsicAttributes['span.kind'], {[STRING_TYPE]: 'client'})
+        t.same(span._intrinsicAttributes.component, { [STRING_TYPE]: 'TestStore' })
+        t.same(span._intrinsicAttributes['span.kind'], { [STRING_TYPE]: 'client' })
 
         const agentAttributes = span._agentAttributes
         t.ok(agentAttributes)
@@ -251,9 +249,9 @@ tap.test('fromSegment()', (t) => {
 
         // Should have (most) datastore properties.
         t.ok(agentAttributes['db.instance'])
-        t.same(agentAttributes['db.collection'], {[STRING_TYPE]: 'my-collection'})
-        t.same(agentAttributes['peer.hostname'], {[STRING_TYPE]: 'my-db-host'})
-        t.same(agentAttributes['peer.address'], {[STRING_TYPE]: 'my-db-host:/path/to/db.sock'})
+        t.same(agentAttributes['db.collection'], { [STRING_TYPE]: 'my-collection' })
+        t.same(agentAttributes['peer.hostname'], { [STRING_TYPE]: 'my-db-host' })
+        t.same(agentAttributes['peer.address'], { [STRING_TYPE]: 'my-db-host:/path/to/db.sock' })
 
         const statement = agentAttributes['db.statement']
         t.ok(statement)
@@ -294,12 +292,12 @@ tap.test('fromSegment()', (t) => {
         t.equal(traceId, transaction.traceId)
 
         // Spot check a few known attributes
-        t.same(intrinsics.type, {[STRING_TYPE]: 'Span'})
-        t.same(intrinsics.traceId, {[STRING_TYPE]: transaction.traceId})
+        t.same(intrinsics.type, { [STRING_TYPE]: 'Span' })
+        t.same(intrinsics.traceId, { [STRING_TYPE]: transaction.traceId })
 
-        t.same(userAttributes.customKey, {[STRING_TYPE]: 'customValue'})
+        t.same(userAttributes.customKey, { [STRING_TYPE]: 'customValue' })
 
-        t.same(agentAttributes.anAgentAttribute, {[BOOL_TYPE]: true})
+        t.same(agentAttributes.anAgentAttribute, { [BOOL_TYPE]: true })
 
         t.end()
       }, 10)
@@ -320,10 +318,10 @@ tap.test('fromSegment()', (t) => {
         const span = StreamingSpanEvent.fromSegment(segment, 'parent')
 
         const serializedSpan = span.toStreamingFormat()
-        const {intrinsics} = serializedSpan
+        const { intrinsics } = serializedSpan
 
-        t.same(intrinsics['intrinsic.1'], {[INT_TYPE]: 1})
-        t.same(intrinsics['intrinsic.2'], {[INT_TYPE]: 2})
+        t.same(intrinsics['intrinsic.1'], { [INT_TYPE]: 1 })
+        t.same(intrinsics['intrinsic.2'], { [INT_TYPE]: 2 })
 
         t.end()
       }, 10)
@@ -345,8 +343,8 @@ tap.test('fromSegment()', (t) => {
           t.ok(span instanceof StreamingSpanEvent)
 
           t.ok(span._intrinsicAttributes)
-          t.same(span._intrinsicAttributes.category, {[STRING_TYPE]: CATEGORIES.HTTP})
-          t.same(span._intrinsicAttributes['span.kind'], {[STRING_TYPE]: 'client'})
+          t.same(span._intrinsicAttributes.category, { [STRING_TYPE]: CATEGORIES.HTTP })
+          t.same(span._intrinsicAttributes['span.kind'], { [STRING_TYPE]: 'client' })
 
           t.end()
         })
@@ -365,9 +363,8 @@ tap.test('fromSegment()', (t) => {
       t.ok(span)
       t.ok(span instanceof StreamingSpanEvent)
 
-
-      t.same(span._intrinsicAttributes.category, {[STRING_TYPE]: CATEGORIES.DATASTORE})
-      t.same(span._intrinsicAttributes['span.kind'], {[STRING_TYPE]: 'client'})
+      t.same(span._intrinsicAttributes.category, { [STRING_TYPE]: CATEGORIES.DATASTORE })
+      t.same(span._intrinsicAttributes['span.kind'], { [STRING_TYPE]: 'client' })
 
       t.end()
     })

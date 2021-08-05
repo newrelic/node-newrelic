@@ -11,63 +11,74 @@ const semver = require('semver')
 
 function verifyAggregateData(t, data) {
   t.equal(data.length, 3, 'should have expected amount of results')
-  t.same(
-    data,
-    [{value: 5}, {value: 15}, {value: 25}],
-    'should have expected results'
-  )
+  t.same(data, [{ value: 5 }, { value: 15 }, { value: 25 }], 'should have expected results')
 }
 
 if (semver.satisfies(mongoPackage.version, '<4')) {
   common.test('aggregate', function aggregateTest(t, collection, verify) {
-    collection.aggregate([
-      {$sort: {i: 1}},
-      {$match: {mod10: 5}},
-      {$limit: 3},
-      {$project: {value: '$i', _id: 0}}
-    ], function onResult(err, cursor) {
-      if (!cursor) {
-        t.fail('No data retrieved!')
-        verify(err)
-      } else if (cursor instanceof Array) {
-        verifyAggregateData(t, cursor)
-        verify(err, [
-          'Datastore/statement/MongoDB/testCollection/aggregate',
-          'Callback: onResult'
-        ], ['aggregate'])
-      } else {
-        cursor.toArray(function onResult2(err, data) {
-          verifyAggregateData(t, data)
-          verify(err, [
-            'Datastore/statement/MongoDB/testCollection/aggregate',
-            'Callback: onResult',
-            'Datastore/statement/MongoDB/testCollection/toArray',
-            'Callback: onResult2'
-          ], ['aggregate', 'toArray'])
-        })
+    collection.aggregate(
+      [
+        { $sort: { i: 1 } },
+        { $match: { mod10: 5 } },
+        { $limit: 3 },
+        { $project: { value: '$i', _id: 0 } }
+      ],
+      function onResult(err, cursor) {
+        if (!cursor) {
+          t.fail('No data retrieved!')
+          verify(err)
+        } else if (cursor instanceof Array) {
+          verifyAggregateData(t, cursor)
+          verify(
+            err,
+            ['Datastore/statement/MongoDB/testCollection/aggregate', 'Callback: onResult'],
+            ['aggregate']
+          )
+        } else {
+          cursor.toArray(function onResult2(err, data) {
+            verifyAggregateData(t, data)
+            verify(
+              err,
+              [
+                'Datastore/statement/MongoDB/testCollection/aggregate',
+                'Callback: onResult',
+                'Datastore/statement/MongoDB/testCollection/toArray',
+                'Callback: onResult2'
+              ],
+              ['aggregate', 'toArray']
+            )
+          })
+        }
       }
-    })
+    )
   })
 } else {
   common.test('aggregate v4', async function aggregateTest(t, collection, verify) {
-    const data = await collection.aggregate([
-      {$sort: {i: 1}},
-      {$match: {mod10: 5}},
-      {$limit: 3},
-      {$project: {value: '$i', _id: 0}}
-    ]).toArray()
+    const data = await collection
+      .aggregate([
+        { $sort: { i: 1 } },
+        { $match: { mod10: 5 } },
+        { $limit: 3 },
+        { $project: { value: '$i', _id: 0 } }
+      ])
+      .toArray()
     verifyAggregateData(t, data)
-    verify(null, [
-      'Datastore/statement/MongoDB/testCollection/aggregate',
-      'Datastore/statement/MongoDB/testCollection/toArray',
-    ], ['aggregate', 'toArray'], 2)
+    verify(
+      null,
+      [
+        'Datastore/statement/MongoDB/testCollection/aggregate',
+        'Datastore/statement/MongoDB/testCollection/toArray'
+      ],
+      ['aggregate', 'toArray'],
+      2
+    )
   })
 }
 
 common.test('bulkWrite', function bulkWriteTest(t, collection, verify) {
   collection.bulkWrite(
-    [{deleteMany: {filter: {}}}, {insertOne: { document: { a: 1 }}}],
-    {ordered: true, w: 1},
+    [{ deleteMany: { filter: {} } }, { insertOne: { document: { a: 1 } } }],
+    { ordered: true, w: 1 },
     onWrite
   )
 
@@ -77,10 +88,7 @@ common.test('bulkWrite', function bulkWriteTest(t, collection, verify) {
     t.equal(data.deletedCount, 30)
     verify(
       null,
-      [
-        'Datastore/statement/MongoDB/testCollection/bulkWrite',
-        'Callback: onWrite'
-      ],
+      ['Datastore/statement/MongoDB/testCollection/bulkWrite', 'Callback: onWrite'],
       ['bulkWrite']
     )
   }
@@ -92,10 +100,7 @@ common.test('count', function countTest(t, collection, verify) {
     t.equal(data, 30)
     verify(
       null,
-      [
-        'Datastore/statement/MongoDB/testCollection/count',
-        'Callback: onCount'
-      ],
+      ['Datastore/statement/MongoDB/testCollection/count', 'Callback: onCount'],
       ['count']
     )
   })
@@ -107,10 +112,7 @@ common.test('distinct', function distinctTest(t, collection, verify) {
     t.same(data.sort(), [0, 1, 2, 3, 4, 5, 6, 7, 8, 9])
     verify(
       null,
-      [
-        'Datastore/statement/MongoDB/testCollection/distinct',
-        'Callback: done'
-      ],
+      ['Datastore/statement/MongoDB/testCollection/distinct', 'Callback: done'],
       ['distinct']
     )
   })
@@ -120,25 +122,17 @@ common.test('drop', function dropTest(t, collection, verify) {
   collection.drop(function done(err, data) {
     t.error(err)
     t.equal(data, true)
-    verify(
-      null,
-      [
-        'Datastore/statement/MongoDB/testCollection/drop',
-        'Callback: done'
-      ],
-      ['drop']
-    )
+    verify(null, ['Datastore/statement/MongoDB/testCollection/drop', 'Callback: done'], ['drop'])
   })
 })
 
-
 if (semver.satisfies(mongoPackage.version, '<3')) {
   common.test('geoNear', function geoNearTest(t, collection, verify) {
-    collection.ensureIndex({loc: '2d'}, {bucketSize: 1}, indexed)
+    collection.ensureIndex({ loc: '2d' }, { bucketSize: 1 }, indexed)
 
     function indexed(err) {
       t.error(err)
-      collection.geoNear(20, 20, {maxDistance: 5}, done)
+      collection.geoNear(20, 20, { maxDistance: 5 }, done)
     }
 
     function done(err, data) {
@@ -172,31 +166,28 @@ common.test('isCapped', function isCappedTest(t, collection, verify) {
 
     verify(
       null,
-      [
-        'Datastore/statement/MongoDB/testCollection/isCapped',
-        'Callback: done'
-      ],
+      ['Datastore/statement/MongoDB/testCollection/isCapped', 'Callback: done'],
       ['isCapped']
     )
   })
 })
 
 common.test('mapReduce', function mapReduceTest(t, collection, verify) {
-  collection.mapReduce(map, reduce, {out: {inline: 1}}, done)
+  collection.mapReduce(map, reduce, { out: { inline: 1 } }, done)
 
   function done(err, data) {
     t.error(err)
     const expectedData = [
-      {_id: 0, value: 30},
-      {_id: 1, value: 33},
-      {_id: 2, value: 36},
-      {_id: 3, value: 39},
-      {_id: 4, value: 42},
-      {_id: 5, value: 45},
-      {_id: 6, value: 48},
-      {_id: 7, value: 51},
-      {_id: 8, value: 54},
-      {_id: 9, value: 57}
+      { _id: 0, value: 30 },
+      { _id: 1, value: 33 },
+      { _id: 2, value: 36 },
+      { _id: 3, value: 39 },
+      { _id: 4, value: 42 },
+      { _id: 5, value: 45 },
+      { _id: 6, value: 48 },
+      { _id: 7, value: 51 },
+      { _id: 8, value: 54 },
+      { _id: 9, value: 57 }
     ]
 
     // data is not sorted depending on speed of
@@ -206,10 +197,7 @@ common.test('mapReduce', function mapReduceTest(t, collection, verify) {
 
     verify(
       null,
-      [
-        'Datastore/statement/MongoDB/testCollection/mapReduce',
-        'Callback: done'
-      ],
+      ['Datastore/statement/MongoDB/testCollection/mapReduce', 'Callback: done'],
       ['mapReduce']
     )
   }
@@ -240,18 +228,15 @@ common.test('options', function optionsTest(t, collection, verify) {
 
     verify(
       null,
-      [
-        'Datastore/statement/MongoDB/testCollection/options',
-        'Callback: done'
-      ],
+      ['Datastore/statement/MongoDB/testCollection/options', 'Callback: done'],
       ['options']
     )
   })
 })
 
 if (semver.satisfies(mongoPackage.version, '<4')) {
-  common.test('parallelCollectionScan', function(t, collection, verify) {
-    collection.parallelCollectionScan({numCursors: 1}, function done(err, cursors) {
+  common.test('parallelCollectionScan', function (t, collection, verify) {
+    collection.parallelCollectionScan({ numCursors: 1 }, function done(err, cursors) {
       t.error(err)
 
       cursors[0].toArray(function toArray(err, items) {
@@ -269,7 +254,7 @@ if (semver.satisfies(mongoPackage.version, '<4')) {
             'Datastore/statement/MongoDB/testCollection/parallelCollectionScan',
             'Callback: done',
             'Datastore/statement/MongoDB/testCollection/toArray',
-            'Callback: toArray',
+            'Callback: toArray'
           ],
           ['parallelCollectionScan', 'toArray']
         )
@@ -278,11 +263,11 @@ if (semver.satisfies(mongoPackage.version, '<4')) {
   })
 
   common.test('geoHaystackSearch', function haystackSearchTest(t, collection, verify) {
-    collection.ensureIndex({loc: 'geoHaystack', type: 1}, {bucketSize: 1}, indexed)
+    collection.ensureIndex({ loc: 'geoHaystack', type: 1 }, { bucketSize: 1 }, indexed)
 
     function indexed(err) {
       t.error(err)
-      collection.geoHaystackSearch(15, 15, {maxDistance: 5, search: {}}, done)
+      collection.geoHaystackSearch(15, 15, { maxDistance: 5, search: {} }, done)
     }
 
     function done(err, data) {
@@ -307,28 +292,25 @@ if (semver.satisfies(mongoPackage.version, '<4')) {
   })
 
   common.test('group', function groupTest(t, collection, verify) {
-    collection.group(['mod10'], {}, {count: 0, total: 0}, count, done)
+    collection.group(['mod10'], {}, { count: 0, total: 0 }, count, done)
 
     function done(err, data) {
       t.error(err)
       t.same(data.sort(sort), [
-        {mod10: 0, count: 3, total: 30},
-        {mod10: 1, count: 3, total: 33},
-        {mod10: 2, count: 3, total: 36},
-        {mod10: 3, count: 3, total: 39},
-        {mod10: 4, count: 3, total: 42},
-        {mod10: 5, count: 3, total: 45},
-        {mod10: 6, count: 3, total: 48},
-        {mod10: 7, count: 3, total: 51},
-        {mod10: 8, count: 3, total: 54},
-        {mod10: 9, count: 3, total: 57}
+        { mod10: 0, count: 3, total: 30 },
+        { mod10: 1, count: 3, total: 33 },
+        { mod10: 2, count: 3, total: 36 },
+        { mod10: 3, count: 3, total: 39 },
+        { mod10: 4, count: 3, total: 42 },
+        { mod10: 5, count: 3, total: 45 },
+        { mod10: 6, count: 3, total: 48 },
+        { mod10: 7, count: 3, total: 51 },
+        { mod10: 8, count: 3, total: 54 },
+        { mod10: 9, count: 3, total: 57 }
       ])
       verify(
         null,
-        [
-          'Datastore/statement/MongoDB/testCollection/group',
-          'Callback: done'
-        ],
+        ['Datastore/statement/MongoDB/testCollection/group', 'Callback: done'],
         ['group']
       )
     }
@@ -350,30 +332,19 @@ common.test('rename', function renameTest(t, collection, verify) {
 
     verify(
       null,
-      [
-        'Datastore/statement/MongoDB/testCollection/rename',
-        'Callback: done'
-      ],
+      ['Datastore/statement/MongoDB/testCollection/rename', 'Callback: done'],
       ['rename']
     )
   })
 })
 
-
 common.test('stats', function statsTest(t, collection, verify) {
-  collection.stats({i: 5}, function done(err, data) {
+  collection.stats({ i: 5 }, function done(err, data) {
     t.error(err)
     t.equal(data.ns, common.DB_NAME + '.testCollection')
     t.equal(data.count, 30)
     t.equal(data.ok, 1)
 
-    verify(
-      null,
-      [
-        'Datastore/statement/MongoDB/testCollection/stats',
-        'Callback: done'
-      ],
-      ['stats']
-    )
+    verify(null, ['Datastore/statement/MongoDB/testCollection/stats', 'Callback: done'], ['stats'])
   })
 })

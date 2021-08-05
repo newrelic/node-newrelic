@@ -25,7 +25,7 @@ const DEFAULT_CONFIG = {
   security_policies_token: 'AAAA-TEST-TOKE-NNN',
   plugins: {
     // turn off native metrics to avoid unwanted gc metrics
-    native_metrics: {enabled: false}
+    native_metrics: { enabled: false }
   },
   utilization: {
     detect_aws: false,
@@ -47,7 +47,7 @@ function getPreconnectReply(securityPolicies) {
   return reply
 }
 
-const CONNECT_REPLY = {return_value: {agent_run_id: RUN_ID}}
+const CONNECT_REPLY = { return_value: { agent_run_id: RUN_ID } }
 
 tap.test('LASP/CSP - Cross Agent Tests', (t) => {
   t.plan(testCases.length)
@@ -192,7 +192,7 @@ function initConfigurationItem(config, path, value) {
       return
     }
 
-    if (index === (nestedKeys.length - 1)) {
+    if (index === nestedKeys.length - 1) {
       nestedSetting[settingName] = value
       return
     }
@@ -213,8 +213,7 @@ function createTestConfiguration(t, testCase) {
     const settingValue = policyMappings.allowedValues[policyValue.enabled ? 1 : 0]
 
     t.comment(
-      `${policyName}.enabled: ${policyValue.enabled} ` +
-      `-> ${matchingConfigPath}: ${settingValue}`
+      `${policyName}.enabled: ${policyValue.enabled} ` + `-> ${matchingConfigPath}: ${settingValue}`
     )
 
     initConfigurationItem(initialConfig, matchingConfigPath, settingValue)
@@ -226,7 +225,7 @@ function createTestConfiguration(t, testCase) {
 function hasRequiredFeatures(t, requiredFeatures) {
   const unsupportedFeatures = requiredFeatures.filter((featureName) => {
     const mapping = LASP_MAP[featureName]
-    return (mapping == null)
+    return mapping == null
   })
 
   if (unsupportedFeatures.length > 0) {

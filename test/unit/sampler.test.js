@@ -14,41 +14,39 @@ var configurator = require('../../lib/config')
 var expect = require('chai').expect
 var sampler = require('../../lib/sampler')
 
-
 var NAMES = require('../../lib/metrics/names')
 
-
-describe('environmental sampler', function() {
+describe('environmental sampler', function () {
   var agent = null
   var numCpus = require('os').cpus().length
   var oldCpuUsage = process.cpuUsage
   var oldUptime = process.uptime
 
-  beforeEach(function() {
+  beforeEach(function () {
     agent = new Agent(configurator.initialize())
-    process.cpuUsage = function() {
+    process.cpuUsage = function () {
       // process.cpuUsage return values in cpu microseconds (1^-6)
       return { user: 1e6 * numCpus, system: 1e6 * numCpus }
     }
-    process.uptime = function() {
+    process.uptime = function () {
       // process.uptime returns values in seconds
       return 1
     }
   })
 
-  afterEach(function() {
+  afterEach(function () {
     sampler.stop()
     process.cpuUsage = oldCpuUsage
     process.uptime = oldUptime
   })
 
-  it('should have the native-metrics package available', function() {
-    expect(function() {
+  it('should have the native-metrics package available', function () {
+    expect(function () {
       require('@newrelic/native-metrics')
     }).to.not.throw()
   })
 
-  it('should still gather native metrics when bound and unbound', function(done) {
+  it('should still gather native metrics when bound and unbound', function (done) {
     sampler.start(agent)
     sampler.stop()
     sampler.start(agent)
@@ -89,7 +87,7 @@ describe('environmental sampler', function() {
     })
   })
 
-  it('should gather loop metrics', function(done) {
+  it('should gather loop metrics', function (done) {
     sampler.start(agent)
     sampler.nativeMetrics.getLoopMetrics()
     spinLoop(function runLoop() {
@@ -104,21 +102,25 @@ describe('environmental sampler', function() {
     })
   })
 
-  it('should depend on Agent to provide the current metrics summary', function() {
-    expect(function() { sampler.start(agent) }).to.not.throw()
-    expect(function() { sampler.stop(agent) }).to.not.throw()
+  it('should depend on Agent to provide the current metrics summary', function () {
+    expect(function () {
+      sampler.start(agent)
+    }).to.not.throw()
+    expect(function () {
+      sampler.stop(agent)
+    }).to.not.throw()
   })
 
-  it('should default to a state of stopped', function() {
+  it('should default to a state of stopped', function () {
     expect(sampler.state).equal('stopped')
   })
 
-  it('should say it is running after start', function() {
+  it('should say it is running after start', function () {
     sampler.start(agent)
     expect(sampler.state).equal('running')
   })
 
-  it('should gather CPU user utilization metric', function() {
+  it('should gather CPU user utilization metric', function () {
     sampler.sampleCpu(agent)()
 
     var stats = agent.metrics.getOrCreateMetric(NAMES.CPU.USER_UTILIZATION)
@@ -126,7 +128,7 @@ describe('environmental sampler', function() {
     expect(stats.total).equal(1)
   })
 
-  it('should gather CPU system utilization metric', function() {
+  it('should gather CPU system utilization metric', function () {
     sampler.sampleCpu(agent)()
 
     var stats = agent.metrics.getOrCreateMetric(NAMES.CPU.SYSTEM_UTILIZATION)
@@ -134,7 +136,7 @@ describe('environmental sampler', function() {
     expect(stats.total).equal(1)
   })
 
-  it('should gather CPU user time metric', function() {
+  it('should gather CPU user time metric', function () {
     sampler.sampleCpu(agent)()
 
     var stats = agent.metrics.getOrCreateMetric(NAMES.CPU.USER_TIME)
@@ -142,7 +144,7 @@ describe('environmental sampler', function() {
     expect(stats.total).equal(numCpus)
   })
 
-  it('should gather CPU sytem time metric', function() {
+  it('should gather CPU sytem time metric', function () {
     sampler.sampleCpu(agent)()
 
     var stats = agent.metrics.getOrCreateMetric(NAMES.CPU.SYSTEM_TIME)
@@ -150,7 +152,7 @@ describe('environmental sampler', function() {
     expect(stats.total).equal(numCpus)
   })
 
-  it('should gather GC metrics', function(done) {
+  it('should gather GC metrics', function (done) {
     sampler.start(agent)
 
     // Clear up the current state of the metrics.
@@ -185,14 +187,14 @@ describe('environmental sampler', function() {
     })
   })
 
-  it('should not gather GC metrics if disabled', function() {
+  it('should not gather GC metrics if disabled', function () {
     agent.config.plugins.native_metrics.enabled = false
     sampler.start(agent)
     expect(sampler.nativeMetrics).to.be.null
   })
 
-  it('should catch if process.cpuUsage throws an error', function() {
-    process.cpuUsage = function() {
+  it('should catch if process.cpuUsage throws an error', function () {
+    process.cpuUsage = function () {
       throw new Error('ohhhhhh boyyyyyy')
     }
     sampler.sampleCpu(agent)()
@@ -201,7 +203,7 @@ describe('environmental sampler', function() {
     expect(stats.callCount).equal(0)
   })
 
-  it('should collect all specified memory statistics', function() {
+  it('should collect all specified memory statistics', function () {
     sampler.sampleMemory(agent)()
 
     Object.keys(NAMES.MEMORY).forEach(function testStat(memoryStat) {
@@ -212,9 +214,9 @@ describe('environmental sampler', function() {
     })
   })
 
-  it('should catch if process.memoryUsage throws an error', function() {
+  it('should catch if process.memoryUsage throws an error', function () {
     var oldProcessMem = process.memoryUsage
-    process.memoryUsage = function() {
+    process.memoryUsage = function () {
       throw new Error('your computer is on fire')
     }
     sampler.sampleMemory(agent)()
@@ -224,7 +226,7 @@ describe('environmental sampler', function() {
     process.memoryUsage = oldProcessMem
   })
 
-  it('should have some rough idea of how deep the event queue is', function(done) {
+  it('should have some rough idea of how deep the event queue is', function (done) {
     sampler.checkEvents(agent)()
 
     /* sampler.checkEvents works by creating a timer and using
@@ -237,7 +239,7 @@ describe('environmental sampler', function() {
      * timer has nanosecond precision (and probably significantly
      * greater-than-millisecond accuracy).
      */
-    setTimeout(function() {
+    setTimeout(function () {
       var stats = agent.metrics.getOrCreateMetric('Events/wait')
       expect(stats.callCount).equal(1)
       /* process.hrtime will notice the passage of time, but this
@@ -260,10 +262,10 @@ function spinLoop(cb) {
 
   timeout()
   function timeout() {
-    setTimeout(function() {
+    setTimeout(function () {
       let trash = []
       for (let i = 0; i < 100000; ++i) {
-        trash.push([{i: i}])
+        trash.push([{ i: i }])
       }
       trash = null
 

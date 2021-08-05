@@ -10,14 +10,13 @@
 require('tap').mochaGlobals()
 
 const chai = require('chai')
-const should   = chai.should()
+const should = chai.should()
 const parseSql = require('../../lib/db/parse-sql')
 
-
-describe('database query parser', function() {
-  describe('SELECT SQL', function() {
-    it("should parse a simple query", function() {
-      var ps = parseSql('NoSQL', "Select\n *\n from dude")
+describe('database query parser', function () {
+  describe('SELECT SQL', function () {
+    it('should parse a simple query', function () {
+      var ps = parseSql('NoSQL', 'Select\n *\n from dude')
       should.exist(ps)
 
       should.exist(ps.type)
@@ -31,8 +30,8 @@ describe('database query parser', function() {
       ps.raw.should.equal('Select\n *\n from dude')
     })
 
-    it("should parse another simple query", function() {
-      var ps = parseSql('NoSQL', "Select * from transaction_traces_12")
+    it('should parse another simple query', function () {
+      var ps = parseSql('NoSQL', 'Select * from transaction_traces_12')
       should.exist(ps)
 
       should.exist(ps.type)
@@ -47,9 +46,9 @@ describe('database query parser', function() {
     })
   })
 
-  describe('DELETE SQL', function() {
-    it("should parse a simple command", function() {
-      var ps = parseSql('NoSQL', "DELETE\nfrom dude")
+  describe('DELETE SQL', function () {
+    it('should parse a simple command', function () {
+      var ps = parseSql('NoSQL', 'DELETE\nfrom dude')
       should.exist(ps)
 
       should.exist(ps.type)
@@ -63,7 +62,7 @@ describe('database query parser', function() {
       ps.raw.should.equal('DELETE\nfrom dude')
     })
 
-    it("should parse a command with conditions", function() {
+    it('should parse a command with conditions', function () {
       var ps = parseSql('NoSQL', "DELETE\nfrom dude where name = 'man'")
       should.exist(ps)
 
@@ -75,13 +74,13 @@ describe('database query parser', function() {
 
       should.exist(ps.collection)
       ps.collection.should.equal('dude')
-      ps.raw.should.equal('DELETE\nfrom dude where name = \'man\'')
+      ps.raw.should.equal("DELETE\nfrom dude where name = 'man'")
     })
   })
 
-  describe('UPDATE SQL', function() {
-    it("should parse a command with gratuitous white space and conditions", function() {
-      var ps = parseSql('NoSQL', "  update test set value = 1 where id = 12")
+  describe('UPDATE SQL', function () {
+    it('should parse a command with gratuitous white space and conditions', function () {
+      var ps = parseSql('NoSQL', '  update test set value = 1 where id = 12')
       should.exist(ps)
 
       should.exist(ps.type)
@@ -96,9 +95,9 @@ describe('database query parser', function() {
     })
   })
 
-  describe('INSERT SQL', function() {
-    it("should parse a command with a subquery", function() {
-      var ps = parseSql('NoSQL', "  insert into\ntest\nselect * from dude")
+  describe('INSERT SQL', function () {
+    it('should parse a command with a subquery', function () {
+      var ps = parseSql('NoSQL', '  insert into\ntest\nselect * from dude')
       should.exist(ps)
 
       should.exist(ps.type)
@@ -113,9 +112,9 @@ describe('database query parser', function() {
     })
   })
 
-  describe('invalid SQL', function() {
-    it("should return 'other' when handed garbage", function() {
-      var ps = parseSql('NoSQL', "  bulge into\ndudes\nselect * from dude")
+  describe('invalid SQL', function () {
+    it("should return 'other' when handed garbage", function () {
+      var ps = parseSql('NoSQL', '  bulge into\ndudes\nselect * from dude')
       should.exist(ps)
 
       should.exist(ps.type)
@@ -128,7 +127,7 @@ describe('database query parser', function() {
       ps.raw.should.equal('bulge into\ndudes\nselect * from dude')
     })
 
-    it("should return 'other' when handed an object", function() {
+    it("should return 'other' when handed an object", function () {
       var ps = parseSql('NoSQL', {
         key: 'value'
       })

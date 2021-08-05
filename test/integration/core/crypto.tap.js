@@ -10,10 +10,10 @@ var crypto = require('crypto')
 var helper = require('../../lib/agent_helper')
 var verifySegments = require('./verify.js')
 
-test('pbkdf2', function(t) {
+test('pbkdf2', function (t) {
   var agent = setupAgent(t)
-  helper.runInTransaction(agent, function() {
-    crypto.pbkdf2('hunter2', 'saltine', 5, 32, 'sha1', function(err, key) {
+  helper.runInTransaction(agent, function () {
+    crypto.pbkdf2('hunter2', 'saltine', 5, 32, 'sha1', function (err, key) {
       t.notOk(err, 'should not error')
       t.equal(key.length, 32)
       verifySegments(t, agent, 'crypto.pbkdf2')
@@ -21,10 +21,10 @@ test('pbkdf2', function(t) {
   })
 })
 
-test('randomBytes', function(t) {
+test('randomBytes', function (t) {
   var agent = setupAgent(t)
-  helper.runInTransaction(agent, function() {
-    crypto.randomBytes(32, function(err, key) {
+  helper.runInTransaction(agent, function () {
+    crypto.randomBytes(32, function (err, key) {
       t.notOk(err, 'should not error')
       t.ok(key.length, 32)
       verifySegments(t, agent, 'crypto.randomBytes')
@@ -32,9 +32,9 @@ test('randomBytes', function(t) {
   })
 })
 
-test('sync randomBytes', function(t) {
+test('sync randomBytes', function (t) {
   var agent = setupAgent(t)
-  helper.runInTransaction(agent, function(transaction) {
+  helper.runInTransaction(agent, function (transaction) {
     var bytes = crypto.randomBytes(32)
     t.ok(bytes instanceof Buffer)
     t.equal(bytes.length, 32)
@@ -43,10 +43,11 @@ test('sync randomBytes', function(t) {
   })
 })
 
-test('pseudoRandomBytes', function(t) {
+test('pseudoRandomBytes', function (t) {
   var agent = setupAgent(t)
-  helper.runInTransaction(agent, function() {
-    crypto.pseudoRandomBytes(32, function(err, key) {
+  helper.runInTransaction(agent, function () {
+    // eslint-disable-next-line node/no-deprecated-api
+    crypto.pseudoRandomBytes(32, function (err, key) {
       t.notOk(err, 'should not error')
       t.ok(key.length, 32)
       verifySegments(t, agent, 'crypto.pseudoRandomBytes')
@@ -54,9 +55,10 @@ test('pseudoRandomBytes', function(t) {
   })
 })
 
-test('sync pseudoRandomBytes', function(t) {
+test('sync pseudoRandomBytes', function (t) {
   var agent = setupAgent(t)
-  helper.runInTransaction(agent, function(transaction) {
+  helper.runInTransaction(agent, function (transaction) {
+    // eslint-disable-next-line node/no-deprecated-api
     var bytes = crypto.pseudoRandomBytes(32)
     t.ok(bytes instanceof Buffer)
     t.equal(bytes.length, 32)
@@ -65,14 +67,14 @@ test('sync pseudoRandomBytes', function(t) {
   })
 })
 
-test('randomFill', function(t) {
+test('randomFill', function (t) {
   if (!crypto.randomFill) {
     return t.end()
   }
   var agent = setupAgent(t)
-  helper.runInTransaction(agent, function() {
+  helper.runInTransaction(agent, function () {
     var buf = Buffer.alloc(10)
-    crypto.randomFill(buf, function(err, buffer) {
+    crypto.randomFill(buf, function (err, buffer) {
       t.notOk(err, 'should not error')
       t.ok(buffer.length, 10)
       verifySegments(t, agent, 'crypto.randomFill')
@@ -80,12 +82,12 @@ test('randomFill', function(t) {
   })
 })
 
-test('sync randomFill', function(t) {
+test('sync randomFill', function (t) {
   if (!crypto.randomFill) {
     return t.end()
   }
   var agent = setupAgent(t)
-  helper.runInTransaction(agent, function(transaction) {
+  helper.runInTransaction(agent, function (transaction) {
     var buf = Buffer.alloc(10)
     crypto.randomFillSync(buf)
     t.ok(buf instanceof Buffer)
@@ -123,10 +125,9 @@ test('scryptSync', (t) => {
   })
 })
 
-
 function setupAgent(t) {
   var agent = helper.instrumentMockedAgent()
-  t.teardown(function() {
+  t.teardown(function () {
     helper.unloadAgent(agent)
   })
 

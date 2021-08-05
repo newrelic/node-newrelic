@@ -17,11 +17,14 @@ test('http errors are noticed correctly', function testError(t) {
 
   server.listen(0)
 
-  http.get({
-    path: '/test?thing=123',
-    host: 'localhost',
-    port: server.address().port
-  }, close)
+  http.get(
+    {
+      path: '/test?thing=123',
+      host: 'localhost',
+      port: server.address().port
+    },
+    close
+  )
 
   function handler(req, res) {
     agent.errors.add(agent.getTransaction(), new Error('notice me!'))

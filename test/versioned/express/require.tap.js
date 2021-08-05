@@ -8,8 +8,7 @@
 var test = require('tap').test
 var helper = require('../../lib/agent_helper')
 
-
-test("requiring express a bunch of times shouldn't leak listeners", function(t) {
+test("requiring express a bunch of times shouldn't leak listeners", function (t) {
   var agent = helper.instrumentMockedAgent()
   require('express')
   var numListeners = agent.listeners('transactionFinished').length

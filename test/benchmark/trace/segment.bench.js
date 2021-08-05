@@ -41,7 +41,7 @@ suite.add({
     root.timer.setDurationInMillis(10000, Date.now())
     addChildren(root, 899)
   },
-  fn: function() {
+  fn: function () {
     return root.toJSON()
   }
 })
@@ -54,7 +54,7 @@ suite.add({
     root.timer.setDurationInMillis(10000, Date.now())
     addChildren(root, 1)
   },
-  fn: function() {
+  fn: function () {
     return root.toJSON()
   }
 })
@@ -67,7 +67,7 @@ suite.add({
     root.timer.setDurationInMillis(10000, Date.now())
     addChildren(root, 2)
   },
-  fn: function() {
+  fn: function () {
     return root.toJSON()
   }
 })
@@ -80,7 +80,7 @@ suite.add({
     root.timer.setDurationInMillis(10000, Date.now())
     addChildren(root, 899)
   },
-  fn: function() {
+  fn: function () {
     return root.getExclusiveDurationInMillis()
   }
 })
@@ -93,7 +93,7 @@ suite.add({
     root.timer.setDurationInMillis(10000, Date.now())
     addChildren(root, 1)
   },
-  fn: function() {
+  fn: function () {
     return root.getExclusiveDurationInMillis()
   }
 })
@@ -106,10 +106,9 @@ suite.add({
     root.timer.setDurationInMillis(10000, Date.now())
     addChildren(root, 2)
   },
-  fn: function() {
+  fn: function () {
     return root.getExclusiveDurationInMillis()
   }
 })
-
 
 suite.run()

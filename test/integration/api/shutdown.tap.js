@@ -82,7 +82,6 @@ tap.test('#shutdown', (t) => {
   })
 })
 
-
 function setupShutdownEndpoints(runId) {
   // Final harvest
   return {
@@ -93,13 +92,13 @@ function setupShutdownEndpoints(runId) {
 
 function setupConnectionEndpoints(runId) {
   return {
-    preconnect: nockRequest('preconnect').reply(200, {return_value: TEST_DOMAIN}),
+    preconnect: nockRequest('preconnect').reply(200, { return_value: TEST_DOMAIN }),
     connect: nockRequest('connect').reply(200, {
       return_value: {
         agent_run_id: runId
       }
     }),
-    settings: nockRequest('agent_settings', runId).reply(200, {return_value: []})
+    settings: nockRequest('agent_settings', runId).reply(200, { return_value: [] })
   }
 }
 

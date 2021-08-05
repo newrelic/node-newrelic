@@ -7,7 +7,6 @@
 
 var helper = require('../../lib/agent_helper')
 
-
 // bootstrap instrumentation
 helper.instrumentMockedAgent()
 
@@ -16,15 +15,17 @@ var express = require('express')
 var app = express()
 var server = require('http').createServer(app)
 
-
-app.get('/test/:id', function(req, res, next) {
-  process.nextTick(function() { throw new Error('threw in a timer', next) })
+app.get('/test/:id', function (req, res, next) {
+  process.nextTick(function () {
+    throw new Error('threw in a timer', next)
+  })
 })
 
-helper.ranomPort(function(port) {
-  server.listen(port, function() {
-    process.on('message', function(code) {
-      helper.makeGetRequest('http://localhost:' + port + '/test/31337', function() {
+helper.ranomPort(function (port) {
+  server.listen(port, function () {
+    process.on('message', function (code) {
+      helper.makeGetRequest('http://localhost:' + port + '/test/31337', function () {
+        // eslint-disable-next-line no-process-exit
         process.exit(code)
       })
     })

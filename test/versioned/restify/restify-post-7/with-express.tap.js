@@ -7,11 +7,11 @@
 
 const tap = require('tap')
 const request = require('request')
-const helper  = require('../../../lib/agent_helper')
+const helper = require('../../../lib/agent_helper')
 
 const MAX_PORT_ATTEMPTS = 5
 
-tap.test("restify shouldn't affect express query parsing middleware", function(t) {
+tap.test("restify shouldn't affect express query parsing middleware", function (t) {
   t.plan(2)
 
   const agent = helper.instrumentMockedAgent()
@@ -19,8 +19,8 @@ tap.test("restify shouldn't affect express query parsing middleware", function(t
 
   require('restify')
 
-  const app     = express()
-  const server  = require('http').createServer(app)
+  const app = express()
+  const server = require('http').createServer(app)
 
   app.get('/', function cb_get(req, res) {
     // Unforunately, restify has its own issues with Express right now
@@ -68,7 +68,7 @@ tap.test("restify shouldn't affect express query parsing middleware", function(t
   server.on('listening', () => {
     const port = server.address().port
 
-    request.get(`http://localhost:${port}/?test=success`, function(err, response) {
+    request.get(`http://localhost:${port}/?test=success`, function (err, response) {
       if (err) {
         return t.fail(err)
       }

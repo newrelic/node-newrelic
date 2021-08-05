@@ -25,14 +25,14 @@ tap.test('Agent API - Stubbed Agent API', (t) => {
     t.end()
   })
 
-  t.test("exports a transaction naming function", (t) => {
+  t.test('exports a transaction naming function', (t) => {
     t.ok(api.setTransactionName)
     t.type(api.setTransactionName, 'function')
 
     t.end()
   })
 
-  t.test("exports a dispatcher naming function", (t) => {
+  t.test('exports a dispatcher naming function', (t) => {
     t.ok(api.setDispatcher)
 
     t.type(api.setDispatcher, 'function')
@@ -48,7 +48,7 @@ tap.test('Agent API - Stubbed Agent API', (t) => {
     t.end()
   })
 
-  t.test("exports a controller naming function", (t) => {
+  t.test('exports a controller naming function', (t) => {
     t.ok(api.setControllerName)
     t.type(api.setControllerName, 'function')
 
@@ -71,14 +71,14 @@ tap.test('Agent API - Stubbed Agent API', (t) => {
     t.end()
   })
 
-  t.test("exports a function to get the current transaction handle", (t) => {
+  t.test('exports a function to get the current transaction handle', (t) => {
     t.ok(api.getTransaction)
     t.type(api.getTransaction, 'function')
 
     t.end()
   })
 
-  t.test("exports a function for adding naming rules", (t) => {
+  t.test('exports a function for adding naming rules', (t) => {
     t.ok(api.addNamingRule)
     t.type(api.addNamingRule, 'function')
 
@@ -87,13 +87,13 @@ tap.test('Agent API - Stubbed Agent API', (t) => {
 
   t.test("shouldn't throw when a naming rule is added", (t) => {
     t.doesNotThrow(() => {
-      api.addNamingRule(/^foo/, "/foo/*")
+      api.addNamingRule(/^foo/, '/foo/*')
     })
 
     t.end()
   })
 
-  t.test("exports a function for ignoring certain URLs", (t) => {
+  t.test('exports a function for ignoring certain URLs', (t) => {
     t.ok(api.addIgnoringRule)
     t.type(api.addIgnoringRule, 'function')
 
@@ -102,13 +102,13 @@ tap.test('Agent API - Stubbed Agent API', (t) => {
 
   t.test("shouldn't throw when an ignoring rule is added", (t) => {
     t.doesNotThrow(() => {
-      api.addIgnoringRule(/^foo/, "/foo/*")
+      api.addIgnoringRule(/^foo/, '/foo/*')
     })
 
     t.end()
   })
 
-  t.test("exports a function for getting linking metadata", (t) => {
+  t.test('exports a function for getting linking metadata', (t) => {
     t.ok(api.getLinkingMetadata)
     t.type(api.getTraceMetadata, 'function')
 
@@ -118,7 +118,7 @@ tap.test('Agent API - Stubbed Agent API', (t) => {
     t.end()
   })
 
-  t.test("exports a function for getting trace metadata", (t) => {
+  t.test('exports a function for getting trace metadata', (t) => {
     t.ok(api.getTraceMetadata)
     t.type(api.getTraceMetadata, 'function')
 
@@ -132,7 +132,7 @@ tap.test('Agent API - Stubbed Agent API', (t) => {
     t.end()
   })
 
-  t.test("exports a function for capturing errors", (t) => {
+  t.test('exports a function for capturing errors', (t) => {
     t.ok(api.noticeError)
     t.type(api.noticeError, 'function')
 
@@ -147,7 +147,7 @@ tap.test('Agent API - Stubbed Agent API', (t) => {
     t.end()
   })
 
-  t.test("should return an empty string when requesting browser monitoring", (t) => {
+  t.test('should return an empty string when requesting browser monitoring', (t) => {
     const header = api.getBrowserTimingHeader()
     t.equal(header, '')
 
@@ -162,7 +162,7 @@ tap.test('Agent API - Stubbed Agent API', (t) => {
     t.end()
   })
 
-  t.test("exports a function for adding multiple custom parameters at once", (t) => {
+  t.test('exports a function for adding multiple custom parameters at once', (t) => {
     t.ok(api.addCustomAttributes)
     t.type(api.addCustomAttributes, 'function')
 
@@ -171,13 +171,13 @@ tap.test('Agent API - Stubbed Agent API', (t) => {
 
   t.test("shouldn't throw when multiple custom parameters are added", (t) => {
     t.doesNotThrow(() => {
-      api.addCustomAttributes({test: 'value', test2: 'value2'})
+      api.addCustomAttributes({ test: 'value', test2: 'value2' })
     })
 
     t.end()
   })
 
-  t.test("should return a function when calling setLambdaHandler", (t) => {
+  t.test('should return a function when calling setLambdaHandler', (t) => {
     function myNop() {}
     const retVal = api.setLambdaHandler(myNop)
     t.equal(retVal, myNop)
@@ -201,7 +201,9 @@ tap.test('Agent API - Stubbed Agent API', (t) => {
 
   t.test('should return the return value of the handler', (t) => {
     const obj = {}
-    const ret = api.startSegment('foo', false, function() { return obj })
+    const ret = api.startSegment('foo', false, function () {
+      return obj
+    })
     t.equal(obj, ret)
 
     t.end()
@@ -215,7 +217,7 @@ tap.test('Agent API - Stubbed Agent API', (t) => {
     t.end()
   })
 
-  t.test("should call the function passed into startWebTransaction", (t) => {
+  t.test('should call the function passed into startWebTransaction', (t) => {
     api.startWebTransaction('test', function nop() {
       t.end()
     })
@@ -245,7 +247,7 @@ tap.test('Agent API - Stubbed Agent API', (t) => {
     t.end()
   })
 
-  t.test("should call the function passed into startBackgroundTransaction", (t) => {
+  t.test('should call the function passed into startBackgroundTransaction', (t) => {
     api.startBackgroundTransaction('test', 'group', function nop() {
       t.end()
     })
@@ -270,27 +272,23 @@ tap.test('Agent API - Stubbed Agent API', (t) => {
     }
   )
 
-  t.test("shouldn't throw when a custom background transaction is started with no group",
-    (t) => {
-      t.doesNotThrow(() => {
-        api.startBackgroundTransaction('test', function nop() {})
-      })
+  t.test("shouldn't throw when a custom background transaction is started with no group", (t) => {
+    t.doesNotThrow(() => {
+      api.startBackgroundTransaction('test', function nop() {})
+    })
 
+    t.end()
+  })
+
+  t.test('should call the function passed into startBackgroundTransaction with no group', (t) => {
+    api.startBackgroundTransaction('test', function nop() {
       t.end()
-    }
-  )
-
-  t.test("should call the function passed into startBackgroundTransaction with no group",
-    (t) => {
-      api.startBackgroundTransaction('test', function nop() {
-        t.end()
-      })
-    }
-  )
+    })
+  })
 
   t.test(
     "shouldn't throw when a callback isn't passed into startBackgroundTransaction " +
-    "with no group",
+      'with no group',
     (t) => {
       t.doesNotThrow(() => {
         api.startBackgroundTransaction('test')
@@ -347,7 +345,7 @@ tap.test('Agent API - Stubbed Agent API', (t) => {
 
   t.test('should not throw when calling the custom metric recorder', (t) => {
     t.doesNotThrow(() => {
-      api.recordCustomEvent('EventName', {id: 10})
+      api.recordCustomEvent('EventName', { id: 10 })
     })
 
     t.end()

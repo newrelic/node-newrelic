@@ -22,7 +22,7 @@ suite.add({
   async: true,
   initialize: makeInit(true),
   agent: {},
-  fn: function(agent, done) {
+  fn: function (agent, done) {
     testDatastore.testBatch('test', done)
   }
 })
@@ -31,7 +31,7 @@ suite.add({
   name: 'uninstrumented operation',
   initialize: makeInit(false),
   async: true,
-  fn: function(agent, done) {
+  fn: function (agent, done) {
     testDatastore.testBatch('test', done)
   }
 })
@@ -42,7 +42,7 @@ suite.add({
   agent: {},
   initialize: makeInit(true),
   runInTransaction: true,
-  fn: function(agent, done) {
+  fn: function (agent, done) {
     testDatastore.testBatch('test', done)
   }
 })

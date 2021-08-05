@@ -8,17 +8,17 @@
 var helper = require('../../lib/agent_helper')
 var shared = require('./shared')
 
-
 var s = shared.makeSuite('Shim segments')
 var agent = s.agent
 var suite = s.suite
 var shim = s.shim
-var tx = helper.runInTransaction(agent, function(_tx) { return _tx })
-
+var tx = helper.runInTransaction(agent, function (_tx) {
+  return _tx
+})
 
 suite.add({
   name: 'shim.bindSegment',
-  fn: function() {
+  fn: function () {
     var test = shared.getTest()
     shim.bindSegment(test, 'func', {}, true)
     return test
@@ -27,10 +27,10 @@ suite.add({
 
 suite.add({
   name: 'shim.record',
-  fn: function() {
+  fn: function () {
     var test = shared.getTest()
-    shim.record(test, 'func', function(shim, fn, name, args) {
-      return {name: name, args: args}
+    shim.record(test, 'func', function (shim, fn, name, args) {
+      return { name: name, args: args }
     })
     return test
   }
@@ -38,7 +38,7 @@ suite.add({
 
 suite.add({
   name: 'shim.getSegment(obj)',
-  fn: function() {
+  fn: function () {
     var test = shared.getTest()
     shim.getSegment(test.func)
     return test
@@ -47,14 +47,14 @@ suite.add({
 
 suite.add({
   name: 'shim.getSegment()',
-  fn: function() {
+  fn: function () {
     return shim.getSegment()
   }
 })
 
 suite.add({
   name: 'shim.getActiveSegment',
-  fn: function() {
+  fn: function () {
     var test = shared.getTest()
     shim.getActiveSegment(test.func)
     return test
@@ -63,7 +63,7 @@ suite.add({
 
 suite.add({
   name: 'shim.storeSegment',
-  fn: function() {
+  fn: function () {
     var test = shared.getTest()
     shim.storeSegment(test, {})
     return test
@@ -72,7 +72,7 @@ suite.add({
 
 suite.add({
   name: 'shim.bindCallbackSegment',
-  fn: function() {
+  fn: function () {
     var test = shared.getTest()
     shim.bindCallbackSegment(test, 'func', {})
     return test
@@ -81,7 +81,7 @@ suite.add({
 
 suite.add({
   name: 'shim.applySegment',
-  fn: function() {
+  fn: function () {
     var test = shared.getTest()
     shim.applySegment(test.func, tx.trace.root, true, test, [1, 2, 3])
     return test
@@ -90,7 +90,7 @@ suite.add({
 
 suite.add({
   name: 'shim.createSegment',
-  fn: function() {
+  fn: function () {
     var test = shared.getTest()
     shim.createSegment('foo', test.func, tx.trace.root)
     tx.trace.root.children = []
@@ -100,8 +100,8 @@ suite.add({
 
 suite.add({
   name: 'shim.copySegmentParameters',
-  fn: function() {
-    shim.copySegmentParameters(tx.trace.root, {foo: 'bar'})
+  fn: function () {
+    shim.copySegmentParameters(tx.trace.root, { foo: 'bar' })
   }
 })
 

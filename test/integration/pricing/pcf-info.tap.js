@@ -10,8 +10,7 @@ var helper = require('../../lib/agent_helper')
 var path = require('path')
 var tap = require('tap')
 
-
-tap.test('pricing pcf info', function(t) {
+tap.test('pricing pcf info', function (t) {
   var testFile = path.resolve(
     __dirname,
     '../../lib/cross_agent_tests/utilization_vendor_specific',
@@ -19,7 +18,7 @@ tap.test('pricing pcf info', function(t) {
   )
   var getInfo = require('../../../lib/utilization/pcf-info')
 
-  fs.readFile(testFile, function(err, data) {
+  fs.readFile(testFile, function (err, data) {
     if (err) {
       throw err
     }
@@ -35,13 +34,13 @@ tap.test('pricing pcf info', function(t) {
 })
 
 function makeTest(testCase, getInfo) {
-  return function(t) {
+  return function (t) {
     var agent = helper.loadMockedAgent()
-    t.teardown(function() {
+    t.teardown(function () {
       helper.unloadAgent(agent)
     })
 
-    Object.keys(testCase.env_vars).forEach(function(key) {
+    Object.keys(testCase.env_vars).forEach(function (key) {
       var value = testCase.env_vars[key].response
       if (value == null) {
         delete process.env[key]
@@ -50,7 +49,7 @@ function makeTest(testCase, getInfo) {
       }
     })
 
-    getInfo(agent, function(err, info) {
+    getInfo(agent, function (err, info) {
       if (testCase.expected_vendors_hash) {
         var expected = testCase.expected_vendors_hash.pcf
         t.error(err, 'should not error getting data')
@@ -72,7 +71,7 @@ function checkMetrics(t, agent, expectedMetrics) {
     return
   }
 
-  Object.keys(expectedMetrics).forEach(function(expectedMetric) {
+  Object.keys(expectedMetrics).forEach(function (expectedMetric) {
     var metric = agent.metrics.getOrCreateMetric(expectedMetric)
     t.equal(
       metric.callCount,

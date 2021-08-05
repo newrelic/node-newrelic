@@ -8,8 +8,7 @@
 const test = require('tap').test
 const configurator = require('../../../lib/config')
 const Agent = require('../../../lib/agent')
-const {getTestSecret} = require('../../helpers/secrets')
-
+const { getTestSecret } = require('../../helpers/secrets')
 
 const license = getTestSecret('TEST_LICENSE')
 test('Collector API should send errors to staging-collector.newrelic.com', (t) => {
@@ -32,11 +31,11 @@ test('Collector API should send errors to staging-collector.newrelic.com', (t) =
   var agent = new Agent(config)
   var api = agent.collector
 
-  api.connect(function(error) {
+  api.connect(function (error) {
     t.error(error, 'connected without error')
 
     var transaction
-    var proxy = agent.tracer.transactionProxy(function() {
+    var proxy = agent.tracer.transactionProxy(function () {
       transaction = agent.getTransaction()
       transaction.finalizeNameFromUri('/nonexistent', 501)
     })
@@ -44,12 +43,9 @@ test('Collector API should send errors to staging-collector.newrelic.com', (t) =
     t.ok(transaction, 'got a transaction')
     agent.errors.add(transaction, new Error('test error'))
 
-    var payload = [
-      agent.config.run_id,
-      agent.errors.traceAggregator.errors
-    ]
+    var payload = [agent.config.run_id, agent.errors.traceAggregator.errors]
 
-    api.error_data(payload, function(error, command) {
+    api.error_data(payload, function (error, command) {
       t.error(error, 'sent errors without error')
       t.notOk(command.returned, 'return value is null')
 

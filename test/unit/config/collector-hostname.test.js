@@ -11,10 +11,10 @@ const Config = require('../../../lib/config')
 const keyTests = require('../../lib/cross_agent_tests/collector_hostname.json')
 
 const keyMapping = {
-  'config_file_key': 'license_key',
-  'config_override_host': 'host',
-  'env_key': 'NEW_RELIC_LICENSE_KEY',
-  'env_override_host': 'NEW_RELIC_HOST'
+  config_file_key: 'license_key',
+  config_override_host: 'host',
+  env_key: 'NEW_RELIC_LICENSE_KEY',
+  env_override_host: 'NEW_RELIC_HOST'
 }
 
 tap.test('collector host name', (t) => {

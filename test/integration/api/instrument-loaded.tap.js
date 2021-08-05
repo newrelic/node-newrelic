@@ -4,7 +4,7 @@
  */
 
 'use strict'
-const {test} = require('tap')
+const { test } = require('tap')
 const mongodb = require('mongodb')
 const API = require('../../../api')
 const agentHelper = require('../../lib/agent_helper')

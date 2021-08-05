@@ -47,10 +47,7 @@ function assertMetrics(metrics, expected, exclusive, assertValues) {
 
   for (var i = 0, len = expected.length; i < len; i++) {
     const expectedMetric = expected[i]
-    const metric = metrics.getMetric(
-      expectedMetric[0].name,
-      expectedMetric[0].scope
-    )
+    const metric = metrics.getMetric(expectedMetric[0].name, expectedMetric[0].scope)
     if (!metric) {
       throw new Error(format('%j is missing from the metrics bucket', expectedMetric[0]))
     }
@@ -119,14 +116,12 @@ function tapAssertMetrics(tap, transaction, expected, exact) {
     const metric = metrics.getMetric(name, scope)
     tap.ok(metric, 'should have expected metric name')
 
-    tap.strictSame(metric.toJSON(), expectedMetric[1],
-      'metric values should match')
+    tap.strictSame(metric.toJSON(), expectedMetric[1], 'metric values should match')
   }
 
   if (exact) {
     const metricsJSON = metrics.toJSON()
-    tap.equal(metricsJSON.length, expected.length,
-      'metrics length should match')
+    tap.equal(metricsJSON.length, expected.length, 'metrics length should match')
   }
 }
 
@@ -157,9 +152,9 @@ function assertSegments(parent, expected, options) {
   }
 
   function getChildren(_parent) {
-    return _parent.children.filter(function(item) {
+    return _parent.children.filter(function (item) {
       if (exact && options && options.exclude) {
-        return (options.exclude.indexOf(item.name) === -1)
+        return options.exclude.indexOf(item.name) === -1
       }
       return true
     })
@@ -175,16 +170,22 @@ function assertSegments(parent, expected, options) {
         assert.equal(
           child ? child.name : undefined,
           sequenceItem,
-          'segment "' + parent.name + '" should have child "' + sequenceItem +
-            '" in position ' + childCount
+          'segment "' +
+            parent.name +
+            '" should have child "' +
+            sequenceItem +
+            '" in position ' +
+            childCount
         )
 
         // If the next expected item is not array, then check that the current
         // child has no children
         if (!Array.isArray(expected[i + 1])) {
           // var children = child.children
-          assert(getChildren(child).length === 0, 'segment "' + child.name +
-            '" should not have any children')
+          assert(
+            getChildren(child).length === 0,
+            'segment "' + child.name + '" should not have any children'
+          )
         }
       } else if (typeof sequenceItem === 'object') {
         assertSegments(child, sequenceItem, options)
@@ -197,7 +198,9 @@ function assertSegments(parent, expected, options) {
       childCount,
       format(
         'segment "%s" expected to have %j children, but got %j',
-        parent.name, childCount, children.length
+        parent.name,
+        childCount,
+        children.length
       )
     )
   } else {
@@ -211,8 +214,7 @@ function assertSegments(parent, expected, options) {
             child = parent.children[j]
           }
         }
-        assert.ok(child, 'segment "' + parent.name + '" should have child "' +
-          sequenceItem + '"')
+        assert.ok(child, 'segment "' + parent.name + '" should have child "' + sequenceItem + '"')
         if (typeof expected[i + 1] === 'object') {
           assertSegments(child, expected[i + 1], exact)
         }

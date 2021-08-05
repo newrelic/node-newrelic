@@ -38,7 +38,7 @@ tap.test('Agent API - startBackgroundTransaction', (t) => {
   t.test('should add nested transaction as segment to parent transaction', (t) => {
     let transaction = null
 
-    api.startBackgroundTransaction('test', function() {
+    api.startBackgroundTransaction('test', function () {
       nested()
       transaction = agent.tracer.getTransaction()
 
@@ -50,7 +50,7 @@ tap.test('Agent API - startBackgroundTransaction', (t) => {
     })
 
     function nested() {
-      api.startBackgroundTransaction('nested', function() {})
+      api.startBackgroundTransaction('nested', function () {})
     }
 
     t.notOk(transaction.isActive())
@@ -58,10 +58,10 @@ tap.test('Agent API - startBackgroundTransaction', (t) => {
     t.end()
   })
 
-  t.test("should end the transaction after the handle returns by default", (t) => {
+  t.test('should end the transaction after the handle returns by default', (t) => {
     let transaction = null
 
-    api.startBackgroundTransaction('test', function() {
+    api.startBackgroundTransaction('test', function () {
       transaction = agent.tracer.getTransaction()
       t.equal(transaction.type, 'bg')
       t.equal(transaction.getFullName(), 'OtherTransaction/Nodejs/test')
@@ -73,10 +73,10 @@ tap.test('Agent API - startBackgroundTransaction', (t) => {
     t.end()
   })
 
-  t.test("should be namable with setTransactionName", (t) => {
+  t.test('should be namable with setTransactionName', (t) => {
     let handle = null
     let transaction = null
-    api.startBackgroundTransaction('test', function() {
+    api.startBackgroundTransaction('test', function () {
       transaction = agent.tracer.getTransaction()
       handle = api.getTransaction()
       api.setTransactionName('custom name')
@@ -86,7 +86,7 @@ tap.test('Agent API - startBackgroundTransaction', (t) => {
       t.ok(transaction.isActive())
     })
 
-    process.nextTick(function() {
+    process.nextTick(function () {
       handle.end()
 
       t.notOk(transaction.isActive())
@@ -98,7 +98,7 @@ tap.test('Agent API - startBackgroundTransaction', (t) => {
 
   t.test('should start a background txn with the given name as the name and group', (t) => {
     let transaction = null
-    api.startBackgroundTransaction('test', 'group', function() {
+    api.startBackgroundTransaction('test', 'group', function () {
       transaction = agent.tracer.getTransaction()
       t.ok(transaction)
 
@@ -115,7 +115,7 @@ tap.test('Agent API - startBackgroundTransaction', (t) => {
   t.test('should end the txn after a promise returned by the txn function resolves', (t) => {
     let thenCalled = false
     const FakePromise = {
-      then: function(f) {
+      then: function (f) {
         thenCalled = true
         f()
         return this
@@ -123,7 +123,7 @@ tap.test('Agent API - startBackgroundTransaction', (t) => {
     }
 
     let transaction = null
-    api.startBackgroundTransaction('test', function() {
+    api.startBackgroundTransaction('test', function () {
       transaction = agent.tracer.getTransaction()
 
       t.equal(transaction.type, 'bg')
@@ -143,7 +143,7 @@ tap.test('Agent API - startBackgroundTransaction', (t) => {
 
   t.test('should not end the txn if the txn is being handled externally', (t) => {
     let transaction = null
-    api.startBackgroundTransaction('test', function() {
+    api.startBackgroundTransaction('test', function () {
       transaction = agent.tracer.getTransaction()
 
       t.equal(transaction.type, 'bg')
@@ -159,8 +159,8 @@ tap.test('Agent API - startBackgroundTransaction', (t) => {
     t.end()
   })
 
-  t.test("should call the handler if no name is supplied", (t) => {
-    api.startBackgroundTransaction(null, function() {
+  t.test('should call the handler if no name is supplied', (t) => {
+    api.startBackgroundTransaction(null, function () {
       const transaction = agent.tracer.getTransaction()
       t.notOk(transaction)
 
@@ -168,7 +168,7 @@ tap.test('Agent API - startBackgroundTransaction', (t) => {
     })
   })
 
-  t.test("should not throw when no handler is supplied", (t) => {
+  t.test('should not throw when no handler is supplied', (t) => {
     t.doesNotThrow(() => api.startBackgroundTransaction('test'))
     t.doesNotThrow(() => api.startBackgroundTransaction('test', 'asdf'))
     t.doesNotThrow(() => api.startBackgroundTransaction('test', 'asdf', 'not a function'))

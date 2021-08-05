@@ -10,7 +10,6 @@ var timers = require('timers')
 var helper = require('../../lib/agent_helper')
 var verifySegments = require('./verify')
 
-
 tap.test('setTimeout', function testSetTimeout(t) {
   var agent = setupAgent(t)
   helper.runInTransaction(agent, function transactionWrapper() {
@@ -23,7 +22,7 @@ tap.test('setTimeout', function testSetTimeout(t) {
 tap.test('setImmediate', function testSetImmediate(t) {
   t.autoend()
 
-  t.test('segments', function(t) {
+  t.test('segments', function (t) {
     t.plan(2)
     var agent = setupAgent(t)
     helper.runInTransaction(agent, function transactionWrapper(tx) {
@@ -37,55 +36,55 @@ tap.test('setImmediate', function testSetImmediate(t) {
     })
   })
 
-  t.test('async transaction', function(t) {
+  t.test('async transaction', function (t) {
     t.plan(2)
     var agent = setupAgent(t)
 
-    helper.runInTransaction(agent, function(tx) {
-      timers.setImmediate(function() {
+    helper.runInTransaction(agent, function (tx) {
+      timers.setImmediate(function () {
         t.ok(agent.getTransaction(), 'should be in a transaction')
         t.equal(agent.getTransaction().id, tx.id, 'should be in correct transaction')
       })
     })
   })
 
-  t.test('overlapping transactions', function(t) {
+  t.test('overlapping transactions', function (t) {
     t.plan(5)
     var agent = setupAgent(t)
     var firstTx = null
 
-    helper.runInTransaction(agent, function(tx) {
+    helper.runInTransaction(agent, function (tx) {
       firstTx = tx
       check(tx)
     })
 
-    timers.setImmediate(function() {
-      helper.runInTransaction(agent, function(tx) {
+    timers.setImmediate(function () {
+      helper.runInTransaction(agent, function (tx) {
         t.notEqual(tx.id, firstTx.id, 'should not conflate transactions')
         check(tx)
       })
     })
 
     function check(tx) {
-      timers.setImmediate(function() {
+      timers.setImmediate(function () {
         t.ok(agent.getTransaction(), 'should be in a transaction')
         t.equal(agent.getTransaction().id, tx.id, 'should be in correct transaction')
       })
     }
   })
 
-  t.test('nested setImmediate calls', function(t) {
+  t.test('nested setImmediate calls', function (t) {
     t.plan(4)
 
     var agent = setupAgent(t)
 
     t.notOk(agent.getTransaction(), 'should not start in a transaction')
-    helper.runInTransaction(agent, function() {
-      setImmediate(function() {
+    helper.runInTransaction(agent, function () {
+      setImmediate(function () {
         t.ok(agent.getTransaction(), 'should have transaction in first immediate')
-        setImmediate(function() {
+        setImmediate(function () {
           t.ok(agent.getTransaction(), 'should have tx in second immediate')
-          setImmediate(function() {
+          setImmediate(function () {
             t.ok(agent.getTransaction(), 'should have tx in third immediate')
           })
         })
@@ -164,13 +163,18 @@ tap.test('nextTick with extra args', function testNextTick(t) {
   process.nextTick = multiArgNextTick
   var agent = setupAgent(t)
   helper.runInTransaction(agent, function transactionWrapper(transaction) {
-    process.nextTick(function callback() {
-      t.equal(agent.getTransaction(), transaction)
-      t.equal(agent.getTransaction().trace.root.children.length, 0)
-      t.deepEqual([].slice.call(arguments), [1, 2, 3])
-      process.nextTick = original
-      t.end()
-    }, 1, 2, 3)
+    process.nextTick(
+      function callback() {
+        t.equal(agent.getTransaction(), transaction)
+        t.equal(agent.getTransaction().trace.root.children.length, 0)
+        t.deepEqual([].slice.call(arguments), [1, 2, 3])
+        process.nextTick = original
+        t.end()
+      },
+      1,
+      2,
+      3
+    )
   })
 
   function multiArgNextTick(fn) {
@@ -180,7 +184,6 @@ tap.test('nextTick with extra args', function testNextTick(t) {
     })
   }
 })
-
 
 tap.test('clearTimeout', function testNextTick(t) {
   var agent = setupAgent(t)

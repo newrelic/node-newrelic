@@ -5,7 +5,6 @@
 
 'use strict'
 
-
 const tap = require('tap')
 const sinon = require('sinon')
 const Aggregator = require('../../../lib/aggregators/base-aggregator')
@@ -27,12 +26,15 @@ tap.test('scheduling', (t) => {
     fakeCollectorApi = {}
     fakeCollectorApi[METHOD] = () => {}
 
-    baseAggregator = new Aggregator({
-      periodMs: PERIOD_MS,
-      runId: RUN_ID,
-      limit: LIMIT,
-      method: METHOD
-    }, fakeCollectorApi)
+    baseAggregator = new Aggregator(
+      {
+        periodMs: PERIOD_MS,
+        runId: RUN_ID,
+        limit: LIMIT,
+        method: METHOD
+      },
+      fakeCollectorApi
+    )
 
     // Keep track of send invocations, avoiding rest of functionality
     sendInvocation = 0
@@ -125,12 +127,15 @@ tap.test('send', (t) => {
     fakeCollectorApi = {}
     fakeCollectorApi[METHOD] = () => {}
 
-    baseAggregator = new Aggregator({
-      periodMs: PERIOD_MS,
-      runId: RUN_ID,
-      limit: LIMIT,
-      method: METHOD
-    }, fakeCollectorApi)
+    baseAggregator = new Aggregator(
+      {
+        periodMs: PERIOD_MS,
+        runId: RUN_ID,
+        limit: LIMIT,
+        method: METHOD
+      },
+      fakeCollectorApi
+    )
   })
 
   t.afterEach(() => {
@@ -230,7 +235,7 @@ tap.test('send', (t) => {
     }
 
     fakeCollectorApi[METHOD] = (payload, callback) => {
-      callback(null, { retainData: true})
+      callback(null, { retainData: true })
     }
 
     baseAggregator.send()
@@ -256,7 +261,7 @@ tap.test('send', (t) => {
     }
 
     fakeCollectorApi[METHOD] = (payload, callback) => {
-      callback(null, { retainData: false})
+      callback(null, { retainData: false })
     }
 
     baseAggregator.send()
@@ -285,7 +290,7 @@ tap.test('send', (t) => {
     }
 
     fakeCollectorApi[METHOD] = (payload, callback) => {
-      callback(null, { retainData: false})
+      callback(null, { retainData: false })
     }
 
     baseAggregator.send()
@@ -314,7 +319,7 @@ tap.test('send', (t) => {
     }
 
     fakeCollectorApi[METHOD] = (payload, callback) => {
-      callback(null, { retainData: false})
+      callback(null, { retainData: false })
     }
 
     baseAggregator.send()
@@ -338,7 +343,7 @@ tap.test('send', (t) => {
     })
 
     fakeCollectorApi[METHOD] = (payload, callback) => {
-      callback(null, { retainData: false})
+      callback(null, { retainData: false })
     }
 
     baseAggregator.send()
@@ -359,12 +364,15 @@ tap.test('reconfigure() should update runid', (t) => {
     fakeCollectorApi = {}
     fakeCollectorApi[METHOD] = () => {}
 
-    baseAggregator = new Aggregator({
-      periodMs: PERIOD_MS,
-      runId: RUN_ID,
-      limit: LIMIT,
-      method: METHOD
-    }, fakeCollectorApi)
+    baseAggregator = new Aggregator(
+      {
+        periodMs: PERIOD_MS,
+        runId: RUN_ID,
+        limit: LIMIT,
+        method: METHOD
+      },
+      fakeCollectorApi
+    )
   })
 
   t.afterEach(() => {
@@ -374,7 +382,7 @@ tap.test('reconfigure() should update runid', (t) => {
 
   t.test('reconfigure() should update runid', (t) => {
     const expectedRunId = 'new run id'
-    const fakeConfig = {run_id: expectedRunId}
+    const fakeConfig = { run_id: expectedRunId }
 
     baseAggregator.reconfigure(fakeConfig)
 

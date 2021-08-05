@@ -18,10 +18,10 @@ let initialize = null
 let shim = null
 const originalShimRequire = DatastoreShim.prototype.require
 
-test("Lazy loading of native PG client", (t) => {
+test('Lazy loading of native PG client', (t) => {
   t.autoend()
 
-  t.beforeEach(function() {
+  t.beforeEach(function () {
     agent = helper.loadMockedAgent()
     initialize = require('../../../lib/instrumentation/pg')
 
@@ -36,7 +36,7 @@ test("Lazy loading of native PG client", (t) => {
     shim = new DatastoreShim(agent, 'postgres')
   })
 
-  t.afterEach(function() {
+  t.afterEach(function () {
     helper.unloadAgent(agent)
 
     // Restore stubbed require
@@ -49,12 +49,12 @@ test("Lazy loading of native PG client", (t) => {
     }
 
     function DefaultClient() {}
-    DefaultClient.prototype.query = function() {}
+    DefaultClient.prototype.query = function () {}
     function NativeClient() {}
-    NativeClient.prototype.query = function() {}
+    NativeClient.prototype.query = function () {}
 
     const mockPg = new PG(DefaultClient)
-    mockPg.__defineGetter__("native", function() {
+    mockPg.__defineGetter__('native', function () {
       return null
     })
     return mockPg
@@ -66,12 +66,12 @@ test("Lazy loading of native PG client", (t) => {
     }
 
     function DefaultClient() {}
-    DefaultClient.prototype.query = function() {}
+    DefaultClient.prototype.query = function () {}
     function NativeClient() {}
-    NativeClient.prototype.query = function() {}
+    NativeClient.prototype.query = function () {}
 
     const mockPg = new PG(DefaultClient)
-    mockPg.__defineGetter__("native", function() {
+    mockPg.__defineGetter__('native', function () {
       delete mockPg.native
       mockPg.native = new PG(NativeClient)
       return mockPg.native
@@ -79,7 +79,7 @@ test("Lazy loading of native PG client", (t) => {
     return mockPg
   }
 
-  t.test("instruments when native getter is called", (t) => {
+  t.test('instruments when native getter is called', (t) => {
     const mockPg = getMockModule()
 
     initialize(agent, mockPg, 'pg', shim)
@@ -93,7 +93,7 @@ test("Lazy loading of native PG client", (t) => {
     t.end()
   })
 
-  t.test("does not fail when getter is called multiple times", (t) => {
+  t.test('does not fail when getter is called multiple times', (t) => {
     let mockPg = getMockModule()
 
     initialize(agent, mockPg, 'pg', shim)
@@ -107,7 +107,7 @@ test("Lazy loading of native PG client", (t) => {
     t.end()
   })
 
-  t.test("does not throw when no native module is found", (t) => {
+  t.test('does not throw when no native module is found', (t) => {
     const mockPg = getMockModuleNoNative()
 
     initialize(agent, mockPg, 'pg', shim)
@@ -118,7 +118,7 @@ test("Lazy loading of native PG client", (t) => {
     t.end()
   })
 
-  t.test("does not interfere with non-native instrumentation", (t) => {
+  t.test('does not interfere with non-native instrumentation', (t) => {
     const mockPg = getMockModule()
 
     initialize(agent, mockPg, 'pg', shim)
@@ -136,7 +136,7 @@ test("Lazy loading of native PG client", (t) => {
     t.end()
   })
 
-  t.test("when pg modules is refreshed in cache", (t) => {
+  t.test('when pg modules is refreshed in cache', (t) => {
     let mockPg = getMockModule()
 
     // instrument once

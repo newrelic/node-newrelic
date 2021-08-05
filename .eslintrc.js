@@ -7,4 +7,22 @@
 
 module.exports = {
   extends: '@newrelic',
+  overrides: [
+    {
+      files: [
+        'test/integration/*.tap.js',
+        'test/integration/*/*.tap.js',
+        'test/integration/core/exec-me.js'
+      ],
+      rules: {
+        'no-console': ['off']
+      }
+    },
+    {
+      files: ['newrelic.js'],
+      rules: {
+        'header/header': ['off']
+      }
+    }
+  ]
 }

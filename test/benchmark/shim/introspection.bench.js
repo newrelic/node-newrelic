@@ -7,15 +7,13 @@
 
 var shared = require('./shared')
 
-
 var s = shared.makeSuite('Shim introspection')
 var suite = s.suite
 var shim = s.shim
 
-
 suite.add({
   name: 'shim.getName',
-  fn: function() {
+  fn: function () {
     var test = shared.getTest()
     return shim.getName(test.func)
   }
@@ -23,7 +21,7 @@ suite.add({
 
 suite.add({
   name: 'shim.isWrapped',
-  fn: function() {
+  fn: function () {
     var test = shared.getTest()
     shim.isWrapped(test, 'func')
     return test
@@ -32,49 +30,53 @@ suite.add({
 
 suite.add({
   name: 'shim.isObject',
-  fn: function() {
+  fn: function () {
     return shim.isObject({})
   }
 })
 
 suite.add({
   name: 'shim.isFunction',
-  fn: function() {
-    return shim.isFunction(function() {})
+  fn: function () {
+    return shim.isFunction(function () {})
   }
 })
 
 suite.add({
   name: 'shim.isPromise',
-  fn: function() {
-    return shim.isPromise(new Promise(function(res) { res() }))
+  fn: function () {
+    return shim.isPromise(
+      new Promise(function (res) {
+        res()
+      })
+    )
   }
 })
 
 suite.add({
   name: 'shim.isString',
-  fn: function() {
+  fn: function () {
     return shim.isString('func')
   }
 })
 
 suite.add({
   name: 'shim.isNumber',
-  fn: function() {
+  fn: function () {
     return shim.isNumber(1234)
   }
 })
 
 suite.add({
   name: 'shim.isBoolean',
-  fn: function() {
+  fn: function () {
     return shim.isBoolean(true)
   }
 })
 
 suite.add({
   name: 'shim.isArray',
-  fn: function() {
+  fn: function () {
     return shim.isArray([])
   }
 })

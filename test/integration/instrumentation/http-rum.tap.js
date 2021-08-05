@@ -13,21 +13,20 @@ var API = require('../../../api.js')
 var StreamSink = require('../../../lib/util/stream-sink.js')
 var hashes = require('../../../lib/util/hashes.js')
 
-
 var DATA_PREFIX = 'NREUM.info = '
 
-test('custom naming rules should be applied early for RUM', function(t) {
+test('custom naming rules should be applied early for RUM', function (t) {
   t.plan(3)
 
-  var conf  = {
+  var conf = {
     rules: {
-      name: [{pattern: '/test', name: '/WORKING'}]
+      name: [{ pattern: '/test', name: '/WORKING' }]
     },
     license_key: 'abc1234abc1234abc1234',
     browser_monitoring: {
       enable: true,
       debug: false
-    },
+    }
   }
 
   const agent = helper.instrumentMockedAgent(conf)
@@ -49,30 +48,29 @@ test('custom naming rules should be applied early for RUM', function(t) {
     response.end(api.getBrowserTimingHeader())
   })
 
-  external.listen(0, function() {
+  external.listen(0, function () {
     var port = external.address().port
 
-    http.request({port: port, path: '/test'}, done).end()
+    http.request({ port: port, path: '/test' }, done).end()
 
     function done(res) {
-      res.pipe(new StreamSink(function(err, header) {
-        t.equal(header.substr(0,7), '<script', 'should generate RUM headers')
-        header.split(';').forEach(function(element) {
-          if (element.substr(0, DATA_PREFIX.length) === DATA_PREFIX) {
-            var dataString = element.substr(DATA_PREFIX.length, element.length)
-            var data = JSON.parse(dataString)
-            var tx = hashes.deobfuscateNameUsingKey(
-              data.transactionName,
-              agent.config.license_key.substr(0,13)
-            )
-            t.equal(
-              tx, 'WebTransaction/NormalizedUri/WORKING',
-              'should normalize url before RUM'
-            )
-          }
+      res.pipe(
+        new StreamSink(function (err, header) {
+          t.equal(header.substr(0, 7), '<script', 'should generate RUM headers')
+          header.split(';').forEach(function (element) {
+            if (element.substr(0, DATA_PREFIX.length) === DATA_PREFIX) {
+              var dataString = element.substr(DATA_PREFIX.length, element.length)
+              var data = JSON.parse(dataString)
+              var tx = hashes.deobfuscateNameUsingKey(
+                data.transactionName,
+                agent.config.license_key.substr(0, 13)
+              )
+              t.equal(tx, 'WebTransaction/NormalizedUri/WORKING', 'should normalize url before RUM')
+            }
+          })
+          t.end()
         })
-        t.end()
-      }))
+      )
     }
   })
 
@@ -82,18 +80,18 @@ test('custom naming rules should be applied early for RUM', function(t) {
   })
 })
 
-test('custom web transactions should have rules applied for RUM', function(t) {
+test('custom web transactions should have rules applied for RUM', function (t) {
   t.plan(2)
 
-  var conf  = {
+  var conf = {
     rules: {
-      name: [{pattern: '/test', name: '/WORKING'}]
+      name: [{ pattern: '/test', name: '/WORKING' }]
     },
     license_key: 'abc1234abc1234abc1234',
     browser_monitoring: {
       enable: true,
       debug: false
-    },
+    }
   }
 
   const agent = helper.instrumentMockedAgent(conf)
@@ -106,17 +104,16 @@ test('custom web transactions should have rules applied for RUM', function(t) {
   agent.config.browser_monitoring.browser_key = 1234
   agent.config.browser_monitoring.js_agent_loader = 'function () {}'
 
-
-  api.startWebTransaction('/test', function() {
+  api.startWebTransaction('/test', function () {
     var header = api.getBrowserTimingHeader()
-    t.equal(header.substr(0,7), '<script', 'should generate RUM headers')
-    header.split(';').forEach(function(element) {
+    t.equal(header.substr(0, 7), '<script', 'should generate RUM headers')
+    header.split(';').forEach(function (element) {
       if (element.substr(0, DATA_PREFIX.length) === DATA_PREFIX) {
         var dataString = element.substr(DATA_PREFIX.length, element.length)
         var data = JSON.parse(dataString)
         var tx = hashes.deobfuscateNameUsingKey(
           data.transactionName,
-          agent.config.license_key.substr(0,13)
+          agent.config.license_key.substr(0, 13)
         )
         t.equal(tx, 'WebTransaction/NormalizedUri/WORKING', 'url normalized before RUM')
       }

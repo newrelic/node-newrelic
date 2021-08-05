@@ -13,8 +13,8 @@ const params = require('../lib/params')
 const request = require('request')
 const zlib = require('zlib')
 const copy = require('../../lib/util/copy')
-const {defaultAttributeConfig} = require('./fixtures')
-const {EventEmitter} = require('events')
+const { defaultAttributeConfig } = require('./fixtures')
+const { EventEmitter } = require('events')
 
 const KEYPATH = path.join(__dirname, 'test-key.key')
 const CERTPATH = path.join(__dirname, 'self-signed-test-certificate.crt')
@@ -28,7 +28,7 @@ setInterval(() => {
   }
 }, 25).unref()
 
-const helper = module.exports = {
+const helper = (module.exports = {
   SSL_HOST: 'localhost',
   getAgent: () => _agent,
 
@@ -85,7 +85,8 @@ const helper = module.exports = {
    */
   generateCollectorPath: (method, runID, protocolVersion) => {
     protocolVersion = protocolVersion || 17
-    let fragment = '/agent_listener/invoke_raw_method?' +
+    let fragment =
+      '/agent_listener/invoke_raw_method?' +
       `marshal_format=json&protocol_version=${protocolVersion}&` +
       `license_key=license%20key%20here&method=${method}`
 
@@ -269,11 +270,7 @@ const helper = module.exports = {
   },
 
   withSSL: () => {
-    return Promise.all([
-      fs.readFile(KEYPATH),
-      fs.readFile(CERTPATH),
-      fs.readFile(CAPATH)
-    ])
+    return Promise.all([fs.readFile(KEYPATH), fs.readFile(CERTPATH), fs.readFile(CAPATH)])
   },
 
   // FIXME: I long for the day I no longer need this gross hack
@@ -298,17 +295,20 @@ const helper = module.exports = {
     // Max port: 65535
     // Our range: 1024-65024
     const port = Math.ceil(Math.random() * 64000 + 1024)
-    const server = net.createServer().once('listening', () => {
-      server.close(() => {
-        process.nextTick(callback.bind(null, port))
+    const server = net
+      .createServer()
+      .once('listening', () => {
+        server.close(() => {
+          process.nextTick(callback.bind(null, port))
+        })
       })
-    }).once('error', (err) => {
-      if (err.code === 'EADDRINUSE') {
-        helper.randomPort(callback)
-      } else {
-        throw err
-      }
-    })
+      .once('error', (err) => {
+        if (err.code === 'EADDRINUSE') {
+          helper.randomPort(callback)
+        } else {
+          throw err
+        }
+      })
     server.listen(port)
   },
 
@@ -395,7 +395,7 @@ const helper = module.exports = {
     })
   },
 
-  runOutOfContext: function(fn) {
+  runOutOfContext: function (fn) {
     tasks.push(fn)
   },
 
@@ -425,7 +425,7 @@ const helper = module.exports = {
     rules = copy.shallow(rules, defaultAttributeConfig())
     return copy.shallow(rules, new EventEmitter())
   }
-}
+})
 
 /**
  * Removes all listeners with the given name from the emitter.

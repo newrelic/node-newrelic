@@ -13,7 +13,6 @@ const async = require('async')
 var METRIC_HOST_NAME = null
 var METRIC_HOST_PORT = null
 
-
 exports.MONGO_SEGMENT_RE = common.MONGO_SEGMENT_RE
 exports.TRANSACTION_NAME = common.TRANSACTION_NAME
 exports.DB_NAME = common.DB_NAME
@@ -28,16 +27,16 @@ exports.dropTestCollections = dropTestCollections
 function collectionTest(name, run) {
   var collections = ['testCollection', 'testCollection2']
 
-  tap.test(name, {timeout: 10000}, function(t) {
+  tap.test(name, { timeout: 10000 }, function (t) {
     var agent = null
     var client = null
     var db = null
     var collection = null
     t.autoend()
 
-    t.test('remote connection', function(t) {
+    t.test('remote connection', function (t) {
       t.autoend()
-      t.beforeEach(function() {
+      t.beforeEach(function () {
         agent = helper.instrumentMockedAgent()
 
         var mongodb = require('mongodb')
@@ -56,36 +55,33 @@ function collectionTest(name, run) {
           })
       })
 
-      t.afterEach(function() {
+      t.afterEach(function () {
         return common.close(client, db).then(() => {
           helper.unloadAgent(agent)
           agent = null
         })
       })
 
-      t.test('should not error outside of a transaction', function(t) {
+      t.test('should not error outside of a transaction', function (t) {
         t.notOk(agent.getTransaction(), 'should not be in a transaction')
-        run(t, collection, function(err) {
+        run(t, collection, function (err) {
           t.error(err, 'running test should not error')
           t.notOk(agent.getTransaction(), 'should not somehow gain a transaction')
           t.end()
         })
       })
 
-      t.test('should generate the correct metrics and segments', function(t) {
-        helper.runInTransaction(agent, function(transaction) {
+      t.test('should generate the correct metrics and segments', function (t) {
+        helper.runInTransaction(agent, function (transaction) {
           transaction.name = common.TRANSACTION_NAME
-          run(t, collection, function(err, segments, metrics, childrenLength = 1) {
+          run(t, collection, function (err, segments, metrics, childrenLength = 1) {
             if (
               !t.error(err, 'running test should not error') ||
               !t.ok(agent.getTransaction(), 'should maintain tx state')
             ) {
               return t.end()
             }
-            t.equal(
-              agent.getTransaction().id, transaction.id,
-              'should not change transactions'
-            )
+            t.equal(agent.getTransaction().id, transaction.id, 'should not change transactions')
             var segment = agent.tracer.getSegment()
             var current = transaction.trace.root
 
@@ -125,22 +121,16 @@ function collectionTest(name, run) {
             t.ok(current === segment, 'should test to the current segment')
 
             transaction.end()
-            common.checkMetrics(
-              t,
-              agent,
-              METRIC_HOST_NAME,
-              METRIC_HOST_PORT,
-              metrics || []
-            )
+            common.checkMetrics(t, agent, METRIC_HOST_NAME, METRIC_HOST_PORT, metrics || [])
             t.end()
           })
         })
       })
 
-      t.test('should respect `datastore_tracer.instance_reporting`', function(t) {
+      t.test('should respect `datastore_tracer.instance_reporting`', function (t) {
         agent.config.datastore_tracer.instance_reporting.enabled = false
-        helper.runInTransaction(agent, function(tx) {
-          run(t, collection, function(err) {
+        helper.runInTransaction(agent, function (tx) {
+          run(t, collection, function (err) {
             if (!t.error(err, 'running test should not error')) {
               return t.end()
             }
@@ -150,22 +140,10 @@ function collectionTest(name, run) {
               if (common.MONGO_SEGMENT_RE.test(current.name)) {
                 t.comment('Checking segment ' + current.name)
                 const attributes = current.getAttributes()
-                t.notOk(
-                  attributes.host,
-                  'should not have host attribute'
-                )
-                t.notOk(
-                  attributes.port_path_or_id,
-                  'should not have port attribute'
-                )
-                t.ok(
-                  attributes.database_name,
-                  'should have database name attribute'
-                )
-                t.ok(
-                  attributes.product,
-                  'should have product attribute'
-                )
+                t.notOk(attributes.host, 'should not have host attribute')
+                t.notOk(attributes.port_path_or_id, 'should not have port attribute')
+                t.ok(attributes.database_name, 'should have database name attribute')
+                t.ok(attributes.product, 'should have product attribute')
               }
               current = current.children[0]
             }
@@ -174,10 +152,10 @@ function collectionTest(name, run) {
         })
       })
 
-      t.test('should respect `datastore_tracer.database_name_reporting`', function(t) {
+      t.test('should respect `datastore_tracer.database_name_reporting`', function (t) {
         agent.config.datastore_tracer.database_name_reporting.enabled = false
-        helper.runInTransaction(agent, function(tx) {
-          run(t, collection, function(err) {
+        helper.runInTransaction(agent, function (tx) {
+          run(t, collection, function (err) {
             if (!t.error(err, 'running test should not error')) {
               return t.end()
             }
@@ -187,22 +165,10 @@ function collectionTest(name, run) {
               if (common.MONGO_SEGMENT_RE.test(current.name)) {
                 t.comment('Checking segment ' + current.name)
                 const attributes = current.getAttributes()
-                t.ok(
-                  attributes.host,
-                  'should have host attribute'
-                )
-                t.ok(
-                  attributes.port_path_or_id,
-                  'should have port attribute'
-                )
-                t.notOk(
-                  attributes.database_name,
-                  'should not have database name attribute'
-                )
-                t.ok(
-                  attributes.product,
-                  'should have product attribute'
-                )
+                t.ok(attributes.host, 'should have host attribute')
+                t.ok(attributes.port_path_or_id, 'should have port attribute')
+                t.notOk(attributes.database_name, 'should not have database name attribute')
+                t.ok(attributes.product, 'should have product attribute')
               }
               current = current.children[0]
             }
@@ -217,9 +183,9 @@ function collectionTest(name, run) {
     // the same box as these tests.
     var domainPath = common.getDomainSocketPath()
     var shouldTestDomain = domainPath
-    t.test('domain socket', {skip: !shouldTestDomain}, function(t) {
+    t.test('domain socket', { skip: !shouldTestDomain }, function (t) {
       t.autoend()
-      t.beforeEach(function() {
+      t.beforeEach(function () {
         agent = helper.instrumentMockedAgent()
         METRIC_HOST_NAME = agent.config.getHostnameSafe()
         METRIC_HOST_PORT = domainPath
@@ -238,33 +204,26 @@ function collectionTest(name, run) {
           })
       })
 
-      t.afterEach(function() {
+      t.afterEach(function () {
         return common.close(client, db).then(() => {
           helper.unloadAgent(agent)
           agent = null
         })
       })
 
-      t.test('should have domain socket in metrics', function(t) {
+      t.test('should have domain socket in metrics', function (t) {
         t.notOk(agent.getTransaction(), 'should not have transaction')
-        helper.runInTransaction(agent, function(transaction) {
+        helper.runInTransaction(agent, function (transaction) {
           transaction.name = common.TRANSACTION_NAME
-          run(t, collection, function(err, segments, metrics) {
+          run(t, collection, function (err, segments, metrics) {
             t.error(err)
             transaction.end()
             var re = new RegExp('^Datastore/instance/MongoDB/' + domainPath)
-            var badMetrics = Object.keys(agent.metrics._metrics.unscoped)
-              .filter(function(m) {
-                return re.test(m)
-              })
+            var badMetrics = Object.keys(agent.metrics._metrics.unscoped).filter(function (m) {
+              return re.test(m)
+            })
             t.notOk(badMetrics.length, 'should not use domain path as host name')
-            common.checkMetrics(
-              t,
-              agent,
-              METRIC_HOST_NAME,
-              METRIC_HOST_PORT,
-              metrics || []
-            )
+            common.checkMetrics(t, agent, METRIC_HOST_NAME, METRIC_HOST_PORT, metrics || [])
             t.end()
           })
         })
@@ -295,15 +254,12 @@ function populate(db, collection) {
         data: Math.random().toString(36).slice(2),
         mod10: i % 10,
         // spiral out
-        loc: [
-          (i % 4 && (i + 1) % 4 ? i : -i),
-          ((i + 1) % 4 && (i + 2) % 4 ? i : -i)
-        ]
+        loc: [i % 4 && (i + 1) % 4 ? i : -i, (i + 1) % 4 && (i + 2) % 4 ? i : -i]
       })
     }
 
-    db.collection('testCollection2').drop(function() {
-      collection.deleteMany({}, function(err) {
+    db.collection('testCollection2').drop(function () {
+      collection.deleteMany({}, function (err) {
         if (err) reject(err)
         collection.insert(items, resolve)
       })
@@ -322,20 +278,23 @@ function dropTestCollections(mongodb, collections) {
     const client = res.client
     const db = res.db
 
-    async.eachSeries(collections, (collection, cb) => {
-      db.dropCollection(collection, (err) => {
-        // It's ok if the collection didn't exist before
-        if (err && err.errmsg === 'ns not found') {
-          err = null
-        }
+    async.eachSeries(
+      collections,
+      (collection, cb) => {
+        db.dropCollection(collection, (err) => {
+          // It's ok if the collection didn't exist before
+          if (err && err.errmsg === 'ns not found') {
+            err = null
+          }
 
-        cb(err)
-      })
-    }, (err) => {
-      return common.close(client, db)
-        .catch((err2) => {
+          cb(err)
+        })
+      },
+      (err) => {
+        return common.close(client, db).catch((err2) => {
           throw err || err2
         })
-    })
+      }
+    )
   })
 }

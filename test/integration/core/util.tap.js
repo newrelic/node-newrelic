@@ -10,12 +10,12 @@ const util = require('util')
 const path = require('path')
 const helper = require('../../lib/agent_helper')
 
-test('promisify', {skip: !util.promisify}, function(t) {
+test('promisify', { skip: !util.promisify }, function (t) {
   t.autoend()
-  t.test('should work on setTimeout', function(t) {
+  t.test('should work on setTimeout', function (t) {
     t.plan(2)
     var agent = helper.instrumentMockedAgent()
-    t.teardown(function() {
+    t.teardown(function () {
       helper.unloadAgent(agent)
     })
     let asyncTimeout = util.promisify(setTimeout)
@@ -25,14 +25,14 @@ test('promisify', {skip: !util.promisify}, function(t) {
         t.ok(true, 'should evaluate properly')
         t.end()
       })
-      .catch(ex => {
+      .catch((ex) => {
         t.error(ex)
       })
   })
-  t.test('should work on setImmediate', function(t) {
+  t.test('should work on setImmediate', function (t) {
     t.plan(2)
     var agent = helper.instrumentMockedAgent()
-    t.teardown(function() {
+    t.teardown(function () {
       helper.unloadAgent(agent)
     })
     let asyncImmediate = util.promisify(setImmediate)
@@ -42,14 +42,14 @@ test('promisify', {skip: !util.promisify}, function(t) {
         t.pass('should evaluate properly')
         t.end()
       })
-      .catch(ex => {
+      .catch((ex) => {
         t.error(ex)
       })
   })
-  t.test('should work on child_process.exec', function(t) {
+  t.test('should work on child_process.exec', function (t) {
     t.plan(3)
     var agent = helper.instrumentMockedAgent()
-    t.teardown(function() {
+    t.teardown(function () {
       helper.unloadAgent(agent)
     })
     let asyncExec = util.promisify(require('child_process').exec)
@@ -59,14 +59,14 @@ test('promisify', {skip: !util.promisify}, function(t) {
         t.type(result.stdout, 'string', 'should have string stdout')
         t.type(result.stderr, 'string', 'should have string stderr')
       })
-      .catch(ex => {
+      .catch((ex) => {
         t.error(ex)
       })
   })
-  t.test('should work on child_process.execFile', function(t) {
+  t.test('should work on child_process.execFile', function (t) {
     t.plan(3)
     var agent = helper.instrumentMockedAgent()
-    t.teardown(function() {
+    t.teardown(function () {
       helper.unloadAgent(agent)
     })
     let asyncExec = util.promisify(require('child_process').execFile)
@@ -76,19 +76,20 @@ test('promisify', {skip: !util.promisify}, function(t) {
         t.type(result.stdout, 'string', 'should have string stdout')
         t.type(result.stderr, 'string', 'should have string stderr')
       })
-      .catch(ex => {
+      .catch((ex) => {
         t.error(ex)
       })
   })
 
-  t.test('should work on fs.exists', function(t) {
+  t.test('should work on fs.exists', function (t) {
     t.plan(1)
 
     var agent = helper.instrumentMockedAgent()
-    t.teardown(function() {
+    t.teardown(function () {
       helper.unloadAgent(agent)
     })
 
+    // eslint-disable-next-line node/no-deprecated-api
     let asyncExists = util.promisify(require('fs').exists)
 
     asyncExists(path.join(__dirname, 'exec-me.js'))
@@ -96,7 +97,7 @@ test('promisify', {skip: !util.promisify}, function(t) {
         t.ok(true, 'should find file')
         t.end()
       })
-      .catch(ex => {
+      .catch((ex) => {
         t.error(ex)
       })
   })

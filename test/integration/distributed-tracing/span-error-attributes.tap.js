@@ -12,7 +12,7 @@ const API = require('../../../api')
 tap.test('span error attributes', (t) => {
   t.test('core', (t) => {
     const config = {
-      distributed_tracing: { enabled: true },
+      distributed_tracing: { enabled: true }
     }
 
     const agent = helper.instrumentMockedAgent(config)
@@ -23,10 +23,11 @@ tap.test('span error attributes', (t) => {
 
     agent.on('transactionFinished', () => {
       const errorEvents = agent.errors.eventAggregator.getEvents()
-      const errorEventSpanIds = errorEvents.map(e => e[2].spanId)
+      const errorEventSpanIds = errorEvents.map((e) => e[2].spanId)
 
       t.same(
-        new Set(spanIds), new Set(errorEventSpanIds),
+        new Set(spanIds),
+        new Set(errorEventSpanIds),
         'Every TransactionError event should have a unique span ID'
       )
 
@@ -34,15 +35,11 @@ tap.test('span error attributes', (t) => {
 
       const spanEvents = agent.spanEventAggregator.getEvents()
 
-      spanEvents.forEach(s => {
+      spanEvents.forEach((s) => {
         const attrs = s.attributes
-        t.match(attrs['error.message'], /test[0-9]/,
-          'Error attributes are on the spans'
-        )
+        t.match(attrs['error.message'], /test[0-9]/, 'Error attributes are on the spans')
 
-        t.match(attrs['error.class'], 'Error',
-          'Error attributes are on the spans'
-        )
+        t.match(attrs['error.class'], 'Error', 'Error attributes are on the spans')
       })
 
       t.equal(spanEvents.length, numErrors, 'Every span was reported')
@@ -119,7 +116,8 @@ tap.test('span error attributes', (t) => {
     agent.on('transactionFinished', () => {
       const spanEvent = agent.spanEventAggregator.getEvents()[0]
       const attrs = spanEvent.attributes
-      t.ok(spanEvent.intrinsics.guid === spanId && !attrs['error.message'],
+      t.ok(
+        spanEvent.intrinsics.guid === spanId && !attrs['error.message'],
         'There should be no error message on the span'
       )
     })
@@ -154,18 +152,21 @@ tap.test('span error attributes', (t) => {
     agent.on('transactionFinished', () => {
       const errorEvents = agent.errors.eventAggregator.getEvents()
       const spanEvents = agent.spanEventAggregator.getEvents()
-      const ignoredSpanEvent = spanEvents.filter(s => s.intrinsics.guid === ignoredSpanId)[0]
-      const spanEvent = spanEvents.filter(s => s.intrinsics.guid === spanId)[0]
+      const ignoredSpanEvent = spanEvents.filter((s) => s.intrinsics.guid === ignoredSpanId)[0]
+      const spanEvent = spanEvents.filter((s) => s.intrinsics.guid === spanId)[0]
 
-      t.ok(errorEvents.length === 1 && errorEvents[0][2].spanId === spanId,
+      t.ok(
+        errorEvents.length === 1 && errorEvents[0][2].spanId === spanId,
         'There should only be the non-ignored error reported'
       )
 
-      t.ok(spanEvent.attributes['error.message'] === 'not ignored',
+      t.ok(
+        spanEvent.attributes['error.message'] === 'not ignored',
         'The non-ignored error should be reported'
       )
 
-      t.notOk(ignoredSpanEvent.attributes['error.message'],
+      t.notOk(
+        ignoredSpanEvent.attributes['error.message'],
         'The ignored error should not be reported'
       )
     })
@@ -212,7 +213,7 @@ tap.test('span error attributes', (t) => {
     agent.on('transactionFinished', () => {
       const errorEvents = agent.errors.eventAggregator.getEvents()
       const spanEvents = agent.spanEventAggregator.getEvents()
-      const ignoredSpanEvent = spanEvents.filter(s => s.intrinsics.guid === ignoredSpanId)[0]
+      const ignoredSpanEvent = spanEvents.filter((s) => s.intrinsics.guid === ignoredSpanId)[0]
 
       t.equal(
         errorEvents.length,
@@ -220,7 +221,8 @@ tap.test('span error attributes', (t) => {
         'There should not be any errors reported because of status code'
       )
 
-      t.notOk(ignoredSpanEvent.attributes['error.message'],
+      t.notOk(
+        ignoredSpanEvent.attributes['error.message'],
         'The ignored error should not be added to span.'
       )
     })
@@ -248,7 +250,7 @@ tap.test('span error attributes', (t) => {
     t.end()
   })
 
-  t.test("should propogate expected error attribute to span", (t) => {
+  t.test('should propogate expected error attribute to span', (t) => {
     const agent = helper.instrumentMockedAgent({
       distributed_tracing: {
         enabled: true
@@ -270,8 +272,8 @@ tap.test('span error attributes', (t) => {
     agent.on('transactionFinished', () => {
       const errorEvents = agent.errors.eventAggregator.getEvents()
       const spanEvents = agent.spanEventAggregator.getEvents()
-      const expectedSpanEvent = spanEvents.filter(s => s.intrinsics.guid === expectedSpanId)[0]
-      const spanEvent = spanEvents.filter(s => s.intrinsics.guid === notExpectedSpanId)[0]
+      const expectedSpanEvent = spanEvents.filter((s) => s.intrinsics.guid === expectedSpanId)[0]
+      const spanEvent = spanEvents.filter((s) => s.intrinsics.guid === notExpectedSpanId)[0]
 
       t.equal(errorEvents.length, 2)
 

@@ -31,7 +31,7 @@ describe('header-attributes', () => {
     it('should be case insensitive when allow_all_headers is false', (done) => {
       agent.config.allow_all_headers = false
       const headers = {
-        'Accept': 'acceptValue'
+        Accept: 'acceptValue'
       }
 
       helper.runInTransaction(agent, (transaction) => {
@@ -79,7 +79,7 @@ describe('header-attributes', () => {
       const refererUrl = 'https://www.google.com/search/cats?scrubbed=false'
 
       const headers = {
-        'referer': refererUrl
+        referer: refererUrl
       }
 
       helper.runInTransaction(agent, (transaction) => {
@@ -189,10 +189,7 @@ describe('header-attributes', () => {
 
           const attributes = transaction.trace.attributes.get(DESTINATIONS.TRANS_TRACE)
           expect(attributes).to.not.have.property('response.headers.invalid')
-          expect(attributes).to.have.property(
-            'response.headers.contentType',
-            'valid-type'
-          )
+          expect(attributes).to.have.property('response.headers.contentType', 'valid-type')
           done()
         })
       })
@@ -216,10 +213,7 @@ describe('header-attributes', () => {
           expect(attributes).to.not.have.property('response.headers.xFilteredOut')
           expect(attributes).to.not.have.property('response.headers.XFilteredOut')
           expect(attributes).to.have.property('response.headers.valid', 'header')
-          expect(attributes).to.have.property(
-            'response.headers.contentType',
-            'valid-type'
-          )
+          expect(attributes).to.have.property('response.headers.contentType', 'valid-type')
           done()
         })
       })

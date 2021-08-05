@@ -38,7 +38,7 @@ tap.test('Agent API - startWebTransaction', (t) => {
   t.test('should add nested transaction as segment to parent transaction', (t) => {
     let transaction = null
 
-    api.startWebTransaction('test', function() {
+    api.startWebTransaction('test', function () {
       nested()
       transaction = agent.tracer.getTransaction()
       t.equal(transaction.type, 'web')
@@ -48,7 +48,7 @@ tap.test('Agent API - startWebTransaction', (t) => {
     })
 
     function nested() {
-      api.startWebTransaction('nested', function() {})
+      api.startWebTransaction('nested', function () {})
     }
 
     t.notOk(transaction.isActive())
@@ -56,10 +56,10 @@ tap.test('Agent API - startWebTransaction', (t) => {
     t.end()
   })
 
-  t.test("should end the transaction after the handle returns by default", (t) => {
+  t.test('should end the transaction after the handle returns by default', (t) => {
     let transaction = null
 
-    api.startWebTransaction('test', function() {
+    api.startWebTransaction('test', function () {
       transaction = agent.tracer.getTransaction()
       t.equal(transaction.type, 'web')
       t.equal(transaction.getFullName(), 'WebTransaction/Custom//test')
@@ -73,7 +73,7 @@ tap.test('Agent API - startWebTransaction', (t) => {
   t.test('should end the txn after a promise returned by the txn function resolves', (t) => {
     let thenCalled = false
     const FakePromise = {
-      then: function(f) {
+      then: function (f) {
         thenCalled = true
         f()
         return this
@@ -82,7 +82,7 @@ tap.test('Agent API - startWebTransaction', (t) => {
 
     let transaction = null
 
-    api.startWebTransaction('test', function() {
+    api.startWebTransaction('test', function () {
       transaction = agent.tracer.getTransaction()
       t.equal(transaction.type, 'web')
       t.equal(transaction.getFullName(), 'WebTransaction/Custom//test')
@@ -101,7 +101,7 @@ tap.test('Agent API - startWebTransaction', (t) => {
   t.test('should not end the txn if the txn is being handled externally', (t) => {
     let transaction = null
 
-    api.startWebTransaction('test', function() {
+    api.startWebTransaction('test', function () {
       transaction = agent.tracer.getTransaction()
       t.equal(transaction.type, 'web')
       t.equal(transaction.getFullName(), 'WebTransaction/Custom//test')
@@ -116,10 +116,10 @@ tap.test('Agent API - startWebTransaction', (t) => {
     t.end()
   })
 
-  t.test("should call the handler if no url is supplied", (t) => {
+  t.test('should call the handler if no url is supplied', (t) => {
     let transaction = null
 
-    api.startWebTransaction(null, function() {
+    api.startWebTransaction(null, function () {
       transaction = agent.tracer.getTransaction()
       t.notOk(transaction)
 
@@ -127,7 +127,7 @@ tap.test('Agent API - startWebTransaction', (t) => {
     })
   })
 
-  t.test("should not throw when no handler is supplied", (t) => {
+  t.test('should not throw when no handler is supplied', (t) => {
     // should not throw
     api.startWebTransaction('test')
 

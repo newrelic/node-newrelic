@@ -15,12 +15,16 @@ var suite = benchmark.createBenchmark({
 
 suite.add({
   name: 'makeId(16)',
-  fn: function() { makeId(16) }
+  fn: function () {
+    makeId(16)
+  }
 })
 
 suite.add({
   name: 'makeId(32)',
-  fn: function() { makeId(32) }
+  fn: function () {
+    makeId(32)
+  }
 })
 
 suite.run()

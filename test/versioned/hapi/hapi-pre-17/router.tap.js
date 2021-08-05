@@ -10,14 +10,14 @@ var request = require('request')
 var helper = require('../../../lib/agent_helper')
 var utils = require('./hapi-utils')
 
-tap.test('Hapi router introspection', function(t) {
+tap.test('Hapi router introspection', function (t) {
   t.plan(3)
 
   var agent = null
   var server = null
   var port = null
 
-  t.beforeEach(function() {
+  t.beforeEach(function () {
     agent = helper.instrumentMockedAgent({
       attributes: {
         enabled: true,
@@ -28,45 +28,45 @@ tap.test('Hapi router introspection', function(t) {
     server = utils.getServer()
   })
 
-  t.afterEach(function() {
+  t.afterEach(function () {
     helper.unloadAgent(agent)
     return new Promise((resolve) => server.stop(resolve))
   })
 
-  t.test('simple case using server.route', function(t) {
+  t.test('simple case using server.route', function (t) {
     agent.on('transactionFinished', utils.verifier(t))
 
     var route = {
       method: 'GET',
       path: '/test/{id}',
-      handler: function(req, reply) {
+      handler: function (req, reply) {
         t.ok(agent.getTransaction(), 'transaction is available')
-        reply({status: 'ok'})
+        reply({ status: 'ok' })
       }
     }
     server.route(route)
 
-    server.start(function() {
+    server.start(function () {
       port = server.info.port
       var params = {
         uri: 'http://localhost:' + port + '/test/31337',
         json: true
       }
-      request.get(params, function(error, res, body) {
+      request.get(params, function (error, res, body) {
         t.equal(res.statusCode, 200, 'nothing exploded')
-        t.deepEqual(body, {status: 'ok'}, 'got expected response')
+        t.deepEqual(body, { status: 'ok' }, 'got expected response')
         t.end()
       })
     })
   })
 
-  t.test('less simple case (server.addRoute & route.config.handler)', function(t) {
+  t.test('less simple case (server.addRoute & route.config.handler)', function (t) {
     agent.on('transactionFinished', utils.verifier(t))
 
     var hello = {
-      handler: function(req, reply) {
+      handler: function (req, reply) {
         t.ok(agent.getTransaction(), 'transaction is available')
-        reply({status: 'ok'})
+        reply({ status: 'ok' })
       }
     }
 
@@ -77,22 +77,22 @@ tap.test('Hapi router introspection', function(t) {
     }
     server.route(route)
 
-    server.start(function() {
+    server.start(function () {
       port = server.info.port
       var params = {
         uri: 'http://localhost:' + port + '/test/31337',
         json: true
       }
-      request.get(params, function(error, res, body) {
+      request.get(params, function (error, res, body) {
         t.equal(res.statusCode, 200, 'nothing exploded')
-        t.deepEqual(body, {status: 'ok'}, 'got expected response')
+        t.deepEqual(body, { status: 'ok' }, 'got expected response')
         t.end()
       })
     })
   })
 
-  t.test('404 transaction is named correctly', function(t) {
-    agent.on('transactionFinished', function(tx) {
+  t.test('404 transaction is named correctly', function (t) {
+    agent.on('transactionFinished', function (tx) {
       t.equal(
         tx.trace.root.children[0].name,
         'WebTransaction/Nodejs/GET/(not found)',
@@ -100,15 +100,15 @@ tap.test('Hapi router introspection', function(t) {
       )
     })
 
-    server.start(function() {
+    server.start(function () {
       port = server.info.port
       var params = {
         uri: 'http://localhost:' + port + '/test',
         json: true
       }
-      request.get(params, function(error, res, body) {
+      request.get(params, function (error, res, body) {
         t.equal(res.statusCode, 404, 'nonexistent route was not found')
-        t.deepEqual(body, {statusCode: 404, error: 'Not Found'}, 'got expected response')
+        t.deepEqual(body, { statusCode: 404, error: 'Not Found' }, 'got expected response')
         t.end()
       })
     })

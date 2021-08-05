@@ -38,7 +38,7 @@ function assertExpectedResult({ t, data, count, keyPrefix, extraValues, legacyVa
 }
 
 common.test('deleteMany', function deleteManyTest(t, collection, verify) {
-  collection.deleteMany({mod10: 5}, function done(err, data) {
+  collection.deleteMany({ mod10: 5 }, function done(err, data) {
     t.error(err)
     assertExpectedResult({
       t,
@@ -48,17 +48,14 @@ common.test('deleteMany', function deleteManyTest(t, collection, verify) {
     })
     verify(
       null,
-      [
-        'Datastore/statement/MongoDB/testCollection/deleteMany',
-        'Callback: done'
-      ],
+      ['Datastore/statement/MongoDB/testCollection/deleteMany', 'Callback: done'],
       ['deleteMany']
     )
   })
 })
 
 common.test('deleteOne', function deleteOneTest(t, collection, verify) {
-  collection.deleteOne({mod10: 5}, function done(err, data) {
+  collection.deleteOne({ mod10: 5 }, function done(err, data) {
     t.error(err)
     assertExpectedResult({
       t,
@@ -68,17 +65,14 @@ common.test('deleteOne', function deleteOneTest(t, collection, verify) {
     })
     verify(
       null,
-      [
-        'Datastore/statement/MongoDB/testCollection/deleteOne',
-        'Callback: done'
-      ],
+      ['Datastore/statement/MongoDB/testCollection/deleteOne', 'Callback: done'],
       ['deleteOne']
     )
   })
 })
 
 common.test('insert', function insertTest(t, collection, verify) {
-  collection.insert({foo: 'bar'}, function done(err, data) {
+  collection.insert({ foo: 'bar' }, function done(err, data) {
     t.error(err)
     assertExpectedResult({
       t,
@@ -94,17 +88,14 @@ common.test('insert', function insertTest(t, collection, verify) {
 
     verify(
       null,
-      [
-        'Datastore/statement/MongoDB/testCollection/insert',
-        'Callback: done'
-      ],
+      ['Datastore/statement/MongoDB/testCollection/insert', 'Callback: done'],
       ['insert']
     )
   })
 })
 
 common.test('insertMany', function insertManyTest(t, collection, verify) {
-  collection.insertMany([{foo: 'bar'}, {foo: 'bar2'}], function done(err, data) {
+  collection.insertMany([{ foo: 'bar' }, { foo: 'bar2' }], function done(err, data) {
     t.error(err)
     assertExpectedResult({
       t,
@@ -121,17 +112,14 @@ common.test('insertMany', function insertManyTest(t, collection, verify) {
 
     verify(
       null,
-      [
-        'Datastore/statement/MongoDB/testCollection/insertMany',
-        'Callback: done'
-      ],
+      ['Datastore/statement/MongoDB/testCollection/insertMany', 'Callback: done'],
       ['insertMany']
     )
   })
 })
 
 common.test('insertOne', function insertOneTest(t, collection, verify) {
-  collection.insertOne({foo: 'bar'}, function done(err, data) {
+  collection.insertOne({ foo: 'bar' }, function done(err, data) {
     t.error(err)
     assertExpectedResult({
       t,
@@ -146,17 +134,14 @@ common.test('insertOne', function insertOneTest(t, collection, verify) {
 
     verify(
       null,
-      [
-        'Datastore/statement/MongoDB/testCollection/insertOne',
-        'Callback: done'
-      ],
+      ['Datastore/statement/MongoDB/testCollection/insertOne', 'Callback: done'],
       ['insertOne']
     )
   })
 })
 
 common.test('remove', function removeTest(t, collection, verify) {
-  collection.remove({mod10: 5}, function done(err, data) {
+  collection.remove({ mod10: 5 }, function done(err, data) {
     t.error(err)
     assertExpectedResult({
       t,
@@ -167,17 +152,14 @@ common.test('remove', function removeTest(t, collection, verify) {
 
     verify(
       null,
-      [
-        'Datastore/statement/MongoDB/testCollection/remove',
-        'Callback: done'
-      ],
+      ['Datastore/statement/MongoDB/testCollection/remove', 'Callback: done'],
       ['remove']
     )
   })
 })
 
 common.test('replaceOne', function replaceOneTest(t, collection, verify) {
-  collection.replaceOne({i: 5}, {foo: 'bar'}, function done(err, data) {
+  collection.replaceOne({ i: 5 }, { foo: 'bar' }, function done(err, data) {
     t.error(err)
     assertExpectedResult({
       t,
@@ -196,10 +178,7 @@ common.test('replaceOne', function replaceOneTest(t, collection, verify) {
 
     verify(
       null,
-      [
-        'Datastore/statement/MongoDB/testCollection/replaceOne',
-        'Callback: done'
-      ],
+      ['Datastore/statement/MongoDB/testCollection/replaceOne', 'Callback: done'],
       ['replaceOne']
     )
   })
@@ -207,24 +186,17 @@ common.test('replaceOne', function replaceOneTest(t, collection, verify) {
 
 if (semver.satisfies(mongoPackage.version, '<4')) {
   common.test('save', function saveTest(t, collection, verify) {
-    collection.save({foo: 'bar'}, function done(err, data) {
+    collection.save({ foo: 'bar' }, function done(err, data) {
       t.error(err)
-      t.same(data.result, {ok: 1, n: 1})
+      t.same(data.result, { ok: 1, n: 1 })
 
-      verify(
-        null,
-        [
-          'Datastore/statement/MongoDB/testCollection/save',
-          'Callback: done'
-        ],
-        ['save']
-      )
+      verify(null, ['Datastore/statement/MongoDB/testCollection/save', 'Callback: done'], ['save'])
     })
   })
 }
 
 common.test('update', function updateTest(t, collection, verify) {
-  collection.update({i: 5}, { $set: {foo: 'bar'}}, function done(err, data) {
+  collection.update({ i: 5 }, { $set: { foo: 'bar' } }, function done(err, data) {
     t.error(err)
     assertExpectedResult({
       t,
@@ -243,17 +215,14 @@ common.test('update', function updateTest(t, collection, verify) {
 
     verify(
       null,
-      [
-        'Datastore/statement/MongoDB/testCollection/update',
-        'Callback: done'
-      ],
+      ['Datastore/statement/MongoDB/testCollection/update', 'Callback: done'],
       ['update']
     )
   })
 })
 
 common.test('updateMany', function updateManyTest(t, collection, verify) {
-  collection.updateMany({mod10: 5}, {$set: {a: 5}}, function done(err, data) {
+  collection.updateMany({ mod10: 5 }, { $set: { a: 5 } }, function done(err, data) {
     t.error(err)
     assertExpectedResult({
       t,
@@ -272,17 +241,14 @@ common.test('updateMany', function updateManyTest(t, collection, verify) {
 
     verify(
       null,
-      [
-        'Datastore/statement/MongoDB/testCollection/updateMany',
-        'Callback: done'
-      ],
+      ['Datastore/statement/MongoDB/testCollection/updateMany', 'Callback: done'],
       ['updateMany']
     )
   })
 })
 
 common.test('updateOne', function updateOneTest(t, collection, verify) {
-  collection.updateOne({i: 5}, {$set: {a: 5}}, function done(err, data) {
+  collection.updateOne({ i: 5 }, { $set: { a: 5 } }, function done(err, data) {
     t.notOk(err, 'should not error')
     assertExpectedResult({
       t,
@@ -301,10 +267,7 @@ common.test('updateOne', function updateOneTest(t, collection, verify) {
 
     verify(
       null,
-      [
-        'Datastore/statement/MongoDB/testCollection/updateOne',
-        'Callback: done'
-      ],
+      ['Datastore/statement/MongoDB/testCollection/updateOne', 'Callback: done'],
       ['updateOne']
     )
   })

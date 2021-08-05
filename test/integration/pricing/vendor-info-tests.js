@@ -12,8 +12,7 @@ var helper = require('../../lib/agent_helper')
 var http = require('http')
 var _httpGet = http.get
 
-
-module.exports = function(t, vendor) {
+module.exports = function (t, vendor) {
   var testFile = path.resolve(
     __dirname,
     '../../lib/cross_agent_tests/utilization_vendor_specific',
@@ -22,11 +21,11 @@ module.exports = function(t, vendor) {
   var getInfo = require('../../../lib/utilization/' + vendor + '-info')
 
   nock.disableNetConnect()
-  t.teardown(function() {
+  t.teardown(function () {
     nock.enableNetConnect()
   })
 
-  fs.readFile(testFile, function(err, data) {
+  fs.readFile(testFile, function (err, data) {
     if (!t.error(err, 'should not error loading tests')) {
       t.fail('Could not load tests!')
       t.end()
@@ -46,9 +45,9 @@ module.exports = function(t, vendor) {
 
 function makeTest(testCase, vendor, getInfo) {
   var agent = null
-  return function(t) {
+  return function (t) {
     agent = helper.loadMockedAgent()
-    t.teardown(function() {
+    t.teardown(function () {
       helper.unloadAgent(agent)
       getInfo.clearCache()
       nock.cleanAll()
@@ -63,10 +62,10 @@ function makeTest(testCase, vendor, getInfo) {
       let onErrorCallback = null
 
       var res = {
-        setTimeout: function(timeout, fn) {
+        setTimeout: function (timeout, fn) {
           timeoutCallback = fn
         },
-        on: function(event, cb) {
+        on: function (event, cb) {
           if (event === 'error') {
             onErrorCallback = cb
           }
@@ -109,7 +108,7 @@ function makeTest(testCase, vendor, getInfo) {
 
     http.get = timeoutMock(timeoutUrl)
 
-    getInfo(agent, function(err, info) {
+    getInfo(agent, function (err, info) {
       if (testCase.expected_vendors_hash) {
         var expected = testCase.expected_vendors_hash[vendor]
         t.error(err, 'should not error getting data')
@@ -140,7 +139,7 @@ function makeTest(testCase, vendor, getInfo) {
       return
     }
 
-    Object.keys(expectedMetrics).forEach(function(expectedMetric) {
+    Object.keys(expectedMetrics).forEach(function (expectedMetric) {
       var metric = agent.metrics.getOrCreateMetric(expectedMetric)
       t.equal(
         metric.callCount,

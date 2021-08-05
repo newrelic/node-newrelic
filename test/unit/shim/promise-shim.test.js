@@ -21,24 +21,24 @@ describe('PromiseShim', () => {
   let TestPromise = null
 
   beforeEach(() => {
-    TestPromise = function(executor) {
+    TestPromise = function (executor) {
       this.executorCaller(executor)
     }
 
-    TestPromise.resolve = function(val) {
+    TestPromise.resolve = function (val) {
       const p = Object.create(TestPromise.prototype)
       p.resolver(val)
       return p
     }
 
-    TestPromise.reject = function(val) {
+    TestPromise.reject = function (val) {
       const p = Object.create(TestPromise.prototype)
       p.rejector(val)
       return p
     }
 
-    TestPromise.promisify = function(func) {
-      return function() {
+    TestPromise.promisify = function (func) {
+      return function () {
         const args = shim.argsToArray.apply(shim, arguments)
         const p = Object.create(TestPromise.prototype)
         args.push((err, res) => {
@@ -53,7 +53,7 @@ describe('PromiseShim', () => {
       }
     }
 
-    TestPromise.prototype.executorCaller = function(executor) {
+    TestPromise.prototype.executorCaller = function (executor) {
       try {
         executor(this.resolver.bind(this), this.rejector.bind(this))
       } catch (err) {
@@ -61,7 +61,7 @@ describe('PromiseShim', () => {
       }
     }
 
-    TestPromise.prototype.resolver = function(resolution) {
+    TestPromise.prototype.resolver = function (resolution) {
       this.resolution = resolution
       helper.runOutOfContext(() => {
         if (this._next._thenned) {
@@ -70,7 +70,7 @@ describe('PromiseShim', () => {
       })
     }
 
-    TestPromise.prototype.rejector = function(rejection) {
+    TestPromise.prototype.rejector = function (rejection) {
       this.rejection = rejection
       helper.runOutOfContext(() => {
         if (this._next._caught) {
@@ -79,7 +79,7 @@ describe('PromiseShim', () => {
       })
     }
 
-    TestPromise.prototype.then = function(res, rej) {
+    TestPromise.prototype.then = function (res, rej) {
       this.res = res
       this.rej = rej
 
@@ -90,7 +90,7 @@ describe('PromiseShim', () => {
       return this._next
     }
 
-    TestPromise.prototype.catch = function(ErrorClass, rej) {
+    TestPromise.prototype.catch = function (ErrorClass, rej) {
       this.ErrorClass = ErrorClass
       this.rej = rej
 
@@ -114,49 +114,41 @@ describe('PromiseShim', () => {
   })
 
   it('should inherit from Shim', () => {
-    expect(shim).to.be.an.instanceOf(PromiseShim)
-      .and.an.instanceOf(Shim)
+    expect(shim).to.be.an.instanceOf(PromiseShim).and.an.instanceOf(Shim)
   })
 
   describe('constructor', () => {
     it('should require the `agent` parameter', () => {
-      expect(() => new PromiseShim())
-        .to.throw(Error, /^Shim must be initialized with .*? agent/)
+      expect(() => new PromiseShim()).to.throw(Error, /^Shim must be initialized with .*? agent/)
     })
 
     it('should require the `moduleName` parameter', () => {
-      expect(() => new PromiseShim(agent))
-        .to.throw(Error, /^Shim must be initialized with .*? module name/)
+      expect(() => new PromiseShim(agent)).to.throw(
+        Error,
+        /^Shim must be initialized with .*? module name/
+      )
     })
   })
 
   describe('.Contextualizer', () => {
     it('should be the underlying contextualization class', () => {
-      expect(PromiseShim).to.have.property('Contextualizer')
-        .that.is.an.instanceOf(Function)
+      expect(PromiseShim).to.have.property('Contextualizer').that.is.an.instanceOf(Function)
     })
   })
 
   describe('#logger', () => {
     it('should be a non-writable property', () => {
-      expect(() => shim.logger = 'foobar').to.throw()
+      expect(() => (shim.logger = 'foobar')).to.throw()
 
-      expect(shim)
-        .to.have.property('logger')
-        .that.is.not.equal('foobar')
+      expect(shim).to.have.property('logger').that.is.not.equal('foobar')
     })
 
     it('should be a logger to use with the shim', () => {
-      expect(shim.logger).to.have.property('trace')
-        .that.is.an.instanceOf(Function)
-      expect(shim.logger).to.have.property('debug')
-        .that.is.an.instanceOf(Function)
-      expect(shim.logger).to.have.property('info')
-        .that.is.an.instanceOf(Function)
-      expect(shim.logger).to.have.property('warn')
-        .that.is.an.instanceOf(Function)
-      expect(shim.logger).to.have.property('error')
-        .that.is.an.instanceOf(Function)
+      expect(shim.logger).to.have.property('trace').that.is.an.instanceOf(Function)
+      expect(shim.logger).to.have.property('debug').that.is.an.instanceOf(Function)
+      expect(shim.logger).to.have.property('info').that.is.an.instanceOf(Function)
+      expect(shim.logger).to.have.property('warn').that.is.an.instanceOf(Function)
+      expect(shim.logger).to.have.property('error').that.is.an.instanceOf(Function)
     })
   })
 
@@ -191,15 +183,13 @@ describe('PromiseShim', () => {
         expect(reject).to.be.a('function')
         resolve()
       })
-      expect(p)
-        .to.be.an.instanceOf(WrappedPromise)
-        .and.an.instanceOf(TestPromise)
+      expect(p).to.be.an.instanceOf(WrappedPromise).and.an.instanceOf(TestPromise)
 
       return p
     })
 
     it('should accept a nodule and property', () => {
-      const testing = {TestPromise}
+      const testing = { TestPromise }
       shim.wrapConstructor(testing, 'TestPromise')
       expect(testing).to.have.property('TestPromise').not.equal(TestPromise)
       expect(shim.isWrapped(testing.TestPromise)).to.be.true
@@ -209,9 +199,7 @@ describe('PromiseShim', () => {
         expect(reject).to.be.a('function')
         resolve()
       })
-      expect(p)
-        .to.be.an.instanceOf(testing.TestPromise)
-        .and.an.instanceOf(TestPromise)
+      expect(p).to.be.an.instanceOf(testing.TestPromise).and.an.instanceOf(TestPromise)
 
       return p
     })
@@ -294,28 +282,35 @@ describe('PromiseShim', () => {
           // with context propagation.
           shim.wrapThen(TestPromise.prototype, 'then')
 
-          async.series([
-            (cb) => {
-              expectSameTransaction(agent.getTransaction(), tx)
-              new WrappedPromise((resolve) => {
+          async.series(
+            [
+              (cb) => {
                 expectSameTransaction(agent.getTransaction(), tx)
-                resolve() // <-- Resolve will lose context.
-              }).then(() => {
+                new WrappedPromise((resolve) => {
+                  expectSameTransaction(agent.getTransaction(), tx)
+                  resolve() // <-- Resolve will lose context.
+                })
+                  .then(() => {
+                    expectSameTransaction(agent.getTransaction(), tx)
+                    cb()
+                  })
+                  .catch(cb)
+              },
+              (cb) => {
                 expectSameTransaction(agent.getTransaction(), tx)
-                cb()
-              }).catch(cb)
-            },
-            (cb) => {
-              expectSameTransaction(agent.getTransaction(), tx)
-              new WrappedPromise((resolve) => {
-                expectSameTransaction(agent.getTransaction(), tx)
-                helper.runOutOfContext(resolve) // <-- Context loss before resolve.
-              }).then(() => {
-                expectSameTransaction(agent.getTransaction(), tx)
-                cb()
-              }).catch(cb)
-            }
-          ], done)
+                new WrappedPromise((resolve) => {
+                  expectSameTransaction(agent.getTransaction(), tx)
+                  helper.runOutOfContext(resolve) // <-- Context loss before resolve.
+                })
+                  .then(() => {
+                    expectSameTransaction(agent.getTransaction(), tx)
+                    cb()
+                  })
+                  .catch(cb)
+              }
+            ],
+            done
+          )
         })
       })
     })
@@ -431,28 +426,35 @@ describe('PromiseShim', () => {
           // with context propagation.
           shim.wrapThen(TestPromise.prototype, 'then')
 
-          async.series([
-            (cb) => {
-              expectSameTransaction(agent.getTransaction(), tx)
-              new TestPromise((resolve) => {
+          async.series(
+            [
+              (cb) => {
                 expectSameTransaction(agent.getTransaction(), tx)
-                resolve() // <-- Resolve will lose context.
-              }).then(() => {
+                new TestPromise((resolve) => {
+                  expectSameTransaction(agent.getTransaction(), tx)
+                  resolve() // <-- Resolve will lose context.
+                })
+                  .then(() => {
+                    expectSameTransaction(agent.getTransaction(), tx)
+                    cb()
+                  })
+                  .catch(cb)
+              },
+              (cb) => {
                 expectSameTransaction(agent.getTransaction(), tx)
-                cb()
-              }).catch(cb)
-            },
-            (cb) => {
-              expectSameTransaction(agent.getTransaction(), tx)
-              new TestPromise((resolve) => {
-                expectSameTransaction(agent.getTransaction(), tx)
-                helper.runOutOfContext(resolve) // <-- Context loss before resolve.
-              }).then(() => {
-                expectSameTransaction(agent.getTransaction(), tx)
-                cb()
-              }).catch(cb)
-            }
-          ], done)
+                new TestPromise((resolve) => {
+                  expectSameTransaction(agent.getTransaction(), tx)
+                  helper.runOutOfContext(resolve) // <-- Context loss before resolve.
+                })
+                  .then(() => {
+                    expectSameTransaction(agent.getTransaction(), tx)
+                    cb()
+                  })
+                  .catch(cb)
+              }
+            ],
+            done
+          )
         })
       })
     })
@@ -461,9 +463,7 @@ describe('PromiseShim', () => {
   describe('#wrapCast', () => {
     it('should accept just a function', (done) => {
       const wrappedResolve = shim.wrapCast(TestPromise.resolve)
-      expect(wrappedResolve)
-        .to.be.a('function')
-        .and.not.equal(TestPromise.resolve)
+      expect(wrappedResolve).to.be.a('function').and.not.equal(TestPromise.resolve)
       expect(shim.isWrapped(wrappedResolve)).to.be.true
 
       const p = wrappedResolve('foo')
@@ -507,9 +507,7 @@ describe('PromiseShim', () => {
     it('should accept just a function', (done) => {
       shim.setClass(TestPromise)
       const wrappedThen = shim.wrapThen(TestPromise.prototype.then)
-      expect(wrappedThen)
-        .to.be.a('function')
-        .and.not.equal(TestPromise.prototype.then)
+      expect(wrappedThen).to.be.a('function').and.not.equal(TestPromise.prototype.then)
       expect(shim.isWrapped(wrappedThen)).to.be.true
 
       const p = TestPromise.resolve('foo')
@@ -567,9 +565,7 @@ describe('PromiseShim', () => {
     it('should accept just a function', (done) => {
       shim.setClass(TestPromise)
       const wrappedCatch = shim.wrapCatch(TestPromise.prototype.catch)
-      expect(wrappedCatch)
-        .to.be.a('function')
-        .and.not.equal(TestPromise.prototype.catch)
+      expect(wrappedCatch).to.be.a('function').and.not.equal(TestPromise.prototype.catch)
       expect(shim.isWrapped(wrappedCatch)).to.be.true
 
       const p = TestPromise.reject('foo')
@@ -639,15 +635,11 @@ describe('PromiseShim', () => {
 
     it('should accept just a function', () => {
       const wrappedPromisify = shim.wrapPromisify(TestPromise.promisify)
-      expect(wrappedPromisify)
-        .to.be.a('function')
-        .and.not.equal(TestPromise.promisify)
+      expect(wrappedPromisify).to.be.a('function').and.not.equal(TestPromise.promisify)
       expect(shim.isWrapped(wrappedPromisify)).to.be.true
 
       const promised = wrappedPromisify(asyncFn)
-      expect(promised)
-        .to.be.a('function')
-        .and.not.equal(asyncFn)
+      expect(promised).to.be.a('function').and.not.equal(asyncFn)
     })
 
     it('should accept a nodule and property', () => {
@@ -656,9 +648,7 @@ describe('PromiseShim', () => {
       expect(shim.isWrapped(TestPromise.promisify)).to.be.true
 
       const promised = TestPromise.promisify(asyncFn)
-      expect(promised)
-        .to.be.a('function')
-        .and.not.equal(asyncFn)
+      expect(promised).to.be.a('function').and.not.equal(asyncFn)
     })
 
     describe('wrapper', () => {

@@ -31,7 +31,7 @@ tap.test('Agent API - instrument', (t) => {
     shimmer.registerInstrumentation.restore()
   })
 
-  t.test("exports a function for adding custom instrumentation", (t) => {
+  t.test('exports a function for adding custom instrumentation', (t) => {
     t.ok(api.instrument)
     t.type(api.instrument, 'function')
 
@@ -41,7 +41,7 @@ tap.test('Agent API - instrument', (t) => {
   t.test('should register the instrumentation with shimmer', (t) => {
     const opts = {
       moduleName: 'foobar',
-      onRequire: function() {}
+      onRequire: function () {}
     }
     api.instrument(opts)
 

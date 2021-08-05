@@ -15,14 +15,14 @@ var suite = benchmark.createBenchmark({
 
 var asyncHooks = require('async_hooks')
 var noopHook = asyncHooks.createHook({
-  init: function() {},
-  before: function() {},
-  after: function() {},
-  destroy: function() {}
+  init: function () {},
+  before: function () {},
+  after: function () {},
+  destroy: function () {}
 })
 
 var tests = [
-  {name: 'no agent, no hooks'},
+  { name: 'no agent, no hooks' },
   {
     name: 'no agent, noop async hooks',
     before: function registerHook() {
@@ -35,14 +35,14 @@ var tests = [
   {
     name: 'instrumentation',
     agent: {
-      config: {feature_flag: {await_support: false}}
+      config: { feature_flag: { await_support: false } }
     },
     runInTransaction: true
   },
   {
     name: 'agent async hooks',
     agent: {
-      config: {feature_flag: {await_support: true}}
+      config: { feature_flag: { await_support: true } }
     },
     runInTransaction: true
   }

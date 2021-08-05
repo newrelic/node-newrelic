@@ -14,8 +14,8 @@ var expect = require('chai').expect
 var DistributedTracePayload = require('../../../lib/transaction/dt-payload')
 var DistributedTracePayloadStub = DistributedTracePayload.Stub
 
-describe('DistributedTracePayload', function() {
-  it('has a text method that returns the stringified payload', function() {
+describe('DistributedTracePayload', function () {
+  it('has a text method that returns the stringified payload', function () {
     var payload = {
       a: 1,
       b: 'test'
@@ -32,7 +32,7 @@ describe('DistributedTracePayload', function() {
     }
   })
 
-  it('has a httpSafe method that returns the base64 encoded payload', function() {
+  it('has a httpSafe method that returns the base64 encoded payload', function () {
     var payload = {
       a: 1,
       b: 'test'
@@ -50,8 +50,8 @@ describe('DistributedTracePayload', function() {
   })
 })
 
-describe('DistributedTracePayloadStub', function() {
-  it('has a httpSafe method that returns an empty string', function() {
+describe('DistributedTracePayloadStub', function () {
+  it('has a httpSafe method that returns an empty string', function () {
     var payload = {
       a: 1,
       b: 'test'
@@ -60,7 +60,7 @@ describe('DistributedTracePayloadStub', function() {
     expect(dt.httpSafe()).to.equal('')
   })
 
-  it('has a text method that returns an empty string', function() {
+  it('has a text method that returns an empty string', function () {
     var payload = {
       a: 1,
       b: 'test'

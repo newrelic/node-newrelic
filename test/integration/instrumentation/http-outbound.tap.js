@@ -8,8 +8,7 @@
 const helper = require('../../lib/agent_helper')
 const tap = require('tap')
 
-
-tap.test('external requests', function(t) {
+tap.test('external requests', function (t) {
   t.autoend()
 
   let agent = null
@@ -23,7 +22,7 @@ tap.test('external requests', function(t) {
     helper.unloadAgent(agent)
   })
 
-  t.test('segments should end on error', function(t) {
+  t.test('segments should end on error', function (t) {
     var notVeryReliable = http.createServer(function badHandler(req) {
       req.socket.end()
     })
@@ -51,7 +50,7 @@ tap.test('external requests', function(t) {
     })
   })
 
-  t.test('should have expected child segments', function(t) {
+  t.test('should have expected child segments', function (t) {
     // The externals segment is based on the lifetime of the request and response.
     // These objects are event emitters and we consider the external to be
     // completed when the response emits `end`. Since there are actions that
@@ -59,11 +58,11 @@ tap.test('external requests', function(t) {
     // sequences will be their own tree under the main external call. This
     // results in a tree with several sibling branches that might otherwise be
     // shown in a heirarchy. This is okay.
-    var server = http.createServer(function(req, res) {
+    var server = http.createServer(function (req, res) {
       req.resume()
       res.end('ok')
     })
-    t.teardown(function() {
+    t.teardown(function () {
       server.close()
     })
 
@@ -111,7 +110,7 @@ tap.test('external requests', function(t) {
     }
   })
 
-  t.test('should not duplicate the external segment', function(t) {
+  t.test('should not duplicate the external segment', function (t) {
     var https = require('https')
 
     helper.runInTransaction(agent, function inTransaction() {
@@ -125,11 +124,7 @@ tap.test('external requests', function(t) {
       var root = agent.tracer.getTransaction().trace.root
       var segment = root.children[0]
 
-      t.equal(
-        segment.name,
-        'External/encrypted.google.com:443/',
-        'should be named'
-      )
+      t.equal(segment.name, 'External/encrypted.google.com:443/', 'should be named')
       t.ok(segment.timer.start, 'should have started')
       t.ok(segment.timer.hasEnd(), 'should have ended')
       t.equal(segment.children.length, 1, 'should have 1 child')
@@ -145,16 +140,23 @@ tap.test('external requests', function(t) {
     }
   })
 
-  t.test('NODE-1647 should not interfere with `got`', {timeout: 5000}, function(t) {
+  t.test('NODE-1647 should not interfere with `got`', { timeout: 5000 }, function (t) {
     // Our way of wrapping HTTP response objects caused `got` to hang. This was
     // resolved in agent 2.5.1.
     var got = require('got')
-    helper.runInTransaction(agent, function() {
+    helper.runInTransaction(agent, function () {
       var req = got('https://example.com/')
-      t.teardown(function() { req.cancel() })
+      t.teardown(function () {
+        req.cancel()
+      })
       req.then(
-        function() { t.end() },
-        function(e) { t.error(e); t.end() }
+        function () {
+          t.end()
+        },
+        function (e) {
+          t.error(e)
+          t.end()
+        }
       )
     })
   })

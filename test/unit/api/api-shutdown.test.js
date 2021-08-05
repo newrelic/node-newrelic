@@ -58,7 +58,7 @@ tap.test('Agent API - shutdown', (t) => {
     setupAgentApi()
     t.teardown(cleanupAgentApi)
 
-    agent.stop = function(cb) {
+    agent.stop = function (cb) {
       cb()
     }
 
@@ -73,7 +73,7 @@ tap.test('Agent API - shutdown', (t) => {
     setupAgentApi()
     t.teardown(cleanupAgentApi)
 
-    agent.stop = function(cb) {
+    agent.stop = function (cb) {
       cb()
     }
 
@@ -104,7 +104,7 @@ tap.test('Agent API - shutdown', (t) => {
       const mock = sinon.mock(agent)
       agent.setState('started')
       mock.expects('forceHarvestAll').once()
-      api.shutdown({collectPendingData: true})
+      api.shutdown({ collectPendingData: true })
       mock.verify()
 
       t.end()
@@ -114,7 +114,7 @@ tap.test('Agent API - shutdown', (t) => {
       const mock = sinon.mock(agent)
       agent.setState('starting')
       mock.expects('forceHarvestAll').once()
-      api.shutdown({collectPendingData: true})
+      api.shutdown({ collectPendingData: true })
       agent.setState('started')
       mock.verify()
 
@@ -125,7 +125,7 @@ tap.test('Agent API - shutdown', (t) => {
       const mock = sinon.mock(agent)
       agent.setState('starting')
       mock.expects('forceHarvestAll').never()
-      api.shutdown({collectPendingData: true})
+      api.shutdown({ collectPendingData: true })
       mock.verify()
 
       t.end()
@@ -135,7 +135,7 @@ tap.test('Agent API - shutdown', (t) => {
       const mock = sinon.mock(agent)
       agent.setState('starting')
       mock.expects('stop').once()
-      api.shutdown({collectPendingData: true})
+      api.shutdown({ collectPendingData: true })
       agent.setState('errored')
       mock.verify()
 
@@ -146,7 +146,7 @@ tap.test('Agent API - shutdown', (t) => {
       const mock = sinon.mock(agent)
       agent.setState('starting')
       mock.expects('stop').once()
-      api.shutdown({collectPendingData: true, timeout: 1000})
+      api.shutdown({ collectPendingData: true, timeout: 1000 })
       agent.setState('errored')
       mock.verify()
 
@@ -164,7 +164,7 @@ tap.test('Agent API - shutdown', (t) => {
       const mock = sinon.mock(agent)
       agent.setState('started')
       mock.expects('stop').once()
-      api.shutdown({waitForIdle: true})
+      api.shutdown({ waitForIdle: true })
       mock.verify()
 
       t.end()
@@ -175,7 +175,7 @@ tap.test('Agent API - shutdown', (t) => {
       agent.setState('started')
       mock.expects('stop').never()
       helper.runInTransaction(agent, (tx) => {
-        api.shutdown({waitForIdle: true})
+        api.shutdown({ waitForIdle: true })
         mock.verify()
         mock.restore()
 
@@ -197,7 +197,7 @@ tap.test('Agent API - shutdown', (t) => {
     const mock = sinon.mock(agent)
     agent.setState('starting')
     mock.expects('forceHarvestAll').once()
-    api.shutdown({collectPendingData: true, timeout: 1000})
+    api.shutdown({ collectPendingData: true, timeout: 1000 })
     agent.setState('started')
     mock.verify()
 
@@ -243,7 +243,7 @@ tap.test('Agent API - shutdown', (t) => {
 
     agent.setState('starting')
 
-    api.shutdown({collectPendingData: true, timeout: 1000}, function sdCallback() {
+    api.shutdown({ collectPendingData: true, timeout: 1000 }, function sdCallback() {
       t.notOk(didCallForceHarvestAll)
       t.equal(stopCallCount, 1)
 
@@ -269,7 +269,7 @@ tap.test('Agent API - shutdown', (t) => {
       setImmediate(cb)
     }
 
-    api.shutdown({collectPendingData: true, timeout: "xyz"}, function() {
+    api.shutdown({ collectPendingData: true, timeout: 'xyz' }, function () {
       t.equal(forceHarvestCallCount, 1)
       t.end()
     })
@@ -296,7 +296,7 @@ tap.test('Agent API - shutdown', (t) => {
       setImmediate(cb)
     }
 
-    api.shutdown({collectPendingData: true}, function() {
+    api.shutdown({ collectPendingData: true }, function () {
       t.equal(stopCallCount, 1)
       t.end()
     })
@@ -326,7 +326,7 @@ tap.test('Agent API - shutdown', (t) => {
       })
     }
 
-    api.shutdown({collectPendingData: true}, function() {
+    api.shutdown({ collectPendingData: true }, function () {
       t.equal(stopCallCount, 1)
       t.end()
     })

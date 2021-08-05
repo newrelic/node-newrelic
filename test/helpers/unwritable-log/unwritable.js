@@ -15,8 +15,8 @@ if (!fs.existsSync(testLogPath)) {
 fs.chmodSync(testLogPath, readOnlyMode)
 
 // Prepare to receive the error.
-process.on('uncaughtException', function(err) {
-  process.send({error: err, stack: err.stack})
+process.on('uncaughtException', function (err) {
+  process.send({ error: err, stack: err.stack })
 })
 
 // Load up new relic with the bad file.
@@ -24,11 +24,11 @@ try {
   process.env.NEW_RELIC_HOME = __dirname
   require('../../../index') // require('newrelic')
 } catch (err) {
-  process.send({error: err, stack: err.stack})
+  process.send({ error: err, stack: err.stack })
 }
 
 // Wait a bit then clean up and exit.
-setTimeout(function() {
+setTimeout(function () {
   fs.chmodSync(testLogPath, 0x180) // => 0600 => rw - -
   fs.unlinkSync(testLogPath)
   process.exit(0)

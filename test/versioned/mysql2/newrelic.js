@@ -20,9 +20,9 @@ exports.config = {
     detect_docker: false
   },
   slow_sql: {
-    enabled: true,
+    enabled: true
   },
-  transaction_tracer : {
+  transaction_tracer: {
     record_sql: 'raw',
     explain_threshold: 0,
     enabled: true

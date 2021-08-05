@@ -39,10 +39,7 @@ tap.test('built-in http queueTime', (t) => {
     server = http.createServer(function cb_createServer(request, response) {
       const transTime = agent.getTransaction().queueTime
       t.ok(transTime > 0, 'must be positive')
-      t.ok(
-        transTime < THRESHOLD,
-        `should be less than ${THRESHOLD}ms (${transTime}ms)`
-      )
+      t.ok(transTime < THRESHOLD, `should be less than ${THRESHOLD}ms (${transTime}ms)`)
       response.end()
     })
 
@@ -93,10 +90,7 @@ tap.test('built-in http queueTime', (t) => {
     server = http.createServer(function cb_createServer(request, response) {
       const transTime = agent.getTransaction().queueTime
       t.ok(transTime > 0, 'must be positive')
-      t.ok(
-        transTime < THRESHOLD,
-        `should be less than ${THRESHOLD}ms (${transTime}ms)`
-      )
+      t.ok(transTime < THRESHOLD, `should be less than ${THRESHOLD}ms (${transTime}ms)`)
       response.end()
     })
 
@@ -122,10 +116,7 @@ tap.test('built-in http queueTime', (t) => {
     server = http.createServer(function cb_createServer(request, response) {
       const transTime = agent.getTransaction().queueTime
       t.ok(transTime > 0, 'must be positive')
-      t.ok(
-        transTime < THRESHOLD,
-        `should be less than ${THRESHOLD}ms (${transTime}ms)`
-      )
+      t.ok(transTime < THRESHOLD, `should be less than ${THRESHOLD}ms (${transTime}ms)`)
       response.end()
     })
 
@@ -151,10 +142,7 @@ tap.test('built-in http queueTime', (t) => {
     server = http.createServer(function cb_createServer(request, response) {
       const transTime = agent.getTransaction().queueTime
       t.ok(transTime > 0, 'must be positive')
-      t.ok(
-        transTime < THRESHOLD,
-        `should be less than ${THRESHOLD}ms (${transTime}ms)`
-      )
+      t.ok(transTime < THRESHOLD, `should be less than ${THRESHOLD}ms (${transTime}ms)`)
       response.end()
     })
 
@@ -180,10 +168,7 @@ tap.test('built-in http queueTime', (t) => {
     server = http.createServer(function cb_createServer(request, response) {
       const transTime = agent.getTransaction().queueTime
       t.ok(transTime > 0, 'must be positive')
-      t.ok(
-        transTime < THRESHOLD,
-        `should be less than ${THRESHOLD}ms (${transTime}ms)`
-      )
+      t.ok(transTime < THRESHOLD, `should be less than ${THRESHOLD}ms (${transTime}ms)`)
       response.end()
     })
 
@@ -209,10 +194,7 @@ tap.test('built-in http queueTime', (t) => {
     server = http.createServer(function cb_createServer(request, response) {
       const transTime = agent.getTransaction().queueTime
       t.ok(transTime > 0, 'must be positive')
-      t.ok(
-        transTime < THRESHOLD,
-        `should be less than ${THRESHOLD}ms (${transTime}ms)`
-      )
+      t.ok(transTime < THRESHOLD, `should be less than ${THRESHOLD}ms (${transTime}ms)`)
       response.end()
     })
 

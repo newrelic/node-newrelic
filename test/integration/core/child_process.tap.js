@@ -11,10 +11,10 @@ var fs = require('fs')
 var helper = require('../../lib/agent_helper')
 var verifySegments = require('./verify.js')
 
-test('exec', function(t) {
+test('exec', function (t) {
   var agent = setupAgent(t)
-  helper.runInTransaction(agent, function() {
-    cp.exec('ls', {cwd: __dirname}, function(err, stdout, stderr) {
+  helper.runInTransaction(agent, function () {
+    cp.exec('ls', { cwd: __dirname }, function (err, stdout, stderr) {
       t.notOk(err, 'should not error')
       var files = stdout.trim().split('\n').sort()
       t.deepEqual(files, fs.readdirSync(__dirname).sort())
@@ -24,10 +24,10 @@ test('exec', function(t) {
   })
 })
 
-test('execFile', function(t) {
+test('execFile', function (t) {
   var agent = setupAgent(t)
-  helper.runInTransaction(agent, function() {
-    cp.execFile('./exec-me.js', {cwd: __dirname}, function(err, stdout, stderr) {
+  helper.runInTransaction(agent, function () {
+    cp.execFile('./exec-me.js', { cwd: __dirname }, function (err, stdout, stderr) {
       t.notOk(err, 'should not error')
       t.equal(stdout, 'I am stdout\n')
       t.equal(stderr, 'I am stderr\n')
@@ -36,16 +36,16 @@ test('execFile', function(t) {
   })
 })
 
-test('transaction context is preserved in subscribed events', function(t) {
+test('transaction context is preserved in subscribed events', function (t) {
   var agent = setupAgent(t)
-  helper.runInTransaction(agent, function(transaction) {
-    var child = cp.fork('./exec-me.js', {cwd: __dirname})
+  helper.runInTransaction(agent, function (transaction) {
+    var child = cp.fork('./exec-me.js', { cwd: __dirname })
 
-    child.on('message', function() {
+    child.on('message', function () {
       t.equal(agent.tracer.getTransaction(), transaction)
     })
 
-    child.on('exit', function() {
+    child.on('exit', function () {
       t.equal(agent.tracer.getTransaction(), transaction)
       t.end()
     })
@@ -55,8 +55,8 @@ test('transaction context is preserved in subscribed events', function(t) {
 test('should not break removeListener for single event', (t) => {
   const agent = setupAgent(t)
 
-  helper.runInTransaction(agent, function() {
-    const child = cp.fork('./exec-me.js', {cwd: __dirname})
+  helper.runInTransaction(agent, function () {
+    const child = cp.fork('./exec-me.js', { cwd: __dirname })
 
     function onMessage() {}
 
@@ -66,7 +66,7 @@ test('should not break removeListener for single event', (t) => {
     child.removeListener('message', onMessage)
     t.notOk(child._events.message)
 
-    child.on('exit', function() {
+    child.on('exit', function () {
       t.end()
     })
   })
@@ -75,8 +75,8 @@ test('should not break removeListener for single event', (t) => {
 test('should not break removeListener for multiple events down to single', (t) => {
   const agent = setupAgent(t)
 
-  helper.runInTransaction(agent, function() {
-    const child = cp.fork('./exec-me.js', {cwd: __dirname})
+  helper.runInTransaction(agent, function () {
+    const child = cp.fork('./exec-me.js', { cwd: __dirname })
 
     function onMessage() {}
     function onMessage2() {}
@@ -89,7 +89,7 @@ test('should not break removeListener for multiple events down to single', (t) =
     t.ok(child._events.message)
     t.equal(child._events.message.__NR_original, onMessage2)
 
-    child.on('exit', function() {
+    child.on('exit', function () {
       t.end()
     })
   })
@@ -98,8 +98,8 @@ test('should not break removeListener for multiple events down to single', (t) =
 test('should not break removeListener for multiple events down to multiple', (t) => {
   const agent = setupAgent(t)
 
-  helper.runInTransaction(agent, function() {
-    const child = cp.fork('./exec-me.js', {cwd: __dirname})
+  helper.runInTransaction(agent, function () {
+    const child = cp.fork('./exec-me.js', { cwd: __dirname })
 
     function onMessage() {}
     function onMessage2() {}
@@ -114,7 +114,7 @@ test('should not break removeListener for multiple events down to multiple', (t)
     t.ok(child._events.message)
     t.equal(child._events.message.length, 2)
 
-    child.on('exit', function() {
+    child.on('exit', function () {
       t.end()
     })
   })
@@ -123,8 +123,8 @@ test('should not break removeListener for multiple events down to multiple', (t)
 test('should not break once() removal of listener', (t) => {
   const agent = setupAgent(t)
 
-  helper.runInTransaction(agent, function() {
-    const child = cp.fork('./exec-me.js', {cwd: __dirname})
+  helper.runInTransaction(agent, function () {
+    const child = cp.fork('./exec-me.js', { cwd: __dirname })
 
     let invokedMessage = false
     child.once('message', function onMessage() {
@@ -132,7 +132,7 @@ test('should not break once() removal of listener', (t) => {
       t.notOk(child._events.message)
     })
 
-    child.on('exit', function() {
+    child.on('exit', function () {
       t.ok(invokedMessage, 'Must have onMessage called for test to be valid.')
       t.end()
     })
@@ -142,8 +142,8 @@ test('should not break once() removal of listener', (t) => {
 test('should not break multiple once() for multiple events down to single', (t) => {
   const agent = setupAgent(t)
 
-  helper.runInTransaction(agent, function() {
-    const child = cp.fork('./exec-me.js', {cwd: __dirname})
+  helper.runInTransaction(agent, function () {
+    const child = cp.fork('./exec-me.js', { cwd: __dirname })
 
     let invokedMessage1 = false
     let invokedMessage2 = false
@@ -158,7 +158,7 @@ test('should not break multiple once() for multiple events down to single', (t) 
     function onMessage3() {}
     child.on('message', onMessage3)
 
-    child.on('exit', function() {
+    child.on('exit', function () {
       t.ok(invokedMessage1, 'Must have onMessage called for test to be valid.')
       t.ok(invokedMessage2, 'Must have onMessage2 called for test to be valid.')
 
@@ -171,8 +171,8 @@ test('should not break multiple once() for multiple events down to single', (t) 
 test('should not break multiple once() for multiple events down to multiple', (t) => {
   const agent = setupAgent(t)
 
-  helper.runInTransaction(agent, function() {
-    const child = cp.fork('./exec-me.js', {cwd: __dirname})
+  helper.runInTransaction(agent, function () {
+    const child = cp.fork('./exec-me.js', { cwd: __dirname })
 
     let invokedMessage1 = false
     let invokedMessage2 = false
@@ -187,7 +187,7 @@ test('should not break multiple once() for multiple events down to multiple', (t
     child.on('message', function onMessage3() {})
     child.on('message', function onMessage4() {})
 
-    child.on('exit', function() {
+    child.on('exit', function () {
       t.ok(invokedMessage1, 'Must have onMessage called for test to be valid.')
       t.ok(invokedMessage2, 'Must have onMessage2 called for test to be valid.')
 
@@ -203,8 +203,8 @@ test('should not break multiple once() for multiple events down to multiple', (t
 test('should not break removal of non-wrapped listener', (t) => {
   const agent = setupAgent(t)
 
-  helper.runInTransaction(agent, function() {
-    const child = cp.fork('./exec-me.js', {cwd: __dirname})
+  helper.runInTransaction(agent, function () {
+    const child = cp.fork('./exec-me.js', { cwd: __dirname })
 
     // Avoid our instrumentation via private method.
     // TODO: should we also be instrumenting addListener?
@@ -214,7 +214,7 @@ test('should not break removal of non-wrapped listener', (t) => {
     child.removeListener('message', nonWrappedListener)
     t.notOk(child._events.message)
 
-    child.on('exit', function() {
+    child.on('exit', function () {
       t.end()
     })
   })
@@ -224,8 +224,8 @@ test('should not break removal of non-wrapped listener', (t) => {
 test('should not break when non-wrapped listener exists', (t) => {
   const agent = setupAgent(t)
 
-  helper.runInTransaction(agent, function() {
-    const child = cp.fork('./exec-me.js', {cwd: __dirname})
+  helper.runInTransaction(agent, function () {
+    const child = cp.fork('./exec-me.js', { cwd: __dirname })
 
     let invokedMessage = false
     child.once('message', function onMessage() {
@@ -236,7 +236,7 @@ test('should not break when non-wrapped listener exists', (t) => {
     function nonWrappedListener() {}
     child.addListener('message', nonWrappedListener)
 
-    child.on('exit', function() {
+    child.on('exit', function () {
       t.ok(invokedMessage, 'Must have onMessage called for test to be valid.')
 
       t.ok(child._events.message)
@@ -250,8 +250,8 @@ test('should not break when non-wrapped listener exists', (t) => {
 test('should not introduce a new error nor hide error for missing handler', (t) => {
   const agent = setupAgent(t)
 
-  helper.runInTransaction(agent, function() {
-    const child = cp.fork('./exec-me.js', {cwd: __dirname})
+  helper.runInTransaction(agent, function () {
+    const child = cp.fork('./exec-me.js', { cwd: __dirname })
 
     try {
       child.on('message', null)
@@ -260,7 +260,7 @@ test('should not introduce a new error nor hide error for missing handler', (t) 
       t.ok(error.message.includes('"listener" argument must be'))
     }
 
-    child.on('exit', function() {
+    child.on('exit', function () {
       t.end()
     })
   })
@@ -269,8 +269,8 @@ test('should not introduce a new error nor hide error for missing handler', (t) 
 test('should not introduce a new error nor hide error for invalid handler', (t) => {
   const agent = setupAgent(t)
 
-  helper.runInTransaction(agent, function() {
-    const child = cp.fork('./exec-me.js', {cwd: __dirname})
+  helper.runInTransaction(agent, function () {
+    const child = cp.fork('./exec-me.js', { cwd: __dirname })
 
     try {
       child.on('message', 1)
@@ -279,7 +279,7 @@ test('should not introduce a new error nor hide error for invalid handler', (t) 
       t.ok(error.message.includes('"listener" argument must be'))
     }
 
-    child.on('exit', function() {
+    child.on('exit', function () {
       t.end()
     })
   })
@@ -288,8 +288,8 @@ test('should not introduce a new error nor hide error for invalid handler', (t) 
 test('should not break removeAllListeners', (t) => {
   const agent = setupAgent(t)
 
-  helper.runInTransaction(agent, function() {
-    const child = cp.fork('./exec-me.js', {cwd: __dirname})
+  helper.runInTransaction(agent, function () {
+    const child = cp.fork('./exec-me.js', { cwd: __dirname })
 
     function onMessage() {}
 
@@ -299,7 +299,7 @@ test('should not break removeAllListeners', (t) => {
     child.removeAllListeners('message')
     t.notOk(child._events.message)
 
-    child.on('exit', function() {
+    child.on('exit', function () {
       t.end()
     })
   })
@@ -307,7 +307,7 @@ test('should not break removeAllListeners', (t) => {
 
 function setupAgent(t) {
   var agent = helper.instrumentMockedAgent()
-  t.teardown(function() {
+  t.teardown(function () {
     helper.unloadAgent(agent)
   })
 

@@ -20,10 +20,14 @@ describe('Error Event Aggregator', () => {
   let errorEventAggregator
 
   beforeEach(() => {
-    errorEventAggregator = new ErrorEventAggregator({
-      runId: RUN_ID,
-      limit: LIMIT
-    }, {}, new Metrics(5, {}, {}))
+    errorEventAggregator = new ErrorEventAggregator(
+      {
+        runId: RUN_ID,
+        limit: LIMIT
+      },
+      {},
+      new Metrics(5, {}, {})
+    )
   })
 
   afterEach(() => {
@@ -42,7 +46,7 @@ describe('Error Event Aggregator', () => {
       events_seen: 1
     }
 
-    const rawErrorEvent = [{type: 'TransactionError', 'error.class': 'class'}, {}, {}]
+    const rawErrorEvent = [{ 'type': 'TransactionError', 'error.class': 'class' }, {}, {}]
 
     errorEventAggregator.add(rawErrorEvent)
 

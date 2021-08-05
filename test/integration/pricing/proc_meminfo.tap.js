@@ -12,12 +12,12 @@ var fs = require('fs')
 var parseProcMemInfo = require('../../../lib/parse-proc-meminfo')
 var path = require('path')
 
-test('pricing proc_meminfo', function(t) {
+test('pricing proc_meminfo', function (t) {
   var testDir = path.resolve(__dirname, '../../lib/cross_agent_tests/proc_meminfo')
-  glob(path.join(testDir, '*.txt'), function(err, data) {
+  glob(path.join(testDir, '*.txt'), function (err, data) {
     if (err) throw err
     t.ok(data.length > 0, 'should have tests to run')
-    a.each(data, runFile, function(err) {
+    a.each(data, runFile, function (err) {
       t.notOk(err, 'should not have an error')
       t.end()
     })
@@ -41,6 +41,6 @@ test('pricing proc_meminfo', function(t) {
   function testFile(name, file) {
     var expected = parseName(name)
     var info = parseProcMemInfo(file)
-    t.same(info, expected, "should have expected info with " + name)
+    t.same(info, expected, 'should have expected info with ' + name)
   }
 })

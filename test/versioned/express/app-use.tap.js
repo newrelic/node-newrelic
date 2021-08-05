@@ -6,11 +6,10 @@
 'use strict'
 
 var test = require('tap').test
-var helper  = require('../../lib/agent_helper')
+var helper = require('../../lib/agent_helper')
 var http = require('http')
 
-
-test('app should be at top of stack when mounted', function(t) {
+test('app should be at top of stack when mounted', function (t) {
   var agent = helper.instrumentMockedAgent()
   var express = require('express')
 
@@ -23,18 +22,14 @@ test('app should be at top of stack when mounted', function(t) {
   var main = express()
   var child = express()
 
-  child.on('mount', function() {
-    t.equal(
-      main._router.stack.length,
-      3,
-      '3 middleware functions: query parser, Express, child'
-    )
+  child.on('mount', function () {
+    t.equal(main._router.stack.length, 3, '3 middleware functions: query parser, Express, child')
   })
 
   main.use(child)
 })
 
-test('app should be at top of stack when mounted', function(t) {
+test('app should be at top of stack when mounted', function (t) {
   const agent = helper.instrumentMockedAgent()
 
   var express = require('express')
@@ -45,7 +40,7 @@ test('app should be at top of stack when mounted', function(t) {
   var router2 = new express.Router()
   var server = http.createServer(main)
 
-  t.teardown(function() {
+  t.teardown(function () {
     helper.unloadAgent(agent)
     server.close()
   })
@@ -64,14 +59,14 @@ test('app should be at top of stack when mounted', function(t) {
 
   // store finished transactions
   var finishedTransactions = {}
-  agent.on('transactionFinished', function(tx) {
+  agent.on('transactionFinished', function (tx) {
     finishedTransactions[tx.id] = tx
   })
 
-  helper.randomPort(function(port) {
-    server.listen(port, function() {
+  helper.randomPort(function (port) {
+    server.listen(port, function () {
       var host = 'http://localhost:' + port
-      helper.makeGetRequest(host + '/myApp/myChild/app', function(err, res, body) {
+      helper.makeGetRequest(host + '/myApp/myChild/app', function (err, res, body) {
         t.notOk(err)
         t.equal(
           finishedTransactions[body].nameState.getName(),
@@ -80,7 +75,7 @@ test('app should be at top of stack when mounted', function(t) {
         )
       })
 
-      helper.makeGetRequest(host + '/myApp/nestedApp  ', function(err, res, body) {
+      helper.makeGetRequest(host + '/myApp/nestedApp  ', function (err, res, body) {
         t.notOk(err)
         t.equal(
           finishedTransactions[body].nameState.getName(),
@@ -89,7 +84,7 @@ test('app should be at top of stack when mounted', function(t) {
         )
       })
 
-      helper.makeGetRequest(host + '/myApp/myChild/router', function(err, res, body) {
+      helper.makeGetRequest(host + '/myApp/myChild/router', function (err, res, body) {
         t.notOk(err)
         t.equal(
           finishedTransactions[body].nameState.getName(),
@@ -98,7 +93,7 @@ test('app should be at top of stack when mounted', function(t) {
         )
       })
 
-      helper.makeGetRequest(host + '/myApp/nestedRouter', function(err, res, body) {
+      helper.makeGetRequest(host + '/myApp/nestedRouter', function (err, res, body) {
         t.notOk(err)
         t.equal(
           finishedTransactions[body].nameState.getName(),
@@ -107,7 +102,7 @@ test('app should be at top of stack when mounted', function(t) {
         )
       })
 
-      helper.makeGetRequest(host + '/foo/bar', function(err, res, body) {
+      helper.makeGetRequest(host + '/foo/bar', function (err, res, body) {
         t.notOk(err)
         t.equal(
           finishedTransactions[body].nameState.getName(),
@@ -123,7 +118,7 @@ test('app should be at top of stack when mounted', function(t) {
   }
 })
 
-test('should not pass wrong args when transaction is not present', function(t) {
+test('should not pass wrong args when transaction is not present', function (t) {
   t.plan(5)
 
   const agent = helper.instrumentMockedAgent()
@@ -138,27 +133,27 @@ test('should not pass wrong args when transaction is not present', function(t) {
   main.use('/', router)
   main.use('/', router2)
 
-  t.teardown(function() {
+  t.teardown(function () {
     helper.unloadAgent(agent)
     server.close()
   })
 
-  router.get('/', function(req, res, next) {
+  router.get('/', function (req, res, next) {
     args = [req, res]
     agent.getTransaction().end()
     next()
   })
 
-  router2.get('/', function(req, res, next) {
+  router2.get('/', function (req, res, next) {
     t.equal(req, args[0])
     t.equal(res, args[1])
     t.equal(typeof next, 'function')
     res.send('ok')
   })
 
-  helper.randomPort(function(port) {
-    server.listen(port, function() {
-      helper.makeGetRequest('http://localhost:' + port + '/', function(err, res, body) {
+  helper.randomPort(function (port) {
+    server.listen(port, function () {
+      helper.makeGetRequest('http://localhost:' + port + '/', function (err, res, body) {
         t.notOk(err)
         t.equal(body, 'ok')
         t.end()

@@ -68,18 +68,15 @@ describe('AdaptiveSampler', () => {
       // priority transactions in order to make the test predictable.
       const epsilon = 0.000001
       const expectedMSP = [
-        0.9, 0.9, 0.9, 0.9, 0.9, 0.9, 0.9, 0.9, 0.9, 0.9,
-        0.316227766016838, 0.5500881229337736, 0.6957797474657306,
-        0.7910970452225743, 0.8559144986383691, 0.9013792551037068,
-        0.9340820391176599, 0.9580942670418969, 0.976025777575764,
-        0.9896031249412947, 1.0
+        0.9, 0.9, 0.9, 0.9, 0.9, 0.9, 0.9, 0.9, 0.9, 0.9, 0.316227766016838, 0.5500881229337736,
+        0.6957797474657306, 0.7910970452225743, 0.8559144986383691, 0.9013792551037068,
+        0.9340820391176599, 0.9580942670418969, 0.976025777575764, 0.9896031249412947, 1.0
       ]
 
       // Change this to maxSampled if we change the way the back off works.
       for (let i = 0; i <= 2 * sampler.samplingTarget; ++i) {
         const expected = expectedMSP[i]
-        expect(sampler.samplingThreshold)
-          .to.be.within(expected - epsilon, expected + epsilon)
+        expect(sampler.samplingThreshold).to.be.within(expected - epsilon, expected + epsilon)
 
         sampler.shouldSample(Infinity)
       }
@@ -106,23 +103,20 @@ describe('AdaptiveSampler', () => {
       it(testName, shared[testName])
     })
 
-    it(
-      'should reset itself after a transaction outside the window has been created',
-      (done) => {
-        const spy = sinon.spy(sampler, '_reset')
-        sampler.samplingPeriod = 50
-        expect(spy.callCount).to.equal(0)
-        agent.emit('transactionStarted', {timer: {start: Date.now()}})
-        expect(spy.callCount).to.equal(1)
+    it('should reset itself after a transaction outside the window has been created', (done) => {
+      const spy = sinon.spy(sampler, '_reset')
+      sampler.samplingPeriod = 50
+      expect(spy.callCount).to.equal(0)
+      agent.emit('transactionStarted', { timer: { start: Date.now() } })
+      expect(spy.callCount).to.equal(1)
 
-        setTimeout(() => {
-          expect(spy.callCount).to.equal(1)
-          agent.emit('transactionStarted', {timer: {start: Date.now()}})
-          expect(spy.callCount).to.equal(2)
-          done()
-        }, 100)
-      }
-    )
+      setTimeout(() => {
+        expect(spy.callCount).to.equal(1)
+        agent.emit('transactionStarted', { timer: { start: Date.now() } })
+        expect(spy.callCount).to.equal(2)
+        done()
+      }, 100)
+    })
   })
 
   describe('in standard mode', () => {

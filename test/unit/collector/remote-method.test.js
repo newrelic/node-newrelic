@@ -13,7 +13,8 @@ const RemoteMethod = require('../../../lib/collector/remote-method')
 
 function generate(method, runID, protocolVersion) {
   protocolVersion = protocolVersion || 17
-  let fragment = '/agent_listener/invoke_raw_method?' +
+  let fragment =
+    '/agent_listener/invoke_raw_method?' +
     `marshal_format=json&protocol_version=${protocolVersion}&` +
     `license_key=license%20key%20here&method=${method}`
 
@@ -56,7 +57,7 @@ tap.test('serialize', (t) => {
   })
 
   t.test('should JSON-encode the given payload', (t) => {
-    method.serialize({foo: 'bar'}, (err, encoded) => {
+    method.serialize({ foo: 'bar' }, (err, encoded) => {
       t.error(err)
 
       t.equal(encoded, '{"foo":"bar"}')
@@ -65,7 +66,7 @@ tap.test('serialize', (t) => {
   })
 
   t.test('should not error with circular payloads', (t) => {
-    const obj = {foo: 'bar'}
+    const obj = { foo: 'bar' }
     obj.obj = obj
     method.serialize(obj, (err, encoded) => {
       t.error(err)
@@ -76,15 +77,20 @@ tap.test('serialize', (t) => {
   })
 
   t.test('should catch serialization errors', (t) => {
-    method.serialize({toJSON: () => {
-      throw new Error('fake serialization error')
-    }}, (err, encoded) => {
-      t.ok(err)
-      t.equal(err.message, 'fake serialization error')
+    method.serialize(
+      {
+        toJSON: () => {
+          throw new Error('fake serialization error')
+        }
+      },
+      (err, encoded) => {
+        t.ok(err)
+        t.equal(err.message, 'fake serialization error')
 
-      t.notOk(encoded)
-      t.end()
-    })
+        t.notOk(encoded)
+        t.end()
+      }
+    )
   })
 })
 
@@ -95,7 +101,7 @@ tap.test('_safeRequest', (t) => {
   let options = null
 
   t.beforeEach(() => {
-    method = new RemoteMethod('test', {max_payload_size_in_bytes: 100}, {})
+    method = new RemoteMethod('test', { max_payload_size_in_bytes: 100 }, {})
     options = {
       host: 'collector.newrelic.com',
       port: 80,
@@ -107,49 +113,65 @@ tap.test('_safeRequest', (t) => {
   })
 
   t.test('requires an options hash', (t) => {
-    t.throws(() => { method._safeRequest() }, 'Must include options to make request!')
+    t.throws(() => {
+      method._safeRequest()
+    }, 'Must include options to make request!')
     t.end()
   })
 
   t.test('requires a collector hostname', (t) => {
     delete options.host
-    t.throws(() => { method._safeRequest(options) }, 'Must include collector hostname!')
+    t.throws(() => {
+      method._safeRequest(options)
+    }, 'Must include collector hostname!')
     t.end()
   })
 
   t.test('requires a collector port', (t) => {
     delete options.port
-    t.throws(() => { method._safeRequest(options) }, 'Must include collector port!')
+    t.throws(() => {
+      method._safeRequest(options)
+    }, 'Must include collector port!')
     t.end()
   })
 
   t.test('requires an error callback', (t) => {
     delete options.onError
-    t.throws(() => { method._safeRequest(options) }, 'Must include error handler!')
+    t.throws(() => {
+      method._safeRequest(options)
+    }, 'Must include error handler!')
     t.end()
   })
 
   t.test('requires a response callback', (t) => {
     delete options.onResponse
-    t.throws(() => { method._safeRequest(options) }, 'Must include response handler!')
+    t.throws(() => {
+      method._safeRequest(options)
+    }, 'Must include response handler!')
     t.end()
   })
 
   t.test('requires a request body', (t) => {
     delete options.body
-    t.throws(() => { method._safeRequest(options) }, 'Must include body to send to collector!')
+    t.throws(() => {
+      method._safeRequest(options)
+    }, 'Must include body to send to collector!')
     t.end()
   })
 
   t.test('requires a request URL', (t) => {
     delete options.path
-    t.throws(() => { method._safeRequest(options) }, 'Must include URL to request!')
+    t.throws(() => {
+      method._safeRequest(options)
+    }, 'Must include URL to request!')
     t.end()
   })
 
   t.test('requires a request body within the maximum payload size limit', (t) => {
     options.body = 'a'.repeat(method._config.max_payload_size_in_bytes + 1)
-    t.throws(() => { method._safeRequest(options) }, 'Maximum payload size exceeded')
+    t.throws(() => {
+      method._safeRequest(options)
+    }, 'Maximum payload size exceeded')
     t.end()
   })
 })
@@ -158,7 +180,7 @@ tap.test('when calling a method on the collector', (t) => {
   t.autoend()
 
   t.test('should not throw when dealing with compressed data', (t) => {
-    const method = new RemoteMethod('test', {}, {host: 'localhost'})
+    const method = new RemoteMethod('test', {}, { host: 'localhost' })
     method._shouldCompress = () => true
     method._safeRequest = (options) => {
       t.equal(options.body.readUInt8(0), 120)
@@ -171,7 +193,7 @@ tap.test('when calling a method on the collector', (t) => {
   })
 
   t.test('should not throw when preparing uncompressed data', (t) => {
-    const method = new RemoteMethod('test', {}, {host: 'localhost'})
+    const method = new RemoteMethod('test', {}, { host: 'localhost' })
     method._safeRequest = (options) => {
       t.equal(options.body, '"data"')
 
@@ -196,7 +218,7 @@ tap.test('when the connection fails', (t) => {
     }
 
     const method = new RemoteMethod('TEST', config, endpoint)
-    method.invoke({message: 'none'}, {}, (error) => {
+    method.invoke({ message: 'none' }, {}, (error) => {
       t.ok(error)
       t.equal(error.message, 'connect ECONNREFUSED 127.0.0.1:8765')
 
@@ -264,7 +286,7 @@ tap.test('when posting to collector', (t) => {
   })
 
   t.test('should pass through error when compression fails', (t) => {
-    method = new RemoteMethod('test', {}, {host: 'localhost'})
+    method = new RemoteMethod('test', {}, { host: 'localhost' })
     method._shouldCompress = () => true
     // zlib.deflate really wants a stringlike entity
     method._post(-1, {}, (error) => {
@@ -281,7 +303,7 @@ tap.test('when posting to collector', (t) => {
       return nock(URL)
         .post(generate('metric_data', RUN_ID))
         .matchHeader('Content-Encoding', 'identity')
-        .reply(200, {return_value: []})
+        .reply(200, { return_value: [] })
     }
 
     t.test('should invoke the callback without error', (t) => {
@@ -304,7 +326,7 @@ tap.test('when posting to collector', (t) => {
     t.end('should respect the put_for_data_send config', (t) => {
       const putMetrics = nock(URL)
         .put(generate('metric_data', RUN_ID))
-        .reply(200, {return_value: []})
+        .reply(200, { return_value: [] })
 
       config.put_for_data_send = true
       method._post('[]', {}, (error) => {
@@ -319,7 +341,7 @@ tap.test('when posting to collector', (t) => {
       const sendDeflatedMetrics = nock(URL)
         .post(generate('metric_data', RUN_ID))
         .matchHeader('Content-Encoding', 'deflate')
-        .reply(200, {return_value: []})
+        .reply(200, { return_value: [] })
 
       method._shouldCompress = () => true
       method._post('[]', {}, (error) => {
@@ -335,7 +357,7 @@ tap.test('when posting to collector', (t) => {
       const sendGzippedMetrics = nock(URL)
         .post(generate('metric_data', RUN_ID))
         .matchHeader('Content-Encoding', 'gzip')
-        .reply(200, {return_value: []})
+        .reply(200, { return_value: [] })
 
       config.compressed_content_encoding = 'gzip'
       method._shouldCompress = () => true
@@ -352,9 +374,7 @@ tap.test('when posting to collector', (t) => {
     t.autoend()
 
     function nockMetric500() {
-      return nock(URL)
-        .post(generate('metric_data', RUN_ID))
-        .reply(500, {return_value: []})
+      return nock(URL).post(generate('metric_data', RUN_ID)).reply(500, { return_value: [] })
     }
 
     t.test('should invoke the callback without error', (t) => {
@@ -386,7 +406,9 @@ tap.test('when posting to collector', (t) => {
     t.beforeEach(() => {
       thrown = new Error('whoops!')
       originalSafeRequest = method._safeRequest
-      method._safeRequest = () => {throw thrown}
+      method._safeRequest = () => {
+        throw thrown
+      }
     })
 
     t.afterEach(() => {
@@ -421,9 +443,7 @@ tap.test('when posting to collector', (t) => {
 
       method = new RemoteMethod('preconnect', successConfig, endpoint)
 
-      nock(URL)
-        .post(generate('preconnect'))
-        .reply(200, response)
+      nock(URL).post(generate('preconnect')).reply(200, response)
     })
 
     t.test('should not error', (t) => {
@@ -449,9 +469,7 @@ tap.test('when posting to collector', (t) => {
     const response = {}
 
     t.beforeEach(() => {
-      nock(URL)
-        .post(generate('metric_data', RUN_ID))
-        .reply(409, response)
+      nock(URL).post(generate('metric_data', RUN_ID)).reply(409, response)
     })
 
     t.test('should include status in callback response', (t) => {
@@ -479,7 +497,7 @@ tap.test('when generating headers for a plain request', (t) => {
 
     const endpoint = {
       host: 'collector.newrelic.com',
-      port: '80',
+      port: '80'
     }
 
     const body = 'test☃'
@@ -549,7 +567,7 @@ tap.test('when generating headers for a compressed request', (t) => {
 
     const endpoint = {
       host: 'collector.newrelic.com',
-      port: '80',
+      port: '80'
     }
 
     const body = 'test☃'

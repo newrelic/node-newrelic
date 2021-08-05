@@ -10,11 +10,10 @@ var testsDir = '../../integration/instrumentation/promises'
 var tap = require('tap')
 var testRegressions = require(testsDir + '/regressions')
 
-
-tap.test('bluebird', function(t) {
+tap.test('bluebird', function (t) {
   t.autoend()
 
-  t.test('regressions', function(t) {
+  t.test('regressions', function (t) {
     t.autoend()
     testRegressions(t, loadBluebird)
   })

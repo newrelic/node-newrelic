@@ -7,7 +7,7 @@
 
 const benchmark = require('../../lib/benchmark')
 
-const {PrioritizedAttributes, ATTRIBUTE_PRIORITY} = require('../../../lib/prioritized-attributes')
+const { PrioritizedAttributes, ATTRIBUTE_PRIORITY } = require('../../../lib/prioritized-attributes')
 const AttributeFilter = require('../../../lib/config/attribute-filter')
 
 const DESTINATIONS = AttributeFilter.DESTINATIONS
@@ -23,12 +23,12 @@ const halfLowHalfHighPriorityAttributes = new PrioritizedAttributes(SEGMENT_SCOP
 batchAddAttributes(halfLowHalfHighPriorityAttributes, 32, ATTRIBUTE_PRIORITY.LOW)
 batchAddAttributes(halfLowHalfHighPriorityAttributes, 32, ATTRIBUTE_PRIORITY.HIGH)
 
-const suite = benchmark.createBenchmark({name: 'priority attributes', runs: 100000})
+const suite = benchmark.createBenchmark({ name: 'priority attributes', runs: 100000 })
 
 let iterationCount = 0
 suite.add({
   name: 'add past maximum, all high priority to start',
-  fn: function() {
+  fn: function () {
     iterationCount++
     const name = iterationCount.toString()
     highPriorityAttributes.addAttribute(
@@ -43,7 +43,7 @@ suite.add({
 
 suite.add({
   name: 'add past maximum, all low priority to start',
-  fn: function() {
+  fn: function () {
     iterationCount++
     const name = iterationCount.toString()
     lowPriorityAttributes.addAttribute(
@@ -58,7 +58,7 @@ suite.add({
 
 suite.add({
   name: 'add past maximum, first half low and last half high to start',
-  fn: function() {
+  fn: function () {
     iterationCount++
     const name = iterationCount.toString()
     lowPriorityAttributes.addAttribute(

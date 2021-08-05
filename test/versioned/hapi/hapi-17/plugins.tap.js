@@ -10,7 +10,7 @@ var request = require('request')
 var tap = require('tap')
 var utils = require('./hapi-17-utils')
 
-tap.test('Hapi Plugins', function(t) {
+tap.test('Hapi Plugins', function (t) {
   t.autoend()
 
   var agent = null
@@ -19,33 +19,33 @@ tap.test('Hapi Plugins', function(t) {
 
   // queue that executes outside of a transaction context
   var tasks = []
-  var intervalId = setInterval(function() {
+  var intervalId = setInterval(function () {
     while (tasks.length) {
       var task = tasks.pop()
       task()
     }
   }, 10)
 
-  t.teardown(function() {
+  t.teardown(function () {
     clearInterval(intervalId)
   })
 
-  t.beforeEach(function() {
+  t.beforeEach(function () {
     agent = helper.instrumentMockedAgent()
 
     server = utils.getServer()
   })
 
-  t.afterEach(function() {
+  t.afterEach(function () {
     helper.unloadAgent(agent)
     return server.stop()
   })
 
-  t.test('maintains transaction state', function(t) {
+  t.test('maintains transaction state', function (t) {
     t.plan(3)
 
     var plugin = {
-      register: function(srvr) {
+      register: function (srvr) {
         srvr.route({
           method: 'GET',
           path: '/test',
@@ -58,30 +58,32 @@ tap.test('Hapi Plugins', function(t) {
       name: 'foobar'
     }
 
-    agent.on('transactionFinished', function(tx) {
+    agent.on('transactionFinished', function (tx) {
       t.equal(
-        tx.getFullName(), 'WebTransaction/Hapi/GET//test',
+        tx.getFullName(),
+        'WebTransaction/Hapi/GET//test',
         'should name transaction correctly'
       )
     })
 
-    server.register(plugin)
-      .then(function() {
+    server
+      .register(plugin)
+      .then(function () {
         return server.start()
       })
-      .then(function() {
+      .then(function () {
         port = server.info.port
-        request.get('http://localhost:' + port + '/test', function(error, res, body) {
+        request.get('http://localhost:' + port + '/test', function (error, res, body) {
           t.equal(body, 'hello', 'should not interfere with response')
         })
       })
   })
 
-  t.test('includes route prefix in transaction name', function(t) {
+  t.test('includes route prefix in transaction name', function (t) {
     t.plan(3)
 
     var plugin = {
-      register: function(srvr) {
+      register: function (srvr) {
         srvr.route({
           method: 'GET',
           path: '/test',
@@ -94,20 +96,22 @@ tap.test('Hapi Plugins', function(t) {
       name: 'foobar'
     }
 
-    agent.on('transactionFinished', function(tx) {
+    agent.on('transactionFinished', function (tx) {
       t.equal(
-        tx.getFullName(), 'WebTransaction/Hapi/GET//prefix/test',
+        tx.getFullName(),
+        'WebTransaction/Hapi/GET//prefix/test',
         'should name transaction correctly'
       )
     })
 
-    server.register(plugin, {routes: { prefix: '/prefix' }})
-      .then(function() {
+    server
+      .register(plugin, { routes: { prefix: '/prefix' } })
+      .then(function () {
         return server.start()
       })
-      .then(function() {
+      .then(function () {
         port = server.info.port
-        request.get('http://localhost:' + port + '/prefix/test', function(error, res, body) {
+        request.get('http://localhost:' + port + '/prefix/test', function (error, res, body) {
           t.equal(body, 'hello', 'should not interfere with response')
         })
       })

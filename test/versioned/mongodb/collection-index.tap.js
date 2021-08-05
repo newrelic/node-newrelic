@@ -9,17 +9,13 @@ const common = require('./collection-common')
 const semver = require('semver')
 const mongoPackage = require('mongodb/package.json')
 
-
 common.test('createIndex', function createIndexTest(t, collection, verify) {
   collection.createIndex('i', function onIndex(err, data) {
     t.error(err)
     t.equal(data, 'i_1')
     verify(
       null,
-      [
-        'Datastore/statement/MongoDB/testCollection/createIndex',
-        'Callback: onIndex'
-      ],
+      ['Datastore/statement/MongoDB/testCollection/createIndex', 'Callback: onIndex'],
       ['createIndex']
     )
   })
@@ -51,19 +47,20 @@ common.test('indexes', function indexesTest(t, collection, verify) {
     var result = data && data[0]
     // this will fail if running mongodb > 4.3.1
     // https://jira.mongodb.org/browse/SERVER-41696
-    t.same(result, {
-      v: result && result.v,
-      key: {_id: 1},
-      name: '_id_',
-      ns: common.DB_NAME + '.testCollection'
-    }, 'should have expected results')
+    t.same(
+      result,
+      {
+        v: result && result.v,
+        key: { _id: 1 },
+        name: '_id_',
+        ns: common.DB_NAME + '.testCollection'
+      },
+      'should have expected results'
+    )
 
     verify(
       null,
-      [
-        'Datastore/statement/MongoDB/testCollection/indexes',
-        'Callback: done'
-      ],
+      ['Datastore/statement/MongoDB/testCollection/indexes', 'Callback: done'],
       ['indexes']
     )
   })
@@ -76,10 +73,7 @@ common.test('indexExists', function indexExistsTest(t, collection, verify) {
 
     verify(
       null,
-      [
-        'Datastore/statement/MongoDB/testCollection/indexExists',
-        'Callback: done'
-      ],
+      ['Datastore/statement/MongoDB/testCollection/indexExists', 'Callback: done'],
       ['indexExists']
     )
   })
@@ -92,10 +86,7 @@ common.test('indexInformation', function indexInformationTest(t, collection, ver
 
     verify(
       null,
-      [
-        'Datastore/statement/MongoDB/testCollection/indexInformation',
-        'Callback: done'
-      ],
+      ['Datastore/statement/MongoDB/testCollection/indexInformation', 'Callback: done'],
       ['indexInformation']
     )
   })
@@ -108,10 +99,7 @@ if (semver.satisfies(mongoPackage.version, '<4')) {
       t.equal(data, true)
       verify(
         null,
-        [
-          'Datastore/statement/MongoDB/testCollection/dropAllIndexes',
-          'Callback: done'
-        ],
+        ['Datastore/statement/MongoDB/testCollection/dropAllIndexes', 'Callback: done'],
         ['dropAllIndexes']
       )
     })
@@ -123,10 +111,7 @@ if (semver.satisfies(mongoPackage.version, '<4')) {
       t.equal(data, 'i_1')
       verify(
         null,
-        [
-          'Datastore/statement/MongoDB/testCollection/ensureIndex',
-          'Callback: done'
-        ],
+        ['Datastore/statement/MongoDB/testCollection/ensureIndex', 'Callback: done'],
         ['ensureIndex']
       )
     })
@@ -139,10 +124,7 @@ if (semver.satisfies(mongoPackage.version, '<4')) {
 
       verify(
         null,
-        [
-          'Datastore/statement/MongoDB/testCollection/reIndex',
-          'Callback: done'
-        ],
+        ['Datastore/statement/MongoDB/testCollection/reIndex', 'Callback: done'],
         ['reIndex']
       )
     })

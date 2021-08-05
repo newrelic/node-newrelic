@@ -8,11 +8,11 @@
 var benchmark = require('../../lib/benchmark')
 var NameState = require('../../../lib/transaction/name-state')
 
-var suite = benchmark.createBenchmark({name: 'Namestate#getPath'})
+var suite = benchmark.createBenchmark({ name: 'Namestate#getPath' })
 
 suite.add({
   name: 'empty',
-  fn: function() {
+  fn: function () {
     var ns = getNameState()
     ns.pathStack = []
     return ns.getPath()
@@ -21,28 +21,37 @@ suite.add({
 
 suite.add({
   name: 'small',
-  fn: function() {
+  fn: function () {
     var ns = getNameState()
-    ns.pathStack = [{path: '/'}, {path: '/foo'}, {path: 'bar'}]
+    ns.pathStack = [{ path: '/' }, { path: '/foo' }, { path: 'bar' }]
     return ns.getPath()
   }
 })
 
 suite.add({
   name: 'big',
-  fn: function() {
+  fn: function () {
     var ns = getNameState()
     ns.pathStack = [
-      {path: '/'}, {path: '/foo'}, {path: 'bar'},
-      {path: '/'}, {path: '/foo/'}, {path: 'bar'},
-      {path: '/'}, {path: '/foo'}, {path: 'bar'},
-      {path: '/'}, {path: '/foo/'}, {path: 'bar'},
-      {path: '/'}, {path: '/foo/'}, {path: '/bar'}
+      { path: '/' },
+      { path: '/foo' },
+      { path: 'bar' },
+      { path: '/' },
+      { path: '/foo/' },
+      { path: 'bar' },
+      { path: '/' },
+      { path: '/foo' },
+      { path: 'bar' },
+      { path: '/' },
+      { path: '/foo/' },
+      { path: 'bar' },
+      { path: '/' },
+      { path: '/foo/' },
+      { path: '/bar' }
     ]
     return ns.getPath()
   }
 })
-
 
 suite.run()
 

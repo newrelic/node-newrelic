@@ -16,35 +16,30 @@ test('ending segment after transaction', (t) => {
   let start = null
   helper.runInTransaction(agent, (tx) => {
     const segmentName = 'my-tracer'
-    newrelic.startSegment(segmentName, false, (cb) => {
-      segment = agent.tracer.getSegment()
-      t.equal(segment.name, segmentName, 'should be the segment we created')
-      t.ok(segment.timer.isRunning(), 'timer should have automatically been started')
-      start = segment.getDurationInMillis()
+    newrelic.startSegment(
+      segmentName,
+      false,
+      (cb) => {
+        segment = agent.tracer.getSegment()
+        t.equal(segment.name, segmentName, 'should be the segment we created')
+        t.ok(segment.timer.isRunning(), 'timer should have automatically been started')
+        start = segment.getDurationInMillis()
 
-      tx.end()
-      setImmediate(cb, tx)
-    }, finish)
+        tx.end()
+        setImmediate(cb, tx)
+      },
+      finish
+    )
 
     function finish() {
-      t.notOk(
-        segment.timer.isActive(),
-        'segment timer should have been stopped by tx end'
-      )
+      t.notOk(segment.timer.isActive(), 'segment timer should have been stopped by tx end')
 
-      t.ok(
-        segment.getDurationInMillis() > start,
-        'time should have been updated'
-      )
+      t.ok(segment.getDurationInMillis() > start, 'time should have been updated')
 
       const totalTime = tx.trace.getTotalTimeDurationInMillis()
       t.ok(totalTime > 0, 'transaction should have a totalTime')
 
-      t.equal(
-        segment.name,
-        'Truncated/my-tracer',
-        'name should have Truncated/ prefix'
-      )
+      t.equal(segment.name, 'Truncated/my-tracer', 'name should have Truncated/ prefix')
 
       t.end()
     }
@@ -58,24 +53,23 @@ test('segment ended before tx ends should not have Truncated prefix', (t) => {
   let start = null
   helper.runInTransaction(agent, (tx) => {
     const segmentName = 'my-tracer'
-    newrelic.startSegment(segmentName, false, (cb) => {
-      segment = agent.tracer.getSegment()
-      t.ok(segment.timer.isRunning(), 'timer should have automatically been started')
-      start = segment.getDurationInMillis()
-      cb()
-    }, finish)
+    newrelic.startSegment(
+      segmentName,
+      false,
+      (cb) => {
+        segment = agent.tracer.getSegment()
+        t.ok(segment.timer.isRunning(), 'timer should have automatically been started')
+        start = segment.getDurationInMillis()
+        cb()
+      },
+      finish
+    )
 
     function finish() {
       tx.end()
-      t.notOk(
-        segment.timer.isActive(),
-        'segment timer should have been stopped by tx end'
-      )
+      t.notOk(segment.timer.isActive(), 'segment timer should have been stopped by tx end')
 
-      t.ok(
-        segment.getDurationInMillis() > start,
-        'time should have been updated'
-      )
+      t.ok(segment.getDurationInMillis() > start, 'time should have been updated')
 
       const totalTime = tx.trace.getTotalTimeDurationInMillis()
       t.ok(totalTime > 0, 'transaction should have a totalTime')
@@ -92,23 +86,25 @@ test('touching a segment', (t) => {
   let segment = null
   helper.runInTransaction(agent, (tx) => {
     const segmentName = 'my-tracer'
-    newrelic.startSegment(segmentName, false, (cb) => {
-      segment = agent.tracer.getSegment()
-      t.equal(segment.name, segmentName, 'should be the segment we created')
-      t.ok(segment.timer.isRunning(), 'timer should have automatically been started')
+    newrelic.startSegment(
+      segmentName,
+      false,
+      (cb) => {
+        segment = agent.tracer.getSegment()
+        t.equal(segment.name, segmentName, 'should be the segment we created')
+        t.ok(segment.timer.isRunning(), 'timer should have automatically been started')
 
-      segment.touch()
-      t.ok(segment.timer.isRunning(), 'timer should still be running after touch')
+        segment.touch()
+        t.ok(segment.timer.isRunning(), 'timer should still be running after touch')
 
-      cb()
-    }, finish)
+        cb()
+      },
+      finish
+    )
 
     function finish() {
       tx.end()
-      t.notOk(
-        segment.timer.isActive(),
-        'segment timer should have been stopped by tx end'
-      )
+      t.notOk(segment.timer.isActive(), 'segment timer should have been stopped by tx end')
 
       const totalTime = tx.trace.getTotalTimeDurationInMillis()
       t.ok(totalTime > 0, 'transaction should have a totalTime')

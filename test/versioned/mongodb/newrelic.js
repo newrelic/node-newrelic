@@ -20,6 +20,6 @@ exports.config = {
     detect_docker: false
   },
   transaction_tracer: {
-    enabled : true
+    enabled: true
   }
 }

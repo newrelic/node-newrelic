@@ -10,7 +10,7 @@ const tap = require('tap')
 const parse = require('../../../lib/collector/parse-response')
 
 tap.test('should call back with an error if called with no collector method name', (t) => {
-  parse(null, {statusCode: 200}, (err) => {
+  parse(null, { statusCode: 200 }, (err) => {
     t.ok(err)
     t.equal(err.message, 'collector method name required!')
 
@@ -28,8 +28,10 @@ tap.test('should call back with an error if called without a response', (t) => {
 })
 
 tap.test('should throw if called without a callback', (t) => {
-  const response = {statusCode : 200}
-  t.throws(() => { parse('TEST', response, undefined) }, new Error('callback required!'))
+  const response = { statusCode: 200 }
+  t.throws(() => {
+    parse('TEST', response, undefined)
+  }, new Error('callback required!'))
 
   t.end()
 })
@@ -37,12 +39,12 @@ tap.test('should throw if called without a callback', (t) => {
 tap.test('when initialized properly and response status is 200', (t) => {
   t.autoend()
 
-  const response = {statusCode : 200}
+  const response = { statusCode: 200 }
   const methodName = 'TEST'
 
   t.test('should pass through return value', (t) => {
     function callback(error, res) {
-      t.same(res.payload, [1,1,2,3,5,8])
+      t.same(res.payload, [1, 1, 2, 3, 5, 8])
 
       t.end()
     }
@@ -150,14 +152,14 @@ tap.test('when initialized properly and response status is 200', (t) => {
 tap.test('when initialized properly and response status is 503', (t) => {
   t.autoend()
 
-  const response = {statusCode : 503}
+  const response = { statusCode: 503 }
   const methodName = 'TEST'
 
   t.test('should pass through return value despite weird status code', (t) => {
     function callback(error, res) {
       t.error(error)
 
-      t.same(res.payload, [1,1,2,3,5,8])
+      t.same(res.payload, [1, 1, 2, 3, 5, 8])
       t.equal(res.status, 503)
 
       t.end()
@@ -179,4 +181,3 @@ tap.test('when initialized properly and response status is 503', (t) => {
     parser(null, '{}')
   })
 })
-

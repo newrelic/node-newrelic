@@ -9,7 +9,6 @@ var helper = require('../../lib/agent_helper')
 var http = require('http')
 var test = require('tap').test
 
-
 var express
 var agent
 var app
@@ -23,26 +22,26 @@ runTests({
 })
 
 function runTests(flags) {
-  test('transaction name with single route', function(t) {
+  test('transaction name with single route', function (t) {
     setup(t)
 
-    app.get('/path1', function(req, res) {
+    app.get('/path1', function (req, res) {
       res.end()
     })
 
     runTest(t, '/path1', '/path1')
   })
 
-  test('transaction name with no matched routes', function(t) {
+  test('transaction name with no matched routes', function (t) {
     setup(t)
 
-    app.get('/path1', function(req, res) {
+    app.get('/path1', function (req, res) {
       res.end()
     })
 
     var endpoint = '/asdf'
 
-    agent.on('transactionFinished', function(transaction) {
+    agent.on('transactionFinished', function (transaction) {
       t.equal(
         transaction.name,
         'WebTransaction/Expressjs/GET/(not found)',
@@ -50,7 +49,7 @@ function runTests(flags) {
       )
       t.end()
     })
-    var server = app.listen(function() {
+    var server = app.listen(function () {
       makeRequest(server, endpoint)
     })
     t.teardown(function cb_tearDown() {
@@ -58,23 +57,27 @@ function runTests(flags) {
     })
   })
 
-  test('transaction name with route that has multiple handlers', function(t) {
+  test('transaction name with route that has multiple handlers', function (t) {
     setup(t)
 
-    app.get('/path1', function(req, res, next) {
-      next()
-    }, function(req, res) {
-      res.end()
-    })
+    app.get(
+      '/path1',
+      function (req, res, next) {
+        next()
+      },
+      function (req, res) {
+        res.end()
+      }
+    )
 
     runTest(t, '/path1', '/path1')
   })
 
-  test('transaction name with router middleware', function(t) {
+  test('transaction name with router middleware', function (t) {
     setup(t)
 
     var router = new express.Router()
-    router.get('/path1', function(req, res) {
+    router.get('/path1', function (req, res) {
       res.end()
     })
 
@@ -83,14 +86,14 @@ function runTests(flags) {
     runTest(t, '/path1', '/path1')
   })
 
-  test('transaction name with middleware function', function(t) {
+  test('transaction name with middleware function', function (t) {
     setup(t)
 
-    app.use('/path1', function(req, res, next) {
+    app.use('/path1', function (req, res, next) {
       next()
     })
 
-    app.get('/path1', function(req, res) {
+    app.get('/path1', function (req, res) {
       res.end()
     })
 
@@ -139,31 +142,31 @@ function runTests(flags) {
     runTest(t, '/path1', '/')
   })
 
-  test('transaction name with shared middleware function', function(t) {
+  test('transaction name with shared middleware function', function (t) {
     setup(t)
 
-    app.use(['/path1', '/path2'], function(req, res, next) {
+    app.use(['/path1', '/path2'], function (req, res, next) {
       next()
     })
 
-    app.get('/path1', function(req, res) {
+    app.get('/path1', function (req, res) {
       res.end()
     })
 
     runTest(t, '/path1', '/path1')
   })
 
-  test('transaction name when ending in shared middleware', function(t) {
+  test('transaction name when ending in shared middleware', function (t) {
     setup(t)
 
-    app.use(['/path1', '/path2'], function(req, res) {
+    app.use(['/path1', '/path2'], function (req, res) {
       res.end()
     })
 
     runTest(t, '/path1', '/path1,/path2')
   })
 
-  test('transaction name with subapp middleware', function(t) {
+  test('transaction name with subapp middleware', function (t) {
     setup(t)
 
     var subapp = express()
@@ -177,12 +180,12 @@ function runTests(flags) {
     runTest(t, '/path1', '/path1')
   })
 
-  test('transaction name with subrouter', function(t) {
+  test('transaction name with subrouter', function (t) {
     setup(t)
 
     var router = new express.Router()
 
-    router.get('/path1', function(req, res) {
+    router.get('/path1', function (req, res) {
       res.end()
     })
 
@@ -191,27 +194,24 @@ function runTests(flags) {
     runTest(t, '/api/path1', '/api/path1')
   })
 
-  test(
-    'multiple route handlers with the same name do not duplicate transaction name',
-    function(t) {
-      setup(t)
-
-      app.get('/path1', function(req, res, next) {
-        next()
-      })
-
-      app.get('/path1', function(req, res) {
-        res.end()
-      })
-
-      runTest(t, '/path1', '/path1')
-    }
-  )
-
-  test('responding from middleware', function(t) {
+  test('multiple route handlers with the same name do not duplicate transaction name', function (t) {
     setup(t)
 
-    app.use('/test', function(req, res, next) {
+    app.get('/path1', function (req, res, next) {
+      next()
+    })
+
+    app.get('/path1', function (req, res) {
+      res.end()
+    })
+
+    runTest(t, '/path1', '/path1')
+  })
+
+  test('responding from middleware', function (t) {
+    setup(t)
+
+    app.use('/test', function (req, res, next) {
       res.send('ok')
       next()
     })
@@ -219,10 +219,10 @@ function runTests(flags) {
     runTest(t, '/test')
   })
 
-  test('responding from middleware with parameter', function(t) {
+  test('responding from middleware with parameter', function (t) {
     setup(t)
 
-    app.use('/test', function(req, res, next) {
+    app.use('/test', function (req, res, next) {
       res.send('ok')
       next()
     })
@@ -230,24 +230,24 @@ function runTests(flags) {
     runTest(t, '/test/param', '/test')
   })
 
-  test('with error', function(t) {
+  test('with error', function (t) {
     setup(t)
 
-    app.get('/path1', function(req, res, next) {
+    app.get('/path1', function (req, res, next) {
       next(new Error('some error'))
     })
 
-    app.use(function(err, req, res) {
+    app.use(function (err, req, res) {
       return res.status(500).end()
     })
 
     runTest(t, '/path1', '/path1')
   })
 
-  test('with error and path-specific error handler', function(t) {
+  test('with error and path-specific error handler', function (t) {
     setup(t)
 
-    app.get('/path1', function() {
+    app.get('/path1', function () {
       throw new Error('some error')
     })
 
@@ -258,60 +258,61 @@ function runTests(flags) {
     runTest(t, '/path1', '/path1')
   })
 
-  test('when router error is handled outside of the router', function(t) {
+  test('when router error is handled outside of the router', function (t) {
     setup(t)
 
     var router = new express.Router()
 
-    router.get('/path1', function(req, res, next) {
+    router.get('/path1', function (req, res, next) {
       next(new Error('some error'))
     })
 
     app.use('/router1', router)
 
-    app.use(function(err, req, res, next) { // eslint-disable-line no-unused-vars
+    // eslint-disable-next-line no-unused-vars
+    app.use(function (err, req, res, next) {
       return res.status(500).end()
     })
 
     runTest(t, '/router1/path1', '/router1/path1')
   })
 
-  test('when using a route variable', function(t) {
+  test('when using a route variable', function (t) {
     setup(t)
 
-    app.get('/:foo/:bar', function(req, res) {
+    app.get('/:foo/:bar', function (req, res) {
       res.end()
     })
 
     runTest(t, '/foo/bar', '/:foo/:bar')
   })
 
-  test('when using a string pattern in path', function(t) {
+  test('when using a string pattern in path', function (t) {
     setup(t)
 
-    app.get('/ab?cd', function(req, res) {
+    app.get('/ab?cd', function (req, res) {
       res.end()
     })
 
     runTest(t, '/abcd', '/ab?cd')
   })
 
-  test('when using a regular expression in path', function(t) {
+  test('when using a regular expression in path', function (t) {
     setup(t)
 
-    app.get(/a/, function(req, res) {
+    app.get(/a/, function (req, res) {
       res.end()
     })
 
     runTest(t, '/abcd', '/a/')
   })
 
-  test('when using router with a route variable', function(t) {
+  test('when using router with a route variable', function (t) {
     setup(t)
 
     var router = express.Router() // eslint-disable-line new-cap
 
-    router.get('/:var2/path1', function(req, res) {
+    router.get('/:var2/path1', function (req, res) {
       res.end()
     })
 
@@ -320,11 +321,11 @@ function runTests(flags) {
     runTest(t, '/foo/bar/path1', '/:var1/:var2/path1')
   })
 
-  test('when mounting a subapp using a variable', function(t) {
+  test('when mounting a subapp using a variable', function (t) {
     setup(t)
 
     var subapp = express()
-    subapp.get('/:var2/path1', function(req, res) {
+    subapp.get('/:var2/path1', function (req, res) {
       res.end()
     })
 
@@ -333,7 +334,7 @@ function runTests(flags) {
     runTest(t, '/foo/bar/path1', '/:var1/:var2/path1')
   })
 
-  test('using two routers', function(t) {
+  test('using two routers', function (t) {
     setup(t)
 
     var router1 = express.Router() // eslint-disable-line new-cap
@@ -342,14 +343,14 @@ function runTests(flags) {
     app.use('/:router1', router1)
     router1.use('/:router2', router2)
 
-    router2.get('/path1', function(req, res) {
+    router2.get('/path1', function (req, res) {
       res.end()
     })
 
     runTest(t, '/router1/router2/path1', '/:router1/:router2/path1')
   })
 
-  test('transactions running in parallel should be recorded correctly', function(t) {
+  test('transactions running in parallel should be recorded correctly', function (t) {
     setup(t)
     var router1 = express.Router() // eslint-disable-line new-cap
     var router2 = express.Router() // eslint-disable-line new-cap
@@ -357,19 +358,15 @@ function runTests(flags) {
     app.use('/:router1', router1)
     router1.use('/:router2', router2)
 
-    router2.get('/path1', function(req, res) {
-      setTimeout(function() {
+    router2.get('/path1', function (req, res) {
+      setTimeout(function () {
         res.end()
       }, 0)
     })
 
     var numTests = 4
-    var runner = makeMultiRunner(t,
-      '/router1/router2/path1',
-      '/:router1/:router2/path1',
-      numTests
-    )
-    var server = app.listen(function() {
+    var runner = makeMultiRunner(t, '/router1/router2/path1', '/:router1/:router2/path1', numTests)
+    var server = app.listen(function () {
       t.teardown(function cb_tearDown() {
         server.close()
       })
@@ -379,51 +376,55 @@ function runTests(flags) {
     })
   })
 
-  test('names transaction when request is aborted', function(t) {
+  test('names transaction when request is aborted', function (t) {
     t.plan(4)
     setup(t)
 
     var request = null
 
-    app.get('/test', function(req, res, next) {
+    app.get('/test', function (req, res, next) {
       t.comment('middleware')
       t.ok(agent.getTransaction(), 'transaction exists')
 
       // generate error after client has aborted
       request.abort()
-      setTimeout(function() {
+      setTimeout(function () {
         t.comment('timed out')
         t.ok(agent.getTransaction() == null, 'transaction has already ended')
         next(new Error('some error'))
       }, 100)
     })
 
-    app.use(function(error, req, res, next) { // eslint-disable-line no-unused-vars
+    // eslint-disable-next-line no-unused-vars
+    app.use(function (error, req, res, next) {
       t.comment('errorware')
       t.ok(agent.getTransaction() == null, 'no active transaction when responding')
       res.end()
     })
 
-    var server = app.listen(function() {
+    var server = app.listen(function () {
       t.comment('making request')
       var port = server.address().port
-      request = http.request({
-        hostname: 'localhost',
-        port: port,
-        path: '/test'
-      }, function() {})
+      request = http.request(
+        {
+          hostname: 'localhost',
+          port: port,
+          path: '/test'
+        },
+        function () {}
+      )
       request.end()
 
       // add error handler, otherwise aborting will cause an exception
-      request.on('error', function(err) {
+      request.on('error', function (err) {
         t.comment('request errored: ' + err)
       })
-      request.on('abort', function() {
+      request.on('abort', function () {
         t.comment('request aborted')
       })
     })
 
-    agent.on('transactionFinished', function(tx) {
+    agent.on('transactionFinished', function (tx) {
       t.equal(tx.name, 'WebTransaction/Expressjs/GET//test')
     })
 
@@ -432,37 +433,38 @@ function runTests(flags) {
     })
   })
 
-  test('Express transaction names are unaffected by errorware', function(t) {
+  test('Express transaction names are unaffected by errorware', function (t) {
     t.plan(1)
     setup(t)
 
-    agent.on('transactionFinished', function(tx) {
+    agent.on('transactionFinished', function (tx) {
       var expected = 'WebTransaction/Expressjs/GET//test'
       t.equal(tx.trace.root.children[0].name, expected)
     })
 
-    app.use('/test', function() {
+    app.use('/test', function () {
       throw new Error('endpoint error')
     })
 
-    app.use('/test', function(err, req, res, next) { // eslint-disable-line no-unused-vars
+    // eslint-disable-next-line no-unused-vars
+    app.use('/test', function (err, req, res, next) {
       res.send(err.message)
     })
 
-    var server = app.listen(function() {
+    var server = app.listen(function () {
       http.request({ port: server.address().port, path: '/test' }).end()
     })
 
-    t.teardown(function() {
+    t.teardown(function () {
       server.close()
     })
   })
 
-  test('when next is called after transaction state loss', function(t) {
+  test('when next is called after transaction state loss', function (t) {
     // Uninstrumented work queue. This must be set up before the agent is loaded
     // so that no transaction state is maintained.
     var tasks = []
-    var interval = setInterval(function() {
+    var interval = setInterval(function () {
       if (tasks.length) {
         tasks.pop()()
       }
@@ -476,7 +478,7 @@ function runTests(flags) {
       'WebTransaction/Expressjs/GET//bar',
       'WebTransaction/Expressjs/GET//foo'
     ]
-    agent.on('transactionFinished', function(tx) {
+    agent.on('transactionFinished', function (tx) {
       t.equal(
         tx.name,
         transactionNames[transactionsFinished++],
@@ -484,29 +486,29 @@ function runTests(flags) {
       )
     })
 
-    app.use('/foo', function(req, res, next) {
-      setTimeout(function() {
+    app.use('/foo', function (req, res, next) {
+      setTimeout(function () {
         tasks.push(next)
       }, 5)
     })
 
-    app.get('/foo', function(req, res) {
-      setTimeout(function() {
+    app.get('/foo', function (req, res) {
+      setTimeout(function () {
         res.send('foo done\n')
       }, 500)
     })
 
-    app.get('/bar', function(req, res) {
+    app.get('/bar', function (req, res) {
       res.send('bar done\n')
     })
 
-    var server = app.listen(function() {
+    var server = app.listen(function () {
       var port = server.address().port
 
       // Send first request to `/foo` which is slow and uses the work queue.
-      http.get({port: port, path: '/foo'}, function(res) {
+      http.get({ port: port, path: '/foo' }, function (res) {
         res.resume()
-        res.on('end', function() {
+        res.on('end', function () {
           t.equal(transactionsFinished, 2, 'should have two transactions done')
           t.end()
         })
@@ -514,13 +516,13 @@ function runTests(flags) {
 
       // Send the second request after a short wait `/bar` which is fast and
       // does not use the work queue.
-      setTimeout(function() {
-        http.get({port: port, path: '/bar'}, function(res) {
+      setTimeout(function () {
+        http.get({ port: port, path: '/bar' }, function (res) {
           res.resume()
         })
       }, 100)
     })
-    t.teardown(function() {
+    t.teardown(function () {
       server.close()
       clearInterval(interval)
     })
@@ -540,11 +542,14 @@ function runTests(flags) {
     var done = 0
     var seen = new Set()
     if (!expectedName) expectedName = endpoint
-    agent.on('transactionFinished', function(transaction) {
+    agent.on('transactionFinished', function (transaction) {
       t.notOk(seen.has(transaction), 'should never see the finishing transaction twice')
       seen.add(transaction)
-      t.equal(transaction.name, 'WebTransaction/Expressjs/GET/' + expectedName,
-        'transaction has expected name')
+      t.equal(
+        transaction.name,
+        'WebTransaction/Expressjs/GET/' + expectedName,
+        'transaction has expected name'
+      )
       transaction.end()
       if (++done === numTests) {
         done = 0
@@ -558,12 +563,15 @@ function runTests(flags) {
 
   function runTest(t, endpoint, expectedName) {
     if (!expectedName) expectedName = endpoint
-    agent.on('transactionFinished', function(transaction) {
-      t.equal(transaction.name, 'WebTransaction/Expressjs/GET/' + expectedName,
-        'transaction has expected name')
+    agent.on('transactionFinished', function (transaction) {
+      t.equal(
+        transaction.name,
+        'WebTransaction/Expressjs/GET/' + expectedName,
+        'transaction has expected name'
+      )
       t.end()
     })
-    var server = app.listen(function() {
+    var server = app.listen(function () {
       makeRequest(server, endpoint)
     })
     t.teardown(function cb_tearDown() {
@@ -573,6 +581,6 @@ function runTests(flags) {
 
   function makeRequest(server, path, callback) {
     var port = server.address().port
-    http.request({port: port, path: path}, callback).end()
+    http.request({ port: port, path: path }, callback).end()
   }
 }

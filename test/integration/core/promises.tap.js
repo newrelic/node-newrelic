@@ -10,4 +10,4 @@ if (!global.Promise) {
   return
 }
 
-require('./promises')({await_support: false})
+require('./promises')({ await_support: false })

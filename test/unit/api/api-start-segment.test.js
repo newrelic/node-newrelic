@@ -26,8 +26,8 @@ tap.test('Agent API - startSegment', (t) => {
   })
 
   t.test('should name the segment as provided', (t) => {
-    helper.runInTransaction(agent, function() {
-      api.startSegment('foobar', false, function() {
+    helper.runInTransaction(agent, function () {
+      api.startSegment('foobar', false, function () {
         const segment = api.shim.getSegment()
         t.ok(segment)
         t.equal(segment.name, 'foobar')
@@ -38,9 +38,9 @@ tap.test('Agent API - startSegment', (t) => {
   })
 
   t.test('should return the return value of the handler', (t) => {
-    helper.runInTransaction(agent, function() {
+    helper.runInTransaction(agent, function () {
       const obj = {}
-      const ret = api.startSegment('foobar', false, function() {
+      const ret = api.startSegment('foobar', false, function () {
         return obj
       })
 
@@ -50,9 +50,9 @@ tap.test('Agent API - startSegment', (t) => {
   })
 
   t.test('should not record a metric when `record` is `false`', (t) => {
-    helper.runInTransaction(agent, function(tx) {
+    helper.runInTransaction(agent, function (tx) {
       tx.name = 'test'
-      api.startSegment('foobar', false, function() {
+      api.startSegment('foobar', false, function () {
         const segment = api.shim.getSegment()
 
         t.ok(segment)
@@ -72,9 +72,9 @@ tap.test('Agent API - startSegment', (t) => {
   })
 
   t.test('should record a metric when `record` is `true`', (t) => {
-    helper.runInTransaction(agent, function(tx) {
+    helper.runInTransaction(agent, function (tx) {
       tx.name = 'test'
-      api.startSegment('foobar', true, function() {
+      api.startSegment('foobar', true, function () {
         const segment = api.shim.getSegment()
 
         t.ok(segment)
@@ -96,39 +96,46 @@ tap.test('Agent API - startSegment', (t) => {
   })
 
   t.test('should time the segment from the callback if provided', (t) => {
-    helper.runInTransaction(agent, function() {
-      api.startSegment('foobar', false, function(cb) {
-        const segment = api.shim.getSegment()
-        setTimeout(cb, 150, null, segment)
-      }, function(err, segment) {
-        t.notOk(err)
-        t.ok(segment)
+    helper.runInTransaction(agent, function () {
+      api.startSegment(
+        'foobar',
+        false,
+        function (cb) {
+          const segment = api.shim.getSegment()
+          setTimeout(cb, 150, null, segment)
+        },
+        function (err, segment) {
+          t.notOk(err)
+          t.ok(segment)
 
-        const duration = segment.getDurationInMillis()
-        const isExpectedRange = (duration >= 100) && (duration < 200)
-        t.ok(isExpectedRange)
+          const duration = segment.getDurationInMillis()
+          const isExpectedRange = duration >= 100 && duration < 200
+          t.ok(isExpectedRange)
 
-        t.end()
-      })
+          t.end()
+        }
+      )
     })
   })
 
   t.test('should time the segment from a returned promise', (t) => {
-    return helper.runInTransaction(agent, function() {
-      return api.startSegment('foobar', false, function() {
-        const segment = api.shim.getSegment()
-        return new Promise(function(resolve) {
-          setTimeout(resolve, 150, segment)
+    return helper.runInTransaction(agent, function () {
+      return api
+        .startSegment('foobar', false, function () {
+          const segment = api.shim.getSegment()
+          return new Promise(function (resolve) {
+            setTimeout(resolve, 150, segment)
+          })
         })
-      }).then(function(segment) {
-        t.ok(segment)
+        .then(function (segment) {
+          t.ok(segment)
 
-        const duration = segment.getDurationInMillis()
-        const isExpectedRange = (duration >= 100) && (duration < 200)
-        t.ok(isExpectedRange)
+          const duration = segment.getDurationInMillis()
+          const isExpectedRange = duration >= 100 && duration < 200
+          t.ok(isExpectedRange)
 
-        t.end()
-      })
+          t.end()
+        })
     })
   })
 })

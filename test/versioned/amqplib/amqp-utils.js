@@ -15,7 +15,6 @@ exports.CON_STRING = CON_STRING
 exports.DIRECT_EXCHANGE = 'test-direct-exchange'
 exports.FANOUT_EXCHANGE = 'test-fanout-exchange'
 
-
 exports.verifySubscribe = verifySubscribe
 exports.verifyConsumeTransaction = verifyConsumeTransaction
 exports.verifyProduce = verifyProduce
@@ -31,36 +30,31 @@ function verifySubscribe(t, tx, exchange, routingKey) {
   var isCallback = !!metrics.findSegment(tx.trace.root, 'Callback: <anonymous>')
 
   if (isCallback) {
-    t.doesNotThrow(function() {
+    t.doesNotThrow(function () {
       metrics.assertSegments(tx.trace.root, [
-        'amqplib.Channel#consume', [
-          'Callback: <anonymous>', [
-            'MessageBroker/RabbitMQ/Exchange/Produce/Named/' + exchange
-          ]
-        ]
+        'amqplib.Channel#consume',
+        ['Callback: <anonymous>', ['MessageBroker/RabbitMQ/Exchange/Produce/Named/' + exchange]]
       ])
     }, 'should have expected segments')
   } else {
-    t.doesNotThrow(function() {
+    t.doesNotThrow(function () {
       metrics.assertSegments(tx.trace.root, [
-        'amqplib.Channel#consume', [
-          'MessageBroker/RabbitMQ/Exchange/Produce/Named/' + exchange,
-        ]
+        'amqplib.Channel#consume',
+        ['MessageBroker/RabbitMQ/Exchange/Produce/Named/' + exchange]
       ])
     }, 'should have expected segments')
   }
 
-  t.doesNotThrow(function() {
-    metrics.assertMetrics(tx.metrics, [
-      [{name: 'MessageBroker/RabbitMQ/Exchange/Produce/Named/' + exchange}],
-    ], false, false)
+  t.doesNotThrow(function () {
+    metrics.assertMetrics(
+      tx.metrics,
+      [[{ name: 'MessageBroker/RabbitMQ/Exchange/Produce/Named/' + exchange }]],
+      false,
+      false
+    )
   }, 'should have expected metrics')
 
-  t.notMatch(
-    tx.getFullName(),
-    /^OtherTransaction\/Message/,
-    'should not set transaction name'
-  )
+  t.notMatch(tx.getFullName(), /^OtherTransaction\/Message/, 'should not set transaction name')
 
   var consume = metrics.findSegment(
     tx.trace.root,
@@ -80,12 +74,7 @@ function verifyCAT(t, produceTransaction, consumeTransaction) {
     produceTransaction.id,
     'should have the the correct referring transaction guid'
   )
-  t.equals(
-    consumeTransaction.tripId,
-    produceTransaction.id,
-    'should have the the correct trip id'
-
-  )
+  t.equals(consumeTransaction.tripId, produceTransaction.id, 'should have the the correct trip id')
   t.notOk(
     consumeTransaction.invalidIncomingExternalTransaction,
     'invalid incoming external transaction should be false'
@@ -96,45 +85,30 @@ function verifyDistributedTrace(t, produceTransaction, consumeTransaction) {
   t.ok(produceTransaction.isDistributedTrace, 'should mark producer as distributed')
   t.ok(consumeTransaction.isDistributedTrace, 'should mark consumer as distributed')
 
-  t.equals(
-    consumeTransaction.incomingCatId,
-    null,
-    'should not set old CAT properties'
-  )
+  t.equals(consumeTransaction.incomingCatId, null, 'should not set old CAT properties')
 
-  t.equals(
-    produceTransaction.id,
-    consumeTransaction.parentId,
-    'should have proper parent id'
-  )
-  t.equals(
-    produceTransaction.traceId,
-    consumeTransaction.traceId,
-    'should have proper trace id'
-  )
+  t.equals(produceTransaction.id, consumeTransaction.parentId, 'should have proper parent id')
+  t.equals(produceTransaction.traceId, consumeTransaction.traceId, 'should have proper trace id')
   var produceSegment = produceTransaction.trace.root.children[0].children[0]
   produceSegment = produceSegment.children[0] || produceSegment
-  t.equals(
-    produceSegment.id,
-    consumeTransaction.parentSpanId,
-    'should have proper parentSpanId'
-  )
-  t.equals(
-    consumeTransaction.parentTransportType,
-    'AMQP',
-    'should have correct transport type'
-  )
+  t.equals(produceSegment.id, consumeTransaction.parentSpanId, 'should have proper parentSpanId')
+  t.equals(consumeTransaction.parentTransportType, 'AMQP', 'should have correct transport type')
 }
 
 function verifyConsumeTransaction(t, tx, exchange, queue, routingKey) {
-  t.doesNotThrow(function() {
-    metrics.assertMetrics(tx.metrics, [
-      [{name: 'OtherTransaction/Message/RabbitMQ/Exchange/Named/' + exchange}],
-      [{name: 'OtherTransactionTotalTime/Message/RabbitMQ/Exchange/Named/' + exchange}],
-      [{name: 'OtherTransaction/Message/all'}],
-      [{name: 'OtherTransaction/all'}],
-      [{name: 'OtherTransactionTotalTime'}],
-    ], false, false)
+  t.doesNotThrow(function () {
+    metrics.assertMetrics(
+      tx.metrics,
+      [
+        [{ name: 'OtherTransaction/Message/RabbitMQ/Exchange/Named/' + exchange }],
+        [{ name: 'OtherTransactionTotalTime/Message/RabbitMQ/Exchange/Named/' + exchange }],
+        [{ name: 'OtherTransaction/Message/all' }],
+        [{ name: 'OtherTransaction/all' }],
+        [{ name: 'OtherTransactionTotalTime' }]
+      ],
+      false,
+      false
+    )
   }, 'should have expected metrics')
 
   t.equal(
@@ -151,26 +125,25 @@ function verifyConsumeTransaction(t, tx, exchange, queue, routingKey) {
 
   var attributes = tx.trace.attributes.get(DESTINATIONS.TRANS_TRACE)
   t.equal(
-    attributes['message.routingKey'], routingKey,
+    attributes['message.routingKey'],
+    routingKey,
     'should have routing key transaction parameter'
   )
-  t.equal(
-    attributes['message.queueName'], queue,
-    'should have queue name transaction parameter'
-  )
+  t.equal(attributes['message.queueName'], queue, 'should have queue name transaction parameter')
 }
 
 function verifySendToQueue(t, tx) {
-  t.doesNotThrow(function() {
-    metrics.assertSegments(tx.trace.root, [
-      'MessageBroker/RabbitMQ/Exchange/Produce/Named/Default'
-    ])
+  t.doesNotThrow(function () {
+    metrics.assertSegments(tx.trace.root, ['MessageBroker/RabbitMQ/Exchange/Produce/Named/Default'])
   }, 'should have expected segments')
 
-  t.doesNotThrow(function() {
-    metrics.assertMetrics(tx.metrics, [
-      [{name: 'MessageBroker/RabbitMQ/Exchange/Produce/Named/Default'}]
-    ], false, false)
+  t.doesNotThrow(function () {
+    metrics.assertMetrics(
+      tx.metrics,
+      [[{ name: 'MessageBroker/RabbitMQ/Exchange/Produce/Named/Default' }]],
+      false,
+      false
+    )
   }, 'should have expected metrics')
 
   var segment = metrics.findSegment(
@@ -180,26 +153,27 @@ function verifySendToQueue(t, tx) {
   const attributes = segment.getAttributes()
   t.equals(attributes.routing_key, 'testQueue', 'should store routing key')
   t.equals(attributes.reply_to, 'my.reply.queue', 'should store reply to')
-  t.equals(
-    attributes.correlation_id, 'correlation-id',
-    'should store correlation id'
-  )
+  t.equals(attributes.correlation_id, 'correlation-id', 'should store correlation id')
 }
 
 function verifyProduce(t, tx, exchangeName, routingKey) {
   var isCallback = !!metrics.findSegment(tx.trace.root, 'Callback: <anonymous>')
 
   if (isCallback) {
-    t.doesNotThrow(function() {
+    t.doesNotThrow(function () {
       metrics.assertSegments(tx.trace.root, [
-        'Channel#assertExchange', [
-          'Callback: <anonymous>', [
-            'Channel#assertQueue', [
-              'Callback: <anonymous>', [
-                'Channel#bindQueue', [
-                  'Callback: <anonymous>', [
-                    'MessageBroker/RabbitMQ/Exchange/Produce/Named/' + exchangeName
-                  ]
+        'Channel#assertExchange',
+        [
+          'Callback: <anonymous>',
+          [
+            'Channel#assertQueue',
+            [
+              'Callback: <anonymous>',
+              [
+                'Channel#bindQueue',
+                [
+                  'Callback: <anonymous>',
+                  ['MessageBroker/RabbitMQ/Exchange/Produce/Named/' + exchangeName]
                 ]
               ]
             ]
@@ -208,23 +182,24 @@ function verifyProduce(t, tx, exchangeName, routingKey) {
       ])
     }, 'should have expected segments')
   } else {
-    t.doesNotThrow(function() {
+    t.doesNotThrow(function () {
       metrics.assertSegments(tx.trace.root, [
-        'Channel#assertExchange', [
-          'Channel#assertQueue', [
-            'Channel#bindQueue', [
-              'MessageBroker/RabbitMQ/Exchange/Produce/Named/' + exchangeName
-            ]
-          ]
+        'Channel#assertExchange',
+        [
+          'Channel#assertQueue',
+          ['Channel#bindQueue', ['MessageBroker/RabbitMQ/Exchange/Produce/Named/' + exchangeName]]
         ]
       ])
     }, 'should have expected segments')
   }
 
-  t.doesNotThrow(function() {
-    metrics.assertMetrics(tx.metrics, [
-      [{name: 'MessageBroker/RabbitMQ/Exchange/Produce/Named/' + exchangeName}]
-    ], false, false)
+  t.doesNotThrow(function () {
+    metrics.assertMetrics(
+      tx.metrics,
+      [[{ name: 'MessageBroker/RabbitMQ/Exchange/Produce/Named/' + exchangeName }]],
+      false,
+      false
+    )
   }, 'should have expected metrics')
 
   var segment = metrics.findSegment(
@@ -235,10 +210,7 @@ function verifyProduce(t, tx, exchangeName, routingKey) {
   if (routingKey) {
     t.equals(attributes.routing_key, routingKey, 'should have routing key')
   } else {
-    t.notOk(
-      attributes.routing_key,
-      'should not have routing key'
-    )
+    t.notOk(attributes.routing_key, 'should not have routing key')
   }
 }
 
@@ -250,28 +222,20 @@ function verifyGet(t, tx, exchangeName, routingKey, queue) {
     t.doesNotThrow(assertions, 'should have expected segments')
 
     function assertions() {
-      metrics.assertSegments(
-        tx.trace.root,
-        [
-          produceName,
-          consumeName,
-          ['Callback: <anonymous>']
-        ]
-      )
+      metrics.assertSegments(tx.trace.root, [produceName, consumeName, ['Callback: <anonymous>']])
     }
   } else {
-    t.doesNotThrow(function() {
-      metrics.assertSegments(tx.trace.root, [
-        produceName,
-        consumeName
-      ])
+    t.doesNotThrow(function () {
+      metrics.assertSegments(tx.trace.root, [produceName, consumeName])
     }, 'should have expected segments')
   }
-  t.doesNotThrow(function() {
-    metrics.assertMetrics(tx.metrics, [
-      [{name: produceName}],
-      [{name: consumeName}]
-    ], false, false)
+  t.doesNotThrow(function () {
+    metrics.assertMetrics(
+      tx.metrics,
+      [[{ name: produceName }], [{ name: consumeName }]],
+      false,
+      false
+    )
   }, 'should have expected metrics')
 }
 
@@ -279,18 +243,20 @@ function verifyPurge(t, tx) {
   var isCallback = !!metrics.findSegment(tx.trace.root, 'Callback: <anonymous>')
 
   if (isCallback) {
-    t.doesNotThrow(function() {
+    t.doesNotThrow(function () {
       metrics.assertSegments(tx.trace.root, [
-        'Channel#assertExchange', [
-          'Callback: <anonymous>', [
-            'Channel#assertQueue', [
-              'Callback: <anonymous>', [
-                'Channel#bindQueue', [
-                  'Callback: <anonymous>', [
-                    'MessageBroker/RabbitMQ/Queue/Purge/Temp', [
-                      'Callback: <anonymous>'
-                    ]
-                  ]
+        'Channel#assertExchange',
+        [
+          'Callback: <anonymous>',
+          [
+            'Channel#assertQueue',
+            [
+              'Callback: <anonymous>',
+              [
+                'Channel#bindQueue',
+                [
+                  'Callback: <anonymous>',
+                  ['MessageBroker/RabbitMQ/Queue/Purge/Temp', ['Callback: <anonymous>']]
                 ]
               ]
             ]
@@ -299,23 +265,21 @@ function verifyPurge(t, tx) {
       ])
     }, 'should have expected segments')
   } else {
-    t.doesNotThrow(function() {
+    t.doesNotThrow(function () {
       metrics.assertSegments(tx.trace.root, [
-        'Channel#assertExchange', [
-          'Channel#assertQueue', [
-            'Channel#bindQueue', [
-              'MessageBroker/RabbitMQ/Queue/Purge/Temp'
-            ]
-          ]
-        ]
+        'Channel#assertExchange',
+        ['Channel#assertQueue', ['Channel#bindQueue', ['MessageBroker/RabbitMQ/Queue/Purge/Temp']]]
       ])
     }, 'should have expected segments')
   }
 
-  t.doesNotThrow(function() {
-    metrics.assertMetrics(tx.metrics, [
-      [{name: 'MessageBroker/RabbitMQ/Queue/Purge/Temp'}]
-    ], false, false)
+  t.doesNotThrow(function () {
+    metrics.assertMetrics(
+      tx.metrics,
+      [[{ name: 'MessageBroker/RabbitMQ/Queue/Purge/Temp' }]],
+      false,
+      false
+    )
   }, 'should have expected metrics')
 }
 
@@ -328,12 +292,12 @@ function verifyTransaction(t, tx, msg) {
 
 function getChannel(amqplib, cb) {
   if (cb) {
-    amqplib.connect(CON_STRING, null, function(err, conn) {
+    amqplib.connect(CON_STRING, null, function (err, conn) {
       if (err) {
         return cb(err)
       }
 
-      conn.createChannel(function(err, channel) {
+      conn.createChannel(function (err, channel) {
         cb(err, {
           connection: conn,
           channel: channel
@@ -341,9 +305,9 @@ function getChannel(amqplib, cb) {
       })
     })
   } else {
-    return amqplib.connect(CON_STRING).then(function(conn) {
-      return conn.createChannel().then(function(channel) {
-        return {connection: conn, channel: channel}
+    return amqplib.connect(CON_STRING).then(function (conn) {
+      return conn.createChannel().then(function (channel) {
+        return { connection: conn, channel: channel }
       })
     })
   }

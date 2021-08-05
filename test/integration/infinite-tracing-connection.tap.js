@@ -13,11 +13,7 @@ const protoLoader = require('@grpc/proto-loader')
 
 const helper = require('../lib/agent_helper')
 
-const PROTO_PATH = path.join(
-  __dirname,
-  '../..',
-  '/lib/grpc/endpoints/infinite-tracing/v1.proto'
-)
+const PROTO_PATH = path.join(__dirname, '../..', '/lib/grpc/endpoints/infinite-tracing/v1.proto')
 
 const TEST_DOMAIN = 'test-collector.newrelic.com'
 const TEST_COLLECTOR_URL = `https://${TEST_DOMAIN}`
@@ -29,16 +25,13 @@ const INITIAL_SESSION_ID = 'initial_session_id'
 
 const EXPECTED_SEGMENT_NAME = 'Test Segment'
 
-const packageDefinition = protoLoader.loadSync(
-  PROTO_PATH,
-  {
-    keepCase: true,
-    longs: String,
-    enums: String,
-    defaults: true,
-    oneofs: true
-  }
-)
+const packageDefinition = protoLoader.loadSync(PROTO_PATH, {
+  keepCase: true,
+  longs: String,
+  enums: String,
+  defaults: true,
+  oneofs: true
+})
 
 const infiniteTracingService = grpc.loadPackageDefinition(packageDefinition).com.newrelic.trace.v1
 
@@ -50,13 +43,13 @@ tap.test('Inifinite tracing - Connection Handling', (t) => {
   let startingEndpoints = null
   let spanReceivedListener = null
 
-  t.beforeEach(async(t) => {
+  t.beforeEach(async (t) => {
     await new Promise((resolve) => {
       testSetup(t, resolve)
     })
   })
 
-  t.afterEach(async() => {
+  t.afterEach(async () => {
     helper.unloadAgent(agent)
 
     if (!nock.isDone()) {
@@ -77,7 +70,7 @@ tap.test('Inifinite tracing - Connection Handling', (t) => {
     spanReceivedListener = (span, metadata) => {
       t.ok(span)
 
-      const {name} = span.intrinsics
+      const { name } = span.intrinsics
 
       t.deepEqual(name.string_value, EXPECTED_SEGMENT_NAME)
 
@@ -112,7 +105,7 @@ tap.test('Inifinite tracing - Connection Handling', (t) => {
     spanReceivedListener = (span, metadata) => {
       t.ok(span)
 
-      const {name} = span.intrinsics
+      const { name } = span.intrinsics
 
       t.deepEqual(name.string_value, EXPECTED_SEGMENT_NAME)
 
@@ -185,65 +178,69 @@ tap.test('Inifinite tracing - Connection Handling', (t) => {
     nock.disableNetConnect()
     startingEndpoints = setupConnectionEndpoints(INITIAL_RUN_ID, INITIAL_SESSION_ID)
 
-    helper.withSSL().then(([ key, certificate, ca ]) => {
-      const sslOpts = {
-        ca: ca,
-        authPairs: [{private_key : key, cert_chain : certificate}]
-      }
+    helper
+      .withSSL()
+      .then(([key, certificate, ca]) => {
+        const sslOpts = {
+          ca: ca,
+          authPairs: [{ private_key: key, cert_chain: certificate }]
+        }
 
-      const services = [{
-        serviceDefinition: infiniteTracingService.IngestService.service,
-        implementation: {recordSpan: recordSpan}
-      }]
+        const services = [
+          {
+            serviceDefinition: infiniteTracingService.IngestService.service,
+            implementation: { recordSpan: recordSpan }
+          }
+        ]
 
-      server = createGrpcServer(sslOpts, services, (err, port) => {
-        t.error(err)
+        server = createGrpcServer(sslOpts, services, (err, port) => {
+          t.error(err)
 
-        server.start()
+          server.start()
 
-        agent = helper.loadMockedAgent({
-          license_key: EXPECTED_LICENSE_KEY,
-          apdex_t: Number.MIN_VALUE, // force transaction traces
-          host: TEST_DOMAIN,
-          plugins: {
-            // turn off native metrics to avoid unwanted gc metrics
-            native_metrics: {enabled: false}
-          },
-          distributed_tracing: {enabled: true},
-          slow_sql: {enabled: true},
-          transaction_tracer: {
-            record_sql: 'obfuscated',
-            explain_threshold: Number.MIN_VALUE // force SQL traces
-          },
-          infinite_tracing: {
-            trace_observer: {
-              host: helper.SSL_HOST,
-              port: port
+          agent = helper.loadMockedAgent({
+            license_key: EXPECTED_LICENSE_KEY,
+            apdex_t: Number.MIN_VALUE, // force transaction traces
+            host: TEST_DOMAIN,
+            plugins: {
+              // turn off native metrics to avoid unwanted gc metrics
+              native_metrics: { enabled: false }
+            },
+            distributed_tracing: { enabled: true },
+            slow_sql: { enabled: true },
+            transaction_tracer: {
+              record_sql: 'obfuscated',
+              explain_threshold: Number.MIN_VALUE // force SQL traces
+            },
+            infinite_tracing: {
+              trace_observer: {
+                host: helper.SSL_HOST,
+                port: port
+              }
             }
+          })
+
+          agent.config.no_immediate_harvest = true
+
+          // Currently test-only configuration
+          const origEnv = process.env.NEWRELIC_GRPCCONNECTION_CA
+          process.env.NEWRELIC_GRPCCONNECTION_CA = ca
+          t.teardown(() => {
+            process.env.NEWRELIC_GRPCCONNECTION_CA = origEnv
+          })
+
+          if (callback) {
+            callback()
           }
         })
-
-        agent.config.no_immediate_harvest = true
-
-        // Currently test-only configuration
-        const origEnv = process.env.NEWRELIC_GRPCCONNECTION_CA
-        process.env.NEWRELIC_GRPCCONNECTION_CA = ca
-        t.teardown(() => {
-          process.env.NEWRELIC_GRPCCONNECTION_CA = origEnv
-        })
-
-        if (callback) {
-          callback()
-        }
       })
-    })
       .catch((err) => {
         t.error(err)
       })
   }
 
   function recordSpan(stream) {
-    stream.on('data', function(span) {
+    stream.on('data', function (span) {
       if (spanReceivedListener) {
         spanReceivedListener(span, stream.metadata)
       }
@@ -272,7 +269,7 @@ function createTestData(agent, segmentName, callback) {
 
 function setupConnectionEndpoints(runId, sessionId) {
   return {
-    preconnect: nockRequest('preconnect').reply(200, {return_value: TEST_DOMAIN}),
+    preconnect: nockRequest('preconnect').reply(200, { return_value: TEST_DOMAIN }),
     connect: nockRequest('connect').reply(200, {
       return_value: {
         agent_run_id: runId,
@@ -281,7 +278,7 @@ function setupConnectionEndpoints(runId, sessionId) {
         }
       }
     }),
-    settings: nockRequest('agent_settings', runId).reply(200, {return_value: []})
+    settings: nockRequest('agent_settings', runId).reply(200, { return_value: [] })
   }
 }
 
@@ -317,7 +314,7 @@ function createGrpcServer(sslOptions, services, callback) {
     server.addService(service.serviceDefinition, service.implementation)
   }
 
-  const {ca, authPairs} = sslOptions
+  const { ca, authPairs } = sslOptions
   const credentials = grpc.ServerCredentials.createSsl(ca, authPairs, false)
 
   // Select a random port

@@ -7,7 +7,7 @@
 
 var test = require('tap').test
 
-test('Multiple require("newrelic")', function(t) {
+test('Multiple require("newrelic")', function (t) {
   process.env.NEW_RELIC_ENABLED = false
 
   var path = require.resolve('../../../index.js')

@@ -7,16 +7,16 @@
 
 const tap = require('tap')
 const request = require('request')
-const helper  = require('../../lib/agent_helper')
+const helper = require('../../lib/agent_helper')
 const httpErrors = require('http-errors')
 
 const testErrorHandled = (agent, test, uri, port) => {
-  request.get(`http://127.0.0.1:${port}${uri}`, function() {
+  request.get(`http://127.0.0.1:${port}${uri}`, function () {
     test.end()
   })
 }
 
-tap.test('Test Errors', (test)=>{
+tap.test('Test Errors', (test) => {
   const agent = helper.instrumentMockedAgent()
   const fastify = require('fastify')()
 
@@ -25,13 +25,8 @@ tap.test('Test Errors', (test)=>{
     next(httpErrors.NotFound())
   })
 
-  fastify.listen(0).then(()=>{
-    testErrorHandled(
-      agent,
-      test,
-      '/404-via-reply',
-      fastify.server.address().port
-    )
+  fastify.listen(0).then(() => {
+    testErrorHandled(agent, test, '/404-via-reply', fastify.server.address().port)
   })
 
   test.teardown(() => {

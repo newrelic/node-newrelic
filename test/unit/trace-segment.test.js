@@ -157,8 +157,7 @@ tap.test('TraceSegment', (t) => {
     setTimeout(() => {
       t.equal(trace.root.timer.hrDuration, null)
       segment.end()
-      t.ok(trace.root.timer.getDurationInMillis() >
-        segment.timer.getDurationInMillis() - 1) // alow for slop
+      t.ok(trace.root.timer.getDurationInMillis() > segment.timer.getDurationInMillis() - 1) // alow for slop
       t.end()
     }, 10)
   })
@@ -182,7 +181,7 @@ tap.test('TraceSegment', (t) => {
 
     t.equal(agent.activeTransactions, 0)
 
-    setTimeout(function() {
+    setTimeout(function () {
       t.equal(agent.totalActiveSegments, 0)
       t.equal(agent.segmentsClearedInHarvest, 2)
 
@@ -259,7 +258,8 @@ tap.test('TraceSegment', (t) => {
       t.same(webChild.toJSON(), [
         0,
         1,
-        'WebTransaction/NormalizedUri/*', {
+        'WebTransaction/NormalizedUri/*',
+        {
           'nr_exclusive_duration_millis': 1,
           'request.parameters.test1': 'value1',
           'request.parameters.test2': true,
@@ -294,10 +294,7 @@ tap.test('TraceSegment', (t) => {
       params.test3 = '50'
 
       webChild = segment.add(url)
-      transaction.trace.attributes.addAttributes(
-        DESTINATIONS.TRANS_SCOPE,
-        params
-      )
+      transaction.trace.attributes.addAttributes(DESTINATIONS.TRANS_SCOPE, params)
       transaction.baseSegment = webChild
       transaction.finalizeNameFromUri(url, 200)
 
@@ -335,10 +332,10 @@ tap.test('TraceSegment', (t) => {
         1,
         'WebTransaction/NormalizedUri/*',
         {
-          nr_exclusive_duration_millis : 1,
-          0     : 'first',
-          1     : 'another',
-          test3 : '50',
+          nr_exclusive_duration_millis: 1,
+          0: 'first',
+          1: 'another',
+          test3: '50'
         },
         []
       ]
@@ -379,13 +376,7 @@ tap.test('TraceSegment', (t) => {
     })
 
     t.test('should serialize the segment without the parameters', (t) => {
-      const expected = [
-        0,
-        1,
-        'WebTransaction/NormalizedUri/*',
-        {},
-        []
-      ]
+      const expected = [0, 1, 'WebTransaction/NormalizedUri/*', {}, []]
       t.same(webChild.toJSON(), expected)
       t.end()
     })
@@ -399,10 +390,7 @@ tap.test('TraceSegment', (t) => {
     t.beforeEach(() => {
       agent.config.attributes.enabled = true
       agent.config.attributes.include = ['request.parameters.*']
-      agent.config.attributes.exclude = [
-        'request.parameters.test1',
-        'request.parameters.test4'
-      ]
+      agent.config.attributes.exclude = ['request.parameters.test1', 'request.parameters.test4']
       agent.config.emit('attributes.exclude')
 
       const transaction = new Transaction(agent)
@@ -455,7 +443,8 @@ tap.test('TraceSegment', (t) => {
       t.same(webChild.toJSON(), [
         0,
         1,
-        'WebTransaction/NormalizedUri/*', {
+        'WebTransaction/NormalizedUri/*',
+        {
           'nr_exclusive_duration_millis': 1,
           'request.parameters.test2': true,
           'request.parameters.test3': '50'
@@ -492,7 +481,7 @@ tap.test('TraceSegment', (t) => {
         3,
         17,
         'DB/select/getSome',
-        {nr_exclusive_duration_millis : 14},
+        { nr_exclusive_duration_millis: 14 },
         []
       ])
       t.end()
@@ -529,7 +518,7 @@ tap.test('TraceSegment', (t) => {
       const root = transaction.trace.root
 
       // Make root duration calculation predictable
-      root.timer.start  = 1000
+      root.timer.start = 1000
       segment.timer.start = 1001
       segment.overwriteDurationInMillis(3)
 
@@ -541,7 +530,6 @@ tap.test('TraceSegment', (t) => {
     })
   })
 })
-
 
 tap.test('when serialized', (t) => {
   t.autoend()
@@ -581,7 +569,7 @@ tap.test('when serialized', (t) => {
     t.end()
   })
 
-  t.test('should not cause a stack overflow', {timeout: 30000}, (t) => {
+  t.test('should not cause a stack overflow', { timeout: 30000 }, (t) => {
     let parent = segment
     for (var i = 0; i < 9000; ++i) {
       const child = new TraceSegment(trans, 'Child ' + i)
@@ -589,7 +577,7 @@ tap.test('when serialized', (t) => {
       parent = child
     }
 
-    t.doesNotThrow(function() {
+    t.doesNotThrow(function () {
       segment.toJSON()
     })
 

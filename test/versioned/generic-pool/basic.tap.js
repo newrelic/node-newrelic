@@ -9,37 +9,36 @@ var a = require('async')
 var helper = require('../../lib/agent_helper')
 var tap = require('tap')
 
-
-tap.test('generic-pool', function(t) {
+tap.test('generic-pool', function (t) {
   t.autoend()
 
   var agent = null
   var pool = null
   var PoolClass = require('generic-pool').Pool
 
-  t.beforeEach(function() {
+  t.beforeEach(function () {
     agent = helper.instrumentMockedAgent()
     pool = require('generic-pool')
   })
 
-  t.afterEach(function() {
+  t.afterEach(function () {
     helper.unloadAgent(agent)
     pool = null
   })
 
   var tasks = []
-  var decontextInterval = setInterval(function() {
+  var decontextInterval = setInterval(function () {
     if (tasks.length > 0) {
       tasks.pop()()
     }
   }, 10)
 
-  t.teardown(function() {
+  t.teardown(function () {
     clearInterval(decontextInterval)
   })
 
   function addTask(cb, args) {
-    tasks.push(function() {
+    tasks.push(function () {
       return cb.apply(null, args || [])
     })
   }
@@ -48,39 +47,58 @@ tap.test('generic-pool', function(t) {
     return tx && tx.id
   }
 
-  t.test('instantiation', function(t) {
+  t.test('instantiation', function (t) {
     t.plan(2)
 
     // As of generic-pool 3, it is not possible to instantiate Pool without `new`.
 
-    t.doesNotThrow(function() {
+    t.doesNotThrow(function () {
       var p = pool.createPool({
-        create: function() { return new Promise(function(res) { addTask(res, {}) }) },
-        destroy: function() { return new Promise(function(res) { addTask(res) }) }
+        create: function () {
+          return new Promise(function (res) {
+            addTask(res, {})
+          })
+        },
+        destroy: function () {
+          return new Promise(function (res) {
+            addTask(res)
+          })
+        }
       })
       t.type(p, PoolClass, 'should create a Pool')
     }, 'should be able to instantiate with createPool')
   })
 
-  t.test('context maintenance', function(t) {
-    var p = pool.createPool({
-      create: function() { return new Promise(function(res) { addTask(res, {}) }) },
-      destroy: function() { return new Promise(function(res) { addTask(res) }) }
-    }, {
-      max: 2,
-      min: 0
-    })
+  t.test('context maintenance', function (t) {
+    var p = pool.createPool(
+      {
+        create: function () {
+          return new Promise(function (res) {
+            addTask(res, {})
+          })
+        },
+        destroy: function () {
+          return new Promise(function (res) {
+            addTask(res)
+          })
+        }
+      },
+      {
+        max: 2,
+        min: 0
+      }
+    )
 
-    a.times(6, run, function(err) {
+    a.times(6, run, function (err) {
       t.error(err, 'should not error when acquiring')
       drain()
     })
 
     function run(n, cb) {
-      helper.runInTransaction(agent, function(tx) {
-        p.acquire().then(function(c) {
+      helper.runInTransaction(agent, function (tx) {
+        p.acquire().then(function (c) {
           t.equal(id(agent.getTransaction()), id(tx), n + ': should maintain tx state')
-          addTask(function() {
+          addTask(function () {
             p.release(c)
             cb()
           })
@@ -89,26 +107,28 @@ tap.test('generic-pool', function(t) {
     }
 
     function drain() {
-      run('drain', function(err) {
+      run('drain', function (err) {
         t.error(err, 'should not error when acquired before draining')
       })
 
-      helper.runInTransaction(agent, function(tx) {
-        p.drain().then(function() {
-          t.equal(id(agent.getTransaction()), id(tx), 'should have context through drain')
+      helper.runInTransaction(agent, function (tx) {
+        p.drain()
+          .then(function () {
+            t.equal(id(agent.getTransaction()), id(tx), 'should have context through drain')
 
-          return p.clear().then(function() {
-            t.equal(
-              id(agent.getTransaction()), id(tx),
-              'should have context through destroy'
-            )
+            return p.clear().then(function () {
+              t.equal(id(agent.getTransaction()), id(tx), 'should have context through destroy')
+            })
           })
-        }).then(function() {
-          t.end()
-        }, function(err) {
-          t.error(err)
-          t.end()
-        })
+          .then(
+            function () {
+              t.end()
+            },
+            function (err) {
+              t.error(err)
+              t.end()
+            }
+          )
       })
     }
   })

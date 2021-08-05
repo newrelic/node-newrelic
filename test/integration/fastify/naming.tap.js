@@ -7,64 +7,57 @@
 
 const tap = require('tap')
 const requestClient = require('request')
-const helper  = require('../../lib/agent_helper')
+const helper = require('../../lib/agent_helper')
 
 /**
  * Single function to register all the routes used by the test
  *
  * @todo Would this be better closer to test, or is it good here
  */
-const configureFastifyServer = async(fastify) => {
+const configureFastifyServer = async (fastify) => {
   /**
    * Route's callback is an async function, and response is returned
    */
-  fastify.get('/async-return', async() => {
+  fastify.get('/async-return', async () => {
     return { called: '/async-return' }
   })
 
   /**
    * Route's callback is an async function, and response is sent via reply
    */
-  fastify.get('/async-reply-send', async(request, reply) => {
-    reply.send( { called: '/async-reply-send' } )
+  fastify.get('/async-reply-send', async (request, reply) => {
+    reply.send({ called: '/async-reply-send' })
   })
 
   /**
    * Route's callback is not an async function, and response is sent via reply
    */
   fastify.get('/sync-reply-send', (request, reply) => {
-    reply.send( { called: '/sync-reply-send' } )
+    reply.send({ called: '/sync-reply-send' })
   })
 
   /**
    * Register a route via plugin to make sure our wrapper catches these
    */
-  fastify.register(
-    function(fastifyInstance, options, done) {
-      fastifyInstance.get('/plugin-registered', async() => {
-        return { called: '/plugin-registered' }
-      })
-      done()
-    },
-    {}
-  )
+  fastify.register(function (fastifyInstance, options, done) {
+    fastifyInstance.get('/plugin-registered', async () => {
+      return { called: '/plugin-registered' }
+    })
+    done()
+  }, {})
 
   await loadMiddleware(fastify)
 }
 
 let callCount = 0
-const loadMiddleware = async(fastify) => {
+const loadMiddleware = async (fastify) => {
   function testMiddleware(req, res, next) {
     callCount++
     next()
   }
 
   // If fastify version is >=3, .use() will fail unless a plugin adds it
-  try {
-    fastify.use((_,__,next) => next())
-  } catch (_) {
-    await fastify.register(require('fastify-express'))
-  }
+  fastify.use((_, __, next) => next())
 
   fastify.use(testMiddleware)
 }
@@ -80,9 +73,9 @@ const testUri = (uri, agent, test, port) => {
     )
   })
 
-  requestClient.get(`http://127.0.0.1:${port}${uri}`, function(error, response, body) {
-    const result = body = JSON.parse(body)
-    test.equals(result.called ,uri, `${uri} url did not error`)
+  requestClient.get(`http://127.0.0.1:${port}${uri}`, function (error, response, body) {
+    const result = (body = JSON.parse(body))
+    test.equals(result.called, uri, `${uri} url did not error`)
   })
 }
 
@@ -99,7 +92,7 @@ tap.test('Test Transaction Naming', (test) => {
   let agent
   let fastify
 
-  test.beforeEach(async() => {
+  test.beforeEach(async () => {
     agent = helper.instrumentMockedAgent({
       feature_flag: {
         fastify_instrumentation: true
@@ -114,11 +107,11 @@ tap.test('Test Transaction Naming', (test) => {
     fastify.close()
   })
 
-  for (const [,uri] of routesToTest.entries()) {
+  for (const [, uri] of routesToTest.entries()) {
     test.test(`testing naming for ${uri} `, (t) => {
       t.autoend()
       t.plan(2)
-      fastify.listen(0).then(()=>{
+      fastify.listen(0).then(() => {
         testUri(uri, agent, t, fastify.server.address().port)
       })
     })

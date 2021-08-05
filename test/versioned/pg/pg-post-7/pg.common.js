@@ -36,31 +36,39 @@ module.exports = function runTests(name, clientFactory) {
     const setupClient = new pg.Client(CON_OBJ)
 
     return new Promise((resolve, reject) => {
-      setupClient.connect(function(err) {
+      setupClient.connect(function (err) {
         if (err) {
           reject(err)
         }
         const tableDrop = 'DROP TABLE IF EXISTS ' + TABLE_PREPARED
 
         const tableCreate =
-          'CREATE TABLE ' + TABLE_PREPARED + ' (' +
-            PK + ' integer PRIMARY KEY, ' +
-            COL + ' text' +
+          'CREATE TABLE ' +
+          TABLE_PREPARED +
+          ' (' +
+          PK +
+          ' integer PRIMARY KEY, ' +
+          COL +
+          ' text' +
           ');'
 
-        a.eachSeries([
-          'set client_min_messages=\'warning\';', // supress PG notices
-          tableDrop,
-          tableCreate
-        ], function(query, cb) {
-          setupClient.query(query, cb)
-        }, function(err) {
-          if (err) {
-            reject(err)
+        a.eachSeries(
+          [
+            "set client_min_messages='warning';", // supress PG notices
+            tableDrop,
+            tableCreate
+          ],
+          function (query, cb) {
+            setupClient.query(query, cb)
+          },
+          function (err) {
+            if (err) {
+              reject(err)
+            }
+            setupClient.end()
+            resolve()
           }
-          setupClient.end()
-          resolve()
-        })
+        )
       })
     })
   }
@@ -75,10 +83,7 @@ module.exports = function runTests(name, clientFactory) {
     const transaction = segment.transaction
     const agent = transaction.agent
     selectTable = selectTable || TABLE
-    t.equal(
-      Object.keys(transaction.metrics.scoped).length, 0,
-      'should not have any scoped metrics'
-    )
+    t.equal(Object.keys(transaction.metrics.scoped).length, 0, 'should not have any scoped metrics')
 
     const unscoped = transaction.metrics.unscoped
 
@@ -88,7 +93,7 @@ module.exports = function runTests(name, clientFactory) {
       'Datastore/Postgres/all': 2,
       'Datastore/Postgres/allWeb': 2,
       'Datastore/operation/Postgres/insert': 1,
-      'Datastore/operation/Postgres/select': 1,
+      'Datastore/operation/Postgres/select': 1
     }
 
     expected['Datastore/statement/Postgres/' + TABLE + '/insert'] = 1
@@ -101,18 +106,20 @@ module.exports = function runTests(name, clientFactory) {
     const expectedNames = Object.keys(expected)
     const unscopedNames = Object.keys(unscoped)
 
-    expectedNames.forEach(function(expectedName) {
+    expectedNames.forEach(function (expectedName) {
       t.ok(unscoped[expectedName], 'should have unscoped metric ' + expectedName)
       if (unscoped[expectedName]) {
         t.equal(
-          unscoped[expectedName].callCount, expected[expectedName],
+          unscoped[expectedName].callCount,
+          expected[expectedName],
           'metric ' + expectedName + ' should have correct callCount'
         )
       }
     })
 
     t.equal(
-      unscopedNames.length, expectedNames.length,
+      unscopedNames.length,
+      expectedNames.length,
       'should have correct number of unscoped metrics'
     )
   }
@@ -125,10 +132,7 @@ module.exports = function runTests(name, clientFactory) {
     t.ok(trace, 'trace should exist')
     t.ok(trace.root, 'root element should exist')
 
-    const setSegment = findSegment(
-      trace.root,
-      'Datastore/statement/Postgres/' + TABLE + '/insert'
-    )
+    const setSegment = findSegment(trace.root, 'Datastore/statement/Postgres/' + TABLE + '/insert')
 
     const getSegment = findSegment(
       trace.root,
@@ -138,7 +142,9 @@ module.exports = function runTests(name, clientFactory) {
     t.ok(setSegment, 'trace segment for insert should exist')
     t.ok(getSegment, 'trace segment for select should exist')
 
-    if (!getSegment) return
+    if (!getSegment) {
+      return
+    }
 
     t.equal(
       getSegment.name,
@@ -154,33 +160,18 @@ module.exports = function runTests(name, clientFactory) {
     const agent = transaction.agent
     const trace = transaction.trace
 
-    const setSegment = findSegment(
-      trace.root,
-      'Datastore/statement/Postgres/' + TABLE + '/insert'
-    )
+    const setSegment = findSegment(trace.root, 'Datastore/statement/Postgres/' + TABLE + '/insert')
     const attributes = setSegment.getAttributes()
 
     const metricHostName = getMetricHostName(agent, params.postgres_host)
-    t.equal(
-      attributes.host,
-      metricHostName,
-      'should add the host parameter'
-    )
+    t.equal(attributes.host, metricHostName, 'should add the host parameter')
     t.equal(
       attributes.port_path_or_id,
       String(params.postgres_port),
       'should add the port parameter'
     )
-    t.equal(
-      attributes.database_name,
-      params.postgres_db,
-      'should add the database name parameter'
-    )
-    t.equal(
-      attributes.product,
-      'Postgres',
-      'should add the product attribute'
-    )
+    t.equal(attributes.database_name, params.postgres_db, 'should add the database name parameter')
+    t.equal(attributes.product, 'Postgres', 'should add the product attribute')
   }
 
   function verifySlowQueries(t, agent) {
@@ -190,11 +181,7 @@ module.exports = function runTests(name, clientFactory) {
     for (let sample of agent.queries.samples.values()) {
       const queryParams = sample.getParams()
 
-      t.equal(
-        queryParams.host,
-        metricHostName,
-        'instance data should show up in slow query params'
-      )
+      t.equal(queryParams.host, metricHostName, 'instance data should show up in slow query params')
 
       t.equal(
         queryParams.port_path_or_id,
@@ -212,13 +199,13 @@ module.exports = function runTests(name, clientFactory) {
     }
   }
 
-  test('Postgres instrumentation: ' + name, function(t) {
+  test('Postgres instrumentation: ' + name, function (t) {
     t.autoend()
 
     let agent = null
     let pg = null
 
-    t.beforeEach(function() {
+    t.beforeEach(function () {
       // the pg module has `native` lazy getter that is removed after first call,
       // so in order to re-instrument, we need to remove the pg module from the cache
       const pgName = require.resolve('pg')
@@ -230,16 +217,16 @@ module.exports = function runTests(name, clientFactory) {
       return postgresSetup()
     })
 
-    t.afterEach(function() {
+    t.afterEach(function () {
       helper.unloadAgent(agent)
       agent = null
       pg = null
     })
 
-    t.test('simple query with prepared statement', function(t) {
+    t.test('simple query with prepared statement', function (t) {
       const client = new pg.Client(CON_OBJ)
 
-      t.teardown(function() {
+      t.teardown(function () {
         client.end()
       })
 
@@ -251,15 +238,15 @@ module.exports = function runTests(name, clientFactory) {
 
         const colVal = 'Hello'
         const pkVal = 111
-        let insQuery = 'INSERT INTO ' + TABLE_PREPARED + ' (' + PK + ',' +  COL
+        let insQuery = 'INSERT INTO ' + TABLE_PREPARED + ' (' + PK + ',' + COL
         insQuery += ') VALUES($1, $2);'
 
-        client.connect(function(error) {
+        client.connect(function (error) {
           if (!t.error(error)) {
             return t.end()
           }
 
-          client.query(insQuery, [pkVal, colVal], function(error, ok) {
+          client.query(insQuery, [pkVal, colVal], function (error, ok) {
             if (!t.error(error)) {
               return t.end()
             }
@@ -270,7 +257,7 @@ module.exports = function runTests(name, clientFactory) {
             let selQuery = 'SELECT * FROM ' + TABLE_PREPARED + ' WHERE '
             selQuery += PK + '=' + pkVal + ';'
 
-            client.query(selQuery, function(error, value) {
+            client.query(selQuery, function (error, value) {
               if (!t.error(error)) {
                 return t.end()
               }
@@ -287,10 +274,10 @@ module.exports = function runTests(name, clientFactory) {
       })
     })
 
-    t.test('Promise style query', function(t) {
+    t.test('Promise style query', function (t) {
       const client = new pg.Client(CON_OBJ)
 
-      t.teardown(function() {
+      t.teardown(function () {
         client.end()
       })
 
@@ -301,7 +288,7 @@ module.exports = function runTests(name, clientFactory) {
 
         const colVal = 'Hello'
         const pkVal = 111
-        let insQuery = 'INSERT INTO ' + TABLE_PREPARED + ' (' + PK + ',' +  COL
+        let insQuery = 'INSERT INTO ' + TABLE_PREPARED + ' (' + PK + ',' + COL
         insQuery += ') VALUES($1, $2);'
 
         try {
@@ -333,11 +320,11 @@ module.exports = function runTests(name, clientFactory) {
       })
     })
 
-    t.test('Submittable style Query timings', function(t) {
+    t.test('Submittable style Query timings', function (t) {
       // see bottom of this page https://node-postgres.com/guides/upgrading
       const client = new pg.Client(CON_OBJ)
 
-      t.teardown(function() {
+      t.teardown(function () {
         client.end()
       })
 
@@ -349,14 +336,14 @@ module.exports = function runTests(name, clientFactory) {
 
         const selQuery = 'SELECT pg_sleep(2), now() as sleep;'
 
-        client.connect(function(error) {
+        client.connect(function (error) {
           if (!t.error(error)) {
             return t.end()
           }
 
           const pgQuery = client.query(new pg.Query(selQuery))
 
-          pgQuery.on('error', () =>  {
+          pgQuery.on('error', () => {
             t.error(error)
             t.end()
           })
@@ -372,8 +359,10 @@ module.exports = function runTests(name, clientFactory) {
 
             const metrics = finalTx.metrics.getMetric('Datastore/operation/Postgres/select')
 
-            t.ok(metrics.total > 2.0,
-              'Submittable style Query pg_sleep of 2 seconds should result in > 2 sec timing')
+            t.ok(
+              metrics.total > 2.0,
+              'Submittable style Query pg_sleep of 2 seconds should result in > 2 sec timing'
+            )
 
             t.end()
           })
@@ -381,10 +370,10 @@ module.exports = function runTests(name, clientFactory) {
       })
     })
 
-    t.test('Promise style query timings', function(t) {
+    t.test('Promise style query timings', function (t) {
       const client = new pg.Client(CON_OBJ)
 
-      t.teardown(function() {
+      t.teardown(function () {
         client.end()
       })
 
@@ -413,8 +402,10 @@ module.exports = function runTests(name, clientFactory) {
 
           const metrics = finalTx.metrics.getMetric('Datastore/operation/Postgres/select')
 
-          t.ok(metrics.total > 2.0,
-            'Promise style query pg_sleep of 2 seconds should result in > 2 sec timing')
+          t.ok(
+            metrics.total > 2.0,
+            'Promise style query pg_sleep of 2 seconds should result in > 2 sec timing'
+          )
 
           t.end()
         } catch (err) {
@@ -424,10 +415,10 @@ module.exports = function runTests(name, clientFactory) {
       })
     })
 
-    t.test('Callback style query timings', function(t) {
+    t.test('Callback style query timings', function (t) {
       const client = new pg.Client(CON_OBJ)
 
-      t.teardown(function() {
+      t.teardown(function () {
         client.end()
       })
 
@@ -436,14 +427,14 @@ module.exports = function runTests(name, clientFactory) {
         t.ok(transaction, 'transaction should be visible')
         t.equal(tx, transaction, 'We got the same transaction')
 
-        client.connect(function(error) {
+        client.connect(function (error) {
           if (!t.error(error)) {
             return t.end()
           }
 
           const selQuery = 'SELECT pg_sleep(2), now() as sleep;'
 
-          client.query(selQuery, function(error, ok) {
+          client.query(selQuery, function (error, ok) {
             if (!t.error(error)) {
               return t.end()
             }
@@ -458,8 +449,10 @@ module.exports = function runTests(name, clientFactory) {
 
             const metrics = finalTx.metrics.getMetric('Datastore/operation/Postgres/select')
 
-            t.ok(metrics.total > 2.0,
-              'Callback style query pg_sleep of 2 seconds should result in > 2 sec timing')
+            t.ok(
+              metrics.total > 2.0,
+              'Callback style query pg_sleep of 2 seconds should result in > 2 sec timing'
+            )
 
             t.end()
           })
@@ -467,7 +460,7 @@ module.exports = function runTests(name, clientFactory) {
       })
     })
 
-    t.test('client pooling query', function(t) {
+    t.test('client pooling query', function (t) {
       t.plan(39)
       t.notOk(agent.getTransaction(), 'no transaction should be in play')
       helper.runInTransaction(agent, function transactionInScope(tx) {
@@ -477,10 +470,10 @@ module.exports = function runTests(name, clientFactory) {
 
         const colVal = 'World!'
         const pkVal = 222
-        let insQuery = 'INSERT INTO ' + TABLE_PREPARED + ' (' + PK + ',' +  COL
+        let insQuery = 'INSERT INTO ' + TABLE_PREPARED + ' (' + PK + ',' + COL
         insQuery += ') VALUES(' + pkVal + ",'" + colVal + "');"
         const pool = new pg.Pool(CON_OBJ)
-        pool.query(insQuery, function(error, ok) {
+        pool.query(insQuery, function (error, ok) {
           if (!t.error(error)) {
             return t.end()
           }
@@ -491,7 +484,7 @@ module.exports = function runTests(name, clientFactory) {
           let selQuery = 'SELECT * FROM ' + TABLE_PREPARED + ' WHERE '
           selQuery += PK + '=' + pkVal + ';'
 
-          pool.query(selQuery, function(error, value) {
+          pool.query(selQuery, function (error, value) {
             if (!t.error(error)) {
               return t.end()
             }
@@ -507,7 +500,7 @@ module.exports = function runTests(name, clientFactory) {
       })
     })
 
-    t.test('using Pool constructor', function(t) {
+    t.test('using Pool constructor', function (t) {
       t.plan(40)
 
       t.notOk(agent.getTransaction(), 'no transaction should be in play')
@@ -518,7 +511,7 @@ module.exports = function runTests(name, clientFactory) {
 
         const colVal = 'World!'
         const pkVal = 222
-        let insQuery = 'INSERT INTO ' + TABLE_PREPARED + ' (' + PK + ',' +  COL
+        let insQuery = 'INSERT INTO ' + TABLE_PREPARED + ' (' + PK + ',' + COL
         insQuery += ') VALUES(' + pkVal + ",'" + colVal + "');"
 
         let pool = null
@@ -528,12 +521,12 @@ module.exports = function runTests(name, clientFactory) {
           pool = pg.pools.getOrCreate(CON_OBJ)
         }
 
-        pool.connect(function(error, client, done) {
+        pool.connect(function (error, client, done) {
           if (!t.error(error)) {
             return t.end()
           }
 
-          client.query(insQuery, function(error, ok) {
+          client.query(insQuery, function (error, ok) {
             if (!t.error(error)) {
               return t.end()
             }
@@ -544,7 +537,7 @@ module.exports = function runTests(name, clientFactory) {
             let selQuery = 'SELECT * FROM ' + TABLE_PREPARED + ' WHERE '
             selQuery += PK + '=' + pkVal + ';'
 
-            client.query(selQuery, function(error, value) {
+            client.query(selQuery, function (error, value) {
               if (!t.error(error)) {
                 return t.end()
               }
@@ -570,25 +563,25 @@ module.exports = function runTests(name, clientFactory) {
       t.plan(3)
       const client = new pg.Client(CON_OBJ)
 
-      t.teardown(function() {
+      t.teardown(function () {
         client.end()
       })
 
-      helper.runInTransaction(agent, function() {
+      helper.runInTransaction(agent, function () {
         const transaction = agent.getTransaction()
 
         const colVal = 'Sianara'
         const pkVal = 444
 
         function CustomConfigClass() {
-          this._text = 'INSERT INTO ' + TABLE_PREPARED + ' (' + PK + ',' +  COL
+          this._text = 'INSERT INTO ' + TABLE_PREPARED + ' (' + PK + ',' + COL
           this._text += ') VALUES($1, $2);'
         }
 
         // "text" is defined as a getter on the prototype, so it will not be
         // a property owned by the instance
         Object.defineProperty(CustomConfigClass.prototype, 'text', {
-          get: function() {
+          get: function () {
             return this._text
           }
         })
@@ -596,12 +589,12 @@ module.exports = function runTests(name, clientFactory) {
         // create a config instance
         const config = new CustomConfigClass()
 
-        client.connect(function(error) {
+        client.connect(function (error) {
           if (!t.error(error)) {
             return t.end()
           }
 
-          client.query(config, [pkVal, colVal], function(error) {
+          client.query(config, [pkVal, colVal], function (error) {
             if (!t.error(error)) {
               return t.end()
             }
@@ -616,7 +609,7 @@ module.exports = function runTests(name, clientFactory) {
       })
     })
 
-    t.test('should add datastore instance parameters to slow query traces', function(t) {
+    t.test('should add datastore instance parameters to slow query traces', function (t) {
       t.plan(7)
       // enable slow queries
       agent.config.transaction_tracer.record_sql = 'raw'
@@ -624,13 +617,13 @@ module.exports = function runTests(name, clientFactory) {
 
       const client = new pg.Client(CON_OBJ)
 
-      t.teardown(function() {
+      t.teardown(function () {
         client.end()
       })
 
-      helper.runInTransaction(agent, function() {
+      helper.runInTransaction(agent, function () {
         const transaction = agent.getTransaction()
-        client.connect(function(error) {
+        client.connect(function (error) {
           if (!t.error(error)) {
             return t.end()
           }
@@ -648,59 +641,53 @@ module.exports = function runTests(name, clientFactory) {
       })
     })
 
-    t.test("should not add datastore instance parameters to slow query traces when" +
-        " disabled", function(t) {
-      t.plan(5)
+    t.test(
+      'should not add datastore instance parameters to slow query traces when' + ' disabled',
+      function (t) {
+        t.plan(5)
 
-      // enable slow queries
-      agent.config.transaction_tracer.record_sql = 'raw'
-      agent.config.slow_sql.enabled = true
+        // enable slow queries
+        agent.config.transaction_tracer.record_sql = 'raw'
+        agent.config.slow_sql.enabled = true
 
-      // disable datastore instance
-      agent.config.datastore_tracer.instance_reporting.enabled = false
-      agent.config.datastore_tracer.database_name_reporting.enabled = false
+        // disable datastore instance
+        agent.config.datastore_tracer.instance_reporting.enabled = false
+        agent.config.datastore_tracer.database_name_reporting.enabled = false
 
-      const client = new pg.Client(CON_OBJ)
+        const client = new pg.Client(CON_OBJ)
 
-      t.teardown(function() {
-        client.end()
-      })
+        t.teardown(function () {
+          client.end()
+        })
 
-      helper.runInTransaction(agent, function() {
-        const transaction = agent.getTransaction()
-        client.connect(function(error) {
-          if (!t.error(error)) {
-            return t.end()
-          }
-
-          client.query('SELECT * FROM pg_sleep(1);', function(error) {
+        helper.runInTransaction(agent, function () {
+          const transaction = agent.getTransaction()
+          client.connect(function (error) {
             if (!t.error(error)) {
               return t.end()
             }
 
-            transaction.end()
-            const queryParams = agent.queries.samples.values().next().value
+            client.query('SELECT * FROM pg_sleep(1);', function (error) {
+              if (!t.error(error)) {
+                return t.end()
+              }
 
-            t.equal(
-              queryParams.host,
-              undefined,
-              'should not have host parameter'
-            )
+              transaction.end()
+              const queryParams = agent.queries.samples.values().next().value
 
-            t.equal(
-              queryParams.port_path_or_id,
-              undefined,
-              'should not have port parameter'
-            )
+              t.equal(queryParams.host, undefined, 'should not have host parameter')
 
-            t.equal(
-              queryParams.database_name,
-              undefined,
-              'should not have database name parameter'
-            )
+              t.equal(queryParams.port_path_or_id, undefined, 'should not have port parameter')
+
+              t.equal(
+                queryParams.database_name,
+                undefined,
+                'should not have database name parameter'
+              )
+            })
           })
         })
-      })
-    })
+      }
+    )
   })
 }

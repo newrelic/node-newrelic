@@ -12,28 +12,28 @@ var helper = require('../../../lib/agent_helper')
 var utils = require('./hapi-utils')
 var HTTP_ATTS = require('../../../lib/fixtures').httpAttributes
 
-tap.test('Hapi vhost support', function(t) {
+tap.test('Hapi vhost support', function (t) {
   t.plan(1)
 
   var port = null
 
-  t.test('should not explode when using vhosts', function(t) {
+  t.test('should not explode when using vhosts', function (t) {
     const agent = helper.instrumentMockedAgent()
     const server = utils.getServer()
 
     // disabled by default
     agent.config.attributes.enabled = true
 
-    t.teardown(function() {
-      server.stop(function() {
+    t.teardown(function () {
+      server.stop(function () {
         helper.unloadAgent(agent)
       })
     })
 
-    agent.on('transactionFinished', function(tx) {
+    agent.on('transactionFinished', function (tx) {
       t.ok(tx.trace, 'transaction has a trace.')
       var attributes = tx.trace.attributes.get(DESTINATIONS.TRANS_TRACE)
-      HTTP_ATTS.forEach(function(key) {
+      HTTP_ATTS.forEach(function (key) {
         t.ok(attributes[key], 'Trace contains expected HTTP attribute: ' + key)
       })
     })
@@ -42,9 +42,9 @@ tap.test('Hapi vhost support', function(t) {
       method: 'GET',
       path: '/test/',
       vhost: 'localhost',
-      handler: function(req, reply) {
+      handler: function (req, reply) {
         t.ok(agent.getTransaction(), 'transaction is available')
-        reply({status: 'ok'})
+        reply({ status: 'ok' })
       }
     })
 
@@ -52,21 +52,21 @@ tap.test('Hapi vhost support', function(t) {
       method: 'GET',
       path: '/test/2',
       vhost: 'localhost',
-      handler: function(req, reply) {
+      handler: function (req, reply) {
         t.ok(agent.getTransaction(), 'transaction is available')
-        reply({status: 'ok'})
+        reply({ status: 'ok' })
       }
     })
 
-    server.start(function() {
+    server.start(function () {
       port = server.info.port
       var params = {
         uri: 'http://localhost:' + port + '/test/2',
         json: true
       }
-      request.get(params, function(error, res, body) {
+      request.get(params, function (error, res, body) {
         t.equal(res.statusCode, 200, 'nothing exploded')
-        t.deepEqual(body, {status: 'ok'}, 'got expected response')
+        t.deepEqual(body, { status: 'ok' }, 'got expected response')
         t.end()
       })
     })
