@@ -1,3 +1,29 @@
+### v8.1.0 (2021-08-05)
+
+--- NOTES NEEDS REVIEW ---
+Update third party notices for release
+--------------------------
+
+* Fixed issue where Promise based `pg.Client.query` timings were always in sub-millisecond range.
+
+* Explicitly enabled APM for mongo instrumentation(client.monitorCommands = true)
+
+* Added an eslint rule to verify every file includes the copyright statement
+
+* Fixed bug where `API.shutdown` would not harvest or keep process active effectively after an agent restart.
+
+  The agent will now correctly update its state to 'started' after a reconnect has completed.
+
+* Added necessary instrumentation to support v4 of mongodb
+
+* Added additional instrumentation to properly set the collection on versions `>= 3.3.0`
+ * Updated mongo versioned stanzas to run all tests on versions `<4`
+
+* Fixed the `homepage` field in package.json to use `https` in the link to the github repo
+
+Details
+Shamelessly add myself to the contributors list
+
 ### v8.0.0 (2021-07-26)
 
 * Added official parity support for Node 16.
