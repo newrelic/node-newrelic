@@ -13,11 +13,9 @@ const glob = require('glob')
 
 const CERT_PATH = path.join(__dirname, '..', '..', 'SSL_CA_cert_bundle', '*.pem')
 
-const OUTFILE =
-  path.join(__dirname, '..', 'lib', 'collector', 'ssl', 'certificates')
+const OUTFILE = path.join(__dirname, '..', 'lib', 'collector', 'ssl', 'certificates')
 
-const HEADER =
-  `/**\n
+const HEADER = `/**\n
    * certificates.js - CA bundle for SSL communication with RPM.\n
    *\n
    * This file contains the X509 certificates used to communicate with New Relic\n
@@ -80,10 +78,7 @@ function dumpCerts(error, certs) {
 
   fs.writeFileSync(
     OUTFILE,
-    HEADER +
-    'module.exports = [\n' +
-    certs.map((cert) => cert.toEntry()).join(',\n\n') +
-    '\n]\n'
+    HEADER + 'module.exports = [\n' + certs.map((cert) => cert.toEntry()).join(',\n\n') + '\n]\n'
   )
 }
 

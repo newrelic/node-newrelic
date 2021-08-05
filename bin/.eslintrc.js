@@ -5,8 +5,9 @@
 
 'use strict'
 module.exports = {
-  "rules": {
-    "no-console": "off",
-    "no-shadow": ["warn", {"allow": ["cb", "error", "err"]}],
+  rules: {
+    'no-process-exit': 'off',
+    'no-console': 'off',
+    'no-shadow': ['warn', { allow: ['cb', 'error', 'err'] }]
   }
 }

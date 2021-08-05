@@ -7,7 +7,7 @@
 
 const fs = require('fs')
 
-const {program, Option} = require('commander')
+const { program, Option } = require('commander')
 
 const Github = require('./github')
 const git = require('./git-commands')
@@ -26,7 +26,7 @@ program.addOption(
 )
 program.option(
   '--major-release',
-  'create a major release. (release-type option must be set to \'major\')'
+  "create a major release. (release-type option must be set to 'major')"
 )
 program.option('--remote <remote>', 'remote to push branch to', 'origin')
 program.option('--branch <branch>', 'branch to generate notes from', 'main')
@@ -64,11 +64,11 @@ async function prepareReleaseNotes() {
 
   const startingBranch = options.branch.replace('refs/heads/', '')
 
-  const isValid = options.force || (
-    await validateRemote(options.remote) &&
-    await validateLocalChanges() &&
-    await validateCurrentBranch(startingBranch)
-  )
+  const isValid =
+    options.force ||
+    ((await validateRemote(options.remote)) &&
+      (await validateLocalChanges()) &&
+      (await validateCurrentBranch(startingBranch)))
 
   if (!isValid) {
     console.log('Invalid configuration. Halting script.')
@@ -84,7 +84,7 @@ async function prepareReleaseNotes() {
     await npm.version(options.releaseType, false)
 
     const packagePath = '../package.json'
-    console.log('Extracting new version from package.json here: ', )
+    console.log('Extracting new version from package.json here: ')
     const packageInfo = require(packagePath)
 
     const version = `v${packageInfo.version}`
@@ -259,7 +259,7 @@ async function generateReleaseNotes() {
       }
     }
 
-    const {1: proposedReleaseNotes} = parts
+    const { 1: proposedReleaseNotes } = parts
 
     const titleRemoved = proposedReleaseNotes.replace(PROPOSED_NOTES_HEADER, '')
     return {
@@ -268,17 +268,21 @@ async function generateReleaseNotes() {
     }
   })
 
-  const finalData = releaseNoteData.reduce((result, currentValue) => {
-    const trimmedNotes = currentValue.notes.trim()
-    if (trimmedNotes) { // avoid adding lines for empty notes
-      result.notes += '\n\n' + trimmedNotes
+  const finalData = releaseNoteData.reduce(
+    (result, currentValue) => {
+      const trimmedNotes = currentValue.notes.trim()
+      if (trimmedNotes) {
+        // avoid adding lines for empty notes
+        result.notes += '\n\n' + trimmedNotes
+      }
+      result.links += `\n* PR: ${currentValue.url}`
+      return result
+    },
+    {
+      notes: '',
+      links: ''
     }
-    result.links += `\n* PR: ${currentValue.url}`
-    return result
-  }, {
-    notes: '',
-    links: ''
-  })
+  )
 
   return finalData
 }
@@ -289,7 +293,7 @@ function generateUnformattedNotes(originalNotes) {
   // Drop extra snyk details and just keep high-level summary.
   if (originalNotes.indexOf('snyk:metadata') >= 0) {
     const snykParts = originalNotes.split('<hr/>')
-    const {0: snykDescription} = snykParts
+    const { 0: snykDescription } = snykParts
 
     unformattedNotes = snykDescription.trim()
   }
@@ -323,12 +327,7 @@ function updateReleaseNotesFile(file, version, newNotes) {
       const todayFormatted = new Date().toISOString().split('T')[0]
       const newVersionHeader = `### ${version} (${todayFormatted})`
 
-      const newContent = [
-        newVersionHeader,
-        newNotes,
-        '\n\n',
-        data
-      ].join('')
+      const newContent = [newVersionHeader, newNotes, '\n\n', data].join('')
 
       fs.writeFile(file, newContent, 'utf8', (err) => {
         if (err) {

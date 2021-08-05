@@ -5,7 +5,7 @@
 
 'use strict'
 
-const {program} = require('commander')
+const { program } = require('commander')
 
 const checkWorkflowRun = require('./check-workflow-run')
 const git = require('./git-commands')
@@ -31,18 +31,18 @@ async function createReleaseTag() {
   }
 
   try {
-    const isValid = options.force || (
-      await validateLocalChanges() &&
-      await validateCurrentBranch(branch) &&
-      await checkWorkflowRun(repoOwner, branch)
-    )
+    const isValid =
+      options.force ||
+      ((await validateLocalChanges()) &&
+        (await validateCurrentBranch(branch)) &&
+        (await checkWorkflowRun(repoOwner, branch)))
 
     if (!isValid) {
       process.exit(1)
     }
 
     const packagePath = '../package.json'
-    console.log('Extracting new version from package.json here: ', )
+    console.log('Extracting new version from package.json here: ')
     const packageInfo = require(packagePath)
 
     const version = `v${packageInfo.version}`
