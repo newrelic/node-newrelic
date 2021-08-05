@@ -1,18 +1,18 @@
 {
-  "lastUpdated": "Mon Jul 26 2021 09:59:32 GMT-0700 (Pacific Daylight Time)",
+  "lastUpdated": "Thu Aug 05 2021 12:37:42 GMT-0700 (Pacific Daylight Time)",
   "projectName": "New Relic Node Agent",
   "projectUrl": "https://github.com/newrelic/node-newrelic",
   "includeDev": true,
   "dependencies": {
-    "@grpc/grpc-js@1.2.11": {
+    "@grpc/grpc-js@1.3.6": {
       "name": "@grpc/grpc-js",
-      "version": "1.2.11",
+      "version": "1.3.6",
       "range": "^1.2.11",
       "licenses": "Apache-2.0",
       "repoUrl": "https://github.com/grpc/grpc-node/tree/master/packages/grpc-js",
-      "versionedRepoUrl": "https://github.com/grpc/grpc-node/tree/%40grpc/grpc-js%401.2.11/packages/grpc-js",
+      "versionedRepoUrl": "https://github.com/grpc/grpc-node/tree/master/packages/grpc-js/tree/v1.3.6",
       "licenseFile": "node_modules/@grpc/grpc-js/LICENSE",
-      "licenseUrl": "https://github.com/grpc/grpc-node/blob/%40grpc/grpc-js%401.2.11/packages/grpc-js/LICENSE",
+      "licenseUrl": "https://github.com/grpc/grpc-node/tree/master/packages/grpc-js/blob/v1.3.6/LICENSE",
       "licenseTextSource": "file",
       "publisher": "Google Inc."
     },
@@ -184,15 +184,15 @@
       "publisher": "New Relic Node.js agent team",
       "email": "nodejs@newrelic.com"
     },
-    "@octokit/rest@18.0.15": {
+    "@octokit/rest@18.8.0": {
       "name": "@octokit/rest",
-      "version": "18.0.15",
+      "version": "18.8.0",
       "range": "^18.0.15",
       "licenses": "MIT",
       "repoUrl": "https://github.com/octokit/rest.js",
-      "versionedRepoUrl": "https://github.com/octokit/rest.js/tree/v18.0.15",
+      "versionedRepoUrl": "https://github.com/octokit/rest.js/tree/v18.8.0",
       "licenseFile": "node_modules/@octokit/rest/LICENSE",
-      "licenseUrl": "https://github.com/octokit/rest.js/blob/v18.0.15/LICENSE",
+      "licenseUrl": "https://github.com/octokit/rest.js/blob/v18.8.0/LICENSE",
       "licenseTextSource": "file"
     },
     "JSV@4.0.2": {
@@ -238,29 +238,29 @@
       "email": "mathias@qiwi.be",
       "url": "https://mathiasbynens.be/"
     },
-    "bluebird@3.7.1": {
+    "bluebird@3.7.2": {
       "name": "bluebird",
-      "version": "3.7.1",
+      "version": "3.7.2",
       "range": "^3.4.7",
       "licenses": "MIT",
       "repoUrl": "https://github.com/petkaantonov/bluebird",
-      "versionedRepoUrl": "https://github.com/petkaantonov/bluebird/tree/v3.7.1",
+      "versionedRepoUrl": "https://github.com/petkaantonov/bluebird/tree/v3.7.2",
       "licenseFile": "node_modules/bluebird/LICENSE",
-      "licenseUrl": "https://github.com/petkaantonov/bluebird/blob/v3.7.1/LICENSE",
+      "licenseUrl": "https://github.com/petkaantonov/bluebird/blob/v3.7.2/LICENSE",
       "licenseTextSource": "file",
       "publisher": "Petka Antonov",
       "email": "petka_antonov@hotmail.com",
       "url": "http://github.com/petkaantonov/"
     },
-    "chai@4.2.0": {
+    "chai@4.3.4": {
       "name": "chai",
-      "version": "4.2.0",
+      "version": "4.3.4",
       "range": "^4.1.2",
       "licenses": "MIT",
       "repoUrl": "https://github.com/chaijs/chai",
-      "versionedRepoUrl": "https://github.com/chaijs/chai/tree/v4.2.0",
+      "versionedRepoUrl": "https://github.com/chaijs/chai/tree/v4.3.4",
       "licenseFile": "node_modules/chai/LICENSE",
-      "licenseUrl": "https://github.com/chaijs/chai/blob/v4.2.0/LICENSE",
+      "licenseUrl": "https://github.com/chaijs/chai/blob/v4.3.4/LICENSE",
       "licenseTextSource": "file",
       "publisher": "Jake Luer",
       "email": "jake@alogicalparadox.com"
@@ -278,15 +278,27 @@
       "publisher": "TJ Holowaychuk",
       "email": "tj@vision-media.ca"
     },
-    "eslint@6.8.0": {
+    "eslint-plugin-header@3.1.1": {
+      "name": "eslint-plugin-header",
+      "version": "3.1.1",
+      "range": "^3.1.1",
+      "licenses": "MIT",
+      "repoUrl": "https://github.com/Stuk/eslint-plugin-header",
+      "versionedRepoUrl": "https://github.com/Stuk/eslint-plugin-header/tree/v3.1.1",
+      "licenseFile": "node_modules/eslint-plugin-header/README.md",
+      "licenseUrl": "https://github.com/Stuk/eslint-plugin-header/blob/v3.1.1/README.md",
+      "licenseTextSource": "spdx",
+      "publisher": "Stuart Knightley"
+    },
+    "eslint@7.32.0": {
       "name": "eslint",
-      "version": "6.8.0",
-      "range": "^6.8.0",
+      "version": "7.32.0",
+      "range": "^7.32.0",
       "licenses": "MIT",
       "repoUrl": "https://github.com/eslint/eslint",
-      "versionedRepoUrl": "https://github.com/eslint/eslint/tree/v6.8.0",
+      "versionedRepoUrl": "https://github.com/eslint/eslint/tree/v7.32.0",
       "licenseFile": "node_modules/eslint/LICENSE",
-      "licenseUrl": "https://github.com/eslint/eslint/blob/v6.8.0/LICENSE",
+      "licenseUrl": "https://github.com/eslint/eslint/blob/v7.32.0/LICENSE",
       "licenseTextSource": "file",
       "publisher": "Nicholas C. Zakas",
       "email": "nicholas+npm@nczconsulting.com"
@@ -317,15 +329,15 @@
       "publisher": "Matteo Collina",
       "email": "hello@matteocollina.com"
     },
-    "generic-pool@3.7.1": {
+    "generic-pool@3.8.2": {
       "name": "generic-pool",
-      "version": "3.7.1",
+      "version": "3.8.2",
       "range": "^3.6.1",
       "licenses": "MIT",
       "repoUrl": "https://github.com/coopernurse/node-pool",
-      "versionedRepoUrl": "https://github.com/coopernurse/node-pool/tree/v3.7.1",
+      "versionedRepoUrl": "https://github.com/coopernurse/node-pool/tree/v3.8.2",
       "licenseFile": "node_modules/generic-pool/README.md",
-      "licenseUrl": "https://github.com/coopernurse/node-pool/blob/v3.7.1/README.md",
+      "licenseUrl": "https://github.com/coopernurse/node-pool/blob/v3.8.2/README.md",
       "licenseTextSource": "spdx",
       "publisher": "James Cooper",
       "email": "james@bitmechanic.com"
@@ -369,6 +381,20 @@
       "email": "me@jongleberry.com",
       "url": "http://jongleberry.com"
     },
+    "http-errors@1.8.0": {
+      "name": "http-errors",
+      "version": "1.8.0",
+      "range": "^1.7.3",
+      "licenses": "MIT",
+      "repoUrl": "https://github.com/jshttp/http-errors",
+      "versionedRepoUrl": "https://github.com/jshttp/http-errors/tree/v1.8.0",
+      "licenseFile": "node_modules/http-errors/LICENSE",
+      "licenseUrl": "https://github.com/jshttp/http-errors/blob/v1.8.0/LICENSE",
+      "licenseTextSource": "file",
+      "publisher": "Jonathan Ong",
+      "email": "me@jongleberry.com",
+      "url": "http://jongleberry.com"
+    },
     "husky@6.0.0": {
       "name": "husky",
       "version": "6.0.0",
@@ -382,28 +408,28 @@
       "publisher": "Typicode",
       "email": "typicode@gmail.com"
     },
-    "jsdoc@3.6.3": {
+    "jsdoc@3.6.7": {
       "name": "jsdoc",
-      "version": "3.6.3",
+      "version": "3.6.7",
       "range": "^3.6.3",
       "licenses": "Apache-2.0",
       "repoUrl": "https://github.com/jsdoc/jsdoc",
-      "versionedRepoUrl": "https://github.com/jsdoc/jsdoc/tree/v3.6.3",
+      "versionedRepoUrl": "https://github.com/jsdoc/jsdoc/tree/v3.6.7",
       "licenseFile": "node_modules/jsdoc/LICENSE.md",
-      "licenseUrl": "https://github.com/jsdoc/jsdoc/blob/v3.6.3/LICENSE.md",
+      "licenseUrl": "https://github.com/jsdoc/jsdoc/blob/v3.6.7/LICENSE.md",
       "licenseTextSource": "file",
       "publisher": "Michael Mathews",
       "email": "micmath@gmail.com"
     },
-    "lint-staged@11.0.0": {
+    "lint-staged@11.1.1": {
       "name": "lint-staged",
-      "version": "11.0.0",
+      "version": "11.1.1",
       "range": "^11.0.0",
       "licenses": "MIT",
       "repoUrl": "https://github.com/okonet/lint-staged",
-      "versionedRepoUrl": "https://github.com/okonet/lint-staged/tree/v11.0.0",
+      "versionedRepoUrl": "https://github.com/okonet/lint-staged/tree/v11.1.1",
       "licenseFile": "node_modules/lint-staged/LICENSE",
-      "licenseUrl": "https://github.com/okonet/lint-staged/blob/v11.0.0/LICENSE",
+      "licenseUrl": "https://github.com/okonet/lint-staged/blob/v11.1.1/LICENSE",
       "licenseTextSource": "file",
       "publisher": "Andrey Okonetchnikov",
       "email": "andrey@okonet.ru"
@@ -433,26 +459,26 @@
       "publisher": "Nijiko Yonskai",
       "email": "nijikokun@gmail.com"
     },
-    "mongodb@3.3.4": {
+    "mongodb@3.6.10": {
       "name": "mongodb",
-      "version": "3.3.4",
+      "version": "3.6.10",
       "range": "^3.3.3",
       "licenses": "Apache-2.0",
       "repoUrl": "https://github.com/mongodb/node-mongodb-native",
-      "versionedRepoUrl": "https://github.com/mongodb/node-mongodb-native/tree/v3.3.4",
+      "versionedRepoUrl": "https://github.com/mongodb/node-mongodb-native/tree/v3.6.10",
       "licenseFile": "node_modules/mongodb/LICENSE.md",
-      "licenseUrl": "https://github.com/mongodb/node-mongodb-native/blob/v3.3.4/LICENSE.md",
+      "licenseUrl": "https://github.com/mongodb/node-mongodb-native/blob/v3.6.10/LICENSE.md",
       "licenseTextSource": "file"
     },
-    "mysql@2.17.1": {
+    "mysql@2.18.1": {
       "name": "mysql",
-      "version": "2.17.1",
+      "version": "2.18.1",
       "range": "*",
       "licenses": "MIT",
       "repoUrl": "https://github.com/mysqljs/mysql",
-      "versionedRepoUrl": "https://github.com/mysqljs/mysql/tree/v2.17.1",
+      "versionedRepoUrl": "https://github.com/mysqljs/mysql/tree/v2.18.1",
       "licenseFile": "node_modules/mysql/License",
-      "licenseUrl": "https://github.com/mysqljs/mysql/blob/v2.17.1/License",
+      "licenseUrl": "https://github.com/mysqljs/mysql/blob/v2.18.1/License",
       "licenseTextSource": "file",
       "publisher": "Felix Geisendörfer",
       "email": "felix@debuggable.com",
@@ -510,19 +536,6 @@
       "publisher": "Matt Ranney",
       "email": "mjr@ranney.com"
     },
-    "request@2.88.0": {
-      "name": "request",
-      "version": "2.88.0",
-      "range": "^2.88.0",
-      "licenses": "Apache-2.0",
-      "repoUrl": "https://github.com/request/request",
-      "versionedRepoUrl": "https://github.com/request/request/tree/v2.88.0",
-      "licenseFile": "node_modules/request/LICENSE",
-      "licenseUrl": "https://github.com/request/request/blob/v2.88.0/LICENSE",
-      "licenseTextSource": "file",
-      "publisher": "Mikeal Rogers",
-      "email": "mikeal.rogers@gmail.com"
-    },
     "request@2.88.2": {
       "name": "request",
       "version": "2.88.2",
@@ -536,15 +549,15 @@
       "publisher": "Mikeal Rogers",
       "email": "mikeal.rogers@gmail.com"
     },
-    "restify@8.4.0": {
+    "restify@8.5.1": {
       "name": "restify",
-      "version": "8.4.0",
+      "version": "8.5.1",
       "range": "^8.4.0",
       "licenses": "MIT",
       "repoUrl": "https://github.com/restify/node-restify",
-      "versionedRepoUrl": "https://github.com/restify/node-restify/tree/v8.4.0",
+      "versionedRepoUrl": "https://github.com/restify/node-restify/tree/v8.5.1",
       "licenseFile": "node_modules/restify/LICENSE",
-      "licenseUrl": "https://github.com/restify/node-restify/blob/v8.4.0/LICENSE",
+      "licenseUrl": "https://github.com/restify/node-restify/blob/v8.5.1/LICENSE",
       "licenseTextSource": "file",
       "publisher": "Mark Cavage",
       "email": "mcavage@gmail.com"
