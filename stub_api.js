@@ -9,13 +9,16 @@ var logger = require('./lib/logger.js')
 var RealAPI = require('./api.js')
 var TransactionHandle = require('./lib/transaction/handle')
 
-
 /* eslint-disable no-eval */
 function stubFunction(name) {
   return eval(
-    "(function () {return function " + name + "() {" +
-    "logger.debug('Not calling " + name + " because New Relic is disabled.');" +
-    "}}())"
+    '(function () {return function ' +
+      name +
+      '() {' +
+      "logger.debug('Not calling " +
+      name +
+      " because New Relic is disabled.');" +
+      '}}())'
   )
 }
 /* eslint-enable no-eval */
@@ -24,7 +27,6 @@ function Stub() {}
 
 var keys = Object.keys(RealAPI.prototype)
 var length = keys.length
-
 
 /* This way the stub API doesn't have to be updated in lockstep with the regular
  * API.

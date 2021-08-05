@@ -6,7 +6,7 @@
 'use strict'
 
 const util = require('util')
-const logger = require('./lib/logger').child({component: 'api'})
+const logger = require('./lib/logger').child({ component: 'api' })
 const recordWeb = require('./lib/metrics/recorders/http')
 const recordBackground = require('./lib/metrics/recorders/other')
 const customRecorder = require('./lib/metrics/recorders/custom')
@@ -28,8 +28,8 @@ const NAMES = require('./lib/metrics/names')
  * CONSTANTS
  *
  */
-const RUM_STUB = "<script type='text/javascript' %s>window.NREUM||(NREUM={});" +
-                "NREUM.info = %s; %s</script>"
+const RUM_STUB =
+  "<script type='text/javascript' %s>window.NREUM||(NREUM={});" + 'NREUM.info = %s; %s</script>'
 
 // these messages are used in the _gracefail() method below in getBrowserTimingHeader
 const RUM_ISSUES = [
@@ -44,9 +44,7 @@ const RUM_ISSUES = [
 ]
 
 // Can't overwrite internal parameters or all heck will break loose.
-const CUSTOM_DENYLIST = new Set([
-  'nr_flatten_leading'
-])
+const CUSTOM_DENYLIST = new Set(['nr_flatten_leading'])
 
 const CUSTOM_EVENT_TYPE_REGEX = /^[a-zA-Z0-9:_ ]+$/
 
@@ -90,12 +88,9 @@ API.prototype.setTransactionName = function setTransactionName(name) {
 
   if (!name) {
     if (transaction && transaction.url) {
-      logger.error(
-        "Must include name in setTransactionName call for URL %s.",
-        transaction.url
-      )
+      logger.error('Must include name in setTransactionName call for URL %s.', transaction.url)
     } else {
-      logger.error("Must include name in setTransactionName call.")
+      logger.error('Must include name in setTransactionName call.')
     }
 
     return
@@ -117,14 +112,12 @@ API.prototype.setTransactionName = function setTransactionName(name) {
  *  `ignore` methods on it.
  */
 API.prototype.getTransaction = function getTransaction() {
-  var metric = this.agent.metrics.getOrCreateMetric(
-    NAMES.SUPPORTABILITY.API + '/getTransaction'
-  )
+  var metric = this.agent.metrics.getOrCreateMetric(NAMES.SUPPORTABILITY.API + '/getTransaction')
   metric.incrementCallCount()
 
   var transaction = this.agent.tracer.getTransaction()
   if (!transaction) {
-    logger.debug("No transaction found when calling API#getTransaction")
+    logger.debug('No transaction found when calling API#getTransaction')
     return new TransactionHandle.Stub()
   }
 
@@ -198,13 +191,11 @@ API.prototype.getLinkingMetadata = function getLinkingMetadata(omitSupportabilit
  *                           report to New Relic
  */
 API.prototype.setDispatcher = function setDispatcher(name, version) {
-  var metric = this.agent.metrics.getOrCreateMetric(
-    NAMES.SUPPORTABILITY.API + '/setDispatcher'
-  )
+  var metric = this.agent.metrics.getOrCreateMetric(NAMES.SUPPORTABILITY.API + '/setDispatcher')
   metric.incrementCallCount()
 
   if (!name || typeof name !== 'string') {
-    logger.error("setDispatcher must be called with a name, and name must be a string.")
+    logger.error('setDispatcher must be called with a name, and name must be a string.')
     return
   }
 
@@ -239,24 +230,19 @@ API.prototype.setDispatcher = function setDispatcher(name, version) {
  *                        to the HTTP method used for the request.
  */
 API.prototype.setControllerName = function setControllerName(name, action) {
-  var metric = this.agent.metrics.getOrCreateMetric(
-    NAMES.SUPPORTABILITY.API + '/setControllerName'
-  )
+  var metric = this.agent.metrics.getOrCreateMetric(NAMES.SUPPORTABILITY.API + '/setControllerName')
   metric.incrementCallCount()
 
   var transaction = this.agent.tracer.getTransaction()
   if (!transaction) {
-    return logger.warn("No transaction found when setting controller to %s.", name)
+    return logger.warn('No transaction found when setting controller to %s.', name)
   }
 
   if (!name) {
     if (transaction && transaction.url) {
-      logger.error(
-        "Must include name in setControllerName call for URL %s.",
-        transaction.url
-      )
+      logger.error('Must include name in setControllerName call for URL %s.', transaction.url)
     } else {
-      logger.error("Must include name in setControllerName call.")
+      logger.error('Must include name in setControllerName call.')
     }
 
     return
@@ -265,7 +251,6 @@ API.prototype.setControllerName = function setControllerName(name, action) {
   action = action || transaction.verb || 'GET'
   transaction.forceName = NAMES.CONTROLLER + '/' + name + '/' + action
 }
-
 
 /**
  * Add a custom attribute to the current transaction. Some attributes are
@@ -284,15 +269,10 @@ API.prototype.addCustomAttribute = function addCustomAttribute(key, value) {
 
   // If high security mode is on, custom attributes are disabled.
   if (this.agent.config.high_security) {
-    logger.warnOnce(
-      'Custom attributes',
-      'Custom attributes are disabled by high security mode.'
-    )
+    logger.warnOnce('Custom attributes', 'Custom attributes are disabled by high security mode.')
     return false
   } else if (!this.agent.config.api.custom_attributes_enabled) {
-    logger.debug(
-      'Config.api.custom_attributes_enabled set to false, not collecting value'
-    )
+    logger.debug('Config.api.custom_attributes_enabled set to false, not collecting value')
     return false
   }
 
@@ -304,10 +284,7 @@ API.prototype.addCustomAttribute = function addCustomAttribute(key, value) {
 
   const trace = transaction.trace
   if (!trace.custom) {
-    logger.warn(
-      'Could not add attribute %s to nonexistent custom attributes.',
-      key
-    )
+    logger.warn('Could not add attribute %s to nonexistent custom attributes.', key)
     return false
   }
 
@@ -406,19 +383,14 @@ API.prototype.addCustomSpanAttribute = function addCustomSpanAttribute(key, valu
     )
     return false
   } else if (!this.agent.config.api.custom_attributes_enabled) {
-    logger.debug(
-      'Config.api.custom_attributes_enabled set to false, not collecting value'
-    )
+    logger.debug('Config.api.custom_attributes_enabled set to false, not collecting value')
     return false
   }
 
   const spanContext = this.agent.tracer.getSpanContext()
 
   if (!spanContext) {
-    logger.debug(
-      'Could not add attribute %s. No available span.',
-      key
-    )
+    logger.debug('Could not add attribute %s. No available span.', key)
     return false
   }
 
@@ -445,28 +417,21 @@ API.prototype.addCustomSpanAttribute = function addCustomSpanAttribute(key, valu
  *  Optional. Any custom attributes to be displayed in the New Relic UI.
  */
 API.prototype.noticeError = function noticeError(error, customAttributes) {
-  const metric = this.agent.metrics.getOrCreateMetric(
-    NAMES.SUPPORTABILITY.API + '/noticeError'
-  )
+  const metric = this.agent.metrics.getOrCreateMetric(NAMES.SUPPORTABILITY.API + '/noticeError')
   metric.incrementCallCount()
 
   if (!this.agent.config.api.notice_error_enabled) {
-    logger.debug(
-      'Config.api.notice_error_enabled set to false, not collecting error'
-    )
+    logger.debug('Config.api.notice_error_enabled set to false, not collecting error')
     return false
   }
 
   // If high security mode is on or custom attributes are disabled,
   // noticeError does not collect custom attributes.
   if (this.agent.config.high_security) {
-    logger.debug(
-      'Passing custom attributes to notice error API is disabled in high security mode.'
-    )
+    logger.debug('Passing custom attributes to notice error API is disabled in high security mode.')
   } else if (!this.agent.config.api.custom_attributes_enabled) {
     logger.debug(
-      'Config.api.custom_attributes_enabled set to false, ' +
-      'ignoring custom error attributes.'
+      'Config.api.custom_attributes_enabled set to false, ' + 'ignoring custom error attributes.'
     )
   }
 
@@ -513,13 +478,10 @@ API.prototype.noticeError = function noticeError(error, customAttributes) {
  * @param {string} name    The name to use for the transaction.
  */
 API.prototype.addNamingRule = function addNamingRule(pattern, name) {
-  var metric = this.agent.metrics.getOrCreateMetric(
-    NAMES.SUPPORTABILITY.API + '/addNamingRule'
-  )
+  var metric = this.agent.metrics.getOrCreateMetric(NAMES.SUPPORTABILITY.API + '/addNamingRule')
   metric.incrementCallCount()
 
-
-  if (!name) return logger.error("Simple naming rules require a replacement name.")
+  if (!name) return logger.error('Simple naming rules require a replacement name.')
 
   this.agent.userNormalizer.addSimple(pattern, '/' + name)
 }
@@ -538,12 +500,10 @@ API.prototype.addNamingRule = function addNamingRule(pattern, name) {
  * @param {RegExp} pattern The pattern to ignore.
  */
 API.prototype.addIgnoringRule = function addIgnoringRule(pattern) {
-  var metric = this.agent.metrics.getOrCreateMetric(
-    NAMES.SUPPORTABILITY.API + '/addIgnoringRule'
-  )
+  var metric = this.agent.metrics.getOrCreateMetric(NAMES.SUPPORTABILITY.API + '/addIgnoringRule')
   metric.incrementCallCount()
 
-  if (!pattern) return logger.error("Must include a URL pattern to ignore.")
+  if (!pattern) return logger.error('Must include a URL pattern to ignore.')
 
   this.agent.userNormalizer.addSimple(pattern, null)
 }
@@ -698,12 +658,7 @@ API.prototype.getBrowserTimingHeader = function getBrowserTimingHeader(options) 
   var nonce = options && options.nonce ? 'nonce="' + options.nonce + '"' : ''
 
   // the complete header to be written to the browser
-  var out = util.format(
-    RUM_STUB,
-    nonce,
-    json,
-    js_agent_loader
-  )
+  var out = util.format(RUM_STUB, nonce, json, js_agent_loader)
 
   logger.trace('generating RUM header', out)
 
@@ -745,9 +700,9 @@ API.prototype.getBrowserTimingHeader = function getBrowserTimingHeader(options) 
  * @return {*} Returns the result of calling `handler`.
  */
 API.prototype.startSegment = function startSegment(name, record, handler, callback) {
-  this.agent.metrics.getOrCreateMetric(
-    NAMES.SUPPORTABILITY.API + '/startSegment'
-  ).incrementCallCount()
+  this.agent.metrics
+    .getOrCreateMetric(NAMES.SUPPORTABILITY.API + '/startSegment')
+    .incrementCallCount()
 
   // Check that we have usable arguments.
   if (!name || typeof handler !== 'function') {
@@ -824,11 +779,7 @@ API.prototype.startWebTransaction = function startWebTransaction(url, handle) {
     return handle()
   }
 
-  logger.debug(
-    'starting web transaction %s (%s).',
-    url,
-    handle && handle.name
-  )
+  logger.debug('starting web transaction %s (%s).', url, handle && handle.name)
 
   var shim = this.shim
   var tracer = this.agent.tracer
@@ -842,11 +793,7 @@ API.prototype.startWebTransaction = function startWebTransaction(url, handle) {
     }
 
     if (tx === parent) {
-      logger.debug(
-        'not creating nested transaction %s using transaction %s',
-        url,
-        tx.id
-      )
+      logger.debug('not creating nested transaction %s using transaction %s', url, tx.id)
       return tracer.addSegment(url, null, null, true, handle)
     }
 
@@ -932,12 +879,7 @@ function startBackgroundTransaction(name, group, handle) {
     return handle()
   }
 
-  logger.debug(
-    'starting background transaction %s:%s (%s)',
-    name,
-    group,
-    handle && handle.name
-  )
+  logger.debug('starting background transaction %s:%s (%s)', name, group, handle && handle.name)
 
   var tracer = this.agent.tracer
   var shim = this.shim
@@ -952,11 +894,7 @@ function startBackgroundTransaction(name, group, handle) {
     }
 
     if (tx === parent) {
-      logger.debug(
-        'not creating nested transaction %s using transaction %s',
-        txName,
-        tx.id
-      )
+      logger.debug('not creating nested transaction %s using transaction %s', txName, tx.id)
       return tracer.addSegment(txName, null, null, true, handle)
     }
 
@@ -990,9 +928,7 @@ function startBackgroundTransaction(name, group, handle) {
  * the correct transaction context when called.
  */
 API.prototype.endTransaction = function endTransaction() {
-  var metric = this.agent.metrics.getOrCreateMetric(
-    NAMES.SUPPORTABILITY.API + '/endTransaction'
-  )
+  var metric = this.agent.metrics.getOrCreateMetric(NAMES.SUPPORTABILITY.API + '/endTransaction')
   metric.incrementCallCount()
 
   var tracer = this.agent.tracer
@@ -1053,7 +989,7 @@ API.prototype.recordMetric = function recordMetric(name, value) {
 
   const stats = Object.create(null)
   const required = ['count', 'total', 'min', 'max', 'sumOfSquares']
-  const keyMap = {count: 'callCount'}
+  const keyMap = { count: 'callCount' }
 
   for (let i = 0, l = required.length; i < l; ++i) {
     if (typeof value[required[i]] !== 'number') {
@@ -1084,9 +1020,7 @@ API.prototype.recordMetric = function recordMetric(name, value) {
  *                          by. Defaults to 1.
  */
 API.prototype.incrementMetric = function incrementMetric(name, value) {
-  const metric = this.agent.metrics.getOrCreateMetric(
-    NAMES.SUPPORTABILITY.API + '/incrementMetric'
-  )
+  const metric = this.agent.metrics.getOrCreateMetric(NAMES.SUPPORTABILITY.API + '/incrementMetric')
   metric.incrementCallCount()
 
   if (!value && value !== 0) {
@@ -1117,22 +1051,15 @@ API.prototype.incrementMetric = function incrementMetric(name, value) {
  *                             or boolean.
  */
 API.prototype.recordCustomEvent = function recordCustomEvent(eventType, attributes) {
-  var metric = this.agent.metrics.getOrCreateMetric(
-    NAMES.SUPPORTABILITY.API + '/recordCustomEvent'
-  )
+  var metric = this.agent.metrics.getOrCreateMetric(NAMES.SUPPORTABILITY.API + '/recordCustomEvent')
   metric.incrementCallCount()
 
   // If high security mode is on, custom events are disabled.
   if (this.agent.config.high_security) {
-    logger.warnOnce(
-      "Custom Event",
-      "Custom events are disabled by high security mode."
-    )
+    logger.warnOnce('Custom Event', 'Custom events are disabled by high security mode.')
     return false
   } else if (!this.agent.config.api.custom_events_enabled) {
-    logger.debug(
-      "Config.api.custom_events_enabled set to false, not collecting value"
-    )
+    logger.debug('Config.api.custom_events_enabled set to false, not collecting value')
     return false
   }
 
@@ -1192,7 +1119,7 @@ API.prototype.recordCustomEvent = function recordCustomEvent(eventType, attribut
   }
 
   var tx = this.agent.getTransaction()
-  var priority = tx && tx.priority || Math.random()
+  var priority = (tx && tx.priority) || Math.random()
   this.agent.customEventAggregator.add([instrinics, filteredAttributes], priority)
 }
 
@@ -1216,9 +1143,7 @@ API.prototype.recordCustomEvent = function recordCustomEvent(eventType, attribut
  *  this function.
  */
 API.prototype.instrument = function instrument(moduleName, onRequire, onError) {
-  var metric = this.agent.metrics.getOrCreateMetric(
-    NAMES.SUPPORTABILITY.API + '/instrument'
-  )
+  var metric = this.agent.metrics.getOrCreateMetric(NAMES.SUPPORTABILITY.API + '/instrument')
   metric.incrementCallCount()
 
   var opts = moduleName
@@ -1253,15 +1178,18 @@ API.prototype.instrument = function instrument(moduleName, onRequire, onError) {
  *  If provided, should `onRequire` throw an error, the error will be passed to
  *  this function.
  */
-API.prototype.instrumentConglomerate =
-function instrumentConglomerate(moduleName, onRequire, onError) {
-  this.agent.metrics.getOrCreateMetric(
-    NAMES.SUPPORTABILITY.API + '/instrumentConglomerate'
-  ).incrementCallCount()
+API.prototype.instrumentConglomerate = function instrumentConglomerate(
+  moduleName,
+  onRequire,
+  onError
+) {
+  this.agent.metrics
+    .getOrCreateMetric(NAMES.SUPPORTABILITY.API + '/instrumentConglomerate')
+    .incrementCallCount()
 
   let opts = moduleName
   if (typeof opts === 'string') {
-    opts = {moduleName, onRequire, onError}
+    opts = { moduleName, onRequire, onError }
   }
 
   opts.type = MODULE_TYPE.CONGLOMERATE
@@ -1287,8 +1215,7 @@ function instrumentConglomerate(moduleName, onRequire, onError) {
  *  If provided, should `onRequire` throw an error, the error will be passed to
  *  this function.
  */
-API.prototype.instrumentDatastore =
-function instrumentDatastore(moduleName, onRequire, onError) {
+API.prototype.instrumentDatastore = function instrumentDatastore(moduleName, onRequire, onError) {
   var metric = this.agent.metrics.getOrCreateMetric(
     NAMES.SUPPORTABILITY.API + '/instrumentDatastore'
   )
@@ -1325,8 +1252,7 @@ function instrumentDatastore(moduleName, onRequire, onError) {
  * @param {object} module
  *  The actual module object or function we're instrumenting
  */
-API.prototype.instrumentLoadedModule =
-function instrumentLoadedModule(moduleName, module) {
+API.prototype.instrumentLoadedModule = function instrumentLoadedModule(moduleName, module) {
   var metric = this.agent.metrics.getOrCreateMetric(
     NAMES.SUPPORTABILITY.API + '/instrumentLoadedModule'
   )
@@ -1357,10 +1283,7 @@ function instrumentLoadedModule(moduleName, module) {
 
     return true
   } catch (error) {
-    logger.error(
-      'instrumentLoadedModule encountered an error, module not instrumentend: %s',
-      error
-    )
+    logger.error('instrumentLoadedModule encountered an error, module not instrumentend: %s', error)
   }
 }
 
@@ -1383,8 +1306,11 @@ function instrumentLoadedModule(moduleName, module) {
  *  If provided, should `onRequire` throw an error, the error will be passed to
  *  this function.
  */
-API.prototype.instrumentWebframework =
-function instrumentWebframework(moduleName, onRequire, onError) {
+API.prototype.instrumentWebframework = function instrumentWebframework(
+  moduleName,
+  onRequire,
+  onError
+) {
   var metric = this.agent.metrics.getOrCreateMetric(
     NAMES.SUPPORTABILITY.API + '/instrumentWebframework'
   )
@@ -1422,8 +1348,7 @@ function instrumentWebframework(moduleName, onRequire, onError) {
  *  If provided, should `onRequire` throw an error, the error will be passed to
  *  this function.
  */
-API.prototype.instrumentMessages =
-function instrumentMessages(moduleName, onRequire, onError) {
+API.prototype.instrumentMessages = function instrumentMessages(moduleName, onRequire, onError) {
   var metric = this.agent.metrics.getOrCreateMetric(
     NAMES.SUPPORTABILITY.API + '/instrumentMessages'
   )
@@ -1448,18 +1373,16 @@ function instrumentMessages(moduleName, onRequire, onError) {
  * @returns {*} The object containing the current trace and span ids
  */
 API.prototype.getTraceMetadata = function getTraceMetadata() {
-  var metric = this.agent.metrics.getOrCreateMetric(
-    NAMES.SUPPORTABILITY.API + '/getTraceMetadata'
-  )
+  var metric = this.agent.metrics.getOrCreateMetric(NAMES.SUPPORTABILITY.API + '/getTraceMetadata')
   metric.incrementCallCount()
 
   const metadata = {}
 
   const segment = this.agent.tracer.getSegment()
   if (!segment) {
-    logger.debug("No transaction found when calling API#getTraceMetadata")
+    logger.debug('No transaction found when calling API#getTraceMetadata')
   } else if (!this.agent.config.distributed_tracing.enabled) {
-    logger.debug("Distributed tracing disabled when calling API#getTraceMetadata")
+    logger.debug('Distributed tracing disabled when calling API#getTraceMetadata')
   } else {
     metadata.traceId = segment.transaction.traceId
 
@@ -1492,8 +1415,7 @@ API.prototype.getTraceMetadata = function getTraceMetadata() {
  *  Callback function that runs when agent stops.
  */
 API.prototype.shutdown = function shutdown(options, cb) {
-  this.agent.metrics.getOrCreateMetric(`${NAMES.SUPPORTABILITY.API}/shutdown`)
-    .incrementCallCount()
+  this.agent.metrics.getOrCreateMetric(`${NAMES.SUPPORTABILITY.API}/shutdown`).incrementCallCount()
 
   let callback = cb
   if (typeof options === 'function') {
@@ -1529,10 +1451,7 @@ function _doShutdown(api, options, callback) {
 
   function afterHarvest(error) {
     if (error) {
-      logger.error(
-        error,
-        'An error occurred while running last harvest before shutdown.'
-      )
+      logger.error(error, 'An error occurred while running last harvest before shutdown.')
     }
     agent.stop(callback)
   }
@@ -1543,10 +1462,7 @@ function _doShutdown(api, options, callback) {
         agent.stop(callback)
       }, options.timeout).unref()
     } else if (options.timeout) {
-      logger.warn(
-        'options.timeout should be of type "number". Got %s',
-        typeof options.timeout
-      )
+      logger.warn('options.timeout should be of type "number". Got %s', typeof options.timeout)
     }
 
     agent.on('started', function shutdownHarvest() {
@@ -1556,10 +1472,7 @@ function _doShutdown(api, options, callback) {
     agent.on('errored', function logShutdownError(error) {
       agent.stop(callback)
       if (error) {
-        logger.error(
-          error,
-          'The agent encountered an error after calling shutdown.'
-        )
+        logger.error(error, 'The agent encountered an error after calling shutdown.')
       }
     })
   } else if (options.collectPendingData) {
@@ -1603,7 +1516,7 @@ function _filterAttributes(attributes, name) {
     if (!isValidType(attributes[attributeKey])) {
       logger.info(
         `Omitting attribute ${attributeKey} from ${name} call, type must ` +
-        'be boolean, number, or string'
+          'be boolean, number, or string'
       )
       return
     }
