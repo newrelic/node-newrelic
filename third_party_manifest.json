@@ -367,20 +367,6 @@
       "licenseUrl": "https://github.com/sindresorhus/got/blob/v8.3.2/license",
       "licenseTextSource": "file"
     },
-    "http-errors@1.7.3": {
-      "name": "http-errors",
-      "version": "1.7.3",
-      "range": "^1.7.3",
-      "licenses": "MIT",
-      "repoUrl": "https://github.com/jshttp/http-errors",
-      "versionedRepoUrl": "https://github.com/jshttp/http-errors/tree/v1.7.3",
-      "licenseFile": "node_modules/http-errors/LICENSE",
-      "licenseUrl": "https://github.com/jshttp/http-errors/blob/v1.7.3/LICENSE",
-      "licenseTextSource": "file",
-      "publisher": "Jonathan Ong",
-      "email": "me@jongleberry.com",
-      "url": "http://jongleberry.com"
-    },
     "http-errors@1.8.0": {
       "name": "http-errors",
       "version": "1.8.0",
