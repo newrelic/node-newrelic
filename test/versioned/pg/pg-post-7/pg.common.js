@@ -5,21 +5,21 @@
 
 'use strict'
 
-var a = require('async')
-var tap = require('tap')
-var params = require('../../../lib/params')
-var helper = require('../../../lib/agent_helper')
-var findSegment = require('../../../lib/metrics_helper').findSegment
-var test = tap.test
-var getMetricHostName = require('../../../lib/metrics_helper').getMetricHostName
+const a = require('async')
+const tap = require('tap')
+const params = require('../../../lib/params')
+const helper = require('../../../lib/agent_helper')
+const findSegment = require('../../../lib/metrics_helper').findSegment
+const test = tap.test
+const getMetricHostName = require('../../../lib/metrics_helper').getMetricHostName
 
 module.exports = function runTests(name, clientFactory) {
   // constants for table creation and db connection
-  var TABLE = 'testTable-post'
-  var TABLE_PREPARED = '"' + TABLE + '"'
-  var PK = 'pk_column'
-  var COL = 'test_column'
-  var CON_OBJ = {
+  const TABLE = 'testTable-post'
+  const TABLE_PREPARED = '"' + TABLE + '"'
+  const PK = 'pk_column'
+  const COL = 'test_column'
+  const CON_OBJ = {
     user: params.postgres_user,
     password: params.postgres_pass,
     host: params.postgres_host,
@@ -32,17 +32,17 @@ module.exports = function runTests(name, clientFactory) {
    * then recreation of a testing table
    */
   function postgresSetup() {
-    var pg = clientFactory()
-    var setupClient = new pg.Client(CON_OBJ)
+    const pg = clientFactory()
+    const setupClient = new pg.Client(CON_OBJ)
 
     return new Promise((resolve, reject) => {
       setupClient.connect(function(err) {
         if (err) {
           reject(err)
         }
-        var tableDrop = 'DROP TABLE IF EXISTS ' + TABLE_PREPARED
+        const tableDrop = 'DROP TABLE IF EXISTS ' + TABLE_PREPARED
 
-        var tableCreate =
+        const tableCreate =
           'CREATE TABLE ' + TABLE_PREPARED + ' (' +
             PK + ' integer PRIMARY KEY, ' +
             COL + ' text' +
@@ -72,17 +72,17 @@ module.exports = function runTests(name, clientFactory) {
   }
 
   function verifyMetrics(t, segment, selectTable) {
-    var transaction = segment.transaction
-    var agent = transaction.agent
+    const transaction = segment.transaction
+    const agent = transaction.agent
     selectTable = selectTable || TABLE
     t.equal(
       Object.keys(transaction.metrics.scoped).length, 0,
       'should not have any scoped metrics'
     )
 
-    var unscoped = transaction.metrics.unscoped
+    const unscoped = transaction.metrics.unscoped
 
-    var expected = {
+    const expected = {
       'Datastore/all': 2,
       'Datastore/allWeb': 2,
       'Datastore/Postgres/all': 2,
@@ -94,43 +94,43 @@ module.exports = function runTests(name, clientFactory) {
     expected['Datastore/statement/Postgres/' + TABLE + '/insert'] = 1
     expected['Datastore/statement/Postgres/' + selectTable + '/select'] = 1
 
-    var metricHostName = getMetricHostName(agent, params.postgres_host)
-    var hostId = metricHostName + '/' + params.postgres_port
+    const metricHostName = getMetricHostName(agent, params.postgres_host)
+    const hostId = metricHostName + '/' + params.postgres_port
     expected['Datastore/instance/Postgres/' + hostId] = 2
 
-    var expectedNames = Object.keys(expected)
-    var unscopedNames = Object.keys(unscoped)
+    const expectedNames = Object.keys(expected)
+    const unscopedNames = Object.keys(unscoped)
 
     expectedNames.forEach(function(expectedName) {
       t.ok(unscoped[expectedName], 'should have unscoped metric ' + expectedName)
       if (unscoped[expectedName]) {
-        t.equals(
+        t.equal(
           unscoped[expectedName].callCount, expected[expectedName],
           'metric ' + expectedName + ' should have correct callCount'
         )
       }
     })
 
-    t.equals(
+    t.equal(
       unscopedNames.length, expectedNames.length,
       'should have correct number of unscoped metrics'
     )
   }
 
   function verifyTrace(t, segment, selectTable) {
-    var transaction = segment.transaction
+    const transaction = segment.transaction
     selectTable = selectTable || TABLE
-    var trace = transaction.trace
+    const trace = transaction.trace
 
     t.ok(trace, 'trace should exist')
     t.ok(trace.root, 'root element should exist')
 
-    var setSegment = findSegment(
+    const setSegment = findSegment(
       trace.root,
       'Datastore/statement/Postgres/' + TABLE + '/insert'
     )
 
-    var getSegment = findSegment(
+    const getSegment = findSegment(
       trace.root,
       'Datastore/statement/Postgres/' + selectTable + '/select'
     )
@@ -140,7 +140,7 @@ module.exports = function runTests(name, clientFactory) {
 
     if (!getSegment) return
 
-    t.equals(
+    t.equal(
       getSegment.name,
       'Datastore/statement/Postgres/' + selectTable + '/select',
       'should register the query call'
@@ -150,33 +150,33 @@ module.exports = function runTests(name, clientFactory) {
   }
 
   function verifyInstanceParameters(t, segment) {
-    var transaction = segment.transaction
-    var agent = transaction.agent
-    var trace = transaction.trace
+    const transaction = segment.transaction
+    const agent = transaction.agent
+    const trace = transaction.trace
 
-    var setSegment = findSegment(
+    const setSegment = findSegment(
       trace.root,
       'Datastore/statement/Postgres/' + TABLE + '/insert'
     )
     const attributes = setSegment.getAttributes()
 
-    var metricHostName = getMetricHostName(agent, params.postgres_host)
-    t.equals(
+    const metricHostName = getMetricHostName(agent, params.postgres_host)
+    t.equal(
       attributes.host,
       metricHostName,
       'should add the host parameter'
     )
-    t.equals(
+    t.equal(
       attributes.port_path_or_id,
       String(params.postgres_port),
       'should add the port parameter'
     )
-    t.equals(
+    t.equal(
       attributes.database_name,
       params.postgres_db,
       'should add the database name parameter'
     )
-    t.equals(
+    t.equal(
       attributes.product,
       'Postgres',
       'should add the product attribute'
@@ -184,9 +184,9 @@ module.exports = function runTests(name, clientFactory) {
   }
 
   function verifySlowQueries(t, agent) {
-    var metricHostName = getMetricHostName(agent, params.postgres_host)
+    const metricHostName = getMetricHostName(agent, params.postgres_host)
 
-    t.equals(agent.queries.samples.size, 1, 'should have one slow query')
+    t.equal(agent.queries.samples.size, 1, 'should have one slow query')
     for (let sample of agent.queries.samples.values()) {
       const queryParams = sample.getParams()
 
@@ -215,13 +215,13 @@ module.exports = function runTests(name, clientFactory) {
   test('Postgres instrumentation: ' + name, function(t) {
     t.autoend()
 
-    var agent = null
-    var pg = null
+    let agent = null
+    let pg = null
 
     t.beforeEach(function() {
       // the pg module has `native` lazy getter that is removed after first call,
       // so in order to re-instrument, we need to remove the pg module from the cache
-      var pgName = require.resolve('pg')
+      const pgName = require.resolve('pg')
       delete require.cache[pgName]
 
       agent = helper.instrumentMockedAgent()
@@ -237,7 +237,7 @@ module.exports = function runTests(name, clientFactory) {
     })
 
     t.test('simple query with prepared statement', function(t) {
-      var client = new pg.Client(CON_OBJ)
+      const client = new pg.Client(CON_OBJ)
 
       t.teardown(function() {
         client.end()
@@ -245,13 +245,13 @@ module.exports = function runTests(name, clientFactory) {
 
       t.notOk(agent.getTransaction(), 'no transaction should be in play')
       helper.runInTransaction(agent, function transactionInScope(tx) {
-        var transaction = agent.getTransaction()
+        const transaction = agent.getTransaction()
         t.ok(transaction, 'transaction should be visible')
         t.equal(tx, transaction, 'We got the same transaction')
 
-        var colVal = 'Hello'
-        var pkVal = 111
-        var insQuery = 'INSERT INTO ' + TABLE_PREPARED + ' (' + PK + ',' +  COL
+        const colVal = 'Hello'
+        const pkVal = 111
+        let insQuery = 'INSERT INTO ' + TABLE_PREPARED + ' (' + PK + ',' +  COL
         insQuery += ') VALUES($1, $2);'
 
         client.connect(function(error) {
@@ -267,7 +267,7 @@ module.exports = function runTests(name, clientFactory) {
             t.ok(agent.getTransaction(), 'transaction should still be visible')
             t.ok(ok, 'everything should be peachy after setting')
 
-            var selQuery = 'SELECT * FROM ' + TABLE_PREPARED + ' WHERE '
+            let selQuery = 'SELECT * FROM ' + TABLE_PREPARED + ' WHERE '
             selQuery += PK + '=' + pkVal + ';'
 
             client.query(selQuery, function(error, value) {
@@ -276,7 +276,7 @@ module.exports = function runTests(name, clientFactory) {
               }
 
               t.ok(agent.getTransaction(), 'transaction should still still be visible')
-              t.equals(value.rows[0][COL], colVal, 'Postgres client should still work')
+              t.equal(value.rows[0][COL], colVal, 'Postgres client should still work')
 
               transaction.end()
               verify(t, agent.tracer.getSegment())
@@ -287,19 +287,199 @@ module.exports = function runTests(name, clientFactory) {
       })
     })
 
+    t.test('Promise style query', function(t) {
+      const client = new pg.Client(CON_OBJ)
+
+      t.teardown(function() {
+        client.end()
+      })
+
+      helper.runInTransaction(agent, async function transactionInScope(tx) {
+        const transaction = agent.getTransaction()
+        t.ok(transaction, 'transaction should be visible')
+        t.equal(tx, transaction, 'We got the same transaction')
+
+        const colVal = 'Hello'
+        const pkVal = 111
+        let insQuery = 'INSERT INTO ' + TABLE_PREPARED + ' (' + PK + ',' +  COL
+        insQuery += ') VALUES($1, $2);'
+
+        try {
+          await client.connect()
+        } catch (err) {
+          t.error(err)
+        }
+
+        try {
+          const results = await client.query(insQuery, [pkVal, colVal])
+
+          t.ok(agent.getTransaction(), 'transaction should still be visible')
+          t.ok(results, 'everything should be peachy after setting')
+
+          let selQuery = 'SELECT * FROM ' + TABLE_PREPARED + ' WHERE '
+          selQuery += PK + '=' + pkVal + ';'
+
+          const selectResults = await client.query(selQuery)
+
+          t.ok(agent.getTransaction(), 'transaction should still still be visible')
+          t.equal(selectResults.rows[0][COL], colVal, 'Postgres client should still work')
+          transaction.end()
+          verify(t, agent.tracer.getSegment())
+          t.end()
+        } catch (err) {
+          t.error(err)
+          t.end()
+        }
+      })
+    })
+
+    t.test('Submittable style Query timings', function(t) {
+      // see bottom of this page https://node-postgres.com/guides/upgrading
+      const client = new pg.Client(CON_OBJ)
+
+      t.teardown(function() {
+        client.end()
+      })
+
+      t.notOk(agent.getTransaction(), 'no transaction should be in play')
+      helper.runInTransaction(agent, function transactionInScope(tx) {
+        const transaction = agent.getTransaction()
+        t.ok(transaction, 'transaction should be visible')
+        t.equal(tx, transaction, 'We got the same transaction')
+
+        const selQuery = 'SELECT pg_sleep(2), now() as sleep;'
+
+        client.connect(function(error) {
+          if (!t.error(error)) {
+            return t.end()
+          }
+
+          const pgQuery = client.query(new pg.Query(selQuery))
+
+          pgQuery.on('error', () =>  {
+            t.error(error)
+            t.end()
+          })
+
+          pgQuery.on('end', () => {
+            t.ok(agent.getTransaction(), 'transaction should still be visible')
+
+            transaction.end()
+
+            const segment = agent.tracer.getSegment()
+
+            const finalTx = segment.transaction
+
+            const metrics = finalTx.metrics.getMetric('Datastore/operation/Postgres/select')
+
+            t.ok(metrics.total > 2.0,
+              'Submittable style Query pg_sleep of 2 seconds should result in > 2 sec timing')
+
+            t.end()
+          })
+        })
+      })
+    })
+
+    t.test('Promise style query timings', function(t) {
+      const client = new pg.Client(CON_OBJ)
+
+      t.teardown(function() {
+        client.end()
+      })
+
+      helper.runInTransaction(agent, async function transactionInScope(tx) {
+        const transaction = agent.getTransaction()
+        t.ok(transaction, 'transaction should be visible')
+        t.equal(tx, transaction, 'We got the same transaction')
+
+        try {
+          await client.connect()
+        } catch (err) {
+          t.error(err)
+        }
+
+        try {
+          const selQuery = 'SELECT pg_sleep(2), now() as sleep;'
+
+          const selectResults = await client.query(selQuery)
+
+          t.ok(agent.getTransaction(), 'transaction should still still be visible')
+          t.ok(selectResults, 'Postgres client should still work')
+          transaction.end()
+          const segment = agent.tracer.getSegment()
+
+          const finalTx = segment.transaction
+
+          const metrics = finalTx.metrics.getMetric('Datastore/operation/Postgres/select')
+
+          t.ok(metrics.total > 2.0,
+            'Promise style query pg_sleep of 2 seconds should result in > 2 sec timing')
+
+          t.end()
+        } catch (err) {
+          t.error(err)
+          t.end()
+        }
+      })
+    })
+
+    t.test('Callback style query timings', function(t) {
+      const client = new pg.Client(CON_OBJ)
+
+      t.teardown(function() {
+        client.end()
+      })
+
+      helper.runInTransaction(agent, async function transactionInScope(tx) {
+        const transaction = agent.getTransaction()
+        t.ok(transaction, 'transaction should be visible')
+        t.equal(tx, transaction, 'We got the same transaction')
+
+        client.connect(function(error) {
+          if (!t.error(error)) {
+            return t.end()
+          }
+
+          const selQuery = 'SELECT pg_sleep(2), now() as sleep;'
+
+          client.query(selQuery, function(error, ok) {
+            if (!t.error(error)) {
+              return t.end()
+            }
+
+            t.ok(agent.getTransaction(), 'transaction should still be visible')
+            t.ok(ok, 'everything should be peachy after setting')
+
+            transaction.end()
+            const segment = agent.tracer.getSegment()
+
+            const finalTx = segment.transaction
+
+            const metrics = finalTx.metrics.getMetric('Datastore/operation/Postgres/select')
+
+            t.ok(metrics.total > 2.0,
+              'Callback style query pg_sleep of 2 seconds should result in > 2 sec timing')
+
+            t.end()
+          })
+        })
+      })
+    })
+
     t.test('client pooling query', function(t) {
       t.plan(39)
       t.notOk(agent.getTransaction(), 'no transaction should be in play')
       helper.runInTransaction(agent, function transactionInScope(tx) {
-        var transaction = agent.getTransaction()
+        const transaction = agent.getTransaction()
         t.ok(transaction, 'transaction should be visible')
         t.equal(tx, transaction, 'We got the same transaction')
 
-        var colVal = 'World!'
-        var pkVal = 222
-        var insQuery = 'INSERT INTO ' + TABLE_PREPARED + ' (' + PK + ',' +  COL
+        const colVal = 'World!'
+        const pkVal = 222
+        let insQuery = 'INSERT INTO ' + TABLE_PREPARED + ' (' + PK + ',' +  COL
         insQuery += ') VALUES(' + pkVal + ",'" + colVal + "');"
-        var pool = new pg.Pool(CON_OBJ)
+        const pool = new pg.Pool(CON_OBJ)
         pool.query(insQuery, function(error, ok) {
           if (!t.error(error)) {
             return t.end()
@@ -308,7 +488,7 @@ module.exports = function runTests(name, clientFactory) {
           t.ok(agent.getTransaction(), 'transaction should still be visible')
           t.ok(ok, 'everything should be peachy after setting')
 
-          var selQuery = 'SELECT * FROM ' + TABLE_PREPARED + ' WHERE '
+          let selQuery = 'SELECT * FROM ' + TABLE_PREPARED + ' WHERE '
           selQuery += PK + '=' + pkVal + ';'
 
           pool.query(selQuery, function(error, value) {
@@ -317,7 +497,7 @@ module.exports = function runTests(name, clientFactory) {
             }
 
             t.ok(agent.getTransaction(), 'transaction should still still be visible')
-            t.equals(value.rows[0][COL], colVal, 'Postgres client should still work')
+            t.equal(value.rows[0][COL], colVal, 'Postgres client should still work')
 
             transaction.end()
             pool.end()
@@ -332,16 +512,16 @@ module.exports = function runTests(name, clientFactory) {
 
       t.notOk(agent.getTransaction(), 'no transaction should be in play')
       helper.runInTransaction(agent, function transactionInScope(tx) {
-        var transaction = agent.getTransaction()
+        const transaction = agent.getTransaction()
         t.ok(transaction, 'transaction should be visible')
         t.equal(tx, transaction, 'We got the same transaction')
 
-        var colVal = 'World!'
-        var pkVal = 222
-        var insQuery = 'INSERT INTO ' + TABLE_PREPARED + ' (' + PK + ',' +  COL
+        const colVal = 'World!'
+        const pkVal = 222
+        let insQuery = 'INSERT INTO ' + TABLE_PREPARED + ' (' + PK + ',' +  COL
         insQuery += ') VALUES(' + pkVal + ",'" + colVal + "');"
 
-        var pool = null
+        let pool = null
         if (pg.Pool) {
           pool = new pg.Pool(CON_OBJ)
         } else {
@@ -361,7 +541,7 @@ module.exports = function runTests(name, clientFactory) {
             t.ok(agent.getTransaction(), 'transaction should still be visible')
             t.ok(ok, 'everything should be peachy after setting')
 
-            var selQuery = 'SELECT * FROM ' + TABLE_PREPARED + ' WHERE '
+            let selQuery = 'SELECT * FROM ' + TABLE_PREPARED + ' WHERE '
             selQuery += PK + '=' + pkVal + ';'
 
             client.query(selQuery, function(error, value) {
@@ -370,7 +550,7 @@ module.exports = function runTests(name, clientFactory) {
               }
 
               t.ok(agent.getTransaction(), 'transaction should still still be visible')
-              t.equals(value.rows[0][COL], colVal, 'Postgres client should still work')
+              t.equal(value.rows[0][COL], colVal, 'Postgres client should still work')
 
               transaction.end()
               if (pool.end instanceof Function) {
@@ -388,17 +568,17 @@ module.exports = function runTests(name, clientFactory) {
     // https://github.com/newrelic/node-newrelic/pull/223
     t.test('query using an config object with `text` getter instead of property', (t) => {
       t.plan(3)
-      var client = new pg.Client(CON_OBJ)
+      const client = new pg.Client(CON_OBJ)
 
       t.teardown(function() {
         client.end()
       })
 
       helper.runInTransaction(agent, function() {
-        var transaction = agent.getTransaction()
+        const transaction = agent.getTransaction()
 
-        var colVal = 'Sianara'
-        var pkVal = 444
+        const colVal = 'Sianara'
+        const pkVal = 444
 
         function CustomConfigClass() {
           this._text = 'INSERT INTO ' + TABLE_PREPARED + ' (' + PK + ',' +  COL
@@ -414,7 +594,7 @@ module.exports = function runTests(name, clientFactory) {
         })
 
         // create a config instance
-        var config = new CustomConfigClass()
+        const config = new CustomConfigClass()
 
         client.connect(function(error) {
           if (!t.error(error)) {
@@ -426,7 +606,7 @@ module.exports = function runTests(name, clientFactory) {
               return t.end()
             }
 
-            var segment = findSegment(
+            const segment = findSegment(
               transaction.trace.root,
               'Datastore/statement/Postgres/' + TABLE + '/insert'
             )
@@ -442,14 +622,14 @@ module.exports = function runTests(name, clientFactory) {
       agent.config.transaction_tracer.record_sql = 'raw'
       agent.config.slow_sql.enabled = true
 
-      var client = new pg.Client(CON_OBJ)
+      const client = new pg.Client(CON_OBJ)
 
       t.teardown(function() {
         client.end()
       })
 
       helper.runInTransaction(agent, function() {
-        var transaction = agent.getTransaction()
+        const transaction = agent.getTransaction()
         client.connect(function(error) {
           if (!t.error(error)) {
             return t.end()
@@ -480,14 +660,14 @@ module.exports = function runTests(name, clientFactory) {
       agent.config.datastore_tracer.instance_reporting.enabled = false
       agent.config.datastore_tracer.database_name_reporting.enabled = false
 
-      var client = new pg.Client(CON_OBJ)
+      const client = new pg.Client(CON_OBJ)
 
       t.teardown(function() {
         client.end()
       })
 
       helper.runInTransaction(agent, function() {
-        var transaction = agent.getTransaction()
+        const transaction = agent.getTransaction()
         client.connect(function(error) {
           if (!t.error(error)) {
             return t.end()
