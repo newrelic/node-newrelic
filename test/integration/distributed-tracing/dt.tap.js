@@ -96,27 +96,6 @@ tap.test('distributed tracing full integration', (t) => {
     end.close()
   })
 
-  function runTest() {
-    http.get(generateUrl(START_PORT, 'start'), (res) => {
-      res.resume()
-      start.close()
-      middle.close()
-      end.close()
-    })
-    var txCount = 0
-
-    const testsToCheck = []
-    agent.on('transactionFinished', (trans) => {
-      const event = agent.transactionEventAggregator.getEvents().filter((evt) => {
-        return evt[0].guid === trans.id
-      })[0]
-      testsToCheck.push(transInspector[txCount].bind(this, trans, event))
-      if (++txCount === 3) {
-        testsToCheck.forEach((test) => test())
-      }
-    })
-  }
-
   var transInspector = [
     function endTest(trans, event) {
       // Check the unscoped metrics
@@ -228,6 +207,26 @@ tap.test('distributed tracing full integration', (t) => {
       t.end()
     }
   ]
+  function runTest() {
+    http.get(generateUrl(START_PORT, 'start'), (res) => {
+      res.resume()
+      start.close()
+      middle.close()
+      end.close()
+    })
+    var txCount = 0
+
+    const testsToCheck = []
+    agent.on('transactionFinished', (trans) => {
+      const event = agent.transactionEventAggregator.getEvents().filter((evt) => {
+        return evt[0].guid === trans.id
+      })[0]
+      testsToCheck.push(transInspector[txCount].bind(this, trans, event))
+      if (++txCount === 3) {
+        testsToCheck.forEach((test) => test())
+      }
+    })
+  }
 })
 
 tap.test('distributed tracing', (t) => {

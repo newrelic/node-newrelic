@@ -9,6 +9,19 @@ const tap = require('tap')
 const requestClient = require('request')
 const helper = require('../../lib/agent_helper')
 
+let callCount = 0
+const loadMiddleware = async (fastify) => {
+  function testMiddleware(req, res, next) {
+    callCount++
+    next()
+  }
+
+  // If fastify version is >=3, .use() will fail unless a plugin adds it
+  fastify.use((_, __, next) => next())
+
+  fastify.use(testMiddleware)
+}
+
 /**
  * Single function to register all the routes used by the test
  *
@@ -47,19 +60,6 @@ const configureFastifyServer = async (fastify) => {
   }, {})
 
   await loadMiddleware(fastify)
-}
-
-let callCount = 0
-const loadMiddleware = async (fastify) => {
-  function testMiddleware(req, res, next) {
-    callCount++
-    next()
-  }
-
-  // If fastify version is >=3, .use() will fail unless a plugin adds it
-  fastify.use((_, __, next) => next())
-
-  fastify.use(testMiddleware)
 }
 
 let testCount = 0

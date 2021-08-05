@@ -1068,7 +1068,7 @@ describe('Transaction', function () {
 
         const originalHeaders = createHeadersAndInsertTrace(txn)
 
-        const orig_traceparent = originalHeaders.traceparent
+        const origTraceparent = originalHeaders.traceparent
         const traceparent = 'asdlkfjasdl;fkja'
         const tracestate = 'stuff'
 
@@ -1081,7 +1081,7 @@ describe('Transaction', function () {
 
         const secondHeaders = createHeadersAndInsertTrace(txn)
 
-        expect(secondHeaders.traceparent).to.equal(orig_traceparent)
+        expect(secondHeaders.traceparent).to.equal(origTraceparent)
         txn.end()
       })
     })
@@ -1420,7 +1420,7 @@ describe('Transaction', function () {
         childSegment.start()
 
         const originalHeaders = createHeadersAndInsertTrace(txn)
-        const orig_traceparent = originalHeaders.traceparent
+        const origTraceparent = originalHeaders.traceparent
         const traceparent = 'asdlkfjasdl;fkja'
         const tracestate = 'stuff'
 
@@ -1428,7 +1428,7 @@ describe('Transaction', function () {
 
         const secondHeaders = createHeadersAndInsertTrace(txn)
 
-        expect(secondHeaders.traceparent).to.equal(orig_traceparent)
+        expect(secondHeaders.traceparent).to.equal(origTraceparent)
         txn.end()
       })
     })

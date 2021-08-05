@@ -25,7 +25,7 @@ tap.test('should not crash when Restify handles a connection', function (t) {
   const restify = require('restify')
   const server = restify.createServer()
 
-  t.teardown(function cb_tearDown() {
+  t.teardown(() => {
     helper.unloadAgent(agent)
     server.close()
   })
@@ -66,7 +66,9 @@ tap.test('should not crash when Restify handles a connection', function (t) {
     const port = server.address().port
 
     request.get(`http://localhost:${port}/hello/friend`, function (error, response, body) {
-      if (error) return t.fail(error)
+      if (error) {
+        return t.fail(error)
+      }
       t.notOk(agent.getTransaction(), "transaction shouldn't leak into external request")
 
       var metric = agent.metrics.getMetric(METRIC)
@@ -90,7 +92,7 @@ tap.test('Restify should still be instrumented when run with SSL', function (t) 
       const restify = require('restify')
       const server = restify.createServer({ key, certificate })
 
-      t.teardown(function cb_tearDown() {
+      t.teardown(() => {
         helper.unloadAgent(agent)
         server.close()
       })

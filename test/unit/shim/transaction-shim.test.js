@@ -158,6 +158,13 @@ describe('TransactionShim', function () {
           var bgTx = null
           var webCalled = false
           var bgCalled = false
+          var bg = shim.bindCreateTransaction(
+            function () {
+              bgCalled = true
+              bgTx = shim.getSegment().transaction
+            },
+            { type: shim.BG }
+          )
           var web = shim.bindCreateTransaction(
             function () {
               webCalled = true
@@ -165,14 +172,6 @@ describe('TransactionShim', function () {
               bg()
             },
             { type: shim.WEB }
-          )
-
-          var bg = shim.bindCreateTransaction(
-            function () {
-              bgCalled = true
-              bgTx = shim.getSegment().transaction
-            },
-            { type: shim.BG }
           )
 
           web()

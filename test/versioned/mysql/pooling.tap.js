@@ -32,7 +32,9 @@ tap.test('MySQL instrumentation with a connection pool', { timeout: 30000 }, fun
 
   var withRetry = {
     getClient: function (callback, counter) {
-      if (!counter) counter = 1
+      if (!counter) {
+        counter = 1
+      }
       counter++
 
       pool.acquire(function (err, client) {
@@ -58,16 +60,22 @@ tap.test('MySQL instrumentation with a connection pool', { timeout: 30000 }, fun
 
   var dal = {
     lookup: function (params, callback) {
-      if (!params.id) return callback(new Error('Must include ID to look up.'))
+      if (!params.id) {
+        return callback(new Error('Must include ID to look up.'))
+      }
 
-      withRetry.getClient(function cb_getClient(err, client) {
-        if (err) return callback(err)
+      withRetry.getClient((err, client) => {
+        if (err) {
+          return callback(err)
+        }
 
         var query = 'SELECT *' + '  FROM ' + DBNAME + '.' + DBTABLE + ' WHERE id = ?'
         client.query(query, [params.id], function (err, results) {
           withRetry.release(client) // always release back to the pool
 
-          if (err) return callback(err)
+          if (err) {
+            return callback(err)
+          }
 
           callback(null, results.length ? results[0] : results)
         })

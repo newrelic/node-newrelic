@@ -37,12 +37,18 @@ tap.test('MySQL transactions', { timeout: 30000 }, function (t) {
     helper.runInTransaction(agent, function transactionInScope() {
       t.ok(agent.getTransaction(), 'we should be in a transaction')
       client.beginTransaction(function (err) {
-        if (err) return t.fail(err)
+        if (err) {
+          return t.fail(err)
+        }
         // trying the object mode of client.query
         client.query({ sql: 'SELECT 1', timeout: 10 }, function (err) {
-          if (err) return t.fail(err)
+          if (err) {
+            return t.fail(err)
+          }
           client.commit(function (err) {
-            if (err) return t.fail(err)
+            if (err) {
+              return t.fail(err)
+            }
             t.ok(agent.getTransaction(), 'MySQL query should not lose the transaction')
           })
         })

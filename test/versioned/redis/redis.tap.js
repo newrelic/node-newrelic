@@ -69,13 +69,17 @@ test('Redis instrumentation', { timeout: 20000 }, function (t) {
       t.ok(transaction, 'transaction should be visible')
 
       client.set('testkey', 'arglbargle', function (error, ok) {
-        if (error) return t.fail(error)
+        if (error) {
+          return t.fail(error)
+        }
 
         t.ok(agent.getTransaction(), 'transaction should still be visible')
         t.ok(ok, 'everything should be peachy after setting')
 
         client.get('testkey', function (error, value) {
-          if (error) return t.fail(error)
+          if (error) {
+            return t.fail(error)
+          }
 
           t.ok(agent.getTransaction(), 'transaction should still still be visible')
           t.equals(value, 'arglbargle', 'memcached client should still work')
@@ -163,10 +167,14 @@ test('Redis instrumentation', { timeout: 20000 }, function (t) {
     helper.runInTransaction(agent, function transactionInScope() {
       var transaction = agent.getTransaction()
       client.set('testkey', 'arglbargle', function (error) {
-        if (error) return t.fail(error)
+        if (error) {
+          return t.fail(error)
+        }
 
         client.get('testkey', function (error) {
-          if (error) return t.fail(error)
+          if (error) {
+            return t.fail(error)
+          }
 
           transaction.end()
           var unscoped = transaction.metrics.unscoped
@@ -225,7 +233,9 @@ test('Redis instrumentation', { timeout: 20000 }, function (t) {
     helper.runInTransaction(agent, function transactionInScope() {
       var transaction = agent.getTransaction()
       client.set('testkey', 'arglbargle', function (error) {
-        if (error) return t.fail(error)
+        if (error) {
+          return t.fail(error)
+        }
 
         var trace = transaction.trace
         var setSegment = trace.root.children[0]

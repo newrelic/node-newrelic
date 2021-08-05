@@ -33,7 +33,7 @@ test('loading the application via index.js', { timeout: 15000 }, (t) => {
     t.same(agent.config.applications(), ['My Application'], 'app name is valid')
     t.equal(agent.config.agent_enabled, true, 'the agent is still enabled')
 
-    agent.stop(function cb_stop(err) {
+    agent.stop(function cbStop(err) {
       t.notOk(err, 'should not error when stopping')
       t.equal(agent._state, 'stopped', "agent didn't error shutting down")
 

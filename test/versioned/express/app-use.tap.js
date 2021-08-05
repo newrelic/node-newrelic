@@ -13,7 +13,7 @@ test('app should be at top of stack when mounted', function (t) {
   var agent = helper.instrumentMockedAgent()
   var express = require('express')
 
-  t.teardown(function cb_tearDown() {
+  t.teardown(() => {
     helper.unloadAgent(agent)
   })
 

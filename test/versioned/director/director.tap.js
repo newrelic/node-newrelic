@@ -10,6 +10,7 @@ var http = require('http')
 var helper = require('../../lib/agent_helper')
 
 tap.test('basic director test', function (t) {
+  let server = null
   const agent = helper.instrumentMockedAgent()
 
   const director = require('director')
@@ -72,7 +73,7 @@ tap.test('basic director test', function (t) {
     )
   })
 
-  var server = http.createServer(function (req, res) {
+  server = http.createServer(function (req, res) {
     router.dispatch(req, res, function (err) {
       if (err) {
         res.writeHead(404)
@@ -94,6 +95,7 @@ tap.test('basic director test', function (t) {
 })
 
 tap.test('backward recurse director test', function (t) {
+  let server = null
   const agent = helper.instrumentMockedAgent()
 
   const director = require('director')
@@ -131,7 +133,7 @@ tap.test('backward recurse director test', function (t) {
     t.equal(web.partialName, 'Director/GET//hello', 'should have partial name for apdex')
   })
 
-  var server = http.createServer(function (req, res) {
+  server = http.createServer(function (req, res) {
     router.dispatch(req, res, function (err) {
       if (err) {
         res.writeHead(404)
@@ -153,6 +155,7 @@ tap.test('backward recurse director test', function (t) {
 })
 
 tap.test('two routers with same URI director test', function (t) {
+  let server = null
   const agent = helper.instrumentMockedAgent()
 
   const director = require('director')
@@ -184,7 +187,7 @@ tap.test('two routers with same URI director test', function (t) {
     this.res.end('{"status":"ok"}')
   })
 
-  var server = http.createServer(function (req, res) {
+  server = http.createServer(function (req, res) {
     router.dispatch(req, res, function (err) {
       if (err) {
         res.writeHead(404)
@@ -206,6 +209,7 @@ tap.test('two routers with same URI director test', function (t) {
 })
 
 tap.test('director async routes test', function (t) {
+  let server = null
   const agent = helper.instrumentMockedAgent()
 
   const director = require('director')
@@ -266,7 +270,7 @@ tap.test('director async routes test', function (t) {
     )
   })
 
-  var server = http.createServer(function (req, res) {
+  server = http.createServer(function (req, res) {
     router.dispatch(req, res, function (err) {
       if (err) {
         res.writeHead(404)

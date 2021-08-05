@@ -30,7 +30,7 @@ test('built-in http instrumentation should handle internal & external requests',
     '<body><p>I heard you like HTML.</p></body>' +
     '</html>'
 
-  var external = http.createServer(function cb_createServer(request, response) {
+  var external = http.createServer((request, response) => {
     response.writeHead(200, {
       'Content-Length': PAYLOAD.length,
       'Content-Type': 'application/json'
@@ -45,7 +45,9 @@ test('built-in http instrumentation should handle internal & external requests',
       transaction = agent.getTransaction()
       t.ok(transaction, 'handler is part of transaction')
 
-      if (requestResponse.statusCode !== 200) return t.fail(requestResponse.statusCode)
+      if (requestResponse.statusCode !== 200) {
+        return t.fail(requestResponse.statusCode)
+      }
 
       requestResponse.setEncoding('utf8')
       requestResponse.on('data', function (data) {
@@ -60,7 +62,7 @@ test('built-in http instrumentation should handle internal & external requests',
     }
   }
 
-  var server = http.createServer(function cb_createServer(request, response) {
+  var server = http.createServer((request, response) => {
     t.ok(agent.getTransaction(), 'should be within the scope of the transaction')
 
     var req = http.request(
@@ -80,14 +82,16 @@ test('built-in http instrumentation should handle internal & external requests',
     req.end()
   })
 
-  t.teardown(function cb_tearDown() {
+  t.teardown(() => {
     external.close()
     server.close()
     helper.unloadAgent(agent)
   })
 
   var testResponseHandler = function (response) {
-    if (response.statusCode !== 200) return t.fail(response.statusCode)
+    if (response.statusCode !== 200) {
+      return t.fail(response.statusCode)
+    }
 
     response.setEncoding('utf8')
 
@@ -182,7 +186,7 @@ test('built-in http instrumentation should not swallow errors', function (t) {
 
   let server = null
 
-  t.teardown(function cb_tearDown() {
+  t.teardown(() => {
     server.close()
     helper.unloadAgent(agent)
   })
@@ -204,6 +208,7 @@ test('built-in http instrumentation should not swallow errors', function (t) {
     })
 
     // this is gonna blow up
+    // eslint-disable-next-line no-use-before-define
     var x = x.dieshere.ohno
   }
 
@@ -243,7 +248,7 @@ test('built-in http instrumentation should not swallow errors', function (t) {
 test('built-in http instrumentation making outbound requests', function (t) {
   var agent = helper.instrumentMockedAgent()
 
-  var server = http.createServer(function cb_createServer(req, res) {
+  var server = http.createServer((req, res) => {
     var body = '{"status":"ok"}'
     res.writeHead(200, {
       'Content-Length': body.length,
@@ -252,7 +257,7 @@ test('built-in http instrumentation making outbound requests', function (t) {
     res.end(body)
   })
 
-  t.teardown(function cb_tearDown() {
+  t.teardown(() => {
     server.close()
     helper.unloadAgent(agent)
   })
@@ -339,7 +344,7 @@ test(
 
     var agent = helper.instrumentMockedAgent()
 
-    t.teardown(function cb_tearDown() {
+    t.teardown(() => {
       helper.unloadAgent(agent)
     })
 
@@ -398,11 +403,6 @@ test('built-in http instrumentation should not crash when server does not have a
 
   var agent = helper.instrumentMockedAgent()
 
-  t.teardown(function cb_tearDown() {
-    helper.unloadAgent(agent)
-    server.close()
-  })
-
   var server = http.createServer(function (req, res) {
     res.end()
   })
@@ -430,4 +430,9 @@ test('built-in http instrumentation should not crash when server does not have a
     }
     http.request(options, callback).end()
   }
+
+  t.teardown(() => {
+    helper.unloadAgent(agent)
+    server.close()
+  })
 })

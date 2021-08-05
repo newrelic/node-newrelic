@@ -369,13 +369,13 @@ describe('shimmer', function () {
         var ids = []
 
         var spamTransaction = function (i) {
-          var wrapped = agent.tracer.transactionProxy(function cb_transactionProxy() {
+          var wrapped = agent.tracer.transactionProxy(function transactionProxyCb() {
             var current = agent.getTransaction()
             transactions[i] = current
             ids[i] = current.id
 
             process.nextTick(
-              agent.tracer.bindFunction(function cb_bindFunction() {
+              agent.tracer.bindFunction(function bindFunctionCb() {
                 var lookup = agent.getTransaction()
                 expect(lookup).equal(current)
 
@@ -394,7 +394,9 @@ describe('shimmer', function () {
 
           trans.end()
 
-          if (doneCount === 10) return done()
+          if (doneCount === 10) {
+            return done()
+          }
         })
 
         for (var i = 0; i < 10; i += 1) {
@@ -410,13 +412,13 @@ describe('shimmer', function () {
         var ids = []
 
         var spamTransaction = function (i) {
-          var wrapped = agent.tracer.transactionProxy(function cb_transactionProxy() {
+          var wrapped = agent.tracer.transactionProxy(function transactionProxyCb() {
             var current = agent.getTransaction()
             transactions[i] = current
             ids[i] = current.id
 
             setTimeout(
-              agent.tracer.bindFunction(function cb_bindFunction() {
+              agent.tracer.bindFunction(function bindFunctionCb() {
                 var lookup = agent.getTransaction()
                 expect(lookup).equal(current)
 
@@ -436,7 +438,9 @@ describe('shimmer', function () {
 
           trans.end()
 
-          if (doneCount === 10) return done()
+          if (doneCount === 10) {
+            return done()
+          }
         })
 
         for (var i = 0; i < 10; i += 1) {
@@ -454,7 +458,7 @@ describe('shimmer', function () {
         var ids = []
 
         var eventTransaction = function (j) {
-          var wrapped = agent.tracer.transactionProxy(function cb_transactionProxy() {
+          var wrapped = agent.tracer.transactionProxy(function transactionProxyCb() {
             var current = agent.getTransaction()
             var id = current.id
             var name = 'ttest' + (j + 1)
@@ -464,7 +468,7 @@ describe('shimmer', function () {
 
             eventer.on(
               name,
-              agent.tracer.bindFunction(function cb_bindFunction() {
+              agent.tracer.bindFunction(function bindFunctionCb() {
                 var lookup = agent.getTransaction()
                 expect(lookup).equal(current)
                 expect(lookup.id).equal(id)
@@ -486,7 +490,9 @@ describe('shimmer', function () {
 
           trans.end()
 
-          if (doneCount === 10) return done()
+          if (doneCount === 10) {
+            return done()
+          }
         })
 
         for (var i = 0; i < 10; i += 1) {
@@ -535,7 +541,7 @@ describe('shimmer', function () {
         }
 
         var createTicker = function (j) {
-          return agent.tracer.transactionProxy(function cb_transactionProxy() {
+          return agent.tracer.transactionProxy(function transactionProxyCb() {
             var current = agent.getTransaction()
             transactions[j] = current
             ids[j] = current.id
@@ -543,7 +549,7 @@ describe('shimmer', function () {
             verify(j, 'createTicker', current)
 
             process.nextTick(
-              agent.tracer.bindFunction(function cb_bindFunction() {
+              agent.tracer.bindFunction(function bindFunctionCb() {
                 verify(j, 'nextTick', current)
                 createTimer(current, j)
               })
@@ -559,7 +565,9 @@ describe('shimmer', function () {
 
           trans.end()
 
-          if (doneCount === 10) return done()
+          if (doneCount === 10) {
+            return done()
+          }
         })
 
         for (var i = 0; i < 10; i++) {

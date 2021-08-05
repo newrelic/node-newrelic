@@ -24,7 +24,7 @@ function execAsPromise(command) {
         return reject(err)
       }
 
-      resolve(stdout)
+      return resolve(stdout)
     })
   })
 

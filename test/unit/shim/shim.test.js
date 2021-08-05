@@ -999,6 +999,7 @@ describe('Shim', function () {
           return { name: 'test segment', promise: true, opaque: true }
         })
 
+        const result = {}
         helper.runInTransaction(agent, function () {
           var ret = wrapped()
           expect(ret).to.be.instanceOf(Object.getPrototypeOf(promise).constructor)
@@ -1013,7 +1014,6 @@ describe('Shim', function () {
         })
 
         expect(promise.segment.opaque).to.be.true
-        var result = {}
         setTimeout(function () {
           promise.resolve(result)
         }, 5)
@@ -1024,8 +1024,10 @@ describe('Shim', function () {
           return { name: 'test segment', promise: true }
         })
 
+        const result = {}
         helper.runInTransaction(agent, function () {
           var ret = wrapped()
+          const oldDur = promise.segment.timer.getDurationInMillis()
           expect(ret).to.be.instanceOf(Object.getPrototypeOf(promise).constructor)
 
           ret
@@ -1037,8 +1039,6 @@ describe('Shim', function () {
             .catch(done)
         })
 
-        var oldDur = promise.segment.timer.getDurationInMillis()
-        var result = {}
         setTimeout(function () {
           promise.resolve(result)
         }, 5)
@@ -1049,6 +1049,7 @@ describe('Shim', function () {
           return { name: 'test segment', promise: true, opaque: true }
         })
 
+        const result = {}
         helper.runInTransaction(agent, function () {
           var ret = wrapped()
           expect(ret).to.be.instanceOf(Object.getPrototypeOf(promise).constructor)
@@ -1068,7 +1069,6 @@ describe('Shim', function () {
         })
 
         expect(promise.segment.opaque).to.be.true
-        var result = {}
         setTimeout(function () {
           promise.reject(result)
         }, 5)
@@ -1079,8 +1079,10 @@ describe('Shim', function () {
           return { name: 'test segment', promise: true }
         })
 
+        const result = {}
         helper.runInTransaction(agent, function () {
           var ret = wrapped()
+          const oldDur = promise.segment.timer.getDurationInMillis()
           expect(ret).to.be.instanceOf(Object.getPrototypeOf(promise).constructor)
 
           ret
@@ -1097,8 +1099,6 @@ describe('Shim', function () {
             .catch(done)
         })
 
-        var oldDur = promise.segment.timer.getDurationInMillis()
-        var result = {}
         setTimeout(function () {
           promise.reject(result)
         }, 5)
@@ -1109,6 +1109,7 @@ describe('Shim', function () {
           return { name: 'test segment', promise: true }
         })
 
+        const result = {}
         helper.runInTransaction(agent, function () {
           var ret = wrapped()
           expect(ret).to.be.instanceOf(Object.getPrototypeOf(promise).constructor)
@@ -1120,7 +1121,6 @@ describe('Shim', function () {
           })
         })
 
-        var result = {}
         setTimeout(function () {
           promise.reject(result)
         }, 5)

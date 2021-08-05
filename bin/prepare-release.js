@@ -311,7 +311,7 @@ function updateReleaseNotesFile(file, version, newNotes) {
   const promise = new Promise((resolve, reject) => {
     fs.readFile(file, 'utf8', (err, data) => {
       if (err) {
-        return reject(err)
+        reject(err)
       }
 
       if (data.startsWith(`### ${version}`)) {
@@ -320,7 +320,7 @@ function updateReleaseNotesFile(file, version, newNotes) {
           `Delete existing ${version} release notes (if desired) and run again`
         ].join('\n')
 
-        return reject(new Error(errMessage))
+        reject(new Error(errMessage))
       }
 
       // toISOString() will always return UTC time
@@ -329,9 +329,9 @@ function updateReleaseNotesFile(file, version, newNotes) {
 
       const newContent = [newVersionHeader, newNotes, '\n\n', data].join('')
 
-      fs.writeFile(file, newContent, 'utf8', (err) => {
-        if (err) {
-          return reject(err)
+      fs.writeFile(file, newContent, 'utf8', (writeErr) => {
+        if (writeErr) {
+          reject(err)
         }
 
         console.log(`Added new release notes to ${file} under ${newVersionHeader}`)

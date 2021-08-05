@@ -39,7 +39,7 @@ test('custom naming rules should be applied early for RUM', function (t) {
   agent.config.browser_monitoring.browser_key = 1234
   agent.config.browser_monitoring.js_agent_loader = 'function () {}'
 
-  var external = http.createServer(function cb_createServer(request, response) {
+  var external = http.createServer((request, response) => {
     t.equal(
       agent.getTransaction().getName(),
       'NormalizedUri/WORKING',
@@ -74,7 +74,7 @@ test('custom naming rules should be applied early for RUM', function (t) {
     }
   })
 
-  t.teardown(function cb_tearDown() {
+  t.teardown(function () {
     external.close()
     helper.unloadAgent(agent)
   })
@@ -121,7 +121,7 @@ test('custom web transactions should have rules applied for RUM', function (t) {
     t.end()
   })
 
-  t.teardown(function cb_tearDown() {
+  t.teardown(function () {
     helper.unloadAgent(agent)
   })
 })

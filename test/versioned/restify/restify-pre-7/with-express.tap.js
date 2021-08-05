@@ -20,7 +20,7 @@ tap.test("restify shouldn't affect express query parsing middleware", function (
   var app = express()
   var server = require('http').createServer(app)
 
-  app.get('/', function cb_get(req, res) {
+  app.get('/', (req, res) => {
     t.deepEqual(req.query, { test: 'success' }, 'express req.query property is correct')
     res.sendStatus(200)
   })
@@ -63,7 +63,7 @@ tap.test("restify shouldn't affect express query parsing middleware", function (
     })
   })
 
-  t.teardown(function cb_tearDown() {
+  t.teardown(() => {
     server.close()
     helper.unloadAgent(agent)
   })

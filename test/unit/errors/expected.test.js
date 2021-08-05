@@ -261,11 +261,11 @@ describe('Expected Errors', function () {
       helper.runInTransaction(agent, function (tx) {
         tx.statusCode = 500
         const apdexStats = tx.metrics.getOrCreateApdexMetric(NAMES.APDEX)
-        const error_collector = agent.config.error_collector
-        error_collector.expected_messages = {
+        const errorCollector = agent.config.error_collector
+        errorCollector.expected_messages = {
           Error: ['apdex is frustrating']
         }
-        error_collector.ignore_messages = {
+        errorCollector.ignore_messages = {
           ReferenceError: ['apdex is frustrating']
         }
 

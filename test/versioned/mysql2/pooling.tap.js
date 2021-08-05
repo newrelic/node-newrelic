@@ -29,7 +29,9 @@ tap.test('MySQL2 instrumentation with a connection pool', { timeout: 60000 }, fu
 
   var withRetry = {
     getClient: function (callback, counter) {
-      if (!counter) counter = 1
+      if (!counter) {
+        counter = 1
+      }
       counter++
 
       pool.acquire(function (err, client) {
@@ -55,16 +57,22 @@ tap.test('MySQL2 instrumentation with a connection pool', { timeout: 60000 }, fu
 
   var dal = {
     lookup: function (params, callback) {
-      if (!params.id) return callback(new Error('Must include ID to look up.'))
+      if (!params.id) {
+        return callback(new Error('Must include ID to look up.'))
+      }
 
-      withRetry.getClient(function cb_getClient(err, client) {
-        if (err) return callback(err)
+      withRetry.getClient((err, client) => {
+        if (err) {
+          return callback(err)
+        }
 
         var query = 'SELECT *' + '  FROM ' + DBNAME + '.' + DBTABLE + ' WHERE id = ?'
         client.query(query, [params.id], function (err, results) {
           withRetry.release(client) // always release back to the pool
 
-          if (err) return callback(err)
+          if (err) {
+            return callback(err)
+          }
 
           callback(null, results.length ? results[0] : results)
         })
@@ -76,7 +84,9 @@ tap.test('MySQL2 instrumentation with a connection pool', { timeout: 60000 }, fu
     t.notOk(agent.getTransaction(), 'no transaction should be in play yet')
     helper.runInTransaction(agent, function transactionInScope() {
       dal.lookup({ id: 1 }, function (error, row) {
-        if (error) t.fail(error)
+        if (error) {
+          t.fail(error)
+        }
 
         // need to inspect on next tick, otherwise calling transaction.end() here
         // in the callback (which is its own segment) would mark it as truncated

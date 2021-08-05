@@ -274,7 +274,8 @@ tap.test('TraceSegment', (t) => {
 
   t.test('with parameters parsed out by framework', (t) => {
     t.autoend()
-    let webChild, trace
+    let webChild
+    let trace
 
     t.beforeEach(() => {
       agent.config.attributes.enabled = true

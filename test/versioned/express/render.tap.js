@@ -45,7 +45,7 @@ function runTests(conf) {
     var agent = helper.instrumentMockedAgent(conf)
     var router = require('express').Router() // eslint-disable-line new-cap
 
-    t.teardown(function cb_tearDown() {
+    t.teardown(() => {
       helper.unloadAgent(agent)
     })
 
@@ -68,7 +68,7 @@ function runTests(conf) {
 
     t.plan(2)
 
-    t.teardown(function cb_tearDown() {
+    t.teardown(() => {
       helper.unloadAgent(agent)
     })
 
@@ -324,7 +324,7 @@ function runTests(conf) {
       var app = require('express')()
       var server = require('http').createServer(app)
 
-      t.teardown(function cb_tearDown() {
+      t.teardown(() => {
         server.close()
         helper.unloadAgent(agent)
       })
@@ -355,7 +355,7 @@ function runTests(conf) {
       var app = require('express')()
       var server = require('http').createServer(app)
 
-      t.teardown(function cb_tearDown() {
+      t.teardown(() => {
         server.close()
         helper.unloadAgent(agent)
       })
@@ -390,7 +390,7 @@ function runTests(conf) {
       var app = require('express')()
       var server = require('http').createServer(app)
 
-      t.teardown(function cb_tearDown() {
+      t.teardown(() => {
         server.close()
         helper.unloadAgent(agent)
       })
@@ -425,7 +425,7 @@ function runTests(conf) {
       var app = require('express')()
       var server = require('http').createServer(app)
 
-      t.teardown(function cb_tearDown() {
+      t.teardown(() => {
         server.close()
         helper.unloadAgent(agent)
       })
@@ -455,7 +455,7 @@ function runTests(conf) {
       var app = require('express')()
       var server = require('http').createServer(app)
 
-      t.teardown(function cb_tearDown() {
+      t.teardown(() => {
         server.close()
         helper.unloadAgent(agent)
       })
@@ -495,7 +495,7 @@ function runTests(conf) {
       var app = require('express')()
       var server = require('http').createServer(app)
 
-      t.teardown(function cb_tearDown() {
+      t.teardown(() => {
         server.close()
         helper.unloadAgent(agent)
       })
@@ -533,7 +533,7 @@ function runTests(conf) {
       var app = require('express')()
       var server = require('http').createServer(app)
 
-      t.teardown(function cb_tearDown() {
+      t.teardown(() => {
         server.close()
         helper.unloadAgent(agent)
       })
@@ -572,7 +572,7 @@ function runTests(conf) {
     var agent = helper.instrumentMockedAgent(conf)
     var app = require('express')()
     var server = require('http').createServer(app)
-    t.teardown(function cb_tearDown() {
+    t.teardown(() => {
       server.close()
       helper.unloadAgent(agent)
     })

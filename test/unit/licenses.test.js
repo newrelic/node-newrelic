@@ -29,18 +29,18 @@ test('should all be accounted for in LICENSES object', { timeout: 5000 }, (t) =>
     function (dep, cb) {
       a.waterfall(
         [
-          function (cb) {
-            fs.readFile(path.join(MODULE_DIR, dep, 'package.json'), { encoding: 'utf8' }, cb)
+          function (depCb) {
+            fs.readFile(path.join(MODULE_DIR, dep, 'package.json'), { encoding: 'utf8' }, depCb)
           },
-          function (depPackage, cb) {
+          function (depPackage, depsCb) {
             try {
               const parsedPackage = JSON.parse(depPackage)
               const license = parsedPackage.license || parsedPackage.licenses
               setImmediate(function () {
-                cb(null, [dep, license])
+                depsCb(null, [dep, license])
               })
             } catch (e) {
-              cb(e)
+              depsCb(e)
             }
           }
         ],

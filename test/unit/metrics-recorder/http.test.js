@@ -25,7 +25,9 @@ function makeSegment(options) {
 }
 
 function record(options) {
-  if (options.apdexT) options.transaction.metrics.apdexT = options.apdexT
+  if (options.apdexT) {
+    options.transaction.metrics.apdexT = options.apdexT
+  }
 
   var segment = makeSegment(options)
   var transaction = options.transaction

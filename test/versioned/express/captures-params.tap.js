@@ -68,7 +68,9 @@ tap.test('test attributes.enabled for express', function (t) {
       server.listen(port, TEST_HOST, function () {
         var url = TEST_URL + port + '/user/'
         helper.makeGetRequest(url, function (error, response, body) {
-          if (error) t.fail(error)
+          if (error) {
+            t.fail(error)
+          }
 
           t.ok(
             /application\/json/.test(response.headers['content-type']),
@@ -109,7 +111,9 @@ tap.test('test attributes.enabled for express', function (t) {
       server.listen(port, TEST_HOST, function () {
         var url = TEST_URL + port + '/user/5'
         helper.makeGetRequest(url, function (error, response, body) {
-          if (error) t.fail(error)
+          if (error) {
+            t.fail(error)
+          }
 
           t.ok(
             /application\/json/.test(response.headers['content-type']),
@@ -154,7 +158,9 @@ tap.test('test attributes.enabled for express', function (t) {
       server.listen(port, TEST_HOST, function () {
         var url = TEST_URL + port + '/user/?name=bob'
         helper.makeGetRequest(url, function (error, response, body) {
-          if (error) t.fail(error)
+          if (error) {
+            t.fail(error)
+          }
 
           t.ok(
             /application\/json/.test(response.headers['content-type']),
@@ -200,7 +206,9 @@ tap.test('test attributes.enabled for express', function (t) {
       server.listen(port, TEST_HOST, function () {
         var url = TEST_URL + port + '/user/5?name=bob'
         helper.makeGetRequest(url, function (error, response, body) {
-          if (error) t.fail(error)
+          if (error) {
+            t.fail(error)
+          }
 
           t.ok(
             /application\/json/.test(response.headers['content-type']),

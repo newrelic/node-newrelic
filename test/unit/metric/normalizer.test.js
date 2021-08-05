@@ -98,7 +98,7 @@ describe('MetricNormalizer', function () {
       ]
 
       expect(
-        normalizer.rules.map(function cb_map(r) {
+        normalizer.rules.map((r) => {
           return r.toJSON()
         })
       ).eql(reduced)
@@ -144,7 +144,7 @@ describe('MetricNormalizer', function () {
         replacement: '$1'
       }
       expect(
-        normalizer.rules.map(function cb_map(r) {
+        normalizer.rules.map((r) => {
           return r.toJSON()
         })
       ).eql([expected])

@@ -43,7 +43,9 @@ tap.test('Basic run through mysql functionality', { timeout: 30 * 1000 }, functi
 
   var withRetry = {
     getClient: function (callback, counter) {
-      if (!counter) counter = 1
+      if (!counter) {
+        counter = 1
+      }
       counter++
 
       pool.acquire(function (err, client) {
@@ -73,11 +75,15 @@ tap.test('Basic run through mysql functionality', { timeout: 30 * 1000 }, functi
       t.ok(agent.getTransaction(), 'we should be in a transaction')
 
       withRetry.getClient(function (err, client) {
-        if (err) return t.fail(err)
+        if (err) {
+          return t.fail(err)
+        }
 
         t.ok(agent.getTransaction(), 'generic-pool should not lose the transaction')
         client.query('SELECT 1', function (err) {
-          if (err) return t.fail(err)
+          if (err) {
+            return t.fail(err)
+          }
 
           t.ok(agent.getTransaction(), 'MySQL query should not lose the transaction')
           withRetry.release(client)
@@ -99,11 +105,15 @@ tap.test('Basic run through mysql functionality', { timeout: 30 * 1000 }, functi
       t.ok(agent.getTransaction(), 'we should be in a transaction')
 
       withRetry.getClient(function (err, client) {
-        if (err) return t.fail(err)
+        if (err) {
+          return t.fail(err)
+        }
 
         t.ok(agent.getTransaction(), 'generic-pool should not lose the transaction')
         client.query('SELECT 1', [], function (err) {
-          if (err) return t.fail(err)
+          if (err) {
+            return t.fail(err)
+          }
 
           t.ok(agent.getTransaction(), 'MySQL query should not lose the transaction')
           withRetry.release(client)
@@ -124,7 +134,9 @@ tap.test('Basic run through mysql functionality', { timeout: 30 * 1000 }, functi
       t.ok(agent.getTransaction(), 'we should be in a transaction')
 
       withRetry.getClient(function (err, client) {
-        if (err) return t.fail(err)
+        if (err) {
+          return t.fail(err)
+        }
 
         t.ok(agent.getTransaction(), 'generic-pool should not lose the transaction')
         var query = client.query('SELECT 1', [])
@@ -135,7 +147,9 @@ tap.test('Basic run through mysql functionality', { timeout: 30 * 1000 }, functi
         })
 
         query.on('error', function (err) {
-          if (err) return t.fail(err)
+          if (err) {
+            return t.fail(err)
+          }
         })
 
         query.on('end', function () {
@@ -158,7 +172,9 @@ tap.test('Basic run through mysql functionality', { timeout: 30 * 1000 }, functi
     helper.runInTransaction(agent, function transactionInScope() {
       t.ok(agent.getTransaction(), 'we should be in a transaction')
       withRetry.getClient(function (err, client) {
-        if (err) return t.fail(err)
+        if (err) {
+          return t.fail(err)
+        }
         client.query('create database if not exists test_db;', function (err) {
           t.error(err, 'should not fail to create database')
 
@@ -201,7 +217,9 @@ tap.test('Basic run through mysql functionality', { timeout: 30 * 1000 }, functi
       t.ok(agent.getTransaction(), 'we should be in a transaction')
 
       withRetry.getClient(function (err, client) {
-        if (err) return t.fail(err)
+        if (err) {
+          return t.fail(err)
+        }
 
         t.ok(agent.getTransaction(), 'generic-pool should not lose the transaction')
         var query = client.query('SELECT SLEEP(1)', [])
@@ -215,7 +233,9 @@ tap.test('Basic run through mysql functionality', { timeout: 30 * 1000 }, functi
         })
 
         query.on('error', function (err) {
-          if (err) return t.fail(err, 'streaming should not fail')
+          if (err) {
+            return t.fail(err, 'streaming should not fail')
+          }
         })
 
         query.on('end', function () {
@@ -254,7 +274,9 @@ tap.test('Basic run through mysql functionality', { timeout: 30 * 1000 }, functi
       t.ok(agent.getTransaction(), 'we should be in a transaction')
 
       withRetry.getClient(function (err, client) {
-        if (err) return t.fail(err)
+        if (err) {
+          return t.fail(err)
+        }
 
         t.ok(agent.getTransaction(), 'generic-pool should not lose the transaction')
         var query = client.query('SELECT 1', [])
@@ -264,7 +286,9 @@ tap.test('Basic run through mysql functionality', { timeout: 30 * 1000 }, functi
         })
 
         query.on('error', function errorCallback(err) {
-          if (err) return t.fail(err, 'streaming should not fail')
+          if (err) {
+            return t.fail(err, 'streaming should not fail')
+          }
         })
 
         query.on('end', function endCallback() {
@@ -292,11 +316,15 @@ tap.test('Basic run through mysql functionality', { timeout: 30 * 1000 }, functi
       t.ok(agent.getTransaction(), 'we should be in a transaction')
 
       withRetry.getClient(function (err, client) {
-        if (err) return t.fail(err)
+        if (err) {
+          return t.fail(err)
+        }
 
         t.ok(agent.getTransaction(), 'generic-pool should not lose the transaction')
         client.query({ sql: 'SELECT 1' }, function (err) {
-          if (err) return t.fail(err)
+          if (err) {
+            return t.fail(err)
+          }
 
           t.ok(agent.getTransaction(), 'MySQL query should not lose the transaction')
           withRetry.release(client)
@@ -317,11 +345,15 @@ tap.test('Basic run through mysql functionality', { timeout: 30 * 1000 }, functi
       t.ok(agent.getTransaction(), 'we should be in a transaction')
 
       withRetry.getClient(function (err, client) {
-        if (err) return t.fail(err)
+        if (err) {
+          return t.fail(err)
+        }
 
         t.ok(agent.getTransaction(), 'generic-pool should not lose the transaction')
         client.query({ sql: 'SELECT 1' }, [], function (err) {
-          if (err) return t.fail(err)
+          if (err) {
+            return t.fail(err)
+          }
 
           t.ok(agent.getTransaction(), 'MySQL query should not lose the transaction')
           withRetry.release(client)

@@ -100,7 +100,9 @@ test('built-in http module instrumentation', (t) => {
 
           var requested = new EventEmitter()
           requested.path = '/TEST'
-          if (options.path) requested.path = options.path
+          if (options.path) {
+            requested.path = options.path
+          }
 
           return requested
         }
@@ -947,11 +949,11 @@ test('built-in http module instrumentation', (t) => {
       })
 
       http = require('http')
-      let had_expect = 0
+      let hadExpect = 0
 
       const server = http.createServer(function (req, res) {
         if (req.headers.expect) {
-          had_expect++
+          hadExpect++
           t.equal(req.headers.expect, '100-continue')
         }
         t.equal(req.headers.a, '1')
@@ -962,12 +964,12 @@ test('built-in http module instrumentation', (t) => {
       })
 
       server.on('listening', function () {
-        helper.runInTransaction(agent, obj_request)
+        helper.runInTransaction(agent, objRequest)
       })
 
       helper.startServerWithRandomPortRetry(server)
 
-      function obj_request() {
+      function objRequest() {
         addSegment()
 
         const port = server.address().port
@@ -975,13 +977,13 @@ test('built-in http module instrumentation', (t) => {
           { host: 'localhost', port: port, headers: { a: 1, b: 2 } },
           function (res) {
             res.resume()
-            array_request()
+            arrayRequest()
           }
         )
         req.end()
       }
 
-      function array_request() {
+      function arrayRequest() {
         addSegment()
 
         const port = server.address().port
@@ -996,13 +998,13 @@ test('built-in http module instrumentation', (t) => {
           },
           function (res) {
             res.resume()
-            expect_request()
+            expectRequest()
           }
         )
         req.end()
       }
 
-      function expect_request() {
+      function expectRequest() {
         addSegment()
 
         const port = server.address().port
@@ -1014,14 +1016,14 @@ test('built-in http module instrumentation', (t) => {
           },
           function (res) {
             res.resume()
-            end_test()
+            endTest()
           }
         )
         req.end()
       }
 
-      function end_test() {
-        t.equal(had_expect, 1)
+      function endTest() {
+        t.equal(hadExpect, 1)
         agent.getTransaction().end()
         helper.unloadAgent(agent)
         server.close(t.end())
@@ -1061,7 +1063,7 @@ test('http.createServer should trace errors in top-level handlers', (t) => {
     server.close(t.end)
   })
 
-  server = http.createServer(function cb_createServer() {
+  server = http.createServer(function createServerCb() {
     throw new Error('whoops!')
   })
 
@@ -1098,7 +1100,7 @@ test('http.request should trace errors in listeners', (t) => {
     })
   })
 
-  server = http.createServer(function cb_createServer(request, response) {
+  server = http.createServer(function createServerCb(request, response) {
     response.writeHead(200, { 'Content-Type': 'text/plain' })
     response.end()
   })

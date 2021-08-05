@@ -7,7 +7,6 @@
 module.exports = {
   rules: {
     'no-process-exit': 'off',
-    'no-console': 'off',
-    'no-shadow': ['warn', { allow: ['cb', 'error', 'err'] }]
+    'no-console': 'off'
   }
 }

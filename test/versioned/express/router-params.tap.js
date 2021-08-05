@@ -32,8 +32,8 @@ test('Express router introspection', function (t) {
   })
   app.use('/a/:param1', router)
 
-  t.teardown(function cb_tearDown() {
-    server.close(function cb_close() {
+  t.teardown(() => {
+    server.close(() => {
       helper.unloadAgent(agent)
     })
   })

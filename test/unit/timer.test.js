@@ -122,7 +122,9 @@ describe('Timer', function () {
   })
 
   describe('endsAfter indicates whether the timer ended after another timer', () => {
-    var start, first, second
+    var start
+    var first
+    var second
 
     beforeEach(function () {
       start = Date.now()

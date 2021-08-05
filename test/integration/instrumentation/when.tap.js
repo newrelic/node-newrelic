@@ -163,13 +163,13 @@ test('when debug API', function (t) {
   t.test('should not break onFatalRejection', function (t) {
     helper.temporarilyRemoveListeners(t, process, 'unhandledRejection')
 
+    const error = { val: 'test' }
     when.Promise.onFatalRejection = function testFatal(e) {
       t.equal(e.value, error)
       t.end()
     }
 
-    var error = { val: 'test' }
-    var p = when.reject(error)
+    const p = when.reject(error)
 
     p.done()
   })
@@ -190,6 +190,7 @@ test('when debug API', function (t) {
       process.emit = asyncHookDomainEmit
     })
 
+    const error = { val: 'test' }
     when.Promise.onPotentiallyUnhandledRejectionHandled = function testOPURH(e) {
       t.equal(e.value, error, 'should have passed error through')
       t.end()
@@ -199,8 +200,7 @@ test('when debug API', function (t) {
       t.equal(e.value, error, 'should pass error though')
     }
 
-    var error = { val: 'test' }
-    var p = when.reject(error)
+    const p = when.reject(error)
 
     setTimeout(function () {
       p.catch(function () {})
@@ -623,8 +623,11 @@ test('Promise#with', function (t) {
 
 test('all', function (t) {
   t.autoend()
-  var agent, when, Promise
-  var p1, p2
+  var agent
+  var when
+  var Promise
+  var p1
+  var p2
 
   t.beforeEach(() => {
     agent = helper.instrumentMockedAgent({ feature_flag: { promise_segments: false } })
@@ -664,7 +667,9 @@ test('all', function (t) {
 
 test('any', function (t) {
   t.autoend()
-  var agent, when, Promise
+  var agent
+  var when
+  var Promise
 
   t.beforeEach(() => {
     agent = helper.instrumentMockedAgent({ feature_flag: { promise_segments: false } })
@@ -699,7 +704,9 @@ test('any', function (t) {
 
 test('some', function (t) {
   t.autoend()
-  var agent, when, Promise
+  var agent
+  var when
+  var Promise
 
   t.beforeEach(() => {
     agent = helper.instrumentMockedAgent({ feature_flag: { promise_segments: false } })
@@ -738,7 +745,9 @@ test('some', function (t) {
 
 test('map', function (t) {
   t.autoend()
-  var agent, when, Promise
+  var agent
+  var when
+  var Promise
 
   t.beforeEach(() => {
     agent = helper.instrumentMockedAgent({ feature_flag: { promise_segments: false } })
@@ -783,7 +792,9 @@ test('map', function (t) {
 
 test('reduce', function (t) {
   t.autoend()
-  var agent, when, Promise
+  var agent
+  var when
+  var Promise
 
   t.beforeEach(() => {
     agent = helper.instrumentMockedAgent({ feature_flag: { promise_segments: false } })
@@ -836,7 +847,9 @@ test('reduce', function (t) {
 
 test('filter', function (t) {
   t.autoend()
-  var agent, when, Promise
+  var agent
+  var when
+  var Promise
 
   t.beforeEach(() => {
     agent = helper.instrumentMockedAgent({ feature_flag: { promise_segments: false } })

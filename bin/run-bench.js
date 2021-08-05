@@ -81,14 +81,14 @@ function run() {
     [
       function resolveGlobs(cb) {
         if (!globs.length) {
-          return cb()
+          cb()
         }
 
         a.map(globs, glob, function afterGlobbing(err, resolved) {
           if (err) {
             console.error('Failed to glob:', err)
             process.exitCode = -1
-            return cb(err)
+            cb(err)
           }
           resolved.forEach(function mergeResolved(files) {
             files.forEach(function mergeFile(file) {
@@ -104,7 +104,7 @@ function run() {
         tests.sort()
         a.eachSeries(
           tests,
-          function spawnEachFile(file, cb) {
+          function spawnEachFile(file, spawnCb) {
             var test = path.relative(benchpath, file)
 
             var args = [file]
@@ -114,19 +114,19 @@ function run() {
             var child = cp.spawn('node', args, { cwd: cwd, stdio: 'pipe' })
             printer.addTest(test, child)
 
-            child.on('error', cb)
+            child.on('error', spawnCb)
             child.on('exit', function onChildExit(code) {
               if (code) {
-                return cb(new Error('Benchmark exited with code ' + code))
+                spawnCb(new Error('Benchmark exited with code ' + code))
               }
-              cb()
+              spawnCb()
             })
           },
           function afterSpawnEachFile(err) {
             if (err) {
               console.error('Spawning failed:', err)
               process.exitCode = -2
-              return cb(err)
+              cb(err)
             }
             cb()
           }

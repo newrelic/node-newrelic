@@ -932,8 +932,10 @@ module.exports = function runTests(flags) {
 
   tap.test('should throw when called without executor', function testNoExecutor(t) {
     var OriginalPromise = Promise
-    var unwrappedError, wrappedError
-    var wrapped, unwrapped
+    var unwrappedError
+    var wrappedError
+    var wrapped
+    var unwrapped
     helper.loadTestAgent(t, { feature_flag: flags })
 
     try {

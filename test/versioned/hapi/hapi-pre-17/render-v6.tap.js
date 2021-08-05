@@ -111,7 +111,9 @@ test('agent instrumentation of Hapi', function (t) {
     server.start(function () {
       port = server.info.port
       request('http://localhost:' + port + '/test', function (error, response, body) {
-        if (error) t.fail(error)
+        if (error) {
+          t.fail(error)
+        }
 
         t.equal(response.statusCode, 200, 'response code should be 200')
         t.equal(body, fixtures.htmlBody, 'template should still render fine')
@@ -159,7 +161,9 @@ test('agent instrumentation of Hapi', function (t) {
     server.start(function () {
       port = server.info.port
       request('http://localhost:' + port + '/test', function (error, response, body) {
-        if (error) t.fail(error)
+        if (error) {
+          t.fail(error)
+        }
 
         t.equal(response.statusCode, 200, 'response code should be 200')
         t.equal(body, fixtures.htmlBody, 'template should still render fine')
@@ -187,7 +191,9 @@ test('agent instrumentation of Hapi', function (t) {
     server.start(function () {
       port = server.info.port
       request.get('http://localhost:' + port + '/test', function (error, response, body) {
-        if (error) t.fail(error)
+        if (error) {
+          t.fail(error)
+        }
 
         t.ok(response, 'got a response from Express')
         t.ok(body, 'got back a body')

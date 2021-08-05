@@ -316,10 +316,10 @@ describe('TraceContext', function () {
     })
 
     it('should create valid headers', () => {
-      const trusted_key = '19000'
+      const trustedKey = '19000'
       const accountId = '190'
       const appId = '109354'
-      agent.config.trusted_account_key = trusted_key
+      agent.config.trusted_account_key = trustedKey
       agent.config.account_id = accountId
       agent.config.primary_application_id = appId
       agent.transactionSampler.shouldSample = () => false
@@ -331,7 +331,7 @@ describe('TraceContext', function () {
         const headers = getTraceContextHeaders(txn)
         expect(txn.traceContext._validateAndParseTraceParentHeader(headers.traceparent)).to.be.ok
         expect(txn.traceContext._validateAndParseTraceStateHeader(headers.tracestate)).to.be.ok
-        expect(headers.tracestate.split('=')[0]).to.equal(`${trusted_key}@nr`)
+        expect(headers.tracestate.split('=')[0]).to.equal(`${trustedKey}@nr`)
         expect(headers.tracestate.split('-')[6]).to.equal('0')
         expect(headers.tracestate.split('-')[3]).to.equal(appId)
         expect(headers.tracestate.split('-')[2]).to.equal(accountId)
@@ -341,16 +341,16 @@ describe('TraceContext', function () {
     })
 
     it('should accept first valid nr entry when duplicate entries exist', () => {
-      const acct_key = '190'
-      agent.config.trusted_account_key = acct_key
+      const acctKey = '190'
+      agent.config.trusted_account_key = acctKey
       const duplicateAcctTraceState =
         /* eslint-disable-next-line max-len */
         '42@bar=foo,190@nr=0-0-709288-8599547-f85f42fd82a4cf1d-164d3b4b0d09cb05-1-0.789-1563574856827,190@nr=bar'
       const traceparent = '00-00015f9f95352ad550284c27c5d3084c-00f067aa0ba902b7-00'
       const appId = '109354'
 
-      agent.config.trusted_account_key = acct_key
-      agent.config.account_id = acct_key
+      agent.config.trusted_account_key = acctKey
+      agent.config.account_id = acctKey
       agent.config.primary_application_id = appId
       agent.transactionSampler.shouldSample = () => false
 
@@ -364,7 +364,7 @@ describe('TraceContext', function () {
 
         expect(valid.entryFound).to.be.true
         expect(valid.entryValid).to.be.true
-        expect(valid.vendors.match(`${acct_key}@nr`)).to.not.exist
+        expect(valid.vendors.match(`${acctKey}@nr`)).to.not.exist
 
         const nrMatch = traceContextPayload.tracestate.match(/190@nr/g) || []
         expect(nrMatch.length, 'has only one nr entry').to.equal(1)
@@ -377,8 +377,8 @@ describe('TraceContext', function () {
     })
 
     it('should not accept first nr entry when duplicate entries exist and its invalid', () => {
-      const acct_key = '190'
-      agent.config.trusted_account_key = acct_key
+      const acctKey = '190'
+      agent.config.trusted_account_key = acctKey
       const duplicateAcctTraceState =
         /* eslint-disable-next-line max-len */
         '190@nr=bar,42@bar=foo,190@nr=0-0-709288-8599547-f85f42fd82a4cf1d-164d3b4b0d09cb05-1-0.789-1563574856827'
@@ -386,7 +386,7 @@ describe('TraceContext', function () {
 
       expect(valid.entryFound).to.be.true
       expect(valid.entryValid).to.be.false
-      expect(valid.vendors.match(`${acct_key}@nr`)).to.not.exist
+      expect(valid.vendors.match(`${acctKey}@nr`)).to.not.exist
     })
 
     it('should propogate headers', () => {

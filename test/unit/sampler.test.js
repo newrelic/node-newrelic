@@ -248,7 +248,9 @@ describe('environmental sampler', function () {
        * sure we're not getting back undefined or null here.
        */
       expect(stats.total).a('number')
-      if (process.hrtime) expect(stats.total).above(0)
+      if (process.hrtime) {
+        expect(stats.total).above(0)
+      }
 
       done()
     }, 0)

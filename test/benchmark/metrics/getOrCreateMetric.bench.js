@@ -9,13 +9,13 @@ var benchmark = require('../../lib/benchmark')
 var Metrics = require('../../../lib/metrics')
 var shared = require('./shared')
 
+var metrics = new Metrics(1, {}, {})
 var suite = benchmark.createBenchmark({
   name: 'metrics.getOrCreateMetric',
   after: function () {
     metrics = new Metrics(1, {}, {})
   }
 })
-var metrics = new Metrics(1, {}, {})
 
 preOptMetrics()
 

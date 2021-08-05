@@ -375,7 +375,9 @@ tap.test('Serverless mode harvest', (t) => {
 function findMetric(metrics, name) {
   for (var i = 0; i < metrics.length; i++) {
     var metric = metrics[i]
-    if (metric[0].name === name) return metric
+    if (metric[0].name === name) {
+      return metric
+    }
   }
 }
 

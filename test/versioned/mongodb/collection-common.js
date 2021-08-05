@@ -260,7 +260,9 @@ function populate(db, collection) {
 
     db.collection('testCollection2').drop(function () {
       collection.deleteMany({}, function (err) {
-        if (err) reject(err)
+        if (err) {
+          reject(err)
+        }
         collection.insert(items, resolve)
       })
     })

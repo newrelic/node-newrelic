@@ -52,7 +52,7 @@ function checkMetric(names, agent, scope) {
   let res = true
   const agentMetrics = getMetrics(agent)
   const metrics = scope ? agentMetrics.scoped[scope] : agentMetrics.unscoped
-  names.forEach(function cb_forEach(name) {
+  names.forEach((name) => {
     res = res && metrics[NAMES.FS.PREFIX + name]
   })
   return res

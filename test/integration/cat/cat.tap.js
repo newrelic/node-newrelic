@@ -76,23 +76,6 @@ test('cross application tracing full integration', function (t) {
     res.end()
   })
 
-  function runTest() {
-    http.get(generateUrl(START_PORT, 'start'), function (res) {
-      res.resume()
-      start.close()
-      middle.close()
-      end.close()
-    })
-    var txCount = 0
-
-    agent.on('transactionFinished', function (trans) {
-      var event = agent.transactionEventAggregator.getEvents().filter(function (evt) {
-        return evt[0]['nr.guid'] === trans.id
-      })[0]
-      transInspector[txCount](trans, event)
-      txCount += 1
-    })
-  }
   var transInspector = [
     function endTest(trans, event) {
       // Check the unscoped metrics
@@ -277,6 +260,23 @@ test('cross application tracing full integration', function (t) {
       t.end()
     }
   ]
+  function runTest() {
+    http.get(generateUrl(START_PORT, 'start'), function (res) {
+      res.resume()
+      start.close()
+      middle.close()
+      end.close()
+    })
+    var txCount = 0
+
+    agent.on('transactionFinished', function (trans) {
+      var event = agent.transactionEventAggregator.getEvents().filter(function (evt) {
+        return evt[0]['nr.guid'] === trans.id
+      })[0]
+      transInspector[txCount](trans, event)
+      txCount += 1
+    })
+  }
 })
 
 function generateServer(http, api, port, started, responseHandler) {

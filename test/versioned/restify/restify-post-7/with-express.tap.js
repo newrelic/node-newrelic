@@ -22,7 +22,7 @@ tap.test("restify shouldn't affect express query parsing middleware", function (
   const app = express()
   const server = require('http').createServer(app)
 
-  app.get('/', function cb_get(req, res) {
+  app.get('/', (req, res) => {
     // Unforunately, restify has its own issues with Express right now
     // and by modify the prototype ends up chaning query from a property
     // to a function. So we'll double-check the value but express is already borked.
@@ -77,7 +77,7 @@ tap.test("restify shouldn't affect express query parsing middleware", function (
     })
   })
 
-  t.teardown(function cb_tearDown() {
+  t.teardown(() => {
     server.close()
     helper.unloadAgent(agent)
   })

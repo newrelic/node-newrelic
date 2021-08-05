@@ -66,7 +66,7 @@ function loadCerts(root, callback) {
       certificates.push(certificate)
     }
 
-    callback(null, certificates)
+    return callback(null, certificates)
   })
 }
 

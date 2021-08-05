@@ -110,7 +110,9 @@ test('Cassandra instrumentation', { timeout: 5000 }, function testInstrumentatio
           var selQuery = 'SELECT * FROM ' + KS + '.' + FAM + ' WHERE '
           selQuery += PK + ' = 111;'
           client.execute(selQuery, function (error, value) {
-            if (error) return t.fail(error)
+            if (error) {
+              return t.fail(error)
+            }
 
             t.ok(agent.getTransaction(), 'transaction should still still be visible')
             t.equals(value.rows[0][COL], colValArr[0], 'Cassandra client should still work')

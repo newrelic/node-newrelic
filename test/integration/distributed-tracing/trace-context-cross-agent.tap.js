@@ -25,7 +25,7 @@ const camelCaseToSnakeCase = function (object) {
 
 const getDescendantValue = function (object, descendants) {
   const arrayDescendants = descendants.split('.')
-  while (arrayDescendants.length && (object = object[arrayDescendants.shift()]));
+  while (arrayDescendants.length && (object = object[arrayDescendants.shift()])) {}
   return object
 }
 
@@ -391,9 +391,9 @@ const runTestCase = function (testCase, parentTest) {
       }
 
       for (const [key] of testCase.inbound_headers.entries()) {
-        const inbound_header = testCase.inbound_headers[key]
+        const inboundHeader = testCase.inbound_headers[key]
 
-        transaction.acceptDistributedTraceHeaders(testCase.transport_type, inbound_header)
+        transaction.acceptDistributedTraceHeaders(testCase.transport_type, inboundHeader)
 
         // Generate outbound payloads
         const outboundTraceContextPayloads = testCase.outbound_payloads || []
@@ -421,7 +421,9 @@ const runTestCase = function (testCase, parentTest) {
 
           // _parseIntrinsics returns null for absent items, remove them
           Object.keys(intrinsics).forEach((k) => {
-            if (intrinsics[k] === null) delete intrinsics[k]
+            if (intrinsics[k] === null) {
+              delete intrinsics[k]
+            }
           })
 
           // Get a list of vendor strings from the tracestate after removing the

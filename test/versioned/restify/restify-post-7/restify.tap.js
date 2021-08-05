@@ -51,7 +51,9 @@ tap.test('Restify', (t) => {
 
       var url = 'http://localhost:' + port + '/hello/friend'
       request.get(url, function (error, response, body) {
-        if (error) return t.fail(error)
+        if (error) {
+          return t.fail(error)
+        }
         t.notOk(agent.getTransaction(), 'transaction should not leak into external request')
         t.equals(body, '"hello friend"', 'should return expected data')
       })

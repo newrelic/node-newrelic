@@ -9,7 +9,9 @@ module.exports = verifySegments
 
 function verifySegments(t, agent, name, extras, done) {
   var root = agent.getTransaction().trace.root
-  if (!extras) extras = []
+  if (!extras) {
+    extras = []
+  }
   t.equal(root.children.length, 1, 'should have a single child')
   var child = root.children[0]
   t.equal(child.name, name, 'child segment should have correct name')

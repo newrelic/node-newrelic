@@ -481,7 +481,9 @@ API.prototype.addNamingRule = function addNamingRule(pattern, name) {
   var metric = this.agent.metrics.getOrCreateMetric(NAMES.SUPPORTABILITY.API + '/addNamingRule')
   metric.incrementCallCount()
 
-  if (!name) return logger.error('Simple naming rules require a replacement name.')
+  if (!name) {
+    return logger.error('Simple naming rules require a replacement name.')
+  }
 
   this.agent.userNormalizer.addSimple(pattern, '/' + name)
 }
@@ -503,7 +505,9 @@ API.prototype.addIgnoringRule = function addIgnoringRule(pattern) {
   var metric = this.agent.metrics.getOrCreateMetric(NAMES.SUPPORTABILITY.API + '/addIgnoringRule')
   metric.incrementCallCount()
 
-  if (!pattern) return logger.error('Must include a URL pattern to ignore.')
+  if (!pattern) {
+    return logger.error('Must include a URL pattern to ignore.')
+  }
 
   this.agent.userNormalizer.addSimple(pattern, null)
 }
@@ -551,17 +555,19 @@ API.prototype.getBrowserTimingHeader = function getBrowserTimingHeader(options) 
     return '<!-- NREUM: (' + num + ') -->'
   }
 
-  var browser_monitoring = config.browser_monitoring
+  var browserMonitoring = config.browser_monitoring
 
   // config.browser_monitoring should always exist, but we don't want the agent
   // to bail here if something goes wrong
-  if (!browser_monitoring) return _gracefail(2)
+  if (!browserMonitoring) {
+    return _gracefail(2)
+  }
 
   /* Can control header generation with configuration this setting is only
    * available in the newrelic.js config file, it is not ever set by the
    * server.
    */
-  if (!browser_monitoring.enable) {
+  if (!browserMonitoring.enable) {
     // It has been disabled by the user; no need to warn them about their own
     // settings so fail quietly and gracefully.
     return _gracefail(0, true)
@@ -570,7 +576,9 @@ API.prototype.getBrowserTimingHeader = function getBrowserTimingHeader(options) 
   var trans = this.agent.getTransaction()
 
   // bail gracefully outside a transaction
-  if (!trans || trans.isIgnored()) return _gracefail(1)
+  if (!trans || trans.isIgnored()) {
+    return _gracefail(1)
+  }
 
   var name = trans.getFullName()
 
@@ -578,7 +586,9 @@ API.prototype.getBrowserTimingHeader = function getBrowserTimingHeader(options) 
    * avoid people going crazy, trying to figure out why browser monitoring is
    * not working when they're missing a transaction name.
    */
-  if (!name) return _gracefail(3)
+  if (!name) {
+    return _gracefail(3)
+  }
 
   var time = trans.timer.getDurationInMillis()
 
@@ -594,19 +604,25 @@ API.prototype.getBrowserTimingHeader = function getBrowserTimingHeader(options) 
    * newrelic.js, there will be no application_id set.  We bail instead of
    * outputting null/undefined configuration values.
    */
-  if (!appid) return _gracefail(4)
+  if (!appid) {
+    return _gracefail(4)
+  }
 
   /* If there is no browser_key, the server has likely decided to disable
    * browser monitoring.
    */
-  var licenseKey = browser_monitoring.browser_key
-  if (!licenseKey) return _gracefail(5)
+  var licenseKey = browserMonitoring.browser_key
+  if (!licenseKey) {
+    return _gracefail(5)
+  }
 
   /* If there is no agent_loader script, there is no point
    * in setting the rum data
    */
-  var js_agent_loader = browser_monitoring.js_agent_loader
-  if (!js_agent_loader) return _gracefail(6)
+  var jsAgentLoader = browserMonitoring.js_agent_loader
+  if (!jsAgentLoader) {
+    return _gracefail(6)
+  }
 
   /* If rum is enabled, but then later disabled on the server,
    * this is the only parameter that gets updated.
@@ -615,14 +631,16 @@ API.prototype.getBrowserTimingHeader = function getBrowserTimingHeader(options) 
    * the lifetime of an application, and it should be picked up
    * on the next ForceRestart by the collector.
    */
-  var loader = browser_monitoring.loader
-  if (loader === 'none') return _gracefail(7)
+  var loader = browserMonitoring.loader
+  if (loader === 'none') {
+    return _gracefail(7)
+  }
 
   // This hash gets written directly into the browser.
-  var rum_hash = {
-    agent: browser_monitoring.js_agent_file,
-    beacon: browser_monitoring.beacon,
-    errorBeacon: browser_monitoring.error_beacon,
+  var rumHash = {
+    agent: browserMonitoring.js_agent_file,
+    beacon: browserMonitoring.beacon,
+    errorBeacon: browserMonitoring.error_beacon,
     licenseKey: licenseKey,
     applicationID: appid,
     applicationTime: time,
@@ -647,18 +665,18 @@ API.prototype.getBrowserTimingHeader = function getBrowserTimingHeader(options) 
   }
 
   if (!properties.isEmpty(attrs)) {
-    rum_hash.atts = hashes.obfuscateNameUsingKey(JSON.stringify(attrs), key)
+    rumHash.atts = hashes.obfuscateNameUsingKey(JSON.stringify(attrs), key)
   }
 
   // if debugging, do pretty format of JSON
   var tabs = config.browser_monitoring.debug ? 2 : 0
-  var json = JSON.stringify(rum_hash, null, tabs)
+  var json = JSON.stringify(rumHash, null, tabs)
 
   // set nonce attribute if passed in options
   var nonce = options && options.nonce ? 'nonce="' + options.nonce + '"' : ''
 
   // the complete header to be written to the browser
-  var out = util.format(RUM_STUB, nonce, json, js_agent_loader)
+  var out = util.format(RUM_STUB, nonce, json, jsAgentLoader)
 
   logger.trace('generating RUM header', out)
 

@@ -33,7 +33,7 @@ async.map(
         return cb(parseError)
       }
 
-      cb(null, parsed)
+      return cb(null, parsed)
     })
   },
   (err, resultFiles) => {

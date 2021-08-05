@@ -333,7 +333,7 @@ tap.test('when starting', (t) => {
       t.end()
     }
 
-    agent.start(function cb_start() {})
+    agent.start(function cbStart() {})
   })
 
   t.test('should not error when disabled via configuration', (t) => {
@@ -354,7 +354,7 @@ tap.test('when starting', (t) => {
       t.end()
     }
 
-    agent.start(function cb_start() {
+    agent.start(function cbStart() {
       t.equal(agent._state, 'stopped')
       t.end()
     })
@@ -367,7 +367,7 @@ tap.test('when starting', (t) => {
       t.end()
     }
 
-    agent.start(function cb_start(error) {
+    agent.start(function cbStart(error) {
       t.ok(error)
 
       t.end()
@@ -382,7 +382,7 @@ tap.test('when starting', (t) => {
       t.end()
     }
 
-    agent.start(function cb_start(error) {
+    agent.start(function cbStart(error) {
       t.equal(error.message, 'Not starting without license key!')
 
       t.end()
@@ -417,7 +417,7 @@ tap.test('when starting', (t) => {
       callback(passed)
     }
 
-    agent.start(function cb_start(error) {
+    agent.start(function cbStart(error) {
       t.equal(error, passed)
 
       t.end()
@@ -438,7 +438,7 @@ tap.test('when starting', (t) => {
 
     agent.metrics.measureMilliseconds('Test/Bogus', null, 1)
 
-    agent.start(function cb_start(error) {
+    agent.start(function cbStart(error) {
       t.error(error)
       t.ok(metrics.isDone())
 
@@ -546,7 +546,7 @@ tap.test('initial harvest', (t) => {
   t.test('should not blow up when harvest cycle errors', (t) => {
     const metrics = nock(URL).post(helper.generateCollectorPath('metric_data', RUN_ID)).reply(503)
 
-    agent.start(function cb_start() {
+    agent.start(function cbStart() {
       setTimeout(function () {
         global.setInterval = origInterval
 
@@ -602,7 +602,7 @@ tap.test('when stopping', (t) => {
   })
 
   t.test('should not shut down connection if not connected', (t) => {
-    agent.stop(function cb_stop(error) {
+    agent.stop(function cbStop(error) {
       t.error(error)
       t.end()
     })
@@ -640,7 +640,7 @@ tap.test('when stopping after connected', (t) => {
       .post(helper.generateCollectorPath('shutdown', RUN_ID))
       .reply(200, { return_value: null })
 
-    agent.stop(function cb_stop(error) {
+    agent.stop(function cbStop(error) {
       t.error(error)
       t.notOk(agent.config.run_id)
 
@@ -745,7 +745,7 @@ tap.test('when connected', (t) => {
       .post(helper.generateCollectorPath('shutdown', 404))
       .reply(200, { return_value: null })
 
-    agent.start(function cb_start(error) {
+    agent.start(function cbStart(error) {
       t.error(error)
       t.ok(redirect.isDone())
       t.ok(handshake.isDone())
@@ -755,7 +755,7 @@ tap.test('when connected', (t) => {
       t.equal(agent.metrics._apdexT, 0.742)
       t.same(agent.urlNormalizer.rules, [])
 
-      agent.stop(function cb_stop() {
+      agent.stop(function cbStop() {
         t.ok(settings.isDone())
         t.ok(metrics.isDone())
         t.ok(shutdown.isDone())

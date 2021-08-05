@@ -15,7 +15,9 @@ var path = require('path')
 test('pricing proc_cpuinfo', function (t) {
   var testDir = path.resolve(__dirname, '../../lib/cross_agent_tests/proc_cpuinfo')
   glob(path.join(testDir, '*.txt'), function globCallback(err, data) {
-    if (err) throw err
+    if (err) {
+      throw err
+    }
     t.ok(data.length > 0, 'should have tests to run')
     a.each(
       data,
@@ -31,7 +33,9 @@ test('pricing proc_cpuinfo', function (t) {
 
   function runFile(name, cb) {
     fs.readFile(name, function getFile(err, data) {
-      if (err) throw err
+      if (err) {
+        throw err
+      }
       testFile(name, data.toString())
       cb()
     })

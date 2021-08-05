@@ -14,7 +14,8 @@ const params = require('../../lib/params')
 const DB_INDEX = 4
 
 tap.test('ioredis instrumentation', function (t) {
-  var agent, redisClient
+  var agent
+  var redisClient
 
   t.beforeEach(function () {
     return setup(t).then((result) => {

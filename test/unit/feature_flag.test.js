@@ -40,7 +40,9 @@ var used = [
 ]
 
 describe('feature flags', function () {
-  var prerelease, unreleased, released
+  var prerelease
+  var unreleased
+  var released
 
   before(function () {
     prerelease = Object.keys(flags.prerelease)
@@ -79,34 +81,40 @@ describe('feature flags', function () {
   })
   it('should account for all *used* keys', function () {
     used.forEach(function (key) {
-      if (released.indexOf(key) >= 0) return
-      if (unreleased.indexOf(key) >= 0) return
-      if (prerelease.indexOf(key) >= 0) return
+      if (released.indexOf(key) >= 0) {
+        return
+      }
+      if (unreleased.indexOf(key) >= 0) {
+        return
+      }
+      if (prerelease.indexOf(key) >= 0) {
+        return
+      }
 
       throw new Error('Flag not accounted for')
     })
   })
   it('should warn if released flags are still in config', function () {
+    let called = false
     Config.prototype.setLogger({
       warn: function () {
         called = true
       },
       warnOnce: () => {}
     })
-    var called = false
     var config = new Config()
     config.feature_flag.released = true
     config.validateFlags()
     called.should.equal(true)
   })
   it('should warn if unreleased flags are still in config', function () {
+    let called = false
     Config.prototype.setLogger({
       warn: function () {
         called = true
       },
       warnOnce: () => {}
     })
-    var called = false
     var config = new Config()
     config.feature_flag.unreleased = true
     config.validateFlags()

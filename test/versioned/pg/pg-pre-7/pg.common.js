@@ -142,7 +142,9 @@ module.exports = function runTests(name, clientFactory) {
     t.ok(setSegment, 'trace segment for insert should exist')
     t.ok(getSegment, 'trace segment for select should exist')
 
-    if (!getSegment) return
+    if (!getSegment) {
+      return
+    }
 
     t.equals(
       getSegment.name,

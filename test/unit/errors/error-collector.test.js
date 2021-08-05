@@ -27,7 +27,9 @@ const DESTS = require('../../../lib/config/attribute-filter').DESTINATIONS
 const NAMES = require('../../../lib/metrics/names')
 
 function createTransaction(agent, code, isWeb) {
-  if (typeof isWeb === 'undefined') isWeb = true
+  if (typeof isWeb === 'undefined') {
+    isWeb = true
+  }
 
   var transaction = new Transaction(agent)
   if (isWeb) {
@@ -194,7 +196,8 @@ describe('Errors', function () {
   describe('display name', function () {
     var PARAMS = 4
 
-    var trans, error
+    var trans
+    var error
 
     it('should be in agent attributes if set by user', function () {
       agent.config.process_host.display_name = 'test-value'
@@ -1417,7 +1420,9 @@ describe('Errors', function () {
     })
 
     it('not spill over reservoir size', function () {
-      if (agent) helper.unloadAgent(agent)
+      if (agent) {
+        helper.unloadAgent(agent)
+      }
       agent = helper.loadMockedAgent({ error_collector: { max_event_samples_stored: 10 } })
 
       for (var i = 0; i < 20; i++) {
@@ -1645,7 +1650,7 @@ describe('Errors', function () {
           helper.unloadAgent(agent)
           agent = helper.instrumentMockedAgent()
 
-          var server = http.createServer(function cb_createServer(req, res) {
+          var server = http.createServer(function createServerCb(req, res) {
             expect(agent.getTransaction()).to.exist
             // Return HTTP error, so that when the transaction ends, an error
             // event is generated.
@@ -1855,7 +1860,7 @@ test('When using the async listener', (t) => {
         return handledErrorCallback()
       })
 
-      const disruptor = agent.tracer.transactionProxy(function cb_transactionProxy() {
+      const disruptor = agent.tracer.transactionProxy(function transactionProxyCb() {
         transaction = agent.getTransaction()
         active = process.domain
 

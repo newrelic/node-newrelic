@@ -28,16 +28,16 @@ function setup(mysql) {
           'GRANT ALL ON *.* TO `test_user`',
           'CREATE DATABASE IF NOT EXISTS `agent_integration`'
         ],
-        function (sql, cb) {
+        function (sql, setupCb) {
           client.query(sql, function (err) {
             // Travis uses MySQL 5.4 which does not support `IF NOT EXISTS` for
             // `CREATE USER`. This means we will likely be creating the test user
             // in a database that already has the test user and so we should
             // ignore that error.
             if (err && !/^CREATE USER/.test(sql)) {
-              cb(err)
+              setupCb(err)
             } else {
-              cb()
+              setupCb()
             }
           })
         },
@@ -68,8 +68,8 @@ function setup(mysql) {
           'TRUNCATE TABLE `test`',
           'INSERT INTO `test` (`test_value`) VALUE ("hamburgefontstiv")'
         ],
-        function (sql, cb) {
-          client.query(sql, cb)
+        function (sql, setupCb) {
+          client.query(sql, setupCb)
         },
         function (err) {
           client.end()
@@ -107,7 +107,7 @@ function setupPool(mysql, logger) {
         pool.destroy(client)
       })
 
-      client.connect(function cb_connect(err) {
+      client.connect((err) => {
         if (err) {
           logger.error('MySQL client failed to connect. Does `agent_integration` exist?')
         }

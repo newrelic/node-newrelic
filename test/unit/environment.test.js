@@ -202,7 +202,7 @@ describe('the environment scraper', function () {
   it('should have built a flattened package list', function () {
     var packages = find(settings, 'Packages')
     expect(packages.length).above(5)
-    packages.forEach(function cb_forEach(pair) {
+    packages.forEach((pair) => {
       expect(JSON.parse(pair).length).equal(2)
     })
   })
@@ -210,7 +210,7 @@ describe('the environment scraper', function () {
   it('should have built a flattened dependency list', function () {
     var dependencies = find(settings, 'Dependencies')
     expect(dependencies.length).above(5)
-    dependencies.forEach(function cb_forEach(pair) {
+    dependencies.forEach((pair) => {
       expect(JSON.parse(pair).length).equal(2)
     })
   })
@@ -259,7 +259,9 @@ describe('the environment scraper', function () {
     var nmod = path.resolve(__dirname, '../helpers/node_modules')
 
     beforeEach(function (done) {
-      if (!fs.existsSync(nmod)) fs.mkdirSync(nmod)
+      if (!fs.existsSync(nmod)) {
+        fs.mkdirSync(nmod)
+      }
 
       // node_modules/
       //  a/
@@ -288,26 +290,26 @@ describe('the environment scraper', function () {
           a.apply(makeDir, path.join(dir, 'node_modules')),
 
           // Make the package.json
-          function (cb) {
+          function (pkgCb) {
             var pkgJSON = { name: pkg, dependencies: {} }
             pkgJSON.dependencies[dep] = '*'
-            fs.writeFile(path.join(dir, 'package.json'), JSON.stringify(pkgJSON), cb)
+            fs.writeFile(path.join(dir, 'package.json'), JSON.stringify(pkgJSON), pkgCb)
           },
 
           // Make the dep a symlink.
-          function (cb) {
+          function (symCb) {
             var depModule = path.join(dir, 'node_modules', dep)
             fs.symlink(path.join(nmod, dep), depModule, 'dir', function (err) {
-              cb(err && err.code !== 'EEXIST' ? err : null)
+              symCb(err && err.code !== 'EEXIST' ? err : null)
             })
           }
         ],
         cb
       )
 
-      function makeDir(dirp, cb) {
+      function makeDir(dirp, mkdirDb) {
         fs.mkdir(dirp, function (err) {
-          cb(err && err.code !== 'EEXIST' ? err : null)
+          mkdirDb(err && err.code !== 'EEXIST' ? err : null)
         })
       }
     }

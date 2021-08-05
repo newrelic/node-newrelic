@@ -112,7 +112,7 @@ function shutdown(options, cb) {
     if (typeof options === 'function') {
       callback = options
     } else {
-      callback = function __NR_defaultCb() {}
+      callback = function __NRDefaultCb() {}
     }
   }
 

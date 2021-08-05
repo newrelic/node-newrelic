@@ -6,12 +6,12 @@
 'use strict'
 
 const tap = require('tap')
-const test_data = require('../lib/obfuscation-data')
+const testData = require('../lib/obfuscation-data')
 const hashes = require('../../lib/util/hashes')
 
 tap.test('obfuscation', (t) => {
   t.test('should objuscate strings correctly', (t) => {
-    test_data.forEach(function (test) {
+    testData.forEach(function (test) {
       t.equal(hashes.obfuscateNameUsingKey(test.input, test.key), test.output)
     })
     t.end()
@@ -21,7 +21,7 @@ tap.test('obfuscation', (t) => {
 
 tap.test('deobfuscation', (t) => {
   t.test('should deobjuscate strings correctly', (t) => {
-    test_data.forEach(function (test) {
+    testData.forEach(function (test) {
       t.equal(hashes.deobfuscateNameUsingKey(test.output, test.key), test.input)
     })
     t.end()

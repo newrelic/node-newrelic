@@ -20,7 +20,9 @@ function FakeConnection() {
 }
 
 FakeConnection.prototype.on = function on(event, callback) {
-  if (event === 'connect') return callback()
+  if (event === 'connect') {
+    return callback()
+  }
   if (event === 'data') {
     this.on_data = callback
     return callback
@@ -28,7 +30,9 @@ FakeConnection.prototype.on = function on(event, callback) {
 }
 
 FakeConnection.prototype.setNoDelay = function setNoDelay(bagel) {
-  if (bagel !== false) this.bagel = true
+  if (bagel !== false) {
+    this.bagel = true
+  }
 }
 
 FakeConnection.prototype.setTimeout = function setTimeout(timeout) {
@@ -107,8 +111,10 @@ describe('agent instrumentation of Redis', function () {
         should.exist(transaction)
 
         /* eslint-disable new-cap */
-        client.PING(function cb_PING(error, results) {
-          if (error) return done(error)
+        client.PING(function pingCb(error, results) {
+          if (error) {
+            return done(error)
+          }
 
           should.exist(agent.getTransaction())
           expect(results, 'PING should still work').equal('PONG')
@@ -137,7 +143,7 @@ describe('agent instrumentation of Redis', function () {
         should.exist(transaction)
 
         /* eslint-disable new-cap */
-        client.PING(function cb_PING() {
+        client.PING(function pingCb() {
           transaction.end()
         })
         /* eslint-enable new-cap */
@@ -166,7 +172,9 @@ describe('agent instrumentation of Redis', function () {
 
         /* eslint-disable new-cap */
         client.PING(1, 2, function (error, results) {
-          if (error) return done(error)
+          if (error) {
+            return done(error)
+          }
 
           should.exist(agent.getTransaction())
           expect(results, 'PING should still work').equal('PONG')

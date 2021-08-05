@@ -89,7 +89,9 @@ tap.test('all instrumented modules should be detected when uninstrumented', func
   })
   t.equal(flagMetrics.length, 1, 'Uninstrumented flag metric present')
 
-  if (flagMetrics.length !== 1) return t.end()
+  if (flagMetrics.length !== 1) {
+    return t.end()
+  }
 
   t.ok(
     flagMetrics[0][1].callCount > 0,
@@ -106,7 +108,9 @@ tap.test('all instrumented modules should be detected when uninstrumented', func
       }
     })
 
-    if (!found) t.fail('No uninstrumented module metric found for ' + module)
+    if (!found) {
+      t.fail('No uninstrumented module metric found for ' + module)
+    }
   })
 
   t.end()

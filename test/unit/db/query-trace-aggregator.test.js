@@ -32,7 +32,9 @@ describe('Query Trace Aggregator', function testQueryTracer() {
       let cbCalledWithNull = false
 
       const cb = (err, data) => {
-        if (data === null) cbCalledWithNull = true
+        if (data === null) {
+          cbCalledWithNull = true
+        }
       }
 
       queries._toPayload(cb)

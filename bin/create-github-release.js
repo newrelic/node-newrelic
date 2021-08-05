@@ -94,7 +94,7 @@ async function readReleaseNoteFile(file) {
         return reject(err)
       }
 
-      resolve(data)
+      return resolve(data)
     })
   })
 

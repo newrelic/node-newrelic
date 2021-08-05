@@ -7,6 +7,9 @@
 
 module.exports = {
   extends: '@newrelic',
+  rules: {
+    'consistent-return': 'off'
+  },
   overrides: [
     {
       files: [

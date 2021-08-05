@@ -204,10 +204,10 @@ tap.test('Should properly format spans sent from the queue', (t) => {
   t.equal(spanStreamer.spans.length, 0, 'no spans queued')
 
   const fakeSpan = new SpanStreamerEvent('sandwich', {}, {})
-  const fakeSpan_queued = new SpanStreamerEvent('porridge', {}, {})
+  const fakeSpanQueued = new SpanStreamerEvent('porridge', {}, {})
 
   spanStreamer.write(fakeSpan)
-  spanStreamer.write(fakeSpan_queued)
+  spanStreamer.write(fakeSpanQueued)
 
   t.equal(spanStreamer.spans.length, 1, 'one span queued')
 

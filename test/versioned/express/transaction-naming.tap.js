@@ -52,7 +52,7 @@ function runTests(flags) {
     var server = app.listen(function () {
       makeRequest(server, endpoint)
     })
-    t.teardown(function cb_tearDown() {
+    t.teardown(() => {
       server.close()
     })
   })
@@ -367,7 +367,7 @@ function runTests(flags) {
     var numTests = 4
     var runner = makeMultiRunner(t, '/router1/router2/path1', '/:router1/:router2/path1', numTests)
     var server = app.listen(function () {
-      t.teardown(function cb_tearDown() {
+      t.teardown(() => {
         server.close()
       })
       for (var i = 0; i < numTests; i++) {
@@ -428,7 +428,7 @@ function runTests(flags) {
       t.equal(tx.name, 'WebTransaction/Expressjs/GET//test')
     })
 
-    t.teardown(function cb_tearDown() {
+    t.teardown(() => {
       server.close()
     })
   })
@@ -533,7 +533,7 @@ function runTests(flags) {
 
     express = require('express')
     app = express()
-    t.teardown(function cb_tearDown() {
+    t.teardown(() => {
       helper.unloadAgent(agent)
     })
   }
@@ -541,7 +541,9 @@ function runTests(flags) {
   function makeMultiRunner(t, endpoint, expectedName, numTests) {
     var done = 0
     var seen = new Set()
-    if (!expectedName) expectedName = endpoint
+    if (!expectedName) {
+      expectedName = endpoint
+    }
     agent.on('transactionFinished', function (transaction) {
       t.notOk(seen.has(transaction), 'should never see the finishing transaction twice')
       seen.add(transaction)
@@ -562,7 +564,9 @@ function runTests(flags) {
   }
 
   function runTest(t, endpoint, expectedName) {
-    if (!expectedName) expectedName = endpoint
+    if (!expectedName) {
+      expectedName = endpoint
+    }
     agent.on('transactionFinished', function (transaction) {
       t.equal(
         transaction.name,
@@ -574,7 +578,7 @@ function runTests(flags) {
     var server = app.listen(function () {
       makeRequest(server, endpoint)
     })
-    t.teardown(function cb_tearDown() {
+    t.teardown(() => {
       server.close()
     })
   }

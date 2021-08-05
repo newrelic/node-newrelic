@@ -672,7 +672,9 @@ test('wrapFunction', function testwrapFunction(t) {
     t.equal(this, outer)
     t.equal(seg.name, 'my segment')
     return callbacks.map(function transfrom(arg) {
-      if (typeof arg === 'function') return bindFunction(arg)
+      if (typeof arg === 'function') {
+        return bindFunction(arg)
+      }
       return arg
     })
   }

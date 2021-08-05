@@ -15,7 +15,9 @@ var path = require('path')
 test('pricing proc_meminfo', function (t) {
   var testDir = path.resolve(__dirname, '../../lib/cross_agent_tests/proc_meminfo')
   glob(path.join(testDir, '*.txt'), function (err, data) {
-    if (err) throw err
+    if (err) {
+      throw err
+    }
     t.ok(data.length > 0, 'should have tests to run')
     a.each(data, runFile, function (err) {
       t.notOk(err, 'should not have an error')
@@ -25,7 +27,9 @@ test('pricing proc_meminfo', function (t) {
 
   function runFile(name, cb) {
     fs.readFile(name, function runTestFiles(err, data) {
-      if (err) throw err
+      if (err) {
+        throw err
+      }
       testFile(name, data.toString())
       cb()
     })

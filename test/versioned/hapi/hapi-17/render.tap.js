@@ -103,7 +103,9 @@ tap.test('agent instrumentation of Hapi', function (t) {
       for (var i = 0, len = root.children.length; i < len; i++) {
         var segment = root.children[i]
         t.ok(segment.timer.hasEnd(), util.format('verify %s (%s) has ended', segment.name, tx.id))
-        if (segment.children) verifyEnded(segment, tx)
+        if (segment.children) {
+          verifyEnded(segment, tx)
+        }
       }
     }
 
@@ -121,7 +123,9 @@ tap.test('agent instrumentation of Hapi', function (t) {
       .then(function () {
         port = server.info.port
         request('http://localhost:' + port + '/test', function (error, response, body) {
-          if (error) t.fail(error)
+          if (error) {
+            t.fail(error)
+          }
 
           t.equal(response.statusCode, 200, 'response code should be 200')
           t.equal(body, fixtures.htmlBody, 'template should still render fine')
@@ -168,7 +172,9 @@ tap.test('agent instrumentation of Hapi', function (t) {
       .then(function () {
         port = server.info.port
         request('http://localhost:' + port + '/test', function (error, response, body) {
-          if (error) t.fail(error)
+          if (error) {
+            t.fail(error)
+          }
 
           t.equal(response.statusCode, 200, 'response code should be 200')
           t.equal(body, fixtures.htmlBody, 'template should still render fine')
@@ -201,7 +207,9 @@ tap.test('agent instrumentation of Hapi', function (t) {
     server.start().then(function () {
       port = server.info.port
       request.get('http://localhost:' + port + '/test', function (error, response, body) {
-        if (error) t.fail(error)
+        if (error) {
+          t.fail(error)
+        }
 
         t.ok(response, 'got a response from Hapi')
         t.ok(body, 'got back a body')
