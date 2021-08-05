@@ -1,7 +1,7 @@
 ### v8.1.0 (2021-08-05)
 
 * Added necessary instrumentation to support v4 of `mongodb`.
-  * Explicitly enabled APM for `mongodb` instrumentation(client.monitorCommands = true)
+  * Explicitly enabled APM for `mongodb` instrumentation(`client.monitorCommands = true`)
 
 * Fixed issue where Promise based `pg.Client.query` timings were always in sub-millisecond range.
 
