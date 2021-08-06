@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "Fri Aug 06 2021 14:21:34 GMT-0400 (Eastern Daylight Time)",
+  "lastUpdated": "Fri Aug 06 2021 15:00:50 GMT-0400 (Eastern Daylight Time)",
   "projectName": "New Relic Node Agent",
   "projectUrl": "https://github.com/newrelic/node-newrelic",
   "includeOptDeps": true,
@@ -395,20 +395,6 @@
       "licenseUrl": "https://github.com/sindresorhus/got/blob/v8.3.2/license",
       "licenseTextSource": "file"
     },
-    "http-errors@1.7.3": {
-      "name": "http-errors",
-      "version": "1.7.3",
-      "range": "^1.7.3",
-      "licenses": "MIT",
-      "repoUrl": "https://github.com/jshttp/http-errors",
-      "versionedRepoUrl": "https://github.com/jshttp/http-errors/tree/v1.7.3",
-      "licenseFile": "node_modules/send/node_modules/http-errors/LICENSE",
-      "licenseUrl": "https://github.com/jshttp/http-errors/blob/v1.7.3/LICENSE",
-      "licenseTextSource": "file",
-      "publisher": "Jonathan Ong",
-      "email": "me@jongleberry.com",
-      "url": "http://jongleberry.com"
-    },
     "http-errors@1.8.0": {
       "name": "http-errors",
       "version": "1.8.0",
@@ -589,20 +575,6 @@
       "licenseTextSource": "file",
       "publisher": "Mark Cavage",
       "email": "mcavage@gmail.com"
-    },
-    "rimraf@2.6.3": {
-      "name": "rimraf",
-      "version": "2.6.3",
-      "range": "^2.6.3",
-      "licenses": "ISC",
-      "repoUrl": "https://github.com/isaacs/rimraf",
-      "versionedRepoUrl": "https://github.com/isaacs/rimraf/tree/v2.6.3",
-      "licenseFile": "node_modules/temp/node_modules/rimraf/LICENSE",
-      "licenseUrl": "https://github.com/isaacs/rimraf/blob/v2.6.3/LICENSE",
-      "licenseTextSource": "file",
-      "publisher": "Isaac Z. Schlueter",
-      "email": "i@izs.me",
-      "url": "http://blog.izs.me/"
     },
     "rimraf@2.7.1": {
       "name": "rimraf",
