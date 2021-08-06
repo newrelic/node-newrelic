@@ -12,7 +12,7 @@ require('tap').mochaGlobals()
 var Logger = require('../../../lib/util/logger')
 var chai = require('chai')
 var expect = chai.expect
-var through = require('through')
+const { Transform } = require('stream')
 
 var DEFAULT_KEYS = [
   'hostname',
@@ -34,12 +34,15 @@ describe('logger', function() {
       name: 'my-logger',
       level: 'info',
       hostname: 'my-host',
-      stream: through(addResult)
+      stream: new Transform({
+        transform: addResult
+      })
     })
   })
 
-  function addResult(data) {
+  function addResult(data, encoding, done) {
     results = results.concat(data.toString().split('\n').filter(Boolean).map(JSON.parse))
+    done()
   }
 
   it('should interpolate values', function(done) {
