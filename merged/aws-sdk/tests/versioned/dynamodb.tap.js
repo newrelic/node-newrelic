@@ -1,7 +1,8 @@
 /*
-* Copyright 2020 New Relic Corporation. All rights reserved.
-* SPDX-License-Identifier: Apache-2.0
-*/
+ * Copyright 2020 New Relic Corporation. All rights reserved.
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 'use strict'
 
 const tap = require('tap')
@@ -22,7 +23,7 @@ tap.test('DynamoDB', (t) => {
 
   let server = null
 
-  t.beforeEach(async() => {
+  t.beforeEach(async () => {
     server = createEmptyResponseServer()
 
     await new Promise((resolve) => {
@@ -68,24 +69,28 @@ tap.test('DynamoDB', (t) => {
 
   t.test('commands with callback', (t) => {
     helper.runInTransaction((tx) => {
-      async.eachSeries(tests, (cfg, cb) => {
-        t.comment(`Testing ${cfg.method}`)
-        cfg.api[cfg.method](cfg.params, (err) => {
-          t.error(err)
+      async.eachSeries(
+        tests,
+        (cfg, cb) => {
+          t.comment(`Testing ${cfg.method}`)
+          cfg.api[cfg.method](cfg.params, (err) => {
+            t.error(err)
 
-          return setImmediate(cb)
-        })
-      }, () => {
-        tx.end()
+            return setImmediate(cb)
+          })
+        },
+        () => {
+          tx.end()
 
-        const args = [t, tests, tx]
-        setImmediate(finish, ...args)
-      })
+          const args = [t, tests, tx]
+          setImmediate(finish, ...args)
+        }
+      )
     })
   })
 
   t.test('commands with promises', (t) => {
-    helper.runInTransaction(async function(tx) {
+    helper.runInTransaction(async function (tx) {
       // Execute commands in order
       // Await works because this is in a for-loop / no callback api
       for (let i = 0; i < tests.length; i++) {
@@ -112,11 +117,7 @@ function finish(t, tests, tx) {
   const root = tx.trace.root
   const segments = common.checkAWSAttributes(t, root, common.DATASTORE_PATTERN)
 
-  t.equal(
-    segments.length,
-    tests.length,
-    `should have ${tests.length} aws datastore segments`
-  )
+  t.equal(segments.length, tests.length, `should have ${tests.length} aws datastore segments`)
 
   const externalSegments = common.checkAWSAttributes(t, root, common.EXTERN_PATTERN)
   t.equal(externalSegments.length, 0, 'should not have any External segments')
@@ -129,16 +130,20 @@ function finish(t, tests, tx) {
       'should have operation in segment name'
     )
     const attrs = segment.attributes.get(common.SEGMENT_DESTINATION)
-    t.matches(attrs, {
-      'host': String,
-      'port_path_or_id': String,
-      'product': 'DynamoDB',
-      'collection': String,
-      'aws.operation': operation,
-      'aws.requestId': String,
-      'aws.region': 'us-east-1',
-      'aws.service': 'DynamoDB'
-    }, 'should have expected attributes')
+    t.matches(
+      attrs,
+      {
+        'host': String,
+        'port_path_or_id': String,
+        'product': 'DynamoDB',
+        'collection': String,
+        'aws.operation': operation,
+        'aws.requestId': String,
+        'aws.region': 'us-east-1',
+        'aws.service': 'DynamoDB'
+      },
+      'should have expected attributes'
+    )
   })
 
   t.end()
@@ -158,22 +163,22 @@ function createTests(ddb, docClient, tableName) {
   const docQueryParams = getDocQueryParams(tableName, docUniqueArtist)
 
   const composedTests = [
-    {api: ddb, method: 'createTable', params: createTblParams, operation: 'createTable'},
-    {api: ddb, method: 'putItem', params: putItemParams, operation: 'putItem'},
-    {api: ddb, method: 'getItem', params: itemParams, operation: 'getItem'},
-    {api: ddb, method: 'updateItem', params: itemParams, operation: 'updateItem'},
-    {api: ddb, method: 'scan', params: {TableName: tableName}, operation: 'scan'},
-    {api: ddb, method: 'query', params: queryParams, operation: 'query'},
-    {api: ddb, method: 'deleteItem', params: itemParams, operation: 'deleteItem'},
+    { api: ddb, method: 'createTable', params: createTblParams, operation: 'createTable' },
+    { api: ddb, method: 'putItem', params: putItemParams, operation: 'putItem' },
+    { api: ddb, method: 'getItem', params: itemParams, operation: 'getItem' },
+    { api: ddb, method: 'updateItem', params: itemParams, operation: 'updateItem' },
+    { api: ddb, method: 'scan', params: { TableName: tableName }, operation: 'scan' },
+    { api: ddb, method: 'query', params: queryParams, operation: 'query' },
+    { api: ddb, method: 'deleteItem', params: itemParams, operation: 'deleteItem' },
 
-    {api: docClient, method: 'put', params: docPutParams, operation: 'putItem'},
-    {api: docClient, method: 'get', params: docItemParams, operation: 'getItem'},
-    {api: docClient, method: 'update', params: docItemParams, operation: 'updateItem'},
-    {api: docClient, method: 'scan', params: {TableName: tableName}, operation: 'scan'},
-    {api: docClient, method: 'query', params: docQueryParams, operation: 'query'},
-    {api: docClient, method: 'delete', params: docItemParams, operation: 'deleteItem'},
+    { api: docClient, method: 'put', params: docPutParams, operation: 'putItem' },
+    { api: docClient, method: 'get', params: docItemParams, operation: 'getItem' },
+    { api: docClient, method: 'update', params: docItemParams, operation: 'updateItem' },
+    { api: docClient, method: 'scan', params: { TableName: tableName }, operation: 'scan' },
+    { api: docClient, method: 'query', params: docQueryParams, operation: 'query' },
+    { api: docClient, method: 'delete', params: docItemParams, operation: 'deleteItem' },
 
-    {api: ddb, method: 'deleteTable', params: deleteTableParams, operation: 'deleteTable'}
+    { api: ddb, method: 'deleteTable', params: deleteTableParams, operation: 'deleteTable' }
   ]
 
   return composedTests
@@ -182,12 +187,12 @@ function createTests(ddb, docClient, tableName) {
 function getCreateTableParams(tableName) {
   const params = {
     AttributeDefinitions: [
-      {AttributeName: 'Artist', AttributeType: 'S'},
-      {AttributeName: 'SongTitle', AttributeType: 'S'}
+      { AttributeName: 'Artist', AttributeType: 'S' },
+      { AttributeName: 'SongTitle', AttributeType: 'S' }
     ],
     KeySchema: [
-      {AttributeName: 'Artist', KeyType: 'HASH'},
-      {AttributeName: 'SongTitle', KeyType: 'RANGE'}
+      { AttributeName: 'Artist', KeyType: 'HASH' },
+      { AttributeName: 'SongTitle', KeyType: 'RANGE' }
     ],
     ProvisionedThroughput: {
       ReadCapacityUnits: 5,
@@ -202,9 +207,9 @@ function getCreateTableParams(tableName) {
 function getPutItemParams(tableName, uniqueArtist) {
   const params = {
     Item: {
-      AlbumTitle: {S: 'Somewhat Famous'},
-      Artist: {S: uniqueArtist},
-      SongTitle: {S: 'Call Me Today'}
+      AlbumTitle: { S: 'Somewhat Famous' },
+      Artist: { S: uniqueArtist },
+      SongTitle: { S: 'Call Me Today' }
     },
     TableName: tableName
   }
@@ -215,8 +220,8 @@ function getPutItemParams(tableName, uniqueArtist) {
 function getItemParams(tableName, uniqueArtist) {
   const params = {
     Key: {
-      Artist: {S: uniqueArtist},
-      SongTitle: {S: 'Call Me Today'}
+      Artist: { S: uniqueArtist },
+      SongTitle: { S: 'Call Me Today' }
     },
     TableName: tableName
   }
@@ -227,7 +232,7 @@ function getItemParams(tableName, uniqueArtist) {
 function getQueryParams(tableName, uniqueArtist) {
   const params = {
     ExpressionAttributeValues: {
-      ':v1': {S: uniqueArtist}
+      ':v1': { S: uniqueArtist }
     },
     KeyConditionExpression: 'Artist = :v1',
     TableName: tableName

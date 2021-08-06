@@ -1,7 +1,8 @@
 /*
-* Copyright 2020 New Relic Corporation. All rights reserved.
-* SPDX-License-Identifier: Apache-2.0
-*/
+ * Copyright 2020 New Relic Corporation. All rights reserved.
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 'use strict'
 
 const tap = require('tap')
@@ -19,7 +20,7 @@ tap.test('AWS HTTP Services', (t) => {
   let server = null
   let endpoint = null
 
-  t.beforeEach(async() => {
+  t.beforeEach(async () => {
     server = createEmptyResponseServer()
 
     await new Promise((resolve) => {
@@ -33,7 +34,7 @@ tap.test('AWS HTTP Services', (t) => {
       onRequire: require('../../lib/instrumentation')
     })
     AWS = require('aws-sdk')
-    AWS.config.update({region: 'us-east-1'})
+    AWS.config.update({ region: 'us-east-1' })
 
     endpoint = `http://localhost:${server.address().port}`
   })
@@ -51,23 +52,26 @@ tap.test('AWS HTTP Services', (t) => {
         credentials: FAKE_CREDENTIALS,
         endpoint: endpoint
       })
-      service.createApiKey({
-        customerId: 'STRING_VALUE',
-        description: 'STRING_VALUE',
-        enabled: true || false,
-        generateDistinctId: true || false,
-        name: 'STRING_VALUE',
-        stageKeys: [
-          {
-            restApiId: 'STRING_VALUE',
-            stageName: 'STRING_VALUE'
-          }
-        ],
-        value: 'STRING_VALUE'
-      }, () => {
-        tx.end()
-        setImmediate(finish, t, 'API Gateway', 'createApiKey', tx)
-      })
+      service.createApiKey(
+        {
+          customerId: 'STRING_VALUE',
+          description: 'STRING_VALUE',
+          enabled: true || false,
+          generateDistinctId: true || false,
+          name: 'STRING_VALUE',
+          stageKeys: [
+            {
+              restApiId: 'STRING_VALUE',
+              stageName: 'STRING_VALUE'
+            }
+          ],
+          value: 'STRING_VALUE'
+        },
+        () => {
+          tx.end()
+          setImmediate(finish, t, 'API Gateway', 'createApiKey', tx)
+        }
+      )
     })
   })
 
@@ -77,21 +81,25 @@ tap.test('AWS HTTP Services', (t) => {
         credentials: FAKE_CREDENTIALS,
         endpoint: endpoint
       })
-      service.addTags({
-        LoadBalancerNames: [
-          'my-load-balancer'
-        ],
-        Tags: [{
-          Key: 'project',
-          Value: 'lima'
-        }, {
-          Key: 'department',
-          Value: 'digital-media'
-        }]
-      }, () => {
-        tx.end()
-        setImmediate(finish, t, 'Elastic Load Balancing', 'addTags', tx)
-      })
+      service.addTags(
+        {
+          LoadBalancerNames: ['my-load-balancer'],
+          Tags: [
+            {
+              Key: 'project',
+              Value: 'lima'
+            },
+            {
+              Key: 'department',
+              Value: 'digital-media'
+            }
+          ]
+        },
+        () => {
+          tx.end()
+          setImmediate(finish, t, 'Elastic Load Balancing', 'addTags', tx)
+        }
+      )
     })
   })
 
@@ -101,18 +109,22 @@ tap.test('AWS HTTP Services', (t) => {
         credentials: FAKE_CREDENTIALS,
         endpoint: endpoint
       })
-      service.addTagsToResource({
-        ResourceName: 'STRING_VALUE', /* required */
-        Tags: [ /* required */
-          {
-            Key: 'STRING_VALUE',
-            Value: 'STRING_VALUE'
-          }
-        ]
-      }, () => {
-        tx.end()
-        setImmediate(finish, t, 'ElastiCache', 'addTagsToResource', tx)
-      })
+      service.addTagsToResource(
+        {
+          ResourceName: 'STRING_VALUE' /* required */,
+          Tags: [
+            /* required */
+            {
+              Key: 'STRING_VALUE',
+              Value: 'STRING_VALUE'
+            }
+          ]
+        },
+        () => {
+          tx.end()
+          setImmediate(finish, t, 'ElastiCache', 'addTagsToResource', tx)
+        }
+      )
     })
   })
 
@@ -122,18 +134,21 @@ tap.test('AWS HTTP Services', (t) => {
         credentials: FAKE_CREDENTIALS,
         endpoint: endpoint
       })
-      service.addLayerVersionPermission({
-        Action: 'lambda:GetLayerVersion', /* required */
-        LayerName: 'STRING_VALUE', /* required */
-        Principal: '*', /* required */
-        StatementId: 'STRING_VALUE', /* required */
-        VersionNumber: 2, /* required */
-        OrganizationId: 'o-0123456789',
-        RevisionId: 'STRING_VALUE'
-      }, () => {
-        tx.end()
-        setImmediate(finish, t, 'Lambda', 'addLayerVersionPermission', tx)
-      })
+      service.addLayerVersionPermission(
+        {
+          Action: 'lambda:GetLayerVersion' /* required */,
+          LayerName: 'STRING_VALUE' /* required */,
+          Principal: '*' /* required */,
+          StatementId: 'STRING_VALUE' /* required */,
+          VersionNumber: 2 /* required */,
+          OrganizationId: 'o-0123456789',
+          RevisionId: 'STRING_VALUE'
+        },
+        () => {
+          tx.end()
+          setImmediate(finish, t, 'Lambda', 'addLayerVersionPermission', tx)
+        }
+      )
     })
   })
 
@@ -143,13 +158,16 @@ tap.test('AWS HTTP Services', (t) => {
         credentials: FAKE_CREDENTIALS,
         endpoint: endpoint
       })
-      service.addRoleToDBCluster({
-        DBClusterIdentifier: 'STRING_VALUE', /* required */
-        RoleArn: 'arn:aws:iam::123456789012:role/AuroraAccessRole' /* required */
-      }, () => {
-        tx.end()
-        setImmediate(finish, t, 'Amazon RDS', 'addRoleToDBCluster', tx)
-      })
+      service.addRoleToDBCluster(
+        {
+          DBClusterIdentifier: 'STRING_VALUE' /* required */,
+          RoleArn: 'arn:aws:iam::123456789012:role/AuroraAccessRole' /* required */
+        },
+        () => {
+          tx.end()
+          setImmediate(finish, t, 'Amazon RDS', 'addRoleToDBCluster', tx)
+        }
+      )
     })
   })
 
@@ -159,13 +177,16 @@ tap.test('AWS HTTP Services', (t) => {
         credentials: FAKE_CREDENTIALS,
         endpoint: endpoint
       })
-      service.acceptReservedNodeExchange({
-        ReservedNodeId: 'STRING_VALUE', /* required */
-        TargetReservedNodeOfferingId: 'STRING_VALUE' /* required */
-      }, () => {
-        tx.end()
-        setImmediate(finish, t, 'Redshift', 'acceptReservedNodeExchange', tx)
-      })
+      service.acceptReservedNodeExchange(
+        {
+          ReservedNodeId: 'STRING_VALUE' /* required */,
+          TargetReservedNodeOfferingId: 'STRING_VALUE' /* required */
+        },
+        () => {
+          tx.end()
+          setImmediate(finish, t, 'Redshift', 'acceptReservedNodeExchange', tx)
+        }
+      )
     })
   })
 
@@ -175,24 +196,27 @@ tap.test('AWS HTTP Services', (t) => {
         credentials: FAKE_CREDENTIALS,
         endpoint: endpoint
       })
-      service.compareFaces({
-        SimilarityThreshold: 90,
-        SourceImage: {
-          S3Object: {
-            Bucket: 'mybucket',
-            Name: 'mysourceimage'
+      service.compareFaces(
+        {
+          SimilarityThreshold: 90,
+          SourceImage: {
+            S3Object: {
+              Bucket: 'mybucket',
+              Name: 'mysourceimage'
+            }
+          },
+          TargetImage: {
+            S3Object: {
+              Bucket: 'mybucket',
+              Name: 'mytargetimage'
+            }
           }
         },
-        TargetImage: {
-          S3Object: {
-            Bucket: 'mybucket',
-            Name: 'mytargetimage'
-          }
+        () => {
+          tx.end()
+          setImmediate(finish, t, 'Rekognition', 'compareFaces', tx)
         }
-      }, () => {
-        tx.end()
-        setImmediate(finish, t, 'Rekognition', 'compareFaces', tx)
-      })
+      )
     })
   })
 
@@ -202,13 +226,16 @@ tap.test('AWS HTTP Services', (t) => {
         credentials: FAKE_CREDENTIALS,
         endpoint: endpoint
       })
-      service.cloneReceiptRuleSet({
-        OriginalRuleSetName: 'RuleSetToClone',
-        RuleSetName: 'RuleSetToCreate'
-      }, () => {
-        tx.end()
-        setImmediate(finish, t, 'Amazon SES', 'cloneReceiptRuleSet', tx)
-      })
+      service.cloneReceiptRuleSet(
+        {
+          OriginalRuleSetName: 'RuleSetToClone',
+          RuleSetName: 'RuleSetToCreate'
+        },
+        () => {
+          tx.end()
+          setImmediate(finish, t, 'Amazon SES', 'cloneReceiptRuleSet', tx)
+        }
+      )
     })
   })
 })
@@ -217,12 +244,16 @@ function finish(t, service, operation, tx) {
   const externals = common.checkAWSAttributes(t, tx.trace.root, common.EXTERN_PATTERN)
   if (t.equal(externals.length, 1, 'should have an aws external')) {
     const attrs = externals[0].attributes.get(common.SEGMENT_DESTINATION)
-    t.matches(attrs, {
-      'aws.operation': operation,
-      'aws.requestId': String,
-      'aws.service': service,
-      'aws.region': 'us-east-1'
-    }, 'should have expected attributes')
+    t.matches(
+      attrs,
+      {
+        'aws.operation': operation,
+        'aws.requestId': String,
+        'aws.service': service,
+        'aws.region': 'us-east-1'
+      },
+      'should have expected attributes'
+    )
   }
 
   t.end()

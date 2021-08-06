@@ -1,7 +1,8 @@
 /*
-* Copyright 2020 New Relic Corporation. All rights reserved.
-* SPDX-License-Identifier: Apache-2.0
-*/
+ * Copyright 2020 New Relic Corporation. All rights reserved.
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 'use strict'
 
 const sinon = require('sinon')
@@ -20,7 +21,7 @@ tap.test('aws-sdk', (t) => {
   let server = null
   let endpoint = null
 
-  t.beforeEach(async() => {
+  t.beforeEach(async () => {
     server = createEmptyResponseServer()
 
     await new Promise((resolve) => {
@@ -34,7 +35,7 @@ tap.test('aws-sdk', (t) => {
       onRequire: require('../../lib/instrumentation')
     })
     AWS = require('aws-sdk')
-    AWS.config.update({region: 'us-east-1'})
+    AWS.config.update({ region: 'us-east-1' })
 
     endpoint = `http://localhost:${server.address().port}`
   })
@@ -47,7 +48,7 @@ tap.test('aws-sdk', (t) => {
     AWS = null
   })
 
-  t.test('should mark requests to be dt-disabled', {skip: true}, (t) => {
+  t.test('should mark requests to be dt-disabled', { skip: true }, (t) => {
     // http because we've changed endpoint to be http
     const http = require('http')
     sinon.spy(http, 'request')
@@ -66,9 +67,9 @@ tap.test('aws-sdk', (t) => {
       // allows using generic endpoint, instead of needing a
       // bucket.endpoint server setup.
       s3ForcePathStyle: true,
-      params: {Bucket: 'bucket'}
+      params: { Bucket: 'bucket' }
     })
-    s3.listObjects({Delimiter: '/'}, (err) => {
+    s3.listObjects({ Delimiter: '/' }, (err) => {
       t.error(err)
 
       if (t.ok(http.request.calledOnce, 'should call http.request')) {
@@ -89,26 +90,32 @@ tap.test('aws-sdk', (t) => {
       endpoint: endpoint
     })
     helper.runInTransaction((tx) => {
-      service.cloneReceiptRuleSet({
-        OriginalRuleSetName: 'RuleSetToClone',
-        RuleSetName: 'RuleSetToCreate'
-      }).promise().then(() => {
-        t.transaction(tx)
-        tx.end()
-        ender()
-      })
+      service
+        .cloneReceiptRuleSet({
+          OriginalRuleSetName: 'RuleSetToClone',
+          RuleSetName: 'RuleSetToCreate'
+        })
+        .promise()
+        .then(() => {
+          t.transaction(tx)
+          tx.end()
+          ender()
+        })
     })
 
     // Run two concurrent promises to check for conflation
     helper.runInTransaction((tx) => {
-      service.cloneReceiptRuleSet({
-        OriginalRuleSetName: 'RuleSetToClone',
-        RuleSetName: 'RuleSetToCreate'
-      }).promise().then(() => {
-        t.transaction(tx)
-        tx.end()
-        ender()
-      })
+      service
+        .cloneReceiptRuleSet({
+          OriginalRuleSetName: 'RuleSetToClone',
+          RuleSetName: 'RuleSetToCreate'
+        })
+        .promise()
+        .then(() => {
+          t.transaction(tx)
+          tx.end()
+          ender()
+        })
     })
 
     let count = 0

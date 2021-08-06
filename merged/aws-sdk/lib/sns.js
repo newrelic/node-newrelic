@@ -1,7 +1,8 @@
 /*
-* Copyright 2020 New Relic Corporation. All rights reserved.
-* SPDX-License-Identifier: Apache-2.0
-*/
+ * Copyright 2020 New Relic Corporation. All rights reserved.
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 'use strict'
 
 module.exports = {
@@ -34,6 +35,6 @@ function wrapPublish(shim, original, name, args) {
   }
 }
 
-function getDestinationName({TopicArn, TargetArn}) {
+function getDestinationName({ TopicArn, TargetArn }) {
   return TopicArn || TargetArn || 'PhoneNumber' // We don't want the value of PhoneNumber
 }

@@ -1,7 +1,8 @@
 /*
-* Copyright 2020 New Relic Corporation. All rights reserved.
-* SPDX-License-Identifier: Apache-2.0
-*/
+ * Copyright 2020 New Relic Corporation. All rights reserved.
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 'use strict'
 
 const tap = require('tap')
@@ -27,7 +28,7 @@ tap.test('SQS API', (t) => {
 
   let server = null
 
-  t.beforeEach(async() => {
+  t.beforeEach(async () => {
     server = createSqsServer()
 
     await new Promise((resolve) => {
@@ -73,7 +74,7 @@ tap.test('SQS API', (t) => {
 
   t.test('commands with callback', (t) => {
     const createParams = getCreateParams(queueName)
-    sqs.createQueue(createParams, function(createErr, createData) {
+    sqs.createQueue(createParams, function (createErr, createData) {
       t.error(createErr)
 
       queueUrl = createData.QueueUrl
@@ -113,12 +114,12 @@ tap.test('SQS API', (t) => {
 
   t.test('commands with promises', (t) => {
     const createParams = getCreateParams(queueName)
-    sqs.createQueue(createParams, function(createErr, createData) {
+    sqs.createQueue(createParams, function (createErr, createData) {
       t.error(createErr)
 
       queueUrl = createData.QueueUrl
 
-      helper.runInTransaction(async transaction => {
+      helper.runInTransaction(async (transaction) => {
         try {
           const sendMessageParams = getSendMessageParams(queueUrl)
           const sendData = await sqs.sendMessage(sendMessageParams).promise()
@@ -131,8 +132,7 @@ tap.test('SQS API', (t) => {
 
         try {
           const sendMessageBatchParams = getSendMessageBatchParams(queueUrl)
-          const sendBatchData =
-            await sqs.sendMessageBatch(sendMessageBatchParams).promise()
+          const sendBatchData = await sqs.sendMessageBatch(sendMessageBatchParams).promise()
           t.ok(sendBatchData.Successful)
 
           sendMessageBatchRequestId = getRequestId(t, sendBatchData)
@@ -233,8 +233,8 @@ function getSendMessageParams(queueUrl) {
     MessageAttributes: {
       Attr1: {
         DataType: 'String',
-          StringValue: 'One'
-        }
+        StringValue: 'One'
+      }
     },
     MessageBody: 'This is a test message',
     QueueUrl: queueUrl
@@ -247,20 +247,20 @@ function getSendMessageBatchParams(queueUrl) {
   const params = {
     Entries: [
       {
-          Id: 'ONE',
-          MessageBody: 'ONE BODY',
-          MessageAttributes: {
-              Attribute1: {DataType: 'String', StringValue: 'Value 1'},
-              Attribute2: {DataType: 'String', StringValue: 'Value 2'}
-          }
+        Id: 'ONE',
+        MessageBody: 'ONE BODY',
+        MessageAttributes: {
+          Attribute1: { DataType: 'String', StringValue: 'Value 1' },
+          Attribute2: { DataType: 'String', StringValue: 'Value 2' }
+        }
       },
       {
-          Id: 'TWO',
-          MessageBody: 'TWO BODY',
-          MessageAttributes: {
-              Attribute1: {DataType: 'String', StringValue: 'Value 1'},
-              Attribute2: {DataType: 'String', StringValue: 'Value 2'}
-          }
+        Id: 'TWO',
+        MessageBody: 'TWO BODY',
+        MessageAttributes: {
+          Attribute1: { DataType: 'String', StringValue: 'Value 1' },
+          Attribute2: { DataType: 'String', StringValue: 'Value 2' }
+        }
       }
     ],
     QueueUrl: queueUrl
@@ -271,13 +271,9 @@ function getSendMessageBatchParams(queueUrl) {
 
 function getReceiveMessageParams(queueUrl) {
   const params = {
-    AttributeNames: [
-       'SentTimestamp'
-    ],
+    AttributeNames: ['SentTimestamp'],
     MaxNumberOfMessages: 2,
-    MessageAttributeNames: [
-       'All'
-    ],
+    MessageAttributeNames: ['All'],
     QueueUrl: queueUrl
   }
 
