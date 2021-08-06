@@ -137,7 +137,7 @@
     "ssl": "./bin/ssl.sh",
     "sub-install": "node test/bin/install_sub_deps",
     "test": "npm run integration && npm run unit",
-    "third-party-updates": "oss third-party manifest && oss third-party notices && git add THIRD_PARTY_NOTICES.md third_party_manifest.json",
+    "third-party-updates": "oss third-party manifest --includeOptDeps && oss third-party notices --includeOptDeps && git add THIRD_PARTY_NOTICES.md third_party_manifest.json",
     "unit": "rm -f newrelic_agent.log && time tap --test-regex='(\\/|^test\\/unit\\/.*\\.test\\.js)$' --timeout=180 --no-coverage --reporter classic",
     "update-cross-agent-tests": "./bin/update-cats.sh",
     "versioned-tests": "./bin/run-versioned-tests.sh",
@@ -168,7 +168,7 @@
     "@newrelic/native-metrics": "^7.0.1"
   },
   "devDependencies": {
-    "@newrelic/newrelic-oss-cli": "^0.0.6",
+    "@newrelic/newrelic-oss-cli": "^0.1.0",
     "@newrelic/proxy": "^2.0.0",
     "@newrelic/test-utilities": "^6.0.0",
     "@octokit/rest": "^18.0.15",

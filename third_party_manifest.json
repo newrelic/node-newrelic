@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "Thu Aug 05 2021 12:37:42 GMT-0700 (Pacific Daylight Time)",
+  "lastUpdated": "Fri Aug 06 2021 14:21:34 GMT-0400 (Eastern Daylight Time)",
   "projectName": "New Relic Node Agent",
   "projectUrl": "https://github.com/newrelic/node-newrelic",
   "includeOptDeps": true,
@@ -173,15 +173,15 @@
     }
   },
   "devDependencies": {
-    "@newrelic/newrelic-oss-cli@0.0.6": {
+    "@newrelic/newrelic-oss-cli@0.1.0": {
       "name": "@newrelic/newrelic-oss-cli",
-      "version": "0.0.6",
-      "range": "^0.0.6",
+      "version": "0.1.0",
+      "range": "^0.1.0",
       "licenses": "Apache-2.0",
       "repoUrl": "https://github.com/newrelic/newrelic-oss-cli",
-      "versionedRepoUrl": "https://github.com/newrelic/newrelic-oss-cli/tree/v0.0.6",
+      "versionedRepoUrl": "https://github.com/newrelic/newrelic-oss-cli/tree/v0.1.0",
       "licenseFile": "node_modules/@newrelic/newrelic-oss-cli/README.md",
-      "licenseUrl": "https://github.com/newrelic/newrelic-oss-cli/blob/v0.0.6/README.md",
+      "licenseUrl": "https://github.com/newrelic/newrelic-oss-cli/blob/v0.1.0/README.md",
       "licenseTextSource": "spdx",
       "publisher": "New Relic"
     },
@@ -394,6 +394,20 @@
       "licenseFile": "node_modules/got/license",
       "licenseUrl": "https://github.com/sindresorhus/got/blob/v8.3.2/license",
       "licenseTextSource": "file"
+    },
+    "http-errors@1.7.3": {
+      "name": "http-errors",
+      "version": "1.7.3",
+      "range": "^1.7.3",
+      "licenses": "MIT",
+      "repoUrl": "https://github.com/jshttp/http-errors",
+      "versionedRepoUrl": "https://github.com/jshttp/http-errors/tree/v1.7.3",
+      "licenseFile": "node_modules/send/node_modules/http-errors/LICENSE",
+      "licenseUrl": "https://github.com/jshttp/http-errors/blob/v1.7.3/LICENSE",
+      "licenseTextSource": "file",
+      "publisher": "Jonathan Ong",
+      "email": "me@jongleberry.com",
+      "url": "http://jongleberry.com"
     },
     "http-errors@1.8.0": {
       "name": "http-errors",
