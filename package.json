@@ -168,7 +168,7 @@
     "@newrelic/native-metrics": "^7.0.1"
   },
   "devDependencies": {
-    "@newrelic/newrelic-oss-cli": "^0.1.0",
+    "@newrelic/newrelic-oss-cli": "^0.1.1",
     "@newrelic/proxy": "^2.0.0",
     "@newrelic/test-utilities": "^6.0.0",
     "@octokit/rest": "^18.0.15",

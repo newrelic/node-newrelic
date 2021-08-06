@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "Fri Aug 06 2021 15:00:50 GMT-0400 (Eastern Daylight Time)",
+  "lastUpdated": "Fri Aug 06 2021 16:21:48 GMT-0400 (Eastern Daylight Time)",
   "projectName": "New Relic Node Agent",
   "projectUrl": "https://github.com/newrelic/node-newrelic",
   "includeOptDeps": true,
@@ -173,16 +173,16 @@
     }
   },
   "devDependencies": {
-    "@newrelic/newrelic-oss-cli@0.1.0": {
+    "@newrelic/newrelic-oss-cli@0.1.1": {
       "name": "@newrelic/newrelic-oss-cli",
-      "version": "0.1.0",
-      "range": "^0.1.0",
+      "version": "0.1.1",
+      "range": "^0.1.1",
       "licenses": "Apache-2.0",
       "repoUrl": "https://github.com/newrelic/newrelic-oss-cli",
-      "versionedRepoUrl": "https://github.com/newrelic/newrelic-oss-cli/tree/v0.1.0",
-      "licenseFile": "node_modules/@newrelic/newrelic-oss-cli/README.md",
-      "licenseUrl": "https://github.com/newrelic/newrelic-oss-cli/blob/v0.1.0/README.md",
-      "licenseTextSource": "spdx",
+      "versionedRepoUrl": "https://github.com/newrelic/newrelic-oss-cli/tree/v0.1.1",
+      "licenseFile": "node_modules/@newrelic/newrelic-oss-cli/LICENSE",
+      "licenseUrl": "https://github.com/newrelic/newrelic-oss-cli/blob/v0.1.1/LICENSE",
+      "licenseTextSource": "file",
       "publisher": "New Relic"
     },
     "@newrelic/proxy@2.0.0": {
