@@ -1331,7 +1331,7 @@ IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ### @newrelic/newrelic-oss-cli
 
-This product includes source derived from [@newrelic/newrelic-oss-cli](https://github.com/newrelic/newrelic-oss-cli) ([v0.1.1](https://github.com/newrelic/newrelic-oss-cli/tree/v0.1.1)), distributed under the [Apache-2.0 License](https://github.com/newrelic/newrelic-oss-cli/blob/v0.1.1/LICENSE):
+This product includes source derived from [@newrelic/newrelic-oss-cli](https://github.com/newrelic/newrelic-oss-cli) ([v0.1.2](https://github.com/newrelic/newrelic-oss-cli/tree/v0.1.2)), distributed under the [Apache-2.0 License](https://github.com/newrelic/newrelic-oss-cli/blob/v0.1.2/LICENSE):
 
 ```
                                  Apache License
@@ -1522,7 +1522,7 @@ This product includes source derived from [@newrelic/newrelic-oss-cli](https://g
       same "printed page" as the copyright notice for easier
       identification within third-party archives.
 
-   Copyright 2019 New Relic, Inc.
+   Copyright [yyyy] [name of copyright owner]
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
