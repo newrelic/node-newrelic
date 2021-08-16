@@ -15,6 +15,7 @@
   "author": "New Relic Node.js Agent Team <nodejs@newrelic.com>",
   "license": "Apache-2.0",
   "devDependencies": {
+    "@newrelic/eslint-config": "^0.0.1",
     "@newrelic/test-utilities": "^5.1.0",
     "eslint": "^7.32.0",
     "eslint-config-prettier": "^8.3.0",
