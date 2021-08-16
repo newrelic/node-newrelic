@@ -170,6 +170,7 @@
     "@newrelic/proxy": "^2.0.0",
     "@newrelic/test-utilities": "^6.0.0",
     "@octokit/rest": "^18.0.15",
+    "ajv": "^6.12.6",
     "architect": "*",
     "benchmark": "^2.1.4",
     "bluebird": "^3.4.7",
@@ -185,7 +186,6 @@
     "http-errors": "^1.7.3",
     "husky": "^6.0.0",
     "jsdoc": "^3.6.3",
-    "JSV": "~4.0.2",
     "lint-staged": "^11.0.0",
     "memcached": ">=0.2.8",
     "minami": "^1.1.1",
@@ -202,7 +202,6 @@
     "sinon": "^4.5.0",
     "tap": "^15.0.9",
     "temp": "^0.8.1",
-    "through": "^2.3.6",
     "when": "*"
   },
   "repository": {

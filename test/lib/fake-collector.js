@@ -5,18 +5,18 @@
 
 'use strict'
 
-var path = require('path')
-var util = require('util')
-var fs = require('fs')
-var jsv = require('JSV').JSV
-var env = jsv.createEnvironment()
-var restify = require('restify')
-var codec = require('../../lib/util/codec')
-var logger = require('../../lib/logger').child({component: 'fake_collector'})
+const path = require('path')
+const util = require('util')
+const fs = require('fs')
+const Ajv = require('ajv')
+const ajv = new Ajv()
+const restify = require('restify')
+const codec = require('../../lib/util/codec')
+const logger = require('../../lib/logger').child({component: 'fake_collector'})
 
-var ACTUAL_HOST = 'collector-1.integration-test'
-var PORT = 8089
-var PATHS = {
+const ACTUAL_HOST = 'collector-1.integration-test'
+const PORT = 8089
+const PATHS = {
   connect: path.join(__dirname, 'schemas/connect.json'),
   container: path.join(__dirname, 'schemas/transaction_sample_data.json'),
   trace: path.join(__dirname, 'schemas/transaction_trace.json'),
@@ -28,21 +28,26 @@ var PATHS = {
 const { SSL_HOST } = require('./agent_helper')
 
 
-var schemas = {}
+const schemas = {}
 Object.keys(PATHS).forEach(function(key) {
   schemas[key] = JSON.parse(fs.readFileSync(PATHS[key]))
 })
+
+function validateSchema(data, schema) {
+  const checkSchema = ajv.compile(schema)
+  return checkSchema(data)
+}
 
 function getHostname(request) {
   return request.header('Host').split(/:/)[0]
 }
 
 function decodeTraceData(encodedArray, callback) {
-  var toDecode = encodedArray.length
-  var decoded = []
+  let toDecode = encodedArray.length
+  const decoded = []
 
   encodedArray.forEach(function(data) {
-    var element = data[4]
+    const element = data[4]
     codec.decode(element, function(error, extracted) {
       if (error) return callback(error)
 
@@ -55,9 +60,9 @@ function decodeTraceData(encodedArray, callback) {
 
 function validate(schema, namespace) {
   return function(submitted, validations, callback) {
-    var data = submitted
+    const data = submitted
 
-    var report = env.validate(data, schema)
+    const report = validateSchema(data, schema)
     if (report.errors.length) validations[namespace] = report.errors
     return callback(null, validations)
   }
@@ -72,9 +77,9 @@ function returnData(validations, returned) {
   return returned
 }
 
-var validators = {
+const validators = {
   originalHost: function originalHost(request, validations) {
-    var host = getHostname(request)
+    const host = getHostname(request)
 
     validations.host_name_errors = []
 
@@ -92,7 +97,7 @@ var validators = {
   },
 
   redirectedHost: function(request, validations) {
-    var host = getHostname(request)
+    const host = getHostname(request)
     if (host !== ACTUAL_HOST) {
       validations.host_name_errors = ['did not redirect to ' + ACTUAL_HOST]
     }
@@ -105,12 +110,12 @@ var validators = {
   metrics: validate(schemas.metric, 'metric_data'),
 
   transactionTraces: function(transactionData, validations, callback) {
-    var data = JSON.parse(transactionData)
+    const data = JSON.parse(transactionData)
 
-    var report = env.validate(data, schemas.container)
+    const report = validateSchema(data, schemas.container)
     if (report.errors.length) validations.transaction_sample_data = report.errors
 
-    var traces = data[1]
+    const traces = data[1]
     decodeTraceData(traces, function(err, traceList) {
       if (err) {
         validations.transaction_traces =
@@ -119,7 +124,7 @@ var validators = {
       }
 
       validations.transaction_traces = traceList.map(function(trace) {
-        var validateReport = env.validate(trace, schemas.trace)
+        const validateReport = validateSchema(trace, schemas.trace)
         if (validateReport.errors.length) return validateReport.errors
       }).filter(function(trace) { if (trace) return true })
 
@@ -132,25 +137,25 @@ var validators = {
   },
 
   sqlTraces: function(sqlTraceData, validations, callback) {
-    var data = JSON.parse(sqlTraceData)
+    const data = JSON.parse(sqlTraceData)
 
-    var report = env.validate(data, schemas.sql)
+    const report = validateSchema(data, schemas.sql)
     if (report.errors.length) validations.sql_trace_data = report.errors
 
     validations.sql_param_decode_errors = []
     validations.sql_params = []
 
-    var toDecode = data.length
+    let toDecode = data.length
     data.forEach(function(trace) {
       codec.decode(trace[9], function(error, extracted) {
         if (error) {
-          var message = util.format(
+          const message = util.format(
             'unable to inflate encoded SQL parameters. zlib says: %s',
             error.message
           )
           validations.sql_param_decode_errors.push(message)
         } else {
-          var validateReport = env.validate(extracted, schemas.sqlParams)
+          const validateReport = validateSchema(extracted, schemas.sqlParams)
           if (validateReport.errors.length) {
             validations.sql_params.push(validateReport.errors)
           }
@@ -183,7 +188,7 @@ var validators = {
       )
     }
 
-    var version = query.protocol_version
+    const version = query.protocol_version
     if (!version) {
       validation.query_errors.push('protocol_version not set')
     } else if ((version < 9 || version > 17)) {
@@ -208,7 +213,7 @@ var validators = {
   httpHeaders: function(request, validation) {
     validation.header_errors = []
 
-    var encoding = request.header('content-encoding')
+    const encoding = request.header('content-encoding')
     if (!encoding) {
       validation.header_errors.push("'Content-Encoding' not set")
     } else if (!(encoding === 'identity' || encoding === 'deflate')) {
@@ -228,7 +233,7 @@ var validators = {
     }
 
     // NewRelic-NodeAgent/0.9.1-46 (nodejs 0.8.12 darwin-x64)
-    var userAgentPattern = /^NewRelic-[a-zA-Z0-9]+\/[0-9.\-]+ \(.+\)$/
+    const userAgentPattern = /^NewRelic-[a-zA-Z0-9]+\/[0-9.\-]+ \(.+\)$/
     if (!userAgentPattern.test(request.header('User-Agent'))) {
       validation.header_errors.push("'User-Agent' should conform to New Relic standards")
     }
@@ -251,7 +256,7 @@ function handleGenerically(validator) {
   }
 }
 
-var methods = {
+const methods = {
   preconnect: function(req, res, validations, next) {
     validators.originalHost(req, validations)
 
@@ -294,7 +299,7 @@ var methods = {
 }
 
 function bootstrap(options, callback) {
-  var server = restify.createServer({
+  const server = restify.createServer({
     key: fs.readFileSync(path.join(__dirname, './test-key.key')),
     certificate: fs.readFileSync(
       path.join(
@@ -318,7 +323,7 @@ function bootstrap(options, callback) {
   }))
 
   server.post('/agent_listener/invoke_raw_method', function(req, res, next) {
-    var validations = {}
+    const validations = {}
     validators.queryString(req.query, validations)
     validators.httpHeaders(req, validations)
 
