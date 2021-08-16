@@ -33,7 +33,7 @@ code, the source code can be found at [https://github.com/newrelic/node-newrelic
 * [@newrelic/proxy](#newrelicproxy)
 * [@newrelic/test-utilities](#newrelictest-utilities)
 * [@octokit/rest](#octokitrest)
-* [JSV](#JSV)
+* [ajv](#ajv)
 * [architect](#architect)
 * [benchmark](#benchmark)
 * [bluebird](#bluebird)
@@ -65,7 +65,6 @@ code, the source code can be found at [https://github.com/newrelic/node-newrelic
 * [sinon](#sinon)
 * [tap](#tap)
 * [temp](#temp)
-* [through](#through)
 * [when](#when)
 
 **[optionalDependencies](#optionalDependencies)**
@@ -81,7 +80,7 @@ code, the source code can be found at [https://github.com/newrelic/node-newrelic
 
 ### @grpc/grpc-js
 
-This product includes source derived from [@grpc/grpc-js](https://github.com/grpc/grpc-node/tree/master/packages/grpc-js) ([v1.3.6](https://github.com/grpc/grpc-node/tree/master/packages/grpc-js/tree/v1.3.6)), distributed under the [Apache-2.0 License](https://github.com/grpc/grpc-node/tree/master/packages/grpc-js/blob/v1.3.6/LICENSE):
+This product includes source derived from [@grpc/grpc-js](https://github.com/grpc/grpc-node/tree/master/packages/grpc-js) ([v1.3.7](https://github.com/grpc/grpc-node/tree/master/packages/grpc-js/tree/v1.3.7)), distributed under the [Apache-2.0 License](https://github.com/grpc/grpc-node/tree/master/packages/grpc-js/blob/v1.3.7/LICENSE):
 
 ```
                                  Apache License
@@ -1154,7 +1153,7 @@ THE SOFTWARE.
 
 ### async
 
-This product includes source derived from [async](https://github.com/caolan/async) ([v3.2.0](https://github.com/caolan/async/tree/v3.2.0)), distributed under the [MIT License](https://github.com/caolan/async/blob/v3.2.0/LICENSE):
+This product includes source derived from [async](https://github.com/caolan/async) ([v3.2.1](https://github.com/caolan/async/tree/v3.2.1)), distributed under the [MIT License](https://github.com/caolan/async/blob/v3.2.1/LICENSE):
 
 ```
 Copyright (c) 2010-2018 Caolan McMahon
@@ -1765,7 +1764,7 @@ This product includes source derived from [@newrelic/test-utilities](https://git
 
 ### @octokit/rest
 
-This product includes source derived from [@octokit/rest](https://github.com/octokit/rest.js) ([v18.8.0](https://github.com/octokit/rest.js/tree/v18.8.0)), distributed under the [MIT License](https://github.com/octokit/rest.js/blob/v18.8.0/LICENSE):
+This product includes source derived from [@octokit/rest](https://github.com/octokit/rest.js) ([v18.9.1](https://github.com/octokit/rest.js/tree/v18.9.1)), distributed under the [MIT License](https://github.com/octokit/rest.js/blob/v18.9.1/LICENSE):
 
 ```
 The MIT License
@@ -1793,12 +1792,34 @@ THE SOFTWARE.
 
 ```
 
-### JSV
+### ajv
 
-This product includes source derived from [JSV](https://github.com/garycourt/JSV) ([v4.0.2](https://github.com/garycourt/JSV/tree/v4.0.2)), distributed under the [FreeBSD License](https://github.com/garycourt/JSV/tree/v4.0.2#license):
+This product includes source derived from [ajv](https://github.com/ajv-validator/ajv) ([v6.12.6](https://github.com/ajv-validator/ajv/tree/v6.12.6)), distributed under the [MIT License](https://github.com/ajv-validator/ajv/blob/v6.12.6/LICENSE):
 
 ```
-undefined
+The MIT License (MIT)
+
+Copyright (c) 2015-2017 Evgeny Poberezkin
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+
 ```
 
 ### architect
@@ -2288,7 +2309,7 @@ https://github.com/jmblog/color-themes-for-google-code-prettify
 
 ### lint-staged
 
-This product includes source derived from [lint-staged](https://github.com/okonet/lint-staged) ([v11.1.1](https://github.com/okonet/lint-staged/tree/v11.1.1)), distributed under the [MIT License](https://github.com/okonet/lint-staged/blob/v11.1.1/LICENSE):
+This product includes source derived from [lint-staged](https://github.com/okonet/lint-staged) ([v11.1.2](https://github.com/okonet/lint-staged/tree/v11.1.2)), distributed under the [MIT License](https://github.com/okonet/lint-staged/blob/v11.1.2/LICENSE):
 
 ```
 The MIT License (MIT)
@@ -2412,7 +2433,7 @@ https://github.com/jsdoc3/jsdoc
 
 ### mongodb
 
-This product includes source derived from [mongodb](https://github.com/mongodb/node-mongodb-native) ([v3.6.10](https://github.com/mongodb/node-mongodb-native/tree/v3.6.10)), distributed under the [Apache-2.0 License](https://github.com/mongodb/node-mongodb-native/blob/v3.6.10/LICENSE.md):
+This product includes source derived from [mongodb](https://github.com/mongodb/node-mongodb-native) ([v3.6.11](https://github.com/mongodb/node-mongodb-native/tree/v3.6.11)), distributed under the [Apache-2.0 License](https://github.com/mongodb/node-mongodb-native/blob/v3.6.11/LICENSE.md):
 
 ```
 Apache License
@@ -2970,29 +2991,6 @@ FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
 COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
 IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-
-```
-
-### through
-
-This product includes source derived from [through](https://github.com/dominictarr/through) ([v2.3.8](https://github.com/dominictarr/through/tree/v2.3.8)), distributed under the [MIT License](https://github.com/dominictarr/through/blob/v2.3.8/LICENSE.APACHE2):
-
-```
-Apache License, Version 2.0
-
-Copyright (c) 2011 Dominic Tarr
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
 
 ```
 
