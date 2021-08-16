@@ -8,6 +8,7 @@
   "concat-stream": "MIT",
   "https-proxy-agent": "MIT",
   "json-stringify-safe": "ISC",
+  "readable-stream": "MIT",
   "semver": "ISC",
   "@grpc/grpc-js": "Apache-2.0",
   "@grpc/proto-loader": "Apache-2.0"
