@@ -33,7 +33,6 @@ bower_components
 build/Release
 
 # Dependency directories
-package-lock.json
 node_modules/
 jspm_packages/
 
