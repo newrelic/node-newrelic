@@ -164,7 +164,7 @@ tap.test('#applyLasp', (t) => {
     t.equal(config.transaction_tracer.record_sql, 'off')
     t.equal(agent._resetQueries.callCount, 1)
     t.equal(config.attributes.include_enabled, false)
-    t.deepEqual(config.attributes.exclude, ['request.parameters.*'])
+    t.same(config.attributes.exclude, ['request.parameters.*'])
     t.equal(config.strip_exception_messages.enabled, true)
     t.equal(agent._resetErrors.callCount, 1)
     t.equal(config.api.custom_events_enabled, false)
@@ -215,7 +215,7 @@ tap.test('#applyLasp', (t) => {
 
   t.test('should return known policies', (t) => {
     const response = config.applyLasp(agent, policies)
-    t.deepEqual(response.payload, {
+    t.same(response.payload, {
       record_sql: { enabled: false, required: false },
       attributes_include: { enabled: false, required: false },
       allow_raw_exception_messages: { enabled: false, required: false },

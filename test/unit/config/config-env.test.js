@@ -47,7 +47,7 @@ tap.test('when overriding configuration values via environment variables', (t) =
       {'NEW_RELIC_APP_NAME': 'app one,app two;and app three'},
       (tc) => {
         t.ok(tc.app_name)
-        t.deepEqual(tc.app_name, ['app one', 'app two', 'and app three'])
+        t.same(tc.app_name, ['app one', 'app two', 'and app three'])
         t.end()
       }
     )
@@ -56,7 +56,7 @@ tap.test('when overriding configuration values via environment variables', (t) =
   t.test('should trim spaces from multiple application names ', (t) => {
     idempotentEnv({'NEW_RELIC_APP_NAME': 'zero,one, two,  three;   four'}, (tc) => {
       t.ok(tc.app_name)
-      t.deepEqual(tc.app_name, ['zero', 'one', 'two', 'three', 'four'])
+      t.same(tc.app_name, ['zero', 'one', 'two', 'three', 'four'])
       t.end()
     })
   })
@@ -173,8 +173,8 @@ tap.test('when overriding configuration values via environment variables', (t) =
     idempotentEnv(env, (tc) => {
       t.equal(tc.span_events.enabled, true)
       t.equal(tc.span_events.attributes.enabled, true)
-      t.deepEqual(tc.span_events.attributes.include, ['one', 'two', 'three'])
-      t.deepEqual(tc.span_events.attributes.exclude, ['four', 'five', 'six'])
+      t.same(tc.span_events.attributes.include, ['one', 'two', 'three'])
+      t.same(tc.span_events.attributes.exclude, ['four', 'five', 'six'])
 
       t.end()
     })
@@ -188,8 +188,8 @@ tap.test('when overriding configuration values via environment variables', (t) =
     }
     idempotentEnv(env, (tc) => {
       t.equal(tc.transaction_segments.attributes.enabled, true)
-      t.deepEqual(tc.transaction_segments.attributes.include, ['one', 'two', 'three'])
-      t.deepEqual(tc.transaction_segments.attributes.exclude, ['four', 'five', 'six'])
+      t.same(tc.transaction_segments.attributes.include, ['one', 'two', 'three'])
+      t.same(tc.transaction_segments.attributes.exclude, ['four', 'five', 'six'])
 
       t.end()
     })
@@ -294,7 +294,7 @@ tap.test('when overriding configuration values via environment variables', (t) =
 
   t.test('should pick up excluded attributes', (t) => {
     idempotentEnv({'NEW_RELIC_ATTRIBUTES_EXCLUDE': 'one,two,three'}, (tc) => {
-      t.deepEqual(tc.attributes.exclude, ['one', 'two', 'three'])
+      t.same(tc.attributes.exclude, ['one', 'two', 'three'])
       t.end()
     })
   })
@@ -317,7 +317,7 @@ tap.test('when overriding configuration values via environment variables', (t) =
     idempotentEnv(
       {'NEW_RELIC_ERROR_COLLECTOR_IGNORE_ERROR_CODES': '401,404,502'},
       (tc) => {
-        t.deepEqual(tc.error_collector.ignore_status_codes, [401, 404, 502])
+        t.same(tc.error_collector.ignore_status_codes, [401, 404, 502])
         t.end()
       }
     )
@@ -327,7 +327,7 @@ tap.test('when overriding configuration values via environment variables', (t) =
     idempotentEnv(
       {'NEW_RELIC_ERROR_COLLECTOR_IGNORE_ERROR_CODES': '401, 420-421, 502'},
       (tc) => {
-        t.deepEqual(tc.error_collector.ignore_status_codes, [401, 420, 421, 502])
+        t.same(tc.error_collector.ignore_status_codes, [401, 420, 421, 502])
         t.end()
       }
     )
@@ -337,7 +337,7 @@ tap.test('when overriding configuration values via environment variables', (t) =
     idempotentEnv(
       {'NEW_RELIC_ERROR_COLLECTOR_IGNORE_ERROR_CODES': '421-420'},
       (tc) => {
-        t.deepEqual(tc.error_collector.ignore_status_codes, [])
+        t.same(tc.error_collector.ignore_status_codes, [])
         t.end()
       }
     )
@@ -347,7 +347,7 @@ tap.test('when overriding configuration values via environment variables', (t) =
     idempotentEnv(
       {'NEW_RELIC_ERROR_COLLECTOR_IGNORE_ERROR_CODES': '1 - 1776'},
       (tc) => {
-        t.deepEqual(tc.error_collector.ignore_status_codes, [])
+        t.same(tc.error_collector.ignore_status_codes, [])
         t.end()
       }
     )
@@ -357,7 +357,7 @@ tap.test('when overriding configuration values via environment variables', (t) =
     idempotentEnv(
       {'NEW_RELIC_ERROR_COLLECTOR_IGNORE_ERROR_CODES': '-7'},
       (tc) => {
-        t.deepEqual(tc.error_collector.ignore_status_codes, [-7])
+        t.same(tc.error_collector.ignore_status_codes, [-7])
         t.end()
       }
     )
@@ -367,7 +367,7 @@ tap.test('when overriding configuration values via environment variables', (t) =
     idempotentEnv(
       {'NEW_RELIC_ERROR_COLLECTOR_IGNORE_ERROR_CODES': 'abc'},
       (tc) => {
-        t.deepEqual(tc.error_collector.ignore_status_codes, [])
+        t.same(tc.error_collector.ignore_status_codes, [])
         t.end()
       }
     )
@@ -377,7 +377,7 @@ tap.test('when overriding configuration values via environment variables', (t) =
     idempotentEnv(
       {'NEW_RELIC_ERROR_COLLECTOR_EXPECTED_ERROR_CODES': '401,404,502'},
       (tc) => {
-        t.deepEqual(tc.error_collector.expected_status_codes, [401, 404, 502])
+        t.same(tc.error_collector.expected_status_codes, [401, 404, 502])
         t.end()
       }
     )
@@ -387,7 +387,7 @@ tap.test('when overriding configuration values via environment variables', (t) =
     idempotentEnv(
       {'NEW_RELIC_ERROR_COLLECTOR_EXPECTED_ERROR_CODES': '401, 420-421, 502'},
       (tc) => {
-        t.deepEqual(tc.error_collector.expected_status_codes, [401, 420, 421, 502])
+        t.same(tc.error_collector.expected_status_codes, [401, 420, 421, 502])
         t.end()
       }
     )
@@ -397,7 +397,7 @@ tap.test('when overriding configuration values via environment variables', (t) =
     idempotentEnv(
       {'NEW_RELIC_ERROR_COLLECTOR_EXPECTED_ERROR_CODES': '421-420'},
       (tc) => {
-        t.deepEqual(tc.error_collector.expected_status_codes, [])
+        t.same(tc.error_collector.expected_status_codes, [])
         t.end()
       }
     )
@@ -407,7 +407,7 @@ tap.test('when overriding configuration values via environment variables', (t) =
     idempotentEnv(
       {'NEW_RELIC_ERROR_COLLECTOR_EXPECTED_ERROR_CODES': '1 - 1776'},
       (tc) => {
-        t.deepEqual(tc.error_collector.expected_status_codes, [])
+        t.same(tc.error_collector.expected_status_codes, [])
         t.end()
       }
     )
@@ -417,7 +417,7 @@ tap.test('when overriding configuration values via environment variables', (t) =
     idempotentEnv(
       {'NEW_RELIC_ERROR_COLLECTOR_EXPECTED_ERROR_CODES': '-7'},
       (tc) => {
-        t.deepEqual(tc.error_collector.expected_status_codes, [-7])
+        t.same(tc.error_collector.expected_status_codes, [-7])
         t.end()
       }
     )
@@ -427,7 +427,7 @@ tap.test('when overriding configuration values via environment variables', (t) =
     idempotentEnv(
       {'NEW_RELIC_ERROR_COLLECTOR_EXPECTED_ERROR_CODES': 'abc'},
       (tc) => {
-        t.deepEqual(tc.error_collector.expected_status_codes, [])
+        t.same(tc.error_collector.expected_status_codes, [])
         t.end()
       }
     )
@@ -469,7 +469,7 @@ tap.test('when overriding configuration values via environment variables', (t) =
         '{"name":"u","pattern":"^t"},{"name":"t","pattern":"^u"}'
       },
       (tc) => {
-        t.deepEqual(tc.rules.name, [
+        t.same(tc.rules.name, [
           {name: 'u', pattern: '^t'},
           {name: 't', pattern: '^u'},
         ])
@@ -486,7 +486,7 @@ tap.test('when overriding configuration values via environment variables', (t) =
         '^/test,^/no_match,^/socket\\.io/,^/api/.*/index$'
       },
       (tc) => {
-        t.deepEqual(tc.rules.ignore, [
+        t.same(tc.rules.ignore, [
           '^/test',
           '^/no_match',
           '^/socket\\.io/',
@@ -507,7 +507,7 @@ tap.test('when overriding configuration values via environment variables', (t) =
 
   t.test('should pick app name from APP_POOL_ID', (t) => {
     idempotentEnv({'APP_POOL_ID': 'Simple Azure app'}, (tc) => {
-      t.deepEqual(tc.applications(), ['Simple Azure app'])
+      t.same(tc.applications(), ['Simple Azure app'])
       t.end()
     })
   })
@@ -580,7 +580,7 @@ tap.test('when overriding configuration values via environment variables', (t) =
     idempotentEnv(
       {'NEW_RELIC_ERROR_COLLECTOR_IGNORE_ERRORS': 'Error, AnotherError'},
       (tc) => {
-        t.deepEqual(tc.error_collector.ignore_classes, ['Error', 'AnotherError'])
+        t.same(tc.error_collector.ignore_classes, ['Error', 'AnotherError'])
         t.end()
       }
     )
@@ -590,7 +590,7 @@ tap.test('when overriding configuration values via environment variables', (t) =
     idempotentEnv(
       {'NEW_RELIC_ERROR_COLLECTOR_EXPECTED_ERRORS': 'QError, AnotherError'},
       (tc) => {
-        t.deepEqual(tc.error_collector.expected_classes, ['QError', 'AnotherError'])
+        t.same(tc.error_collector.expected_classes, ['QError', 'AnotherError'])
         t.end()
       }
     )

@@ -20,7 +20,7 @@ tap.test('#constructor', (t) => {
       return new AttributeFilter()
     })
 
-    t.notThrow(function() {
+    t.doesNotThrow(function() {
       return new AttributeFilter(makeAttributeFilterConfig())
     })
 

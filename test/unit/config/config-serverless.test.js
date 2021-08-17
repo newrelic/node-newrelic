@@ -305,7 +305,7 @@ tap.test('serverless mode via ENV variables', (t) => {
       AWS_LAMBDA_FUNCTION_NAME: 'MyLambdaFunc'
     }, (tc) => {
       t.ok(tc.app_name)
-      t.deepEqual(tc.applications(), ['MyLambdaFunc'])
+      t.same(tc.applications(), ['MyLambdaFunc'])
       t.end()
     })
   })
@@ -313,7 +313,7 @@ tap.test('serverless mode via ENV variables', (t) => {
   t.test('should default generic app name when no AWS_LAMBDA_FUNCTION_NAME', (t) => {
     idempotentEnv({NEW_RELIC_SERVERLESS_MODE_ENABLED: true}, (tc) => {
       t.ok(tc.app_name)
-      t.deepEqual(tc.applications(), ['Serverless Application'])
+      t.same(tc.applications(), ['Serverless Application'])
 
       t.end()
     })
@@ -420,7 +420,7 @@ tap.test('when distributed_tracing manually set in serverless_mode', (t) => {
       NEW_RELIC_SERVERLESS_MODE_ENABLED: true,
       NEW_RELIC_DISTRIBUTED_TRACING_ENABLED: true
     }
-    t.notThrow(idempotentEnv.bind(idempotentEnv, env, () => {}))
+    t.doesNotThrow(idempotentEnv.bind(idempotentEnv, env, () => {}))
     t.end()
   })
 })
