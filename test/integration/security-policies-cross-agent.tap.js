@@ -83,6 +83,7 @@ tap.test('LASP/CSP - Cross Agent Tests', (t) => {
     connectBody = null
 
     if (!nock.isDone()) {
+      // eslint-disable-next-line no-console
       console.error('Cleaning pending mocks: %j', nock.pendingMocks())
       nock.cleanAll()
     }

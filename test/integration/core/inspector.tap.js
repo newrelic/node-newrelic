@@ -10,15 +10,10 @@ try {
   // eslint-disable-next-line node/no-unsupported-features/node-builtins
   var inspector = require('inspector')
 } catch (e) {
-  console.log('inspector failed to load, skipping tests', e)
-  return
+  // will skip tests below
 }
 var helper = require('../../lib/agent_helper')
-
-test('inspector', function (t) {
-  if (!inspector) {
-    return t.end()
-  }
+test('inspector', { skip: !inspector }, function (t) {
   var agent = setupAgent(t)
   helper.runInTransaction(agent, function (txn) {
     var session = new inspector.Session()

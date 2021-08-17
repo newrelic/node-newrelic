@@ -6,8 +6,10 @@
 
 'use strict'
 
+/* eslint-disable no-console */
 console.log('I am stdout')
 console.error('I am stderr')
+/* eslint-enable no-console */
 
 if (process.send) {
   process.send('hello')

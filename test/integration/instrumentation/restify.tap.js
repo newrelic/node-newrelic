@@ -41,12 +41,14 @@ tap.test('should not crash when Restify handles a connection', function (t) {
     // server port not guranteed to be not in use
     if (e.code === 'EADDRINUSE') {
       if (attempts >= MAX_PORT_ATTEMPTS) {
+        // eslint-disable-next-line no-console
         console.log('Exceeded max attempts (%s), bailing out.', MAX_PORT_ATTEMPTS)
         throw new Error('Unable to get unused port')
       }
 
       attempts++
 
+      // eslint-disable-next-line no-console
       console.log('Address in use, retrying...')
       setTimeout(() => {
         server.close()
