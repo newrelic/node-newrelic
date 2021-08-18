@@ -27,12 +27,6 @@ module.exports = {
   postgres_pass: process.env.NR_NODE_TEST_POSTGRES_PASS,
   postgres_db: process.env.NR_NODE_TEST_POSTGRES_DB || 'postgres',
 
-  oracle_host: process.env.NR_NODE_TEST_ORACLE_HOST || 'localhost',
-  oracle_port: process.env.NR_NODE_TEST_ORACLE_PORT || 1521,
-  oracle_user: process.env.NR_NODE_TEST_ORACLE_USER || 'system',
-  oracle_pass: process.env.NR_NODE_TEST_ORACLE_PASS || 'oracle',
-  oracle_db: process.env.NR_NODE_TEST_ORACLE_DB || 'xe',
-
   rabbitmq_host: process.env.NR_NODE_TEST_RABBIT_HOST || 'localhost',
   rabbitmq_port: process.env.NR_NODE_TEST_RABBIT_PORT || 5672
 }
