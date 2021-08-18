@@ -5,126 +5,138 @@
 
 'use strict'
 
-// TODO: convert to normal tap style.
-// Below allows use of mocha DSL with tap runner.
-require('tap').mochaGlobals()
+const tap = require('tap')
 
-const chai = require('chai')
-const expect = chai.expect
 const harvestConfigValidator = require('../../../lib/config/harvest-config-validator')
 
-describe('#isValidHarvestValue', () => {
-  it('should be valid when positive number', () => {
+tap.test('#isValidHarvestValue', (t) => {
+  t.autoend()
+
+  t.test('should be valid when positive number', (t) => {
     const isValid = harvestConfigValidator.isValidHarvestValue(1)
-    expect(isValid).to.be.true
+    t.equal(isValid, true)
+
+    t.end()
   })
 
-  it('should be valid when zero', () => {
+  t.test('should be valid when zero', (t) => {
     const isValid = harvestConfigValidator.isValidHarvestValue(0)
-    expect(isValid).to.be.true
+    t.equal(isValid, true)
+
+    t.end()
   })
 
-  it('should be invalid when null', () => {
+  t.test('should be invalid when null', (t) => {
     const isValid = harvestConfigValidator.isValidHarvestValue(null)
-    expect(isValid).to.be.false
+    t.equal(isValid, false)
+
+    t.end()
   })
 
-  it('should be invalid when undefined', () => {
+  t.test('should be invalid when undefined', (t) => {
     const isValid = harvestConfigValidator.isValidHarvestValue()
-    expect(isValid).to.be.false
+    t.equal(isValid, false)
+
+    t.end()
   })
 
-  it('should be invalid when less than zero', () => {
+  t.test('should be invalid when less than zero', (t) => {
     const isValid = harvestConfigValidator.isValidHarvestValue(-1)
-    expect(isValid).to.be.false
+    t.equal(isValid, false)
+
+    t.end()
   })
 })
 
-describe('#isHarvestConfigValid', () => {
-  describe('with valid config', () => {
-    it('should be valid', () => {
-      const validConfig = getValidHarvestConfig()
-      const isValidConfig = harvestConfigValidator.isValidHarvestConfig(validConfig)
-      expect(isValidConfig).to.be.true
-    })
+tap.test('#isHarvestConfigValid', (t) => {
+  t.autoend()
+
+  t.test('should be valid with valid config', (t) => {
+    const validConfig = getValidHarvestConfig()
+    const isValidConfig = harvestConfigValidator.isValidHarvestConfig(validConfig)
+
+    t.equal(isValidConfig, true)
+
+    t.end()
   })
 
-  describe('with invalid report_period', () => {
+  t.test('should be invalid with invalid report_period', (t) => {
     const invalidConfig = getValidHarvestConfig()
     invalidConfig.report_period_ms = null
 
-    it('should be invalid', () => {
-      const isValidConfig = harvestConfigValidator.isValidHarvestConfig(invalidConfig)
-      expect(isValidConfig).to.be.false
-    })
+    const isValidConfig = harvestConfigValidator.isValidHarvestConfig(invalidConfig)
+    t.equal(isValidConfig, false)
+
+    t.end()
   })
 
-  describe('with missing harvest_limits', () => {
+  t.test('should be invalid with missing harvest_limits', (t) => {
     const invalidConfig = getValidHarvestConfig()
     invalidConfig.harvest_limits = null
 
-    it('should be invalid', () => {
-      const isValidConfig = harvestConfigValidator.isValidHarvestConfig(invalidConfig)
-      expect(isValidConfig).to.be.false
-    })
+    const isValidConfig = harvestConfigValidator.isValidHarvestConfig(invalidConfig)
+    t.equal(isValidConfig, false)
+
+    t.end()
   })
 
-  describe('with empty harvest_limits', () => {
+  t.test('should be invalid with empty harvest_limits', (t) => {
     const invalidConfig = getValidHarvestConfig()
     invalidConfig.harvest_limits = {}
 
-    it('should be invalid', () => {
-      const isValidConfig = harvestConfigValidator.isValidHarvestConfig(invalidConfig)
-      expect(isValidConfig).to.be.false
-    })
+    const isValidConfig = harvestConfigValidator.isValidHarvestConfig(invalidConfig)
+    t.equal(isValidConfig, false)
+
+    t.end()
   })
 
-  describe('with valid analytic_event_data', () => {
+  // TODO: organize the valids together
+  t.test('should be valid with valid analytic_event_data', (t) => {
     const validConfig = getValidHarvestConfig()
     validConfig.harvest_limits.error_event_data = null
     validConfig.harvest_limits.custom_event_data = null
     validConfig.harvest_limits.span_event_data = null
 
-    it('should be valid', () => {
-      const isValidConfig = harvestConfigValidator.isValidHarvestConfig(validConfig)
-      expect(isValidConfig).to.be.true
-    })
+    const isValidConfig = harvestConfigValidator.isValidHarvestConfig(validConfig)
+    t.equal(isValidConfig, true)
+
+    t.end()
   })
 
-  describe('with valid custom_event_data', () => {
+  t.test('should be valid with custom_event_data', (t) => {
     const validConfig = getValidHarvestConfig()
     validConfig.harvest_limits.error_event_data = null
     validConfig.harvest_limits.analytic_event_data = null
     validConfig.harvest_limits.span_event_data = null
 
-    it('should be valid', () => {
-      const isValidConfig = harvestConfigValidator.isValidHarvestConfig(validConfig)
-      expect(isValidConfig).to.be.true
-    })
+    const isValidConfig = harvestConfigValidator.isValidHarvestConfig(validConfig)
+    t.equal(isValidConfig, true)
+
+    t.end()
   })
 
-  describe('with valid error_event_data', () => {
+  t.test('should be valid with valid error_event_data', (t) => {
     const validConfig = getValidHarvestConfig()
     validConfig.harvest_limits.custom_event_data = null
     validConfig.harvest_limits.analytic_event_data = null
     validConfig.harvest_limits.span_event_data = null
 
-    it('should be valid', () => {
-      const isValidConfig = harvestConfigValidator.isValidHarvestConfig(validConfig)
-      expect(isValidConfig).to.be.true
-    })
+    const isValidConfig = harvestConfigValidator.isValidHarvestConfig(validConfig)
+    t.equal(isValidConfig, true)
+
+    t.end()
   })
 
-  describe('with valid span_event_data', () => {
+  t.test('should be valid with valid span_event_data', (t) => {
     const validConfig = getValidHarvestConfig()
     validConfig.harvest_limits.error_event_data = null
     validConfig.harvest_limits.custom_event_data = null
     validConfig.harvest_limits.analytic_event_data = null
 
-    it('should be valid', () => {
-      const isValidConfig = harvestConfigValidator.isValidHarvestConfig(validConfig)
-      expect(isValidConfig).to.be.true
-    })
+    const isValidConfig = harvestConfigValidator.isValidHarvestConfig(validConfig)
+    t.equal(isValidConfig, true)
+
+    t.end()
   })
 })
 
