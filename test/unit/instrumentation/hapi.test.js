@@ -5,55 +5,58 @@
 
 'use strict'
 
-// TODO: convert to normal tap style.
-// Below allows use of mocha DSL with tap runner.
-require('tap').mochaGlobals()
+const tap = require('tap')
+const helper = require('../../lib/agent_helper')
+const shims = require('../../../lib/shim')
 
-var chai = require('chai')
-var expect = chai.expect
-var helper = require('../../lib/agent_helper')
+tap.test('an instrumented Hapi application', function (t) {
+  t.autoend()
 
-var shims = require('../../../lib/shim')
+  t.test("shouldn't cause bootstrapping to fail", function (t) {
+    t.autoend()
 
-describe('an instrumented Hapi application', function () {
-  describe("shouldn't cause bootstrapping to fail", function () {
-    var agent
-    var initialize
+    let agent
+    let initialize
 
-    before(function () {
+    t.before(function () {
       agent = helper.loadMockedAgent()
       initialize = require('../../../lib/instrumentation/hapi')
     })
 
-    after(function () {
+    t.teardown(function () {
       helper.unloadAgent(agent)
     })
 
-    it('when passed nothing', function () {
-      expect(function () {
+    t.test('when passed nothing', function (t) {
+      t.doesNotThrow(function () {
         initialize()
-      }).not.throws()
+      })
+      t.end()
     })
 
-    it('when passed no module', function () {
-      expect(function () {
+    t.test('when passed no module', function (t) {
+      t.doesNotThrow(function () {
         initialize(agent)
-      }).not.throws()
+      })
+      t.end()
     })
 
-    it('when passed an empty module', function () {
+    t.test('when passed an empty module', function (t) {
       initialize(agent, {})
-      expect(function () {
+      t.doesNotThrow(function () {
         initialize(agent, {})
-      }).not.throws()
+      })
+      t.end()
     })
   })
 
-  describe('when stubbed', function () {
-    var agent
-    var stub
+  t.test('when stubbed', function (t) {
+    t.autoend()
 
-    beforeEach(function () {
+    let agent
+    let stub
+
+    t.beforeEach(function () {
       agent = helper.instrumentMockedAgent()
       agent.environment.clearFramework()
 
@@ -63,22 +66,23 @@ describe('an instrumented Hapi application', function () {
 
       stub = { Server: Server }
 
-      var shim = new shims.WebFrameworkShim(agent, 'hapi')
+      const shim = new shims.WebFrameworkShim(agent, 'hapi')
 
       require('../../../lib/instrumentation/hapi')(agent, stub, 'hapi', shim)
     })
 
-    afterEach(function () {
+    t.afterEach(function () {
       helper.unloadAgent(agent)
     })
 
-    it('should set framework to Hapi when a new app is created', function () {
-      var server = new stub.Server()
+    t.test('should set framework to Hapi when a new app is created', function (t) {
+      const server = new stub.Server()
       server.start()
 
-      var frameworks = agent.environment.get('Framework')
-      expect(frameworks.length).equal(1)
-      expect(frameworks[0]).equal('Hapi')
+      const frameworks = agent.environment.get('Framework')
+      t.equal(frameworks.length, 1)
+      t.equal(frameworks[0], 'Hapi')
+      t.end()
     })
   })
 })

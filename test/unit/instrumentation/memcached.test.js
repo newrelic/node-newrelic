@@ -5,55 +5,55 @@
 
 'use strict'
 
-// TODO: convert to normal tap style.
-// Below allows use of mocha DSL with tap runner.
-require('tap').mochaGlobals()
-
-const chai = require('chai')
-const expect = chai.expect
 const helper = require('../../lib/agent_helper')
+const tap = require('tap')
 
-describe('agent instrumentation of memcached', function () {
-  describe("shouldn't cause bootstrapping to fail", function () {
+tap.test('agent instrumentation of memcached', function (t) {
+  t.autoend()
+  t.test("shouldn't cause bootstrapping to fail", function (t) {
+    t.autoend()
     let agent
     let initialize
 
-    before(function () {
+    t.before(function () {
       agent = helper.loadMockedAgent()
       initialize = require('../../../lib/instrumentation/memcached')
     })
 
-    after(function () {
+    t.teardown(function () {
       helper.unloadAgent(agent)
     })
 
-    it('when passed no module', function () {
-      expect(function () {
+    t.test('when passed no module', function (t) {
+      t.doesNotThrow(() => {
         initialize(agent)
-      }).not.throws()
+      })
+      t.end()
     })
 
-    it('when passed an empty module', function () {
-      expect(function () {
+    t.test('when passed an empty module', function (t) {
+      t.doesNotThrow(() => {
         initialize(agent, {})
-      }).not.throws()
+      })
+      t.end()
     })
   })
 
-  describe('for each operation', function () {
-    it('should update the global aggregate statistics')
-    it('should also update the global web aggregate statistics')
-    it('should update the aggregate statistics for the operation type')
-    it('should update the scoped aggregate statistics for the operation type')
+  t.test('for each operation', function (t) {
+    t.autoend()
+    t.test('should update the global aggregate statistics')
+    t.test('should also update the global web aggregate statistics')
+    t.test('should update the aggregate statistics for the operation type')
+    t.test('should update the scoped aggregate statistics for the operation type')
   })
 
-  it('should instrument setting data')
-  it('should instrument adding data')
-  it('should instrument appending data')
-  it('should instrument prepending data')
-  it('should instrument checking and setting data')
-  it('should instrument incrementing data')
-  it('should instrument decrementing data')
-  it('should instrument getting data')
-  it('should instrument deleting data')
+  t.test('should instrument setting data')
+  t.test('should instrument adding data')
+  t.test('should instrument appending data')
+  t.test('should instrument prepending data')
+  t.test('should instrument checking and setting data')
+  t.test('should instrument incrementing data')
+  t.test('should instrument decrementing data')
+  t.test('should instrument getting data')
+  t.test('should instrument deleting data')
 })
