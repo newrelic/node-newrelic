@@ -23,7 +23,6 @@
     "redis": "*",
     "restify": "*",
     "superagent": "*",
-    "oracle": "*",
     "when": "*"
   }
 }
