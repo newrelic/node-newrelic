@@ -1,7 +1,8 @@
 /*
-* Copyright 2020 New Relic Corporation. All rights reserved.
-* SPDX-License-Identifier: Apache-2.0
-*/
+ * Copyright 2020 New Relic Corporation. All rights reserved.
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 'use strict'
 
 const UNKNOWN = 'Unknown'
@@ -11,10 +12,7 @@ function validate(shim, AWS) {
     shim.logger.debug('Could not find NodeHttpClient, not instrumenting.')
     return false
   }
-  if (
-    !shim.isFunction(AWS.Service) ||
-    !shim.isFunction(AWS.Service.prototype.makeRequest)
-  ) {
+  if (!shim.isFunction(AWS.Service) || !shim.isFunction(AWS.Service.prototype.makeRequest)) {
     shim.logger.debug('Could not find AWS.Service#makeRequest, not instrumenting.')
     return false
   }

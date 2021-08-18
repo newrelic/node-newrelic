@@ -1,7 +1,8 @@
 /*
-* Copyright 2020 New Relic Corporation. All rights reserved.
-* SPDX-License-Identifier: Apache-2.0
-*/
+ * Copyright 2020 New Relic Corporation. All rights reserved.
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 'use strict'
 
 const http = require('http')
@@ -9,7 +10,7 @@ const fs = require('fs')
 const path = require('path')
 
 function createSqsServer() {
-  const server = http.createServer(function(req, res) {
+  const server = http.createServer(function (req, res) {
     if (req.method === 'POST') {
       handleSqsPost(req, res)
       return
@@ -25,8 +26,8 @@ function createSqsServer() {
 function handleSqsPost(req, res) {
   let body = ''
 
-  req.on('data', chunk => {
-      body += chunk.toString()
+  req.on('data', (chunk) => {
+    body += chunk.toString()
   })
 
   req.on('end', () => {
@@ -173,7 +174,7 @@ function getReceiveMessageResponse(callback) {
 
 function readFromXml(fileName, callback) {
   const fullPath = path.join(__dirname, 'responses', fileName)
-  fs.readFile(fullPath, 'utf8', function(err, data) {
+  fs.readFile(fullPath, 'utf8', function (err, data) {
     callback(err, data)
   })
 }

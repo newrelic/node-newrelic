@@ -1,7 +1,8 @@
 /*
-* Copyright 2020 New Relic Corporation. All rights reserved.
-* SPDX-License-Identifier: Apache-2.0
-*/
+ * Copyright 2020 New Relic Corporation. All rights reserved.
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 'use strict'
 
 const tap = require('tap')
@@ -33,7 +34,6 @@ tap.test('amazon-dax-client', (t) => {
       type: 'conglomerate',
       onRequire: require('../../lib/instrumentation')
     })
-
 
     AWS = require('aws-sdk')
     const AmazonDaxClient = require('amazon-dax-client')
@@ -87,12 +87,16 @@ tap.test('amazon-dax-client', (t) => {
         t.equal(segment.name, 'Datastore/operation/DynamoDB/getItem')
 
         const attrs = segment.attributes.get(common.SEGMENT_DESTINATION)
-        t.matches(attrs, {
-          host: 'unknown',
-          port_path_or_id: 'unknown',
-          collection: 'TableDoesNotExist',
-          product: 'DynamoDB'
-        }, 'should have expected attributes')
+        t.matches(
+          attrs,
+          {
+            host: 'unknown',
+            port_path_or_id: 'unknown',
+            collection: 'TableDoesNotExist',
+            product: 'DynamoDB'
+          },
+          'should have expected attributes'
+        )
 
         t.end()
       })

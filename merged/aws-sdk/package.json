@@ -9,7 +9,8 @@
     "versioned": "npm run versioned:npm7",
     "versioned:npm6": "versioned-tests --minor -i 2 'tests/versioned/*.tap.js'",
     "versioned:npm7": "versioned-tests --minor --all -i 2 'tests/versioned/*.tap.js'",
-    "lint": "eslint *.js lib tests"
+    "lint": "eslint *.js lib tests",
+    "lint:fix": "eslint --fix *.js lib tests"
   },
   "engines": {
     "node": ">=12.0.0"
@@ -21,11 +22,17 @@
   "author": "New Relic Node.js agent team <nodejs@newrelic.com>",
   "license": "Apache-2.0",
   "devDependencies": {
+    "@newrelic/eslint-config": "^0.0.1",
     "@newrelic/test-utilities": "^5.1.0",
     "async": "^2.6.1",
     "aws-sdk": "^2.403.0",
-    "eslint": "^5.12.1",
-    "newrelic": "^6.11.0",
+    "eslint": "^7.32.0",
+    "eslint-config-prettier": "^8.3.0",
+    "eslint-plugin-header": "^3.1.1",
+    "eslint-plugin-node": "^11.1.0",
+    "eslint-plugin-prettier": "^3.4.0",
+    "newrelic": "^8.1.0",
+    "prettier": "^2.3.2",
     "sinon": "^7.2.3",
     "tap": "^15.0.9"
   },

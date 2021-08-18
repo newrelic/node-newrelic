@@ -1,10 +1,11 @@
 /*
-* Copyright 2020 New Relic Corporation. All rights reserved.
-* SPDX-License-Identifier: Apache-2.0
-*/
+ * Copyright 2020 New Relic Corporation. All rights reserved.
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 'use strict'
 
-const {grabLastUrlSegment} = require('./util')
+const { grabLastUrlSegment } = require('./util')
 module.exports = {
   name: 'sqs',
   type: 'message',
@@ -44,5 +45,3 @@ function recordMessageApi(shim, original, name, args) {
     opaque: true
   }
 }
-
-

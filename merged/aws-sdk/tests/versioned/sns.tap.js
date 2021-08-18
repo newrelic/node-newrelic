@@ -1,7 +1,8 @@
 /*
-* Copyright 2020 New Relic Corporation. All rights reserved.
-* SPDX-License-Identifier: Apache-2.0
-*/
+ * Copyright 2020 New Relic Corporation. All rights reserved.
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 'use strict'
 
 const tap = require('tap')
@@ -20,7 +21,7 @@ tap.test('SNS', (t) => {
 
   let server = null
 
-  t.beforeEach(async() => {
+  t.beforeEach(async () => {
     server = createEmptyResponseServer()
 
     await new Promise((resolve) => {
@@ -51,7 +52,7 @@ tap.test('SNS', (t) => {
 
   t.test('publish with callback', (t) => {
     helper.runInTransaction((tx) => {
-      const params = {TopicArn, Message: 'Hello!'}
+      const params = { TopicArn, Message: 'Hello!' }
 
       sns.publish(params, (err) => {
         t.error(err)
@@ -64,8 +65,8 @@ tap.test('SNS', (t) => {
   })
 
   t.test('publish with promise', (t) => {
-    helper.runInTransaction(async tx => {
-      const params = {TopicArn, Message: 'Hello!'}
+    helper.runInTransaction(async (tx) => {
+      const params = { TopicArn, Message: 'Hello!' }
 
       try {
         await sns.publish(params).promise()
@@ -91,12 +92,16 @@ function finish(t, tx) {
   t.equal(externalSegments.length, 0, 'should not have any External segments')
 
   const attrs = messages[0].attributes.get(common.SEGMENT_DESTINATION)
-  t.matches(attrs, {
-    'aws.operation': 'publish',
-    'aws.requestId': String,
-    'aws.service': 'Amazon SNS',
-    'aws.region': 'us-east-1'
-  }, 'should have expected attributes for publish')
+  t.matches(
+    attrs,
+    {
+      'aws.operation': 'publish',
+      'aws.requestId': String,
+      'aws.service': 'Amazon SNS',
+      'aws.region': 'us-east-1'
+    },
+    'should have expected attributes for publish'
+  )
 
   t.end()
 }

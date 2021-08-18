@@ -1,7 +1,8 @@
 /*
-* Copyright 2020 New Relic Corporation. All rights reserved.
-* SPDX-License-Identifier: Apache-2.0
-*/
+ * Copyright 2020 New Relic Corporation. All rights reserved.
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 'use strict'
 
 const tap = require('tap')
@@ -19,7 +20,7 @@ tap.test('S3 buckets', (t) => {
 
   let server = null
 
-  t.beforeEach(async() => {
+  t.beforeEach(async () => {
     server = createEmptyResponseServer()
 
     await new Promise((resolve) => {
@@ -54,13 +55,13 @@ tap.test('S3 buckets', (t) => {
     const Bucket = 'delete-aws-sdk-test-bucket-' + Math.floor(Math.random() * 100000)
 
     helper.runInTransaction((tx) => {
-      S3.headBucket({Bucket}, (err) => {
+      S3.headBucket({ Bucket }, (err) => {
         t.error(err)
 
-        S3.createBucket({Bucket}, (err) => {
+        S3.createBucket({ Bucket }, (err) => {
           t.error(err)
 
-          S3.deleteBucket({Bucket}, (err) => {
+          S3.deleteBucket({ Bucket }, (err) => {
             t.error(err)
             tx.end()
 
@@ -75,9 +76,9 @@ tap.test('S3 buckets', (t) => {
   t.test('commands with promises', (t) => {
     const Bucket = 'delete-aws-sdk-test-bucket-' + Math.floor(Math.random() * 100000)
 
-    helper.runInTransaction(async tx => {
+    helper.runInTransaction(async (tx) => {
       try {
-        await S3.headBucket({Bucket}).promise()
+        await S3.headBucket({ Bucket }).promise()
       } catch (err) {
         t.error(err)
       }
@@ -85,13 +86,13 @@ tap.test('S3 buckets', (t) => {
       try {
         // using pathstyle will result in the params being mutated due to this call,
         // which is why the params are manually pasted in each call.
-        await S3.createBucket({Bucket}).promise()
+        await S3.createBucket({ Bucket }).promise()
       } catch (err) {
         t.error(err)
       }
 
       try {
-        await S3.deleteBucket({Bucket}).promise()
+        await S3.deleteBucket({ Bucket }).promise()
       } catch (err) {
         t.error(err)
       }
@@ -117,10 +118,14 @@ function finish(t, tx) {
 
 function checkAttrs(t, segment, operation) {
   const attrs = segment.attributes.get(common.SEGMENT_DESTINATION)
-  t.matches(attrs, {
-    'aws.operation': operation,
-    'aws.requestId': String,
-    'aws.service': 'Amazon S3',
-    'aws.region': 'us-east-1'
-  }, `should have expected attributes for ${operation}`)
+  t.matches(
+    attrs,
+    {
+      'aws.operation': operation,
+      'aws.requestId': String,
+      'aws.service': 'Amazon S3',
+      'aws.region': 'us-east-1'
+    },
+    `should have expected attributes for ${operation}`
+  )
 }

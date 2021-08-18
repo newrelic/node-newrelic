@@ -1,7 +1,8 @@
 /*
-* Copyright 2020 New Relic Corporation. All rights reserved.
-* SPDX-License-Identifier: Apache-2.0
-*/
+ * Copyright 2020 New Relic Corporation. All rights reserved.
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 'use strict'
 
 const DDB_OPERATIONS = [
@@ -45,7 +46,7 @@ function instrument(shim, AWS) {
           parameters: {
             host: this.endpoint && this.endpoint.host,
             port_path_or_id: this.endpoint && this.endpoint.port,
-            collection: params && params.TableName || 'Unknown'
+            collection: (params && params.TableName) || 'Unknown'
           },
           callback: shim.LAST,
           opaque: true
@@ -76,7 +77,7 @@ function instrument(shim, AWS) {
         parameters: {
           host: endpoint && endpoint.host,
           port_path_or_id: endpoint && endpoint.port,
-          collection: params && params.TableName || 'Unknown'
+          collection: (params && params.TableName) || 'Unknown'
         },
         callback: shim.LAST,
         opaque: true

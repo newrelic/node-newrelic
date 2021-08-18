@@ -1,13 +1,14 @@
 /*
-* Copyright 2020 New Relic Corporation. All rights reserved.
-* SPDX-License-Identifier: Apache-2.0
-*/
+ * Copyright 2020 New Relic Corporation. All rights reserved.
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 'use strict'
 
 const http = require('http')
 
 function createEmptyResponseServer() {
-  const server = http.createServer(function(req, res) {
+  const server = http.createServer(function (req, res) {
     if (
       req.method === 'GET' ||
       req.method === 'POST' ||
