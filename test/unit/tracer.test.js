@@ -16,16 +16,16 @@ const Segment = require('../../lib/transaction/trace/segment')
 
 const notRunningStates = ['stopped', 'stopping', 'errored']
 
-describe('Tracer', function() {
+describe('Tracer', function () {
   let agent = null
   let tracer = null
 
-  beforeEach(function() {
+  beforeEach(function () {
     agent = helper.loadMockedAgent()
     tracer = agent.tracer
   })
 
-  afterEach(function() {
+  afterEach(function () {
     helper.unloadAgent(agent)
   })
 
@@ -39,7 +39,7 @@ describe('Tracer', function() {
       wrapped()
     })
 
-    it('should not try to wrap a null handler', function() {
+    it('should not try to wrap a null handler', function () {
       expect(tracer.transactionProxy(null)).equal(null)
     })
 
@@ -80,27 +80,27 @@ describe('Tracer', function() {
       })
     })
 
-    describe('when proxying a trace segment', function() {
-      it('should not try to wrap a null handler', function() {
-        helper.runInTransaction(agent, function() {
+    describe('when proxying a trace segment', function () {
+      it('should not try to wrap a null handler', function () {
+        helper.runInTransaction(agent, function () {
           expect(tracer.wrapFunction('123', null, null)).equal(null)
         })
       })
     })
 
-    describe('when proxying a callback', function() {
-      it('should not try to wrap a null handler', function() {
-        helper.runInTransaction(agent, function() {
+    describe('when proxying a callback', function () {
+      it('should not try to wrap a null handler', function () {
+        helper.runInTransaction(agent, function () {
           expect(tracer.bindFunction(null)).equal(null)
         })
       })
     })
 
-    describe('when handling immutable errors', function() {
-      it('should not break in annotation process', function() {
-        helper.runInTransaction(agent, function(trans) {
+    describe('when handling immutable errors', function () {
+      it('should not break in annotation process', function () {
+        helper.runInTransaction(agent, function (trans) {
           function wrapMe() {
-            const err = new Error("FIREBOMB")
+            const err = new Error('FIREBOMB')
             Object.freeze(err)
             throw err
           }
@@ -109,11 +109,11 @@ describe('Tracer', function() {
       })
     })
 
-    describe('when a transaction is created inside a transaction', function() {
-      it('should reuse the existing transaction instead of nesting', function() {
-        helper.runInTransaction(agent, function(outerTransaction) {
+    describe('when a transaction is created inside a transaction', function () {
+      it('should reuse the existing transaction instead of nesting', function () {
+        helper.runInTransaction(agent, function (outerTransaction) {
           const outerId = outerTransaction.id
-          helper.runInTransaction(agent, function(innerTransaction) {
+          helper.runInTransaction(agent, function (innerTransaction) {
             const innerId = innerTransaction.id
 
             expect(innerId).equal(outerId)

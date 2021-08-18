@@ -7,14 +7,13 @@
 
 var helper = require('../../../lib/agent_helper')
 
-
-module.exports = function(t, loadLibrary) {
-  t.test('NODE-1649 Stack overflow on recursive promise', function(t) {
+module.exports = function (t, loadLibrary) {
+  t.test('NODE-1649 Stack overflow on recursive promise', function (t) {
     // This was resolved in 2.6.0 as a side-effect of completely refactoring the
     // promise instrumentation.
 
     var agent = helper.loadMockedAgent()
-    t.teardown(function() {
+    t.teardown(function () {
       helper.unloadAgent(agent)
     })
     var Promise = loadLibrary()
@@ -23,7 +22,7 @@ module.exports = function(t, loadLibrary) {
       this._count = count
     }
 
-    Provider.prototype.getNext = function() {
+    Provider.prototype.getNext = function () {
       return Promise.resolve(--this._count > 0 ? this._count : null)
     }
 
@@ -41,7 +40,7 @@ module.exports = function(t, loadLibrary) {
       }
     }
 
-    return helper.runInTransaction(agent, function() {
+    return helper.runInTransaction(agent, function () {
       return getData(new Provider(10000))
     })
   })

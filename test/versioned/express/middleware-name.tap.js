@@ -8,26 +8,21 @@
 var test = require('tap').test
 var helper = require('../../lib/agent_helper')
 
-
-test('should name middleware correctly', function(t) {
+test('should name middleware correctly', function (t) {
   var agent = helper.instrumentMockedAgent()
 
   var app = require('express')()
   var server
 
-  t.teardown(function() {
+  t.teardown(function () {
     server.close()
     helper.unloadAgent(agent)
   })
 
   app.use('/', testMiddleware)
 
-  server = app.listen(0, function() {
-    t.equal(
-      app._router.stack.length,
-      3,
-      '3 middleware functions: query parser, Express, router'
-    )
+  server = app.listen(0, function () {
+    t.equal(app._router.stack.length, 3, '3 middleware functions: query parser, Express, router')
 
     var count = 0
     for (var i = 0; i < app._router.stack.length; i++) {

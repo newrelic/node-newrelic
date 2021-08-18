@@ -13,25 +13,28 @@ const params = require('../../lib/params')
 // Indicates unique database in Redis. 0-15 supported.
 const DB_INDEX = 4
 
-tap.test('ioredis instrumentation', function(t) {
-  var agent, redisClient
+tap.test('ioredis instrumentation', function (t) {
+  var agent
+  var redisClient
 
-  t.beforeEach(function() {
+  t.beforeEach(function () {
     return setup(t).then((result) => {
       agent = result.agent
       redisClient = result.client
     })
   })
 
-  t.afterEach(function() {
+  t.afterEach(function () {
     agent && helper.unloadAgent(agent)
     redisClient && redisClient.disconnect()
   })
 
-  t.test('creates expected metrics', {timeout : 5000}, function(t) {
-    var onError = function(error) { return t.fail(error) }
+  t.test('creates expected metrics', { timeout: 5000 }, function (t) {
+    var onError = function (error) {
+      return t.fail(error)
+    }
 
-    agent.on('transactionFinished', function(tx) {
+    agent.on('transactionFinished', function (tx) {
       var expected = [
         [{ name: 'Datastore/all' }],
         [{ name: 'Datastore/Redis/all' }],
@@ -42,16 +45,21 @@ tap.test('ioredis instrumentation', function(t) {
     })
 
     helper.runInTransaction(agent, function transactionInScope(transaction) {
-      redisClient.set('testkey', 'testvalue').then(function() {
-        transaction.end()
-      }, onError).catch(onError)
+      redisClient
+        .set('testkey', 'testvalue')
+        .then(function () {
+          transaction.end()
+        }, onError)
+        .catch(onError)
     })
   })
 
-  t.test('creates expected segments', {timeout : 5000}, function(t) {
-    var onError = function(error) { return t.fail(error) }
+  t.test('creates expected segments', { timeout: 5000 }, function (t) {
+    var onError = function (error) {
+      return t.fail(error)
+    }
 
-    agent.on('transactionFinished', function(tx) {
+    agent.on('transactionFinished', function (tx) {
       var root = tx.trace.root
       t.equals(root.children.length, 2, 'root has two children')
 
@@ -68,11 +76,12 @@ tap.test('ioredis instrumentation', function(t) {
     })
 
     helper.runInTransaction(agent, function transactionInScope(transaction) {
-      redisClient.set('testkey', 'testvalue')
-        .then(function() {
+      redisClient
+        .set('testkey', 'testvalue')
+        .then(function () {
           return redisClient.get('testkey')
         })
-        .then(function() {
+        .then(function () {
           transaction.end()
         })
         .catch(onError)
@@ -80,21 +89,19 @@ tap.test('ioredis instrumentation', function(t) {
   })
 
   // NODE-1524 regression
-  t.test('does not crash when ending out of transaction', function(t) {
+  t.test('does not crash when ending out of transaction', function (t) {
     helper.runInTransaction(agent, function transactionInScope(transaction) {
       t.ok(agent.getTransaction(), 'transaction should be in progress')
-      redisClient.set('testkey', 'testvalue')
-        .then(function() {
-          t.notOk(agent.getTransaction(), 'transaction should have ended')
-          t.end()
-        })
+      redisClient.set('testkey', 'testvalue').then(function () {
+        t.notOk(agent.getTransaction(), 'transaction should have ended')
+        t.end()
+      })
       transaction.end()
     })
   })
 
   t.autoend()
 })
-
 
 function setup(t) {
   return new Promise((resolve, reject) => {
@@ -124,7 +131,7 @@ function setup(t) {
             return reject(err)
           }
 
-          resolve({agent, client})
+          resolve({ agent, client })
         })
       })
     })

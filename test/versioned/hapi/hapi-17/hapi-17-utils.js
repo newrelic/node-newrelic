@@ -20,5 +20,5 @@ exports.getServer = function getServer(cfg) {
   const server = servers[Math.round(Math.random())]
 
   tap.comment(`Randomly testing with hapi.${server}`)
-  return hapi[server](Object.assign({}, opts, {host, port}))
+  return hapi[server](Object.assign({}, opts, { host, port }))
 }

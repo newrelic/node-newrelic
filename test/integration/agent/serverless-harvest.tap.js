@@ -26,7 +26,7 @@ tap.test('Serverless mode harvest', (t) => {
 
   process.env.AWS_EXECUTION_ENV = TEST_EX_ENV
 
-  t.beforeEach(async() => {
+  t.beforeEach(async () => {
     logSpy = sinon.spy(fs, 'writeSync')
     agent = helper.instrumentMockedAgent({
       serverless_mode: {
@@ -42,7 +42,7 @@ tap.test('Serverless mode harvest', (t) => {
     await agentStart()
   })
 
-  t.afterEach(async() => {
+  t.afterEach(async () => {
     logSpy && logSpy.restore()
     helper.unloadAgent(agent)
 
@@ -113,11 +113,7 @@ tap.test('Serverless mode harvest', (t) => {
       'metric_data',
       function checkData(payload) {
         t.ok(payload, 'should have a payload')
-        t.deepEqual(
-          payload[3][0][0],
-          {name: 'TEST/discard'},
-          'should have test metric'
-        )
+        t.deepEqual(payload[3][0][0], { name: 'TEST/discard' }, 'should have test metric')
         t.end()
       }
     )
@@ -128,16 +124,8 @@ tap.test('Serverless mode harvest', (t) => {
 
     helper.runInTransaction(agent, (tx) => {
       tx.finalizeNameFromUri('/nonexistent', 501)
-      tx.trace.attributes.addAttribute(
-        DESTS.ERROR_EVENT,
-        'foo',
-        'bar'
-      )
-      tx.trace.attributes.addAttribute(
-        DESTS.ERROR_EVENT,
-        'request.uri',
-        '/nonexistent'
-      )
+      tx.trace.attributes.addAttribute(DESTS.ERROR_EVENT, 'foo', 'bar')
+      tx.trace.attributes.addAttribute(DESTS.ERROR_EVENT, 'request.uri', '/nonexistent')
       agent.errors.add(tx, new Error('test error'))
       const spanId = agent.tracer.getSegment().id
 
@@ -154,7 +142,7 @@ tap.test('Serverless mode harvest', (t) => {
             const attrs = errData.agentAttributes
             t.deepEqual(
               attrs,
-              {foo: 'bar', 'request.uri': '/nonexistent', spanId},
+              { 'foo': 'bar', 'request.uri': '/nonexistent', spanId },
               'should have the correct attributes'
             )
             t.end()
@@ -259,16 +247,8 @@ tap.test('Serverless mode harvest', (t) => {
   t.test('sending error events', (t) => {
     helper.runInTransaction(agent, (tx) => {
       tx.finalizeNameFromUri('/nonexistent', 501)
-      tx.trace.attributes.addAttribute(
-        DESTS.ERROR_EVENT,
-        'foo',
-        'bar'
-      )
-      tx.trace.attributes.addAttribute(
-        DESTS.ERROR_EVENT,
-        'request.uri',
-        '/nonexistent'
-      )
+      tx.trace.attributes.addAttribute(DESTS.ERROR_EVENT, 'foo', 'bar')
+      tx.trace.attributes.addAttribute(DESTS.ERROR_EVENT, 'request.uri', '/nonexistent')
       agent.errors.add(tx, new Error('test error'))
       const spanId = agent.tracer.getSegment().id
 
@@ -277,36 +257,31 @@ tap.test('Serverless mode harvest', (t) => {
         const rawPayload = findPayload(logSpy.args[0])
         const encodedData = rawPayload[2]
 
-        checkCompressedPayload(
-          t,
-          encodedData,
-          'error_event_data',
-          function checkData(payload) {
-            t.ok(payload, 'should have a payload')
+        checkCompressedPayload(t, encodedData, 'error_event_data', function checkData(payload) {
+          t.ok(payload, 'should have a payload')
 
-            const [runId, eventMetrics, eventData] = payload
+          const [runId, eventMetrics, eventData] = payload
 
-            // runid should be null/undefined
-            t.notOk(runId)
+          // runid should be null/undefined
+          t.notOk(runId)
 
-            t.equal(eventMetrics.events_seen, 1)
+          t.equal(eventMetrics.events_seen, 1)
 
-            const expectedSize = agent.config.error_collector.max_event_samples_stored
-            t.equal(eventMetrics.reservoir_size, expectedSize)
+          const expectedSize = agent.config.error_collector.max_event_samples_stored
+          t.equal(eventMetrics.reservoir_size, expectedSize)
 
-            const errorEvent = eventData[0]
-            const [intrinsicAttr, /* skip user */, agentAttr] = errorEvent
+          const errorEvent = eventData[0]
+          const [intrinsicAttr /* skip user */, , agentAttr] = errorEvent
 
-            t.equal(intrinsicAttr.type, 'TransactionError')
+          t.equal(intrinsicAttr.type, 'TransactionError')
 
-            t.deepEqual(
-              agentAttr,
-              {foo: 'bar', 'request.uri': '/nonexistent', spanId},
-              'should have the correct attributes'
-            )
-            t.end()
-          }
-        )
+          t.deepEqual(
+            agentAttr,
+            { 'foo': 'bar', 'request.uri': '/nonexistent', spanId },
+            'should have the correct attributes'
+          )
+          t.end()
+        })
       })
       agent.harvestSync()
     })
@@ -317,7 +292,7 @@ tap.test('Serverless mode harvest', (t) => {
       tx.finalizeNameFromUri('/nonexistent', 501)
 
       const expectedEventType = 'myEvent'
-      const expectedAttributes = {foo: 'bar'}
+      const expectedAttributes = { foo: 'bar' }
 
       const api = new API(agent)
       api.recordCustomEvent(expectedEventType, expectedAttributes)
@@ -327,31 +302,22 @@ tap.test('Serverless mode harvest', (t) => {
         const rawPayload = findPayload(logSpy.args[0])
         const encodedData = rawPayload[2]
 
-        checkCompressedPayload(
-          t,
-          encodedData,
-          'custom_event_data',
-          function checkData(payload) {
-            t.ok(payload, 'should have a payload')
+        checkCompressedPayload(t, encodedData, 'custom_event_data', function checkData(payload) {
+          t.ok(payload, 'should have a payload')
 
-            const [runId, eventData] = payload
+          const [runId, eventData] = payload
 
-            // runid should be null/undefined
-            t.notOk(runId)
+          // runid should be null/undefined
+          t.notOk(runId)
 
-            const customEvent = eventData[0]
-            const [intrinsicAttr, userAttr] = customEvent
+          const customEvent = eventData[0]
+          const [intrinsicAttr, userAttr] = customEvent
 
-            t.equal(intrinsicAttr.type, expectedEventType)
+          t.equal(intrinsicAttr.type, expectedEventType)
 
-            t.deepEqual(
-              userAttr,
-              expectedAttributes,
-              'should have the correct attributes'
-            )
-            t.end()
-          }
-        )
+          t.deepEqual(userAttr, expectedAttributes, 'should have the correct attributes')
+          t.end()
+        })
       })
       agent.harvestSync()
     })
@@ -369,47 +335,37 @@ tap.test('Serverless mode harvest', (t) => {
 
       const expectedSql = 'select pg_sleep(1)'
 
-      agent.queries.add(
-        tx.trace.root,
-        'postgres',
-        expectedSql,
-        'FAKE STACK'
-      )
+      agent.queries.add(tx.trace.root, 'postgres', expectedSql, 'FAKE STACK')
 
       tx.end()
       agent.once('harvestFinished', () => {
         const rawPayload = findPayload(logSpy.args[0])
         const encodedData = rawPayload[2]
 
-        checkCompressedPayload(
-          t,
-          encodedData,
-          'sql_trace_data',
-          function checkData(payload) {
-            t.ok(payload, 'should have a payload')
+        checkCompressedPayload(t, encodedData, 'sql_trace_data', function checkData(payload) {
+          t.ok(payload, 'should have a payload')
 
-            const [runId, samples] = payload
+          const [runId, samples] = payload
 
-            // runid should be null/undefined
-            t.notOk(runId)
+          // runid should be null/undefined
+          t.notOk(runId)
 
-            const sample = samples[0]
+          const sample = samples[0]
 
-            const transactionUrl = sample[1]
-            const sql = sample[3]
-            const count = sample[5]
-            const encodedParams = sample[9]
+          const transactionUrl = sample[1]
+          const sql = sample[3]
+          const count = sample[5]
+          const encodedParams = sample[9]
 
-            t.equal(transactionUrl, expectedUrl)
-            t.equal(sql, expectedSql)
-            t.equal(count, 1)
+          t.equal(transactionUrl, expectedUrl)
+          t.equal(sql, expectedSql)
+          t.equal(count, 1)
 
-            // won't have anything interesting added this way
-            t.ok(encodedParams)
+          // won't have anything interesting added this way
+          t.ok(encodedParams)
 
-            t.end()
-          }
-        )
+          t.end()
+        })
       })
       agent.harvestSync()
     })
@@ -419,7 +375,9 @@ tap.test('Serverless mode harvest', (t) => {
 function findMetric(metrics, name) {
   for (var i = 0; i < metrics.length; i++) {
     var metric = metrics[i]
-    if (metric[0].name === name) return metric
+    if (metric[0].name === name) {
+      return metric
+    }
   }
 }
 

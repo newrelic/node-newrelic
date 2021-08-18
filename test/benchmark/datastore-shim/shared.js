@@ -11,7 +11,7 @@ const DatastoreShim = require('../../../lib/shim/datastore-shim')
 const TestDatastore = require('./test-datastore')
 
 function makeSuite(name) {
-  return benchmark.createBenchmark({name: name, runs: 10000})
+  return benchmark.createBenchmark({ name: name, runs: 10000 })
 }
 
 function getTestDatastore(agent, instrumented) {

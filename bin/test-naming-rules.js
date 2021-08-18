@@ -18,7 +18,7 @@ var options = null
 if (arrayContainsAny(process.argv, '-h', '-?', '--help')) {
   printHelp()
 } else if (process.argv.length === 3) {
-  options = {rules: null, urls: path.resolve(cwd, process.argv[2])}
+  options = { rules: null, urls: path.resolve(cwd, process.argv[2]) }
 } else if (process.argv.length === 4) {
   options = {
     rules: path.resolve(cwd, process.argv[2]),
@@ -72,8 +72,8 @@ function run(opts) {
   defaultNormalizer.on('appliedRule', onAppliedRule)
   userNormalizer.on('appliedRule', onAppliedRule)
 
-  var urlsFile = fs.createReadStream(opts.urls, {encoding: 'utf-8'})
-  var reader = readline.createInterface({input: urlsFile, output: null})
+  var urlsFile = fs.createReadStream(opts.urls, { encoding: 'utf-8' })
+  var reader = readline.createInterface({ input: urlsFile, output: null })
   reader.on('line', function onUrlLine(urlLine) {
     appliedRules = []
     var scrubbedUrl = urltils.scrub(urlLine)
@@ -92,7 +92,10 @@ function run(opts) {
         var match = appliedRules[i]
         console.log(
           ' %s: %s => %s (rule %s)',
-          (i + 1), match.original, match.normalized, match.rule.pattern
+          i + 1,
+          match.original,
+          match.normalized,
+          match.rule.pattern
         )
       }
     }
@@ -119,33 +122,37 @@ function loadDefaultNormalizer(config) {
   var normalizer = new MetricNormalizer(config, 'URL')
 
   // Add in the rules the collector would ship down.
-  normalizer.load([{
-    'match_expression':
-      '.*\\.(ace|arj|ini|txt|udl|plist|css|gif|ico|jpe?g|js|png|swf|woff|caf|' +
-      'aiff|m4v|mpe?g|mp3|mp4|mov)$',
-    'replacement': '/*.\\1',
-    'replace_all': false,
-    'each_segment': false,
-    'ignore': false,
-    'terminate_chain': true,
-    'eval_order': 1000
-  }, {
-    'match_expression': '^[0-9][0-9a-f_,.-]*$',
-    'replacement': '*',
-    'replace_all': false,
-    'each_segment': true,
-    'ignore': false,
-    'terminate_chain': false,
-    'eval_order': 1001
-  }, {
-    'match_expression': '^(.*)/[0-9][0-9a-f_,-]*\\.([0-9a-z][0-9a-z]*)$',
-    'replacement': '\\1/.*\\2',
-    'replace_all': false,
-    'each_segment': false,
-    'ignore': false,
-    'terminate_chain': false,
-    'eval_order': 1002
-  }])
+  normalizer.load([
+    {
+      match_expression:
+        '.*\\.(ace|arj|ini|txt|udl|plist|css|gif|ico|jpe?g|js|png|swf|woff|caf|' +
+        'aiff|m4v|mpe?g|mp3|mp4|mov)$',
+      replacement: '/*.\\1',
+      replace_all: false,
+      each_segment: false,
+      ignore: false,
+      terminate_chain: true,
+      eval_order: 1000
+    },
+    {
+      match_expression: '^[0-9][0-9a-f_,.-]*$',
+      replacement: '*',
+      replace_all: false,
+      each_segment: true,
+      ignore: false,
+      terminate_chain: false,
+      eval_order: 1001
+    },
+    {
+      match_expression: '^(.*)/[0-9][0-9a-f_,-]*\\.([0-9a-z][0-9a-z]*)$',
+      replacement: '\\1/.*\\2',
+      replace_all: false,
+      each_segment: false,
+      ignore: false,
+      terminate_chain: false,
+      eval_order: 1002
+    }
+  ])
 
   return normalizer
 }

@@ -8,7 +8,7 @@
 const tap = require('tap')
 
 const helper = require('../lib/agent_helper')
-const {Attributes} = require('../../lib/attributes')
+const { Attributes } = require('../../lib/attributes')
 const AttributeFilter = require('../../lib/config/attribute-filter')
 
 const DESTINATIONS = AttributeFilter.DESTINATIONS
@@ -70,10 +70,7 @@ tap.test('#addAttributes', (t) => {
 
   t.test('adds multiple attributes to instance', (t) => {
     const inst = new Attributes(TRANSACTION_SCOPE)
-    inst.addAttributes(
-      DESTINATIONS.TRANS_SCOPE,
-      {one: '1', two: '2'}
-    )
+    inst.addAttributes(DESTINATIONS.TRANS_SCOPE, { one: '1', two: '2' })
     const attributes = inst.get(DESTINATIONS.TRANS_SCOPE)
 
     t.equal(attributes.one, '1')
@@ -86,20 +83,17 @@ tap.test('#addAttributes', (t) => {
     const inst = new Attributes(TRANSACTION_SCOPE, 10)
     const attributes = {
       first: 'first',
-      second: [ 'second' ],
+      second: ['second'],
       third: { key: 'third' },
       fourth: 4,
       fifth: true,
       sixth: undefined,
       seventh: null,
       eighth: Symbol('test'),
-      ninth: function() {}
+      ninth: function () {}
     }
 
-    inst.addAttributes(
-      DESTINATIONS.TRANS_SCOPE,
-      attributes
-    )
+    inst.addAttributes(DESTINATIONS.TRANS_SCOPE, attributes)
 
     const res = inst.get(DESTINATIONS.TRANS_SCOPE)
     t.equal(Object.keys(res).length, 3)
@@ -124,10 +118,7 @@ tap.test('#addAttributes', (t) => {
       so: 4
     }
 
-    inst.addAttributes(
-      DESTINATIONS.TRANS_SCOPE,
-      attributes
-    )
+    inst.addAttributes(DESTINATIONS.TRANS_SCOPE, attributes)
     const res = inst.get(DESTINATIONS.TRANS_SCOPE)
 
     t.equal(Object.keys(res).length, 3)

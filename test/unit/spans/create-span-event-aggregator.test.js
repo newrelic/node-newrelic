@@ -24,68 +24,67 @@ tap.test('should return standard when trace observer not configured', (t) => {
   t.end()
 })
 
-tap.test(
-  'should return standard when in serverless mode, trace observer valid',
-  (t) => {
-    const config = Config.initialize({
-      serverless_mode: { enabled: true },
-      infinite_tracing: { trace_observer: {
+tap.test('should return standard when in serverless mode, trace observer valid', (t) => {
+  const config = Config.initialize({
+    serverless_mode: { enabled: true },
+    infinite_tracing: {
+      trace_observer: {
         host: VALID_HOST
-      }}
-    })
+      }
+    }
+  })
 
-    const aggregator = createSpanEventAggregator(config)
-    assertStandardSpanAggregator(t, aggregator)
+  const aggregator = createSpanEventAggregator(config)
+  assertStandardSpanAggregator(t, aggregator)
 
-    t.end()
-  }
-)
+  t.end()
+})
 
-tap.test(
-  'should return streaming when trace observer configured',
-  (t) => {
-    const config = Config.initialize({
-      infinite_tracing: { trace_observer: {
+tap.test('should return streaming when trace observer configured', (t) => {
+  const config = Config.initialize({
+    infinite_tracing: {
+      trace_observer: {
         host: VALID_HOST
-      }}
-    })
+      }
+    }
+  })
 
-    const aggregator = createSpanEventAggregator(config)
-    const isStreamingAggregator = aggregator instanceof StreamingSpanEventAggregator
+  const aggregator = createSpanEventAggregator(config)
+  const isStreamingAggregator = aggregator instanceof StreamingSpanEventAggregator
 
-    t.ok(isStreamingAggregator)
+  t.ok(isStreamingAggregator)
 
-    t.end()
-  }
-)
+  t.end()
+})
 
-tap.test(
-  'should trim host and port options when they are strings',
-  (t) => {
-    const config = Config.initialize({
-      infinite_tracing: { trace_observer: {
+tap.test('should trim host and port options when they are strings', (t) => {
+  const config = Config.initialize({
+    infinite_tracing: {
+      trace_observer: {
         host: `   ${VALID_HOST}  `,
         port: '   300  '
-      }}
-    })
+      }
+    }
+  })
 
-    createSpanEventAggregator(config)
-    t.same(config.infinite_tracing.trace_observer, {
-      host: VALID_HOST,
-      port: '300'
-    })
+  createSpanEventAggregator(config)
+  t.same(config.infinite_tracing.trace_observer, {
+    host: VALID_HOST,
+    port: '300'
+  })
 
-    t.end()
-  }
-)
+  t.end()
+})
 
 tap.test(
   'should revert to standard aggregator when it fails to create streaming aggregator',
   (t) => {
     const config = Config.initialize({
-      infinite_tracing: { trace_observer: {
-        host: VALID_HOST
-      }}
+      infinite_tracing: {
+        trace_observer: {
+          host: VALID_HOST
+        }
+      }
     })
 
     const err = new Error('failed to craete streaming aggregator')
@@ -95,22 +94,27 @@ tap.test(
       trace: sinon.stub()
     }
 
-    const createSpanAggrStubbed = proxyquire('../../../lib/spans/create-span-event-aggregator',
-      {
-        './streaming-span-event-aggregator': stub,
-        '../logger': loggerStub
-      }
-    )
+    const createSpanAggrStubbed = proxyquire('../../../lib/spans/create-span-event-aggregator', {
+      './streaming-span-event-aggregator': stub,
+      '../logger': loggerStub
+    })
 
     const aggregator = createSpanAggrStubbed(config)
     assertStandardSpanAggregator(t, aggregator)
-    t.same(config.infinite_tracing.trace_observer, { host: '', port: ''},
-      'should set host and port to empty strings when failing to create streaming aggregator')
-    t.same(loggerStub.warn.args[0], [
-      err,
-      'Failed to create streaming span event aggregator for infinite tracing. ' +
-      'Reverting to standard span event aggregator and disabling infinite tracing'
-    ], 'should log warning about failed streaming construction')
+    t.same(
+      config.infinite_tracing.trace_observer,
+      { host: '', port: '' },
+      'should set host and port to empty strings when failing to create streaming aggregator'
+    )
+    t.same(
+      loggerStub.warn.args[0],
+      [
+        err,
+        'Failed to create streaming span event aggregator for infinite tracing. ' +
+          'Reverting to standard span event aggregator and disabling infinite tracing'
+      ],
+      'should log warning about failed streaming construction'
+    )
 
     t.end()
   }

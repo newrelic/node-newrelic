@@ -10,10 +10,10 @@ const tap = require('tap')
 const sinon = require('sinon')
 const Config = require('../../../lib/config')
 const securityPolicies = require('../../lib/fixtures').securityPolicies
-const {idempotentEnv} = require('./helper')
+const { idempotentEnv } = require('./helper')
 
 tap.test('should pick up the security policies token', (t) => {
-  idempotentEnv({'NEW_RELIC_SECURITY_POLICIES_TOKEN': 'super secure'}, (tc) => {
+  idempotentEnv({ NEW_RELIC_SECURITY_POLICIES_TOKEN: 'super secure' }, (tc) => {
     t.ok(tc.security_policies_token)
     t.equal(tc.security_policies_token, 'super secure')
     t.end()

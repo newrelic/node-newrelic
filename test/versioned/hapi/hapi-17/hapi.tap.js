@@ -11,10 +11,10 @@ var helper = require('../../../lib/agent_helper')
 var instrument = require('../../../../lib/instrumentation/hapi')
 var utils = require('./hapi-17-utils')
 
-tap.test('instrumentation of Hapi', function(t) {
+tap.test('instrumentation of Hapi', function (t) {
   t.autoend()
 
-  t.test('preserves server creation return', function(t) {
+  t.test('preserves server creation return', function (t) {
     var agent = helper.loadMockedAgent()
     var hapi = require('hapi')
     var returned = utils.getServer({ hapi: hapi })

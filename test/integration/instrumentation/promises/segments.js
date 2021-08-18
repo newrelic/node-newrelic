@@ -8,7 +8,6 @@
 var helper = require('../../../lib/agent_helper')
 var assertSegments = require('../../../lib/metrics_helper').assertSegments
 
-
 module.exports = runTests
 
 function runTests(t, agent, Promise) {
@@ -24,11 +23,11 @@ function runTests(t, agent, Promise) {
       segment.touch()
       return new Promise(function startSomeWork(resolve, reject) {
         if (shouldReject) {
-          process.nextTick(function() {
+          process.nextTick(function () {
             reject('some reason')
           })
         } else {
-          process.nextTick(function() {
+          process.nextTick(function () {
             resolve(123)
           })
         }
@@ -40,52 +39,40 @@ function runTests(t, agent, Promise) {
 function segmentsEnabledTests(t, agent, Promise, doSomeWork) {
   var tracer = agent.tracer
 
-  t.test('segments: child segment is created inside then handler', function(t) {
+  t.test('segments: child segment is created inside then handler', function (t) {
     agent.config.feature_flag.promise_segments = true
 
-    agent.once('transactionFinished', function(tx) {
+    agent.once('transactionFinished', function (tx) {
       t.equal(tx.trace.root.children.length, 1)
 
       checkSegments(t, tx.trace.root, [
-        'doSomeWork', [
-          'Promise startSomeWork', [
-            'Promise#then <anonymous>', [
-              'someChildSegment'
-            ]
-          ]
-        ]
+        'doSomeWork',
+        ['Promise startSomeWork', ['Promise#then <anonymous>', ['someChildSegment']]]
       ])
 
       t.end()
     })
 
     helper.runInTransaction(agent, function transactionWrapper(transaction) {
-      doSomeWork('doSomeWork')
-        .then(function() {
-          var childSegment = tracer.createSegment('someChildSegment')
-          // touch the segment, so that it is not truncated
-          childSegment.touch()
-          tracer.bindFunction(function() {}, childSegment)
-          process.nextTick(transaction.end.bind(transaction))
-        })
+      doSomeWork('doSomeWork').then(function () {
+        var childSegment = tracer.createSegment('someChildSegment')
+        // touch the segment, so that it is not truncated
+        childSegment.touch()
+        tracer.bindFunction(function () {}, childSegment)
+        process.nextTick(transaction.end.bind(transaction))
+      })
     })
   })
 
-  t.test('segments: then handler that returns a new promise', function(t) {
+  t.test('segments: then handler that returns a new promise', function (t) {
     // This test is prone to issues with implementation details of each library.
     // To avoid that, we're manually constructing segments instead of
     // piggy-backing on promise segments.
     agent.config.feature_flag.promise_segments = false
 
-    agent.once('transactionFinished', function(tx) {
+    agent.once('transactionFinished', function (tx) {
       t.equal(tx.trace.root.children.length, 1)
-      checkSegments(t, tx.trace.root, [
-        'doWork1', [
-          'doWork2', [
-            'secondThen'
-          ]
-        ]
-      ])
+      checkSegments(t, tx.trace.root, ['doWork1', ['doWork2', ['secondThen']]])
 
       t.end()
     })
@@ -104,23 +91,15 @@ function segmentsEnabledTests(t, agent, Promise, doSomeWork) {
     })
   })
 
-  t.test('segments: then handler that returns a value', function(t) {
+  t.test('segments: then handler that returns a value', function (t) {
     agent.config.feature_flag.promise_segments = true
 
-    agent.once('transactionFinished', function(tx) {
+    agent.once('transactionFinished', function (tx) {
       t.equal(tx.trace.root.children.length, 1)
 
       checkSegments(t, tx.trace.root, [
         'doWork1',
-        [
-          'Promise startSomeWork',
-          [
-            'Promise#then firstThen',
-            [
-              'Promise#then secondThen',
-            ]
-          ]
-        ]
+        ['Promise startSomeWork', ['Promise#then firstThen', ['Promise#then secondThen']]]
       ])
 
       t.end()
@@ -137,20 +116,15 @@ function segmentsEnabledTests(t, agent, Promise, doSomeWork) {
     })
   })
 
-  t.test('segments: catch handler with error from original promise', function(t) {
+  t.test('segments: catch handler with error from original promise', function (t) {
     agent.config.feature_flag.promise_segments = true
 
-    agent.once('transactionFinished', function(tx) {
+    agent.once('transactionFinished', function (tx) {
       t.equal(tx.trace.root.children.length, 1)
 
       checkSegments(t, tx.trace.root, [
         'doWork1',
-        [
-          'Promise startSomeWork',
-          [
-            'Promise#catch catchHandler',
-          ]
-        ]
+        ['Promise startSomeWork', ['Promise#catch catchHandler']]
       ])
 
       t.end()
@@ -167,22 +141,16 @@ function segmentsEnabledTests(t, agent, Promise, doSomeWork) {
     })
   })
 
-  t.test('segments: catch handler with error from subsequent promise', function(t) {
+  t.test('segments: catch handler with error from subsequent promise', function (t) {
     // This test is prone to issues with implementation details of each library.
     // To avoid that, we're manually constructing segments instead of
     // piggy-backing on promise segments.
     agent.config.feature_flag.promise_segments = false
 
-    agent.once('transactionFinished', function(tx) {
+    agent.once('transactionFinished', function (tx) {
       t.equal(tx.trace.root.children.length, 1)
 
-      checkSegments(t, tx.trace.root, [
-        'doWork1', [
-          'doWork2', [
-            'catchHandler'
-          ]
-        ]
-      ])
+      checkSegments(t, tx.trace.root, ['doWork1', ['doWork2', ['catchHandler']]])
 
       t.end()
     })
@@ -206,18 +174,18 @@ function segmentsEnabledTests(t, agent, Promise, doSomeWork) {
     })
   })
 
-  t.test('segments: when promise is created beforehand', function(t) {
+  t.test('segments: when promise is created beforehand', function (t) {
     agent.config.feature_flag.promise_segments = true
 
-    agent.once('transactionFinished', function(tx) {
+    agent.once('transactionFinished', function (tx) {
       t.equal(tx.trace.root.children.length, 2)
 
-      checkSegments(t, tx.trace.root, [
-        'Promise startSomeWork', [
-          'Promise#then myThen'
-        ],
-        'doSomeWork'
-      ], true)
+      checkSegments(
+        t,
+        tx.trace.root,
+        ['Promise startSomeWork', ['Promise#then myThen'], 'doSomeWork'],
+        true
+      )
 
       t.end()
     })
@@ -246,37 +214,32 @@ function segmentsEnabledTests(t, agent, Promise, doSomeWork) {
 function segmentsDisabledTests(t, agent, Promise, doSomeWork) {
   var tracer = agent.tracer
 
-  t.test('no segments: child segment is created inside then handler', function(t) {
+  t.test('no segments: child segment is created inside then handler', function (t) {
     agent.config.feature_flag.promise_segments = false
 
-    agent.once('transactionFinished', function(tx) {
+    agent.once('transactionFinished', function (tx) {
       t.equal(tx.trace.root.children.length, 1)
 
-      checkSegments(t, tx.trace.root, [
-        'doSomeWork', [
-          'someChildSegment'
-        ]
-      ])
+      checkSegments(t, tx.trace.root, ['doSomeWork', ['someChildSegment']])
 
       t.end()
     })
 
     helper.runInTransaction(agent, function transactionWrapper(transaction) {
-      doSomeWork('doSomeWork')
-        .then(function() {
-          var childSegment = tracer.createSegment('someChildSegment')
-          // touch the segment, so that it is not truncated
-          childSegment.touch()
-          tracer.bindFunction(function() {}, childSegment)
-          process.nextTick(transaction.end.bind(transaction))
-        })
+      doSomeWork('doSomeWork').then(function () {
+        var childSegment = tracer.createSegment('someChildSegment')
+        // touch the segment, so that it is not truncated
+        childSegment.touch()
+        tracer.bindFunction(function () {}, childSegment)
+        process.nextTick(transaction.end.bind(transaction))
+      })
     })
   })
 
-  t.test('no segments: then handler that returns a new promise', function(t) {
+  t.test('no segments: then handler that returns a new promise', function (t) {
     agent.config.feature_flag.promise_segments = false
 
-    agent.once('transactionFinished', function(tx) {
+    agent.once('transactionFinished', function (tx) {
       t.equal(tx.trace.root.children.length, 1)
 
       checkSegments(t, tx.trace.root, ['doWork1'])
@@ -287,7 +250,9 @@ function segmentsDisabledTests(t, agent, Promise, doSomeWork) {
     helper.runInTransaction(agent, function transactionWrapper(transaction) {
       doSomeWork('doWork1')
         .then(function firstThen() {
-          return new Promise(function secondChain(res) { res() })
+          return new Promise(function secondChain(res) {
+            res()
+          })
         })
         .then(function secondThen() {
           process.nextTick(transaction.end.bind(transaction))
@@ -295,10 +260,10 @@ function segmentsDisabledTests(t, agent, Promise, doSomeWork) {
     })
   })
 
-  t.test('no segments: then handler that returns a value', function(t) {
+  t.test('no segments: then handler that returns a value', function (t) {
     agent.config.feature_flag.promise_segments = false
 
-    agent.once('transactionFinished', function(tx) {
+    agent.once('transactionFinished', function (tx) {
       t.equal(tx.trace.root.children.length, 1)
 
       checkSegments(t, tx.trace.root, ['doWork1'])
@@ -317,10 +282,10 @@ function segmentsDisabledTests(t, agent, Promise, doSomeWork) {
     })
   })
 
-  t.test('no segments: catch handler with error from original promise', function(t) {
+  t.test('no segments: catch handler with error from original promise', function (t) {
     agent.config.feature_flag.promise_segments = false
 
-    agent.once('transactionFinished', function(tx) {
+    agent.once('transactionFinished', function (tx) {
       t.equal(tx.trace.root.children.length, 1)
 
       checkSegments(t, tx.trace.root, ['doWork1'])
@@ -339,17 +304,13 @@ function segmentsDisabledTests(t, agent, Promise, doSomeWork) {
     })
   })
 
-  t.test('no segments: catch handler with error from subsequent promise', function(t) {
+  t.test('no segments: catch handler with error from subsequent promise', function (t) {
     agent.config.feature_flag.promise_segments = false
 
-    agent.once('transactionFinished', function(tx) {
+    agent.once('transactionFinished', function (tx) {
       t.equal(tx.trace.root.children.length, 1)
 
-      checkSegments(t, tx.trace.root, [
-        'doWork1', [
-          'doWork2',
-        ]
-      ])
+      checkSegments(t, tx.trace.root, ['doWork1', ['doWork2']])
 
       t.end()
     })
@@ -366,10 +327,10 @@ function segmentsDisabledTests(t, agent, Promise, doSomeWork) {
     })
   })
 
-  t.test('no segments: when promise is created beforehand', function(t) {
+  t.test('no segments: when promise is created beforehand', function (t) {
     agent.config.feature_flag.promise_segments = false
 
-    agent.once('transactionFinished', function(tx) {
+    agent.once('transactionFinished', function (tx) {
       t.equal(tx.trace.root.children.length, 1)
 
       checkSegments(t, tx.trace.root, ['doSomeWork'], true)
@@ -379,7 +340,9 @@ function segmentsDisabledTests(t, agent, Promise, doSomeWork) {
 
     helper.runInTransaction(agent, function transactionWrapper(transaction) {
       var resolve
-      var p = new Promise(function startSomeWork(r) { resolve = r })
+      var p = new Promise(function startSomeWork(r) {
+        resolve = r
+      })
 
       var segment = tracer.createSegment('doSomeWork')
       resolve = tracer.bindFunction(resolve, segment)
@@ -397,7 +360,7 @@ function segmentsDisabledTests(t, agent, Promise, doSomeWork) {
 }
 
 function checkSegments(t, parent, expected, options) {
-  t.doesNotThrow(function() {
+  t.doesNotThrow(function () {
     assertSegments(parent, expected, options)
   }, 'should have expected segments')
 }

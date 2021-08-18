@@ -187,7 +187,7 @@ tap.test('fromSegment()', (t) => {
 
     const shim = new DatastoreShim(agent, 'test-data-store', '', 'TestStore')
 
-    const dsConn = {myDbOp: (query, cb) => setTimeout(cb, 50)}
+    const dsConn = { myDbOp: (query, cb) => setTimeout(cb, 50) }
     let longQuery = ''
     while (Buffer.byteLength(longQuery, 'utf8') < 2001) {
       longQuery += 'a'

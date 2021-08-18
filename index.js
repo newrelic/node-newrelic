@@ -16,7 +16,6 @@ const featureFlags = require('./lib/feature_flags').prerelease
 const psemver = require('./lib/util/process-version')
 let logger = require('./lib/logger') // Gets re-loaded after initialization.
 
-
 const pkgJSON = require('./package.json')
 logger.info(
   'Using New Relic for Node.js. Agent version: %s; Node version: %s.',
@@ -43,15 +42,13 @@ function initialize() {
   let message = null
 
   try {
-    logger.debug(
-      'Process was running %s seconds before agent was loaded.',
-      preAgentTime
-    )
+    logger.debug('Process was running %s seconds before agent was loaded.', preAgentTime)
 
     if (!psemver.satisfies(pkgJSON.engines.node)) {
       // TODO: Update this message when Node v12 is deprecated.
-      message = 'New Relic for Node.js requires a version of Node equal to or\n' +
-      'greater than 12.0.0. Not starting!'
+      message =
+        'New Relic for Node.js requires a version of Node equal to or\n' +
+        'greater than 12.0.0. Not starting!'
 
       logger.error(message)
       throw new Error(message)
@@ -61,7 +58,7 @@ function initialize() {
     if (psemver.satisfies('>=17.0.0')) {
       logger.warn(
         'New Relic for Node.js %s has not been tested on Node.js %s. Please ' +
-        'update the agent or downgrade your version of Node.js',
+          'update the agent or downgrade your version of Node.js',
         pkgJSON.version,
         process.version
       )
@@ -132,9 +129,7 @@ function createAgent(config) {
   const appNames = agent.config.applications()
 
   if (config.logging.diagnostics) {
-    logger.warn(
-      'Diagnostics logging is enabled, this may cause significant overhead.'
-    )
+    logger.warn('Diagnostics logging is enabled, this may cause significant overhead.')
   }
 
   if (appNames.length < 1) {
@@ -176,9 +171,7 @@ function createAgent(config) {
 function addStartupSupportabilities(agent) {
   // TODO: As new versions come out, make sure to update Angler metrics.
   const nodeMajor = /^v?(\d+)/.exec(process.version)
-  agent.recordSupportability(
-    'Nodejs/Version/' + ((nodeMajor && nodeMajor[1]) || 'unknown')
-  )
+  agent.recordSupportability('Nodejs/Version/' + ((nodeMajor && nodeMajor[1]) || 'unknown'))
 
   const configFlags = Object.keys(agent.config.feature_flag)
   for (let i = 0; i < configFlags.length; ++i) {

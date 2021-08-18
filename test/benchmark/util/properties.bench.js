@@ -16,7 +16,9 @@ var suite = benchmark.createBenchmark({
 var testObj
 suite.add({
   name: 'isEmpty (object instance)',
-  before: function() {testObj = {}},
+  before: function () {
+    testObj = {}
+  },
   fn: function testIsEmptyObjectPrototype() {
     properties.isEmpty(testObj)
   }
@@ -24,7 +26,9 @@ suite.add({
 
 suite.add({
   name: 'isEmpty (null prototype)',
-  before: function() {testObj = Object.create(null)},
+  before: function () {
+    testObj = Object.create(null)
+  },
   fn: function testIsEmptyNullPrototype() {
     properties.isEmpty(testObj)
   }

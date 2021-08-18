@@ -17,7 +17,7 @@ var tap = require('tap')
 module.exports = runTests
 
 function runTests(createServer) {
-  tap.test("Hapi capture params support", function(t) {
+  tap.test('Hapi capture params support', function (t) {
     t.autoend()
 
     var agent = null
@@ -36,7 +36,7 @@ function runTests(createServer) {
       server = createServer()
     })
 
-    t.afterEach(async() => {
+    t.afterEach(async () => {
       helper.unloadAgent(agent)
 
       await new Promise((resolve, reject) => {
@@ -50,44 +50,41 @@ function runTests(createServer) {
       })
     })
 
-    t.test("simple case with no params", function(t) {
-      agent.on('transactionFinished', function(transaction) {
+    t.test('simple case with no params', function (t) {
+      agent.on('transactionFinished', function (transaction) {
         t.ok(transaction.trace, 'transaction has a trace.')
         var attributes = transaction.trace.attributes.get(DESTINATIONS.TRANS_TRACE)
-        HTTP_ATTRS.forEach(function(key) {
+        HTTP_ATTRS.forEach(function (key) {
           t.ok(attributes[key], 'Trace contains expected HTTP attribute: ' + key)
         })
         if (attributes.httpResponseMessage) {
-          t.equal(
-            attributes.httpResponseMessage,
-            'OK',
-            'Trace contains httpResponseMessage'
-          )
+          t.equal(attributes.httpResponseMessage, 'OK', 'Trace contains httpResponseMessage')
         }
       })
 
       server.route({
         method: 'GET',
         path: '/test/',
-        handler: function(req, reply) {
-          t.ok(agent.getTransaction(), "transaction is available")
+        handler: function (req, reply) {
+          t.ok(agent.getTransaction(), 'transaction is available')
 
-          reply({status: 'ok'})
+          reply({ status: 'ok' })
         }
       })
 
-      server.start(function() {
+      server.start(function () {
         port = server.info.port
         makeRequest(t, 'http://localhost:' + port + '/test/')
       })
     })
 
-    t.test("case with route params", function(t) {
-      agent.on('transactionFinished', function(transaction) {
+    t.test('case with route params', function (t) {
+      agent.on('transactionFinished', function (transaction) {
         t.ok(transaction.trace, 'transaction has a trace.')
         var attributes = transaction.trace.attributes.get(DESTINATIONS.TRANS_TRACE)
         t.equal(
-          attributes['request.parameters.id'], '1337',
+          attributes['request.parameters.id'],
+          '1337',
           'Trace attributes include `id` route param'
         )
       })
@@ -95,25 +92,26 @@ function runTests(createServer) {
       server.route({
         method: 'GET',
         path: '/test/{id}/',
-        handler: function(req, reply) {
-          t.ok(agent.getTransaction(), "transaction is available")
+        handler: function (req, reply) {
+          t.ok(agent.getTransaction(), 'transaction is available')
 
-          reply({status: 'ok'})
+          reply({ status: 'ok' })
         }
       })
 
-      server.start(function() {
+      server.start(function () {
         port = server.info.port
         makeRequest(t, 'http://localhost:' + port + '/test/1337/')
       })
     })
 
-    t.test("case with query params", function(t) {
-      agent.on('transactionFinished', function(transaction) {
+    t.test('case with query params', function (t) {
+      agent.on('transactionFinished', function (transaction) {
         t.ok(transaction.trace, 'transaction has a trace.')
         var attributes = transaction.trace.attributes.get(DESTINATIONS.TRANS_TRACE)
         t.equal(
-          attributes['request.parameters.name'], 'hapi',
+          attributes['request.parameters.name'],
+          'hapi',
           'Trace attributes include `name` query param'
         )
       })
@@ -121,29 +119,31 @@ function runTests(createServer) {
       server.route({
         method: 'GET',
         path: '/test/',
-        handler: function(req, reply) {
-          t.ok(agent.getTransaction(), "transaction is available")
+        handler: function (req, reply) {
+          t.ok(agent.getTransaction(), 'transaction is available')
 
-          reply({status: 'ok'})
+          reply({ status: 'ok' })
         }
       })
 
-      server.start(function() {
+      server.start(function () {
         port = server.info.port
         makeRequest(t, 'http://localhost:' + port + '/test/?name=hapi')
       })
     })
 
-    t.test("case with both route and query params", function(t) {
-      agent.on('transactionFinished', function(transaction) {
+    t.test('case with both route and query params', function (t) {
+      agent.on('transactionFinished', function (transaction) {
         t.ok(transaction.trace, 'transaction has a trace.')
         var attributes = transaction.trace.attributes.get(DESTINATIONS.TRANS_TRACE)
         t.equal(
-          attributes['request.parameters.id'], '1337',
+          attributes['request.parameters.id'],
+          '1337',
           'Trace attributes include `id` route param'
         )
         t.equal(
-          attributes['request.parameters.name'], 'hapi',
+          attributes['request.parameters.name'],
+          'hapi',
           'Trace attributes include `name` query param'
         )
       })
@@ -151,14 +151,14 @@ function runTests(createServer) {
       server.route({
         method: 'GET',
         path: '/test/{id}/',
-        handler: function(req, reply) {
-          t.ok(agent.getTransaction(), "transaction is available")
+        handler: function (req, reply) {
+          t.ok(agent.getTransaction(), 'transaction is available')
 
-          reply({status: 'ok'})
+          reply({ status: 'ok' })
         }
       })
 
-      server.start(function() {
+      server.start(function () {
         port = server.info.port
         makeRequest(t, 'http://localhost:' + port + '/test/1337/?name=hapi')
       })
@@ -171,9 +171,9 @@ function makeRequest(t, uri) {
     uri: uri,
     json: true
   }
-  request.get(params, function(err, res, body) {
-    t.equal(res.statusCode, 200, "nothing exploded")
-    t.deepEqual(body, {status: 'ok'}, "got expected response")
+  request.get(params, function (err, res, body) {
+    t.equal(res.statusCode, 200, 'nothing exploded')
+    t.deepEqual(body, { status: 'ok' }, 'got expected response')
     t.end()
   })
 }

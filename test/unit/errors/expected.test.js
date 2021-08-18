@@ -17,23 +17,23 @@ const should = require('chai').should()
 const urltils = require('../../../lib/util/urltils')
 const errorHelper = require('../../../lib/errors/helper')
 
-const expect  = chai.expect
+const expect = chai.expect
 
-describe('Expected Errors', function() {
-  describe('when expeced configuration is present', function() {
+describe('Expected Errors', function () {
+  describe('when expeced configuration is present', function () {
     let agent
 
-    beforeEach(function() {
+    beforeEach(function () {
       agent = helper.loadMockedAgent()
     })
 
-    afterEach(function() {
+    afterEach(function () {
       helper.unloadAgent(agent)
       agent = null
     })
 
-    it('expected status code should not increment apdex frustrating', function() {
-      helper.runInTransaction(agent, function(tx) {
+    it('expected status code should not increment apdex frustrating', function () {
+      helper.runInTransaction(agent, function (tx) {
         agent.config.error_collector.expected_status_codes = [500]
         tx.statusCode = 500
         const apdexStats = tx.metrics.getOrCreateApdexMetric(NAMES.APDEX)
@@ -45,17 +45,17 @@ describe('Expected Errors', function() {
       })
     })
 
-    it('expected messages', function(done) {
-      helper.runInTransaction(agent, function(tx) {
+    it('expected messages', function (done) {
+      helper.runInTransaction(agent, function (tx) {
         agent.config.error_collector.capture_events = true
-        agent.config.error_collector.expected_messages = {"Error":["expected"]}
+        agent.config.error_collector.expected_messages = { Error: ['expected'] }
 
         let error = new Error('expected')
-        let exception = new Exception({error})
+        let exception = new Exception({ error })
         tx.addException(exception)
 
         error = new Error('NOT expected')
-        exception = new Exception({error})
+        exception = new Exception({ error })
         tx.addException(exception)
 
         tx.end()
@@ -72,17 +72,17 @@ describe('Expected Errors', function() {
       })
     })
 
-    it('expected classes', function(done) {
-      helper.runInTransaction(agent, function(tx) {
+    it('expected classes', function (done) {
+      helper.runInTransaction(agent, function (tx) {
         agent.config.error_collector.capture_events = true
-        agent.config.error_collector.expected_classes = ["ReferenceError"]
+        agent.config.error_collector.expected_classes = ['ReferenceError']
 
         let error = new ReferenceError('expected')
-        let exception = new Exception({error})
+        let exception = new Exception({ error })
         tx.addException(exception)
 
         error = new Error('NOT expected')
-        exception = new Exception({error})
+        exception = new Exception({ error })
         tx.addException(exception)
 
         tx.end()
@@ -99,19 +99,19 @@ describe('Expected Errors', function() {
       })
     })
 
-    it('expected messages by type', function(done) {
-      helper.runInTransaction(agent, function(tx) {
+    it('expected messages by type', function (done) {
+      helper.runInTransaction(agent, function (tx) {
         agent.config.error_collector.capture_events = true
         agent.config.error_collector.expected_messages = {
-          "ReferenceError":["expected if a ReferenceError"]
+          ReferenceError: ['expected if a ReferenceError']
         }
 
         let error = new ReferenceError('expected if a ReferenceError')
-        let exception = new Exception({error})
+        let exception = new Exception({ error })
         tx.addException(exception)
 
         error = new Error('expected if a ReferenceError')
-        exception = new Exception({error})
+        exception = new Exception({ error })
         tx.addException(exception)
 
         tx.end()
@@ -128,22 +128,23 @@ describe('Expected Errors', function() {
       })
     })
 
-    it('should increment expected error metric call counts', function() {
-      helper.runInTransaction(agent, function(tx) {
+    it('should increment expected error metric call counts', function () {
+      helper.runInTransaction(agent, function (tx) {
         agent.config.error_collector.capture_events = true
-        agent.config.error_collector.expected_classes = ["Error"]
+        agent.config.error_collector.expected_classes = ['Error']
 
         const error1 = new Error('expected')
         const error2 = new ReferenceError('NOT expected')
-        const exception1 = new Exception({error: error1})
-        const exception2 = new Exception({error: error2})
+        const exception1 = new Exception({ error: error1 })
+        const exception2 = new Exception({ error: error2 })
 
         tx.addException(exception1)
         tx.addException(exception2)
         tx.end()
 
-        const transactionErrorMetric
-          = agent.metrics.getMetric(NAMES.ERRORS.PREFIX + tx.getFullName())
+        const transactionErrorMetric = agent.metrics.getMetric(
+          NAMES.ERRORS.PREFIX + tx.getFullName()
+        )
 
         const expectedErrorMetric = agent.metrics.getMetric(NAMES.ERRORS.EXPECTED)
 
@@ -152,22 +153,23 @@ describe('Expected Errors', function() {
       })
     })
 
-    it('should not increment error metric call counts, web transaction', function() {
-      helper.runInTransaction(agent, function(tx) {
+    it('should not increment error metric call counts, web transaction', function () {
+      helper.runInTransaction(agent, function (tx) {
         agent.config.error_collector.capture_events = true
-        agent.config.error_collector.expected_classes = ["Error"]
+        agent.config.error_collector.expected_classes = ['Error']
 
         const error1 = new Error('expected')
         const error2 = new ReferenceError('NOT expected')
-        const exception1 = new Exception({error: error1})
-        const exception2 = new Exception({error: error2})
+        const exception1 = new Exception({ error: error1 })
+        const exception2 = new Exception({ error: error2 })
 
         tx.addException(exception1)
         tx.addException(exception2)
         tx.end()
 
-        const transactionErrorMetric
-          = agent.metrics.getMetric(NAMES.ERRORS.PREFIX + tx.getFullName())
+        const transactionErrorMetric = agent.metrics.getMetric(
+          NAMES.ERRORS.PREFIX + tx.getFullName()
+        )
 
         const allErrorMetric = agent.metrics.getMetric(NAMES.ERRORS.ALL)
         const webErrorMetric = agent.metrics.getMetric(NAMES.ERRORS.WEB)
@@ -181,22 +183,23 @@ describe('Expected Errors', function() {
       })
     })
 
-    it('should not generate any error metrics during expected status code', function() {
-      helper.runInTransaction(agent, function(tx) {
+    it('should not generate any error metrics during expected status code', function () {
+      helper.runInTransaction(agent, function (tx) {
         agent.config.error_collector.expected_status_codes = [500]
         tx.statusCode = 500
 
         const error1 = new Error('expected')
         const error2 = new ReferenceError('NOT expected')
-        const exception1 = new Exception({error: error1})
-        const exception2 = new Exception({error: error2})
+        const exception1 = new Exception({ error: error1 })
+        const exception2 = new Exception({ error: error2 })
 
         tx.addException(exception1)
         tx.addException(exception2)
         tx.end()
 
-        const transactionErrorMetric
-          = agent.metrics.getMetric(NAMES.ERRORS.PREFIX + tx.getFullName())
+        const transactionErrorMetric = agent.metrics.getMetric(
+          NAMES.ERRORS.PREFIX + tx.getFullName()
+        )
 
         const allErrorMetric = agent.metrics.getMetric(NAMES.ERRORS.ALL)
         const webErrorMetric = agent.metrics.getMetric(NAMES.ERRORS.WEB)
@@ -210,24 +213,24 @@ describe('Expected Errors', function() {
       })
     })
 
-    it('should not increment error metric call counts, bg transaction', function() {
-      helper.runInTransaction(agent, function(tx) {
-        tx.type = "BACKGROUND"
+    it('should not increment error metric call counts, bg transaction', function () {
+      helper.runInTransaction(agent, function (tx) {
+        tx.type = 'BACKGROUND'
         agent.config.error_collector.capture_events = true
-        agent.config.error_collector.expected_classes = ["Error"]
+        agent.config.error_collector.expected_classes = ['Error']
 
         const error1 = new Error('expected')
         const error2 = new ReferenceError('NOT expected')
-        const exception1 = new Exception({error: error1})
-        const exception2 = new Exception({error: error2})
+        const exception1 = new Exception({ error: error1 })
+        const exception2 = new Exception({ error: error2 })
 
         tx.addException(exception1)
         tx.addException(exception2)
         tx.end()
 
-
-        const transactionErrorMetric
-          = agent.metrics.getMetric(NAMES.ERRORS.PREFIX + tx.getFullName())
+        const transactionErrorMetric = agent.metrics.getMetric(
+          NAMES.ERRORS.PREFIX + tx.getFullName()
+        )
 
         const allErrorMetric = agent.metrics.getMetric(NAMES.ERRORS.ALL)
         const webErrorMetric = agent.metrics.getMetric(NAMES.ERRORS.WEB)
@@ -241,42 +244,37 @@ describe('Expected Errors', function() {
       })
     })
 
-    it('should not increment error metric call counts, bg transaction', function() {
-      helper.runInTransaction(agent, function(tx) {
-        agent.config.error_collector.expected_messages = {"Error":["except this error"]}
-        let exception = new Error("except this error")
-        let result = errorHelper.isExpectedException(
-          tx,
-          exception,
-          agent.config,
-          urltils
-        )
+    it('should not increment error metric call counts, bg transaction', function () {
+      helper.runInTransaction(agent, function (tx) {
+        agent.config.error_collector.expected_messages = { Error: ['except this error'] }
+        let exception = new Error('except this error')
+        let result = errorHelper.isExpectedException(tx, exception, agent.config, urltils)
 
         expect(result).equals(true)
       })
     })
 
-    it('status code + "all expected" errors should not affect apdex', function() {
+    it('status code + "all expected" errors should not affect apdex', function () {
       // when we have an error-like status code, and all the collected errors
       // are expected, we can safely assume that the error-like status code
       // came from an expected error
-      helper.runInTransaction(agent, function(tx) {
+      helper.runInTransaction(agent, function (tx) {
         tx.statusCode = 500
         const apdexStats = tx.metrics.getOrCreateApdexMetric(NAMES.APDEX)
-        const error_collector = agent.config.error_collector
-        error_collector.expected_messages = {
+        const errorCollector = agent.config.error_collector
+        errorCollector.expected_messages = {
           Error: ['apdex is frustrating']
         }
-        error_collector.ignore_messages = {
+        errorCollector.ignore_messages = {
           ReferenceError: ['apdex is frustrating']
         }
 
         let error = new Error('apdex is frustrating')
-        let exception = new Exception({error})
+        let exception = new Exception({ error })
         tx.addException(exception)
 
         error = new ReferenceError('apdex is frustrating')
-        exception = new Exception({error})
+        exception = new Exception({ error })
         tx.addException(exception)
 
         expect(tx.hasOnlyExpectedErrors()).equals(true)
@@ -289,8 +287,8 @@ describe('Expected Errors', function() {
       })
     })
 
-    it('status code + no errors should frustrate apdex', function() {
-      helper.runInTransaction(agent, function(tx) {
+    it('status code + no errors should frustrate apdex', function () {
+      helper.runInTransaction(agent, function (tx) {
         tx.statusCode = 500
         const apdexStats = tx.metrics.getOrCreateApdexMetric(NAMES.APDEX)
         expect(tx.hasOnlyExpectedErrors()).equals(false)
@@ -303,25 +301,25 @@ describe('Expected Errors', function() {
       })
     })
 
-    it('status code + "not all expected" errors should frustrate apdex', function() {
+    it('status code + "not all expected" errors should frustrate apdex', function () {
       // when we have an error-like status code, and some of the collected
       // errors are expected, but others are not, we have no idea which error
       // resulted in the error-like status code.  Therefore we still bump
       // apdex to frustrating.
 
-      helper.runInTransaction(agent, function(tx) {
+      helper.runInTransaction(agent, function (tx) {
         tx.statusCode = 500
         const apdexStats = tx.metrics.getOrCreateApdexMetric(NAMES.APDEX)
         agent.config.error_collector.expected_messages = {
-          "Error":["apdex is frustrating"]
+          Error: ['apdex is frustrating']
         }
 
         let error = new Error('apdex is frustrating')
-        let exception = new Exception({error})
+        let exception = new Exception({ error })
         tx.addException(exception)
 
         error = new ReferenceError('apdex is frustrating')
-        exception = new Exception({error})
+        exception = new Exception({ error })
         tx.addException(exception)
 
         tx._setApdex(NAMES.APDEX, 1, 1)

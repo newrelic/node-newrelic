@@ -9,7 +9,7 @@ const benchmark = require('../../lib/benchmark')
 const helper = require('../../lib/agent_helper')
 const SpanEvent = require('../../../lib/spans/span-event')
 
-const suite = benchmark.createBenchmark({name: 'SpanEvent'})
+const suite = benchmark.createBenchmark({ name: 'SpanEvent' })
 let segment = null
 
 suite.add({

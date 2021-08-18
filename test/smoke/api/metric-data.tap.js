@@ -9,8 +9,7 @@ const test = require('tap').test
 const configurator = require('../../../lib/config')
 const Agent = require('../../../lib/agent')
 const CollectorAPI = require('../../../lib/collector/api')
-const {getTestSecret} = require('../../helpers/secrets')
-
+const { getTestSecret } = require('../../helpers/secrets')
 
 const license = getTestSecret('TEST_LICENSE')
 test('Collector API should send metrics to staging-collector.newrelic.com', (t) => {
@@ -34,8 +33,7 @@ test('Collector API should send metrics to staging-collector.newrelic.com', (t) 
   var agent = new Agent(config)
   var api = new CollectorAPI(agent)
 
-
-  api.connect(function(error) {
+  api.connect(function (error) {
     t.notOk(error, 'connected without error')
 
     agent.metrics.measureMilliseconds('TEST/discard', null, 101)
@@ -45,18 +43,13 @@ test('Collector API should send metrics to staging-collector.newrelic.com', (t) 
     const metricJson = metrics.toJSON()
     t.ok(metricJson.length >= 2, 'Should have at least two metrics.')
 
-    var payload = [
-      agent.config.run_id,
-      metrics.started  / 1000,
-      Date.now() / 1000,
-      metrics
-    ]
+    var payload = [agent.config.run_id, metrics.started / 1000, Date.now() / 1000, metrics]
 
-    api.metric_data(payload, function(error, command) {
+    api.metric_data(payload, function (error, command) {
       t.notOk(error, 'sent metrics without error')
       t.ok(command, 'got a response')
 
-      t.same(command, {retainData: false})
+      t.same(command, { retainData: false })
 
       t.end()
     })

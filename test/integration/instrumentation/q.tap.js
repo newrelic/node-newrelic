@@ -28,23 +28,22 @@ test('q.ninvoke', function testQNInvoke(t) {
   var secondTest = q.defer()
 
   helper.runInTransaction(agent, function transactionWrapper(transaction) {
-    q.ninvoke(function() {
+    q.ninvoke(function () {
       qContext.assertTransaction(transaction)
       firstTest.resolve()
     })
   })
 
   helper.runInTransaction(agent, function transactionWrapper(transaction) {
-    q.ninvoke(function() {
+    q.ninvoke(function () {
       qContext.assertTransaction(transaction)
       secondTest.resolve()
     })
   })
 
-  q.all([firstTest, secondTest])
-    .then(function done() {
-      t.end()
-    })
+  q.all([firstTest, secondTest]).then(function done() {
+    t.end()
+  })
 })
 
 test('q.then', function testQNInvoke(t) {
@@ -56,23 +55,22 @@ test('q.then', function testQNInvoke(t) {
   var secondTest = q.defer()
 
   helper.runInTransaction(agent, function transactionWrapper(transaction) {
-    q(true).then(function() {
+    q(true).then(function () {
       qContext.assertTransaction(transaction)
       firstTest.resolve()
     })
   })
 
   helper.runInTransaction(agent, function transactionWrapper(transaction) {
-    q(true).then(function() {
+    q(true).then(function () {
       qContext.assertTransaction(transaction)
       secondTest.resolve()
     })
   })
 
-  q.all([firstTest, secondTest])
-    .then(function done() {
-      t.end()
-    })
+  q.all([firstTest, secondTest]).then(function done() {
+    t.end()
+  })
 })
 
 test('q.then rejections', function testQNInvoke(t) {
@@ -98,7 +96,7 @@ test('q.then rejections', function testQNInvoke(t) {
       }
     })
 
-    q(true).then(function() {
+    q(true).then(function () {
       throw thrownError
     })
   })
@@ -112,15 +110,14 @@ test('q.then rejections', function testQNInvoke(t) {
       }
     })
 
-    q(true).then(function() {
+    q(true).then(function () {
       throw thrownError
     })
   })
 
-  q.all([firstTest.promise, secondTest.promise])
-    .then(function done() {
-      t.end()
-    })
+  q.all([firstTest.promise, secondTest.promise]).then(function done() {
+    t.end()
+  })
 })
 
 function setupAgent(t) {

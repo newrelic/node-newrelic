@@ -5,4 +5,4 @@
 
 'use strict'
 
-require('./promises.js')({await_support: true})
+require('./promises.js')({ await_support: true })

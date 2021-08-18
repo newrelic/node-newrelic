@@ -36,7 +36,7 @@ exports.config = {
     detect_gcp: false,
     detect_docker: false
   },
-  transaction_tracer : {
-    enabled : true
+  transaction_tracer: {
+    enabled: true
   }
 }

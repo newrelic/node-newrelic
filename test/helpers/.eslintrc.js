@@ -4,8 +4,10 @@
  */
 
 'use strict'
+
 module.exports = {
-  env: {
-    mocha: true
+  rules: {
+    'no-process-exit': 'off',
+    'node/no-unpublished-require': 'off'
   }
 }

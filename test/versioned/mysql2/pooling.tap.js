@@ -13,26 +13,28 @@ var setup = require('./setup')
 var DBNAME = 'agent_integration'
 var DBTABLE = 'test'
 
-tap.test('MySQL2 instrumentation with a connection pool', {timeout: 60000}, function(t) {
+tap.test('MySQL2 instrumentation with a connection pool', { timeout: 60000 }, function (t) {
   // set up the instrumentation before loading MySQL
-  var poolLogger = logger.child({component: 'pool'})
+  var poolLogger = logger.child({ component: 'pool' })
   var agent = helper.instrumentMockedAgent()
   var mysql = require('mysql2')
   var pool = setup.pool(mysql, poolLogger)
 
-  t.teardown(function() {
-    pool.drain(function() {
+  t.teardown(function () {
+    pool.drain(function () {
       pool.destroyAllNow()
       helper.unloadAgent(agent)
     })
   })
 
   var withRetry = {
-    getClient : function(callback, counter) {
-      if (!counter) counter = 1
+    getClient: function (callback, counter) {
+      if (!counter) {
+        counter = 1
+      }
       counter++
 
-      pool.acquire(function(err, client) {
+      pool.acquire(function (err, client) {
         if (err) {
           poolLogger.error('Failed to get connection from the pool: %s', err)
 
@@ -40,7 +42,7 @@ tap.test('MySQL2 instrumentation with a connection pool', {timeout: 60000}, func
             pool.destroy(client)
             withRetry.getClient(callback, counter)
           } else {
-            return callback(new Error('Couldn\'t connect to DB after 10 attempts.'))
+            return callback(new Error("Couldn't connect to DB after 10 attempts."))
           }
         } else {
           callback(null, client)
@@ -48,25 +50,29 @@ tap.test('MySQL2 instrumentation with a connection pool', {timeout: 60000}, func
       })
     },
 
-    release: function(client) {
+    release: function (client) {
       pool.release(client)
     }
   }
 
   var dal = {
-    lookup: function(params, callback) {
-      if (!params.id) return callback(new Error('Must include ID to look up.'))
+    lookup: function (params, callback) {
+      if (!params.id) {
+        return callback(new Error('Must include ID to look up.'))
+      }
 
-      withRetry.getClient(function cb_getClient(err, client) {
-        if (err) return callback(err)
+      withRetry.getClient((err, client) => {
+        if (err) {
+          return callback(err)
+        }
 
-        var query = 'SELECT *' +
-                    '  FROM ' + DBNAME + '.' + DBTABLE +
-                    ' WHERE id = ?'
-        client.query(query, [params.id], function(err, results) {
+        var query = 'SELECT *' + '  FROM ' + DBNAME + '.' + DBTABLE + ' WHERE id = ?'
+        client.query(query, [params.id], function (err, results) {
           withRetry.release(client) // always release back to the pool
 
-          if (err) return callback(err)
+          if (err) {
+            return callback(err)
+          }
 
           callback(null, results.length ? results[0] : results)
         })
@@ -77,8 +83,10 @@ tap.test('MySQL2 instrumentation with a connection pool', {timeout: 60000}, func
   setup(mysql).then(() => {
     t.notOk(agent.getTransaction(), 'no transaction should be in play yet')
     helper.runInTransaction(agent, function transactionInScope() {
-      dal.lookup({id: 1}, function(error, row) {
-        if (error) t.fail(error)
+      dal.lookup({ id: 1 }, function (error, row) {
+        if (error) {
+          t.fail(error)
+        }
 
         // need to inspect on next tick, otherwise calling transaction.end() here
         // in the callback (which is its own segment) would mark it as truncated
@@ -95,11 +103,7 @@ tap.test('MySQL2 instrumentation with a connection pool', {timeout: 60000}, func
       }
 
       t.equals(row.id, 1, 'mysql2 should still work (found id)')
-      t.equals(
-        row.test_value,
-        'hamburgefontstiv',
-        'mysql driver should still work (found value)'
-      )
+      t.equals(row.test_value, 'hamburgefontstiv', 'mysql driver should still work (found value)')
 
       transaction.end()
 
@@ -120,10 +124,14 @@ tap.test('MySQL2 instrumentation with a connection pool', {timeout: 60000}, func
       t.equals(selectSegment.children[0].name, 'Callback: <anonymous>')
 
       selectSegment.children[0].children
-        .map(function(segment) {return segment.name})
-        .forEach(function(segmentName) {
-          if (segmentName !== 'timers.setTimeout'
-              && segmentName !== 'Truncated/timers.setTimeout') {
+        .map(function (segment) {
+          return segment.name
+        })
+        .forEach(function (segmentName) {
+          if (
+            segmentName !== 'timers.setTimeout' &&
+            segmentName !== 'Truncated/timers.setTimeout'
+          ) {
             t.fail('callback segment should have only timeout children')
           }
         })

@@ -28,36 +28,36 @@ tap.test('Agent API - setTranasactionName', (t) => {
     agent = null
   })
 
-  t.test("exports a transaction naming function", (t) => {
+  t.test('exports a transaction naming function', (t) => {
     t.ok(api.setTransactionName)
     t.type(api.setTransactionName, 'function')
 
     t.end()
   })
 
-  t.test("sets the transaction name to the custom name", (t) => {
+  t.test('sets the transaction name to the custom name', (t) => {
     setTranasactionNameGoldenPath((transaction) => {
       t.equal(transaction.name, 'WebTransaction/Custom/Test')
       t.end()
     })
   })
 
-  t.test("names the web trace segment after the custom name", (t) => {
+  t.test('names the web trace segment after the custom name', (t) => {
     setTranasactionNameGoldenPath((transaction, segment) => {
       t.equal(segment.name, 'WebTransaction/Custom/Test')
       t.end()
     })
   })
 
-  t.test("leaves the request URL alone", (t) => {
+  t.test('leaves the request URL alone', (t) => {
     setTranasactionNameGoldenPath((transaction) => {
       t.equal(transaction.url, TEST_URL)
       t.end()
     })
   })
 
-  t.test("uses the last name set when called multiple times", (t) => {
-    agent.on('transactionFinished', function(transaction) {
+  t.test('uses the last name set when called multiple times', (t) => {
+    agent.on('transactionFinished', function (transaction) {
       transaction.finalizeNameFromUri(TEST_URL, 200)
 
       t.equal(transaction.name, 'WebTransaction/Custom/List')
@@ -65,7 +65,7 @@ tap.test('Agent API - setTranasactionName', (t) => {
       t.end()
     })
 
-    helper.runInTransaction(agent, function(transaction) {
+    helper.runInTransaction(agent, function (transaction) {
       agent.tracer.createSegment(NAME)
       transaction.url = TEST_URL
       transaction.verb = 'GET'
@@ -83,15 +83,15 @@ tap.test('Agent API - setTranasactionName', (t) => {
   function setTranasactionNameGoldenPath(cb) {
     let segment = null
 
-    agent.on('transactionFinished', function(finishedTransaction) {
+    agent.on('transactionFinished', function (finishedTransaction) {
       finishedTransaction.finalizeNameFromUri(TEST_URL, 200)
       segment.markAsWeb(TEST_URL)
       cb(finishedTransaction, segment)
     })
 
-    helper.runInTransaction(agent, function(tx) {
+    helper.runInTransaction(agent, function (tx) {
       // grab segment
-      agent.tracer.addSegment(NAME, null, null, false, function() {
+      agent.tracer.addSegment(NAME, null, null, false, function () {
         // HTTP instrumentation sets URL as soon as it knows it
         segment = agent.tracer.getSegment()
         tx.type = 'web'

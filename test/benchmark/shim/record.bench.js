@@ -11,31 +11,33 @@ var Shim = require('../../../lib/shim/shim')
 
 var agent = helper.loadMockedAgent()
 var shim = new Shim(agent, 'test-module', './')
-var suite = benchmark.createBenchmark({name: 'Shim#record'})
+var suite = benchmark.createBenchmark({ name: 'Shim#record' })
 
-var transaction = helper.runInTransaction(agent, function(tx) { return tx })
+var transaction = helper.runInTransaction(agent, function (tx) {
+  return tx
+})
 
 suite.add({
   name: 'function',
-  fn: function() {
-    return shim.record(getTest().func, function() {})
+  fn: function () {
+    return shim.record(getTest().func, function () {})
   }
 })
 
 suite.add({
   name: 'property',
-  fn: function() {
-    return shim.record(getTest(), 'func', function() {})
+  fn: function () {
+    return shim.record(getTest(), 'func', function () {})
   }
 })
 
-var wrapped = shim.record(getTest(), 'func', function() {
-  return {name: 'foo', callback: shim.LAST}
+var wrapped = shim.record(getTest(), 'func', function () {
+  return { name: 'foo', callback: shim.LAST }
 })
 
 suite.add({
   name: 'wrapper - no transaction',
-  fn: function() {
+  fn: function () {
     agent.tracer.segment = null
     wrapped.func(noop)
   }
@@ -43,7 +45,7 @@ suite.add({
 
 suite.add({
   name: 'wrapper - in transaction',
-  fn: function() {
+  fn: function () {
     agent.tracer.segment = transaction.trace.root
     wrapped.func(noop)
   }
@@ -53,7 +55,7 @@ suite.run()
 
 function getTest() {
   return {
-    func: function(cb) {
+    func: function (cb) {
       cb()
     }
   }

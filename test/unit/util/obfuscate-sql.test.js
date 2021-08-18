@@ -40,7 +40,9 @@ tap.test('sql obfuscation', (t) => {
   t.test('should handle large JSON inserts', (t) => {
     const JSONData = '{"data": "' + new Array(8400000).fill('a').join('') + '"}'
     const result = obfuscate(
-      'INSERT INTO "Documents" ("data") VALUES (\'' + JSONData + '\')', 'postgres')
+      'INSERT INTO "Documents" ("data") VALUES (\'' + JSONData + "')",
+      'postgres'
+    )
     t.equal(result, 'INSERT INTO "Documents" ("data") VALUES (?)')
     t.end()
   })

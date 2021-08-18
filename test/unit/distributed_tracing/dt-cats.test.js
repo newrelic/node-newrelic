@@ -17,15 +17,13 @@ const recorder = require('../../../lib/metrics/recorders/distributed-trace')
 // supportability metrics are expected in the tests we unstub it.
 const recordSupportability = require('../../../lib/agent').prototype.recordSupportability
 
-const testCases = require(
-  '../../lib/cross_agent_tests/distributed_tracing/distributed_tracing.json'
-)
+const testCases = require('../../lib/cross_agent_tests/distributed_tracing/distributed_tracing.json')
 
-describe('distributed tracing', function() {
+describe('distributed tracing', function () {
   var agent
 
   beforeEach(() => {
-    agent = helper.loadMockedAgent({distributed_tracing: {enabled: true}})
+    agent = helper.loadMockedAgent({ distributed_tracing: { enabled: true } })
     agent.recordSupportability = recordSupportability
   })
 
@@ -61,7 +59,7 @@ describe('distributed tracing', function() {
           tx.acceptDistributedTraceHeaders(testCase.transport_type, headers)
           if (testCase.intrinsics.target_events.indexOf('TransactionError') > -1) {
             const error = new Error('uh oh')
-            const exception = new Exception({error})
+            const exception = new Exception({ error })
             tx.addException(exception)
           }
         })
@@ -101,11 +99,7 @@ describe('distributed tracing', function() {
         tx.end()
         const intrinsics = testCase.intrinsics
         intrinsics.target_events.forEach((type) => {
-          expect(type).to.be.oneOf([
-            'Transaction',
-            'TransactionError',
-            'Span'
-          ])
+          expect(type).to.be.oneOf(['Transaction', 'TransactionError', 'Span'])
 
           const common = intrinsics.common
           const specific = intrinsics[type] || {}
@@ -121,14 +115,10 @@ describe('distributed tracing', function() {
               toCheck = agent.spanEventAggregator.getEvents()
               break
           }
-          const exact = Object.assign(
-            specific.exact || {},
-            common.exact || {}
-          )
+          const exact = Object.assign(specific.exact || {}, common.exact || {})
 
           const arbitrary = (specific.expected || []).concat(common.expected || [])
-          const unexpected =
-            (specific.unexpected || []).concat(common.unexpected || [])
+          const unexpected = (specific.unexpected || []).concat(common.unexpected || [])
 
           expect(toCheck).to.have.length.above(0)
           toCheck.forEach((event) => {
@@ -143,12 +133,10 @@ describe('distributed tracing', function() {
               expect(attributes, `${type} should have ${key}`).to.have.property(key)
             })
             unexpected.forEach((key) => {
-              expect(attributes, `${type} should not have ${key}`)
-                .to.not.have.property(key)
+              expect(attributes, `${type} should not have ${key}`).to.not.have.property(key)
             })
             Object.keys(exact).forEach((key) => {
-              expect(attributes[key], `${type} should have equal ${key}`)
-                .to.equal(exact[key])
+              expect(attributes[key], `${type} should have equal ${key}`).to.equal(exact[key])
             })
           })
         })
@@ -158,10 +146,9 @@ describe('distributed tracing', function() {
           const metricName = metricPair[0]
           const callCount = metrics.getOrCreateMetric(metricName).callCount
           const metricCount = metricPair[1]
-          expect(
-            callCount,
-            `${metricName} should have ${metricCount} samples`
-          ).to.equal(metricCount)
+          expect(callCount, `${metricName} should have ${metricCount} samples`).to.equal(
+            metricCount
+          )
         })
         done()
       })

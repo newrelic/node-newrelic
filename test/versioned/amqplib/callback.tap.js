@@ -10,7 +10,6 @@ var API = require('../../../api')
 var helper = require('../../lib/agent_helper')
 var tap = require('tap')
 
-
 /*
 TODO:
 
@@ -23,7 +22,7 @@ consumer
 
  */
 
-tap.test('amqplib callback instrumentation', function(t) {
+tap.test('amqplib callback instrumentation', function (t) {
   t.autoend()
 
   var amqplib = null
@@ -32,7 +31,7 @@ tap.test('amqplib callback instrumentation', function(t) {
   var agent = null
   var api = null
 
-  t.beforeEach(function() {
+  t.beforeEach(function () {
     agent = helper.instrumentMockedAgent({
       attributes: {
         enabled: true
@@ -54,7 +53,7 @@ tap.test('amqplib callback instrumentation', function(t) {
 
     amqplib = require('amqplib/callback_api')
     return new Promise((resolve, reject) => {
-      amqpUtils.getChannel(amqplib, function(err, result) {
+      amqpUtils.getChannel(amqplib, function (err, result) {
         if (err) {
           reject(err)
         }
@@ -66,7 +65,7 @@ tap.test('amqplib callback instrumentation', function(t) {
     })
   })
 
-  t.afterEach(function() {
+  t.afterEach(function () {
     helper.unloadAgent(agent)
 
     if (!conn) {
@@ -76,10 +75,10 @@ tap.test('amqplib callback instrumentation', function(t) {
     return conn.close()
   })
 
-  t.test('connect in a transaction', function(t) {
-    helper.runInTransaction(agent, function() {
-      t.doesNotThrow(function() {
-        amqplib.connect(amqpUtils.CON_STRING, null, function(err, _conn) {
+  t.test('connect in a transaction', function (t) {
+    helper.runInTransaction(agent, function () {
+      t.doesNotThrow(function () {
+        amqplib.connect(amqpUtils.CON_STRING, null, function (err, _conn) {
           t.error(err, 'should not break connection')
           if (!t.passing()) {
             t.bailout('Can not connect to RabbitMQ, stopping tests.')
@@ -95,8 +94,8 @@ tap.test('amqplib callback instrumentation', function(t) {
     })
   })
 
-  t.test('sendToQueue', function(t) {
-    agent.on('transactionFinished', function(tx) {
+  t.test('sendToQueue', function (t) {
+    agent.on('transactionFinished', function (tx) {
       amqpUtils.verifySendToQueue(t, tx)
       t.end()
     })
@@ -110,90 +109,31 @@ tap.test('amqplib callback instrumentation', function(t) {
     })
   })
 
-  t.test('publish to fanout exchange', function(t) {
+  t.test('publish to fanout exchange', function (t) {
     var exchange = amqpUtils.FANOUT_EXCHANGE
 
-    agent.on('transactionFinished', function(tx) {
+    agent.on('transactionFinished', function (tx) {
       amqpUtils.verifyProduce(t, tx, exchange)
       t.end()
     })
 
-    helper.runInTransaction(agent, function(tx) {
+    helper.runInTransaction(agent, function (tx) {
       t.ok(agent.tracer.getSegment(), 'should start in transaction')
-      channel.assertExchange(exchange, 'fanout', null, function(err) {
+      channel.assertExchange(exchange, 'fanout', null, function (err) {
         t.error(err, 'should not error asserting exchange')
         amqpUtils.verifyTransaction(t, tx, 'assertExchange')
 
-        channel.assertQueue('', {exclusive: true}, function(err, result) {
+        channel.assertQueue('', { exclusive: true }, function (err, result) {
           t.error(err, 'should not error asserting queue')
           amqpUtils.verifyTransaction(t, tx, 'assertQueue')
           var queueName = result.queue
 
-          channel.bindQueue(queueName, exchange, '', null, function(err) {
+          channel.bindQueue(queueName, exchange, '', null, function (err) {
             t.error(err, 'should not error binding queue')
             amqpUtils.verifyTransaction(t, tx, 'bindQueue')
             channel.publish(exchange, '', Buffer.from('hello'))
-            setImmediate(function() { tx.end() })
-          })
-        })
-      })
-    })
-  })
-
-  t.test('publish to direct exchange', function(t) {
-    var exchange = amqpUtils.DIRECT_EXCHANGE
-
-    agent.on('transactionFinished', function(tx) {
-      amqpUtils.verifyProduce(t, tx, exchange, 'key1')
-      t.end()
-    })
-
-    helper.runInTransaction(agent, function(tx) {
-      channel.assertExchange(exchange, 'direct', null, function(err) {
-        t.error(err, 'should not error asserting exchange')
-        amqpUtils.verifyTransaction(t, tx, 'assertExchange')
-
-        channel.assertQueue('', {exclusive: true}, function(err, result) {
-          t.error(err, 'should not error asserting queue')
-          amqpUtils.verifyTransaction(t, tx, 'assertQueue')
-          var queueName = result.queue
-
-          channel.bindQueue(queueName, exchange, 'key1', null, function(err) {
-            t.error(err, 'should not error binding queue')
-            amqpUtils.verifyTransaction(t, tx, 'bindQueue')
-            channel.publish(exchange, 'key1', Buffer.from('hello'))
-            setImmediate(function() { tx.end() })
-          })
-        })
-      })
-    })
-  })
-
-  t.test('purge queue', function(t) {
-    var exchange = amqpUtils.DIRECT_EXCHANGE
-    var queueName = null
-
-    agent.on('transactionFinished', function(tx) {
-      amqpUtils.verifyPurge(t, tx)
-      t.end()
-    })
-
-    helper.runInTransaction(agent, function(tx) {
-      channel.assertExchange(exchange, 'direct', null, function(err) {
-        t.error(err, 'should not error asserting exchange')
-        amqpUtils.verifyTransaction(t, tx, 'assertExchange')
-
-        channel.assertQueue('', {exclusive: true}, function(err, result) {
-          t.error(err, 'should not error asserting queue')
-          amqpUtils.verifyTransaction(t, tx, 'assertQueue')
-          queueName = result.queue
-
-          channel.bindQueue(queueName, exchange, 'key1', null, function(err) {
-            t.error(err, 'should not error binding queue')
-            amqpUtils.verifyTransaction(t, tx, 'bindQueue')
-            channel.purgeQueue(queueName, function(err) {
-              t.error(err, 'should not error purging queue')
-              setImmediate(function() { tx.end() })
+            setImmediate(function () {
+              tx.end()
             })
           })
         })
@@ -201,28 +141,88 @@ tap.test('amqplib callback instrumentation', function(t) {
     })
   })
 
-  t.test('get a message', function(t) {
+  t.test('publish to direct exchange', function (t) {
+    var exchange = amqpUtils.DIRECT_EXCHANGE
+
+    agent.on('transactionFinished', function (tx) {
+      amqpUtils.verifyProduce(t, tx, exchange, 'key1')
+      t.end()
+    })
+
+    helper.runInTransaction(agent, function (tx) {
+      channel.assertExchange(exchange, 'direct', null, function (err) {
+        t.error(err, 'should not error asserting exchange')
+        amqpUtils.verifyTransaction(t, tx, 'assertExchange')
+
+        channel.assertQueue('', { exclusive: true }, function (err, result) {
+          t.error(err, 'should not error asserting queue')
+          amqpUtils.verifyTransaction(t, tx, 'assertQueue')
+          var queueName = result.queue
+
+          channel.bindQueue(queueName, exchange, 'key1', null, function (err) {
+            t.error(err, 'should not error binding queue')
+            amqpUtils.verifyTransaction(t, tx, 'bindQueue')
+            channel.publish(exchange, 'key1', Buffer.from('hello'))
+            setImmediate(function () {
+              tx.end()
+            })
+          })
+        })
+      })
+    })
+  })
+
+  t.test('purge queue', function (t) {
+    var exchange = amqpUtils.DIRECT_EXCHANGE
+    var queueName = null
+
+    agent.on('transactionFinished', function (tx) {
+      amqpUtils.verifyPurge(t, tx)
+      t.end()
+    })
+
+    helper.runInTransaction(agent, function (tx) {
+      channel.assertExchange(exchange, 'direct', null, function (err) {
+        t.error(err, 'should not error asserting exchange')
+        amqpUtils.verifyTransaction(t, tx, 'assertExchange')
+
+        channel.assertQueue('', { exclusive: true }, function (err, result) {
+          t.error(err, 'should not error asserting queue')
+          amqpUtils.verifyTransaction(t, tx, 'assertQueue')
+          queueName = result.queue
+
+          channel.bindQueue(queueName, exchange, 'key1', null, function (err) {
+            t.error(err, 'should not error binding queue')
+            amqpUtils.verifyTransaction(t, tx, 'bindQueue')
+            channel.purgeQueue(queueName, function (err) {
+              t.error(err, 'should not error purging queue')
+              setImmediate(function () {
+                tx.end()
+              })
+            })
+          })
+        })
+      })
+    })
+  })
+
+  t.test('get a message', function (t) {
     var exchange = amqpUtils.DIRECT_EXCHANGE
     var queue = null
 
-
-    channel.assertExchange(exchange, 'direct', null, function(err) {
+    channel.assertExchange(exchange, 'direct', null, function (err) {
       t.error(err, 'should not error asserting exchange')
 
-      channel.assertQueue('', {exclusive: true}, function(err, res) {
+      channel.assertQueue('', { exclusive: true }, function (err, res) {
         t.error(err, 'should not error asserting queue')
         queue = res.queue
 
-        channel.bindQueue(queue, exchange, 'consume-tx-key', null, function(err) {
+        channel.bindQueue(queue, exchange, 'consume-tx-key', null, function (err) {
           t.error(err, 'should not error binding queue')
 
-          helper.runInTransaction(agent, function(tx) {
-            channel.publish(
-              exchange,
-              'consume-tx-key',
-              Buffer.from('hello')
-            )
-            channel.get(queue, {}, function(err, msg) {
+          helper.runInTransaction(agent, function (tx) {
+            channel.publish(exchange, 'consume-tx-key', Buffer.from('hello'))
+            channel.get(queue, {}, function (err, msg) {
               t.notOk(err, 'should not cause an error')
               t.ok(msg, 'should receive a message')
 
@@ -231,7 +231,7 @@ tap.test('amqplib callback instrumentation', function(t) {
               t.equal(body, 'hello', 'should receive expected body')
 
               channel.ack(msg)
-              setImmediate(function() {
+              setImmediate(function () {
                 tx.end()
                 amqpUtils.verifyGet(t, tx, exchange, 'consume-tx-key', queue)
                 t.end()
@@ -243,61 +243,62 @@ tap.test('amqplib callback instrumentation', function(t) {
     })
   })
 
-  t.test('consume in a transaction with old CAT', function(t) {
+  t.test('consume in a transaction with old CAT', function (t) {
     var exchange = amqpUtils.DIRECT_EXCHANGE
     var queue = null
 
-    channel.assertExchange(exchange, 'direct', null, function(err) {
+    channel.assertExchange(exchange, 'direct', null, function (err) {
       t.error(err, 'should not error asserting exchange')
 
-      channel.assertQueue('', {exclusive: true}, function(err, res) {
+      channel.assertQueue('', { exclusive: true }, function (err, res) {
         t.error(err, 'should not error asserting queue')
         queue = res.queue
 
-        channel.bindQueue(queue, exchange, 'consume-tx-key', null, function(err) {
+        channel.bindQueue(queue, exchange, 'consume-tx-key', null, function (err) {
           t.error(err, 'should not error binding queue')
 
-          helper.runInTransaction(agent, function(tx) {
-            channel.consume(queue, function(msg) {
-              var consumeTxnHandle = api.getTransaction()
-              var consumeTxn = consumeTxnHandle._transaction
-              t.notEqual(consumeTxn, tx, 'should not be in original transaction')
-              t.ok(msg, 'should receive a message')
+          helper.runInTransaction(agent, function (tx) {
+            channel.consume(
+              queue,
+              function (msg) {
+                var consumeTxnHandle = api.getTransaction()
+                var consumeTxn = consumeTxnHandle._transaction
+                t.notEqual(consumeTxn, tx, 'should not be in original transaction')
+                t.ok(msg, 'should receive a message')
 
-              var body = msg.content.toString('utf8')
-              t.equal(body, 'hello', 'should receive expected body')
+                var body = msg.content.toString('utf8')
+                t.equal(body, 'hello', 'should receive expected body')
 
-              channel.ack(msg)
-              tx.end()
-              amqpUtils.verifySubscribe(t, tx, exchange, 'consume-tx-key')
-              consumeTxnHandle.end(function() {
-                amqpUtils.verifyConsumeTransaction(
-                  t,
-                  consumeTxn,
-                  exchange,
-                  queue,
-                  'consume-tx-key'
-                )
-                amqpUtils.verifyCAT(t, tx, consumeTxn)
-                t.end()
-              })
-            }, null, function(err) {
-              t.error(err, 'should not error subscribing consumer')
-              amqpUtils.verifyTransaction(t, tx, 'consume')
+                channel.ack(msg)
+                tx.end()
+                amqpUtils.verifySubscribe(t, tx, exchange, 'consume-tx-key')
+                consumeTxnHandle.end(function () {
+                  amqpUtils.verifyConsumeTransaction(
+                    t,
+                    consumeTxn,
+                    exchange,
+                    queue,
+                    'consume-tx-key'
+                  )
+                  amqpUtils.verifyCAT(t, tx, consumeTxn)
+                  t.end()
+                })
+              },
+              null,
+              function (err) {
+                t.error(err, 'should not error subscribing consumer')
+                amqpUtils.verifyTransaction(t, tx, 'consume')
 
-              channel.publish(
-                exchange,
-                'consume-tx-key',
-                Buffer.from('hello')
-              )
-            })
+                channel.publish(exchange, 'consume-tx-key', Buffer.from('hello'))
+              }
+            )
           })
         })
       })
     })
   })
 
-  t.test('consume in a transaction with distributed tracing', function(t) {
+  t.test('consume in a transaction with distributed tracing', function (t) {
     agent.config.distributed_tracing.enabled = true
     agent.config.span_events.enabled = true
     agent.config.account_id = 1234
@@ -307,137 +308,145 @@ tap.test('amqplib callback instrumentation', function(t) {
     var exchange = amqpUtils.DIRECT_EXCHANGE
     var queue = null
 
-    channel.assertExchange(exchange, 'direct', null, function(err) {
+    channel.assertExchange(exchange, 'direct', null, function (err) {
       t.error(err, 'should not error asserting exchange')
 
-      channel.assertQueue('', {exclusive: true}, function(err, res) {
+      channel.assertQueue('', { exclusive: true }, function (err, res) {
         t.error(err, 'should not error asserting queue')
         queue = res.queue
 
-        channel.bindQueue(queue, exchange, 'consume-tx-key', null, function(err) {
+        channel.bindQueue(queue, exchange, 'consume-tx-key', null, function (err) {
           t.error(err, 'should not error binding queue')
 
-          helper.runInTransaction(agent, function(tx) {
-            channel.consume(queue, function(msg) {
-              var consumeTxnHandle = api.getTransaction()
-              var consumeTxn = consumeTxnHandle._transaction
-              t.notEqual(consumeTxn, tx, 'should not be in original transaction')
+          helper.runInTransaction(agent, function (tx) {
+            channel.consume(
+              queue,
+              function (msg) {
+                var consumeTxnHandle = api.getTransaction()
+                var consumeTxn = consumeTxnHandle._transaction
+                t.notEqual(consumeTxn, tx, 'should not be in original transaction')
+                t.ok(msg, 'should receive a message')
+
+                var body = msg.content.toString('utf8')
+                t.equal(body, 'hello', 'should receive expected body')
+
+                channel.ack(msg)
+                tx.end()
+                amqpUtils.verifySubscribe(t, tx, exchange, 'consume-tx-key')
+                consumeTxnHandle.end(function () {
+                  amqpUtils.verifyConsumeTransaction(
+                    t,
+                    consumeTxn,
+                    exchange,
+                    queue,
+                    'consume-tx-key'
+                  )
+                  amqpUtils.verifyDistributedTrace(t, tx, consumeTxn)
+                  t.end()
+                })
+              },
+              null,
+              function (err) {
+                t.error(err, 'should not error subscribing consumer')
+                amqpUtils.verifyTransaction(t, tx, 'consume')
+
+                channel.publish(exchange, 'consume-tx-key', Buffer.from('hello'))
+              }
+            )
+          })
+        })
+      })
+    })
+  })
+
+  t.test('consume out of transaction', function (t) {
+    var exchange = amqpUtils.DIRECT_EXCHANGE
+    var queue = null
+
+    agent.on('transactionFinished', function (tx) {
+      amqpUtils.verifyConsumeTransaction(t, tx, exchange, queue, 'consume-tx-key')
+      t.end()
+    })
+
+    channel.assertExchange(exchange, 'direct', null, function (err) {
+      t.error(err, 'should not error asserting exchange')
+
+      channel.assertQueue('', { exclusive: true }, function (err, res) {
+        t.error(err, 'should not error asserting queue')
+        queue = res.queue
+
+        channel.bindQueue(queue, exchange, 'consume-tx-key', null, function (err) {
+          t.error(err, 'should not error binding queue')
+
+          channel.consume(
+            queue,
+            function (msg) {
+              var tx = api.getTransaction()
               t.ok(msg, 'should receive a message')
 
               var body = msg.content.toString('utf8')
               t.equal(body, 'hello', 'should receive expected body')
 
               channel.ack(msg)
-              tx.end()
-              amqpUtils.verifySubscribe(t, tx, exchange, 'consume-tx-key')
-              consumeTxnHandle.end(function() {
-                amqpUtils.verifyConsumeTransaction(
-                  t,
-                  consumeTxn,
-                  exchange,
-                  queue,
-                  'consume-tx-key'
-                )
-                amqpUtils.verifyDistributedTrace(t, tx, consumeTxn)
-                t.end()
+
+              setImmediate(function () {
+                tx.end()
               })
-            }, null, function(err) {
+            },
+            null,
+            function (err) {
               t.error(err, 'should not error subscribing consumer')
-              amqpUtils.verifyTransaction(t, tx, 'consume')
 
-              channel.publish(
-                exchange,
-                'consume-tx-key',
-                Buffer.from('hello')
-              )
-            })
-          })
+              channel.publish(amqpUtils.DIRECT_EXCHANGE, 'consume-tx-key', Buffer.from('hello'))
+            }
+          )
         })
       })
     })
   })
 
-  t.test('consume out of transaction', function(t) {
+  t.test('rename message consume transaction', function (t) {
     var exchange = amqpUtils.DIRECT_EXCHANGE
     var queue = null
 
-    agent.on('transactionFinished', function(tx) {
-      amqpUtils.verifyConsumeTransaction(t, tx, exchange, queue, 'consume-tx-key')
-      t.end()
-    })
-
-    channel.assertExchange(exchange, 'direct', null, function(err) {
-      t.error(err, 'should not error asserting exchange')
-
-      channel.assertQueue('', {exclusive: true}, function(err, res) {
-        t.error(err, 'should not error asserting queue')
-        queue = res.queue
-
-        channel.bindQueue(queue, exchange, 'consume-tx-key', null, function(err) {
-          t.error(err, 'should not error binding queue')
-
-          channel.consume(queue, function(msg) {
-            var tx = api.getTransaction()
-            t.ok(msg, 'should receive a message')
-
-            var body = msg.content.toString('utf8')
-            t.equal(body, 'hello', 'should receive expected body')
-
-            channel.ack(msg)
-
-            setImmediate(function() { tx.end() })
-          }, null, function(err) {
-            t.error(err, 'should not error subscribing consumer')
-
-            channel.publish(
-              amqpUtils.DIRECT_EXCHANGE,
-              'consume-tx-key',
-              Buffer.from('hello')
-            )
-          })
-        })
-      })
-    })
-  })
-
-  t.test('rename message consume transaction', function(t) {
-    var exchange = amqpUtils.DIRECT_EXCHANGE
-    var queue = null
-
-    agent.on('transactionFinished', function(tx) {
+    agent.on('transactionFinished', function (tx) {
       t.equal(
-        tx.getFullName(), 'OtherTransaction/Message/Custom/foobar',
+        tx.getFullName(),
+        'OtherTransaction/Message/Custom/foobar',
         'should have specified name'
       )
       t.end()
     })
 
-    channel.assertExchange(exchange, 'direct', null, function(err) {
+    channel.assertExchange(exchange, 'direct', null, function (err) {
       t.error(err, 'should not error asserting exchange')
 
-      channel.assertQueue('', {exclusive: true}, function(err, res) {
+      channel.assertQueue('', { exclusive: true }, function (err, res) {
         t.error(err, 'should not error asserting queue')
         queue = res.queue
 
-        channel.bindQueue(queue, exchange, 'consume-tx-key', null, function(err) {
+        channel.bindQueue(queue, exchange, 'consume-tx-key', null, function (err) {
           t.error(err, 'should not error binding queue')
 
-          channel.consume(queue, function(msg) {
-            var tx = api.getTransaction()
-            api.setTransactionName('foobar')
+          channel.consume(
+            queue,
+            function (msg) {
+              var tx = api.getTransaction()
+              api.setTransactionName('foobar')
 
-            channel.ack(msg)
+              channel.ack(msg)
 
-            setImmediate(function() { tx.end() })
-          }, null, function(err) {
-            t.error(err, 'should not error subscribing consumer')
+              setImmediate(function () {
+                tx.end()
+              })
+            },
+            null,
+            function (err) {
+              t.error(err, 'should not error subscribing consumer')
 
-            channel.publish(
-              amqpUtils.DIRECT_EXCHANGE,
-              'consume-tx-key',
-              Buffer.from('hello')
-            )
-          })
+              channel.publish(amqpUtils.DIRECT_EXCHANGE, 'consume-tx-key', Buffer.from('hello'))
+            }
+          )
         })
       })
     })

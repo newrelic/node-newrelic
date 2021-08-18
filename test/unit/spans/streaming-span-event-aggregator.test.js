@@ -14,7 +14,9 @@ tap.test('Should only attempt to connect on first start() call', (t) => {
 
   const opts = {
     span_streamer: {
-      connect: () => { connectCount++ }
+      connect: () => {
+        connectCount++
+      }
     }
   }
 
@@ -35,7 +37,9 @@ tap.test('Should only attempt to disconnect on first stop() call', (t) => {
   const opts = {
     span_streamer: {
       connect: () => {},
-      disconnect: () => { disonnectCount++ }
+      disconnect: () => {
+        disonnectCount++
+      }
     }
   }
 
@@ -56,7 +60,9 @@ tap.test('Should attempt to connect on start() after stop() call', (t) => {
 
   const opts = {
     span_streamer: {
-      connect: () => { connectCount++ },
+      connect: () => {
+        connectCount++
+      },
       disconnect: () => {}
     }
   }

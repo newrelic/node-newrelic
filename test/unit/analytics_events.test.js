@@ -18,11 +18,11 @@ var expect = chai.expect
 
 const LIMIT = 10
 
-describe('Analytics events', function() {
+describe('Analytics events', function () {
   var agent = null
   var trans = null
 
-  beforeEach(function() {
+  beforeEach(function () {
     agent = helper.loadMockedAgent({
       transaction_events: {
         max_samples_stored: LIMIT
@@ -31,16 +31,16 @@ describe('Analytics events', function() {
     agent.config.attributes.enabled = true
   })
 
-  afterEach(function() {
+  afterEach(function () {
     helper.unloadAgent(agent)
   })
 
-  describe('when there are attributes on transaction', function() {
-    beforeEach(function() {
+  describe('when there are attributes on transaction', function () {
+    beforeEach(function () {
       trans = new Transaction(agent)
     })
 
-    it('event should contain those attributes', function() {
+    it('event should contain those attributes', function () {
       trans.trace.attributes.addAttribute(DESTS.TRANS_EVENT, 'test', 'TEST')
       agent._addEventFromTransaction(trans)
 
@@ -53,13 +53,13 @@ describe('Analytics events', function() {
     })
   })
 
-  describe('when host name is specified by user', function() {
-    beforeEach(function() {
+  describe('when host name is specified by user', function () {
+    beforeEach(function () {
       agent.config.process_host.display_name = 'test-value'
       trans = new Transaction(agent)
     })
 
-    it('name should be sent with event', function() {
+    it('name should be sent with event', function () {
       agent._addEventFromTransaction(trans)
 
       var first = 0
@@ -73,33 +73,33 @@ describe('Analytics events', function() {
     })
   })
 
-  describe('when analytics events are disabled', function() {
-    it('collector cannot enable remotely', function() {
+  describe('when analytics events are disabled', function () {
+    it('collector cannot enable remotely', function () {
       agent.config.transaction_events.enabled = false
-      expect(function() {
-        agent.config.onConnect({'collect_analytics_events' : true})
+      expect(function () {
+        agent.config.onConnect({ collect_analytics_events: true })
       }).not.throws()
       expect(agent.config.transaction_events.enabled).equals(false)
     })
   })
 
-  describe('when analytics events are enabled', function() {
-    it('collector can disable remotely', function() {
+  describe('when analytics events are enabled', function () {
+    it('collector can disable remotely', function () {
       agent.config.transaction_events.enabled = true
-      expect(function() {
-        agent.config.onConnect({'collect_analytics_events' : false})
+      expect(function () {
+        agent.config.onConnect({ collect_analytics_events: false })
       }).not.throws()
       expect(agent.config.transaction_events.enabled).equals(false)
     })
   })
 
-  describe('on transaction finished', function() {
-    beforeEach(function() {
+  describe('on transaction finished', function () {
+    beforeEach(function () {
       trans = new Transaction(agent)
     })
 
-    it('should queue an event', function(done) {
-      agent._addEventFromTransaction = function(transaction) {
+    it('should queue an event', function (done) {
+      agent._addEventFromTransaction = function (transaction) {
         expect(transaction).to.equal(trans)
         done()
       }
@@ -107,7 +107,7 @@ describe('Analytics events', function() {
       trans.end()
     })
 
-    it('should generate an event from transaction', function() {
+    it('should generate an event from transaction', function () {
       trans.end()
 
       const events = getTransactionEvents(agent)
@@ -128,7 +128,7 @@ describe('Analytics events', function() {
       expect(eventValues.error).to.equal(false)
     })
 
-    it('should flag errored transactions', function() {
+    it('should flag errored transactions', function () {
       trans.addException(new Error('wuh oh'))
       trans.end()
 
@@ -149,7 +149,7 @@ describe('Analytics events', function() {
       expect(eventValues.error).to.equal(true)
     })
 
-    it('should add DT parent attributes with an accepted payload', function() {
+    it('should add DT parent attributes with an accepted payload', function () {
       agent.config.distributed_tracing.enabled = true
       agent.config.primary_application_id = 'test'
       agent.config.account_id = 1
@@ -177,7 +177,7 @@ describe('Analytics events', function() {
       expect(trans.priority).to.be.greaterThan(1)
     })
 
-    it('should add DT attributes', function() {
+    it('should add DT attributes', function () {
       agent.config.distributed_tracing.enabled = true
       trans = new Transaction(agent)
       trans.end()
@@ -195,8 +195,7 @@ describe('Analytics events', function() {
       expect(trans.priority).to.be.greaterThan(1)
     })
 
-
-    it('should contain user and agent attributes', function() {
+    it('should contain user and agent attributes', function () {
       trans.end()
 
       const events = getTransactionEvents(agent)
@@ -209,7 +208,7 @@ describe('Analytics events', function() {
       expect(event[2]).to.be.an('Object')
     })
 
-    it('should contain custom attributes', function() {
+    it('should contain custom attributes', function () {
       trans.trace.addCustomAttribute('a', 'b')
       trans.end()
 
@@ -218,7 +217,7 @@ describe('Analytics events', function() {
       expect(event[1].a).to.equal('b')
     })
 
-    it('includes internal synthetics attributes', function() {
+    it('includes internal synthetics attributes', function () {
       trans.syntheticsData = {
         version: 1,
         accountId: 123,
@@ -237,7 +236,7 @@ describe('Analytics events', function() {
       expect(attributes['nr.syntheticsMonitorId']).equal('monId')
     })
 
-    it('not spill over reservoir size', function() {
+    it('not spill over reservoir size', function () {
       for (var i = 0; i < 20; i++) {
         agent._addEventFromTransaction(trans)
       }

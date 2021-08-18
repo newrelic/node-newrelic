@@ -29,7 +29,7 @@ describe('Metric Aggregator', () => {
   let testClock = null
 
   beforeEach(() => {
-    testClock = sinon.useFakeTimers({now: EXPECTED_START_SECONDS * 1000})
+    testClock = sinon.useFakeTimers({ now: EXPECTED_START_SECONDS * 1000 })
 
     fakeCollectorApi = {}
     fakeCollectorApi[EXPECTED_METHOD] = () => {}
@@ -67,7 +67,7 @@ describe('Metric Aggregator', () => {
   describe('reconfigure()', () => {
     it('should update runId', () => {
       const expectedRunId = 'new run id'
-      const fakeConfig = {run_id: expectedRunId}
+      const fakeConfig = { run_id: expectedRunId }
 
       metricAggregator.reconfigure(fakeConfig)
 
@@ -205,14 +205,10 @@ describe('Metric Aggregator', () => {
       const expectedMetricName = 'myMetric'
       const expectedMetricScope = 'myScope'
 
-      metricAggregator
-        .getOrCreateMetric(expectedMetricName, expectedMetricScope)
-        .recordValue(2, 1)
+      metricAggregator.getOrCreateMetric(expectedMetricName, expectedMetricScope).recordValue(2, 1)
 
       const mergeData = new Metrics(EXPECTED_APDEX_T, mapper, normalizer)
-      mergeData
-        .getOrCreateMetric(expectedMetricName, expectedMetricScope)
-        .recordValue(4, 2)
+      mergeData.getOrCreateMetric(expectedMetricName, expectedMetricScope).recordValue(4, 2)
 
       mergeData.getOrCreateMetric('newMetric').incrementCallCount()
 
@@ -223,8 +219,7 @@ describe('Metric Aggregator', () => {
       const newUnscopedMetric = metricAggregator.getMetric('newMetric')
       expect(newUnscopedMetric).to.have.property('callCount', 1)
 
-      const mergedScopedMetric =
-        metricAggregator.getMetric(expectedMetricName, expectedMetricScope)
+      const mergedScopedMetric = metricAggregator.getMetric(expectedMetricName, expectedMetricScope)
 
       expect(mergedScopedMetric.callCount).to.equal(2)
       expect(mergedScopedMetric.min).to.equal(2)
@@ -297,14 +292,10 @@ describe('Metric Aggregator', () => {
       const expectedMetricName = 'myMetric'
       const expectedMetricScope = 'myScope'
 
-      metricAggregator
-        .getOrCreateMetric(expectedMetricName, expectedMetricScope)
-        .recordValue(2, 1)
+      metricAggregator.getOrCreateMetric(expectedMetricName, expectedMetricScope).recordValue(2, 1)
 
       const mergeData = new Metrics(EXPECTED_APDEX_T, mapper, normalizer)
-      mergeData
-        .getOrCreateMetric(expectedMetricName, expectedMetricScope)
-        .recordValue(4, 2)
+      mergeData.getOrCreateMetric(expectedMetricName, expectedMetricScope).recordValue(4, 2)
 
       mergeData.getOrCreateMetric('newMetric').incrementCallCount()
 
@@ -315,8 +306,7 @@ describe('Metric Aggregator', () => {
       const newUnscopedMetric = metricAggregator.getMetric('newMetric')
       expect(newUnscopedMetric).to.have.property('callCount', 1)
 
-      const mergedScopedMetric =
-        metricAggregator.getMetric(expectedMetricName, expectedMetricScope)
+      const mergedScopedMetric = metricAggregator.getMetric(expectedMetricName, expectedMetricScope)
 
       expect(mergedScopedMetric.callCount).to.equal(2)
       expect(mergedScopedMetric.min).to.equal(2)
@@ -431,9 +421,7 @@ describe('Metric Aggregator', () => {
 
       const spy = sinon.spy(metricAggregator._metrics, 'getMetric')
 
-      metricAggregator
-        .getOrCreateMetric(expectedName, expectedScope)
-        .incrementCallCount()
+      metricAggregator.getOrCreateMetric(expectedName, expectedScope).incrementCallCount()
 
       const metric = metricAggregator.getMetric(expectedName, expectedScope)
 

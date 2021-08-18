@@ -28,8 +28,8 @@ tap.test('distributed tracing full integration', (t) => {
     distributed_tracing: {
       enabled: true
     },
-    cross_application_tracer: {enabled: false},
-    encoding_key: 'some key',
+    cross_application_tracer: { enabled: false },
+    encoding_key: 'some key'
   }
   const agent = helper.instrumentMockedAgent(config)
   agent.config.primary_application_id = APP_ID
@@ -96,27 +96,6 @@ tap.test('distributed tracing full integration', (t) => {
     end.close()
   })
 
-  function runTest() {
-    http.get(generateUrl(START_PORT, 'start'), (res) => {
-      res.resume()
-      start.close()
-      middle.close()
-      end.close()
-    })
-    var txCount = 0
-
-    const testsToCheck = []
-    agent.on('transactionFinished', (trans) => {
-      const event = agent.transactionEventAggregator.getEvents().filter((evt) => {
-        return evt[0].guid === trans.id
-      })[0]
-      testsToCheck.push(transInspector[txCount].bind(this, trans, event))
-      if (++txCount === 3) {
-        testsToCheck.forEach((test) => test())
-      }
-    })
-  }
-
   var transInspector = [
     function endTest(trans, event) {
       // Check the unscoped metrics
@@ -128,14 +107,8 @@ tap.test('distributed tracing full integration', (t) => {
         t.ok(unscoped[`${metric}Web`], `end generated a ${name} (Web) metric`)
       })
 
-      t.equal(
-        Object.keys(unscoped).length, 11,
-        'end should only have expected unscoped metrics'
-      )
-      t.equal(
-        Object.keys(trans.metrics.scoped).length, 0,
-        'should have no scoped metrics'
-      )
+      t.equal(Object.keys(unscoped).length, 11, 'end should only have expected unscoped metrics')
+      t.equal(Object.keys(trans.metrics.scoped).length, 0, 'should have no scoped metrics')
       // check the intrinsic attributes
       validateIntrinsics(t, trans.trace.intrinsics, 'end', 'trace')
 
@@ -161,30 +134,18 @@ tap.test('distributed tracing full integration', (t) => {
 
       const external = `External/localhost:${END_PORT}/`
       EXTERNAL_METRIC_SUFFIXES.forEach((suf) => {
-        t.ok(
-          unscoped[external + suf],
-          `middle generated expected External metric (/${suf})`
-        )
+        t.ok(unscoped[external + suf], `middle generated expected External metric (/${suf})`)
       })
 
-      t.equal(
-        Object.keys(unscoped).length, 15,
-        'middle should only have expected unscoped metrics'
-      )
+      t.equal(Object.keys(unscoped).length, 15, 'middle should only have expected unscoped metrics')
 
       // check the scoped metrics
       const scoped = trans.metrics.scoped
       const middleMetric = scoped['WebTransaction/Nodejs/GET//start/middle']
       t.ok(middleMetric, 'middle generated a scoped metric block')
-      t.ok(
-        middleMetric[external + 'http'],
-        'middle generated an External scoped metric'
-      )
+      t.ok(middleMetric[external + 'http'], 'middle generated an External scoped metric')
       const scopedKeys = Object.keys(middleMetric)
-      t.equal(
-        scopedKeys.length, 1,
-        'middle should only be the inbound and outbound request.'
-      )
+      t.equal(scopedKeys.length, 1, 'middle should only be the inbound and outbound request.')
       t.deepEqual(
         scopedKeys,
         ['External/localhost:10002/http'],
@@ -213,29 +174,17 @@ tap.test('distributed tracing full integration', (t) => {
 
       const external = `External/localhost:${MIDDLE_PORT}/`
       EXTERNAL_METRIC_SUFFIXES.forEach((suf) => {
-        t.ok(
-          unscoped[external + suf],
-          `start generated expected External metric (/${suf})`
-        )
+        t.ok(unscoped[external + suf], `start generated expected External metric (/${suf})`)
       })
 
-      t.equal(
-        Object.keys(unscoped).length, 13,
-        'start should only have expected unscoped metrics'
-      )
+      t.equal(Object.keys(unscoped).length, 13, 'start should only have expected unscoped metrics')
       // check the scoped metrics
       const scoped = trans.metrics.scoped
       const startMetric = scoped['WebTransaction/Nodejs/GET//start']
       t.ok(startMetric, 'start generated a scoped metric block')
-      t.ok(
-        startMetric[external + 'http'],
-        'start generated an External scoped metric'
-      )
+      t.ok(startMetric[external + 'http'], 'start generated an External scoped metric')
       const scopedKeys = Object.keys(startMetric)
-      t.equal(
-        scopedKeys.length, 1,
-        'start should only be the inbound and outbound request.'
-      )
+      t.equal(scopedKeys.length, 1, 'start should only be the inbound and outbound request.')
       t.deepEqual(
         scopedKeys,
         ['External/localhost:10001/http'],
@@ -258,6 +207,26 @@ tap.test('distributed tracing full integration', (t) => {
       t.end()
     }
   ]
+  function runTest() {
+    http.get(generateUrl(START_PORT, 'start'), (res) => {
+      res.resume()
+      start.close()
+      middle.close()
+      end.close()
+    })
+    var txCount = 0
+
+    const testsToCheck = []
+    agent.on('transactionFinished', (trans) => {
+      const event = agent.transactionEventAggregator.getEvents().filter((evt) => {
+        return evt[0].guid === trans.id
+      })[0]
+      testsToCheck.push(transInspector[txCount].bind(this, trans, event))
+      if (++txCount === 3) {
+        testsToCheck.forEach((test) => test())
+      }
+    })
+  }
 })
 
 tap.test('distributed tracing', (t) => {
@@ -268,10 +237,10 @@ tap.test('distributed tracing', (t) => {
 
   t.autoend()
 
-  t.beforeEach(async() => {
+  t.beforeEach(async () => {
     agent = helper.instrumentMockedAgent({
-      distributed_tracing: {enabled: true},
-      cross_application_tracer: {enabled: true},
+      distributed_tracing: { enabled: true },
+      cross_application_tracer: { enabled: true }
     })
     agent.config.primary_application_id = APP_ID
     agent.config.account_id = ACCOUNT_ID
@@ -283,66 +252,68 @@ tap.test('distributed tracing', (t) => {
 
     // TODO: convert to async functions to get rid of 'async' library usage.
     await new Promise((resolve) => {
-      async.parallel([
-        (cb) => {
-          start = generateServer(http, api, START_PORT, cb, (req, res) => {
-            const tx = agent.tracer.getTransaction()
-            tx.nameState.appendPath('foobar')
+      async.parallel(
+        [
+          (cb) => {
+            start = generateServer(http, api, START_PORT, cb, (req, res) => {
+              const tx = agent.tracer.getTransaction()
+              tx.nameState.appendPath('foobar')
 
-            get(generateUrl(MIDDLE_PORT, 'start/middle'), (err, body) => {
-              tx.nameState.popPath('foobar')
+              get(generateUrl(MIDDLE_PORT, 'start/middle'), (err, body) => {
+                tx.nameState.popPath('foobar')
 
-              body.start = req.headers
-              body = JSON.stringify(body)
+                body.start = req.headers
+                body = JSON.stringify(body)
+                res.setHeader('Content-Type', 'application/json')
+                res.setHeader('Content-Length', Buffer.byteLength(body))
+                res.write(body)
+                res.end()
+              })
+            })
+          },
+
+          (cb) => {
+            middle = generateServer(http, api, MIDDLE_PORT, cb, (req, res) => {
+              const tx = agent.tracer.getTransaction()
+              tx.nameState.appendPath('foobar')
+
+              get(generateUrl(END_PORT, 'middle/end'), (err, body) => {
+                tx.nameState.popPath('foobar')
+
+                body.middle = req.headers
+                body = JSON.stringify(body)
+                res.setHeader('Content-Type', 'application/json')
+                res.setHeader('Content-Length', Buffer.byteLength(body))
+                res.write(body)
+                res.end()
+              })
+            })
+          },
+
+          (cb) => {
+            end = generateServer(http, api, END_PORT, cb, (req, res) => {
+              const body = JSON.stringify({ end: req.headers })
               res.setHeader('Content-Type', 'application/json')
               res.setHeader('Content-Length', Buffer.byteLength(body))
               res.write(body)
               res.end()
             })
-          })
-        },
-
-        (cb) => {
-          middle = generateServer(http, api, MIDDLE_PORT, cb, (req, res) => {
-            const tx = agent.tracer.getTransaction()
-            tx.nameState.appendPath('foobar')
-
-            get(generateUrl(END_PORT, 'middle/end'), (err, body) => {
-              tx.nameState.popPath('foobar')
-
-              body.middle = req.headers
-              body = JSON.stringify(body)
-              res.setHeader('Content-Type', 'application/json')
-              res.setHeader('Content-Length', Buffer.byteLength(body))
-              res.write(body)
-              res.end()
-            })
-          })
-        },
-
-        (cb) => {
-          end = generateServer(http, api, END_PORT, cb, (req, res) => {
-            const body = JSON.stringify({end: req.headers})
-            res.setHeader('Content-Type', 'application/json')
-            res.setHeader('Content-Length', Buffer.byteLength(body))
-            res.write(body)
-            res.end()
-          })
-        }
-      ], resolve)
+          }
+        ],
+        resolve
+      )
     })
   })
 
   // TODO: convert to async functions to get rid of 'async' library usage.
-  t.afterEach(async() => {
+  t.afterEach(async () => {
     helper.unloadAgent(agent)
 
     await new Promise((resolve) => {
-      async.parallel([
-        (cb) => start.close(cb),
-        (cb) => middle.close(cb),
-        (cb) => end.close(cb),
-      ], resolve)
+      async.parallel(
+        [(cb) => start.close(cb), (cb) => middle.close(cb), (cb) => end.close(cb)],
+        resolve
+      )
     })
   })
 
@@ -363,8 +334,8 @@ tap.test('distributed tracing', (t) => {
   t.test('should be disabled by shim.DISABLE_DT symbol', (t) => {
     helper.runInTransaction(agent, (tx) => {
       const OLD_HEADER = 'x-newrelic-transaction'
-      const headers = {[SYMBOLS.DISABLE_DT]: true}
-      get(generateUrl(START_PORT, 'start'), {headers}, (err, body) => {
+      const headers = { [SYMBOLS.DISABLE_DT]: true }
+      get(generateUrl(START_PORT, 'start'), { headers }, (err, body) => {
         t.error(err)
 
         t.notOk(body.start.newrelic, 'should not add DT header when disabled')
@@ -450,7 +421,7 @@ function get(uri, options, cb) {
 
   require('http').get(options, (res) => {
     let body = ''
-    res.on('data', (data) => body += data.toString('utf8'))
+    res.on('data', (data) => (body += data.toString('utf8')))
     res.on('error', (err) => cb(err))
     res.on('end', () => cb(null, JSON.parse(body)))
   })

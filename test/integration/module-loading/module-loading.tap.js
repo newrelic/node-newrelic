@@ -5,7 +5,7 @@
 
 'use strict'
 
-const tap  = require('tap')
+const tap = require('tap')
 const path = require('path')
 
 const helper = require('../../lib/agent_helper')
@@ -13,7 +13,7 @@ const shimmer = require('../../../lib/shimmer')
 
 const customPackagePath = './node_modules/customTestPackage'
 
-tap.test('Should properly track module paths to enable shim.require()', function(t) {
+tap.test('Should properly track module paths to enable shim.require()', function (t) {
   t.autoend()
 
   let agent = helper.instrumentMockedAgent()

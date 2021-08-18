@@ -7,8 +7,7 @@
 
 var test = require('tap').test
 
-
-test('loading the application via index.js with agent disabled', function(t) {
+test('loading the application via index.js with agent disabled', function (t) {
   t.plan(2)
 
   process.env.NEW_RELIC_HOME = __dirname + '/..'

@@ -7,17 +7,16 @@
 
 var test = require('tap').test
 
-
-test('loading the application via index.js with agent disabled', function(t) {
+test('loading the application via index.js with agent disabled', function (t) {
   t.plan(3)
 
   process.env.NEW_RELIC_HOME = '/this/is/not/a/real/path'
   process.env.HOME = '/this/is/also/not/a/real/path'
-  process.cwd = function() {
+  process.cwd = function () {
     return __dirname
   }
   var api
-  t.doesNotThrow(function() {
+  t.doesNotThrow(function () {
     api = require('../../../')
   }, 'should not die when the config file is not found')
 

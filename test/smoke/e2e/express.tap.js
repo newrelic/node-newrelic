@@ -55,4 +55,3 @@ tap.test('Express e2e request smoke test', (t) => {
     throw new Error(util.format('child process unexpectedly closed: %s', type))
   }
 })
-

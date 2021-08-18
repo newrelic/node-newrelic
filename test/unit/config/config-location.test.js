@@ -23,7 +23,7 @@ tap.test('when overriding the config file location via NR_HOME', (t) => {
   let origHome = null
   let startDir = null
 
-  t.beforeEach(async() => {
+  t.beforeEach(async () => {
     if (process.env.NEW_RELIC_HOME) {
       origHome = process.env.NEW_RELIC_HOME
     }
@@ -36,9 +36,7 @@ tap.test('when overriding the config file location via NR_HOME', (t) => {
     process.chdir(NOPLACEDIR)
     process.env.NEW_RELIC_HOME = DESTDIR
 
-    const sampleConfig = fs.createReadStream(
-      path.join(__dirname, '../../../lib/config/default.js')
-    )
+    const sampleConfig = fs.createReadStream(path.join(__dirname, '../../../lib/config/default.js'))
     const sandboxedConfig = fs.createWriteStream(CONFIGPATH)
     sampleConfig.pipe(sandboxedConfig)
 
@@ -47,7 +45,7 @@ tap.test('when overriding the config file location via NR_HOME', (t) => {
     })
   })
 
-  t.afterEach(async() => {
+  t.afterEach(async () => {
     if (origHome) {
       process.env.NEW_RELIC_HOME = origHome
     } else {
@@ -56,10 +54,10 @@ tap.test('when overriding the config file location via NR_HOME', (t) => {
     origHome = null
 
     await fsPromises.unlink(CONFIGPATH)
-    await fsPromises.rmdir(DESTDIR, {recursive: true})
+    await fsPromises.rmdir(DESTDIR, { recursive: true })
 
     process.chdir(startDir)
-    await fsPromises.rmdir(NOPLACEDIR, {recursive: true})
+    await fsPromises.rmdir(NOPLACEDIR, { recursive: true })
   })
 
   t.test('should load the configuration', (t) => {
@@ -156,7 +154,7 @@ tap.test('Selecting config file path', (t) => {
   })
 
   t.test('should load the default newrelic.js config file', (t) => {
-    const filename = "newrelic.js"
+    const filename = 'newrelic.js'
     createSampleConfig(DESTDIR, filename)
 
     const configuration = Config.initialize()
@@ -166,7 +164,7 @@ tap.test('Selecting config file path', (t) => {
   })
 
   t.test('should load the default newrelic.cjs config file', (t) => {
-    const filename = "newrelic.cjs"
+    const filename = 'newrelic.cjs'
     createSampleConfig(DESTDIR, filename)
 
     const configuration = Config.initialize()
@@ -176,7 +174,7 @@ tap.test('Selecting config file path', (t) => {
   })
 
   t.test('should load config when overriding the default with NEW_RELIC_CONFIG_FILENAME', (t) => {
-    const filename =  'some-file-name.js'
+    const filename = 'some-file-name.js'
     process.env.NEW_RELIC_CONFIG_FILENAME = filename
     createSampleConfig(DESTDIR, filename)
 
@@ -186,7 +184,7 @@ tap.test('Selecting config file path', (t) => {
     t.end()
   })
 
-  t.test('should load config from the main module\'s filepath', (t) => {
+  t.test("should load config from the main module's filepath", (t) => {
     const filename = 'newrelic.js'
     createSampleConfig(MAIN_MODULE_DIR, filename)
 

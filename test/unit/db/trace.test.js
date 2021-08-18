@@ -12,13 +12,13 @@ require('tap').mochaGlobals()
 const helper = require('../../lib/agent_helper')
 const chai = require('chai')
 
-const expect  = chai.expect
+const expect = chai.expect
 
-describe('SQL trace', function() {
-  describe('attributes', function() {
+describe('SQL trace', function () {
+  describe('attributes', function () {
     var agent
 
-    beforeEach(function() {
+    beforeEach(function () {
       agent = helper.loadMockedAgent({
         slow_sql: {
           enabled: true
@@ -30,25 +30,20 @@ describe('SQL trace', function() {
       })
     })
 
-    afterEach(function() {
+    afterEach(function () {
       helper.unloadAgent(agent)
     })
 
-    it('should include all DT intrinsics sans parentId and parentSpanId', function(done) {
+    it('should include all DT intrinsics sans parentId and parentSpanId', function (done) {
       agent.config.distributed_tracing.enabled = true
       agent.config.primary_application_id = 'test'
       agent.config.account_id = 1
       agent.config.simple_compression = true
-      helper.runInTransaction(agent, function(tx) {
+      helper.runInTransaction(agent, function (tx) {
         const payload = tx._createDistributedTracePayload().text()
         tx.isDistributedTrace = null
         tx._acceptDistributedTracePayload(payload)
-        agent.queries.add(
-          tx.trace.root,
-          'postgres',
-          'select pg_sleep(1)',
-          'FAKE STACK'
-        )
+        agent.queries.add(tx.trace.root, 'postgres', 'select pg_sleep(1)', 'FAKE STACK')
         agent.queries.prepareJSON((err, samples) => {
           const sample = samples[0]
           const attributes = sample[sample.length - 1]
@@ -66,15 +61,10 @@ describe('SQL trace', function() {
       })
     })
 
-    it('should serialize properly using prepareJSONSync', function() {
-      helper.runInTransaction(agent, function(tx) {
+    it('should serialize properly using prepareJSONSync', function () {
+      helper.runInTransaction(agent, function (tx) {
         const query = 'select pg_sleep(1)'
-        agent.queries.add(
-          tx.trace.root,
-          'postgres',
-          query,
-          'FAKE STACK'
-        )
+        agent.queries.add(tx.trace.root, 'postgres', query, 'FAKE STACK')
         const sampleObj = agent.queries.samples.values().next().value
         const sample = agent.queries.prepareJSONSync()[0]
         expect(sample[0]).to.equal(tx.getFullName())
@@ -89,18 +79,13 @@ describe('SQL trace', function() {
       })
     })
 
-    it('should include the proper priority on transaction end', function(done) {
+    it('should include the proper priority on transaction end', function (done) {
       agent.config.distributed_tracing.enabled = true
       agent.config.primary_application_id = 'test'
       agent.config.account_id = 1
       agent.config.simple_compression = true
-      helper.runInTransaction(agent, function(tx) {
-        agent.queries.add(
-          tx.trace.root,
-          'postgres',
-          'select pg_sleep(1)',
-          'FAKE STACK'
-        )
+      helper.runInTransaction(agent, function (tx) {
+        agent.queries.add(tx.trace.root, 'postgres', 'select pg_sleep(1)', 'FAKE STACK')
         agent.queries.prepareJSON((err, samples) => {
           const sample = samples[0]
           const attributes = sample[sample.length - 1]

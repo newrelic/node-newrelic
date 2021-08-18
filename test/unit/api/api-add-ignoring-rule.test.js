@@ -28,7 +28,7 @@ tap.test('Agent API - addIgnoringRule', (t) => {
     agent = null
   })
 
-  t.test("exports a function for ignoring certain URLs", (t) => {
+  t.test('exports a function for ignoring certain URLs', (t) => {
     t.ok(api.addIgnoringRule)
     t.type(api.addIgnoringRule, 'function')
 
@@ -52,52 +52,52 @@ tap.test('Agent API - addIgnoringRule', (t) => {
     })
   })
 
-  t.test("should leave the passed-in pattern alone", (t) => {
+  t.test('should leave the passed-in pattern alone', (t) => {
     addIgnoringRuleGoldenPath(agent, api, (mine) => {
       t.equal(mine.pattern.source, '^\\/test\\/.*')
       t.end()
     })
   })
 
-  t.test("should have the correct replacement", (t) => {
+  t.test('should have the correct replacement', (t) => {
     addIgnoringRuleGoldenPath(agent, api, (mine) => {
       t.equal(mine.replacement, '$0')
       t.end()
     })
   })
 
-  t.test("should set it to highest precedence", (t) => {
+  t.test('should set it to highest precedence', (t) => {
     addIgnoringRuleGoldenPath(agent, api, (mine) => {
       t.equal(mine.precedence, 0)
       t.end()
     })
   })
 
-  t.test("should end further normalization", (t) => {
+  t.test('should end further normalization', (t) => {
     addIgnoringRuleGoldenPath(agent, api, (mine) => {
       t.equal(mine.isTerminal, true)
       t.end()
     })
   })
 
-  t.test("should only apply it to the whole URL", (t) => {
+  t.test('should only apply it to the whole URL', (t) => {
     addIgnoringRuleGoldenPath(agent, api, (mine) => {
       t.equal(mine.eachSegment, false)
       t.end()
     })
   })
 
-  t.test("should ignore transactions related to that URL", (t) => {
+  t.test('should ignore transactions related to that URL', (t) => {
     addIgnoringRuleGoldenPath(agent, api, (mine) => {
       t.equal(mine.ignore, true)
       t.end()
     })
   })
 
-  t.test("applies a string pattern correctly", (t) => {
+  t.test('applies a string pattern correctly', (t) => {
     api.addIgnoringRule('^/test/.*')
 
-    agent.on('transactionFinished', function(transaction) {
+    agent.on('transactionFinished', function (transaction) {
       transaction.finalizeNameFromUri(TEST_URL, 200)
 
       t.equal(transaction.ignore, true)
@@ -105,7 +105,7 @@ tap.test('Agent API - addIgnoringRule', (t) => {
       t.end()
     })
 
-    helper.runInTransaction(agent, function(transaction) {
+    helper.runInTransaction(agent, function (transaction) {
       agent.tracer.createSegment(NAME)
       transaction.url = TEST_URL
       transaction.verb = 'GET'

@@ -36,13 +36,10 @@ tap.test('built-in http queueTime', (t) => {
   t.test('header should allow t=${time} style headers', (t) => {
     let server = null
 
-    server = http.createServer(function cb_createServer(request, response) {
+    server = http.createServer(function createServerCb(request, response) {
       const transTime = agent.getTransaction().queueTime
       t.ok(transTime > 0, 'must be positive')
-      t.ok(
-        transTime < THRESHOLD,
-        `should be less than ${THRESHOLD}ms (${transTime}ms)`
-      )
+      t.ok(transTime < THRESHOLD, `should be less than ${THRESHOLD}ms (${transTime}ms)`)
       response.end()
     })
 
@@ -65,7 +62,7 @@ tap.test('built-in http queueTime', (t) => {
   t.test('bad header should log a warning', (t) => {
     let server = null
 
-    server = http.createServer(function cb_createServer(request, response) {
+    server = http.createServer(function createServerCb(request, response) {
       const transTime = agent.getTransaction().queueTime
       t.equal(transTime, 0, 'queueTime is not added')
       response.end()
@@ -90,13 +87,10 @@ tap.test('built-in http queueTime', (t) => {
   t.test('x-request should verify milliseconds', (t) => {
     let server = null
 
-    server = http.createServer(function cb_createServer(request, response) {
+    server = http.createServer(function createServerCb(request, response) {
       const transTime = agent.getTransaction().queueTime
       t.ok(transTime > 0, 'must be positive')
-      t.ok(
-        transTime < THRESHOLD,
-        `should be less than ${THRESHOLD}ms (${transTime}ms)`
-      )
+      t.ok(transTime < THRESHOLD, `should be less than ${THRESHOLD}ms (${transTime}ms)`)
       response.end()
     })
 
@@ -119,13 +113,10 @@ tap.test('built-in http queueTime', (t) => {
   t.test('x-queue should verify milliseconds', (t) => {
     let server = null
 
-    server = http.createServer(function cb_createServer(request, response) {
+    server = http.createServer(function createServerCb(request, response) {
       const transTime = agent.getTransaction().queueTime
       t.ok(transTime > 0, 'must be positive')
-      t.ok(
-        transTime < THRESHOLD,
-        `should be less than ${THRESHOLD}ms (${transTime}ms)`
-      )
+      t.ok(transTime < THRESHOLD, `should be less than ${THRESHOLD}ms (${transTime}ms)`)
       response.end()
     })
 
@@ -148,13 +139,10 @@ tap.test('built-in http queueTime', (t) => {
   t.test('x-request should verify microseconds', (t) => {
     let server = null
 
-    server = http.createServer(function cb_createServer(request, response) {
+    server = http.createServer(function createServerCb(request, response) {
       const transTime = agent.getTransaction().queueTime
       t.ok(transTime > 0, 'must be positive')
-      t.ok(
-        transTime < THRESHOLD,
-        `should be less than ${THRESHOLD}ms (${transTime}ms)`
-      )
+      t.ok(transTime < THRESHOLD, `should be less than ${THRESHOLD}ms (${transTime}ms)`)
       response.end()
     })
 
@@ -177,13 +165,10 @@ tap.test('built-in http queueTime', (t) => {
   t.test('x-queue should verify nanoseconds', (t) => {
     let server = null
 
-    server = http.createServer(function cb_createServer(request, response) {
+    server = http.createServer(function createServerCb(request, response) {
       const transTime = agent.getTransaction().queueTime
       t.ok(transTime > 0, 'must be positive')
-      t.ok(
-        transTime < THRESHOLD,
-        `should be less than ${THRESHOLD}ms (${transTime}ms)`
-      )
+      t.ok(transTime < THRESHOLD, `should be less than ${THRESHOLD}ms (${transTime}ms)`)
       response.end()
     })
 
@@ -206,13 +191,10 @@ tap.test('built-in http queueTime', (t) => {
   t.test('x-request should verify seconds', (t) => {
     let server = null
 
-    server = http.createServer(function cb_createServer(request, response) {
+    server = http.createServer(function createServerCb(request, response) {
       const transTime = agent.getTransaction().queueTime
       t.ok(transTime > 0, 'must be positive')
-      t.ok(
-        transTime < THRESHOLD,
-        `should be less than ${THRESHOLD}ms (${transTime}ms)`
-      )
+      t.ok(transTime < THRESHOLD, `should be less than ${THRESHOLD}ms (${transTime}ms)`)
       response.end()
     })
 

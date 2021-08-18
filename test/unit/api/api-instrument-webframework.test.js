@@ -34,7 +34,7 @@ tap.test('Agent API - instrumentWebframework', (t) => {
   t.test('should register the instrumentation with shimmer', (t) => {
     const opts = {
       moduleName: 'foobar',
-      onRequire: function() {}
+      onRequire: function () {}
     }
     api.instrumentWebframework(opts)
 

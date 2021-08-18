@@ -27,7 +27,7 @@ exports.getServer = function getServer(cfg) {
 
 exports.verifier = function verifier(t, verb) {
   verb = verb || 'GET'
-  return function(transaction) {
+  return function (transaction) {
     t.equal(
       transaction.name,
       'WebTransaction/Hapi/' + verb + '//test/{id}',
@@ -43,14 +43,11 @@ exports.verifier = function verifier(t, verb) {
     t.ok(web, 'trace has web segment')
     t.equal(web.name, transaction.name, 'segment name and transaction name match')
 
-    t.equal(
-      web.partialName,
-      'Hapi/' + verb + '//test/{id}',
-      'should have partial name for apdex'
-    )
+    t.equal(web.partialName, 'Hapi/' + verb + '//test/{id}', 'should have partial name for apdex')
 
     t.equal(
-      web.getAttributes()['request.parameters.id'], '31337',
+      web.getAttributes()['request.parameters.id'],
+      '31337',
       'namer gets attributes out of route'
     )
   }

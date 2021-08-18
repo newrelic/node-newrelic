@@ -9,48 +9,51 @@
 // Below allows use of mocha DSL with tap runner.
 require('tap').mochaGlobals()
 
-var chai   = require('chai')
+var chai = require('chai')
 var expect = chai.expect
 var helper = require('../../lib/agent_helper')
 
 var shims = require('../../../lib/shim')
 
-
-describe("an instrumented Hapi application", function() {
-  describe("shouldn't cause bootstrapping to fail", function() {
+describe('an instrumented Hapi application', function () {
+  describe("shouldn't cause bootstrapping to fail", function () {
     var agent
     var initialize
 
-
-    before(function() {
+    before(function () {
       agent = helper.loadMockedAgent()
       initialize = require('../../../lib/instrumentation/hapi')
     })
 
-    after(function() {
+    after(function () {
       helper.unloadAgent(agent)
     })
 
-    it("when passed nothing", function() {
-      expect(function() { initialize() }).not.throws()
+    it('when passed nothing', function () {
+      expect(function () {
+        initialize()
+      }).not.throws()
     })
 
-    it("when passed no module", function() {
-      expect(function() { initialize(agent) }).not.throws()
+    it('when passed no module', function () {
+      expect(function () {
+        initialize(agent)
+      }).not.throws()
     })
 
-    it("when passed an empty module", function() {
+    it('when passed an empty module', function () {
       initialize(agent, {})
-      expect(function() { initialize(agent, {}) }).not.throws()
+      expect(function () {
+        initialize(agent, {})
+      }).not.throws()
     })
   })
 
-  describe("when stubbed", function() {
+  describe('when stubbed', function () {
     var agent
     var stub
 
-
-    beforeEach(function() {
+    beforeEach(function () {
       agent = helper.instrumentMockedAgent()
       agent.environment.clearFramework()
 
@@ -58,18 +61,18 @@ describe("an instrumented Hapi application", function() {
       Server.prototype.route = () => {}
       Server.prototype.start = () => {}
 
-      stub = {Server : Server}
+      stub = { Server: Server }
 
       var shim = new shims.WebFrameworkShim(agent, 'hapi')
 
       require('../../../lib/instrumentation/hapi')(agent, stub, 'hapi', shim)
     })
 
-    afterEach(function() {
+    afterEach(function () {
       helper.unloadAgent(agent)
     })
 
-    it("should set framework to Hapi when a new app is created", function() {
+    it('should set framework to Hapi when a new app is created', function () {
       var server = new stub.Server()
       server.start()
 

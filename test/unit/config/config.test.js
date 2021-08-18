@@ -36,21 +36,18 @@ tap.test('when loading invalid configuration file', (t) => {
     realpathSyncStub.restore()
   })
 
-  t.test(
-    'should continue agent startup with config.newrelic_home property removed',
-    (t) => {
-      const Cornfig = require('../../../lib/config')
-      let configuration
+  t.test('should continue agent startup with config.newrelic_home property removed', (t) => {
+    const Cornfig = require('../../../lib/config')
+    let configuration
 
-      t.doesNotThrow(function envTest() {
-        configuration = Cornfig.initialize()
-      })
+    t.doesNotThrow(function envTest() {
+      configuration = Cornfig.initialize()
+    })
 
-      t.notOk(configuration.newrelic_home)
+    t.notOk(configuration.newrelic_home)
 
-      t.end()
-    }
-  )
+    t.end()
+  })
 })
 
 tap.test('when loading options via constructor', (t) => {
@@ -87,14 +84,14 @@ tap.test('when loading options via constructor', (t) => {
   })
 
   t.test('should trim should trim spaces from license key', (t) => {
-    const config = new Config({ license_key: ' license '})
+    const config = new Config({ license_key: ' license ' })
     t.equal(config.license_key, 'license')
 
     t.end()
   })
 
   t.test('should have log aliases', (t) => {
-    const config = new Config({'logging': {'level': 'verbose'}})
+    const config = new Config({ logging: { level: 'verbose' } })
     t.equal(config.logging.level, 'trace')
 
     t.end()

@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "Mon Aug 16 2021 16:12:50 GMT-0400 (Eastern Daylight Time)",
+  "lastUpdated": "Tue Aug 17 2021 12:32:47 GMT-0400 (Eastern Daylight Time)",
   "projectName": "New Relic Node Agent",
   "projectUrl": "https://github.com/newrelic/node-newrelic",
   "includeOptDeps": true,
@@ -173,6 +173,19 @@
     }
   },
   "devDependencies": {
+    "@newrelic/eslint-config@0.0.2": {
+      "name": "@newrelic/eslint-config",
+      "version": "0.0.2",
+      "range": "^0.0.2",
+      "licenses": "Apache-2.0",
+      "repoUrl": "https://github.com/newrelic/eslint-config-newrelic",
+      "versionedRepoUrl": "https://github.com/newrelic/eslint-config-newrelic/tree/v0.0.2",
+      "licenseFile": "node_modules/@newrelic/eslint-config/LICENSE",
+      "licenseUrl": "https://github.com/newrelic/eslint-config-newrelic/blob/v0.0.2/LICENSE",
+      "licenseTextSource": "file",
+      "publisher": "New Relic Node.js agent team",
+      "email": "nodejs@newrelic.com"
+    },
     "@newrelic/newrelic-oss-cli@0.1.2": {
       "name": "@newrelic/newrelic-oss-cli",
       "version": "0.1.2",
@@ -302,6 +315,18 @@
       "publisher": "TJ Holowaychuk",
       "email": "tj@vision-media.ca"
     },
+    "eslint-config-prettier@8.3.0": {
+      "name": "eslint-config-prettier",
+      "version": "8.3.0",
+      "range": "^8.3.0",
+      "licenses": "MIT",
+      "repoUrl": "https://github.com/prettier/eslint-config-prettier",
+      "versionedRepoUrl": "https://github.com/prettier/eslint-config-prettier/tree/v8.3.0",
+      "licenseFile": "node_modules/eslint-config-prettier/LICENSE",
+      "licenseUrl": "https://github.com/prettier/eslint-config-prettier/blob/v8.3.0/LICENSE",
+      "licenseTextSource": "file",
+      "publisher": "Simon Lydell"
+    },
     "eslint-plugin-header@3.1.1": {
       "name": "eslint-plugin-header",
       "version": "3.1.1",
@@ -313,6 +338,30 @@
       "licenseUrl": "https://github.com/Stuk/eslint-plugin-header/blob/v3.1.1/README.md",
       "licenseTextSource": "spdx",
       "publisher": "Stuart Knightley"
+    },
+    "eslint-plugin-node@11.1.0": {
+      "name": "eslint-plugin-node",
+      "version": "11.1.0",
+      "range": "^11.1.0",
+      "licenses": "MIT",
+      "repoUrl": "https://github.com/mysticatea/eslint-plugin-node",
+      "versionedRepoUrl": "https://github.com/mysticatea/eslint-plugin-node/tree/v11.1.0",
+      "licenseFile": "node_modules/eslint-plugin-node/LICENSE",
+      "licenseUrl": "https://github.com/mysticatea/eslint-plugin-node/blob/v11.1.0/LICENSE",
+      "licenseTextSource": "file",
+      "publisher": "Toru Nagashima"
+    },
+    "eslint-plugin-prettier@3.4.0": {
+      "name": "eslint-plugin-prettier",
+      "version": "3.4.0",
+      "range": "^3.4.0",
+      "licenses": "MIT",
+      "repoUrl": "https://github.com/prettier/eslint-plugin-prettier",
+      "versionedRepoUrl": "https://github.com/prettier/eslint-plugin-prettier/tree/v3.4.0",
+      "licenseFile": "node_modules/eslint-plugin-prettier/LICENSE.md",
+      "licenseUrl": "https://github.com/prettier/eslint-plugin-prettier/blob/v3.4.0/LICENSE.md",
+      "licenseTextSource": "file",
+      "publisher": "Teddy Katz"
     },
     "eslint@7.32.0": {
       "name": "eslint",
@@ -508,6 +557,18 @@
       "licenseTextSource": "file",
       "publisher": "Pedro Teixeira",
       "email": "pedro.teixeira@gmail.com"
+    },
+    "prettier@2.3.2": {
+      "name": "prettier",
+      "version": "2.3.2",
+      "range": "^2.3.2",
+      "licenses": "MIT",
+      "repoUrl": "https://github.com/prettier/prettier",
+      "versionedRepoUrl": "https://github.com/prettier/prettier/tree/v2.3.2",
+      "licenseFile": "node_modules/prettier/LICENSE",
+      "licenseUrl": "https://github.com/prettier/prettier/blob/v2.3.2/LICENSE",
+      "licenseTextSource": "file",
+      "publisher": "James Long"
     },
     "proxyquire@1.8.0": {
       "name": "proxyquire",

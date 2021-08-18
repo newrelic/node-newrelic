@@ -3,7 +3,6 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-
 'use strict'
 
 // TODO: convert to normal tap style.

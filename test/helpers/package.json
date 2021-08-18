@@ -1,5 +1,8 @@
 {
   "name": "helpers",
   "version": "0.0.0",
-  "main": "environment.child.js"
+  "main": "environment.child.js",
+  "engines": {
+    "node": ">=12"
+  }
 }

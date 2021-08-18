@@ -12,15 +12,15 @@ var dockerInfo = require('../../../lib/utilization/docker-info')
 var helper = require('../../lib/agent_helper')
 var path = require('path')
 
-var TEST_DIRECTORY =
-  path.resolve(__dirname, '../../lib/cross_agent_tests/docker_container_id/')
+var TEST_DIRECTORY = path.resolve(__dirname, '../../lib/cross_agent_tests/docker_container_id/')
 
-
-test('pricing docker info', function(t) {
+test('pricing docker info', function (t) {
   var os = require('os')
   var originalPlatform = os.platform
-  os.platform = function() { return 'linux' }
-  t.teardown(function() {
+  os.platform = function () {
+    return 'linux'
+  }
+  t.teardown(function () {
     os.platform = originalPlatform
   })
 
@@ -42,18 +42,18 @@ test('pricing docker info', function(t) {
 })
 
 function makeTest(testCase) {
-  return function(t) {
+  return function (t) {
     var agent = helper.loadMockedAgent()
-    t.teardown(function() {
+    t.teardown(function () {
       helper.unloadAgent(agent)
       dockerInfo.clearVendorCache()
     })
 
     mockProcRead(t, path.join(TEST_DIRECTORY, testCase.filename))
-    dockerInfo.getVendorInfo(agent, function(err, info) {
+    dockerInfo.getVendorInfo(agent, function (err, info) {
       if (testCase.containerId) {
         t.error(err, 'should not have failed')
-        t.same(info, {id: testCase.containerId}, 'should have expected container id')
+        t.same(info, { id: testCase.containerId }, 'should have expected container id')
       } else {
         t.notOk(info, 'should not have found container id')
       }
@@ -73,12 +73,12 @@ function makeTest(testCase) {
 
 function mockProcRead(t, testFile) {
   var original = common.readProc
-  t.teardown(function() {
+  t.teardown(function () {
     common.readProc = original
   })
 
-  common.readProc = function(file, cb) {
-    fs.readFile(testFile, {encoding: 'utf8'}, function(err, data) {
+  common.readProc = function (file, cb) {
+    fs.readFile(testFile, { encoding: 'utf8' }, function (err, data) {
       t.error(err, 'should not fail to load test file')
       cb(err, data)
     })

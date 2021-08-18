@@ -11,8 +11,7 @@
 var test = require('tap').test
 var helper = require('../../lib/agent_helper')
 
-
-test("Express + express-enrouten compatibility test", function(t) {
+test('Express + express-enrouten compatibility test', function (t) {
   t.plan(2)
 
   var agent = helper.instrumentMockedAgent()
@@ -21,23 +20,23 @@ test("Express + express-enrouten compatibility test", function(t) {
   var app = express()
   var server = require('http').createServer(app)
 
-  app.use(enrouten({directory: './fixtures'}))
+  app.use(enrouten({ directory: './fixtures' }))
 
-  t.teardown(function cb_tearDown() {
-    server.close(function cb_close() {
+  t.teardown(() => {
+    server.close(() => {
       helper.unloadAgent(agent)
     })
   })
 
   // New Relic + express-enrouten used to have a bug, where any routes after the
   // first one would be lost.
-  server.listen(0, function() {
+  server.listen(0, function () {
     var port = server.address().port
-    helper.makeGetRequest('http://localhost:' + port + '/', function(error, res) {
+    helper.makeGetRequest('http://localhost:' + port + '/', function (error, res) {
       t.equal(res.statusCode, 200, 'First Route loaded')
     })
 
-    helper.makeGetRequest('http://localhost:' + port + '/foo', function(error, res) {
+    helper.makeGetRequest('http://localhost:' + port + '/foo', function (error, res) {
       t.equal(res.statusCode, 200, 'Second Route loaded')
     })
   })

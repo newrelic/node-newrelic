@@ -26,10 +26,12 @@ function getTest() {
 
 suite.add({
   name: 'shim.wrap',
-  fn: function() {
+  fn: function () {
     var test = getTest()
-    shim.wrap(test, 'func', function(shim, fn) {
-      return function() { return fn.apply(this, arguments) }
+    shim.wrap(test, 'func', function (shim, fn) {
+      return function () {
+        return fn.apply(this, arguments)
+      }
     })
     return test
   }
@@ -37,10 +39,12 @@ suite.add({
 
 suite.add({
   name: 'shimmer.wrapMethod',
-  fn: function() {
+  fn: function () {
     var test = getTest()
-    shimmer.wrapMethod(test, 'test', 'func', function(fn) {
-      return function() { return fn.apply(this, arguments) }
+    shimmer.wrapMethod(test, 'test', 'func', function (fn) {
+      return function () {
+        return fn.apply(this, arguments)
+      }
     })
     return test
   }
@@ -48,11 +52,13 @@ suite.add({
 
 suite.add({
   name: 'IIFE',
-  fn: function() {
+  fn: function () {
     var test = getTest()
-    test.func = (function(fn) {
-      return function() { return fn.apply(this, arguments) }
-    }(test.func))
+    test.func = (function (fn) {
+      return function () {
+        return fn.apply(this, arguments)
+      }
+    }(test.func)) // eslint-disable-line prettier/prettier
     return test
   }
 })

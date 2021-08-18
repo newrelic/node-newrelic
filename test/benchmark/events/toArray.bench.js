@@ -12,7 +12,7 @@ var poolSize = 10000
 var queue = new PriorityQueue(poolSize)
 var suite = benchmark.createBenchmark({
   name: 'PriorityQueue.merge',
-  after: function() {
+  after: function () {
     queue = new PriorityQueue(poolSize)
   }
 })
@@ -24,14 +24,14 @@ for (var i = 0; i < poolSize; ++i) {
 
 suite.add({
   name: 'toArray',
-  fn: function() {
+  fn: function () {
     queue.toArray()
   }
 })
 
 suite.add({
   name: 'getRawEvents',
-  fn: function() {
+  fn: function () {
     queue.getRawEvents()
   }
 })

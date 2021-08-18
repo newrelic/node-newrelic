@@ -20,26 +20,26 @@ const endpointDataChecks = {
     return !!agent.metrics.getMetric('myMetric')
   },
   error_event_data: function hasErrorEventData(agent) {
-    return (agent.errors.eventAggregator.events.length > 0)
+    return agent.errors.eventAggregator.events.length > 0
   },
   error_data: function hasErrorData(agent) {
-    return (agent.errors.traceAggregator.errors.length > 0)
+    return agent.errors.traceAggregator.errors.length > 0
   },
   analytic_event_data: function hasTransactionEventData(agent) {
-    return (agent.transactionEventAggregator.length > 0)
+    return agent.transactionEventAggregator.length > 0
   },
   transaction_sample_data: function hasTransactionTraceData(agent) {
     return !!agent.traces.trace
   },
   span_event_data: function hasSpanEventData(agent) {
-    return (agent.spanEventAggregator.length > 0)
+    return agent.spanEventAggregator.length > 0
   },
   custom_event_data: function hasCustomEventData(agent) {
     // TODO... prob don't ned to grrab events
-    return (agent.customEventAggregator.length > 0)
+    return agent.customEventAggregator.length > 0
   },
   sql_trace_data: function hasSqlTraceData(agent) {
-    return (agent.queries.samples.size > 0)
+    return agent.queries.samples.size > 0
   }
 }
 
@@ -65,7 +65,7 @@ function createStatusCodeTest(testCase) {
 
     let agent = null
 
-    statusCodeTest.beforeEach(async() => {
+    statusCodeTest.beforeEach(async () => {
       nock.disableNetConnect()
 
       testClock = sinon.useFakeTimers({
@@ -83,10 +83,10 @@ function createStatusCodeTest(testCase) {
         host: TEST_DOMAIN,
         plugins: {
           // turn off native metrics to avoid unwanted gc metrics
-          native_metrics: {enabled: false}
+          native_metrics: { enabled: false }
         },
-        distributed_tracing: {enabled: true},
-        slow_sql: {enabled: true},
+        distributed_tracing: { enabled: true },
+        slow_sql: { enabled: true },
         transaction_tracer: {
           record_sql: 'obfuscated',
           explain_threshold: Number.MIN_VALUE // force SQL traces
@@ -111,6 +111,7 @@ function createStatusCodeTest(testCase) {
       shutdown = null
 
       if (!nock.isDone()) {
+        // eslint-disable-next-line no-console
         console.error('Cleaning pending mocks: %j', nock.pendingMocks())
         nock.cleanAll()
       }
@@ -161,7 +162,7 @@ function createStatusCodeTest(testCase) {
           subTest.notOk(
             mockEndpoint.isDone(),
             `${endpointName} should not have been called yet. ` +
-            'An early invocation may indicate a race condition with the test or agent.'
+              'An early invocation may indicate a race condition with the test or agent.'
           )
 
           // Move clock forward to trigger auto harvests.
@@ -210,10 +211,7 @@ function createStatusCodeTest(testCase) {
         function verifyDataRetention() {
           const hasDataPostHarvest = checkHasTestData(agent)
           if (testCase.retain_data) {
-            subTest.ok(
-              hasDataPostHarvest,
-              `should have retained data after ${endpointName} call`
-            )
+            subTest.ok(hasDataPostHarvest, `should have retained data after ${endpointName} call`)
           } else {
             subTest.notOk(
               hasDataPostHarvest,
@@ -228,12 +226,9 @@ function createStatusCodeTest(testCase) {
 
 function whenAllAggregatorsSend(agent) {
   const metricPromise = new Promise((resolve) => {
-    agent.metrics.once(
-      'finished metric_data data send.',
-      function onMetricsFinished() {
-        resolve()
-      }
-    )
+    agent.metrics.once('finished metric_data data send.', function onMetricsFinished() {
+      resolve()
+    })
   })
 
   const spanPromise = new Promise((resolve) => {
@@ -264,21 +259,15 @@ function whenAllAggregatorsSend(agent) {
   })
 
   const transactionTracePromise = new Promise((resolve) => {
-    agent.traces.once(
-      'finished transaction_sample_data data send.',
-      function onTracesFinished() {
-        resolve()
-      }
-    )
+    agent.traces.once('finished transaction_sample_data data send.', function onTracesFinished() {
+      resolve()
+    })
   })
 
   const sqlTracePromise = new Promise((resolve) => {
-    agent.queries.once(
-      'finished sql_trace_data data send.',
-      function onSqlTracesFinished() {
-        resolve()
-      }
-    )
+    agent.queries.once('finished sql_trace_data data send.', function onSqlTracesFinished() {
+      resolve()
+    })
   })
 
   const errorTracePromise = new Promise((resolve) => {
@@ -322,24 +311,17 @@ function whenAllAggregatorsSend(agent) {
  * @param {*} callback
  */
 function createTestData(agent, callback) {
-  const metric = agent.metrics.getOrCreateMetric(
-    'myMetric'
-  )
+  const metric = agent.metrics.getOrCreateMetric('myMetric')
   metric.incrementCallCount()
 
   agent.errors.addUserError(null, new Error('Why?!!!?!!'))
 
-  agent.customEventAggregator.add([{type: 'MyCustomEvent', timestamp: Date.now()}])
+  agent.customEventAggregator.add([{ type: 'MyCustomEvent', timestamp: Date.now() }])
 
   helper.runInTransaction(agent, (transaction) => {
-    const segment = transaction.trace.add("MySegment")
+    const segment = transaction.trace.add('MySegment')
     segment.overwriteDurationInMillis(1)
-    agent.queries.add(
-      segment,
-      'mysql',
-      'select * from foo',
-      new Error().stack
-    )
+    agent.queries.add(segment, 'mysql', 'select * from foo', new Error().stack)
 
     transaction.finalizeNameFromUri('/some/test/url', 200)
     transaction.end()
@@ -349,9 +331,9 @@ function createTestData(agent, callback) {
 
 function setupConnectionEndpoints() {
   return {
-    preconnect: nockRequest('preconnect').reply(200, {return_value: TEST_DOMAIN}),
-    connect: nockRequest('connect').reply(200, {return_value: {agent_run_id: RUN_ID}}),
-    settings: nockRequest('agent_settings', RUN_ID).reply(200, {return_value: []})
+    preconnect: nockRequest('preconnect').reply(200, { return_value: TEST_DOMAIN }),
+    connect: nockRequest('connect').reply(200, { return_value: { agent_run_id: RUN_ID } }),
+    settings: nockRequest('agent_settings', RUN_ID).reply(200, { return_value: [] })
   }
 }
 

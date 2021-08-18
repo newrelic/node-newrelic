@@ -10,7 +10,7 @@ var request = require('request')
 var tap = require('tap')
 var utils = require('./hapi-utils')
 
-tap.test('Hapi Plugins', function(t) {
+tap.test('Hapi Plugins', function (t) {
   t.autoend()
 
   var agent = null
@@ -19,29 +19,29 @@ tap.test('Hapi Plugins', function(t) {
 
   // queue that executes outside of a transaction context
   var tasks = []
-  var intervalId = setInterval(function() {
+  var intervalId = setInterval(function () {
     while (tasks.length) {
       var task = tasks.pop()
       task()
     }
   }, 10)
 
-  t.teardown(function() {
+  t.teardown(function () {
     clearInterval(intervalId)
   })
 
-  t.beforeEach(function() {
+  t.beforeEach(function () {
     agent = helper.instrumentMockedAgent()
 
     server = utils.getServer()
   })
 
-  t.afterEach(function() {
+  t.afterEach(function () {
     helper.unloadAgent(agent)
     return new Promise((resolve) => server.stop(resolve))
   })
 
-  t.test('maintains transaction state', function(t) {
+  t.test('maintains transaction state', function (t) {
     t.plan(3)
 
     function plugin(srvr, opts, next) {
@@ -55,25 +55,26 @@ tap.test('Hapi Plugins', function(t) {
       })
       next()
     }
-    plugin.attributes = {name: 'foobar'}
+    plugin.attributes = { name: 'foobar' }
     server.register(plugin)
 
-    agent.on('transactionFinished', function(tx) {
+    agent.on('transactionFinished', function (tx) {
       t.equal(
-        tx.getFullName(), 'WebTransaction/Hapi/GET//test',
+        tx.getFullName(),
+        'WebTransaction/Hapi/GET//test',
         'should name transaction correctly'
       )
     })
 
-    server.start(function() {
+    server.start(function () {
       port = server.info.port
-      request.get('http://localhost:' + port + '/test', function(error, res, body) {
+      request.get('http://localhost:' + port + '/test', function (error, res, body) {
         t.equal(body, 'hello', 'should not interfere with response')
       })
     })
   })
 
-  t.test('includes route prefix in transaction name', function(t) {
+  t.test('includes route prefix in transaction name', function (t) {
     t.plan(3)
 
     function plugin(srvr, opts, next) {
@@ -87,25 +88,26 @@ tap.test('Hapi Plugins', function(t) {
       })
       next()
     }
-    plugin.attributes = {name: 'foobar'}
+    plugin.attributes = { name: 'foobar' }
     server.register(plugin, { routes: { prefix: '/prefix' } })
 
-    agent.on('transactionFinished', function(tx) {
+    agent.on('transactionFinished', function (tx) {
       t.equal(
-        tx.getFullName(), 'WebTransaction/Hapi/GET//prefix/test',
+        tx.getFullName(),
+        'WebTransaction/Hapi/GET//prefix/test',
         'should name transaction correctly'
       )
     })
 
-    server.start(function() {
+    server.start(function () {
       port = server.info.port
-      request.get('http://localhost:' + port + '/prefix/test', function(error, res, body) {
+      request.get('http://localhost:' + port + '/prefix/test', function (error, res, body) {
         t.equal(body, 'hello', 'should not interfere with response')
       })
     })
   })
 
-  t.test('maintains transaction state while mounting array of plugins', function(t) {
+  t.test('maintains transaction state while mounting array of plugins', function (t) {
     t.plan(3)
     var plugin = {
       register: function plugin(srvr, opts, next) {
@@ -121,18 +123,19 @@ tap.test('Hapi Plugins', function(t) {
       }
     }
     plugin.register.attributes = { name: 'foo' }
-    server.register([ plugin ])
+    server.register([plugin])
 
-    agent.on('transactionFinished', function(tx) {
+    agent.on('transactionFinished', function (tx) {
       t.equal(
-        tx.getFullName(), 'WebTransaction/Hapi/GET//test',
+        tx.getFullName(),
+        'WebTransaction/Hapi/GET//test',
         'should name transaction correctly'
       )
     })
 
-    server.start(function() {
+    server.start(function () {
       port = server.info.port
-      request.get('http://localhost:' + port + '/test', function(error, res, body) {
+      request.get('http://localhost:' + port + '/test', function (error, res, body) {
         t.equal(body, 'hello', 'should not interfere with response')
       })
     })

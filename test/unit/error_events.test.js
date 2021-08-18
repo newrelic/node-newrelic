@@ -51,14 +51,14 @@ test('Error events', (t) => {
       agent.config.distributed_tracing.enabled = true
       agent.config.primary_application_id = 'test'
       agent.config.account_id = 1
-      helper.runInTransaction(agent, function(tx) {
+      helper.runInTransaction(agent, function (tx) {
         const payload = tx._createDistributedTracePayload().text()
         tx.isDistributedTrace = null
         tx._acceptDistributedTracePayload(payload)
         const error = new Error('some error')
         const customAttributes = {}
         const timestamp = 0
-        const exception = new Exception({error, customAttributes, timestamp})
+        const exception = new Exception({ error, customAttributes, timestamp })
         tx.addException(exception)
 
         tx.end()
@@ -84,22 +84,21 @@ test('Error events', (t) => {
       agent.config.distributed_tracing.enabled = true
       agent.config.primary_application_id = 'test'
       agent.config.account_id = 1
-      helper.runInTransaction(agent, function(tx) {
+      helper.runInTransaction(agent, function (tx) {
         const payload = tx._createDistributedTracePayload().text()
         tx.isDistributedTrace = null
         tx._acceptDistributedTracePayload(payload)
         const error = new Error('some error')
         const customAttributes = {}
         const timestamp = 0
-        const exception = new Exception({error, customAttributes, timestamp})
+        const exception = new Exception({ error, customAttributes, timestamp })
         tx.addException(exception)
 
         const segment = tx.agent.tracer.getSegment()
 
         tx.end()
 
-
-        const {2: agentAttributes} = agent.errors.eventAggregator.getEvents()[0]
+        const { 2: agentAttributes } = agent.errors.eventAggregator.getEvents()[0]
 
         t.equal(agentAttributes.spanId, segment.id)
 
@@ -111,11 +110,11 @@ test('Error events', (t) => {
       agent.config.distributed_tracing.enabled = true
       agent.config.primary_application_id = 'test'
       agent.config.account_id = 1
-      helper.runInTransaction(agent, function(tx) {
+      helper.runInTransaction(agent, function (tx) {
         const error = new Error('some error')
         const customAttributes = {}
         const timestamp = 0
-        const exception = new Exception({error, customAttributes, timestamp})
+        const exception = new Exception({ error, customAttributes, timestamp })
         tx.addException(exception)
         tx.end()
         const attributes = agent.errors.eventAggregator.getEvents()[0][0]

@@ -47,10 +47,7 @@ tap.test('ServerlessCollector API', (t) => {
   }
 
   t.test('has all expected methods shared with the serverful API', (t) => {
-    const serverfulSpecificPublicMethods = new Set([
-      'connect',
-      'reportSettings'
-    ])
+    const serverfulSpecificPublicMethods = new Set(['connect', 'reportSettings'])
 
     const sharedMethods = Object.keys(serverfulAPI.prototype).filter((key) => {
       return !key.startsWith('_') && !serverfulSpecificPublicMethods.has(key)
@@ -97,7 +94,7 @@ tap.test('ServerlessCollector API', (t) => {
     t.afterEach(afterTest)
 
     t.test('adds metric_data to the payload object', (t) => {
-      const metricData = {type: 'metric_data'}
+      const metricData = { type: 'metric_data' }
       api.metric_data(metricData, () => {
         t.same(api.payload.metric_data, metricData)
         t.end()
@@ -112,7 +109,7 @@ tap.test('ServerlessCollector API', (t) => {
     t.afterEach(afterTest)
 
     t.test('adds error_data to the payload object', (t) => {
-      const errorData = {type: 'error_data'}
+      const errorData = { type: 'error_data' }
       api.error_data(errorData, () => {
         t.same(api.payload.error_data, errorData)
         t.end()
@@ -127,7 +124,7 @@ tap.test('ServerlessCollector API', (t) => {
     t.afterEach(afterTest)
 
     t.test('adds transaction_sample_data to the payload object', (t) => {
-      const transactionSampleData = {type: 'transaction_sample_data'}
+      const transactionSampleData = { type: 'transaction_sample_data' }
       api.transaction_sample_data(transactionSampleData, () => {
         t.same(api.payload.transaction_sample_data, transactionSampleData)
         t.end()
@@ -142,7 +139,7 @@ tap.test('ServerlessCollector API', (t) => {
     t.afterEach(afterTest)
 
     t.test('adds analytic_event_data to the payload object', (t) => {
-      const analyticsEvents = {type: 'analytic_event_data'}
+      const analyticsEvents = { type: 'analytic_event_data' }
       api.analytic_event_data(analyticsEvents, () => {
         t.same(api.payload.analytic_event_data, analyticsEvents)
 
@@ -158,7 +155,7 @@ tap.test('ServerlessCollector API', (t) => {
     t.afterEach(afterTest)
 
     t.test('adds custom_event_data to the payload object', (t) => {
-      const customEvents = {type: 'custom_event_data'}
+      const customEvents = { type: 'custom_event_data' }
       api.custom_event_data(customEvents, () => {
         t.same(api.payload.custom_event_data, customEvents)
         t.end()
@@ -173,7 +170,7 @@ tap.test('ServerlessCollector API', (t) => {
     t.afterEach(afterTest)
 
     t.test('adds error_event_data to the payload object', (t) => {
-      const errorEvents = {type: 'error_event_data'}
+      const errorEvents = { type: 'error_event_data' }
       api.error_event_data(errorEvents, () => {
         t.same(api.payload.error_event_data, errorEvents)
         t.end()
@@ -188,7 +185,7 @@ tap.test('ServerlessCollector API', (t) => {
     t.afterEach(afterTest)
 
     t.test('adds span_event_data to the payload object', (t) => {
-      const spanEvents = {type: 'span_event_data'}
+      const spanEvents = { type: 'span_event_data' }
       api.span_event_data(spanEvents, () => {
         t.same(api.payload.span_event_data, spanEvents)
         t.end()
@@ -204,8 +201,8 @@ tap.test('ServerlessCollector API', (t) => {
 
     t.test('should base64 encode the gzipped payload synchronously', (t) => {
       const testPayload = {
-        someKey: "someValue",
-        buyOne: "getOne"
+        someKey: 'someValue',
+        buyOne: 'getOne'
       }
       api.payload = testPayload
       const oldDoFlush = api.constructor.prototype._doFlush
@@ -242,7 +239,7 @@ tap.test('ServerlessCollector API', (t) => {
     })
 
     t.test('compresses full payload and writes formatted to stdout', (t) => {
-      api.payload = {type: 'test payload'}
+      api.payload = { type: 'test payload' }
 
       api.flushPayload(() => {
         const logPayload = JSON.parse(stdOutSpy.args[0][0])
@@ -258,7 +255,7 @@ tap.test('ServerlessCollector API', (t) => {
     })
 
     t.test('handles very large payload and writes formatted to stdout', (t) => {
-      api.payload = {type: 'test payload'}
+      api.payload = { type: 'test payload' }
       for (let i = 0; i < 4096; i++) {
         api.payload[`customMetric${i}`] = Math.floor(Math.random() * 100000)
       }
@@ -291,7 +288,7 @@ tap.test('ServerlessCollector with output to custom pipe', (t) => {
   let agent = null
   let writeFileSyncStub = null
 
-  t.beforeEach(async() => {
+  t.beforeEach(async () => {
     nock.disableNetConnect()
 
     process.env.NEWRELIC_PIPE_PATH = customPath
@@ -315,7 +312,7 @@ tap.test('ServerlessCollector with output to custom pipe', (t) => {
     writeFileSyncStub = sinon.stub(fs, 'writeFileSync').callsFake(() => {})
   })
 
-  t.afterEach(async() => {
+  t.afterEach(async () => {
     nock.enableNetConnect()
     helper.unloadAgent(agent)
 
@@ -325,7 +322,7 @@ tap.test('ServerlessCollector with output to custom pipe', (t) => {
   })
 
   t.test('compresses full payload and writes formatted to stdout', (t) => {
-    api.payload = {type: 'test payload'}
+    api.payload = { type: 'test payload' }
     api.flushPayload(() => {
       const writtenPayload = JSON.parse(writeFileSyncStub.args[0][1])
 
@@ -339,7 +336,7 @@ tap.test('ServerlessCollector with output to custom pipe', (t) => {
   })
 
   t.test('handles very large payload and writes formatted to stdout', (t) => {
-    api.payload = {type: 'test payload'}
+    api.payload = { type: 'test payload' }
     for (let i = 0; i < 4096; i++) {
       api.payload[`customMetric${i}`] = Math.floor(Math.random() * 100000)
     }

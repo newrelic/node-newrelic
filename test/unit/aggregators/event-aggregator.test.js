@@ -5,7 +5,6 @@
 
 'use strict'
 
-
 const tap = require('tap')
 const EventAggregator = require('../../../lib/aggregators/event-aggregator')
 const PriorityQueue = require('../../../lib/priority-queue')
@@ -29,11 +28,15 @@ tap.test('Event Aggregator', (t) => {
   function beforeTest() {
     metrics = new Metrics(5, {}, {})
 
-    eventAggregator = new EventAggregator({
-      runId: RUN_ID,
-      limit: LIMIT,
-      metricNames: METRIC_NAMES
-    }, {}, metrics)
+    eventAggregator = new EventAggregator(
+      {
+        runId: RUN_ID,
+        limit: LIMIT,
+        metricNames: METRIC_NAMES
+      },
+      {},
+      metrics
+    )
   }
 
   function afterTest() {
@@ -47,7 +50,7 @@ tap.test('Event Aggregator', (t) => {
     t.afterEach(afterTest)
 
     t.test('should add errors', (t) => {
-      const rawEvent = [{type: 'some-event'}, {}, {}]
+      const rawEvent = [{ type: 'some-event' }, {}, {}]
       eventAggregator.add(rawEvent)
 
       t.equal(eventAggregator.length, 1)
@@ -59,15 +62,15 @@ tap.test('Event Aggregator', (t) => {
     })
 
     t.test('should not add over limit', (t) => {
-      eventAggregator.add([{type: 'some-event'}, {name: 'name1`'}, {}])
-      eventAggregator.add([{type: 'some-event'}, {name: 'name2`'}, {}])
-      eventAggregator.add([{type: 'some-event'}, {name: 'name3`'}, {}])
-      eventAggregator.add([{type: 'some-event'}, {name: 'name4`'}, {}])
-      eventAggregator.add([{type: 'some-event'}, {name: 'name5`'}, {}])
+      eventAggregator.add([{ type: 'some-event' }, { name: 'name1`' }, {}])
+      eventAggregator.add([{ type: 'some-event' }, { name: 'name2`' }, {}])
+      eventAggregator.add([{ type: 'some-event' }, { name: 'name3`' }, {}])
+      eventAggregator.add([{ type: 'some-event' }, { name: 'name4`' }, {}])
+      eventAggregator.add([{ type: 'some-event' }, { name: 'name5`' }, {}])
 
       t.equal(eventAggregator.length, LIMIT)
 
-      eventAggregator.add([{type: 'some-event'}, {name: 'name6`'}, {}])
+      eventAggregator.add([{ type: 'some-event' }, { name: 'name6`' }, {}])
 
       t.equal(eventAggregator.length, LIMIT)
 
@@ -75,7 +78,7 @@ tap.test('Event Aggregator', (t) => {
     })
 
     t.test('should increment seen metric for successful add', (t) => {
-      const rawEvent = [{type: 'some-event'}, {}, {}]
+      const rawEvent = [{ type: 'some-event' }, {}, {}]
       eventAggregator.add(rawEvent)
 
       t.equal(eventAggregator.length, 1)
@@ -87,13 +90,13 @@ tap.test('Event Aggregator', (t) => {
     })
 
     t.test('should increment seen metric for unsuccessful add', (t) => {
-      eventAggregator.add([{type: 'some-event'}, {name: 'name1`'}, {}])
-      eventAggregator.add([{type: 'some-event'}, {name: 'name2`'}, {}])
-      eventAggregator.add([{type: 'some-event'}, {name: 'name3`'}, {}])
-      eventAggregator.add([{type: 'some-event'}, {name: 'name4`'}, {}])
-      eventAggregator.add([{type: 'some-event'}, {name: 'name5`'}, {}])
+      eventAggregator.add([{ type: 'some-event' }, { name: 'name1`' }, {}])
+      eventAggregator.add([{ type: 'some-event' }, { name: 'name2`' }, {}])
+      eventAggregator.add([{ type: 'some-event' }, { name: 'name3`' }, {}])
+      eventAggregator.add([{ type: 'some-event' }, { name: 'name4`' }, {}])
+      eventAggregator.add([{ type: 'some-event' }, { name: 'name5`' }, {}])
 
-      eventAggregator.add([{type: 'some-event'}, {name: 'not added`'}, {}])
+      eventAggregator.add([{ type: 'some-event' }, { name: 'not added`' }, {}])
 
       t.equal(eventAggregator.length, LIMIT)
 
@@ -104,7 +107,7 @@ tap.test('Event Aggregator', (t) => {
     })
 
     t.test('should increment sent metric for successful add', (t) => {
-      const rawEvent = [{type: 'some-event'}, {}, {}]
+      const rawEvent = [{ type: 'some-event' }, {}, {}]
       eventAggregator.add(rawEvent)
 
       t.equal(eventAggregator.length, 1)
@@ -116,13 +119,13 @@ tap.test('Event Aggregator', (t) => {
     })
 
     t.test('should not increment sent metric for unsuccessful add', (t) => {
-      eventAggregator.add([{type: 'some-event'}, {name: 'name1`'}, {}])
-      eventAggregator.add([{type: 'some-event'}, {name: 'name2`'}, {}])
-      eventAggregator.add([{type: 'some-event'}, {name: 'name3`'}, {}])
-      eventAggregator.add([{type: 'some-event'}, {name: 'name4`'}, {}])
-      eventAggregator.add([{type: 'some-event'}, {name: 'name5`'}, {}])
+      eventAggregator.add([{ type: 'some-event' }, { name: 'name1`' }, {}])
+      eventAggregator.add([{ type: 'some-event' }, { name: 'name2`' }, {}])
+      eventAggregator.add([{ type: 'some-event' }, { name: 'name3`' }, {}])
+      eventAggregator.add([{ type: 'some-event' }, { name: 'name4`' }, {}])
+      eventAggregator.add([{ type: 'some-event' }, { name: 'name5`' }, {}])
 
-      eventAggregator.add([{type: 'some-event'}, {name: 'not added`'}, {}])
+      eventAggregator.add([{ type: 'some-event' }, { name: 'not added`' }, {}])
 
       t.equal(eventAggregator.length, LIMIT)
 
@@ -133,13 +136,13 @@ tap.test('Event Aggregator', (t) => {
     })
 
     t.test('should increment dropped metric for unsucccesful add', (t) => {
-      eventAggregator.add([{type: 'some-event'}, {name: 'name1`'}, {}])
-      eventAggregator.add([{type: 'some-event'}, {name: 'name2`'}, {}])
-      eventAggregator.add([{type: 'some-event'}, {name: 'name3`'}, {}])
-      eventAggregator.add([{type: 'some-event'}, {name: 'name4`'}, {}])
-      eventAggregator.add([{type: 'some-event'}, {name: 'name5`'}, {}])
+      eventAggregator.add([{ type: 'some-event' }, { name: 'name1`' }, {}])
+      eventAggregator.add([{ type: 'some-event' }, { name: 'name2`' }, {}])
+      eventAggregator.add([{ type: 'some-event' }, { name: 'name3`' }, {}])
+      eventAggregator.add([{ type: 'some-event' }, { name: 'name4`' }, {}])
+      eventAggregator.add([{ type: 'some-event' }, { name: 'name5`' }, {}])
 
-      eventAggregator.add([{type: 'some-event'}, {name: 'not added`'}, {}])
+      eventAggregator.add([{ type: 'some-event' }, { name: 'not added`' }, {}])
 
       t.equal(eventAggregator.length, LIMIT)
 
@@ -149,8 +152,8 @@ tap.test('Event Aggregator', (t) => {
       t.end()
     })
 
-    t.test('should not increment dropped metric for successful add', (t) =>{
-      const rawEvent = [{type: 'some-event'}, {}, {}]
+    t.test('should not increment dropped metric for successful add', (t) => {
+      const rawEvent = [{ type: 'some-event' }, {}, {}]
       eventAggregator.add(rawEvent)
 
       t.equal(eventAggregator.length, 1)
@@ -169,12 +172,12 @@ tap.test('Event Aggregator', (t) => {
     t.afterEach(afterTest)
 
     t.test('should merge passed-in data with priorities', (t) => {
-      const rawEvent = [{type: 'some-event'}, {name: 'name1'}, {}]
+      const rawEvent = [{ type: 'some-event' }, { name: 'name1' }, {}]
       eventAggregator.add(rawEvent)
 
       const mergePriorityData = new PriorityQueue(2)
-      mergePriorityData.add([{type: 'some-event'}, {name: 'name2'}, {}])
-      mergePriorityData.add([{type: 'some-event'}, {name: 'name3'}, {}])
+      mergePriorityData.add([{ type: 'some-event' }, { name: 'name2' }, {}])
+      mergePriorityData.add([{ type: 'some-event' }, { name: 'name3' }, {}])
 
       eventAggregator._merge(mergePriorityData)
 
@@ -184,16 +187,16 @@ tap.test('Event Aggregator', (t) => {
     })
 
     t.test('should not merge past limit', (t) => {
-      const rawEvent = [{type: 'some-event'}, {name: 'name1'}, {}]
+      const rawEvent = [{ type: 'some-event' }, { name: 'name1' }, {}]
       eventAggregator.add(rawEvent)
 
       const mergePriorityData = new PriorityQueue(10)
-      mergePriorityData.add([{type: 'some-event'}, {name: 'name2'}, {}])
-      mergePriorityData.add([{type: 'some-event'}, {name: 'name3'}, {}])
-      mergePriorityData.add([{type: 'some-event'}, {name: 'name4'}, {}])
-      mergePriorityData.add([{type: 'some-event'}, {name: 'name5'}, {}])
+      mergePriorityData.add([{ type: 'some-event' }, { name: 'name2' }, {}])
+      mergePriorityData.add([{ type: 'some-event' }, { name: 'name3' }, {}])
+      mergePriorityData.add([{ type: 'some-event' }, { name: 'name4' }, {}])
+      mergePriorityData.add([{ type: 'some-event' }, { name: 'name5' }, {}])
 
-      mergePriorityData.add([{type: 'some-event'}, {name: 'wont merge'}, {}])
+      mergePriorityData.add([{ type: 'some-event' }, { name: 'wont merge' }, {}])
 
       eventAggregator._merge(mergePriorityData)
 
@@ -203,12 +206,12 @@ tap.test('Event Aggregator', (t) => {
     })
 
     t.test('should increment seen metric for successful merge', (t) => {
-      const rawEvent = [{type: 'some-event'}, {name: 'name1'}, {}]
+      const rawEvent = [{ type: 'some-event' }, { name: 'name1' }, {}]
       eventAggregator.add(rawEvent)
 
       const mergePriorityData = new PriorityQueue(2)
-      mergePriorityData.add([{type: 'some-event'}, {name: 'name2'}, {}])
-      mergePriorityData.add([{type: 'some-event'}, {name: 'name3'}, {}])
+      mergePriorityData.add([{ type: 'some-event' }, { name: 'name2' }, {}])
+      mergePriorityData.add([{ type: 'some-event' }, { name: 'name3' }, {}])
 
       eventAggregator._merge(mergePriorityData)
 
@@ -221,16 +224,16 @@ tap.test('Event Aggregator', (t) => {
     })
 
     t.test('should increment seen metric for unsuccessful merge', (t) => {
-      const rawEvent = [{type: 'some-event'}, {name: 'name1'}, {}]
+      const rawEvent = [{ type: 'some-event' }, { name: 'name1' }, {}]
       eventAggregator.add(rawEvent)
 
       const mergePriorityData = new PriorityQueue(10)
-      mergePriorityData.add([{type: 'some-event'}, {name: 'name2'}, {}])
-      mergePriorityData.add([{type: 'some-event'}, {name: 'name3'}, {}])
-      mergePriorityData.add([{type: 'some-event'}, {name: 'name4'}, {}])
-      mergePriorityData.add([{type: 'some-event'}, {name: 'name5'}, {}])
+      mergePriorityData.add([{ type: 'some-event' }, { name: 'name2' }, {}])
+      mergePriorityData.add([{ type: 'some-event' }, { name: 'name3' }, {}])
+      mergePriorityData.add([{ type: 'some-event' }, { name: 'name4' }, {}])
+      mergePriorityData.add([{ type: 'some-event' }, { name: 'name5' }, {}])
 
-      mergePriorityData.add([{type: 'some-event'}, {name: 'wont merge'}, {}])
+      mergePriorityData.add([{ type: 'some-event' }, { name: 'wont merge' }, {}])
 
       eventAggregator._merge(mergePriorityData)
 
@@ -243,12 +246,12 @@ tap.test('Event Aggregator', (t) => {
     })
 
     t.test('should increment sent metric for successful merge', (t) => {
-      const rawEvent = [{type: 'some-event'}, {name: 'name1'}, {}]
+      const rawEvent = [{ type: 'some-event' }, { name: 'name1' }, {}]
       eventAggregator.add(rawEvent)
 
       const mergePriorityData = new PriorityQueue(2)
-      mergePriorityData.add([{type: 'some-event'}, {name: 'name2'}, {}])
-      mergePriorityData.add([{type: 'some-event'}, {name: 'name3'}, {}])
+      mergePriorityData.add([{ type: 'some-event' }, { name: 'name2' }, {}])
+      mergePriorityData.add([{ type: 'some-event' }, { name: 'name3' }, {}])
 
       eventAggregator._merge(mergePriorityData)
 
@@ -261,16 +264,16 @@ tap.test('Event Aggregator', (t) => {
     })
 
     t.test('should not increment sent metric for unsuccessful merge', (t) => {
-      const rawEvent = [{type: 'some-event'}, {name: 'name1'}, {}]
+      const rawEvent = [{ type: 'some-event' }, { name: 'name1' }, {}]
       eventAggregator.add(rawEvent)
 
       const mergePriorityData = new PriorityQueue(10)
-      mergePriorityData.add([{type: 'some-event'}, {name: 'name2'}, {}])
-      mergePriorityData.add([{type: 'some-event'}, {name: 'name3'}, {}])
-      mergePriorityData.add([{type: 'some-event'}, {name: 'name4'}, {}])
-      mergePriorityData.add([{type: 'some-event'}, {name: 'name5'}, {}])
+      mergePriorityData.add([{ type: 'some-event' }, { name: 'name2' }, {}])
+      mergePriorityData.add([{ type: 'some-event' }, { name: 'name3' }, {}])
+      mergePriorityData.add([{ type: 'some-event' }, { name: 'name4' }, {}])
+      mergePriorityData.add([{ type: 'some-event' }, { name: 'name5' }, {}])
 
-      mergePriorityData.add([{type: 'some-event'}, {name: 'wont merge'}, {}])
+      mergePriorityData.add([{ type: 'some-event' }, { name: 'wont merge' }, {}])
 
       eventAggregator._merge(mergePriorityData)
 
@@ -283,16 +286,16 @@ tap.test('Event Aggregator', (t) => {
     })
 
     t.test('should increment dropped metric for unsucccesful merge', (t) => {
-      const rawEvent = [{type: 'some-event'}, {name: 'name1'}, {}]
+      const rawEvent = [{ type: 'some-event' }, { name: 'name1' }, {}]
       eventAggregator.add(rawEvent)
 
       const mergePriorityData = new PriorityQueue(10)
-      mergePriorityData.add([{type: 'some-event'}, {name: 'name2'}, {}])
-      mergePriorityData.add([{type: 'some-event'}, {name: 'name3'}, {}])
-      mergePriorityData.add([{type: 'some-event'}, {name: 'name4'}, {}])
-      mergePriorityData.add([{type: 'some-event'}, {name: 'name5'}, {}])
+      mergePriorityData.add([{ type: 'some-event' }, { name: 'name2' }, {}])
+      mergePriorityData.add([{ type: 'some-event' }, { name: 'name3' }, {}])
+      mergePriorityData.add([{ type: 'some-event' }, { name: 'name4' }, {}])
+      mergePriorityData.add([{ type: 'some-event' }, { name: 'name5' }, {}])
 
-      mergePriorityData.add([{type: 'some-event'}, {name: 'wont merge'}, {}])
+      mergePriorityData.add([{ type: 'some-event' }, { name: 'wont merge' }, {}])
 
       eventAggregator._merge(mergePriorityData)
 
@@ -304,13 +307,13 @@ tap.test('Event Aggregator', (t) => {
       t.end()
     })
 
-    t.test('should not increment dropped metric for successful merge', (t) =>{
-      const rawEvent = [{type: 'some-event'}, {name: 'name1'}, {}]
+    t.test('should not increment dropped metric for successful merge', (t) => {
+      const rawEvent = [{ type: 'some-event' }, { name: 'name1' }, {}]
       eventAggregator.add(rawEvent)
 
       const mergePriorityData = new PriorityQueue(2)
-      mergePriorityData.add([{type: 'some-event'}, {name: 'name2'}, {}])
-      mergePriorityData.add([{type: 'some-event'}, {name: 'name3'}, {}])
+      mergePriorityData.add([{ type: 'some-event' }, { name: 'name2' }, {}])
+      mergePriorityData.add([{ type: 'some-event' }, { name: 'name3' }, {}])
 
       eventAggregator._merge(mergePriorityData)
 
@@ -330,7 +333,7 @@ tap.test('Event Aggregator', (t) => {
     t.afterEach(afterTest)
 
     t.test('should return events in priority collection', (t) => {
-      const rawEvent = [{type: 'some-event'}, {}, {}]
+      const rawEvent = [{ type: 'some-event' }, {}, {}]
       eventAggregator.add(rawEvent)
 
       const data = eventAggregator._getMergeData()
@@ -349,7 +352,7 @@ tap.test('Event Aggregator', (t) => {
     t.afterEach(afterTest)
 
     t.test('should clear errors', (t) => {
-      const rawEvent = [{type: 'some-event'}, {name: 'name1'}, {}]
+      const rawEvent = [{ type: 'some-event' }, { name: 'name1' }, {}]
       eventAggregator.add(rawEvent)
 
       t.equal(eventAggregator.length, 1)
@@ -370,7 +373,7 @@ tap.test('Event Aggregator', (t) => {
 
     t.test('should update underlying container limits on resize', (t) => {
       const fakeConfig = {
-        getAggregatorConfig: function() {
+        getAggregatorConfig: function () {
           return {
             periodMs: 3000,
             limit: LIMIT - 1
@@ -386,7 +389,7 @@ tap.test('Event Aggregator', (t) => {
 
     t.test('reconfigure() should not update underlying container on no resize', (t) => {
       const fakeConfig = {
-        getAggregatorConfig: function() {
+        getAggregatorConfig: function () {
           return {
             periodMs: 3000,
             limit: LIMIT
@@ -403,7 +406,7 @@ tap.test('Event Aggregator', (t) => {
 
     t.test('reconfigure() should update the period and limit when present', (t) => {
       const fakeConfig = {
-        getAggregatorConfig: function() {
+        getAggregatorConfig: function () {
           return {
             periodMs: 3000,
             limit: 2000

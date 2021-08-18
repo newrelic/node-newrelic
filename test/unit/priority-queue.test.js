@@ -13,11 +13,11 @@ var chai = require('chai')
 var expect = chai.expect
 var PriorityQueue = require('../../lib/priority-queue')
 
-describe('PriorityQueue', function() {
+describe('PriorityQueue', function () {
   var queue = null
 
-  describe('#add', function() {
-    it('structures the data as a min heap', function() {
+  describe('#add', function () {
+    it('structures the data as a min heap', function () {
       queue = new PriorityQueue()
 
       queue.add('left grandchild', 10)
@@ -26,10 +26,13 @@ describe('PriorityQueue', function() {
       queue.add('left child', 8)
 
       expect(queue.toArray()).to.deep.equal([
-        'parent', 'left child', 'right child', 'left grandchild'
+        'parent',
+        'left child',
+        'right child',
+        'left grandchild'
       ])
     })
-    it('replaces lowest priority item if limit is met', function() {
+    it('replaces lowest priority item if limit is met', function () {
       queue = new PriorityQueue(4)
 
       queue.add('left grandchild', 10)
@@ -38,25 +41,31 @@ describe('PriorityQueue', function() {
       queue.add('left child', 8)
 
       expect(queue.toArray()).to.deep.equal([
-        'parent', 'left child', 'right child', 'left grandchild'
+        'parent',
+        'left child',
+        'right child',
+        'left grandchild'
       ])
 
       queue.add('new parent', 2)
 
       expect(queue.toArray()).to.deep.equal([
-        'new parent', 'right child', 'left grandchild', 'left child'
+        'new parent',
+        'right child',
+        'left grandchild',
+        'left child'
       ])
     })
 
-    it('does not insert events in the case the limit is 0', function() {
+    it('does not insert events in the case the limit is 0', function () {
       queue = new PriorityQueue(0)
       expect(queue.add('test', 1)).to.be.false
       expect(queue.length).to.equal(0)
     })
   })
 
-  describe('#merge', function() {
-    it('merges two sources and maintains the limit', function() {
+  describe('#merge', function () {
+    it('merges two sources and maintains the limit', function () {
       var queueLimit = 4
       var queue1 = new PriorityQueue(queueLimit)
       var queue2 = new PriorityQueue(queueLimit)
@@ -71,8 +80,8 @@ describe('PriorityQueue', function() {
     })
   })
 
-  describe('#setLimit', function() {
-    it('resets the limit property and slices the data if necessary', function() {
+  describe('#setLimit', function () {
+    it('resets the limit property and slices the data if necessary', function () {
       queue = new PriorityQueue(5)
 
       expect(queue.limit).to.equal(5)

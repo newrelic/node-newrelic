@@ -6,7 +6,7 @@
 'use strict'
 
 const fs = require('fs')
-const {program} = require('commander')
+const { program } = require('commander')
 
 const Github = require('./github')
 
@@ -94,7 +94,7 @@ async function readReleaseNoteFile(file) {
         return reject(err)
       }
 
-      resolve(data)
+      return resolve(data)
     })
   })
 

@@ -25,14 +25,14 @@ tap.test('Agent API - transaction handle', (t) => {
     agent = null
   })
 
-  t.test("exports a function for getting a transaction handle", (t) => {
+  t.test('exports a function for getting a transaction handle', (t) => {
     t.ok(api.getTransaction)
     t.type(api.getTransaction, 'function')
 
     t.end()
   })
 
-  t.test("shoud return a stub when running outside of a transaction", (t) => {
+  t.test('shoud return a stub when running outside of a transaction', (t) => {
     const handle = api.getTransaction()
     t.type(handle.end, 'function')
     t.type(handle.ignore, 'function')
@@ -44,8 +44,8 @@ tap.test('Agent API - transaction handle', (t) => {
     t.end()
   })
 
-  t.test("should mark the transaction as externally handled", (t) => {
-    helper.runInTransaction(agent, function(txn) {
+  t.test('should mark the transaction as externally handled', (t) => {
+    helper.runInTransaction(agent, function (txn) {
       const handle = api.getTransaction()
 
       t.ok(txn.handledExternally)
@@ -56,8 +56,8 @@ tap.test('Agent API - transaction handle', (t) => {
     })
   })
 
-  t.test("should return a method to ignore the transaction", (t) => {
-    helper.runInTransaction(agent, function(txn) {
+  t.test('should return a method to ignore the transaction', (t) => {
+    helper.runInTransaction(agent, function (txn) {
       const handle = api.getTransaction()
 
       t.type(handle.ignore, 'function')
@@ -72,8 +72,8 @@ tap.test('Agent API - transaction handle', (t) => {
     })
   })
 
-  t.test("should have a method to insert distributed trace headers", (t) => {
-    helper.runInTransaction(agent, function() {
+  t.test('should have a method to insert distributed trace headers', (t) => {
+    helper.runInTransaction(agent, function () {
       const handle = api.getTransaction()
 
       t.type(handle.insertDistributedTraceHeaders, 'function')
@@ -88,22 +88,22 @@ tap.test('Agent API - transaction handle', (t) => {
     })
   })
 
-  t.test("should have a method for accepting distributed trace headers", (t) => {
-    helper.runInTransaction(agent, function() {
+  t.test('should have a method for accepting distributed trace headers', (t) => {
+    helper.runInTransaction(agent, function () {
       const handle = api.getTransaction()
       t.type(handle.acceptDistributedTraceHeaders, 'function')
       t.end()
     })
   })
 
-  t.test("should return a handle with a method to end the transaction", (t) => {
+  t.test('should return a handle with a method to end the transaction', (t) => {
     let transaction
-    agent.on('transactionFinished', function(finishedTransaction) {
+    agent.on('transactionFinished', function (finishedTransaction) {
       t.equal(finishedTransaction.id, transaction.id)
       t.end()
     })
 
-    helper.runInTransaction(agent, function(txn) {
+    helper.runInTransaction(agent, function (txn) {
       transaction = txn
       const handle = api.getTransaction()
       t.type(handle.end, 'function')
@@ -111,17 +111,17 @@ tap.test('Agent API - transaction handle', (t) => {
     })
   })
 
-  t.test("should call a callback when handle end is called", (t) => {
-    helper.runInTransaction(agent, function() {
+  t.test('should call a callback when handle end is called', (t) => {
+    helper.runInTransaction(agent, function () {
       const handle = api.getTransaction()
-      handle.end(function() {
+      handle.end(function () {
         t.end()
       })
     })
   })
 
-  t.test("does not blow up when end is called without a callback", (t) => {
-    helper.runInTransaction(agent, function() {
+  t.test('does not blow up when end is called without a callback', (t) => {
+    helper.runInTransaction(agent, function () {
       const handle = api.getTransaction()
       handle.end()
 
@@ -129,8 +129,8 @@ tap.test('Agent API - transaction handle', (t) => {
     })
   })
 
-  t.test("should have a method for reporting whether the transaction is sampled", (t) => {
-    helper.runInTransaction(agent, function() {
+  t.test('should have a method for reporting whether the transaction is sampled', (t) => {
+    helper.runInTransaction(agent, function () {
       const handle = api.getTransaction()
       t.type(handle.isSampled, 'function')
       t.equal(handle.isSampled(), true)

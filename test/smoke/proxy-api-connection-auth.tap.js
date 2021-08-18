@@ -10,7 +10,7 @@ const tap = require('tap')
 const configurator = require('../../lib/config')
 const Agent = require('../../lib/agent')
 const CollectorAPI = require('../../lib/collector/api')
-const {getTestSecret} = require('../helpers/secrets')
+const { getTestSecret } = require('../helpers/secrets')
 const license = getTestSecret('TEST_LICENSE')
 
 tap.test('proxy authentication should set headers', (t) => {

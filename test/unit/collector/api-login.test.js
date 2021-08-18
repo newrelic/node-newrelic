@@ -48,7 +48,7 @@ tap.test('when high_security: true', (t) => {
   })
 
   t.test('should send high_security:true in preconnect payload', (t) => {
-    const expectedPreconnectBody = [{high_security: true}]
+    const expectedPreconnectBody = [{ high_security: true }]
 
     const preconnect = nock(URL + ':8080')
       .post(helper.generateCollectorPath('preconnect'), expectedPreconnectBody)
@@ -58,7 +58,7 @@ tap.test('when high_security: true', (t) => {
         }
       })
 
-    const connectResponse = {return_value: {agent_run_id: RUN_ID}}
+    const connectResponse = { return_value: { agent_run_id: RUN_ID } }
     const connect = nock(URL)
       .post(helper.generateCollectorPath('connect'))
       .reply(200, connectResponse)
@@ -105,7 +105,7 @@ tap.test('when high_security: false', (t) => {
   })
 
   t.test('should send high_security:true in preconnect payload', (t) => {
-    const expectedPreconnectBody = [{high_security: false}]
+    const expectedPreconnectBody = [{ high_security: false }]
 
     const preconnect = nock(URL + ':8080')
       .post(helper.generateCollectorPath('preconnect'), expectedPreconnectBody)
@@ -115,7 +115,7 @@ tap.test('when high_security: false', (t) => {
         }
       })
 
-    const connectResponse = {return_value: {agent_run_id: RUN_ID}}
+    const connectResponse = { return_value: { agent_run_id: RUN_ID } }
     const connect = nock(URL)
       .post(helper.generateCollectorPath('connect'))
       .reply(200, connectResponse)
@@ -169,10 +169,12 @@ tap.test('in a LASP-enabled agent', (t) => {
 
   // HSM should never be true when LASP/CSP enabled but payload should still be sent.
   t.test('should send token in preconnect payload with high_security:false', (t) => {
-    const expectedPreconnectBody = [{
-      security_policies_token: SECURITY_POLICIES_TOKEN,
-      high_security: false
-    }]
+    const expectedPreconnectBody = [
+      {
+        security_policies_token: SECURITY_POLICIES_TOKEN,
+        high_security: false
+      }
+    ]
 
     const preconnect = nock(URL + ':8080')
       .post(helper.generateCollectorPath('preconnect'), expectedPreconnectBody)
@@ -266,15 +268,13 @@ tap.test('should copy request headers', (t) => {
     request_headers_map: reqHeaderMap
   }
 
-  const response = {return_value: valid}
+  const response = { return_value: valid }
 
   const redirection = nock(URL + ':8080')
     .post(helper.generateCollectorPath('preconnect'))
-    .reply(200, {return_value: {redirect_host: HOST, security_policies: {}}})
+    .reply(200, { return_value: { redirect_host: HOST, security_policies: {} } })
 
-  const connection = nock(URL)
-    .post(helper.generateCollectorPath('connect'))
-    .reply(200, response)
+  const connection = nock(URL).post(helper.generateCollectorPath('connect')).reply(200, response)
 
   collectorApi._login(function test() {
     t.same(collectorApi._reqHeadersMap, reqHeaderMap)
@@ -304,14 +304,12 @@ tap.test('receiving 200 response, with valid data', (t) => {
 
     nock.disableNetConnect()
 
-    const response = {return_value: validSsc}
+    const response = { return_value: validSsc }
 
     redirection = nock(URL + ':8080')
       .post(helper.generateCollectorPath('preconnect'))
-      .reply(200, {return_value: {redirect_host: HOST, security_policies: {}}})
-    connection = nock(URL)
-      .post(helper.generateCollectorPath('connect'))
-      .reply(200, response)
+      .reply(200, { return_value: { redirect_host: HOST, security_policies: {} } })
+    connection = nock(URL).post(helper.generateCollectorPath('connect')).reply(200, response)
   })
 
   t.afterEach(() => {
@@ -439,11 +437,11 @@ tap.test('receiving no hostname from preconnect', (t) => {
 
     nock.disableNetConnect()
 
-    const response = {return_value: validSsc}
+    const response = { return_value: validSsc }
 
     redirection = nock(URL + ':8080')
       .post(helper.generateCollectorPath('preconnect'))
-      .reply(200, {return_value: {redirect_host: '', security_policies: {}}})
+      .reply(200, { return_value: { redirect_host: '', security_policies: {} } })
 
     connection = nock(URL + ':8080')
       .post(helper.generateCollectorPath('connect'))
@@ -519,7 +517,7 @@ tap.test('receiving a weirdo redirect name from preconnect', (t) => {
 
     nock.disableNetConnect()
 
-    const response = {return_value: validSsc}
+    const response = { return_value: validSsc }
 
     redirection = nock(URL + ':8080')
       .post(helper.generateCollectorPath('preconnect'))
@@ -605,7 +603,6 @@ tap.test('receiving no config back from connect', (t) => {
   let redirection = null
   let connection = null
 
-
   t.beforeEach(() => {
     agent = setupMockedAgent()
     collectorApi = new CollectorApi(agent)
@@ -614,11 +611,11 @@ tap.test('receiving no config back from connect', (t) => {
 
     redirection = nock(URL + ':8080')
       .post(helper.generateCollectorPath('preconnect'))
-      .reply(200, {return_value: {redirect_host: HOST, security_policies: {}}})
+      .reply(200, { return_value: { redirect_host: HOST, security_policies: {} } })
 
     connection = nock(URL)
       .post(helper.generateCollectorPath('connect'))
-      .reply(200, {return_value: null})
+      .reply(200, { return_value: null })
   })
 
   t.afterEach(() => {
@@ -680,7 +677,6 @@ tap.test('receiving 503 response from connect', (t) => {
   let redirection = null
   let connection = null
 
-
   t.beforeEach(() => {
     agent = setupMockedAgent()
     collectorApi = new CollectorApi(agent)
@@ -689,11 +685,9 @@ tap.test('receiving 503 response from connect', (t) => {
 
     redirection = nock(URL + ':8080')
       .post(helper.generateCollectorPath('preconnect'))
-      .reply(200, {return_value: {redirect_host: HOST, security_policies: {}}})
+      .reply(200, { return_value: { redirect_host: HOST, security_policies: {} } })
 
-    connection = nock(URL)
-      .post(helper.generateCollectorPath('connect'))
-      .reply(503)
+    connection = nock(URL).post(helper.generateCollectorPath('connect')).reply(503)
   })
 
   t.afterEach(() => {
@@ -744,7 +738,6 @@ tap.test('receiving 200 response to connect but no data', (t) => {
   let redirection = null
   let connection = null
 
-
   t.beforeEach(() => {
     agent = setupMockedAgent()
     collectorApi = new CollectorApi(agent)
@@ -753,11 +746,9 @@ tap.test('receiving 200 response to connect but no data', (t) => {
 
     redirection = nock(URL + ':8080')
       .post(helper.generateCollectorPath('preconnect'))
-      .reply(200, {return_value: {redirect_host: HOST, security_policies: {}}})
+      .reply(200, { return_value: { redirect_host: HOST, security_policies: {} } })
 
-    connection = nock(URL)
-      .post(helper.generateCollectorPath('connect'))
-      .reply(200)
+    connection = nock(URL).post(helper.generateCollectorPath('connect')).reply(200)
   })
 
   t.afterEach(() => {
@@ -814,8 +805,8 @@ function setupMockedAgent() {
     browser_monitoring: {},
     transaction_tracer: {}
   })
-  agent.reconfigure = function() {}
-  agent.setState = function() {}
+  agent.reconfigure = function () {}
+  agent.setState = function () {}
 
   return agent
 }

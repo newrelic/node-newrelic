@@ -15,23 +15,22 @@ var expect = chai.expect
 var parseSql = require('../../../../lib/db/query-parsers/sql')
 var CATs = require('../../../lib/cross_agent_tests/sql_parsing')
 
-
-describe('database query parser', function() {
-  it("should accept query as a string", function() {
-    var ps = parseSql("select * from someTable")
+describe('database query parser', function () {
+  it('should accept query as a string', function () {
+    var ps = parseSql('select * from someTable')
     ps.query.should.equal('select * from someTable')
   })
 
-  it("should accept query as a sql property of an object", function() {
+  it('should accept query as a sql property of an object', function () {
     var ps = parseSql({
-      sql: "select * from someTable"
+      sql: 'select * from someTable'
     })
     ps.query.should.equal('select * from someTable')
   })
 
-  describe('SELECT SQL', function() {
-    it("should parse a simple query", function() {
-      var ps = parseSql("Select * from dude")
+  describe('SELECT SQL', function () {
+    it('should parse a simple query', function () {
+      var ps = parseSql('Select * from dude')
       should.exist(ps)
 
       should.exist(ps.operation)
@@ -42,7 +41,7 @@ describe('database query parser', function() {
       ps.query.should.equal('Select * from dude')
     })
 
-    it('should parse more interesting queries too', function() {
+    it('should parse more interesting queries too', function () {
       var sql = [
         'SELECT P.postcode, ',
         'P.suburb, ',
@@ -65,9 +64,9 @@ describe('database query parser', function() {
     })
   })
 
-  describe('DELETE SQL', function() {
-    it("should parse a simple command", function() {
-      var ps = parseSql("DELETE\nfrom dude")
+  describe('DELETE SQL', function () {
+    it('should parse a simple command', function () {
+      var ps = parseSql('DELETE\nfrom dude')
       should.exist(ps)
 
       should.exist(ps.operation)
@@ -78,7 +77,7 @@ describe('database query parser', function() {
       ps.query.should.equal('DELETE\nfrom dude')
     })
 
-    it("should parse a command with conditions", function() {
+    it('should parse a command with conditions', function () {
       var ps = parseSql("DELETE\nfrom dude where name = 'man'")
       should.exist(ps)
 
@@ -87,13 +86,13 @@ describe('database query parser', function() {
 
       should.exist(ps.collection)
       ps.collection.should.equal('dude')
-      ps.query.should.equal('DELETE\nfrom dude where name = \'man\'')
+      ps.query.should.equal("DELETE\nfrom dude where name = 'man'")
     })
   })
 
-  describe('UPDATE SQL', function() {
-    it("should parse a command with gratuitous white space and conditions", function() {
-      var ps = parseSql("  update test set value = 1 where id = 12")
+  describe('UPDATE SQL', function () {
+    it('should parse a command with gratuitous white space and conditions', function () {
+      var ps = parseSql('  update test set value = 1 where id = 12')
       should.exist(ps)
 
       should.exist(ps.operation)
@@ -105,9 +104,9 @@ describe('database query parser', function() {
     })
   })
 
-  describe('INSERT SQL', function() {
-    it("should parse a command with a subquery", function() {
-      var ps = parseSql("  insert into\ntest\nselect * from dude")
+  describe('INSERT SQL', function () {
+    it('should parse a command with a subquery', function () {
+      var ps = parseSql('  insert into\ntest\nselect * from dude')
       should.exist(ps)
 
       should.exist(ps.operation)
@@ -119,16 +118,16 @@ describe('database query parser', function() {
     })
   })
 
-  describe('invalid SQL', function() {
-    it("should return 'other' when handed garbage", function() {
-      var ps = parseSql("  bulge into\ndudes\nselect * from dude")
+  describe('invalid SQL', function () {
+    it("should return 'other' when handed garbage", function () {
+      var ps = parseSql('  bulge into\ndudes\nselect * from dude')
       should.exist(ps)
       ps.operation.should.equal('other')
       should.not.exist(ps.collection)
       ps.query.should.equal('bulge into\ndudes\nselect * from dude')
     })
 
-    it("should return 'other' when handed an object", function() {
+    it("should return 'other' when handed an object", function () {
       var ps = parseSql({
         key: 'value'
       })
@@ -139,12 +138,12 @@ describe('database query parser', function() {
     })
   })
 
-  describe('CAT', function() {
-    CATs.forEach(function(cat) {
-      describe(clean(cat.input), function() {
+  describe('CAT', function () {
+    CATs.forEach(function (cat) {
+      describe(clean(cat.input), function () {
         var ps = parseSql(cat.input)
 
-        it('should parse the operation as ' + cat.operation, function() {
+        it('should parse the operation as ' + cat.operation, function () {
           expect(ps).to.have.property('operation', cat.operation)
         })
 
@@ -153,7 +152,7 @@ describe('database query parser', function() {
         } else if (/\w+\.\w+/.test(ps.collection)) {
           it('should strip database names from collection names as ' + cat.table)
         } else {
-          it('should parse the collection as ' + cat.table, function() {
+          it('should parse the collection as ' + cat.table, function () {
             expect(ps).to.have.property('collection', cat.table)
           })
         }
@@ -163,9 +162,5 @@ describe('database query parser', function() {
 })
 
 function clean(sql) {
-  return '"' + sql
-    .replace(/\n/gm, '\\n')
-    .replace(/\r/gm, '\\r')
-    .replace(/\t/gm, '\\t')
-    + '"'
+  return '"' + sql.replace(/\n/gm, '\\n').replace(/\r/gm, '\\r').replace(/\t/gm, '\\t') + '"'
 }

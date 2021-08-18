@@ -11,9 +11,8 @@ const helper = require('../lib/agent_helper')
 const Transaction = require('../../lib/transaction')
 const ParsedStatement = require('../../lib/db/parsed-statement')
 
-
 function checkMetric(t, metrics, name, scope) {
-  t.match(metrics.getMetric(name, scope), {'total': 0.333})
+  t.match(metrics.getMetric(name, scope), { total: 0.333 })
 }
 
 tap.test('recording database metrics', (t) => {
@@ -30,9 +29,9 @@ tap.test('recording database metrics', (t) => {
   t.test('on scoped transactions with parsed statements - with collection', (t) => {
     t.test('with collection', (t) => {
       t.beforeEach(() => {
-        let ps          = new ParsedStatement('NoSQL', 'select', 'test_collection')
+        let ps = new ParsedStatement('NoSQL', 'select', 'test_collection')
         let transaction = new Transaction(agent)
-        let segment     = transaction.trace.add('test')
+        let segment = transaction.trace.add('test')
 
         transaction.type = Transaction.TYPES.BG
         segment.setDurationInMillis(333)
@@ -92,9 +91,9 @@ tap.test('recording database metrics', (t) => {
 
     t.test('without collection', (t) => {
       t.beforeEach(() => {
-        let ps          = new ParsedStatement('NoSQL', 'select')
+        let ps = new ParsedStatement('NoSQL', 'select')
         let transaction = new Transaction(agent)
-        let segment     = transaction.trace.add('test')
+        let segment = transaction.trace.add('test')
 
         transaction.type = Transaction.TYPES.BG
         segment.setDurationInMillis(333)
@@ -159,9 +158,9 @@ tap.test('recording database metrics', (t) => {
   t.test('on unscoped transactions with parsed statements', (t) => {
     t.test('with collection', (t) => {
       t.beforeEach(() => {
-        let ps          = new ParsedStatement('NoSQL', 'select', 'test_collection')
+        let ps = new ParsedStatement('NoSQL', 'select', 'test_collection')
         let transaction = new Transaction(agent)
-        let segment     = transaction.trace.add('test')
+        let segment = transaction.trace.add('test')
 
         transaction.type = Transaction.TYPES.BG
         segment.setDurationInMillis(333)
@@ -216,9 +215,9 @@ tap.test('recording database metrics', (t) => {
 
     t.test('without collection', (t) => {
       t.beforeEach(() => {
-        let ps          = new ParsedStatement('NoSQL', 'select')
+        let ps = new ParsedStatement('NoSQL', 'select')
         let transaction = new Transaction(agent)
-        let segment     = transaction.trace.add('test')
+        let segment = transaction.trace.add('test')
 
         transaction.type = Transaction.TYPES.BG
         segment.setDurationInMillis(333)
@@ -285,18 +284,13 @@ tap.test('recording slow queries', (t) => {
 
     t.beforeEach(() => {
       agent = helper.loadMockedAgent({
-        slow_sql: {enabled: true},
+        slow_sql: { enabled: true },
         transaction_tracer: {
           record_sql: 'obfuscated'
         }
       })
 
-      let ps = new ParsedStatement(
-        'MySql',
-        'select',
-        'foo',
-        'select * from foo where b=1'
-      )
+      let ps = new ParsedStatement('MySql', 'select', 'foo', 'select * from foo where b=1')
 
       transaction = new Transaction(agent)
       transaction.type = Transaction.TYPES.BG
@@ -305,12 +299,7 @@ tap.test('recording slow queries', (t) => {
       segment.setDurationInMillis(503)
       ps.recordMetrics(segment, 'TEST')
 
-      let ps2 = new ParsedStatement(
-        'MySql',
-        'select',
-        'foo',
-        'select * from foo where b=2'
-      )
+      let ps2 = new ParsedStatement('MySql', 'select', 'foo', 'select * from foo where b=2')
 
       let segment2 = transaction.trace.add('test')
       segment2.setDurationInMillis(501)
@@ -360,18 +349,13 @@ tap.test('recording slow queries', (t) => {
 
     t.beforeEach(() => {
       agent = helper.loadMockedAgent({
-        slow_sql: {enabled: true},
+        slow_sql: { enabled: true },
         transaction_tracer: {
           record_sql: 'obfuscated'
         }
       })
 
-      let ps = new ParsedStatement(
-        'MySql',
-        'select',
-        null,
-        'select * from foo where b=1'
-      )
+      let ps = new ParsedStatement('MySql', 'select', null, 'select * from foo where b=1')
 
       transaction = new Transaction(agent)
       segment = transaction.trace.add('test')
@@ -379,12 +363,7 @@ tap.test('recording slow queries', (t) => {
       segment.setDurationInMillis(503)
       ps.recordMetrics(segment, 'TEST')
 
-      let ps2 = new ParsedStatement(
-        'MySql',
-        'select',
-        null,
-        'select * from foo where b=2'
-      )
+      let ps2 = new ParsedStatement('MySql', 'select', null, 'select * from foo where b=2')
 
       let segment2 = transaction.trace.add('test')
       segment2.setDurationInMillis(501)
@@ -407,7 +386,7 @@ tap.test('recording slow queries', (t) => {
       let sample = agent.queries.samples.values().next().value
       let trace = sample.trace
 
-      t.ok(trace.id <= (2 ** 63 - 1))
+      t.ok(trace.id <= 2 ** 63 - 1)
 
       t.end()
     })
@@ -444,7 +423,7 @@ tap.test('recording slow queries', (t) => {
 
     t.beforeEach(() => {
       agent = helper.loadMockedAgent({
-        slow_sql: {enabled: true},
+        slow_sql: { enabled: true },
         transaction_tracer: {
           record_sql: 'obfuscated'
         }

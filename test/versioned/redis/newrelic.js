@@ -16,6 +16,6 @@ exports.config = {
     detect_docker: false
   },
   logging: {
-    enabled: false,
+    enabled: false
   }
 }

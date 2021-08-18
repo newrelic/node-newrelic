@@ -11,14 +11,15 @@ var shared = require('./shared')
 var s = shared.makeSuite()
 var suite = s.suite
 var tracer = s.agent.tracer
-var tx = helper.runInTransaction(s.agent, function(_tx) { return _tx })
+var tx = helper.runInTransaction(s.agent, function (_tx) {
+  return _tx
+})
 tracer.segment = tx.root
-
 
 preOptBind()
 var bound = tracer.bindFunction(shared.getTest().func, tx.root, true)
 
-setTimeout(function() {
+setTimeout(function () {
   suite.add({
     name: 'all parameters',
     fn: allParamBind
@@ -46,7 +47,7 @@ setTimeout(function() {
 
   suite.add({
     name: 'wrapped',
-    fn: function() {
+    fn: function () {
       return bound(Math.random(), Math.random(), Math.random())
     }
   })

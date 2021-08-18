@@ -28,7 +28,7 @@ tap.test('Agent API - getLinkingMetadata', (t) => {
   t.test('should return available fields, no DT data, when DT disabled in transaction', (t) => {
     agent.config.distributed_tracing.enabled = false
 
-    helper.runInTransaction(agent, function() {
+    helper.runInTransaction(agent, function () {
       const metadata = api.getLinkingMetadata()
 
       // trace and span id are omitted when dt is disabled
@@ -60,7 +60,7 @@ tap.test('Agent API - getLinkingMetadata', (t) => {
   })
 
   t.test('should return all data, when DT enabled in transaction', (t) => {
-    helper.runInTransaction(agent, function() {
+    helper.runInTransaction(agent, function () {
       const metadata = api.getLinkingMetadata()
 
       t.ok(metadata['trace.id'])
@@ -82,7 +82,7 @@ tap.test('Agent API - getLinkingMetadata', (t) => {
     const expectedEntityGuid = 'test'
     agent.config.entity_guid = expectedEntityGuid
 
-    helper.runInTransaction(agent, function() {
+    helper.runInTransaction(agent, function () {
       const metadata = api.getLinkingMetadata()
 
       t.ok(metadata['trace.id'])

@@ -29,12 +29,10 @@ tap.test('DataSender (callback style) talking to fake collector', (t) => {
     port: 8765
   }
 
-  config.certificates = [
-    read(join(__dirname, '../lib/ca-certificate.crt'), 'utf8')
-  ]
+  config.certificates = [read(join(__dirname, '../lib/ca-certificate.crt'), 'utf8')]
   const method = new RemoteMethod('preconnect', config, endpoint)
 
-  collector({port: 8765}, (error, server) => {
+  collector({ port: 8765 }, (error, server) => {
     // set a reasonable server timeout for cleanup
     // of the server's keep-alive connections
     server.server.setTimeout(5000)
@@ -99,9 +97,7 @@ tap.test('remote method to preconnect', (t) => {
       port: 9876
     }
 
-    config.certificates = [
-      read(join(__dirname, '../lib/ca-certificate.crt'), 'utf8')
-    ]
+    config.certificates = [read(join(__dirname, '../lib/ca-certificate.crt'), 'utf8')]
 
     const method = new RemoteMethod('preconnect', config, endpoint)
     return method
@@ -132,7 +128,7 @@ tap.test('remote method to preconnect', (t) => {
     function responder(req, res) {
       const parsed = url.parse(req.url, true)
       t.equal(parsed.query.method, 'preconnect', 'should get redirect host request')
-      res.write(JSON.stringify({return_value: 'some-collector-url'}))
+      res.write(JSON.stringify({ return_value: 'some-collector-url' }))
       res.end()
     }
   }

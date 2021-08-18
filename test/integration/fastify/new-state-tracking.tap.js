@@ -8,7 +8,7 @@
 const tap = require('tap')
 const http = require('http')
 
-const helper  = require('../../lib/agent_helper')
+const helper = require('../../lib/agent_helper')
 
 const originalSetImmediate = setImmediate
 
@@ -34,8 +34,8 @@ tap.test('fastify with new state tracking', (t) => {
     fastify.close()
   })
 
-  t.test('should not reuse transactions via normal usage', async(t) => {
-    fastify.get('/', async() => {
+  t.test('should not reuse transactions via normal usage', async (t) => {
+    fastify.get('/', async () => {
       return { hello: 'world' }
     })
 
@@ -55,8 +55,8 @@ tap.test('fastify with new state tracking', (t) => {
     t.equal(transactions.length, 2)
   })
 
-  t.test('should not reuse transactions with non-awaited promise', async(t) => {
-    fastify.get('/', async() => {
+  t.test('should not reuse transactions with non-awaited promise', async (t) => {
+    fastify.get('/', async () => {
       doWork() // fire-and-forget promise
       return { hello: 'world' }
     })

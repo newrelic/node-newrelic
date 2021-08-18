@@ -7,8 +7,7 @@
 
 var AttributeFilter = require('../../../lib/config/attribute-filter')
 var benchmark = require('../../lib/benchmark')
-const {makeAttributeFilterConfig} = require('../../lib/agent_helper')
-
+const { makeAttributeFilterConfig } = require('../../lib/agent_helper')
 
 var suite = benchmark.createBenchmark({
   name: 'config.filter'
@@ -66,10 +65,10 @@ var attributes = [
   'request.headers.no-rules-match'
 ]
 
-attributes.forEach(function(attr) {
+attributes.forEach(function (attr) {
   suite.add({
     name: attr,
-    fn: function() {
+    fn: function () {
       return filter.filterTransaction(AttributeFilter.DESTINATIONS.TRANS_TRACE, attr)
     }
   })

@@ -9,11 +9,11 @@
 // Below allows use of mocha DSL with tap runner.
 require('tap').mochaGlobals()
 
-const chai   = require('chai')
+const chai = require('chai')
 const expect = chai.expect
-const Stats  = require('../../lib/stats')
+const Stats = require('../../lib/stats')
 
-describe("Stats", function() {
+describe('Stats', function () {
   var statistics
 
   function verifyStats(actualStats, expectedStats) {
@@ -25,16 +25,16 @@ describe("Stats", function() {
     expect(actualStats.sumOfSquares).equal(expectedStats.sumOfSquares)
   }
 
-  beforeEach(function() {
+  beforeEach(function () {
     statistics = new Stats()
   })
 
-  it("should correctly summarize a sample set of statistics", function() {
+  it('should correctly summarize a sample set of statistics', function () {
     const expectedStats = {
       callCount: 3,
       totalTime: 0.306,
       totalExclusive: 0.128,
-      min: 0.060,
+      min: 0.06,
       max: 0.123,
       sumOfSquares: 0.033858
     }
@@ -46,13 +46,13 @@ describe("Stats", function() {
     verifyStats(statistics, expectedStats)
   })
 
-  it("should correctly summarize another simple set of statistics", function() {
+  it('should correctly summarize another simple set of statistics', function () {
     const expectedStats = {
       callCount: 2,
-      totalTime: 0.240,
+      totalTime: 0.24,
       totalExclusive: 0.0,
-      min: 0.120,
-      max: 0.120,
+      min: 0.12,
+      max: 0.12,
       sumOfSquares: 0.0288
     }
 
@@ -62,8 +62,8 @@ describe("Stats", function() {
     verifyStats(statistics, expectedStats)
   })
 
-  describe("when incrementing the call count", function() {
-    it("should increment by 1 by default", function() {
+  describe('when incrementing the call count', function () {
+    it('should increment by 1 by default', function () {
       const expectedStats = {
         callCount: 1,
         totalTime: 0,
@@ -77,7 +77,7 @@ describe("Stats", function() {
       verifyStats(statistics, expectedStats)
     })
 
-    it("should increment by the provided value", function() {
+    it('should increment by the provided value', function () {
       const expectedStats = {
         callCount: 23,
         totalTime: 0,
@@ -91,7 +91,7 @@ describe("Stats", function() {
       verifyStats(statistics, expectedStats)
     })
 
-    it("shouldn't increment when the provided value is 0", function() {
+    it("shouldn't increment when the provided value is 0", function () {
       const expectedStats = {
         callCount: 0,
         totalTime: 0,
@@ -106,12 +106,12 @@ describe("Stats", function() {
     })
   })
 
-  it("should correctly merge summaries", function() {
+  it('should correctly merge summaries', function () {
     const expectedStats = {
       callCount: 3,
       totalTime: 0.306,
       totalExclusive: 0.128,
-      min: 0.060,
+      min: 0.06,
       max: 0.123,
       sumOfSquares: 0.033858
     }
@@ -141,7 +141,7 @@ describe("Stats", function() {
       callCount: 5,
       totalTime: 0.552,
       totalExclusive: 0.128,
-      min: 0.060,
+      min: 0.06,
       max: 0.123,
       sumOfSquares: 0.064116
     }
@@ -150,8 +150,8 @@ describe("Stats", function() {
     verifyStats(statistics, expectedStatsMerged)
   })
 
-  describe("when handling quantities", function() {
-    it("should store bytes as bytes, rescaling only at serialization")
-    it("should store time as nanoseconds, rescaling only at serialization")
+  describe('when handling quantities', function () {
+    it('should store bytes as bytes, rescaling only at serialization')
+    it('should store time as nanoseconds, rescaling only at serialization')
   })
 })

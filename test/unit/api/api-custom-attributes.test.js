@@ -31,7 +31,7 @@ tap.test('Agent API - custom attributes', (t) => {
     agent = null
   })
 
-  t.test("exports a function for adding multiple custom attributes at once", (t) => {
+  t.test('exports a function for adding multiple custom attributes at once', (t) => {
     t.ok(api.addCustomAttributes)
     t.type(api.addCustomAttributes, 'function')
     t.end()
@@ -44,7 +44,7 @@ tap.test('Agent API - custom attributes', (t) => {
   })
 
   t.test('should properly add custom attributes', (t) => {
-    helper.runInTransaction(agent, function(transaction) {
+    helper.runInTransaction(agent, function (transaction) {
       api.addCustomAttribute('test', 1)
       const attributes = transaction.trace.custom.get(DESTINATIONS.TRANS_TRACE)
 
@@ -56,7 +56,7 @@ tap.test('Agent API - custom attributes', (t) => {
   })
 
   t.test('should skip if attribute key length limit is exceeded', (t) => {
-    helper.runInTransaction(agent, function(transaction) {
+    helper.runInTransaction(agent, function (transaction) {
       const tooLong = [
         'Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
         'Cras id lacinia erat. Suspendisse mi nisl, sodales vel est eu,',
@@ -67,7 +67,6 @@ tap.test('Agent API - custom attributes', (t) => {
       api.addCustomAttribute(tooLong, 'will fail')
       const attributes = transaction.trace.custom.get(DESTINATIONS.TRANS_TRACE)
 
-
       const hasTooLong = Object.hasOwnProperty.call(attributes, 'tooLong')
       t.notOk(hasTooLong)
 
@@ -77,7 +76,7 @@ tap.test('Agent API - custom attributes', (t) => {
   })
 
   t.test('should properly add multiple custom attributes', (t) => {
-    helper.runInTransaction(agent, function(transaction) {
+    helper.runInTransaction(agent, function (transaction) {
       api.addCustomAttributes({
         one: 1,
         two: 2
@@ -93,7 +92,7 @@ tap.test('Agent API - custom attributes', (t) => {
   })
 
   t.test('should not add custom attributes when disabled', (t) => {
-    helper.runInTransaction(agent, function(transaction) {
+    helper.runInTransaction(agent, function (transaction) {
       agent.config.api.custom_attributes_enabled = false
       api.addCustomAttribute('test', 1)
       const attributes = transaction.trace.custom.get(DESTINATIONS.TRANS_TRACE)
@@ -108,7 +107,7 @@ tap.test('Agent API - custom attributes', (t) => {
   })
 
   t.test('should not add multiple custom attributes when disabled', (t) => {
-    helper.runInTransaction(agent, function(transaction) {
+    helper.runInTransaction(agent, function (transaction) {
       agent.config.api.custom_attributes_enabled = false
       api.addCustomAttributes({
         one: 1,
@@ -128,7 +127,7 @@ tap.test('Agent API - custom attributes', (t) => {
   })
 
   t.test('should not add custom attributes in high security mode', (t) => {
-    helper.runInTransaction(agent, function(transaction) {
+    helper.runInTransaction(agent, function (transaction) {
       agent.config.high_security = true
       api.addCustomAttribute('test', 1)
       const attributes = transaction.trace.custom.get(DESTINATIONS.TRANS_TRACE)
@@ -143,7 +142,7 @@ tap.test('Agent API - custom attributes', (t) => {
   })
 
   t.test('should not add multiple custom attributes in high security mode', (t) => {
-    helper.runInTransaction(agent, function(transaction) {
+    helper.runInTransaction(agent, function (transaction) {
       agent.config.high_security = true
       api.addCustomAttributes({
         one: 1,
@@ -162,15 +161,15 @@ tap.test('Agent API - custom attributes', (t) => {
     })
   })
 
-  t.test("should keep the most-recently seen value", (t) => {
-    agent.on('transactionFinished', function(transaction) {
+  t.test('should keep the most-recently seen value', (t) => {
+    agent.on('transactionFinished', function (transaction) {
       const attributes = transaction.trace.custom.get(DESTINATIONS.TRANS_TRACE)
       t.equal(attributes.TestName, 'Third')
 
       t.end()
     })
 
-    helper.runInTransaction(agent, function(transaction) {
+    helper.runInTransaction(agent, function (transaction) {
       api.addCustomAttribute('TestName', 'TestValue')
       api.addCustomAttribute('TestName', 'Second')
       api.addCustomAttribute('TestName', 'Third')
@@ -180,7 +179,7 @@ tap.test('Agent API - custom attributes', (t) => {
   })
 
   t.test('should roll with it if custom attributes are gone', (t) => {
-    helper.runInTransaction(agent, function(transaction) {
+    helper.runInTransaction(agent, function (transaction) {
       const trace = transaction.trace
       delete trace.custom
 
@@ -195,7 +194,7 @@ tap.test('Agent API - custom attributes', (t) => {
     agent.config.attributes.exclude.push('ignore_me')
     agent.config.emit('attributes.exclude')
 
-    agent.on('transactionFinished', function(transaction) {
+    agent.on('transactionFinished', function (transaction) {
       const attributes = transaction.trace.custom.get(DESTINATIONS.TRANS_TRACE)
 
       const hasIgnore = Object.hasOwnProperty.call(attributes, 'ignore_me')
@@ -204,7 +203,7 @@ tap.test('Agent API - custom attributes', (t) => {
       t.end()
     })
 
-    helper.runInTransaction(agent, function(transaction) {
+    helper.runInTransaction(agent, function (transaction) {
       api.addCustomAttribute('ignore_me', 'set')
 
       transaction.end()
@@ -212,9 +211,9 @@ tap.test('Agent API - custom attributes', (t) => {
   })
 
   t.test('should properly add custom span attribute', (t) => {
-    helper.runInTransaction(agent, function(transaction) {
+    helper.runInTransaction(agent, function (transaction) {
       transaction.name = 'test'
-      api.startSegment('foobar', false, function() {
+      api.startSegment('foobar', false, function () {
         api.addCustomSpanAttribute('spannnnnny', 1)
         const segment = api.shim.getSegment()
         const span = SpanEvent.fromSegment(segment, 'parent')
@@ -229,7 +228,7 @@ tap.test('Agent API - custom attributes', (t) => {
   })
 
   t.test('should properly add multiple custom span attributes', (t) => {
-    helper.runInTransaction(agent, function(transaction) {
+    helper.runInTransaction(agent, function (transaction) {
       api.startSegment('foo', false, () => {
         api.addCustomSpanAttributes({
           one: 1,

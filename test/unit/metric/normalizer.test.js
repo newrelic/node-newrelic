@@ -16,47 +16,47 @@ const Normalizer = require('../../../lib/metrics/normalizer')
 
 const stagingRules = require('./staging-rules')
 
-describe ("MetricNormalizer", function() {
+describe('MetricNormalizer', function () {
   var normalizer
 
-  beforeEach(function() {
-    var config = {enforce_backstop: true}
+  beforeEach(function () {
+    var config = { enforce_backstop: true }
     normalizer = new Normalizer(config, 'URL')
   })
 
-  it("should throw when instantiated without config", function() {
-    expect(function() {
+  it('should throw when instantiated without config', function () {
+    expect(function () {
       normalizer = new Normalizer()
     }).throws()
   })
 
-  it("should throw when instantiated without type", function() {
-    var config = {enforce_backstop: true}
-    expect(function() {
+  it('should throw when instantiated without type', function () {
+    var config = { enforce_backstop: true }
+    expect(function () {
       normalizer = new Normalizer(config)
     }).throws()
   })
 
-  it("should normalize even without any rules set", function() {
-    expect(function() {
+  it('should normalize even without any rules set', function () {
+    expect(function () {
       expect(normalizer.normalize('/sample')).to.have.property('value', 'NormalizedUri/*')
     }).not.throws()
   })
 
-  it("should normalize with an empty rule set", function() {
-    expect(function() {
+  it('should normalize with an empty rule set', function () {
+    expect(function () {
       normalizer.load([])
 
       expect(normalizer.normalize('/sample')).to.have.property('value', 'NormalizedUri/*')
     }).not.throws()
   })
 
-  describe("with rules captured from the staging collector on 2012-08-29", function() {
-    beforeEach(function() {
+  describe('with rules captured from the staging collector on 2012-08-29', function () {
+    beforeEach(function () {
       normalizer.load(stagingRules)
     })
 
-    it("should eliminate duplicate rules as part of loading them", function() {
+    it('should eliminate duplicate rules as part of loading them', function () {
       var patternWithSlash = '^(.*)\\/[0-9][0-9a-f_,-]*\\.([0-9a-z][0-9a-z]*)$'
       var reduced = [
         {
@@ -97,27 +97,32 @@ describe ("MetricNormalizer", function() {
         }
       ]
 
-      expect(normalizer.rules.map(function cb_map(r) {
-        return r.toJSON()
-      })).eql(reduced)
+      expect(
+        normalizer.rules.map((r) => {
+          return r.toJSON()
+        })
+      ).eql(reduced)
     })
 
-    it("should normalize a JPEGgy URL", function() {
-      expect(normalizer.normalize('/excessivity.jpeg'))
-        .to.have.property('value', 'NormalizedUri/*.jpeg')
+    it('should normalize a JPEGgy URL', function () {
+      expect(normalizer.normalize('/excessivity.jpeg')).to.have.property(
+        'value',
+        'NormalizedUri/*.jpeg'
+      )
     })
 
-    it("should normalize a JPGgy URL", function() {
-      expect(normalizer.normalize('/excessivity.jpg'))
-        .to.have.property('value', 'NormalizedUri/*.jpg')
+    it('should normalize a JPGgy URL', function () {
+      expect(normalizer.normalize('/excessivity.jpg')).to.have.property(
+        'value',
+        'NormalizedUri/*.jpg'
+      )
     })
 
-    it("should normalize a CSS URL", function() {
-      expect(normalizer.normalize('/style.css'))
-        .to.have.property('value', 'NormalizedUri/*.css')
+    it('should normalize a CSS URL', function () {
+      expect(normalizer.normalize('/style.css')).to.have.property('value', 'NormalizedUri/*.css')
     })
 
-    it('should drop old rules when reloading', function() {
+    it('should drop old rules when reloading', function () {
       var newRule = {
         each_segment: false,
         eval_order: 0,
@@ -138,13 +143,15 @@ describe ("MetricNormalizer", function() {
         ignore: false,
         replacement: '$1'
       }
-      expect(normalizer.rules.map(function cb_map(r) {
-        return r.toJSON()
-      })).eql([expected])
+      expect(
+        normalizer.rules.map((r) => {
+          return r.toJSON()
+        })
+      ).eql([expected])
     })
   })
 
-  it("should ignore a matching name", function() {
+  it('should ignore a matching name', function () {
     normalizer.load([
       {
         each_segment: false,
@@ -160,7 +167,7 @@ describe ("MetricNormalizer", function() {
     expect(normalizer.normalize('/long_polling')).to.have.property('ignore', true)
   })
 
-  it("should apply rules by precedence", function() {
+  it('should apply rules by precedence', function () {
     normalizer.load([
       {
         each_segment: true,
@@ -182,11 +189,13 @@ describe ("MetricNormalizer", function() {
       }
     ])
 
-    expect(normalizer.normalize('/rice/is/not/rice'))
-      .to.have.property('value', 'NormalizedUri/rice/is/not/millet')
+    expect(normalizer.normalize('/rice/is/not/rice')).to.have.property(
+      'value',
+      'NormalizedUri/rice/is/not/millet'
+    )
   })
 
-  it("should terminate when indicated by rule", function() {
+  it('should terminate when indicated by rule', function () {
     normalizer.load([
       {
         each_segment: true,
@@ -208,66 +217,71 @@ describe ("MetricNormalizer", function() {
       }
     ])
 
-    expect(normalizer.normalize('/rice/is/not/rice'))
-      .to.have.property('value', 'NormalizedUri/rice/is/not/mochi')
+    expect(normalizer.normalize('/rice/is/not/rice')).to.have.property(
+      'value',
+      'NormalizedUri/rice/is/not/mochi'
+    )
   })
 
-  describe("when calling addSimple", function() {
-    it("won't crash with no parameters", function() {
-      expect(function() { normalizer.addSimple() }).not.throws()
+  describe('when calling addSimple', function () {
+    it("won't crash with no parameters", function () {
+      expect(function () {
+        normalizer.addSimple()
+      }).not.throws()
     })
 
-    it("won't crash when name isn't passed", function() {
-      expect(function() { normalizer.addSimple('^t') }).not.throws()
+    it("won't crash when name isn't passed", function () {
+      expect(function () {
+        normalizer.addSimple('^t')
+      }).not.throws()
     })
 
-    it("will ignore matches when name isn't passed", function() {
+    it("will ignore matches when name isn't passed", function () {
       normalizer.addSimple('^t')
       expect(normalizer.rules[0].ignore).equal(true)
     })
 
-    it("will create rename rules that work properly", function() {
+    it('will create rename rules that work properly', function () {
       normalizer.addSimple('^/t(.*)$', '/w$1')
-      expect(normalizer.normalize('/test'))
-        .to.have.property('value', 'NormalizedUri/west')
+      expect(normalizer.normalize('/test')).to.have.property('value', 'NormalizedUri/west')
     })
   })
 
-  describe('when loading from config', function() {
+  describe('when loading from config', function () {
     var config = null
 
-    beforeEach(function() {
+    beforeEach(function () {
       config = new Config({
         rules: {
           name: [
-            {pattern: '^first$',  name: 'first',  precedence: 500},
-            {pattern: '^second$', name: 'second', precedence: 500},
-            {pattern: '^third$',  name: 'third',  precedence: 100},
-            {pattern: '^fourth$', name: 'fourth', precedence: 500}
+            { pattern: '^first$', name: 'first', precedence: 500 },
+            { pattern: '^second$', name: 'second', precedence: 500 },
+            { pattern: '^third$', name: 'third', precedence: 100 },
+            { pattern: '^fourth$', name: 'fourth', precedence: 500 }
           ]
-        },
+        }
       })
 
       normalizer = new Normalizer(config, 'URL')
     })
 
-    afterEach(function() {
+    afterEach(function () {
       config = null
       normalizer = null
     })
 
-    describe('with feature flag reverse_naming_rules', function() {
-      describe('set to true', function() {
-        beforeEach(function() {
-          config.feature_flag = {reverse_naming_rules: true}
+    describe('with feature flag reverse_naming_rules', function () {
+      describe('set to true', function () {
+        beforeEach(function () {
+          config.feature_flag = { reverse_naming_rules: true }
           normalizer.loadFromConfig()
         })
 
-        it('should respect precedence', function() {
+        it('should respect precedence', function () {
           expect(normalizer.rules[1]).to.have.property('replacement', 'third')
         })
 
-        it('should have the rules in reverse order', function() {
+        it('should have the rules in reverse order', function () {
           expect(normalizer.rules[1]).to.have.property('replacement', 'third')
           expect(normalizer.rules[2]).to.have.property('replacement', 'fourth')
           expect(normalizer.rules[3]).to.have.property('replacement', 'second')
@@ -275,16 +289,16 @@ describe ("MetricNormalizer", function() {
         })
       })
 
-      describe('set to false (default)', function() {
-        beforeEach(function() {
+      describe('set to false (default)', function () {
+        beforeEach(function () {
           normalizer.loadFromConfig()
         })
 
-        it('should respect precedence', function() {
+        it('should respect precedence', function () {
           expect(normalizer.rules[1]).to.have.property('replacement', 'third')
         })
 
-        it('should have the rules in forward order', function() {
+        it('should have the rules in forward order', function () {
           expect(normalizer.rules[1]).to.have.property('replacement', 'third')
           expect(normalizer.rules[2]).to.have.property('replacement', 'first')
           expect(normalizer.rules[3]).to.have.property('replacement', 'second')

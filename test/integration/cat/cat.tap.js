@@ -18,19 +18,15 @@ const END_PORT = 10002
 const CROSS_PROCESS_ID = '1337#7331'
 const TX_NAME = 'WebTransaction/Nodejs/GET//middle/end'
 
-
-test('cross application tracing full integration', function(t) {
+test('cross application tracing full integration', function (t) {
   t.plan(57)
   var config = {
-    cross_application_tracer: {enabled: true},
+    cross_application_tracer: { enabled: true },
     trusted_account_ids: [1337],
     cross_process_id: CROSS_PROCESS_ID,
-    encoding_key: 'some key',
+    encoding_key: 'some key'
   }
-  config.obfuscatedId = hashes.obfuscateNameUsingKey(
-    config.cross_process_id,
-    config.encoding_key
-  )
+  config.obfuscatedId = hashes.obfuscateNameUsingKey(config.cross_process_id, config.encoding_key)
   const agent = helper.instrumentMockedAgent(config)
 
   // require http after creating the agent
@@ -47,76 +43,47 @@ test('cross application tracing full integration', function(t) {
 
   // Naming is how the requests will flow through the system, to test that all
   // metrics are generated as expected as well as the dirac events.
-  var start = generateServer(http, api, START_PORT, started, function(req, res) {
+  var start = generateServer(http, api, START_PORT, started, function (req, res) {
     var tx = agent.tracer.getTransaction()
     tx.nameState.appendPath('foobar')
-    http.get(generateUrl(MIDDLE_PORT, 'start/middle'), function(externRes) {
+    http.get(generateUrl(MIDDLE_PORT, 'start/middle'), function (externRes) {
       externRes.resume()
-      externRes.on('end', function() {
+      externRes.on('end', function () {
         tx.nameState.popPath('foobar')
         res.end()
       })
     })
   })
 
-  var middle = generateServer(http, api, MIDDLE_PORT, started, function(req, res) {
+  var middle = generateServer(http, api, MIDDLE_PORT, started, function (req, res) {
     t.ok(req.headers['x-newrelic-id'], 'middle received x-newrelic-id from start')
-    t.ok(
-      req.headers['x-newrelic-transaction'],
-      'middle received x-newrelic-transaction from start'
-    )
+    t.ok(req.headers['x-newrelic-transaction'], 'middle received x-newrelic-transaction from start')
 
     var tx = agent.tracer.getTransaction()
     tx.nameState.appendPath('foobar')
-    http.get(generateUrl(END_PORT, 'middle/end'), function(externRes) {
+    http.get(generateUrl(END_PORT, 'middle/end'), function (externRes) {
       externRes.resume()
-      externRes.on('end', function() {
+      externRes.on('end', function () {
         tx.nameState.popPath('foobar')
         res.end()
       })
     })
   })
 
-  var end = generateServer(http, api, END_PORT, started, function(req, res) {
+  var end = generateServer(http, api, END_PORT, started, function (req, res) {
     t.ok(req.headers['x-newrelic-id'], 'end received x-newrelic-id from middle')
-    t.ok(
-      req.headers['x-newrelic-transaction'],
-      'end received x-newrelic-transaction from middle'
-    )
+    t.ok(req.headers['x-newrelic-transaction'], 'end received x-newrelic-transaction from middle')
     res.end()
   })
 
-  function runTest() {
-    http.get(generateUrl(START_PORT, 'start'), function(res) {
-      res.resume()
-      start.close()
-      middle.close()
-      end.close()
-    })
-    var txCount = 0
-
-    agent.on('transactionFinished', function(trans) {
-      var event = agent.transactionEventAggregator.getEvents().filter(function(evt) {
-        return evt[0]['nr.guid'] === trans.id
-      })[0]
-      transInspector[txCount](trans, event)
-      txCount += 1
-    })
-  }
   var transInspector = [
     function endTest(trans, event) {
       // Check the unscoped metrics
       var unscoped = trans.metrics.unscoped
       var caMetric = format('ClientApplication/%s/all', CROSS_PROCESS_ID)
       t.ok(unscoped[caMetric], 'end generated a ClientApplication metric')
-      t.equal(
-        Object.keys(unscoped).length, 8,
-        'end should only have expected unscoped metrics'
-      )
-      t.equal(
-        Object.keys(trans.metrics.scoped).length, 0,
-        'should have no scoped metrics'
-      )
+      t.equal(Object.keys(unscoped).length, 8, 'end should only have expected unscoped metrics')
+      t.equal(Object.keys(trans.metrics.scoped).length, 0, 'should have no scoped metrics')
 
       // Check the intrinsic attributes
       var trace = trans.trace
@@ -137,10 +104,7 @@ test('cross application tracing full integration', function(t) {
       t.ok(intrinsic['nr.guid'], 'end should have an nr.guid on event')
       t.ok(intrinsic['nr.tripId'], 'end should have an nr.tripId on event')
       t.ok(intrinsic['nr.pathHash'], 'end should have an nr.pathHash on event')
-      t.ok(
-        intrinsic['nr.referringPathHash'],
-        'end should have an nr.referringPathHash on event'
-      )
+      t.ok(intrinsic['nr.referringPathHash'], 'end should have an nr.referringPathHash on event')
       t.ok(
         intrinsic['nr.referringTransactionGuid'],
         'end should have an nr.referringTransactionGuid on event'
@@ -159,13 +123,12 @@ test('cross application tracing full integration', function(t) {
       t.ok(unscoped[eaMetric], 'middle generated a ExternalApp metric')
       var etMetric = format(
         'ExternalTransaction/localhost:%s/%s/%s',
-        END_PORT, CROSS_PROCESS_ID, TX_NAME
+        END_PORT,
+        CROSS_PROCESS_ID,
+        TX_NAME
       )
       t.ok(unscoped[etMetric], 'middle generated a ExternalTransaction metric')
-      t.equal(
-        Object.keys(unscoped).length, 14,
-        'middle should only have expected unscoped metrics'
-      )
+      t.equal(Object.keys(unscoped).length, 14, 'middle should only have expected unscoped metrics')
 
       // check the scoped metrics
       var scoped = trans.metrics.scoped
@@ -179,10 +142,7 @@ test('cross application tracing full integration', function(t) {
           'middle generated a ExternalTransaction scoped metric'
         )
         var scopedKeys = Object.keys(scoped['WebTransaction/Nodejs/GET//start/middle'])
-        t.equal(
-          scopedKeys.length, 1,
-          'middle should only be the inbound and outbound request.'
-        )
+        t.equal(scopedKeys.length, 1, 'middle should only be the inbound and outbound request.')
         t.deepEqual(scopedKeys, [etMetric], 'should have expected scoped metric name')
       }
 
@@ -203,7 +163,8 @@ test('cross application tracing full integration', function(t) {
       var externalSegment =
         trace.root.children[0].children[trace.root.children[0].children.length - 1]
       t.equal(
-        externalSegment.name.split('/')[0], 'ExternalTransaction',
+        externalSegment.name.split('/')[0],
+        'ExternalTransaction',
         'middle should have an ExternalTransaction segment'
       )
       t.ok(
@@ -216,10 +177,7 @@ test('cross application tracing full integration', function(t) {
       t.ok(intrinsic['nr.guid'], 'middle should have an nr.guid on event')
       t.ok(intrinsic['nr.tripId'], 'middle should have an nr.tripId on event')
       t.ok(intrinsic['nr.pathHash'], 'middle should have an nr.pathHash on event')
-      t.ok(
-        intrinsic['nr.referringPathHash'],
-        'middle should have an nr.referringPathHash on event'
-      )
+      t.ok(intrinsic['nr.referringPathHash'], 'middle should have an nr.referringPathHash on event')
       t.ok(
         intrinsic['nr.referringTransactionGuid'],
         'middle should have an nr.referringTransactionGuid on event'
@@ -232,37 +190,26 @@ test('cross application tracing full integration', function(t) {
     function startTest(trans, event) {
       // check the unscoped metrics
       var unscoped = trans.metrics.unscoped
-      var eaMetric = format(
-        'ExternalApp/localhost:%s/%s/all',
-        MIDDLE_PORT, CROSS_PROCESS_ID
-      )
+      var eaMetric = format('ExternalApp/localhost:%s/%s/all', MIDDLE_PORT, CROSS_PROCESS_ID)
       t.ok(unscoped[eaMetric], 'start generated a ExternalApp metric')
       var etMetric = format(
         'ExternalTransaction/localhost:%s/%s/WebTransaction/Nodejs/GET//start/middle',
-        MIDDLE_PORT, CROSS_PROCESS_ID
+        MIDDLE_PORT,
+        CROSS_PROCESS_ID
       )
       t.ok(unscoped[etMetric], 'start generated a ExternalTransaction metric')
-      t.equal(
-        Object.keys(unscoped).length, 13,
-        'start should only have expected unscoped metrics'
-      )
+      t.equal(Object.keys(unscoped).length, 13, 'start should only have expected unscoped metrics')
 
       // check the scoped metrics
       var scoped = trans.metrics.scoped
-      t.ok(
-        scoped['WebTransaction/Nodejs/GET//start'],
-        'start generated a scoped metric block'
-      )
+      t.ok(scoped['WebTransaction/Nodejs/GET//start'], 'start generated a scoped metric block')
       if (scoped['WebTransaction/Nodejs/GET//start']) {
         t.ok(
           scoped['WebTransaction/Nodejs/GET//start'][etMetric],
           'start generated a ExternalTransaction scoped metric'
         )
         var scopedKeys = Object.keys(scoped['WebTransaction/Nodejs/GET//start'])
-        t.equal(
-          scopedKeys.length, 1,
-          'start should only be the inbound and outbound request.'
-        )
+        t.equal(scopedKeys.length, 1, 'start should only be the inbound and outbound request.')
         t.deepEqual(scopedKeys, [etMetric], 'should have expected scoped metric name')
       }
 
@@ -283,7 +230,8 @@ test('cross application tracing full integration', function(t) {
       var externalSegment =
         trace.root.children[0].children[trace.root.children[0].children.length - 1]
       t.equal(
-        externalSegment.name.split('/')[0], 'ExternalTransaction',
+        externalSegment.name.split('/')[0],
+        'ExternalTransaction',
         'start should have an ExternalTransaction segment'
       )
       t.ok(
@@ -312,10 +260,27 @@ test('cross application tracing full integration', function(t) {
       t.end()
     }
   ]
+  function runTest() {
+    http.get(generateUrl(START_PORT, 'start'), function (res) {
+      res.resume()
+      start.close()
+      middle.close()
+      end.close()
+    })
+    var txCount = 0
+
+    agent.on('transactionFinished', function (trans) {
+      var event = agent.transactionEventAggregator.getEvents().filter(function (evt) {
+        return evt[0]['nr.guid'] === trans.id
+      })[0]
+      transInspector[txCount](trans, event)
+      txCount += 1
+    })
+  }
 })
 
 function generateServer(http, api, port, started, responseHandler) {
-  var server = http.createServer(function(req, res) {
+  var server = http.createServer(function (req, res) {
     var tx = api.agent.getTransaction()
     tx.nameState.appendPath(req.url)
     req.resume()

@@ -9,8 +9,7 @@ const tap = require('tap')
 const configurator = require('../../lib/config')
 const Agent = require('../../lib/agent')
 const CollectorAPI = require('../../lib/collector/api')
-const {getTestSecret} = require('../helpers/secrets')
-
+const { getTestSecret } = require('../helpers/secrets')
 
 const license = getTestSecret('TEST_LICENSE')
 tap.test('no proxy set should not use proxy agent', (t) => {
@@ -33,7 +32,6 @@ tap.test('no proxy set should not use proxy agent', (t) => {
   })
   const agent = new Agent(config)
   const api = new CollectorAPI(agent)
-
 
   api.connect((error, response) => {
     t.notOk(error, 'connected without error')

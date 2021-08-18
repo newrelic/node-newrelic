@@ -13,13 +13,13 @@ const read = require('fs').readFileSync
 const configurator = require('../../lib/config')
 const Agent = require('../../lib/agent')
 const CollectorAPI = require('../../lib/collector/api')
-const {getTestSecret} = require('../helpers/secrets')
+const { getTestSecret } = require('../helpers/secrets')
 const { SSL_HOST } = require('../lib/agent_helper')
 
 let port = 0
 const SSL_CONFIG = {
   key: read(join(__dirname, '../lib/test-key.key')),
-  cert: read(join(__dirname, '../lib/self-signed-test-certificate.crt')),
+  cert: read(join(__dirname, '../lib/self-signed-test-certificate.crt'))
 }
 const license = getTestSecret('TEST_LICENSE')
 
@@ -46,9 +46,7 @@ tap.test('setting proxy_port should use the proxy agent', (t) => {
       logging: {
         level: 'trace'
       },
-      certificates: [
-        read(join(__dirname, '..', 'lib', 'ca-certificate.crt'), 'utf8')
-      ]
+      certificates: [read(join(__dirname, '..', 'lib', 'ca-certificate.crt'), 'utf8')]
     })
     const agent = new Agent(config)
     const api = new CollectorAPI(agent)

@@ -5,24 +5,23 @@
 
 'use strict'
 
-const tap     = require('tap')
+const tap = require('tap')
 const request = require('request')
-const helper  = require('../../../lib/agent_helper')
+const helper = require('../../../lib/agent_helper')
 
 const MAX_PORT_ATTEMPTS = 5
 
-tap.test("restify shouldn't affect express query parsing middleware", function(t) {
+tap.test("restify shouldn't affect express query parsing middleware", function (t) {
   t.plan(2)
 
-  var agent   = helper.instrumentMockedAgent()
+  var agent = helper.instrumentMockedAgent()
   var express = require('express')
   var restify = require('restify') // eslint-disable-line no-unused-vars
-  var app     = express()
-  var server  = require('http').createServer(app)
+  var app = express()
+  var server = require('http').createServer(app)
 
-
-  app.get('/', function cb_get(req, res) {
-    t.deepEqual(req.query, {test: 'success'}, 'express req.query property is correct')
+  app.get('/', (req, res) => {
+    t.deepEqual(req.query, { test: 'success' }, 'express req.query property is correct')
     res.sendStatus(200)
   })
 
@@ -55,7 +54,7 @@ tap.test("restify shouldn't affect express query parsing middleware", function(t
   server.on('listening', () => {
     const port = server.address().port
 
-    request.get(`http://localhost:${port}/?test=success`, function(err, response) {
+    request.get(`http://localhost:${port}/?test=success`, function (err, response) {
       if (err) {
         return t.fail(err)
       }
@@ -64,7 +63,7 @@ tap.test("restify shouldn't affect express query parsing middleware", function(t
     })
   })
 
-  t.teardown(function cb_tearDown() {
+  t.teardown(() => {
     server.close()
     helper.unloadAgent(agent)
   })

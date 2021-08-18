@@ -6,17 +6,16 @@
 'use strict'
 
 var tap = require('tap')
-var request = require('request').defaults({json: true})
-var helper  = require('../../../lib/agent_helper')
+var request = require('request').defaults({ json: true })
+var helper = require('../../../lib/agent_helper')
 
-
-tap.test('Restify router', function(t) {
+tap.test('Restify router', function (t) {
   t.autoend()
 
   var agent = null
   var server = null
 
-  t.beforeEach(function() {
+  t.beforeEach(function () {
     agent = helper.instrumentMockedAgent({
       attributes: {
         enabled: true,
@@ -27,22 +26,22 @@ tap.test('Restify router', function(t) {
     server = require('restify').createServer()
   })
 
-  t.afterEach(function() {
+  t.afterEach(function () {
     return new Promise((resolve) => {
-      server.close(function() {
+      server.close(function () {
         helper.unloadAgent(agent)
         resolve()
       })
     })
   })
 
-  t.test('introspection', function(t) {
+  t.test('introspection', function (t) {
     t.plan(12)
 
     // need to capture attributes
     agent.config.attributes.enabled = true
 
-    agent.on('transactionFinished', function(transaction) {
+    agent.on('transactionFinished', function (transaction) {
       t.equal(
         transaction.name,
         'WebTransaction/Restify/GET//test/:id',
@@ -56,128 +55,133 @@ tap.test('Restify router', function(t) {
       var web = transaction.trace.root.children[0]
       t.ok(web, 'trace has web segment')
       t.equal(web.name, transaction.name, 'segment name and transaction name match')
+      t.equal(web.partialName, 'Restify/GET//test/:id', 'should have partial name for apdex')
       t.equal(
-        web.partialName,
-        'Restify/GET//test/:id',
-        'should have partial name for apdex'
-      )
-      t.equal(
-        web.getAttributes()['request.parameters.id'], '31337',
+        web.getAttributes()['request.parameters.id'],
+        '31337',
         'namer gets parameters out of route'
       )
     })
 
-    server.get('/test/:id', function(req, res, next) {
+    server.get('/test/:id', function (req, res, next) {
       t.ok(agent.getTransaction(), 'transaction should be available')
 
-      res.send({status : 'ok'})
+      res.send({ status: 'ok' })
       next()
     })
 
     _listenAndRequest(t, '/test/31337')
   })
 
-  t.test('trailing slash differentiates routes (without slash)', function(t) {
+  t.test('trailing slash differentiates routes (without slash)', function (t) {
     t.plan(3)
 
     server.get('/path1/', function first(req, res, next) {
       t.fail('should not enter this route')
-      res.send({status: 'ok'})
+      res.send({ status: 'ok' })
       next()
     })
     server.get('/path1', function first(req, res, next) {
-      t.ok(agent.getTransaction(),'should enter this route')
-      res.send({status: 'ok'})
+      t.ok(agent.getTransaction(), 'should enter this route')
+      res.send({ status: 'ok' })
       next()
     })
 
     _listenAndRequest(t, '/path1')
   })
 
-  t.test('trailing slash differentiates routes (with slash)', function(t) {
+  t.test('trailing slash differentiates routes (with slash)', function (t) {
     t.plan(3)
 
     server.get('/path1/', function first(req, res, next) {
       t.ok(agent.getTransaction(), 'should enter this route')
-      res.send({status: 'ok'})
+      res.send({ status: 'ok' })
       next()
     })
     server.get('/path1', function first(req, res, next) {
       t.fail('should not enter this route')
-      res.send({status: 'ok'})
+      res.send({ status: 'ok' })
       next()
     })
 
     _listenAndRequest(t, '/path1/')
   })
 
-  t.test('ignoreTrailingSlash option should ignore trailing slash', function(t) {
+  t.test('ignoreTrailingSlash option should ignore trailing slash', function (t) {
     t.plan(3)
 
-    server = require('restify').createServer({ignoreTrailingSlash: true})
+    server = require('restify').createServer({ ignoreTrailingSlash: true })
 
     server.get('/path1/', function first(req, res, next) {
       t.ok(agent.getTransaction(), 'should enter this route')
-      res.send({status: 'ok'})
+      res.send({ status: 'ok' })
       next()
     })
 
     _listenAndRequest(t, '/path1')
   })
 
-  t.test('next(true): terminates processing', function(t) {
+  t.test('next(true): terminates processing', function (t) {
     t.plan(4)
 
-    server.get('/test/:id', function first(req, res, next) {
-      t.ok(agent.getTransaction(), 'transaction should be available')
-      res.send({status: 'ok'})
-      next(true)
-    }, function second() {
-      t.fail('should not enter this final middleware')
-    })
+    server.get(
+      '/test/:id',
+      function first(req, res, next) {
+        t.ok(agent.getTransaction(), 'transaction should be available')
+        res.send({ status: 'ok' })
+        next(true)
+      },
+      function second() {
+        t.fail('should not enter this final middleware')
+      }
+    )
 
-    agent.on('transactionFinished', function(tx) {
+    agent.on('transactionFinished', function (tx) {
       t.equal(tx.name, 'WebTransaction/Restify/GET//test/:id', 'should have correct name')
     })
 
     _listenAndRequest(t, '/test/foobar')
   })
 
-  t.test('next(false): stop processing', function(t) {
+  t.test('next(false): stop processing', function (t) {
     t.plan(4)
 
-    server.get('/test/:id', function first(req, res, next) {
-      t.ok(agent.getTransaction(), 'transaction should be available')
-      res.send({status: 'ok'})
-      next(false)
-    }, function final(req, res, next) {
-      t.fail('should not enter this final middleware')
-      res.send({status: 'ok'})
-      next()
-    })
+    server.get(
+      '/test/:id',
+      function first(req, res, next) {
+        t.ok(agent.getTransaction(), 'transaction should be available')
+        res.send({ status: 'ok' })
+        next(false)
+      },
+      function final(req, res, next) {
+        t.fail('should not enter this final middleware')
+        res.send({ status: 'ok' })
+        next()
+      }
+    )
 
-    agent.on('transactionFinished', function(tx) {
+    agent.on('transactionFinished', function (tx) {
       t.equal(tx.name, 'WebTransaction/Restify/GET//test/:id', 'should have correct name')
     })
 
     _listenAndRequest(t, '/test/foobar')
   })
 
-  t.test('next("other_route"): jump processing', function(t) {
+  t.test('next("other_route"): jump processing', function (t) {
     t.plan(5)
 
-    server.get({name: 'first', path: '/test/:id'}, function final(req, res, next) {
+    server.get({ name: 'first', path: '/test/:id' }, function final(req, res, next) {
       t.ok(agent.getTransaction(), 'transaction should be available')
       next('second')
     })
 
-    server.get({name: 'second', path: '/other'}, function final(req, res, next) {
+    server.get({ name: 'second', path: '/other' }, function final(req, res, next) {
       t.ok(agent.getTransaction(), 'transaction should be available')
-      res.send({status: 'ok'})
+      res.send({ status: 'ok' })
       next()
     })
 
-    agent.on('transactionFinished', function(tx) {
+    agent.on('transactionFinished', function (tx) {
       t.equal(tx.name, 'WebTransaction/Restify/GET//other', 'should have correct name')
     })
 
@@ -185,12 +189,12 @@ tap.test('Restify router', function(t) {
   })
 
   function _listenAndRequest(t, route) {
-    server.listen(0, function() {
+    server.listen(0, function () {
       var port = server.address().port
       var url = 'http://localhost:' + port + route
-      request.get(url, function(error, res, body) {
+      request.get(url, function (error, res, body) {
         t.equal(res.statusCode, 200, 'nothing exploded')
-        t.deepEqual(body, {status : 'ok'}, 'got expected response')
+        t.deepEqual(body, { status: 'ok' }, 'got expected response')
       })
     })
   }

@@ -7,7 +7,6 @@
 
 const shared = require('./shared')
 
-
 const s = shared.makeSuite('Shim segments')
 const suite = s.suite
 const shim = s.shim
@@ -37,14 +36,14 @@ const testFunctions = {
   }
 }
 
-Object.keys(testFunctions).forEach(testName => {
+Object.keys(testFunctions).forEach((testName) => {
   suite.add({
     name: testName + ' (wrapped)',
-    before: function() {
+    before: function () {
       test = shared.getTest()
       test.func.testProp = 1
-      shim.wrapReturn(test, 'func', function(shim, fn, fnName, ret) {
-        return {ret: ret}
+      shim.wrapReturn(test, 'func', function (shim, fn, fnName, ret) {
+        return { ret: ret }
       })
       return test
     },
@@ -52,7 +51,7 @@ Object.keys(testFunctions).forEach(testName => {
   })
   suite.add({
     name: testName + ' (unwrapped)',
-    before: function() {
+    before: function () {
       test = shared.getTest()
       test.func.testProp = 1
       return test

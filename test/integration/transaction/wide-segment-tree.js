@@ -20,17 +20,17 @@ const distributedTracingConfig = {
   distributed_tracing: {
     enabled: true
   },
-  cross_application_tracer: {enabled: false},
+  cross_application_tracer: { enabled: false },
   account_id: '1337',
   primary_application_id: '7331',
   trusted_account_key: '1337',
-  encoding_key: 'some key',
+  encoding_key: 'some key'
 }
 
 // Trigger DT code paths on transaction end, as well
 const agent = helper.loadMockedAgent(distributedTracingConfig)
 
-helper.runInTransaction(agent, function(transaction) {
+helper.runInTransaction(agent, function (transaction) {
   const root = transaction.trace.root
 
   // Avoid special casing of root that can result in avoiding
@@ -47,4 +47,3 @@ helper.runInTransaction(agent, function(transaction) {
     helper.unloadAgent(agent)
   }
 })
-

@@ -25,12 +25,12 @@ test('Unhandled rejection', (t) => {
   })
 
   t.test('should not report it if there is another handler', (t) => {
-    process.once('unhandledRejection', function() {})
+    process.once('unhandledRejection', function () {})
 
-    helper.runInTransaction(agent, function(transaction) {
+    helper.runInTransaction(agent, function (transaction) {
       Promise.reject('test rejection')
 
-      setTimeout(function() {
+      setTimeout(function () {
         t.equal(transaction.exceptions.length, 0)
         t.end()
       }, 15)
@@ -40,19 +40,19 @@ test('Unhandled rejection', (t) => {
   t.test('should catch early throws with long chains', (t) => {
     let segment
 
-    helper.runInTransaction(agent, function(transaction) {
-      new Promise(function(resolve) {
+    helper.runInTransaction(agent, function (transaction) {
+      new Promise(function (resolve) {
         segment = agent.tracer.getSegment()
         setTimeout(resolve, 0)
       })
-        .then(function() {
+        .then(function () {
           throw new Error('some error')
         })
-        .then(function() {
-          throw new Error('We shouldn\'t be here!')
+        .then(function () {
+          throw new Error("We shouldn't be here!")
         })
-        .catch(function(err) {
-          process.nextTick(function() {
+        .catch(function (err) {
+          process.nextTick(function () {
             const currentSegment = agent.tracer.getSegment()
             const currentTransaction = agent.getTransaction()
 

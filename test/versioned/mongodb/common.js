@@ -15,14 +15,11 @@ var MONGO_SEGMENT_RE = /^Datastore\/.*?\/MongoDB/
 var TRANSACTION_NAME = 'mongo test'
 var DB_NAME = 'integration'
 
-
 exports.MONGO_SEGMENT_RE = MONGO_SEGMENT_RE
 exports.TRANSACTION_NAME = TRANSACTION_NAME
 exports.DB_NAME = DB_NAME
 
-exports.connect = semver.satisfies(mongoPackage.version, '<3')
-  ? connectV2
-  : connectV3
+exports.connect = semver.satisfies(mongoPackage.version, '<3') ? connectV2 : connectV3
 
 exports.checkMetrics = checkMetrics
 exports.close = close
@@ -46,7 +43,7 @@ function connectV2(mongodb, path) {
 
     var db = new mongodb.Db(DB_NAME, server)
 
-    db.open(function(err) {
+    db.open(function (err) {
       if (err) {
         reject(err)
       }
@@ -63,7 +60,7 @@ function connectV3(mongodb, host) {
     } else {
       host = params.mongodb_host + ':' + params.mongodb_port
     }
-    mongodb.MongoClient.connect('mongodb://' + host, function(err, client) {
+    mongodb.MongoClient.connect('mongodb://' + host, function (err, client) {
       if (err) {
         reject(err)
       }
@@ -142,9 +139,10 @@ function checkMetrics(t, agent, host, port, metrics) {
     )
   }
 
-  var expectedUnscopedCount = 5 + (2 * metrics.length)
+  var expectedUnscopedCount = 5 + 2 * metrics.length
   t.equal(
-    unscopedDatastoreNames.length, expectedUnscopedCount,
+    unscopedDatastoreNames.length,
+    expectedUnscopedCount,
     'should have ' + expectedUnscopedCount + ' unscoped metrics'
   )
   var expectedUnscopedMetrics = [
@@ -154,7 +152,7 @@ function checkMetrics(t, agent, host, port, metrics) {
     'Datastore/MongoDB/allWeb',
     'Datastore/instance/MongoDB/' + host + '/' + port
   ]
-  expectedUnscopedMetrics.forEach(function(metric) {
+  expectedUnscopedMetrics.forEach(function (metric) {
     if (t.ok(unscopedMetrics[metric], 'should have unscoped metric ' + metric)) {
       t.equal(unscopedMetrics[metric].callCount, total, 'should have correct call count')
     }

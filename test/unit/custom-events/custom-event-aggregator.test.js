@@ -10,8 +10,7 @@
 require('tap').mochaGlobals()
 
 const expect = require('chai').expect
-const CustomEventAggregator =
-  require('../../../lib/custom-events/custom-event-aggregator')
+const CustomEventAggregator = require('../../../lib/custom-events/custom-event-aggregator')
 const Metrics = require('../../../lib/metrics')
 
 const RUN_ID = 1337
@@ -22,10 +21,14 @@ describe('Custom Event Aggregator', () => {
   let eventAggregator
 
   beforeEach(() => {
-    eventAggregator = new CustomEventAggregator({
-      runId: RUN_ID,
-      limit: LIMIT
-    }, {}, new Metrics(5, {}, {}))
+    eventAggregator = new CustomEventAggregator(
+      {
+        runId: RUN_ID,
+        limit: LIMIT
+      },
+      {},
+      new Metrics(5, {}, {})
+    )
   })
 
   afterEach(() => {
@@ -39,7 +42,7 @@ describe('Custom Event Aggregator', () => {
   })
 
   it('toPayloadSync() should return json format of data', () => {
-    const rawEvent = [{type: 'Custom'}, {foo: 'bar'}]
+    const rawEvent = [{ type: 'Custom' }, { foo: 'bar' }]
 
     eventAggregator.add(rawEvent)
 

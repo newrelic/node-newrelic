@@ -54,10 +54,10 @@ tap.test('ioredis instrumentation', (t) => {
     redisClient && redisClient.disconnect()
   })
 
-  t.test('creates expected metrics', {timeout: 5000}, (t) => {
+  t.test('creates expected metrics', { timeout: 5000 }, (t) => {
     t.plan(1)
 
-    agent.on('transactionFinished', function(tx) {
+    agent.on('transactionFinished', function (tx) {
       const expected = [
         [{ name: 'Datastore/all' }],
         [{ name: 'Datastore/Redis/all' }],
@@ -71,16 +71,19 @@ tap.test('ioredis instrumentation', (t) => {
     })
 
     helper.runInTransaction(agent, (transaction) => {
-      redisClient.set('testkey', 'testvalue').then(function() {
-        transaction.end()
-      }, t.error).catch(t.error)
+      redisClient
+        .set('testkey', 'testvalue')
+        .then(function () {
+          transaction.end()
+        }, t.error)
+        .catch(t.error)
     })
   })
 
-  t.test('creates expected segments', {timeout: 5000}, (t) => {
+  t.test('creates expected segments', { timeout: 5000 }, (t) => {
     t.plan(5)
 
-    agent.on('transactionFinished', function(tx) {
+    agent.on('transactionFinished', function (tx) {
       const root = tx.trace.root
       t.equals(root.children.length, 2, 'root has two children')
 
@@ -97,7 +100,8 @@ tap.test('ioredis instrumentation', (t) => {
     })
 
     helper.runInTransaction(agent, (transaction) => {
-      redisClient.set('testkey', 'testvalue')
+      redisClient
+        .set('testkey', 'testvalue')
         .then(() => redisClient.get('testkey'))
         .then((value) => {
           t.equal(value, 'testvalue', 'should have expected value')
@@ -111,13 +115,11 @@ tap.test('ioredis instrumentation', (t) => {
   t.test('does not crash when ending out of transaction', (t) => {
     helper.runInTransaction(agent, (transaction) => {
       t.ok(agent.getTransaction(), 'transaction should be in progress')
-      redisClient.set('testkey', 'testvalue')
-        .then(function() {
-          t.notOk(agent.getTransaction(), 'transaction should have ended')
-          t.end()
-        })
+      redisClient.set('testkey', 'testvalue').then(function () {
+        t.notOk(agent.getTransaction(), 'transaction should have ended')
+        t.end()
+      })
       transaction.end()
     })
   })
 })
-

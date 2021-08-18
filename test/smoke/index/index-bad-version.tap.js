@@ -6,9 +6,8 @@
 'use strict'
 
 const tap = require('tap')
-const {getTestSecret} = require('../../helpers/secrets')
+const { getTestSecret } = require('../../helpers/secrets')
 const StubApi = require('../../../stub_api')
-
 
 const license = getTestSecret('TEST_LICENSE')
 const VERSIONS = ['garbage', '4.0.0']
@@ -26,9 +25,9 @@ tap.test('load agent with bad versions should load stub agent', (t) => {
 
   VERSIONS.forEach((version) => {
     t.test(`agent version: ${version}`, (t) => {
-      t.doesNotThrow(function() {
+      t.doesNotThrow(function () {
         var _version = process.version
-        Object.defineProperty(process, 'version', {value: version, writable: true})
+        Object.defineProperty(process, 'version', { value: version, writable: true })
         t.equal(process.version, version, 'should have set bad version')
 
         var api = require('../../../index.js')

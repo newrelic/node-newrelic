@@ -11,21 +11,17 @@ var asyncHooks = require('async_hooks')
 function testSegments(t, segmentMap) {
   global.gc()
   // Give the gc some time to work.
-  setTimeout(function() {
+  setTimeout(function () {
     t.notOk(segmentMap.size, 'segments should be cleared after gc')
     t.end()
   }, 10)
 }
 
-test('await', function(t) {
+test('await', function (t) {
   var agent = setupAgent(t)
-  helper.runInTransaction(agent, async function(txn) {
+  helper.runInTransaction(agent, async function (txn) {
     var transaction = agent.getTransaction()
-    t.equal(
-      transaction && transaction.id,
-      txn.id,
-      'should start in a transaction'
-    )
+    t.equal(transaction && transaction.id, txn.id, 'should start in a transaction')
 
     await Promise.resolve("i'll be back")
 
@@ -50,7 +46,7 @@ test('await', function(t) {
   })
 })
 
-test("the agent's async hook", function(t) {
+test("the agent's async hook", function (t) {
   class TestResource extends asyncHooks.AsyncResource {
     constructor(id) {
       super('PROMISE', id)
@@ -70,11 +66,11 @@ test("the agent's async hook", function(t) {
   }
 
   t.autoend()
-  t.test('does not crash on multiple resolve calls', function(t) {
+  t.test('does not crash on multiple resolve calls', function (t) {
     var agent = setupAgent(t)
-    helper.runInTransaction(agent, function() {
-      t.doesNotThrow(function() {
-        new Promise(function(res) {
+    helper.runInTransaction(agent, function () {
+      t.doesNotThrow(function () {
+        new Promise(function (res) {
           res()
           res()
         }).then(t.end)
@@ -82,37 +78,33 @@ test("the agent's async hook", function(t) {
     })
   })
 
-  t.test(
-    'does not restore a segment for a resource created outside a transaction',
-    function(t) {
-      var agent = setupAgent(t)
-      var res = new TestResource(1)
-      helper.runInTransaction(agent, function() {
-        var root = agent.tracer.segment
-        var segmentMap =
-          require('../../../lib/instrumentation/core/async_hooks').segmentMap
-
-        t.equal(segmentMap.size, 0, 'no segments should be tracked')
-        res.doStuff(function() {
-          t.ok(agent.tracer.segment, 'should be in a transaction')
-          t.equal(
-            agent.tracer.segment.name,
-            root.name,
-            'loses transaction state for resources created outside of a transaction'
-          )
-          t.end()
-        })
-      })
-    }
-  )
-
-  t.test('restores context in inactive transactions', function(t) {
+  t.test('does not restore a segment for a resource created outside a transaction', function (t) {
     var agent = setupAgent(t)
-    helper.runInTransaction(agent, function(txn) {
+    var res = new TestResource(1)
+    helper.runInTransaction(agent, function () {
+      var root = agent.tracer.segment
+      var segmentMap = require('../../../lib/instrumentation/core/async_hooks').segmentMap
+
+      t.equal(segmentMap.size, 0, 'no segments should be tracked')
+      res.doStuff(function () {
+        t.ok(agent.tracer.segment, 'should be in a transaction')
+        t.equal(
+          agent.tracer.segment.name,
+          root.name,
+          'loses transaction state for resources created outside of a transaction'
+        )
+        t.end()
+      })
+    })
+  })
+
+  t.test('restores context in inactive transactions', function (t) {
+    var agent = setupAgent(t)
+    helper.runInTransaction(agent, function (txn) {
       var res = new TestResource(1)
       var root = agent.tracer.segment
       txn.end()
-      res.doStuff(function() {
+      res.doStuff(function () {
         t.equal(
           agent.tracer.segment,
           root,
@@ -123,7 +115,7 @@ test("the agent's async hook", function(t) {
     })
   })
 
-  t.test('parent promises persist perspective to problematic progeny', function(t) {
+  t.test('parent promises persist perspective to problematic progeny', function (t) {
     var agent = setupAgent(t)
     var tasks = []
     var intervalId = setInterval(() => {
@@ -136,7 +128,7 @@ test("the agent's async hook", function(t) {
       clearInterval(intervalId)
     })
 
-    helper.runInTransaction(agent, function(txn) {
+    helper.runInTransaction(agent, function (txn) {
       t.ok(txn, 'transaction should not be null')
 
       var p = Promise.resolve()
@@ -151,7 +143,7 @@ test("the agent's async hook", function(t) {
     })
   })
 
-  t.test('maintains transaction context', function(t) {
+  t.test('maintains transaction context', function (t) {
     var agent = setupAgent(t)
     var tasks = []
     var intervalId = setInterval(() => {
@@ -164,25 +156,24 @@ test("the agent's async hook", function(t) {
       clearInterval(intervalId)
     })
 
-    helper.runInTransaction(agent, function(txn) {
+    helper.runInTransaction(agent, function (txn) {
       t.ok(txn, 'transaction should not be null')
       var segment = txn.trace.root
       agent.tracer.bindFunction(one, segment)()
 
-      var wrapperTwo = agent.tracer.bindFunction(function() {
+      var wrapperTwo = agent.tracer.bindFunction(function () {
         return two()
       }, segment)
-      var wrapperThree = agent.tracer.bindFunction(function() {
+      var wrapperThree = agent.tracer.bindFunction(function () {
         return three()
       }, segment)
 
       function one() {
-        return new Promise(executor)
-          .then(() => {
-            var tx = agent.getTransaction()
-            t.equal(tx ? tx.id : null, txn.id)
-            t.end()
-          })
+        return new Promise(executor).then(() => {
+          var tx = agent.getTransaction()
+          t.equal(tx ? tx.id : null, txn.id)
+          t.end()
+        })
       }
 
       function executor(resolve) {
@@ -211,10 +202,10 @@ test("the agent's async hook", function(t) {
     })
   })
 
-  t.test('stops propagation on transaction end', function(t) {
+  t.test('stops propagation on transaction end', function (t) {
     const agent = setupAgent(t)
 
-    helper.runInTransaction(agent, function(txn) {
+    helper.runInTransaction(agent, function (txn) {
       t.ok(txn, 'transaction should not be null')
       const segment = txn.trace.root
       agent.tracer.bindFunction(one, segment)()
@@ -235,7 +226,7 @@ test("the agent's async hook", function(t) {
     })
   })
 
-  t.test('loses transaction context', function(t) {
+  t.test('loses transaction context', function (t) {
     var agent = setupAgent(t)
     var tasks = []
     var intervalId = setInterval(() => {
@@ -248,22 +239,21 @@ test("the agent's async hook", function(t) {
       clearInterval(intervalId)
     })
 
-    helper.runInTransaction(agent, function(txn) {
+    helper.runInTransaction(agent, function (txn) {
       t.ok(txn, 'transaction should not be null')
       var segment = txn.trace.root
       agent.tracer.bindFunction(one, segment)()
 
-      var wrapperTwo = agent.tracer.bindFunction(function() {
+      var wrapperTwo = agent.tracer.bindFunction(function () {
         return two()
       }, segment)
 
       function one() {
-        return new Promise(executor)
-          .then(() => {
-            var tx = agent.getTransaction()
-            t.equal(tx ? tx.id : null, txn.id)
-            t.end()
-          })
+        return new Promise(executor).then(() => {
+          var tx = agent.getTransaction()
+          t.equal(tx ? tx.id : null, txn.id)
+          t.end()
+        })
       }
 
       function executor(resolve) {
@@ -289,10 +279,10 @@ test("the agent's async hook", function(t) {
     })
   })
 
-  t.test('handles multientry callbacks correctly', function(t) {
+  t.test('handles multientry callbacks correctly', function (t) {
     var agent = setupAgent(t)
     var segmentMap = require('../../../lib/instrumentation/core/async_hooks').segmentMap
-    helper.runInTransaction(agent, function() {
+    helper.runInTransaction(agent, function () {
       var root = agent.tracer.segment
 
       var aSeg = agent.tracer.createSegment('A')
@@ -329,11 +319,7 @@ test("the agent's async hook", function(t) {
           'runInAsyncScope should restore the segment active when a callback was called'
         )
       })
-      t.equal(
-        agent.tracer.segment.name,
-        root.name,
-        'root should be restored after we are finished'
-      )
+      t.equal(agent.tracer.segment.name, root.name, 'root should be restored after we are finished')
       resA.doStuff(() => {
         t.equal(
           agent.tracer.segment.name,
@@ -359,7 +345,7 @@ function checkCallMetrics(t, testMetrics) {
 
   if (global.gc) {
     global.gc()
-    return setTimeout(function() {
+    return setTimeout(function () {
       t.equal(
         testMetrics.initCalled - TAP_COUNT,
         testMetrics.destroyCalled,
@@ -371,7 +357,7 @@ function checkCallMetrics(t, testMetrics) {
   t.end()
 }
 
-test('promise hooks', function(t) {
+test('promise hooks', function (t) {
   t.autoend()
   var testMetrics = {
     initCalled: 0,
@@ -406,10 +392,10 @@ test('promise hooks', function(t) {
   })
   hook.enable()
 
-  t.test('are only called once during the lifetime of a promise', function(t) {
-    new Promise(function(res) {
+  t.test('are only called once during the lifetime of a promise', function (t) {
+    new Promise(function (res) {
       setTimeout(res, 10)
-    }).then(function() {
+    }).then(function () {
       setImmediate(checkCallMetrics, t, testMetrics)
     })
   })
@@ -417,9 +403,9 @@ test('promise hooks', function(t) {
 
 function setupAgent(t) {
   var agent = helper.instrumentMockedAgent({
-    feature_flag: {await_support: true}
+    feature_flag: { await_support: true }
   })
-  t.teardown(function() {
+  t.teardown(function () {
     helper.unloadAgent(agent)
   })
 

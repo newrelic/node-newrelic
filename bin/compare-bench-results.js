@@ -18,109 +18,119 @@ if (process.argv.length !== 4) {
   process.exit(1)
 }
 
-async.map(process.argv.slice(2), (file, cb) => {
-  fs.readFile(file, {encoding: 'utf8'}, (err, data) => {
+async.map(
+  process.argv.slice(2),
+  (file, cb) => {
+    fs.readFile(file, { encoding: 'utf8' }, (err, data) => {
+      if (err) {
+        return cb(err)
+      }
+
+      let parsed = null
+      try {
+        parsed = JSON.parse(data)
+      } catch (parseError) {
+        return cb(parseError)
+      }
+
+      return cb(null, parsed)
+    })
+  },
+  (err, resultFiles) => {
     if (err) {
-      return cb(err)
+      console.log('Failed to load files.')
+      console.log(err)
+      process.exit(2)
     }
 
-    let parsed = null
-    try {
-      parsed = JSON.parse(data)
-    } catch (parseError) {
-      return cb(parseError)
-    }
+    const baseline = resultFiles[0]
+    const downstream = resultFiles[1]
 
-    cb(null, parsed)
-  })
-}, (err, resultFiles) => {
-  if (err) {
-    console.log('Failed to load files.')
-    console.log(err)
-    process.exit(2)
-  }
+    const baselineFiles = Object.keys(baseline)
+    const downstreamFiles = Object.keys(downstream)
+    const warnings = []
 
-  const baseline = resultFiles[0]
-  const downstream = resultFiles[1]
-
-  const baselineFiles = Object.keys(baseline)
-  const downstreamFiles = Object.keys(downstream)
-  const warnings = []
-
-  diffArrays(baselineFiles, downstreamFiles).forEach((file) => {
-    warnings.push(`- **WARNING**: File "${file}" in base but not branch.`)
-  })
-  diffArrays(downstreamFiles, baselineFiles).forEach((file) => {
-    warnings.push(`- **NOTE**: File "${file}" in branch but not base.`)
-  })
-
-  let allPassing = true
-  const details = baselineFiles.sort().map((testFile) => {
-    const base = baseline[testFile]
-    const down = downstream[testFile]
-
-    if (!down) {
-      return [
-        '<details>',
-        `<summary>${testFile} file missing from branch</summary>`,
-        '',
-        '</details>'
-      ].join('\n')
-    }
-
-    let filePassing = true
-    const baseTests = Object.keys(base)
-    const downTests = Object.keys(down)
-
-    diffArrays(baseTests, downTests).forEach((test) => {
-      warnings.push(`- **WARNING**: Test "${test}" in base but not branch.`)
+    diffArrays(baselineFiles, downstreamFiles).forEach((file) => {
+      warnings.push(`- **WARNING**: File "${file}" in base but not branch.`)
     })
-    diffArrays(downTests, baseTests).forEach((test) => {
-      warnings.push(`- **NOTE**: Test "${test}" in branch but not base.`)
+    diffArrays(downstreamFiles, baselineFiles).forEach((file) => {
+      warnings.push(`- **NOTE**: File "${file}" in branch but not base.`)
     })
 
-    const results = baseTests.sort().map((test) => {
-      const passes = compareResults(base[test], down[test])
-      filePassing = filePassing && passes
+    let allPassing = true
+    const details = baselineFiles
+      .sort()
+      .map((testFile) => {
+        const base = baseline[testFile]
+        const down = downstream[testFile]
 
-      return [
-        '<details>',
-        `<summary>${test}: ${passMark(passes)}</summary>`,
-        '',
-        formatResults(base[test], down[test]),
-        '</details>',
-        ''
-      ].join('\n')
-    }).join('\n')
-    allPassing = allPassing && filePassing
+        if (!down) {
+          return [
+            '<details>',
+            `<summary>${testFile} file missing from branch</summary>`,
+            '',
+            '</details>'
+          ].join('\n')
+        }
 
-    return [
-      '<details>',
-      `<summary>${testFile}: ${passMark(filePassing)}</summary>`,
-      '',
-      results,
-      '',
-      '-----------------------------------------------------------------------',
-      '</details>'
-    ].join('\n')
-  }).join('\n\n')
+        let filePassing = true
+        const baseTests = Object.keys(base)
+        const downTests = Object.keys(down)
 
-  if (warnings.length) {
-    console.log('### WARNINGS')
-    console.log(warnings.join('\n'))
+        diffArrays(baseTests, downTests).forEach((test) => {
+          warnings.push(`- **WARNING**: Test "${test}" in base but not branch.`)
+        })
+        diffArrays(downTests, baseTests).forEach((test) => {
+          warnings.push(`- **NOTE**: Test "${test}" in branch but not base.`)
+        })
+
+        const results = baseTests
+          .sort()
+          .map((test) => {
+            const passes = compareResults(base[test], down[test])
+            filePassing = filePassing && passes
+
+            return [
+              '<details>',
+              `<summary>${test}: ${passMark(passes)}</summary>`,
+              '',
+              formatResults(base[test], down[test]),
+              '</details>',
+              ''
+            ].join('\n')
+          })
+          .join('\n')
+        allPassing = allPassing && filePassing
+
+        return [
+          '<details>',
+          `<summary>${testFile}: ${passMark(filePassing)}</summary>`,
+          '',
+          results,
+          '',
+          '-----------------------------------------------------------------------',
+          '</details>'
+        ].join('\n')
+      })
+      .join('\n\n')
+
+    if (warnings.length) {
+      console.log('### WARNINGS')
+      console.log(warnings.join('\n'))
+      console.log('')
+    }
+
+    console.log(`### Benchmark Results: ${passMark(allPassing)}`)
     console.log('')
-  }
+    console.log('### Details')
+    console.log('_Lower is better._')
+    console.log(details)
 
-  console.log(`### Benchmark Results: ${passMark(allPassing)}`)
-  console.log('')
-  console.log('### Details')
-  console.log('_Lower is better._')
-  console.log(details)
-
-  if (!allPassing) {
-    process.exitCode = -1
+    if (!allPassing) {
+      process.exitCode = -1
+    }
   }
-})
+)
 
 function diffArrays(a, b) {
   return a.filter((elem) => !b.includes(elem))
@@ -157,7 +167,7 @@ function formatResults(base, down) {
     const baseValue = base[field]
     const downValue = down[field]
     const diffValue = downValue - baseValue
-    const diffPercent = (100 * diffValue / baseValue).toFixed(2)
+    const diffPercent = ((100 * diffValue) / baseValue).toFixed(2)
     const prefix = diffValue >= 0 ? '+' : ''
 
     return (

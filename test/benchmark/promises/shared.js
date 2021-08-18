@@ -8,7 +8,7 @@
 var benchmark = require('../../lib/benchmark')
 
 function makeSuite(name) {
-  return benchmark.createBenchmark({async: true, name: name, delay: 0.01})
+  return benchmark.createBenchmark({ async: true, name: name, delay: 0.01 })
 }
 
 var NUM_PROMISES = 300
@@ -37,7 +37,7 @@ var tests = [
     return function runTest(agent, cb) {
       var prom = Promise.resolve()
       for (var i = 0; i < NUM_PROMISES; ++i) {
-        prom = prom.then(function() {})
+        prom = prom.then(function () {})
       }
       prom.then(cb)
     }
@@ -47,7 +47,7 @@ var tests = [
     return function runTest(agent, cb) {
       var prom = Promise.resolve()
       for (var i = 0; i < NUM_PROMISES / 2; ++i) {
-        prom = prom.then(function() {}).catch(function() {})
+        prom = prom.then(function () {}).catch(function () {})
       }
       prom.then(cb)
     }
@@ -57,9 +57,9 @@ var tests = [
     return function runTest(agent, cb) {
       var prom = Promise.reject()
       for (var i = 0; i < NUM_PROMISES - 1; ++i) {
-        prom = prom.then(function() {})
+        prom = prom.then(function () {})
       }
-      prom.catch(function() {}).then(cb)
+      prom.catch(function () {}).then(cb)
     }
   },
 
@@ -67,7 +67,9 @@ var tests = [
     return function runTest(agent, cb) {
       for (var i = 0; i < NUM_PROMISES; ++i) {
         /* eslint-disable no-new */
-        new Promise(function(res) {res()})
+        new Promise(function (res) {
+          res()
+        })
       }
       cb()
     }
@@ -78,10 +80,12 @@ var tests = [
       var promises = []
       for (var i = 0; i < NUM_PROMISES / 2; ++i) {
         promises.push(
-          new Promise(function(resolve) {
-            resolve(new Promise(function(res) {
-              setImmediate(res)
-            }))
+          new Promise(function (resolve) {
+            resolve(
+              new Promise(function (res) {
+                setImmediate(res)
+              })
+            )
           })
         )
       }
@@ -93,8 +97,8 @@ var tests = [
     return function runTest(agent, cb) {
       var prom = Promise.resolve()
       for (var i = 0; i < NUM_PROMISES / 2; ++i) {
-        var prom = prom.then(function() {
-          return new Promise(function(res) {
+        var prom = prom.then(function () {
+          return new Promise(function (res) {
             setImmediate(res)
           })
         })
@@ -105,7 +109,9 @@ var tests = [
 
   function promiseConstructorThrow(Promise) {
     return function runTest(agent, cb) {
-      (new Promise(function() {throw new Error('Whoops!')})).catch(() => {})
+      new Promise(function () {
+        throw new Error('Whoops!')
+      }).catch(() => {})
       cb()
     }
   }

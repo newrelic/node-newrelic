@@ -6,7 +6,7 @@
 'use strict'
 
 const tap = require('tap')
-const parse  = require('../../../lib/collector/key-parser').parseKey
+const parse = require('../../../lib/collector/key-parser').parseKey
 
 tap.test('collector license key parser', (t) => {
   t.test('should return the region prefix when a region is detected', (t) => {

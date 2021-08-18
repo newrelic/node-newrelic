@@ -24,10 +24,14 @@ describe('SpanAggregator', () => {
   let agent = null
 
   beforeEach(() => {
-    spanEventAggregator = new SpanEventAggregator({
-      runId: RUN_ID,
-      limit: LIMIT
-    }, {}, new Metrics(5, {}, {}))
+    spanEventAggregator = new SpanEventAggregator(
+      {
+        runId: RUN_ID,
+        limit: LIMIT
+      },
+      {},
+      new Metrics(5, {}, {})
+    )
     agent = helper.instrumentMockedAgent({
       distributed_tracing: {
         enabled: true
@@ -101,11 +105,15 @@ describe('SpanAggregator', () => {
 
     const metrics = new Metrics(5, {}, {})
 
-    spanEventAggregator = new SpanEventAggregator({
-      runId: RUN_ID,
-      limit: 1,
-      metricNames: METRIC_NAMES
-    }, {}, metrics)
+    spanEventAggregator = new SpanEventAggregator(
+      {
+        runId: RUN_ID,
+        limit: 1,
+        metricNames: METRIC_NAMES
+      },
+      {},
+      metrics
+    )
 
     helper.runInTransaction(agent, (tx) => {
       tx.priority = 42
@@ -188,10 +196,14 @@ describe('SpanAggregator', () => {
 
     sinon.stub(logger, 'child').callsFake(() => fakeLogger)
 
-    const spanEventAgg = new SpanEventAggregator({
-      runId: RUN_ID,
-      limit: LIMIT
-    }, {}, new Metrics(5, {}, {}))
+    const spanEventAgg = new SpanEventAggregator(
+      {
+        runId: RUN_ID,
+        limit: LIMIT
+      },
+      {},
+      new Metrics(5, {}, {})
+    )
 
     spanEventAgg.send()
     logger.child.restore()
@@ -209,10 +221,14 @@ describe('SpanAggregator', () => {
 
     sinon.stub(logger, 'child').callsFake(() => fakeLogger)
 
-    const spanEventAgg = new SpanEventAggregator({
-      runId: RUN_ID,
-      limit: LIMIT
-    }, {}, new Metrics(5, {}, {}))
+    const spanEventAgg = new SpanEventAggregator(
+      {
+        runId: RUN_ID,
+        limit: LIMIT
+      },
+      {},
+      new Metrics(5, {}, {})
+    )
 
     spanEventAgg.send()
     logger.child.restore()

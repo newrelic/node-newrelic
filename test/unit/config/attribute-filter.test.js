@@ -8,7 +8,7 @@
 const tap = require('tap')
 
 const AttributeFilter = require('../../../lib/config/attribute-filter')
-const {makeAttributeFilterConfig} = require('../../lib/agent_helper')
+const { makeAttributeFilterConfig } = require('../../lib/agent_helper')
 
 const DESTS = AttributeFilter.DESTINATIONS
 
@@ -16,11 +16,11 @@ tap.test('#constructor', (t) => {
   t.autoend()
 
   t.test('should require a config object', (t) => {
-    t.throws(function() {
+    t.throws(function () {
       return new AttributeFilter()
     })
 
-    t.doesNotThrow(function() {
+    t.doesNotThrow(function () {
       return new AttributeFilter(makeAttributeFilterConfig())
     })
 
@@ -32,21 +32,23 @@ tap.test('#filter', (t) => {
   t.autoend()
 
   t.test('should respect the rules', (t) => {
-    const filter = new AttributeFilter(makeAttributeFilterConfig({
-      attributes: {
-        enabled: true,
-        include_enabled: true,
-        include: ['a'],
-        exclude: ['a*']
-      },
-      transaction_events: {
+    const filter = new AttributeFilter(
+      makeAttributeFilterConfig({
         attributes: {
           enabled: true,
-          include: ['ab', 'bcd*', 'b*'],
-          exclude: ['bc*']
+          include_enabled: true,
+          include: ['a'],
+          exclude: ['a*']
+        },
+        transaction_events: {
+          attributes: {
+            enabled: true,
+            include: ['ab', 'bcd*', 'b*'],
+            exclude: ['bc*']
+          }
         }
-      }
-    }))
+      })
+    )
 
     makeFilterAssertions(t, filter)
 
@@ -54,21 +56,23 @@ tap.test('#filter', (t) => {
   })
 
   t.test('should not add include rules when they are disabled', (t) => {
-    const filter = new AttributeFilter(makeAttributeFilterConfig({
-      attributes: {
-        enabled: true,
-        include_enabled: false,
-        include: ['a'],
-        exclude: ['ab']
-      },
-      transaction_events: {
+    const filter = new AttributeFilter(
+      makeAttributeFilterConfig({
         attributes: {
           enabled: true,
-          include: ['ab', 'bcd*', 'b*'],
-          exclude: ['bc*']
+          include_enabled: false,
+          include: ['a'],
+          exclude: ['ab']
+        },
+        transaction_events: {
+          attributes: {
+            enabled: true,
+            include: ['ab', 'bcd*', 'b*'],
+            exclude: ['bc*']
+          }
         }
-      }
-    }))
+      })
+    )
 
     t.equal(filter.filterTransaction(DESTS.TRANS_COMMON, 'a'), DESTS.TRANS_COMMON)
     t.equal(filter.filterTransaction(DESTS.TRANS_COMMON, 'ab'), DESTS.NONE)
@@ -80,35 +84,39 @@ tap.test('#filter', (t) => {
   })
 
   t.test('should not matter the order of the rules', (t) => {
-    const filter = new AttributeFilter(makeAttributeFilterConfig({
-      attributes: {
-        enabled: true,
-        include_enabled: true,
-        include: ['a'],
-        exclude: ['a*']
-      },
-      transaction_events: {
+    const filter = new AttributeFilter(
+      makeAttributeFilterConfig({
         attributes: {
           enabled: true,
-          include: ['b*', 'bcd*', 'ab'],
-          exclude: ['bc*']
+          include_enabled: true,
+          include: ['a'],
+          exclude: ['a*']
+        },
+        transaction_events: {
+          attributes: {
+            enabled: true,
+            include: ['b*', 'bcd*', 'ab'],
+            exclude: ['bc*']
+          }
         }
-      }
-    }))
+      })
+    )
 
     makeFilterAssertions(t, filter)
     t.end()
   })
 
   t.test('should match `*` to anything', (t) => {
-    const filter = new AttributeFilter(makeAttributeFilterConfig({
-      attributes: {
-        enabled: true,
-        include_enabled: true,
-        include: ['a*'],
-        exclude: ['*']
-      }
-    }))
+    const filter = new AttributeFilter(
+      makeAttributeFilterConfig({
+        attributes: {
+          enabled: true,
+          include_enabled: true,
+          include: ['a*'],
+          exclude: ['*']
+        }
+      })
+    )
 
     t.equal(filter.filterTransaction(DESTS.TRANS_COMMON, 'a'), DESTS.TRANS_COMMON)
     t.equal(filter.filterTransaction(DESTS.TRANS_COMMON, 'ab'), DESTS.TRANS_COMMON)
@@ -120,14 +128,16 @@ tap.test('#filter', (t) => {
   })
 
   t.test('should parse dot rules correctly', (t) => {
-    const filter = new AttributeFilter(makeAttributeFilterConfig({
-      attributes: {
-        enabled: true,
-        include_enabled: true,
-        include: ['a.c'],
-        exclude: ['ab*']
-      }
-    }))
+    const filter = new AttributeFilter(
+      makeAttributeFilterConfig({
+        attributes: {
+          enabled: true,
+          include_enabled: true,
+          include: ['a.c'],
+          exclude: ['ab*']
+        }
+      })
+    )
 
     t.equal(filter.filterTransaction(DESTS.TRANS_COMMON, 'a.c'), DESTS.TRANS_COMMON)
     t.equal(filter.filterTransaction(DESTS.TRANS_COMMON, 'abc'), DESTS.NONE)

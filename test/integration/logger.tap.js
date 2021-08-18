@@ -5,18 +5,17 @@
 
 'use strict'
 
-var path   = require ('path')
-var fs     = require('fs')
-var tap    = require('tap')
+var path = require('path')
+var fs = require('fs')
+var tap = require('tap')
 var rimraf = require('rimraf')
 
 var DIRNAME = 'XXXNOCONFTEST'
 
-
-tap.test('logger', function(t) {
+tap.test('logger', function (t) {
   t.autoend()
 
-  t.afterEach(async() => {
+  t.afterEach(async () => {
     if (path.basename(process.cwd()) === DIRNAME) {
       process.chdir('..')
     }
@@ -32,8 +31,8 @@ tap.test('logger', function(t) {
     })
   })
 
-  t.test('configuration from environment', function(t) {
-    fs.mkdir(DIRNAME, function(error) {
+  t.test('configuration from environment', function (t) {
+    fs.mkdir(DIRNAME, function (error) {
       if (!t.error(error, 'should not fail to make directory')) {
         return t.end()
       }
@@ -42,7 +41,7 @@ tap.test('logger', function(t) {
 
       process.env.NEW_RELIC_LOG = 'stdout'
 
-      t.doesNotThrow(function() {
+      t.doesNotThrow(function () {
         t.ok(require('../../lib/logger'), 'requiring logger returned a logging object')
       })
 

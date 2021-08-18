@@ -8,8 +8,7 @@
 const tap = require('tap')
 const configurator = require('../../../lib/config')
 const Agent = require('../../../lib/agent')
-const {getTestSecret} = require('../../helpers/secrets')
-
+const { getTestSecret } = require('../../helpers/secrets')
 
 const license = getTestSecret('TEST_LICENSE')
 tap.test('Collector API should connect to staging-collector.newrelic.com', (t) => {

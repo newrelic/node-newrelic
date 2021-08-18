@@ -200,8 +200,8 @@ tap.test('with default properties', (t) => {
 
   t.test('should allow passed-in config to override errors ignored', (t) => {
     configuration = Config.initialize({
-      error_collector : {
-        ignore_status_codes : []
+      error_collector: {
+        ignore_status_codes: []
       }
     })
 

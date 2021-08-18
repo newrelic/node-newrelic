@@ -7,7 +7,6 @@
 
 var tap = require('tap')
 
-
-tap.test('pricing aws info', function(t) {
+tap.test('pricing aws info', function (t) {
   require('./vendor-info-tests')(t, 'aws')
 })

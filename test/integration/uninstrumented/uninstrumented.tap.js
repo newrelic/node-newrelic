@@ -5,15 +5,18 @@
 
 'use strict'
 
+/* eslint-disable node/no-unpublished-require */
 const Metrics = require('../../../lib/metrics')
 const MetricNormalizer = require('../../../lib/metrics/normalizer')
 const MetricMapper = require('../../../lib/metrics/mapper')
+// eslint-disable-next-line node/no-extraneous-require
 const tap = require('tap')
 const uninstrumented = require('../../../lib/uninstrumented')
 const helper = require('../../lib/agent_helper')
 const shimmer = require('../../../lib/shimmer')
+/* eslint-enable node/no-unpublished-require */
 
-tap.test('does not mark files with known module names as uninstrumented', function(t) {
+tap.test('does not mark files with known module names as uninstrumented', function (t) {
   const loaded = []
 
   require('./mock-config/redis')
@@ -34,7 +37,7 @@ tap.test('does not mark files with known module names as uninstrumented', functi
   uninstrumented.check()
   uninstrumented.createMetrics(metrics)
 
-  const flagMetrics = metrics.toJSON().filter(function(metric) {
+  const flagMetrics = metrics.toJSON().filter(function (metric) {
     return metric[0].name === 'Supportability/Uninstrumented/redis'
   })
   t.equal(flagMetrics.length, 0, 'No uninstrumented flag metric present')
@@ -44,14 +47,14 @@ tap.test('does not mark files with known module names as uninstrumented', functi
 
 // This doesn't test the core http and https modules because we can't detect if
 // core modules have already been loaded.
-tap.test('all instrumented modules should be detected when uninstrumented', function(t) {
+tap.test('all instrumented modules should be detected when uninstrumented', function (t) {
   const loaded = []
 
   const instrumentations = Object.keys(shimmer.registeredInstrumentations)
   // Include pg.js and mysql2 special case
   instrumentations.push('pg.js', 'mysql2')
 
-  instrumentations.forEach(function(module) {
+  instrumentations.forEach(function (module) {
     // core module--will always be instrumented,
     // but still added to registeredInstrumentations
     if (module !== 'domain') {
@@ -81,29 +84,33 @@ tap.test('all instrumented modules should be detected when uninstrumented', func
 
   const metricsJSON = metrics.toJSON()
 
-  const flagMetrics = metricsJSON.filter(function(metric) {
+  const flagMetrics = metricsJSON.filter(function (metric) {
     return metric[0].name === 'Supportability/Uninstrumented'
   })
   t.equal(flagMetrics.length, 1, 'Uninstrumented flag metric present')
 
-  if (flagMetrics.length !== 1) return t.end()
+  if (flagMetrics.length !== 1) {
+    return t.end()
+  }
 
   t.ok(
     flagMetrics[0][1].callCount > 0,
     'Callcount for uninstrumented flag metric > 0 (' + flagMetrics[0][1].callCount + ')'
   )
 
-  loaded.forEach(function(module) {
+  loaded.forEach(function (module) {
     var found = false
 
-    metricsJSON.forEach(function(metric) {
+    metricsJSON.forEach(function (metric) {
       if (metric[0].name === 'Supportability/Uninstrumented/' + module) {
         t.ok(metric[1].callCount > 0, 'should have uninstrumented metric for ' + module)
         found = true
       }
     })
 
-    if (!found) t.fail('No uninstrumented module metric found for ' + module)
+    if (!found) {
+      t.fail('No uninstrumented module metric found for ' + module)
+    }
   })
 
   t.end()

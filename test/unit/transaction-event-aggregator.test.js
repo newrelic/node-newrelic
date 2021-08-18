@@ -10,8 +10,7 @@
 require('tap').mochaGlobals()
 
 const expect = require('chai').expect
-const TransactionEventAggregator =
-  require('../../lib/transaction/transaction-event-aggregator')
+const TransactionEventAggregator = require('../../lib/transaction/transaction-event-aggregator')
 const Metrics = require('../../lib/metrics')
 
 const RUN_ID = 1337
@@ -54,7 +53,7 @@ describe('Transaction Event Aggregator', () => {
       events_seen: 1
     }
 
-    const rawEvent = [{type: 'Transaction', error: false}, {foo: 'bar'}]
+    const rawEvent = [{ type: 'Transaction', error: false }, { foo: 'bar' }]
 
     eventAggregator.add(rawEvent)
 
@@ -76,11 +75,11 @@ describe('Transaction Event Aggregator', () => {
 
   describe('when data over split threshold', () => {
     beforeEach(() => {
-      eventAggregator.add([{type: 'Transaction', error: false}, {num: 1}])
-      eventAggregator.add([{type: 'Transaction', error: false}, {num: 2}])
-      eventAggregator.add([{type: 'Transaction', error: false}, {num: 3}])
-      eventAggregator.add([{type: 'Transaction', error: false}, {num: 4}])
-      eventAggregator.add([{type: 'Transaction', error: false}, {num: 5}])
+      eventAggregator.add([{ type: 'Transaction', error: false }, { num: 1 }])
+      eventAggregator.add([{ type: 'Transaction', error: false }, { num: 2 }])
+      eventAggregator.add([{ type: 'Transaction', error: false }, { num: 3 }])
+      eventAggregator.add([{ type: 'Transaction', error: false }, { num: 4 }])
+      eventAggregator.add([{ type: 'Transaction', error: false }, { num: 5 }])
     })
 
     describe('send()', () => {
@@ -110,7 +109,7 @@ describe('Transaction Event Aggregator', () => {
           payloads.push(payload)
 
           // Needed for both to invoke
-          callback(null, {retainData: false})
+          callback(null, { retainData: false })
         }
 
         eventAggregator.send()
@@ -140,7 +139,7 @@ describe('Transaction Event Aggregator', () => {
         const originalData = eventAggregator._getMergeData()
 
         fakeCollectorApi[EXPECTED_METHOD] = (payload, callback) => {
-          callback(null, {retainData: true})
+          callback(null, { retainData: true })
         }
 
         eventAggregator.send()
@@ -156,7 +155,7 @@ describe('Transaction Event Aggregator', () => {
 
       it('should not merge when transport indicates not to retain', () => {
         fakeCollectorApi[EXPECTED_METHOD] = (payload, callback) => {
-          callback(null, {retainData: false})
+          callback(null, { retainData: false })
         }
 
         eventAggregator.send()
@@ -177,7 +176,7 @@ describe('Transaction Event Aggregator', () => {
             payloadToRetain = payload
           }
 
-          callback(null, {retainData: shouldRetain})
+          callback(null, { retainData: shouldRetain })
         }
 
         eventAggregator.send()
@@ -201,7 +200,7 @@ describe('Transaction Event Aggregator', () => {
         })
 
         fakeCollectorApi[EXPECTED_METHOD] = (payload, callback) => {
-          callback(null, { retainData: false})
+          callback(null, { retainData: false })
         }
 
         eventAggregator.send()

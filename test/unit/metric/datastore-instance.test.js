@@ -15,33 +15,32 @@ var DatastoreShim = require('../../../lib/shim/datastore-shim')
 var ParsedStatement = require('../../../lib/db/parsed-statement')
 var tests = require('../../lib/cross_agent_tests/datastores/datastore_instances')
 
-
-describe('Datastore instance metrics collected via the datastore shim', function() {
+describe('Datastore instance metrics collected via the datastore shim', function () {
   var agent = null
 
-  beforeEach(function() {
+  beforeEach(function () {
     agent = helper.loadMockedAgent()
   })
 
-  afterEach(function() {
+  afterEach(function () {
     if (agent) {
       helper.unloadAgent(agent)
     }
     agent = null
   })
 
-  tests.forEach(function(test) {
-    it(test.name, function(done) {
-      agent.config.getHostnameSafe = function() {
+  tests.forEach(function (test) {
+    it(test.name, function (done) {
+      agent.config.getHostnameSafe = function () {
         return test.system_hostname
       }
 
       var shim = new DatastoreShim(agent, 'testModule', null, test.product)
 
       var testInstrumented = {
-        query: function() {}
+        query: function () {}
       }
-      shim.recordOperation(testInstrumented, 'query', function() {
+      shim.recordOperation(testInstrumented, 'query', function () {
         var dbHost = test.db_hostname
         if (!dbHost && (test.unix_socket || test.database_path)) {
           dbHost = 'localhost'
@@ -64,7 +63,7 @@ describe('Datastore instance metrics collected via the datastore shim', function
         }
       })
 
-      helper.runInTransaction(agent, function(tx) {
+      helper.runInTransaction(agent, function (tx) {
         testInstrumented.query()
 
         tx.end()
@@ -75,27 +74,27 @@ describe('Datastore instance metrics collected via the datastore shim', function
   })
 })
 
-describe('Datastore instance metrics captured through the segment', function() {
+describe('Datastore instance metrics captured through the segment', function () {
   var agent = null
 
-  beforeEach(function() {
+  beforeEach(function () {
     agent = helper.loadMockedAgent()
   })
 
-  afterEach(function() {
+  afterEach(function () {
     if (agent) {
       helper.unloadAgent(agent)
     }
     agent = null
   })
 
-  tests.forEach(function(test) {
-    it(test.name, function(done) {
-      agent.config.getHostnameSafe = function() {
+  tests.forEach(function (test) {
+    it(test.name, function (done) {
+      agent.config.getHostnameSafe = function () {
         return test.system_hostname
       }
 
-      helper.runInTransaction(agent, function(tx) {
+      helper.runInTransaction(agent, function (tx) {
         var ps = new ParsedStatement(test.product, 'SELECT', 'bar')
         var child = tx.trace.root.add('test segment', ps.recordMetrics.bind(ps))
 

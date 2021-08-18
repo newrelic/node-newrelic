@@ -67,11 +67,11 @@ async function checkWorkflowRun(repoOwner, branch) {
     }
 
     if (!results.ci) {
-      console.log('Latest ci workflow run result was not \'completed\' and \'success\'.')
+      console.log("Latest ci workflow run result was not 'completed' and 'success'.")
     }
 
     if (!results.smokeTest) {
-      console.log('Latest smoke-test workflow run result was not \'completed\' and \'success\'.')
+      console.log("Latest smoke-test workflow run result was not 'completed' and 'success'.")
     }
 
     return false

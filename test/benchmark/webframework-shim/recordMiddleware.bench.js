@@ -11,9 +11,11 @@ var WebFrameworkShim = require('../../../lib/shim/webframework-shim')
 
 var agent = helper.loadMockedAgent()
 var shim = new WebFrameworkShim(agent, 'test-module', './')
-var suite = benchmark.createBenchmark({name: 'recordMiddleware'})
+var suite = benchmark.createBenchmark({ name: 'recordMiddleware' })
 
-var transaction = helper.runInTransaction(agent, function(tx) { return tx })
+var transaction = helper.runInTransaction(agent, function (tx) {
+  return tx
+})
 
 shim.setFramework('benchmarks')
 
@@ -23,7 +25,7 @@ addTests('implicit spec', implicitSpec)
 addTests('explicit spec', explicitSpec)
 addTests('   mixed spec', randomSpec)
 
-setTimeout(function() {
+setTimeout(function () {
   suite.run()
 }, 500)
 
@@ -32,28 +34,28 @@ function addTests(name, speccer) {
 
   suite.add({
     name: name + ' - function middleware',
-    fn: function() {
+    fn: function () {
       return recordFunc(speccer())
     }
   })
 
   suite.add({
     name: name + ' - property middleware',
-    fn: function() {
+    fn: function () {
       return recordProperty(speccer())
     }
   })
 
   suite.add({
     name: name + ' - mixed middleware   ',
-    fn: function() {
+    fn: function () {
       return randomRecord(speccer())
     }
   })
 
   suite.add({
     name: name + ' - wrapper (no tx)    ',
-    fn: function() {
+    fn: function () {
       agent.tracer.segment = null
       middleware(getReqd(), {}, noop)
     }
@@ -61,7 +63,7 @@ function addTests(name, speccer) {
 
   suite.add({
     name: name + ' - wrapper (tx)       ',
-    fn: function() {
+    fn: function () {
       agent.tracer.segment = transaction.trace.root
       middleware(getReqd(), {}, noop)
     }
@@ -70,7 +72,7 @@ function addTests(name, speccer) {
 
 function getTest() {
   return {
-    func: function(req, res, next) {
+    func: function (req, res, next) {
       next()
     }
   }
@@ -78,7 +80,7 @@ function getTest() {
 
 function getReqd() {
   return {
-    params: {a: 1, b: 2, c: 3},
+    params: { a: 1, b: 2, c: 3 },
     __NR_transactionInfo: {
       transaction: transaction,
       segmentStack: [],
@@ -105,7 +107,7 @@ function explicitSpec() {
     res: shim.SECOND,
     next: shim.LAST,
     name: 'funcy_name',
-    params: function(shim, fn, name, args) {
+    params: function (shim, fn, name, args) {
       return args[0].params
     }
   }

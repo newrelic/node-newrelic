@@ -127,8 +127,8 @@ test('bind + capture error', function testThrows(t) {
   helper.temporarilyRemoveListeners(t, t.domain, 'error')
 
   // Need to break out of tap's domain so the error is truly uncaught.
-  var pin = setTimeout(function() {}, 5000)
-  helper.runOutOfContext(function() {
+  var pin = setTimeout(function () {}, 5000)
+  helper.runOutOfContext(function () {
     clearTimeout(pin)
 
     helper.runInTransaction(agent, inTrans)
@@ -288,8 +288,8 @@ test('createSegment', function testCreateSegment(t) {
     t.equal(segment.name, 'inside transaction')
 
     tracer.bindFunction(function bound() {
-      t.equal(segment.timer.hrstart,  null)
-      t.equal(segment.timer.hrDuration,  null)
+      t.equal(segment.timer.hrstart, null)
+      t.equal(segment.timer.hrDuration, null)
       t.equal(tracer.getSegment(), segment)
     }, segment)()
   })
@@ -298,8 +298,8 @@ test('createSegment', function testCreateSegment(t) {
 
   tracer.bindFunction(function bound() {
     t.equal(outerSegment.name, 'outside with parent')
-    t.equal(outerSegment.timer.hrstart,  null)
-    t.equal(outerSegment.timer.hrDuration,  null)
+    t.equal(outerSegment.timer.hrstart, null)
+    t.equal(outerSegment.timer.hrDuration, null)
     t.equal(tracer.getSegment(), outerSegment)
   }, outerSegment)()
 
@@ -330,10 +330,7 @@ test('addSegment', function addSegmentTest(t) {
   var root
   t.plan(8)
 
-  t.equal(
-    tracer.addSegment('outside', null, null, false, check),
-    null
-  )
+  t.equal(tracer.addSegment('outside', null, null, false, check), null)
 
   helper.runInTransaction(agent, function inTrans(transaction) {
     var segment = tracer.addSegment('inside', null, null, false, check)
@@ -605,23 +602,14 @@ test('wrapFunction', function testwrapFunction(t) {
   var returnVal = {}
 
   var args = ['a', 'b', 'c'].map(makeCallback)
-  var wrapped = tracer.wrapFunction(
-    'my segment',
-    record,
-    callAll,
-    wrapArgs,
-    wrapReturn
-  )
+  var wrapped = tracer.wrapFunction('my segment', record, callAll, wrapArgs, wrapReturn)
 
   t.plan(61)
 
   t.equal(wrapped.apply(outer, [null].concat(args)), returnVal)
 
   helper.runInTransaction(agent, function inTransaction() {
-    t.equal(
-      Object.getPrototypeOf(wrapped.apply(outer, ['my segment'].concat(args))),
-      returnVal
-    )
+    t.equal(Object.getPrototypeOf(wrapped.apply(outer, ['my segment'].concat(args))), returnVal)
   })
 
   t.equal(wrapped.apply(outer, [null].concat(args)), returnVal)
@@ -663,7 +651,7 @@ test('wrapFunction', function testwrapFunction(t) {
       t.equal(c.call(inner, segment, 'c'), 'c')
 
       if (segment) {
-        segment.children.forEach(function(child) {
+        segment.children.forEach(function (child) {
           t.ok(child.timer.hrstart)
           t.ok(child.timer.hrDuration)
         })
@@ -684,7 +672,9 @@ test('wrapFunction', function testwrapFunction(t) {
     t.equal(this, outer)
     t.equal(seg.name, 'my segment')
     return callbacks.map(function transfrom(arg) {
-      if (typeof arg === 'function') return bindFunction(arg)
+      if (typeof arg === 'function') {
+        return bindFunction(arg)
+      }
       return arg
     })
   }
@@ -705,11 +695,7 @@ test('wrapFunctionLast', function testwrapFunctionLast(t) {
   var innerReturn = {}
 
   var args = [1, 2, 3, callback]
-  var wrapped = tracer.wrapFunctionLast(
-    'my segment',
-    record,
-    takesCallback
-  )
+  var wrapped = tracer.wrapFunctionLast('my segment', record, takesCallback)
 
   t.plan(30)
 
@@ -782,11 +768,7 @@ test('wrapFunctionFirst', function testwrapFunctionFirst(t) {
   var returnVal = {}
   var innerReturn = {}
 
-  var wrapped = tracer.wrapFunctionFirst(
-    'my segment',
-    record,
-    takesCallback
-  )
+  var wrapped = tracer.wrapFunctionFirst('my segment', record, takesCallback)
 
   t.plan(30)
 
