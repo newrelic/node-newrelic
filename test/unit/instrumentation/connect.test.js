@@ -13,10 +13,6 @@ function nextulator(req, res, next) {
   return next()
 }
 
-function nextulator(req, res, next) {
-  return next()
-}
-
 tap.test('an instrumented Connect stack', function (t) {
   t.autoend()
 
