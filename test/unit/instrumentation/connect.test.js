@@ -5,12 +5,7 @@
 
 /* eslint-disable strict */
 
-// TODO: convert to normal tap style.
-// Below allows use of mocha DSL with tap runner.
-require('tap').mochaGlobals()
-
-const chai = require('chai')
-const expect = chai.expect
+const tap = require('tap')
 const helper = require('../../lib/agent_helper')
 const WebShim = require('../../../lib/shim/webframework-shim')
 
@@ -18,45 +13,51 @@ function nextulator(req, res, next) {
   return next()
 }
 
-describe('an instrumented Connect stack', function () {
-  describe("shouldn't cause bootstrapping to fail", function () {
+tap.test('an instrumented Connect stack', function (t) {
+  t.autoend()
+
+  t.test("shouldn't cause bootstrapping to fail", function (t) {
     // testing some stuff further down that needs to be non-strict
     'use strict'
 
-    var agent
-    var initialize
-    var shim
+    t.autoend()
+    let agent
+    let initialize
+    let shim
 
-    before(function () {
+    t.before(function () {
       agent = helper.loadMockedAgent()
       shim = new WebShim(agent, 'connect')
       initialize = require('../../../lib/instrumentation/connect')
     })
 
-    after(function () {
+    t.teardown(function () {
       helper.unloadAgent(agent)
     })
 
-    it('when passed no module', function () {
-      expect(function () {
+    t.test('when passed no module', function (t) {
+      t.doesNotThrow(() => {
         initialize(agent, null, 'connect', shim)
-      }).not.throws()
+      })
+      t.end()
     })
 
-    it('when passed an empty module', function () {
-      expect(function () {
+    t.test('when passed an empty module', function (t) {
+      t.doesNotThrow(() => {
         initialize(agent, {}, 'connect', shim)
-      }).not.throws()
+      })
+      t.end()
     })
   })
 
-  describe('for Connect 1 (stubbed)', function () {
-    var agent
-    var stub
-    var app
-    var shim
+  t.test('for Connect 1 (stubbed)', function (t) {
+    t.autoend()
+    let agent
+    let stub
+    let app
+    let shim
 
-    beforeEach(function () {
+    t.beforeEach(function () {
       agent = helper.instrumentMockedAgent()
 
       stub = {
@@ -82,33 +83,39 @@ describe('an instrumented Connect stack', function () {
       app = stub.HTTPServer.prototype
     })
 
-    afterEach(function () {
+    t.afterEach(function () {
       helper.unloadAgent(agent)
     })
 
-    it("shouldn't throw if there's no middleware chain", function () {
-      expect(function () {
+    t.test("shouldn't throw if there's no middleware chain", function (t) {
+      t.doesNotThrow(() => {
         app.use.call(app, nextulator)
-      }).not.throws()
+      })
+      t.end()
     })
 
-    it("shouldn't throw if there's a middleware link with no handler", function () {
+    t.test("shouldn't throw if there's a middleware link with no handler", function (t) {
       app.stack = []
 
-      expect(function () {
+      t.doesNotThrow(function () {
         app.use.call(app, '/')
-      }).not.throws()
+      })
+      t.end()
     })
 
-    it("shouldn't throw if there's a middleware link with a non-function handler", () => {
-      app.stack = []
+    t.test(
+      "shouldn't throw if there's a middleware link with a non-function handler",
+      function (t) {
+        app.stack = []
 
-      expect(function () {
-        app.use.call(app, '/', 'hamburglar')
-      }).not.throws()
-    })
+        t.doesNotThrow(function () {
+          app.use.call(app, '/', 'hamburglar')
+        })
+        t.end()
+      }
+    )
 
-    it("shouldn't break use", function () {
+    t.test("shouldn't break use", function (t) {
       function errulator(err, req, res, next) {
         return next(err)
       }
@@ -121,12 +128,12 @@ describe('an instrumented Connect stack', function () {
       app.use.call(app, '/help', nextulator)
       app.use.call(app, '/error2', errulator)
 
-      expect(app.stack.length).equal(5)
+      t.equal(app.stack.length, 5)
+      t.end()
     })
 
-    it("shouldn't barf on functions with ES5 future reserved keyword names", function () {
+    t.test("shouldn't barf on functions with ES5 future reserved keyword names", function (t) {
       // doin this on porpoise
-      // jshint -W024
       /* eslint-disable */
       function static(req, res, next) {
         return next()
@@ -134,18 +141,21 @@ describe('an instrumented Connect stack', function () {
 
       app.stack = []
 
-      expect(function () { app.use.call(app, '/', static); }).not.throws()
+      t.doesNotThrow(function () { app.use.call(app, '/', static); })
+      t.end()
     })
   })
 
-  describe("for Connect 2 (stubbed)", function () {
-    var agent
-    var stub
-    var app
-    var shim
+  t.test("for Connect 2 (stubbed)", function (t) {
+    t.autoend()
+
+    let agent
+    let stub
+    let app
+    let shim
 
 
-    beforeEach(function () {
+    t.beforeEach(function () {
       agent = helper.instrumentMockedAgent()
 
       stub = {
@@ -170,29 +180,31 @@ describe('an instrumented Connect stack', function () {
       app = stub.proto
     })
 
-    afterEach(function () {
+    t.afterEach(function () {
       helper.unloadAgent(agent)
     })
 
-    it("shouldn't throw if there's no middleware chain", function () {
-      var app = stub.proto
-      expect(function () { app.use.call(app, nextulator); }).not.throws()
+    t.test("shouldn't throw if there's no middleware chain", function (t) {
+      const app = stub.proto
+      t.doesNotThrow(function () { app.use.call(app, nextulator); })
+      t.end()
     })
 
-    it("shouldn't throw if there's a middleware link with no handler", function () {
+    t.test("shouldn't throw if there's a middleware link with no handler", function (t) {
       app.stack = []
 
-      expect(function () { app.use.call(app, '/'); }).not.throws()
+      t.doesNotThrow(function () { app.use.call(app, '/'); })
+      t.end()
     })
 
-    it("shouldn't throw if there's a middleware link with a non-function handler",
-       function () {
+    t.test("shouldn't throw if there's a middleware link with a non-function handler", function (t) {
       app.stack = []
 
-      expect(function () { app.use.call(app, '/', 'hamburglar'); }).not.throws()
+      t.doesNotThrow(function () { app.use.call(app, '/', 'hamburglar'); })
+      t.end()
     })
 
-    it("shouldn't break use", function () {
+    t.test("shouldn't break use", function (t) {
       function errulator(err, req, res, next) {
         return next(err)
       }
@@ -205,19 +217,22 @@ describe('an instrumented Connect stack', function () {
       app.use.call(app, '/help', nextulator)
       app.use.call(app, '/error2', errulator)
 
-      expect(app.stack.length).equal(5)
+      t.equal(app.stack.length, 5)
+      t.end()
     })
 
-    it("shouldn't barf on functions with ES5 future reserved keyword names", function () {
+    t.test("shouldn't barf on functions with ES5 future reserved keyword names", function (t) {
       // doin this on porpoise
-      // jshint -W024
       function static(req, res, next) {
         return next()
       }
 
       app.stack = []
 
-      expect(function () { app.use.call(app, '/', static); }).not.throws()
+      t.doesNotThrow(function () { app.use.call(app, '/', static); })
+      t.end()
     })
   })
 })
+
+/* eslint-enable strict */
