@@ -272,16 +272,14 @@ function populate(db, collection) {
  * Bootstrap a running MongoDB instance by dropping all the collections used
  * by tests.
  * @param {*} mongodb MongoDB module to execute commands on.
- * @param {*} collections Collections to drop for test.
+ * @param {Array} collections Collections to drop for test.
  */
 async function dropTestCollections(mongodb, collections) {
   if (!collections.length) {
     return
   }
 
-  const res = await common.connect(mongodb)
-  const client = res.client
-  const db = res.db
+  const { client, db } = await common.connect(mongodb)
 
   const dropCollectionPromises = collections.map(async (collection) => {
     try {
