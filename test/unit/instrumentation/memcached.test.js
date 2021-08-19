@@ -38,22 +38,4 @@ tap.test('agent instrumentation of memcached', function (t) {
       t.end()
     })
   })
-
-  t.test('for each operation', function (t) {
-    t.autoend()
-    t.test('should update the global aggregate statistics')
-    t.test('should also update the global web aggregate statistics')
-    t.test('should update the aggregate statistics for the operation type')
-    t.test('should update the scoped aggregate statistics for the operation type')
-  })
-
-  t.test('should instrument setting data')
-  t.test('should instrument adding data')
-  t.test('should instrument appending data')
-  t.test('should instrument prepending data')
-  t.test('should instrument checking and setting data')
-  t.test('should instrument incrementing data')
-  t.test('should instrument decrementing data')
-  t.test('should instrument getting data')
-  t.test('should instrument deleting data')
 })
