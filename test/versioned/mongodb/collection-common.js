@@ -291,6 +291,9 @@ async function dropTestCollections(mongodb, collections) {
     }
   })
 
-  await Promise.all(dropCollectionPromises)
-  await common.close(client, db)
+  try {
+    await Promise.all(dropCollectionPromises)
+  } finally {
+    await common.close(client, db)
+  }
 }
