@@ -8,7 +8,6 @@
 var common = require('./common')
 var tap = require('tap')
 var helper = require('../../lib/agent_helper')
-const async = require('async')
 
 var METRIC_HOST_NAME = null
 var METRIC_HOST_PORT = null
@@ -273,30 +272,28 @@ function populate(db, collection) {
  * Bootstrap a running MongoDB instance by dropping all the collections used
  * by tests.
  * @param {*} mongodb MongoDB module to execute commands on.
- * @param {*} collections Collections to drop for test.
+ * @param {Array} collections Collections to drop for test.
  */
-function dropTestCollections(mongodb, collections) {
-  return common.connect(mongodb).then((res) => {
-    const client = res.client
-    const db = res.db
+async function dropTestCollections(mongodb, collections) {
+  if (!collections.length) {
+    return
+  }
 
-    async.eachSeries(
-      collections,
-      (collection, cb) => {
-        db.dropCollection(collection, (err) => {
-          // It's ok if the collection didn't exist before
-          if (err && err.errmsg === 'ns not found') {
-            err = null
-          }
+  const { client, db } = await common.connect(mongodb)
 
-          cb(err)
-        })
-      },
-      (err) => {
-        return common.close(client, db).catch((err2) => {
-          throw err || err2
-        })
+  const dropCollectionPromises = collections.map(async (collection) => {
+    try {
+      await db.dropCollection(collection)
+    } catch (err) {
+      if (err && err.errmsg !== 'ns not found') {
+        throw err
       }
-    )
+    }
   })
+
+  try {
+    await Promise.all(dropCollectionPromises)
+  } finally {
+    await common.close(client, db)
+  }
 }
