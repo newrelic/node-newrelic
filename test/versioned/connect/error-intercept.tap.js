@@ -95,16 +95,6 @@ test('intercepting errors with connect 2', function (t) {
         return next() // will never get here
       }
 
-      var stubRes = {
-        headers: {},
-        setHeader: function (name, value) {
-          stubRes.headers[name] = value
-        },
-        end: function () {
-          stubRes._end = agent.tracer.slice(arguments)
-        }
-      }
-
       app.use(wiggleware)
 
       var http = require('http')
