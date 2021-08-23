@@ -11,7 +11,8 @@
         "connect": ">=1.0.0"
       },
       "files": [
-        "error-intercept.tap.js"
+        "error-intercept.tap.js",
+        "route.tap.js"
       ]
     }
   ],
