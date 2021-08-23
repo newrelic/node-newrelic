@@ -7,16 +7,27 @@
 
 const { test } = require('tap')
 const helper = require('../../lib/agent_helper')
+const semver = require('semver')
 
 // connect is a loudmouth without this
 process.env.NODE_ENV = 'test'
 
 test('transaction tests', function (t) {
   t.autoend()
+  let agent
+
+  t.beforeEach(function () {
+    agent = helper.instrumentMockedAgent()
+  })
+
+  t.afterEach(function () {
+    helper.unloadAgent(agent)
+  })
 
   t.test('should properly name transaction from route name', function (t) {
     t.plan(10)
-    const agent = helper.instrumentMockedAgent()
+    const connect = require('connect')
+    const { version: pkgVersion } = require('connect/package')
     let server
     agent.once('transactionFinished', function (transaction) {
       t.equal(transaction.name, 'WebTransaction/Connect/GET//foo')
@@ -32,13 +43,8 @@ test('transaction tests', function (t) {
       server.close()
     })
 
-    t.teardown(() => {
-      helper.unloadAgent(agent)
-    })
-
     helper.runInTransaction(agent, function () {
-      var connect = require('connect')
-      var app = connect()
+      const app = connect()
 
       function middleware(req, res) {
         t.ok(agent.getTransaction(), 'transaction should be available')
@@ -46,13 +52,14 @@ test('transaction tests', function (t) {
       }
 
       app.use('/foo', middleware)
-      server = createServerAndMakeRequest({ url: '/foo', expectedData: 'foo', t, app })
+      server = createServerAndMakeRequest({ url: '/foo', expectedData: 'foo', t, app, pkgVersion })
     })
   })
 
   t.test('should default to `/` when no route is specified', function (t) {
     t.plan(10)
-    const agent = helper.instrumentMockedAgent()
+    const connect = require('connect')
+    const { version: pkgVersion } = require('connect/package')
     let server
     agent.once('transactionFinished', function (transaction) {
       t.equal(transaction.name, 'WebTransaction/Connect/GET//')
@@ -68,13 +75,8 @@ test('transaction tests', function (t) {
       server.close()
     })
 
-    t.teardown(() => {
-      helper.unloadAgent(agent)
-    })
-
     helper.runInTransaction(agent, function () {
-      var connect = require('connect')
-      var app = connect()
+      const app = connect()
 
       function middleware(req, res) {
         t.ok(agent.getTransaction(), 'transaction should be available')
@@ -82,7 +84,7 @@ test('transaction tests', function (t) {
       }
 
       app.use(middleware)
-      server = createServerAndMakeRequest({ url: '/foo', expectedData: 'root', t, app })
+      server = createServerAndMakeRequest({ url: '/foo', expectedData: 'root', t, app, pkgVersion })
     })
   })
 })
@@ -99,9 +101,19 @@ test('transaction tests', function (t) {
  * @param {Object} app connect app
  * @return {http.Server}
  */
-function createServerAndMakeRequest({ url, expectedData, t, app }) {
+function createServerAndMakeRequest({ url, expectedData, t, app, pkgVersion }) {
   const http = require('http')
-  const server = http.createServer(app).listen(0, function () {
+  let requestListener = app
+
+  // connect < v2 was a different module
+  // you had to manually call app.handle
+  if (semver.satisfies(pkgVersion, '<2')) {
+    requestListener = function (req, res) {
+      app.handle(req, res)
+    }
+  }
+
+  const server = http.createServer(requestListener).listen(0, function () {
     var req = http.request(
       {
         port: server.address().port,
