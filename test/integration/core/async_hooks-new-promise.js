@@ -467,6 +467,8 @@ test("the agent's async hook", function (t) {
     })
   })
 
+  // if `feature_flaog.unresolved_promise_cleanup` is set to false
+  // this will not clean up promises on destroy
   t.test('cleans up unresolved promises on destroy', (t) => {
     const agent = setupAgent(t)
     const segmentMap = require('../../../lib/instrumentation/core/async_hooks').segmentMap
@@ -482,7 +484,11 @@ test("the agent's async hook", function (t) {
       global.gc && global.gc()
 
       setImmediate(() => {
-        t.equal(segmentMap.size, 0)
+        if (agent.config.feature_flag.unresolved_promise_cleanup) {
+          t.equal(segmentMap.size, 0)
+        } else {
+          t.equal(segmentMap.size, 1)
+        }
 
         t.end()
       })

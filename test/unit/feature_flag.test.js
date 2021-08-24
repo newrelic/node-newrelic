@@ -36,7 +36,8 @@ var used = [
   'unreleased',
   'fastify_instrumentation',
   'certificate_bundle',
-  'new_promise_tracking'
+  'new_promise_tracking',
+  'unresolved_promise_cleanup'
 ]
 
 describe('feature flags', function () {
