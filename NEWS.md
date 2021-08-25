@@ -4,7 +4,7 @@
 
     **WARNING**: If you set `unresolved_promise_cleanup` to `false`, failure to resolve all promises in your application will result in memory leaks even if those promises are garbage collected
 
-* Support using `connect` to route middleware calls.
+* Supported using `connect` to route middleware calls.
 
 * Removed stubbed out tests in memcached unit tests
 
@@ -22,7 +22,7 @@
 
 * Replaced `JSV` with `ajv` for JSON schema validation in tests
 
-* Removed `through` in lieu of core Node.js implementation of Transform stream.
+* Removed `through` in lieu of core Node.js implementation of Transform stream in tests.
 
 ### v8.1.0 (2021-08-05)
 
