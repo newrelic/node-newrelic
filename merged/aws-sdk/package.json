@@ -5,12 +5,14 @@
   "main": "index.js",
   "scripts": {
     "test": "npm run unit && npm run versioned",
+    "third-party-updates": "oss third-party manifest && oss third-party notices && git add THIRD_PARTY_NOTICES.md third_party_manifest.json",
     "unit": "tap tests/unit/**/*.tap.js",
     "versioned": "npm run versioned:npm7",
     "versioned:npm6": "versioned-tests --minor -i 2 'tests/versioned/*.tap.js'",
     "versioned:npm7": "versioned-tests --minor --all -i 2 'tests/versioned/*.tap.js'",
     "lint": "eslint *.js lib tests",
-    "lint:fix": "eslint --fix *.js lib tests"
+    "lint:fix": "eslint --fix *.js lib tests",
+    "prepare": "husky install"
   },
   "engines": {
     "node": ">=12.0.0"
@@ -22,7 +24,8 @@
   "author": "New Relic Node.js agent team <nodejs@newrelic.com>",
   "license": "Apache-2.0",
   "devDependencies": {
-    "@newrelic/eslint-config": "^0.0.1",
+    "@newrelic/eslint-config": "^0.0.2",
+    "@newrelic/newrelic-oss-cli": "^0.1.2",
     "@newrelic/test-utilities": "^5.1.0",
     "async": "^2.6.1",
     "aws-sdk": "^2.403.0",
@@ -31,6 +34,8 @@
     "eslint-plugin-header": "^3.1.1",
     "eslint-plugin-node": "^11.1.0",
     "eslint-plugin-prettier": "^3.4.0",
+    "husky": "^7.0.2",
+    "lint-staged": "^11.1.2",
     "newrelic": "^8.1.0",
     "prettier": "^2.3.2",
     "sinon": "^7.2.3",
