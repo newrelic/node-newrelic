@@ -147,7 +147,7 @@ test("the agent's async hook", function (t) {
         tasks.push(() => {
           p.then(() => {
             const tx = agent.getTransaction()
-            t.notEqual(
+            t.not(
               tx ? tx.id : null,
               txn.id,
               'If this failed, this use case now works! Time to switch to "t.equal"'
@@ -243,7 +243,7 @@ test("the agent's async hook", function (t) {
         tasks.push(() => {
           next().then(() => {
             const tx = agent.getTransaction()
-            t.notEqual(
+            t.not(
               tx ? tx.id : null,
               txn.id,
               'If this failed, this use case now works! Time to switch to "t.equal"'
@@ -467,37 +467,67 @@ test("the agent's async hook", function (t) {
     })
   })
 
-  // if `feature_flaog.unresolved_promise_cleanup` is set to false
-  // this will not clean up promises on destroy
-  t.test('cleans up unresolved promises on destroy', (t) => {
-    const agent = setupAgent(t)
-    const segmentMap = require('../../../lib/instrumentation/core/async_hooks').segmentMap
+  t.test(
+    'cleans up unresolved promises on destroy',
+    { skip: process.env.NEW_RELIC_FEATURE_FLAG_UNRESOLVED_PROMISE_CLEANUP === 'false' },
+    (t) => {
+      const agent = setupAgent(t)
+      const segmentMap = require('../../../lib/instrumentation/core/async_hooks').segmentMap
 
-    helper.runInTransaction(agent, () => {
-      /* eslint-disable no-unused-vars */
-      let promise = unresolvedPromiseFunc()
+      helper.runInTransaction(agent, () => {
+        /* eslint-disable no-unused-vars */
+        let promise = unresolvedPromiseFunc()
 
-      t.equal(segmentMap.size, 1)
+        t.equal(segmentMap.size, 1, 'segment map should have 1 element')
 
-      promise = null
+        promise = null
 
-      global.gc && global.gc()
+        global.gc && global.gc()
 
-      setImmediate(() => {
-        if (agent.config.feature_flag.unresolved_promise_cleanup) {
-          t.equal(segmentMap.size, 0)
-        } else {
-          t.equal(segmentMap.size, 1)
-        }
-
-        t.end()
+        setImmediate(() => {
+          t.equal(segmentMap.size, 0, 'segment map should clean up unresolved promises on destroy')
+          t.end()
+        })
       })
-    })
 
-    function unresolvedPromiseFunc() {
-      return new Promise(() => {})
+      function unresolvedPromiseFunc() {
+        return new Promise(() => {})
+      }
     }
-  })
+  )
+
+  t.test(
+    'does not clean up unresolved promises on destroy when `unresolved_promise_cleanup` is set to false',
+    { skip: process.env.NEW_RELIC_FEATURE_FLAG_UNRESOLVED_PROMISE_CLEANUP !== 'false' },
+    (t) => {
+      const agent = setupAgent(t)
+      const segmentMap = require('../../../lib/instrumentation/core/async_hooks').segmentMap
+
+      helper.runInTransaction(agent, () => {
+        /* eslint-disable no-unused-vars */
+        let promise = unresolvedPromiseFunc()
+
+        t.equal(segmentMap.size, 1, 'segment map should have 1 element')
+
+        promise = null
+
+        global.gc && global.gc()
+
+        setImmediate(() => {
+          t.equal(
+            segmentMap.size,
+            1,
+            'segment map should not clean up unresolved promise on destroy'
+          )
+          t.end()
+        })
+      })
+
+      function unresolvedPromiseFunc() {
+        return new Promise(() => {})
+      }
+    }
+  )
 })
 
 function checkCallMetrics(t, testMetrics) {
