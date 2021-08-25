@@ -1,8 +1,9 @@
 {
-  "lastUpdated": "Mon Jul 19 2021 13:14:52 GMT-0700 (Pacific Daylight Time)",
+  "lastUpdated": "Wed Aug 25 2021 11:33:08 GMT-0400 (Eastern Daylight Time)",
   "projectName": "New Relic Koa Instrumentation",
   "projectUrl": "https://github.com/newrelic/node-newrelic-koa",
   "includeDev": true,
+  "includeOptDeps": false,
   "dependencies": {},
   "devDependencies": {
     "@koa/router@8.0.8": {
@@ -18,6 +19,31 @@
       "publisher": "Alex Mingoia",
       "email": "talk@alexmingoia.com"
     },
+    "@newrelic/eslint-config@0.0.2": {
+      "name": "@newrelic/eslint-config",
+      "version": "0.0.2",
+      "range": "^0.0.2",
+      "licenses": "Apache-2.0",
+      "repoUrl": "https://github.com/newrelic/eslint-config-newrelic",
+      "versionedRepoUrl": "https://github.com/newrelic/eslint-config-newrelic/tree/v0.0.2",
+      "licenseFile": "node_modules/@newrelic/eslint-config/LICENSE",
+      "licenseUrl": "https://github.com/newrelic/eslint-config-newrelic/blob/v0.0.2/LICENSE",
+      "licenseTextSource": "file",
+      "publisher": "New Relic Node.js agent team",
+      "email": "nodejs@newrelic.com"
+    },
+    "@newrelic/newrelic-oss-cli@0.1.2": {
+      "name": "@newrelic/newrelic-oss-cli",
+      "version": "0.1.2",
+      "range": "^0.1.2",
+      "licenses": "Apache-2.0",
+      "repoUrl": "https://github.com/newrelic/newrelic-oss-cli",
+      "versionedRepoUrl": "https://github.com/newrelic/newrelic-oss-cli/tree/v0.1.2",
+      "licenseFile": "node_modules/@newrelic/newrelic-oss-cli/LICENSE",
+      "licenseUrl": "https://github.com/newrelic/newrelic-oss-cli/blob/v0.1.2/LICENSE",
+      "licenseTextSource": "file",
+      "publisher": "New Relic"
+    },
     "@newrelic/test-utilities@5.1.0": {
       "name": "@newrelic/test-utilities",
       "version": "5.1.0",
@@ -31,31 +57,79 @@
       "publisher": "New Relic Node.js agent team",
       "email": "nodejs@newrelic.com"
     },
-    "newrelic@6.13.1": {
-      "name": "newrelic",
-      "version": "6.13.1",
-      "range": "^6.11.0",
-      "licenses": "Apache-2.0",
-      "repoUrl": "https://github.com/newrelic/node-newrelic",
-      "versionedRepoUrl": "https://github.com/newrelic/node-newrelic/tree/v6.13.1",
-      "licenseFile": "node_modules/newrelic/LICENSE",
-      "licenseUrl": "https://github.com/newrelic/node-newrelic/blob/v6.13.1/LICENSE",
+    "eslint-config-prettier@8.3.0": {
+      "name": "eslint-config-prettier",
+      "version": "8.3.0",
+      "range": "^8.3.0",
+      "licenses": "MIT",
+      "repoUrl": "https://github.com/prettier/eslint-config-prettier",
+      "versionedRepoUrl": "https://github.com/prettier/eslint-config-prettier/tree/v8.3.0",
+      "licenseFile": "node_modules/eslint-config-prettier/LICENSE",
+      "licenseUrl": "https://github.com/prettier/eslint-config-prettier/blob/v8.3.0/LICENSE",
       "licenseTextSource": "file",
-      "publisher": "New Relic Node.js agent team",
-      "email": "nodejs@newrelic.com"
+      "publisher": "Simon Lydell"
     },
-    "eslint@5.16.0": {
+    "eslint-plugin-header@3.1.1": {
+      "name": "eslint-plugin-header",
+      "version": "3.1.1",
+      "range": "^3.1.1",
+      "licenses": "MIT",
+      "repoUrl": "https://github.com/Stuk/eslint-plugin-header",
+      "versionedRepoUrl": "https://github.com/Stuk/eslint-plugin-header/tree/v3.1.1",
+      "licenseFile": "node_modules/eslint-plugin-header/README.md",
+      "licenseUrl": "https://github.com/Stuk/eslint-plugin-header/blob/v3.1.1/README.md",
+      "licenseTextSource": "spdx",
+      "publisher": "Stuart Knightley"
+    },
+    "eslint-plugin-node@11.1.0": {
+      "name": "eslint-plugin-node",
+      "version": "11.1.0",
+      "range": "^11.1.0",
+      "licenses": "MIT",
+      "repoUrl": "https://github.com/mysticatea/eslint-plugin-node",
+      "versionedRepoUrl": "https://github.com/mysticatea/eslint-plugin-node/tree/v11.1.0",
+      "licenseFile": "node_modules/eslint-plugin-node/LICENSE",
+      "licenseUrl": "https://github.com/mysticatea/eslint-plugin-node/blob/v11.1.0/LICENSE",
+      "licenseTextSource": "file",
+      "publisher": "Toru Nagashima"
+    },
+    "eslint-plugin-prettier@3.4.0": {
+      "name": "eslint-plugin-prettier",
+      "version": "3.4.0",
+      "range": "^3.4.0",
+      "licenses": "MIT",
+      "repoUrl": "https://github.com/prettier/eslint-plugin-prettier",
+      "versionedRepoUrl": "https://github.com/prettier/eslint-plugin-prettier/tree/v3.4.0",
+      "licenseFile": "node_modules/eslint-plugin-prettier/LICENSE.md",
+      "licenseUrl": "https://github.com/prettier/eslint-plugin-prettier/blob/v3.4.0/LICENSE.md",
+      "licenseTextSource": "file",
+      "publisher": "Teddy Katz"
+    },
+    "eslint@7.32.0": {
       "name": "eslint",
-      "version": "5.16.0",
-      "range": "^5.8.0",
+      "version": "7.32.0",
+      "range": "^7.32.0",
       "licenses": "MIT",
       "repoUrl": "https://github.com/eslint/eslint",
-      "versionedRepoUrl": "https://github.com/eslint/eslint/tree/v5.16.0",
+      "versionedRepoUrl": "https://github.com/eslint/eslint/tree/v7.32.0",
       "licenseFile": "node_modules/eslint/LICENSE",
-      "licenseUrl": "https://github.com/eslint/eslint/blob/v5.16.0/LICENSE",
+      "licenseUrl": "https://github.com/eslint/eslint/blob/v7.32.0/LICENSE",
       "licenseTextSource": "file",
       "publisher": "Nicholas C. Zakas",
       "email": "nicholas+npm@nczconsulting.com"
+    },
+    "husky@7.0.2": {
+      "name": "husky",
+      "version": "7.0.2",
+      "range": "^7.0.2",
+      "licenses": "MIT",
+      "repoUrl": "https://github.com/typicode/husky",
+      "versionedRepoUrl": "https://github.com/typicode/husky/tree/v7.0.2",
+      "licenseFile": "node_modules/husky/LICENSE",
+      "licenseUrl": "https://github.com/typicode/husky/blob/v7.0.2/LICENSE",
+      "licenseTextSource": "file",
+      "publisher": "Typicode",
+      "email": "typicode@gmail.com"
     },
     "koa-route@3.2.0": {
       "name": "koa-route",
@@ -91,6 +165,44 @@
       "licenseFile": "node_modules/koa/LICENSE",
       "licenseUrl": "https://github.com/koajs/koa/blob/v2.13.1/LICENSE",
       "licenseTextSource": "file"
+    },
+    "lint-staged@11.1.2": {
+      "name": "lint-staged",
+      "version": "11.1.2",
+      "range": "^11.1.2",
+      "licenses": "MIT",
+      "repoUrl": "https://github.com/okonet/lint-staged",
+      "versionedRepoUrl": "https://github.com/okonet/lint-staged/tree/v11.1.2",
+      "licenseFile": "node_modules/lint-staged/LICENSE",
+      "licenseUrl": "https://github.com/okonet/lint-staged/blob/v11.1.2/LICENSE",
+      "licenseTextSource": "file",
+      "publisher": "Andrey Okonetchnikov",
+      "email": "andrey@okonet.ru"
+    },
+    "newrelic@8.1.0": {
+      "name": "newrelic",
+      "version": "8.1.0",
+      "range": "^8.1.0",
+      "licenses": "Apache-2.0",
+      "repoUrl": "https://github.com/newrelic/node-newrelic",
+      "versionedRepoUrl": "https://github.com/newrelic/node-newrelic/tree/v8.1.0",
+      "licenseFile": "node_modules/newrelic/LICENSE",
+      "licenseUrl": "https://github.com/newrelic/node-newrelic/blob/v8.1.0/LICENSE",
+      "licenseTextSource": "file",
+      "publisher": "New Relic Node.js agent team",
+      "email": "nodejs@newrelic.com"
+    },
+    "prettier@2.3.2": {
+      "name": "prettier",
+      "version": "2.3.2",
+      "range": "^2.3.2",
+      "licenses": "MIT",
+      "repoUrl": "https://github.com/prettier/prettier",
+      "versionedRepoUrl": "https://github.com/prettier/prettier/tree/v2.3.2",
+      "licenseFile": "node_modules/prettier/LICENSE",
+      "licenseUrl": "https://github.com/prettier/prettier/blob/v2.3.2/LICENSE",
+      "licenseTextSource": "file",
+      "publisher": "James Long"
     },
     "semver@5.7.1": {
       "name": "semver",
