@@ -15,6 +15,7 @@ const logger = require('../../../lib/logger')
 
 const RUN_ID = 1337
 const LIMIT = 1000
+const DEFAULT_PERIOD = 60000
 
 tap.test('SpanAggregator', (t) => {
   t.autoend()
@@ -26,7 +27,8 @@ tap.test('SpanAggregator', (t) => {
     spanEventAggregator = new SpanEventAggregator(
       {
         runId: RUN_ID,
-        limit: LIMIT
+        limit: LIMIT,
+        periodMs: DEFAULT_PERIOD
       },
       {},
       new Metrics(5, {}, {})
@@ -241,4 +243,66 @@ tap.test('SpanAggregator', (t) => {
     t.equal(ct, 0)
     t.end()
   })
+
+  t.test('should use default values for limit and periodMs', (t) => {
+    const fakeConfig = {
+      getAggregatorConfig: sinon.stub().returns(null)
+    }
+    spanEventAggregator.reconfigure(fakeConfig)
+    t.equal(
+      spanEventAggregator.periodMs,
+      DEFAULT_PERIOD,
+      `should default periodMs to ${DEFAULT_PERIOD}`
+    )
+    t.equal(spanEventAggregator.limit, LIMIT, `should default limit to ${LIMIT}`)
+    t.equal(spanEventAggregator._items.limit, LIMIT, `should set queue limit to ${LIMIT}`)
+    t.end()
+  })
+
+  t.test('should use `span_event_harvest_config.report_period_ms` from server', (t) => {
+    const fakeConfig = {
+      span_event_harvest_config: {
+        report_period_ms: 4000
+      },
+      getAggregatorConfig: sinon.stub().returns(null)
+    }
+    spanEventAggregator.reconfigure(fakeConfig)
+    t.equal(
+      spanEventAggregator.periodMs,
+      4000,
+      `should use span_event_harvest_config.report_period_ms`
+    )
+    t.end()
+  })
+
+  t.test(
+    `should use 'span_event_harvest_config.harvest_limit' from server when it is less than default limit(${LIMIT})`,
+    (t) => {
+      const fakeConfig = {
+        span_event_harvest_config: {
+          harvest_limit: 500
+        },
+        getAggregatorConfig: sinon.stub().returns(null)
+      }
+      spanEventAggregator.reconfigure(fakeConfig)
+      t.equal(spanEventAggregator.limit, 500, 'should use span_event_harvest_config.harvest_limit')
+      t.equal(spanEventAggregator._items.limit, 500, `should set queue limit to 500`)
+      t.end()
+    }
+  )
+
+  t.test(
+    `should not use 'span_event_harvest_config.harvest_limit' from server when it is greater than default limit(${LIMIT})`,
+    (t) => {
+      const fakeConfig = {
+        span_event_harvest_config: {
+          harvest_limit: 5000
+        },
+        getAggregatorConfig: sinon.stub().returns(null)
+      }
+      spanEventAggregator.reconfigure(fakeConfig)
+      t.equal(spanEventAggregator.limit, LIMIT, `should default limit to ${LIMIT}`)
+      t.end()
+    }
+  )
 })
