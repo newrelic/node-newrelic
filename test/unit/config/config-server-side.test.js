@@ -485,6 +485,21 @@ tap.test('when receiving server-side configuration', (t) => {
 
       t.end()
     })
+
+    t.test('should set `span_event_harvest_config` from server', (t) => {
+      const spanEventHarvestConfig = {
+        report_period_ms: 1000,
+        harvest_limit: 10000
+      }
+      config.onConnect({
+        agent_config: {
+          span_event_harvest_config: spanEventHarvestConfig
+        }
+      })
+
+      t.same(config.span_event_harvest_config, spanEventHarvestConfig)
+      t.end()
+    })
   })
 
   t.test('when event_harvest_config is set', (t) => {
