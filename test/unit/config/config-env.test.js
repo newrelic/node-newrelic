@@ -165,13 +165,15 @@ tap.test('when overriding configuration values via environment variables', (t) =
       NEW_RELIC_SPAN_EVENTS_ENABLED: true,
       NEW_RELIC_SPAN_EVENTS_ATTRIBUTES_ENABLED: true,
       NEW_RELIC_SPAN_EVENTS_ATTRIBUTES_INCLUDE: 'one,two,three',
-      NEW_RELIC_SPAN_EVENTS_ATTRIBUTES_EXCLUDE: 'four,five,six'
+      NEW_RELIC_SPAN_EVENTS_ATTRIBUTES_EXCLUDE: 'four,five,six',
+      NEW_RELIC_SPAN_EVENTS_MAX_SAMPLES_STORED: 2000
     }
     idempotentEnv(env, (tc) => {
       t.equal(tc.span_events.enabled, true)
       t.equal(tc.span_events.attributes.enabled, true)
       t.same(tc.span_events.attributes.include, ['one', 'two', 'three'])
       t.same(tc.span_events.attributes.exclude, ['four', 'five', 'six'])
+      t.equal(tc.span_events.max_samples_stored, 2000)
 
       t.end()
     })
