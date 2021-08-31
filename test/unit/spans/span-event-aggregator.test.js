@@ -14,7 +14,7 @@ const Metrics = require('../../../lib/metrics')
 const logger = require('../../../lib/logger')
 
 const RUN_ID = 1337
-const MIN_LIMIT = 1000
+const DEFAULT_LIMIT = 1000
 const MAX_LIMIT = 10000
 const DEFAULT_PERIOD = 60000
 
@@ -28,7 +28,7 @@ tap.test('SpanAggregator', (t) => {
     spanEventAggregator = new SpanEventAggregator(
       {
         runId: RUN_ID,
-        limit: MIN_LIMIT,
+        limit: DEFAULT_LIMIT,
         periodMs: DEFAULT_PERIOD
       },
       {},
@@ -180,7 +180,7 @@ tap.test('SpanAggregator', (t) => {
 
         t.ok(metrics.reservoir_size)
         t.ok(metrics.events_seen)
-        t.equal(metrics.reservoir_size, MIN_LIMIT)
+        t.equal(metrics.reservoir_size, DEFAULT_LIMIT)
         t.equal(metrics.events_seen, 1)
 
         t.ok(events[0])
@@ -205,7 +205,7 @@ tap.test('SpanAggregator', (t) => {
     const spanEventAgg = new SpanEventAggregator(
       {
         runId: RUN_ID,
-        limit: MIN_LIMIT
+        limit: DEFAULT_LIMIT
       },
       {},
       new Metrics(5, {}, {})
@@ -232,7 +232,7 @@ tap.test('SpanAggregator', (t) => {
     const spanEventAgg = new SpanEventAggregator(
       {
         runId: RUN_ID,
-        limit: MIN_LIMIT
+        limit: DEFAULT_LIMIT
       },
       {},
       new Metrics(5, {}, {})
@@ -249,7 +249,7 @@ tap.test('SpanAggregator', (t) => {
     const fakeConfig = {
       getAggregatorConfig: sinon.stub().returns(null),
       span_events: {
-        max_samples_stored: MIN_LIMIT
+        max_samples_stored: DEFAULT_LIMIT
       }
     }
     spanEventAggregator.reconfigure(fakeConfig)
@@ -262,30 +262,35 @@ tap.test('SpanAggregator', (t) => {
     t.end()
   })
 
-  t.test('should use minimum value for limit when not user configured', (t) => {
+  t.test('should use default value for limit when user cleared', (t) => {
     const fakeConfig = {
       getAggregatorConfig: sinon.stub().returns(null),
       span_events: {
         enabled: true,
-        max_samples_stored: null
+        max_samples_stored: ''
       }
     }
 
     spanEventAggregator.reconfigure(fakeConfig)
 
-    t.equal(spanEventAggregator.limit, MIN_LIMIT, `should default limit to ${MIN_LIMIT}`)
-    t.equal(spanEventAggregator._items.limit, MIN_LIMIT, `should set queue limit to ${MIN_LIMIT}`)
+    t.equal(spanEventAggregator.limit, DEFAULT_LIMIT, `should default limit to ${DEFAULT_LIMIT}`)
+    t.equal(
+      spanEventAggregator._items.limit,
+      DEFAULT_LIMIT,
+      `should set queue limit to ${DEFAULT_LIMIT}`
+    )
     t.end()
   })
 
   t.test('should use `span_event_harvest_config.report_period_ms` from server', (t) => {
     const fakeConfig = {
       span_event_harvest_config: {
-        report_period_ms: 4000
+        report_period_ms: 4000,
+        harvest_limit: 1000
       },
       getAggregatorConfig: sinon.stub().returns(null),
       span_events: {
-        max_samples_stored: MIN_LIMIT
+        max_samples_stored: DEFAULT_LIMIT
       }
     }
     spanEventAggregator.reconfigure(fakeConfig)
@@ -298,97 +303,51 @@ tap.test('SpanAggregator', (t) => {
     t.end()
   })
 
-  t.test('should use max_samples_stored when in valid range', (t) => {
-    const expectedLimit = 5000
-    const harvestLimit = 10000
+  t.test(`should use 'span_event_harvest_config.harvest_limit' from server`, (t) => {
     const fakeConfig = {
       span_event_harvest_config: {
-        harvest_limit: harvestLimit
+        harvest_limit: 2000
       },
+      getAggregatorConfig: sinon.stub().returns(null),
+      span_events: {
+        max_samples_stored: 3000
+      }
+    }
+    spanEventAggregator.reconfigure(fakeConfig)
+    t.equal(spanEventAggregator.limit, 2000, 'should use span_event_harvest_config.harvest_limit')
+    t.equal(spanEventAggregator._items.limit, 2000, `should set queue limit`)
+    t.end()
+  })
+
+  t.test(`should use 'span_event_harvest_config.harvest_limit' from server`, (t) => {
+    const fakeConfig = {
+      span_event_harvest_config: {
+        harvest_limit: 2000
+      },
+      getAggregatorConfig: sinon.stub().returns(null),
+      span_events: {
+        max_samples_stored: 3000
+      }
+    }
+    spanEventAggregator.reconfigure(fakeConfig)
+    t.equal(spanEventAggregator.limit, 2000, 'should use span_event_harvest_config.harvest_limit')
+    t.equal(spanEventAggregator._items.limit, 2000, `should set queue limit`)
+    t.end()
+  })
+
+  t.test('should use max_samples_stored as-is when no span harvest config', (t) => {
+    const expectedLimit = 5000
+    const fakeConfig = {
       getAggregatorConfig: sinon.stub().returns(null),
       span_events: {
         max_samples_stored: expectedLimit
       }
     }
 
-    t.ok(expectedLimit > MIN_LIMIT, 'failed test setup expectations')
-    t.ok(expectedLimit < harvestLimit, 'failed test setup expectations')
-
     spanEventAggregator.reconfigure(fakeConfig)
 
     t.equal(spanEventAggregator.limit, expectedLimit)
     t.equal(spanEventAggregator._items.limit, expectedLimit)
-    t.end()
-  })
-
-  t.test(
-    `should use 'span_event_harvest_config.harvest_limit' from server when it is less than configured limit`,
-    (t) => {
-      const fakeConfig = {
-        span_event_harvest_config: {
-          harvest_limit: 2000
-        },
-        getAggregatorConfig: sinon.stub().returns(null),
-        span_events: {
-          max_samples_stored: 3000
-        }
-      }
-      spanEventAggregator.reconfigure(fakeConfig)
-      t.equal(spanEventAggregator.limit, 2000, 'should use span_event_harvest_config.harvest_limit')
-      t.equal(spanEventAggregator._items.limit, 2000, `should set queue limit`)
-      t.end()
-    }
-  )
-
-  t.test(
-    `should not use 'span_event_harvest_config.harvest_limit' from server when it is greater than configured`,
-    (t) => {
-      const fakeConfig = {
-        span_event_harvest_config: {
-          harvest_limit: 5000
-        },
-        getAggregatorConfig: sinon.stub().returns(null),
-        span_events: {
-          max_samples_stored: MIN_LIMIT
-        }
-      }
-      spanEventAggregator.reconfigure(fakeConfig)
-      t.equal(spanEventAggregator.limit, MIN_LIMIT, `should set limit to ${MIN_LIMIT}`)
-      t.end()
-    }
-  )
-
-  t.test('should use minimum limit when user configured below minimum', (t) => {
-    const fakeConfig = {
-      span_event_harvest_config: {
-        harvest_limit: 5000
-      },
-      getAggregatorConfig: sinon.stub().returns(null),
-      span_events: {
-        max_samples_stored: 2
-      }
-    }
-    spanEventAggregator.reconfigure(fakeConfig)
-    t.equal(spanEventAggregator.limit, MIN_LIMIT, `should set limit to ${MIN_LIMIT}`)
-    t.end()
-  })
-
-  t.test('should use fall-back maximum when no server limit set', (t) => {
-    const maxSamples = 20000
-    const fakeConfig = {
-      span_event_harvest_config: {
-        harvest_limit: null
-      },
-      getAggregatorConfig: sinon.stub().returns(null),
-      span_events: {
-        max_samples_stored: maxSamples
-      }
-    }
-
-    t.ok(maxSamples > MAX_LIMIT, 'failed test setup expectations')
-
-    spanEventAggregator.reconfigure(fakeConfig)
-    t.equal(spanEventAggregator.limit, MAX_LIMIT, `should set limit to ${MAX_LIMIT}`)
     t.end()
   })
 
