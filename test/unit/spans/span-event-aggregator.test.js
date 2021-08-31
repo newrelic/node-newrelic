@@ -11,7 +11,6 @@ const sinon = require('sinon')
 const helper = require('../../lib/agent_helper')
 const SpanEventAggregator = require('../../../lib/spans/span-event-aggregator')
 const Metrics = require('../../../lib/metrics')
-const logger = require('../../../lib/logger')
 
 const RUN_ID = 1337
 const DEFAULT_LIMIT = 1000
@@ -190,59 +189,6 @@ tap.test('SpanAggregator', (t) => {
         t.end()
       }, 10)
     })
-  })
-
-  t.test('should log span trace data when traceEnabled', (t) => {
-    let ct = 0
-    const fakeLogger = {
-      traceEnabled: () => true,
-      trace: () => ++ct,
-      debug: () => {}
-    }
-
-    sinon.stub(logger, 'child').callsFake(() => fakeLogger)
-
-    const spanEventAgg = new SpanEventAggregator(
-      {
-        runId: RUN_ID,
-        limit: DEFAULT_LIMIT
-      },
-      {},
-      new Metrics(5, {}, {})
-    )
-
-    spanEventAgg.send()
-    logger.child.restore()
-
-    t.equal(ct, 1)
-
-    t.end()
-  })
-
-  t.test('should not log span trace data when !traceEnabled', (t) => {
-    let ct = 0
-    const fakeLogger = {
-      traceEnabled: () => false,
-      trace: () => ++ct,
-      debug: () => {}
-    }
-
-    sinon.stub(logger, 'child').callsFake(() => fakeLogger)
-
-    const spanEventAgg = new SpanEventAggregator(
-      {
-        runId: RUN_ID,
-        limit: DEFAULT_LIMIT
-      },
-      {},
-      new Metrics(5, {}, {})
-    )
-
-    spanEventAgg.send()
-    logger.child.restore()
-
-    t.equal(ct, 0)
-    t.end()
   })
 
   t.test('should use default value for periodMs', (t) => {
