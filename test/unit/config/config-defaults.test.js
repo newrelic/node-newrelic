@@ -238,4 +238,9 @@ tap.test('with default properties', (t) => {
     t.equal(configuration.serverless_mode.enabled, false)
     t.end()
   })
+
+  t.test('should default span event max_samples_stored', (t) => {
+    t.equal(configuration.span_events.max_samples_stored, 1000)
+    t.end()
+  })
 })

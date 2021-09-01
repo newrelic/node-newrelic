@@ -247,13 +247,14 @@ tap.test('fun facts about apps that New Relic is interested in include', (t) => 
     agent.config.transaction_events.max_samples_stored = expectedValue
     agent.config.custom_insights_events.max_samples_stored = expectedValue
     agent.config.error_collector.max_event_samples_stored = expectedValue
+    agent.config.span_events.max_samples_stored = expectedValue
 
     const expectedHarvestConfig = {
       harvest_limits: {
         analytic_event_data: expectedValue,
         custom_event_data: expectedValue,
         error_event_data: expectedValue,
-        span_event_data: 1000 // not configurable, set as constant
+        span_event_data: expectedValue
       }
     }
 
