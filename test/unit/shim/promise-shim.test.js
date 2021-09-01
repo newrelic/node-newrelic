@@ -4,624 +4,599 @@
  */
 
 'use strict'
+const tap = require('tap')
 
-// TODO: convert to normal tap style.
-// Below allows use of mocha DSL with tap runner.
-require('tap').mochaGlobals()
-
-const async = require('async')
-const expect = require('chai').expect
+const asyncLib = require('async')
 const helper = require('../../lib/agent_helper')
 const PromiseShim = require('../../../lib/shim/promise-shim')
 const Shim = require('../../../lib/shim/shim')
 
-describe('PromiseShim', () => {
+tap.Test.prototype.addAssert('sameTransaction', 2, function expectSameTransaction(tx1, tx2) {
+  this.ok(tx1, 'current transaction exists')
+  this.ok(tx2, 'active transaction exists')
+  this.equal(tx1.id, tx2.id, 'current transaction id should match active transaction id')
+})
+
+tap.test('PromiseShim', (t) => {
+  t.autoend()
+
+  // ensure the test does not exist before all pending
+  // runOutOfContext tasks are executed
+  helper.interval.ref()
+
+  // unref the runOutOfContext interval
+  // so other tests can run unencumbered
+  t.teardown(() => {
+    helper.interval.unref()
+  })
+
   let agent = null
   let shim = null
   let TestPromise = null
 
-  beforeEach(() => {
-    TestPromise = function (executor) {
-      this.executorCaller(executor)
-    }
-
-    TestPromise.resolve = function (val) {
-      const p = Object.create(TestPromise.prototype)
-      p.resolver(val)
-      return p
-    }
-
-    TestPromise.reject = function (val) {
-      const p = Object.create(TestPromise.prototype)
-      p.rejector(val)
-      return p
-    }
-
-    TestPromise.promisify = function (func) {
-      return function () {
-        const args = shim.argsToArray.apply(shim, arguments)
-        const p = Object.create(TestPromise.prototype)
-        args.push((err, res) => {
-          if (err) {
-            p.rejector(err)
-          } else {
-            p.resolver(res)
-          }
-        })
-        func.apply(this, args)
-        return p
-      }
-    }
-
-    TestPromise.prototype.executorCaller = function (executor) {
-      try {
-        executor(this.resolver.bind(this), this.rejector.bind(this))
-      } catch (err) {
-        this.rejector(err)
-      }
-    }
-
-    TestPromise.prototype.resolver = function (resolution) {
-      this.resolution = resolution
-      helper.runOutOfContext(() => {
-        if (this._next._thenned) {
-          this._next._thenned(resolution)
-        }
-      })
-    }
-
-    TestPromise.prototype.rejector = function (rejection) {
-      this.rejection = rejection
-      helper.runOutOfContext(() => {
-        if (this._next._caught) {
-          this._next._caught(rejection)
-        }
-      })
-    }
-
-    TestPromise.prototype.then = function (res, rej) {
-      this.res = res
-      this.rej = rej
-
-      this._next = Object.create(TestPromise.prototype)
-      this._next._thenned = res
-      this._next._caught = rej
-
-      return this._next
-    }
-
-    TestPromise.prototype.catch = function (ErrorClass, rej) {
-      this.ErrorClass = ErrorClass
-      this.rej = rej
-
-      this._next = Object.create(TestPromise.prototype)
-      this._next._caught = rej || ErrorClass
-
-      return this._next
-    }
-
-    TestPromise.Promise = TestPromise
+  function beforeTest() {
+    TestPromise = require('./promise-shim')()
 
     agent = helper.loadMockedAgent()
     shim = new PromiseShim(agent, 'test-promise', null)
-  })
+  }
 
-  afterEach(() => {
+  function afterTest() {
     helper.unloadAgent(agent)
-    TestPromise = null
     agent = null
     shim = null
-  })
+    TestPromise = null
+  }
 
-  it('should inherit from Shim', () => {
-    expect(shim).to.be.an.instanceOf(PromiseShim).and.an.instanceOf(Shim)
-  })
+  t.test('constructor', (t) => {
+    t.autoend()
+    t.beforeEach(beforeTest)
+    t.afterEach(afterTest)
 
-  describe('constructor', () => {
-    it('should require the `agent` parameter', () => {
-      expect(() => new PromiseShim()).to.throw(Error, /^Shim must be initialized with .*? agent/)
+    t.test('should inherit from Shim', (t) => {
+      t.ok(shim instanceof PromiseShim)
+      t.ok(shim instanceof Shim)
+      t.end()
     })
 
-    it('should require the `moduleName` parameter', () => {
-      expect(() => new PromiseShim(agent)).to.throw(
-        Error,
-        /^Shim must be initialized with .*? module name/
-      )
-    })
-  })
-
-  describe('.Contextualizer', () => {
-    it('should be the underlying contextualization class', () => {
-      expect(PromiseShim).to.have.property('Contextualizer').that.is.an.instanceOf(Function)
-    })
-  })
-
-  describe('#logger', () => {
-    it('should be a non-writable property', () => {
-      expect(() => (shim.logger = 'foobar')).to.throw()
-
-      expect(shim).to.have.property('logger').that.is.not.equal('foobar')
+    t.test('should require the `agent` parameter', (t) => {
+      t.throws(() => new PromiseShim(), /^Shim must be initialized with .*? agent/)
+      t.end()
     })
 
-    it('should be a logger to use with the shim', () => {
-      expect(shim.logger).to.have.property('trace').that.is.an.instanceOf(Function)
-      expect(shim.logger).to.have.property('debug').that.is.an.instanceOf(Function)
-      expect(shim.logger).to.have.property('info').that.is.an.instanceOf(Function)
-      expect(shim.logger).to.have.property('warn').that.is.an.instanceOf(Function)
-      expect(shim.logger).to.have.property('error').that.is.an.instanceOf(Function)
+    t.test('should require the `moduleName` parameter', (t) => {
+      t.throws(() => new PromiseShim(agent), /^Shim must be initialized with .*? module name/)
+      t.end()
     })
   })
 
-  describe('#setClass', () => {
-    it('should set the class used for instance checks', () => {
+  t.test('.Contextualizer', (t) => {
+    t.autoend()
+    t.beforeEach(beforeTest)
+    t.afterEach(afterTest)
+
+    t.test('should be the underlying contextualization class', (t) => {
+      t.ok(PromiseShim.Contextualizer)
+      t.ok(PromiseShim.Contextualizer instanceof Function)
+      t.end()
+    })
+  })
+
+  t.test('#logger', (t) => {
+    t.autoend()
+    t.beforeEach(beforeTest)
+    t.afterEach(afterTest)
+
+    t.test('should be a non-writable property', (t) => {
+      t.throws(() => (shim.logger = 'foobar'))
+      t.not(shim.logger, 'foobar')
+      t.end()
+    })
+
+    t.test('should have expected log levels', (t) => {
+      t.ok(shim.logger.trace)
+      t.ok(shim.logger.trace instanceof Function)
+      t.ok(shim.logger.debug)
+      t.ok(shim.logger.debug instanceof Function)
+      t.ok(shim.logger.info)
+      t.ok(shim.logger.info instanceof Function)
+      t.ok(shim.logger.warn)
+      t.ok(shim.logger.warn instanceof Function)
+      t.ok(shim.logger.error)
+      t.ok(shim.logger.error instanceof Function)
+      t.end()
+    })
+  })
+
+  t.test('#setClass', (t) => {
+    t.autoend()
+    t.beforeEach(beforeTest)
+    t.afterEach(afterTest)
+
+    t.test('should set the class used for instance checks', (t) => {
       const p = new TestPromise(() => {})
-      expect(shim.isPromiseInstance(p)).to.be.false
-
+      t.notOk(shim.isPromiseInstance(p))
       shim.setClass(TestPromise)
-      expect(shim.isPromiseInstance(p)).to.be.true
+      t.ok(shim.isPromiseInstance(p))
+      t.end()
+    })
+
+    t.test('should detect if an object is an instance of the instrumented class', (t) => {
+      shim.setClass(TestPromise)
+      t.notOk(shim.isPromiseInstance(TestPromise))
+      t.ok(shim.isPromiseInstance(new TestPromise(() => {})))
+      t.notOk(shim.isPromiseInstance(new Promise(() => {})))
+      t.notOk(shim.isPromiseInstance({}))
+      t.end()
     })
   })
 
-  describe('#isPromiseInstance', () => {
-    it('should detect if an object is an instance of the instrumented class', () => {
-      shim.setClass(TestPromise)
-      expect(shim.isPromiseInstance(TestPromise)).to.be.false
-      expect(shim.isPromiseInstance(new TestPromise(() => {}))).to.be.true
-      expect(shim.isPromiseInstance(new Promise(() => {}))).to.be.false
-      expect(shim.isPromiseInstance({})).to.be.false
-    })
-  })
+  t.test('#wrapConstructor', (t) => {
+    t.autoend()
+    t.beforeEach(beforeTest)
+    t.afterEach(afterTest)
 
-  describe('#wrapConstructor', () => {
-    it('should accept just a class constructor', () => {
+    t.test('should accept just a class constructor', (t) => {
       const WrappedPromise = shim.wrapConstructor(TestPromise)
-      expect(WrappedPromise).to.not.equal(TestPromise)
-      expect(shim.isWrapped(WrappedPromise)).to.be.true
+      t.not(WrappedPromise, TestPromise)
+      t.ok(shim.isWrapped(WrappedPromise))
 
       const p = new WrappedPromise((resolve, reject) => {
-        expect(resolve).to.be.a('function')
-        expect(reject).to.be.a('function')
+        t.equal(typeof resolve, 'function')
+        t.equal(typeof reject, 'function')
         resolve()
       })
-      expect(p).to.be.an.instanceOf(WrappedPromise).and.an.instanceOf(TestPromise)
 
+      t.ok(p instanceof WrappedPromise, 'instance of wrapped promise')
+      t.ok(p instanceof TestPromise, 'instance of test promise')
       return p
     })
 
-    it('should accept a nodule and property', () => {
+    t.test('should accept a nodule and property', (t) => {
       const testing = { TestPromise }
       shim.wrapConstructor(testing, 'TestPromise')
-      expect(testing).to.have.property('TestPromise').not.equal(TestPromise)
-      expect(shim.isWrapped(testing.TestPromise)).to.be.true
+      t.ok(testing.TestPromise)
+      t.not(testing.TestPromise, TestPromise)
+      t.ok(shim.isWrapped(testing.TestPromise))
 
       const p = new testing.TestPromise((resolve, reject) => {
-        expect(resolve).to.be.a('function')
-        expect(reject).to.be.a('function')
+        t.equal(typeof resolve, 'function')
+        t.equal(typeof reject, 'function')
         resolve()
       })
-      expect(p).to.be.an.instanceOf(testing.TestPromise).and.an.instanceOf(TestPromise)
 
+      t.ok(p instanceof testing.TestPromise)
+      t.ok(p instanceof TestPromise)
       return p
     })
 
-    describe('wrapper', () => {
-      it('should execute the executor', () => {
-        return helper.runInTransaction(agent, () => {
-          let executed = false
+    t.test('should execute the executor', (t) => {
+      return helper.runInTransaction(agent, () => {
+        let executed = false
 
-          const WrappedPromise = shim.wrapConstructor(TestPromise)
-          const p = new WrappedPromise((resolve) => {
-            executed = true
-            resolve()
-          })
+        const WrappedPromise = shim.wrapConstructor(TestPromise)
+        const p = new WrappedPromise((resolve) => {
+          executed = true
+          resolve()
+        })
 
-          expect(executed).to.be.true
+        t.ok(executed)
 
-          return p
+        return p
+      })
+    })
+
+    t.test('should not change resolve values', (t) => {
+      helper.runInTransaction(agent, () => {
+        const resolution = {}
+
+        const WrappedPromise = shim.wrapConstructor(TestPromise)
+        const p = new WrappedPromise((resolve) => {
+          resolve(resolution)
+        })
+
+        p.then((val) => {
+          t.equal(val, resolution)
+          t.end()
         })
       })
+    })
 
-      it('should not change resolve values', (done) => {
-        helper.runInTransaction(agent, () => {
-          const resolution = {}
+    t.test('should not change reject values', (t) => {
+      helper.runInTransaction(agent, () => {
+        const rejection = {}
 
-          const WrappedPromise = shim.wrapConstructor(TestPromise)
-          const p = new WrappedPromise((resolve) => {
-            resolve(resolution)
-          })
+        const WrappedPromise = shim.wrapConstructor(TestPromise)
+        const p = new WrappedPromise((resolve, reject) => {
+          reject(rejection)
+        })
 
-          p.then((val) => {
-            expect(val).to.equal(resolution)
-            done()
-          })
+        p.catch((val) => {
+          t.equal(val, rejection)
+          t.end()
         })
       })
+    })
 
-      it('should not change reject values', (done) => {
-        helper.runInTransaction(agent, () => {
-          const rejection = {}
+    t.test('should capture errors thrown in the executor', (t) => {
+      helper.runInTransaction(agent, () => {
+        const WrappedPromise = shim.wrapConstructor(TestPromise)
 
-          const WrappedPromise = shim.wrapConstructor(TestPromise)
-          const p = new WrappedPromise((resolve, reject) => {
-            reject(rejection)
-          })
-
-          p.catch((val) => {
-            expect(val).to.equal(rejection)
-            done()
+        let p = null
+        t.doesNotThrow(() => {
+          p = new WrappedPromise(() => {
+            throw new Error('this should be caught')
           })
         })
-      })
 
-      it('should capture errors thrown in the executor', (done) => {
-        helper.runInTransaction(agent, () => {
-          const WrappedPromise = shim.wrapConstructor(TestPromise)
-
-          let p = null
-          expect(() => {
-            p = new WrappedPromise(() => {
-              throw new Error('this should be caught')
-            })
-          }).to.not.throw()
-
-          p.catch((err) => {
-            expect(err)
-              .to.be.an.instanceOf(Error)
-              .and.have.property('message', 'this should be caught')
-            done()
-          })
+        p.catch((err) => {
+          t.ok(err instanceof Error)
+          t.ok(err.message)
+          t.end()
         })
       })
+    })
 
-      it('should reinstate lost context', (done) => {
-        helper.runInTransaction(agent, (tx) => {
-          shim.setClass(TestPromise)
-          const WrappedPromise = shim.wrapConstructor(TestPromise)
+    t.test('should reinstate lost context', (t) => {
+      helper.runInTransaction(agent, (tx) => {
+        shim.setClass(TestPromise)
+        const WrappedPromise = shim.wrapConstructor(TestPromise)
 
-          // Wrapping then is required to make sure the then callback is wrapped
-          // with context propagation.
-          shim.wrapThen(TestPromise.prototype, 'then')
+        // Wrapping then is required to make sure the then callback is wrapped
+        // with context propagation.
+        shim.wrapThen(TestPromise.prototype, 'then')
 
-          async.series(
-            [
-              (cb) => {
-                expectSameTransaction(agent.getTransaction(), tx)
-                new WrappedPromise((resolve) => {
-                  expectSameTransaction(agent.getTransaction(), tx)
-                  resolve() // <-- Resolve will lose context.
+        asyncLib.series(
+          [
+            (cb) => {
+              t.sameTransaction(agent.getTransaction(), tx)
+              new WrappedPromise((resolve) => {
+                t.sameTransaction(agent.getTransaction(), tx)
+                resolve() // <-- Resolve will lose context.
+              })
+                .then(() => {
+                  t.sameTransaction(agent.getTransaction(), tx)
+                  cb()
                 })
-                  .then(() => {
-                    expectSameTransaction(agent.getTransaction(), tx)
-                    cb()
-                  })
-                  .catch(cb)
-              },
-              (cb) => {
-                expectSameTransaction(agent.getTransaction(), tx)
-                new WrappedPromise((resolve) => {
-                  expectSameTransaction(agent.getTransaction(), tx)
-                  helper.runOutOfContext(resolve) // <-- Context loss before resolve.
+                .catch(cb)
+            },
+            (cb) => {
+              t.sameTransaction(agent.getTransaction(), tx)
+              new WrappedPromise((resolve) => {
+                t.sameTransaction(agent.getTransaction(), tx)
+                helper.runOutOfContext(resolve) // <-- Context loss before resolve.
+              })
+                .then(() => {
+                  t.sameTransaction(agent.getTransaction(), tx)
+                  cb()
                 })
-                  .then(() => {
-                    expectSameTransaction(agent.getTransaction(), tx)
-                    cb()
-                  })
-                  .catch(cb)
-              }
-            ],
-            done
-          )
-        })
+                .catch(cb)
+            }
+          ],
+          t.end
+        )
       })
     })
   })
 
-  describe('#wrapExecutorCaller', () => {
-    it('should accept just a function', () => {
+  t.test('#wrapExecutorCaller', (t) => {
+    t.autoend()
+    t.beforeEach(beforeTest)
+    t.afterEach(afterTest)
+
+    t.test('should accept just a function', (t) => {
       const wrappedCaller = shim.wrapExecutorCaller(TestPromise.prototype.executorCaller)
-      expect(wrappedCaller).to.not.equal(TestPromise.prototype.executorCaller)
-      expect(shim.isWrapped(wrappedCaller)).to.be.true
+      t.not(wrappedCaller, TestPromise.prototype.executorCaller)
+      t.ok(shim.isWrapped(wrappedCaller))
 
       TestPromise.prototype.executorCaller = wrappedCaller
 
       const p = new TestPromise((resolve, reject) => {
-        expect(resolve).to.be.a('function')
-        expect(reject).to.be.a('function')
+        t.equal(typeof resolve, 'function')
+        t.equal(typeof reject, 'function')
         resolve()
       })
-      expect(p).an.instanceOf(TestPromise)
 
+      t.ok(p instanceof TestPromise)
       return p
     })
 
-    it('should accept a nodule and property', () => {
+    t.test('should accept a nodule and property', (t) => {
       shim.wrapExecutorCaller(TestPromise.prototype, 'executorCaller')
-      expect(shim.isWrapped(TestPromise.prototype.executorCaller)).to.be.true
+      t.ok(shim.isWrapped(TestPromise.prototype.executorCaller))
 
       const p = new TestPromise((resolve, reject) => {
-        expect(resolve).to.be.a('function')
-        expect(reject).to.be.a('function')
+        t.equal(typeof resolve, 'function')
+        t.equal(typeof reject, 'function')
         resolve()
       })
-      expect(p).an.instanceOf(TestPromise)
-
+      t.ok(p instanceof TestPromise)
       return p
     })
 
-    describe('wrapper', () => {
-      it('should execute the executor', () => {
-        return helper.runInTransaction(agent, () => {
-          let executed = false
+    t.test('should execute the executor', (t) => {
+      return helper.runInTransaction(agent, () => {
+        let executed = false
 
-          shim.wrapExecutorCaller(TestPromise.prototype, 'executorCaller')
-          const p = new TestPromise((resolve) => {
-            executed = true
-            resolve()
-          })
+        shim.wrapExecutorCaller(TestPromise.prototype, 'executorCaller')
+        const p = new TestPromise((resolve) => {
+          executed = true
+          resolve()
+        })
 
-          expect(executed).to.be.true
+        t.ok(executed)
+        return p
+      })
+    })
 
-          return p
+    t.test('should not change resolve values', (t) => {
+      helper.runInTransaction(agent, () => {
+        const resolution = {}
+
+        shim.wrapExecutorCaller(TestPromise.prototype, 'executorCaller')
+        const p = new TestPromise((resolve) => {
+          resolve(resolution)
+        })
+
+        p.then((val) => {
+          t.equal(val, resolution)
+          t.end()
         })
       })
+    })
 
-      it('should not change resolve values', (done) => {
-        helper.runInTransaction(agent, () => {
-          const resolution = {}
+    t.test('should not change reject values', (t) => {
+      helper.runInTransaction(agent, () => {
+        const rejection = {}
 
-          shim.wrapExecutorCaller(TestPromise.prototype, 'executorCaller')
-          const p = new TestPromise((resolve) => {
-            resolve(resolution)
-          })
+        shim.wrapExecutorCaller(TestPromise.prototype, 'executorCaller')
+        const p = new TestPromise((resolve, reject) => {
+          reject(rejection)
+        })
 
-          p.then((val) => {
-            expect(val).to.equal(resolution)
-            done()
-          })
+        p.catch((val) => {
+          t.equal(val, rejection)
+          t.end()
         })
       })
+    })
 
-      it('should not change reject values', (done) => {
-        helper.runInTransaction(agent, () => {
-          const rejection = {}
+    t.test('should capture errors thrown in the executor', (t) => {
+      helper.runInTransaction(agent, () => {
+        shim.wrapExecutorCaller(TestPromise.prototype, 'executorCaller')
 
-          shim.wrapExecutorCaller(TestPromise.prototype, 'executorCaller')
-          const p = new TestPromise((resolve, reject) => {
-            reject(rejection)
-          })
-
-          p.catch((val) => {
-            expect(val).to.equal(rejection)
-            done()
+        let p = null
+        t.doesNotThrow(() => {
+          p = new TestPromise(() => {
+            throw new Error('this should be caught')
           })
         })
-      })
 
-      it('should capture errors thrown in the executor', (done) => {
-        helper.runInTransaction(agent, () => {
-          shim.wrapExecutorCaller(TestPromise.prototype, 'executorCaller')
-
-          let p = null
-          expect(() => {
-            p = new TestPromise(() => {
-              throw new Error('this should be caught')
-            })
-          }).to.not.throw()
-
-          p.catch((err) => {
-            expect(err)
-              .to.be.an.instanceOf(Error)
-              .and.have.property('message', 'this should be caught')
-            done()
-          })
+        p.catch((err) => {
+          t.ok(err instanceof Error)
+          t.ok(err.message)
+          t.end()
         })
       })
+    })
 
-      it('should reinstate lost context', (done) => {
-        helper.runInTransaction(agent, (tx) => {
-          shim.setClass(TestPromise)
-          shim.wrapExecutorCaller(TestPromise.prototype, 'executorCaller')
+    t.test('should reinstate lost context', (t) => {
+      helper.runInTransaction(agent, (tx) => {
+        shim.setClass(TestPromise)
+        shim.wrapExecutorCaller(TestPromise.prototype, 'executorCaller')
 
-          // Wrapping then is required to make sure the then callback is wrapped
-          // with context propagation.
-          shim.wrapThen(TestPromise.prototype, 'then')
+        // Wrapping then is required to make sure the then callback is wrapped
+        // with context propagation.
+        shim.wrapThen(TestPromise.prototype, 'then')
 
-          async.series(
-            [
-              (cb) => {
-                expectSameTransaction(agent.getTransaction(), tx)
-                new TestPromise((resolve) => {
-                  expectSameTransaction(agent.getTransaction(), tx)
-                  resolve() // <-- Resolve will lose context.
+        asyncLib.series(
+          [
+            (cb) => {
+              t.sameTransaction(agent.getTransaction(), tx)
+              new TestPromise((resolve) => {
+                t.sameTransaction(agent.getTransaction(), tx)
+                resolve() // <-- Resolve will lose context.
+              })
+                .then(() => {
+                  t.sameTransaction(agent.getTransaction(), tx)
+                  cb()
                 })
-                  .then(() => {
-                    expectSameTransaction(agent.getTransaction(), tx)
-                    cb()
-                  })
-                  .catch(cb)
-              },
-              (cb) => {
-                expectSameTransaction(agent.getTransaction(), tx)
-                new TestPromise((resolve) => {
-                  expectSameTransaction(agent.getTransaction(), tx)
-                  helper.runOutOfContext(resolve) // <-- Context loss before resolve.
+                .catch(cb)
+            },
+            (cb) => {
+              t.sameTransaction(agent.getTransaction(), tx)
+              new TestPromise((resolve) => {
+                t.sameTransaction(agent.getTransaction(), tx)
+                helper.runOutOfContext(resolve) // <-- Context loss before resolve.
+              })
+                .then(() => {
+                  t.sameTransaction(agent.getTransaction(), tx)
+                  cb()
                 })
-                  .then(() => {
-                    expectSameTransaction(agent.getTransaction(), tx)
-                    cb()
-                  })
-                  .catch(cb)
-              }
-            ],
-            done
-          )
-        })
+                .catch(cb)
+            }
+          ],
+          t.end
+        )
       })
     })
   })
 
-  describe('#wrapCast', () => {
-    it('should accept just a function', (done) => {
+  t.test('#wrapCast', (t) => {
+    t.autoend()
+    t.beforeEach(beforeTest)
+    t.afterEach(afterTest)
+
+    t.test('should accept just a function', (t) => {
       const wrappedResolve = shim.wrapCast(TestPromise.resolve)
-      expect(wrappedResolve).to.be.a('function').and.not.equal(TestPromise.resolve)
-      expect(shim.isWrapped(wrappedResolve)).to.be.true
+      t.equal(typeof wrappedResolve, 'function')
+      t.not(wrappedResolve, TestPromise.resolve)
+      t.ok(shim.isWrapped(wrappedResolve))
 
       const p = wrappedResolve('foo')
-      expect(p).to.be.an.instanceOf(TestPromise)
+      t.ok(p instanceof TestPromise)
       p.then((val) => {
-        expect(val).to.equal('foo')
-        done()
+        t.equal(val, 'foo')
+        t.end()
       })
     })
 
-    it('should accept a nodule and property', (done) => {
+    t.test('should accept a nodule and property', (t) => {
       shim.wrapCast(TestPromise, 'resolve')
-      expect(TestPromise.resolve).to.be.a('function')
-      expect(shim.isWrapped(TestPromise.resolve)).to.be.true
+      t.equal(typeof TestPromise.resolve, 'function')
+      t.ok(shim.isWrapped(TestPromise.resolve))
 
       const p = TestPromise.resolve('foo')
-      expect(p).to.be.an.instanceOf(TestPromise)
+      t.ok(p instanceof TestPromise)
       p.then((val) => {
-        expect(val).to.equal('foo')
-        done()
+        t.equal(val, 'foo')
+        t.end()
       })
     })
 
-    describe('wrapper', () => {
-      it('should link context through to thenned callbacks', (done) => {
-        shim.setClass(TestPromise)
-        shim.wrapCast(TestPromise, 'resolve')
-        shim.wrapThen(TestPromise.prototype, 'then')
+    t.test('should link context through to thenned callbacks', (t) => {
+      shim.setClass(TestPromise)
+      shim.wrapCast(TestPromise, 'resolve')
+      shim.wrapThen(TestPromise.prototype, 'then')
 
-        helper.runInTransaction(agent, (tx) => {
-          TestPromise.resolve().then(() => {
-            expectSameTransaction(agent.getTransaction(), tx)
-            done()
-          })
+      helper.runInTransaction(agent, (tx) => {
+        TestPromise.resolve().then(() => {
+          t.sameTransaction(agent.getTransaction(), tx)
+          t.end()
         })
       })
     })
   })
 
-  describe('#wrapThen', () => {
-    it('should accept just a function', (done) => {
+  t.test('#wrapThen', (t) => {
+    t.autoend()
+    t.beforeEach(beforeTest)
+    t.afterEach(afterTest)
+
+    t.test('should accept just a function', (t) => {
       shim.setClass(TestPromise)
       const wrappedThen = shim.wrapThen(TestPromise.prototype.then)
-      expect(wrappedThen).to.be.a('function').and.not.equal(TestPromise.prototype.then)
-      expect(shim.isWrapped(wrappedThen)).to.be.true
+      t.equal(typeof wrappedThen, 'function')
+      t.not(wrappedThen, TestPromise.prototype.then)
+      t.ok(shim.isWrapped(wrappedThen))
 
       const p = TestPromise.resolve('foo')
-      expect(p).to.be.an.instanceOf(TestPromise)
+      t.ok(p instanceof TestPromise)
       wrappedThen.call(p, (val) => {
-        expect(val).to.equal('foo')
-        done()
+        t.equal(val, 'foo')
+        t.end()
       })
     })
 
-    it('should accept a nodule and property', (done) => {
+    t.test('should accept a nodule and property', (t) => {
       shim.setClass(TestPromise)
       shim.wrapThen(TestPromise.prototype, 'then')
-      expect(TestPromise.prototype.then).to.be.a('function')
-      expect(shim.isWrapped(TestPromise.prototype.then)).to.be.true
+      t.equal(typeof TestPromise.prototype.then, 'function')
+      t.ok(shim.isWrapped(TestPromise.prototype.then))
 
       const p = TestPromise.resolve('foo')
-      expect(p).to.be.an.instanceOf(TestPromise)
+      t.ok(p instanceof TestPromise)
       p.then((val) => {
-        expect(val).to.equal('foo')
-        done()
+        t.equal(val, 'foo')
+        t.end()
       })
     })
 
-    describe('wrapper', () => {
-      it('should link context through to thenned callbacks', (done) => {
-        shim.setClass(TestPromise)
-        shim.wrapThen(TestPromise.prototype, 'then')
+    t.test('should link context through to thenned callbacks', (t) => {
+      shim.setClass(TestPromise)
+      shim.wrapThen(TestPromise.prototype, 'then')
 
-        helper.runInTransaction(agent, (tx) => {
-          TestPromise.resolve().then(() => {
-            expectSameTransaction(agent.getTransaction(), tx)
-            done()
-          })
+      helper.runInTransaction(agent, (tx) => {
+        TestPromise.resolve().then(() => {
+          t.sameTransaction(agent.getTransaction(), tx)
+          t.end()
         })
       })
+    })
 
-      it('should wrap both handlers', () => {
-        shim.setClass(TestPromise)
-        shim.wrapThen(TestPromise.prototype, 'then')
+    t.test('should wrap both handlers', (t) => {
+      shim.setClass(TestPromise)
+      shim.wrapThen(TestPromise.prototype, 'then')
+      function resolve() {}
+      function reject() {}
 
-        const p = TestPromise.resolve()
-        p.then(resolve, reject)
+      const p = TestPromise.resolve()
+      p.then(resolve, reject)
 
-        expect(p).property('res').to.be.a('function').and.not.equal(resolve)
-        expect(p).property('rej').to.be.a('function').and.not.equal(reject)
-
-        function resolve() {}
-        function reject() {}
-      })
+      t.equal(typeof p.res, 'function')
+      t.not(p.res, resolve)
+      t.equal(typeof p.rej, 'function')
+      t.not(p.rej, reject)
+      t.end()
     })
   })
 
-  describe('#wrapCatch', () => {
-    it('should accept just a function', (done) => {
+  t.test('#wrapCatch', (t) => {
+    t.autoend()
+    t.beforeEach(beforeTest)
+    t.afterEach(afterTest)
+
+    t.test('should accept just a function', (t) => {
       shim.setClass(TestPromise)
       const wrappedCatch = shim.wrapCatch(TestPromise.prototype.catch)
-      expect(wrappedCatch).to.be.a('function').and.not.equal(TestPromise.prototype.catch)
-      expect(shim.isWrapped(wrappedCatch)).to.be.true
+      t.equal(typeof wrappedCatch, 'function')
+      t.not(wrappedCatch, TestPromise.prototype.catch)
+      t.ok(shim.isWrapped(wrappedCatch))
 
       const p = TestPromise.reject('foo')
-      expect(p).to.be.an.instanceOf(TestPromise)
+      t.ok(p instanceof TestPromise)
       wrappedCatch.call(p, (val) => {
-        expect(val).to.equal('foo')
-        done()
+        t.equal(val, 'foo')
+        t.end()
       })
     })
 
-    it('should accept a nodule and property', (done) => {
+    t.test('should accept a nodule and property', (t) => {
       shim.setClass(TestPromise)
       shim.wrapCatch(TestPromise.prototype, 'catch')
-      expect(TestPromise.prototype.catch).to.be.a('function')
-      expect(shim.isWrapped(TestPromise.prototype.catch)).to.be.true
+      t.equal(typeof TestPromise.prototype.catch, 'function')
+      t.ok(shim.isWrapped(TestPromise.prototype.catch))
 
       const p = TestPromise.reject('foo')
-      expect(p).to.be.an.instanceOf(TestPromise)
+      t.ok(p instanceof TestPromise)
       p.catch((val) => {
-        expect(val).to.equal('foo')
-        done()
+        t.equal(val, 'foo')
+        t.end()
       })
     })
 
-    describe('wrapper', () => {
-      it('should link context through to thenned callbacks', (done) => {
-        shim.setClass(TestPromise)
-        shim.wrapCatch(TestPromise.prototype, 'catch')
+    t.test('should link context through to thenned callbacks', (t) => {
+      shim.setClass(TestPromise)
+      shim.wrapCatch(TestPromise.prototype, 'catch')
 
-        helper.runInTransaction(agent, (tx) => {
-          TestPromise.reject().catch(() => {
-            expectSameTransaction(agent.getTransaction(), tx)
-            done()
-          })
+      helper.runInTransaction(agent, (tx) => {
+        TestPromise.reject().catch(() => {
+          t.sameTransaction(agent.getTransaction(), tx)
+          t.end()
         })
       })
+    })
 
-      it('should only wrap the rejection handler', () => {
-        shim.setClass(TestPromise)
-        shim.wrapCatch(TestPromise.prototype, 'catch')
+    t.test('should only wrap the rejection handler', (t) => {
+      shim.setClass(TestPromise)
+      shim.wrapCatch(TestPromise.prototype, 'catch')
 
-        const p = TestPromise.reject()
-        p.catch(Error, reject)
+      const p = TestPromise.reject()
+      function reject() {}
+      p.catch(Error, reject)
 
-        expect(p).property('ErrorClass', Error)
-        expect(p).property('rej').to.be.a('function').and.not.equal(reject)
-
-        function reject() {}
-      })
+      t.ok(p.ErrorClass)
+      t.equal(typeof p.rej, 'function')
+      t.not(p.rej, reject)
+      t.end()
     })
   })
 
-  describe('#wrapPromisify', () => {
+  t.test('#wrapPromisify', (t) => {
+    t.autoend()
     let asyncFn = null
-
-    beforeEach(() => {
+    t.beforeEach(() => {
+      beforeTest()
       asyncFn = (val, cb) => {
         helper.runOutOfContext(() => {
           if (val instanceof Error) {
@@ -633,45 +608,45 @@ describe('PromiseShim', () => {
       }
     })
 
-    it('should accept just a function', () => {
+    t.afterEach(afterTest)
+
+    t.test('should accept just a function', (t) => {
       const wrappedPromisify = shim.wrapPromisify(TestPromise.promisify)
-      expect(wrappedPromisify).to.be.a('function').and.not.equal(TestPromise.promisify)
-      expect(shim.isWrapped(wrappedPromisify)).to.be.true
+      t.equal(typeof wrappedPromisify, 'function')
+      t.not(wrappedPromisify, TestPromise.promisify)
+      t.ok(shim.isWrapped(wrappedPromisify))
 
-      const promised = wrappedPromisify(asyncFn)
-      expect(promised).to.be.a('function').and.not.equal(asyncFn)
+      const promised = wrappedPromisify(shim, asyncFn)
+      t.equal(typeof promised, 'function')
+      t.not(promised, asyncFn)
+      t.end()
     })
 
-    it('should accept a nodule and property', () => {
+    t.test('should accept a nodule and property', (t) => {
       shim.wrapPromisify(TestPromise, 'promisify')
-      expect(TestPromise.promisify).to.be.a('function')
-      expect(shim.isWrapped(TestPromise.promisify)).to.be.true
+      t.equal(typeof TestPromise.promisify, 'function')
+      t.ok(shim.isWrapped(TestPromise.promisify))
 
-      const promised = TestPromise.promisify(asyncFn)
-      expect(promised).to.be.a('function').and.not.equal(asyncFn)
+      const promised = TestPromise.promisify(shim, asyncFn)
+      t.equal(typeof promised, 'function')
+      t.not(promised, asyncFn)
+      t.end()
     })
 
-    describe('wrapper', () => {
-      it('should propagate transaction context', (done) => {
-        shim.setClass(TestPromise)
-        shim.wrapPromisify(TestPromise, 'promisify')
-        shim.wrapThen(TestPromise.prototype, 'then')
+    t.test('should propagate transaction context', (t) => {
+      shim.setClass(TestPromise)
+      shim.wrapPromisify(TestPromise, 'promisify')
+      shim.wrapThen(TestPromise.prototype, 'then')
 
-        const promised = TestPromise.promisify(asyncFn)
+      const promised = TestPromise.promisify(shim, asyncFn)
 
-        helper.runInTransaction(agent, (tx) => {
-          promised('foobar').then((val) => {
-            expectSameTransaction(agent.getTransaction(), tx)
-            expect(val).to.equal('foobar')
-            done()
-          })
+      helper.runInTransaction(agent, (tx) => {
+        promised('foobar').then((val) => {
+          t.sameTransaction(agent.getTransaction(), tx)
+          t.equal(val, 'foobar')
+          t.end()
         })
       })
     })
   })
 })
-
-function expectSameTransaction(tx1, tx2) {
-  expect(tx2, 'transaction 2').to.exist
-  expect(tx1, 'transaction 1').to.exist.and.have.property('id', tx2.id)
-}

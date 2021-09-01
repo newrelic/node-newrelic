@@ -5,13 +5,9 @@
 
 'use strict'
 
-// TODO: convert to normal tap style.
-// Below allows use of mocha DSL with tap runner.
-require('tap').mochaGlobals()
-
+const { test } = require('tap')
 const ConglomerateShim = require('../../../lib/shim/conglomerate-shim')
 const DatastoreShim = require('../../../lib/shim/datastore-shim')
-const { expect } = require('chai')
 const helper = require('../../lib/agent_helper')
 const MessageShim = require('../../../lib/shim/message-shim')
 const PromiseShim = require('../../../lib/shim/promise-shim')
@@ -19,69 +15,55 @@ const Shim = require('../../../lib/shim/shim')
 const TransactionShim = require('../../../lib/shim/transaction-shim')
 const WebFrameworkShim = require('../../../lib/shim/webframework-shim')
 
-describe('ConglomerateShim', () => {
+test('ConglomerateShim', (t) => {
+  t.autoend()
   let agent = null
   let shim = null
 
-  beforeEach(() => {
+  t.beforeEach(() => {
     agent = helper.loadMockedAgent()
     shim = new ConglomerateShim(agent, 'test-module')
   })
 
-  afterEach(() => {
+  t.afterEach(() => {
     helper.unloadAgent(agent)
     agent = null
     shim = null
   })
 
-  describe('constructor', () => {
-    it('should require an agent parameter', () => {
-      expect(() => new ConglomerateShim()).to.throw(
-        Error,
-        /^Shim must be initialized with .*? agent/
-      )
-    })
-    it('should require a module name parameter', () => {
-      expect(() => new ConglomerateShim(agent)).to.throw(
-        Error,
-        /^Shim must be initialized with .*? module name/
-      )
-    })
+  t.test('should require an agent parameter', (t) => {
+    t.throws(() => new ConglomerateShim(), /^Shim must be initialized with .*? agent/)
+    t.end()
+  })
+  t.test('should require a module name parameter', (t) => {
+    t.throws(() => new ConglomerateShim(agent), /^Shim must be initialized with .*? module name/)
+    t.end()
   })
 
-  describe('module type properties', () => {
-    it('should exist for each shim type', () => {
-      expect(shim).to.have.property('GENERIC', 'generic')
-      expect(shim).to.have.property('DATASTORE', 'datastore')
-      expect(shim).to.have.property('MESSAGE', 'message')
-      expect(shim).to.have.property('PROMISE', 'promise')
-      expect(shim).to.have.property('TRANSACTION', 'transaction')
-      expect(shim).to.have.property('WEB_FRAMEWORK', 'web-framework')
-    })
+  t.test('should exist for each shim type', (t) => {
+    t.ok(shim.GENERIC, 'generic')
+    t.ok(shim.DATASTORE, 'datastore')
+    t.ok(shim.MESSAGE, 'message')
+    t.ok(shim.PROMISE, 'promise')
+    t.ok(shim.TRANSACTION, 'transaction')
+    t.ok(shim.WEB_FRAMEWORK, 'web-framework')
+    t.end()
   })
 
-  describe('#makeSpecializedShim', () => {
-    it('should construct a new shim', () => {
-      expect(shim.makeSpecializedShim(shim.GENERIC, 'foobar'))
-        .to.be.an.instanceOf(Shim)
-        .and.not.equal(shim)
-    })
+  t.test('should construct a new shim', (t) => {
+    const specialShim = shim.makeSpecializedShim(shim.GENERIC, 'foobar')
+    t.ok(specialShim instanceof Shim)
+    t.not(specialShim, shim)
+    t.end()
+  })
 
-    describe('new shim', () => {
-      it('should be an instance of the correct class', () => {
-        expect(shim.makeSpecializedShim(shim.GENERIC, 'foobar')).to.be.an.instanceOf(Shim)
-        expect(shim.makeSpecializedShim(shim.DATASTORE, 'foobar')).to.be.an.instanceOf(
-          DatastoreShim
-        )
-        expect(shim.makeSpecializedShim(shim.MESSAGE, 'foobar')).to.be.an.instanceOf(MessageShim)
-        expect(shim.makeSpecializedShim(shim.PROMISE, 'foobar')).to.be.an.instanceOf(PromiseShim)
-        expect(shim.makeSpecializedShim(shim.TRANSACTION, 'foobar')).to.be.an.instanceOf(
-          TransactionShim
-        )
-        expect(shim.makeSpecializedShim(shim.WEB_FRAMEWORK, 'foobar')).to.be.an.instanceOf(
-          WebFrameworkShim
-        )
-      })
-    })
+  t.test('should be an instance of the correct class', (t) => {
+    t.ok(shim.makeSpecializedShim(shim.GENERIC, 'foobar') instanceof Shim)
+    t.ok(shim.makeSpecializedShim(shim.DATASTORE, 'foobar') instanceof DatastoreShim)
+    t.ok(shim.makeSpecializedShim(shim.MESSAGE, 'foobar') instanceof MessageShim)
+    t.ok(shim.makeSpecializedShim(shim.PROMISE, 'foobar') instanceof PromiseShim)
+    t.ok(shim.makeSpecializedShim(shim.TRANSACTION, 'foobar') instanceof TransactionShim)
+    t.ok(shim.makeSpecializedShim(shim.WEB_FRAMEWORK, 'foobar') instanceof WebFrameworkShim)
+    t.end()
   })
 })

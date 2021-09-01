@@ -22,7 +22,8 @@ const CAPATH = path.join(__dirname, 'ca-certificate.crt')
 
 let _agent = null
 const tasks = []
-setInterval(() => {
+
+let interval = setInterval(() => {
   while (tasks.length) {
     tasks.pop()()
   }
@@ -30,6 +31,9 @@ setInterval(() => {
 
 const helper = (module.exports = {
   SSL_HOST: 'localhost',
+  // export the runOutOfContext task loop
+  // so at times it can be ref'd, unref'd
+  interval,
   getAgent: () => _agent,
 
   /**
@@ -424,6 +428,22 @@ const helper = (module.exports = {
   makeAttributeFilterConfig: (rules = {}) => {
     rules = copy.shallow(rules, defaultAttributeConfig())
     return copy.shallow(rules, new EventEmitter())
+  },
+
+  getMetrics(agent) {
+    return agent.metrics._metrics
+  },
+
+  testNonWritable({ t, obj, key, value }) {
+    t.throws(function () {
+      obj[key] = 'testNonWritable test value'
+    }, new RegExp("(read only property '" + key + "'|Cannot set property " + key + ')'))
+
+    if (value) {
+      t.equal(obj[key], value)
+    } else {
+      t.not(obj[key], 'testNonWritable test value')
+    }
   }
 })
 
