@@ -312,4 +312,28 @@ tap.test('SpanAggregator', (t) => {
     t.equal(spanEventAggregator.limit, MAX_LIMIT, `should set limit to ${MAX_LIMIT}`)
     t.end()
   })
+
+  t.test('should report SpanEvent/Limit supportability metric', (t) => {
+    const recordValueStub = sinon.stub()
+    spanEventAggregator._metrics.getOrCreateMetric = sinon
+      .stub()
+      .returns({ recordValue: recordValueStub })
+    const harvestLimit = 2000
+    const fakeConfig = {
+      getAggregatorConfig: sinon.stub().returns(null),
+      span_event_harvest_config: {
+        harvest_limit: harvestLimit
+      }
+    }
+
+    spanEventAggregator.reconfigure(fakeConfig)
+
+    t.equal(
+      spanEventAggregator._metrics.getOrCreateMetric.args[0][0],
+      'Supportability/SpanEvent/Limit',
+      'should name event appropriately'
+    )
+    t.equal(recordValueStub.args[0][0], harvestLimit, `should set limit to ${harvestLimit}`)
+    t.end()
+  })
 })
