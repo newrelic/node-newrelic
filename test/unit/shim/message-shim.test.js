@@ -4,14 +4,16 @@
  */
 
 'use strict'
-const { test } = require('tap')
+const tap = require('tap')
 const API = require('../../../api')
 var DESTINATIONS = require('../../../lib/config/attribute-filter').DESTINATIONS
 const hashes = require('../../../lib/util/hashes')
 const helper = require('../../lib/agent_helper')
 const MessageShim = require('../../../lib/shim/message-shim')
 
-test('MessageShim', function (t) {
+tap.Test.prototype.addAssert('isNonWritable', 1, helper.isNonWritable)
+
+tap.test('MessageShim', function (t) {
   t.autoend()
   let agent = null
   let shim = null
@@ -100,8 +102,8 @@ test('MessageShim', function (t) {
 
     t.test('should be enumerated on the class and prototype', function (t) {
       messageLibs.forEach(function (lib) {
-        helper.testNonWritable({ t, obj: MessageShim, key: lib })
-        helper.testNonWritable({ t, obj: shim, key: lib })
+        t.isNonWritable({ obj: MessageShim, key: lib })
+        t.isNonWritable({ obj: shim, key: lib })
       })
       t.end()
     })
@@ -115,8 +117,8 @@ test('MessageShim', function (t) {
 
     t.test('should be enumerated on the class and prototype', function (t) {
       messageLibs.forEach(function (lib) {
-        helper.testNonWritable({ t, obj: MessageShim, key: lib })
-        helper.testNonWritable({ t, obj: shim, key: lib })
+        t.isNonWritable({ obj: MessageShim, key: lib })
+        t.isNonWritable({ obj: shim, key: lib })
       })
       t.end()
     })

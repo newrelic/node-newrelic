@@ -22,12 +22,12 @@ tap.test('PromiseShim', (t) => {
 
   // ensure the test does not exist before all pending
   // runOutOfContext tasks are executed
-  helper.interval.ref()
+  helper.outOfContextQueueInterval.ref()
 
   // unref the runOutOfContext interval
   // so other tests can run unencumbered
   t.teardown(() => {
-    helper.interval.unref()
+    helper.outOfContextQueueInterval.unref()
   })
 
   let agent = null
