@@ -4,61 +4,53 @@
  */
 
 'use strict'
+const { test } = require('tap')
+const codec = require('../../../lib/util/codec')
+const DATA = { foo: 'bar' }
+const ENCODED = 'eJyrVkrLz1eyUkpKLFKqBQAdegQ0'
 
-// TODO: convert to normal tap style.
-// Below allows use of mocha DSL with tap runner.
-require('tap').mochaGlobals()
-
-var expect = require('chai').expect
-var codec = require('../../../lib/util/codec')
-
-var DATA = { foo: 'bar' }
-var ENCODED = 'eJyrVkrLz1eyUkpKLFKqBQAdegQ0'
-
-describe('codec', function () {
-  describe('.encode', function () {
-    it('should zip and base-64 encode the data', function (done) {
+test('codec', function (t) {
+  t.autoend()
+  t.test('.encode', function (t) {
+    t.autoend()
+    t.test('should zip and base-64 encode the data', function (t) {
       codec.encode(DATA, function (err, encoded) {
-        expect(err).to.not.exist
-        expect(encoded).to.equal(ENCODED)
-        done()
+        t.error(err)
+        t.equal(encoded, ENCODED)
+        t.end()
       })
     })
 
-    it('should not error for circular payloads', function (done) {
-      var val = 'eJyrVkrLz1eyUkpKLFLSUcpPygKyo50zi5JLcxKLFOpilWoBuCkK6A=='
-      var obj = { foo: 'bar' }
+    t.test('should not error for circular payloads', function (t) {
+      const val = 'eJyrVkrLz1eyUkpKLFLSUcpPygKyo50zi5JLcxKLFOpilWoBuCkK6A=='
+      const obj = { foo: 'bar' }
       obj.obj = obj
 
       codec.encode(obj, function (err, encoded) {
-        expect(err).to.not.exist
-        expect(encoded).to.equal(val)
-        done()
+        t.error(err)
+        t.equal(encoded, val)
+        t.end()
       })
     })
   })
 
-  describe('.decode', function () {
-    it('should parse the encoded payload', function (done) {
-      codec.decode(ENCODED, function (err, data) {
-        expect(err).to.not.exist
-        expect(data).to.deep.equal(DATA)
-        done()
-      })
+  t.test('.decode should parse the encoded payload', function (t) {
+    codec.decode(ENCODED, function (err, data) {
+      t.error(err)
+      t.same(data, DATA)
+      t.end()
     })
   })
 
-  describe('.encodeSync', function () {
-    it('should zip and base-64 encode the data', function () {
-      const encoded = codec.encodeSync(DATA)
-      expect(encoded).to.equal(ENCODED)
-    })
+  t.test('.encodeSync should zip and base-64 encode the data', function (t) {
+    const encoded = codec.encodeSync(DATA)
+    t.equal(encoded, ENCODED)
+    t.end()
   })
 
-  describe('.decodeSync', function () {
-    it('should parse the encoded payload', function () {
-      const data = codec.decodeSync(ENCODED)
-      expect(data).to.deep.equal(DATA)
-    })
+  t.test('.decodeSync should parse the encoded payload', function (t) {
+    const data = codec.decodeSync(ENCODED)
+    t.same(data, DATA)
+    t.end()
   })
 })

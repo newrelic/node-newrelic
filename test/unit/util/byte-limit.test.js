@@ -5,67 +5,78 @@
 
 'use strict'
 
-// TODO: convert to normal tap style.
-// Below allows use of mocha DSL with tap runner.
-require('tap').mochaGlobals()
-
-const expect = require('chai').expect
+const { test } = require('tap')
 const byteUtils = require('../../../lib/util/byte-limit')
 
-describe('byte-limit', () => {
-  describe('#isValidLength', () => {
-    it('returns false when the string is larger than the limit', () => {
-      expect(byteUtils.isValidLength('12345', 4)).to.equal(false)
+test('byte-limit', (t) => {
+  t.autoend()
+
+  t.test('#isValidLength', (t) => {
+    t.autoend()
+    t.test('returns false when the string is larger than the limit', (t) => {
+      t.notOk(byteUtils.isValidLength('12345', 4))
+      t.end()
     })
 
-    it('returns true when the string is equal to the limit', () => {
-      expect(byteUtils.isValidLength('12345', 5)).to.equal(true)
+    t.test('returns true when the string is equal to the limit', (t) => {
+      t.ok(byteUtils.isValidLength('12345', 5))
+      t.end()
     })
 
-    it('returns true when the string is smaller than the limit', () => {
-      expect(byteUtils.isValidLength('12345', 6)).to.equal(true)
+    t.test('returns true when the string is smaller than the limit', (t) => {
+      t.ok(byteUtils.isValidLength('12345', 6))
+      t.end()
     })
   })
-  describe('#compareLength', () => {
-    it('returns -1 when the string is smaller than the limit', () => {
+  t.test('#compareLength', (t) => {
+    t.autoend()
+    t.test('returns -1 when the string is smaller than the limit', (t) => {
       const str = '123456789'
       const cmpVal = byteUtils.compareLength(str, 255)
-      expect(cmpVal).to.be.lessThan(0)
+      t.ok(cmpVal < 0)
+      t.end()
     })
-    it('returns 0 when the string is equal than the limit', () => {
+    t.test('returns 0 when the string is equal than the limit', (t) => {
       const str = '123456789'
       const cmpVal = byteUtils.compareLength(str, 9)
-      expect(cmpVal).to.equal(0)
+      t.equal(cmpVal, 0)
+      t.end()
     })
-    it('returns 1 when the string is larger than the limit', () => {
+    t.test('returns 1 when the string is larger than the limit', (t) => {
       const str = '123456789'
       const cmpVal = byteUtils.compareLength(str, 2)
-      expect(cmpVal).to.be.greaterThan(0)
+      t.ok(cmpVal > 0)
+      t.end()
     })
   })
 
-  describe('#truncate', () => {
-    it('truncates string value to given limit', () => {
+  t.test('#truncate', (t) => {
+    t.autoend()
+    t.test('truncates string value to given limit', (t) => {
       let str = '123456789'
       str = byteUtils.truncate(str, 5)
-      expect(str).to.equal('12345')
+      t.equal(str, '12345')
+      t.end()
     })
-    it('returns original string if within limit', () => {
+    t.test('returns original string if within limit', (t) => {
       let str = '123456789'
       str = byteUtils.truncate(str, 10)
-      expect(str).to.equal('123456789')
+      t.equal(str, '123456789')
+      t.end()
     })
-    it('respects multibyte characters', () => {
+    t.test('respects multibyte characters', (t) => {
       let str = '\uD87E\uDC04\uD87E\uDC04'
-      expect(Buffer.byteLength(str, 'utf8')).to.equal(8)
+      t.equal(Buffer.byteLength(str, 'utf8'), 8)
       str = byteUtils.truncate(str, 3)
-      expect(str).to.equal('\uD87E')
+      t.equal(str, '\uD87E')
+      t.end()
     })
-    it('should strings with split unicode characters properly', () => {
+    t.test('should strings with split unicode characters properly', (t) => {
       let str = '\uD87E\uDC04\uD87E\uDC04'
-      expect(Buffer.byteLength(str, 'utf8')).to.equal(8)
+      t.equal(Buffer.byteLength(str, 'utf8'), 8)
       str = byteUtils.truncate(str, 2)
-      expect(str).to.equal('')
+      t.equal(str, '')
+      t.end()
     })
   })
 })
