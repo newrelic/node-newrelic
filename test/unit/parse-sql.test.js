@@ -5,142 +5,131 @@
 
 'use strict'
 
-// TODO: convert to normal tap style.
-// Below allows use of mocha DSL with tap runner.
-require('tap').mochaGlobals()
-
-const chai = require('chai')
-const should = chai.should()
+const tap = require('tap')
 const parseSql = require('../../lib/db/parse-sql')
 
-describe('database query parser', function () {
-  describe('SELECT SQL', function () {
-    it('should parse a simple query', function () {
+tap.test('database query parser', function (t) {
+  t.autoend()
+
+  t.test('SELECT SQL', function (t) {
+    t.autoend()
+
+    t.test('should parse a simple query', function (t) {
       var ps = parseSql('NoSQL', 'Select\n *\n from dude')
-      should.exist(ps)
-
-      should.exist(ps.type)
-      ps.type.should.equal('NoSQL')
-
-      should.exist(ps.operation)
-      ps.operation.should.equal('select')
-
-      should.exist(ps.collection)
-      ps.collection.should.equal('dude')
-      ps.raw.should.equal('Select\n *\n from dude')
+      t.ok(ps)
+      t.ok(ps.type)
+      t.equal(ps.type, 'NoSQL')
+      t.ok(ps.operation)
+      t.equal(ps.operation, 'select')
+      t.ok(ps.collection)
+      t.equal(ps.collection, 'dude')
+      t.equal(ps.raw, 'Select\n *\n from dude')
+      t.end()
     })
 
-    it('should parse another simple query', function () {
+    t.test('should parse another simple query', function (t) {
       var ps = parseSql('NoSQL', 'Select * from transaction_traces_12')
-      should.exist(ps)
-
-      should.exist(ps.type)
-      ps.type.should.equal('NoSQL')
-
-      should.exist(ps.operation)
-      ps.operation.should.equal('select')
-
-      should.exist(ps.collection)
-      ps.collection.should.equal('transaction_traces_12')
-      ps.raw.should.equal('Select * from transaction_traces_12')
+      t.ok(ps)
+      t.ok(ps.type)
+      t.equal(ps.type, 'NoSQL')
+      t.ok(ps.operation)
+      t.equal(ps.operation, 'select')
+      t.ok(ps.collection)
+      t.equal(ps.collection, 'transaction_traces_12')
+      t.equal(ps.raw, 'Select * from transaction_traces_12')
+      t.end()
     })
   })
 
-  describe('DELETE SQL', function () {
-    it('should parse a simple command', function () {
+  t.test('DELETE SQL', function (t) {
+    t.autoend()
+
+    t.test('should parse a simple command', function (t) {
       var ps = parseSql('NoSQL', 'DELETE\nfrom dude')
-      should.exist(ps)
-
-      should.exist(ps.type)
-      ps.type.should.equal('NoSQL')
-
-      should.exist(ps.operation)
-      ps.operation.should.equal('delete')
-
-      should.exist(ps.collection)
-      ps.collection.should.equal('dude')
-      ps.raw.should.equal('DELETE\nfrom dude')
+      t.ok(ps)
+      t.ok(ps.type)
+      t.equal(ps.type, 'NoSQL')
+      t.ok(ps.operation)
+      t.equal(ps.operation, 'delete')
+      t.ok(ps.collection)
+      t.equal(ps.collection, 'dude')
+      t.equal(ps.raw, 'DELETE\nfrom dude')
+      t.end()
     })
 
-    it('should parse a command with conditions', function () {
+    t.test('should parse a command with conditions', function (t) {
       var ps = parseSql('NoSQL', "DELETE\nfrom dude where name = 'man'")
-      should.exist(ps)
-
-      should.exist(ps.type)
-      ps.type.should.equal('NoSQL')
-
-      should.exist(ps.operation)
-      ps.operation.should.equal('delete')
-
-      should.exist(ps.collection)
-      ps.collection.should.equal('dude')
-      ps.raw.should.equal("DELETE\nfrom dude where name = 'man'")
+      t.ok(ps)
+      t.ok(ps.type)
+      t.equal(ps.type, 'NoSQL')
+      t.ok(ps.operation)
+      t.equal(ps.operation, 'delete')
+      t.ok(ps.collection)
+      t.equal(ps.collection, 'dude')
+      t.equal(ps.raw, "DELETE\nfrom dude where name = 'man'")
+      t.end()
     })
   })
 
-  describe('UPDATE SQL', function () {
-    it('should parse a command with gratuitous white space and conditions', function () {
+  t.test('UPDATE SQL', function (t) {
+    t.autoend()
+
+    t.test('should parse a command with gratuitous white space and conditions', function (t) {
       var ps = parseSql('NoSQL', '  update test set value = 1 where id = 12')
-      should.exist(ps)
-
-      should.exist(ps.type)
-      ps.type.should.equal('NoSQL')
-
-      should.exist(ps.operation)
-      ps.operation.should.equal('update')
-
-      should.exist(ps.collection)
-      ps.collection.should.equal('test')
-      ps.raw.should.equal('update test set value = 1 where id = 12')
+      t.ok(ps)
+      t.ok(ps.type)
+      t.equal(ps.type, 'NoSQL')
+      t.not(ps.operation, undefined)
+      t.equal(ps.operation, 'update')
+      t.not(ps.collection, undefined)
+      t.equal(ps.collection, 'test')
+      t.equal(ps.raw, 'update test set value = 1 where id = 12')
+      t.end()
     })
   })
 
-  describe('INSERT SQL', function () {
-    it('should parse a command with a subquery', function () {
+  t.test('INSERT SQL', function (t) {
+    t.autoend()
+
+    t.test('should parse a command with a subquery', function (t) {
       var ps = parseSql('NoSQL', '  insert into\ntest\nselect * from dude')
-      should.exist(ps)
-
-      should.exist(ps.type)
-      ps.type.should.equal('NoSQL')
-
-      should.exist(ps.operation)
-      ps.operation.should.equal('insert')
-
-      should.exist(ps.collection)
-      ps.collection.should.equal('test')
-      ps.raw.should.equal('insert into\ntest\nselect * from dude')
+      t.ok(ps)
+      t.not(ps.type, undefined)
+      t.equal(ps.type, 'NoSQL')
+      t.not(ps.operation, undefined)
+      t.equal(ps.operation, 'insert')
+      t.ok(ps.collection)
+      t.equal(ps.collection, 'test')
+      t.equal(ps.raw, 'insert into\ntest\nselect * from dude')
+      t.end()
     })
   })
 
-  describe('invalid SQL', function () {
-    it("should return 'other' when handed garbage", function () {
-      var ps = parseSql('NoSQL', '  bulge into\ndudes\nselect * from dude')
-      should.exist(ps)
+  t.test('invalid SQL', function (t) {
+    t.autoend()
 
-      should.exist(ps.type)
-      ps.type.should.equal('NoSQL')
-
-      should.exist(ps.operation)
-      ps.operation.should.equal('other')
-
-      should.not.exist(ps.collection)
-      ps.raw.should.equal('bulge into\ndudes\nselect * from dude')
+    t.test("should return 'other' when handed garbage", function (t) {
+      var ps = parseSql('NoSQL', '  gender into\ndudes\nselect * from dude')
+      t.ok(ps)
+      t.not(ps.type, undefined)
+      t.equal(ps.type, 'NoSQL')
+      t.not(ps.operation, undefined)
+      t.equal(ps.operation, 'other')
+      t.equal(ps.collection, null)
+      t.equal(ps.raw, 'gender into\ndudes\nselect * from dude')
+      t.end()
     })
 
-    it("should return 'other' when handed an object", function () {
-      var ps = parseSql('NoSQL', {
-        key: 'value'
-      })
-      should.exist(ps)
-
-      should.exist(ps.type)
-      ps.type.should.equal('NoSQL')
-
-      should.exist(ps.operation)
-      ps.operation.should.equal('other')
-
-      should.not.exist(ps.collection)
-      chai.expect(ps.raw).equal('')
+    t.test("should return 'other' when handed an object", function (t) {
+      var ps = parseSql('NoSQL', { key: 'value' })
+      t.ok(ps)
+      t.ok(ps.type)
+      t.equal(ps.type, 'NoSQL')
+      t.ok(ps.operation)
+      t.equal(ps.operation, 'other')
+      t.equal(ps.collection, null)
+      t.equal(ps.raw, '')
+      t.end()
     })
   })
 })
