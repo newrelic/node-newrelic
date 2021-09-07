@@ -164,6 +164,7 @@ tap.test('Analytics events', function (t) {
       t.equal(eventValues.duration, trans.timer.getDurationInMillis() / 1000)
       t.equal(eventValues.type, 'Transaction')
       t.equal(eventValues.error, true)
+      t.end()
     })
 
     t.test('should add DT parent attributes with an accepted payload', function () {
@@ -192,6 +193,7 @@ tap.test('Analytics events', function (t) {
       t.equal(attributes.error, false)
       t.equal(trans.sampled, true)
       t.ok(trans.priority > 1)
+      t.end()
     })
 
     t.test('should add DT attributes', function () {
