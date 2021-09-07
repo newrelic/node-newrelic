@@ -35,6 +35,27 @@ function getPath(obj, path) {
   return obj[paths[0]]
 }
 
+tap.Test.prototype.addAssert('check', 3, function (key, before, after) {
+  var fromFile = { high_security: true }
+  setPath(fromFile, key, before)
+
+  var config = new Config(fromFile)
+  return this.same(getPath(config, key), after)
+})
+
+tap.Test.prototype.addAssert('checkServer', 4, function (config, key, expected, server) {
+  setPath(config, key, expected)
+  var fromServer = { high_security: true }
+  fromServer[key] = server
+
+  this.same(getPath(config, key), expected)
+  this.same(fromServer[key], server)
+
+  config.onConnect(fromServer)
+  this.same(getPath(config, key), expected)
+  return this.pass()
+})
+
 tap.test('high security mode', function (t) {
   t.autoend()
 
@@ -70,48 +91,48 @@ tap.test('high security mode', function (t) {
       })
 
       t.test('should reject disabling ssl', function (t) {
-        check(t, 'ssl', true, false)
+        t.checkServer(config, 'ssl', true, false)
         t.end()
       })
 
       t.test('should reject enabling allow_all_headers', function (t) {
-        check(t, 'allow_all_headers', false, true)
+        t.checkServer(config, 'allow_all_headers', false, true)
         t.end()
       })
 
       t.test('should reject enabling slow_sql', function (t) {
-        check(t, 'slow_sql.enabled', false, true)
+        t.checkServer(config, 'slow_sql.enabled', false, true)
         t.end()
       })
 
       t.test('should not change attributes settings', function (t) {
-        check(t, 'attributes.include', [], ['foobar'])
-        check(t, 'attributes.exclude', [], ['fizzbang', 'request.parameters.*'])
+        t.checkServer(config, 'attributes.include', [], ['foobar'])
+        t.checkServer(config, 'attributes.exclude', [], ['fizzbang', 'request.parameters.*'])
         t.end()
       })
 
       t.test('should not change transaction_tracer settings', function (t) {
-        check(t, 'transaction_tracer.record_sql', 'obfuscated', 'raw')
-        check(t, 'transaction_tracer.attributes.include', [], ['foobar'])
-        check(t, 'transaction_tracer.attributes.exclude', [], ['fizzbang'])
+        t.checkServer(config, 'transaction_tracer.record_sql', 'obfuscated', 'raw')
+        t.checkServer(config, 'transaction_tracer.attributes.include', [], ['foobar'])
+        t.checkServer(config, 'transaction_tracer.attributes.exclude', [], ['fizzbang'])
         t.end()
       })
 
       t.test('should not change error_collector settings', function (t) {
-        check(t, 'error_collector.attributes.include', [], ['foobar'])
-        check(t, 'error_collector.attributes.exclude', [], ['fizzbang'])
+        t.checkServer(config, 'error_collector.attributes.include', [], ['foobar'])
+        t.checkServer(config, 'error_collector.attributes.exclude', [], ['fizzbang'])
         t.end()
       })
 
       t.test('should not change browser_monitoring settings', function (t) {
-        check(t, 'browser_monitoring.attributes.include', [], ['foobar'])
-        check(t, 'browser_monitoring.attributes.exclude', [], ['fizzbang'])
+        t.checkServer(config, 'browser_monitoring.attributes.include', [], ['foobar'])
+        t.checkServer(config, 'browser_monitoring.attributes.exclude', [], ['fizzbang'])
         t.end()
       })
 
       t.test('should not change transaction_events settings', function (t) {
-        check(t, 'transaction_events.attributes.include', [], ['foobar'])
-        check(t, 'transaction_events.attributes.exclude', [], ['fizzbang'])
+        t.checkServer(config, 'transaction_events.attributes.include', [], ['foobar'])
+        t.checkServer(config, 'transaction_events.attributes.exclude', [], ['fizzbang'])
         t.end()
       })
 
@@ -126,18 +147,6 @@ tap.test('high security mode', function (t) {
         t.equal(config.agent_enabled, false)
         t.end()
       })
-
-      function check(t, key, expected, server) {
-        setPath(config, key, expected)
-        var fromServer = { high_security: true }
-        fromServer[key] = server
-
-        t.deepEqual(getPath(config, key), expected)
-        t.deepEqual(fromServer[key], server)
-
-        config.onConnect(fromServer)
-        t.deepEqual(getPath(config, key), expected)
-      }
     })
 
     t.test('when high_security === false', function (t) {
@@ -194,69 +203,68 @@ tap.test('high security mode', function (t) {
       t.autoend()
 
       t.test('should detect that ssl is off', function (t) {
-        check(t, 'ssl', false, true)
+        t.check('ssl', false, true)
         t.end()
       })
 
       t.test('should detect that allow_all_headers is on', function (t) {
-        check(t, 'allow_all_headers', true, false)
+        t.check('allow_all_headers', true, false)
         t.end()
       })
 
       t.test('should change attributes settings', function (t) {
         // Should not touch `enabled` setting or exclude.
-        check(t, 'attributes.enabled', true, true)
-        check(t, 'attributes.enabled', false, false)
-        check(t, 'attributes.exclude', ['fizbang'], ['fizbang', 'request.parameters.*'])
-
-        check(t, 'attributes.include', ['foobar'], [])
+        t.check('attributes.enabled', true, true)
+        t.check('attributes.enabled', false, false)
+        t.check('attributes.exclude', ['fizbang'], ['fizbang', 'request.parameters.*'])
+        t.check('attributes.include', ['foobar'], [])
         t.end()
       })
 
       t.test('should change transaction_tracer settings', function (t) {
-        check(t, 'transaction_tracer.record_sql', 'raw', 'obfuscated')
+        t.check('transaction_tracer.record_sql', 'raw', 'obfuscated')
 
         // Should not touch `enabled` setting.
-        check(t, 'transaction_tracer.attributes.enabled', true, true)
-        check(t, 'transaction_tracer.attributes.enabled', false, false)
+        t.check('transaction_tracer.attributes.enabled', true, true)
+        t.check('transaction_tracer.attributes.enabled', false, false)
 
-        check(t, 'transaction_tracer.attributes.include', ['foobar'], [])
-        check(t, 'transaction_tracer.attributes.exclude', ['fizbang'], ['fizbang'])
+        t.check('transaction_tracer.attributes.include', ['foobar'], [])
+        t.check('transaction_tracer.attributes.exclude', ['fizbang'], ['fizbang'])
         t.end()
       })
 
       t.test('should change error_collector settings', function (t) {
         // Should not touch `enabled` setting.
-        check(t, 'error_collector.attributes.enabled', true, true)
-        check(t, 'error_collector.attributes.enabled', false, false)
+        t.check('error_collector.attributes.enabled', true, true)
+        t.check('error_collector.attributes.enabled', false, false)
 
-        check(t, 'error_collector.attributes.include', ['foobar'], [])
-        check(t, 'error_collector.attributes.exclude', ['fizbang'], ['fizbang'])
+        t.check('error_collector.attributes.include', ['foobar'], [])
+        t.check('error_collector.attributes.exclude', ['fizbang'], ['fizbang'])
         t.end()
       })
 
       t.test('should change browser_monitoring settings', function (t) {
         // Should not touch `enabled` setting.
-        check(t, 'browser_monitoring.attributes.enabled', true, true)
-        check(t, 'browser_monitoring.attributes.enabled', false, false)
+        t.check('browser_monitoring.attributes.enabled', true, true)
+        t.check('browser_monitoring.attributes.enabled', false, false)
 
-        check(t, 'browser_monitoring.attributes.include', ['foobar'], [])
-        check(t, 'browser_monitoring.attributes.exclude', ['fizbang'], ['fizbang'])
+        t.check('browser_monitoring.attributes.include', ['foobar'], [])
+        t.check('browser_monitoring.attributes.exclude', ['fizbang'], ['fizbang'])
         t.end()
       })
 
       t.test('should change transaction_events settings', function (t) {
         // Should not touch `enabled` setting.
-        check(t, 'transaction_events.attributes.enabled', true, true)
-        check(t, 'transaction_events.attributes.enabled', false, false)
+        t.check('transaction_events.attributes.enabled', true, true)
+        t.check('transaction_events.attributes.enabled', false, false)
 
-        check(t, 'transaction_events.attributes.include', ['foobar'], [])
-        check(t, 'transaction_events.attributes.exclude', ['fizbang'], ['fizbang'])
+        t.check('transaction_events.attributes.include', ['foobar'], [])
+        t.check('transaction_events.attributes.exclude', ['fizbang'], ['fizbang'])
         t.end()
       })
 
       t.test('should detect that slow_sql is enabled', function (t) {
-        check(t, 'slow_sql.enabled', true, false)
+        t.check('slow_sql.enabled', true, false)
         t.end()
       })
 
@@ -266,18 +274,10 @@ tap.test('high security mode', function (t) {
         config.attributes.include = ['some val']
         config._applyHighSecurity()
         t.equal(config.ssl, true)
-        t.deepEqual(config.attributes.include, [])
+        t.same(config.attributes.include, [])
         t.end()
       })
     })
-
-    function check(t, key, before, after) {
-      var fromFile = { high_security: true }
-      setPath(fromFile, key, before)
-
-      var config = new Config(fromFile)
-      t.deepEqual(getPath(config, key), after)
-    }
   })
 
   t.test('affect custom params', function (t) {
@@ -305,7 +305,7 @@ tap.test('high security mode', function (t) {
       helper.runInTransaction(agent, () => {
         agent.config.high_security = false
         const success = api.addCustomAttribute('key', 'value')
-        t.ok([null, undefined].includes(success))
+        t.notOk(success)
         t.end()
       })
     })
