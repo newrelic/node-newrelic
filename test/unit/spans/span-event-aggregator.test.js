@@ -13,7 +13,7 @@ const SpanEventAggregator = require('../../../lib/spans/span-event-aggregator')
 const Metrics = require('../../../lib/metrics')
 
 const RUN_ID = 1337
-const DEFAULT_LIMIT = 1000
+const DEFAULT_LIMIT = 2000
 const MAX_LIMIT = 10000
 const DEFAULT_PERIOD = 60000
 
