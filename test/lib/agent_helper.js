@@ -22,7 +22,12 @@ const CAPATH = path.join(__dirname, 'ca-certificate.crt')
 
 let _agent = null
 const tasks = []
-setInterval(() => {
+
+/**
+ * Set up an unref'd loop to execute tasks that are added
+ * via helper.runOutOfContext
+ */
+let outOfContextQueueInterval = setInterval(() => {
   while (tasks.length) {
     tasks.pop()()
   }
@@ -30,6 +35,7 @@ setInterval(() => {
 
 const helper = (module.exports = {
   SSL_HOST: 'localhost',
+  outOfContextQueueInterval,
   getAgent: () => _agent,
 
   /**
@@ -395,6 +401,12 @@ const helper = (module.exports = {
     })
   },
 
+  /**
+   * Adds a function to the outOfContext interval
+   * above
+   *
+   * @param {Function} fn to execute
+   */
   runOutOfContext: function (fn) {
     tasks.push(fn)
   },
@@ -424,6 +436,31 @@ const helper = (module.exports = {
   makeAttributeFilterConfig: (rules = {}) => {
     rules = copy.shallow(rules, defaultAttributeConfig())
     return copy.shallow(rules, new EventEmitter())
+  },
+
+  getMetrics(agent) {
+    return agent.metrics._metrics
+  },
+
+  /**
+   * to be used to extend tap assertions
+   * tap.Test.prototype.addAssert('isNonWritable', 1, isNonWritable)
+   *
+   * @param {Object} params
+   * @param {Object} params.obj obj to assign value
+   * @param {string} params.key key to assign value
+   * @param {string} params.value expected value of obj[key]
+   */
+  isNonWritable({ obj, key, value }) {
+    this.throws(function () {
+      obj[key] = 'testNonWritable test value'
+    }, new RegExp("(read only property '" + key + "'|Cannot set property " + key + ')'))
+
+    if (value) {
+      this.equal(obj[key], value)
+    } else {
+      this.not(obj[key], 'testNonWritable test value')
+    }
   }
 })
 
