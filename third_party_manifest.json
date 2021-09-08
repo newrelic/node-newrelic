@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "Tue Aug 17 2021 12:32:47 GMT-0400 (Eastern Daylight Time)",
+  "lastUpdated": "Wed Sep 08 2021 17:22:24 GMT-0400 (Eastern Daylight Time)",
   "projectName": "New Relic Node Agent",
   "projectUrl": "https://github.com/newrelic/node-newrelic",
   "includeOptDeps": true,
@@ -388,19 +388,6 @@
       "licenseTextSource": "file",
       "publisher": "TJ Holowaychuk",
       "email": "tj@vision-media.ca"
-    },
-    "fastify@2.15.3": {
-      "name": "fastify",
-      "version": "2.15.3",
-      "range": "^2.15.3",
-      "licenses": "MIT",
-      "repoUrl": "https://github.com/fastify/fastify",
-      "versionedRepoUrl": "https://github.com/fastify/fastify/tree/v2.15.3",
-      "licenseFile": "node_modules/fastify/LICENSE",
-      "licenseUrl": "https://github.com/fastify/fastify/blob/v2.15.3/LICENSE",
-      "licenseTextSource": "file",
-      "publisher": "Matteo Collina",
-      "email": "hello@matteocollina.com"
     },
     "generic-pool@3.8.2": {
       "name": "generic-pool",
