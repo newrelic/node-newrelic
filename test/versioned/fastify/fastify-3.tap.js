@@ -30,14 +30,19 @@ tap.test('Fastify Instrumentation', (t) => {
 
   /**
    * Fastify v3 has '.fastify' and '.default' properties attached to the exported
-   * 'fastify' function.
+   * 'fastify' function. These are all the same original exported function, just
+   * arranged to support a variety of import styles.
    */
-  t.test('Should propagate fastify properties when instrumented', (t) => {
+  t.test('Should propagate fastify exports when instrumented', (t) => {
     const original = fastifyExport.__NR_original
 
-    for (const [key, value] of Object.entries(original)) {
-      t.equal(fastifyExport[key], value)
-    }
+    // Confirms the original setup matches expectations
+    t.equal(original.fastify, original)
+    t.equal(original.default, original)
+
+    // Asserts our new export has the same behavior
+    t.equal(fastifyExport.fastify, fastifyExport)
+    t.equal(fastifyExport.default, fastifyExport)
 
     t.end()
   })
