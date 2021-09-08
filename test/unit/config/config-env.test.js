@@ -313,6 +313,13 @@ tap.test('when overriding configuration values via environment variables', (t) =
     })
   })
 
+  t.test('should pick up error collector max_event_samples_stored value', (t) => {
+    idempotentEnv({ NEW_RELIC_ERROR_COLLECTOR_MAX_EVENT_SAMPLES_STORED: 20 }, (tc) => {
+      t.equal(tc.error_collector.max_event_samples_stored, 20)
+      t.end()
+    })
+  })
+
   t.test('should pick up which status codes are ignored', (t) => {
     idempotentEnv({ NEW_RELIC_ERROR_COLLECTOR_IGNORE_ERROR_CODES: '401,404,502' }, (tc) => {
       t.same(tc.error_collector.ignore_status_codes, [401, 404, 502])
@@ -422,6 +429,30 @@ tap.test('when overriding configuration values via environment variables', (t) =
   t.test('should pick up the transaction trace Top N scale', (t) => {
     idempotentEnv({ NEW_RELIC_TRACER_TOP_N: 5 }, (tc) => {
       t.equal(tc.transaction_tracer.top_n, '5')
+      t.end()
+    })
+  })
+
+  t.test('should pick up the transaction events env vars', (t) => {
+    const env = {
+      NEW_RELIC_TRANSACTION_EVENTS_ATTRIBUTES_ENABLED: true,
+      NEW_RELIC_TRANSACTION_EVENTS_ATTRIBUTES_INCLUDE: 'one,two,three',
+      NEW_RELIC_TRANSACTION_EVENTS_ATTRIBUTES_EXCLUDE: 'four,five,six',
+      NEW_RELIC_TRANSACTION_EVENTS_MAX_SAMPLES_STORED: 200
+    }
+    idempotentEnv(env, (tc) => {
+      t.equal(tc.transaction_events.attributes.enabled, true)
+      t.same(tc.transaction_events.attributes.include, ['one', 'two', 'three'])
+      t.same(tc.transaction_events.attributes.exclude, ['four', 'five', 'six'])
+      t.equal(tc.transaction_events.max_samples_stored, 200)
+
+      t.end()
+    })
+  })
+
+  t.test('should pick up the custom insights events max samples stored env var', (t) => {
+    idempotentEnv({ NEW_RELIC_CUSTOM_INSIGHTS_EVENTS_MAX_SAMPLES_STORED: 88 }, (tc) => {
+      t.equal(tc.custom_insights_events.max_samples_stored, 88)
       t.end()
     })
   })
