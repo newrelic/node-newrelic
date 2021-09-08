@@ -36,24 +36,23 @@ function getPath(obj, path) {
 }
 
 tap.Test.prototype.addAssert('check', 3, function (key, before, after) {
-  var fromFile = { high_security: true }
+  const fromFile = { high_security: true }
   setPath(fromFile, key, before)
 
-  var config = new Config(fromFile)
+  const config = new Config(fromFile)
   return this.same(getPath(config, key), after)
 })
 
 tap.Test.prototype.addAssert('checkServer', 4, function (config, key, expected, server) {
   setPath(config, key, expected)
-  var fromServer = { high_security: true }
+  const fromServer = { high_security: true }
   fromServer[key] = server
 
   this.same(getPath(config, key), expected)
   this.same(fromServer[key], server)
 
   config.onConnect(fromServer)
-  this.same(getPath(config, key), expected)
-  return this.pass()
+  return this.same(getPath(config, key), expected)
 })
 
 tap.test('high security mode', function (t) {
