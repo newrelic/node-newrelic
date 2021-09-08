@@ -156,7 +156,6 @@ test('DatastoreShim', function (t) {
     })
 
     t.test('should create custom metric names if the `datastoreId` is a string', function (t) {
-      const dsShim = new DatastoreShim(dsAgent, 'test-cassandra')
       t.doesNotThrow(function () {
         dsShim.setDatastore('Fake Datastore')
       })
@@ -166,7 +165,6 @@ test('DatastoreShim', function (t) {
     })
 
     t.test("should update the dsShim's logger", function (t) {
-      const dsShim = new DatastoreShim(dsAgent, 'test-cassandra')
       const original = dsShim.logger
       dsShim.setDatastore(dsShim.CASSANDRA)
       t.not(dsShim.logger, original)
@@ -177,25 +175,25 @@ test('DatastoreShim', function (t) {
 
   t.test('#setParser', (t) => {
     t.autoend()
-    let agent = null
-    let shim = null
+    let parserAgent = null
+    let parserShim = null
 
     t.beforeEach(function () {
-      agent = helper.loadMockedAgent()
-      // Use a shim without a parser set for these tests.
-      shim = new DatastoreShim(agent, 'test')
-      shim._metrics = { PREFIX: '' }
+      parserAgent = helper.loadMockedAgent()
+      // Use a parserShim without a parser set for these tests.
+      parserShim = new DatastoreShim(parserAgent, 'test')
+      parserShim._metrics = { PREFIX: '' }
     })
 
     t.afterEach(function () {
-      shim = null
-      agent = helper.unloadAgent(agent)
+      parserShim = null
+      parserAgent = helper.unloadAgent(parserAgent)
     })
 
     t.test('should default to an SQL parser', function (t) {
-      shim.agent.config.transaction_tracer.record_sql = 'raw'
+      parserShim.agent.config.transaction_tracer.record_sql = 'raw'
       const query = 'SELECT 1 FROM test'
-      const parsed = shim.parseQuery(query)
+      const parsed = parserShim.parseQuery(query)
       t.equal(parsed.operation, 'select')
       t.equal(parsed.collection, 'test')
       t.equal(parsed.raw, query)
@@ -204,23 +202,23 @@ test('DatastoreShim', function (t) {
 
     t.test('should allow for the parser to be set', function (t) {
       let testValue = false
-      shim.setParser(function fakeParser(query) {
+      parserShim.setParser(function fakeParser(query) {
         t.equal(query, 'foobar')
         testValue = true
         return {
           operation: 'test'
         }
       })
-      shim.parseQuery('foobar')
+      parserShim.parseQuery('foobar')
       t.ok(testValue)
       t.end()
     })
 
     t.test('should have constants to set the query parser with', function (t) {
-      shim.agent.config.transaction_tracer.record_sql = 'raw'
-      shim.setParser(shim.SQL_PARSER)
+      parserShim.agent.config.transaction_tracer.record_sql = 'raw'
+      parserShim.setParser(parserShim.SQL_PARSER)
       const query = 'SELECT 1 FROM test'
-      const parsed = shim.parseQuery(query)
+      const parsed = parserShim.parseQuery(query)
       t.equal(parsed.operation, 'select')
       t.equal(parsed.collection, 'test')
       t.equal(parsed.raw, query)
@@ -229,41 +227,40 @@ test('DatastoreShim', function (t) {
 
     t.test('should not set parser to a new parser with invalid string', function (t) {
       let testValue = false
-      shim.setParser(function fakeParser(query) {
+      parserShim.setParser(function fakeParser(query) {
         t.equal(query, 'SELECT 1 FROM test')
         testValue = true
         return {
           operation: 'test'
         }
       })
-      shim.setParser('bad string')
+      parserShim.setParser('bad string')
       const query = 'SELECT 1 FROM test'
-      shim.parseQuery(query)
+      parserShim.parseQuery(query)
       t.ok(testValue)
       t.end()
     })
 
     t.test('should not set parser to a new parser with an object', function (t) {
       let testValue = false
-      shim.setParser(function fakeParser(query) {
+      parserShim.setParser(function fakeParser(query) {
         t.equal(query, 'SELECT 1 FROM test')
         testValue = true
         return {
           operation: 'test'
         }
       })
-      shim.setParser({
+      parserShim.setParser({
         parser: function shouldNotBeCalled() {
           throw new Error('get me outta here')
         }
       })
       const query = 'SELECT 1 FROM test'
-      shim.parseQuery(query)
+      parserShim.parseQuery(query)
       t.ok(testValue)
       t.end()
     })
   })
-
   t.test('#recordOperation', (t) => {
     t.autoend()
     t.beforeEach(beforeEach)
