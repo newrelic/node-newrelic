@@ -21,6 +21,9 @@ tap.test('Analytics events', function (t) {
   let trans = null
 
   t.beforeEach(function () {
+    if (agent) {
+      return
+    } // already instantiated
     agent = helper.loadMockedAgent({
       transaction_events: {
         max_samples_stored: LIMIT
@@ -30,7 +33,11 @@ tap.test('Analytics events', function (t) {
   })
 
   t.afterEach(function () {
+    if (!agent) {
+      return
+    } // already destroyed
     helper.unloadAgent(agent)
+    agent = null
   })
 
   t.test('when there are attributes on transaction', function (t) {
@@ -103,7 +110,7 @@ tap.test('Analytics events', function (t) {
     })
   })
 
-  t.test('on transaction finished', function () {
+  t.test('on transaction finished', function (t) {
     t.autoend()
 
     t.beforeEach(function () {
@@ -111,15 +118,14 @@ tap.test('Analytics events', function (t) {
     })
 
     t.test('should queue an event', async function (t) {
-      const transaction = await new Promise((resolve) => {
-        agent._addEventFromTransaction = resolve
-      })
-      t.equal(transaction, trans)
-      trans.end()
-      t.end()
+      agent._addEventFromTransaction = (transaction) => {
+        t.equal(transaction, trans)
+        trans.end()
+        t.end()
+      }
     })
 
-    t.test('should generate an event from transaction', function () {
+    t.test('should generate an event from transaction', function (t) {
       trans.end()
 
       const events = getTransactionEvents(agent)
@@ -131,10 +137,10 @@ tap.test('Analytics events', function (t) {
       var eventValues = event[0]
       t.equal(typeof eventValues, 'object')
       t.equal(typeof eventValues.webDuration, 'number')
-      t.not(NaN.isNaN(eventValues.webDuration))
+      t.not(Number.isNaN(eventValues.webDuration))
       t.equal(eventValues.webDuration, trans.timer.getDurationInMillis() / 1000)
       t.equal(typeof eventValues.timestamp, 'number')
-      t.not(NaN.isNaN(eventValues.timestamp))
+      t.not(Number.isNaN(eventValues.timestamp))
       t.equal(eventValues.timestamp, trans.timer.start)
       t.equal(eventValues.name, trans.name)
       t.equal(eventValues.duration, trans.timer.getDurationInMillis() / 1000)
@@ -143,7 +149,7 @@ tap.test('Analytics events', function (t) {
       t.end()
     })
 
-    t.test('should flag errored transactions', function () {
+    t.test('should flag errored transactions', function (t) {
       trans.addException(new Error('wuh oh'))
       trans.end()
 
@@ -155,10 +161,10 @@ tap.test('Analytics events', function (t) {
       var eventValues = event[0]
       t.equal(typeof eventValues, 'object')
       t.equal(typeof eventValues.webDuration, 'number')
-      t.not(NaN.isNaN(eventValues.webDuration))
+      t.not(Number.isNaN(eventValues.webDuration))
       t.equal(eventValues.webDuration, trans.timer.getDurationInMillis() / 1000)
       t.equal(typeof eventValues.timestamp, 'number')
-      t.not(NaN.isNaN(eventValues.timestamp))
+      t.not(Number.isNaN(eventValues.timestamp))
       t.equal(eventValues.timestamp, trans.timer.start)
       t.equal(eventValues.name, trans.name)
       t.equal(eventValues.duration, trans.timer.getDurationInMillis() / 1000)
@@ -167,7 +173,7 @@ tap.test('Analytics events', function (t) {
       t.end()
     })
 
-    t.test('should add DT parent attributes with an accepted payload', function () {
+    t.test('should add DT parent attributes with an accepted payload', function (t) {
       agent.config.distributed_tracing.enabled = true
       agent.config.primary_application_id = 'test'
       agent.config.account_id = 1
@@ -196,7 +202,7 @@ tap.test('Analytics events', function (t) {
       t.end()
     })
 
-    t.test('should add DT attributes', function () {
+    t.test('should add DT attributes', function (t) {
       agent.config.distributed_tracing.enabled = true
       trans = new Transaction(agent)
       trans.end()
@@ -215,7 +221,7 @@ tap.test('Analytics events', function (t) {
       t.end()
     })
 
-    t.test('should contain user and agent attributes', function () {
+    t.test('should contain user and agent attributes', function (t) {
       trans.end()
 
       const events = getTransactionEvents(agent)
@@ -223,13 +229,13 @@ tap.test('Analytics events', function (t) {
       t.equal(events.length, 1)
 
       var event = events[0]
-      t.equal(typeof event[0], 'Object')
-      t.equal(typeof event[1], 'Object')
-      t.equal(typeof event[2], 'Object')
+      t.equal(typeof event[0], 'object')
+      t.equal(typeof event[1], 'object')
+      t.equal(typeof event[2], 'object')
       t.end()
     })
 
-    t.test('should contain custom attributes', function () {
+    t.test('should contain custom attributes', function (t) {
       trans.trace.addCustomAttribute('a', 'b')
       trans.end()
 
@@ -239,7 +245,7 @@ tap.test('Analytics events', function (t) {
       t.end()
     })
 
-    t.test('includes internal synthetics attributes', function () {
+    t.test('includes internal synthetics attributes', function (t) {
       trans.syntheticsData = {
         version: 1,
         accountId: 123,
@@ -259,7 +265,7 @@ tap.test('Analytics events', function (t) {
       t.end()
     })
 
-    t.test('not spill over reservoir size', function () {
+    t.test('not spill over reservoir size', function (t) {
       for (var i = 0; i < 20; i++) {
         agent._addEventFromTransaction(trans)
       }
