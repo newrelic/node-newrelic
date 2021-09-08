@@ -240,7 +240,7 @@ tap.test('with default properties', (t) => {
   })
 
   t.test('should default span event max_samples_stored', (t) => {
-    t.equal(configuration.span_events.max_samples_stored, 1000)
+    t.equal(configuration.span_events.max_samples_stored, 2000)
     t.end()
   })
 })
