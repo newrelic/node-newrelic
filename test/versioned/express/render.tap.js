@@ -130,7 +130,7 @@ function runTests(conf) {
             'got correct content type'
           )
 
-          t.deepEqual(JSON.parse(body), { yep: true }, 'Express correctly serves.')
+          t.same(JSON.parse(body), { yep: true }, 'Express correctly serves.')
 
           var stats
 
@@ -253,7 +253,18 @@ function runTests(conf) {
           var first = errors[0]
           t.ok(first, 'have the first error')
 
-          t.equal(first[2], "Cannot read property 'ohno' of undefined", 'got the expected error')
+          // The error msg changed in v16.9
+          // change assertion to check for an include of
+          // diff msgs
+          const expectedError = [
+            "Cannot read property 'ohno' of undefined",
+            "Cannot read properties of undefined (reading 'ohno')"
+          ]
+          t.ok(
+            expectedError.includes(first[2]),
+            "Cannot read property 'ohno' of undefined",
+            'got the expected error'
+          )
 
           t.end()
         })
@@ -277,7 +288,7 @@ function runTests(conf) {
           t.ok(isFramework, 'should indicate that express is a framework')
 
           t.notOk(agent.getTransaction(), "transaction shouldn't be visible from request")
-          t.equals(body, BODY, 'response and original page text match')
+          t.equal(body, BODY, 'response and original page text match')
 
           var stats = agent.metrics.getMetric('WebTransaction/Expressjs/GET//test')
           t.ok(stats, 'Statistics should have been found for request.')
@@ -304,7 +315,7 @@ function runTests(conf) {
           t.error(error, 'should not fail making request')
 
           t.notOk(agent.getTransaction(), "transaction shouldn't be visible from request")
-          t.equals(body, BODY, 'response and original page text match')
+          t.equal(body, BODY, 'response and original page text match')
 
           var stats = agent.metrics.getMetric('WebTransaction/Expressjs/GET//test')
           t.ok(stats, 'Statistics should have been found for request.')
@@ -590,7 +601,7 @@ function runTests(conf) {
     server.listen(0, TEST_HOST, function () {
       var port = server.address().port
       request.get(TEST_URL + port + TEST_PATH, function (err, response, body) {
-        t.equals(body, 'bar', 'should not fail with a proxy layer')
+        t.equal(body, 'bar', 'should not fail with a proxy layer')
         t.end()
       })
     })
