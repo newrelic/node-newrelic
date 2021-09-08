@@ -107,33 +107,33 @@ test('built-in http instrumentation should handle internal & external requests',
         return t.end()
       }
 
-      t.equals(response.statusCode, 200, 'should successfully fetch the page')
-      t.equals(fetchedBody, PAGE, "page shouldn't change")
+      t.equal(response.statusCode, 200, 'should successfully fetch the page')
+      t.equal(fetchedBody, PAGE, "page shouldn't change")
 
       var scope = 'WebTransaction/NormalizedUri/*'
       var stats = agent.metrics.getOrCreateMetric(scope)
 
-      t.equals(transaction.type, 'web', 'should be a web transaction')
-      t.equals(transaction.name, scope, 'should set transaction name')
-      t.equals(
+      t.equal(transaction.type, 'web', 'should be a web transaction')
+      t.equal(transaction.name, scope, 'should set transaction name')
+      t.equal(
         transaction.name,
         transaction.baseSegment.name,
         'baseSegment name should match transaction name'
       )
 
-      t.equals(stats.callCount, 2, 'should record unscoped path stats after a normal request')
+      t.equal(stats.callCount, 2, 'should record unscoped path stats after a normal request')
 
       var isDispatcher = agent.environment.get('Dispatcher').indexOf('http') > -1
       t.ok(isDispatcher, 'should indicate that the http dispatcher is in play')
 
       stats = agent.metrics.getOrCreateMetric('HttpDispatcher')
-      t.equals(stats.callCount, 2, 'should have accounted for all the internal http requests')
+      t.equal(stats.callCount, 2, 'should have accounted for all the internal http requests')
 
       stats = agent.metrics.getOrCreateMetric('External/localhost:8321/http', scope)
-      t.equals(stats.callCount, 1, 'should record outbound HTTP requests in metrics')
+      t.equal(stats.callCount, 1, 'should record outbound HTTP requests in metrics')
 
       stats = transaction.metrics.getOrCreateMetric('External/localhost:8321/http', scope)
-      t.equals(
+      t.equal(
         stats.callCount,
         1,
         'should associate outbound HTTP requests with the inbound transaction'
@@ -230,11 +230,13 @@ test('built-in http instrumentation should not swallow errors', function (t) {
       var second = errors[1]
       t.ok(first, 'should have the first error')
 
-      t.equal(
-        first[2],
+      // In v16.9 of Node.js the response error message
+      // changed
+      const expectedError = [
         "Cannot read property 'dieshere' of undefined",
-        'should get the expected error'
-      )
+        "Cannot read properties of undefined (reading 'dieshere')"
+      ]
+      t.ok(expectedError.includes(first[2]), 'should get the expected error')
 
       if (t.ok(second, 'should have the second error')) {
         t.equal(second[2], 'HttpError 501', 'should get the expected error')
@@ -273,11 +275,7 @@ test('built-in http instrumentation making outbound requests', function (t) {
             return t.end()
           }
 
-          t.deepEqual(
-            JSON.parse(body),
-            { status: 'ok' },
-            'request with ' + type + ' defined succeeded'
-          )
+          t.same(JSON.parse(body), { status: 'ok' }, 'request with ' + type + ' defined succeeded')
           next()
         })
         res.pipe(sink)
