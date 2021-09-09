@@ -320,7 +320,10 @@ tap.test('MessageShim', function (t) {
         return wrapped().then(function (v) {
           t.equal(v, val)
           const duration = segment.getDurationInMillis()
-          t.ok(duration >= DELAY, `Segment duration: ${duration}, Timer duration: ${DELAY}`)
+          t.ok(
+            duration >= DELAY,
+            `Segment duration: ${duration} should be >= Timer duration: ${DELAY}`
+          )
         })
       })
     })
