@@ -15,11 +15,11 @@ const { getMetricHostName } = require('../../../lib/metrics_helper')
 
 module.exports = function runTests(name, clientFactory) {
   // constants for table creation and db connection
-  var TABLE = 'testTable-pre'
-  var TABLE_PREPARED = '"' + TABLE + '"'
-  var PK = 'pk_column'
-  var COL = 'test_column'
-  var CON_OBJ = {
+  const TABLE = 'testTable-pre'
+  const TABLE_PREPARED = '"' + TABLE + '"'
+  const PK = 'pk_column'
+  const COL = 'test_column'
+  const CON_OBJ = {
     user: params.postgres_user,
     password: params.postgres_pass,
     host: params.postgres_host,
@@ -32,17 +32,17 @@ module.exports = function runTests(name, clientFactory) {
    * then recreation of a testing table
    */
   function postgresSetup() {
-    var pg = clientFactory()
-    var setupClient = new pg.Client(CON_OBJ)
+    const pg = clientFactory()
+    const setupClient = new pg.Client(CON_OBJ)
 
     return new Promise((resolve, reject) => {
       setupClient.connect(function (err) {
         if (err) {
           reject(err)
         }
-        var tableDrop = 'DROP TABLE IF EXISTS ' + TABLE_PREPARED
+        const tableDrop = 'DROP TABLE IF EXISTS ' + TABLE_PREPARED
 
-        var tableCreate =
+        const tableCreate =
           'CREATE TABLE ' +
           TABLE_PREPARED +
           ' (' +
@@ -80,14 +80,14 @@ module.exports = function runTests(name, clientFactory) {
   }
 
   function verifyMetrics(t, segment, selectTable) {
-    var transaction = segment.transaction
-    var agent = transaction.agent
+    const transaction = segment.transaction
+    const agent = transaction.agent
     selectTable = selectTable || TABLE
     t.equal(Object.keys(transaction.metrics.scoped).length, 0, 'should not have any scoped metrics')
 
-    var unscoped = transaction.metrics.unscoped
+    const unscoped = transaction.metrics.unscoped
 
-    var expected = {
+    const expected = {
       'Datastore/all': 2,
       'Datastore/allWeb': 2,
       'Datastore/Postgres/all': 2,
@@ -99,12 +99,12 @@ module.exports = function runTests(name, clientFactory) {
     expected['Datastore/statement/Postgres/' + TABLE + '/insert'] = 1
     expected['Datastore/statement/Postgres/' + selectTable + '/select'] = 1
 
-    var metricHostName = getMetricHostName(agent, params.postgres_host)
-    var hostId = metricHostName + '/' + params.postgres_port
+    const metricHostName = getMetricHostName(agent, params.postgres_host)
+    const hostId = metricHostName + '/' + params.postgres_port
     expected['Datastore/instance/Postgres/' + hostId] = 2
 
-    var expectedNames = Object.keys(expected)
-    var unscopedNames = Object.keys(unscoped)
+    const expectedNames = Object.keys(expected)
+    const unscopedNames = Object.keys(unscoped)
 
     expectedNames.forEach(function (expectedName) {
       t.ok(unscoped[expectedName], 'should have unscoped metric ' + expectedName)
@@ -125,16 +125,16 @@ module.exports = function runTests(name, clientFactory) {
   }
 
   function verifyTrace(t, segment, selectTable) {
-    var transaction = segment.transaction
+    const transaction = segment.transaction
     selectTable = selectTable || TABLE
-    var trace = transaction.trace
+    const trace = transaction.trace
 
     t.ok(trace, 'trace should exist')
     t.ok(trace.root, 'root element should exist')
 
-    var setSegment = findSegment(trace.root, 'Datastore/statement/Postgres/' + TABLE + '/insert')
+    const setSegment = findSegment(trace.root, 'Datastore/statement/Postgres/' + TABLE + '/insert')
 
-    var getSegment = findSegment(
+    const getSegment = findSegment(
       trace.root,
       'Datastore/statement/Postgres/' + selectTable + '/select'
     )
@@ -156,14 +156,14 @@ module.exports = function runTests(name, clientFactory) {
   }
 
   function verifyInstanceParameters(t, segment) {
-    var transaction = segment.transaction
-    var agent = transaction.agent
-    var trace = transaction.trace
+    const transaction = segment.transaction
+    const agent = transaction.agent
+    const trace = transaction.trace
 
-    var setSegment = findSegment(trace.root, 'Datastore/statement/Postgres/' + TABLE + '/insert')
+    const setSegment = findSegment(trace.root, 'Datastore/statement/Postgres/' + TABLE + '/insert')
     const attributes = setSegment.getAttributes()
 
-    var metricHostName = getMetricHostName(agent, params.postgres_host)
+    const metricHostName = getMetricHostName(agent, params.postgres_host)
     t.equals(attributes.host, metricHostName, 'should add the host parameter')
     t.equals(
       attributes.port_path_or_id,
@@ -190,10 +190,10 @@ module.exports = function runTests(name, clientFactory) {
   }
 
   function verifySlowQueries(t, agent) {
-    var metricHostName = getMetricHostName(agent, params.postgres_host)
+    const metricHostName = getMetricHostName(agent, params.postgres_host)
 
     t.equals(agent.queries.samples.size, 1, 'should have one slow query')
-    for (let sample of agent.queries.samples.values()) {
+    for (const sample of agent.queries.samples.values()) {
       const queryParams = sample.getParams()
 
       t.equal(queryParams.host, metricHostName, 'instance data should show up in slow query params')
@@ -217,13 +217,13 @@ module.exports = function runTests(name, clientFactory) {
   test('Postgres instrumentation: ' + name, function (t) {
     t.autoend()
 
-    var agent = null
-    var pg = null
+    let agent = null
+    let pg = null
 
     t.beforeEach(function () {
       // the pg module has `native` lazy getter that is removed after first call,
       // so in order to re-instrument, we need to remove the pg module from the cache
-      var pgResolved = require.resolve('pg')
+      const pgResolved = require.resolve('pg')
       delete require.cache[pgResolved]
 
       agent = helper.instrumentMockedAgent()
@@ -239,7 +239,7 @@ module.exports = function runTests(name, clientFactory) {
     })
 
     t.test('simple query with prepared statement', function (t) {
-      var client = new pg.Client(CON_OBJ)
+      const client = new pg.Client(CON_OBJ)
 
       t.teardown(function () {
         client.end()
@@ -247,13 +247,13 @@ module.exports = function runTests(name, clientFactory) {
 
       t.notOk(agent.getTransaction(), 'no transaction should be in play')
       helper.runInTransaction(agent, function transactionInScope(tx) {
-        var transaction = agent.getTransaction()
+        const transaction = agent.getTransaction()
         t.ok(transaction, 'transaction should be visible')
         t.equal(tx, transaction, 'We got the same transaction')
 
-        var colVal = 'Hello'
-        var pkVal = 111
-        var insQuery = 'INSERT INTO ' + TABLE_PREPARED + ' (' + PK + ',' + COL
+        const colVal = 'Hello'
+        const pkVal = 111
+        let insQuery = 'INSERT INTO ' + TABLE_PREPARED + ' (' + PK + ',' + COL
         insQuery += ') VALUES($1, $2);'
 
         client.connect(function (error) {
@@ -269,7 +269,7 @@ module.exports = function runTests(name, clientFactory) {
             t.ok(agent.getTransaction(), 'transaction should still be visible')
             t.ok(ok, 'everything should be peachy after setting')
 
-            var selQuery = 'SELECT * FROM ' + TABLE_PREPARED + ' WHERE '
+            let selQuery = 'SELECT * FROM ' + TABLE_PREPARED + ' WHERE '
             selQuery += PK + '=' + pkVal + ';'
 
             client.query(selQuery, function (error, value) {
@@ -291,7 +291,7 @@ module.exports = function runTests(name, clientFactory) {
 
     t.test('simple query using query.on() events', function (t) {
       t.plan(36)
-      var client = new pg.Client(CON_OBJ)
+      const client = new pg.Client(CON_OBJ)
 
       t.teardown(function () {
         client.end()
@@ -299,13 +299,13 @@ module.exports = function runTests(name, clientFactory) {
 
       t.notOk(agent.getTransaction(), 'no transaction should be in play')
       helper.runInTransaction(agent, function transactionInScope(tx) {
-        var transaction = agent.getTransaction()
+        const transaction = agent.getTransaction()
         t.ok(transaction, 'transaction should be visible')
         t.equal(tx, transaction, 'We got the same transaction')
 
-        var colVal = 'Goodbye'
-        var pkVal = 333
-        var insQuery = 'INSERT INTO ' + TABLE_PREPARED + ' (' + PK + ',' + COL
+        const colVal = 'Goodbye'
+        const pkVal = 333
+        let insQuery = 'INSERT INTO ' + TABLE_PREPARED + ' (' + PK + ',' + COL
         insQuery += ') VALUES($1, $2);'
 
         client.connect(function (error) {
@@ -313,7 +313,7 @@ module.exports = function runTests(name, clientFactory) {
             return t.end()
           }
 
-          var query = client.query(insQuery, [pkVal, colVal])
+          const query = client.query(insQuery, [pkVal, colVal])
 
           // Prints DeprecationWarning for pg@7 update
           query.on('error', function (err) {
@@ -324,10 +324,10 @@ module.exports = function runTests(name, clientFactory) {
           query.on('end', function () {
             t.ok(agent.getTransaction(), 'transaction should still be visible')
 
-            var selQueryStr = 'SELECT * FROM ' + TABLE_PREPARED + ' WHERE '
+            let selQueryStr = 'SELECT * FROM ' + TABLE_PREPARED + ' WHERE '
             selQueryStr += PK + '=' + pkVal + ';'
 
-            var selQuery = client.query(selQueryStr)
+            const selQuery = client.query(selQueryStr)
 
             selQuery.on('error', function (err) {
               t.error(err, 'error while querying')
@@ -347,7 +347,7 @@ module.exports = function runTests(name, clientFactory) {
 
     t.test('simple query using query.addListener() events', function (t) {
       t.plan(36)
-      var client = new pg.Client(CON_OBJ)
+      const client = new pg.Client(CON_OBJ)
 
       t.teardown(function () {
         client.end()
@@ -355,13 +355,13 @@ module.exports = function runTests(name, clientFactory) {
 
       t.notOk(agent.getTransaction(), 'no transaction should be in play')
       helper.runInTransaction(agent, function transactionInScope(tx) {
-        var transaction = agent.getTransaction()
+        const transaction = agent.getTransaction()
         t.ok(transaction, 'transaction should be visible')
         t.equal(tx, transaction, 'We got the same transaction')
 
-        var colVal = 'Sianara'
-        var pkVal = 444
-        var insQuery = 'INSERT INTO ' + TABLE_PREPARED + ' (' + PK + ',' + COL
+        const colVal = 'Sianara'
+        const pkVal = 444
+        let insQuery = 'INSERT INTO ' + TABLE_PREPARED + ' (' + PK + ',' + COL
         insQuery += ') VALUES($1, $2);'
 
         client.connect(function (error) {
@@ -369,7 +369,7 @@ module.exports = function runTests(name, clientFactory) {
             return t.end()
           }
 
-          var query = client.query(insQuery, [pkVal, colVal])
+          const query = client.query(insQuery, [pkVal, colVal])
 
           query.addListener('error', function (err) {
             t.error(err, 'error while querying')
@@ -378,10 +378,10 @@ module.exports = function runTests(name, clientFactory) {
           query.addListener('end', function () {
             t.ok(agent.getTransaction(), 'transaction should still be visible')
 
-            var selQueryStr = 'SELECT * FROM ' + TABLE_PREPARED + ' WHERE '
+            let selQueryStr = 'SELECT * FROM ' + TABLE_PREPARED + ' WHERE '
             selQueryStr += PK + '=' + pkVal + ';'
 
-            var selQuery = client.query(selQueryStr)
+            const selQuery = client.query(selQueryStr)
 
             selQuery.addListener('error', function (err) {
               t.error(err, 'error while querying')
@@ -403,13 +403,13 @@ module.exports = function runTests(name, clientFactory) {
       t.plan(40)
       t.notOk(agent.getTransaction(), 'no transaction should be in play')
       helper.runInTransaction(agent, function transactionInScope(tx) {
-        var transaction = agent.getTransaction()
+        const transaction = agent.getTransaction()
         t.ok(transaction, 'transaction should be visible')
         t.equal(tx, transaction, 'We got the same transaction')
 
-        var colVal = 'World!'
-        var pkVal = 222
-        var insQuery = 'INSERT INTO ' + TABLE_PREPARED + ' (' + PK + ',' + COL
+        const colVal = 'World!'
+        const pkVal = 222
+        let insQuery = 'INSERT INTO ' + TABLE_PREPARED + ' (' + PK + ',' + COL
         insQuery += ') VALUES(' + pkVal + ",'" + colVal + "');"
         pg.connect(CON_OBJ, function (error, clientPool, done) {
           if (!t.error(error)) {
@@ -424,7 +424,7 @@ module.exports = function runTests(name, clientFactory) {
             t.ok(agent.getTransaction(), 'transaction should still be visible')
             t.ok(ok, 'everything should be peachy after setting')
 
-            var selQuery = 'SELECT * FROM ' + TABLE_PREPARED + ' WHERE '
+            let selQuery = 'SELECT * FROM ' + TABLE_PREPARED + ' WHERE '
             selQuery += PK + '=' + pkVal + ';'
 
             clientPool.query(selQuery, function (error, value) {
@@ -449,16 +449,16 @@ module.exports = function runTests(name, clientFactory) {
 
       t.notOk(agent.getTransaction(), 'no transaction should be in play')
       helper.runInTransaction(agent, function transactionInScope(tx) {
-        var transaction = agent.getTransaction()
+        const transaction = agent.getTransaction()
         t.ok(transaction, 'transaction should be visible')
         t.equal(tx, transaction, 'We got the same transaction')
 
-        var colVal = 'World!'
-        var pkVal = 222
-        var insQuery = 'INSERT INTO ' + TABLE_PREPARED + ' (' + PK + ',' + COL
+        const colVal = 'World!'
+        const pkVal = 222
+        let insQuery = 'INSERT INTO ' + TABLE_PREPARED + ' (' + PK + ',' + COL
         insQuery += ') VALUES(' + pkVal + ",'" + colVal + "');"
 
-        var pool = null
+        let pool = null
         if (pg.Pool) {
           pool = new pg.Pool(CON_OBJ)
         } else {
@@ -478,7 +478,7 @@ module.exports = function runTests(name, clientFactory) {
             t.ok(agent.getTransaction(), 'transaction should still be visible')
             t.ok(ok, 'everything should be peachy after setting')
 
-            var selQuery = 'SELECT * FROM ' + TABLE_PREPARED + ' WHERE '
+            let selQuery = 'SELECT * FROM ' + TABLE_PREPARED + ' WHERE '
             selQuery += PK + '=' + pkVal + ';'
 
             client.query(selQuery, function (error, value) {
@@ -505,17 +505,17 @@ module.exports = function runTests(name, clientFactory) {
     // https://github.com/newrelic/node-newrelic/pull/223
     t.test('query using an config object with `text` getter instead of property', (t) => {
       t.plan(3)
-      var client = new pg.Client(CON_OBJ)
+      const client = new pg.Client(CON_OBJ)
 
       t.teardown(function () {
         client.end()
       })
 
       helper.runInTransaction(agent, function () {
-        var transaction = agent.getTransaction()
+        const transaction = agent.getTransaction()
 
-        var colVal = 'Sianara'
-        var pkVal = 444
+        const colVal = 'Sianara'
+        const pkVal = 444
 
         function CustomConfigClass() {
           this._text = 'INSERT INTO ' + TABLE_PREPARED + ' (' + PK + ',' + COL
@@ -531,7 +531,7 @@ module.exports = function runTests(name, clientFactory) {
         })
 
         // create a config instance
-        var config = new CustomConfigClass()
+        const config = new CustomConfigClass()
 
         client.connect(function (error) {
           if (!t.error(error)) {
@@ -543,7 +543,7 @@ module.exports = function runTests(name, clientFactory) {
               return t.end()
             }
 
-            var segment = findSegment(
+            const segment = findSegment(
               transaction.trace.root,
               'Datastore/statement/Postgres/' + TABLE + '/insert'
             )
@@ -559,14 +559,14 @@ module.exports = function runTests(name, clientFactory) {
       agent.config.transaction_tracer.record_sql = 'raw'
       agent.config.slow_sql.enabled = true
 
-      var client = new pg.Client(CON_OBJ)
+      const client = new pg.Client(CON_OBJ)
 
       t.teardown(function () {
         client.end()
       })
 
       helper.runInTransaction(agent, function () {
-        var transaction = agent.getTransaction()
+        const transaction = agent.getTransaction()
         client.connect(function (error) {
           if (!t.error(error)) {
             return t.end()
@@ -592,14 +592,14 @@ module.exports = function runTests(name, clientFactory) {
       agent.config.distributed_tracing.enabled = true
       agent.config.slow_sql.enabled = true
 
-      var client = new pg.Client(CON_OBJ)
+      const client = new pg.Client(CON_OBJ)
 
       t.teardown(function () {
         client.end()
       })
 
       helper.runInTransaction(agent, function () {
-        var transaction = agent.getTransaction()
+        const transaction = agent.getTransaction()
         client.connect(function (error) {
           if (!t.error(error)) {
             return t.end()
@@ -632,14 +632,14 @@ module.exports = function runTests(name, clientFactory) {
         agent.config.datastore_tracer.instance_reporting.enabled = false
         agent.config.datastore_tracer.database_name_reporting.enabled = false
 
-        var client = new pg.Client(CON_OBJ)
+        const client = new pg.Client(CON_OBJ)
 
         t.teardown(function () {
           client.end()
         })
 
         helper.runInTransaction(agent, function () {
-          var transaction = agent.getTransaction()
+          const transaction = agent.getTransaction()
           client.connect(function (error) {
             if (!t.error(error)) {
               return t.end()
@@ -670,7 +670,7 @@ module.exports = function runTests(name, clientFactory) {
 
     t.test('query.on should still be chainable', function (t) {
       t.plan(2)
-      var client = new pg.Client(CON_OBJ)
+      const client = new pg.Client(CON_OBJ)
 
       t.teardown(function () {
         client.end()
@@ -681,7 +681,7 @@ module.exports = function runTests(name, clientFactory) {
           return t.end()
         }
 
-        var query = client.query('SELECT table_name FROM information_schema.tables')
+        const query = client.query('SELECT table_name FROM information_schema.tables')
 
         query
           .on('error', function (err) {
@@ -696,7 +696,7 @@ module.exports = function runTests(name, clientFactory) {
 
     t.test('query.on should create one segment for row events', function (t) {
       helper.runInTransaction(agent, function transactionInScope(tx) {
-        var client = new pg.Client(CON_OBJ)
+        const client = new pg.Client(CON_OBJ)
         t.teardown(function () {
           client.end()
         })
@@ -706,10 +706,10 @@ module.exports = function runTests(name, clientFactory) {
             return t.end()
           }
 
-          var query = client.query('SELECT table_name FROM information_schema.tables')
+          const query = client.query('SELECT table_name FROM information_schema.tables')
           query.on('row', function onRow() {})
           query.on('end', function ended() {
-            var segment = findSegment(
+            const segment = findSegment(
               tx.trace.root,
               'Datastore/statement/Postgres/information_schema.tables/select'
             )
@@ -725,7 +725,7 @@ module.exports = function runTests(name, clientFactory) {
       t.plan(2)
 
       helper.runInTransaction(agent, function transactionInScope(tx) {
-        var client = new pg.Client(CON_OBJ)
+        const client = new pg.Client(CON_OBJ)
 
         t.teardown(function () {
           client.end()
@@ -736,7 +736,7 @@ module.exports = function runTests(name, clientFactory) {
             return t.end()
           }
 
-          var query = client.query('SELECT table_name FROM information_schema.tables')
+          const query = client.query('SELECT table_name FROM information_schema.tables')
 
           query.addListener('error', function (err) {
             t.error(err, 'error while querying')
@@ -746,7 +746,7 @@ module.exports = function runTests(name, clientFactory) {
           query.addListener('row', function onRow() {})
 
           query.addListener('end', function ended() {
-            var segment = findSegment(
+            const segment = findSegment(
               tx.trace.root,
               'Datastore/statement/Postgres/information_schema.tables/select'
             )
@@ -761,7 +761,7 @@ module.exports = function runTests(name, clientFactory) {
       t.plan(3)
 
       helper.runInTransaction(agent, function transactionInScope(tx) {
-        var client = new pg.Client(CON_OBJ)
+        const client = new pg.Client(CON_OBJ)
 
         t.teardown(function () {
           client.end()
@@ -772,7 +772,7 @@ module.exports = function runTests(name, clientFactory) {
             return t.end()
           }
 
-          var query = client.query('SELECT * FROM generate_series(0, 9)')
+          const query = client.query('SELECT * FROM generate_series(0, 9)')
 
           query.on('error', function (err) {
             t.error(err, 'error while querying')
@@ -784,13 +784,13 @@ module.exports = function runTests(name, clientFactory) {
             query.emit('readable', row)
           })
 
-          var called = 0
+          let called = 0
           query.on('readable', function onReadable() {
             called++
           })
 
           query.on('end', function ended() {
-            var segment = findSegment(
+            const segment = findSegment(
               tx.trace.root,
               'Datastore/statement/Postgres/generate_series/select'
             )
@@ -808,7 +808,7 @@ module.exports = function runTests(name, clientFactory) {
         t.plan(3)
 
         helper.runInTransaction(agent, function transactionInScope(tx) {
-          var client = new pg.Client(CON_OBJ)
+          const client = new pg.Client(CON_OBJ)
 
           t.teardown(function () {
             client.end()
@@ -819,7 +819,7 @@ module.exports = function runTests(name, clientFactory) {
               return t.end()
             }
 
-            var query = client.query('SELECT * FROM generate_series(0, 9)')
+            const query = client.query('SELECT * FROM generate_series(0, 9)')
 
             query.addListener('error', function (err) {
               t.error(err, 'error while querying')
@@ -831,13 +831,13 @@ module.exports = function runTests(name, clientFactory) {
               query.emit('readable')
             })
 
-            var called = 0
+            let called = 0
             query.addListener('readable', function onReadable() {
               called++
             })
 
             query.addListener('end', function ended() {
-              var segment = findSegment(
+              const segment = findSegment(
                 tx.trace.root,
                 'Datastore/statement/Postgres/generate_series/select'
               )

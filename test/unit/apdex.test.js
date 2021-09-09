@@ -14,7 +14,7 @@ const expect = chai.expect
 const ApdexStats = require('../../lib/stats/apdex')
 
 describe('ApdexStats', function () {
-  var statistics
+  let statistics
 
   beforeEach(function () {
     statistics = new ApdexStats(0.3)
@@ -67,7 +67,7 @@ describe('ApdexStats', function () {
     const expectedStats = { satisfying: 1, tolerating: 1, frustrating: 1 }
     verifyApdexStats(statistics, expectedStats)
 
-    var other = new ApdexStats(0.3)
+    const other = new ApdexStats(0.3)
     other.recordValueInMillis(120)
     other.recordValueInMillis(120)
     other.recordValueInMillis(120)

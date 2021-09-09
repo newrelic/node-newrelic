@@ -15,7 +15,7 @@ tap.test('database query parser', function (t) {
     t.autoend()
 
     t.test('should parse a simple query', function (t) {
-      var ps = parseSql('NoSQL', 'Select\n *\n from dude')
+      const ps = parseSql('NoSQL', 'Select\n *\n from dude')
       t.ok(ps)
       t.ok(ps.type)
       t.equal(ps.type, 'NoSQL')
@@ -28,7 +28,7 @@ tap.test('database query parser', function (t) {
     })
 
     t.test('should parse another simple query', function (t) {
-      var ps = parseSql('NoSQL', 'Select * from transaction_traces_12')
+      const ps = parseSql('NoSQL', 'Select * from transaction_traces_12')
       t.ok(ps)
       t.ok(ps.type)
       t.equal(ps.type, 'NoSQL')
@@ -45,7 +45,7 @@ tap.test('database query parser', function (t) {
     t.autoend()
 
     t.test('should parse a simple command', function (t) {
-      var ps = parseSql('NoSQL', 'DELETE\nfrom dude')
+      const ps = parseSql('NoSQL', 'DELETE\nfrom dude')
       t.ok(ps)
       t.ok(ps.type)
       t.equal(ps.type, 'NoSQL')
@@ -58,7 +58,7 @@ tap.test('database query parser', function (t) {
     })
 
     t.test('should parse a command with conditions', function (t) {
-      var ps = parseSql('NoSQL', "DELETE\nfrom dude where name = 'man'")
+      const ps = parseSql('NoSQL', "DELETE\nfrom dude where name = 'man'")
       t.ok(ps)
       t.ok(ps.type)
       t.equal(ps.type, 'NoSQL')
@@ -75,7 +75,7 @@ tap.test('database query parser', function (t) {
     t.autoend()
 
     t.test('should parse a command with gratuitous white space and conditions', function (t) {
-      var ps = parseSql('NoSQL', '  update test set value = 1 where id = 12')
+      const ps = parseSql('NoSQL', '  update test set value = 1 where id = 12')
       t.ok(ps)
       t.ok(ps.type)
       t.equal(ps.type, 'NoSQL')
@@ -92,7 +92,7 @@ tap.test('database query parser', function (t) {
     t.autoend()
 
     t.test('should parse a command with a subquery', function (t) {
-      var ps = parseSql('NoSQL', '  insert into\ntest\nselect * from dude')
+      const ps = parseSql('NoSQL', '  insert into\ntest\nselect * from dude')
       t.ok(ps)
       t.not(ps.type, undefined)
       t.equal(ps.type, 'NoSQL')
@@ -109,7 +109,7 @@ tap.test('database query parser', function (t) {
     t.autoend()
 
     t.test("should return 'other' when handed garbage", function (t) {
-      var ps = parseSql('NoSQL', '  gender into\ndudes\nselect * from dude')
+      const ps = parseSql('NoSQL', '  gender into\ndudes\nselect * from dude')
       t.ok(ps)
       t.not(ps.type, undefined)
       t.equal(ps.type, 'NoSQL')
@@ -121,7 +121,7 @@ tap.test('database query parser', function (t) {
     })
 
     t.test("should return 'other' when handed an object", function (t) {
-      var ps = parseSql('NoSQL', { key: 'value' })
+      const ps = parseSql('NoSQL', { key: 'value' })
       t.ok(ps)
       t.ok(ps.type)
       t.equal(ps.type, 'NoSQL')

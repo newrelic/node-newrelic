@@ -120,7 +120,7 @@ test('Promise trace', (t) => {
     const expected = ['a', ['f'], ['c', ['d']]]
 
     return helper.runInTransaction(agent, function (tx) {
-      var a = start('a', true)
+      const a = start('a', true)
       a.then(step('e')).catch(step('f'))
 
       return a
@@ -143,7 +143,7 @@ test('Promise trace', (t) => {
     const expected = ['a', ['b', ['e'], ['c', ['d']]]]
 
     return helper.runInTransaction(agent, function (tx) {
-      var b = start('a').then(step('b'))
+      const b = start('a').then(step('b'))
       b.then(step('e'))
 
       return b
@@ -167,7 +167,7 @@ test('Promise trace', (t) => {
     const expected = ['a', ['e'], ['c', ['d']]]
 
     return helper.runInTransaction(agent, function (tx) {
-      var b = start('a', true).then(step('b'))
+      const b = start('a', true).then(step('b'))
       b.catch(step('e'))
 
       return b
@@ -192,7 +192,7 @@ test('Promise trace', (t) => {
     const expected = ['a', ['e'], ['c', ['d']]]
 
     return helper.runInTransaction(agent, function (tx) {
-      var b = start('a').catch(step('b'))
+      const b = start('a').catch(step('b'))
       b.then(step('e'))
 
       return b
@@ -318,10 +318,10 @@ function checkTrace(t, tx, expected) {
   }
 
   function _check(segment, expectedChildren) {
-    var expectedName = expectedChildren.shift() // shift === pop_front
+    const expectedName = expectedChildren.shift() // shift === pop_front
 
     // Remove `checkTrace` from the segment before checking it.
-    var lastChild = segment.children[segment.children.length - 1]
+    const lastChild = segment.children[segment.children.length - 1]
     if (lastChild && lastChild.name === 'checkTrace') {
       segment.children.pop()
     }

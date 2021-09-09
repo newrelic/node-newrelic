@@ -8,12 +8,12 @@
 const benchmark = require('../../lib/benchmark')
 const properties = require('../../../lib/util/properties')
 
-var suite = benchmark.createBenchmark({
+const suite = benchmark.createBenchmark({
   runs: 100000,
   name: 'util.properties'
 })
 
-var testObj
+let testObj
 suite.add({
   name: 'isEmpty (object instance)',
   before: function () {

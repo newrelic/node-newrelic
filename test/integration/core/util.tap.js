@@ -14,11 +14,11 @@ test('promisify', { skip: !util.promisify }, function (t) {
   t.autoend()
   t.test('should work on setTimeout', function (t) {
     t.plan(2)
-    var agent = helper.instrumentMockedAgent()
+    const agent = helper.instrumentMockedAgent()
     t.teardown(function () {
       helper.unloadAgent(agent)
     })
-    let asyncTimeout = util.promisify(setTimeout)
+    const asyncTimeout = util.promisify(setTimeout)
     asyncTimeout(10, 'foobar')
       .then((val) => {
         t.equal(val, 'foobar', 'setTimeout parameter should flow')
@@ -31,11 +31,11 @@ test('promisify', { skip: !util.promisify }, function (t) {
   })
   t.test('should work on setImmediate', function (t) {
     t.plan(2)
-    var agent = helper.instrumentMockedAgent()
+    const agent = helper.instrumentMockedAgent()
     t.teardown(function () {
       helper.unloadAgent(agent)
     })
-    let asyncImmediate = util.promisify(setImmediate)
+    const asyncImmediate = util.promisify(setImmediate)
     asyncImmediate('foobar')
       .then((val) => {
         t.equal(val, 'foobar', 'setImmediate parameter should flow')
@@ -48,11 +48,11 @@ test('promisify', { skip: !util.promisify }, function (t) {
   })
   t.test('should work on child_process.exec', function (t) {
     t.plan(3)
-    var agent = helper.instrumentMockedAgent()
+    const agent = helper.instrumentMockedAgent()
     t.teardown(function () {
       helper.unloadAgent(agent)
     })
-    let asyncExec = util.promisify(require('child_process').exec)
+    const asyncExec = util.promisify(require('child_process').exec)
     asyncExec('ls')
       .then((result) => {
         t.type(result, 'object', 'first argument should be object')
@@ -65,11 +65,11 @@ test('promisify', { skip: !util.promisify }, function (t) {
   })
   t.test('should work on child_process.execFile', function (t) {
     t.plan(3)
-    var agent = helper.instrumentMockedAgent()
+    const agent = helper.instrumentMockedAgent()
     t.teardown(function () {
       helper.unloadAgent(agent)
     })
-    let asyncExec = util.promisify(require('child_process').execFile)
+    const asyncExec = util.promisify(require('child_process').execFile)
     asyncExec(path.join(__dirname, 'exec-me.js'))
       .then((result) => {
         t.type(result, 'object', 'first argument should be object')
@@ -84,13 +84,13 @@ test('promisify', { skip: !util.promisify }, function (t) {
   t.test('should work on fs.exists', function (t) {
     t.plan(1)
 
-    var agent = helper.instrumentMockedAgent()
+    const agent = helper.instrumentMockedAgent()
     t.teardown(function () {
       helper.unloadAgent(agent)
     })
 
     // eslint-disable-next-line node/no-deprecated-api
-    let asyncExists = util.promisify(require('fs').exists)
+    const asyncExists = util.promisify(require('fs').exists)
 
     asyncExists(path.join(__dirname, 'exec-me.js'))
       .then(() => {

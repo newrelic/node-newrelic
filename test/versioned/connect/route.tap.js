@@ -114,7 +114,7 @@ function createServerAndMakeRequest({ url, expectedData, t, app, pkgVersion }) {
   }
 
   const server = http.createServer(requestListener).listen(0, function () {
-    var req = http.request(
+    const req = http.request(
       {
         port: server.address().port,
         host: 'localhost',

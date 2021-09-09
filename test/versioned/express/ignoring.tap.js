@@ -5,20 +5,20 @@
 
 'use strict'
 
-var test = require('tap').test
-var request = require('request')
-var helper = require('../../lib/agent_helper')
-var API = require('../../../api')
+const test = require('tap').test
+const request = require('request')
+const helper = require('../../lib/agent_helper')
+const API = require('../../../api')
 
 test('ignoring an Express route', function (t) {
   t.plan(7)
 
   const agent = helper.instrumentMockedAgent()
 
-  var api = new API(agent)
-  var express = require('express')
-  var app = express()
-  var server = require('http').createServer(app)
+  const api = new API(agent)
+  const express = require('express')
+  const app = express()
+  const server = require('http').createServer(app)
 
   t.teardown(() => {
     server.close(() => {
@@ -37,10 +37,10 @@ test('ignoring an Express route', function (t) {
 
     t.notOk(agent.traces.trace, 'should have no transaction trace')
 
-    var metrics = agent.metrics._metrics.unscoped
+    const metrics = agent.metrics._metrics.unscoped
     t.equal(Object.keys(metrics).length, 1, 'only supportability metrics added to agent collection')
 
-    var errors = agent.errors.traceAggregator.errors
+    const errors = agent.errors.traceAggregator.errors
     t.equal(errors.length, 0, 'no errors noticed')
   })
 
@@ -51,8 +51,8 @@ test('ignoring an Express route', function (t) {
   })
 
   server.listen(0, function () {
-    var port = server.address().port
-    var url = 'http://localhost:' + port + '/polling/31337'
+    const port = server.address().port
+    const url = 'http://localhost:' + port + '/polling/31337'
     request.get(url, { json: true }, function (error, res, body) {
       t.equal(res.statusCode, 400, 'got expected error')
       t.deepEqual(body, { status: 'pollpollpoll' }, 'got expected response')

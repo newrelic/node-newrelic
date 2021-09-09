@@ -9,18 +9,18 @@
 // Below allows use of mocha DSL with tap runner.
 require('tap').mochaGlobals()
 
-var chai = require('chai')
-var expect = chai.expect
-var helper = require('../../lib/agent_helper')
-var generateRecorder = require('../../../lib/metrics/recorders/http_external')
-var Transaction = require('../../../lib/transaction')
+const chai = require('chai')
+const expect = chai.expect
+const helper = require('../../lib/agent_helper')
+const generateRecorder = require('../../../lib/metrics/recorders/http_external')
+const Transaction = require('../../../lib/transaction')
 
 function recordExternal(segment, scope) {
   return generateRecorder('test.example.com', 'http')(segment, scope)
 }
 
 function makeSegment(options) {
-  var segment = options.transaction.trace.root.add('placeholder')
+  const segment = options.transaction.trace.root.add('placeholder')
   segment.setDurationInMillis(options.duration)
   segment._setExclusiveDurationInMillis(options.exclusive)
 
@@ -32,16 +32,16 @@ function record(options) {
     options.transaction.metrics.apdexT = options.apdexT
   }
 
-  var segment = makeSegment(options)
-  var transaction = options.transaction
+  const segment = makeSegment(options)
+  const transaction = options.transaction
 
   transaction.finalizeNameFromUri(options.url, options.code)
   recordExternal(segment, options.transaction.name)
 }
 
 describe('recordExternal', function () {
-  var agent
-  var trans
+  let agent
+  let trans
 
   beforeEach(function () {
     agent = helper.loadMockedAgent()
@@ -54,7 +54,7 @@ describe('recordExternal', function () {
   })
 
   describe('when scope is undefined', function () {
-    var segment
+    let segment
 
     beforeEach(function () {
       segment = makeSegment({
@@ -73,7 +73,7 @@ describe('recordExternal', function () {
     it('should record no scoped metrics', function () {
       recordExternal(segment, undefined)
 
-      var result = [
+      const result = [
         [{ name: 'External/test.example.com/http' }, [1, 0, 0, 0, 0, 0]],
         [{ name: 'External/allOther' }, [1, 0, 0, 0, 0, 0]],
         [{ name: 'External/test.example.com/all' }, [1, 0, 0, 0, 0, 0]],
@@ -96,7 +96,7 @@ describe('recordExternal', function () {
         exclusive: 2
       })
 
-      var result = [
+      const result = [
         [{ name: 'External/test.example.com/http' }, [1, 0.03, 0.002, 0.03, 0.03, 0.0009]],
         [{ name: 'External/allWeb' }, [1, 0.03, 0.002, 0.03, 0.03, 0.0009]],
         [{ name: 'External/test.example.com/all' }, [1, 0.03, 0.002, 0.03, 0.03, 0.0009]],
@@ -112,17 +112,17 @@ describe('recordExternal', function () {
   })
 
   it('should report exclusive time correctly', function () {
-    var root = trans.trace.root
-    var parent = root.add('/parent', recordExternal)
-    var child1 = parent.add('/child1', generateRecorder('api.twitter.com', 'https'))
-    var child2 = parent.add('/child2', generateRecorder('oauth.facebook.com', 'http'))
+    const root = trans.trace.root
+    const parent = root.add('/parent', recordExternal)
+    const child1 = parent.add('/child1', generateRecorder('api.twitter.com', 'https'))
+    const child2 = parent.add('/child2', generateRecorder('oauth.facebook.com', 'http'))
 
     root.setDurationInMillis(32, 0)
     parent.setDurationInMillis(32, 0)
     child1.setDurationInMillis(15, 10)
     child2.setDurationInMillis(2, 1)
 
-    var result = [
+    const result = [
       [{ name: 'External/test.example.com/http' }, [1, 0.032, 0.015, 0.032, 0.032, 0.001024]],
       [{ name: 'External/allOther' }, [3, 0.049, 0.032, 0.002, 0.032, 0.001253]],
       [{ name: 'External/test.example.com/all' }, [1, 0.032, 0.015, 0.032, 0.032, 0.001024]],

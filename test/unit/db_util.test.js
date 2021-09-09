@@ -9,13 +9,13 @@
 // Below allows use of mocha DSL with tap runner.
 require('tap').mochaGlobals()
 
-var chai = require('chai')
-var expect = chai.expect
-var util = require('../../lib/db/utils')
+const chai = require('chai')
+const expect = chai.expect
+const util = require('../../lib/db/utils')
 
 describe('DB Utilities:', function () {
   describe('use statement parser', function () {
-    var useParser = util.extractDatabaseChangeFromUse
+    const useParser = util.extractDatabaseChangeFromUse
 
     it('should match single statement use expressions', function () {
       expect(useParser('use test_db;')).equal('test_db')

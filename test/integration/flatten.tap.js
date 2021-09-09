@@ -5,8 +5,8 @@
 
 'use strict'
 
-var tap = require('tap')
-var flatten = require('../../lib/util/flatten')
+const tap = require('tap')
+const flatten = require('../../lib/util/flatten')
 
 tap.test('util.flatten', function (t) {
   t.autoend()
@@ -28,7 +28,7 @@ tap.test('util.flatten', function (t) {
   })
 
   t.test('flattens recursive objects', function (t) {
-    var obj = {}
+    const obj = {}
     obj.x = obj
     t.deepEqual(flatten({}, '', obj), {})
 
@@ -52,7 +52,7 @@ tap.test('util.flatten.keys', function (t) {
   })
 
   t.test('flattens recursive objects', function (t) {
-    var obj = {}
+    const obj = {}
     obj.x = obj
     t.deepEqual(flatten.keys(obj), [])
     t.end()

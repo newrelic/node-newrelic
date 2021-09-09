@@ -5,16 +5,16 @@
 
 'use strict'
 
-var helper = require('../../lib/agent_helper')
-var shared = require('./shared')
+const helper = require('../../lib/agent_helper')
+const shared = require('./shared')
 
-var s = shared.makeSuite('Tracer segments')
-var suite = s.suite
-var tracer = s.agent.tracer
-var tx = helper.runInTransaction(s.agent, function (_tx) {
+const s = shared.makeSuite('Tracer segments')
+const suite = s.suite
+const tracer = s.agent.tracer
+const tx = helper.runInTransaction(s.agent, function (_tx) {
   return _tx
 })
-var bound = tracer.bindFunction(shared.getTest(), tx.root, true)
+const bound = tracer.bindFunction(shared.getTest(), tx.root, true)
 tracer.segment = tx.root
 
 suite.add({
@@ -34,7 +34,7 @@ suite.add({
 suite.add({
   name: 'tracer.addSegment',
   fn: function () {
-    var test = shared.getTest()
+    const test = shared.getTest()
     return tracer.addSegment('test', null, null, true, test.func)
   }
 })

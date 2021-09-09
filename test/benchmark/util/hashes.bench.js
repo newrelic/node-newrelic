@@ -8,7 +8,7 @@
 const benchmark = require('../../lib/benchmark')
 const makeId = require('../../../lib/util/hashes').makeId
 
-var suite = benchmark.createBenchmark({
+const suite = benchmark.createBenchmark({
   name: 'util.hashes',
   runs: 10000
 })

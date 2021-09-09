@@ -13,7 +13,7 @@ const common = require('../../../lib/utilization/common')
 const expect = require('chai').expect
 const helper = require('../../lib/agent_helper.js')
 
-var BIG = 'abcd'
+let BIG = 'abcd'
 while (BIG.length < 300) {
   BIG += BIG
 }
@@ -63,7 +63,7 @@ describe('Utilization Common Components', function () {
     })
 
     it('should not fail with "clean" objects', function () {
-      var obj = Object.create(null)
+      const obj = Object.create(null)
       obj.foo = 'foo'
       expect(common.getKeys(obj, ['foo'])).to.deep.equal({ foo: 'foo' })
     })

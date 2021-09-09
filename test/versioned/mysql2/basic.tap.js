@@ -7,20 +7,20 @@
 
 process.env.NEW_RELIC_HOME = __dirname
 
-var tap = require('tap')
-var logger = require('../../../lib/logger')
-var helper = require('../../lib/agent_helper')
-var urltils = require('../../../lib/util/urltils')
-var params = require('../../lib/params')
-var setup = require('./setup')
+const tap = require('tap')
+const logger = require('../../../lib/logger')
+const helper = require('../../lib/agent_helper')
+const urltils = require('../../../lib/util/urltils')
+const params = require('../../lib/params')
+const setup = require('./setup')
 
 tap.test('Basic run through mysql functionality', { timeout: 30 * 1000 }, function (t) {
   t.autoend()
 
-  var agent = null
-  var mysql = null
-  var poolLogger = logger.child({ component: 'pool' })
-  var pool = null
+  let agent = null
+  let mysql = null
+  const poolLogger = logger.child({ component: 'pool' })
+  let pool = null
 
   t.beforeEach(function () {
     agent = helper.instrumentMockedAgent()
@@ -89,7 +89,7 @@ tap.test('Basic run through mysql functionality', { timeout: 30 * 1000 }, functi
 
           agent.getTransaction().end()
           t.ok(agent.queries.samples.size > 0, 'there should be a query sample')
-          for (let sample of agent.queries.samples.values()) {
+          for (const sample of agent.queries.samples.values()) {
             t.ok(sample.total > 0, 'the samples should have positive duration')
           }
           t.end()
@@ -118,7 +118,7 @@ tap.test('Basic run through mysql functionality', { timeout: 30 * 1000 }, functi
           withRetry.release(client)
           agent.getTransaction().end()
           t.ok(agent.queries.samples.size > 0, 'there should be a query sample')
-          for (let sample of agent.queries.samples.values()) {
+          for (const sample of agent.queries.samples.values()) {
             t.ok(sample.total > 0, 'the samples should have positive duration')
           }
           t.end()
@@ -138,8 +138,8 @@ tap.test('Basic run through mysql functionality', { timeout: 30 * 1000 }, functi
         }
 
         t.ok(agent.getTransaction(), 'generic-pool should not lose the transaction')
-        var query = client.query('SELECT 1', [])
-        var results = false
+        const query = client.query('SELECT 1', [])
+        let results = false
 
         query.on('result', function () {
           results = true
@@ -157,7 +157,7 @@ tap.test('Basic run through mysql functionality', { timeout: 30 * 1000 }, functi
           t.ok(results, 'results should be received')
           agent.getTransaction().end()
           t.ok(agent.queries.samples.size > 0, 'there should be a query sample')
-          for (let sample of agent.queries.samples.values()) {
+          for (const sample of agent.queries.samples.values()) {
             t.ok(sample.total > 0, 'the samples should have positive duration')
           }
           t.end()
@@ -181,7 +181,7 @@ tap.test('Basic run through mysql functionality', { timeout: 30 * 1000 }, functi
             t.error(err, 'should not fail to set database')
 
             client.query('SELECT 1 + 1 AS solution', function (err) {
-              var seg = agent.tracer.getSegment().parent
+              const seg = agent.tracer.getSegment().parent
               const attributes = seg.getAttributes()
 
               t.notOk(err, 'no errors')
@@ -199,7 +199,7 @@ tap.test('Basic run through mysql functionality', { timeout: 30 * 1000 }, functi
               withRetry.release(client)
               agent.getTransaction().end()
               t.ok(agent.queries.samples.size > 0, 'there should be a query sample')
-              for (let sample of agent.queries.samples.values()) {
+              for (const sample of agent.queries.samples.values()) {
                 t.ok(sample.total > 0, 'the samples should have positive duration')
               }
               t.end()
@@ -231,7 +231,7 @@ tap.test('Basic run through mysql functionality', { timeout: 30 * 1000 }, functi
 
           agent.getTransaction().end()
           t.ok(agent.queries.samples.size > 0, 'there should be a query sample')
-          for (let sample of agent.queries.samples.values()) {
+          for (const sample of agent.queries.samples.values()) {
             t.ok(sample.total > 0, 'the samples should have positive duration')
           }
           t.end()
@@ -251,11 +251,11 @@ tap.test('Basic run through mysql functionality', { timeout: 30 * 1000 }, functi
         }
 
         t.ok(agent.getTransaction(), 'generic-pool should not lose the transaction')
-        var query = client.query('SELECT SLEEP(1)', [])
-        var start = Date.now()
-        var duration = null
-        var results = false
-        var ended = false
+        const query = client.query('SELECT SLEEP(1)', [])
+        const start = Date.now()
+        let duration = null
+        let results = false
+        let ended = false
 
         query.on('result', function () {
           results = true
@@ -276,10 +276,10 @@ tap.test('Basic run through mysql functionality', { timeout: 30 * 1000 }, functi
           const transaction = agent.getTransaction().end()
           withRetry.release(client)
           t.ok(results && ended, 'result and end events should occur')
-          var traceRoot = transaction.trace.root
-          var traceRootDuration = traceRoot.timer.getDurationInMillis()
-          var segment = findSegment(traceRoot, 'Datastore/statement/MySQL/unknown/select')
-          var queryNodeDuration = segment.timer.getDurationInMillis()
+          const traceRoot = transaction.trace.root
+          const traceRootDuration = traceRoot.timer.getDurationInMillis()
+          const segment = findSegment(traceRoot, 'Datastore/statement/MySQL/unknown/select')
+          const queryNodeDuration = segment.timer.getDurationInMillis()
 
           t.ok(
             Math.abs(duration - queryNodeDuration) < 50,
@@ -308,7 +308,7 @@ tap.test('Basic run through mysql functionality', { timeout: 30 * 1000 }, functi
         }
 
         t.ok(agent.getTransaction(), 'generic-pool should not lose the transaction')
-        var query = client.query('SELECT 1', [])
+        const query = client.query('SELECT 1', [])
 
         query.on('result', function resultCallback() {
           setTimeout(function resultTimeout() {}, 10)
@@ -324,13 +324,13 @@ tap.test('Basic run through mysql functionality', { timeout: 30 * 1000 }, functi
           setTimeout(function actualEnd() {
             const transaction = agent.getTransaction().end()
             withRetry.release(client)
-            var traceRoot = transaction.trace.root
-            var querySegment = traceRoot.children[0]
+            const traceRoot = transaction.trace.root
+            const querySegment = traceRoot.children[0]
             t.equal(querySegment.children.length, 2, 'the query segment should have two children')
 
-            var childSegment = querySegment.children[1]
+            const childSegment = querySegment.children[1]
             t.equal(childSegment.name, 'Callback: endCallback', 'children should be callbacks')
-            var grandChildSegment = childSegment.children[0]
+            const grandChildSegment = childSegment.children[0]
             t.equal(grandChildSegment.name, 'timers.setTimeout', 'grand children should be timers')
             t.end()
           }, 100)
@@ -359,7 +359,7 @@ tap.test('Basic run through mysql functionality', { timeout: 30 * 1000 }, functi
           withRetry.release(client)
           agent.getTransaction().end()
           t.ok(agent.queries.samples.size > 0, 'there should be a query sample')
-          for (let sample of agent.queries.samples.values()) {
+          for (const sample of agent.queries.samples.values()) {
             t.ok(sample.total > 0, 'the samples should have positive duration')
           }
           t.end()
@@ -388,7 +388,7 @@ tap.test('Basic run through mysql functionality', { timeout: 30 * 1000 }, functi
           withRetry.release(client)
           agent.getTransaction().end()
           t.ok(agent.queries.samples.size > 0, 'there should be a query sample')
-          for (let sample of agent.queries.samples.values()) {
+          for (const sample of agent.queries.samples.values()) {
             t.ok(sample.total > 0, 'the samples should have positive duration')
           }
           t.end()
@@ -405,7 +405,7 @@ tap.test('Basic run through mysql functionality', { timeout: 30 * 1000 }, functi
           client.query('use test_db;', function (err) {
             t.error(err)
             client.query('SELECT 1 + 1 AS solution', function (err) {
-              var seg = agent.tracer.getSegment().parent
+              const seg = agent.tracer.getSegment().parent
               const attributes = seg.getAttributes()
               t.error(err)
               if (t.ok(seg, 'should have a segment')) {
@@ -434,8 +434,8 @@ tap.test('Basic run through mysql functionality', { timeout: 30 * 1000 }, functi
 })
 
 function findSegment(root, segmentName) {
-  for (var i = 0; i < root.children.length; i++) {
-    var segment = root.children[i]
+  for (let i = 0; i < root.children.length; i++) {
+    const segment = root.children[i]
     if (segment.name === segmentName) {
       return segment
     }

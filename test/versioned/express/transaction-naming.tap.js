@@ -5,13 +5,13 @@
 
 'use strict'
 
-var helper = require('../../lib/agent_helper')
-var http = require('http')
-var test = require('tap').test
+const helper = require('../../lib/agent_helper')
+const http = require('http')
+const test = require('tap').test
 
-var express
-var agent
-var app
+let express
+let agent
+let app
 
 runTests({
   express_segments: false
@@ -39,7 +39,7 @@ function runTests(flags) {
       res.end()
     })
 
-    var endpoint = '/asdf'
+    const endpoint = '/asdf'
 
     agent.on('transactionFinished', function (transaction) {
       t.equal(
@@ -76,7 +76,7 @@ function runTests(flags) {
   test('transaction name with router middleware', function (t) {
     setup(t)
 
-    var router = new express.Router()
+    const router = new express.Router()
     router.get('/path1', function (req, res) {
       res.end()
     })
@@ -169,7 +169,7 @@ function runTests(flags) {
   test('transaction name with subapp middleware', function (t) {
     setup(t)
 
-    var subapp = express()
+    const subapp = express()
 
     subapp.get('/path1', function middleware(req, res) {
       res.end()
@@ -183,7 +183,7 @@ function runTests(flags) {
   test('transaction name with subrouter', function (t) {
     setup(t)
 
-    var router = new express.Router()
+    const router = new express.Router()
 
     router.get('/path1', function (req, res) {
       res.end()
@@ -261,7 +261,7 @@ function runTests(flags) {
   test('when router error is handled outside of the router', function (t) {
     setup(t)
 
-    var router = new express.Router()
+    const router = new express.Router()
 
     router.get('/path1', function (req, res, next) {
       next(new Error('some error'))
@@ -310,7 +310,7 @@ function runTests(flags) {
   test('when using router with a route variable', function (t) {
     setup(t)
 
-    var router = express.Router() // eslint-disable-line new-cap
+    const router = express.Router() // eslint-disable-line new-cap
 
     router.get('/:var2/path1', function (req, res) {
       res.end()
@@ -324,7 +324,7 @@ function runTests(flags) {
   test('when mounting a subapp using a variable', function (t) {
     setup(t)
 
-    var subapp = express()
+    const subapp = express()
     subapp.get('/:var2/path1', function (req, res) {
       res.end()
     })
@@ -337,8 +337,8 @@ function runTests(flags) {
   test('using two routers', function (t) {
     setup(t)
 
-    var router1 = express.Router() // eslint-disable-line new-cap
-    var router2 = express.Router() // eslint-disable-line new-cap
+    const router1 = express.Router() // eslint-disable-line new-cap
+    const router2 = express.Router() // eslint-disable-line new-cap
 
     app.use('/:router1', router1)
     router1.use('/:router2', router2)
@@ -352,8 +352,8 @@ function runTests(flags) {
 
   test('transactions running in parallel should be recorded correctly', function (t) {
     setup(t)
-    var router1 = express.Router() // eslint-disable-line new-cap
-    var router2 = express.Router() // eslint-disable-line new-cap
+    const router1 = express.Router() // eslint-disable-line new-cap
+    const router2 = express.Router() // eslint-disable-line new-cap
 
     app.use('/:router1', router1)
     router1.use('/:router2', router2)
@@ -364,13 +364,18 @@ function runTests(flags) {
       }, 0)
     })
 
-    var numTests = 4
-    var runner = makeMultiRunner(t, '/router1/router2/path1', '/:router1/:router2/path1', numTests)
+    const numTests = 4
+    const runner = makeMultiRunner(
+      t,
+      '/router1/router2/path1',
+      '/:router1/:router2/path1',
+      numTests
+    )
     var server = app.listen(function () {
       t.teardown(() => {
         server.close()
       })
-      for (var i = 0; i < numTests; i++) {
+      for (let i = 0; i < numTests; i++) {
         runner(server)
       }
     })
@@ -380,7 +385,7 @@ function runTests(flags) {
     t.plan(4)
     setup(t)
 
-    var request = null
+    let request = null
 
     app.get('/test', function (req, res, next) {
       t.comment('middleware')
@@ -404,7 +409,7 @@ function runTests(flags) {
 
     var server = app.listen(function () {
       t.comment('making request')
-      var port = server.address().port
+      const port = server.address().port
       request = http.request(
         {
           hostname: 'localhost',
@@ -438,7 +443,7 @@ function runTests(flags) {
     setup(t)
 
     agent.on('transactionFinished', function (tx) {
-      var expected = 'WebTransaction/Expressjs/GET//test'
+      const expected = 'WebTransaction/Expressjs/GET//test'
       t.equal(tx.trace.root.children[0].name, expected)
     })
 
@@ -463,8 +468,8 @@ function runTests(flags) {
   test('when next is called after transaction state loss', function (t) {
     // Uninstrumented work queue. This must be set up before the agent is loaded
     // so that no transaction state is maintained.
-    var tasks = []
-    var interval = setInterval(function () {
+    const tasks = []
+    const interval = setInterval(function () {
       if (tasks.length) {
         tasks.pop()()
       }
@@ -473,8 +478,8 @@ function runTests(flags) {
     setup(t)
     t.plan(3)
 
-    var transactionsFinished = 0
-    var transactionNames = [
+    let transactionsFinished = 0
+    const transactionNames = [
       'WebTransaction/Expressjs/GET//bar',
       'WebTransaction/Expressjs/GET//foo'
     ]
@@ -503,7 +508,7 @@ function runTests(flags) {
     })
 
     var server = app.listen(function () {
-      var port = server.address().port
+      const port = server.address().port
 
       // Send first request to `/foo` which is slow and uses the work queue.
       http.get({ port: port, path: '/foo' }, function (res) {
@@ -539,8 +544,8 @@ function runTests(flags) {
   }
 
   function makeMultiRunner(t, endpoint, expectedName, numTests) {
-    var done = 0
-    var seen = new Set()
+    let done = 0
+    const seen = new Set()
     if (!expectedName) {
       expectedName = endpoint
     }
@@ -584,7 +589,7 @@ function runTests(flags) {
   }
 
   function makeRequest(server, path, callback) {
-    var port = server.address().port
+    const port = server.address().port
     http.request({ port: port, path: path }, callback).end()
   }
 }

@@ -5,12 +5,12 @@
 
 'use strict'
 
-var common = require('./collection-common')
-var concat = require('concat-stream')
-var helper = require('../../lib/agent_helper')
-var mongoPackage = require('mongodb/package.json')
-var semver = require('semver')
-var tap = require('tap')
+const common = require('./collection-common')
+const concat = require('concat-stream')
+const helper = require('../../lib/agent_helper')
+const mongoPackage = require('mongodb/package.json')
+const semver = require('semver')
+const tap = require('tap')
 
 common.test('count', function countTest(t, collection, verify) {
   collection.find({}).count(function onCount(err, data) {
@@ -77,10 +77,10 @@ common.test('toArray', function toArrayTest(t, collection, verify) {
 
 if (semver.satisfies(mongoPackage.version, '<4')) {
   tap.test('piping cursor stream hides internal calls', function (t) {
-    var agent = helper.instrumentMockedAgent()
-    var client = null
-    var db = null
-    var collection = null
+    let agent = helper.instrumentMockedAgent()
+    let client = null
+    let db = null
+    let collection = null
 
     t.teardown(function () {
       return common.close(client, db).then(() => {
@@ -89,7 +89,7 @@ if (semver.satisfies(mongoPackage.version, '<4')) {
       })
     })
 
-    var mongodb = require('mongodb')
+    const mongodb = require('mongodb')
     common
       .dropTestCollections(mongodb, ['testCollection'])
       .then(() => {
@@ -107,7 +107,7 @@ if (semver.satisfies(mongoPackage.version, '<4')) {
     function runTest() {
       helper.runInTransaction(agent, function (transaction) {
         transaction.name = common.TRANSACTION_NAME
-        var destination = concat(function () {})
+        const destination = concat(function () {})
 
         destination.on('finish', function () {
           transaction.end()

@@ -310,7 +310,7 @@ function verifyAgentStart(t, error, endpoints) {
  */
 function createGrpcServer(sslOptions, services, callback) {
   const server = new grpc.Server()
-  for (let [, service] of services.entries()) {
+  for (const [, service] of services.entries()) {
     server.addService(service.serviceDefinition, service.implementation)
   }
 

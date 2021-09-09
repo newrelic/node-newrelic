@@ -5,11 +5,11 @@
 
 'use strict'
 
-var DESTINATIONS = require('../../../lib/config/attribute-filter').DESTINATIONS
-var params = require('../../lib/params')
-var metrics = require('../../lib/metrics_helper')
+const DESTINATIONS = require('../../../lib/config/attribute-filter').DESTINATIONS
+const params = require('../../lib/params')
+const metrics = require('../../lib/metrics_helper')
 
-var CON_STRING = 'amqp://' + params.rabbitmq_host + ':' + params.rabbitmq_port
+const CON_STRING = 'amqp://' + params.rabbitmq_host + ':' + params.rabbitmq_port
 
 exports.CON_STRING = CON_STRING
 exports.DIRECT_EXCHANGE = 'test-direct-exchange'
@@ -27,7 +27,7 @@ exports.verifyTransaction = verifyTransaction
 exports.getChannel = getChannel
 
 function verifySubscribe(t, tx, exchange, routingKey) {
-  var isCallback = !!metrics.findSegment(tx.trace.root, 'Callback: <anonymous>')
+  const isCallback = !!metrics.findSegment(tx.trace.root, 'Callback: <anonymous>')
 
   if (isCallback) {
     t.doesNotThrow(function () {
@@ -56,7 +56,7 @@ function verifySubscribe(t, tx, exchange, routingKey) {
 
   t.notMatch(tx.getFullName(), /^OtherTransaction\/Message/, 'should not set transaction name')
 
-  var consume = metrics.findSegment(
+  const consume = metrics.findSegment(
     tx.trace.root,
     'MessageBroker/RabbitMQ/Exchange/Produce/Named/' + exchange
   )
@@ -89,7 +89,7 @@ function verifyDistributedTrace(t, produceTransaction, consumeTransaction) {
 
   t.equals(produceTransaction.id, consumeTransaction.parentId, 'should have proper parent id')
   t.equals(produceTransaction.traceId, consumeTransaction.traceId, 'should have proper trace id')
-  var produceSegment = produceTransaction.trace.root.children[0].children[0]
+  let produceSegment = produceTransaction.trace.root.children[0].children[0]
   produceSegment = produceSegment.children[0] || produceSegment
   t.equals(produceSegment.id, consumeTransaction.parentSpanId, 'should have proper parentSpanId')
   t.equals(consumeTransaction.parentTransportType, 'AMQP', 'should have correct transport type')
@@ -117,13 +117,13 @@ function verifyConsumeTransaction(t, tx, exchange, queue, routingKey) {
     'should not set transaction name'
   )
 
-  var consume = metrics.findSegment(
+  const consume = metrics.findSegment(
     tx.trace.root,
     'OtherTransaction/Message/RabbitMQ/Exchange/Named/' + exchange
   )
   t.equals(consume, tx.baseSegment)
 
-  var attributes = tx.trace.attributes.get(DESTINATIONS.TRANS_TRACE)
+  const attributes = tx.trace.attributes.get(DESTINATIONS.TRANS_TRACE)
   t.equal(
     attributes['message.routingKey'],
     routingKey,
@@ -146,7 +146,7 @@ function verifySendToQueue(t, tx) {
     )
   }, 'should have expected metrics')
 
-  var segment = metrics.findSegment(
+  const segment = metrics.findSegment(
     tx.trace.root,
     'MessageBroker/RabbitMQ/Exchange/Produce/Named/Default'
   )
@@ -157,7 +157,7 @@ function verifySendToQueue(t, tx) {
 }
 
 function verifyProduce(t, tx, exchangeName, routingKey) {
-  var isCallback = !!metrics.findSegment(tx.trace.root, 'Callback: <anonymous>')
+  const isCallback = !!metrics.findSegment(tx.trace.root, 'Callback: <anonymous>')
 
   if (isCallback) {
     t.doesNotThrow(function () {
@@ -202,7 +202,7 @@ function verifyProduce(t, tx, exchangeName, routingKey) {
     )
   }, 'should have expected metrics')
 
-  var segment = metrics.findSegment(
+  const segment = metrics.findSegment(
     tx.trace.root,
     'MessageBroker/RabbitMQ/Exchange/Produce/Named/' + exchangeName
   )
@@ -215,9 +215,9 @@ function verifyProduce(t, tx, exchangeName, routingKey) {
 }
 
 function verifyGet(t, tx, exchangeName, routingKey, queue) {
-  var isCallback = !!metrics.findSegment(tx.trace.root, 'Callback: <anonymous>')
-  var produceName = 'MessageBroker/RabbitMQ/Exchange/Produce/Named/' + exchangeName
-  var consumeName = 'MessageBroker/RabbitMQ/Exchange/Consume/Named/' + queue
+  const isCallback = !!metrics.findSegment(tx.trace.root, 'Callback: <anonymous>')
+  const produceName = 'MessageBroker/RabbitMQ/Exchange/Produce/Named/' + exchangeName
+  const consumeName = 'MessageBroker/RabbitMQ/Exchange/Consume/Named/' + queue
   if (isCallback) {
     t.doesNotThrow(assertions, 'should have expected segments')
 
@@ -240,7 +240,7 @@ function verifyGet(t, tx, exchangeName, routingKey, queue) {
 }
 
 function verifyPurge(t, tx) {
-  var isCallback = !!metrics.findSegment(tx.trace.root, 'Callback: <anonymous>')
+  const isCallback = !!metrics.findSegment(tx.trace.root, 'Callback: <anonymous>')
 
   if (isCallback) {
     t.doesNotThrow(function () {
@@ -284,7 +284,7 @@ function verifyPurge(t, tx) {
 }
 
 function verifyTransaction(t, tx, msg) {
-  var seg = tx.agent.tracer.getSegment()
+  const seg = tx.agent.tracer.getSegment()
   if (t.ok(seg, 'should have transaction state in ' + msg)) {
     t.equal(seg.transaction.id, tx.id, 'should have correct transaction in ' + msg)
   }

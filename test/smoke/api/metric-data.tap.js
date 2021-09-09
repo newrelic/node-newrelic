@@ -30,8 +30,8 @@ test('Collector API should send metrics to staging-collector.newrelic.com', (t) 
       level: 'trace'
     }
   })
-  var agent = new Agent(config)
-  var api = new CollectorAPI(agent)
+  const agent = new Agent(config)
+  const api = new CollectorAPI(agent)
 
   api.connect(function (error) {
     t.notOk(error, 'connected without error')
@@ -43,7 +43,7 @@ test('Collector API should send metrics to staging-collector.newrelic.com', (t) 
     const metricJson = metrics.toJSON()
     t.ok(metricJson.length >= 2, 'Should have at least two metrics.')
 
-    var payload = [agent.config.run_id, metrics.started / 1000, Date.now() / 1000, metrics]
+    const payload = [agent.config.run_id, metrics.started / 1000, Date.now() / 1000, metrics]
 
     api.metric_data(payload, function (error, command) {
       t.notOk(error, 'sent metrics without error')

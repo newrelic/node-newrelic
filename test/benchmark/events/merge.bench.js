@@ -5,13 +5,13 @@
 
 'use strict'
 
-var benchmark = require('../../lib/benchmark')
-var PriorityQueue = require('../../../lib/priority-queue')
+const benchmark = require('../../lib/benchmark')
+const PriorityQueue = require('../../../lib/priority-queue')
 
-var poolSize = 10000
-var queue1 = new PriorityQueue(poolSize)
-var queue2 = new PriorityQueue(poolSize)
-var suite = benchmark.createBenchmark({
+const poolSize = 10000
+let queue1 = new PriorityQueue(poolSize)
+let queue2 = new PriorityQueue(poolSize)
+const suite = benchmark.createBenchmark({
   name: 'PriorityQueue.merge',
   after: function () {
     queue1 = new PriorityQueue(poolSize)
@@ -52,7 +52,7 @@ suite.add({
 suite.add({
   name: 'two full queues (toArray)',
   before: function () {
-    for (var i = 0; i < poolSize; ++i) {
+    for (let i = 0; i < poolSize; ++i) {
       queue1.add('test')
       queue2.add('test')
     }
@@ -66,7 +66,7 @@ suite.add({
 suite.add({
   name: 'two full queues (getRawEvents)',
   before: function () {
-    for (var i = 0; i < poolSize; ++i) {
+    for (let i = 0; i < poolSize; ++i) {
       queue1.add('test')
       queue2.add('test')
     }

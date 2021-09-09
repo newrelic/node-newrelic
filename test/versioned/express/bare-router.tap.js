@@ -5,17 +5,17 @@
 
 'use strict'
 
-var test = require('tap').test
-var helper = require('../../lib/agent_helper')
+const test = require('tap').test
+const helper = require('../../lib/agent_helper')
 
 test('Express router introspection', function (t) {
   t.plan(11)
 
   const agent = helper.instrumentMockedAgent()
 
-  var express = require('express')
-  var app = express()
-  var server = require('http').createServer(app)
+  const express = require('express')
+  const app = express()
+  const server = require('http').createServer(app)
 
   t.teardown(() => {
     server.close(() => {
@@ -34,7 +34,7 @@ test('Express router introspection', function (t) {
     t.equal(transaction.verb, 'GET', 'HTTP method is GET')
     t.ok(transaction.trace, 'transaction has trace')
 
-    var web = transaction.trace.root.children[0]
+    const web = transaction.trace.root.children[0]
     t.ok(web, 'trace has web segment')
     t.equal(web.name, transaction.name, 'segment name and transaction name match')
 
@@ -50,7 +50,7 @@ test('Express router introspection', function (t) {
 
   helper.randomPort(function (port) {
     server.listen(port, function () {
-      var url = 'http://localhost:' + port + '/test'
+      const url = 'http://localhost:' + port + '/test'
       helper.makeGetRequest(url, { json: true }, function (error, res, body) {
         t.equal(res.statusCode, 200, 'nothing exploded')
         t.deepEqual(body, { status: 'ok' }, 'got expected response')

@@ -23,17 +23,17 @@ tap.test('external requests', function (t) {
   })
 
   t.test('segments should end on error', function (t) {
-    var notVeryReliable = http.createServer(function badHandler(req) {
+    const notVeryReliable = http.createServer(function badHandler(req) {
       req.socket.end()
     })
 
     notVeryReliable.listen(0)
 
     helper.runInTransaction(agent, function inTransaction() {
-      var req = http.get(notVeryReliable.address())
+      const req = http.get(notVeryReliable.address())
 
       req.on('error', function onError() {
-        var segment = agent.tracer.getTransaction().trace.root.children[0]
+        const segment = agent.tracer.getTransaction().trace.root.children[0]
 
         t.equal(
           segment.name,
@@ -58,7 +58,7 @@ tap.test('external requests', function (t) {
     // sequences will be their own tree under the main external call. This
     // results in a tree with several sibling branches that might otherwise be
     // shown in a heirarchy. This is okay.
-    var server = http.createServer(function (req, res) {
+    const server = http.createServer(function (req, res) {
       req.resume()
       res.end('ok')
     })
@@ -69,7 +69,7 @@ tap.test('external requests', function (t) {
     server.listen(0)
 
     helper.runInTransaction(agent, function inTransaction(tx) {
-      var url = 'http://localhost:' + server.address().port + '/some/path'
+      const url = 'http://localhost:' + server.address().port + '/some/path'
       http.get(url, function onResonse(res) {
         res.resume()
         res.once('end', function resEnded() {
@@ -81,7 +81,7 @@ tap.test('external requests', function (t) {
     })
 
     function check(tx) {
-      var external = tx.trace.root.children[0]
+      const external = tx.trace.root.children[0]
       t.equal(
         external.name,
         'External/localhost:' + server.address().port + '/some/path',
@@ -91,7 +91,7 @@ tap.test('external requests', function (t) {
       t.ok(external.timer.hasEnd(), 'should have ended')
       t.ok(external.children.length, 'should have children')
 
-      var connect = external.children[0]
+      let connect = external.children[0]
       t.equal(connect.name, 'http.Agent#createConnection', 'should be connect segment')
       t.equal(connect.children.length, 1, 'connect should have 1 child')
 
@@ -100,10 +100,10 @@ tap.test('external requests', function (t) {
         connect = connect.children[0]
       }
 
-      var dnsLookup = connect.children[0]
+      const dnsLookup = connect.children[0]
       t.equal(dnsLookup.name, 'dns.lookup', 'should be dns.lookup segment')
 
-      var callback = external.children[external.children.length - 1]
+      const callback = external.children[external.children.length - 1]
       t.equal(callback.name, 'timers.setTimeout', 'should have timeout segment')
 
       t.end()
@@ -111,7 +111,7 @@ tap.test('external requests', function (t) {
   })
 
   t.test('should not duplicate the external segment', function (t) {
-    var https = require('https')
+    const https = require('https')
 
     helper.runInTransaction(agent, function inTransaction() {
       https.get('https://encrypted.google.com:443/', function onResonse(res) {
@@ -121,15 +121,15 @@ tap.test('external requests', function (t) {
     })
 
     function check() {
-      var root = agent.tracer.getTransaction().trace.root
-      var segment = root.children[0]
+      const root = agent.tracer.getTransaction().trace.root
+      const segment = root.children[0]
 
       t.equal(segment.name, 'External/encrypted.google.com:443/', 'should be named')
       t.ok(segment.timer.start, 'should have started')
       t.ok(segment.timer.hasEnd(), 'should have ended')
       t.equal(segment.children.length, 1, 'should have 1 child')
 
-      var notDuped = segment.children[0]
+      const notDuped = segment.children[0]
       t.notEqual(
         notDuped.name,
         segment.name,
@@ -143,9 +143,9 @@ tap.test('external requests', function (t) {
   t.test('NODE-1647 should not interfere with `got`', { timeout: 5000 }, function (t) {
     // Our way of wrapping HTTP response objects caused `got` to hang. This was
     // resolved in agent 2.5.1.
-    var got = require('got')
+    const got = require('got')
     helper.runInTransaction(agent, function () {
-      var req = got('https://example.com/')
+      const req = got('https://example.com/')
       t.teardown(function () {
         req.cancel()
       })

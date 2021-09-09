@@ -27,7 +27,7 @@ tap.test('The API supportability metrics', (t) => {
     helper.unloadAgent(agent)
   })
 
-  for (var i = 0; i < apiCalls.length; i++) {
+  for (let i = 0; i < apiCalls.length; i++) {
     testMetricCalls(apiCalls[i])
   }
 

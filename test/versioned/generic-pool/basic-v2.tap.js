@@ -5,16 +5,16 @@
 
 'use strict'
 
-var a = require('async')
-var helper = require('../../lib/agent_helper')
-var tap = require('tap')
+const a = require('async')
+const helper = require('../../lib/agent_helper')
+const tap = require('tap')
 
 tap.test('generic-pool', function (t) {
   t.autoend()
 
-  var agent = null
-  var pool = null
-  var PoolClass = require('generic-pool').Pool
+  let agent = null
+  let pool = null
+  const PoolClass = require('generic-pool').Pool
 
   t.beforeEach(function () {
     agent = helper.instrumentMockedAgent()
@@ -26,8 +26,8 @@ tap.test('generic-pool', function (t) {
     pool = null
   })
 
-  var tasks = []
-  var decontextInterval = setInterval(function () {
+  const tasks = []
+  const decontextInterval = setInterval(function () {
     if (tasks.length > 0) {
       tasks.pop()()
     }
@@ -52,7 +52,7 @@ tap.test('generic-pool', function (t) {
 
     t.doesNotThrow(function () {
       // eslint-disable-next-line new-cap
-      var p = pool.Pool({
+      const p = pool.Pool({
         create: function (cb) {
           addTask(cb, [null, {}])
         },
@@ -64,7 +64,7 @@ tap.test('generic-pool', function (t) {
     }, 'should be able to instantiate without new')
 
     t.doesNotThrow(function () {
-      var p = new pool.Pool({
+      const p = new pool.Pool({
         create: function (cb) {
           addTask(cb, [null, {}])
         },
@@ -77,7 +77,7 @@ tap.test('generic-pool', function (t) {
   })
 
   t.test('context maintenance', function (t) {
-    var p = new pool.Pool({
+    const p = new pool.Pool({
       max: 2,
       min: 0,
       create: function (cb) {

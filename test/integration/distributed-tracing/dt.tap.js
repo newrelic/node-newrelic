@@ -44,8 +44,8 @@ tap.test('distributed tracing full integration', (t) => {
   const http = require('http')
   const api = new API(agent)
 
-  var firstExternalId
-  var secondExternalId
+  let firstExternalId
+  let secondExternalId
 
   let serversToStart = 3
   function started() {
@@ -96,7 +96,7 @@ tap.test('distributed tracing full integration', (t) => {
     end.close()
   })
 
-  var transInspector = [
+  const transInspector = [
     function endTest(trans, event) {
       // Check the unscoped metrics
       const unscoped = trans.metrics.unscoped
@@ -124,7 +124,7 @@ tap.test('distributed tracing full integration', (t) => {
     },
     function middleTest(trans, event) {
       // check the unscoped metrics
-      var unscoped = trans.metrics.unscoped
+      const unscoped = trans.metrics.unscoped
 
       EXPECTED_DT_METRICS.forEach((name) => {
         const metric = `${name}/App/${ACCOUNT_ID}/${APP_ID}/HTTP/all`
@@ -167,7 +167,7 @@ tap.test('distributed tracing full integration', (t) => {
     },
     function startTest(trans, event) {
       // check the unscoped metrics
-      var unscoped = trans.metrics.unscoped
+      const unscoped = trans.metrics.unscoped
 
       const metric = 'DurationByCaller/Unknown/Unknown/Unknown/Unknown/all'
       t.ok(unscoped[metric], 'start has expected DT unscoped metric')
@@ -214,7 +214,7 @@ tap.test('distributed tracing full integration', (t) => {
       middle.close()
       end.close()
     })
-    var txCount = 0
+    let txCount = 0
 
     const testsToCheck = []
     agent.on('transactionFinished', (trans) => {

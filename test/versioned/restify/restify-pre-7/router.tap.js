@@ -5,15 +5,15 @@
 
 'use strict'
 
-var tap = require('tap')
-var request = require('request').defaults({ json: true })
-var helper = require('../../../lib/agent_helper')
+const tap = require('tap')
+const request = require('request').defaults({ json: true })
+const helper = require('../../../lib/agent_helper')
 
 tap.test('Restify router', function (t) {
   t.autoend()
 
-  var agent = null
-  var server = null
+  let agent = null
+  let server = null
 
   t.beforeEach(function () {
     agent = helper.instrumentMockedAgent({
@@ -52,7 +52,7 @@ tap.test('Restify router', function (t) {
       t.equal(transaction.verb, 'GET', 'HTTP method is GET')
       t.ok(transaction.trace, 'transaction has trace')
 
-      var web = transaction.trace.root.children[0]
+      const web = transaction.trace.root.children[0]
       t.ok(web, 'trace has web segment')
       t.equal(web.name, transaction.name, 'segment name and transaction name match')
       t.equal(web.partialName, 'Restify/GET//test/:id', 'should have partial name for apdex')
@@ -147,8 +147,8 @@ tap.test('Restify router', function (t) {
 
   function _listenAndRequest(t, route) {
     server.listen(0, function () {
-      var port = server.address().port
-      var url = 'http://localhost:' + port + route
+      const port = server.address().port
+      const url = 'http://localhost:' + port + route
       request.get(url, function (error, res, body) {
         t.equal(res.statusCode, 200, 'nothing exploded')
         t.deepEqual(body, { status: 'ok' }, 'got expected respose')

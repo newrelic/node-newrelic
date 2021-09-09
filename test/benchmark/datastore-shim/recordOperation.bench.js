@@ -9,7 +9,7 @@ const shared = require('./shared')
 
 const suite = shared.makeSuite('recordOperation')
 
-var testDatastore = null
+let testDatastore = null
 
 function makeInit(instrumented) {
   return function setDatastore(agent) {

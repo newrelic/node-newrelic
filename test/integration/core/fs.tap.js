@@ -836,7 +836,7 @@ test('watchFile', function (t) {
 })
 
 function setupAgent(t) {
-  var agent = helper.instrumentMockedAgent()
+  const agent = helper.instrumentMockedAgent()
   t.teardown(function () {
     helper.unloadAgent(agent)
   })

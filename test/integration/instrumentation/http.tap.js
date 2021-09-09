@@ -5,13 +5,13 @@
 
 'use strict'
 
-var DESTINATIONS = require('../../../lib/config/attribute-filter').DESTINATIONS
-var tap = require('tap')
-var test = tap.test
-var http = require('http')
-var helper = require('../../lib/agent_helper')
-var StreamSink = require('../../../lib/util/stream-sink')
-var HTTP_ATTRS = require('../../lib/fixtures').httpAttributes
+const DESTINATIONS = require('../../../lib/config/attribute-filter').DESTINATIONS
+const tap = require('tap')
+const test = tap.test
+const http = require('http')
+const helper = require('../../lib/agent_helper')
+const StreamSink = require('../../../lib/util/stream-sink')
+const HTTP_ATTRS = require('../../lib/fixtures').httpAttributes
 
 test('built-in http instrumentation should handle internal & external requests', function (t) {
   const agent = helper.instrumentMockedAgent()
@@ -30,7 +30,7 @@ test('built-in http instrumentation should handle internal & external requests',
     '<body><p>I heard you like HTML.</p></body>' +
     '</html>'
 
-  var external = http.createServer((request, response) => {
+  const external = http.createServer((request, response) => {
     response.writeHead(200, {
       'Content-Length': PAYLOAD.length,
       'Content-Type': 'application/json'
@@ -39,8 +39,8 @@ test('built-in http instrumentation should handle internal & external requests',
   })
 
   // save for later use in the test response handler
-  var transaction
-  var internalResponseHandler = function (response) {
+  let transaction
+  const internalResponseHandler = function (response) {
     return function (requestResponse) {
       transaction = agent.getTransaction()
       t.ok(transaction, 'handler is part of transaction')
@@ -62,10 +62,10 @@ test('built-in http instrumentation should handle internal & external requests',
     }
   }
 
-  var server = http.createServer((request, response) => {
+  const server = http.createServer((request, response) => {
     t.ok(agent.getTransaction(), 'should be within the scope of the transaction')
 
-    var req = http.request(
+    const req = http.request(
       {
         host: TEST_HOST,
         port: TEST_EXTERNAL_PORT,
@@ -88,14 +88,14 @@ test('built-in http instrumentation should handle internal & external requests',
     helper.unloadAgent(agent)
   })
 
-  var testResponseHandler = function (response) {
+  const testResponseHandler = function (response) {
     if (response.statusCode !== 200) {
       return t.fail(response.statusCode)
     }
 
     response.setEncoding('utf8')
 
-    var fetchedBody = ''
+    let fetchedBody = ''
     response.on('data', function (data) {
       fetchedBody += data
     })
@@ -110,8 +110,8 @@ test('built-in http instrumentation should handle internal & external requests',
       t.equal(response.statusCode, 200, 'should successfully fetch the page')
       t.equal(fetchedBody, PAGE, "page shouldn't change")
 
-      var scope = 'WebTransaction/NormalizedUri/*'
-      var stats = agent.metrics.getOrCreateMetric(scope)
+      const scope = 'WebTransaction/NormalizedUri/*'
+      let stats = agent.metrics.getOrCreateMetric(scope)
 
       t.equal(transaction.type, 'web', 'should be a web transaction')
       t.equal(transaction.name, scope, 'should set transaction name')
@@ -123,7 +123,7 @@ test('built-in http instrumentation should handle internal & external requests',
 
       t.equal(stats.callCount, 2, 'should record unscoped path stats after a normal request')
 
-      var isDispatcher = agent.environment.get('Dispatcher').indexOf('http') > -1
+      const isDispatcher = agent.environment.get('Dispatcher').indexOf('http') > -1
       t.ok(isDispatcher, 'should indicate that the http dispatcher is in play')
 
       stats = agent.metrics.getOrCreateMetric('HttpDispatcher')
@@ -139,7 +139,7 @@ test('built-in http instrumentation should handle internal & external requests',
         'should associate outbound HTTP requests with the inbound transaction'
       )
 
-      var attributes = transaction.trace.attributes.get(DESTINATIONS.TRANS_TRACE)
+      const attributes = transaction.trace.attributes.get(DESTINATIONS.TRANS_TRACE)
 
       HTTP_ATTRS.forEach(function (key) {
         t.ok(attributes[key] !== undefined, 'Trace contains attribute: ' + key)
@@ -158,7 +158,7 @@ test('built-in http instrumentation should handle internal & external requests',
       // server handler fires.
       t.notOk(agent.getTransaction(), 'should create tx until first request')
 
-      var req = http.request(
+      const req = http.request(
         {
           host: TEST_HOST,
           port: TEST_INTERNAL_PORT,
@@ -191,7 +191,7 @@ test('built-in http instrumentation should not swallow errors', function (t) {
     helper.unloadAgent(agent)
   })
 
-  var pin = setTimeout(function () {}, 1000)
+  const pin = setTimeout(function () {}, 1000)
   helper.runOutOfContext(function () {
     clearTimeout(pin)
 
@@ -213,7 +213,7 @@ test('built-in http instrumentation should not swallow errors', function (t) {
   }
 
   function makeRequest() {
-    var options = {
+    const options = {
       host: 'localhost',
       port: 1337,
       path: '/'
@@ -222,12 +222,12 @@ test('built-in http instrumentation should not swallow errors', function (t) {
     http.get(options, function (res) {
       t.equal(res.statusCode, 501, 'should get expected (error) status code')
 
-      var errors = agent.errors.traceAggregator.errors
+      const errors = agent.errors.traceAggregator.errors
       t.ok(errors, 'should find error')
       t.equal(errors.length, 2, 'should be 2 errors')
 
-      var first = errors[0]
-      var second = errors[1]
+      const first = errors[0]
+      const second = errors[1]
       t.ok(first, 'should have the first error')
 
       // In v16.9 of Node.js the response error message
@@ -248,10 +248,10 @@ test('built-in http instrumentation should not swallow errors', function (t) {
 })
 
 test('built-in http instrumentation making outbound requests', function (t) {
-  var agent = helper.instrumentMockedAgent()
+  const agent = helper.instrumentMockedAgent()
 
-  var server = http.createServer((req, res) => {
-    var body = '{"status":"ok"}'
+  const server = http.createServer((req, res) => {
+    const body = '{"status":"ok"}'
     res.writeHead(200, {
       'Content-Length': body.length,
       'Content-Type': 'text/plain'
@@ -269,7 +269,7 @@ test('built-in http instrumentation making outbound requests', function (t) {
       .request(options, function (res) {
         t.equal(res.statusCode, 200, 'got HTTP OK status code')
 
-        var sink = new StreamSink(function (err, body) {
+        const sink = new StreamSink(function (err, body) {
           if (err) {
             t.fail(err)
             return t.end()
@@ -340,14 +340,14 @@ test(
   function (t) {
     t.plan(5)
 
-    var agent = helper.instrumentMockedAgent()
+    const agent = helper.instrumentMockedAgent()
 
     t.teardown(() => {
       helper.unloadAgent(agent)
     })
 
-    var count = 0
-    var closing = false
+    let count = 0
+    let closing = false
     var server = http.createServer(function (req, res) {
       count++
 
@@ -380,13 +380,13 @@ test(
     })
 
     function makeRequest(callback) {
-      var options = {
+      const options = {
         hostname: 'localhost',
         port: server.address().port,
         path: '/',
         agent: false
       }
-      var req = http.request(options, callback)
+      const req = http.request(options, callback)
       req.on('error', function (err) {
         t.error(err, 'should not fail to make requests')
       })
@@ -399,13 +399,13 @@ test(
 test('built-in http instrumentation should not crash when server does not have addess', function (t) {
   t.plan(3)
 
-  var agent = helper.instrumentMockedAgent()
+  const agent = helper.instrumentMockedAgent()
 
-  var server = http.createServer(function (req, res) {
+  const server = http.createServer(function (req, res) {
     res.end()
   })
 
-  var port
+  let port
   server.listen(0, function () {
     port = server.address().port
     t.ok(server.address, 'has address')
@@ -420,7 +420,7 @@ test('built-in http instrumentation should not crash when server does not have a
   })
 
   function makeRequest(callback) {
-    var options = {
+    const options = {
       hostname: 'localhost',
       port: port,
       path: '/',

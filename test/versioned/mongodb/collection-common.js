@@ -5,12 +5,12 @@
 
 'use strict'
 
-var common = require('./common')
-var tap = require('tap')
-var helper = require('../../lib/agent_helper')
+const common = require('./common')
+const tap = require('tap')
+const helper = require('../../lib/agent_helper')
 
-var METRIC_HOST_NAME = null
-var METRIC_HOST_PORT = null
+let METRIC_HOST_NAME = null
+let METRIC_HOST_PORT = null
 
 exports.MONGO_SEGMENT_RE = common.MONGO_SEGMENT_RE
 exports.TRANSACTION_NAME = common.TRANSACTION_NAME
@@ -24,13 +24,13 @@ exports.test = collectionTest
 exports.dropTestCollections = dropTestCollections
 
 function collectionTest(name, run) {
-  var collections = ['testCollection', 'testCollection2']
+  const collections = ['testCollection', 'testCollection2']
 
   tap.test(name, { timeout: 10000 }, function (t) {
-    var agent = null
-    var client = null
-    var db = null
-    var collection = null
+    let agent = null
+    let client = null
+    let db = null
+    let collection = null
     t.autoend()
 
     t.test('remote connection', function (t) {
@@ -38,7 +38,7 @@ function collectionTest(name, run) {
       t.beforeEach(function () {
         agent = helper.instrumentMockedAgent()
 
-        var mongodb = require('mongodb')
+        const mongodb = require('mongodb')
 
         return dropTestCollections(mongodb, collections)
           .then(() => {
@@ -81,8 +81,8 @@ function collectionTest(name, run) {
               return t.end()
             }
             t.equal(agent.getTransaction().id, transaction.id, 'should not change transactions')
-            var segment = agent.tracer.getSegment()
-            var current = transaction.trace.root
+            const segment = agent.tracer.getSegment()
+            let current = transaction.trace.root
 
             // this logic is just for the collection.aggrate v4+
             // aggregate no longer returns a callback with cursor
@@ -105,7 +105,7 @@ function collectionTest(name, run) {
                 t.equal(child.children.length, 0, 'should have no more children')
               })
             } else {
-              for (var i = 0, l = segments.length; i < l; ++i) {
+              for (let i = 0, l = segments.length; i < l; ++i) {
                 t.equal(current.children.length, childrenLength, 'should have one child')
                 current = current.children[0]
                 t.equal(current.name, segments[i], 'child should be named ' + segments[i])
@@ -134,7 +134,7 @@ function collectionTest(name, run) {
               return t.end()
             }
 
-            var current = tx.trace.root
+            let current = tx.trace.root
             while (current) {
               if (common.MONGO_SEGMENT_RE.test(current.name)) {
                 t.comment('Checking segment ' + current.name)
@@ -159,7 +159,7 @@ function collectionTest(name, run) {
               return t.end()
             }
 
-            var current = tx.trace.root
+            let current = tx.trace.root
             while (current) {
               if (common.MONGO_SEGMENT_RE.test(current.name)) {
                 t.comment('Checking segment ' + current.name)
@@ -180,8 +180,8 @@ function collectionTest(name, run) {
     // The domain socket tests should only be run if there is a domain socket
     // to connect to, which only happens if there is a Mongo instance running on
     // the same box as these tests.
-    var domainPath = common.getDomainSocketPath()
-    var shouldTestDomain = domainPath
+    const domainPath = common.getDomainSocketPath()
+    const shouldTestDomain = domainPath
     t.test('domain socket', { skip: !shouldTestDomain }, function (t) {
       t.autoend()
       t.beforeEach(function () {
@@ -189,7 +189,7 @@ function collectionTest(name, run) {
         METRIC_HOST_NAME = agent.config.getHostnameSafe()
         METRIC_HOST_PORT = domainPath
 
-        var mongodb = require('mongodb')
+        const mongodb = require('mongodb')
 
         return dropTestCollections(mongodb, collections)
           .then(() => {
@@ -217,8 +217,8 @@ function collectionTest(name, run) {
           run(t, collection, function (err, segments, metrics) {
             t.error(err)
             transaction.end()
-            var re = new RegExp('^Datastore/instance/MongoDB/' + domainPath)
-            var badMetrics = Object.keys(agent.metrics._metrics.unscoped).filter(function (m) {
+            const re = new RegExp('^Datastore/instance/MongoDB/' + domainPath)
+            const badMetrics = Object.keys(agent.metrics._metrics.unscoped).filter(function (m) {
               return re.test(m)
             })
             t.notOk(badMetrics.length, 'should not use domain path as host name')
@@ -236,7 +236,7 @@ function collectionTest(name, run) {
         METRIC_HOST_NAME = agent.config.getHostnameSafe()
         METRIC_HOST_PORT = domainPath
 
-        var mongodb = require('mongodb')
+        const mongodb = require('mongodb')
 
         return dropTestCollections(mongodb, collections)
           .then(() => {
@@ -264,8 +264,8 @@ function collectionTest(name, run) {
           run(t, collection, function (err, segments, metrics) {
             t.error(err)
             transaction.end()
-            var re = new RegExp('^Datastore/instance/MongoDB/' + domainPath)
-            var badMetrics = Object.keys(agent.metrics._metrics.unscoped).filter(function (m) {
+            const re = new RegExp('^Datastore/instance/MongoDB/' + domainPath)
+            const badMetrics = Object.keys(agent.metrics._metrics.unscoped).filter(function (m) {
               return re.test(m)
             })
             t.notOk(badMetrics.length, 'should not use domain path as host name')
@@ -281,7 +281,7 @@ function collectionTest(name, run) {
       t.beforeEach(function () {
         agent = helper.instrumentMockedAgent()
 
-        var mongodb = require('mongodb')
+        const mongodb = require('mongodb')
 
         return dropTestCollections(mongodb, collections)
           .then(() => {
@@ -315,8 +315,8 @@ function collectionTest(name, run) {
               return t.end()
             }
             t.equal(agent.getTransaction().id, transaction.id, 'should not change transactions')
-            var segment = agent.tracer.getSegment()
-            var current = transaction.trace.root
+            const segment = agent.tracer.getSegment()
+            let current = transaction.trace.root
 
             // this logic is just for the collection.aggrate v4+
             // aggregate no longer returns a callback with cursor
@@ -339,7 +339,7 @@ function collectionTest(name, run) {
                 t.equal(child.children.length, 0, 'should have no more children')
               })
             } else {
-              for (var i = 0, l = segments.length; i < l; ++i) {
+              for (let i = 0, l = segments.length; i < l; ++i) {
                 t.equal(current.children.length, childrenLength, 'should have one child')
                 current = current.children[0]
                 t.equal(current.name, segments[i], 'child should be named ' + segments[i])
@@ -364,12 +364,12 @@ function collectionTest(name, run) {
 }
 
 function checkSegmentParams(t, segment) {
-  var dbName = common.DB_NAME
+  let dbName = common.DB_NAME
   if (/\/rename$/.test(segment.name)) {
     dbName = 'admin'
   }
 
-  var attributes = segment.getAttributes()
+  const attributes = segment.getAttributes()
   t.equal(attributes.database_name, dbName, 'should have correct db name')
   t.equal(attributes.host, METRIC_HOST_NAME, 'should have correct host name')
   t.equal(attributes.port_path_or_id, METRIC_HOST_PORT, 'should have correct port')
@@ -377,8 +377,8 @@ function checkSegmentParams(t, segment) {
 
 function populate(db, collection) {
   return new Promise((resolve, reject) => {
-    var items = []
-    for (var i = 0; i < 30; ++i) {
+    const items = []
+    for (let i = 0; i < 30; ++i) {
       items.push({
         i: i,
         next3: [i + 1, i + 2, i + 3],

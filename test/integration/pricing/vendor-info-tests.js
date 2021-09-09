@@ -5,20 +5,20 @@
 
 'use strict'
 
-var path = require('path')
-var nock = require('nock')
-var fs = require('fs')
-var helper = require('../../lib/agent_helper')
-var http = require('http')
-var _httpGet = http.get
+const path = require('path')
+const nock = require('nock')
+const fs = require('fs')
+const helper = require('../../lib/agent_helper')
+const http = require('http')
+const _httpGet = http.get
 
 module.exports = function (t, vendor) {
-  var testFile = path.resolve(
+  const testFile = path.resolve(
     __dirname,
     '../../lib/cross_agent_tests/utilization_vendor_specific',
     vendor + '.json'
   )
-  var getInfo = require('../../../lib/utilization/' + vendor + '-info')
+  const getInfo = require('../../../lib/utilization/' + vendor + '-info')
 
   nock.disableNetConnect()
   t.teardown(function () {
@@ -32,19 +32,19 @@ module.exports = function (t, vendor) {
       return
     }
 
-    var cases = JSON.parse(data)
+    const cases = JSON.parse(data)
 
     t.autoend()
     t.ok(cases.length > 0, 'should have tests to run')
 
-    for (var i = 0; i < cases.length; ++i) {
+    for (let i = 0; i < cases.length; ++i) {
       t.test(cases[i].testname, makeTest(cases[i], vendor, getInfo))
     }
   })
 }
 
 function makeTest(testCase, vendor, getInfo) {
-  var agent = null
+  let agent = null
   return function (t) {
     agent = helper.loadMockedAgent()
     t.teardown(function () {
@@ -53,15 +53,15 @@ function makeTest(testCase, vendor, getInfo) {
       nock.cleanAll()
     })
 
-    var redirection = null
-    var uris = Object.keys(testCase.uri)
-    var timeoutUrl = null
+    let redirection = null
+    const uris = Object.keys(testCase.uri)
+    let timeoutUrl = null
 
     function timeoutMock(urlToTimeout) {
-      var timeoutCallback
+      let timeoutCallback
       let onErrorCallback = null
 
-      var res = {
+      const res = {
         setTimeout: function (timeout, fn) {
           timeoutCallback = fn
         },
@@ -90,12 +90,12 @@ function makeTest(testCase, vendor, getInfo) {
       }
     }
 
-    var host = null
-    for (var i = 0; i < uris.length; ++i) {
-      var uri = uris[i]
-      var responseData = testCase.uri[uri]
-      var hostUrl = uri.split('/').slice(0, 3).join('/')
-      var endpoint = '/' + uri.split('/').slice(3).join('/')
+    let host = null
+    for (let i = 0; i < uris.length; ++i) {
+      const uri = uris[i]
+      const responseData = testCase.uri[uri]
+      const hostUrl = uri.split('/').slice(0, 3).join('/')
+      const endpoint = '/' + uri.split('/').slice(3).join('/')
       host = host || nock(hostUrl)
 
       if (responseData.timeout) {
@@ -110,7 +110,7 @@ function makeTest(testCase, vendor, getInfo) {
 
     getInfo(agent, function (err, info) {
       if (testCase.expected_vendors_hash) {
-        var expected = testCase.expected_vendors_hash[vendor]
+        const expected = testCase.expected_vendors_hash[vendor]
         t.error(err, 'should not error getting data')
         t.same(info, expected, 'should have expected info')
       } else {
@@ -140,7 +140,7 @@ function makeTest(testCase, vendor, getInfo) {
     }
 
     Object.keys(expectedMetrics).forEach(function (expectedMetric) {
-      var metric = agent.metrics.getOrCreateMetric(expectedMetric)
+      const metric = agent.metrics.getOrCreateMetric(expectedMetric)
       t.equal(
         metric.callCount,
         expectedMetrics[expectedMetric].call_count,

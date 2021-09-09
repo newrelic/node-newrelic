@@ -5,20 +5,20 @@
 
 'use strict'
 
-var path = require('path')
-var test = require('tap').test
-var fork = require('child_process').fork
+const path = require('path')
+const test = require('tap').test
+const fork = require('child_process').fork
 
 /*
  *
  * CONSTANTS
  *
  */
-var COMPLETION = 27
+const COMPLETION = 27
 
 test('Express async throw', function (t) {
-  var erk = fork(path.join(__dirname, 'erk.js'))
-  var timer
+  const erk = fork(path.join(__dirname, 'erk.js'))
+  let timer
 
   erk.on('error', function (error) {
     t.fail(error)

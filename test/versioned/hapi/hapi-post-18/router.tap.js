@@ -5,18 +5,18 @@
 
 'use strict'
 
-var tap = require('tap')
-var request = require('request')
-var helper = require('../../../lib/agent_helper')
-var utils = require('./hapi-18-utils')
+const tap = require('tap')
+const request = require('request')
+const helper = require('../../../lib/agent_helper')
+const utils = require('./hapi-18-utils')
 const Boom = require('@hapi/boom')
 
 tap.test('Hapi router introspection', function (t) {
   t.autoend()
 
-  var agent = null
-  var server = null
-  var port = null
+  let agent = null
+  let server = null
+  let port = null
 
   t.beforeEach(function () {
     agent = helper.instrumentMockedAgent({
@@ -48,7 +48,7 @@ tap.test('Hapi router introspection', function (t) {
 
     server.start().then(function () {
       port = server.info.port
-      var params = {
+      const params = {
         uri: 'http://localhost:' + port + '/test/31337',
         json: true
       }
@@ -63,7 +63,7 @@ tap.test('Hapi router introspection', function (t) {
   t.test('using route handler under config object', function (t) {
     agent.on('transactionFinished', verifier(t))
 
-    var hello = {
+    const hello = {
       handler: function () {
         t.ok(agent.getTransaction(), 'transaction is available')
         return { status: 'ok' }
@@ -78,7 +78,7 @@ tap.test('Hapi router introspection', function (t) {
 
     server.start().then(function () {
       port = server.info.port
-      var params = {
+      const params = {
         uri: 'http://localhost:' + port + '/test/31337',
         json: true
       }
@@ -105,7 +105,7 @@ tap.test('Hapi router introspection', function (t) {
 
     server.start().then(function () {
       port = server.info.port
-      var params = {
+      const params = {
         uri: 'http://localhost:' + port + '/test/31337',
         json: true
       }
@@ -120,7 +120,7 @@ tap.test('Hapi router introspection', function (t) {
   t.test('using `pre` config option', function (t) {
     agent.on('transactionFinished', verifier(t))
 
-    var route = {
+    const route = {
       method: 'GET',
       path: '/test/{id}',
       options: {
@@ -155,7 +155,7 @@ tap.test('Hapi router introspection', function (t) {
 
     server.start().then(function () {
       port = server.info.port
-      var params = {
+      const params = {
         uri: 'http://localhost:' + port + '/test/31337',
         json: true
       }
@@ -187,7 +187,7 @@ tap.test('Hapi router introspection', function (t) {
 
     server.start().then(function () {
       port = server.info.port
-      var params = {
+      const params = {
         uri: 'http://localhost:' + port + '/test/31337',
         json: true
       }
@@ -236,7 +236,7 @@ tap.test('Hapi router introspection', function (t) {
 
     server.start().then(function () {
       port = server.info.port
-      var params = {
+      const params = {
         uri: 'http://localhost:' + port + '/test/31337',
         json: true
       }
@@ -259,7 +259,7 @@ tap.test('Hapi router introspection', function (t) {
 
     server.start().then(function () {
       port = server.info.port
-      var params = {
+      const params = {
         uri: 'http://localhost:' + port + '/test',
         json: true
       }
@@ -356,7 +356,7 @@ tap.test('Hapi router introspection', function (t) {
 
     server.start().then(function () {
       port = server.info.port
-      var params = {
+      const params = {
         uri: 'http://localhost:' + port + '/first/123/second/456/data',
         json: true
       }
@@ -383,7 +383,7 @@ function verifier(t, verb) {
     t.equal(transaction.verb, verb, 'HTTP method is ' + verb)
     t.ok(transaction.trace, 'transaction has trace')
 
-    var web = transaction.trace.root.children[0]
+    const web = transaction.trace.root.children[0]
     t.ok(web, 'trace has web segment')
     t.equal(web.name, transaction.name, 'segment name and transaction name match')
 

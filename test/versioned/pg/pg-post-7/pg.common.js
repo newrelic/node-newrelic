@@ -178,7 +178,7 @@ module.exports = function runTests(name, clientFactory) {
     const metricHostName = getMetricHostName(agent, params.postgres_host)
 
     t.equal(agent.queries.samples.size, 1, 'should have one slow query')
-    for (let sample of agent.queries.samples.values()) {
+    for (const sample of agent.queries.samples.values()) {
       const queryParams = sample.getParams()
 
       t.equal(queryParams.host, metricHostName, 'instance data should show up in slow query params')

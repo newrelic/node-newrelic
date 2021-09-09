@@ -156,8 +156,8 @@ tap.test('Serverless mode harvest', (t) => {
   t.test('sending traces', (t) => {
     t.plan(4)
 
-    var transaction
-    var proxy = agent.tracer.transactionProxy(() => {
+    let transaction
+    const proxy = agent.tracer.transactionProxy(() => {
       transaction = agent.getTransaction()
       transaction.finalizeNameFromUri('/nonexistent', 200)
     })
@@ -187,8 +187,8 @@ tap.test('Serverless mode harvest', (t) => {
 
     agent.config.transaction_events.max_samples_stored = 0
 
-    var transaction
-    var proxy = agent.tracer.transactionProxy(() => {
+    let transaction
+    const proxy = agent.tracer.transactionProxy(() => {
       transaction = agent.getTransaction()
       transaction.finalizeNameFromUri('/nonexistent', 200)
     })
@@ -373,8 +373,8 @@ tap.test('Serverless mode harvest', (t) => {
 })
 
 function findMetric(metrics, name) {
-  for (var i = 0; i < metrics.length; i++) {
-    var metric = metrics[i]
+  for (let i = 0; i < metrics.length; i++) {
+    const metric = metrics[i]
     if (metric[0].name === name) {
       return metric
     }
@@ -390,7 +390,7 @@ function checkCompressedPayload(t, payload, prop, cb) {
     const data = decoded.data[prop]
     t.ok(data, `compressed payload includes ${prop} prop`)
 
-    for (let key in decoded.data) {
+    for (const key in decoded.data) {
       if (!decoded.data[key].length) {
         t.fail(`payload data.${key} property is empty`)
       }
@@ -401,8 +401,8 @@ function checkCompressedPayload(t, payload, prop, cb) {
 }
 
 function findPayload(args) {
-  for (var i = 0; i < args.length; ++i) {
-    var arg = args[i]
+  for (let i = 0; i < args.length; ++i) {
+    const arg = args[i]
     if (typeof arg === 'string') {
       return JSON.parse(arg)
     }

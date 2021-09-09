@@ -5,17 +5,17 @@
 
 'use strict'
 
-var a = require('async')
-var cp = require('child_process')
-var glob = require('glob')
-var path = require('path')
+const a = require('async')
+const cp = require('child_process')
+const glob = require('glob')
+const path = require('path')
 
-var cwd = path.resolve(__dirname, '..')
-var benchpath = path.resolve(cwd, 'test/benchmark')
+const cwd = path.resolve(__dirname, '..')
+const benchpath = path.resolve(cwd, 'test/benchmark')
 
-var tests = []
-var globs = []
-var opts = Object.create(null)
+const tests = []
+const globs = []
+const opts = Object.create(null)
 
 process.argv.slice(2).forEach(function forEachFileArg(file) {
   if (/^--/.test(file)) {
@@ -105,13 +105,13 @@ function run() {
         a.eachSeries(
           tests,
           function spawnEachFile(file, spawnCb) {
-            var test = path.relative(benchpath, file)
+            const test = path.relative(benchpath, file)
 
-            var args = [file]
+            const args = [file]
             if (opts.inspect) {
               args.unshift('--inspect-brk')
             }
-            var child = cp.spawn('node', args, { cwd: cwd, stdio: 'pipe' })
+            const child = cp.spawn('node', args, { cwd: cwd, stdio: 'pipe' })
             printer.addTest(test, child)
 
             child.on('error', spawnCb)

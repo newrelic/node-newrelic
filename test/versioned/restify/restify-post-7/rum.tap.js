@@ -5,10 +5,10 @@
 
 'use strict'
 
-var tap = require('tap')
-var request = require('request').defaults({ json: true })
-var helper = require('../../../lib/agent_helper')
-var API = require('../../../../api')
+const tap = require('tap')
+const request = require('request').defaults({ json: true })
+const helper = require('../../../lib/agent_helper')
+const API = require('../../../../api')
 
 tap.test('Restify router introspection', function (t) {
   t.plan(3)
@@ -28,14 +28,14 @@ tap.test('Restify router introspection', function (t) {
   })
 
   server.get('/test/:id', function (req, res, next) {
-    var rum = api.getBrowserTimingHeader()
+    const rum = api.getBrowserTimingHeader()
     t.equal(rum.substr(0, 7), '<script')
     res.send({ status: 'ok' })
     next()
   })
 
   server.listen(0, function () {
-    var port = server.address().port
+    const port = server.address().port
     request.get('http://localhost:' + port + '/test/31337', function (error, res, body) {
       t.equal(res.statusCode, 200, 'nothing exploded')
       t.deepEqual(body, { status: 'ok' }, 'got expected respose')

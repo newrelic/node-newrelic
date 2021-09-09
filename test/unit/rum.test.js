@@ -9,18 +9,18 @@
 // Below allows use of mocha DSL with tap runner.
 require('tap').mochaGlobals()
 
-var chai = require('chai')
-var assert = require('assert')
-var helper = require('../lib/agent_helper')
-var API = require('../../api')
+const chai = require('chai')
+const assert = require('assert')
+const helper = require('../lib/agent_helper')
+const API = require('../../api')
 
-var hashes = require('../../lib/util/hashes')
+const hashes = require('../../lib/util/hashes')
 
 chai.should()
 
 describe('the RUM API', function () {
-  var agent
-  var api
+  let agent
+  let api
 
   beforeEach(function () {
     agent = helper.loadMockedAgent({
@@ -85,7 +85,7 @@ describe('the RUM API', function () {
     agent.config.browser_monitoring.debug = true
     helper.runInTransaction(agent, function (t) {
       t.finalizeNameFromUri('hello')
-      var l = api.getBrowserTimingHeader().split('\n').length
+      const l = api.getBrowserTimingHeader().split('\n').length
 
       // there should be about 5 new lines here, this is a really *rough*
       // estimate if it's being pretty printed
@@ -96,7 +96,7 @@ describe('the RUM API', function () {
   it('should be compact when not debugging', function () {
     helper.runInTransaction(agent, function (t) {
       t.finalizeNameFromUri('hello')
-      var l = api.getBrowserTimingHeader().split('\n').length
+      const l = api.getBrowserTimingHeader().split('\n').length
       assert.equal(l, 1)
     })
   })
@@ -126,7 +126,7 @@ describe('the RUM API', function () {
   })
 
   it('should add nonce attribute to script if passed in options', function () {
-    var nonce = '12345'
+    const nonce = '12345'
     helper.runInTransaction(agent, function (t) {
       t.finalizeNameFromUri('hello')
       api
@@ -140,9 +140,12 @@ describe('the RUM API', function () {
     helper.runInTransaction(agent, function (t) {
       api.addCustomAttribute('hello', 1)
       t.finalizeNameFromUri('hello')
-      var payload = /"atts":"(.*)"/.exec(api.getBrowserTimingHeader())
+      const payload = /"atts":"(.*)"/.exec(api.getBrowserTimingHeader())
       payload.should.not.be.null
-      var deobf = hashes.deobfuscateNameUsingKey(payload[1], agent.config.license_key.substr(0, 13))
+      const deobf = hashes.deobfuscateNameUsingKey(
+        payload[1],
+        agent.config.license_key.substr(0, 13)
+      )
       JSON.parse(deobf).u.hello.should.equal(1)
     })
   })

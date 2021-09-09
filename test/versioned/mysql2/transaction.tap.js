@@ -5,23 +5,23 @@
 
 'use strict'
 
-var tap = require('tap')
-var helper = require('../../lib/agent_helper')
-var params = require('../../lib/params')
-var setup = require('./setup')
+const tap = require('tap')
+const helper = require('../../lib/agent_helper')
+const params = require('../../lib/params')
+const setup = require('./setup')
 
-var DBUSER = 'test_user'
-var DBNAME = 'agent_integration'
+const DBUSER = 'test_user'
+const DBNAME = 'agent_integration'
 
 tap.test('MySQL transactions', { timeout: 30000 }, function (t) {
   t.plan(3)
 
   // set up the instrumentation before loading MySQL
-  var agent = helper.instrumentMockedAgent()
-  var mysql = require('mysql2')
+  const agent = helper.instrumentMockedAgent()
+  const mysql = require('mysql2')
 
   setup(mysql).then(() => {
-    var client = mysql.createConnection({
+    const client = mysql.createConnection({
       user: DBUSER,
       database: DBNAME,
       host: params.mysql_host,

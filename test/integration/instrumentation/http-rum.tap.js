@@ -5,20 +5,20 @@
 
 'use strict'
 
-var tap = require('tap')
-var test = tap.test
-var http = require('http')
-var helper = require('../../lib/agent_helper.js')
-var API = require('../../../api.js')
-var StreamSink = require('../../../lib/util/stream-sink.js')
-var hashes = require('../../../lib/util/hashes.js')
+const tap = require('tap')
+const test = tap.test
+const http = require('http')
+const helper = require('../../lib/agent_helper.js')
+const API = require('../../../api.js')
+const StreamSink = require('../../../lib/util/stream-sink.js')
+const hashes = require('../../../lib/util/hashes.js')
 
-var DATA_PREFIX = 'NREUM.info = '
+const DATA_PREFIX = 'NREUM.info = '
 
 test('custom naming rules should be applied early for RUM', function (t) {
   t.plan(3)
 
-  var conf = {
+  const conf = {
     rules: {
       name: [{ pattern: '/test', name: '/WORKING' }]
     },
@@ -39,7 +39,7 @@ test('custom naming rules should be applied early for RUM', function (t) {
   agent.config.browser_monitoring.browser_key = 1234
   agent.config.browser_monitoring.js_agent_loader = 'function () {}'
 
-  var external = http.createServer((request, response) => {
+  const external = http.createServer((request, response) => {
     t.equal(
       agent.getTransaction().getName(),
       'NormalizedUri/WORKING',
@@ -49,7 +49,7 @@ test('custom naming rules should be applied early for RUM', function (t) {
   })
 
   external.listen(0, function () {
-    var port = external.address().port
+    const port = external.address().port
 
     http.request({ port: port, path: '/test' }, done).end()
 
@@ -59,9 +59,9 @@ test('custom naming rules should be applied early for RUM', function (t) {
           t.equal(header.substr(0, 7), '<script', 'should generate RUM headers')
           header.split(';').forEach(function (element) {
             if (element.substr(0, DATA_PREFIX.length) === DATA_PREFIX) {
-              var dataString = element.substr(DATA_PREFIX.length, element.length)
-              var data = JSON.parse(dataString)
-              var tx = hashes.deobfuscateNameUsingKey(
+              const dataString = element.substr(DATA_PREFIX.length, element.length)
+              const data = JSON.parse(dataString)
+              const tx = hashes.deobfuscateNameUsingKey(
                 data.transactionName,
                 agent.config.license_key.substr(0, 13)
               )
@@ -83,7 +83,7 @@ test('custom naming rules should be applied early for RUM', function (t) {
 test('custom web transactions should have rules applied for RUM', function (t) {
   t.plan(2)
 
-  var conf = {
+  const conf = {
     rules: {
       name: [{ pattern: '/test', name: '/WORKING' }]
     },
@@ -105,13 +105,13 @@ test('custom web transactions should have rules applied for RUM', function (t) {
   agent.config.browser_monitoring.js_agent_loader = 'function () {}'
 
   api.startWebTransaction('/test', function () {
-    var header = api.getBrowserTimingHeader()
+    const header = api.getBrowserTimingHeader()
     t.equal(header.substr(0, 7), '<script', 'should generate RUM headers')
     header.split(';').forEach(function (element) {
       if (element.substr(0, DATA_PREFIX.length) === DATA_PREFIX) {
-        var dataString = element.substr(DATA_PREFIX.length, element.length)
-        var data = JSON.parse(dataString)
-        var tx = hashes.deobfuscateNameUsingKey(
+        const dataString = element.substr(DATA_PREFIX.length, element.length)
+        const data = JSON.parse(dataString)
+        const tx = hashes.deobfuscateNameUsingKey(
           data.transactionName,
           agent.config.license_key.substr(0, 13)
         )

@@ -5,9 +5,9 @@
 
 'use strict'
 
-var logger = require('./lib/logger.js')
-var RealAPI = require('./api.js')
-var TransactionHandle = require('./lib/transaction/handle')
+const logger = require('./lib/logger.js')
+const RealAPI = require('./api.js')
+const TransactionHandle = require('./lib/transaction/handle')
 
 /* eslint-disable no-eval */
 function stubFunction(name) {
@@ -25,14 +25,14 @@ function stubFunction(name) {
 
 function Stub() {}
 
-var keys = Object.keys(RealAPI.prototype)
-var length = keys.length
+const keys = Object.keys(RealAPI.prototype)
+const length = keys.length
 
 /* This way the stub API doesn't have to be updated in lockstep with the regular
  * API.
  */
-for (var i = 0; i < length; i++) {
-  var functionName = keys[i]
+for (let i = 0; i < length; i++) {
+  const functionName = keys[i]
   Stub.prototype[functionName] = stubFunction(functionName)
 }
 
@@ -107,7 +107,7 @@ function startBackgroundTransaction(name, group, callback) {
 function shutdown(options, cb) {
   logger.debug('Not calling shutdown because New Relic is disabled.')
 
-  var callback = cb
+  let callback = cb
   if (!callback) {
     if (typeof options === 'function') {
       callback = options

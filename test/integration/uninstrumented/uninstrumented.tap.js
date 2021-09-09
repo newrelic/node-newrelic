@@ -99,7 +99,7 @@ tap.test('all instrumented modules should be detected when uninstrumented', func
   )
 
   loaded.forEach(function (module) {
-    var found = false
+    let found = false
 
     metricsJSON.forEach(function (metric) {
       if (metric[0].name === 'Supportability/Uninstrumented/' + module) {

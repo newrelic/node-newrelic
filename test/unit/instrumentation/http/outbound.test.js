@@ -7,16 +7,16 @@
 
 const tap = require('tap')
 
-var http = require('http')
-var https = require('https')
-var url = require('url')
-var events = require('events')
-var helper = require('../../../lib/agent_helper')
-var NAMES = require('../../../../lib/metrics/names')
-var instrumentOutbound = require('../../../../lib/instrumentation/core/http-outbound')
-var hashes = require('../../../../lib/util/hashes')
-var nock = require('nock')
-var Segment = require('../../../../lib/transaction/trace/segment')
+const http = require('http')
+const https = require('https')
+const url = require('url')
+const events = require('events')
+const helper = require('../../../lib/agent_helper')
+const NAMES = require('../../../../lib/metrics/names')
+const instrumentOutbound = require('../../../../lib/instrumentation/core/http-outbound')
+const hashes = require('../../../../lib/util/hashes')
+const nock = require('nock')
+const Segment = require('../../../../lib/transaction/trace/segment')
 const { DESTINATIONS } = require('../../../../lib/config/attribute-filter')
 
 tap.test('instrumentOutbound', (t) => {
@@ -76,8 +76,8 @@ tap.test('instrumentOutbound', (t) => {
   t.test('should strip query parameters from path in transaction trace segment', (t) => {
     const req = new events.EventEmitter()
     helper.runInTransaction(agent, function (transaction) {
-      var path = '/asdf'
-      var name = NAMES.EXTERNAL.PREFIX + HOSTNAME + ':' + PORT + path
+      const path = '/asdf'
+      const name = NAMES.EXTERNAL.PREFIX + HOSTNAME + ':' + PORT + path
 
       instrumentOutbound(agent, { host: HOSTNAME, port: PORT }, makeFakeRequest)
       t.equal(transaction.trace.root.children[0].name, name)
@@ -295,7 +295,7 @@ tap.test('should add data from cat header to segment', (t) => {
       const port = server.address().port
       http
         .get({ host: 'localhost', port: port }, function (res) {
-          var segment = agent.tracer.getTransaction().trace.root.children[0]
+          const segment = agent.tracer.getTransaction().trace.root.children[0]
 
           t.match(segment, {
             catId: '123#456',
@@ -354,10 +354,10 @@ tap.test('should add data from cat header to segment', (t) => {
     })
 
     helper.runInTransaction(agent, handled)
-    var errRegex = /connect ECONNREFUSED( 127.0.0.1:12345)?/
+    const errRegex = /connect ECONNREFUSED( 127.0.0.1:12345)?/
 
     function handled(transaction) {
-      var req = http.get({ host: 'localhost', port: 12345 }, function () {})
+      const req = http.get({ host: 'localhost', port: 12345 }, function () {})
 
       req.on('close', function () {
         t.equal(transaction.exceptions.length, 0)
@@ -649,8 +649,8 @@ tap.test('Should properly handle http(s) get and request signatures', (t) => {
       const { urlType, headers, callback, swapHost } = testOpts
 
       // Setup the arguments and the test name
-      let args = [] // Setup arguments to the get/request function
-      let names = [] // Capture parameters for the name of the test
+      const args = [] // Setup arguments to the get/request function
+      const names = [] // Capture parameters for the name of the test
 
       // See if a URL argument is being used
       if (urlType === 'string') {
@@ -662,7 +662,7 @@ tap.test('Should properly handle http(s) get and request signatures', (t) => {
       }
 
       // See if an options argument should be used
-      let opts = {}
+      const opts = {}
       if (headers) {
         opts.headers = { test: 'test' }
         names.push('options')
@@ -694,7 +694,7 @@ tap.test('Should properly handle http(s) get and request signatures', (t) => {
         }
 
         // Setup a function to test the response.
-        let callbackTester = (res) => {
+        const callbackTester = (res) => {
           testResult(res, testOpts, t)
         }
 

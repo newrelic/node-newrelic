@@ -20,12 +20,12 @@ QContext.prototype.assertTransaction = function assertTransaction(transaction) {
 }
 
 test('q.ninvoke', function testQNInvoke(t) {
-  var agent = setupAgent(t)
-  var q = require('q')
-  var qContext = new QContext(t, agent)
+  const agent = setupAgent(t)
+  const q = require('q')
+  const qContext = new QContext(t, agent)
 
-  var firstTest = q.defer()
-  var secondTest = q.defer()
+  const firstTest = q.defer()
+  const secondTest = q.defer()
 
   helper.runInTransaction(agent, function transactionWrapper(transaction) {
     q.ninvoke(function () {
@@ -47,12 +47,12 @@ test('q.ninvoke', function testQNInvoke(t) {
 })
 
 test('q.then', function testQNInvoke(t) {
-  var agent = setupAgent(t)
-  var q = require('q')
-  var qContext = new QContext(t, agent)
+  const agent = setupAgent(t)
+  const q = require('q')
+  const qContext = new QContext(t, agent)
 
-  var firstTest = q.defer()
-  var secondTest = q.defer()
+  const firstTest = q.defer()
+  const secondTest = q.defer()
 
   helper.runInTransaction(agent, function transactionWrapper(transaction) {
     q(true).then(function () {
@@ -78,17 +78,17 @@ test('q.then rejections', function testQNInvoke(t) {
 
   t.plan(4)
 
-  var agent = setupAgent(t)
-  var q = require('q')
-  var qContext = new QContext(t, agent)
+  const agent = setupAgent(t)
+  const q = require('q')
+  const qContext = new QContext(t, agent)
 
-  var firstTest = q.defer()
-  var secondTest = q.defer()
+  const firstTest = q.defer()
+  const secondTest = q.defer()
 
   helper.temporarilyRemoveListeners(t, process, 'unhandledRejection')
 
   helper.runInTransaction(agent, function transactionWrapper(transaction) {
-    var thrownError = new Error('First unhandled error')
+    const thrownError = new Error('First unhandled error')
     process.on('unhandledRejection', function rejectionHandler(error) {
       if (error === thrownError) {
         qContext.assertTransaction(transaction)
@@ -102,7 +102,7 @@ test('q.then rejections', function testQNInvoke(t) {
   })
 
   helper.runInTransaction(agent, function transactionWrapper(transaction) {
-    var thrownError = new Error('Second unhandled error')
+    const thrownError = new Error('Second unhandled error')
     process.on('unhandledRejection', function rejectionHandler(error) {
       if (error === thrownError) {
         qContext.assertTransaction(transaction)
@@ -121,7 +121,7 @@ test('q.then rejections', function testQNInvoke(t) {
 })
 
 function setupAgent(t) {
-  var agent = helper.instrumentMockedAgent()
+  const agent = helper.instrumentMockedAgent()
   t.teardown(function tearDown() {
     helper.unloadAgent(agent)
   })

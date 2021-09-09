@@ -19,10 +19,10 @@ const TraceAggregator = require('../../lib/transaction/trace/aggregator')
 const Transaction = require('../../lib/transaction')
 
 describe('TraceAggregator', function () {
-  var agent = null
+  let agent = null
 
   function createTransaction(name, duration, synth) {
-    var transaction = new Transaction(agent)
+    const transaction = new Transaction(agent)
     // gotta create the trace
     transaction.trace.setDurationInMillis(duration)
     transaction.url = name
@@ -55,7 +55,7 @@ describe('TraceAggregator', function () {
 
   it('should require a configuration at startup time', function () {
     expect(() => new TraceAggregator()).to.throw()
-    var config = configurator.initialize({
+    const config = configurator.initialize({
       transaction_tracer: {
         enabled: true
       }
@@ -79,7 +79,7 @@ describe('TraceAggregator', function () {
   })
 
   it('should let the agent decide whether to ignore a transaction', function () {
-    var transaction = new Transaction(agent)
+    const transaction = new Transaction(agent)
     transaction.trace.setDurationInMillis(3000)
     transaction.ignore = true
 
@@ -88,7 +88,7 @@ describe('TraceAggregator', function () {
   })
 
   describe('with top n support', function () {
-    var config
+    let config
 
     beforeEach(function () {
       config = configurator.initialize({
@@ -99,29 +99,29 @@ describe('TraceAggregator', function () {
     })
 
     it('should set n from its configuration', function () {
-      var TOP_N = 21
+      const TOP_N = 21
       config.transaction_tracer.top_n = TOP_N
-      var aggregator = new TraceAggregator({ config })
+      const aggregator = new TraceAggregator({ config })
 
       expect(aggregator.capacity).equal(TOP_N)
     })
 
     it('should track the top 20 slowest transactions if top_n is unconfigured', () => {
-      var aggregator = new TraceAggregator({ config })
+      const aggregator = new TraceAggregator({ config })
 
       expect(aggregator.capacity).equal(20)
     })
 
     it('should track the slowest transaction in a harvest period if top_n is 0', () => {
       config.transaction_tracer.top_n = 0
-      var aggregator = new TraceAggregator({ config })
+      const aggregator = new TraceAggregator({ config })
 
       expect(aggregator.capacity).equal(1)
     })
 
     it('should only save a trace for an existing name if new one is slower', () => {
-      var URI = '/simple'
-      var aggregator = new TraceAggregator({ config })
+      const URI = '/simple'
+      const aggregator = new TraceAggregator({ config })
       aggregator.reported = 10 // needed to override "first 5"
 
       aggregator.add(createTransaction(URI, 3000))
@@ -169,7 +169,7 @@ describe('TraceAggregator', function () {
   })
 
   it('should collect traces when the threshold is 0', function () {
-    var config = configurator.initialize({
+    const config = configurator.initialize({
       transaction_tracer: {
         transaction_threshold: 0,
         enabled: true,
@@ -177,8 +177,8 @@ describe('TraceAggregator', function () {
       }
     })
 
-    var aggregator = new TraceAggregator({ config })
-    var transaction = new Transaction(agent)
+    const aggregator = new TraceAggregator({ config })
+    const transaction = new Transaction(agent)
 
     transaction.trace.setDurationInMillis(0)
     transaction.url = '/test'
@@ -190,18 +190,18 @@ describe('TraceAggregator', function () {
   })
 
   it('should collect traces for transactions that exceed apdex_f', function () {
-    var ABOVE_THRESHOLD = 29
-    var APDEXT = 0.007
+    const ABOVE_THRESHOLD = 29
+    const APDEXT = 0.007
 
-    var config = configurator.initialize({
+    const config = configurator.initialize({
       transaction_tracer: {
         enabled: true,
         top_n: 10
       }
     })
 
-    var aggregator = new TraceAggregator({ config })
-    var transaction = new Transaction(agent)
+    const aggregator = new TraceAggregator({ config })
+    const transaction = new Transaction(agent)
 
     aggregator.reported = 10 // needed to override "first 5"
 
@@ -217,18 +217,18 @@ describe('TraceAggregator', function () {
   })
 
   it("should not collect traces for transactions that don't exceed apdex_f", function () {
-    var BELOW_THRESHOLD = 27
-    var APDEXT = 0.007
+    const BELOW_THRESHOLD = 27
+    const APDEXT = 0.007
 
-    var config = configurator.initialize({
+    const config = configurator.initialize({
       transaction_tracer: {
         enabled: true,
         top_n: 10
       }
     })
 
-    var aggregator = new TraceAggregator({ config })
-    var transaction = new Transaction(agent)
+    const aggregator = new TraceAggregator({ config })
+    const transaction = new Transaction(agent)
 
     aggregator.reported = 10 // needed to override "first 5"
 
@@ -244,17 +244,17 @@ describe('TraceAggregator', function () {
   })
 
   it('should collect traces that exceed explicit trace threshold', () => {
-    var ABOVE_THRESHOLD = 29
-    var THRESHOLD = 0.028
+    const ABOVE_THRESHOLD = 29
+    const THRESHOLD = 0.028
 
-    var config = configurator.initialize({
+    const config = configurator.initialize({
       transaction_tracer: {
         enabled: true,
         transaction_threshold: THRESHOLD
       }
     })
 
-    var aggregator = new TraceAggregator({ config })
+    const aggregator = new TraceAggregator({ config })
     aggregator.reported = 10 // needed to override "first 5"
     const tx = createTransaction('/test', ABOVE_THRESHOLD)
     aggregator.add(tx)
@@ -263,17 +263,17 @@ describe('TraceAggregator', function () {
   })
 
   it('should not collect traces that do not exceed trace threshold', () => {
-    var BELOW_THRESHOLD = 29
-    var THRESHOLD = 30
+    const BELOW_THRESHOLD = 29
+    const THRESHOLD = 30
 
-    var config = configurator.initialize({
+    const config = configurator.initialize({
       transaction_tracer: {
         enabled: true,
         transaction_threshold: THRESHOLD
       }
     })
 
-    var aggregator = new TraceAggregator({ config })
+    const aggregator = new TraceAggregator({ config })
     aggregator.reported = 10 // needed to override "first 5"
     const tx = createTransaction('/test', BELOW_THRESHOLD)
     aggregator.add(tx)
@@ -281,14 +281,14 @@ describe('TraceAggregator', function () {
   })
 
   it('should group transactions by the metric name associated with them', () => {
-    var config = configurator.initialize({
+    const config = configurator.initialize({
       transaction_tracer: {
         enabled: true,
         top_n: 10
       }
     })
 
-    var aggregator = new TraceAggregator({ config })
+    const aggregator = new TraceAggregator({ config })
 
     const tx = createTransaction('/test', 2100)
     aggregator.add(tx)
@@ -328,11 +328,11 @@ describe('TraceAggregator', function () {
       agent.config.run_id = 1337
       agent.config.transaction_tracer.enabled = true
 
-      var aggregator = agent.traces
+      const aggregator = agent.traces
       const tx = createTransaction('/test', 5030)
       aggregator.add(tx)
 
-      var remaining = 4
+      let remaining = 4
       // 2nd-5th harvests: no serialized trace, timing still set
       var looper = function () {
         expect(aggregator.requestTimes['WebTransaction/Uri/test']).equal(5030)
@@ -369,7 +369,7 @@ describe('TraceAggregator', function () {
   it('should reset the syntheticsTraces when resetting trace', function () {
     agent.config.transaction_tracer.enabled = true
 
-    var aggregator = agent.traces
+    const aggregator = agent.traces
     createTransaction('/testOne', 503)
     expect(aggregator.trace).to.exist
     aggregator.clear()

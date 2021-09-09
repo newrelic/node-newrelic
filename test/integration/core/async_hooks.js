@@ -4,9 +4,9 @@
  */
 
 'use strict'
-var test = require('tap').test
-var helper = require('../../lib/agent_helper')
-var asyncHooks = require('async_hooks')
+const test = require('tap').test
+const helper = require('../../lib/agent_helper')
+const asyncHooks = require('async_hooks')
 
 function testSegments(t, segmentMap) {
   global.gc()
@@ -18,9 +18,9 @@ function testSegments(t, segmentMap) {
 }
 
 test('await', function (t) {
-  var agent = setupAgent(t)
+  const agent = setupAgent(t)
   helper.runInTransaction(agent, async function (txn) {
-    var transaction = agent.getTransaction()
+    let transaction = agent.getTransaction()
     t.equal(transaction && transaction.id, txn.id, 'should start in a transaction')
 
     await Promise.resolve("i'll be back")
@@ -32,7 +32,7 @@ test('await', function (t) {
       'should resume in the same transaction after await'
     )
 
-    var segmentMap = require('../../../lib/instrumentation/core/async_hooks').segmentMap
+    const segmentMap = require('../../../lib/instrumentation/core/async_hooks').segmentMap
     txn.end()
     // Segments won't be cleared till a gc cycle clears the promises
     // they are related with.
@@ -67,7 +67,7 @@ test("the agent's async hook", function (t) {
 
   t.autoend()
   t.test('does not crash on multiple resolve calls', function (t) {
-    var agent = setupAgent(t)
+    const agent = setupAgent(t)
     helper.runInTransaction(agent, function () {
       t.doesNotThrow(function () {
         new Promise(function (res) {
@@ -79,11 +79,11 @@ test("the agent's async hook", function (t) {
   })
 
   t.test('does not restore a segment for a resource created outside a transaction', function (t) {
-    var agent = setupAgent(t)
-    var res = new TestResource(1)
+    const agent = setupAgent(t)
+    const res = new TestResource(1)
     helper.runInTransaction(agent, function () {
-      var root = agent.tracer.segment
-      var segmentMap = require('../../../lib/instrumentation/core/async_hooks').segmentMap
+      const root = agent.tracer.segment
+      const segmentMap = require('../../../lib/instrumentation/core/async_hooks').segmentMap
 
       t.equal(segmentMap.size, 0, 'no segments should be tracked')
       res.doStuff(function () {
@@ -99,10 +99,10 @@ test("the agent's async hook", function (t) {
   })
 
   t.test('restores context in inactive transactions', function (t) {
-    var agent = setupAgent(t)
+    const agent = setupAgent(t)
     helper.runInTransaction(agent, function (txn) {
-      var res = new TestResource(1)
-      var root = agent.tracer.segment
+      const res = new TestResource(1)
+      const root = agent.tracer.segment
       txn.end()
       res.doStuff(function () {
         t.equal(
@@ -116,9 +116,9 @@ test("the agent's async hook", function (t) {
   })
 
   t.test('parent promises persist perspective to problematic progeny', function (t) {
-    var agent = setupAgent(t)
-    var tasks = []
-    var intervalId = setInterval(() => {
+    const agent = setupAgent(t)
+    const tasks = []
+    const intervalId = setInterval(() => {
       while (tasks.length) {
         tasks.pop()()
       }
@@ -131,11 +131,11 @@ test("the agent's async hook", function (t) {
     helper.runInTransaction(agent, function (txn) {
       t.ok(txn, 'transaction should not be null')
 
-      var p = Promise.resolve()
+      const p = Promise.resolve()
 
       tasks.push(() => {
         p.then(() => {
-          var tx = agent.getTransaction()
+          const tx = agent.getTransaction()
           t.equal(tx ? tx.id : null, txn.id)
           t.end()
         })
@@ -144,9 +144,9 @@ test("the agent's async hook", function (t) {
   })
 
   t.test('maintains transaction context', function (t) {
-    var agent = setupAgent(t)
-    var tasks = []
-    var intervalId = setInterval(() => {
+    const agent = setupAgent(t)
+    const tasks = []
+    const intervalId = setInterval(() => {
       while (tasks.length) {
         tasks.pop()()
       }
@@ -158,19 +158,19 @@ test("the agent's async hook", function (t) {
 
     helper.runInTransaction(agent, function (txn) {
       t.ok(txn, 'transaction should not be null')
-      var segment = txn.trace.root
+      const segment = txn.trace.root
       agent.tracer.bindFunction(one, segment)()
 
-      var wrapperTwo = agent.tracer.bindFunction(function () {
+      const wrapperTwo = agent.tracer.bindFunction(function () {
         return two()
       }, segment)
-      var wrapperThree = agent.tracer.bindFunction(function () {
+      const wrapperThree = agent.tracer.bindFunction(function () {
         return three()
       }, segment)
 
       function one() {
         return new Promise(executor).then(() => {
-          var tx = agent.getTransaction()
+          const tx = agent.getTransaction()
           t.equal(tx ? tx.id : null, txn.id)
           t.end()
         })
@@ -179,7 +179,7 @@ test("the agent's async hook", function (t) {
       function executor(resolve) {
         tasks.push(() => {
           next().then(() => {
-            var tx = agent.getTransaction()
+            const tx = agent.getTransaction()
             t.equal(tx ? tx.id : null, txn.id)
             resolve()
           })
@@ -227,9 +227,9 @@ test("the agent's async hook", function (t) {
   })
 
   t.test('loses transaction context', function (t) {
-    var agent = setupAgent(t)
-    var tasks = []
-    var intervalId = setInterval(() => {
+    const agent = setupAgent(t)
+    const tasks = []
+    const intervalId = setInterval(() => {
       while (tasks.length) {
         tasks.pop()()
       }
@@ -241,16 +241,16 @@ test("the agent's async hook", function (t) {
 
     helper.runInTransaction(agent, function (txn) {
       t.ok(txn, 'transaction should not be null')
-      var segment = txn.trace.root
+      const segment = txn.trace.root
       agent.tracer.bindFunction(one, segment)()
 
-      var wrapperTwo = agent.tracer.bindFunction(function () {
+      const wrapperTwo = agent.tracer.bindFunction(function () {
         return two()
       }, segment)
 
       function one() {
         return new Promise(executor).then(() => {
-          var tx = agent.getTransaction()
+          const tx = agent.getTransaction()
           t.equal(tx ? tx.id : null, txn.id)
           t.end()
         })
@@ -259,7 +259,7 @@ test("the agent's async hook", function (t) {
       function executor(resolve) {
         tasks.push(() => {
           next().then(() => {
-            var tx = agent.getTransaction()
+            const tx = agent.getTransaction()
             // We know tx will be null here because no promise was returned
             // If this test fails, that's actually a good thing,
             // so throw a party/update Koa.
@@ -280,18 +280,18 @@ test("the agent's async hook", function (t) {
   })
 
   t.test('handles multientry callbacks correctly', function (t) {
-    var agent = setupAgent(t)
-    var segmentMap = require('../../../lib/instrumentation/core/async_hooks').segmentMap
+    const agent = setupAgent(t)
+    const segmentMap = require('../../../lib/instrumentation/core/async_hooks').segmentMap
     helper.runInTransaction(agent, function () {
-      var root = agent.tracer.segment
+      const root = agent.tracer.segment
 
-      var aSeg = agent.tracer.createSegment('A')
+      const aSeg = agent.tracer.createSegment('A')
       agent.tracer.segment = aSeg
-      var resA = new TestResource(1)
+      const resA = new TestResource(1)
 
-      var bSeg = agent.tracer.createSegment('B')
+      const bSeg = agent.tracer.createSegment('B')
       agent.tracer.segment = bSeg
-      var resB = new TestResource(2)
+      const resB = new TestResource(2)
 
       agent.tracer.segment = root
 
@@ -359,15 +359,15 @@ function checkCallMetrics(t, testMetrics) {
 
 test('promise hooks', function (t) {
   t.autoend()
-  var testMetrics = {
+  const testMetrics = {
     initCalled: 0,
     beforeCalled: 0,
     afterCalled: 0,
     destroyCalled: 0
   }
 
-  var promiseIds = {}
-  var hook = asyncHooks.createHook({
+  const promiseIds = {}
+  const hook = asyncHooks.createHook({
     init: function initHook(id, type) {
       if (type === 'PROMISE') {
         promiseIds[id] = true
@@ -402,7 +402,7 @@ test('promise hooks', function (t) {
 })
 
 function setupAgent(t) {
-  var agent = helper.instrumentMockedAgent({
+  const agent = helper.instrumentMockedAgent({
     feature_flag: { await_support: true }
   })
   t.teardown(function () {

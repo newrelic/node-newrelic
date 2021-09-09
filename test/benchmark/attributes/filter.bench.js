@@ -5,15 +5,15 @@
 
 'use strict'
 
-var AttributeFilter = require('../../../lib/config/attribute-filter')
-var benchmark = require('../../lib/benchmark')
+const AttributeFilter = require('../../../lib/config/attribute-filter')
+const benchmark = require('../../lib/benchmark')
 const { makeAttributeFilterConfig } = require('../../lib/agent_helper')
 
-var suite = benchmark.createBenchmark({
+const suite = benchmark.createBenchmark({
   name: 'config.filter'
 })
 
-var filter = makeFilter({
+const filter = makeFilter({
   attributes: {
     enabled: true,
     include: [
@@ -49,7 +49,7 @@ var filter = makeFilter({
   }
 })
 
-var attributes = [
+const attributes = [
   'request.headers.global-include-exact',
   'request.headers.global-include-wildcard',
 

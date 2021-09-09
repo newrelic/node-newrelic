@@ -12,7 +12,7 @@ require('tap').mochaGlobals()
 const chai = require('chai')
 const expect = chai.expect
 const helper = require('../../lib/agent_helper')
-var Transaction = require('../../../lib/transaction')
+const Transaction = require('../../../lib/transaction')
 const TraceContext = require('../../../lib/transaction/tracecontext').TraceContext
 const sinon = require('sinon')
 
@@ -20,7 +20,7 @@ describe('TraceContext', function () {
   let traceContext = null
   let agent = null
   let transaction = null
-  let supportabilitySpy = sinon.spy()
+  const supportabilitySpy = sinon.spy()
 
   beforeEach(function () {
     agent = helper.loadMockedAgent({
@@ -304,7 +304,7 @@ describe('TraceContext', function () {
   describe('header creation', () => {
     it('creating traceparent twice should give the same value', function () {
       helper.runInTransaction(agent, function (txn) {
-        var childSegment = txn.trace.add('child')
+        const childSegment = txn.trace.add('child')
         childSegment.start()
 
         const tp1 = txn.traceContext.createTraceparent()

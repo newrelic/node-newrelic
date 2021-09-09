@@ -5,13 +5,13 @@
 
 'use strict'
 
-var tap = require('tap')
-var timers = require('timers')
-var helper = require('../../lib/agent_helper')
-var verifySegments = require('./verify')
+const tap = require('tap')
+const timers = require('timers')
+const helper = require('../../lib/agent_helper')
+const verifySegments = require('./verify')
 
 tap.test('setTimeout', function testSetTimeout(t) {
-  var agent = setupAgent(t)
+  const agent = setupAgent(t)
   helper.runInTransaction(agent, function transactionWrapper() {
     timers.setTimeout(function anonymous() {
       verifySegments(t, agent, 'timers.setTimeout')
@@ -24,7 +24,7 @@ tap.test('setImmediate', function testSetImmediate(t) {
 
   t.test('segments', function (t) {
     t.plan(2)
-    var agent = setupAgent(t)
+    const agent = setupAgent(t)
     helper.runInTransaction(agent, function transactionWrapper(tx) {
       timers.setImmediate(function anonymous() {
         t.equal(agent.getTransaction().id, tx.id, 'should be in expected transaction')
@@ -38,7 +38,7 @@ tap.test('setImmediate', function testSetImmediate(t) {
 
   t.test('async transaction', function (t) {
     t.plan(2)
-    var agent = setupAgent(t)
+    const agent = setupAgent(t)
 
     helper.runInTransaction(agent, function (tx) {
       timers.setImmediate(function () {
@@ -50,8 +50,8 @@ tap.test('setImmediate', function testSetImmediate(t) {
 
   t.test('overlapping transactions', function (t) {
     t.plan(5)
-    var agent = setupAgent(t)
-    var firstTx = null
+    const agent = setupAgent(t)
+    let firstTx = null
 
     helper.runInTransaction(agent, function (tx) {
       firstTx = tx
@@ -76,7 +76,7 @@ tap.test('setImmediate', function testSetImmediate(t) {
   t.test('nested setImmediate calls', function (t) {
     t.plan(4)
 
-    var agent = setupAgent(t)
+    const agent = setupAgent(t)
 
     t.notOk(agent.getTransaction(), 'should not start in a transaction')
     helper.runInTransaction(agent, function () {
@@ -108,7 +108,7 @@ tap.test('setImmediate', function testSetImmediate(t) {
 })
 
 tap.test('setInterval', function testSetInterval(t) {
-  var agent = setupAgent(t)
+  const agent = setupAgent(t)
   helper.runInTransaction(agent, function transactionWrapper() {
     var interval = timers.setInterval(function anonymous() {
       clearInterval(interval)
@@ -118,7 +118,7 @@ tap.test('setInterval', function testSetInterval(t) {
 })
 
 tap.test('global setTimeout', function testSetTimeout(t) {
-  var agent = setupAgent(t)
+  const agent = setupAgent(t)
   helper.runInTransaction(agent, function transactionWrapper() {
     setTimeout(function anonymous() {
       verifySegments(t, agent, 'timers.setTimeout')
@@ -127,7 +127,7 @@ tap.test('global setTimeout', function testSetTimeout(t) {
 })
 
 tap.test('global setImmediate', function testSetImmediate(t) {
-  var agent = setupAgent(t)
+  const agent = setupAgent(t)
   helper.runInTransaction(agent, function transactionWrapper(transaction) {
     setImmediate(function anonymous() {
       t.equal(agent.getTransaction(), transaction)
@@ -138,7 +138,7 @@ tap.test('global setImmediate', function testSetImmediate(t) {
 })
 
 tap.test('global setInterval', function testSetInterval(t) {
-  var agent = setupAgent(t)
+  const agent = setupAgent(t)
   helper.runInTransaction(agent, function transactionWrapper() {
     var interval = setInterval(function anonymous() {
       clearInterval(interval)
@@ -148,7 +148,7 @@ tap.test('global setInterval', function testSetInterval(t) {
 })
 
 tap.test('nextTick', function testNextTick(t) {
-  var agent = setupAgent(t)
+  const agent = setupAgent(t)
   helper.runInTransaction(agent, function transactionWrapper(transaction) {
     process.nextTick(function callback() {
       t.equal(agent.getTransaction(), transaction)
@@ -159,9 +159,9 @@ tap.test('nextTick', function testNextTick(t) {
 })
 
 tap.test('nextTick with extra args', function testNextTick(t) {
-  var original = process.nextTick
+  const original = process.nextTick
   process.nextTick = multiArgNextTick
-  var agent = setupAgent(t)
+  const agent = setupAgent(t)
   helper.runInTransaction(agent, function transactionWrapper(transaction) {
     process.nextTick(
       function callback() {
@@ -178,7 +178,7 @@ tap.test('nextTick with extra args', function testNextTick(t) {
   })
 
   function multiArgNextTick(fn) {
-    var args = [].slice.call(arguments, 1)
+    const args = [].slice.call(arguments, 1)
     original(function callFn() {
       fn.apply(this, args)
     })
@@ -186,14 +186,14 @@ tap.test('nextTick with extra args', function testNextTick(t) {
 })
 
 tap.test('clearTimeout', function testNextTick(t) {
-  var agent = setupAgent(t)
-  var timer = setTimeout(fail)
+  const agent = setupAgent(t)
+  const timer = setTimeout(fail)
 
   clearTimeout(timer)
 
   helper.runInTransaction(agent, function transactionWrapper(transaction) {
     process.nextTick(function callback() {
-      var timer2 = setTimeout(fail)
+      const timer2 = setTimeout(fail)
       t.notOk(transaction.trace.root.children[0].ignore)
       clearTimeout(timer2)
       t.ok(transaction.trace.root.children[0].ignore)
@@ -207,14 +207,14 @@ tap.test('clearTimeout', function testNextTick(t) {
 })
 
 tap.test('clearImmediate', function testNextTick(t) {
-  var agent = setupAgent(t)
-  var timer = setImmediate(fail)
+  const agent = setupAgent(t)
+  const timer = setImmediate(fail)
 
   clearImmediate(timer)
 
   helper.runInTransaction(agent, function transactionWrapper(transaction) {
     process.nextTick(function callback() {
-      var timer2 = setImmediate(fail)
+      const timer2 = setImmediate(fail)
       t.notOk(transaction.trace.root.children[0])
       clearImmediate(timer2)
       setImmediate(t.end.bind(t))
@@ -227,14 +227,14 @@ tap.test('clearImmediate', function testNextTick(t) {
 })
 
 tap.test('clearTimeout', function testNextTick(t) {
-  var agent = setupAgent(t)
-  var timer = setTimeout(fail)
+  const agent = setupAgent(t)
+  const timer = setTimeout(fail)
 
   clearTimeout(timer)
 
   helper.runInTransaction(agent, function transactionWrapper(transaction) {
     process.nextTick(function callback() {
-      var timer2 = setTimeout(fail)
+      const timer2 = setTimeout(fail)
       t.notOk(transaction.trace.root.children[0].ignore)
       clearTimeout(timer2)
       t.ok(transaction.trace.root.children[0].ignore)
@@ -248,7 +248,7 @@ tap.test('clearTimeout', function testNextTick(t) {
 })
 
 function setupAgent(t) {
-  var agent = helper.instrumentMockedAgent()
+  const agent = helper.instrumentMockedAgent()
   t.teardown(function tearDown() {
     helper.unloadAgent(agent)
   })

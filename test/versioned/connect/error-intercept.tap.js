@@ -5,9 +5,9 @@
 
 'use strict'
 
-var tap = require('tap')
-var test = tap.test
-var helper = require('../../lib/agent_helper')
+const tap = require('tap')
+const test = tap.test
+const helper = require('../../lib/agent_helper')
 
 // connect is a loudmouth without this
 process.env.NODE_ENV = 'test'
@@ -16,9 +16,9 @@ test('intercepting errors with connect 2', function (t) {
   t.plan(3)
 
   t.test('should wrap handlers with proxies', function (t) {
-    var agent = helper.instrumentMockedAgent()
-    var connect = require('connect')
-    var app = connect()
+    const agent = helper.instrumentMockedAgent()
+    const connect = require('connect')
+    const app = connect()
 
     t.teardown(() => {
       helper.unloadAgent(agent)
@@ -32,7 +32,7 @@ test('intercepting errors with connect 2', function (t) {
     // 2 because of the error handler
     t.equal(app.stack.length, 1, 'have test middleware + error interceptor')
 
-    var wrapNop = app.stack[0]
+    const wrapNop = app.stack[0]
     t.equal(wrapNop.route, '', 'nop handler defaults to all routes')
     t.ok(wrapNop.handle, 'have nop handle passed above')
     t.equal(wrapNop.handle.name, 'nop', "nop's name is unchanged")
@@ -42,9 +42,9 @@ test('intercepting errors with connect 2', function (t) {
   })
 
   t.test('should have only one error interceptor in the middleware stack', function (t) {
-    var agent = helper.instrumentMockedAgent()
-    var connect = require('connect')
-    var app = connect()
+    const agent = helper.instrumentMockedAgent()
+    const connect = require('connect')
+    const app = connect()
 
     t.teardown(() => {
       helper.unloadAgent(agent)
@@ -66,13 +66,13 @@ test('intercepting errors with connect 2', function (t) {
   })
 
   t.test('should trace errors that occur while executing a middleware', function (t) {
-    var agent = helper.instrumentMockedAgent()
-    var server
+    const agent = helper.instrumentMockedAgent()
+    let server
     agent.once('transactionFinished', function () {
-      var errors = agent.errors.traceAggregator.errors // FIXME: redundancy is dumb
+      const errors = agent.errors.traceAggregator.errors // FIXME: redundancy is dumb
       t.equal(errors.length, 1, 'the error got traced')
 
-      var error = errors[0]
+      const error = errors[0]
       t.equal(error.length, 5, 'format for traced error is correct')
       t.equal(error[3], 'TypeError', 'got the correct class for the error')
 
@@ -85,11 +85,11 @@ test('intercepting errors with connect 2', function (t) {
     })
 
     helper.runInTransaction(agent, function () {
-      var connect = require('connect')
-      var app = connect()
+      const connect = require('connect')
+      const app = connect()
 
       function wiggleware(req, res, next) {
-        var harbl = null
+        const harbl = null
         harbl.bargl() // OHHH NOOOOO
 
         return next() // will never get here
@@ -97,13 +97,13 @@ test('intercepting errors with connect 2', function (t) {
 
       app.use(wiggleware)
 
-      var http = require('http')
+      const http = require('http')
       server = http
         .createServer(function (req, res) {
           app.handle(req, res)
         })
         .listen(0, function () {
-          var req = http.request(
+          const req = http.request(
             {
               port: server.address().port,
               host: 'localhost',

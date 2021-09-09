@@ -12,9 +12,9 @@ const helper = require('../../lib/agent_helper')
 const helpersDir = path.join(path.resolve(__dirname, '../../'), 'helpers')
 
 tap.test('Uncaught exceptions', (t) => {
-  var proc = startProc()
+  const proc = startProc()
 
-  var timer = setTimeout(function () {
+  const timer = setTimeout(function () {
     t.fail('child did not exit')
     proc.kill()
     t.end()
@@ -30,10 +30,10 @@ tap.test('Uncaught exceptions', (t) => {
 })
 
 tap.test('Caught uncaught exceptions', (t) => {
-  var proc = startProc()
+  const proc = startProc()
 
-  var theRightStuff = 31415927
-  var timer = setTimeout(function () {
+  const theRightStuff = 31415927
+  const timer = setTimeout(function () {
     t.fail('child hung')
     proc.kill()
     t.end()
@@ -52,9 +52,9 @@ tap.test('Caught uncaught exceptions', (t) => {
 tap.test('Report uncaught exceptions', (t) => {
   t.plan(3)
 
-  var proc = startProc()
-  var message = 'I am a test error'
-  var messageReceived = false
+  const proc = startProc()
+  const message = 'I am a test error'
+  let messageReceived = false
 
   proc.on('message', function (errors) {
     messageReceived = true
@@ -74,15 +74,15 @@ tap.test('Report uncaught exceptions', (t) => {
 tap.test('Triggers harvest while in serverless mode', (t) => {
   t.plan(9)
 
-  var proc = startProc({
+  const proc = startProc({
     NEW_RELIC_SERVERLESS_MODE_ENABLED: 'y',
     NEW_RELIC_LOG_ENABLED: 'false',
     NEW_RELIC_DISTRIBUTED_TRACING_ENABLED: 'false',
     NEW_RELIC_HOME: helpersDir
   })
-  var message = 'I am a test error'
-  var messageReceived = false
-  var payload = ''
+  const message = 'I am a test error'
+  let messageReceived = false
+  let payload = ''
   proc.stdout.on('data', function bufferData(data) {
     payload += data.toString('utf8')
   })
@@ -120,9 +120,9 @@ tap.test('Triggers harvest while in serverless mode', (t) => {
 
 tap.test('Do not report domained exceptions', (t) => {
   t.plan(3)
-  var proc = startProc()
-  var message = 'I am a test error'
-  var messageReceived = false
+  const proc = startProc()
+  const message = 'I am a test error'
+  let messageReceived = false
 
   proc.on('message', function (errors) {
     messageReceived = true

@@ -44,7 +44,7 @@ common.test('dropIndex', function dropIndexTest(t, collection, verify) {
 common.test('indexes', function indexesTest(t, collection, verify) {
   collection.indexes(function done(err, data) {
     t.error(err)
-    var result = data && data[0]
+    const result = data && data[0]
     // this will fail if running a mongodb server > 4.3.1
     // https://jira.mongodb.org/browse/SERVER-41696
     t.same(

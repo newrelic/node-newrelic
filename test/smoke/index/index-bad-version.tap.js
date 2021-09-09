@@ -26,11 +26,11 @@ tap.test('load agent with bad versions should load stub agent', (t) => {
   VERSIONS.forEach((version) => {
     t.test(`agent version: ${version}`, (t) => {
       t.doesNotThrow(function () {
-        var _version = process.version
+        const _version = process.version
         Object.defineProperty(process, 'version', { value: version, writable: true })
         t.equal(process.version, version, 'should have set bad version')
 
-        var api = require('../../../index.js')
+        const api = require('../../../index.js')
         t.ok(api instanceof StubApi)
 
         process.version = _version

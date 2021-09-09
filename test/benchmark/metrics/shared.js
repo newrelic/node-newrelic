@@ -5,8 +5,8 @@
 
 'use strict'
 
-var scopeNames = []
-var metricNames = []
+const scopeNames = []
+const metricNames = []
 
 fillMetrics()
 

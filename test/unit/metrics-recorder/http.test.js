@@ -9,15 +9,15 @@
 // Below allows use of mocha DSL with tap runner.
 require('tap').mochaGlobals()
 
-var chai = require('chai')
-var expect = chai.expect
-var helper = require('../../lib/agent_helper')
-var assertMetrics = require('../../lib/metrics_helper').assertMetrics
-var recordWeb = require('../../../lib/metrics/recorders/http')
-var Transaction = require('../../../lib/transaction')
+const chai = require('chai')
+const expect = chai.expect
+const helper = require('../../lib/agent_helper')
+const assertMetrics = require('../../lib/metrics_helper').assertMetrics
+const recordWeb = require('../../../lib/metrics/recorders/http')
+const Transaction = require('../../../lib/transaction')
 
 function makeSegment(options) {
-  var segment = options.transaction.trace.root.add('placeholder')
+  const segment = options.transaction.trace.root.add('placeholder')
   segment.setDurationInMillis(options.duration)
   segment._setExclusiveDurationInMillis(options.exclusive)
 
@@ -29,8 +29,8 @@ function record(options) {
     options.transaction.metrics.apdexT = options.apdexT
   }
 
-  var segment = makeSegment(options)
-  var transaction = options.transaction
+  const segment = makeSegment(options)
+  const transaction = options.transaction
 
   transaction.finalizeNameFromUri(options.url, options.code)
   segment.markAsWeb(options.url)
@@ -38,8 +38,8 @@ function record(options) {
 }
 
 describe('recordWeb', function () {
-  var agent
-  var trans
+  let agent
+  let trans
 
   beforeEach(function () {
     agent = helper.instrumentMockedAgent()
@@ -51,7 +51,7 @@ describe('recordWeb', function () {
   })
 
   describe('when scope is undefined', function () {
-    var segment
+    let segment
 
     beforeEach(function () {
       segment = makeSegment({
@@ -94,7 +94,7 @@ describe('recordWeb', function () {
           exclusive: 55
         })
 
-        var result = [
+        const result = [
           [{ name: 'WebTransaction' }, [1, 0.055, 0.055, 0.055, 0.055, 0.003025]],
           [{ name: 'WebTransactionTotalTime' }, [1, 0.055, 0.055, 0.055, 0.055, 0.003025]],
           [{ name: 'HttpDispatcher' }, [1, 0.055, 0.055, 0.055, 0.055, 0.003025]],
@@ -141,7 +141,7 @@ describe('recordWeb', function () {
           exclusive: 55
         })
 
-        var result = [
+        const result = [
           [{ name: 'WebTransaction' }, [1, 0.055, 0.055, 0.055, 0.055, 0.003025]],
           [{ name: 'WebTransactionTotalTime' }, [1, 0.055, 0.055, 0.055, 0.055, 0.003025]],
           [{ name: 'HttpDispatcher' }, [1, 0.055, 0.055, 0.055, 0.055, 0.003025]],
@@ -179,7 +179,7 @@ describe('recordWeb', function () {
           exclusive: 55
         })
 
-        var result = [
+        const result = [
           [{ name: 'WebTransaction' }, [1, 0.055, 0.055, 0.055, 0.055, 0.003025]],
           [{ name: 'WebTransactionTotalTime' }, [1, 0.055, 0.055, 0.055, 0.055, 0.003025]],
           [{ name: 'HttpDispatcher' }, [1, 0.055, 0.055, 0.055, 0.055, 0.003025]],
@@ -206,7 +206,7 @@ describe('recordWeb', function () {
           exclusive: 100
         })
 
-        var result = [
+        const result = [
           [{ name: 'WebTransaction' }, [1, 0.055, 0.1, 0.055, 0.055, 0.003025]],
           [{ name: 'WebTransactionTotalTime' }, [1, 0.1, 0.1, 0.1, 0.1, 0.010000000000000002]],
           [{ name: 'HttpDispatcher' }, [1, 0.055, 0.1, 0.055, 0.055, 0.003025]],
@@ -233,7 +233,7 @@ describe('recordWeb', function () {
           exclusive: 55
         })
 
-        var result = [
+        const result = [
           [{ name: 'WebTransaction' }, [1, 0.055, 0.055, 0.055, 0.055, 0.003025]],
           [{ name: 'WebTransactionTotalTime' }, [1, 0.055, 0.055, 0.055, 0.055, 0.003025]],
           [{ name: 'HttpDispatcher' }, [1, 0.055, 0.055, 0.055, 0.055, 0.003025]],
@@ -280,7 +280,7 @@ describe('recordWeb', function () {
           exclusive: 1
         })
 
-        var result = [
+        const result = [
           [{ name: 'WebTransaction' }, [1, 0.001, 0.001, 0.001, 0.001, 0.000001]],
           [{ name: 'WebTransactionTotalTime' }, [1, 0.001, 0.001, 0.001, 0.001, 0.000001]],
           [{ name: 'HttpDispatcher' }, [1, 0.001, 0.001, 0.001, 0.001, 0.000001]],
@@ -302,7 +302,7 @@ describe('recordWeb', function () {
       // FIXME: probably shouldn't do all this through side effects
       trans.statusCode = 404
       trans._setApdex('Apdex/Uri/test', 30)
-      var result = [[{ name: 'Apdex/Uri/test' }, [1, 0, 0, 0.1, 0.1, 0]]]
+      const result = [[{ name: 'Apdex/Uri/test' }, [1, 0, 0, 0.1, 0.1, 0]]]
       expect(agent.config.error_collector.ignore_status_codes).deep.equal([404])
       assertMetrics(trans.metrics, result, true, true)
     })
@@ -320,7 +320,7 @@ describe('recordWeb', function () {
         exclusive: 1
       })
 
-      var result = [
+      const result = [
         [{ name: 'WebTransaction' }, [1, 0.001, 0.001, 0.001, 0.001, 0.000001]],
         [{ name: 'WebTransactionTotalTime' }, [1, 0.001, 0.001, 0.001, 0.001, 0.000001]],
         [{ name: 'HttpDispatcher' }, [1, 0.001, 0.001, 0.001, 0.001, 0.000001]],
@@ -339,7 +339,7 @@ describe('recordWeb', function () {
       // FIXME: probably shouldn't do all this through side effects
       trans.statusCode = 503
       trans._setApdex('Apdex/Uri/test', 30)
-      var result = [[{ name: 'Apdex/Uri/test' }, [0, 0, 1, 0.1, 0.1, 0]]]
+      const result = [[{ name: 'Apdex/Uri/test' }, [0, 0, 1, 0.1, 0.1, 0]]]
       assertMetrics(trans.metrics, result, true, true)
     })
 
@@ -354,7 +354,7 @@ describe('recordWeb', function () {
         exclusive: 1
       })
 
-      var result = [
+      const result = [
         [{ name: 'WebTransaction' }, [1, 0.001, 0.001, 0.001, 0.001, 0.000001]],
         [{ name: 'HttpDispatcher' }, [1, 0.001, 0.001, 0.001, 0.001, 0.000001]],
         [{ name: 'WebTransaction/NormalizedUri/*' }, [1, 0.001, 0.001, 0.001, 0.001, 0.000001]],
@@ -386,7 +386,7 @@ describe('recordWeb', function () {
         exclusive: 1200
       })
 
-      var result = [
+      const result = [
         [{ name: 'WebTransaction' }, [1, 1.2, 1.2, 1.2, 1.2, 1.44]],
         [{ name: 'HttpDispatcher' }, [1, 1.2, 1.2, 1.2, 1.2, 1.44]],
         [{ name: 'WebTransaction/WebFrameworkUri/TestJS//key/:id' }, [1, 1.2, 1.2, 1.2, 1.2, 1.44]],

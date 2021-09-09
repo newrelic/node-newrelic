@@ -8,16 +8,16 @@
 const tap = require('tap')
 const test = tap.test
 
-var DESTINATIONS = require('../../../../lib/config/attribute-filter').DESTINATIONS
-var EventEmitter = require('events').EventEmitter
-var helper = require('../../../lib/agent_helper')
-var hashes = require('../../../../lib/util/hashes')
-var Segment = require('../../../../lib/transaction/trace/segment')
-var Shim = require('../../../../lib/shim').Shim
+const DESTINATIONS = require('../../../../lib/config/attribute-filter').DESTINATIONS
+const EventEmitter = require('events').EventEmitter
+const helper = require('../../../lib/agent_helper')
+const hashes = require('../../../../lib/util/hashes')
+const Segment = require('../../../../lib/transaction/trace/segment')
+const Shim = require('../../../../lib/shim').Shim
 
-var NEWRELIC_ID_HEADER = 'x-newrelic-id'
-var NEWRELIC_APP_DATA_HEADER = 'x-newrelic-app-data'
-var NEWRELIC_TRANSACTION_HEADER = 'x-newrelic-transaction'
+const NEWRELIC_ID_HEADER = 'x-newrelic-id'
+const NEWRELIC_APP_DATA_HEADER = 'x-newrelic-app-data'
+const NEWRELIC_TRANSACTION_HEADER = 'x-newrelic-transaction'
 
 test('built-in http module instrumentation', (t) => {
   t.autoend()
@@ -25,9 +25,9 @@ test('built-in http module instrumentation', (t) => {
   let http = null
   let agent = null
 
-  let PAYLOAD = JSON.stringify({ msg: 'ok' })
+  const PAYLOAD = JSON.stringify({ msg: 'ok' })
 
-  let PAGE =
+  const PAGE =
     '<html>' +
     '<head><title>test response</title></head>' +
     '<body><p>I heard you like HTML.</p></body>' +
@@ -98,7 +98,7 @@ test('built-in http module instrumentation', (t) => {
         request: function request(_options) {
           options = _options
 
-          var requested = new EventEmitter()
+          const requested = new EventEmitter()
           requested.path = '/TEST'
           if (options.path) {
             requested.path = options.path
@@ -441,8 +441,8 @@ test('built-in http module instrumentation', (t) => {
         server.close(t.end())
       })
 
-      var transactionHeader = ['789', false, 'trip-id-1', '1234abcd']
-      var headers = {}
+      const transactionHeader = ['789', false, 'trip-id-1', '1234abcd']
+      const headers = {}
       headers[NEWRELIC_ID_HEADER] = hashes.obfuscateNameUsingKey('123', encKey)
       headers[NEWRELIC_TRANSACTION_HEADER] = hashes.obfuscateNameUsingKey(
         JSON.stringify(transactionHeader),
@@ -467,7 +467,7 @@ test('built-in http module instrumentation', (t) => {
       })
 
       const transactionHeader = ['789', false, 'trip-id-1', {}]
-      let headers = {}
+      const headers = {}
       headers[NEWRELIC_TRANSACTION_HEADER] = hashes.obfuscateNameUsingKey(
         JSON.stringify(transactionHeader),
         encKey
@@ -518,8 +518,8 @@ test('built-in http module instrumentation', (t) => {
     })
 
     t.test('should ignore cat headers', (t) => {
-      var server = http.createServer(function (req, res) {
-        var transaction = agent.getTransaction()
+      const server = http.createServer(function (req, res) {
+        const transaction = agent.getTransaction()
         t.notOk(transaction.incomingCatId)
         t.notOk(transaction.incomingAppData)
         t.notOk(transaction.tripId)
@@ -532,7 +532,7 @@ test('built-in http module instrumentation', (t) => {
       })
 
       const transactionHeader = ['789', false, 'trip-id-1', '1234abcd']
-      let headers = {}
+      const headers = {}
       headers[NEWRELIC_ID_HEADER] = hashes.obfuscateNameUsingKey('123', encKey)
       headers[NEWRELIC_APP_DATA_HEADER] = hashes.obfuscateNameUsingKey('456', encKey)
       headers[NEWRELIC_TRANSACTION_HEADER] = hashes.obfuscateNameUsingKey(
@@ -583,7 +583,7 @@ test('built-in http module instrumentation', (t) => {
         const port = server.address().port
 
         http.get({ host: 'localhost', port: port, headers: headers }, function (res) {
-          var data = JSON.parse(
+          const data = JSON.parse(
             hashes.deobfuscateNameUsingKey(res.headers['x-newrelic-app-data'], encKey)
           )
           t.equal(data[0], '456')
@@ -610,7 +610,7 @@ test('built-in http module instrumentation', (t) => {
       server.on('listening', function () {
         const port = server.address().port
         http.get({ host: 'localhost', port: port, headers: headers }, function (res) {
-          var data = JSON.parse(
+          const data = JSON.parse(
             hashes.deobfuscateNameUsingKey(res.headers['x-newrelic-app-data'], encKey)
           )
           t.equal(data[4], -1)
@@ -842,7 +842,7 @@ test('built-in http module instrumentation', (t) => {
         transaction.referringPathHash = 'h/def'
         transaction.id = '456'
         transaction.tripId = '789'
-        var pathHash = hashes.calculatePathHash(
+        const pathHash = hashes.calculatePathHash(
           agent.config.applications()[0],
           transaction.name,
           transaction.referringPathHash
@@ -902,7 +902,7 @@ test('built-in http module instrumentation', (t) => {
 
         const port = server.address().port
         const req = http.get({ host: 'localhost', port: port }, function (res) {
-          var data = JSON.parse(
+          const data = JSON.parse(
             hashes.deobfuscateNameUsingKey(req.getHeader(NEWRELIC_TRANSACTION_HEADER), encKey)
           )
           t.equal(data[3], pathHash)
@@ -1054,7 +1054,9 @@ test('http.createServer should trace errors in top-level handlers', (t) => {
     helper.unloadAgent(agent)
   })
 
-  let server
+  const server = http.createServer(function createServerCb() {
+    throw new Error('whoops!')
+  })
   let request
 
   process.once('uncaughtException', function () {
@@ -1065,10 +1067,6 @@ test('http.createServer should trace errors in top-level handlers', (t) => {
     // allow server to close fast instead of after timeout
     request.abort()
     server.close(t.end)
-  })
-
-  server = http.createServer(function createServerCb() {
-    throw new Error('whoops!')
   })
 
   server.listen(8182, function () {
@@ -1093,7 +1091,10 @@ test('http.request should trace errors in listeners', (t) => {
     helper.unloadAgent(agent)
   })
 
-  let server
+  const server = http.createServer(function createServerCb(request, response) {
+    response.writeHead(200, { 'Content-Type': 'text/plain' })
+    response.end()
+  })
 
   process.once('uncaughtException', function () {
     const errors = agent.errors.traceAggregator.errors
@@ -1102,11 +1103,6 @@ test('http.request should trace errors in listeners', (t) => {
     server.close(() => {
       t.end()
     })
-  })
-
-  server = http.createServer(function createServerCb(request, response) {
-    response.writeHead(200, { 'Content-Type': 'text/plain' })
-    response.end()
   })
 
   server.listen(8183, function () {

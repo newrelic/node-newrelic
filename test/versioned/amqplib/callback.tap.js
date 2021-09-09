@@ -5,10 +5,10 @@
 
 'use strict'
 
-var amqpUtils = require('./amqp-utils')
-var API = require('../../../api')
-var helper = require('../../lib/agent_helper')
-var tap = require('tap')
+const amqpUtils = require('./amqp-utils')
+const API = require('../../../api')
+const helper = require('../../lib/agent_helper')
+const tap = require('tap')
 
 /*
 TODO:
@@ -25,11 +25,11 @@ consumer
 tap.test('amqplib callback instrumentation', function (t) {
   t.autoend()
 
-  var amqplib = null
-  var conn = null
-  var channel = null
-  var agent = null
-  var api = null
+  let amqplib = null
+  let conn = null
+  let channel = null
+  let agent = null
+  let api = null
 
   t.beforeEach(function () {
     agent = helper.instrumentMockedAgent({
@@ -38,7 +38,7 @@ tap.test('amqplib callback instrumentation', function (t) {
       }
     })
 
-    var params = {
+    const params = {
       encoding_key: 'this is an encoding key',
       cross_process_id: '1234#4321'
     }
@@ -48,7 +48,7 @@ tap.test('amqplib callback instrumentation', function (t) {
 
     api = new API(agent)
 
-    var instrumentation = require('../../../lib/instrumentation/amqplib')
+    const instrumentation = require('../../../lib/instrumentation/amqplib')
     api.instrumentMessages('amqplib/callback_api', instrumentation.instrumentCallbackAPI)
 
     amqplib = require('amqplib/callback_api')
@@ -110,7 +110,7 @@ tap.test('amqplib callback instrumentation', function (t) {
   })
 
   t.test('publish to fanout exchange', function (t) {
-    var exchange = amqpUtils.FANOUT_EXCHANGE
+    const exchange = amqpUtils.FANOUT_EXCHANGE
 
     agent.on('transactionFinished', function (tx) {
       amqpUtils.verifyProduce(t, tx, exchange)
@@ -126,7 +126,7 @@ tap.test('amqplib callback instrumentation', function (t) {
         channel.assertQueue('', { exclusive: true }, function (err, result) {
           t.error(err, 'should not error asserting queue')
           amqpUtils.verifyTransaction(t, tx, 'assertQueue')
-          var queueName = result.queue
+          const queueName = result.queue
 
           channel.bindQueue(queueName, exchange, '', null, function (err) {
             t.error(err, 'should not error binding queue')
@@ -142,7 +142,7 @@ tap.test('amqplib callback instrumentation', function (t) {
   })
 
   t.test('publish to direct exchange', function (t) {
-    var exchange = amqpUtils.DIRECT_EXCHANGE
+    const exchange = amqpUtils.DIRECT_EXCHANGE
 
     agent.on('transactionFinished', function (tx) {
       amqpUtils.verifyProduce(t, tx, exchange, 'key1')
@@ -157,7 +157,7 @@ tap.test('amqplib callback instrumentation', function (t) {
         channel.assertQueue('', { exclusive: true }, function (err, result) {
           t.error(err, 'should not error asserting queue')
           amqpUtils.verifyTransaction(t, tx, 'assertQueue')
-          var queueName = result.queue
+          const queueName = result.queue
 
           channel.bindQueue(queueName, exchange, 'key1', null, function (err) {
             t.error(err, 'should not error binding queue')
@@ -173,8 +173,8 @@ tap.test('amqplib callback instrumentation', function (t) {
   })
 
   t.test('purge queue', function (t) {
-    var exchange = amqpUtils.DIRECT_EXCHANGE
-    var queueName = null
+    const exchange = amqpUtils.DIRECT_EXCHANGE
+    let queueName = null
 
     agent.on('transactionFinished', function (tx) {
       amqpUtils.verifyPurge(t, tx)
@@ -207,8 +207,8 @@ tap.test('amqplib callback instrumentation', function (t) {
   })
 
   t.test('get a message', function (t) {
-    var exchange = amqpUtils.DIRECT_EXCHANGE
-    var queue = null
+    const exchange = amqpUtils.DIRECT_EXCHANGE
+    let queue = null
 
     channel.assertExchange(exchange, 'direct', null, function (err) {
       t.error(err, 'should not error asserting exchange')
@@ -227,7 +227,7 @@ tap.test('amqplib callback instrumentation', function (t) {
               t.ok(msg, 'should receive a message')
 
               amqpUtils.verifyTransaction(t, tx, 'get')
-              var body = msg.content.toString('utf8')
+              const body = msg.content.toString('utf8')
               t.equal(body, 'hello', 'should receive expected body')
 
               channel.ack(msg)
@@ -245,8 +245,8 @@ tap.test('amqplib callback instrumentation', function (t) {
 
   t.test('consume in a transaction with old CAT', function (t) {
     agent.config.distributed_tracing.enabled = false
-    var exchange = amqpUtils.DIRECT_EXCHANGE
-    var queue = null
+    const exchange = amqpUtils.DIRECT_EXCHANGE
+    let queue = null
 
     channel.assertExchange(exchange, 'direct', null, function (err) {
       t.error(err, 'should not error asserting exchange')
@@ -262,12 +262,12 @@ tap.test('amqplib callback instrumentation', function (t) {
             channel.consume(
               queue,
               function (msg) {
-                var consumeTxnHandle = api.getTransaction()
-                var consumeTxn = consumeTxnHandle._transaction
+                const consumeTxnHandle = api.getTransaction()
+                const consumeTxn = consumeTxnHandle._transaction
                 t.notEqual(consumeTxn, tx, 'should not be in original transaction')
                 t.ok(msg, 'should receive a message')
 
-                var body = msg.content.toString('utf8')
+                const body = msg.content.toString('utf8')
                 t.equal(body, 'hello', 'should receive expected body')
 
                 channel.ack(msg)
@@ -305,8 +305,8 @@ tap.test('amqplib callback instrumentation', function (t) {
     agent.config.primary_application_id = 4321
     agent.config.trusted_account_key = 1234
 
-    var exchange = amqpUtils.DIRECT_EXCHANGE
-    var queue = null
+    const exchange = amqpUtils.DIRECT_EXCHANGE
+    let queue = null
 
     channel.assertExchange(exchange, 'direct', null, function (err) {
       t.error(err, 'should not error asserting exchange')
@@ -322,12 +322,12 @@ tap.test('amqplib callback instrumentation', function (t) {
             channel.consume(
               queue,
               function (msg) {
-                var consumeTxnHandle = api.getTransaction()
-                var consumeTxn = consumeTxnHandle._transaction
+                const consumeTxnHandle = api.getTransaction()
+                const consumeTxn = consumeTxnHandle._transaction
                 t.notEqual(consumeTxn, tx, 'should not be in original transaction')
                 t.ok(msg, 'should receive a message')
 
-                var body = msg.content.toString('utf8')
+                const body = msg.content.toString('utf8')
                 t.equal(body, 'hello', 'should receive expected body')
 
                 channel.ack(msg)
@@ -360,8 +360,8 @@ tap.test('amqplib callback instrumentation', function (t) {
   })
 
   t.test('consume out of transaction', function (t) {
-    var exchange = amqpUtils.DIRECT_EXCHANGE
-    var queue = null
+    const exchange = amqpUtils.DIRECT_EXCHANGE
+    let queue = null
 
     agent.on('transactionFinished', function (tx) {
       amqpUtils.verifyConsumeTransaction(t, tx, exchange, queue, 'consume-tx-key')
@@ -381,10 +381,10 @@ tap.test('amqplib callback instrumentation', function (t) {
           channel.consume(
             queue,
             function (msg) {
-              var tx = api.getTransaction()
+              const tx = api.getTransaction()
               t.ok(msg, 'should receive a message')
 
-              var body = msg.content.toString('utf8')
+              const body = msg.content.toString('utf8')
               t.equal(body, 'hello', 'should receive expected body')
 
               channel.ack(msg)
@@ -406,8 +406,8 @@ tap.test('amqplib callback instrumentation', function (t) {
   })
 
   t.test('rename message consume transaction', function (t) {
-    var exchange = amqpUtils.DIRECT_EXCHANGE
-    var queue = null
+    const exchange = amqpUtils.DIRECT_EXCHANGE
+    let queue = null
 
     agent.on('transactionFinished', function (tx) {
       t.equal(
@@ -431,7 +431,7 @@ tap.test('amqplib callback instrumentation', function (t) {
           channel.consume(
             queue,
             function (msg) {
-              var tx = api.getTransaction()
+              const tx = api.getTransaction()
               api.setTransactionName('foobar')
 
               channel.ack(msg)

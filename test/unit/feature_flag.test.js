@@ -9,15 +9,15 @@
 // Below allows use of mocha DSL with tap runner.
 require('tap').mochaGlobals()
 
-var flags = require('../../lib/feature_flags')
-var chai = require('chai')
-var assert = require('assert')
-var Config = require('../../lib/config')
+const flags = require('../../lib/feature_flags')
+const chai = require('chai')
+const assert = require('assert')
+const Config = require('../../lib/config')
 
 chai.should()
 
 // please do not delete flags from here
-var used = [
+const used = [
   'await_support',
   'cat',
   'custom_instrumentation',
@@ -41,9 +41,9 @@ var used = [
 ]
 
 describe('feature flags', function () {
-  var prerelease
-  var unreleased
-  var released
+  let prerelease
+  let unreleased
+  let released
 
   before(function () {
     prerelease = Object.keys(flags.prerelease)
@@ -103,7 +103,7 @@ describe('feature flags', function () {
       },
       warnOnce: () => {}
     })
-    var config = new Config()
+    const config = new Config()
     config.feature_flag.released = true
     config.validateFlags()
     called.should.equal(true)
@@ -116,7 +116,7 @@ describe('feature flags', function () {
       },
       warnOnce: () => {}
     })
-    var config = new Config()
+    const config = new Config()
     config.feature_flag.unreleased = true
     config.validateFlags()
     called.should.equal(true)

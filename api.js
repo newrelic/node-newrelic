@@ -76,12 +76,12 @@ function API(agent) {
  *                      Relic UI. Will be prefixed with 'Custom/' when sent.
  */
 API.prototype.setTransactionName = function setTransactionName(name) {
-  var metric = this.agent.metrics.getOrCreateMetric(
+  const metric = this.agent.metrics.getOrCreateMetric(
     NAMES.SUPPORTABILITY.API + '/setTransactionName'
   )
   metric.incrementCallCount()
 
-  var transaction = this.agent.tracer.getTransaction()
+  const transaction = this.agent.tracer.getTransaction()
   if (!transaction) {
     return logger.warn("No transaction found when setting name to '%s'.", name)
   }
@@ -112,10 +112,10 @@ API.prototype.setTransactionName = function setTransactionName(name) {
  *  `ignore` methods on it.
  */
 API.prototype.getTransaction = function getTransaction() {
-  var metric = this.agent.metrics.getOrCreateMetric(NAMES.SUPPORTABILITY.API + '/getTransaction')
+  const metric = this.agent.metrics.getOrCreateMetric(NAMES.SUPPORTABILITY.API + '/getTransaction')
   metric.incrementCallCount()
 
-  var transaction = this.agent.tracer.getTransaction()
+  const transaction = this.agent.tracer.getTransaction()
   if (!transaction) {
     logger.debug('No transaction found when calling API#getTransaction')
     return new TransactionHandle.Stub()
@@ -191,7 +191,7 @@ API.prototype.getLinkingMetadata = function getLinkingMetadata(omitSupportabilit
  *                           report to New Relic
  */
 API.prototype.setDispatcher = function setDispatcher(name, version) {
-  var metric = this.agent.metrics.getOrCreateMetric(NAMES.SUPPORTABILITY.API + '/setDispatcher')
+  const metric = this.agent.metrics.getOrCreateMetric(NAMES.SUPPORTABILITY.API + '/setDispatcher')
   metric.incrementCallCount()
 
   if (!name || typeof name !== 'string') {
@@ -230,10 +230,12 @@ API.prototype.setDispatcher = function setDispatcher(name, version) {
  *                        to the HTTP method used for the request.
  */
 API.prototype.setControllerName = function setControllerName(name, action) {
-  var metric = this.agent.metrics.getOrCreateMetric(NAMES.SUPPORTABILITY.API + '/setControllerName')
+  const metric = this.agent.metrics.getOrCreateMetric(
+    NAMES.SUPPORTABILITY.API + '/setControllerName'
+  )
   metric.incrementCallCount()
 
-  var transaction = this.agent.tracer.getTransaction()
+  const transaction = this.agent.tracer.getTransaction()
   if (!transaction) {
     return logger.warn('No transaction found when setting controller to %s.', name)
   }
@@ -320,12 +322,12 @@ API.prototype.addCustomAttribute = function addCustomAttribute(key, value) {
  * @param {string} [atts.KEY.VALUE] The value you want displayed. Must be serializable.
  */
 API.prototype.addCustomAttributes = function addCustomAttributes(atts) {
-  var metric = this.agent.metrics.getOrCreateMetric(
+  const metric = this.agent.metrics.getOrCreateMetric(
     NAMES.SUPPORTABILITY.API + '/addCustomAttributes'
   )
   metric.incrementCallCount()
 
-  for (var key in atts) {
+  for (const key in atts) {
     if (!properties.hasOwn(atts, key)) {
       continue
     }
@@ -353,7 +355,7 @@ API.prototype.addCustomSpanAttributes = function addCustomSpanAttributes(atts) {
   )
   metric.incrementCallCount()
 
-  for (let key in atts) {
+  for (const key in atts) {
     if (properties.hasOwn(atts, key)) {
       this.addCustomSpanAttribute(key, atts[key])
     }
@@ -478,7 +480,7 @@ API.prototype.noticeError = function noticeError(error, customAttributes) {
  * @param {string} name    The name to use for the transaction.
  */
 API.prototype.addNamingRule = function addNamingRule(pattern, name) {
-  var metric = this.agent.metrics.getOrCreateMetric(NAMES.SUPPORTABILITY.API + '/addNamingRule')
+  const metric = this.agent.metrics.getOrCreateMetric(NAMES.SUPPORTABILITY.API + '/addNamingRule')
   metric.incrementCallCount()
 
   if (!name) {
@@ -502,7 +504,7 @@ API.prototype.addNamingRule = function addNamingRule(pattern, name) {
  * @param {RegExp} pattern The pattern to ignore.
  */
 API.prototype.addIgnoringRule = function addIgnoringRule(pattern) {
-  var metric = this.agent.metrics.getOrCreateMetric(NAMES.SUPPORTABILITY.API + '/addIgnoringRule')
+  const metric = this.agent.metrics.getOrCreateMetric(NAMES.SUPPORTABILITY.API + '/addIgnoringRule')
   metric.incrementCallCount()
 
   if (!pattern) {
@@ -528,12 +530,12 @@ API.prototype.addIgnoringRule = function addIgnoringRule(pattern) {
  * @returns {string} The `<script>` header to be injected.
  */
 API.prototype.getBrowserTimingHeader = function getBrowserTimingHeader(options) {
-  var metric = this.agent.metrics.getOrCreateMetric(
+  const metric = this.agent.metrics.getOrCreateMetric(
     NAMES.SUPPORTABILITY.API + '/getBrowserTimingHeader'
   )
   metric.incrementCallCount()
 
-  var config = this.agent.config
+  const config = this.agent.config
 
   /**
    * Gracefully fail.
@@ -555,7 +557,7 @@ API.prototype.getBrowserTimingHeader = function getBrowserTimingHeader(options) 
     return '<!-- NREUM: (' + num + ') -->'
   }
 
-  var browserMonitoring = config.browser_monitoring
+  const browserMonitoring = config.browser_monitoring
 
   // config.browser_monitoring should always exist, but we don't want the agent
   // to bail here if something goes wrong
@@ -573,14 +575,14 @@ API.prototype.getBrowserTimingHeader = function getBrowserTimingHeader(options) 
     return _gracefail(0, true)
   }
 
-  var trans = this.agent.getTransaction()
+  const trans = this.agent.getTransaction()
 
   // bail gracefully outside a transaction
   if (!trans || trans.isIgnored()) {
     return _gracefail(1)
   }
 
-  var name = trans.getFullName()
+  const name = trans.getFullName()
 
   /* If we're in an unnamed transaction, add a friendly warning this is to
    * avoid people going crazy, trying to figure out why browser monitoring is
@@ -590,14 +592,14 @@ API.prototype.getBrowserTimingHeader = function getBrowserTimingHeader(options) 
     return _gracefail(3)
   }
 
-  var time = trans.timer.getDurationInMillis()
+  const time = trans.timer.getDurationInMillis()
 
   /*
    * Only the first 13 chars of the license should be used for hashing with
    * the transaction name.
    */
-  var key = config.license_key.substr(0, 13)
-  var appid = config.application_id
+  const key = config.license_key.substr(0, 13)
+  const appid = config.application_id
 
   /* This is only going to work if the agent has successfully handshaked with
    * the collector. If the networks is bad, or there is no license key set in
@@ -611,7 +613,7 @@ API.prototype.getBrowserTimingHeader = function getBrowserTimingHeader(options) 
   /* If there is no browser_key, the server has likely decided to disable
    * browser monitoring.
    */
-  var licenseKey = browserMonitoring.browser_key
+  const licenseKey = browserMonitoring.browser_key
   if (!licenseKey) {
     return _gracefail(5)
   }
@@ -619,7 +621,7 @@ API.prototype.getBrowserTimingHeader = function getBrowserTimingHeader(options) 
   /* If there is no agent_loader script, there is no point
    * in setting the rum data
    */
-  var jsAgentLoader = browserMonitoring.js_agent_loader
+  const jsAgentLoader = browserMonitoring.js_agent_loader
   if (!jsAgentLoader) {
     return _gracefail(6)
   }
@@ -631,13 +633,13 @@ API.prototype.getBrowserTimingHeader = function getBrowserTimingHeader(options) 
    * the lifetime of an application, and it should be picked up
    * on the next ForceRestart by the collector.
    */
-  var loader = browserMonitoring.loader
+  const loader = browserMonitoring.loader
   if (loader === 'none') {
     return _gracefail(7)
   }
 
   // This hash gets written directly into the browser.
-  var rumHash = {
+  const rumHash = {
     agent: browserMonitoring.js_agent_file,
     beacon: browserMonitoring.beacon,
     errorBeacon: browserMonitoring.error_beacon,
@@ -652,7 +654,7 @@ API.prototype.getBrowserTimingHeader = function getBrowserTimingHeader(options) 
     agentToken: null
   }
 
-  var attrs = Object.create(null)
+  const attrs = Object.create(null)
 
   const customAttrs = trans.trace.custom.get(ATTR_DEST.BROWSER_EVENT)
   if (!properties.isEmpty(customAttrs)) {
@@ -669,14 +671,14 @@ API.prototype.getBrowserTimingHeader = function getBrowserTimingHeader(options) 
   }
 
   // if debugging, do pretty format of JSON
-  var tabs = config.browser_monitoring.debug ? 2 : 0
-  var json = JSON.stringify(rumHash, null, tabs)
+  const tabs = config.browser_monitoring.debug ? 2 : 0
+  const json = JSON.stringify(rumHash, null, tabs)
 
   // set nonce attribute if passed in options
-  var nonce = options && options.nonce ? 'nonce="' + options.nonce + '"' : ''
+  const nonce = options && options.nonce ? 'nonce="' + options.nonce + '"' : ''
 
   // the complete header to be written to the browser
-  var out = util.format(RUM_STUB, nonce, json, jsAgentLoader)
+  const out = util.format(RUM_STUB, nonce, json, jsAgentLoader)
 
   logger.trace('generating RUM header', out)
 
@@ -742,7 +744,7 @@ API.prototype.startSegment = function startSegment(name, record, handler, callba
   }
 
   // Create the segment and call the handler.
-  var wrappedHandler = this.shim.record(handler, function handlerNamer(shim) {
+  const wrappedHandler = this.shim.record(handler, function handlerNamer(shim) {
     return {
       name: name,
       recorder: record ? customRecorder : null,
@@ -782,7 +784,7 @@ API.prototype.startSegment = function startSegment(name, record, handler, callba
  *  Function that represents the transaction work.
  */
 API.prototype.startWebTransaction = function startWebTransaction(url, handle) {
-  var metric = this.agent.metrics.getOrCreateMetric(
+  const metric = this.agent.metrics.getOrCreateMetric(
     NAMES.SUPPORTABILITY.API + '/startWebTransaction'
   )
   metric.incrementCallCount()
@@ -799,12 +801,12 @@ API.prototype.startWebTransaction = function startWebTransaction(url, handle) {
 
   logger.debug('starting web transaction %s (%s).', url, handle && handle.name)
 
-  var shim = this.shim
-  var tracer = this.agent.tracer
-  var parent = tracer.getTransaction()
+  const shim = this.shim
+  const tracer = this.agent.tracer
+  const parent = tracer.getTransaction()
 
   return tracer.transactionNestProxy('web', function startWebSegment() {
-    var tx = tracer.getTransaction()
+    const tx = tracer.getTransaction()
 
     if (!tx) {
       return handle.apply(this, arguments)
@@ -827,8 +829,8 @@ API.prototype.startWebTransaction = function startWebTransaction(url, handle) {
     tx.baseSegment = tracer.createSegment(url, recordWeb)
     tx.baseSegment.start()
 
-    var boundHandle = tracer.bindFunction(handle, tx.baseSegment)
-    var returnResult = boundHandle.call(this)
+    const boundHandle = tracer.bindFunction(handle, tx.baseSegment)
+    let returnResult = boundHandle.call(this)
     if (returnResult && shim.isPromise(returnResult)) {
       returnResult = shim.interceptPromise(returnResult, tx.end.bind(tx))
     } else if (!tx.handledExternally) {
@@ -877,7 +879,7 @@ API.prototype.startBackgroundTransaction = startBackgroundTransaction
  * @memberOf API#
  */
 function startBackgroundTransaction(name, group, handle) {
-  var metric = this.agent.metrics.getOrCreateMetric(
+  const metric = this.agent.metrics.getOrCreateMetric(
     NAMES.SUPPORTABILITY.API + '/startBackgroundTransaction'
   )
   metric.incrementCallCount()
@@ -899,13 +901,13 @@ function startBackgroundTransaction(name, group, handle) {
 
   logger.debug('starting background transaction %s:%s (%s)', name, group, handle && handle.name)
 
-  var tracer = this.agent.tracer
-  var shim = this.shim
-  var txName = group + '/' + name
-  var parent = tracer.getTransaction()
+  const tracer = this.agent.tracer
+  const shim = this.shim
+  const txName = group + '/' + name
+  const parent = tracer.getTransaction()
 
   return tracer.transactionNestProxy('bg', function startBackgroundSegment() {
-    var tx = tracer.getTransaction()
+    const tx = tracer.getTransaction()
 
     if (!tx) {
       return handle.apply(this, arguments)
@@ -929,8 +931,8 @@ function startBackgroundTransaction(name, group, handle) {
     tx.baseSegment.partialName = group
     tx.baseSegment.start()
 
-    var boundHandle = tracer.bindFunction(handle, tx.baseSegment)
-    var returnResult = boundHandle.call(this)
+    const boundHandle = tracer.bindFunction(handle, tx.baseSegment)
+    let returnResult = boundHandle.call(this)
     if (returnResult && shim.isPromise(returnResult)) {
       returnResult = shim.interceptPromise(returnResult, tx.end.bind(tx))
     } else if (!tx.handledExternally) {
@@ -946,11 +948,11 @@ function startBackgroundTransaction(name, group, handle) {
  * the correct transaction context when called.
  */
 API.prototype.endTransaction = function endTransaction() {
-  var metric = this.agent.metrics.getOrCreateMetric(NAMES.SUPPORTABILITY.API + '/endTransaction')
+  const metric = this.agent.metrics.getOrCreateMetric(NAMES.SUPPORTABILITY.API + '/endTransaction')
   metric.incrementCallCount()
 
-  var tracer = this.agent.tracer
-  var tx = tracer.getTransaction()
+  const tracer = this.agent.tracer
+  const tx = tracer.getTransaction()
 
   if (tx) {
     if (tx.baseSegment) {
@@ -1069,7 +1071,9 @@ API.prototype.incrementMetric = function incrementMetric(name, value) {
  *                             or boolean.
  */
 API.prototype.recordCustomEvent = function recordCustomEvent(eventType, attributes) {
-  var metric = this.agent.metrics.getOrCreateMetric(NAMES.SUPPORTABILITY.API + '/recordCustomEvent')
+  const metric = this.agent.metrics.getOrCreateMetric(
+    NAMES.SUPPORTABILITY.API + '/recordCustomEvent'
+  )
   metric.incrementCallCount()
 
   // If high security mode is on, custom events are disabled.
@@ -1086,7 +1090,7 @@ API.prototype.recordCustomEvent = function recordCustomEvent(eventType, attribut
   }
   // Check all the arguments before bailing to give maximum information in a
   // single invocation.
-  var fail = false
+  let fail = false
 
   if (!eventType || typeof eventType !== 'string') {
     logger.warn(
@@ -1131,13 +1135,13 @@ API.prototype.recordCustomEvent = function recordCustomEvent(eventType, attribut
   // Filter all object type valued attributes out
   const filteredAttributes = _filterAttributes(attributes, `${eventType} custom event`)
 
-  var instrinics = {
+  const instrinics = {
     type: eventType,
     timestamp: Date.now()
   }
 
-  var tx = this.agent.getTransaction()
-  var priority = (tx && tx.priority) || Math.random()
+  const tx = this.agent.getTransaction()
+  const priority = (tx && tx.priority) || Math.random()
   this.agent.customEventAggregator.add([instrinics, filteredAttributes], priority)
 }
 
@@ -1161,10 +1165,10 @@ API.prototype.recordCustomEvent = function recordCustomEvent(eventType, attribut
  *  this function.
  */
 API.prototype.instrument = function instrument(moduleName, onRequire, onError) {
-  var metric = this.agent.metrics.getOrCreateMetric(NAMES.SUPPORTABILITY.API + '/instrument')
+  const metric = this.agent.metrics.getOrCreateMetric(NAMES.SUPPORTABILITY.API + '/instrument')
   metric.incrementCallCount()
 
-  var opts = moduleName
+  let opts = moduleName
   if (typeof opts === 'string') {
     opts = {
       moduleName: moduleName,
@@ -1234,12 +1238,12 @@ API.prototype.instrumentConglomerate = function instrumentConglomerate(
  *  this function.
  */
 API.prototype.instrumentDatastore = function instrumentDatastore(moduleName, onRequire, onError) {
-  var metric = this.agent.metrics.getOrCreateMetric(
+  const metric = this.agent.metrics.getOrCreateMetric(
     NAMES.SUPPORTABILITY.API + '/instrumentDatastore'
   )
   metric.incrementCallCount()
 
-  var opts = moduleName
+  let opts = moduleName
   if (typeof opts === 'string') {
     opts = {
       moduleName: moduleName,
@@ -1271,7 +1275,7 @@ API.prototype.instrumentDatastore = function instrumentDatastore(moduleName, onR
  *  The actual module object or function we're instrumenting
  */
 API.prototype.instrumentLoadedModule = function instrumentLoadedModule(moduleName, module) {
-  var metric = this.agent.metrics.getOrCreateMetric(
+  const metric = this.agent.metrics.getOrCreateMetric(
     NAMES.SUPPORTABILITY.API + '/instrumentLoadedModule'
   )
   metric.incrementCallCount()
@@ -1329,12 +1333,12 @@ API.prototype.instrumentWebframework = function instrumentWebframework(
   onRequire,
   onError
 ) {
-  var metric = this.agent.metrics.getOrCreateMetric(
+  const metric = this.agent.metrics.getOrCreateMetric(
     NAMES.SUPPORTABILITY.API + '/instrumentWebframework'
   )
   metric.incrementCallCount()
 
-  var opts = moduleName
+  let opts = moduleName
   if (typeof opts === 'string') {
     opts = {
       moduleName: moduleName,
@@ -1367,12 +1371,12 @@ API.prototype.instrumentWebframework = function instrumentWebframework(
  *  this function.
  */
 API.prototype.instrumentMessages = function instrumentMessages(moduleName, onRequire, onError) {
-  var metric = this.agent.metrics.getOrCreateMetric(
+  const metric = this.agent.metrics.getOrCreateMetric(
     NAMES.SUPPORTABILITY.API + '/instrumentMessages'
   )
   metric.incrementCallCount()
 
-  var opts = moduleName
+  let opts = moduleName
   if (typeof opts === 'string') {
     opts = {
       moduleName: moduleName,
@@ -1391,7 +1395,9 @@ API.prototype.instrumentMessages = function instrumentMessages(moduleName, onReq
  * @returns {*} The object containing the current trace and span ids
  */
 API.prototype.getTraceMetadata = function getTraceMetadata() {
-  var metric = this.agent.metrics.getOrCreateMetric(NAMES.SUPPORTABILITY.API + '/getTraceMetadata')
+  const metric = this.agent.metrics.getOrCreateMetric(
+    NAMES.SUPPORTABILITY.API + '/getTraceMetadata'
+  )
   metric.incrementCallCount()
 
   const metadata = {}
@@ -1501,11 +1507,11 @@ function _doShutdown(api, options, callback) {
 }
 
 function _checkKeyLength(object, maxLength) {
-  var keys = Object.keys(object)
-  var badKey = false
-  var len = keys.length
-  var key = '' // init to string because gotta go fast
-  for (var i = 0; i < len; i++) {
+  const keys = Object.keys(object)
+  let badKey = false
+  const len = keys.length
+  let key = '' // init to string because gotta go fast
+  for (let i = 0; i < len; i++) {
     key = keys[i]
     if (key.length > maxLength) {
       logger.warn(

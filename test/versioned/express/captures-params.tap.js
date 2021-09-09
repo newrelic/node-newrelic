@@ -8,19 +8,19 @@
 // shut up, Express
 process.env.NODE_ENV = 'test'
 
-var DESTINATIONS = require('../../../lib/config/attribute-filter').DESTINATIONS
-var tap = require('tap')
-var helper = require('../../lib/agent_helper')
-var HTTP_ATTS = require('../../lib/fixtures').httpAttributes
+const DESTINATIONS = require('../../../lib/config/attribute-filter').DESTINATIONS
+const tap = require('tap')
+const helper = require('../../lib/agent_helper')
+const HTTP_ATTS = require('../../lib/fixtures').httpAttributes
 
 // CONSTANTS
-var TEST_HOST = 'localhost'
-var TEST_URL = 'http://' + TEST_HOST + ':'
+const TEST_HOST = 'localhost'
+const TEST_URL = 'http://' + TEST_HOST + ':'
 
 tap.test('test attributes.enabled for express', function (t) {
   t.autoend()
 
-  var agent = null
+  let agent = null
   t.beforeEach(function () {
     agent = helper.instrumentMockedAgent({
       apdex_t: 1,
@@ -37,9 +37,9 @@ tap.test('test attributes.enabled for express', function (t) {
   })
 
   t.test('no variables', function (t) {
-    var app = require('express')()
-    var server = require('http').createServer(app)
-    var port = null
+    const app = require('express')()
+    const server = require('http').createServer(app)
+    let port = null
 
     t.teardown(function () {
       server.close()
@@ -54,7 +54,7 @@ tap.test('test attributes.enabled for express', function (t) {
 
     agent.on('transactionFinished', function (transaction) {
       t.ok(transaction.trace, 'transaction has a trace.')
-      var attributes = transaction.trace.attributes.get(DESTINATIONS.TRANS_TRACE)
+      const attributes = transaction.trace.attributes.get(DESTINATIONS.TRANS_TRACE)
       HTTP_ATTS.forEach(function (key) {
         t.ok(attributes[key], 'Trace contains expected HTTP attribute: ' + key)
       })
@@ -66,7 +66,7 @@ tap.test('test attributes.enabled for express', function (t) {
     helper.randomPort(function (_port) {
       port = _port
       server.listen(port, TEST_HOST, function () {
-        var url = TEST_URL + port + '/user/'
+        const url = TEST_URL + port + '/user/'
         helper.makeGetRequest(url, function (error, response, body) {
           if (error) {
             t.fail(error)
@@ -85,9 +85,9 @@ tap.test('test attributes.enabled for express', function (t) {
   })
 
   t.test('route variables', function (t) {
-    var app = require('express')()
-    var server = require('http').createServer(app)
-    var port = null
+    const app = require('express')()
+    const server = require('http').createServer(app)
+    let port = null
 
     t.teardown(function () {
       server.close()
@@ -102,14 +102,14 @@ tap.test('test attributes.enabled for express', function (t) {
 
     agent.on('transactionFinished', function (transaction) {
       t.ok(transaction.trace, 'transaction has a trace.')
-      var attributes = transaction.trace.attributes.get(DESTINATIONS.TRANS_TRACE)
+      const attributes = transaction.trace.attributes.get(DESTINATIONS.TRANS_TRACE)
       t.equal(attributes['request.parameters.id'], '5', 'Trace attributes include `id` route param')
     })
 
     helper.randomPort(function (_port) {
       port = _port
       server.listen(port, TEST_HOST, function () {
-        var url = TEST_URL + port + '/user/5'
+        const url = TEST_URL + port + '/user/5'
         helper.makeGetRequest(url, function (error, response, body) {
           if (error) {
             t.fail(error)
@@ -128,9 +128,9 @@ tap.test('test attributes.enabled for express', function (t) {
   })
 
   t.test('query variables', { timeout: 1000 }, function (t) {
-    var app = require('express')()
-    var server = require('http').createServer(app)
-    var port = null
+    const app = require('express')()
+    const server = require('http').createServer(app)
+    let port = null
 
     t.teardown(function () {
       server.close()
@@ -145,7 +145,7 @@ tap.test('test attributes.enabled for express', function (t) {
 
     agent.on('transactionFinished', function (transaction) {
       t.ok(transaction.trace, 'transaction has a trace.')
-      var attributes = transaction.trace.attributes.get(DESTINATIONS.TRANS_TRACE)
+      const attributes = transaction.trace.attributes.get(DESTINATIONS.TRANS_TRACE)
       t.equal(
         attributes['request.parameters.name'],
         'bob',
@@ -156,7 +156,7 @@ tap.test('test attributes.enabled for express', function (t) {
     helper.randomPort(function (_port) {
       port = _port
       server.listen(port, TEST_HOST, function () {
-        var url = TEST_URL + port + '/user/?name=bob'
+        const url = TEST_URL + port + '/user/?name=bob'
         helper.makeGetRequest(url, function (error, response, body) {
           if (error) {
             t.fail(error)
@@ -175,9 +175,9 @@ tap.test('test attributes.enabled for express', function (t) {
   })
 
   t.test('route and query variables', function (t) {
-    var app = require('express')()
-    var server = require('http').createServer(app)
-    var port = null
+    const app = require('express')()
+    const server = require('http').createServer(app)
+    let port = null
 
     t.teardown(function () {
       server.close()
@@ -192,7 +192,7 @@ tap.test('test attributes.enabled for express', function (t) {
 
     agent.on('transactionFinished', function (transaction) {
       t.ok(transaction.trace, 'transaction has a trace.')
-      var attributes = transaction.trace.attributes.get(DESTINATIONS.TRANS_TRACE)
+      const attributes = transaction.trace.attributes.get(DESTINATIONS.TRANS_TRACE)
       t.equal(attributes['request.parameters.id'], '5', 'Trace attributes include `id` route param')
       t.equal(
         attributes['request.parameters.name'],
@@ -204,7 +204,7 @@ tap.test('test attributes.enabled for express', function (t) {
     helper.randomPort(function (_port) {
       port = _port
       server.listen(port, TEST_HOST, function () {
-        var url = TEST_URL + port + '/user/5?name=bob'
+        const url = TEST_URL + port + '/user/5?name=bob'
         helper.makeGetRequest(url, function (error, response, body) {
           if (error) {
             t.fail(error)
@@ -223,9 +223,9 @@ tap.test('test attributes.enabled for express', function (t) {
   })
 
   t.test('query params mask route attributes', function (t) {
-    var app = require('express')()
-    var server = require('http').createServer(app)
-    var port = null
+    const app = require('express')()
+    const server = require('http').createServer(app)
+    let port = null
 
     t.teardown(function () {
       server.close()
@@ -236,7 +236,7 @@ tap.test('test attributes.enabled for express', function (t) {
     })
 
     agent.on('transactionFinished', function (transaction) {
-      var attributes = transaction.trace.attributes.get(DESTINATIONS.TRANS_TRACE)
+      const attributes = transaction.trace.attributes.get(DESTINATIONS.TRANS_TRACE)
       t.equal(attributes['request.parameters.id'], '6', 'attributes should include query params')
       t.end()
     })

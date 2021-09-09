@@ -19,11 +19,11 @@ const runMultiple = testTransactionState.runMultiple
 
 test('Promise constructor retains all properties', function (t) {
   var Promise = require('when').Promise
-  var originalKeys = Object.keys(Promise)
+  const originalKeys = Object.keys(Promise)
 
   setupAgent(t)
   var Promise = require('when').Promise
-  var wrappedKeys = Object.keys(Promise)
+  const wrappedKeys = Object.keys(Promise)
 
   originalKeys.forEach(function (key) {
     if (wrappedKeys.indexOf(key) === -1) {
@@ -35,22 +35,22 @@ test('Promise constructor retains all properties', function (t) {
 })
 
 test('transaction state', function (t) {
-  var agent = setupAgent(t)
-  var when = require('when')
+  const agent = setupAgent(t)
+  const when = require('when')
   testTransactionState(t, agent, when.Promise, when)
   t.autoend()
 })
 
 test('segments', function (t) {
-  var agent = setupAgent(t)
-  var when = require('when')
+  const agent = setupAgent(t)
+  const when = require('when')
   testPromiseSegments(t, agent, when.Promise)
   t.autoend()
 })
 
 test('no transaction', function (t) {
   setupAgent(t)
-  var when = require('when')
+  const when = require('when')
 
   when
     .resolve(0)
@@ -71,7 +71,7 @@ test('no transaction', function (t) {
 test('new Promise() throw', function (t) {
   t.plan(2)
 
-  var Promise = require('when').Promise
+  const Promise = require('when').Promise
 
   try {
     new Promise(function () {
@@ -94,7 +94,7 @@ test('new Promise() throw', function (t) {
 test('new Promise() resolve then throw', function (t) {
   t.plan(1)
 
-  var Promise = require('when').Promise
+  const Promise = require('when').Promise
 
   try {
     new Promise(function (resolve) {
@@ -132,7 +132,7 @@ test('when()', function (t) {
 
 test('when.defer', function (t) {
   testPromiseLibraryMethod(t, 2, function (when, name) {
-    var defer = when.defer()
+    const defer = when.defer()
     process.nextTick(function () {
       defer.resolve(name + 'resolve value')
     })
@@ -140,7 +140,7 @@ test('when.defer', function (t) {
     return defer.promise.then(function (x) {
       t.equal(x, name + 'resolve value', name + 'should have correct value')
 
-      var defer2 = when.defer()
+      const defer2 = when.defer()
       defer2.reject(new Error(name + 'error message'))
       return defer2.promise
         .then(function () {
@@ -158,7 +158,7 @@ test('when debug API', function (t) {
 
   t.plan(2)
   setupAgent(t)
-  var when = require('when')
+  const when = require('when')
 
   t.test('should not break onFatalRejection', function (t) {
     helper.temporarilyRemoveListeners(t, process, 'unhandledRejection')
@@ -209,14 +209,14 @@ test('when debug API', function (t) {
 })
 
 test('when.iterate', function (t) {
-  var COUNT = 10
+  const COUNT = 10
   testPromiseLibraryMethod(t, COUNT * 6 + 2, function (when, name) {
-    var agent = helper.getAgent()
-    var transaction = agent.getTransaction()
+    const agent = helper.getAgent()
+    const transaction = agent.getTransaction()
 
-    var incrementerCount = 0
-    var predicateCount = 0
-    var bodyCount = 0
+    let incrementerCount = 0
+    let predicateCount = 0
+    let bodyCount = 0
     return when.iterate(
       function (x) {
         t.equal(
@@ -267,7 +267,7 @@ test('when.join', function (t) {
 
 test('when.lift', function (t) {
   testPromiseLibraryMethod(t, 2, function (when, name) {
-    var func = when.lift(function (x) {
+    const func = when.lift(function (x) {
       if (x instanceof Error) {
         throw x
       }
@@ -378,7 +378,7 @@ test('Promise.reject', function (t) {
 test('Promise#done', function (t) {
   testPromiseClassMethod(t, 3, function (Promise, name) {
     return new Promise(function (resolve, reject) {
-      var ret = Promise.resolve(name + 'resolve value').done(resolve, reject)
+      const ret = Promise.resolve(name + 'resolve value').done(resolve, reject)
       t.equal(ret, undefined, name + 'should not return a promise from #done')
     })
       .then(function (x) {
@@ -583,9 +583,9 @@ test('Promise#yield', function (t) {
 
 test('Promise#delay', function (t) {
   testPromiseInstanceMethod(t, 3, function (p, name) {
-    var start = Date.now()
+    const start = Date.now()
     return p.delay(100).then(function (x) {
-      var end = Date.now()
+      const end = Date.now()
       t.same(x, [1, 2, 3, name], name + 'should resolve with original promise')
       t.ok(end - start > 98, name + 'should wait close to correct time')
       t.ok(end - start < 125, name + 'should wait close to correct time')
@@ -595,7 +595,7 @@ test('Promise#delay', function (t) {
 
 test('Promise#timeout', function (t) {
   testPromiseInstanceMethod(t, 3, function (p, name) {
-    var start = Date.now()
+    const start = Date.now()
     return p
       .delay(100)
       .timeout(50, new Error(name + 'timeout message'))
@@ -603,7 +603,7 @@ test('Promise#timeout', function (t) {
         t.fail(name + 'should not have resolved')
       })
       .catch(function (err) {
-        var end = Date.now()
+        const end = Date.now()
         t.equal(err.message, name + 'timeout message', name + 'should have correct message')
         t.ok(end - start > 48, name + 'should wait close to correct time')
         t.ok(end - start < 75, name + 'should wait close to correct time')
@@ -613,7 +613,7 @@ test('Promise#timeout', function (t) {
 
 test('Promise#with', function (t) {
   testPromiseInstanceMethod(t, 2, function (p, name) {
-    var obj = {}
+    const obj = {}
     return p.with(obj).then(function (x) {
       t.same(x, [1, 2, 3, name], name + 'should resolve with correct value')
       t.equal(this, obj, name + 'should have correct context')
@@ -623,11 +623,11 @@ test('Promise#with', function (t) {
 
 test('all', function (t) {
   t.autoend()
-  var agent
-  var when
-  var Promise
-  var p1
-  var p2
+  let agent
+  let when
+  let Promise
+  let p1
+  let p2
 
   t.beforeEach(() => {
     agent = helper.instrumentMockedAgent({ feature_flag: { promise_segments: false } })
@@ -667,9 +667,9 @@ test('all', function (t) {
 
 test('any', function (t) {
   t.autoend()
-  var agent
-  var when
-  var Promise
+  let agent
+  let when
+  let Promise
 
   t.beforeEach(() => {
     agent = helper.instrumentMockedAgent({ feature_flag: { promise_segments: false } })
@@ -704,9 +704,9 @@ test('any', function (t) {
 
 test('some', function (t) {
   t.autoend()
-  var agent
-  var when
-  var Promise
+  let agent
+  let when
+  let Promise
 
   t.beforeEach(() => {
     agent = helper.instrumentMockedAgent({ feature_flag: { promise_segments: false } })
@@ -745,9 +745,9 @@ test('some', function (t) {
 
 test('map', function (t) {
   t.autoend()
-  var agent
-  var when
-  var Promise
+  let agent
+  let when
+  let Promise
 
   t.beforeEach(() => {
     agent = helper.instrumentMockedAgent({ feature_flag: { promise_segments: false } })
@@ -792,9 +792,9 @@ test('map', function (t) {
 
 test('reduce', function (t) {
   t.autoend()
-  var agent
-  var when
-  var Promise
+  let agent
+  let when
+  let Promise
 
   t.beforeEach(() => {
     agent = helper.instrumentMockedAgent({ feature_flag: { promise_segments: false } })
@@ -847,9 +847,9 @@ test('reduce', function (t) {
 
 test('filter', function (t) {
   t.autoend()
-  var agent
-  var when
-  var Promise
+  let agent
+  let when
+  let Promise
 
   t.beforeEach(() => {
     agent = helper.instrumentMockedAgent({ feature_flag: { promise_segments: false } })
@@ -894,11 +894,11 @@ test('fn.apply', function (t) {
   setupAgent(t)
 
   require('when')
-  var fn = require('when/function')
+  const fn = require('when/function')
 
   function noop() {}
 
-  var args = [1, 2, 3]
+  const args = [1, 2, 3]
   fn.apply(noop, args).then(function () {
     t.end()
   })
@@ -908,13 +908,13 @@ test('node.apply', function (t) {
   setupAgent(t)
 
   require('when')
-  var nodefn = require('when/node')
+  const nodefn = require('when/node')
 
   function nodeStyleFunction(arg1, cb) {
     process.nextTick(cb)
   }
 
-  var args = [1]
+  const args = [1]
   nodefn
     .apply(nodeStyleFunction, args)
     .then(function () {
@@ -926,7 +926,7 @@ test('node.apply', function (t) {
 })
 
 function setupAgent(t, enableSegments) {
-  var agent = helper.instrumentMockedAgent({
+  const agent = helper.instrumentMockedAgent({
     feature_flag: { promise_segments: enableSegments }
   })
   t.teardown(function tearDown() {
@@ -936,11 +936,11 @@ function setupAgent(t, enableSegments) {
 }
 
 function testPromiseInstanceMethod(t, plan, testFunc) {
-  var agent = setupAgent(t)
-  var Promise = require('when').Promise
+  const agent = setupAgent(t)
+  const Promise = require('when').Promise
 
   _testPromiseMethod(t, plan, agent, function (name) {
-    var p = new Promise(function (resolve) {
+    const p = new Promise(function (resolve) {
       resolve([1, 2, 3, name])
     })
     return testFunc(p, name, agent)
@@ -948,9 +948,9 @@ function testPromiseInstanceMethod(t, plan, testFunc) {
 }
 
 function testPromiseClassMethod(t, plan, testFunc) {
-  var agent = setupAgent(t)
-  var when = require('when')
-  var Promise = when.Promise
+  const agent = setupAgent(t)
+  const when = require('when')
+  const Promise = when.Promise
 
   _testPromiseMethod(t, plan, agent, function (name) {
     return testFunc(Promise, name)
@@ -958,8 +958,8 @@ function testPromiseClassMethod(t, plan, testFunc) {
 }
 
 function testPromiseLibraryMethod(t, plan, testFunc) {
-  var agent = setupAgent(t)
-  var when = require('when')
+  const agent = setupAgent(t)
+  const when = require('when')
 
   _testPromiseMethod(t, plan, agent, function (name) {
     return testFunc(when, name)
@@ -967,12 +967,12 @@ function testPromiseLibraryMethod(t, plan, testFunc) {
 }
 
 function _testPromiseMethod(t, plan, agent, testFunc) {
-  var COUNT = 2
+  const COUNT = 2
   t.plan(plan * 3 + (COUNT + 1) * 3)
 
   t.doesNotThrow(function outTXPromiseThrowTest() {
-    var name = '[no tx] '
-    var isAsync = false
+    const name = '[no tx] '
+    let isAsync = false
     testFunc(name)
       .finally(function () {
         t.ok(isAsync, name + 'should have executed asynchronously')
@@ -1001,9 +1001,9 @@ function _testPromiseMethod(t, plan, agent, testFunc) {
       COUNT,
       function (i, cb) {
         helper.runInTransaction(agent, function transactionWrapper(transaction) {
-          var name = '[tx ' + i + '] '
+          const name = '[tx ' + i + '] '
           t.doesNotThrow(function inTXPromiseThrowTest() {
-            var isAsync = false
+            let isAsync = false
             testFunc(name)
               .finally(function () {
                 t.ok(isAsync, name + 'should have executed asynchronously')

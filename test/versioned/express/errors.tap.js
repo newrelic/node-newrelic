@@ -5,13 +5,13 @@
 
 'use strict'
 
-var helper = require('../../lib/agent_helper')
-var http = require('http')
-var tap = require('tap')
+const helper = require('../../lib/agent_helper')
+const http = require('http')
+const tap = require('tap')
 
-var express
-var agent
-var app
+let express
+let agent
+let app
 
 runTests({
   express_segments: false
@@ -171,7 +171,7 @@ function runTests(flags) {
   tap.test('should not report errors handled by errorware outside router', function (t) {
     setup(t)
 
-    var router1 = express.Router() // eslint-disable-line new-cap
+    const router1 = express.Router() // eslint-disable-line new-cap
     router1.get('/test', function () {
       throw new Error('some error')
     })
@@ -194,7 +194,7 @@ function runTests(flags) {
     t.plan(3)
     setup(t)
 
-    var request = null
+    let request = null
 
     app.get('/test', function (req, res, next) {
       t.comment('middleware')
@@ -218,7 +218,7 @@ function runTests(flags) {
 
     var server = app.listen(function () {
       t.comment('making request')
-      var port = server.address().port
+      const port = server.address().port
       request = http.request(
         {
           hostname: 'localhost',
@@ -254,8 +254,8 @@ function runTests(flags) {
   }
 
   function runTest(t, callback) {
-    var statusCode
-    var errors
+    let statusCode
+    let errors
 
     agent.on('transactionFinished', function () {
       errors = agent.errors.traceAggregator.errors
@@ -264,7 +264,7 @@ function runTests(flags) {
       }
     })
 
-    var endpoint = '/test'
+    const endpoint = '/test'
     var server = app.listen(function () {
       makeRequest(server, endpoint, function (response) {
         statusCode = response.statusCode
@@ -280,7 +280,7 @@ function runTests(flags) {
   }
 
   function makeRequest(server, path, callback) {
-    var port = server.address().port
+    const port = server.address().port
     http.request({ port: port, path: path }, callback).end()
   }
 }

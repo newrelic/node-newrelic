@@ -28,14 +28,14 @@ test('Collector API should send errors to staging-collector.newrelic.com', (t) =
       level: 'trace'
     }
   })
-  var agent = new Agent(config)
-  var api = agent.collector
+  const agent = new Agent(config)
+  const api = agent.collector
 
   api.connect(function (error) {
     t.error(error, 'connected without error')
 
-    var transaction
-    var proxy = agent.tracer.transactionProxy(function () {
+    let transaction
+    const proxy = agent.tracer.transactionProxy(function () {
       transaction = agent.getTransaction()
       transaction.finalizeNameFromUri('/nonexistent', 501)
     })
@@ -43,7 +43,7 @@ test('Collector API should send errors to staging-collector.newrelic.com', (t) =
     t.ok(transaction, 'got a transaction')
     agent.errors.add(transaction, new Error('test error'))
 
-    var payload = [agent.config.run_id, agent.errors.traceAggregator.errors]
+    const payload = [agent.config.run_id, agent.errors.traceAggregator.errors]
 
     api.error_data(payload, function (error, command) {
       t.error(error, 'sent errors without error')

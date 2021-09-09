@@ -5,12 +5,12 @@
 
 'use strict'
 
-var benchmark = require('../../lib/benchmark')
-var Metrics = require('../../../lib/metrics')
-var shared = require('./shared')
+const benchmark = require('../../lib/benchmark')
+const Metrics = require('../../../lib/metrics')
+const shared = require('./shared')
 
-var metrics = new Metrics(1, {}, {})
-var suite = benchmark.createBenchmark({
+let metrics = new Metrics(1, {}, {})
+const suite = benchmark.createBenchmark({
   name: 'metrics.getOrCreateMetric',
   after: function () {
     metrics = new Metrics(1, {}, {})
@@ -29,7 +29,7 @@ suite.add({
 suite.add({
   name: 'many unscoped',
   fn: function () {
-    for (var i = 0; i < 100; ++i) {
+    for (let i = 0; i < 100; ++i) {
       metrics.getOrCreateMetric(shared.getMetric(), null)
     }
   }
@@ -45,7 +45,7 @@ suite.add({
 suite.add({
   name: 'many scoped',
   fn: function () {
-    for (var i = 0; i < 100; ++i) {
+    for (let i = 0; i < 100; ++i) {
       metrics.getOrCreateMetric(shared.getMetric(), shared.getScope())
     }
   }
@@ -54,7 +54,7 @@ suite.add({
 suite.add({
   name: 'many mixed scope',
   fn: function () {
-    for (var i = 0; i < 100; ++i) {
+    for (let i = 0; i < 100; ++i) {
       metrics.getOrCreateMetric(shared.getMetric(), shared.getMaybeUnscoped())
     }
   }
@@ -63,8 +63,8 @@ suite.add({
 suite.run()
 
 function preOptMetrics() {
-  var m = new Metrics(1, {}, {})
-  for (var i = 0; i < 100000; ++i) {
+  const m = new Metrics(1, {}, {})
+  for (let i = 0; i < 100000; ++i) {
     m.getOrCreateMetric(shared.getMetric(), shared.getMaybeUnscoped())
   }
 }

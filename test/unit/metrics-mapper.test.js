@@ -39,7 +39,7 @@ describe('MetricMapper', function () {
   })
 
   describe('when loading mappings at creation', function () {
-    var mapper
+    let mapper
 
     before(function () {
       mapper = new MetricMapper([
@@ -64,7 +64,7 @@ describe('MetricMapper', function () {
   })
 
   describe('when adding mappings after creation', function () {
-    var mapper = new MetricMapper()
+    const mapper = new MetricMapper()
 
     before(function () {
       mapper.load([[{ name: 'Test/RenameMe1' }, 1001]])

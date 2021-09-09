@@ -10,22 +10,22 @@ const tap = require('tap')
 // Below allows use of mocha DSL with tap runner.
 tap.mochaGlobals()
 
-var chai = require('chai')
-var should = chai.should()
-var expect = chai.expect
-var helper = require('../lib/agent_helper')
-var API = require('../../api')
-var AttributeFilter = require('../../lib/config/attribute-filter')
-var Metrics = require('../../lib/metrics')
-var Trace = require('../../lib/transaction/trace')
-var Transaction = require('../../lib/transaction')
+const chai = require('chai')
+const should = chai.should()
+const expect = chai.expect
+const helper = require('../lib/agent_helper')
+const API = require('../../api')
+const AttributeFilter = require('../../lib/config/attribute-filter')
+const Metrics = require('../../lib/metrics')
+const Trace = require('../../lib/transaction/trace')
+const Transaction = require('../../lib/transaction')
 const Segment = require('../../lib/transaction/trace/segment')
-var hashes = require('../../lib/util/hashes')
+const hashes = require('../../lib/util/hashes')
 const sinon = require('sinon')
 
 describe('Transaction', function () {
-  var agent = null
-  var trans = null
+  let agent = null
+  let trans = null
 
   beforeEach(function () {
     agent = helper.loadMockedAgent({
@@ -45,13 +45,13 @@ describe('Transaction', function () {
   })
 
   it('should create a trace on demand', function () {
-    var trace = trans.trace
+    const trace = trans.trace
     expect(trace).instanceOf(Trace)
     expect(trans.trace).equal(trace)
   })
 
   it('should have at most one associated trace', function () {
-    var trace = trans.trace
+    const trace = trans.trace
     expect(trace).not.instanceof(Array)
   })
 
@@ -81,7 +81,7 @@ describe('Transaction', function () {
         return done()
       })
       helper.runInTransaction(agent, function (txn) {
-        var childSegment = txn.trace.add('child')
+        const childSegment = txn.trace.add('child')
         childSegment.start()
 
         txn.end()
@@ -96,7 +96,7 @@ describe('Transaction', function () {
       })
 
       helper.runInTransaction(agent, function (txn) {
-        var childSegment = txn.trace.add('child')
+        const childSegment = txn.trace.add('child')
         childSegment.start()
 
         txn.ignore = true
@@ -177,20 +177,20 @@ describe('Transaction', function () {
   })
 
   it('should know when it is not a web transaction', function () {
-    var tx = new Transaction(agent)
+    const tx = new Transaction(agent)
     tx.type = Transaction.TYPES.BG
     expect(tx.isWeb()).to.be.false
   })
 
   it('should know when it is a web transaction', function () {
-    var tx = new Transaction(agent)
+    const tx = new Transaction(agent)
     tx.type = Transaction.TYPES.WEB
     expect(tx.isWeb()).to.be.true
   })
 
   describe('when dealing with individual metrics', function () {
     it('should add metrics by name', function () {
-      var tt = new Transaction(agent)
+      const tt = new Transaction(agent)
 
       tt.measure('Custom/Test01')
       should.exist(tt.metrics.getMetric('Custom/Test01'))
@@ -199,25 +199,25 @@ describe('Transaction', function () {
     })
 
     it('should allow multiple overlapping metric measurements for same name', function () {
-      var TRACE_NAME = 'Custom/Test06'
-      var SLEEP_DURATION = 43
-      var tt = new Transaction(agent)
+      const TRACE_NAME = 'Custom/Test06'
+      const SLEEP_DURATION = 43
+      const tt = new Transaction(agent)
 
       tt.measure(TRACE_NAME, null, SLEEP_DURATION)
       tt.measure(TRACE_NAME, null, SLEEP_DURATION - 5)
 
-      var statistics = tt.metrics.getMetric(TRACE_NAME)
+      const statistics = tt.metrics.getMetric(TRACE_NAME)
       expect(statistics.callCount).to.equal(2)
       expect(statistics.max).above((SLEEP_DURATION - 1) / 1000)
     })
 
     it('should allow manual setting of metric durations', function () {
-      var tt = new Transaction(agent)
+      const tt = new Transaction(agent)
 
       tt.measure('Custom/Test16', null, 65)
       tt.end()
 
-      var metrics = tt.metrics.getMetric('Custom/Test16')
+      const metrics = tt.metrics.getMetric('Custom/Test16')
       expect(metrics.total).equal(0.065)
     })
   })
@@ -446,8 +446,8 @@ describe('Transaction', function () {
   })
 
   describe('when setting apdex for key transactions', function () {
-    var tx = null
-    var metric = null
+    let tx = null
+    let metric = null
 
     before(function () {
       tx = new Transaction(agent)
@@ -474,7 +474,7 @@ describe('Transaction', function () {
 
     it('should not require a key transaction apdexT', function () {
       tx._setApdex('Apdex/TestController/another', 1200)
-      var another = tx.metrics.getMetric('Apdex/TestController/another')
+      const another = tx.metrics.getMetric('Apdex/TestController/another')
       expect(another.apdexT).equal(0.1)
     })
   })
@@ -485,22 +485,22 @@ describe('Transaction', function () {
   })
 
   it('should not scope web transactions to their URL', function () {
-    var tx = new Transaction(agent)
+    const tx = new Transaction(agent)
     tx.finalizeNameFromUri('/test/1337?action=edit', 200)
     expect(tx.name).not.equal('/test/1337?action=edit')
     expect(tx.name).not.equal('WebTransaction/Uri/test/1337')
   })
 
   describe('pathHashes', function () {
-    var transaction
+    let transaction
 
     beforeEach(function () {
       transaction = new Transaction(agent)
     })
 
     it('should add up to 10 items to to pathHashes', function () {
-      var toAdd = ['1', '2', '3', '4', '4', '5', '6', '7', '8', '9', '10', '11']
-      var expected = ['10', '9', '8', '7', '6', '5', '4', '3', '2', '1']
+      const toAdd = ['1', '2', '3', '4', '4', '5', '6', '7', '8', '9', '10', '11']
+      const expected = ['10', '9', '8', '7', '6', '5', '4', '3', '2', '1']
 
       toAdd.forEach(transaction.pushPathHash.bind(transaction))
       expect(transaction.pathHashes).deep.equal(expected)
@@ -510,7 +510,7 @@ describe('Transaction', function () {
       transaction.name = '/a/b/c'
       transaction.referringPathHash = '/d/e/f'
 
-      var curHash = hashes.calculatePathHash(
+      const curHash = hashes.calculatePathHash(
         agent.config.applications()[0],
         transaction.name,
         transaction.referringPathHash
@@ -528,7 +528,7 @@ describe('Transaction', function () {
       transaction.nameState.setPrefix('/a/b/c')
       transaction.referringPathHash = '/d/e/f'
 
-      var curHash = hashes.calculatePathHash(
+      const curHash = hashes.calculatePathHash(
         agent.config.applications()[0],
         transaction.nameState.getName(),
         transaction.referringPathHash
@@ -542,7 +542,7 @@ describe('Transaction', function () {
   })
 
   describe('hasErrors', function () {
-    var transaction
+    let transaction
 
     beforeEach(function () {
       transaction = new Transaction(agent)
@@ -580,7 +580,7 @@ describe('Transaction', function () {
   })
 
   describe('getIntrinsicAttributes', function () {
-    var transaction
+    let transaction
 
     beforeEach(function () {
       transaction = new Transaction(agent)
@@ -592,7 +592,7 @@ describe('Transaction', function () {
       transaction.referringTransactionGuid = '1234'
       transaction.incomingCatId = '2345'
 
-      var attributes = transaction.getIntrinsicAttributes()
+      const attributes = transaction.getIntrinsicAttributes()
       expect(attributes.referring_transaction_guid).equal('1234')
       expect(attributes.client_cross_process_id).equal('2345')
       expect(attributes.path_hash).to.be.a('string')
@@ -608,7 +608,7 @@ describe('Transaction', function () {
         monitorId: 'monId'
       }
 
-      var attributes = transaction.getIntrinsicAttributes()
+      const attributes = transaction.getIntrinsicAttributes()
       expect(attributes.synthetics_resource_id).equal('resId')
       expect(attributes.synthetics_job_id).equal('jobId')
       expect(attributes.synthetics_monitor_id).equal('monId')
@@ -621,7 +621,7 @@ describe('Transaction', function () {
     })
 
     it('includes distributed trace attributes', function () {
-      var attributes = transaction.getIntrinsicAttributes()
+      const attributes = transaction.getIntrinsicAttributes()
       expect(transaction.priority.toString().length).to.be.at.most(8)
 
       expect(attributes).to.have.property('guid', transaction.id)
@@ -632,7 +632,7 @@ describe('Transaction', function () {
   })
 
   describe('getResponseDurationInMillis', function () {
-    var transaction
+    let transaction
 
     beforeEach(function () {
       transaction = new Transaction(agent)
@@ -643,7 +643,7 @@ describe('Transaction', function () {
         transaction.url = 'someUrl'
 
         // add a segment that will end after the transaction ends
-        var childSegment = transaction.trace.add('child')
+        const childSegment = transaction.trace.add('child')
         childSegment.start()
 
         transaction.end()
@@ -660,7 +660,7 @@ describe('Transaction', function () {
       it('should report response time equal to trace duration', function () {
         // add a segment that will end after the transaction ends
         transaction.type = Transaction.TYPES.BG
-        var bgTransactionSegment = transaction.trace.add('backgroundWork')
+        const bgTransactionSegment = transaction.trace.add('backgroundWork')
         bgTransactionSegment.start()
 
         transaction.end()
@@ -675,7 +675,7 @@ describe('Transaction', function () {
   })
 
   describe('_acceptDistributedTracePayload', function () {
-    var tx = null
+    let tx = null
 
     beforeEach(function () {
       agent.recordSupportability = sinon.spy()
@@ -901,8 +901,8 @@ describe('Transaction', function () {
   })
 
   describe('_getParsedPayload', function () {
-    var tx = null
-    var payload = null
+    let tx = null
+    let payload = null
 
     beforeEach(function () {
       agent.recordSupportability = sinon.spy()
@@ -946,7 +946,7 @@ describe('Transaction', function () {
   })
 
   describe('_createDistributedTracePayload', function () {
-    var tx = null
+    let tx = null
 
     beforeEach(function () {
       agent.recordSupportability = sinon.spy()
@@ -1044,7 +1044,7 @@ describe('Transaction', function () {
       }
 
       helper.runInTransaction(agent, function (txn) {
-        var childSegment = txn.trace.add('child')
+        const childSegment = txn.trace.add('child')
         childSegment.start()
 
         txn.acceptDistributedTraceHeaders('HTTP', headers)
@@ -1062,7 +1062,7 @@ describe('Transaction', function () {
       agent.config.span_events.enabled = true
 
       helper.runInTransaction(agent, function (txn) {
-        var childSegment = txn.trace.add('child')
+        const childSegment = txn.trace.add('child')
         childSegment.start()
 
         const originalHeaders = createHeadersAndInsertTrace(txn)
@@ -1111,7 +1111,7 @@ describe('Transaction', function () {
       }
 
       helper.runInTransaction(agent, function (txn) {
-        var childSegment = txn.trace.add('child')
+        const childSegment = txn.trace.add('child')
         childSegment.start()
 
         const headers = {
@@ -1140,7 +1140,7 @@ describe('Transaction', function () {
       agent.config.span_events.enabled = true
 
       helper.runInTransaction(agent, function (txn) {
-        var childSegment = txn.trace.add('child')
+        const childSegment = txn.trace.add('child')
         childSegment.start()
 
         const headers = 'JUST A STRING'
@@ -1176,7 +1176,7 @@ describe('Transaction', function () {
       }
 
       helper.runInTransaction(agent, function (txn) {
-        var childSegment = txn.trace.add('child')
+        const childSegment = txn.trace.add('child')
         childSegment.start()
 
         txn.acceptDistributedTraceHeaders('HTTP', firstTraceContext)
@@ -1205,7 +1205,7 @@ describe('Transaction', function () {
       }
 
       helper.runInTransaction(agent, function (txn) {
-        var childSegment = txn.trace.add('child')
+        const childSegment = txn.trace.add('child')
         childSegment.start()
 
         const outboundHeaders = {}
@@ -1256,7 +1256,7 @@ describe('Transaction', function () {
       }
 
       helper.runInTransaction(agent, function (txn) {
-        var childSegment = txn.trace.add('child')
+        const childSegment = txn.trace.add('child')
         childSegment.start()
 
         const headers = {
@@ -1397,7 +1397,7 @@ describe('Transaction', function () {
       const goodParent = '00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-00'
 
       helper.runInTransaction(agent, function (txn) {
-        var childSegment = txn.trace.add('child')
+        const childSegment = txn.trace.add('child')
         childSegment.start()
 
         txn.acceptTraceContextPayload(goodParent, 'stuff')
@@ -1415,7 +1415,7 @@ describe('Transaction', function () {
       agent.config.span_events.enabled = true
 
       helper.runInTransaction(agent, function (txn) {
-        var childSegment = txn.trace.add('child')
+        const childSegment = txn.trace.add('child')
         childSegment.start()
 
         const originalHeaders = createHeadersAndInsertTrace(txn)
@@ -1443,7 +1443,7 @@ describe('Transaction', function () {
         'null@nr=0-0-33-2827902-7d3efb1b173fecfa-e8b91a159289ff74-1-1.23456-1518469636035'
 
       helper.runInTransaction(agent, function (txn) {
-        var childSegment = txn.trace.add('child')
+        const childSegment = txn.trace.add('child')
         childSegment.start()
 
         txn.acceptTraceContextPayload(incomingTraceparent, incomingNullKeyedTracestate)
@@ -1473,7 +1473,7 @@ describe('Transaction', function () {
         '33@nr=0-0-33-2827902-7d3efb1b173fecfa-e8b91a159289ff74-1-1.23456-1518469636035'
 
       helper.runInTransaction(agent, function (txn) {
-        var childSegment = txn.trace.add('child')
+        const childSegment = txn.trace.add('child')
         childSegment.start()
 
         txn.acceptTraceContextPayload(incomingTraceparent, incomingNullKeyedTracestate)
@@ -1494,8 +1494,8 @@ describe('Transaction', function () {
   })
 
   describe('addDistributedTraceIntrinsics', function () {
-    var tx = null
-    var attributes = null
+    let tx = null
+    let attributes = null
 
     beforeEach(function () {
       attributes = {}

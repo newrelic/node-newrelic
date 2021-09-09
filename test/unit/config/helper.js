@@ -8,7 +8,7 @@
 const Config = require('../../../lib/config')
 
 function idempotentEnv(envConfig, initialConfig, callback) {
-  let saved = {}
+  const saved = {}
 
   // Allow idempotentEnv to be called w/o initialConfig
   if (typeof initialConfig === 'function') {

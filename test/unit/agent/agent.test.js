@@ -205,7 +205,7 @@ tap.test('when forcing transaction ignore status', (t) => {
 
 tap.test('#startAggregators should start all aggregators', (t) => {
   // Load agent with default 'stopped' state
-  let agent = helper.loadMockedAgent(null, false)
+  const agent = helper.loadMockedAgent(null, false)
   agent.config.distributed_tracing.enabled = true // for span events
 
   t.teardown(() => {
@@ -226,7 +226,7 @@ tap.test('#startAggregators should start all aggregators', (t) => {
 
 tap.test('#startAggregators should start all aggregators', (t) => {
   // Load agent with default 'stopped' state
-  let agent = helper.loadMockedAgent(null, false)
+  const agent = helper.loadMockedAgent(null, false)
   agent.config.distributed_tracing.enabled = true // for span events
 
   t.teardown(() => {
@@ -247,7 +247,7 @@ tap.test('#startAggregators should start all aggregators', (t) => {
 
 tap.test('#stopAggregators should stop all aggregators', (t) => {
   // Load agent with default 'stopped' state
-  let agent = helper.loadMockedAgent(null, false)
+  const agent = helper.loadMockedAgent(null, false)
   agent.config.distributed_tracing.enabled = true // for span events
 
   t.teardown(() => {
@@ -271,7 +271,7 @@ tap.test('#onConnect should reconfigure all the aggregators', (t) => {
   const EXPECTED_AGG_COUNT = 8
 
   // Load agent with default 'stopped' state
-  let agent = helper.loadMockedAgent(null, false)
+  const agent = helper.loadMockedAgent(null, false)
   agent.config.distributed_tracing.enabled = true // for span events
 
   t.teardown(() => {

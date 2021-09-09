@@ -5,12 +5,12 @@
 
 'use strict'
 
-var path = require('path')
-var fs = require('fs')
-var tap = require('tap')
-var rimraf = require('rimraf')
+const path = require('path')
+const fs = require('fs')
+const tap = require('tap')
+const rimraf = require('rimraf')
 
-var DIRNAME = 'XXXNOCONFTEST'
+const DIRNAME = 'XXXNOCONFTEST'
 
 tap.test('logger', function (t) {
   t.autoend()
@@ -20,7 +20,7 @@ tap.test('logger', function (t) {
       process.chdir('..')
     }
 
-    var dirPath = path.join(process.cwd(), DIRNAME)
+    const dirPath = path.join(process.cwd(), DIRNAME)
 
     await new Promise((resolve) => {
       if (fs.existsSync(dirPath)) {

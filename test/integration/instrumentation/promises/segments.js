@@ -5,8 +5,8 @@
 
 'use strict'
 
-var helper = require('../../../lib/agent_helper')
-var assertSegments = require('../../../lib/metrics_helper').assertSegments
+const helper = require('../../../lib/agent_helper')
+const assertSegments = require('../../../lib/metrics_helper').assertSegments
 
 module.exports = runTests
 
@@ -16,8 +16,8 @@ function runTests(t, agent, Promise) {
 
   // simulates a function that returns a promise and has a segment created for itself
   function doSomeWork(segmentName, shouldReject) {
-    var tracer = agent.tracer
-    var segment = tracer.createSegment(segmentName)
+    const tracer = agent.tracer
+    const segment = tracer.createSegment(segmentName)
     return tracer.bindFunction(actualWork, segment)()
     function actualWork() {
       segment.touch()
@@ -37,7 +37,7 @@ function runTests(t, agent, Promise) {
 }
 
 function segmentsEnabledTests(t, agent, Promise, doSomeWork) {
-  var tracer = agent.tracer
+  const tracer = agent.tracer
 
   t.test('segments: child segment is created inside then handler', function (t) {
     agent.config.feature_flag.promise_segments = true
@@ -55,7 +55,7 @@ function segmentsEnabledTests(t, agent, Promise, doSomeWork) {
 
     helper.runInTransaction(agent, function transactionWrapper(transaction) {
       doSomeWork('doSomeWork').then(function () {
-        var childSegment = tracer.createSegment('someChildSegment')
+        const childSegment = tracer.createSegment('someChildSegment')
         // touch the segment, so that it is not truncated
         childSegment.touch()
         tracer.bindFunction(function () {}, childSegment)
@@ -83,7 +83,7 @@ function segmentsEnabledTests(t, agent, Promise, doSomeWork) {
           return doSomeWork('doWork2')
         })
         .then(function secondThen() {
-          var s = tracer.createSegment('secondThen')
+          const s = tracer.createSegment('secondThen')
           s.start()
           s.end()
           process.nextTick(transaction.end.bind(transaction))
@@ -161,12 +161,12 @@ function segmentsEnabledTests(t, agent, Promise, doSomeWork) {
           return doSomeWork('doWork2', true)
         })
         .then(function secondThen() {
-          var s = tracer.createSegment('secondThen')
+          const s = tracer.createSegment('secondThen')
           s.start()
           s.end()
         })
         .catch(function catchHandler() {
-          var s = tracer.createSegment('catchHandler')
+          const s = tracer.createSegment('catchHandler')
           s.start()
           s.end()
           process.nextTick(transaction.end.bind(transaction))
@@ -191,12 +191,12 @@ function segmentsEnabledTests(t, agent, Promise, doSomeWork) {
     })
 
     helper.runInTransaction(agent, function transactionWrapper(transaction) {
-      var resolve
-      var p = new Promise(function startSomeWork(r) {
+      let resolve
+      const p = new Promise(function startSomeWork(r) {
         resolve = r
       })
 
-      var segment = tracer.createSegment('doSomeWork')
+      const segment = tracer.createSegment('doSomeWork')
       resolve = tracer.bindFunction(resolve, segment)
 
       p.then(function myThen() {
@@ -212,7 +212,7 @@ function segmentsEnabledTests(t, agent, Promise, doSomeWork) {
 }
 
 function segmentsDisabledTests(t, agent, Promise, doSomeWork) {
-  var tracer = agent.tracer
+  const tracer = agent.tracer
 
   t.test('no segments: child segment is created inside then handler', function (t) {
     agent.config.feature_flag.promise_segments = false
@@ -227,7 +227,7 @@ function segmentsDisabledTests(t, agent, Promise, doSomeWork) {
 
     helper.runInTransaction(agent, function transactionWrapper(transaction) {
       doSomeWork('doSomeWork').then(function () {
-        var childSegment = tracer.createSegment('someChildSegment')
+        const childSegment = tracer.createSegment('someChildSegment')
         // touch the segment, so that it is not truncated
         childSegment.touch()
         tracer.bindFunction(function () {}, childSegment)
@@ -339,12 +339,12 @@ function segmentsDisabledTests(t, agent, Promise, doSomeWork) {
     })
 
     helper.runInTransaction(agent, function transactionWrapper(transaction) {
-      var resolve
-      var p = new Promise(function startSomeWork(r) {
+      let resolve
+      const p = new Promise(function startSomeWork(r) {
         resolve = r
       })
 
-      var segment = tracer.createSegment('doSomeWork')
+      const segment = tracer.createSegment('doSomeWork')
       resolve = tracer.bindFunction(resolve, segment)
 
       p.then(function myThen() {

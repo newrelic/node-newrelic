@@ -5,14 +5,14 @@
 
 'use strict'
 
-var helper = require('../../../lib/agent_helper')
-var http = require('http')
-var tap = require('tap')
-var utils = require('./hapi-utils')
+const helper = require('../../../lib/agent_helper')
+const http = require('http')
+const tap = require('tap')
+const utils = require('./hapi-utils')
 
-var agent
-var server
-var port
+let agent
+let server
+let port
 
 tap.test('Hapi v16 error handling', function (t) {
   t.autoend()
@@ -196,8 +196,8 @@ tap.test('Hapi v16 error handling', function (t) {
 })
 
 function runTest(t, callback) {
-  var statusCode
-  var errors
+  let statusCode
+  let errors
 
   agent.on('transactionFinished', function () {
     errors = agent.errors.traceAggregator.errors
@@ -206,7 +206,7 @@ function runTest(t, callback) {
     }
   })
 
-  var endpoint = '/test'
+  const endpoint = '/test'
   server.start(function () {
     port = server.info.port
     makeRequest(server, endpoint, function (response) {

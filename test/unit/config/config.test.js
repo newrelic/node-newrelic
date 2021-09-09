@@ -119,7 +119,7 @@ tap.test('#publicSettings', (t) => {
 
     // The object returned from Config.publicSettings
     // should not have any values of type object
-    for (let key in pub) {
+    for (const key in pub) {
       if (pub[key] !== null) {
         t.not(typeof pub[key], 'object')
       }

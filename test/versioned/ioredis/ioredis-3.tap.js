@@ -14,8 +14,8 @@ const params = require('../../lib/params')
 const DB_INDEX = 4
 
 tap.test('ioredis instrumentation', function (t) {
-  var agent
-  var redisClient
+  let agent
+  let redisClient
 
   t.beforeEach(function () {
     return setup(t).then((result) => {
@@ -30,12 +30,12 @@ tap.test('ioredis instrumentation', function (t) {
   })
 
   t.test('creates expected metrics', { timeout: 5000 }, function (t) {
-    var onError = function (error) {
+    const onError = function (error) {
       return t.fail(error)
     }
 
     agent.on('transactionFinished', function (tx) {
-      var expected = [
+      const expected = [
         [{ name: 'Datastore/all' }],
         [{ name: 'Datastore/Redis/all' }],
         [{ name: 'Datastore/operation/Redis/set' }]
@@ -55,20 +55,20 @@ tap.test('ioredis instrumentation', function (t) {
   })
 
   t.test('creates expected segments', { timeout: 5000 }, function (t) {
-    var onError = function (error) {
+    const onError = function (error) {
       return t.fail(error)
     }
 
     agent.on('transactionFinished', function (tx) {
-      var root = tx.trace.root
+      const root = tx.trace.root
       t.equals(root.children.length, 2, 'root has two children')
 
-      var setSegment = root.children[0]
+      const setSegment = root.children[0]
       t.equals(setSegment.name, 'Datastore/operation/Redis/set')
 
       // ioredis operations return promise, any 'then' callbacks will be sibling segments
       // of the original redis call
-      var getSegment = root.children[1]
+      const getSegment = root.children[1]
       t.equals(getSegment.name, 'Datastore/operation/Redis/get')
       t.equals(getSegment.children.length, 0, 'should not contain any segments')
 

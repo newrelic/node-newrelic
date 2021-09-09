@@ -5,10 +5,10 @@
 
 'use strict'
 
-var amqpUtils = require('./amqp-utils')
-var API = require('../../../api')
-var helper = require('../../lib/agent_helper')
-var tap = require('tap')
+const amqpUtils = require('./amqp-utils')
+const API = require('../../../api')
+const helper = require('../../lib/agent_helper')
+const tap = require('tap')
 
 /*
 TODO:
@@ -25,11 +25,11 @@ consumer
 tap.test('amqplib promise instrumentation', function (t) {
   t.autoend()
 
-  var amqplib = null
-  var conn = null
-  var channel = null
-  var agent = null
-  var api = null
+  let amqplib = null
+  let conn = null
+  let channel = null
+  let agent = null
+  let api = null
 
   t.beforeEach(function () {
     // In promise mode, amqplib loads bluebird. In our tests we unwrap the
@@ -49,7 +49,7 @@ tap.test('amqplib promise instrumentation', function (t) {
       }
     })
 
-    var params = {
+    const params = {
       encoding_key: 'this is an encoding key',
       cross_process_id: '1234#4321'
     }
@@ -59,7 +59,7 @@ tap.test('amqplib promise instrumentation', function (t) {
 
     api = new API(agent)
 
-    var instrumentation = require('../../../lib/instrumentation/amqplib')
+    const instrumentation = require('../../../lib/instrumentation/amqplib')
     api.instrumentMessages('amqplib', instrumentation.instrumentPromiseAPI)
 
     amqplib = require('amqplib')
@@ -132,7 +132,7 @@ tap.test('amqplib promise instrumentation', function (t) {
         })
         .then(function (result) {
           amqpUtils.verifyTransaction(t, tx, 'assertQueue')
-          var queueName = result.queue
+          const queueName = result.queue
           return channel.bindQueue(queueName, amqpUtils.FANOUT_EXCHANGE)
         })
         .then(function () {
@@ -162,7 +162,7 @@ tap.test('amqplib promise instrumentation', function (t) {
         })
         .then(function (result) {
           amqpUtils.verifyTransaction(t, tx, 'assertQueue')
-          var queueName = result.queue
+          const queueName = result.queue
           return channel.bindQueue(queueName, amqpUtils.DIRECT_EXCHANGE, 'key1')
         })
         .then(function () {
@@ -178,7 +178,7 @@ tap.test('amqplib promise instrumentation', function (t) {
   })
 
   t.test('purge queue', function (t) {
-    var queueName = null
+    let queueName = null
 
     agent.on('transactionFinished', function (tx) {
       amqpUtils.verifyPurge(t, tx)
@@ -213,8 +213,8 @@ tap.test('amqplib promise instrumentation', function (t) {
   })
 
   t.test('get a message', function (t) {
-    var queue = null
-    var exchange = amqpUtils.DIRECT_EXCHANGE
+    let queue = null
+    const exchange = amqpUtils.DIRECT_EXCHANGE
 
     channel
       .assertExchange(exchange, 'direct')
@@ -233,7 +233,7 @@ tap.test('amqplib promise instrumentation', function (t) {
             .then(function (msg) {
               t.ok(msg, 'should receive a message')
 
-              var body = msg.content.toString('utf8')
+              const body = msg.content.toString('utf8')
               t.equal(body, 'hello', 'should receive expected body')
 
               amqpUtils.verifyTransaction(t, tx, 'get')
@@ -254,9 +254,9 @@ tap.test('amqplib promise instrumentation', function (t) {
 
   t.test('consume in a transaction with old CAT', function (t) {
     agent.config.distributed_tracing.enabled = false
-    var queue = null
-    var consumeTxn = null
-    var exchange = amqpUtils.DIRECT_EXCHANGE
+    let queue = null
+    let consumeTxn = null
+    const exchange = amqpUtils.DIRECT_EXCHANGE
 
     channel
       .assertExchange(exchange, 'direct')
@@ -272,12 +272,12 @@ tap.test('amqplib promise instrumentation', function (t) {
           .runInTransaction(agent, function (tx) {
             return channel
               .consume(queue, function (msg) {
-                var consumeTxnHandle = api.getTransaction()
+                const consumeTxnHandle = api.getTransaction()
                 consumeTxn = consumeTxnHandle._transaction
                 t.notEqual(consumeTxn, tx, 'should not be in original transaction')
                 t.ok(msg, 'should receive a message')
 
-                var body = msg.content.toString('utf8')
+                const body = msg.content.toString('utf8')
                 t.equal(body, 'hello', 'should receive expected body')
 
                 channel.ack(msg)
@@ -314,9 +314,9 @@ tap.test('amqplib promise instrumentation', function (t) {
     agent.config.primary_application_id = 4321
     agent.config.trusted_account_key = 1234
 
-    var queue = null
-    var consumeTxn = null
-    var exchange = amqpUtils.DIRECT_EXCHANGE
+    let queue = null
+    let consumeTxn = null
+    const exchange = amqpUtils.DIRECT_EXCHANGE
 
     channel
       .assertExchange(exchange, 'direct')
@@ -332,12 +332,12 @@ tap.test('amqplib promise instrumentation', function (t) {
           .runInTransaction(agent, function (tx) {
             return channel
               .consume(queue, function (msg) {
-                var consumeTxnHandle = api.getTransaction()
+                const consumeTxnHandle = api.getTransaction()
                 consumeTxn = consumeTxnHandle._transaction
                 t.notEqual(consumeTxn, tx, 'should not be in original transaction')
                 t.ok(msg, 'should receive a message')
 
-                var body = msg.content.toString('utf8')
+                const body = msg.content.toString('utf8')
                 t.equal(body, 'hello', 'should receive expected body')
 
                 channel.ack(msg)
@@ -370,7 +370,7 @@ tap.test('amqplib promise instrumentation', function (t) {
   })
 
   t.test('consume out of transaction', function (t) {
-    var queue = null
+    let queue = null
 
     agent.on('transactionFinished', function (tx) {
       amqpUtils.verifyConsumeTransaction(t, tx, amqpUtils.DIRECT_EXCHANGE, queue, 'consume-tx-key')
@@ -391,7 +391,7 @@ tap.test('amqplib promise instrumentation', function (t) {
           .consume(queue, function (msg) {
             t.ok(msg, 'should receive a message')
 
-            var body = msg.content.toString('utf8')
+            const body = msg.content.toString('utf8')
             t.equal(body, 'hello', 'should receive expected body')
 
             channel.ack(msg)
@@ -411,7 +411,7 @@ tap.test('amqplib promise instrumentation', function (t) {
   })
 
   t.test('rename message consume transaction', function (t) {
-    var queue = null
+    let queue = null
 
     agent.on('transactionFinished', function (tx) {
       t.equal(

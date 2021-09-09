@@ -9,14 +9,14 @@
 // Below allows use of mocha DSL with tap runner.
 require('tap').mochaGlobals()
 
-var assertMetrics = require('../lib/metrics_helper').assertMetrics
-var assert = require('chai').assert
-var Metrics = require('../../lib/metrics')
-var MetricMapper = require('../../lib/metrics/mapper')
-var MetricNormalizer = require('../../lib/metrics/normalizer')
+const assertMetrics = require('../lib/metrics_helper').assertMetrics
+const assert = require('chai').assert
+const Metrics = require('../../lib/metrics')
+const MetricMapper = require('../../lib/metrics/mapper')
+const MetricNormalizer = require('../../lib/metrics/normalizer')
 
 describe('metrics_helper.assertMetrics', function () {
-  var metrics
+  let metrics
 
   beforeEach(function () {
     metrics = createMetricsBucket()
@@ -110,16 +110,16 @@ describe('metrics_helper.assertMetrics', function () {
   })
 
   it('should handle unscoped metrics', function () {
-    var myMetric = metrics.getOrCreateMetric('MyMetric')
+    const myMetric = metrics.getOrCreateMetric('MyMetric')
     myMetric.recordValue(1, 1)
-    var expected = [[{ name: 'MyMetric' }, [1, 1, 1, 1, 1, 1]]]
+    const expected = [[{ name: 'MyMetric' }, [1, 1, 1, 1, 1, 1]]]
     assertMetrics(metrics, expected, true)
   })
 
   it('should handle scoped metrics', function () {
-    var myMetric = metrics.getOrCreateMetric('MyMetric', 'SomeScope')
+    const myMetric = metrics.getOrCreateMetric('MyMetric', 'SomeScope')
     myMetric.recordValue(1, 1)
-    var expected = [[{ name: 'MyMetric', scope: 'SomeScope' }, [1, 1, 1, 1, 1, 1]]]
+    const expected = [[{ name: 'MyMetric', scope: 'SomeScope' }, [1, 1, 1, 1, 1, 1]]]
     assertMetrics(metrics, expected, true)
   })
 })

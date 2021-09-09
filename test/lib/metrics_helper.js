@@ -45,7 +45,7 @@ function assertMetrics(metrics, expected, exclusive, assertValues) {
     assertValues = true
   }
 
-  for (var i = 0, len = expected.length; i < len; i++) {
+  for (let i = 0, len = expected.length; i < len; i++) {
     const expectedMetric = expected[i]
     const metric = metrics.getMetric(expectedMetric[0].name, expectedMetric[0].scope)
     if (!metric) {
@@ -98,7 +98,7 @@ function assertMetrics(metrics, expected, exclusive, assertValues) {
  * @param {boolean} exact           When true, found and expected metric lengths should match
  */
 function tapAssertMetrics(tap, transaction, expected, exact) {
-  var metrics = transaction.metrics
+  const metrics = transaction.metrics
 
   for (let i = 0; i < expected.length; ++i) {
     let expectedMetric = Object.assign({}, expected[i])
@@ -160,10 +160,10 @@ function assertSegments(parent, expected, options) {
     })
   }
 
-  let children = getChildren(parent)
+  const children = getChildren(parent)
   if (exact) {
     for (let i = 0; i < expected.length; ++i) {
-      let sequenceItem = expected[i]
+      const sequenceItem = expected[i]
 
       if (typeof sequenceItem === 'string') {
         child = children[childCount++]
@@ -205,7 +205,7 @@ function assertSegments(parent, expected, options) {
     )
   } else {
     for (let i = 0; i < expected.length; i++) {
-      let sequenceItem = expected[i]
+      const sequenceItem = expected[i]
 
       if (typeof sequenceItem === 'string') {
         // find corresponding child in parent
@@ -228,8 +228,8 @@ function findSegment(root, name) {
     return root
   } else if (root.children && root.children.length) {
     for (let i = 0; i < root.children.length; i++) {
-      let child = root.children[i]
-      let found = findSegment(child, name)
+      const child = root.children[i]
+      const found = findSegment(child, name)
       if (found) {
         return found
       }

@@ -18,7 +18,7 @@ tap.test('span error attributes', (t) => {
     const agent = helper.instrumentMockedAgent(config)
     const api = new API(agent)
 
-    let spanIds = []
+    const spanIds = []
     const numErrors = 3
 
     agent.on('transactionFinished', () => {

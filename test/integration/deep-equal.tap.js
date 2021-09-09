@@ -18,7 +18,7 @@ test('deepEqual handles all the edge cases', function (t) {
   function functionA(a) {
     return a++
   }
-  var functionB = functionA
+  const functionB = functionA
 
   // 1. === gets the job done
   t.ok(deepEqual(null, null), 'null is the same as itself')
@@ -29,37 +29,37 @@ test('deepEqual handles all the edge cases', function (t) {
   t.ok(deepEqual(functionA, functionB), 'references to the same function are equal')
 
   // 4. buffers are compared by value
-  var bufferA = Buffer.from('abc')
-  var bufferB = Buffer.from('abc')
+  const bufferA = Buffer.from('abc')
+  let bufferB = Buffer.from('abc')
   t.ok(deepEqual(bufferA, bufferB), 'buffers are compared by value')
 
   // 5. dates are compared by numeric (time) value
-  var dateA = new Date('2001-01-11')
-  var dateB = new Date('2001-01-11')
+  const dateA = new Date('2001-01-11')
+  let dateB = new Date('2001-01-11')
   t.ok(deepEqual(dateA, dateB), 'dates are compared by time value')
 
   // 6. regexps are compared by their properties
-  var rexpA = /^h[oe][wl][dl][oy]$/
-  var rexpB = /^h[oe][wl][dl][oy]$/
+  const rexpA = /^h[oe][wl][dl][oy]$/
+  let rexpB = /^h[oe][wl][dl][oy]$/
   t.ok(deepEqual(rexpA, rexpB), 'regexps are compared by their properties')
 
   // 8. loads of tests for objects
   t.ok(deepEqual({}, {}), 'bare objects check out')
-  var a = { a: 'a' }
-  var b = a
+  const a = { a: 'a' }
+  let b = a
   t.ok(deepEqual(a, b), 'identical object references check out')
   b = { a: 'a' }
   t.ok(deepEqual(a, b), 'identical simple object values check out')
 
   t.ok(deepEqual([0, 1], [0, 1]), 'arrays check out')
 
-  var cyclicA = {}
+  const cyclicA = {}
   cyclicA.x = cyclicA
-  var cyclicB = {}
+  const cyclicB = {}
   cyclicB.x = cyclicB
   t.ok(deepEqual(cyclicA, cyclicB), 'can handle cyclic data structures')
 
-  var y = {
+  const y = {
     v: {
       v: {
         v: { v: { v: { v: { v: { v: { v: { v: { v: { v: { v: { v: { v: {} } } } } } } } } } } } }
@@ -67,7 +67,7 @@ test('deepEqual handles all the edge cases', function (t) {
     }
   }
   y.v.v.v.v.v.v.v.v.v.v.v.v.v.v.v.v = y
-  var z = {
+  const z = {
     v: {
       v: {
         v: { v: { v: { v: { v: { v: { v: { v: { v: { v: { v: { v: { v: {} } } } } } } } } } } } }
@@ -77,7 +77,7 @@ test('deepEqual handles all the edge cases', function (t) {
   z.v.v.v.v.v.v.v.v.v.v.v.v.v.v.v.v = z
   t.ok(deepEqual(y, z), 'deeply recursive data structures also work')
 
-  var heinous = {
+  const heinous = {
     nothin: null,
     nope: undefined,
     number: 0,
@@ -91,7 +91,7 @@ test('deepEqual handles all the edge cases', function (t) {
   }
   heinous.granular.self = heinous
 
-  var awful = {
+  const awful = {
     nothin: null,
     nope: undefined,
     number: 0,
@@ -158,7 +158,7 @@ test('deepEqual handles all the edge cases', function (t) {
   // 8. objects present edge cases galore
   t.notOk(deepEqual([], {}), "different object types shouldn't match")
 
-  var nullstructor = Object.create(null)
+  const nullstructor = Object.create(null)
   t.notOk(deepEqual({}, nullstructor), 'Object.create(null).constructor === undefined')
 
   b = { b: 'b' }

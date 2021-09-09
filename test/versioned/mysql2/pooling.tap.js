@@ -5,20 +5,20 @@
 
 'use strict'
 
-var tap = require('tap')
-var logger = require('../../../lib/logger')
-var helper = require('../../lib/agent_helper')
-var setup = require('./setup')
+const tap = require('tap')
+const logger = require('../../../lib/logger')
+const helper = require('../../lib/agent_helper')
+const setup = require('./setup')
 
-var DBNAME = 'agent_integration'
-var DBTABLE = 'test'
+const DBNAME = 'agent_integration'
+const DBTABLE = 'test'
 
 tap.test('MySQL2 instrumentation with a connection pool', { timeout: 60000 }, function (t) {
   // set up the instrumentation before loading MySQL
-  var poolLogger = logger.child({ component: 'pool' })
-  var agent = helper.instrumentMockedAgent()
-  var mysql = require('mysql2')
-  var pool = setup.pool(mysql, poolLogger)
+  const poolLogger = logger.child({ component: 'pool' })
+  const agent = helper.instrumentMockedAgent()
+  const mysql = require('mysql2')
+  const pool = setup.pool(mysql, poolLogger)
 
   t.teardown(function () {
     pool.drain(function () {
@@ -55,7 +55,7 @@ tap.test('MySQL2 instrumentation with a connection pool', { timeout: 60000 }, fu
     }
   }
 
-  var dal = {
+  const dal = {
     lookup: function (params, callback) {
       if (!params.id) {
         return callback(new Error('Must include ID to look up.'))
@@ -66,7 +66,7 @@ tap.test('MySQL2 instrumentation with a connection pool', { timeout: 60000 }, fu
           return callback(err)
         }
 
-        var query = 'SELECT *' + '  FROM ' + DBNAME + '.' + DBTABLE + ' WHERE id = ?'
+        const query = 'SELECT *' + '  FROM ' + DBNAME + '.' + DBTABLE + ' WHERE id = ?'
         client.query(query, [params.id], function (err, results) {
           withRetry.release(client) // always release back to the pool
 
@@ -96,7 +96,7 @@ tap.test('MySQL2 instrumentation with a connection pool', { timeout: 60000 }, fu
     })
 
     function inspect(row) {
-      var transaction = agent.getTransaction()
+      const transaction = agent.getTransaction()
       if (!transaction) {
         t.fail('transaction should be visible')
         return t.end()
@@ -107,12 +107,12 @@ tap.test('MySQL2 instrumentation with a connection pool', { timeout: 60000 }, fu
 
       transaction.end()
 
-      var trace = transaction.trace
+      const trace = transaction.trace
       t.ok(trace, 'trace should exist')
       t.ok(trace.root, 'root element should exist.')
       t.equals(trace.root.children.length, 1, 'There should be only one child.')
 
-      var selectSegment = trace.root.children[0]
+      const selectSegment = trace.root.children[0]
       t.ok(selectSegment, 'trace segment for first SELECT should exist')
       t.equals(
         selectSegment.name,

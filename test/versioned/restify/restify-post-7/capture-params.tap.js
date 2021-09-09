@@ -5,16 +5,16 @@
 
 'use strict'
 
-var DESTINATIONS = require('../../../../lib/config/attribute-filter').DESTINATIONS
-var test = require('tap').test
-var request = require('request').defaults({ json: true })
-var helper = require('../../../lib/agent_helper')
-var HTTP_ATTS = require('../../../lib/fixtures').httpAttributes
+const DESTINATIONS = require('../../../../lib/config/attribute-filter').DESTINATIONS
+const test = require('tap').test
+const request = require('request').defaults({ json: true })
+const helper = require('../../../lib/agent_helper')
+const HTTP_ATTS = require('../../../lib/fixtures').httpAttributes
 
 test('Restify capture params introspection', function (t) {
   t.autoend()
 
-  var agent = null
+  let agent = null
 
   t.beforeEach(function () {
     agent = helper.instrumentMockedAgent({
@@ -31,8 +31,8 @@ test('Restify capture params introspection', function (t) {
   })
 
   t.test('simple case with no params', function (t) {
-    var server = require('restify').createServer()
-    var port = null
+    const server = require('restify').createServer()
+    let port = null
 
     t.teardown(function () {
       server.close()
@@ -41,7 +41,7 @@ test('Restify capture params introspection', function (t) {
     agent.on('transactionFinished', function (transaction) {
       t.ok(transaction.trace, 'transaction has a trace.')
       // on older versions of node response messages aren't included
-      var attributes = transaction.trace.attributes.get(DESTINATIONS.TRANS_TRACE)
+      const attributes = transaction.trace.attributes.get(DESTINATIONS.TRANS_TRACE)
       HTTP_ATTS.forEach(function (key) {
         t.ok(attributes[key], 'Trace contains expected HTTP attribute: ' + key)
       })
@@ -68,8 +68,8 @@ test('Restify capture params introspection', function (t) {
   })
 
   t.test('case with route params', function (t) {
-    var server = require('restify').createServer()
-    var port = null
+    const server = require('restify').createServer()
+    let port = null
 
     t.teardown(function () {
       server.close()
@@ -78,7 +78,7 @@ test('Restify capture params introspection', function (t) {
     agent.on('transactionFinished', function (transaction) {
       t.ok(transaction.trace, 'transaction has a trace.')
       // on older versions of node response messages aren't included
-      var attributes = transaction.trace.attributes.get(DESTINATIONS.TRANS_TRACE)
+      const attributes = transaction.trace.attributes.get(DESTINATIONS.TRANS_TRACE)
       t.equal(
         attributes['request.parameters.id'],
         '1337',
@@ -104,8 +104,8 @@ test('Restify capture params introspection', function (t) {
   })
 
   t.test('case with query params', function (t) {
-    var server = require('restify').createServer()
-    var port = null
+    const server = require('restify').createServer()
+    let port = null
 
     t.teardown(function () {
       server.close()
@@ -114,7 +114,7 @@ test('Restify capture params introspection', function (t) {
     agent.on('transactionFinished', function (transaction) {
       t.ok(transaction.trace, 'transaction has a trace.')
       // on older versions of node response messages aren't included
-      var attributes = transaction.trace.attributes.get(DESTINATIONS.TRANS_TRACE)
+      const attributes = transaction.trace.attributes.get(DESTINATIONS.TRANS_TRACE)
       t.equal(
         attributes['request.parameters.name'],
         'restify',
@@ -131,7 +131,7 @@ test('Restify capture params introspection', function (t) {
 
     server.listen(0, function () {
       port = server.address().port
-      var url = 'http://localhost:' + port + '/test?name=restify'
+      const url = 'http://localhost:' + port + '/test?name=restify'
       request.get(url, function (error, res, body) {
         t.equal(res.statusCode, 200, 'nothing exploded')
         t.deepEqual(body, { status: 'ok' }, 'got expected respose')
@@ -141,8 +141,8 @@ test('Restify capture params introspection', function (t) {
   })
 
   t.test('case with both route and query params', function (t) {
-    var server = require('restify').createServer()
-    var port = null
+    const server = require('restify').createServer()
+    let port = null
 
     t.teardown(function () {
       server.close()
@@ -151,7 +151,7 @@ test('Restify capture params introspection', function (t) {
     agent.on('transactionFinished', function (transaction) {
       t.ok(transaction.trace, 'transaction has a trace.')
       // on older versions of node response messages aren't included
-      var attributes = transaction.trace.attributes.get(DESTINATIONS.TRANS_TRACE)
+      const attributes = transaction.trace.attributes.get(DESTINATIONS.TRANS_TRACE)
       t.equal(
         attributes['request.parameters.id'],
         '1337',
@@ -173,7 +173,7 @@ test('Restify capture params introspection', function (t) {
 
     server.listen(0, function () {
       port = server.address().port
-      var url = 'http://localhost:' + port + '/test/1337?name=restify'
+      const url = 'http://localhost:' + port + '/test/1337?name=restify'
       request.get(url, function (error, res, body) {
         t.equal(res.statusCode, 200, 'nothing exploded')
         t.deepEqual(body, { status: 'ok' }, 'got expected respose')

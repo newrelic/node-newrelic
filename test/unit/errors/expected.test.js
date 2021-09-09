@@ -247,8 +247,8 @@ describe('Expected Errors', function () {
     it('should not increment error metric call counts, bg transaction', function () {
       helper.runInTransaction(agent, function (tx) {
         agent.config.error_collector.expected_messages = { Error: ['except this error'] }
-        let exception = new Error('except this error')
-        let result = errorHelper.isExpectedException(tx, exception, agent.config, urltils)
+        const exception = new Error('except this error')
+        const result = errorHelper.isExpectedException(tx, exception, agent.config, urltils)
 
         expect(result).equals(true)
       })

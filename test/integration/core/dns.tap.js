@@ -5,13 +5,13 @@
 
 'use strict'
 
-var test = require('tap').test
-var dns = require('dns')
-var helper = require('../../lib/agent_helper')
-var verifySegments = require('./verify.js')
+const test = require('tap').test
+const dns = require('dns')
+const helper = require('../../lib/agent_helper')
+const verifySegments = require('./verify.js')
 
 test('lookup', function (t) {
-  var agent = setupAgent(t)
+  const agent = setupAgent(t)
   helper.runInTransaction(agent, function () {
     dns.lookup('localhost', function (err, ip, v) {
       t.notOk(err, 'should not error')
@@ -23,7 +23,7 @@ test('lookup', function (t) {
 })
 
 test('resolve', function (t) {
-  var agent = setupAgent(t)
+  const agent = setupAgent(t)
   helper.runInTransaction(agent, function () {
     dns.resolve('example.com', function (err, ips) {
       t.notOk(err, 'should not error')
@@ -37,7 +37,7 @@ test('resolve', function (t) {
 })
 
 test('resolve4', function (t) {
-  var agent = setupAgent(t)
+  const agent = setupAgent(t)
   helper.runInTransaction(agent, function () {
     dns.resolve4('example.com', function (err, ips) {
       t.notOk(err, 'should not error')
@@ -49,7 +49,7 @@ test('resolve4', function (t) {
 })
 
 test('resolve6', function (t) {
-  var agent = setupAgent(t)
+  const agent = setupAgent(t)
   helper.runInTransaction(agent, function () {
     dns.resolve6('example.com', function (err, ips) {
       t.notOk(err, 'should not error')
@@ -61,7 +61,7 @@ test('resolve6', function (t) {
 })
 
 test('resolveCname', function (t) {
-  var agent = setupAgent(t)
+  const agent = setupAgent(t)
   helper.runInTransaction(agent, function () {
     dns.resolveCname('example.com', function (err) {
       t.equal(err.code, 'ENODATA')
@@ -71,7 +71,7 @@ test('resolveCname', function (t) {
 })
 
 test('resolveMx', function (t) {
-  var agent = setupAgent(t)
+  const agent = setupAgent(t)
   helper.runInTransaction(agent, function () {
     dns.resolveMx('example.com', function (err, ips) {
       t.notOk(err)
@@ -83,7 +83,7 @@ test('resolveMx', function (t) {
 })
 
 test('resolveNs', function (t) {
-  var agent = setupAgent(t)
+  const agent = setupAgent(t)
   helper.runInTransaction(agent, function () {
     dns.resolveNs('example.com', function (err, names) {
       t.notOk(err, 'should not error')
@@ -94,7 +94,7 @@ test('resolveNs', function (t) {
 })
 
 test('resolveTxt', function (t) {
-  var agent = setupAgent(t)
+  const agent = setupAgent(t)
   helper.runInTransaction(agent, function () {
     dns.resolveTxt('example.com', function (err, data) {
       t.notOk(err)
@@ -105,7 +105,7 @@ test('resolveTxt', function (t) {
 })
 
 test('resolveSrv', function (t) {
-  var agent = setupAgent(t)
+  const agent = setupAgent(t)
   helper.runInTransaction(agent, function () {
     dns.resolveSrv('example.com', function (err) {
       t.equal(err.code, 'ENODATA')
@@ -115,11 +115,11 @@ test('resolveSrv', function (t) {
 })
 
 test('reverse', function (t) {
-  var agent = setupAgent(t)
+  const agent = setupAgent(t)
   helper.runInTransaction(agent, function () {
     dns.reverse('127.0.0.1', function (err, names) {
       t.notOk(err, 'should not error')
-      var expected = []
+      let expected = []
       if (names.length > 0) {
         if (process.env.DOCKERIZED) {
           if (names.length === 2) {
@@ -141,7 +141,7 @@ test('reverse', function (t) {
 })
 
 function setupAgent(t) {
-  var agent = helper.instrumentMockedAgent()
+  const agent = helper.instrumentMockedAgent()
   t.teardown(function () {
     helper.unloadAgent(agent)
   })

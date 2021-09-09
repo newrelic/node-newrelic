@@ -132,9 +132,9 @@ tap.test('Analytics events', function (t) {
 
       t.equal(events.length, 1)
 
-      var event = events[0]
+      const event = events[0]
       t.ok(Array.isArray(event))
-      var eventValues = event[0]
+      const eventValues = event[0]
       t.equal(typeof eventValues, 'object')
       t.equal(typeof eventValues.webDuration, 'number')
       t.not(Number.isNaN(eventValues.webDuration))
@@ -156,9 +156,9 @@ tap.test('Analytics events', function (t) {
       const events = getTransactionEvents(agent)
       t.equal(events.length, 1)
 
-      var event = events[0]
+      const event = events[0]
       t.ok(Array.isArray(event))
-      var eventValues = event[0]
+      const eventValues = event[0]
       t.equal(typeof eventValues, 'object')
       t.equal(typeof eventValues.webDuration, 'number')
       t.not(Number.isNaN(eventValues.webDuration))
@@ -211,7 +211,7 @@ tap.test('Analytics events', function (t) {
 
       t.equal(events.length, 1)
 
-      var attributes = events[0][0]
+      const attributes = events[0][0]
       t.equal(attributes.traceId, trans.traceId)
       t.equal(attributes.guid, trans.id)
       t.equal(attributes.priority, trans.priority)
@@ -228,7 +228,7 @@ tap.test('Analytics events', function (t) {
 
       t.equal(events.length, 1)
 
-      var event = events[0]
+      const event = events[0]
       t.equal(typeof event[0], 'object')
       t.equal(typeof event[1], 'object')
       t.equal(typeof event[2], 'object')
@@ -240,7 +240,7 @@ tap.test('Analytics events', function (t) {
       trans.end()
 
       const events = getTransactionEvents(agent)
-      var event = events[0]
+      const event = events[0]
       t.equal(event[1].a, 'b')
       t.end()
     })
@@ -257,8 +257,8 @@ tap.test('Analytics events', function (t) {
       trans.end()
 
       const events = getTransactionEvents(agent)
-      var event = events[0]
-      var attributes = event[0]
+      const event = events[0]
+      const attributes = event[0]
       t.equal(attributes['nr.syntheticsResourceId'], 'resId')
       t.equal(attributes['nr.syntheticsJobId'], 'jobId')
       t.equal(attributes['nr.syntheticsMonitorId'], 'monId')
@@ -266,7 +266,7 @@ tap.test('Analytics events', function (t) {
     })
 
     t.test('not spill over reservoir size', function (t) {
-      for (var i = 0; i < 20; i++) {
+      for (let i = 0; i < 20; i++) {
         agent._addEventFromTransaction(trans)
       }
       t.equal(getTransactionEvents(agent).length, LIMIT)

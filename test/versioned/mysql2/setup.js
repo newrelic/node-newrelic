@@ -5,8 +5,8 @@
 
 'use strict'
 
-var a = require('async')
-var params = require('../../lib/params')
+const a = require('async')
+const params = require('../../lib/params')
 
 module.exports = exports = setup
 exports.pool = setupPool
@@ -15,7 +15,7 @@ function setup(mysql) {
   return a.series([
     // 1. Create the user and database as root.
     function (cb) {
-      var client = mysql.createConnection({
+      const client = mysql.createConnection({
         host: params.mysql_host,
         port: params.mysql_port,
         user: 'root',
@@ -50,7 +50,7 @@ function setup(mysql) {
 
     // 2. Create the table and data as test user.
     function (cb) {
-      var client = mysql.createConnection({
+      const client = mysql.createConnection({
         host: params.mysql_host,
         port: params.mysql_port,
         user: 'test_user',
@@ -81,9 +81,9 @@ function setup(mysql) {
 }
 
 function setupPool(mysql, logger) {
-  var generic = require('generic-pool')
+  const generic = require('generic-pool')
 
-  var pool = new generic.Pool({
+  const pool = new generic.Pool({
     name: 'mysql2',
     min: 2,
     max: 6,
@@ -94,7 +94,7 @@ function setupPool(mysql, logger) {
     },
 
     create: function (callback) {
-      var client = mysql.createConnection({
+      const client = mysql.createConnection({
         user: 'test_user',
         database: 'agent_integration',
         host: params.mysql_host,

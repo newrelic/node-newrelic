@@ -5,23 +5,23 @@
 
 'use strict'
 
-var request = require('request')
-var tap = require('tap')
-var helper = require('../../../lib/agent_helper')
-var utils = require('./hapi-utils')
+const request = require('request')
+const tap = require('tap')
+const helper = require('../../../lib/agent_helper')
+const utils = require('./hapi-utils')
 
 tap.test('Hapi.ext', function (t) {
   t.autoend()
 
-  var agent = null
-  var server = null
-  var port = null
+  let agent = null
+  let server = null
+  let port = null
 
   // queue that executes outside of a transaction context
-  var tasks = []
-  var intervalId = setInterval(function () {
+  const tasks = []
+  const intervalId = setInterval(function () {
     while (tasks.length) {
-      var task = tasks.pop()
+      const task = tasks.pop()
       task()
     }
   }, 10)
@@ -53,7 +53,7 @@ tap.test('Hapi.ext', function (t) {
   })
 
   t.test('maintains transaction state, with config object', function (t) {
-    var config = {
+    const config = {
       type: 'onRequest',
       method: function (req, reply) {
         t.ok(agent.getTransaction(), 'transaction is available')
@@ -68,7 +68,7 @@ tap.test('Hapi.ext', function (t) {
   })
 
   t.test('maintains transaction state, with array of config objects', function (t) {
-    var config = [
+    const config = [
       {
         type: 'onRequest',
         method: function (req, reply) {

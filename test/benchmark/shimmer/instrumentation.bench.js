@@ -5,10 +5,10 @@
 
 'use strict'
 
-var benchmark = require('../../lib/benchmark')
-var shimmer = require('../../../lib/shimmer')
+const benchmark = require('../../lib/benchmark')
+const shimmer = require('../../../lib/shimmer')
 
-var suite = benchmark.createBenchmark({ name: 'shimmer wrapping', delay: 0.01 })
+const suite = benchmark.createBenchmark({ name: 'shimmer wrapping', delay: 0.01 })
 
 suite.add({
   name: 'shimmer.patchModule()',

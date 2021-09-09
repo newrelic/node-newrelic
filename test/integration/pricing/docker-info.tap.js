@@ -5,18 +5,18 @@
 
 'use strict'
 
-var test = require('tap').test
-var fs = require('fs')
-var common = require('../../../lib/utilization/common')
-var dockerInfo = require('../../../lib/utilization/docker-info')
-var helper = require('../../lib/agent_helper')
-var path = require('path')
+const test = require('tap').test
+const fs = require('fs')
+const common = require('../../../lib/utilization/common')
+const dockerInfo = require('../../../lib/utilization/docker-info')
+const helper = require('../../lib/agent_helper')
+const path = require('path')
 
-var TEST_DIRECTORY = path.resolve(__dirname, '../../lib/cross_agent_tests/docker_container_id/')
+const TEST_DIRECTORY = path.resolve(__dirname, '../../lib/cross_agent_tests/docker_container_id/')
 
 test('pricing docker info', function (t) {
-  var os = require('os')
-  var originalPlatform = os.platform
+  const os = require('os')
+  const originalPlatform = os.platform
   os.platform = function () {
     return 'linux'
   }
@@ -31,11 +31,11 @@ test('pricing docker info', function (t) {
       return
     }
 
-    var cases = JSON.parse(data)
+    const cases = JSON.parse(data)
 
     t.autoend()
     t.ok(cases.length > 0, 'should have tests to run')
-    for (var i = 0; i < cases.length; ++i) {
+    for (let i = 0; i < cases.length; ++i) {
       t.test(cases[i].filename, makeTest(cases[i]))
     }
   })
@@ -43,7 +43,7 @@ test('pricing docker info', function (t) {
 
 function makeTest(testCase) {
   return function (t) {
-    var agent = helper.loadMockedAgent()
+    const agent = helper.loadMockedAgent()
     t.teardown(function () {
       helper.unloadAgent(agent)
       dockerInfo.clearVendorCache()
@@ -72,7 +72,7 @@ function makeTest(testCase) {
 }
 
 function mockProcRead(t, testFile) {
-  var original = common.readProc
+  const original = common.readProc
   t.teardown(function () {
     common.readProc = original
   })
