@@ -186,7 +186,6 @@
     "eslint-plugin-node": "^11.1.0",
     "eslint-plugin-prettier": "^3.4.0",
     "express": "*",
-    "fastify": "^2.15.3",
     "generic-pool": "^3.6.1",
     "glob": "^7.1.2",
     "got": "^8.0.1",

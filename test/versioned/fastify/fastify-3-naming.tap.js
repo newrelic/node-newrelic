@@ -16,8 +16,7 @@ const loadMiddleware = async (fastify) => {
     next()
   }
 
-  // If fastify version is >=3, .use() will fail unless a plugin adds it
-  fastify.use((_, __, next) => next())
+  await fastify.register(require('middie'))
 
   fastify.use(testMiddleware)
 }
@@ -79,36 +78,97 @@ const testUri = (uri, agent, test, port) => {
   })
 }
 
-tap.test('Test Transaction Naming', (test) => {
+const routesToTest = [
+  '/async-return',
+  '/async-reply-send',
+  '/sync-reply-send',
+  '/plugin-registered'
+]
+
+tap.test('Test Transaction Naming - Standard Export', (test) => {
   test.autoend()
 
-  const routesToTest = [
-    '/async-return',
-    '/async-reply-send',
-    '/sync-reply-send',
-    '/plugin-registered'
-  ]
-
-  let agent
-  let fastify
-
-  test.beforeEach(async () => {
-    agent = helper.instrumentMockedAgent({
+  test.beforeEach(async (t) => {
+    const agent = helper.instrumentMockedAgent({
       feature_flag: {
         fastify_instrumentation: true
       }
     })
-    fastify = require('fastify')()
+    const fastify = require('fastify')()
     await configureFastifyServer(fastify)
+
+    t.context.agent = agent
+    t.context.fastify = fastify
   })
 
-  test.afterEach(() => {
+  test.afterEach((t) => {
+    const { agent, fastify } = t.context
+
     helper.unloadAgent(agent)
     fastify.close()
   })
 
+  createTests(test)
+})
+
+tap.test('Test Transaction Naming - Fastify Property', (test) => {
+  test.autoend()
+
+  test.beforeEach(async (t) => {
+    const agent = helper.instrumentMockedAgent({
+      feature_flag: {
+        fastify_instrumentation: true
+      }
+    })
+    const fastify = require('fastify').fastify()
+    await configureFastifyServer(fastify)
+
+    t.context.agent = agent
+    t.context.fastify = fastify
+  })
+
+  test.afterEach((t) => {
+    const { agent, fastify } = t.context
+
+    helper.unloadAgent(agent)
+    fastify.close()
+  })
+
+  createTests(test)
+})
+
+tap.test('Test Transaction Naming - Default Property', (test) => {
+  test.autoend()
+
+  test.beforeEach(async (t) => {
+    const agent = helper.instrumentMockedAgent({
+      feature_flag: {
+        fastify_instrumentation: true
+      }
+    })
+    const fastify = require('fastify').default()
+    const { version: pkgVersion } = require('fastify/package')
+    await configureFastifyServer(fastify, pkgVersion)
+
+    t.context.agent = agent
+    t.context.fastify = fastify
+  })
+
+  test.afterEach((t) => {
+    const { agent, fastify } = t.context
+
+    helper.unloadAgent(agent)
+    fastify.close()
+  })
+
+  createTests(test)
+})
+
+function createTests(t) {
   for (const [, uri] of routesToTest.entries()) {
-    test.test(`testing naming for ${uri} `, (t) => {
+    t.test(`testing naming for ${uri} `, (t) => {
+      const { agent, fastify } = t.context
+
       t.autoend()
       t.plan(2)
       fastify.listen(0).then(() => {
@@ -117,5 +177,5 @@ tap.test('Test Transaction Naming', (test) => {
     })
   }
 
-  test.equals(testCount, callCount, 'middleware was called')
-})
+  t.equals(testCount, callCount, 'middleware was called')
+}
