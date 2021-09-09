@@ -1,3 +1,53 @@
+### v8.3.0 (2021-09-09)
+
+* Fixes issue where `.fastify` and `.default` properties would be missing from the `fastify` export when instrumented.
+
+  Instrumentation now sets `.fastify` and `.default` properties to the wrapped `fastify` export function for fastify v3.
+
+* Distributed tracing enabled by default.
+
+* Added the following environment variables for the corresponding configuration items:
+  * **config item:** `transaction_events.max_samples_stored`
+**env var:** `NEW_RELIC_TRANSACTION_EVENTS_MAX_SAMPLES_STORED`                                                  
+
+  * **config item:** `custom_insights_events.max_samples_stored`
+**env var:** `NEW_RELIC_CUSTOM_INSIGHTS_EVENTS_MAX_SAMPLES_STORED`                                                  
+
+  * **config item:** `error_collector.max_event_samples_stored`
+**env var:** `NEW_RELIC_ERROR_COLLECTOR_MAX_EVENT_SAMPLES_STORED`
+
+* Ported `webframework-shim`, `shim`, and `transaction-shim` tests to use TAP
+
+- Transitioned analytics_events.js to Tap from using Mocha globals.
+
+- Changed default for `span_events.max_samples_stored` from 1000 to 2000.
+
+- Transitioned high-security.test.js to use tap instead of mocha syntax.
+
+* Migrated `conglomerate-shim`, `datastore-shim`, `message-shim`, and `promise-shim` to use tap
+
+* Changed assertions for 2 http error msg tests to work with all versions of Node.js
+
+* Updated default span event limit to 2000.
+
+- Transitioned parse-sql.test.js to use tap over Mocha globals.
+
+- Transitioned priority-queue.test.js to use tap rather than Mocha globals.
+
+* Migrated util unit tests from mocha to tap
+
+- Made 'Supportability/SpanEvents/Limit' a constant.
+
+- Added supportability metric SpanEvent/Limit
+
+* Added support for properly setting the `host` and `port` for mongodb requests that are to cluster.
+
+* Added ability to configure the maximum number of spans that can be collected per minute via `span_events.max_samples_stored`.
+
+* Handled setting the `span_event_harvest_config` from server and using in `SpanEventAggregator` to enforce the queue size and harvest cycle duration.
+
+* Converted span-event-aggregator unit tests to use tap API.
+
 ### v8.2.0 (2021-08-25)
 
 * Added a new feature flag `unresolved_promise_cleanup` that defaults to true only when `new_promise_tracking` feature flag is set to `true`.  If disabled, this will help with performance of agent when an application has a lot of promises.  To disable set in your config `feature_flag.unresolved_promise_cleanup` to `false` or pass in the env var of `NEW_RELIC_FEATURE_FLAG_UNRESOLVED_PROMISE_CLEANUP=false` when starting application with agent.
