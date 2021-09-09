@@ -15,15 +15,13 @@ const crossAgentTests = require('../../lib/cross_agent_tests/cat/cat_map.json')
 const cat = require('../../../lib/util/cat.js')
 const NAMES = require('../../../lib/metrics/names.js')
 
-tap.test('when CAT is disabled', (t) => {
+tap.test('when CAT is disabled (default agent settings)', (t) => {
   t.autoend()
 
   let agent = null
 
   t.beforeEach(() => {
-    agent = helper.loadMockedAgent({
-      cross_application_tracer: { enabled: false }
-    })
+    agent = helper.loadMockedAgent()
   })
 
   t.afterEach(() => {
@@ -51,7 +49,11 @@ tap.test('when CAT is disabled', (t) => {
           'totalTime',
           'type',
           'webDuration',
-          'error'
+          'error',
+          'traceId',
+          'guid',
+          'priority',
+          'sampled'
         ])
 
       chai.expect(attrs.duration).to.be.closeTo(expectedDuration, 0.001)
@@ -146,7 +148,8 @@ tap.test('when CAT is enabled', (t) => {
     // App name from test data
     agent = helper.loadMockedAgent({
       apdex_t: 0.05,
-      cross_application_tracer: { enabled: true }
+      cross_application_tracer: { enabled: true },
+      distributed_tracing: { enabled: false }
     })
     agent.config.applications = function newFake() {
       return ['testAppName']

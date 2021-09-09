@@ -5,19 +5,20 @@
 
 'use strict'
 
-var test = require('tap').test
-var helper = require('../../lib/agent_helper')
-var hashes = require('../../../lib/util/hashes')
-var API = require('../../../api')
+const test = require('tap').test
+const helper = require('../../lib/agent_helper')
+const hashes = require('../../../lib/util/hashes')
+const API = require('../../../api')
 
 // Constants
-var CROSS_PROCESS_ID = '1337#7331'
-var PORT = 1337
+const CROSS_PROCESS_ID = '1337#7331'
+const PORT = 1337
 
 test('background transactions should not blow up with CAT', function (t) {
   t.plan(19)
-  var config = {
+  const config = {
     cross_application_tracer: { enabled: true },
+    distributed_tracing: { enabled: false },
     trusted_account_ids: [1337],
     cross_process_id: CROSS_PROCESS_ID,
     encoding_key: 'some key'
@@ -28,7 +29,7 @@ test('background transactions should not blow up with CAT', function (t) {
   const http = require('http')
   const api = new API(agent)
 
-  var server = http.createServer(function (req, res) {
+  const server = http.createServer(function (req, res) {
     t.ok(req.headers['x-newrelic-id'], 'got incoming x-newrelic-id')
     t.ok(req.headers['x-newrelic-transaction'], 'got incoming x-newrelic-transaction')
     req.resume()
@@ -38,8 +39,8 @@ test('background transactions should not blow up with CAT', function (t) {
   server.listen(
     PORT,
     api.startBackgroundTransaction('myTx', function () {
-      var tx = api.getTransaction()
-      var connOptions = {
+      const tx = api.getTransaction()
+      const connOptions = {
         hostname: 'localhost',
         port: PORT,
         path: '/thing'
@@ -52,10 +53,10 @@ test('background transactions should not blow up with CAT', function (t) {
     })
   )
 
-  var finishedHandlers = [
+  const finishedHandlers = [
     function web(trans, event) {
       t.equal(trans.name, 'WebTransaction/NormalizedUri/*', 'got web trans first')
-      var intrinsic = event[0]
+      const intrinsic = event[0]
 
       t.equal(intrinsic.name, 'WebTransaction/NormalizedUri/*', 'web event has name')
       t.ok(intrinsic['nr.guid'], 'web should have an nr.guid on event')
@@ -74,7 +75,7 @@ test('background transactions should not blow up with CAT', function (t) {
     },
     function background(trans, event) {
       t.equal(trans.name, 'OtherTransaction/Nodejs/myTx', 'got background trans second')
-      var intrinsic = event[0]
+      const intrinsic = event[0]
 
       t.ok(intrinsic['nr.guid'], 'bg should have an nr.guid on event')
       t.ok(intrinsic['nr.tripId'], 'bg should have an nr.tripId on event')
@@ -94,9 +95,9 @@ test('background transactions should not blow up with CAT', function (t) {
       )
     }
   ]
-  var count = 0
+  let count = 0
   agent.on('transactionFinished', function (trans) {
-    var event = agent.transactionEventAggregator.getEvents().filter(function (evt) {
+    const event = agent.transactionEventAggregator.getEvents().filter(function (evt) {
       return evt[0]['nr.guid'] === trans.id
     })[0]
     finishedHandlers[count](trans, event)

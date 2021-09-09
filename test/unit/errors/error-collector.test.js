@@ -59,6 +59,10 @@ describe('Errors', function () {
     agent = helper.loadMockedAgent({
       attributes: {
         enabled: true
+      },
+      // TODO: remove dt config setting when CAT deprecated
+      distributed_tracing: {
+        enabled: false
       }
     })
   })

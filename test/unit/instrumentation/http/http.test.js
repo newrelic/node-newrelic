@@ -416,7 +416,6 @@ test('built-in http module instrumentation', (t) => {
 
     t.beforeEach(() => {
       agent2 = helper.instrumentMockedAgent({
-        cross_application_tracer: { enabled: true },
         encoding_key: encKey
       })
     })
@@ -426,6 +425,7 @@ test('built-in http module instrumentation', (t) => {
     })
 
     t.test('should add cat headers from request to transaction', (t) => {
+      agent2.config.distributed_tracing.enabled = false
       const server = http.createServer(function (req, res) {
         const transaction = agent2.getTransaction()
 
@@ -508,6 +508,7 @@ test('built-in http module instrumentation', (t) => {
     t.beforeEach(() => {
       agent = helper.instrumentMockedAgent({
         cross_application_tracer: { enabled: false },
+        distributed_tracing: { enabled: false },
         encoding_key: encKey
       })
     })
@@ -556,6 +557,7 @@ test('built-in http module instrumentation', (t) => {
     t.beforeEach(() => {
       agent = helper.instrumentMockedAgent({
         cross_application_tracer: { enabled: true },
+        distributed_tracing: { enabled: false },
         encoding_key: encKey,
         trusted_account_ids: [123],
         cross_process_id: '456'
@@ -789,6 +791,7 @@ test('built-in http module instrumentation', (t) => {
     t.beforeEach(() => {
       agent = helper.instrumentMockedAgent({
         cross_application_tracer: { enabled: true },
+        distributed_tracing: { enabled: false },
         encoding_key: encKey,
         obfuscatedId: 'o123'
       })
@@ -944,6 +947,7 @@ test('built-in http module instrumentation', (t) => {
 
       agent = helper.instrumentMockedAgent({
         cross_application_tracer: { enabled: true },
+        distributed_tracing: { enabled: false },
         encoding_key: encKey,
         obfuscatedId: 'o123'
       })

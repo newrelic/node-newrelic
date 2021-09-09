@@ -940,6 +940,8 @@ function checkMetrics(t, metrics, expected, path) {
     [{ name: 'HttpDispatcher' }],
     [{ name: 'WebTransaction/Expressjs/GET/' + path }],
     [{ name: 'WebTransactionTotalTime/Expressjs/GET/' + path }],
+    [{ name: 'DurationByCaller/Unknown/Unknown/Unknown/Unknown/all' }],
+    [{ name: 'DurationByCaller/Unknown/Unknown/Unknown/Unknown/allWeb' }],
     [{ name: 'Apdex/Expressjs/GET/' + path }],
     [{ name: 'Apdex' }],
     [{ name: NAMES.EXPRESS.MIDDLEWARE + 'query//' }],
