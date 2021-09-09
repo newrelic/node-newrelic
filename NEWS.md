@@ -1,12 +1,7 @@
 ### v8.3.0 (2021-09-09)
 
-* Distributed tracing enabled by default.
-  * Updated default span event/`span_events.max_samples_stored` limit to 2000.
-  * Added ability to configure the maximum number of spans that can be collected per minute via `span_events.max_samples_stored`.
-  * Added environment variable, `NEW_RELIC_SPAN_EVENTS_MAX_SAMPLES_STORED`, to set `span_events.max_samples_stored`
-  * Handled setting the `span_event_harvest_config` from server and using in `SpanEventAggregator` to enforce the queue size and harvest cycle duration.
-  * Converted span-event-aggregator unit tests to use tap API.
-  * Made 'Supportability/SpanEvents/Limit' a constant.
+* Enabled Distributed Tracing (DT) by default.
+  * Added ability to configure the maximum number of spans that can be collected per minute via `span_events.max_samples_stored` and environment variable, `NEW_RELIC_SPAN_EVENTS_MAX_SAMPLES_STORED`.
   * Added supportability metric SpanEvent/Limit.
 
 * Added support for properly setting the `host` and `port` for mongodb requests that are to cluster.
@@ -17,29 +12,17 @@
 
 * Added the following environment variables for the corresponding configuration items:
   * **config item:** `transaction_events.max_samples_stored`
-**env var:** `NEW_RELIC_TRANSACTION_EVENTS_MAX_SAMPLES_STORED`                                                  
+**env var:** `NEW_RELIC_TRANSACTION_EVENTS_MAX_SAMPLES_STORED`
 
   * **config item:** `custom_insights_events.max_samples_stored`
-**env var:** `NEW_RELIC_CUSTOM_INSIGHTS_EVENTS_MAX_SAMPLES_STORED`                                                  
+**env var:** `NEW_RELIC_CUSTOM_INSIGHTS_EVENTS_MAX_SAMPLES_STORED`
 
   * **config item:** `error_collector.max_event_samples_stored`
 **env var:** `NEW_RELIC_ERROR_COLLECTOR_MAX_EVENT_SAMPLES_STORED`
 
-* Ported `webframework-shim`, `shim`, and `transaction-shim` tests to use tap.
-
-* Transitioned analytics_events.js to Tap from using Mocha globals.
-
-* Transitioned high-security.test.js to use tap instead of mocha syntax.
-
-* Migrated `conglomerate-shim`, `datastore-shim`, `message-shim`, and `promise-shim` to use tap.
+* Converted several unit tests to use the tap API.
 
 * Changed assertions for 2 http error msg tests to work with all versions of Node.js.
-
-* Transitioned parse-sql.test.js to use tap over Mocha globals.
-
-* Transitioned priority-queue.test.js to use tap rather than Mocha globals.
-
-* Migrated util unit tests from mocha to tap
 
 ### v8.2.0 (2021-08-25)
 
