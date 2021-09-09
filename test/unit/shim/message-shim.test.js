@@ -319,7 +319,8 @@ tap.test('MessageShim', function (t) {
       return helper.runInTransaction(agent, function () {
         return wrapped().then(function (v) {
           t.equal(v, val)
-          t.ok(segment.getDurationInMillis() >= DELAY)
+          const duration = segment.getDurationInMillis()
+          t.ok(duration >= DELAY, `Segment duration: ${duration}, Timer duration: ${DELAY}`)
         })
       })
     })
