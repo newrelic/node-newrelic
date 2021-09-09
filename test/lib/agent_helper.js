@@ -459,7 +459,7 @@ const helper = (module.exports = {
     if (value) {
       this.equal(obj[key], value)
     } else {
-      this.not(obj[key], 'testNonWritable test value')
+      this.not(obj[key], 'testNonWritable test value', 'should not set value when non-writable')
     }
   }
 })
