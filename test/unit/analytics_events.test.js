@@ -5,24 +5,25 @@
 
 'use strict'
 
-// TODO: convert to normal tap style.
-// Below allows use of mocha DSL with tap runner.
-require('tap').mochaGlobals()
+const tap = require('tap')
 
-var chai = require('chai')
-var helper = require('../lib/agent_helper')
-var Transaction = require('../../lib/transaction')
+const Transaction = require('../../lib/transaction')
+const helper = require('../lib/agent_helper')
 
-var DESTS = require('../../lib/config/attribute-filter').DESTINATIONS
-var expect = chai.expect
+const DESTS = require('../../lib/config/attribute-filter').DESTINATIONS
 
 const LIMIT = 10
 
-describe('Analytics events', function () {
-  var agent = null
-  var trans = null
+tap.test('Analytics events', function (t) {
+  t.autoend()
 
-  beforeEach(function () {
+  let agent = null
+  let trans = null
+
+  t.beforeEach(function () {
+    if (agent) {
+      return
+    } // already instantiated
     agent = helper.loadMockedAgent({
       transaction_events: {
         max_samples_stored: LIMIT
@@ -31,125 +32,148 @@ describe('Analytics events', function () {
     agent.config.attributes.enabled = true
   })
 
-  afterEach(function () {
+  t.afterEach(function () {
+    if (!agent) {
+      return
+    } // already destroyed
     helper.unloadAgent(agent)
+    agent = null
   })
 
-  describe('when there are attributes on transaction', function () {
-    beforeEach(function () {
+  t.test('when there are attributes on transaction', function (t) {
+    t.autoend()
+
+    t.beforeEach(function () {
       trans = new Transaction(agent)
     })
 
-    it('event should contain those attributes', function () {
+    t.test('event should contain those attributes', function (t) {
       trans.trace.attributes.addAttribute(DESTS.TRANS_EVENT, 'test', 'TEST')
       agent._addEventFromTransaction(trans)
 
-      var first = 0
-      var agentAttrs = 2
+      const first = 0
+      const agentAttrs = 2
 
       const events = getTransactionEvents(agent)
       const firstEvent = events[first]
-      expect(firstEvent[agentAttrs]).to.have.property('test', 'TEST')
+      t.equal(firstEvent[agentAttrs].test, 'TEST')
+      t.end()
     })
   })
 
-  describe('when host name is specified by user', function () {
-    beforeEach(function () {
+  t.test('when host name is specified by user', function (t) {
+    t.autoend()
+
+    t.beforeEach(function () {
       agent.config.process_host.display_name = 'test-value'
       trans = new Transaction(agent)
     })
 
-    it('name should be sent with event', function () {
+    t.test('name should be sent with event', function (t) {
       agent._addEventFromTransaction(trans)
 
-      var first = 0
-      var agentAttrs = 2
+      const first = 0
+      const agentAttrs = 2
 
       const events = getTransactionEvents(agent)
       const firstEvent = events[first]
-      expect(firstEvent[agentAttrs]).deep.equals({
+      t.same(firstEvent[agentAttrs], {
         'host.displayName': 'test-value'
       })
+      t.end()
     })
   })
 
-  describe('when analytics events are disabled', function () {
-    it('collector cannot enable remotely', function () {
+  t.test('when analytics events are disabled', function (t) {
+    t.autoend()
+
+    t.test('collector cannot enable remotely', function (t) {
       agent.config.transaction_events.enabled = false
-      expect(function () {
+      t.doesNotThrow(function () {
         agent.config.onConnect({ collect_analytics_events: true })
-      }).not.throws()
-      expect(agent.config.transaction_events.enabled).equals(false)
+      })
+      t.equal(agent.config.transaction_events.enabled, false)
+      t.end()
     })
   })
 
-  describe('when analytics events are enabled', function () {
-    it('collector can disable remotely', function () {
+  t.test('when analytics events are enabled', function (t) {
+    t.autoend()
+
+    t.test('collector can disable remotely', function (t) {
       agent.config.transaction_events.enabled = true
-      expect(function () {
+      t.doesNotThrow(function () {
         agent.config.onConnect({ collect_analytics_events: false })
-      }).not.throws()
-      expect(agent.config.transaction_events.enabled).equals(false)
+      })
+      t.equal(agent.config.transaction_events.enabled, false)
+      t.end()
     })
   })
 
-  describe('on transaction finished', function () {
-    beforeEach(function () {
+  t.test('on transaction finished', function (t) {
+    t.autoend()
+
+    t.beforeEach(function () {
       trans = new Transaction(agent)
     })
 
-    it('should queue an event', function (done) {
-      agent._addEventFromTransaction = function (transaction) {
-        expect(transaction).to.equal(trans)
-        done()
+    t.test('should queue an event', async function (t) {
+      agent._addEventFromTransaction = (transaction) => {
+        t.equal(transaction, trans)
+        trans.end()
+        t.end()
       }
-
-      trans.end()
     })
 
-    it('should generate an event from transaction', function () {
+    t.test('should generate an event from transaction', function (t) {
       trans.end()
 
       const events = getTransactionEvents(agent)
 
-      expect(events.length).to.equal(1)
+      t.equal(events.length, 1)
 
       var event = events[0]
-      expect(event).to.be.a('Array')
+      t.ok(Array.isArray(event))
       var eventValues = event[0]
-      expect(eventValues).to.be.a('object')
-      expect(eventValues.webDuration).to.be.a('number').and.not.NaN
-      expect(eventValues.webDuration).to.equal(trans.timer.getDurationInMillis() / 1000)
-      expect(eventValues.timestamp).to.be.a('number').and.not.NaN
-      expect(eventValues.timestamp).to.equal(trans.timer.start)
-      expect(eventValues.name).to.equal(trans.name)
-      expect(eventValues.duration).to.equal(trans.timer.getDurationInMillis() / 1000)
-      expect(eventValues.type).to.equal('Transaction')
-      expect(eventValues.error).to.equal(false)
+      t.equal(typeof eventValues, 'object')
+      t.equal(typeof eventValues.webDuration, 'number')
+      t.not(Number.isNaN(eventValues.webDuration))
+      t.equal(eventValues.webDuration, trans.timer.getDurationInMillis() / 1000)
+      t.equal(typeof eventValues.timestamp, 'number')
+      t.not(Number.isNaN(eventValues.timestamp))
+      t.equal(eventValues.timestamp, trans.timer.start)
+      t.equal(eventValues.name, trans.name)
+      t.equal(eventValues.duration, trans.timer.getDurationInMillis() / 1000)
+      t.equal(eventValues.type, 'Transaction')
+      t.equal(eventValues.error, false)
+      t.end()
     })
 
-    it('should flag errored transactions', function () {
+    t.test('should flag errored transactions', function (t) {
       trans.addException(new Error('wuh oh'))
       trans.end()
 
       const events = getTransactionEvents(agent)
-      expect(events.length).to.equal(1)
+      t.equal(events.length, 1)
 
       var event = events[0]
-      expect(event).to.be.a('Array')
+      t.ok(Array.isArray(event))
       var eventValues = event[0]
-      expect(eventValues).to.be.a('object')
-      expect(eventValues.webDuration).to.be.a('number').and.not.NaN
-      expect(eventValues.webDuration).to.equal(trans.timer.getDurationInMillis() / 1000)
-      expect(eventValues.timestamp).to.be.a('number').and.not.NaN
-      expect(eventValues.timestamp).to.equal(trans.timer.start)
-      expect(eventValues.name).to.equal(trans.name)
-      expect(eventValues.duration).to.equal(trans.timer.getDurationInMillis() / 1000)
-      expect(eventValues.type).to.equal('Transaction')
-      expect(eventValues.error).to.equal(true)
+      t.equal(typeof eventValues, 'object')
+      t.equal(typeof eventValues.webDuration, 'number')
+      t.not(Number.isNaN(eventValues.webDuration))
+      t.equal(eventValues.webDuration, trans.timer.getDurationInMillis() / 1000)
+      t.equal(typeof eventValues.timestamp, 'number')
+      t.not(Number.isNaN(eventValues.timestamp))
+      t.equal(eventValues.timestamp, trans.timer.start)
+      t.equal(eventValues.name, trans.name)
+      t.equal(eventValues.duration, trans.timer.getDurationInMillis() / 1000)
+      t.equal(eventValues.type, 'Transaction')
+      t.equal(eventValues.error, true)
+      t.end()
     })
 
-    it('should add DT parent attributes with an accepted payload', function () {
+    t.test('should add DT parent attributes with an accepted payload', function (t) {
       agent.config.distributed_tracing.enabled = true
       agent.config.primary_application_id = 'test'
       agent.config.account_id = 1
@@ -161,63 +185,67 @@ describe('Analytics events', function () {
 
       const events = getTransactionEvents(agent)
 
-      expect(events.length).to.equal(1)
+      t.equal(events.length, 1)
 
       const attributes = events[0][0]
-      expect(attributes.traceId).to.equal(trans.traceId)
-      expect(attributes.guid).to.equal(trans.id)
-      expect(attributes.priority).to.equal(trans.priority)
-      expect(attributes.sampled).to.equal(trans.sampled)
-      expect(attributes.parentId).to.equal(trans.id)
-      expect(attributes['parent.type']).to.equal('App')
-      expect(attributes['parent.app']).to.equal(agent.config.primary_application_id)
-      expect(attributes['parent.account']).to.equal(agent.config.account_id)
-      expect(attributes.error).to.equal(false)
-      expect(trans.sampled).to.equal(true)
-      expect(trans.priority).to.be.greaterThan(1)
+      t.equal(attributes.traceId, trans.traceId)
+      t.equal(attributes.guid, trans.id)
+      t.equal(attributes.priority, trans.priority)
+      t.equal(attributes.sampled, trans.sampled)
+      t.equal(attributes.parentId, trans.id)
+      t.equal(attributes['parent.type'], 'App')
+      t.equal(attributes['parent.app'], agent.config.primary_application_id)
+      t.equal(attributes['parent.account'], agent.config.account_id)
+      t.equal(attributes.error, false)
+      t.equal(trans.sampled, true)
+      t.ok(trans.priority > 1)
+      t.end()
     })
 
-    it('should add DT attributes', function () {
+    t.test('should add DT attributes', function (t) {
       agent.config.distributed_tracing.enabled = true
       trans = new Transaction(agent)
       trans.end()
 
       const events = getTransactionEvents(agent)
 
-      expect(events.length).to.equal(1)
+      t.equal(events.length, 1)
 
       var attributes = events[0][0]
-      expect(attributes.traceId).to.equal(trans.traceId)
-      expect(attributes.guid).to.equal(trans.id)
-      expect(attributes.priority).to.equal(trans.priority)
-      expect(attributes.sampled).to.equal(trans.sampled)
-      expect(trans.sampled).to.equal(true)
-      expect(trans.priority).to.be.greaterThan(1)
+      t.equal(attributes.traceId, trans.traceId)
+      t.equal(attributes.guid, trans.id)
+      t.equal(attributes.priority, trans.priority)
+      t.equal(attributes.sampled, trans.sampled)
+      t.equal(trans.sampled, true)
+      t.ok(trans.priority > 1)
+      t.end()
     })
 
-    it('should contain user and agent attributes', function () {
+    t.test('should contain user and agent attributes', function (t) {
       trans.end()
 
       const events = getTransactionEvents(agent)
 
-      expect(events.length).to.equal(1)
+      t.equal(events.length, 1)
 
       var event = events[0]
-      expect(event[0]).to.be.an('Object')
-      expect(event[1]).to.be.an('Object')
-      expect(event[2]).to.be.an('Object')
+      t.equal(typeof event[0], 'object')
+      t.equal(typeof event[1], 'object')
+      t.equal(typeof event[2], 'object')
+      t.end()
     })
 
-    it('should contain custom attributes', function () {
+    t.test('should contain custom attributes', function (t) {
       trans.trace.addCustomAttribute('a', 'b')
       trans.end()
 
       const events = getTransactionEvents(agent)
       var event = events[0]
-      expect(event[1].a).to.equal('b')
+      t.equal(event[1].a, 'b')
+      t.end()
     })
 
-    it('includes internal synthetics attributes', function () {
+    t.test('includes internal synthetics attributes', function (t) {
       trans.syntheticsData = {
         version: 1,
         accountId: 123,
@@ -231,17 +259,18 @@ describe('Analytics events', function () {
       const events = getTransactionEvents(agent)
       var event = events[0]
       var attributes = event[0]
-      expect(attributes['nr.syntheticsResourceId']).equal('resId')
-      expect(attributes['nr.syntheticsJobId']).equal('jobId')
-      expect(attributes['nr.syntheticsMonitorId']).equal('monId')
+      t.equal(attributes['nr.syntheticsResourceId'], 'resId')
+      t.equal(attributes['nr.syntheticsJobId'], 'jobId')
+      t.equal(attributes['nr.syntheticsMonitorId'], 'monId')
+      t.end()
     })
 
-    it('not spill over reservoir size', function () {
+    t.test('not spill over reservoir size', function (t) {
       for (var i = 0; i < 20; i++) {
         agent._addEventFromTransaction(trans)
       }
-
-      expect(getTransactionEvents(agent).length).equals(LIMIT)
+      t.equal(getTransactionEvents(agent).length, LIMIT)
+      t.end()
     })
   })
 })
