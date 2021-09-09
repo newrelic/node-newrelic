@@ -22,6 +22,7 @@ test('cross application tracing full integration', function (t) {
   t.plan(57)
   var config = {
     cross_application_tracer: { enabled: true },
+    distributed_tracing: { enabled: false },
     trusted_account_ids: [1337],
     cross_process_id: CROSS_PROCESS_ID,
     encoding_key: 'some key'

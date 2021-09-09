@@ -253,6 +253,7 @@ tap.test('amqplib promise instrumentation', function (t) {
   })
 
   t.test('consume in a transaction with old CAT', function (t) {
+    agent.config.distributed_tracing.enabled = false
     var queue = null
     var consumeTxn = null
     var exchange = amqpUtils.DIRECT_EXCHANGE
@@ -309,7 +310,6 @@ tap.test('amqplib promise instrumentation', function (t) {
   })
 
   t.test('consume in a transaction with distributed tracing', function (t) {
-    agent.config.distributed_tracing.enabled = true
     agent.config.account_id = 1234
     agent.config.primary_application_id = 4321
     agent.config.trusted_account_key = 1234

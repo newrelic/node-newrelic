@@ -122,6 +122,8 @@ function checkMetrics(t, metrics, expected, path) {
     [{ name: 'HttpDispatcher' }],
     [{ name: 'WebTransaction/Hapi/GET/' + path }],
     [{ name: 'WebTransactionTotalTime/Hapi/GET/' + path }],
+    [{ name: 'DurationByCaller/Unknown/Unknown/Unknown/Unknown/all' }],
+    [{ name: 'DurationByCaller/Unknown/Unknown/Unknown/Unknown/allWeb' }],
     [{ name: 'Apdex/Hapi/GET/' + path }],
     [{ name: 'Apdex' }]
   ]

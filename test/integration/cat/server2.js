@@ -10,6 +10,7 @@ const hashes = require('../../../lib/util/hashes')
 
 const config = {
   cross_application_tracer: { enabled: true },
+  distributed_tracing: { enabled: false },
   trusted_account_ids: [1337],
   cross_process_id: '2448#8442',
   encoding_key: 'some key'

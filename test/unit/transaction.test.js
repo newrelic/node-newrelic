@@ -586,7 +586,8 @@ describe('Transaction', function () {
       transaction = new Transaction(agent)
     })
 
-    it('includes CAT attributes', function () {
+    it('includes CAT attributes if DT disabled', function () {
+      transaction.agent.config.distributed_tracing.enabled = false
       transaction.tripId = '3456'
       transaction.referringTransactionGuid = '1234'
       transaction.incomingCatId = '2345'
@@ -619,9 +620,7 @@ describe('Transaction', function () {
       )
     })
 
-    it('includes distributed trace attributes if flag is enabled', function () {
-      transaction.agent.config.distributed_tracing.enabled = true
-
+    it('includes distributed trace attributes', function () {
       var attributes = transaction.getIntrinsicAttributes()
       expect(transaction.priority.toString().length).to.be.at.most(8)
 

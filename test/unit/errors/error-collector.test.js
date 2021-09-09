@@ -1286,6 +1286,7 @@ describe('Errors', function () {
       })
 
       it('should contain CAT intrinsic parameters', function () {
+        agent.config.distributed_tracing.enabled = false
         var transaction = createTransaction(agent, 200)
 
         transaction.referringTransactionGuid = '1234'
@@ -1635,13 +1636,11 @@ describe('Errors', function () {
           expect(attributes['nr.transactionGuid']).equal(transaction.id)
         })
 
-        it('includes internal referringTransactionGuid attribute', function () {
+        it('includes traceId attribute', function () {
           transaction.referringTransactionGuid = '1234'
           transaction.end()
           var attributes = getFirstEventIntrinsicAttributes(aggregator)
-          expect(attributes['nr.referringTransactionGuid']).to.equal(
-            transaction.referringTransactionGuid
-          )
+          expect(attributes.traceId).to.equal(transaction.traceId)
         })
 
         it('includes http port if the transaction is a web transaction', function (done) {

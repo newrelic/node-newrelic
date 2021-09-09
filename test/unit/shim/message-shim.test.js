@@ -357,6 +357,7 @@ tap.test('MessageShim', function (t) {
     })
 
     t.test('should insert CAT request headers', function (t) {
+      agent.config.distributed_tracing.enabled = false
       const headers = {}
       shim.recordProduce(wrappable, 'getActiveSegment', function () {
         return { headers: headers }
@@ -1101,6 +1102,7 @@ tap.test('MessageShim', function (t) {
     })
 
     t.test('should extract CAT headers from the message', function (t) {
+      agent.config.distributed_tracing.enabled = false
       const params = {
         encoding_key: 'this is an encoding key',
         cross_process_id: '1234#4321'

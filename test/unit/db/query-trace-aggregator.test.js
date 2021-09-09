@@ -1059,6 +1059,7 @@ function addQuery(queries, duration, url, query) {
 function FakeTransaction(url = null) {
   this.url = url
   this.name = 'FakeTransaction'
+  this.addDistributedTraceIntrinsics = () => {}
 }
 
 FakeTransaction.prototype.getFullName = function () {
