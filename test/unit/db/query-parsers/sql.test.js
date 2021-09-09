@@ -5,43 +5,52 @@
 
 'use strict'
 
-// TODO: convert to normal tap style.
-// Below allows use of mocha DSL with tap runner.
-require('tap').mochaGlobals()
-
-const chai = require('chai')
-const should = chai.should()
-const expect = chai.expect
+const { test } = require('tap')
 const parseSql = require('../../../../lib/db/query-parsers/sql')
 const CATs = require('../../../lib/cross_agent_tests/sql_parsing')
 
-describe('database query parser', function () {
-  it('should accept query as a string', function () {
+/**
+ * Wraps query in double-quotes and
+ * escapes \n, \r, and \t
+ *
+ * @param {string} sql to escape
+ */
+function clean(sql) {
+  return '"' + sql.replace(/\n/gm, '\\n').replace(/\r/gm, '\\r').replace(/\t/gm, '\\t') + '"'
+}
+
+test('database query parser', function (t) {
+  t.autoend()
+  t.test('should accept query as a string', function (t) {
     const ps = parseSql('select * from someTable')
-    ps.query.should.equal('select * from someTable')
+    t.equal(ps.query, 'select * from someTable')
+    t.end()
   })
 
-  it('should accept query as a sql property of an object', function () {
+  t.test('should accept query as a sql property of an object', function (t) {
     const ps = parseSql({
       sql: 'select * from someTable'
     })
-    ps.query.should.equal('select * from someTable')
+    t.equal(ps.query, 'select * from someTable')
+    t.end()
   })
 
-  describe('SELECT SQL', function () {
-    it('should parse a simple query', function () {
+  t.test('SELECT SQL', function (t) {
+    t.autoend()
+    t.test('should parse a simple query', function (t) {
       const ps = parseSql('Select * from dude')
-      should.exist(ps)
+      t.ok(ps)
 
-      should.exist(ps.operation)
-      ps.operation.should.equal('select')
+      t.ok(ps.operation)
+      t.equal(ps.operation, 'select')
 
-      should.exist(ps.collection)
-      ps.collection.should.equal('dude')
-      ps.query.should.equal('Select * from dude')
+      t.ok(ps.collection)
+      t.equal(ps.collection, 'dude')
+      t.equal(ps.query, 'Select * from dude')
+      t.end()
     })
 
-    it('should parse more interesting queries too', function () {
+    t.test('should parse more interesting queries too', function (t) {
       const sql = [
         'SELECT P.postcode, ',
         'P.suburb, ',
@@ -57,110 +66,121 @@ describe('database query parser', function () {
         'LIMIT 1'
       ].join('\n')
       const ps = parseSql(sql)
-      expect(ps).to.exist
-      expect(ps).to.have.property('operation', 'select')
-      expect(ps).to.have.property('collection', 'postcodes')
-      expect(ps).to.have.property('query', sql)
+      t.ok(ps)
+      t.equal(ps.operation, 'select')
+      t.equal(ps.collection, 'postcodes')
+      t.equal(ps.query, sql)
+      t.end()
     })
   })
 
-  describe('DELETE SQL', function () {
-    it('should parse a simple command', function () {
+  t.test('DELETE SQL', function (t) {
+    t.autoend()
+    t.test('should parse a simple command', function (t) {
       const ps = parseSql('DELETE\nfrom dude')
-      should.exist(ps)
+      t.ok(ps)
 
-      should.exist(ps.operation)
-      ps.operation.should.equal('delete')
+      t.ok(ps.operation)
+      t.equal(ps.operation, 'delete')
 
-      should.exist(ps.collection)
-      ps.collection.should.equal('dude')
-      ps.query.should.equal('DELETE\nfrom dude')
+      t.ok(ps.collection)
+      t.equal(ps.collection, 'dude')
+      t.equal(ps.query, 'DELETE\nfrom dude')
+      t.end()
     })
 
-    it('should parse a command with conditions', function () {
+    t.test('should parse a command with conditions', function (t) {
       const ps = parseSql("DELETE\nfrom dude where name = 'man'")
-      should.exist(ps)
+      t.ok(ps)
 
-      should.exist(ps.operation)
-      ps.operation.should.equal('delete')
+      t.ok(ps.operation)
+      t.equal(ps.operation, 'delete')
 
-      should.exist(ps.collection)
-      ps.collection.should.equal('dude')
-      ps.query.should.equal("DELETE\nfrom dude where name = 'man'")
+      t.ok(ps.collection)
+      t.equal(ps.collection, 'dude')
+      t.equal(ps.query, "DELETE\nfrom dude where name = 'man'")
+      t.end()
     })
   })
 
-  describe('UPDATE SQL', function () {
-    it('should parse a command with gratuitous white space and conditions', function () {
+  t.test('UPDATE SQL', function (t) {
+    t.autoend()
+    t.test('should parse a command with gratuitous white space and conditions', function (t) {
       const ps = parseSql('  update test set value = 1 where id = 12')
-      should.exist(ps)
+      t.ok(ps)
 
-      should.exist(ps.operation)
-      ps.operation.should.equal('update')
+      t.ok(ps.operation)
+      t.equal(ps.operation, 'update')
 
-      should.exist(ps.collection)
-      ps.collection.should.equal('test')
-      ps.query.should.equal('update test set value = 1 where id = 12')
+      t.ok(ps.collection)
+      t.equal(ps.collection, 'test')
+      t.equal(ps.query, 'update test set value = 1 where id = 12')
+      t.end()
     })
   })
 
-  describe('INSERT SQL', function () {
-    it('should parse a command with a subquery', function () {
+  t.test('INSERT SQL', function (t) {
+    t.autoend()
+    t.test('should parse a command with a subquery', function (t) {
       const ps = parseSql('  insert into\ntest\nselect * from dude')
-      should.exist(ps)
+      t.ok(ps)
 
-      should.exist(ps.operation)
-      ps.operation.should.equal('insert')
+      t.ok(ps.operation)
+      t.equal(ps.operation, 'insert')
 
-      should.exist(ps.collection)
-      ps.collection.should.equal('test')
-      ps.query.should.equal('insert into\ntest\nselect * from dude')
+      t.ok(ps.collection)
+      t.equal(ps.collection, 'test')
+      t.equal(ps.query, 'insert into\ntest\nselect * from dude')
+      t.end()
     })
   })
 
-  describe('invalid SQL', function () {
-    it("should return 'other' when handed garbage", function () {
+  t.test('invalid SQL', function (t) {
+    t.autoend()
+    t.test("should return 'other' when handed garbage", function (t) {
       const ps = parseSql('  bulge into\ndudes\nselect * from dude')
-      should.exist(ps)
-      ps.operation.should.equal('other')
-      should.not.exist(ps.collection)
-      ps.query.should.equal('bulge into\ndudes\nselect * from dude')
+      t.ok(ps)
+      t.equal(ps.operation, 'other')
+      t.notOk(ps.collection)
+      t.equal(ps.query, 'bulge into\ndudes\nselect * from dude')
+      t.end()
     })
 
-    it("should return 'other' when handed an object", function () {
+    t.test("should return 'other' when handed an object", function (t) {
       const ps = parseSql({
         key: 'value'
       })
-      should.exist(ps)
-      ps.operation.should.equal('other')
-      should.not.exist(ps.collection)
-      expect(ps.query).equal('')
+      t.ok(ps)
+      t.equal(ps.operation, 'other')
+      t.notOk(ps.collection)
+      t.equal(ps.query, '')
+      t.end()
     })
   })
 
-  describe('CAT', function () {
+  t.test('CAT', function (t) {
+    t.autoend()
     CATs.forEach(function (cat) {
-      describe(clean(cat.input), function () {
+      t.test(clean(cat.input), function (t) {
+        t.autoend()
         const ps = parseSql(cat.input)
 
-        it('should parse the operation as ' + cat.operation, function () {
-          expect(ps).to.have.property('operation', cat.operation)
+        t.test('should parse the operation as ' + cat.operation, function (t) {
+          t.equal(ps.operation, cat.operation)
+          t.end()
         })
 
         if (cat.table === '(subquery)') {
-          it('should parse subquery collections as ' + cat.table)
+          t.test('should parse subquery collections as ' + cat.table)
         } else if (/\w+\.\w+/.test(ps.collection)) {
-          it('should strip database names from collection names as ' + cat.table)
+          t.test('should strip database names from collection names as ' + cat.table)
         } else {
-          it('should parse the collection as ' + cat.table, function () {
-            expect(ps).to.have.property('collection', cat.table)
+          t.test('should parse the collection as ' + cat.table, function (t) {
+            t.equal(ps.collection, cat.table)
+            t.end()
           })
         }
       })
     })
   })
 })
-
-function clean(sql) {
-  return '"' + sql.replace(/\n/gm, '\\n').replace(/\r/gm, '\\r').replace(/\t/gm, '\\t') + '"'
-}
