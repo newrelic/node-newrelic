@@ -5,10 +5,10 @@
 
 'use strict'
 
-var testsDir = '../../integration/instrumentation/promises'
+const testsDir = '../../integration/instrumentation/promises'
 
-var tap = require('tap')
-var testRegressions = require(testsDir + '/regressions')
+const tap = require('tap')
+const testRegressions = require(testsDir + '/regressions')
 
 tap.test('bluebird', function (t) {
   t.autoend()

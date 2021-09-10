@@ -5,23 +5,23 @@
 
 'use strict'
 
-var request = require('request')
-var tap = require('tap')
-var helper = require('../../../lib/agent_helper')
-var utils = require('./hapi-18-utils')
+const request = require('request')
+const tap = require('tap')
+const helper = require('../../../lib/agent_helper')
+const utils = require('./hapi-18-utils')
 
 tap.test('Hapi v17 ext', function (t) {
   t.autoend()
 
-  var agent = null
-  var server = null
-  var port = null
+  let agent = null
+  let server = null
+  let port = null
 
   // Queue that executes outside of a transaction context
-  var tasks = []
-  var intervalId = setInterval(function () {
+  const tasks = []
+  const intervalId = setInterval(function () {
     while (tasks.length) {
-      var task = tasks.pop()
+      const task = tasks.pop()
       task()
     }
   }, 10)

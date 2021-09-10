@@ -9,10 +9,10 @@ const tap = require('tap')
 
 exports.getServer = function getServer(cfg) {
   cfg = cfg || {}
-  var host = cfg.host || 'localhost'
-  var port = cfg.port || 0
-  var opts = cfg.options || {}
-  var hapi = cfg.hapi || require('hapi')
+  const host = cfg.host || 'localhost'
+  const port = cfg.port || 0
+  const opts = cfg.options || {}
+  const hapi = cfg.hapi || require('hapi')
 
   // v17 exports two references to the server object,
   // so we'll let fate decide which to use for a given test

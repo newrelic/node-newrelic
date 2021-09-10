@@ -28,8 +28,8 @@ tap.test('Collector API should connect to staging-collector.newrelic.com', (t) =
       level: 'trace'
     }
   })
-  var agent = new Agent(config)
-  var api = agent.collector
+  const agent = new Agent(config)
+  const api = agent.collector
 
   api.connect(function (error, response) {
     t.error(error, 'connected without error')

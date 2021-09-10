@@ -5,25 +5,25 @@
 
 'use strict'
 
-var tap = require('tap')
-var test = tap.test
-var helper = require('../../lib/agent_helper')
-var EventEmitter = require('events').EventEmitter
+const tap = require('tap')
+const test = tap.test
+const helper = require('../../lib/agent_helper')
+const EventEmitter = require('events').EventEmitter
 
 test('bind in transaction', function testBind(t) {
-  var agent = helper.loadTestAgent(t)
-  var tracer = agent.tracer
-  var context = {}
+  const agent = helper.loadTestAgent(t)
+  const tracer = agent.tracer
+  const context = {}
   t.plan(10)
 
   helper.runInTransaction(agent, function inTrans(transaction) {
-    var root = transaction.trace.root
-    var other = tracer.createSegment('other')
+    const root = transaction.trace.root
+    const other = tracer.createSegment('other')
     t.equal(tracer.getTransaction(), transaction, 'should start in transaction')
 
     t.comment('implicit segment bind')
     t.equal(tracer.getSegment(), root, 'should start at root segment')
-    var bound = tracer.bindFunction(compare)
+    let bound = tracer.bindFunction(compare)
 
     tracer.segment = null
     bound.call(context, root)
@@ -50,12 +50,12 @@ test('bind in transaction', function testBind(t) {
 })
 
 test('bind outside transaction', function testBind(t) {
-  var agent = helper.loadTestAgent(t)
-  var tracer = agent.tracer
-  var root
+  const agent = helper.loadTestAgent(t)
+  const tracer = agent.tracer
+  let root
   t.plan(5)
 
-  var bound = tracer.bindFunction(compare)
+  let bound = tracer.bindFunction(compare)
   compare(null)
   bound(null)
 
@@ -76,14 +76,14 @@ test('bind outside transaction', function testBind(t) {
 })
 
 test('bind + throw', function testThrows(t) {
-  var agent = helper.loadTestAgent(t)
-  var tracer = agent.tracer
-  var error = new Error('oh no!!')
+  const agent = helper.loadTestAgent(t)
+  const tracer = agent.tracer
+  const error = new Error('oh no!!')
   t.plan(12)
 
   helper.runInTransaction(agent, function inTrans(transaction) {
     t.comment('root is active')
-    var root = transaction.trace.root
+    const root = transaction.trace.root
     compare(dangerous(root, root), root)
     compare(dangerous(null, root), root)
 
@@ -115,10 +115,10 @@ test('bind + throw', function testThrows(t) {
 test('bind + capture error', function testThrows(t) {
   helper.temporarilyOverrideTapUncaughtBehavior(tap, t)
 
-  var agent = helper.loadTestAgent(t)
-  var tracer = agent.tracer
-  var error = new Error('oh no!!')
-  var name = 'some custom transaction name'
+  const agent = helper.loadTestAgent(t)
+  const tracer = agent.tracer
+  const error = new Error('oh no!!')
+  const name = 'some custom transaction name'
   t.plan(8)
 
   // These don't really do anything with newest tap but leaving
@@ -127,7 +127,7 @@ test('bind + capture error', function testThrows(t) {
   helper.temporarilyRemoveListeners(t, t.domain, 'error')
 
   // Need to break out of tap's domain so the error is truly uncaught.
-  var pin = setTimeout(function () {}, 5000)
+  const pin = setTimeout(function () {}, 5000)
   helper.runOutOfContext(function () {
     clearTimeout(pin)
 
@@ -135,10 +135,10 @@ test('bind + capture error', function testThrows(t) {
   })
 
   function inTrans(transaction) {
-    var other = tracer.createSegment('other')
+    const other = tracer.createSegment('other')
     transaction.name = name
     process.once('uncaughtException', function onUncaughtException(err) {
-      var logged = agent.errors.traceAggregator.errors[0]
+      const logged = agent.errors.traceAggregator.errors[0]
       t.notOk(tracer.getSegment(), 'should not leak transaction into handler')
 
       t.equal(err, error, 'should have expected error')
@@ -168,14 +168,14 @@ test('bind + capture error', function testThrows(t) {
 })
 
 test('bind + full', function testThrows(t) {
-  var agent = helper.loadTestAgent(t)
-  var tracer = agent.tracer
+  const agent = helper.loadTestAgent(t)
+  const tracer = agent.tracer
   t.plan(10)
 
   helper.runInTransaction(agent, function inTrans() {
-    var segment = tracer.createSegment('segment')
-    var notStarted = tracer.createSegment('notStarted')
-    var bound = tracer.bindFunction(check, segment, true)
+    const segment = tracer.createSegment('segment')
+    const notStarted = tracer.createSegment('notStarted')
+    let bound = tracer.bindFunction(check, segment, true)
 
     t.notOk(segment.timer.hrstart)
     bound()
@@ -204,12 +204,12 @@ test('bind + full', function testThrows(t) {
 })
 
 test('bind + bad function', function testThrows(t) {
-  var agent = helper.loadTestAgent(t)
-  var tracer = agent.tracer
+  const agent = helper.loadTestAgent(t)
+  const tracer = agent.tracer
   t.plan(5)
 
   helper.runInTransaction(agent, function inTrans() {
-    var obj = {}
+    const obj = {}
     t.equal(tracer.bindFunction(false), false)
     t.equal(tracer.bindFunction(true), true)
     t.equal(tracer.bindFunction('foo'), 'foo')
@@ -220,9 +220,9 @@ test('bind + bad function', function testThrows(t) {
 })
 
 test('bind + args', function testThrows(t) {
-  var agent = helper.loadTestAgent(t)
-  var tracer = agent.tracer
-  var bound
+  const agent = helper.loadTestAgent(t)
+  const tracer = agent.tracer
+  let bound
   t.plan(1)
 
   helper.runInTransaction(agent, function inTrans() {
@@ -236,8 +236,8 @@ test('bind + args', function testThrows(t) {
 })
 
 test('getTransaction', function testGetTransaction(t) {
-  var agent = helper.loadTestAgent(t)
-  var tracer = agent.tracer
+  const agent = helper.loadTestAgent(t)
+  const tracer = agent.tracer
 
   t.plan(5)
 
@@ -254,18 +254,18 @@ test('getTransaction', function testGetTransaction(t) {
 })
 
 test('getSegment', function testGetTransaction(t) {
-  var agent = helper.loadTestAgent(t)
-  var tracer = agent.tracer
+  const agent = helper.loadTestAgent(t)
+  const tracer = agent.tracer
   t.plan(5)
 
   t.notOk(tracer.getSegment())
   helper.runInTransaction(agent, function inTrans(transaction) {
-    var root = transaction.trace.root
+    const root = transaction.trace.root
     t.equal(tracer.getSegment(), root)
     t.equal(tracer.segment, tracer.getSegment())
 
     setTimeout(function onTimeout() {
-      var segment = root.children[0].children[0]
+      const segment = root.children[0].children[0]
       t.equal(tracer.getSegment(), segment)
       t.equal(tracer.getSegment().name, 'Callback: onTimeout')
     }, 0)
@@ -273,16 +273,16 @@ test('getSegment', function testGetTransaction(t) {
 })
 
 test('createSegment', function testCreateSegment(t) {
-  var agent = helper.loadTestAgent(t)
-  var tracer = agent.tracer
-  var root
+  const agent = helper.loadTestAgent(t)
+  const tracer = agent.tracer
+  let root
   t.plan(10)
 
-  var noSegment = tracer.createSegment('outside transaction')
+  const noSegment = tracer.createSegment('outside transaction')
   t.equal(noSegment, null)
 
   helper.runInTransaction(agent, function inTrans(transaction) {
-    var segment = tracer.createSegment('inside transaction')
+    const segment = tracer.createSegment('inside transaction')
     root = transaction.trace.root
     t.equal(tracer.getSegment(), root)
     t.equal(segment.name, 'inside transaction')
@@ -294,7 +294,7 @@ test('createSegment', function testCreateSegment(t) {
     }, segment)()
   })
 
-  var outerSegment = tracer.createSegment('outside with parent', null, root)
+  const outerSegment = tracer.createSegment('outside with parent', null, root)
 
   tracer.bindFunction(function bound() {
     t.equal(outerSegment.name, 'outside with parent')
@@ -307,12 +307,12 @@ test('createSegment', function testCreateSegment(t) {
 })
 
 test('createSegment + recorder', function testCreateSegment(t) {
-  var agent = helper.loadTestAgent(t)
-  var tracer = agent.tracer
+  const agent = helper.loadTestAgent(t)
+  const tracer = agent.tracer
   t.plan(2)
 
   helper.runInTransaction(agent, function inTrans(transaction) {
-    var segment = tracer.createSegment('inside transaction', recorder)
+    const segment = tracer.createSegment('inside transaction', recorder)
     t.equal(segment.name, 'inside transaction')
 
     transaction.end()
@@ -325,22 +325,22 @@ test('createSegment + recorder', function testCreateSegment(t) {
 })
 
 test('addSegment', function addSegmentTest(t) {
-  var agent = helper.loadTestAgent(t)
-  var tracer = agent.tracer
-  var root
+  const agent = helper.loadTestAgent(t)
+  const tracer = agent.tracer
+  let root
   t.plan(8)
 
   t.equal(tracer.addSegment('outside', null, null, false, check), null)
 
   helper.runInTransaction(agent, function inTrans(transaction) {
-    var segment = tracer.addSegment('inside', null, null, false, check)
+    const segment = tracer.addSegment('inside', null, null, false, check)
 
     t.equal(segment.name, 'inside')
     root = transaction.trace.root
     t.equal(root.children[0], segment)
   })
 
-  var outside = tracer.addSegment('outside', null, root, false, check)
+  const outside = tracer.addSegment('outside', null, root, false, check)
 
   t.equal(outside.name, 'outside')
   t.equal(root.children[1], outside)
@@ -354,14 +354,14 @@ test('addSegment', function addSegmentTest(t) {
 })
 
 test('addSegment + recorder', function addSegmentTest(t) {
-  var agent = helper.loadTestAgent(t)
-  var tracer = agent.tracer
-  var segment
+  const agent = helper.loadTestAgent(t)
+  const tracer = agent.tracer
+  let segment
   t.plan(7)
 
   helper.runInTransaction(agent, function inTrans(transaction) {
     segment = tracer.addSegment('inside', record, null, false, check)
-    var root = transaction.trace.root
+    const root = transaction.trace.root
 
     t.equal(segment.name, 'inside')
     t.equal(segment.timer.hrDuration, null)
@@ -385,13 +385,13 @@ test('addSegment + recorder', function addSegmentTest(t) {
 })
 
 test('addSegment + full', function addSegmentTest(t) {
-  var agent = helper.loadTestAgent(t)
-  var tracer = agent.tracer
+  const agent = helper.loadTestAgent(t)
+  const tracer = agent.tracer
   t.plan(7)
 
   helper.runInTransaction(agent, function inTrans(transaction) {
-    var segment = tracer.addSegment('inside', null, null, true, check)
-    var root = transaction.trace.root
+    const segment = tracer.addSegment('inside', null, null, true, check)
+    const root = transaction.trace.root
 
     t.equal(segment.name, 'inside')
     t.ok(segment.timer.hrDuration)
@@ -414,7 +414,7 @@ test('addSegment + full', function addSegmentTest(t) {
 test('transactionProxy', function testTransactionProxy(t) {
   const agent = helper.loadTestAgent(t)
 
-  var tracer = agent.tracer
+  const tracer = agent.tracer
   t.plan(10)
 
   t.equal(tracer.transactionProxy(null), null)
@@ -425,8 +425,8 @@ test('transactionProxy', function testTransactionProxy(t) {
   t.end()
 
   function handler() {
-    var transaction = tracer.getTransaction()
-    var root = transaction.trace.root
+    const transaction = tracer.getTransaction()
+    const root = transaction.trace.root
 
     t.deepEqual([].slice.call(arguments), [1, 2, 3])
     t.equal(root.name, 'ROOT')
@@ -445,7 +445,7 @@ test('transactionProxy', function testTransactionProxy(t) {
 test('transactionNestProxy', function testTransactionNestProxy(t) {
   const agent = helper.loadTestAgent(t)
 
-  var tracer = agent.tracer
+  const tracer = agent.tracer
   t.plan(20)
 
   t.equal(tracer.transactionNestProxy('web', null), null, 'should not wrap null')
@@ -456,8 +456,8 @@ test('transactionNestProxy', function testTransactionNestProxy(t) {
   t.end()
 
   function handler() {
-    var transaction = tracer.getTransaction()
-    var root = transaction.trace.root
+    const transaction = tracer.getTransaction()
+    const root = transaction.trace.root
 
     t.deepEqual([].slice.call(arguments), [1, 2, 3])
     t.equal(root.name, 'ROOT')
@@ -478,8 +478,8 @@ test('transactionNestProxy', function testTransactionNestProxy(t) {
     }
 
     function handler3() {
-      var transaction3 = tracer.getTransaction()
-      var root3 = transaction3.trace.root
+      const transaction3 = tracer.getTransaction()
+      const root3 = transaction3.trace.root
 
       t.equal(root.name, 'ROOT')
       t.equal(root3, tracer.getSegment())
@@ -491,12 +491,12 @@ test('transactionNestProxy', function testTransactionNestProxy(t) {
 })
 
 test('bindEmitter', function testbindEmitter(t) {
-  var agent = helper.loadTestAgent(t)
-  var tracer = agent.tracer
-  var emitter = new EventEmitter()
-  var emitter2 = new EventEmitter()
-  var data = {}
-  var root
+  const agent = helper.loadTestAgent(t)
+  const tracer = agent.tracer
+  const emitter = new EventEmitter()
+  const emitter2 = new EventEmitter()
+  const data = {}
+  let root
 
   t.plan(20)
 
@@ -524,7 +524,7 @@ test('bindEmitter', function testbindEmitter(t) {
   emitter2.emit('before', data)
   emitter2.emit('after', data)
 
-  var emitter3 = new EventEmitter()
+  const emitter3 = new EventEmitter()
   emitter3.on('before', check(root))
   tracer.bindEmitter(emitter3, root)
   emitter3.on('after', check(root))
@@ -541,14 +541,14 @@ test('bindEmitter', function testbindEmitter(t) {
 })
 
 test('tracer.slice', function testSlice(t) {
-  var agent = helper.loadTestAgent(t)
-  var tracer = agent.tracer
+  const agent = helper.loadTestAgent(t)
+  const tracer = agent.tracer
   t.plan(3)
 
   check(1, 2, 3)
 
   function check() {
-    var args = tracer.slice(arguments)
+    const args = tracer.slice(arguments)
     t.deepEqual(args, [1, 2, 3])
     t.ok(Array.isArray(args))
     t.equal(typeof args.forEach, 'function')
@@ -557,15 +557,15 @@ test('tracer.slice', function testSlice(t) {
 })
 
 test('wrapFunctionNoSegment', function testwrapFunctionNoSegment(t) {
-  var agent = helper.loadTestAgent(t)
-  var tracer = agent.tracer
-  var outer = {}
-  var inner = {}
-  var segment = null
+  const agent = helper.loadTestAgent(t)
+  const tracer = agent.tracer
+  const outer = {}
+  const inner = {}
+  let segment = null
 
   t.plan(15)
 
-  var wrapped = tracer.wrapFunctionNoSegment(doSomething)
+  const wrapped = tracer.wrapFunctionNoSegment(doSomething)
 
   wrapped.call(outer, segment, [4], 4, check)
 
@@ -577,8 +577,8 @@ test('wrapFunctionNoSegment', function testwrapFunctionNoSegment(t) {
   wrapped.call(outer, null, [4, 5], 4, 5, check)
 
   function doSomething(seg) {
-    var args = tracer.slice(arguments)
-    var callback = args.pop()
+    const args = tracer.slice(arguments)
+    const callback = args.pop()
     t.equal(this, outer)
     t.equal(tracer.getSegment(), seg)
     process.nextTick(function next() {
@@ -595,14 +595,14 @@ test('wrapFunctionNoSegment', function testwrapFunctionNoSegment(t) {
 })
 
 test('wrapFunction', function testwrapFunction(t) {
-  var agent = helper.loadTestAgent(t)
-  var tracer = agent.tracer
-  var outer = {}
-  var inner = {}
-  var returnVal = {}
+  const agent = helper.loadTestAgent(t)
+  const tracer = agent.tracer
+  const outer = {}
+  const inner = {}
+  const returnVal = {}
 
-  var args = ['a', 'b', 'c'].map(makeCallback)
-  var wrapped = tracer.wrapFunction('my segment', record, callAll, wrapArgs, wrapReturn)
+  const args = ['a', 'b', 'c'].map(makeCallback)
+  const wrapped = tracer.wrapFunction('my segment', record, callAll, wrapArgs, wrapReturn)
 
   t.plan(61)
 
@@ -616,7 +616,7 @@ test('wrapFunction', function testwrapFunction(t) {
 
   function makeCallback(val) {
     return function callback(parent, arg) {
-      var segment = tracer.getSegment()
+      const segment = tracer.getSegment()
       t.equal(arg, val)
       t.equal(this, inner)
       if (parent) {
@@ -630,7 +630,7 @@ test('wrapFunction', function testwrapFunction(t) {
   }
 
   function callAll(name, a, b, c) {
-    var segment = tracer.getSegment()
+    const segment = tracer.getSegment()
 
     if (name) {
       t.equal(segment.name, name)
@@ -687,15 +687,15 @@ test('wrapFunction', function testwrapFunction(t) {
 })
 
 test('wrapFunctionLast', function testwrapFunctionLast(t) {
-  var agent = helper.loadTestAgent(t)
-  var tracer = agent.tracer
-  var outer = {}
-  var inner = {}
-  var returnVal = {}
-  var innerReturn = {}
+  const agent = helper.loadTestAgent(t)
+  const tracer = agent.tracer
+  const outer = {}
+  const inner = {}
+  const returnVal = {}
+  const innerReturn = {}
 
-  var args = [1, 2, 3, callback]
-  var wrapped = tracer.wrapFunctionLast('my segment', record, takesCallback)
+  const args = [1, 2, 3, callback]
+  const wrapped = tracer.wrapFunctionLast('my segment', record, takesCallback)
 
   t.plan(30)
 
@@ -708,7 +708,7 @@ test('wrapFunctionLast', function testwrapFunctionLast(t) {
   t.equal(wrapped.apply(outer, [null].concat(args)), returnVal)
 
   function callback(parent, callbackArgs) {
-    var segment = tracer.getSegment()
+    const segment = tracer.getSegment()
     t.deepEqual(callbackArgs, [1, 2, 3])
     t.equal(this, inner)
 
@@ -722,9 +722,9 @@ test('wrapFunctionLast', function testwrapFunctionLast(t) {
   }
 
   function takesCallback(name) {
-    var segment = tracer.getSegment()
-    var cbArgs = [].slice.call(arguments, 1, -1)
-    var cb = arguments[arguments.length - 1]
+    const segment = tracer.getSegment()
+    const cbArgs = [].slice.call(arguments, 1, -1)
+    const cb = arguments[arguments.length - 1]
 
     if (name) {
       t.equal(segment.name, name)
@@ -761,14 +761,14 @@ test('wrapFunctionLast', function testwrapFunctionLast(t) {
 })
 
 test('wrapFunctionFirst', function testwrapFunctionFirst(t) {
-  var agent = helper.loadTestAgent(t)
-  var tracer = agent.tracer
-  var outer = {}
-  var inner = {}
-  var returnVal = {}
-  var innerReturn = {}
+  const agent = helper.loadTestAgent(t)
+  const tracer = agent.tracer
+  const outer = {}
+  const inner = {}
+  const returnVal = {}
+  const innerReturn = {}
 
-  var wrapped = tracer.wrapFunctionFirst('my segment', record, takesCallback)
+  const wrapped = tracer.wrapFunctionFirst('my segment', record, takesCallback)
 
   t.plan(30)
 
@@ -781,7 +781,7 @@ test('wrapFunctionFirst', function testwrapFunctionFirst(t) {
   t.equal(wrapped.call(outer, callback, null, 1, 2, 3), returnVal)
 
   function callback(parent, args) {
-    var segment = tracer.getSegment()
+    const segment = tracer.getSegment()
     t.deepEqual(args, [1, 2, 3])
     t.equal(this, inner)
 
@@ -795,8 +795,8 @@ test('wrapFunctionFirst', function testwrapFunctionFirst(t) {
   }
 
   function takesCallback(cb, name) {
-    var segment = tracer.getSegment()
-    var args = [].slice.call(arguments, 2)
+    const segment = tracer.getSegment()
+    const args = [].slice.call(arguments, 2)
 
     if (name) {
       t.equal(segment.name, name)
@@ -833,12 +833,12 @@ test('wrapFunctionFirst', function testwrapFunctionFirst(t) {
 })
 
 test('wrapSyncFunction', function testwrapSyncFunction(t) {
-  var agent = helper.loadTestAgent(t)
-  var tracer = agent.tracer
+  const agent = helper.loadTestAgent(t)
+  const tracer = agent.tracer
 
   t.plan(9)
 
-  var wrapped = tracer.wrapSyncFunction('my segment', record, doSomething)
+  const wrapped = tracer.wrapSyncFunction('my segment', record, doSomething)
 
   wrapped(null, [1, 2, 3], 1, 2, 3)
 

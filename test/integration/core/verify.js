@@ -8,21 +8,21 @@
 module.exports = verifySegments
 
 function verifySegments(t, agent, name, extras, done) {
-  var root = agent.getTransaction().trace.root
+  const root = agent.getTransaction().trace.root
   if (!extras) {
     extras = []
   }
   t.equal(root.children.length, 1, 'should have a single child')
-  var child = root.children[0]
+  const child = root.children[0]
   t.equal(child.name, name, 'child segment should have correct name')
   t.ok(child.timer.touched, 'child should started and ended')
   t.equal(child.children.length, 1 + extras.length, 'child should have a single callback segment')
 
-  for (var i = 0; i < extras.length; ++i) {
+  for (let i = 0; i < extras.length; ++i) {
     t.equal(child.children[i].name, extras[i])
   }
 
-  var callback = child.children[child.children.length - 1]
+  const callback = child.children[child.children.length - 1]
   t.ok(
     callback.name === 'Callback: anonymous' || callback.name === 'Callback: <anonymous>',
     'callback segment should have correct name'

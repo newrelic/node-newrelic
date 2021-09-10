@@ -9,13 +9,13 @@
 // Below allows use of mocha DSL with tap runner.
 require('tap').mochaGlobals()
 
-var chai = require('chai')
-var expect = chai.expect
-var helper = require('../lib/agent_helper')
-var API = require('../../api')
+const chai = require('chai')
+const expect = chai.expect
+const helper = require('../lib/agent_helper')
+const API = require('../../api')
 
 describe('Transaction naming:', function () {
-  var agent
+  let agent
 
   beforeEach(function () {
     agent = helper.loadMockedAgent()
@@ -52,7 +52,7 @@ describe('Transaction naming:', function () {
   })
 
   it('API naming should trump default naming', function (done) {
-    var api = new API(agent)
+    const api = new API(agent)
     helper.runInTransaction(agent, function (transaction) {
       api.setTransactionName('override')
       transaction.finalizeNameFromUri('http://test.test.com/', 200)
@@ -62,7 +62,7 @@ describe('Transaction naming:', function () {
   })
 
   it('API naming should trump instrumentation naming', function (done) {
-    var api = new API(agent)
+    const api = new API(agent)
     helper.runInTransaction(agent, function (transaction) {
       simulateInstrumentation(transaction)
       api.setTransactionName('override')
@@ -73,7 +73,7 @@ describe('Transaction naming:', function () {
   })
 
   it('API naming should trump instrumentation naming (order should not matter)', function (done) {
-    var api = new API(agent)
+    const api = new API(agent)
     helper.runInTransaction(agent, function (transaction) {
       api.setTransactionName('override')
       simulateInstrumentation(transaction)
@@ -84,7 +84,7 @@ describe('Transaction naming:', function () {
   })
 
   it('API should trump 404', function (done) {
-    var api = new API(agent)
+    const api = new API(agent)
     helper.runInTransaction(agent, function (transaction) {
       api.setTransactionName('override')
       simulateInstrumentation(transaction)
@@ -134,7 +134,7 @@ describe('Transaction naming:', function () {
 
   it('Custom naming rules should trump API calls', function (done) {
     agent.userNormalizer.addSimple(/\//, '/test-transaction')
-    var api = new API(agent)
+    const api = new API(agent)
     helper.runInTransaction(agent, function (transaction) {
       api.setTransactionName('override')
       transaction.finalizeNameFromUri('http://test.test.com/', 200)

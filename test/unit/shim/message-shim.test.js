@@ -6,7 +6,7 @@
 'use strict'
 const tap = require('tap')
 const API = require('../../../api')
-var DESTINATIONS = require('../../../lib/config/attribute-filter').DESTINATIONS
+const DESTINATIONS = require('../../../lib/config/attribute-filter').DESTINATIONS
 const hashes = require('../../../lib/util/hashes')
 const helper = require('../../lib/agent_helper')
 const MessageShim = require('../../../lib/shim/message-shim')
@@ -19,7 +19,7 @@ tap.test('MessageShim', function (t) {
   let shim = null
   let wrappable = null
   let interval = null
-  let tasks = []
+  const tasks = []
 
   t.before(function () {
     interval = setInterval(function () {
@@ -59,7 +59,7 @@ tap.test('MessageShim', function (t) {
       }
     }
 
-    var params = {
+    const params = {
       encoding_key: 'this is an encoding key',
       cross_process_id: '1234#4321'
     }
@@ -319,7 +319,8 @@ tap.test('MessageShim', function (t) {
       return helper.runInTransaction(agent, function () {
         return wrapped().then(function (v) {
           t.equal(v, val)
-          t.ok(segment.getDurationInMillis() >= DELAY)
+          const duration = segment.getDurationInMillis()
+          t.ok(duration >= DELAY, `Segment duration: ${duration}, Timer duration: ${DELAY}`)
         })
       })
     })
@@ -1116,7 +1117,7 @@ tap.test('MessageShim', function (t) {
       txHeader = hashes.obfuscateNameUsingKey(txHeader, agent.config.encoding_key)
 
       messageHandler = function () {
-        var catHeaders = {
+        const catHeaders = {
           NewRelicID: idHeader,
           NewRelicTransaction: txHeader
         }

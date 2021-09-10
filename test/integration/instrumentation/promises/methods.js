@@ -9,13 +9,13 @@
 // Confirm and move logic there, if true. If used by multiple but only versioned,
 // move under versioned folder.
 
-var helper = require('../../../lib/agent_helper')
-var testTransactionState = require('./transaction-state')
+const helper = require('../../../lib/agent_helper')
+const testTransactionState = require('./transaction-state')
 const util = require('util')
 
-var runMultiple = testTransactionState.runMultiple
-var tasks = []
-var interval = null
+const runMultiple = testTransactionState.runMultiple
+const tasks = []
+let interval = null
 
 const setImmediatePromisified = util.promisify(setImmediate)
 
@@ -25,7 +25,7 @@ module.exports = function (t, library, loadLibrary) {
     function () {
       return require(library)
     }
-  var ptap = new PromiseTap(t, loadLibrary())
+  const ptap = new PromiseTap(t, loadLibrary())
 
   t.beforeEach(async () => {
     if (interval) {
@@ -101,8 +101,8 @@ module.exports = function (t, library, loadLibrary) {
 
     t.test('usage', function (t) {
       testPromiseClassMethod(t, 3, function resolveTest(Promise, name) {
-        var tracer = helper.getAgent().tracer
-        var inTx = !!tracer.segment
+        const tracer = helper.getAgent().tracer
+        const inTx = !!tracer.segment
         return new Promise(function (resolve) {
           addTask(function () {
             t.notOk(tracer.segment, name + 'should lose tx')
@@ -135,8 +135,8 @@ module.exports = function (t, library, loadLibrary) {
 
     t.test('usage', function (t) {
       testPromiseClassMethod(t, 1, function (Promise, name) {
-        var p1 = Promise.resolve(name + '1')
-        var p2 = Promise.resolve(name + '2')
+        const p1 = Promise.resolve(name + '1')
+        const p2 = Promise.resolve(name + '2')
 
         return Promise.all([p1, p2]).then(function (result) {
           t.deepEqual(result, [name + '1', name + '2'], name + 'should not change result')
@@ -156,11 +156,11 @@ module.exports = function (t, library, loadLibrary) {
 
     t.test('usage', function (t) {
       testPromiseClassMethod(t, 1, function (Promise, name) {
-        var p1 = Promise.resolve(name + '1')
-        var p2 = Promise.reject(name + '2')
+        const p1 = Promise.resolve(name + '1')
+        const p2 = Promise.reject(name + '2')
 
         return Promise.allSettled([p1, p2]).then(function (inspections) {
-          var result = inspections.map(function (i) {
+          const result = inspections.map(function (i) {
             return i.isFulfilled() ? { value: i.value() } : { reason: i.reason() }
           })
           t.deepEqual(
@@ -208,7 +208,7 @@ module.exports = function (t, library, loadLibrary) {
 
     t.test('usage', function (t) {
       testPromiseClassMethod(t, 2, function (Promise, name) {
-        var ctx = {}
+        const ctx = {}
         return Promise.bind(ctx, name).then(function (value) {
           t.equal(this, ctx, 'should have expected `this` value')
           t.equal(value, name, 'should not change passed value')
@@ -241,7 +241,7 @@ module.exports = function (t, library, loadLibrary) {
     t.test('context', function (t) {
       testPromiseContext(t, function (Promise, name) {
         return Promise.coroutine(function* (_name) {
-          for (var i = 0; i < 10; ++i) {
+          for (let i = 0; i < 10; ++i) {
             yield Promise.delay(5)
           }
           return _name
@@ -251,7 +251,7 @@ module.exports = function (t, library, loadLibrary) {
 
     t.test('usage', function (t) {
       testPromiseClassMethod(t, 4, function (Promise, name) {
-        var count = 0
+        let count = 0
 
         t.doesNotThrow(function () {
           Promise.coroutine.addYieldHandler(function (value) {
@@ -263,7 +263,7 @@ module.exports = function (t, library, loadLibrary) {
         }, 'should be able to add yield handler')
 
         return Promise.coroutine(function* (_name) {
-          for (var i = 0; i < 10; ++i) {
+          for (let i = 0; i < 10; ++i) {
             yield Promise.delay(5)
             ++count
           }
@@ -289,11 +289,11 @@ module.exports = function (t, library, loadLibrary) {
 
     t.test('usage', function (t) {
       testPromiseClassMethod(t, 3, function (Promise, name) {
-        var DELAY = 500
-        var MARGIN = 100
-        var start = Date.now()
+        const DELAY = 500
+        const MARGIN = 100
+        const start = Date.now()
         return Promise.delay(DELAY, name).then(function (result) {
-          var duration = Date.now() - start
+          const duration = Date.now() - start
           t.ok(duration < DELAY + MARGIN, 'should not take more than expected time')
           t.ok(duration > DELAY - MARGIN, 'should not take less than expected time')
           t.equal(result, name, 'should pass through resolve value')
@@ -374,8 +374,8 @@ module.exports = function (t, library, loadLibrary) {
 
   ptap.test('Promise.getNewLibraryCopy', function (t) {
     helper.loadTestAgent(t)
-    var Promise = loadLibrary()
-    var Promise2 = Promise.getNewLibraryCopy()
+    const Promise = loadLibrary()
+    const Promise2 = Promise.getNewLibraryCopy()
 
     t.ok(Promise2.resolve.__NR_original, 'should have wrapped class methods')
     t.ok(Promise2.prototype.then.__NR_original, 'should have wrapped instance methods')
@@ -386,9 +386,9 @@ module.exports = function (t, library, loadLibrary) {
 
   ptap.test('Promise.is', function (t) {
     helper.loadTestAgent(t)
-    var Promise = loadLibrary()
+    const Promise = loadLibrary()
 
-    var p = new Promise(function (resolve) {
+    let p = new Promise(function (resolve) {
       setImmediate(resolve)
     })
     t.ok(Promise.is(p), 'should not break promise identification (new)')
@@ -489,7 +489,7 @@ module.exports = function (t, library, loadLibrary) {
 
     t.test('usage', function (t) {
       testPromiseClassMethod(t, 3, function methodTest(Promise, name) {
-        var fn = Promise.method(function () {
+        const fn = Promise.method(function () {
           throw new Error('Promise.method test error')
         })
 
@@ -506,8 +506,8 @@ module.exports = function (t, library, loadLibrary) {
             }
           )
           .then(function () {
-            var foo = { what: 'Promise.method test object' }
-            var fn2 = Promise.method(function () {
+            const foo = { what: 'Promise.method test object' }
+            const fn2 = Promise.method(function () {
               return foo
             })
 
@@ -521,8 +521,8 @@ module.exports = function (t, library, loadLibrary) {
 
   ptap.test('Promise.noConflict', function (t) {
     helper.loadTestAgent(t)
-    var Promise = loadLibrary()
-    var Promise2 = Promise.noConflict()
+    const Promise = loadLibrary()
+    const Promise2 = Promise.noConflict()
 
     t.ok(Promise2.resolve.__NR_original, 'should have wrapped class methods')
     t.ok(Promise2.prototype.then.__NR_original, 'should have wrapped instance methods')
@@ -545,7 +545,7 @@ module.exports = function (t, library, loadLibrary) {
 
     t.test('usage', function (t) {
       testPromiseClassMethod(t, 4, function methodTest(Promise, name) {
-        var fn = Promise.promisify(function (cb) {
+        const fn = Promise.promisify(function (cb) {
           cb(new Error('Promise.promisify test error'))
         })
 
@@ -568,8 +568,8 @@ module.exports = function (t, library, loadLibrary) {
           )
           .then(function () {
             // Test success handling.
-            var foo = { what: 'Promise.promisify test object' }
-            var fn2 = Promise.promisify(function (cb) {
+            const foo = { what: 'Promise.promisify test object' }
+            const fn2 = Promise.promisify(function (cb) {
               cb(null, foo)
             })
 
@@ -781,9 +781,9 @@ module.exports = function (t, library, loadLibrary) {
 
     t.test('usage', function (t) {
       testPromiseInstanceMethod(t, 4, function bindTest(Promise, p, name) {
-        var foo = { what: 'test object' }
-        var ctx2 = { what: 'a different test object' }
-        var err = new Error('oh dear')
+        const foo = { what: 'test object' }
+        const ctx2 = { what: 'a different test object' }
+        const err = new Error('oh dear')
         return p
           .bind(foo)
           .then(function (res) {
@@ -861,7 +861,7 @@ module.exports = function (t, library, loadLibrary) {
 
     t.test('usage', function (t) {
       testPromiseInstanceMethod(t, 1, function catchReturnTest(Promise, p, name) {
-        var foo = { what: 'catchReturn test object' }
+        const foo = { what: 'catchReturn test object' }
         return p
           .throw(new Error('catchReturn test error'))
           .catchReturn(foo)
@@ -896,7 +896,7 @@ module.exports = function (t, library, loadLibrary) {
 
     t.test('usage', function (t) {
       testPromiseInstanceMethod(t, 1, function catchThrowTest(Promise, p, name) {
-        var foo = { what: 'catchThrow test object' }
+        const foo = { what: 'catchThrow test object' }
         return p
           .throw(new Error('catchThrow test error'))
           .catchThrow(foo)
@@ -933,14 +933,14 @@ module.exports = function (t, library, loadLibrary) {
 
     t.test('usage', function (t) {
       testPromiseInstanceMethod(t, 3, function delayTest(Promise, p, name) {
-        var DELAY = 500
-        var MARGIN = 100
-        var start = Date.now()
+        const DELAY = 500
+        const MARGIN = 100
+        const start = Date.now()
         return p
           .return(name)
           .delay(DELAY)
           .then(function (result) {
-            var duration = Date.now() - start
+            const duration = Date.now() - start
             t.ok(duration < DELAY + MARGIN, 'should not take more than expected time')
             t.ok(duration > DELAY - MARGIN, 'should not take less than expected time')
             t.equal(result, name, 'should pass through resolve value')
@@ -1302,7 +1302,7 @@ module.exports = function (t, library, loadLibrary) {
 
     t.test('usage', function (t) {
       testPromiseInstanceMethod(t, 1, function returnTest(Promise, p, name) {
-        var foo = { what: 'return test object' }
+        const foo = { what: 'return test object' }
         return p.return(foo).then(function (res) {
           t.equal(res, foo, name + 'should pass throught the correct object')
         })
@@ -1531,7 +1531,7 @@ module.exports = function (t, library, loadLibrary) {
 
     t.test('usage', function (t) {
       testPromiseInstanceMethod(t, 4, function (Promise, p, name) {
-        var start = null
+        let start = null
         return p
           .timeout(1000)
           .then(
@@ -1550,7 +1550,7 @@ module.exports = function (t, library, loadLibrary) {
               t.fail(name + 'should have timed out long delay')
             },
             function (err) {
-              var duration = Date.now() - start
+              const duration = Date.now() - start
               t.ok(duration < 600, name + 'should not timeout slower than expected')
               t.ok(duration > 400, name + 'should not timeout faster than expected')
               t.equal(err.message, name + 'timed out', name + 'should have expected error')
@@ -1585,9 +1585,9 @@ module.exports = function (t, library, loadLibrary) {
 
       t.test('usage', function (t) {
         testPromiseInstanceMethod(t, 8, function asCallbackTest(Promise, p, name, agent) {
-          var startTransaction = agent.getTransaction()
+          const startTransaction = agent.getTransaction()
           return p[methodName](function (err, result) {
-            var inCallbackTransaction = agent.getTransaction()
+            const inCallbackTransaction = agent.getTransaction()
             t.equal(
               id(startTransaction),
               id(inCallbackTransaction),
@@ -1603,7 +1603,7 @@ module.exports = function (t, library, loadLibrary) {
               t.fail(name + 'should have skipped then after rejection')
             })
             [methodName](function (err, result) {
-              var inCallbackTransaction = agent.getTransaction()
+              const inCallbackTransaction = agent.getTransaction()
               t.equal(
                 id(startTransaction),
                 id(inCallbackTransaction),
@@ -1825,7 +1825,7 @@ module.exports = function (t, library, loadLibrary) {
 
       t.test('usage', function (t) {
         testPromiseInstanceMethod(t, 1, function throwTest(Promise, p, name) {
-          var foo = { what: 'throw test object' }
+          const foo = { what: 'throw test object' }
           return p[methodName](foo)
             .then(function () {
               t.fail(name + 'should not go into resolve handler after throw')
@@ -1879,7 +1879,7 @@ module.exports = function (t, library, loadLibrary) {
               }
             )
             .then(function () {
-              var foo = { what: 'Promise.' + method + ' test object' }
+              const foo = { what: 'Promise.' + method + ' test object' }
               return Promise[method](function () {
                 return foo
               }).then(function (obj) {
@@ -1896,18 +1896,18 @@ module.exports = function (t, library, loadLibrary) {
   // ------------------------------------------------------------------------ //
 
   function testPromiseInstanceMethod(t, plan, testFunc) {
-    var agent = helper.loadTestAgent(t)
-    var Promise = loadLibrary()
+    const agent = helper.loadTestAgent(t)
+    const Promise = loadLibrary()
 
     _testPromiseMethod(t, plan, agent, function (name) {
-      var p = Promise.resolve([1, 2, 3, name])
+      const p = Promise.resolve([1, 2, 3, name])
       return testFunc(Promise, p, name, agent)
     })
   }
 
   function testPromiseInstanceCastMethod(t, plan, testFunc) {
-    var agent = helper.loadTestAgent(t)
-    var Promise = loadLibrary()
+    const agent = helper.loadTestAgent(t)
+    const Promise = loadLibrary()
 
     _testAllCastTypes(t, plan, agent, function (t, name, value) {
       return testFunc(t, Promise, Promise.resolve(name), name, value)
@@ -1915,8 +1915,8 @@ module.exports = function (t, library, loadLibrary) {
   }
 
   function testPromiseClassMethod(t, plan, testFunc) {
-    var agent = helper.loadTestAgent(t)
-    var Promise = loadLibrary()
+    const agent = helper.loadTestAgent(t)
+    const Promise = loadLibrary()
 
     _testPromiseMethod(t, plan, agent, function (name) {
       return testFunc(Promise, name)
@@ -1924,8 +1924,8 @@ module.exports = function (t, library, loadLibrary) {
   }
 
   function testPromiseClassCastMethod(t, plan, testFunc) {
-    var agent = helper.loadTestAgent(t)
-    var Promise = loadLibrary()
+    const agent = helper.loadTestAgent(t)
+    const Promise = loadLibrary()
 
     _testAllCastTypes(t, plan, agent, function (t, name, value) {
       return testFunc(t, Promise, name, value)
@@ -1933,28 +1933,28 @@ module.exports = function (t, library, loadLibrary) {
   }
 
   function testPromiseContext(t, factory) {
-    var agent = helper.loadTestAgent(t)
-    var Promise = loadLibrary()
+    const agent = helper.loadTestAgent(t)
+    const Promise = loadLibrary()
 
     _testPromiseContext(t, agent, factory.bind(null, Promise))
   }
 }
 
 function addTask() {
-  var args = [].slice.apply(arguments)
-  var fn = args.shift() // Pop front.
+  const args = [].slice.apply(arguments)
+  const fn = args.shift() // Pop front.
   tasks.push(function () {
     fn.apply(null, args)
   })
 }
 
 function _testPromiseMethod(t, plan, agent, testFunc) {
-  var COUNT = 2
+  const COUNT = 2
   t.plan(plan * 3 + (COUNT + 1) * 3)
 
   t.doesNotThrow(function outTXPromiseThrowTest() {
-    var name = '[no tx] '
-    var isAsync = false
+    const name = '[no tx] '
+    let isAsync = false
     testFunc(name)
       .finally(function () {
         t.ok(isAsync, name + 'should have executed asynchronously')
@@ -1982,9 +1982,9 @@ function _testPromiseMethod(t, plan, agent, testFunc) {
       COUNT,
       function (i, cb) {
         helper.runInTransaction(agent, function transactionWrapper(transaction) {
-          var name = '[tx ' + i + '] '
+          const name = '[tx ' + i + '] '
           t.doesNotThrow(function inTXPromiseThrowTest() {
-            var isAsync = false
+            let isAsync = false
             testFunc(name)
               .finally(function () {
                 t.ok(isAsync, name + 'should have executed asynchronously')
@@ -2026,7 +2026,7 @@ function _testPromiseContext(t, agent, factory) {
   t.test('context switch', function (t) {
     t.plan(2)
 
-    var ctxA = helper.runInTransaction(agent, function (tx) {
+    const ctxA = helper.runInTransaction(agent, function (tx) {
       return {
         transaction: tx,
         promise: factory('[tx a] ')
@@ -2043,7 +2043,7 @@ function _testPromiseContext(t, agent, factory) {
       ctxA.promise
         .catch(function () {})
         .then(function () {
-          var tx = agent.tracer.getTransaction()
+          const tx = agent.tracer.getTransaction()
           t.comment('A: ' + id(ctxA.transaction) + ' | B: ' + id(txB))
           t.equal(id(tx), id(ctxA.transaction), 'should be in expected context')
         })
@@ -2054,7 +2054,7 @@ function _testPromiseContext(t, agent, factory) {
   t.test('context loss', function (t) {
     t.plan(2)
 
-    var ctxA = helper.runInTransaction(agent, function (tx) {
+    const ctxA = helper.runInTransaction(agent, function (tx) {
       t.teardown(function () {
         tx.end()
       })
@@ -2069,7 +2069,7 @@ function _testPromiseContext(t, agent, factory) {
     ctxA.promise
       .catch(function () {})
       .then(function () {
-        var tx = agent.tracer.getTransaction()
+        const tx = agent.tracer.getTransaction()
         t.equal(id(tx), id(ctxA.transaction), 'should be in expected context')
       })
   })
@@ -2078,14 +2078,14 @@ function _testPromiseContext(t, agent, factory) {
   t.test('context gain', function (t) {
     t.plan(2)
 
-    var promise = factory('[no tx] ')
+    const promise = factory('[no tx] ')
 
     t.notOk(agent.tracer.getTransaction(), 'should not be in transaction')
     helper.runInTransaction(agent, function (tx) {
       promise
         .catch(function () {})
         .then(function () {
-          var tx2 = agent.tracer.getTransaction()
+          const tx2 = agent.tracer.getTransaction()
           t.equal(id(tx2), id(tx), 'should be in expected context')
         })
     })
@@ -2095,7 +2095,7 @@ function _testPromiseContext(t, agent, factory) {
   t.test('context expiration', function (t) {
     t.plan(2)
 
-    var ctxA = helper.runInTransaction(agent, function (tx) {
+    const ctxA = helper.runInTransaction(agent, function (tx) {
       return {
         transaction: tx,
         promise: factory('[tx a] ')
@@ -2113,7 +2113,7 @@ function _testPromiseContext(t, agent, factory) {
       ctxA.promise
         .catch(function () {})
         .then(function () {
-          var tx = agent.tracer.getTransaction()
+          const tx = agent.tracer.getTransaction()
           t.comment('A: ' + id(ctxA.transaction) + ' | B: ' + id(txB))
           t.equal(id(tx), id(txB), 'should be in expected context')
         })
@@ -2122,7 +2122,7 @@ function _testPromiseContext(t, agent, factory) {
 }
 
 function _testAllCastTypes(t, plan, agent, testFunc) {
-  var values = [42, 'foobar', {}, [], function () {}]
+  const values = [42, 'foobar', {}, [], function () {}]
 
   t.plan(2)
   t.test('in context', function (t) {
@@ -2131,7 +2131,7 @@ function _testAllCastTypes(t, plan, agent, testFunc) {
     helper.runInTransaction(agent, function (tx) {
       _test(t, '[no-tx]', 0)
         .then(function () {
-          var txB = agent.tracer.getTransaction()
+          const txB = agent.tracer.getTransaction()
           t.equal(id(tx), id(txB), 'should maintain transaction state')
         })
         .catch(function (err) {
@@ -2151,7 +2151,7 @@ function _testAllCastTypes(t, plan, agent, testFunc) {
   })
 
   function _test(t, name, i) {
-    var val = values[i]
+    const val = values[i]
     t.comment(typeof val === 'function' ? val.toString() : JSON.stringify(val))
     return testFunc(t, name, val).then(function () {
       if (++i < values.length) {
@@ -2169,11 +2169,11 @@ function PromiseTap(t, Promise) {
 }
 
 PromiseTap.prototype.test = function (name, test) {
-  var match = name.match(/^Promise([#.])(.+)$/)
+  const match = name.match(/^Promise([#.])(.+)$/)
   if (match) {
-    var location = match[1]
-    var methodName = match[2]
-    var exists = false
+    const location = match[1]
+    const methodName = match[2]
+    let exists = false
 
     if (location === '.') {
       exists = typeof this.Promise[methodName] === 'function'
@@ -2204,15 +2204,15 @@ PromiseTap.prototype.skip = function (name) {
 }
 
 PromiseTap.prototype.check = function (loadLibrary) {
-  var self = this
+  const self = this
   this.t.test('check', function (t) {
     helper.loadTestAgent(t)
-    var Promise = loadLibrary()
+    const Promise = loadLibrary()
 
-    var classMethods = Object.keys(self.Promise).sort()
+    const classMethods = Object.keys(self.Promise).sort()
     self._check(t, Promise, classMethods, self.testedClassMethods, '.')
 
-    var instanceMethods = Object.keys(self.Promise.prototype).sort()
+    const instanceMethods = Object.keys(self.Promise.prototype).sort()
     self._check(t, Promise.prototype, instanceMethods, self.testedInstanceMethods, '#')
 
     t.end()
@@ -2220,12 +2220,12 @@ PromiseTap.prototype.check = function (loadLibrary) {
 }
 
 PromiseTap.prototype._check = function (t, source, methods, tested, type) {
-  var prefix = 'Promise' + type
-  var originalSource = type === '.' ? this.Promise : this.Promise.prototype
+  const prefix = 'Promise' + type
+  const originalSource = type === '.' ? this.Promise : this.Promise.prototype
 
   methods.forEach(function (method) {
-    var wrapped = source[method]
-    var original = wrapped.__NR_original || originalSource[method]
+    const wrapped = source[method]
+    const original = wrapped.__NR_original || originalSource[method]
 
     // Skip this property if it is internal (starts or ends with underscore), is
     // a class (starts with a capital letter), or is not a function.
@@ -2233,7 +2233,7 @@ PromiseTap.prototype._check = function (t, source, methods, tested, type) {
       return
     }
 
-    var longName = prefix + method
+    const longName = prefix + method
     t.ok(tested.indexOf(method) > -1, 'should test ' + prefix + method)
 
     Object.keys(original).forEach(function (key) {

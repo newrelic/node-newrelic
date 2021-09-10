@@ -9,16 +9,16 @@
 // Below allows use of mocha DSL with tap runner.
 require('tap').mochaGlobals()
 
-var chai = require('chai')
-var expect = chai.expect
-var helper = require('../../lib/agent_helper')
-var Metrics = require('../../../lib/metrics')
-var MetricMapper = require('../../../lib/metrics/mapper')
-var MetricNormalizer = require('../../../lib/metrics/normalizer')
+const chai = require('chai')
+const expect = chai.expect
+const helper = require('../../lib/agent_helper')
+const Metrics = require('../../../lib/metrics')
+const MetricMapper = require('../../../lib/metrics/mapper')
+const MetricNormalizer = require('../../../lib/metrics/normalizer')
 
 describe('Metrics', function () {
-  var metrics
-  var agent
+  let metrics
+  let agent
 
   beforeEach(function () {
     agent = helper.loadMockedAgent()
@@ -49,30 +49,30 @@ describe('Metrics', function () {
     })
 
     it('should return apdex summaries with an apdexT same as config', function () {
-      var metric = metrics.getOrCreateApdexMetric('Apdex/MetricsTest')
+      const metric = metrics.getOrCreateApdexMetric('Apdex/MetricsTest')
       expect(metric.apdexT).equal(agent.config.apdex_t)
     })
 
     it('should allow overriding apdex summaries with a custom apdexT', function () {
-      var metric = metrics.getOrCreateApdexMetric('Apdex/MetricsTest', null, 1)
+      const metric = metrics.getOrCreateApdexMetric('Apdex/MetricsTest', null, 1)
       expect(metric.apdexT).equal(0.001)
     })
 
     it('should require the overriding apdex to be greater than 0', function () {
-      var metric = metrics.getOrCreateApdexMetric('Apdex/MetricsTest', null, 0)
+      const metric = metrics.getOrCreateApdexMetric('Apdex/MetricsTest', null, 0)
       expect(metric.apdexT).equal(agent.config.apdex_t)
     })
 
     it('should require the overriding apdex to not be negative', function () {
-      var metric = metrics.getOrCreateApdexMetric('Apdex/MetricsTest', null, -5000)
+      const metric = metrics.getOrCreateApdexMetric('Apdex/MetricsTest', null, -5000)
       expect(metric.apdexT).equal(agent.config.apdex_t)
     })
   })
 
   describe('when creating with parameters', function () {
-    var TEST_APDEX = 0.4
-    var TEST_MAPPER = new MetricMapper([[{ name: 'Renamed/333' }, 1337]])
-    var TEST_NORMALIZER = new MetricNormalizer({ enforce_backstop: true }, 'metric name')
+    const TEST_APDEX = 0.4
+    const TEST_MAPPER = new MetricMapper([[{ name: 'Renamed/333' }, 1337]])
+    const TEST_NORMALIZER = new MetricNormalizer({ enforce_backstop: true }, 'metric name')
 
     beforeEach(function () {
       TEST_NORMALIZER.addSimple(/^Test\/RenameMe(.*)$/, 'Renamed/$1')
@@ -80,37 +80,37 @@ describe('Metrics', function () {
     })
 
     it('should pass apdex through to ApdexStats', function () {
-      var apdex = metrics.getOrCreateApdexMetric('Test/RenameMe333')
+      const apdex = metrics.getOrCreateApdexMetric('Test/RenameMe333')
       expect(apdex.apdexT).equal(TEST_APDEX)
     })
 
     it('should pass metric mappings through for serialization', function () {
       metrics.measureMilliseconds('Test/RenameMe333', null, 400, 300)
-      var summary = JSON.stringify(metrics.toJSON())
+      const summary = JSON.stringify(metrics.toJSON())
       expect(summary).equal('[[1337,[1,0.4,0.3,0.4,0.4,0.16000000000000003]]]')
     })
   })
 
   describe('when creating individual metrics', function () {
     it('should create a metric when a nonexistent name is requested', function () {
-      var metric = metrics.getOrCreateMetric('Test/Nonexistent', 'TEST')
+      const metric = metrics.getOrCreateMetric('Test/Nonexistent', 'TEST')
       expect(metric).to.have.property('callCount')
     })
 
     it('should have statistics available', function () {
-      var metric = metrics.getOrCreateMetric('Agent/Test')
+      const metric = metrics.getOrCreateMetric('Agent/Test')
       expect(metric).to.have.property('callCount')
     })
 
     it('should have have regular functions', function () {
-      var metric = metrics.getOrCreateMetric('Agent/StatsTest')
+      const metric = metrics.getOrCreateMetric('Agent/StatsTest')
       expect(metric).to.have.property('incrementCallCount')
     })
   })
 
   describe('when creating individual apdex metrics', function () {
     it('should have apdex functions', function () {
-      var metric = metrics.getOrCreateApdexMetric('Agent/ApdexTest')
+      const metric = metrics.getOrCreateApdexMetric('Agent/ApdexTest')
       expect(metric).to.have.property('incrementFrustrating')
     })
   })
@@ -131,13 +131,13 @@ describe('Metrics', function () {
 
   it('should resolve the correctly scoped set of metrics when scope passed', function () {
     metrics.measureMilliseconds('Apdex/ScopedMetricsTest', 'TEST')
-    var scoped = metrics._resolve('TEST')
+    const scoped = metrics._resolve('TEST')
 
     expect(scoped['Apdex/ScopedMetricsTest']).an('object')
   })
 
   it('should implicitly create a blank set of metrics when resolving new scope', () => {
-    var scoped = metrics._resolve('NOEXISTBRO')
+    const scoped = metrics._resolve('NOEXISTBRO')
 
     expect(scoped).an('object')
     expect(Object.keys(scoped).length).equal(0)
@@ -173,9 +173,9 @@ describe('Metrics', function () {
       })
 
       describe('with ordinary statistics', function () {
-        var NAME = 'Agent/Test384'
-        var metric
-        var mapper
+        const NAME = 'Agent/Test384'
+        let metric
+        let mapper
 
         beforeEach(function () {
           metric = metrics.getOrCreateMetric(NAME)
@@ -183,27 +183,27 @@ describe('Metrics', function () {
         })
 
         it('should get the bare stats right', function () {
-          var summary = JSON.stringify(metrics._getUnscopedData(NAME))
+          const summary = JSON.stringify(metrics._getUnscopedData(NAME))
           expect(summary).to.equal('[{"name":"Agent/Test384"},[0,0,0,0,0,0]]')
         })
 
         it('should correctly map metrics to IDs given a mapping', function () {
           metrics.mapper = mapper
-          var summary = JSON.stringify(metrics._getUnscopedData(NAME))
+          const summary = JSON.stringify(metrics._getUnscopedData(NAME))
           expect(summary).equal('[1234,[0,0,0,0,0,0]]')
         })
 
         it('should correctly serialize statistics', function () {
           metric.recordValue(0.3, 0.1)
-          var summary = JSON.stringify(metrics._getUnscopedData(NAME))
+          const summary = JSON.stringify(metrics._getUnscopedData(NAME))
           expect(summary).to.equal('[{"name":"Agent/Test384"},[1,0.3,0.1,0.3,0.3,0.09]]')
         })
       })
 
       describe('with apdex statistics', function () {
-        var NAME = 'Agent/Test385'
-        var metric
-        var mapper
+        const NAME = 'Agent/Test385'
+        let metric
+        let mapper
 
         beforeEach(function () {
           metrics = new Metrics(0.8, new MetricMapper(), agent.metricNameNormalizer)
@@ -212,19 +212,19 @@ describe('Metrics', function () {
         })
 
         it('should get the bare stats right', function () {
-          var summary = JSON.stringify(metrics._getUnscopedData(NAME))
+          const summary = JSON.stringify(metrics._getUnscopedData(NAME))
           expect(summary).to.equal('[{"name":"Agent/Test385"},[0,0,0,0.8,0.8,0]]')
         })
 
         it('should correctly map metrics to IDs given a mapping', function () {
           metrics.mapper = mapper
-          var summary = JSON.stringify(metrics._getUnscopedData(NAME))
+          const summary = JSON.stringify(metrics._getUnscopedData(NAME))
           expect(summary).equal('[1234,[0,0,0,0.8,0.8,0]]')
         })
 
         it('should correctly serialize statistics', function () {
           metric.recordValueInMillis(3220)
-          var summary = JSON.stringify(metrics._getUnscopedData(NAME))
+          const summary = JSON.stringify(metrics._getUnscopedData(NAME))
           expect(summary).to.equal('[{"name":"Agent/Test385"},[0,0,1,0.8,0.8,0]]')
         })
       })
@@ -262,7 +262,7 @@ describe('Metrics', function () {
   })
 
   describe('when merging two metrics collections', function () {
-    var other = null
+    let other = null
 
     beforeEach(function () {
       metrics.started = 31337

@@ -5,25 +5,25 @@
 
 'use strict'
 
-var tap = require('tap')
-var test = tap.test
-var helper = require('../../lib/agent_helper')
-var params = require('../../lib/params')
-var findSegment = require('../../lib/metrics_helper').findSegment
-var getMetricHostName = require('../../lib/metrics_helper').getMetricHostName
-var util = require('util')
+const tap = require('tap')
+const test = tap.test
+const helper = require('../../lib/agent_helper')
+const params = require('../../lib/params')
+const findSegment = require('../../lib/metrics_helper').findSegment
+const getMetricHostName = require('../../lib/metrics_helper').getMetricHostName
+const util = require('util')
 
 const bootstrapMemcached = util.promisify(helper.bootstrapMemcached)
 
-var METRICS_ASSERTIONS = 10
+const METRICS_ASSERTIONS = 10
 
 test('memcached instrumentation', { timeout: 5000 }, function (t) {
   t.autoend()
 
-  var agent
-  var Memcached
-  var memcached
-  var HOST_ID
+  let agent
+  let Memcached
+  let memcached
+  let HOST_ID
 
   t.test('generates correct metrics and trace segments', function (t) {
     t.autoend()
@@ -436,7 +436,7 @@ test('memcached instrumentation', { timeout: 5000 }, function (t) {
           t.notOk(err, 'should not throw an error')
 
           transaction.end()
-          var segment = transaction.trace.root.children[0]
+          const segment = transaction.trace.root.children[0]
           t.equals(segment.getAttributes().key, '"foo"', 'should have the get key as a parameter')
         })
       })
@@ -451,7 +451,7 @@ test('memcached instrumentation', { timeout: 5000 }, function (t) {
           t.error(err)
 
           transaction.end()
-          var segment = transaction.trace.root.children[0]
+          const segment = transaction.trace.root.children[0]
           t.notOk(segment.getAttributes().key, 'should not have any attributes')
         })
       })
@@ -465,7 +465,7 @@ test('memcached instrumentation', { timeout: 5000 }, function (t) {
           t.notOk(err, 'should not throw an error')
 
           transaction.end()
-          var segment = transaction.trace.root.children[0]
+          const segment = transaction.trace.root.children[0]
           t.equals(
             segment.getAttributes().key,
             '["foo","bar"]',
@@ -483,7 +483,7 @@ test('memcached instrumentation', { timeout: 5000 }, function (t) {
           t.notOk(err, 'should not throw an error')
 
           transaction.end()
-          var segment = transaction.trace.root.children[0]
+          const segment = transaction.trace.root.children[0]
           t.equals(segment.getAttributes().key, '"foo"', 'should have the set key as a parameter')
         })
       })
@@ -515,7 +515,7 @@ test('memcached instrumentation', { timeout: 5000 }, function (t) {
           t.notOk(err, 'should not throw an error')
 
           transaction.end()
-          var segment = transaction.trace.root.children[0]
+          const segment = transaction.trace.root.children[0]
           const attributes = segment.getAttributes()
           t.equals(
             attributes.host,
@@ -528,7 +528,7 @@ test('memcached instrumentation', { timeout: 5000 }, function (t) {
             'should collect port instance attributes'
           )
 
-          var expectedMetrics = {}
+          const expectedMetrics = {}
           expectedMetrics['Datastore/instance/Memcache/' + HOST_ID] = 1
           verifyMetrics(t, transaction.metrics, expectedMetrics)
         })
@@ -543,7 +543,7 @@ test('memcached instrumentation', { timeout: 5000 }, function (t) {
           t.notOk(err, 'should not throw an error')
 
           transaction.end()
-          var segment = transaction.trace.root.children[0]
+          const segment = transaction.trace.root.children[0]
           const attributes = segment.getAttributes()
           t.equals(
             attributes.host,
@@ -556,7 +556,7 @@ test('memcached instrumentation', { timeout: 5000 }, function (t) {
             'should collect port instance attributes'
           )
 
-          var expectedMetrics = {}
+          const expectedMetrics = {}
           expectedMetrics['Datastore/instance/Memcache/' + HOST_ID] = 1
           verifyMetrics(t, transaction.metrics, expectedMetrics)
         })
@@ -592,7 +592,7 @@ test('memcached instrumentation', { timeout: 5000 }, function (t) {
           t.notOk(err, 'should not throw an error')
 
           transaction.end()
-          var segment = transaction.trace.root.children[0]
+          const segment = transaction.trace.root.children[0]
           const attributes = segment.getAttributes()
           t.equals(attributes.host, undefined, 'should not have host instance parameter')
           t.equals(
@@ -601,7 +601,7 @@ test('memcached instrumentation', { timeout: 5000 }, function (t) {
             'should should not have port instance parameter'
           )
 
-          var datastoreInstanceMetric = 'Datastore/instance/Memcache/' + HOST_ID
+          const datastoreInstanceMetric = 'Datastore/instance/Memcache/' + HOST_ID
           t.notOk(
             getMetrics(agent).unscoped[datastoreInstanceMetric],
             'should not have datastore instance metric'
@@ -618,7 +618,7 @@ test('memcached instrumentation', { timeout: 5000 }, function (t) {
           t.notOk(err, 'should not throw an error')
 
           transaction.end()
-          var segment = transaction.trace.root.children[0]
+          const segment = transaction.trace.root.children[0]
           const attributes = segment.getAttributes()
           t.equals(attributes.host, undefined, 'should not have host instance parameter')
           t.equals(
@@ -627,7 +627,7 @@ test('memcached instrumentation', { timeout: 5000 }, function (t) {
             'should should not have port instance parameter'
           )
 
-          var datastoreInstanceMetric = 'Datastore/instance/Memcache/' + HOST_ID
+          const datastoreInstanceMetric = 'Datastore/instance/Memcache/' + HOST_ID
           t.notOk(
             getMetrics(agent).unscoped[datastoreInstanceMetric],
             'should not have datastore instance metric'
@@ -639,8 +639,8 @@ test('memcached instrumentation', { timeout: 5000 }, function (t) {
 
   t.test('captures datastore instance attributes with multiple hosts', function (t) {
     t.autoend()
-    var origCommand = null
-    var realServer = params.memcached_host + ':' + params.memcached_port
+    let origCommand = null
+    const realServer = params.memcached_host + ':' + params.memcached_port
 
     t.beforeEach(async () => {
       await bootstrapMemcached()
@@ -684,7 +684,7 @@ test('memcached instrumentation', { timeout: 5000 }, function (t) {
           if (!t.error(err)) {
             return t.end()
           }
-          var firstSegment = agent.tracer.getSegment().parent
+          const firstSegment = agent.tracer.getSegment().parent
 
           memcached.get('bar', function (err) {
             if (!t.error(err)) {
@@ -714,8 +714,8 @@ test('memcached instrumentation', { timeout: 5000 }, function (t) {
             return t.end()
           }
 
-          var firstGet = transaction.trace.root.children[0]
-          var secondGet = transaction.trace.root.children[1]
+          const firstGet = transaction.trace.root.children[0]
+          const secondGet = transaction.trace.root.children[1]
           if (firstGet.getAttributes().host === 'server1') {
             t.comment('first get is server 1')
             checkParams(firstGet, 'server1', '1111')
@@ -733,11 +733,11 @@ test('memcached instrumentation', { timeout: 5000 }, function (t) {
 })
 
 function verifySegments(t, rootSegment, expected) {
-  var previous
-  for (var i = 0; i < expected.length; i++) {
-    var child = expected[i]
+  let previous
+  for (let i = 0; i < expected.length; i++) {
+    const child = expected[i]
     if (typeof child === 'string') {
-      var childSegment = findSegment(rootSegment, child)
+      const childSegment = findSegment(rootSegment, child)
       if (!childSegment) {
         previous = null
         t.fail(util.format('Segment %s does not have child %s', rootSegment.name, child))
@@ -751,8 +751,8 @@ function verifySegments(t, rootSegment, expected) {
 }
 
 function verifyMetrics(t, metrics, expected) {
-  var unscoped = metrics.unscoped
-  var expectedNames = Object.keys(expected)
+  const unscoped = metrics.unscoped
+  const expectedNames = Object.keys(expected)
 
   expectedNames.forEach(function (name) {
     t.ok(unscoped[name], 'should have unscoped metric ' + name)

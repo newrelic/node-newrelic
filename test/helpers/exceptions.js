@@ -25,8 +25,8 @@ const commands = {
 
   domainUncaughtException: function (message) {
     // eslint-disable-next-line node/no-deprecated-api
-    var domain = require('domain')
-    var d = domain.create()
+    const domain = require('domain')
+    const d = domain.create()
 
     d.on('error', sendErrors)
 

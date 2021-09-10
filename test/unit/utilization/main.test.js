@@ -9,12 +9,12 @@
 // Below allows use of mocha DSL with tap runner.
 require('tap').mochaGlobals()
 
-var expect = require('chai').expect
-var helper = require('../../lib/agent_helper.js')
-var proxyquire = require('proxyquire')
+const expect = require('chai').expect
+const helper = require('../../lib/agent_helper.js')
+const proxyquire = require('proxyquire')
 
 describe('getVendors', function () {
-  var agent
+  let agent
 
   beforeEach(function () {
     agent = helper.loadMockedAgent()
@@ -40,7 +40,7 @@ describe('getVendors', function () {
     let kubernetesCalled = false
     let pcfCalled = false
 
-    var getVendors = proxyquire('../../../lib/utilization', {
+    const getVendors = proxyquire('../../../lib/utilization', {
       './aws-info': function (agentArg, cb) {
         awsCalled = true
         cb()
@@ -82,7 +82,7 @@ describe('getVendors', function () {
   })
 
   it('returns multiple vendors if available', function (done) {
-    var getVendors = proxyquire('../../../lib/utilization', {
+    const getVendors = proxyquire('../../../lib/utilization', {
       './aws-info': function (agentArg, cb) {
         cb(null, 'aws info')
       },

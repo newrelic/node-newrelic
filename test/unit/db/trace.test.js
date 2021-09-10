@@ -16,7 +16,7 @@ const expect = chai.expect
 
 describe('SQL trace', function () {
   describe('attributes', function () {
-    var agent
+    let agent
 
     beforeEach(function () {
       agent = helper.loadMockedAgent({

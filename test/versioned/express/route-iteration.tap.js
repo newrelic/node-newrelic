@@ -5,16 +5,16 @@
 
 'use strict'
 
-var test = require('tap').test
-var helper = require('../../lib/agent_helper')
+const test = require('tap').test
+const helper = require('../../lib/agent_helper')
 
 test('new relic should not break route iteration', function (t) {
   t.plan(1)
-  var agent = helper.instrumentMockedAgent()
-  var express = require('express')
-  var router = new express.Router()
-  var childA = new express.Router()
-  var childB = new express.Router()
+  const agent = helper.instrumentMockedAgent()
+  const express = require('express')
+  const router = new express.Router()
+  const childA = new express.Router()
+  const childB = new express.Router()
 
   t.teardown(() => {
     helper.unloadAgent(agent)

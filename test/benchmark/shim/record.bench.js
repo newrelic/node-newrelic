@@ -5,15 +5,15 @@
 
 'use strict'
 
-var benchmark = require('../../lib/benchmark')
-var helper = require('../../lib/agent_helper')
-var Shim = require('../../../lib/shim/shim')
+const benchmark = require('../../lib/benchmark')
+const helper = require('../../lib/agent_helper')
+const Shim = require('../../../lib/shim/shim')
 
-var agent = helper.loadMockedAgent()
-var shim = new Shim(agent, 'test-module', './')
-var suite = benchmark.createBenchmark({ name: 'Shim#record' })
+const agent = helper.loadMockedAgent()
+const shim = new Shim(agent, 'test-module', './')
+const suite = benchmark.createBenchmark({ name: 'Shim#record' })
 
-var transaction = helper.runInTransaction(agent, function (tx) {
+const transaction = helper.runInTransaction(agent, function (tx) {
   return tx
 })
 
@@ -31,7 +31,7 @@ suite.add({
   }
 })
 
-var wrapped = shim.record(getTest(), 'func', function () {
+const wrapped = shim.record(getTest(), 'func', function () {
   return { name: 'foo', callback: shim.LAST }
 })
 

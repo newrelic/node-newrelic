@@ -5,10 +5,10 @@
 
 'use strict'
 
-var EventEmitter = require('events').EventEmitter
-var tap = require('tap')
-var test = tap.test
-var helper = require('../../lib/agent_helper')
+const EventEmitter = require('events').EventEmitter
+const tap = require('tap')
+const test = tap.test
+const helper = require('../../lib/agent_helper')
 
 test('asynchronous state propagation', function (t) {
   t.plan(12)
@@ -16,7 +16,7 @@ test('asynchronous state propagation', function (t) {
   t.test('a. async transaction with setTimeout', { timeout: 5000 }, function (t) {
     t.plan(2)
 
-    var agent = helper.instrumentMockedAgent()
+    const agent = helper.instrumentMockedAgent()
 
     t.teardown(() => {
       // FIXME: why does CLS keep the transaction?
@@ -39,7 +39,7 @@ test('asynchronous state propagation', function (t) {
   t.test('b. async transaction with setInterval', { timeout: 5000 }, function (t) {
     t.plan(4)
 
-    var count = 0
+    let count = 0
     const agent = helper.instrumentMockedAgent()
     let handle
 
@@ -68,7 +68,7 @@ test('asynchronous state propagation', function (t) {
   t.test('c. async transaction with process.nextTick', { timeout: 5000 }, function (t) {
     t.plan(2)
 
-    var agent = helper.instrumentMockedAgent()
+    const agent = helper.instrumentMockedAgent()
 
     t.teardown(() => {
       // FIXME: why does CLS keep the transaction?
@@ -91,7 +91,7 @@ test('asynchronous state propagation', function (t) {
   t.test('d. async transaction with EventEmitter.prototype.emit', { timeout: 5000 }, function (t) {
     t.plan(2)
 
-    var agent = helper.instrumentMockedAgent()
+    const agent = helper.instrumentMockedAgent()
     const ee = new EventEmitter()
 
     t.teardown(() => {
@@ -119,9 +119,9 @@ test('asynchronous state propagation', function (t) {
     function (t) {
       t.plan(6)
 
-      var first
-      var second
-      var agent = helper.instrumentMockedAgent()
+      let first
+      let second
+      const agent = helper.instrumentMockedAgent()
 
       t.teardown(() => {
         // FIXME: why does CLS keep the transaction?
@@ -158,7 +158,7 @@ test('asynchronous state propagation', function (t) {
     function (t) {
       t.plan(15)
 
-      var agent = helper.instrumentMockedAgent()
+      const agent = helper.instrumentMockedAgent()
 
       t.teardown(() => {
         // FIXME: why does CLS keep the transaction?
@@ -169,7 +169,7 @@ test('asynchronous state propagation', function (t) {
       })
 
       function runInterval() {
-        var count = 0
+        let count = 0
         let handle
         let id
 
@@ -216,7 +216,7 @@ test('asynchronous state propagation', function (t) {
       })
 
       function handler(id) {
-        var transaction = agent.getTransaction()
+        const transaction = agent.getTransaction()
         t.ok(transaction, 'transaction should be visible')
         t.equal((transaction || {}).id, id, 'transaction matches')
       }
@@ -243,8 +243,8 @@ test('asynchronous state propagation', function (t) {
     function (t) {
       t.plan(3)
 
-      var agent = helper.instrumentMockedAgent()
-      let ee = new EventEmitter()
+      const agent = helper.instrumentMockedAgent()
+      const ee = new EventEmitter()
 
       t.teardown(() => {
         // FIXME: why does CLS keep the transaction?
@@ -275,7 +275,7 @@ test('asynchronous state propagation', function (t) {
     function (t) {
       t.plan(5)
 
-      var agent = helper.instrumentMockedAgent()
+      const agent = helper.instrumentMockedAgent()
 
       t.teardown(() => {
         // FIXME: why does CLS keep the transaction?
@@ -313,7 +313,7 @@ test('asynchronous state propagation', function (t) {
     function (t) {
       t.plan(5)
 
-      var agent = helper.instrumentMockedAgent()
+      const agent = helper.instrumentMockedAgent()
       let outerHandle
       let innerHandle
 
@@ -355,7 +355,7 @@ test('asynchronous state propagation', function (t) {
     function (t) {
       t.plan(5)
 
-      var agent = helper.instrumentMockedAgent()
+      const agent = helper.instrumentMockedAgent()
 
       t.teardown(() => {
         // FIXME: why does CLS keep the transaction?
@@ -400,7 +400,7 @@ test('asynchronous state propagation', function (t) {
     function (t) {
       t.plan(4)
 
-      var agent = helper.instrumentMockedAgent()
+      const agent = helper.instrumentMockedAgent()
       const outer = new EventEmitter()
       const inner = new EventEmitter()
 

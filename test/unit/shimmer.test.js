@@ -9,24 +9,24 @@
 // Below allows use of mocha DSL with tap runner.
 require('tap').mochaGlobals()
 
-var oldInstrumentations = require('../../lib/instrumentations')
-var insPath = require.resolve('../../lib/instrumentations')
+const oldInstrumentations = require('../../lib/instrumentations')
+const insPath = require.resolve('../../lib/instrumentations')
 require.cache[insPath].exports = wrappedInst
 function wrappedInst() {
-  var ret = oldInstrumentations()
+  const ret = oldInstrumentations()
   ret['../lib/broken_instrumentation_module'] = {
     module: '../test/lib/broken_instrumentation_module'
   }
   return ret
 }
 
-var chai = require('chai')
-var expect = chai.expect
-var helper = require('../lib/agent_helper')
-var logger = require('../../lib/logger').child({ component: 'TEST' })
-var shimmer = require('../../lib/shimmer')
-var shims = require('../../lib/shim')
-var EventEmitter = require('events').EventEmitter
+const chai = require('chai')
+const expect = chai.expect
+const helper = require('../lib/agent_helper')
+const logger = require('../../lib/logger').child({ component: 'TEST' })
+const shimmer = require('../../lib/shimmer')
+const shims = require('../../lib/shim')
+const EventEmitter = require('events').EventEmitter
 
 describe('shimmer', function () {
   describe('custom instrumentation', function () {
@@ -38,11 +38,11 @@ describe('shimmer', function () {
 
   function makeModuleTests(moduleName, throwsError) {
     return function moduleTests() {
-      var agent = null
-      var onRequireArgs = null
-      var counter = 0
-      var instrumentationOpts = null
-      var instrumentedModule = null
+      let agent = null
+      let onRequireArgs = null
+      let counter = 0
+      let instrumentationOpts = null
+      let instrumentedModule = null
 
       beforeEach(function () {
         agent = helper.instrumentMockedAgent()
@@ -68,7 +68,7 @@ describe('shimmer', function () {
       })
 
       it('should be sent a shim and the loaded module', function () {
-        var mod = require(moduleName)
+        const mod = require(moduleName)
         expect(onRequireArgs.length).to.equal(3)
         expect(onRequireArgs[0]).to.be.an.instanceof(shims.Shim)
         expect(onRequireArgs[1]).to.equal(mod)
@@ -82,7 +82,7 @@ describe('shimmer', function () {
       })
 
       it('should receive the correct module (' + moduleName + ')', function () {
-        var mod = require(moduleName)
+        const mod = require(moduleName)
         expect(mod).to.equal(instrumentedModule)
       })
 
@@ -107,9 +107,9 @@ describe('shimmer', function () {
   }
 
   describe('wrapping exports', function () {
-    var agent = null
-    var original = null
-    var wrapper = null
+    let agent = null
+    let original = null
+    let wrapper = null
 
     beforeEach(function () {
       agent = helper.instrumentMockedAgent()
@@ -133,13 +133,13 @@ describe('shimmer', function () {
     })
 
     it('should replace the return value from require', function () {
-      var obj = require('../helpers/module')
+      const obj = require('../helpers/module')
       expect(obj).to.equal(wrapper).and.not.equal(original)
     })
   })
 
   describe('the instrumentation injector', function () {
-    var nodule = {
+    const nodule = {
       c: 2,
       ham: 'ham',
       doubler: function (x, cb) {
@@ -157,9 +157,9 @@ describe('shimmer', function () {
     }
 
     it('should wrap a method', function () {
-      var doubled = 0
-      var before = false
-      var after = false
+      let doubled = 0
+      let before = false
+      let after = false
 
       shimmer.wrapMethod(nodule, 'nodule', 'doubler', function (original) {
         return function () {
@@ -181,9 +181,9 @@ describe('shimmer', function () {
     })
 
     it('should preserve properties on wrapped methods', () => {
-      var quadrupled = 0
-      var before = false
-      var after = false
+      let quadrupled = 0
+      let before = false
+      let after = false
 
       nodule.quadrupler.test = () => {}
 
@@ -215,7 +215,7 @@ describe('shimmer', function () {
     })
 
     describe('with accessor replacement', function () {
-      var simple
+      let simple
 
       beforeEach(function () {
         simple = { target: true }
@@ -255,7 +255,7 @@ describe('shimmer', function () {
       })
 
       it('should replace a property with an accessor', function (done) {
-        var original = shimmer.wrapDeprecated(simple, 'nodule', 'target', {
+        const original = shimmer.wrapDeprecated(simple, 'nodule', 'target', {
           get: function () {
             // test will only complete if this is called
             done()
@@ -268,8 +268,8 @@ describe('shimmer', function () {
       })
 
       it('should invoke the setter when the accessor is used', function (done) {
-        var test = 'ham'
-        var original = shimmer.wrapDeprecated(simple, 'nodule', 'target', {
+        const test = 'ham'
+        const original = shimmer.wrapDeprecated(simple, 'nodule', 'target', {
           get: function () {
             return test
           },
@@ -285,9 +285,9 @@ describe('shimmer', function () {
     })
 
     it('should wrap, then unwrap a method', function () {
-      var tripled = 0
-      var before = false
-      var after = false
+      let tripled = 0
+      let before = false
+      let after = false
 
       shimmer.wrapMethod(nodule, 'nodule', 'tripler', function (original) {
         return function () {
@@ -320,10 +320,10 @@ describe('shimmer', function () {
     })
 
     it("shouldn't break anything when an NR-wrapped method is wrapped again", function () {
-      var hamceptacle = ''
-      var before = false
-      var after = false
-      var hammed = false
+      let hamceptacle = ''
+      let before = false
+      let after = false
+      let hammed = false
 
       shimmer.wrapMethod(nodule, 'nodule', 'hammer', function (original) {
         return function () {
@@ -334,7 +334,7 @@ describe('shimmer', function () {
       })
 
       // monkey-patching the old-fashioned way
-      var hammer = nodule.hammer
+      const hammer = nodule.hammer
       nodule.hammer = function () {
         hammer.apply(this, arguments)
         hammed = true
@@ -351,7 +351,7 @@ describe('shimmer', function () {
     })
 
     describe('with full instrumentation running', function () {
-      var agent
+      let agent
 
       beforeEach(function () {
         agent = helper.loadMockedAgent()
@@ -364,19 +364,19 @@ describe('shimmer', function () {
       it('should push transactions through process.nextTick', function (done) {
         expect(agent.getTransaction()).equal(null)
 
-        var synchronizer = new EventEmitter()
-        var transactions = []
-        var ids = []
+        const synchronizer = new EventEmitter()
+        const transactions = []
+        const ids = []
 
-        var spamTransaction = function (i) {
-          var wrapped = agent.tracer.transactionProxy(function transactionProxyCb() {
-            var current = agent.getTransaction()
+        const spamTransaction = function (i) {
+          const wrapped = agent.tracer.transactionProxy(function transactionProxyCb() {
+            const current = agent.getTransaction()
             transactions[i] = current
             ids[i] = current.id
 
             process.nextTick(
               agent.tracer.bindFunction(function bindFunctionCb() {
-                var lookup = agent.getTransaction()
+                const lookup = agent.getTransaction()
                 expect(lookup).equal(current)
 
                 synchronizer.emit('inner', lookup, i)
@@ -386,7 +386,7 @@ describe('shimmer', function () {
           wrapped()
         }
 
-        var doneCount = 0
+        let doneCount = 0
         synchronizer.on('inner', function (trans, j) {
           doneCount += 1
           expect(trans).equal(transactions[j])
@@ -399,7 +399,7 @@ describe('shimmer', function () {
           }
         })
 
-        for (var i = 0; i < 10; i += 1) {
+        for (let i = 0; i < 10; i += 1) {
           process.nextTick(spamTransaction.bind(this, i))
         }
       })
@@ -407,19 +407,19 @@ describe('shimmer', function () {
       it('should push transactions through setTimeout', function (done) {
         expect(agent.getTransaction()).equal(null)
 
-        var synchronizer = new EventEmitter()
-        var transactions = []
-        var ids = []
+        const synchronizer = new EventEmitter()
+        const transactions = []
+        const ids = []
 
-        var spamTransaction = function (i) {
-          var wrapped = agent.tracer.transactionProxy(function transactionProxyCb() {
-            var current = agent.getTransaction()
+        const spamTransaction = function (i) {
+          const wrapped = agent.tracer.transactionProxy(function transactionProxyCb() {
+            const current = agent.getTransaction()
             transactions[i] = current
             ids[i] = current.id
 
             setTimeout(
               agent.tracer.bindFunction(function bindFunctionCb() {
-                var lookup = agent.getTransaction()
+                const lookup = agent.getTransaction()
                 expect(lookup).equal(current)
 
                 synchronizer.emit('inner', lookup, i)
@@ -430,7 +430,7 @@ describe('shimmer', function () {
           wrapped()
         }
 
-        var doneCount = 0
+        let doneCount = 0
         synchronizer.on('inner', function (trans, j) {
           doneCount += 1
           expect(trans).equal(transactions[j])
@@ -443,9 +443,9 @@ describe('shimmer', function () {
           }
         })
 
-        for (var i = 0; i < 10; i += 1) {
+        for (let i = 0; i < 10; i += 1) {
           // You know what this test needs? Some non-determinism!
-          var timeout = Math.floor(Math.random() * 20)
+          const timeout = Math.floor(Math.random() * 20)
           setTimeout(spamTransaction.bind(this, i), timeout)
         }
       })
@@ -453,15 +453,15 @@ describe('shimmer', function () {
       it('should push transactions through EventEmitters', function (done) {
         expect(agent.getTransaction()).equal(null)
 
-        var eventer = new EventEmitter()
-        var transactions = []
-        var ids = []
+        const eventer = new EventEmitter()
+        const transactions = []
+        const ids = []
 
-        var eventTransaction = function (j) {
-          var wrapped = agent.tracer.transactionProxy(function transactionProxyCb() {
-            var current = agent.getTransaction()
-            var id = current.id
-            var name = 'ttest' + (j + 1)
+        const eventTransaction = function (j) {
+          const wrapped = agent.tracer.transactionProxy(function transactionProxyCb() {
+            const current = agent.getTransaction()
+            const id = current.id
+            const name = 'ttest' + (j + 1)
 
             transactions[j] = current
             ids[j] = id
@@ -469,7 +469,7 @@ describe('shimmer', function () {
             eventer.on(
               name,
               agent.tracer.bindFunction(function bindFunctionCb() {
-                var lookup = agent.getTransaction()
+                const lookup = agent.getTransaction()
                 expect(lookup).equal(current)
                 expect(lookup.id).equal(id)
 
@@ -482,7 +482,7 @@ describe('shimmer', function () {
           wrapped()
         }
 
-        var doneCount = 0
+        let doneCount = 0
         eventer.on('inner', function (trans, j) {
           doneCount += 1
           expect(trans).equal(transactions[j])
@@ -495,7 +495,7 @@ describe('shimmer', function () {
           }
         })
 
-        for (var i = 0; i < 10; i += 1) {
+        for (let i = 0; i < 10; i += 1) {
           eventTransaction(i)
         }
       })
@@ -503,14 +503,14 @@ describe('shimmer', function () {
       it('should handle whatever ridiculous nonsense you throw at it', function (done) {
         expect(agent.getTransaction()).equal(null)
 
-        var synchronizer = new EventEmitter()
-        var eventer = new EventEmitter()
-        var transactions = []
-        var ids = []
-        var doneCount = 0
+        const synchronizer = new EventEmitter()
+        const eventer = new EventEmitter()
+        const transactions = []
+        const ids = []
+        let doneCount = 0
 
-        var verify = function (i, phase, passed) {
-          var lookup = agent.getTransaction()
+        const verify = function (i, phase, passed) {
+          const lookup = agent.getTransaction()
           logger.trace(
             '%d %s %d %d',
             i,
@@ -529,20 +529,20 @@ describe('shimmer', function () {
           synchronizer.emit('inner', trans, j)
         })
 
-        var createTimer = function (trans, j) {
-          var wrapped = agent.tracer.wrapFunctionFirst('createTimer', null, process.nextTick)
+        const createTimer = function (trans, j) {
+          const wrapped = agent.tracer.wrapFunctionFirst('createTimer', null, process.nextTick)
 
           wrapped(function () {
-            var current = agent.getTransaction()
+            const current = agent.getTransaction()
 
             verify(j, 'createTimer', current)
             eventer.emit('rntest', current, j)
           })
         }
 
-        var createTicker = function (j) {
+        const createTicker = function (j) {
           return agent.tracer.transactionProxy(function transactionProxyCb() {
-            var current = agent.getTransaction()
+            const current = agent.getTransaction()
             transactions[j] = current
             ids[j] = current.id
 
@@ -570,7 +570,7 @@ describe('shimmer', function () {
           }
         })
 
-        for (var i = 0; i < 10; i++) {
+        for (let i = 0; i < 10; i++) {
           process.nextTick(createTicker(i))
         }
       })

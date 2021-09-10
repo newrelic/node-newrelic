@@ -5,16 +5,16 @@
 
 'use strict'
 
-var shared = require('./shared')
+const shared = require('./shared')
 
-var s = shared.makeSuite('Shim introspection')
-var suite = s.suite
-var shim = s.shim
+const s = shared.makeSuite('Shim introspection')
+const suite = s.suite
+const shim = s.shim
 
 suite.add({
   name: 'shim.getName',
   fn: function () {
-    var test = shared.getTest()
+    const test = shared.getTest()
     return shim.getName(test.func)
   }
 })
@@ -22,7 +22,7 @@ suite.add({
 suite.add({
   name: 'shim.isWrapped',
   fn: function () {
-    var test = shared.getTest()
+    const test = shared.getTest()
     shim.isWrapped(test, 'func')
     return test
   }

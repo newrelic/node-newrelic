@@ -5,23 +5,23 @@
 
 'use strict'
 
-var helper = require('../../../lib/agent_helper')
-var request = require('request')
-var tap = require('tap')
-var utils = require('./hapi-utils')
+const helper = require('../../../lib/agent_helper')
+const request = require('request')
+const tap = require('tap')
+const utils = require('./hapi-utils')
 
 tap.test('Hapi Plugins', function (t) {
   t.autoend()
 
-  var agent = null
-  var server = null
-  var port = null
+  let agent = null
+  let server = null
+  let port = null
 
   // queue that executes outside of a transaction context
-  var tasks = []
-  var intervalId = setInterval(function () {
+  const tasks = []
+  const intervalId = setInterval(function () {
     while (tasks.length) {
-      var task = tasks.pop()
+      const task = tasks.pop()
       task()
     }
   }, 10)
@@ -109,7 +109,7 @@ tap.test('Hapi Plugins', function (t) {
 
   t.test('maintains transaction state while mounting array of plugins', function (t) {
     t.plan(3)
-    var plugin = {
+    const plugin = {
       register: function plugin(srvr, opts, next) {
         srvr.route({
           method: 'GET',

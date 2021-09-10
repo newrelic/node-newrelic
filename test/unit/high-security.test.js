@@ -7,16 +7,16 @@
 
 const tap = require('tap')
 
-var helper = require('../lib/agent_helper')
-var facts = require('../../lib/collector/facts')
-var API = require('../../api')
-var Config = require('../../lib/config')
+const helper = require('../lib/agent_helper')
+const facts = require('../../lib/collector/facts')
+const API = require('../../api')
+const Config = require('../../lib/config')
 
 // simplified version of lodash set()
 function setPath(obj, path, value) {
-  let paths = path.split('.')
+  const paths = path.split('.')
   while (paths.length - 1) {
-    let key = paths.shift()
+    const key = paths.shift()
     if (!(key in obj)) {
       obj[key] = {}
     }
@@ -27,9 +27,9 @@ function setPath(obj, path, value) {
 
 // simplified version of lodash get()
 function getPath(obj, path) {
-  let paths = path.split('.')
+  const paths = path.split('.')
   while (paths.length - 1) {
-    let key = paths.shift()
+    const key = paths.shift()
     obj = obj[key]
   }
   return obj[paths[0]]
@@ -60,7 +60,7 @@ tap.test('high security mode', function (t) {
 
   t.test('config to be sent during connect', function (t) {
     t.autoend()
-    var agent = null
+    let agent = null
 
     t.beforeEach(function () {
       agent = helper.loadMockedAgent()
@@ -80,7 +80,7 @@ tap.test('high security mode', function (t) {
 
   t.test('conditional application of server side settings', function (t) {
     t.autoend()
-    var config = null
+    let config = null
 
     t.test('when high_security === true', function (t) {
       t.autoend()
@@ -171,8 +171,8 @@ tap.test('high security mode', function (t) {
     t.test('_applyHighSecurity during init', function (t) {
       t.autoend()
 
-      var orig = Config.prototype._applyHighSecurity
-      var called
+      const orig = Config.prototype._applyHighSecurity
+      let called
 
       t.beforeEach(function () {
         called = false
@@ -268,7 +268,7 @@ tap.test('high security mode', function (t) {
       })
 
       t.test('should detect no problems', function (t) {
-        var config = new Config({ high_security: true })
+        const config = new Config({ high_security: true })
         config.ssl = true
         config.attributes.include = ['some val']
         config._applyHighSecurity()
@@ -281,8 +281,8 @@ tap.test('high security mode', function (t) {
 
   t.test('affect custom params', function (t) {
     t.autoend()
-    var agent = null
-    var api = null
+    let agent = null
+    let api = null
 
     t.beforeEach(function () {
       agent = helper.loadMockedAgent()
@@ -295,7 +295,7 @@ tap.test('high security mode', function (t) {
 
     t.test('should disable addCustomAttribute if high_security is on', function (t) {
       agent.config.high_security = true
-      var success = api.addCustomAttribute('key', 'value')
+      const success = api.addCustomAttribute('key', 'value')
       t.equal(success, false)
       t.end()
     })

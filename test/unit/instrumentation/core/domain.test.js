@@ -15,7 +15,7 @@ test('Domains', (t) => {
 
   let agent = null
   let d = null
-  let tasks = []
+  const tasks = []
   let interval = null
 
   t.beforeEach((t) => {

@@ -5,24 +5,24 @@
 
 'use strict'
 
-var test = require('tap').test
-var net = require('net')
-var helper = require('../../lib/agent_helper')
+const test = require('tap').test
+const net = require('net')
+const helper = require('../../lib/agent_helper')
 
 function id(tx) {
   return tx && tx.id
 }
 
 test('createServer', function createServerTest(t) {
-  var agent = setupAgent(t)
+  const agent = setupAgent(t)
 
   helper.runInTransaction(agent, function transactionWrapper(transaction) {
-    var server = net.createServer(handler)
+    const server = net.createServer(handler)
 
     server.listen(4123, function listening() {
       // leave transaction
       agent.tracer.segment = null
-      var socket = net.connect({ port: 4123 })
+      const socket = net.connect({ port: 4123 })
       socket.write('test123')
       socket.end()
     })
@@ -45,13 +45,13 @@ test('createServer', function createServerTest(t) {
     }
 
     function onClose() {
-      var root = agent.getTransaction().trace.root
+      const root = agent.getTransaction().trace.root
       t.equal(root.children.length, 1, 'should have a single child')
-      var child = root.children[0]
+      const child = root.children[0]
       t.equal(child.name, 'net.Server.onconnection', 'child segment should have correct name')
       t.ok(child.timer.touched, 'child should started and ended')
       t.equal(child.children.length, 1, 'child should have a single child segment')
-      var timeout = child.children[0]
+      const timeout = child.children[0]
       t.equal(timeout.name, 'timers.setTimeout', 'timeout segment should have correct name')
       t.ok(timeout.timer.touched, 'timeout should started and ended')
       t.equal(timeout.children.length, 1, 'timeout should have a single callback segment')
@@ -61,9 +61,9 @@ test('createServer', function createServerTest(t) {
 })
 
 test('connect', function connectTest(t) {
-  var agent = setupAgent(t)
+  const agent = setupAgent(t)
 
-  var server = net.createServer(function connectionHandler(socket) {
+  const server = net.createServer(function connectionHandler(socket) {
     socket.on('data', function onData(data) {
       t.equal(data.toString(), 'some data')
       socket.end('end data')
@@ -79,8 +79,8 @@ test('connect', function connectTest(t) {
   })
 
   function transactionWrapper(transaction) {
-    var count = 0
-    var socket = net.createConnection({ port: 4123 })
+    let count = 0
+    const socket = net.createConnection({ port: 4123 })
     socket.on('data', function onData(data) {
       t.equal(id(agent.getTransaction()), id(transaction), 'should maintain tx')
       t.equal(data.toString(), 'end data')
@@ -103,9 +103,9 @@ test('connect', function connectTest(t) {
         return t.end()
       }
 
-      var root = agent.getTransaction().trace.root
+      const root = agent.getTransaction().trace.root
       t.equal(root.children.length, 1, 'should have a single child')
-      var connectSegment = root.children[0]
+      let connectSegment = root.children[0]
       t.equal(
         connectSegment.name,
         'net.createConnection',
@@ -120,8 +120,8 @@ test('connect', function connectTest(t) {
       }
 
       t.equal(connectSegment.children.length, 2, 'connect should have a two child segment')
-      var dnsSegment = connectSegment.children[0]
-      var timeoutSegment = connectSegment.children[1]
+      const dnsSegment = connectSegment.children[0]
+      const timeoutSegment = connectSegment.children[1]
 
       t.equal(dnsSegment.name, 'dns.lookup', 'dns segment should have correct name')
       t.ok(dnsSegment.timer.touched, 'dns segment should started and ended')
@@ -135,12 +135,12 @@ test('connect', function connectTest(t) {
 })
 
 test('createServer and connect', function createServerTest(t) {
-  var agent = setupAgent(t)
+  const agent = setupAgent(t)
   helper.runInTransaction(agent, function transactionWrapper(transaction) {
-    var server = net.createServer(handler)
+    const server = net.createServer(handler)
 
     server.listen(4123, function listening() {
-      var socket = net.connect({ port: 4123 })
+      const socket = net.connect({ port: 4123 })
       socket.write('test123')
       socket.end()
     })
@@ -163,9 +163,9 @@ test('createServer and connect', function createServerTest(t) {
     }
 
     function onClose() {
-      var root = agent.getTransaction().trace.root
+      const root = agent.getTransaction().trace.root
       t.equal(root.children.length, 2, 'should have 2 children')
-      var clientSegment = root.children[0]
+      let clientSegment = root.children[0]
       t.equal(clientSegment.name, 'net.connect', 'server segment should have correct name')
       t.ok(clientSegment.timer.touched, 'server should started and ended')
 
@@ -176,14 +176,14 @@ test('createServer and connect', function createServerTest(t) {
       }
 
       t.equal(clientSegment.children.length, 1, 'clientSegment should only have one child')
-      var dnsSegment = clientSegment.children[0]
+      const dnsSegment = clientSegment.children[0]
       if (dnsSegment) {
         t.equal(dnsSegment.name, 'dns.lookup', 'dnsSegment is named properly')
       } else {
         t.fail('did not have children, prevent undefined property lookup')
       }
 
-      var serverSegment = root.children[1]
+      const serverSegment = root.children[1]
       t.equal(
         serverSegment.name,
         'net.Server.onconnection',
@@ -197,7 +197,7 @@ test('createServer and connect', function createServerTest(t) {
 })
 
 function setupAgent(t) {
-  var agent = helper.instrumentMockedAgent()
+  const agent = helper.instrumentMockedAgent()
   t.teardown(function tearDown() {
     helper.unloadAgent(agent)
   })

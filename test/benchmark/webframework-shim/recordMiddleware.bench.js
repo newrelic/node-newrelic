@@ -5,15 +5,15 @@
 
 'use strict'
 
-var benchmark = require('../../lib/benchmark')
-var helper = require('../../lib/agent_helper')
-var WebFrameworkShim = require('../../../lib/shim/webframework-shim')
+const benchmark = require('../../lib/benchmark')
+const helper = require('../../lib/agent_helper')
+const WebFrameworkShim = require('../../../lib/shim/webframework-shim')
 
-var agent = helper.loadMockedAgent()
-var shim = new WebFrameworkShim(agent, 'test-module', './')
-var suite = benchmark.createBenchmark({ name: 'recordMiddleware' })
+const agent = helper.loadMockedAgent()
+const shim = new WebFrameworkShim(agent, 'test-module', './')
+const suite = benchmark.createBenchmark({ name: 'recordMiddleware' })
 
-var transaction = helper.runInTransaction(agent, function (tx) {
+const transaction = helper.runInTransaction(agent, function (tx) {
   return tx
 })
 
@@ -30,7 +30,7 @@ setTimeout(function () {
 }, 500)
 
 function addTests(name, speccer) {
-  var middleware = recordFunc(speccer())
+  const middleware = recordFunc(speccer())
 
   suite.add({
     name: name + ' - function middleware',
@@ -114,7 +114,7 @@ function explicitSpec() {
 }
 
 function randomSpec() {
-  var n = Math.random()
+  const n = Math.random()
   if (n > 0.666) {
     return implicitSpec()
   } else if (n > 0.333) {
@@ -141,10 +141,10 @@ function randomRecord(spec) {
 function noop() {}
 
 function preOptRecordMiddleware() {
-  for (var i = 0; i < 1000; ++i) {
-    var m = randomRecord(randomSpec)
+  for (let i = 0; i < 1000; ++i) {
+    let m = randomRecord(randomSpec)
     m = typeof m === 'function' ? m : m.func
-    for (var j = 0; j < 100; ++j) {
+    for (let j = 0; j < 100; ++j) {
       m(getReqd(), {}, noop)
     }
   }

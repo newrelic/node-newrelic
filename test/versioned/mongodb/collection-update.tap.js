@@ -23,13 +23,13 @@ const semver = require('semver')
  */
 function assertExpectedResult({ t, data, count, keyPrefix, extraValues, legacyValues }) {
   if (semver.satisfies(mongoPackage.version, '<4')) {
-    let expectedResult = { ok: 1, ...legacyValues }
+    const expectedResult = { ok: 1, ...legacyValues }
     if (count) {
       expectedResult.n = count
     }
     t.same(data.result, expectedResult)
   } else {
-    let expectedResult = { acknowledged: true, ...extraValues }
+    const expectedResult = { acknowledged: true, ...extraValues }
     if (count) {
       expectedResult[`${keyPrefix}Count`] = count
     }

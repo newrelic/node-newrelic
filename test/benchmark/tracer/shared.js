@@ -5,12 +5,12 @@
 
 'use strict'
 
-var benchmark = require('../../lib/benchmark')
-var helper = require('../../lib/agent_helper')
+const benchmark = require('../../lib/benchmark')
+const helper = require('../../lib/agent_helper')
 
 function makeSuite(name) {
-  var agent = helper.loadMockedAgent()
-  var suite = benchmark.createBenchmark({ name: name, delay: 0.01 })
+  const agent = helper.loadMockedAgent()
+  const suite = benchmark.createBenchmark({ name: name, delay: 0.01 })
   return { agent: agent, suite: suite }
 }
 

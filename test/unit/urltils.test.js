@@ -9,9 +9,9 @@
 // Below allows use of mocha DSL with tap runner.
 require('tap').mochaGlobals()
 
-var expect = require('chai').expect
-var urltils = require('../../lib/util/urltils.js')
-var url = require('url')
+const expect = require('chai').expect
+const urltils = require('../../lib/util/urltils.js')
+const url = require('url')
 
 describe('NR URL utilities', function () {
   describe('scrubbing URLs', function () {
@@ -39,7 +39,7 @@ describe('NR URL utilities', function () {
   })
 
   describe('determining whether an HTTP status code is an error', function () {
-    var config = { error_collector: { ignore_status_codes: [] } }
+    let config = { error_collector: { ignore_status_codes: [] } }
 
     it('should not throw when called with no params', function () {
       expect(function () {
@@ -164,14 +164,14 @@ describe('NR URL utilities', function () {
   })
 
   describe('isIgnoredError', function () {
-    var config = { error_collector: { ignore_status_codes: [] } }
+    const config = { error_collector: { ignore_status_codes: [] } }
 
     it('returns true if the status code is an HTTP error in the ignored list', () => {
-      var errorCodes = [
+      const errorCodes = [
         400, 401, 402, 403, 404, 405, 406, 407, 408, 409, 410, 411, 412, 413, 414, 415, 416, 417,
         418, 419, 420, 500, 503
       ]
-      var statusCode
+      let statusCode
 
       for (var i = 0; i < errorCodes.length; i++) {
         statusCode = errorCodes[i]
@@ -186,8 +186,8 @@ describe('NR URL utilities', function () {
     })
 
     it('returns false if the status code is NOT an HTTP error', function () {
-      var statusCodes = [200]
-      var statusCode
+      const statusCodes = [200]
+      let statusCode
 
       for (var i = 0; i < statusCodes.length; i++) {
         statusCode = statusCodes[i]
@@ -203,8 +203,8 @@ describe('NR URL utilities', function () {
   })
 
   describe('copying parameters from a query hash', function () {
-    var source
-    var dest
+    let source
+    let dest
 
     beforeEach(function () {
       source = {}

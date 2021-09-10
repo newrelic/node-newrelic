@@ -16,14 +16,14 @@ const suite = benchmark.createBenchmark({
   name: 'trace segments'
 })
 
-var root
+let root
 
 function addChildren(rootSegment, numChildren) {
   const queue = [rootSegment]
-  for (var numSegments = 1; numSegments < 900; numSegments += numChildren) {
-    var parent = queue.shift()
-    for (var i = 0; i < numChildren; ++i) {
-      var child = parent.add('child ' + (numSegments + i))
+  for (let numSegments = 1; numSegments < 900; numSegments += numChildren) {
+    const parent = queue.shift()
+    for (let i = 0; i < numChildren; ++i) {
+      const child = parent.add('child ' + (numSegments + i))
       child.timer.setDurationInMillis(
         (0.99 + Math.random() / 100) * parent.timer.durationInMillis,
         parent.timer.start + 1

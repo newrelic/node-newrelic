@@ -5,11 +5,11 @@
 
 'use strict'
 
-var test = require('tap').test
-var request = require('request')
-var helper = require('../../../lib/agent_helper')
-var API = require('../../../../api')
-var utils = require('./hapi-18-utils')
+const test = require('tap').test
+const request = require('request')
+const helper = require('../../../lib/agent_helper')
+const API = require('../../../../api')
+const utils = require('./hapi-18-utils')
 
 test('ignoring a Hapi route', function (t) {
   t.plan(6)
@@ -28,10 +28,10 @@ test('ignoring a Hapi route', function (t) {
 
     t.notOk(agent.traces.trace, 'should have no transaction trace')
 
-    var metrics = agent.metrics._metrics.unscoped
+    const metrics = agent.metrics._metrics.unscoped
     t.equal(Object.keys(metrics).length, 1, 'only supportability metrics added to agent collection')
 
-    var errors = agent.errors.traceAggregator.errors
+    const errors = agent.errors.traceAggregator.errors
     t.equal(errors.length, 0, 'no errors noticed')
   })
 
@@ -45,8 +45,8 @@ test('ignoring a Hapi route', function (t) {
   })
 
   server.start().then(function () {
-    var port = server.info.port
-    var params = {
+    const port = server.info.port
+    const params = {
       uri: 'http://localhost:' + port + '/order/31337',
       json: true
     }

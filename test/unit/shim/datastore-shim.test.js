@@ -697,7 +697,7 @@ test('DatastoreShim', function (t) {
     })
 
     t.test('should bind the callback if there is one', function (t) {
-      let cb = function () {}
+      const cb = function () {}
 
       const toWrap = function (_query, wrappedCB) {
         t.not(wrappedCB, cb)

@@ -171,7 +171,7 @@ tap.test('SpanAggregator', (t) => {
 
         spanEventAggregator.addSegment(segment)
 
-        var payload = spanEventAggregator._toPayloadSync()
+        const payload = spanEventAggregator._toPayloadSync()
 
         const [runId, metrics, events] = payload
 

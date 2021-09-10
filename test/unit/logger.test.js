@@ -16,7 +16,7 @@ const Logger = require('../../lib/util/logger')
 const path = require('path')
 
 describe('Logger', function () {
-  var logger = null
+  let logger = null
 
   beforeEach(function () {
     logger = new Logger({
@@ -83,9 +83,9 @@ describe('Logger', function () {
 })
 
 function runTestFile(file, cb) {
-  var testHelperDir = path.resolve(__dirname, '../helpers/')
-  var proc = cp.fork(path.join(testHelperDir, file), { silent: true })
-  var message = null
+  const testHelperDir = path.resolve(__dirname, '../helpers/')
+  const proc = cp.fork(path.join(testHelperDir, file), { silent: true })
+  let message = null
 
   proc.on('message', function (msg) {
     message = msg

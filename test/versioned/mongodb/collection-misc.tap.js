@@ -243,7 +243,7 @@ if (semver.satisfies(mongoPackage.version, '<4')) {
         t.error(err)
         t.equal(items.length, 30)
 
-        var total = items.reduce(function sum(prev, item) {
+        const total = items.reduce(function sum(prev, item) {
           return item.i + prev
         }, 0)
 

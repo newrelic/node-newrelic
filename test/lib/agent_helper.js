@@ -27,7 +27,7 @@ const tasks = []
  * Set up an unref'd loop to execute tasks that are added
  * via helper.runOutOfContext
  */
-let outOfContextQueueInterval = setInterval(() => {
+const outOfContextQueueInterval = setInterval(() => {
   while (tasks.length) {
     tasks.pop()()
   }
@@ -174,7 +174,7 @@ const helper = (module.exports = {
   },
 
   loadTestAgent: (t, conf, setState = true) => {
-    let agent = helper.instrumentMockedAgent(conf, setState)
+    const agent = helper.instrumentMockedAgent(conf, setState)
     t.teardown(() => {
       helper.unloadAgent(agent)
     })
@@ -474,7 +474,7 @@ const helper = (module.exports = {
 function removeListenerByName(emitter, eventName, listenerName) {
   const listeners = emitter.listeners(eventName)
   for (let i = 0, len = listeners.length; i < len; ++i) {
-    let listener = listeners[i]
+    const listener = listeners[i]
     if (typeof listener === 'function' && listener.name === listenerName) {
       emitter.removeListener(eventName, listener)
     }

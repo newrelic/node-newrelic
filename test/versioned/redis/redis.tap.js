@@ -17,11 +17,11 @@ const DB_INDEX = 2
 test('Redis instrumentation', { timeout: 20000 }, function (t) {
   t.autoend()
 
-  var METRIC_HOST_NAME = null
-  var HOST_ID = null
+  let METRIC_HOST_NAME = null
+  let HOST_ID = null
 
-  var agent
-  var client
+  let agent
+  let client
 
   t.beforeEach(function () {
     return new Promise((resolve, reject) => {
@@ -65,7 +65,7 @@ test('Redis instrumentation', { timeout: 20000 }, function (t) {
   t.test('should find Redis calls in the transaction trace', function (t) {
     t.plan(17)
     helper.runInTransaction(agent, function transactionInScope() {
-      var transaction = agent.getTransaction()
+      const transaction = agent.getTransaction()
       t.ok(transaction, 'transaction should be visible')
 
       client.set('testkey', 'arglbargle', function (error, ok) {
@@ -84,19 +84,19 @@ test('Redis instrumentation', { timeout: 20000 }, function (t) {
           t.ok(agent.getTransaction(), 'transaction should still still be visible')
           t.equals(value, 'arglbargle', 'memcached client should still work')
 
-          var trace = transaction.trace
+          const trace = transaction.trace
           t.ok(trace, 'trace should exist')
           t.ok(trace.root, 'root element should exist')
           t.equals(trace.root.children.length, 1, 'there should be only one child of the root')
 
-          var setSegment = trace.root.children[0]
+          const setSegment = trace.root.children[0]
           const setAttributes = setSegment.getAttributes()
           t.ok(setSegment, 'trace segment for set should exist')
           t.equals(setSegment.name, 'Datastore/operation/Redis/set', 'should register the set')
           t.equals(setAttributes.key, '"testkey"', 'should have the set key as a attribute')
           t.equals(setSegment.children.length, 1, 'set should have an only child')
 
-          var getSegment = setSegment.children[0].children[0]
+          const getSegment = setSegment.children[0].children[0]
           const getAttributes = getSegment.getAttributes()
           t.ok(getSegment, 'trace segment for get should exist')
 
@@ -156,7 +156,7 @@ test('Redis instrumentation', { timeout: 20000 }, function (t) {
     })
 
     agent.on('transactionFinished', function (tx) {
-      var redSeg = tx.trace.root.children[0]
+      const redSeg = tx.trace.root.children[0]
       t.equal(redSeg.name, 'Datastore/operation/Redis/set', 'should have untruncated redis segment')
       t.equal(redSeg.children.length, 0, 'should have no children for redis segment')
     })
@@ -165,7 +165,7 @@ test('Redis instrumentation', { timeout: 20000 }, function (t) {
   t.test('should create correct metrics', function (t) {
     t.plan(14)
     helper.runInTransaction(agent, function transactionInScope() {
-      var transaction = agent.getTransaction()
+      const transaction = agent.getTransaction()
       client.set('testkey', 'arglbargle', function (error) {
         if (error) {
           return t.fail(error)
@@ -177,8 +177,8 @@ test('Redis instrumentation', { timeout: 20000 }, function (t) {
           }
 
           transaction.end()
-          var unscoped = transaction.metrics.unscoped
-          var expected = {
+          const unscoped = transaction.metrics.unscoped
+          const expected = {
             'Datastore/all': 2,
             'Datastore/allWeb': 2,
             'Datastore/Redis/all': 2,
@@ -201,7 +201,7 @@ test('Redis instrumentation', { timeout: 20000 }, function (t) {
         // Regardless of error, key should still be captured.
         t.error(error)
 
-        var segment = agent.tracer.getSegment().parent
+        const segment = agent.tracer.getSegment().parent
         t.equals(segment.getAttributes().key, '"saveme"', 'should have `key` attribute')
         t.end()
       })
@@ -216,7 +216,7 @@ test('Redis instrumentation', { timeout: 20000 }, function (t) {
         // Regardless of error, key should still be captured.
         t.error(error)
 
-        var segment = agent.tracer.getSegment().parent
+        const segment = agent.tracer.getSegment().parent
         t.notOk(segment.getAttributes().key, 'should not have `key` attribute')
         t.end()
       })
@@ -231,14 +231,14 @@ test('Redis instrumentation', { timeout: 20000 }, function (t) {
     agent.config.datastore_tracer.database_name_reporting.enabled = true
 
     helper.runInTransaction(agent, function transactionInScope() {
-      var transaction = agent.getTransaction()
+      const transaction = agent.getTransaction()
       client.set('testkey', 'arglbargle', function (error) {
         if (error) {
           return t.fail(error)
         }
 
-        var trace = transaction.trace
-        var setSegment = trace.root.children[0]
+        const trace = transaction.trace
+        const setSegment = trace.root.children[0]
         const attributes = setSegment.getAttributes()
         t.equals(attributes.host, METRIC_HOST_NAME, 'should have host as attribute')
         t.equals(
@@ -260,20 +260,20 @@ test('Redis instrumentation', { timeout: 20000 }, function (t) {
     agent.config.datastore_tracer.database_name_reporting.enabled = false
 
     helper.runInTransaction(agent, function transactionInScope() {
-      var transaction = agent.getTransaction()
+      const transaction = agent.getTransaction()
       client.set('testkey', 'arglbargle', function (error) {
         if (!t.error(error)) {
           return t.end()
         }
 
-        var setSegment = transaction.trace.root.children[0]
+        const setSegment = transaction.trace.root.children[0]
         const attributes = setSegment.getAttributes()
         t.equals(attributes.host, undefined, 'should not have host attribute')
         t.equals(attributes.port_path_or_id, undefined, 'should not have port attribute')
         t.equals(attributes.database_name, undefined, 'should not have db name attribute')
 
         transaction.end()
-        var unscoped = transaction.metrics.unscoped
+        const unscoped = transaction.metrics.unscoped
         t.equals(
           unscoped['Datastore/instance/Redis/' + HOST_ID],
           undefined,
@@ -285,8 +285,8 @@ test('Redis instrumentation', { timeout: 20000 }, function (t) {
 
   t.test('should follow selected database', function (t) {
     t.plan(12)
-    var transaction = null
-    var SELECTED_DB = 3
+    let transaction = null
+    const SELECTED_DB = 3
     helper.runInTransaction(agent, function (tx) {
       transaction = tx
       client.set('select:test:key', 'foo', function (err) {
@@ -308,9 +308,9 @@ test('Redis instrumentation', { timeout: 20000 }, function (t) {
     })
 
     function verify() {
-      var setSegment1 = transaction.trace.root.children[0]
-      var selectSegment = setSegment1.children[0].children[0]
-      var setSegment2 = selectSegment.children[0].children[0]
+      const setSegment1 = transaction.trace.root.children[0]
+      const selectSegment = setSegment1.children[0].children[0]
+      const setSegment2 = selectSegment.children[0].children[0]
 
       t.equals(setSegment1.name, 'Datastore/operation/Redis/set', 'should register the first set')
       t.equals(

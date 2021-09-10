@@ -32,21 +32,21 @@ tap.test('TraceSegment', (t) => {
 
   t.test('should be bound to a Trace', (t) => {
     let segment = null
-    let trans = new Transaction(agent)
+    const trans = new Transaction(agent)
     t.throws(function noTrace() {
       segment = new TraceSegment(null, 'UnitTest')
     })
     t.equal(segment, null)
 
-    let success = new TraceSegment(trans, 'UnitTest')
+    const success = new TraceSegment(trans, 'UnitTest')
     t.equal(success.transaction, trans)
     trans.end()
     t.end()
   })
 
   t.test('should not add new children when marked as opaque', (t) => {
-    let trans = new Transaction(agent)
-    let segment = new TraceSegment(trans, 'UnitTest')
+    const trans = new Transaction(agent)
+    const segment = new TraceSegment(trans, 'UnitTest')
     t.notOk(segment.opaque)
     segment.opaque = true
     segment.add('child')
@@ -59,46 +59,46 @@ tap.test('TraceSegment', (t) => {
   })
 
   t.test('should call an optional callback function', (t) => {
-    let trans = new Transaction(agent)
+    const trans = new Transaction(agent)
     t.doesNotThrow(function noCallback() {
       new TraceSegment(trans, 'UnitTest') // eslint-disable-line no-new
     })
-    let working = new TraceSegment(trans, 'UnitTest', t.end)
+    const working = new TraceSegment(trans, 'UnitTest', t.end)
     working.end()
     trans.end()
   })
 
   t.test('has a name', (t) => {
-    let trans = new Transaction(agent)
-    let success = new TraceSegment(trans, 'UnitTest')
+    const trans = new Transaction(agent)
+    const success = new TraceSegment(trans, 'UnitTest')
     t.equal(success.name, 'UnitTest')
     t.end()
   })
 
   t.test('is created with no children', (t) => {
-    let trans = new Transaction(agent)
-    let segment = new TraceSegment(trans, 'UnitTest')
+    const trans = new Transaction(agent)
+    const segment = new TraceSegment(trans, 'UnitTest')
     t.equal(segment.children.length, 0)
     t.end()
   })
 
   t.test('has a timer', (t) => {
-    let trans = new Transaction(agent)
-    let segment = new TraceSegment(trans, 'UnitTest')
+    const trans = new Transaction(agent)
+    const segment = new TraceSegment(trans, 'UnitTest')
     t.ok(segment.timer)
     t.end()
   })
 
   t.test('does not start its timer on creation', (t) => {
-    let trans = new Transaction(agent)
-    let segment = new TraceSegment(trans, 'UnitTest')
+    const trans = new Transaction(agent)
+    const segment = new TraceSegment(trans, 'UnitTest')
     t.equal(segment.timer.isRunning(), false)
     t.end()
   })
 
   t.test('allows the timer to be updated without ending it', (t) => {
-    let trans = new Transaction(agent)
-    let segment = new TraceSegment(trans, 'UnitTest')
+    const trans = new Transaction(agent)
+    const segment = new TraceSegment(trans, 'UnitTest')
     segment.start()
     segment.touch()
     t.equal(segment.timer.isRunning(), true)
@@ -107,8 +107,8 @@ tap.test('TraceSegment', (t) => {
   })
 
   t.test('accepts a callback that records metrics for this segment', (t) => {
-    let trans = new Transaction(agent)
-    let segment = new TraceSegment(trans, 'Test', (insider) => {
+    const trans = new Transaction(agent)
+    const segment = new TraceSegment(trans, 'Test', (insider) => {
       t.equal(insider, segment)
       return t.end()
     })
@@ -148,9 +148,9 @@ tap.test('TraceSegment', (t) => {
   })
 
   t.test('updates root segment timer when end() is called', (t) => {
-    let trans = new Transaction(agent)
-    let trace = trans.trace
-    let segment = new TraceSegment(trans, 'Test')
+    const trans = new Transaction(agent)
+    const trace = trans.trace
+    const segment = new TraceSegment(trans, 'Test')
 
     segment.setDurationInMillis(10, 0)
 
@@ -287,7 +287,7 @@ tap.test('TraceSegment', (t) => {
       const segment = trace.add('UnitTest')
 
       const url = '/test'
-      let params = {}
+      const params = {}
 
       // Express uses positional parameters sometimes
       params[0] = 'first'
@@ -316,7 +316,7 @@ tap.test('TraceSegment', (t) => {
     })
 
     t.test('should have the positional parameters from the params array', (t) => {
-      let attributes = trace.attributes.get(DESTINATIONS.TRANS_TRACE)
+      const attributes = trace.attributes.get(DESTINATIONS.TRANS_TRACE)
       t.equal(attributes[0], 'first')
       t.equal(attributes[1], 'another')
       t.end()
@@ -328,7 +328,7 @@ tap.test('TraceSegment', (t) => {
     })
 
     t.test('should serialize the segment with the parameters', (t) => {
-      let expected = [
+      const expected = [
         0,
         1,
         'WebTransaction/NormalizedUri/*',
@@ -572,7 +572,7 @@ tap.test('when serialized', (t) => {
 
   t.test('should not cause a stack overflow', { timeout: 30000 }, (t) => {
     let parent = segment
-    for (var i = 0; i < 9000; ++i) {
+    for (let i = 0; i < 9000; ++i) {
       const child = new TraceSegment(trans, 'Child ' + i)
       parent.children.push(child)
       parent = child

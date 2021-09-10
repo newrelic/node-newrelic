@@ -5,9 +5,9 @@
 
 'use strict'
 
-var tap = require('tap')
-var http = require('http')
-var helper = require('../../lib/agent_helper')
+const tap = require('tap')
+const http = require('http')
+const helper = require('../../lib/agent_helper')
 
 tap.test('basic director test', function (t) {
   let server = null
@@ -25,7 +25,7 @@ tap.test('basic director test', function (t) {
     this.res.end('{"status":"ok"}')
   }
 
-  var routes = {
+  const routes = {
     '/hello': {
       'get': fn0,
       '/(\\w+)/': {
@@ -34,7 +34,7 @@ tap.test('basic director test', function (t) {
     }
   }
 
-  var router = new director.http.Router(routes).configure({ recurse: 'forward' })
+  const router = new director.http.Router(routes).configure({ recurse: 'forward' })
 
   t.teardown(function () {
     helper.unloadAgent(agent)
@@ -52,20 +52,20 @@ tap.test('basic director test', function (t) {
     t.equal(transaction.verb, 'GET', 'HTTP method is GET')
     t.ok(transaction.trace, 'transaction has trace')
 
-    var web = transaction.trace.root.children[0]
+    const web = transaction.trace.root.children[0]
     t.ok(web, 'trace has web segment')
     t.equal(web.name, transaction.name, 'segment name and transaction name match')
 
     t.equal(web.partialName, 'Director/GET//hello', 'should have partial name for apdex')
 
-    var handler0 = web.children[0]
+    const handler0 = web.children[0]
     t.equal(
       handler0.name,
       'Nodejs/Middleware/Director/fn0//hello',
       'route 0 segment has correct name'
     )
 
-    var handler1 = web.children[1]
+    const handler1 = web.children[1]
     t.equal(
       handler1.name,
       'Nodejs/Middleware/Director/fn1//hello/(\\w+)/',
@@ -84,7 +84,7 @@ tap.test('basic director test', function (t) {
 
   helper.randomPort(function (port) {
     server.listen(port, function () {
-      var url = 'http://localhost:' + port + '/hello/eric'
+      const url = 'http://localhost:' + port + '/hello/eric'
       helper.makeGetRequest(url, { json: true }, function (error, res, body) {
         t.equal(res.statusCode, 200, 'nothing exploded')
         t.deepEqual(body, { status: 'ok' }, 'got expected response')
@@ -108,7 +108,7 @@ tap.test('backward recurse director test', function (t) {
     null
   }
 
-  var routes = {
+  const routes = {
     '/hello': {
       'get': fn0,
       '/(\\w+)/': {
@@ -117,7 +117,7 @@ tap.test('backward recurse director test', function (t) {
     }
   }
 
-  var router = new director.http.Router(routes).configure({ recurse: 'backward' })
+  const router = new director.http.Router(routes).configure({ recurse: 'backward' })
 
   t.teardown(function () {
     helper.unloadAgent(agent)
@@ -129,7 +129,7 @@ tap.test('backward recurse director test', function (t) {
   agent.on('transactionFinished', function (transaction) {
     t.equal(transaction.name, 'WebTransaction/Director/GET//hello', 'transaction has expected name')
 
-    var web = transaction.trace.root.children[0]
+    const web = transaction.trace.root.children[0]
     t.equal(web.partialName, 'Director/GET//hello', 'should have partial name for apdex')
   })
 
@@ -144,7 +144,7 @@ tap.test('backward recurse director test', function (t) {
 
   helper.randomPort(function (port) {
     server.listen(port, function () {
-      var url = 'http://localhost:' + port + '/hello/eric'
+      const url = 'http://localhost:' + port + '/hello/eric'
       helper.makeGetRequest(url, { json: true }, function (error, res, body) {
         t.equal(res.statusCode, 200, 'nothing exploded')
         t.deepEqual(body, { status: 'ok' }, 'got expected response')
@@ -160,7 +160,7 @@ tap.test('two routers with same URI director test', function (t) {
 
   const director = require('director')
 
-  var router = new director.http.Router()
+  const router = new director.http.Router()
 
   t.teardown(function () {
     helper.unloadAgent(agent)
@@ -177,7 +177,7 @@ tap.test('two routers with same URI director test', function (t) {
       'transaction has expected name'
     )
 
-    var web = transaction.trace.root.children[0]
+    const web = transaction.trace.root.children[0]
     t.equal(web.partialName, 'Director/GET//helloWorld', 'should have partial name for apdex')
   })
 
@@ -198,7 +198,7 @@ tap.test('two routers with same URI director test', function (t) {
 
   helper.randomPort(function (port) {
     server.listen(port, function () {
-      var url = 'http://localhost:' + port + '/helloWorld'
+      const url = 'http://localhost:' + port + '/helloWorld'
       helper.makeGetRequest(url, { json: true }, function (error, res, body) {
         t.equal(res.statusCode, 200, 'nothing exploded')
         t.deepEqual(body, { status: 'ok' }, 'got expected response')
@@ -214,7 +214,7 @@ tap.test('director async routes test', function (t) {
 
   const director = require('director')
 
-  var router = new director.http.Router().configure({ async: true })
+  const router = new director.http.Router().configure({ async: true })
 
   t.teardown(function () {
     helper.unloadAgent(agent)
@@ -231,10 +231,10 @@ tap.test('director async routes test', function (t) {
       'transaction has expected name'
     )
 
-    var web = transaction.trace.root.children[0]
+    const web = transaction.trace.root.children[0]
     t.equal(web.partialName, 'Director/GET//:foo/:bar/:bazz', 'should have partial name for apdex')
 
-    var handler0 = web.children[0]
+    const handler0 = web.children[0]
 
     t.equal(
       handler0.name,
@@ -242,7 +242,7 @@ tap.test('director async routes test', function (t) {
       'route 0 segment has correct name'
     )
 
-    var handler1 = web.children[1]
+    const handler1 = web.children[1]
 
     t.equal(
       handler1.name,
@@ -281,7 +281,7 @@ tap.test('director async routes test', function (t) {
 
   helper.randomPort(function (port) {
     server.listen(port, function () {
-      var url = 'http://localhost:' + port + '/three/random/things'
+      const url = 'http://localhost:' + port + '/three/random/things'
       helper.makeGetRequest(url, { json: true }, function (error, res, body) {
         t.equal(res.statusCode, 200, 'nothing exploded')
         t.deepEqual(body, 'dog', 'got expected response')
@@ -297,20 +297,20 @@ tap.test('express w/ director subrouter test', function (t) {
 
   const director = require('director')
 
-  var express = require('express')
-  var expressRouter = express.Router() // eslint-disable-line new-cap
-  var app = express()
-  var server
+  const express = require('express')
+  const expressRouter = express.Router() // eslint-disable-line new-cap
+  const app = express()
+  let server
 
   function helloWorld() {
     this.res.writeHead(200, { 'Content-Type': 'text/plain' })
     this.res.end('eric says hello')
   }
 
-  var routes = {
+  const routes = {
     '/hello': { get: helloWorld }
   }
-  var router = new director.http.Router(routes)
+  const router = new director.http.Router(routes)
 
   t.teardown(function () {
     helper.unloadAgent(agent)
@@ -327,7 +327,7 @@ tap.test('express w/ director subrouter test', function (t) {
       'transaction has expected name'
     )
 
-    var web = transaction.trace.root.children[0]
+    const web = transaction.trace.root.children[0]
     t.equal(web.partialName, 'Director/GET//express/hello', 'should have partial name for apdex')
   })
 
@@ -343,7 +343,7 @@ tap.test('express w/ director subrouter test', function (t) {
 
   helper.randomPort(function (port) {
     server = app.listen(port, 'localhost', function () {
-      var url = 'http://localhost:' + port + '/express/hello'
+      const url = 'http://localhost:' + port + '/express/hello'
       helper.makeGetRequest(url, { json: true }, function (error, res, body) {
         t.equal(res.statusCode, 200, 'nothing exploded')
         t.deepEqual(body, 'eric says hello', 'got expected response')
@@ -356,9 +356,9 @@ tap.test('director instrumentation', function (t) {
   t.plan(10)
 
   t.test('should allow null routers through constructor on http router', function (t) {
-    var agent = helper.instrumentMockedAgent()
-    var director = require('director')
-    var routes = {
+    const agent = helper.instrumentMockedAgent()
+    const director = require('director')
+    const routes = {
       '/hello': null
     }
 
@@ -369,9 +369,9 @@ tap.test('director instrumentation', function (t) {
   })
 
   t.test('should allow null routers through constructor on base router', function (t) {
-    var agent = helper.instrumentMockedAgent()
-    var director = require('director')
-    var routes = {
+    const agent = helper.instrumentMockedAgent()
+    const director = require('director')
+    const routes = {
       '/hello': null
     }
 
@@ -382,9 +382,9 @@ tap.test('director instrumentation', function (t) {
   })
 
   t.test('should allow null routers through constructor on cli router', function (t) {
-    var agent = helper.instrumentMockedAgent()
-    var director = require('director')
-    var routes = {
+    const agent = helper.instrumentMockedAgent()
+    const director = require('director')
+    const routes = {
       '/hello': null
     }
 
@@ -395,9 +395,9 @@ tap.test('director instrumentation', function (t) {
   })
 
   t.test('should allow routers through .on on cli router', function (t) {
-    var agent = helper.instrumentMockedAgent()
-    var director = require('director')
-    var router = new director.cli.Router()
+    const agent = helper.instrumentMockedAgent()
+    const director = require('director')
+    const router = new director.cli.Router()
     router.on(/^$/, function () {})
 
     helper.unloadAgent(agent)
@@ -405,9 +405,9 @@ tap.test('director instrumentation', function (t) {
   })
 
   t.test('should allow routers through .on on http router', function (t) {
-    var agent = helper.instrumentMockedAgent()
-    var director = require('director')
-    var router = new director.http.Router()
+    const agent = helper.instrumentMockedAgent()
+    const director = require('director')
+    const router = new director.http.Router()
     router.on('get', /^$/, function () {})
 
     helper.unloadAgent(agent)
@@ -415,9 +415,9 @@ tap.test('director instrumentation', function (t) {
   })
 
   t.test('should allow routers through .on on base router', function (t) {
-    var agent = helper.instrumentMockedAgent()
-    var director = require('director')
-    var router = new director.Router()
+    const agent = helper.instrumentMockedAgent()
+    const director = require('director')
+    const router = new director.Router()
     router.on(/^$/, function () {})
 
     helper.unloadAgent(agent)
@@ -425,9 +425,9 @@ tap.test('director instrumentation', function (t) {
   })
 
   t.test('should allow null routers through method mounters', function (t) {
-    var agent = helper.instrumentMockedAgent()
-    var director = require('director')
-    var router = new director.http.Router()
+    const agent = helper.instrumentMockedAgent()
+    const director = require('director')
+    const router = new director.http.Router()
 
     router.get('/tes/', null)
 
@@ -436,9 +436,9 @@ tap.test('director instrumentation', function (t) {
   })
 
   t.test('should allow null routers through .on on http router', function (t) {
-    var agent = helper.instrumentMockedAgent()
-    var director = require('director')
-    var router = new director.http.Router()
+    const agent = helper.instrumentMockedAgent()
+    const director = require('director')
+    const router = new director.http.Router()
 
     router.on('get', '/test/')
 
@@ -447,9 +447,9 @@ tap.test('director instrumentation', function (t) {
   })
 
   t.test('should allow null routers through .on on cli router', function (t) {
-    var agent = helper.instrumentMockedAgent()
-    var director = require('director')
-    var router = new director.cli.Router()
+    const agent = helper.instrumentMockedAgent()
+    const director = require('director')
+    const router = new director.cli.Router()
 
     router.on('get', 'test')
 
@@ -458,9 +458,9 @@ tap.test('director instrumentation', function (t) {
   })
 
   t.test('should allow null routers through .on on base router', function (t) {
-    var agent = helper.instrumentMockedAgent()
-    var director = require('director')
-    var router = new director.Router()
+    const agent = helper.instrumentMockedAgent()
+    const director = require('director')
+    const router = new director.Router()
 
     router.on('get', 'test')
 

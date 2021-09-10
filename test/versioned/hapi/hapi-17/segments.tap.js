@@ -5,17 +5,17 @@
 
 'use strict'
 
-var tap = require('tap')
-var helper = require('../../../lib/agent_helper')
-var http = require('http')
-var assertMetrics = require('../../../lib/metrics_helper').assertMetrics
-var assertSegments = require('../../../lib/metrics_helper').assertSegments
-var NAMES = require('../../../../lib/metrics/names')
-var utils = require('./hapi-17-utils')
+const tap = require('tap')
+const helper = require('../../../lib/agent_helper')
+const http = require('http')
+const assertMetrics = require('../../../lib/metrics_helper').assertMetrics
+const assertSegments = require('../../../lib/metrics_helper').assertSegments
+const NAMES = require('../../../../lib/metrics/names')
+const utils = require('./hapi-17-utils')
 
-var agent
-var server
-var port
+let agent
+let server
+let port
 
 tap.test('Hapi segments', function (t) {
   t.autoend()
@@ -130,7 +130,7 @@ tap.test('Hapi segments', function (t) {
 
 function runTest(t, callback) {
   agent.on('transactionFinished', function (tx) {
-    var baseSegment = tx.trace.root.children[0]
+    const baseSegment = tx.trace.root.children[0]
     callback(baseSegment.children, tx)
   })
 
@@ -146,7 +146,7 @@ function runTest(t, callback) {
 
 function checkMetrics(t, metrics, expected, path) {
   path = path || '/test'
-  var expectedAll = [
+  const expectedAll = [
     [{ name: 'WebTransaction' }],
     [{ name: 'WebTransactionTotalTime' }],
     [{ name: 'HttpDispatcher' }],
@@ -158,8 +158,8 @@ function checkMetrics(t, metrics, expected, path) {
     [{ name: 'Apdex' }]
   ]
 
-  for (var i = 0; i < expected.length; i++) {
-    var metric = expected[i]
+  for (let i = 0; i < expected.length; i++) {
+    const metric = expected[i]
     expectedAll.push([{ name: metric }])
     expectedAll.push([{ name: metric, scope: 'WebTransaction/Hapi/GET/' + path }])
   }

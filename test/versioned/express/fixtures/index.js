@@ -8,7 +8,7 @@
 /**
  * Created by lmarkus on 11/24/14.
  */
-var routes = function (router) {
+const routes = function (router) {
   router.get('/', function (req, res) {
     res.send('kraken')
     res.end()

@@ -5,20 +5,20 @@
 
 'use strict'
 
-var tap = require('tap')
-var request = require('request')
-var helper = require('../../../lib/agent_helper')
-var API = require('../../../../api')
-var utils = require('./hapi-utils')
+const tap = require('tap')
+const request = require('request')
+const helper = require('../../../lib/agent_helper')
+const API = require('../../../../api')
+const utils = require('./hapi-utils')
 
 tap.test('ignoring a Hapi route', function (t) {
   t.plan(7)
 
   const agent = helper.instrumentMockedAgent()
 
-  var api = new API(agent)
-  var server = utils.getServer()
-  var port = null
+  const api = new API(agent)
+  const server = utils.getServer()
+  let port = null
 
   t.teardown(function () {
     server.stop(function () {
@@ -37,10 +37,10 @@ tap.test('ignoring a Hapi route', function (t) {
 
     t.notOk(agent.traces.trace, 'should have no transaction trace')
 
-    var metrics = agent.metrics._metrics.unscoped
+    const metrics = agent.metrics._metrics.unscoped
     t.equal(Object.keys(metrics).length, 1, 'only supportability metrics added to agent collection')
 
-    var errors = agent.errors.traceAggregator.errors
+    const errors = agent.errors.traceAggregator.errors
     t.equal(errors.length, 0, 'no errors noticed')
   })
 
@@ -55,7 +55,7 @@ tap.test('ignoring a Hapi route', function (t) {
 
   server.start(function () {
     port = server.info.port
-    var params = {
+    const params = {
       uri: 'http://localhost:' + port + '/order/31337',
       json: true
     }

@@ -44,15 +44,15 @@ tap.test('LASP-enabled agent', (t) => {
   })
 
   t.test('drops full trace if custom attributes are disabled by LASP', function (t) {
-    var transaction
-    var proxy = agent.tracer.transactionProxy(function () {
+    let transaction
+    const proxy = agent.tracer.transactionProxy(function () {
       transaction = agent.getTransaction()
       transaction.finalizeNameFromUri('/nonexistent', 200)
       // ensure it's slow enough to get traced
       transaction.trace.setDurationInMillis(5001)
       api.addCustomAttribute('foo', 'bar')
       api.addCustomAttribute('fizz', 'buzz')
-      var attributes = transaction.trace.custom.attributes
+      const attributes = transaction.trace.custom.attributes
       t.same(Object.keys(attributes), ['foo', 'fizz'], 'transaction trace has custom attributes')
     })
     proxy()
@@ -75,15 +75,15 @@ tap.test('LASP-enabled agent', (t) => {
   t.test('drops full trace if attributes.include is disabled by LASP', function (t) {
     agent.config.attributes.include = ['f*']
     agent.config.emit('attributes.include')
-    var transaction
-    var proxy = agent.tracer.transactionProxy(function () {
+    let transaction
+    const proxy = agent.tracer.transactionProxy(function () {
       transaction = agent.getTransaction()
       transaction.finalizeNameFromUri('/nonexistent', 200)
       // ensure it's slow enough to get traced
       transaction.trace.setDurationInMillis(5001)
       api.addCustomAttribute('foo', 'bar')
       api.addCustomAttribute('fizz', 'buzz')
-      var attributes = transaction.trace.custom.attributes
+      const attributes = transaction.trace.custom.attributes
       t.same(Object.keys(attributes), ['foo', 'fizz'], 'transaction trace has custom attributes')
     })
     proxy()

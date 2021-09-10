@@ -9,18 +9,18 @@
 // Below allows use of mocha DSL with tap runner.
 require('tap').mochaGlobals()
 
-var Agent = require('../../lib/agent')
-var configurator = require('../../lib/config')
-var expect = require('chai').expect
-var sampler = require('../../lib/sampler')
+const Agent = require('../../lib/agent')
+const configurator = require('../../lib/config')
+const expect = require('chai').expect
+const sampler = require('../../lib/sampler')
 
-var NAMES = require('../../lib/metrics/names')
+const NAMES = require('../../lib/metrics/names')
 
 describe('environmental sampler', function () {
-  var agent = null
-  var numCpus = require('os').cpus().length
-  var oldCpuUsage = process.cpuUsage
-  var oldUptime = process.uptime
+  let agent = null
+  const numCpus = require('os').cpus().length
+  const oldCpuUsage = process.cpuUsage
+  const oldUptime = process.uptime
 
   beforeEach(function () {
     agent = new Agent(configurator.initialize())
@@ -93,7 +93,7 @@ describe('environmental sampler', function () {
     spinLoop(function runLoop() {
       sampler.sampleLoop(agent, sampler.nativeMetrics)()
 
-      var stats = agent.metrics.getOrCreateMetric(NAMES.LOOP.USAGE)
+      const stats = agent.metrics.getOrCreateMetric(NAMES.LOOP.USAGE)
       expect(stats.callCount).to.be.above(1)
       expect(stats.max).to.be.above(0)
       expect(stats.min).to.be.at.most(stats.max)
@@ -123,7 +123,7 @@ describe('environmental sampler', function () {
   it('should gather CPU user utilization metric', function () {
     sampler.sampleCpu(agent)()
 
-    var stats = agent.metrics.getOrCreateMetric(NAMES.CPU.USER_UTILIZATION)
+    const stats = agent.metrics.getOrCreateMetric(NAMES.CPU.USER_UTILIZATION)
     expect(stats.callCount).equal(1)
     expect(stats.total).equal(1)
   })
@@ -131,7 +131,7 @@ describe('environmental sampler', function () {
   it('should gather CPU system utilization metric', function () {
     sampler.sampleCpu(agent)()
 
-    var stats = agent.metrics.getOrCreateMetric(NAMES.CPU.SYSTEM_UTILIZATION)
+    const stats = agent.metrics.getOrCreateMetric(NAMES.CPU.SYSTEM_UTILIZATION)
     expect(stats.callCount).equal(1)
     expect(stats.total).equal(1)
   })
@@ -139,7 +139,7 @@ describe('environmental sampler', function () {
   it('should gather CPU user time metric', function () {
     sampler.sampleCpu(agent)()
 
-    var stats = agent.metrics.getOrCreateMetric(NAMES.CPU.USER_TIME)
+    const stats = agent.metrics.getOrCreateMetric(NAMES.CPU.USER_TIME)
     expect(stats.callCount).equal(1)
     expect(stats.total).equal(numCpus)
   })
@@ -147,7 +147,7 @@ describe('environmental sampler', function () {
   it('should gather CPU sytem time metric', function () {
     sampler.sampleCpu(agent)()
 
-    var stats = agent.metrics.getOrCreateMetric(NAMES.CPU.SYSTEM_TIME)
+    const stats = agent.metrics.getOrCreateMetric(NAMES.CPU.SYSTEM_TIME)
     expect(stats.callCount).equal(1)
     expect(stats.total).equal(numCpus)
   })
@@ -199,7 +199,7 @@ describe('environmental sampler', function () {
     }
     sampler.sampleCpu(agent)()
 
-    var stats = agent.metrics.getOrCreateMetric('CPU/User/Utilization')
+    const stats = agent.metrics.getOrCreateMetric('CPU/User/Utilization')
     expect(stats.callCount).equal(0)
   })
 
@@ -207,21 +207,21 @@ describe('environmental sampler', function () {
     sampler.sampleMemory(agent)()
 
     Object.keys(NAMES.MEMORY).forEach(function testStat(memoryStat) {
-      var metricName = NAMES.MEMORY[memoryStat]
-      var stats = agent.metrics.getOrCreateMetric(metricName)
+      const metricName = NAMES.MEMORY[memoryStat]
+      const stats = agent.metrics.getOrCreateMetric(metricName)
       expect(stats.callCount, `${metricName} callCount`).to.equal(1)
       expect(stats.max, `${metricName} max`).to.be.above(1)
     })
   })
 
   it('should catch if process.memoryUsage throws an error', function () {
-    var oldProcessMem = process.memoryUsage
+    const oldProcessMem = process.memoryUsage
     process.memoryUsage = function () {
       throw new Error('your computer is on fire')
     }
     sampler.sampleMemory(agent)()
 
-    var stats = agent.metrics.getOrCreateMetric('Memory/Physical')
+    const stats = agent.metrics.getOrCreateMetric('Memory/Physical')
     expect(stats.callCount).equal(0)
     process.memoryUsage = oldProcessMem
   })
@@ -240,7 +240,7 @@ describe('environmental sampler', function () {
      * greater-than-millisecond accuracy).
      */
     setTimeout(function () {
-      var stats = agent.metrics.getOrCreateMetric('Events/wait')
+      const stats = agent.metrics.getOrCreateMetric('Events/wait')
       expect(stats.callCount).equal(1)
       /* process.hrtime will notice the passage of time, but this
        * happens too fast to measure any meaningful latency in versions

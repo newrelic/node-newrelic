@@ -28,9 +28,9 @@ describe('Server Config', function () {
     it('_fromServer should update ignore_status_codes', function () {
       helper.runInTransaction(agent, function () {
         agent.config.error_collector.ignore_status_codes = [404]
-        let params = { 'error_collector.ignore_status_codes': ['501-505'] }
+        const params = { 'error_collector.ignore_status_codes': ['501-505'] }
         agent.config._fromServer(params, 'error_collector.ignore_status_codes')
-        let expected = [404, 501, 502, 503, 504, 505]
+        const expected = [404, 501, 502, 503, 504, 505]
         expect(agent.config.error_collector.ignore_status_codes).eql(expected)
       })
     })
@@ -38,9 +38,9 @@ describe('Server Config', function () {
     it('_fromServer should update expected_status_codes', function () {
       helper.runInTransaction(agent, function () {
         agent.config.error_collector.expected_status_codes = [404]
-        let params = { 'error_collector.expected_status_codes': ['501-505'] }
+        const params = { 'error_collector.expected_status_codes': ['501-505'] }
         agent.config._fromServer(params, 'error_collector.expected_status_codes')
-        let expected = [404, 501, 502, 503, 504, 505]
+        const expected = [404, 501, 502, 503, 504, 505]
         expect(agent.config.error_collector.expected_status_codes).eql(expected)
       })
     })
@@ -48,9 +48,9 @@ describe('Server Config', function () {
     it('_fromServer should update expected_classes', function () {
       helper.runInTransaction(agent, function () {
         agent.config.error_collector.expected_classes = ['Foo']
-        let params = { 'error_collector.expected_classes': ['Bar'] }
+        const params = { 'error_collector.expected_classes': ['Bar'] }
         agent.config._fromServer(params, 'error_collector.expected_classes')
-        let expected = ['Foo', 'Bar']
+        const expected = ['Foo', 'Bar']
         expect(agent.config.error_collector.expected_classes).eql(expected)
       })
     })
@@ -58,9 +58,9 @@ describe('Server Config', function () {
     it('_fromServer should update ignore_classes', function () {
       helper.runInTransaction(agent, function () {
         agent.config.error_collector.ignore_classes = ['Foo']
-        let params = { 'error_collector.ignore_classes': ['Bar'] }
+        const params = { 'error_collector.ignore_classes': ['Bar'] }
         agent.config._fromServer(params, 'error_collector.ignore_classes')
-        let expected = ['Foo', 'Bar']
+        const expected = ['Foo', 'Bar']
         expect(agent.config.error_collector.ignore_classes).eql(expected)
       })
     })
@@ -68,9 +68,9 @@ describe('Server Config', function () {
     it('_fromServer should update expected_messages', function () {
       helper.runInTransaction(agent, function () {
         agent.config.error_collector.expected_messages = { Foo: ['bar'] }
-        let params = { 'error_collector.expected_messages': { Zip: ['zap'] } }
+        const params = { 'error_collector.expected_messages': { Zip: ['zap'] } }
         agent.config._fromServer(params, 'error_collector.expected_messages')
-        let expected = { Foo: ['bar'], Zip: ['zap'] }
+        const expected = { Foo: ['bar'], Zip: ['zap'] }
         expect(agent.config.error_collector.expected_messages).eql(expected)
       })
     })
@@ -78,9 +78,9 @@ describe('Server Config', function () {
     it('_fromServer should update ignore_messages', function () {
       helper.runInTransaction(agent, function () {
         agent.config.error_collector.ignore_messages = { Foo: ['bar'] }
-        let params = { 'error_collector.ignore_messages': { Zip: ['zap'] } }
+        const params = { 'error_collector.ignore_messages': { Zip: ['zap'] } }
         agent.config._fromServer(params, 'error_collector.ignore_messages')
-        let expected = { Foo: ['bar'], Zip: ['zap'] }
+        const expected = { Foo: ['bar'], Zip: ['zap'] }
         expect(agent.config.error_collector.ignore_messages).eql(expected)
       })
     })
@@ -88,9 +88,9 @@ describe('Server Config', function () {
     it('_fromServer should merge if keys match', function () {
       helper.runInTransaction(agent, function () {
         agent.config.error_collector.ignore_messages = { Foo: ['bar'] }
-        let params = { 'error_collector.ignore_messages': { Foo: ['zap'] } }
+        const params = { 'error_collector.ignore_messages': { Foo: ['zap'] } }
         agent.config._fromServer(params, 'error_collector.ignore_messages')
-        let expected = { Foo: ['bar', 'zap'] }
+        const expected = { Foo: ['bar', 'zap'] }
         expect(agent.config.error_collector.ignore_messages).eql(expected)
       })
     })
@@ -99,9 +99,9 @@ describe('Server Config', function () {
       helper.runInTransaction(agent, function () {
         // whoops, a misconfiguration
         agent.config.error_collector.ignore_messages = { Foo: 'bar' }
-        let params = { 'error_collector.ignore_messages': { Foo: ['zap'] } }
+        const params = { 'error_collector.ignore_messages': { Foo: ['zap'] } }
         agent.config._fromServer(params, 'error_collector.ignore_messages')
-        let expected = { Foo: ['zap'] } // expect this to replace
+        const expected = { Foo: ['zap'] } // expect this to replace
         expect(agent.config.error_collector.ignore_messages).eql(expected)
       })
     })
@@ -110,9 +110,9 @@ describe('Server Config', function () {
       helper.runInTransaction(agent, function () {
         // whoops, a misconfiguration
         agent.config.error_collector.ignore_messages = { Foo: 'bar' }
-        let params = { 'error_collector.ignore_messages': { Foo: ['zap'] } }
+        const params = { 'error_collector.ignore_messages': { Foo: ['zap'] } }
         agent.config._fromServer(params, 'error_collector.ignore_messages')
-        let expected = { Foo: ['zap'] } // expect this to replace
+        const expected = { Foo: ['zap'] } // expect this to replace
         expect(agent.config.error_collector.ignore_messages).eql(expected)
       })
     })
@@ -254,9 +254,9 @@ describe('Server Config', function () {
       helper.runInTransaction(agent, function () {
         // whoops, a misconfiguration
         agent.config.error_collector.ignore_messages = { Foo: ['zap', 'bar'] }
-        let params = { 'error_collector.ignore_messages': { Foo: ['bar'] } }
+        const params = { 'error_collector.ignore_messages': { Foo: ['bar'] } }
         agent.config._fromServer(params, 'error_collector.ignore_messages')
-        let expected = { Foo: ['zap', 'bar'] } // expect this to replace
+        const expected = { Foo: ['zap', 'bar'] } // expect this to replace
         expect(agent.config.error_collector.ignore_messages).eql(expected)
       })
     })

@@ -255,7 +255,7 @@ tap.test('when overriding configuration values via environment variables', (t) =
     }
 
     // eslint-disable-next-line guard-for-in
-    for (let key in logAliases) {
+    for (const key in logAliases) {
       idempotentEnv({ NEW_RELIC_LOG_LEVEL: key }, (tc) => {
         t.equal(tc.logging.level, logAliases[key])
       })

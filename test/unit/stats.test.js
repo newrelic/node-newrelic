@@ -14,7 +14,7 @@ const expect = chai.expect
 const Stats = require('../../lib/stats')
 
 describe('Stats', function () {
-  var statistics
+  let statistics
 
   function verifyStats(actualStats, expectedStats) {
     expect(actualStats.callCount).equal(expectedStats.callCount)
@@ -131,7 +131,7 @@ describe('Stats', function () {
       sumOfSquares: 0.030258
     }
 
-    var other = new Stats()
+    const other = new Stats()
     other.recordValueInMillis(123, 0)
     other.recordValueInMillis(123, 0)
 

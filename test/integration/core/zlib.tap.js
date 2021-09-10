@@ -5,21 +5,21 @@
 
 'use strict'
 
-var test = require('tap').test
-var zlib = require('zlib')
-var helper = require('../../lib/agent_helper')
-var verifySegments = require('./verify')
-var concat = require('concat-stream')
+const test = require('tap').test
+const zlib = require('zlib')
+const helper = require('../../lib/agent_helper')
+const verifySegments = require('./verify')
+const concat = require('concat-stream')
 
 // Prepare our data values. Note that since the agent isn't loaded yet these
 // compressions are immune to agent fiddling.
-var CONTENT = 'some content'
-var DEFLATED_CONTENT = zlib.deflateSync(CONTENT).toString('base64')
-var DEFLATED_RAW = zlib.deflateRawSync(CONTENT).toString('base64')
-var GZIP_CONTENT = zlib.gzipSync(CONTENT).toString('base64')
+const CONTENT = 'some content'
+const DEFLATED_CONTENT = zlib.deflateSync(CONTENT).toString('base64')
+const DEFLATED_RAW = zlib.deflateRawSync(CONTENT).toString('base64')
+const GZIP_CONTENT = zlib.gzipSync(CONTENT).toString('base64')
 
 test('deflate', function (t) {
-  var agent = setupAgent(t)
+  const agent = setupAgent(t)
   helper.runInTransaction(agent, function () {
     zlib.deflate(CONTENT, function (err, data) {
       t.notOk(err, 'should not error')
@@ -30,7 +30,7 @@ test('deflate', function (t) {
 })
 
 test('deflateRaw', function (t) {
-  var agent = setupAgent(t)
+  const agent = setupAgent(t)
   helper.runInTransaction(agent, function () {
     zlib.deflateRaw(CONTENT, function (err, data) {
       t.notOk(err, 'should not error')
@@ -41,7 +41,7 @@ test('deflateRaw', function (t) {
 })
 
 test('gzip', function (t) {
-  var agent = setupAgent(t)
+  const agent = setupAgent(t)
   helper.runInTransaction(agent, function () {
     zlib.gzip(CONTENT, function (err, data) {
       t.notOk(err, 'should not error')
@@ -52,7 +52,7 @@ test('gzip', function (t) {
 })
 
 test('inflate', function (t) {
-  var agent = setupAgent(t)
+  const agent = setupAgent(t)
   helper.runInTransaction(agent, function () {
     zlib.inflate(Buffer.from(DEFLATED_CONTENT, 'base64'), function (err, data) {
       t.notOk(err, 'should not error')
@@ -63,7 +63,7 @@ test('inflate', function (t) {
 })
 
 test('inflateRaw', function (t) {
-  var agent = setupAgent(t)
+  const agent = setupAgent(t)
   helper.runInTransaction(agent, function () {
     zlib.inflateRaw(Buffer.from(DEFLATED_RAW, 'base64'), function (err, data) {
       t.notOk(err, 'should not error')
@@ -74,7 +74,7 @@ test('inflateRaw', function (t) {
 })
 
 test('gunzip', function (t) {
-  var agent = setupAgent(t)
+  const agent = setupAgent(t)
   helper.runInTransaction(agent, function () {
     zlib.gunzip(Buffer.from(GZIP_CONTENT, 'base64'), function (err, data) {
       t.notOk(err, 'should not error')
@@ -85,7 +85,7 @@ test('gunzip', function (t) {
 })
 
 test('unzip', function (t) {
-  var agent = setupAgent(t)
+  const agent = setupAgent(t)
   helper.runInTransaction(agent, function () {
     zlib.unzip(Buffer.from(GZIP_CONTENT, 'base64'), function (err, data) {
       t.notOk(err, 'should not error')
@@ -144,12 +144,12 @@ test('createInflateRaw', function (t) {
 })
 
 function testStream(t, method, src, out) {
-  var agent = setupAgent(t)
+  const agent = setupAgent(t)
   helper.runInTransaction(agent, function (transaction) {
-    var concatStream = concat(check)
+    const concatStream = concat(check)
 
     // The check callback is called when the stream finishes.
-    var stream = zlib[method]()
+    const stream = zlib[method]()
     stream.pipe(concatStream)
     stream.end(src)
 
@@ -162,7 +162,7 @@ function testStream(t, method, src, out) {
 }
 
 function setupAgent(t) {
-  var agent = helper.instrumentMockedAgent()
+  const agent = helper.instrumentMockedAgent()
   t.teardown(function () {
     helper.unloadAgent(agent)
   })

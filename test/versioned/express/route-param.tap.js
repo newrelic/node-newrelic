@@ -5,9 +5,9 @@
 
 'use strict'
 
-var test = require('tap').test
-var helper = require('../../lib/agent_helper')
-var request = require('request').defaults({ json: true })
+const test = require('tap').test
+const helper = require('../../lib/agent_helper')
+const request = require('request').defaults({ json: true })
 
 test('Express route param', function (t) {
   const agent = helper.instrumentMockedAgent()
@@ -22,7 +22,7 @@ test('Express route param', function (t) {
 
   server.listen(0, function () {
     t.autoend()
-    var port = server.address().port
+    const port = server.address().port
 
     t.test('pass-through param', function (t) {
       t.plan(4)
@@ -80,18 +80,18 @@ test('Express route param', function (t) {
 })
 
 function testRequest(port, param, cb) {
-  var url = 'http://localhost:' + port + '/a/b/' + param + '/c'
+  const url = 'http://localhost:' + port + '/a/b/' + param + '/c'
   request.get(url, function (err, response, body) {
     cb(err, body)
   })
 }
 
 function createServer(express) {
-  var app = express()
+  const app = express()
 
-  var aRouter = new express.Router()
-  var bRouter = new express.Router()
-  var cRouter = new express.Router()
+  const aRouter = new express.Router()
+  const bRouter = new express.Router()
+  const cRouter = new express.Router()
 
   cRouter.get('', function (req, res) {
     if (req.action !== 'preempt') {

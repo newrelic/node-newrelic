@@ -5,17 +5,17 @@
 
 'use strict'
 
-var DESTINATIONS = require('../../../../lib/config/attribute-filter').DESTINATIONS
-var tap = require('tap')
-var request = require('request')
-var helper = require('../../../lib/agent_helper')
-var utils = require('./hapi-utils')
-var HTTP_ATTS = require('../../../lib/fixtures').httpAttributes
+const DESTINATIONS = require('../../../../lib/config/attribute-filter').DESTINATIONS
+const tap = require('tap')
+const request = require('request')
+const helper = require('../../../lib/agent_helper')
+const utils = require('./hapi-utils')
+const HTTP_ATTS = require('../../../lib/fixtures').httpAttributes
 
 tap.test('Hapi vhost support', function (t) {
   t.plan(1)
 
-  var port = null
+  let port = null
 
   t.test('should not explode when using vhosts', function (t) {
     const agent = helper.instrumentMockedAgent()
@@ -32,7 +32,7 @@ tap.test('Hapi vhost support', function (t) {
 
     agent.on('transactionFinished', function (tx) {
       t.ok(tx.trace, 'transaction has a trace.')
-      var attributes = tx.trace.attributes.get(DESTINATIONS.TRANS_TRACE)
+      const attributes = tx.trace.attributes.get(DESTINATIONS.TRANS_TRACE)
       HTTP_ATTS.forEach(function (key) {
         t.ok(attributes[key], 'Trace contains expected HTTP attribute: ' + key)
       })
@@ -60,7 +60,7 @@ tap.test('Hapi vhost support', function (t) {
 
     server.start(function () {
       port = server.info.port
-      var params = {
+      const params = {
         uri: 'http://localhost:' + port + '/test/2',
         json: true
       }

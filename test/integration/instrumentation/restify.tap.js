@@ -5,10 +5,10 @@
 
 'use strict'
 
-var tap = require('tap')
-var request = require('request')
-var helper = require('../../lib/agent_helper')
-var assertMetrics = require('../../lib/metrics_helper').assertMetrics
+const tap = require('tap')
+const request = require('request')
+const helper = require('../../lib/agent_helper')
+const assertMetrics = require('../../lib/metrics_helper').assertMetrics
 
 /*
  *
@@ -73,12 +73,12 @@ tap.test('should not crash when Restify handles a connection', function (t) {
       }
       t.notOk(agent.getTransaction(), "transaction shouldn't leak into external request")
 
-      var metric = agent.metrics.getMetric(METRIC)
+      const metric = agent.metrics.getMetric(METRIC)
       t.ok(metric, 'request metrics should have been gathered')
       t.equals(metric.callCount, 1, 'handler should have been called')
       t.equals(body, '"hello friend"', 'should return expected data')
 
-      var isFramework = agent.environment.get('Framework').indexOf('Restify') > -1
+      const isFramework = agent.environment.get('Framework').indexOf('Restify') > -1
       t.ok(isFramework, 'should indicate that restify is a framework')
     })
   })
@@ -167,7 +167,7 @@ tap.test('Restify should generate middleware metrics', function (t) {
     next()
   })
 
-  var port = null
+  let port = null
   server.listen(function () {
     port = server.address().port
 
@@ -205,7 +205,7 @@ tap.test('Restify should generate middleware metrics', function (t) {
       ])
     })
 
-    var url = 'http://localhost:' + port + '/foo/bar'
+    const url = 'http://localhost:' + port + '/foo/bar'
     request.get(url, function (err) {
       t.error(err, 'should not fail to make request')
     })

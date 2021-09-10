@@ -14,11 +14,11 @@ const MAX_PORT_ATTEMPTS = 5
 tap.test("restify shouldn't affect express query parsing middleware", function (t) {
   t.plan(2)
 
-  var agent = helper.instrumentMockedAgent()
-  var express = require('express')
-  var restify = require('restify') // eslint-disable-line no-unused-vars
-  var app = express()
-  var server = require('http').createServer(app)
+  const agent = helper.instrumentMockedAgent()
+  const express = require('express')
+  const restify = require('restify') // eslint-disable-line no-unused-vars
+  const app = express()
+  const server = require('http').createServer(app)
 
   app.get('/', (req, res) => {
     t.deepEqual(req.query, { test: 'success' }, 'express req.query property is correct')

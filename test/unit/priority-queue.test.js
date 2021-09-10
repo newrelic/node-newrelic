@@ -55,11 +55,11 @@ tap.test('PriorityQueue', function (t) {
     t.autoend()
 
     t.test('merges two sources and maintains the limit', function (t) {
-      var queueLimit = 4
-      var queue1 = new PriorityQueue(queueLimit)
-      var queue2 = new PriorityQueue(queueLimit)
+      const queueLimit = 4
+      const queue1 = new PriorityQueue(queueLimit)
+      const queue2 = new PriorityQueue(queueLimit)
 
-      for (var pri = 0; pri < queueLimit; ++pri) {
+      for (let pri = 0; pri < queueLimit; ++pri) {
         queue1.add('test', pri)
         queue2.add('test', pri)
       }
@@ -80,7 +80,7 @@ tap.test('PriorityQueue', function (t) {
       queue.setLimit(10)
       t.equal(queue.limit, 10)
 
-      for (var i = 0; i < 6; i++) {
+      for (let i = 0; i < 6; i++) {
         queue.add(i, i)
       }
 

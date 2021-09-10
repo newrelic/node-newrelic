@@ -20,7 +20,7 @@ const recordSupportability = require('../../../lib/agent').prototype.recordSuppo
 const testCases = require('../../lib/cross_agent_tests/distributed_tracing/distributed_tracing.json')
 
 describe('distributed tracing', function () {
-  var agent
+  let agent
 
   beforeEach(() => {
     agent = helper.loadMockedAgent({ distributed_tracing: { enabled: true } })
@@ -52,7 +52,7 @@ describe('distributed tracing', function () {
           testCase.inbound_payloads = [testCase.inbound_payloads]
         }
         testCase.inbound_payloads.forEach((payload) => {
-          let headers = { newrelic: '' }
+          const headers = { newrelic: '' }
           if (payload) {
             headers.newrelic = JSON.stringify(payload)
           }
@@ -66,7 +66,7 @@ describe('distributed tracing', function () {
 
         if (testCase.outbound_payloads) {
           testCase.outbound_payloads.forEach((outbound) => {
-            let headers = {}
+            const headers = {}
             tx.insertDistributedTraceHeaders(headers)
             const payload = headers.newrelic
             const created = tx._getParsedPayload(payload)
@@ -103,7 +103,7 @@ describe('distributed tracing', function () {
 
           const common = intrinsics.common
           const specific = intrinsics[type] || {}
-          var toCheck
+          let toCheck
           switch (type) {
             case 'Transaction':
               toCheck = agent.transactionEventAggregator.getEvents()

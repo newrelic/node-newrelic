@@ -5,8 +5,8 @@
 
 'use strict'
 
-var helper = require('./agent_helper')
-var async = require('async')
+const helper = require('./agent_helper')
+const async = require('async')
 
 exports.createBenchmark = function createBenchmark(opts) {
   return new Benchmark(opts)
@@ -33,7 +33,7 @@ class Benchmark {
   }
 
   processSamples() {
-    var samples = this.samples
+    const samples = this.samples
     return (this.processedSamples = Object.keys(samples).reduce((acc, sampleName) => {
       acc[sampleName] = new BenchmarkStats(samples[sampleName])
       return acc
@@ -45,8 +45,8 @@ class Benchmark {
   }
 
   run(cb) {
-    var suite = this
-    var agent = null
+    const suite = this
+    let agent = null
 
     async.eachSeries(
       this.tests,
@@ -55,8 +55,8 @@ class Benchmark {
           agent = helper.instrumentMockedAgent(test.agent.config)
         }
 
-        var testName = test.name
-        var testFn = test.fn
+        const testName = test.name
+        const testFn = test.fn
 
         if (typeof test.initialize === 'function') {
           test.initialize(agent)
@@ -85,7 +85,7 @@ class Benchmark {
             execute()
 
             function execute(executeCb) {
-              var prevCpu = process.cpuUsage()
+              const prevCpu = process.cpuUsage()
               if (test.async) {
                 testFn(agent, after)
               } else {
@@ -95,7 +95,7 @@ class Benchmark {
               function after() {
                 // The cpu delta is reported in microseconds, so we turn them into
                 // milliseconds
-                var delta = process.cpuUsage(prevCpu).user / 1000
+                const delta = process.cpuUsage(prevCpu).user / 1000
 
                 if (typeof test.after === 'function') {
                   test.after()
@@ -142,14 +142,14 @@ class BenchmarkStats {
       throw new Error('BenchmarkStats requires additional samples')
     }
 
-    var sortedSamples = samples.slice().sort((a, b) => a - b)
+    let sortedSamples = samples.slice().sort((a, b) => a - b)
 
     // Throw out the top 0.1% to cut down on very large anomalies
     sortedSamples = sortedSamples.slice(0, Math.floor(samples.length * 0.999))
 
     this.numSamples = sortedSamples.length
-    var sum = 0
-    var sumOfSquares = 0
+    let sum = 0
+    let sumOfSquares = 0
     sortedSamples.forEach((sample) => {
       sum += sample
       sumOfSquares += sample * sample

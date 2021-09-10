@@ -9,20 +9,20 @@
 // Below allows use of mocha DSL with tap runner.
 require('tap').mochaGlobals()
 
-var chai = require('chai')
-var should = chai.should()
-var expect = chai.expect
-var parseSql = require('../../../../lib/db/query-parsers/sql')
-var CATs = require('../../../lib/cross_agent_tests/sql_parsing')
+const chai = require('chai')
+const should = chai.should()
+const expect = chai.expect
+const parseSql = require('../../../../lib/db/query-parsers/sql')
+const CATs = require('../../../lib/cross_agent_tests/sql_parsing')
 
 describe('database query parser', function () {
   it('should accept query as a string', function () {
-    var ps = parseSql('select * from someTable')
+    const ps = parseSql('select * from someTable')
     ps.query.should.equal('select * from someTable')
   })
 
   it('should accept query as a sql property of an object', function () {
-    var ps = parseSql({
+    const ps = parseSql({
       sql: 'select * from someTable'
     })
     ps.query.should.equal('select * from someTable')
@@ -30,7 +30,7 @@ describe('database query parser', function () {
 
   describe('SELECT SQL', function () {
     it('should parse a simple query', function () {
-      var ps = parseSql('Select * from dude')
+      const ps = parseSql('Select * from dude')
       should.exist(ps)
 
       should.exist(ps.operation)
@@ -42,7 +42,7 @@ describe('database query parser', function () {
     })
 
     it('should parse more interesting queries too', function () {
-      var sql = [
+      const sql = [
         'SELECT P.postcode, ',
         'P.suburb, ',
         'R.region_state as state, ',
@@ -56,7 +56,7 @@ describe('database query parser', function () {
         'AND P.suburb_seo_key = ? ',
         'LIMIT 1'
       ].join('\n')
-      var ps = parseSql(sql)
+      const ps = parseSql(sql)
       expect(ps).to.exist
       expect(ps).to.have.property('operation', 'select')
       expect(ps).to.have.property('collection', 'postcodes')
@@ -66,7 +66,7 @@ describe('database query parser', function () {
 
   describe('DELETE SQL', function () {
     it('should parse a simple command', function () {
-      var ps = parseSql('DELETE\nfrom dude')
+      const ps = parseSql('DELETE\nfrom dude')
       should.exist(ps)
 
       should.exist(ps.operation)
@@ -78,7 +78,7 @@ describe('database query parser', function () {
     })
 
     it('should parse a command with conditions', function () {
-      var ps = parseSql("DELETE\nfrom dude where name = 'man'")
+      const ps = parseSql("DELETE\nfrom dude where name = 'man'")
       should.exist(ps)
 
       should.exist(ps.operation)
@@ -92,7 +92,7 @@ describe('database query parser', function () {
 
   describe('UPDATE SQL', function () {
     it('should parse a command with gratuitous white space and conditions', function () {
-      var ps = parseSql('  update test set value = 1 where id = 12')
+      const ps = parseSql('  update test set value = 1 where id = 12')
       should.exist(ps)
 
       should.exist(ps.operation)
@@ -106,7 +106,7 @@ describe('database query parser', function () {
 
   describe('INSERT SQL', function () {
     it('should parse a command with a subquery', function () {
-      var ps = parseSql('  insert into\ntest\nselect * from dude')
+      const ps = parseSql('  insert into\ntest\nselect * from dude')
       should.exist(ps)
 
       should.exist(ps.operation)
@@ -120,7 +120,7 @@ describe('database query parser', function () {
 
   describe('invalid SQL', function () {
     it("should return 'other' when handed garbage", function () {
-      var ps = parseSql('  bulge into\ndudes\nselect * from dude')
+      const ps = parseSql('  bulge into\ndudes\nselect * from dude')
       should.exist(ps)
       ps.operation.should.equal('other')
       should.not.exist(ps.collection)
@@ -128,7 +128,7 @@ describe('database query parser', function () {
     })
 
     it("should return 'other' when handed an object", function () {
-      var ps = parseSql({
+      const ps = parseSql({
         key: 'value'
       })
       should.exist(ps)
@@ -141,7 +141,7 @@ describe('database query parser', function () {
   describe('CAT', function () {
     CATs.forEach(function (cat) {
       describe(clean(cat.input), function () {
-        var ps = parseSql(cat.input)
+        const ps = parseSql(cat.input)
 
         it('should parse the operation as ' + cat.operation, function () {
           expect(ps).to.have.property('operation', cat.operation)

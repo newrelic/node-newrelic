@@ -5,23 +5,23 @@
 
 'use strict'
 
-var benchmark = require('../lib/benchmark')
+const benchmark = require('../lib/benchmark')
 
-var suite = benchmark.createBenchmark({
+const suite = benchmark.createBenchmark({
   name: 'async hooks',
   async: true,
   fn: runBenchmark
 })
 
-var asyncHooks = require('async_hooks')
-var noopHook = asyncHooks.createHook({
+const asyncHooks = require('async_hooks')
+const noopHook = asyncHooks.createHook({
   init: function () {},
   before: function () {},
   after: function () {},
   destroy: function () {}
 })
 
-var tests = [
+const tests = [
   { name: 'no agent, no hooks' },
   {
     name: 'no agent, noop async hooks',
@@ -53,8 +53,8 @@ tests.forEach((test) => suite.add(test))
 suite.run()
 
 function runBenchmark(agent, cb) {
-  var p = Promise.resolve()
-  for (var i = 0; i < 300; ++i) {
+  let p = Promise.resolve()
+  for (let i = 0; i < 300; ++i) {
     p = p.then(function noop() {})
   }
   p.then(cb)

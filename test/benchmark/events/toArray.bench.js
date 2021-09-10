@@ -5,12 +5,12 @@
 
 'use strict'
 
-var benchmark = require('../../lib/benchmark')
-var PriorityQueue = require('../../../lib/priority-queue')
+const benchmark = require('../../lib/benchmark')
+const PriorityQueue = require('../../../lib/priority-queue')
 
-var poolSize = 10000
-var queue = new PriorityQueue(poolSize)
-var suite = benchmark.createBenchmark({
+const poolSize = 10000
+let queue = new PriorityQueue(poolSize)
+const suite = benchmark.createBenchmark({
   name: 'PriorityQueue.merge',
   after: function () {
     queue = new PriorityQueue(poolSize)
@@ -18,7 +18,7 @@ var suite = benchmark.createBenchmark({
 })
 
 // Fill queue to serialize
-for (var i = 0; i < poolSize; ++i) {
+for (let i = 0; i < poolSize; ++i) {
   queue.add('test')
 }
 

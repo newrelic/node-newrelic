@@ -9,17 +9,17 @@
 // Below allows use of mocha DSL with tap runner.
 require('tap').mochaGlobals()
 
-var chai = require('chai')
-var expect = chai.expect
-var Rule = require('../../../lib/metrics/normalizer/rule')
+const chai = require('chai')
+const expect = chai.expect
+const Rule = require('../../../lib/metrics/normalizer/rule')
 
 describe('NormalizerRule', function () {
-  var rule
+  let rule
 
   describe('with a very simple specification', function () {
     before(function () {
       // sample rule sent by staging collector 1 on 2012-08-29
-      var sample = {
+      const sample = {
         each_segment: false,
         eval_order: 0,
         terminate_chain: true,
@@ -47,8 +47,8 @@ describe('NormalizerRule', function () {
     })
 
     it("shouldn't throw if the regexp doesn't compile", function () {
-      var whoops = { match_expression: '$[ad^' }
-      var bad
+      const whoops = { match_expression: '$[ad^' }
+      let bad
       expect(function () {
         bad = new Rule(whoops)
       }).not.throws()
@@ -116,7 +116,7 @@ describe('NormalizerRule', function () {
   describe('with a more complex substitution rule', function () {
     before(function () {
       // sample rule sent by staging collector 1 on 2012-08-29
-      var sample = {
+      const sample = {
         each_segment: true,
         eval_order: 1,
         terminate_chain: false,
@@ -165,7 +165,7 @@ describe('NormalizerRule', function () {
   })
 
   it('should replace all the instances of a pattern when so specified', function () {
-    var sample = {
+    const sample = {
       each_segment: false,
       eval_order: 0,
       terminate_chain: false,
@@ -222,7 +222,7 @@ describe('NormalizerRule', function () {
 
   describe('when given a RegExp', function () {
     it('should merge flags', function () {
-      var r = new Rule({
+      const r = new Rule({
         each_segment: false,
         eval_order: 0,
         terminate_chain: false,
@@ -232,14 +232,14 @@ describe('NormalizerRule', function () {
         replacement: 'y'
       })
 
-      var re = r.pattern
+      const re = r.pattern
       expect(re.ignoreCase).to.be.true
       expect(re.multiline).to.be.true
       expect(re.global).to.be.true
     })
 
     it('should not die on duplicated flags', function () {
-      var r = null
+      let r = null
       expect(function () {
         r = new Rule({
           each_segment: false,
@@ -252,7 +252,7 @@ describe('NormalizerRule', function () {
         })
       }).to.not.throw()
 
-      var re = r.pattern
+      const re = r.pattern
       expect(re.ignoreCase).to.be.true
       expect(re.multiline).to.be.false
       expect(re.global).to.be.true

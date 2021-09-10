@@ -17,12 +17,12 @@ test('loading the application via index.js', { timeout: 15000 }, (t) => {
   process.env.NEW_RELIC_LICENSE_KEY = license
 
   t.doesNotThrow(function () {
-    var api = require('../../../index.js')
+    const api = require('../../../index.js')
     agent = api.agent
     t.equal(agent._state, 'connecting', 'agent is booting')
   }, "just loading the agent doesn't throw")
 
-  var metric = agent.metrics.getMetric('Supportability/Nodejs/FeatureFlag/await_support/enabled')
+  let metric = agent.metrics.getMetric('Supportability/Nodejs/FeatureFlag/await_support/enabled')
   t.notOk(metric, 'should not create metric for unchanged feature flags')
 
   metric = agent.metrics.getMetric('Supportability/Nodejs/FeatureFlag/express5/enabled')

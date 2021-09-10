@@ -74,7 +74,7 @@ tap.test('shim.require() should play well with multiple test runs', (t) => {
 })
 
 function simulateTestLoadAndUnload() {
-  let agent = helper.instrumentMockedAgent()
+  const agent = helper.instrumentMockedAgent()
 
   shimmer.registerInstrumentation({
     moduleName: customPackagePath

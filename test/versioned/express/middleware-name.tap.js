@@ -5,28 +5,22 @@
 
 'use strict'
 
-var test = require('tap').test
-var helper = require('../../lib/agent_helper')
+const test = require('tap').test
+const helper = require('../../lib/agent_helper')
 
 test('should name middleware correctly', function (t) {
-  var agent = helper.instrumentMockedAgent()
+  const agent = helper.instrumentMockedAgent()
 
-  var app = require('express')()
-  var server
-
-  t.teardown(function () {
-    server.close()
-    helper.unloadAgent(agent)
-  })
+  const app = require('express')()
 
   app.use('/', testMiddleware)
 
-  server = app.listen(0, function () {
+  const server = app.listen(0, function () {
     t.equal(app._router.stack.length, 3, '3 middleware functions: query parser, Express, router')
 
-    var count = 0
-    for (var i = 0; i < app._router.stack.length; i++) {
-      var layer = app._router.stack[i]
+    let count = 0
+    for (let i = 0; i < app._router.stack.length; i++) {
+      const layer = app._router.stack[i]
 
       // route middleware doesn't have a name, sentinel is our error handler,
       // neither should be wrapped.
@@ -36,6 +30,11 @@ test('should name middleware correctly', function (t) {
     }
     t.equal(count, 1, 'should find only one testMiddleware function')
     t.end()
+  })
+
+  t.teardown(function () {
+    server.close()
+    helper.unloadAgent(agent)
   })
 
   function testMiddleware(req, res, next) {

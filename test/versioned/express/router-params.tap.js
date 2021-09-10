@@ -5,9 +5,9 @@
 
 'use strict'
 
-var test = require('tap').test
-var request = require('request')
-var helper = require('../../lib/agent_helper')
+const test = require('tap').test
+const request = require('request')
+const helper = require('../../lib/agent_helper')
 
 test('Express router introspection', function (t) {
   t.plan(14)
@@ -19,11 +19,11 @@ test('Express router introspection', function (t) {
     }
   })
 
-  var express = require('express')
-  var app = express()
-  var server = require('http').createServer(app)
+  const express = require('express')
+  const app = express()
+  const server = require('http').createServer(app)
 
-  var router = express.Router() // eslint-disable-line new-cap
+  const router = express.Router() // eslint-disable-line new-cap
   router.get('/b/:param2', function (req, res) {
     t.ok(agent.getTransaction(), 'transaction is available')
 
@@ -50,7 +50,7 @@ test('Express router introspection', function (t) {
     t.equal(transaction.verb, 'GET', 'HTTP method is GET')
     t.ok(transaction.trace, 'transaction has trace')
 
-    var web = transaction.trace.root.children[0]
+    const web = transaction.trace.root.children[0]
     t.ok(web, 'trace has web segment')
     t.equal(web.name, transaction.name, 'segment name and transaction name match')
     t.equal(
@@ -64,8 +64,8 @@ test('Express router introspection', function (t) {
   })
 
   server.listen(0, function () {
-    var port = server.address().port
-    var url = 'http://localhost:' + port + '/a/foo/b/bar'
+    const port = server.address().port
+    const url = 'http://localhost:' + port + '/a/foo/b/bar'
     request.get(url, { json: true }, function (error, res, body) {
       t.error(error, 'should not have errored')
       t.equal(res.statusCode, 200, 'should have ok status')

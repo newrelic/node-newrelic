@@ -645,7 +645,7 @@ tap.test('Shim', function (t) {
       function Foo() {
         t.ok(this instanceof Foo)
       }
-      var WrappedFoo = shim.wrapReturn(Foo, function () {
+      const WrappedFoo = shim.wrapReturn(Foo, function () {
         t.ok(this instanceof Foo)
       })
 
@@ -977,7 +977,7 @@ tap.test('Shim', function (t) {
     })
 
     t.test('should make the segment translucent when `error` is emitted', function (t) {
-      var wrapped = shim.record(toWrap, function () {
+      const wrapped = shim.record(toWrap, function () {
         return { name: 'test segment', stream: true, opaque: true }
       })
 
@@ -1166,7 +1166,7 @@ tap.test('Shim', function (t) {
 
       const result = {}
       helper.runInTransaction(agent, function () {
-        var ret = wrapped()
+        const ret = wrapped()
         t.ok(ret instanceof Object.getPrototypeOf(promise).constructor)
 
         ret
@@ -1226,7 +1226,7 @@ tap.test('Shim', function (t) {
 
       const result = {}
       helper.runInTransaction(agent, function () {
-        var ret = wrapped()
+        const ret = wrapped()
         t.ok(ret instanceof Object.getPrototypeOf(promise).constructor)
 
         process.on('unhandledRejection', function (err, p) {
@@ -1629,7 +1629,7 @@ tap.test('Shim', function (t) {
     })
 
     t.test('should fully unwrap nested wrappers', function (t) {
-      for (var i = 0; i < 10; ++i) {
+      for (let i = 0; i < 10; ++i) {
         wrapped = shim.wrap(wrapped, function () {
           return function () {}
         })
@@ -1716,7 +1716,7 @@ tap.test('Shim', function (t) {
     })
 
     t.test('should not fully unwrap multiple nested wrappers', function (t) {
-      for (var i = 0; i < 10; ++i) {
+      for (let i = 0; i < 10; ++i) {
         wrapped = shim.wrap(wrapped, function () {
           return function () {}
         })

@@ -7,14 +7,14 @@
 'use strict'
 /* eslint-disable no-console */
 
-var fs = require('fs')
-var path = require('path')
-var readline = require('readline')
-var urltils = require('../lib/util/urltils')
-var MetricNormalizer = require('../lib/metrics/normalizer')
+const fs = require('fs')
+const path = require('path')
+const readline = require('readline')
+const urltils = require('../lib/util/urltils')
+const MetricNormalizer = require('../lib/metrics/normalizer')
 
-var cwd = process.cwd()
-var options = null
+const cwd = process.cwd()
+let options = null
 if (arrayContainsAny(process.argv, '-h', '-?', '--help')) {
   printHelp()
 } else if (process.argv.length === 3) {
@@ -59,26 +59,26 @@ function printHelp() {
 }
 
 function run(opts) {
-  var config = require('../lib/config').initialize()
-  var runtimeRules = opts.rules ? require(opts.rules) : null
-  var appliedRules = []
+  const config = require('../lib/config').initialize()
+  const runtimeRules = opts.rules ? require(opts.rules) : null
+  let appliedRules = []
 
   // responsible for handling default rules provided by the server
-  var defaultNormalizer = loadDefaultNormalizer(config, runtimeRules)
+  const defaultNormalizer = loadDefaultNormalizer(config, runtimeRules)
 
   // rules defined by user in local configuration file
-  var userNormalizer = loadUserNormalizer(config, runtimeRules)
+  const userNormalizer = loadUserNormalizer(config, runtimeRules)
 
   defaultNormalizer.on('appliedRule', onAppliedRule)
   userNormalizer.on('appliedRule', onAppliedRule)
 
-  var urlsFile = fs.createReadStream(opts.urls, { encoding: 'utf-8' })
-  var reader = readline.createInterface({ input: urlsFile, output: null })
+  const urlsFile = fs.createReadStream(opts.urls, { encoding: 'utf-8' })
+  const reader = readline.createInterface({ input: urlsFile, output: null })
   reader.on('line', function onUrlLine(urlLine) {
     appliedRules = []
-    var scrubbedUrl = urltils.scrub(urlLine)
+    const scrubbedUrl = urltils.scrub(urlLine)
 
-    var normalized = userNormalizer.normalize(scrubbedUrl)
+    let normalized = userNormalizer.normalize(scrubbedUrl)
 
     if (!normalized.matched) {
       normalized = defaultNormalizer.normalize(scrubbedUrl)
@@ -88,8 +88,8 @@ function run(opts) {
     if (appliedRules.length === 0) {
       console.log('no rules matched')
     } else {
-      for (var i = 0; i < appliedRules.length; i++) {
-        var match = appliedRules[i]
+      for (let i = 0; i < appliedRules.length; i++) {
+        const match = appliedRules[i]
         console.log(
           ' %s: %s => %s (rule %s)',
           i + 1,
@@ -119,7 +119,7 @@ function run(opts) {
 
 function loadDefaultNormalizer(config) {
   // Load the normalizer.
-  var normalizer = new MetricNormalizer(config, 'URL')
+  const normalizer = new MetricNormalizer(config, 'URL')
 
   // Add in the rules the collector would ship down.
   normalizer.load([
@@ -159,7 +159,7 @@ function loadDefaultNormalizer(config) {
 
 function loadUserNormalizer(config, rules) {
   // Load the normalizer.
-  var normalizer = new MetricNormalizer(config, 'user')
+  const normalizer = new MetricNormalizer(config, 'user')
   normalizer.loadFromConfig()
 
   if (rules && rules.length) {
@@ -173,7 +173,7 @@ function loadUserNormalizer(config, rules) {
 }
 
 function arrayContainsAny(array) {
-  for (var i = 1; i < arguments.length; ++i) {
+  for (let i = 1; i < arguments.length; ++i) {
     if (array.indexOf(arguments[i]) !== -1) {
       return true
     }

@@ -13,18 +13,18 @@ require('tap').mochaGlobals()
 // environment when testing.
 delete process.env.NODE_ENV
 
-var a = require('async')
-var path = require('path')
-var fs = require('fs')
-var spawn = require('child_process').spawn
-var chai = require('chai')
-var expect = chai.expect
-var should = chai.should()
-var environment = require('../../lib/environment')
-var rimraf = require('rimraf')
+const a = require('async')
+const path = require('path')
+const fs = require('fs')
+const spawn = require('child_process').spawn
+const chai = require('chai')
+const expect = chai.expect
+const should = chai.should()
+const environment = require('../../lib/environment')
+const rimraf = require('rimraf')
 
 function find(settings, name) {
-  var items = settings.filter(function (candidate) {
+  const items = settings.filter(function (candidate) {
     return candidate[0] === name
   })
 
@@ -32,14 +32,14 @@ function find(settings, name) {
 }
 
 describe('the environment scraper', function () {
-  var settings = null
+  let settings = null
 
   before(reloadEnvironment)
 
   it('should allow clearing of the dispatcher', function () {
     environment.setDispatcher('custom')
 
-    var dispatchers = environment.get('Dispatcher')
+    const dispatchers = environment.get('Dispatcher')
     expect(dispatchers).include.members(['custom'])
 
     expect(function () {
@@ -63,7 +63,7 @@ describe('the environment scraper', function () {
 
   it('should collect only a single dispatcher', function () {
     environment.setDispatcher('first')
-    var dispatchers = environment.get('Dispatcher')
+    let dispatchers = environment.get('Dispatcher')
     expect(dispatchers).include.members(['first'])
 
     environment.setDispatcher('custom')
@@ -79,7 +79,7 @@ describe('the environment scraper', function () {
     environment.setFramework('custom')
     environment.setFramework('another')
 
-    var frameworks = environment.get('Framework')
+    const frameworks = environment.get('Framework')
     expect(frameworks).include.members(['custom', 'another'])
 
     expect(function () {
@@ -153,7 +153,7 @@ describe('the environment scraper', function () {
   })
 
   describe('without process.config', function () {
-    var conf = null
+    let conf = null
 
     before(function (done) {
       conf = process.config
@@ -200,7 +200,7 @@ describe('the environment scraper', function () {
   })
 
   it('should have built a flattened package list', function () {
-    var packages = find(settings, 'Packages')
+    const packages = find(settings, 'Packages')
     expect(packages.length).above(5)
     packages.forEach((pair) => {
       expect(JSON.parse(pair).length).equal(2)
@@ -208,7 +208,7 @@ describe('the environment scraper', function () {
   })
 
   it('should have built a flattened dependency list', function () {
-    var dependencies = find(settings, 'Dependencies')
+    const dependencies = find(settings, 'Dependencies')
     expect(dependencies.length).above(5)
     dependencies.forEach((pair) => {
       expect(JSON.parse(pair).length).equal(2)
@@ -216,9 +216,9 @@ describe('the environment scraper', function () {
   })
 
   it('should get correct version for dependencies', function (done) {
-    var root = path.join(__dirname, '../lib/example-packages')
+    const root = path.join(__dirname, '../lib/example-packages')
     environment.listPackages(root, function (err, packages) {
-      var versions = packages.reduce(function (map, pkg) {
+      const versions = packages.reduce(function (map, pkg) {
         map[pkg[0]] = pkg[1]
         return map
       }, {})
@@ -233,20 +233,20 @@ describe('the environment scraper', function () {
   })
 
   it('should not crash when given a file in NODE_PATH', function (done) {
-    var env = {
+    const env = {
       NODE_PATH: path.join(__dirname, 'environment.test.js'),
       PATH: process.env.PATH
     }
 
-    var opt = {
+    const opt = {
       env: env,
       stdio: 'inherit',
       cwd: path.join(__dirname, '..')
     }
 
-    var exec = process.argv[0]
-    var args = [path.join(__dirname, '../helpers/environment.child.js')]
-    var proc = spawn(exec, args, opt)
+    const exec = process.argv[0]
+    const args = [path.join(__dirname, '../helpers/environment.child.js')]
+    const proc = spawn(exec, args, opt)
 
     proc.on('exit', function (code) {
       expect(code).equal(0)
@@ -256,7 +256,7 @@ describe('the environment scraper', function () {
   })
 
   describe('with symlinks', function () {
-    var nmod = path.resolve(__dirname, '../helpers/node_modules')
+    const nmod = path.resolve(__dirname, '../helpers/node_modules')
 
     beforeEach(function (done) {
       if (!fs.existsSync(nmod)) {
@@ -276,13 +276,13 @@ describe('the environment scraper', function () {
     })
 
     afterEach(function (done) {
-      var aDir = path.join(nmod, 'a')
-      var bDir = path.join(nmod, 'b')
+      const aDir = path.join(nmod, 'a')
+      const bDir = path.join(nmod, 'b')
       a.each([aDir, bDir], rimraf, done)
     })
 
     function makePackage(pkg, dep, cb) {
-      var dir = path.join(nmod, pkg)
+      const dir = path.join(nmod, pkg)
       a.series(
         [
           // Make the directory tree.
@@ -291,14 +291,14 @@ describe('the environment scraper', function () {
 
           // Make the package.json
           function (pkgCb) {
-            var pkgJSON = { name: pkg, dependencies: {} }
+            const pkgJSON = { name: pkg, dependencies: {} }
             pkgJSON.dependencies[dep] = '*'
             fs.writeFile(path.join(dir, 'package.json'), JSON.stringify(pkgJSON), pkgCb)
           },
 
           // Make the dep a symlink.
           function (symCb) {
-            var depModule = path.join(dir, 'node_modules', dep)
+            const depModule = path.join(dir, 'node_modules', dep)
             fs.symlink(path.join(nmod, dep), depModule, 'dir', function (err) {
               symCb(err && err.code !== 'EEXIST' ? err : null)
             })
@@ -324,15 +324,15 @@ describe('the environment scraper', function () {
     })
 
     function execChild(cb) {
-      var opt = {
+      const opt = {
         stdio: 'pipe',
         env: process.env,
         cwd: path.join(__dirname, '../helpers')
       }
 
-      var exec = process.argv[0]
-      var args = [path.join(__dirname, '../helpers/environment.child.js')]
-      var proc = spawn(exec, args, opt)
+      const exec = process.argv[0]
+      const args = [path.join(__dirname, '../helpers/environment.child.js')]
+      const proc = spawn(exec, args, opt)
 
       proc.stdout.pipe(process.stderr)
       proc.stderr.pipe(process.stderr)
@@ -345,7 +345,7 @@ describe('the environment scraper', function () {
   })
 
   describe('when NODE_ENV is "production"', function () {
-    var nSettings = null
+    let nSettings = null
 
     before(function (done) {
       process.env.NODE_ENV = 'production'

@@ -17,10 +17,10 @@ const Normalizer = require('../../../lib/metrics/normalizer')
 const stagingRules = require('./staging-rules')
 
 describe('MetricNormalizer', function () {
-  var normalizer
+  let normalizer
 
   beforeEach(function () {
-    var config = { enforce_backstop: true }
+    const config = { enforce_backstop: true }
     normalizer = new Normalizer(config, 'URL')
   })
 
@@ -31,7 +31,7 @@ describe('MetricNormalizer', function () {
   })
 
   it('should throw when instantiated without type', function () {
-    var config = { enforce_backstop: true }
+    const config = { enforce_backstop: true }
     expect(function () {
       normalizer = new Normalizer(config)
     }).throws()
@@ -57,8 +57,8 @@ describe('MetricNormalizer', function () {
     })
 
     it('should eliminate duplicate rules as part of loading them', function () {
-      var patternWithSlash = '^(.*)\\/[0-9][0-9a-f_,-]*\\.([0-9a-z][0-9a-z]*)$'
-      var reduced = [
+      const patternWithSlash = '^(.*)\\/[0-9][0-9a-f_,-]*\\.([0-9a-z][0-9a-z]*)$'
+      const reduced = [
         {
           eachSegment: false,
           precedence: 0,
@@ -123,7 +123,7 @@ describe('MetricNormalizer', function () {
     })
 
     it('should drop old rules when reloading', function () {
-      var newRule = {
+      const newRule = {
         each_segment: false,
         eval_order: 0,
         terminate_chain: true,
@@ -134,7 +134,7 @@ describe('MetricNormalizer', function () {
       }
       normalizer.load([newRule])
 
-      var expected = {
+      const expected = {
         eachSegment: false,
         precedence: 0,
         isTerminal: true,
@@ -248,7 +248,7 @@ describe('MetricNormalizer', function () {
   })
 
   describe('when loading from config', function () {
-    var config = null
+    let config = null
 
     beforeEach(function () {
       config = new Config({

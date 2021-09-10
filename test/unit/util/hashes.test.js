@@ -21,7 +21,7 @@ tap.test('hashes', (t) => {
     })
 
     t.test('always unique', (t) => {
-      let ids = {}
+      const ids = {}
       for (let length = 16; length < 64; length++) {
         for (let attempts = 0; attempts < 500; attempts++) {
           const id = hashes.makeId(length)

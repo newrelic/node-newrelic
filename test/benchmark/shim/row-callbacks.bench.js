@@ -5,20 +5,20 @@
 
 'use strict'
 
-var benchmark = require('../../lib/benchmark')
-var EventEmitter = require('events').EventEmitter
-var helper = require('../../lib/agent_helper')
-var Shim = require('../../../lib/shim/shim')
+const benchmark = require('../../lib/benchmark')
+const EventEmitter = require('events').EventEmitter
+const helper = require('../../lib/agent_helper')
+const Shim = require('../../../lib/shim/shim')
 
-var CYCLES = 1000
+const CYCLES = 1000
 
-var agent = helper.loadMockedAgent()
-var shim = new Shim(agent, 'test-module', './')
-var suite = benchmark.createBenchmark({
+const agent = helper.loadMockedAgent()
+const shim = new Shim(agent, 'test-module', './')
+const suite = benchmark.createBenchmark({
   name: 'row callbacks'
 })
 
-var test = {
+const test = {
   stream: function () {
     return new EventEmitter()
   },
@@ -35,10 +35,10 @@ suite.add({
   name: 'shim.record({stream}).emit("foo")',
   fn: function () {
     helper.runInTransaction(agent, function (tx) {
-      var stream = test.streamWrapped()
+      const stream = test.streamWrapped()
       stream.on('foo', function () {})
 
-      for (var i = 0; i < CYCLES; ++i) {
+      for (let i = 0; i < CYCLES; ++i) {
         stream.emit('foo', i)
       }
       tx.end()
@@ -50,10 +50,10 @@ suite.add({
   name: 'shim.record({stream}).emit("bar")',
   fn: function () {
     helper.runInTransaction(agent, function (tx) {
-      var stream = test.streamWrapped()
+      const stream = test.streamWrapped()
       stream.on('bar', function () {})
 
-      for (var i = 0; i < CYCLES; ++i) {
+      for (let i = 0; i < CYCLES; ++i) {
         stream.emit('bar', i)
       }
       tx.end()
@@ -65,10 +65,10 @@ suite.add({
   name: 'unwrapped',
   fn: function () {
     helper.runInTransaction(agent, function (tx) {
-      var stream = test.stream()
+      const stream = test.stream()
       stream.on('foo', function () {})
 
-      for (var i = 0; i < CYCLES; ++i) {
+      for (let i = 0; i < CYCLES; ++i) {
         stream.emit('foo', i)
       }
       tx.end()

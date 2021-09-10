@@ -5,9 +5,9 @@
 
 'use strict'
 
-var helper = require('../../../lib/agent_helper')
+const helper = require('../../../lib/agent_helper')
 
-var COUNT = 2
+const COUNT = 2
 
 module.exports = runTests
 runTests.runMultiple = runMultiple
@@ -123,8 +123,8 @@ function runTests(t, agent, Promise, library) {
           }
 
           function test(transaction) {
-            var p = resolve(Promise).then(end(transaction, cb), end(transaction, cb))
-            var d = p.domain
+            const p = resolve(Promise).then(end(transaction, cb), end(transaction, cb))
+            const d = p.domain
             delete p.domain
             t.doesNotThrow(function () {
               JSON.stringify(p)
@@ -184,7 +184,7 @@ function runTests(t, agent, Promise, library) {
           }
 
           function test(transaction) {
-            var err = new Error('some error ' + i)
+            const err = new Error('some error ' + i)
             reject(Promise, err)
               .then(function unusedStep() {
                 t.fail('should not change execution profile')
@@ -237,7 +237,7 @@ function runTests(t, agent, Promise, library) {
     t.plan(4)
 
     helper.runInTransaction(agent, function transactionWrapper(transaction) {
-      var err = new Error('some error')
+      const err = new Error('some error')
       Promise.resolve(0)
         .then(function step1() {
           return 1
@@ -268,8 +268,8 @@ function runTests(t, agent, Promise, library) {
 }
 
 function runMultiple(count, fn, cb) {
-  var finished = 0
-  for (var i = 0; i < count; ++i) {
+  let finished = 0
+  for (let i = 0; i < count; ++i) {
     fn(i, function runMultipleCallback() {
       if (++finished >= count) {
         cb()
@@ -279,7 +279,7 @@ function runMultiple(count, fn, cb) {
 }
 
 function checkTransaction(t, agent, transaction) {
-  var currentTransaction = agent.getTransaction()
+  const currentTransaction = agent.getTransaction()
 
   if (transaction) {
     t.ok(currentTransaction, 'should be in a transaction')

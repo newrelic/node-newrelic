@@ -5,13 +5,13 @@
 
 'use strict'
 
-var test = require('tap').test
-var helper = require('../../lib/agent_helper')
-var http = require('http')
+const test = require('tap').test
+const helper = require('../../lib/agent_helper')
+const http = require('http')
 
 test('app should be at top of stack when mounted', function (t) {
-  var agent = helper.instrumentMockedAgent()
-  var express = require('express')
+  const agent = helper.instrumentMockedAgent()
+  const express = require('express')
 
   t.teardown(() => {
     helper.unloadAgent(agent)
@@ -19,8 +19,8 @@ test('app should be at top of stack when mounted', function (t) {
 
   t.plan(1)
 
-  var main = express()
-  var child = express()
+  const main = express()
+  const child = express()
 
   child.on('mount', function () {
     t.equal(main._router.stack.length, 3, '3 middleware functions: query parser, Express, child')
@@ -32,13 +32,13 @@ test('app should be at top of stack when mounted', function (t) {
 test('app should be at top of stack when mounted', function (t) {
   const agent = helper.instrumentMockedAgent()
 
-  var express = require('express')
-  var main = express()
-  var app = express()
-  var app2 = express()
-  var router = new express.Router()
-  var router2 = new express.Router()
-  var server = http.createServer(main)
+  const express = require('express')
+  const main = express()
+  const app = express()
+  const app2 = express()
+  const router = new express.Router()
+  const router2 = new express.Router()
+  const server = http.createServer(main)
 
   t.teardown(function () {
     helper.unloadAgent(agent)
@@ -58,14 +58,14 @@ test('app should be at top of stack when mounted', function (t) {
   t.plan(10)
 
   // store finished transactions
-  var finishedTransactions = {}
+  const finishedTransactions = {}
   agent.on('transactionFinished', function (tx) {
     finishedTransactions[tx.id] = tx
   })
 
   helper.randomPort(function (port) {
     server.listen(port, function () {
-      var host = 'http://localhost:' + port
+      const host = 'http://localhost:' + port
       helper.makeGetRequest(host + '/myApp/myChild/app', function (err, res, body) {
         t.notOk(err)
         t.equal(
@@ -123,12 +123,12 @@ test('should not pass wrong args when transaction is not present', function (t) 
 
   const agent = helper.instrumentMockedAgent()
 
-  var express = require('express')
-  var main = express()
-  var router = new express.Router()
-  var router2 = new express.Router()
-  var server = http.createServer(main)
-  var args
+  const express = require('express')
+  const main = express()
+  const router = new express.Router()
+  const router2 = new express.Router()
+  const server = http.createServer(main)
+  let args
 
   main.use('/', router)
   main.use('/', router2)

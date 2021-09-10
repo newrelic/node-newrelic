@@ -5,18 +5,18 @@
 
 'use strict'
 
-var helper = require('../../../lib/agent_helper')
+const helper = require('../../../lib/agent_helper')
 
 module.exports = function (t, loadLibrary) {
   t.test('NODE-1649 Stack overflow on recursive promise', function (t) {
     // This was resolved in 2.6.0 as a side-effect of completely refactoring the
     // promise instrumentation.
 
-    var agent = helper.loadMockedAgent()
+    const agent = helper.loadMockedAgent()
     t.teardown(function () {
       helper.unloadAgent(agent)
     })
-    var Promise = loadLibrary()
+    const Promise = loadLibrary()
 
     function Provider(count) {
       this._count = count
@@ -27,7 +27,7 @@ module.exports = function (t, loadLibrary) {
     }
 
     function getData(dataProvider) {
-      var results = []
+      const results = []
 
       return dataProvider.getNext().then(collectResults)
 

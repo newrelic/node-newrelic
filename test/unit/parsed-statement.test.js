@@ -29,9 +29,9 @@ tap.test('recording database metrics', (t) => {
   t.test('on scoped transactions with parsed statements - with collection', (t) => {
     t.test('with collection', (t) => {
       t.beforeEach(() => {
-        let ps = new ParsedStatement('NoSQL', 'select', 'test_collection')
-        let transaction = new Transaction(agent)
-        let segment = transaction.trace.add('test')
+        const ps = new ParsedStatement('NoSQL', 'select', 'test_collection')
+        const transaction = new Transaction(agent)
+        const segment = transaction.trace.add('test')
 
         transaction.type = Transaction.TYPES.BG
         segment.setDurationInMillis(333)
@@ -91,9 +91,9 @@ tap.test('recording database metrics', (t) => {
 
     t.test('without collection', (t) => {
       t.beforeEach(() => {
-        let ps = new ParsedStatement('NoSQL', 'select')
-        let transaction = new Transaction(agent)
-        let segment = transaction.trace.add('test')
+        const ps = new ParsedStatement('NoSQL', 'select')
+        const transaction = new Transaction(agent)
+        const segment = transaction.trace.add('test')
 
         transaction.type = Transaction.TYPES.BG
         segment.setDurationInMillis(333)
@@ -158,9 +158,9 @@ tap.test('recording database metrics', (t) => {
   t.test('on unscoped transactions with parsed statements', (t) => {
     t.test('with collection', (t) => {
       t.beforeEach(() => {
-        let ps = new ParsedStatement('NoSQL', 'select', 'test_collection')
-        let transaction = new Transaction(agent)
-        let segment = transaction.trace.add('test')
+        const ps = new ParsedStatement('NoSQL', 'select', 'test_collection')
+        const transaction = new Transaction(agent)
+        const segment = transaction.trace.add('test')
 
         transaction.type = Transaction.TYPES.BG
         segment.setDurationInMillis(333)
@@ -215,9 +215,9 @@ tap.test('recording database metrics', (t) => {
 
     t.test('without collection', (t) => {
       t.beforeEach(() => {
-        let ps = new ParsedStatement('NoSQL', 'select')
-        let transaction = new Transaction(agent)
-        let segment = transaction.trace.add('test')
+        const ps = new ParsedStatement('NoSQL', 'select')
+        const transaction = new Transaction(agent)
+        const segment = transaction.trace.add('test')
 
         transaction.type = Transaction.TYPES.BG
         segment.setDurationInMillis(333)
@@ -290,7 +290,7 @@ tap.test('recording slow queries', (t) => {
         }
       })
 
-      let ps = new ParsedStatement('MySql', 'select', 'foo', 'select * from foo where b=1')
+      const ps = new ParsedStatement('MySql', 'select', 'foo', 'select * from foo where b=1')
 
       transaction = new Transaction(agent)
       transaction.type = Transaction.TYPES.BG
@@ -299,9 +299,9 @@ tap.test('recording slow queries', (t) => {
       segment.setDurationInMillis(503)
       ps.recordMetrics(segment, 'TEST')
 
-      let ps2 = new ParsedStatement('MySql', 'select', 'foo', 'select * from foo where b=2')
+      const ps2 = new ParsedStatement('MySql', 'select', 'foo', 'select * from foo where b=2')
 
-      let segment2 = transaction.trace.add('test')
+      const segment2 = transaction.trace.add('test')
       segment2.setDurationInMillis(501)
       ps2.recordMetrics(segment2, 'TEST')
 
@@ -320,8 +320,8 @@ tap.test('recording slow queries', (t) => {
     t.test('should capture queries', (t) => {
       t.equal(agent.queries.samples.size, 1)
 
-      let sample = agent.queries.samples.values().next().value
-      let trace = sample.trace
+      const sample = agent.queries.samples.values().next().value
+      const trace = sample.trace
 
       t.equal(sample.total, 1004)
       t.equal(sample.totalExclusive, 1004)
@@ -355,7 +355,7 @@ tap.test('recording slow queries', (t) => {
         }
       })
 
-      let ps = new ParsedStatement('MySql', 'select', null, 'select * from foo where b=1')
+      const ps = new ParsedStatement('MySql', 'select', null, 'select * from foo where b=1')
 
       transaction = new Transaction(agent)
       segment = transaction.trace.add('test')
@@ -363,9 +363,9 @@ tap.test('recording slow queries', (t) => {
       segment.setDurationInMillis(503)
       ps.recordMetrics(segment, 'TEST')
 
-      let ps2 = new ParsedStatement('MySql', 'select', null, 'select * from foo where b=2')
+      const ps2 = new ParsedStatement('MySql', 'select', null, 'select * from foo where b=2')
 
-      let segment2 = transaction.trace.add('test')
+      const segment2 = transaction.trace.add('test')
       segment2.setDurationInMillis(501)
       ps2.recordMetrics(segment2, 'TEST')
 
@@ -383,8 +383,8 @@ tap.test('recording slow queries', (t) => {
     })
 
     t.test('should have IDs that fit a signed long', (t) => {
-      let sample = agent.queries.samples.values().next().value
-      let trace = sample.trace
+      const sample = agent.queries.samples.values().next().value
+      const trace = sample.trace
 
       t.ok(trace.id <= 2 ** 63 - 1)
 
@@ -394,8 +394,8 @@ tap.test('recording slow queries', (t) => {
     t.test('should capture queries', (t) => {
       t.equal(agent.queries.samples.size, 1)
 
-      let sample = agent.queries.samples.values().next().value
-      let trace = sample.trace
+      const sample = agent.queries.samples.values().next().value
+      const trace = sample.trace
 
       t.equal(sample.total, 1004)
       t.equal(sample.totalExclusive, 1004)
@@ -429,7 +429,7 @@ tap.test('recording slow queries', (t) => {
         }
       })
 
-      let ps = new ParsedStatement('MySql', 'select', null, null)
+      const ps = new ParsedStatement('MySql', 'select', null, null)
 
       transaction = new Transaction(agent)
       segment = transaction.trace.add('test')
@@ -437,9 +437,9 @@ tap.test('recording slow queries', (t) => {
       segment.setDurationInMillis(503)
       ps.recordMetrics(segment, 'TEST')
 
-      let ps2 = new ParsedStatement('MySql', 'select', null, null)
+      const ps2 = new ParsedStatement('MySql', 'select', null, null)
 
-      let segment2 = transaction.trace.add('test')
+      const segment2 = transaction.trace.add('test')
       segment2.setDurationInMillis(501)
       ps2.recordMetrics(segment2, 'TEST')
 

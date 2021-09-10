@@ -5,19 +5,19 @@
 
 'use strict'
 
-var DESTINATIONS = require('../../../../lib/config/attribute-filter').DESTINATIONS
-var tap = require('tap')
-var request = require('request')
-var helper = require('../../../lib/agent_helper')
-var utils = require('./hapi-18-utils')
-var HTTP_ATTS = require('../../../lib/fixtures').httpAttributes
+const DESTINATIONS = require('../../../../lib/config/attribute-filter').DESTINATIONS
+const tap = require('tap')
+const request = require('request')
+const helper = require('../../../lib/agent_helper')
+const utils = require('./hapi-18-utils')
+const HTTP_ATTS = require('../../../lib/fixtures').httpAttributes
 
 tap.test('Hapi capture params support', function (t) {
   t.autoend()
 
-  var agent = null
-  var server = null
-  var port = null
+  let agent = null
+  let server = null
+  let port = null
 
   t.beforeEach(function () {
     agent = helper.instrumentMockedAgent({
@@ -40,7 +40,7 @@ tap.test('Hapi capture params support', function (t) {
   t.test('simple case with no params', function (t) {
     agent.on('transactionFinished', function (transaction) {
       t.ok(transaction.trace, 'transaction has a trace.')
-      var attributes = transaction.trace.attributes.get(DESTINATIONS.TRANS_TRACE)
+      const attributes = transaction.trace.attributes.get(DESTINATIONS.TRANS_TRACE)
       HTTP_ATTS.forEach(function (key) {
         t.ok(attributes[key], 'Trace contains expected HTTP attribute: ' + key)
       })
@@ -64,7 +64,7 @@ tap.test('Hapi capture params support', function (t) {
   t.test('case with route params', function (t) {
     agent.on('transactionFinished', function (tx) {
       t.ok(tx.trace, 'transaction has a trace.')
-      var attributes = tx.trace.attributes.get(DESTINATIONS.TRANS_TRACE)
+      const attributes = tx.trace.attributes.get(DESTINATIONS.TRANS_TRACE)
       t.equal(
         attributes['request.parameters.id'],
         '1337',
@@ -90,7 +90,7 @@ tap.test('Hapi capture params support', function (t) {
   t.test('case with query params', function (t) {
     agent.on('transactionFinished', function (tx) {
       t.ok(tx.trace, 'transaction has a trace.')
-      var attributes = tx.trace.attributes.get(DESTINATIONS.TRANS_TRACE)
+      const attributes = tx.trace.attributes.get(DESTINATIONS.TRANS_TRACE)
       t.equal(
         attributes['request.parameters.name'],
         'hapi',
@@ -116,7 +116,7 @@ tap.test('Hapi capture params support', function (t) {
   t.test('case with both route and query params', function (t) {
     agent.on('transactionFinished', function (tx) {
       t.ok(tx.trace, 'transaction has a trace.')
-      var attributes = tx.trace.attributes.get(DESTINATIONS.TRANS_TRACE)
+      const attributes = tx.trace.attributes.get(DESTINATIONS.TRANS_TRACE)
       t.equal(
         attributes['request.parameters.id'],
         '1337',
@@ -146,7 +146,7 @@ tap.test('Hapi capture params support', function (t) {
 })
 
 function makeRequest(t, uri) {
-  var params = {
+  const params = {
     uri: uri,
     json: true
   }

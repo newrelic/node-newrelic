@@ -347,7 +347,7 @@ tap.test('utilization', (t) => {
       }
 
       Object.keys(test).forEach(function setVal(key) {
-        var testValue = test[key]
+        const testValue = test[key]
 
         switch (key) {
           case 'input_environment_variables':
@@ -425,7 +425,7 @@ tap.test('utilization', (t) => {
         }
       })
 
-      var expected = test.expected_output_json
+      const expected = test.expected_output_json
       // We don't collect full hostnames
       delete expected.full_hostname
 
@@ -569,7 +569,7 @@ tap.test('boot_id', (t) => {
         }
       })
 
-      var expected = test.expected_output_json
+      const expected = test.expected_output_json
 
       // Stub out docker container id query to make this consistent on all OSes.
       sysInfo._getDockerContainerId = (_agent, callback) => {
@@ -610,7 +610,7 @@ tap.test('boot_id', (t) => {
     }
 
     Object.keys(expectedMetrics).forEach((expectedMetric) => {
-      var metric = agent.metrics.getOrCreateMetric(expectedMetric)
+      const metric = agent.metrics.getOrCreateMetric(expectedMetric)
       expect(metric).to.have.property('callCount', expectedMetrics[expectedMetric].call_count)
     })
   }

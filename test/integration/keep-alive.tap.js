@@ -18,7 +18,7 @@ tap.test('RemoteMethod makes two requests with one connection', (t) => {
   t.ok(true, 'Setup Test')
 
   // create a basic https server using our standard test certs
-  let opts = {
+  const opts = {
     key: read(join(__dirname, '../lib/test-key.key')),
     cert: read(join(__dirname, '../lib/self-signed-test-certificate.crt'))
   }

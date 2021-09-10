@@ -44,7 +44,7 @@ tap.test('fastify with new state tracking', (t) => {
     const port = fastify.server.address().port
     const url = `http://localhost:${port}/`
 
-    let transactions = []
+    const transactions = []
     agent.on('transactionFinished', (transaction) => {
       transactions.push(transaction)
     })
@@ -73,7 +73,7 @@ tap.test('fastify with new state tracking', (t) => {
     const port = fastify.server.address().port
     const url = `http://localhost:${port}/`
 
-    let transactions = []
+    const transactions = []
     agent.on('transactionFinished', (transaction) => {
       transactions.push(transaction)
     })

@@ -5,7 +5,7 @@
 
 'use strict'
 
-var test = require('tap').test
+const test = require('tap').test
 
 test('loading the application via index.js with agent disabled', function (t) {
   t.plan(3)
@@ -15,7 +15,7 @@ test('loading the application via index.js with agent disabled', function (t) {
   process.cwd = function () {
     return __dirname
   }
-  var api
+  let api
   t.doesNotThrow(function () {
     api = require('../../../')
   }, 'should not die when the config file is not found')

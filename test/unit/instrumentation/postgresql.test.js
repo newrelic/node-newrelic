@@ -92,7 +92,7 @@ test('Lazy loading of native PG client', (t) => {
   })
 
   t.test('does not fail when getter is called multiple times', (t) => {
-    let mockPg = getMockModule()
+    const mockPg = getMockModule()
 
     initialize(agent, mockPg, 'pg', shim)
     const pg1 = mockPg.native

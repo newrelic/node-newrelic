@@ -28,14 +28,14 @@ tap.test('Collector API should send transaction traces to staging-collector.newr
       level: 'trace'
     }
   })
-  var agent = new Agent(config)
-  var api = agent.collector
+  const agent = new Agent(config)
+  const api = agent.collector
 
   api.connect(function (error) {
     t.error(error, 'connected without error')
 
-    var transaction
-    var proxy = agent.tracer.transactionProxy(function () {
+    let transaction
+    const proxy = agent.tracer.transactionProxy(function () {
       transaction = agent.getTransaction()
       transaction.finalizeNameFromUri('/nonexistent', 200)
     })
@@ -50,7 +50,7 @@ tap.test('Collector API should send transaction traces to staging-collector.newr
       t.error(err, 'should encode trace without error')
       t.ok(encoded, 'have the encoded trace')
 
-      var payload = [agent.config.run_id, [encoded]]
+      const payload = [agent.config.run_id, [encoded]]
 
       api.transaction_sample_data(payload, function (error, command) {
         t.error(error, 'sent transaction trace without error')

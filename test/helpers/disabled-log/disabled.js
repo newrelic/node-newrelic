@@ -6,8 +6,8 @@
 'use strict'
 
 // Start with a clean slate.
-var fs = require('fs')
-var testLogPath = __dirname + '/test.log'
+const fs = require('fs')
+const testLogPath = __dirname + '/test.log'
 if (fs.existsSync(testLogPath)) {
   fs.unlinkSync(testLogPath)
 }

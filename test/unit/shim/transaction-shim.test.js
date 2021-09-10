@@ -73,7 +73,7 @@ tap.test('TransactionShim', function (t) {
       }
     }
 
-    var params = {
+    const params = {
       encoding_key: 'this is an encoding key',
       cross_process_id: '1234#4321'
     }
@@ -538,7 +538,7 @@ tap.test('TransactionShim', function (t) {
         agent.config.distributed_tracing.enabled = false
 
         helper.runInTransaction(agent, function (tx) {
-          var headers = createCATHeaders(agent.config)
+          const headers = createCATHeaders(agent.config)
           delete headers['X-NewRelic-App-Data']
 
           t.notOk(tx.incomingCatId)
@@ -680,8 +680,8 @@ tap.test('TransactionShim', function (t) {
         agent.config.distributed_tracing.enabled = false
 
         helper.runInTransaction(agent, function () {
-          var headers = createCATHeaders(agent.config)
-          var segment = shim.getSegment()
+          const headers = createCATHeaders(agent.config)
+          const segment = shim.getSegment()
           delete headers['X-NewRelic-Id']
           delete headers['X-NewRelic-Transaction']
 
@@ -705,8 +705,8 @@ tap.test('TransactionShim', function (t) {
         agent.config.distributed_tracing.enabled = false
 
         helper.runInTransaction(agent, shim.WEB, function (tx) {
-          var headers = createCATHeaders(agent.config, true)
-          var segment = shim.getSegment()
+          const headers = createCATHeaders(agent.config, true)
+          const segment = shim.getSegment()
           delete headers.NewRelicID
           delete headers.NewRelicTransaction
 

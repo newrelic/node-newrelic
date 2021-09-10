@@ -46,7 +46,7 @@ function runTest(t, data) {
   const normalizer = new TxSegmentNormalizer()
   normalizer.load(data.transaction_segment_terms)
 
-  for (var j = 0; j < data.tests.length; j++) {
+  for (let j = 0; j < data.tests.length; j++) {
     const test = data.tests[j]
     t.hasStrict(normalizer.normalize(test.input), { value: test.expected })
   }

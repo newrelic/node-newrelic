@@ -5,20 +5,20 @@
 
 'use strict'
 
-var path = require('path')
-var tap = require('tap')
-var request = require('request')
-var helper = require('../../../lib/agent_helper')
-var API = require('../../../../api')
-var utils = require('./hapi-utils')
-var fixtures = require('../fixtures')
+const path = require('path')
+const tap = require('tap')
+const request = require('request')
+const helper = require('../../../lib/agent_helper')
+const API = require('../../../../api')
+const utils = require('./hapi-utils')
+const fixtures = require('../fixtures')
 
 tap.test('agent instrumentation of Hapi', function (t) {
   t.plan(4)
 
-  var port = null
-  var agent = null
-  var server = null
+  let port = null
+  let agent = null
+  let server = null
 
   t.beforeEach(function () {
     agent = helper.instrumentMockedAgent()
@@ -51,7 +51,7 @@ tap.test('agent instrumentation of Hapi', function (t) {
         t.ok(/application\/json/.test(response.headers['content-type']), 'got correct content type')
         t.deepEqual(JSON.parse(body), { yep: true }, 'response survived')
 
-        var stats = agent.metrics.getMetric('WebTransaction/Hapi/GET//test')
+        let stats = agent.metrics.getMetric('WebTransaction/Hapi/GET//test')
         t.ok(stats, 'found unscoped stats for request path')
         t.equal(stats.callCount, 1, '/test was only requested once')
 
@@ -69,7 +69,7 @@ tap.test('agent instrumentation of Hapi', function (t) {
         t.ok(stats, 'found HTTP dispatcher statistics')
         t.equal(stats.callCount, 1, 'only one HTTP-dispatched request was made')
 
-        var serialized = JSON.stringify(agent.metrics._toPayloadSync())
+        const serialized = JSON.stringify(agent.metrics._toPayloadSync())
         t.ok(
           serialized.match(/WebTransaction\/Hapi\/GET\/\/test/),
           'serialized metrics as expected'
@@ -81,7 +81,7 @@ tap.test('agent instrumentation of Hapi', function (t) {
   })
 
   t.test('using EJS templates', { timeout: 1000 }, function (t) {
-    var config = {
+    const config = {
       options: {
         views: {
           path: path.join(__dirname, '../views'),
@@ -103,7 +103,7 @@ tap.test('agent instrumentation of Hapi', function (t) {
     })
 
     agent.once('transactionFinished', function () {
-      var stats = agent.metrics.getMetric('View/index/Rendering')
+      const stats = agent.metrics.getMetric('View/index/Rendering')
       t.equal(stats.callCount, 1, 'should note the view rendering')
     })
 
@@ -123,13 +123,13 @@ tap.test('agent instrumentation of Hapi', function (t) {
   })
 
   t.test('should generate rum headers', { timeout: 1000 }, function (t) {
-    var api = new API(agent)
+    const api = new API(agent)
 
     agent.config.application_id = '12345'
     agent.config.browser_monitoring.browser_key = '12345'
     agent.config.browser_monitoring.js_agent_loader = 'function(){}'
 
-    var config = {
+    const config = {
       options: {
         views: {
           path: path.join(__dirname, '../views'),
@@ -146,14 +146,14 @@ tap.test('agent instrumentation of Hapi', function (t) {
       method: 'GET',
       path: '/test',
       handler: function (req, reply) {
-        var rum = api.getBrowserTimingHeader()
+        const rum = api.getBrowserTimingHeader()
         t.equal(rum.substr(0, 7), '<script')
         reply.view('index', { title: 'yo dawg', rum: rum })
       }
     })
 
     agent.once('transactionFinished', function () {
-      var stats = agent.metrics.getMetric('View/index/Rendering')
+      const stats = agent.metrics.getMetric('View/index/Rendering')
       t.equal(stats.callCount, 1, 'should note the view rendering')
     })
 
@@ -182,7 +182,7 @@ tap.test('agent instrumentation of Hapi', function (t) {
       method: 'GET',
       path: '/test',
       handler: function () {
-        var hmm
+        let hmm
         hmm.ohno.failure.is.terrible()
       }
     })
@@ -197,11 +197,11 @@ tap.test('agent instrumentation of Hapi', function (t) {
         t.ok(response, 'got a response from Express')
         t.ok(body, 'got back a body')
 
-        var errors = agent.errors.traceAggregator.errors
+        const errors = agent.errors.traceAggregator.errors
         t.ok(errors, 'errors were found')
         t.equal(errors.length, 1, 'should be 1 error')
 
-        var first = errors[0]
+        const first = errors[0]
         t.ok(first, 'have the first error')
         t.match(first[2], 'ohno', 'got the expected error')
 
