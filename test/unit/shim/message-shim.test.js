@@ -320,7 +320,10 @@ tap.test('MessageShim', function (t) {
         return wrapped().then(function (v) {
           t.equal(v, val)
           const duration = segment.getDurationInMillis()
-          t.ok(duration >= DELAY, `Segment duration: ${duration}, Timer duration: ${DELAY}`)
+          t.ok(
+            duration > DELAY - 1,
+            `Segment duration: ${duration} should be > Timer duration: ${DELAY - 1}`
+          )
         })
       })
     })
@@ -781,7 +784,11 @@ tap.test('MessageShim', function (t) {
       return helper.runInTransaction(agent, function () {
         return wrapped().then(function (v) {
           t.equal(v, val)
-          t.ok(segment.getDurationInMillis() > DELAY - 1)
+          const duration = segment.getDurationInMillis()
+          t.ok(
+            duration > DELAY - 1,
+            `Segment duration: ${duration} should be > Timer duration: ${DELAY - 1}`
+          )
         })
       })
     })
