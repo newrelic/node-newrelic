@@ -416,6 +416,8 @@ test('built-in http module instrumentation', (t) => {
 
     t.beforeEach(() => {
       agent2 = helper.instrumentMockedAgent({
+        cross_application_tracer: { enabled: true },
+        distributed_tracing: { enabled: false },
         encoding_key: encKey
       })
     })
@@ -425,7 +427,6 @@ test('built-in http module instrumentation', (t) => {
     })
 
     t.test('should add cat headers from request to transaction', (t) => {
-      agent2.config.distributed_tracing.enabled = false
       const server = http.createServer(function (req, res) {
         const transaction = agent2.getTransaction()
 

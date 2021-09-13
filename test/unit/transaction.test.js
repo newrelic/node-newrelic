@@ -586,7 +586,8 @@ describe('Transaction', function () {
       transaction = new Transaction(agent)
     })
 
-    it('includes CAT attributes if DT disabled', function () {
+    it('includes CAT attributes when enabled', function () {
+      transaction.agent.config.cross_application_tracer.enabled = true
       transaction.agent.config.distributed_tracing.enabled = false
       transaction.tripId = '3456'
       transaction.referringTransactionGuid = '1234'

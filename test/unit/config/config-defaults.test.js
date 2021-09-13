@@ -209,8 +209,8 @@ tap.test('with default properties', (t) => {
     t.end()
   })
 
-  t.test('should enable cross application tracer', (t) => {
-    t.equal(configuration.cross_application_tracer.enabled, true)
+  t.test('should disable cross application tracer', (t) => {
+    t.equal(configuration.cross_application_tracer.enabled, false)
     t.end()
   })
 

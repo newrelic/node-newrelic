@@ -126,6 +126,7 @@ tap.test('should add synthetics inbound header to transaction', (t) => {
       'curly' // synthetics monitor id
     ]
     agent = helper.instrumentMockedAgent({
+      cross_application_tracer: { enabled: true },
       distributed_tracing: { enabled: false },
       trusted_account_ids: [23, 567],
       encoding_key: ENCODING_KEY

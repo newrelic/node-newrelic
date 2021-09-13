@@ -155,7 +155,7 @@ tap.test('when receiving server-side configuration', (t) => {
   })
 
   t.test('should configure cross application tracing', (t) => {
-    t.equal(config.cross_application_tracer.enabled, true)
+    config.cross_application_tracer.enabled = true
 
     config.onConnect({ 'cross_application_tracer.enabled': false })
     t.equal(config.cross_application_tracer.enabled, false)
