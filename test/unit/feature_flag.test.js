@@ -37,7 +37,8 @@ const used = [
   'fastify_instrumentation',
   'certificate_bundle',
   'new_promise_tracking',
-  'unresolved_promise_cleanup'
+  'unresolved_promise_cleanup',
+  'undici_instrumentation'
 ]
 
 describe('feature flags', function () {
