@@ -429,16 +429,20 @@ tap.test('TransactionShim', function (t) {
 
   t.test('#handleCATHeaders', function (t) {
     t.autoend()
-    t.beforeEach(function () {
+
+    t.beforeEach(() => {
       beforeEach()
-      agent.config.distributed_tracing.enabled = true
+      agent.config.cross_application_tracer.enabled = true
+      agent.config.distributed_tracing.enabled = false
     })
     t.afterEach(afterEach)
+
     t.test('should not run if disabled', function (t) {
       helper.runInTransaction(agent, function (tx) {
+        agent.config.cross_application_tracer.enabled = false
+
         const headers = createCATHeaders(agent.config)
         const segment = shim.getSegment()
-        agent.config.cross_application_tracer.enabled = false
 
         t.notOk(tx.incomingCatId)
         t.notOk(tx.referringTransactionGuid)
@@ -506,8 +510,6 @@ tap.test('TransactionShim', function (t) {
     t.test(
       'should attach the CAT info to the provided segment transaction - DT disabled, id and transaction are provided',
       function (t) {
-        agent.config.distributed_tracing.enabled = false
-
         helper.runInTransaction(agent, shim.WEB, function (tx) {
           const headers = createCATHeaders(agent.config)
           const segment = shim.getSegment()
@@ -535,8 +537,6 @@ tap.test('TransactionShim', function (t) {
     t.test(
       'should attach the CAT info to current transaction if not provided - DT disabled, id and transaction are provided',
       function (t) {
-        agent.config.distributed_tracing.enabled = false
-
         helper.runInTransaction(agent, function (tx) {
           const headers = createCATHeaders(agent.config)
           delete headers['X-NewRelic-App-Data']
@@ -560,8 +560,6 @@ tap.test('TransactionShim', function (t) {
     t.test(
       'should work with alternate header names - DT disabled, id and transaction are provided',
       function (t) {
-        agent.config.distributed_tracing.enabled = false
-
         helper.runInTransaction(agent, shim.WEB, function (tx) {
           const headers = createCATHeaders(agent.config, true)
           const segment = shim.getSegment()
@@ -589,6 +587,8 @@ tap.test('TransactionShim', function (t) {
     t.test(
       'Should propagate w3c tracecontext header when present, id and transaction are provided',
       function (t) {
+        agent.config.distributed_tracing.enabled = true
+
         const traceparent = '00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-00'
         const tracestate = 'test=test'
 
@@ -610,6 +610,8 @@ tap.test('TransactionShim', function (t) {
     t.test(
       'Should propagate w3c tracecontext header when no tracestate, id and transaction are provided',
       function (t) {
+        agent.config.distributed_tracing.enabled = true
+
         const traceparent = '00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-00'
 
         helper.runInTransaction(agent, function (tx) {
@@ -629,6 +631,8 @@ tap.test('TransactionShim', function (t) {
     t.test(
       'Should propagate w3c tracecontext header when tracestate empty string, id and transaction are provided',
       function (t) {
+        agent.config.distributed_tracing.enabled = true
+
         const traceparent = '00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-00'
         const tracestate = ''
 
@@ -649,8 +653,6 @@ tap.test('TransactionShim', function (t) {
     t.test(
       'should attach the CAT info to the provided segment - DT disabled, app data is provided',
       function (t) {
-        agent.config.distributed_tracing.enabled = false
-
         helper.runInTransaction(agent, shim.WEB, function (tx) {
           const headers = createCATHeaders(agent.config)
           const segment = shim.getSegment()
@@ -677,8 +679,6 @@ tap.test('TransactionShim', function (t) {
     t.test(
       'should attach the CAT info to current segment if not provided - DT disabled, app data is provided',
       function (t) {
-        agent.config.distributed_tracing.enabled = false
-
         helper.runInTransaction(agent, function () {
           const headers = createCATHeaders(agent.config)
           const segment = shim.getSegment()
@@ -702,8 +702,6 @@ tap.test('TransactionShim', function (t) {
     t.test(
       'should work with alternate header names - DT disabled, app data is provided',
       function (t) {
-        agent.config.distributed_tracing.enabled = false
-
         helper.runInTransaction(agent, shim.WEB, function (tx) {
           const headers = createCATHeaders(agent.config, true)
           const segment = shim.getSegment()
@@ -754,7 +752,11 @@ tap.test('TransactionShim', function (t) {
 
   t.test('#insertCATRequestHeaders', function (t) {
     t.autoend()
-    t.beforeEach(beforeEach)
+    t.beforeEach(() => {
+      beforeEach()
+      agent.config.cross_application_tracer.enabled = true
+      agent.config.distributed_tracing.enabled = false
+    })
     t.afterEach(afterEach)
     t.test('should not run if disabled', function (t) {
       helper.runInTransaction(agent, function () {
@@ -792,8 +794,6 @@ tap.test('TransactionShim', function (t) {
     })
 
     t.test('should use X-Http-Style-Headers when useAlt is false - DT disabled', function (t) {
-      agent.config.distributed_tracing.enabled = false
-
       helper.runInTransaction(agent, function () {
         const headers = {}
         shim.insertCATRequestHeaders(headers)
@@ -809,8 +809,6 @@ tap.test('TransactionShim', function (t) {
     t.test(
       'should use MessageQueueStyleHeaders when useAlt is true with DT disabled',
       function (t) {
-        agent.config.distributed_tracing.enabled = false
-
         helper.runInTransaction(agent, function () {
           const headers = {}
           shim.insertCATRequestHeaders(headers, true)
@@ -825,8 +823,6 @@ tap.test('TransactionShim', function (t) {
     )
 
     t.test('should append the current path hash to the transaction - DT disabled', function (t) {
-      agent.config.distributed_tracing.enabled = false
-
       helper.runInTransaction(agent, function (tx) {
         tx.nameState.appendPath('foobar')
         t.equal(tx.pathHashes.length, 0)
@@ -841,8 +837,6 @@ tap.test('TransactionShim', function (t) {
     })
 
     t.test('should be an obfuscated value - DT disabled, id header', function (t) {
-      agent.config.distributed_tracing.enabled = false
-
       helper.runInTransaction(agent, function () {
         const headers = {}
         shim.insertCATRequestHeaders(headers)
@@ -853,8 +847,6 @@ tap.test('TransactionShim', function (t) {
     })
 
     t.test('should deobfuscate to the app id - DT disabled, id header', function (t) {
-      agent.config.distributed_tracing.enabled = false
-
       helper.runInTransaction(agent, function () {
         const headers = {}
         shim.insertCATRequestHeaders(headers)
@@ -869,8 +861,6 @@ tap.test('TransactionShim', function (t) {
     })
 
     t.test('should be an obfuscated value - DT disabled, transaction header', function (t) {
-      agent.config.distributed_tracing.enabled = false
-
       helper.runInTransaction(agent, function () {
         const headers = {}
         shim.insertCATRequestHeaders(headers)
@@ -883,8 +873,6 @@ tap.test('TransactionShim', function (t) {
     t.test(
       'should deobfuscate to transaction information - DT disabled, transaction header',
       function (t) {
-        agent.config.distributed_tracing.enabled = false
-
         helper.runInTransaction(agent, function () {
           const headers = {}
           shim.insertCATRequestHeaders(headers)
@@ -908,7 +896,11 @@ tap.test('TransactionShim', function (t) {
 
   t.test('#insertCATReplyHeader', function (t) {
     t.autoend()
-    t.beforeEach(beforeEach)
+    t.beforeEach(() => {
+      beforeEach()
+      agent.config.cross_application_tracer.enabled = true
+      agent.config.distributed_tracing.enabled = false
+    })
     t.afterEach(afterEach)
 
     t.test('should not run if disabled', function (t) {
@@ -945,8 +937,6 @@ tap.test('TransactionShim', function (t) {
     })
 
     t.test('should use X-Http-Style-Headers when useAlt is false - DT disabled', function (t) {
-      agent.config.distributed_tracing.enabled = false
-
       helper.runInTransaction(agent, function () {
         const headers = {}
         shim.insertCATReplyHeader(headers)
@@ -958,8 +948,6 @@ tap.test('TransactionShim', function (t) {
     })
 
     t.test('should use MessageQueueStyleHeaders when useAlt is true - DT disabled', function (t) {
-      agent.config.distributed_tracing.enabled = false
-
       helper.runInTransaction(agent, function () {
         const headers = {}
         shim.insertCATReplyHeader(headers, true)
@@ -971,8 +959,6 @@ tap.test('TransactionShim', function (t) {
     })
 
     t.test('should be an obfuscated value - DT disabled, app data header', function (t) {
-      agent.config.distributed_tracing.enabled = false
-
       helper.runInTransaction(agent, function () {
         const headers = {}
         shim.insertCATReplyHeader(headers)
@@ -985,8 +971,6 @@ tap.test('TransactionShim', function (t) {
     t.test(
       'should deobfuscate to CAT application data - DT disabled, app data header',
       function (t) {
-        agent.config.distributed_tracing.enabled = false
-
         helper.runInTransaction(agent, function () {
           const headers = {}
           shim.insertCATReplyHeader(headers)

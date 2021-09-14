@@ -255,6 +255,8 @@ tap.test('should add data from cat header to segment', (t) => {
 
   t.beforeEach(() => {
     agent = helper.instrumentMockedAgent({
+      cross_application_tracer: { enabled: true },
+      distributed_tracing: { enabled: false },
       encoding_key: encKey,
       trusted_account_ids: [123]
     })
@@ -286,9 +288,6 @@ tap.test('should add data from cat header to segment', (t) => {
   }
 
   t.test('should use config.obfuscatedId as the x-newrelic-id header', (t) => {
-    // Explicitly disabling DT for CAT tests
-    // TODO: update test when CAT deprecated
-    agent.config.distributed_tracing.enabled = false
     helper.runInTransaction(agent, function () {
       addSegment()
 
@@ -313,9 +312,6 @@ tap.test('should add data from cat header to segment', (t) => {
   })
 
   t.test('should not explode with invalid data', (t) => {
-    // Explicitly disabling DT for CAT tests
-    // TODO: update test when CAT deprecated
-    agent.config.distributed_tracing.enabled = false
     helper.runInTransaction(agent, function () {
       addSegment()
 

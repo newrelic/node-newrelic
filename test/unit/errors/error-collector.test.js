@@ -1286,7 +1286,9 @@ describe('Errors', function () {
       })
 
       it('should contain CAT intrinsic parameters', function () {
+        agent.config.cross_application_tracer.enabled = true
         agent.config.distributed_tracing.enabled = false
+
         const transaction = createTransaction(agent, 200)
 
         transaction.referringTransactionGuid = '1234'
