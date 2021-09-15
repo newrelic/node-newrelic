@@ -650,6 +650,27 @@ tap.test('TransactionShim', function (t) {
       }
     )
 
+    t.test('should propagate w3c headers when CAT expicitly disabled', (t) => {
+      agent.config.cross_application_tracer.enabled = false
+      agent.config.distributed_tracing.enabled = true
+
+      const traceparent = '00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-00'
+      const tracestate = 'test=test'
+
+      helper.runInTransaction(agent, function (tx) {
+        const headers = { traceparent, tracestate }
+        const segment = shim.getSegment()
+        shim.handleCATHeaders(headers, segment)
+
+        const outboundHeaders = {}
+        tx.insertDistributedTraceHeaders(outboundHeaders)
+
+        t.ok(outboundHeaders.traceparent.startsWith('00-4bf92f3577b3'))
+        t.ok(outboundHeaders.tracestate.endsWith(tracestate))
+        t.end()
+      })
+    })
+
     t.test(
       'should attach the CAT info to the provided segment - DT disabled, app data is provided',
       function (t) {

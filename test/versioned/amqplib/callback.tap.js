@@ -301,10 +301,6 @@ tap.test('amqplib callback instrumentation', function (t) {
   })
 
   t.test('consume in a transaction with distributed tracing', function (t) {
-    // TODO: existing bug found, to be fixed with:
-    // https://github.com/newrelic/node-newrelic/issues/900
-    agent.config.cross_application_tracer.enabled = true
-
     agent.config.span_events.enabled = true
     agent.config.account_id = 1234
     agent.config.primary_application_id = 4321

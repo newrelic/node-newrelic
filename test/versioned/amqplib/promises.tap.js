@@ -311,10 +311,6 @@ tap.test('amqplib promise instrumentation', function (t) {
   })
 
   t.test('consume in a transaction with distributed tracing', function (t) {
-    // TODO: existing bug found, to be fixed with:
-    // https://github.com/newrelic/node-newrelic/issues/900
-    agent.config.cross_application_tracer.enabled = true
-
     agent.config.account_id = 1234
     agent.config.primary_application_id = 4321
     agent.config.trusted_account_key = 1234
