@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "Thu Sep 09 2021 13:14:17 GMT-0700 (Pacific Daylight Time)",
+  "lastUpdated": "Fri Sep 17 2021 15:21:27 GMT-0700 (Pacific Daylight Time)",
   "projectName": "New Relic Node Agent",
   "projectUrl": "https://github.com/newrelic/node-newrelic",
   "includeOptDeps": true,
@@ -338,6 +338,20 @@
       "licenseUrl": "https://github.com/Stuk/eslint-plugin-header/blob/v3.1.1/README.md",
       "licenseTextSource": "spdx",
       "publisher": "Stuart Knightley"
+    },
+    "eslint-plugin-jsdoc@36.1.0": {
+      "name": "eslint-plugin-jsdoc",
+      "version": "36.1.0",
+      "range": "^36.1.0",
+      "licenses": "BSD-3-Clause",
+      "repoUrl": "https://github.com/gajus/eslint-plugin-jsdoc",
+      "versionedRepoUrl": "https://github.com/gajus/eslint-plugin-jsdoc/tree/v36.1.0",
+      "licenseFile": "node_modules/eslint-plugin-jsdoc/LICENSE",
+      "licenseUrl": "https://github.com/gajus/eslint-plugin-jsdoc/blob/v36.1.0/LICENSE",
+      "licenseTextSource": "file",
+      "publisher": "Gajus Kuizinas",
+      "email": "gajus@gajus.com",
+      "url": "http://gajus.com"
     },
     "eslint-plugin-node@11.1.0": {
       "name": "eslint-plugin-node",

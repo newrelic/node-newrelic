@@ -6,7 +6,7 @@
 'use strict'
 
 module.exports = {
-  extends: '@newrelic',
+  extends: ['@newrelic', 'plugin:jsdoc/recommended'],
   rules: {
     'consistent-return': 'off'
   },
@@ -17,5 +17,6 @@ module.exports = {
         'header/header': ['off']
       }
     }
-  ]
+  ],
+  plugins: ['jsdoc']
 }
