@@ -57,7 +57,7 @@ tap.test('external requests', function (t) {
     // happen throughout the requests lifetime on other events, each of those
     // sequences will be their own tree under the main external call. This
     // results in a tree with several sibling branches that might otherwise be
-    // shown in a heirarchy. This is okay.
+    // shown in a hierarchy. This is okay.
     const server = http.createServer(function (req, res) {
       req.resume()
       res.end('ok')
@@ -70,7 +70,7 @@ tap.test('external requests', function (t) {
 
     helper.runInTransaction(agent, function inTransaction(tx) {
       const url = 'http://localhost:' + server.address().port + '/some/path'
-      http.get(url, function onResonse(res) {
+      http.get(url, function onResponse(res) {
         res.resume()
         res.once('end', function resEnded() {
           setTimeout(function timeout() {
@@ -114,7 +114,7 @@ tap.test('external requests', function (t) {
     const https = require('https')
 
     helper.runInTransaction(agent, function inTransaction() {
-      https.get('https://example.com:443/', function onResonse(res) {
+      https.get('https://example.com:443/', function onResponse(res) {
         res.once('end', check)
         res.resume()
       })
