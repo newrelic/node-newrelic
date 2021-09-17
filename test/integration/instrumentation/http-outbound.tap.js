@@ -114,7 +114,7 @@ tap.test('external requests', function (t) {
     const https = require('https')
 
     helper.runInTransaction(agent, function inTransaction() {
-      https.get('https://encrypted.google.com:443/', function onResonse(res) {
+      https.get('https://example.com:443/', function onResonse(res) {
         res.once('end', check)
         res.resume()
       })
@@ -124,7 +124,7 @@ tap.test('external requests', function (t) {
       const root = agent.tracer.getTransaction().trace.root
       const segment = root.children[0]
 
-      t.equal(segment.name, 'External/encrypted.google.com:443/', 'should be named')
+      t.equal(segment.name, 'External/example.com:443/', 'should be named')
       t.ok(segment.timer.start, 'should have started')
       t.ok(segment.timer.hasEnd(), 'should have ended')
       t.equal(segment.children.length, 1, 'should have 1 child')
