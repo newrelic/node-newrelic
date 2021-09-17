@@ -22,7 +22,8 @@ const COL = 'test_column'
 const client = new cassandra.Client({
   contactPoints: [params.cassandra_host],
   protocolOptions: params.cassandra_port,
-  keyspace: KS
+  keyspace: KS,
+  localDataCenter: 'datacenter1'
 })
 
 /**
@@ -36,7 +37,8 @@ const client = new cassandra.Client({
 function cassSetup(runTest) {
   const setupClient = new cassandra.Client({
     contactPoints: [params.cassandra_host],
-    protocolOptions: params.cassandra_port
+    protocolOptions: params.cassandra_port,
+    localDataCenter: 'datacenter1'
   })
 
   const ksDrop = 'DROP KEYSPACE IF EXISTS ' + KS + ';'
