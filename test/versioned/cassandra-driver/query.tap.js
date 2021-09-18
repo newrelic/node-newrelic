@@ -117,18 +117,18 @@ test('Cassandra instrumentation', { timeout: 5000 }, function testInstrumentatio
             }
 
             t.ok(agent.getTransaction(), 'transaction should still still be visible')
-            t.equals(value.rows[0][COL], colValArr[0], 'Cassandra client should still work')
+            t.equal(value.rows[0][COL], colValArr[0], 'Cassandra client should still work')
 
             const trace = transaction.trace
             t.ok(trace, 'trace should exist')
             t.ok(trace.root, 'root element should exist')
 
-            t.equals(trace.root.children.length, 1, 'there should be only one child of the root')
+            t.equal(trace.root.children.length, 1, 'there should be only one child of the root')
 
             const setSegment = trace.root.children[0]
             t.ok(setSegment, 'trace segment for insert should exist')
             if (setSegment) {
-              t.equals(
+              t.equal(
                 setSegment.name,
                 'Datastore/statement/Cassandra/test.testFamily/insert/batch',
                 'should register the executeBatch'
@@ -142,7 +142,7 @@ test('Cassandra instrumentation', { timeout: 5000 }, function testInstrumentatio
               const getSegment = setSegment.children[childIndex].children[0]
               t.ok(getSegment, 'trace segment for select should exist')
               if (getSegment) {
-                t.equals(
+                t.equal(
                   getSegment.name,
                   'Datastore/statement/Cassandra/test.testFamily/select',
                   'should register the execute'
