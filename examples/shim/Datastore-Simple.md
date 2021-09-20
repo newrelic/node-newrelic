@@ -17,7 +17,7 @@ function instrumentCassandra(shim, cassandra, moduleName) {
 
   var proto = cassandra.Client.prototype
   shim.recordOperation(proto, ['connect', 'shutdown'], {callback: shim.LAST})
-  shim.recordQuery(proto, '_innerExecute', {query: shim.FIRST, callback: shim.LAST})
+  shim.recordQuery(proto, '_execute', {query: shim.FIRST, callback: shim.LAST})
   shim.recordBatchQuery(proto, 'batch', {
     query: findBatchQueryArg,
     callback: shim.LAST
