@@ -322,20 +322,20 @@ tap.test('AwsLambda.patchLambdaHandler', (t) => {
       function confirmAgentAttribute(transaction) {
         const agentAttributes = transaction.trace.attributes.get(ATTR_DEST.TRANS_EVENT)
 
-        t.not('request.headers.X-Amz-Cf-Id' in agentAttributes)
-        t.not('request.headers.X-Forwarded-For' in agentAttributes)
-        t.not('request.headers.X-Forwarded-Port' in agentAttributes)
-        t.not('request.headers.X-Forwarded-Proto' in agentAttributes)
+        t.notOk('request.headers.X-Amz-Cf-Id' in agentAttributes)
+        t.notOk('request.headers.X-Forwarded-For' in agentAttributes)
+        t.notOk('request.headers.X-Forwarded-Port' in agentAttributes)
+        t.notOk('request.headers.X-Forwarded-Proto' in agentAttributes)
 
-        t.not('request.headers.xAmzCfId' in agentAttributes)
-        t.not('request.headers.xForwardedFor' in agentAttributes)
-        t.not('request.headers.xForwardedPort' in agentAttributes)
-        t.not('request.headers.xForwardedProto' in agentAttributes)
+        t.notOk('request.headers.xAmzCfId' in agentAttributes)
+        t.notOk('request.headers.xForwardedFor' in agentAttributes)
+        t.notOk('request.headers.xForwardedPort' in agentAttributes)
+        t.notOk('request.headers.xForwardedProto' in agentAttributes)
 
-        t.not('request.headers.XAmzCfId' in agentAttributes)
-        t.not('request.headers.XForwardedFor' in agentAttributes)
-        t.not('request.headers.XForwardedPort' in agentAttributes)
-        t.not('request.headers.XForwardedProto' in agentAttributes)
+        t.notOk('request.headers.XAmzCfId' in agentAttributes)
+        t.notOk('request.headers.XForwardedFor' in agentAttributes)
+        t.notOk('request.headers.XForwardedPort' in agentAttributes)
+        t.notOk('request.headers.XForwardedProto' in agentAttributes)
 
         t.end()
       }
@@ -561,8 +561,8 @@ tap.test('AwsLambda.patchLambdaHandler', (t) => {
         const attributes = transaction.trace.attributes.get(ATTR_DEST.TRANS_EVENT)
         const segment = transaction.agent.tracer.getSegment()
         const spanAttributes = segment.attributes.get(ATTR_DEST.SPAN_EVENT)
-        t.not('aws.lambda.coldStart' in attributes)
-        t.not('aws.lambda.coldStart' in spanAttributes)
+        t.notOk('aws.lambda.coldStart' in attributes)
+        t.notOk('aws.lambda.coldStart' in spanAttributes)
       }
 
       transactionNum++
@@ -625,10 +625,10 @@ tap.test('AwsLambda.patchLambdaHandler', (t) => {
       const segment = transaction.agent.tracer.getSegment()
       const spanAttributes = segment.attributes.get(ATTR_DEST.SPAN_EVENT)
 
-      t.not(EVENTSOURCE_ARN in agentAttributes)
-      t.not(EVENTSOURCE_TYPE in agentAttributes)
-      t.not(EVENTSOURCE_ARN in spanAttributes)
-      t.not(EVENTSOURCE_TYPE in spanAttributes)
+      t.notOk(EVENTSOURCE_ARN in agentAttributes)
+      t.notOk(EVENTSOURCE_TYPE in agentAttributes)
+      t.notOk(EVENTSOURCE_ARN in spanAttributes)
+      t.notOk(EVENTSOURCE_TYPE in spanAttributes)
       t.end()
     }
   })
