@@ -852,7 +852,7 @@ tap.test('TransactionShim', function (t) {
         shim.insertCATRequestHeaders(headers)
 
         t.equal(tx.pathHashes.length, 1)
-        t.equal(tx.pathHashes[0], '14cd4d06')
+        t.equal(tx.pathHashes[0], '0f9570a6')
         t.end()
       })
     })
@@ -909,104 +909,6 @@ tap.test('TransactionShim', function (t) {
 
           t.ok(Array.isArray(txInfo))
           t.equal(txInfo.length, 4)
-          t.end()
-        })
-      }
-    )
-  })
-
-  t.test('#insertCATReplyHeader', function (t) {
-    t.autoend()
-    t.beforeEach(() => {
-      beforeEach()
-      agent.config.cross_application_tracer.enabled = true
-      agent.config.distributed_tracing.enabled = false
-    })
-    t.afterEach(afterEach)
-
-    t.test('should not run if disabled', function (t) {
-      helper.runInTransaction(agent, function () {
-        agent.config.cross_application_tracer.enabled = false
-        const headers = {}
-
-        shim.insertCATReplyHeader(headers)
-
-        t.notOk(headers['X-NewRelic-App-Data'])
-        t.end()
-      })
-    })
-
-    t.test('should not run if the encoding key is missing', function (t) {
-      helper.runInTransaction(agent, function () {
-        delete agent.config.encoding_key
-        const headers = {}
-
-        shim.insertCATReplyHeader(headers)
-
-        t.notOk(headers['X-NewRelic-App-Data'])
-        t.end()
-      })
-    })
-
-    t.test('should fail gracefully when no headers are given', function (t) {
-      helper.runInTransaction(agent, function () {
-        t.doesNotThrow(function () {
-          shim.insertCATReplyHeader(null)
-        })
-        t.end()
-      })
-    })
-
-    t.test('should use X-Http-Style-Headers when useAlt is false - DT disabled', function (t) {
-      helper.runInTransaction(agent, function () {
-        const headers = {}
-        shim.insertCATReplyHeader(headers)
-
-        t.notOk(headers.NewRelicAppData)
-        t.match(headers['X-NewRelic-App-Data'], /^[a-zA-Z0-9/-]{60,80}={0,2}$/)
-        t.end()
-      })
-    })
-
-    t.test('should use MessageQueueStyleHeaders when useAlt is true - DT disabled', function (t) {
-      helper.runInTransaction(agent, function () {
-        const headers = {}
-        shim.insertCATReplyHeader(headers, true)
-
-        t.notOk(headers['X-NewRelic-App-Data'])
-        t.match(headers.NewRelicAppData, /^[a-zA-Z0-9/-]{60,80}={0,2}$/)
-        t.end()
-      })
-    })
-
-    t.test('should be an obfuscated value - DT disabled, app data header', function (t) {
-      helper.runInTransaction(agent, function () {
-        const headers = {}
-        shim.insertCATReplyHeader(headers)
-
-        t.match(headers['X-NewRelic-App-Data'], /^[a-zA-Z0-9/-]{60,80}={0,2}$/)
-        t.end()
-      })
-    })
-
-    t.test(
-      'should deobfuscate to CAT application data - DT disabled, app data header',
-      function (t) {
-        helper.runInTransaction(agent, function () {
-          const headers = {}
-          shim.insertCATReplyHeader(headers)
-
-          let appData = hashes.deobfuscateNameUsingKey(
-            headers['X-NewRelic-App-Data'],
-            agent.config.encoding_key
-          )
-
-          t.doesNotThrow(function () {
-            appData = JSON.parse(appData)
-          })
-
-          t.equal(appData.length, 7)
-          t.ok(Array.isArray(appData))
           t.end()
         })
       }
