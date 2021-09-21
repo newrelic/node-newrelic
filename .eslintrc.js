@@ -7,8 +7,7 @@
 
 module.exports = {
   extends: ['@newrelic', 'plugin:jsdoc/recommended'],
-  plugins: ['jsdoc', 'disable'],
-  processor: 'disable/disable',
+  plugins: ['jsdoc'],
   rules: {
     'consistent-return': 'off'
   },
@@ -17,12 +16,6 @@ module.exports = {
       files: ['newrelic.js'],
       rules: {
         'header/header': ['off']
-      }
-    },
-    {
-      files: ['test/**/*.js'],
-      settings: {
-        'disable/plugins': ['jsdoc']
       }
     }
   ]
