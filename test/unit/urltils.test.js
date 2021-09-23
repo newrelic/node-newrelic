@@ -171,34 +171,21 @@ describe('NR URL utilities', function () {
         400, 401, 402, 403, 404, 405, 406, 407, 408, 409, 410, 411, 412, 413, 414, 415, 416, 417,
         418, 419, 420, 500, 503
       ]
-      let statusCode
 
-      for (var i = 0; i < errorCodes.length; i++) {
-        statusCode = errorCodes[i]
-        expect(urltils.isIgnoredError(config, statusCode)).equal(false)
-      }
-
-      for (var i = 0; i < errorCodes.length; i++) {
-        statusCode = errorCodes[i]
-        config.error_collector.ignore_status_codes = [statusCode]
-        expect(urltils.isIgnoredError(config, statusCode)).equal(true)
-      }
+      errorCodes.forEach((code) => {
+        expect(urltils.isIgnoredError(config, code)).equal(false)
+        config.error_collector.ignore_status_codes = [code]
+        expect(urltils.isIgnoredError(config, code)).equal(true)
+      })
     })
 
     it('returns false if the status code is NOT an HTTP error', function () {
       const statusCodes = [200]
-      let statusCode
-
-      for (var i = 0; i < statusCodes.length; i++) {
-        statusCode = statusCodes[i]
-        expect(urltils.isIgnoredError(config, statusCode)).equal(false)
-      }
-
-      for (var i = 0; i < statusCodes.length; i++) {
-        statusCode = statusCodes[i]
-        config.error_collector.ignore_status_codes = [statusCode]
-        expect(urltils.isIgnoredError(config, statusCode)).equal(false)
-      }
+      statusCodes.forEach((code) => {
+        expect(urltils.isIgnoredError(config, code)).equal(false)
+        config.error_collector.ignore_status_codes = [code]
+        expect(urltils.isIgnoredError(config, code)).equal(false)
+      })
     })
   })
 

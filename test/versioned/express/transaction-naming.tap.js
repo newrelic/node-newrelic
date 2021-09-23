@@ -49,8 +49,8 @@ function runTests(flags) {
       )
       t.end()
     })
-    var server = app.listen(function () {
-      makeRequest(server, endpoint)
+    const server = app.listen(function () {
+      makeRequest(this, endpoint)
     })
     t.teardown(() => {
       server.close()
@@ -371,12 +371,12 @@ function runTests(flags) {
       '/:router1/:router2/path1',
       numTests
     )
-    var server = app.listen(function () {
+    app.listen(function () {
       t.teardown(() => {
-        server.close()
+        this.close()
       })
       for (let i = 0; i < numTests; i++) {
-        runner(server)
+        runner(this)
       }
     })
   })
@@ -407,9 +407,9 @@ function runTests(flags) {
       res.end()
     })
 
-    var server = app.listen(function () {
+    const server = app.listen(function () {
       t.comment('making request')
-      const port = server.address().port
+      const port = this.address().port
       request = http.request(
         {
           hostname: 'localhost',
@@ -456,8 +456,8 @@ function runTests(flags) {
       res.send(err.message)
     })
 
-    var server = app.listen(function () {
-      http.request({ port: server.address().port, path: '/test' }).end()
+    const server = app.listen(function () {
+      http.request({ port: this.address().port, path: '/test' }).end()
     })
 
     t.teardown(function () {
@@ -507,8 +507,8 @@ function runTests(flags) {
       res.send('bar done\n')
     })
 
-    var server = app.listen(function () {
-      const port = server.address().port
+    const server = app.listen(function () {
+      const port = this.address().port
 
       // Send first request to `/foo` which is slow and uses the work queue.
       http.get({ port: port, path: '/foo' }, function (res) {
@@ -580,8 +580,8 @@ function runTests(flags) {
       )
       t.end()
     })
-    var server = app.listen(function () {
-      makeRequest(server, endpoint)
+    const server = app.listen(function () {
+      makeRequest(this, endpoint)
     })
     t.teardown(() => {
       server.close()

@@ -208,7 +208,7 @@ test('built-in http instrumentation should not swallow errors', function (t) {
     })
 
     // this is gonna blow up
-    // eslint-disable-next-line no-use-before-define
+    // eslint-disable-next-line no-use-before-define, no-var
     var x = x.dieshere.ohno
   }
 
@@ -348,16 +348,16 @@ test(
 
     let count = 0
     let closing = false
-    var server = http.createServer(function (req, res) {
+    const server = http.createServer(function (req, res) {
       count++
 
       if (count === 1) {
-        setTimeout(function () {
+        setTimeout(() => {
           t.pass('request #1 was received')
           res.end()
 
           closing = true
-          server.close()
+          this.close()
         }, 5)
       } else {
         setTimeout(function () {

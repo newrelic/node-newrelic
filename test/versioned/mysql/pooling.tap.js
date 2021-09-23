@@ -14,14 +14,10 @@ const DBNAME = 'agent_integration'
 const DBTABLE = 'test'
 
 tap.test('MySQL instrumentation with a connection pool', { timeout: 30000 }, function (t) {
-  var agent = null
-  var mysql = null
   const poolLogger = logger.child({ component: 'pool' })
-  var pool = null
-
-  var agent = helper.instrumentMockedAgent()
-  var mysql = require('mysql')
-  var pool = setup.pool(mysql, poolLogger)
+  const agent = helper.instrumentMockedAgent()
+  const mysql = require('mysql')
+  const pool = setup.pool(mysql, poolLogger)
 
   t.teardown(function () {
     pool.drain(function () {
@@ -30,7 +26,7 @@ tap.test('MySQL instrumentation with a connection pool', { timeout: 30000 }, fun
     })
   })
 
-  var withRetry = {
+  const withRetry = {
     getClient: function (callback, counter) {
       if (!counter) {
         counter = 1
@@ -43,7 +39,7 @@ tap.test('MySQL instrumentation with a connection pool', { timeout: 30000 }, fun
 
           if (counter < 10) {
             pool.destroy(client)
-            withRetry.getClient(callback, counter)
+            this.getClient(callback, counter)
           } else {
             return callback(new Error("Couldn't connect to DB after 10 attempts."))
           }

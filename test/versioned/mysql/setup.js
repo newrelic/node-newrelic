@@ -83,7 +83,7 @@ function setup(mysql) {
 function setupPool(mysql, logger) {
   const generic = require('generic-pool')
 
-  var pool = new generic.Pool({
+  return new generic.Pool({
     name: 'mysql',
     min: 2,
     max: 6,
@@ -104,7 +104,7 @@ function setupPool(mysql, logger) {
       client.on('error', function (err) {
         logger.error('MySQL connection errored out, destroying connection')
         logger.error(err)
-        pool.destroy(client)
+        this.destroy(client)
       })
 
       client.connect((err) => {
@@ -121,6 +121,4 @@ function setupPool(mysql, logger) {
       client.end()
     }
   })
-
-  return pool
 }

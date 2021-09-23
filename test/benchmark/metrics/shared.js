@@ -16,10 +16,10 @@ exports.getMaybeUnscoped = getMaybeUnscoped
 exports.getMetric = getMetric
 
 function fillMetrics() {
-  for (var i = 0; i < 10; ++i) {
+  for (let i = 0; i < 10; ++i) {
     scopeNames.push('scope/' + i)
   }
-  for (var i = 0; i < 100; ++i) {
+  for (let i = 0; i < 100; ++i) {
     metricNames.push('metric/' + i)
   }
 }

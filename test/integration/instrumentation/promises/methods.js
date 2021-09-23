@@ -827,7 +827,7 @@ module.exports = function (t, library, loadLibrary) {
 
     t.test('usage', function (t) {
       testPromiseInstanceMethod(t, 3, function callTest(Promise, p, name) {
-        var foo = {
+        const foo = {
           test: function () {
             t.equal(this, foo, name + 'should have correct this value')
             t.pass(name + 'should call the test method of foo')
