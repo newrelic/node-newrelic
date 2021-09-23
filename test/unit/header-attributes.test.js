@@ -159,7 +159,7 @@ describe('header-attributes', () => {
         }
 
         helper.runInTransaction(agent, (transaction) => {
-          headerAttributes.collectRequestHeaders(headers, transaction, true)
+          headerAttributes.collectRequestHeaders(headers, transaction)
 
           const attributes = transaction.trace.attributes.get(DESTINATIONS.TRANS_TRACE)
           expect(attributes).to.not.have.property('request.headers.x-filtered-out')
