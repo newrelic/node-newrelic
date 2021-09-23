@@ -103,6 +103,11 @@
       "name": "Bob Evans",
       "email": "revans@newrelic.com",
       "web": "https://newrelic.com"
+    },
+    {
+      "name": "Diana Thayer",
+      "email": "dthayer@newrelic.com",
+      "web": "https://newrelic.com"
     }
   ],
   "description": "New Relic agent",
