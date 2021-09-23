@@ -852,7 +852,7 @@ tap.test('TransactionShim', function (t) {
         shim.insertCATRequestHeaders(headers)
 
         t.equal(tx.pathHashes.length, 1)
-        t.equal(tx.pathHashes[0], '14cd4d06')
+        t.equal(tx.pathHashes[0], '0f9570a6')
         t.end()
       })
     })
