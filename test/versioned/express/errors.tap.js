@@ -216,9 +216,9 @@ function runTests(flags) {
       res.end()
     })
 
-    var server = app.listen(function () {
+    const server = app.listen(function () {
       t.comment('making request')
-      const port = server.address().port
+      const port = this.address().port
       request = http.request(
         {
           hostname: 'localhost',
@@ -265,8 +265,8 @@ function runTests(flags) {
     })
 
     const endpoint = '/test'
-    var server = app.listen(function () {
-      makeRequest(server, endpoint, function (response) {
+    const server = app.listen(function () {
+      makeRequest(this, endpoint, function (response) {
         statusCode = response.statusCode
         if (errors) {
           callback(errors, statusCode)

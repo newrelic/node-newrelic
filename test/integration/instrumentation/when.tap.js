@@ -18,11 +18,11 @@ const test = tap.test
 const runMultiple = testTransactionState.runMultiple
 
 test('Promise constructor retains all properties', function (t) {
-  var Promise = require('when').Promise
+  let Promise = require('when').Promise
   const originalKeys = Object.keys(Promise)
 
   setupAgent(t)
-  var Promise = require('when').Promise
+  Promise = require('when').Promise
   const wrappedKeys = Object.keys(Promise)
 
   originalKeys.forEach(function (key) {

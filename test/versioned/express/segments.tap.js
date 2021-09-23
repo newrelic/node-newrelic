@@ -908,8 +908,8 @@ function runTest(t, options, callback) {
     callback(baseSegment.children, tx)
   })
 
-  var server = app.listen(function () {
-    makeRequest(server, endpoint, function (response) {
+  const server = app.listen(function () {
+    makeRequest(this, endpoint, function (response) {
       response.resume()
     })
   })

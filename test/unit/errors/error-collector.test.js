@@ -1521,11 +1521,11 @@ describe('Errors', function () {
           agent.config.attributes.exclude = ['c']
           agent.config.emit('attributes.exclude')
           const error = new Error('some error')
-          var customAttributes = { a: 'b', c: 'ignored' }
+          let customAttributes = { a: 'b', c: 'ignored' }
           api.noticeError(error, customAttributes)
 
           const agentAttributes = getFirstEventAgentAttributes(aggregator)
-          var customAttributes = getFirstEventCustomAttributes(aggregator)
+          customAttributes = getFirstEventCustomAttributes(aggregator)
 
           expect(Object.keys(customAttributes)).length(1)
           expect(customAttributes.c).to.be.undefined
