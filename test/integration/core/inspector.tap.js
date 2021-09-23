@@ -10,7 +10,7 @@ const test = require('tap').test
 const inspector = require('inspector')
 const helper = require('../../lib/agent_helper')
 
-test('inspector', { skip: !inspector }, function (t) {
+test('inspector', function (t) {
   const agent = setupAgent(t)
   helper.runInTransaction(agent, function (txn) {
     const session = new inspector.Session()

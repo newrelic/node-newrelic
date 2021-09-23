@@ -16,7 +16,7 @@ const NUM_PROMISES = 300
 const tests = [
   function forkedTest(Promise) {
     return function runTest(agent, cb) {
-      let prom = Promise.resolve()
+      const prom = Promise.resolve()
 
       // number of internal nodes on the binary tree of promises
       // this will produce a binary tree with NUM_PROMISES / 2 internal
@@ -25,7 +25,6 @@ const tests = [
       const promises = [prom]
 
       for (let i = 0; i < internalPromises; ++i) {
-        prom = promises[i]
         promises.push(prom.then(function first() {}))
         promises.push(prom.then(function second() {}))
       }
