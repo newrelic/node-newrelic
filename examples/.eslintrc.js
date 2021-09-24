@@ -11,6 +11,7 @@ module.exports = {
   rules: {
     'consistent-return': 'off',
     'no-console': 'off',
-    'node/no-extraneous-require': 'off'
+    'node/no-extraneous-require': 'off',
+    'node/no-missing-require': 'off'
   }
 }
