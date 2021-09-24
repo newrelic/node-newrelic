@@ -230,6 +230,56 @@ tap.test('clearTimeout should ignore segment created for timer', (t) => {
   })
 })
 
+tap.test('clearTimeout should not ignore parent segment when opaque', (t) => {
+  const expectedParentName = 'opaque segment'
+
+  const agent = setupAgent(t)
+
+  helper.runInTransaction(agent, function transactionWrapper(transaction) {
+    process.nextTick(function callback() {
+      helper.runInSegment(agent, expectedParentName, (segment) => {
+        segment.opaque = true
+
+        const timer = setTimeout(t.fail)
+
+        const parentSegment = transaction.trace.root.children[0]
+        t.equal(parentSegment.name, expectedParentName)
+        t.equal(parentSegment.ignore, false)
+
+        clearTimeout(timer)
+        t.equal(parentSegment.ignore, false)
+
+        setTimeout(t.end)
+      })
+    })
+  })
+})
+
+tap.test('clearTimeout should not ignore parent segment when internal', (t) => {
+  const expectedParentName = 'internal segment'
+
+  const agent = setupAgent(t)
+
+  helper.runInTransaction(agent, function transactionWrapper(transaction) {
+    process.nextTick(function callback() {
+      helper.runInSegment(agent, expectedParentName, (segment) => {
+        segment.internal = true
+
+        const timer = setTimeout(t.fail)
+
+        const parentSegment = transaction.trace.root.children[0]
+        t.equal(parentSegment.name, expectedParentName)
+        t.equal(parentSegment.ignore, false)
+
+        clearTimeout(timer)
+        t.equal(parentSegment.ignore, false)
+
+        setTimeout(t.end)
+      })
+    })
+  })
+})
+
 function setupAgent(t) {
   const agent = helper.instrumentMockedAgent()
   t.teardown(function tearDown() {

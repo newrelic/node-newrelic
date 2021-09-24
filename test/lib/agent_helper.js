@@ -231,6 +231,12 @@ const helper = (module.exports = {
     })
   },
 
+  runInSegment: (agent, name, callback) => {
+    const tracer = agent.tracer
+
+    return tracer.addSegment(name, null, null, null, callback)
+  },
+
   /**
    * Stub to bootstrap a memcached instance
    *
