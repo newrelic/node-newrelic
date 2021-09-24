@@ -10,10 +10,9 @@ process.env.NEW_RELIC_HOME = __dirname
 const tap = require('tap')
 const logger = require('../../../lib/logger')
 const helper = require('../../lib/agent_helper')
-var urltils = require('../../../lib/util/urltils')
+const urltils = require('../../../lib/util/urltils')
 const params = require('../../lib/params')
 const setup = require('./setup')
-var urltils = require('../../../lib/util/urltils')
 
 tap.test('Basic run through mysql functionality', { timeout: 30 * 1000 }, function (t) {
   t.autoend()
@@ -41,7 +40,7 @@ tap.test('Basic run through mysql functionality', { timeout: 30 * 1000 }, functi
     })
   })
 
-  var withRetry = {
+  const withRetry = {
     getClient: function (callback, counter) {
       if (!counter) {
         counter = 1
@@ -54,7 +53,7 @@ tap.test('Basic run through mysql functionality', { timeout: 30 * 1000 }, functi
 
           if (counter < 10) {
             pool.destroy(client)
-            withRetry.getClient(callback, counter)
+            this.getClient(callback, counter)
           } else {
             return callback(new Error("Couldn't connect to DB after 10 attempts."))
           }

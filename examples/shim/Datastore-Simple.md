@@ -17,7 +17,7 @@ function instrumentCassandra(shim, cassandra, moduleName) {
 
   var proto = cassandra.Client.prototype
   shim.recordOperation(proto, ['connect', 'shutdown'], {callback: shim.LAST})
-  shim.recordQuery(proto, '_innerExecute', {query: shim.FIRST, callback: shim.LAST})
+  shim.recordQuery(proto, '_execute', {query: shim.FIRST, callback: shim.LAST})
   shim.recordBatchQuery(proto, 'batch', {
     query: findBatchQueryArg,
     callback: shim.LAST
@@ -170,7 +170,7 @@ into it and use any other array manipulation that you want.
 ### Recording Queries
 
 ```js
-  shim.recordQuery(proto, '_innerExecute', {query: shim.FIRST, callback: shim.LAST})
+  shim.recordQuery(proto, '_execute', {query: shim.FIRST, callback: shim.LAST})
 ```
 
 The `cassandra.Client` class has three different methods for performing queries:
@@ -304,5 +304,5 @@ there, please drop us a line on the [community forum](https://discuss.newrelic.c
 [6]: http://docs.datastax.com/en/latest-nodejs-driver-api/Client.html#eachRow
 [7]: http://docs.datastax.com/en/latest-nodejs-driver-api/Client.html#execute
 [8]: http://docs.datastax.com/en/latest-nodejs-driver-api/Client.html#stream
-[9]: https://github.com/datastax/nodejs-driver/blob/master/lib/client.js#L355
+[9]: https://github.com/datastax/nodejs-driver/blob/master/lib/client.js#L589
 [10]: http://docs.datastax.com/en/latest-nodejs-driver-api/Client.html#batch

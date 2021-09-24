@@ -209,7 +209,7 @@ test('built-in http instrumentation should not swallow errors', function (t) {
 
     // this is gonna blow up
     // eslint-disable-next-line no-use-before-define
-    var x = x.dieshere.ohno
+    const x = x.dieshere.ohno
   }
 
   function makeRequest() {
@@ -230,13 +230,7 @@ test('built-in http instrumentation should not swallow errors', function (t) {
       const second = errors[1]
       t.ok(first, 'should have the first error')
 
-      // In v16.9 of Node.js the response error message
-      // changed
-      const expectedError = [
-        "Cannot read property 'dieshere' of undefined",
-        "Cannot read properties of undefined (reading 'dieshere')"
-      ]
-      t.ok(expectedError.includes(first[2]), 'should get the expected error')
+      t.equal(first[2], "Cannot access 'x' before initialization", 'should get the expected error')
 
       if (t.ok(second, 'should have the second error')) {
         t.equal(second[2], 'HttpError 501', 'should get the expected error')
@@ -348,16 +342,16 @@ test(
 
     let count = 0
     let closing = false
-    var server = http.createServer(function (req, res) {
+    const server = http.createServer(function (req, res) {
       count++
 
       if (count === 1) {
-        setTimeout(function () {
+        setTimeout(() => {
           t.pass('request #1 was received')
           res.end()
 
           closing = true
-          server.close()
+          this.close()
         }, 5)
       } else {
         setTimeout(function () {

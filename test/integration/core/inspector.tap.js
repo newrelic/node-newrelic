@@ -6,14 +6,11 @@
 'use strict'
 
 const test = require('tap').test
-try {
-  // eslint-disable-next-line node/no-unsupported-features/node-builtins
-  var inspector = require('inspector')
-} catch (e) {
-  // will skip tests below
-}
+// eslint-disable-next-line node/no-unsupported-features/node-builtins
+const inspector = require('inspector')
 const helper = require('../../lib/agent_helper')
-test('inspector', { skip: !inspector }, function (t) {
+
+test('inspector', function (t) {
   const agent = setupAgent(t)
   helper.runInTransaction(agent, function (txn) {
     const session = new inspector.Session()

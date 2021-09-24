@@ -110,7 +110,7 @@ tap.test('setImmediate', function testSetImmediate(t) {
 tap.test('setInterval', function testSetInterval(t) {
   const agent = setupAgent(t)
   helper.runInTransaction(agent, function transactionWrapper() {
-    var interval = timers.setInterval(function anonymous() {
+    const interval = timers.setInterval(function anonymous() {
       clearInterval(interval)
       verifySegments(t, agent, 'timers.setInterval')
     }, 10)
@@ -140,7 +140,7 @@ tap.test('global setImmediate', function testSetImmediate(t) {
 tap.test('global setInterval', function testSetInterval(t) {
   const agent = setupAgent(t)
   helper.runInTransaction(agent, function transactionWrapper() {
-    var interval = setInterval(function anonymous() {
+    const interval = setInterval(function anonymous() {
       clearInterval(interval)
       verifySegments(t, agent, 'timers.setInterval')
     }, 10)
@@ -167,7 +167,7 @@ tap.test('nextTick with extra args', function testNextTick(t) {
       function callback() {
         t.equal(agent.getTransaction(), transaction)
         t.equal(agent.getTransaction().trace.root.children.length, 0)
-        t.deepEqual([].slice.call(arguments), [1, 2, 3])
+        t.same([].slice.call(arguments), [1, 2, 3])
         process.nextTick = original
         t.end()
       },

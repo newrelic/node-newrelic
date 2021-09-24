@@ -40,7 +40,7 @@ tap.test('Basic run through mysql functionality', { timeout: 30 * 1000 }, functi
     })
   })
 
-  var withRetry = {
+  const withRetry = {
     getClient: function (callback, counter) {
       if (!counter) {
         counter = 1
@@ -53,7 +53,7 @@ tap.test('Basic run through mysql functionality', { timeout: 30 * 1000 }, functi
 
           if (counter < 10) {
             pool.destroy(client)
-            withRetry.getClient(callback, counter)
+            this.getClient(callback, counter)
           } else {
             return callback(new Error("Couldn't connect to DB after 10 attempts."))
           }

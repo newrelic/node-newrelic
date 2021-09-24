@@ -22,10 +22,10 @@ const suite = benchmark.createBenchmark({
 suite.add({
   name: 'few into many',
   before: function () {
-    for (var i = 0; i < poolSize; ++i) {
+    for (let i = 0; i < poolSize; ++i) {
       queue1.add('test')
     }
-    for (var i = 0; i < poolSize / 100; ++i) {
+    for (let i = 0; i < poolSize / 100; ++i) {
       queue2.add('test')
     }
   },
@@ -37,10 +37,10 @@ suite.add({
 suite.add({
   name: 'many into few',
   before: function () {
-    for (var i = 0; i < poolSize; ++i) {
+    for (let i = 0; i < poolSize; ++i) {
       queue2.add('test')
     }
-    for (var i = 0; i < poolSize / 100; ++i) {
+    for (let i = 0; i < poolSize / 100; ++i) {
       queue1.add('test')
     }
   },

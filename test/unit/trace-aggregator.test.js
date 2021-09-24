@@ -334,7 +334,7 @@ describe('TraceAggregator', function () {
 
       let remaining = 4
       // 2nd-5th harvests: no serialized trace, timing still set
-      var looper = function () {
+      const looper = function () {
         expect(aggregator.requestTimes['WebTransaction/Uri/test']).equal(5030)
         aggregator.clear()
 

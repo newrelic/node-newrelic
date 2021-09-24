@@ -268,10 +268,10 @@ function getMockTransaction(agent, test, start, durationInSeconds, totalTimeInSe
 
   // CAT data
   if (test.inboundPayload) {
-    cat.parsedHeadersToTrans(test.inboundPayload[0], test.inboundPayload, transaction)
+    cat.assignCatToTransaction(test.inboundPayload[0], test.inboundPayload, transaction)
   } else {
     // Simulate the headers being unparsable or not existing
-    cat.parsedHeadersToTrans(null, null, transaction)
+    cat.assignCatToTransaction(null, null, transaction)
   }
 
   if (test.outboundRequests) {

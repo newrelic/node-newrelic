@@ -50,10 +50,10 @@ describe('the environment scraper', function () {
   it('should allow setting dispatcher version', function () {
     environment.setDispatcher('custom', '2')
 
-    var dispatchers = environment.get('Dispatcher')
+    let dispatchers = environment.get('Dispatcher')
     expect(dispatchers).include.members(['custom'])
 
-    var dispatchers = environment.get('Dispatcher Version')
+    dispatchers = environment.get('Dispatcher Version')
     expect(dispatchers).include.members(['2'])
 
     expect(function () {

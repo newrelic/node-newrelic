@@ -30,7 +30,8 @@ test("adding 'handle' middleware", function (t) {
 
   app.use(handle)
 
-  var server = app.listen(function () {
+  app.listen(function () {
+    const server = this
     const port = server.address().port
 
     http

@@ -120,6 +120,13 @@ describe('environmental sampler', function () {
     expect(sampler.state).equal('running')
   })
 
+  it('should say it is stopped after stop', function () {
+    sampler.start(agent)
+    expect(sampler.state).equal('running')
+    sampler.stop(agent)
+    expect(sampler.state).equal('stopped')
+  })
+
   it('should gather CPU user utilization metric', function () {
     sampler.sampleCpu(agent)()
 
