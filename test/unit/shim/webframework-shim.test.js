@@ -565,6 +565,24 @@ test('WebFrameworkShim', function (t) {
       t.end()
     })
 
+    t.test('should prepend spec.prefix to a metric name when present', function (t) {
+      const wrapped = shim.recordMiddleware(wrappable.getActiveSegment, {
+        prefix: 'unitTestPrefix',
+        type: shim.MIDDLEWARE,
+        route: '/unit-test-route'
+      })
+      helper.runInTransaction(agent, function (tx) {
+        txInfo.transaction = tx
+        const segment = wrapped(req)
+
+        t.equal(
+          segment.name,
+          'Nodejs/Middleware/Restify/unitTestPrefix/getActiveSegment//unit-test-route'
+        )
+        t.end()
+      })
+    })
+
     t.test('should reinstate its own context', function (t) {
       testType(shim.MIDDLEWARE, 'Nodejs/Middleware/Restify/getActiveSegment')
 

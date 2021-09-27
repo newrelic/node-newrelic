@@ -8,6 +8,7 @@
 const tap = require('tap')
 const requestClient = require('request')
 const helper = require('../../lib/agent_helper')
+const metrics = require('../../lib/metrics_helper')
 
 let callCount = 0
 const loadMiddleware = async (fastify) => {
@@ -70,6 +71,18 @@ const testUri = (uri, agent, test, port) => {
       transaction.getName(),
       `transaction name matched for ${uri}`
     )
+
+    // FIXME: https://github.com/newrelic/node-newrelic/issues/926
+    // The middleware segments should be siblings not children
+    // and include the middleware registered with fastify.use
+    // https://github.com/newrelic/node-newrelic/issues/927
+    metrics.assertSegments(transaction.trace.root, [
+      `WebTransaction/WebFrameworkUri/Fastify/GET/${uri}`,
+      [`Nodejs/Middleware/Fastify/<anonymous>/${uri}`]
+      /* ['Nodejs/Middleware/Fastify/onRequest/testMiddleware',
+          [`Nodejs/Middleware/Fastify/<anonymous>/${uri}`]
+        ]*/
+    ])
   })
 
   requestClient.get(`http://127.0.0.1:${port}${uri}`, function (error, response, body) {
