@@ -72,7 +72,10 @@ const testUri = (uri, agent, test, port) => {
 
     metrics.assertSegments(transaction.trace.root, [
       `WebTransaction/WebFrameworkUri/Fastify/GET/${uri}`,
-      ['Nodejs/Middleware/Fastify/testMiddleware', `Nodejs/Middleware/Fastify/<anonymous>/${uri}`]
+      [
+        'Nodejs/Middleware/Fastify/onRequest/testMiddleware',
+        `Nodejs/Middleware/Fastify/<anonymous>/${uri}`
+      ]
     ])
   })
 
