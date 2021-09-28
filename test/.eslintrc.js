@@ -5,18 +5,7 @@
 
 'use strict'
 module.exports = {
-  extends: ['plugin:jsdoc/recommended'],
-  plugins: ['jsdoc', 'disable'],
-  processor: 'disable/disable',
   env: {
     mocha: true
-  },
-  overrides: [
-    {
-      files: ['./**/*.js'],
-      settings: {
-        'disable/plugins': ['jsdoc']
-      }
-    }
-  ]
+  }
 }
