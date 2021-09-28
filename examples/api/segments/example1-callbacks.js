@@ -7,9 +7,10 @@
 
 const newrelic = require('newrelic')
 
-// we'll stub out an async task that runs as part of monitoring a segment
 /**
- * @param callback
+ * We'll stub out an async task that runs as part of monitoring a segment
+ *
+ * @param {Function} callback
  */
 function myAsyncTask(callback) {
   const sleep = new Promise((resolve) => {
@@ -23,25 +24,26 @@ function myAsyncTask(callback) {
 // then we stub out the task that handles that task's result,
 // to show how the result is passed throughthe segment handler
 /**
- * @param greetings
- * @param callback
+ * @param {string} greetings
+ * @param {Function} callback
  */
 function myNextTask(greetings, callback) {
   callback(null, `${greetings}, it's me!`)
 }
 
-// this task will be run as its own segment within our transaction handler
 /**
- * @param cb
+ * This task will be run as its own segment within our transaction handler
+ *
+ * @param {Function} callback
  */
-function someTask(cb) {
+function someTask(callback) {
   myAsyncTask(function firstCb(err1, result) {
     if (err1) {
-      return cb(err1)
+      return callback(err1)
     }
 
     myNextTask(result, function secondCb(err2, output) {
-      cb(err2, output)
+      callback(err2, output)
     })
   })
 }

@@ -32,7 +32,7 @@ newrelic.startBackgroundTransaction(transactionName, function handle() {
 
 // Function to simulate async work.
 /**
- * @param callback
+ * @param {Function} callback
  */
 function doSomeWork(callback) {
   setTimeout(function work() {

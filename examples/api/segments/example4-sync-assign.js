@@ -7,26 +7,26 @@
 
 const newrelic = require('newrelic')
 
-// we'll stub out an async task that runs as part of monitoring a segment
 /**
- *
+ * We'll stub out an async task that runs as part of monitoring a segment.
  */
 function mySyncTask() {
   return 'hello world'
 }
 
-// then we stub out the task that handles that task's result,
-// to show how the result is passed throughthe segment handler
+//
 /**
- * @param greetings
+ * Then we stub out the task that handles that task's result,
+ * to show how the result is passed throughthe segment handler.
+ *
+ * @param {string} greetings
  */
 function myNextTask(greetings) {
   return `${greetings}, it's me!`
 }
 
-// this task will be run as its own segment within our transaction handler
 /**
- *
+ * This task will be run as its own segment within our transaction handler
  */
 function someTask() {
   const result = mySyncTask()

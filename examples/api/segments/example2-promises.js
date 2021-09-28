@@ -7,9 +7,8 @@
 
 const newrelic = require('newrelic')
 
-// we'll stub out an async task that runs as part of monitoring a segment
 /**
- *
+ * We'll stub out an async task that runs as part of monitoring a segment
  */
 async function myAsyncTask() {
   await new Promise((resolve) => {
@@ -21,7 +20,7 @@ async function myAsyncTask() {
 // then we stub out the task that handles that task's result,
 // to show how the result is passed throughthe segment handler
 /**
- * @param greetings
+ * @param {string} greetings
  */
 function myNextTask(greetings) {
   return `${greetings}, it's me!`
