@@ -6,8 +6,7 @@
 'use strict'
 
 module.exports = {
-  extends: ['@newrelic', 'plugin:jsdoc/recommended'],
-  plugins: ['jsdoc'],
+  extends: '@newrelic',
   rules: {
     'consistent-return': 'off'
   },
