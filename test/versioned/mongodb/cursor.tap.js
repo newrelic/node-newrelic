@@ -31,7 +31,7 @@ common.test('explain', function explainTest(t, collection, verify) {
     if (data.hasOwnProperty('cursor')) {
       t.equal(data.cursor, 'BasicCursor', 'should have correct response')
     } else {
-      t.ok(data.hasOwnProperty('queryPlanner'), 'should have correct reponse')
+      t.ok(data.hasOwnProperty('queryPlanner'), 'should have correct response')
     }
     verify(
       null,

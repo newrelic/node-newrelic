@@ -84,7 +84,7 @@ function collectionTest(name, run) {
             const segment = agent.tracer.getSegment()
             let current = transaction.trace.root
 
-            // this logic is just for the collection.aggrate v4+
+            // this logic is just for the collection.aggregate v4+
             // aggregate no longer returns a callback with cursor
             // it just returns a cursor. so the segments on the
             // transaction are not nested but both on the trace
@@ -100,6 +100,7 @@ function collectionTest(name, run) {
                 t.equal(child.name, expectedSegment, `child should be named ${expectedSegment}`)
                 if (common.MONGO_SEGMENT_RE.test(child.name)) {
                   checkSegmentParams(t, child)
+                  t.equal(child.ignore, false, 'should not ignore segment')
                 }
 
                 t.equal(child.children.length, 0, 'should have no more children')
@@ -111,6 +112,7 @@ function collectionTest(name, run) {
                 t.equal(current.name, segments[i], 'child should be named ' + segments[i])
                 if (common.MONGO_SEGMENT_RE.test(current.name)) {
                   checkSegmentParams(t, current)
+                  t.equal(current.ignore, false, 'should not ignore segment')
                 }
               }
 
@@ -318,7 +320,7 @@ function collectionTest(name, run) {
             const segment = agent.tracer.getSegment()
             let current = transaction.trace.root
 
-            // this logic is just for the collection.aggrate v4+
+            // this logic is just for the collection.aggregate v4+
             // aggregate no longer returns a callback with cursor
             // it just returns a cursor. so the segments on the
             // transaction are not nested but both on the trace
@@ -334,6 +336,7 @@ function collectionTest(name, run) {
                 t.equal(child.name, expectedSegment, `child should be named ${expectedSegment}`)
                 if (common.MONGO_SEGMENT_RE.test(child.name)) {
                   checkSegmentParams(t, child)
+                  t.equal(child.ignore, false, 'should not ignore segment')
                 }
 
                 t.equal(child.children.length, 0, 'should have no more children')
@@ -345,6 +348,7 @@ function collectionTest(name, run) {
                 t.equal(current.name, segments[i], 'child should be named ' + segments[i])
                 if (common.MONGO_SEGMENT_RE.test(current.name)) {
                   checkSegmentParams(t, current)
+                  t.equal(current.ignore, false, 'should not ignore segment')
                 }
               }
 

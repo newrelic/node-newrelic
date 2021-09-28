@@ -110,7 +110,7 @@ tap.test('setImmediate', function testSetImmediate(t) {
 tap.test('setInterval', function testSetInterval(t) {
   const agent = setupAgent(t)
   helper.runInTransaction(agent, function transactionWrapper() {
-    const interval = timers.setInterval(function anonymous() {
+    const interval = timers.setInterval(() => {
       clearInterval(interval)
       verifySegments(t, agent, 'timers.setInterval')
     }, 10)
@@ -140,7 +140,7 @@ tap.test('global setImmediate', function testSetImmediate(t) {
 tap.test('global setInterval', function testSetInterval(t) {
   const agent = setupAgent(t)
   helper.runInTransaction(agent, function transactionWrapper() {
-    const interval = setInterval(function anonymous() {
+    const interval = setInterval(() => {
       clearInterval(interval)
       verifySegments(t, agent, 'timers.setInterval')
     }, 10)
@@ -185,66 +185,99 @@ tap.test('nextTick with extra args', function testNextTick(t) {
   }
 })
 
-tap.test('clearTimeout', function testNextTick(t) {
+tap.test('clearImmediate', (t) => {
   const agent = setupAgent(t)
-  const timer = setTimeout(fail)
-
-  clearTimeout(timer)
-
-  helper.runInTransaction(agent, function transactionWrapper(transaction) {
-    process.nextTick(function callback() {
-      const timer2 = setTimeout(fail)
-      t.notOk(transaction.trace.root.children[0].ignore)
-      clearTimeout(timer2)
-      t.ok(transaction.trace.root.children[0].ignore)
-      setTimeout(t.end.bind(t))
-    })
-  })
-
-  function fail() {
-    t.fail()
-  }
-})
-
-tap.test('clearImmediate', function testNextTick(t) {
-  const agent = setupAgent(t)
-  const timer = setImmediate(fail)
+  const timer = setImmediate(t.fail)
 
   clearImmediate(timer)
 
   helper.runInTransaction(agent, function transactionWrapper(transaction) {
     process.nextTick(function callback() {
-      const timer2 = setImmediate(fail)
+      const timer2 = setImmediate(t.fail)
       t.notOk(transaction.trace.root.children[0])
       clearImmediate(timer2)
       setImmediate(t.end.bind(t))
     })
   })
-
-  function fail() {
-    t.fail()
-  }
 })
 
-tap.test('clearTimeout', function testNextTick(t) {
-  const agent = setupAgent(t)
-  const timer = setTimeout(fail)
+tap.test('clearTimeout should function outside of transaction context', (t) => {
+  setupAgent(t)
+
+  const timer = setTimeout(t.fail)
 
   clearTimeout(timer)
 
+  setImmediate(t.end)
+})
+
+tap.test('clearTimeout should ignore segment created for timer', (t) => {
+  const agent = setupAgent(t)
+
   helper.runInTransaction(agent, function transactionWrapper(transaction) {
     process.nextTick(function callback() {
-      const timer2 = setTimeout(fail)
-      t.notOk(transaction.trace.root.children[0].ignore)
-      clearTimeout(timer2)
-      t.ok(transaction.trace.root.children[0].ignore)
-      setTimeout(t.end.bind(t))
+      const timer = setTimeout(t.fail)
+
+      const timerSegment = transaction.trace.root.children[0]
+      t.equal(timerSegment.name, 'timers.setTimeout')
+      t.equal(timerSegment.ignore, false)
+
+      clearTimeout(timer)
+      t.equal(timerSegment.ignore, true)
+
+      setTimeout(t.end)
     })
   })
+})
 
-  function fail() {
-    t.fail()
-  }
+tap.test('clearTimeout should not ignore parent segment when opaque', (t) => {
+  const expectedParentName = 'opaque segment'
+
+  const agent = setupAgent(t)
+
+  helper.runInTransaction(agent, function transactionWrapper(transaction) {
+    process.nextTick(function callback() {
+      helper.runInSegment(agent, expectedParentName, (segment) => {
+        segment.opaque = true
+
+        const timer = setTimeout(t.fail)
+
+        const parentSegment = transaction.trace.root.children[0]
+        t.equal(parentSegment.name, expectedParentName)
+        t.equal(parentSegment.ignore, false)
+
+        clearTimeout(timer)
+        t.equal(parentSegment.ignore, false)
+
+        setTimeout(t.end)
+      })
+    })
+  })
+})
+
+tap.test('clearTimeout should not ignore parent segment when internal', (t) => {
+  const expectedParentName = 'internal segment'
+
+  const agent = setupAgent(t)
+
+  helper.runInTransaction(agent, function transactionWrapper(transaction) {
+    process.nextTick(function callback() {
+      helper.runInSegment(agent, expectedParentName, (segment) => {
+        segment.internal = true
+
+        const timer = setTimeout(t.fail)
+
+        const parentSegment = transaction.trace.root.children[0]
+        t.equal(parentSegment.name, expectedParentName)
+        t.equal(parentSegment.ignore, false)
+
+        clearTimeout(timer)
+        t.equal(parentSegment.ignore, false)
+
+        setTimeout(t.end)
+      })
+    })
+  })
 })
 
 function setupAgent(t) {
