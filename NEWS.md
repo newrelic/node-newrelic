@@ -10,17 +10,17 @@
 
 * Removed warnings from agent tests for `no-var` eslint rule.
 
+* Added support for Cassandra driver v4.0.0 and above.
+
+* Fixed issue where DT headers would not be processed by `transaction-shim.handleCATHeaders()` when CAT was explicitly disabled. This primarily impacts `amqplib` instrumentation.
+
 * Transitioned aws-lambda.test.js to use Tap over Mocha.
 
 * Removed warnings from agent for `no-var` eslint rule.
 
-* Added support for Cassandra driver v4.0.0 and above.
-
 * Refactored `transaction-shim`, `http` and `http-outbound` to use centralized CAT methods in `util/cat`
 
 * Replaced http-outbound test call to use example.com to avoid unpredictable connection resets.
-
-* Fixed issue where DT headers would not be processed by `transaction-shim.handleCATHeaders()` when CAT was explicitly disabled. This primarily impacts `amqplib` instrumentation.
 
 * Migrated sql query parser tests to tap
 
