@@ -83,6 +83,34 @@ tap.test('fastify with new state tracking', (t) => {
 
     t.equal(transactions.length, 2)
   })
+
+  t.test('should wrap request/response hooks', async (t) => {
+    let ok = false
+
+    fastify.addHook('onRequest', (request, reply, done) => {
+      ok = true
+      done()
+    })
+
+    fastify.get('/', async () => {
+      return { hello: 'world' }
+    })
+
+    await fastify.listen(0)
+
+    const port = fastify.server.address().port
+    const url = `http://localhost:${port}/`
+
+    await makeRequestPromise(url)
+
+    const transactions = []
+    agent.on('transactionFinished', (transaction) => {
+      transactions.push(transaction)
+    })
+
+    t.ok(ok, 'hook ran')
+    t.equal(transactions.length, 1)
+  })
 })
 
 function makeRequest(url, cb) {
