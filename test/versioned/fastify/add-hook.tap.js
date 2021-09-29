@@ -51,7 +51,7 @@ tap.test(function (t) {
       return all
     }, {})
     for (const hookName of REQUEST_HOOKS) {
-      fastify.addHook(hookName, (req, res, next) => {
+      fastify.addHook(hookName, function testHook(req, res, next) {
         ok[hookName] = true
         next()
       })
@@ -63,9 +63,9 @@ tap.test(function (t) {
         metrics.assertSegments(transaction.trace.root, [
           'WebTransaction/WebFrameworkUri/Fastify/GET//',
           [
-            'Nodejs/Middleware/Fastify/onRequest/<anonymous>',
-            'Nodejs/Middleware/Fastify/preParsing/<anonymous>',
-            'Nodejs/Middleware/Fastify/onSend/<anonymous>'
+            'Nodejs/Middleware/Fastify/onRequest/testHook',
+            'Nodejs/Middleware/Fastify/preParsing/testHook',
+            'Nodejs/Middleware/Fastify/onSend/testHook'
           ]
         ])
         resolve()
