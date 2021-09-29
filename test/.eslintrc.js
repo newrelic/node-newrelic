@@ -5,6 +5,11 @@
 
 'use strict'
 module.exports = {
+  plugins: ['disable'],
+  processor: 'disable/disable',
+  settings: {
+    'disable/plugins': ['jsdoc']
+  },
   env: {
     mocha: true
   }

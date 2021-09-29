@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "Tue Sep 28 2021 12:17:02 GMT-0700 (Pacific Daylight Time)",
+  "lastUpdated": "Wed Sep 29 2021 10:42:21 GMT-0400 (Eastern Daylight Time)",
   "projectName": "New Relic Node Agent",
   "projectUrl": "https://github.com/newrelic/node-newrelic",
   "includeOptDeps": true,
@@ -326,6 +326,19 @@
       "licenseUrl": "https://github.com/prettier/eslint-config-prettier/blob/v8.3.0/LICENSE",
       "licenseTextSource": "file",
       "publisher": "Simon Lydell"
+    },
+    "eslint-plugin-disable@2.0.1": {
+      "name": "eslint-plugin-disable",
+      "version": "2.0.1",
+      "range": "^2.0.1",
+      "licenses": "MIT",
+      "repoUrl": "https://github.com/mradionov/eslint-plugin-disable",
+      "versionedRepoUrl": "https://github.com/mradionov/eslint-plugin-disable/tree/v2.0.1",
+      "licenseFile": "node_modules/eslint-plugin-disable/LICENSE",
+      "licenseUrl": "https://github.com/mradionov/eslint-plugin-disable/blob/v2.0.1/LICENSE",
+      "licenseTextSource": "file",
+      "publisher": "Michael Radionov",
+      "url": "https://github.com/mradionov"
     },
     "eslint-plugin-header@3.1.1": {
       "name": "eslint-plugin-header",
