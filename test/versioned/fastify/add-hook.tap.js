@@ -13,9 +13,9 @@ const metrics = require('../../lib/metrics_helper')
 const REQUEST_HOOKS = [
   'onRequest',
   'preParsing',
-  // 'preValidation',
-  // 'preHandler',
-  // 'preSerialization',
+  'preValidation',
+  'preHandler',
+  'preSerialization',
   'onSend',
   'onResponse'
 ]
