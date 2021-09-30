@@ -8,6 +8,7 @@
 const tap = require('tap')
 const requestClient = require('request')
 const helper = require('../../lib/agent_helper')
+const metrics = require('../../lib/metrics_helper')
 
 let callCount = 0
 const loadMiddleware = async (fastify) => {
@@ -63,16 +64,24 @@ let testCount = 0
 const testUri = (uri, agent, test, port) => {
   agent.on('transactionFinished', (transaction) => {
     testCount++
-    test.equals(
+    test.equal(
       `WebFrameworkUri/Fastify/GET/${uri}`,
       transaction.getName(),
       `transaction name matched for ${uri}`
     )
+
+    metrics.assertSegments(transaction.trace.root, [
+      `WebTransaction/WebFrameworkUri/Fastify/GET/${uri}`,
+      [
+        'Nodejs/Middleware/Fastify/onRequest/testMiddleware',
+        `Nodejs/Middleware/Fastify/<anonymous>/${uri}`
+      ]
+    ])
   })
 
   requestClient.get(`http://127.0.0.1:${port}${uri}`, function (error, response, body) {
     const result = (body = JSON.parse(body))
-    test.equals(result.called, uri, `${uri} url did not error`)
+    test.equal(result.called, uri, `${uri} url did not error`)
   })
 }
 
@@ -114,5 +123,5 @@ tap.test('Test Transaction Naming', (test) => {
     })
   }
 
-  test.equals(testCount, callCount, 'middleware was called')
+  test.equal(testCount, callCount, 'middleware was called')
 })
