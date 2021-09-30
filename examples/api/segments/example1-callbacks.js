@@ -21,9 +21,10 @@ function myAsyncTask(callback) {
   })
 }
 
-// then we stub out the task that handles that task's result,
-// to show how the result is passed throughthe segment handler
 /**
+ * Then we stub out the task that handles that task's result,
+ * to show how the result is passed throughthe segment handler
+ *
  * @param {string} greetings
  * @param {Function} callback
  */

@@ -22,7 +22,7 @@ module.exports = {
     {
       files: ['./lib/shim/*.js', 'lib/transaction/handle.js', 'api.js'],
       rules: {
-        'jsdoc/require-jsdoc': 'warn'
+        'jsdoc/require-jsdoc': 'error'
       }
     }
   ]

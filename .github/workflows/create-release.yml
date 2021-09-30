@@ -39,9 +39,4 @@ jobs:
       run: node ./bin/create-github-release.js --tag ${{ steps.get_tag.outputs.latest_tag }} --repo-owner ${{ github.repository_owner }}
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-    - run: npm run public-docs
-    - name: Deploy Docs
-      uses: peaceiris/actions-gh-pages@v3
-      with:
-        github_token: ${{ secrets.GITHUB_TOKEN }}
-        publish_dir: ./out
+    - run: npm run publish-docs
