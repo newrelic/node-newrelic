@@ -1,8 +1,7 @@
 name: Create Release
 
 # Manual trigger only
-on:
-  workflow_dispatch:
+on: [workflow_dispatch]
 
 jobs:
   tag-and-publish:
