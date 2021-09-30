@@ -21,7 +21,7 @@ async function myAsyncTask() {
  * Then we stub out the task that handles that task's result,
  * to show how the result is passed throughthe segment handler.
  *
- * @param {string} greetings
+ * @param greetings
  */
 async function myNextTask(greetings) {
   await new Promise((resolve) => {

@@ -19,7 +19,7 @@ function mySyncTask() {
  * Then we stub out the task that handles that task's result,
  * to show how the result is passed throughthe segment handler.
  *
- * @param {string} greetings
+ * @param greetings
  */
 function myNextTask(greetings) {
   return `${greetings}, it's me!`

@@ -17,18 +17,18 @@ async function myAsyncTask() {
   return 'hello world'
 }
 
-// then we stub out the task that handles that task's result,
-// to show how the result is passed throughthe segment handler
 /**
- * @param {string} greetings
+ * Then we stub out the task that handles that task's result,
+ * to show how the result is passed throughthe segment handler
+ *
+ * @param greetings
  */
 function myNextTask(greetings) {
   return `${greetings}, it's me!`
 }
 
-// this task will be run as its own segment within our transaction handler
 /**
- *
+ * This task will be run as its own segment within our transaction handler
  */
 function someTask() {
   return myAsyncTask().then(function thenNext(result) {
