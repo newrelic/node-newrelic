@@ -62,11 +62,9 @@ tap.test(function (t) {
         t.equal('WebFrameworkUri/Fastify/GET//', transaction.getName(), `transaction name matched`)
         metrics.assertSegments(transaction.trace.root, [
           'WebTransaction/WebFrameworkUri/Fastify/GET//',
-          [
-            'Nodejs/Middleware/Fastify/onRequest/testHook',
-            'Nodejs/Middleware/Fastify/preParsing/testHook',
-            'Nodejs/Middleware/Fastify/onSend/testHook'
-          ]
+          REQUEST_HOOKS.map((hookName) => {
+            return `Nodejs/Middleware/Fastify/${hookName}/testHook`
+          })
         ])
         resolve()
       })
