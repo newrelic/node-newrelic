@@ -35,6 +35,10 @@ jobs:
     - name: Get Created Tag
       id: get_tag
       run: echo "::set-output name=latest_tag::$(git describe --tags --abbrev=0)"
+    - name: Setup GitHub Credentials
+      run: |
+        git config user.name $GITHUB_ACTOR
+        git config user.email gh-actions-${GITHUB_ACTOR}@github.com
     - name: Create GitHub Release
       run: node ./bin/create-github-release.js --tag ${{ steps.get_tag.outputs.latest_tag }} --repo-owner ${{ github.repository_owner }}
       env:
