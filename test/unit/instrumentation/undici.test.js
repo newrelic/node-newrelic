@@ -37,16 +37,14 @@ tap.test('undici instrumentation', { skip: shouldSkip }, function (t) {
       sendHeaders: diagnosticsChannel.channel('undici:client:sendHeaders'),
       headers: diagnosticsChannel.channel('undici:request:headers'),
       send: diagnosticsChannel.channel('undici:request:trailers'),
-      error: diagnosticsChannel.channel('undici:request:error'),
-      beforeConnect: diagnosticsChannel.channel('undici:client:beforeConnect'),
-      connected: diagnosticsChannel.channel('undici:client:connected'),
-      connectError: diagnosticsChannel.channel('undici:client:connectError')
+      error: diagnosticsChannel.channel('undici:request:error')
     }
     agent = helper.loadMockedAgent()
     agent.config.distributed_tracing.enabled = false
     agent.config.cross_application_tracer.enabled = false
     agent.config.feature_flag = {
-      undici_instrumentation: true
+      undici_instrumentation: true,
+      undici_async_tracking: true
     }
     shim = new TransactionShim(agent, 'undici')
     loggerMock = require('../mocks/logger')(sandbox)
@@ -63,6 +61,7 @@ tap.test('undici instrumentation', { skip: shouldSkip }, function (t) {
     sandbox.resetHistory()
     agent.config.distributed_tracing.enabled = false
     agent.config.cross_application_tracer.enabled = false
+    agent.config.feature_flag.undici_async_tracking = true
     helper.unloadAgent(agent)
   }
 
@@ -136,6 +135,51 @@ tap.test('undici instrumentation', { skip: shouldSkip }, function (t) {
         t.end()
       })
     })
+
+    t.test(
+      'should get the parent segment from Map when executionAsyncId is the same',
+      function (t) {
+        helper.runInTransaction(agent, function (tx) {
+          const addHeader = sandbox.stub()
+          const request = { path: '/foo-2', addHeader }
+          channels.create.publish({ request })
+          const segment = tx.trace.add('another segment')
+          segment.start()
+          shim.setActiveSegment(segment)
+          const request2 = { path: '/path', addHeader }
+          channels.create.publish({ request: request2 })
+          t.same(
+            request[SYMBOLS.PARENT_SEGMENT],
+            request2[SYMBOLS.PARENT_SEGMENT],
+            'parent segment should be same'
+          )
+          t.end()
+        })
+      }
+    )
+
+    t.test(
+      'should get the parent segment shim when `undici_async_tracking` is false',
+      function (t) {
+        agent.config.feature_flag.undici_async_tracking = false
+        helper.runInTransaction(agent, function (tx) {
+          const addHeader = sandbox.stub()
+          const request = { path: '/foo-2', addHeader }
+          channels.create.publish({ request })
+          const segment = tx.trace.add('another segment')
+          segment.start()
+          shim.setActiveSegment(segment)
+          const request2 = { path: '/path', addHeader }
+          channels.create.publish({ request: request2 })
+          t.not(
+            request[SYMBOLS.PARENT_SEGMENT].name,
+            request2[SYMBOLS.PARENT_SEGMENT].name,
+            'parent segment should not be same'
+          )
+          t.end()
+        })
+      }
+    )
   })
 
   t.test('client:sendHeaders', function (t) {
@@ -174,6 +218,24 @@ tap.test('undici instrumentation', { skip: shouldSkip }, function (t) {
         t.equal(attrs.procedure, 'POST')
         t.equal(attrs['request.parameters.a'], 'b')
         t.equal(attrs['request.parameters.c'], 'd')
+        t.end()
+      })
+    })
+
+    t.test('should not create segment if transaction is not active', function (t) {
+      helper.runInTransaction(agent, function (tx) {
+        const socket = {
+          remotePort: 443,
+          servername: 'unittesting.com'
+        }
+        const request = {
+          method: 'POST',
+          path: '/foo?a=b&c=d'
+        }
+        request[SYMBOLS.PARENT_SEGMENT] = shim.createSegment('parent')
+        tx.end()
+        channels.sendHeaders.publish({ request, socket })
+        t.notOk(request[SYMBOLS.SEGMENT])
         t.end()
       })
     })
@@ -337,78 +399,6 @@ tap.test('undici instrumentation', { skip: shouldSkip }, function (t) {
             [SYMBOLS.SEGMENT]: segment
           }
           channels.error.publish({ request, error })
-          t.equal(segment.timer.state, 3, 'previous active segment timer should be stopped')
-          t.same(parentSegment, shim.getSegment(), 'parentSegment should now the active')
-          t.same(loggerMock.trace.args[0], [
-            error,
-            'Captured outbound error on behalf of the user.'
-          ])
-          t.same(tx.agent.errors.add.args[0], [tx, error])
-          tx.agent.errors.add.restore()
-          t.end()
-        })
-      }
-    )
-  })
-
-  t.test('client:beforeConnect', function (t) {
-    t.autoend()
-    t.afterEach(afterEach)
-
-    t.test('should add a segment for the undici.Client.connect', function (t) {
-      helper.runInTransaction(agent, function () {
-        const parentSegment = shim.createSegment('parent')
-        shim.setActiveSegment(parentSegment)
-        const connector = {}
-        channels.beforeConnect.publish({ connector })
-        t.ok(connector[SYMBOLS.SEGMENT])
-        t.ok(connector[SYMBOLS.PARENT_SEGMENT])
-        const segment = shim.getSegment()
-        t.equal(segment.name, 'undici.Client.connect')
-        t.end()
-      })
-    })
-  })
-
-  t.test('client:connected', function (t) {
-    t.autoend()
-    t.afterEach(afterEach)
-
-    t.test('should end current segment and restore to parent', function (t) {
-      helper.runInTransaction(agent, function () {
-        const parentSegment = shim.createSegment('parent')
-        const segment = shim.createSegment('active')
-        shim.setActiveSegment(segment)
-        const connector = {
-          [SYMBOLS.PARENT_SEGMENT]: parentSegment,
-          [SYMBOLS.SEGMENT]: segment
-        }
-        channels.connected.publish({ connector })
-        t.equal(segment.timer.state, 3, 'previous active segment timer should be stopped')
-        t.same(parentSegment, shim.getSegment(), 'parentSegment should now the active')
-        t.end()
-      })
-    })
-  })
-
-  t.test('client:connectError', function (t) {
-    t.autoend()
-    t.afterEach(afterEach)
-
-    t.test(
-      'should end current segment and restore to parent and add error to active transaction',
-      function (t) {
-        helper.runInTransaction(agent, function (tx) {
-          sandbox.stub(tx.agent.errors, 'add')
-          const parentSegment = shim.createSegment('parent')
-          const segment = shim.createSegment('active')
-          shim.setActiveSegment(segment)
-          const error = new Error('failed to create socket connection')
-          const connector = {
-            [SYMBOLS.PARENT_SEGMENT]: parentSegment,
-            [SYMBOLS.SEGMENT]: segment
-          }
-          channels.connectError.publish({ connector, error })
           t.equal(segment.timer.state, 3, 'previous active segment timer should be stopped')
           t.same(parentSegment, shim.getSegment(), 'parentSegment should now the active')
           t.same(loggerMock.trace.args[0], [
