@@ -123,7 +123,7 @@ tap.test('Undici request tests', (t) => {
           method: 'GET'
         })
       } catch (err) {
-        t.equal(err.message, 'getaddrinfo ENOTFOUND invalidurl')
+        t.match(err.message, /getaddrinfo.*invalidurl/)
         const segment = metrics.findSegment(tx.trace.root, 'External/invalidurl/foo')
         t.notOk(segment)
         tx.end()
