@@ -78,6 +78,16 @@ tap.test('undici instrumentation', { skip: shouldSkip }, function (t) {
     t.autoend()
     t.afterEach(afterEach)
 
+    t.test('should log trace if request is not in an active transaction', function (t) {
+      channels.create.publish({ request: { path: '/foo' } })
+      t.same(loggerMock.trace.args[0], [
+        'Not capturing data for outbound request (%s) because parent segment opaque (%s)',
+        '/foo',
+        undefined
+      ])
+      t.end()
+    })
+
     t.test('should not add headers when segment is opaque', function (t) {
       helper.runInTransaction(agent, function (tx) {
         const segment = tx.trace.add('parent')
