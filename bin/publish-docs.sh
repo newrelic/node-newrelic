@@ -13,4 +13,4 @@ git rm -r docs
 mv out docs
 git add docs
 git commit -m "docs: update for ${PACKAGE_VERSION}"
-git push garbados gh-pages && git push garbados gh-pages:gh-pages
+git push origin gh-pages && git push public gh-pages:gh-pages
