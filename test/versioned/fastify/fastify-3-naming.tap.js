@@ -20,6 +20,15 @@ const loadMiddleware = async (fastify) => {
   await fastify.register(require('middie'))
 
   fastify.use(testMiddleware)
+
+  function pathMountedMiddleware(req, res, next) {
+    next()
+  }
+
+  fastify.use('/async-return', pathMountedMiddleware)
+  fastify.use('/async-reply-send', pathMountedMiddleware)
+  fastify.use('/sync-reply-send', pathMountedMiddleware)
+  fastify.use('/plugin-registered', pathMountedMiddleware)
 }
 
 /**
@@ -73,7 +82,11 @@ const testUri = (uri, agent, test, port) => {
     )
     metrics.assertSegments(transaction.trace.root, [
       `WebTransaction/WebFrameworkUri/Fastify/GET/${uri}`,
-      [`Nodejs/Middleware/Fastify/<anonymous>/${uri}`]
+      [
+        'Nodejs/Middleware/Fastify/onRequest/testMiddleware',
+        `Nodejs/Middleware/Fastify/onRequest/pathMountedMiddleware/${uri}`,
+        `Nodejs/Middleware/Fastify/<anonymous>/${uri}`
+      ]
     ])
   })
 
