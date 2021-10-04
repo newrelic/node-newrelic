@@ -147,7 +147,7 @@ tap.test('undici instrumentation', { skip: shouldSkip }, function (t) {
     })
 
     t.test(
-      'should get the parent segment from Map when executionAsyncId is the same',
+      'should get the parent segment executionAsyncResource when it already exists',
       function (t) {
         helper.runInTransaction(agent, function (tx) {
           const addHeader = sandbox.stub()
