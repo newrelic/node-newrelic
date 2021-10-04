@@ -101,6 +101,7 @@ tap.test('undici instrumentation', { skip: shouldSkip }, function (t) {
           '/foo',
           'parent'
         ])
+        tx.end()
         t.end()
       })
     })
@@ -117,31 +118,34 @@ tap.test('undici instrumentation', { skip: shouldSkip }, function (t) {
         t.ok(request[SYMBOLS.PARENT_SEGMENT])
         t.equal(request.addHeader.callCount, 1)
         t.same(request.addHeader.args[0], ['x-newrelic-synthetics', 'synthHeader'])
+        tx.end()
         t.end()
       })
     })
 
     t.test('should add DT headers when `distributed_tracing` is enabled', function (t) {
       agent.config.distributed_tracing.enabled = true
-      helper.runInTransaction(agent, function () {
+      helper.runInTransaction(agent, function (tx) {
         const addHeader = sandbox.stub()
         channels.create.publish({ request: { path: '/foo-2', addHeader } })
         t.equal(addHeader.callCount, 2)
         t.equal(addHeader.args[0][0], 'traceparent')
         t.match(addHeader.args[0][1], /^[\w\d\-]{55}$/)
         t.same(addHeader.args[1], ['newrelic', ''])
+        tx.end()
         t.end()
       })
     })
 
     t.test('should add CAT headers when `cross_application_tracer` is enabled', function (t) {
       agent.config.cross_application_tracer.enabled = true
-      helper.runInTransaction(agent, function () {
+      helper.runInTransaction(agent, function (tx) {
         const addHeader = sandbox.stub()
         channels.create.publish({ request: { path: '/foo-2', addHeader } })
         t.equal(addHeader.callCount, 1)
         t.equal(addHeader.args[0][0], 'X-NewRelic-Transaction')
         t.match(addHeader.args[0][1], /^[\w\d/-]{60,80}={0,2}$/)
+        tx.end()
         t.end()
       })
     })
@@ -163,10 +167,28 @@ tap.test('undici instrumentation', { skip: shouldSkip }, function (t) {
             request2[SYMBOLS.PARENT_SEGMENT],
             'parent segment should be same'
           )
+          tx.end()
           t.end()
         })
       }
     )
+
+    t.test('should get diff parent segment across diff async execution contexts', function (t) {
+      helper.runInTransaction(agent, function (tx) {
+        const request = { path: '/request1', addHeader: sandbox.stub() }
+        channels.create.publish({ request })
+        Promise.resolve('test').then(() => {
+          const segment = tx.trace.add('another segment')
+          segment.start()
+          shim.setActiveSegment(segment)
+          const request2 = { path: '/request2', addHeader: sandbox.stub() }
+          channels.create.publish({ request: request2 })
+          t.not(request[SYMBOLS.PARENT_SEGMENT], request2[SYMBOLS.PARENT_SEGMENT])
+          tx.end()
+          t.end()
+        })
+      })
+    })
 
     t.test(
       'should get the parent segment shim when `undici_async_tracking` is false',
@@ -186,6 +208,7 @@ tap.test('undici instrumentation', { skip: shouldSkip }, function (t) {
             request2[SYMBOLS.PARENT_SEGMENT].name,
             'parent segment should not be same'
           )
+          tx.end()
           t.end()
         })
       }
@@ -197,19 +220,20 @@ tap.test('undici instrumentation', { skip: shouldSkip }, function (t) {
     t.afterEach(afterEach)
 
     t.test('should not create segment is parent segment is opaque', function (t) {
-      helper.runInTransaction(agent, function () {
+      helper.runInTransaction(agent, function (tx) {
         const before = shim.getSegment()
         const request = {}
         request[SYMBOLS.PARENT_SEGMENT] = { opaque: true }
         channels.sendHeaders.publish({ request })
         const after = shim.getSegment()
         t.same(before, after)
+        tx.end()
         t.end()
       })
     })
 
     t.test('should name segment with appropriate attrs based on request.path', function (t) {
-      helper.runInTransaction(agent, function () {
+      helper.runInTransaction(agent, function (tx) {
         const socket = {
           remotePort: 443,
           servername: 'unittesting.com'
@@ -228,6 +252,7 @@ tap.test('undici instrumentation', { skip: shouldSkip }, function (t) {
         t.equal(attrs.procedure, 'POST')
         t.equal(attrs['request.parameters.a'], 'b')
         t.equal(attrs['request.parameters.c'], 'd')
+        tx.end()
         t.end()
       })
     })
@@ -251,7 +276,7 @@ tap.test('undici instrumentation', { skip: shouldSkip }, function (t) {
     })
 
     t.test('should use proper url if http', function (t) {
-      helper.runInTransaction(agent, function () {
+      helper.runInTransaction(agent, function (tx) {
         const socket = {
           remotePort: 80,
           _host: 'unittesting.com'
@@ -266,12 +291,13 @@ tap.test('undici instrumentation', { skip: shouldSkip }, function (t) {
         t.equal(segment.name, 'External/unittesting.com/http')
         const attrs = segment.attributes.get(DESTINATIONS.SPAN_EVENT)
         t.equal(attrs.url, 'http://unittesting.com/http')
+        tx.end()
         t.end()
       })
     })
 
     t.test('should use port in https if not 443', function (t) {
-      helper.runInTransaction(agent, function () {
+      helper.runInTransaction(agent, function (tx) {
         const socket = {
           remotePort: 9999,
           servername: 'unittesting.com'
@@ -286,12 +312,13 @@ tap.test('undici instrumentation', { skip: shouldSkip }, function (t) {
         t.equal(segment.name, 'External/unittesting.com:9999/port-https')
         const attrs = segment.attributes.get(DESTINATIONS.SPAN_EVENT)
         t.equal(attrs.url, 'https://unittesting.com:9999/port-https')
+        tx.end()
         t.end()
       })
     })
 
     t.test('should use port in http if not 80', function (t) {
-      helper.runInTransaction(agent, function () {
+      helper.runInTransaction(agent, function (tx) {
         const socket = {
           remotePort: 8080,
           _host: 'unittesting.com'
@@ -306,6 +333,7 @@ tap.test('undici instrumentation', { skip: shouldSkip }, function (t) {
         t.equal(segment.name, 'External/unittesting.com:8080/port-http')
         const attrs = segment.attributes.get(DESTINATIONS.SPAN_EVENT)
         t.equal(attrs.url, 'http://unittesting.com:8080/port-http')
+        tx.end()
         t.end()
       })
     })
@@ -316,17 +344,18 @@ tap.test('undici instrumentation', { skip: shouldSkip }, function (t) {
     t.afterEach(afterEach)
 
     t.test('should not add span attrs when there is not an active segment', function (t) {
-      helper.runInTransaction(agent, function () {
+      helper.runInTransaction(agent, function (tx) {
         channels.headers.publish({ request: {} })
         const segment = shim.getSegment()
         const attrs = segment.getAttributes()
         t.same(Object.keys(attrs), [])
+        tx.end()
         t.end()
       })
     })
 
     t.test('should add statusCode and statusText from response', function (t) {
-      helper.runInTransaction(agent, function () {
+      helper.runInTransaction(agent, function (tx) {
         const segment = shim.createSegment('active')
         const request = {
           [SYMBOLS.SEGMENT]: segment
@@ -339,6 +368,7 @@ tap.test('undici instrumentation', { skip: shouldSkip }, function (t) {
         const attrs = segment.attributes.get(DESTINATIONS.SPAN_EVENT)
         t.equal(attrs['http.statusCode'], 200)
         t.equal(attrs['http.statusText'], 'OK')
+        tx.end()
         t.end()
       })
     })
@@ -347,7 +377,7 @@ tap.test('undici instrumentation', { skip: shouldSkip }, function (t) {
       agent.config.cross_application_tracer.enabled = true
       agent.config.encoding_key = 'testing-key'
       agent.config.trusted_account_ids = [111]
-      helper.runInTransaction(agent, function () {
+      helper.runInTransaction(agent, function (tx) {
         const segment = shim.createSegment('active')
         segment.addAttribute('url', 'https://www.unittesting.com/path')
         const request = {
@@ -365,6 +395,7 @@ tap.test('undici instrumentation', { skip: shouldSkip }, function (t) {
         }
         channels.headers.publish({ request, response })
         t.equal(segment.name, 'ExternalTransaction/www.unittesting.com/111#456/abc')
+        tx.end()
         t.end()
       })
     })
@@ -375,7 +406,7 @@ tap.test('undici instrumentation', { skip: shouldSkip }, function (t) {
     t.afterEach(afterEach)
 
     t.test('should end current segment and restore to parent', function (t) {
-      helper.runInTransaction(agent, function () {
+      helper.runInTransaction(agent, function (tx) {
         const parentSegment = shim.createSegment('parent')
         const segment = shim.createSegment('active')
         shim.setActiveSegment(segment)
@@ -386,6 +417,7 @@ tap.test('undici instrumentation', { skip: shouldSkip }, function (t) {
         channels.send.publish({ request })
         t.equal(segment.timer.state, 3, 'previous active segment timer should be stopped')
         t.same(parentSegment, shim.getSegment(), 'parentSegment should now the active')
+        tx.end()
         t.end()
       })
     })
@@ -417,6 +449,7 @@ tap.test('undici instrumentation', { skip: shouldSkip }, function (t) {
           ])
           t.same(tx.agent.errors.add.args[0], [tx, error])
           tx.agent.errors.add.restore()
+          tx.end()
           t.end()
         })
       }
