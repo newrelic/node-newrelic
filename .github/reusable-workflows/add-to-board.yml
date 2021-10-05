@@ -1,0 +1,20 @@
+name: Add Issues and PRs to Board
+
+on:
+  workflow_call:
+    inputs:
+      project:
+        description: 'The project board to add issue or PR onto.'
+        default: https://github.com/orgs/newrelic/projects/41
+        required: false
+        type: string
+
+jobs:
+  assign_to_project:
+    runs-on: ubuntu-latest
+    name: Assign Issues and/or PRs to Project ${{ inputs.project }}
+    steps:
+    - name: Assign to project
+      uses: srggrs/assign-one-project-github-action@1.2.1
+      with:
+        project: ${{ inputs.project }}
