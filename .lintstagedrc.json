@@ -1,5 +1,7 @@
 {
-  "**/*.js": [
-    "eslint --fix"
-  ]
+  "./*.js": ["eslint --fix"],
+  "./lib/**/*.js": ["eslint --fix"],
+  "./test/**/*.js": ["eslint --fix"],
+  "./bin/**/*.js": ["eslint --fix"],
+  "./examples/**/*.js": ["eslint --fix"]
 }
