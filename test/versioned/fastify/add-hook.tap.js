@@ -29,31 +29,38 @@ const AFTER_TX_HOOKS = ['onResponse']
 
 const ALL_HOOKS = [...REQUEST_HOOKS, ...AFTER_HANDLER_HOOKS, ...AFTER_TX_HOOKS]
 
-tap.test(
-  'should properly name segments for each lifecycle hook event',
-  async function hookNameTests(t) {
-    const agent = helper.instrumentMockedAgent({
+function getSegmentNames(hooks) {
+  return hooks.map((hookName) => {
+    return `Nodejs/Middleware/Fastify/${hookName}/testHook`
+  })
+}
+
+tap.test('fastify hook instrumentation', (t) => {
+  t.autoend()
+
+  let agent = null
+  let fastify = null
+
+  t.beforeEach(() => {
+    agent = helper.instrumentMockedAgent({
       feature_flag: {
         fastify_instrumentation: true
       }
     })
-    const fastify = require('fastify')()
+    fastify = require('fastify')()
+  })
 
+  t.afterEach(() => {
+    helper.unloadAgent(agent)
+    fastify.close()
+  })
+
+  t.test('non-error hooks', async function nonErrorHookTest(t) {
+    // setup fastify route
     fastify.get('/', function routeHandler(_, reply) {
       t.comment('route handler called')
       reply.send({ hello: 'world' })
     })
-
-    t.teardown(() => {
-      helper.unloadAgent(agent)
-      fastify.close()
-    })
-
-    function getSegmentNames(hooks) {
-      return hooks.map((hookName) => {
-        return `Nodejs/Middleware/Fastify/${hookName}/testHook`
-      })
-    }
 
     // setup hooks
     const ok = ALL_HOOKS.reduce((all, hookName) => {
@@ -98,5 +105,40 @@ tap.test(
       t.equal(isOk, true, `${hookName} captured`)
     }
     t.end()
-  }
-)
+  })
+
+  t.test('error hook', async function errorHookTest(t) {
+    // setup fastify route
+    fastify.get('/', function routeHandler() {
+      throw new Error('sup')
+    })
+
+    const hookName = 'onError'
+    let ok = false
+
+    fastify.addHook(hookName, (req, reply, next) => {
+      ok = true
+      next()
+    })
+
+    agent.on('transactionFinished', (transaction) => {
+      t.equal('WebFrameworkUri/Fastify/GET//', transaction.getName(), `transaction name matched`)
+      // all the hooks are siblings of the route handler
+      metrics.assertSegments(transaction.trace.root, [
+        'WebTransaction/WebFrameworkUri/Fastify/GET//',
+        [
+          'Nodejs/Middleware/Fastify/routeHandler'
+          // `Nodejs/Middleware/Fastify/${hookName}/testHook`
+        ]
+      ])
+    })
+
+    await fastify.listen(0)
+    const { port } = fastify.server.address()
+    const result = await getAsync(`http://127.0.0.1:${port}/`)
+    t.ok(ok)
+    t.equal(result.statusCode, 500)
+    t.equal(result.body, '{"statusCode":500,"error":"Internal Server Error","message":"sup"}')
+    t.end()
+  })
+})
