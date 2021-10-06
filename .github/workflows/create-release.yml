@@ -1,8 +1,7 @@
 name: Create Release
 
 # Manual trigger only
-on:
-  workflow_dispatch:
+on: [workflow_dispatch]
 
 jobs:
   tag-and-publish:
@@ -39,3 +38,4 @@ jobs:
       run: node ./bin/create-github-release.js --tag ${{ steps.get_tag.outputs.latest_tag }} --repo-owner ${{ github.repository_owner }}
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    - run: npm run publish-docs

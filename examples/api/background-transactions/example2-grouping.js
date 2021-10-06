@@ -5,24 +5,28 @@
 
 'use strict'
 
-var newrelic = require('newrelic')
+const newrelic = require('newrelic')
 
-var transactionName = 'myCustomTransaction'
+const transactionName = 'myCustomTransaction'
 
 // The second parameter to `startBackgroundTransaction` may be a group to
 // organize related background transactions on APM. More on this can be found
 // on our documentation website:
 // https://docs.newrelic.com/docs/apm/applications-menu/monitoring/transactions-page#txn-type-dropdown
-var groupName = 'myTransactionGroup'
+const groupName = 'myTransactionGroup'
 
 newrelic.startBackgroundTransaction(transactionName, groupName, function handle() {
-  var transaction = newrelic.getTransaction()
+  const transaction = newrelic.getTransaction()
   doSomeWork(function cb() {
     transaction.end()
   })
 })
 
-// Function to simulate async work.
+/**
+ * Function to simulate async work.
+ *
+ * @param callback
+ */
 function doSomeWork(callback) {
   setTimeout(function work() {
     callback()

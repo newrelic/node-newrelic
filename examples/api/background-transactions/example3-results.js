@@ -5,12 +5,12 @@
 
 'use strict'
 
-var newrelic = require('newrelic')
+const newrelic = require('newrelic')
 
-var transactionName = 'myCustomTransaction'
+const transactionName = 'myCustomTransaction'
 
 // The return value of the handle is passed back from `startBackgroundTransaction`.
-var result = newrelic.startBackgroundTransaction(transactionName, function handle() {
+const result = newrelic.startBackgroundTransaction(transactionName, function handle() {
   return 42
 })
 

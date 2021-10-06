@@ -5,7 +5,7 @@
 
 'use strict'
 
-const newrelic = require('newrelic') // eslint-disable-line node/no-extraneous-require
+const newrelic = require('newrelic')
 
 /*
 `addCustomAttribute` adds a custom attribute to an existing transaction.
