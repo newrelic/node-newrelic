@@ -4,13 +4,11 @@
  */
 
 'use strict'
+
 module.exports = {
-  plugins: ['disable'],
-  processor: 'disable/disable',
-  settings: {
-    'disable/plugins': ['jsdoc']
-  },
-  env: {
-    mocha: true
+  rules: {
+    'no-console': 'off',
+    'node/no-extraneous-require': 'off',
+    'node/no-missing-require': 'off'
   }
 }

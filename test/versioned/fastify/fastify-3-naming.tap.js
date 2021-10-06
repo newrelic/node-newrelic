@@ -20,6 +20,15 @@ const loadMiddleware = async (fastify) => {
   await fastify.register(require('middie'))
 
   fastify.use(testMiddleware)
+
+  function pathMountedMiddleware(req, res, next) {
+    next()
+  }
+
+  fastify.use('/async-return', pathMountedMiddleware)
+  fastify.use('/async-reply-send', pathMountedMiddleware)
+  fastify.use('/sync-reply-send', pathMountedMiddleware)
+  fastify.use('/plugin-registered', pathMountedMiddleware)
 }
 
 /**

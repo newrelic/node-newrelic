@@ -5,9 +5,9 @@
 
 'use strict'
 
-var newrelic = require('newrelic')
+const newrelic = require('newrelic')
 
-var transactionName = 'myCustomTransaction'
+const transactionName = 'myCustomTransaction'
 
 // startBackgroundTransaction() takes a name, group, and a handler function to
 // execute. The group is optional. The last parameter is the function performing
@@ -23,19 +23,25 @@ var transactionName = 'myCustomTransaction'
 //    called, the transaction will end immediately after the handle returns.
 
 // Here is an example for the second case.
-newrelic.startBackgroundTransaction(transactionName, function handle() {
-  return doSomeWork().then(function resolve() {
-    // Handle results...
-  }).catch(function reject(error) {
-    newrelic.noticeError(error)
-    // Handle error...
+newrelic
+  .startBackgroundTransaction(transactionName, function handle() {
+    return doSomeWork()
+      .then(function resolve() {
+        // Handle results...
+      })
+      .catch(function reject(error) {
+        newrelic.noticeError(error)
+        // Handle error...
+      })
   })
-}).then(function afterTransaction() {
-  // Note that you can continue off of the promise at this point, but the
-  // transaction has ended and this work will not be associated with it.
-})
+  .then(function afterTransaction() {
+    // Note that you can continue off of the promise at this point, but the
+    // transaction has ended and this work will not be associated with it.
+  })
 
-// Function to simulate async function that returns a promise.
+/**
+ * Function to simulate async function that returns a promise.
+ */
 function doSomeWork() {
   return new Promise(function executor(resolve) {
     setTimeout(function work() {
