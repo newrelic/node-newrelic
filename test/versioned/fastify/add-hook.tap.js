@@ -109,14 +109,15 @@ tap.test('fastify hook instrumentation', (t) => {
 
   t.test('error hook', async function errorHookTest(t) {
     // setup fastify route
-    fastify.get('/', function routeHandler() {
+    fastify.get('/', async function routeHandler() {
       throw new Error('sup')
     })
 
     const hookName = 'onError'
     let ok = false
 
-    fastify.addHook(hookName, (req, reply, next) => {
+    fastify.addHook(hookName, function testHook(req, reply, err, next) {
+      t.equal(err.message, 'sup', 'error message correct')
       ok = true
       next()
     })
@@ -127,8 +128,8 @@ tap.test('fastify hook instrumentation', (t) => {
       metrics.assertSegments(transaction.trace.root, [
         'WebTransaction/WebFrameworkUri/Fastify/GET//',
         [
-          'Nodejs/Middleware/Fastify/routeHandler'
-          // `Nodejs/Middleware/Fastify/${hookName}/testHook`
+          'Nodejs/Middleware/Fastify/routeHandler',
+          [`Nodejs/Middleware/Fastify/${hookName}/testHook`]
         ]
       ])
     })
