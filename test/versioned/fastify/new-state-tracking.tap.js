@@ -6,9 +6,8 @@
 'use strict'
 
 const tap = require('tap')
-const http = require('http')
-
 const helper = require('../../lib/agent_helper')
+const common = require('./common')
 
 const originalSetImmediate = setImmediate
 
@@ -49,8 +48,8 @@ tap.test('fastify with new state tracking', (t) => {
       transactions.push(transaction)
     })
 
-    await makeRequestPromise(url)
-    await makeRequestPromise(url)
+    await common.makeRequest(url)
+    await common.makeRequest(url)
 
     t.equal(transactions.length, 2)
   })
@@ -78,24 +77,9 @@ tap.test('fastify with new state tracking', (t) => {
       transactions.push(transaction)
     })
 
-    await makeRequestPromise(url)
-    await makeRequestPromise(url)
+    await common.makeRequest(url)
+    await common.makeRequest(url)
 
     t.equal(transactions.length, 2)
   })
 })
-
-function makeRequest(url, cb) {
-  http.get(url, (res) => {
-    res.resume()
-    res.on('end', () => {
-      cb()
-    })
-  })
-}
-
-function makeRequestPromise(url) {
-  return new Promise((resolve) => {
-    makeRequest(url, resolve)
-  })
-}

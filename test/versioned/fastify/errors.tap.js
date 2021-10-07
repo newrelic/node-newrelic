@@ -11,7 +11,7 @@ const helper = require('../../lib/agent_helper')
 const httpErrors = require('http-errors')
 const semver = require('semver')
 
-const testErrorHandled = (agent, uri, port) => {
+function testErrorHandled(agent, uri, port) {
   return new Promise((resolve) => {
     request.get(`http://127.0.0.1:${port}${uri}`, function () {
       resolve()
