@@ -201,7 +201,6 @@ tap.test('Undici request tests', (t) => {
   })
 
   t.test('pipeline', (t) => {
-    // eslint-disable-next-line node/no-unsupported-features/node-builtins
     const { pipeline, PassThrough, Readable, Writable } = require('stream')
     helper.runInTransaction(agent, async (tx) => {
       pipeline(
