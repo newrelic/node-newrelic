@@ -6,18 +6,9 @@
 'use strict'
 
 const tap = require('tap')
-const request = require('request')
 const helper = require('../../lib/agent_helper')
-const httpErrors = require('http-errors')
 const semver = require('semver')
-
-const testErrorHandled = (agent, uri, port) => {
-  return new Promise((resolve) => {
-    request.get(`http://127.0.0.1:${port}${uri}`, function () {
-      resolve()
-    })
-  })
-}
+const { makeRequest } = require('./common')
 
 tap.test('Test Errors', async (test) => {
   const agent = helper.instrumentMockedAgent()
@@ -34,11 +25,15 @@ tap.test('Test Errors', async (test) => {
   }
 
   fastify.use((req, res, next) => {
+    const err = new Error('Not found')
     // eslint-disable-next-line new-cap
-    next(httpErrors.NotFound())
+    err.status = 404
+    next(err)
   })
 
-  return fastify.listen(0).then(() => {
-    return testErrorHandled(agent, '/404-via-reply', fastify.server.address().port)
-  })
+  await fastify.listen(0)
+  const url = `http://127.0.0.1:${fastify.server.address().port}/404-via-reply`
+  const res = await makeRequest(url)
+  test.equal(res.statusCode, 404)
+  test.end()
 })

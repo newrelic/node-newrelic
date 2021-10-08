@@ -196,7 +196,6 @@
     "generic-pool": "^3.6.1",
     "glob": "^7.1.2",
     "got": "^8.0.1",
-    "http-errors": "^1.7.3",
     "husky": "^6.0.0",
     "jsdoc": "^3.6.3",
     "lint-staged": "^11.0.0",
