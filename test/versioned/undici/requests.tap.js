@@ -9,6 +9,7 @@ const tap = require('tap')
 const { DESTINATIONS } = require('../../../lib/config/attribute-filter')
 const helper = require('../../lib/agent_helper')
 const metrics = require('../../lib/metrics_helper')
+const http = require('http')
 
 tap.test('Undici request tests', (t) => {
   t.autoend()
@@ -149,6 +150,41 @@ tap.test('Undici request tests', (t) => {
         t.equal(tx.exceptions.length, 1)
         t.equal(tx.exceptions[0].error.message, 'Request aborted')
         tx.end()
+        t.end()
+      }
+    })
+  })
+
+  t.test('segments should end on error', (t) => {
+    const socketEndServer = http.createServer(function badHandler(req) {
+      req.socket.end()
+    })
+
+    t.teardown(() => {
+      socketEndServer.close()
+    })
+
+    socketEndServer.listen(0)
+
+    helper.runInTransaction(agent, async (transaction) => {
+      const { port } = socketEndServer.address()
+      const req = undici.request(`http://localhost:${port}`)
+
+      try {
+        await req
+      } catch (error) {
+        metrics.assertSegments(transaction.trace.root, [`External/localhost:${port}/`], {
+          exact: false
+        })
+
+        const segments = transaction.trace.root.children
+        const segment = segments[segments.length - 1]
+
+        t.ok(segment.timer.start, 'should have started')
+        t.ok(segment.timer.hasEnd(), 'should have ended')
+
+        transaction.end()
+
         t.end()
       }
     })
