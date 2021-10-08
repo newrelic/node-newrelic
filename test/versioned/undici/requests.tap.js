@@ -10,6 +10,7 @@ const { DESTINATIONS } = require('../../../lib/config/attribute-filter')
 const helper = require('../../lib/agent_helper')
 const metrics = require('../../lib/metrics_helper')
 const http = require('http')
+const https = require('https')
 
 tap.test('Undici request tests', (t) => {
   t.autoend()
@@ -60,6 +61,67 @@ tap.test('Undici request tests', (t) => {
       metrics.assertSegments(tx.trace.root, ['External/httpbin.org/post'], { exact: false })
       tx.end()
       t.end()
+    })
+  })
+
+  t.test('should add HTTP port to segment name when provided', (t) => {
+    const server = http.createServer((req, res) => {
+      req.resume()
+      res.end('http')
+    })
+
+    t.teardown(() => {
+      server.close()
+    })
+
+    server.listen(0)
+
+    helper.runInTransaction(agent, async (transaction) => {
+      const { port } = server.address()
+      await undici.request(`http://localhost:${port}`)
+
+      metrics.assertSegments(transaction.trace.root, [`External/localhost:${port}/`], {
+        exact: false
+      })
+
+      transaction.end()
+      t.end()
+    })
+  })
+
+  t.test('should add HTTPS port to segment name when provided', async (t) => {
+    const [key, cert, ca] = await helper.withSSL()
+    const server = https.createServer({ key, cert }, (req, res) => {
+      res.write('SSL response')
+      res.end()
+    })
+
+    t.teardown(() => {
+      server.close()
+    })
+
+    server.listen(0)
+
+    await helper.runInTransaction(agent, async (transaction) => {
+      const { port } = server.address()
+
+      const client = new undici.Client(`https://localhost:${port}`, {
+        tls: {
+          ca
+        }
+      })
+
+      t.teardown(() => {
+        client.close()
+      })
+
+      await client.request({ path: '/', method: 'GET' })
+
+      metrics.assertSegments(transaction.trace.root, [`External/localhost:${port}/`], {
+        exact: false
+      })
+
+      transaction.end()
     })
   })
 
