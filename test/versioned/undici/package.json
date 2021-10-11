@@ -14,5 +14,8 @@
         "requests.tap.js"
       ]
     }
-  ]
+  ],
+  "engines": {
+    "node": ">=12"
+  }
 }
