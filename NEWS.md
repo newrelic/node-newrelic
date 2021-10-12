@@ -1,24 +1,18 @@
 ### v8.5.0 (2021-10-12)
 
-* Removed fastify feature flag.  Fastify instrumentation is now GA
+* Added full support for Fastify v2 and v3. Fastify instrumentation is now GA.
+  * Removed fastify feature flag.
+  * Instrumented Fastify routes by wrapping `addHook`.
+  * Added middleware mounting for fastify v3.
+  * Fixed capturing of mount point for middleware naming.
+  * Fixed the WebFramework spec definitions for Fastify middleware and route handlers to properly retrieve the IncomingMessage from a request object.
+  * Added proper definition to middleware handlers so that the relationship to consecutive middleware and route handler are siblings and not direct children.
 
-* Added parameterized route transaction naming tests to Fastify versioned test suite
+* Added experimental instrumentation for the [undici](https://github.com/nodejs/undici) http client behind a feature flag.
 
-* Added versioned tests to prove the undici API works with the agent
+  To enable undici support, add the following into your config: `{ feature_flag: { undici_instrumentation: true } }`.  The support for undici client is Node.js 16.x as it takes advantage of the [diagnostics_channel](https://nodejs.org/dist/latest-v16.x/docs/api/diagnostics_channel.html). Lastly, you must be using [v4.7.0+](https://github.com/nodejs/undici/releases/tag/v4.7.0) of the undici client for any of the instrumentation to work.
 
-- Instrument Fastify routes by wrapping `addHook`.
-
-* Added middleware mounting for fastify v3.
-
-* Fixed capturing of mount point for middleware naming.
-
-* Fixed an issue with undici instrumentation where the parent segment wasn't always correct.  
- * Fixed an issue where undici instrumentation would crash if transaction got ended before undici external segment was added
- * Removed instrumentation for undici connections as it did not provide any additional context from what we already have with the net module and socket connections
-
-* Fixed the WebFramework spec definitions for Fastify middleware and route handlers to properly retrieve the IncomingMessage from a request object.  Also, added proper definition to middleware handlers so that the relationship to consecutive middleware and route handler are siblings and not direct children.
-
-* Added instrumentation for the [undici](https://github.com/nodejs/undici) http client.  The instrumentation is behind a feature flag.  To enable, add the following into your config `{ feature_flag: { undici_instrumentation: true } }`.  The support for undici client is Node.js 16.x as it takes advantage of the [diagnostics_channel](https://nodejs.org/dist/latest-v16.x/docs/api/diagnostics_channel.html).  Lastly, you must be using [v4.7.0+](https://github.com/nodejs/undici/releases/tag/v4.7.0) of the undici client for any of the instrumentation to work.
+  Note: There are currently some state issues if requests to an app are made with keep alive and you have multiple undici requests being made in parallel. In this case, set feature_flag: `{ undici_async_tracking: false }` which avoids these state issues at the cost of some broken segment nesting.
 
 ### v8.4.0 (2021-09-28)
 
