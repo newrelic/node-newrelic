@@ -54,10 +54,10 @@ tap.test('when overriding the config file location via NR_HOME', (t) => {
     origHome = null
 
     await fsPromises.unlink(CONFIGPATH)
-    await fsPromises.rmdir(DESTDIR, { recursive: true })
+    await fsPromises.rm(DESTDIR, { recursive: true })
 
     process.chdir(startDir)
-    await fsPromises.rmdir(NOPLACEDIR, { recursive: true })
+    await fsPromises.rm(NOPLACEDIR, { recursive: true })
   })
 
   t.test('should load the configuration', (t) => {
@@ -146,9 +146,9 @@ tap.test('Selecting config file path', (t) => {
 
     processMainModuleStub.resetBehavior()
 
-    fs.rmdirSync(DESTDIR)
-    fs.rmdirSync(NOPLACEDIR)
-    fs.rmdirSync(MAIN_MODULE_DIR)
+    fs.rmSync(DESTDIR, { recursive: true })
+    fs.rmSync(NOPLACEDIR, { recursive: true })
+    fs.rmSync(MAIN_MODULE_DIR, { recursive: true })
 
     process.chdir(originalWorkingDirectory)
   })
