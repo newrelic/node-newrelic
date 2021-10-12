@@ -12,6 +12,49 @@ const token = process.env.SLACK_TOKEN
 const signingSecret = process.env.SLACK_SECRET
 let missingEnvVars = []
 
+/**
+ * Finds the last released tag and finds all the PRs that have been
+ * merged since last release.  This then formats the list and sends a slack
+ * message to `node-agent-dev` to serve as a reminder to release
+ *
+ * To use this script you must set the following env vars:
+ * GITHUB_TOKEN - api token to talk to Github API(in CI this just uses the default token)
+ * SLACK_CHANNEL - slack channel to send message
+ * SLACK_TOKEN - token from bot
+ * SLACK_SECRET - signing secret from bot
+ */
+async function prepareReleaseNotes() {
+  try {
+    if (!areEnvVarsSet()) {
+      console.log(`${missingEnvVars.join(', ')} are not set.`)
+      stopOnError()
+    }
+
+    const app = new App({
+      token,
+      signingSecret
+    })
+
+    const { prs, latestRelease } = await findMergedPRs()
+
+    let msg = null
+
+    if (!prs.length) {
+      msg = `:the-more-you-know: We have not merged any new PRs since \`${latestRelease.name}\`.`
+    } else {
+      msg = createSlackMessage(prs, latestRelease)
+    }
+
+    await app.client.chat.postMessage({
+      channel,
+      text: msg
+    })
+    console.log(`Posted msg to ${channel}`)
+  } catch (err) {
+    stopOnError(err)
+  }
+}
+
 function stopOnError(err) {
   if (err) {
     console.error(err)
@@ -64,35 +107,11 @@ async function findMergedPRs() {
     return pr.merge_commit_sha !== tag.commit.sha
   })
 
-  console.log(`Found ${filteredPullRequests.length}`)
+  console.log(`Found ${filteredPullRequests.length} PRs not yet released.`)
   const prs = filteredPullRequests.map((pr) => pr.html_url)
   return {
     prs,
     latestRelease
-  }
-}
-
-async function prepareReleaseNotes() {
-  try {
-    if (!areEnvVarsSet()) {
-      console.log(`${missingEnvVars.join(', ')} are not set.`)
-      stopOnError()
-    }
-
-    const app = new App({
-      token,
-      signingSecret
-    })
-
-    const { prs, latestRelease } = await findMergedPRs()
-    const msg = createSlackMessage(prs, latestRelease)
-    await app.client.chat.postMessage({
-      channel,
-      text: msg
-    })
-    console.log(`Posted msg to ${channel}`)
-  } catch (err) {
-    stopOnError(err)
   }
 }
 
