@@ -179,6 +179,7 @@
     "@newrelic/proxy": "^2.0.0",
     "@newrelic/test-utilities": "^6.0.0",
     "@octokit/rest": "^18.0.15",
+    "@slack/bolt": "^3.7.0",
     "ajv": "^6.12.6",
     "architect": "*",
     "benchmark": "^2.1.4",

@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "Fri Oct 08 2021 12:04:27 GMT-0400 (Eastern Daylight Time)",
+  "lastUpdated": "Tue Oct 12 2021 11:39:01 GMT-0400 (Eastern Daylight Time)",
   "projectName": "New Relic Node Agent",
   "projectUrl": "https://github.com/newrelic/node-newrelic",
   "includeOptDeps": true,
@@ -235,6 +235,18 @@
       "licenseFile": "node_modules/@octokit/rest/LICENSE",
       "licenseUrl": "https://github.com/octokit/rest.js/blob/v18.9.1/LICENSE",
       "licenseTextSource": "file"
+    },
+    "@slack/bolt@3.7.0": {
+      "name": "@slack/bolt",
+      "version": "3.7.0",
+      "range": "^3.7.0",
+      "licenses": "MIT",
+      "repoUrl": "https://github.com/slackapi/bolt",
+      "versionedRepoUrl": "https://github.com/slackapi/bolt/tree/v3.7.0",
+      "licenseFile": "node_modules/@slack/bolt/LICENSE",
+      "licenseUrl": "https://github.com/slackapi/bolt/blob/v3.7.0/LICENSE",
+      "licenseTextSource": "file",
+      "publisher": "Slack Technologies, LLC"
     },
     "ajv@6.12.6": {
       "name": "ajv",
