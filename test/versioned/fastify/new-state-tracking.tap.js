@@ -20,7 +20,6 @@ tap.test('fastify with new state tracking', (t) => {
   t.beforeEach(() => {
     agent = helper.instrumentMockedAgent({
       feature_flag: {
-        fastify_instrumentation: true,
         new_promise_tracking: true
       }
     })

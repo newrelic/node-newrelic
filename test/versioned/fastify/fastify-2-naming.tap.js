@@ -28,11 +28,7 @@ tap.test('Test Transaction Naming', (test) => {
   test.autoend()
 
   test.beforeEach(() => {
-    const agent = helper.instrumentMockedAgent({
-      feature_flag: {
-        fastify_instrumentation: true
-      }
-    })
+    const agent = helper.instrumentMockedAgent()
     const fastify = require('fastify')()
     const calls = { test: 0, middleware: 0 }
     test.context.agent = agent

@@ -42,11 +42,7 @@ function getExpectedSegments(hooks) {
 tap.test('fastify hook instrumentation', (t) => {
   t.autoend()
   t.beforeEach(() => {
-    const agent = helper.instrumentMockedAgent({
-      feature_flag: {
-        fastify_instrumentation: true
-      }
-    })
+    const agent = helper.instrumentMockedAgent()
     const fastify = require('fastify')()
     common.setupRoutes(fastify)
     t.context.agent = agent
