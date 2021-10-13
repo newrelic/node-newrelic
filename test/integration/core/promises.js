@@ -732,7 +732,7 @@ module.exports = function runTests(flags) {
         t.equal(this, void 0, 'context should be undefined')
         process.nextTick(function finish() {
           t.equal(id(agent.getTransaction()), id(transaction), 'transaction should be preserved')
-          t.deepEqual(val, [15, 25], 'value should be preserved')
+          t.same(val, [15, 25], 'value should be preserved')
           t.ok(agent.tracer.getSegment() === segment, 'segment should be preserved')
 
           t.end()
@@ -766,7 +766,7 @@ module.exports = function runTests(flags) {
         t.equal(this, void 0, 'context should be undefined')
         process.nextTick(function finish() {
           t.equal(id(agent.getTransaction()), id(transaction), 'transaction should be preserved')
-          t.deepEqual(val, 10, 'value should be preserved')
+          t.same(val, 10, 'value should be preserved')
           t.ok(agent.tracer.getSegment() === segment, 'segment should be preserved')
 
           t.end()
@@ -802,7 +802,7 @@ module.exports = function runTests(flags) {
         t.equal(this, void 0, 'context should be undefined')
         process.nextTick(function finish() {
           t.equal(id(agent.getTransaction()), id(transaction), 'transaction should be preserved')
-          t.deepEqual(val, 15, 'value should be preserved')
+          t.same(val, 15, 'value should be preserved')
           t.ok(agent.tracer.getSegment() === segment, 'segment should be preserved')
 
           t.end()
@@ -838,7 +838,7 @@ module.exports = function runTests(flags) {
         t.equal(this, void 0, 'context should be undefined')
         process.nextTick(function finish() {
           t.equal(id(agent.getTransaction()), id(transaction), 'transaction should be preserved')
-          t.deepEqual(val, 10, 'value should be preserved')
+          t.same(val, 10, 'value should be preserved')
           t.ok(agent.tracer.getSegment() === segment, 'segment should be preserved')
 
           t.end()
@@ -869,7 +869,7 @@ module.exports = function runTests(flags) {
         t.equal(this, void 0, 'context should be undefined')
         process.nextTick(function finish() {
           t.equal(id(agent.getTransaction()), id(transaction), 'transaction should be preserved')
-          t.deepEqual(val, 15, 'value should be preserved')
+          t.same(val, 15, 'value should be preserved')
 
           t.end()
         })
@@ -898,7 +898,7 @@ module.exports = function runTests(flags) {
         t.equal(this, void 0, 'context should be undefined')
         process.nextTick(function finish() {
           t.equal(id(agent.getTransaction()), id(transaction), 'transaction should be preserved')
-          t.deepEqual(val, 10, 'value should be preserved')
+          t.same(val, 10, 'value should be preserved')
 
           t.end()
         })

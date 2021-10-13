@@ -17,7 +17,7 @@ test('exec', function (t) {
     cp.exec('ls', { cwd: __dirname }, function (err, stdout, stderr) {
       t.notOk(err, 'should not error')
       const files = stdout.trim().split('\n').sort()
-      t.deepEqual(files, fs.readdirSync(__dirname).sort())
+      t.same(files, fs.readdirSync(__dirname).sort())
       t.equal(stderr, '')
       verifySegments(t, agent, 'child_process.exec', ['child_process.execFile'])
     })

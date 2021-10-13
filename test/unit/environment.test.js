@@ -157,6 +157,12 @@ describe('the environment scraper', function () {
 
     before(function (done) {
       conf = process.config
+
+      /**
+       * TODO: Augmenting process.config has been deprecated in Node 16.
+       * When fully disabled we may no-longer be able to test but also may no-longer need to.
+       * https://nodejs.org/api/deprecations.html#DEP0150
+       */
       process.config = null
       reloadEnvironment(done)
     })

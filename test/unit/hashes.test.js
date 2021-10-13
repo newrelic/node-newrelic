@@ -30,6 +30,11 @@ tap.test('deobfuscation', (t) => {
 })
 
 tap.test('getHash', (t) => {
+  /**
+   * TODO: crypto.DEFAULT_ENCODING has been deprecated.
+   * When fully disabled, this test can likely be removed.
+   * https://nodejs.org/api/deprecations.html#DEP0091
+   */
   /* eslint-disable node/no-deprecated-api */
   t.test('should not crash when changing the DEFAULT_ENCODING key on crypto', (t) => {
     const crypto = require('crypto')

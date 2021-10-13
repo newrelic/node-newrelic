@@ -144,7 +144,7 @@ test('cross application tracing full integration', function (t) {
         )
         const scopedKeys = Object.keys(scoped['WebTransaction/Nodejs/GET//start/middle'])
         t.equal(scopedKeys.length, 1, 'middle should only be the inbound and outbound request.')
-        t.deepEqual(scopedKeys, [etMetric], 'should have expected scoped metric name')
+        t.same(scopedKeys, [etMetric], 'should have expected scoped metric name')
       }
 
       // check the intrinsic attributes
@@ -211,7 +211,7 @@ test('cross application tracing full integration', function (t) {
         )
         const scopedKeys = Object.keys(scoped['WebTransaction/Nodejs/GET//start'])
         t.equal(scopedKeys.length, 1, 'start should only be the inbound and outbound request.')
-        t.deepEqual(scopedKeys, [etMetric], 'should have expected scoped metric name')
+        t.same(scopedKeys, [etMetric], 'should have expected scoped metric name')
       }
 
       // check the intrinsic attributes
