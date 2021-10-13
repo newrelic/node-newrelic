@@ -29,7 +29,8 @@ tap.test('generic-pool', function (t) {
   const tasks = []
   const decontextInterval = setInterval(function () {
     if (tasks.length > 0) {
-      tasks.pop()()
+      const fn = tasks.pop()
+      fn()
     }
   }, 10)
 
@@ -38,6 +39,12 @@ tap.test('generic-pool', function (t) {
   })
 
   function addTask(cb, args) {
+    // in versions 2.5.2 and below
+    // destroy tasks do not pass a callback
+    // so let's not add a task if cb is undefined
+    if (!cb) {
+      return
+    }
     tasks.push(function () {
       return cb.apply(null, args || [])
     })

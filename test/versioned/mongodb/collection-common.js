@@ -8,6 +8,8 @@
 const common = require('./common')
 const tap = require('tap')
 const helper = require('../../lib/agent_helper')
+const semver = require('semver')
+const { version: pkgVersion } = require('mongodb/package')
 
 let METRIC_HOST_NAME = null
 let METRIC_HOST_PORT = null
@@ -278,92 +280,96 @@ function collectionTest(name, run) {
       })
     })
 
-    t.test('replica set string remote connection', function (t) {
-      t.autoend()
-      t.beforeEach(function () {
-        agent = helper.instrumentMockedAgent()
+    // this seems to break in 3.x up to 3.6.0
+    // I think it is because of this https://jira.mongodb.org/browse/NODE-2452
+    if (semver.satisfies(pkgVersion, '>=3.6.0')) {
+      t.test('replica set string remote connection', function (t) {
+        t.autoend()
+        t.beforeEach(function () {
+          agent = helper.instrumentMockedAgent()
 
-        const mongodb = require('mongodb')
+          const mongodb = require('mongodb')
 
-        return dropTestCollections(mongodb, collections)
-          .then(() => {
-            METRIC_HOST_NAME = common.getHostName(agent)
-            METRIC_HOST_PORT = common.getPort()
-            return common.connect(mongodb, null, true)
-          })
-          .then((res) => {
-            client = res.client
-            db = res.db
-            collection = db.collection('testCollection')
-            return populate(db, collection)
-          })
-      })
-
-      t.afterEach(function () {
-        return common.close(client, db).then(() => {
-          helper.unloadAgent(agent)
-          agent = null
+          return dropTestCollections(mongodb, collections)
+            .then(() => {
+              METRIC_HOST_NAME = common.getHostName(agent)
+              METRIC_HOST_PORT = common.getPort()
+              return common.connect(mongodb, null, true)
+            })
+            .then((res) => {
+              client = res.client
+              db = res.db
+              collection = db.collection('testCollection')
+              return populate(db, collection)
+            })
         })
-      })
 
-      t.test('should generate the correct metrics and segments', function (t) {
-        helper.runInTransaction(agent, function (transaction) {
-          transaction.name = common.TRANSACTION_NAME
-          run(t, collection, function (err, segments, metrics, childrenLength = 1) {
-            if (
-              !t.error(err, 'running test should not error') ||
-              !t.ok(agent.getTransaction(), 'should maintain tx state')
-            ) {
-              return t.end()
-            }
-            t.equal(agent.getTransaction().id, transaction.id, 'should not change transactions')
-            const segment = agent.tracer.getSegment()
-            let current = transaction.trace.root
+        t.afterEach(function () {
+          return common.close(client, db).then(() => {
+            helper.unloadAgent(agent)
+            agent = null
+          })
+        })
 
-            // this logic is just for the collection.aggregate v4+
-            // aggregate no longer returns a callback with cursor
-            // it just returns a cursor. so the segments on the
-            // transaction are not nested but both on the trace
-            // root. instead of traversing the children, just
-            // iterate over the expected segments and compare
-            // against the corresponding child on trace root
-            if (childrenLength === 2) {
-              t.equal(current.children.length, childrenLength, 'should have one child')
+        t.test('should generate the correct metrics and segments', function (t) {
+          helper.runInTransaction(agent, function (transaction) {
+            transaction.name = common.TRANSACTION_NAME
+            run(t, collection, function (err, segments, metrics, childrenLength = 1) {
+              if (
+                !t.error(err, 'running test should not error') ||
+                !t.ok(agent.getTransaction(), 'should maintain tx state')
+              ) {
+                return t.end()
+              }
+              t.equal(agent.getTransaction().id, transaction.id, 'should not change transactions')
+              const segment = agent.tracer.getSegment()
+              let current = transaction.trace.root
 
-              segments.forEach((expectedSegment, i) => {
-                const child = current.children[i]
-
-                t.equal(child.name, expectedSegment, `child should be named ${expectedSegment}`)
-                if (common.MONGO_SEGMENT_RE.test(child.name)) {
-                  checkSegmentParams(t, child)
-                  t.equal(child.ignore, false, 'should not ignore segment')
-                }
-
-                t.equal(child.children.length, 0, 'should have no more children')
-              })
-            } else {
-              for (let i = 0, l = segments.length; i < l; ++i) {
+              // this logic is just for the collection.aggregate v4+
+              // aggregate no longer returns a callback with cursor
+              // it just returns a cursor. so the segments on the
+              // transaction are not nested but both on the trace
+              // root. instead of traversing the children, just
+              // iterate over the expected segments and compare
+              // against the corresponding child on trace root
+              if (childrenLength === 2) {
                 t.equal(current.children.length, childrenLength, 'should have one child')
-                current = current.children[0]
-                t.equal(current.name, segments[i], 'child should be named ' + segments[i])
-                if (common.MONGO_SEGMENT_RE.test(current.name)) {
-                  checkSegmentParams(t, current)
-                  t.equal(current.ignore, false, 'should not ignore segment')
+
+                segments.forEach((expectedSegment, i) => {
+                  const child = current.children[i]
+
+                  t.equal(child.name, expectedSegment, `child should be named ${expectedSegment}`)
+                  if (common.MONGO_SEGMENT_RE.test(child.name)) {
+                    checkSegmentParams(t, child)
+                    t.equal(child.ignore, false, 'should not ignore segment')
+                  }
+
+                  t.equal(child.children.length, 0, 'should have no more children')
+                })
+              } else {
+                for (let i = 0, l = segments.length; i < l; ++i) {
+                  t.equal(current.children.length, childrenLength, 'should have one child')
+                  current = current.children[0]
+                  t.equal(current.name, segments[i], 'child should be named ' + segments[i])
+                  if (common.MONGO_SEGMENT_RE.test(current.name)) {
+                    checkSegmentParams(t, current)
+                    t.equal(current.ignore, false, 'should not ignore segment')
+                  }
                 }
+
+                t.equal(current.children.length, 0, 'should have no more children')
               }
 
-              t.equal(current.children.length, 0, 'should have no more children')
-            }
+              t.ok(current === segment, 'should test to the current segment')
 
-            t.ok(current === segment, 'should test to the current segment')
-
-            transaction.end()
-            common.checkMetrics(t, agent, METRIC_HOST_NAME, METRIC_HOST_PORT, metrics || [])
-            t.end()
+              transaction.end()
+              common.checkMetrics(t, agent, METRIC_HOST_NAME, METRIC_HOST_PORT, metrics || [])
+              t.end()
+            })
           })
         })
       })
-    })
+    }
   })
 }
 
