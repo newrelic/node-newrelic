@@ -45,6 +45,11 @@ tap.test('when overriding the config file location via NR_HOME', (t) => {
     })
   })
 
+  /**
+   * TODO: Replace `rmdir` with `rm` when drop Node 12.
+   * `rmdir` has been deprecated but preferred `rm` was introduced in Node 14.
+   * https://nodejs.org/api/deprecations.html#DEP0147
+   */
   t.afterEach(async () => {
     if (origHome) {
       process.env.NEW_RELIC_HOME = origHome
@@ -54,10 +59,10 @@ tap.test('when overriding the config file location via NR_HOME', (t) => {
     origHome = null
 
     await fsPromises.unlink(CONFIGPATH)
-    await fsPromises.rm(DESTDIR, { recursive: true })
+    await fsPromises.rmdir(DESTDIR, { recursive: true })
 
     process.chdir(startDir)
-    await fsPromises.rm(NOPLACEDIR, { recursive: true })
+    await fsPromises.rmdir(NOPLACEDIR, { recursive: true })
   })
 
   t.test('should load the configuration', (t) => {
@@ -146,9 +151,14 @@ tap.test('Selecting config file path', (t) => {
 
     processMainModuleStub.resetBehavior()
 
-    fs.rmSync(DESTDIR, { recursive: true })
-    fs.rmSync(NOPLACEDIR, { recursive: true })
-    fs.rmSync(MAIN_MODULE_DIR, { recursive: true })
+    /**
+     * TODO: Replace with `rm` when drop Node 12.
+     * `rmdir` has been deprecated but preferred `rm` was introduced in Node 14.
+     * https://nodejs.org/api/deprecations.html#DEP0147
+     */
+    fs.rmdirSync(DESTDIR, { recursive: true })
+    fs.rmdirSync(NOPLACEDIR, { recursive: true })
+    fs.rmdirSync(MAIN_MODULE_DIR, { recursive: true })
 
     process.chdir(originalWorkingDirectory)
   })
