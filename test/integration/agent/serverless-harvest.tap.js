@@ -74,7 +74,7 @@ tap.test('Serverless mode harvest', (t) => {
         }
 
         t.ok(decoded.metadata, 'decoded payload has metadata object')
-        t.deepEqual(
+        t.same(
           decoded.metadata,
           {
             arn: TEST_ARN,
@@ -113,7 +113,7 @@ tap.test('Serverless mode harvest', (t) => {
       'metric_data',
       function checkData(payload) {
         t.ok(payload, 'should have a payload')
-        t.deepEqual(payload[3][0][0], { name: 'TEST/discard' }, 'should have test metric')
+        t.same(payload[3][0][0], { name: 'TEST/discard' }, 'should have test metric')
         t.end()
       }
     )
@@ -140,7 +140,7 @@ tap.test('Serverless mode harvest', (t) => {
             const errData = payload[1][0][4]
             t.ok(errData, 'should contain error information')
             const attrs = errData.agentAttributes
-            t.deepEqual(
+            t.same(
               attrs,
               { 'foo': 'bar', 'request.uri': '/nonexistent', spanId },
               'should have the correct attributes'
@@ -275,7 +275,7 @@ tap.test('Serverless mode harvest', (t) => {
 
           t.equal(intrinsicAttr.type, 'TransactionError')
 
-          t.deepEqual(
+          t.same(
             agentAttr,
             { 'foo': 'bar', 'request.uri': '/nonexistent', spanId },
             'should have the correct attributes'
@@ -315,7 +315,7 @@ tap.test('Serverless mode harvest', (t) => {
 
           t.equal(intrinsicAttr.type, expectedEventType)
 
-          t.deepEqual(userAttr, expectedAttributes, 'should have the correct attributes')
+          t.same(userAttr, expectedAttributes, 'should have the correct attributes')
           t.end()
         })
       })

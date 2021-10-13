@@ -146,7 +146,7 @@ tap.test('distributed tracing full integration', (t) => {
       t.ok(middleMetric[external + 'http'], 'middle generated an External scoped metric')
       const scopedKeys = Object.keys(middleMetric)
       t.equal(scopedKeys.length, 1, 'middle should only be the inbound and outbound request.')
-      t.deepEqual(
+      t.same(
         scopedKeys,
         ['External/localhost:10002/http'],
         'should have expected scoped metric name'
@@ -185,7 +185,7 @@ tap.test('distributed tracing full integration', (t) => {
       t.ok(startMetric[external + 'http'], 'start generated an External scoped metric')
       const scopedKeys = Object.keys(startMetric)
       t.equal(scopedKeys.length, 1, 'start should only be the inbound and outbound request.')
-      t.deepEqual(
+      t.same(
         scopedKeys,
         ['External/localhost:10001/http'],
         'should have expected scoped metric name'

@@ -63,7 +63,7 @@ function runTest(t, test) {
   })
 
   // Did we pass?
-  const passed = t.deepEqual(destinations, test.expected_destinations, test.testname)
+  const passed = t.same(destinations, test.expected_destinations, test.testname)
 
   // If not, log the test information to make debugging easier.
   if (!passed) {

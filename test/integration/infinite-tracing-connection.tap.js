@@ -72,7 +72,7 @@ tap.test('Inifinite tracing - Connection Handling', (t) => {
 
       const { name } = span.intrinsics
 
-      t.deepEqual(name.string_value, EXPECTED_SEGMENT_NAME)
+      t.same(name.string_value, EXPECTED_SEGMENT_NAME)
 
       const [licenseKey] = metadata.get('license_key')
       t.equal(licenseKey, EXPECTED_LICENSE_KEY)
@@ -107,17 +107,17 @@ tap.test('Inifinite tracing - Connection Handling', (t) => {
 
       const { name } = span.intrinsics
 
-      t.deepEqual(name.string_value, EXPECTED_SEGMENT_NAME)
+      t.same(name.string_value, EXPECTED_SEGMENT_NAME)
 
       const [licenseKey] = metadata.get('license_key')
       t.equal(licenseKey, EXPECTED_LICENSE_KEY)
 
       const [runId] = metadata.get('agent_run_token')
-      t.notEqual(runId, INITIAL_RUN_ID)
+      t.not(runId, INITIAL_RUN_ID)
       t.equal(runId, RESTARTED_RUN_ID)
 
       const [sessionId] = metadata.get('session_id')
-      t.notEqual(sessionId, INITIAL_SESSION_ID)
+      t.not(sessionId, INITIAL_SESSION_ID)
       t.equal(sessionId, RESTARTED_SESSION_ID, 'should persist new request_headers_map on metadata')
 
       t.end()

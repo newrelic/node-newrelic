@@ -489,7 +489,7 @@ test('readdir', function (t) {
   helper.runInTransaction(agent, function (trans) {
     fs.readdir(name, function (err, data) {
       t.equal(err, null, 'should not error')
-      t.deepEqual(data, [], 'should get list of contents')
+      t.same(data, [], 'should get list of contents')
       verifySegments(t, agent, NAMES.FS.PREFIX + 'readdir')
 
       trans.end()

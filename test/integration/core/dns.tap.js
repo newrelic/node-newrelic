@@ -87,7 +87,7 @@ test('resolveNs', function (t) {
   helper.runInTransaction(agent, function () {
     dns.resolveNs('example.com', function (err, names) {
       t.notOk(err, 'should not error')
-      t.deepEqual(names.sort(), ['a.iana-servers.net', 'b.iana-servers.net'])
+      t.same(names.sort(), ['a.iana-servers.net', 'b.iana-servers.net'])
       verifySegments(t, agent, 'dns.resolveNs')
     })
   })
