@@ -9,6 +9,8 @@ const tap = require('tap')
 const request = require('request')
 const helper = require('../../../lib/agent_helper')
 const utils = require('./hapi-utils')
+const semver = require('semver')
+const { version: pkgVersion } = require('hapi/package')
 
 tap.test('Hapi router introspection', function (t) {
   t.autoend()
@@ -54,7 +56,7 @@ tap.test('Hapi router introspection', function (t) {
       }
       request.get(params, function (error, res, body) {
         t.equal(res.statusCode, 200, 'nothing exploded')
-        t.deepEqual(body, { status: 'ok' }, 'got expected response')
+        t.same(body, { status: 'ok' }, 'got expected response')
         t.end()
       })
     })
@@ -85,7 +87,7 @@ tap.test('Hapi router introspection', function (t) {
       }
       request.get(params, function (error, res, body) {
         t.equal(res.statusCode, 200, 'nothing exploded')
-        t.deepEqual(body, { status: 'ok' }, 'got expected response')
+        t.same(body, { status: 'ok' }, 'got expected response')
         t.end()
       })
     })
@@ -113,7 +115,7 @@ tap.test('Hapi router introspection', function (t) {
       }
       request.get(params, function (error, res, body) {
         t.equal(res.statusCode, 200, 'nothing exploded')
-        t.deepEqual(body, { status: 'ok' }, 'got expected response')
+        t.same(body, { status: 'ok' }, 'got expected response')
         t.end()
       })
     })
@@ -171,7 +173,7 @@ tap.test('Hapi router introspection', function (t) {
       }
       request.get(params, function (error, res, body) {
         t.equal(res.statusCode, 200, 'nothing exploded')
-        t.deepEqual(body, { status: 'ok' }, 'got expected response')
+        t.same(body, { status: 'ok' }, 'got expected response')
         t.end()
       })
     })
@@ -204,7 +206,7 @@ tap.test('Hapi router introspection', function (t) {
       }
       request.get(params, function (error, res, body) {
         t.equal(res.statusCode, 200, 'nothing exploded')
-        t.deepEqual(body, { status: 'ok' }, 'got expected response')
+        t.same(body, { status: 'ok' }, 'got expected response')
         t.end()
       })
     })
@@ -254,7 +256,7 @@ tap.test('Hapi router introspection', function (t) {
       }
       request.post(params, function (error, res, body) {
         t.equal(res.statusCode, 200, 'nothing exploded')
-        t.deepEqual(body, { status: 'ok' }, 'got expected response')
+        t.same(body, { status: 'ok' }, 'got expected response')
         t.end()
       })
     })
@@ -277,11 +279,10 @@ tap.test('Hapi router introspection', function (t) {
       }
       request.get(params, function (error, res, body) {
         t.equal(res.statusCode, 404, 'nonexistent route was not found')
-        t.deepEqual(
-          body,
-          { statusCode: 404, error: 'Not Found', message: 'Not Found' },
-          'got expected response'
-        )
+        const expectedErr = semver.satisfies(pkgVersion, '>=16.2.0')
+          ? { statusCode: 404, error: 'Not Found', message: 'Not Found' }
+          : { statusCode: 404, error: 'Not Found' }
+        t.same(body, expectedErr, 'got expected response')
         t.end()
       })
     })

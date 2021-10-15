@@ -5,11 +5,7 @@
 
 set -x
 
-VERSIONED_MODE="${VERSIONED_MODE:---major}"
-if [[ $TRAVIS_BRANCH == `git describe --tags --always HEAD` ]]; then
-  VERSIONED_MODE=--minor
-fi
-
+VERSIONED_MODE="${VERSIONED_MODE:---minor}"
 set -f
 directories=()
 if [[ "$1" != '' ]]; then

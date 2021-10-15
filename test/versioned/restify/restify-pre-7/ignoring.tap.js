@@ -52,7 +52,7 @@ test('Restify router introspection', function (t) {
     const url = 'http://localhost:' + port + '/polling/31337'
     request.get(url, function (error, res, body) {
       t.equal(res.statusCode, 400, 'got expected error')
-      t.deepEqual(body, { status: 'pollpollpoll' }, 'got expected response')
+      t.same(body, { status: 'pollpollpoll' }, 'got expected response')
     })
   })
 })

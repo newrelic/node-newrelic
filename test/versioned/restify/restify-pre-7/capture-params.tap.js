@@ -61,7 +61,7 @@ test('Restify capture params introspection', function (t) {
       port = server.address().port
       request.get('http://localhost:' + port + '/test', function (error, res, body) {
         t.equal(res.statusCode, 200, 'nothing exploded')
-        t.deepEqual(body, { status: 'ok' }, 'got expected respose')
+        t.same(body, { status: 'ok' }, 'got expected respose')
         t.end()
       })
     })
@@ -97,7 +97,7 @@ test('Restify capture params introspection', function (t) {
       port = server.address().port
       request.get('http://localhost:' + port + '/test/1337', function (error, res, body) {
         t.equal(res.statusCode, 200, 'nothing exploded')
-        t.deepEqual(body, { status: 'ok' }, 'got expected respose')
+        t.same(body, { status: 'ok' }, 'got expected respose')
         t.end()
       })
     })
@@ -134,7 +134,7 @@ test('Restify capture params introspection', function (t) {
       const url = 'http://localhost:' + port + '/test?name=restify'
       request.get(url, function (error, res, body) {
         t.equal(res.statusCode, 200, 'nothing exploded')
-        t.deepEqual(body, { status: 'ok' }, 'got expected respose')
+        t.same(body, { status: 'ok' }, 'got expected respose')
         t.end()
       })
     })
@@ -176,7 +176,7 @@ test('Restify capture params introspection', function (t) {
       const url = 'http://localhost:' + port + '/test/1337?name=restify'
       request.get(url, function (error, res, body) {
         t.equal(res.statusCode, 200, 'nothing exploded')
-        t.deepEqual(body, { status: 'ok' }, 'got expected respose')
+        t.same(body, { status: 'ok' }, 'got expected respose')
         t.end()
       })
     })

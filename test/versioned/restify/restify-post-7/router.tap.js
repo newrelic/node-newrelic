@@ -8,6 +8,8 @@
 const tap = require('tap')
 const request = require('request').defaults({ json: true })
 const helper = require('../../../lib/agent_helper')
+const { version: pkgVersion } = require('restify/package')
+const semver = require('semver')
 
 tap.test('Restify router', function (t) {
   t.autoend()
@@ -107,41 +109,49 @@ tap.test('Restify router', function (t) {
     _listenAndRequest(t, '/path1/')
   })
 
-  t.test('ignoreTrailingSlash option should ignore trailing slash', function (t) {
-    t.plan(3)
+  // added ignoreTrailingSlash is 7.1.0
+  // https://github.com/restify/node-restify/blob/master/CHANGELOG.md#710-2018-03-26
+  if (semver.satisfies(pkgVersion, '>=7.1.0')) {
+    t.test('ignoreTrailingSlash option should ignore trailing slash', function (t) {
+      t.plan(3)
 
-    server = require('restify').createServer({ ignoreTrailingSlash: true })
+      server = require('restify').createServer({ ignoreTrailingSlash: true })
 
-    server.get('/path1/', function first(req, res, next) {
-      t.ok(agent.getTransaction(), 'should enter this route')
-      res.send({ status: 'ok' })
-      next()
-    })
-
-    _listenAndRequest(t, '/path1')
-  })
-
-  t.test('next(true): terminates processing', function (t) {
-    t.plan(4)
-
-    server.get(
-      '/test/:id',
-      function first(req, res, next) {
-        t.ok(agent.getTransaction(), 'transaction should be available')
+      server.get('/path1/', function first(req, res, next) {
+        t.ok(agent.getTransaction(), 'should enter this route')
         res.send({ status: 'ok' })
-        next(true)
-      },
-      function second() {
-        t.fail('should not enter this final middleware')
-      }
-    )
+        next()
+      })
 
-    agent.on('transactionFinished', function (tx) {
-      t.equal(tx.name, 'WebTransaction/Restify/GET//test/:id', 'should have correct name')
+      _listenAndRequest(t, '/path1')
     })
+  }
 
-    _listenAndRequest(t, '/test/foobar')
-  })
+  // fixed in 7.2.3
+  // https://github.com/restify/node-restify/blob/master/CHANGELOG.md#723-2018-11-16
+  if (semver.satisfies(pkgVersion, '>=7.2.3')) {
+    t.test('next(true): terminates processing', function (t) {
+      t.plan(4)
+
+      server.get(
+        '/test/:id',
+        function first(req, res, next) {
+          t.ok(agent.getTransaction(), 'transaction should be available')
+          res.send({ status: 'ok' })
+          next(true)
+        },
+        function second() {
+          t.fail('should not enter this final middleware')
+        }
+      )
+
+      agent.on('transactionFinished', function (tx) {
+        t.equal(tx.name, 'WebTransaction/Restify/GET//test/:id', 'should have correct name')
+      })
+
+      _listenAndRequest(t, '/test/foobar')
+    })
+  }
 
   t.test('next(false): stop processing', function (t) {
     t.plan(4)
@@ -194,7 +204,7 @@ tap.test('Restify router', function (t) {
       const url = 'http://localhost:' + port + route
       request.get(url, function (error, res, body) {
         t.equal(res.statusCode, 200, 'nothing exploded')
-        t.deepEqual(body, { status: 'ok' }, 'got expected response')
+        t.same(body, { status: 'ok' }, 'got expected response')
       })
     })
   }

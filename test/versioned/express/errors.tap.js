@@ -30,8 +30,8 @@ function runTests(flags) {
     })
 
     runTest(t, function (errors, statusCode) {
-      t.equals(errors.length, 1)
-      t.equals(statusCode, 500)
+      t.equal(errors.length, 1)
+      t.equal(statusCode, 500)
       t.end()
     })
   })
@@ -44,8 +44,8 @@ function runTests(flags) {
     })
 
     runTest(t, function (errors, statusCode) {
-      t.equals(errors.length, 1)
-      t.equals(statusCode, 500)
+      t.equal(errors.length, 1)
+      t.equal(statusCode, 500)
       t.end()
     })
   })
@@ -58,8 +58,8 @@ function runTests(flags) {
     })
 
     runTest(t, function (errors, statusCode) {
-      t.equals(errors.length, 1)
-      t.equals(statusCode, 500)
+      t.equal(errors.length, 1)
+      t.equal(statusCode, 500)
       t.end()
     })
   })
@@ -77,8 +77,8 @@ function runTests(flags) {
     })
 
     runTest(t, function (errors, statusCode) {
-      t.equals(errors.length, 0)
-      t.equals(statusCode, 200)
+      t.equal(errors.length, 0)
+      t.equal(statusCode, 200)
       t.end()
     })
   })
@@ -98,9 +98,9 @@ function runTests(flags) {
       })
 
       runTest(t, function (errors, statusCode) {
-        t.equals(errors.length, 1)
-        t.equals(errors[0][2], 'some error')
-        t.equals(statusCode, 400)
+        t.equal(errors.length, 1)
+        t.equal(errors[0][2], 'some error')
+        t.equal(statusCode, 400)
         t.end()
       })
     }
@@ -118,8 +118,8 @@ function runTests(flags) {
     })
 
     runTest(t, function (errors, statuscode) {
-      t.equals(errors.length, 1)
-      t.equals(statuscode, 500)
+      t.equal(errors.length, 1)
+      t.equal(statuscode, 500)
       t.end()
     })
   })
@@ -140,8 +140,8 @@ function runTests(flags) {
     })
 
     runTest(t, function (errors, statuscode) {
-      t.equals(errors.length, 1)
-      t.equals(statuscode, 500)
+      t.equal(errors.length, 1)
+      t.equal(statuscode, 500)
       t.end()
     })
   })
@@ -162,8 +162,8 @@ function runTests(flags) {
     })
 
     runTest(t, function (errors, statuscode) {
-      t.equals(errors.length, 0)
-      t.equals(statuscode, 200)
+      t.equal(errors.length, 0)
+      t.equal(statuscode, 200)
       t.end()
     })
   })
@@ -184,8 +184,8 @@ function runTests(flags) {
     })
 
     runTest(t, function (errors, statuscode) {
-      t.equals(errors.length, 0)
-      t.equals(statuscode, 200)
+      t.equal(errors.length, 0)
+      t.equal(statuscode, 200)
       t.end()
     })
   })

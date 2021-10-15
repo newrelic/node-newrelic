@@ -38,7 +38,7 @@ tap.test('Restify router introspection', function (t) {
     const port = server.address().port
     request.get('http://localhost:' + port + '/test/31337', function (error, res, body) {
       t.equal(res.statusCode, 200, 'nothing exploded')
-      t.deepEqual(body, { status: 'ok' }, 'got expected respose')
+      t.same(body, { status: 'ok' }, 'got expected respose')
       t.end()
     })
   })

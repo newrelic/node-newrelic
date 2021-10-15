@@ -79,6 +79,10 @@ jobs:
     - name: Run Versioned Tests (npm v6 / Node 10-14)
       if: ${{ matrix.node-version != '16.x' }}
       run: npm run versioned:npm6
+      env:
+        VERSIONED_MODE: ${{ github.ref == 'main' && '--minor' || '--major' }}
     - name: Run Versioned Tests (npm v7 / Node 16)
       if: ${{ matrix.node-version == '16.x' }}
       run: npm run versioned:npm7
+      env:
+        VERSIONED_MODE: ${{ github.ref == 'main' && '--minor' || '--major' }}

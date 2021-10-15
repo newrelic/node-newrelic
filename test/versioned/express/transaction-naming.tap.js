@@ -8,6 +8,8 @@
 const helper = require('../../lib/agent_helper')
 const http = require('http')
 const test = require('tap').test
+const semver = require('semver')
+const { version: pkgVersion } = require('express/package')
 
 let express
 let agent
@@ -98,48 +100,6 @@ function runTests(flags) {
     })
 
     runTest(t, '/path1', '/path1')
-  })
-
-  test('transaction name with array of middleware with unspecified mount path', (t) => {
-    setup(t)
-
-    function mid1(req, res, next) {
-      t.pass('mid1 is executed')
-      next()
-    }
-
-    function mid2(req, res, next) {
-      t.pass('mid2 is executed')
-      next()
-    }
-
-    app.use([mid1, mid2])
-
-    app.get('/path1', (req, res) => {
-      res.end()
-    })
-
-    runTest(t, '/path1', '/path1')
-  })
-
-  test('transaction name when ending in array of unmounted middleware', (t) => {
-    setup(t)
-
-    function mid1(req, res, next) {
-      t.pass('mid1 is executed')
-      next()
-    }
-
-    function mid2(req, res) {
-      t.pass('mid2 is executed')
-      res.end()
-    }
-
-    app.use([mid1, mid2])
-
-    app.use(mid1)
-
-    runTest(t, '/path1', '/')
   })
 
   test('transaction name with shared middleware function', function (t) {
@@ -532,6 +492,53 @@ function runTests(flags) {
       clearInterval(interval)
     })
   })
+
+  // express did not add array based middleware registration
+  // without path until 4.9.2
+  // https://github.com/expressjs/express/blob/master/History.md#492--2014-09-17
+  if (semver.satisfies(pkgVersion, '>=4.9.2')) {
+    test('transaction name with array of middleware with unspecified mount path', (t) => {
+      setup(t)
+
+      function mid1(req, res, next) {
+        t.pass('mid1 is executed')
+        next()
+      }
+
+      function mid2(req, res, next) {
+        t.pass('mid2 is executed')
+        next()
+      }
+
+      app.use([mid1, mid2])
+
+      app.get('/path1', (req, res) => {
+        res.end()
+      })
+
+      runTest(t, '/path1', '/path1')
+    })
+
+    test('transaction name when ending in array of unmounted middleware', (t) => {
+      setup(t)
+
+      function mid1(req, res, next) {
+        t.pass('mid1 is executed')
+        next()
+      }
+
+      function mid2(req, res) {
+        t.pass('mid2 is executed')
+        res.end()
+      }
+
+      app.use([mid1, mid2])
+
+      app.use(mid1)
+
+      runTest(t, '/path1', '/')
+    })
+  }
 
   function setup(t) {
     agent = helper.instrumentMockedAgent(flags)

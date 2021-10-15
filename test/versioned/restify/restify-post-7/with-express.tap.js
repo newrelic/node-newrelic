@@ -35,7 +35,7 @@ tap.test("restify shouldn't affect express query parsing middleware", function (
 
     // The restify function replacement mentioned above also results
     // in a string instead of an object.
-    t.deepEqual(query, 'test=success', 'express req.query property is correct')
+    t.same(query, 'test=success', 'express req.query property is correct')
     res.sendStatus(200)
   })
 
