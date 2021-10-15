@@ -13,9 +13,10 @@ const signingSecret = process.env.SLACK_SECRET
 let missingEnvVars = []
 
 /**
- * Finds the last released tag and finds all the PRs that have been
- * merged since last release.  This then formats the list and sends a slack
- * message to `node-agent-dev` to serve as a reminder to release
+ * Finds the last released tag and all the PRs that have been
+ * merged since last release.  It will then format the PR list
+ * and send a slack message to `node-agent-dev`
+ * to serve as a reminder to release.
  *
  * To use this script you must set the following env vars:
  * GITHUB_TOKEN - api token to talk to Github API(in CI this just uses the default token)
@@ -23,7 +24,7 @@ let missingEnvVars = []
  * SLACK_TOKEN - token from bot
  * SLACK_SECRET - signing secret from bot
  */
-async function prepareReleaseNotes() {
+async function unreleasedPRs() {
   try {
     if (!areEnvVarsSet()) {
       console.log(`${missingEnvVars.join(', ')} are not set.`)
@@ -115,4 +116,4 @@ async function findMergedPRs() {
   }
 }
 
-prepareReleaseNotes()
+unreleasedPRs()
