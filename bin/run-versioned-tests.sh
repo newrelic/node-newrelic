@@ -6,6 +6,7 @@
 set -x
 
 VERSIONED_MODE="${VERSIONED_MODE:---minor}"
+SAMPLES="${SAMPLES:-10}"
 set -f
 directories=()
 if [[ "$1" != '' ]]; then
@@ -21,7 +22,7 @@ echo "${NPM7}"
 
 if [[ "${NPM7}" = 1 ]];
 then
-  time ./node_modules/.bin/versioned-tests $VERSIONED_MODE -i 2 --all ${directories[@]}
+  time ./node_modules/.bin/versioned-tests $VERSIONED_MODE -i 2 --all --samples $SAMPLES ${directories[@]}
 else
-  time ./node_modules/.bin/versioned-tests $VERSIONED_MODE -i 2 ${directories[@]}
+  time ./node_modules/.bin/versioned-tests $VERSIONED_MODE -i 2 --samples $SAMPLES ${directories[@]}
 fi
