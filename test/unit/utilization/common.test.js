@@ -5,12 +5,8 @@
 
 'use strict'
 
-// TODO: convert to normal tap style.
-// Below allows use of mocha DSL with tap runner.
-require('tap').mochaGlobals()
-
+const tap = require('tap')
 const common = require('../../../lib/utilization/common')
-const expect = require('chai').expect
 const helper = require('../../lib/agent_helper.js')
 
 let BIG = 'abcd'
@@ -18,69 +14,81 @@ while (BIG.length < 300) {
   BIG += BIG
 }
 
-describe('Utilization Common Components', function () {
-  describe('common.checkValueString', function () {
-    it('should fail for strings of invalid size', function () {
-      expect(common.checkValueString(null)).to.be.false
-      expect(common.checkValueString({})).to.be.false
-      expect(common.checkValueString('')).to.be.false
+tap.test('Utilization Common Components', function (t) {
+  t.autoend()
+  t.test('common.checkValueString', function (t) {
+    t.autoend()
+    t.test('should fail for strings of invalid size', function (t) {
+      t.notOk(common.checkValueString(null))
+      t.notOk(common.checkValueString({}))
+      t.notOk(common.checkValueString(''))
 
-      expect(common.checkValueString(BIG)).to.be.false
+      t.notOk(common.checkValueString(BIG))
+      t.end()
     })
 
-    it('should fail for strings with invalid characters', function () {
-      expect(common.checkValueString('&')).to.be.false
-      expect(common.checkValueString('foo\0')).to.be.false
+    t.test('should fail for strings with invalid characters', function (t) {
+      t.notOk(common.checkValueString('&'))
+      t.notOk(common.checkValueString('foo\0'))
+      t.end()
     })
 
-    it('should allow good values', function () {
-      expect(common.checkValueString('foobar')).to.be.true
-      expect(common.checkValueString('f1B_./- \xff')).to.be.true
+    t.test('should allow good values', function (t) {
+      t.ok(common.checkValueString('foobar'))
+      t.ok(common.checkValueString('f1B_./- \xff'))
+      t.end()
     })
   })
 
-  describe('common.getKeys', function () {
-    it('should return null if any key is missing', function () {
-      expect(common.getKeys({}, ['foo'])).to.be.null
-      expect(common.getKeys({ foo: 'bar' }, ['foo', 'bar'])).to.be.null
-      expect(common.getKeys(null, ['foo'])).to.be.null
+  t.test('common.getKeys', function (t) {
+    t.autoend()
+    t.test('should return null if any key is missing', function (t) {
+      t.equal(common.getKeys({}, ['foo']), null)
+      t.equal(common.getKeys({ foo: 'bar' }, ['foo', 'bar']), null)
+      t.equal(common.getKeys(null, ['foo']), null)
+      t.end()
     })
 
-    it('should return null if any key is invalid', function () {
-      expect(common.getKeys({ foo: 'foo\0' }, ['foo'])).to.be.null
-      expect(common.getKeys({ foo: 'foo', bar: 'bar\0' }, ['foo', 'bar'])).to.be.null
+    t.test('should return null if any key is invalid', function (t) {
+      t.equal(common.getKeys({ foo: 'foo\0' }, ['foo']), null)
+      t.equal(common.getKeys({ foo: 'foo', bar: 'bar\0' }, ['foo', 'bar']), null)
+      t.end()
     })
 
-    it('should return null if any value is too large', function () {
-      expect(common.getKeys({ foo: BIG }, ['foo'])).to.be.null
+    t.test('should return null if any value is too large', function (t) {
+      t.equal(common.getKeys({ foo: BIG }, ['foo']), null)
+      t.end()
     })
 
-    it('should pull only the desired values', function () {
-      expect(common.getKeys({ foo: 'foo', bar: 'bar', baz: 'baz' }, ['foo', 'baz'])).to.deep.equal({
+    t.test('should pull only the desired values', function (t) {
+      t.same(common.getKeys({ foo: 'foo', bar: 'bar', baz: 'baz' }, ['foo', 'baz']), {
         foo: 'foo',
         baz: 'baz'
       })
+      t.end()
     })
 
-    it('should not fail with "clean" objects', function () {
+    t.test('should not fail with "clean" objects', function (t) {
       const obj = Object.create(null)
       obj.foo = 'foo'
-      expect(common.getKeys(obj, ['foo'])).to.deep.equal({ foo: 'foo' })
+      t.same(common.getKeys(obj, ['foo']), { foo: 'foo' })
+      t.end()
     })
   })
 
-  describe('common.request', () => {
+  t.test('common.request', (t) => {
+    t.autoend()
     let agent = null
     let clock = null
 
-    beforeEach(function () {
+    t.beforeEach(function () {
       const sinon = require('sinon')
       clock = sinon.useFakeTimers()
 
       agent = helper.loadMockedAgent()
     })
 
-    afterEach(function () {
+    t.afterEach(function () {
       helper.unloadAgent(agent)
       agent = null
 
@@ -88,7 +96,7 @@ describe('Utilization Common Components', function () {
       clock = null
     })
 
-    it('should not invoke callback multiple times on timeout', (done) => {
+    t.test('should not invoke callback multiple times on timeout', (t) => {
       let invocationCount = 0
       common.request(
         {
@@ -98,7 +106,7 @@ describe('Utilization Common Components', function () {
         agent,
         (err) => {
           invocationCount++
-          expect(err).to.exist
+          t.ok(err)
         }
       )
 
@@ -114,8 +122,8 @@ describe('Utilization Common Components', function () {
       setTimeout(verifyInvocations, 1000)
 
       function verifyInvocations() {
-        expect(invocationCount).to.equal(1)
-        done()
+        t.equal(invocationCount, 1)
+        t.end()
       }
     })
   })

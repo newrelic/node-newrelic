@@ -4,19 +4,15 @@
  */
 
 'use strict'
-
-// TODO: convert to normal tap style.
-// Below allows use of mocha DSL with tap runner.
-require('tap').mochaGlobals()
-
-const expect = require('chai').expect
+const { test } = require('tap')
 const helper = require('../../lib/agent_helper.js')
 const proxyquire = require('proxyquire')
 
-describe('getVendors', function () {
+test('getVendors', function (t) {
+  t.autoend()
   let agent
 
-  beforeEach(function () {
+  t.beforeEach(function () {
     agent = helper.loadMockedAgent()
     agent.config.utilization = {
       detect_aws: true,
@@ -28,11 +24,11 @@ describe('getVendors', function () {
     }
   })
 
-  afterEach(function () {
+  t.afterEach(function () {
     helper.unloadAgent(agent)
   })
 
-  it('calls all vendors', function (done) {
+  t.test('calls all vendors', function (t) {
     let awsCalled = false
     let azureCalled = false
     let gcpCalled = false
@@ -70,18 +66,18 @@ describe('getVendors', function () {
     }).getVendors
 
     getVendors(agent, function (err) {
-      expect(err).to.be.null
-      expect(awsCalled).to.be.true
-      expect(azureCalled).to.be.true
-      expect(gcpCalled).to.be.true
-      expect(dockerCalled).to.be.true
-      expect(kubernetesCalled).to.be.true
-      expect(pcfCalled).to.be.true
-      done()
+      t.error(err)
+      t.ok(awsCalled)
+      t.ok(azureCalled)
+      t.ok(gcpCalled)
+      t.ok(dockerCalled)
+      t.ok(kubernetesCalled)
+      t.ok(pcfCalled)
+      t.end()
     })
   })
 
-  it('returns multiple vendors if available', function (done) {
+  t.test('returns multiple vendors if available', function (t) {
     const getVendors = proxyquire('../../../lib/utilization', {
       './aws-info': function (agentArg, cb) {
         cb(null, 'aws info')
@@ -94,10 +90,10 @@ describe('getVendors', function () {
     }).getVendors
 
     getVendors(agent, function (err, vendors) {
-      expect(err).to.be.null
-      expect(vendors.aws).to.equal('aws info')
-      expect(vendors.docker).to.equal('docker info')
-      done()
+      t.error(err)
+      t.equal(vendors.aws, 'aws info')
+      t.equal(vendors.docker, 'docker info')
+      t.end()
     })
   })
 })
