@@ -5,20 +5,16 @@
 
 'use strict'
 
-// TODO: convert to normal tap style.
-// Below allows use of mocha DSL with tap runner.
-require('tap').mochaGlobals()
-
-const chai = require('chai')
+const tap = require('tap')
 const cp = require('child_process')
-const expect = chai.expect
 const Logger = require('../../lib/util/logger')
 const path = require('path')
 
-describe('Logger', function () {
+tap.test('Logger', function (t) {
+  t.autoend()
   let logger = null
 
-  beforeEach(function () {
+  t.beforeEach(function () {
     logger = new Logger({
       name: 'newrelic',
       level: 'trace',
@@ -26,62 +22,65 @@ describe('Logger', function () {
     })
   })
 
-  afterEach(function () {
+  t.afterEach(function () {
     logger = null
   })
 
-  describe('when setting values', function () {
-    it('should not throw when passed-in log level is 0', function () {
-      expect(function () {
-        logger.level(0)
-      }).to.not.throw()
+  t.test('should not throw when passed-in log level is 0', function (t) {
+    t.doesNotThrow(function () {
+      logger.level(0)
     })
-
-    it('should not throw when passed-in log level is ONE MILLION', function () {
-      expect(function () {
-        logger.level(1000000)
-      }).to.not.throw()
-    })
-
-    it('should not throw when passed-in log level is "verbose"', function () {
-      expect(function () {
-        logger.level('verbose')
-      }).to.not.throw()
-    })
+    t.end()
   })
 
-  describe('log file', function () {
-    it('should not cause crash if unwritable', function (done) {
-      runTestFile('unwritable-log/unwritable.js', done)
+  t.test('should not throw when passed-in log level is ONE MILLION', function (t) {
+    t.doesNotThrow(function () {
+      logger.level(1000000)
     })
-
-    it('should not be created if logger is disabled', function (done) {
-      runTestFile('disabled-log/disabled.js', done)
-    })
+    t.end()
   })
 
-  describe('when logging', function () {
-    it('should not throw for huge messages', function (done) {
-      process.once('warning', (warning) => {
-        expect(warning).to.have.property('name', 'NewRelicWarning')
-        expect(warning).to.have.property('message')
-        done()
-      })
+  t.test('should not throw when passed-in log level is "verbose"', function (t) {
+    t.doesNotThrow(function () {
+      logger.level('verbose')
+    })
+    t.end()
+  })
 
-      let huge = 'a'
-      while (huge.length < Logger.MAX_LOG_BUFFER / 2) {
-        huge += huge
-      }
+  t.test('should not cause crash if unwritable', function (t) {
+    runTestFile('unwritable-log/unwritable.js', t.end)
+  })
 
-      expect(() => {
-        logger.fatal('some message to start the buffer off')
-        logger.fatal(huge)
-        logger.fatal(huge)
-      }).to.not.throw()
+  t.test('should not be created if logger is disabled', function (t) {
+    runTestFile('disabled-log/disabled.js', t.end)
+  })
+
+  t.test('should not throw for huge messages', function (t) {
+    process.once('warning', (warning) => {
+      t.equal(warning.name, 'NewRelicWarning')
+      t.ok(warning.message)
+      t.end()
+    })
+
+    let huge = 'a'
+    while (huge.length < Logger.MAX_LOG_BUFFER / 2) {
+      huge += huge
+    }
+
+    t.doesNotThrow(() => {
+      logger.fatal('some message to start the buffer off')
+      logger.fatal(huge)
+      logger.fatal(huge)
     })
   })
 })
 
+/**
+ * Runs a test file in a child process
+ *
+ * @param {string} file path to file
+ * @param {Function} cb called when test is over
+ */
 function runTestFile(file, cb) {
   const testHelperDir = path.resolve(__dirname, '../helpers/')
   const proc = cp.fork(path.join(testHelperDir, file), { silent: true })
