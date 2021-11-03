@@ -15,5 +15,20 @@ module.exports = [
     type: 'message',
     moduleName: '@aws-sdk/client-sns',
     onRequire: require('./lib/v3-sns')
+  },
+  {
+    type: 'generic',
+    moduleName: './MiddlewareStack',
+    onRequire: require('./lib/mw-stack')
+  },
+  {
+    type: 'generic',
+    moduleName: '@aws-sdk/smithy-client',
+    onRequire: require('./lib/smithy-client')
+  },
+  {
+    type: 'generic',
+    moduleName: '@aws-sdk/node-http-handler',
+    onRequire: require('./lib/http-handler')
   }
 ]
