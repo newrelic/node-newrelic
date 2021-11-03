@@ -4,25 +4,21 @@
 
   `parseProcCPUInfo` and `parseProcMeminfo` now check for `null` input prior to processing.
 
-* Migrated utilization unit tests from mocha to tap
+* Updated README to favor using `-r` to load the agent vs `require('newrelic')`.
 
-* Migrated logger unit tests from mocha to tap
+* Updated `@newrelic/test-utilities` to 6.1.1 and applied a global sampling value of 10 for versioned tests.
 
-* Updated README to favor using `-r` to load the agent vs `require('newrelic')`
+* Migrated utilization unit tests from mocha to tap.
 
-* Updated `@newrelic/test-utilities` to 6.1.1 and applied a global sampling value of 10 for versioned tests
+* Migrated logger unit tests from mocha to tap.
 
 * Cleaned up or added future removal comments for several deprecation warnings.
 
---- NOTES NEEDS REVIEW ---
-I mistakenly check `github.ref` with branch name but based on [docs](https://docs.github.com/en/actions/learn-github-actions/contexts) it needs to be `refs/head/<branch>`
---------------------------
-
-* Added a script and corresponding CI job that will check for PRs that have been merged and not release and notify the team in a private slack chanel
+* Added a script and corresponding CI job that will check for PRs that have been merged and not release and notify the team in a private slack channel.
 
 * Updated the versioned test runner to always run against minor versions.
 
-* Fixed a high severity npm audit failure
+* Fixed a high severity npm audit failure.
 
 ### v8.5.0 (2021-10-12)
 
