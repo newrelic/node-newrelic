@@ -149,6 +149,7 @@
     "versioned-tests": "./bin/run-versioned-tests.sh",
     "update-changelog-version": "node ./bin/update-changelog-version",
     "versioned": "npm run versioned:npm7",
+    "versioned:major": "npm run prepare-test && VERSIONED_MODE=--major NPM7=1 time ./bin/run-versioned-tests.sh",
     "versioned:npm6": "npm run prepare-test && time ./bin/run-versioned-tests.sh",
     "versioned:npm7": "npm run prepare-test && NPM7=1 time ./bin/run-versioned-tests.sh",
     "prepare": "husky install"
