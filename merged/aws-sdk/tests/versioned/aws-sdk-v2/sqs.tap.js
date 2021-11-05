@@ -8,8 +8,8 @@
 const tap = require('tap')
 const utils = require('@newrelic/test-utilities')
 
-const common = require('./common')
-const { createSqsServer, FAKE_CREDENTIALS } = require('./aws-server-stubs')
+const common = require('../common')
+const { createResponseServer, FAKE_CREDENTIALS } = require('../aws-server-stubs')
 
 const AWS_REGION = 'us-east-1'
 
@@ -29,7 +29,7 @@ tap.test('SQS API', (t) => {
   let server = null
 
   t.beforeEach(async () => {
-    server = createSqsServer()
+    server = createResponseServer()
 
     await new Promise((resolve) => {
       server.listen(0, resolve)
@@ -39,7 +39,7 @@ tap.test('SQS API', (t) => {
     helper.registerInstrumentation({
       moduleName: 'aws-sdk',
       type: 'conglomerate',
-      onRequire: require('../../lib/instrumentation')
+      onRequire: require('../../../lib/instrumentation')
     })
 
     AWS = require('aws-sdk')

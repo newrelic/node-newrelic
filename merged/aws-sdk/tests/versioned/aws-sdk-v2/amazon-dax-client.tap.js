@@ -8,8 +8,8 @@
 const tap = require('tap')
 const utils = require('@newrelic/test-utilities')
 
-const common = require('./common')
-const { FAKE_CREDENTIALS } = require('./aws-server-stubs')
+const common = require('../common')
+const { FAKE_CREDENTIALS } = require('../aws-server-stubs')
 
 // This will not resolve / allow web requests. Even with real ones, requests
 // have to execute within the same VPC as the DAX configuration. When adding DAX support,
@@ -32,7 +32,7 @@ tap.test('amazon-dax-client', (t) => {
     helper.registerInstrumentation({
       moduleName: 'aws-sdk',
       type: 'conglomerate',
-      onRequire: require('../../lib/instrumentation')
+      onRequire: require('../../../lib/instrumentation')
     })
 
     AWS = require('aws-sdk')

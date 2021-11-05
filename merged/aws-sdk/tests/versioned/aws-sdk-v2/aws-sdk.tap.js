@@ -10,7 +10,7 @@ const tap = require('tap')
 const utils = require('@newrelic/test-utilities')
 utils.assert.extendTap(tap)
 
-const { createEmptyResponseServer, FAKE_CREDENTIALS } = require('./aws-server-stubs')
+const { createEmptyResponseServer, FAKE_CREDENTIALS } = require('../aws-server-stubs')
 
 tap.test('aws-sdk', (t) => {
   t.autoend()
@@ -32,7 +32,7 @@ tap.test('aws-sdk', (t) => {
     helper.registerInstrumentation({
       moduleName: 'aws-sdk',
       type: 'conglomerate',
-      onRequire: require('../../lib/instrumentation')
+      onRequire: require('../../../lib/instrumentation')
     })
     AWS = require('aws-sdk')
     AWS.config.update({ region: 'us-east-1' })

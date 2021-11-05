@@ -8,8 +8,8 @@
 const tap = require('tap')
 const utils = require('@newrelic/test-utilities')
 
-const common = require('./common')
-const { createEmptyResponseServer, FAKE_CREDENTIALS } = require('./aws-server-stubs')
+const common = require('../common')
+const { createEmptyResponseServer, FAKE_CREDENTIALS } = require('../aws-server-stubs')
 
 tap.test('SNS', (t) => {
   t.autoend()
@@ -32,7 +32,7 @@ tap.test('SNS', (t) => {
     helper.registerInstrumentation({
       moduleName: 'aws-sdk',
       type: 'conglomerate',
-      onRequire: require('../../lib/instrumentation')
+      onRequire: require('../../../lib/instrumentation')
     })
     AWS = require('aws-sdk')
 
