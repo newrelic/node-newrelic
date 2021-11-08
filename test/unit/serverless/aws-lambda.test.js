@@ -1255,6 +1255,48 @@ tap.test('AwsLambda.patchLambdaHandler', (t) => {
     }
   })
 
+  t.test(
+    'should record error event when func is async an UnhandledPromiseRejection is thrown',
+    (t) => {
+      agent.on('harvestStarted', confirmErrorCapture)
+
+      let transaction
+      const wrappedHandler = awsLambda.patchLambdaHandler(async () => {
+        transaction = agent.tracer.getTransaction()
+        // eslint-disable-next-line no-new
+        new Promise(() => {
+          t.ok(transaction)
+          t.equal(transaction.type, 'bg')
+          t.equal(transaction.getFullName(), expectedBgTransactionName)
+          t.ok(transaction.isActive())
+
+          throw error
+        })
+
+        await new Promise((resolve) => setTimeout(resolve, 1))
+      })
+
+      process.on('unhandledRejection', (err) => {
+        t.equal(err, error)
+        t.equal(transaction.isActive(), false)
+
+        t.end()
+      })
+
+      wrappedHandler(stubEvent, stubContext, stubCallback)
+      function confirmErrorCapture() {
+        const errors = agent.errors.traceAggregator.errors
+        t.equal(errors.length, 1)
+
+        const noticedError = errors[0]
+        const [, transactionName, message, type] = noticedError
+        t.equal(transactionName, expectedBgTransactionName)
+        t.equal(message, errorMessage)
+        t.equal(type, 'SyntaxError')
+      }
+    }
+  )
+
   t.test('should record error event when error is thrown', (t) => {
     helper.temporarilyOverrideTapUncaughtBehavior(tap, t)
 
