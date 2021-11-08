@@ -1,9 +1,9 @@
 {
-  "lastUpdated": "Wed Aug 25 2021 11:25:10 GMT-0400 (Eastern Daylight Time)",
+  "lastUpdated": "Fri Nov 05 2021 14:53:14 GMT-0400 (Eastern Daylight Time)",
   "projectName": "New Relic AWS-SDK Instrumentation",
   "projectUrl": "https://github.com/newrelic/node-newrelic-aws-sdk",
-  "includeDev": true,
   "includeOptDeps": false,
+  "includeDev": true,
   "dependencies": {},
   "devDependencies": {
     "@newrelic/eslint-config@0.0.2": {

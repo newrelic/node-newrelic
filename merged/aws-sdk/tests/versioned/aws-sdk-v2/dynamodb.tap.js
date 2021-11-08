@@ -9,8 +9,8 @@ const tap = require('tap')
 const utils = require('@newrelic/test-utilities')
 const async = require('async')
 
-const common = require('./common')
-const { createEmptyResponseServer, FAKE_CREDENTIALS } = require('./aws-server-stubs')
+const common = require('../common')
+const { createEmptyResponseServer, FAKE_CREDENTIALS } = require('../aws-server-stubs')
 
 tap.test('DynamoDB', (t) => {
   t.autoend()
@@ -34,7 +34,7 @@ tap.test('DynamoDB', (t) => {
     helper.registerInstrumentation({
       moduleName: 'aws-sdk',
       type: 'conglomerate',
-      onRequire: require('../../lib/instrumentation')
+      onRequire: require('../../../lib/instrumentation')
     })
 
     AWS = require('aws-sdk')

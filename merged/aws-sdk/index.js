@@ -12,3 +12,4 @@
  */
 const newrelic = require('newrelic')
 newrelic.instrumentConglomerate('aws-sdk', require('./lib/instrumentation'))
+newrelic.instrumentMessages('@aws-sdk/client-sns', require('./lib/v3-sns'))

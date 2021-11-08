@@ -12,7 +12,7 @@ const SQS_PATTERN = /^MessageBroker\/SQS\/Queue/
 
 const SEGMENT_DESTINATION = 0x20
 
-function checkAWSAttributes(t, segment, pattern, markedSegments = []) {
+function checkAWSAttributes(t, segment, pattern, markedSegments = [], skipAttrsCheck) {
   const expectedAttrs = {
     'aws.operation': String,
     'aws.service': String,
@@ -22,11 +22,13 @@ function checkAWSAttributes(t, segment, pattern, markedSegments = []) {
 
   if (pattern.test(segment.name)) {
     markedSegments.push(segment)
-    const attrs = segment.attributes.get(SEGMENT_DESTINATION)
-    t.matches(attrs, expectedAttrs, 'should have aws attributes')
+    if (!skipAttrsCheck) {
+      const attrs = segment.attributes.get(SEGMENT_DESTINATION)
+      t.matches(attrs, expectedAttrs, 'should have aws attributes')
+    }
   }
   segment.children.forEach((child) => {
-    checkAWSAttributes(t, child, pattern, markedSegments)
+    checkAWSAttributes(t, child, pattern, markedSegments, skipAttrsCheck)
   })
 
   return markedSegments

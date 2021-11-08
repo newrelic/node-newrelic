@@ -5,8 +5,8 @@
 
 'use strict'
 
-const createSqsServer = require('./sqs-server')
 const createEmptyResponseServer = require('./empty-response-server')
+const createResponseServer = require('./response-server')
 
 // Specific values are unimportant because we'll be hitting our
 // custom servers. But they need to be populated.
@@ -16,7 +16,7 @@ const FAKE_CREDENTIALS = {
 }
 
 module.exports = {
-  createSqsServer,
   createEmptyResponseServer,
+  createResponseServer,
   FAKE_CREDENTIALS
 }
