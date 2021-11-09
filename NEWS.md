@@ -1,3 +1,7 @@
+### v8.5.2 (2021-11-09)
+
+* Fixed issue where unhandled promise rejections were not getting logged as errors in a lambda execution
+
 ### v8.5.1 (2021-11-03)
 
 * Fixed bug where failure to retrieve CPU/Memory details for certain Linux distros could result in a crash.
