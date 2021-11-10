@@ -16,42 +16,25 @@ const SEND_COMMANDS = ['SendMessageCommand', 'SendMessageBatchCommand']
 
 const RECEIVE_COMMANDS = ['ReceiveMessageCommand']
 
-function wrapClientSend(shim, original, name, args) {
-  const {
-    constructor,
-    input: { QueueUrl }
-  } = args[0]
-  const type = constructor.name
-  if (SEND_COMMANDS.includes(type)) {
-    return {
-      callback: shim.LAST,
-      destinationName: grabLastUrlSegment(QueueUrl),
-      destinationType: shim.QUEUE,
-      opaque: true
+function makeWrapClient(commands) {
+  return function wrapClient(shim, original, name, args) {
+    const {
+      constructor,
+      input: { QueueUrl }
+    } = args[0]
+    const type = constructor.name
+    if (commands.includes(type)) {
+      return {
+        callback: shim.LAST,
+        destinationName: grabLastUrlSegment(QueueUrl),
+        destinationType: shim.QUEUE,
+        opaque: true
+      }
     }
+
+    // eslint-disable-next-line consistent-return
+    return
   }
-
-  // eslint-disable-next-line consistent-return
-  return
-}
-
-function wrapClientReceive(shim, original, name, args) {
-  const {
-    constructor,
-    input: { QueueUrl }
-  } = args[0]
-  const type = constructor.name
-  if (RECEIVE_COMMANDS.includes(type)) {
-    return {
-      callback: shim.LAST,
-      destinationName: grabLastUrlSegment(QueueUrl),
-      destinationType: shim.QUEUE,
-      opaque: true
-    }
-  }
-
-  // eslint-disable-next-line consistent-return
-  return
 }
 
 module.exports = function instrument(shim, AWS) {
@@ -59,6 +42,9 @@ module.exports = function instrument(shim, AWS) {
     shim.logger.debug('Could not find SQS, not instrumenting.')
     return
   }
+
+  const wrapClientSend = makeWrapClient(SEND_COMMANDS)
+  const wrapClientReceive = makeWrapClient(RECEIVE_COMMANDS)
 
   shim.setLibrary(shim.SQS)
   shim.recordProduce(AWS.SQSClient.prototype, 'send', wrapClientSend)
