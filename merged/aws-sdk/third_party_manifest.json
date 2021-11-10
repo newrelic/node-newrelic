@@ -1,24 +1,11 @@
 {
-  "lastUpdated": "Wed Nov 10 2021 13:43:19 GMT-0800 (Pacific Standard Time)",
+  "lastUpdated": "Wed Nov 10 2021 15:49:14 GMT-0800 (Pacific Standard Time)",
   "projectName": "New Relic AWS-SDK Instrumentation",
   "projectUrl": "https://github.com/newrelic/node-newrelic-aws-sdk",
   "includeOptDeps": false,
   "includeDev": true,
   "dependencies": {},
   "devDependencies": {
-    "@aws-sdk/client-sqs@3.40.0": {
-      "name": "@aws-sdk/client-sqs",
-      "version": "3.40.0",
-      "range": "^3.40.0",
-      "licenses": "Apache-2.0",
-      "repoUrl": "https://github.com/aws/aws-sdk-js-v3",
-      "versionedRepoUrl": "https://github.com/aws/aws-sdk-js-v3/tree/v3.40.0",
-      "licenseFile": "node_modules/@aws-sdk/client-sqs/LICENSE",
-      "licenseUrl": "https://github.com/aws/aws-sdk-js-v3/blob/v3.40.0/LICENSE",
-      "licenseTextSource": "file",
-      "publisher": "AWS SDK for JavaScript Team",
-      "url": "https://aws.amazon.com/javascript/"
-    },
     "@newrelic/eslint-config@0.0.2": {
       "name": "@newrelic/eslint-config",
       "version": "0.0.2",
