@@ -33,6 +33,7 @@ tap.test('S3 buckets', (t) => {
     common.registerCoreInstrumentation(helper)
     const { S3Client, ...lib } = require('@aws-sdk/client-s3')
     S3 = new S3Client({
+      region: 'us-east-1',
       credentials: FAKE_CREDENTIALS,
       endpoint: `http://localhost:${server.address().port}`,
       // allows using generic endpoint, instead of needing a
