@@ -83,59 +83,36 @@ tap.test('SQS API', (t) => {
   })
 
   t.test('commands with promises', async (t) => {
-    // create queue
-    const createParams = getCreateParams(queueName)
-    const createCommand = new CreateQueueCommand(createParams)
-    let QueueUrl
     try {
-      const createData = await sqs.send(createCommand)
-      QueueUrl = createData.QueueUrl
+      // create queue
+      const createParams = getCreateParams(queueName)
+      const createCommand = new CreateQueueCommand(createParams)
+      const { QueueUrl } = await sqs.send(createCommand)
+      t.ok(QueueUrl)
+      // run send/receive commands in transaction
+      await helper.runInTransaction(async (transaction) => {
+        // send message
+        const sendMessageParams = getSendMessageParams(QueueUrl)
+        const sendMessageCommand = new SendMessageCommand(sendMessageParams)
+        const { MessageId } = await sqs.send(sendMessageCommand)
+        t.ok(MessageId)
+        // send message batch
+        const sendMessageBatchParams = getSendMessageBatchParams(QueueUrl)
+        const sendMessageBatchCommand = new SendMessageBatchCommand(sendMessageBatchParams)
+        const { Successful } = await sqs.send(sendMessageBatchCommand)
+        t.ok(Successful)
+        // receive message
+        const receiveMessageParams = getReceiveMessageParams(QueueUrl)
+        const receiveMessageCommand = new ReceiveMessageCommand(receiveMessageParams)
+        const { Messages } = await sqs.send(receiveMessageCommand)
+        t.ok(Messages)
+        // wrap up
+        transaction.end()
+        await finish(t, transaction)
+      })
     } catch (err) {
       t.error(err)
     }
-    t.ok(QueueUrl)
-    // run send/receive commands in transaction
-    await helper.runInTransaction(async (transaction) => {
-      // send message
-      const sendMessageParams = getSendMessageParams(QueueUrl)
-      const sendMessageCommand = new SendMessageCommand(sendMessageParams)
-      let sendMessageData = null
-      let MessageId = null
-      try {
-        sendMessageData = await sqs.send(sendMessageCommand)
-        MessageId = sendMessageData.MessageId
-      } catch (err) {
-        t.error(err)
-      }
-      t.ok(MessageId)
-      // send message batch
-      const sendMessageBatchParams = getSendMessageBatchParams(QueueUrl)
-      const sendMessageBatchCommand = new SendMessageBatchCommand(sendMessageBatchParams)
-      let sendMessageBatchData = null
-      let Successful = null
-      try {
-        sendMessageBatchData = await sqs.send(sendMessageBatchCommand)
-        Successful = sendMessageBatchData.Successful
-      } catch (err) {
-        t.error(err)
-      }
-      t.ok(Successful)
-      // receive message
-      const receiveMessageParams = getReceiveMessageParams(QueueUrl)
-      const receiveMessageCommand = new ReceiveMessageCommand(receiveMessageParams)
-      let receiveMessageData = null
-      let Messages = null
-      try {
-        receiveMessageData = await sqs.send(receiveMessageCommand)
-        Messages = receiveMessageData.Messages
-      } catch (err) {
-        t.error(err)
-      }
-      t.ok(Messages)
-      // wrap up
-      transaction.end()
-      await finish(t, transaction)
-    })
   })
 
   function finish(t, transaction) {
