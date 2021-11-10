@@ -1,5 +1,5 @@
 {
-  "name": "aws-sdk-tests",
+  "name": "aws-sdk-v2-tests",
   "version": "0.0.0",
   "private": true,
   "tests": [

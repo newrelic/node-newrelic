@@ -7,7 +7,6 @@
 const UNKNOWN = 'Unknown'
 const { NR_CONFIG } = require('./smithy-client')
 
-// TODO: use shim.wrapReturn instead of patching functions directly
 function wrapConstructStack(shim, constructStack) {
   return function wrappedConstructStack(...args) {
     const stack = constructStack.apply(this, args)
@@ -15,8 +14,6 @@ function wrapConstructStack(shim, constructStack) {
       shim.wrap(stack, 'resolve', wrapResolve)
     }
 
-    // TODO: test clone/concat
-    // this was a rip off of OTEL
     if (!shim.isWrapped(stack.clone)) {
       shim.wrap(stack, 'clone', wrapClone)
     }
