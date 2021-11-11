@@ -47,7 +47,7 @@ tap.test('SNS', (t) => {
   })
 
   t.afterEach(() => {
-    server.close()
+    server.destroy()
     server = null
 
     helper && helper.unload()

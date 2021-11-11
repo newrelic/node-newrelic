@@ -26,6 +26,21 @@ function createResponseServer() {
     res.end()
   })
 
+  // make close faster
+  const sockets = new Set()
+  server.on('connection', (socket) => {
+    sockets.add(socket)
+    socket.once('close', () => {
+      sockets.delete(socket)
+    })
+  })
+  server.destroy = function () {
+    sockets.forEach((socket) => {
+      socket.destroy()
+    })
+    server.close()
+  }
+
   return server
 }
 

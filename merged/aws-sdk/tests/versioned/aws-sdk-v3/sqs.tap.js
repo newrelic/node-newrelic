@@ -66,7 +66,7 @@ tap.test('SQS API', (t) => {
   t.afterEach(() => {
     helper && helper.unload()
 
-    server.close()
+    server.destroy()
     server = null
 
     helper = null
