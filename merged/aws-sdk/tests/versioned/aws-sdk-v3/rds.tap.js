@@ -36,7 +36,7 @@ tap.test('RDSClient', (t) => {
   })
 
   t.afterEach(() => {
-    server.close()
+    server.destroy()
     helper && helper.unload()
   })
 

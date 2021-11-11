@@ -47,7 +47,7 @@ tap.test('S3 buckets', (t) => {
   })
 
   t.afterEach(() => {
-    server.close()
+    server.destroy()
     server = null
 
     helper && helper.unload()

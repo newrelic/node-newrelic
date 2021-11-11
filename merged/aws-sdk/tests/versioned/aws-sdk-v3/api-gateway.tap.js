@@ -36,7 +36,7 @@ tap.test('APIGatewayClient', (t) => {
   })
 
   t.afterEach(() => {
-    server.close()
+    server.destroy()
     helper && helper.unload()
   })
 
