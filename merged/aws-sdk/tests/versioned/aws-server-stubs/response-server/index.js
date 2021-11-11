@@ -37,7 +37,6 @@ function createResponseServer() {
   })
   server.destroy = function () {
     sockets.forEach((socket) => {
-      sockets.delete(socket)
       socket.destroy()
     })
     server.close()
