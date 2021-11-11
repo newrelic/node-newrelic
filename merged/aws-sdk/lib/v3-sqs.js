@@ -5,11 +5,6 @@
 
 'use strict'
 
-/*
- * Copyright 2021 New Relic Corporation. All rights reserved.
- * SPDX-License-Identifier: Apache-2.0
- */
-
 const { grabLastUrlSegment } = require('./util')
 
 const SEND_COMMANDS = ['SendMessageCommand', 'SendMessageBatchCommand']
