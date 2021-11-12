@@ -53,7 +53,7 @@ function wrapResolve(shim, resolve) {
         const segment = shim.getSegment(response.body.req)
         segment.addAttribute('aws.operation', ctx.commandName || UNKNOWN)
         segment.addAttribute('aws.requestId', response.headers['x-amzn-requestid'] || UNKNOWN)
-        segment.addAttribute('aws.service', config && config.serviceId || UNKNOWN)
+        segment.addAttribute('aws.service', (config && config.serviceId) || UNKNOWN)
         segment.addAttribute('aws.region', region || UNKNOWN)
         return result
       }
