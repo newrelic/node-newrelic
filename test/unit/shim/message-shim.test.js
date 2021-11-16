@@ -576,6 +576,33 @@ tap.test('MessageShim', function (t) {
       })
     })
 
+    t.test('should bind promise even without messageHandler', function (t) {
+      const msg = {}
+      let segment = null
+      const DELAY = 25
+
+      function wrapMe() {
+        segment = shim.getSegment()
+        return new Promise((resolve) => {
+          setTimeout(() => {
+            resolve(msg)
+          }, DELAY)
+        })
+      }
+
+      const wrapped = shim.recordConsume(wrapMe, {
+        destinationName: shim.FIRST
+      })
+
+      return helper.runInTransaction(agent, function () {
+        return wrapped('foo', function () {}).then(function (message) {
+          const duration = segment.getDurationInMillis()
+          t.ok(duration > DELAY - 1, 'segment duration should be at least 100 ms')
+          t.equal(message, msg)
+        })
+      })
+    })
+
     t.test('should execute the wrapped function', function (t) {
       let executed = false
       const toWrap = function () {
