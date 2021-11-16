@@ -24,7 +24,8 @@ tap.test('Should properly track module paths to enable shim.require()', function
   })
 
   shimmer.registerInstrumentation({
-    moduleName: customPackagePath
+    moduleName: customPackagePath,
+    onRequire: () => {}
   })
 
   // As of node 11, this path is being cached, and will not hit our resolve hooks for
@@ -49,7 +50,8 @@ tap.test('shim.require() should play well with multiple test runs', (t) => {
   let agent = helper.instrumentMockedAgent()
 
   shimmer.registerInstrumentation({
-    moduleName: customPackagePath
+    moduleName: customPackagePath,
+    onRequire: () => {}
   })
 
   t.teardown(() => {

@@ -158,6 +158,7 @@ const helper = (module.exports = {
     agent.emit('unload')
     shimmer.unpatchModule()
     shimmer.unwrapAll()
+    shimmer.registeredInstrumentations = Object.create(null)
     shimmer.debug = false
 
     // On all versions each agent will add an unhandledRejection handler. This

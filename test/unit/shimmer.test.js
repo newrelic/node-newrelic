@@ -7,7 +7,8 @@
 
 // TODO: convert to normal tap style.
 // Below allows use of mocha DSL with tap runner.
-require('tap').mochaGlobals()
+const tap = require('tap')
+tap.mochaGlobals()
 
 const oldInstrumentations = require('../../lib/instrumentations')
 const insPath = require.resolve('../../lib/instrumentations')
@@ -576,4 +577,76 @@ describe('shimmer', function () {
       })
     })
   })
+})
+
+tap.test('Should not augment module when no instrumentation hooks provided', (t) => {
+  const testModulePath = '../helpers/module' // TODO: make constant w/ other usage
+
+  const agent = helper.instrumentMockedAgent()
+  t.teardown(() => {
+    helper.unloadAgent(agent)
+  })
+
+  const instrumentationOpts = {
+    moduleName: testModulePath,
+    onError: () => {}
+  }
+  shimmer.registerInstrumentation(instrumentationOpts)
+
+  const loadedModule = require(testModulePath)
+
+  t.equal(loadedModule.foo, 'bar')
+
+  const nrProps = Object.keys(loadedModule).filter((key) => {
+    return key.startsWith('__NR')
+  })
+
+  // Future proofing to catch any added symbols. If test  module modified to add own symbol
+  // will have to filter out here.
+  const nrSymbols = Object.getOwnPropertySymbols(loadedModule)
+
+  t.equal(nrProps.length, 0, `should not have any NR props but found: ${JSON.stringify(nrProps)}`)
+  t.equal(nrSymbols.length, 0, `should not have NR symbols but found: ${JSON.stringify(nrSymbols)}`)
+
+  t.end()
+})
+
+tap.test('Should not crash on empty instrumentation registration', (t) => {
+  const agent = helper.instrumentMockedAgent()
+  t.teardown(() => {
+    helper.unloadAgent(agent)
+  })
+
+  shimmer.registerInstrumentation()
+
+  t.end()
+})
+
+tap.test('Should not register instrumentation with no name provided', (t) => {
+  const agent = helper.instrumentMockedAgent()
+  t.teardown(() => {
+    helper.unloadAgent(agent)
+  })
+
+  shimmer.registerInstrumentation({})
+
+  t.notOk(shimmer.registeredInstrumentations.undefined)
+
+  t.end()
+})
+
+tap.test('Should not register when no hooks provided', (t) => {
+  const agent = helper.instrumentMockedAgent()
+  t.teardown(() => {
+    helper.unloadAgent(agent)
+  })
+
+  const moduleName = 'test name'
+  shimmer.registerInstrumentation({
+    moduleName: moduleName
+  })
+
+  t.notOk(shimmer.registeredInstrumentations[moduleName])
+
+  t.end()
 })
