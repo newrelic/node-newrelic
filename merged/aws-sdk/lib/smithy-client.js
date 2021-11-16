@@ -35,7 +35,7 @@ function postClientConstructor(shim) {
 }
 
 /**
- * Returns the plugin object that adds 2 middleare
+ * Returns the plugin object that adds 2 middleware
  *
  * @param {Shim} shim
  * @param {Object} config smithy client config
