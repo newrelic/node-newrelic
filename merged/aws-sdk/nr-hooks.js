@@ -18,17 +18,7 @@ module.exports = [
   },
   {
     type: 'generic',
-    moduleName: './MiddlewareStack',
-    onRequire: require('./lib/mw-stack')
-  },
-  {
-    type: 'generic',
     moduleName: '@aws-sdk/smithy-client',
-    onRequire: require('./lib/smithy-client')
-  },
-  {
-    type: 'generic',
-    moduleName: '@aws-sdk/node-http-handler',
-    onRequire: require('./lib/http-handler')
+    onResolved: require('./lib/smithy-client')
   }
 ]

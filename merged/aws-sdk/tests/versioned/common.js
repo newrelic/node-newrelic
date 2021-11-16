@@ -46,19 +46,9 @@ function getMatchingSegments(t, segment, pattern, markedSegments = []) {
 
 function registerCoreInstrumentation(helper) {
   helper.registerInstrumentation({
-    moduleName: './MiddlewareStack',
-    type: 'generic',
-    onRequire: require('../../lib/mw-stack')
-  })
-  helper.registerInstrumentation({
     moduleName: '@aws-sdk/smithy-client',
     type: 'generic',
-    onRequire: require('../../lib/smithy-client')
-  })
-  helper.registerInstrumentation({
-    moduleName: '@aws-sdk/node-http-handler',
-    type: 'generic',
-    onRequire: require('../../lib/http-handler')
+    onResolved: require('../../lib/smithy-client')
   })
 }
 

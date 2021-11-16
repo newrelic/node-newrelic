@@ -13,6 +13,7 @@
 const newrelic = require('newrelic')
 newrelic.instrumentConglomerate('aws-sdk', require('./lib/instrumentation'))
 newrelic.instrumentMessages('@aws-sdk/client-sns', require('./lib/v3-sns'))
-newrelic.instrument('./MiddlewareStack', require('./lib/mw-stack'))
-newrelic.instrument('@aws-sdk/smithy-client', require('./lib/smithy-client'))
-newrelic.instrument('@aws-sdk/node-http-handler', require('./lib/http-handler'))
+newrelic.instrument({
+  moduleName: '@aws-sdk/smithy-client',
+  onResolved: require('./lib/smithy-client')
+})
