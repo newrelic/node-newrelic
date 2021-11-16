@@ -5,32 +5,94 @@
 
 'use strict'
 
-function wrapClientSend(shim, original, name, args) {
-  const { constructor, input } = args[0]
-  const type = constructor.name
-  if (type === 'PublishCommand') {
-    return {
-      callback: shim.LAST,
-      destinationName: getDestinationName(input),
-      destinationType: shim.TOPIC,
-      opaque: true
-    }
-  }
+module.exports = function instrument(shim, name, resolvedName) {
+  const fileNameIndex = resolvedName.indexOf('/index')
+  const relativeFolder = resolvedName.substr(0, fileNameIndex)
 
-  // eslint-disable-next-line consistent-return
-  return
-}
+  // The path changes depending on the version... so we don't want to hard-code the relative
+  // path from the module root.
+  const snsClientExport = shim.require(`${relativeFolder}/SNSClient`)
 
-function getDestinationName({ TopicArn, TargetArn }) {
-  return TopicArn || TargetArn || 'PhoneNumber' // We don't want the value of PhoneNumber
-}
-
-module.exports = function instrument(shim, AWS) {
-  if (!shim.isFunction(AWS.SNS)) {
-    shim.logger.debug('Could not find SNS, not instrumenting.')
+  if (!shim.isFunction(snsClientExport.SNSClient)) {
+    shim.logger.debug('Could not find SNSClient, not instrumenting.')
     return
   }
 
   shim.setLibrary(shim.SNS)
-  shim.recordProduce(AWS.SNSClient.prototype, 'send', wrapClientSend)
+  shim.wrapClass(snsClientExport, 'SNSClient', { post: postClientConstructor, es6: true })
+}
+
+/**
+ * Calls the instances middlewareStack.use to register
+ * a plugin that adds a middleware to record the time it teakes to publish a message
+ * see: https://aws.amazon.com/blogs/developer/middleware-stack-modular-aws-sdk-js/
+ *
+ * @param {Shim} shim
+ */
+function postClientConstructor(shim) {
+  this.middlewareStack.use(getPlugin(shim))
+}
+
+/**
+ * Returns the plugin object that adds middleware
+ *
+ * @param {Shim} shim
+ * @returns {object}
+ */
+function getPlugin(shim) {
+  return {
+    applyToStack: (clientStack) => {
+      clientStack.add(snsMiddleware.bind(null, shim), {
+        name: 'NewRelicSnsMiddleware',
+        step: 'initialize',
+        priority: 'high'
+      })
+    }
+  }
+}
+
+/**
+ * Middleware hook that records the middleware chain
+ * when command is `PublishCommand`
+ *
+ * @param {Shim} shim
+ * @param {function} next middleware function
+ * @param {Object} context
+ * @returns {function}
+ */
+function snsMiddleware(shim, next, context) {
+  if (context.commandName === 'PublishCommand') {
+    return shim.recordProduce(next, getSnsSpec)
+  }
+
+  return next
+}
+
+/**
+ * Returns the spec for PublishCommand
+ *
+ * @param {Shim} shim
+ * @param {original} original original middleware function
+ * @param {Array} args to the middleware function
+ * @returns {Object}
+ */
+function getSnsSpec(shim, original, name, args) {
+  const [command] = args
+  return {
+    promise: true,
+    callback: shim.LAST,
+    destinationName: getDestinationName(command.input),
+    destinationType: shim.TOPIC,
+    opaque: true
+  }
+}
+
+/**
+ * Helper to set the appropriate destinationName based on
+ * the command input
+ *
+ * @param {Object}
+ */
+function getDestinationName({ TopicArn, TargetArn }) {
+  return TopicArn || TargetArn || 'PhoneNumber' // We don't want the value of PhoneNumber
 }

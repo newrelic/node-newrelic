@@ -34,7 +34,7 @@ tap.test('SNS', (t) => {
     helper.registerInstrumentation({
       moduleName: '@aws-sdk/client-sns',
       type: 'message',
-      onRequire: require('../../../lib/v3-sns')
+      onResolved: require('../../../lib/v3-sns')
     })
     const lib = require('@aws-sdk/client-sns')
     const SNSClient = lib.SNSClient
@@ -49,7 +49,7 @@ tap.test('SNS', (t) => {
   })
 
   t.afterEach(() => {
-    server.close()
+    server.destroy()
     server = null
     // this may be brute force but i could not figure out
     // which files within the modules were cached preventing the instrumenting
