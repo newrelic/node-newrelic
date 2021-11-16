@@ -10,6 +10,8 @@
 const tap = require('tap')
 tap.mochaGlobals()
 
+const path = require('path')
+
 const oldInstrumentations = require('../../lib/instrumentations')
 const insPath = require.resolve('../../lib/instrumentations')
 require.cache[insPath].exports = wrappedInst
@@ -29,9 +31,11 @@ const shimmer = require('../../lib/shimmer')
 const shims = require('../../lib/shim')
 const EventEmitter = require('events').EventEmitter
 
+const TEST_MODULE_PATH = '../helpers/module'
+
 describe('shimmer', function () {
   describe('custom instrumentation', function () {
-    describe('of relative modules', makeModuleTests('../helpers/module'))
+    describe('of relative modules', makeModuleTests(TEST_MODULE_PATH))
     describe('of modules', makeModuleTests('chai'))
     describe('of modules, where instrumentation fails', makeModuleTests('chai', true))
     describe('of deep modules', makeModuleTests('chai/lib/chai'))
@@ -115,7 +119,7 @@ describe('shimmer', function () {
     beforeEach(function () {
       agent = helper.instrumentMockedAgent()
       shimmer.registerInstrumentation({
-        moduleName: '../helpers/module',
+        moduleName: TEST_MODULE_PATH,
         onRequire: function (shim, nodule) {
           original = nodule
           wrapper = {}
@@ -134,7 +138,7 @@ describe('shimmer', function () {
     })
 
     it('should replace the return value from require', function () {
-      const obj = require('../helpers/module')
+      const obj = require(TEST_MODULE_PATH)
       expect(obj).to.equal(wrapper).and.not.equal(original)
     })
   })
@@ -580,20 +584,18 @@ describe('shimmer', function () {
 })
 
 tap.test('Should not augment module when no instrumentation hooks provided', (t) => {
-  const testModulePath = '../helpers/module' // TODO: make constant w/ other usage
-
   const agent = helper.instrumentMockedAgent()
   t.teardown(() => {
     helper.unloadAgent(agent)
   })
 
   const instrumentationOpts = {
-    moduleName: testModulePath,
+    moduleName: TEST_MODULE_PATH,
     onError: () => {}
   }
   shimmer.registerInstrumentation(instrumentationOpts)
 
-  const loadedModule = require(testModulePath)
+  const loadedModule = require(TEST_MODULE_PATH)
 
   t.equal(loadedModule.foo, 'bar')
 
@@ -649,4 +651,173 @@ tap.test('Should not register when no hooks provided', (t) => {
   t.notOk(shimmer.registeredInstrumentations[moduleName])
 
   t.end()
+})
+
+tap.test('onResolved', (t) => {
+  t.autoend()
+
+  let agent = null
+
+  t.beforeEach(() => {
+    agent = helper.instrumentMockedAgent()
+  })
+
+  t.afterEach(() => {
+    helper.unloadAgent(agent)
+  })
+
+  t.test('Should be invoked with resolved module path', (t) => {
+    shimmer.registerInstrumentation({
+      moduleName: TEST_MODULE_PATH,
+      onResolved: onResolvedHandler
+    })
+
+    require(TEST_MODULE_PATH)
+
+    function onResolvedHandler(shim, moduleName, resolvedFilepath) {
+      const expectedResolvePath = `${path.join(__dirname, TEST_MODULE_PATH)}.js`
+
+      t.ok(shim)
+      t.equal(shim.moduleName, TEST_MODULE_PATH)
+      t.equal(moduleName, TEST_MODULE_PATH)
+      t.equal(resolvedFilepath, expectedResolvePath)
+
+      t.end()
+    }
+  })
+
+  t.test('Should invoke prior to onRequire hook', (t) => {
+    const invokedHooks = []
+
+    shimmer.registerInstrumentation({
+      moduleName: TEST_MODULE_PATH,
+      onResolved: onResolvedHandler,
+      onRequire: onRequireHandler
+    })
+
+    function onResolvedHandler() {
+      invokedHooks.push('onResolvedHandler')
+    }
+
+    function onRequireHandler() {
+      invokedHooks.push('onRequireHandler')
+    }
+
+    require(TEST_MODULE_PATH)
+
+    t.equal(invokedHooks[0], 'onResolvedHandler')
+    t.equal(invokedHooks[1], 'onRequireHandler')
+
+    t.end()
+  })
+
+  t.test('Should not crash when handler errors without onError', (t) => {
+    shimmer.registerInstrumentation({
+      moduleName: TEST_MODULE_PATH,
+      onResolved: onResolvedHandler
+    })
+
+    function onResolvedHandler() {
+      throw new Error('Instrumentation is haunted.')
+    }
+
+    const exportedModule = require(TEST_MODULE_PATH)
+
+    t.ok(exportedModule)
+
+    t.end()
+  })
+
+  t.test('Should invoke onError on errors', (t) => {
+    const expectedError = new Error('Instrumentation is haunted.')
+
+    shimmer.registerInstrumentation({
+      moduleName: TEST_MODULE_PATH,
+      onResolved: onResolvedHandler,
+      onError: onErrorHandler
+    })
+
+    function onResolvedHandler() {
+      throw expectedError
+    }
+
+    let capturedError = null
+    function onErrorHandler(error) {
+      capturedError = error
+    }
+
+    const exportedModule = require(TEST_MODULE_PATH)
+
+    t.ok(exportedModule)
+    t.equal(capturedError, expectedError)
+
+    t.end()
+  })
+
+  t.test('Should not crash when onError throws', (t) => {
+    shimmer.registerInstrumentation({
+      moduleName: TEST_MODULE_PATH,
+      onResolved: onResolvedHandler,
+      onError: onErrorHandler
+    })
+
+    function onResolvedHandler() {
+      throw new Error('Instrumentation is haunted.')
+    }
+
+    function onErrorHandler() {
+      throw new Error('onErrorHandler fails to handle errors')
+    }
+
+    const exportedModule = require(TEST_MODULE_PATH)
+
+    t.ok(exportedModule)
+
+    t.end()
+  })
+
+  t.test('Should not re-execute successful onResolved on multiple requires', (t) => {
+    shimmer.registerInstrumentation({
+      moduleName: TEST_MODULE_PATH,
+      onResolved: onResolvedHandler
+    })
+
+    let invokeCount = 0
+    function onResolvedHandler() {
+      invokeCount++
+    }
+
+    require(TEST_MODULE_PATH)
+    require(TEST_MODULE_PATH)
+    require(TEST_MODULE_PATH)
+    require(TEST_MODULE_PATH)
+    require(TEST_MODULE_PATH)
+
+    t.equal(invokeCount, 1)
+
+    t.end()
+  })
+
+  t.test('Should not retry previously failed instrumentation', (t) => {
+    shimmer.registerInstrumentation({
+      moduleName: TEST_MODULE_PATH,
+      onResolved: onResolvedHandler
+    })
+
+    let invokeCount = 0
+    function onResolvedHandler() {
+      invokeCount++
+      throw new Error('Instrumentation is haunted.')
+    }
+
+    require(TEST_MODULE_PATH)
+    require(TEST_MODULE_PATH)
+    require(TEST_MODULE_PATH)
+    require(TEST_MODULE_PATH)
+    require(TEST_MODULE_PATH)
+
+    t.equal(invokeCount, 1)
+
+    t.end()
+  })
 })
