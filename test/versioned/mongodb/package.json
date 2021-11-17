@@ -8,7 +8,7 @@
         "node": ">=12"
       },
       "dependencies": {
-        "mongodb": ">=2.1"
+        "mongodb": ">=2.1 <4.2.0 "
       },
       "files": [
         "collection-find.tap.js",
@@ -20,9 +20,7 @@
       ]
     }
   ],
-  "dependencies": {
-    "mongodb": "^2.1 <3.3.0"
-  },
+  "dependencies": {},
   "engines": {
     "node": ">=12"
   }
