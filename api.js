@@ -1142,7 +1142,7 @@ API.prototype.recordCustomEvent = function recordCustomEvent(eventType, attribut
  *
  * @param {object} options The options for this custom instrumentation.
  * @param {string} options.moduleName The module name given to require to load the module
- * @param {Function}  options.onResolved The function to call when prior to module load after the filepath has been resolved
+ * @param {Function}  options.onResolved The function to call prior to module load after the filepath has been resolved
  * @param {Function}  options.onRequire The function to call when the module has been loaded
  * @param {Function} [options.onError] If provided, should `onRequire` throw an error, the error will be passed to
  *  this function.
@@ -1175,7 +1175,7 @@ API.prototype.instrument = function instrument(moduleName, onRequire, onError) {
  *
  * @param {object} options The options for this custom instrumentation.
  * @param {string} options.moduleName The module name given to require to load the module
- * @param {Function}  options.onResolved The function to call when prior to module load after the filepath has been resolved
+ * @param {Function}  options.onResolved The function to call prior to module load after the filepath has been resolved
  * @param {Function}  options.onRequire The function to call when the module has been loaded
  * @param {Function} [options.onError] If provided, should `onRequire` throw an error, the error will be passed to
  *  this function.
@@ -1209,7 +1209,7 @@ API.prototype.instrumentConglomerate = function instrumentConglomerate(
  *
  * @param {object} options The options for this custom instrumentation.
  * @param {string} options.moduleName The module name given to require to load the module
- * @param {Function}  options.onResolved The function to call when prior to module load after the filepath has been resolved
+ * @param {Function}  options.onResolved The function to call prior to module load after the filepath has been resolved
  * @param {Function}  options.onRequire The function to call when the module has been loaded
  * @param {Function} [options.onError] If provided, should `onRequire` throw an error, the error will be passed to
  *  this function.
@@ -1244,7 +1244,7 @@ API.prototype.instrumentDatastore = function instrumentDatastore(moduleName, onR
  *
  * @param {object} options The options for this custom instrumentation.
  * @param {string} options.moduleName The module name given to require to load the module
- * @param {Function}  options.onResolved The function to call when prior to module load after the filepath has been resolved
+ * @param {Function}  options.onResolved The function to call prior to module load after the filepath has been resolved
  * @param {Function}  options.onRequire The function to call when the module has been loaded
  * @param {Function} [options.onError] If provided, should `onRequire` throw an error, the error will be passed to
  *  this function.
@@ -1283,7 +1283,7 @@ API.prototype.instrumentWebframework = function instrumentWebframework(
  *
  * @param {object} options The options for this custom instrumentation.
  * @param {string} options.moduleName The module name given to require to load the module
- * @param {Function}  options.onResolved The function to call when prior to module load after the filepath has been resolved
+ * @param {Function}  options.onResolved The function to call prior to module load after the filepath has been resolved
  * @param {Function}  options.onRequire The function to call when the module has been loaded
  * @param {Function} [options.onError] If provided, should `onRequire` throw an error, the error will be passed to
  *  this function.

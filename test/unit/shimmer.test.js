@@ -619,7 +619,7 @@ tap.test('Should not crash on empty instrumentation registration', (t) => {
     helper.unloadAgent(agent)
   })
 
-  shimmer.registerInstrumentation()
+  t.doesNotThrow(shimmer.registerInstrumentation)
 
   t.end()
 })
