@@ -24,7 +24,7 @@ function checkAWSAttributes(t, segment, pattern, markedSegments = [], skipAttrsC
     markedSegments.push(segment)
     if (!skipAttrsCheck) {
       const attrs = segment.attributes.get(SEGMENT_DESTINATION)
-      t.matches(attrs, expectedAttrs, 'should have aws attributes')
+      t.match(attrs, expectedAttrs, 'should have aws attributes')
     }
   }
   segment.children.forEach((child) => {

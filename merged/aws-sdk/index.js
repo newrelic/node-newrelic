@@ -13,3 +13,4 @@
 const newrelic = require('newrelic')
 newrelic.instrumentConglomerate('aws-sdk', require('./lib/instrumentation'))
 newrelic.instrumentMessages('@aws-sdk/client-sns', require('./lib/v3-sns'))
+newrelic.instrumentMessages('@aws-sdk/client-dynamodb', require('./lib/v3-dynamo-ddb'))

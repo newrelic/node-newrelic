@@ -51,5 +51,8 @@
     "*.md",
     "tests/versioned/*.js",
     "tests/versioned/aws-server-stubs/**"
-  ]
+  ],
+  "dependencies": {
+    "@aws-sdk/client-dynamodb": "^3.41.0"
+  }
 }
