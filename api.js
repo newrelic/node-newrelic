@@ -55,7 +55,8 @@ const CUSTOM_EVENT_TYPE_REGEX = /^[a-zA-Z0-9:_ ]+$/
  * You do not need to directly instantiate this class, as an instance of this is
  * the return from `require('newrelic')`.
  *
- * @constructor
+ * @param agent
+ * @class
  */
 function API(agent) {
   this.agent = agent
@@ -139,6 +140,7 @@ API.prototype.getTransaction = function getTransaction() {
  *   utilization.full_hostname. If utilization.full_hostname is null or empty,
  *   this will be the hostname specified in the connect request as host.
  *
+ * @param omitSupportability
  * @returns {LinkingMetadata} The linking object with the data above
  */
 API.prototype.getLinkingMetadata = function getLinkingMetadata(omitSupportability) {
@@ -186,7 +188,6 @@ API.prototype.getLinkingMetadata = function getLinkingMetadata(omitSupportabilit
  *
  * @param {string} name The string you would like to report to New Relic
  *                      as the dispatcher.
- *
  * @param {string} [version] The dispatcher version you would like to
  *                           report to New Relic
  */
@@ -414,7 +415,6 @@ API.prototype.addCustomSpanAttribute = function addCustomSpanAttribute(key, valu
  *
  * @param {Error} error
  *  The error to be traced.
- *
  * @param {object} [customAttributes]
  *  Optional. Any custom attributes to be displayed in the New Relic UI.
  */
@@ -526,7 +526,7 @@ API.prototype.addIgnoringRule = function addIgnoringRule(pattern) {
  * Do *not* reuse the headers between users, or even between requests.
  *
  * @param {string} [options.nonce] - Nonce to inject into `<script>` header.
- *
+ * @param options
  * @returns {string} The `<script>` header to be injected.
  */
 API.prototype.getBrowserTimingHeader = function getBrowserTimingHeader(options) {
@@ -545,7 +545,7 @@ API.prototype.getBrowserTimingHeader = function getBrowserTimingHeader(options) 
    *
    * @param {number} num          - Error code from `RUM_ISSUES`.
    * @param {bool} [quite=false]  - Be quiet about this failure.
-   *
+   * @param quiet
    * @see RUM_ISSUES
    */
   function _gracefail(num, quiet) {
@@ -687,9 +687,9 @@ API.prototype.getBrowserTimingHeader = function getBrowserTimingHeader(options) 
 
 /**
  * @callback startSegmentCallback
- * @param {function} cb
+ * @param {Function} cb
  *   The function to time with the created segment.
- * @return {Promise=} Returns a promise if cb returns a promise.
+ * @returns {Promise=} Returns a promise if cb returns a promise.
  */
 
 /**
@@ -701,23 +701,18 @@ API.prototype.getBrowserTimingHeader = function getBrowserTimingHeader(options) 
  *    // The returned promise here will signify the end of the segment.
  *    return myAsyncTask().then(myNextTask)
  *  })
- *
  * @param {string} name
  *  The name to give the new segment. This will also be the name of the metric.
- *
  * @param {bool} record
  *  Indicates if the segment should be recorded as a metric. Metrics will show
  *  up on the transaction breakdown table and server breakdown graph. Segments
  *  just show up in transaction traces.
- *
  * @param {startSegmentCallback} handler
  *  The function to track as a segment.
- *
- * @param {function} [callback]
+ * @param {Function} [callback]
  *  An optional callback for the handler. This will indicate the end of the
  *  timing if provided.
- *
- * @return {*} Returns the result of calling `handler`.
+ * @returns {*} Returns the result of calling `handler`.
  */
 API.prototype.startSegment = function startSegment(name, record, handler, callback) {
   this.agent.metrics
@@ -775,11 +770,9 @@ API.prototype.startSegment = function startSegment(name, record, handler, callba
  *     transaction.end()
  *   }, 100)
  * })
- *
  * @param {string} url
  *  The URL of the transaction.  It is used to name and group related transactions in APM,
  *  so it should be a generic name and not iclude any variable parameters.
- *
  * @param {Function}  handle
  *  Function that represents the transaction work.
  */
@@ -862,20 +855,16 @@ API.prototype.startBackgroundTransaction = startBackgroundTransaction
  *     transaction.end()
  *   }, 100)
  * })
- *
  * @param {string} name
  *  The name of the transaction. It is used to name and group related
  *  transactions in APM, so it should be a generic name and not iclude any
  *  variable parameters.
- *
  * @param {string} [group]
  *  Optional, used for grouping background transactions in APM. For more
  *  information see:
  *  https://docs.newrelic.com/docs/apm/applications-menu/monitoring/transactions-page#txn-type-dropdown
- *
  * @param {Function} handle
  *  Function that represents the background work.
- *
  * @memberOf API#
  */
 function startBackgroundTransaction(name, group, handle) {
@@ -972,9 +961,9 @@ API.prototype.endTransaction = function endTransaction() {
  * Record a custom metric, usually associated with a particular duration.
  * The `name` must be a string following standard metric naming rules. The `value` will
  * usually be a number, but it can also be an object.
- *   * When `value` is a numeric value, it should represent the magnitude of a measurement
+ *   When `value` is a numeric value, it should represent the magnitude of a measurement
  *     associated with an event; for example, the duration for a particular method call.
- *   * When `value` is an object, it must contain count, total, min, max, and sumOfSquares
+ *   When `value` is an object, it must contain count, total, min, max, and sumOfSquares
  *     keys, all with number values. This form is useful to aggregate metrics on your own
  *     and report them periodically; for example, from a setInterval. These values will
  *     be aggregated with any previously collected values for the same metric. The names
@@ -1151,18 +1140,15 @@ API.prototype.recordCustomEvent = function recordCustomEvent(eventType, attribut
  *  - `newrelic.instrument(moduleName, onRequire [,onError])`
  *  - `newrelic.instrument(options)`
  *
- * @param {object} options
- *  The options for this custom instrumentation.
- *
- * @param {string} options.moduleName
- *  The module name given to require to load the module
- *
- * @param {function}  options.onRequire
- *  The function to call when the module is required
- *
- * @param {function} [options.onError]
- *  If provided, should `onRequire` throw an error, the error will be passed to
+ * @param {object} options The options for this custom instrumentation.
+ * @param {string} options.moduleName The module name given to require to load the module
+ * @param {Function}  options.onResolved The function to call prior to module load after the filepath has been resolved
+ * @param {Function}  options.onRequire The function to call when the module has been loaded
+ * @param {Function} [options.onError] If provided, should `onRequire` throw an error, the error will be passed to
  *  this function.
+ * @param moduleName
+ * @param onRequire
+ * @param onError
  */
 API.prototype.instrument = function instrument(moduleName, onRequire, onError) {
   const metric = this.agent.metrics.getOrCreateMetric(NAMES.SUPPORTABILITY.API + '/instrument')
@@ -1187,18 +1173,15 @@ API.prototype.instrument = function instrument(moduleName, onRequire, onError) {
  * - `newrelic.instrumentConglomerate(moduleName, onRequire [, onError])`
  * - `newrelic.isntrumentConglomerate(options)`
  *
- * @param {object} options
- *  The options for this custom instrumentation.
- *
- * @param {string} options.moduleName
- *  The module name given to require to load the module
- *
- * @param {function} options.onRequire
- *  The function to call when the module is required
- *
- * @param {function} [options.onError]
- *  If provided, should `onRequire` throw an error, the error will be passed to
+ * @param {object} options The options for this custom instrumentation.
+ * @param {string} options.moduleName The module name given to require to load the module
+ * @param {Function}  options.onResolved The function to call prior to module load after the filepath has been resolved
+ * @param {Function}  options.onRequire The function to call when the module has been loaded
+ * @param {Function} [options.onError] If provided, should `onRequire` throw an error, the error will be passed to
  *  this function.
+ * @param moduleName
+ * @param onRequire
+ * @param onError
  */
 API.prototype.instrumentConglomerate = function instrumentConglomerate(
   moduleName,
@@ -1224,18 +1207,15 @@ API.prototype.instrumentConglomerate = function instrumentConglomerate(
  *  - `newrelic.instrumentDatastore(moduleName, onRequire [,onError])`
  *  - `newrelic.instrumentDatastore(options)`
  *
- * @param {object} options
- *  The options for this custom instrumentation.
- *
- * @param {string} options.moduleName
- *  The module name given to require to load the module
- *
- * @param {function} options.onRequire
- *  The function to call when the module is required
- *
- * @param {function} [options.onError]
- *  If provided, should `onRequire` throw an error, the error will be passed to
+ * @param {object} options The options for this custom instrumentation.
+ * @param {string} options.moduleName The module name given to require to load the module
+ * @param {Function}  options.onResolved The function to call prior to module load after the filepath has been resolved
+ * @param {Function}  options.onRequire The function to call when the module has been loaded
+ * @param {Function} [options.onError] If provided, should `onRequire` throw an error, the error will be passed to
  *  this function.
+ * @param moduleName
+ * @param onRequire
+ * @param onError
  */
 API.prototype.instrumentDatastore = function instrumentDatastore(moduleName, onRequire, onError) {
   const metric = this.agent.metrics.getOrCreateMetric(
@@ -1257,6 +1237,80 @@ API.prototype.instrumentDatastore = function instrumentDatastore(moduleName, onR
 }
 
 /**
+ * Registers an instrumentation function.
+ *
+ *  - `newrelic.instrumentWebframework(moduleName, onRequire [,onError])`
+ *  - `newrelic.instrumentWebframework(options)`
+ *
+ * @param {object} options The options for this custom instrumentation.
+ * @param {string} options.moduleName The module name given to require to load the module
+ * @param {Function}  options.onResolved The function to call prior to module load after the filepath has been resolved
+ * @param {Function}  options.onRequire The function to call when the module has been loaded
+ * @param {Function} [options.onError] If provided, should `onRequire` throw an error, the error will be passed to
+ *  this function.
+ * @param moduleName
+ * @param onRequire
+ * @param onError
+ */
+API.prototype.instrumentWebframework = function instrumentWebframework(
+  moduleName,
+  onRequire,
+  onError
+) {
+  const metric = this.agent.metrics.getOrCreateMetric(
+    NAMES.SUPPORTABILITY.API + '/instrumentWebframework'
+  )
+  metric.incrementCallCount()
+
+  let opts = moduleName
+  if (typeof opts === 'string') {
+    opts = {
+      moduleName: moduleName,
+      onRequire: onRequire,
+      onError: onError
+    }
+  }
+
+  opts.type = MODULE_TYPE.WEB_FRAMEWORK
+  shimmer.registerInstrumentation(opts)
+}
+
+/**
+ * Registers an instrumentation function for instrumenting message brokers.
+ *
+ *  - `newrelic.instrumentMessages(moduleName, onRequire [,onError])`
+ *  - `newrelic.instrumentMessages(options)`
+ *
+ * @param {object} options The options for this custom instrumentation.
+ * @param {string} options.moduleName The module name given to require to load the module
+ * @param {Function}  options.onResolved The function to call prior to module load after the filepath has been resolved
+ * @param {Function}  options.onRequire The function to call when the module has been loaded
+ * @param {Function} [options.onError] If provided, should `onRequire` throw an error, the error will be passed to
+ *  this function.
+ * @param moduleName
+ * @param onRequire
+ * @param onError
+ */
+API.prototype.instrumentMessages = function instrumentMessages(moduleName, onRequire, onError) {
+  const metric = this.agent.metrics.getOrCreateMetric(
+    NAMES.SUPPORTABILITY.API + '/instrumentMessages'
+  )
+  metric.incrementCallCount()
+
+  let opts = moduleName
+  if (typeof opts === 'string') {
+    opts = {
+      moduleName: moduleName,
+      onRequire: onRequire,
+      onError: onError
+    }
+  }
+
+  opts.type = MODULE_TYPE.MESSAGE
+  shimmer.registerInstrumentation(opts)
+}
+
+/**
  * Applies an instrumentation to an already loaded module.
  *
  *    // oh no, express was loaded before newrelic
@@ -1270,7 +1324,6 @@ API.prototype.instrumentDatastore = function instrumentDatastore(moduleName, onR
  * @param {string} moduleName
  *  The module's name/identifier.  Will be normalized
  *  into an instrumentation key.
- *
  * @param {object} module
  *  The actual module object or function we're instrumenting
  */
@@ -1305,88 +1358,8 @@ API.prototype.instrumentLoadedModule = function instrumentLoadedModule(moduleNam
 
     return true
   } catch (error) {
-    logger.error('instrumentLoadedModule encountered an error, module not instrumentend: %s', error)
+    logger.error('instrumentLoadedModule encountered an error, module not instrumented: %s', error)
   }
-}
-
-/**
- * Registers an instrumentation function.
- *
- *  - `newrelic.instrumentWebframework(moduleName, onRequire [,onError])`
- *  - `newrelic.instrumentWebframework(options)`
- *
- * @param {object} options
- *  The options for this custom instrumentation.
- *
- * @param {string} options.moduleName
- *  The module name given to require to load the module
- *
- * @param {function}  options.onRequire
- *  The function to call when the module is required
- *
- * @param {function} [options.onError]
- *  If provided, should `onRequire` throw an error, the error will be passed to
- *  this function.
- */
-API.prototype.instrumentWebframework = function instrumentWebframework(
-  moduleName,
-  onRequire,
-  onError
-) {
-  const metric = this.agent.metrics.getOrCreateMetric(
-    NAMES.SUPPORTABILITY.API + '/instrumentWebframework'
-  )
-  metric.incrementCallCount()
-
-  let opts = moduleName
-  if (typeof opts === 'string') {
-    opts = {
-      moduleName: moduleName,
-      onRequire: onRequire,
-      onError: onError
-    }
-  }
-
-  opts.type = MODULE_TYPE.WEB_FRAMEWORK
-  shimmer.registerInstrumentation(opts)
-}
-
-/**
- * Registers an instrumentation function for instrumenting message brokers.
- *
- *  - `newrelic.instrumentMessages(moduleName, onRequire [,onError])`
- *  - `newrelic.instrumentMessages(options)`
- *
- * @param {object} options
- *  The options for this custom instrumentation.
- *
- * @param {string} options.moduleName
- *  The module name given to require to load the module
- *
- * @param {function}  options.onRequire
- *  The function to call when the module is required
- *
- * @param {function} [options.onError]
- *  If provided, should `onRequire` throw an error, the error will be passed to
- *  this function.
- */
-API.prototype.instrumentMessages = function instrumentMessages(moduleName, onRequire, onError) {
-  const metric = this.agent.metrics.getOrCreateMetric(
-    NAMES.SUPPORTABILITY.API + '/instrumentMessages'
-  )
-  metric.incrementCallCount()
-
-  let opts = moduleName
-  if (typeof opts === 'string') {
-    opts = {
-      moduleName: moduleName,
-      onRequire: onRequire,
-      onError: onError
-    }
-  }
-
-  opts.type = MODULE_TYPE.MESSAGE
-  shimmer.registerInstrumentation(opts)
 }
 
 /**
@@ -1424,19 +1397,16 @@ API.prototype.getTraceMetadata = function getTraceMetadata() {
  *
  * @param {object} [options]
  *  Object with shut down options.
- *
  * @param {boolean} [options.collectPendingData=false]
  *  If true, the agent will send any pending data to the collector before
  *  shutting down.
- *
  * @param {number} [options.timeout=0]
  *  Time in milliseconds to wait before shutting down.
- *
  * @param {boolean} [options.waitForIdle=false]
  *  If true, the agent will not shut down until there are no active transactions.
- *
- * @param {function} [callback]
+ * @param {Function} [callback]
  *  Callback function that runs when agent stops.
+ * @param cb
  */
 API.prototype.shutdown = function shutdown(options, cb) {
   this.agent.metrics.getOrCreateMetric(`${NAMES.SUPPORTABILITY.API}/shutdown`).incrementCallCount()
@@ -1458,6 +1428,11 @@ API.prototype.shutdown = function shutdown(options, cb) {
   _doShutdown(this, options, callback)
 }
 
+/**
+ * @param api
+ * @param options
+ * @param callback
+ */
 function _doShutdown(api, options, callback) {
   const agent = api.agent
 
@@ -1473,6 +1448,9 @@ function _doShutdown(api, options, callback) {
     return
   }
 
+  /**
+   * @param error
+   */
   function afterHarvest(error) {
     if (error) {
       logger.error(error, 'An error occurred while running last harvest before shutdown.')
@@ -1506,6 +1484,10 @@ function _doShutdown(api, options, callback) {
   }
 }
 
+/**
+ * @param object
+ * @param maxLength
+ */
 function _checkKeyLength(object, maxLength) {
   const keys = Object.keys(object)
   let badKey = false
@@ -1534,6 +1516,10 @@ API.prototype.setLambdaHandler = function setLambdaHandler(handler) {
   return this.awsLambda.patchLambdaHandler(handler)
 }
 
+/**
+ * @param attributes
+ * @param name
+ */
 function _filterAttributes(attributes, name) {
   const filteredAttributes = Object.create(null)
   Object.keys(attributes).forEach((attributeKey) => {
