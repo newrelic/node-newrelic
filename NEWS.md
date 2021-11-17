@@ -1,3 +1,15 @@
+### v8.6.0 (2021-11-17)
+
+* Added `onResolved` instrumentation hook to apply instrumentation prior to module load.
+
+  This hook fires after the module filepath has been resolved just prior to the module being loaded by the CommonJS module loader.
+
+* Fixed issue where `recordConsume` was not binding consumer if it was a promise
+
+* Pinned mongo versioned tests to `<4.2.0` until we can address https://github.com/newrelic/node-newrelic/issues/982
+
+* Introduced a context management API to be used in place of manually calling tracer.segment get/set.
+
 ### v8.5.2 (2021-11-09)
 
 * Fixed issue where unhandled promise rejections were not getting logged as errors in a lambda execution
