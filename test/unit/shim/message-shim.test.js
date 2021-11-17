@@ -591,7 +591,8 @@ tap.test('MessageShim', function (t) {
       }
 
       const wrapped = shim.recordConsume(wrapMe, {
-        destinationName: shim.FIRST
+        destinationName: shim.FIRST,
+        promise: true
       })
 
       return helper.runInTransaction(agent, function () {
