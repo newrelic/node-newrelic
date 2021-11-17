@@ -544,10 +544,15 @@ tap.test('MessageShim', function (t) {
     t.test('should handle promise-based APIs', function (t) {
       const msg = {}
       let segment = null
+      const DELAY = 25
 
       function wrapMe() {
         segment = shim.getSegment()
-        return new Promise((resolve) => resolve(msg))
+        return new Promise((resolve) => {
+          setTimeout(() => {
+            resolve(msg)
+          }, DELAY)
+        })
       }
 
       const wrapped = shim.recordConsume(wrapMe, {
@@ -561,10 +566,40 @@ tap.test('MessageShim', function (t) {
 
       return helper.runInTransaction(agent, function () {
         return wrapped('foo', function () {}).then(function (message) {
+          const duration = segment.getDurationInMillis()
+          t.ok(duration > DELAY - 1, 'segment duration should be at least 100 ms')
           t.equal(message, msg)
           const attributes = segment.getAttributes()
           t.equal(attributes.a, 'a')
           t.equal(attributes.b, 'b')
+        })
+      })
+    })
+
+    t.test('should bind promise even without messageHandler', function (t) {
+      const msg = {}
+      let segment = null
+      const DELAY = 25
+
+      function wrapMe() {
+        segment = shim.getSegment()
+        return new Promise((resolve) => {
+          setTimeout(() => {
+            resolve(msg)
+          }, DELAY)
+        })
+      }
+
+      const wrapped = shim.recordConsume(wrapMe, {
+        destinationName: shim.FIRST,
+        promise: true
+      })
+
+      return helper.runInTransaction(agent, function () {
+        return wrapped('foo', function () {}).then(function (message) {
+          const duration = segment.getDurationInMillis()
+          t.ok(duration > DELAY - 1, 'segment duration should be at least 100 ms')
+          t.equal(message, msg)
         })
       })
     })
@@ -972,6 +1007,27 @@ tap.test('MessageShim', function (t) {
             t.notOk(tx.isActive())
             t.end()
           }, 5)
+        })
+      })
+    })
+
+    t.test('should properly time promise based consumers', function (t) {
+      messageHandler = function () {
+        return { promise: true }
+      }
+
+      let segment
+      const DELAY = 25
+      wrapped('my.queue', function consumer() {
+        return new Promise((resolve) => {
+          segment = shim.getSegment()
+          setTimeout(resolve, DELAY)
+        }).then(function () {
+          setImmediate(() => {
+            const duration = segment.getDurationInMillis()
+            t.ok(duration > DELAY - 1, 'promised based consumers should be timed properly')
+            t.end()
+          })
         })
       })
     })
