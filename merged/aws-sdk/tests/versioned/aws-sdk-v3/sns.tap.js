@@ -62,6 +62,22 @@ tap.test('SNS', (t) => {
     helper && helper.unload()
   })
 
+  t.test('publish with callback', (t) => {
+    helper.runInTransaction((tx) => {
+      const params = { Message: 'Hello!' }
+
+      const cmd = new PublishCommand(params)
+      sns.send(cmd, (err) => {
+        t.error(err)
+        tx.end()
+
+        const destName = 'PhoneNumber'
+        const args = [t, tx, destName]
+        setImmediate(finish, ...args)
+      })
+    })
+  })
+
   t.test('publish with default destination(PhoneNumber)', (t) => {
     helper.runInTransaction(async (tx) => {
       const params = { Message: 'Hello!' }
