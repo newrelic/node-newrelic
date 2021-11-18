@@ -10,6 +10,8 @@ const helper = require('../../lib/agent_helper')
 const Shim = require('../../../lib/shim/shim')
 
 const agent = helper.loadMockedAgent()
+const contextManager = helper.getContextManager()
+
 const shim = new Shim(agent, 'test-module', './')
 const suite = benchmark.createBenchmark({ name: 'Shim#record' })
 
@@ -38,7 +40,7 @@ const wrapped = shim.record(getTest(), 'func', function () {
 suite.add({
   name: 'wrapper - no transaction',
   fn: function () {
-    agent.tracer.segment = null
+    contextManager.setContext(null)
     wrapped.func(noop)
   }
 })
@@ -46,7 +48,7 @@ suite.add({
 suite.add({
   name: 'wrapper - in transaction',
   fn: function () {
-    agent.tracer.segment = transaction.trace.root
+    contextManager.setContext(transaction.trace.root)
     wrapped.func(noop)
   }
 })
