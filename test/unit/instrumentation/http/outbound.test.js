@@ -19,10 +19,11 @@ const nock = require('nock')
 const Segment = require('../../../../lib/transaction/trace/segment')
 const { DESTINATIONS } = require('../../../../lib/config/attribute-filter')
 
+const HOSTNAME = 'localhost'
+const PORT = 8890
+
 tap.test('instrumentOutbound', (t) => {
-  let agent
-  const HOSTNAME = 'localhost'
-  const PORT = 8890
+  let agent = null
 
   t.beforeEach(() => {
     agent = helper.loadMockedAgent()
@@ -384,10 +385,13 @@ tap.test('should add data from cat header to segment', (t) => {
 })
 
 tap.test('when working with http.request', (t) => {
-  let agent
+  let agent = null
+  let contextManager = null
 
   t.beforeEach(() => {
     agent = helper.instrumentMockedAgent()
+    contextManager = helper.getContextManager()
+
     nock.disableNetConnect()
   })
 
@@ -403,7 +407,7 @@ tap.test('when working with http.request', (t) => {
 
     helper.runInTransaction(agent, function (transaction) {
       http.get('http://www.google.com/index.html', function (res) {
-        const segment = agent.tracer.getSegment()
+        const segment = contextManager.getContext()
 
         t.equal(segment.name, 'External/www.google.com/index.html')
         res.resume()
@@ -441,7 +445,7 @@ tap.test('when working with http.request', (t) => {
 
     helper.runInTransaction(agent, function (transaction) {
       http.get('http://www.google.com/index.html', function (res) {
-        const segment = agent.tracer.getSegment()
+        const segment = contextManager.getContext()
 
         t.ok(segment.timer.hrstart instanceof Array)
         t.equal(segment.timer.hrDuration, null)
@@ -467,10 +471,11 @@ tap.test('when working with http.request', (t) => {
     helper.runInTransaction(agent, (transaction) => {
       const parentSegment = agent.tracer.createSegment('ParentSegment')
       parentSegment.opaque = true
-      agent.tracer.segment = parentSegment // make the current active segment
+
+      contextManager.setContext(parentSegment) // make the current active segment
 
       http.get(`${host}${path}`, (res) => {
-        const segment = agent.tracer.getSegment()
+        const segment = contextManager.getContext()
 
         t.equal(segment, parentSegment)
         t.equal(segment.name, 'ParentSegment')
@@ -576,9 +581,12 @@ tap.test('Should properly handle http(s) get and request signatures', (t) => {
   t.autoend()
 
   let agent = null
+  let contextManager = null
 
   function beforeTest() {
     agent = helper.instrumentMockedAgent()
+    contextManager = helper.getContextManager()
+
     nock.disableNetConnect()
   }
 
@@ -721,7 +729,7 @@ tap.test('Should properly handle http(s) get and request signatures', (t) => {
         str = 'Hello from Google'
       }
 
-      const segment = agent.tracer.getSegment()
+      const segment = contextManager.getContext()
 
       t.equal(segment.name, external)
       t.equal(res.statusCode, 200)
