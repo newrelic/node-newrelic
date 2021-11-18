@@ -10,7 +10,7 @@ const helper = require('../../lib/agent_helper')
 const asyncHooks = require('async_hooks')
 
 test('await', function (t) {
-  const agent = setupAgent(t)
+  const { agent } = setupAgent(t)
 
   helper.runInTransaction(agent, async function (txn) {
     let transaction = agent.getTransaction()
@@ -68,7 +68,7 @@ test("the agent's async hook", function (t) {
 
   t.autoend()
   t.test('does not crash on multiple resolve calls', function (t) {
-    const agent = setupAgent(t)
+    const { agent } = setupAgent(t)
     helper.runInTransaction(agent, function () {
       t.doesNotThrow(function () {
         new Promise(function (resolve) {
@@ -80,17 +80,18 @@ test("the agent's async hook", function (t) {
   })
 
   t.test('does not restore a segment for a resource created outside a transaction', function (t) {
-    const agent = setupAgent(t)
+    const { agent, contextManager } = setupAgent(t)
+
     const testResource = new TestResource(1)
     helper.runInTransaction(agent, function () {
-      const root = agent.tracer.segment
+      const root = contextManager.getContext()
       const segmentMap = require('../../../lib/instrumentation/core/async_hooks').segmentMap
 
       t.equal(segmentMap.size, 0, 'no segments should be tracked')
       testResource.doStuff(function () {
-        t.ok(agent.tracer.segment, 'should be in a transaction')
+        t.ok(contextManager.getContext(), 'should be in a transaction')
         t.equal(
-          agent.tracer.segment.name,
+          contextManager.getContext().name,
           root.name,
           'loses transaction state for resources created outside of a transaction'
         )
@@ -100,14 +101,15 @@ test("the agent's async hook", function (t) {
   })
 
   t.test('restores context in inactive transactions', function (t) {
-    const agent = setupAgent(t)
+    const { agent, contextManager } = setupAgent(t)
+
     helper.runInTransaction(agent, function (txn) {
       const testResource = new TestResource(1)
-      const root = agent.tracer.segment
+      const root = contextManager.getContext()
       txn.end()
       testResource.doStuff(function () {
         t.equal(
-          agent.tracer.segment,
+          contextManager.getContext(),
           root,
           'the hooks restore a segment when its transaction has been ended'
         )
@@ -127,7 +129,7 @@ test("the agent's async hook", function (t) {
     'parent promises that are already resolved DO NOT persist to continuations ' +
       'scheduled after a timer async hop.',
     function (t) {
-      const agent = setupAgent(t)
+      const { agent } = setupAgent(t)
       const tasks = []
       const intervalId = setInterval(() => {
         while (tasks.length) {
@@ -165,7 +167,7 @@ test("the agent's async hook", function (t) {
    * For unresolved parent promises, persistance should stil work as expected.
    */
   t.test('unresolved parent promises persist perspective to problematic progeny', function (t) {
-    const agent = setupAgent(t)
+    const { agent } = setupAgent(t)
     const tasks = []
     const intervalId = setInterval(() => {
       while (tasks.length) {
@@ -206,7 +208,7 @@ test("the agent's async hook", function (t) {
    * mechanism that clears (and sets hook as active) causes this to fail.
    */
   t.test('DOES NOT maintain transaction context', function (t) {
-    const agent = setupAgent(t)
+    const { agent } = setupAgent(t)
     const tasks = []
     const intervalId = setInterval(() => {
       while (tasks.length) {
@@ -270,7 +272,7 @@ test("the agent's async hook", function (t) {
   })
 
   t.test('maintains transaction context for unresolved promises', function (t) {
-    const agent = setupAgent(t)
+    const { agent } = setupAgent(t)
     const tasks = []
     const intervalId = setInterval(() => {
       while (tasks.length) {
@@ -340,7 +342,7 @@ test("the agent's async hook", function (t) {
   })
 
   t.test('stops propagation on transaction end', function (t) {
-    const agent = setupAgent(t)
+    const { agent, contextManager } = setupAgent(t)
 
     helper.runInTransaction(agent, function (txn) {
       t.ok(txn, 'transaction should not be null')
@@ -349,13 +351,13 @@ test("the agent's async hook", function (t) {
 
       function one() {
         return new Promise((done) => {
-          const currentSegment = agent.tracer.segment
+          const currentSegment = contextManager.getContext()
           t.ok(currentSegment, 'should have propagated a segment')
           txn.end()
 
           done()
         }).then(() => {
-          const currentSegment = agent.tracer.segment
+          const currentSegment = contextManager.getContext()
           t.notOk(currentSegment, 'should not have a propagated segment')
           t.end()
         })
@@ -364,7 +366,7 @@ test("the agent's async hook", function (t) {
   })
 
   t.test('loses transaction context', function (t) {
-    const agent = setupAgent(t)
+    const { agent } = setupAgent(t)
     const tasks = []
     const intervalId = setInterval(() => {
       while (tasks.length) {
@@ -417,33 +419,34 @@ test("the agent's async hook", function (t) {
   })
 
   t.test('handles multientry callbacks correctly', function (t) {
-    const agent = setupAgent(t)
+    const { agent, contextManager } = setupAgent(t)
+
     const segmentMap = require('../../../lib/instrumentation/core/async_hooks').segmentMap
     helper.runInTransaction(agent, function () {
-      const root = agent.tracer.segment
+      const root = contextManager.getContext()
 
       const aSeg = agent.tracer.createSegment('A')
-      agent.tracer.segment = aSeg
+      contextManager.setContext(aSeg)
       const resA = new TestResource(1)
 
       const bSeg = agent.tracer.createSegment('B')
-      agent.tracer.segment = bSeg
+      contextManager.setContext(bSeg)
       const resB = new TestResource(2)
 
-      agent.tracer.segment = root
+      contextManager.setContext(root)
 
       t.equal(segmentMap.size, 2, 'all resources should create an entry on init')
 
       resA.doStuff(() => {
         t.equal(
-          agent.tracer.segment.name,
+          contextManager.getContext().name,
           aSeg.name,
           'runInAsyncScope should restore the segment active when a resource was made'
         )
 
         resB.doStuff(() => {
           t.equal(
-            agent.tracer.segment.name,
+            contextManager.getContext().name,
             bSeg.name,
             'runInAsyncScope should restore the segment active when a resource was made'
           )
@@ -451,15 +454,19 @@ test("the agent's async hook", function (t) {
           t.end()
         })
         t.equal(
-          agent.tracer.segment.name,
+          contextManager.getContext().name,
           aSeg.name,
           'runInAsyncScope should restore the segment active when a callback was called'
         )
       })
-      t.equal(agent.tracer.segment.name, root.name, 'root should be restored after we are finished')
+      t.equal(
+        contextManager.getContext().name,
+        root.name,
+        'root should be restored after we are finished'
+      )
       resA.doStuff(() => {
         t.equal(
-          agent.tracer.segment.name,
+          contextManager.getContext().name,
           aSeg.name,
           'runInAsyncScope should restore the segment active when a resource was made'
         )
@@ -471,7 +478,7 @@ test("the agent's async hook", function (t) {
     'cleans up unresolved promises on destroy',
     { skip: process.env.NEW_RELIC_FEATURE_FLAG_UNRESOLVED_PROMISE_CLEANUP === 'false' },
     (t) => {
-      const agent = setupAgent(t)
+      const { agent } = setupAgent(t)
       const segmentMap = require('../../../lib/instrumentation/core/async_hooks').segmentMap
 
       helper.runInTransaction(agent, () => {
@@ -500,7 +507,7 @@ test("the agent's async hook", function (t) {
     'does not clean up unresolved promises on destroy when `unresolved_promise_cleanup` is set to false',
     { skip: process.env.NEW_RELIC_FEATURE_FLAG_UNRESOLVED_PROMISE_CLEANUP !== 'false' },
     (t) => {
-      const agent = setupAgent(t)
+      const { agent } = setupAgent(t)
       const segmentMap = require('../../../lib/instrumentation/core/async_hooks').segmentMap
 
       helper.runInTransaction(agent, () => {
@@ -604,9 +611,15 @@ function setupAgent(t) {
   const agent = helper.instrumentMockedAgent({
     feature_flag: { await_support: true }
   })
+
+  const contextManager = helper.getContextManager()
+
   t.teardown(function () {
     helper.unloadAgent(agent)
   })
 
-  return agent
+  return {
+    agent,
+    contextManager
+  }
 }

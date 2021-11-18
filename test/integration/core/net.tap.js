@@ -14,14 +14,14 @@ function id(tx) {
 }
 
 test('createServer', function createServerTest(t) {
-  const agent = setupAgent(t)
+  const { agent, contextManager } = setupAgent(t)
 
   helper.runInTransaction(agent, function transactionWrapper(transaction) {
     const server = net.createServer(handler)
 
     server.listen(4123, function listening() {
       // leave transaction
-      agent.tracer.segment = null
+      contextManager.setContext(null)
       const socket = net.connect({ port: 4123 })
       socket.write('test123')
       socket.end()
@@ -31,7 +31,7 @@ test('createServer', function createServerTest(t) {
       t.equal(id(agent.getTransaction()), id(transaction), 'should maintain tx')
       socket.end('test')
       t.equal(
-        agent.tracer.getSegment().name,
+        contextManager.getContext().name,
         'net.Server.onconnection',
         'child segment should have correct name'
       )
@@ -61,7 +61,7 @@ test('createServer', function createServerTest(t) {
 })
 
 test('connect', function connectTest(t) {
-  const agent = setupAgent(t)
+  const { agent } = setupAgent(t)
 
   const server = net.createServer(function connectionHandler(socket) {
     socket.on('data', function onData(data) {
@@ -135,7 +135,8 @@ test('connect', function connectTest(t) {
 })
 
 test('createServer and connect', function createServerTest(t) {
-  const agent = setupAgent(t)
+  const { agent, contextManager } = setupAgent(t)
+
   helper.runInTransaction(agent, function transactionWrapper(transaction) {
     const server = net.createServer(handler)
 
@@ -149,7 +150,7 @@ test('createServer and connect', function createServerTest(t) {
       t.equal(id(agent.getTransaction()), id(transaction), 'should maintain tx')
       socket.end('test')
       t.equal(
-        agent.tracer.getSegment().name,
+        contextManager.getContext().name,
         'net.Server.onconnection',
         'child segment should have correct name'
       )
@@ -198,8 +199,14 @@ test('createServer and connect', function createServerTest(t) {
 
 function setupAgent(t) {
   const agent = helper.instrumentMockedAgent()
+  const contextManager = helper.getContextManager()
+
   t.teardown(function tearDown() {
     helper.unloadAgent(agent)
   })
-  return agent
+
+  return {
+    agent,
+    contextManager
+  }
 }
