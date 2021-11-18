@@ -36,7 +36,7 @@
     "eslint-plugin-prettier": "^3.4.0",
     "husky": "^7.0.2",
     "lint-staged": "^11.1.2",
-    "newrelic": "^8.1.0",
+    "newrelic": "^8.6.0",
     "prettier": "^2.3.2",
     "sinon": "^7.2.3",
     "tap": "^15.0.9"

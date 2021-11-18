@@ -15,5 +15,10 @@ module.exports = [
     type: 'message',
     moduleName: '@aws-sdk/client-sns',
     onRequire: require('./lib/v3-sns')
+  },
+  {
+    type: 'generic',
+    moduleName: '@aws-sdk/smithy-client',
+    onResolved: require('./lib/smithy-client')
   }
 ]

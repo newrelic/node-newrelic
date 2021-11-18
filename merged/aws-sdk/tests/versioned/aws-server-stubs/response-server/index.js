@@ -6,6 +6,9 @@
 'use strict'
 
 const http = require('http')
+const { getAddTagsResponse } = require('./elasticache')
+const { getAcceptExchangeResponse } = require('./redshift')
+const { getSendEmailResponse } = require('./ses')
 const { getPublishResponse, getListTopicsResponse } = require('./sns')
 const {
   getCreateQueueResponse,
@@ -68,6 +71,12 @@ function createGetDataFromAction(endpoint, body) {
       return getSendMessageBatchResponse.bind(null)
     case 'ReceiveMessage':
       return getReceiveMessageResponse.bind(null)
+    case 'SendEmail':
+      return getSendEmailResponse.bind(null)
+    case 'AcceptReservedNodeExchange':
+      return getAcceptExchangeResponse.bind(null)
+    case 'AddTagsToResource':
+      return getAddTagsResponse.bind(null)
     default:
       return function actionNotImplemented(callback) {
         setImmediate(() => {

@@ -1097,7 +1097,7 @@ SOFTWARE.
 
 ### newrelic
 
-This product includes source derived from [newrelic](https://github.com/newrelic/node-newrelic) ([v8.1.0](https://github.com/newrelic/node-newrelic/tree/v8.1.0)), distributed under the [Apache-2.0 License](https://github.com/newrelic/node-newrelic/blob/v8.1.0/LICENSE):
+This product includes source derived from [newrelic](https://github.com/newrelic/node-newrelic) ([v8.6.0](https://github.com/newrelic/node-newrelic/tree/v8.6.0)), distributed under the [Apache-2.0 License](https://github.com/newrelic/node-newrelic/blob/v8.6.0/LICENSE):
 
 ```
                                  Apache License
