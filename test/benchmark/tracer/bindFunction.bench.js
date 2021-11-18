@@ -11,10 +11,11 @@ const shared = require('./shared')
 const s = shared.makeSuite()
 const suite = s.suite
 const tracer = s.agent.tracer
+const contextManager = helper.getContextManager()
 const tx = helper.runInTransaction(s.agent, function (_tx) {
   return _tx
 })
-tracer.segment = tx.root
+contextManager.setContext(tx.root)
 
 preOptBind()
 const bound = tracer.bindFunction(shared.getTest().func, tx.root, true)

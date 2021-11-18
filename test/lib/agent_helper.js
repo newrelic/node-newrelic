@@ -37,6 +37,7 @@ const helper = (module.exports = {
   SSL_HOST: 'localhost',
   outOfContextQueueInterval,
   getAgent: () => _agent,
+  getContextManager: () => _agent && _agent._contextManager,
 
   /**
    * Set up an agent that won't try to connect to the collector, but also

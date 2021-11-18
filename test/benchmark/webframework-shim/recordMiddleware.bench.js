@@ -10,6 +10,7 @@ const helper = require('../../lib/agent_helper')
 const WebFrameworkShim = require('../../../lib/shim/webframework-shim')
 
 const agent = helper.loadMockedAgent()
+const contextManager = helper.getContextManager()
 const shim = new WebFrameworkShim(agent, 'test-module', './')
 const suite = benchmark.createBenchmark({ name: 'recordMiddleware' })
 
@@ -56,7 +57,7 @@ function addTests(name, speccer) {
   suite.add({
     name: name + ' - wrapper (no tx)    ',
     fn: function () {
-      agent.tracer.segment = null
+      contextManager.setContext(null)
       middleware(getReqd(), {}, noop)
     }
   })
@@ -64,7 +65,7 @@ function addTests(name, speccer) {
   suite.add({
     name: name + ' - wrapper (tx)       ',
     fn: function () {
-      agent.tracer.segment = transaction.trace.root
+      contextManager.setContext(transaction.trace.root)
       middleware(getReqd(), {}, noop)
     }
   })

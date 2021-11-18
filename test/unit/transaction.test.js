@@ -25,12 +25,14 @@ const sinon = require('sinon')
 
 describe('Transaction', function () {
   let agent = null
+  let contextManager = null
   let trans = null
 
   beforeEach(function () {
     agent = helper.loadMockedAgent({
       attributes: { enabled: true }
     })
+    contextManager = helper.getContextManager()
     trans = new Transaction(agent)
   })
 
@@ -1003,11 +1005,11 @@ describe('Transaction', function () {
 
     it('adds the current span id as the parent span id', function () {
       agent.config.span_events.enabled = true
-      agent.tracer.segment = tx.trace.root
+      contextManager.setContext(tx.trace.root)
       tx.sampled = true
       const payload = JSON.parse(tx._createDistributedTracePayload().text())
       expect(payload.d.id).to.equal(tx.trace.root.id)
-      agent.tracer.segment = null
+      contextManager.setContext(null)
       agent.config.span_events.enabled = false
     })
 
@@ -1015,10 +1017,10 @@ describe('Transaction', function () {
       agent.config.span_events.enabled = true
       tx._calculatePriority()
       tx.sampled = false
-      agent.tracer.segment = tx.trace.root
+      contextManager.setContext(tx.trace.root)
       const payload = JSON.parse(tx._createDistributedTracePayload().text())
       expect(payload.d.id).to.be.undefined
-      agent.tracer.segment = null
+      contextManager.setContext(null)
       agent.config.span_events.enabled = false
     })
 
@@ -1297,7 +1299,7 @@ describe('Transaction', function () {
 
       const tx = new Transaction(agent)
 
-      agent.tracer.segment = tx.trace.root
+      contextManager.setContext(tx.trace.root)
 
       const outboundHeaders = createHeadersAndInsertTrace(tx)
       const traceparent = outboundHeaders.traceparent
@@ -1314,7 +1316,7 @@ describe('Transaction', function () {
       expect(traceparentParts[1], 'traceId is lowercase hex').to.match(lowercaseHexRegex)
       expect(traceparentParts[2], 'parentId is lowercase hex').to.match(lowercaseHexRegex)
 
-      agent.tracer.segment = null
+      contextManager.setContext(null)
     })
 
     it('should generate new parentId when spans_events disabled', () => {
@@ -1325,7 +1327,7 @@ describe('Transaction', function () {
       const tx = new Transaction(agent)
       const lowercaseHexRegex = /^[a-f0-9]+/
 
-      agent.tracer.segment = tx.trace.root
+      contextManager.setContext(tx.trace.root)
 
       const outboundHeaders = createHeadersAndInsertTrace(tx)
       const traceparent = outboundHeaders.traceparent
@@ -1343,7 +1345,7 @@ describe('Transaction', function () {
 
       const tx = new Transaction(agent)
 
-      agent.tracer.segment = tx.trace.root
+      contextManager.setContext(tx.trace.root)
       tx.sampled = true
 
       const outboundHeaders = createHeadersAndInsertTrace(tx)
@@ -1352,7 +1354,7 @@ describe('Transaction', function () {
 
       expect(traceparentParts[3], 'flags').to.equal('01')
 
-      agent.tracer.segment = null
+      contextManager.setContext(null)
     })
 
     it('should set traceparent traceid if traceparent exists on transaction', () => {
@@ -1366,14 +1368,14 @@ describe('Transaction', function () {
 
       tx.acceptTraceContextPayload(traceparent, tracestate)
 
-      agent.tracer.segment = tx.trace.root
+      contextManager.setContext(tx.trace.root)
 
       const outboundHeaders = createHeadersAndInsertTrace(tx)
       const traceparentParts = outboundHeaders.traceparent.split('-')
 
       expect(traceparentParts[1], 'traceId').to.equal('4bf92f3577b34da6a3ce929d0e0e4736')
 
-      agent.tracer.segment = null
+      contextManager.setContext(null)
     })
 
     it('generates a priority for entry-point transactions', () => {
@@ -1603,6 +1605,7 @@ tap.test('when being named with finalizeNameFromUri', (t) => {
   t.autoend()
 
   let agent = null
+  let contextManager = null
   let transaction = null
 
   t.beforeEach(() => {
@@ -1615,6 +1618,7 @@ tap.test('when being named with finalizeNameFromUri', (t) => {
         enabled: true
       }
     })
+    contextManager = helper.getContextManager()
 
     transaction = new Transaction(agent)
   })
@@ -1666,8 +1670,7 @@ tap.test('when being named with finalizeNameFromUri', (t) => {
   t.test('should add finalized via rule transaction name to active span intrinsics', (t) => {
     agent.userNormalizer.addSimple('^/config', '/foobar')
 
-    // force a segment in context
-    agent.tracer.segment = new Segment(transaction, 'test segment')
+    addSegmentInContext(contextManager, transaction, 'test segment')
 
     transaction.finalizeNameFromUri('/config', 200)
 
@@ -1710,8 +1713,7 @@ tap.test('when being named with finalizeNameFromUri', (t) => {
       'should add finalized via rule transaction name to active span intrinsics',
     (t) => {
       setupNameState(transaction)
-      // force a segment in context
-      agent.tracer.segment = new Segment(transaction, 'test segment')
+      addSegmentInContext(contextManager, transaction, 'test segment')
 
       transaction.finalizeNameFromUri('/some/random/path', 200)
 
@@ -1757,6 +1759,7 @@ tap.test('requestd', (t) => {
   t.autoend()
 
   let agent = null
+  let contextManager = null
   let transaction = null
 
   t.beforeEach(() => {
@@ -1772,6 +1775,8 @@ tap.test('requestd', (t) => {
       }
     })
 
+    contextManager = helper.getContextManager()
+
     transaction = new Transaction(agent)
   })
 
@@ -1785,12 +1790,11 @@ tap.test('requestd', (t) => {
   t.test('when namestate populated should copy parameters from the name stack', (t) => {
     setupNameState(transaction)
 
-    // force a segment in context
-    agent.tracer.segment = new Segment(transaction, 'test segment')
+    addSegmentInContext(contextManager, transaction, 'test segment')
 
     transaction.finalizeNameFromUri('/some/random/path', 200)
 
-    const segment = transaction.agent.tracer.getSegment()
+    const segment = contextManager.getContext()
 
     t.match(segment.attributes.get(AttributeFilter.DESTINATIONS.SPAN_EVENT), {
       'request.parameters.foo': 'biz',
@@ -1805,6 +1809,7 @@ tap.test('when being named with finalizeName', (t) => {
   t.autoend()
 
   let agent = null
+  let contextManager = null
   let transaction = null
 
   t.beforeEach(() => {
@@ -1818,6 +1823,7 @@ tap.test('when being named with finalizeName', (t) => {
       }
     })
 
+    contextManager = helper.getContextManager()
     transaction = new Transaction(agent)
   })
 
@@ -1864,8 +1870,7 @@ tap.test('when being named with finalizeName', (t) => {
   })
 
   t.test('should add finalized transaction name to active span intrinsics', (t) => {
-    // force a segment in context
-    agent.tracer.segment = new Segment(transaction, 'test segment')
+    addSegmentInContext(contextManager, transaction, 'test segment')
 
     transaction.finalizeName('/config')
 
@@ -1903,4 +1908,11 @@ function createHeadersAndInsertTrace(transaction) {
   transaction.insertDistributedTraceHeaders(headers)
 
   return headers
+}
+
+function addSegmentInContext(contextManager, transaction, name) {
+  const segment = new Segment(transaction, name)
+  contextManager.setContext(segment)
+
+  return segment
 }

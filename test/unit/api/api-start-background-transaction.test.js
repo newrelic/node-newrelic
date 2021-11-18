@@ -13,16 +13,19 @@ tap.test('Agent API - startBackgroundTransaction', (t) => {
   t.autoend()
 
   let agent = null
+  let contextManager = null
   let api = null
 
   t.beforeEach(() => {
     agent = helper.loadMockedAgent()
+    contextManager = helper.getContextManager()
     api = new API(agent)
   })
 
   t.afterEach(() => {
     helper.unloadAgent(agent)
     agent = null
+    contextManager = null
   })
 
   t.test('should not throw when transaction cannot be created', (t) => {
@@ -46,7 +49,9 @@ tap.test('Agent API - startBackgroundTransaction', (t) => {
       t.equal(transaction.getFullName(), 'OtherTransaction/Nodejs/test')
       t.ok(transaction.isActive())
 
-      t.equal(agent.tracer.segment.children[0].name, 'Nodejs/nested')
+      const currentSegment = contextManager.getContext()
+      const nestedSegment = currentSegment.children[0]
+      t.equal(nestedSegment.name, 'Nodejs/nested')
     })
 
     function nested() {

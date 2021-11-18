@@ -303,8 +303,9 @@ function step(n, rejection) {
   }
 }
 
-function name(n) {
-  helper.getAgent().tracer.segment.name = n
+function name(newName) {
+  const segment = helper.getContextManager().getContext()
+  segment.name = newName
 }
 
 function checkTrace(t, tx, expected) {

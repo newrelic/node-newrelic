@@ -11,10 +11,13 @@ const helper = require('../../lib/agent_helper')
 const s = shared.makeSuite('Tracer utilities')
 const suite = s.suite
 const tracer = s.agent.tracer
+const contextManager = helper.getContextManager()
+
 const tx = helper.runInTransaction(s.agent, function (_tx) {
   return _tx
 })
-tracer.segment = tx.root
+
+contextManager.setContext(tx.root)
 
 suite.add({
   name: 'tracer.slice',
