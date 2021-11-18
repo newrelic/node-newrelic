@@ -19,7 +19,13 @@ module.exports = function instrument(shim, name, resolvedName) {
   }
 
   shim.setLibrary(shim.SNS)
-  shim.wrapClass(snsClientExport, 'SNSClient', { post: postClientConstructor, es6: true })
+  shim.wrapReturn(
+    snsClientExport,
+    'SNSClient',
+    function wrappedReturn(shim, original, name, instance) {
+      postClientConstructor.call(instance, shim)
+    }
+  )
 }
 
 /**
