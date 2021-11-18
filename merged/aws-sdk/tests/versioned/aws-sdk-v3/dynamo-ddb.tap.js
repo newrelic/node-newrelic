@@ -152,20 +152,13 @@ tap.test('DynamoDB', (t) => {
         'should have operation in segment name'
       )
       const attrs = segment.attributes.get(common.SEGMENT_DESTINATION)
-      t.match(
-        attrs,
-        {
-          'host': String,
-          'port_path_or_id': String,
-          'product': 'DynamoDB',
-          'collection': String,
-          'aws.operation': command.constructor.name,
-          // 'aws.requestId': String,
-          'aws.region': 'us-east-1',
-          'aws.service': 'DynamoDB'
-        },
-        'should have expected attributes'
-      )
+      t.equal(typeof attrs.host, 'string')
+      t.equal(typeof attrs.port_path_or_id, 'string')
+      t.equal(typeof attrs.collection, 'string')
+      t.match(attrs.product, /DynamoDB|dynamodb/)
+      t.match(attrs['aws.operation'], command.constructor.name)
+      t.match(attrs['aws.region'], 'us-east-1')
+      t.match(attrs['aws.service'], /DynamoDB|dynamodb/)
     })
 
     t.end()
