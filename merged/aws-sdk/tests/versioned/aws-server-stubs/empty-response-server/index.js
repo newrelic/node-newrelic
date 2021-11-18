@@ -6,6 +6,7 @@
 'use strict'
 
 const http = require('http')
+const { patchDestroy } = require('../common')
 
 function createEmptyResponseServer() {
   const server = http.createServer(function (req, res) {
@@ -29,21 +30,8 @@ function createEmptyResponseServer() {
     res.end('Unhandled request method')
   })
 
-  // server.destroy: close, but faster!
-  // tracks and manually closes any open sockets
-  const sockets = new Set()
-  server.on('connection', (socket) => {
-    sockets.add(socket)
-    socket.once('close', () => {
-      sockets.delete(socket)
-    })
-  })
-  server.destroy = function () {
-    sockets.forEach((socket) => {
-      socket.destroy()
-    })
-    server.close()
-  }
+  // patch server.destroy
+  patchDestroy(server)
 
   return server
 }

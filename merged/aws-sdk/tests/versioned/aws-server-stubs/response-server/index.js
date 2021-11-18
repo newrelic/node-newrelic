@@ -17,6 +17,7 @@ const {
   getReceiveMessageResponse
 } = require('./sqs')
 const { parseBody } = require('./common')
+const { patchDestroy } = require('../common')
 
 function createResponseServer() {
   const server = http.createServer(function (req, res) {
@@ -28,6 +29,9 @@ function createResponseServer() {
     res.statusCode = 500
     res.end()
   })
+
+  // patch server.destroy
+  patchDestroy(server)
 
   return server
 }
