@@ -69,6 +69,9 @@ describe('shimmer', function () {
       afterEach(function () {
         counter = 0
         onRequireArgs = null
+
+        clearCachedModules([TEST_MODULE_PATH])
+
         helper.unloadAgent(agent)
       })
 
@@ -777,8 +780,12 @@ tap.test('onResolved', (t) => {
   })
 
   t.test('Should not re-execute successful onResolved on multiple requires', (t) => {
+    t.teardown(() => {
+      clearCachedModules(['./module', '../helpers/require-module-1', '../helpers/require-module-2'])
+    })
+
     shimmer.registerInstrumentation({
-      moduleName: TEST_MODULE_PATH,
+      moduleName: './module', // Register how required modules will require this module
       onResolved: onResolvedHandler
     })
 
@@ -787,11 +794,8 @@ tap.test('onResolved', (t) => {
       invokeCount++
     }
 
-    require(TEST_MODULE_PATH)
-    require(TEST_MODULE_PATH)
-    require(TEST_MODULE_PATH)
-    require(TEST_MODULE_PATH)
-    require(TEST_MODULE_PATH)
+    require('../helpers/require-module-1')
+    require('../helpers/require-module-2')
 
     t.equal(invokeCount, 1)
 
@@ -799,8 +803,12 @@ tap.test('onResolved', (t) => {
   })
 
   t.test('Should not retry previously failed instrumentation', (t) => {
+    t.teardown(() => {
+      clearCachedModules(['./module', '../helpers/require-module-1', '../helpers/require-module-2'])
+    })
+
     shimmer.registerInstrumentation({
-      moduleName: TEST_MODULE_PATH,
+      moduleName: './module', // Register how required modules will require this module
       onResolved: onResolvedHandler
     })
 
@@ -810,14 +818,23 @@ tap.test('onResolved', (t) => {
       throw new Error('Instrumentation is haunted.')
     }
 
-    require(TEST_MODULE_PATH)
-    require(TEST_MODULE_PATH)
-    require(TEST_MODULE_PATH)
-    require(TEST_MODULE_PATH)
-    require(TEST_MODULE_PATH)
+    require('../helpers/require-module-1')
+    require('../helpers/require-module-2')
 
     t.equal(invokeCount, 1)
 
     t.end()
   })
 })
+
+function clearCachedModules(modules) {
+  modules.forEach((moduleName) => {
+    try {
+      const requirePath = require.resolve(moduleName)
+      delete require.cache[requirePath]
+      return true
+    } catch (e) {
+      return false
+    }
+  })
+}
