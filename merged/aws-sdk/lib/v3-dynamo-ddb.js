@@ -15,6 +15,7 @@ const COMMANDS = [
   'GetItemCommand',
   'PutItemCommand',
   'QueryCommand',
+  'ScanCommand',
   'UpdateItemCommand',
   'UpdateTableCommand'
 ]
@@ -27,7 +28,6 @@ module.exports = function instrument(shim, name, resolvedName) {
   // so we don't want to hard-code the relative
   // path from the module root.
   const dynamoClientExport = shim.require(`${relativeFolder}/DynamoDBClient`)
-  console.log(dynamoClientExport)
 
   if (!shim.isFunction(dynamoClientExport.DynamoDBClient)) {
     shim.logger.debug('Could not find DynamoDBClient, not instrumenting.')
@@ -49,7 +49,7 @@ module.exports = function instrument(shim, name, resolvedName) {
  * @param {Shim} shim
  */
 function postClientConstructor(shim) {
-  this.middlewareStack.use(getPlugin(shim))
+  this.middlewareStack.use(getPlugin(shim, this.config))
 }
 
 /**
@@ -58,10 +58,10 @@ function postClientConstructor(shim) {
  * @param {Shim} shim
  * @returns {object}
  */
-function getPlugin(shim) {
+function getPlugin(shim, config) {
   return {
     applyToStack: (clientStack) => {
-      clientStack.add(dynamoMiddleware.bind(null, shim), {
+      clientStack.add(dynamoMiddleware.bind(null, shim, config), {
         name: 'NewRelicDynamoMiddleware',
         step: 'initialize',
         priority: 'high'
@@ -79,12 +79,24 @@ function getPlugin(shim) {
  * @param {Object} context
  * @returns {function}
  */
-function dynamoMiddleware(shim, next, context) {
-  if (COMMANDS.includes(context.commandName)) {
-    return shim.recordProduce(next, getDynamoSpec)
-  }
+function dynamoMiddleware(shim, config, next, context) {
+  return async function wrappedMiddleware(args) {
+    if (!COMMANDS.includes(context.commandName)) {
+      return await next(args)
+    }
 
-  return next
+    const [endpoint, region] = await Promise.all([config.endpoint(), config.region()])
+    const wrappedNext = shim.recordOperation(
+      next,
+      getDynamoSpec.bind({
+        endpoint,
+        region,
+        serviceId: config.serviceId
+      })
+    )
+
+    return await wrappedNext(args)
+  }
 }
 
 /**
@@ -97,21 +109,23 @@ function dynamoMiddleware(shim, next, context) {
  */
 function getDynamoSpec(shim, original, name, args) {
   const [command] = args
+  const collection = (command.input && command.input.TableName) || 'Unknown'
+  const host = this.endpoint && this.endpoint.hostname
+  // eslint-disable-next-line camelcase
+  const port_path_or_id = this.endpoint && this.endpoint.port
   return {
-    promise: true,
+    name: command.constructor.name,
+    parameters: {
+      host,
+      port_path_or_id,
+      collection,
+      'product': this.serviceId,
+      'aws.operation': command.constructor.name,
+      // 'aws.requestId': String,
+      'aws.region': this.region,
+      'aws.service': this.serviceId
+    },
     callback: shim.LAST,
-    destinationName: getDestinationName(command.input),
-    destinationType: shim.TOPIC,
     opaque: true
   }
-}
-
-/**
- * Helper to set the appropriate destinationName based on
- * the command input
- *
- * @param {Object}
- */
-function getDestinationName(input) {
-  // TODO
 }

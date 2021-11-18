@@ -7,7 +7,6 @@
 
 const tap = require('tap')
 const utils = require('@newrelic/test-utilities')
-const async = require('async')
 
 const common = require('../common')
 const { createEmptyResponseServer, FAKE_CREDENTIALS } = require('../aws-server-stubs')
@@ -32,6 +31,7 @@ tap.test('DynamoDB', (t) => {
   let ScanCommand = null
   let QueryCommand = null
   let DeleteItemCommand = null
+  let DeleteTableCommand = null
 
   t.beforeEach(async () => {
     server = createEmptyResponseServer()
@@ -43,7 +43,7 @@ tap.test('DynamoDB', (t) => {
     helper = utils.TestAgent.makeInstrumented()
     helper.registerInstrumentation({
       moduleName: '@aws-sdk/client-dynamodb',
-      type: 'message',
+      type: 'datastore',
       onResolved: require('../../../lib/v3-dynamo-ddb')
     })
 
@@ -56,6 +56,7 @@ tap.test('DynamoDB', (t) => {
     ScanCommand = lib.ScanCommand
     QueryCommand = lib.QueryCommand
     DeleteItemCommand = lib.DeleteItemCommand
+    DeleteTableCommand = lib.DeleteTableCommand
 
     client = new DynamoDBClient({
       credentials: FAKE_CREDENTIALS,
@@ -64,7 +65,7 @@ tap.test('DynamoDB', (t) => {
     })
 
     tableName = `delete-aws-sdk-test-table-${Math.floor(Math.random() * 100000)}`
-    commands = createCommands(client, tableName)
+    commands = createCommands()
   })
 
   t.afterEach(async () => {
@@ -83,12 +84,13 @@ tap.test('DynamoDB', (t) => {
     ScanCommand = null
     QueryCommand = null
     DeleteItemCommand = null
+    DeleteTableCommand = null
   })
 
   t.test('commands', async (t) => {
     await helper.runInTransaction(async (tx) => {
       for (const command of commands) {
-        t.comment(`Testing ${command.name}`)
+        t.comment(`Testing ${command.constructor.name}`)
         try {
           await client.send(command)
         } catch (err) {
@@ -101,7 +103,7 @@ tap.test('DynamoDB', (t) => {
     })
   })
 
-  function createCommands(ddb, tableName) {
+  function createCommands() {
     const ddbUniqueArtist = `DELETE_One You Know ${Math.floor(Math.random() * 100000)}`
     const createTblParams = getCreateTableParams(tableName)
     const putItemParams = getPutItemParams(tableName, ddbUniqueArtist)
@@ -115,6 +117,7 @@ tap.test('DynamoDB', (t) => {
     const scanCommand = new ScanCommand({ TableName: tableName })
     const queryCommand = new QueryCommand(queryParams)
     const deleteItemCommand = new DeleteItemCommand(itemParams)
+    const deleteTableCommand = new DeleteTableCommand(deleteTableParams)
     return [
       createTableCommand,
       putItemCommand,
@@ -122,41 +125,47 @@ tap.test('DynamoDB', (t) => {
       updateItemCommand,
       scanCommand,
       queryCommand,
-      deleteItemCommand
+      deleteItemCommand,
+      deleteTableCommand
     ]
   }
 
   function finish(t, commands, tx) {
     const root = tx.trace.root
-    const segments = common.checkAWSAttributes(t, root, common.DATASTORE_PATTERN)
+    const segments = common.checkAWSAttributes(t, root, common.DATASTORE_PATTERN, [], true)
 
-    t.equal(segments.length, commands.length, `should have ${commands.length} AWS datastore segments`)
+    t.equal(
+      segments.length,
+      commands.length,
+      `should have ${commands.length} AWS datastore segments`
+    )
 
-    const externalSegments = common.checkAWSAttributes(t, root, common.EXTERN_PATTERN)
+    const externalSegments = common.checkAWSAttributes(t, root, common.EXTERN_PATTERN, [], true)
     t.equal(externalSegments.length, 0, 'should not have any External segments')
 
     segments.forEach((segment, i) => {
       const command = commands[i]
+      t.ok(command)
       t.equal(
         segment.name,
-        `Datastore/operation/DynamoDB/${command.name}`,
+        `Datastore/operation/DynamoDB/${command.constructor.name}`,
         'should have operation in segment name'
       )
       const attrs = segment.attributes.get(common.SEGMENT_DESTINATION)
-      // t.match(
-      //   attrs,
-      //   {
-      //     'host': String,
-      //     'port_path_or_id': String,
-      //     'product': 'DynamoDB',
-      //     'collection': String,
-      //     'aws.operation': command.name,
-      //     'aws.requestId': String,
-      //     'aws.region': 'us-east-1',
-      //     'aws.service': 'DynamoDB'
-      //   },
-      //   'should have expected attributes'
-      // )
+      t.match(
+        attrs,
+        {
+          'host': String,
+          'port_path_or_id': String,
+          'product': 'DynamoDB',
+          'collection': String,
+          'aws.operation': command.constructor.name,
+          // 'aws.requestId': String,
+          'aws.region': 'us-east-1',
+          'aws.service': 'DynamoDB'
+        },
+        'should have expected attributes'
+      )
     })
 
     t.end()
