@@ -29,6 +29,7 @@ function createEmptyResponseServer() {
     res.end('Unhandled request method')
   })
 
+  // server.destroy: close, but faster!
   // tracks and manually closes any open sockets
   const sockets = new Set()
   server.on('connection', (socket) => {

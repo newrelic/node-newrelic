@@ -459,7 +459,7 @@ This product includes source derived from [@newrelic/newrelic-oss-cli](https://g
 
 ### @newrelic/test-utilities
 
-This product includes source derived from [@newrelic/test-utilities](https://github.com/newrelic/node-test-utilities) ([v5.1.0](https://github.com/newrelic/node-test-utilities/tree/v5.1.0)), distributed under the [Apache-2.0 License](https://github.com/newrelic/node-test-utilities/blob/v5.1.0/LICENSE):
+This product includes source derived from [@newrelic/test-utilities](https://github.com/newrelic/node-test-utilities) ([v6.1.1](https://github.com/newrelic/node-test-utilities/tree/v6.1.1)), distributed under the [Apache-2.0 License](https://github.com/newrelic/node-test-utilities/blob/v6.1.1/LICENSE):
 
 ```
                                  Apache License
@@ -1097,7 +1097,7 @@ SOFTWARE.
 
 ### newrelic
 
-This product includes source derived from [newrelic](https://github.com/newrelic/node-newrelic) ([v8.1.0](https://github.com/newrelic/node-newrelic/tree/v8.1.0)), distributed under the [Apache-2.0 License](https://github.com/newrelic/node-newrelic/blob/v8.1.0/LICENSE):
+This product includes source derived from [newrelic](https://github.com/newrelic/node-newrelic) ([v8.6.0](https://github.com/newrelic/node-newrelic/tree/v8.6.0)), distributed under the [Apache-2.0 License](https://github.com/newrelic/node-newrelic/blob/v8.6.0/LICENSE):
 
 ```
                                  Apache License

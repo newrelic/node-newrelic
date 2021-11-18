@@ -74,11 +74,7 @@ function wrapMakeRequest(shim, fn, name, request) {
 
       const promise = shim.applySegment(original, activeSegment, false, this, arguments)
 
-      // TODO: convert to shim.bindPromise() once released.
-      return shim.interceptPromise(promise, function thenTouch() {
-        activeSegment.opaque = false
-        activeSegment.touch()
-      })
+      return shim.bindPromise(promise, activeSegment)
     }
   })
 }
