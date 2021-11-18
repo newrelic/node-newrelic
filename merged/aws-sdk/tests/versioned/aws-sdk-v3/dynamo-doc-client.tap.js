@@ -9,6 +9,7 @@ const tap = require('tap')
 const utils = require('@newrelic/test-utilities')
 const common = require('../common')
 const { createEmptyResponseServer, FAKE_CREDENTIALS } = require('../aws-server-stubs')
+const async = require('async')
 
 tap.test('DynamoDB', (t) => {
   t.autoend()
@@ -86,8 +87,6 @@ tap.test('DynamoDB', (t) => {
   t.test('client commands', (t) => {
     const docClient = new DynamoDBDocumentClient(client)
     helper.runInTransaction(async function (tx) {
-      // Execute commands in order
-      // Await works because this is in a for-loop / no callback api
       for (let i = 0; i < tests.length; i++) {
         const cfg = tests[i]
         t.comment(`Testing ${cfg.operation}`)
@@ -106,11 +105,31 @@ tap.test('DynamoDB', (t) => {
     })
   })
 
+  t.test('client commands via callback', (t) => {
+    const docClient = new DynamoDBDocumentClient(client)
+    helper.runInTransaction(function (tx) {
+      async.eachSeries(
+        tests,
+        (cfg, cb) => {
+          t.comment(`Testing ${cfg.operation}`)
+          docClient.send(new ddbCommands[cfg.command](cfg.params), (err) => {
+            t.error(err)
+            return setImmediate(cb)
+          })
+        },
+        () => {
+          tx.end()
+
+          const args = [t, tests, tx]
+          setImmediate(finish, ...args)
+        }
+      )
+    })
+  })
+
   t.test('client from commands', (t) => {
     const docClientFrom = DynamoDBDocumentClient.from(client)
     helper.runInTransaction(async function (tx) {
-      // Execute commands in order
-      // Await works because this is in a for-loop / no callback api
       for (let i = 0; i < tests.length; i++) {
         const cfg = tests[i]
         t.comment(`Testing ${cfg.operation}`)
