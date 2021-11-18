@@ -35,7 +35,13 @@ module.exports = function instrument(shim, name, resolvedName) {
   }
 
   shim.setDatastore(shim.DYNAMODB)
-  shim.wrapClass(dynamoClientExport, 'DynamoDBClient', { post: postClientConstructor, es6: true })
+  shim.wrapReturn(
+    dynamoClientExport,
+    'DynamoDBClient',
+    function wrappedReturn(shim, fn, name, instance) {
+      postClientConstructor.call(instance, shim)
+    }
+  )
 
   // eslint-disable-next-line consistent-return
   return
@@ -115,17 +121,9 @@ function getDynamoSpec(shim, original, name, args) {
   const port_path_or_id = this.endpoint && this.endpoint.port
   return {
     name: command.constructor.name,
-    parameters: {
-      host,
-      port_path_or_id,
-      collection,
-      'product': this.serviceId,
-      'aws.operation': command.constructor.name,
-      // 'aws.requestId': String,
-      'aws.region': this.region,
-      'aws.service': this.serviceId
-    },
+    parameters: { host, port_path_or_id, collection },
     callback: shim.LAST,
-    opaque: true
+    opaque: true,
+    promise: true
   }
 }

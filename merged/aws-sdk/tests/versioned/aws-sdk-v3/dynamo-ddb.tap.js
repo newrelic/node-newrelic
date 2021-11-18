@@ -41,6 +41,7 @@ tap.test('DynamoDB', (t) => {
     })
 
     helper = utils.TestAgent.makeInstrumented()
+    common.registerCoreInstrumentation(helper)
     helper.registerInstrumentation({
       moduleName: '@aws-sdk/client-dynamodb',
       type: 'datastore',
@@ -97,7 +98,6 @@ tap.test('DynamoDB', (t) => {
           t.error(err)
         }
       }
-      // TODO test instrumentation
       tx.end()
       await finish(t, commands, tx)
     })
@@ -132,7 +132,7 @@ tap.test('DynamoDB', (t) => {
 
   function finish(t, commands, tx) {
     const root = tx.trace.root
-    const segments = common.checkAWSAttributes(t, root, common.DATASTORE_PATTERN, [], true)
+    const segments = common.checkAWSAttributes(t, root, common.DATASTORE_PATTERN)
 
     t.equal(
       segments.length,
@@ -140,7 +140,7 @@ tap.test('DynamoDB', (t) => {
       `should have ${commands.length} AWS datastore segments`
     )
 
-    const externalSegments = common.checkAWSAttributes(t, root, common.EXTERN_PATTERN, [], true)
+    const externalSegments = common.checkAWSAttributes(t, root, common.EXTERN_PATTERN)
     t.equal(externalSegments.length, 0, 'should not have any External segments')
 
     segments.forEach((segment, i) => {
@@ -155,10 +155,6 @@ tap.test('DynamoDB', (t) => {
       t.equal(typeof attrs.host, 'string')
       t.equal(typeof attrs.port_path_or_id, 'string')
       t.equal(typeof attrs.collection, 'string')
-      t.match(attrs.product, /DynamoDB|dynamodb/)
-      t.match(attrs['aws.operation'], command.constructor.name)
-      t.match(attrs['aws.region'], 'us-east-1')
-      t.match(attrs['aws.service'], /DynamoDB|dynamodb/)
     })
 
     t.end()
