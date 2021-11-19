@@ -145,6 +145,22 @@
       "files": [
         "sns.tap.js"
       ]
+    },
+    {
+      "engines": {
+        "node": ">=12.0"
+      },
+      "dependencies": {
+        "@aws-sdk/util-dynamodb": "latest",
+        "@aws-sdk/client-dynamodb": "latest",
+        "@aws-sdk/lib-dynamodb": {
+          "versions": ">=3.0.0",
+          "samples": 10
+        }
+      },
+      "files": [
+        "dynamo-doc-client.tap.js"
+      ]
     }
   ],
   "dependencies": {}
