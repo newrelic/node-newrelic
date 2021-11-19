@@ -5,10 +5,8 @@
 
 'use strict'
 
-const testsDir = '../../integration/instrumentation/promises'
-
 const tap = require('tap')
-const testMethods = require(testsDir + '/methods')
+const testMethods = require('./methods')
 
 tap.test('bluebird', function (t) {
   t.autoend()
