@@ -22,7 +22,7 @@ module.exports = function instrument(shim, name, resolvedName) {
   shim.wrapReturn(
     snsClientExport,
     'SNSClient',
-    function wrappedReturn(shim, original, name, instance) {
+    function wrappedReturn(shim, original, fnName, instance) {
       postClientConstructor.call(instance, shim)
     }
   )
