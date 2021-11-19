@@ -34,7 +34,7 @@ tap.test('SNS', (t) => {
     helper.registerInstrumentation({
       moduleName: '@aws-sdk/client-sns',
       type: 'message',
-      onRequire: require('../../../lib/v3-sns')
+      onResolved: require('../../../lib/v3-sns')
     })
     const lib = require('@aws-sdk/client-sns')
     const SNSClient = lib.SNSClient
@@ -49,7 +49,7 @@ tap.test('SNS', (t) => {
   })
 
   t.afterEach(() => {
-    server.close()
+    server.destroy()
     server = null
     // this may be brute force but i could not figure out
     // which files within the modules were cached preventing the instrumenting
@@ -60,6 +60,22 @@ tap.test('SNS', (t) => {
       }
     })
     helper && helper.unload()
+  })
+
+  t.test('publish with callback', (t) => {
+    helper.runInTransaction((tx) => {
+      const params = { Message: 'Hello!' }
+
+      const cmd = new PublishCommand(params)
+      sns.send(cmd, (err) => {
+        t.error(err)
+        tx.end()
+
+        const destName = 'PhoneNumber'
+        const args = [t, tx, destName]
+        setImmediate(finish, ...args)
+      })
+    })
   })
 
   t.test('publish with default destination(PhoneNumber)', (t) => {
