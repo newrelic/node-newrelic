@@ -49,7 +49,7 @@ tap.test('SNS', (t) => {
   })
 
   t.afterEach(() => {
-    server.close()
+    server.destroy()
     server = null
     // this may be brute force but i could not figure out
     // which files within the modules were cached preventing the instrumenting
