@@ -30,7 +30,6 @@ function createEmptyResponseServer() {
     res.end('Unhandled request method')
   })
 
-  // patch server.destroy
   patchDestroy(server)
 
   return server

@@ -30,7 +30,6 @@ function createResponseServer() {
     res.end()
   })
 
-  // patch server.destroy
   patchDestroy(server)
 
   return server
