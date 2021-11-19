@@ -24,6 +24,6 @@ module.exports = [
   {
     type: 'datastore',
     moduleName: '@aws-sdk/client-dynamodb',
-    onResolved: require('./lib/v3-dynamo-ddb')
+    onResolved: require('./lib/v3-client-dynamodb')
   }
 ]

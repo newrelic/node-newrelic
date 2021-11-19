@@ -157,7 +157,7 @@
         }
       },
       "files": [
-        "dynamo-ddb.tap.js"
+        "client-dynamodb.tap.js"
       ]
     }
   ],

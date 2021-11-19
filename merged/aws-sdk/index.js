@@ -18,7 +18,7 @@ newrelic.instrumentMessages({
 })
 newrelic.instrumentMessages({
   moduleName: '@aws-sdk/client-dynamodb',
-  onResolved: require('./lib/v3-dynamo-ddb')
+  onResolved: require('./lib/v3-client-dynamodb')
 })
 newrelic.instrument({
   moduleName: '@aws-sdk/smithy-client',
