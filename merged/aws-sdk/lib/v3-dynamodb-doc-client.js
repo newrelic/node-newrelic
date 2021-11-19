@@ -34,14 +34,14 @@ module.exports = function instrument(shim, name, resolvedName) {
   shim.wrapReturn(
     ddbDocClientExport,
     'DynamoDBDocumentClient',
-    function wrappedReturn(shim, fn, name, instance) {
+    function wrappedReturn(shim, fn, fnName, instance) {
       postClientConstructor.call(instance, shim)
     }
   )
   shim.wrapReturn(
     ddbDocClientExport.DynamoDBDocumentClient,
     'from',
-    function wrappedReturn(shim, fn, name, instance) {
+    function wrappedReturn(shim, fn, fnName, instance) {
       postClientConstructor.call(instance, shim)
     }
   )
