@@ -5,12 +5,8 @@
 
 'use strict'
 
-// TODO: seems like this may only be ran by the bluebird versioned test methods.tap.js
-// Confirm and move logic there, if true. If used by multiple but only versioned,
-// move under versioned folder.
-
-const helper = require('../../../lib/agent_helper')
-const testTransactionState = require('./transaction-state')
+const helper = require('../../lib/agent_helper')
+const testTransactionState = require('../../integration/instrumentation/promises/transaction-state')
 const util = require('util')
 
 const runMultiple = testTransactionState.runMultiple
