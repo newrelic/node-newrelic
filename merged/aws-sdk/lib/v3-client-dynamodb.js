@@ -31,25 +31,21 @@ module.exports = function instrument(shim, name, resolvedName) {
 
   if (!shim.isFunction(dynamoClientExport.DynamoDBClient)) {
     shim.logger.debug('Could not find DynamoDBClient, not instrumenting.')
-    return
+  } else {
+    shim.setDatastore(shim.DYNAMODB)
+    shim.wrapReturn(
+      dynamoClientExport,
+      'DynamoDBClient',
+      function wrappedReturn(shim, fn, fnName, instance) {
+        postClientConstructor.call(instance, shim)
+      }
+    )
   }
-
-  shim.setDatastore(shim.DYNAMODB)
-  shim.wrapReturn(
-    dynamoClientExport,
-    'DynamoDBClient',
-    function wrappedReturn(shim, fn, name, instance) {
-      postClientConstructor.call(instance, shim)
-    }
-  )
-
-  // eslint-disable-next-line consistent-return
-  return
 }
 
 /**
- * Calls the instances middlewareStack.use to register
- * a plugin that adds a middleware to record the time it teakes to publish a message
+ * Calls the instance's middlewareStack.use to register
+ * our instrumentation as a plugin.
  * see: https://aws.amazon.com/blogs/developer/middleware-stack-modular-aws-sdk-js/
  *
  * @param {Shim} shim
@@ -86,20 +82,14 @@ function getPlugin(shim, config) {
  * @returns {function}
  */
 function dynamoMiddleware(shim, config, next, context) {
+  const { commandName } = context
   return async function wrappedMiddleware(args) {
-    if (!COMMANDS.includes(context.commandName)) {
+    if (!COMMANDS.includes(commandName)) {
       return await next(args)
     }
-
-    const [endpoint, region] = await Promise.all([config.endpoint(), config.region()])
-    const wrappedNext = shim.recordOperation(
-      next,
-      getDynamoSpec.bind({
-        endpoint,
-        region,
-        serviceId: config.serviceId
-      })
-    )
+    const endpoint = await config.endpoint()
+    const getSpec = getDynamoSpec.bind({ endpoint, commandName })
+    const wrappedNext = shim.recordOperation(next, getSpec)
 
     return await wrappedNext(args)
   }
@@ -114,14 +104,13 @@ function dynamoMiddleware(shim, config, next, context) {
  * @returns {Object}
  */
 function getDynamoSpec(shim, original, name, args) {
-  const [command] = args
-  const collection = (command.input && command.input.TableName) || 'Unknown'
+  const [{ input }] = args
+  const collection = (input && input.TableName) || 'Unknown'
   const host = this.endpoint && this.endpoint.hostname
-  // eslint-disable-next-line camelcase
-  const port_path_or_id = this.endpoint && this.endpoint.port
+  const portPathOrId = this.endpoint && this.endpoint.port
   return {
-    name: command.constructor.name,
-    parameters: { host, port_path_or_id, collection },
+    name: this.commandName,
+    parameters: { host, port_path_or_id: portPathOrId, collection },
     callback: shim.LAST,
     opaque: true,
     promise: true

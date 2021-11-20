@@ -31,6 +31,10 @@ tap.test('DynamoDB', (t) => {
   let ScanCommand = null
   let QueryCommand = null
   let DeleteItemCommand = null
+  let BatchWriteItemCommand = null
+  let BatchGetItemCommand = null
+  let BatchExecuteStatementCommand = null
+  let UpdateTableCommand = null
   let DeleteTableCommand = null
 
   t.beforeEach(async () => {
@@ -57,6 +61,10 @@ tap.test('DynamoDB', (t) => {
     ScanCommand = lib.ScanCommand
     QueryCommand = lib.QueryCommand
     DeleteItemCommand = lib.DeleteItemCommand
+    BatchWriteItemCommand = lib.BatchWriteItemCommand
+    BatchGetItemCommand = lib.BatchGetItemCommand
+    BatchExecuteStatementCommand = lib.BatchExecuteStatementCommand
+    UpdateTableCommand = lib.UpdateTableCommand
     DeleteTableCommand = lib.DeleteTableCommand
 
     client = new DynamoDBClient({
@@ -85,10 +93,20 @@ tap.test('DynamoDB', (t) => {
     ScanCommand = null
     QueryCommand = null
     DeleteItemCommand = null
+    BatchWriteItemCommand = null
+    BatchGetItemCommand = null
+    BatchExecuteStatementCommand = null
+    UpdateTableCommand = null
     DeleteTableCommand = null
+
+    Object.keys(require.cache).forEach((key) => {
+      if (key.includes('@aws-sdk/client-dynamodb')) {
+        delete require.cache[key]
+      }
+    })
   })
 
-  t.test('commands', async (t) => {
+  t.test('commands, promise-style', async (t) => {
     await helper.runInTransaction(async (tx) => {
       for (const command of commands) {
         t.comment(`Testing ${command.constructor.name}`)
@@ -103,12 +121,39 @@ tap.test('DynamoDB', (t) => {
     })
   })
 
+  // t.test('commands, callback-style', async (t) => {
+  //   await helper.runInTransaction(async (tx) => {
+  //     for (const command of commands) {
+  //       t.comment(`Testing ${command.constructor.name}`)
+  //       try {
+  //         await new Promise((resolve, reject) => {
+  //           client.send(command, (err) => {
+  //             if (err) { return reject(err) }
+  //             else { return resolve() }
+  //           })
+  //         })
+  //       } catch (err) {
+  //         t.error(err)
+  //       }
+  //     }
+  //     tx.end()
+  //     await finish(t, commands, tx)
+  //   })
+  // })
+
   function createCommands() {
     const ddbUniqueArtist = `DELETE_One You Know ${Math.floor(Math.random() * 100000)}`
     const createTblParams = getCreateTableParams(tableName)
     const putItemParams = getPutItemParams(tableName, ddbUniqueArtist)
     const itemParams = getItemParams(tableName, ddbUniqueArtist)
     const queryParams = getQueryParams(tableName, ddbUniqueArtist)
+    const batchWriteItemCommandParams = getBatchWriteItemCommandParams(tableName, ddbUniqueArtist)
+    const batchGetItemCommandParams = getBatchGetItemCommandParams(tableName, ddbUniqueArtist)
+    const batchExecuteStatementCommandParams = getBatchExecuteStatementCommandParams(
+      tableName,
+      ddbUniqueArtist
+    )
+    const updateTableCommandParams = getUpdateTableCommandParams(tableName)
     const deleteTableParams = getDeleteTableParams(tableName)
     const createTableCommand = new CreateTableCommand(createTblParams)
     const putItemCommand = new PutItemCommand(putItemParams)
@@ -117,6 +162,12 @@ tap.test('DynamoDB', (t) => {
     const scanCommand = new ScanCommand({ TableName: tableName })
     const queryCommand = new QueryCommand(queryParams)
     const deleteItemCommand = new DeleteItemCommand(itemParams)
+    const batchWriteItemCommand = new BatchWriteItemCommand(batchWriteItemCommandParams)
+    const batchGetItemCommand = new BatchGetItemCommand(batchGetItemCommandParams)
+    const batchExecuteStatementCommand = new BatchExecuteStatementCommand(
+      batchExecuteStatementCommandParams
+    )
+    const updateTableCommand = new UpdateTableCommand(updateTableCommandParams)
     const deleteTableCommand = new DeleteTableCommand(deleteTableParams)
     return [
       createTableCommand,
@@ -126,6 +177,10 @@ tap.test('DynamoDB', (t) => {
       scanCommand,
       queryCommand,
       deleteItemCommand,
+      batchWriteItemCommand,
+      batchGetItemCommand,
+      batchExecuteStatementCommand,
+      updateTableCommand,
       deleteTableCommand
     ]
   }
@@ -224,4 +279,49 @@ function getDeleteTableParams(tableName) {
   }
 
   return params
+}
+
+function getBatchWriteItemCommandParams(tableName, uniqueArtist) {
+  const params = {}
+  params[tableName] = {
+    RequestItems: [
+      {
+        PutRequest: {
+          Key: {
+            AlbumTitle: { S: 'Deltron 3030' },
+            Artist: { S: uniqueArtist },
+            SongTitle: { S: 'Virus' }
+          }
+        }
+      }
+    ]
+  }
+  return params
+}
+
+function getBatchGetItemCommandParams(tableName, uniqueArtist) {
+  const params = {}
+  params[tableName] = {
+    RequestItems: {
+      ConsistentRead: true,
+      Keys: {
+        Artist: { S: uniqueArtist }
+      }
+    }
+  }
+  return params
+}
+
+function getBatchExecuteStatementCommandParams(tableName, uniqueArtist) {
+  const Statement = `SELECT * FROM ${tableName} x WHERE x.Artist = ${uniqueArtist}`
+  return {
+    Statements: [{ Statement }]
+  }
+}
+
+function getUpdateTableCommandParams(tableName) {
+  return {
+    AttributeDefinitions: [{ AttributeName: 'AlbumTitle', AttributeType: 'S' }],
+    TableName: tableName
+  }
 }
