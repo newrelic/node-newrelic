@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "Thu Nov 18 2021 12:58:46 GMT-0500 (Eastern Standard Time)",
+  "lastUpdated": "Thu Nov 18 2021 14:26:40 GMT-0800 (Pacific Standard Time)",
   "projectName": "New Relic AWS-SDK Instrumentation",
   "projectUrl": "https://github.com/newrelic/node-newrelic-aws-sdk",
   "includeOptDeps": false,

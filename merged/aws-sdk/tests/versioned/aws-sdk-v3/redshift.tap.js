@@ -35,7 +35,7 @@ tap.test('RedshiftClient', (t) => {
   })
 
   t.afterEach(() => {
-    server.close()
+    server.destroy()
     helper && helper.unload()
   })
 

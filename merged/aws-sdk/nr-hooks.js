@@ -12,14 +12,19 @@ module.exports = [
     onRequire: require('./lib/instrumentation')
   },
   {
+    type: 'generic',
+    moduleName: '@aws-sdk/smithy-client',
+    onResolved: require('./lib/smithy-client')
+  },
+  {
     type: 'message',
     moduleName: '@aws-sdk/client-sns',
     onResolved: require('./lib/v3-sns')
   },
   {
-    type: 'generic',
-    moduleName: '@aws-sdk/smithy-client',
-    onResolved: require('./lib/smithy-client')
+    type: 'datastore',
+    moduleName: '@aws-sdk/client-dynamodb',
+    onResolved: require('./lib/v3-client-dynamodb')
   },
   {
     type: 'datastore',
