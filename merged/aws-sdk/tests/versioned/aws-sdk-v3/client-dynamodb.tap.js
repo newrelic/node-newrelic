@@ -217,7 +217,7 @@ tap.test('DynamoDB', (t) => {
           'aws.operation': command.constructor.name,
           'aws.requestId': String,
           'aws.region': 'us-east-1',
-          'aws.service': 'DynamoDB'
+          'aws.service': /dynamodb|DynamoDB/
         },
         'should have expected attributes'
       )
