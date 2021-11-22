@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 New Relic Corporation. All rights reserved.
+ * Copyright 2021 New Relic Corporation. All rights reserved.
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -7,6 +7,7 @@
 
 const tap = require('tap')
 const utils = require('@newrelic/test-utilities')
+const async = require('async')
 
 const common = require('../common')
 const { createEmptyResponseServer, FAKE_CREDENTIALS } = require('../aws-server-stubs')
@@ -100,14 +101,14 @@ tap.test('DynamoDB', (t) => {
     DeleteTableCommand = null
 
     Object.keys(require.cache).forEach((key) => {
-      if (key.includes('@aws-sdk/client-dynamodb')) {
+      if (key.includes('@aws-sdk/client-dynamodb') || key.includes('@aws-sdk/smithy-client')) {
         delete require.cache[key]
       }
     })
   })
 
-  t.test('commands, promise-style', async (t) => {
-    await helper.runInTransaction(async (tx) => {
+  t.test('commands, promise-style', (t) => {
+    helper.runInTransaction(async (tx) => {
       for (const command of commands) {
         t.comment(`Testing ${command.constructor.name}`)
         try {
@@ -117,29 +118,28 @@ tap.test('DynamoDB', (t) => {
         }
       }
       tx.end()
-      await finish(t, commands, tx)
+      finish(t, commands, tx)
     })
   })
 
-  // t.test('commands, callback-style', async (t) => {
-  //   await helper.runInTransaction(async (tx) => {
-  //     for (const command of commands) {
-  //       t.comment(`Testing ${command.constructor.name}`)
-  //       try {
-  //         await new Promise((resolve, reject) => {
-  //           client.send(command, (err) => {
-  //             if (err) { return reject(err) }
-  //             else { return resolve() }
-  //           })
-  //         })
-  //       } catch (err) {
-  //         t.error(err)
-  //       }
-  //     }
-  //     tx.end()
-  //     await finish(t, commands, tx)
-  //   })
-  // })
+  t.test('commands, callback-style', (t) => {
+    helper.runInTransaction((tx) => {
+      async.eachSeries(
+        commands,
+        (command, cb) => {
+          t.comment(`Testing ${command.constructor.name}`)
+          client.send(command, (err) => {
+            t.error(err)
+            return setImmediate(cb)
+          })
+        },
+        () => {
+          tx.end()
+          finish(t, commands, tx)
+        }
+      )
+    })
+  })
 
   function createCommands() {
     const ddbUniqueArtist = `DELETE_One You Know ${Math.floor(Math.random() * 100000)}`
@@ -207,9 +207,20 @@ tap.test('DynamoDB', (t) => {
         'should have operation in segment name'
       )
       const attrs = segment.attributes.get(common.SEGMENT_DESTINATION)
-      t.equal(typeof attrs.host, 'string')
-      t.equal(typeof attrs.port_path_or_id, 'string')
-      t.equal(typeof attrs.collection, 'string')
+      t.match(
+        attrs,
+        {
+          'host': String,
+          'port_path_or_id': String,
+          'product': 'DynamoDB',
+          'collection': String,
+          'aws.operation': command.constructor.name,
+          'aws.requestId': String,
+          'aws.region': 'us-east-1',
+          'aws.service': 'DynamoDB'
+        },
+        'should have expected attributes'
+      )
     })
 
     t.end()
