@@ -1,8 +1,137 @@
 {
-  "name": "aws-sdk-tests",
+  "name": "aws-sdk-v3-tests",
+  "engines": {
+    "node": ">=12.0"
+  },
   "version": "0.0.0",
   "private": true,
   "tests": [
+    {
+      "engines": {
+        "node": ">=12.0"
+      },
+      "dependencies": {
+        "@aws-sdk/client-api-gateway": {
+          "versions": ">=3.0.0",
+          "samples": 10
+        }
+      },
+      "files": [
+        "api-gateway.tap.js"
+      ]
+    },
+    {
+      "engines": {
+        "node": ">=12.0"
+      },
+      "dependencies": {
+        "@aws-sdk/client-elasticache": {
+          "versions": ">=3.0.0",
+          "samples": 10
+        }
+      },
+      "files": [
+        "elasticache.tap.js"
+      ]
+    },
+    {
+      "engines": {
+        "node": ">=12.0"
+      },
+      "dependencies": {
+        "@aws-sdk/client-elastic-load-balancing": {
+          "versions": ">=3.0.0",
+          "samples": 10
+        }
+      },
+      "files": [
+        "elb.tap.js"
+      ]
+    },
+    {
+      "engines": {
+        "node": ">=12.0"
+      },
+      "dependencies": {
+        "@aws-sdk/client-lambda": {
+          "versions": ">=3.0.0",
+          "samples": 10
+        }
+      },
+      "files": [
+        "lambda.tap.js"
+      ]
+    },
+    {
+      "engines": {
+        "node": ">=12.0"
+      },
+      "dependencies": {
+        "@aws-sdk/client-rds": {
+          "versions": ">=3.0.0",
+          "samples": 10
+        }
+      },
+      "files": [
+        "rds.tap.js"
+      ]
+    },
+    {
+      "engines": {
+        "node": ">=12.0"
+      },
+      "dependencies": {
+        "@aws-sdk/client-redshift": {
+          "versions": ">=3.0.0",
+          "samples": 10
+        }
+      },
+      "files": [
+        "redshift.tap.js"
+      ]
+    },
+    {
+      "engines": {
+        "node": ">=12.0"
+      },
+      "dependencies": {
+        "@aws-sdk/client-rekognition": {
+          "versions": ">=3.0.0",
+          "samples": 10
+        }
+      },
+      "files": [
+        "rekognition.tap.js"
+      ]
+    },
+    {
+      "engines": {
+        "node": ">=12.0"
+      },
+      "dependencies": {
+        "@aws-sdk/client-s3": {
+          "versions": ">=3.0.0",
+          "samples": 10
+        }
+      },
+      "files": [
+        "s3.tap.js"
+      ]
+    },
+    {
+      "engines": {
+        "node": ">=12.0"
+      },
+      "dependencies": {
+        "@aws-sdk/client-ses": {
+          "versions": ">=3.0.0",
+          "samples": 10
+        }
+      },
+      "files": [
+        "ses.tap.js"
+      ]
+    },
     {
       "engines": {
         "node": ">=12.0"
@@ -29,6 +158,36 @@
       },
       "files": [
         "sqs.tap.js"
+      ]
+    },
+    {
+      "engines": {
+        "node": ">=12.0"
+      },
+      "dependencies": {
+        "@aws-sdk/client-dynamodb": {
+          "versions": ">=3.0.0",
+          "samples": 10
+        }
+      },
+      "files": [
+        "client-dynamodb.tap.js"
+      ]
+    },
+    {
+      "engines": {
+        "node": ">=12.0"
+      },
+      "dependencies": {
+        "@aws-sdk/util-dynamodb": "latest",
+        "@aws-sdk/client-dynamodb": "latest",
+        "@aws-sdk/lib-dynamodb": {
+          "versions": ">=3.0.0",
+          "samples": 10
+        }
+      },
+      "files": [
+        "dynamo-doc-client.tap.js"
       ]
     }
   ],

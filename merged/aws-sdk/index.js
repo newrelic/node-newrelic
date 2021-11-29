@@ -12,5 +12,23 @@
  */
 const newrelic = require('newrelic')
 newrelic.instrumentConglomerate('aws-sdk', require('./lib/instrumentation'))
-newrelic.instrumentMessages('@aws-sdk/client-sns', require('./lib/v3-sns'))
-newrelic.instrumentMessages('@aws-sdk/client-sqs', require('./lib/v3-sqs'))
+newrelic.instrument({
+  moduleName: '@aws-sdk/smithy-client',
+  onResolved: require('./lib/smithy-client')
+})
+newrelic.instrumentMessages({
+  moduleName: '@aws-sdk/client-sns',
+  onResolved: require('./lib/v3-sns')
+})
+newrelic.instrumentMessages({
+  moduleName: '@aws-sdk/client-sqs',
+  onResolved: require('./lib/v3-sqs')
+})
+newrelic.instrumentDatastore({
+  moduleName: '@aws-sdk/client-dynamodb',
+  onResolved: require('./lib/v3-client-dynamodb')
+})
+newrelic.instrumentDatastore({
+  moduleName: '@aws-sdk/lib-dynamodb',
+  onResolved: require('./lib/v3-dynamodb-doc-client')
+})

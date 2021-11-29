@@ -6,6 +6,9 @@
 'use strict'
 
 const http = require('http')
+const { getAddTagsResponse } = require('./elasticache')
+const { getAcceptExchangeResponse } = require('./redshift')
+const { getSendEmailResponse } = require('./ses')
 const { getPublishResponse, getListTopicsResponse } = require('./sns')
 const {
   getCreateQueueResponse,
@@ -14,6 +17,7 @@ const {
   getReceiveMessageResponse
 } = require('./sqs')
 const { parseBody } = require('./common')
+const { patchDestroy } = require('../common')
 
 function createResponseServer() {
   const server = http.createServer(function (req, res) {
@@ -26,21 +30,7 @@ function createResponseServer() {
     res.end()
   })
 
-  // server.destroy: close, but faster!
-  // tracks and manually closes any open sockets
-  const sockets = new Set()
-  server.on('connection', (socket) => {
-    sockets.add(socket)
-    socket.once('close', () => {
-      sockets.delete(socket)
-    })
-  })
-  server.destroy = function () {
-    sockets.forEach((socket) => {
-      socket.destroy()
-    })
-    server.close()
-  }
+  patchDestroy(server)
 
   return server
 }
@@ -84,6 +74,12 @@ function createGetDataFromAction(endpoint, body) {
       return getSendMessageBatchResponse.bind(null)
     case 'ReceiveMessage':
       return getReceiveMessageResponse.bind(null)
+    case 'SendEmail':
+      return getSendEmailResponse.bind(null)
+    case 'AcceptReservedNodeExchange':
+      return getAcceptExchangeResponse.bind(null)
+    case 'AddTagsToResource':
+      return getAddTagsResponse.bind(null)
     default:
       return function actionNotImplemented(callback) {
         setImmediate(() => {

@@ -6,6 +6,7 @@
 'use strict'
 
 const http = require('http')
+const { patchDestroy } = require('../common')
 
 function createEmptyResponseServer() {
   const server = http.createServer(function (req, res) {
@@ -28,6 +29,8 @@ function createEmptyResponseServer() {
     res.statusCode = 500
     res.end('Unhandled request method')
   })
+
+  patchDestroy(server)
 
   return server
 }

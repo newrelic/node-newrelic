@@ -48,11 +48,11 @@ tap.test('aws-sdk', (t) => {
     AWS = null
   })
 
-  t.test('should mark requests to be dt-disabled', { skip: true }, (t) => {
+  t.test('should mark requests to be dt-disabled', (t) => {
     // http because we've changed endpoint to be http
     const http = require('http')
     sinon.spy(http, 'request')
-    t.tearDown(() => {
+    t.teardown(() => {
       // `afterEach` runs before `tearDown`, so the sinon spy may have already
       // been removed.
       if (http.request.restore) {
