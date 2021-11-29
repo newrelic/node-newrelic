@@ -27,10 +27,6 @@ tap.test('SQS API', (t) => {
   let ReceiveMessageCommand = null
 
   let queueName = null
-  // let sendMessageRequestId = null
-  // let sendMessageBatchRequestId = null
-  // let receiveMessageRequestId = null
-
   let server = null
 
   t.beforeEach(async () => {
@@ -41,10 +37,11 @@ tap.test('SQS API', (t) => {
     })
 
     helper = utils.TestAgent.makeInstrumented()
+    common.registerCoreInstrumentation(helper)
     helper.registerInstrumentation({
       moduleName: '@aws-sdk/client-sqs',
       type: 'message',
-      onRequire: require('../../../lib/v3-sqs')
+      onResolved: require('../../../lib/v3-sqs')
     })
 
     const lib = require('@aws-sdk/client-sqs')
@@ -77,9 +74,6 @@ tap.test('SQS API', (t) => {
     SendMessageBatchCommand = null
 
     queueName = null
-    // sendMessageRequestId = null
-    // sendMessageBatchRequestId = null
-    // receiveMessageRequestId = null
   })
 
   t.test('commands with promises', async (t) => {
@@ -119,7 +113,7 @@ tap.test('SQS API', (t) => {
     const expectedSegmentCount = 3
 
     const root = transaction.trace.root
-    const segments = common.checkAWSAttributes(t, root, common.SQS_PATTERN, [], true)
+    const segments = common.checkAWSAttributes(t, root, common.SQS_PATTERN)
 
     t.equal(
       segments.length,
@@ -127,19 +121,19 @@ tap.test('SQS API', (t) => {
       `should have ${expectedSegmentCount} AWS MessageBroker/SQS segments`
     )
 
-    const externalSegments = common.checkAWSAttributes(t, root, common.EXTERN_PATTERN, [], true)
+    const externalSegments = common.checkAWSAttributes(t, root, common.EXTERN_PATTERN)
     t.equal(externalSegments.length, 0, 'should not have any External segments')
 
     const [sendMessage, sendMessageBatch, receiveMessage] = segments
 
     checkName(t, sendMessage.name, 'Produce', queueName)
-    // checkAttributes(t, sendMessage, 'sendMessage', sendMessageRequestId)
+    checkAttributes(t, sendMessage, 'SendMessageCommand')
 
     checkName(t, sendMessageBatch.name, 'Produce', queueName)
-    // checkAttributes(t, sendMessageBatch, 'sendMessageBatch', sendMessageBatchRequestId)
+    checkAttributes(t, sendMessageBatch, 'SendMessageBatchCommand')
 
     checkName(t, receiveMessage.name, 'Consume', queueName)
-    // checkAttributes(t, receiveMessage, 'receiveMessage', receiveMessageRequestId)
+    checkAttributes(t, receiveMessage, 'ReceiveMessageCommand')
 
     t.end()
   }
@@ -151,28 +145,18 @@ function checkName(t, name, action, queueName) {
   t.match(name, specificName, 'should have correct name')
 }
 
-// function checkAttributes(t, segment, operation, expectedRequestId) {
-//   const actualAttributes = segment.attributes.get(common.SEGMENT_DESTINATION)
-//
-//   const expectedAttributes = {
-//     'aws.operation': operation,
-//     'aws.requestId': expectedRequestId,
-//     'aws.service': 'Amazon SQS',
-//     'aws.region': AWS_REGION
-//   }
-//
-//   t.match(
-//     actualAttributes,
-//     expectedAttributes,
-//     `should have expected attributes for ${operation}`
-//   )
-// }
+function checkAttributes(t, segment, operation) {
+  const actualAttributes = segment.attributes.get(common.SEGMENT_DESTINATION)
 
-// function getRequestId(t, apiReturnedData) {
-//   const metadata = apiReturnedData['$metadata']
-//   t.ok(metadata)
-//   return metadata.RequestId
-// }
+  const expectedAttributes = {
+    'aws.operation': operation,
+    'aws.requestId': String,
+    'aws.service': /sqs|SQS/,
+    'aws.region': AWS_REGION
+  }
+
+  t.match(actualAttributes, expectedAttributes, `should have expected attributes for ${operation}`)
+}
 
 function getCreateParams(queueName) {
   const params = {

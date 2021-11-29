@@ -11,37 +11,94 @@ const SEND_COMMANDS = ['SendMessageCommand', 'SendMessageBatchCommand']
 
 const RECEIVE_COMMANDS = ['ReceiveMessageCommand']
 
-function makeWrapClient(commands) {
-  return function wrapClient(shim, original, name, args) {
-    const {
-      constructor,
-      input: { QueueUrl }
-    } = args[0]
-    const type = constructor.name
-    if (commands.includes(type)) {
-      return {
-        callback: shim.LAST,
-        destinationName: grabLastUrlSegment(QueueUrl),
-        destinationType: shim.QUEUE,
-        opaque: true
-      }
-    }
+module.exports = function instrument(shim, name, resolvedName) {
+  const fileNameIndex = resolvedName.indexOf('/index')
+  const relativeFolder = resolvedName.substr(0, fileNameIndex)
 
-    // eslint-disable-next-line consistent-return
-    return
+  // The path changes depending on the version...
+  // so we don't want to hard-code the relative
+  // path from the module root.
+  const sqsClientExport = shim.require(`${relativeFolder}/SQSClient`)
+
+  if (!shim.isFunction(sqsClientExport.SQSClient)) {
+    shim.logger.debug('Could not find SQSClient, not instrumenting.')
+  } else {
+    shim.setLibrary(shim.SQS)
+    shim.wrapReturn(
+      sqsClientExport,
+      'SQSClient',
+      function wrappedReturn(shim, fn, fnName, instance) {
+        postClientConstructor.call(instance, shim)
+      }
+    )
   }
 }
 
-module.exports = function instrument(shim, AWS) {
-  if (!shim.isFunction(AWS.SQS)) {
-    shim.logger.debug('Could not find SQS, not instrumenting.')
-    return
+/**
+ * Calls the instances middlewareStack.use to register
+ * a plugin that adds a middleware to record the time it teakes to publish a message
+ * see: https://aws.amazon.com/blogs/developer/middleware-stack-modular-aws-sdk-js/
+ *
+ * @param {Shim} shim
+ */
+function postClientConstructor(shim) {
+  this.middlewareStack.use(getPlugin(shim))
+}
+
+/**
+ * Returns the plugin object that adds middleware
+ *
+ * @param {Shim} shim
+ * @returns {object}
+ */
+function getPlugin(shim) {
+  return {
+    applyToStack: (clientStack) => {
+      clientStack.add(sqsMiddleware.bind(null, shim), {
+        name: 'NewRelicSqsMiddleware',
+        step: 'initialize',
+        priority: 'high'
+      })
+    }
   }
+}
 
-  const wrapClientSend = makeWrapClient(SEND_COMMANDS)
-  const wrapClientReceive = makeWrapClient(RECEIVE_COMMANDS)
+/**
+ * Middleware hook that records the middleware chain
+ * when command is `PublishCommand`
+ *
+ * @param {Shim} shim
+ * @param {function} next middleware function
+ * @param {Object} context
+ * @returns {function}
+ */
+function sqsMiddleware(shim, next, context) {
+  if (SEND_COMMANDS.includes(context.commandName)) {
+    return shim.recordProduce(next, getSqsSpec)
+  } else if (RECEIVE_COMMANDS.includes(context.commandName)) {
+    return shim.recordConsume(next, getSqsSpec)
+  }
+  return next
+}
 
-  shim.setLibrary(shim.SQS)
-  shim.recordProduce(AWS.SQSClient.prototype, 'send', wrapClientSend)
-  shim.recordConsume(AWS.SQSClient.prototype, 'send', wrapClientReceive)
+/**
+ * Returns the spec for PublishCommand
+ *
+ * @param {Shim} shim
+ * @param {original} original original middleware function
+ * @param {Array} args to the middleware function
+ * @returns {Object}
+ */
+function getSqsSpec(shim, original, name, args) {
+  const [
+    {
+      input: { QueueUrl }
+    }
+  ] = args
+  return {
+    callback: shim.LAST,
+    destinationName: grabLastUrlSegment(QueueUrl),
+    destinationType: shim.QUEUE,
+    opaque: true
+  }
 }
