@@ -8,7 +8,7 @@
         "node": ">=12"
       },
       "dependencies": {
-        "redis": ">=2.0.0"
+        "redis": ">=2.0.0 < 4"
       },
       "files": [
         "redis.tap.js"
