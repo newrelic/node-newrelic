@@ -8,21 +8,19 @@
 const { getExport, wrapPostClientConstructor, wrapReturn } = require('./util')
 const { wrapDynamoMiddleware } = require('./dynamodb-util')
 
-const CLIENT = 'DynamoDBClient'
+const CLIENT = 'DynamoDBDocumentClient'
 
 const COMMANDS = [
-  'BatchExecuteStatementCommand',
-  'CreateTableCommand',
+  'PutItemCommand',
+  'GetItemCommand',
+  'UpdateItemCommand',
+  'DeleteItemCommand',
   'BatchGetItemCommand',
   'BatchWriteItemCommand',
-  'DeleteItemCommand',
-  'DeleteTableCommand',
-  'GetItemCommand',
-  'PutItemCommand',
+  'TransactGetItemsCommand',
+  'TransactWriteItemsCommand',
   'QueryCommand',
-  'ScanCommand',
-  'UpdateItemCommand',
-  'UpdateTableCommand'
+  'ScanCommand'
 ]
 
 const postClientConstructor = wrapPostClientConstructor(getPlugin)
@@ -30,27 +28,28 @@ const wrappedReturn = wrapReturn(postClientConstructor)
 const dynamoMiddleware = wrapDynamoMiddleware(COMMANDS)
 
 module.exports = function instrument(shim, name, resolvedName) {
-  const dynamoClientExport = getExport(shim, resolvedName, CLIENT)
+  const ddbDocClientExport = getExport(shim, resolvedName, CLIENT)
 
-  if (!shim.isFunction(dynamoClientExport[CLIENT])) {
+  if (!shim.isFunction(ddbDocClientExport[CLIENT])) {
     shim.logger.debug(`Could not find ${CLIENT}, not instrumenting.`)
   } else {
     shim.setDatastore(shim.DYNAMODB)
-    shim.wrapReturn(dynamoClientExport, CLIENT, wrappedReturn)
+    shim.wrapReturn(ddbDocClientExport, CLIENT, wrappedReturn)
+    shim.wrapReturn(ddbDocClientExport[CLIENT], 'from', wrappedReturn)
   }
 }
 
 /**
- * Returns the plugin object that adds middleware
+ * Returns the plugin object that adds an initialize middleware
  *
  * @param {Shim} shim
- * @returns {object}
+ * @param {Object} config DynamoDBDocumentClient config
  */
 function getPlugin(shim, config) {
   return {
     applyToStack: (clientStack) => {
       clientStack.add(dynamoMiddleware.bind(null, shim, config), {
-        name: 'NewRelicDynamoMiddleware',
+        name: 'NewRelicDynamoDocClientMiddleware',
         step: 'initialize',
         priority: 'high'
       })
