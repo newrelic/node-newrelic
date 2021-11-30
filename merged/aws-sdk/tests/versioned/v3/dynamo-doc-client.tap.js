@@ -36,7 +36,7 @@ tap.test('DynamoDB', (t) => {
     helper.registerInstrumentation({
       moduleName: '@aws-sdk/lib-dynamodb',
       type: 'datastore',
-      onResolved: require('../../../lib/v3-dynamodb-doc-client')
+      onResolved: require('../../../lib/v3/dynamodb-doc-client')
     })
 
     const lib = require('@aws-sdk/lib-dynamodb')

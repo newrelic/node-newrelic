@@ -7,7 +7,7 @@
 
 const tap = require('tap')
 const utils = require('@newrelic/test-utilities')
-const instrumentationHelper = require('../../../lib/instrumentation-helper')
+const instrumentationHelper = require('../../../lib/v2/instrumentation-helper')
 utils.assert.extendTap(tap)
 
 tap.test('instrumentation is supported', (t) => {
@@ -21,7 +21,7 @@ tap.test('instrumentation is supported', (t) => {
     helper.registerInstrumentation({
       moduleName: 'aws-sdk',
       type: 'conglomerate',
-      onRequire: require('../../../lib/instrumentation')
+      onRequire: require('../../../lib/v2/instrumentation')
     })
     AWS = require('aws-sdk')
   })
@@ -31,15 +31,15 @@ tap.test('instrumentation is supported', (t) => {
     AWS = null
   })
 
-  t.test('AWS should have newrelic attributes', (t) => {
-    t.assert(AWS.__NR_instrumented, 'Found __NR_instrumented')
+  t.test('AWS should not have newrelic attributes', (t) => {
+    t.assert(!AWS.__NR_instrumented, '__NR_instrumented not present')
     t.end()
   })
 
   t.test('instrumentation supported function', (t) => {
     t.assert(
-      instrumentationHelper.instrumentationSupported(AWS),
-      'instrumentationSupported returned true'
+      !instrumentationHelper.instrumentationSupported(AWS),
+      'instrumentationSupported returned false'
     )
     t.end()
   })

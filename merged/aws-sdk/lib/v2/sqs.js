@@ -5,7 +5,7 @@
 
 'use strict'
 
-const { grabLastUrlSegment } = require('./util')
+const { grabLastUrlSegment } = require('../util')
 module.exports = {
   name: 'sqs',
   type: 'message',

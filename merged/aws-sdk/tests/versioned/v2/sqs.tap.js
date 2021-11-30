@@ -39,7 +39,7 @@ tap.test('SQS API', (t) => {
     helper.registerInstrumentation({
       moduleName: 'aws-sdk',
       type: 'conglomerate',
-      onRequire: require('../../../lib/instrumentation')
+      onRequire: require('../../../lib/v2/instrumentation')
     })
 
     AWS = require('aws-sdk')

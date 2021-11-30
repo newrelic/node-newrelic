@@ -9,31 +9,31 @@ module.exports = [
   {
     type: 'conglomerate',
     moduleName: 'aws-sdk',
-    onRequire: require('./lib/instrumentation')
+    onRequire: require('./lib/v2/instrumentation')
   },
   {
     type: 'generic',
     moduleName: '@aws-sdk/smithy-client',
-    onResolved: require('./lib/smithy-client')
+    onResolved: require('./lib/v3/smithy-client')
   },
   {
     type: 'message',
     moduleName: '@aws-sdk/client-sns',
-    onResolved: require('./lib/v3-sns')
+    onResolved: require('./lib/v3/sns')
   },
   {
     type: 'message',
     moduleName: '@aws-sdk/client-sqs',
-    onResolved: require('./lib/v3-sqs')
+    onResolved: require('./lib/v3/sqs')
   },
   {
     type: 'datastore',
     moduleName: '@aws-sdk/client-dynamodb',
-    onResolved: require('./lib/v3-client-dynamodb')
+    onResolved: require('./lib/v3/client-dynamodb')
   },
   {
     type: 'datastore',
     moduleName: '@aws-sdk/lib-dynamodb',
-    onResolved: require('./lib/v3-dynamodb-doc-client')
+    onResolved: require('./lib/v3/dynamodb-doc-client')
   }
 ]

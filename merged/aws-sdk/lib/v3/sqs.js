@@ -5,7 +5,7 @@
 
 'use strict'
 
-const { grabLastUrlSegment } = require('./util')
+const { grabLastUrlSegment } = require('../util')
 
 const SEND_COMMANDS = ['SendMessageCommand', 'SendMessageBatchCommand']
 

@@ -48,7 +48,7 @@ function registerCoreInstrumentation(helper) {
   helper.registerInstrumentation({
     moduleName: '@aws-sdk/smithy-client',
     type: 'generic',
-    onResolved: require('../../lib/smithy-client')
+    onResolved: require('../../lib/v3/smithy-client')
   })
 }
 
