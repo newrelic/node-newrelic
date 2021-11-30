@@ -4,34 +4,21 @@
  */
 
 'use strict'
+
 const UNKNOWN = 'Unknown'
 
-module.exports = function instrumentSmithyClient(shim, name, resolvedName) {
-  const fileNameIndex = resolvedName.indexOf('/index')
-  const relativeFolder = resolvedName.substr(0, fileNameIndex)
+const { getExport, wrapPostClientConstructor } = require('./util')
 
-  // The path changes depending on the version... so we don't want to hard-code the relative
-  // path from the module root.
-  const smithyClientExport = shim.require(`${relativeFolder}/client`)
+const postClientConstructor = wrapPostClientConstructor(getPlugin)
+
+module.exports = function instrumentSmithyClient(shim, name, resolvedName) {
+  const smithyClientExport = getExport(shim, resolvedName, 'client')
 
   if (!shim.isFunction(smithyClientExport.Client)) {
     shim.logger.debug('Could not find Smithy Client, not instrumenting.')
-    return
+  } else {
+    shim.wrapClass(smithyClientExport, 'Client', { post: postClientConstructor, es6: true })
   }
-
-  shim.wrapClass(smithyClientExport, 'Client', { post: postClientConstructor, es6: true })
-}
-
-/**
- * Calls the instances middlewareStack.use to register
- * a plugin that adds 2 different middleware at various
- * stages of a middleware stack
- * see: https://aws.amazon.com/blogs/developer/middleware-stack-modular-aws-sdk-js/
- *
- * @param {Shim} shim
- */
-function postClientConstructor(shim) {
-  this.middlewareStack.use(getPlugin(shim, this.config))
 }
 
 /**

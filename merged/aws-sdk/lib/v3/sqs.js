@@ -7,18 +7,16 @@
 
 const { grabLastUrlSegment } = require('../util')
 
+const { getExport, wrapPostClientConstructor } = require('./util')
+
 const SEND_COMMANDS = ['SendMessageCommand', 'SendMessageBatchCommand']
 
 const RECEIVE_COMMANDS = ['ReceiveMessageCommand']
 
-module.exports = function instrument(shim, name, resolvedName) {
-  const fileNameIndex = resolvedName.indexOf('/index')
-  const relativeFolder = resolvedName.substr(0, fileNameIndex)
+const postClientConstructor = wrapPostClientConstructor(getPlugin)
 
-  // The path changes depending on the version...
-  // so we don't want to hard-code the relative
-  // path from the module root.
-  const sqsClientExport = shim.require(`${relativeFolder}/SQSClient`)
+module.exports = function instrument(shim, name, resolvedName) {
+  const sqsClientExport = getExport(shim, resolvedName, 'SQSClient')
 
   if (!shim.isFunction(sqsClientExport.SQSClient)) {
     shim.logger.debug('Could not find SQSClient, not instrumenting.')
@@ -32,17 +30,6 @@ module.exports = function instrument(shim, name, resolvedName) {
       }
     )
   }
-}
-
-/**
- * Calls the instances middlewareStack.use to register
- * a plugin that adds a middleware to record the time it teakes to publish a message
- * see: https://aws.amazon.com/blogs/developer/middleware-stack-modular-aws-sdk-js/
- *
- * @param {Shim} shim
- */
-function postClientConstructor(shim) {
-  this.middlewareStack.use(getPlugin(shim))
 }
 
 /**

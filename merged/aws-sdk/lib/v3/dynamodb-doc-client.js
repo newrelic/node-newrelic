@@ -5,6 +5,8 @@
 
 'use strict'
 
+const { getExport, wrapPostClientConstructor } = require('./util')
+
 const DDB_COMMAND_TYPES = [
   'PutItemCommand',
   'GetItemCommand',
@@ -18,13 +20,10 @@ const DDB_COMMAND_TYPES = [
   'ScanCommand'
 ]
 
-module.exports = function instrument(shim, name, resolvedName) {
-  const fileNameIndex = resolvedName.indexOf('/index')
-  const relativeFolder = resolvedName.substr(0, fileNameIndex)
+const postClientConstructor = wrapPostClientConstructor(getPlugin)
 
-  // The path changes depending on the version... so we don't want to hard-code the relative
-  // path from the module root.
-  const ddbDocClientExport = shim.require(`${relativeFolder}/DynamoDBDocumentClient`)
+module.exports = function instrument(shim, name, resolvedName) {
+  const ddbDocClientExport = getExport(shim, resolvedName, 'DynamoDBDocumentClient')
 
   if (!shim.isFunction(ddbDocClientExport.DynamoDBDocumentClient)) {
     shim.logger.debug('Could not find DynamoDBDocumentClient, not instrumenting.')
@@ -45,18 +44,6 @@ module.exports = function instrument(shim, name, resolvedName) {
       postClientConstructor.call(instance, shim)
     }
   )
-}
-
-/**
- * Calls the instances middlewareStack.use to register
- * a plugin that adds a middleware to record the dynamo
- * operations
- * see: https://aws.amazon.com/blogs/developer/middleware-stack-modular-aws-sdk-js/
- *
- * @param {Shim} shim
- */
-function postClientConstructor(shim) {
-  this.middlewareStack.use(getPlugin(shim, this.config))
 }
 
 /**

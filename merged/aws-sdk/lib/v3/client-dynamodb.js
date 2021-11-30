@@ -5,6 +5,8 @@
 
 'use strict'
 
+const { getExport, wrapPostClientConstructor } = require('./util')
+
 const COMMANDS = [
   'BatchExecuteStatementCommand',
   'CreateTableCommand',
@@ -20,14 +22,10 @@ const COMMANDS = [
   'UpdateTableCommand'
 ]
 
-module.exports = function instrument(shim, name, resolvedName) {
-  const fileNameIndex = resolvedName.indexOf('/index')
-  const relativeFolder = resolvedName.substr(0, fileNameIndex)
+const postClientConstructor = wrapPostClientConstructor(getPlugin)
 
-  // The path changes depending on the version...
-  // so we don't want to hard-code the relative
-  // path from the module root.
-  const dynamoClientExport = shim.require(`${relativeFolder}/DynamoDBClient`)
+module.exports = function instrument(shim, name, resolvedName) {
+  const dynamoClientExport = getExport(shim, resolvedName, 'DynamoDBClient')
 
   if (!shim.isFunction(dynamoClientExport.DynamoDBClient)) {
     shim.logger.debug('Could not find DynamoDBClient, not instrumenting.')
@@ -41,17 +39,6 @@ module.exports = function instrument(shim, name, resolvedName) {
       }
     )
   }
-}
-
-/**
- * Calls the instance's middlewareStack.use to register
- * our instrumentation as a plugin.
- * see: https://aws.amazon.com/blogs/developer/middleware-stack-modular-aws-sdk-js/
- *
- * @param {Shim} shim
- */
-function postClientConstructor(shim) {
-  this.middlewareStack.use(getPlugin(shim, this.config))
 }
 
 /**

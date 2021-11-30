@@ -5,13 +5,12 @@
 
 'use strict'
 
-module.exports = function instrument(shim, name, resolvedName) {
-  const fileNameIndex = resolvedName.indexOf('/index')
-  const relativeFolder = resolvedName.substr(0, fileNameIndex)
+const { getExport, wrapPostClientConstructor } = require('./util')
 
-  // The path changes depending on the version... so we don't want to hard-code the relative
-  // path from the module root.
-  const snsClientExport = shim.require(`${relativeFolder}/SNSClient`)
+const postClientConstructor = wrapPostClientConstructor(getPlugin)
+
+module.exports = function instrument(shim, name, resolvedName) {
+  const snsClientExport = getExport(shim, resolvedName, 'SNSClient')
 
   if (!shim.isFunction(snsClientExport.SNSClient)) {
     shim.logger.debug('Could not find SNSClient, not instrumenting.')
@@ -26,17 +25,6 @@ module.exports = function instrument(shim, name, resolvedName) {
       postClientConstructor.call(instance, shim)
     }
   )
-}
-
-/**
- * Calls the instances middlewareStack.use to register
- * a plugin that adds a middleware to record the time it teakes to publish a message
- * see: https://aws.amazon.com/blogs/developer/middleware-stack-modular-aws-sdk-js/
- *
- * @param {Shim} shim
- */
-function postClientConstructor(shim) {
-  this.middlewareStack.use(getPlugin(shim))
 }
 
 /**
