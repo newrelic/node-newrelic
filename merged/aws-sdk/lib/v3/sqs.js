@@ -77,11 +77,8 @@ function sqsMiddleware(shim, next, context) {
  * @returns {Object}
  */
 function getSqsSpec(shim, original, name, args) {
-  const [
-    {
-      input: { QueueUrl }
-    }
-  ] = args
+  const [command] = args
+  const { QueueUrl } = command.input
   return {
     callback: shim.LAST,
     destinationName: grabLastUrlSegment(QueueUrl),
