@@ -3,8 +3,6 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-// TODO restore attribute checking, see checkAttributes
-
 'use strict'
 
 const tap = require('tap')
@@ -77,36 +75,32 @@ tap.test('SQS API', (t) => {
   })
 
   t.test('commands with promises', async (t) => {
-    try {
-      // create queue
-      const createParams = getCreateParams(queueName)
-      const createCommand = new CreateQueueCommand(createParams)
-      const { QueueUrl } = await sqs.send(createCommand)
-      t.ok(QueueUrl)
-      // run send/receive commands in transaction
-      await helper.runInTransaction(async (transaction) => {
-        // send message
-        const sendMessageParams = getSendMessageParams(QueueUrl)
-        const sendMessageCommand = new SendMessageCommand(sendMessageParams)
-        const { MessageId } = await sqs.send(sendMessageCommand)
-        t.ok(MessageId)
-        // send message batch
-        const sendMessageBatchParams = getSendMessageBatchParams(QueueUrl)
-        const sendMessageBatchCommand = new SendMessageBatchCommand(sendMessageBatchParams)
-        const { Successful } = await sqs.send(sendMessageBatchCommand)
-        t.ok(Successful)
-        // receive message
-        const receiveMessageParams = getReceiveMessageParams(QueueUrl)
-        const receiveMessageCommand = new ReceiveMessageCommand(receiveMessageParams)
-        const { Messages } = await sqs.send(receiveMessageCommand)
-        t.ok(Messages)
-        // wrap up
-        transaction.end()
-        await finish(t, transaction)
-      })
-    } catch (err) {
-      t.error(err)
-    }
+    // create queue
+    const createParams = getCreateParams(queueName)
+    const createCommand = new CreateQueueCommand(createParams)
+    const { QueueUrl } = await sqs.send(createCommand)
+    t.ok(QueueUrl)
+    // run send/receive commands in transaction
+    await helper.runInTransaction(async (transaction) => {
+      // send message
+      const sendMessageParams = getSendMessageParams(QueueUrl)
+      const sendMessageCommand = new SendMessageCommand(sendMessageParams)
+      const { MessageId } = await sqs.send(sendMessageCommand)
+      t.ok(MessageId)
+      // send message batch
+      const sendMessageBatchParams = getSendMessageBatchParams(QueueUrl)
+      const sendMessageBatchCommand = new SendMessageBatchCommand(sendMessageBatchParams)
+      const { Successful } = await sqs.send(sendMessageBatchCommand)
+      t.ok(Successful)
+      // receive message
+      const receiveMessageParams = getReceiveMessageParams(QueueUrl)
+      const receiveMessageCommand = new ReceiveMessageCommand(receiveMessageParams)
+      const { Messages } = await sqs.send(receiveMessageCommand)
+      t.ok(Messages)
+      // wrap up
+      transaction.end()
+      await finish(t, transaction)
+    })
   })
 
   function finish(t, transaction) {
@@ -134,8 +128,6 @@ tap.test('SQS API', (t) => {
 
     checkName(t, receiveMessage.name, 'Consume', queueName)
     checkAttributes(t, receiveMessage, 'ReceiveMessageCommand')
-
-    t.end()
   }
 })
 
