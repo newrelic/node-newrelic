@@ -6,7 +6,7 @@
 'use strict'
 
 const test = require('tap').test
-const helper = require('../../lib/agent_helper')
+const helper = require('../../../lib/agent_helper')
 const asyncHooks = require('async_hooks')
 
 test('await', function (t) {
@@ -16,7 +16,7 @@ test('await', function (t) {
     let transaction = agent.getTransaction()
     t.equal(transaction && transaction.id, txn.id, 'should start in a transaction')
 
-    const segmentMap = require('../../../lib/instrumentation/core/async_hooks').segmentMap
+    const segmentMap = require('../../../../lib/instrumentation/core/async_hooks').segmentMap
 
     const promise = new Promise((resolve) => {
       // don't immediately resolve so logic can kick in.
@@ -85,7 +85,7 @@ test("the agent's async hook", function (t) {
     const testResource = new TestResource(1)
     helper.runInTransaction(agent, function () {
       const root = contextManager.getContext()
-      const segmentMap = require('../../../lib/instrumentation/core/async_hooks').segmentMap
+      const segmentMap = require('../../../../lib/instrumentation/core/async_hooks').segmentMap
 
       t.equal(segmentMap.size, 0, 'no segments should be tracked')
       testResource.doStuff(function () {
@@ -421,7 +421,7 @@ test("the agent's async hook", function (t) {
   t.test('handles multientry callbacks correctly', function (t) {
     const { agent, contextManager } = setupAgent(t)
 
-    const segmentMap = require('../../../lib/instrumentation/core/async_hooks').segmentMap
+    const segmentMap = require('../../../../lib/instrumentation/core/async_hooks').segmentMap
     helper.runInTransaction(agent, function () {
       const root = contextManager.getContext()
 
@@ -479,7 +479,7 @@ test("the agent's async hook", function (t) {
     { skip: process.env.NEW_RELIC_FEATURE_FLAG_UNRESOLVED_PROMISE_CLEANUP === 'false' },
     (t) => {
       const { agent } = setupAgent(t)
-      const segmentMap = require('../../../lib/instrumentation/core/async_hooks').segmentMap
+      const segmentMap = require('../../../../lib/instrumentation/core/async_hooks').segmentMap
 
       helper.runInTransaction(agent, () => {
         /* eslint-disable no-unused-vars */
@@ -508,7 +508,7 @@ test("the agent's async hook", function (t) {
     { skip: process.env.NEW_RELIC_FEATURE_FLAG_UNRESOLVED_PROMISE_CLEANUP !== 'false' },
     (t) => {
       const { agent } = setupAgent(t)
-      const segmentMap = require('../../../lib/instrumentation/core/async_hooks').segmentMap
+      const segmentMap = require('../../../../lib/instrumentation/core/async_hooks').segmentMap
 
       helper.runInTransaction(agent, () => {
         /* eslint-disable no-unused-vars */
@@ -609,7 +609,9 @@ test('promise hooks', function (t) {
 
 function setupAgent(t) {
   const agent = helper.instrumentMockedAgent({
-    feature_flag: { await_support: true }
+    feature_flag: {
+      await_support: true
+    }
   })
 
   const contextManager = helper.getContextManager()

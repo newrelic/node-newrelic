@@ -5,7 +5,7 @@
 
 'use strict'
 const test = require('tap').test
-const helper = require('../../lib/agent_helper')
+const helper = require('../../../lib/agent_helper')
 const asyncHooks = require('async_hooks')
 
 function testSegments(t, segmentMap) {
@@ -32,7 +32,7 @@ test('await', function (t) {
       'should resume in the same transaction after await'
     )
 
-    const segmentMap = require('../../../lib/instrumentation/core/async_hooks').segmentMap
+    const segmentMap = require('../../../../lib/instrumentation/core/async_hooks').segmentMap
     txn.end()
     // Segments won't be cleared till a gc cycle clears the promises
     // they are related with.
@@ -84,7 +84,7 @@ test("the agent's async hook", function (t) {
     const res = new TestResource(1)
     helper.runInTransaction(agent, function () {
       const root = contextManager.getContext()
-      const segmentMap = require('../../../lib/instrumentation/core/async_hooks').segmentMap
+      const segmentMap = require('../../../../lib/instrumentation/core/async_hooks').segmentMap
 
       t.equal(segmentMap.size, 0, 'no segments should be tracked')
       res.doStuff(function () {
@@ -282,7 +282,7 @@ test("the agent's async hook", function (t) {
 
   t.test('handles multientry callbacks correctly', function (t) {
     const { agent, contextManager } = setupAgent(t)
-    const segmentMap = require('../../../lib/instrumentation/core/async_hooks').segmentMap
+    const segmentMap = require('../../../../lib/instrumentation/core/async_hooks').segmentMap
     helper.runInTransaction(agent, function () {
       const root = contextManager.getContext()
 
@@ -410,7 +410,9 @@ test('promise hooks', function (t) {
 
 function setupAgent(t) {
   const agent = helper.instrumentMockedAgent({
-    feature_flag: { await_support: true }
+    feature_flag: {
+      await_support: true
+    }
   })
 
   const contextManager = helper.getContextManager()
