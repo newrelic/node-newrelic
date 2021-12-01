@@ -20,6 +20,10 @@ newrelic.instrumentMessages({
   moduleName: '@aws-sdk/client-sns',
   onResolved: require('./lib/v3-sns')
 })
+newrelic.instrumentMessages({
+  moduleName: '@aws-sdk/client-sqs',
+  onResolved: require('./lib/v3-sqs')
+})
 newrelic.instrumentDatastore({
   moduleName: '@aws-sdk/client-dynamodb',
   onResolved: require('./lib/v3-client-dynamodb')

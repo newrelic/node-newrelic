@@ -22,6 +22,11 @@ module.exports = [
     onResolved: require('./lib/v3-sns')
   },
   {
+    type: 'message',
+    moduleName: '@aws-sdk/client-sqs',
+    onResolved: require('./lib/v3-sqs')
+  },
+  {
     type: 'datastore',
     moduleName: '@aws-sdk/client-dynamodb',
     onResolved: require('./lib/v3-client-dynamodb')
