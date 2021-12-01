@@ -90,3 +90,69 @@ jobs:
       env:
         VERSIONED_MODE: ${{ github.ref == 'refs/heads/main' && '--minor' || '--major' }}
         JOBS: 4 # 2 per CPU seems to be the sweet spot in GHA (July 2022)
+
+  unit-async-local:
+    name: unit (AsyncLocalContext)
+
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [16.x]
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v2
+      with:
+        node-version: ${{ matrix.node-version }}
+    - name: Install Dependencies
+      run: npm ci
+    - name: Run Unit Tests
+      run: npm run unit:async-local
+
+  integration-async-local:
+    name: integration (AsyncLocalContext)
+
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [16.x]
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v2
+      with:
+        node-version: ${{ matrix.node-version }}
+    - name: Install Dependencies
+      run: npm ci
+    - name: Run Docker Services
+      run: npm run services
+    - name: Run Integration Tests
+      run: npm run integration:async-local
+
+  versioned-async-local:
+    name: versioned (AsyncLocalContext)
+
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [16.x]
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v2
+      with:
+        node-version: ${{ matrix.node-version }}
+    - name: Install Dependencies
+      run: npm ci
+    - name: Run Docker Services
+      run: npm run services
+    - name: Run Versioned Tests
+      run: npm run versioned:async-local
+      env:
+        VERSIONED_MODE: '--major'

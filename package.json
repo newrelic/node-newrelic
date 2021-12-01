@@ -147,6 +147,7 @@
     "docker-env": "./bin/docker-env-vars.sh",
     "docs": "npm ci && jsdoc -c ./jsdoc-conf.json --private -r .",
     "integration": "npm run prepare-test && npm run sub-install && time c8 -o ./coverage/integration tap test/integration/**/**/*.tap.js --timeout=180 --no-coverage --reporter classic",
+    "integration:async-local": "npm run prepare-test && npm run sub-install && time tap --test-regex='(\\/|^test\\/integration\\/.*\\.tap\\.js)$' --timeout=180 --no-coverage --reporter classic --test-env=NEW_RELIC_FEATURE_FLAG_ASYNC_LOCAL_CONTEXT=1",
     "prepare-test": "npm run ssl && npm run docker-env",
     "lint": "eslint ./*.{js,mjs} lib test bin examples",
     "lint:fix": "eslint --fix, ./*.{js,mjs} lib test bin examples",
@@ -159,6 +160,7 @@
     "test": "npm run integration && npm run unit && npm run unit:esm",
     "third-party-updates": "oss third-party manifest --includeOptDeps && oss third-party notices --includeOptDeps && git add THIRD_PARTY_NOTICES.md third_party_manifest.json",
      "unit": "rm -f newrelic_agent.log && time c8 -o ./coverage/unit tap --test-regex='(\\/|^test\\/unit\\/.*\\.test\\.js)$' --timeout=180 --no-coverage --reporter classic",
+    "unit:async-local": "rm -f newrelic_agent.log && time tap --test-regex='(\\/|^test\\/unit\\/.*\\.test\\.js)$' --timeout=180 --no-coverage --reporter classic --test-env=NEW_RELIC_FEATURE_FLAG_ASYNC_LOCAL_CONTEXT=1",
     "unit:esm": "rm -f newrelic_agent.log && time c8 -o ./coverage/esm-unit --include *.mjs --include **/*.mjs --exclude false tap --test-regex='(\\/|^test\\/unit\\/.*\\.test\\.mjs)$' --timeout=180 --no-coverage --reporter classic --node-arg=--experimental-loader=testdouble",
     "update-cross-agent-tests": "./bin/update-cats.sh",
     "versioned-tests": "./bin/run-versioned-tests.sh",
@@ -168,6 +170,8 @@
     "versioned:major": "npm run checkout-external-versioned && npm run prepare-test && VERSIONED_MODE=--major NPM7=1 time ./bin/run-versioned-tests.sh",
     "versioned:npm6": "npm run checkout-external-versioned && npm run prepare-test && time ./bin/run-versioned-tests.sh",
     "versioned:npm7": "npm run checkout-external-versioned && npm run prepare-test && NPM7=1 time ./bin/run-versioned-tests.sh",
+    "versioned:async-local": "npm run checkout-external-versioned && npm run prepare-test && NEW_RELIC_FEATURE_FLAG_ASYNC_LOCAL_CONTEXT=1 NPM7=1 time ./bin/run-versioned-tests.sh",
+    "versioned:async-local:major": "npm run checkout-external-versioned && npm run prepare-test && NEW_RELIC_FEATURE_FLAG_ASYNC_LOCAL_CONTEXT=1 VERSIONED_MODE=--major NPM7=1 time ./bin/run-versioned-tests.sh",
     "prepare": "husky install"
   },
   "bin": {
