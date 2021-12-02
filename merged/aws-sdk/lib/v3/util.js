@@ -22,7 +22,7 @@ exports.getExport = function getExport(shim, resolvedName, exportName) {
 
 /**
  * Given a plugin getter, calls the instances middlewareStack.use to register
- * a plugin that adds a middleware to record the dynamo operations.
+ * a plugin that adds a middleware to record operations.
  * see: https://aws.amazon.com/blogs/developer/middleware-stack-modular-aws-sdk-js/
  *
  * @param {function} getPlugin Plugin getter, produces middleware given params.
