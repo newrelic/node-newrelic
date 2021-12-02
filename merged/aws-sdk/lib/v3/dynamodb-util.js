@@ -31,37 +31,25 @@ function getDynamoSpec(shim, original, name, args) {
 }
 
 /**
- * Generate DynamoDB middleware that instruments a given list of commands.
- * @param {String[]} commands A list of commands to instrument.
+ * Middleware hook that records the middleware chain
+ * when command is in a list of monitored commands.
+ *
+ * @param {Shim} shim
+ * @param {Object} config AWS SDK client configuration
+ * @param {function} next middleware function
+ * @param {Object} context Context for the running command
  * @returns {function}
  */
-function wrapDynamoMiddleware(commands) {
-  /**
-   * Middleware hook that records the middleware chain
-   * when command is in a list of monitored commands.
-   *
-   * @param {Shim} shim
-   * @param {Object} config AWS SDK client configuration
-   * @param {function} next middleware function
-   * @param {Object} context Context for the running command
-   * @returns {function}
-   */
-  return function dynamoMiddleware(shim, config, next, context) {
-    const { commandName } = context
-    return async function wrappedMiddleware(args) {
-      if (commands.includes(commandName)) {
-        const endpoint = await config.endpoint()
-        const getSpec = getDynamoSpec.bind({ endpoint, commandName })
-        const wrappedNext = shim.recordOperation(next, getSpec)
-        return wrappedNext(args)
-      }
-      shim.logger.debug(`Not recording command ${commandName}.`)
-
-      return next(args)
-    }
+function dynamoMiddleware(shim, config, next, context) {
+  const { commandName } = context
+  return async function wrappedMiddleware(args) {
+    const endpoint = await config.endpoint()
+    const getSpec = getDynamoSpec.bind({ endpoint, commandName })
+    const wrappedNext = shim.recordOperation(next, getSpec)
+    return wrappedNext(args)
   }
 }
 
 module.exports = {
-  wrapDynamoMiddleware
+  dynamoMiddleware
 }

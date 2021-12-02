@@ -6,28 +6,12 @@
 'use strict'
 
 const { getExport, wrapPostClientConstructor, wrapReturn } = require('./util')
-const { wrapDynamoMiddleware } = require('./dynamodb-util')
+const { dynamoMiddleware } = require('./dynamodb-util')
 
 const CLIENT = 'DynamoDBClient'
 
-const COMMANDS = [
-  'BatchExecuteStatementCommand',
-  'CreateTableCommand',
-  'BatchGetItemCommand',
-  'BatchWriteItemCommand',
-  'DeleteItemCommand',
-  'DeleteTableCommand',
-  'GetItemCommand',
-  'PutItemCommand',
-  'QueryCommand',
-  'ScanCommand',
-  'UpdateItemCommand',
-  'UpdateTableCommand'
-]
-
 const postClientConstructor = wrapPostClientConstructor(getPlugin)
 const wrappedReturn = wrapReturn(postClientConstructor)
-const dynamoMiddleware = wrapDynamoMiddleware(COMMANDS)
 
 module.exports = function instrument(shim, name, resolvedName) {
   const dynamoClientExport = getExport(shim, resolvedName, CLIENT)
