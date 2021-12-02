@@ -7,13 +7,14 @@
 
 const { grabLastUrlSegment } = require('../util')
 
-const { getExport, wrapPostClientConstructor } = require('./util')
+const { getExport, wrapPostClientConstructor, wrapReturn } = require('./util')
 
 const SEND_COMMANDS = ['SendMessageCommand', 'SendMessageBatchCommand']
 
 const RECEIVE_COMMANDS = ['ReceiveMessageCommand']
 
 const postClientConstructor = wrapPostClientConstructor(getPlugin)
+const wrappedReturn = wrapReturn(postClientConstructor)
 
 module.exports = function instrument(shim, name, resolvedName) {
   const sqsClientExport = getExport(shim, resolvedName, 'SQSClient')
@@ -22,13 +23,7 @@ module.exports = function instrument(shim, name, resolvedName) {
     shim.logger.debug('Could not find SQSClient, not instrumenting.')
   } else {
     shim.setLibrary(shim.SQS)
-    shim.wrapReturn(
-      sqsClientExport,
-      'SQSClient',
-      function wrappedReturn(shim, fn, fnName, instance) {
-        postClientConstructor.call(instance, shim)
-      }
-    )
+    shim.wrapReturn(sqsClientExport, 'SQSClient', wrappedReturn)
   }
 }
 

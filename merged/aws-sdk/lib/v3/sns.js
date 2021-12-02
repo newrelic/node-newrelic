@@ -5,26 +5,20 @@
 
 'use strict'
 
-const { getExport, wrapPostClientConstructor } = require('./util')
+const { getExport, wrapPostClientConstructor, wrapReturn } = require('./util')
 
 const postClientConstructor = wrapPostClientConstructor(getPlugin)
+const wrappedReturn = wrapReturn(postClientConstructor)
 
 module.exports = function instrument(shim, name, resolvedName) {
   const snsClientExport = getExport(shim, resolvedName, 'SNSClient')
 
   if (!shim.isFunction(snsClientExport.SNSClient)) {
     shim.logger.debug('Could not find SNSClient, not instrumenting.')
-    return
+  } else {
+    shim.setLibrary(shim.SNS)
+    shim.wrapReturn(snsClientExport, 'SNSClient', wrappedReturn)
   }
-
-  shim.setLibrary(shim.SNS)
-  shim.wrapReturn(
-    snsClientExport,
-    'SNSClient',
-    function wrappedReturn(shim, original, fnName, instance) {
-      postClientConstructor.call(instance, shim)
-    }
-  )
 }
 
 /**
@@ -58,7 +52,6 @@ function snsMiddleware(shim, next, context) {
   if (context.commandName === 'PublishCommand') {
     return shim.recordProduce(next, getSnsSpec)
   }
-
   return next
 }
 
