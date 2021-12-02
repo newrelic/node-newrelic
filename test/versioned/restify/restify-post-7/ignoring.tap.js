@@ -34,8 +34,24 @@ test('Restify router introspection', function (t) {
 
     t.notOk(agent.traces.trace, 'should have no transaction trace')
 
+    // Domain usage varies by version so just checking list of known allowed metric patterns.
+    const potentialSupportMetrics = [
+      'Supportability/API/addIgnoringRule',
+      'Supportability/Features/instrumentation/onRequire/domain',
+      'Supportability/Features/instrumentation/onRequire/restify'
+    ]
+
     const metrics = agent.metrics._metrics.unscoped
-    t.equal(Object.keys(metrics).length, 1, 'only supportability metrics added to agent collection')
+
+    const unexpectedMetrics = Object.keys(metrics).filter((metricName) => {
+      const matching = potentialSupportMetrics.filter((value) => {
+        return metricName.startsWith(value)
+      })
+
+      return matching > 0
+    })
+
+    t.equal(unexpectedMetrics.length, 0, 'only supportability metrics added to agent collection')
 
     const errors = agent.errors.traceAggregator.errors
     t.equal(errors.length, 0, 'no errors noticed')

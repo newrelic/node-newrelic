@@ -38,7 +38,7 @@ test('ignoring an Express route', function (t) {
     t.notOk(agent.traces.trace, 'should have no transaction trace')
 
     const metrics = agent.metrics._metrics.unscoped
-    t.equal(Object.keys(metrics).length, 1, 'only supportability metrics added to agent collection')
+    t.equal(Object.keys(metrics).length, 3, 'only supportability metrics added to agent collection')
 
     const errors = agent.errors.traceAggregator.errors
     t.equal(errors.length, 0, 'no errors noticed')

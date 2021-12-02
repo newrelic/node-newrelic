@@ -37,8 +37,25 @@ tap.test('ignoring a Hapi route', function (t) {
 
     t.notOk(agent.traces.trace, 'should have no transaction trace')
 
+    // Vision usage varies by version so just checking list of known allowed metric patterns.
+    const potentialSupportMetrics = [
+      'Supportability/API/addIgnoringRule',
+      'Supportability/Features/instrumentation/onRequire/vision',
+      'Supportability/Features/instrumentation/onRequire/domain',
+      'Supportability/Features/instrumentation/onRequire/hapi'
+    ]
+
     const metrics = agent.metrics._metrics.unscoped
-    t.equal(Object.keys(metrics).length, 1, 'only supportability metrics added to agent collection')
+
+    const unexpectedMetrics = Object.keys(metrics).filter((metricName) => {
+      const matching = potentialSupportMetrics.filter((value) => {
+        return metricName.startsWith(value)
+      })
+
+      return matching > 0
+    })
+
+    t.equal(unexpectedMetrics.length, 0, 'only supportability metrics added to agent collection')
 
     const errors = agent.errors.traceAggregator.errors
     t.equal(errors.length, 0, 'no errors noticed')
