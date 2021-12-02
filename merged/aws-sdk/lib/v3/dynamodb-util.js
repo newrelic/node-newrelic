@@ -55,6 +55,8 @@ function wrapDynamoMiddleware(commands) {
         const wrappedNext = shim.recordOperation(next, getSpec)
         return wrappedNext(args)
       }
+      shim.logger.debug(`Not recording command ${commandName}.`)
+
       return next(args)
     }
   }

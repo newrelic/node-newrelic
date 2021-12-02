@@ -52,6 +52,8 @@ function snsMiddleware(shim, next, context) {
   if (context.commandName === 'PublishCommand') {
     return shim.recordProduce(next, getSnsSpec)
   }
+  shim.logger.debug(`Not instrumenting command ${context.commandName}.`)
+
   return next
 }
 

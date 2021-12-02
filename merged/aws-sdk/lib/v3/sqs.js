@@ -60,6 +60,8 @@ function sqsMiddleware(shim, next, context) {
   } else if (RECEIVE_COMMANDS.includes(context.commandName)) {
     return shim.recordConsume(next, getSqsSpec)
   }
+  shim.logger.debug(`Not instrumenting command ${context.commandName}.`)
+
   return next
 }
 
