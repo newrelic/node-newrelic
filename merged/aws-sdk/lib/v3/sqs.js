@@ -5,44 +5,26 @@
 
 'use strict'
 
-const { grabLastUrlSegment } = require('./util')
+const { grabLastUrlSegment } = require('../util')
+
+const { getExport, wrapPostClientConstructor, wrapReturn } = require('./util')
 
 const SEND_COMMANDS = ['SendMessageCommand', 'SendMessageBatchCommand']
 
 const RECEIVE_COMMANDS = ['ReceiveMessageCommand']
 
-module.exports = function instrument(shim, name, resolvedName) {
-  const fileNameIndex = resolvedName.indexOf('/index')
-  const relativeFolder = resolvedName.substr(0, fileNameIndex)
+const postClientConstructor = wrapPostClientConstructor(getPlugin)
+const wrappedReturn = wrapReturn(postClientConstructor)
 
-  // The path changes depending on the version...
-  // so we don't want to hard-code the relative
-  // path from the module root.
-  const sqsClientExport = shim.require(`${relativeFolder}/SQSClient`)
+module.exports = function instrument(shim, name, resolvedName) {
+  const sqsClientExport = getExport(shim, resolvedName, 'SQSClient')
 
   if (!shim.isFunction(sqsClientExport.SQSClient)) {
     shim.logger.debug('Could not find SQSClient, not instrumenting.')
   } else {
     shim.setLibrary(shim.SQS)
-    shim.wrapReturn(
-      sqsClientExport,
-      'SQSClient',
-      function wrappedReturn(shim, fn, fnName, instance) {
-        postClientConstructor.call(instance, shim)
-      }
-    )
+    shim.wrapReturn(sqsClientExport, 'SQSClient', wrappedReturn)
   }
-}
-
-/**
- * Calls the instances middlewareStack.use to register
- * a plugin that adds a middleware to record the time it teakes to publish a message
- * see: https://aws.amazon.com/blogs/developer/middleware-stack-modular-aws-sdk-js/
- *
- * @param {Shim} shim
- */
-function postClientConstructor(shim) {
-  this.middlewareStack.use(getPlugin(shim))
 }
 
 /**
@@ -78,6 +60,8 @@ function sqsMiddleware(shim, next, context) {
   } else if (RECEIVE_COMMANDS.includes(context.commandName)) {
     return shim.recordConsume(next, getSqsSpec)
   }
+  shim.logger.debug(`Not instrumenting command ${context.commandName}.`)
+
   return next
 }
 

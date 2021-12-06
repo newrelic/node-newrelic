@@ -39,7 +39,7 @@ tap.test('SQS API', (t) => {
     helper.registerInstrumentation({
       moduleName: '@aws-sdk/client-sqs',
       type: 'message',
-      onResolved: require('../../../lib/v3-sqs')
+      onResolved: require('../../../lib/v3/sqs')
     })
 
     const lib = require('@aws-sdk/client-sqs')

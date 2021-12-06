@@ -32,7 +32,7 @@ tap.test('amazon-dax-client', (t) => {
     helper.registerInstrumentation({
       moduleName: 'aws-sdk',
       type: 'conglomerate',
-      onRequire: require('../../../lib/instrumentation')
+      onRequire: require('../../../lib/v2/instrumentation')
     })
 
     AWS = require('aws-sdk')

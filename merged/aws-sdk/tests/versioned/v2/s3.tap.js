@@ -31,7 +31,7 @@ tap.test('S3 buckets', (t) => {
     helper.registerInstrumentation({
       moduleName: 'aws-sdk',
       type: 'conglomerate',
-      onRequire: require('../../../lib/instrumentation')
+      onRequire: require('../../../lib/v2/instrumentation')
     })
     AWS = require('aws-sdk')
     S3 = new AWS.S3({
