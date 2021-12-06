@@ -38,4 +38,33 @@ jobs:
       run: node ./bin/create-github-release.js --tag ${{ steps.get_tag.outputs.latest_tag }} --repo-owner ${{ github.repository_owner }}
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-    - run: npm run publish-docs
+    - name: Publish API Docs
+      run: npm run publish-docs
+    - name: Update system configuration pages
+      env:
+        VERSION: ${{ steps.get_tag.outputs.latest_tag}}
+      run: |
+        # Need to strip the v from version(i.e. - v8.6.0 is not 8.6.0)
+        PKG_VERSION="${VERSION//v/}""
+        PAYLOAD="{
+             \"system_configuration\": {
+               \"key\":   \"nodejs_agent_version\",
+               \"value\": \"$PKG_VERSION\"
+            }
+          }"
+        CONTENT_TYPE='Content-Type: application/json'
+        # STAGING
+        curl -X POST 'https://staging-api.newrelic.com/v2/system_configuration.json' \
+          -H "X-Api-Key:${{ secrets.NEW_RELIC_API_KEY_STAGING }}" -i \
+          -H "$CONTENT_TYPE" \
+          -d "$PAYLOAD"
+        # PRODUCTION
+        curl -X POST 'https://api.newrelic.com/v2/system_configuration.json' \
+          -H "X-Api-Key:${{ secrets.NEW_RELIC_API_KEY_PRODUCTION }}" -i \
+          -H "$CONTENT_TYPE" \
+          -d "$PAYLOAD"
+        # EU PRODUCTION
+        curl -X POST 'https://api.eu.newrelic.com/v2/system_configuration.json' \
+          -H "X-Api-Key:$ {{ secrets.NEW_RELIC_API_KEY_EU }}" -i \
+          -H "$CONTENT_TYPE" \
+          -d "$PAYLOAD"
