@@ -38,4 +38,7 @@ jobs:
       run: node ./bin/create-github-release.js --tag ${{ steps.get_tag.outputs.latest_tag }} --repo-owner ${{ github.repository_owner }}
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-    - run: npm run publish-docs
+    - name: Publish API Docs
+      run: npm run publish-docs
+    - name: Update system configuration pages
+      run: node ./bin/update-system-config-pages.js --version ${{ steps.get_tag.outputs.latest_tag }} --staging-key ${{ secrets.NEW_RELIC_API_KEY_STAGING }} --prod-key ${{ secrets.NEW_RELIC_API_KEY_PRODUCTION }}
