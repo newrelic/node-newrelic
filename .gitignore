@@ -14,6 +14,7 @@ out
 .nyc_output
 test/**/package-lock.json
 coverage/
+test/versioned-external/TEMP_TESTS
 
 # Needed for testing
 !test/integration/moduleLoading/node_modules

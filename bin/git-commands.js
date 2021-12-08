@@ -86,6 +86,44 @@ async function pushTags() {
   return output
 }
 
+async function checkout(branchName) {
+  const stdout = await execAsPromise(`git checkout ${branchName}`)
+  const output = stdout.trim()
+
+  return output
+}
+
+async function clone(url, name, args) {
+  const argsString = args.join(' ')
+  const stdout = await execAsPromise(`git clone ${argsString} ${url} ${name}`)
+  const output = stdout.trim()
+
+  return output
+}
+
+async function setSparseCheckoutFolders(folders) {
+  const foldersString = folders.join(' ')
+
+  const stdout = await execAsPromise(`git sparse-checkout set ${foldersString}`)
+  const output = stdout.trim()
+
+  return output
+}
+
+async function sparseCloneRepo(repoInfo, checkoutFiles) {
+  const { name, repository, branch } = repoInfo
+
+  const cloneOptions = ['--filter=blob:none', '--no-checkout', '--depth 1', '--sparse']
+  await clone(repository, name, cloneOptions)
+  process.chdir(name)
+
+  await setSparseCheckoutFolders(checkoutFiles)
+
+  await checkout(branch)
+
+  process.chdir('..')
+}
+
 function execAsPromise(command) {
   const promise = new Promise((resolve, reject) => {
     console.log(`Executing: '${command}'`)
@@ -111,5 +149,8 @@ module.exports = {
   commit,
   pushToRemote,
   createAnnotatedTag,
-  pushTags
+  pushTags,
+  checkout,
+  clone,
+  sparseCloneRepo
 }

@@ -9,10 +9,17 @@ VERSIONED_MODE="${VERSIONED_MODE:---minor}"
 SAMPLES="${SAMPLES:-10}"
 set -f
 directories=()
-if [[ "$1" != '' ]]; then
+if [[ "$1" != '' ]];
+then
   directories=(
     "test/versioned/${1}"
-    "node_modules/@newrelic/${1}/tests/versioned"
+    "test/versioned-external/TEMP_TESTS/${1}"
+    "test/versioned-external/TEMP_TESTS/${1}/tests/versioned"
+  )
+else
+  directories=(
+    "test/versioned/"
+    "test/versioned-external"
   )
 fi
 
