@@ -5,7 +5,13 @@
 
 'use strict'
 
-const { rm, mkdir } = require('fs/promises')
+/* eslint-disable no-console, no-process-exit */
+
+// TODO: Update when drop Node 12
+// 'rm' not available in Node 12 but considered deprecated in newer versions
+// 'fs/promises' not available in Node 12
+const { existsSync } = require('fs')
+const { rmdir, mkdir } = require('fs').promises
 
 const { sparseCloneRepo } = require('../../bin/git-commands')
 const repos = require('./external-repos')
@@ -31,8 +37,28 @@ async function checkoutTests() {
 }
 
 async function createNewTestFolder() {
-  await rm(TEMP_TESTS_FOLDER, { recursive: true, force: true })
+  if (existsSync(TEMP_TESTS_FOLDER)) {
+    console.log(`Removing ${TEMP_TESTS_FOLDER} folder.`)
+    await rmdir(TEMP_TESTS_FOLDER, { recursive: true, force: true })
+  }
+
+  console.log(`Creating new ${TEMP_TESTS_FOLDER} folder.`)
   await mkdir(TEMP_TESTS_FOLDER)
 }
 
-checkoutTests()
+try {
+  checkoutTests()
+} catch (error) {
+  stopOnError(error)
+}
+
+function stopOnError(err) {
+  if (err) {
+    console.error(err)
+  }
+
+  console.log('Halting execution with exit code: 1')
+  process.exit(1)
+}
+
+/* eslint-enable no-console, no-process-exit */
