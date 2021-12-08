@@ -74,6 +74,8 @@ async function updateSystemConfigs() {
     if (errors.length) {
       throw new Error(errors)
     }
+
+    console.log(`Successfully updated the Node.js Agent Version to ${opts.version}`)
   } catch (err) {
     console.error(err)
     process.exit(1)
