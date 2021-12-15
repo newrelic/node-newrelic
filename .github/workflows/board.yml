@@ -4,6 +4,7 @@ on:
     inputs:
       project_id:
         description: Id of Project in GitHub
+        # To find guid run `gh api -H "Accept: application/vnd.github.inertia-preview+json" orgs/newrelic/projects --jq ".[] | select(.name == \"Node.js Engineering Board\").id"`
         default: 5864688 # Node.js Engineering Board https://github.com/orgs/newrelic/projects/41
         required: false
         type: number
@@ -33,9 +34,9 @@ jobs:
     - name: Assign PR to Project
       if: github.event_name == 'pull_request'
       run: |
-        ISSUE_ID=${{ github.event.issue.id }}
+        ISSUE_ID=${{ github.event.pull_request.id }}
         COLUMN=$(gh api -H "$HEADER" projects/$PROJECT_ID/columns --jq ".[] | select(.name == \"$COLUMN_NAME\").id")
-        gh api -H "$HEADER" -X POST projects/columns/$COLUMN/cards -f content_type='Issue' -F content_id=$ISSUE_ID
+        gh api -H "$HEADER" -X POST projects/columns/$COLUMN/cards -f content_type='PullRequest' -F content_id=$ISSUE_ID
       env:
         COLUMN_NAME: ${{ inputs.pr_column}}
     - name: Assign Issue to Project
