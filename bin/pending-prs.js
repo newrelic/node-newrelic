@@ -11,6 +11,8 @@ const channel = process.env.SLACK_CHANNEL
 const token = process.env.SLACK_TOKEN
 const signingSecret = process.env.SLACK_SECRET
 let missingEnvVars = []
+const { program } = require('commander')
+program.requiredOption('--repo <repo-name>', 'Name of repo to check for unreleased PRs')
 
 /**
  * Finds the last released tag and all the PRs that have been
@@ -23,6 +25,8 @@ let missingEnvVars = []
  * SLACK_CHANNEL - slack channel to send message
  * SLACK_TOKEN - token from bot
  * SLACK_SECRET - signing secret from bot
+ *
+ * `node ./bin/pending-prs.js --repo <repo-name>`
  */
 async function unreleasedPRs() {
   try {
@@ -31,19 +35,22 @@ async function unreleasedPRs() {
       stopOnError()
     }
 
+    program.parse()
+    const opts = program.opts()
+
     const app = new App({
       token,
       signingSecret
     })
 
-    const { prs, latestRelease } = await findMergedPRs()
+    const { prs, latestRelease } = await findMergedPRs(opts.repo)
 
     let msg = null
 
     if (!prs.length) {
-      msg = `:the-more-you-know: We have not merged any new PRs since \`${latestRelease.name}\`.`
+      msg = `:the-more-you-know: *${opts.repo}* does not have any new PRs since \`${latestRelease.name}\` on *${latestRelease.published_at}*.`
     } else {
-      msg = createSlackMessage(prs, latestRelease)
+      msg = createSlackMessage(prs, latestRelease, opts.repo)
     }
 
     await app.client.chat.postMessage({
@@ -70,25 +77,27 @@ function areEnvVarsSet() {
   return missingEnvVars.length === 0
 }
 
-function createSlackMessage(prs, latestRelease) {
+function createSlackMessage(prs, latestRelease, repo) {
   return `
-    There have been ${prs.length} PRs merged since \`${latestRelease.name}\` on *${
+    *${repo}*
+
+  There have been ${prs.length} PRs merged since \`${latestRelease.name}\` on *${
     latestRelease.published_at
   }*.
 
-    :waiting: *PRs not yet released*:
+  :waiting: *PRs not yet released*:
 
  - ${prs.join('\n - ')}
 
-    Do you want to <https://github.com/newrelic/node-newrelic/actions/workflows/prepare-release.yml | prepare a release>?
+    Do you want to <https://github.com/newrelic/${repo}/actions/workflows/prepare-release.yml | prepare a release>?
     `
 }
 
-async function findMergedPRs() {
-  const github = new Github()
+async function findMergedPRs(repo) {
+  const github = new Github('newrelic', repo)
   const latestRelease = await github.getLatestRelease()
   console.log(
-    `The latest release is: ${latestRelease.name} published: ${latestRelease.published_at}`
+    `The latest release for ${repo} is: ${latestRelease.name} published: ${latestRelease.published_at}`
   )
   console.log(`Tag: ${latestRelease.tag_name}, Target: ${latestRelease.target_commitish}`)
 
