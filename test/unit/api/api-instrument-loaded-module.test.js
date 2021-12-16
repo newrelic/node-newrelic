@@ -70,6 +70,14 @@ tap.test('Agent API - instrumentLoadedModule', (t) => {
     t.end()
   })
 
+  t.test('should return false when no instrumentation exists', (t) => {
+    const result = api.instrumentLoadedModule('tap', {})
+
+    t.equal(result, false)
+
+    t.end()
+  })
+
   t.test('should not instrument/wrap multiple times on multiple invocations', (t) => {
     const originalUse = expressMock.application.use
 

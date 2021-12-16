@@ -44,3 +44,48 @@ test('should return false when a function errors during instrumentation', (t) =>
 
   t.equal(result, false)
 })
+
+test('should return false when instrumentation handler returns false (did not instrument)', (t) => {
+  t.plan(2)
+
+  const agent = agentHelper.loadMockedAgent()
+  t.teardown(() => {
+    agentHelper.unloadAgent(agent)
+  })
+
+  const api = new API(agent)
+
+  const moduleName = 'express'
+  api.instrument(moduleName, onRequire)
+
+  function onRequire() {
+    t.ok('should hit the onRequire')
+    return false
+  }
+
+  const result = api.instrumentLoadedModule(moduleName, {})
+
+  t.equal(result, false)
+})
+
+test('should return true when instrumentation handler does not return anything', (t) => {
+  t.plan(2)
+
+  const agent = agentHelper.loadMockedAgent()
+  t.teardown(() => {
+    agentHelper.unloadAgent(agent)
+  })
+
+  const api = new API(agent)
+
+  const moduleName = 'express'
+  api.instrument(moduleName, onRequire)
+
+  function onRequire() {
+    t.ok('should hit the onRequire')
+  }
+
+  const result = api.instrumentLoadedModule(moduleName, {})
+
+  t.equal(result, true)
+})
