@@ -1,10 +1,24 @@
-name: Add issues/PRs to project board
+# This is intended to be called in any of our repos.
+# To use you can look at `add-to-board.yml` as a reference.
+# You should be able to just call `uses: newrelic/node-newrelic/.github/workflows/board.yml@main`
+# If for some reason the "todo" or "needs pr" columns are different than the default, you can pass in
+# via
+# with:
+#   todo_column: 'TODO Column'
+#   pr_column: 'PR Column'
+#
+# If you do not want to add to the Node.js Engineering Board, you'll have to find the guid of the project
+# by using the GitHub API
+# `gh api -H "Accept: application/vnd.github.inertia-preview+json" orgs/newrelic/projects --jq ".[] | select(.name == \"<Name of Boarda>"\").id"`
+#
+# You can find a project via `orgs/newrelic/projects`, `repos/newrelic/<repo-name>/projects`
+
+name: Add Issues/PRs to project board
 on:
   workflow_call:
     inputs:
       project_id:
         description: Id of Project in GitHub
-        # To find guid run `gh api -H "Accept: application/vnd.github.inertia-preview+json" orgs/newrelic/projects --jq ".[] | select(.name == \"Node.js Engineering Board\").id"`
         default: 5864688 # Node.js Engineering Board https://github.com/orgs/newrelic/projects/41
         required: false
         type: number
@@ -18,14 +32,11 @@ on:
         default: 'Needs PR Review'
         required: false
         type: string
-    secrets:
-      token:
-        required: true
 
 jobs:
-  assign_pr_to_project:
+  assign_to_project:
     env:
-      GITHUB_TOKEN: ${{ secrets.token }}
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       PROJECT_ID: ${{ inputs.project_id }}
       HEADER: "Accept: application/vnd.github.inertia-preview+json"
     runs-on: ubuntu-latest
