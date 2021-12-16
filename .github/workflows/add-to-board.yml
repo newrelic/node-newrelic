@@ -1,0 +1,11 @@
+name: Auto Assign to Project(s)
+
+on:
+  issues:
+    types: [opened]
+  pull_request:
+    types: [opened]
+
+jobs:
+  add-to-board:
+    uses: newrelic/node-newrelic/.github/workflows/board.yml@main
