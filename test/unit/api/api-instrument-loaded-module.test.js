@@ -62,15 +62,44 @@ tap.test('Agent API - instrumentLoadedModule', (t) => {
     t.end()
   })
 
+  t.test('should return false when it cannot resolve module', (t) => {
+    const result = api.instrumentLoadedModule('myTestModule')
+
+    t.equal(result, false)
+
+    t.end()
+  })
+
+  t.test('should return false when no instrumentation exists', (t) => {
+    const result = api.instrumentLoadedModule('tap', {})
+
+    t.equal(result, false)
+
+    t.end()
+  })
+
+  t.test('should not instrument/wrap multiple times on multiple invocations', (t) => {
+    const originalUse = expressMock.application.use
+
+    api.instrumentLoadedModule('express', expressMock)
+    api.instrumentLoadedModule('express', expressMock)
+
+    const nrOriginal = expressMock.application.use.__NR_original
+    t.equal(nrOriginal, originalUse)
+
+    t.end()
+  })
+
   t.test('should not throw if supported module is not installed', function (t) {
     // We need a supported module in our test. We need that module _not_ to be
     // installed. We'll use aws-sdk.  This first bit ensures
-    let awsSdk = false
+    const EMPTY_MODULE = {}
+    let awsSdk = EMPTY_MODULE
     try {
       // eslint-disable-next-line node/no-missing-require
       awsSdk = require('aws-sdk')
     } catch (e) {}
-    t.ok(awsSdk === false, 'aws-sdk is not installed')
+    t.ok(awsSdk === EMPTY_MODULE, 'aws-sdk is not installed')
 
     // attempt to instrument -- if nothing throws we're good
     try {
