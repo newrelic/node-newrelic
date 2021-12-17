@@ -29,7 +29,7 @@ program.requiredOption(
  * SLACK_TOKEN - token from bot
  * SLACK_SECRET - signing secret from bot
  *
- * `node ./bin/pending-prs.js --repo <repo-name>`
+ * `node ./bin/pending-prs.js --repos <comma-delimited repo list>`
  */
 function unreleasedPRs() {
   try {
