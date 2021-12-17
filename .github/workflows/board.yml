@@ -36,7 +36,10 @@ on:
 jobs:
   assign_to_project:
     env:
-      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      # Cannot use `secrets.GITHUB_TOKEN` because the project board
+      # exists at org level. You cannot add permissions outside the scope
+      # of the given repo
+      GITHUB_TOKEN: ${{ secrets.GH_ORG_TOKEN }}
       PROJECT_ID: ${{ inputs.project_id }}
       HEADER: "Accept: application/vnd.github.inertia-preview+json"
     runs-on: ubuntu-latest
