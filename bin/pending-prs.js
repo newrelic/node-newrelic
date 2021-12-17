@@ -12,7 +12,10 @@ const token = process.env.SLACK_TOKEN
 const signingSecret = process.env.SLACK_SECRET
 let missingEnvVars = []
 const { program } = require('commander')
-program.requiredOption('--repo <repo-name>', 'Name of repo to check for unreleased PRs')
+program.requiredOption(
+  '--repos <repos>',
+  'Comma-delimited list of repos in newrelic org to check for unreleased PRs'
+)
 
 /**
  * Finds the last released tag and all the PRs that have been
@@ -28,7 +31,7 @@ program.requiredOption('--repo <repo-name>', 'Name of repo to check for unreleas
  *
  * `node ./bin/pending-prs.js --repo <repo-name>`
  */
-async function unreleasedPRs() {
+function unreleasedPRs() {
   try {
     if (!areEnvVarsSet()) {
       console.log(`${missingEnvVars.join(', ')} are not set.`)
@@ -43,21 +46,25 @@ async function unreleasedPRs() {
       signingSecret
     })
 
-    const { prs, latestRelease } = await findMergedPRs(opts.repo)
+    const repos = opts.repos.split(',')
 
-    let msg = null
+    repos.forEach(async (repo) => {
+      const { prs, latestRelease } = await findMergedPRs(repo)
 
-    if (!prs.length) {
-      msg = `:the-more-you-know: *${opts.repo}* does not have any new PRs since \`${latestRelease.name}\` on *${latestRelease.published_at}*.`
-    } else {
-      msg = createSlackMessage(prs, latestRelease, opts.repo)
-    }
+      let msg = null
 
-    await app.client.chat.postMessage({
-      channel,
-      text: msg
+      if (!prs.length) {
+        msg = `:the-more-you-know: *${repo}* does not have any new PRs since \`${latestRelease.name}\` on *${latestRelease.published_at}*.`
+      } else {
+        msg = createSlackMessage(prs, latestRelease, repo)
+      }
+
+      await app.client.chat.postMessage({
+        channel,
+        text: msg
+      })
+      console.log(`Posted msg to ${channel}`)
     })
-    console.log(`Posted msg to ${channel}`)
   } catch (err) {
     stopOnError(err)
   }
