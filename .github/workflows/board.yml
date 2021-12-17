@@ -32,6 +32,13 @@ on:
         default: 'Needs PR Review'
         required: false
         type: string
+    # Cannot rely on environment secrets(i.e. from node-newrelic settings)
+    # in a reusable workflow.  We must pass it in, see add-to-board.yml
+    # See: https://github.community/t/reusable-workflows-secrets-and-environments/203695/4
+    secrets:
+      gh_token:
+        description: Token used to make gh api calls, must have org level perms
+        required: true
 
 jobs:
   assign_to_project:
@@ -39,7 +46,7 @@ jobs:
       # Cannot use `secrets.GITHUB_TOKEN` because the project board
       # exists at org level. You cannot add permissions outside the scope
       # of the given repo
-      GITHUB_TOKEN: ${{ secrets.GH_ORG_TOKEN }}
+      GITHUB_TOKEN: ${{ secrets.gh_token }}
       PROJECT_ID: ${{ inputs.project_id }}
       HEADER: "Accept: application/vnd.github.inertia-preview+json"
     runs-on: ubuntu-latest
