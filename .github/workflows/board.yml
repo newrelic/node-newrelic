@@ -53,7 +53,7 @@ jobs:
     name: Assign Issues and/or PRs to Project
     steps:
     - name: Assign PR to Project
-      if: github.event_name == 'pull_request'
+      if: github.event_name == 'pull_request_target'
       run: |
         PR_ID=${{ github.event.pull_request.id }}
         COLUMN=$(gh api -H "$HEADER" projects/$PROJECT_ID/columns --jq ".[] | select(.name == \"$COLUMN_NAME\").id")
