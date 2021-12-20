@@ -1,4 +1,4 @@
-name: Unreleased PRs
+name: Notify Unreleased PRs
 on:
   workflow_dispatch:
   schedule:
@@ -17,10 +17,10 @@ jobs:
     - name: Install Dependencies
       run: npm ci
     - name: Check for PRs not yet released
-      run: node ./bin/pending-prs.js
+      run: node ./bin/pending-prs.js --repos $NR_REPOS
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         SLACK_CHANNEL: ${{ secrets.SLACK_CHANNEL }}
         SLACK_TOKEN: ${{ secrets.SLACK_TOKEN }}
         SLACK_SECRET: ${{ secrets.SLACK_SECRET }}
-
+        NR_REPOS: ${{ secrets.NR_REPOS }}
