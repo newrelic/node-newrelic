@@ -1,0 +1,14 @@
+name: Auto Assign to Project(s)
+
+on:
+  issues:
+    types: [opened]
+  pull_request_target:
+    types: [opened]
+
+jobs:
+  add-to-board:
+    uses: newrelic/node-newrelic/.github/workflows/board.yml@main
+    # See board.yml explaining why this has to be done
+    secrets:
+      gh_token: ${{ secrets.GH_ORG_TOKEN }}
