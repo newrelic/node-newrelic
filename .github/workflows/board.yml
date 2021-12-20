@@ -55,9 +55,9 @@ jobs:
     - name: Assign PR to Project
       if: github.event_name == 'pull_request'
       run: |
-        ISSUE_ID=${{ github.event.pull_request.id }}
+        PR_ID=${{ github.event.pull_request.id }}
         COLUMN=$(gh api -H "$HEADER" projects/$PROJECT_ID/columns --jq ".[] | select(.name == \"$COLUMN_NAME\").id")
-        gh api -H "$HEADER" -X POST projects/columns/$COLUMN/cards -f content_type='PullRequest' -F content_id=$ISSUE_ID
+        gh api -H "$HEADER" -X POST projects/columns/$COLUMN/cards -f content_type='PullRequest' -F content_id=$PR_ID
       env:
         COLUMN_NAME: ${{ inputs.pr_column}}
     - name: Assign Issue to Project
