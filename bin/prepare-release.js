@@ -29,11 +29,15 @@ program.option(
 )
 program.option('--remote <remote>', 'remote to push branch to', 'origin')
 program.option('--branch <branch>', 'branch to generate notes from', 'main')
-program.option('--repo-owner <repoOwner>', 'repository owner', 'newrelic')
 program.option('--dry-run', 'generate notes without creating a branch or PR')
 program.option('--no-pr', 'generate notes and branch but do not create PR')
 program.option('-f --force', 'bypass validation')
 program.option('--changelog <changelog>', 'Name of changelog(defaults to NEWS.md)', 'NEWS.md')
+program.option(
+  '--repo <repo>',
+  'Repo to work against(Defaults to newrelic/node-newrelic)',
+  'newrelic/node-newrelic'
+)
 
 function stopOnError(err) {
   if (err) {
@@ -53,8 +57,8 @@ async function prepareReleaseNotes() {
   program.parse()
 
   const options = program.opts()
-
   console.log('Script running with following options: ', JSON.stringify(options))
+  const [owner, repo] = options.repo.split('/')
 
   logStep('Validation')
 
@@ -83,9 +87,8 @@ async function prepareReleaseNotes() {
 
     await npm.version(options.releaseType, false)
 
-    const packagePath = '../package.json'
-    console.log(`Working directory of action: ${__dirname}`)
-    console.log('Extracting new version from package.json here: ')
+    const packagePath = `${process.cwd()}/package.json`
+    console.log(`Extracting new version from ${packagePath}`)
     const packageInfo = require(packagePath)
 
     const version = `v${packageInfo.version}`
@@ -114,7 +117,7 @@ async function prepareReleaseNotes() {
 
     logStep('Create Release Notes')
 
-    const releaseData = await generateReleaseNotes()
+    const releaseData = await generateReleaseNotes(owner, repo)
     await updateReleaseNotesFile(options.changelog, version, releaseData.notes)
 
     if (options.dryRun) {
@@ -144,8 +147,8 @@ async function prepareReleaseNotes() {
       stopOnError()
     }
 
-    console.log('Creating draft PR with new release notes for repo owner: ', options.repoOwner)
-    const remoteApi = new Github(options.repoOwner)
+    console.log('Creating draft PR with new release notes for repo owner: ', owner)
+    const remoteApi = new Github(owner, repo)
     const title = `Release ${version}`
     const body = getFormattedPrBody(releaseData)
     const prOptions = {
@@ -222,8 +225,8 @@ async function validateCurrentBranch(branch) {
   }
 }
 
-async function generateReleaseNotes() {
-  const github = new Github()
+async function generateReleaseNotes(owner, repo) {
+  const github = new Github(owner, repo)
   const latestRelease = await github.getLatestRelease()
   console.log(
     `The latest release is: ${latestRelease.name} published: ${latestRelease.published_at}`

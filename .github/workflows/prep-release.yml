@@ -1,0 +1,42 @@
+name: Prepare Release PR
+
+# Manual trigger only
+on:
+  workflow_call:
+    inputs:
+      release_type:
+        description: Type of release. patch or minor (major if breaking)
+        type: string
+        required: true
+        default: patch
+
+jobs:
+  generate-release-notes:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [lts/*]
+
+    steps:
+    # Check out caller repo
+    - uses: actions/checkout@v2
+    # check out agent repo to agent-repo for the bin folders
+    - uses: actions/checkout@v2
+      with:
+        repository: newrelic/node-newrelic
+        path: agent-repo
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v2
+      with:
+        node-version: ${{ matrix.node-version }}
+    # Only need to install deps in agent-repo because of the bin scripts
+    - name: Install Dependencies
+      run: npm ci --prefix agent-repo
+    - name: Setup GitHub Credentials
+      run: |
+        git config user.name $GITHUB_ACTOR
+        git config user.email gh-actions-${GITHUB_ACTOR}@github.com
+    - name: Create Release Notes
+      run: node ./agent-repo/bin/prepare-release.js --release-type ${{ inputs.release_type }} --branch ${{ github.ref }} --repo ${{ github.repository }}
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
