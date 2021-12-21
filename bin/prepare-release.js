@@ -13,7 +13,6 @@ const Github = require('./github')
 const git = require('./git-commands')
 const npm = require('./npm-commands')
 
-const FILE_NAME = 'NEWS.md'
 const PROPOSED_NOTES_HEADER = 'Proposed Release Notes'
 
 const FORCE_RUN_DEAFULT_REMOTE = 'origin'
@@ -34,6 +33,7 @@ program.option('--repo-owner <repoOwner>', 'repository owner', 'newrelic')
 program.option('--dry-run', 'generate notes without creating a branch or PR')
 program.option('--no-pr', 'generate notes and branch but do not create PR')
 program.option('-f --force', 'bypass validation')
+program.option('--changelog <changelog>', 'Name of changelog(defaults to NEWS.md)', 'NEWS.md')
 
 function stopOnError(err) {
   if (err) {
@@ -84,6 +84,7 @@ async function prepareReleaseNotes() {
     await npm.version(options.releaseType, false)
 
     const packagePath = '../package.json'
+    console.log(`Working directory of action: ${__dirname}`)
     console.log('Extracting new version from package.json here: ')
     const packageInfo = require(packagePath)
 
@@ -114,7 +115,7 @@ async function prepareReleaseNotes() {
     logStep('Create Release Notes')
 
     const releaseData = await generateReleaseNotes()
-    await updateReleaseNotesFile(FILE_NAME, version, releaseData.notes)
+    await updateReleaseNotesFile(options.changelog, version, releaseData.notes)
 
     if (options.dryRun) {
       console.log('\nDry run indicated (--dry-run), skipping remaining steps.')

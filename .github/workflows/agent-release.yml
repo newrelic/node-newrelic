@@ -1,0 +1,16 @@
+name: Prepare Agent Release PR
+
+# Manual trigger only
+on:
+  workflow_dispatch:
+    inputs:
+      release_type:
+        description: 'Type of release. patch or minor (major if breaking)'
+        required: true
+        default: 'patch'
+
+jobs:
+  agent-release-notes:
+    uses: newrelic/node-newrelic/.github/workflows/prepare-release.yml@prep-release-reuse
+    with:
+      release_type: ${{ inputs.release_type }}
