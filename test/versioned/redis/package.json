@@ -13,9 +13,17 @@
       "files": [
         "redis.tap.js"
       ]
+    },
+    {
+      "engines": {
+        "node": ">=12"
+      },
+      "dependencies": {
+        "@node-redis/client": ">=1.0.0"
+      },
+      "files": [
+        "redis-v4.tap.js"
+      ]
     }
-  ],
-  "dependencies": {
-    "redis": "^2.8.0"
-  }
+  ]
 }
