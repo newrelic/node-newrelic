@@ -1,6 +1,5 @@
 name: Prepare Release PR
 
-# Manual trigger only
 on:
   workflow_call:
     inputs:
