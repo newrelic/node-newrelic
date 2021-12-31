@@ -58,9 +58,7 @@ tap.test('Undici request tests', (t) => {
       })
       t.equal(statusCode, 200)
 
-      metrics.assertSegments(tx.trace.root, ['External/<unknown>', ['External/httpbin.org/post']], {
-        exact: false
-      })
+      metrics.assertSegments(tx.trace.root, ['External/httpbin.org/post'], { exact: false })
       tx.end()
       t.end()
     })
@@ -82,13 +80,9 @@ tap.test('Undici request tests', (t) => {
       const { port } = server.address()
       await undici.request(`http://localhost:${port}`)
 
-      metrics.assertSegments(
-        transaction.trace.root,
-        ['External/<unknown>', [`External/localhost:${port}/`]],
-        {
-          exact: false
-        }
-      )
+      metrics.assertSegments(transaction.trace.root, [`External/localhost:${port}/`], {
+        exact: false
+      })
 
       transaction.end()
       t.end()
@@ -123,13 +117,9 @@ tap.test('Undici request tests', (t) => {
 
       await client.request({ path: '/', method: 'GET' })
 
-      metrics.assertSegments(
-        transaction.trace.root,
-        ['External/<unknown>', [`External/localhost:${port}/`]],
-        {
-          exact: false
-        }
-      )
+      metrics.assertSegments(transaction.trace.root, [`External/localhost:${port}/`], {
+        exact: false
+      })
 
       transaction.end()
     })
@@ -180,10 +170,7 @@ tap.test('Undici request tests', (t) => {
       t.equal(statusCode2, 200)
       metrics.assertSegments(
         tx.trace.root,
-        [
-          ['External/<unknown>', ['External/httpbin.org/post']],
-          ['External/<unknown>', ['External/httpbin.org/put']]
-        ],
+        ['External/httpbin.org/post', 'External/httpbin.org/put'],
         { exact: false }
       )
       tx.end()
@@ -221,11 +208,7 @@ tap.test('Undici request tests', (t) => {
         }, 100)
         await req
       } catch (err) {
-        metrics.assertSegments(
-          tx.trace.root,
-          ['External/<unknown>', ['External/httpbin.org/delay/1']],
-          { exact: false }
-        )
+        metrics.assertSegments(tx.trace.root, ['External/httpbin.org/delay/1'], { exact: false })
         t.equal(tx.exceptions.length, 1)
         t.equal(tx.exceptions[0].error.message, 'Request aborted')
         tx.end()
@@ -252,13 +235,9 @@ tap.test('Undici request tests', (t) => {
       try {
         await req
       } catch (error) {
-        metrics.assertSegments(
-          transaction.trace.root,
-          ['External/<unknown>', [`External/localhost:${port}/`]],
-          {
-            exact: false
-          }
-        )
+        metrics.assertSegments(transaction.trace.root, [`External/localhost:${port}/`], {
+          exact: false
+        })
 
         const segments = transaction.trace.root.children
         const segment = segments[segments.length - 1]
@@ -280,11 +259,7 @@ tap.test('Undici request tests', (t) => {
         method: 'GET'
       })
       t.equal(statusCode, 400)
-      metrics.assertSegments(
-        tx.trace.root,
-        ['External/<unknown>', ['External/httpbin.org/status/400']],
-        { exact: false }
-      )
+      metrics.assertSegments(tx.trace.root, ['External/httpbin.org/status/400'], { exact: false })
       tx.end()
       t.end()
     })
@@ -294,9 +269,7 @@ tap.test('Undici request tests', (t) => {
     helper.runInTransaction(agent, async (tx) => {
       const res = await undici.fetch('https://httpbin.org')
       t.equal(res.status, 200)
-      metrics.assertSegments(tx.trace.root, ['External/<unknown>', ['External/httpbin.org/']], {
-        exact: false
-      })
+      metrics.assertSegments(tx.trace.root, ['External/httpbin.org/'], { exact: false })
       tx.end()
       t.end()
     })
@@ -319,9 +292,7 @@ tap.test('Undici request tests', (t) => {
           })
         }
       )
-      metrics.assertSegments(tx.trace.root, ['External/<unknown>', ['External/httpbin.org/get']], {
-        exact: false
-      })
+      metrics.assertSegments(tx.trace.root, ['External/httpbin.org/get'], { exact: false })
       tx.end()
       t.end()
     })
@@ -357,11 +328,7 @@ tap.test('Undici request tests', (t) => {
         }),
         (err) => {
           t.error(err)
-          metrics.assertSegments(
-            tx.trace.root,
-            ['External/<unknown>', ['External/httpbin.org/get']],
-            { exact: false }
-          )
+          metrics.assertSegments(tx.trace.root, ['External/httpbin.org/get'], { exact: false })
           tx.end()
           t.end()
         }
