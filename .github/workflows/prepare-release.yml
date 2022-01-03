@@ -1,4 +1,4 @@
-name: Prepare Release PR
+name: Prepare Agent Release PR
 
 # Manual trigger only
 on:
@@ -10,26 +10,7 @@ on:
         default: 'patch'
 
 jobs:
-  generate-release-notes:
-    runs-on: ubuntu-latest
-
-    strategy:
-      matrix:
-        node-version: [14.x]
-
-    steps:
-    - uses: actions/checkout@v2
-    - name: Use Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v1 # https://github.com/actions/setup-node
-      with:
-        node-version: ${{ matrix.node-version }}
-    - name: Install Dependencies
-      run: npm ci
-    - name: Setup GitHub Credentials
-      run: |
-        git config user.name $GITHUB_ACTOR
-        git config user.email gh-actions-${GITHUB_ACTOR}@github.com
-    - name: Create Release Notes
-      run: node ./bin/prepare-release.js --release-type ${{ github.event.inputs.release_type }} --branch ${{ github.ref }} --repo-owner ${{ github.repository_owner }}
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  agent-release-notes:
+    uses: newrelic/node-newrelic/.github/workflows/prep-release.yml@main
+    with:
+      release_type: ${{ github.event.inputs.release_type }}
