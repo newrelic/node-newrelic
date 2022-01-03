@@ -1,0 +1,16 @@
+name: Prepare Release PR
+
+on:
+  workflow_dispatch:
+    inputs:
+      release_type:
+        description: Type of release. patch or minor (major if breaking)
+        required: true
+        default: patch
+
+jobs:
+  release-notes:
+    uses: newrelic/node-newrelic/.github/workflows/prep-release.yml@main
+    with:
+      release_type: ${{ github.event.inputs.release_type }}
+      changelog_file: CHANGELOG.md
