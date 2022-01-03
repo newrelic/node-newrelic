@@ -5,8 +5,6 @@
 
 * Updated pending PRs workflow to check all repos the team owns.
 
-* Fixed event name for adding PRs to board from `pull_request` to `pull_request_target`
-
 * Changed the event type from `pull_request` to `pull_request_target` to allow for auto assign of PRs to the Node.js Engineering Board
 
 * Fixed issue where expected status code ranges would not be parsed until ignored status codes were also defined.
