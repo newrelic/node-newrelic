@@ -19,7 +19,7 @@
         "node": ">=12"
       },
       "dependencies": {
-        "@node-redis/client": ">=1.0.0"
+        "redis": ">=4"
       },
       "files": [
         "redis-v4.tap.js"
