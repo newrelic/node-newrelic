@@ -6,12 +6,12 @@ on:
       release_type:
         description: Type of release. patch or minor (major if breaking)
         type: string
-        required: true
+        required: false
         default: patch
       changelog_file:
         description: Name of changelog file.
         type: string
-        required: true
+        required: false
         default: NEWS.md
 
 jobs:
