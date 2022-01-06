@@ -9,36 +9,19 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [14.x]
+        node-version: [lts/*]
 
     steps:
-    - uses: actions/checkout@v2
-    - name: Use Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v1 # https://github.com/actions/setup-node
-      with:
-        node-version: ${{ matrix.node-version }}
-        registry-url: 'https://registry.npmjs.org'
+    - uses: newrelic/node-newrelic/.github/workflows/release-creation.yml@main
+    # npm ci and getting tag is redundant from the reusable workflow `release-creation`
+    # but all that work was done on the child repo in `agent-repo` folder and didn't
+    # want to update the system config and publishing API docs
     - name: Install Dependencies
       run: npm ci
-    - name: Setup GitHub Credentials
-      run: |
-        git config user.name $GITHUB_ACTOR
-        git config user.email gh-actions-${GITHUB_ACTOR}@github.com
-    - name: Create Release tag
-      run: node ./bin/create-release-tag.js --branch ${{ github.ref }} --repo-owner ${{ github.repository_owner }}
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-    - run: npm publish
-      env:
-        NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
     - name: Get Created Tag
       id: get_tag
       run: echo "::set-output name=latest_tag::$(git describe --tags --abbrev=0)"
-    - name: Create GitHub Release
-      run: node ./bin/create-github-release.js --tag ${{ steps.get_tag.outputs.latest_tag }} --repo-owner ${{ github.repository_owner }}
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-    - name: Publish API Docs
-      run: npm run publish-docs
     - name: Update system configuration pages
       run: node ./bin/update-system-config-pages.js --version ${{ steps.get_tag.outputs.latest_tag }} --staging-key ${{ secrets.NEW_RELIC_API_KEY_STAGING }} --prod-key ${{ secrets.NEW_RELIC_API_KEY_PRODUCTION }}
+    - name: Publish API Docs
+      run: npm run publish-docs

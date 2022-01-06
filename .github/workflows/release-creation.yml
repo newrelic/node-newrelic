@@ -1,0 +1,54 @@
+name: Reusable Create Release
+
+on:
+  workflow_call:
+    inputs:
+      changelog_file:
+        description: Name of changelog file.
+        type: string
+        required: false
+        default: NEWS.md
+
+jobs:
+  tag-and-publish:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [lts/*]
+
+    steps:
+    # Check out caller repo
+    - uses: actions/checkout@v2
+    # check out agent repo to agent-repo for the bin folders
+    - uses: actions/checkout@v2
+      with:
+        repository: newrelic/node-newrelic
+        path: agent-repo
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v2
+      with:
+        node-version: ${{ matrix.node-version }}
+        registry-url: 'https://registry.npmjs.org'
+    # Only need to install deps in agent-repo because of the bin scripts
+    - name: Install Dependencies
+      run: npm ci --prefix agent-repo
+    - name: Setup GitHub Credentials
+      run: |
+        git config user.name $GITHUB_ACTOR
+        git config user.email gh-actions-${GITHUB_ACTOR}@github.com
+    - name: Create Release Tag
+      run: node ./agent-repo/bin/create-release-tag.js --branch ${{ github.ref }} --repo-owner ${{ github.repository_owner }}
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    - name: Publish to Npm
+      run: npm publish
+      env:
+        NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+    - name: Get Created Tag
+      id: get_tag
+      run: echo "::set-output name=latest_tag::$(git describe --tags --abbrev=0)"
+    - name: Create GitHub Release
+      run: node ./agent-repo/bin/create-github-release.js --tag ${{ steps.get_tag.outputs.latest_tag }} --repo-owner ${{ github.repository_owner }} --changelog ${{ inputs.changelog_file }}
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
