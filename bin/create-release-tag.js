@@ -41,8 +41,8 @@ async function createReleaseTag() {
       process.exit(1)
     }
 
-    const packagePath = '../package.json'
-    console.log('Extracting new version from package.json here: ')
+    const packagePath = `${process.cwd()}/package.json`
+    console.log(`Extracting new version from ${packagePath}`)
     const packageInfo = require(packagePath)
 
     const version = `v${packageInfo.version}`

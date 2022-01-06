@@ -1,0 +1,29 @@
+name: Agent Post Release
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  update-rpm-and-docs:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [lts/*]
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v2
+      with:
+        node-version: ${{ matrix.node-version }}
+    - name: Install Dependencies
+      run: npm ci
+    - name: Get Created Tag
+      id: get_tag
+      run: echo "::set-output name=latest_tag::$(git describe --tags --abbrev=0)"
+    - name: Update system configuration pages
+      run: node ./bin/update-system-config-pages.js --version ${{ steps.get_tag.outputs.latest_tag }} --staging-key ${{ secrets.NEW_RELIC_API_KEY_STAGING }} --prod-key ${{ secrets.NEW_RELIC_API_KEY_PRODUCTION }}
+    - name: Publish API Docs
+      run: npm run publish-docs

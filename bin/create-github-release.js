@@ -17,8 +17,8 @@ const TAG_VALID_REGEX = /v\d+\.\d+\.\d+/
 program.requiredOption('--tag <tag>', 'tag name to create GitHub release for')
 program.option('--repo-owner <repoOwner>', 'repository owner', 'newrelic')
 program.option(
-  '--release-notes-file <releaseNotesFile>',
-  'path to release notes file',
+  '--changelog <changelog>',
+  'Name of changelog(defaults to NEWS.md)',
   DEFAULT_FILE_NAME
 )
 program.option('-f --force', 'bypass validation')
@@ -48,7 +48,7 @@ async function createRelease() {
     }
 
     logStep('Get Release Notes from File')
-    const body = await getReleaseNotes(tagName, options.releaseNotesFile)
+    const body = await getReleaseNotes(tagName, options.changelog)
 
     logStep('Create Release')
     await github.createRelease(tagName, tagName, body)
