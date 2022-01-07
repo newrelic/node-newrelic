@@ -1,6 +1,7 @@
 name: Agent Post Release
 
 on:
+  workflow_dispatch:
   release:
     types: [published]
 
