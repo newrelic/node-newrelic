@@ -9,6 +9,7 @@ const { exec } = require('child_process')
 // in CI we clone `node-newrelic` for reusable workflows
 // we do not want it to be part of `git status` nor adding via `git add .`
 const AGENT_SUB_REPO = 'agent-repo'
+const DOCS_SUB_REPO = 'docs-website'
 
 async function getPushRemotes() {
   const stdout = await execAsPromise('git remote -v')
@@ -34,7 +35,7 @@ async function getPushRemotes() {
 async function getLocalChanges() {
   const stdout = await execAsPromise('git status --short --porcelain')
   const changes = stdout.split('\n').filter((line) => {
-    return line.length > 0 && !line.includes(AGENT_SUB_REPO)
+    return line.length > 0 && !line.includes(AGENT_SUB_REPO || DOCS_SUB_REPO)
   })
 
   return changes
