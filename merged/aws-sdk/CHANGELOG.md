@@ -1,3 +1,27 @@
+### v4.1.0 (2022-01-06)
+
+* Added support for AWS SDK v3 🎉
+
+  * Instrumented the following packages: `@aws-sdk/client-sns`, `@aws-sdk/client-sqs`, `@aws-sdk/client-dynamodb`, `@aws-sdk/lib-dynamodb`.
+
+  * Captured generic AWS requests by instrumenting the `@aws-sdk/smithy-client`.
+
+* Required agent version to be `>=8.7.0` to register the instrumentation to support AWS SDK v3
+
+* Added workflow to automate preparing release notes by reusing the `newrelic/node-newrelic/.github/workflows/prep-release.yml@main` workflow from agent repository.
+
+* Added job to automatically add issues/pr to Node.js Engineering board
+
+* Upgraded `@newrelic/test-utilities` to enable running 1 file through versioned runner
+
+* Added a pre-commit hook to check if package.json changes and run oss third-party manifest and oss third-party notices. This will ensure the third_party_manifest.json and THIRD_PARTY_NOTICES.md are up to date.
+
+* Added a pre-commit hook to run linting via husky
+
+* Added @newrelic/eslint-config to rely on a centralized eslint ruleset.
+
+* Upgraded setup-node CI job to v2 and changed the linting node version to lts/* for future proofing
+
 ### 4.0.1 (2021-07-20):
 * Added versioned tests to the files list within package.json
 
