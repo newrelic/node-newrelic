@@ -39,14 +39,18 @@ jobs:
     # Only need to install deps in agent-repo because of the bin scripts
     - name: Install Dependencies
       run: |
-        npm ci #Install deps in caller repo
-        npm ci --prefix agent-repo #Install deps in agent repo
+        # Install deps in caller repo
+        npm ci
+        # Install deps in agent repo
+        npm ci --prefix agent-repo
     - name: Setup GitHub Credentials
       run: |
         git config user.name $GITHUB_ACTOR
         git config user.email gh-actions-${GITHUB_ACTOR}@github.com
     - name: Create Release Tag
-      run: node ./agent-repo/bin/create-release-tag.js --branch ${{ github.ref }} --repo-owner ${{ github.repository_owner }}
+      run: node ./agent-repo/bin/create-release-tag.js --branch ${{ github.ref }} --repo ${{ github.repository }}
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     - name: Publish to Npm
       run: npm publish
       env:
@@ -55,7 +59,7 @@ jobs:
       id: get_tag
       run: echo "::set-output name=latest_tag::$(git describe --tags --abbrev=0)"
     - name: Create GitHub Release
-      run: node ./agent-repo/bin/create-github-release.js --tag ${{ steps.get_tag.outputs.latest_tag }} --repo-owner ${{ github.repository_owner }} --changelog ${{ inputs.changelog_file }}
+      run: node ./agent-repo/bin/create-github-release.js --tag ${{ steps.get_tag.outputs.latest_tag }} --repo ${{ github.repository }} --changelog ${{ inputs.changelog_file }}
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 

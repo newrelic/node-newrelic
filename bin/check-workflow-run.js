@@ -8,6 +8,8 @@
 const Github = require('./github')
 
 const SUCCESS_MSG = '*** [OK] ***'
+const WORKFLOWS = ['ci-workflow.yml']
+const AGENT_REPO = 'node-newrelic'
 
 const formatRun = (run) => {
   return {
@@ -22,56 +24,30 @@ const formatRun = (run) => {
   }
 }
 
-async function checkWorkflowRun(repoOwner, branch) {
-  const github = new Github(repoOwner)
+async function checkWorkflowRun(repoOwner, repo, branch) {
+  const github = new Github(repoOwner, repo)
+
+  // only agent has smoke tests
+  // add to list
+  if (repo === AGENT_REPO) {
+    WORKFLOWS.push('smoke-test-workflow.yml')
+  }
 
   try {
-    const results = {
-      ci: false,
-      smokeTest: false
-    }
-
-    const latestRun = await github.getLatestWorkflowRun('ci-workflow.yml', branch)
-
-    if (latestRun === undefined) {
-      console.log('No ci workflow run found.')
-    } else {
-      console.log('CI workflow run details: ', JSON.stringify(formatRun(latestRun)))
-      if (latestRun.status === 'completed' && latestRun.conclusion === 'success') {
-        results.ci = true
+    const successfulWorfklowRuns = WORKFLOWS.filter(async (workflow) => {
+      const latestRun = await github.getLatestWorkflowRun(workflow, branch)
+      if (latestRun === undefined) {
+        console.log('No ci workflow run found.')
+        return false
       }
-    }
+      console.log(`${workflow} run details: ${JSON.stringify(formatRun(latestRun))}`)
+      return latestRun.status === 'completed' && latestRun.conclusion === 'success'
+    })
 
-    const latestSmokeTestRun = await github.getLatestWorkflowRun('smoke-test-workflow.yml', branch)
-
-    if (latestSmokeTestRun === undefined) {
-      console.log('No smoke test workflow run found.')
-    } else {
-      console.log(
-        'Smoke-test workflow run details: ',
-        JSON.stringify(formatRun(latestSmokeTestRun))
-      )
-
-      if (
-        latestSmokeTestRun.status === 'completed' &&
-        latestSmokeTestRun.conclusion === 'success'
-      ) {
-        results.smokeTest = true
-      }
-    }
-
-    if (results.ci && results.smokeTest) {
+    if (successfulWorfklowRuns.length === WORKFLOWS.length) {
       console.log(SUCCESS_MSG)
-      console.log('Latest ci and smoke-test runs were successful!')
+      console.log(`${WORKFLOWS.join(', ')} were successful!`)
       return true
-    }
-
-    if (!results.ci) {
-      console.log("Latest ci workflow run result was not 'completed' and 'success'.")
-    }
-
-    if (!results.smokeTest) {
-      console.log("Latest smoke-test workflow run result was not 'completed' and 'success'.")
     }
 
     return false
