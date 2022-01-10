@@ -43,7 +43,7 @@ jobs:
     - name: Publish to Npm
       run: npm publish
       env:
-        NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        NODE_AUTH_TOKEN: ${{ secrets.NODE_AGENT_NPM_TOKEN }}
     - name: Get Created Tag
       id: get_tag
       run: echo "::set-output name=latest_tag::$(git describe --tags --abbrev=0)"
