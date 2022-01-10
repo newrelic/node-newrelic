@@ -8,6 +8,13 @@ on:
         type: string
         required: false
         default: NEWS.md
+    secrets:
+      # Cannot rely on environment secrets(i.e. from node-newrelic settings or org level)
+      # in a reusable workflow.  We must pass it in, see create-release.yml
+      # See: https://github.community/t/reusable-workflows-secrets-and-environments/203695/4
+      npm_token:
+        description: Auth token to publish to npm registry
+        required: true
 
 jobs:
   tag-and-publish:
@@ -40,12 +47,10 @@ jobs:
         git config user.email gh-actions-${GITHUB_ACTOR}@github.com
     - name: Create Release Tag
       run: node ./agent-repo/bin/create-release-tag.js --branch ${{ github.ref }} --repo-owner ${{ github.repository_owner }}
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     - name: Publish to Npm
       run: npm publish
       env:
-        NODE_AUTH_TOKEN: ${{ secrets.NODE_AGENT_NPM_TOKEN }}
+        NODE_AUTH_TOKEN: ${{ secrets.npm_token }}
     - name: Get Created Tag
       id: get_tag
       run: echo "::set-output name=latest_tag::$(git describe --tags --abbrev=0)"

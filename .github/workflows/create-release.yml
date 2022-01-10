@@ -6,3 +6,7 @@ on: [workflow_dispatch]
 jobs:
   tag-and-publish:
     uses: newrelic/node-newrelic/.github/workflows/release-creation.yml@main
+    # See release-creation.yml explaining why this has to be done
+    secrets:
+      npm_token: ${{ secrets.NODE_AGENT_NPM_TOKEN }}
+
