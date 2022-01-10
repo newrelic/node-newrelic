@@ -31,7 +31,9 @@ jobs:
         registry-url: 'https://registry.npmjs.org'
     # Only need to install deps in agent-repo because of the bin scripts
     - name: Install Dependencies
-      run: npm ci --prefix agent-repo
+      run: |
+        npm ci #Install deps in caller repo
+        npm ci --prefix agent-repo #Install deps in agent repo
     - name: Setup GitHub Credentials
       run: |
         git config user.name $GITHUB_ACTOR
