@@ -9,8 +9,8 @@ const Github = require('./github')
 
 const SUCCESS_MSG = '*** [OK] ***'
 
-async function filterAsync(array, cb) {
-  const filterMap = await Promise.all(array.map(cb))
+async function filterAsync(array, checkWorkflowSuccess) {
+  const filterMap = await Promise.all(array.map(checkWorkflowSuccess))
   return array.filter((_, index) => filterMap[index])
 }
 
@@ -33,7 +33,7 @@ async function checkWorkflowRun(repoOwner, repo, branch, workflows) {
   try {
     const successfulWorfklowRuns = await filterAsync(
       workflows,
-      async function filterWorkflows(workflow) {
+      async function filterWorkflow(workflow) {
         const latestRun = await github.getLatestWorkflowRun(workflow, branch)
         if (latestRun === undefined) {
           console.log('No ci workflow run found.')
