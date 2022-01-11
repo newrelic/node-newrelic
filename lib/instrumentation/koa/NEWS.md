@@ -1,3 +1,20 @@
+### v6.1.0 (2022-01-11)
+
+* Added workflow to automate preparing release notes by reusing the newrelic/node-newrelic/.github/workflows/prep-release.yml@main workflow from agent repository.
+
+* Added job to automatically add issues/pr to Node.js Engineering board
+
+* Removed context-less timer hop from transaction state test.
+
+  The context-less timer hope was not specific to koa execution. With the upcoming AsyncLocal implementation there are new limitations to boundaries we can track promises that cause this to fail. Given this setup is not specific to koa functionality, modifying to remove.
+
+* Added a pre-commit hook to check if package.json changes and run oss third-party manifest and oss third-party notices. This will ensure the third_party_manifest.json and THIRD_PARTY_NOTICES.md are up to date.
+ * Added a pre-commit hook to run linting via husky
+
+* Added @newrelic/eslint-config to rely on a centralized eslint ruleset.
+
+* Upgraded setup-node CI job to v2 and changed the linting node version to lts/* for future proofing
+
 ### 6.0.1 (2021-07-20)
 
 * Added versioned tests to the files list within package.json
