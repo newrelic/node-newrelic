@@ -8,8 +8,11 @@
 const Github = require('./github')
 
 const SUCCESS_MSG = '*** [OK] ***'
-const WORKFLOWS = ['ci-workflow.yml']
-const AGENT_REPO = 'node-newrelic'
+
+async function filterAsync(array, checkWorkflowSuccess) {
+  const filterMap = await Promise.all(array.map(checkWorkflowSuccess))
+  return array.filter((_, index) => filterMap[index])
+}
 
 const formatRun = (run) => {
   return {
@@ -24,29 +27,26 @@ const formatRun = (run) => {
   }
 }
 
-async function checkWorkflowRun(repoOwner, repo, branch) {
+async function checkWorkflowRun(repoOwner, repo, branch, workflows) {
   const github = new Github(repoOwner, repo)
 
-  // only agent has smoke tests
-  // add to list
-  if (repo === AGENT_REPO) {
-    WORKFLOWS.push('smoke-test-workflow.yml')
-  }
-
   try {
-    const successfulWorfklowRuns = WORKFLOWS.filter(async (workflow) => {
-      const latestRun = await github.getLatestWorkflowRun(workflow, branch)
-      if (latestRun === undefined) {
-        console.log('No ci workflow run found.')
-        return false
+    const successfulWorfklowRuns = await filterAsync(
+      workflows,
+      async function filterWorkflow(workflow) {
+        const latestRun = await github.getLatestWorkflowRun(workflow, branch)
+        if (latestRun === undefined) {
+          console.log('No ci workflow run found.')
+          return false
+        }
+        console.log(`${workflow} run details: ${JSON.stringify(formatRun(latestRun))}`)
+        return latestRun.status === 'completed' && latestRun.conclusion === 'success'
       }
-      console.log(`${workflow} run details: ${JSON.stringify(formatRun(latestRun))}`)
-      return latestRun.status === 'completed' && latestRun.conclusion === 'success'
-    })
+    )
 
-    if (successfulWorfklowRuns.length === WORKFLOWS.length) {
+    if (successfulWorfklowRuns.length === workflows.length) {
       console.log(SUCCESS_MSG)
-      console.log(`${WORKFLOWS.join(', ')} were successful!`)
+      console.log(`${workflows.join(', ')} were successful!`)
       return true
     }
 
