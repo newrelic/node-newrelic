@@ -8,6 +8,11 @@ on:
         type: string
         required: false
         default: NEWS.md
+      workflows:
+        description: Comma-delimited list of workflows to check
+        type: string
+        required: false
+        default: ci-workflow.yml
     secrets:
       # Cannot rely on environment secrets(i.e. from node-newrelic settings or org level)
       # in a reusable workflow.  We must pass it in, see create-release.yml
@@ -48,7 +53,7 @@ jobs:
         git config user.name $GITHUB_ACTOR
         git config user.email gh-actions-${GITHUB_ACTOR}@github.com
     - name: Create Release Tag
-      run: node ./agent-repo/bin/create-release-tag.js --branch ${{ github.ref }} --repo ${{ github.repository }}
+      run: node ./agent-repo/bin/create-release-tag.js --branch ${{ github.ref }} --repo ${{ github.repository }} --workflows ${{ inputs.workflows }}
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     - name: Publish to Npm

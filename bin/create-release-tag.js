@@ -18,6 +18,11 @@ program.option(
   'newrelic/node-newrelic'
 )
 program.option('-f --force', 'bypass validation')
+program.option(
+  '-w, --workflows <workflows>',
+  'Comma delimited list of workflows to check',
+  'ci-workflow.yml'
+)
 
 async function createReleaseTag() {
   // Parse commandline options inputs
@@ -29,6 +34,7 @@ async function createReleaseTag() {
 
   const branch = options.branch.replace('refs/heads/', '')
   const [owner, repo] = options.repo.split('/')
+  const workflows = options.workflows.split(',')
 
   if (options.force) {
     console.log('--force set. Skipping validation logic')
@@ -39,7 +45,7 @@ async function createReleaseTag() {
       options.force ||
       ((await validateLocalChanges()) &&
         (await validateCurrentBranch(branch)) &&
-        (await checkWorkflowRun(owner, repo, branch)))
+        (await checkWorkflowRun(owner, repo, branch, workflows)))
 
     if (!isValid) {
       process.exit(1)
