@@ -2,8 +2,10 @@ name: Agent Post Release
 
 on:
   workflow_dispatch:
-  release:
-    types: [published]
+  workflow_run:
+    workflows: ["Create Release"]
+    types:
+      - completed
 
 jobs:
   update-rpm-and-docs:
