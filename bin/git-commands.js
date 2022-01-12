@@ -62,6 +62,14 @@ async function addAllFiles() {
   return output
 }
 
+async function addFiles(files) {
+  files = files.join(' ')
+  const stdout = await execAsPromise(`git add ${files}`)
+  const output = stdout.trim()
+
+  return output
+}
+
 async function commit(message) {
   const stdout = await execAsPromise(`git commit -m "${message}"`)
   const output = stdout.trim()
@@ -156,5 +164,6 @@ module.exports = {
   pushTags,
   checkout,
   clone,
-  sparseCloneRepo
+  sparseCloneRepo,
+  addFiles
 }

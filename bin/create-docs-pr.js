@@ -196,17 +196,22 @@ function formatReleaseNotes(releaseDate, version, body) {
  * @param {string} version
  */
 function addReleaseNotesFile(body, version) {
-  const FILE = `node-agent-bob-${version}.mdx`
+  const FILE = getFileName(version)
   return new Promise((resolve, reject) => {
-    fs.writeFile(`${RELEASE_NOTES_PATH}/${FILE}`, body, 'utf8', (writeErr) => {
+    fs.writeFile(FILE, body, 'utf8', (writeErr) => {
       if (writeErr) {
         reject(writeErr)
       }
 
-      console.log(`Added new release notes ${FILE} to ${RELEASE_NOTES_PATH}`)
+      console.log(`Added new release notes ${FILE}`)
       resolve()
     })
   })
+}
+
+function getFileName(version) {
+  const FILE = `node-agent-${version}.mdx`
+  return `${RELEASE_NOTES_PATH}/${FILE}`
 }
 
 /**
@@ -224,7 +229,8 @@ async function commitRelaseNotes(version, remote, branch, dryRun) {
   }
 
   console.log(`Adding release notes for ${version}`)
-  await git.addAllFiles()
+  const files = [getFileName(version)]
+  await git.addFiles(files)
   await git.commit(`chore: Node.js Agent ${version} Release Notes.`)
   console.log(`Pushing branch to remote ${remote}`)
   await git.pushToRemote(remote, branch)
