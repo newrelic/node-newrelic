@@ -17,14 +17,16 @@ const TAG_VALID_REGEX = /v\d+\.\d+\.\d+/
 
 program.requiredOption('--tag <tag>', 'tag name to create GitHub release for')
 program.option('--remote <remote>', 'remote to push branch to', 'origin')
-program.option('--repo-owner <repoOwner>', 'repository owner', 'newrelic')
+program.option('--username <github username>', 'Owner of the fork of docs-website')
 program.option(
   '--changelog <changelog>',
   'Name of changelog(defaults to NEWS.md)',
   DEFAULT_FILE_NAME
 )
 program.option('-f --force', 'bypass validation')
-const RELEASE_NOTES_PATH = './src/content/docs/release-notes/agent-release-notes/nodejs-release-notes'
+program.option('--dry-run', 'executes script but does not commit nor create PR')
+const RELEASE_NOTES_PATH =
+  './src/content/docs/release-notes/agent-release-notes/nodejs-release-notes'
 
 async function createRelease() {
   // Parse commandline options inputs
@@ -32,81 +34,27 @@ async function createRelease() {
 
   const options = program.opts()
 
-  console.log('Script running with following options: ', JSON.stringify(options))
-
+  console.log(`Script running with following options: ${JSON.stringify(options)}`)
 
   try {
     const version = options.tag.replace('refs/tags/', '')
-    console.log('Getting version from tag: ', version)
+    console.log(`Getting version from tag: ${version}`)
 
     logStep('Validation')
-    if (options.force) {
-      console.log('--force set. Skipping validation logic')
-    }
-
-    if (!options.force && !TAG_VALID_REGEX.exec(version)) {
-      console.log('Tag arg invalid (%s). Valid tags in form: v#.#.# (e.g. v7.2.1)', version)
-      stopOnError()
-    }
-
+    validateTag(version, options.force)
     logStep('Get Release Notes from File')
     const { body, releaseDate } = await getReleaseNotes(version, options.changelog)
-    const releaseNotesBody = [
-      '---',
-      'subject: Node.js agent',
-      `releaseDate: '${releaseDate}'`,
-      `version: ${version.substr(1)}`,
-      `downloadLink: 'https://www.npmjs.com/package/newrelic'`,
-      '---',
-      '',
-      '##Notes',
-      '',
-      body
-    ].join('\n')
-
-
     logStep('Branch Creation')
-    process.chdir('docs-website')
-    const branchName = `bob-add-node-${version}`
-    if (options.dryRun) {
-      console.log('Dry run indicated (--dry-run), not creating branch.')
-    } else {
-      console.log('Creating and checking out new branch: ', branchName)
-      await git.checkoutNewBranch(branchName)
-    }
-
-
+    const branchName = await createBranch(version, options.dryRun)
+    logStep('Format release notes file')
+    const releaseNotesBody = formatReleaseNotes(releaseDate, version, body)
     logStep('Create Release Notes')
     await addReleaseNotesFile(releaseNotesBody, version)
-
     logStep('Commit Release Notes')
-
-    if (options.dryRun) {
-      console.log('Dry run indicated (--dry-run), skipping remaining steps.')
-      return
-    }
-
-    console.log(`Adding release notes for ${version}`)
-    await git.addAllFiles()
-    await git.commit(`chore: Node.js Agent ${version} Release Notes.`)
-    console.log(`Pushing branch to remote ${options.remote}`)
-    await git.pushToRemote(options.remote, branchName)
-
+    await commitRelaseNotes(version, options.remote, branchName, options.dryRun)
     logStep('Create Pull Request')
-
-    if (!process.env.GITHUB_TOKEN) {
-      console.log('GITHUB_TOKEN required to create a pull request')
-      stopOnError()
-    }
-
-    console.log(`Creating PR with new release for repo owner ${options.repoOwner}`)
-    const github = new Github(options.repoOwner, 'docs-website')
-    const title = `Node.js Agent ${version} Release Notes`
-    // TODO: add proper pr body and submit then be done with it
-
-    process.chdir('..')
+    await createPR(options.username, version, branchName, options.dryRun)
     console.log('*** Full Run Successful ***')
-
   } catch (err) {
     if (err.status && err.status === 404) {
       console.log('404 status error detected. For octokit, this may mean insuffient permissions.')
@@ -114,9 +62,35 @@ async function createRelease() {
     }
 
     stopOnError(err)
+  } finally {
+    process.chdir('..')
   }
 }
 
+/**
+ * Validates tag matches version we want vX.X.X
+ *
+ * @param {string} version
+ * @param {boolean} force flag to skip validation of tag
+ */
+function validateTag(version, force) {
+  if (force) {
+    console.log('--force set. Skipping validation logic')
+    return
+  }
+
+  if (!TAG_VALID_REGEX.exec(version)) {
+    console.log('Tag arg invalid (%s). Valid tags in form: v#.#.# (e.g. v7.2.1)', version)
+    stopOnError()
+  }
+}
+
+/**
+ * Extracts the relevant changes from the NEWS.md
+ *
+ * @param {string} version
+ * @param {string} releaseNotesFile
+ */
 async function getReleaseNotes(version, releaseNotesFile) {
   console.log('Retrieving release notes from file: ', releaseNotesFile)
 
@@ -132,15 +106,20 @@ async function getReleaseNotes(version, releaseNotesFile) {
     throw new Error('Did not split into multiple sections. Double check notes format.')
   }
 
-  const [ , tagSection] = sections
+  const [, tagSection] = sections
   // e.g. v7.1.2 (2021-02-24)\n\n
   const headingRegex = /^v\d+\.\d+\.\d+ \((\d{4}-\d{2}-\d{2})\)\n\n/
   const body = tagSection.replace(headingRegex, '')
-  const [ , releaseDate] = headingRegex.exec(tagSection)
+  const [, releaseDate] = headingRegex.exec(tagSection)
 
   return { body, releaseDate }
 }
 
+/**
+ * Reads the contents of NEWS.md
+ *
+ * @param {string} file path to NEWS.md
+ */
 async function readReleaseNoteFile(file) {
   const promise = new Promise((resolve, reject) => {
     fs.readFile(file, 'utf8', (err, data) => {
@@ -155,6 +134,139 @@ async function readReleaseNoteFile(file) {
   return promise
 }
 
+/**
+ * Creates a branch in your local `docs-website` fork
+ * That follows the pattern `add-node-<new agent version>`
+ *
+ * @param {string} version
+ * @param {boolean} dryRun skip branch creation
+ */
+async function createBranch(version, dryRun) {
+  process.chdir('docs-website')
+  const branchName = `add-node-${version}`
+  if (dryRun) {
+    console.log(`Dry run indicated (--dry-run), not creating branch ${branchName}`)
+  } else {
+    console.log('Creating and checking out new branch: ', branchName)
+    await git.checkoutNewBranch(branchName)
+  }
+
+  return branchName
+}
+
+/**
+ * Formats the .mdx to adhere to the docs team standards for
+ * release notes.
+ *
+ * @param {string} releaseDate
+ * @param {string} version
+ * @param {string} body list of changes
+ */
+function formatReleaseNotes(releaseDate, version, body) {
+  const releaseNotesBody = [
+    '---',
+    'subject: Node.js agent',
+    `releaseDate: '${releaseDate}'`,
+    `version: ${version.substr(1)}`,
+    `downloadLink: 'https://www.npmjs.com/package/newrelic'`,
+    '---',
+    '',
+    '##Notes',
+    '',
+    body
+  ].join('\n')
+
+  console.log(`Release Notes Body \n${releaseNotesBody}`)
+  return releaseNotesBody
+}
+
+/**
+ * Writes the contents of the release notes to the docs-website fork
+ *
+ * @param {string} body contents of the .mdx
+ * @param {string} version
+ */
+function addReleaseNotesFile(body, version) {
+  const FILE = `node-agent-bob-${version}.mdx`
+  return new Promise((resolve, reject) => {
+    fs.writeFile(`${RELEASE_NOTES_PATH}/${FILE}`, body, 'utf8', (writeErr) => {
+      if (writeErr) {
+        reject(writeErr)
+      }
+
+      console.log(`Added new release notes ${FILE} to ${RELEASE_NOTES_PATH}`)
+      resolve()
+    })
+  })
+}
+
+/**
+ * Commits release notes to the local fork and pushes to proper branch.
+ *
+ * @param {string} version
+ * @param {string} remote
+ * @param {string} branch
+ * @param {boolean} dryRun
+ */
+async function commitRelaseNotes(version, remote, branch, dryRun) {
+  if (dryRun) {
+    console.log('Dry run indicated (--dry-run), skipping committing release notes.')
+    return
+  }
+
+  console.log(`Adding release notes for ${version}`)
+  await git.addAllFiles()
+  await git.commit(`chore: Node.js Agent ${version} Release Notes.`)
+  console.log(`Pushing branch to remote ${remote}`)
+  await git.pushToRemote(remote, branch)
+}
+
+/**
+ * Creates a PR to the newrelic/docs-website with new release notes
+ *
+ * @param {string} username of fork
+ * @param {string} version
+ * @param {string} branch
+ * @param {boolean} dryRun
+ */
+async function createPR(username, version, branch, dryRun) {
+  if (!process.env.GITHUB_TOKEN) {
+    console.log('GITHUB_TOKEN required to create a pull request')
+    stopOnError()
+  }
+
+  const github = new Github('newrelic', 'docs-website')
+  const title = `Node.js Agent ${version} Release Notes`
+  const body = [
+    '## Give us some context',
+    '',
+    '* What problem does this PR solve?',
+    `Node.js Agent Release Notes ${version}`,
+    ''
+  ].join('\n')
+
+  const prOptions = {
+    head: `${username}:${branch}`,
+    base: 'develop',
+    title,
+    body
+  }
+
+  console.log(`Creating PR with following options: ${JSON.stringify(prOptions)}\n\n`)
+
+  if (dryRun) {
+    console.log('Dry run indicated (--dry-run), skipping creating pull request.')
+    return
+  }
+
+  return await github.createPR(prOptions)
+}
+
+/**
+ * Logs error and exits script on failure
+ *
+ * @param {Error} err
+ */
 function stopOnError(err) {
   if (err) {
     console.error(err)
@@ -164,22 +276,13 @@ function stopOnError(err) {
   process.exit(1)
 }
 
+/**
+ * Logs formatted msg
+ *
+ * @param {string} step
+ */
 function logStep(step) {
   console.log(`\n ----- [Step]: ${step} -----\n`)
-}
-
-function addReleaseNotesFile(body, version) {
-  const FILE = `node-agent-bob-${version}.mdx`
-  return new Promise((resolve, reject) => {
-    fs.writeFile(`${RELEASE_NOTES_PATH}/${FILE}`, body, 'utf8', (writeErr) => {
-      if(writeErr) {
-        reject(err)
-      }
-
-      console.log(`Added new release notes ${FILE} to ${RELEASE_NOTES_PATH}`)
-      resolve()
-    })
-  })
 }
 
 createRelease()
