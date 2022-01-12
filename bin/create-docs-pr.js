@@ -6,6 +6,7 @@
 'use strict'
 
 const fs = require('fs')
+const path = require('path')
 const { program } = require('commander')
 
 const Github = require('./github')
@@ -25,6 +26,11 @@ program.option(
 )
 program.option('-f --force', 'bypass validation')
 program.option('--dry-run', 'executes script but does not commit nor create PR')
+program.option(
+  '--repo-path <path',
+  'Path to the docs-website fork on local machine',
+  'docs-website'
+)
 const RELEASE_NOTES_PATH =
   './src/content/docs/release-notes/agent-release-notes/nodejs-release-notes'
 
@@ -45,7 +51,7 @@ async function createRelease() {
     logStep('Get Release Notes from File')
     const { body, releaseDate } = await getReleaseNotes(version, options.changelog)
     logStep('Branch Creation')
-    const branchName = await createBranch(version, options.dryRun)
+    const branchName = await createBranch(options.repoPath, version, options.dryRun)
     logStep('Format release notes file')
     const releaseNotesBody = formatReleaseNotes(releaseDate, version, body)
     logStep('Create Release Notes')
@@ -138,11 +144,14 @@ async function readReleaseNoteFile(file) {
  * Creates a branch in your local `docs-website` fork
  * That follows the pattern `add-node-<new agent version>`
  *
+ * @param filePath
  * @param {string} version
  * @param {boolean} dryRun skip branch creation
  */
-async function createBranch(version, dryRun) {
-  process.chdir('docs-website')
+async function createBranch(filePath, version, dryRun) {
+  filePath = path.resolve(filePath)
+  console.log(`Changing to ${filePath}`)
+  process.chdir(filePath)
   const branchName = `add-node-${version}`
   if (dryRun) {
     console.log(`Dry run indicated (--dry-run), not creating branch ${branchName}`)
