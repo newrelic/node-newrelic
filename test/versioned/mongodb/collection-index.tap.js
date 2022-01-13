@@ -45,18 +45,20 @@ common.test('indexes', function indexesTest(t, collection, verify) {
   collection.indexes(function done(err, data) {
     t.error(err)
     const result = data && data[0]
+    const expectedResult = {
+      v: result && result.v,
+      key: { _id: 1 },
+      name: '_id_'
+    }
+
     // this will fail if running a mongodb server > 4.3.1
     // https://jira.mongodb.org/browse/SERVER-41696
-    t.same(
-      result,
-      {
-        v: result && result.v,
-        key: { _id: 1 },
-        name: '_id_',
-        ns: common.DB_NAME + '.testCollection'
-      },
-      'should have expected results'
-    )
+    // we only connect to a server > 4.3.1 when using the mongodb
+    // driver of 4.2.0+
+    if (semver.satisfies(mongoPackage.version, '<4.2.0')) {
+      expectedResult.ns = `${common.DB_NAME}.testCollection`
+    }
+    t.same(result, expectedResult, 'should have expected results')
 
     verify(
       null,
