@@ -47,6 +47,8 @@ instrumentations
   })
   .forEach(addCompatibleAgentCheck)
 
+const NOOP_ON_REQUIRE = () => false
+
 /**
  * Adds a check on resolve to ensure on a version of the agent that does
  * not have the multiple invocation bug. If compatible, replaces onResolved
@@ -56,6 +58,9 @@ instrumentations
  * @param {object} definition Object definition instrumentation parameters
  */
 function addCompatibleAgentCheck(definition) {
+  // Silence old agent versions from warning about missing require.
+  definition.onRequire = NOOP_ON_REQUIRE
+
   const originalOnResolved = definition.onResolved
 
   definition.onResolved = function checkCompatibleOnResolved(shim, name) {
