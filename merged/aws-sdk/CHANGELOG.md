@@ -1,3 +1,7 @@
+### v4.1.1 (2022-01-13)
+
+* Fixed issue where v3 instrumentation checks against agent version would result in a logged error and fail to apply instrumentation.
+
 ### v4.1.0 (2022-01-06)
 
 * Added support for AWS SDK v3 🎉
