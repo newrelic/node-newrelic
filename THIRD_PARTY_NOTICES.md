@@ -1770,7 +1770,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 ### @newrelic/test-utilities
 
-This product includes source derived from [@newrelic/test-utilities](https://github.com/newrelic/node-test-utilities) ([v6.1.1](https://github.com/newrelic/node-test-utilities/tree/v6.1.1)), distributed under the [Apache-2.0 License](https://github.com/newrelic/node-test-utilities/blob/v6.1.1/LICENSE):
+This product includes source derived from [@newrelic/test-utilities](https://github.com/newrelic/node-test-utilities) ([v6.3.0](https://github.com/newrelic/node-test-utilities/tree/v6.3.0)), distributed under the [Apache-2.0 License](https://github.com/newrelic/node-test-utilities/blob/v6.3.0/LICENSE):
 
 ```
                                  Apache License
@@ -3292,7 +3292,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ### tap
 
-This product includes source derived from [tap](https://github.com/tapjs/node-tap) ([v15.0.10](https://github.com/tapjs/node-tap/tree/v15.0.10)), distributed under the [ISC License](https://github.com/tapjs/node-tap/blob/v15.0.10/LICENSE):
+This product includes source derived from [tap](https://github.com/tapjs/node-tap) ([v15.1.6](https://github.com/tapjs/node-tap/tree/v15.1.6)), distributed under the [ISC License](https://github.com/tapjs/node-tap/blob/v15.1.6/LICENSE):
 
 ```
 The ISC License

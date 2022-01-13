@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "Wed Dec 08 2021 10:12:28 GMT-0800 (Pacific Standard Time)",
+  "lastUpdated": "Thu Jan 13 2022 11:55:16 GMT-0500 (Eastern Standard Time)",
   "projectName": "New Relic Node Agent",
   "projectUrl": "https://github.com/newrelic/node-newrelic",
   "includeOptDeps": true,
@@ -212,15 +212,15 @@
       "email": "nathan@tootallnate.net",
       "url": "http://n8.io/"
     },
-    "@newrelic/test-utilities@6.1.1": {
+    "@newrelic/test-utilities@6.3.0": {
       "name": "@newrelic/test-utilities",
-      "version": "6.1.1",
-      "range": "^6.1.1",
+      "version": "6.3.0",
+      "range": "^6.3.0",
       "licenses": "Apache-2.0",
       "repoUrl": "https://github.com/newrelic/node-test-utilities",
-      "versionedRepoUrl": "https://github.com/newrelic/node-test-utilities/tree/v6.1.1",
+      "versionedRepoUrl": "https://github.com/newrelic/node-test-utilities/tree/v6.3.0",
       "licenseFile": "node_modules/@newrelic/test-utilities/LICENSE",
-      "licenseUrl": "https://github.com/newrelic/node-test-utilities/blob/v6.1.1/LICENSE",
+      "licenseUrl": "https://github.com/newrelic/node-test-utilities/blob/v6.3.0/LICENSE",
       "licenseTextSource": "file",
       "publisher": "New Relic Node.js agent team",
       "email": "nodejs@newrelic.com"
@@ -686,15 +686,15 @@
       "licenseTextSource": "file",
       "publisher": "Christian Johansen"
     },
-    "tap@15.0.10": {
+    "tap@15.1.6": {
       "name": "tap",
-      "version": "15.0.10",
+      "version": "15.1.6",
       "range": "^15.0.9",
       "licenses": "ISC",
       "repoUrl": "https://github.com/tapjs/node-tap",
-      "versionedRepoUrl": "https://github.com/tapjs/node-tap/tree/v15.0.10",
+      "versionedRepoUrl": "https://github.com/tapjs/node-tap/tree/v15.1.6",
       "licenseFile": "node_modules/tap/LICENSE",
-      "licenseUrl": "https://github.com/tapjs/node-tap/blob/v15.0.10/LICENSE",
+      "licenseUrl": "https://github.com/tapjs/node-tap/blob/v15.1.6/LICENSE",
       "licenseTextSource": "file",
       "publisher": "Isaac Z. Schlueter",
       "email": "i@izs.me",
