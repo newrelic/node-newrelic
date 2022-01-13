@@ -41,13 +41,13 @@ const instrumentations = [
 // TODO: Remove code block next major release of module by moving to a peer-dependency check.
 // See further comments in check-agent-compatible.js.
 const checkAgentCompatible = require('./lib/v3/check-agent-compatible')
+const NOOP_ON_REQUIRE = () => false
+
 instrumentations
   .filter((definition) => {
     return definition.onResolved
   })
   .forEach(addCompatibleAgentCheck)
-
-const NOOP_ON_REQUIRE = () => false
 
 /**
  * Adds a check on resolve to ensure on a version of the agent that does
