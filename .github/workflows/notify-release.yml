@@ -19,7 +19,7 @@ jobs:
     - name: Check for PRs not yet released
       run: node ./bin/pending-prs.js --repos $NR_REPOS
       env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        GITHUB_TOKEN: ${{ secrets.NODE_AGENT_GH_TOKEN }}
         SLACK_CHANNEL: ${{ secrets.SLACK_CHANNEL }}
         SLACK_TOKEN: ${{ secrets.SLACK_TOKEN }}
         SLACK_SECRET: ${{ secrets.SLACK_SECRET }}
