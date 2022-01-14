@@ -16,7 +16,7 @@ const DEFAULT_FILE_NAME = 'NEWS.md'
 /** e.g. v7.2.1 */
 const TAG_VALID_REGEX = /v\d+\.\d+\.\d+/
 
-program.requiredOption('--tag <tag>', 'tag name to create GitHub release for')
+program.requiredOption('--tag <tag>', 'tag name to get version of released agent')
 program.option('--remote <remote>', 'remote to push branch to', 'origin')
 program.option('--username <github username>', 'Owner of the fork of docs-website')
 program.option(
@@ -34,7 +34,7 @@ program.option(
 const RELEASE_NOTES_PATH =
   './src/content/docs/release-notes/agent-release-notes/nodejs-release-notes'
 
-async function createRelease() {
+async function createReleaseNotesPr() {
   // Parse commandline options inputs
   program.parse()
 
@@ -176,7 +176,7 @@ function formatReleaseNotes(releaseDate, version, body) {
     '---',
     'subject: Node.js agent',
     `releaseDate: '${releaseDate}'`,
-    `version: ${version.substr(1)}`,
+    `version: ${version.substr(1)}`, // remove the `v` from start of version
     `downloadLink: 'https://www.npmjs.com/package/newrelic'`,
     '---',
     '',
@@ -196,6 +196,8 @@ function formatReleaseNotes(releaseDate, version, body) {
  * @param {string} version
  */
 function addReleaseNotesFile(body, version) {
+  // change `v0.0.0` to `0-0-0`
+  version = version.substr(1).replace(/\./g, '-')
   const FILE = getFileName(version)
   return new Promise((resolve, reject) => {
     fs.writeFile(FILE, body, 'utf8', (writeErr) => {
@@ -231,7 +233,7 @@ async function commitRelaseNotes(version, remote, branch, dryRun) {
   console.log(`Adding release notes for ${version}`)
   const files = [getFileName(version)]
   await git.addFiles(files)
-  await git.commit(`chore: Node.js Agent ${version} Release Notes.`)
+  await git.commit(`chore: Adds Node.js Agent ${version} Release Notes.`)
   console.log(`Pushing branch to remote ${remote}`)
   await git.pushToRemote(remote, branch)
 }
@@ -252,19 +254,11 @@ async function createPR(username, version, branch, dryRun) {
 
   const github = new Github('newrelic', 'docs-website')
   const title = `Node.js Agent ${version} Release Notes`
-  const body = [
-    '## Give us some context',
-    '',
-    '* What problem does this PR solve?',
-    `Node.js Agent Release Notes ${version}`,
-    ''
-  ].join('\n')
-
   const prOptions = {
     head: `${username}:${branch}`,
     base: 'develop',
     title,
-    body
+    body: title
   }
 
   console.log(`Creating PR with following options: ${JSON.stringify(prOptions)}\n\n`)
@@ -300,4 +294,4 @@ function logStep(step) {
   console.log(`\n ----- [Step]: ${step} -----\n`)
 }
 
-createRelease()
+createReleaseNotesPr()
