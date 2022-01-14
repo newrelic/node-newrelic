@@ -11,4 +11,4 @@ jobs:
     uses: newrelic/node-newrelic/.github/workflows/board.yml@main
     # See board.yml explaining why this has to be done
     secrets:
-      gh_token: ${{ secrets.GH_ORG_TOKEN }}
+      gh_token: ${{ secrets.NODE_AGENT_GH_TOKEN }}
