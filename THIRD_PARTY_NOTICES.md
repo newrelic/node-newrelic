@@ -504,7 +504,7 @@ This product includes source derived from [@grpc/proto-loader](https://github.co
 
 ### @newrelic/aws-sdk
 
-This product includes source derived from [@newrelic/aws-sdk](https://github.com/newrelic/node-newrelic-aws-sdk) ([v4.0.1](https://github.com/newrelic/node-newrelic-aws-sdk/tree/v4.0.1)), distributed under the [Apache-2.0 License](https://github.com/newrelic/node-newrelic-aws-sdk/blob/v4.0.1/LICENSE):
+This product includes source derived from [@newrelic/aws-sdk](https://github.com/newrelic/node-newrelic-aws-sdk) ([v4.1.1](https://github.com/newrelic/node-newrelic-aws-sdk/tree/v4.1.1)), distributed under the [Apache-2.0 License](https://github.com/newrelic/node-newrelic-aws-sdk/blob/v4.1.1/LICENSE):
 
 ```
                                  Apache License
