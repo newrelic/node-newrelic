@@ -20,11 +20,14 @@ exports.TRANSACTION_NAME = TRANSACTION_NAME
 exports.DB_NAME = DB_NAME
 
 // Check package versions to decide which connect function to use below
-exports.connect = semver.satisfies(mongoPackage.version, '<3')
-  ? connectV2
-  : semver.satisfies(mongoPackage.version, '>=4.2.0')
-  ? connectV4
-  : connectV3
+exports.connect = function connect() {
+  if (semver.satisfies(mongoPackage.version, '<3')) {
+    return connectV2.apply(this, arguments)
+  } else if (semver.satisfies(mongoPackage.version, '>=3 <4.2.0')) {
+    return connectV3.apply(this, arguments)
+  }
+  return connectV4.apply(this, arguments)
+}
 
 exports.checkMetrics = checkMetrics
 exports.close = close
