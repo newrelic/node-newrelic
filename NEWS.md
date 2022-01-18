@@ -1,30 +1,25 @@
 ### v8.7.1 (2022-01-18)
 
-* Bumps @newrelic/aws-sdk to ^4.1.1.
+* Bumped @newrelic/aws-sdk to ^4.1.1.
 
-* Added a script to be used by agent developers to add a PR to `docs-website` after the release of agent.
+* Upgraded `@newrelic/test-utilities` to ^6.3.0.
 
-* Updated `add-to-board` to use org level `NODE_AGENT_GH_TOKEN`
+  Includes `helpers.getShim` so sub packages properly execute.
 
-* Updated the pending-prs job to use the org level GitHub personal access token so we can report on private repos.
+* Resolved dependabot and certain npm audit warnings.
 
-* Upgraded `@newrelic/test-utilities` to latest to get `helpers.getShim` so sub packages properly execute.
+* Automation and CI improvements:
+  * Added a script to be used by agent developers to add a PR to `docs-website` after the release of agent.
+  * Changed the trigger for post release jobs.
+  * Updated the `create-release-tag` script to pass in workflows to check before creating tag.
+    * Fixed `create-release-tag` to properly filter out all async workflow run checks
+    * Updated agent release to pass in a different list of workflows vs the default
+  * Fixed release creation reusable workflow by passing in repo to `bin/create-release-tag.js` and `bin/create-github-release.js`.
+  * Added `workflow_dispatch` to Agent Post Release workflow for manual testing.
+  * Added a reusable workflow to create a release tag, publish to NPM and publish a GitHub release.
+    * Updated agent release workflow to reference reusable workflow.
+    * Added a new workflow to update RPM and publish API docs on a published release event type.
 
-* Changed the trigger for post release jobs.
-
-* `package-lock.json` updates to clear up dependabot and some npm audit warnings.
-
-* Updated the `create-release-tag` script to pass in workflows to check before creating tag.  
- * Fixed `create-release-tag` to properly filter out all async workflow run checks
- * Updated agent release to pass in a different list of workflows vs the default
-
-* Fixed release creation reusable workflow by passing in repo to `bin/create-release-tag.js` and `bin/create-github-release.js`.
-
-* Added `workflow_dispatch` to Agent Post Release workflow for manual testing.
-
-* Added a reusable workflow to create a release tag, publish to NPM and publish a GitHub release.
- * Updated agent release workflow to reference reusable workflow.
- * Added a new workflow to update RPM and publish API docs on a published release event type.
 
 ### v8.7.0 (2022-01-04)
 
@@ -47,7 +42,7 @@
 
 * Added an input `changelog_file` to pass in name of changelog.  This defaults to `NEWS.md` but some repos use `CHANGELOG.md`
 
-* Abstracted `bin/prepare-release.js` to work against other repositories.  
+* Abstracted `bin/prepare-release.js` to work against other repositories.
 
 * Added reusable prepare-release workflow that can be referenced in all other newrelic Node.js repositories.
 
