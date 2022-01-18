@@ -1,3 +1,31 @@
+### v8.7.1 (2022-01-18)
+
+* Bumps @newrelic/aws-sdk to ^4.1.1.
+
+* Added a script to be used by agent developers to add a PR to `docs-website` after the release of agent.
+
+* Updated `add-to-board` to use org level `NODE_AGENT_GH_TOKEN`
+
+* Updated the pending-prs job to use the org level GitHub personal access token so we can report on private repos.
+
+* Upgraded `@newrelic/test-utilities` to latest to get `helpers.getShim` so sub packages properly execute.
+
+* Changed the trigger for post release jobs.
+
+* `package-lock.json` updates to clear up dependabot and some npm audit warnings.
+
+* Updated the `create-release-tag` script to pass in workflows to check before creating tag.  
+ * Fixed `create-release-tag` to properly filter out all async workflow run checks
+ * Updated agent release to pass in a different list of workflows vs the default
+
+* Fixed release creation reusable workflow by passing in repo to `bin/create-release-tag.js` and `bin/create-github-release.js`.
+
+* Added `workflow_dispatch` to Agent Post Release workflow for manual testing.
+
+* Added a reusable workflow to create a release tag, publish to NPM and publish a GitHub release.
+ * Updated agent release workflow to reference reusable workflow.
+ * Added a new workflow to update RPM and publish API docs on a published release event type.
+
 ### v8.7.0 (2022-01-04)
 
 * Updated `onResolved` instrumentation hook to only be called the first time we see a specific module filepath resolved.
