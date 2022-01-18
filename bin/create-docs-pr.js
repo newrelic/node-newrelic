@@ -114,7 +114,7 @@ async function getReleaseNotes(version, releaseNotesFile) {
 
   const [, tagSection] = sections
   // e.g. v7.1.2 (2021-02-24)\n\n
-  const headingRegex = /^v\d+\.\d+\.\d+ \((\d{4}-\d{2}-\d{2})\)\n\n/
+  const headingRegex = /^v\d+\.\d+\.\d+ \((\d{4}-\d{2}-\d{2})\)\s+/
   const body = tagSection.replace(headingRegex, '')
   const [, releaseDate] = headingRegex.exec(tagSection)
 
@@ -196,8 +196,6 @@ function formatReleaseNotes(releaseDate, version, body) {
  * @param {string} version
  */
 function addReleaseNotesFile(body, version) {
-  // change `v0.0.0` to `0-0-0`
-  version = version.substr(1).replace(/\./g, '-')
   const FILE = getFileName(version)
   return new Promise((resolve, reject) => {
     fs.writeFile(FILE, body, 'utf8', (writeErr) => {
@@ -212,6 +210,8 @@ function addReleaseNotesFile(body, version) {
 }
 
 function getFileName(version) {
+  // change `v0.0.0` to `0-0-0`
+  version = version.substr(1).replace(/\./g, '-')
   const FILE = `node-agent-${version}.mdx`
   return `${RELEASE_NOTES_PATH}/${FILE}`
 }
