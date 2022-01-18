@@ -57,13 +57,13 @@ async function createReleaseNotesPr() {
     logStep('Create Release Notes')
     await addReleaseNotesFile(releaseNotesBody, version)
     logStep('Commit Release Notes')
-    await commitRelaseNotes(version, options.remote, branchName, options.dryRun)
+    await commitReleaseNotes(version, options.remote, branchName, options.dryRun)
     logStep('Create Pull Request')
     await createPR(options.username, version, branchName, options.dryRun)
     console.log('*** Full Run Successful ***')
   } catch (err) {
     if (err.status && err.status === 404) {
-      console.log('404 status error detected. For octokit, this may mean insuffient permissions.')
+      console.log('404 status error detected. For octokit, this may mean insufficient permissions.')
       console.log('Ensure you have a valid GITHUB_TOKEN set in your env vars.')
     }
 
@@ -180,7 +180,7 @@ function formatReleaseNotes(releaseDate, version, body) {
     `downloadLink: 'https://www.npmjs.com/package/newrelic'`,
     '---',
     '',
-    '##Notes',
+    '## Notes',
     '',
     body
   ].join('\n')
@@ -224,7 +224,7 @@ function getFileName(version) {
  * @param {string} branch
  * @param {boolean} dryRun
  */
-async function commitRelaseNotes(version, remote, branch, dryRun) {
+async function commitReleaseNotes(version, remote, branch, dryRun) {
   if (dryRun) {
     console.log('Dry run indicated (--dry-run), skipping committing release notes.')
     return
@@ -233,7 +233,7 @@ async function commitRelaseNotes(version, remote, branch, dryRun) {
   console.log(`Adding release notes for ${version}`)
   const files = [getFileName(version)]
   await git.addFiles(files)
-  await git.commit(`chore: Adds Node.js Agent ${version} Release Notes.`)
+  await git.commit(`chore: Adds Node.js agent ${version} release notes.`)
   console.log(`Pushing branch to remote ${remote}`)
   await git.pushToRemote(remote, branch)
 }
