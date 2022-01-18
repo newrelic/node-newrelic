@@ -26,7 +26,7 @@ jobs:
       run: npm ci
     - name: Get Created Tag
       id: get_tag
-      run: echo "::set-output name=latest_tag::$(git describe --tags --abbrev=0)"
+      run: echo "::set-output name=latest_tag::$(cat package.json | jq .version)"
     - name: Update system configuration pages
       run: node ./bin/update-system-config-pages.js --version ${{ steps.get_tag.outputs.latest_tag }} --staging-key ${{ secrets.NEW_RELIC_API_KEY_STAGING }} --prod-key ${{ secrets.NEW_RELIC_API_KEY_PRODUCTION }}
     - name: Publish API Docs

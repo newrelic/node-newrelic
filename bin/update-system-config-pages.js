@@ -27,7 +27,7 @@ function getPayload(version) {
   return {
     system_configuration: {
       key: 'nodejs_agent_version',
-      value: version.substr(1) // strip the v from v1.0.0
+      value: version
     }
   }
 }
