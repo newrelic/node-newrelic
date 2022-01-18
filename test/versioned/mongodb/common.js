@@ -19,7 +19,15 @@ exports.MONGO_SEGMENT_RE = MONGO_SEGMENT_RE
 exports.TRANSACTION_NAME = TRANSACTION_NAME
 exports.DB_NAME = DB_NAME
 
-exports.connect = semver.satisfies(mongoPackage.version, '<3') ? connectV2 : connectV3
+// Check package versions to decide which connect function to use below
+exports.connect = function connect() {
+  if (semver.satisfies(mongoPackage.version, '<3')) {
+    return connectV2.apply(this, arguments)
+  } else if (semver.satisfies(mongoPackage.version, '>=3 <4.2.0')) {
+    return connectV3.apply(this, arguments)
+  }
+  return connectV4.apply(this, arguments)
+}
 
 exports.checkMetrics = checkMetrics
 exports.close = close
@@ -79,6 +87,35 @@ function connectV3(mongodb, host, replicaSet = false) {
   })
 }
 
+// This is same as connectV3 except it uses a different
+// set of params to connect to the mongodb_v4 container
+// it is actually just using the `mongodb:5` image
+function connectV4(mongodb, host, replicaSet = false) {
+  return new Promise((resolve, reject) => {
+    if (host) {
+      host = encodeURIComponent(host)
+    } else {
+      host = params.mongodb_v4_host + ':' + params.mongodb_v4_port
+    }
+
+    let connString = `mongodb://${host}`
+    let options = {}
+
+    if (replicaSet) {
+      connString = `mongodb://${host},${host},${host}`
+      options = { useNewUrlParser: true, useUnifiedTopology: true }
+    }
+    mongodb.MongoClient.connect(connString, options, function (err, client) {
+      if (err) {
+        reject(err)
+      }
+
+      const db = client.db(DB_NAME)
+      resolve({ db, client })
+    })
+  })
+}
+
 function close(client, db) {
   return new Promise((resolve) => {
     if (db && typeof db.close === 'function') {
@@ -92,13 +129,16 @@ function close(client, db) {
 }
 
 function getHostName(agent) {
-  return urltils.isLocalhost(params.mongodb_host)
-    ? agent.config.getHostnameSafe()
+  const host = semver.satisfies(mongoPackage.version, '>=4.2.0')
+    ? params.mongodb_v4_host
     : params.mongodb_host
+  return urltils.isLocalhost(host) ? agent.config.getHostnameSafe() : host
 }
 
 function getPort() {
-  return String(params.mongodb_port)
+  return semver.satisfies(mongoPackage.version, '>=4.2.0')
+    ? String(params.mongodb_v4_port)
+    : String(params.mongodb_port)
 }
 
 function checkMetrics(t, agent, host, port, metrics) {
