@@ -7,7 +7,7 @@
       "node": ">=12"
     },
     "dependencies": {
-      "superagent": ">=2 <7.1.0"
+      "superagent": ">=2 <7.1.0 ||  >=7.1.1"
     },
     "files": [
       "async-await.tap.js",
