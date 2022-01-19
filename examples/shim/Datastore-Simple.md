@@ -158,7 +158,7 @@ is responsible for connecting the two. Here's how that might look in our case:
   shim.recordOperation(proto, ['connect', 'shutdown'], {
     callback: function operationCallbackBinder(shim, opFunc, opName, segment, args) {
       var cb = args[args.length - 1]
-      args[args.length - 1] = shim.bindSegment(cb, segment)
+      args[args.length - 1] = shim.bindSegment(cb, segment, true)
     }
   })
 ```
