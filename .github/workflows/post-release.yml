@@ -9,8 +9,8 @@ on:
 
 jobs:
   update-rpm-and-docs:
-    # Check if this was a manual invocationworkflow_dispatch) or triggered(workflow_run) and successful
-    if: ${{ 'workflow_dispatch' in github.event || github.event.workflow_run && github.event.workflow_run.conclusion == 'success' }}
+    # Check if this was a manual invocation*workflow_dispatch) or triggered(workflow_run) and successful
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run && github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
 
     strategy:
