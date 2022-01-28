@@ -67,7 +67,8 @@ For more information on getting started, [check the Node.js docs](https://docs.n
 There are several modules that can be installed and configured to accompany the Node.js agent:
 
  * [@newrelic/apollo-server-plugin](https://github.com/newrelic/newrelic-node-apollo-server-plugin): New Relic's official Apollo Server plugin for use with the Node.js agent.
- * [@newrelic/winston-enricher](https://github.com/newrelic/newrelic-winston-logenricher-node): Provides distributed trace and span information output as JSON-formatted log messages.  This is most commonly used with the New Relic Logs product.
+ * [@newrelic/winston-enricher](https://github.com/newrelic/newrelic-node-log-extensions/tree/main/packages/winston-log-enricher): Provides distributed trace and span information output as JSON-formatted log messages in Winston.  This is most commonly used with the New Relic Logs product.
+ * [@newrelic/pino-enricher](https://github.com/newrelic/newrelic-node-log-extensions/tree/main/packages/pino-log-enricher): Provides distributed trace and span information output as JSON-formatted log messages in Pino.  This is most commonly used with the New Relic Logs product.
  * [@newrelic/mysql](https://github.com/newrelic/node-newrelic-mysql)(**Experimental**): Standalone instrumentation for [mysql2](https://github.com/sidorares/node-mysql2#readme) and [mysql2/promise](https://github.com/sidorares/node-mysql2/blob/master/documentation/Promise-Wrapper.md) as well as the same instrumentation for [mysql](https://github.com/mysqljs/mysql#readme) within the Node.js agent.
 
 There are several modules included within the Node.js agent to add more instrumentation for 3rd party modules:
