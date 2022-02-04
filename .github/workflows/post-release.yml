@@ -25,6 +25,10 @@ jobs:
         node-version: ${{ matrix.node-version }}
     - name: Install Dependencies
       run: npm ci
+    - name: Setup GitHub Credentials
+      run: |
+        git config user.name $GITHUB_ACTOR
+        git config user.email gh-actions-${GITHUB_ACTOR}@github.com
     - name: Get Created Tag
       id: get_tag
       run: echo "::set-output name=latest_tag::$(cat package.json | jq .version)"
