@@ -38,18 +38,13 @@ program.option('--dry-run', 'Execute the logic but do not send slack message')
  */
 function unreleasedPRs() {
   try {
-    if (!areEnvVarsSet()) {
-      console.log(`${missingEnvVars.join(', ')} are not set.`)
-      stopOnError()
-    }
-
     program.parse()
     const opts = program.opts()
 
-    const app = new App({
-      token,
-      signingSecret
-    })
+    if (!areEnvVarsSet(opts.dryRun)) {
+      console.log(`${missingEnvVars.join(', ')} are not set.`)
+      stopOnError()
+    }
 
     const repos = opts.repos.split(',')
     const ignoredLabels = opts.ignoreLabels.split(',')
@@ -68,6 +63,11 @@ function unreleasedPRs() {
       if (opts.dryRun) {
         console.log(`Skipping slack but here are the deets\n${msg}`)
       } else {
+        const app = new App({
+          token,
+          signingSecret
+        })
+
         await app.client.chat.postMessage({
           channel,
           text: msg
@@ -89,7 +89,10 @@ function stopOnError(err) {
   process.exit(1)
 }
 
-function areEnvVarsSet() {
+function areEnvVarsSet(dryRun) {
+  if (dryRun) {
+    return process.env.hasOwnProperty('GITHUB_TOKEN')
+  }
   missingEnvVars = requiredEnvVars.filter((envVar) => !process.env.hasOwnProperty(envVar))
   return missingEnvVars.length === 0
 }
