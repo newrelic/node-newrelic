@@ -17,10 +17,11 @@ jobs:
     - name: Install Dependencies
       run: npm ci
     - name: Check for PRs not yet released
-      run: node ./bin/pending-prs.js --repos $NR_REPOS
+      run: node ./bin/pending-prs.js --repos $NR_REPOS --ignore-labels $IGNORE_LABELS
       env:
         GITHUB_TOKEN: ${{ secrets.NODE_AGENT_GH_TOKEN }}
         SLACK_CHANNEL: ${{ secrets.SLACK_CHANNEL }}
         SLACK_TOKEN: ${{ secrets.SLACK_TOKEN }}
         SLACK_SECRET: ${{ secrets.SLACK_SECRET }}
         NR_REPOS: ${{ secrets.NR_REPOS }}
+        IGNORE_LABELS: ${{ secrets.IGNORE_LABELS }}
