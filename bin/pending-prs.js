@@ -16,6 +16,11 @@ program.requiredOption(
   '--repos <repos>',
   'Comma-delimited list of repos in newrelic org to check for unreleased PRs'
 )
+program.option(
+  '--ignore-labels <labels>',
+  'Comma-delimited list of labels to ignore when creating the list of unreleased PRs. This is intended to be used for PRs that do not have code that ships within the module.'
+)
+program.option('--dry-run', 'Execute the logic but do not send slack message')
 
 /**
  * Finds the last released tag and all the PRs that have been
@@ -33,23 +38,19 @@ program.requiredOption(
  */
 function unreleasedPRs() {
   try {
-    if (!areEnvVarsSet()) {
+    program.parse()
+    const opts = program.opts()
+
+    if (!areEnvVarsSet(opts.dryRun)) {
       console.log(`${missingEnvVars.join(', ')} are not set.`)
       stopOnError()
     }
 
-    program.parse()
-    const opts = program.opts()
-
-    const app = new App({
-      token,
-      signingSecret
-    })
-
     const repos = opts.repos.split(',')
+    const ignoredLabels = opts.ignoreLabels.split(',')
 
     repos.forEach(async (repo) => {
-      const { prs, latestRelease } = await findMergedPRs(repo)
+      const { prs, latestRelease } = await findMergedPRs(repo, ignoredLabels)
 
       let msg = null
 
@@ -59,11 +60,20 @@ function unreleasedPRs() {
         msg = createSlackMessage(prs, latestRelease, repo)
       }
 
-      await app.client.chat.postMessage({
-        channel,
-        text: msg
-      })
-      console.log(`Posted msg to ${channel}`)
+      if (opts.dryRun) {
+        console.log(`Skipping slack but here are the deets\n${msg}`)
+      } else {
+        const app = new App({
+          token,
+          signingSecret
+        })
+
+        await app.client.chat.postMessage({
+          channel,
+          text: msg
+        })
+        console.log(`Posted msg to ${channel}`)
+      }
     })
   } catch (err) {
     stopOnError(err)
@@ -79,7 +89,10 @@ function stopOnError(err) {
   process.exit(1)
 }
 
-function areEnvVarsSet() {
+function areEnvVarsSet(dryRun) {
+  if (dryRun) {
+    return process.env.hasOwnProperty('GITHUB_TOKEN')
+  }
   missingEnvVars = requiredEnvVars.filter((envVar) => !process.env.hasOwnProperty(envVar))
   return missingEnvVars.length === 0
 }
@@ -100,7 +113,7 @@ function createSlackMessage(prs, latestRelease, repo) {
     `
 }
 
-async function findMergedPRs(repo) {
+async function findMergedPRs(repo, ignoredLabels) {
   const github = new Github('newrelic', repo)
   const latestRelease = await github.getLatestRelease()
   console.log(
@@ -119,9 +132,12 @@ async function findMergedPRs(repo) {
   const mergedPullRequests = await github.getMergedPullRequestsSince(commitDate)
 
   const filteredPullRequests = mergedPullRequests.filter((pr) => {
+    // Find all PRs without an ignored label
+    const withIngored = pr.labels.some(({ name }) => ignoredLabels.includes(name))
+
     // Sometimes the commit for the PR the tag is set to has an earlier time than
     // the PR merge time and we'll pull in release note PRs. Filters those out.
-    return pr.merge_commit_sha !== tag.commit.sha
+    return pr.merge_commit_sha !== tag.commit.sha && !withIngored
   })
 
   console.log(`Found ${filteredPullRequests.length} PRs not yet released.`)
