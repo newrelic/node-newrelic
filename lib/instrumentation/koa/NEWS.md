@@ -1,3 +1,11 @@
+### v6.1.1 (2022-02-07)
+
+* Updated `add-to-board` to use org level `NODE_AGENT_GH_TOKEN`
+
+* Removed usages of internal tracer instance.
+
+* Bumped `@newrelic/test-utilities` to ^6.3.0.
+
 ### v6.1.0 (2022-01-11)
 
 * Removed context-less timer hop from transaction state test.
