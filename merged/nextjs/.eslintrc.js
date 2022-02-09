@@ -5,5 +5,6 @@
 
 'use strict'
 module.exports = {
-  extends: '@newrelic'
+  extends: '@newrelic',
+  ignorePatterns: ['tests/versioned/app']
 }

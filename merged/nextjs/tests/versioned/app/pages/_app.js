@@ -3,4 +3,8 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-'use strict'
+function MyApp({ Component, pageProps }) {
+  return <Component {...pageProps} />
+}
+
+export default MyApp
