@@ -4,8 +4,10 @@
   "description": "Next.js instrumentation for the New Relic Node.js agent. ",
   "main": "index.js",
   "scripts": {
-    "test": "npm run unit && npm run versioned",
     "lint": "eslint *.js lib tests",
+    "prepare": "husky install",
+    "test": "npm run unit && npm run versioned",
+    "third-party-updates": "oss third-party manifest && oss third-party notices && git add THIRD_PARTY_NOTICES.md third_party_manifest.json",
     "unit": "tap --test-regex='(\\/|^tests\\/unit\\/.*\\.test\\.js)$' --no-coverage",
     "versioned": "npm run versioned:npm7",
     "versioned:major": "versioned-tests --major --all -i 2 'tests/versioned/*.tap.js'",
@@ -31,8 +33,11 @@
   },
   "devDependencies": {
     "@newrelic/eslint-config": "^0.0.4",
+    "@newrelic/newrelic-oss-cli": "^0.1.2",
     "@newrelic/test-utilities": "^6.4.0",
     "eslint": "^8.8.0",
+    "husky": "^7.0.4",
+    "lint-staged": "^12.3.3",
     "newrelic": "^8.7.1",
     "tap": "^15.1.6"
   },
