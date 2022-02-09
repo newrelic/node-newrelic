@@ -39,16 +39,19 @@ helpers.build = function build(path = 'app') {
  * @param {number} [port=3001]
  * @returns {Promise}
  */
-helpers.start = function start(path = 'app', port = 3001) {
+helpers.start = async function start(path = 'app', port = 3001) {
+  // Needed to support the various locations tests may get loaded from (versioned VS tap <file> VS IDE debugger)
+  const fullPath = `${__dirname}/${path}`
+
   const { startServer } = require('next/dist/server/lib/start-server')
-  return startServer({
-    dir: path,
+  const app = await startServer({
+    dir: fullPath,
     hostname: 'localhost',
     port
-  }).then(async (app) => {
-    await app.prepare()
-    return app
   })
+
+  await app.prepare()
+  return app
 }
 
 /**
