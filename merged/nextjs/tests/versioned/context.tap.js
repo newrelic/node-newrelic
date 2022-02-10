@@ -6,36 +6,47 @@
 'use strict'
 
 const tap = require('tap')
+const helpers = require('./helpers')
 const utils = require('@newrelic/test-utilities')
 
 tap.test('next-context', (t) => {
   t.autoend()
 
-  let helper
-  // TODO let server
+  let agent
+  let app
 
-  t.beforeEach(() => {
-    helper = utils.TestAgent.makeInstrumented()
-    helper.registerInstrumentation({
+  t.beforeEach(async () => {
+    agent = utils.TestAgent.makeInstrumented()
+    agent.registerInstrumentation({
       moduleName: './context',
-      type: 'datastore',
-      onResolved: require('../../lib/context')
+      type: 'web-framework',
+      onRequire: require('../../lib/context')
     })
 
-    // TODO require server
-    // TODO set up server
+    await helpers.build()
+    app = await helpers.start()
   })
 
   t.afterEach(() => {
-    helper && helper.unload()
-    helper = null
-
-    // TODO close server
+    app.options.httpServer.close()
+    agent.unload()
   })
 
   t.test('records middleware', async (t) => {
-    t.autoend()
+    let transactions = 0
+    agent.agent.on('transactionFinished', function (tx) {
+      transactions++
+      const name =
+        transactions === 1
+          ? 'WebTransaction/WebFrameworkUri/Nextjs/GET//api/person/[id]'
+          : 'WebTransaction/WebFrameworkUri/Nextjs/GET//person/[id]'
+      t.equal(tx.name, name, 'should properly name Next transaction')
+    })
 
-    // TODO
+    return helpers.makeRequest('/api/person/1').then((res) => {
+      t.equal(transactions, 2, 'should be 2 transactions')
+      t.equal(res.statusCode, 200)
+      t.end()
+    })
   })
 })
