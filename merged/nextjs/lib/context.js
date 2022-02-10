@@ -11,7 +11,7 @@ const { NEXT } = require('./constants')
 const PROP = Symbol('nrMiddlewareName')
 
 module.exports = function initialize(shim, ctx) {
-  shim.setFramework('Nextjs')
+  shim.setFramework(NEXT)
   shim.wrap(ctx, 'getModuleContext', function middlewareRecorder(shim, getModuleContext) {
     return function wrappedModuleContext() {
       const result = getModuleContext.apply(this, arguments)
@@ -25,7 +25,7 @@ module.exports = function initialize(shim, ctx) {
               name: `Nodejs/Middleware/Nextjs/${middlewareName}`,
               type: shim.ROUTE,
               req: args.request,
-              route: mwName,
+              route: middlewareName,
               promise: true
             }
           })

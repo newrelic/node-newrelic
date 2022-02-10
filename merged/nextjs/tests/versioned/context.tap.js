@@ -33,20 +33,21 @@ tap.test('next-context', (t) => {
   })
 
   t.test('records middleware', async (t) => {
-    let transactions = 0
-    agent.agent.on('transactionFinished', function (tx) {
-      transactions++
-      const name =
-        transactions === 1
-          ? 'WebTransaction/WebFrameworkUri/Nextjs/GET//api/person/[id]'
-          : 'WebTransaction/WebFrameworkUri/Nextjs/GET//person/[id]'
-      t.equal(tx.name, name, 'should properly name Next transaction')
+    const txPromise = new Promise((resolve) => {
+      agent.agent.on('transactionFinished', resolve)
     })
+    const res = await helpers.makeRequest('/api/person/1')
+    t.equal(res.statusCode, 200)
 
-    return helpers.makeRequest('/api/person/1').then((res) => {
-      t.equal(transactions, 2, 'should be 2 transactions')
-      t.equal(res.statusCode, 200)
-      t.end()
-    })
+    const tx = await txPromise
+    t.equal(tx.name, 'WebTransaction/NormalizedUri/*')
+    t.equal(tx.trace.root.children[0].children.length, 3)
+    const [mw1, mw2, mw3] = tx.trace.root.children[0].children
+    t.equal(mw1.name, 'Nodejs/Middleware/Nextjs//_middleware')
+    t.equal(mw2.name, 'Nodejs/Middleware/Nextjs//api/_middleware')
+    t.equal(mw3.name, 'Nodejs/Middleware/Nextjs//api/person/_middleware')
+
+    tx.end()
+    t.end()
   })
 })
