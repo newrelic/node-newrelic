@@ -9,7 +9,7 @@ const tap = require('tap')
 const helpers = require('./helpers')
 const utils = require('@newrelic/test-utilities')
 
-tap.test('next-context', (t) => {
+tap.test('middleware tracking', (t) => {
   t.autoend()
 
   let agent
