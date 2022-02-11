@@ -31,7 +31,7 @@
     "prettier": "^2.3.2",
     "semver": "^5.5.0",
     "superagent": "^3.8.3",
-    "tap": "^15.0.9"
+    "tap": "^15.1.6"
   },
   "engines": {
     "node": ">=12.0"
