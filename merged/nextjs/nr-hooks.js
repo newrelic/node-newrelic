@@ -10,5 +10,10 @@ module.exports = [
     type: 'web-framework',
     moduleName: './next-server',
     onRequire: require('./lib/next-server')
+  },
+  {
+    type: 'web-framework',
+    moduleName: './render',
+    onRequire: require('./lib/render')
   }
 ]

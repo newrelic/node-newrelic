@@ -5,5 +5,6 @@
 
 'use strict'
 module.exports = {
-  NEXT: 'Nextjs'
+  NEXT: 'Nextjs',
+  SPAN_PREFIX: 'Nodejs/Nextjs'
 }
