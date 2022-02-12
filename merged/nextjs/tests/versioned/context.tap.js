@@ -42,6 +42,7 @@ tap.test('middleware tracking', (t) => {
     const tx = await txPromise
     t.equal(tx.name, 'WebTransaction/NormalizedUri/*')
     t.equal(tx.trace.root.children[0].children.length, 3)
+    // verify that each layer of middleware has an associated span
     const [mw1, mw2, mw3] = tx.trace.root.children[0].children
     t.equal(mw1.name, 'Nodejs/Middleware/Nextjs//_middleware')
     t.equal(mw2.name, 'Nodejs/Middleware/Nextjs//api/_middleware')

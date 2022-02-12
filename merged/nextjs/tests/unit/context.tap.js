@@ -36,11 +36,14 @@ tap.test('middleware tracking', (t) => {
       }
     }
 
+    // instrument next.js module context
     initialize(fakeShim, fakeCtx)
-
+    // run wrapped getter
     const result = fakeCtx.getModuleContext()
+    // verify that we proxied it ok
     t.ok(util.types.isProxy(result.context._ENTRIES))
     t.equal(wrapped, true)
+    // verify that updating the proxy records a span
     t.equal(recorded, false)
     result.context._ENTRIES['middleware_pages/hello'] = 'world'
     t.equal(recorded, true)

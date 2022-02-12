@@ -11,6 +11,11 @@ const { NEXT } = require('./constants')
 const PROP = Symbol('nrMiddlewareName')
 
 module.exports = function initialize(shim, ctx) {
+  /*
+  Middleware is tracked via a 'module context' object
+  whose `_ENTRIES` property is updated by each middleware layer.
+  So, we proxy `_ENTRIES` and record a span whenever middleware modifies it.
+  */
   shim.setFramework(NEXT)
   shim.wrap(ctx, 'getModuleContext', function middlewareRecorder(shim, getModuleContext) {
     return function wrappedModuleContext() {
