@@ -31,7 +31,7 @@ tap.test('Next.js', (t) => {
     agent.unload()
   })
 
-  t.test('should properly name getServerProps segments on static pages', async (t) => {
+  t.test('should properly name getServerSideProps segments on static pages', async (t) => {
     let transaction
     agent.agent.on('transactionFinished', function (tx) {
       transaction = tx
@@ -41,12 +41,12 @@ tap.test('Next.js', (t) => {
     t.equal(res.statusCode, 200)
     const root = transaction.trace.root.children[0]
     const nextSegment = root.children[1]
-    t.equal(nextSegment.name, 'Nodejs/Nextjs/getServerProps//ssr/people')
+    t.equal(nextSegment.name, 'Nodejs/Nextjs/getServerSideProps//ssr/people')
     const attrs = nextSegment.attributes.get(SPAN_EVENT)
     t.match(attrs, { 'next.page': '/ssr/people' })
   })
 
-  t.test('should properly name getServerProps segments on dynamic pages', async (t) => {
+  t.test('should properly name getServerSideProps segments on dynamic pages', async (t) => {
     let transaction
     agent.agent.on('transactionFinished', function (tx) {
       transaction = tx
@@ -56,7 +56,7 @@ tap.test('Next.js', (t) => {
     t.equal(res.statusCode, 200)
     const root = transaction.trace.root.children[0]
     const nextSegment = root.children[1]
-    t.equal(nextSegment.name, 'Nodejs/Nextjs/getServerProps//ssr/dynamic/person/[id]')
+    t.equal(nextSegment.name, 'Nodejs/Nextjs/getServerSideProps//ssr/dynamic/person/[id]')
     const attrs = nextSegment.attributes.get(SPAN_EVENT)
     t.match(attrs, { 'next.page': '/ssr/dynamic/person/[id]' })
   })

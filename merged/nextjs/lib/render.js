@@ -20,7 +20,7 @@ module.exports = function initialize(shim, render) {
         req,
         res,
         promise: true,
-        name: `${SPAN_PREFIX}/getServerProps/${page}`
+        name: `${SPAN_PREFIX}/getServerSideProps/${page}`
       }
     }
   )
