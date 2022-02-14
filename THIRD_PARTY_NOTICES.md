@@ -86,7 +86,7 @@ code, the source code can be found at [https://github.com/newrelic/node-newrelic
 
 ### @grpc/grpc-js
 
-This product includes source derived from [@grpc/grpc-js](https://github.com/grpc/grpc-node/tree/master/packages/grpc-js) ([v1.3.7](https://github.com/grpc/grpc-node/tree/master/packages/grpc-js/tree/v1.3.7)), distributed under the [Apache-2.0 License](https://github.com/grpc/grpc-node/tree/master/packages/grpc-js/blob/v1.3.7/LICENSE):
+This product includes source derived from [@grpc/grpc-js](https://github.com/grpc/grpc-node/tree/master/packages/grpc-js) ([v1.5.5](https://github.com/grpc/grpc-node/tree/master/packages/grpc-js/tree/v1.5.5)), distributed under the [Apache-2.0 License](https://github.com/grpc/grpc-node/tree/master/packages/grpc-js/blob/v1.5.5/LICENSE):
 
 ```
                                  Apache License
@@ -295,7 +295,7 @@ This product includes source derived from [@grpc/grpc-js](https://github.com/grp
 
 ### @grpc/proto-loader
 
-This product includes source derived from [@grpc/proto-loader](https://github.com/grpc/grpc-node) ([v0.5.6](https://github.com/grpc/grpc-node/tree/v0.5.6)), distributed under the [Apache-2.0 License](https://github.com/grpc/grpc-node/blob/v0.5.6/LICENSE):
+This product includes source derived from [@grpc/proto-loader](https://github.com/grpc/grpc-node) ([v0.6.9](https://github.com/grpc/grpc-node/tree/v0.6.9)), distributed under the [Apache-2.0 License](https://github.com/grpc/grpc-node/blob/v0.6.9/LICENSE):
 
 ```
                                  Apache License
@@ -1159,7 +1159,7 @@ THE SOFTWARE.
 
 ### async
 
-This product includes source derived from [async](https://github.com/caolan/async) ([v3.2.1](https://github.com/caolan/async/tree/v3.2.1)), distributed under the [MIT License](https://github.com/caolan/async/blob/v3.2.1/LICENSE):
+This product includes source derived from [async](https://github.com/caolan/async) ([v3.2.3](https://github.com/caolan/async/tree/v3.2.3)), distributed under the [MIT License](https://github.com/caolan/async/blob/v3.2.3/LICENSE):
 
 ```
 Copyright (c) 2010-2018 Caolan McMahon
@@ -2531,7 +2531,7 @@ SOFTWARE.
 
 ### jsdoc
 
-This product includes source derived from [jsdoc](https://github.com/jsdoc/jsdoc) ([v3.6.7](https://github.com/jsdoc/jsdoc/tree/v3.6.7)), distributed under the [Apache-2.0 License](https://github.com/jsdoc/jsdoc/blob/v3.6.7/LICENSE.md):
+This product includes source derived from [jsdoc](https://github.com/jsdoc/jsdoc) ([v3.6.10](https://github.com/jsdoc/jsdoc/tree/v3.6.10)), distributed under the [Apache-2.0 License](https://github.com/jsdoc/jsdoc/blob/v3.6.10/LICENSE.md):
 
 ```
 # License
