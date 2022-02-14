@@ -8,6 +8,7 @@
 const tap = require('tap')
 const helpers = require('./helpers')
 const utils = require('@newrelic/test-utilities')
+const SPAN_EVENT = 0x10
 
 tap.test('Next.js', (t) => {
   t.autoend()
@@ -39,7 +40,10 @@ tap.test('Next.js', (t) => {
     const res = await helpers.makeRequest('/ssr/people')
     t.equal(res.statusCode, 200)
     const root = transaction.trace.root.children[0]
-    t.equal(root.children[1].name, 'Nodejs/Nextjs/getServerProps//ssr/people')
+    const nextSegment = root.children[1]
+    t.equal(nextSegment.name, 'Nodejs/Nextjs/getServerProps//ssr/people')
+    const attrs = nextSegment.attributes.get(SPAN_EVENT)
+    t.match(attrs, { 'next.page': '/ssr/people' })
   })
 
   t.test('should properly name getServerProps segments on dynamic pages', async (t) => {
@@ -51,6 +55,9 @@ tap.test('Next.js', (t) => {
     const res = await helpers.makeRequest('/ssr/dynamic/person/1')
     t.equal(res.statusCode, 200)
     const root = transaction.trace.root.children[0]
-    t.equal(root.children[1].name, 'Nodejs/Nextjs/getServerProps//ssr/dynamic/person/[id]')
+    const nextSegment = root.children[1]
+    t.equal(nextSegment.name, 'Nodejs/Nextjs/getServerProps//ssr/dynamic/person/[id]')
+    const attrs = nextSegment.attributes.get(SPAN_EVENT)
+    t.match(attrs, { 'next.page': '/ssr/dynamic/person/[id]' })
   })
 })
