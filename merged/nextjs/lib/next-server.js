@@ -6,10 +6,10 @@
 'use strict'
 
 // TODO: add to webframework shim constants so can do shim.NEXT
-const FRAMEWORK_NAME = 'Nextjs'
+const { NEXT } = require('./constants')
 
 module.exports = function initialize(shim, nextServer) {
-  shim.setFramework(shim.NEXT || FRAMEWORK_NAME)
+  shim.setFramework(shim.NEXT || NEXT)
 
   const Server = nextServer.default
 
