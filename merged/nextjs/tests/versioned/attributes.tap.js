@@ -32,12 +32,7 @@ tap.test('Next.js', (t) => {
         include: ['request.parameters.*']
       }
     })
-
-    agent.registerInstrumentation({
-      moduleName: './next-server',
-      type: 'web-framework',
-      onRequire: require('../../lib/next-server')
-    })
+    helpers.registerInstrumentation(agent)
 
     // TODO: would be nice to run a new server per test so there are not chained failures
     // but currently has issues. Potentially due to module caching.
@@ -96,10 +91,26 @@ tap.test('Next.js', (t) => {
 
       const agentAttributes = getTransactionEventAgentAttributes(endedTransaction)
 
-      t.match(agentAttributes, {
-        'request.parameters.first': 'one',
-        'request.parameters.second': 'two'
-      })
+      t.match(
+        agentAttributes,
+        {
+          'request.parameters.first': 'one',
+          'request.parameters.second': 'two'
+        },
+        'should match transaction attributes'
+      )
+
+      const segmentAttrs = getSegmentAgentAttributes(
+        endedTransaction,
+        'Nodejs/Nextjs/getServerSideProps//ssr/people'
+      )
+      t.match(
+        segmentAttrs,
+        {
+          'next.page': '/ssr/people'
+        },
+        'should match segment attributes'
+      )
     }
   )
 
@@ -120,6 +131,17 @@ tap.test('Next.js', (t) => {
         'request.parameters.id': '1', // route [id] param
         'request.parameters.queryParam': 'queryValue'
       })
+      const segmentAttrs = getSegmentAgentAttributes(
+        endedTransaction,
+        'Nodejs/Nextjs/getServerSideProps//ssr/dynamic/person/[id]'
+      )
+      t.match(
+        segmentAttrs,
+        {
+          'next.page': '/ssr/dynamic/person/[id]'
+        },
+        'should match segment attributes'
+      )
     }
   )
 
@@ -183,5 +205,14 @@ tap.test('Next.js', (t) => {
 
   function getTransactionIntrinsicAttributes(transaction) {
     return transaction.trace.intrinsics
+  }
+
+  function getSegmentAgentAttributes(transaction, name) {
+    const segment = helpers.findSegmentByName(transaction.trace.root, name)
+    if (segment) {
+      return segment.attributes.get(DESTINATIONS.SPAN_EVENT)
+    }
+
+    return {}
   }
 })

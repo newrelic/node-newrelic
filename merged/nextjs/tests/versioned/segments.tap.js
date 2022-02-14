@@ -8,7 +8,7 @@
 const tap = require('tap')
 const helpers = require('./helpers')
 const utils = require('@newrelic/test-utilities')
-const SPAN_EVENT = 0x10
+const SEGMENT_PREFIX = 'Nodejs/Nextjs/getServerSideProps/'
 
 tap.test('Next.js', (t) => {
   t.autoend()
@@ -17,11 +17,7 @@ tap.test('Next.js', (t) => {
 
   t.before(async () => {
     agent = utils.TestAgent.makeInstrumented()
-    agent.registerInstrumentation({
-      moduleName: './render',
-      type: 'web-framework',
-      onRequire: require('../../lib/render')
-    })
+    helpers.registerInstrumentation(agent)
     await helpers.build()
     app = await helpers.start()
   })
@@ -41,9 +37,7 @@ tap.test('Next.js', (t) => {
     t.equal(res.statusCode, 200)
     const root = transaction.trace.root.children[0]
     const nextSegment = root.children[1]
-    t.equal(nextSegment.name, 'Nodejs/Nextjs/getServerSideProps//ssr/people')
-    const attrs = nextSegment.attributes.get(SPAN_EVENT)
-    t.match(attrs, { 'next.page': '/ssr/people' })
+    t.equal(nextSegment.name, `${SEGMENT_PREFIX}/ssr/people`)
   })
 
   t.test('should properly name getServerSideProps segments on dynamic pages', async (t) => {
@@ -56,8 +50,6 @@ tap.test('Next.js', (t) => {
     t.equal(res.statusCode, 200)
     const root = transaction.trace.root.children[0]
     const nextSegment = root.children[1]
-    t.equal(nextSegment.name, 'Nodejs/Nextjs/getServerSideProps//ssr/dynamic/person/[id]')
-    const attrs = nextSegment.attributes.get(SPAN_EVENT)
-    t.match(attrs, { 'next.page': '/ssr/dynamic/person/[id]' })
+    t.equal(nextSegment.name, `${SEGMENT_PREFIX}/ssr/dynamic/person/[id]`)
   })
 })

@@ -24,12 +24,7 @@ tap.test('Next.js', (t) => {
         include: ['request.parameters.*']
       }
     })
-
-    agent.registerInstrumentation({
-      moduleName: './next-server',
-      type: 'web-framework',
-      onRequire: require('../../lib/next-server')
-    })
+    helpers.registerInstrumentation(agent)
 
     // TODO: would be nice to run a new server per test so there are not chained failures
     // but currently has issues. Potentially due to module caching.
