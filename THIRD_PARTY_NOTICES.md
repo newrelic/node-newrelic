@@ -86,7 +86,7 @@ code, the source code can be found at [https://github.com/newrelic/node-newrelic
 
 ### @grpc/grpc-js
 
-This product includes source derived from [@grpc/grpc-js](https://github.com/grpc/grpc-node/tree/master/packages/grpc-js) ([v1.3.7](https://github.com/grpc/grpc-node/tree/master/packages/grpc-js/tree/v1.3.7)), distributed under the [Apache-2.0 License](https://github.com/grpc/grpc-node/tree/master/packages/grpc-js/blob/v1.3.7/LICENSE):
+This product includes source derived from [@grpc/grpc-js](https://github.com/grpc/grpc-node/tree/master/packages/grpc-js) ([v1.5.5](https://github.com/grpc/grpc-node/tree/master/packages/grpc-js/tree/v1.5.5)), distributed under the [Apache-2.0 License](https://github.com/grpc/grpc-node/tree/master/packages/grpc-js/blob/v1.5.5/LICENSE):
 
 ```
                                  Apache License
@@ -295,7 +295,7 @@ This product includes source derived from [@grpc/grpc-js](https://github.com/grp
 
 ### @grpc/proto-loader
 
-This product includes source derived from [@grpc/proto-loader](https://github.com/grpc/grpc-node) ([v0.5.6](https://github.com/grpc/grpc-node/tree/v0.5.6)), distributed under the [Apache-2.0 License](https://github.com/grpc/grpc-node/blob/v0.5.6/LICENSE):
+This product includes source derived from [@grpc/proto-loader](https://github.com/grpc/grpc-node) ([v0.6.9](https://github.com/grpc/grpc-node/tree/v0.6.9)), distributed under the [Apache-2.0 License](https://github.com/grpc/grpc-node/blob/v0.6.9/LICENSE):
 
 ```
                                  Apache License
@@ -712,7 +712,7 @@ This product includes source derived from [@newrelic/aws-sdk](https://github.com
 
 ### @newrelic/koa
 
-This product includes source derived from [@newrelic/koa](https://github.com/newrelic/node-newrelic-koa) ([v6.0.1](https://github.com/newrelic/node-newrelic-koa/tree/v6.0.1)), distributed under the [Apache-2.0 License](https://github.com/newrelic/node-newrelic-koa/blob/v6.0.1/LICENSE):
+This product includes source derived from [@newrelic/koa](https://github.com/newrelic/node-newrelic-koa) ([v6.1.1](https://github.com/newrelic/node-newrelic-koa/tree/v6.1.1)), distributed under the [Apache-2.0 License](https://github.com/newrelic/node-newrelic-koa/blob/v6.1.1/LICENSE):
 
 ```
 Apache License
@@ -921,7 +921,7 @@ Apache License
 
 ### @newrelic/superagent
 
-This product includes source derived from [@newrelic/superagent](https://github.com/newrelic/node-newrelic-superagent) ([v5.0.1](https://github.com/newrelic/node-newrelic-superagent/tree/v5.0.1)), distributed under the [Apache-2.0 License](https://github.com/newrelic/node-newrelic-superagent/blob/v5.0.1/LICENSE):
+This product includes source derived from [@newrelic/superagent](https://github.com/newrelic/node-newrelic-superagent) ([v5.1.0](https://github.com/newrelic/node-newrelic-superagent/tree/v5.1.0)), distributed under the [Apache-2.0 License](https://github.com/newrelic/node-newrelic-superagent/blob/v5.1.0/LICENSE):
 
 ```
                                  Apache License
@@ -1159,7 +1159,7 @@ THE SOFTWARE.
 
 ### async
 
-This product includes source derived from [async](https://github.com/caolan/async) ([v3.2.1](https://github.com/caolan/async/tree/v3.2.1)), distributed under the [MIT License](https://github.com/caolan/async/blob/v3.2.1/LICENSE):
+This product includes source derived from [async](https://github.com/caolan/async) ([v3.2.3](https://github.com/caolan/async/tree/v3.2.3)), distributed under the [MIT License](https://github.com/caolan/async/blob/v3.2.3/LICENSE):
 
 ```
 Copyright (c) 2010-2018 Caolan McMahon
@@ -1770,7 +1770,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 ### @newrelic/test-utilities
 
-This product includes source derived from [@newrelic/test-utilities](https://github.com/newrelic/node-test-utilities) ([v6.3.0](https://github.com/newrelic/node-test-utilities/tree/v6.3.0)), distributed under the [Apache-2.0 License](https://github.com/newrelic/node-test-utilities/blob/v6.3.0/LICENSE):
+This product includes source derived from [@newrelic/test-utilities](https://github.com/newrelic/node-test-utilities) ([v6.4.0](https://github.com/newrelic/node-test-utilities/tree/v6.4.0)), distributed under the [Apache-2.0 License](https://github.com/newrelic/node-test-utilities/blob/v6.4.0/LICENSE):
 
 ```
                                  Apache License
@@ -1979,7 +1979,7 @@ This product includes source derived from [@newrelic/test-utilities](https://git
 
 ### @octokit/rest
 
-This product includes source derived from [@octokit/rest](https://github.com/octokit/rest.js) ([v18.9.1](https://github.com/octokit/rest.js/tree/v18.9.1)), distributed under the [MIT License](https://github.com/octokit/rest.js/blob/v18.9.1/LICENSE):
+This product includes source derived from [@octokit/rest](https://github.com/octokit/rest.js) ([v18.12.0](https://github.com/octokit/rest.js/tree/v18.12.0)), distributed under the [MIT License](https://github.com/octokit/rest.js/blob/v18.12.0/LICENSE):
 
 ```
 The MIT License
@@ -2009,7 +2009,7 @@ THE SOFTWARE.
 
 ### @slack/bolt
 
-This product includes source derived from [@slack/bolt](https://github.com/slackapi/bolt) ([v3.7.0](https://github.com/slackapi/bolt/tree/v3.7.0)), distributed under the [MIT License](https://github.com/slackapi/bolt/blob/v3.7.0/LICENSE):
+This product includes source derived from [@slack/bolt](https://github.com/slackapi/bolt) ([v3.9.0](https://github.com/slackapi/bolt/tree/v3.9.0)), distributed under the [MIT License](https://github.com/slackapi/bolt/blob/v3.9.0/LICENSE):
 
 ```
 The MIT License (MIT)
@@ -2156,7 +2156,7 @@ THE SOFTWARE.
 
 ### chai
 
-This product includes source derived from [chai](https://github.com/chaijs/chai) ([v4.3.4](https://github.com/chaijs/chai/tree/v4.3.4)), distributed under the [MIT License](https://github.com/chaijs/chai/blob/v4.3.4/LICENSE):
+This product includes source derived from [chai](https://github.com/chaijs/chai) ([v4.3.6](https://github.com/chaijs/chai/tree/v4.3.6)), distributed under the [MIT License](https://github.com/chaijs/chai/blob/v4.3.6/LICENSE):
 
 ```
 MIT License
@@ -2244,7 +2244,7 @@ THE SOFTWARE.
 
 ### eslint-plugin-disable
 
-This product includes source derived from [eslint-plugin-disable](https://github.com/mradionov/eslint-plugin-disable) ([v2.0.1](https://github.com/mradionov/eslint-plugin-disable/tree/v2.0.1)), distributed under the [MIT License](https://github.com/mradionov/eslint-plugin-disable/blob/v2.0.1/LICENSE):
+This product includes source derived from [eslint-plugin-disable](https://github.com/mradionov/eslint-plugin-disable) ([v2.0.3](https://github.com/mradionov/eslint-plugin-disable/tree/v2.0.3)), distributed under the [MIT License](https://github.com/mradionov/eslint-plugin-disable/blob/v2.0.3/LICENSE):
 
 ```
 Copyright (c) 2015 Michael Radionov (https://github.com/mradionov)
@@ -2287,7 +2287,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 ### eslint-plugin-jsdoc
 
-This product includes source derived from [eslint-plugin-jsdoc](https://github.com/gajus/eslint-plugin-jsdoc) ([v36.1.0](https://github.com/gajus/eslint-plugin-jsdoc/tree/v36.1.0)), distributed under the [BSD-3-Clause License](https://github.com/gajus/eslint-plugin-jsdoc/blob/v36.1.0/LICENSE):
+This product includes source derived from [eslint-plugin-jsdoc](https://github.com/gajus/eslint-plugin-jsdoc) ([v36.1.1](https://github.com/gajus/eslint-plugin-jsdoc/tree/v36.1.1)), distributed under the [BSD-3-Clause License](https://github.com/gajus/eslint-plugin-jsdoc/blob/v36.1.1/LICENSE):
 
 ```
 Copyright (c) 2018, Gajus Kuizinas (http://gajus.com/)
@@ -2349,7 +2349,7 @@ SOFTWARE.
 
 ### eslint-plugin-prettier
 
-This product includes source derived from [eslint-plugin-prettier](https://github.com/prettier/eslint-plugin-prettier) ([v3.4.0](https://github.com/prettier/eslint-plugin-prettier/tree/v3.4.0)), distributed under the [MIT License](https://github.com/prettier/eslint-plugin-prettier/blob/v3.4.0/LICENSE.md):
+This product includes source derived from [eslint-plugin-prettier](https://github.com/prettier/eslint-plugin-prettier) ([v3.4.1](https://github.com/prettier/eslint-plugin-prettier/tree/v3.4.1)), distributed under the [MIT License](https://github.com/prettier/eslint-plugin-prettier/blob/v3.4.1/LICENSE.md):
 
 ```
 # The MIT License (MIT)
@@ -2408,7 +2408,7 @@ THE SOFTWARE.
 
 ### express
 
-This product includes source derived from [express](https://github.com/expressjs/express) ([v4.17.1](https://github.com/expressjs/express/tree/v4.17.1)), distributed under the [MIT License](https://github.com/expressjs/express/blob/v4.17.1/LICENSE):
+This product includes source derived from [express](https://github.com/expressjs/express) ([v4.17.2](https://github.com/expressjs/express/tree/v4.17.2)), distributed under the [MIT License](https://github.com/expressjs/express/blob/v4.17.2/LICENSE):
 
 ```
 (The MIT License)
@@ -2456,7 +2456,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 ### glob
 
-This product includes source derived from [glob](https://github.com/isaacs/node-glob) ([v7.1.7](https://github.com/isaacs/node-glob/tree/v7.1.7)), distributed under the [ISC License](https://github.com/isaacs/node-glob/blob/v7.1.7/LICENSE):
+This product includes source derived from [glob](https://github.com/isaacs/node-glob) ([v7.2.0](https://github.com/isaacs/node-glob/tree/v7.2.0)), distributed under the [ISC License](https://github.com/isaacs/node-glob/blob/v7.2.0/LICENSE):
 
 ```
 The ISC License
@@ -2531,7 +2531,7 @@ SOFTWARE.
 
 ### jsdoc
 
-This product includes source derived from [jsdoc](https://github.com/jsdoc/jsdoc) ([v3.6.7](https://github.com/jsdoc/jsdoc/tree/v3.6.7)), distributed under the [Apache-2.0 License](https://github.com/jsdoc/jsdoc/blob/v3.6.7/LICENSE.md):
+This product includes source derived from [jsdoc](https://github.com/jsdoc/jsdoc) ([v3.6.10](https://github.com/jsdoc/jsdoc/tree/v3.6.10)), distributed under the [Apache-2.0 License](https://github.com/jsdoc/jsdoc/blob/v3.6.10/LICENSE.md):
 
 ```
 # License
@@ -2641,7 +2641,7 @@ https://github.com/jmblog/color-themes-for-google-code-prettify
 
 ### lint-staged
 
-This product includes source derived from [lint-staged](https://github.com/okonet/lint-staged) ([v11.1.2](https://github.com/okonet/lint-staged/tree/v11.1.2)), distributed under the [MIT License](https://github.com/okonet/lint-staged/blob/v11.1.2/LICENSE):
+This product includes source derived from [lint-staged](https://github.com/okonet/lint-staged) ([v11.2.6](https://github.com/okonet/lint-staged/tree/v11.2.6)), distributed under the [MIT License](https://github.com/okonet/lint-staged/blob/v11.2.6/LICENSE):
 
 ```
 The MIT License (MIT)
@@ -2765,7 +2765,7 @@ https://github.com/jsdoc3/jsdoc
 
 ### mongodb
 
-This product includes source derived from [mongodb](https://github.com/mongodb/node-mongodb-native) ([v3.6.11](https://github.com/mongodb/node-mongodb-native/tree/v3.6.11)), distributed under the [Apache-2.0 License](https://github.com/mongodb/node-mongodb-native/blob/v3.6.11/LICENSE.md):
+This product includes source derived from [mongodb](https://github.com/mongodb/node-mongodb-native) ([v3.7.3](https://github.com/mongodb/node-mongodb-native/tree/v3.7.3)), distributed under the [Apache-2.0 License](https://github.com/mongodb/node-mongodb-native/blob/v3.7.3/LICENSE.md):
 
 ```
 Apache License
@@ -3029,7 +3029,7 @@ SOFTWARE.
 
 ### prettier
 
-This product includes source derived from [prettier](https://github.com/prettier/prettier) ([v2.3.2](https://github.com/prettier/prettier/tree/v2.3.2)), distributed under the [MIT License](https://github.com/prettier/prettier/blob/v2.3.2/LICENSE):
+This product includes source derived from [prettier](https://github.com/prettier/prettier) ([v2.5.1](https://github.com/prettier/prettier/tree/v2.5.1)), distributed under the [MIT License](https://github.com/prettier/prettier/blob/v2.5.1/LICENSE):
 
 ```
 Copyright © James Long and contributors
@@ -3179,7 +3179,7 @@ END OF TERMS AND CONDITIONS
 
 ### restify
 
-This product includes source derived from [restify](https://github.com/restify/node-restify) ([v8.5.1](https://github.com/restify/node-restify/tree/v8.5.1)), distributed under the [MIT License](https://github.com/restify/node-restify/blob/v8.5.1/LICENSE):
+This product includes source derived from [restify](https://github.com/restify/node-restify) ([v8.6.1](https://github.com/restify/node-restify/tree/v8.6.1)), distributed under the [MIT License](https://github.com/restify/node-restify/blob/v8.6.1/LICENSE):
 
 ```
 Copyright (c) 2011 Mark Cavage, All rights reserved.
@@ -3377,7 +3377,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 ### @newrelic/native-metrics
 
-This product includes source derived from [@newrelic/native-metrics](https://github.com/newrelic/node-native-metrics) ([v7.0.1](https://github.com/newrelic/node-native-metrics/tree/v7.0.1)), distributed under the [Apache-2.0 License](https://github.com/newrelic/node-native-metrics/blob/v7.0.1/LICENSE):
+This product includes source derived from [@newrelic/native-metrics](https://github.com/newrelic/node-native-metrics) ([v7.1.0](https://github.com/newrelic/node-native-metrics/tree/v7.1.0)), distributed under the [Apache-2.0 License](https://github.com/newrelic/node-native-metrics/blob/v7.1.0/LICENSE):
 
 ```
                                  Apache License
