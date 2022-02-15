@@ -11,7 +11,7 @@ module.exports = function initialize(shim, render) {
   shim.record(
     render,
     'renderToHTML',
-    function middlewareRecorder(shim, renderToHTML, name, [req, res, page]) {
+    function renderToHTMLRecorder(shim, renderToHTML, name, [req, res, page]) {
       return {
         inContext() {
           const segment = shim.getActiveSegment()
