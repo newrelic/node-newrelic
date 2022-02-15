@@ -2104,7 +2104,8 @@ tap.test('Shim', function (t) {
         false,
         {},
         [],
-        function checkSegment() {
+        function checkSegment(activeSegment) {
+          t.equal(activeSegment, segment)
           t.equal(contextManager.getContext(), segment)
           t.end()
         }
