@@ -10,7 +10,6 @@ export async function getServerSideProps(context) {
   const { id } = context.params
   const user = data.find((person) => person.id.toString() === id)
 
-
   return {
     props: { user }
   }

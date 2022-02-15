@@ -13,3 +13,4 @@
 const newrelic = require('newrelic')
 
 newrelic.instrumentWebframework('./next-server', require('./lib/next-server'))
+newrelic.instrumentWebframework('./render', require('./lib/render'))

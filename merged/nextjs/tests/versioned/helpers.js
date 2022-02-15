@@ -71,3 +71,29 @@ helpers.makeRequest = function (uri, port = 3001) {
       .on('error', reject)
   })
 }
+
+/**
+ * Registers all instrumentation for Next.js
+ *
+ * @param {Agent} agent
+ */
+helpers.registerInstrumentation = function (agent) {
+  const hooks = require('../../nr-hooks')
+  hooks.forEach(agent.registerInstrumentation)
+}
+
+helpers.findSegmentByName = function (root, name) {
+  if (root.name === name) {
+    return root
+  } else if (root.children && root.children.length) {
+    for (let i = 0; i < root.children.length; i++) {
+      const child = root.children[i]
+      const found = helpers.findSegmentByName(child, name)
+      if (found) {
+        return found
+      }
+    }
+  }
+
+  return null
+}
