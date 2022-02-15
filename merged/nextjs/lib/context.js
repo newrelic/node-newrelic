@@ -27,7 +27,7 @@ module.exports = function initialize(shim, ctx) {
           shim.record(nrObj, 'default', function mwRecord(shim, origMw, name, [args]) {
             const middlewareName = this[PROP]
             return {
-              name: `Nodejs/Middleware/Nextjs/${middlewareName}`,
+              name: `${shim._metrics.MIDDLEWARE}${shim._metrics.PREFIX}${middlewareName}`,
               type: shim.ROUTE,
               req: args.request,
               route: middlewareName,

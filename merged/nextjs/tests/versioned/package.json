@@ -14,7 +14,6 @@
       },
       "files": [
         "attributes.tap.js",
-        "context.tap.js",
         "segments.tap.js",
         "transaction-naming.tap.js"
       ]
