@@ -1,18 +1,18 @@
 {
-  "lastUpdated": "Mon Feb 14 2022 12:43:26 GMT-0800 (Pacific Standard Time)",
+  "lastUpdated": "Wed Feb 16 2022 15:50:08 GMT-0800 (Pacific Standard Time)",
   "projectName": "New Relic Node Agent",
   "projectUrl": "https://github.com/newrelic/node-newrelic",
   "includeOptDeps": true,
   "optionalDependencies": {
-    "@newrelic/native-metrics@7.0.1": {
+    "@newrelic/native-metrics@7.1.1": {
       "name": "@newrelic/native-metrics",
-      "version": "7.0.1",
-      "range": "^7.0.1",
+      "version": "7.1.1",
+      "range": "^7.1.1",
       "licenses": "Apache-2.0",
       "repoUrl": "https://github.com/newrelic/node-native-metrics",
-      "versionedRepoUrl": "https://github.com/newrelic/node-native-metrics/tree/v7.0.1",
+      "versionedRepoUrl": "https://github.com/newrelic/node-native-metrics/tree/v7.1.1",
       "licenseFile": "node_modules/@newrelic/native-metrics/LICENSE",
-      "licenseUrl": "https://github.com/newrelic/node-native-metrics/blob/v7.0.1/LICENSE",
+      "licenseUrl": "https://github.com/newrelic/node-native-metrics/blob/v7.1.1/LICENSE",
       "licenseTextSource": "file",
       "publisher": "New Relic Node.js agent team",
       "email": "nodejs@newrelic.com"
@@ -57,28 +57,28 @@
       "publisher": "New Relic Node.js agent team",
       "email": "nodejs@newrelic.com"
     },
-    "@newrelic/koa@6.0.1": {
+    "@newrelic/koa@6.1.0": {
       "name": "@newrelic/koa",
-      "version": "6.0.1",
-      "range": "^6.0.1",
+      "version": "6.1.0",
+      "range": "^6.1.0",
       "licenses": "Apache-2.0",
       "repoUrl": "https://github.com/newrelic/node-newrelic-koa",
-      "versionedRepoUrl": "https://github.com/newrelic/node-newrelic-koa/tree/v6.0.1",
+      "versionedRepoUrl": "https://github.com/newrelic/node-newrelic-koa/tree/v6.1.0",
       "licenseFile": "node_modules/@newrelic/koa/LICENSE",
-      "licenseUrl": "https://github.com/newrelic/node-newrelic-koa/blob/v6.0.1/LICENSE",
+      "licenseUrl": "https://github.com/newrelic/node-newrelic-koa/blob/v6.1.0/LICENSE",
       "licenseTextSource": "file",
       "publisher": "New Relic Node.js agent team",
       "email": "nodejs@newrelic.com"
     },
-    "@newrelic/superagent@5.0.1": {
+    "@newrelic/superagent@5.1.0": {
       "name": "@newrelic/superagent",
-      "version": "5.0.1",
-      "range": "^5.0.1",
+      "version": "5.1.0",
+      "range": "^5.1.0",
       "licenses": "Apache-2.0",
       "repoUrl": "https://github.com/newrelic/node-newrelic-superagent",
-      "versionedRepoUrl": "https://github.com/newrelic/node-newrelic-superagent/tree/v5.0.1",
+      "versionedRepoUrl": "https://github.com/newrelic/node-newrelic-superagent/tree/v5.1.0",
       "licenseFile": "node_modules/@newrelic/superagent/LICENSE",
-      "licenseUrl": "https://github.com/newrelic/node-newrelic-superagent/blob/v5.0.1/LICENSE",
+      "licenseUrl": "https://github.com/newrelic/node-newrelic-superagent/blob/v5.1.0/LICENSE",
       "licenseTextSource": "file",
       "publisher": "New Relic Node.js Agent Team",
       "email": "nodejs@newrelic.com"
