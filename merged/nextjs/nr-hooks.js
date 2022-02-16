@@ -15,5 +15,10 @@ module.exports = [
     type: 'web-framework',
     moduleName: './render',
     onRequire: require('./lib/render')
+  },
+  {
+    type: 'web-framework',
+    moduleName: './context',
+    onRequire: require('./lib/context')
   }
 ]
