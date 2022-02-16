@@ -8,6 +8,9 @@
 const helpers = module.exports
 const { exec } = require('child_process')
 const http = require('http')
+const tap = require('tap')
+const utils = require('@newrelic/test-utilities')
+utils.assert.extendTap(tap)
 
 /**
  * Builds a Next.js app
