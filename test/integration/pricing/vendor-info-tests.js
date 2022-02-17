@@ -106,6 +106,12 @@ function makeTest(testCase, vendor, getInfo) {
       redirection.reply(200, JSON.stringify(responseData.response || ''))
     }
 
+    // This may be messy but AWS makes an extra call to get an auth token
+    // we need to nock this out once
+    if (vendor === 'aws') {
+      host.put('/latest/api/token').reply(200, 'awsAuthToken')
+    }
+
     http.get = timeoutMock(timeoutUrl)
 
     getInfo(agent, function (err, info) {
