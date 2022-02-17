@@ -712,7 +712,7 @@ This product includes source derived from [@newrelic/aws-sdk](https://github.com
 
 ### @newrelic/koa
 
-This product includes source derived from [@newrelic/koa](https://github.com/newrelic/node-newrelic-koa) ([v6.0.1](https://github.com/newrelic/node-newrelic-koa/tree/v6.0.1)), distributed under the [Apache-2.0 License](https://github.com/newrelic/node-newrelic-koa/blob/v6.0.1/LICENSE):
+This product includes source derived from [@newrelic/koa](https://github.com/newrelic/node-newrelic-koa) ([v6.1.0](https://github.com/newrelic/node-newrelic-koa/tree/v6.1.0)), distributed under the [Apache-2.0 License](https://github.com/newrelic/node-newrelic-koa/blob/v6.1.0/LICENSE):
 
 ```
 Apache License
@@ -921,7 +921,7 @@ Apache License
 
 ### @newrelic/superagent
 
-This product includes source derived from [@newrelic/superagent](https://github.com/newrelic/node-newrelic-superagent) ([v5.0.1](https://github.com/newrelic/node-newrelic-superagent/tree/v5.0.1)), distributed under the [Apache-2.0 License](https://github.com/newrelic/node-newrelic-superagent/blob/v5.0.1/LICENSE):
+This product includes source derived from [@newrelic/superagent](https://github.com/newrelic/node-newrelic-superagent) ([v5.1.0](https://github.com/newrelic/node-newrelic-superagent/tree/v5.1.0)), distributed under the [Apache-2.0 License](https://github.com/newrelic/node-newrelic-superagent/blob/v5.1.0/LICENSE):
 
 ```
                                  Apache License
@@ -3377,7 +3377,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 ### @newrelic/native-metrics
 
-This product includes source derived from [@newrelic/native-metrics](https://github.com/newrelic/node-native-metrics) ([v7.0.1](https://github.com/newrelic/node-native-metrics/tree/v7.0.1)), distributed under the [Apache-2.0 License](https://github.com/newrelic/node-native-metrics/blob/v7.0.1/LICENSE):
+This product includes source derived from [@newrelic/native-metrics](https://github.com/newrelic/node-native-metrics) ([v7.1.1](https://github.com/newrelic/node-native-metrics/tree/v7.1.1)), distributed under the [Apache-2.0 License](https://github.com/newrelic/node-native-metrics/blob/v7.1.1/LICENSE):
 
 ```
                                  Apache License
