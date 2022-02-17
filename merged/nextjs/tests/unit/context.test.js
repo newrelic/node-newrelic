@@ -59,22 +59,6 @@ tap.test('middleware tracking', (t) => {
     t.end()
   })
 
-  t.test('should strip middleware_pages from middleware name', (t) => {
-    const mwFn = {
-      default() {
-        return 'world'
-      }
-    }
-    const result = fakeCtx.getModuleContext()
-    result.context._ENTRIES['middleware_pages/hello'] = mwFn
-    const nrMwName = Object.getOwnPropertySymbols(
-      result.context._ENTRIES['middleware_pages/hello']
-    )[0]
-    const name = result.context._ENTRIES['middleware_pages/hello'][nrMwName]
-    t.equal(name, '/hello')
-    t.end()
-  })
-
   t.test('should not affect exeuction of original function', (t) => {
     const mwFn = {
       default() {

@@ -8,6 +8,7 @@
 const tap = require('tap')
 const helpers = require('./helpers')
 const utils = require('@newrelic/test-utilities')
+const TRANSACTION_PREFX = 'WebTransaction/WebFrameworkUri/Nextjs/GET/'
 const SEGMENT_PREFIX = 'Nodejs/Nextjs/getServerSideProps/'
 const MW_PREFIX = 'Nodejs/Middleware/Nextjs/'
 
@@ -34,14 +35,28 @@ tap.test('Next.js', (t) => {
       transaction = tx
     })
 
-    const res = await helpers.makeRequest('/ssr/people')
+    const URI = '/ssr/people'
+
+    const res = await helpers.makeRequest(URI)
+
     t.equal(res.statusCode, 200)
-    const segments = transaction.trace.root.children[0].children
-    t.equal(segments.length, 3, 'should have 3 segments')
-    const [rootMw, ssrMw, ssrSegment] = segments
-    t.equal(rootMw.name, `${MW_PREFIX}/_middleware`, 'root middleware should match')
-    t.equal(ssrMw.name, `${MW_PREFIX}/ssr/_middleware`, 'ssr middleware should match')
-    t.equal(ssrSegment.name, `${SEGMENT_PREFIX}/ssr/people`, 'getServerSideProps should match')
+    const expectedSegments = [
+      {
+        name: `${TRANSACTION_PREFX}${URI}`,
+        children: [
+          {
+            name: `${MW_PREFIX}/_middleware`
+          },
+          {
+            name: `${MW_PREFIX}/ssr/_middleware`
+          },
+          {
+            name: `${SEGMENT_PREFIX}${URI}`
+          }
+        ]
+      }
+    ]
+    t.segments(transaction.trace.root, expectedSegments)
   })
 
   t.test('should properly name getServerSideProps segments on dynamic pages', async (t) => {
@@ -50,23 +65,32 @@ tap.test('Next.js', (t) => {
       transaction = tx
     })
 
-    const res = await helpers.makeRequest('/ssr/dynamic/person/1')
+    const EXPECTED_URI = '/ssr/dynamic/person/[id]'
+    const URI = EXPECTED_URI.replace(/\[id\]/, '1')
+
+    const res = await helpers.makeRequest(URI)
+
     t.equal(res.statusCode, 200)
-    const segments = transaction.trace.root.children[0].children
-    t.equal(segments.length, 4, 'should have 4 segments')
-    const [rootMw, ssrMw, ssrDynamicMw, ssrSegment] = segments
-    t.equal(rootMw.name, `${MW_PREFIX}/_middleware`, 'root middleware should match')
-    t.equal(ssrMw.name, `${MW_PREFIX}/ssr/_middleware`, 'ssr middleware should match')
-    t.equal(
-      ssrDynamicMw.name,
-      `${MW_PREFIX}/ssr/dynamic/_middleware`,
-      'ssr dynamic middleware should match'
-    )
-    t.equal(
-      ssrSegment.name,
-      `${SEGMENT_PREFIX}/ssr/dynamic/person/[id]`,
-      'getServerSideProps should match'
-    )
+    const expectedSegments = [
+      {
+        name: `${TRANSACTION_PREFX}${EXPECTED_URI}`,
+        children: [
+          {
+            name: `${MW_PREFIX}/_middleware`
+          },
+          {
+            name: `${MW_PREFIX}/ssr/_middleware`
+          },
+          {
+            name: `${MW_PREFIX}/ssr/dynamic/_middleware`
+          },
+          {
+            name: `${SEGMENT_PREFIX}${EXPECTED_URI}`
+          }
+        ]
+      }
+    ]
+    t.segments(transaction.trace.root, expectedSegments)
   })
 
   t.test('should record segment for every layer of API middlewares', async (t) => {
@@ -75,20 +99,29 @@ tap.test('Next.js', (t) => {
       transaction = tx
     })
 
-    const res = await helpers.makeRequest('/api/person/1')
-    t.equal(res.statusCode, 200)
+    const EXPECTED_URI = '/api/person/[id]'
+    const URI = EXPECTED_URI.replace(/\[id\]/, '1')
 
-    const segments = transaction.trace.root.children[0].children
-    t.equal(segments.length, 3, 'should have 3 segments')
-    const [rootMw, apiMw, personApiMw] = segments
-    t.equal(rootMw.name, `${MW_PREFIX}/_middleware`, 'root middleware should match')
-    t.equal(apiMw.name, `${MW_PREFIX}/api/_middleware`, 'api middleware should match')
-    t.equal(
-      personApiMw.name,
-      `${MW_PREFIX}/api/person/_middleware`,
-      'person api middleware should match'
-    )
-    t.end()
+    const res = await helpers.makeRequest(URI)
+
+    t.equal(res.statusCode, 200)
+    const expectedSegments = [
+      {
+        name: `${TRANSACTION_PREFX}${EXPECTED_URI}`,
+        children: [
+          {
+            name: `${MW_PREFIX}/_middleware`
+          },
+          {
+            name: `${MW_PREFIX}/api/_middleware`
+          },
+          {
+            name: `${MW_PREFIX}/api/person/_middleware`
+          }
+        ]
+      }
+    ]
+    t.segments(transaction.trace.root, expectedSegments)
   })
 
   t.test('should record 2 API middlewares when applicable', async (t) => {
@@ -97,15 +130,24 @@ tap.test('Next.js', (t) => {
       transaction = tx
     })
 
-    const res = await helpers.makeRequest('/api/hello')
-    t.equal(res.statusCode, 200)
+    const URI = '/api/hello'
+    const res = await helpers.makeRequest(URI)
 
-    const segments = transaction.trace.root.children[0].children
-    t.equal(segments.length, 2, 'should have 2 segments')
-    const [rootMw, apiMw] = segments
-    t.equal(rootMw.name, `${MW_PREFIX}/_middleware`, 'root middleware should match')
-    t.equal(apiMw.name, `${MW_PREFIX}/api/_middleware`, 'api middleware should match')
-    t.end()
+    t.equal(res.statusCode, 200)
+    const expectedSegments = [
+      {
+        name: `${TRANSACTION_PREFX}${URI}`,
+        children: [
+          {
+            name: `${MW_PREFIX}/_middleware`
+          },
+          {
+            name: `${MW_PREFIX}/api/_middleware`
+          }
+        ]
+      }
+    ]
+    t.segments(transaction.trace.root, expectedSegments)
   })
 
   t.test('should record 2 page middlewares when applicable', async (t) => {
@@ -114,15 +156,28 @@ tap.test('Next.js', (t) => {
       transaction = tx
     })
 
-    const res = await helpers.makeRequest('/person/1')
-    t.equal(res.statusCode, 200)
+    const EXPECTED_URI = '/person/[id]'
+    const URI = EXPECTED_URI.replace(/\[id\]/, '1')
 
-    const segments = transaction.trace.root.children[0].children
-    t.equal(segments.length, 3, 'should have 3 segments')
-    const [rootMw, apiMw, ssrSegment] = segments
-    t.equal(rootMw.name, `${MW_PREFIX}/_middleware`, 'root middleware should match')
-    t.equal(apiMw.name, `${MW_PREFIX}/person/_middleware`, 'person middleware should match')
-    t.equal(ssrSegment.name, `${SEGMENT_PREFIX}/person/[id]`, 'getServerSideProps should match')
-    t.end()
+    const res = await helpers.makeRequest(URI)
+
+    t.equal(res.statusCode, 200)
+    const expectedSegments = [
+      {
+        name: `${TRANSACTION_PREFX}${EXPECTED_URI}`,
+        children: [
+          {
+            name: `${MW_PREFIX}/_middleware`
+          },
+          {
+            name: `${MW_PREFIX}/person/_middleware`
+          },
+          {
+            name: `${SEGMENT_PREFIX}${EXPECTED_URI}`
+          }
+        ]
+      }
+    ]
+    t.segments(transaction.trace.root, expectedSegments)
   })
 })

@@ -8,8 +8,6 @@
 const util = require('util')
 const { NEXT } = require('./constants')
 
-const PROP = Symbol('nrMiddlewareName')
-
 module.exports = function initialize(shim, ctx) {
   /*
   Middleware is tracked via a 'module context' object
@@ -23,12 +21,11 @@ module.exports = function initialize(shim, ctx) {
       const handler = {
         set(obj, prop, value) {
           const nrObj = Object.assign(Object.create(null), value)
-          nrObj[PROP] = prop.replace(/^middleware_pages/, '')
+          const middlewareName = prop.replace(/^middleware_pages/, '')
           shim.record(nrObj, 'default', function mwRecord(shim, origMw, name, [args]) {
-            const middlewareName = this[PROP]
             return {
               name: `${shim._metrics.MIDDLEWARE}${shim._metrics.PREFIX}${middlewareName}`,
-              type: shim.ROUTE,
+              type: shim.MIDDLEWARE,
               req: args.request,
               route: middlewareName,
               promise: true
