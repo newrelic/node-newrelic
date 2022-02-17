@@ -1,5 +1,2 @@
-# CHANGELOG
-
-## 0.1.0 (TBD)
-
-* [Initial release notes here]
+### v0.0.0 (2022-02-17)
+Placeholder for actual changelog
