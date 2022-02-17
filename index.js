@@ -45,10 +45,9 @@ function initialize() {
     logger.debug('Process was running %s seconds before agent was loaded.', preAgentTime)
 
     if (!psemver.satisfies(pkgJSON.engines.node)) {
-      // TODO: Update this message when Node v12 is deprecated.
       message =
-        'New Relic for Node.js requires a version of Node equal to or\n' +
-        'greater than 12.0.0. Not starting!'
+        `New Relic for Node.js requires a version of Node ${pkgJSON.engines.node}. \n` +
+        `Please upgrade from your current Node version: ${process.version}. Not starting!`
 
       logger.error(message)
       throw new Error(message)
