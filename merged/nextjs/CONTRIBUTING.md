@@ -64,10 +64,10 @@ The Apollo Server plugin includes a suite of unit and functional tests which sho
 verify your changes don't break existing functionality.
 
 Unit tests are stored in `tests/`. They're written in
-[node-tap](https://github.com/isaacs/node-tap), and have the extension `.tap.js`.
+[node-tap](https://github.com/isaacs/node-tap), and have the extension `.test.js`.
 
 Functional tests against specific versions of instrumented modules are stored
-in `tests/integration/` and `tests/versioned/`. They are also written in `node-tap`.
+in tests/versioned/`, and have the extension `.tap.js`. They are also written in `node-tap`.
 
 #### Running Tests
 
