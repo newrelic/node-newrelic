@@ -82,6 +82,7 @@ tap.test('Utilization Common Components', function (t) {
     let agent = null
 
     t.before(() => {
+      nock.disableNetConnect()
       nock('http://fakedomain').persist().get('/timeout').delay(150).reply(200, 'wohoo')
     })
 
@@ -96,9 +97,10 @@ tap.test('Utilization Common Components', function (t) {
 
     t.teardown(() => {
       nock.cleanAll()
+      nock.enableNetConnect()
     })
 
-    t.test('should not timeout when request suceeds', (t) => {
+    t.test('should not timeout when request succeeds', (t) => {
       let invocationCount = 0
       common.request(
         {
@@ -138,7 +140,7 @@ tap.test('Utilization Common Components', function (t) {
         agent,
         (err) => {
           t.ok(err)
-          t.equal(err.code, 'ECONNRESET', 'error should be socket timeotu')
+          t.equal(err.code, 'ECONNRESET', 'error should be socket timeout')
           invocationCount++
         }
       )
