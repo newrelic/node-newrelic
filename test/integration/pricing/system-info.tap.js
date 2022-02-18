@@ -23,6 +23,7 @@ test('pricing system-info aws', function (t) {
   }
 
   const awsRedirect = nock(awsHost)
+  awsRedirect.put('/latest/api/token').reply(200, 'awsToken')
   // eslint-disable-next-line guard-for-in
   for (const awsPath in awsResponses) {
     awsRedirect.get('/2016-09-02/' + awsPath).reply(200, awsResponses[awsPath])

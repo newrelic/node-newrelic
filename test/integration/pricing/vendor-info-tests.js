@@ -62,12 +62,11 @@ function makeTest(testCase, vendor, getInfo) {
       let onErrorCallback = null
 
       const res = {
-        setTimeout: function (timeout, fn) {
-          timeoutCallback = fn
-        },
         on: function (event, cb) {
           if (event === 'error') {
             onErrorCallback = cb
+          } else if (event === 'timeout') {
+            timeoutCallback = cb
           }
         },
         abort: () => {
@@ -104,6 +103,12 @@ function makeTest(testCase, vendor, getInfo) {
 
       redirection = host.get(endpoint)
       redirection.reply(200, JSON.stringify(responseData.response || ''))
+    }
+
+    // This may be messy but AWS makes an extra call to get an auth token
+    // we need to nock this out once
+    if (vendor === 'aws') {
+      host.put('/latest/api/token').reply(200, 'awsAuthToken')
     }
 
     http.get = timeoutMock(timeoutUrl)

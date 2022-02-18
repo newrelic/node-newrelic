@@ -8,6 +8,7 @@
 const tap = require('tap')
 const common = require('../../../lib/utilization/common')
 const helper = require('../../lib/agent_helper.js')
+const nock = require('nock')
 
 let BIG = 'abcd'
 while (BIG.length < 300) {
@@ -79,47 +80,75 @@ tap.test('Utilization Common Components', function (t) {
   t.test('common.request', (t) => {
     t.autoend()
     let agent = null
-    let clock = null
+
+    t.before(() => {
+      nock.disableNetConnect()
+      nock('http://fakedomain').persist().get('/timeout').delay(150).reply(200, 'wohoo')
+    })
 
     t.beforeEach(function () {
-      const sinon = require('sinon')
-      clock = sinon.useFakeTimers()
-
       agent = helper.loadMockedAgent()
     })
 
     t.afterEach(function () {
       helper.unloadAgent(agent)
       agent = null
+    })
 
-      clock.restore()
-      clock = null
+    t.teardown(() => {
+      nock.cleanAll()
+      nock.enableNetConnect()
+    })
+
+    t.test('should not timeout when request succeeds', (t) => {
+      let invocationCount = 0
+      common.request(
+        {
+          method: 'GET',
+          host: 'fakedomain',
+          timeout: 200,
+          path: '/timeout'
+        },
+        agent,
+        (err, data) => {
+          t.error(err)
+          t.equal(data, 'wohoo')
+          invocationCount++
+        }
+      )
+
+      // need to give enough time for second to have chance to run.
+      // sinon and http dont quite seem to work well enough to do this
+      // totally faked synchronously.
+      setTimeout(verifyInvocations, 250)
+
+      function verifyInvocations() {
+        t.equal(invocationCount, 1)
+        t.end()
+      }
     })
 
     t.test('should not invoke callback multiple times on timeout', (t) => {
       let invocationCount = 0
       common.request(
         {
-          host: 'fakedomain.provider.something',
-          path: '/metadata'
+          method: 'GET',
+          host: 'fakedomain',
+          timeout: 100,
+          path: '/timeout'
         },
         agent,
         (err) => {
-          invocationCount++
           t.ok(err)
+          t.equal(err.code, 'ECONNRESET', 'error should be socket timeout')
+          invocationCount++
         }
       )
-
-      // trigger the timeout
-      clock.tick(2000)
-
-      // let the rest run
-      clock.restore()
 
       // need to give enough time for second to have chance to run.
       // sinon and http dont quite seem to work well enough to do this
       // totally faked synchronously.
-      setTimeout(verifyInvocations, 1000)
+      setTimeout(verifyInvocations, 200)
 
       function verifyInvocations() {
         t.equal(invocationCount, 1)
