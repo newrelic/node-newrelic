@@ -62,12 +62,11 @@ function makeTest(testCase, vendor, getInfo) {
       let onErrorCallback = null
 
       const res = {
-        setTimeout: function (timeout, fn) {
-          timeoutCallback = fn
-        },
         on: function (event, cb) {
           if (event === 'error') {
             onErrorCallback = cb
+          } else if (event === 'timeout') {
+            timeoutCallback = cb
           }
         },
         abort: () => {
