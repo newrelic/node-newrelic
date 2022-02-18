@@ -1,4 +1,4 @@
-[![Community Plus header](https://github.com/newrelic//raw/master/src/images/categories/Community_Plus.png)](https://opensource.newrelic.com/oss-category/#community-plus)
+[![Community Plus header](https://github.com/newrelic/opensource-website/raw/master/src/images/categories/Community_Plus.png)](https://opensource.newrelic.com/oss-category/#community-plus)
 
 # New Relic Next.js Instrumentation [![Next.js Instrumentation CI][1]][2]
 
