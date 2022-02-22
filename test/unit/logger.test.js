@@ -55,6 +55,31 @@ tap.test('Logger', function (t) {
     runTestFile('disabled-log/disabled.js', t.end)
   })
 
+  t.test('should not log bootstrapping logs when logs disabled', function (t) {
+    runTestFile('disabled-with-log-queue/disabled.js', function (error, message) {
+      t.notOk(error)
+      t.notOk(message)
+      t.end()
+    })
+  })
+
+  t.test('should log bootstrapping logs at specified level when logs enabled', function (t) {
+    runTestFile('enabled-with-log-queue/enabled.js', function (error, message) {
+      t.notOk(error)
+      t.ok(message)
+
+      let logs = []
+      t.doesNotThrow(function () {
+        logs = message.split('\n').filter(Boolean).map(JSON.parse)
+      })
+
+      t.ok(logs.length >= 1)
+      t.ok(logs.every((log) => log.level >= 30))
+
+      t.end()
+    })
+  })
+
   t.test('should not throw for huge messages', function (t) {
     process.once('warning', (warning) => {
       t.equal(warning.name, 'NewRelicWarning')
@@ -83,8 +108,14 @@ tap.test('Logger', function (t) {
  */
 function runTestFile(file, cb) {
   const testHelperDir = path.resolve(__dirname, '../helpers/')
-  const proc = cp.fork(path.join(testHelperDir, file), { silent: true })
+  const proc = cp.fork(path.join(testHelperDir, file), { stdio: 'pipe' })
   let message = null
+
+  let result = ''
+
+  proc.stdout.on('data', function (data) {
+    result += data
+  })
 
   proc.on('message', function (msg) {
     message = msg
@@ -93,6 +124,8 @@ function runTestFile(file, cb) {
   proc.on('exit', function () {
     if (message && message.error) {
       cb(message.error)
+    } else if (result) {
+      cb(null, result)
     } else {
       cb()
     }
