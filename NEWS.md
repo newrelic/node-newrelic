@@ -14,33 +14,13 @@
 
 * Bumped `@grpc/grpc-js` to ^1.5.5.
 
---- NOTES NEEDS REVIEW ---
-<h3>Snyk has created this PR to upgrade @newrelic/superagent from 5.0.1 to 5.1.0.</h3>
+* Bumped `@grpc/proto-loader` to ^0.6.9.
 
-![merge advice](https://app.snyk.io/badges/merge-advice/?package_manager=npm&package_name=@newrelic/superagent&from_version=5.0.1&to_version=5.1.0&pr_id=929398ae-7679-4f81-99d8-88705ab7c355&visibility=true&has_feature_flag=false)
-:information_source: Keep your dependencies up-to-date. This makes it easier to fix existing vulnerabilities and to more quickly identify and fix newly disclosed vulnerabilities when they affect your project.
---------------------------
+* Bumped `@newrelic/superagent` to ^5.1.0.
 
---- NOTES NEEDS REVIEW ---
-<h3>Snyk has created this PR to upgrade @newrelic/koa from 6.0.1 to 6.1.0.</h3>
+* Bumped `@newrelic/koa` to ^6.1.0.
 
-![merge advice](https://app.snyk.io/badges/merge-advice/?package_manager=npm&package_name=@newrelic/koa&from_version=6.0.1&to_version=6.1.0&pr_id=146dd581-7281-4d04-860f-be0b19641683&visibility=true&has_feature_flag=false)
-:information_source: Keep your dependencies up-to-date. This makes it easier to fix existing vulnerabilities and to more quickly identify and fix newly disclosed vulnerabilities when they affect your project.
---------------------------
-
---- NOTES NEEDS REVIEW ---
-<h3>Snyk has created this PR to upgrade @grpc/proto-loader from 0.5.6 to 0.6.9.</h3>
-
-:information_source: Keep your dependencies up-to-date. This makes it easier to fix existing vulnerabilities and to more quickly identify and fix newly disclosed vulnerabilities when they affect your project.
---------------------------
-
-* Bumped follow-redirects to resolve dev-dependency audit warning.
-
---- NOTES NEEDS REVIEW ---
-<h3>Snyk has created this PR to upgrade async from 3.2.1 to 3.2.3.</h3>
-
-:information_source: Keep your dependencies up-to-date. This makes it easier to fix existing vulnerabilities and to more quickly identify and fix newly disclosed vulnerabilities when they affect your project.
---------------------------
+* Bumped `async` to ^3.2.3.
 
 * Resolved several npm audit warnings for dev deps.
 
@@ -52,7 +32,7 @@
 
 * Updated README to include `@newrelic/pino-enricher` as an external module.
 
-Documentation fix in a sample of the Datastore Instrumentation for Node.js.
+* Fixed documentation in a sample of the Datastore Instrumentation for Node.js.
 
 * Added a new `mongo:5` container to `npm run sevices` to test mongodb driver >=4.2.0.
 
