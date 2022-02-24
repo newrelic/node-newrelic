@@ -5,7 +5,7 @@ Segments and spans (when Distributed Tracing is enabled) are captured for Next.j
 ## Next.js middleware Segments/Spans
 [Next.js middleware](https://nextjs.org/docs/middleware) is currently a beta feature and our instrumentation may be subject to change and/or break during patch, or minor upgrades of Next.js.
 
-`/Nodejs/Middleware/Nextjs/<middleware location>``
+`/Nodejs/Middleware/Nextjs/<middleware location>`
 
 ### Nested Middleware
 If you have middleware in a deeply nested application, segments and spans will be created for every unique middleware.
