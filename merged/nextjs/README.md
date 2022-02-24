@@ -6,7 +6,9 @@ New Relic's official Next.js framework instrumentation for use with the New Reli
 
 This module is a dependency of the agent and is installed by default when you install the agent.
 
-This module provides instrumentation for Server-Side Rendering via [getServerSideProps](https://nextjs.org/docs/basic-features/data-fetching/get-server-side-props), [Middleware](https://nextjs.org/docs/middleware), and New Relic Transaction naming for both page and server requests.
+This module provides instrumentation for Server-Side Rendering via [getServerSideProps](https://nextjs.org/docs/basic-features/data-fetching/get-server-side-props), [Middleware](https://nextjs.org/docs/middleware), and New Relic Transaction naming for both page and server requests. It does not provide any instrumentation for actions occurring during build, client side code.  If you want telemetry data on actions occurring on client(browser), you can [inject the browser agent](./docs/inject-browser-agent.md).
+
+Here are documents for more in-depth explanation around [transaction naming](./docs/transactions.md), [segments/spans](./docs/segments-and-spans.md), and [injecting browser agent](./docs/inject-browser-agent.md).
 
 ## Installation
 
@@ -19,15 +21,23 @@ npm install @newrelic/next
 ```
 
 ```js
-node -r @newrelic/next your-program.js
+NODE_OPTIONS='-r @newrelic/next' next your-program.js
 ```
 
-If you cannot control how your program is run, you can load the `@newrelic/next` module before any other module in your program.
+
+If you cannot control how your program is run, you can load the `@newrelic/next` module before any other module in your program. However, we strongly suggest you avoid this method at all costs.  We found bundling when running `next build` causes problems and also will make your bundle unncessarily large.
 
 ```js
 require('@newrelic/next')
 
 /* ... the rest of your program ... */
+```
+
+### Custom Next.js servers
+If you are using next as a [custom server](https://nextjs.org/docs/advanced-features/custom-server), you're probably not running your application with the `next` CLI.  In that scenario we recommend running the Next.js instrumentation as follows.
+
+```js
+node -r @newrelic/next your-program.js
 ```
 
 For more information, please see the agent [installation guide][3].
