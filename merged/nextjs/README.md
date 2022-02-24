@@ -48,10 +48,47 @@ Our [API and developer documentation](http://newrelic.github.io/node-newrelic/do
 
 ## Usage
 
-Next.js is a full stack React Framework.  This module augments the Node.js New Relic agent, thus any client side actions will not be instrumented.
+Next.js is a full stack React Framework.  This module augments the Node.js New Relic agent, thus any client side actions will not be instrumented. However, below is a method of adding the [New Relic Browser agent](https://docs.newrelic.com/docs/browser/browser-monitoring/getting-started/introduction-browser-monitoring/) to get more information on client side actions.
 
 ```js
-How to inject browser snippet will go here
+import Head from 'next/head'
+import Layout, { siteTitle } from '../../components/layout'
+import utilStyles from '../../styles/utils.module.css'
+import Link from 'next/link'
+
+
+export async function getServerSideProps() {
+  // You must require agent and put it within this function
+  // otherwise it will try to get bundled by webpack and cause errors.
+  const newrelic = require('newrelic')
+  const browserTimingHeader = newrelic.getBrowserTimingHeader()
+  return {
+	props: {
+  	browserTimingHeader
+	}
+  }
+}
+
+export default function Home({ browserTimingHeader }) {
+  return (
+	<Layout home>
+  	<Head>
+    	<title>{siteTitle}</title>
+  	</Head>
+  	<div dangerouslySetInnerHTML={{ __html: browserTimingHeader }} />
+  	<section className={utilStyles.headingMd}>
+    	<p>It me</p>
+    	<p>
+      	This page uses server-side rendering and uses the newrelic API to inject
+      	timing headers.
+    	</p>
+      <div>
+      	<Link href="/">
+        	<a>← Back to home</a>
+      	</Link>
+    	</div>
+  	</section>
+	</Layout>
 ```
 
 For more information, please see the agent [compatibility and requirements][4].
