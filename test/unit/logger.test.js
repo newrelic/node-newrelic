@@ -18,7 +18,8 @@ tap.test('Logger', function (t) {
     logger = new Logger({
       name: 'newrelic',
       level: 'trace',
-      enabled: true
+      enabled: true,
+      configured: true
     })
   })
 
@@ -44,6 +45,50 @@ tap.test('Logger', function (t) {
     t.doesNotThrow(function () {
       logger.level('verbose')
     })
+    t.end()
+  })
+
+  t.test('should equeue logs until configured', function (t) {
+    logger.options.configured = false
+    logger.trace('trace')
+    logger.debug('debug')
+    logger.info('info')
+    logger.warn('warn')
+    logger.error('error')
+    logger.fatal('fatal')
+    t.ok(logger.logQueue.length === 6, 'should have 6 logs in the queue')
+    t.end()
+  })
+
+  t.test('should not equeue logs when disabled', function (t) {
+    logger.trace('trace')
+    logger.debug('debug')
+    logger.info('info')
+    logger.warn('warn')
+    logger.error('error')
+    logger.fatal('fatal')
+    t.ok(logger.logQueue.length === 0, 'should have 0 logs in the queue')
+    t.end()
+  })
+
+  t.test('should flush logs when configured', function (t) {
+    logger.options.configured = false
+    logger.trace('trace')
+    logger.debug('debug')
+    logger.info('info')
+    logger.warn('warn')
+    logger.error('error')
+    logger.fatal('fatal')
+
+    t.ok(logger.logQueue.length === 6, 'should have 6 logs in the queue')
+
+    logger.configure({
+      level: 'trace',
+      enabled: true,
+      name: 'test-logger'
+    })
+
+    t.ok(logger.logQueue.length === 0, 'should have 0 logs in the queue')
     t.end()
   })
 
