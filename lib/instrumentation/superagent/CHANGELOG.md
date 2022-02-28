@@ -1,3 +1,19 @@
+### v5.1.1 (2022-02-28)
+
+* Removed versioned tests from npm artifact.
+
+* Fixed link to discuss.newrelic.com in README
+
+* Resolved several dev-dependency audit warnings.
+
+* Bumped `tap` to ^15.1.6."
+
+* Pinned version of `superagent` to `<7.1.0` until author fixes bug.
+
+* Updated `add-to-board` to use org level `NODE_AGENT_GH_TOKEN`
+
+* Updated semver ranges to exclude `7.1.0` as it is a broken version.
+
 ### v5.1.0 (2022-01-11)
 
 * Added workflow to automate preparing release notes by reusing the newrelic/node-newrelic/.github/workflows/prep-release.yml@main workflow from agent repository.
