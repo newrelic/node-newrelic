@@ -47,7 +47,6 @@
     "*.md",
     "index.js",
     "nr-hooks.js",
-    "lib/**",
-    "tests/versioned/*.js"
+    "lib/**"
   ]
 }
