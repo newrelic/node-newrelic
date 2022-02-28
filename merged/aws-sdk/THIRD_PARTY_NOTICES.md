@@ -1121,7 +1121,7 @@ SOFTWARE.
 
 ### newrelic
 
-This product includes source derived from [newrelic](https://github.com/newrelic/node-newrelic) ([v8.7.0](https://github.com/newrelic/node-newrelic/tree/v8.7.0)), distributed under the [Apache-2.0 License](https://github.com/newrelic/node-newrelic/blob/v8.7.0/LICENSE):
+This product includes source derived from [newrelic](https://github.com/newrelic/node-newrelic) ([v8.7.1](https://github.com/newrelic/node-newrelic/tree/v8.7.1)), distributed under the [Apache-2.0 License](https://github.com/newrelic/node-newrelic/blob/v8.7.1/LICENSE):
 
 ```
                                  Apache License
@@ -1379,7 +1379,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ### tap
 
-This product includes source derived from [tap](https://github.com/tapjs/node-tap) ([v15.0.9](https://github.com/tapjs/node-tap/tree/v15.0.9)), distributed under the [ISC License](https://github.com/tapjs/node-tap/blob/v15.0.9/LICENSE):
+This product includes source derived from [tap](https://github.com/tapjs/node-tap) ([v15.1.6](https://github.com/tapjs/node-tap/tree/v15.1.6)), distributed under the [ISC License](https://github.com/tapjs/node-tap/blob/v15.1.6/LICENSE):
 
 ```
 The ISC License
