@@ -1,9 +1,9 @@
 {
-  "lastUpdated": "Wed Aug 25 2021 11:38:16 GMT-0400 (Eastern Daylight Time)",
+  "lastUpdated": "Mon Feb 28 2022 16:46:04 GMT-0500 (GMT-05:00)",
   "projectName": "New Relic SuperAgent Instrumentation",
   "projectUrl": "https://github.com/newrelic/node-newrelic-superagent",
-  "includeDev": true,
   "includeOptDeps": false,
+  "includeDev": true,
   "dependencies": {},
   "devDependencies": {
     "@newrelic/eslint-config@0.0.2": {
@@ -180,15 +180,15 @@
       "publisher": "TJ Holowaychuk",
       "email": "tj@vision-media.ca"
     },
-    "tap@15.0.9": {
+    "tap@15.1.6": {
       "name": "tap",
-      "version": "15.0.9",
-      "range": "^15.0.9",
+      "version": "15.1.6",
+      "range": "^15.1.6",
       "licenses": "ISC",
       "repoUrl": "https://github.com/tapjs/node-tap",
-      "versionedRepoUrl": "https://github.com/tapjs/node-tap/tree/v15.0.9",
+      "versionedRepoUrl": "https://github.com/tapjs/node-tap/tree/v15.1.6",
       "licenseFile": "node_modules/tap/LICENSE",
-      "licenseUrl": "https://github.com/tapjs/node-tap/blob/v15.0.9/LICENSE",
+      "licenseUrl": "https://github.com/tapjs/node-tap/blob/v15.1.6/LICENSE",
       "licenseTextSource": "file",
       "publisher": "Isaac Z. Schlueter",
       "email": "i@izs.me",
