@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "Wed Jan 05 2022 11:19:10 GMT-0500 (Eastern Standard Time)",
+  "lastUpdated": "Mon Feb 28 2022 16:29:42 GMT-0500 (GMT-05:00)",
   "projectName": "New Relic AWS-SDK Instrumentation",
   "projectUrl": "https://github.com/newrelic/node-newrelic-aws-sdk",
   "includeOptDeps": false,
@@ -168,15 +168,15 @@
       "publisher": "Andrey Okonetchnikov",
       "email": "andrey@okonet.ru"
     },
-    "newrelic@8.7.0": {
+    "newrelic@8.7.1": {
       "name": "newrelic",
-      "version": "8.7.0",
-      "range": "^8.7.0",
+      "version": "8.7.1",
+      "range": "^8.7.1",
       "licenses": "Apache-2.0",
       "repoUrl": "https://github.com/newrelic/node-newrelic",
-      "versionedRepoUrl": "https://github.com/newrelic/node-newrelic/tree/v8.7.0",
+      "versionedRepoUrl": "https://github.com/newrelic/node-newrelic/tree/v8.7.1",
       "licenseFile": "node_modules/newrelic/LICENSE",
-      "licenseUrl": "https://github.com/newrelic/node-newrelic/blob/v8.7.0/LICENSE",
+      "licenseUrl": "https://github.com/newrelic/node-newrelic/blob/v8.7.1/LICENSE",
       "licenseTextSource": "file",
       "publisher": "New Relic Node.js agent team",
       "email": "nodejs@newrelic.com"
@@ -205,15 +205,15 @@
       "licenseTextSource": "file",
       "publisher": "Christian Johansen"
     },
-    "tap@15.0.9": {
+    "tap@15.1.6": {
       "name": "tap",
-      "version": "15.0.9",
+      "version": "15.1.6",
       "range": "^15.0.9",
       "licenses": "ISC",
       "repoUrl": "https://github.com/tapjs/node-tap",
-      "versionedRepoUrl": "https://github.com/tapjs/node-tap/tree/v15.0.9",
+      "versionedRepoUrl": "https://github.com/tapjs/node-tap/tree/v15.1.6",
       "licenseFile": "node_modules/tap/LICENSE",
-      "licenseUrl": "https://github.com/tapjs/node-tap/blob/v15.0.9/LICENSE",
+      "licenseUrl": "https://github.com/tapjs/node-tap/blob/v15.1.6/LICENSE",
       "licenseTextSource": "file",
       "publisher": "Isaac Z. Schlueter",
       "email": "i@izs.me",
