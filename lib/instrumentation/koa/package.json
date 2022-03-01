@@ -11,8 +11,7 @@
     "/lib/**",
     "nr-hooks.js",
     "index.js",
-    "*.md",
-    "tests/versioned/*.js"
+    "*.md"
   ],
   "scripts": {
     "test": "npm run unit && npm run versioned",
