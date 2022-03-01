@@ -73,24 +73,24 @@ export async function getServerSideProps() {
 
 export default function Home({ browserTimingHeader }) {
   return (
-	<Layout home>
-  	<Head>
-    	<title>{siteTitle}</title>
-  	</Head>
-  	<div dangerouslySetInnerHTML={{ __html: browserTimingHeader }} />
-  	<section className={utilStyles.headingMd}>
-    	<p>It me</p>
-    	<p>
-      	This page uses server-side rendering and uses the newrelic API to inject
-      	timing headers.
-    	</p>
-      <div>
-      	<Link href="/">
-        	<a>← Back to home</a>
-      	</Link>
-    	</div>
-  	</section>
-	</Layout>
+    <Layout home>
+      <Head>
+        <title>{siteTitle}</title>
+      </Head>
+      <div dangerouslySetInnerHTML={{ __html: browserTimingHeader }} />
+      <section className={utilStyles.headingMd}>
+        <p>It me</p>
+        <p>
+          This page uses server-side rendering and uses the newrelic API to inject
+          timing headers.
+        </p>
+        <div>
+          <Link href="/">
+            <a>← Back to home</a>
+          </Link>
+        </div>
+      </section>
+    </Layout>
   )
 }
 ```
@@ -152,4 +152,3 @@ New Relic Next.js instrumentation also uses source code from third-party librari
 [2]: https://github.com/newrelic/node-newrelic-nextjs/actions
 [3]: https://docs.newrelic.com/docs/agents/nodejs-agent/installation-configuration/install-nodejs-agent
 [4]: https://docs.newrelic.com/docs/agents/nodejs-agent/getting-started/compatibility-requirements-nodejs-agent
-
