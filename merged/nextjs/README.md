@@ -10,6 +10,8 @@ This module provides instrumentation for Server-Side Rendering via [getServerSid
 
 Here are documents for more in-depth explanation around [transaction naming](./docs/transactions.md), [segments/spans](./docs/segments-and-spans.md), and [injecting browser agent](./docs/inject-browser-agent.md).
 
+**Note**: The minimum supported Next.js version is [12.0.9](https://github.com/vercel/next.js/releases/tag/v12.0.9).
+
 ## Installation
 
 Typically, most users use the version auto-installed by the agent. You can see agent install instructions [here](https://github.com/newrelic/node-newrelic#installation-and-getting-started).
