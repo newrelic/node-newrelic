@@ -65,9 +65,9 @@ export async function getServerSideProps() {
   const newrelic = require('newrelic')
   const browserTimingHeader = newrelic.getBrowserTimingHeader()
   return {
-	props: {
-  	browserTimingHeader
-	}
+    props: {
+      browserTimingHeader
+    }
   }
 }
 
@@ -91,6 +91,8 @@ export default function Home({ browserTimingHeader }) {
     	</div>
   	</section>
 	</Layout>
+  )
+}
 ```
 
 For static compiled pages, you can use the [copy-paste method](https://docs.newrelic.com/docs/browser/browser-monitoring/installation/install-browser-monitoring-agent/#copy-paste-app) for enabling the New Relic Browser agent.
