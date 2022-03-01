@@ -1,8 +1,8 @@
-# Injecting New Relic Browser Agent
+# Injecting New Relic browser agent
 
-**Note**: You must [install the New Relic Browser agent](https://docs.newrelic.com/docs/browser/browser-monitoring/installation/install-browser-monitoring-agent/) in your account first before injecting it into a Next.js.
+**Note**: You must [install the New Relic browser agent](https://docs.newrelic.com/docs/browser/browser-monitoring/installation/install-browser-monitoring-agent/) in your account first before injecting it into a Next.js.
 
-The process of setting up the browser agent on a Next.js requires a few lines of code.  Below is an example component that injects the Browser agent with a `getServerSideProps` call.
+The process of setting up the browser agent on a Next.js requires a few lines of code.  Below is an example component that injects the browser agent with a `getServerSideProps` call.
 
 ```js
 import Head from 'next/head'
@@ -47,4 +47,4 @@ export default function Home({ browserTimingHeader }) {
 }
 ```
 
-For static compiled pages, you can use the [copy-paste method](https://docs.newrelic.com/docs/browser/browser-monitoring/installation/install-browser-monitoring-agent/#copy-paste-app) for enabling the New Relic Browser agent.
+For static compiled pages, you can use the [copy-paste method](https://docs.newrelic.com/docs/browser/browser-monitoring/installation/install-browser-monitoring-agent/#copy-paste-app) for enabling the New Relic browser agent.

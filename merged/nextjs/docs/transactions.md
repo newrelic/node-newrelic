@@ -1,8 +1,8 @@
 # Transactions
 
-Transactions are captured as web transactions, and named based on the Next.js page or API route. If using Next.js as a [custom server](https://nextjs.org/docs/advanced-features/custom-server), our Next.js instrumentation will override the transaction naming of existing instrumentation for the custom server framework(i.e. express, fastify, hapi, koa) and the transaction will be renamed based on the Next.js page or API route.
+Transactions are captured as web transactions and named based on the Next.js page or API route. If you are using Next.js as a [custom server](https://nextjs.org/docs/advanced-features/custom-server), our Next.js instrumentation overrides the transaction naming of existing instrumentation for the custom server framework (for example, express, fastify, hapi, koa). Also, the transaction will be renamed based on the Next.js page or API route.
 
-Let's say we have a Next.js app with the following application structure
+Let's say we have a Next.js app with the following application structure:
 
 ```
 pages
@@ -34,6 +34,6 @@ There are two exceptions to the transaction naming above.
 If a request to a non-existent page or API route is made, the transaction name will flow through the Next.js 404 page and will be named as `Nextjs/GET//404`.
 
 ### Non 404 errors
-If a request is made that results in a 4xx or 5xx error, the transaction will flow through the Next.js Error component and will be named as `Nextjs/GET//_error`.
+If a request is made that results in a 4xx or 5xx error, the transaction will flow through the Next.js error component and will be named as `Nextjs/GET//_error`.
 
 
