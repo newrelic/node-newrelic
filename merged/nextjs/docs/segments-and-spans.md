@@ -25,7 +25,7 @@ If a request is made to `pages/nested/last/1`, there will be 4 segments
  * `Nodejs/Middleware/Nextjs//_middleware`
  * `Nodejs/Middleware/Nextjs/nested/_middleware`
  * `Nodejs/Middleware/Nextjs/nested/last/_middleware`
- * `Nodejs/Middleware/Nextjs/getServerSideProps//pages/nested/last/[id]`
+ * `Nodejs/Nextjs/getServerSideProps//pages/nested/last/[id]`
 
 
 ## Server-Side Rendering Segments/Spans
