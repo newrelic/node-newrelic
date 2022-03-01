@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "Wed Feb 09 2022 10:13:34 GMT-0500 (Eastern Standard Time)",
+  "lastUpdated": "Tue Mar 01 2022 13:13:31 GMT-0500 (Eastern Standard Time)",
   "projectName": "New Relic Next.js Instrumentation",
   "projectUrl": "https://github.com/newrelic/newrelic-node-nextjs",
   "includeOptDeps": false,
@@ -44,19 +44,6 @@
       "publisher": "New Relic Node.js agent team",
       "email": "nodejs@newrelic.com"
     },
-    "eslint@8.8.0": {
-      "name": "eslint",
-      "version": "8.8.0",
-      "range": "^8.8.0",
-      "licenses": "MIT",
-      "repoUrl": "https://github.com/eslint/eslint",
-      "versionedRepoUrl": "https://github.com/eslint/eslint/tree/v8.8.0",
-      "licenseFile": "node_modules/eslint/LICENSE",
-      "licenseUrl": "https://github.com/eslint/eslint/blob/v8.8.0/LICENSE",
-      "licenseTextSource": "file",
-      "publisher": "Nicholas C. Zakas",
-      "email": "nicholas+npm@nczconsulting.com"
-    },
     "husky@7.0.4": {
       "name": "husky",
       "version": "7.0.4",
@@ -83,15 +70,15 @@
       "publisher": "Andrey Okonetchnikov",
       "email": "andrey@okonet.ru"
     },
-    "newrelic@8.7.1": {
+    "newrelic@8.8.0": {
       "name": "newrelic",
-      "version": "8.7.1",
-      "range": "^8.7.1",
+      "version": "8.8.0",
+      "range": "^8.8.0",
       "licenses": "Apache-2.0",
       "repoUrl": "https://github.com/newrelic/node-newrelic",
-      "versionedRepoUrl": "https://github.com/newrelic/node-newrelic/tree/v8.7.1",
+      "versionedRepoUrl": "https://github.com/newrelic/node-newrelic/tree/v8.8.0",
       "licenseFile": "node_modules/newrelic/LICENSE",
-      "licenseUrl": "https://github.com/newrelic/node-newrelic/blob/v8.7.1/LICENSE",
+      "licenseUrl": "https://github.com/newrelic/node-newrelic/blob/v8.8.0/LICENSE",
       "licenseTextSource": "file",
       "publisher": "New Relic Node.js agent team",
       "email": "nodejs@newrelic.com"

@@ -4,10 +4,10 @@
  */
 
 'use strict'
-const { NEXT, SPAN_PREFIX } = require('./constants')
+const SPAN_PREFIX = 'Nodejs/Nextjs'
 
 module.exports = function initialize(shim, render) {
-  shim.setFramework(shim.NEXT || NEXT)
+  shim.setFramework(shim.NEXT)
   shim.record(
     render,
     'renderToHTML',

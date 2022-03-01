@@ -15,7 +15,9 @@
     "versioned:npm7": "versioned-tests --minor --all -i 2 'tests/versioned/*.tap.js'"
   },
   "files": [
+    "*.md",
     "index.js",
+    "nr-hooks.js",
     "lib/*.js"
   ],
   "repository": {
@@ -37,10 +39,10 @@
     "@newrelic/test-utilities": "^6.4.0",
     "husky": "^7.0.4",
     "lint-staged": "^12.3.3",
-    "newrelic": "^8.7.1",
+    "newrelic": "^8.8.0",
     "tap": "^15.1.6"
   },
   "peerDependencies": {
-    "newrelic": ">=8"
+    "newrelic": ">=8.8.0"
   }
 }
