@@ -15,10 +15,13 @@
     "versioned:npm7": "versioned-tests --minor --all -i 2 'tests/versioned/*.tap.js'"
   },
   "files": [
-    "*.md",
+    "README.md",
+    "LICENSE",
+    "CHANGELOG.md",
+    "THIRD_PARTY_NOTICES.md",
     "index.js",
     "nr-hooks.js",
-    "lib/*.js"
+    "lib/"
   ],
   "repository": {
     "type": "git",
