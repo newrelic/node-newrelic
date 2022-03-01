@@ -45,3 +45,5 @@ export default function Home({ browserTimingHeader }) {
 	</Layout>
 
 ```
+
+For static compiled pages, you can use the [copy-paste method](https://docs.newrelic.com/docs/browser/browser-monitoring/installation/install-browser-monitoring-agent/#copy-paste-app) for enabling the New Relic Browser agent.

@@ -6,7 +6,7 @@ New Relic's official Next.js framework instrumentation for use with the New Reli
 
 This module is a dependency of the agent and is installed by default when you install the agent.
 
-This module provides instrumentation for Server-Side Rendering via [getServerSideProps](https://nextjs.org/docs/basic-features/data-fetching/get-server-side-props), [Middleware](https://nextjs.org/docs/middleware), and New Relic Transaction naming for both page and server requests. It does not provide any instrumentation for actions occurring during build, client side code.  If you want telemetry data on actions occurring on client(browser), you can [inject the browser agent](./docs/inject-browser-agent.md).
+This module provides instrumentation for Server-Side Rendering via [getServerSideProps](https://nextjs.org/docs/basic-features/data-fetching/get-server-side-props), [Middleware](https://nextjs.org/docs/middleware), and New Relic Transaction naming for both page and server requests. It does not provide any instrumentation for actions occurring during build, client-side code.  If you want telemetry data on actions occurring on client(browser), you can [inject the browser agent](./docs/inject-browser-agent.md).
 
 Here are documents for more in-depth explanation around [transaction naming](./docs/transactions.md), [segments/spans](./docs/segments-and-spans.md), and [injecting browser agent](./docs/inject-browser-agent.md).
 
@@ -46,9 +46,9 @@ For more information, please see the agent [installation guide][3].
 
 Our [API and developer documentation](http://newrelic.github.io/node-newrelic/docs/) for writing instrumentation will be of help. We particularly recommend the tutorials and various "shim" API documentation.
 
-## Usage
+## Client-side Instrumentation
 
-Next.js is a full stack React Framework.  This module augments the Node.js New Relic agent, thus any client side actions will not be instrumented. However, below is a method of adding the [New Relic Browser agent](https://docs.newrelic.com/docs/browser/browser-monitoring/getting-started/introduction-browser-monitoring/) to get more information on client side actions.
+Next.js is a full stack React Framework.  This module augments the Node.js New Relic agent, thus any client-side actions will not be instrumented. However, below is a method of adding the [New Relic Browser agent](https://docs.newrelic.com/docs/browser/browser-monitoring/getting-started/introduction-browser-monitoring/) to get more information on client-side actions.
 
 ```js
 import Head from 'next/head'
@@ -90,6 +90,8 @@ export default function Home({ browserTimingHeader }) {
   	</section>
 	</Layout>
 ```
+
+For static compiled pages, you can use the [copy-paste method](https://docs.newrelic.com/docs/browser/browser-monitoring/installation/install-browser-monitoring-agent/#copy-paste-app) for enabling the New Relic Browser agent.
 
 For more information, please see the agent [compatibility and requirements][4].
 

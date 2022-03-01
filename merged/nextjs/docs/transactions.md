@@ -1,6 +1,6 @@
 # Transactions
 
-Transactions are captured as web transactions, and named based on the Next.js page or API route. If using Next.js as a [custom server](https://nextjs.org/docs/advanced-features/custom-server), the transaction will be renamed based on the Next.js page or API route.
+Transactions are captured as web transactions, and named based on the Next.js page or API route. If using Next.js as a [custom server](https://nextjs.org/docs/advanced-features/custom-server), our Next.js instrumentation will override the transaction naming of existing instrumentation for the custom server framework(i.e. express, fastify, hapi, koa) and the transaction will be renamed based on the Next.js page or API route.
 
 Let's say we have a Next.js app with the following application structure
 
