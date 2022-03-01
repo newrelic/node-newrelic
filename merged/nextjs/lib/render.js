@@ -4,17 +4,16 @@
  */
 
 'use strict'
-const { NEXT, SPAN_PREFIX } = require('./constants')
+const SPAN_PREFIX = 'Nodejs/Nextjs'
 
 module.exports = function initialize(shim, render) {
-  shim.setFramework(shim.NEXT || NEXT)
+  shim.setFramework(shim.NEXT)
   shim.record(
     render,
     'renderToHTML',
     function renderToHTMLRecorder(shim, renderToHTML, name, [req, res, page]) {
       return {
-        inContext() {
-          const segment = shim.getActiveSegment()
+        inContext(segment) {
           segment.addSpanAttributes({ 'next.page': page })
         },
         req,

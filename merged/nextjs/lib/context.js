@@ -6,7 +6,6 @@
 'use strict'
 
 const util = require('util')
-const { NEXT } = require('./constants')
 
 module.exports = function initialize(shim, ctx) {
   /*
@@ -14,7 +13,7 @@ module.exports = function initialize(shim, ctx) {
   whose `_ENTRIES` property is updated by each middleware layer.
   So, we proxy `_ENTRIES` and record a span whenever middleware modifies it.
   */
-  shim.setFramework(NEXT)
+  shim.setFramework(shim.NEXT)
   shim.wrap(ctx, 'getModuleContext', function middlewareRecorder(shim, getModuleContext) {
     return function wrappedModuleContext() {
       const result = getModuleContext.apply(this, arguments)
