@@ -25,24 +25,24 @@ export async function getServerSideProps() {
 
 export default function Home({ browserTimingHeader }) {
   return (
-	<Layout home>
-  	<Head>
-    	<title>{siteTitle}</title>
-  	</Head>
-  	<div dangerouslySetInnerHTML={{ __html: browserTimingHeader }} />
-  	<section className={utilStyles.headingMd}>
-    	<p>It me</p>
-    	<p>
-      	This page uses server-side rendering and uses the newrelic API to inject
-      	timing headers.
-    	</p>
-      <div>
-      	<Link href="/">
-        	<a>← Back to home</a>
-      	</Link>
-    	</div>
-  	</section>
-	</Layout>
+    <Layout home>
+      <Head>
+        <title>{siteTitle}</title>
+      </Head>
+      <div dangerouslySetInnerHTML={{ __html: browserTimingHeader }} />
+      <section className={utilStyles.headingMd}>
+        <p>It me</p>
+        <p>
+          This page uses server-side rendering and uses the newrelic API to inject
+          timing headers.
+        </p>
+        <div>
+          <Link href="/">
+            <a>← Back to home</a>
+          </Link>
+        </div>
+      </section>
+    </Layout>
   )
 }
 ```
