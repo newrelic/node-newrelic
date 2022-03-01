@@ -13,8 +13,7 @@ module.exports = function initialize(shim, render) {
     'renderToHTML',
     function renderToHTMLRecorder(shim, renderToHTML, name, [req, res, page]) {
       return {
-        inContext() {
-          const segment = shim.getActiveSegment()
+        inContext(segment) {
           segment.addSpanAttributes({ 'next.page': page })
         },
         req,
