@@ -23,6 +23,11 @@ const repos = [
     branch: 'main'
   },
   {
+    name: 'next',
+    repository: 'https://github.com/newrelic/newrelic-node-nextjs.git',
+    branch: 'main'
+  },
+  {
     name: 'superagent',
     repository: 'https://github.com/newrelic/node-newrelic-superagent.git',
     branch: 'main'
