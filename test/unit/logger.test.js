@@ -48,7 +48,7 @@ tap.test('Logger', function (t) {
     t.end()
   })
 
-  t.test('should equeue logs until configured', function (t) {
+  t.test('should enqueue logs until configured', function (t) {
     logger.options.configured = false
     logger.trace('trace')
     logger.debug('debug')
@@ -60,7 +60,7 @@ tap.test('Logger', function (t) {
     t.end()
   })
 
-  t.test('should not equeue logs when disabled', function (t) {
+  t.test('should not enqueue logs when disabled', function (t) {
     logger.trace('trace')
     logger.debug('debug')
     logger.info('info')
