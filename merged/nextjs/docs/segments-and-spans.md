@@ -12,9 +12,9 @@ If you have middleware in a deeply nested application, segments and spans will b
 
 ```sh
   pages
-    _middleware
+    _middleware.js
       nested
-        _middleware
+        _middleware.js
           last
             _middleware.js
             [id].js
@@ -23,8 +23,8 @@ If you have middleware in a deeply nested application, segments and spans will b
 If a request is made to `pages/nested/last/1`, there will be 4 segments:
 
  * `Nodejs/Middleware/Nextjs//_middleware`
- * `Nodejs/Middleware/Nextjs/nested/_middleware`
- * `Nodejs/Middleware/Nextjs/nested/last/_middleware`
+ * `Nodejs/Middleware/Nextjs//nested/_middleware`
+ * `Nodejs/Middleware/Nextjs//nested/last/_middleware`
  * `Nodejs/Nextjs/getServerSideProps//pages/nested/last/[id]`
 
 
@@ -38,4 +38,3 @@ Next.js pages that contain server-side rendering must export a function called `
 | Name      | Description                                                |
 | --------- | ---------------------------------------------------------- |
 | next.page | Name of the page, including dynamic route where applicable |
-

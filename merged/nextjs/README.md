@@ -23,7 +23,7 @@ npm install @newrelic/next
 ```
 
 ```js
-NODE_OPTIONS='-r @newrelic/next' next your-program.js
+NODE_OPTIONS='-r @newrelic/next' next start your-program.js
 ```
 
 If you cannot control how your program is run, you can load the `@newrelic/next` module before any other module in your program. However, we strongly suggest you avoid this method at all costs.  We found bundling when running `next build` causes problems and also will make your bundle unnecessarily large.
@@ -140,7 +140,7 @@ If you believe you have found a security vulnerability in this project or any of
 
 If you would like to contribute to this project, review [these guidelines](./CONTRIBUTING.md).
 
-To all contributors, we thank you!  Without your contribution, this project would not be what it is today.  We also host a community project page dedicated to [Project Name](<LINK TO https://opensource.newrelic.com/projects/... PAGE>).
+To all contributors, we thank you!  Without your contribution, this project would not be what it is today.  We also host a community project page dedicated to [New Relic Next.js instrumentation](https://opensource.newrelic.com/projects/newrelic/newrelic-node-nextjs).
 
 ## License
 New Relic Next.js instrumentation is licensed under the [Apache 2.0](http://apache.org/licenses/LICENSE-2.0.txt) License.
