@@ -11,6 +11,7 @@
         "mongodb": ">=2.1"
       },
       "files": [
+        "bulk.tap.js",
         "collection-find.tap.js",
         "collection-index.tap.js",
         "collection-misc.tap.js",
