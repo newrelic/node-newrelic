@@ -92,6 +92,16 @@ tap.test('Logger', function (t) {
     t.end()
   })
 
+  t.test('should fallback to default logging config when config is invalid', function (t) {
+    runTestFile('disabled-with-invalid-config/disabled.js', function (error, message) {
+      t.notOk(error)
+
+      // should pipe logs to stdout if config is invalid, even if logging is disabled
+      t.ok(message)
+      t.end()
+    })
+  })
+
   t.test('should not cause crash if unwritable', function (t) {
     runTestFile('unwritable-log/unwritable.js', t.end)
   })
