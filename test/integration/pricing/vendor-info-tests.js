@@ -9,8 +9,6 @@ const path = require('path')
 const nock = require('nock')
 const fs = require('fs')
 const helper = require('../../lib/agent_helper')
-const http = require('http')
-const _httpGet = http.get
 
 module.exports = function (t, vendor) {
   const testFile = path.resolve(
@@ -44,6 +42,10 @@ module.exports = function (t, vendor) {
 }
 
 function makeTest(testCase, vendor, getInfo) {
+  // aws splits the timeout between token and metadata
+  // let's be efficient as possible and assign a lower
+  // timeout to aws tests
+  const timeout = vendor === 'aws' ? 501 : 1001
   let agent = null
   return function (t) {
     agent = helper.loadMockedAgent()
@@ -55,39 +57,6 @@ function makeTest(testCase, vendor, getInfo) {
 
     let redirection = null
     const uris = Object.keys(testCase.uri)
-    let timeoutUrl = null
-
-    function timeoutMock(urlToTimeout) {
-      let timeoutCallback
-      let onErrorCallback = null
-
-      const res = {
-        on: function (event, cb) {
-          if (event === 'error') {
-            onErrorCallback = cb
-          } else if (event === 'timeout') {
-            timeoutCallback = cb
-          }
-        },
-        abort: () => {
-          // not particularly accurate invoking sync
-          // but trying to keep parity.
-          const error = new Error('ECONNRESET')
-          error.code = 'ECONNRESET'
-          onErrorCallback(error)
-        }
-      }
-      return function wrappedGet(options, callback) {
-        setTimeout(function makeRequest() {
-          if (urlToTimeout === formatUrl(options)) {
-            return timeoutCallback()
-          }
-
-          _httpGet(options, callback)
-        }, 0)
-        return res
-      }
-    }
 
     let host = null
     for (let i = 0; i < uris.length; ++i) {
@@ -97,11 +66,11 @@ function makeTest(testCase, vendor, getInfo) {
       const endpoint = '/' + uri.split('/').slice(3).join('/')
       host = host || nock(hostUrl)
 
-      if (responseData.timeout) {
-        timeoutUrl = hostUrl + endpoint
-      }
-
       redirection = host.get(endpoint)
+
+      if (responseData.timeout) {
+        redirection = redirection.delay(timeout)
+      }
       redirection.reply(200, JSON.stringify(responseData.response || ''))
     }
 
@@ -110,8 +79,6 @@ function makeTest(testCase, vendor, getInfo) {
     if (vendor === 'aws') {
       host.put('/latest/api/token').reply(200, 'awsAuthToken')
     }
-
-    http.get = timeoutMock(timeoutUrl)
 
     getInfo(agent, function (err, info) {
       if (testCase.expected_vendors_hash) {
@@ -153,11 +120,4 @@ function makeTest(testCase, vendor, getInfo) {
       )
     })
   }
-}
-
-function formatUrl(opts) {
-  if (typeof opts === 'string') {
-    return opts
-  }
-  return (opts.protocol || 'http:') + '//' + opts.host + opts.path
 }
