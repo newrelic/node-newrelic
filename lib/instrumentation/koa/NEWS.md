@@ -1,3 +1,13 @@
+### v6.1.2 (2022-03-07)
+
+* Bumps [urijs](https://github.com/medialize/URI.js) from 1.19.7 to 1.19.9.
+
+* Stopped bundling versioned tests.
+
+* Fixed discuss.newrelic.com link in README
+
+* Resolved several dev-dependency audit warnings.
+
 ### v6.1.1 (2022-02-07)
 
 * Updated `add-to-board` to use org level `NODE_AGENT_GH_TOKEN`
