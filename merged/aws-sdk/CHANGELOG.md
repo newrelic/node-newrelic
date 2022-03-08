@@ -1,3 +1,15 @@
+### v4.1.2 (2022-03-07)
+
+* Removed versioned tests from npm artifact.
+
+* Fixed link to discuss.newrelic.com in README
+
+* Updated newrelic from 8.7.0 to 8.7.1.
+
+* Resolved several dev-dependency audit warnings.
+
+* Updated `add-to-board` to use org level `NODE_AGENT_GH_TOKEN`
+
 ### v4.1.1 (2022-01-13)
 
 * Fixed issue where v3 instrumentation checks against agent version would result in a logged error and fail to apply instrumentation.
