@@ -577,4 +577,11 @@ tap.test('when overriding configuration values via environment variables', (t) =
       t.end()
     })
   })
+
+  t.test('should pick up all_all_headers', (t) => {
+    idempotentEnv({ NEW_RELIC_ALLOW_ALL_HEADERS: 'true' }, function (tc) {
+      t.equal(tc.allow_all_headers, true)
+      t.end()
+    })
+  })
 })
