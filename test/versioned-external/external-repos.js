@@ -31,6 +31,17 @@ const repos = [
     name: 'superagent',
     repository: 'https://github.com/newrelic/node-newrelic-superagent.git',
     branch: 'main'
+  },
+  {
+    name: 'apollo-server',
+    repository: 'https://github.com/newrelic/newrelic-node-apollo-server-plugin.git',
+    branch: 'main',
+    additionalFiles: [
+      'tests/agent-testing.js',
+      'tests/create-apollo-server-setup.js',
+      'tests/data-definitions.js',
+      'tests/test-client.js'
+    ]
   }
 ]
 
