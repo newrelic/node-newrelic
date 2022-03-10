@@ -31,7 +31,7 @@
       },
       "dependencies": {
         "ejs": "2.5.5",
-        "@hapi/hapi": "^20.1.2",
+        "@hapi/hapi": ">=20.1.2",
         "vision": "^5.0.0"
       },
       "files": [
