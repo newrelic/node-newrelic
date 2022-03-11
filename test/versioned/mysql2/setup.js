@@ -8,8 +8,15 @@
 const a = require('async')
 const params = require('../../lib/params')
 
+const USER = 'mysql2_test_user'
+const DATABASE = 'mysql2_agent_integration'
+const TABLE = 'test'
+
 module.exports = exports = setup
 exports.pool = setupPool
+exports.USER = USER
+exports.DATABASE = DATABASE
+exports.TABLE = TABLE
 
 function setup(mysql) {
   return a.series([
@@ -24,9 +31,9 @@ function setup(mysql) {
 
       a.eachSeries(
         [
-          'CREATE USER test_user',
-          'GRANT ALL ON *.* TO `test_user`',
-          'CREATE DATABASE IF NOT EXISTS `agent_integration`'
+          `CREATE USER ${USER}`,
+          `GRANT ALL ON *.* TO ${USER}`,
+          `CREATE DATABASE IF NOT EXISTS ${DATABASE}`
         ],
         function (sql, setupCb) {
           client.query(sql, function (err) {
@@ -53,20 +60,20 @@ function setup(mysql) {
       const client = mysql.createConnection({
         host: params.mysql_host,
         port: params.mysql_port,
-        user: 'test_user',
-        database: 'agent_integration'
+        user: USER,
+        database: DATABASE
       })
 
       a.eachSeries(
         [
           [
-            'CREATE TABLE IF NOT EXISTS `test` (',
+            `CREATE TABLE IF NOT EXISTS ${TABLE} (`,
             '  `id`         INTEGER(10) PRIMARY KEY AUTO_INCREMENT,',
             '  `test_value` VARCHAR(255)',
             ')'
           ].join('\n'),
-          'TRUNCATE TABLE `test`',
-          'INSERT INTO `test` (`test_value`) VALUE ("hamburgefontstiv")'
+          `TRUNCATE TABLE ${TABLE}`,
+          `INSERT INTO ${TABLE} (test_value) VALUE ("hamburgefontstiv")`
         ],
         function (sql, setupCb) {
           client.query(sql, setupCb)
@@ -95,8 +102,8 @@ function setupPool(mysql, logger) {
 
     create: function (callback) {
       const client = mysql.createConnection({
-        user: 'test_user',
-        database: 'agent_integration',
+        user: USER,
+        database: DATABASE,
         host: params.mysql_host,
         port: params.mysql_port
       })

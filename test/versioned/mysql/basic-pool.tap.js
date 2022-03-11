@@ -15,8 +15,7 @@ const setup = require('./setup')
 const { version: pkgVersion } = require('mysql/package')
 const semver = require('semver')
 
-const DBUSER = 'root'
-const DBNAME = 'agent_integration'
+const { USER, DATABASE } = setup
 
 const config = getConfig({})
 function getConfig(extras) {
@@ -24,8 +23,8 @@ function getConfig(extras) {
     connectionLimit: 10,
     host: params.mysql_host,
     port: params.mysql_port,
-    user: DBUSER,
-    database: DBNAME
+    user: USER,
+    database: DATABASE
   }
 
   // eslint-disable-next-line guard-for-in
@@ -49,8 +48,8 @@ tap.test('bad config', function (t) {
   const badConfig = {
     connectionLimit: 10,
     host: 'nohost',
-    user: DBUSER,
-    database: DBNAME
+    user: USER,
+    database: DATABASE
   }
 
   t.test(function (t) {
@@ -137,7 +136,7 @@ tap.test('mysql built-in connection pools', { timeout: 30 * 1000 }, function (t)
           urltils.isLocalhost(config.host) ? agent.config.getHostnameSafe() : config.host,
           'set host'
         )
-        t.equal(attributes.database_name, DBNAME, 'set database name')
+        t.equal(attributes.database_name, DATABASE, 'set database name')
         t.equal(attributes.port_path_or_id, String(config.port), 'set port')
         t.equal(attributes.product, 'MySQL', 'set product attribute')
         txn.end()
@@ -157,7 +156,7 @@ tap.test('mysql built-in connection pools', { timeout: 30 * 1000 }, function (t)
 
         t.notOk(attributes.host, 'should have no host parameter')
         t.notOk(attributes.port_path_or_id, 'should have no port parameter')
-        t.equal(attributes.database_name, DBNAME, 'should set database name')
+        t.equal(attributes.database_name, DATABASE, 'should set database name')
         t.equal(attributes.product, 'MySQL', 'should set product attribute')
         agent.config.datastore_tracer.instance_reporting.enabled = true
         txn.end()
@@ -205,7 +204,7 @@ tap.test('mysql built-in connection pools', { timeout: 30 * 1000 }, function (t)
         const attributes = seg.getAttributes()
         t.ok(seg, 'there is a segment')
         t.equal(attributes.host, agent.config.getHostnameSafe(), 'set host')
-        t.equal(attributes.database_name, DBNAME, 'set database name')
+        t.equal(attributes.database_name, DATABASE, 'set database name')
         t.equal(attributes.port_path_or_id, String(defaultConfig.port), 'set port')
         t.equal(attributes.product, 'MySQL', 'should set product attribute')
         txn.end()
@@ -231,7 +230,7 @@ tap.test('mysql built-in connection pools', { timeout: 30 * 1000 }, function (t)
           urltils.isLocalhost(config.host) ? agent.config.getHostnameSafe() : config.host,
           'should set host'
         )
-        t.equal(attributes.database_name, DBNAME, 'should set database name')
+        t.equal(attributes.database_name, DATABASE, 'should set database name')
         t.equal(attributes.port_path_or_id, '3306', 'should set port')
         t.equal(attributes.product, 'MySQL', 'should set product attribute')
         txn.end()
@@ -376,7 +375,7 @@ tap.test('mysql built-in connection pools', { timeout: 30 * 1000 }, function (t)
             t.ok(seg, 'there is a segment')
             t.equal(attributes.host, agent.config.getHostnameSafe(), 'set host')
             t.equal(attributes.port_path_or_id, socketPath, 'set path')
-            t.equal(attributes.database_name, DBNAME, 'set database name')
+            t.equal(attributes.database_name, DATABASE, 'set database name')
             t.equal(attributes.product, 'MySQL', 'should set product attribute')
             txn.end()
             socketPool.end(t.end)

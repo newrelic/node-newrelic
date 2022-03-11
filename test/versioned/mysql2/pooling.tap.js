@@ -10,8 +10,7 @@ const logger = require('../../../lib/logger')
 const helper = require('../../lib/agent_helper')
 const setup = require('./setup')
 
-const DBNAME = 'agent_integration'
-const DBTABLE = 'test'
+const { DATABASE, TABLE } = setup
 
 tap.test('MySQL2 instrumentation with a connection pool', { timeout: 60000 }, function (t) {
   // set up the instrumentation before loading MySQL
@@ -66,7 +65,7 @@ tap.test('MySQL2 instrumentation with a connection pool', { timeout: 60000 }, fu
           return callback(err)
         }
 
-        const query = 'SELECT *' + '  FROM ' + DBNAME + '.' + DBTABLE + ' WHERE id = ?'
+        const query = 'SELECT *' + '  FROM ' + DATABASE + '.' + TABLE + ' WHERE id = ?'
         client.query(query, [params.id], function (err, results) {
           withRetry.release(client) // always release back to the pool
 
@@ -116,7 +115,7 @@ tap.test('MySQL2 instrumentation with a connection pool', { timeout: 60000 }, fu
       t.ok(selectSegment, 'trace segment for first SELECT should exist')
       t.equals(
         selectSegment.name,
-        'Datastore/statement/MySQL/agent_integration.test/select',
+        `Datastore/statement/MySQL/${DATABASE}.${TABLE}/select`,
         'should register as SELECT'
       )
 
