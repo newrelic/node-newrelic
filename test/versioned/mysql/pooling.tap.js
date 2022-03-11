@@ -10,8 +10,7 @@ const logger = require('../../../lib/logger')
 const helper = require('../../lib/agent_helper')
 const setup = require('./setup')
 
-const DBNAME = 'agent_integration'
-const DBTABLE = 'test'
+const { DATABASE, TABLE } = setup
 
 tap.test('MySQL instrumentation with a connection pool', { timeout: 30000 }, function (t) {
   const poolLogger = logger.child({ component: 'pool' })
@@ -65,7 +64,7 @@ tap.test('MySQL instrumentation with a connection pool', { timeout: 30000 }, fun
           return callback(err)
         }
 
-        const query = 'SELECT *' + '  FROM ' + DBNAME + '.' + DBTABLE + ' WHERE id = ?'
+        const query = 'SELECT *' + '  FROM ' + DATABASE + '.' + TABLE + ' WHERE id = ?'
         client.query(query, [params.id], function (err, results) {
           withRetry.release(client) // always release back to the pool
 
@@ -120,7 +119,7 @@ tap.test('MySQL instrumentation with a connection pool', { timeout: 30000 }, fun
 
       t.equal(
         selectSegment.name,
-        'Datastore/statement/MySQL/agent_integration.test/select',
+        `Datastore/statement/MySQL/${DATABASE}.${TABLE}/select`,
         'should register as SELECT'
       )
 

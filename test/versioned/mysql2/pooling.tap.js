@@ -10,8 +10,7 @@ const logger = require('../../../lib/logger')
 const helper = require('../../lib/agent_helper')
 const setup = require('./setup')
 
-const DBNAME = 'agent_integration'
-const DBTABLE = 'test'
+const { DATABASE, TABLE } = setup
 
 tap.test('MySQL2 instrumentation with a connection pool', { timeout: 60000 }, function (t) {
   // set up the instrumentation before loading MySQL
@@ -66,7 +65,7 @@ tap.test('MySQL2 instrumentation with a connection pool', { timeout: 60000 }, fu
           return callback(err)
         }
 
-        const query = 'SELECT *' + '  FROM ' + DBNAME + '.' + DBTABLE + ' WHERE id = ?'
+        const query = 'SELECT *' + '  FROM ' + DATABASE + '.' + TABLE + ' WHERE id = ?'
         client.query(query, [params.id], function (err, results) {
           withRetry.release(client) // always release back to the pool
 
@@ -102,26 +101,26 @@ tap.test('MySQL2 instrumentation with a connection pool', { timeout: 60000 }, fu
         return t.end()
       }
 
-      t.equals(row.id, 1, 'mysql2 should still work (found id)')
-      t.equals(row.test_value, 'hamburgefontstiv', 'mysql driver should still work (found value)')
+      t.equal(row.id, 1, 'mysql2 should still work (found id)')
+      t.equal(row.test_value, 'hamburgefontstiv', 'mysql driver should still work (found value)')
 
       transaction.end()
 
       const trace = transaction.trace
       t.ok(trace, 'trace should exist')
       t.ok(trace.root, 'root element should exist.')
-      t.equals(trace.root.children.length, 1, 'There should be only one child.')
+      t.equal(trace.root.children.length, 1, 'There should be only one child.')
 
       const selectSegment = trace.root.children[0]
       t.ok(selectSegment, 'trace segment for first SELECT should exist')
-      t.equals(
+      t.equal(
         selectSegment.name,
-        'Datastore/statement/MySQL/agent_integration.test/select',
+        `Datastore/statement/MySQL/${DATABASE}.${TABLE}/select`,
         'should register as SELECT'
       )
 
-      t.equals(selectSegment.children.length, 1, 'should only have a callback segment')
-      t.equals(selectSegment.children[0].name, 'Callback: <anonymous>')
+      t.equal(selectSegment.children.length, 1, 'should only have a callback segment')
+      t.equal(selectSegment.children[0].name, 'Callback: <anonymous>')
 
       selectSegment.children[0].children
         .map(function (segment) {

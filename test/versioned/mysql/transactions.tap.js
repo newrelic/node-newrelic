@@ -10,8 +10,7 @@ const helper = require('../../lib/agent_helper')
 const params = require('../../lib/params')
 const setup = require('./setup')
 
-const DBUSER = 'test_user'
-const DBNAME = 'agent_integration'
+const { USER, DATABASE } = setup
 
 tap.test('MySQL transactions', { timeout: 30000 }, function (t) {
   t.plan(6)
@@ -22,8 +21,8 @@ tap.test('MySQL transactions', { timeout: 30000 }, function (t) {
 
   setup(mysql).then(() => {
     const client = mysql.createConnection({
-      user: DBUSER,
-      database: DBNAME,
+      user: USER,
+      database: DATABASE,
       host: params.mysql_host,
       port: params.mysql_port
     })
