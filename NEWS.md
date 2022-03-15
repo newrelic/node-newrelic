@@ -8,7 +8,7 @@
 
   Thanks to Cody Landry (@codylandry) for the contribution.
 
-* added `NEW_RELIC_ALLOW_ALL_HEADERS` as a boolean environment variable, same behaviour as existing `allow_all_headers`.
+* Added `NEW_RELIC_ALLOW_ALL_HEADERS` as a boolean environment variable, same behavior as existing `allow_all_headers`.
 
 * Updated the AWS IMDBS v2 endpoint to use `latest` to align with the internal agent specification.
 
