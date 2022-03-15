@@ -10,7 +10,7 @@ const mongoPackage = require('mongodb/package.json')
 const semver = require('semver')
 
 // see test/versioned/mongodb/common.js
-if (semver.satisfies(mongoPackage.version, '>=3 <4.2.0')) {
+if (semver.satisfies(mongoPackage.version, '>=3.2.4 <4.1.4')) {
   common.test('unorderedBulkOp', function unorderedBulkOpTest(t, collection, verify) {
     const bulk = collection.initializeUnorderedBulkOp()
     bulk
