@@ -2,6 +2,20 @@
 
 * Added support for `initializeUnorderedBulkOp`, and `initializeOrderedBulkOp` in mongodb v3 instrumentation.
 
+  Thanks to Denis Lantsman (@dlants) for the contribution.
+
+* Updated logger to delay logging until configuration is parsed. The logger will now queue all log entries that occur before the agent can parse the configuration.
+
+  Thanks to Cody Landry (@codylandry) for the contribution.
+
+* added `NEW_RELIC_ALLOW_ALL_HEADERS` as a boolean environment variable, same behaviour as existing `allow_all_headers`.
+
+* Updated the AWS IMDBS v2 endpoint to use `latest` to align with the internal agent specification.
+
+* Bumped `@newrelic/koa` to ^6.1.1.
+
+* Added Next.js to External Modules list in README.
+
 * Updated mysql and mysql2 versioned tests to run against their own databases on the MySQL instance.
 
 * Removed upper-bound testing from restify versioned tests so future major versions will be covered.
@@ -10,35 +24,19 @@
 
   Continues to skip version 1.6.2 which had a bug that broke tests which was resolved in 1.6.3.
 
-* Added Next.js to External Modules list in README.
-
 * Updated @hapi/hapi Node 16 versioned test runs to run against @hapi/hapi >=20.1.2 so future major releases will be ran.
 
 * Fixed sparse checkout of non-default branch for external versioned tests.
 
 * Added external versioned tests for the Apollo Server plugin instrumentation.
 
-* Updated the AWS IMDBS v2 endpoint to use `latest` to align with the internal agent specification.
-
-* added ALLOW_ALL_HEADERS as a boolean environment variable, same behaviour as existing `allow_all_headers`.
-
 * Added nock delay to test timeouts in utilization integration tests.
-
-Problem 
-We have noticed that logging configurations aren't considered for logs during the bootstrapping phase of the agent startup.  This results in a high number of logs generated, especially when using nodejs lambda functions.
 
 * Added newrelic-node-nextjs to external versioned tests to be run on every PR.
 
 * Updated external version test running to support more test scenarios.
   * Adds `test/versioned-external` to lint ignore to avoid issues for scripts in tests that auto run linting tools (next/react).
   * Adds `index.js` and `nr-hooks.js` to files automatically checked-out for test runs.
-
---- NOTES NEEDS REVIEW ---
-<h3>Snyk has created this PR to upgrade @newrelic/koa from 6.1.0 to 6.1.1.</h3>
-
-![merge advice](https://app.snyk.io/badges/merge-advice/?package_manager=npm&package_name=@newrelic/koa&from_version=6.1.0&to_version=6.1.1&pr_id=6524b942-fae2-41b6-959f-21a2082fed8a&visibility=true&has_feature_flag=false)
-:information_source: Keep your dependencies up-to-date. This makes it easier to fix existing vulnerabilities and to more quickly identify and fix newly disclosed vulnerabilities when they affect your project.
---------------------------
 
 ### v8.8.0 (2022-02-23)
 
