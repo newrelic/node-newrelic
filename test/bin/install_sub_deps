@@ -13,7 +13,7 @@ var glob = require('glob')
 var exec = require('child_process').exec
 
 var options = {
-  ignore: '**/test/versioned/**'
+  ignore: '**/test/{versioned,versioned-external}/**'
 }
 
 var folder
