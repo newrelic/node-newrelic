@@ -145,6 +145,8 @@ Here are some resources for learning more about the agent:
 
 - [The changelog](https://github.com/newrelic/node-newrelic/blob/main/NEWS.md)
 
+- [Example applications](https://github.com/newrelic/newrelic-node-examples) - Working examples of New Relic features in Node.js.
+
 ## Support
 
 Should you need assistance with New Relic products, you are in good hands with several support channels.
