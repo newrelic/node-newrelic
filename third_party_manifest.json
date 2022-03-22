@@ -212,15 +212,15 @@
       "email": "nathan@tootallnate.net",
       "url": "http://n8.io/"
     },
-    "@newrelic/test-utilities@6.3.0": {
+    "@newrelic/test-utilities@6.5.0": {
       "name": "@newrelic/test-utilities",
-      "version": "6.3.0",
-      "range": "^6.3.0",
+      "version": "6.5.0",
+      "range": "^6.5.0",
       "licenses": "Apache-2.0",
       "repoUrl": "https://github.com/newrelic/node-test-utilities",
-      "versionedRepoUrl": "https://github.com/newrelic/node-test-utilities/tree/v6.3.0",
+      "versionedRepoUrl": "https://github.com/newrelic/node-test-utilities/tree/v6.5.0",
       "licenseFile": "node_modules/@newrelic/test-utilities/LICENSE",
-      "licenseUrl": "https://github.com/newrelic/node-test-utilities/blob/v6.3.0/LICENSE",
+      "licenseUrl": "https://github.com/newrelic/node-test-utilities/blob/v6.5.0/LICENSE",
       "licenseTextSource": "file",
       "publisher": "New Relic Node.js agent team",
       "email": "nodejs@newrelic.com"
@@ -441,15 +441,15 @@
       "publisher": "James Cooper",
       "email": "james@bitmechanic.com"
     },
-    "glob@7.1.7": {
+    "glob@7.2.0": {
       "name": "glob",
-      "version": "7.1.7",
+      "version": "7.2.0",
       "range": "^7.1.2",
       "licenses": "ISC",
       "repoUrl": "https://github.com/isaacs/node-glob",
-      "versionedRepoUrl": "https://github.com/isaacs/node-glob/tree/v7.1.7",
+      "versionedRepoUrl": "https://github.com/isaacs/node-glob/tree/v7.2.0",
       "licenseFile": "node_modules/glob/LICENSE",
-      "licenseUrl": "https://github.com/isaacs/node-glob/blob/v7.1.7/LICENSE",
+      "licenseUrl": "https://github.com/isaacs/node-glob/blob/v7.2.0/LICENSE",
       "licenseTextSource": "file",
       "publisher": "Isaac Z. Schlueter",
       "email": "i@izs.me",
