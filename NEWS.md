@@ -1,3 +1,11 @@
+### v8.9.1 (2022-03-22)
+
+* Fixed `shim.wrapReturn` to call `Reflect.construct` in construct Proxy trap.  Also including `newTarget` to work with inherited classes.
+
+* Added link to New Relic Node.js Examples repository.
+
+* Excluded installing dependencies in `versioned-external` folders when running integration tests.
+
 ### v8.9.0 (2022-03-15)
 
 * Added support for `initializeUnorderedBulkOp`, and `initializeOrderedBulkOp` in mongodb v3 instrumentation.
