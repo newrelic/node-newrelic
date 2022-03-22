@@ -541,6 +541,31 @@ tap.test('Shim', function (t) {
       t.equal(shim.unwrap(wrappable.bar), original)
       t.end()
     })
+
+    t.test('should wrap child instance properly', function (t) {
+      class ParentTest {
+        constructor() {
+          this.parent = true
+        }
+
+        parentMethod() {
+          return 'hello world'
+        }
+      }
+
+      const WrappedParent = shim.wrapReturn(ParentTest, function () {})
+
+      class ChildTest extends WrappedParent {
+        childMethod() {
+          return 'child method'
+        }
+      }
+
+      const child = new ChildTest()
+      t.ok(typeof child.childMethod === 'function', 'should have child methods')
+      t.ok(typeof child.parentMethod === 'function', 'should have parent methods')
+      t.end()
+    })
   })
 
   t.test('#wrapReturn wrapper', function (t) {
@@ -648,6 +673,8 @@ tap.test('Shim', function (t) {
       function Foo() {
         t.ok(this instanceof Foo)
       }
+
+      Foo.prototype.method = function () {}
       const WrappedFoo = shim.wrapReturn(Foo, function () {
         t.ok(this instanceof Foo)
       })
@@ -655,6 +682,7 @@ tap.test('Shim', function (t) {
       const foo = new WrappedFoo()
       t.ok(foo instanceof Foo)
       t.ok(foo instanceof WrappedFoo)
+      t.ok(typeof foo.method === 'function')
       t.end()
     })
 
@@ -718,7 +746,7 @@ tap.test('Shim', function (t) {
     })
   })
 
-  t.test('#wrappClass wrapper', function (t) {
+  t.test('#wrapClass wrapper', function (t) {
     t.autoend()
     let executed = null
     let toWrap = null
