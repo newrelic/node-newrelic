@@ -1770,7 +1770,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 ### @newrelic/test-utilities
 
-This product includes source derived from [@newrelic/test-utilities](https://github.com/newrelic/node-test-utilities) ([v6.5.1](https://github.com/newrelic/node-test-utilities/tree/v6.5.1)), distributed under the [Apache-2.0 License](https://github.com/newrelic/node-test-utilities/blob/v6.5.1/LICENSE):
+This product includes source derived from [@newrelic/test-utilities](https://github.com/newrelic/node-test-utilities) ([v6.5.2](https://github.com/newrelic/node-test-utilities/tree/v6.5.2)), distributed under the [Apache-2.0 License](https://github.com/newrelic/node-test-utilities/blob/v6.5.2/LICENSE):
 
 ```
                                  Apache License
