@@ -1249,28 +1249,6 @@ tap.test('Shim', function (t) {
         promise.reject(result)
       }, 5)
     })
-
-    t.test('should not affect unhandledRejection event', function (t) {
-      const wrapped = shim.record(toWrap, function () {
-        return { name: 'test segment', promise: true }
-      })
-
-      const result = {}
-      helper.runInTransaction(agent, function () {
-        const ret = wrapped()
-        t.ok(ret instanceof Object.getPrototypeOf(promise).constructor)
-
-        process.on('unhandledRejection', function (err, p) {
-          t.equal(err, result)
-          t.equal(p, ret)
-          t.end()
-        })
-      })
-
-      setTimeout(function () {
-        promise.reject(result)
-      }, 5)
-    })
   })
 
   t.test('#record wrapper when called without a transaction', function (t) {
