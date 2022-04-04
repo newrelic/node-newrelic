@@ -1260,10 +1260,13 @@ tap.test('Shim', function (t) {
         const ret = wrapped()
         t.ok(ret instanceof Object.getPrototypeOf(promise).constructor)
 
-        process.on('unhandledRejection', function (err, p) {
+        process.on('unhandledRejection', function (err) {
           t.equal(err, result)
-          t.equal(p, ret)
           t.end()
+        })
+
+        ret.then(() => {
+          t.end(new Error('Should not have resolved'))
         })
       })
 
