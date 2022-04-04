@@ -1,6 +1,6 @@
 ### v0.1.1 (2022-04-04)
 
-* Added logic to check if `getModuleContext` is an async function and instrumenting its return value accordingly.
+* Added support for middleware in > 12.1.1 of Next.js.  The return of `getModuleContext` is now an async function.
 
 * Fixed a few small documentation items.
 
