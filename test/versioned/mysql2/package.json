@@ -15,6 +15,7 @@
         "basic-pool.tap.js",
         "basic.tap.js",
         "pooling.tap.js",
+        "promises.tap.js",
         "transaction.tap.js"
       ]
     }
