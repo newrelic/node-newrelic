@@ -29,7 +29,7 @@ echo "${NPM7}"
 
 if [[ "${NPM7}" = 1 ]];
 then
-  time ./node_modules/.bin/versioned-tests $VERSIONED_MODE -i 2 --all --samples $SAMPLES ${directories[@]}
+  time ./node_modules/.bin/versioned-tests $VERSIONED_MODE -i 2 --all --strict --samples $SAMPLES ${directories[@]}
 else
-  time ./node_modules/.bin/versioned-tests $VERSIONED_MODE -i 2 --samples $SAMPLES ${directories[@]}
+  time ./node_modules/.bin/versioned-tests $VERSIONED_MODE -i 2 --strict --samples $SAMPLES ${directories[@]}
 fi
