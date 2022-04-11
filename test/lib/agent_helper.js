@@ -15,6 +15,7 @@ const zlib = require('zlib')
 const copy = require('../../lib/util/copy')
 const { defaultAttributeConfig } = require('./fixtures')
 const { EventEmitter } = require('events')
+const Transaction = require('../../lib/transaction')
 
 const KEYPATH = path.join(__dirname, 'test-key.key')
 const CERTPATH = path.join(__dirname, 'self-signed-test-certificate.crt')
@@ -33,9 +34,44 @@ const outOfContextQueueInterval = setInterval(() => {
   }
 }, 25).unref()
 
+function FakeTx() {}
+
+FakeTx.prototype.getFullName = function () {
+  return this.name
+}
+
+function FakeTransaction(agent, url = null) {
+  let transaction = {}
+  if (agent) {
+    transaction = new Transaction(agent)
+  } else {
+    transaction = new FakeTx()
+  }
+
+  transaction.url = url
+  transaction.name = 'FakeTransaction'
+  transaction.addDistributedTraceIntrinsics = () => {}
+  return transaction
+}
+
+function FakeSegment(transaction, duration, name = 'FakeSegment') {
+  this.transaction = transaction
+  this.attributes = {}
+  this.name = name
+  this.addAttribute = function addAttribute(key, value) {
+    this.attributes[key] = value
+  }
+  this.getAttributes = () => this.attributes
+  this.getDurationInMillis = function getDurationInMillis() {
+    return duration
+  }
+}
+
 const helper = (module.exports = {
   SSL_HOST: 'localhost',
   outOfContextQueueInterval,
+  FakeSegment,
+  FakeTransaction,
   getAgent: () => _agent,
   getContextManager: () => _agent && _agent._contextManager,
 
@@ -111,6 +147,7 @@ const helper = (module.exports = {
       ERRORS: helper.generateCollectorPath('error_data', runId),
       ERROR_EVENTS: helper.generateCollectorPath('error_event_data', runId),
       EVENTS: helper.generateCollectorPath('analytic_event_data', runId),
+      LOGS: helper.generateCollectorPath('log_event_data', runId),
       METRICS: helper.generateCollectorPath('metric_data', runId),
       PRECONNECT: helper.generateCollectorPath('preconnect'),
       QUERIES: helper.generateCollectorPath('sql_trace_data', runId),

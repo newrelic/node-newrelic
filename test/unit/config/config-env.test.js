@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 New Relic Corporation. All rights reserved.
+ * Copyright 2022 New Relic Corporation. All rights reserved.
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -581,6 +581,32 @@ tap.test('when overriding configuration values via environment variables', (t) =
   t.test('should pick up all_all_headers', (t) => {
     idempotentEnv({ NEW_RELIC_ALLOW_ALL_HEADERS: 'true' }, function (tc) {
       t.equal(tc.allow_all_headers, true)
+      t.end()
+    })
+  })
+
+  t.test('should pick up application logging values', (t) => {
+    const config = {
+      NEW_RELIC_APPLICATION_LOGGING_ENABLED: 'true',
+      NEW_RELIC_APPLICATION_LOGGING_FORWARDING_ENABLED: 'true',
+      NEW_RELIC_APPLICATION_LOGGING_FORWARDING_MAX_SAMPLES_STORED: '12345',
+      NEW_RELIC_APPLICATION_LOGGING_METRICS_ENABLED: 'false',
+      NEW_RELIC_APPLICATION_LOGGING_LOCAL_DECORATING_ENABLED: 'true'
+    }
+    idempotentEnv(config, function (tc) {
+      t.same(tc.application_logging, {
+        enabled: true,
+        forwarding: {
+          enabled: true,
+          max_samples_stored: 12345
+        },
+        metrics: {
+          enabled: false
+        },
+        local_decorating: {
+          enabled: true
+        }
+      })
       t.end()
     })
   })
