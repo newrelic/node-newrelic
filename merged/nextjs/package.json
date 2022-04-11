@@ -43,7 +43,7 @@
     "husky": "^7.0.4",
     "lint-staged": "^12.3.3",
     "newrelic": "^8.8.0",
-    "tap": "^15.1.6"
+    "tap": "^16.0.1"
   },
   "peerDependencies": {
     "newrelic": ">=8.8.0"
