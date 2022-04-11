@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "Tue Mar 01 2022 17:13:42 GMT-0500 (GMT-05:00)",
+  "lastUpdated": "Mon Apr 11 2022 12:26:23 GMT-0700 (Pacific Daylight Time)",
   "projectName": "New Relic Koa Instrumentation",
   "projectUrl": "https://github.com/newrelic/node-newrelic-koa",
   "includeOptDeps": false,
@@ -215,15 +215,15 @@
       "licenseUrl": "https://github.com/npm/node-semver/blob/v5.7.1/LICENSE",
       "licenseTextSource": "file"
     },
-    "tap@15.1.6": {
+    "tap@16.0.1": {
       "name": "tap",
-      "version": "15.1.6",
-      "range": "^15.0.9",
+      "version": "16.0.1",
+      "range": "^16.0.1",
       "licenses": "ISC",
       "repoUrl": "https://github.com/tapjs/node-tap",
-      "versionedRepoUrl": "https://github.com/tapjs/node-tap/tree/v15.1.6",
+      "versionedRepoUrl": "https://github.com/tapjs/node-tap/tree/v16.0.1",
       "licenseFile": "node_modules/tap/LICENSE",
-      "licenseUrl": "https://github.com/tapjs/node-tap/blob/v15.1.6/LICENSE",
+      "licenseUrl": "https://github.com/tapjs/node-tap/blob/v16.0.1/LICENSE",
       "licenseTextSource": "file",
       "publisher": "Isaac Z. Schlueter",
       "email": "i@izs.me",
