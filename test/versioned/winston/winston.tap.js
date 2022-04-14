@@ -33,7 +33,7 @@ tap.test('Winston instrumentation', (t) => {
   })
 
   // Stream factory for a test. Applies common assertions to logged messages.
-  const makeStreamTest = (t) => {
+  const makeStreamTest = (cb) => {
     let toBeClosed = 0
     return (assertFn) => {
       toBeClosed++
@@ -42,7 +42,7 @@ tap.test('Winston instrumentation', (t) => {
           assertFn(msg)
         }
         if (--toBeClosed === 0) {
-          t.end()
+          cb()
         }
       }
     }
@@ -78,7 +78,9 @@ tap.test('Winston instrumentation', (t) => {
       }
     }
 
-    const handleMessages = makeStreamTest(t)
+    const handleMessages = makeStreamTest(() => {
+      t.end()
+    })
     const jsonStream = concat(handleMessages(assertFn))
     const simpleStream = concat(handleMessages(assertFn))
 
@@ -110,7 +112,9 @@ tap.test('Winston instrumentation', (t) => {
       t.equal(typeof msg.timestamp, 'number', 'timestamp must be a number')
     }
 
-    const handleMessages = makeStreamTest(t)
+    const handleMessages = makeStreamTest(() => {
+      t.end()
+    })
     const stream = concat(handleMessages(assertFn))
 
     const logger = winston.createLogger({
@@ -139,7 +143,9 @@ tap.test('Winston instrumentation', (t) => {
       t.notOk(msg.trace, 'Trace removed from JSON')
     }
 
-    const handleMessages = makeStreamTest(t)
+    const handleMessages = makeStreamTest(() => {
+      t.end()
+    })
     const stream = concat(handleMessages(assertFn))
 
     winston.createLogger({
