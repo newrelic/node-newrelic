@@ -1212,12 +1212,12 @@ IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ### tap
 
-This product includes source derived from [tap](https://github.com/tapjs/node-tap) ([v15.1.6](https://github.com/tapjs/node-tap/tree/v15.1.6)), distributed under the [ISC License](https://github.com/tapjs/node-tap/blob/v15.1.6/LICENSE):
+This product includes source derived from [tap](https://github.com/tapjs/node-tap) ([v16.0.1](https://github.com/tapjs/node-tap/tree/v16.0.1)), distributed under the [ISC License](https://github.com/tapjs/node-tap/blob/v16.0.1/LICENSE):
 
 ```
 The ISC License
 
-Copyright (c) Isaac Z. Schlueter and Contributors
+Copyright (c) 2011-2022 Isaac Z. Schlueter and Contributors
 
 Permission to use, copy, modify, and/or distribute this software for any
 purpose with or without fee is hereby granted, provided that the above
