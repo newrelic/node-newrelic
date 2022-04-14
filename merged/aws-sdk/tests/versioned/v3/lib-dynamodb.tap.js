@@ -9,7 +9,6 @@ const tap = require('tap')
 const utils = require('@newrelic/test-utilities')
 const common = require('../common')
 const { createEmptyResponseServer, FAKE_CREDENTIALS } = require('../aws-server-stubs')
-const async = require('async')
 
 tap.test('DynamoDB', (t) => {
   t.autoend()
@@ -107,23 +106,23 @@ tap.test('DynamoDB', (t) => {
 
   t.test('client commands via callback', (t) => {
     const docClient = new DynamoDBDocumentClient(client)
-    helper.runInTransaction(function (tx) {
-      async.eachSeries(
-        tests,
-        (cfg, cb) => {
-          t.comment(`Testing ${cfg.operation}`)
-          docClient.send(new ddbCommands[cfg.command](cfg.params), (err) => {
-            t.error(err)
-            return setImmediate(cb)
-          })
-        },
-        () => {
-          tx.end()
+    helper.runInTransaction(async function (tx) {
+      for (const test of tests) {
+        t.comment(`Testing ${test.operation}`)
 
-          const args = [t, tests, tx]
-          setImmediate(finish, ...args)
-        }
-      )
+        await new Promise((resolve) => {
+          docClient.send(new ddbCommands[test.command](test.params), (err) => {
+            t.error(err)
+
+            return setImmediate(resolve)
+          })
+        })
+      }
+
+      tx.end()
+
+      const args = [t, tests, tx]
+      setImmediate(finish, ...args)
     })
   })
 

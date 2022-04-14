@@ -21,7 +21,6 @@ code, the source code can be found at [https://github.com/newrelic/node-newrelic
 * [@newrelic/eslint-config](#newreliceslint-config)
 * [@newrelic/newrelic-oss-cli](#newrelicnewrelic-oss-cli)
 * [@newrelic/test-utilities](#newrelictest-utilities)
-* [async](#async)
 * [aws-sdk](#aws-sdk)
 * [eslint-config-prettier](#eslint-config-prettier)
 * [eslint-plugin-header](#eslint-plugin-header)
@@ -687,33 +686,6 @@ This product includes source derived from [@newrelic/test-utilities](https://git
    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
    See the License for the specific language governing permissions and
    limitations under the License.
-
-```
-
-### async
-
-This product includes source derived from [async](https://github.com/caolan/async) ([v2.6.3](https://github.com/caolan/async/tree/v2.6.3)), distributed under the [MIT License](https://github.com/caolan/async/blob/v2.6.3/LICENSE):
-
-```
-Copyright (c) 2010-2018 Caolan McMahon
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in
-all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-THE SOFTWARE.
 
 ```
 
