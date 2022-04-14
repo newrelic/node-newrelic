@@ -10,6 +10,7 @@
     "versioned": "npm run versioned:npm7",
     "versioned:npm6": "versioned-tests --minor -i 2 tests/versioned/**/*.tap.js",
     "versioned:npm7": "versioned-tests --minor --all -i 2 tests/versioned/**/*.tap.js",
+    "versioned:major": "versioned-tests --major -i 2 tests/versioned/**/*.tap.js",
     "lint": "eslint *.js lib tests",
     "lint:fix": "eslint --fix *.js lib tests",
     "prepare": "husky install"
@@ -39,7 +40,7 @@
     "newrelic": "^8.7.1",
     "prettier": "^2.3.2",
     "sinon": "^7.2.3",
-    "tap": "^15.0.9"
+    "tap": "^16.0.1"
   },
   "peerDependencies": {
     "newrelic": ">=6.11.0"
