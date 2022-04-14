@@ -1157,3 +1157,48 @@ tap.test('when event_harvest_config updated on connect with a valid config', (t)
     })
   })
 })
+
+tap.test('logging supportability on connect', (t) => {
+  t.autoend()
+  let agent
+  const keys = ['Forwarding', 'Metrics', 'LocalDecorating']
+
+  t.beforeEach(() => {
+    nock.disableNetConnect()
+    agent = helper.loadMockedAgent(null, false)
+  })
+  t.afterEach(() => {
+    helper.unloadAgent(agent)
+    agent = null
+  })
+
+  t.test('should increment disabled metrics when logging features are off', (t) => {
+    agent.config.application_logging.metrics.enabled = false
+    agent.config.application_logging.forwarding.enabled = false
+    agent.config.application_logging.local_decorating.enabled = false
+    agent.onConnect(false, () => {
+      keys.forEach((key) => {
+        const disabled = agent.metrics.getMetric(`Supportability/Logging/${key}/Nodejs/disabled`)
+        const enabled = agent.metrics.getMetric(`Supportability/Logging/${key}/Nodejs/enabled`)
+        t.equal(disabled.callCount, 1)
+        t.notOk(enabled)
+      })
+      t.end()
+    })
+  })
+
+  t.test('should increment enabled metrics when logging features are on', (t) => {
+    agent.config.application_logging.metrics.enabled = true
+    agent.config.application_logging.forwarding.enabled = true
+    agent.config.application_logging.local_decorating.enabled = true
+    agent.onConnect(false, () => {
+      keys.forEach((key) => {
+        const disabled = agent.metrics.getMetric(`Supportability/Logging/${key}/Nodejs/disabled`)
+        const enabled = agent.metrics.getMetric(`Supportability/Logging/${key}/Nodejs/enabled`)
+        t.equal(enabled.callCount, 1)
+        t.notOk(disabled)
+      })
+      t.end()
+    })
+  })
+})
