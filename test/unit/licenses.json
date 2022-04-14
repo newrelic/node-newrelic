@@ -2,6 +2,7 @@
   "@newrelic/aws-sdk": "Apache-2.0",
   "@newrelic/koa": "Apache-2.0",
   "@newrelic/superagent": "Apache-2.0",
+  "@newrelic/winston-enricher": "Apache-2.0",
   "@newrelic/native-metrics": "Apache-2.0",
   "@tyriar/fibonacci-heap": "MIT",
   "async": "MIT",
