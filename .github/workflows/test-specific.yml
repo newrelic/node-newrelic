@@ -7,6 +7,9 @@ on:
       test_path:
         description: 'Path to the test directory under `test/versioned/`.'
         required: true
+      branch:
+        description: 'The branch to test against.'
+        required: true
 
 jobs:
   versioned:
@@ -17,7 +20,8 @@ jobs:
         node-version: [12.x, 14.x, 16.x]
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
+      ref: ${{ github.event.inputs.branch }}
     - name: Use Node.js ${{ matrix.node-version }}
       uses: actions/setup-node@v2
       with:
