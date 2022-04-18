@@ -1,3 +1,21 @@
+### v8.10.0 (2022-04-18)
+
+* Added `--strict` flag to versioned test runner to properly fail CI runs when test files are not included.
+
+* Added `promises.tap.js` to mysql2 versioned tests.
+
+* Added instrumentation for `mysql2/promise`.
+   * This previously only existed in our standalone `@newrelic/mysql`, but now gives feature partiy between the two.
+
+* Fixed promise interceptor from re-throwing errors.
+
+* Updated @newrelic/test-utilities to latest.
+ * Removed unused test file in restify versioned tests.
+
+* Added transaction naming documentation ported from a discussion forum post: https://discuss.newrelic.com/t/relic-solution-the-philosophy-of-naming-your-node-agent-transactions/.
+
+* Removed native CPU metric sampler
+
 ### v8.9.1 (2022-03-22)
 
 * Fixed `shim.wrapReturn` to call `Reflect.construct` in construct Proxy trap.  Also including `newTarget` to work with inherited classes.
