@@ -7,7 +7,6 @@
 
 const tap = require('tap')
 const utils = require('@newrelic/test-utilities')
-const async = require('async')
 
 const common = require('../common')
 const { createEmptyResponseServer, FAKE_CREDENTIALS } = require('../aws-server-stubs')
@@ -123,21 +122,21 @@ tap.test('DynamoDB', (t) => {
   })
 
   t.test('commands, callback-style', (t) => {
-    helper.runInTransaction((tx) => {
-      async.eachSeries(
-        commands,
-        (command, cb) => {
-          t.comment(`Testing ${command.constructor.name}`)
+    helper.runInTransaction(async (tx) => {
+      for (const command of commands) {
+        t.comment(`Testing ${command.constructor.name}`)
+
+        await new Promise((resolve) => {
           client.send(command, (err) => {
             t.error(err)
-            return setImmediate(cb)
+
+            return setImmediate(resolve)
           })
-        },
-        () => {
-          tx.end()
-          finish(t, commands, tx)
-        }
-      )
+        })
+      }
+
+      tx.end()
+      finish(t, commands, tx)
     })
   })
 

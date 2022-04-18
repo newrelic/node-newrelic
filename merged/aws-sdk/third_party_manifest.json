@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "Mon Apr 11 2022 12:38:35 GMT-0700 (Pacific Daylight Time)",
+  "lastUpdated": "Thu Apr 14 2022 13:31:08 GMT-0700 (Pacific Daylight Time)",
   "projectName": "New Relic AWS-SDK Instrumentation",
   "projectUrl": "https://github.com/newrelic/node-newrelic-aws-sdk",
   "includeOptDeps": false,
@@ -55,18 +55,6 @@
       "licenseTextSource": "file",
       "publisher": "New Relic Node.js agent team",
       "email": "nodejs@newrelic.com"
-    },
-    "async@2.6.3": {
-      "name": "async",
-      "version": "2.6.3",
-      "range": "^2.6.1",
-      "licenses": "MIT",
-      "repoUrl": "https://github.com/caolan/async",
-      "versionedRepoUrl": "https://github.com/caolan/async/tree/v2.6.3",
-      "licenseFile": "node_modules/async/LICENSE",
-      "licenseUrl": "https://github.com/caolan/async/blob/v2.6.3/LICENSE",
-      "licenseTextSource": "file",
-      "publisher": "Caolan McMahon"
     },
     "aws-sdk@2.969.0": {
       "name": "aws-sdk",
