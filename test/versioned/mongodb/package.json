@@ -8,7 +8,7 @@
         "node": ">=12"
       },
       "dependencies": {
-        "mongodb": ">=2.1"
+        "mongodb": ">=2.1 < 4.0.0 || >= 4.1.4"
       },
       "files": [
         "bulk.tap.js",
