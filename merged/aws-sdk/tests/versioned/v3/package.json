@@ -13,7 +13,7 @@
       "dependencies": {
         "@aws-sdk/client-api-gateway": {
           "versions": ">=3.0.0",
-          "samples": 10
+          "samples": 5
         }
       },
       "files": [
@@ -27,7 +27,7 @@
       "dependencies": {
         "@aws-sdk/client-elasticache": {
           "versions": ">=3.0.0",
-          "samples": 10
+          "samples": 2
         }
       },
       "files": [
@@ -41,7 +41,7 @@
       "dependencies": {
         "@aws-sdk/client-elastic-load-balancing": {
           "versions": ">=3.0.0",
-          "samples": 10
+          "samples": 2
         }
       },
       "files": [
@@ -55,7 +55,7 @@
       "dependencies": {
         "@aws-sdk/client-lambda": {
           "versions": ">=3.0.0",
-          "samples": 10
+          "samples": 2
         }
       },
       "files": [
@@ -69,7 +69,7 @@
       "dependencies": {
         "@aws-sdk/client-rds": {
           "versions": ">=3.0.0",
-          "samples": 10
+          "samples": 2
         }
       },
       "files": [
@@ -83,7 +83,7 @@
       "dependencies": {
         "@aws-sdk/client-redshift": {
           "versions": ">=3.0.0",
-          "samples": 10
+          "samples": 2
         }
       },
       "files": [
@@ -97,7 +97,7 @@
       "dependencies": {
         "@aws-sdk/client-rekognition": {
           "versions": ">=3.0.0",
-          "samples": 10
+          "samples": 2
         }
       },
       "files": [
@@ -111,7 +111,7 @@
       "dependencies": {
         "@aws-sdk/client-s3": {
           "versions": ">=3.0.0",
-          "samples": 10
+          "samples": 5
         }
       },
       "files": [
@@ -125,7 +125,7 @@
       "dependencies": {
         "@aws-sdk/client-ses": {
           "versions": ">=3.0.0",
-          "samples": 10
+          "samples": 2
         }
       },
       "files": [
