@@ -87,108 +87,40 @@ tap.test('ServerlessCollector API', (t) => {
     })
   })
 
-  t.test('#metricData', (t) => {
-    t.autoend()
+  const testMethods = [
+    { key: 'metric_data', name: '#metricData' },
+    { key: 'error_data', name: '#errorData' },
+    { key: 'transaction_sample_data', name: '#transactionSampleData' },
+    { key: 'analytic_event_data', name: '#analyticsEvents' },
+    { key: 'custom_event_data', name: '#customEvents' },
+    { key: 'error_event_data', name: '#errorEvents' },
+    { key: 'sql_trace_data', name: '#sqlTraceEvents' },
+    { key: 'span_event_data', name: '#spanEvents' },
+    { key: 'log_event_data', name: '#logEvents' }
+  ]
 
-    t.beforeEach(beforeTest)
-    t.afterEach(afterTest)
+  testMethods.forEach(({ key, name }) => {
+    t.test(name, (t) => {
+      t.autoend()
 
-    t.test('adds metric_data to the payload object', (t) => {
-      const metricData = { type: 'metric_data' }
-      api.metric_data(metricData, () => {
-        t.same(api.payload.metric_data, metricData)
-        t.end()
+      t.beforeEach(beforeTest)
+      t.afterEach(afterTest)
+
+      t.test(`adds ${key} to the payload object`, (t) => {
+        const eventData = { type: key }
+        api[key](eventData, () => {
+          t.same(api.payload[key], eventData)
+          t.end()
+        })
       })
-    })
-  })
 
-  t.test('#error_data', (t) => {
-    t.autoend()
-
-    t.beforeEach(beforeTest)
-    t.afterEach(afterTest)
-
-    t.test('adds error_data to the payload object', (t) => {
-      const errorData = { type: 'error_data' }
-      api.error_data(errorData, () => {
-        t.same(api.payload.error_data, errorData)
-        t.end()
-      })
-    })
-  })
-
-  t.test('#transaction_sample_data', (t) => {
-    t.autoend()
-
-    t.beforeEach(beforeTest)
-    t.afterEach(afterTest)
-
-    t.test('adds transaction_sample_data to the payload object', (t) => {
-      const transactionSampleData = { type: 'transaction_sample_data' }
-      api.transaction_sample_data(transactionSampleData, () => {
-        t.same(api.payload.transaction_sample_data, transactionSampleData)
-        t.end()
-      })
-    })
-  })
-
-  t.test('#analyticsEvents', (t) => {
-    t.autoend()
-
-    t.beforeEach(beforeTest)
-    t.afterEach(afterTest)
-
-    t.test('adds analytic_event_data to the payload object', (t) => {
-      const analyticsEvents = { type: 'analytic_event_data' }
-      api.analytic_event_data(analyticsEvents, () => {
-        t.same(api.payload.analytic_event_data, analyticsEvents)
-
-        t.end()
-      })
-    })
-  })
-
-  t.test('#customEvents', (t) => {
-    t.autoend()
-
-    t.beforeEach(beforeTest)
-    t.afterEach(afterTest)
-
-    t.test('adds custom_event_data to the payload object', (t) => {
-      const customEvents = { type: 'custom_event_data' }
-      api.custom_event_data(customEvents, () => {
-        t.same(api.payload.custom_event_data, customEvents)
-        t.end()
-      })
-    })
-  })
-
-  t.test('#error_event_data', (t) => {
-    t.autoend()
-
-    t.beforeEach(beforeTest)
-    t.afterEach(afterTest)
-
-    t.test('adds error_event_data to the payload object', (t) => {
-      const errorEvents = { type: 'error_event_data' }
-      api.error_event_data(errorEvents, () => {
-        t.same(api.payload.error_event_data, errorEvents)
-        t.end()
-      })
-    })
-  })
-
-  t.test('#spanEvents', (t) => {
-    t.autoend()
-
-    t.beforeEach(beforeTest)
-    t.afterEach(afterTest)
-
-    t.test('adds span_event_data to the payload object', (t) => {
-      const spanEvents = { type: 'span_event_data' }
-      api.span_event_data(spanEvents, () => {
-        t.same(api.payload.span_event_data, spanEvents)
-        t.end()
+      t.test(`does not add ${key} to the payload object when disabled`, (t) => {
+        api.enabled = false
+        const eventData = { type: key }
+        api[key](eventData, () => {
+          t.same(api.payload[key], null)
+          t.end()
+        })
       })
     })
   })

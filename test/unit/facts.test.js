@@ -242,27 +242,34 @@ tap.test('fun facts about apps that New Relic is interested in include', (t) => 
     })
   })
 
-  t.test('should add harvest_limits from local or default config', (t) => {
-    const expectedValue = 10
-    agent.config.transaction_events.max_samples_stored = expectedValue
-    agent.config.custom_insights_events.max_samples_stored = expectedValue
-    agent.config.error_collector.max_event_samples_stored = expectedValue
-    agent.config.span_events.max_samples_stored = expectedValue
+  // Every call connect needs to use the original values of max_samples_stored as the server overwrites
+  // these with derived samples based on harvest cycle frequencies
+  t.test(
+    'should add harvest_limits from their respective config values on every call to generate facts',
+    (t) => {
+      const expectedValue = 10
+      agent.config.transaction_events.max_samples_stored = expectedValue
+      agent.config.custom_insights_events.max_samples_stored = expectedValue
+      agent.config.error_collector.max_event_samples_stored = expectedValue
+      agent.config.span_events.max_samples_stored = expectedValue
+      agent.config.application_logging.forwarding.max_samples_stored = expectedValue
 
-    const expectedHarvestConfig = {
-      harvest_limits: {
-        analytic_event_data: expectedValue,
-        custom_event_data: expectedValue,
-        error_event_data: expectedValue,
-        span_event_data: expectedValue
+      const expectedHarvestConfig = {
+        harvest_limits: {
+          analytic_event_data: expectedValue,
+          custom_event_data: expectedValue,
+          error_event_data: expectedValue,
+          span_event_data: expectedValue,
+          log_event_data: expectedValue
+        }
       }
-    }
 
-    facts(agent, (factsResult) => {
-      expect(factsResult.event_harvest_config).deep.equal(expectedHarvestConfig)
-      t.end()
-    })
-  })
+      facts(agent, (factsResult) => {
+        expect(factsResult.event_harvest_config).deep.equal(expectedHarvestConfig)
+        t.end()
+      })
+    }
+  )
 })
 
 tap.test('utilization', (t) => {

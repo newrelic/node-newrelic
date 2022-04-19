@@ -206,7 +206,7 @@ tap.test('when forcing transaction ignore status', (t) => {
 tap.test('#startAggregators should start all aggregators', (t) => {
   // Load agent with default 'stopped' state
   const agent = helper.loadMockedAgent(null, false)
-  agent.config.distributed_tracing.enabled = true // for span events
+  agent.config.application_logging.enabled = true // for span events
 
   t.teardown(() => {
     helper.unloadAgent(agent)
@@ -220,27 +220,7 @@ tap.test('#startAggregators should start all aggregators', (t) => {
   t.ok(agent.spanEventAggregator.sendTimer)
   t.ok(agent.transactionEventAggregator.sendTimer)
   t.ok(agent.customEventAggregator.sendTimer)
-
-  t.end()
-})
-
-tap.test('#startAggregators should start all aggregators', (t) => {
-  // Load agent with default 'stopped' state
-  const agent = helper.loadMockedAgent(null, false)
-  agent.config.distributed_tracing.enabled = true // for span events
-
-  t.teardown(() => {
-    helper.unloadAgent(agent)
-  })
-
-  agent.startAggregators()
-
-  t.ok(agent.traces.sendTimer)
-  t.ok(agent.errors.traceAggregator.sendTimer)
-  t.ok(agent.errors.eventAggregator.sendTimer)
-  t.ok(agent.spanEventAggregator.sendTimer)
-  t.ok(agent.transactionEventAggregator.sendTimer)
-  t.ok(agent.customEventAggregator.sendTimer)
+  t.ok(agent.logs.sendTimer)
 
   t.end()
 })
@@ -248,7 +228,7 @@ tap.test('#startAggregators should start all aggregators', (t) => {
 tap.test('#stopAggregators should stop all aggregators', (t) => {
   // Load agent with default 'stopped' state
   const agent = helper.loadMockedAgent(null, false)
-  agent.config.distributed_tracing.enabled = true // for span events
+  agent.config.application_logging.enabled = true // for span events
 
   t.teardown(() => {
     helper.unloadAgent(agent)
@@ -263,16 +243,17 @@ tap.test('#stopAggregators should stop all aggregators', (t) => {
   t.notOk(agent.spanEventAggregator.sendTimer)
   t.notOk(agent.transactionEventAggregator.sendTimer)
   t.notOk(agent.customEventAggregator.sendTimer)
+  t.notOk(agent.logs.sendTimer)
 
   t.end()
 })
 
 tap.test('#onConnect should reconfigure all the aggregators', (t) => {
-  const EXPECTED_AGG_COUNT = 8
+  const EXPECTED_AGG_COUNT = 9
 
   // Load agent with default 'stopped' state
   const agent = helper.loadMockedAgent(null, false)
-  agent.config.distributed_tracing.enabled = true // for span events
+  agent.config.application_logging.enabled = true // for span events
 
   t.teardown(() => {
     helper.unloadAgent(agent)
@@ -699,6 +680,80 @@ tap.test('when connected', (t) => {
     nock.enableNetConnect()
   })
 
+  function mockHandShake(config = {}) {
+    const redirect = nock(URL)
+      .post(helper.generateCollectorPath('preconnect'))
+      .reply(200, {
+        return_value: {
+          redirect_host: 'collector.newrelic.com',
+          security_policies: {}
+        }
+      })
+
+    const handshake = nock(URL)
+      .post(helper.generateCollectorPath('connect'))
+      .reply(200, { return_value: config })
+    return { redirect, handshake }
+  }
+
+  function setupAggregators(enableAggregator) {
+    agent.config.application_logging.enabled = enableAggregator
+    agent.config.slow_sql.enabled = enableAggregator
+    agent.config.transaction_tracer.record_sql = 'raw'
+    agent.config.distributed_tracing.enabled = enableAggregator
+    agent.config.custom_insights_events.enabled = enableAggregator
+    agent.config.transaction_events.enabled = enableAggregator
+    agent.config.transaction_tracer.enabled = enableAggregator
+    agent.config.collect_errors = enableAggregator
+    agent.config.error_collector.capture_events = enableAggregator
+    const runId = 1122
+    const config = {
+      agent_run_id: runId
+    }
+    const { redirect, handshake } = mockHandShake(config)
+    const metrics = nock(URL)
+      .post(helper.generateCollectorPath('metric_data', runId))
+      .reply(200, { return_value: [] })
+    const logs = nock(URL)
+      .post(helper.generateCollectorPath('log_event_data', runId))
+      .reply(200, { return_value: [] })
+    const sql = nock(URL)
+      .post(helper.generateCollectorPath('sql_trace_data', runId))
+      .reply(200, { return_value: [] })
+    const spanEventAggregator = nock(URL)
+      .post(helper.generateCollectorPath('span_event_data', runId))
+      .reply(200, { return_value: [] })
+    const transactionEvents = nock(URL)
+      .post(helper.generateCollectorPath('analytic_event_data', runId))
+      .reply(200, { return_value: [] })
+    const transactionSamples = nock(URL)
+      .post(helper.generateCollectorPath('transaction_sample_data', runId))
+      .reply(200, { return_value: [] })
+    const customEvents = nock(URL)
+      .post(helper.generateCollectorPath('custom_event_data', runId))
+      .reply(200, { return_value: [] })
+    const errorTransactionEvents = nock(URL)
+      .post(helper.generateCollectorPath('error_data', runId))
+      .reply(200, { return_value: [] })
+    const errorEvents = nock(URL)
+      .post(helper.generateCollectorPath('error_event_data', runId))
+      .reply(200, { return_value: [] })
+
+    return {
+      redirect,
+      handshake,
+      metrics,
+      logs,
+      sql,
+      spanEventAggregator,
+      transactionSamples,
+      transactionEvents,
+      customEvents,
+      errorTransactionEvents,
+      errorEvents
+    }
+  }
+
   t.test('should update the metric apdexT value after connect', (t) => {
     t.equal(agent.metrics._apdexT, 0.1)
 
@@ -715,53 +770,156 @@ tap.test('when connected', (t) => {
 
   t.test('should reset the config and metrics normalizer on connection', (t) => {
     const config = {
-      agent_run_id: 404,
+      agent_run_id: 1122,
       apdex_t: 0.742,
       url_rules: []
     }
 
-    const redirect = nock(URL)
-      .post(helper.generateCollectorPath('preconnect'))
-      .reply(200, {
-        return_value: {
-          redirect_host: 'collector.newrelic.com',
-          security_policies: {}
-        }
-      })
-
-    const handshake = nock(URL)
-      .post(helper.generateCollectorPath('connect'))
-      .reply(200, { return_value: config })
-
-    const settings = nock(URL)
-      .post(helper.generateCollectorPath('agent_settings', 404))
-      .reply(200, { return_value: config })
-
-    const metrics = nock(URL)
-      .post(helper.generateCollectorPath('metric_data', 404))
-      .reply(200, { return_value: [] })
-
+    const { redirect, handshake } = mockHandShake(config)
     const shutdown = nock(URL)
-      .post(helper.generateCollectorPath('shutdown', 404))
+      .post(helper.generateCollectorPath('shutdown', 1122))
       .reply(200, { return_value: null })
 
+    t.equal(agent.metrics._apdexT, 0.1)
     agent.start(function cbStart(error) {
       t.error(error)
       t.ok(redirect.isDone())
       t.ok(handshake.isDone())
 
       t.equal(agent._state, 'started')
-      t.equal(agent.config.run_id, 404)
+      t.equal(agent.config.run_id, 1122)
       t.equal(agent.metrics._apdexT, 0.742)
       t.same(agent.urlNormalizer.rules, [])
 
       agent.stop(function cbStop() {
-        t.ok(settings.isDone())
-        t.ok(metrics.isDone())
         t.ok(shutdown.isDone())
 
         t.end()
       })
+    })
+  })
+
+  t.test('should force harvest of all aggregators 1 second after connect', (t) => {
+    const {
+      redirect,
+      handshake,
+      metrics,
+      logs,
+      sql,
+      spanEventAggregator,
+      transactionEvents,
+      transactionSamples,
+      customEvents,
+      errorTransactionEvents,
+      errorEvents
+    } = setupAggregators(true)
+
+    agent.logs.add([{ key: 'bar' }])
+    const tx = new helper.FakeTransaction(agent, '/path/to/fake')
+    tx.metrics = { apdexT: 0 }
+    const segment = new helper.FakeSegment(tx, 2000)
+    agent.queries.add(segment, 'mysql', 'select * from foo', 'Stack\nFrames')
+    agent.spanEventAggregator.add(segment)
+    agent.transactionEventAggregator.add(tx)
+    agent.customEventAggregator.add({ key: 'value' })
+    agent.traces.add(tx)
+    const err = new Error('test error')
+    agent.errors.traceAggregator.add(err)
+    agent.errors.eventAggregator.add(err)
+
+    agent.start((err) => {
+      t.error(err)
+      t.ok(redirect.isDone())
+      t.ok(handshake.isDone())
+      t.ok(metrics.isDone())
+      t.ok(logs.isDone())
+      t.ok(sql.isDone())
+      t.ok(spanEventAggregator.isDone())
+      t.ok(transactionEvents.isDone())
+      t.ok(transactionSamples.isDone())
+      t.ok(customEvents.isDone())
+      t.ok(errorTransactionEvents.isDone())
+      t.ok(errorEvents.isDone())
+      t.end()
+    })
+  })
+
+  t.test(
+    'should force harvest of only metric data 1 second after connect when all other aggregators are disabled',
+    (t) => {
+      const {
+        redirect,
+        handshake,
+        metrics,
+        logs,
+        sql,
+        spanEventAggregator,
+        transactionEvents,
+        transactionSamples,
+        customEvents,
+        errorTransactionEvents,
+        errorEvents
+      } = setupAggregators(false)
+
+      agent.logs.add([{ key: 'bar' }])
+      const tx = new helper.FakeTransaction(agent, '/path/to/fake')
+      tx.metrics = { apdexT: 0 }
+      const segment = new helper.FakeSegment(tx, 2000)
+      agent.queries.add(segment, 'mysql', 'select * from foo', 'Stack\nFrames')
+      agent.spanEventAggregator.add(segment)
+      agent.transactionEventAggregator.add(tx)
+      agent.customEventAggregator.add({ key: 'value' })
+      agent.traces.add(tx)
+      const err = new Error('test error')
+      agent.errors.traceAggregator.add(err)
+      agent.errors.eventAggregator.add(err)
+
+      agent.start((err) => {
+        t.error(err)
+        t.ok(redirect.isDone())
+        t.ok(handshake.isDone())
+        t.ok(metrics.isDone())
+        t.notOk(logs.isDone())
+        t.notOk(sql.isDone())
+        t.notOk(spanEventAggregator.isDone())
+        t.notOk(transactionEvents.isDone())
+        t.notOk(transactionSamples.isDone())
+        t.notOk(customEvents.isDone())
+        t.notOk(errorTransactionEvents.isDone())
+        t.notOk(errorEvents.isDone())
+        t.end()
+      })
+    }
+  )
+
+  t.test('should not post data when there is none in aggregators during a force harvest', (t) => {
+    const {
+      redirect,
+      handshake,
+      metrics,
+      logs,
+      sql,
+      spanEventAggregator,
+      transactionEvents,
+      transactionSamples,
+      customEvents,
+      errorTransactionEvents,
+      errorEvents
+    } = setupAggregators(true)
+    agent.start((err) => {
+      t.error(err)
+      t.ok(redirect.isDone())
+      t.ok(handshake.isDone())
+      t.ok(metrics.isDone())
+      t.notOk(logs.isDone())
+      t.notOk(sql.isDone())
+      t.notOk(spanEventAggregator.isDone())
+      t.notOk(transactionEvents.isDone())
+      t.notOk(transactionSamples.isDone())
+      t.notOk(customEvents.isDone())
+      t.notOk(errorTransactionEvents.isDone())
+      t.notOk(errorEvents.isDone())
+      t.end()
     })
   })
 })
@@ -905,7 +1063,9 @@ tap.test('when event_harvest_config updated on connect with a valid config', (t)
     harvest_limits: {
       analytic_event_data: 833,
       custom_event_data: 833,
-      error_event_data: 8
+      error_event_data: 8,
+      span_event_data: 200,
+      log_event_data: 833
     }
   }
 
@@ -970,6 +1130,74 @@ tap.test('when event_harvest_config updated on connect with a valid config', (t)
 
       t.ok(metric)
       t.equal(metric.total, validHarvestConfig.harvest_limits.error_event_data)
+      t.end()
+    })
+  })
+
+  t.test('should generate SpanEventData/HarvestLimit supportability', (t) => {
+    agent.onConnect(false, () => {
+      const expectedMetricName = 'Supportability/EventHarvest/SpanEventData/HarvestLimit'
+
+      const metric = agent.metrics.getMetric(expectedMetricName)
+
+      t.ok(metric)
+      t.equal(metric.total, validHarvestConfig.harvest_limits.span_event_data)
+      t.end()
+    })
+  })
+  t.test('should generate LogEventData/HarvestLimit supportability', (t) => {
+    agent.onConnect(false, () => {
+      const expectedMetricName = 'Supportability/EventHarvest/LogEventData/HarvestLimit'
+
+      const metric = agent.metrics.getMetric(expectedMetricName)
+
+      t.ok(metric)
+      t.equal(metric.total, validHarvestConfig.harvest_limits.log_event_data)
+      t.end()
+    })
+  })
+})
+
+tap.test('logging supportability on connect', (t) => {
+  t.autoend()
+  let agent
+  const keys = ['Forwarding', 'Metrics', 'LocalDecorating']
+
+  t.beforeEach(() => {
+    nock.disableNetConnect()
+    agent = helper.loadMockedAgent(null, false)
+  })
+  t.afterEach(() => {
+    helper.unloadAgent(agent)
+    agent = null
+  })
+
+  t.test('should increment disabled metrics when logging features are off', (t) => {
+    agent.config.application_logging.metrics.enabled = false
+    agent.config.application_logging.forwarding.enabled = false
+    agent.config.application_logging.local_decorating.enabled = false
+    agent.onConnect(false, () => {
+      keys.forEach((key) => {
+        const disabled = agent.metrics.getMetric(`Supportability/Logging/${key}/Nodejs/disabled`)
+        const enabled = agent.metrics.getMetric(`Supportability/Logging/${key}/Nodejs/enabled`)
+        t.equal(disabled.callCount, 1)
+        t.notOk(enabled)
+      })
+      t.end()
+    })
+  })
+
+  t.test('should increment enabled metrics when logging features are on', (t) => {
+    agent.config.application_logging.metrics.enabled = true
+    agent.config.application_logging.forwarding.enabled = true
+    agent.config.application_logging.local_decorating.enabled = true
+    agent.onConnect(false, () => {
+      keys.forEach((key) => {
+        const disabled = agent.metrics.getMetric(`Supportability/Logging/${key}/Nodejs/disabled`)
+        const enabled = agent.metrics.getMetric(`Supportability/Logging/${key}/Nodejs/enabled`)
+        t.equal(enabled.callCount, 1)
+        t.notOk(disabled)
+      })
       t.end()
     })
   })

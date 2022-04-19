@@ -14,6 +14,7 @@ const Config = require('../../../lib/config')
 const expect = require('chai').expect
 const QueryTraceAggregator = require('../../../lib/db/query-trace-aggregator')
 const codec = require('../../../lib/util/codec')
+const { FakeSegment, FakeTransaction } = require('../../lib/agent_helper')
 
 const FAKE_STACK = 'Error\nfake stack'
 
@@ -1048,35 +1049,12 @@ describe('Query Trace Aggregator', function testQueryTracer() {
 })
 
 function addQuery(queries, duration, url, query) {
-  const transaction = new FakeTransaction(url)
+  const transaction = new FakeTransaction(null, url)
   const segment = new FakeSegment(transaction, duration)
 
   queries.add(segment, 'mysql', query || 'select * from foo where a=2', FAKE_STACK)
 
   return segment
-}
-
-function FakeTransaction(url = null) {
-  this.url = url
-  this.name = 'FakeTransaction'
-  this.addDistributedTraceIntrinsics = () => {}
-}
-
-FakeTransaction.prototype.getFullName = function () {
-  return this.name
-}
-
-function FakeSegment(transaction, duration, name = 'FakeSegment') {
-  this.transaction = transaction
-  this.attributes = {}
-  this.name = name
-  this.addAttribute = function addAttribute(key, value) {
-    this.attributes[key] = value
-  }
-  this.getAttributes = () => this.attributes
-  this.getDurationInMillis = function getDurationInMillis() {
-    return duration
-  }
 }
 
 function verifySample(sample, count, segment) {
