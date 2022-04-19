@@ -8,7 +8,10 @@
         "node": ">=12 <14"
       },
       "dependencies": {
-        "hapi": ">=2.0.0 <6",
+        "hapi": {
+          "versions": ">=2.0.0 <6",
+          "samples": 5
+        },
         "ejs": "2.5"
       },
       "files": [
@@ -23,7 +26,10 @@
         "node": ">=12 <14"
       },
       "dependencies": {
-        "hapi": ">=6.0.0 <7"
+        "hapi": {
+          "versions": ">=6.0.0 <7",
+          "samples": 3
+        }
       },
       "files": [
         "capture-params.tap.js",
@@ -38,7 +44,10 @@
         "node": ">=12 <14"
       },
       "dependencies": {
-        "hapi": ">=7.0.0 <8.3 || >=8.8 <9"
+        "hapi": {
+          "versions": ">=7.0.0 <8.3 || >=8.8 <9",
+          "samples": 3
+        }
       },
       "files": [
         "capture-params.tap.js",
@@ -71,7 +80,10 @@
         "node": ">=12 <14"
       },
       "dependencies": {
-        "hapi": ">=16.0.0 <17",
+        "hapi": {
+          "versions": ">=16.0.0 <17",
+          "samples": 2
+        },
         "ejs": "2.5",
         "vision": "4.1"
       },
