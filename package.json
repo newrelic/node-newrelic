@@ -1,6 +1,6 @@
 {
   "name": "newrelic",
-  "version": "8.9.1",
+  "version": "8.10.0",
   "author": "New Relic Node.js agent team <nodejs@newrelic.com>",
   "license": "Apache-2.0",
   "contributors": [
@@ -217,7 +217,7 @@
     "rimraf": "^2.6.3",
     "should": "*",
     "sinon": "^4.5.0",
-    "tap": "^15.0.9",
+    "tap": "^16.0.1",
     "temp": "^0.8.1",
     "when": "*"
   },

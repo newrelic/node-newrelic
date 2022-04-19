@@ -9,8 +9,11 @@
       },
       "dependencies": {
         "ejs": "2.5.5",
-        "@hapi/hapi": ">=18.3.1",
-        "vision": "^5.0.0"
+        "@hapi/hapi": {
+          "versions": ">=18.3.1",
+          "samples": 5
+        },
+        "vision": "latest"
       },
       "files": [
         "capture-params.tap.js",
@@ -32,7 +35,7 @@
       "dependencies": {
         "ejs": "2.5.5",
         "@hapi/hapi": ">=20.1.2",
-        "vision": "^5.0.0"
+        "vision": "latest"
       },
       "files": [
         "capture-params.tap.js",

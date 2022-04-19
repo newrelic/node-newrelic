@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "Wed Apr 13 2022 16:54:45 GMT-0700 (Pacific Daylight Time)",
+  "lastUpdated": "Tue Apr 19 2022 10:20:15 GMT-0700 (Pacific Daylight Time)",
   "projectName": "New Relic Node Agent",
   "projectUrl": "https://github.com/newrelic/node-newrelic",
   "includeOptDeps": true,
@@ -702,7 +702,7 @@
     "tap@15.1.6": {
       "name": "tap",
       "version": "15.1.6",
-      "range": "^15.0.9",
+      "range": "^16.0.1",
       "licenses": "ISC",
       "repoUrl": "https://github.com/tapjs/node-tap",
       "versionedRepoUrl": "https://github.com/tapjs/node-tap/tree/v15.1.6",
