@@ -243,4 +243,21 @@ tap.test('with default properties', (t) => {
     t.equal(configuration.span_events.max_samples_stored, 2000)
     t.end()
   })
+
+  t.test('should default application logging accordingly', (t) => {
+    t.same(configuration.application_logging, {
+      enabled: false,
+      forwarding: {
+        enabled: false,
+        max_samples_stored: 10000
+      },
+      metrics: {
+        enabled: true
+      },
+      local_decorating: {
+        enabled: false
+      }
+    })
+    t.end()
+  })
 })
