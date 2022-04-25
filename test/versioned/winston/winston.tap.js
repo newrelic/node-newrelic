@@ -111,28 +111,36 @@ tap.test('Winston instrumentation', (t) => {
     t.autoend()
 
     t.beforeEach(() => {
-      setup({ application_logging: { enabled: true } })
+      setup({
+        application_logging: {
+          enabled: true,
+          local_decorating: {
+            enabled: true
+          }
+        }
+      })
     })
 
-    t.test('should add linking metadata to all transports', (t) => {
-      const assertFn = (msg) => {
-        t.equal(msg['entity.name'], agent.config.applications()[0], 'should have entity name')
-        t.equal(msg['entity.type'], 'SERVICE', 'should have entity type')
-        t.equal(typeof msg.timestamp, 'number', 'should have timestamp as number')
-        t.equal(msg.hostname, agent.config.getHostnameSafe(), 'should have hostname as string')
-        t.equal(msg.level, 'info')
-        if (msg.message === 'out of trans') {
-          t.equal(msg['trace.id'], undefined, 'msg out of trans should not have trace id')
-          t.equal(msg['span.id'], undefined, 'msg out of trans should not have span id')
-        } else if (msg.message === 'in trans') {
-          t.equal(typeof msg['trace.id'], 'string', 'msg in trans should have trace id')
-          t.equal(typeof msg['span.id'], 'string', 'msg in trans should have span id')
-        }
+    const msgAssertFn = (t, msg) => {
+      t.equal(msg['entity.name'], agent.config.applications()[0], 'should have entity name')
+      t.equal(msg['entity.type'], 'SERVICE', 'should have entity type')
+      t.equal(typeof msg.timestamp, 'number', 'should have timestamp as number')
+      t.equal(msg.hostname, agent.config.getHostnameSafe(), 'should have hostname as string')
+      t.equal(msg.level, 'info')
+      if (msg.message === 'out of trans') {
+        t.equal(msg['trace.id'], undefined, 'msg out of trans should not have trace id')
+        t.equal(msg['span.id'], undefined, 'msg out of trans should not have span id')
+      } else if (msg.message === 'in trans') {
+        t.equal(typeof msg['trace.id'], 'string', 'msg in trans should have trace id')
+        t.equal(typeof msg['span.id'], 'string', 'msg in trans should have span id')
       }
+    }
 
+    t.test('should add linking metadata to all transports', (t) => {
       const handleMessages = makeStreamTest(() => {
         t.end()
       })
+      const assertFn = msgAssertFn.bind(null, t)
       const jsonStream = concat(handleMessages(assertFn))
       const simpleStream = concat(handleMessages(assertFn))
 
@@ -156,63 +164,25 @@ tap.test('Winston instrumentation', (t) => {
       logStuff(logger, [jsonStream, simpleStream])
     })
 
-    t.test('should preserve original_timestamp on transports with timestamp formats', (t) => {
-      const assertFn = (msg) => {
-        t.equal(msg.label, 'test', 'format applies test label')
-        t.ok('original_timestamp' in msg, 'formatter must preserve original timestamp')
-        t.ok(/^\d{4}$/.test(msg.original_timestamp), 'original_timestamp must be YYYY')
-        t.equal(typeof msg.timestamp, 'number', 'timestamp must be a number')
-      }
-
+    t.test('should instrument top-level format', async (t) => {
       const handleMessages = makeStreamTest(() => {
         t.end()
       })
-      const stream = concat(handleMessages(assertFn))
+      const assertFn = msgAssertFn.bind(null, t)
+      const simpleStream = concat(handleMessages(assertFn))
 
+      // Example Winston setup to test
       const logger = winston.createLogger({
+        format: winston.format.simple(),
         transports: [
           new winston.transports.Stream({
             level: 'info',
-            format: winston.format.combine(
-              winston.format.timestamp({ format: 'YYYY' }),
-              winston.format.label({ label: 'test' })
-            ),
-            stream
+            stream: simpleStream
           })
         ]
       })
 
-      logStuff(logger, [stream])
-    })
-
-    t.test('should add error metadata to logs', (t) => {
-      const assertFn = (msg) => {
-        t.ok(msg['error.message'], 'Error messages are captured')
-        t.equal(msg['error.message'], 'test error message', 'Error message should be unmodified')
-        t.ok(msg['error.class'], 'Error classes are captured')
-        t.ok(msg['error.stack'], 'Error stack traces are captured')
-        t.notOk(msg.stack, 'Stack removed from JSON')
-        t.notOk(msg.trace, 'Trace removed from JSON')
-      }
-
-      const handleMessages = makeStreamTest(() => {
-        t.end()
-      })
-      const stream = concat(handleMessages(assertFn))
-
-      winston.createLogger({
-        transports: [
-          new winston.transports.Stream({
-            level: 'info',
-            handleExceptions: true,
-            stream
-          })
-        ],
-        exitOnError: false
-      })
-
-      process.emit('uncaughtException', new Error('test error message'))
-      stream.end()
+      logStuff(logger, [simpleStream])
     })
   })
 })
