@@ -206,7 +206,6 @@ tap.test('when forcing transaction ignore status', (t) => {
 tap.test('#startAggregators should start all aggregators', (t) => {
   // Load agent with default 'stopped' state
   const agent = helper.loadMockedAgent(null, false)
-  agent.config.application_logging.enabled = true
   agent.config.application_logging.forwarding.enabled = true
 
   t.teardown(() => {
@@ -229,7 +228,6 @@ tap.test('#startAggregators should start all aggregators', (t) => {
 tap.test('#stopAggregators should stop all aggregators', (t) => {
   // Load agent with default 'stopped' state
   const agent = helper.loadMockedAgent(null, false)
-  agent.config.application_logging.enabled = true
   agent.config.application_logging.forwarding.enabled = true
 
   t.teardown(() => {
@@ -255,7 +253,6 @@ tap.test('#onConnect should reconfigure all the aggregators', (t) => {
 
   // Load agent with default 'stopped' state
   const agent = helper.loadMockedAgent(null, false)
-  agent.config.application_logging.enabled = true // for span events
   agent.config.application_logging.forwarding.enabled = true
 
   t.teardown(() => {
