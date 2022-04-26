@@ -246,7 +246,7 @@ tap.test('with default properties', (t) => {
 
   t.test('should default application logging accordingly', (t) => {
     t.same(configuration.application_logging, {
-      enabled: false,
+      enabled: true,
       forwarding: {
         enabled: false,
         max_samples_stored: 10000

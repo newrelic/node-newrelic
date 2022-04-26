@@ -206,7 +206,7 @@ tap.test('when forcing transaction ignore status', (t) => {
 tap.test('#startAggregators should start all aggregators', (t) => {
   // Load agent with default 'stopped' state
   const agent = helper.loadMockedAgent(null, false)
-  agent.config.application_logging.enabled = true // for span events
+  agent.config.application_logging.forwarding.enabled = true
 
   t.teardown(() => {
     helper.unloadAgent(agent)
@@ -228,7 +228,7 @@ tap.test('#startAggregators should start all aggregators', (t) => {
 tap.test('#stopAggregators should stop all aggregators', (t) => {
   // Load agent with default 'stopped' state
   const agent = helper.loadMockedAgent(null, false)
-  agent.config.application_logging.enabled = true // for span events
+  agent.config.application_logging.forwarding.enabled = true
 
   t.teardown(() => {
     helper.unloadAgent(agent)
@@ -253,7 +253,7 @@ tap.test('#onConnect should reconfigure all the aggregators', (t) => {
 
   // Load agent with default 'stopped' state
   const agent = helper.loadMockedAgent(null, false)
-  agent.config.application_logging.enabled = true // for span events
+  agent.config.application_logging.forwarding.enabled = true
 
   t.teardown(() => {
     helper.unloadAgent(agent)
@@ -698,6 +698,7 @@ tap.test('when connected', (t) => {
 
   function setupAggregators(enableAggregator) {
     agent.config.application_logging.enabled = enableAggregator
+    agent.config.application_logging.forwarding.enabled = enableAggregator
     agent.config.slow_sql.enabled = enableAggregator
     agent.config.transaction_tracer.record_sql = 'raw'
     agent.config.distributed_tracing.enabled = enableAggregator
@@ -1173,6 +1174,7 @@ tap.test('logging supportability on connect', (t) => {
   })
 
   t.test('should increment disabled metrics when logging features are off', (t) => {
+    agent.config.application_logging.enabled = true
     agent.config.application_logging.metrics.enabled = false
     agent.config.application_logging.forwarding.enabled = false
     agent.config.application_logging.local_decorating.enabled = false
@@ -1187,7 +1189,27 @@ tap.test('logging supportability on connect', (t) => {
     })
   })
 
+  t.test(
+    'should increment disabled metrics when logging features are on but application_logging.enabled is false',
+    (t) => {
+      agent.config.application_logging.enabled = false
+      agent.config.application_logging.metrics.enabled = true
+      agent.config.application_logging.forwarding.enabled = true
+      agent.config.application_logging.local_decorating.enabled = true
+      agent.onConnect(false, () => {
+        keys.forEach((key) => {
+          const disabled = agent.metrics.getMetric(`Supportability/Logging/${key}/Nodejs/disabled`)
+          const enabled = agent.metrics.getMetric(`Supportability/Logging/${key}/Nodejs/enabled`)
+          t.equal(disabled.callCount, 1)
+          t.notOk(enabled)
+        })
+        t.end()
+      })
+    }
+  )
+
   t.test('should increment enabled metrics when logging features are on', (t) => {
+    agent.config.application_logging.enabled = true
     agent.config.application_logging.metrics.enabled = true
     agent.config.application_logging.forwarding.enabled = true
     agent.config.application_logging.local_decorating.enabled = true
