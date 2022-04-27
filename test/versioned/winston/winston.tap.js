@@ -9,7 +9,7 @@ const tap = require('tap')
 const helper = require('../../lib/agent_helper')
 const concat = require('concat-stream')
 
-tap.test('Winston instrumentation', (t) => {
+tap.test('Winston instrumentation', { bail: true }, (t) => {
   t.autoend()
 
   let agent
@@ -183,6 +183,12 @@ tap.test('Winston instrumentation', (t) => {
       })
 
       logStuff(logger, [simpleStream])
+    })
+
+    t.test('should be able to determine if already instrumented', async (t) => {
+      t.equal(typeof winston.createLogger.__NR_unwrap, 'function')
+      winston.createLogger.__NR_unwrap()
+      t.equal(winston.createLogger.__NR_unwrap, undefined)
     })
   })
 })
