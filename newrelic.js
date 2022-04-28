@@ -51,7 +51,7 @@ exports.config = {
     enabled: true,
     local_decorating: {
       /**
-       * TODO
+       * Toggles whether the agent performs *Local Log Decoration* on standard log output.
        */
       enabled: true
     }
