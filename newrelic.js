@@ -54,24 +54,12 @@ exports.config = {
       /**
        * Toggles whether the agent gathers log records for sending to New Relic.
        */
-      enabled: false,
-      /**
-       * Number of log records to send per minute to New Relic.
-       * Controls the overall memory consumption when using log forwarding.
-       */
-      max_samples_stored: 10000
-    },
-    metrics: {
-      /**
-       * Toggles whether the agent gathers the the user facing `Logging/lines`
-       * and `Logging/lines/{SEVERITY}` *Logging Metrics* used in the Logs chart
-       * on the APM Summary page.
-       */
-      enabled: true
+      enabled: false
     },
     local_decorating: {
       /**
-       * Toggles whether the agent performs *Local Log Decoration* on standard log output.
+       * Toggles whether the agent performs *Local Log Decoration* on standard
+       * log output.
        */
       enabled: true
     }
