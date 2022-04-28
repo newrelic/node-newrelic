@@ -45,16 +45,11 @@ exports.config = {
    */
   allow_all_headers: true,
   application_logging: {
-    /**
-     * If this is disabled, all sub-features are disabled.
-     * If it is enabled, the individual sub-feature configurations take effect.
-     */
-    enabled: true,
     forwarding: {
       /**
        * Toggles whether the agent gathers log records for sending to New Relic.
        */
-      enabled: false
+      enabled: true
     },
     local_decorating: {
       /**
