@@ -42,9 +42,6 @@ test('Redis instrumentation', function (t) {
 
     // need to capture attributes
     agent.config.attributes.enabled = true
-
-    // Start testing!
-    t.notOk(agent.getTransaction(), 'no transaction should be in play')
   })
 
   t.afterEach(async function () {
@@ -63,6 +60,7 @@ test('Redis instrumentation', function (t) {
   })
 
   t.test('should find Redis calls in the transaction trace', function (t) {
+    t.notOk(agent.getTransaction(), 'no transaction should be in play')
     helper.runInTransaction(agent, async function transactionInScope() {
       const transaction = agent.getTransaction()
       t.ok(transaction, 'transaction should be visible')
@@ -101,6 +99,7 @@ test('Redis instrumentation', function (t) {
   })
 
   t.test('should create correct metrics', function (t) {
+    t.notOk(agent.getTransaction(), 'no transaction should be in play')
     helper.runInTransaction(agent, async function transactionInScope() {
       const transaction = agent.getTransaction()
       await client.set('testkey', 'arglbargle')
@@ -121,6 +120,7 @@ test('Redis instrumentation', function (t) {
   })
 
   t.test('should add `key` attribute to trace segment', function (t) {
+    t.notOk(agent.getTransaction(), 'no transaction should be in play')
     agent.config.attributes.enabled = true
 
     helper.runInTransaction(agent, async function () {
@@ -133,6 +133,7 @@ test('Redis instrumentation', function (t) {
   })
 
   t.test('should not add `key` attribute to trace segment', function (t) {
+    t.notOk(agent.getTransaction(), 'no transaction should be in play')
     agent.config.attributes.enabled = false
 
     helper.runInTransaction(agent, async function () {
@@ -145,6 +146,7 @@ test('Redis instrumentation', function (t) {
   })
 
   t.test('should add datastore instance attributes to trace segments', function (t) {
+    t.notOk(agent.getTransaction(), 'no transaction should be in play')
     // Enable.
     agent.config.datastore_tracer.instance_reporting.enabled = true
     agent.config.datastore_tracer.database_name_reporting.enabled = true
@@ -169,6 +171,7 @@ test('Redis instrumentation', function (t) {
   })
 
   t.test('should not add instance attributes/metrics when disabled', function (t) {
+    t.notOk(agent.getTransaction(), 'no transaction should be in play')
     // disable
     agent.config.datastore_tracer.instance_reporting.enabled = false
     agent.config.datastore_tracer.database_name_reporting.enabled = false
@@ -195,6 +198,7 @@ test('Redis instrumentation', function (t) {
   })
 
   t.test('should follow selected database', function (t) {
+    t.notOk(agent.getTransaction(), 'no transaction should be in play')
     let transaction = null
     const SELECTED_DB = 3
     helper.runInTransaction(agent, async function (tx) {
