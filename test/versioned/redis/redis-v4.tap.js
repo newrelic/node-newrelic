@@ -49,8 +49,10 @@ test('Redis instrumentation', function (t) {
 
   t.afterEach(async function () {
     agent && helper.unloadAgent(agent)
-    await client.flushAll()
-    await client.disconnect()
+    if (client) {
+      await client.flushAll()
+      await client.disconnect()
+    }
     // must purge require cache of redis related instrumentation
     // otherwise it will not re-register on subsequent test runs
     Object.keys(require.cache).forEach((key) => {
