@@ -30,6 +30,7 @@ test('Redis instrumentation', function (t) {
     client = redis.createClient({ socket: { port: params.redis_port, host: params.redis_host } })
 
     await client.connect()
+    await client.flushAll()
 
     await client.select(DB_INDEX)
     // eslint-disable-next-line new-cap
@@ -48,7 +49,8 @@ test('Redis instrumentation', function (t) {
 
   t.afterEach(async function () {
     agent && helper.unloadAgent(agent)
-    client && (await client.quit())
+    await client.flushAll()
+    await client.disconnect()
     // must purge require cache of redis related instrumentation
     // otherwise it will not re-register on subsequent test runs
     Object.keys(require.cache).forEach((key) => {
