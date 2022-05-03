@@ -186,9 +186,7 @@ tap.test('Winston instrumentation', { bail: true }, (t) => {
     })
 
     t.test('should be able to determine if already instrumented', async (t) => {
-      t.equal(typeof winston.createLogger.__NR_unwrap, 'function')
-      winston.createLogger.__NR_unwrap()
-      t.equal(winston.createLogger.__NR_unwrap, undefined)
+      t.equal(winston.__NR_instrumented, true)
     })
   })
 })
