@@ -117,6 +117,31 @@ describe('Transaction', function () {
     trans.end()
   })
 
+  it('should flush logs on end', function (done) {
+    sinon.spy(trans.logs, 'flush')
+    agent.on('transactionFinished', (inner) => {
+      expect(inner.logs.flush.callCount).to.equal(1)
+      done()
+    })
+
+    trans.logs.add('log-line1')
+    trans.logs.add('log-line2')
+    trans.end()
+  })
+
+  it('should not flush logs when transaction is ignored', function (done) {
+    sinon.spy(trans.logs, 'flush')
+    agent.on('transactionFinished', (inner) => {
+      expect(inner.logs.flush.callCount).to.equal(0)
+      done()
+    })
+
+    trans.logs.add('log-line1')
+    trans.logs.add('log-line2')
+    trans.ignore = true
+    trans.end()
+  })
+
   describe('upon creation', function () {
     it('should have an ID', function () {
       should.exist(trans.id)
