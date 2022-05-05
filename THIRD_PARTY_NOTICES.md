@@ -1131,7 +1131,7 @@ This product includes source derived from [@newrelic/superagent](https://github.
 
 ### @newrelic/winston-enricher
 
-This product includes source derived from [@newrelic/winston-enricher](https://github.com/newrelic/newrelic-node-log-extensions) ([v3.0.0](https://github.com/newrelic/newrelic-node-log-extensions/tree/v3.0.0)), distributed under the [Apache-2.0 License](https://github.com/newrelic/newrelic-node-log-extensions/blob/v3.0.0/LICENSE):
+This product includes source derived from [@newrelic/winston-enricher](https://github.com/newrelic/newrelic-node-log-extensions) ([v3.1.0](https://github.com/newrelic/newrelic-node-log-extensions/tree/v3.1.0)), distributed under the [Apache-2.0 License](https://github.com/newrelic/newrelic-node-log-extensions/blob/v3.1.0/LICENSE):
 
 ```
                                  Apache License
