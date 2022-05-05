@@ -7,6 +7,7 @@
 const { test } = require('tap')
 const LogAggregator = require('../../../lib/aggregators/log-aggregator')
 const Metrics = require('../../../lib/metrics')
+const sinon = require('sinon')
 
 const RUN_ID = 1337
 const LIMIT = 5
@@ -14,15 +15,20 @@ const LIMIT = 5
 test('Log Aggregator', (t) => {
   t.autoend()
   let logEventAggregator
+  let agentStub
 
   t.beforeEach(() => {
+    agentStub = {
+      getTransaction: sinon.stub()
+    }
     logEventAggregator = new LogAggregator(
       {
         runId: RUN_ID,
         limit: LIMIT
       },
       {},
-      new Metrics(5, {}, {})
+      new Metrics(5, {}, {}),
+      agentStub
     )
   })
 
@@ -69,6 +75,32 @@ test('Log Aggregator', (t) => {
     const payload = logEventAggregator._toPayloadSync()
 
     t.notOk(payload)
+    t.end()
+  })
+
+  t.test('should add log line to transaction when in transaction context', (t) => {
+    const transaction = { logs: { add: sinon.stub() } }
+    agentStub.getTransaction.returns(transaction)
+    const line = { key: 'value' }
+    logEventAggregator.add(line)
+    t.ok(transaction.logs.add.callCount, 1, 'should add log to transaction')
+    t.same(transaction.logs.add.args[0], [line])
+    t.same(logEventAggregator.getEvents(), [], 'log aggregator should be empty')
+    t.end()
+  })
+
+  t.test('should add log line to aggregator when not in transaction context', (t) => {
+    const line = { key: 'value' }
+    logEventAggregator.add(line)
+    t.same(logEventAggregator.getEvents(), [line])
+    t.end()
+  })
+
+  t.test('should add logs to aggregator in batch with priority', (t) => {
+    const logs = [{ a: 'b' }, { b: 'c' }, { c: 'd' }]
+    const priority = Math.random() + 1
+    logEventAggregator.addBatch(logs, priority)
+    t.equal(logEventAggregator.getEvents().length, 3)
     t.end()
   })
 })
