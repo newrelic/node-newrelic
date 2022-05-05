@@ -43,15 +43,17 @@ test('Logs tests', (t) => {
     logs.add('line1')
     logs.add('line2')
     logs.add('line3')
+    logs.add('line4')
     t.same(logs.storage, ['line1', 'line2'])
     t.end()
   })
 
   t.test('it should flush the batch', (t) => {
     logs.add('line')
-    logs.flush('1.10')
+    const priority = Math.random() + 1
+    logs.flush(priority)
     t.ok(logs.aggregator.addBatch.callCount, 1, 'should call addBatch once')
-    t.same(logs.aggregator.addBatch.args[0], [['line'], '1.10'])
+    t.same(logs.aggregator.addBatch.args[0], [['line'], priority])
     t.end()
   })
 })
