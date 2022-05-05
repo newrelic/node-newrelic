@@ -98,7 +98,7 @@ test('Log Aggregator', (t) => {
 
   t.test('should add logs to aggregator in batch with priority', (t) => {
     const logs = [{ a: 'b' }, { b: 'c' }, { c: 'd' }]
-    const priority = '1.22'
+    const priority = Math.random() + 1
     logEventAggregator.addBatch(logs, priority)
     t.equal(logEventAggregator.getEvents().length, 3)
     t.end()
