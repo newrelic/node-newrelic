@@ -146,6 +146,11 @@ tap.test('high security mode', function (t) {
         t.equal(config.agent_enabled, false)
         t.end()
       })
+
+      t.test('should disable application logging forwarding', (t) => {
+        t.checkServer(config, 'application_logging.forwarding.enabled', false, true)
+        t.end()
+      })
     })
 
     t.test('when high_security === false', function (t) {
