@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "Wed Apr 06 2022 11:10:38 GMT-0400 (Eastern Daylight Time)",
+  "lastUpdated": "Thu May 05 2022 14:13:25 GMT-0700 (Pacific Daylight Time)",
   "projectName": "New Relic Node Agent",
   "projectUrl": "https://github.com/newrelic/node-newrelic",
   "includeOptDeps": true,
@@ -79,6 +79,19 @@
       "versionedRepoUrl": "https://github.com/newrelic/node-newrelic-superagent/tree/v5.1.0",
       "licenseFile": "node_modules/@newrelic/superagent/LICENSE",
       "licenseUrl": "https://github.com/newrelic/node-newrelic-superagent/blob/v5.1.0/LICENSE",
+      "licenseTextSource": "file",
+      "publisher": "New Relic Node.js Agent Team",
+      "email": "nodejs@newrelic.com"
+    },
+    "@newrelic/winston-enricher@3.1.0": {
+      "name": "@newrelic/winston-enricher",
+      "version": "3.1.0",
+      "range": "^3.1.0",
+      "licenses": "Apache-2.0",
+      "repoUrl": "https://github.com/newrelic/newrelic-node-log-extensions",
+      "versionedRepoUrl": "https://github.com/newrelic/newrelic-node-log-extensions/tree/v3.1.0",
+      "licenseFile": "node_modules/@newrelic/winston-enricher/LICENSE",
+      "licenseUrl": "https://github.com/newrelic/newrelic-node-log-extensions/blob/v3.1.0/LICENSE",
       "licenseTextSource": "file",
       "publisher": "New Relic Node.js Agent Team",
       "email": "nodejs@newrelic.com"
