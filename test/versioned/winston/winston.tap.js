@@ -52,10 +52,11 @@ tap.test('Winston instrumentation', { bail: true }, (t) => {
     // Log some stuff, both in and out of a transaction
     logger.info('out of trans')
 
-    helper.runInTransaction(agent, 'test', () => {
+    helper.runInTransaction(agent, 'test', (transaction) => {
       logger.info('in trans')
 
       // Force the streams to close so that we can test the output
+      transaction.end()
       streams.forEach((stream) => {
         stream.end()
       })
@@ -70,6 +71,7 @@ tap.test('Winston instrumentation', { bail: true }, (t) => {
     })
 
     t.test('should not instrument logs when app logging is not enabled', (t) => {
+      t.equal(!!winston.__NR_original, false, 'should not wrap createLogger')
       const assertFn = (msg) => {
         t.equal(msg['entity.name'], undefined, 'should not have entity name')
         t.equal(msg['entity.type'], undefined, 'should not have entity type')
@@ -78,13 +80,14 @@ tap.test('Winston instrumentation', { bail: true }, (t) => {
         t.equal(msg.level, 'info')
         t.equal(msg['trace.id'], undefined, 'msg should not have trace id')
         t.equal(msg['span.id'], undefined, 'msg should not have span id')
+        t.notOk(msg.message.includes('NR-LINKING'), 'should not contain NR-LINKING metadata')
       }
 
       const handleMessages = makeStreamTest(() => {
+        t.same(agent.logs.getEvents(), [], 'should not add any logs to log aggregator')
         t.end()
       })
       const jsonStream = concat(handleMessages(assertFn))
-      const simpleStream = concat(handleMessages(assertFn))
 
       // Example Winston setup to test
       const logger = winston.createLogger({
@@ -93,28 +96,63 @@ tap.test('Winston instrumentation', { bail: true }, (t) => {
           new winston.transports.Stream({
             level: 'info',
             stream: jsonStream
-          }),
-          // Handle streams with pre-set formats
-          new winston.transports.Stream({
-            level: 'info',
-            format: winston.format.simple(),
-            stream: simpleStream
           })
         ]
       })
 
-      logStuff(logger, [jsonStream, simpleStream])
+      logStuff(logger, [jsonStream])
     })
   })
 
-  t.test('logging enabled', (t) => {
+  t.test('local log decorating', (t) => {
+    t.autoend()
+
+    t.beforeEach(() => {
+      setup({ application_logging: { enabled: true, local_decorating: { enabled: true } } })
+    })
+
+    t.test('should not instrument logs when app logging is not enabled', (t) => {
+      t.equal(!!winston.__NR_original, false, 'should not wrap createLogger')
+      const assertFn = (msg) => {
+        t.equal(msg['entity.name'], undefined, 'should not have entity name')
+        t.equal(msg['entity.type'], undefined, 'should not have entity type')
+        t.equal(msg.timestamp, undefined, 'should not have timestamp as number')
+        t.equal(msg.hostname, undefined, 'should not have hostname as string')
+        t.equal(msg.level, 'info')
+        t.equal(msg['trace.id'], undefined, 'msg should not have trace id')
+        t.equal(msg['span.id'], undefined, 'msg should not have span id')
+        t.ok(msg.message.includes('NR-LINKING'), 'should not contain NR-LINKING metadata')
+      }
+
+      const handleMessages = makeStreamTest(() => {
+        t.same(agent.logs.getEvents(), [], 'should not add any logs to log aggregator')
+        t.end()
+      })
+      const jsonStream = concat(handleMessages(assertFn))
+
+      // Example Winston setup to test
+      const logger = winston.createLogger({
+        transports: [
+          // Log to a stream so we can test the output
+          new winston.transports.Stream({
+            level: 'info',
+            stream: jsonStream
+          })
+        ]
+      })
+
+      logStuff(logger, [jsonStream])
+    })
+  })
+
+  t.test('log forwarding enabled', (t) => {
     t.autoend()
 
     t.beforeEach(() => {
       setup({
         application_logging: {
           enabled: true,
-          local_decorating: {
+          forwarding: {
             enabled: true
           }
         }
@@ -134,15 +172,16 @@ tap.test('Winston instrumentation', { bail: true }, (t) => {
         t.equal(typeof msg['trace.id'], 'string', 'msg in trans should have trace id')
         t.equal(typeof msg['span.id'], 'string', 'msg in trans should have span id')
       }
+      t.notOk(msg.message.includes('NR-LINKING'), 'should not contain NR-LINKING metadata')
     }
 
     t.test('should add linking metadata to all transports', (t) => {
       const handleMessages = makeStreamTest(() => {
+        t.ok(agent.logs.getEvents().length, 2, 'should add both logs to aggregator')
         t.end()
       })
       const assertFn = msgAssertFn.bind(null, t)
       const jsonStream = concat(handleMessages(assertFn))
-      const simpleStream = concat(handleMessages(assertFn))
 
       // Example Winston setup to test
       const logger = winston.createLogger({
@@ -151,20 +190,14 @@ tap.test('Winston instrumentation', { bail: true }, (t) => {
           new winston.transports.Stream({
             level: 'info',
             stream: jsonStream
-          }),
-          // Handle streams with pre-set formats
-          new winston.transports.Stream({
-            level: 'info',
-            format: winston.format.simple(),
-            stream: simpleStream
           })
         ]
       })
 
-      logStuff(logger, [jsonStream, simpleStream])
+      logStuff(logger, [jsonStream])
     })
 
-    t.test('should instrument top-level format', async (t) => {
+    t.test('should instrument top-level format', (t) => {
       const handleMessages = makeStreamTest(() => {
         t.end()
       })
@@ -181,12 +214,9 @@ tap.test('Winston instrumentation', { bail: true }, (t) => {
           })
         ]
       })
+      t.equal(!!winston.createLogger.__NR_original, true)
 
       logStuff(logger, [simpleStream])
-    })
-
-    t.test('should be able to determine if already instrumented', async (t) => {
-      t.equal(winston.__NR_instrumented, true)
     })
   })
 })
