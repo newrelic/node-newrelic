@@ -48,18 +48,37 @@ tap.test('Winston instrumentation', { bail: true }, (t) => {
     }
   }
 
-  const logStuff = (logger, streams) => {
+  const logStuff = ({ logger, stream }) => {
     // Log some stuff, both in and out of a transaction
     logger.info('out of trans')
 
     helper.runInTransaction(agent, 'test', (transaction) => {
       logger.info('in trans')
 
-      // Force the streams to close so that we can test the output
       transaction.end()
-      streams.forEach((stream) => {
-        stream.end()
-      })
+      // Force the stream to close so that we can test the output
+      stream.end()
+    })
+  }
+
+  /**
+   * Logs lines in and out of transaction but also asserts the size of the log
+   * aggregator.  The log line in transaction context should not be added to aggregator
+   * until after the transaction ends
+   */
+  const logWithAggregator = ({ logger, stream, t }) => {
+    // Log some stuff, both in and out of a transaction
+    logger.info('out of trans')
+    t.equal(agent.logs.getEvents().length, 1, 'should only add 1 log to aggregator')
+
+    helper.runInTransaction(agent, 'test', (transaction) => {
+      logger.info('in trans')
+      t.equal(agent.logs.getEvents().length, 1, 'should only add 1 log to aggregator')
+
+      transaction.end()
+      t.equal(agent.logs.getEvents().length, 2, 'should only add 1 log after transaction end')
+      // Force the stream to close so that we can test the output
+      stream.end()
     })
   }
 
@@ -100,7 +119,7 @@ tap.test('Winston instrumentation', { bail: true }, (t) => {
         ]
       })
 
-      logStuff(logger, [jsonStream])
+      logStuff({ logger, stream: jsonStream })
     })
   })
 
@@ -141,7 +160,7 @@ tap.test('Winston instrumentation', { bail: true }, (t) => {
         ]
       })
 
-      logStuff(logger, [jsonStream])
+      logStuff({ logger, stream: jsonStream })
     })
   })
 
@@ -194,7 +213,7 @@ tap.test('Winston instrumentation', { bail: true }, (t) => {
         ]
       })
 
-      logStuff(logger, [jsonStream])
+      logWithAggregator({ logger, stream: jsonStream, t })
     })
 
     t.test('should instrument top-level format', (t) => {
@@ -216,7 +235,7 @@ tap.test('Winston instrumentation', { bail: true }, (t) => {
       })
       t.equal(!!winston.createLogger.__NR_original, true)
 
-      logStuff(logger, [simpleStream])
+      logWithAggregator({ logger, stream: simpleStream, t })
     })
   })
 })
