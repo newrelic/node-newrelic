@@ -768,7 +768,9 @@ tap.test('display_host', { timeout: 20000 }, (t) => {
 tap.test('log metrics for common logging libraries', (t) => {
   t.autoend()
 
-  const packages = ['winston', 'bunyan']
+  const logPackages = ['winston', 'bunyan']
+  const otherPackages = ['express', 'indium']
+  const packages = logPackages.concat(otherPackages)
   let getJSON
   let agent = null
 
@@ -801,12 +803,19 @@ tap.test('log metrics for common logging libraries', (t) => {
     facts(agent, function getFacts() {
       // doesn't matter what gets returned because we only care what was logged
       // wait for harvest cycle
+
       // check metrics
-      for (const lib of packages) {
+      for (const lib of logPackages) {
         const metric = agent.metrics.getOrCreateMetric(
           `${NAMES.SUPPORTABILITY.NODEJS_DEPENDENCIES}/${lib}`
         )
         t.equal(metric.callCount, 1, `${lib} should have logged`)
+      }
+      for (const lib of otherPackages) {
+        const metric = agent.metrics.getOrCreateMetric(
+          `${NAMES.SUPPORTABILITY.NODEJS_DEPENDENCIES}/${lib}`
+        )
+        t.equal(metric.callCount, 0, `${lib} should not have logged`)
       }
       t.end()
     })
