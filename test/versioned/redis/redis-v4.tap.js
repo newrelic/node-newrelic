@@ -30,6 +30,7 @@ test('Redis instrumentation', function (t) {
     client = redis.createClient({ socket: { port: params.redis_port, host: params.redis_host } })
 
     await client.connect()
+    await client.flushAll()
 
     await client.select(DB_INDEX)
     // eslint-disable-next-line new-cap
@@ -41,14 +42,14 @@ test('Redis instrumentation', function (t) {
 
     // need to capture attributes
     agent.config.attributes.enabled = true
-
-    // Start testing!
-    t.notOk(agent.getTransaction(), 'no transaction should be in play')
   })
 
   t.afterEach(async function () {
     agent && helper.unloadAgent(agent)
-    client && (await client.quit())
+    if (client) {
+      await client.flushAll()
+      await client.disconnect()
+    }
     // must purge require cache of redis related instrumentation
     // otherwise it will not re-register on subsequent test runs
     Object.keys(require.cache).forEach((key) => {
@@ -59,7 +60,7 @@ test('Redis instrumentation', function (t) {
   })
 
   t.test('should find Redis calls in the transaction trace', function (t) {
-    t.plan(16)
+    t.notOk(agent.getTransaction(), 'no transaction should be in play')
     helper.runInTransaction(agent, async function transactionInScope() {
       const transaction = agent.getTransaction()
       t.ok(transaction, 'transaction should be visible')
@@ -93,11 +94,12 @@ test('Redis instrumentation', function (t) {
       t.equal(getAttributes.key, '"testkey"', 'should have the get key as a attribute')
 
       t.ok(getSegment.timer.hrDuration, 'trace segment should have ended')
+      t.end()
     })
   })
 
   t.test('should create correct metrics', function (t) {
-    t.plan(12)
+    t.notOk(agent.getTransaction(), 'no transaction should be in play')
     helper.runInTransaction(agent, async function transactionInScope() {
       const transaction = agent.getTransaction()
       await client.set('testkey', 'arglbargle')
@@ -113,10 +115,12 @@ test('Redis instrumentation', function (t) {
         'Datastore/operation/Redis/get': 1
       }
       checkMetrics(t, unscoped, expected)
+      t.end()
     })
   })
 
   t.test('should add `key` attribute to trace segment', function (t) {
+    t.notOk(agent.getTransaction(), 'no transaction should be in play')
     agent.config.attributes.enabled = true
 
     helper.runInTransaction(agent, async function () {
@@ -129,6 +133,7 @@ test('Redis instrumentation', function (t) {
   })
 
   t.test('should not add `key` attribute to trace segment', function (t) {
+    t.notOk(agent.getTransaction(), 'no transaction should be in play')
     agent.config.attributes.enabled = false
 
     helper.runInTransaction(agent, async function () {
@@ -141,8 +146,7 @@ test('Redis instrumentation', function (t) {
   })
 
   t.test('should add datastore instance attributes to trace segments', function (t) {
-    t.autoend()
-
+    t.notOk(agent.getTransaction(), 'no transaction should be in play')
     // Enable.
     agent.config.datastore_tracer.instance_reporting.enabled = true
     agent.config.datastore_tracer.database_name_reporting.enabled = true
@@ -162,12 +166,12 @@ test('Redis instrumentation', function (t) {
       )
       t.equal(attributes.database_name, String(DB_INDEX), 'should have database id as attribute')
       t.equal(attributes.product, 'Redis', 'should have product attribute')
+      t.end()
     })
   })
 
   t.test('should not add instance attributes/metrics when disabled', function (t) {
-    t.autoend()
-
+    t.notOk(agent.getTransaction(), 'no transaction should be in play')
     // disable
     agent.config.datastore_tracer.instance_reporting.enabled = false
     agent.config.datastore_tracer.database_name_reporting.enabled = false
@@ -189,11 +193,12 @@ test('Redis instrumentation', function (t) {
         undefined,
         'should not have instance metric'
       )
+      t.end()
     })
   })
 
   t.test('should follow selected database', function (t) {
-    t.autoend()
+    t.notOk(agent.getTransaction(), 'no transaction should be in play')
     let transaction = null
     const SELECTED_DB = 3
     helper.runInTransaction(agent, async function (tx) {
@@ -208,12 +213,13 @@ test('Redis instrumentation', function (t) {
       t.ok(agent.getTransaction(), 'should not lose transaction state')
       transaction.end()
       verify()
+      t.end()
     })
 
     function verify() {
       const setSegment1 = transaction.trace.root.children[0]
-      const selectSegment = transaction.trace.root.children[2]
-      const setSegment2 = transaction.trace.root.children[4]
+      const selectSegment = transaction.trace.root.children[1]
+      const setSegment2 = transaction.trace.root.children[2]
 
       t.equal(setSegment1.name, 'Datastore/operation/Redis/set', 'should register the first set')
       t.equal(
