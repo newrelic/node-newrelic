@@ -798,13 +798,13 @@ tap.test('log metrics for common logging libraries', (t) => {
   })
 
   t.test('logs metrics for common logging libraries', (t) => {
-    facts(agent, async function getFacts() {
+    facts(agent, function getFacts() {
       // doesn't matter what gets returned because we only care what was logged
       // wait for harvest cycle
       // check metrics
       for (const lib of packages) {
         const metric = agent.metrics.getOrCreateMetric(
-          `${NAMES.SUPPORTABILITY.DEPENDENCIES}/Nodejs/${lib}`
+          `${NAMES.SUPPORTABILITY.NODEJS_DEPENDENCIES}/${lib}`
         )
         t.equal(metric.callCount, 1, `${lib} should have logged`)
       }
