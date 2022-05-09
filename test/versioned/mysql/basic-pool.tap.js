@@ -54,9 +54,6 @@ tap.test('bad config', function (t) {
 
   t.test(function (t) {
     const poolCluster = mysql.createPoolCluster()
-    t.teardown(function () {
-      poolCluster.end()
-    })
 
     poolCluster.add(badConfig) // anonymous group
     poolCluster.getConnection(function (err) {
@@ -72,6 +69,7 @@ tap.test('bad config', function (t) {
       t.not(frames[0], frames[4], 'do not multi-wrap')
 
       t.ok(err, 'should be an error')
+      poolCluster.end()
       t.end()
     })
   })
@@ -86,7 +84,7 @@ tap.test('bad config', function (t) {
 // TODO: test .query without callback
 // TODO: test notice errors
 // TODO: test sql capture
-tap.test('mysql built-in connection pools', { timeout: 30 * 1000 }, function (t) {
+tap.test('mysql built-in connection pools', function (t) {
   let agent = null
   let mysql = null
   let pool = null
@@ -388,32 +386,35 @@ tap.test('mysql built-in connection pools', { timeout: 30 * 1000 }, function (t)
   })
 })
 
-tap.test('poolCluster', { timeout: 30 * 1000 }, function (t) {
+tap.test('poolCluster', function (t) {
   t.autoend()
 
   let agent = null
   let mysql = null
+  let poolCluster = null
 
   t.beforeEach(function () {
     agent = helper.instrumentMockedAgent()
     mysql = require('mysql')
-    return setup(mysql)
+    return setup(mysql).then(() => {
+      poolCluster = mysql.createPoolCluster()
+
+      poolCluster.add(config) // anonymous group
+      poolCluster.add('MASTER', config)
+      poolCluster.add('REPLICA', config)
+    })
   })
 
   t.afterEach(function () {
+    poolCluster.end()
     helper.unloadAgent(agent)
 
     agent = null
     mysql = null
+    poolCluster = null
   })
 
   t.test('primer', function (t) {
-    const poolCluster = mysql.createPoolCluster()
-
-    poolCluster.add(config) // anonymous group
-    poolCluster.add('MASTER', config)
-    poolCluster.add('REPLICA', config)
-
     poolCluster.getConnection(function (err, connection) {
       t.error(err, 'should not be an error')
       t.notOk(agent.getTransaction(), 'transaction should not exist')
@@ -423,19 +424,12 @@ tap.test('poolCluster', { timeout: 30 * 1000 }, function (t) {
         t.notOk(agent.getTransaction(), 'transaction should not exist')
 
         connection.release()
-        poolCluster.end()
         t.end()
       })
     })
   })
 
   t.test('get any connection', function (t) {
-    const poolCluster = mysql.createPoolCluster()
-
-    poolCluster.add(config) // anonymous group
-    poolCluster.add('MASTER', config)
-    poolCluster.add('REPLICA', config)
-
     helper.runInTransaction(agent, function (txn) {
       poolCluster.getConnection(function (err, connection) {
         t.error(err, 'should not have error')
@@ -444,19 +438,12 @@ tap.test('poolCluster', { timeout: 30 * 1000 }, function (t) {
 
         txn.end()
         connection.release()
-        poolCluster.end()
         t.end()
       })
     })
   })
 
   t.test('get any connection', function (t) {
-    const poolCluster = mysql.createPoolCluster()
-
-    poolCluster.add(config) // anonymous group
-    poolCluster.add('MASTER', config)
-    poolCluster.add('REPLICA', config)
-
     poolCluster.getConnection(function (err, connection) {
       t.error(err, 'should not have error')
 
@@ -465,7 +452,7 @@ tap.test('poolCluster', { timeout: 30 * 1000 }, function (t) {
           t.error(err, 'no error ocurred')
           const transxn = agent.getTransaction()
           t.ok(transxn, 'transaction should exist')
-          t.same(transxn, txn, 'transaction must be same')
+          t.equal(transxn.id, txn.id, 'transaction must be same')
           const segment = agent.tracer.getSegment().parent
           t.ok(segment, 'segment should exist')
           t.ok(segment.timer.start > 0, 'starts at a postitive time')
@@ -473,7 +460,6 @@ tap.test('poolCluster', { timeout: 30 * 1000 }, function (t) {
           t.equal(segment.name, 'Datastore/statement/MySQL/unknown/select', 'is named')
           txn.end()
           connection.release()
-          poolCluster.end()
           t.end()
         })
       })
@@ -481,12 +467,6 @@ tap.test('poolCluster', { timeout: 30 * 1000 }, function (t) {
   })
 
   t.test('get MASTER connection', function (t) {
-    const poolCluster = mysql.createPoolCluster()
-
-    poolCluster.add(config) // anonymous group
-    poolCluster.add('MASTER', config)
-    poolCluster.add('REPLICA', config)
-
     helper.runInTransaction(agent, function (txn) {
       poolCluster.getConnection('MASTER', function (err, connection) {
         t.notOk(err)
@@ -495,26 +475,19 @@ tap.test('poolCluster', { timeout: 30 * 1000 }, function (t) {
 
         txn.end()
         connection.release()
-        poolCluster.end()
         t.end()
       })
     })
   })
 
   t.test('get MASTER connection', function (t) {
-    const poolCluster = mysql.createPoolCluster()
-
-    poolCluster.add(config) // anonymous group
-    poolCluster.add('MASTER', config)
-    poolCluster.add('REPLICA', config)
-
     poolCluster.getConnection('MASTER', function (err, connection) {
       helper.runInTransaction(agent, function (txn) {
         connection.query('SELECT ? + ? AS solution', [1, 1], function (err) {
           t.error(err, 'no error ocurred')
           const transxn = agent.getTransaction()
           t.ok(transxn, 'transaction should exist')
-          t.same(transxn, txn, 'transaction must be same')
+          t.equal(transxn.id, txn.id, 'transaction must be same')
           const segment = agent.tracer.getSegment().parent
           t.ok(segment, 'segment should exist')
           t.ok(segment.timer.start > 0, 'starts at a postitive time')
@@ -522,7 +495,6 @@ tap.test('poolCluster', { timeout: 30 * 1000 }, function (t) {
           t.equal(segment.name, 'Datastore/statement/MySQL/unknown/select', 'is named')
           txn.end()
           connection.release()
-          poolCluster.end()
           t.end()
         })
       })
@@ -530,12 +502,6 @@ tap.test('poolCluster', { timeout: 30 * 1000 }, function (t) {
   })
 
   t.test('get glob', function (t) {
-    const poolCluster = mysql.createPoolCluster()
-
-    poolCluster.add(config) // anonymous group
-    poolCluster.add('MASTER', config)
-    poolCluster.add('REPLICA', config)
-
     helper.runInTransaction(agent, function (txn) {
       poolCluster.getConnection('REPLICA*', 'ORDER', function (err, connection) {
         t.notOk(err)
@@ -544,26 +510,19 @@ tap.test('poolCluster', { timeout: 30 * 1000 }, function (t) {
 
         txn.end()
         connection.release()
-        poolCluster.end()
         t.end()
       })
     })
   })
 
   t.test('get glob', function (t) {
-    const poolCluster = mysql.createPoolCluster()
-
-    poolCluster.add(config) // anonymous group
-    poolCluster.add('MASTER', config)
-    poolCluster.add('REPLICA', config)
-
     poolCluster.getConnection('REPLICA*', 'ORDER', function (err, connection) {
       helper.runInTransaction(agent, function (txn) {
         connection.query('SELECT ? + ? AS solution', [1, 1], function (err) {
           t.error(err, 'no error ocurred')
           const transxn = agent.getTransaction()
           t.ok(transxn, 'transaction should exist')
-          t.same(transxn, txn, 'transaction must be same')
+          t.equal(transxn.id, txn.id, 'transaction must be same')
           const segment = agent.tracer.getSegment().parent
           t.ok(segment, 'segment should exist')
           t.ok(segment.timer.start > 0, 'starts at a postitive time')
@@ -571,7 +530,6 @@ tap.test('poolCluster', { timeout: 30 * 1000 }, function (t) {
           t.equal(segment.name, 'Datastore/statement/MySQL/unknown/select', 'is named')
           txn.end()
           connection.release()
-          poolCluster.end()
           t.end()
         })
       })
@@ -579,12 +537,6 @@ tap.test('poolCluster', { timeout: 30 * 1000 }, function (t) {
   })
 
   t.test('get star', function (t) {
-    const poolCluster = mysql.createPoolCluster()
-
-    poolCluster.add(config) // anonymous group
-    poolCluster.add('MASTER', config)
-    poolCluster.add('REPLICA', config)
-
     helper.runInTransaction(agent, function () {
       poolCluster.of('*').getConnection(function (err, connection) {
         t.notOk(err)
@@ -592,26 +544,19 @@ tap.test('poolCluster', { timeout: 30 * 1000 }, function (t) {
 
         agent.getTransaction().end()
         connection.release()
-        poolCluster.end()
         t.end()
       })
     })
   })
 
   t.test('get star', function (t) {
-    const poolCluster = mysql.createPoolCluster()
-
-    poolCluster.add(config) // anonymous group
-    poolCluster.add('MASTER', config)
-    poolCluster.add('REPLICA', config)
-
     poolCluster.of('*').getConnection(function (err, connection) {
       helper.runInTransaction(agent, function (txn) {
         connection.query('SELECT ? + ? AS solution', [1, 1], function (err) {
           t.error(err, 'no error ocurred')
           const transxn = agent.getTransaction()
           t.ok(transxn, 'transaction should exist')
-          t.same(transxn, txn, 'transaction must be same')
+          t.equal(transxn.id, txn.id, 'transaction must be same')
           const segment = agent.tracer.getSegment().parent
           t.ok(segment, 'segment should exist')
           t.ok(segment.timer.start > 0, 'starts at a postitive time')
@@ -620,7 +565,6 @@ tap.test('poolCluster', { timeout: 30 * 1000 }, function (t) {
 
           txn.end()
           connection.release()
-          poolCluster.end()
           t.end()
         })
       })
@@ -628,12 +572,6 @@ tap.test('poolCluster', { timeout: 30 * 1000 }, function (t) {
   })
 
   t.test('get wildcard', function (t) {
-    const poolCluster = mysql.createPoolCluster()
-
-    poolCluster.add(config) // anonymous group
-    poolCluster.add('MASTER', config)
-    poolCluster.add('REPLICA', config)
-
     helper.runInTransaction(agent, function () {
       const pool = poolCluster.of('REPLICA*', 'RANDOM')
       pool.getConnection(function (err, connection) {
@@ -642,19 +580,12 @@ tap.test('poolCluster', { timeout: 30 * 1000 }, function (t) {
 
         agent.getTransaction().end()
         connection.release()
-        poolCluster.end()
         t.end()
       })
     })
   })
 
   t.test('get wildcard', function (t) {
-    const poolCluster = mysql.createPoolCluster()
-
-    poolCluster.add(config) // anonymous group
-    poolCluster.add('MASTER', config)
-    poolCluster.add('REPLICA', config)
-
     const pool = poolCluster.of('REPLICA*', 'RANDOM')
     pool.getConnection(function (err, connection) {
       helper.runInTransaction(agent, function (txn) {
@@ -662,7 +593,7 @@ tap.test('poolCluster', { timeout: 30 * 1000 }, function (t) {
           t.error(err, 'no error ocurred')
           const transxn = agent.getTransaction()
           t.ok(transxn, 'transaction should exist')
-          t.same(transxn, txn, 'transaction must be same')
+          t.equal(transxn.id, txn.id, 'transaction must be same')
           const segment = agent.tracer.getSegment().parent
           t.ok(segment, 'segment should exist')
           t.ok(segment.timer.start > 0, 'starts at a postitive time')
@@ -670,7 +601,6 @@ tap.test('poolCluster', { timeout: 30 * 1000 }, function (t) {
           t.equal(segment.name, 'Datastore/statement/MySQL/unknown/select', 'is named')
           txn.end()
           connection.release()
-          poolCluster.end()
           t.end()
         })
       })
@@ -681,12 +611,6 @@ tap.test('poolCluster', { timeout: 30 * 1000 }, function (t) {
   // https://github.com/mysqljs/mysql/blob/master/Changes.md#v2120-2016-11-02
   if (semver.satisfies(pkgVersion, '>=2.12.0')) {
     t.test('poolCluster query', function (t) {
-      const poolCluster = mysql.createPoolCluster()
-
-      poolCluster.add(config) // anonymous group
-      poolCluster.add('MASTER', config)
-      poolCluster.add('REPLICA', config)
-
       const masterPool = poolCluster.of('MASTER', 'RANDOM')
       const replicaPool = poolCluster.of('REPLICA', 'RANDOM')
       helper.runInTransaction(agent, function (txn) {
@@ -731,7 +655,6 @@ tap.test('poolCluster', { timeout: 30 * 1000 }, function (t) {
             t.equal(segment.name, 'Datastore/statement/MySQL/unknown/select', 'is named')
 
             txn.end()
-            poolCluster.end()
             t.end()
           })
         })
