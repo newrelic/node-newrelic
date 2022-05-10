@@ -275,7 +275,7 @@ tap.test('amqplib promise instrumentation', function (t) {
               .consume(queue, function (msg) {
                 const consumeTxnHandle = api.getTransaction()
                 consumeTxn = consumeTxnHandle._transaction
-                t.notEqual(consumeTxn, tx, 'should not be in original transaction')
+                t.not(consumeTxn, tx, 'should not be in original transaction')
                 t.ok(msg, 'should receive a message')
 
                 const body = msg.content.toString('utf8')
@@ -335,7 +335,7 @@ tap.test('amqplib promise instrumentation', function (t) {
               .consume(queue, function (msg) {
                 const consumeTxnHandle = api.getTransaction()
                 consumeTxn = consumeTxnHandle._transaction
-                t.notEqual(consumeTxn, tx, 'should not be in original transaction')
+                t.not(consumeTxn, tx, 'should not be in original transaction')
                 t.ok(msg, 'should receive a message')
 
                 const body = msg.content.toString('utf8')
