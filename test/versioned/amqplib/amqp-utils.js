@@ -10,6 +10,8 @@ const params = require('../../lib/params')
 const metrics = require('../../lib/metrics_helper')
 
 const CON_STRING = 'amqp://' + params.rabbitmq_host + ':' + params.rabbitmq_port
+const { version: pkgVersion } = require('amqplib/package')
+const semver = require('semver')
 
 exports.CON_STRING = CON_STRING
 exports.DIRECT_EXCHANGE = 'test-direct-exchange'
@@ -60,21 +62,21 @@ function verifySubscribe(t, tx, exchange, routingKey) {
     tx.trace.root,
     'MessageBroker/RabbitMQ/Exchange/Produce/Named/' + exchange
   )
-  t.equals(consume.getAttributes().routing_key, routingKey, 'should store routing key')
+  t.equal(consume.getAttributes().routing_key, routingKey, 'should store routing key')
 }
 
 function verifyCAT(t, produceTransaction, consumeTransaction) {
-  t.equals(
+  t.equal(
     consumeTransaction.incomingCatId,
     produceTransaction.agent.config.cross_process_id,
     'should have the proper incoming CAT id'
   )
-  t.equals(
+  t.equal(
     consumeTransaction.referringTransactionGuid,
     produceTransaction.id,
     'should have the the correct referring transaction guid'
   )
-  t.equals(consumeTransaction.tripId, produceTransaction.id, 'should have the the correct trip id')
+  t.equal(consumeTransaction.tripId, produceTransaction.id, 'should have the the correct trip id')
   t.notOk(
     consumeTransaction.invalidIncomingExternalTransaction,
     'invalid incoming external transaction should be false'
@@ -85,14 +87,14 @@ function verifyDistributedTrace(t, produceTransaction, consumeTransaction) {
   t.ok(produceTransaction.isDistributedTrace, 'should mark producer as distributed')
   t.ok(consumeTransaction.isDistributedTrace, 'should mark consumer as distributed')
 
-  t.equals(consumeTransaction.incomingCatId, null, 'should not set old CAT properties')
+  t.equal(consumeTransaction.incomingCatId, null, 'should not set old CAT properties')
 
-  t.equals(produceTransaction.id, consumeTransaction.parentId, 'should have proper parent id')
-  t.equals(produceTransaction.traceId, consumeTransaction.traceId, 'should have proper trace id')
+  t.equal(produceTransaction.id, consumeTransaction.parentId, 'should have proper parent id')
+  t.equal(produceTransaction.traceId, consumeTransaction.traceId, 'should have proper trace id')
   let produceSegment = produceTransaction.trace.root.children[0].children[0]
   produceSegment = produceSegment.children[0] || produceSegment
-  t.equals(produceSegment.id, consumeTransaction.parentSpanId, 'should have proper parentSpanId')
-  t.equals(consumeTransaction.parentTransportType, 'AMQP', 'should have correct transport type')
+  t.equal(produceSegment.id, consumeTransaction.parentSpanId, 'should have proper parentSpanId')
+  t.equal(consumeTransaction.parentTransportType, 'AMQP', 'should have correct transport type')
 }
 
 function verifyConsumeTransaction(t, tx, exchange, queue, routingKey) {
@@ -121,7 +123,7 @@ function verifyConsumeTransaction(t, tx, exchange, queue, routingKey) {
     tx.trace.root,
     'OtherTransaction/Message/RabbitMQ/Exchange/Named/' + exchange
   )
-  t.equals(consume, tx.baseSegment)
+  t.equal(consume, tx.baseSegment)
 
   const attributes = tx.trace.attributes.get(DESTINATIONS.TRANS_TRACE)
   t.equal(
@@ -151,47 +153,57 @@ function verifySendToQueue(t, tx) {
     'MessageBroker/RabbitMQ/Exchange/Produce/Named/Default'
   )
   const attributes = segment.getAttributes()
-  t.equals(attributes.routing_key, 'testQueue', 'should store routing key')
-  t.equals(attributes.reply_to, 'my.reply.queue', 'should store reply to')
-  t.equals(attributes.correlation_id, 'correlation-id', 'should store correlation id')
+  t.equal(attributes.routing_key, 'testQueue', 'should store routing key')
+  t.equal(attributes.reply_to, 'my.reply.queue', 'should store reply to')
+  t.equal(attributes.correlation_id, 'correlation-id', 'should store correlation id')
 }
 
 function verifyProduce(t, tx, exchangeName, routingKey) {
   const isCallback = !!metrics.findSegment(tx.trace.root, 'Callback: <anonymous>')
+  let segments = []
 
   if (isCallback) {
-    t.doesNotThrow(function () {
-      metrics.assertSegments(tx.trace.root, [
-        'Channel#assertExchange',
+    segments = [
+      'Channel#assertExchange',
+      [
+        'Callback: <anonymous>',
         [
-          'Callback: <anonymous>',
+          'Channel#assertQueue',
           [
-            'Channel#assertQueue',
+            'Callback: <anonymous>',
             [
-              'Callback: <anonymous>',
+              'Channel#bindQueue',
               [
-                'Channel#bindQueue',
-                [
-                  'Callback: <anonymous>',
-                  ['MessageBroker/RabbitMQ/Exchange/Produce/Named/' + exchangeName]
-                ]
+                'Callback: <anonymous>',
+                ['MessageBroker/RabbitMQ/Exchange/Produce/Named/' + exchangeName]
               ]
             ]
           ]
         ]
-      ])
-    }, 'should have expected segments')
+      ]
+    ]
+    // 0.9.0 flattened the segment tree
+    // See: https://github.com/amqp-node/amqplib/pull/635/files
+  } else if (semver.gte(pkgVersion, '0.9.0')) {
+    segments = [
+      'Channel#assertExchange',
+      'Channel#assertQueue',
+      'Channel#bindQueue',
+      'MessageBroker/RabbitMQ/Exchange/Produce/Named/' + exchangeName
+    ]
   } else {
-    t.doesNotThrow(function () {
-      metrics.assertSegments(tx.trace.root, [
-        'Channel#assertExchange',
-        [
-          'Channel#assertQueue',
-          ['Channel#bindQueue', ['MessageBroker/RabbitMQ/Exchange/Produce/Named/' + exchangeName]]
-        ]
-      ])
-    }, 'should have expected segments')
+    segments = [
+      'Channel#assertExchange',
+      [
+        'Channel#assertQueue',
+        ['Channel#bindQueue', ['MessageBroker/RabbitMQ/Exchange/Produce/Named/' + exchangeName]]
+      ]
+    ]
   }
+
+  t.doesNotThrow(() => {
+    metrics.assertSegments(tx.trace.root, segments, 'should have expected segments')
+  })
 
   t.doesNotThrow(function () {
     metrics.assertMetrics(
@@ -208,7 +220,7 @@ function verifyProduce(t, tx, exchangeName, routingKey) {
   )
   const attributes = segment.getAttributes()
   if (routingKey) {
-    t.equals(attributes.routing_key, routingKey, 'should have routing key')
+    t.equal(attributes.routing_key, routingKey, 'should have routing key')
   } else {
     t.notOk(attributes.routing_key, 'should not have routing key')
   }
@@ -241,37 +253,47 @@ function verifyGet(t, tx, exchangeName, routingKey, queue) {
 
 function verifyPurge(t, tx) {
   const isCallback = !!metrics.findSegment(tx.trace.root, 'Callback: <anonymous>')
+  let segments = []
 
   if (isCallback) {
-    t.doesNotThrow(function () {
-      metrics.assertSegments(tx.trace.root, [
-        'Channel#assertExchange',
+    segments = [
+      'Channel#assertExchange',
+      [
+        'Callback: <anonymous>',
         [
-          'Callback: <anonymous>',
+          'Channel#assertQueue',
           [
-            'Channel#assertQueue',
+            'Callback: <anonymous>',
             [
-              'Callback: <anonymous>',
+              'Channel#bindQueue',
               [
-                'Channel#bindQueue',
-                [
-                  'Callback: <anonymous>',
-                  ['MessageBroker/RabbitMQ/Queue/Purge/Temp', ['Callback: <anonymous>']]
-                ]
+                'Callback: <anonymous>',
+                ['MessageBroker/RabbitMQ/Queue/Purge/Temp', ['Callback: <anonymous>']]
               ]
             ]
           ]
         ]
-      ])
-    }, 'should have expected segments')
+      ]
+    ]
+    // 0.9.0 flattened the segment tree
+    // See: https://github.com/amqp-node/amqplib/pull/635/files
+  } else if (semver.gte(pkgVersion, '0.9.0')) {
+    segments = [
+      'Channel#assertExchange',
+      'Channel#assertQueue',
+      'Channel#bindQueue',
+      'MessageBroker/RabbitMQ/Queue/Purge/Temp'
+    ]
   } else {
-    t.doesNotThrow(function () {
-      metrics.assertSegments(tx.trace.root, [
-        'Channel#assertExchange',
-        ['Channel#assertQueue', ['Channel#bindQueue', ['MessageBroker/RabbitMQ/Queue/Purge/Temp']]]
-      ])
-    }, 'should have expected segments')
+    segments = [
+      'Channel#assertExchange',
+      ['Channel#assertQueue', ['Channel#bindQueue', ['MessageBroker/RabbitMQ/Queue/Purge/Temp']]]
+    ]
   }
+
+  t.doesNotThrow(() => {
+    metrics.assertSegments(tx.trace.root, segments, 'should have expected segments')
+  })
 
   t.doesNotThrow(function () {
     metrics.assertMetrics(
