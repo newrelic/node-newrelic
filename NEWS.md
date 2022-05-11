@@ -38,9 +38,9 @@
 
 * Bumped `tap` to 16.x.
 
-### v8.10.0 (2022-04-18)
-
 * Updated `ansi-regex` to resolve an audit warning from a CVE.### v8.10.0 (2022-04-18)
+
+### v8.10.0 (2022-04-18)
 
 * Added instrumentation for `mysql2/promise`.
    * This previously only existed in our standalone `@newrelic/mysql`, but now gives feature partiy between the two.
