@@ -1,4 +1,4 @@
-### v8.11.0 (2022-05-10)
+### v8.11.0 (2022-05-11)
 
 * Log forwarding from APM agent enabled.
 
@@ -24,6 +24,8 @@
 
     * Fixed check to ensure both `application_logging.enabled` and `application_logging.forwarding.enabled` are true before registering the log aggregator.
 
+    * upgraded Winston log enricher and added versioned test around running agent with logging and log enricher
+
 * Added feature toggle supportability metrics on connect.
 
 * Removed distributed tracing setting from example config
@@ -35,6 +37,8 @@
 * Bumped [moment](https://github.com/moment/moment) from 2.29.1 to 2.29.2.
 
 * Bumped `tap` to 16.x.
+
+### v8.10.0 (2022-04-18)
 
 * Updated `ansi-regex` to resolve an audit warning from a CVE.### v8.10.0 (2022-04-18)
 
