@@ -1,3 +1,40 @@
+### v8.11.0 (2022-05-11)
+
+* Added application logging for Winston in the Node.js agent
+
+    * Ability to forward logs, send log metrics, and perform local log decoration
+
+    * Added application log aggregator to collect logs with adaptive sampling and appropriate max samples stored.
+
+    * Added `application_logging` configuration and env vars with appropriate defaults.
+
+    * Added `application_logging.enabled` configuration value, defaulting to true.
+
+    * Set `application_logging.forwarding.enabled` to false when High Security Mode (HSM) is set.
+
+    * Enabled log forwarding by default in the example config.
+
+    * Added sent, seen and dropped metrics that collected on every harvest cycle around log lines.
+
+    * Added supportability metrics for some popular logging frameworks.
+    
+    * Added supportability metrics to record if the logging features are enabled.
+
+    * Added a storage mechanisms to transactions to keep logs until transaction ends.
+
+* Removed distributed tracing setting from example config
+
+* Fixed a typo in lib/instrumentation/core/child_process.js
+  Thanks to  Eito Katagiri (@eitoball) for the contribution
+
+* Support automatic instrumentation of Redis v4
+
+* Bumped [moment](https://github.com/moment/moment) from 2.29.1 to 2.29.2.
+
+* Bumped `tap` to 16.x.
+
+* Updated `ansi-regex` to resolve a dev dependency audit warning.
+
 ### v8.10.0 (2022-04-18)
 
 * Added instrumentation for `mysql2/promise`.
