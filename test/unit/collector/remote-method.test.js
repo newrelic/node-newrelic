@@ -752,6 +752,9 @@ tap.test('record data usage supportability metrics', (t) => {
     const method1 = new RemoteMethod('preconnect', agent.config, endpoint, agent.metrics)
     const method2 = new RemoteMethod('connect', agent.config, endpoint, agent.metrics)
     const payload = [{ hello: 'world' }]
+    const expectedSize = 19
+    const totalMetric = [2, expectedSize * 2, 0, expectedSize, expectedSize, 722]
+    const singleMetric = [1, expectedSize, 0, expectedSize, expectedSize, 361]
     for (const method of [method1, method2]) {
       await new Promise((resolve, reject) => {
         method.invoke(payload, (err) => {
@@ -770,28 +773,19 @@ tap.test('record data usage supportability metrics', (t) => {
           {
             name: `${NAMES.SUPPORTABILITY.NODEJS}/Collector/Output/Bytes`
           },
-          [
-            2, 0.0000362396240234375, 0.0000362396240234375, 0.00001811981201171875,
-            0.00001811981201171875, 6.566551746800542e-10
-          ]
+          totalMetric
         ],
         [
           {
             name: `${NAMES.SUPPORTABILITY.NODEJS}/Collector/preconnect/Output/Bytes`
           },
-          [
-            1, 0.00001811981201171875, 0.00001811981201171875, 0.00001811981201171875,
-            0.00001811981201171875, 3.283275873400271e-10
-          ]
+          singleMetric
         ],
         [
           {
             name: `${NAMES.SUPPORTABILITY.NODEJS}/Collector/connect/Output/Bytes`
           },
-          [
-            1, 0.00001811981201171875, 0.00001811981201171875, 0.00001811981201171875,
-            0.00001811981201171875, 3.283275873400271e-10
-          ]
+          singleMetric
         ]
       ]
     )
