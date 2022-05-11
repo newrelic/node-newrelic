@@ -28,7 +28,7 @@
 
 * Fixed a typo in lib/instrumentation/core/child_process.js
 
-* Support automatic instrumentation of Redis v4
+* Added instrumentation support for `redis` v4.
 
 * Bumped [moment](https://github.com/moment/moment) from 2.29.1 to 2.29.2.
 
