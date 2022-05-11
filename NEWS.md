@@ -1,14 +1,16 @@
 ### v8.11.0 (2022-05-11)
 
-* Log forwarding from APM agent is now possible.
+* Added application logging for Winston in the Node.js agent
+
+    * Ability to forward logs, send log metrics, and perform local log decoration
 
     * Added application log aggregator to collect logs with adaptive sampling and appropriate max samples stored.
 
     * Added `application_logging` configuration and env vars with appropriate defaults.
 
-    * Changed default value of `application_logging.enabled` to be true.
+    * Added `application_logging.enabled` configuration value, defaulting to true.
 
-    * Set `application_logging.forwarding.enabled` to false when HSM is set.
+    * Set `application_logging.forwarding.enabled` to false when High Security Mode (HSM) is set.
 
     * Enabled log forwarding by default in the example config.
 
@@ -20,21 +22,18 @@
 
     * Added a storage mechanisms to transactions to keep logs until transaction ends.
 
-    * Updated log aggregator to check transaction context before adding.
-
-    * Ensured both `application_logging.enabled` and `application_logging.forwarding.enabled` are true before registering the log aggregator.
-
 * Removed distributed tracing setting from example config
 
 * Fixed a typo in lib/instrumentation/core/child_process.js
+  Thanks to  Eito Katagiri (@eitoball) for the contribution
 
-* Added instrumentation support for `redis` v4.
+* Support automatic instrumentation of Redis v4
 
 * Bumped [moment](https://github.com/moment/moment) from 2.29.1 to 2.29.2.
 
 * Bumped `tap` to 16.x.
 
-* Updated `ansi-regex` to resolve an audit warning from a CVE.
+* Updated `ansi-regex` to resolve a dev dependency audit warning.
 
 ### v8.10.0 (2022-04-18)
 
