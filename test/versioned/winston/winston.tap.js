@@ -238,4 +238,61 @@ tap.test('Winston instrumentation', { bail: true }, (t) => {
       logWithAggregator({ logger, stream: simpleStream, t })
     })
   })
+
+  t.test('application logging enabled and log enricher used', (t) => {
+    const API = require('../../../api')
+    t.autoend()
+
+    t.beforeEach(() => {
+      setup({
+        application_logging: {
+          enabled: true,
+          forwarding: {
+            enabled: false
+          }
+        }
+      })
+    })
+
+    const msgAssertFn = (t, msg) => {
+      t.equal(msg['entity.name'], agent.config.applications()[0], 'should have entity name')
+      t.equal(msg['entity.type'], 'SERVICE', 'should have entity type')
+      t.equal(typeof msg.timestamp, 'number', 'should have timestamp as number')
+      t.equal(msg.hostname, agent.config.getHostnameSafe(), 'should have hostname as string')
+      t.equal(msg.level, 'info')
+      if (msg.message === 'out of trans') {
+        t.equal(msg['trace.id'], undefined, 'msg out of trans should not have trace id')
+        t.equal(msg['span.id'], undefined, 'msg out of trans should not have span id')
+      } else if (msg.message === 'in trans') {
+        t.equal(typeof msg['trace.id'], 'string', 'msg in trans should have trace id')
+        t.equal(typeof msg['span.id'], 'string', 'msg in trans should have span id')
+      }
+      t.notOk(msg.message.includes('NR-LINKING'), 'should not contain NR-LINKING metadata')
+    }
+
+    t.test('should add linking metadata to all transports', (t) => {
+      const api = new API(agent)
+      const nrFormatter = require('@newrelic/winston-enricher/lib/createFormatter')
+      const handleMessages = makeStreamTest(() => {
+        t.equal(agent.logs.getEvents().length, 0, 'should not add logs to aggregator')
+        t.end()
+      })
+      const assertFn = msgAssertFn.bind(null, t)
+      const jsonStream = concat(handleMessages(assertFn))
+
+      // Example Winston setup to test
+      const logger = winston.createLogger({
+        transports: [
+          // Log to a stream so we can test the output
+          new winston.transports.Stream({
+            level: 'info',
+            format: nrFormatter(api, winston)(),
+            stream: jsonStream
+          })
+        ]
+      })
+
+      logStuff({ logger, stream: jsonStream, t })
+    })
+  })
 })
