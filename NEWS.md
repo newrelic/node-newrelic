@@ -1,6 +1,6 @@
 ### v8.11.0 (2022-05-11)
 
-* Log forwarding from APM agent enabled.
+* Log forwarding from APM agent is now possible.
 
     * Added application log aggregator to collect logs with adaptive sampling and appropriate max samples stored.
 
@@ -12,21 +12,17 @@
 
     * Enabled log forwarding by default in the example config.
 
-    * Include Winston log enricher in default instrumentation, so logs are enriched automatically.
-
     * Added sent, seen and dropped metrics that collected on every harvest cycle around log lines.
 
-    * Added supportability metrics for some popular logging frameworks
+    * Added supportability metrics for some popular logging frameworks.
+    
+    * Added supportability metrics to record if the logging features are enabled.
 
     * Added a storage mechanisms to transactions to keep logs until transaction ends.
 
-    * Updated log aggregator to check transaction context before adding.  Otherwise it adds to transaction and then transaction will add batch to aggregator when it ends with the appropriate priority.
+    * Updated log aggregator to check transaction context before adding.
 
-    * Fixed check to ensure both `application_logging.enabled` and `application_logging.forwarding.enabled` are true before registering the log aggregator.
-
-    * upgraded Winston log enricher and added versioned test around running agent with logging and log enricher
-
-* Added feature toggle supportability metrics on connect.
+    * Ensured both `application_logging.enabled` and `application_logging.forwarding.enabled` are true before registering the log aggregator.
 
 * Removed distributed tracing setting from example config
 
