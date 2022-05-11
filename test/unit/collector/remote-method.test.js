@@ -10,6 +10,9 @@ const tap = require('tap')
 const url = require('url')
 const Config = require('../../../lib/config')
 const RemoteMethod = require('../../../lib/collector/remote-method')
+const helper = require('../../lib/agent_helper')
+const { tapAssertMetrics } = require('../../lib/metrics_helper')
+const NAMES = require('../../../lib/metrics/names')
 
 function generate(method, runID, protocolVersion) {
   protocolVersion = protocolVersion || 17
@@ -722,6 +725,77 @@ tap.test('when generating the User-Agent string', (t) => {
 
   t.test('should include node platform and architecture', (t) => {
     t.match(userAgent, process.platform + '-' + process.arch)
+    t.end()
+  })
+})
+
+tap.test('record data usage supportability metrics', (t) => {
+  t.autoend()
+
+  let endpoint
+
+  let agent
+
+  t.beforeEach(() => {
+    agent = helper.instrumentMockedAgent()
+    endpoint = {
+      host: agent.config.host,
+      port: agent.config.port
+    }
+  })
+
+  t.afterEach(() => {
+    agent && helper.unloadAgent(agent)
+  })
+
+  t.test('should aggregate bytes of uploaded payloads', async (t) => {
+    const method1 = new RemoteMethod('preconnect', agent.config, endpoint, agent.metrics)
+    const method2 = new RemoteMethod('connect', agent.config, endpoint, agent.metrics)
+    const payload = [{ hello: 'world' }]
+    for (const method of [method1, method2]) {
+      await new Promise((resolve, reject) => {
+        method.invoke(payload, (err) => {
+          err ? reject(err) : resolve()
+        })
+      })
+    }
+
+    tapAssertMetrics(
+      t,
+      {
+        metrics: agent.metrics
+      },
+      [
+        [
+          {
+            name: `${NAMES.SUPPORTABILITY.NODEJS}/Collector/Output/Bytes`
+          },
+          [
+            2, 0.0000362396240234375, 0.0000362396240234375, 0.00001811981201171875,
+            0.00001811981201171875, 6.566551746800542e-10
+          ]
+        ],
+        [
+          {
+            name: `${NAMES.SUPPORTABILITY.NODEJS}/Collector/preconnect/Output/Bytes`
+          },
+          [
+            1, 0.00001811981201171875, 0.00001811981201171875, 0.00001811981201171875,
+            0.00001811981201171875, 3.283275873400271e-10
+          ]
+        ],
+        [
+          {
+            name: `${NAMES.SUPPORTABILITY.NODEJS}/Collector/connect/Output/Bytes`
+          },
+          [
+            1, 0.00001811981201171875, 0.00001811981201171875, 0.00001811981201171875,
+            0.00001811981201171875, 3.283275873400271e-10
+          ]
+        ]
+      ]
+    )
+
     t.end()
   })
 })
