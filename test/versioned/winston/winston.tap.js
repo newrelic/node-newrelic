@@ -49,12 +49,11 @@ tap.test('Winston instrumentation', { bail: true }, (t) => {
   }
 
   /**
-   * Log lines in and out of a transaction for eveyr logger.
+   * Log lines in and out of a transaction for every logger.
    * @param {Object} opts
    * @param {DerivedLogger} opts.logger instance of winston
    * @param {Array} opts.loggers an array of winston loggers
    * @param {Stream} opts.stream stream used to end test
-   * @param {Test} opts.t tap test
    */
   const logStuff = ({ loggers, logger, stream }) => {
     loggers = loggers || [logger]
@@ -177,7 +176,7 @@ tap.test('Winston instrumentation', { bail: true }, (t) => {
         t.equal(msg.level, 'info')
         t.equal(msg['trace.id'], undefined, 'msg should not have trace id')
         t.equal(msg['span.id'], undefined, 'msg should not have span id')
-        t.ok(msg.message.includes('NR-LINKING'), 'should not contain NR-LINKING metadata')
+        t.ok(msg.message.includes('NR-LINKING'), 'should contain NR-LINKING metadata')
       }
 
       const handleMessages = makeStreamTest(() => {
@@ -209,7 +208,7 @@ tap.test('Winston instrumentation', { bail: true }, (t) => {
         t.equal(msg.level, 'info')
         t.equal(msg['trace.id'], undefined, 'msg should not have trace id')
         t.equal(msg['span.id'], undefined, 'msg should not have span id')
-        t.ok(msg.message.includes('NR-LINKING'), 'should not contain NR-LINKING metadata')
+        t.ok(msg.message.includes('NR-LINKING'), 'should contain NR-LINKING metadata')
       }
 
       const handleMessages = makeStreamTest(() => {
