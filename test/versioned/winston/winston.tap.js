@@ -48,38 +48,74 @@ tap.test('Winston instrumentation', { bail: true }, (t) => {
     }
   }
 
-  const logStuff = ({ logger, stream }) => {
-    // Log some stuff, both in and out of a transaction
-    logger.info('out of trans')
+  /**
+   * Log lines in and out of a transaction for every logger.
+   * @param {Object} opts
+   * @param {DerivedLogger} opts.logger instance of winston
+   * @param {Array} opts.loggers an array of winston loggers
+   * @param {Stream} opts.stream stream used to end test
+   */
+  const logStuff = ({ loggers, logger, stream }) => {
+    loggers = loggers || [logger]
+    loggers.forEach((logger) => {
+      // Log some stuff, both in and out of a transaction
+      logger.info('out of trans')
 
-    helper.runInTransaction(agent, 'test', (transaction) => {
-      logger.info('in trans')
+      helper.runInTransaction(agent, 'test', (transaction) => {
+        logger.info('in trans')
 
-      transaction.end()
-      // Force the stream to close so that we can test the output
-      stream.end()
+        transaction.end()
+      })
     })
+
+    // Force the stream to close so that we can test the output
+    stream.end()
   }
 
   /**
-   * Logs lines in and out of transaction but also asserts the size of the log
+   * Logs lines in and out of transaction for every logger and also asserts the size of the log
    * aggregator.  The log line in transaction context should not be added to aggregator
    * until after the transaction ends
+   *
+   * @param {Object} opts
+   * @param {DerivedLogger} opts.logger instance of winston
+   * @param {Array} opts.loggers an array of winston loggers
+   * @param {Stream} opts.stream stream used to end test
+   * @param {Test} opts.t tap test
    */
-  const logWithAggregator = ({ logger, stream, t }) => {
-    // Log some stuff, both in and out of a transaction
-    logger.info('out of trans')
-    t.equal(agent.logs.getEvents().length, 1, 'should only add 1 log to aggregator')
+  const logWithAggregator = ({ logger, loggers, stream, t }) => {
+    let aggregatorLength = 0
+    loggers = loggers || [logger]
+    loggers.forEach((logger) => {
+      // Log some stuff, both in and out of a transaction
+      logger.info('out of trans')
+      aggregatorLength++
+      t.equal(
+        agent.logs.getEvents().length,
+        aggregatorLength,
+        `should only add ${aggregatorLength} log to aggregator`
+      )
 
-    helper.runInTransaction(agent, 'test', (transaction) => {
-      logger.info('in trans')
-      t.equal(agent.logs.getEvents().length, 1, 'should only add 1 log to aggregator')
+      helper.runInTransaction(agent, 'test', (transaction) => {
+        logger.info('in trans')
+        t.equal(
+          agent.logs.getEvents().length,
+          aggregatorLength,
+          `should keep log aggregator at ${aggregatorLength}`
+        )
 
-      transaction.end()
-      t.equal(agent.logs.getEvents().length, 2, 'should only add 1 log after transaction end')
-      // Force the stream to close so that we can test the output
-      stream.end()
+        transaction.end()
+        aggregatorLength++
+        t.equal(
+          agent.logs.getEvents().length,
+          aggregatorLength,
+          `should only add ${aggregatorLength} log after transaction end`
+        )
+      })
     })
+
+    // Force the stream to close so that we can test the output
+    stream.end()
   }
 
   t.test('logging disabled', (t) => {
@@ -140,7 +176,7 @@ tap.test('Winston instrumentation', { bail: true }, (t) => {
         t.equal(msg.level, 'info')
         t.equal(msg['trace.id'], undefined, 'msg should not have trace id')
         t.equal(msg['span.id'], undefined, 'msg should not have span id')
-        t.ok(msg.message.includes('NR-LINKING'), 'should not contain NR-LINKING metadata')
+        t.ok(msg.message.includes('NR-LINKING'), 'should contain NR-LINKING metadata')
       }
 
       const handleMessages = makeStreamTest(() => {
@@ -161,6 +197,39 @@ tap.test('Winston instrumentation', { bail: true }, (t) => {
       })
 
       logStuff({ logger, stream: jsonStream })
+    })
+
+    t.test('should not double log nor instrument composed logger', (t) => {
+      const assertFn = (msg) => {
+        t.equal(msg['entity.name'], undefined, 'should not have entity name')
+        t.equal(msg['entity.type'], undefined, 'should not have entity type')
+        t.equal(msg.timestamp, undefined, 'should not have timestamp as number')
+        t.equal(msg.hostname, undefined, 'should not have hostname as string')
+        t.equal(msg.level, 'info')
+        t.equal(msg['trace.id'], undefined, 'msg should not have trace id')
+        t.equal(msg['span.id'], undefined, 'msg should not have span id')
+        t.ok(msg.message.includes('NR-LINKING'), 'should contain NR-LINKING metadata')
+      }
+
+      const handleMessages = makeStreamTest(() => {
+        t.same(agent.logs.getEvents(), [], 'should not add any logs to log aggregator')
+        t.end()
+      })
+      const jsonStream = concat(handleMessages(assertFn))
+
+      // Example Winston setup to test
+      const logger = winston.createLogger({
+        format: winston.format.simple(),
+        transports: [
+          new winston.transports.Stream({
+            level: 'info',
+            stream: jsonStream
+          })
+        ]
+      })
+      const subLogger = winston.createLogger(logger)
+
+      logStuff({ loggers: [logger, subLogger], stream: jsonStream })
     })
   })
 
@@ -236,6 +305,28 @@ tap.test('Winston instrumentation', { bail: true }, (t) => {
       t.equal(!!winston.createLogger.__NR_original, true)
 
       logWithAggregator({ logger, stream: simpleStream, t })
+    })
+
+    t.test('should not double log nor instrument composed logger', (t) => {
+      const handleMessages = makeStreamTest(() => {
+        t.end()
+      })
+      const assertFn = msgAssertFn.bind(null, t)
+      const simpleStream = concat(handleMessages(assertFn))
+
+      // Example Winston setup to test
+      const logger = winston.createLogger({
+        format: winston.format.simple(),
+        transports: [
+          new winston.transports.Stream({
+            level: 'info',
+            stream: simpleStream
+          })
+        ]
+      })
+      const subLogger = winston.createLogger(logger)
+
+      logWithAggregator({ loggers: [logger, subLogger], stream: simpleStream, t })
     })
   })
 
