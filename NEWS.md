@@ -1,13 +1,6 @@
 ### v8.11.1 (2022-05-13)
 
-* Fixed an issue when creating a winston logger with an already instantiated logger.
-
---- NOTES NEEDS REVIEW ---
-By default, github's actions/checkout action will do a shallow clone
-of a single commit, without history. Since our workflow requires a
-merge, we need the full history in order to be able to perform the
-merge.
---------------------------
+* Fixed an issue with winston instrumentation that caused agent to crash when creating a winston logger from an existing instantiated logger.
 
 ### v8.11.0 (2022-05-11)
 
