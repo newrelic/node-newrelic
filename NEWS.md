@@ -1,3 +1,7 @@
+### v8.11.1 (2022-05-13)
+
+* Fixed an issue with winston instrumentation that caused agent to crash when creating a winston logger from an existing instantiated logger.
+
 ### v8.11.0 (2022-05-11)
 
 * Added application logging for Winston in the Node.js agent
