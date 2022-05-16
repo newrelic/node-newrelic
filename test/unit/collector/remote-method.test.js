@@ -771,19 +771,19 @@ tap.test('record data usage supportability metrics', (t) => {
       [
         [
           {
-            name: `${NAMES.SUPPORTABILITY.NODEJS}/Collector/Output/Bytes`
+            name: NAMES.DATA_USAGE.COLLECTOR
           },
           totalMetric
         ],
         [
           {
-            name: `${NAMES.SUPPORTABILITY.NODEJS}/Collector/preconnect/Output/Bytes`
+            name: `${NAMES.SUPPORTABILITY.NODEJS}/Collector/preconnect/${NAMES.DATA_USAGE.SUFFIX}`
           },
           singleMetric
         ],
         [
           {
-            name: `${NAMES.SUPPORTABILITY.NODEJS}/Collector/connect/Output/Bytes`
+            name: `${NAMES.SUPPORTABILITY.NODEJS}/Collector/connect/${NAMES.DATA_USAGE.SUFFIX}`
           },
           singleMetric
         ]
@@ -791,5 +791,82 @@ tap.test('record data usage supportability metrics', (t) => {
     )
 
     t.end()
+  })
+
+  t.test('should report response size ok', async (t) => {
+    const byteLength = (data) => Buffer.byteLength(JSON.stringify(data), 'utf8')
+    const payload = [{ hello: 'world' }]
+    const response = { hello: 'galaxy' }
+    const payloadSize = byteLength(payload)
+    const responseSize = byteLength(response)
+    const metric = [1, payloadSize, responseSize, 19, 19, 361]
+    const method = new RemoteMethod('preconnect', agent.config, endpoint, agent.metrics)
+    // stub call to NR so we can test response payload metrics
+    method._post = (data, nrHeaders, callback) => {
+      callback(null, { payload: response })
+    }
+    await new Promise((resolve, reject) => {
+      method.invoke(payload, (err) => {
+        err ? reject(err) : resolve()
+      })
+    })
+
+    tapAssertMetrics(
+      t,
+      {
+        metrics: agent.metrics
+      },
+      [
+        [
+          {
+            name: NAMES.DATA_USAGE.COLLECTOR
+          },
+          metric
+        ],
+        [
+          {
+            name: `${NAMES.SUPPORTABILITY.NODEJS}/Collector/preconnect/${NAMES.DATA_USAGE.SUFFIX}`
+          },
+          metric
+        ]
+      ]
+    )
+  })
+
+  t.test('should record metrics even if posting a payload fails', async (t) => {
+    const byteLength = (data) => Buffer.byteLength(JSON.stringify(data), 'utf8')
+    const payload = [{ hello: 'world' }]
+    const payloadSize = byteLength(payload)
+    const metric = [1, payloadSize, 0, 19, 19, 361]
+    const method = new RemoteMethod('preconnect', agent.config, endpoint, agent.metrics)
+    // stub call to NR so we can test response payload metrics
+    method._post = (data, nrHeaders, callback) => {
+      const err = new Error('')
+      callback(err)
+    }
+    await new Promise((resolve) => {
+      method.invoke(payload, resolve)
+    })
+
+    tapAssertMetrics(
+      t,
+      {
+        metrics: agent.metrics
+      },
+      [
+        [
+          {
+            name: NAMES.DATA_USAGE.COLLECTOR
+          },
+          metric
+        ],
+        [
+          {
+            name: `${NAMES.SUPPORTABILITY.NODEJS}/Collector/preconnect/${NAMES.DATA_USAGE.SUFFIX}`
+          },
+          metric
+        ]
+      ]
+    )
   })
 })
