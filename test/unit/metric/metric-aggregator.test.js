@@ -399,10 +399,12 @@ describe('Metric Aggregator', () => {
   })
 
   describe('measureBytes', () => {
+    const MEGABYTE = 1024 * 1024
+
     it('should return value from metrics collection', () => {
       const spy = sinon.spy(metricAggregator._metrics, 'measureBytes')
 
-      const metric = metricAggregator.measureBytes('metric', 1024 * 1024)
+      const metric = metricAggregator.measureBytes('metric', MEGABYTE)
 
       expect(metric).to.exist
 
@@ -411,6 +413,26 @@ describe('Metric Aggregator', () => {
       expect(metric).to.have.property('totalExclusive', 1)
 
       expect(spy.calledOnce).to.be.true
+    })
+
+    it('should record exclusive bytes', () => {
+      const metric = metricAggregator.measureBytes('metric', MEGABYTE * 2, MEGABYTE)
+
+      expect(metric).to.exist
+
+      expect(metric).to.have.property('callCount', 1)
+      expect(metric).to.have.property('total', 2)
+      expect(metric).to.have.property('totalExclusive', 1)
+    })
+
+    it('should optionally not convert to megabytes', () => {
+      const metric = metricAggregator.measureBytes('metric', 2, 1, true)
+
+      expect(metric).to.exist
+
+      expect(metric).to.have.property('callCount', 1)
+      expect(metric).to.have.property('total', 2)
+      expect(metric).to.have.property('totalExclusive', 1)
     })
   })
 

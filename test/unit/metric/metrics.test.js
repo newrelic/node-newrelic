@@ -159,6 +159,27 @@ describe('Metrics', function () {
     expect(Object.keys(metrics.scoped).length).equal(0)
   })
 
+  it('should measure bytes ok', function () {
+    const MEGABYTE = 1024 * 1024
+    const stat = metrics.measureBytes('Test/Bytes', MEGABYTE)
+    expect(stat.total).equal(1)
+    expect(stat.totalExclusive).equal(1)
+  })
+
+  it('should measure exclusive bytes ok', function () {
+    const MEGABYTE = 1024 * 1024
+    const stat = metrics.measureBytes('Test/Bytes', MEGABYTE * 2, MEGABYTE)
+    expect(stat.total).equal(2)
+    expect(stat.totalExclusive).equal(1)
+  })
+
+  it('should optionally not convert bytes to megabytes', function () {
+    const MEGABYTE = 1024 * 1024
+    const stat = metrics.measureBytes('Test/Bytes', MEGABYTE * 2, MEGABYTE, true)
+    expect(stat.total).equal(MEGABYTE * 2)
+    expect(stat.totalExclusive).equal(MEGABYTE)
+  })
+
   describe('when serializing', function () {
     describe('unscoped metrics', function () {
       it('should get the basics right', function () {
