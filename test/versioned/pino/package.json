@@ -1,0 +1,22 @@
+{
+  "name": "pino-tests",
+  "version": "0.0.0",
+  "private": true,
+  "dependencies": {
+    "flush-write-stream": "^2.0.0",
+    "split2": "^4.1.0"
+  },
+  "tests": [
+    {
+      "engines": {
+        "node": ">=12"
+      },
+      "dependencies": {
+        "pino": ">=7.0.0"
+      },
+      "files": [
+        "pino.tap.js"
+      ]
+    }
+  ]
+}

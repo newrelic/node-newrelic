@@ -96,6 +96,15 @@ test('Log Aggregator', (t) => {
     t.end()
   })
 
+  t.test('should parse json log line to object', (t) => {
+    const line = { a: 'b' }
+    const jsonLine = JSON.stringify(line)
+    logEventAggregator.add(jsonLine)
+    t.equal(logEventAggregator.getEvents().length, 1)
+    t.same(logEventAggregator.getEvents(), [line], 'log aggregator have converted json to object')
+    t.end()
+  })
+
   t.test('should add logs to aggregator in batch with priority', (t) => {
     const logs = [{ a: 'b' }, { b: 'c' }, { c: 'd' }]
     const priority = Math.random() + 1
