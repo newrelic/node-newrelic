@@ -1224,3 +1224,39 @@ tap.test('logging supportability on connect', (t) => {
     })
   })
 })
+
+tap.test('getNRLinkingMetadata', (t) => {
+  t.autoend()
+  let agent
+
+  t.beforeEach(() => {
+    agent = helper.loadMockedAgent()
+  })
+
+  t.afterEach(() => {
+    helper.unloadAgent(agent)
+  })
+
+  t.test('should properly format the NR-LINKING pipe string', (t) => {
+    agent.config.entity_guid = 'unit-test'
+    helper.runInTransaction(agent, 'nr-linking-test', (tx) => {
+      const nrLinkingMeta = agent.getNRLinkingMetadata()
+      const expectedLinkingMeta = ` NR-LINKING|unit-test|${agent.config.getHostnameSafe()}|${
+        tx.traceId
+      }|${tx.trace.root.id}|New%20Relic%20for%20Node.js%20tests|`
+      t.equal(
+        nrLinkingMeta,
+        expectedLinkingMeta,
+        'NR-LINKING metadata should be properly formatted'
+      )
+      t.end()
+    })
+  })
+
+  t.test('should properly handle if parts of NR-LINKING are undefined', (t) => {
+    const nrLinkingMeta = agent.getNRLinkingMetadata()
+    const expectedLinkingMeta = ` NR-LINKING||${agent.config.getHostnameSafe()}|||New%20Relic%20for%20Node.js%20tests|`
+    t.equal(nrLinkingMeta, expectedLinkingMeta, 'NR-LINKING metadata should be properly formatted')
+    t.end()
+  })
+})

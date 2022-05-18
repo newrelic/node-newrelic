@@ -150,32 +150,7 @@ API.prototype.getLinkingMetadata = function getLinkingMetadata(omitSupportabilit
     metric.incrementCallCount()
   }
 
-  const agent = this.agent
-
-  const segment = agent.tracer.getSegment()
-  const config = agent.config
-
-  const linkingMetadata = {
-    'entity.name': config.applications()[0],
-    'entity.type': 'SERVICE',
-    'hostname': config.getHostnameSafe()
-  }
-
-  if (config.distributed_tracing.enabled && segment) {
-    linkingMetadata['trace.id'] = segment.transaction.traceId
-    const spanId = segment.getSpanId()
-    if (spanId) {
-      linkingMetadata['span.id'] = spanId
-    }
-  } else {
-    logger.debug('getLinkingMetadata with no active transaction')
-  }
-
-  if (config.entity_guid) {
-    linkingMetadata['entity.guid'] = config.entity_guid
-  }
-
-  return linkingMetadata
+  return this.agent.getLinkingMetadata()
 }
 
 /**
