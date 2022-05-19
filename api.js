@@ -27,8 +27,8 @@ const NAMES = require('./lib/metrics/names')
  * CONSTANTS
  *
  */
-const RUM_STUB =
-  "<script type='text/javascript' %s>window.NREUM||(NREUM={});" + 'NREUM.info = %s; %s</script>'
+const RUM_STUB = 'window.NREUM||(NREUM={}); NREUM.info = %s;'
+const RUM_STUB_SHELL = `<script type='text/javascript' %s>${RUM_STUB} %s</script>`
 
 // these messages are used in the _gracefail() method below in getBrowserTimingHeader
 const RUM_ISSUES = [
@@ -675,9 +675,10 @@ API.prototype.getBrowserTimingHeader = function getBrowserTimingHeader(options) 
 
   // set nonce attribute if passed in options
   const nonce = options && options.nonce ? 'nonce="' + options.nonce + '"' : ''
+  const script = options && options.hasToRemoveScriptWrapper ? RUM_STUB : RUM_STUB_SHELL
 
   // the complete header to be written to the browser
-  const out = util.format(RUM_STUB, nonce, json, jsAgentLoader)
+  const out = util.format(script, nonce, json, jsAgentLoader)
 
   logger.trace('generating RUM header', out)
 
