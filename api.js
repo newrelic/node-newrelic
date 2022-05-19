@@ -675,7 +675,7 @@ API.prototype.getBrowserTimingHeader = function getBrowserTimingHeader(options) 
 
   // set nonce attribute if passed in options
   const nonce = options && options.nonce ? 'nonce="' + options.nonce + '"' : ''
-  const script = options?.hasToRemoveScriptWrapper ? RUM_STUB : RUM_STUB_SHELL
+  const script = options && options.hasToRemoveScriptWrapper ? RUM_STUB : RUM_STUB_SHELL
 
   // the complete header to be written to the browser
   const out = util.format(script, nonce, json, jsAgentLoader)
