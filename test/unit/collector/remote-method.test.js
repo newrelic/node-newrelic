@@ -223,7 +223,8 @@ tap.test('when the connection fails', (t) => {
     const method = new RemoteMethod('TEST', config, endpoint)
     method.invoke({ message: 'none' }, {}, (error) => {
       t.ok(error)
-      t.equal(error.message, 'connect ECONNREFUSED 127.0.0.1:8765')
+      // regex for either ipv4 or ipv6 localhost
+      t.match(error.message, /connect ECONNREFUSED (127\.0\.0\.1|::1):8765/)
 
       t.end()
     })
