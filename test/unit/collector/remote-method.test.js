@@ -750,8 +750,8 @@ tap.test('record data usage supportability metrics', (t) => {
   })
 
   t.test('should aggregate bytes of uploaded payloads', async (t) => {
-    const method1 = new RemoteMethod('preconnect', agent.config, endpoint, agent.metrics)
-    const method2 = new RemoteMethod('connect', agent.config, endpoint, agent.metrics)
+    const method1 = new RemoteMethod('preconnect', agent.config, endpoint, agent)
+    const method2 = new RemoteMethod('connect', agent.config, endpoint, agent)
     const payload = [{ hello: 'world' }]
     const expectedSize = 19
     const totalMetric = [2, expectedSize * 2, 0, expectedSize, expectedSize, 722]
@@ -801,7 +801,7 @@ tap.test('record data usage supportability metrics', (t) => {
     const payloadSize = byteLength(payload)
     const responseSize = byteLength(response)
     const metric = [1, payloadSize, responseSize, 19, 19, 361]
-    const method = new RemoteMethod('preconnect', agent.config, endpoint, agent.metrics)
+    const method = new RemoteMethod('preconnect', agent.config, endpoint, agent)
     // stub call to NR so we can test response payload metrics
     method._post = (data, nrHeaders, callback) => {
       callback(null, { payload: response })
@@ -839,7 +839,7 @@ tap.test('record data usage supportability metrics', (t) => {
     const payload = [{ hello: 'world' }]
     const payloadSize = byteLength(payload)
     const metric = [1, payloadSize, 0, 19, 19, 361]
-    const method = new RemoteMethod('preconnect', agent.config, endpoint, agent.metrics)
+    const method = new RemoteMethod('preconnect', agent.config, endpoint, agent)
     // stub call to NR so we can test response payload metrics
     method._post = (data, nrHeaders, callback) => {
       const err = new Error('')
