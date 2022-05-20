@@ -11,6 +11,17 @@ const { truncate } = require('../../../lib/util/application-logging')
 const helper = require('../../lib/agent_helper')
 const { LOGGING } = require('../../../lib/metrics/names')
 
+/**
+ * Helper to format n log lines and add `\n`
+ * to each line
+ * This is because `asJson` appends \n to every log line
+ * See: https://github.com/pinojs/pino/blob/master/lib/tools.js#L175
+ */
+function stringifyLines(logs) {
+  logs = Array.isArray(logs) ? logs : [logs]
+  return logs.map((log) => `${JSON.stringify(log)}\n`)
+}
+
 tap.Test.prototype.addAssert(
   'validateAnnotations',
   2,
@@ -20,10 +31,10 @@ tap.Test.prototype.addAssert(
       config.applications()[0],
       'should have entity name that matches app'
     )
-    this.equal(logLine['entity.guid'], 'pino-guid', 'should have set entitye guid')
+    this.equal(logLine['entity.guid'], 'pino-guid', 'should have set entity guid')
     this.equal(logLine['entity.type'], 'SERVICE', 'should have entity type of SERVICE')
     this.equal(logLine.hostname, config.getHostnameSafe(), 'should have proper hostname')
-    this.match(logLine.timestamp, /[0-9]{10}/, 'should have proper unix timestamp')
+    this.match(logLine.timestamp, /[\d]{10}/, 'should have proper unix timestamp')
     this.notOk(logLine.message.includes('NR-LINKING'), 'should not contain NR-LINKING metadata')
     if (message) {
       this.equal(logLine.message, message, 'message should be the same as log')
@@ -71,7 +82,8 @@ tap.test('Pino instrumentation', (t) => {
     const line = await once(stream, 'data')
     t.equal(line.msg, message, 'msg should not change')
     t.equal(line.level, 30, 'level should not change')
-    t.match(line.time, /[0-9]{10}/, 'time should not change')
+    // if application logging is enabled it renames this to `timestamp`
+    t.ok(line.time, 'time should not change')
     contextKeys.forEach((key) => {
       t.notOk(line[key], `should not have ${key}`)
     })
@@ -129,7 +141,7 @@ tap.test('Pino instrumentation', (t) => {
       const line = await once(stream, 'data')
       t.validateAnnotations({ line, message, level, config })
       t.equal(agent.logs.getEvents().length, 1, 'should have 1 log in aggregator')
-      t.same(agent.logs.getEvents(), [line], 'log should be same in aggregator')
+      t.same(agent.logs.getEvents(), stringifyLines(line), 'log should be same in aggregator')
       t.end()
     })
 
@@ -144,7 +156,7 @@ tap.test('Pino instrumentation', (t) => {
       t.equal(line['error.stack'], truncate(err.stack), 'should have proper error.stack')
       t.notOk(line.err, 'should not have err key')
       t.equal(agent.logs.getEvents().length, 1, 'should have 1 log in aggregator')
-      t.same(agent.logs.getEvents(), [line], 'log should be same in aggregator')
+      t.same(agent.logs.getEvents(), stringifyLines(line), 'log should be same in aggregator')
       t.end()
     })
 
@@ -169,7 +181,7 @@ tap.test('Pino instrumentation', (t) => {
           1,
           'should have log in aggregator after transaction ends'
         )
-        t.same(agent.logs.getEvents(), [line], 'log should be same in aggregator')
+        t.same(agent.logs.getEvents(), stringifyLines(line), 'log should be same in aggregator')
         t.end()
       })
     })
@@ -203,7 +215,11 @@ tap.test('Pino instrumentation', (t) => {
           2,
           'should have log in aggregator after transaction ends'
         )
-        t.same(agent.logs.getEvents(), [childLine, line], 'log should be same in aggregator')
+        t.same(
+          agent.logs.getEvents(),
+          stringifyLines([childLine, line]),
+          'log should be same in aggregator'
+        )
         t.end()
       })
     })
@@ -231,7 +247,7 @@ tap.test('Pino instrumentation', (t) => {
       1,
       'should have log in aggregator after transaction ends'
     )
-    t.same(agent.logs.getEvents(), [line], 'log should be same in aggregator')
+    t.same(agent.logs.getEvents(), stringifyLines(line), 'log should be same in aggregator')
     t.end()
   })
 
