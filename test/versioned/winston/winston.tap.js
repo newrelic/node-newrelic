@@ -10,6 +10,7 @@ const helper = require('../../lib/agent_helper')
 const concat = require('concat-stream')
 const { validateLogLine, CONTEXT_KEYS } = require('../../lib/logging-helper')
 const { Writable } = require('stream')
+const { LOGGING } = require('../../../lib/metrics/names')
 
 // winston puts the log line getting construct through formatters on a symbol
 // which is exported from this module
@@ -141,8 +142,8 @@ tap.test('winston instrumentation', (t) => {
 
     const handleMessages = makeStreamTest(() => {
       t.same(agent.logs.getEvents(), [], 'should not add any logs to log aggregator')
-      const metric = agent.metrics.getMetric('Supportability/Logging/Nodejs/winston/enabled')
-      t.notOk(metric, 'should not create  pino/enabled metric when logging is disabled')
+      const metric = agent.metrics.getMetric(LOGGING.LIBS.WINSTON)
+      t.notOk(metric, `should not create ${LOGGING.LIBS.WINSTON} metric when logging is disabled`)
       t.end()
     })
     const jsonStream = concat(handleMessages(assertFn))
@@ -164,7 +165,7 @@ tap.test('winston instrumentation', (t) => {
   t.test('logging enabled', (t) => {
     setup({ application_logging: { enabled: true } })
     winston.createLogger({})
-    const metric = agent.metrics.getMetric('Supportability/Logging/Nodejs/winston/enabled')
+    const metric = agent.metrics.getMetric(LOGGING.LIBS.WINSTON)
     t.equal(metric.callCount, 1, 'should create external module metric')
     t.end()
   })
@@ -516,12 +517,12 @@ tap.test('winston instrumentation', (t) => {
         let grandTotal = 0
         for (const [logLevel, maxCount] of Object.entries(logLevels)) {
           grandTotal += maxCount
-          const metricName = `Logging/lines/${logLevel}`
+          const metricName = LOGGING.LEVELS[logLevel.toUpperCase()]
           const metric = agent.metrics.getMetric(metricName)
           t.ok(metric, `ensure ${metricName} exists`)
           t.equal(metric.callCount, maxCount, `ensure ${metricName} has the right value`)
         }
-        const metricName = `Logging/lines`
+        const metricName = LOGGING.LINES
         const metric = agent.metrics.getMetric(metricName)
         t.ok(metric, `ensure ${metricName} exists`)
         t.equal(metric.callCount, grandTotal, `ensure ${metricName} has the right value`)
@@ -558,10 +559,10 @@ tap.test('winston instrumentation', (t) => {
 
           // Close the stream so that the logging calls are complete
           nullStream.end()
-          const linesMetric = agent.metrics.getMetric('Logging/lines')
-          t.notOk(linesMetric, 'should not create Logging/lines metric')
-          const levelMetric = agent.metrics.getMetric('Logging/lines/info')
-          t.notOk(levelMetric, 'should not create Logging/lines/info metric')
+          const linesMetric = agent.metrics.getMetric(LOGGING.LINES)
+          t.notOk(linesMetric, `should not create ${LOGGING.LINES} metric`)
+          const levelMetric = agent.metrics.getMetric(LOGGING.LEVELS.INFO)
+          t.notOk(levelMetric, `should not create ${LOGGING.LEVELS.INFO} metric`)
           t.end()
         })
       })

@@ -8,6 +8,7 @@
 const tap = require('tap')
 const sinon = require('sinon')
 const loggingUtils = require('../../../lib/util/application-logging')
+const { LOGGING } = require('../../../lib/metrics/names')
 
 tap.test('truncate', (t) => {
   t.autoend()
@@ -118,13 +119,13 @@ tap.test('incrementLoggingLinesMetrics', (t) => {
   loggingUtils.incrementLoggingLinesMetrics('debug', metricsStub)
   t.equal(
     metricsStub.getOrCreateMetric.args[0][0],
-    'Logging/lines',
-    'should create Logging/lines metric'
+    LOGGING.LINES,
+    `should create ${LOGGING.LINES} metric`
   )
   t.equal(
     metricsStub.getOrCreateMetric.args[1][0],
-    'Logging/lines/debug',
-    'should create Logging/lines/debug metric'
+    LOGGING.LEVELS.DEBUG,
+    `should create ${LOGGING.LEVELS.DEBUG} metric`
   )
   t.equal(callCountStub.incrementCallCount.callCount, 2, 'should increment each metric')
   t.end()
