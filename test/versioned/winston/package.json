@@ -8,8 +8,7 @@
         "node": ">=12"
       },
       "dependencies": {
-        "winston": ">=3",
-        "@newrelic/winston-enricher": "latest"
+        "winston": ">=3"
       },
       "files": [
         "winston.tap.js"

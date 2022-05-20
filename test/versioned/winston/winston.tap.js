@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 New Relic Corporation. All rights reserved.
+ * Copyright 2022 New Relic Corporation. All rights reserved.
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -10,6 +10,10 @@ const helper = require('../../lib/agent_helper')
 const concat = require('concat-stream')
 const { validateLogLine, CONTEXT_KEYS } = require('../../lib/logging-helper')
 const { Writable } = require('stream')
+
+// winston puts the log line getting construct through formatters on a symbol
+// which is exported from this module
+const { MESSAGE } = require('triple-beam')
 
 tap.Test.prototype.addAssert('validateAnnotations', 2, validateLogLine)
 
@@ -228,6 +232,42 @@ tap.test('winston instrumentation', (t) => {
 
       logStuff({ loggers: [logger, subLogger], stream: jsonStream })
     })
+
+    // See: https://github.com/newrelic/node-newrelic/issues/1196
+    // This test adds a printf formatter and then asserts that both the log lines
+    // have NR-LINKING in the message getting built in printf format
+    t.test('should not affect the log line if formatter is not json', (t) => {
+      const handleMessages = makeStreamTest((msgs) => {
+        t.same(agent.logs.getEvents(), [], 'should not add any logs to log aggregator')
+        msgs.forEach((msg) => {
+          t.match(
+            msg[MESSAGE],
+            /123 info: [in|out of]+ trans NR-LINKING|.*$/,
+            'should add NR-LINKING data to formatted log line'
+          )
+        })
+        t.end()
+      })
+
+      const assertFn = msgAssertFn.bind(null, t)
+      const jsonStream = concat(handleMessages(assertFn))
+
+      // Example Winston setup to test
+      const logger = winston.createLogger({
+        format: winston.format.combine(
+          winston.format.label({ label: '123' }),
+          winston.format.printf((info) => `${info.label} ${info.level}: ${info.message}`)
+        ),
+        transports: [
+          new winston.transports.Stream({
+            level: 'info',
+            stream: jsonStream
+          })
+        ]
+      })
+
+      logStuff({ loggers: [logger], stream: jsonStream })
+    })
   })
 
   t.test('log forwarding enabled', (t) => {
@@ -374,6 +414,50 @@ tap.test('winston instrumentation', (t) => {
       const subLogger = winston.createLogger(logger)
 
       logWithAggregator({ loggers: [logger, subLogger], stream: simpleStream, t })
+    })
+
+    // See: https://github.com/newrelic/node-newrelic/issues/1196
+    // This test adds a printf formatter and then asserts that both the log lines
+    // in aggregator have keys added in other formatters and that the log line being built
+    // is is in printf format
+    t.test('should not affect the log line if formatter is not json', (t) => {
+      const handleMessages = makeStreamTest((msgs) => {
+        const events = agent.logs.getEvents()
+        events.forEach((event) => {
+          t.equal(
+            event.label,
+            '123',
+            'should include keys added in other formaters to log line in aggregator'
+          )
+        })
+        msgs.forEach((msg) => {
+          t.match(
+            msg[MESSAGE],
+            /123 info: [in|out of]+ trans$/,
+            'should add NR-LINKING data to formatted log line'
+          )
+        })
+        t.end()
+      })
+
+      const assertFn = msgAssertFn.bind(null, t)
+      const jsonStream = concat(handleMessages(assertFn))
+
+      // Example Winston setup to test
+      const logger = winston.createLogger({
+        format: winston.format.combine(
+          winston.format.label({ label: '123' }),
+          winston.format.printf((info) => `${info.label} ${info.level}: ${info.message}`)
+        ),
+        transports: [
+          new winston.transports.Stream({
+            level: 'info',
+            stream: jsonStream
+          })
+        ]
+      })
+
+      logWithAggregator({ loggers: [logger], stream: jsonStream, t })
     })
   })
 
