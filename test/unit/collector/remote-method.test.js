@@ -14,6 +14,8 @@ const helper = require('../../lib/agent_helper')
 const { tapAssertMetrics } = require('../../lib/metrics_helper')
 const NAMES = require('../../../lib/metrics/names')
 
+const BARE_AGENT = { config: {}, metrics: { measureBytes() {} } }
+
 function generate(method, runID, protocolVersion) {
   protocolVersion = protocolVersion || 17
   let fragment =
@@ -35,18 +37,25 @@ tap.test('should require a name for the method to call', (t) => {
   t.end()
 })
 
+tap.test('should require an agent for the method to call', (t) => {
+  t.throws(() => {
+    new RemoteMethod('test') // eslint-disable-line no-new
+  })
+  t.end()
+})
+
 tap.test('should expose a call method as its public API', (t) => {
-  t.type(new RemoteMethod('test').invoke, 'function')
+  t.type(new RemoteMethod('test', BARE_AGENT).invoke, 'function')
   t.end()
 })
 
 tap.test('should expose its name', (t) => {
-  t.equal(new RemoteMethod('test').name, 'test')
+  t.equal(new RemoteMethod('test', BARE_AGENT).name, 'test')
   t.end()
 })
 
 tap.test('should default to protocol 17', (t) => {
-  t.equal(new RemoteMethod('test')._protocolVersion, 17)
+  t.equal(new RemoteMethod('test', BARE_AGENT)._protocolVersion, 17)
   t.end()
 })
 
@@ -56,7 +65,7 @@ tap.test('serialize', (t) => {
   let method = null
 
   t.beforeEach(() => {
-    method = new RemoteMethod('test')
+    method = new RemoteMethod('test', BARE_AGENT)
   })
 
   t.test('should JSON-encode the given payload', (t) => {
@@ -104,7 +113,8 @@ tap.test('_safeRequest', (t) => {
   let options = null
 
   t.beforeEach(() => {
-    method = new RemoteMethod('test', { max_payload_size_in_bytes: 100 }, {})
+    const agent = { config: { max_payload_size_in_bytes: 100 } }
+    method = new RemoteMethod('test', agent)
     options = {
       host: 'collector.newrelic.com',
       port: 80,
@@ -183,7 +193,7 @@ tap.test('when calling a method on the collector', (t) => {
   t.autoend()
 
   t.test('should not throw when dealing with compressed data', (t) => {
-    const method = new RemoteMethod('test', {}, { host: 'localhost' })
+    const method = new RemoteMethod('test', BARE_AGENT, { host: 'localhost' })
     method._shouldCompress = () => true
     method._safeRequest = (options) => {
       t.equal(options.body.readUInt8(0), 120)
@@ -196,7 +206,7 @@ tap.test('when calling a method on the collector', (t) => {
   })
 
   t.test('should not throw when preparing uncompressed data', (t) => {
-    const method = new RemoteMethod('test', {}, { host: 'localhost' })
+    const method = new RemoteMethod('test', BARE_AGENT, { host: 'localhost' })
     method._safeRequest = (options) => {
       t.equal(options.body, '"data"')
 
@@ -220,7 +230,7 @@ tap.test('when the connection fails', (t) => {
       port: 8765
     }
 
-    const method = new RemoteMethod('TEST', config, endpoint)
+    const method = new RemoteMethod('TEST', { ...BARE_AGENT, config }, endpoint)
     method.invoke({ message: 'none' }, {}, (error) => {
       t.ok(error)
       // regex for either ipv4 or ipv6 localhost
@@ -238,7 +248,7 @@ tap.test('when the connection fails', (t) => {
       host: 'failed.domain.cxlrg',
       port: 80
     }
-    const method = new RemoteMethod('TEST', config, endpoint)
+    const method = new RemoteMethod('TEST', { ...BARE_AGENT, config }, endpoint)
     method.invoke([], {}, (error) => {
       t.ok(error)
 
@@ -279,7 +289,7 @@ tap.test('when posting to collector', (t) => {
       port: 443
     }
 
-    method = new RemoteMethod('metric_data', config, endpoint)
+    method = new RemoteMethod('metric_data', { ...BARE_AGENT, config }, endpoint)
   })
 
   t.afterEach(() => {
@@ -290,7 +300,7 @@ tap.test('when posting to collector', (t) => {
   })
 
   t.test('should pass through error when compression fails', (t) => {
-    method = new RemoteMethod('test', {}, { host: 'localhost' })
+    method = new RemoteMethod('test', BARE_AGENT, { host: 'localhost' })
     method._shouldCompress = () => true
     // zlib.deflate really wants a stringlike entity
     method._post(-1, {}, (error) => {
@@ -445,7 +455,8 @@ tap.test('when posting to collector', (t) => {
         port: 443
       }
 
-      method = new RemoteMethod('preconnect', successConfig, endpoint)
+      const agent = { config: successConfig, metrics: { measureBytes() {} } }
+      method = new RemoteMethod('preconnect', agent, endpoint)
 
       nock(URL).post(generate('preconnect')).reply(200, response)
     })
@@ -505,7 +516,7 @@ tap.test('when generating headers for a plain request', (t) => {
     }
 
     const body = 'test☃'
-    method = new RemoteMethod(body, config, endpoint)
+    method = new RemoteMethod(body, { config }, endpoint)
 
     options = {
       body,
@@ -575,7 +586,7 @@ tap.test('when generating headers for a compressed request', (t) => {
     }
 
     const body = 'test☃'
-    const method = new RemoteMethod(body, config, endpoint)
+    const method = new RemoteMethod(body, { config }, endpoint)
 
     const options = {
       body,
@@ -640,7 +651,7 @@ tap.test('when generating a request URL', (t) => {
       port: 80
     }
 
-    const method = new RemoteMethod(TEST_METHOD, config, endpoint)
+    const method = new RemoteMethod(TEST_METHOD, { config }, endpoint)
     parsed = reconstitute(method._path())
   })
 
@@ -665,7 +676,7 @@ tap.test('when generating a request URL', (t) => {
   })
 
   t.test('should not include the agent run ID when not set', (t) => {
-    const method = new RemoteMethod(TEST_METHOD, config, endpoint)
+    const method = new RemoteMethod(TEST_METHOD, { config }, endpoint)
     parsed = reconstitute(method._path())
     t.notOk(parsed.query.run_id)
 
@@ -674,7 +685,7 @@ tap.test('when generating a request URL', (t) => {
 
   t.test('should include the agent run ID when set', (t) => {
     config.run_id = TEST_RUN_ID
-    const method = new RemoteMethod(TEST_METHOD, config, endpoint)
+    const method = new RemoteMethod(TEST_METHOD, { config }, endpoint)
     parsed = reconstitute(method._path())
     t.equal(parsed.query.run_id, '' + TEST_RUN_ID)
 
@@ -700,7 +711,7 @@ tap.test('when generating the User-Agent string', (t) => {
     version = pkg.version
     pkg.version = TEST_VERSION
     const config = new Config({})
-    const method = new RemoteMethod('test', config, {})
+    const method = new RemoteMethod('test', { config }, {})
 
     userAgent = method._userAgent()
   })
@@ -750,8 +761,8 @@ tap.test('record data usage supportability metrics', (t) => {
   })
 
   t.test('should aggregate bytes of uploaded payloads', async (t) => {
-    const method1 = new RemoteMethod('preconnect', agent.config, endpoint, agent)
-    const method2 = new RemoteMethod('connect', agent.config, endpoint, agent)
+    const method1 = new RemoteMethod('preconnect', agent, endpoint)
+    const method2 = new RemoteMethod('connect', agent, endpoint)
     const payload = [{ hello: 'world' }]
     const expectedSize = 19
     const totalMetric = [2, expectedSize * 2, 0, expectedSize, expectedSize, 722]
@@ -778,13 +789,13 @@ tap.test('record data usage supportability metrics', (t) => {
         ],
         [
           {
-            name: `${NAMES.SUPPORTABILITY.NODEJS}/Collector/preconnect/${NAMES.DATA_USAGE.SUFFIX}`
+            name: `${NAMES.DATA_USAGE.PREFIX}/preconnect/${NAMES.DATA_USAGE.SUFFIX}`
           },
           singleMetric
         ],
         [
           {
-            name: `${NAMES.SUPPORTABILITY.NODEJS}/Collector/connect/${NAMES.DATA_USAGE.SUFFIX}`
+            name: `${NAMES.DATA_USAGE.PREFIX}/connect/${NAMES.DATA_USAGE.SUFFIX}`
           },
           singleMetric
         ]
@@ -801,7 +812,7 @@ tap.test('record data usage supportability metrics', (t) => {
     const payloadSize = byteLength(payload)
     const responseSize = byteLength(response)
     const metric = [1, payloadSize, responseSize, 19, 19, 361]
-    const method = new RemoteMethod('preconnect', agent.config, endpoint, agent)
+    const method = new RemoteMethod('preconnect', agent, endpoint)
     // stub call to NR so we can test response payload metrics
     method._post = (data, nrHeaders, callback) => {
       callback(null, { payload: response })
@@ -839,7 +850,7 @@ tap.test('record data usage supportability metrics', (t) => {
     const payload = [{ hello: 'world' }]
     const payloadSize = byteLength(payload)
     const metric = [1, payloadSize, 0, 19, 19, 361]
-    const method = new RemoteMethod('preconnect', agent.config, endpoint, agent)
+    const method = new RemoteMethod('preconnect', agent, endpoint)
     // stub call to NR so we can test response payload metrics
     method._post = (data, nrHeaders, callback) => {
       const err = new Error('')
