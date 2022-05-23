@@ -874,7 +874,7 @@ tap.test('record data usage supportability metrics', (t) => {
         ],
         [
           {
-            name: `${NAMES.SUPPORTABILITY.NODEJS}/Collector/preconnect/${NAMES.DATA_USAGE.SUFFIX}`
+            name: `${NAMES.DATA_USAGE.PREFIX}/preconnect/${NAMES.DATA_USAGE.SUFFIX}`
           },
           metric
         ]
