@@ -1,3 +1,7 @@
+### v8.11.2 (2022-05-23)
+
+* Fixed winston instrumentation to no longer coerce every log line to be json.
+
 ### v8.11.1 (2022-05-13)
 
 * Fixed an issue with winston instrumentation that caused agent to crash when creating a winston logger from an existing instantiated logger.
