@@ -16,6 +16,7 @@ test('Log Aggregator', (t) => {
   t.autoend()
   let logEventAggregator
   let agentStub
+  let log
 
   t.beforeEach(() => {
     agentStub = {
@@ -30,21 +31,7 @@ test('Log Aggregator', (t) => {
       new Metrics(5, {}, {}),
       agentStub
     )
-  })
-
-  t.afterEach(() => {
-    logEventAggregator = null
-  })
-
-  t.test('should set the correct default method', (t) => {
-    const method = logEventAggregator.method
-
-    t.equal(method, 'log_event_data')
-    t.end()
-  })
-
-  t.test('toPayload() should return json format of data', (t) => {
-    const log = {
+    log = {
       'level': 30,
       'timestamp': '1649689872369',
       'pid': 4856,
@@ -57,6 +44,21 @@ test('Log Aggregator', (t) => {
       'entity.guid': 'MTkwfEFQTXxBUFBMSUNBVElPTnwyMjUzMDY0Nw',
       'message': 'unit test msg'
     }
+  })
+
+  t.afterEach(() => {
+    logEventAggregator = null
+    log = null
+  })
+
+  t.test('should set the correct default method', (t) => {
+    const method = logEventAggregator.method
+
+    t.equal(method, 'log_event_data')
+    t.end()
+  })
+
+  t.test('toPayload() should return json format of data', (t) => {
     const logs = []
 
     for (let i = 0; i <= 8; i++) {
@@ -68,6 +70,15 @@ test('Log Aggregator', (t) => {
     const payload = logEventAggregator._toPayloadSync()
     t.equal(payload.length, 1)
     t.same(payload, [{ logs: logs.reverse() }])
+    t.end()
+  })
+
+  t.test('toPayload() should de-serialize a log if already JSON', (t) => {
+    const log2 = JSON.stringify(log)
+    logEventAggregator.add(log)
+    logEventAggregator.add(log2)
+    const payload = logEventAggregator._toPayloadSync()
+    t.same(payload, [{ logs: [log, JSON.parse(log2)] }])
     t.end()
   })
 
@@ -93,6 +104,19 @@ test('Log Aggregator', (t) => {
     const line = { key: 'value' }
     logEventAggregator.add(line)
     t.same(logEventAggregator.getEvents(), [line])
+    t.end()
+  })
+
+  t.test('should add json log line to aggregator', (t) => {
+    const line = { a: 'b' }
+    const jsonLine = JSON.stringify(line)
+    logEventAggregator.add(jsonLine)
+    t.equal(logEventAggregator.getEvents().length, 1)
+    t.same(
+      logEventAggregator.getEvents(),
+      [jsonLine],
+      'log aggregator should not de-serialize if already string'
+    )
     t.end()
   })
 
