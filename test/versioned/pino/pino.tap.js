@@ -82,6 +82,8 @@ tap.test('Pino instrumentation', (t) => {
     const line = await once(stream, 'data')
     t.equal(line.msg, message, 'msg should not change')
     t.equal(line.level, 30, 'level should not change')
+    // pino by default includes hostname
+    t.equal(line.hostname, agent.config.getHostnameSafe(), 'hostname should not change')
     // if application logging is enabled it renames this to `timestamp`
     t.ok(line.time, 'time should not change')
     contextKeys.forEach((key) => {
@@ -185,6 +187,23 @@ tap.test('Pino instrumentation', (t) => {
         t.end()
       })
     })
+
+    t.test(
+      'should assign hostname from NR linking metadata when not defined as a core chinding',
+      async (t) => {
+        const localStream = sink()
+        const localLogger = pino({ base: undefined }, localStream)
+        const message = 'pino unit test'
+        const level = 'info'
+        localLogger[level](message)
+        const line = await once(localStream, 'data')
+        t.notOk(line.pid, 'should not have pid when overriding base chindings')
+        t.validateAnnotations({ line, message, level, config })
+        t.equal(agent.logs.getEvents().length, 1, 'should have 1 log in aggregator')
+        t.same(agent.logs.getEvents(), stringifyLines(line), 'log should be same in aggregator')
+        t.end()
+      }
+    )
 
     t.test('should properly handle child loggers', (t) => {
       const childLogger = logger.child({ module: 'child' })
