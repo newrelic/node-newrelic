@@ -12,6 +12,7 @@ const helper = require('../../lib/agent_helper')
 const MessageShim = require('../../../lib/shim/message-shim')
 
 tap.Test.prototype.addAssert('isNonWritable', 1, helper.isNonWritable)
+tap.Test.prototype.addAssert('compareSegments', 2, helper.compareSegments)
 
 tap.test('MessageShim', function (t) {
   t.autoend()
@@ -1228,7 +1229,7 @@ tap.test('MessageShim', function (t) {
         const parent = wrapped('my.queue', null, function subCb() {
           const segment = shim.getSegment()
           t.equal(segment.name, 'Callback: subCb')
-          t.same(parent.children, [segment])
+          t.compareSegments(parent, [segment])
           t.end()
         })
         t.ok(parent)

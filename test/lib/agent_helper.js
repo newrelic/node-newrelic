@@ -506,6 +506,19 @@ const helper = (module.exports = {
     } else {
       this.not(obj[key], 'testNonWritable test value', 'should not set value when non-writable')
     }
+  },
+  /**
+   *  Verifies the expected length of children segments and that every
+   *  id matches between a segment array and the children
+   *
+   *  @param {Object} parent trace
+   *  @param {Array} segments list of expected segments
+   */
+  compareSegments(parent, segments) {
+    this.ok(parent.children.length, segments.length, 'should be the same amount of children')
+    segments.forEach((segment, index) => {
+      this.equal(parent.children[index].id, segment.id, 'should have same ids')
+    })
   }
 })
 
