@@ -295,7 +295,7 @@ This product includes source derived from [@grpc/grpc-js](https://github.com/grp
 
 ### @grpc/proto-loader
 
-This product includes source derived from [@grpc/proto-loader](https://github.com/grpc/grpc-node) ([v0.6.9](https://github.com/grpc/grpc-node/tree/v0.6.9)), distributed under the [Apache-2.0 License](https://github.com/grpc/grpc-node/blob/v0.6.9/LICENSE):
+This product includes source derived from [@grpc/proto-loader](https://github.com/grpc/grpc-node) ([v0.6.12](https://github.com/grpc/grpc-node/tree/v0.6.12)), distributed under the [Apache-2.0 License](https://github.com/grpc/grpc-node/blob/v0.6.12/LICENSE):
 
 ```
                                  Apache License
@@ -1770,7 +1770,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 ### @newrelic/test-utilities
 
-This product includes source derived from [@newrelic/test-utilities](https://github.com/newrelic/node-test-utilities) ([v6.5.2](https://github.com/newrelic/node-test-utilities/tree/v6.5.2)), distributed under the [Apache-2.0 License](https://github.com/newrelic/node-test-utilities/blob/v6.5.2/LICENSE):
+This product includes source derived from [@newrelic/test-utilities](https://github.com/newrelic/node-test-utilities) ([v6.5.3](https://github.com/newrelic/node-test-utilities/tree/v6.5.3)), distributed under the [Apache-2.0 License](https://github.com/newrelic/node-test-utilities/blob/v6.5.3/LICENSE):
 
 ```
                                  Apache License

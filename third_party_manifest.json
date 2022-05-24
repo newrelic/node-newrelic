@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "Fri May 20 2022 11:15:38 GMT-0400 (Eastern Daylight Time)",
+  "lastUpdated": "Tue May 24 2022 10:20:35 GMT-0400 (Eastern Daylight Time)",
   "projectName": "New Relic Node Agent",
   "projectUrl": "https://github.com/newrelic/node-newrelic",
   "includeOptDeps": true,
@@ -32,15 +32,15 @@
       "licenseTextSource": "file",
       "publisher": "Google Inc."
     },
-    "@grpc/proto-loader@0.6.9": {
+    "@grpc/proto-loader@0.6.12": {
       "name": "@grpc/proto-loader",
-      "version": "0.6.9",
-      "range": "^0.6.9",
+      "version": "0.6.12",
+      "range": "^0.6.12",
       "licenses": "Apache-2.0",
       "repoUrl": "https://github.com/grpc/grpc-node",
-      "versionedRepoUrl": "https://github.com/grpc/grpc-node/tree/v0.6.9",
+      "versionedRepoUrl": "https://github.com/grpc/grpc-node/tree/v0.6.12",
       "licenseFile": "node_modules/@grpc/proto-loader/LICENSE",
-      "licenseUrl": "https://github.com/grpc/grpc-node/blob/v0.6.9/LICENSE",
+      "licenseUrl": "https://github.com/grpc/grpc-node/blob/v0.6.12/LICENSE",
       "licenseTextSource": "file",
       "publisher": "Google Inc."
     },
@@ -212,15 +212,15 @@
       "email": "nathan@tootallnate.net",
       "url": "http://n8.io/"
     },
-    "@newrelic/test-utilities@6.5.2": {
+    "@newrelic/test-utilities@6.5.3": {
       "name": "@newrelic/test-utilities",
-      "version": "6.5.2",
-      "range": "^6.5.2",
+      "version": "6.5.3",
+      "range": "^6.5.3",
       "licenses": "Apache-2.0",
       "repoUrl": "https://github.com/newrelic/node-test-utilities",
-      "versionedRepoUrl": "https://github.com/newrelic/node-test-utilities/tree/v6.5.2",
+      "versionedRepoUrl": "https://github.com/newrelic/node-test-utilities/tree/v6.5.3",
       "licenseFile": "node_modules/@newrelic/test-utilities/LICENSE",
-      "licenseUrl": "https://github.com/newrelic/node-test-utilities/blob/v6.5.2/LICENSE",
+      "licenseUrl": "https://github.com/newrelic/node-test-utilities/blob/v6.5.3/LICENSE",
       "licenseTextSource": "file",
       "publisher": "New Relic Node.js agent team",
       "email": "nodejs@newrelic.com"
