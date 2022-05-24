@@ -136,6 +136,17 @@ describe('the RUM API', function () {
     })
   })
 
+  it('should get browser agent script without wrapping tag if hasToRemoveScriptWrapper passed in options', function () {
+    const hasToRemoveScriptWrapper = true
+    helper.runInTransaction(agent, function (t) {
+      t.finalizeNameFromUri('hello')
+      api
+        .getBrowserTimingHeader({ hasToRemoveScriptWrapper })
+        .startsWith('window.NREUM')
+        .should.equal(true)
+    })
+  })
+
   it('should add custom attributes', function () {
     helper.runInTransaction(agent, function (t) {
       api.addCustomAttribute('hello', 1)
