@@ -2,12 +2,15 @@
 
 * Added instrumentation to pino to support application logging use cases: forwarding, local decorating, and metrics.
 
-- Report metrics about the data usage of harvested data.
-
-* Upgraded `@grpc/proto-loader` to fix a [CVE](https://security.snyk.io/vuln/SNYK-JS-PROTOBUFJS-2441248) with `protobufjs`.
- * Upgraded `@newrelic/test-utilities` to resolve a dev-only audit warning.
+* Added supportability metrics about the data usage bytes of harvested data to the collector endpoints.
 
 * Added an optional way to avoid wrapping browser agent script with <script> tag when using `api.getBrowserTimingHeader`.  This will ease usage with Component based libraries like React.
+
+  Thanks to @github-dd-nicolas for the contribution. 🎉
+
+* Upgraded `@grpc/proto-loader` to fix a [CVE](https://security.snyk.io/vuln/SNYK-JS-PROTOBUFJS-2441248) with `protobufjs`.
+
+* Upgraded `@newrelic/test-utilities` to resolve a dev-only audit warning.
 
 ### v8.11.2 (2022-05-23)
 
