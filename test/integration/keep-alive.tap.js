@@ -113,6 +113,7 @@ function createRemoteMethod(port) {
 
   config.certificates = [read(join(__dirname, '../lib/ca-certificate.crt'), 'utf8')]
 
-  const method = new RemoteMethod('fake', config, endpoint)
+  const agent = { config, metrics: { measureBytes() {} } }
+  const method = new RemoteMethod('fake', agent, endpoint)
   return method
 }

@@ -154,4 +154,26 @@ describe('Stats', function () {
     it('should store bytes as bytes, rescaling only at serialization')
     it('should store time as nanoseconds, rescaling only at serialization')
   })
+
+  describe('recordValueInBytes', function () {
+    const MEGABYTE = 1024 ** 2
+
+    it('should measure bytes as megabytes', function () {
+      statistics.recordValueInBytes(MEGABYTE)
+      expect(statistics.total).equal(1)
+      expect(statistics.totalExclusive).equal(1)
+    })
+
+    it('should measure exclusive bytes ok', function () {
+      statistics.recordValueInBytes(MEGABYTE * 2, MEGABYTE)
+      expect(statistics.total).equal(2)
+      expect(statistics.totalExclusive).equal(1)
+    })
+
+    it('should optionally not convert bytes to megabytes', function () {
+      statistics.recordValueInBytes(MEGABYTE * 2, MEGABYTE, true)
+      expect(statistics.total).equal(MEGABYTE * 2)
+      expect(statistics.totalExclusive).equal(MEGABYTE)
+    })
+  })
 })

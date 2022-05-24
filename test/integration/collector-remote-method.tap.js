@@ -12,6 +12,9 @@ const https = require('https')
 const url = require('url')
 const collector = require('../lib/fake-collector')
 const RemoteMethod = require('../../lib/collector/remote-method')
+const NAMES = require('../../lib/metrics/names')
+const { tapAssertMetrics } = require('../lib/metrics_helper')
+const { instrumentMockedAgent, unloadAgent } = require('../lib/agent_helper')
 const { SSL_HOST } = require('../lib/agent_helper')
 
 tap.test('DataSender (callback style) talking to fake collector', (t) => {
@@ -30,7 +33,8 @@ tap.test('DataSender (callback style) talking to fake collector', (t) => {
   }
 
   config.certificates = [read(join(__dirname, '../lib/ca-certificate.crt'), 'utf8')]
-  const method = new RemoteMethod('preconnect', config, endpoint)
+  const agent = { config, metrics: { measureBytes() {} } }
+  const method = new RemoteMethod('preconnect', agent, endpoint)
 
   collector({ port: 8765 }, (error, server) => {
     // set a reasonable server timeout for cleanup
@@ -99,7 +103,8 @@ tap.test('remote method to preconnect', (t) => {
 
     config.certificates = [read(join(__dirname, '../lib/ca-certificate.crt'), 'utf8')]
 
-    const method = new RemoteMethod('preconnect', config, endpoint)
+    const agent = { config, metrics: { measureBytes() {} } }
+    const method = new RemoteMethod('preconnect', agent, endpoint)
     return method
   }
 
@@ -132,4 +137,71 @@ tap.test('remote method to preconnect', (t) => {
       res.end()
     }
   }
+})
+
+tap.test('record data usage supportability metrics', (t) => {
+  t.autoend()
+
+  const port = 8765
+  let agent
+  let server
+  let method
+
+  t.beforeEach(async () => {
+    agent = instrumentMockedAgent({
+      run_id: 1337,
+      ssl: true,
+      license_key: 'whatever',
+      version: '0',
+      max_payload_size_in_bytes: 1000000,
+      feature_flag: {},
+      certificates: [read(join(__dirname, '../lib/ca-certificate.crt'), 'utf8')]
+    })
+    server = await new Promise((resolve, reject) => {
+      collector({ port }, (error, server) => {
+        server.server.setTimeout(5000)
+        return error ? reject(error) : resolve(server)
+      })
+    })
+    method = new RemoteMethod('preconnect', agent, { host: SSL_HOST, port })
+  })
+
+  t.afterEach(() => {
+    agent && unloadAgent(agent)
+    server && server.close()
+    method = null
+  })
+
+  t.test('should record metrics about data usage', async (t) => {
+    const byteLength = (data) => Buffer.byteLength(JSON.stringify(data), 'utf8')
+    const payload = [{ hello: 'world' }]
+    const payloadSize = byteLength(payload)
+    const metric = [1, payloadSize, 35, 19, 19, 361]
+    await new Promise((resolve) => {
+      method.invoke(payload, resolve)
+    })
+
+    tapAssertMetrics(
+      t,
+      {
+        metrics: agent.metrics
+      },
+      [
+        [
+          {
+            name: NAMES.DATA_USAGE.COLLECTOR
+          },
+          metric
+        ],
+        [
+          {
+            name: `${NAMES.DATA_USAGE.PREFIX}/preconnect/${NAMES.DATA_USAGE.SUFFIX}`
+          },
+          metric
+        ]
+      ]
+    )
+
+    t.end()
+  })
 })
