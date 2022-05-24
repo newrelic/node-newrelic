@@ -27,7 +27,7 @@ const NAMES = require('./lib/metrics/names')
  * CONSTANTS
  *
  */
-const RUM_STUB = 'window.NREUM||(NREUM={}); NREUM.info = %s;'
+const RUM_STUB = 'window.NREUM||(NREUM={});NREUM.info = %s;'
 const RUM_STUB_SHELL = `<script type='text/javascript' %s>${RUM_STUB} %s</script>`
 
 // these messages are used in the _gracefail() method below in getBrowserTimingHeader
@@ -514,10 +514,14 @@ API.prototype.addIgnoringRule = function addIgnoringRule(pattern) {
 }
 
 /**
- * Get the <script>...</script> header necessary for Browser Monitoring
+ * Get the script header necessary for Browser Monitoring
  * This script must be manually injected into your templates, as high as possible
  * in the header, but _after_ any X-UA-COMPATIBLE HTTP-EQUIV meta tags.
  * Otherwise you may hurt IE!
+ *
+ * By default this method will return a script wrapped by `<script>` tags, but with
+ * option `hasToRemoveScriptWrapper` it can send back only the script content
+ * without the `<script>` wrapper. Useful for React component based frontend.
  *
  * This method must be called _during_ a transaction, and must be called every
  * time you want to generate the headers.
@@ -525,8 +529,9 @@ API.prototype.addIgnoringRule = function addIgnoringRule(pattern) {
  * Do *not* reuse the headers between users, or even between requests.
  *
  * @param {string} [options.nonce] - Nonce to inject into `<script>` header.
+ * @param {boolean} [options.hasToRemoveScriptWrapper] - Used to import agent script without `<script>` tag wrapper.
  * @param options
- * @returns {string} The `<script>` header to be injected.
+ * @returns {string} The script content to be injected in `<head>` or put inside `<script>` tag (depending on options)
  */
 API.prototype.getBrowserTimingHeader = function getBrowserTimingHeader(options) {
   const metric = this.agent.metrics.getOrCreateMetric(
