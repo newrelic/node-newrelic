@@ -8,13 +8,19 @@
 const tap = require('tap')
 const helper = require('../../lib/agent_helper')
 const concat = require('concat-stream')
-const { validateLogLine, CONTEXT_KEYS } = require('../../lib/logging-helper')
+const { validateLogLine } = require('../../lib/logging-helper')
 const { Writable } = require('stream')
 const { LOGGING } = require('../../../lib/metrics/names')
-
 // winston puts the log line getting construct through formatters on a symbol
 // which is exported from this module
 const { MESSAGE } = require('triple-beam')
+const {
+  makeStreamTest,
+  logStuff,
+  logWithAggregator,
+  originalMsgAssertion,
+  logForwardingMsgAssertion
+} = require('./helpers')
 
 tap.Test.prototype.addAssert('validateAnnotations', 2, validateLogLine)
 
@@ -40,105 +46,19 @@ tap.test('winston instrumentation', (t) => {
         delete require.cache[key]
       }
     })
+
+    /**
+     * since our nr-winston-transport gets registered
+     * with `opts.handleExceptions` we need to remove the listener
+     * after every test so subsequent tests that actually throw
+     * uncaughtExceptions only get the error and not every previous
+     * instance of a logger
+     */
+    process.removeAllListeners(['uncaughtException'])
   })
-
-  // Stream factory for a test. Applies common assertions to logged messages.
-  const makeStreamTest = (cb) => {
-    let toBeClosed = 0
-    return (assertFn) => {
-      toBeClosed++
-      return (msgs) => {
-        for (const msg of msgs) {
-          assertFn(msg)
-        }
-        if (--toBeClosed === 0) {
-          cb(msgs)
-        }
-      }
-    }
-  }
-
-  /**
-   * Log lines in and out of a transaction for every logger.
-   * @param {Object} opts
-   * @param {DerivedLogger} opts.logger instance of winston
-   * @param {Array} opts.loggers an array of winston loggers
-   * @param {Stream} opts.stream stream used to end test
-   */
-  const logStuff = ({ loggers, logger, stream }) => {
-    loggers = loggers || [logger]
-    loggers.forEach((log) => {
-      // Log some stuff, both in and out of a transaction
-      log.info('out of trans')
-
-      helper.runInTransaction(agent, 'test', (transaction) => {
-        log.info('in trans')
-
-        transaction.end()
-      })
-    })
-
-    // Force the stream to close so that we can test the output
-    stream.end()
-  }
-
-  /**
-   * Logs lines in and out of transaction for every logger and also asserts the size of the log
-   * aggregator.  The log line in transaction context should not be added to aggregator
-   * until after the transaction ends
-   *
-   * @param {Object} opts
-   * @param {DerivedLogger} opts.logger instance of winston
-   * @param {Array} opts.loggers an array of winston loggers
-   * @param {Stream} opts.stream stream used to end test
-   * @param {Test} opts.t tap test
-   */
-  const logWithAggregator = ({ logger, loggers, stream, t }) => {
-    let aggregatorLength = 0
-    loggers = loggers || [logger]
-    loggers.forEach((log) => {
-      // Log some stuff, both in and out of a transaction
-      log.info('out of trans')
-      aggregatorLength++
-      t.equal(
-        agent.logs.getEvents().length,
-        aggregatorLength,
-        `should only add ${aggregatorLength} log to aggregator`
-      )
-
-      helper.runInTransaction(agent, 'test', (transaction) => {
-        log.info('in trans')
-        t.equal(
-          agent.logs.getEvents().length,
-          aggregatorLength,
-          `should keep log aggregator at ${aggregatorLength}`
-        )
-
-        transaction.end()
-        aggregatorLength++
-        t.equal(
-          agent.logs.getEvents().length,
-          aggregatorLength,
-          `should only add ${aggregatorLength} log after transaction end`
-        )
-      })
-    })
-
-    // Force the stream to close so that we can test the output
-    stream.end()
-  }
 
   t.test('logging disabled', (t) => {
     setup({ application_logging: { enabled: false } })
-    t.equal(!!winston.__NR_original, false, 'should not wrap createLogger')
-    const assertFn = (msg) => {
-      CONTEXT_KEYS.forEach((key) => {
-        t.notOk(msg[key], `should not have ${key}`)
-      })
-      t.notOk(msg.timestamp, 'should not have timestamp')
-      t.equal(msg.level, 'info')
-      t.notOk(msg.message.includes('NR-LINKING'), 'should not contain NR-LINKING metadata')
-    }
 
     const handleMessages = makeStreamTest(() => {
       t.same(agent.logs.getEvents(), [], 'should not add any logs to log aggregator')
@@ -146,6 +66,7 @@ tap.test('winston instrumentation', (t) => {
       t.notOk(metric, `should not create ${LOGGING.LIBS.WINSTON} metric when logging is disabled`)
       t.end()
     })
+    const assertFn = originalMsgAssertion.bind(null, { t })
     const jsonStream = concat(handleMessages(assertFn))
 
     // Example Winston setup to test
@@ -159,7 +80,7 @@ tap.test('winston instrumentation', (t) => {
       ]
     })
 
-    logStuff({ logger, stream: jsonStream })
+    logStuff({ logger, stream: jsonStream, helper, agent })
   })
 
   t.test('logging enabled', (t) => {
@@ -174,17 +95,15 @@ tap.test('winston instrumentation', (t) => {
     t.autoend()
 
     t.beforeEach(() => {
-      setup({ application_logging: { enabled: true, local_decorating: { enabled: true } } })
-    })
-
-    const msgAssertFn = (t, msg) => {
-      CONTEXT_KEYS.forEach((key) => {
-        t.notOk(msg[key], `should not have ${key}`)
+      setup({
+        application_logging: {
+          enabled: true,
+          local_decorating: { enabled: true },
+          forwarding: { enabled: false },
+          metrics: { enabled: false }
+        }
       })
-      t.notOk(msg.timestamp, 'should not have timestamp')
-      t.equal(msg.level, 'info')
-      t.ok(msg.message.includes('NR-LINKING'), 'should contain NR-LINKING metadata')
-    }
+    })
 
     t.test('should not add NR context to logs when decorating is enabled', (t) => {
       t.equal(!!winston.__NR_original, false, 'should not wrap createLogger')
@@ -193,7 +112,7 @@ tap.test('winston instrumentation', (t) => {
         t.end()
       })
 
-      const assertFn = msgAssertFn.bind(null, t)
+      const assertFn = originalMsgAssertion.bind(null, { t, includeLocalDecorating: true })
       const jsonStream = concat(handleMessages(assertFn))
 
       // Example Winston setup to test
@@ -207,7 +126,7 @@ tap.test('winston instrumentation', (t) => {
         ]
       })
 
-      logStuff({ logger, stream: jsonStream })
+      logStuff({ logger, stream: jsonStream, helper, agent })
     })
 
     t.test('should not double log nor instrument composed logger', (t) => {
@@ -216,7 +135,7 @@ tap.test('winston instrumentation', (t) => {
         t.end()
       })
 
-      const assertFn = msgAssertFn.bind(null, t)
+      const assertFn = originalMsgAssertion.bind(null, { t, includeLocalDecorating: true })
       const jsonStream = concat(handleMessages(assertFn))
 
       // Example Winston setup to test
@@ -231,7 +150,7 @@ tap.test('winston instrumentation', (t) => {
       })
       const subLogger = winston.createLogger(logger)
 
-      logStuff({ loggers: [logger, subLogger], stream: jsonStream })
+      logStuff({ loggers: [logger, subLogger], stream: jsonStream, helper, agent })
     })
 
     // See: https://github.com/newrelic/node-newrelic/issues/1196
@@ -250,7 +169,7 @@ tap.test('winston instrumentation', (t) => {
         t.end()
       })
 
-      const assertFn = msgAssertFn.bind(null, t)
+      const assertFn = originalMsgAssertion.bind(null, { t, includeLocalDecorating: true })
       const jsonStream = concat(handleMessages(assertFn))
 
       // Example Winston setup to test
@@ -267,7 +186,7 @@ tap.test('winston instrumentation', (t) => {
         ]
       })
 
-      logStuff({ loggers: [logger], stream: jsonStream })
+      logStuff({ loggers: [logger], stream: jsonStream, helper, agent })
     })
   })
 
@@ -280,43 +199,33 @@ tap.test('winston instrumentation', (t) => {
           enabled: true,
           forwarding: {
             enabled: true
+          },
+          local_decorating: {
+            enabled: false
+          },
+          metrics: {
+            enabled: false
           }
         }
       })
     })
 
-    const msgAssertFn = (t, msg) => {
-      if (msg.message === 'out of trans') {
-        t.validateAnnotations({
-          line: msg,
-          message: 'out of trans',
-          level: 'info',
-          config: agent.config
-        })
-        t.equal(msg['trace.id'], undefined, 'msg out of trans should not have trace id')
-        t.equal(msg['span.id'], undefined, 'msg out of trans should not have span id')
-      } else if (msg.message === 'in trans') {
-        t.validateAnnotations({
-          line: msg,
-          message: 'in trans',
-          level: 'info',
-          config: agent.config
-        })
-        t.equal(typeof msg['trace.id'], 'string', 'msg in trans should have trace id')
-        t.equal(typeof msg['span.id'], 'string', 'msg in trans should have span id')
-      }
-    }
-
-    t.test('should add linking metadata to all transports', (t) => {
+    t.test('should add linking metadata to log aggregator', (t) => {
       const handleMessages = makeStreamTest(() => {
-        t.ok(agent.logs.getEvents().length, 2, 'should add both logs to aggregator')
+        const msgs = agent.logs.getEvents()
+        t.equal(msgs.length, 2, 'should add both logs to aggregator')
+        msgs.forEach((msg) => {
+          logForwardingMsgAssertion(t, msg, agent)
+          t.ok(msg.original_timestamp, 'should put customer timestamp on original_timestamp')
+        })
         t.end()
       })
-      const assertFn = msgAssertFn.bind(null, t)
+      const assertFn = originalMsgAssertion.bind(null, { t, timestamp: true })
       const jsonStream = concat(handleMessages(assertFn))
 
       // Example Winston setup to test
       const logger = winston.createLogger({
+        format: winston.format.timestamp('YYYY-MM-DD HH:mm:ss'),
         transports: [
           // Log to a stream so we can test the output
           new winston.transports.Stream({
@@ -326,11 +235,12 @@ tap.test('winston instrumentation', (t) => {
         ]
       })
 
-      logWithAggregator({ logger, stream: jsonStream, t })
+      logWithAggregator({ logger, stream: jsonStream, t, helper, agent })
     })
 
-    t.test('should properly reformat errors', (t) => {
+    t.test('should properly reformat errors on msgs to log aggregator', (t) => {
       const name = 'TestError'
+      const errorMsg = 'throw uncaught exception test'
       // Simulate an error being thrown to trigger Winston's error handling
       class TestError extends Error {
         constructor(msg) {
@@ -340,20 +250,20 @@ tap.test('winston instrumentation', (t) => {
       }
 
       const handleMessages = makeStreamTest(() => {
-        t.ok(agent.logs.getEvents().length, 1, 'should add error line to aggregator')
-        t.end()
-      })
-
-      const errorMsg = 'throw uncaught exception test'
-      const err = new TestError(errorMsg)
-
-      const assertFn = (msg) => {
+        const msgs = agent.logs.getEvents()
+        t.equal(msgs.length, 1, 'should add error line to aggregator')
+        const [msg] = msgs
         t.equal(msg['error.message'], errorMsg, 'error.message should match')
         t.equal(msg['error.class'], name, 'error.class should match')
         t.ok(typeof msg['error.stack'] === 'string', 'error.stack should be a string')
         t.notOk(msg.stack, 'stack should be removed')
         t.notOk(msg.trace, 'trace should be removed')
-      }
+        t.end()
+      })
+
+      const err = new TestError(errorMsg)
+
+      const assertFn = originalMsgAssertion.bind(null, { t, level: 'error' })
       const jsonStream = concat(handleMessages(assertFn))
 
       // Example Winston setup to test
@@ -362,8 +272,7 @@ tap.test('winston instrumentation', (t) => {
           // Log to a stream so we can test the output
           new winston.transports.Stream({
             level: 'info',
-            stream: jsonStream,
-            handleExceptions: true
+            stream: jsonStream
           })
         ],
         exitOnError: false
@@ -373,33 +282,17 @@ tap.test('winston instrumentation', (t) => {
       jsonStream.end()
     })
 
-    t.test('should instrument top-level format', (t) => {
-      const handleMessages = makeStreamTest(() => {
-        t.end()
-      })
-      const assertFn = msgAssertFn.bind(null, t)
-      const simpleStream = concat(handleMessages(assertFn))
-
-      // Example Winston setup to test
-      const logger = winston.createLogger({
-        format: winston.format.simple(),
-        transports: [
-          new winston.transports.Stream({
-            level: 'info',
-            stream: simpleStream
-          })
-        ]
-      })
-      t.equal(!!winston.createLogger.__NR_original, true)
-
-      logWithAggregator({ logger, stream: simpleStream, t })
-    })
-
     t.test('should not double log nor instrument composed logger', (t) => {
       const handleMessages = makeStreamTest(() => {
+        const msgs = agent.logs.getEvents()
+        t.equal(msgs.length, 4, 'should add 4 logs(2 per logger) to log aggregator')
+        msgs.forEach((msg) => {
+          logForwardingMsgAssertion(t, msg, agent)
+        })
         t.end()
       })
-      const assertFn = msgAssertFn.bind(null, t)
+
+      const assertFn = originalMsgAssertion.bind(null, { t })
       const simpleStream = concat(handleMessages(assertFn))
 
       // Example Winston setup to test
@@ -414,7 +307,7 @@ tap.test('winston instrumentation', (t) => {
       })
       const subLogger = winston.createLogger(logger)
 
-      logWithAggregator({ loggers: [logger, subLogger], stream: simpleStream, t })
+      logWithAggregator({ loggers: [logger, subLogger], stream: simpleStream, t, helper, agent })
     })
 
     // See: https://github.com/newrelic/node-newrelic/issues/1196
@@ -425,23 +318,24 @@ tap.test('winston instrumentation', (t) => {
       const handleMessages = makeStreamTest((msgs) => {
         const events = agent.logs.getEvents()
         events.forEach((event) => {
+          logForwardingMsgAssertion(t, event, agent)
           t.equal(
             event.label,
             '123',
-            'should include keys added in other formaters to log line in aggregator'
+            'should include keys added in other formatters to log line in aggregator'
           )
         })
         msgs.forEach((msg) => {
           t.match(
             msg[MESSAGE],
             /123 info: [in|out of]+ trans$/,
-            'should add NR-LINKING data to formatted log line'
+            'should not affect original log line'
           )
         })
         t.end()
       })
 
-      const assertFn = msgAssertFn.bind(null, t)
+      const assertFn = originalMsgAssertion.bind(null, { t })
       const jsonStream = concat(handleMessages(assertFn))
 
       // Example Winston setup to test
@@ -458,7 +352,7 @@ tap.test('winston instrumentation', (t) => {
         ]
       })
 
-      logWithAggregator({ loggers: [logger], stream: jsonStream, t })
+      logWithAggregator({ loggers: [logger], stream: jsonStream, t, helper, agent })
     })
   })
 

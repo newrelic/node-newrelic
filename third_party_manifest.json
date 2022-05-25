@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "Tue May 24 2022 10:20:35 GMT-0400 (Eastern Daylight Time)",
+  "lastUpdated": "Wed May 25 2022 12:23:19 GMT-0400 (Eastern Daylight Time)",
   "projectName": "New Relic Node Agent",
   "projectUrl": "https://github.com/newrelic/node-newrelic",
   "includeOptDeps": true,
@@ -170,6 +170,19 @@
       "licenseFile": "node_modules/semver/LICENSE",
       "licenseUrl": "https://github.com/npm/node-semver/blob/v5.7.1/LICENSE",
       "licenseTextSource": "file"
+    },
+    "winston-transport@4.5.0": {
+      "name": "winston-transport",
+      "version": "4.5.0",
+      "range": "^4.5.0",
+      "licenses": "MIT",
+      "repoUrl": "https://github.com/winstonjs/winston-transport",
+      "versionedRepoUrl": "https://github.com/winstonjs/winston-transport/tree/v4.5.0",
+      "licenseFile": "node_modules/winston-transport/LICENSE",
+      "licenseUrl": "https://github.com/winstonjs/winston-transport/blob/v4.5.0/LICENSE",
+      "licenseTextSource": "file",
+      "publisher": "Charlie Robbins",
+      "email": "charlie.robbins@gmail.com"
     }
   },
   "devDependencies": {
