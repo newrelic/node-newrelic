@@ -8,6 +8,7 @@ const { test } = require('tap')
 const LogAggregator = require('../../../lib/aggregators/log-aggregator')
 const Metrics = require('../../../lib/metrics')
 const sinon = require('sinon')
+const helper = require('../../lib/agent_helper')
 
 const RUN_ID = 1337
 const LIMIT = 5
@@ -21,6 +22,16 @@ test('Log Aggregator', (t) => {
   t.beforeEach(() => {
     agentStub = {
       getTransaction: sinon.stub()
+    }
+    // Normally this config is set after connect and in the actual
+    // code we only use it after connect, but for unit testing
+    // purposes, we'll set this here.
+    agentStub.config = {
+      event_harvest_config: {
+        harvest_limits: {
+          log_event_data: 42
+        }
+      }
     }
     logEventAggregator = new LogAggregator(
       {
@@ -38,7 +49,6 @@ test('Log Aggregator', (t) => {
       'hostname': 'test-host',
       'entity.name': 'unit-test',
       'entity.type': 'SERVICE',
-      'hostname': 'test-host',
       'trace.id': '2f93639c684a2dd33c28345173d218b8',
       'span.id': 'a136d77f2a5b997b',
       'entity.guid': 'MTkwfEFQTXxBUFBMSUNBVElPTnwyMjUzMDY0Nw',
@@ -126,5 +136,60 @@ test('Log Aggregator', (t) => {
     logEventAggregator.addBatch(logs, priority)
     t.equal(logEventAggregator.getEvents().length, 3)
     t.end()
+  })
+})
+
+test('big red button', (t) => {
+  t.autoend()
+
+  let agent
+
+  t.beforeEach(() => {
+    // setup agent
+    agent = helper.instrumentMockedAgent()
+  })
+
+  t.afterEach(() => {
+    agent && helper.unloadAgent(agent)
+  })
+
+  t.test('should show logs if the config for it is enabled', (t) => {
+    t.plan(2)
+
+    agent.config.onConnect({
+      event_harvest_config: {
+        report_period_ms: 60,
+        harvest_limits: {
+          log_event_data: 42
+        }
+      }
+    })
+    agent.onConnect(false, () => {
+      agent.logs.add('hello')
+      agent.logs.add('world')
+      const payload = agent.logs._toPayloadSync()
+      const logMessages = payload[0].logs
+      for (const msg of logMessages) {
+        t.ok(['hello', 'world'].includes(msg))
+      }
+    })
+  })
+
+  t.test('should drop logs if the server disabled logging', (t) => {
+    t.plan(1)
+    agent.config.onConnect({
+      event_harvest_config: {
+        report_period_ms: 60,
+        harvest_limits: {
+          log_event_data: 0
+        }
+      }
+    })
+    agent.onConnect(false, () => {
+      agent.logs.add('hello')
+      agent.logs.add('world')
+      const payload = agent.logs._toPayloadSync()
+      t.notOk(payload)
+    })
   })
 })
