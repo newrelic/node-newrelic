@@ -50,6 +50,7 @@ tap.test('AwsLambda.patchLambdaHandler', (t) => {
         }
       })
     }
+    agent.collector._doFlush = () => {} // stub to prevent flushing logs to stdout
     awsLambda = new AwsLambda(agent)
     awsLambda._resetModuleState()
 
