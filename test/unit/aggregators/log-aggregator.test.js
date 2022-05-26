@@ -165,12 +165,12 @@ test('big red button', (t) => {
       }
     })
     agent.onConnect(false, () => {
-      agent.logs.add('hello')
-      agent.logs.add('world')
+      agent.logs.add({ msg: 'hello' })
+      agent.logs.add({ msg: 'world' })
       const payload = agent.logs._toPayloadSync()
       const logMessages = payload[0].logs
       for (const msg of logMessages) {
-        t.ok(['hello', 'world'].includes(msg))
+        t.ok(['hello', 'world'].includes(msg.msg))
       }
     })
   })
@@ -186,8 +186,8 @@ test('big red button', (t) => {
       }
     })
     agent.onConnect(false, () => {
-      agent.logs.add('hello')
-      agent.logs.add('world')
+      agent.logs.add({ msg: 'hello' })
+      agent.logs.add({ msg: 'world' })
       const payload = agent.logs._toPayloadSync()
       t.notOk(payload)
     })
