@@ -11,5 +11,6 @@
   "readable-stream": "MIT",
   "semver": "ISC",
   "@grpc/grpc-js": "Apache-2.0",
-  "@grpc/proto-loader": "Apache-2.0"
+  "@grpc/proto-loader": "Apache-2.0",
+  "winston-transport": "MIT"
 }
