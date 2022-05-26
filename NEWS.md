@@ -1,3 +1,9 @@
+### v8.13.0 (2022-05-26)
+
+* Moved log forwarding logic to a transport so customer transports are not polluted with NR linking metadata and timestamp and error manipulations.
+
+* Prevented transmitting logs when application level logging has been disabled.
+
 ### v8.12.0 (2022-05-24)
 
 * Added instrumentation to pino to support application logging use cases: forwarding, local decorating, and metrics.
