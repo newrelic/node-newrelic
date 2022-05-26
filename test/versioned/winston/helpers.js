@@ -13,7 +13,7 @@ const { CONTEXT_KEYS } = require('../../lib/logging-helper')
  *
  * @param {function} cb callback after all messages have been emitted
  */
-helpers.makeStreamTest = (cb) => {
+helpers.makeStreamTest = function makeStreamTest(cb) {
   let toBeClosed = 0
   return (assertFn) => {
     toBeClosed++
@@ -37,7 +37,7 @@ helpers.makeStreamTest = (cb) => {
  * @param {object} opts.helper test helpers
  * @param {object} opts.agent new relic agent
  */
-helpers.logStuff = ({ loggers, logger, stream, helper, agent }) => {
+helpers.logStuff = function logStuff({ loggers, logger, stream, helper, agent }) {
   loggers = loggers || [logger]
   loggers.forEach((log) => {
     // Log some stuff, both in and out of a transaction
@@ -67,7 +67,14 @@ helpers.logStuff = ({ loggers, logger, stream, helper, agent }) => {
  * @param {object} opts.helper test helpers
  * @param {object} opts.agent new relic agent
  */
-helpers.logWithAggregator = ({ logger, loggers, stream, t, agent, helper }) => {
+helpers.logWithAggregator = function logWithAggregator({
+  logger,
+  loggers,
+  stream,
+  t,
+  agent,
+  helper
+}) {
   let aggregatorLength = 0
   loggers = loggers || [logger]
   loggers.forEach((log) => {
@@ -112,10 +119,10 @@ helpers.logWithAggregator = ({ logger, loggers, stream, t, agent, helper }) => {
  * @param {boolean} [opts.timestamp=false] does timestamp exist on original message
  * @param {string} [opts.level=info] level to assert is on message
  */
-helpers.originalMsgAssertion = (
+helpers.originalMsgAssertion = function originalMsgAssertion(
   { t, includeLocalDecorating = false, timestamp = false, level = 'info' },
   msg
-) => {
+) {
   CONTEXT_KEYS.forEach((key) => {
     t.notOk(msg[key], `should not have ${key}`)
   })
@@ -140,7 +147,7 @@ helpers.originalMsgAssertion = (
  * @param {Test} t
  * @param {string} msg log line
  */
-helpers.logForwardingMsgAssertion = (t, logLine, agent) => {
+helpers.logForwardingMsgAssertion = function logForwardingMsgAssertion(t, logLine, agent) {
   if (logLine.message === 'out of trans') {
     t.validateAnnotations({
       line: logLine,

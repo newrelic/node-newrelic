@@ -106,7 +106,6 @@ tap.test('winston instrumentation', (t) => {
     })
 
     t.test('should not add NR context to logs when decorating is enabled', (t) => {
-      t.equal(!!winston.__NR_original, false, 'should not wrap createLogger')
       const handleMessages = makeStreamTest(() => {
         t.same(agent.logs.getEvents(), [], 'should not add any logs to log aggregator')
         t.end()
