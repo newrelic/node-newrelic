@@ -2,7 +2,7 @@
 
 * Moved log forwarding logic to a transport so customer transports are not polluted with NR linking metadata and timestamp and error manipulations.
 
-* Do not aggregate or forward logs when the maximum sample size has been set to zero.
+* Prevented transmitting logs when application level logging has been disabled.
 
 ### v8.12.0 (2022-05-24)
 
