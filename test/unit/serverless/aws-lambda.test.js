@@ -50,6 +50,8 @@ tap.test('AwsLambda.patchLambdaHandler', (t) => {
         }
       })
     }
+    // TODO: switch to `os.devnull` once we drop Node 12 support.
+    process.env.NEWRELIC_PIPE_PATH = '/dev/null'
     awsLambda = new AwsLambda(agent)
     awsLambda._resetModuleState()
 

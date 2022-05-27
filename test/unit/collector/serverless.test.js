@@ -39,6 +39,8 @@ tap.test('ServerlessCollector API', (t) => {
     agent.reconfigure = () => {}
     agent.setState = () => {}
     api = new API(agent)
+    // TODO: switch to `os.devnull` once we drop Node 12 support.
+    process.env.NEWRELIC_PIPE_PATH = '/dev/null'
   }
 
   function afterTest() {
@@ -155,17 +157,18 @@ tap.test('ServerlessCollector API', (t) => {
   t.test('#flushPayload', (t) => {
     t.autoend()
 
-    let stdOutSpy = null
+    let outputSpy = null
 
     t.beforeEach(() => {
-      // Need to allow output for tap to function correctly
-      stdOutSpy = sinon.spy(process.stdout, 'write')
+      // We're using NEWRELIC_PIPE_PATH to output to /dev/null so
+      // let's check that we are writing to the device.
+      outputSpy = sinon.spy(fs, 'writeFileSync')
 
       beforeTest()
     })
 
     t.afterEach(() => {
-      stdOutSpy.restore()
+      outputSpy.restore()
 
       afterTest()
     })
@@ -174,7 +177,7 @@ tap.test('ServerlessCollector API', (t) => {
       api.payload = { type: 'test payload' }
 
       api.flushPayload(() => {
-        const logPayload = JSON.parse(stdOutSpy.args[0][0])
+        const logPayload = JSON.parse(outputSpy.args[0][1])
 
         t.type(logPayload, Array)
         t.type(logPayload[0], 'number')
@@ -195,7 +198,7 @@ tap.test('ServerlessCollector API', (t) => {
       api.flushPayload(() => {
         let logPayload = null
 
-        logPayload = JSON.parse(stdOutSpy.getCall(0).args[0])
+        logPayload = JSON.parse(outputSpy.args[0][1])
 
         const buf = Buffer.from(logPayload[2], 'base64')
 
