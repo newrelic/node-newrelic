@@ -1,3 +1,9 @@
+### v8.13.1 (2022-05-27)
+
+- Fixes passing undefined as a formatter options to `winston.format.combine`
+
+* Silenced stdout from serverless tests
+
 ### v8.13.0 (2022-05-26)
 
 * Moved log forwarding logic to a transport so customer transports are not polluted with NR linking metadata and timestamp and error manipulations.
