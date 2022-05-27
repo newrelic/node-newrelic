@@ -1,8 +1,6 @@
 ### v8.13.1 (2022-05-27)
 
-- Fixes passing undefined as a formatter options to `winston.format.combine`
-
-* Silenced stdout from serverless tests
+* Fixed passing undefined as a formatter options to `winston.format.combine`
 
 ### v8.13.0 (2022-05-26)
 
