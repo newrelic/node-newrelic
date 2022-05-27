@@ -1050,13 +1050,14 @@ test('http.createServer should trace errors in top-level handlers', (t) => {
 
   const http = require('http')
   const agent = helper.instrumentMockedAgent()
+  const err = new Error('whoops')
 
   t.teardown(() => {
     helper.unloadAgent(agent)
   })
 
   const server = http.createServer(function createServerCb() {
-    throw new Error('whoops!')
+    throw err
   })
   let request
 
@@ -1070,14 +1071,15 @@ test('http.createServer should trace errors in top-level handlers', (t) => {
     server.close(t.end)
   })
 
+  let swallowedError
   server.listen(8182, function () {
     request = http.get({ host: 'localhost', port: 8182 }, function () {
-      t.end('actually got response')
+      t.equal(swallowedError.message, err.message, 'error should have been swallowed')
+      t.end()
     })
 
     request.on('error', function swallowError(err) {
-      // eslint-disable-next-line no-console
-      console.log('swallowed error: ', err)
+      swallowedError = err
     })
   })
 })
