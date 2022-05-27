@@ -53,7 +53,6 @@ async function createReleaseNotesPr() {
     const { body, releaseDate } = await getReleaseNotes(version, options.changelog)
     logStep('Branch Creation')
     const branchName = await createBranch(options.repoPath, version, options.dryRun)
-    process.exit(1)
     logStep('Format release notes file')
     const releaseNotesBody = formatReleaseNotes(releaseDate, version, body)
     logStep('Create Release Notes')
