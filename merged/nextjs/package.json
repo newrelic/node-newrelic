@@ -39,11 +39,11 @@
   "devDependencies": {
     "@newrelic/eslint-config": "^0.0.4",
     "@newrelic/newrelic-oss-cli": "^0.1.2",
-    "@newrelic/test-utilities": "^6.4.0",
-    "husky": "^7.0.4",
-    "lint-staged": "^12.3.3",
-    "newrelic": "^8.8.0",
-    "tap": "^16.0.1"
+    "@newrelic/test-utilities": "^6.5.3",
+    "husky": "^8.0.1",
+    "lint-staged": "^12.4.2",
+    "newrelic": "^8.13.0",
+    "tap": "^16.2.0"
   },
   "peerDependencies": {
     "newrelic": ">=8.8.0"
