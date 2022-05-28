@@ -2,6 +2,8 @@
 
 * Fixed passing undefined as a formatter options to `winston.format.combine`
 
+  Thanks to Rana Mohammad (@rjmohammad) for the contribution. 🎉
+
 ### v8.13.0 (2022-05-26)
 
 * Moved log forwarding logic to a transport so customer transports are not polluted with NR linking metadata and timestamp and error manipulations.
