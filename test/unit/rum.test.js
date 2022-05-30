@@ -125,24 +125,38 @@ describe('the RUM API', function () {
     })
   })
 
-  it('should add nonce attribute to script if passed in options', function () {
-    const nonce = '12345'
+  it('should get browser agent script with wrapping tag', function () {
     helper.runInTransaction(agent, function (t) {
       t.finalizeNameFromUri('hello')
       api
-        .getBrowserTimingHeader({ nonce: nonce })
-        .indexOf('nonce="' + nonce + '">')
-        .should.not.equal(-1)
+        .getBrowserTimingHeader()
+        .startsWith(
+          `<script type=\'text/javascript\'>window.NREUM||(NREUM={});NREUM.info = {"licenseKey":1234,"applicationID":12345,`
+        )
+        .should.equal(true)
+    })
+  })
+
+  it('should get browser agent script with wrapping tag and add nonce attribute to script if passed in options', function () {
+    helper.runInTransaction(agent, function (t) {
+      t.finalizeNameFromUri('hello')
+      api
+        .getBrowserTimingHeader({ nonce: '12345' })
+        .startsWith(
+          `<script type=\'text/javascript\' nonce="12345">window.NREUM||(NREUM={});NREUM.info = {"licenseKey":1234,"applicationID":12345,`
+        )
+        .should.equal(true)
     })
   })
 
   it('should get browser agent script without wrapping tag if hasToRemoveScriptWrapper passed in options', function () {
-    const hasToRemoveScriptWrapper = true
     helper.runInTransaction(agent, function (t) {
       t.finalizeNameFromUri('hello')
       api
-        .getBrowserTimingHeader({ hasToRemoveScriptWrapper })
-        .startsWith('window.NREUM')
+        .getBrowserTimingHeader({ hasToRemoveScriptWrapper: true })
+        .startsWith(
+          'window.NREUM||(NREUM={});NREUM.info = {"licenseKey":1234,"applicationID":12345,'
+        )
         .should.equal(true)
     })
   })
