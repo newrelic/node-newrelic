@@ -1,3 +1,7 @@
+### v8.13.2 (2022-05-31)
+
+* Upgraded `protobufjs` to resolve  CVE-2022-25878
+
 ### v8.13.1 (2022-05-27)
 
 * Fixed passing undefined as a formatter options to `winston.format.combine`
