@@ -11,17 +11,6 @@ const { truncate } = require('../../../lib/util/application-logging')
 const helper = require('../../lib/agent_helper')
 const { LOGGING } = require('../../../lib/metrics/names')
 
-/**
- * Helper to format n log lines and add `\n`
- * to each line
- * This is because `asJson` appends \n to every log line
- * See: https://github.com/pinojs/pino/blob/master/lib/tools.js#L175
- */
-function stringifyLines(logs) {
-  logs = Array.isArray(logs) ? logs : [logs]
-  return logs.map((log) => `${JSON.stringify(log)}\n`)
-}
-
 tap.Test.prototype.addAssert(
   'validateAnnotations',
   2,
@@ -43,6 +32,47 @@ tap.Test.prototype.addAssert(
     if (level) {
       this.equal(logLine.level, level, 'level should be string value not number')
     }
+  }
+)
+
+tap.Test.prototype.addAssert(
+  'validateOrigAndForwardedLines',
+  3,
+  function compareOrigAndForwardedLines(origLine, forwardedLine, comparedKeys = '') {
+    if (comparedKeys === '') {
+      comparedKeys = ['hostname', 'level', 'pid']
+    }
+    for (const key of comparedKeys) {
+      this.equal(
+        origLine[key],
+        forwardedLine[key],
+        `original and forwarded lines should have equal '${key}' property`
+      )
+    }
+    // msg and time are renamed, but should be otherwise equal
+    this.equal(
+      origLine.msg,
+      forwardedLine.message,
+      "original 'msg' should equal forwarded 'message'"
+    )
+    this.ok(
+      /**
+       * We actually can modify the timestamp slightly, because
+       * between the time the user logs the timestamp to the time we
+       * transform the log line, we may cross an epoch second, since
+       * we set our timestamp by checking the epoch at the time of
+       * modification.
+       *
+       * We can't do better because we need an epoch time, and the
+       * Pino user may have originally defined any sort of wacky
+       * time format. So we can't just copy their timestamp, and
+       * we definitely don't want to attempt to parse it in order
+       * to preserve it. Our epoch time may therefore be slightly
+       * off from theirs, hopefully never more than a second.
+       */
+      Math.abs(origLine.time - forwardedLine.timestamp) <= 1,
+      "original 'time' should almost equal forwarded 'timestamp'"
+    )
   }
 )
 
@@ -114,7 +144,7 @@ tap.test('Pino instrumentation', (t) => {
     helper.runInTransaction(agent, 'pino-test', async () => {
       logger.info(message)
       const line = await once(stream, 'data')
-      t.ok(line.message.includes('NR-LINKING'), 'should contain NR-LINKING metadata')
+      t.ok(line.msg.includes('NR-LINKING'), 'should contain NR-LINKING metadata')
       contextKeys.forEach((key) => {
         t.notOk(line[key], `should not have ${key}`)
       })
@@ -140,10 +170,11 @@ tap.test('Pino instrumentation', (t) => {
       const message = 'pino unit test'
       const level = 'info'
       logger[level](message)
-      const line = await once(stream, 'data')
-      t.validateAnnotations({ line, message, level, config })
+      const origLine = await once(stream, 'data')
+      const forwardedLine = JSON.parse(agent.logs.getEvents()[0])
+      t.validateAnnotations({ line: forwardedLine, message, level, config })
       t.equal(agent.logs.getEvents().length, 1, 'should have 1 log in aggregator')
-      t.same(agent.logs.getEvents(), stringifyLines(line), 'log should be same in aggregator')
+      t.validateOrigAndForwardedLines(origLine, forwardedLine)
       t.end()
     })
 
@@ -151,14 +182,15 @@ tap.test('Pino instrumentation', (t) => {
       const err = new Error('This is a test')
       const level = 'error'
       logger[level](err)
-      const line = await once(stream, 'data')
-      t.validateAnnotations({ line, config, message: err.message, level })
-      t.equal(line['error.class'], 'Error', 'should have Error as error.class')
-      t.equal(line['error.message'], err.message, 'should have proper error.message')
-      t.equal(line['error.stack'], truncate(err.stack), 'should have proper error.stack')
-      t.notOk(line.err, 'should not have err key')
+      const origLine = await once(stream, 'data')
+      const forwardedLine = JSON.parse(agent.logs.getEvents()[0])
+      t.validateAnnotations({ line: forwardedLine, config, message: err.message, level })
+      t.equal(forwardedLine['error.class'], 'Error', 'should have Error as error.class')
+      t.equal(forwardedLine['error.message'], err.message, 'should have proper error.message')
+      t.equal(forwardedLine['error.stack'], truncate(err.stack), 'should have proper error.stack')
+      t.notOk(forwardedLine.err, 'should not have err key')
       t.equal(agent.logs.getEvents().length, 1, 'should have 1 log in aggregator')
-      t.same(agent.logs.getEvents(), stringifyLines(line), 'log should be same in aggregator')
+      t.validateOrigAndForwardedLines(origLine, forwardedLine)
       t.end()
     })
 
@@ -168,10 +200,8 @@ tap.test('Pino instrumentation', (t) => {
         const message = 'My debug test'
         logger[level](message)
         const meta = agent.getLinkingMetadata()
-        const line = await once(stream, 'data')
-        t.validateAnnotations({ line, config, message, level })
-        t.equal(line['trace.id'], meta['trace.id'])
-        t.equal(line['span.id'], meta['span.id'])
+        const origLine = await once(stream, 'data')
+
         t.equal(
           agent.logs.getEvents().length,
           0,
@@ -183,7 +213,12 @@ tap.test('Pino instrumentation', (t) => {
           1,
           'should have log in aggregator after transaction ends'
         )
-        t.same(agent.logs.getEvents(), stringifyLines(line), 'log should be same in aggregator')
+
+        const forwardedLine = JSON.parse(agent.logs.getEvents()[0])
+        t.validateAnnotations({ line: forwardedLine, config, message, level })
+        t.equal(forwardedLine['trace.id'], meta['trace.id'])
+        t.equal(forwardedLine['span.id'], meta['span.id'])
+        t.validateOrigAndForwardedLines(origLine, forwardedLine)
         t.end()
       })
     })
@@ -196,11 +231,12 @@ tap.test('Pino instrumentation', (t) => {
         const message = 'pino unit test'
         const level = 'info'
         localLogger[level](message)
-        const line = await once(localStream, 'data')
-        t.notOk(line.pid, 'should not have pid when overriding base chindings')
-        t.validateAnnotations({ line, message, level, config })
+        const origLine = await once(localStream, 'data')
+        const forwardedLine = JSON.parse(agent.logs.getEvents()[0])
+        t.notOk(forwardedLine.pid, 'should not have pid when overriding base chindings')
+        t.validateAnnotations({ line: forwardedLine, message, level, config })
         t.equal(agent.logs.getEvents().length, 1, 'should have 1 log in aggregator')
-        t.same(agent.logs.getEvents(), stringifyLines(line), 'log should be same in aggregator')
+        t.validateOrigAndForwardedLines(origLine, forwardedLine, ['pid', 'level'])
         t.end()
       }
     )
@@ -212,17 +248,11 @@ tap.test('Pino instrumentation', (t) => {
         const message = 'My debug test'
         logger[level](message)
         const meta = agent.getLinkingMetadata()
-        const line = await once(stream, 'data')
-        t.validateAnnotations({ line, config, message, level })
-        t.equal(line['trace.id'], meta['trace.id'])
-        t.equal(line['span.id'], meta['span.id'])
-
+        const origLine = await once(stream, 'data')
         const childMessage = 'this is a child message'
         childLogger[level](childMessage)
-        const childLine = await once(stream, 'data')
-        t.validateAnnotations({ line: childLine, config, message: childMessage, level })
-        t.equal(childLine['trace.id'], meta['trace.id'])
-        t.equal(childLine['span.id'], meta['span.id'])
+        const origChildLine = await once(stream, 'data')
+
         t.equal(
           agent.logs.getEvents().length,
           0,
@@ -234,11 +264,20 @@ tap.test('Pino instrumentation', (t) => {
           2,
           'should have log in aggregator after transaction ends'
         )
-        t.same(
-          agent.logs.getEvents(),
-          stringifyLines([childLine, line]),
-          'log should be same in aggregator'
-        )
+
+        const forwardedLine = JSON.parse(agent.logs.getEvents()[1])
+        const forwardedChildLine = JSON.parse(agent.logs.getEvents()[0])
+
+        t.validateAnnotations({ line: forwardedLine, config, message, level })
+        t.equal(forwardedLine['trace.id'], meta['trace.id'])
+        t.equal(forwardedLine['span.id'], meta['span.id'])
+
+        t.validateAnnotations({ line: forwardedChildLine, config, message: childMessage, level })
+        t.equal(forwardedChildLine['trace.id'], meta['trace.id'])
+        t.equal(forwardedChildLine['span.id'], meta['span.id'])
+
+        t.validateOrigAndForwardedLines(origLine, forwardedLine)
+        t.validateOrigAndForwardedLines(origChildLine, forwardedChildLine)
         t.end()
       })
     })
@@ -257,16 +296,17 @@ tap.test('Pino instrumentation', (t) => {
     const message = 'My debug test'
     logger[level](message)
     const meta = agent.getLinkingMetadata()
-    const line = await once(stream, 'data')
-    t.validateAnnotations({ line, config, message, level })
-    t.equal(line['trace.id'], meta['trace.id'])
-    t.equal(line['span.id'], meta['span.id'])
+    const origLine = await once(stream, 'data')
+    const forwardedLine = JSON.parse(agent.logs.getEvents()[0])
+    t.validateAnnotations({ line: forwardedLine, config, message, level })
+    t.equal(forwardedLine['trace.id'], meta['trace.id'])
+    t.equal(forwardedLine['span.id'], meta['span.id'])
     t.equal(
       agent.logs.getEvents().length,
       1,
       'should have log in aggregator after transaction ends'
     )
-    t.same(agent.logs.getEvents(), stringifyLines(line), 'log should be same in aggregator')
+    t.validateOrigAndForwardedLines(origLine, forwardedLine)
     t.end()
   })
 
