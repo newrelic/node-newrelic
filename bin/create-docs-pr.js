@@ -15,6 +15,7 @@ const git = require('./git-commands')
 const DEFAULT_FILE_NAME = 'NEWS.md'
 /** e.g. v7.2.1 */
 const TAG_VALID_REGEX = /v\d+\.\d+\.\d+/
+const BASE_BRANCH = 'develop'
 
 program.requiredOption('--tag <tag>', 'tag name to get version of released agent')
 program.option('--remote <remote>', 'remote to push branch to', 'origin')
@@ -102,21 +103,13 @@ async function getReleaseNotes(version, releaseNotesFile) {
 
   const data = await readReleaseNoteFile(releaseNotesFile)
 
-  const currentVersionHeader = `### ${version}`
-  if (data.indexOf(currentVersionHeader) !== 0) {
-    throw new Error(`Current tag (${currentVersionHeader}) not first line of release notes.`)
-  }
-
-  const sections = data.split('### ', 2)
-  if (sections.length !== 2) {
-    throw new Error('Did not split into multiple sections. Double check notes format.')
-  }
-
-  const [, tagSection] = sections
+  const sections = data.split('### ')
+  // Iterate over all past releases to find the version we want
+  const versionChangeLog = sections.find((section) => section.startsWith(version))
   // e.g. v7.1.2 (2021-02-24)\n\n
   const headingRegex = /^v\d+\.\d+\.\d+ \((\d{4}-\d{2}-\d{2})\)\s+/
-  const body = tagSection.replace(headingRegex, '')
-  const [, releaseDate] = headingRegex.exec(tagSection)
+  const body = versionChangeLog.replace(headingRegex, '')
+  const [, releaseDate] = headingRegex.exec(versionChangeLog)
 
   return { body, releaseDate }
 }
@@ -157,6 +150,7 @@ async function createBranch(filePath, version, dryRun) {
     console.log(`Dry run indicated (--dry-run), not creating branch ${branchName}`)
   } else {
     console.log('Creating and checking out new branch: ', branchName)
+    await git.checkout(BASE_BRANCH)
     await git.checkoutNewBranch(branchName)
   }
 
@@ -256,7 +250,7 @@ async function createPR(username, version, branch, dryRun) {
   const title = `Node.js Agent ${version} Release Notes`
   const prOptions = {
     head: `${username}:${branch}`,
-    base: 'develop',
+    base: BASE_BRANCH,
     title,
     body: title
   }
