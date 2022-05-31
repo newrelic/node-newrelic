@@ -10,22 +10,12 @@ const { sink, once } = require('pino/test/helper')
 const { truncate } = require('../../../lib/util/application-logging')
 const helper = require('../../lib/agent_helper')
 const { LOGGING } = require('../../../lib/metrics/names')
-
-/**
- * Helper to format n log lines and add `\n`
- * to each line
- * This is because `asJson` appends \n to every log line
- * See: https://github.com/pinojs/pino/blob/master/lib/tools.js#L175
- */
-function stringifyLines(logs) {
-  logs = Array.isArray(logs) ? logs : [logs]
-  return logs.map((log) => `${JSON.stringify(log)}\n`)
-}
+const { originalMsgAssertion } = require('./helpers')
 
 tap.Test.prototype.addAssert(
-  'validateAnnotations',
+  'validateNrLogLine',
   2,
-  function assertCoreAnnotations({ line: logLine, message, level, config }) {
+  function validateNrLogLine({ line: logLine, message, level, config }) {
     this.equal(
       logLine['entity.name'],
       config.applications()[0],
@@ -45,9 +35,6 @@ tap.Test.prototype.addAssert(
     }
   }
 )
-
-// NOTE: pino adds hostname to log lines which is why we don't check it here
-const contextKeys = ['entity.name', 'entity.type', 'entity.guid', 'trace.id', 'span.id']
 
 tap.test('Pino instrumentation', (t) => {
   t.autoend()
@@ -80,15 +67,8 @@ tap.test('Pino instrumentation', (t) => {
     const message = 'logs are not enriched'
     disabledLogger.info(message)
     const line = await once(stream, 'data')
+    originalMsgAssertion({ t, logLine: line, hostname: agent.config.getHostnameSafe() })
     t.equal(line.msg, message, 'msg should not change')
-    t.equal(line.level, 30, 'level should not change')
-    // pino by default includes hostname
-    t.equal(line.hostname, agent.config.getHostnameSafe(), 'hostname should not change')
-    // if application logging is enabled it renames this to `timestamp`
-    t.ok(line.time, 'time should not change')
-    contextKeys.forEach((key) => {
-      t.notOk(line[key], `should not have ${key}`)
-    })
     const metric = agent.metrics.getMetric(LOGGING.LIBS.PINO)
     t.notOk(metric, `should not create ${LOGGING.LIBS.PINO} metric when logging is disabled`)
     t.end()
@@ -114,10 +94,13 @@ tap.test('Pino instrumentation', (t) => {
     helper.runInTransaction(agent, 'pino-test', async () => {
       logger.info(message)
       const line = await once(stream, 'data')
-      t.ok(line.message.includes('NR-LINKING'), 'should contain NR-LINKING metadata')
-      contextKeys.forEach((key) => {
-        t.notOk(line[key], `should not have ${key}`)
+      originalMsgAssertion({
+        t,
+        includeLocalDecorating: true,
+        hostname: agent.config.getHostnameSafe(),
+        logLine: line
       })
+      t.same(agent.logs.getEvents(), [], 'should not add any logs to log aggregator')
       t.end()
     })
   })
@@ -141,9 +124,10 @@ tap.test('Pino instrumentation', (t) => {
       const level = 'info'
       logger[level](message)
       const line = await once(stream, 'data')
-      t.validateAnnotations({ line, message, level, config })
+      originalMsgAssertion({ t, hostname: agent.config.getHostnameSafe(), logLine: line })
       t.equal(agent.logs.getEvents().length, 1, 'should have 1 log in aggregator')
-      t.same(agent.logs.getEvents(), stringifyLines(line), 'log should be same in aggregator')
+      const formattedLine = agent.logs.getEvents()[0]()
+      t.validateNrLogLine({ line: formattedLine, message, level, config })
       t.end()
     })
 
@@ -152,13 +136,19 @@ tap.test('Pino instrumentation', (t) => {
       const level = 'error'
       logger[level](err)
       const line = await once(stream, 'data')
-      t.validateAnnotations({ line, config, message: err.message, level })
-      t.equal(line['error.class'], 'Error', 'should have Error as error.class')
-      t.equal(line['error.message'], err.message, 'should have proper error.message')
-      t.equal(line['error.stack'], truncate(err.stack), 'should have proper error.stack')
-      t.notOk(line.err, 'should not have err key')
+      originalMsgAssertion({
+        t,
+        hostname: agent.config.getHostnameSafe(),
+        logLine: line,
+        level: 50
+      })
       t.equal(agent.logs.getEvents().length, 1, 'should have 1 log in aggregator')
-      t.same(agent.logs.getEvents(), stringifyLines(line), 'log should be same in aggregator')
+      const formattedLine = agent.logs.getEvents()[0]()
+      t.validateNrLogLine({ line: formattedLine, message: err.message, level, config })
+      t.equal(formattedLine['error.class'], 'Error', 'should have Error as error.class')
+      t.equal(formattedLine['error.message'], err.message, 'should have proper error.message')
+      t.equal(formattedLine['error.stack'], truncate(err.stack), 'should have proper error.stack')
+      t.notOk(formattedLine.err, 'should not have err key')
       t.end()
     })
 
@@ -169,9 +159,7 @@ tap.test('Pino instrumentation', (t) => {
         logger[level](message)
         const meta = agent.getLinkingMetadata()
         const line = await once(stream, 'data')
-        t.validateAnnotations({ line, config, message, level })
-        t.equal(line['trace.id'], meta['trace.id'])
-        t.equal(line['span.id'], meta['span.id'])
+        originalMsgAssertion({ t, hostname: agent.config.getHostnameSafe(), logLine: line })
         t.equal(
           agent.logs.getEvents().length,
           0,
@@ -183,7 +171,11 @@ tap.test('Pino instrumentation', (t) => {
           1,
           'should have log in aggregator after transaction ends'
         )
-        t.same(agent.logs.getEvents(), stringifyLines(line), 'log should be same in aggregator')
+
+        const formattedLine = agent.logs.getEvents()[0]()
+        t.validateNrLogLine({ line: formattedLine, message, level, config })
+        t.equal(formattedLine['trace.id'], meta['trace.id'])
+        t.equal(formattedLine['span.id'], meta['span.id'])
         t.end()
       })
     })
@@ -198,9 +190,10 @@ tap.test('Pino instrumentation', (t) => {
         localLogger[level](message)
         const line = await once(localStream, 'data')
         t.notOk(line.pid, 'should not have pid when overriding base chindings')
-        t.validateAnnotations({ line, message, level, config })
+        t.notOk(line.hostname, 'should not have hostname when overriding base chindings')
         t.equal(agent.logs.getEvents().length, 1, 'should have 1 log in aggregator')
-        t.same(agent.logs.getEvents(), stringifyLines(line), 'log should be same in aggregator')
+        const formattedLine = agent.logs.getEvents()[0]()
+        t.validateNrLogLine({ line: formattedLine, message, level, config })
         t.end()
       }
     )
@@ -208,21 +201,16 @@ tap.test('Pino instrumentation', (t) => {
     t.test('should properly handle child loggers', (t) => {
       const childLogger = logger.child({ module: 'child' })
       helper.runInTransaction(agent, 'pino-test', async (tx) => {
+        // these are defined in opposite order because the log aggregator is LIFO
+        const messages = ['this is a child message', 'my parent logger message']
         const level = 'info'
-        const message = 'My debug test'
-        logger[level](message)
+        logger[level](messages[1])
         const meta = agent.getLinkingMetadata()
         const line = await once(stream, 'data')
-        t.validateAnnotations({ line, config, message, level })
-        t.equal(line['trace.id'], meta['trace.id'])
-        t.equal(line['span.id'], meta['span.id'])
-
-        const childMessage = 'this is a child message'
-        childLogger[level](childMessage)
+        originalMsgAssertion({ t, hostname: agent.config.getHostnameSafe(), logLine: line })
+        childLogger[level](messages[0])
         const childLine = await once(stream, 'data')
-        t.validateAnnotations({ line: childLine, config, message: childMessage, level })
-        t.equal(childLine['trace.id'], meta['trace.id'])
-        t.equal(childLine['span.id'], meta['span.id'])
+        originalMsgAssertion({ t, hostname: agent.config.getHostnameSafe(), logLine: childLine })
         t.equal(
           agent.logs.getEvents().length,
           0,
@@ -234,40 +222,16 @@ tap.test('Pino instrumentation', (t) => {
           2,
           'should have log in aggregator after transaction ends'
         )
-        t.same(
-          agent.logs.getEvents(),
-          stringifyLines([childLine, line]),
-          'log should be same in aggregator'
-        )
+
+        agent.logs.getEvents().forEach((logLine, index) => {
+          const formattedLine = logLine()
+          t.validateNrLogLine({ line: formattedLine, message: messages[index], level, config })
+          t.equal(formattedLine['trace.id'], meta['trace.id'], 'should be expected trace.id value')
+          t.equal(formattedLine['span.id'], meta['span.id'], 'should be expected span.id value')
+        })
         t.end()
       })
     })
-  })
-
-  t.test('forwarding + local decorating(favor forwarding)', async (t) => {
-    const config = setupAgent({
-      application_logging: {
-        enabled: true,
-        forwarding: { enabled: true },
-        local_decorating: { enabled: true },
-        metrics: { enabled: false }
-      }
-    })
-    const level = 'info'
-    const message = 'My debug test'
-    logger[level](message)
-    const meta = agent.getLinkingMetadata()
-    const line = await once(stream, 'data')
-    t.validateAnnotations({ line, config, message, level })
-    t.equal(line['trace.id'], meta['trace.id'])
-    t.equal(line['span.id'], meta['span.id'])
-    t.equal(
-      agent.logs.getEvents().length,
-      1,
-      'should have log in aggregator after transaction ends'
-    )
-    t.same(agent.logs.getEvents(), stringifyLines(line), 'log should be same in aggregator')
-    t.end()
   })
 
   t.test('metrics', (t) => {

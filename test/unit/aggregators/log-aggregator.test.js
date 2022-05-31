@@ -83,14 +83,20 @@ test('Log Aggregator', (t) => {
     t.end()
   })
 
-  t.test('toPayload() should de-serialize a log if already JSON', (t) => {
-    const log2 = JSON.stringify(log)
-    logEventAggregator.add(log)
-    logEventAggregator.add(log2)
-    const payload = logEventAggregator._toPayloadSync()
-    t.same(payload, [{ logs: [log, JSON.parse(log2)] }])
-    t.end()
-  })
+  t.test(
+    'toPayload() should execute formatter function when an entry in aggregator is a function',
+    (t) => {
+      const log2 = JSON.stringify(log)
+      function formatLog() {
+        return JSON.parse(log2)
+      }
+      logEventAggregator.add(log)
+      logEventAggregator.add(formatLog)
+      const payload = logEventAggregator._toPayloadSync()
+      t.same(payload, [{ logs: [log, JSON.parse(log2)] }])
+      t.end()
+    }
+  )
 
   t.test('toPayload() should return nothing with no log event data', (t) => {
     const payload = logEventAggregator._toPayloadSync()
