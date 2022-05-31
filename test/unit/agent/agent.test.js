@@ -888,6 +888,14 @@ tap.test('when connected', (t) => {
         t.notOk(customEvents.isDone())
         t.notOk(errorTransactionEvents.isDone())
         t.notOk(errorEvents.isDone())
+        /**
+         * cleaning pending calls to avoid the afterEach
+         * saying it is clearing pending calls
+         * we know these are pending so let's be explicit
+         * vs the afterEach which helps us understanding things
+         * that need cleaned up
+         */
+        nock.cleanAll()
         t.end()
       })
     }
@@ -920,6 +928,14 @@ tap.test('when connected', (t) => {
       t.notOk(customEvents.isDone())
       t.notOk(errorTransactionEvents.isDone())
       t.notOk(errorEvents.isDone())
+      /**
+       * cleaning pending calls to avoid the afterEach
+       * saying it is clearing pending calls
+       * we know these are pending so let's be explicit
+       * vs the afterEach which helps us understanding things
+       * that need cleaned up
+       */
+      nock.cleanAll()
       t.end()
     })
   })
