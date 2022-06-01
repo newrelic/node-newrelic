@@ -132,8 +132,8 @@ tap.test('Connect calls re-generate harvest limits from original config values',
       connectCalls.forEach((call) => {
         const factsConfig = call[0][0]
         t.not(
-          factsConfig.event_harvest_config,
-          config.event_harvest_config,
+          factsConfig.event_harvest_config.harvest_limits,
+          config.event_harvest_config.harvest_limits,
           'facts harvest config should not be same as new harvest config'
         )
         t.same(
