@@ -5,7 +5,20 @@
   "tests": [
     {
       "engines": {
-        "node": ">=12"
+        "node": "12"
+      },
+      "dependencies": {
+        "pino": ">=7.0.0 <8",
+        "flush-write-stream": "2.0.0",
+        "split2": "4.1.0"
+      },
+      "files": [
+        "pino.tap.js"
+      ]
+    },
+    {
+      "engines": {
+        "node": ">=14"
       },
       "dependencies": {
         "pino": ">=7.0.0",
