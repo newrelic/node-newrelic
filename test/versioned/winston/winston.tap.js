@@ -353,6 +353,24 @@ tap.test('winston instrumentation', (t) => {
 
       logWithAggregator({ loggers: [logger], stream: jsonStream, t, helper, agent })
     })
+
+    t.test('w/o options', (t) => {
+      const handleMessages = makeStreamTest(() => {
+        const msgs = agent.logs.getEvents()
+        t.equal(msgs.length, 2, 'should add both logs to aggregator')
+        msgs.forEach((msg) => {
+          logForwardingMsgAssertion(t, msg, agent)
+        })
+        t.end()
+      })
+
+      const logger = winston.createLogger()
+
+      const assertFn = originalMsgAssertion.bind(null, { t })
+      const jsonStream = concat(handleMessages(assertFn))
+
+      logStuff({ loggers: [logger], stream: jsonStream, helper, agent })
+    })
   })
 
   t.test('metrics', (t) => {
