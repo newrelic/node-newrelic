@@ -5,13 +5,15 @@
 
 'use strict'
 
+const semver = require('semver')
+
 const DESTINATIONS = require('../../../lib/config/attribute-filter').DESTINATIONS
 const params = require('../../lib/params')
 const metrics = require('../../lib/metrics_helper')
 
 const CON_STRING = 'amqp://' + params.rabbitmq_host + ':' + params.rabbitmq_port
 const { version: pkgVersion } = require('amqplib/package')
-const semver = require('semver')
+const NATIVE_PROMISES = semver.gte(pkgVersion, '0.10.0')
 
 exports.CON_STRING = CON_STRING
 exports.DIRECT_EXCHANGE = 'test-direct-exchange'
@@ -31,21 +33,28 @@ exports.getChannel = getChannel
 function verifySubscribe(t, tx, exchange, routingKey) {
   const isCallback = !!metrics.findSegment(tx.trace.root, 'Callback: <anonymous>')
 
+  let segments = []
+
   if (isCallback) {
-    t.doesNotThrow(function () {
-      metrics.assertSegments(tx.trace.root, [
-        'amqplib.Channel#consume',
-        ['Callback: <anonymous>', ['MessageBroker/RabbitMQ/Exchange/Produce/Named/' + exchange]]
-      ])
-    }, 'should have expected segments')
+    segments = [
+      'amqplib.Channel#consume',
+      ['Callback: <anonymous>', ['MessageBroker/RabbitMQ/Exchange/Produce/Named/' + exchange]]
+    ]
+  } else if (NATIVE_PROMISES) {
+    segments = [
+      'amqplib.Channel#consume',
+      'MessageBroker/RabbitMQ/Exchange/Produce/Named/' + exchange
+    ]
   } else {
-    t.doesNotThrow(function () {
-      metrics.assertSegments(tx.trace.root, [
-        'amqplib.Channel#consume',
-        ['MessageBroker/RabbitMQ/Exchange/Produce/Named/' + exchange]
-      ])
-    }, 'should have expected segments')
+    segments = [
+      'amqplib.Channel#consume',
+      ['MessageBroker/RabbitMQ/Exchange/Produce/Named/' + exchange]
+    ]
   }
+
+  t.doesNotThrow(function () {
+    metrics.assertSegments(tx.trace.root, segments)
+  }, 'should have expected segments')
 
   t.doesNotThrow(function () {
     metrics.assertMetrics(
@@ -91,7 +100,11 @@ function verifyDistributedTrace(t, produceTransaction, consumeTransaction) {
 
   t.equal(produceTransaction.id, consumeTransaction.parentId, 'should have proper parent id')
   t.equal(produceTransaction.traceId, consumeTransaction.traceId, 'should have proper trace id')
-  let produceSegment = produceTransaction.trace.root.children[0].children[0]
+  // native promises flatten the segment tree, grab the product segment as 2nd child of root
+  let produceSegment =
+    NATIVE_PROMISES && produceTransaction.trace.root.children.length > 1
+      ? produceTransaction.trace.root.children[1]
+      : produceTransaction.trace.root.children[0].children[0]
   produceSegment = produceSegment.children[0] || produceSegment
   t.equal(produceSegment.id, consumeTransaction.parentSpanId, 'should have proper parentSpanId')
   t.equal(consumeTransaction.parentTransportType, 'AMQP', 'should have correct transport type')
