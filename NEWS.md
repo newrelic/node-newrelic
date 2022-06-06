@@ -1,3 +1,14 @@
+### v8.14.0 (2022-06-06)
+
+* Fixed issue with `api.getBrowserTimingHeader` optional script unwrapping issue with util.format.
+    Thanks for your contribution @github-dd-nicolas 🎉
+
+* Do not abort instrumentation of Winston loggers when the logger is created without options.
+
+* Removed latest amqplib (v0.10.0) from versioned testing, as it fails to instrument properly.
+
+* Updated pino instrumentation to not override user log configurations.
+
 ### v8.13.2 (2022-05-31)
 
 * Upgraded `protobufjs` to resolve  CVE-2022-25878
