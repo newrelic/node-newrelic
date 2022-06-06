@@ -27,8 +27,9 @@ const NAMES = require('./lib/metrics/names')
  * CONSTANTS
  *
  */
-const RUM_STUB = 'window.NREUM||(NREUM={});NREUM.info = %s;'
-const RUM_STUB_SHELL = `<script type='text/javascript' %s>${RUM_STUB} %s</script>`
+const RUM_STUB = 'window.NREUM||(NREUM={});NREUM.info = %s; %s'
+const RUM_STUB_SHELL = `<script type='text/javascript'>${RUM_STUB}</script>`
+const RUM_STUB_SHELL_WITH_NONCE_PARAM = `<script type='text/javascript' %s>${RUM_STUB}</script>`
 
 // these messages are used in the _gracefail() method below in getBrowserTimingHeader
 const RUM_ISSUES = [
@@ -653,12 +654,18 @@ API.prototype.getBrowserTimingHeader = function getBrowserTimingHeader(options) 
   const tabs = config.browser_monitoring.debug ? 2 : 0
   const json = JSON.stringify(rumHash, null, tabs)
 
-  // set nonce attribute if passed in options
-  const nonce = options && options.nonce ? 'nonce="' + options.nonce + '"' : ''
-  const script = options && options.hasToRemoveScriptWrapper ? RUM_STUB : RUM_STUB_SHELL
-
   // the complete header to be written to the browser
-  const out = util.format(script, nonce, json, jsAgentLoader)
+  const out =
+    options && options.hasToRemoveScriptWrapper
+      ? util.format(RUM_STUB, json, jsAgentLoader)
+      : options && options.nonce
+      ? util.format(
+          RUM_STUB_SHELL_WITH_NONCE_PARAM,
+          'nonce="' + options.nonce + '"',
+          json,
+          jsAgentLoader
+        )
+      : util.format(RUM_STUB_SHELL, json, jsAgentLoader)
 
   logger.trace('generating RUM header', out)
 
