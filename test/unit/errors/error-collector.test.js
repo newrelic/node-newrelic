@@ -48,6 +48,7 @@ function createBackgroundTransaction(agent) {
 }
 
 tap.test('Errors', (t) => {
+  t.autoend()
   let agent = null
 
   t.beforeEach(() => {
@@ -393,6 +394,7 @@ tap.test('Errors', (t) => {
     })
 
     t.test('when finalizing transactions', (t) => {
+      t.autoend()
       let finalizeCollector = null
 
       t.beforeEach(() => {
@@ -547,7 +549,6 @@ tap.test('Errors', (t) => {
           t.end()
         }
       )
-      t.end()
     })
 
     t.test('with no exception and no transaction', (t) => {
@@ -575,6 +576,7 @@ tap.test('Errors', (t) => {
     })
 
     t.test('with no error and a transaction with a status code', (t) => {
+      t.autoend()
       let noErrorStatusTracer
       let errorJSON
 
@@ -622,7 +624,6 @@ tap.test('Errors', (t) => {
         t.notHas(params, 'stack_trace')
         t.end()
       })
-      t.end()
     })
 
     t.test('with transaction agent attrs, status code, and no error', (t) => {
@@ -735,6 +736,7 @@ tap.test('Errors', (t) => {
     })
 
     t.test('with a thrown TypeError object and no transaction', (t) => {
+      t.autoend()
       let typeErrorTracer
       let errorJSON
 
@@ -781,10 +783,10 @@ tap.test('Errors', (t) => {
         t.equal(params.stack_trace[0], 'Error: Dare to be the same!')
         t.end()
       })
-      t.end()
     })
 
     t.test('with a thrown TypeError and a transaction with no params', (t) => {
+      t.autoend()
       let typeErrorTracer
       let errorJSON
 
@@ -833,10 +835,10 @@ tap.test('Errors', (t) => {
         t.equal(params.stack_trace[0], 'TypeError: Dare to be different!')
         t.end()
       })
-      t.end()
     })
 
     t.test('with a thrown `TypeError` and a transaction with agent attrs', (t) => {
+      t.autoend()
       let errorJSON = null
       let params = null
 
@@ -904,10 +906,10 @@ tap.test('Errors', (t) => {
         t.equal(params.agentAttributes.thing, true)
         t.end()
       })
-      t.end()
     })
 
     t.test('with a thrown string and a transaction', (t) => {
+      t.autoend()
       let thrownTracer
       let errorJSON
 
@@ -954,10 +956,10 @@ tap.test('Errors', (t) => {
         t.notHas(errorJSON[4], 'stack_trace')
         t.end()
       })
-      t.end()
     })
 
     t.test('with a thrown string and a transaction with agent parameters', (t) => {
+      t.autoend()
       let errorJSON = null
       let params = null
 
@@ -1025,10 +1027,10 @@ tap.test('Errors', (t) => {
         t.equal(params.agentAttributes.thing, true)
         t.end()
       })
-      t.end()
     })
 
     t.test('with an internal server error (500) and an exception', (t) => {
+      t.autoend()
       const name = 'WebTransaction/Uri/test-request/zxrkbl'
       let error
 
@@ -1074,10 +1076,10 @@ tap.test('Errors', (t) => {
         t.equal(params.stack_trace[0], 'Error: 500 test error')
         t.end()
       })
-      t.end()
     })
 
     t.test('with a tracer unavailable (503) error', (t) => {
+      t.autoend()
       const name = 'WebTransaction/Uri/test-request/zxrkbl'
       let error
 
@@ -1108,7 +1110,6 @@ tap.test('Errors', (t) => {
         t.equal(messageClass, 'Error')
         t.end()
       })
-      t.end()
     })
 
     t.test('should allow throwing null', (t) => {
@@ -1137,7 +1138,6 @@ tap.test('Errors', (t) => {
         t.equal(errorTraces.length, 1)
         t.equal(errorTraces[0][2], 'record an error')
       })
-      t.end()
     })
 
     t.test('should generate expected error metric for expected errors', (t) => {
@@ -1352,10 +1352,10 @@ tap.test('Errors', (t) => {
       })
       t.end()
     })
-    t.end()
   })
 
   t.test('traced errors', (t) => {
+    t.autoend()
     let aggregator
 
     t.beforeEach(() => {
@@ -1363,6 +1363,7 @@ tap.test('Errors', (t) => {
     })
 
     t.test('without transaction', (t) => {
+      t.autoend()
       t.test('should contain no intrinsic attributes', (t) => {
         const error = new Error('some error')
         aggregator.add(null, error)
@@ -1387,10 +1388,10 @@ tap.test('Errors', (t) => {
         t.notOk(attributes.c)
         t.end()
       })
-      t.end()
     })
 
     t.test('on transaction finished', (t) => {
+      t.autoend()
       t.test('should generate an event if the transaction is an HTTP error', (t) => {
         const transaction = createTransaction(agent, 500)
         aggregator.add(transaction)
@@ -1528,10 +1529,10 @@ tap.test('Errors', (t) => {
       })
       t.end()
     })
-    t.end()
   })
 
   t.test('error events', (t) => {
+    t.autoend()
     let aggregator
 
     t.beforeEach(() => {
@@ -1873,9 +1874,7 @@ tap.test('Errors', (t) => {
       })
       t.end()
     })
-    t.end()
   })
-  t.end()
 })
 
 function getErrorTraces(errorCollector) {
