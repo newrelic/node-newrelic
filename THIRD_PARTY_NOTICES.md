@@ -296,7 +296,7 @@ This product includes source derived from [@grpc/grpc-js](https://github.com/grp
 
 ### @grpc/proto-loader
 
-This product includes source derived from [@grpc/proto-loader](https://github.com/grpc/grpc-node) ([v0.6.12](https://github.com/grpc/grpc-node/tree/v0.6.12)), distributed under the [Apache-2.0 License](https://github.com/grpc/grpc-node/blob/v0.6.12/LICENSE):
+This product includes source derived from [@grpc/proto-loader](https://github.com/grpc/grpc-node) ([v0.6.13](https://github.com/grpc/grpc-node/tree/v0.6.13)), distributed under the [Apache-2.0 License](https://github.com/grpc/grpc-node/blob/v0.6.13/LICENSE):
 
 ```
                                  Apache License

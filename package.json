@@ -160,7 +160,7 @@
   },
   "dependencies": {
     "@grpc/grpc-js": "^1.5.5",
-    "@grpc/proto-loader": "^0.6.12",
+    "@grpc/proto-loader": "^0.6.13",
     "@newrelic/aws-sdk": "^4.1.1",
     "@newrelic/koa": "^6.1.1",
     "@newrelic/superagent": "^5.1.0",
