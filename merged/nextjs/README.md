@@ -101,7 +101,7 @@ For more information, please see the agent [compatibility and requirements][4].
 
 ### Error Handling
 
-For capturing both the client and server side errors it is best to use `pages/_error.js` pattern recommended by NextJs documentation on [Advanced Error Page Customization](https://nextjs.org/docs/advanced-features/custom-error-page#more-advanced-error-page-customizing)
+For capturing both the client and server side errors it is best to use `pages/_error.js` pattern recommended by Next.js documentation on [Advanced Error Page Customization](https://nextjs.org/docs/advanced-features/custom-error-page#more-advanced-error-page-customizing)
 
 This pattern can be used to send either client, server or both types of errors to New Relic.
 
