@@ -99,6 +99,40 @@ For static compiled pages, you can use the [copy-paste method](https://docs.newr
 
 For more information, please see the agent [compatibility and requirements][4].
 
+### Error Handling
+
+For capturing both the client and server side errors it is best to use `pages/_error.js` pattern recommended by Next.js documentation on [Advanced Error Page Customization](https://nextjs.org/docs/advanced-features/custom-error-page#more-advanced-error-page-customizing)
+
+This pattern can be used to send either client, server or both types of errors to New Relic.
+
+```js
+function Error({ statusCode }) {
+  return (
+    <p>
+      {statusCode
+        ? `An error ${statusCode} occurred on server`
+        : "An error occurred on client"}
+    </p>
+  );
+}
+
+Error.getInitialProps = ({ res, err }) => {
+  if (typeof window === "undefined") {
+    const newrelic = require('newrelic');
+    newrelic.noticeError(err);
+  } else {
+    window.newrelic.noticeError(err);
+  }
+
+  const statusCode = res ? res.statusCode : err ? err.statusCode : 404;
+  return { statusCode };
+};
+
+export default Error;
+```
+
+The example above assumes that both the New Relic Browser and Node.js agents are integrated. `getInitialProps` function's `if` statement checks whether an error was thrown on the server side (`typeof window === "undefined"`) and if it was the case, it `requires` New Relic Node.js agent and sends an `err` with `noticeError` method. Otherwise it assumes the error was throw on the front-end side, and uses the browser agent to send the error to New Relic by using `window.newrelic.noticeError(err)`.
+
 ## Testing
 
 The module includes a suite of unit and functional tests which should be used to
