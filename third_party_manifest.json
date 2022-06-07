@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "Thu Jun 02 2022 09:21:00 GMT-0700 (Pacific Daylight Time)",
+  "lastUpdated": "Tue Jun 07 2022 10:42:37 GMT+0100 (British Summer Time)",
   "projectName": "New Relic Node Agent",
   "projectUrl": "https://github.com/newrelic/node-newrelic",
   "includeOptDeps": true,
@@ -32,15 +32,15 @@
       "licenseTextSource": "file",
       "publisher": "Google Inc."
     },
-    "@grpc/proto-loader@0.6.12": {
+    "@grpc/proto-loader@0.6.13": {
       "name": "@grpc/proto-loader",
-      "version": "0.6.12",
-      "range": "^0.6.12",
+      "version": "0.6.13",
+      "range": "^0.6.13",
       "licenses": "Apache-2.0",
       "repoUrl": "https://github.com/grpc/grpc-node",
-      "versionedRepoUrl": "https://github.com/grpc/grpc-node/tree/v0.6.12",
+      "versionedRepoUrl": "https://github.com/grpc/grpc-node/tree/v0.6.13",
       "licenseFile": "node_modules/@grpc/proto-loader/LICENSE",
-      "licenseUrl": "https://github.com/grpc/grpc-node/blob/v0.6.12/LICENSE",
+      "licenseUrl": "https://github.com/grpc/grpc-node/blob/v0.6.13/LICENSE",
       "licenseTextSource": "file",
       "publisher": "Google Inc."
     },
