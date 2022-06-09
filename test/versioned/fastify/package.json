@@ -19,7 +19,7 @@
     },
     {
       "engines": {
-        "node": ">=12"
+        "node": ">=14"
       },
       "dependencies": {
         "fastify": ">=3.0.0",
@@ -32,9 +32,22 @@
         "fastify-3-naming.tap.js",
         "new-state-tracking.tap.js"
       ]
+    },
+    {
+      "engines": {
+        "node": "12"
+      },
+      "dependencies": {
+        "fastify": ">=3.0.0 <4.0.0",
+        "middie": "5.3.0"
+      },
+      "files": [
+        "add-hook.tap.js",
+        "errors.tap.js",
+        "fastify-3.tap.js",
+        "fastify-3-naming.tap.js",
+        "new-state-tracking.tap.js"
+      ]
     }
-  ],
-  "engines": {
-    "node": ">=12"
-  }
+  ]
 }
