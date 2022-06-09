@@ -49,5 +49,8 @@
         "new-state-tracking.tap.js"
       ]
     }
-  ]
+  ],
+  "engines": {
+    "node": ">=12"
+  }
 }
