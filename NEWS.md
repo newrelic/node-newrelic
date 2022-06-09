@@ -1,3 +1,10 @@
+### v8.14.1 (2022-06-09)
+
+* Added defensive code in redis v4 instrumentation to check for `opts.socket` first before evaluating `opts.socket.path`.
+  Thanks @RAshidAZ for your contribution!
+
+* Updated `@grpc/proto-loader` to v0.6.13 to pickup security fixes in protobufjs.
+
 ### v8.14.0 (2022-06-06)
 
 * Fixed issue with `api.getBrowserTimingHeader` optional script unwrapping issue with util.format.
