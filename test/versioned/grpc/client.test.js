@@ -32,21 +32,13 @@ tap.test('grpc client instrumentation', (t) => {
   let server
   let proto
   let grpc
+  let segmentName
 
   const helloName = '/helloworld.Greeter/SayHello'
   const errorName = '/helloworld.Greeter/SayError'
   const rollupHost = `${EXTERNAL.PREFIX}${CLIENT_ADDR}/all`
-  function getMetricNames(methodName) {
-    return {
-      segmentName: `${EXTERNAL.PREFIX}${CLIENT_ADDR}${methodName}`,
-      metrics: [
-        `${EXTERNAL.PREFIX}${CLIENT_ADDR}${methodName}`,
-        rollupHost,
-        EXTERNAL.WEB,
-        EXTERNAL.ALL
-      ]
-    }
-  }
+  const grpcMetricName = `${EXTERNAL.PREFIX}${CLIENT_ADDR}/gRPC`
+  const metrics = [grpcMetricName, rollupHost, EXTERNAL.WEB, EXTERNAL.ALL]
 
   t.beforeEach(async () => {
     agent = helper.instrumentMockedAgent()
@@ -68,7 +60,7 @@ tap.test('grpc client instrumentation', (t) => {
     helper.runInTransaction(agent, 'web', async (tx) => {
       agent.on('transactionFinished', (transaction) => {
         const myTx = transaction.trace.root.children[0]
-        const { segmentName, metrics } = getMetricNames(helloName)
+        segmentName = `${EXTERNAL.PREFIX}${CLIENT_ADDR}${helloName}`
         t.equal(myTx.name, segmentName, 'segment name is correct')
         const { attributes } = myTx.attributes
         t.equal(
@@ -109,7 +101,6 @@ tap.test('grpc client instrumentation', (t) => {
       })
     })
 
-    const { metrics } = getMetricNames(helloName)
     for (const metricName of metrics) {
       const metric = agent.metrics.getMetric(metricName)
       t.notOk(metric, `${metricName} should not be recorded`)
@@ -120,15 +111,33 @@ tap.test('grpc client instrumentation', (t) => {
 
   t.test('should record errors in a transaction', (t) => {
     helper.runInTransaction(agent, 'web', async (tx) => {
-      agent.on('transactionFinished', () => {
-        const { metrics } = getMetricNames(errorName)
+      agent.on('transactionFinished', (transaction) => {
+        const myTx = transaction.trace.root.children[0]
+        const { attributes } = myTx.attributes
+        t.equal(agent.errors.traceAggregator.errors.length, 1, 'should record a single error')
+        t.equal(
+          attributes['http.url'].value,
+          `grpc://${CLIENT_ADDR}${errorName}`,
+          'http.url attribute should be correct'
+        )
+        t.equal(attributes['http.method'].value, errorName, 'method name should be correct')
+        t.equal(
+          attributes['grpc.statusCode'].value,
+          grpc.status.FAILED_PRECONDITION,
+          'status code should correspond to FAILED_PRECONDITION'
+        )
+        t.equal(
+          attributes['grpc.statusText'].value,
+          'i think i will cause problems on purpose',
+          'status text should be error message'
+        )
+        t.equal(attributes.component.value, 'gRPC', 'should have the component set to "gRPC"')
+        const error = agent.errors.traceAggregator.errors[0][2]
+        t.equal(error, 'i think i will cause problems on purpose', 'should have the error message')
         for (const metricName of metrics) {
           const metric = agent.metrics.getMetric(metricName)
           t.ok(metric.callCount > 0, `ensure ${metricName} was recorded`)
         }
-        t.equal(agent.errors.traceAggregator.errors.length, 1, 'should record a single error')
-        const error = agent.errors.traceAggregator.errors[0][2]
-        t.equal(error, 'i think i will cause problems on purpose', 'should have the error message')
       })
 
       await new Promise((resolve) => {
