@@ -11,8 +11,7 @@
         "@grpc/grpc-js": ">=1.0.0"
       },
       "files": [
-        "grpc.tap.js",
-        "client.test.js"
+        "client.tap.js"
       ]
     }
   ]
