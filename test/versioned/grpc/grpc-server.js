@@ -13,7 +13,7 @@ module.exports = function createServerMethods(server) {
       const message = `Hello ${name}`
       cb(null, { message })
     },
-    sayHelloCStream: function sayHelloCStream(call, cb) {
+    sayHelloClientStream: function sayHelloCStream(call, cb) {
       const { metadata } = call
       const names = []
       call.on('data', function (clientStream) {
@@ -27,7 +27,7 @@ module.exports = function createServerMethods(server) {
         })
       })
     },
-    sayHelloSStream: function sayHelloCStream(call) {
+    sayHelloServerStream: function sayHelloCStream(call) {
       const {
         metadata,
         request: { name }
@@ -37,6 +37,17 @@ module.exports = function createServerMethods(server) {
         call.write({ message: `Hello ${n}` })
       })
       call.end()
+    },
+    sayHelloBidiStream: function sayHelloCStream(call) {
+      const { metadata } = call
+      call.on('data', (clientStream) => {
+        const { name } = clientStream
+        server.metadataMap.set(name, metadata.internalRepr)
+        call.write({ message: `Hello ${name}` })
+      })
+      call.on('end', () => {
+        call.end()
+      })
     },
     sayError: function sayError(whatever, cb) {
       return cb({

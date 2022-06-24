@@ -8,11 +8,14 @@ service Greeter {
   rpc SayHello (HelloRequest) returns (HelloReply) {}
   rpc SayError (HelloRequest) returns (HelloReply) {}
   // client side streaming calls
-  rpc SayHelloCStream (stream HelloRequest) returns (HelloReply) {}
-  rpc SayErrorCStream (stream HelloRequest) returns (HelloReply) {}
+  rpc SayHelloClientStream (stream HelloRequest) returns (HelloReply) {}
+  rpc SayErrorClientStream (stream HelloRequest) returns (HelloReply) {}
   // server side streaming calls
-  rpc SayHelloSStream (ArrayHelloRequest) returns (stream HelloReply) {}
-  rpc SayErrorSStream (ArrayHelloRequest) returns (stream HelloReply) {}
+  rpc SayHelloServerStream (ArrayHelloRequest) returns (stream HelloReply) {}
+  rpc SayErrorServerStream (ArrayHelloRequest) returns (stream HelloReply) {}
+  // bidirectional streaming calls
+  rpc SayHelloBidiStream (stream HelloRequest) returns (stream HelloReply) {}
+  rpc SayErrorBidiStream (stream HelloRequest) returns (stream HelloReply) {}
 }
 
 message HelloRequest {

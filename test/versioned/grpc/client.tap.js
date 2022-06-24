@@ -34,8 +34,9 @@ tap.test('grpc client instrumentation', (t) => {
   let segmentName
 
   const helloName = '/helloworld.Greeter/SayHello'
-  const helloCStreamName = '/helloworld.Greeter/SayHelloCStream'
-  const helloSStreamName = '/helloworld.Greeter/SayHelloSStream'
+  const helloClientStreamName = '/helloworld.Greeter/SayHelloClientStream'
+  const helloServerStreamName = '/helloworld.Greeter/SayHelloServerStream'
+  const helloBidiStreamName = '/helloworld.Greeter/SayHelloBidiStream'
   const errorName = '/helloworld.Greeter/SayError'
   const rollupHost = `${EXTERNAL.PREFIX}${CLIENT_ADDR}/all`
   const grpcMetricName = `${EXTERNAL.PREFIX}${CLIENT_ADDR}/gRPC`
@@ -98,15 +99,15 @@ tap.test('grpc client instrumentation', (t) => {
     helper.runInTransaction(agent, 'web', async (tx) => {
       agent.on('transactionFinished', (transaction) => {
         const segment = transaction.trace.root.children[0]
-        segmentName = `${EXTERNAL.PREFIX}${CLIENT_ADDR}${helloCStreamName}`
+        segmentName = `${EXTERNAL.PREFIX}${CLIENT_ADDR}${helloClientStreamName}`
         t.equal(segment.name, segmentName, 'segment name is correct')
         const attributes = segment.getAttributes()
         t.equal(
           attributes['http.url'],
-          `grpc://${CLIENT_ADDR}${helloCStreamName}`,
+          `grpc://${CLIENT_ADDR}${helloClientStreamName}`,
           'http.url attribute should be correct'
         )
-        t.equal(attributes['http.method'], helloCStreamName, 'method name should be correct')
+        t.equal(attributes['http.method'], helloClientStreamName, 'method name should be correct')
         t.equal(attributes['grpc.statusCode'], 0, 'status code should be zero')
         t.equal(attributes['grpc.statusText'], 'OK', 'status text should be OK')
         t.equal(attributes.component, 'gRPC', 'should have the component set to "gRPC"')
@@ -119,7 +120,7 @@ tap.test('grpc client instrumentation', (t) => {
       })
 
       await new Promise((resolve) => {
-        const call = client.sayHelloCStream((err, response) => {
+        const call = client.sayHelloClientStream((err, response) => {
           t.error(err)
           t.ok(response, 'response exists')
           t.equal(response.message, 'Hello bob, jordi, corey', 'response message is correct')
@@ -138,15 +139,15 @@ tap.test('grpc client instrumentation', (t) => {
     helper.runInTransaction(agent, 'web', async (tx) => {
       agent.on('transactionFinished', (transaction) => {
         const segment = transaction.trace.root.children[0]
-        segmentName = `${EXTERNAL.PREFIX}${CLIENT_ADDR}${helloSStreamName}`
+        segmentName = `${EXTERNAL.PREFIX}${CLIENT_ADDR}${helloServerStreamName}`
         t.equal(segment.name, segmentName, 'segment name is correct')
         const attributes = segment.getAttributes()
         t.equal(
           attributes['http.url'],
-          `grpc://${CLIENT_ADDR}${helloSStreamName}`,
+          `grpc://${CLIENT_ADDR}${helloServerStreamName}`,
           'http.url attribute should be correct'
         )
-        t.equal(attributes['http.method'], helloSStreamName, 'method name should be correct')
+        t.equal(attributes['http.method'], helloServerStreamName, 'method name should be correct')
         t.equal(attributes['grpc.statusCode'], 0, 'status code should be zero')
         t.equal(attributes['grpc.statusText'], 'OK', 'status text should be OK')
         t.equal(attributes.component, 'gRPC', 'should have the component set to "gRPC"')
@@ -161,7 +162,7 @@ tap.test('grpc client instrumentation', (t) => {
       await new Promise((resolve) => {
         const names = ['bob', 'jordi', 'corey']
         let counter = 0
-        const call = client.sayHelloSStream({ name: names })
+        const call = client.sayHelloServerStream({ name: names })
         call.on('data', function (response) {
           t.ok(response, 'response exists')
           t.equal(response.message, `Hello ${names[counter]}`, 'response stream message is correct')
@@ -174,6 +175,56 @@ tap.test('grpc client instrumentation', (t) => {
       })
     })
   })
+
+  t.test(
+    'should track bidirectional streaming requests as an external when in a transaction',
+    (t) => {
+      helper.runInTransaction(agent, 'web', async (tx) => {
+        agent.on('transactionFinished', (transaction) => {
+          const segment = transaction.trace.root.children[0]
+          segmentName = `${EXTERNAL.PREFIX}${CLIENT_ADDR}${helloBidiStreamName}`
+          t.equal(segment.name, segmentName, 'segment name is correct')
+          const attributes = segment.getAttributes()
+          t.equal(
+            attributes['http.url'],
+            `grpc://${CLIENT_ADDR}${helloBidiStreamName}`,
+            'http.url attribute should be correct'
+          )
+          t.equal(attributes['http.method'], helloBidiStreamName, 'method name should be correct')
+          t.equal(attributes['grpc.statusCode'], 0, 'status code should be zero')
+          t.equal(attributes['grpc.statusText'], 'OK', 'status text should be OK')
+          t.equal(attributes.component, 'gRPC', 'should have the component set to "gRPC"')
+
+          for (const metricName of metrics) {
+            const metric = agent.metrics.getMetric(metricName)
+            t.ok(metric.callCount > 0, `ensure ${metricName} was recorded`)
+          }
+          t.end()
+        })
+
+        await new Promise((resolve) => {
+          const names = ['bob', 'jordi', 'corey']
+          let counter = 0
+          const call = client.sayHelloBidiStream()
+          names.forEach((name) => call.write({ name }))
+          call.on('data', function (response) {
+            t.ok(response, 'response exists')
+            t.equal(
+              response.message,
+              `Hello ${names[counter]}`,
+              'response stream message is correct'
+            )
+            counter++
+          })
+          call.on('end', () => {
+            tx.end()
+            resolve()
+          })
+          call.end()
+        })
+      })
+    }
+  )
 
   t.test('should include distributed trace headers when enabled', (t) => {
     helper.runInTransaction(agent, 'dt-test', async (tx) => {
