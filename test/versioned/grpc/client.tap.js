@@ -13,8 +13,7 @@ const EXTERNAL = require('../../../lib/metrics/names').EXTERNAL
 const helper = require('../../lib/agent_helper')
 
 const PROTO_PATH = `${__dirname}/example.proto`
-const SERVER_ADDR = '0.0.0.0:50051'
-const CLIENT_ADDR = 'localhost:50051'
+const { CLIENT_ADDR } = require('./constants')
 
 const packageDefinition = protoLoader.loadSync(PROTO_PATH, {
   keepCase: true,
@@ -35,6 +34,8 @@ tap.test('grpc client instrumentation', (t) => {
   let segmentName
 
   const helloName = '/helloworld.Greeter/SayHello'
+  const helloCStreamName = '/helloworld.Greeter/SayHelloCStream'
+  const helloSStreamName = '/helloworld.Greeter/SayHelloSStream'
   const errorName = '/helloworld.Greeter/SayError'
   const rollupHost = `${EXTERNAL.PREFIX}${CLIENT_ADDR}/all`
   const grpcMetricName = `${EXTERNAL.PREFIX}${CLIENT_ADDR}/gRPC`
@@ -43,6 +44,7 @@ tap.test('grpc client instrumentation', (t) => {
   t.beforeEach(async () => {
     agent = helper.instrumentMockedAgent()
     grpc = require('@grpc/grpc-js')
+    const { getServer, getClient } = require('./util')
     proto = grpc.loadPackageDefinition(packageDefinition).helloworld
     server = await getServer(grpc, proto)
     client = getClient(grpc, proto)
@@ -85,6 +87,87 @@ tap.test('grpc client instrumentation', (t) => {
           t.error(err)
           t.ok(response, 'response exists')
           t.equal(response.message, 'Hello New Relic', 'response message is correct')
+          tx.end()
+          resolve()
+        })
+      })
+    })
+  })
+
+  t.test('should track client streaming requests as an external when in a transaction', (t) => {
+    helper.runInTransaction(agent, 'web', async (tx) => {
+      agent.on('transactionFinished', (transaction) => {
+        const segment = transaction.trace.root.children[0]
+        segmentName = `${EXTERNAL.PREFIX}${CLIENT_ADDR}${helloCStreamName}`
+        t.equal(segment.name, segmentName, 'segment name is correct')
+        const attributes = segment.getAttributes()
+        t.equal(
+          attributes['http.url'],
+          `grpc://${CLIENT_ADDR}${helloCStreamName}`,
+          'http.url attribute should be correct'
+        )
+        t.equal(attributes['http.method'], helloCStreamName, 'method name should be correct')
+        t.equal(attributes['grpc.statusCode'], 0, 'status code should be zero')
+        t.equal(attributes['grpc.statusText'], 'OK', 'status text should be OK')
+        t.equal(attributes.component, 'gRPC', 'should have the component set to "gRPC"')
+
+        for (const metricName of metrics) {
+          const metric = agent.metrics.getMetric(metricName)
+          t.ok(metric.callCount > 0, `ensure ${metricName} was recorded`)
+        }
+        t.end()
+      })
+
+      await new Promise((resolve) => {
+        const call = client.sayHelloCStream((err, response) => {
+          t.error(err)
+          t.ok(response, 'response exists')
+          t.equal(response.message, 'Hello bob, jordi, corey', 'response message is correct')
+          tx.end()
+          resolve()
+        })
+
+        const names = ['bob', 'jordi', 'corey']
+        names.forEach((name) => call.write({ name }))
+        call.end()
+      })
+    })
+  })
+
+  t.test('should track server streaming requests as an external when in a transaction', (t) => {
+    helper.runInTransaction(agent, 'web', async (tx) => {
+      agent.on('transactionFinished', (transaction) => {
+        const segment = transaction.trace.root.children[0]
+        segmentName = `${EXTERNAL.PREFIX}${CLIENT_ADDR}${helloSStreamName}`
+        t.equal(segment.name, segmentName, 'segment name is correct')
+        const attributes = segment.getAttributes()
+        t.equal(
+          attributes['http.url'],
+          `grpc://${CLIENT_ADDR}${helloSStreamName}`,
+          'http.url attribute should be correct'
+        )
+        t.equal(attributes['http.method'], helloSStreamName, 'method name should be correct')
+        t.equal(attributes['grpc.statusCode'], 0, 'status code should be zero')
+        t.equal(attributes['grpc.statusText'], 'OK', 'status text should be OK')
+        t.equal(attributes.component, 'gRPC', 'should have the component set to "gRPC"')
+
+        for (const metricName of metrics) {
+          const metric = agent.metrics.getMetric(metricName)
+          t.ok(metric.callCount > 0, `ensure ${metricName} was recorded`)
+        }
+        t.end()
+      })
+
+      await new Promise((resolve) => {
+        const names = ['bob', 'jordi', 'corey']
+        let counter = 0
+        const call = client.sayHelloSStream({ name: names })
+        call.on('data', function (response) {
+          t.ok(response, 'response exists')
+          t.equal(response.message, `Hello ${names[counter]}`, 'response stream message is correct')
+          counter++
+        })
+        call.on('end', () => {
           tx.end()
           resolve()
         })
@@ -212,42 +295,3 @@ tap.test('grpc client instrumentation', (t) => {
     })
   })
 })
-
-async function getServer(grpc, proto) {
-  const server = new grpc.Server()
-  const credentials = grpc.ServerCredentials.createInsecure()
-  // quick and dirty map to store metadata for a given gRPC call
-  server.metadataMap = new Map()
-  const implementation = {
-    sayHello: function sayHello({ metadata, request: { name } }, cb) {
-      // add the metadata from client that the server receives so we can assert DT functionality
-      server.metadataMap.set(name, metadata.internalRepr)
-      const message = 'Hello ' + name
-      cb(null, { message })
-    },
-    sayError: function sayError(whatever, cb) {
-      return cb({
-        code: grpc.status.FAILED_PRECONDITION,
-        message: 'i think i will cause problems on purpose'
-      })
-    }
-  }
-
-  server.addService(proto.Greeter.service, implementation)
-  await new Promise((resolve, reject) => {
-    server.bindAsync(SERVER_ADDR, credentials, (err, port) => {
-      if (err) {
-        reject(err)
-      } else {
-        resolve(port)
-      }
-    })
-  })
-  server.start()
-  return server
-}
-
-function getClient(grpc, proto) {
-  const credentials = grpc.credentials.createInsecure()
-  return new proto.Greeter(CLIENT_ADDR, credentials)
-}
