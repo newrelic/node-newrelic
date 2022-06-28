@@ -21,7 +21,7 @@ module.exports = function initialize(shim, ctx) {
     const handler = {
       set(obj, prop, value) {
         const nrObj = Object.assign(Object.create(null), value)
-        const middlewareName = prop.replace(/^middleware_pages/, '')
+        const middlewareName = prop.replace(/^middleware_(pages)?/, '')
         shim.record(nrObj, 'default', function mwRecord(shim, origMw, name, [args]) {
           return {
             name: `${shim._metrics.MIDDLEWARE}${shim._metrics.PREFIX}${middlewareName}`,
@@ -41,8 +41,28 @@ module.exports = function initialize(shim, ctx) {
      * @param {Object} moduleContext return of `getModuleContext`
      */
     function maybeApplyProxyHandler(moduleContext) {
-      if (!util.types.isProxy(moduleContext.context._ENTRIES)) {
+      if (
+        moduleContext.context &&
+        moduleContext.context._ENTRIES &&
+        !util.types.isProxy(moduleContext.context._ENTRIES)
+      ) {
         moduleContext.context._ENTRIES = new Proxy(moduleContext.context._ENTRIES, handler)
+      }
+
+      // In 12.2.0 they flattened middleware and put the context on runtime property
+      // It also does not pre-emptively make the `_ENTRIES` object so we will create that
+      // so we can properly trap all sets
+      if (moduleContext.runtime && moduleContext.runtime.context) {
+        if (!moduleContext.runtime.context._ENTRIES) {
+          moduleContext.runtime.context._ENTRIES = {}
+        }
+
+        if (!util.types.isProxy(moduleContext.runtime.context._ENTRIES)) {
+          moduleContext.runtime.context._ENTRIES = new Proxy(
+            moduleContext.runtime.context._ENTRIES,
+            handler
+          )
+        }
       }
     }
 
