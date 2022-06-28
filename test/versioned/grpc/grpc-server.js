@@ -33,6 +33,7 @@ module.exports = function createServerMethods(server) {
         request: { name }
       } = call
       name.forEach((n) => {
+        // add the metadata from client that the server receives so we can assert DT functionality
         server.metadataMap.set(n, metadata.internalRepr)
         call.write({ message: `Hello ${n}` })
       })
@@ -42,6 +43,7 @@ module.exports = function createServerMethods(server) {
       const { metadata } = call
       call.on('data', (clientStream) => {
         const { name } = clientStream
+        // add the metadata from client that the server receives so we can assert DT functionality
         server.metadataMap.set(name, metadata.internalRepr)
         call.write({ message: `Hello ${name}` })
       })

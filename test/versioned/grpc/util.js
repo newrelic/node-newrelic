@@ -16,6 +16,13 @@ const grpcMetricName = `${EXTERNAL.PREFIX}${CLIENT_ADDR}/gRPC`
 const metrics = [grpcMetricName, rollupHost, EXTERNAL.WEB, EXTERNAL.ALL]
 const expectedMetrics = metrics.map((metric) => ({ name: metric }))
 
+/**
+ * Iterates over all metrics created during a transaction and asserts no gRPC metrics were created
+ *
+ * @param {Object} params
+ * @param {Object} params.t tap test
+ * @param {Object} params.agent test agent
+ */
 util.assertMetricsNotExisting = function assertMetricsNotExisting({ t, agent }) {
   metrics.forEach((metricName) => {
     const metric = agent.metrics.getMetric(metricName)
@@ -25,6 +32,12 @@ util.assertMetricsNotExisting = function assertMetricsNotExisting({ t, agent }) 
   t.end()
 }
 
+/**
+ * Helper for loading our example protobuf API
+ *
+ * @param {Object} grpc @grpc/grpc-js pkg
+ * @returns {Object} helloworld protobuf pkg
+ */
 function loadProtobufApi(grpc) {
   const PROTO_PATH = `${__dirname}/example.proto`
   const packageDefinition = protoLoader.loadSync(PROTO_PATH, {
@@ -39,7 +52,7 @@ function loadProtobufApi(grpc) {
 }
 
 /**
- * Creates a gRPC server with he Greeter service and the server methods
+ * Creates a gRPC server with the Greeter service and the server methods
  * from `./grpc-server`
  *
  * @param {Object} grpc grpc module
@@ -78,10 +91,27 @@ util.getClient = function getClient(grpc, proto) {
   return new proto.Greeter(CLIENT_ADDR, credentials)
 }
 
+/**
+ * Gets the formatted substring for a given gRPC method
+ *
+ * @param {string} fnName name of gRPC call
+ * @returns {string}
+ */
 util.getRPCName = function getRPCName(fnName) {
   return `/helloworld.Greeter/${fnName}`
 }
 
+/**
+ * Asserts the gRPC external segment and its relevant attributes: http.url,
+ * http.method, grpc.statusCode, grpc.statusText
+ *
+ * @param {Object} params
+ * @param {Object} params.t tap test
+ * @param {Object} params.tx transaction under test
+ * @param {string} params.fnName gRPC method name
+ * @param {number} [params.expectedStatusCode=0] expected status code for test
+ * @param {string} [params.expectedStatusText=OK] expected status text for test
+ */
 util.assertExternalSegment = function assertExternalSegment({
   t,
   tx,
@@ -115,6 +145,15 @@ util.assertExternalSegment = function assertExternalSegment({
   t.end()
 }
 
+/**
+ * Helper to make a unary client request
+ *
+ * @param {Object} params
+ * @param {Object} params.client gRPC client
+ * @param {string} params.fnName gRPC method name
+ * @param {*} params.payload payload to gRPC method
+ * @returns {Promise}
+ */
 util.makeUnaryRequest = function makeUnaryRequest({ client, fnName, payload }) {
   return new Promise((resolve, reject) => {
     client[fnName](payload, (err, response) => {
@@ -127,6 +166,15 @@ util.makeUnaryRequest = function makeUnaryRequest({ client, fnName, payload }) {
   })
 }
 
+/**
+ * Helper to make a streaming client request
+ *
+ * @param {Object} params
+ * @param {Object} params.client gRPC client
+ * @param {string} params.fnName gRPC method name
+ * @param {*} params.payload payload to gRPC method
+ * @returns {Promise}
+ */
 util.makeClientStreamingRequest = function makeClientStreamingRequest({ client, fnName, payload }) {
   return new Promise((resolve, reject) => {
     const call = client[fnName]((err, response) => {
@@ -143,6 +191,15 @@ util.makeClientStreamingRequest = function makeClientStreamingRequest({ client, 
   })
 }
 
+/**
+ * Helper to make a streaming server client request
+ *
+ * @param {Object} params
+ * @param {Object} params.client gRPC client
+ * @param {string} params.fnName gRPC method name
+ * @param {*} params.payload payload to gRPC method
+ * @returns {Promise}
+ */
 util.makeServerStreamingRequest = function makeServerStreamingRequest({ client, fnName, payload }) {
   return new Promise((resolve, reject) => {
     const serverData = []
@@ -159,6 +216,15 @@ util.makeServerStreamingRequest = function makeServerStreamingRequest({ client, 
   })
 }
 
+/**
+ * Helper to make a bidirectional client request
+ *
+ * @param {Object} params
+ * @param {Object} params.client gRPC client
+ * @param {string} params.fnName gRPC method name
+ * @param {*} params.payload payload to gRPC method
+ * @returns {Promise}
+ */
 util.makeBidiStreamingRequest = function makeBidiStreamingRequest({ client, fnName, payload }) {
   return new Promise((resolve, reject) => {
     const serverData = []
