@@ -5,9 +5,11 @@
 
 'use strict'
 const util = module.exports
+const metricsHelpers = require('../../lib/metrics_helper')
+const protoLoader = require('@grpc/proto-loader')
+
 const SERVER_ADDR = '0.0.0.0:50051'
 const CLIENT_ADDR = 'localhost:50051'
-const metricsHelpers = require('../../lib/metrics_helper')
 const { EXTERNAL } = require('../../../lib/metrics/names')
 const rollupHost = `${EXTERNAL.PREFIX}${CLIENT_ADDR}/all`
 const grpcMetricName = `${EXTERNAL.PREFIX}${CLIENT_ADDR}/gRPC`
@@ -23,21 +25,33 @@ util.assertMetricsNotExisting = function assertMetricsNotExisting({ t, agent }) 
   t.end()
 }
 
+function loadProtobufApi(grpc) {
+  const PROTO_PATH = `${__dirname}/example.proto`
+  const packageDefinition = protoLoader.loadSync(PROTO_PATH, {
+    keepCase: true,
+    longs: String,
+    enums: String,
+    defaults: true,
+    oneofs: true
+  })
+
+  return grpc.loadPackageDefinition(packageDefinition).helloworld
+}
+
 /**
- * Creates a gRPC server witht he Greeter service and the server methods
+ * Creates a gRPC server with he Greeter service and the server methods
  * from `./grpc-server`
  *
  * @param {Object} grpc grpc module
- * @param {Object} proto protobuf API example.proto
- * @returns {Object} server grpc server started
+ * @returns {Object} { server, proto } grpc server and protobuf api
  */
-util.getServer = async function getServer(grpc, proto) {
+util.createServer = async function createServer(grpc) {
   const server = new grpc.Server()
   const credentials = grpc.ServerCredentials.createInsecure()
   // quick and dirty map to store metadata for a given gRPC call
   server.metadataMap = new Map()
   const serverMethods = require('./grpc-server')(server)
-
+  const proto = loadProtobufApi(grpc)
   server.addService(proto.Greeter.service, serverMethods)
   await new Promise((resolve, reject) => {
     server.bindAsync(SERVER_ADDR, credentials, (err, port) => {
@@ -49,7 +63,7 @@ util.getServer = async function getServer(grpc, proto) {
     })
   })
   server.start()
-  return server
+  return { server, proto }
 }
 
 /**
@@ -130,7 +144,7 @@ util.makeClientStreamingRequest = function makeClientStreamingRequest({ client, 
 }
 
 util.makeServerStreamingRequest = function makeServerStreamingRequest({ client, fnName, payload }) {
-  return new Promise((resolve) => {
+  return new Promise((resolve, reject) => {
     const serverData = []
     const call = client[fnName](payload)
     call.on('data', (response) => {
@@ -139,11 +153,14 @@ util.makeServerStreamingRequest = function makeServerStreamingRequest({ client, 
     call.on('end', () => {
       resolve(serverData)
     })
+    call.on('error', (err) => {
+      reject(err)
+    })
   })
 }
 
 util.makeBidiStreamingRequest = function makeBidiStreamingRequest({ client, fnName, payload }) {
-  return new Promise((resolve) => {
+  return new Promise((resolve, reject) => {
     const serverData = []
     const call = client[fnName]()
     payload.forEach((data) => call.write(data))
@@ -152,6 +169,9 @@ util.makeBidiStreamingRequest = function makeBidiStreamingRequest({ client, fnNa
     })
     call.on('end', () => {
       resolve(serverData)
+    })
+    call.on('error', (err) => {
+      reject(err)
     })
     call.end()
   })

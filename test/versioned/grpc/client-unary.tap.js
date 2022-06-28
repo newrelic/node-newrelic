@@ -6,31 +6,18 @@
 'use strict'
 
 const tap = require('tap')
-const protoLoader = require('@grpc/proto-loader')
-
 const helper = require('../../lib/agent_helper')
+const { ERR_CODE, ERR_MSG } = require('./constants')
 
-const PROTO_PATH = `${__dirname}/example.proto`
 const {
   assertExternalSegment,
   assertMetricsNotExisting,
   makeUnaryRequest,
-  makeClientStreamingRequest,
-  makeServerStreamingRequest,
-  makeBidiStreamingRequest,
-  getServer,
+  createServer,
   getClient
 } = require('./util')
 
-const packageDefinition = protoLoader.loadSync(PROTO_PATH, {
-  keepCase: true,
-  longs: String,
-  enums: String,
-  defaults: true,
-  oneofs: true
-})
-
-tap.test('grpc client instrumentation', (t) => {
+tap.test('gRPC Client: Unary Requests', (t) => {
   t.autoend()
 
   let agent
@@ -42,8 +29,9 @@ tap.test('grpc client instrumentation', (t) => {
   t.beforeEach(async () => {
     agent = helper.instrumentMockedAgent()
     grpc = require('@grpc/grpc-js')
-    proto = grpc.loadPackageDefinition(packageDefinition).helloworld
-    server = await getServer(grpc, proto)
+    const data = await createServer(grpc)
+    proto = data.proto
+    server = data.server
     client = getClient(grpc, proto)
   })
 
@@ -71,70 +59,6 @@ tap.test('grpc client instrumentation', (t) => {
       tx.end()
     })
   })
-
-  t.test('should track client streaming requests as an external when in a transaction', (t) => {
-    helper.runInTransaction(agent, 'web', async (tx) => {
-      agent.on('transactionFinished', (transaction) => {
-        assertExternalSegment({ t, tx: transaction, fnName: 'SayHelloClientStream' })
-      })
-
-      const names = [{ name: 'Bob' }, { name: 'Jordi' }, { name: 'Corey' }]
-      const response = await makeClientStreamingRequest({
-        client,
-        fnName: 'sayHelloClientStream',
-        payload: names
-      })
-      t.ok(response, 'response exists')
-      t.equal(
-        response.message,
-        `Hello ${names.map(({ name }) => name).join(', ')}`,
-        'response message is correct'
-      )
-      tx.end()
-    })
-  })
-
-  t.test('should track server streaming requests as an external when in a transaction', (t) => {
-    helper.runInTransaction(agent, 'web', async (tx) => {
-      agent.on('transactionFinished', (transaction) => {
-        assertExternalSegment({ t, tx: transaction, fnName: 'SayHelloServerStream' })
-      })
-
-      const names = ['Moe', 'Larry', 'Curly']
-      const responses = await makeServerStreamingRequest({
-        client,
-        fnName: 'sayHelloServerStream',
-        payload: { name: names }
-      })
-      names.forEach((name, i) => {
-        t.equal(responses[i], `Hello ${name}`, 'response stream message should be correct')
-      })
-      tx.end()
-    })
-  })
-
-  t.test(
-    'should track bidirectional streaming requests as an external when in a transaction',
-    (t) => {
-      helper.runInTransaction(agent, 'web', async (tx) => {
-        agent.on('transactionFinished', (transaction) => {
-          assertExternalSegment({ t, tx: transaction, fnName: 'SayHelloBidiStream' })
-        })
-
-        const names = [{ name: 'Huey' }, { name: 'Dewey' }, { name: 'Louie' }]
-        const responses = await makeBidiStreamingRequest({
-          client,
-          fnName: 'sayHelloBidiStream',
-          payload: names
-        })
-        names.forEach(({ name }, i) => {
-          t.equal(responses[i], `Hello ${name}`, 'response stream message should be correct')
-        })
-
-        tx.end()
-      })
-    }
-  )
 
   t.test('should include distributed trace headers when enabled', (t) => {
     helper.runInTransaction(agent, 'dt-test', async (tx) => {
@@ -185,8 +109,8 @@ tap.test('grpc client instrumentation', (t) => {
   })
 
   t.test('should record errors in a transaction', (t) => {
-    const expectedStatusText = 'i think i will cause problems on purpose'
-    const expectedStatusCode = grpc.status.FAILED_PRECONDITION
+    const expectedStatusText = ERR_MSG
+    const expectedStatusCode = ERR_CODE
     helper.runInTransaction(agent, 'web', async (tx) => {
       agent.on('transactionFinished', (transaction) => {
         t.equal(agent.errors.traceAggregator.errors.length, 1, 'should record a single error')
