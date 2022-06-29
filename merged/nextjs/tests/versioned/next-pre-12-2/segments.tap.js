@@ -6,7 +6,7 @@
 'use strict'
 
 const tap = require('tap')
-const helpers = require('./helpers')
+const helpers = require('../helpers')
 const utils = require('@newrelic/test-utilities')
 const TRANSACTION_PREFX = 'WebTransaction/WebFrameworkUri/Nextjs/GET/'
 const SEGMENT_PREFIX = 'Nodejs/Nextjs/getServerSideProps/'
@@ -20,8 +20,8 @@ tap.test('Next.js', (t) => {
   t.before(async () => {
     agent = utils.TestAgent.makeInstrumented()
     helpers.registerInstrumentation(agent)
-    await helpers.build()
-    app = await helpers.start()
+    await helpers.build(__dirname)
+    app = await helpers.start(__dirname)
   })
 
   t.teardown(() => {
@@ -37,7 +37,7 @@ tap.test('Next.js', (t) => {
 
     const URI = '/ssr/people'
 
-    const res = await helpers.makeRequest(URI)
+    const res = await helpers.makeRequest(URI, app.server.port)
 
     t.equal(res.statusCode, 200)
     const expectedSegments = [
@@ -68,7 +68,7 @@ tap.test('Next.js', (t) => {
     const EXPECTED_URI = '/ssr/dynamic/person/[id]'
     const URI = EXPECTED_URI.replace(/\[id\]/, '1')
 
-    const res = await helpers.makeRequest(URI)
+    const res = await helpers.makeRequest(URI, app.server.port)
 
     t.equal(res.statusCode, 200)
     const expectedSegments = [
@@ -102,7 +102,7 @@ tap.test('Next.js', (t) => {
     const EXPECTED_URI = '/api/person/[id]'
     const URI = EXPECTED_URI.replace(/\[id\]/, '1')
 
-    const res = await helpers.makeRequest(URI)
+    const res = await helpers.makeRequest(URI, app.server.port)
 
     t.equal(res.statusCode, 200)
     const expectedSegments = [
@@ -131,7 +131,7 @@ tap.test('Next.js', (t) => {
     })
 
     const URI = '/api/hello'
-    const res = await helpers.makeRequest(URI)
+    const res = await helpers.makeRequest(URI, app.server.port)
 
     t.equal(res.statusCode, 200)
     const expectedSegments = [
@@ -159,7 +159,7 @@ tap.test('Next.js', (t) => {
     const EXPECTED_URI = '/person/[id]'
     const URI = EXPECTED_URI.replace(/\[id\]/, '1')
 
-    const res = await helpers.makeRequest(URI)
+    const res = await helpers.makeRequest(URI, app.server.port)
 
     t.equal(res.statusCode, 200)
     const expectedSegments = [

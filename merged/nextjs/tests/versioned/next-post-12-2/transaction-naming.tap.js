@@ -8,8 +8,6 @@
 const tap = require('tap')
 const helpers = require('../helpers')
 const utils = require('@newrelic/test-utilities')
-const { getNextAppPath } = require('./util')
-
 const NEXT_TRANSACTION_PREFIX = 'WebTransaction/WebFrameworkUri/Nextjs/GET/'
 
 tap.test('Next.js', (t) => {
@@ -18,8 +16,7 @@ tap.test('Next.js', (t) => {
   let app
 
   t.before(async () => {
-    const path = getNextAppPath()
-    await helpers.build(path)
+    await helpers.build(__dirname)
 
     agent = utils.TestAgent.makeInstrumented({
       attributes: {
@@ -30,7 +27,7 @@ tap.test('Next.js', (t) => {
 
     // TODO: would be nice to run a new server per test so there are not chained failures
     // but currently has issues. Potentially due to module caching.
-    app = await helpers.start(path)
+    app = await helpers.start(__dirname)
   })
 
   t.teardown(() => {
@@ -44,7 +41,7 @@ tap.test('Next.js', (t) => {
       endedTransaction = transaction
     })
 
-    const res = await helpers.makeRequest('/static/standard')
+    const res = await helpers.makeRequest('/static/standard', app.server.port)
     t.equal(res.statusCode, 200)
 
     t.ok(endedTransaction)
@@ -57,7 +54,7 @@ tap.test('Next.js', (t) => {
       endedTransaction = transaction
     })
 
-    const res = await helpers.makeRequest('/static/dynamic/testing')
+    const res = await helpers.makeRequest('/static/dynamic/testing', app.server.port)
     t.equal(res.statusCode, 200)
 
     t.ok(endedTransaction)
@@ -70,7 +67,7 @@ tap.test('Next.js', (t) => {
       endedTransaction = transaction
     })
 
-    const res = await helpers.makeRequest('/ssr/people')
+    const res = await helpers.makeRequest('/ssr/people', app.server.port)
     t.equal(res.statusCode, 200)
 
     t.ok(endedTransaction)
@@ -83,7 +80,7 @@ tap.test('Next.js', (t) => {
       endedTransaction = transaction
     })
 
-    const res = await helpers.makeRequest('/ssr/dynamic/person/1')
+    const res = await helpers.makeRequest('/ssr/dynamic/person/1', app.server.port)
     t.equal(res.statusCode, 200)
 
     t.ok(endedTransaction)
@@ -96,7 +93,7 @@ tap.test('Next.js', (t) => {
       endedTransaction = transaction
     })
 
-    const res = await helpers.makeRequest('/api/hello')
+    const res = await helpers.makeRequest('/api/hello', app.server.port)
     t.equal(res.statusCode, 200)
 
     t.ok(endedTransaction)
@@ -109,7 +106,7 @@ tap.test('Next.js', (t) => {
       endedTransaction = transaction
     })
 
-    const res = await helpers.makeRequest('/api/person/2')
+    const res = await helpers.makeRequest('/api/person/2', app.server.port)
     t.equal(res.statusCode, 200)
 
     t.ok(endedTransaction)
@@ -122,7 +119,7 @@ tap.test('Next.js', (t) => {
       transactions.push(transaction)
     })
 
-    const res = await helpers.makeRequest('/person/2')
+    const res = await helpers.makeRequest('/person/2', app.server.port)
     t.equal(res.statusCode, 200)
 
     t.equal(transactions.length, 2)

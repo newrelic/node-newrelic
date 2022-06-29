@@ -6,7 +6,7 @@
 'use strict'
 
 const tap = require('tap')
-const helpers = require('./helpers')
+const helpers = require('../helpers')
 const utils = require('@newrelic/test-utilities')
 
 const DESTINATIONS = {
@@ -25,7 +25,7 @@ tap.test('Next.js', (t) => {
   let app
 
   t.before(async () => {
-    await helpers.build()
+    await helpers.build(__dirname)
 
     agent = utils.TestAgent.makeInstrumented({
       attributes: {
@@ -36,7 +36,7 @@ tap.test('Next.js', (t) => {
 
     // TODO: would be nice to run a new server per test so there are not chained failures
     // but currently has issues. Potentially due to module caching.
-    app = await helpers.start()
+    app = await helpers.start(__dirname)
   })
 
   t.teardown(() => {
@@ -50,7 +50,7 @@ tap.test('Next.js', (t) => {
       endedTransaction = transaction
     })
 
-    const res = await helpers.makeRequest('/static/standard?first=one&second=two')
+    const res = await helpers.makeRequest('/static/standard?first=one&second=two', app.server.port)
     t.equal(res.statusCode, 200)
 
     const agentAttributes = getTransactionEventAgentAttributes(endedTransaction)
@@ -67,7 +67,10 @@ tap.test('Next.js', (t) => {
       endedTransaction = transaction
     })
 
-    const res = await helpers.makeRequest('/static/dynamic/testing?queryParam=queryValue')
+    const res = await helpers.makeRequest(
+      '/static/dynamic/testing?queryParam=queryValue',
+      app.server.port
+    )
     t.equal(res.statusCode, 200)
 
     const agentAttributes = getTransactionEventAgentAttributes(endedTransaction)
@@ -86,7 +89,7 @@ tap.test('Next.js', (t) => {
         endedTransaction = transaction
       })
 
-      const res = await helpers.makeRequest('/ssr/people?first=one&second=two')
+      const res = await helpers.makeRequest('/ssr/people?first=one&second=two', app.server.port)
       t.equal(res.statusCode, 200)
 
       const agentAttributes = getTransactionEventAgentAttributes(endedTransaction)
@@ -122,7 +125,10 @@ tap.test('Next.js', (t) => {
         endedTransaction = transaction
       })
 
-      const res = await helpers.makeRequest('/ssr/dynamic/person/1?queryParam=queryValue')
+      const res = await helpers.makeRequest(
+        '/ssr/dynamic/person/1?queryParam=queryValue',
+        app.server.port
+      )
       t.equal(res.statusCode, 200)
 
       const agentAttributes = getTransactionEventAgentAttributes(endedTransaction)
@@ -151,7 +157,7 @@ tap.test('Next.js', (t) => {
       endedTransaction = transaction
     })
 
-    const res = await helpers.makeRequest('/api/hello?first=one&second=two')
+    const res = await helpers.makeRequest('/api/hello?first=one&second=two', app.server.port)
     t.equal(res.statusCode, 200)
 
     const agentAttributes = getTransactionEventAgentAttributes(endedTransaction)
@@ -168,7 +174,7 @@ tap.test('Next.js', (t) => {
       endedTransaction = transaction
     })
 
-    const res = await helpers.makeRequest('/api/person/2?queryParam=queryValue')
+    const res = await helpers.makeRequest('/api/person/2?queryParam=queryValue', app.server.port)
     t.equal(res.statusCode, 200)
 
     const agentAttributes = getTransactionEventAgentAttributes(endedTransaction)
@@ -185,7 +191,7 @@ tap.test('Next.js', (t) => {
       transactions.push(transaction)
     })
 
-    const res = await helpers.makeRequest('/person/2')
+    const res = await helpers.makeRequest('/person/2', app.server.port)
     t.equal(res.statusCode, 200)
 
     t.equal(transactions.length, 2)

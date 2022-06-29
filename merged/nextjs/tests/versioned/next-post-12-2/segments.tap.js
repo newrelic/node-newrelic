@@ -11,7 +11,6 @@ const utils = require('@newrelic/test-utilities')
 const TRANSACTION_PREFX = 'WebTransaction/WebFrameworkUri/Nextjs/GET/'
 const SEGMENT_PREFIX = 'Nodejs/Nextjs/getServerSideProps/'
 const MW_PREFIX = 'Nodejs/Middleware/Nextjs/'
-const { getNextAppPath } = require('./util')
 
 tap.test('Next.js', (t) => {
   t.autoend()
@@ -21,9 +20,8 @@ tap.test('Next.js', (t) => {
   t.before(async () => {
     agent = utils.TestAgent.makeInstrumented()
     helpers.registerInstrumentation(agent)
-    const path = getNextAppPath()
-    await helpers.build(path)
-    app = await helpers.start(path)
+    await helpers.build(__dirname)
+    app = await helpers.start(__dirname)
   })
 
   t.teardown(() => {
@@ -39,7 +37,7 @@ tap.test('Next.js', (t) => {
 
     const URI = '/ssr/people'
 
-    const res = await helpers.makeRequest(URI)
+    const res = await helpers.makeRequest(URI, app.server.port)
 
     t.equal(res.statusCode, 200)
     const expectedSegments = [
@@ -67,7 +65,7 @@ tap.test('Next.js', (t) => {
     const EXPECTED_URI = '/ssr/dynamic/person/[id]'
     const URI = EXPECTED_URI.replace(/\[id\]/, '1')
 
-    const res = await helpers.makeRequest(URI)
+    const res = await helpers.makeRequest(URI, app.server.port)
 
     t.equal(res.statusCode, 200)
     const expectedSegments = [
@@ -95,7 +93,7 @@ tap.test('Next.js', (t) => {
     const EXPECTED_URI = '/api/person/[id]'
     const URI = EXPECTED_URI.replace(/\[id\]/, '1')
 
-    const res = await helpers.makeRequest(URI)
+    const res = await helpers.makeRequest(URI, app.server.port)
 
     t.equal(res.statusCode, 200)
     const expectedSegments = [

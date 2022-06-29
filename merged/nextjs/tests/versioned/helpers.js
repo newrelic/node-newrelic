@@ -14,16 +14,17 @@ utils.assert.extendTap(tap)
 
 /**
  * Builds a Next.js app
+ * @param {sting} dir directory to run next cli in
  * @param {string} [path=app] path to app
  * @returns {Promise}
  *
  */
-helpers.build = function build(path = 'app') {
+helpers.build = function build(dir, path = 'app') {
   return new Promise((resolve, reject) => {
     exec(
       `./node_modules/.bin/next build ${path}`,
       {
-        cwd: __dirname
+        cwd: dir
       },
       function cb(err, data) {
         if (err) {
@@ -38,19 +39,21 @@ helpers.build = function build(path = 'app') {
 
 /**
  * Bootstraps and starts the Next.js app
+ * @param {sting} dir directory to run next cli in
  * @param {string} [path=app] path to app
  * @param {number} [port=3001]
  * @returns {Promise}
  */
-helpers.start = async function start(path = 'app', port = 3001) {
+helpers.start = async function start(dir, path = 'app', port = 3001) {
   // Needed to support the various locations tests may get loaded from (versioned VS tap <file> VS IDE debugger)
-  const fullPath = `${__dirname}/${path}`
+  const fullPath = `${dir}/${path}`
 
-  const { startServer } = require('next/dist/server/lib/start-server')
+  const { startServer } = require(`${dir}/node_modules/next/dist/server/lib/start-server`)
   const app = await startServer({
     dir: fullPath,
     hostname: 'localhost',
-    port
+    port,
+    allowRetry: true
   })
 
   await app.prepare()
