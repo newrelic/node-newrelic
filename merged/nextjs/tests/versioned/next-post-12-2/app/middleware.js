@@ -20,7 +20,7 @@ module.exports.middleware = async function middleware(request) {
       return response
   }
 
-  if (request.nextUrl.pathname.startsWith === '/api/person') {
+  if (request.nextUrl.pathname.startsWith('/api/person')) {
       const response = NextResponse.next()
       await new Promise((resolve) => {
         setTimeout(resolve, 10)
@@ -28,7 +28,7 @@ module.exports.middleware = async function middleware(request) {
       return response
   }
 
-  if (request.nextUrl.pathname.startsWith === '/person') {
+  if (request.nextUrl.pathname.startsWith('/person')) {
       const response = NextResponse.next()
       await new Promise((resolve) => {
         setTimeout(resolve, 10)
@@ -36,15 +36,7 @@ module.exports.middleware = async function middleware(request) {
       return response
   }
 
-  if (request.nextUrl.pathname.startsWith === '/ssr/dynamic') {
-      const response = NextResponse.next()
-      await new Promise((resolve) => {
-        setTimeout(resolve, 10)
-      })
-      return response
-  }
-
-  if (request.nextUrl.pathname.startsWith === '/ssr') {
+  if (request.nextUrl.pathname.startsWith('/ssr')) {
       const response = NextResponse.next()
       await new Promise((resolve) => {
         setTimeout(resolve, 10)
