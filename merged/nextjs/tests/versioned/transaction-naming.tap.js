@@ -6,7 +6,7 @@
 'use strict'
 
 const tap = require('tap')
-const helpers = require('../helpers')
+const helpers = require('./helpers')
 const utils = require('@newrelic/test-utilities')
 
 const NEXT_TRANSACTION_PREFIX = 'WebTransaction/WebFrameworkUri/Nextjs/GET/'
