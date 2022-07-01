@@ -45,7 +45,7 @@ tap.test('Next.js', (t) => {
         name: `${TRANSACTION_PREFX}${URI}`,
         children: [
           {
-            name: `${MW_PREFIX}middleware`
+            name: `${MW_PREFIX}/middleware`
           },
           {
             name: `${SEGMENT_PREFIX}${URI}`
@@ -73,7 +73,7 @@ tap.test('Next.js', (t) => {
         name: `${TRANSACTION_PREFX}${EXPECTED_URI}`,
         children: [
           {
-            name: `${MW_PREFIX}middleware`
+            name: `${MW_PREFIX}/middleware`
           },
           {
             name: `${SEGMENT_PREFIX}${EXPECTED_URI}`
@@ -84,7 +84,7 @@ tap.test('Next.js', (t) => {
     t.segments(transaction.trace.root, expectedSegments)
   })
 
-  t.test('should record segment for every layer of API middlewares', async (t) => {
+  t.test('should record segment for middleware when making API call', async (t) => {
     let transaction
     agent.agent.on('transactionFinished', function (tx) {
       transaction = tx
@@ -101,7 +101,7 @@ tap.test('Next.js', (t) => {
         name: `${TRANSACTION_PREFX}${EXPECTED_URI}`,
         children: [
           {
-            name: `${MW_PREFIX}middleware`
+            name: `${MW_PREFIX}/middleware`
           }
         ]
       }

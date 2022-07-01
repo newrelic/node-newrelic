@@ -6,25 +6,40 @@
 'use strict'
 
 const util = require('util')
+const semver = require('semver')
+
+// Version middleware is stable
+// See: https://nextjs.org/docs/advanced-features/middleware
+const MIN_SUPPORTED_VERSION = '12.2.0'
 
 module.exports = function initialize(shim, ctx) {
+  const nextVersion = shim.require('./package.json').version
+
+  if (semver.lt(nextVersion, MIN_SUPPORTED_VERSION)) {
+    shim.logger.debug(
+      'Next.js middleware instrumentation only supported on >=12.2.0, got %s',
+      nextVersion
+    )
+    return
+  }
+
   /*
   Middleware is tracked via a 'module context' object
-  whose `_ENTRIES` property is updated by each middleware layer.
-  So, we proxy `_ENTRIES` and record a span whenever middleware modifies it.
+  whose `runtime.context._ENTRIES` property is updated by middleware.
+  So, we proxy `runtime.context._ENTRIES` and record a span whenever middleware modifies it.
   */
   shim.setFramework(shim.NEXT)
-  const isAsync = util.types.isAsyncFunction(ctx.getModuleContext)
+
   shim.wrap(ctx, 'getModuleContext', function middlewareRecorder(shim, getModuleContext) {
     // define proxy handler that adds a set trap and re-assigns the middleware handler
     // with a wrapped function to record the middleware handler execution.
     const handler = {
       set(obj, prop, value) {
         const nrObj = Object.assign(Object.create(null), value)
-        const middlewareName = prop.replace(/^middleware_(pages)?/, '')
         shim.record(nrObj, 'default', function mwRecord(shim, origMw, name, [args]) {
+          const middlewareName = 'middleware'
           return {
-            name: `${shim._metrics.MIDDLEWARE}${shim._metrics.PREFIX}${middlewareName}`,
+            name: `${shim._metrics.MIDDLEWARE}${shim._metrics.PREFIX}/${middlewareName}`,
             type: shim.MIDDLEWARE,
             req: args.request,
             route: middlewareName,
@@ -37,21 +52,13 @@ module.exports = function initialize(shim, ctx) {
     }
 
     /**
-     * Check if the context._ENTRIES object is a proxy, and make it one if not.
+     * Check if the context.runtime.context._ENTRIES object is a proxy, and make it one if not.
+     * Note: In 12.2.0 they flattened middleware and put the context on runtime property
+     * It also does not pre-emptively make the `_ENTRIES` object so we will create that
+     * so we can properly trap all sets
      * @param {Object} moduleContext return of `getModuleContext`
      */
     function maybeApplyProxyHandler(moduleContext) {
-      if (
-        moduleContext.context &&
-        moduleContext.context._ENTRIES &&
-        !util.types.isProxy(moduleContext.context._ENTRIES)
-      ) {
-        moduleContext.context._ENTRIES = new Proxy(moduleContext.context._ENTRIES, handler)
-      }
-
-      // In 12.2.0 they flattened middleware and put the context on runtime property
-      // It also does not pre-emptively make the `_ENTRIES` object so we will create that
-      // so we can properly trap all sets
       if (moduleContext.runtime && moduleContext.runtime.context) {
         if (!moduleContext.runtime.context._ENTRIES) {
           moduleContext.runtime.context._ENTRIES = {}
@@ -66,17 +73,8 @@ module.exports = function initialize(shim, ctx) {
       }
     }
 
-    // In 12.1.1 `getModuleContext` became async
-    // see: https://github.com/vercel/next.js/pull/34437/files#diff-071a8410458475238acf837aa65ab1016398606a4d896d624db618b7fdb889c4
-    if (isAsync) {
-      return async function wrappedModuleContextPromise() {
-        const result = await getModuleContext.apply(this, arguments)
-        maybeApplyProxyHandler(result)
-        return result
-      }
-    }
-    return function wrappedModuleContext() {
-      const result = getModuleContext.apply(this, arguments)
+    return async function wrappedModuleContextPromise() {
+      const result = await getModuleContext.apply(this, arguments)
       maybeApplyProxyHandler(result)
       return result
     }
