@@ -173,7 +173,12 @@ util.makeUnaryRequest = function makeUnaryRequest({ client, fnName, payload }) {
  * @param {*} params.payload payload to gRPC method
  * @returns {Promise}
  */
-util.makeClientStreamingRequest = function makeClientStreamingRequest({ client, fnName, payload }) {
+util.makeClientStreamingRequest = function makeClientStreamingRequest({
+  client,
+  fnName,
+  payload,
+  endStream = true
+}) {
   return new Promise((resolve, reject) => {
     const call = client[fnName]((err, response) => {
       if (err) {
@@ -185,7 +190,10 @@ util.makeClientStreamingRequest = function makeClientStreamingRequest({ client, 
     })
 
     payload.forEach((data) => call.write(data))
-    call.end()
+
+    if (endStream) {
+      call.end()
+    }
   })
 }
 

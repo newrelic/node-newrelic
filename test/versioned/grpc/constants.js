@@ -6,5 +6,7 @@
 'use strict'
 module.exports = {
   ERR_MSG: 'i think i will cause problems on purpose',
-  ERR_CODE: 9
+  ERR_CODE: 9,
+  HALT_SERVER_ERR_MSG: 'I shall halt ye',
+  HALT_CODE: 10
 }

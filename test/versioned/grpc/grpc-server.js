@@ -4,7 +4,7 @@
  */
 
 'use strict'
-const { ERR_MSG, ERR_CODE } = require('./constants')
+const { ERR_MSG, ERR_CODE, HALT_SERVER_ERR_MSG, HALT_CODE } = require('./constants')
 module.exports = function createServerMethods(server) {
   return {
     sayHello: function sayHello({ metadata, request: { name } }, cb) {
@@ -58,8 +58,15 @@ module.exports = function createServerMethods(server) {
       })
     },
     sayErrorClientStream: function sayErrorClientStream(call, cb) {
-      call.on('data', function () {
-        // no-op as we do not care about the data
+      call.on('data', function (stream) {
+        // have server send error mid-stream
+        // when name matches `error`
+        if (stream.name === 'error') {
+          cb({
+            code: HALT_CODE,
+            message: HALT_SERVER_ERR_MSG
+          })
+        }
       })
 
       call.on('end', function () {

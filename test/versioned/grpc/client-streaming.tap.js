@@ -7,7 +7,7 @@
 
 const tap = require('tap')
 const helper = require('../../lib/agent_helper')
-const { ERR_CODE, ERR_MSG } = require('./constants')
+const { ERR_CODE, ERR_MSG, HALT_CODE, HALT_SERVER_ERR_MSG } = require('./constants')
 
 const {
   assertExternalSegment,
@@ -142,6 +142,41 @@ tap.test('gRPC Client: Client Streaming', (t) => {
       try {
         const payload = [{ oh: 'noes' }]
         await makeClientStreamingRequest({ client, fnName: 'sayErrorClientStream', payload })
+      } catch (err) {
+        t.ok(err, 'should get an error')
+        t.equal(err.code, expectedStatusCode, 'should get the right status code')
+        t.equal(err.details, expectedStatusText, 'should get the correct error message')
+        tx.end()
+      }
+    })
+  })
+
+  t.test('should record errors in a transaction when server sends error mid stream', (t) => {
+    const expectedStatusText = HALT_SERVER_ERR_MSG
+    const expectedStatusCode = HALT_CODE
+    helper.runInTransaction(agent, 'web', async (tx) => {
+      agent.on('transactionFinished', (transaction) => {
+        t.equal(agent.errors.traceAggregator.errors.length, 1, 'should record a single error')
+        const error = agent.errors.traceAggregator.errors[0][2]
+        t.equal(error, expectedStatusText, 'should have the error message')
+        assertExternalSegment({
+          t,
+          tx: transaction,
+          fnName: 'SayErrorClientStream',
+          expectedStatusText,
+          expectedStatusCode
+        })
+        t.end()
+      })
+
+      try {
+        const payload = [{ name: 'error' }]
+        await makeClientStreamingRequest({
+          client,
+          fnName: 'sayErrorClientStream',
+          payload,
+          endStream: false
+        })
       } catch (err) {
         t.ok(err, 'should get an error')
         t.equal(err.code, expectedStatusCode, 'should get the right status code')
