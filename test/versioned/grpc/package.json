@@ -11,7 +11,10 @@
         "@grpc/grpc-js": ">=1.0.0"
       },
       "files": [
-        "client.tap.js"
+        "client-unary.tap.js",
+        "client-streaming.tap.js",
+        "client-server-streaming.tap.js",
+        "client-bidi-streaming.tap.js"
       ]
     }
   ]
