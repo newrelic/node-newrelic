@@ -1,3 +1,13 @@
+### v0.2.0 (2022-07-05)
+
+* **BREAKING**: Fixed instrumentation to only support middleware in `>=12.2.0` of Next.js
+   * Next.js has made middleware [stable](https://nextjs.org/docs/advanced-features/middleware).
+   * All attempts in `@newrelic/next` to track middleware before 12.2.0 have been removed.
+
+* Added an additional path to register `next-server` when running a Next.js app with a standalone server.
+
+* Updated dev-dependencies to clear security audit warnings.
+
 ### v0.1.1 (2022-04-04)
 
 * Added support for middleware in > 12.1.1 of Next.js.  The return of `getModuleContext` is now an async function.
