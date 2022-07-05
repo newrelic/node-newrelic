@@ -55,7 +55,7 @@ tap.test('Next.js', (t) => {
 
     const URI = '/ssr/people'
 
-    const res = await helpers.makeRequest(URI, app.server.port)
+    const res = await helpers.makeRequest(URI)
 
     t.equal(res.statusCode, 200)
     const expectedSegments = [
@@ -77,7 +77,7 @@ tap.test('Next.js', (t) => {
     const EXPECTED_URI = '/ssr/dynamic/person/[id]'
     const URI = EXPECTED_URI.replace(/\[id\]/, '1')
 
-    const res = await helpers.makeRequest(URI, app.server.port)
+    const res = await helpers.makeRequest(URI)
 
     t.equal(res.statusCode, 200)
     const expectedSegments = [
@@ -99,7 +99,7 @@ tap.test('Next.js', (t) => {
     const EXPECTED_URI = '/api/person/[id]'
     const URI = EXPECTED_URI.replace(/\[id\]/, '1')
 
-    const res = await helpers.makeRequest(URI, app.server.port)
+    const res = await helpers.makeRequest(URI)
 
     t.equal(res.statusCode, 200)
     const expectedSegments = [

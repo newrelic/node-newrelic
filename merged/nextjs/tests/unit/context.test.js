@@ -75,12 +75,12 @@ tap.test('middleware tracking', (t) => {
   })
 
   t.test('should not instrument getModuleContext if Next.js < 12.2.0', (t) => {
-    sinon.spy(shim.logger, 'debug')
+    sinon.spy(shim.logger, 'warn')
     shim.require.returns({ version: '12.0.1' })
     const newCtx = { getModuleContext: sinon.stub() }
     initialize(shim, newCtx)
-    t.equal(shim.logger.debug.callCount, 1, 'should log debug message')
-    const loggerArgs = shim.logger.debug.args[0]
+    t.equal(shim.logger.warn.callCount, 1, 'should log warn message')
+    const loggerArgs = shim.logger.warn.args[0]
     t.same(loggerArgs, [
       'Next.js middleware instrumentation only supported on >=12.2.0, got %s',
       '12.0.1'

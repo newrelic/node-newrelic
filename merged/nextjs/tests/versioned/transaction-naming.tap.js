@@ -42,7 +42,7 @@ tap.test('Next.js', (t) => {
       endedTransaction = transaction
     })
 
-    const res = await helpers.makeRequest('/static/standard', app.server.port)
+    const res = await helpers.makeRequest('/static/standard')
     t.equal(res.statusCode, 200)
 
     t.ok(endedTransaction)
@@ -55,7 +55,7 @@ tap.test('Next.js', (t) => {
       endedTransaction = transaction
     })
 
-    const res = await helpers.makeRequest('/static/dynamic/testing', app.server.port)
+    const res = await helpers.makeRequest('/static/dynamic/testing')
     t.equal(res.statusCode, 200)
 
     t.ok(endedTransaction)
@@ -68,7 +68,7 @@ tap.test('Next.js', (t) => {
       endedTransaction = transaction
     })
 
-    const res = await helpers.makeRequest('/ssr/people', app.server.port)
+    const res = await helpers.makeRequest('/ssr/people')
     t.equal(res.statusCode, 200)
 
     t.ok(endedTransaction)
@@ -81,7 +81,7 @@ tap.test('Next.js', (t) => {
       endedTransaction = transaction
     })
 
-    const res = await helpers.makeRequest('/ssr/dynamic/person/1', app.server.port)
+    const res = await helpers.makeRequest('/ssr/dynamic/person/1')
     t.equal(res.statusCode, 200)
 
     t.ok(endedTransaction)
@@ -94,7 +94,7 @@ tap.test('Next.js', (t) => {
       endedTransaction = transaction
     })
 
-    const res = await helpers.makeRequest('/api/hello', app.server.port)
+    const res = await helpers.makeRequest('/api/hello')
     t.equal(res.statusCode, 200)
 
     t.ok(endedTransaction)
@@ -107,7 +107,7 @@ tap.test('Next.js', (t) => {
       endedTransaction = transaction
     })
 
-    const res = await helpers.makeRequest('/api/person/2', app.server.port)
+    const res = await helpers.makeRequest('/api/person/2')
     t.equal(res.statusCode, 200)
 
     t.ok(endedTransaction)
@@ -120,7 +120,7 @@ tap.test('Next.js', (t) => {
       transactions.push(transaction)
     })
 
-    const res = await helpers.makeRequest('/person/2', app.server.port)
+    const res = await helpers.makeRequest('/person/2')
     t.equal(res.statusCode, 200)
 
     t.equal(transactions.length, 2)

@@ -16,7 +16,7 @@ module.exports = function initialize(shim, ctx) {
   const nextVersion = shim.require('./package.json').version
 
   if (semver.lt(nextVersion, MIN_SUPPORTED_VERSION)) {
-    shim.logger.debug(
+    shim.logger.warn(
       'Next.js middleware instrumentation only supported on >=12.2.0, got %s',
       nextVersion
     )

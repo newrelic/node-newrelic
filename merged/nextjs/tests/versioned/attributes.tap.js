@@ -50,7 +50,7 @@ tap.test('Next.js', (t) => {
       endedTransaction = transaction
     })
 
-    const res = await helpers.makeRequest('/static/standard?first=one&second=two', app.server.port)
+    const res = await helpers.makeRequest('/static/standard?first=one&second=two')
     t.equal(res.statusCode, 200)
 
     const agentAttributes = getTransactionEventAgentAttributes(endedTransaction)
@@ -67,10 +67,7 @@ tap.test('Next.js', (t) => {
       endedTransaction = transaction
     })
 
-    const res = await helpers.makeRequest(
-      '/static/dynamic/testing?queryParam=queryValue',
-      app.server.port
-    )
+    const res = await helpers.makeRequest('/static/dynamic/testing?queryParam=queryValue')
     t.equal(res.statusCode, 200)
 
     const agentAttributes = getTransactionEventAgentAttributes(endedTransaction)
@@ -89,7 +86,7 @@ tap.test('Next.js', (t) => {
         endedTransaction = transaction
       })
 
-      const res = await helpers.makeRequest('/ssr/people?first=one&second=two', app.server.port)
+      const res = await helpers.makeRequest('/ssr/people?first=one&second=two')
       t.equal(res.statusCode, 200)
 
       const agentAttributes = getTransactionEventAgentAttributes(endedTransaction)
@@ -125,10 +122,7 @@ tap.test('Next.js', (t) => {
         endedTransaction = transaction
       })
 
-      const res = await helpers.makeRequest(
-        '/ssr/dynamic/person/1?queryParam=queryValue',
-        app.server.port
-      )
+      const res = await helpers.makeRequest('/ssr/dynamic/person/1?queryParam=queryValue')
       t.equal(res.statusCode, 200)
 
       const agentAttributes = getTransactionEventAgentAttributes(endedTransaction)
@@ -157,7 +151,7 @@ tap.test('Next.js', (t) => {
       endedTransaction = transaction
     })
 
-    const res = await helpers.makeRequest('/api/hello?first=one&second=two', app.server.port)
+    const res = await helpers.makeRequest('/api/hello?first=one&second=two')
     t.equal(res.statusCode, 200)
 
     const agentAttributes = getTransactionEventAgentAttributes(endedTransaction)
@@ -174,7 +168,7 @@ tap.test('Next.js', (t) => {
       endedTransaction = transaction
     })
 
-    const res = await helpers.makeRequest('/api/person/2?queryParam=queryValue', app.server.port)
+    const res = await helpers.makeRequest('/api/person/2?queryParam=queryValue')
     t.equal(res.statusCode, 200)
 
     const agentAttributes = getTransactionEventAgentAttributes(endedTransaction)
@@ -191,7 +185,7 @@ tap.test('Next.js', (t) => {
       transactions.push(transaction)
     })
 
-    const res = await helpers.makeRequest('/person/2', app.server.port)
+    const res = await helpers.makeRequest('/person/2')
     t.equal(res.statusCode, 200)
 
     t.equal(transactions.length, 2)
