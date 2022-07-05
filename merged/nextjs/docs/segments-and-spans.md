@@ -4,29 +4,11 @@ Segments and spans (when distributed tracing is enabled) are captured for Next.j
 
 ## Next.js middleware segments/spans
 
-[Next.js middleware](https://nextjs.org/docs/middleware) is currently a beta feature and our instrumentation may be subject to change and/or break during patch, or minor upgrades of Next.js.
+[Next.js middleware](https://nextjs.org/docs/middleware) was made stable in 12.2.0.  As of v0.2.0 of `@newrelic/next`, it will only instrument Next.js middleware in versions greater than or equal to 12.2.0.
 
-`/Nodejs/Middleware/Nextjs/<middleware location>`
+`/Nodejs/Middleware/Nextjs//middleware`
 
-If you have middleware in a deeply nested application, segments and spans will be created for every unique middleware.
-
-```sh
-  pages
-    _middleware.js
-      nested
-        _middleware.js
-          last
-            _middleware.js
-            [id].js
-```
-
-If a request is made to `pages/nested/last/1`, there will be 4 segments:
-
- * `Nodejs/Middleware/Nextjs//_middleware`
- * `Nodejs/Middleware/Nextjs//nested/_middleware`
- * `Nodejs/Middleware/Nextjs//nested/last/_middleware`
- * `Nodejs/Nextjs/getServerSideProps//pages/nested/last/[id]`
-
+Since middleware executes for every request you will see the same span for every request if middleware is present even if you aren't executing any business logic for a given route.  If you have middleware in a deeply nested application, segments and spans will be created for every unique middleware.
 
 ## Server-side rendering segments/spans
 
