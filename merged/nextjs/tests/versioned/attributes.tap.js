@@ -25,7 +25,7 @@ tap.test('Next.js', (t) => {
   let app
 
   t.before(async () => {
-    await helpers.build()
+    await helpers.build(__dirname)
 
     agent = utils.TestAgent.makeInstrumented({
       attributes: {
@@ -36,7 +36,7 @@ tap.test('Next.js', (t) => {
 
     // TODO: would be nice to run a new server per test so there are not chained failures
     // but currently has issues. Potentially due to module caching.
-    app = await helpers.start()
+    app = await helpers.start(__dirname)
   })
 
   t.teardown(() => {
