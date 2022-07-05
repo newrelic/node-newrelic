@@ -51,7 +51,7 @@ module.exports = function createServerMethods(server) {
         call.end()
       })
     },
-    sayError: function sayError(whatever, cb) {
+    sayError: function sayError(call, cb) {
       return cb({
         code: ERR_CODE,
         message: ERR_MSG

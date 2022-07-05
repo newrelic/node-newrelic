@@ -49,6 +49,7 @@ tap.test('gRPC Client: Bidi Streaming', (t) => {
       helper.runInTransaction(agent, 'web', async (tx) => {
         agent.on('transactionFinished', (transaction) => {
           assertExternalSegment({ t, tx: transaction, fnName: 'SayHelloBidiStream' })
+          t.end()
         })
 
         const names = [{ name: 'Huey' }, { name: 'Dewey' }, { name: 'Louie' }]
@@ -131,6 +132,7 @@ tap.test('gRPC Client: Bidi Streaming', (t) => {
         t.equal(responses[i], `Hello ${name}`, 'response stream message should be correct')
       })
       assertMetricsNotExisting({ t, agent })
+      t.end()
     }
   )
 
@@ -149,6 +151,7 @@ tap.test('gRPC Client: Bidi Streaming', (t) => {
           expectedStatusText,
           expectedStatusCode
         })
+        t.end()
       })
 
       try {

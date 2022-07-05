@@ -47,6 +47,7 @@ tap.test('gRPC Client: Server Streaming', (t) => {
     helper.runInTransaction(agent, 'web', async (tx) => {
       agent.on('transactionFinished', (transaction) => {
         assertExternalSegment({ t, tx: transaction, fnName: 'SayHelloServerStream' })
+        t.end()
       })
 
       const names = ['Bob', 'Jordi', 'Corey']
@@ -114,6 +115,7 @@ tap.test('gRPC Client: Server Streaming', (t) => {
     t.ok(responses.length, 1)
     t.equal(responses[0], 'Hello New Relic', 'response message is correct')
     assertMetricsNotExisting({ t, agent })
+    t.end()
   })
 
   t.test('should record errors in a transaction', (t) => {
@@ -131,6 +133,7 @@ tap.test('gRPC Client: Server Streaming', (t) => {
           expectedStatusText,
           expectedStatusCode
         })
+        t.end()
       })
 
       try {

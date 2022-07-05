@@ -47,6 +47,7 @@ tap.test('gRPC Client: Unary Requests', (t) => {
     helper.runInTransaction(agent, 'web', async (tx) => {
       agent.on('transactionFinished', (transaction) => {
         assertExternalSegment({ t, tx: transaction, fnName: 'SayHello' })
+        t.end()
       })
 
       const response = await makeUnaryRequest({
@@ -106,6 +107,7 @@ tap.test('gRPC Client: Unary Requests', (t) => {
     t.ok(response, 'response exists')
     t.equal(response.message, 'Hello New Relic', 'response message is correct')
     assertMetricsNotExisting({ t, agent })
+    t.end()
   })
 
   t.test('should record errors in a transaction', (t) => {
@@ -123,6 +125,7 @@ tap.test('gRPC Client: Unary Requests', (t) => {
           expectedStatusText,
           expectedStatusCode
         })
+        t.end()
       })
 
       try {

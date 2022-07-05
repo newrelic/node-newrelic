@@ -7,6 +7,7 @@
 const util = module.exports
 const metricsHelpers = require('../../lib/metrics_helper')
 const protoLoader = require('@grpc/proto-loader')
+const serverImpl = require('./grpc-server')
 
 const SERVER_ADDR = '0.0.0.0:50051'
 const CLIENT_ADDR = 'localhost:50051'
@@ -28,8 +29,6 @@ util.assertMetricsNotExisting = function assertMetricsNotExisting({ t, agent }) 
     const metric = agent.metrics.getMetric(metricName)
     t.notOk(metric, `${metricName} should not be recorded`)
   })
-
-  t.end()
 }
 
 /**
@@ -63,7 +62,7 @@ util.createServer = async function createServer(grpc) {
   const credentials = grpc.ServerCredentials.createInsecure()
   // quick and dirty map to store metadata for a given gRPC call
   server.metadataMap = new Map()
-  const serverMethods = require('./grpc-server')(server)
+  const serverMethods = serverImpl(server)
   const proto = loadProtobufApi(grpc)
   server.addService(proto.Greeter.service, serverMethods)
   await new Promise((resolve, reject) => {
@@ -142,7 +141,6 @@ util.assertExternalSegment = function assertExternalSegment({
   )
   t.equal(attributes.component, 'gRPC', 'should have the component set to "gRPC"')
   metricsHelpers.assertMetrics(tx.metrics, [expectedMetrics], false, false)
-  t.end()
 }
 
 /**
