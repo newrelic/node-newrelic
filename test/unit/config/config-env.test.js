@@ -610,4 +610,11 @@ tap.test('when overriding configuration values via environment variables', (t) =
       t.end()
     })
   })
+
+  t.test('should pick up ignore_server_configuration', (t) => {
+    idempotentEnv({ NEW_RELIC_IGNORE_SERVER_SIDE_CONFIG: 'true' }, function (tc) {
+      t.equal(tc.ignore_server_configuration, true)
+      t.end()
+    })
+  })
 })

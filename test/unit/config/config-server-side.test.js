@@ -500,6 +500,60 @@ tap.test('when receiving server-side configuration', (t) => {
       t.same(config.span_event_harvest_config, spanEventHarvestConfig)
       t.end()
     })
+
+    const ignoreServerConfigFlags = [true, false]
+    ignoreServerConfigFlags.forEach((ignoreServerConfig) => {
+      t.test(
+        `should ${
+          ignoreServerConfig ? 'not ' : ''
+        }update local configuration with server side config values when ignore_server_configuration is set to ${ignoreServerConfig}`,
+        (t) => {
+          t.equal(config.slow_sql.enabled, false)
+          t.equal(config.transaction_tracer.enabled, true)
+          const serverSideConfig = {
+            'slow_sql.enabled': true,
+            'transaction_tracer.enabled': false
+          }
+          config.ignore_server_configuration = ignoreServerConfig
+
+          config.onConnect({
+            agent_config: serverSideConfig
+          })
+
+          // should stay same if `ignore_server_configuration` is true
+          if (ignoreServerConfig) {
+            t.equal(config.slow_sql.enabled, false)
+            t.equal(config.transaction_tracer.enabled, true)
+            // should use updated value if `ignore_server_configuration` is false
+          } else {
+            t.equal(config.slow_sql.enabled, true)
+            t.equal(config.transaction_tracer.enabled, false)
+          }
+
+          t.end()
+        }
+      )
+    })
+
+    t.test(
+      'should update local configuration with server side config values when ignore_server_configuration is enabled',
+      (t) => {
+        t.equal(config.slow_sql.enabled, false)
+        t.equal(config.transaction_tracer.enabled, true)
+        const serverSideConfig = {
+          'slow_sql.enabled': true,
+          'transaction_tracer.enabled': false
+        }
+        config.ignore_server_configuration = true
+
+        config.onConnect({
+          agent_config: serverSideConfig
+        })
+        t.equal(config.slow_sql.enabled, false)
+        t.equal(config.transaction_tracer.enabled, true)
+        t.end()
+      }
+    )
   })
 
   t.test('when event_harvest_config is set', (t) => {
