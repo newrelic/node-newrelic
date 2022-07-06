@@ -10,7 +10,7 @@ This module provides instrumentation for server-side rendering via [getServerSid
 
 Here are documents for more in-depth explanations about [transaction naming](./docs/transactions.md), [segments/spans](./docs/segments-and-spans.md), and [injecting the browser agent](./docs/inject-browser-agent.md).
 
-**Note**: The minimum supported Next.js version is [12.0.9](https://github.com/vercel/next.js/releases/tag/v12.0.9).
+**Note**: The minimum supported Next.js version is [12.0.9](https://github.com/vercel/next.js/releases/tag/v12.0.9).  If you are using Next.js middleware the minimum supported version is [12.2.0](https://github.com/vercel/next.js/releases/tag/v12.2.0).
 
 ## Installation
 
