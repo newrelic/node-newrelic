@@ -534,26 +534,6 @@ tap.test('when receiving server-side configuration', (t) => {
         }
       )
     })
-
-    t.test(
-      'should update local configuration with server side config values when ignore_server_configuration is enabled',
-      (t) => {
-        t.equal(config.slow_sql.enabled, false)
-        t.equal(config.transaction_tracer.enabled, true)
-        const serverSideConfig = {
-          'slow_sql.enabled': true,
-          'transaction_tracer.enabled': false
-        }
-        config.ignore_server_configuration = true
-
-        config.onConnect({
-          agent_config: serverSideConfig
-        })
-        t.equal(config.slow_sql.enabled, false)
-        t.equal(config.transaction_tracer.enabled, true)
-        t.end()
-      }
-    )
   })
 
   t.test('when event_harvest_config is set', (t) => {
