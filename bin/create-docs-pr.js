@@ -35,6 +35,11 @@ program.option(
 const RELEASE_NOTES_PATH =
   './src/content/docs/release-notes/agent-release-notes/nodejs-release-notes'
 
+const SUPPORT_STATEMENT = `
+### Support statement:
+
+* New Relic recommends that you upgrade the agent regularly to ensure that you're getting the latest features and performance benefits. Additionally, older releases will no longer be supported when they reach [end-of-life](/docs/using-new-relic/cross-product-functions/install-configure/notification-changes-new-relic-saas-features-distributed-software).`
+
 async function createReleaseNotesPr() {
   // Parse commandline options inputs
   program.parse()
@@ -108,7 +113,7 @@ async function getReleaseNotes(version, releaseNotesFile) {
   const versionChangeLog = sections.find((section) => section.startsWith(version))
   // e.g. v7.1.2 (2021-02-24)\n\n
   const headingRegex = /^v\d+\.\d+\.\d+ \((\d{4}-\d{2}-\d{2})\)\s+/
-  const body = versionChangeLog.replace(headingRegex, '')
+  const body = versionChangeLog.replace(headingRegex, '') + SUPPORT_STATEMENT
   const [, releaseDate] = headingRegex.exec(versionChangeLog)
 
   return { body, releaseDate }
