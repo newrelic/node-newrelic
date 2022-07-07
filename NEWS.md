@@ -8,6 +8,8 @@
 
 * Updated [got](https://github.com/sindresorhus/got) from 8.3.2 to 11.8.5.
 
+* Updated [moment](https://github.com/moment/moment) from 2.29.2 to 2.29.4
+
 ### v8.14.1 (2022-06-09)
 
 * Added defensive code in redis v4 instrumentation to check for `opts.socket` first before evaluating `opts.socket.path`.
