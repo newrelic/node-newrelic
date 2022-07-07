@@ -1,3 +1,13 @@
+### v8.15.0 (2022-07-07)
+
+* Added instrumentation for grpc-js unary, streaming, and bidirectional client calls.
+
+* Added ability to disable server-side configuration via local configuration setting: `ignore_server_configuration` or environmental variable of `NEW_RELIC_IGNORE_SERVER_SIDE_CONFIG`.
+
+* Added tests for client, server and bidirectional streaming of gRPC client.
+
+* Updated [got](https://github.com/sindresorhus/got) from 8.3.2 to 11.8.5.
+
 ### v8.14.1 (2022-06-09)
 
 * Added defensive code in redis v4 instrumentation to check for `opts.socket` first before evaluating `opts.socket.path`.
