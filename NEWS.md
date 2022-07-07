@@ -1,3 +1,126 @@
+### v8.15.0 (2022-07-07)
+
+* Added ability to disable server-side configuration via local configuration setting: `ignore_server_configuration` or environmental variable of `NEW_RELIC_IGNORE_SERVER_SIDE_CONFIG`.
+    * For folks following along at home our agent introduced this in v0.11.0 but ripped out in v5.0.0 due to no other language agents supporting this.
+    * Other language agents started supporting this to be FedRAMP JAB compliant.
+
+* Added tests for client, server and bidirectional streaming of gRPC client.
+
+* Added instrumentation for grpc-js client unary calls.
+
+--- NOTES NEEDS REVIEW ---
+Bumps [got](https://github.com/sindresorhus/got) from 8.3.2 to 11.8.5.
+<details>
+<summary>Release notes</summary>
+<p><em>Sourced from <a href="https://github.com/sindresorhus/got/releases">got's releases</a>.</em></p>
+<blockquote>
+<h2>v11.8.5</h2>
+<ul>
+<li>Backport <a href="https://github.com/sindresorhus/got/commit/861ccd9ac2237df762a9e2beed7edd88c60782dc">https://github.com/sindresorhus/got/commit/861ccd9ac2237df762a9e2beed7edd88c60782dc</a></li>
+</ul>
+<p><a href="https://github.com/sindresorhus/got/compare/v11.8.4...v11.8.5">https://github.com/sindresorhus/got/compare/v11.8.4...v11.8.5</a></p>
+<h2>v11.8.3</h2>
+<ul>
+<li>Bump cacheable-request dependency (<a href="https://github-redirect.dependabot.com/sindresorhus/got/issues/1921">#1921</a>)  9463bb6</li>
+<li>Fix <code>HTTPError</code> missing <code>.code</code> property (<a href="https://github-redirect.dependabot.com/sindresorhus/got/issues/1739">#1739</a>)  0e167b8</li>
+</ul>
+<p><a href="https://github.com/sindresorhus/got/compare/v11.8.2...v11.8.3">https://github.com/sindresorhus/got/compare/v11.8.2...v11.8.3</a></p>
+<h2>v11.8.2</h2>
+<ul>
+<li>Make the <code>dnsCache</code> option lazy (<a href="https://github-redirect.dependabot.com/sindresorhus/got/issues/1529">#1529</a>)  3bd245f
+This slightly improves Got startup performance and fixes an issue with Jest.</li>
+</ul>
+<p><a href="https://github.com/sindresorhus/got/compare/v11.8.1...v11.8.2">https://github.com/sindresorhus/got/compare/v11.8.1...v11.8.2</a></p>
+<h2>v11.8.1</h2>
+<ul>
+<li>Do not throw on custom stack traces (<a href="https://github-redirect.dependabot.com/sindresorhus/got/issues/1491">#1491</a>) 4c815c3a609eb74d0eb139414d9996b4f65dc3c0</li>
+</ul>
+<h2>v11.8.0</h2>
+<ul>
+<li>Fix for sending files with size <code>0</code> on <code>stat</code> (<a href="https://github-redirect.dependabot.com/sindresorhus/got/issues/1488">#1488</a>)  7acd380</li>
+<li><code>beforeRetry</code> allows stream body if different from original (<a href="https://github-redirect.dependabot.com/sindresorhus/got/issues/1501">#1501</a>)  3dd2273</li>
+<li>Set default value for an options object (<a href="https://github-redirect.dependabot.com/sindresorhus/got/issues/1495">#1495</a>)  390b145</li>
+</ul>
+<p><a href="https://github.com/sindresorhus/got/compare/v11.7.0...v11.8.0">https://github.com/sindresorhus/got/compare/v11.7.0...v11.8.0</a></p>
+<h2>v11.7.0</h2>
+<h3>Improvements</h3>
+<ul>
+<li>Add <a href="https://github.com/sindresorhus/got#httpspfx"><code>pfx</code></a> HTTPS option (<a href="https://github-redirect.dependabot.com/sindresorhus/got/issues/1364">#1364</a>)  c33df7f</li>
+<li>Update <code>body</code> after <code>beforeRequest</code> (<a href="https://github-redirect.dependabot.com/sindresorhus/got/issues/1453">#1453</a>)  e1c1844</li>
+<li>Don&amp;<a href="https://github-redirect.dependabot.com/sindresorhus/got/issues/39">#39</a>;t allocate buffer twice (<a href="https://github-redirect.dependabot.com/sindresorhus/got/issues/1403">#1403</a>)  7bc69d9</li>
+</ul>
+<h3>Fixes</h3>
+<ul>
+<li>Fix a regression where body was sent after redirect  88b32ea</li>
+<li>Fix destructure error on <code>promise.json()</code>  c97ce7c</li>
+<li>Do not ignore userinfo on a redirect to the same origin  52de13b</li>
+</ul>
+<p><a href="https://github.com/sindresorhus/got/compare/v11.6.2...v11.7.0">https://github.com/sindresorhus/got/compare/v11.6.2...v11.7.0</a></p>
+<h2>v11.6.2</h2>
+<h3>Bug fixes</h3>
+<ul>
+<li>Inherit the <code>prefixUrl</code> option from parent if it's <code>undefined</code> (<a href="https://github-redirect.dependabot.com/sindresorhus/got/issues/1448">#1448</a>) a3da70a78aeb7f44dd3e0d0fa47cebe9541eb91e</li>
+<li>Prepare a fix for hanging promise on Node.js 14.10.x 29d4e325b110ccf7571d4265d40760be4175f7ff</li>
+<li>Prepare for Node.js 15.0.0 c126ff19c4e893975cbf6c2c8bebce6ed7631276</li>
+</ul>
+<h3>Docs</h3>
+<!-- raw HTML omitted -->
+</blockquote>
+<p>... (truncated)</p>
+</details>
+<details>
+<summary>Commits</summary>
+<ul>
+<li><a href="https://github.com/sindresorhus/got/commit/5e17bb748c260b02e4cf716c2f4079a1c6a7481e"><code>5e17bb7</code></a> 11.8.5</li>
+<li><a href="https://github.com/sindresorhus/got/commit/bce8ce7d528a675bd5a8d996e110b73674e290d2"><code>bce8ce7</code></a> Backport 861ccd9ac2237df762a9e2beed7edd88c60782dc</li>
+<li><a href="https://github.com/sindresorhus/got/commit/8ced19215603f3eda25a9f5dce390f1b152fe9a3"><code>8ced192</code></a> Fix build</li>
+<li><a href="https://github.com/sindresorhus/got/commit/670eb04b5b01622f489277d6fb1dd04a41d3cb51"><code>670eb04</code></a> 11.8.4</li>
+<li><a href="https://github.com/sindresorhus/got/commit/20f29fe3726a4ddd104f557456dbd5275685e879"><code>20f29fe</code></a> Backport <a href="https://github-redirect.dependabot.com/sindresorhus/got/issues/1543">#1543</a>: Initialize globalResponse in case of ignored HTTPError (<a href="https://github-redirect.dependabot.com/sindresorhus/got/issues/2017">#2017</a>)</li>
+<li><a href="https://github.com/sindresorhus/got/commit/0da732f4650c398f3b2fea672f8916e6c7004c8f"><code>0da732f</code></a> 11.8.3</li>
+<li><a href="https://github.com/sindresorhus/got/commit/9463bb696d4ee909970e3fc609ee40b7644e3f6c"><code>9463bb6</code></a> Bump cacheable-request dependency (<a href="https://github-redirect.dependabot.com/sindresorhus/got/issues/1921">#1921</a>)</li>
+<li><a href="https://github.com/sindresorhus/got/commit/0e167b8b9505a7e9e4a4bbe39e9baeb1f5c4a1fd"><code>0e167b8</code></a> HTTPError code set to 'HTTPError' <a href="https://github-redirect.dependabot.com/sindresorhus/got/issues/1711">#1711</a> (<a href="https://github-redirect.dependabot.com/sindresorhus/got/issues/1739">#1739</a>)</li>
+<li><a href="https://github.com/sindresorhus/got/commit/f896aa52abc41fe40d4942da94a0408477358f14"><code>f896aa5</code></a> 11.8.2</li>
+<li><a href="https://github.com/sindresorhus/got/commit/3bd245f1f7f15e9ef8a99036487a47caabd2fd43"><code>3bd245f</code></a> Instantiate CacheableLookup only when needed (<a href="https://github-redirect.dependabot.com/sindresorhus/got/issues/1529">#1529</a>)</li>
+<li>Additional commits viewable in <a href="https://github.com/sindresorhus/got/compare/v8.3.2...v11.8.5">compare view</a></li>
+</ul>
+</details>
+<br />
+
+
+[![Dependabot compatibility score](https://dependabot-badges.githubapp.com/badges/compatibility_score?dependency-name=got&package-manager=npm_and_yarn&previous-version=8.3.2&new-version=11.8.5)](https://docs.github.com/en/github/managing-security-vulnerabilities/about-dependabot-security-updates#about-compatibility-scores)
+
+Dependabot will resolve any conflicts with this PR as long as you don't alter it yourself. You can also trigger a rebase manually by commenting `@dependabot rebase`.
+
+[//]: # (dependabot-automerge-start)
+[//]: # (dependabot-automerge-end)
+
+---
+
+<details>
+<summary>Dependabot commands and options</summary>
+<br />
+
+You can trigger Dependabot actions by commenting on this PR:
+- `@dependabot rebase` will rebase this PR
+- `@dependabot recreate` will recreate this PR, overwriting any edits that have been made to it
+- `@dependabot merge` will merge this PR after your CI passes on it
+- `@dependabot squash and merge` will squash and merge this PR after your CI passes on it
+- `@dependabot cancel merge` will cancel a previously requested merge and block automerging
+- `@dependabot reopen` will reopen this PR if it is closed
+- `@dependabot close` will close this PR and stop Dependabot recreating it. You can achieve the same result by closing it manually
+- `@dependabot ignore this major version` will close this PR and stop Dependabot creating any more for this major version (unless you reopen the PR or upgrade to it yourself)
+- `@dependabot ignore this minor version` will close this PR and stop Dependabot creating any more for this minor version (unless you reopen the PR or upgrade to it yourself)
+- `@dependabot ignore this dependency` will close this PR and stop Dependabot creating any more for this dependency (unless you reopen the PR or upgrade to it yourself)
+- `@dependabot use these labels` will set the current labels as the default for future PRs for this repo and language
+- `@dependabot use these reviewers` will set the current reviewers as the default for future PRs for this repo and language
+- `@dependabot use these assignees` will set the current assignees as the default for future PRs for this repo and language
+- `@dependabot use this milestone` will set the current milestone as the default for future PRs for this repo and language
+
+You can disable automated security fix PRs for this repo from the [Security Alerts page](https://github.com/newrelic/node-newrelic/network/alerts).
+
+</details>
+--------------------------
+
 ### v8.14.1 (2022-06-09)
 
 * Added defensive code in redis v4 instrumentation to check for `opts.socket` first before evaluating `opts.socket.path`.
