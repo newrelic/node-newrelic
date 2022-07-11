@@ -14,6 +14,11 @@ const DEFAULT_FILE_NAME = 'NEWS.md'
 /** e.g. v7.2.1 */
 const TAG_VALID_REGEX = /v\d+\.\d+\.\d+/
 
+const SUPPORT_STATEMENT = `
+### Support statement:
+
+* New Relic recommends that you upgrade the agent regularly to ensure that you're getting the latest features and performance benefits. Additionally, older releases will no longer be supported when they reach [end-of-life](https://docs.newrelic.com/docs/using-new-relic/cross-product-functions/install-configure/notification-changes-new-relic-saas-features-distributed-software).`
+
 program.requiredOption('--tag <tag>', 'tag name to create GitHub release for')
 program.option(
   '--repo <repo>',
@@ -89,7 +94,7 @@ async function getReleaseNotes(tagName, releaseNotesFile) {
   const headingRegex = /^v\d+\.\d+\.\d+ \(\d{4}-\d{2}-\d{2}\)\n\n/
   const headingRemoved = tagSection.replace(headingRegex, '')
 
-  return headingRemoved
+  return headingRemoved + SUPPORT_STATEMENT
 }
 
 async function readReleaseNoteFile(file) {
