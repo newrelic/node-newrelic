@@ -116,7 +116,7 @@ async function clone(url, name, args) {
 async function setSparseCheckoutFolders(folders) {
   const foldersString = folders.join(' ')
 
-  const stdout = await execAsPromise(`git sparse-checkout set ${foldersString}`)
+  const stdout = await execAsPromise(`git sparse-checkout set --no-cone ${foldersString}`)
   const output = stdout.trim()
 
   return output

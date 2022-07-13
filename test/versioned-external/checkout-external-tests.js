@@ -18,7 +18,7 @@ const repos = require('./external-repos')
 
 const TEMP_TESTS_FOLDER = 'TEMP_TESTS'
 
-const CHECKOUT_FOLDERS = ['index.js', 'nr-hooks.js', 'lib', 'tests/versioned']
+const CHECKOUT_FOLDERS = ['/index.js', '/nr-hooks.js', 'lib', 'tests/versioned']
 
 async function checkoutTests() {
   // Run in context of the folder this script lives in
