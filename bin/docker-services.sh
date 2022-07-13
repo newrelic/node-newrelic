@@ -24,7 +24,7 @@ fi
 if docker ps -a | grep -q "nr_node_mysql"; then
   docker start nr_node_mysql;
 else
-  docker run -d --name nr_node_mysql \
+  docker run -d --platform linux/amd64 --name nr_node_mysql \
     -e "MYSQL_ALLOW_EMPTY_PASSWORD=yes" \
     -e "MYSQL_ROOT_PASSWORD=" \
     -p 3306:3306 mysql:5;
