@@ -10,9 +10,9 @@ const util = require('util')
 const fs = require('fs')
 const Ajv = require('ajv')
 const ajv = new Ajv()
-const restify = require('restify')
+const express = require('express')
+const https = require('https')
 const codec = require('../../lib/util/codec')
-const logger = require('../../lib/logger').child({ component: 'fake_collector' })
 
 const ACTUAL_HOST = 'collector-1.integration-test'
 const PORT = 8089
@@ -323,28 +323,13 @@ const methods = {
 }
 
 function bootstrap(options, callback) {
-  const server = restify.createServer({
-    key: fs.readFileSync(path.join(__dirname, './test-key.key')),
-    certificate: fs.readFileSync(path.join(__dirname, './self-signed-test-certificate.crt'))
+  const app = express()
+  app.use(function (_, res, next) {
+    res.header('Content-Type', 'text/plain')
+    next()
   })
-
-  server.use(restify.plugins.queryParser({ mapParams: false }))
-  server.use(restify.plugins.bodyParser({ mapParams: false }))
-
-  restify.defaultResponseHeaders = function () {
-    // the collector *always* leaves the content-type set to text/plain
-    this.header('Content-Type', 'text/plain')
-  }
-
-  server.on(
-    'after',
-    restify.plugins.auditLogger({
-      log: logger,
-      event: 'after'
-    })
-  )
-
-  server.post('/agent_listener/invoke_raw_method', function (req, res, next) {
+  app.use(express.json())
+  app.post('/agent_listener/invoke_raw_method', function (req, res, next) {
     const validations = {}
     validators.queryString(req.query, validations)
     validators.httpHeaders(req, validations)
@@ -358,16 +343,13 @@ function bootstrap(options, callback) {
     }
   })
 
-  server.pre(function (req, res, next) {
-    // Restify will short-circuit with UnsupportedMediaTypeError for non-gzip encodings.
-    // It will try its best when there is no encoding, so we force that here to
-    // handle our identity case.
-    if (req.headers['content-encoding'] !== 'gzip') {
-      req.headers['content-encoding'] = undefined
-    }
-
-    return next()
-  })
+  const server = https.createServer(
+    {
+      key: fs.readFileSync(path.join(__dirname, './test-key.key')),
+      cert: fs.readFileSync(path.join(__dirname, './self-signed-test-certificate.crt'))
+    },
+    app
+  )
 
   server.listen(options.port, function () {
     callback(null, server)
