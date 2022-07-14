@@ -36,7 +36,7 @@ tap.test('Restify', (t) => {
     agent.on('transactionFinished', () => {
       const metric = agent.metrics.getMetric(METRIC)
       t.ok(metric, 'request metrics should have been gathered')
-      t.equals(metric.callCount, 1, 'handler should have been called')
+      t.equal(metric.callCount, 1, 'handler should have been called')
       const isFramework = agent.environment.get('Framework').indexOf('Restify') > -1
       t.ok(isFramework, 'should indicate that restify is a framework')
     })
@@ -56,7 +56,7 @@ tap.test('Restify', (t) => {
           return t.fail(error)
         }
         t.notOk(agent.getTransaction(), 'transaction should not leak into external request')
-        t.equals(body, '"hello friend"', 'should return expected data')
+        t.equal(body, '"hello friend"', 'should return expected data')
       })
     })
   })
@@ -68,7 +68,7 @@ tap.test('Restify', (t) => {
       const metric = agent.metrics.getMetric(METRIC)
 
       t.ok(metric, 'request metrics should have been gathered')
-      t.equals(metric.callCount, 1, 'handler should have been called')
+      t.equal(metric.callCount, 1, 'handler should have been called')
 
       const isFramework = agent.environment.get('Framework').indexOf('Restify') > -1
       t.ok(isFramework, 'should indicate that restify is a framework')
@@ -97,7 +97,7 @@ tap.test('Restify', (t) => {
             }
 
             t.notOk(agent.getTransaction(), 'transaction should not leak into external request')
-            t.equals(body, '"hello friend"', 'should return expected data')
+            t.equal(body, '"hello friend"', 'should return expected data')
           })
         })
       })

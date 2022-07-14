@@ -51,8 +51,8 @@ tap.test('Restify', (t) => {
 
         const metric = agent.metrics.getMetric(METRIC)
         t.ok(metric, 'request metrics should have been gathered')
-        t.equals(metric.callCount, 1, 'handler should have been called')
-        t.equals(body, '"hello friend"', 'should return expected data')
+        t.equal(metric.callCount, 1, 'handler should have been called')
+        t.equal(body, '"hello friend"', 'should return expected data')
 
         const isFramework = agent.environment.get('Framework').indexOf('Restify') > -1
         t.ok(isFramework, 'should indicate that restify is a framework')
@@ -89,8 +89,8 @@ tap.test('Restify', (t) => {
 
             const metric = agent.metrics.getMetric(METRIC)
             t.ok(metric, 'request metrics should have been gathered')
-            t.equals(metric.callCount, 1, 'handler should have been called')
-            t.equals(body, '"hello friend"', 'should return expected data')
+            t.equal(metric.callCount, 1, 'handler should have been called')
+            t.equal(body, '"hello friend"', 'should return expected data')
 
             const isFramework = agent.environment.get('Framework').indexOf('Restify') > -1
             t.ok(isFramework, 'should indicate that restify is a framework')
