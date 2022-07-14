@@ -10,13 +10,26 @@ const dns = require('dns')
 const helper = require('../../lib/agent_helper')
 const verifySegments = require('./verify.js')
 
-test('lookup', function (t) {
+test('lookup - IPv4', function (t) {
   const agent = setupAgent(t)
   helper.runInTransaction(agent, function () {
-    dns.lookup('localhost', function (err, ip, v) {
+    dns.lookup('localhost', { verbatim: false }, function (err, ip, v) {
       t.notOk(err, 'should not error')
       t.equal(ip, '127.0.0.1')
       t.equal(v, 4)
+      verifySegments(t, agent, 'dns.lookup')
+    })
+  })
+})
+
+test('lookup - IPv6', function (t) {
+  const agent = setupAgent(t)
+  helper.runInTransaction(agent, function () {
+    // Verbatim defaults to true in Node 18+
+    dns.lookup('localhost', { verbatim: true }, function (err, ip, v) {
+      t.notOk(err, 'should not error')
+      t.equal(ip, '::1')
+      t.equal(v, 6)
       verifySegments(t, agent, 'dns.lookup')
     })
   })
