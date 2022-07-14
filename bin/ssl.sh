@@ -45,7 +45,7 @@ if [ -e $CERTIFICATE ]; then
 fi
 
 # generates an RSA key
-openssl genrsa -out $SSLKEY 1024
+openssl genrsa -out $SSLKEY
 
 # ca-index is the "certificate authority" database
 # and ca-serial is a file that openssl will read
