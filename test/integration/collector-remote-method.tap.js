@@ -37,16 +37,15 @@ tap.test('DataSender (callback style) talking to fake collector', (t) => {
   const method = new RemoteMethod('preconnect', agent, endpoint)
 
   collector({ port: 8765 }, (error, server) => {
-    // set a reasonable server timeout for cleanup
-    // of the server's keep-alive connections
-    server.server.setTimeout(5000)
     if (error) {
       t.fail(error)
       return t.end()
     }
 
     t.teardown(() => {
-      server.close()
+      return new Promise((resolve) => {
+        server.close(resolve)
+      })
     })
 
     method._post('[]', {}, (error, results) => {
@@ -118,16 +117,14 @@ tap.test('remote method to preconnect', (t) => {
     opts.cert = read(join(__dirname, '../lib/self-signed-test-certificate.crt'))
     const server = https.createServer(opts, responder)
 
-    // set a reasonable server timeout for cleanup
-    // of the server's keep-alive connections
-    server.setTimeout(5000)
-
     server.listen(port, (err) => {
       startedCallback(err, this)
     })
 
     t.teardown(() => {
-      server.close()
+      return new Promise((resolve) => {
+        server.close(resolve)
+      })
     })
 
     function responder(req, res) {
@@ -159,7 +156,6 @@ tap.test('record data usage supportability metrics', (t) => {
     })
     server = await new Promise((resolve, reject) => {
       collector({ port }, (error, server) => {
-        server.server.setTimeout(5000)
         return error ? reject(error) : resolve(server)
       })
     })
