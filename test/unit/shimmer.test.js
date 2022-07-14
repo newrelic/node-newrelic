@@ -32,13 +32,14 @@ const shims = require('../../lib/shim')
 const EventEmitter = require('events').EventEmitter
 
 const TEST_MODULE_PATH = '../helpers/module'
+const TEST_MODULE = 'sinon'
 
 describe('shimmer', function () {
   describe('custom instrumentation', function () {
     describe('of relative modules', makeModuleTests(TEST_MODULE_PATH))
-    describe('of modules', makeModuleTests('chai'))
-    describe('of modules, where instrumentation fails', makeModuleTests('chai', true))
-    describe('of deep modules', makeModuleTests('chai/lib/chai'))
+    describe('of modules', makeModuleTests(TEST_MODULE))
+    describe('of modules, where instrumentation fails', makeModuleTests(TEST_MODULE, true))
+    describe('of deep modules', makeModuleTests(`${TEST_MODULE}/lib/sinon.js`))
   })
 
   function makeModuleTests(moduleName, throwsError) {
