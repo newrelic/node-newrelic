@@ -8,6 +8,7 @@
 const tap = require('tap')
 const request = require('request')
 const helper = require('../../../lib/agent_helper')
+const { assertMetrics } = require('../../../lib/metrics_helper')
 
 const METRIC = 'WebTransaction/Restify/GET//hello/:name'
 
@@ -35,7 +36,7 @@ tap.test('Restify', (t) => {
     agent.on('transactionFinished', () => {
       const metric = agent.metrics.getMetric(METRIC)
       t.ok(metric, 'request metrics should have been gathered')
-      t.equals(metric.callCount, 1, 'handler should have been called')
+      t.equal(metric.callCount, 1, 'handler should have been called')
       const isFramework = agent.environment.get('Framework').indexOf('Restify') > -1
       t.ok(isFramework, 'should indicate that restify is a framework')
     })
@@ -55,7 +56,7 @@ tap.test('Restify', (t) => {
           return t.fail(error)
         }
         t.notOk(agent.getTransaction(), 'transaction should not leak into external request')
-        t.equals(body, '"hello friend"', 'should return expected data')
+        t.equal(body, '"hello friend"', 'should return expected data')
       })
     })
   })
@@ -67,7 +68,7 @@ tap.test('Restify', (t) => {
       const metric = agent.metrics.getMetric(METRIC)
 
       t.ok(metric, 'request metrics should have been gathered')
-      t.equals(metric.callCount, 1, 'handler should have been called')
+      t.equal(metric.callCount, 1, 'handler should have been called')
 
       const isFramework = agent.environment.get('Framework').indexOf('Restify') > -1
       t.ok(isFramework, 'should indicate that restify is a framework')
@@ -96,7 +97,7 @@ tap.test('Restify', (t) => {
             }
 
             t.notOk(agent.getTransaction(), 'transaction should not leak into external request')
-            t.equals(body, '"hello friend"', 'should return expected data')
+            t.equal(body, '"hello friend"', 'should return expected data')
           })
         })
       })
@@ -104,5 +105,70 @@ tap.test('Restify', (t) => {
         t.fail('unable to set up SSL: ' + error)
         t.end()
       })
+  })
+
+  t.test('should generate middleware metrics', (t) => {
+    // Metrics for this transaction with the right name.
+    const expectedMiddlewareMetrics = [
+      [{ name: 'WebTransaction/Restify/GET//foo/:bar' }],
+      [{ name: 'WebTransactionTotalTime/Restify/GET//foo/:bar' }],
+      [{ name: 'Apdex/Restify/GET//foo/:bar' }],
+
+      // Unscoped middleware metrics.
+      [{ name: 'Nodejs/Middleware/Restify/middleware//' }],
+      [{ name: 'Nodejs/Middleware/Restify/middleware2//' }],
+      [{ name: 'Nodejs/Middleware/Restify/handler//foo/:bar' }],
+
+      // Scoped middleware metrics.
+      [
+        {
+          name: 'Nodejs/Middleware/Restify/middleware//',
+          scope: 'WebTransaction/Restify/GET//foo/:bar'
+        }
+      ],
+      [
+        {
+          name: 'Nodejs/Middleware/Restify/middleware2//',
+          scope: 'WebTransaction/Restify/GET//foo/:bar'
+        }
+      ],
+      [
+        {
+          name: 'Nodejs/Middleware/Restify/handler//foo/:bar',
+          scope: 'WebTransaction/Restify/GET//foo/:bar'
+        }
+      ]
+    ]
+
+    const server = restify.createServer()
+    t.teardown(() => server.close())
+
+    server.use(function middleware(req, res, next) {
+      t.ok(agent.getTransaction(), 'should be in transaction context')
+      next()
+    })
+
+    server.use(function middleware2(req, res, next) {
+      t.ok(agent.getTransaction(), 'should be in transaction context')
+      next()
+    })
+
+    server.get('/foo/:bar', function handler(req, res, next) {
+      t.ok(agent.getTransaction(), 'should be in transaction context')
+      res.send({ message: 'done' })
+      next()
+    })
+
+    server.listen(0, function () {
+      const port = server.address().port
+      const url = `http://localhost:${port}/foo/bar`
+
+      request.get(url, function (error) {
+        t.error(error)
+
+        assertMetrics(agent.metrics, expectedMiddlewareMetrics, false, false)
+        t.end()
+      })
+    })
   })
 })
