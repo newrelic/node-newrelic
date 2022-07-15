@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "Tue Jun 07 2022 10:42:37 GMT+0100 (British Summer Time)",
+  "lastUpdated": "Fri Jul 15 2022 13:30:04 GMT-0700 (Pacific Daylight Time)",
   "projectName": "New Relic Node Agent",
   "projectUrl": "https://github.com/newrelic/node-newrelic",
   "includeOptDeps": true,
@@ -468,15 +468,15 @@
       "email": "i@izs.me",
       "url": "http://blog.izs.me/"
     },
-    "got@8.3.2": {
+    "got@11.8.5": {
       "name": "got",
-      "version": "8.3.2",
-      "range": "^8.0.1",
+      "version": "11.8.5",
+      "range": "^11.8.5",
       "licenses": "MIT",
       "repoUrl": "https://github.com/sindresorhus/got",
-      "versionedRepoUrl": "https://github.com/sindresorhus/got/tree/v8.3.2",
+      "versionedRepoUrl": "https://github.com/sindresorhus/got/tree/v11.8.5",
       "licenseFile": "node_modules/got/license",
-      "licenseUrl": "https://github.com/sindresorhus/got/blob/v8.3.2/license",
+      "licenseUrl": "https://github.com/sindresorhus/got/blob/v11.8.5/license",
       "licenseTextSource": "file"
     },
     "husky@6.0.0": {
@@ -646,19 +646,6 @@
       "licenseTextSource": "file",
       "publisher": "Mikeal Rogers",
       "email": "mikeal.rogers@gmail.com"
-    },
-    "restify@8.5.1": {
-      "name": "restify",
-      "version": "8.5.1",
-      "range": "^8.4.0",
-      "licenses": "MIT",
-      "repoUrl": "https://github.com/restify/node-restify",
-      "versionedRepoUrl": "https://github.com/restify/node-restify/tree/v8.5.1",
-      "licenseFile": "node_modules/restify/LICENSE",
-      "licenseUrl": "https://github.com/restify/node-restify/blob/v8.5.1/LICENSE",
-      "licenseTextSource": "file",
-      "publisher": "Mark Cavage",
-      "email": "mcavage@gmail.com"
     },
     "rimraf@2.7.1": {
       "name": "rimraf",
