@@ -93,8 +93,8 @@ tap.test('fastify hook instrumentation', (t) => {
     })
 
     await fastify.listen(0)
-    const { port } = fastify.server.address()
-    const result = await common.makeRequest(`http://127.0.0.1:${port}/add-hook`)
+    const address = fastify.server.address()
+    const result = await common.makeRequest(address, '/add-hook')
     t.same(result, { hello: 'world' })
 
     // verify every hook was called after response
@@ -133,8 +133,8 @@ tap.test('fastify hook instrumentation', (t) => {
     })
 
     await fastify.listen(0)
-    const { port } = fastify.server.address()
-    const result = await common.makeRequest(`http://127.0.0.1:${port}/error`)
+    const address = fastify.server.address()
+    const result = await common.makeRequest(address, '/error')
     t.ok(ok)
     t.same(result, {
       statusCode: 500,

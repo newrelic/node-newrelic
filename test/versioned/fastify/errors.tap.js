@@ -32,8 +32,8 @@ tap.test('Test Errors', async (test) => {
   })
 
   await fastify.listen(0)
-  const url = `http://127.0.0.1:${fastify.server.address().port}/404-via-reply`
-  const res = await makeRequest(url)
+  const address = fastify.server.address()
+  const res = await makeRequest(address, '/404-via-reply')
   test.equal(res.statusCode, 404)
   test.end()
 })

@@ -8,6 +8,7 @@ const common = module.exports
 const util = require('util')
 const requestClient = require('request')
 const getAsync = util.promisify(requestClient.get)
+const net = require('net')
 
 const ROUTES = {
   ASYNC_RETURN: '/async-return',
@@ -109,10 +110,12 @@ common.registerMiddlewares = ({ fastify, calls }) => {
 /**
  * Helper to make a request and parse the json body
  *
- * @param {string} url to make request to
+ * @param {Object} address fastify address contains address/port
+ * @param {string} uri to make request to
  * @returns {Object} parsed json body
  */
-common.makeRequest = async (url) => {
-  const { body } = await getAsync(url)
+common.makeRequest = async ({ address, port }, uri) => {
+  const formattedAddress = net.isIPv6(address) ? `[${address}]` : address
+  const { body } = await getAsync(`http://${formattedAddress}:${port}${uri}`)
   return JSON.parse(body)
 }
