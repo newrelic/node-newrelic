@@ -109,10 +109,12 @@ common.registerMiddlewares = ({ fastify, calls }) => {
 /**
  * Helper to make a request and parse the json body
  *
- * @param {string} url to make request to
+ * @param {Object} address fastify address contains address/port/family
+ * @param {string} uri to make request to
  * @returns {Object} parsed json body
  */
-common.makeRequest = async (url) => {
-  const { body } = await getAsync(url)
+common.makeRequest = async ({ address, port, family }, uri) => {
+  const formattedAddress = family === 'IPv6' ? `[${address}]` : address
+  const { body } = await getAsync(`http://${formattedAddress}:${port}${uri}`)
   return JSON.parse(body)
 }

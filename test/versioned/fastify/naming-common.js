@@ -27,9 +27,8 @@ module.exports = function createTests(t, getExpectedSegments) {
       })
 
       await fastify.listen(0)
-      const { port } = fastify.server.address()
-      const url = `http://127.0.0.1:${port}${uri}`
-      const result = await makeRequest(url)
+      const address = fastify.server.address()
+      const result = await makeRequest(address, uri)
       t.equal(result.called, uri, `${uri} url did not error`)
       t.ok(calls.test > 0)
       t.equal(calls.test, calls.middleware, 'should be the same value')
@@ -48,9 +47,8 @@ module.exports = function createTests(t, getExpectedSegments) {
       t.equal(transaction.url, '/params/id/parent/edit')
     })
     await fastify.listen()
-    const { port } = fastify.server.address()
-    const url = `http://127.0.0.1:${port}/params/id/parent/edit`
-    const result = await makeRequest(url)
+    const address = fastify.server.address()
+    const result = await makeRequest(address, '/params/id/parent/edit')
     t.same(result, { id: 'id', parent: 'parent' })
     t.end()
   })

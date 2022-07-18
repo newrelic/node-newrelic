@@ -39,16 +39,15 @@ tap.test('fastify with new state tracking', (t) => {
 
     await fastify.listen(0)
 
-    const port = fastify.server.address().port
-    const url = `http://localhost:${port}/`
+    const address = fastify.server.address()
 
     const transactions = []
     agent.on('transactionFinished', (transaction) => {
       transactions.push(transaction)
     })
 
-    await common.makeRequest(url)
-    await common.makeRequest(url)
+    await common.makeRequest(address, '/')
+    await common.makeRequest(address, '/')
 
     t.equal(transactions.length, 2)
   })
@@ -68,16 +67,15 @@ tap.test('fastify with new state tracking', (t) => {
 
     await fastify.listen(0)
 
-    const port = fastify.server.address().port
-    const url = `http://localhost:${port}/`
+    const address = fastify.server.address()
 
     const transactions = []
     agent.on('transactionFinished', (transaction) => {
       transactions.push(transaction)
     })
 
-    await common.makeRequest(url)
-    await common.makeRequest(url)
+    await common.makeRequest(address, '/')
+    await common.makeRequest(address, '/')
 
     t.equal(transactions.length, 2)
   })
