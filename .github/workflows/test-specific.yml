@@ -36,7 +36,7 @@ jobs:
       env:
         VERSIONED_MODE: ${{ github.ref == 'refs/heads/main' && '--minor' || '--major' }}
     - name: Run Versioned Tests (npm v7 / Node 16+)
-      if: ${{ matrix.node-version != '14.x' || matrix.node-version != '12.x' }}
+      if: ${{ matrix.node-version == '16.x' || matrix.node-version == '18.x' }}
       run: npm run versioned:npm7 -- ${{ github.event.inputs.test_path }}
       env:
         VERSIONED_MODE: ${{ github.ref == 'refs/heads/main' && '--minor' || '--major' }}

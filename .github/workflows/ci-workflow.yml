@@ -82,7 +82,7 @@ jobs:
       env:
         VERSIONED_MODE: ${{ github.ref == 'refs/heads/main' && '--minor' || '--major' }}
     - name: Run Versioned Tests (npm v7 / Node 16+)
-      if: ${{ matrix.node-version != '14.x' || matrix.node-version != '12.x' }}
+      if: ${{ matrix.node-version == '16.x' || matrix.node-version == '18.x' }}
       run: TEST_CHILD_TIMEOUT=600000 npm run versioned:npm7
       env:
         VERSIONED_MODE: ${{ github.ref == 'refs/heads/main' && '--minor' || '--major' }}
