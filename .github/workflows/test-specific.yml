@@ -17,7 +17,7 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [14.x, 16.x, 18.x]
+        node-version: [12.x, 14.x, 16.x, 18.x]
 
     steps:
     - uses: actions/checkout@v3
@@ -30,13 +30,13 @@ jobs:
       run: npm ci
     - name: Run Docker Services
       run: npm run services
-    - name: Run Versioned Tests (npm v6 / Node 14)
-      if: ${{ matrix.node-version == '14.x' }}
+    - name: Run Versioned Tests (npm v6 / Node 12/14)
+      if: ${{ matrix.node-version == '14.x' || matrix.node-version == '12.x' }}
       run: npm run versioned:npm6 -- ${{ github.event.inputs.test_path }}
       env:
         VERSIONED_MODE: ${{ github.ref == 'refs/heads/main' && '--minor' || '--major' }}
     - name: Run Versioned Tests (npm v7 / Node 16+)
-      if: ${{ matrix.node-version != '14.x' }}
+      if: ${{ matrix.node-version != '14.x' || matrix.node-version != '12.x' }}
       run: npm run versioned:npm7 -- ${{ github.event.inputs.test_path }}
       env:
         VERSIONED_MODE: ${{ github.ref == 'refs/heads/main' && '--minor' || '--major' }}
