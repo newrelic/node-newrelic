@@ -12,7 +12,7 @@ fi
 if docker ps -a | grep -q "nr_node_mongodb"; then
   docker start nr_node_mongodb;
 else
-  docker run -d --name nr_node_mongodb -p 27017:27017 library/mongo:2;
+  docker run -d --name nr_node_mongodb -p 27017:27017 library/mongo:3;
 fi
 
 if docker ps -a | grep -q "nr_node_mongodb_5"; then
