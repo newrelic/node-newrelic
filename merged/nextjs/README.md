@@ -131,7 +131,7 @@ Error.getInitialProps = ({ res, err }) => {
 export default Error;
 ```
 
-The example above assumes that both the New Relic Browser and Node.js agents are integrated. `getInitialProps` function's `if` statement checks whether an error was thrown on the server side (`typeof window === "undefined"`) and if it was the case, it `requires` New Relic Node.js agent and sends an `err` with `noticeError` method. Otherwise it assumes the error was throw on the front-end side, and uses the browser agent to send the error to New Relic by using `window.newrelic.noticeError(err)`.
+The example above assumes that both the New Relic Browser and Node.js agents are integrated. `getInitialProps` function's `if` statement checks whether an error was thrown on the server side (`typeof window === "undefined"`) and if it was the case, it `requires` New Relic Node.js agent and sends an `err` with `noticeError` method. Otherwise it assumes the error was thrown on the front-end side, and uses the browser agent to send the error to New Relic by using `window.newrelic.noticeError(err)`.
 
 ## Testing
 
@@ -139,7 +139,7 @@ The module includes a suite of unit and functional tests which should be used to
 verify that your changes don't break existing functionality.
 
 All tests are stored in `tests/` and are written using
-[Tap](https://www.npmjs.com/package/tap) with the extension `.test.js`(unit), or `.tap.js`(versioned).
+[Tap](https://www.npmjs.com/package/tap) with the extension `.test.js` (unit), or `.tap.js` (versioned).
 
 To run the full suite, run: `npm test`.
 
