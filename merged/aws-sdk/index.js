@@ -11,22 +11,7 @@
  * then the supportability metrics for custom instrumentation will trigger.
  */
 const newrelic = require('newrelic')
-const semver = require('semver')
-const agentVersion = newrelic && newrelic.agent && newrelic.agent.version
 newrelic.instrumentConglomerate('aws-sdk', require('./lib/v2/instrumentation'))
-
-// TODO: Remove this semver check and semver module when we ship Node 18 support
-// A bug existed in 8.6.0 when we introduced the `onResolved` hook.
-// See: https://github.com/newrelic/node-newrelic/pull/986
-// To avoid unnecessary support issues we will require agent version >= 8.7.0 to
-// register AWS SDK v3 instrumentation
-if (!semver.satisfies(agentVersion, '>=8.7.0')) {
-  newrelic.shim.logger.warn(
-    'The New Relic Node.js agent must be >= 8.7.0 to instrument AWS SDK v3, current version: %s',
-    agentVersion
-  )
-  return
-}
 
 newrelic.instrument({
   moduleName: '@aws-sdk/smithy-client',
