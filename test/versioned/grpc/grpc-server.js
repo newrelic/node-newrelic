@@ -17,6 +17,7 @@ module.exports = function createServerMethods(server) {
       const { metadata } = call
       const names = []
       call.on('data', function (clientStream) {
+        // TODO: Try creating a segment here, look at test code on how to insert a segment here
         const { name } = clientStream
         server.metadataMap.set(name, metadata.internalRepr)
         names.push(name)
@@ -27,7 +28,7 @@ module.exports = function createServerMethods(server) {
         })
       })
     },
-    sayHelloServerStream: function sayHelloCStream(call) {
+    sayHelloServerStream: function sayHelloServerStream(call) {
       const {
         metadata,
         request: { name }
@@ -39,7 +40,7 @@ module.exports = function createServerMethods(server) {
       })
       call.end()
     },
-    sayHelloBidiStream: function sayHelloCStream(call) {
+    sayHelloBidiStream: function sayHelloBidiStream(call) {
       const { metadata } = call
       call.on('data', (clientStream) => {
         const { name } = clientStream
