@@ -9,10 +9,10 @@ else
   docker run -d --name nr_node_memcached -p 11211:11211 memcached;
 fi
 
-if docker ps -a | grep -q "nr_node_mongodb"; then
+if docker ps -a | grep -q "\bnr_node_mongodb\b"; then
   docker start nr_node_mongodb;
 else
-  docker run -d --name nr_node_mongodb -p 27017:27017 library/mongo:3;
+  docker run -d --platform linux/amd64 --name nr_node_mongodb -p 27017:27017 library/mongo:3;
 fi
 
 if docker ps -a | grep -q "nr_node_mongodb_5"; then
