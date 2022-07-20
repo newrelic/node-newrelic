@@ -1,22 +1,10 @@
 {
-  "lastUpdated": "Thu Apr 14 2022 13:31:08 GMT-0700 (Pacific Daylight Time)",
+  "lastUpdated": "Wed Jul 20 2022 17:15:15 GMT-0400 (Eastern Daylight Time)",
   "projectName": "New Relic AWS-SDK Instrumentation",
   "projectUrl": "https://github.com/newrelic/node-newrelic-aws-sdk",
   "includeOptDeps": false,
   "includeDev": true,
-  "dependencies": {
-    "semver@7.3.5": {
-      "name": "semver",
-      "version": "7.3.5",
-      "range": "^7.3.5",
-      "licenses": "ISC",
-      "repoUrl": "https://github.com/npm/node-semver",
-      "versionedRepoUrl": "https://github.com/npm/node-semver/tree/v7.3.5",
-      "licenseFile": "node_modules/semver/LICENSE",
-      "licenseUrl": "https://github.com/npm/node-semver/blob/v7.3.5/LICENSE",
-      "licenseTextSource": "file"
-    }
-  },
+  "dependencies": {},
   "devDependencies": {
     "@newrelic/eslint-config@0.0.2": {
       "name": "@newrelic/eslint-config",
