@@ -248,7 +248,7 @@ tap.test('with default properties', (t) => {
     t.same(configuration.application_logging, {
       enabled: true,
       forwarding: {
-        enabled: false,
+        enabled: true,
         max_samples_stored: 10000
       },
       metrics: {
