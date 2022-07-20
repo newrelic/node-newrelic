@@ -16,41 +16,25 @@ function verifyAggregateData(t, data) {
 
 if (semver.satisfies(mongoPackage.version, '<4')) {
   common.test('aggregate', function aggregateTest(t, collection, verify) {
-    collection.aggregate(
-      [
-        { $sort: { i: 1 } },
-        { $match: { mod10: 5 } },
-        { $limit: 3 },
-        { $project: { value: '$i', _id: 0 } }
-      ],
-      function onResult(err, cursor) {
-        if (!cursor) {
-          t.fail('No data retrieved!')
-          verify(err)
-        } else if (cursor instanceof Array) {
-          verifyAggregateData(t, cursor)
-          verify(
-            err,
-            ['Datastore/statement/MongoDB/testCollection/aggregate', 'Callback: onResult'],
-            ['aggregate']
-          )
-        } else {
-          cursor.toArray(function onResult2(err, data) {
-            verifyAggregateData(t, data)
-            verify(
-              err,
-              [
-                'Datastore/statement/MongoDB/testCollection/aggregate',
-                'Callback: onResult',
-                'Datastore/statement/MongoDB/testCollection/toArray',
-                'Callback: onResult2'
-              ],
-              ['aggregate', 'toArray']
-            )
-          })
-        }
-      }
-    )
+    const cursor = collection.aggregate([
+      { $sort: { i: 1 } },
+      { $match: { mod10: 5 } },
+      { $limit: 3 },
+      { $project: { value: '$i', _id: 0 } }
+    ])
+
+    cursor.toArray(function onResult(err, data) {
+      verifyAggregateData(t, data)
+      verify(
+        err,
+        [
+          'Datastore/statement/MongoDB/testCollection/aggregate',
+          'Datastore/statement/MongoDB/testCollection/toArray'
+        ],
+        ['aggregate', 'toArray'],
+        { childrenLength: 2, strict: false }
+      )
+    })
   })
 } else {
   common.test('aggregate v4', async function aggregateTest(t, collection, verify) {
@@ -70,7 +54,7 @@ if (semver.satisfies(mongoPackage.version, '<4')) {
         'Datastore/statement/MongoDB/testCollection/toArray'
       ],
       ['aggregate', 'toArray'],
-      2
+      { childrenLength: 2 }
     )
   })
 }

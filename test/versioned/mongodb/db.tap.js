@@ -172,7 +172,7 @@ dbTest('dropCollection', ['testCollection'], function dropTest(t, db, verify) {
     t.error(err, 'should not have error getting collection')
 
     db.dropCollection('testCollection', function droppedCollection(err, result) {
-      t.error(err, 'should not have error dropping colleciton')
+      t.error(err, 'should not have error dropping collection')
       t.ok(result === true, 'result should be boolean true')
       verify([
         'Datastore/operation/MongoDB/createCollection',
@@ -367,6 +367,9 @@ function verifyMongoSegments(t, agent, transaction, names) {
   let current = transaction.trace.root
 
   for (let i = 0, l = names.length; i < l; ++i) {
+    // Filter out net.createConnection segments as they could occur during execution, which is fine
+    // but breaks out assertion function
+    current.children = current.children.filter((child) => child.name !== 'net.createConnection')
     t.equal(current.children.length, 1, 'should have one child segment')
     current = current.children[0]
     t.equal(current.name, names[i], 'segment should be named ' + names[i])
