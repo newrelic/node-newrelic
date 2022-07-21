@@ -70,7 +70,7 @@ tap.test('test that connection class reconnects', async (t) => {
     let countDisconnects = 0
 
     connection.on('connected', (callStream) => {
-      t.equals(
+      t.equal(
         callStream.constructor.name,
         'ClientDuplexStreamImpl',
         'connected and received ClientDuplexStreamImpl'
@@ -88,7 +88,7 @@ tap.test('test that connection class reconnects', async (t) => {
       if (countDisconnects > 1) {
         connection._state = 3 // replace with actual fake enum
 
-        t.equals(serverConnections, 2)
+        t.equal(serverConnections, 2)
         // Ends the test
         resolve()
       }
@@ -151,7 +151,7 @@ tap.test('Should reconnect even when data sent back', async (t) => {
     let countDisconnects = 0
 
     connection.on('connected', (callStream) => {
-      t.equals(
+      t.equal(
         callStream.constructor.name,
         'ClientDuplexStreamImpl',
         'connected and received ClientDuplexStreamImpl'
@@ -171,7 +171,7 @@ tap.test('Should reconnect even when data sent back', async (t) => {
       if (countDisconnects > 1) {
         connection._state = 3 // replace with actual fake enum
 
-        t.equals(serverConnections, 2)
+        t.equal(serverConnections, 2)
         // Ends the test
         resolve()
       }

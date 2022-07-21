@@ -130,7 +130,7 @@ tap.test('external requests', function (t) {
       t.equal(segment.children.length, 1, 'should have 1 child')
 
       const notDuped = segment.children[0]
-      t.notEqual(
+      t.not(
         notDuped.name,
         segment.name,
         'child should not be named the same as the external segment'

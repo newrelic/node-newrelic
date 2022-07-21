@@ -437,7 +437,7 @@ test('memcached instrumentation', { timeout: 5000 }, function (t) {
 
           transaction.end()
           const segment = transaction.trace.root.children[0]
-          t.equals(segment.getAttributes().key, '"foo"', 'should have the get key as a parameter')
+          t.equal(segment.getAttributes().key, '"foo"', 'should have the get key as a parameter')
         })
       })
     })
@@ -466,7 +466,7 @@ test('memcached instrumentation', { timeout: 5000 }, function (t) {
 
           transaction.end()
           const segment = transaction.trace.root.children[0]
-          t.equals(
+          t.equal(
             segment.getAttributes().key,
             '["foo","bar"]',
             'should have the multiple keys fetched as a parameter'
@@ -484,7 +484,7 @@ test('memcached instrumentation', { timeout: 5000 }, function (t) {
 
           transaction.end()
           const segment = transaction.trace.root.children[0]
-          t.equals(segment.getAttributes().key, '"foo"', 'should have the set key as a parameter')
+          t.equal(segment.getAttributes().key, '"foo"', 'should have the set key as a parameter')
         })
       })
     })
@@ -517,12 +517,12 @@ test('memcached instrumentation', { timeout: 5000 }, function (t) {
           transaction.end()
           const segment = transaction.trace.root.children[0]
           const attributes = segment.getAttributes()
-          t.equals(
+          t.equal(
             attributes.host,
             getMetricHostName(agent, params.memcached_host),
             'should collect host instance attributes'
           )
-          t.equals(
+          t.equal(
             attributes.port_path_or_id,
             String(params.memcached_port),
             'should collect port instance attributes'
@@ -545,12 +545,12 @@ test('memcached instrumentation', { timeout: 5000 }, function (t) {
           transaction.end()
           const segment = transaction.trace.root.children[0]
           const attributes = segment.getAttributes()
-          t.equals(
+          t.equal(
             attributes.host,
             getMetricHostName(agent, params.memcached_host),
             'should collect host instance attributes'
           )
-          t.equals(
+          t.equal(
             attributes.port_path_or_id,
             String(params.memcached_port),
             'should collect port instance attributes'
@@ -594,8 +594,8 @@ test('memcached instrumentation', { timeout: 5000 }, function (t) {
           transaction.end()
           const segment = transaction.trace.root.children[0]
           const attributes = segment.getAttributes()
-          t.equals(attributes.host, undefined, 'should not have host instance parameter')
-          t.equals(
+          t.equal(attributes.host, undefined, 'should not have host instance parameter')
+          t.equal(
             attributes.port_path_or_id,
             undefined,
             'should should not have port instance parameter'
@@ -620,8 +620,8 @@ test('memcached instrumentation', { timeout: 5000 }, function (t) {
           transaction.end()
           const segment = transaction.trace.root.children[0]
           const attributes = segment.getAttributes()
-          t.equals(attributes.host, undefined, 'should not have host instance parameter')
-          t.equals(
+          t.equal(attributes.host, undefined, 'should not have host instance parameter')
+          t.equal(
             attributes.port_path_or_id,
             undefined,
             'should should not have port instance parameter'
@@ -674,8 +674,8 @@ test('memcached instrumentation', { timeout: 5000 }, function (t) {
 
     function checkParams(segment, host, port) {
       const attributes = segment.getAttributes()
-      t.equals(attributes.host, host, 'should have correct host (' + host + ')')
-      t.equals(attributes.port_path_or_id, port, 'should have correct port (' + port + ')')
+      t.equal(attributes.host, host, 'should have correct host (' + host + ')')
+      t.equal(attributes.port_path_or_id, port, 'should have correct port (' + port + ')')
     }
 
     t.test('separate gets', function (t) {
@@ -756,7 +756,7 @@ function verifyMetrics(t, metrics, expected) {
 
   expectedNames.forEach(function (name) {
     t.ok(unscoped[name], 'should have unscoped metric ' + name)
-    t.equals(
+    t.equal(
       unscoped[name].callCount,
       expected[name],
       'metric ' + name + ' should have correct callCount'

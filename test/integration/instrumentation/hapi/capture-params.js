@@ -173,7 +173,7 @@ function makeRequest(t, uri) {
   }
   request.get(params, function (err, res, body) {
     t.equal(res.statusCode, 200, 'nothing exploded')
-    t.deepEqual(body, { status: 'ok' }, 'got expected response')
+    t.same(body, { status: 'ok' }, 'got expected response')
     t.end()
   })
 }
