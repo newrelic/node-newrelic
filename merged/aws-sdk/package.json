@@ -42,7 +42,7 @@
     "tap": "^16.0.1"
   },
   "peerDependencies": {
-    "newrelic": ">=6.11.0"
+    "newrelic": ">=8.7.0"
   },
   "files": [
     "index.js",
@@ -51,6 +51,5 @@
     "*.md"
   ],
   "dependencies": {
-    "semver": "^7.3.5"
   }
 }
