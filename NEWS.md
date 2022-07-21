@@ -4,29 +4,7 @@
 
 * Added a support statement to our release notes
 
-* Added node 18 to CI workflows. The following changes were made for this:
-
-    * Updated mongodb instrumentation to properly set host and port when connections are made to IPv6 addresses.
-
-    * Fixed fastify versioned tests to account for when fastify binds the server to only IPv6 addresses.
-
-    * Removed `restify` as a dev dependency.
-
-    * Updated fake collector to use express.
-
-    * Fixed how we clone external repos to account for newer versions of git
-
-    * Updated mongo server container to v3 so it can run locally on Mac M1s.
-
-    * Updated instrumentation of mongodb to account for assumptions being made when running mongo server 2.
-
-    * Removed `restify` integration test. Ported missing coverage to `restify` versioned tests.
-
-    * Cleaned up tap deprecation warnings in `restify` versioned tests.
-
-    * Updated self-signed test cert to use sha256 and default size.
-
-    * Updated dns.lookup testing to explicitly verify both verbatim (IPv4, IPv6) states.
+* Added node 18 to CI workflows.
 
 ### v8.15.0 (2022-07-07)
 
