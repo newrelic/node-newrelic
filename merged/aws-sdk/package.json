@@ -1,6 +1,6 @@
 {
   "name": "@newrelic/aws-sdk",
-  "version": "4.1.3",
+  "version": "5.0.0",
   "description": "New Relic instrumentation of the aws-sdk package.",
   "main": "index.js",
   "scripts": {
@@ -42,7 +42,7 @@
     "tap": "^16.0.1"
   },
   "peerDependencies": {
-    "newrelic": ">=6.11.0"
+    "newrelic": ">=8.7.0"
   },
   "files": [
     "index.js",
