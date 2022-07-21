@@ -145,7 +145,7 @@ test('asynchronous state propagation', function (t) {
       setTimeout(function () {
         helper.runInTransaction(agent, function () {
           second = agent.getTransaction().id
-          t.notEqual(first, second, 'different transaction IDs')
+          t.not(first, second, 'different transaction IDs')
           setTimeout(handler.bind(null, second), 100)
         })
       }, 25)
@@ -230,7 +230,7 @@ test('asynchronous state propagation', function (t) {
       process.nextTick(function cbNextTick() {
         helper.runInTransaction(agent, function () {
           second = agent.getTransaction().id
-          t.notEqual(first, second, 'different transaction IDs')
+          t.not(first, second, 'different transaction IDs')
           process.nextTick(handler.bind(null, second))
         })
       })

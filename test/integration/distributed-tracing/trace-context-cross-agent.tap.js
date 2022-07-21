@@ -60,7 +60,7 @@ const testExpectedFixtureKeys = function (t, thingWithKeys, expectedKeys) {
 const testExact = function (t, object, fixture) {
   for (const [descendants, fixtureValue] of Object.entries(fixture)) {
     const valueToTest = getDescendantValue(object, descendants)
-    t.deepEquals(
+    t.same(
       valueToTest,
       fixtureValue,
       `Expected ${descendants} to be ${fixtureValue} but got ${valueToTest}`
@@ -94,7 +94,7 @@ const testExpected = function (t, object, fixture) {
 }
 
 const testVendor = function (t, object, vendors) {
-  t.deepEquals(object.tracestate.vendors, vendors, 'do vendors match?')
+  t.same(object.tracestate.vendors, vendors, 'do vendors match?')
 }
 
 // tests a few of the helper functions we wrote for this test case
@@ -183,7 +183,7 @@ const testSingleEvent = function (t, event, eventType, fixture) {
     const attributeValue = attributes[key]
     const expectedValue = exact[key]
 
-    t.equals(attributeValue, expectedValue, `${eventType} should have ${key}=${expectedValue}`)
+    t.equal(attributeValue, expectedValue, `${eventType} should have ${key}=${expectedValue}`)
   })
 }
 

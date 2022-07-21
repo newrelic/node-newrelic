@@ -60,7 +60,7 @@ tap.test('setImmediate', function testSetImmediate(t) {
 
     timers.setImmediate(function () {
       helper.runInTransaction(agent, function (tx) {
-        t.notEqual(tx.id, firstTx.id, 'should not conflate transactions')
+        t.not(tx.id, firstTx.id, 'should not conflate transactions')
         check(tx)
       })
     })

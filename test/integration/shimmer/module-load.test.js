@@ -47,7 +47,7 @@ tap.test('Test Module Instrumentation Loading', (t) => {
     const module = require(modulePathLocal)
 
     t.ok(module, 'loaded module')
-    t.equals(module(), 'hello world', 'module behaves as expected')
+    t.equal(module(), 'hello world', 'module behaves as expected')
     t.ok(module.__NR_instrumented, '__NR_instrumented set and true')
     t.end()
   })
@@ -79,7 +79,7 @@ tap.test('Test Module Instrumentation Loading', (t) => {
     const module = require(modulePathLocal)
 
     t.ok(module, 'loaded module')
-    t.equals(module(), 'hello world', 'module behaves as expected')
+    t.equal(module(), 'hello world', 'module behaves as expected')
     t.ok(module.__NR_instrumented_errored, '__NR_instrumented_errored set and true')
     t.end()
   })

@@ -148,7 +148,7 @@ test('bind + capture error', function testThrows(t) {
       // global error is not tied to a transaction, so its name should not be
       // the transaction name
       if (t.ok(logged, 'should have a logged error')) {
-        t.notEqual(name, logged[1], 'should not have a transaction with the error')
+        t.not(name, logged[1], 'should not have a transaction with the error')
         t.equal(error.message, logged[2], 'should have the error message')
       }
       t.end()
@@ -227,7 +227,7 @@ test('bind + args', function testThrows(t) {
 
   helper.runInTransaction(agent, function inTrans() {
     bound = tracer.bindFunction(function withArgs() {
-      t.deepEqual([].slice.call(arguments), [1, 2, 3])
+      t.same([].slice.call(arguments), [1, 2, 3])
     })
   })
 
@@ -426,7 +426,7 @@ test('transactionProxy', function testTransactionProxy(t) {
     const transaction = tracer.getTransaction()
     const root = transaction.trace.root
 
-    t.deepEqual([].slice.call(arguments), [1, 2, 3])
+    t.same([].slice.call(arguments), [1, 2, 3])
     t.equal(root.name, 'ROOT')
     t.equal(root, contextManager.getContext())
     t.ok(transaction)
@@ -456,7 +456,7 @@ test('transactionNestProxy', function testTransactionNestProxy(t) {
     const transaction = tracer.getTransaction()
     const root = transaction.trace.root
 
-    t.deepEqual([].slice.call(arguments), [1, 2, 3])
+    t.same([].slice.call(arguments), [1, 2, 3])
     t.equal(root.name, 'ROOT')
     t.equal(root, contextManager.getContext())
     t.ok(transaction)
@@ -481,8 +481,8 @@ test('transactionNestProxy', function testTransactionNestProxy(t) {
       t.equal(root.name, 'ROOT')
       t.equal(root3, contextManager.getContext())
       t.ok(transaction3)
-      t.notEqual(tracer.getTransaction(), transaction)
-      t.notEqual(contextManager.getContext(), root)
+      t.not(tracer.getTransaction(), transaction)
+      t.not(contextManager.getContext(), root)
     }
   }
 })
@@ -546,7 +546,7 @@ test('tracer.slice', function testSlice(t) {
 
   function check() {
     const args = tracer.slice(arguments)
-    t.deepEqual(args, [1, 2, 3])
+    t.same(args, [1, 2, 3])
     t.ok(Array.isArray(args))
     t.equal(typeof args.forEach, 'function')
   }
@@ -585,7 +585,7 @@ test('wrapFunctionNoSegment', function testwrapFunctionNoSegment(t) {
   }
 
   function check(seg, expected) {
-    t.deepEqual([].slice.call(arguments, 2), expected)
+    t.same([].slice.call(arguments, 2), expected)
     t.equal(contextManager.getContext(), seg)
     t.equal(this, inner)
   }
@@ -619,7 +619,7 @@ test('wrapFunction', function testwrapFunction(t) {
       if (parent) {
         t.ok(segment.timer.hrstart)
         t.notOk(segment.timer.hrDuration)
-        t.notEqual(parent.children.indexOf(segment), -1)
+        t.not(parent.children.indexOf(segment), -1)
       }
 
       return val
@@ -706,7 +706,7 @@ test('wrapFunctionLast', function testwrapFunctionLast(t) {
 
   function callback(parent, callbackArgs) {
     const segment = contextManager.getContext()
-    t.deepEqual(callbackArgs, [1, 2, 3])
+    t.same(callbackArgs, [1, 2, 3])
     t.equal(this, inner)
 
     if (parent) {
@@ -779,7 +779,7 @@ test('wrapFunctionFirst', function testwrapFunctionFirst(t) {
 
   function callback(parent, args) {
     const segment = contextManager.getContext()
-    t.deepEqual(args, [1, 2, 3])
+    t.same(args, [1, 2, 3])
     t.equal(this, inner)
 
     if (parent) {
@@ -846,7 +846,7 @@ test('wrapSyncFunction', function testwrapSyncFunction(t) {
   })
 
   function doSomething(trans, expected) {
-    t.deepEqual([].slice.call(arguments, 2), expected)
+    t.same([].slice.call(arguments, 2), expected)
     t.equal(tracer.getTransaction(), trans)
     if (trans) {
       t.equal(contextManager.getContext().name, 'my segment')

@@ -102,7 +102,7 @@ test('multiple errors in web transactions should gather the query params', funct
     agent.errors.traceAggregator.errors.forEach(function (error) {
       t.equal(error[1], 'WebTransaction/NormalizedUri/*', 'should have default tx name')
 
-      t.notEqual(names.indexOf(error[2]), -1, 'should have gathered the errors message')
+      t.not(names.indexOf(error[2]), -1, 'should have gathered the errors message')
       // Remove the found name from the list of names. Since they are unique and
       // should only appear on one error.
       names.splice(names.indexOf(error[2]), 1)

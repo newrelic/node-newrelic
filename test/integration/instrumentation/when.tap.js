@@ -251,7 +251,7 @@ test('when.iterate', function (t) {
 test('when.join', function (t) {
   testPromiseLibraryMethod(t, 2, function (when, name) {
     return when.join(2, when.resolve(name)).then(function (x) {
-      t.deepEqual(x, [2, name], name + 'should resolve with correct value')
+      t.same(x, [2, name], name + 'should resolve with correct value')
 
       return when
         .join(2, when.reject(new Error(name + 'error message')))
