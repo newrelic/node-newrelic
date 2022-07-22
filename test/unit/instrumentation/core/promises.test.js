@@ -18,8 +18,7 @@ test('Promise trace', (t) => {
   t.beforeEach(() => {
     agent = helper.instrumentMockedAgent({
       feature_flag: {
-        promise_segments: true,
-        await_support: false
+        new_promise_tracking: true
       }
     })
   })
