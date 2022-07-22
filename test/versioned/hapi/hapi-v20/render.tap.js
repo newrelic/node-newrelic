@@ -11,7 +11,7 @@ const tap = require('tap')
 const request = require('request')
 const helper = require('../../../lib/agent_helper')
 const API = require('../../../../api')
-const utils = require('./hapi-18-utils')
+const utils = require('./hapi-20-utils')
 const fixtures = require('../fixtures')
 
 tap.test('agent instrumentation of Hapi', function (t) {

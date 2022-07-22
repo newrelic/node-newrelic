@@ -11,7 +11,7 @@ const http = require('http')
 const assertMetrics = require('../../../lib/metrics_helper').assertMetrics
 const assertSegments = require('../../../lib/metrics_helper').assertSegments
 const NAMES = require('../../../../lib/metrics/names')
-const utils = require('./hapi-18-utils')
+const utils = require('./hapi-20-utils')
 
 let agent
 let server

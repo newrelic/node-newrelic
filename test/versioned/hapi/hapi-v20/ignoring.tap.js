@@ -9,7 +9,7 @@ const test = require('tap').test
 const request = require('request')
 const helper = require('../../../lib/agent_helper')
 const API = require('../../../../api')
-const utils = require('./hapi-18-utils')
+const utils = require('./hapi-20-utils')
 
 test('ignoring a Hapi route', function (t) {
   t.plan(6)
