@@ -9,5 +9,6 @@ module.exports = {
   ERR_CODE: 9,
   ERR_SERVER_MSG: 'gRPC status code 9: FAILED_PRECONDITION',
   HALT_SERVER_ERR_MSG: 'I shall halt ye',
-  HALT_CODE: 10
+  HALT_CODE: 10,
+  HALT_GRPC_SERVER_MSG: 'gRPC status code 10: ABORTED'
 }
