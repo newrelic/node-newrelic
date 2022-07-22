@@ -10,17 +10,20 @@ const test = tap.test
 
 const helper = require('../../../lib/agent_helper')
 
+/**
+ * Note: These test had more meaning when we had legacy promise tracking.
+ * We now rely on async hooks to do to promise async propagation.  But unlike legacy
+ * promise instrumentation this will only propagate the same base promise segment.
+ *
+ * The tests still exist to prove some more complex promise chains will not lose context
+ */
 test('Promise trace', (t) => {
   t.autoend()
 
   let agent = null
 
   t.beforeEach(() => {
-    agent = helper.instrumentMockedAgent({
-      feature_flag: {
-        new_promise_tracking: true
-      }
-    })
+    agent = helper.instrumentMockedAgent()
   })
 
   t.afterEach(() => {
@@ -29,16 +32,12 @@ test('Promise trace', (t) => {
   })
 
   t.test('should handle straight chains', (t) => {
-    // a---b---c---d
-    // a[b]; b[c]; c[d]; d[]
-    const expected = ['a', ['b', ['c', ['d']]]]
-
     return helper.runInTransaction(agent, function (tx) {
       return start('a')
         .then(step('b'))
         .then(step('c'))
         .then(step('d'))
-        .then(checkTrace(t, tx, expected))
+        .then(checkTrace(t, tx))
         .then(() => {
           t.end()
         })
@@ -46,19 +45,12 @@ test('Promise trace', (t) => {
   })
 
   t.test('should handle jumping to a catch', (t) => {
-    //  /-----\
-    // a- -b- -c---d
-    //         ^-(catch)
-    // a[c]; c[d] d[]
-
-    const expected = ['a', ['c', ['d']]]
-
     return helper.runInTransaction(agent, function (tx) {
       return start('a', true)
         .then(step('b'))
         .catch(step('c'))
         .then(step('d'))
-        .then(checkTrace(t, tx, expected))
+        .then(checkTrace(t, tx))
         .then(() => {
           t.end()
         })
@@ -66,19 +58,12 @@ test('Promise trace', (t) => {
   })
 
   t.test('should handle jumping over a catch', (t) => {
-    //      /-----\
-    // a---b- -c- -d
-    //         ^-(catch)
-    // a[b]; b[d]; d[]
-
-    const expected = ['a', ['b', ['d']]]
-
     return helper.runInTransaction(agent, function (tx) {
       return start('a')
         .then(step('b'))
         .catch(step('c'))
         .then(step('d'))
-        .then(checkTrace(t, tx, expected))
+        .then(checkTrace(t, tx))
         .then(() => {
           t.end()
         })
@@ -86,13 +71,6 @@ test('Promise trace', (t) => {
   })
 
   t.test('should handle independent branching legs', (t) => {
-    //   /--e---f
-    //  /
-    // a---b---c---d
-    // a[b,e]; b[c]; c[d]; d[]; e[f]; f[]
-
-    const expected = ['a', ['e', ['f']], ['b', ['c', ['d']]]]
-
     return helper.runInTransaction(agent, function (tx) {
       const a = start('a')
       a.then(step('e')).then(step('f'))
@@ -101,7 +79,7 @@ test('Promise trace', (t) => {
         .then(step('b'))
         .then(step('c'))
         .then(step('d'))
-        .then(checkTrace(t, tx, expected))
+        .then(checkTrace(t, tx))
         .then(() => {
           t.end()
         })
@@ -109,15 +87,6 @@ test('Promise trace', (t) => {
   })
 
   t.test('should handle jumping to branched catches', (t) => {
-    //   /-----\
-    //  // -e- -f
-    // |/       ^-(catch)
-    // a- -b- -c---d
-    //  \-----/^-(catch)
-    // a[c,f]; c[d]; f[]
-
-    const expected = ['a', ['f'], ['c', ['d']]]
-
     return helper.runInTransaction(agent, function (tx) {
       const a = start('a', true)
       a.then(step('e')).catch(step('f'))
@@ -126,7 +95,7 @@ test('Promise trace', (t) => {
         .then(step('b'))
         .catch(step('c'))
         .then(step('d'))
-        .then(checkTrace(t, tx, expected))
+        .then(checkTrace(t, tx))
         .then(() => {
           t.end()
         })
@@ -134,13 +103,6 @@ test('Promise trace', (t) => {
   })
 
   t.test('should handle branching in the middle', (t) => {
-    //       /--e
-    //      /
-    // a---b---c---d
-    // a[b]; b[c,e]; c[d]; d[]; e[]
-
-    const expected = ['a', ['b', ['e'], ['c', ['d']]]]
-
     return helper.runInTransaction(agent, function (tx) {
       const b = start('a').then(step('b'))
       b.then(step('e'))
@@ -148,7 +110,7 @@ test('Promise trace', (t) => {
       return b
         .then(step('c'))
         .then(step('d'))
-        .then(checkTrace(t, tx, expected))
+        .then(checkTrace(t, tx))
         .then(() => {
           t.end()
         })
@@ -156,15 +118,6 @@ test('Promise trace', (t) => {
   })
 
   t.test('should handle jumping across a branch', (t) => {
-    //    /----\
-    //   /   / -e
-    //  /   /   ^-(catch)
-    // a- -b- -c---d
-    //  \-----/^-(catch)
-    // a[e,c]; c[d]; d[]; e[]
-
-    const expected = ['a', ['e'], ['c', ['d']]]
-
     return helper.runInTransaction(agent, function (tx) {
       const b = start('a', true).then(step('b'))
       b.catch(step('e'))
@@ -172,7 +125,7 @@ test('Promise trace', (t) => {
       return b
         .catch(step('c'))
         .then(step('d'))
-        .then(checkTrace(t, tx, expected))
+        .then(checkTrace(t, tx))
         .then(() => {
           t.end()
         })
@@ -180,16 +133,6 @@ test('Promise trace', (t) => {
   })
 
   t.test('should handle jumping over a branched catch', (t) => {
-    //    /----\
-    //   /   / -e
-    //  /   /
-    // a- -b- - - - - -c---d
-    //  \  ^-(catch)  /
-    //   \-----------/
-    // a[e,c]; c[d]; d[]; e[]
-
-    const expected = ['a', ['e'], ['c', ['d']]]
-
     return helper.runInTransaction(agent, function (tx) {
       const b = start('a').catch(step('b'))
       b.then(step('e'))
@@ -197,7 +140,7 @@ test('Promise trace', (t) => {
       return b
         .then(step('c'))
         .then(step('d'))
-        .then(checkTrace(t, tx, expected))
+        .then(checkTrace(t, tx))
         .then(() => {
           t.end()
         })
@@ -205,27 +148,6 @@ test('Promise trace', (t) => {
   })
 
   t.test('should handle branches joined by `all`', (t) => {
-    //         /--g- -\
-    //        /        \
-    //       /--e---f--all-\
-    //      /               \
-    // a---b- - - - - - - - -c---d
-    // a[b]; b[e,g,all]; c[d]; d[]; e[f]; f[]; g[]; all[c]
-
-    const expected = [
-      'a',
-      [
-        'b',
-        ['e', ['f', ['!!!ignore!!!']]],
-        ['g'],
-        ['Promise.all', ['Promise#then __NR_thenContext', ['!!!ignore!!!'], ['c', ['d']]]],
-        ['!!!ignore!!!'],
-        ['!!!ignore!!!'],
-        ['!!!ignore!!!'],
-        ['!!!ignore!!!']
-      ]
-    ]
-
     return helper.runInTransaction(agent, function (tx) {
       return start('a')
         .then(function () {
@@ -234,7 +156,7 @@ test('Promise trace', (t) => {
         })
         .then(step('c'))
         .then(step('d'))
-        .then(checkTrace(t, tx, expected))
+        .then(checkTrace(t, tx))
         .then(() => {
           t.end()
         })
@@ -242,33 +164,6 @@ test('Promise trace', (t) => {
   })
 
   t.test('should handle continuing from returned promises', (t) => {
-    //   (return)
-    //       /--e---f---g--\
-    //      /               \
-    // a---b- - - - - - - - -c---d
-    // a[b]; b[e]; c[d]; d[]; e[f]; f[g]; g[c]
-
-    const expected = [
-      'a',
-      [
-        'b',
-        [
-          'e',
-          [
-            'f',
-            [
-              'g',
-              [
-                'Promise#then __NR_thenContext', // Implementation detail.
-                ['!!!ignore!!!'],
-                ['c', ['d']]
-              ]
-            ]
-          ]
-        ]
-      ]
-    ]
-
     return helper.runInTransaction(agent, function (tx) {
       return start('a')
         .then(step('b'))
@@ -278,7 +173,7 @@ test('Promise trace', (t) => {
         })
         .then(step('c'))
         .then(step('d'))
-        .then(checkTrace(t, tx, expected))
+        .then(checkTrace(t, tx))
         .then(() => {
           t.end()
         })
@@ -307,34 +202,10 @@ function name(newName) {
   segment.name = newName
 }
 
-function checkTrace(t, tx, expected) {
-  // Expected is an array containing the name and each child, recursively.
-  // name: <string>
-  // segment: [<name> {, <segment_1> {... , <segment_n>}}]
-
-  return function thenCheckTrace() {
-    name('checkTrace') // So we can skip this segment.
-    _check(tx.trace.root.children[0], expected)
-  }
-
-  function _check(segment, expectedChildren) {
-    const expectedName = expectedChildren.shift() // shift === pop_front
-
-    // Remove `checkTrace` from the segment before checking it.
-    const lastChild = segment.children[segment.children.length - 1]
-    if (lastChild && lastChild.name === 'checkTrace') {
-      segment.children.pop()
-    }
-
-    // Check the segment is named correctly and has the expected amount of children.
-    t.equal(segment.name, expectedName)
-    t.equal(segment.children.length, expectedChildren.length)
-
-    // Check each child is as expected, passing over any implementation details.
-    segment.children.forEach(function (child, i) {
-      if (expectedChildren[i][0] !== '!!!ignore!!!') {
-        _check(child, expectedChildren[i])
-      }
-    })
-  }
+function checkTrace(t, tx) {
+  const segment = tx.trace.root
+  t.equal(segment.name, 'a')
+  t.equal(segment.children.length, 0)
+  // verify current segment is same as trace root
+  t.same(segment.name, helper.getContextManager().getContext().name)
 }
