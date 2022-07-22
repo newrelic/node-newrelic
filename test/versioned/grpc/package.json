@@ -14,7 +14,8 @@
         "client-unary.tap.js",
         "client-streaming.tap.js",
         "client-server-streaming.tap.js",
-        "client-bidi-streaming.tap.js"
+        "client-bidi-streaming.tap.js",
+        "server-unary.tap.js"
       ]
     }
   ]

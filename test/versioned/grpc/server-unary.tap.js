@@ -7,17 +7,21 @@
 
 const tap = require('tap')
 const helper = require('../../lib/agent_helper')
-const { ERR_CODE, ERR_MSG } = require('./constants')
+const DESTINATIONS = require('../../../lib/config/attribute-filter').DESTINATIONS
+const DESTINATION = DESTINATIONS.TRANS_EVENT | DESTINATIONS.ERROR_EVENT
+const { ERR_CODE, ERR_SERVER_MSG } = require('./constants')
 
 const {
-  assertExternalSegment,
-  assertMetricsNotExisting,
   makeUnaryRequest,
   createServer,
-  getClient
+  getClient,
+  getServerTransactionName,
+  assertServerTransaction,
+  assertServerMetrics,
+  assertDistributedTracing
 } = require('./util')
 
-tap.test('gRPC Client: Unary Requests', (t) => {
+tap.test('gRPC Server: Unary Requests', (t) => {
   t.autoend()
 
   let agent
@@ -43,100 +47,153 @@ tap.test('gRPC Client: Unary Requests', (t) => {
     proto = null
   })
 
-  t.test('should track unary client requests as an external when in a transaction', (t) => {
-    helper.runInTransaction(agent, 'web', async (tx) => {
-      agent.on('transactionFinished', (transaction) => {
-        assertExternalSegment({ t, tx: transaction, fnName: 'SayHello' })
-        t.end()
-      })
+  t.test('should track unary server requests', async (t) => {
+    let transaction
+    agent.on('transactionFinished', (tx) => {
+      transaction = tx
+    })
 
+    const response = await makeUnaryRequest({
+      client,
+      fnName: 'sayHello',
+      payload: { name: 'New Relic' }
+    })
+    t.ok(response, 'response exists')
+    t.equal(response.message, 'Hello New Relic', 'response message is correct')
+    t.ok(transaction, 'transaction exists')
+    assertServerTransaction({ t, transaction, fnName: 'SayHello' })
+    assertServerMetrics({ t, agentMetrics: agent.metrics._metrics, fnName: 'SayHello' })
+    t.end()
+  })
+
+  t.test('should add DT headers when `distributed_tracing` is enabled', async (t) => {
+    let serverTransaction
+    let clientTransaction
+    agent.on('transactionFinished', (tx) => {
+      if (tx.name === getServerTransactionName('SayHello')) {
+        serverTransaction = tx
+      }
+    })
+
+    await helper.runInTransaction(agent, 'web', async (tx) => {
+      clientTransaction = tx
+      clientTransaction.name = 'clientTransaction'
       const response = await makeUnaryRequest({
         client,
         fnName: 'sayHello',
         payload: { name: 'New Relic' }
       })
       t.ok(response, 'response exists')
-      t.equal(response.message, 'Hello New Relic', 'response message is correct')
       tx.end()
     })
-  })
 
-  t.test('should include distributed trace headers when enabled', (t) => {
-    helper.runInTransaction(agent, 'dt-test', async (tx) => {
-      const payload = { name: 'dt test' }
-      await makeUnaryRequest({ client, fnName: 'sayHello', payload })
-      const dtMeta = server.metadataMap.get(payload.name)
-      t.match(
-        dtMeta.get('traceparent')[0],
-        /^[\w\d\-]{55}$/,
-        'should have traceparent in server metadata'
-      )
-      t.equal(dtMeta.get('newrelic')[0], '', 'should have newrelic in server metadata')
-      tx.end()
-      t.end()
-    })
-  })
-
-  t.test('should not include distributed trace headers when not in transaction', async (t) => {
-    const payload = { name: 'dt not in transaction' }
-    await makeUnaryRequest({ client, fnName: 'sayHello', payload })
-    const dtMeta = server.metadataMap.get(payload.name)
-    t.notOk(dtMeta.has('traceparent'), 'should not have traceparent in server metadata')
-    t.notOk(dtMeta.has('newrelic'), 'should not have newrelic in server metadata')
-  })
-
-  t.test(
-    'should not include distributed trace headers when distributed_tracing.enabled is set to false',
-    (t) => {
-      agent.config.distributed_tracing.enabled = false
-      helper.runInTransaction(agent, 'dt-test', async (tx) => {
-        const payload = { name: 'dt disabled' }
-        await makeUnaryRequest({ client, payload, fnName: 'sayHello' })
-        const dtMeta = server.metadataMap.get(payload.name)
-        t.notOk(dtMeta.has('traceparent'), 'should not have traceparent in server metadata')
-        t.notOk(dtMeta.has('newrelic'), 'should not have newrelic in server metadata')
-        tx.end()
-        t.end()
-      })
-    }
-  )
-
-  t.test('should not track external unary client requests outside of a transaction', async (t) => {
-    const payload = { name: 'New Relic' }
-    const response = await makeUnaryRequest({ client, fnName: 'sayHello', payload })
-    t.ok(response, 'response exists')
-    t.equal(response.message, 'Hello New Relic', 'response message is correct')
-    assertMetricsNotExisting({ t, agent })
+    assertDistributedTracing({ t, clientTransaction, serverTransaction })
     t.end()
   })
 
-  t.test('should record errors in a transaction', (t) => {
-    const expectedStatusText = ERR_MSG
-    const expectedStatusCode = ERR_CODE
-    helper.runInTransaction(agent, 'web', async (tx) => {
-      agent.on('transactionFinished', (transaction) => {
-        t.equal(agent.errors.traceAggregator.errors.length, 1, 'should record a single error')
-        const error = agent.errors.traceAggregator.errors[0][2]
-        t.equal(error, expectedStatusText, 'should have the error message')
-        assertExternalSegment({
-          t,
-          tx: transaction,
-          fnName: 'SayError',
-          expectedStatusText,
-          expectedStatusCode
-        })
-        t.end()
+  t.test(
+    'should not include distributed trace headers when there is no client transaction',
+    async (t) => {
+      let serverTransaction
+      agent.on('transactionFinished', (tx) => {
+        serverTransaction = tx
       })
+      const payload = { name: 'dt not in transaction' }
+      const response = await makeUnaryRequest({ client, fnName: 'sayHello', payload })
+      t.ok(response, 'response exists')
+      const attributes = serverTransaction.trace.attributes.get(DESTINATION)
+      t.notHas(attributes, 'request.header.newrelic', 'should not have newrelic in headers')
+      t.notHas(attributes, 'request.header.traceparent', 'should not have traceparent in headers')
+    }
+  )
 
-      try {
-        const payload = { oh: 'noes' }
-        await makeUnaryRequest({ client, fnName: 'sayError', payload })
-      } catch (err) {
-        t.ok(err, 'should get an error')
-        t.equal(err.code, expectedStatusCode, 'should get the right status code')
-        t.equal(err.details, expectedStatusText, 'should get the correct error message')
-        tx.end()
+  t.test('should not add DT headers when `distributed_tracing` is disabled', async (t) => {
+    let serverTransaction
+    let clientTransaction
+    agent.on('transactionFinished', (tx) => {
+      if (tx.name === getServerTransactionName('SayHello')) {
+        serverTransaction = tx
       }
     })
+
+    agent.config.distributed_tracing.enabled = false
+    await helper.runInTransaction(agent, 'web', async (tx) => {
+      clientTransaction = tx
+      clientTransaction.name = 'clientTransaction'
+      const response = await makeUnaryRequest({
+        client,
+        fnName: 'sayHello',
+        payload: { name: 'New Relic' }
+      })
+      t.ok(response, 'response exists')
+      tx.end()
+    })
+
+    const attributes = serverTransaction.trace.attributes.get(DESTINATION)
+    t.notHas(attributes, 'request.header.newrelic', 'should not have newrelic in headers')
+    t.notHas(attributes, 'request.header.traceparent', 'should not have traceparent in headers')
+    t.end()
+  })
+
+  t.test('should record errors if `grpc.record_errors` is enabled', async (t) => {
+    let transaction
+    agent.on('transactionFinished', (tx) => {
+      if (tx.name === getServerTransactionName('SayError')) {
+        transaction = tx
+      }
+    })
+
+    try {
+      await makeUnaryRequest({
+        client,
+        fnName: 'sayError',
+        payload: { oh: 'noes' }
+      })
+    } catch (err) {
+      // err tested in client tests
+    }
+    t.ok(transaction, 'transaction exists')
+    t.equal(agent.errors.traceAggregator.errors.length, 1, 'should record a single error')
+    const error = agent.errors.traceAggregator.errors[0][2]
+    t.equal(error, ERR_SERVER_MSG, 'should have the error message')
+    assertServerTransaction({ t, transaction, fnName: 'SayError', expectedStatusCode: ERR_CODE })
+    assertServerMetrics({
+      t,
+      agentMetrics: agent.metrics._metrics,
+      fnName: 'SayError',
+      expectedStatusCode: ERR_CODE
+    })
+    t.end()
+  })
+
+  t.test('should not record errors if `grpc.record_errors` is disabled', async (t) => {
+    agent.config.grpc.record_errors = false
+
+    let transaction
+    agent.on('transactionFinished', (tx) => {
+      if (tx.name === getServerTransactionName('SayError')) {
+        transaction = tx
+      }
+    })
+
+    try {
+      await makeUnaryRequest({
+        client,
+        fnName: 'sayError',
+        payload: { oh: 'noes' }
+      })
+    } catch (err) {
+      // err tested in client tests
+    }
+    t.ok(transaction, 'transaction exists')
+    t.equal(agent.errors.traceAggregator.errors.length, 0, 'should not record any errors')
+    assertServerTransaction({ t, transaction, fnName: 'SayError', expectedStatusCode: ERR_CODE })
+    assertServerMetrics({
+      t,
+      agentMetrics: agent.metrics._metrics,
+      fnName: 'SayError',
+      expectedStatusCode: ERR_CODE
+    })
+    t.end()
   })
 })
