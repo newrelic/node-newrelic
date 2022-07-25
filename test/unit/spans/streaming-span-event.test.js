@@ -141,7 +141,7 @@ tap.test('fromSegment()', (t) => {
           t.same(span._intrinsicAttributes.sampled, { [BOOL_TYPE]: true })
           t.same(span._intrinsicAttributes.priority, { [INT_TYPE]: 42 })
 
-          t.same(span._intrinsicAttributes.name, { [STRING_TYPE]: 'External/example.com:443/' })
+          t.same(span._intrinsicAttributes.name, { [STRING_TYPE]: 'External/example.com/' })
           t.same(span._intrinsicAttributes.timestamp, { [INT_TYPE]: segment.timer.start })
 
           t.ok(span._intrinsicAttributes.duration)
@@ -155,7 +155,7 @@ tap.test('fromSegment()', (t) => {
           t.ok(agentAttributes)
 
           // Should have (most) http properties.
-          t.same(agentAttributes['http.url'], { [STRING_TYPE]: 'https://example.com:443/' })
+          t.same(agentAttributes['http.url'], { [STRING_TYPE]: 'https://example.com/' })
           t.ok(agentAttributes['http.method'])
           t.same(agentAttributes['http.statusCode'], { [INT_TYPE]: 200 })
           t.same(agentAttributes['http.statusText'], { [STRING_TYPE]: 'OK' })
