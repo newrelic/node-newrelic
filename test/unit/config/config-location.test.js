@@ -45,11 +45,6 @@ tap.test('when overriding the config file location via NR_HOME', (t) => {
     })
   })
 
-  /**
-   * TODO: Replace `rmdir` with `rm` when drop Node 12.
-   * `rmdir` has been deprecated but preferred `rm` was introduced in Node 14.
-   * https://nodejs.org/api/deprecations.html#DEP0147
-   */
   t.afterEach(async () => {
     if (origHome) {
       process.env.NEW_RELIC_HOME = origHome
@@ -59,7 +54,7 @@ tap.test('when overriding the config file location via NR_HOME', (t) => {
     origHome = null
 
     await fsPromises.unlink(CONFIGPATH)
-    await fsPromises.rmdir(DESTDIR, { recursive: true })
+    await fsPromises.rm(DESTDIR, { recursive: true, force: true })
 
     process.chdir(startDir)
     await fsPromises.rmdir(NOPLACEDIR, { recursive: true })
