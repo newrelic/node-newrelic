@@ -8,7 +8,7 @@
         "node": ">=12"
       },
       "dependencies": {
-        "@grpc/grpc-js": ">=1.0.0"
+        "@grpc/grpc-js": ">=1.4.0"
       },
       "files": [
         "client-unary.tap.js",
