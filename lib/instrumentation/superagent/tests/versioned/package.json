@@ -4,7 +4,7 @@
   "private": true,
   "tests": [{
     "engines": {
-      "node": ">=12"
+      "node": ">=14"
     },
     "dependencies": {
       "superagent": ">=2 <7.1.0 ||  >=7.1.1"
