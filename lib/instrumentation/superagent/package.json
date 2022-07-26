@@ -37,7 +37,7 @@
     "node": ">=14.0"
   },
   "peerDependencies": {
-    "newrelic": ">=6.11.0"
+    "newrelic": ">=8.7.0"
   },
   "repository": {
     "type": "git",
