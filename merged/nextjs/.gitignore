@@ -60,5 +60,8 @@ typings/
 # VS Code specific configuration
 .vscode
 
+# JetBrains specific configuration
+.idea
+
 # macOs file
 .DS_Store
