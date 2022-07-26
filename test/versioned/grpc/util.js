@@ -174,7 +174,7 @@ util.assertServerTransaction = function assertServerTransaction({
 }) {
   const attributes = transaction.trace.attributes.get(DESTINATION)
   const expectedMethod = `/helloworld.Greeter/${fnName}`
-  const expectedUri = `grpc://${SERVER_ADDR}/helloworld.Greeter/${fnName}`
+  const expectedUri = `/helloworld.Greeter/${fnName}`
   t.equal(
     transaction.name,
     util.getServerTransactionName(fnName),
