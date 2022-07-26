@@ -59,3 +59,6 @@ typings/
 
 # Visual Studio Code files
 .vscode
+
+# JetBrains files
+.idea
