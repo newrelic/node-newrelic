@@ -1,3 +1,12 @@
+### v7.0.0 (2022-07-27)
+
+* **BREAKING** Removed support for Node 12.
+
+  The minimum supported version is now Node v14. For further information on our support policy, see: https://docs.newrelic.com/docs/agents/nodejs-agent/getting-started/compatibility-requirements-nodejs-agent.
+
+* Added support for Node 18.
+* Resolved several dev-dependency audit warnings.
+
 ### v6.1.2 (2022-03-07)
 
 * Bumps [urijs](https://github.com/medialize/URI.js) from 1.19.7 to 1.19.9.
