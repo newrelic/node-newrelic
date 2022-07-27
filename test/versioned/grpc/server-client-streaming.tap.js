@@ -1,0 +1,241 @@
+/*
+ * Copyright 2022 New Relic Corporation. All rights reserved.
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+'use strict'
+
+const tap = require('tap')
+const helper = require('../../lib/agent_helper')
+const DESTINATIONS = require('../../../lib/config/attribute-filter').DESTINATIONS
+const DESTINATION = DESTINATIONS.TRANS_EVENT | DESTINATIONS.ERROR_EVENT
+const { ERR_CODE, ERR_SERVER_MSG, HALT_CODE, HALT_GRPC_SERVER_MSG } = require('./constants')
+
+const {
+  makeClientStreamingRequest,
+  createServer,
+  getClient,
+  getServerTransactionName,
+  assertServerTransaction,
+  assertServerMetrics,
+  assertDistributedTracing
+} = require('./util')
+
+tap.test('gRPC Server: Client Streaming', (t) => {
+  t.autoend()
+
+  let agent
+  let client
+  let server
+  let proto
+  let grpc
+
+  t.beforeEach(async () => {
+    agent = helper.instrumentMockedAgent()
+    grpc = require('@grpc/grpc-js')
+    const data = await createServer(grpc)
+    proto = data.proto
+    server = data.server
+    client = getClient(grpc, proto)
+  })
+
+  t.afterEach(() => {
+    helper.unloadAgent(agent)
+    server.forceShutdown()
+    client.close()
+    grpc = null
+    proto = null
+  })
+
+  t.test('should track client streaming requests', async (t) => {
+    let transaction
+    agent.on('transactionFinished', (tx) => {
+      transaction = tx
+    })
+
+    const names = [{ name: 'Bob' }, { name: 'Jordi' }, { name: 'Corey' }]
+    const response = await makeClientStreamingRequest({
+      client,
+      fnName: 'sayHelloClientStream',
+      payload: names
+    })
+    t.ok(response, 'response exists')
+    t.equal(
+      response.message,
+      `Hello ${names.map(({ name }) => name).join(', ')}`,
+      'response message is correct'
+    )
+    assertServerTransaction({ t, transaction, fnName: 'SayHelloClientStream' })
+    assertServerMetrics({ t, agentMetrics: agent.metrics._metrics, fnName: 'SayHelloClientStream' })
+  })
+
+  t.test('should add DT headers when `distributed_tracing` is enabled', async (t) => {
+    let serverTransaction
+    let clientTransaction
+    agent.on('transactionFinished', (tx) => {
+      if (tx.name === getServerTransactionName('SayHelloClientStream')) {
+        serverTransaction = tx
+      }
+    })
+    const payload = [{ name: 'dt test' }, { name: 'dt test2' }]
+    await helper.runInTransaction(agent, 'web', async (tx) => {
+      clientTransaction = tx
+      clientTransaction.name = 'clientTransaction'
+      await makeClientStreamingRequest({ client, fnName: 'sayHelloClientStream', payload })
+      tx.end()
+    })
+
+    payload.forEach(({ name }) => {
+      // TODO: gotta instrument and test event listeners on client streaming
+      t.test(`adding '${name}' should create a server trace segment`)
+    })
+    assertDistributedTracing({ t, clientTransaction, serverTransaction })
+    t.end()
+  })
+
+  t.test(
+    'should not include distributed trace headers when there is no client transaction',
+    async (t) => {
+      let serverTransaction
+      agent.on('transactionFinished', (tx) => {
+        serverTransaction = tx
+      })
+      const payload = [{ name: 'dt test' }, { name: 'dt test2' }]
+      await makeClientStreamingRequest({ client, fnName: 'sayHelloClientStream', payload })
+      const attributes = serverTransaction.trace.attributes.get(DESTINATION)
+      t.notHas(attributes, 'request.header.newrelic', 'should not have newrelic in headers')
+      t.notHas(attributes, 'request.header.traceparent', 'should not have traceparent in headers')
+    }
+  )
+
+  t.test('should not add DT headers when `distributed_tracing` is disabled', async (t) => {
+    let serverTransaction
+    let clientTransaction
+    agent.on('transactionFinished', (tx) => {
+      if (tx.name === getServerTransactionName('SayHelloClientStream')) {
+        serverTransaction = tx
+      }
+    })
+
+    agent.config.distributed_tracing.enabled = false
+    await helper.runInTransaction(agent, 'web', async (tx) => {
+      clientTransaction = tx
+      clientTransaction.name = 'clientTransaction'
+      const payload = [{ name: 'dt test' }, { name: 'dt test2' }]
+      await makeClientStreamingRequest({ client, fnName: 'sayHelloClientStream', payload })
+      tx.end()
+    })
+
+    const attributes = serverTransaction.trace.attributes.get(DESTINATION)
+    t.notHas(attributes, 'request.header.newrelic', 'should not have newrelic in headers')
+    t.notHas(attributes, 'request.header.traceparent', 'should not have traceparent in headers')
+    t.end()
+  })
+
+  t.test('should record errors if `grpc.record_errors` is enabled', async (t) => {
+    let transaction
+    agent.on('transactionFinished', (tx) => {
+      if (tx.name === getServerTransactionName('SayErrorClientStream')) {
+        transaction = tx
+      }
+    })
+
+    try {
+      const payload = [{ oh: 'noes' }]
+      await makeClientStreamingRequest({ client, fnName: 'sayErrorClientStream', payload })
+    } catch (err) {
+      // err tested in client tests
+    }
+    t.ok(transaction, 'transaction exists')
+    t.equal(agent.errors.traceAggregator.errors.length, 1, 'should record a single error')
+    const error = agent.errors.traceAggregator.errors[0][2]
+    t.equal(error, ERR_SERVER_MSG, 'should have the error message')
+    assertServerTransaction({
+      t,
+      transaction,
+      fnName: 'SayErrorClientStream',
+      expectedStatusCode: ERR_CODE
+    })
+    assertServerMetrics({
+      t,
+      agentMetrics: agent.metrics._metrics,
+      fnName: 'SayErrorClientStream',
+      expectedStatusCode: ERR_CODE
+    })
+    t.end()
+  })
+
+  t.test('should not record errors if `grpc.record_errors` is disabled', async (t) => {
+    agent.config.grpc.record_errors = false
+
+    let transaction
+    agent.on('transactionFinished', (tx) => {
+      if (tx.name === getServerTransactionName('SayErrorClientStream')) {
+        transaction = tx
+      }
+    })
+
+    try {
+      const payload = [{ oh: 'noes' }]
+      await makeClientStreamingRequest({ client, fnName: 'sayErrorClientStream', payload })
+    } catch (err) {
+      // err tested in client tests
+    }
+    t.ok(transaction, 'transaction exists')
+    t.equal(agent.errors.traceAggregator.errors.length, 0, 'should not record any errors')
+    assertServerTransaction({
+      t,
+      transaction,
+      fnName: 'SayErrorClientStream',
+      expectedStatusCode: ERR_CODE
+    })
+    assertServerMetrics({
+      t,
+      agentMetrics: agent.metrics._metrics,
+      fnName: 'SayErrorClientStream',
+      expectedStatusCode: ERR_CODE
+    })
+    t.end()
+  })
+
+  t.test(
+    'should record errors if `grpc.record_errors` is enabled and server sends error mid stream',
+    async (t) => {
+      let transaction
+      agent.on('transactionFinished', (tx) => {
+        if (tx.name === getServerTransactionName('SayErrorClientStream')) {
+          transaction = tx
+        }
+      })
+
+      try {
+        const payload = [{ name: 'error' }]
+        await makeClientStreamingRequest({
+          client,
+          fnName: 'sayErrorClientStream',
+          payload,
+          endStream: false
+        })
+      } catch (err) {
+        // err tested in client tests
+      }
+      t.ok(transaction, 'transaction exists')
+      t.equal(agent.errors.traceAggregator.errors.length, 1, 'should record a single error')
+      const error = agent.errors.traceAggregator.errors[0][2]
+      t.equal(error, HALT_GRPC_SERVER_MSG, 'should have the error message')
+      assertServerTransaction({
+        t,
+        transaction,
+        fnName: 'SayErrorClientStream',
+        expectedStatusCode: HALT_CODE
+      })
+      assertServerMetrics({
+        t,
+        agentMetrics: agent.metrics._metrics,
+        fnName: 'SayErrorClientStream',
+        expectedStatusCode: HALT_CODE
+      })
+      t.end()
+    }
+  )
+})

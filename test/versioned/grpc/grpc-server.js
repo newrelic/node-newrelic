@@ -27,7 +27,7 @@ module.exports = function createServerMethods(server) {
         })
       })
     },
-    sayHelloServerStream: function sayHelloCStream(call) {
+    sayHelloServerStream: function sayHelloServerStream(call) {
       const {
         metadata,
         request: { name }
@@ -39,7 +39,7 @@ module.exports = function createServerMethods(server) {
       })
       call.end()
     },
-    sayHelloBidiStream: function sayHelloCStream(call) {
+    sayHelloBidiStream: function sayHelloBidiStream(call) {
       const { metadata } = call
       call.on('data', (clientStream) => {
         const { name } = clientStream

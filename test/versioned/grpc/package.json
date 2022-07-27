@@ -8,13 +8,17 @@
         "node": ">=12"
       },
       "dependencies": {
-        "@grpc/grpc-js": ">=1.0.0"
+        "@grpc/grpc-js": ">=1.4.0"
       },
       "files": [
         "client-unary.tap.js",
         "client-streaming.tap.js",
         "client-server-streaming.tap.js",
-        "client-bidi-streaming.tap.js"
+        "client-bidi-streaming.tap.js",
+        "server-unary.tap.js",
+        "server-client-streaming.tap.js",
+        "server-streaming.tap.js",
+        "server-bidi-streaming.tap.js"
       ]
     }
   ]

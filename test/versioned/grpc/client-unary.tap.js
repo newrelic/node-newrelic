@@ -27,7 +27,7 @@ tap.test('gRPC Client: Unary Requests', (t) => {
   let grpc
 
   t.beforeEach(async () => {
-    agent = helper.instrumentMockedAgent()
+    agent = helper.instrumentMockedAgent({ grpc: { record_errors: false } })
     grpc = require('@grpc/grpc-js')
     const data = await createServer(grpc)
     proto = data.proto
@@ -45,9 +45,13 @@ tap.test('gRPC Client: Unary Requests', (t) => {
 
   t.test('should track unary client requests as an external when in a transaction', (t) => {
     helper.runInTransaction(agent, 'web', async (tx) => {
+      tx.name = 'clientTransaction'
       agent.on('transactionFinished', (transaction) => {
-        assertExternalSegment({ t, tx: transaction, fnName: 'SayHello' })
-        t.end()
+        if (transaction.name === 'clientTransaction') {
+          // Make sure we're in the client and not server transaction
+          assertExternalSegment({ t, tx: transaction, fnName: 'SayHello' })
+          t.end()
+        }
       })
 
       const response = await makeUnaryRequest({
@@ -114,18 +118,22 @@ tap.test('gRPC Client: Unary Requests', (t) => {
     const expectedStatusText = ERR_MSG
     const expectedStatusCode = ERR_CODE
     helper.runInTransaction(agent, 'web', async (tx) => {
+      tx.name = 'clientTransaction'
       agent.on('transactionFinished', (transaction) => {
-        t.equal(agent.errors.traceAggregator.errors.length, 1, 'should record a single error')
-        const error = agent.errors.traceAggregator.errors[0][2]
-        t.equal(error, expectedStatusText, 'should have the error message')
-        assertExternalSegment({
-          t,
-          tx: transaction,
-          fnName: 'SayError',
-          expectedStatusText,
-          expectedStatusCode
-        })
-        t.end()
+        if (transaction.name === 'clientTransaction') {
+          // Make sure we're in the client and not server transaction
+          t.equal(agent.errors.traceAggregator.errors.length, 1, 'should record a single error')
+          const error = agent.errors.traceAggregator.errors[0][2]
+          t.equal(error, expectedStatusText, 'should have the error message')
+          assertExternalSegment({
+            t,
+            tx: transaction,
+            fnName: 'SayError',
+            expectedStatusText,
+            expectedStatusCode
+          })
+          t.end()
+        }
       })
 
       try {
