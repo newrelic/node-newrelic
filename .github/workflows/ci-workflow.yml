@@ -26,7 +26,7 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [12.x, 14.x, 16.x, 18.x]
+        node-version: [14.x, 16.x, 18.x]
 
     steps:
     - uses: actions/checkout@v2
@@ -44,7 +44,7 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [12.x, 14.x, 16.x, 18.x]
+        node-version: [14.x, 16.x, 18.x]
 
     steps:
     - uses: actions/checkout@v2
@@ -64,7 +64,7 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [12.x, 14.x, 16.x, 18.x]
+        node-version: [14.x, 16.x, 18.x]
 
     steps:
     - uses: actions/checkout@v2
@@ -77,12 +77,12 @@ jobs:
     - name: Run Docker Services
       run: npm run services
     - name: Run Versioned Tests (npm v6 / Node 12/14)
-      if: ${{ matrix.node-version == '14.x' || matrix.node-version == '12.x' }}
+      if: ${{ matrix.node-version == '14.x' }}
       run: TEST_CHILD_TIMEOUT=600000 npm run versioned:npm6
       env:
         VERSIONED_MODE: ${{ github.ref == 'refs/heads/main' && '--minor' || '--major' }}
     - name: Run Versioned Tests (npm v7 / Node 16+)
-      if: ${{ matrix.node-version == '16.x' || matrix.node-version == '18.x' }}
+      if: ${{ matrix.node-version != '14.x' }}
       run: TEST_CHILD_TIMEOUT=600000 npm run versioned:npm7
       env:
         VERSIONED_MODE: ${{ github.ref == 'refs/heads/main' && '--minor' || '--major' }}
