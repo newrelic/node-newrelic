@@ -1,6 +1,6 @@
 {
   "name": "@newrelic/koa",
-  "version": "6.1.2",
+  "version": "7.0.0",
   "description": "Koa instrumentation for the New Relic Node agent",
   "main": "index.js",
   "directories": {
