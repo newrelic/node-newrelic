@@ -1,7 +1,5 @@
 ### v0.3.0 (2022-07-27)
 
-## Proposed Release Notes
-
 * **BREAKING** Removed support for Node 12.
 
 The minimum supported version is now Node v14. For further information on our support policy, see: https://docs.newrelic.com/docs/agents/nodejs-agent/getting-started/compatibility-requirements-nodejs-agent.
@@ -9,16 +7,6 @@ The minimum supported version is now Node v14. For further information on our su
 * Added support for Node 18.x 
 
 * Updated sample app to use `http.get` instead of `fetch` to make subrequests to API to avoid async context propagation breakage in Node 18.
-
-## Links
-
-* PR: https://github.com/newrelic/newrelic-node-nextjs/pull/80
-* PR: https://github.com/newrelic/newrelic-node-nextjs/pull/78
-* PR: https://github.com/newrelic/newrelic-node-nextjs/pull/75
-* PR: https://github.com/newrelic/newrelic-node-nextjs/pull/77
-* PR: https://github.com/newrelic/newrelic-node-nextjs/pull/73
-* PR: https://github.com/newrelic/newrelic-node-nextjs/pull/76
-
 
 ### v0.2.0 (2022-07-05)
 
