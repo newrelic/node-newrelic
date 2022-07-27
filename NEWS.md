@@ -1,6 +1,6 @@
 ### v8.17.0 (2022-07-27)
 
-* Added gRPC server instrumentation
+* Added instrumentation for `grpc-js` server unary, client-streaming, server-streaming and bidirectional streaming handlers.
 
 ### v8.16.0 (2022-07-21)
 
