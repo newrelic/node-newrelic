@@ -1,3 +1,13 @@
+### v0.3.0 (2022-07-27)
+
+* **BREAKING** Removed support for Node 12.
+
+The minimum supported version is now Node v14. For further information on our support policy, see: https://docs.newrelic.com/docs/agents/nodejs-agent/getting-started/compatibility-requirements-nodejs-agent.
+  
+* Added support for Node 18.x 
+
+* Updated sample app to use `http.get` instead of `fetch` to make subrequests to API to avoid async context propagation breakage in Node 18.
+
 ### v0.2.0 (2022-07-05)
 
 * **BREAKING**: Fixed instrumentation to only support middleware in `>=12.2.0` of Next.js
