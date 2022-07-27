@@ -25,11 +25,13 @@ fi
 
 export AGENT_PATH=`pwd`
 
-echo "${NPM7}"
+# Runner will default to CPU count if not specified.
+echo "JOBS = ${JOBS}"
+echo "NPM7 = ${NPM7}"
 
 if [[ "${NPM7}" = 1 ]];
 then
-  time ./node_modules/.bin/versioned-tests $VERSIONED_MODE -i 2 --all --strict --samples $SAMPLES ${directories[@]}
+  time ./node_modules/.bin/versioned-tests $VERSIONED_MODE -i 2 --all --strict --samples $SAMPLES --jobs $JOBS ${directories[@]}
 else
-  time ./node_modules/.bin/versioned-tests $VERSIONED_MODE -i 2 --strict --samples $SAMPLES ${directories[@]}
+  time ./node_modules/.bin/versioned-tests $VERSIONED_MODE -i 2 --strict --samples $SAMPLES --jobs $JOBS ${directories[@]}
 fi
