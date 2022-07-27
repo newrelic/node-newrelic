@@ -1,3 +1,7 @@
+### v8.17.0 (2022-07-27)
+
+* Added gRPC server instrumentation
+
 ### v8.16.0 (2022-07-21)
 
 * Automatic application log forwarding is now enabled by default. This version of the agent will automatically send enriched application logs to New Relic. To learn more about about this feature, see the [APM logs in context documentation](https://docs.newrelic.com/docs/apm/new-relic-apm/getting-started/get-started-logs-context/). For additional configuration options, see the [Node.js logs in context documentation](https://docs.newrelic.com/docs/logs/logs-context/configure-logs-context-nodejs). To learn about how to toggle log ingestion on or off by account, see our documentation to [disable automatic logging](https://docs.newrelic.com/docs/logs/logs-context/disable-automatic-logging) via the UI or API.
