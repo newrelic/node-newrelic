@@ -17,7 +17,6 @@ module.exports = function createServerMethods(server) {
       const { metadata } = call
       const names = []
       call.on('data', function (clientStream) {
-        // TODO: Try creating a segment here, look at test code on how to insert a segment here
         const { name } = clientStream
         server.metadataMap.set(name, metadata.internalRepr)
         names.push(name)
