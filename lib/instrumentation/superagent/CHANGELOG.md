@@ -4,7 +4,7 @@
 
   The minimum supported version is now Node v14. For further information on our support policy, see: https://docs.newrelic.com/docs/agents/nodejs-agent/getting-started/compatibility-requirements-nodejs-agent.
 
-* Updated CI to run against Node versions 14-18.
+* Added support for Node 18.
 * Resolved several dev-dependency audit warnings.
 
 ### v5.1.1 (2022-02-28)
