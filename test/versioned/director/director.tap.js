@@ -20,9 +20,10 @@ tap.test('basic director test', function (t) {
     this.res.writeHead(200)
     this.res.end('{"status":"ok"}')
   }
+
+  // this will still get hit even though the fn0 is ending response
   function fn1() {
-    this.res.writeHead(200)
-    this.res.end('{"status":"ok"}')
+    return true
   }
 
   const routes = {
@@ -87,7 +88,7 @@ tap.test('basic director test', function (t) {
       const url = 'http://localhost:' + port + '/hello/eric'
       helper.makeGetRequest(url, { json: true }, function (error, res, body) {
         t.equal(res.statusCode, 200, 'nothing exploded')
-        t.deepEqual(body, { status: 'ok' }, 'got expected response')
+        t.same(body, { status: 'ok' }, 'got expected response')
         t.end()
       })
     })
@@ -147,7 +148,7 @@ tap.test('backward recurse director test', function (t) {
       const url = 'http://localhost:' + port + '/hello/eric'
       helper.makeGetRequest(url, { json: true }, function (error, res, body) {
         t.equal(res.statusCode, 200, 'nothing exploded')
-        t.deepEqual(body, { status: 'ok' }, 'got expected response')
+        t.same(body, { status: 'ok' }, 'got expected response')
         t.end()
       })
     })
@@ -201,7 +202,7 @@ tap.test('two routers with same URI director test', function (t) {
       const url = 'http://localhost:' + port + '/helloWorld'
       helper.makeGetRequest(url, { json: true }, function (error, res, body) {
         t.equal(res.statusCode, 200, 'nothing exploded')
-        t.deepEqual(body, { status: 'ok' }, 'got expected response')
+        t.same(body, { status: 'ok' }, 'got expected response')
         t.end()
       })
     })
@@ -284,7 +285,7 @@ tap.test('director async routes test', function (t) {
       const url = 'http://localhost:' + port + '/three/random/things'
       helper.makeGetRequest(url, { json: true }, function (error, res, body) {
         t.equal(res.statusCode, 200, 'nothing exploded')
-        t.deepEqual(body, 'dog', 'got expected response')
+        t.same(body, 'dog', 'got expected response')
         t.end()
       })
     })
@@ -346,7 +347,7 @@ tap.test('express w/ director subrouter test', function (t) {
       const url = 'http://localhost:' + port + '/express/hello'
       helper.makeGetRequest(url, { json: true }, function (error, res, body) {
         t.equal(res.statusCode, 200, 'nothing exploded')
-        t.deepEqual(body, 'eric says hello', 'got expected response')
+        t.same(body, 'eric says hello', 'got expected response')
       })
     })
   })
