@@ -1800,7 +1800,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 ### @newrelic/test-utilities
 
-This product includes source derived from [@newrelic/test-utilities](https://github.com/newrelic/node-test-utilities) ([v6.5.5](https://github.com/newrelic/node-test-utilities/tree/v6.5.5)), distributed under the [Apache-2.0 License](https://github.com/newrelic/node-test-utilities/blob/v6.5.5/LICENSE):
+This product includes source derived from [@newrelic/test-utilities](https://github.com/newrelic/node-test-utilities) ([v7.0.0](https://github.com/newrelic/node-test-utilities/tree/v7.0.0)), distributed under the [Apache-2.0 License](https://github.com/newrelic/node-test-utilities/blob/v7.0.0/LICENSE):
 
 ```
                                  Apache License
