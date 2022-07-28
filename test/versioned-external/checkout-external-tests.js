@@ -7,11 +7,8 @@
 
 /* eslint-disable no-console, no-process-exit */
 
-// TODO: Update when drop Node 12
-// 'rm' not available in Node 12 but considered deprecated in newer versions
-// 'fs/promises' not available in Node 12
 const { existsSync } = require('fs')
-const { rm, mkdir } = require('fs').promises
+const { rm, mkdir } = require('fs/promises')
 
 const { sparseCloneRepo } = require('../../bin/git-commands')
 const repos = require('./external-repos')

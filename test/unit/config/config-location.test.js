@@ -8,7 +8,7 @@
 const tap = require('tap')
 const path = require('path')
 const fs = require('fs')
-const fsPromises = require('fs').promises
+const fsPromises = require('fs/promises')
 const sinon = require('sinon')
 
 const Config = require('../../../lib/config')
