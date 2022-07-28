@@ -108,6 +108,11 @@
       "name": "Diana Thayer",
       "email": "dthayer@newrelic.com",
       "web": "https://newrelic.com"
+    },
+    {
+      "name": "Jordi Gutiérrez Hermoso",
+      "email": "jgutierrezhermoso@newrelic.com",
+      "web": "https://newrelic.com"
     }
   ],
   "description": "New Relic agent",
@@ -121,7 +126,7 @@
   ],
   "homepage": "https://github.com/newrelic/node-newrelic",
   "engines": {
-    "node": ">=12.0.0",
+    "node": ">=14",
     "npm": ">=6.0.0"
   },
   "directories": {
