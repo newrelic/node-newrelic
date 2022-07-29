@@ -7,6 +7,7 @@
 
 const tap = require('tap')
 
+const os = require('os')
 const util = require('util')
 const zlib = require('zlib')
 const nock = require('nock')
@@ -39,8 +40,7 @@ tap.test('ServerlessCollector API', (t) => {
     agent.reconfigure = () => {}
     agent.setState = () => {}
     api = new API(agent)
-    // TODO: switch to `os.devnull` once we drop Node 12 support.
-    process.env.NEWRELIC_PIPE_PATH = '/dev/null'
+    process.env.NEWRELIC_PIPE_PATH = os.devNull
   }
 
   function afterTest() {

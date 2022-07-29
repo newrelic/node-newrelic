@@ -7,6 +7,7 @@
 
 const tap = require('tap')
 
+const os = require('os')
 const helper = require('../../lib/agent_helper')
 const AwsLambda = require('../../../lib/serverless/aws-lambda')
 const lambdaSampleEvents = require('./lambda-sample-events')
@@ -50,8 +51,7 @@ tap.test('AwsLambda.patchLambdaHandler', (t) => {
         }
       })
     }
-    // TODO: switch to `os.devnull` once we drop Node 12 support.
-    process.env.NEWRELIC_PIPE_PATH = '/dev/null'
+    process.env.NEWRELIC_PIPE_PATH = os.devNull
     awsLambda = new AwsLambda(agent)
     awsLambda._resetModuleState()
 
