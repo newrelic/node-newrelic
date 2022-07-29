@@ -146,14 +146,9 @@ tap.test('Selecting config file path', (t) => {
 
     processMainModuleStub.resetBehavior()
 
-    /**
-     * TODO: Replace with `rm` when drop Node 12.
-     * `rmdir` has been deprecated but preferred `rm` was introduced in Node 14.
-     * https://nodejs.org/api/deprecations.html#DEP0147
-     */
-    fs.rmdirSync(DESTDIR, { recursive: true })
-    fs.rmdirSync(NOPLACEDIR, { recursive: true })
-    fs.rmdirSync(MAIN_MODULE_DIR, { recursive: true })
+    fs.rmSync(DESTDIR, { recursive: true })
+    fs.rmSync(NOPLACEDIR, { recursive: true })
+    fs.rmSync(MAIN_MODULE_DIR, { recursive: true })
 
     process.chdir(originalWorkingDirectory)
   })
