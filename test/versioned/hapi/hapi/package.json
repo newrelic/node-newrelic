@@ -29,6 +29,6 @@
   "dependencies": {
     "@hapi/hapi": "^20.1.2",
     "ejs": "^2.5.5",
-    "vision": "^5.0.0"
+    "vision": "latest"
   }
 }
