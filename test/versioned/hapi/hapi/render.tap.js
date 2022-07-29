@@ -11,7 +11,7 @@ const tap = require('tap')
 const request = require('request')
 const helper = require('../../../lib/agent_helper')
 const API = require('../../../../api')
-const utils = require('./hapi-17-utils')
+const utils = require('./hapi-utils')
 const fixtures = require('../fixtures')
 
 tap.test('agent instrumentation of Hapi', function (t) {
@@ -50,7 +50,7 @@ tap.test('agent instrumentation of Hapi', function (t) {
         t.error(error, 'should not fail to make request')
 
         t.ok(/application\/json/.test(response.headers['content-type']), 'got correct content type')
-        t.same(JSON.parse(body), { yep: true }, 'response survived')
+        t.deepEqual(JSON.parse(body), { yep: true }, 'response survived')
 
         let stats
 
@@ -83,7 +83,7 @@ tap.test('agent instrumentation of Hapi', function (t) {
     })
   })
 
-  t.test('using EJS templates', { timeout: 1000 }, function (t) {
+  t.test('using EJS templates', { timeout: 2000 }, function (t) {
     server.route({
       method: 'GET',
       path: '/test',

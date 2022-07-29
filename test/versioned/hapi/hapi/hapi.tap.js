@@ -9,7 +9,7 @@ const tap = require('tap')
 const shims = require('../../../../lib/shim')
 const helper = require('../../../lib/agent_helper')
 const instrument = require('../../../../lib/instrumentation/hapi')
-const utils = require('./hapi-18-utils')
+const utils = require('./hapi-utils')
 
 tap.test('instrumentation of Hapi', function (t) {
   t.autoend()

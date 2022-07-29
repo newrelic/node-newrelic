@@ -1,16 +1,16 @@
 {
-  "name": "hapi-v17-tests",
+  "name": "hapi-tests",
   "version": "0.0.0",
   "private": true,
   "tests": [
     {
       "engines": {
-        "node": ">=14 < 16"
+        "node": ">=14"
       },
       "dependencies": {
         "ejs": "2.5.5",
-        "hapi": "^17.0.0",
-        "vision": "5.1"
+        "@hapi/hapi": ">=20.1.2",
+        "vision": "latest"
       },
       "files": [
         "capture-params.tap.js",
@@ -27,8 +27,8 @@
     }
   ],
   "dependencies": {
+    "@hapi/hapi": "^20.1.2",
     "ejs": "^2.5.5",
-    "hapi": "^17.3.1",
-    "vision": "^5.3.1"
+    "vision": "latest"
   }
 }
