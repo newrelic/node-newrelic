@@ -4,21 +4,45 @@
  */
 
 'use strict'
-
-const testsDir = '../../integration/instrumentation/promises'
-
 const tap = require('tap')
-const testRegressions = require(testsDir + '/regressions')
+const helper = require('../../lib/agent_helper')
 
 tap.test('bluebird', function (t) {
   t.autoend()
+  t.test('NODE-1649 Stack overflow on recursive promise', function (t) {
+    // This was resolved in 2.6.0 as a side-effect of completely refactoring the
+    // promise instrumentation.
 
-  t.test('regressions', function (t) {
-    t.autoend()
-    testRegressions(t, loadBluebird)
+    const agent = helper.loadMockedAgent()
+    t.teardown(function () {
+      helper.unloadAgent(agent)
+    })
+    const Promise = require('bluebird')
+
+    function Provider(count) {
+      this._count = count
+    }
+
+    Provider.prototype.getNext = function () {
+      return Promise.resolve(--this._count > 0 ? this._count : null)
+    }
+
+    function getData(dataProvider) {
+      const results = []
+
+      return dataProvider.getNext().then(collectResults)
+
+      function collectResults(result) {
+        if (!result) {
+          return results
+        }
+        results.push(result)
+        return dataProvider.getNext().then(collectResults)
+      }
+    }
+
+    return helper.runInTransaction(agent, function () {
+      return getData(new Provider(10000))
+    })
   })
 })
-
-function loadBluebird() {
-  return require('bluebird') // Load relative to this file.
-}
