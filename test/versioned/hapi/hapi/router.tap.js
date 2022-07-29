@@ -8,7 +8,7 @@
 const tap = require('tap')
 const request = require('request')
 const helper = require('../../../lib/agent_helper')
-const utils = require('./hapi-20-utils')
+const utils = require('./hapi-utils')
 const Boom = require('@hapi/boom')
 
 tap.test('Hapi router introspection', function (t) {

@@ -8,7 +8,7 @@
 const helper = require('../../../lib/agent_helper')
 const http = require('http')
 const tap = require('tap')
-const utils = require('./hapi-20-utils')
+const utils = require('./hapi-utils')
 
 let agent
 let server

@@ -8,7 +8,7 @@
 const request = require('request')
 const tap = require('tap')
 const helper = require('../../../lib/agent_helper')
-const utils = require('./hapi-20-utils')
+const utils = require('./hapi-utils')
 
 tap.test('Hapi ext', function (t) {
   t.autoend()
