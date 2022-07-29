@@ -151,7 +151,7 @@ tap.test('fromSegment()', (t) => {
           t.equal(span.intrinsics.sampled, true)
           t.equal(span.intrinsics.priority, 42)
 
-          t.equal(span.intrinsics.name, 'External/example.com:443/')
+          t.equal(span.intrinsics.name, 'External/example.com/')
           t.equal(span.intrinsics.timestamp, segment.timer.start)
 
           expect(span.intrinsics).to.have.property('duration').within(0.01, 2)
@@ -164,7 +164,7 @@ tap.test('fromSegment()', (t) => {
           const attributes = span.attributes
 
           // Should have (most) http properties.
-          t.equal(attributes['http.url'], 'https://example.com:443/')
+          t.equal(attributes['http.url'], 'https://example.com/')
           t.ok(attributes['http.method'])
           t.equal(attributes['http.statusCode'], 200)
           t.equal(attributes['http.statusText'], 'OK')

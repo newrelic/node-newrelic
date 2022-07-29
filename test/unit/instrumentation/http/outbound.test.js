@@ -644,7 +644,7 @@ tap.test('Should properly handle http(s) get and request signatures', (t) => {
   // testing the http/https modules and get/request methods.
   function testSignatures(nodule, method, t) {
     const host = 'www.newrelic.com'
-    const port = nodule === 'https' ? ':443' : ''
+    const port = ''
     const path = '/index.html'
     const leftPart = `${nodule}://${host}`
     const _url = `${leftPart}${path}`
