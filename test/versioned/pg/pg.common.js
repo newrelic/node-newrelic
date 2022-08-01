@@ -7,11 +7,11 @@
 
 const a = require('async')
 const tap = require('tap')
-const params = require('../../../lib/params')
-const helper = require('../../../lib/agent_helper')
-const findSegment = require('../../../lib/metrics_helper').findSegment
+const params = require('../../lib/params')
+const helper = require('../../lib/agent_helper')
+const findSegment = require('../../lib/metrics_helper').findSegment
 const test = tap.test
-const getMetricHostName = require('../../../lib/metrics_helper').getMetricHostName
+const getMetricHostName = require('../../lib/metrics_helper').getMetricHostName
 
 module.exports = function runTests(name, clientFactory) {
   // constants for table creation and db connection
