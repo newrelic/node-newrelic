@@ -49,6 +49,22 @@ tap.test('truncate', (t) => {
     t.equal(processedStr, str)
     t.end()
   })
+
+  const negativeTests = [
+    { value: '', type: 'empty string' },
+    { value: undefined, type: 'undefined' },
+    { value: null, type: 'null' },
+    { value: {}, type: 'object' },
+    { value: [], type: 'array' },
+    { value: function () {}, type: 'function' }
+  ]
+  negativeTests.forEach(({ value, type }) => {
+    t.test(`should not truncate ${type}`, (t) => {
+      const newValue = loggingUtils.truncate(value)
+      t.same(value, newValue)
+      t.end()
+    })
+  })
 })
 
 tap.test('Application Logging Config Tests', (t) => {
