@@ -504,7 +504,7 @@ This product includes source derived from [@grpc/proto-loader](https://github.co
 
 ### @newrelic/aws-sdk
 
-This product includes source derived from [@newrelic/aws-sdk](https://github.com/newrelic/node-newrelic-aws-sdk) ([v4.1.1](https://github.com/newrelic/node-newrelic-aws-sdk/tree/v4.1.1)), distributed under the [Apache-2.0 License](https://github.com/newrelic/node-newrelic-aws-sdk/blob/v4.1.1/LICENSE):
+This product includes source derived from [@newrelic/aws-sdk](https://github.com/newrelic/node-newrelic-aws-sdk) ([v5.0.0](https://github.com/newrelic/node-newrelic-aws-sdk/tree/v5.0.0)), distributed under the [Apache-2.0 License](https://github.com/newrelic/node-newrelic-aws-sdk/blob/v5.0.0/LICENSE):
 
 ```
                                  Apache License
@@ -712,7 +712,7 @@ This product includes source derived from [@newrelic/aws-sdk](https://github.com
 
 ### @newrelic/koa
 
-This product includes source derived from [@newrelic/koa](https://github.com/newrelic/node-newrelic-koa) ([v6.1.1](https://github.com/newrelic/node-newrelic-koa/tree/v6.1.1)), distributed under the [Apache-2.0 License](https://github.com/newrelic/node-newrelic-koa/blob/v6.1.1/LICENSE):
+This product includes source derived from [@newrelic/koa](https://github.com/newrelic/node-newrelic-koa) ([v7.0.0](https://github.com/newrelic/node-newrelic-koa/tree/v7.0.0)), distributed under the [Apache-2.0 License](https://github.com/newrelic/node-newrelic-koa/blob/v7.0.0/LICENSE):
 
 ```
 Apache License
@@ -921,7 +921,7 @@ Apache License
 
 ### @newrelic/superagent
 
-This product includes source derived from [@newrelic/superagent](https://github.com/newrelic/node-newrelic-superagent) ([v5.1.0](https://github.com/newrelic/node-newrelic-superagent/tree/v5.1.0)), distributed under the [Apache-2.0 License](https://github.com/newrelic/node-newrelic-superagent/blob/v5.1.0/LICENSE):
+This product includes source derived from [@newrelic/superagent](https://github.com/newrelic/node-newrelic-superagent) ([v6.0.0](https://github.com/newrelic/node-newrelic-superagent/tree/v6.0.0)), distributed under the [Apache-2.0 License](https://github.com/newrelic/node-newrelic-superagent/blob/v6.0.0/LICENSE):
 
 ```
                                  Apache License
