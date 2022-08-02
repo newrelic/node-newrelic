@@ -1,3 +1,10 @@
+### v8.17.1 (2022-08-02)
+ * Fixed issue where instrumented code invoked within a @grpc/grpc-js client callback would not get tracked by the agent.
+
+   Bound the external client segment to the onReceiveStatus listener to propagate transaction context to the grpc client callbacks.
+
+ * Fixed issue with truncate in `lib/util/application-logging.js`. It now checks that the argument is a string before checking its length.
+
 ### v8.17.0 (2022-07-27)
 
 * Added instrumentation for `grpc-js` server unary, client-streaming, server-streaming and bidirectional streaming handlers.
@@ -95,7 +102,7 @@
     * Added sent, seen and dropped metrics that collected on every harvest cycle around log lines.
 
     * Added supportability metrics for some popular logging frameworks.
-    
+
     * Added supportability metrics to record if the logging features are enabled.
 
     * Added a storage mechanisms to transactions to keep logs until transaction ends.
@@ -160,7 +167,7 @@
 
 * Removed upper-bound testing from restify versioned tests so future major versions will be covered.
 
-* Removed upper-bound testing from mysql2 versioned tests to cover existing and future major versions. 
+* Removed upper-bound testing from mysql2 versioned tests to cover existing and future major versions.
 
   Continues to skip version 1.6.2 which had a bug that broke tests which was resolved in 1.6.3.
 
