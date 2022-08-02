@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "Fri Jul 15 2022 13:30:04 GMT-0700 (Pacific Daylight Time)",
+  "lastUpdated": "Tue Aug 02 2022 14:00:20 GMT-0400 (Eastern Daylight Time)",
   "projectName": "New Relic Node Agent",
   "projectUrl": "https://github.com/newrelic/node-newrelic",
   "includeOptDeps": true,
@@ -32,15 +32,15 @@
       "licenseTextSource": "file",
       "publisher": "Google Inc."
     },
-    "@grpc/proto-loader@0.6.13": {
+    "@grpc/proto-loader@0.6.9": {
       "name": "@grpc/proto-loader",
-      "version": "0.6.13",
+      "version": "0.6.9",
       "range": "^0.6.13",
       "licenses": "Apache-2.0",
       "repoUrl": "https://github.com/grpc/grpc-node",
-      "versionedRepoUrl": "https://github.com/grpc/grpc-node/tree/v0.6.13",
+      "versionedRepoUrl": "https://github.com/grpc/grpc-node/tree/v0.6.9",
       "licenseFile": "node_modules/@grpc/proto-loader/LICENSE",
-      "licenseUrl": "https://github.com/grpc/grpc-node/blob/v0.6.13/LICENSE",
+      "licenseUrl": "https://github.com/grpc/grpc-node/blob/v0.6.9/LICENSE",
       "licenseTextSource": "file",
       "publisher": "Google Inc."
     },
@@ -170,19 +170,6 @@
       "licenseFile": "node_modules/semver/LICENSE",
       "licenseUrl": "https://github.com/npm/node-semver/blob/v5.7.1/LICENSE",
       "licenseTextSource": "file"
-    },
-    "winston-transport@4.5.0": {
-      "name": "winston-transport",
-      "version": "4.5.0",
-      "range": "^4.5.0",
-      "licenses": "MIT",
-      "repoUrl": "https://github.com/winstonjs/winston-transport",
-      "versionedRepoUrl": "https://github.com/winstonjs/winston-transport/tree/v4.5.0",
-      "licenseFile": "node_modules/winston-transport/LICENSE",
-      "licenseUrl": "https://github.com/winstonjs/winston-transport/blob/v4.5.0/LICENSE",
-      "licenseTextSource": "file",
-      "publisher": "Charlie Robbins",
-      "email": "charlie.robbins@gmail.com"
     }
   },
   "devDependencies": {
@@ -225,15 +212,15 @@
       "email": "nathan@tootallnate.net",
       "url": "http://n8.io/"
     },
-    "@newrelic/test-utilities@6.5.5": {
+    "@newrelic/test-utilities@6.5.2": {
       "name": "@newrelic/test-utilities",
-      "version": "6.5.5",
+      "version": "6.5.2",
       "range": "^6.5.5",
       "licenses": "Apache-2.0",
       "repoUrl": "https://github.com/newrelic/node-test-utilities",
-      "versionedRepoUrl": "https://github.com/newrelic/node-test-utilities/tree/v6.5.5",
+      "versionedRepoUrl": "https://github.com/newrelic/node-test-utilities/tree/v6.5.2",
       "licenseFile": "node_modules/@newrelic/test-utilities/LICENSE",
-      "licenseUrl": "https://github.com/newrelic/node-test-utilities/blob/v6.5.5/LICENSE",
+      "licenseUrl": "https://github.com/newrelic/node-test-utilities/blob/v6.5.2/LICENSE",
       "licenseTextSource": "file",
       "publisher": "New Relic Node.js agent team",
       "email": "nodejs@newrelic.com"
@@ -468,15 +455,15 @@
       "email": "i@izs.me",
       "url": "http://blog.izs.me/"
     },
-    "got@11.8.5": {
+    "got@8.3.2": {
       "name": "got",
-      "version": "11.8.5",
+      "version": "8.3.2",
       "range": "^11.8.5",
       "licenses": "MIT",
       "repoUrl": "https://github.com/sindresorhus/got",
-      "versionedRepoUrl": "https://github.com/sindresorhus/got/tree/v11.8.5",
+      "versionedRepoUrl": "https://github.com/sindresorhus/got/tree/v8.3.2",
       "licenseFile": "node_modules/got/license",
-      "licenseUrl": "https://github.com/sindresorhus/got/blob/v11.8.5/license",
+      "licenseUrl": "https://github.com/sindresorhus/got/blob/v8.3.2/license",
       "licenseTextSource": "file"
     },
     "husky@6.0.0": {
@@ -686,15 +673,15 @@
       "licenseTextSource": "file",
       "publisher": "Christian Johansen"
     },
-    "tap@16.0.1": {
+    "tap@15.1.6": {
       "name": "tap",
-      "version": "16.0.1",
+      "version": "15.1.6",
       "range": "^16.0.1",
       "licenses": "ISC",
       "repoUrl": "https://github.com/tapjs/node-tap",
-      "versionedRepoUrl": "https://github.com/tapjs/node-tap/tree/v16.0.1",
+      "versionedRepoUrl": "https://github.com/tapjs/node-tap/tree/v15.1.6",
       "licenseFile": "node_modules/tap/LICENSE",
-      "licenseUrl": "https://github.com/tapjs/node-tap/blob/v16.0.1/LICENSE",
+      "licenseUrl": "https://github.com/tapjs/node-tap/blob/v15.1.6/LICENSE",
       "licenseTextSource": "file",
       "publisher": "Isaac Z. Schlueter",
       "email": "i@izs.me",

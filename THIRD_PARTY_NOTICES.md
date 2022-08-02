@@ -26,7 +26,6 @@ code, the source code can be found at [https://github.com/newrelic/node-newrelic
 * [json-stringify-safe](#json-stringify-safe)
 * [readable-stream](#readable-stream)
 * [semver](#semver)
-* [winston-transport](#winston-transport)
 
 **[devDependencies](#devDependencies)**
 
@@ -295,7 +294,7 @@ This product includes source derived from [@grpc/grpc-js](https://github.com/grp
 
 ### @grpc/proto-loader
 
-This product includes source derived from [@grpc/proto-loader](https://github.com/grpc/grpc-node) ([v0.6.13](https://github.com/grpc/grpc-node/tree/v0.6.13)), distributed under the [Apache-2.0 License](https://github.com/grpc/grpc-node/blob/v0.6.13/LICENSE):
+This product includes source derived from [@grpc/proto-loader](https://github.com/grpc/grpc-node) ([v0.6.9](https://github.com/grpc/grpc-node/tree/v0.6.9)), distributed under the [Apache-2.0 License](https://github.com/grpc/grpc-node/blob/v0.6.9/LICENSE):
 
 ```
                                  Apache License
@@ -1332,36 +1331,6 @@ IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ```
 
-### winston-transport
-
-This product includes source derived from [winston-transport](https://github.com/winstonjs/winston-transport) ([v4.5.0](https://github.com/winstonjs/winston-transport/tree/v4.5.0)), distributed under the [MIT License](https://github.com/winstonjs/winston-transport/blob/v4.5.0/LICENSE):
-
-```
-The MIT License (MIT)
-
-Copyright (c) 2015 Charlie Robbins & the contributors.
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
-
-
-```
-
 
 ## devDependencies
 
@@ -1800,7 +1769,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 ### @newrelic/test-utilities
 
-This product includes source derived from [@newrelic/test-utilities](https://github.com/newrelic/node-test-utilities) ([v6.5.5](https://github.com/newrelic/node-test-utilities/tree/v6.5.5)), distributed under the [Apache-2.0 License](https://github.com/newrelic/node-test-utilities/blob/v6.5.5/LICENSE):
+This product includes source derived from [@newrelic/test-utilities](https://github.com/newrelic/node-test-utilities) ([v6.5.2](https://github.com/newrelic/node-test-utilities/tree/v6.5.2)), distributed under the [Apache-2.0 License](https://github.com/newrelic/node-test-utilities/blob/v6.5.2/LICENSE):
 
 ```
                                  Apache License
@@ -2515,7 +2484,7 @@ https://creativecommons.org/licenses/by-sa/4.0/
 
 ### got
 
-This product includes source derived from [got](https://github.com/sindresorhus/got) ([v11.8.5](https://github.com/sindresorhus/got/tree/v11.8.5)), distributed under the [MIT License](https://github.com/sindresorhus/got/blob/v11.8.5/license):
+This product includes source derived from [got](https://github.com/sindresorhus/got) ([v8.3.2](https://github.com/sindresorhus/got/tree/v8.3.2)), distributed under the [MIT License](https://github.com/sindresorhus/got/blob/v8.3.2/license):
 
 ```
 MIT License
@@ -3295,12 +3264,12 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ### tap
 
-This product includes source derived from [tap](https://github.com/tapjs/node-tap) ([v16.0.1](https://github.com/tapjs/node-tap/tree/v16.0.1)), distributed under the [ISC License](https://github.com/tapjs/node-tap/blob/v16.0.1/LICENSE):
+This product includes source derived from [tap](https://github.com/tapjs/node-tap) ([v15.1.6](https://github.com/tapjs/node-tap/tree/v15.1.6)), distributed under the [ISC License](https://github.com/tapjs/node-tap/blob/v15.1.6/LICENSE):
 
 ```
 The ISC License
 
-Copyright (c) 2011-2022 Isaac Z. Schlueter and Contributors
+Copyright (c) Isaac Z. Schlueter and Contributors
 
 Permission to use, copy, modify, and/or distribute this software for any
 purpose with or without fee is hereby granted, provided that the above
