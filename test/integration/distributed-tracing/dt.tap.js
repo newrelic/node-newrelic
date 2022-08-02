@@ -246,12 +246,7 @@ tap.test('distributed tracing', (t) => {
   t.autoend()
 
   // simulation of the callback used by the async library, used by generateServer and close
-  const cb = (err, result) => {
-    if (err) {
-      throw new Error(err)
-    }
-    return result
-  }
+  const cb = () => new Promise((resolve) => resolve())
 
   t.beforeEach(async () => {
     agent = helper.instrumentMockedAgent({
@@ -276,23 +271,20 @@ tap.test('distributed tracing', (t) => {
       })
     }
 
-    start = await generateServer(http, api, START_PORT, cb, (req, res) => {
+    start = generateServer(http, api, START_PORT, cb, (req, res) => {
       return getNextUrl('start/middle', 'start', MIDDLE_PORT, req, res)
     })
-    middle = await generateServer(http, api, MIDDLE_PORT, cb, (req, res) => {
+    middle = generateServer(http, api, MIDDLE_PORT, cb, (req, res) => {
       return getNextUrl('middle/end', 'middle', END_PORT, req, res)
     })
-    end = await generateServer(http, api, END_PORT, cb, (req, res) => {
+    end = generateServer(http, api, END_PORT, cb, (req, res) => {
       return createResponse(req, res, {}, 'end')
     })
   })
 
   t.afterEach(async () => {
     helper.unloadAgent(agent)
-
-    await start.close(cb)
-    await middle.close(cb)
-    await end.close(cb)
+    await Promise.all([start.close(cb), middle.close(cb), end.close(cb)])
   })
 
   t.test('should create tracing headers at each step', (t) => {
