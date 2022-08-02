@@ -147,4 +147,16 @@ tap.test('gRPC Client: Unary Requests', (t) => {
       }
     })
   })
+
+  t.test('should bind callback to the proper transaction context', (t) => {
+    helper.runInTransaction(agent, 'web', async (tx) => {
+      client.sayHello({ name: 'Callback' }, (err, response) => {
+        t.ok(response)
+        t.equal(response.message, 'Hello Callback')
+        t.ok(agent.getTransaction(), 'callback should have transaction context')
+        t.equal(agent.getTransaction(), tx, 'transaction should be the one we started with')
+        t.end()
+      })
+    })
+  })
 })
