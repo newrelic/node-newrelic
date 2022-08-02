@@ -514,12 +514,7 @@ module.exports = function runTests(name, clientFactory) {
         let insQuery = 'INSERT INTO ' + TABLE_PREPARED + ' (' + PK + ',' + COL
         insQuery += ') VALUES(' + pkVal + ",'" + colVal + "');"
 
-        let pool = null
-        if (pg.Pool) {
-          pool = new pg.Pool(CON_OBJ)
-        } else {
-          pool = pg.pools.getOrCreate(CON_OBJ)
-        }
+        const pool = new pg.Pool(CON_OBJ)
 
         pool.connect(function (error, client, done) {
           if (!t.error(error)) {
