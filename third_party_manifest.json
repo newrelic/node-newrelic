@@ -1,18 +1,18 @@
 {
-  "lastUpdated": "Mon Aug 01 2022 13:39:21 GMT-0700 (Pacific Daylight Time)",
+  "lastUpdated": "Tue Aug 02 2022 11:33:02 GMT-0700 (Pacific Daylight Time)",
   "projectName": "New Relic Node Agent",
   "projectUrl": "https://github.com/newrelic/node-newrelic",
   "includeOptDeps": true,
   "optionalDependencies": {
-    "@newrelic/native-metrics@8.0.0": {
+    "@newrelic/native-metrics@9.0.0": {
       "name": "@newrelic/native-metrics",
-      "version": "8.0.0",
-      "range": "^8.0.0",
+      "version": "9.0.0",
+      "range": "^9.0.0",
       "licenses": "Apache-2.0",
       "repoUrl": "https://github.com/newrelic/node-native-metrics",
-      "versionedRepoUrl": "https://github.com/newrelic/node-native-metrics/tree/v8.0.0",
+      "versionedRepoUrl": "https://github.com/newrelic/node-native-metrics/tree/v9.0.0",
       "licenseFile": "node_modules/@newrelic/native-metrics/LICENSE",
-      "licenseUrl": "https://github.com/newrelic/node-native-metrics/blob/v8.0.0/LICENSE",
+      "licenseUrl": "https://github.com/newrelic/node-native-metrics/blob/v9.0.0/LICENSE",
       "licenseTextSource": "file",
       "publisher": "New Relic Node.js agent team",
       "email": "nodejs@newrelic.com"

@@ -178,7 +178,7 @@
     "winston-transport": "^4.5.0"
   },
   "optionalDependencies": {
-    "@newrelic/native-metrics": "^8.0.0"
+    "@newrelic/native-metrics": "^9.0.0"
   },
   "devDependencies": {
     "@newrelic/eslint-config": "^0.0.3",
