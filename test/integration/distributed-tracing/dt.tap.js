@@ -6,7 +6,6 @@
 'use strict'
 
 const API = require('../../../api')
-const async = require('async')
 const helper = require('../../lib/agent_helper')
 const tap = require('tap')
 const url = require('url')
@@ -229,6 +228,15 @@ tap.test('distributed tracing full integration', (t) => {
   }
 })
 
+const createResponse = (req, res, body, bodyProperty) => {
+  body[bodyProperty] = req.headers
+  body = JSON.stringify(body)
+  res.setHeader('Content-Type', 'application/json')
+  res.setHeader('Content-Length', Buffer.byteLength(body))
+  res.write(body)
+  res.end()
+}
+
 tap.test('distributed tracing', (t) => {
   let agent = null
   let start = null
@@ -236,6 +244,9 @@ tap.test('distributed tracing', (t) => {
   let end = null
 
   t.autoend()
+
+  // simulation of the callback used by the async library, used by generateServer and close
+  const cb = () => new Promise((resolve) => resolve())
 
   t.beforeEach(async () => {
     agent = helper.instrumentMockedAgent({
@@ -250,71 +261,30 @@ tap.test('distributed tracing', (t) => {
     const http = require('http')
     const api = new API(agent)
 
-    // TODO: convert to async functions to get rid of 'async' library usage.
-    await new Promise((resolve) => {
-      async.parallel(
-        [
-          (cb) => {
-            start = generateServer(http, api, START_PORT, cb, (req, res) => {
-              const tx = agent.tracer.getTransaction()
-              tx.nameState.appendPath('foobar')
+    const getNextUrl = async (endpoint, bodyProperty, port, req, res) => {
+      const tx = agent.tracer.getTransaction()
+      tx.nameState.appendPath('foobar')
 
-              get(generateUrl(MIDDLE_PORT, 'start/middle'), (err, body) => {
-                tx.nameState.popPath('foobar')
+      return get(generateUrl(port, endpoint), (err, body) => {
+        tx.nameState.popPath('foobar')
+        createResponse(req, res, body, bodyProperty)
+      })
+    }
 
-                body.start = req.headers
-                body = JSON.stringify(body)
-                res.setHeader('Content-Type', 'application/json')
-                res.setHeader('Content-Length', Buffer.byteLength(body))
-                res.write(body)
-                res.end()
-              })
-            })
-          },
-
-          (cb) => {
-            middle = generateServer(http, api, MIDDLE_PORT, cb, (req, res) => {
-              const tx = agent.tracer.getTransaction()
-              tx.nameState.appendPath('foobar')
-
-              get(generateUrl(END_PORT, 'middle/end'), (err, body) => {
-                tx.nameState.popPath('foobar')
-
-                body.middle = req.headers
-                body = JSON.stringify(body)
-                res.setHeader('Content-Type', 'application/json')
-                res.setHeader('Content-Length', Buffer.byteLength(body))
-                res.write(body)
-                res.end()
-              })
-            })
-          },
-
-          (cb) => {
-            end = generateServer(http, api, END_PORT, cb, (req, res) => {
-              const body = JSON.stringify({ end: req.headers })
-              res.setHeader('Content-Type', 'application/json')
-              res.setHeader('Content-Length', Buffer.byteLength(body))
-              res.write(body)
-              res.end()
-            })
-          }
-        ],
-        resolve
-      )
+    start = generateServer(http, api, START_PORT, cb, (req, res) => {
+      return getNextUrl('start/middle', 'start', MIDDLE_PORT, req, res)
+    })
+    middle = generateServer(http, api, MIDDLE_PORT, cb, (req, res) => {
+      return getNextUrl('middle/end', 'middle', END_PORT, req, res)
+    })
+    end = generateServer(http, api, END_PORT, cb, (req, res) => {
+      return createResponse(req, res, {}, 'end')
     })
   })
 
-  // TODO: convert to async functions to get rid of 'async' library usage.
   t.afterEach(async () => {
     helper.unloadAgent(agent)
-
-    await new Promise((resolve) => {
-      async.parallel(
-        [(cb) => start.close(cb), (cb) => middle.close(cb), (cb) => end.close(cb)],
-        resolve
-      )
-    })
+    await Promise.all([start.close(cb), middle.close(cb), end.close(cb)])
   })
 
   t.test('should create tracing headers at each step', (t) => {
