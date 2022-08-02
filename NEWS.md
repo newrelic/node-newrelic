@@ -1,5 +1,7 @@
 ### v8.17.1 (2022-08-02)
- * grpc: bound the external client segment to the onReceiveStatus listener to propagate transaction context to the grpc client callbacks.
+ * Fixed issue where instrumetned code invoked within a @grpc/grpc-js client callback would not get tracked by the agent.
+
+   Bound the external client segment to the onReceiveStatus listener to propagate transaction context to the grpc client callbacks.
 
  * Fixed issue with truncate in `lib/util/application-logging.js`. It now checks that the argument is a string before checking its length.
 
