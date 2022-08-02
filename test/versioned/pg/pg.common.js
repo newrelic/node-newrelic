@@ -7,11 +7,11 @@
 
 const a = require('async')
 const tap = require('tap')
-const params = require('../../../lib/params')
-const helper = require('../../../lib/agent_helper')
-const findSegment = require('../../../lib/metrics_helper').findSegment
+const params = require('../../lib/params')
+const helper = require('../../lib/agent_helper')
+const findSegment = require('../../lib/metrics_helper').findSegment
 const test = tap.test
-const getMetricHostName = require('../../../lib/metrics_helper').getMetricHostName
+const getMetricHostName = require('../../lib/metrics_helper').getMetricHostName
 
 module.exports = function runTests(name, clientFactory) {
   // constants for table creation and db connection
@@ -514,12 +514,7 @@ module.exports = function runTests(name, clientFactory) {
         let insQuery = 'INSERT INTO ' + TABLE_PREPARED + ' (' + PK + ',' + COL
         insQuery += ') VALUES(' + pkVal + ",'" + colVal + "');"
 
-        let pool = null
-        if (pg.Pool) {
-          pool = new pg.Pool(CON_OBJ)
-        } else {
-          pool = pg.pools.getOrCreate(CON_OBJ)
-        }
+        const pool = new pg.Pool(CON_OBJ)
 
         pool.connect(function (error, client, done) {
           if (!t.error(error)) {
