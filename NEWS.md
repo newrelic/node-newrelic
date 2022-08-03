@@ -1,3 +1,65 @@
+### v9.0.0 (2022-08-03)
+
+Removed async library from pricing integration tests
+
+* Bumped external instrumentation to new major versions.
+
+Removed async library from distributed tracing integration test
+
+* Updated the minimum version of `pg` in to be 8.2.x.  This is the earliest support version that runs on Node 14+.
+
+* grpc: bound the external client segment to the onReceiveStatus listener to propagate transaction context to the grpc client callbacks.
+
+* grpc: bound the external client segment to the onReceiveStatus listener to propagate transaction context to the grpc client callbacks.
+
+* Fixed issue with `truncate` in lib/util/application-logging.js`.  It now checks that the argument is a string before checking its length.
+
+Converted `fs.rmdirSync` to `fs.rmSync` in `test/unit/config/config-location.test.js` as part of Node 12 deprecation.
+
+* **BREAKING**: Removed certificate bundle from agent. The configuration value config.feature_flag.certificate_bundle will no longer work.
+
+    The agent no-longer includes the New Relic certificate bundle when using the 'certificates' configuration (commonly with proxies). If you find this breaking your current environment, we recommend getting a CA bundle such as the one from Mozilla.
+
+* Updated unsupported odd-numbered release from 17.x to 19.x to prepare for Node 18 support.
+
+- Dropped instrumentation for hapi < v20.0.0. Those versions have been deprecated by Hapi.
+- Dropped tests for hapi < v20.0.0.
+
+* **BREAKING**: Exclude port when making external HTTPS requests to port 443.
+
+    Previous external segments would be named `External/example.com:443` when using default HTTPS port.
+    The external segment will now be named `External/example.com`.
+
+* **BREAKING**: Released the `await_support` feature flag. This also removes the legacy Promise instrumentation.
+
+    The agent now relies on async_hooks to track async promise propagation.  The net result is the if you had `feature_flag.await_support` set to false, the legacy instrumentation tracked every function in a promise chain as a separate segment.
+
+* Bumped `@newrelic/test-utilities` to ^7.0.0.
+
+  This new version of test utilities defaults # of concurrent jobs to currently available CPUs. For local development on modern machines, this can increase full versioned test runs by 30-40%.
+
+* Introduced JOBS ENV var for agent versioned test runs to control number of attempted concurrent test folder runs. Set to 4 for CI runs in GHA.
+
+Converted `/dev/null` to `os.devNull` in 
+
+- test/unit/collector/serverless.test.js
+- test/unit/serverless/aws-lambda.test.js
+
+and converted `fs.promises.rmdir` to `fs.promises.rm` in 
+
+- test/unit/config/config-location.test.js
+- test/versioned-external/checkout-external-tests.js
+
+as part of Node 12 deprecation.
+
+* Dropped support for Node 12.
+   * Updated engines stanza to be `>=14`.
+   * Updated all versioned tests stanza to be `>=14`
+
+* Dropped Node 12 from CI.
+
+* **BREAKING**: Removed instrumentation for the obsolete [oracle](https://www.npmjs.com/package/oracle) npm package.
+
 ### v8.17.1 (2022-08-02)
  * Fixed issue where instrumented code invoked within a @grpc/grpc-js client callback would not get tracked by the agent.
 
