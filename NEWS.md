@@ -1,3 +1,5 @@
+### v9.0.0 (2022-08-03)
+
 ### v8.17.1 (2022-08-02)
  * Fixed issue where instrumented code invoked within a @grpc/grpc-js client callback would not get tracked by the agent.
 
