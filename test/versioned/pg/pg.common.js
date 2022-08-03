@@ -5,13 +5,24 @@
 
 'use strict'
 
-const a = require('async')
 const tap = require('tap')
 const params = require('../../lib/params')
 const helper = require('../../lib/agent_helper')
 const findSegment = require('../../lib/metrics_helper').findSegment
 const test = tap.test
 const getMetricHostName = require('../../lib/metrics_helper').getMetricHostName
+
+function runCommand(client, cmd) {
+  return new Promise((resolve, reject) => {
+    client.query(cmd, function (err) {
+      if (err) {
+        reject(err)
+      }
+
+      resolve()
+    })
+  })
+}
 
 module.exports = function runTests(name, clientFactory) {
   // constants for table creation and db connection
@@ -31,46 +42,28 @@ module.exports = function runTests(name, clientFactory) {
    * Deletion of testing table if already exists,
    * then recreation of a testing table
    */
-  function postgresSetup() {
+  async function postgresSetup() {
     const pg = clientFactory()
     const setupClient = new pg.Client(CON_OBJ)
 
-    return new Promise((resolve, reject) => {
+    await new Promise((resolve, reject) => {
       setupClient.connect(function (err) {
         if (err) {
           reject(err)
         }
-        const tableDrop = 'DROP TABLE IF EXISTS ' + TABLE_PREPARED
 
-        const tableCreate =
-          'CREATE TABLE ' +
-          TABLE_PREPARED +
-          ' (' +
-          PK +
-          ' integer PRIMARY KEY, ' +
-          COL +
-          ' text' +
-          ');'
-
-        a.eachSeries(
-          [
-            "set client_min_messages='warning';", // supress PG notices
-            tableDrop,
-            tableCreate
-          ],
-          function (query, cb) {
-            setupClient.query(query, cb)
-          },
-          function (err) {
-            if (err) {
-              reject(err)
-            }
-            setupClient.end()
-            resolve()
-          }
-        )
+        resolve()
       })
     })
+    await runCommand(setupClient, "set client_min_messages='warning';") // supress PG notices
+
+    const tableDrop = 'DROP TABLE IF EXISTS ' + TABLE_PREPARED
+    await runCommand(setupClient, tableDrop)
+
+    const tableCreate =
+      'CREATE TABLE ' + TABLE_PREPARED + ' (' + PK + ' integer PRIMARY KEY, ' + COL + ' text' + ');'
+    await runCommand(setupClient, tableCreate)
+    setupClient.end()
   }
 
   function verify(t, segment, selectTable) {
