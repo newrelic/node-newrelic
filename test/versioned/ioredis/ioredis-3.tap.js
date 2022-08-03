@@ -17,11 +17,10 @@ tap.test('ioredis instrumentation', function (t) {
   let agent
   let redisClient
 
-  t.beforeEach(function () {
-    return setup(t).then((result) => {
-      agent = result.agent
-      redisClient = result.client
-    })
+  t.beforeEach(async function () {
+    const result = await setup(t)
+    agent = result.agent
+    redisClient = result.client
   })
 
   t.afterEach(function () {
@@ -103,24 +102,19 @@ tap.test('ioredis instrumentation', function (t) {
   t.autoend()
 })
 
-function setup(t) {
+async function setup(t) {
+  const agent = helper.instrumentMockedAgent()
+
+  // remove from cache, so that the bluebird library that ioredis uses gets
+  // re-instrumented
+  clearLoadedModules(t)
+
+  const Redis = require('ioredis')
+
+  const client = new Redis(params.redis_port, params.redis_host)
+  await helper.flushRedisDb(client, DB_INDEX)
+
   return new Promise(async (resolve, reject) => {
-    const agent = helper.instrumentMockedAgent()
-
-    // remove from cache, so that the bluebird library that ioredis uses gets
-    // re-instrumented
-    clearLoadedModules(t)
-
-    let Redis = null
-    try {
-      Redis = require('ioredis')
-    } catch (err) {
-      return reject(err)
-    }
-
-    const client = new Redis(params.redis_port, params.redis_host)
-    await helper.flushRedisDb(client, DB_INDEX)
-
     client.select(DB_INDEX, (err) => {
       if (err) {
         return reject(err)

@@ -18,20 +18,13 @@ tap.test('ioredis instrumentation', (t) => {
   let redisClient = null
 
   t.autoend()
-  t.beforeEach(() => {
-    return new Promise(async (resolve, reject) => {
-      agent = helper.instrumentMockedAgent()
+  t.beforeEach(async () => {
+    agent = helper.instrumentMockedAgent()
+    const Redis = require('ioredis')
+    redisClient = new Redis(params.redis_port, params.redis_host)
+    await helper.flushRedisDb(redisClient, DB_INDEX)
 
-      let Redis = null
-      try {
-        Redis = require('ioredis')
-      } catch (err) {
-        return reject(err)
-      }
-
-      redisClient = new Redis(params.redis_port, params.redis_host)
-      await helper.flushRedisDb(redisClient, DB_INDEX)
-
+    await new Promise(async (resolve, reject) => {
       redisClient.select(DB_INDEX, (err) => {
         if (err) {
           return reject(err)
