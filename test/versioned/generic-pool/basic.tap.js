@@ -5,7 +5,6 @@
 
 'use strict'
 
-const a = require('async')
 const helper = require('../../lib/agent_helper')
 const tap = require('tap')
 
@@ -89,20 +88,22 @@ tap.test('generic-pool', function (t) {
       }
     )
 
-    a.times(6, run, function (err) {
-      t.error(err, 'should not error when acquiring')
-      drain()
+    Array.from({ length: 6 }, async (_, i) => {
+      await run(i)
     })
 
-    function run(n, cb) {
-      helper.runInTransaction(agent, function (tx) {
-        p.acquire().then(function (c) {
-          t.equal(id(agent.getTransaction()), id(tx), n + ': should maintain tx state')
-          addTask(function () {
-            p.release(c)
-            cb()
+    drain()
+
+    async function run(n) {
+      return helper.runInTransaction(agent, async (tx) => {
+        const conn = await p.acquire()
+        t.equal(id(agent.getTransaction()), id(tx), n + ': should maintain tx state')
+        await new Promise((resolve) => {
+          addTask(() => {
+            p.release(conn)
+            resolve()
           })
-        }, cb)
+        })
       })
     }
 
