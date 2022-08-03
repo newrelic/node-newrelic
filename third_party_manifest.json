@@ -1,23 +1,8 @@
 {
-  "lastUpdated": "Tue Aug 02 2022 13:48:06 GMT-0400 (Eastern Daylight Time)",
+  "lastUpdated": "Wed Aug 03 2022 10:24:25 GMT-0400 (Eastern Daylight Time)",
   "projectName": "New Relic Node Agent",
   "projectUrl": "https://github.com/newrelic/node-newrelic",
   "includeOptDeps": true,
-  "optionalDependencies": {
-    "@newrelic/native-metrics@9.0.0": {
-      "name": "@newrelic/native-metrics",
-      "version": "9.0.0",
-      "range": "^9.0.0",
-      "licenses": "Apache-2.0",
-      "repoUrl": "https://github.com/newrelic/node-native-metrics",
-      "versionedRepoUrl": "https://github.com/newrelic/node-native-metrics/tree/v9.0.0",
-      "licenseFile": "node_modules/@newrelic/native-metrics/LICENSE",
-      "licenseUrl": "https://github.com/newrelic/node-native-metrics/blob/v9.0.0/LICENSE",
-      "licenseTextSource": "file",
-      "publisher": "New Relic Node.js agent team",
-      "email": "nodejs@newrelic.com"
-    }
-  },
   "includeDev": true,
   "dependencies": {
     "@grpc/grpc-js@1.6.8": {
@@ -530,7 +515,7 @@
     "request@2.88.2": {
       "name": "request",
       "version": "2.88.2",
-      "range": "^2.88.0",
+      "range": "^2.88.2",
       "licenses": "Apache-2.0",
       "repoUrl": "https://github.com/request/request",
       "versionedRepoUrl": "https://github.com/request/request/tree/v2.88.2",
@@ -616,6 +601,21 @@
       "licenseFile": "node_modules/when/LICENSE.txt",
       "licenseUrl": "https://github.com/cujojs/when/blob/v3.7.8/LICENSE.txt",
       "licenseTextSource": "file"
+    }
+  },
+  "optionalDependencies": {
+    "@newrelic/native-metrics@9.0.0": {
+      "name": "@newrelic/native-metrics",
+      "version": "9.0.0",
+      "range": "^9.0.0",
+      "licenses": "Apache-2.0",
+      "repoUrl": "https://github.com/newrelic/node-native-metrics",
+      "versionedRepoUrl": "https://github.com/newrelic/node-native-metrics/tree/v9.0.0",
+      "licenseFile": "node_modules/@newrelic/native-metrics/LICENSE",
+      "licenseUrl": "https://github.com/newrelic/node-native-metrics/blob/v9.0.0/LICENSE",
+      "licenseTextSource": "file",
+      "publisher": "New Relic Node.js agent team",
+      "email": "nodejs@newrelic.com"
     }
   }
 }
