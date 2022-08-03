@@ -5,31 +5,41 @@
 
 'use strict'
 
+const a = require('async')
 const test = require('tap').test
 const glob = require('glob')
-const fs = require('fs/promises')
+const fs = require('fs')
 const parseProcCpuInfo = require('../../../lib/parse-proc-cpuinfo')
 const path = require('path')
 
-test('pricing proc_cpuinfo', async function (t) {
+test('pricing proc_cpuinfo', function (t) {
   const testDir = path.resolve(__dirname, '../../lib/cross_agent_tests/proc_cpuinfo')
-  const data = await new Promise((resolve, reject) => {
-    glob(path.join(testDir, '*.txt'), function globCallback(err, fileList) {
-      if (err) {
-        return reject(err)
+  glob(path.join(testDir, '*.txt'), function globCallback(err, data) {
+    if (err) {
+      throw err
+    }
+    t.ok(data.length > 0, 'should have tests to run')
+    a.each(
+      data,
+      function (name, cb) {
+        runFile(name, cb)
+      },
+      function (err) {
+        t.notOk(err, 'should not have an error')
+        t.end()
       }
-      resolve(fileList)
-    })
+    )
   })
-  t.ok(data.length > 0, 'should have tests to run')
-  for (const name of data) {
-    const buffer = await fs.readFile(name)
-    const file = buffer.toString()
-    const expected = parseName(name)
-    const info = parseProcCpuInfo(file)
-    t.same(info, expected, 'should have expected info for ' + name)
+
+  function runFile(name, cb) {
+    fs.readFile(name, function getFile(err, data) {
+      if (err) {
+        throw err
+      }
+      testFile(name, data.toString())
+      cb()
+    })
   }
-  t.end()
 
   function parseName(name) {
     const pattern = /^((\d+|X)pack_(\d+|X)core_(\d+|X)logical).txt$/
@@ -46,5 +56,11 @@ test('pricing proc_cpuinfo', async function (t) {
     res.packages = res.packages ? res.packages : null
 
     return res
+  }
+
+  function testFile(name, file) {
+    const expected = parseName(name)
+    const info = parseProcCpuInfo(file)
+    t.same(info, expected, 'should have expected info for ' + name)
   }
 })
