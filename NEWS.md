@@ -1,3 +1,45 @@
+### v9.0.0 (2022-08-03)
+
+* Added official parity support for Node 18.
+
+* **BREAKING**: Dropped Node 12.x support.  For further information on our support policy,
+   see: https://docs.newrelic.com/docs/agents/nodejs-agent/getting-started/compatibility-requirements-nodejs-agent
+
+  * Upgraded `@newrelic/superagent` `@newrelic/aws-sdk` `@newrelic/koa` `@newrelic/native-metrics` and `@newrelic/test-utilities` to the latest major versions
+  * Removed Node 12 from CI workflows.
+  * Updated engines stanza to be `>=14`.
+  * Updated all versioned tests stanza to be `>=14`
+  * Converted `fs.rmdirSync` to `fs.rmSync` in `test/unit/config/config-location.test.js`.
+  * Converted uses of `/dev/null` to `os.devNull` in tests.
+
+* **BREAKING**: Removed certificate bundle from agent. The configuration value `config.feature_flag.certificate_bundle` will no longer work.
+
+    The agent no-longer includes the New Relic certificate bundle when using the 'certificates' configuration (commonly with proxies). If you find this breaking your current environment, we recommend getting a CA bundle such as the one from Mozilla.
+
+* **BREAKING**: The agent now excludes port when making external HTTPS requests to port 443 to be in compliance with the spec and other agents.
+
+    Previous external segments would be named `External/example.com:443` when using default HTTPS port.
+    The external segment will now be named `External/example.com`.
+
+* **BREAKING**: Removed ability to disable async hooks based promise context tracking via the `await_support` feature flag. This also removes the legacy Promise instrumentation.
+
+    Released the `await_support` feature flag. The agent now relies on async_hooks to track async promise propagation.  The net result is the if you had `feature_flag.await_support` set to false, the legacy instrumentation tracked every function in a promise chain as a separate segment.
+
+* **BREAKING**: Removed instrumentation for the obsolete [oracle](https://www.npmjs.com/package/oracle) npm package.
+
+* **BREAKING**: Updated the minimum version of `pg` to be 8.2.x.  This is the earliest support version that runs on Node 14+.
+
+* **BREAKING**: Updated the minimum supported version of hapi to be >= v20.0.0. All versions < v20.0.0 are deprecated by hapi for security reasons, see their [support policy](https://hapi.dev/policies/support/).
+  * Dropped tests for hapi < v20.0.0.
+
+* Bumped `@newrelic/test-utilities` to ^7.0.0.
+
+  This new version of test utilities defaults the number of concurrent jobs to currently available CPUs. For local development on modern machines, this can speed up full versioned test runs by 30-40%.
+
+* Introduced JOBS ENV var for agent versioned test runs to control number of attempted concurrent test folder runs. Set to 4 for CI runs in GHA.
+
+* Removed the async library from distributed tracing and pricing integration tests
+
 ### v8.17.1 (2022-08-02)
  * Fixed issue where instrumented code invoked within a @grpc/grpc-js client callback would not get tracked by the agent.
 
