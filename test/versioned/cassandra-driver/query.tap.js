@@ -6,7 +6,6 @@
 'use strict'
 
 const test = require('tap').test
-const async = require('async')
 const params = require('../../lib/params')
 const helper = require('../../lib/agent_helper')
 
@@ -34,47 +33,45 @@ const client = new cassandra.Client({
  * @param Callback function to set off running the tests
  */
 
-function cassSetup(runTest) {
+async function cassSetup(runTest) {
   const setupClient = new cassandra.Client({
     contactPoints: [params.cassandra_host],
     protocolOptions: params.cassandra_port,
     localDataCenter: 'datacenter1'
   })
 
+  function runCommand(cmd) {
+    return new Promise((resolve, reject) => {
+      setupClient.execute(cmd, function (err) {
+        if (err) {
+          reject(err)
+        }
+
+        resolve()
+      })
+    })
+  }
+
   const ksDrop = 'DROP KEYSPACE IF EXISTS ' + KS + ';'
+  await runCommand(ksDrop)
 
   let ksCreate = 'CREATE KEYSPACE ' + KS + ' WITH replication = '
   ksCreate += "{'class': 'SimpleStrategy', 'replication_factor': 1};"
 
+  await runCommand(ksCreate)
+
   let famCreate = 'CREATE TABLE ' + KS + '.' + FAM + ' (' + PK + ' int PRIMARY KEY, '
   famCreate += COL + ' varchar );'
 
-  async.series([drop, createKs, createFam], done)
+  await runCommand(famCreate)
 
-  function drop(callback) {
-    setupClient.execute(ksDrop, callback)
-  }
-
-  function createKs(callback) {
-    setupClient.execute(ksCreate, callback)
-  }
-
-  function createFam(callback) {
-    setupClient.execute(famCreate, callback)
-  }
-
-  function done(err) {
-    if (err) {
-      throw err
-    }
-    setupClient.shutdown()
-    runTest()
-  }
+  setupClient.shutdown()
+  runTest()
 }
 
-test('Cassandra instrumentation', { timeout: 5000 }, function testInstrumentation(t) {
+test('Cassandra instrumentation', { timeout: 5000 }, async function testInstrumentation(t) {
   t.plan(1)
-  cassSetup(runTest)
+  await cassSetup(runTest)
 
   function runTest() {
     t.test('executeBatch', function (t) {

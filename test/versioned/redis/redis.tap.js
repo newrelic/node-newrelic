@@ -23,38 +23,30 @@ test('Redis instrumentation', { timeout: 20000 }, function (t) {
   let agent
   let client
 
-  t.beforeEach(function () {
-    return new Promise((resolve, reject) => {
-      helper.flushRedisDb(DB_INDEX, (error) => {
-        if (error) {
-          reject(error)
+  t.beforeEach(async function () {
+    agent = helper.instrumentMockedAgent()
+    const redis = require('redis')
+    client = redis.createClient(params.redis_port, params.redis_host)
+    await helper.flushRedisDb(client, DB_INDEX)
+    await new Promise((resolve, reject) => {
+      client.select(DB_INDEX, function (err) {
+        if (err) {
+          reject(err)
         }
-
-        agent = helper.instrumentMockedAgent()
-
-        const redis = require('redis')
-        client = redis.createClient(params.redis_port, params.redis_host)
-        client.once('ready', () => {
-          client.select(DB_INDEX, function (err) {
-            if (err) {
-              reject(err)
-            }
-
-            METRIC_HOST_NAME = urltils.isLocalhost(params.redis_host)
-              ? agent.config.getHostnameSafe()
-              : params.redis_host
-            HOST_ID = METRIC_HOST_NAME + '/' + params.redis_port
-
-            // need to capture attributes
-            agent.config.attributes.enabled = true
-
-            // Start testing!
-            t.notOk(agent.getTransaction(), 'no transaction should be in play')
-            resolve()
-          })
-        })
+        resolve()
       })
     })
+
+    METRIC_HOST_NAME = urltils.isLocalhost(params.redis_host)
+      ? agent.config.getHostnameSafe()
+      : params.redis_host
+    HOST_ID = METRIC_HOST_NAME + '/' + params.redis_port
+
+    // need to capture attributes
+    agent.config.attributes.enabled = true
+
+    // Start testing!
+    t.notOk(agent.getTransaction(), 'no transaction should be in play')
   })
 
   t.afterEach(function () {

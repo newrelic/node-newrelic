@@ -299,23 +299,21 @@ const helper = (module.exports = {
    * @param {function} callback
    *  The operations to be performed while the server is running.
    */
-  flushRedisDb: (redis, dbIndex, callback) => {
-    if (!callback) {
-      // flushRedisDb(dbIndex, callback)
-      callback = dbIndex
-      dbIndex = redis
-      redis = require('redis')
-    }
-    const client = redis.createClient(params.redis_port, params.redis_host)
-    client.select(dbIndex, (err) => {
-      if (err) {
-        client.end(true)
-        return callback(err)
-      }
+  flushRedisDb: (client, dbIndex) => {
+    return new Promise((resolve, reject) => {
+      client.select(dbIndex, (err) => {
+        if (err) {
+          client.end(true)
+          reject(err)
+        }
 
-      client.flushdb((err) => {
-        client.end(true)
-        callback(err)
+        client.flushdb((err) => {
+          if (err) {
+            reject(err)
+          }
+
+          resolve()
+        })
       })
     })
   },
