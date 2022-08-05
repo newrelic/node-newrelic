@@ -351,10 +351,10 @@ tap.test('when posting to collector', (t) => {
       })
     })
 
-    t.test('should default to deflated compression', (t) => {
+    t.test('should default to gzip compression', (t) => {
       const sendDeflatedMetrics = nock(URL)
         .post(generate('metric_data', RUN_ID))
-        .matchHeader('Content-Encoding', 'deflate')
+        .matchHeader('Content-Encoding', 'gzip')
         .reply(200, { return_value: [] })
 
       method._shouldCompress = () => true
@@ -597,7 +597,7 @@ tap.test('when generating headers for a compressed request', (t) => {
   })
 
   t.test('should use the content type from the parameter', (t) => {
-    t.equal(headers['CONTENT-ENCODING'], 'deflate')
+    t.equal(headers['CONTENT-ENCODING'], 'gzip')
     t.end()
   })
 
