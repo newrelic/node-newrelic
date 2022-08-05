@@ -5,29 +5,36 @@
 
 'use strict'
 
-// TODO: convert to normal tap style.
-// Below allows use of mocha DSL with tap runner.
 const test = require('tap').test
 
 // For consistent results, unset this in case the user had it set in their
 // environment when testing.
 delete process.env.NODE_ENV
 
-const a = require('async')
 const path = require('path')
-const fs = require('fs')
+const fs = require('fs/promises')
 const spawn = require('child_process').spawn
 const environment = require('../../lib/environment')
-const rimraf = require('rimraf')
 
-function find(settings, name) {
+const find = (settings, name) => {
   const items = settings.filter((candidate) => candidate[0] === name)
 
   return items[0] && items[0][1]
 }
 
-test('the environment scraper', (t) => {
+test('the environment scraper', async (t) => {
   let settings = null
+
+  const reloadEnvironment = async () => {
+    settings = await new Promise((resolve, reject) =>
+      environment.getJSON((err, data) => {
+        if (err) {
+          reject(err)
+        }
+        return resolve(data)
+      })
+    )
+  }
 
   t.before(reloadEnvironment)
 
@@ -86,8 +93,6 @@ test('the environment scraper', (t) => {
     environment.setFramework('another')
 
     const frameworks = environment.get('Framework')
-    // t.has(frameworks, { framework: 'custom' }, `Frameworks should have 'custom' member`)
-    // t.has(frameworks, { framework: 'another' }, `Frameworks should have 'another' member`)
     t.ok(frameworks.indexOf('custom') > -1, `Frameworks should have 'custom' member`)
     t.ok(frameworks.indexOf('another') > -1, `Frameworks should have 'another' member`)
 
@@ -157,7 +162,7 @@ test('the environment scraper', (t) => {
     t.end()
   })
 
-  t.test('without process.config', (t) => {
+  t.test('without process.config', async (t) => {
     let conf = null
 
     t.before(async () => {
@@ -233,14 +238,14 @@ test('the environment scraper', (t) => {
     t.end()
   })
 
-  t.test('should get correct version for dependencies', async function () {
+  t.test('should get correct version for dependencies', async () => {
     const root = path.join(__dirname, '../lib/example-packages')
     const versions = await new Promise((resolve, reject) => {
-      environment.listPackages(root, function (err, packages) {
+      environment.listPackages(root, (err, packages) => {
         if (err) {
           reject(err)
         }
-        const v = packages.reduce(function (map, pkg) {
+        const v = packages.reduce((map, pkg) => {
           map[pkg[0]] = pkg[1]
           return map
         }, {})
@@ -255,7 +260,7 @@ test('the environment scraper', (t) => {
     t.end()
   })
 
-  t.test('should not crash when given a file in NODE_PATH', async function () {
+  t.test('should not crash when given a file in NODE_PATH', async () => {
     const env = {
       NODE_PATH: path.join(__dirname, 'environment.test.js'),
       PATH: process.env.PATH
@@ -272,7 +277,7 @@ test('the environment scraper', (t) => {
     const proc = spawn(exec, args, opt)
 
     await new Promise((resolve) => {
-      proc.on('exit', function (code) {
+      proc.on('exit', (code) => {
         t.equal(code, 0, 'Process should exit with code 0')
         resolve(code)
       })
@@ -280,78 +285,39 @@ test('the environment scraper', (t) => {
     t.end()
   })
 
-  t.test('with symlinks', (t) => {
+  t.test('with symlinks', async (t) => {
     const nmod = path.resolve(__dirname, '../helpers/node_modules')
-
-    t.before(function () {
-      if (!fs.existsSync(nmod)) {
-        fs.mkdirSync(nmod)
-      }
-
-      // node_modules/
-      //  a/
-      //    package.json
-      //    node_modules/
-      //      b (symlink)
-      //  b/
-      //    package.json
-      //    node_modules/
-      //      a (symlink)
-      a.parallel([a.apply(makePackage, 'a', 'b'), a.apply(makePackage, 'b', 'a')], () => t.end())
-    })
-
-    t.afterEach(() => {
-      const aDir = path.join(nmod, 'a')
-      const bDir = path.join(nmod, 'b')
-      a.each([aDir, bDir], rimraf, () => true) // originally a "done" here
-    })
-
-    async function makePackage(pkg, dep, cb) {
-      const dir = path.join(nmod, pkg)
-      a.series(
-        [
-          // Make the directory tree.
-          a.apply(makeDir, dir),
-          a.apply(makeDir, path.join(dir, 'node_modules')),
-
-          // Make the package.json
-          function (pkgCb) {
-            const pkgJSON = { name: pkg, dependencies: {} }
-            pkgJSON.dependencies[dep] = '*'
-            fs.writeFile(path.join(dir, 'package.json'), JSON.stringify(pkgJSON), pkgCb)
-          },
-
-          // Make the dep a symlink.
-          function (symCb) {
-            const depModule = path.join(dir, 'node_modules', dep)
-            fs.symlink(path.join(nmod, dep), depModule, 'dir', function (err) {
-              symCb(err && err.code !== 'EEXIST' ? err : null)
-            })
-          }
-        ],
-        cb
-      )
-
-      function makeDir(dirp, mkdirDb) {
-        fs.mkdir(dirp, function (err) {
-          mkdirDb(err && err.code !== 'EEXIST' ? err : null)
+    const makeDir = async (dirp, mkdirDb) => {
+      await fs
+        .mkdir(dirp)
+        .then(() => {
+          return mkdirDb(null)
         })
-      }
+        .catch((err) => {
+          if (err.code !== 'EEXIST') {
+            return mkdirDb(err)
+          }
+          return mkdirDb(null)
+        })
     }
 
-    t.test('should not crash when encountering a cyclical symlink', async (t) => {
-      await execChild()
-      t.end()
-    })
+    const makePackage = async (pkg, dep) => {
+      const dir = path.join(nmod, pkg)
 
-    t.test('should not crash when encountering a dangling symlink', async (t) => {
-      rimraf.sync(path.join(nmod, 'a'))
-      const exitCode = await execChild()
-      t.equal(exitCode, 0, 'Exit code should be 0.')
-      t.end()
-    })
+      // Make the directory tree.
+      await makeDir(dir) // make the directory
+      await makeDir(path.join(dir, 'node_modules')) // make the modules subdirectory
 
-    async function execChild() {
+      // Make the package.json
+      const pkgJSON = { name: pkg, dependencies: {} }
+      pkgJSON.dependencies[dep] = '*'
+      await fs.writeFile(path.join(dir, 'package.json'), JSON.stringify(pkgJSON))
+
+      // Make the dep a symlink.
+      const depModule = path.join(dir, 'node_modules', dep)
+      return fs.symlink(path.join(nmod, dep), depModule, 'dir')
+    }
+    const execChild = async () => {
       const opt = {
         stdio: 'pipe',
         env: process.env,
@@ -365,13 +331,51 @@ test('the environment scraper', (t) => {
       proc.stdout.pipe(process.stderr)
       proc.stderr.pipe(process.stderr)
 
-      return new Promise((resolve) => {
+      const code = await new Promise((resolve) => {
         proc.on('exit', (code) => resolve(code))
       })
+      return code
     }
+
+    t.before(async () => {
+      await fs.access(nmod).catch(async () => {
+        await fs.mkdir(nmod)
+      })
+
+      // node_modules/
+      //  a/
+      //    package.json
+      //    node_modules/
+      //      b (symlink)
+      //  b/
+      //    package.json
+      //    node_modules/
+      //      a (symlink)
+      await makePackage('a', 'b')
+      await makePackage('b', 'a')
+    })
+
+    t.afterEach(async () => {
+      const aDir = path.join(nmod, 'a')
+      const bDir = path.join(nmod, 'b')
+      await fs.rm(aDir, { recursive: true, force: true })
+      await fs.rm(bDir, { recursive: true, force: true })
+    })
+
+    t.test('should not crash when encountering a cyclical symlink', async (t) => {
+      await execChild()
+      t.end()
+    })
+
+    t.test('should not crash when encountering a dangling symlink', async (t) => {
+      await fs.rm(path.join(nmod, 'a'), { recursive: true, force: true })
+      const exitCode = await execChild()
+      t.equal(exitCode, 0, 'Exit code should be 0.')
+      t.end()
+    })
   })
 
-  t.test('when NODE_ENV is "production"', (t) => {
+  t.test('when NODE_ENV is "production"', async (t) => {
     let nSettings = null
 
     t.before(async () => {
@@ -381,30 +385,15 @@ test('the environment scraper', (t) => {
           if (err) {
             reject(err)
           }
-          return resolve(data)
+          // delete process.env.NODE_ENV
+          resolve(data)
         })
       })
     })
 
-    t.on('end', () => {
-      delete process.env.NODE_ENV
-    })
-
     t.test('should save the NODE_ENV value in the environment settings', (t) => {
       t.equal(find(nSettings, 'NODE_ENV'), 'production')
+      t.end()
     })
-    t.end()
   })
-
-  async function reloadEnvironment() {
-    // settings is initialized at the top of the scope
-    settings = await new Promise((resolve, reject) =>
-      environment.getJSON((err, data) => {
-        if (err) {
-          reject(err)
-        }
-        return resolve(data)
-      })
-    )
-  }
 })
