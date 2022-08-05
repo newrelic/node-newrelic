@@ -87,14 +87,12 @@ describe('the environment scraper', function () {
     }).not.throws()
   })
 
-  it('should persist dispatcher between getJSON()s', function (done) {
+  it('should persist dispatcher between getJSON()s', async function () {
     environment.setDispatcher('test')
     expect(environment.get('Dispatcher')).to.include.members(['test'])
 
-    environment.refresh(function (err) {
-      expect(environment.get('Dispatcher')).to.include.members(['test'])
-      done(err)
-    })
+    await environment.refresh()
+    expect(environment.get('Dispatcher')).to.include.members(['test'])
   })
 
   it('should have some settings', function () {
@@ -155,7 +153,7 @@ describe('the environment scraper', function () {
   describe('without process.config', function () {
     let conf = null
 
-    before(function (done) {
+    before(function () {
       conf = process.config
 
       /**
@@ -164,12 +162,12 @@ describe('the environment scraper', function () {
        * https://nodejs.org/api/deprecations.html#DEP0150
        */
       process.config = null
-      reloadEnvironment(done)
+      return reloadEnvironment()
     })
 
-    after(function (done) {
+    after(function () {
       process.config = conf
-      reloadEnvironment(done)
+      return reloadEnvironment()
     })
 
     it('should not know whether npm was installed with Node.js', function () {
@@ -221,20 +219,18 @@ describe('the environment scraper', function () {
     })
   })
 
-  it('should get correct version for dependencies', function (done) {
+  it('should get correct version for dependencies', async function () {
     const root = path.join(__dirname, '../lib/example-packages')
-    environment.listPackages(root, function (err, packages) {
-      const versions = packages.reduce(function (map, pkg) {
-        map[pkg[0]] = pkg[1]
-        return map
-      }, {})
+    const packages = []
+    await environment.listPackages(root, packages)
+    const versions = packages.reduce(function (map, pkg) {
+      map[pkg[0]] = pkg[1]
+      return map
+    }, {})
 
-      expect(versions).deep.equal({
-        'invalid-json': '<unknown>',
-        'valid-json': '1.2.3'
-      })
-
-      done()
+    expect(versions).deep.equal({
+      'invalid-json': '<unknown>',
+      'valid-json': '1.2.3'
     })
   })
 
@@ -353,12 +349,9 @@ describe('the environment scraper', function () {
   describe('when NODE_ENV is "production"', function () {
     let nSettings = null
 
-    before(function (done) {
+    before(async function () {
       process.env.NODE_ENV = 'production'
-      environment.getJSON(function (err, data) {
-        nSettings = data
-        done(err)
-      })
+      nSettings = await environment.getJSON()
     })
 
     after(function () {
@@ -370,10 +363,7 @@ describe('the environment scraper', function () {
     })
   })
 
-  function reloadEnvironment(cb) {
-    environment.getJSON(function (err, data) {
-      settings = data
-      cb(err)
-    })
+  async function reloadEnvironment() {
+    settings = await environment.getJSON()
   }
 })

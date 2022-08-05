@@ -1,19 +1,19 @@
 {
-  "lastUpdated": "Wed Aug 03 2022 10:24:25 GMT-0400 (Eastern Daylight Time)",
+  "lastUpdated": "Mon Aug 15 2022 10:14:46 GMT-0400 (Eastern Daylight Time)",
   "projectName": "New Relic Node Agent",
   "projectUrl": "https://github.com/newrelic/node-newrelic",
   "includeOptDeps": true,
   "includeDev": true,
   "dependencies": {
-    "@grpc/grpc-js@1.6.8": {
+    "@grpc/grpc-js@1.6.9": {
       "name": "@grpc/grpc-js",
-      "version": "1.6.8",
+      "version": "1.6.9",
       "range": "^1.5.5",
       "licenses": "Apache-2.0",
       "repoUrl": "https://github.com/grpc/grpc-node/tree/master/packages/grpc-js",
-      "versionedRepoUrl": "https://github.com/grpc/grpc-node/tree/master/packages/grpc-js/tree/v1.6.8",
+      "versionedRepoUrl": "https://github.com/grpc/grpc-node/tree/master/packages/grpc-js/tree/v1.6.9",
       "licenseFile": "node_modules/@grpc/grpc-js/LICENSE",
-      "licenseUrl": "https://github.com/grpc/grpc-node/tree/master/packages/grpc-js/blob/v1.6.8/LICENSE",
+      "licenseUrl": "https://github.com/grpc/grpc-node/tree/master/packages/grpc-js/blob/v1.6.9/LICENSE",
       "licenseTextSource": "file",
       "publisher": "Google Inc."
     },
@@ -80,18 +80,6 @@
       "licenseTextSource": "file",
       "publisher": "Daniel Imms",
       "url": "http://www.growingwiththeweb.com"
-    },
-    "async@3.2.4": {
-      "name": "async",
-      "version": "3.2.4",
-      "range": "^3.2.3",
-      "licenses": "MIT",
-      "repoUrl": "https://github.com/caolan/async",
-      "versionedRepoUrl": "https://github.com/caolan/async/tree/v3.2.4",
-      "licenseFile": "node_modules/async/LICENSE",
-      "licenseUrl": "https://github.com/caolan/async/blob/v3.2.4/LICENSE",
-      "licenseTextSource": "file",
-      "publisher": "Caolan McMahon"
     },
     "concat-stream@2.0.0": {
       "name": "concat-stream",
@@ -257,6 +245,18 @@
       "licenseUrl": "https://github.com/ajv-validator/ajv/blob/v6.12.6/LICENSE",
       "licenseTextSource": "file",
       "publisher": "Evgeny Poberezkin"
+    },
+    "async@3.2.4": {
+      "name": "async",
+      "version": "3.2.4",
+      "range": "^3.2.4",
+      "licenses": "MIT",
+      "repoUrl": "https://github.com/caolan/async",
+      "versionedRepoUrl": "https://github.com/caolan/async/tree/v3.2.4",
+      "licenseFile": "node_modules/async/LICENSE",
+      "licenseUrl": "https://github.com/caolan/async/blob/v3.2.4/LICENSE",
+      "licenseTextSource": "file",
+      "publisher": "Caolan McMahon"
     },
     "chai@4.3.6": {
       "name": "chai",
