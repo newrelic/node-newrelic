@@ -67,7 +67,11 @@ tap.test('Pino instrumentation', (t) => {
     const message = 'logs are not enriched'
     disabledLogger.info(message)
     const line = await once(stream, 'data')
-    originalMsgAssertion({ t, logLine: line, hostname: agent.config.getHostnameSafe() })
+    originalMsgAssertion({
+      t,
+      logLine: line,
+      hostname: agent.config.getHostnameSafe()
+    })
     t.equal(line.msg, message, 'msg should not change')
     const metric = agent.metrics.getMetric(LOGGING.LIBS.PINO)
     t.notOk(metric, `should not create ${LOGGING.LIBS.PINO} metric when logging is disabled`)
@@ -124,7 +128,11 @@ tap.test('Pino instrumentation', (t) => {
       const level = 'info'
       logger[level](message)
       const line = await once(stream, 'data')
-      originalMsgAssertion({ t, hostname: agent.config.getHostnameSafe(), logLine: line })
+      originalMsgAssertion({
+        t,
+        hostname: agent.config.getHostnameSafe(),
+        logLine: line
+      })
       t.equal(agent.logs.getEvents().length, 1, 'should have 1 log in aggregator')
       const formattedLine = agent.logs.getEvents()[0]()
       t.validateNrLogLine({ line: formattedLine, message, level, config })
@@ -144,7 +152,12 @@ tap.test('Pino instrumentation', (t) => {
       })
       t.equal(agent.logs.getEvents().length, 1, 'should have 1 log in aggregator')
       const formattedLine = agent.logs.getEvents()[0]()
-      t.validateNrLogLine({ line: formattedLine, message: err.message, level, config })
+      t.validateNrLogLine({
+        line: formattedLine,
+        message: err.message,
+        level,
+        config
+      })
       t.equal(formattedLine['error.class'], 'Error', 'should have Error as error.class')
       t.equal(formattedLine['error.message'], err.message, 'should have proper error.message')
       t.equal(formattedLine['error.stack'], truncate(err.stack), 'should have proper error.stack')
@@ -159,7 +172,11 @@ tap.test('Pino instrumentation', (t) => {
         logger[level](message)
         const meta = agent.getLinkingMetadata()
         const line = await once(stream, 'data')
-        originalMsgAssertion({ t, hostname: agent.config.getHostnameSafe(), logLine: line })
+        originalMsgAssertion({
+          t,
+          hostname: agent.config.getHostnameSafe(),
+          logLine: line
+        })
         t.equal(
           agent.logs.getEvents().length,
           0,
@@ -207,10 +224,18 @@ tap.test('Pino instrumentation', (t) => {
         logger[level](messages[1])
         const meta = agent.getLinkingMetadata()
         const line = await once(stream, 'data')
-        originalMsgAssertion({ t, hostname: agent.config.getHostnameSafe(), logLine: line })
+        originalMsgAssertion({
+          t,
+          hostname: agent.config.getHostnameSafe(),
+          logLine: line
+        })
         childLogger[level](messages[0])
         const childLine = await once(stream, 'data')
-        originalMsgAssertion({ t, hostname: agent.config.getHostnameSafe(), logLine: childLine })
+        originalMsgAssertion({
+          t,
+          hostname: agent.config.getHostnameSafe(),
+          logLine: childLine
+        })
         t.equal(
           agent.logs.getEvents().length,
           0,
@@ -225,7 +250,12 @@ tap.test('Pino instrumentation', (t) => {
 
         agent.logs.getEvents().forEach((logLine, index) => {
           const formattedLine = logLine()
-          t.validateNrLogLine({ line: formattedLine, message: messages[index], level, config })
+          t.validateNrLogLine({
+            line: formattedLine,
+            message: messages[index],
+            level,
+            config
+          })
           t.equal(formattedLine['trace.id'], meta['trace.id'], 'should be expected trace.id value')
           t.equal(formattedLine['span.id'], meta['span.id'], 'should be expected span.id value')
         })
@@ -246,9 +276,21 @@ tap.test('Pino instrumentation', (t) => {
           metrics: { enabled: true }
         }
       })
+
+      const pinoLogger = pino(
+        {
+          level: 'debug',
+          customLevels: {
+            http: 35
+          }
+        },
+        stream
+      )
+
       helper.runInTransaction(agent, 'pino-test', async () => {
         const logLevels = {
           debug: 20,
+          http: 4, // this one is a custom level
           info: 5,
           warn: 3,
           error: 2
@@ -256,7 +298,7 @@ tap.test('Pino instrumentation', (t) => {
         for (const [logLevel, maxCount] of Object.entries(logLevels)) {
           for (let count = 0; count < maxCount; count++) {
             const msg = `This is log message #${count} at ${logLevel} level`
-            logger[logLevel](msg)
+            pinoLogger[logLevel](msg)
           }
         }
         await once(stream, 'data')
@@ -265,7 +307,7 @@ tap.test('Pino instrumentation', (t) => {
         for (const [logLevel, maxCount] of Object.entries(logLevels)) {
           grandTotal += maxCount
           const metricName = LOGGING.LEVELS[logLevel.toUpperCase()]
-          const metric = agent.metrics.getMetric(metricName)
+          const metric = agent.metrics.getMetric(metricName || LOGGING.LEVELS.UNKNOWN)
           t.ok(metric, `ensure ${metricName} exists`)
           t.equal(metric.callCount, maxCount, `ensure ${metricName} has the right value`)
         }
