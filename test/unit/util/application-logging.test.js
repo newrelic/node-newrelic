@@ -128,21 +128,54 @@ tap.test('Application Logging Config Tests', (t) => {
 })
 
 tap.test('incrementLoggingLinesMetrics', (t) => {
-  const callCountStub = { incrementCallCount: sinon.stub() }
-  const metricsStub = {
-    getOrCreateMetric: sinon.stub().returns(callCountStub)
-  }
-  loggingUtils.incrementLoggingLinesMetrics('debug', metricsStub)
-  t.equal(
-    metricsStub.getOrCreateMetric.args[0][0],
-    LOGGING.LINES,
-    `should create ${LOGGING.LINES} metric`
-  )
-  t.equal(
-    metricsStub.getOrCreateMetric.args[1][0],
-    LOGGING.LEVELS.DEBUG,
-    `should create ${LOGGING.LEVELS.DEBUG} metric`
-  )
-  t.equal(callCountStub.incrementCallCount.callCount, 2, 'should increment each metric')
-  t.end()
+  t.autoend()
+  let callCountStub = null
+  let metricsStub = null
+  t.beforeEach(() => {
+    callCountStub = { incrementCallCount: sinon.stub() }
+    metricsStub = {
+      getOrCreateMetric: sinon.stub().returns(callCountStub)
+    }
+  })
+
+  t.afterEach(() => {
+    callCountStub = null
+    metricsStub = null
+  })
+
+  const levels = Object.keys(LOGGING.LEVELS)
+  levels.forEach((level) => {
+    const levelLowercase = level.toLowerCase()
+    t.test(`should increment logging lines metrics for level: ${levelLowercase}`, (t) => {
+      loggingUtils.incrementLoggingLinesMetrics(levelLowercase, metricsStub)
+      t.equal(
+        metricsStub.getOrCreateMetric.args[0][0],
+        LOGGING.LINES,
+        `should create ${LOGGING.LINES} metric`
+      )
+      t.equal(
+        metricsStub.getOrCreateMetric.args[1][0],
+        LOGGING.LEVELS[level],
+        `should create ${LOGGING.LEVELS[level]} metric`
+      )
+      t.equal(callCountStub.incrementCallCount.callCount, 2, 'should increment each metric')
+      t.end()
+    })
+  })
+
+  t.test('should default to unknown when level is undefined', (t) => {
+    loggingUtils.incrementLoggingLinesMetrics(undefined, metricsStub)
+    t.equal(
+      metricsStub.getOrCreateMetric.args[0][0],
+      LOGGING.LINES,
+      `should create ${LOGGING.LINES} metric`
+    )
+    t.equal(
+      metricsStub.getOrCreateMetric.args[1][0],
+      LOGGING.LEVELS.UNKNOWN,
+      `should create ${LOGGING.LEVELS.UNKNOWN} metric`
+    )
+    t.equal(callCountStub.incrementCallCount.callCount, 2, 'should increment each metric')
+    t.end()
+  })
 })
