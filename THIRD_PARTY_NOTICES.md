@@ -20,7 +20,6 @@ code, the source code can be found at [https://github.com/newrelic/node-newrelic
 * [@newrelic/koa](#newrelickoa)
 * [@newrelic/superagent](#newrelicsuperagent)
 * [@tyriar/fibonacci-heap](#tyriarfibonacci-heap)
-* [async](#async)
 * [concat-stream](#concat-stream)
 * [https-proxy-agent](#https-proxy-agent)
 * [json-stringify-safe](#json-stringify-safe)
@@ -37,6 +36,7 @@ code, the source code can be found at [https://github.com/newrelic/node-newrelic
 * [@octokit/rest](#octokitrest)
 * [@slack/bolt](#slackbolt)
 * [ajv](#ajv)
+* [async](#async)
 * [chai](#chai)
 * [commander](#commander)
 * [eslint-config-prettier](#eslint-config-prettier)
@@ -78,7 +78,7 @@ code, the source code can be found at [https://github.com/newrelic/node-newrelic
 
 ### @grpc/grpc-js
 
-This product includes source derived from [@grpc/grpc-js](https://github.com/grpc/grpc-node/tree/master/packages/grpc-js) ([v1.6.8](https://github.com/grpc/grpc-node/tree/master/packages/grpc-js/tree/v1.6.8)), distributed under the [Apache-2.0 License](https://github.com/grpc/grpc-node/tree/master/packages/grpc-js/blob/v1.6.8/LICENSE):
+This product includes source derived from [@grpc/grpc-js](https://github.com/grpc/grpc-node/tree/master/packages/grpc-js) ([v1.6.9](https://github.com/grpc/grpc-node/tree/master/packages/grpc-js/tree/v1.6.9)), distributed under the [Apache-2.0 License](https://github.com/grpc/grpc-node/tree/master/packages/grpc-js/blob/v1.6.9/LICENSE):
 
 ```
                                  Apache License
@@ -1149,33 +1149,6 @@ THE SOFTWARE.
 
 ```
 
-### async
-
-This product includes source derived from [async](https://github.com/caolan/async) ([v3.2.4](https://github.com/caolan/async/tree/v3.2.4)), distributed under the [MIT License](https://github.com/caolan/async/blob/v3.2.4/LICENSE):
-
-```
-Copyright (c) 2010-2018 Caolan McMahon
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in
-all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-THE SOFTWARE.
-
-```
-
 ### concat-stream
 
 This product includes source derived from [concat-stream](https://github.com/maxogden/concat-stream) ([v2.0.0](https://github.com/maxogden/concat-stream/tree/v2.0.0)), distributed under the [MIT License](https://github.com/maxogden/concat-stream/blob/v2.0.0/LICENSE):
@@ -2086,6 +2059,33 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
+
+```
+
+### async
+
+This product includes source derived from [async](https://github.com/caolan/async) ([v3.2.4](https://github.com/caolan/async/tree/v3.2.4)), distributed under the [MIT License](https://github.com/caolan/async/blob/v3.2.4/LICENSE):
+
+```
+Copyright (c) 2010-2018 Caolan McMahon
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
 
 ```
 

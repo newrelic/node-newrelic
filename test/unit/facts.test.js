@@ -771,7 +771,6 @@ tap.test('log metrics for common logging libraries', (t) => {
   const logPackages = ['winston', 'bunyan']
   const otherPackages = ['express', 'indium']
   const packages = logPackages.concat(otherPackages)
-  let getJSON
   let agent = null
 
   t.beforeEach(() => {
@@ -781,21 +780,19 @@ tap.test('log metrics for common logging libraries', (t) => {
     }
     agent = helper.loadMockedAgent(Object.assign(config, DISABLE_ALL_DETECTIONS))
     // fake getJSON for testing
-    getJSON = agent.environment.getJSON
-    agent.environment.getJSON = (cb) => {
-      cb(null, [
-        [
-          'Packages',
-          packages.map((lib) => {
-            return `["${lib}","0.0.0"]`
-          })
-        ]
-      ])
-    }
+    sinon.stub(agent.environment, 'getJSON')
+    agent.environment.getJSON.resolves([
+      [
+        'Packages',
+        packages.map((lib) => {
+          return `["${lib}","0.0.0"]`
+        })
+      ]
+    ])
   })
 
   t.afterEach(() => {
-    agent.environment.getJSON = getJSON
+    agent.environment.getJSON.restore()
     helper.unloadAgent(agent)
   })
 

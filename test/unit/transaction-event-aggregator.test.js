@@ -83,17 +83,12 @@ describe('Transaction Event Aggregator', () => {
     })
 
     describe('send()', () => {
-      it('should emit proper message with method for starting send', () => {
+      it('should emit proper message with method for starting send', (done) => {
         const expectedStartEmit = `starting ${EXPECTED_METHOD} data send.`
 
-        let emitFired = false
-        eventAggregator.once(expectedStartEmit, () => {
-          emitFired = true
-        })
+        eventAggregator.once(expectedStartEmit, done)
 
         eventAggregator.send()
-
-        expect(emitFired).to.be.true
       })
 
       it('should clear existing data', () => {
@@ -191,21 +186,16 @@ describe('Transaction Event Aggregator', () => {
         expect(currentEvents).to.deep.equal(eventsToRetain)
       })
 
-      it('should emit proper message with method for finishing send', () => {
+      it('should emit proper message with method for finishing send', (done) => {
         const expectedStartEmit = `finished ${EXPECTED_METHOD} data send.`
 
-        let emitFired = false
-        eventAggregator.once(expectedStartEmit, () => {
-          emitFired = true
-        })
+        eventAggregator.once(expectedStartEmit, done)
 
         fakeCollectorApi[EXPECTED_METHOD] = (payload, callback) => {
           callback(null, { retainData: false })
         }
 
         eventAggregator.send()
-
-        expect(emitFired).to.be.true
       })
     })
   })
