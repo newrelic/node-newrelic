@@ -306,8 +306,8 @@ tap.test('Pino instrumentation', (t) => {
         let grandTotal = 0
         for (const [logLevel, maxCount] of Object.entries(logLevels)) {
           grandTotal += maxCount
-          const metricName = LOGGING.LEVELS[logLevel.toUpperCase()]
-          const metric = agent.metrics.getMetric(metricName || LOGGING.LEVELS.UNKNOWN)
+          const metricName = LOGGING.LEVELS[logLevel.toUpperCase()] || LOGGING.LEVELS.UNKNOWN
+          const metric = agent.metrics.getMetric(metricName)
           t.ok(metric, `ensure ${metricName} exists`)
           t.equal(metric.callCount, maxCount, `ensure ${metricName} has the right value`)
         }
