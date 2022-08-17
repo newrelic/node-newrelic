@@ -333,7 +333,7 @@ tap.test('when posting to collector', (t) => {
       method._post('[]', {}, (error) => {
         t.error(error)
         t.ok(sendMetrics.isDone())
-        t.end
+        t.end()
       })
     })
 
@@ -352,9 +352,26 @@ tap.test('when posting to collector', (t) => {
     })
 
     t.test('should default to gzip compression', (t) => {
-      const sendDeflatedMetrics = nock(URL)
+      const sendGzippedMetrics = nock(URL)
         .post(generate('metric_data', RUN_ID))
         .matchHeader('Content-Encoding', 'gzip')
+        .reply(200, { return_value: [] })
+
+      method._shouldCompress = () => true
+      method._post('[]', {}, (error) => {
+        t.error(error)
+
+        t.ok(sendGzippedMetrics.isDone())
+
+        t.end()
+      })
+    })
+
+    t.test('should use deflate compression when requested', (t) => {
+      method._agent.config.compressed_content_encoding = 'deflate'
+      const sendDeflatedMetrics = nock(URL)
+        .post(generate('metric_data', RUN_ID))
+        .matchHeader('Content-Encoding', 'deflate')
         .reply(200, { return_value: [] })
 
       method._shouldCompress = () => true
