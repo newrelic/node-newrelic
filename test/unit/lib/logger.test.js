@@ -10,18 +10,18 @@ const sinon = require('sinon')
 const proxyquire = require('proxyquire').noPreserveCache()
 const EventEmitter = require('events').EventEmitter
 
-tap.test('Bootstrapped Logger', function (harness) {
-  harness.autoend()
+tap.test('Bootstrapped Logger', (t) => {
+  t.autoend()
 
   let fakeLoggerConfigure
   let fakeStreamPipe
   let fakeLogger
-  let fakeEmitter
-  let fakeEmitterSpy
+  let testEmitter
+  let testEmitterSpy
   let fakeFS
   let originalConsoleError
 
-  harness.beforeEach(function () {
+  t.beforeEach(() => {
     // Make sure we don't pollute our logs
     originalConsoleError = global.console.error
     global.console.error = sinon.stub()
@@ -34,21 +34,19 @@ tap.test('Bootstrapped Logger', function (harness) {
       pipe: fakeStreamPipe
     })
 
-    fakeEmitter = new EventEmitter()
-    fakeEmitterSpy = sinon.spy(fakeEmitter, 'on')
+    testEmitter = new EventEmitter()
+    testEmitterSpy = sinon.spy(testEmitter, 'on')
     fakeFS = {
-      createWriteStream: sinon.stub().returns(fakeEmitter)
+      createWriteStream: sinon.stub().returns(testEmitter)
     }
   })
 
-  harness.afterEach(function () {
+  t.afterEach(() => {
     // Restore so we don't have a knock-on effect with other test suites
     global.console.error = originalConsoleError
   })
 
-  harness.test('should instantiate a new logger (logging enabled + filepath)', function (test) {
-    test.plan(7)
-
+  t.test('should instantiate a new logger (logging enabled + filepath)', (t) => {
     proxyquire('../../../lib/logger', {
       './util/logger': fakeLogger,
       './util/unwrapped-core': { fs: fakeFS },
@@ -63,7 +61,7 @@ tap.test('Bootstrapped Logger', function (harness) {
       }
     })
 
-    test.ok(
+    t.ok(
       fakeLogger.calledOnceWithExactly({
         name: 'newrelic_bootstrap',
         level: 'info',
@@ -72,7 +70,7 @@ tap.test('Bootstrapped Logger', function (harness) {
       'should bootstrap sub-logger'
     )
 
-    test.ok(
+    t.ok(
       fakeLoggerConfigure.calledOnceWithExactly({
         name: 'newrelic',
         level: 'debug',
@@ -81,35 +79,33 @@ tap.test('Bootstrapped Logger', function (harness) {
       'should call logger.configure with config options'
     )
 
-    test.ok(
+    t.ok(
       fakeFS.createWriteStream.calledOnceWithExactly('/foo/bar/baz', { flags: 'a+' }),
       'should create a new write stream to specific file'
     )
 
-    test.ok(
-      fakeStreamPipe.calledOnceWithExactly(fakeEmitter),
+    t.ok(
+      fakeStreamPipe.calledOnceWithExactly(testEmitter),
       'should use a new write stream for output'
     )
 
     const expectedError = new Error('stuff blew up')
-    fakeEmitter.emit('error', expectedError)
+    testEmitter.emit('error', expectedError)
 
-    test.ok(
-      fakeEmitterSpy.calledOnceWith('error'),
+    t.ok(
+      testEmitterSpy.calledOnceWith('error'),
       'should handle errors emitted from the write stream'
     )
-    test.ok(
+    t.ok(
       global.console.error.calledWith('New Relic failed to open log file /foo/bar/baz'),
       'should log filepath when error occurs'
     )
-    test.ok(global.console.error.calledWith(expectedError), 'should log error when it occurs')
+    t.ok(global.console.error.calledWith(expectedError), 'should log error when it occurs')
 
-    test.end()
+    t.end()
   })
 
-  harness.test('should instantiate a new logger (logging enabled + stderr)', function (test) {
-    test.plan(1)
-
+  t.test('should instantiate a new logger (logging enabled + stderr)', (t) => {
     proxyquire('../../../lib/logger', {
       './util/logger': fakeLogger,
       './util/unwrapped-core': { fs: fakeFS },
@@ -124,17 +120,15 @@ tap.test('Bootstrapped Logger', function (harness) {
       }
     })
 
-    test.ok(
+    t.ok(
       fakeStreamPipe.calledOnceWithExactly(process.stderr),
       'should use process.stderr for output'
     )
 
-    test.end()
+    t.end()
   })
 
-  harness.test('should instantiate a new logger (logging enabled + stdout)', function (test) {
-    test.plan(1)
-
+  t.test('should instantiate a new logger (logging enabled + stdout)', (t) => {
     proxyquire('../../../lib/logger', {
       './util/logger': fakeLogger,
       './util/unwrapped-core': { fs: fakeFS },
@@ -149,17 +143,15 @@ tap.test('Bootstrapped Logger', function (harness) {
       }
     })
 
-    test.ok(
+    t.ok(
       fakeStreamPipe.calledOnceWithExactly(process.stdout),
       'should use process.stdout for output'
     )
 
-    test.end()
+    t.end()
   })
 
-  harness.test('should instantiate a new logger (logging disabled)', function (test) {
-    test.plan(2)
-
+  t.test('should instantiate a new logger (logging disabled)', (t) => {
     proxyquire('../../../lib/logger', {
       './util/logger': fakeLogger,
       './util/unwrapped-core': { fs: fakeFS },
@@ -174,7 +166,7 @@ tap.test('Bootstrapped Logger', function (harness) {
       }
     })
 
-    test.ok(
+    t.ok(
       fakeLoggerConfigure.calledOnceWithExactly({
         name: 'newrelic',
         level: 'debug',
@@ -183,14 +175,12 @@ tap.test('Bootstrapped Logger', function (harness) {
       'should call logger.configure with config options'
     )
 
-    test.notOk(fakeStreamPipe.called, 'should not call pipe when logging is disabled')
+    t.notOk(fakeStreamPipe.called, 'should not call pipe when logging is disabled')
 
-    test.end()
+    t.end()
   })
 
-  harness.test('should instantiate a new logger (no config)', function (test) {
-    test.plan(1)
-
+  t.test('should instantiate a new logger (no config)', (t) => {
     proxyquire('../../../lib/logger', {
       './util/logger': fakeLogger,
       './util/unwrapped-core': { fs: fakeFS },
@@ -199,8 +189,8 @@ tap.test('Bootstrapped Logger', function (harness) {
       }
     })
 
-    test.notOk(fakeLoggerConfigure.called, 'should not call logger.configure')
+    t.notOk(fakeLoggerConfigure.called, 'should not call logger.configure')
 
-    test.end()
+    t.end()
   })
 })
