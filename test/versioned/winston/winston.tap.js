@@ -385,6 +385,49 @@ tap.test('winston instrumentation', (t) => {
       })
     })
 
+    t.test('should log unknown for custom log levels', (t) => {
+      setup({
+        application_logging: {
+          enabled: true,
+          metrics: {
+            enabled: true
+          },
+          forwarding: { enabled: false },
+          local_decorating: { enabled: false }
+        }
+      })
+
+      const levels = { info: 0, custom: 1 }
+      const customLevelLogger = winston.createLogger({
+        levels,
+        transports: [
+          new winston.transports.Stream({
+            level: 'custom',
+            stream: nullStream
+          })
+        ]
+      })
+      helper.runInTransaction(agent, 'custom-log-test', () => {
+        customLevelLogger.info('info log')
+        customLevelLogger.custom('custom log')
+        nullStream.end()
+        const metric = agent.metrics.getMetric(LOGGING.LEVELS.INFO)
+        t.ok(metric, 'info log metric exists')
+        t.equal(metric.callCount, 1, 'info log count is 1')
+        const unknownMetric = agent.metrics.getMetric(LOGGING.LEVELS.UNKNOWN)
+        t.ok(unknownMetric, 'unknown log metric exists')
+        t.equal(unknownMetric.callCount, 1, 'custom log count is 1')
+        const linesMetric = agent.metrics.getMetric(LOGGING.LINES)
+        t.ok(linesMetric, 'logging lines metric should exist')
+        t.equal(
+          linesMetric.callCount,
+          2,
+          'should count both info level and custom level in logging/lines metric'
+        )
+        t.end()
+      })
+    })
+
     t.test('should count logger metrics', (t) => {
       setup({
         application_logging: {
