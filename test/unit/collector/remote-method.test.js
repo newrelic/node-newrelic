@@ -196,8 +196,8 @@ tap.test('when calling a method on the collector', (t) => {
     const method = new RemoteMethod('test', BARE_AGENT, { host: 'localhost' })
     method._shouldCompress = () => true
     method._safeRequest = (options) => {
-      t.equal(options.body.readUInt8(0), 120)
-      t.equal(options.body.length, 14)
+      t.equal(options.body.readUInt8(0), 31)
+      t.equal(options.body.length, 26)
 
       t.end()
     }
