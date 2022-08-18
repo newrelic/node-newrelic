@@ -1,3 +1,16 @@
+### v9.0.1 (2022-08-18)
+
+* Fixed properly setting logging metrics when using custom levels with winston.
+
+* Handled setting the logging metric name to `UNKNOWN` when using custom log levels in pino and/or winston.
+    Thanks for your contribution @billouboq 🎉
+
+* Removed unnecessary unit test and fixture for OSS license generation
+
+* Updated versioned tests to remove the use of the `async` module.
+
+* Removed 3rd party `async` library from agent code.
+
 ### v9.0.0 (2022-08-03)
 
 * Added official parity support for Node 18.
