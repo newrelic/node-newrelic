@@ -5,7 +5,7 @@
 * Handled setting the logging metric name to `UNKNOWN` when using custom log levels in pino and/or winston.
     Thanks for your contribution @billouboq 🎉
 
-* Removed unnecessary unit test and fixture for OSS license generation
+* Removed unnecessary unit test and fixture for OSS license generation.
 
 * Updated versioned tests to remove the use of the `async` module.
 
