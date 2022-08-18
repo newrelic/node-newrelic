@@ -1,8 +1,23 @@
 {
-  "lastUpdated": "Mon Aug 15 2022 10:14:46 GMT-0400 (Eastern Daylight Time)",
+  "lastUpdated": "Thu Aug 18 2022 15:05:09 GMT-0700 (Pacific Daylight Time)",
   "projectName": "New Relic Node Agent",
   "projectUrl": "https://github.com/newrelic/node-newrelic",
   "includeOptDeps": true,
+  "optionalDependencies": {
+    "@newrelic/native-metrics@9.0.0": {
+      "name": "@newrelic/native-metrics",
+      "version": "9.0.0",
+      "range": "^9.0.0",
+      "licenses": "Apache-2.0",
+      "repoUrl": "https://github.com/newrelic/node-native-metrics",
+      "versionedRepoUrl": "https://github.com/newrelic/node-native-metrics/tree/v9.0.0",
+      "licenseFile": "node_modules/@newrelic/native-metrics/LICENSE",
+      "licenseUrl": "https://github.com/newrelic/node-native-metrics/blob/v9.0.0/LICENSE",
+      "licenseTextSource": "file",
+      "publisher": "New Relic Node.js agent team",
+      "email": "nodejs@newrelic.com"
+    }
+  },
   "includeDev": true,
   "dependencies": {
     "@grpc/grpc-js@1.6.9": {
@@ -461,6 +476,19 @@
       "licenseTextSource": "file",
       "publisher": "Arnout Kazemier"
     },
+    "minami@1.2.3": {
+      "name": "minami",
+      "version": "1.2.3",
+      "range": "^1.2.3",
+      "licenses": "Apache-2.0",
+      "repoUrl": "https://github.com/Nijikokun/minami",
+      "versionedRepoUrl": "https://github.com/Nijikokun/minami/tree/v1.2.3",
+      "licenseFile": "node_modules/minami/LICENSE",
+      "licenseUrl": "https://github.com/Nijikokun/minami/blob/v1.2.3/LICENSE",
+      "licenseTextSource": "file",
+      "publisher": "Nijiko Yonskai",
+      "email": "nijikokun@gmail.com"
+    },
     "nock@11.8.0": {
       "name": "nock",
       "version": "11.8.0",
@@ -601,21 +629,6 @@
       "licenseFile": "node_modules/when/LICENSE.txt",
       "licenseUrl": "https://github.com/cujojs/when/blob/v3.7.8/LICENSE.txt",
       "licenseTextSource": "file"
-    }
-  },
-  "optionalDependencies": {
-    "@newrelic/native-metrics@9.0.0": {
-      "name": "@newrelic/native-metrics",
-      "version": "9.0.0",
-      "range": "^9.0.0",
-      "licenses": "Apache-2.0",
-      "repoUrl": "https://github.com/newrelic/node-native-metrics",
-      "versionedRepoUrl": "https://github.com/newrelic/node-native-metrics/tree/v9.0.0",
-      "licenseFile": "node_modules/@newrelic/native-metrics/LICENSE",
-      "licenseUrl": "https://github.com/newrelic/node-native-metrics/blob/v9.0.0/LICENSE",
-      "licenseTextSource": "file",
-      "publisher": "New Relic Node.js agent team",
-      "email": "nodejs@newrelic.com"
     }
   }
 }

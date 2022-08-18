@@ -204,6 +204,7 @@
     "jsdoc": "^3.6.3",
     "lint-staged": "^11.0.0",
     "memcached": ">=0.2.8",
+    "minami": "^1.2.3",
     "nock": "11.8.0",
     "prettier": "^2.3.2",
     "proxyquire": "^1.8.0",
