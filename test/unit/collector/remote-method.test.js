@@ -88,6 +88,15 @@ tap.test('serialize', (t) => {
     })
   })
 
+  t.test('should be able to handle a bigint', (t) => {
+    const obj = { big: BigInt('1729') }
+    method.serialize(obj, (err, encoded) => {
+      t.error(err)
+      t.equal(encoded, '{"big":"1729"}')
+      t.end()
+    })
+  })
+
   t.test('should catch serialization errors', (t) => {
     method.serialize(
       {
