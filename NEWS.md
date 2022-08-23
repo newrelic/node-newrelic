@@ -1,15 +1,16 @@
 ### v9.0.2 (2022-08-23)
 
-* Added unit test suite for `lib/logger.js`
-* Added destructive integration test for Configuration instantiation
+* Added unit test suite for `lib/logger.js`.
+
+* Added destructive integration test for Configuration instantiation.
 
 * Added a special case to serialize BigInts when sending them to New Relic. BigInts can appear in log data that our customers may be trying to forward.
 
-* Expose  `compressed_content_encoding` configuration and defaulted it to "gzip"
+* Exposed  `compressed_content_encoding` configuration and defaulted it to "gzip".
 
 * Fixed public jsdoc generation.
 
-  Added`minami` back as a dev dependency for use with `jsdoc-conf.js`.
+* Added`minami` back as a dev dependency for use with `jsdoc-conf.js`.
 
 ### v9.0.1 (2022-08-18)
 
