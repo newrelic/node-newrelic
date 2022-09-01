@@ -410,7 +410,7 @@ describe('Transaction', function () {
         trans.forceName = url
         trans.url = url
         agent.txSegmentNormalizer.load([
-          { prefix: 'WebTransaction/NormalizedUri', terms: ['explicit', 'lyrics'] }
+          { prefix: 'WebTransaction/NormalizedUri', terms: ['test', 'string'] }
         ])
         trans.finalizeNameFromUri(url, 200)
         expect(trans.name).to.equal('WebTransaction/NormalizedUri/test/*/string/*')
