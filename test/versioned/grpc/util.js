@@ -336,3 +336,67 @@ util.makeBidiStreamingRequest = function makeBidiStreamingRequest({ client, fnNa
     call.end()
   })
 }
+
+/**
+ * Helper to assert length of errors in trace aggregator
+ * as well as proper code/text of error
+ *
+ * If the server use case it will also assert the transaction and metrics
+ * If the client use case it will assert the external call segment
+ *
+ * @param {Object} params
+ * @param {Object} params.t tap test
+ * @param {Object} params.transaction transaction under test
+ * @param {Array} params.errors agent errors array
+ * @param {boolean} [params.expectErrors=true] flag to indicate if errors will exist
+ * @param {boolean} [params.clientError=false] flag to indicate if error is client side
+ * @param {Array} params.agentMetrics agent metrics array
+ * @param {string} params.fnName gRPC method name
+ * @param {number} params.expectedStatusCode expected status code for test
+ * @param {string} params.expectedStatusText expected status text for test
+ */
+util.assertError = function assertError({
+  t,
+  transaction,
+  errors,
+  expectErrors = true,
+  clientError = false,
+  agentMetrics,
+  fnName,
+  expectedStatusText,
+  expectedStatusCode
+}) {
+  // when testing client the transaction will contain both server and client information. so we need to extract the client error which is always the 2nd
+  const errorLength = expectErrors ? (clientError ? 2 : 1) : 0
+
+  t.equal(errors.traceAggregator.errors.length, errorLength, `should be ${errorLength} errors`)
+
+  if (expectErrors) {
+    const errorPosition = clientError ? 1 : 0
+    const error = errors.traceAggregator.errors[errorPosition][2]
+    t.equal(error, expectedStatusText, 'should have the error message')
+  }
+
+  if (clientError) {
+    util.assertExternalSegment({
+      t,
+      tx: transaction,
+      fnName,
+      expectedStatusText,
+      expectedStatusCode
+    })
+  } else {
+    util.assertServerTransaction({
+      t,
+      transaction,
+      fnName,
+      expectedStatusCode
+    })
+    util.assertServerMetrics({
+      t,
+      agentMetrics,
+      fnName,
+      expectedStatusCode
+    })
+  }
+}
