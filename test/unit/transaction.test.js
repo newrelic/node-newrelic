@@ -404,6 +404,17 @@ describe('Transaction', function () {
         trans.finalizeNameFromUri('/test/string?do=thing&another=thing', 501)
         expect(trans.statusCode).equal(501)
       })
+
+      it('should update value from segment normalizer rules', function () {
+        const url = 'NormalizedUri/test/explicit/string/lyrics'
+        trans.forceName = url
+        trans.url = url
+        agent.txSegmentNormalizer.load([
+          { prefix: 'WebTransaction/NormalizedUri', terms: ['test', 'string'] }
+        ])
+        trans.finalizeNameFromUri(url, 200)
+        expect(trans.name).to.equal('WebTransaction/NormalizedUri/test/*/string/*')
+      })
     })
 
     describe('with a custom partial name set', function () {
