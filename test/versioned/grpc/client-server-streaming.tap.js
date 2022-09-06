@@ -10,6 +10,7 @@ const helper = require('../../lib/agent_helper')
 const { ERR_CODE, ERR_MSG } = require('./constants')
 
 const {
+  assertError,
   assertExternalSegment,
   assertMetricsNotExisting,
   makeServerStreamingRequest,
@@ -27,7 +28,7 @@ tap.test('gRPC Client: Server Streaming', (t) => {
   let grpc
 
   t.beforeEach(async () => {
-    agent = helper.instrumentMockedAgent({ grpc: { record_errors: false } })
+    agent = helper.instrumentMockedAgent()
     grpc = require('@grpc/grpc-js')
     const data = await createServer(grpc)
     proto = data.proto
@@ -122,37 +123,40 @@ tap.test('gRPC Client: Server Streaming', (t) => {
     t.end()
   })
 
-  t.test('should record errors in a transaction', (t) => {
-    const expectedStatusText = ERR_MSG
-    const expectedStatusCode = ERR_CODE
-    helper.runInTransaction(agent, 'web', async (tx) => {
-      tx.name = 'clientTransaction'
-      agent.on('transactionFinished', (transaction) => {
-        if (transaction.name === 'clientTransaction') {
-          // Make sure we're in the client and not server transaction
-          t.equal(agent.errors.traceAggregator.errors.length, 1, 'should record a single error')
-          const error = agent.errors.traceAggregator.errors[0][2]
-          t.equal(error, expectedStatusText, 'should have the error message')
-          assertExternalSegment({
-            t,
-            tx: transaction,
-            fnName: 'SayErrorServerStream',
-            expectedStatusText,
-            expectedStatusCode
-          })
-          t.end()
+  const errorsEnabled = [true, false]
+  errorsEnabled.forEach((enabled) => {
+    t.test(`should ${enabled ? '' : 'not '}record errors in a transaction`, (t) => {
+      const expectedStatusText = ERR_MSG
+      const expectedStatusCode = ERR_CODE
+      agent.config.grpc.record_errors = enabled
+      helper.runInTransaction(agent, 'web', async (tx) => {
+        tx.name = 'clientTransaction'
+        agent.on('transactionFinished', (transaction) => {
+          if (transaction.name === 'clientTransaction') {
+            assertError({
+              t,
+              transaction,
+              errors: agent.errors,
+              expectErrors: enabled,
+              expectedStatusCode,
+              expectedStatusText,
+              fnName: 'SayErrorServerStream',
+              clientError: true
+            })
+            t.end()
+          }
+        })
+
+        try {
+          const payload = { name: ['noes'] }
+          await makeServerStreamingRequest({ client, fnName: 'sayErrorServerStream', payload })
+        } catch (err) {
+          t.ok(err, 'should get an error')
+          t.equal(err.code, expectedStatusCode, 'should get the right status code')
+          t.equal(err.details, expectedStatusText, 'should get the correct error message')
+          tx.end()
         }
       })
-
-      try {
-        const payload = { name: ['noes'] }
-        await makeServerStreamingRequest({ client, fnName: 'sayErrorServerStream', payload })
-      } catch (err) {
-        t.ok(err, 'should get an error')
-        t.equal(err.code, expectedStatusCode, 'should get the right status code')
-        t.equal(err.details, expectedStatusText, 'should get the correct error message')
-        tx.end()
-      }
     })
   })
 })

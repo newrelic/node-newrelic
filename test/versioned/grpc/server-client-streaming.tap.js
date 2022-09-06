@@ -16,6 +16,7 @@ const {
   createServer,
   getClient,
   getServerTransactionName,
+  assertError,
   assertServerTransaction,
   assertServerMetrics,
   assertDistributedTracing
@@ -132,37 +133,43 @@ tap.test('gRPC Server: Client Streaming', (t) => {
     t.end()
   })
 
-  t.test('should record errors if `grpc.record_errors` is enabled', async (t) => {
-    let transaction
-    agent.on('transactionFinished', (tx) => {
-      if (tx.name === getServerTransactionName('SayErrorClientStream')) {
-        transaction = tx
-      }
-    })
+  const errorsEnabled = [true, false]
+  errorsEnabled.forEach((enabled) => {
+    t.test(
+      `should ${enabled ? '' : 'not '}record errors if 'grpc.record_errors' is ${
+        enabled ? 'enabled' : 'disabled'
+      }`,
+      async (t) => {
+        const expectedStatusCode = ERR_CODE
+        const expectedStatusText = ERR_SERVER_MSG
+        agent.config.grpc.record_errors = enabled
+        let transaction
+        agent.on('transactionFinished', (tx) => {
+          if (tx.name === getServerTransactionName('SayErrorClientStream')) {
+            transaction = tx
+          }
+        })
 
-    try {
-      const payload = [{ oh: 'noes' }]
-      await makeClientStreamingRequest({ client, fnName: 'sayErrorClientStream', payload })
-    } catch (err) {
-      // err tested in client tests
-    }
-    t.ok(transaction, 'transaction exists')
-    t.equal(agent.errors.traceAggregator.errors.length, 1, 'should record a single error')
-    const error = agent.errors.traceAggregator.errors[0][2]
-    t.equal(error, ERR_SERVER_MSG, 'should have the error message')
-    assertServerTransaction({
-      t,
-      transaction,
-      fnName: 'SayErrorClientStream',
-      expectedStatusCode: ERR_CODE
-    })
-    assertServerMetrics({
-      t,
-      agentMetrics: agent.metrics._metrics,
-      fnName: 'SayErrorClientStream',
-      expectedStatusCode: ERR_CODE
-    })
-    t.end()
+        try {
+          const payload = [{ oh: 'noes' }]
+          await makeClientStreamingRequest({ client, fnName: 'sayErrorClientStream', payload })
+        } catch (err) {
+          // err tested in client tests
+        }
+
+        assertError({
+          t,
+          transaction,
+          errors: agent.errors,
+          agentMetrics: agent.metrics._metrics,
+          expectErrors: enabled,
+          expectedStatusCode,
+          expectedStatusText,
+          fnName: 'SayErrorClientStream'
+        })
+        t.end()
+      }
+    )
   })
 
   t.test('should not record errors if `grpc.record_errors` is disabled', async (t) => {
