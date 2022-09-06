@@ -1,3 +1,9 @@
+### v9.0.3 (2022-09-06)
+
+* Updated gRPC client instrumenation to respect `grpc.record_errors` when deciding to log errors on gRPC client requests.
+
+* Fixed transaction name finalization to properly copy the appropriate transaction name to root segment.
+
 ### v9.0.2 (2022-08-23)
 
 * Added unit test suite for `lib/logger.js`.
