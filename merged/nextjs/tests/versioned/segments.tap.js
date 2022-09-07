@@ -37,6 +37,13 @@ tap.test('Next.js', (t) => {
 
   t.before(async () => {
     agent = utils.TestAgent.makeInstrumented()
+    // assigning the fake agent to the require cache because in
+    // app/pages/_document we require the agent and want to not
+    // try to bootstrap a new, real one
+    agent.agent.getBrowserTimingHeader = function getBrowserTimingHeader() {
+      return '<div>stub</div>'
+    }
+    require.cache.__NR_cache = agent.agent
     helpers.registerInstrumentation(agent)
     await helpers.build(__dirname)
     app = await helpers.start(__dirname)
