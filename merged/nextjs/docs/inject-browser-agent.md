@@ -37,7 +37,7 @@ class MyDocument extends Document<DocumentProps> {
   }
 
   render() {
-    const { browserTimingScript } = this.props
+    const { browserTimingHeader } = this.props
 
     return (
       <Html>
