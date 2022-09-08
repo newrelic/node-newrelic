@@ -90,6 +90,8 @@ tap.test('ES Module Loader', (t) => {
       fakeShimmer.registerInstrumentation.notCalled,
       'should not have registered an instrumentation copy'
     )
+
+    t.end()
   })
 
   t.test(
@@ -129,6 +131,8 @@ tap.test('ES Module Loader', (t) => {
         fakeShimmer.registerInstrumentation.notCalled,
         'should not have registered an instrumentation copy'
       )
+
+      t.end()
     }
   )
 
@@ -178,6 +182,8 @@ tap.test('ES Module Loader', (t) => {
         fakeShimmer.registerInstrumentation.calledOnceWithExactly(expectedInstrumentation),
         'should not have registered an instrumentation copy'
       )
+
+      t.end()
     }
   )
 })
