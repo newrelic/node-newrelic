@@ -10,11 +10,19 @@ import * as td from 'testdouble'
 tap.test('ES Module Loader', (t) => {
   t.autoend()
 
+  let fakeSpecifier
+  let fakeContext
+  let fakeNextResolve
   let fakeNewrelic
   let fakeShimmer
   let fakeLogger
+  let loader
 
   t.beforeEach(async () => {
+    fakeSpecifier = 'my-test-dep'
+    fakeContext = {}
+    fakeNextResolve = sinon.stub()
+
     fakeLogger = {
       debug: sinon.stub()
     }
@@ -41,6 +49,9 @@ tap.test('ES Module Loader', (t) => {
 
     await td.replaceEsm('../../index.js', {}, fakeNewrelic)
     await td.replaceEsm('../../lib/shimmer.js', {}, fakeShimmer)
+
+    // eslint-disable-next-line node/no-unsupported-features/es-syntax
+    loader = await import('../../esm-loader.mjs')
   })
 
   t.afterEach(() => {
@@ -49,12 +60,6 @@ tap.test('ES Module Loader', (t) => {
 
   t.test('should exit early if agent is not running', async (t) => {
     delete fakeNewrelic.shim
-
-    // eslint-disable-next-line node/no-unsupported-features/es-syntax
-    const loader = await import('../../esm-loader.mjs')
-    const fakeSpecifier = 'my-test-dep'
-    const fakeContext = {}
-    const fakeNextResolve = sinon.stub()
 
     await loader.resolve(fakeSpecifier, fakeContext, fakeNextResolve)
 
@@ -69,14 +74,7 @@ tap.test('ES Module Loader', (t) => {
 
   t.test('should noop if module we are resolving does not have instrumentation', async (t) => {
     fakeShimmer.getInstrumentationNameFromModuleName.returnsArg(0)
-
-    // eslint-disable-next-line node/no-unsupported-features/es-syntax
-    const loader = await import('../../esm-loader.mjs')
-    const fakeSpecifier = 'my-test-dep'
-    const fakeContext = {}
-    const fakeNextResolve = sinon
-      .stub()
-      .returns({ url: 'file://path/to/my-test-dep/index.js', format: 'commonjs' })
+    fakeNextResolve.returns({ url: 'file://path/to/my-test-dep/index.js', format: 'commonjs' })
 
     const expected = await loader.resolve(fakeSpecifier, fakeContext, fakeNextResolve)
 
@@ -103,14 +101,7 @@ tap.test('ES Module Loader', (t) => {
         type: 'generic',
         onRequire: sinon.stub()
       }
-
-      // eslint-disable-next-line node/no-unsupported-features/es-syntax
-      const loader = await import('../../esm-loader.mjs')
-      const fakeSpecifier = 'my-test-dep'
-      const fakeContext = {}
-      const fakeNextResolve = sinon
-        .stub()
-        .returns({ url: 'file://path/to/my-test-dep/index.js', format: 'module' })
+      fakeNextResolve.returns({ url: 'file://path/to/my-test-dep/index.js', format: 'module' })
 
       const expected = await loader.resolve(fakeSpecifier, fakeContext, fakeNextResolve)
 
@@ -145,14 +136,7 @@ tap.test('ES Module Loader', (t) => {
         type: 'generic',
         onRequire: sinon.stub()
       }
-
-      // eslint-disable-next-line node/no-unsupported-features/es-syntax
-      const loader = await import('../../esm-loader.mjs')
-      const fakeSpecifier = 'my-test-dep'
-      const fakeContext = {}
-      const fakeNextResolve = sinon
-        .stub()
-        .returns({ url: 'file://path/to/my-test-dep/index.js', format: 'commonjs' })
+      fakeNextResolve.returns({ url: 'file://path/to/my-test-dep/index.js', format: 'commonjs' })
 
       const expected = await loader.resolve(fakeSpecifier, fakeContext, fakeNextResolve)
 
