@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "Thu Aug 18 2022 15:05:09 GMT-0700 (Pacific Daylight Time)",
+  "lastUpdated": "Thu Sep 08 2022 13:20:46 GMT-0400 (Eastern Daylight Time)",
   "projectName": "New Relic Node Agent",
   "projectUrl": "https://github.com/newrelic/node-newrelic",
   "includeOptDeps": true,
@@ -618,6 +618,20 @@
       "licenseTextSource": "file",
       "publisher": "Bruce Williams",
       "email": "brwcodes@gmail.com"
+    },
+    "testdouble@3.16.6": {
+      "name": "testdouble",
+      "version": "3.16.6",
+      "range": "^3.16.6",
+      "licenses": "MIT",
+      "repoUrl": "https://github.com/testdouble/testdouble.js",
+      "versionedRepoUrl": "https://github.com/testdouble/testdouble.js/tree/v3.16.6",
+      "licenseFile": "node_modules/testdouble/LICENSE.txt",
+      "licenseUrl": "https://github.com/testdouble/testdouble.js/blob/v3.16.6/LICENSE.txt",
+      "licenseTextSource": "file",
+      "publisher": "Justin Searls",
+      "email": "justin@testdouble.com",
+      "url": "http://testdouble.com"
     },
     "when@3.7.8": {
       "name": "when",

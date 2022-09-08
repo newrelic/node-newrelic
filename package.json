@@ -215,6 +215,7 @@
     "sinon": "^4.5.0",
     "tap": "^16.0.1",
     "temp": "^0.8.1",
+    "testdouble": "^3.16.6",
     "when": "*"
   },
   "repository": {
