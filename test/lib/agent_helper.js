@@ -9,6 +9,7 @@ const path = require('path')
 const fs = require('fs').promises
 const shimmer = require('../../lib/shimmer')
 const Agent = require('../../lib/agent')
+const API = require('../../api')
 const params = require('../lib/params')
 const request = require('request')
 const zlib = require('zlib')
@@ -22,6 +23,7 @@ const CERTPATH = path.join(__dirname, 'self-signed-test-certificate.crt')
 const CAPATH = path.join(__dirname, 'ca-certificate.crt')
 
 let _agent = null
+let _agentApi = null
 const tasks = []
 
 /**
@@ -116,6 +118,14 @@ const helper = (module.exports = {
 
     return _agent
   },
+  getAgentApi: function getAgentApi() {
+    // TODO: this needs moar safety, maybe different style based on how this helper is compared to test utils
+    if (!_agentApi) {
+      _agentApi = new API(_agent)
+    }
+
+    return _agentApi
+  },
 
   /**
    * Generate the URLs used to talk to the collector, which have a very
@@ -175,14 +185,11 @@ const helper = (module.exports = {
   instrumentMockedAgent: (conf, setState = true) => {
     shimmer.debug = true
 
-    const agent = helper.loadMockedAgent(conf)
-
-    if (setState) {
-      agent.setState('started')
-    }
+    const agent = helper.loadMockedAgent(conf, setState)
 
     shimmer.patchModule(agent)
     shimmer.bootstrapInstrumentation(agent)
+
     return agent
   },
 
@@ -198,10 +205,10 @@ const helper = (module.exports = {
     shimmer.unwrapAll()
     shimmer.registeredInstrumentations = Object.create(null)
     shimmer.debug = false
-
     // On all versions each agent will add an unhandledRejection handler. This
     // handler needs to be removed on unload.
     removeListenerByName(process, 'unhandledRejection', '__NR_unhandledRejectionHandler')
+
 
     // Stop future harvesting by aggregators.
     agent.stopAggregators()
@@ -209,6 +216,7 @@ const helper = (module.exports = {
     if (agent === _agent) {
       global.__NR_agent = null
       _agent = null
+      _agentApi = null
     }
   },
 
