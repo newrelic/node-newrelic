@@ -3,14 +3,21 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-'use strict'
-
 import helper from '../../lib/agent_helper.js'
 import http from 'node:http'
 import { test } from 'tap'
 import semver from 'semver'
-import expressPkg from 'express/package.json' assert {type: 'json'}
-const pkgVersion = expressPkg.version
+/**
+ * TODO: Update this later
+ * This is in stage 3 and eslint only supports stage 4 and do not want to
+ * install babel parsers just for this line
+ * See : https://github.com/eslint/eslint/discussions/15305
+ *
+ */
+// import expressPkg from 'express/package.json' assert {type: 'json'}
+// const pkgVersion = expressPkg.version
+import { readFileSync } from 'node:fs'
+const { version: pkgVersion } = JSON.parse(readFileSync('./node_modules/express/package.json'))
 
 test('transaction naming tests', (t) => {
   t.autoend()
@@ -25,7 +32,7 @@ test('transaction naming tests', (t) => {
   })
 
   t.test('transaction name with single route', async function (t) {
-    const { app, express } = await setup(t)
+    const { app } = await setup()
 
     app.get('/path1', function (req, res) {
       res.end()
@@ -35,8 +42,7 @@ test('transaction naming tests', (t) => {
   })
 
   t.test('transaction name with no matched routes', async function (t) {
-    console.log('test 2 started')
-    const { app, express } = await setup(t)
+    const { app } = await setup()
 
     app.get('/path1', function (req, res) {
       res.end()
@@ -48,7 +54,7 @@ test('transaction naming tests', (t) => {
   })
 
   t.test('transaction name with route that has multiple handlers', async function (t) {
-    const { app, express } = await setup(t)
+    const { app } = await setup()
 
     app.get(
       '/path1',
@@ -64,7 +70,7 @@ test('transaction naming tests', (t) => {
   })
 
   t.test('transaction name with router middleware', async function (t) {
-    const { app, express } = await setup(t)
+    const { app, express } = await setup()
 
     const router = new express.Router()
     router.get('/path1', function (req, res) {
@@ -77,7 +83,7 @@ test('transaction naming tests', (t) => {
   })
 
   t.test('transaction name with middleware function', async function (t) {
-    const { app, express } = await setup(t)
+    const { app } = await setup()
 
     app.use('/path1', function (req, res, next) {
       next()
@@ -91,7 +97,7 @@ test('transaction naming tests', (t) => {
   })
 
   t.test('transaction name with shared middleware function', async function (t) {
-    const { app, express } = await setup(t)
+    const { app } = await setup()
 
     app.use(['/path1', '/path2'], function (req, res, next) {
       next()
@@ -105,7 +111,7 @@ test('transaction naming tests', (t) => {
   })
 
   t.test('transaction name when ending in shared middleware', async function (t) {
-    const { app, express } = await setup(t)
+    const { app } = await setup()
 
     app.use(['/path1', '/path2'], function (req, res) {
       res.end()
@@ -115,7 +121,7 @@ test('transaction naming tests', (t) => {
   })
 
   t.test('transaction name with subapp middleware', async function (t) {
-    const { app, express } = await setup(t)
+    const { app, express } = await setup()
 
     const subapp = express()
 
@@ -129,7 +135,7 @@ test('transaction naming tests', (t) => {
   })
 
   t.test('transaction name with subrouter', async function (t) {
-    const { app, express } = await setup(t)
+    const { app, express } = await setup()
 
     const router = new express.Router()
 
@@ -142,22 +148,25 @@ test('transaction naming tests', (t) => {
     await runTest({ app, t, endpoint: '/api/path1' })
   })
 
-  t.test('multiple route handlers with the same name do not duplicate transaction name', async function (t) {
-    const { app, express } = await setup(t)
+  t.test(
+    'multiple route handlers with the same name do not duplicate transaction name',
+    async function (t) {
+      const { app } = await setup()
 
-    app.get('/path1', function (req, res, next) {
-      next()
-    })
+      app.get('/path1', function (req, res, next) {
+        next()
+      })
 
-    app.get('/path1', function (req, res) {
-      res.end()
-    })
+      app.get('/path1', function (req, res) {
+        res.end()
+      })
 
-    await runTest({ app, t, endpoint: '/path1' })
-  })
+      await runTest({ app, t, endpoint: '/path1' })
+    }
+  )
 
   t.test('responding from middleware', async function (t) {
-    const { app, express } = await setup(t)
+    const { app } = await setup()
 
     app.use('/test', function (req, res, next) {
       res.send('ok')
@@ -168,7 +177,7 @@ test('transaction naming tests', (t) => {
   })
 
   t.test('responding from middleware with parameter', async function (t) {
-    const { app, express } = await setup(t)
+    const { app } = await setup()
 
     app.use('/test', function (req, res, next) {
       res.send('ok')
@@ -179,7 +188,7 @@ test('transaction naming tests', (t) => {
   })
 
   t.test('with error', async function (t) {
-    const { app, express } = await setup(t)
+    const { app } = await setup()
 
     app.get('/path1', function (req, res, next) {
       next(new Error('some error'))
@@ -193,7 +202,7 @@ test('transaction naming tests', (t) => {
   })
 
   t.test('with error and path-specific error handler', async function (t) {
-    const { app, express } = await setup(t)
+    const { app } = await setup()
 
     app.get('/path1', function () {
       throw new Error('some error')
@@ -207,7 +216,7 @@ test('transaction naming tests', (t) => {
   })
 
   t.test('when router error is handled outside of the router', async function (t) {
-    const { app, express } = await setup(t)
+    const { app, express } = await setup()
 
     const router = new express.Router()
 
@@ -226,7 +235,7 @@ test('transaction naming tests', (t) => {
   })
 
   t.test('when using a route variable', async function (t) {
-    const { app, express } = await setup(t)
+    const { app } = await setup()
 
     app.get('/:foo/:bar', function (req, res) {
       res.end()
@@ -236,7 +245,7 @@ test('transaction naming tests', (t) => {
   })
 
   t.test('when using a string pattern in path', async function (t) {
-    const { app, express } = await setup(t)
+    const { app } = await setup()
 
     app.get('/ab?cd', function (req, res) {
       res.end()
@@ -246,7 +255,7 @@ test('transaction naming tests', (t) => {
   })
 
   t.test('when using a regular expression in path', async function (t) {
-    const { app, express } = await setup(t)
+    const { app } = await setup()
 
     app.get(/a/, function (req, res) {
       res.end()
@@ -256,7 +265,7 @@ test('transaction naming tests', (t) => {
   })
 
   t.test('when using router with a route variable', async function (t) {
-    const { app, express } = await setup(t)
+    const { app, express } = await setup()
 
     const router = express.Router() // eslint-disable-line new-cap
 
@@ -270,7 +279,7 @@ test('transaction naming tests', (t) => {
   })
 
   t.test('when mounting a subapp using a variable', async function (t) {
-    const { app, express } = await setup(t)
+    const { app, express } = await setup()
 
     const subapp = express()
     subapp.get('/:var2/path1', function (req, res) {
@@ -283,7 +292,7 @@ test('transaction naming tests', (t) => {
   })
 
   t.test('using two routers', async function (t) {
-    const { app, express } = await setup(t)
+    const { app, express } = await setup()
 
     const router1 = express.Router() // eslint-disable-line new-cap
     const router2 = express.Router() // eslint-disable-line new-cap
@@ -295,11 +304,16 @@ test('transaction naming tests', (t) => {
       res.end()
     })
 
-    await runTest({ app, t, endpoint: '/router1/router2/path1', expectedName: '/:router1/:router2/path1' })
+    await runTest({
+      app,
+      t,
+      endpoint: '/router1/router2/path1',
+      expectedName: '/:router1/:router2/path1'
+    })
   })
 
   t.test('transactions running in parallel should be recorded correctly', async function (t) {
-    const { app, express } = await setup(t)
+    const { app, express } = await setup()
     const router1 = express.Router() // eslint-disable-line new-cap
     const router2 = express.Router() // eslint-disable-line new-cap
 
@@ -313,12 +327,10 @@ test('transaction naming tests', (t) => {
     })
 
     const numTests = 4
-    let handler = null
     return new Promise((resolve) => {
       app.listen(async function () {
-
-        let promises = []
-        let handlers = []
+        const promises = []
+        const handlers = []
         for (let i = 0; i < numTests; i++) {
           const data = makeMultiRunner({
             t,
@@ -345,7 +357,7 @@ test('transaction naming tests', (t) => {
   })
 
   t.test('names transaction when request is aborted', async function (t) {
-    const { app, express } = await setup(t)
+    const { app } = await setup()
 
     let request = null
 
@@ -362,8 +374,8 @@ test('transaction naming tests', (t) => {
       }, 100)
     })
 
-    // eslint-disable-next-line no-unused-vars
     const promise = new Promise((resolve) => {
+      // eslint-disable-next-line no-unused-vars
       app.use(function (error, req, res, next) {
         t.comment('errorware')
         t.ok(agent.getTransaction() == null, 'no active transaction when responding')
@@ -409,7 +421,7 @@ test('transaction naming tests', (t) => {
   })
 
   t.test('Express transaction names are unaffected by errorware', async function (t) {
-    const { app, express } = await setup(t)
+    const { app } = await setup()
 
     let transactionHandler = null
     const promise = new Promise((resolve) => {
@@ -453,7 +465,7 @@ test('transaction naming tests', (t) => {
       }
     }, 10)
 
-    const { app, express } = await setup(t)
+    const { app } = await setup()
 
     let transactionsFinished = 0
     const transactionNames = [
@@ -525,7 +537,7 @@ test('transaction naming tests', (t) => {
   // https://github.com/expressjs/express/blob/master/History.md#492--2014-09-17
   if (semver.satisfies(pkgVersion, '>=4.9.2')) {
     t.test('transaction name with array of middleware with unspecified mount path', async (t) => {
-      const { app, express } = await setup(t)
+      const { app } = await setup()
 
       function mid1(req, res, next) {
         t.pass('mid1 is executed')
@@ -547,7 +559,7 @@ test('transaction naming tests', (t) => {
     })
 
     t.test('transaction name when ending in array of unmounted middleware', async (t) => {
-      const { app, express } = await setup(t)
+      const { app } = await setup()
 
       function mid1(req, res, next) {
         t.pass('mid1 is executed')
@@ -623,13 +635,19 @@ test('transaction naming tests', (t) => {
   }
 })
 
-async function setup(t) {
+async function setup() {
+  /**
+   * This rule is not fully fleshed out and the library is no longer maintained
+   * See: https://github.com/mysticatea/eslint-plugin-node/issues/250
+   * Fix would be to migrate to use https://github.com/weiran-zsd/eslint-plugin-node
+   */
+
+  // eslint-disable-next-line node/no-unsupported-features/es-syntax
   const expressExport = await import('express')
   const express = expressExport.default
   const app = express()
-  return { app, express}
+  return { app, express }
 }
-
 
 function makeRequest(server, path, callback) {
   const port = server.address().port

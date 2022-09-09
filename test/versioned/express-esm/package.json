@@ -1,8 +1,11 @@
 {
-  "name": "express-tests",
+  "name": "express-esm-tests",
   "version": "0.0.0",
   "type": "module",
   "private": true,
+  "engines": {
+    "node": ">=14"
+  },
   "tests": [
     {
       "engines": {
