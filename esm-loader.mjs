@@ -36,21 +36,23 @@ export async function resolve(specifier, context, nextResolve) {
   const instrumentationDefinition = shimmer.registeredInstrumentations[instrumentationName]
 
   if (instrumentationDefinition) {
-    logger.debug(`Instrumentation exists for ${instrumentationName}`)
+    logger.debug(`Instrumentation exists for ${specifier}`)
 
     if (format === 'commonjs') {
       // ES Modules translate import statements into fully qualified filepaths, so we create a copy of our instrumentation under this filepath
       const instrumentationDefinitionCopy = Object.assign({}, instrumentationDefinition)
-      // TODO: do we really need to strip the prefix?
+
+      // Stripping the prefix is necessary because the code downstream gets this url without it
       instrumentationDefinitionCopy.moduleName = url.replace('file://', '')
+
       shimmer.registerInstrumentation(instrumentationDefinitionCopy)
 
       logger.debug(
-        `Registered instrumentation for CommonJS ${instrumentationName} under ${instrumentationDefinitionCopy.moduleName}`
+        `Registered CommonJS instrumentation for ${specifier} under ${instrumentationDefinitionCopy.moduleName}`
       )
     }
 
-    logger.debug(`${instrumentationName} is not CommonJS, skipping for now`)
+    logger.debug(`${specifier} is not a CommonJS module, skipping for now`)
   }
 
   return { url, format }

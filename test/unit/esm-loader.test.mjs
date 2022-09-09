@@ -115,7 +115,7 @@ tap.test('ES Module Loader', (t) => {
         'should log debug about instrumentation existing'
       )
       t.ok(
-        fakeLogger.debug.calledWith('my-test-dep is not CommonJS, skipping for now'),
+        fakeLogger.debug.calledWith('my-test-dep is not a CommonJS module, skipping for now'),
         'should log debug about instrumentation not being commonjs'
       )
       t.ok(
@@ -151,7 +151,7 @@ tap.test('ES Module Loader', (t) => {
       )
       t.ok(
         fakeLogger.debug.calledWith(
-          'Registered instrumentation for CommonJS my-test-dep under path/to/my-test-dep/index.js'
+          'Registered CommonJS instrumentation for my-test-dep under path/to/my-test-dep/index.js'
         ),
         'should log debug about instrumentation registration'
       )
