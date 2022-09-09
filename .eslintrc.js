@@ -8,9 +8,6 @@
 module.exports = {
   extends: ['@newrelic', 'plugin:jsdoc/recommended'],
   plugins: ['jsdoc'],
-  parserOptions: {
-    ecmaVersion: '2020'
-  },
   rules: {
     'consistent-return': 'off',
     'jsdoc/require-jsdoc': 'off'
