@@ -234,6 +234,7 @@
     "THIRD_PARTY_NOTICES.md",
     "lib/",
     "bin/tracetractor",
-    "bin/test-naming-rules.js"
+    "bin/test-naming-rules.js",
+    "esm-loader.mjs"
   ]
 }
