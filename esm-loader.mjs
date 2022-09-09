@@ -31,29 +31,29 @@ export async function resolve(specifier, context, nextResolve) {
   const instrumentationApi = newrelic.shim
   const logger = instrumentationApi.logger.child({ component: 'esm-loader' })
 
-  const { url, format } = await nextResolve(specifier)
+  const resolvedModule = await nextResolve(specifier)
   const instrumentationName = shimmer.getInstrumentationNameFromModuleName(specifier)
   const instrumentationDefinition = shimmer.registeredInstrumentations[instrumentationName]
 
   if (instrumentationDefinition) {
     logger.debug(`Instrumentation exists for ${specifier}`)
 
-    if (format === 'commonjs') {
+    if (resolvedModule.format === 'commonjs') {
       // ES Modules translate import statements into fully qualified filepaths, so we create a copy of our instrumentation under this filepath
       const instrumentationDefinitionCopy = Object.assign({}, instrumentationDefinition)
 
       // Stripping the prefix is necessary because the code downstream gets this url without it
-      instrumentationDefinitionCopy.moduleName = url.replace('file://', '')
+      instrumentationDefinitionCopy.moduleName = resolvedModule.url.replace('file://', '')
 
       shimmer.registerInstrumentation(instrumentationDefinitionCopy)
 
       logger.debug(
         `Registered CommonJS instrumentation for ${specifier} under ${instrumentationDefinitionCopy.moduleName}`
       )
+    } else {
+      logger.debug(`${specifier} is not a CommonJS module, skipping for now`)
     }
-
-    logger.debug(`${specifier} is not a CommonJS module, skipping for now`)
   }
 
-  return { url, format }
+  return resolvedModule
 }
