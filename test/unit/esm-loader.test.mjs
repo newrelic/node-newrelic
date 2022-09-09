@@ -16,6 +16,7 @@ tap.test('ES Module Loader', (t) => {
   let fakeNewrelic
   let fakeShimmer
   let fakeLogger
+  let fakeLoggerChild
   let loader
 
   t.beforeEach(async () => {
@@ -23,16 +24,16 @@ tap.test('ES Module Loader', (t) => {
     fakeContext = {}
     fakeNextResolve = sinon.stub()
 
-    fakeLogger = {
+    fakeLoggerChild = {
       debug: sinon.stub()
     }
 
+    fakeLogger = {
+      child: sinon.stub().returns(fakeLoggerChild)
+    }
+
     fakeNewrelic = {
-      shim: {
-        logger: {
-          child: sinon.stub().returns(fakeLogger)
-        }
-      }
+      shim: {}
     }
 
     fakeShimmer = {
@@ -49,6 +50,7 @@ tap.test('ES Module Loader', (t) => {
 
     await td.replaceEsm('../../index.js', {}, fakeNewrelic)
     await td.replaceEsm('../../lib/shimmer.js', {}, fakeShimmer)
+    await td.replaceEsm('../../lib/logger.js', {}, fakeLogger)
 
     // eslint-disable-next-line node/no-unsupported-features/es-syntax
     loader = await import('../../esm-loader.mjs')
@@ -68,6 +70,10 @@ tap.test('ES Module Loader', (t) => {
       fakeShimmer.getInstrumentationNameFromModuleName.notCalled,
       'should not have called getInstrumentationNameFromModuleName'
     )
+    t.ok(
+      fakeLogger.child.calledOnceWithExactly({ component: 'esm-loader' }),
+      'should instantiate the logger'
+    )
 
     t.end()
   })
@@ -83,7 +89,7 @@ tap.test('ES Module Loader', (t) => {
       { url: 'file://path/to/my-test-dep/index.js', format: 'commonjs' },
       'should return an object with url and format'
     )
-    t.ok(fakeLogger.debug.notCalled, 'should not log any debug statements')
+    t.ok(fakeLoggerChild.debug.notCalled, 'should not log any debug statements')
     t.ok(
       fakeShimmer.registerInstrumentation.notCalled,
       'should not have registered an instrumentation copy'
@@ -110,12 +116,13 @@ tap.test('ES Module Loader', (t) => {
         { url: 'file://path/to/my-test-dep/index.js', format: 'module' },
         'should return an object with url and format'
       )
+      t.equal(fakeLoggerChild.debug.callCount, 2, 'should log two debug statements')
       t.ok(
-        fakeLogger.debug.calledWith('Instrumentation exists for my-test-dep'),
+        fakeLoggerChild.debug.calledWith('Instrumentation exists for my-test-dep'),
         'should log debug about instrumentation existing'
       )
       t.ok(
-        fakeLogger.debug.calledWith('my-test-dep is not a CommonJS module, skipping for now'),
+        fakeLoggerChild.debug.calledWith('my-test-dep is not a CommonJS module, skipping for now'),
         'should log debug about instrumentation not being commonjs'
       )
       t.ok(
@@ -145,12 +152,13 @@ tap.test('ES Module Loader', (t) => {
         { url: 'file://path/to/my-test-dep/index.js', format: 'commonjs' },
         'should return an object with url and format'
       )
+      t.equal(fakeLoggerChild.debug.callCount, 2, 'should log two debug statements')
       t.ok(
-        fakeLogger.debug.calledWith('Instrumentation exists for my-test-dep'),
+        fakeLoggerChild.debug.calledWith('Instrumentation exists for my-test-dep'),
         'should log debug about instrumentation existing'
       )
       t.ok(
-        fakeLogger.debug.calledWith(
+        fakeLoggerChild.debug.calledWith(
           'Registered CommonJS instrumentation for my-test-dep under path/to/my-test-dep/index.js'
         ),
         'should log debug about instrumentation registration'

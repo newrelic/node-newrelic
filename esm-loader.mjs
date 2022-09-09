@@ -5,6 +5,9 @@
 
 import newrelic from './index.js'
 import shimmer from './lib/shimmer.js'
+import loggingModule from './lib/logger.js'
+
+const logger = loggingModule.child({ component: 'esm-loader' })
 
 /**
  * Hook chain responsible for resolving a file URL for a given module specifier
@@ -27,9 +30,6 @@ export async function resolve(specifier, context, nextResolve) {
   if (!newrelic.shim) {
     return nextResolve(specifier)
   }
-
-  const instrumentationApi = newrelic.shim
-  const logger = instrumentationApi.logger.child({ component: 'esm-loader' })
 
   const resolvedModule = await nextResolve(specifier)
   const instrumentationName = shimmer.getInstrumentationNameFromModuleName(specifier)
