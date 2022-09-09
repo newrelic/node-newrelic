@@ -7,6 +7,8 @@ import helper from '../../lib/agent_helper.js'
 import http from 'node:http'
 import { test } from 'tap'
 import semver from 'semver'
+import expressHelpers from './helpers.mjs'
+const { setup, makeRequest, makeRequestAndFinishTransaction } = expressHelpers
 /**
  * TODO: Update this later
  * This is in stage 3 and eslint only supports stage 4 and do not want to
@@ -607,49 +609,12 @@ test('transaction naming tests', (t) => {
     return { promise, transactionHandler }
   }
 
-  function runTest({ app, t, endpoint, expectedName = endpoint }) {
-    let transactionHandler = null
-
-    const promise = new Promise((resolve) => {
-      transactionHandler = function (transaction) {
-        t.equal(
-          transaction.name,
-          'WebTransaction/Expressjs/GET/' + expectedName,
-          'transaction has expected name'
-        )
-        resolve()
-      }
-    })
-
-    agent.on('transactionFinished', transactionHandler)
-
-    const server = app.listen(function () {
-      makeRequest(this, endpoint)
-    })
-    t.teardown(() => {
-      server.close()
-      agent.removeListener('transactionFinished', transactionHandler)
-    })
-
-    return promise
+  async function runTest({ app, t, endpoint, expectedName = endpoint }) {
+    const transaction = await makeRequestAndFinishTransaction({ t, app, agent, endpoint })
+    t.equal(
+      transaction.name,
+      'WebTransaction/Expressjs/GET/' + expectedName,
+      'transaction has expected name'
+    )
   }
 })
-
-async function setup() {
-  /**
-   * This rule is not fully fleshed out and the library is no longer maintained
-   * See: https://github.com/mysticatea/eslint-plugin-node/issues/250
-   * Fix would be to migrate to use https://github.com/weiran-zsd/eslint-plugin-node
-   */
-
-  // eslint-disable-next-line node/no-unsupported-features/es-syntax
-  const expressExport = await import('express')
-  const express = expressExport.default
-  const app = express()
-  return { app, express }
-}
-
-function makeRequest(server, path, callback) {
-  const port = server.address().port
-  http.request({ port: port, path: path }, callback).end()
-}

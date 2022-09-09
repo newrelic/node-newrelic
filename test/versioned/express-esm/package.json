@@ -17,22 +17,8 @@
         "ejs": "2.5.9"
       },
       "files": [
-        "app-use.tap.js",
-        "async-error.tap.js",
-        "bare-router.tap.js",
-        "captures-params.tap.js",
-        "errors.tap.js",
-        "express-enrouten.tap.js",
-        "ignoring.tap.js",
-        "issue171.tap.js",
-        "middleware-name.tap.js",
-        "render.tap.js",
-        "require.tap.js",
-        "route-iteration.tap.js",
-        "route-param.tap.js",
-        "router-params.tap.js",
-        "segments.tap.js",
-        "transaction-naming.tap.js"
+        "segments.tap.mjs",
+        "transaction-naming.tap.mjs"
       ]
     }
   ],

@@ -15,5 +15,15 @@ module.exports = {
   },
   env: {
     mocha: true
-  }
+  },
+  overrides: [
+    {
+      files: ['*.mjs'],
+      rules: {
+        'node/no-unsupported-features/es-syntax': 'off',
+        'node/no-unpublished-import': 'off',
+        'node/no-extraneous-import': 'off'
+      }
+    }
+  ]
 }

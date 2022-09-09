@@ -209,7 +209,6 @@ const helper = (module.exports = {
     // handler needs to be removed on unload.
     removeListenerByName(process, 'unhandledRejection', '__NR_unhandledRejectionHandler')
 
-
     // Stop future harvesting by aggregators.
     agent.stopAggregators()
 

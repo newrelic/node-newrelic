@@ -3,11 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-// TODO: move this whole file into the test area
-
-
 import shimmer from '../../lib/shimmer.js'
-
 
 let loader = null
 let loaderPromise = null
@@ -26,30 +22,37 @@ async function lazyLoadLoader() {
 
 const TEST_AGENT_API_URL = new URL('./agent-api-test-module.cjs', import.meta.url)
 
-const instrumentedSpecifiers = new Map()
-
+/**
+ * The test loader resolve hook does 2 things:
+ *   1. Calls the agent loader if the reoslved path matches our registered instrumentation
+ *   2. Updates the resolution of the agent API(./index.js in this context) to use a proxy that
+ *      gives us a mocked agent
+ */
 export async function resolve(specifier, context, nextResolve) {
   const resolvedModuleDetails = await nextResolve(specifier)
-  const { url, format } = resolvedModuleDetails
+  const { format } = resolvedModuleDetails
 
   const instrumentation = shimmer.getInstrumentationNameFromModuleName(specifier)
 
   const registeredInstrumentation = shimmer.registeredInstrumentations[instrumentation]
   if (registeredInstrumentation) {
-    instrumentedSpecifiers.set(url, specifier)
-    const loader = await lazyLoadLoader()
+    const agentLoader = await lazyLoadLoader()
 
-    return loader.resolve(specifier, context, nextResolve)
+    return agentLoader.resolve(specifier, context, nextResolve)
   }
 
   /**
    * Changes the resolution url of the agent. by loading the `test/lib/agent-api-test-module.cjs` proxy
    */
-  if (context.parentURL && context.parentURL.indexOf('esm-loader.mjs') >= 0 && specifier === './index.js') {
+  if (
+    context.parentURL &&
+    context.parentURL.indexOf('esm-loader.mjs') >= 0 &&
+    specifier === './index.js'
+  ) {
     // Nothing to see here, look over there
     return {
       url: TEST_AGENT_API_URL.href,
-      format: format,
+      format,
       shortCircuit: true
     }
   }
