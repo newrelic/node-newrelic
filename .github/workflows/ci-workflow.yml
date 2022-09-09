@@ -38,6 +38,8 @@ jobs:
       run: npm ci
     - name: Run Unit Tests
       run: npm run unit
+    - name: Run ESM Unit Tests
+      run: npm run unit:esm
 
   integration:
     runs-on: ubuntu-latest
