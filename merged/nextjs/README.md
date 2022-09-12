@@ -52,47 +52,60 @@ Our [API and developer documentation](http://newrelic.github.io/node-newrelic/do
 
 Next.js is a full stack React Framework. This module augments the Node.js New Relic agent, thus any client-side actions will not be instrumented. However, below is a method of adding the [New Relic Browser agent](https://docs.newrelic.com/docs/browser/browser-monitoring/getting-started/introduction-browser-monitoring/) to get more information on client-side actions.
 
-```js
-import Head from 'next/head'
-import Layout, { siteTitle } from '../../components/layout'
-import utilStyles from '../../styles/utils.module.css'
-import Link from 'next/link'
+The most appropriate approach would be to follow the [beforeInteractive strategy](https://nextjs.org/docs/basic-features/script#beforeinteractive).  Put the following in your `pages/_document.ts`
 
+```ts
+const newrelic = require('newrelic');
+import Document, {
+  DocumentContext,
+  DocumentInitialProps,
+  Html,
+  Head,
+  Main,
+  NextScript,
+} from 'next/document';
+import Script from 'next/script';
 
-export async function getServerSideProps() {
-  // You must require agent and put it within this function
-  // otherwise it will try to get bundled by webpack and cause errors.
-  const newrelic = require('newrelic')
-  const browserTimingHeader = newrelic.getBrowserTimingHeader()
-  return {
-    props: {
-      browserTimingHeader
-    }
+type DocumentProps = {
+  browserTimingHeader: string
+}
+
+class MyDocument extends Document<DocumentProps> {
+  static async getInitialProps(
+    ctx: DocumentContext
+  ): Promise<DocumentInitialProps> {
+    const initialProps = await Document.getInitialProps(ctx);
+
+    const browserTimingHeader = newrelic.getBrowserTimingHeader({
+      hasToRemoveScriptWrapper: true,
+    });
+
+    return {
+      ...initialProps,
+      browserTimingHeader,
+    };
+  }
+
+  render() {
+    const { browserTimingHeader } = this.props
+
+    return (
+      <Html>
+        <Head>{/* whatever you need here */}</Head>
+        <body>
+          <Main />
+          <NextScript />
+          <Script
+            dangerouslySetInnerHTML={{ __html: browserTimingHeader }}
+            strategy="beforeInteractive"
+          ></Script>
+        </body>
+      </Html>
+    );
   }
 }
 
-export default function Home({ browserTimingHeader }) {
-  return (
-    <Layout home>
-      <Head>
-        <title>{siteTitle}</title>
-      </Head>
-      <div dangerouslySetInnerHTML={{ __html: browserTimingHeader }} />
-      <section className={utilStyles.headingMd}>
-        <p>It me</p>
-        <p>
-          This page uses server-side rendering and uses the newrelic API to inject
-          timing headers.
-        </p>
-        <div>
-          <Link href="/">
-            <a>← Back to home</a>
-          </Link>
-        </div>
-      </section>
-    </Layout>
-  )
-}
+export default MyDocument;
 ```
 
 For static compiled pages, you can use the [copy-paste method](https://docs.newrelic.com/docs/browser/browser-monitoring/installation/install-browser-monitoring-agent/#copy-paste-app) for enabling the New Relic Browser agent.
@@ -131,7 +144,7 @@ Error.getInitialProps = ({ res, err }) => {
 export default Error;
 ```
 
-The example above assumes that both the New Relic Browser and Node.js agents are integrated. `getInitialProps` function's `if` statement checks whether an error was thrown on the server side (`typeof window === "undefined"`) and if it was the case, it `requires` New Relic Node.js agent and sends an `err` with `noticeError` method. Otherwise it assumes the error was thrown on the front-end side, and uses the browser agent to send the error to New Relic by using `window.newrelic.noticeError(err)`.
+The example above assumes that both the New Relic Browser and Node.js agents are [integrated](#client-side-instrumentation). The `getInitialProps` function's `if` statement checks whether an error was thrown on the server side (`typeof window === "undefined"`) and if it was the case, it `requires` New Relic Node.js agent and sends an `err` with `noticeError` method. Otherwise it assumes the error was thrown on the front-end side, and uses the browser agent to send the error to New Relic by using `window.newrelic.noticeError(err)`.
 
 ## Testing
 
@@ -148,6 +161,39 @@ Individual test scripts include:
 ```
 npm run unit
 npm run versioned
+```
+
+## Example project
+
+The versioned tests referenced above use an example project that lives within `test/versioned/app`.  It also contains a component that gets injected to connect the Browser and Node.js agent.
+
+### Build example project
+
+```sh
+npm i
+cd tests/versioned
+npx next build app
+```
+
+### Test example project
+**Note**: You must have a New Relic account setup with license key.  Also you need to configure the [browser agent](https://docs.newrelic.com/docs/browser/browser-monitoring/installation/install-browser-monitoring-agent/).
+
+The following command will start the example app and load the New Relic Next.js plugin.
+
+```sh
+NEW_RELIC_APP_NAME=my-next-example NEW_RELIC_LICENSE_KEY=<NR license key> NODE_OPTIONS='-r ../../index' npx next start app
+```
+
+You can now explore the app and see transactions, segments/spans, and browser events occurring. Here are a few URLs to request to get a good sampling of data:
+
+```sh
+curl http://localhost:3000/ssr/people
+curl http://localhost:3000/ssr/dynamic/person/2
+curl http://localhost:3000/person/1
+curl http://127.0.0.1:3000/person/1
+curl http://localhost:3000/invalid/page
+curl http://localhost:3000/api/hello
+curl http://localhost:3000/static/standard
 ```
 
 ## Support
