@@ -138,17 +138,18 @@
     "docs": "npm ci && jsdoc -c ./jsdoc-conf.json --private -r .",
     "integration": "npm run prepare-test && npm run sub-install && time tap test/integration/**/**/*.tap.js --timeout=180 --no-coverage --reporter classic",
     "prepare-test": "npm run ssl && npm run docker-env",
-    "lint": "eslint ./*.js lib test bin examples",
-    "lint:fix": "eslint --fix, ./*.js lib test bin examples",
+    "lint": "eslint ./*.{js,mjs} lib test bin examples",
+    "lint:fix": "eslint --fix, ./*.{js,mjs} lib test bin examples",
     "public-docs": "jsdoc -c ./jsdoc-conf.json --tutorials examples/shim api.js lib/shim/ lib/transaction/handle.js && cp examples/shim/*.png out/",
     "publish-docs": "./bin/publish-docs.sh",
     "services": "./bin/docker-services.sh",
     "smoke": "npm run ssl && time tap test/smoke/**/**/*.tap.js --timeout=180 --no-coverage",
     "ssl": "./bin/ssl.sh",
     "sub-install": "node test/bin/install_sub_deps",
-    "test": "npm run integration && npm run unit",
+    "test": "npm run integration && npm run unit && npm run unit:esm",
     "third-party-updates": "oss third-party manifest --includeOptDeps && oss third-party notices --includeOptDeps && git add THIRD_PARTY_NOTICES.md third_party_manifest.json",
     "unit": "rm -f newrelic_agent.log && time tap --test-regex='(\\/|^test\\/unit\\/.*\\.test\\.js)$' --timeout=180 --no-coverage --reporter classic",
+    "unit:esm": "rm -f newrelic_agent.log && time tap --test-regex='(\\/|^test\\/unit\\/.*\\.test\\.mjs)$' --timeout=180 --no-coverage --reporter classic --node-arg=--loader=testdouble",
     "update-cross-agent-tests": "./bin/update-cats.sh",
     "versioned-tests": "./bin/run-versioned-tests.sh",
     "update-changelog-version": "node ./bin/update-changelog-version",
@@ -215,6 +216,7 @@
     "sinon": "^4.5.0",
     "tap": "^16.0.1",
     "temp": "^0.8.1",
+    "testdouble": "^3.16.6",
     "when": "*"
   },
   "repository": {
@@ -232,6 +234,7 @@
     "THIRD_PARTY_NOTICES.md",
     "lib/",
     "bin/tracetractor",
-    "bin/test-naming-rules.js"
+    "bin/test-naming-rules.js",
+    "esm-loader.mjs"
   ]
 }

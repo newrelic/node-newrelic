@@ -7,6 +7,9 @@
 module.exports = {
   plugins: ['disable'],
   processor: 'disable/disable',
+  parserOptions: {
+    ecmaVersion: '2020'
+  },
   settings: {
     'disable/plugins': ['jsdoc']
   },
