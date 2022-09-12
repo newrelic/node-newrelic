@@ -33,7 +33,7 @@ tap.test('ES Module Loader', (t) => {
     }
 
     fakeNewrelic = {
-      shim: {}
+      agent: {}
     }
 
     fakeShimmer = {
@@ -61,7 +61,7 @@ tap.test('ES Module Loader', (t) => {
   })
 
   t.test('should exit early if agent is not running', async (t) => {
-    delete fakeNewrelic.shim
+    delete fakeNewrelic.agent
 
     await loader.resolve(fakeSpecifier, fakeContext, fakeNextResolve)
 

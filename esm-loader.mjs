@@ -27,7 +27,7 @@ const logger = loggingModule.child({ component: 'esm-loader' })
  * @returns {Promise} Promise object representing the resolution of a given specifier
  */
 export async function resolve(specifier, context, nextResolve) {
-  if (!newrelic.shim) {
+  if (!newrelic.agent) {
     return nextResolve(specifier)
   }
 
