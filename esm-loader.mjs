@@ -31,6 +31,12 @@ export async function resolve(specifier, context, nextResolve) {
     return nextResolve(specifier)
   }
 
+  /**
+   * We manually call the default Node.js resolve hook so
+   * that we can get the fully qualified URL path and the
+   * package type (commonjs/module/builtin) without
+   * duplicating the logic of the Node.js hook
+   */
   const resolvedModule = await nextResolve(specifier)
   const instrumentationName = shimmer.getInstrumentationNameFromModuleName(specifier)
   const instrumentationDefinition = shimmer.registeredInstrumentations[instrumentationName]
