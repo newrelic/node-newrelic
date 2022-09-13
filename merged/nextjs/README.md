@@ -164,37 +164,7 @@ npm run versioned
 ```
 
 ## Example project
-
-The versioned tests referenced above use an example project that lives within `test/versioned/app`.  It also contains a component that gets injected to connect the Browser and Node.js agent.
-
-### Build example project
-
-```sh
-npm i
-cd tests/versioned
-npx next build app
-```
-
-### Test example project
-**Note**: You must have a New Relic account setup with license key.  Also you need to configure the [browser agent](https://docs.newrelic.com/docs/browser/browser-monitoring/installation/install-browser-monitoring-agent/).
-
-The following command will start the example app and load the New Relic Next.js plugin.
-
-```sh
-NEW_RELIC_APP_NAME=my-next-example NEW_RELIC_LICENSE_KEY=<NR license key> NODE_OPTIONS='-r ../../index' npx next start app
-```
-
-You can now explore the app and see transactions, segments/spans, and browser events occurring. Here are a few URLs to request to get a good sampling of data:
-
-```sh
-curl http://localhost:3000/ssr/people
-curl http://localhost:3000/ssr/dynamic/person/2
-curl http://localhost:3000/person/1
-curl http://127.0.0.1:3000/person/1
-curl http://localhost:3000/invalid/page
-curl http://localhost:3000/api/hello
-curl http://localhost:3000/static/standard
-```
+[Click here](https://github.com/newrelic-experimental/newrelic-nextjs-integration) for our official Next.js example project that integrates both the New Relic Next.js plugin and the browser agent.
 
 ## Support
 
