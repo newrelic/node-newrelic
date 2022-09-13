@@ -54,7 +54,6 @@ tap.test('ES Module Loader', { skip: isUnsupported() }, (t) => {
     await td.replaceEsm('../../lib/shimmer.js', {}, fakeShimmer)
     await td.replaceEsm('../../lib/logger.js', {}, fakeLogger)
 
-    // eslint-disable-next-line node/no-unsupported-features/es-syntax
     loader = await import('../../esm-loader.mjs')
   })
 

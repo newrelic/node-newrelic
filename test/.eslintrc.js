@@ -20,6 +20,8 @@ module.exports = {
     {
       files: ['*.mjs'],
       rules: {
+        // TODO: remove this when we decide on how to address
+        // here: https://issues.newrelic.com/browse/NEWRELIC-3321
         'node/no-unsupported-features/es-syntax': 'off',
         'node/no-unpublished-import': 'off',
         'node/no-extraneous-import': 'off'

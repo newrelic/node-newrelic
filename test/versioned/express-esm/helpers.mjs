@@ -18,7 +18,6 @@ helpers.setup = async function setup() {
    * Fix would be to migrate to use https://github.com/weiran-zsd/eslint-plugin-node
    */
 
-  // eslint-disable-next-line node/no-unsupported-features/es-syntax
   const expressExport = await import('express')
   const express = expressExport.default
   const app = express()
