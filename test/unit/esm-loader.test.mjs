@@ -16,6 +16,8 @@ tap.test('ES Module Loader', { skip: isUnsupported() }, (t) => {
   let fakeContext
   let fakeNextResolve
   let fakeNewrelic
+  let fakeGetOrCreateMetric
+  let fakeIncrementCallCount
   let fakeShimmer
   let fakeLogger
   let fakeLoggerChild
@@ -34,8 +36,16 @@ tap.test('ES Module Loader', { skip: isUnsupported() }, (t) => {
       child: sinon.stub().returns(fakeLoggerChild)
     }
 
+    fakeIncrementCallCount = sinon.stub()
+    fakeGetOrCreateMetric = sinon.stub()
+
     fakeNewrelic = {
-      agent: {}
+      agent: {
+        metrics: {
+          getOrCreateMetric: fakeGetOrCreateMetric.returnsThis(),
+          incrementCallCount: fakeIncrementCallCount.returnsThis()
+        }
+      }
     }
 
     fakeShimmer = {
@@ -60,6 +70,34 @@ tap.test('ES Module Loader', { skip: isUnsupported() }, (t) => {
 
   t.afterEach(() => {
     td.reset()
+  })
+
+  t.test('should not update the usage metric if misconfigured', async (t) => {
+    fakeGetOrCreateMetric.resetHistory()
+    fakeIncrementCallCount.resetHistory()
+
+    delete fakeNewrelic.agent
+
+    // eslint-disable-next-line node/no-unsupported-features/es-syntax
+    loader = await import('../../esm-loader.mjs')
+
+    t.ok(fakeGetOrCreateMetric.notCalled, 'should not get the usage metric')
+    t.ok(fakeIncrementCallCount.notCalled, 'should not increment the usage metric')
+
+    t.end()
+  })
+
+  t.test('should update the usage metric', async (t) => {
+    // eslint-disable-next-line node/no-unsupported-features/es-syntax
+    loader = await import('../../esm-loader.mjs')
+
+    t.ok(
+      fakeGetOrCreateMetric.calledOnceWithExactly('Supportability/Features/ESModuleLoader'),
+      'should get the usage metric'
+    )
+    t.equal(fakeIncrementCallCount.callCount, 1, 'should increment the usage metric')
+
+    t.end()
   })
 
   t.test('should exit early if agent is not running', async (t) => {
@@ -171,10 +209,11 @@ tap.test('ES Module Loader', { skip: isUnsupported() }, (t) => {
         fakeShimmer.registeredInstrumentations['my-test-dep']
       )
       expectedInstrumentation.moduleName = 'path/to/my-test-dep/index.js'
+      expectedInstrumentation.friendlyModuleName = 'my-test-dep'
 
       t.ok(
         fakeShimmer.registerInstrumentation.calledOnceWithExactly(expectedInstrumentation),
-        'should not have registered an instrumentation copy'
+        'should have registered an instrumentation copy'
       )
 
       t.end()

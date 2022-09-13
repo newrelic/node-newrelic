@@ -6,10 +6,17 @@
 import newrelic from './index.js'
 import shimmer from './lib/shimmer.js'
 import loggingModule from './lib/logger.js'
+import NAMES from './lib/metrics/names.js'
 import semver from 'semver'
-const isSupportedVersion = () => semver.gte(process.version, 'v16.12.0')
 
+const isSupportedVersion = () => semver.gte(process.version, 'v16.12.0')
 const logger = loggingModule.child({ component: 'esm-loader' })
+
+if (newrelic.agent) {
+  newrelic.agent.metrics
+    .getOrCreateMetric(`${NAMES.SUPPORTABILITY.FEATURES}/ESModuleLoader`)
+    .incrementCallCount()
+}
 
 /**
  * Hook chain responsible for resolving a file URL for a given module specifier
@@ -52,6 +59,9 @@ export async function resolve(specifier, context, nextResolve) {
 
       // Stripping the prefix is necessary because the code downstream gets this url without it
       instrumentationDefinitionCopy.moduleName = resolvedModule.url.replace('file://', '')
+
+      // Added to keep our Supportability metrics from exploding/including customer info via full filepath
+      instrumentationDefinitionCopy.friendlyModuleName = specifier
 
       shimmer.registerInstrumentation(instrumentationDefinitionCopy)
 
