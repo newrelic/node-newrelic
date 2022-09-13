@@ -1,0 +1,37 @@
+{
+  "name": "pg-esm-tests",
+  "type": "module",
+  "version": "0.0.0",
+  "private": true,
+  "tests": [
+    {
+      "engines": {
+        "node": ">=14"
+      },
+      "dependencies": {
+        "pg": ">=8.2 <8.8",
+        "pg-native": ">=2"
+      },
+      "files": [
+        "force-native.tap.mjs",
+        "native.tap.mjs",
+        "pg.tap.mjs"
+      ]
+    },
+    {
+      "engines": {
+        "node": ">=14"
+      },
+      "dependencies": {
+        "pg": ">=8.8",
+        "pg-native": ">=3"
+      },
+      "files": [
+        "force-native.tap.mjs",
+        "native.tap.mjs",
+        "pg.tap.mjs"
+      ]
+    }
+  ],
+  "dependencies": {}
+}
