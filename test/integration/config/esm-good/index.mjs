@@ -1,0 +1,1 @@
+../esm-bad/index.mjs

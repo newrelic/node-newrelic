@@ -13,14 +13,14 @@ tap.test('should gracefully handle ESM imports', (t) => {
   t.autoend()
 
   t.test('when newrelic.js is misnamed', async (t) => {
-    const { stderr } = await exec('node index.js', { cwd: `${__dirname}/esm-bad` })
+    const { stderr } = await exec('node index.mjs', { cwd: `${__dirname}/esm-bad` })
     t.match(stderr, 'ERR_REQUIRE_ESM', 'should mention ERR_REQUIRE_ESM in error message')
     t.end()
   })
 
   t.test('when newrelic.cjs is properly named', async (t) => {
-    const { stdout, stderr } = await exec('node index.js', { cwd: `${__dirname}/esm-good` })
-    t.same(stdout, '', 'all should be quiet in stdout')
+    const { stdout, stderr } = await exec('node index.mjs', { cwd: `${__dirname}/esm-good` })
+    t.same(stdout, 'Hello good-esm\n', 'should greet in stdout')
     t.same(stderr, '', 'all should be quiet in stderr')
     t.end()
   })

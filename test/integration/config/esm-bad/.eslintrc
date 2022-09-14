@@ -1,6 +1,3 @@
 {
-  "parserOptions": {
-    "sourceType": "module"
-  },
   "ignorePatterns": ["newrelic.js"]
 }
