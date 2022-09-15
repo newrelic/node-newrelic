@@ -18,8 +18,7 @@ helpers.setup = async function setup() {
    * Fix would be to migrate to use https://github.com/weiran-zsd/eslint-plugin-node
    */
 
-  const expressExport = await import('express')
-  const express = expressExport.default
+  const { default: express } = await import('express')
   const app = express()
   return { app, express }
 }
