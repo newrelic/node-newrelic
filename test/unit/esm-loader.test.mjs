@@ -209,7 +209,7 @@ tap.test('ES Module Loader', { skip: isUnsupported() }, (t) => {
         fakeShimmer.registeredInstrumentations['my-test-dep']
       )
       expectedInstrumentation.moduleName = 'path/to/my-test-dep/index.js'
-      expectedInstrumentation.friendlyModuleName = 'my-test-dep'
+      expectedInstrumentation.specifier = 'my-test-dep'
 
       t.ok(
         fakeShimmer.registerInstrumentation.calledOnceWithExactly(expectedInstrumentation),

@@ -61,7 +61,7 @@ export async function resolve(specifier, context, nextResolve) {
       instrumentationDefinitionCopy.moduleName = resolvedModule.url.replace('file://', '')
 
       // Added to keep our Supportability metrics from exploding/including customer info via full filepath
-      instrumentationDefinitionCopy.friendlyModuleName = specifier
+      instrumentationDefinitionCopy.specifier = specifier
 
       shimmer.registerInstrumentation(instrumentationDefinitionCopy)
 
