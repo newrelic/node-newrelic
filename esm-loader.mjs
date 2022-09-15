@@ -28,7 +28,7 @@ const logger = loggingModule.child({ component: 'esm-loader' })
  */
 export async function resolve(specifier, context, nextResolve) {
   if (!newrelic.agent) {
-    return nextResolve(specifier)
+    return nextResolve(specifier, context, nextResolve)
   }
 
   /**
@@ -37,7 +37,7 @@ export async function resolve(specifier, context, nextResolve) {
    * package type (commonjs/module/builtin) without
    * duplicating the logic of the Node.js hook
    */
-  const resolvedModule = await nextResolve(specifier)
+  const resolvedModule = await nextResolve(specifier, context, nextResolve)
   const instrumentationName = shimmer.getInstrumentationNameFromModuleName(specifier)
   const instrumentationDefinition = shimmer.registeredInstrumentations[instrumentationName]
 
