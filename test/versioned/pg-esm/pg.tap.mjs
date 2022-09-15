@@ -6,6 +6,6 @@
 import runTests from './pg.common.mjs'
 
 runTests('pure JavaScript', async function getClient() {
-  const pgExport = await import('pg')
-  return pgExport.default
+  const { default: pg } = await import('pg')
+  return pg
 })
