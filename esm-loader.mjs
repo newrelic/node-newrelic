@@ -11,9 +11,10 @@ import semver from 'semver'
 
 const isSupportedVersion = () => semver.gte(process.version, 'v16.12.0')
 const logger = loggingModule.child({ component: 'esm-loader' })
+const MIN_NODE_VERSION = 'v16.12.0'
 
 if (newrelic.agent) {
-  newrelic.agent.metrics.getOrCreateMetric(NAMES.FEATURES.ESMLoader).incrementCallCount()
+  addESMSupportabilityMetrics(newrelic.agent, process.version)
 }
 
 /**
@@ -72,4 +73,20 @@ export async function resolve(specifier, context, nextResolve) {
   }
 
   return resolvedModule
+}
+
+/**
+ * Helper function for determining which of our Supportability metrics to use for the current loader invocation
+ * Note: `process.version` has the version number prefixed with `v`, so our `MIN_NODE_VERSION` constant has the same
+ *
+ * @param {object} agent
+ *        instantiation of the New Relic agent
+ * @returns {void}
+ */
+export function addESMSupportabilityMetrics(agent) {
+  if (semver.gte(process.version, MIN_NODE_VERSION)) {
+    agent.metrics.getOrCreateMetric(NAMES.FEATURES.ESM.LOADER).incrementCallCount()
+  } else {
+    agent.metrics.getOrCreateMetric(NAMES.FEATURES.ESM.UNSUPPORTED_LOADER).incrementCallCount()
+  }
 }
