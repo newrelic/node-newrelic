@@ -134,7 +134,7 @@ function createAgent(config) {
   if (appNames.length < 1) {
     const message =
       'New Relic requires that you name this application!\n' +
-      'Set app_name in your newrelic.js file or set environment variable\n' +
+      'Set app_name in your newrelic.js or newrelic.cjs file or set environment variable\n' +
       'NEW_RELIC_APP_NAME. Not starting!'
     logger.error(message)
     throw new Error(message)
