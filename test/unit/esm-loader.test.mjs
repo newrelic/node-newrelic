@@ -16,6 +16,8 @@ tap.test('ES Module Loader', { skip: isUnsupported() }, (t) => {
   let fakeContext
   let fakeNextResolve
   let fakeNewrelic
+  let fakeGetOrCreateMetric
+  let fakeIncrementCallCount
   let fakeShimmer
   let fakeLogger
   let fakeLoggerChild
@@ -34,8 +36,16 @@ tap.test('ES Module Loader', { skip: isUnsupported() }, (t) => {
       child: sinon.stub().returns(fakeLoggerChild)
     }
 
+    fakeIncrementCallCount = sinon.stub()
+    fakeGetOrCreateMetric = sinon.stub()
+
     fakeNewrelic = {
-      agent: {}
+      agent: {
+        metrics: {
+          getOrCreateMetric: fakeGetOrCreateMetric.returnsThis(),
+          incrementCallCount: fakeIncrementCallCount.returnsThis()
+        }
+      }
     }
 
     fakeShimmer = {
@@ -60,6 +70,31 @@ tap.test('ES Module Loader', { skip: isUnsupported() }, (t) => {
 
   t.afterEach(() => {
     td.reset()
+  })
+
+  t.test('should not update the usage metric if misconfigured', async (t) => {
+    delete fakeNewrelic.agent
+
+    fakeGetOrCreateMetric.resetHistory()
+    fakeIncrementCallCount.resetHistory()
+
+    // eslint-disable-next-line node/no-unsupported-features/es-syntax
+    loader = await import('../../esm-loader.mjs')
+
+    t.ok(fakeGetOrCreateMetric.notCalled, 'should not get a usage metric')
+    t.ok(fakeIncrementCallCount.notCalled, 'should not increment a usage metric')
+
+    t.end()
+  })
+
+  t.test('should update the loader metric when on a supported version of node', async (t) => {
+    t.ok(
+      fakeGetOrCreateMetric.calledOnceWith('Supportability/Features/ESM/Loader'),
+      'should get the correct usage metric'
+    )
+    t.equal(fakeIncrementCallCount.callCount, 1, 'should increment the metric')
+
+    t.end()
   })
 
   t.test('should exit early if agent is not running', async (t) => {
@@ -171,10 +206,11 @@ tap.test('ES Module Loader', { skip: isUnsupported() }, (t) => {
         fakeShimmer.registeredInstrumentations['my-test-dep']
       )
       expectedInstrumentation.moduleName = 'path/to/my-test-dep/index.js'
+      expectedInstrumentation.specifier = 'my-test-dep'
 
       t.ok(
         fakeShimmer.registerInstrumentation.calledOnceWithExactly(expectedInstrumentation),
-        'should not have registered an instrumentation copy'
+        'should have registered an instrumentation copy'
       )
 
       t.end()
@@ -189,16 +225,28 @@ tap.test('Skipped ESM loader', { skip: !isUnsupported() }, (t) => {
   let mockedShimmer = null
   let loader = null
   let resolveStub = null
+  let fakeGetOrCreateMetric
+  let fakeIncrementCallCount
 
   t.beforeEach(async () => {
     resolveStub = sinon.stub()
+
+    fakeIncrementCallCount = sinon.stub()
+    fakeGetOrCreateMetric = sinon.stub()
+
     mockedAgent = {
-      agent: sinon.stub()
+      agent: {
+        metrics: {
+          getOrCreateMetric: fakeGetOrCreateMetric.returnsThis(),
+          incrementCallCount: fakeIncrementCallCount.returnsThis()
+        }
+      }
     }
 
     mockedShimmer = {
       getInstrumentationNameFromModuleName: sinon.stub()
     }
+
     await td.replaceEsm('../../index.js', {}, mockedAgent)
     await td.replaceEsm('../../lib/shimmer.js', {}, mockedShimmer)
     // eslint-disable-next-line node/no-unsupported-features/es-syntax
@@ -221,4 +269,19 @@ tap.test('Skipped ESM loader', { skip: !isUnsupported() }, (t) => {
       'should not have called getInstrumentationNameFromModuleName'
     )
   })
+
+  t.test(
+    'should update the unsupported metric when on an unsupported version of node',
+    async (t) => {
+      t.ok(
+        fakeGetOrCreateMetric.calledOnceWithExactly(
+          'Supportability/Features/ESM/UnsupportedLoader'
+        ),
+        'should get the correct usage metric'
+      )
+      t.equal(fakeIncrementCallCount.callCount, 1, 'should increment the metric')
+
+      t.end()
+    }
+  )
 })

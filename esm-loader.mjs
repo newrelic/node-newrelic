@@ -6,10 +6,15 @@
 import newrelic from './index.js'
 import shimmer from './lib/shimmer.js'
 import loggingModule from './lib/logger.js'
+import NAMES from './lib/metrics/names.js'
 import semver from 'semver'
-const isSupportedVersion = () => semver.gte(process.version, 'v16.12.0')
 
+const isSupportedVersion = () => semver.gte(process.version, 'v16.12.0')
 const logger = loggingModule.child({ component: 'esm-loader' })
+
+if (newrelic.agent) {
+  addESMSupportabilityMetrics(newrelic.agent)
+}
 
 /**
  * Hook chain responsible for resolving a file URL for a given module specifier
@@ -53,6 +58,9 @@ export async function resolve(specifier, context, nextResolve) {
       // Stripping the prefix is necessary because the code downstream gets this url without it
       instrumentationDefinitionCopy.moduleName = resolvedModule.url.replace('file://', '')
 
+      // Added to keep our Supportability metrics from exploding/including customer info via full filepath
+      instrumentationDefinitionCopy.specifier = specifier
+
       shimmer.registerInstrumentation(instrumentationDefinitionCopy)
 
       logger.debug(
@@ -64,4 +72,19 @@ export async function resolve(specifier, context, nextResolve) {
   }
 
   return resolvedModule
+}
+
+/**
+ * Helper function for determining which of our Supportability metrics to use for the current loader invocation
+ *
+ * @param {object} agent
+ *        instantiation of the New Relic agent
+ * @returns {void}
+ */
+export function addESMSupportabilityMetrics(agent) {
+  if (isSupportedVersion()) {
+    agent.metrics.getOrCreateMetric(NAMES.FEATURES.ESM.LOADER).incrementCallCount()
+  } else {
+    agent.metrics.getOrCreateMetric(NAMES.FEATURES.ESM.UNSUPPORTED_LOADER).incrementCallCount()
+  }
 }
