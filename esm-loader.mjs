@@ -76,7 +76,6 @@ export async function resolve(specifier, context, nextResolve) {
 
 /**
  * Helper function for determining which of our Supportability metrics to use for the current loader invocation
- * Note: `process.version` has the version number prefixed with `v`, so our `MIN_NODE_VERSION` constant has the same
  *
  * @param {object} agent
  *        instantiation of the New Relic agent
