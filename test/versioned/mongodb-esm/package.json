@@ -22,8 +22,5 @@
       ]
     }
   ],
-  "dependencies": {},
-  "engines": {
-    "node": ">=14"
-  }
+  "dependencies": {}
 }
