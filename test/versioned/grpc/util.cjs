@@ -8,7 +8,7 @@ const util = module.exports
 const metricsHelpers = require('../../lib/metrics_helper')
 const assertMetrics = require('../../lib/metrics_helper').assertMetrics
 const protoLoader = require('@grpc/proto-loader')
-const serverImpl = require('./grpc-server')
+const serverImpl = require('./grpc-server.cjs')
 const DESTINATIONS = require('../../../lib/config/attribute-filter').DESTINATIONS
 const DESTINATION = DESTINATIONS.TRANS_EVENT | DESTINATIONS.ERROR_EVENT
 

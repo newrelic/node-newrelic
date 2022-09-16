@@ -7,7 +7,7 @@
 
 const tap = require('tap')
 const helper = require('../../lib/agent_helper')
-const { ERR_CODE, ERR_MSG } = require('./constants')
+const { ERR_CODE, ERR_MSG } = require('./constants.cjs')
 
 const {
   assertError,
@@ -16,7 +16,7 @@ const {
   makeUnaryRequest,
   createServer,
   getClient
-} = require('./util')
+} = require('./util.cjs')
 
 tap.test('gRPC Client: Unary Requests', (t) => {
   t.autoend()

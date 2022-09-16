@@ -7,7 +7,7 @@
 
 const tap = require('tap')
 const helper = require('../../lib/agent_helper')
-const { ERR_CODE, ERR_MSG, HALT_CODE, HALT_SERVER_ERR_MSG } = require('./constants')
+const { ERR_CODE, ERR_MSG, HALT_CODE, HALT_SERVER_ERR_MSG } = require('./constants.cjs')
 
 const {
   assertError,
@@ -16,7 +16,7 @@ const {
   makeClientStreamingRequest,
   createServer,
   getClient
-} = require('./util')
+} = require('./util.cjs')
 
 tap.test('gRPC Client: Client Streaming', (t) => {
   t.autoend()

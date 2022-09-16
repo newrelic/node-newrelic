@@ -4,7 +4,7 @@
  */
 
 'use strict'
-const { ERR_MSG, ERR_CODE, HALT_SERVER_ERR_MSG, HALT_CODE } = require('./constants')
+const { ERR_MSG, ERR_CODE, HALT_SERVER_ERR_MSG, HALT_CODE } = require('./constants.cjs')
 module.exports = function createServerMethods(server) {
   return {
     sayHello: function sayHello({ metadata, request: { name } }, cb) {

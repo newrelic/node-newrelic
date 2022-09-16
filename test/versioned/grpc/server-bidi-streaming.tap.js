@@ -9,7 +9,7 @@ const tap = require('tap')
 const helper = require('../../lib/agent_helper')
 const DESTINATIONS = require('../../../lib/config/attribute-filter').DESTINATIONS
 const DESTINATION = DESTINATIONS.TRANS_EVENT | DESTINATIONS.ERROR_EVENT
-const { ERR_CODE, ERR_SERVER_MSG } = require('./constants')
+const { ERR_CODE, ERR_SERVER_MSG } = require('./constants.cjs')
 
 const {
   makeBidiStreamingRequest,
@@ -20,7 +20,7 @@ const {
   assertServerTransaction,
   assertServerMetrics,
   assertDistributedTracing
-} = require('./util')
+} = require('./util.cjs')
 
 tap.test('gRPC Server: Bidi Streaming', (t) => {
   t.autoend()
