@@ -6,8 +6,10 @@
 import tap from 'tap'
 import sinon from 'sinon'
 import * as td from 'testdouble'
+import semver from 'semver'
+const isUnsupported = () => semver.lte(process.version, 'v16.12.0')
 
-tap.test('ES Module Loader', (t) => {
+tap.test('ES Module Loader', { skip: isUnsupported() }, (t) => {
   t.autoend()
 
   let fakeSpecifier
@@ -178,4 +180,45 @@ tap.test('ES Module Loader', (t) => {
       t.end()
     }
   )
+})
+
+tap.test('Skipped ESM loader', { skip: !isUnsupported() }, (t) => {
+  t.autoend()
+
+  let mockedAgent = null
+  let mockedShimmer = null
+  let loader = null
+  let resolveStub = null
+
+  t.beforeEach(async () => {
+    resolveStub = sinon.stub()
+    mockedAgent = {
+      agent: sinon.stub()
+    }
+
+    mockedShimmer = {
+      getInstrumentationNameFromModuleName: sinon.stub()
+    }
+    await td.replaceEsm('../../index.js', {}, mockedAgent)
+    await td.replaceEsm('../../lib/shimmer.js', {}, mockedShimmer)
+    // eslint-disable-next-line node/no-unsupported-features/es-syntax
+    loader = await import('../../esm-loader.mjs')
+  })
+
+  t.test('should exit early if agent is not running', async (t) => {
+    delete mockedAgent.agent
+    await loader.resolve('test-mod', {}, resolveStub)
+    t.ok(
+      mockedShimmer.getInstrumentationNameFromModuleName.notCalled,
+      'should not have called getInstrumentationNameFromModuleName'
+    )
+  })
+
+  t.test('should exit early if the Node.js version is < 16.12.0', async (t) => {
+    await loader.resolve('test-mod', {}, resolveStub)
+    t.ok(
+      mockedShimmer.getInstrumentationNameFromModuleName.notCalled,
+      'should not have called getInstrumentationNameFromModuleName'
+    )
+  })
 })
