@@ -6,6 +6,8 @@
 import newrelic from './index.js'
 import shimmer from './lib/shimmer.js'
 import loggingModule from './lib/logger.js'
+import semver from 'semver'
+const isSupportedVersion = () => semver.gte(process.version, 'v16.12.0')
 
 const logger = loggingModule.child({ component: 'esm-loader' })
 
@@ -27,8 +29,8 @@ const logger = loggingModule.child({ component: 'esm-loader' })
  * @returns {Promise} Promise object representing the resolution of a given specifier
  */
 export async function resolve(specifier, context, nextResolve) {
-  if (!newrelic.agent) {
-    return nextResolve(specifier)
+  if (!newrelic.agent || !isSupportedVersion()) {
+    return nextResolve(specifier, context, nextResolve)
   }
 
   /**
@@ -37,7 +39,7 @@ export async function resolve(specifier, context, nextResolve) {
    * package type (commonjs/module/builtin) without
    * duplicating the logic of the Node.js hook
    */
-  const resolvedModule = await nextResolve(specifier)
+  const resolvedModule = await nextResolve(specifier, context, nextResolve)
   const instrumentationName = shimmer.getInstrumentationNameFromModuleName(specifier)
   const instrumentationDefinition = shimmer.registeredInstrumentations[instrumentationName]
 

@@ -1,5 +1,5 @@
 {
-  "**/*.js": [
+  "**/*.{cjs,mjs,js}": [
     "eslint --fix"
   ]
 }
