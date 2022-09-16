@@ -22,7 +22,7 @@ function runCommand(client, cmd) {
 
 export default function runTests(name, clientFactory) {
   // constants for table creation and db connection
-  const TABLE = 'testTable-post'
+  const TABLE = 'esmTestTable-post'
   const TABLE_PREPARED = '"' + TABLE + '"'
   const PK = 'pk_column'
   const COL = 'test_column'
