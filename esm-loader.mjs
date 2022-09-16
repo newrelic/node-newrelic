@@ -13,7 +13,7 @@ const isSupportedVersion = () => semver.gte(process.version, 'v16.12.0')
 const logger = loggingModule.child({ component: 'esm-loader' })
 
 if (newrelic.agent) {
-  addESMSupportabilityMetrics(newrelic.agent, process.version)
+  addESMSupportabilityMetrics(newrelic.agent)
 }
 
 /**
