@@ -3,16 +3,16 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-'use strict'
-
-const tap = require('tap')
-const helper = require('../../lib/agent_helper')
-const DESTINATIONS = require('../../../lib/config/attribute-filter').DESTINATIONS
+import tap from 'tap'
+import helper from '../../lib/agent_helper.js'
+import { default as constants } from '../grpc/constants.cjs'
+const { ERR_CODE, ERR_SERVER_MSG } = constants
+import { default as utils } from '../grpc/util.cjs'
+import { DESTINATIONS } from '../../../lib/config/attribute-filter.js'
 const DESTINATION = DESTINATIONS.TRANS_EVENT | DESTINATIONS.ERROR_EVENT
-const { ERR_CODE, ERR_SERVER_MSG } = require('./constants.cjs')
 
 const {
-  makeBidiStreamingRequest,
+  makeUnaryRequest,
   createServer,
   getClient,
   getServerTransactionName,
@@ -20,9 +20,9 @@ const {
   assertServerTransaction,
   assertServerMetrics,
   assertDistributedTracing
-} = require('./util.cjs')
+} = utils
 
-tap.test('gRPC Server: Bidi Streaming', (t) => {
+tap.test('gRPC Server: Unary Requests', (t) => {
   t.autoend()
 
   let agent
@@ -31,6 +31,7 @@ tap.test('gRPC Server: Bidi Streaming', (t) => {
   let proto
   let grpc
 
+  /*
   t.beforeEach(async () => {
     agent = helper.instrumentMockedAgent()
     grpc = require('@grpc/grpc-js')
@@ -47,42 +48,75 @@ tap.test('gRPC Server: Bidi Streaming', (t) => {
     grpc = null
     proto = null
   })
+  */
 
-  t.test('should track bidirectional requests', async (t) => {
+  t.before(async () => {
+    agent = helper.instrumentMockedAgent()
+    grpc = await import('@grpc/grpc-js')
+    const data = await createServer(grpc)
+    proto = data.proto
+    server = data.server
+    client = getClient(grpc, proto)
+  })
+
+  t.afterEach(() => {
+    agent.errors.traceAggregator.clear()
+    agent.metrics.clear()
+  })
+
+  t.teardown(() => {
+    helper.unloadAgent(agent)
+    server.forceShutdown()
+    client.close()
+    grpc = null
+    proto = null
+  })
+
+  t.test('should track unary server requests', async (t) => {
     let transaction
-    agent.on('transactionFinished', (tx) => {
+    function transactionFinished(tx) {
       transaction = tx
+    }
+    agent.on('transactionFinished', transactionFinished)
+    t.teardown(() => {
+      agent.removeListener('transactionFinished', transactionFinished)
     })
 
-    const names = [{ name: 'Huey' }, { name: 'Dewey' }, { name: 'Louie' }]
-    const responses = await makeBidiStreamingRequest({
+    const response = await makeUnaryRequest({
       client,
-      fnName: 'sayHelloBidiStream',
-      payload: names
+      fnName: 'sayHello',
+      payload: { name: 'New Relic' }
     })
-    names.forEach(({ name }, i) => {
-      t.equal(responses[i], `Hello ${name}`, 'response stream message should be correct')
-    })
-
+    t.ok(response, 'response exists')
+    t.equal(response.message, 'Hello New Relic', 'response message is correct')
     t.ok(transaction, 'transaction exists')
-    assertServerTransaction({ t, transaction, fnName: 'SayHelloBidiStream' })
-    assertServerMetrics({ t, agentMetrics: agent.metrics._metrics, fnName: 'SayHelloBidiStream' })
+    assertServerTransaction({ t, transaction, fnName: 'SayHello' })
+    assertServerMetrics({ t, agentMetrics: agent.metrics._metrics, fnName: 'SayHello' })
     t.end()
   })
 
   t.test('should add DT headers when `distributed_tracing` is enabled', async (t) => {
     let serverTransaction
     let clientTransaction
-    agent.on('transactionFinished', (tx) => {
-      if (tx.name === getServerTransactionName('SayHelloBidiStream')) {
+    function transactionFinished(tx) {
+      if (tx.name === getServerTransactionName('SayHello')) {
         serverTransaction = tx
       }
+    }
+    agent.on('transactionFinished', transactionFinished)
+    t.teardown(() => {
+      agent.removeListener('transactionFinished', transactionFinished)
     })
-    const payload = [{ name: 'dt test' }]
+
     await helper.runInTransaction(agent, 'web', async (tx) => {
       clientTransaction = tx
       clientTransaction.name = 'clientTransaction'
-      await makeBidiStreamingRequest({ client, fnName: 'sayHelloBidiStream', payload })
+      const response = await makeUnaryRequest({
+        client,
+        fnName: 'sayHello',
+        payload: { name: 'New Relic' }
+      })
+      t.ok(response, 'response exists')
       tx.end()
     })
 
@@ -94,11 +128,16 @@ tap.test('gRPC Server: Bidi Streaming', (t) => {
     'should not include distributed trace headers when there is no client transaction',
     async (t) => {
       let serverTransaction
-      agent.on('transactionFinished', (tx) => {
+      function transactionFinished(tx) {
         serverTransaction = tx
+      }
+      agent.on('transactionFinished', transactionFinished)
+      t.teardown(() => {
+        agent.removeListener('transactionFinished', transactionFinished)
       })
-      const payload = [{ name: 'dt not in transaction' }]
-      await makeBidiStreamingRequest({ client, fnName: 'sayHelloBidiStream', payload })
+      const payload = { name: 'dt not in transaction' }
+      const response = await makeUnaryRequest({ client, fnName: 'sayHello', payload })
+      t.ok(response, 'response exists')
       const attributes = serverTransaction.trace.attributes.get(DESTINATION)
       t.notHas(attributes, 'request.header.newrelic', 'should not have newrelic in headers')
       t.notHas(attributes, 'request.header.traceparent', 'should not have traceparent in headers')
@@ -108,18 +147,26 @@ tap.test('gRPC Server: Bidi Streaming', (t) => {
   t.test('should not add DT headers when `distributed_tracing` is disabled', async (t) => {
     let serverTransaction
     let clientTransaction
-    agent.on('transactionFinished', (tx) => {
-      if (tx.name === getServerTransactionName('SayHelloBidiStream')) {
+    function transactionFinished(tx) {
+      if (tx.name === getServerTransactionName('SayHello')) {
         serverTransaction = tx
       }
+    }
+    agent.on('transactionFinished', transactionFinished)
+    t.teardown(() => {
+      agent.removeListener('transactionFinished', transactionFinished)
     })
 
     agent.config.distributed_tracing.enabled = false
     await helper.runInTransaction(agent, 'web', async (tx) => {
       clientTransaction = tx
       clientTransaction.name = 'clientTransaction'
-      const payload = [{ name: 'dt disabled' }]
-      await makeBidiStreamingRequest({ client, fnName: 'sayHelloBidiStream', payload })
+      const response = await makeUnaryRequest({
+        client,
+        fnName: 'sayHello',
+        payload: { name: 'New Relic' }
+      })
+      t.ok(response, 'response exists')
       tx.end()
     })
 
@@ -140,15 +187,22 @@ tap.test('gRPC Server: Bidi Streaming', (t) => {
         const expectedStatusCode = ERR_CODE
         const expectedStatusText = ERR_SERVER_MSG
         let transaction
-        agent.on('transactionFinished', (tx) => {
-          if (tx.name === getServerTransactionName('SayErrorBidiStream')) {
+        function transactionFinished(tx) {
+          if (tx.name === getServerTransactionName('SayError')) {
             transaction = tx
           }
+        }
+        agent.on('transactionFinished', transactionFinished)
+        t.teardown(() => {
+          agent.removeListener('transactionFinished', transactionFinished)
         })
 
         try {
-          const payload = [{ name: 'server-error' }]
-          await makeBidiStreamingRequest({ client, fnName: 'sayErrorBidiStream', payload })
+          await makeUnaryRequest({
+            client,
+            fnName: 'sayError',
+            payload: { oh: 'noes' }
+          })
         } catch (err) {
           // err tested in client tests
         }
@@ -161,7 +215,7 @@ tap.test('gRPC Server: Bidi Streaming', (t) => {
           expectErrors: enabled,
           expectedStatusCode,
           expectedStatusText,
-          fnName: 'SayErrorBidiStream'
+          fnName: 'SayError'
         })
         t.end()
       }

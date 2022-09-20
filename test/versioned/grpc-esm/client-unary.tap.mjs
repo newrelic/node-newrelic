@@ -3,11 +3,11 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-'use strict'
-
-const tap = require('tap')
-const helper = require('../../lib/agent_helper')
-const { ERR_CODE, ERR_MSG } = require('./constants.cjs')
+import tap from 'tap'
+import helper from '../../lib/agent_helper.js'
+import { default as constants } from '../grpc/constants.cjs'
+const { ERR_CODE, ERR_MSG } = constants
+import { default as utils } from '../grpc/util.cjs'
 
 const {
   assertError,
@@ -16,7 +16,7 @@ const {
   makeUnaryRequest,
   createServer,
   getClient
-} = require('./util.cjs')
+} = utils
 
 tap.test('gRPC Client: Unary Requests', (t) => {
   t.autoend()
@@ -27,9 +27,9 @@ tap.test('gRPC Client: Unary Requests', (t) => {
   let proto
   let grpc
 
-  t.beforeEach(async () => {
+  t.before(async () => {
     agent = helper.instrumentMockedAgent()
-    grpc = require('@grpc/grpc-js')
+    grpc = await import('@grpc/grpc-js')
     const data = await createServer(grpc)
     proto = data.proto
     server = data.server
@@ -37,6 +37,11 @@ tap.test('gRPC Client: Unary Requests', (t) => {
   })
 
   t.afterEach(() => {
+    agent.errors.traceAggregator.clear()
+    agent.metrics.clear()
+  })
+
+  t.teardown(() => {
     helper.unloadAgent(agent)
     server.forceShutdown()
     client.close()
@@ -47,14 +52,17 @@ tap.test('gRPC Client: Unary Requests', (t) => {
   t.test('should track unary client requests as an external when in a transaction', (t) => {
     helper.runInTransaction(agent, 'web', async (tx) => {
       tx.name = 'clientTransaction'
-      agent.on('transactionFinished', (transaction) => {
+      function transactionFinished(transaction) {
         if (transaction.name === 'clientTransaction') {
           // Make sure we're in the client and not server transaction
           assertExternalSegment({ t, tx: transaction, fnName: 'SayHello' })
           t.end()
         }
+      }
+      agent.on('transactionFinished', transactionFinished)
+      t.teardown(() => {
+        agent.removeListener('transactionFinished', transactionFinished)
       })
-
       const response = await makeUnaryRequest({
         client,
         fnName: 'sayHello',
@@ -123,7 +131,7 @@ tap.test('gRPC Client: Unary Requests', (t) => {
       agent.config.grpc.record_errors = enabled
       helper.runInTransaction(agent, 'web', async (tx) => {
         tx.name = 'clientTransaction'
-        agent.on('transactionFinished', (transaction) => {
+        function transactionFinished(transaction) {
           if (transaction.name === 'clientTransaction') {
             assertError({
               t,
@@ -137,6 +145,11 @@ tap.test('gRPC Client: Unary Requests', (t) => {
             })
             t.end()
           }
+        }
+
+        agent.on('transactionFinished', transactionFinished)
+        t.teardown(() => {
+          agent.removeListener('transactionFinished', transactionFinished)
         })
 
         try {
