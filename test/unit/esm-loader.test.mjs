@@ -6,10 +6,14 @@
 import tap from 'tap'
 import sinon from 'sinon'
 import * as td from 'testdouble'
-import semver from 'semver'
-const isUnsupported = () => semver.lte(process.version, 'v16.12.0')
+import path from 'node:path'
+import esmHelpers from '../lib/esm-helpers.mjs'
+const __dirname = esmHelpers.__dirname(import.meta.url)
+const TEST_MOD_FILE_PATH = path.resolve(`${__dirname}../lib/test-mod.mjs`)
+const ESM_SHIM_FILE_PATH = path.resolve(`${__dirname}../../lib/esm-shim.mjs`)
+const MOD_URL = `file://${TEST_MOD_FILE_PATH}`
 
-tap.test('ES Module Loader', { skip: isUnsupported() }, (t) => {
+tap.test('ES Module Loader', { skip: !esmHelpers.supportedLoaderVersion() }, (t) => {
   t.autoend()
 
   let fakeSpecifier
@@ -22,14 +26,17 @@ tap.test('ES Module Loader', { skip: isUnsupported() }, (t) => {
   let fakeLogger
   let fakeLoggerChild
   let loader
+  let loadStub
 
   t.beforeEach(async () => {
     fakeSpecifier = 'my-test-dep'
     fakeContext = {}
     fakeNextResolve = sinon.stub()
+    loadStub = sinon.stub()
 
     fakeLoggerChild = {
-      debug: sinon.stub()
+      debug: sinon.stub(),
+      error: sinon.stub()
     }
 
     fakeLogger = {
@@ -65,6 +72,7 @@ tap.test('ES Module Loader', { skip: isUnsupported() }, (t) => {
     await td.replaceEsm('../../lib/logger.js', {}, fakeLogger)
 
     loader = await import('../../esm-loader.mjs')
+    sinon.spy(loader.registeredSpecifiers, 'get')
   })
 
   t.afterEach(() => {
@@ -82,8 +90,6 @@ tap.test('ES Module Loader', { skip: isUnsupported() }, (t) => {
 
     t.ok(fakeGetOrCreateMetric.notCalled, 'should not get a usage metric')
     t.ok(fakeIncrementCallCount.notCalled, 'should not increment a usage metric')
-
-    t.end()
   })
 
   t.test('should update the loader metric when on a supported version of node', async (t) => {
@@ -92,8 +98,6 @@ tap.test('ES Module Loader', { skip: isUnsupported() }, (t) => {
       'should get the correct usage metric'
     )
     t.equal(fakeIncrementCallCount.callCount, 1, 'should increment the metric')
-
-    t.end()
   })
 
   t.test('should exit early if agent is not running', async (t) => {
@@ -110,8 +114,21 @@ tap.test('ES Module Loader', { skip: isUnsupported() }, (t) => {
       fakeLogger.child.calledOnceWithExactly({ component: 'esm-loader' }),
       'should instantiate the logger'
     )
+  })
 
-    t.end()
+  t.test('should exit early if the import is coming from loader', async (t) => {
+    fakeContext.parentURL = '/path/to/newrelic/esm-loader.mjs'
+    await loader.resolve(fakeSpecifier, fakeContext, fakeNextResolve)
+
+    t.ok(fakeNextResolve.calledOnceWith(fakeSpecifier), 'should only call nextResolve once')
+    t.ok(
+      fakeShimmer.getInstrumentationNameFromModuleName.notCalled,
+      'should not have called getInstrumentationNameFromModuleName'
+    )
+    t.ok(
+      fakeLogger.child.calledOnceWithExactly({ component: 'esm-loader' }),
+      'should instantiate the logger'
+    )
   })
 
   t.test('should noop if module we are resolving does not have instrumentation', async (t) => {
@@ -130,12 +147,10 @@ tap.test('ES Module Loader', { skip: isUnsupported() }, (t) => {
       fakeShimmer.registerInstrumentation.notCalled,
       'should not have registered an instrumentation copy'
     )
-
-    t.end()
   })
 
   t.test(
-    'should noop if module we are resolving has instrumentation but is not commonjs',
+    'should add specifier to map and append hasNrInstrumentation to url if module we are resolving has instrumentation',
     async (t) => {
       fakeShimmer.getInstrumentationNameFromModuleName.returnsArg(0)
       fakeShimmer.registeredInstrumentations['my-test-dep'] = {
@@ -149,24 +164,18 @@ tap.test('ES Module Loader', { skip: isUnsupported() }, (t) => {
 
       t.same(
         expected,
-        { url: 'file://path/to/my-test-dep/index.js', format: 'module' },
+        { url: 'file://path/to/my-test-dep/index.js?hasNrInstrumentation=true', format: 'module' },
         'should return an object with url and format'
       )
-      t.equal(fakeLoggerChild.debug.callCount, 2, 'should log two debug statements')
+      t.equal(fakeLoggerChild.debug.callCount, 1, 'should log two debug statements')
       t.ok(
-        fakeLoggerChild.debug.calledWith('Instrumentation exists for my-test-dep'),
+        fakeLoggerChild.debug.calledWith('Instrumentation exists for my-test-dep module package.'),
         'should log debug about instrumentation existing'
-      )
-      t.ok(
-        fakeLoggerChild.debug.calledWith('my-test-dep is not a CommonJS module, skipping for now'),
-        'should log debug about instrumentation not being commonjs'
       )
       t.ok(
         fakeShimmer.registerInstrumentation.notCalled,
         'should not have registered an instrumentation copy'
       )
-
-      t.end()
     }
   )
 
@@ -190,7 +199,9 @@ tap.test('ES Module Loader', { skip: isUnsupported() }, (t) => {
       )
       t.equal(fakeLoggerChild.debug.callCount, 2, 'should log two debug statements')
       t.ok(
-        fakeLoggerChild.debug.calledWith('Instrumentation exists for my-test-dep'),
+        fakeLoggerChild.debug.calledWith(
+          'Instrumentation exists for my-test-dep commonjs package.'
+        ),
         'should log debug about instrumentation existing'
       )
       t.ok(
@@ -211,24 +222,62 @@ tap.test('ES Module Loader', { skip: isUnsupported() }, (t) => {
         fakeShimmer.registerInstrumentation.calledOnceWithExactly(expectedInstrumentation),
         'should have registered an instrumentation copy'
       )
-
-      t.end()
     }
   )
+
+  t.test('should rewrite module context if it has instrumentation', async (t) => {
+    loader.registeredSpecifiers.set(MOD_URL, 'test-mod')
+
+    const data = await loader.load(`${MOD_URL}?hasNrInstrumentation=true`, {}, loadStub)
+    const expectedSource = `
+    import wrapModule from 'file://${ESM_SHIM_FILE_PATH}'
+    import * as _originalModule from '${MOD_URL}'
+    // lets have as little code in here as possible and push most to
+    // a helper function or class
+    const _wrappedModule = wrapModule(_originalModule, 'test-mod', '${TEST_MOD_FILE_PATH}')
+    // Generate matching exports
+    
+    let _default = _wrappedModule.default
+    // this allows for dynamically mapping to default
+    export { _default as default }
+
+    let _namedMethod = _wrappedModule.namedMethod
+    // this allows for dynamically mapping to namedMethod
+    export { _namedMethod as namedMethod }
+  `
+    t.equal(data.source, expectedSource, 'should rewrite source accordingly')
+    t.equal(data.format, 'module', 'should be of format module')
+    t.ok(data.shortCircuit, 'should apply shortcuit to load hook')
+  })
+
+  t.test('should call next load if imported url lacks `hasNrInstrumentation`', async (t) => {
+    await loader.load(MOD_URL, {}, loadStub)
+    t.equal(loader.registeredSpecifiers.get.callCount, 0, 'should have exited early')
+    t.equal(loadStub.callCount, 1, 'should have called next loader')
+  })
+
+  t.test('should call next load if url is invalid', async (t) => {
+    await loader.load('nope', {}, loadStub)
+    t.equal(loader.registeredSpecifiers.get.callCount, 0, 'should have exited early')
+    t.equal(loadStub.callCount, 1, 'should have called next loader')
+    t.equal(fakeLoggerChild.error.callCount, 1, 'should log error')
+  })
 })
 
-tap.test('Skipped ESM loader', { skip: !isUnsupported() }, (t) => {
+tap.test('Skipped ESM loader', { skip: esmHelpers.supportedLoaderVersion() }, (t) => {
   t.autoend()
 
   let mockedAgent = null
   let mockedShimmer = null
   let loader = null
   let resolveStub = null
+  let loadStub = null
   let fakeGetOrCreateMetric
   let fakeIncrementCallCount
 
   t.beforeEach(async () => {
     resolveStub = sinon.stub()
+    loadStub = sinon.stub()
 
     fakeIncrementCallCount = sinon.stub()
     fakeGetOrCreateMetric = sinon.stub()
@@ -250,9 +299,10 @@ tap.test('Skipped ESM loader', { skip: !isUnsupported() }, (t) => {
     await td.replaceEsm('../../lib/shimmer.js', {}, mockedShimmer)
     // eslint-disable-next-line node/no-unsupported-features/es-syntax
     loader = await import('../../esm-loader.mjs')
+    sinon.spy(loader.registeredSpecifiers, 'get')
   })
 
-  t.test('should exit early if agent is not running', async (t) => {
+  t.test('resolve should exit early if agent is not running', async (t) => {
     delete mockedAgent.agent
     await loader.resolve('test-mod', {}, resolveStub)
     t.ok(
@@ -261,7 +311,7 @@ tap.test('Skipped ESM loader', { skip: !isUnsupported() }, (t) => {
     )
   })
 
-  t.test('should exit early if the Node.js version is < 16.12.0', async (t) => {
+  t.test('resolve should exit early if the Node.js version is < 16.12.0', async (t) => {
     await loader.resolve('test-mod', {}, resolveStub)
     t.ok(
       mockedShimmer.getInstrumentationNameFromModuleName.notCalled,
@@ -269,18 +319,25 @@ tap.test('Skipped ESM loader', { skip: !isUnsupported() }, (t) => {
     )
   })
 
-  t.test(
-    'should update the unsupported metric when on an unsupported version of node',
-    async (t) => {
-      t.ok(
-        fakeGetOrCreateMetric.calledOnceWithExactly(
-          'Supportability/Features/ESM/UnsupportedLoader'
-        ),
-        'should get the correct usage metric'
-      )
-      t.equal(fakeIncrementCallCount.callCount, 1, 'should increment the metric')
+  t.test('load should exit early if agent is not running', async (t) => {
+    delete mockedAgent.agent
+    await loader.load('/path/to/test-mod.js?hasNrInstrumentation=true', {}, loadStub)
+    t.equal(loader.registeredSpecifiers.get.callCount, 0, 'should have exited early')
+    t.equal(loadStub.callCount, 1, 'should have called next loader')
+  })
 
-      t.end()
-    }
-  )
+  t.test('load should exit early if the Node.js version is < 16.12.0', async (t) => {
+    await loader.load('/path/to/test-mod.js?hasNrInstrumentation=true', {}, loadStub)
+    t.equal(loader.registeredSpecifiers.get.callCount, 0, 'should have exited early')
+    t.equal(loadStub.callCount, 1, 'should have called next loader')
+  })
+
+  t.test('should update the unsupported metric when on an unsupported version of node', (t) => {
+    t.ok(
+      fakeGetOrCreateMetric.calledOnceWithExactly('Supportability/Features/ESM/UnsupportedLoader'),
+      'should get the correct usage metric'
+    )
+    t.equal(fakeIncrementCallCount.callCount, 1, 'should increment the metric')
+    t.end()
+  })
 })
