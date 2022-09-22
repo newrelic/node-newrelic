@@ -15,7 +15,7 @@ import {
   TRANSACTION_NAME
 } from './collection-common.mjs'
 import helper from '../../lib/agent_helper.js'
-import { pkgVersion } from './common.cjs'
+import { pkgVersion, STATEMENT_PREFIX } from './common.cjs'
 
 tap.test('Cursor Tests', (t) => {
   t.autoend()
@@ -33,11 +33,7 @@ tap.test('Cursor Tests', (t) => {
     collection.find({}).count(function onCount(err, data) {
       t.notOk(err, 'should not error')
       t.equal(data, 30, 'should have correct result')
-      verify(
-        null,
-        ['Datastore/statement/MongoDB/esmTestCollection/count', 'Callback: onCount'],
-        ['count']
-      )
+      verify(null, [`${STATEMENT_PREFIX}/count`, 'Callback: onCount'], ['count'])
     })
   })
 
@@ -50,11 +46,7 @@ tap.test('Cursor Tests', (t) => {
       } else {
         t.ok(data.hasOwnProperty('queryPlanner'), 'should have correct response')
       }
-      verify(
-        null,
-        ['Datastore/statement/MongoDB/esmTestCollection/explain', 'Callback: onExplain'],
-        ['explain']
-      )
+      verify(null, [`${STATEMENT_PREFIX}/explain`, 'Callback: onExplain'], ['explain'])
     })
   })
 
@@ -63,11 +55,7 @@ tap.test('Cursor Tests', (t) => {
       collection.find({}).nextObject(function onNextObject(err, data) {
         t.notOk(err)
         t.equal(data.i, 0)
-        verify(
-          null,
-          ['Datastore/statement/MongoDB/esmTestCollection/nextObject', 'Callback: onNextObject'],
-          ['nextObject']
-        )
+        verify(null, [`${STATEMENT_PREFIX}/nextObject`, 'Callback: onNextObject'], ['nextObject'])
       })
     })
   }
@@ -76,11 +64,7 @@ tap.test('Cursor Tests', (t) => {
     collection.find({}).next(function onNext(err, data) {
       t.notOk(err)
       t.equal(data.i, 0)
-      verify(
-        null,
-        ['Datastore/statement/MongoDB/esmTestCollection/next', 'Callback: onNext'],
-        ['next']
-      )
+      verify(null, [`${STATEMENT_PREFIX}/next`, 'Callback: onNext'], ['next'])
     })
   })
 
@@ -88,11 +72,7 @@ tap.test('Cursor Tests', (t) => {
     collection.find({}).toArray(function onToArray(err, data) {
       t.notOk(err)
       t.equal(data[0].i, 0)
-      verify(
-        null,
-        ['Datastore/statement/MongoDB/esmTestCollection/toArray', 'Callback: onToArray'],
-        ['toArray']
-      )
+      verify(null, [`${STATEMENT_PREFIX}/toArray`, 'Callback: onToArray'], ['toArray'])
     })
   })
 

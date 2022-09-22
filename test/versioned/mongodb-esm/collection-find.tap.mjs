@@ -7,7 +7,7 @@ import semver from 'semver'
 import tap from 'tap'
 import { test } from './collection-common.mjs'
 import helper from '../../lib/agent_helper.js'
-import { pkgVersion } from './common.cjs'
+import { pkgVersion, STATEMENT_PREFIX } from './common.cjs'
 
 let findOpt = { returnOriginal: false }
 // 4.0.0 changed this opt https://github.com/mongodb/node-mongodb-native/pull/2803/files
@@ -38,11 +38,7 @@ tap.test('Collection(Find) Tests', (t) => {
           t.equal(data.value.a, 15)
           t.equal(data.value.i, 1)
           t.equal(data.ok, 1)
-          verify(
-            null,
-            ['Datastore/statement/MongoDB/esmTestCollection/findAndModify', 'Callback: done'],
-            ['findAndModify']
-          )
+          verify(null, [`${STATEMENT_PREFIX}/findAndModify`, 'Callback: done'], ['findAndModify'])
         }
       }
     )
@@ -54,11 +50,7 @@ tap.test('Collection(Find) Tests', (t) => {
           t.error(err)
           t.equal(data.value.i, 1)
           t.equal(data.ok, 1)
-          verify(
-            null,
-            ['Datastore/statement/MongoDB/esmTestCollection/findAndRemove', 'Callback: done'],
-            ['findAndRemove']
-          )
+          verify(null, [`${STATEMENT_PREFIX}/findAndRemove`, 'Callback: done'], ['findAndRemove'])
         })
       }
     )
@@ -68,11 +60,7 @@ tap.test('Collection(Find) Tests', (t) => {
     collection.findOne({ i: 15 }, function done(err, data) {
       t.error(err)
       t.equal(data.i, 15)
-      verify(
-        null,
-        ['Datastore/statement/MongoDB/esmTestCollection/findOne', 'Callback: done'],
-        ['findOne']
-      )
+      verify(null, [`${STATEMENT_PREFIX}/findOne`, 'Callback: done'], ['findOne'])
     })
   })
 
@@ -85,7 +73,7 @@ tap.test('Collection(Find) Tests', (t) => {
         t.equal(data.value.i, 15)
         verify(
           null,
-          ['Datastore/statement/MongoDB/esmTestCollection/findOneAndDelete', 'Callback: done'],
+          [`${STATEMENT_PREFIX}/findOneAndDelete`, 'Callback: done'],
           ['findOneAndDelete']
         )
       })
@@ -103,7 +91,7 @@ tap.test('Collection(Find) Tests', (t) => {
         t.equal(data.ok, 1)
         verify(
           null,
-          ['Datastore/statement/MongoDB/esmTestCollection/findOneAndReplace', 'Callback: done'],
+          [`${STATEMENT_PREFIX}/findOneAndReplace`, 'Callback: done'],
           ['findOneAndReplace']
         )
       }
@@ -121,7 +109,7 @@ tap.test('Collection(Find) Tests', (t) => {
         t.equal(data.ok, 1)
         verify(
           null,
-          ['Datastore/statement/MongoDB/esmTestCollection/findOneAndUpdate', 'Callback: done'],
+          [`${STATEMENT_PREFIX}/findOneAndUpdate`, 'Callback: done'],
           ['findOneAndUpdate']
         )
       }

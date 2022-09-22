@@ -7,7 +7,7 @@ import semver from 'semver'
 import tap from 'tap'
 import { test, DB_NAME } from './collection-common.mjs'
 import helper from '../../lib/agent_helper.js'
-import { pkgVersion } from './common.cjs'
+import { pkgVersion, STATEMENT_PREFIX } from './common.cjs'
 
 tap.test('Collection(Index) Tests', (t) => {
   t.autoend()
@@ -24,11 +24,7 @@ tap.test('Collection(Index) Tests', (t) => {
     collection.createIndex('i', function onIndex(err, data) {
       t.error(err)
       t.equal(data, 'i_1')
-      verify(
-        null,
-        ['Datastore/statement/MongoDB/esmTestCollection/createIndex', 'Callback: onIndex'],
-        ['createIndex']
-      )
+      verify(null, [`${STATEMENT_PREFIX}/createIndex`, 'Callback: onIndex'], ['createIndex'])
     })
   })
 
@@ -41,9 +37,9 @@ tap.test('Collection(Index) Tests', (t) => {
         verify(
           null,
           [
-            'Datastore/statement/MongoDB/esmTestCollection/createIndex',
+            `${STATEMENT_PREFIX}/createIndex`,
             'Callback: onIndex',
-            'Datastore/statement/MongoDB/esmTestCollection/dropIndex',
+            `${STATEMENT_PREFIX}/dropIndex`,
             'Callback: done'
           ],
           ['createIndex', 'dropIndex']
@@ -71,11 +67,7 @@ tap.test('Collection(Index) Tests', (t) => {
       }
       t.same(result, expectedResult, 'should have expected results')
 
-      verify(
-        null,
-        ['Datastore/statement/MongoDB/esmTestCollection/indexes', 'Callback: done'],
-        ['indexes']
-      )
+      verify(null, [`${STATEMENT_PREFIX}/indexes`, 'Callback: done'], ['indexes'])
     })
   })
 
@@ -84,11 +76,7 @@ tap.test('Collection(Index) Tests', (t) => {
       t.error(err)
       t.equal(data, true)
 
-      verify(
-        null,
-        ['Datastore/statement/MongoDB/esmTestCollection/indexExists', 'Callback: done'],
-        ['indexExists']
-      )
+      verify(null, [`${STATEMENT_PREFIX}/indexExists`, 'Callback: done'], ['indexExists'])
     })
   })
 
@@ -101,7 +89,7 @@ tap.test('Collection(Index) Tests', (t) => {
 
         verify(
           null,
-          ['Datastore/statement/MongoDB/esmTestCollection/indexInformation', 'Callback: done'],
+          [`${STATEMENT_PREFIX}/indexInformation`, 'Callback: done'],
           ['indexInformation']
         )
       })
@@ -115,11 +103,7 @@ tap.test('Collection(Index) Tests', (t) => {
         collection.dropAllIndexes(function done(err, data) {
           t.error(err)
           t.equal(data, true)
-          verify(
-            null,
-            ['Datastore/statement/MongoDB/esmTestCollection/dropAllIndexes', 'Callback: done'],
-            ['dropAllIndexes']
-          )
+          verify(null, [`${STATEMENT_PREFIX}/dropAllIndexes`, 'Callback: done'], ['dropAllIndexes'])
         })
       }
     )
@@ -128,11 +112,7 @@ tap.test('Collection(Index) Tests', (t) => {
       collection.ensureIndex('i', function done(err, data) {
         t.error(err)
         t.equal(data, 'i_1')
-        verify(
-          null,
-          ['Datastore/statement/MongoDB/esmTestCollection/ensureIndex', 'Callback: done'],
-          ['ensureIndex']
-        )
+        verify(null, [`${STATEMENT_PREFIX}/ensureIndex`, 'Callback: done'], ['ensureIndex'])
       })
     })
 
@@ -141,11 +121,7 @@ tap.test('Collection(Index) Tests', (t) => {
         t.error(err)
         t.equal(data, true)
 
-        verify(
-          null,
-          ['Datastore/statement/MongoDB/esmTestCollection/reIndex', 'Callback: done'],
-          ['reIndex']
-        )
+        verify(null, [`${STATEMENT_PREFIX}/reIndex`, 'Callback: done'], ['reIndex'])
       })
     })
   }
