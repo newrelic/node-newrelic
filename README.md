@@ -20,11 +20,15 @@ To use New Relic's Node.js agent entails these three steps, which are described 
 
 1. To install the agent for performance monitoring, use your favorite npm-based package manager and install the `newrelic` package into your application:
 
-    `$ npm install newrelic`
+    ```sh
+    $ npm install newrelic
+    ```
 
 2. Then, copy the stock configuration file to your program's base folder:
 
-    `$ cp ./node_modules/newrelic/newrelic.js ./<your destination>`
+    ```sh
+    $ cp ./node_modules/newrelic/newrelic.js ./<your destination>
+    ```
 
 3. Now, add your New Relic license key and application/service name to that file:
 
@@ -57,6 +61,28 @@ If you cannot control how your program is run, you can load the `newrelic` modul
 
     /* ... the rest of your program ... */
 ```
+
+## ECMAScript Modules
+
+If your application is written with `import` and `export` statements in javascript, you are using [ES Modules](https://nodejs.org/api/esm.html#modules-ecmascript-modules) and must bootstrap the agent in a different way.
+
+The New Relic Node.js agent includes ***_experimental_*** support for ES Modules. The agent is reliant on an experimental feature in Node.js in order to appropriately register instrumentation. Until the Node.js API for [ES Module Loaders](https://nodejs.org/api/esm.html#loaders) is stable, breaking changes may occur when updating Node.js. Lastly, the ESM loader does not follow the same [supported Node.js versions](https://docs.newrelic.com/docs/apm/agents/nodejs-agent/getting-started/compatibility-requirements-nodejs-agent#system) as the agent. The minimum supported version of Node.js is `v16.12.0`.
+
+### Setup
+
+ 1. If you rely on a configuration file to run the agent, you must rename the file from `newrelic.js` to `newrelic.cjs` so it can be properly loaded.  All the contents of the configuration file will behave the same once you rename. See [CommonJS modules in ESM](https://nodejs.org/api/modules.html#enabling) for more details.
+
+```sh
+$ mv newrelic.js newrelic.cjs
+```
+
+ 2. To use the newrelic ESM loader, start your program with node and use the `--experimental-loader` flag and a path to the loader file, like this:
+
+```sh
+$ node --experimental-loader newrelic/esm-loader.mjs your-program.js
+```
+
+**Note**: Unlike the CommonJS methods listed above, there are no alternatives to running the agent without the `--experimental-loader` flag.
 
 ## Getting Started
 

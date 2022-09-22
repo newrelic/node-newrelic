@@ -113,6 +113,16 @@
       "name": "Jordi Gutiérrez Hermoso",
       "email": "jgutierrezhermoso@newrelic.com",
       "web": "https://newrelic.com"
+    },
+    {
+      "name": "Maurice Rickard",
+      "email": "mrickard@newrelic.com",
+      "web": "https://newrelic.com"
+    },
+    {
+      "name": "Jessica Lopatta",
+      "email": "jlopatta@newrelic.com",
+      "web": "https://newrelic.com"
     }
   ],
   "description": "New Relic agent",
