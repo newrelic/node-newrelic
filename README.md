@@ -62,21 +62,21 @@ If you cannot control how your program is run, you can load the `newrelic` modul
     /* ... the rest of your program ... */
 ```
 
-## ES Modules
+## ECMAScript Modules
 
-If your application is written with `import` and `export` statements and is not transpiled to javascript, you are using [ES Modules](https://nodejs.org/api/esm.html#modules-ecmascript-modules) and must bootstrap the agent in a different way. 
+If your application is written with `import` and `export` statements in javascript, you are using [ES Modules](https://nodejs.org/api/esm.html#modules-ecmascript-modules) and must bootstrap the agent in a different way.
 
-The New Relic Node.js agent includes ***_experimental_*** support for ES Modules. The agent is reliant on an experimental feature in Node.js in order to appropriately register instrumentation. Until the Node.js API for [ES Module Loaders](https://nodejs.org/api/esm.html#loaders) is stable, breaking changes may occur when updating Node.js. Lastly, the ESM loader does not follow the same [supported Node.js versions](https://docs.newrelic.com/docs/apm/agents/nodejs-agent/getting-started/compatibility-requirements-nodejs-agent#system) as the agent. The minimum supported version of Node.js is `v16.12.0`. 
+The New Relic Node.js agent includes ***_experimental_*** support for ES Modules. The agent is reliant on an experimental feature in Node.js in order to appropriately register instrumentation. Until the Node.js API for [ES Module Loaders](https://nodejs.org/api/esm.html#loaders) is stable, breaking changes may occur when updating Node.js. Lastly, the ESM loader does not follow the same [supported Node.js versions](https://docs.newrelic.com/docs/apm/agents/nodejs-agent/getting-started/compatibility-requirements-nodejs-agent#system) as the agent. The minimum supported version of Node.js is `v16.12.0`.
 
 ### Setup
 
- 1. If you rely on a configuration file to run the agent, you must rename the file from `newrelic.js` to `newrelic.cjs` so it can be properly loaded.  All the contents of the configuration file will behave the same once you rename. See [CommonJS modules in ESM](https://nodejs.org/api/modules.html#enabling) for more details. 
+ 1. If you rely on a configuration file to run the agent, you must rename the file from `newrelic.js` to `newrelic.cjs` so it can be properly loaded.  All the contents of the configuration file will behave the same once you rename. See [CommonJS modules in ESM](https://nodejs.org/api/modules.html#enabling) for more details.
 
 ```sh
 $ mv newrelic.js newrelic.cjs
 ```
 
- 2. To run your program pass the newrelic ESM loader with the `--experimental-loader` flag.
+ 2. To use the newrelic ESM loader, start your program with node and use the `--experimental-loader` flag and a path to the loader file, like this:
 
 ```sh
 $ node --experimental-loader newrelic/esm-loader.mjs your-program.js
@@ -104,8 +104,6 @@ There are several modules included within the Node.js agent to add more instrume
  * [@newrelic/koa](https://github.com/newrelic/node-newrelic-koa): Provides instrumentation for [koa](https://koajs.com/), [koa-router](https://github.com/ZijianHe/koa-router), [@koa/router](https://github.com/koajs/router), and [koa-route](https://github.com/koajs/route) npm packages.
  * [@newrelic/superagent](https://github.com/newrelic/node-newrelic-superagent): Provides instrumentation for [superagent](https://github.com/visionmedia/superagent) npm package.
  * [@newrelic/native-metrics](https://github.com/newrelic/node-native-metrics): Provides hooks into the native v8 layer of Node.js to provide metrics to the Node.js agent.
-
- 
 
 ## Usage
 
