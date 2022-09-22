@@ -1,3 +1,28 @@
+### v9.1.0 (2022-09-22)
+
+* Added information on using ESM loader to README.md
+
+* Added gRPC ESM versioned tests.
+
+* Updated the alias for localhost in mongodb instrumentation when dealing with IPv6 addresses.
+
+* Added Pg ESM versioned tests
+
+* Added mongodb ESM versioned tests
+
+* Added test ESM loader to properly mock out agent in versioned tests.
+ * Added express ESM versioned tests.
+
+Enhanced supportability metrics for ES Module support
+  * Added new metric to track usage of ES Module loader
+  * Updated instrumentation map to include an optional "friendly name" for tracking metrics
+
+* Updated ESM loader to pass in all arguments to parent resolve methods.
+
+* Enabled re-throwing ESM import errors of `newrelic.js` so that the user is informed to rename it to `newrelic.cjs`
+
+* Added loader hook to support instrumentation of CommonJS dependencies in ES Module applications
+
 ### v9.0.3 (2022-09-06)
 
 * Updated gRPC client instrumenation to respect `grpc.record_errors` when deciding to log errors on gRPC client requests.
