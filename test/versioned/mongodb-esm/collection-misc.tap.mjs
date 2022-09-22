@@ -7,7 +7,7 @@ import semver from 'semver'
 import tap from 'tap'
 import { test, DB_NAME } from './collection-common.mjs'
 import helper from '../../lib/agent_helper.js'
-import { pkgVersion } from './common.cjs'
+import { pkgVersion, STATEMENT_PREFIX } from './common.cjs'
 
 function verifyAggregateData(t, data) {
   t.equal(data.length, 3, 'should have expected amount of results')
@@ -40,7 +40,7 @@ tap.test('Collection(Index) Tests', (t) => {
         verify(
           err,
           [
-            'Datastore/statement/MongoDB/esmTestCollection/aggregate',
+            `${STATEMENT_PREFIX}/aggregate`,
             'Datastore/statement/MongoDB/esmTestCollection/toArray'
           ],
           ['aggregate', 'toArray'],
@@ -64,7 +64,7 @@ tap.test('Collection(Index) Tests', (t) => {
         verify(
           null,
           [
-            'Datastore/statement/MongoDB/esmTestCollection/aggregate',
+            `${STATEMENT_PREFIX}/aggregate`,
             'Datastore/statement/MongoDB/esmTestCollection/toArray'
           ],
           ['aggregate', 'toArray'],
@@ -85,11 +85,7 @@ tap.test('Collection(Index) Tests', (t) => {
       t.error(err)
       t.equal(data.insertedCount, 1)
       t.equal(data.deletedCount, 30)
-      verify(
-        null,
-        ['Datastore/statement/MongoDB/esmTestCollection/bulkWrite', 'Callback: onWrite'],
-        ['bulkWrite']
-      )
+      verify(null, [`${STATEMENT_PREFIX}/bulkWrite`, 'Callback: onWrite'], ['bulkWrite'])
     }
   })
 
@@ -97,11 +93,7 @@ tap.test('Collection(Index) Tests', (t) => {
     collection.count(function onCount(err, data) {
       t.error(err)
       t.equal(data, 30)
-      verify(
-        null,
-        ['Datastore/statement/MongoDB/esmTestCollection/count', 'Callback: onCount'],
-        ['count']
-      )
+      verify(null, [`${STATEMENT_PREFIX}/count`, 'Callback: onCount'], ['count'])
     })
   })
 
@@ -109,11 +101,7 @@ tap.test('Collection(Index) Tests', (t) => {
     collection.distinct('mod10', function done(err, data) {
       t.error(err)
       t.same(data.sort(), [0, 1, 2, 3, 4, 5, 6, 7, 8, 9])
-      verify(
-        null,
-        ['Datastore/statement/MongoDB/esmTestCollection/distinct', 'Callback: done'],
-        ['distinct']
-      )
+      verify(null, [`${STATEMENT_PREFIX}/distinct`, 'Callback: done'], ['distinct'])
     })
   })
 
@@ -121,11 +109,7 @@ tap.test('Collection(Index) Tests', (t) => {
     collection.drop(function done(err, data) {
       t.error(err)
       t.equal(data, true)
-      verify(
-        null,
-        ['Datastore/statement/MongoDB/esmTestCollection/drop', 'Callback: done'],
-        ['drop']
-      )
+      verify(null, [`${STATEMENT_PREFIX}/drop`, 'Callback: done'], ['drop'])
     })
   })
 
@@ -151,9 +135,9 @@ tap.test('Collection(Index) Tests', (t) => {
         verify(
           null,
           [
-            'Datastore/statement/MongoDB/esmTestCollection/ensureIndex',
+            `${STATEMENT_PREFIX}/ensureIndex`,
             'Callback: indexed',
-            'Datastore/statement/MongoDB/esmTestCollection/geoNear',
+            `${STATEMENT_PREFIX}/geoNear`,
             'Callback: done'
           ],
           ['ensureIndex', 'geoNear']
@@ -167,11 +151,7 @@ tap.test('Collection(Index) Tests', (t) => {
       t.error(err)
       t.notOk(data)
 
-      verify(
-        null,
-        ['Datastore/statement/MongoDB/esmTestCollection/isCapped', 'Callback: done'],
-        ['isCapped']
-      )
+      verify(null, [`${STATEMENT_PREFIX}/isCapped`, 'Callback: done'], ['isCapped'])
     })
   })
 
@@ -198,11 +178,7 @@ tap.test('Collection(Index) Tests', (t) => {
       data.sort((a, b) => a._id - b._id)
       t.same(data, expectedData)
 
-      verify(
-        null,
-        ['Datastore/statement/MongoDB/esmTestCollection/mapReduce', 'Callback: done'],
-        ['mapReduce']
-      )
+      verify(null, [`${STATEMENT_PREFIX}/mapReduce`, 'Callback: done'], ['mapReduce'])
     }
 
     /* eslint-disable */
@@ -229,11 +205,7 @@ tap.test('Collection(Index) Tests', (t) => {
         t.notOk(data, 'should have expected results')
       }
 
-      verify(
-        null,
-        ['Datastore/statement/MongoDB/esmTestCollection/options', 'Callback: done'],
-        ['options']
-      )
+      verify(null, [`${STATEMENT_PREFIX}/options`, 'Callback: done'], ['options'])
     })
   })
 
@@ -254,9 +226,9 @@ tap.test('Collection(Index) Tests', (t) => {
           verify(
             null,
             [
-              'Datastore/statement/MongoDB/esmTestCollection/parallelCollectionScan',
+              `${STATEMENT_PREFIX}/parallelCollectionScan`,
               'Callback: done',
-              'Datastore/statement/MongoDB/esmTestCollection/toArray',
+              `${STATEMENT_PREFIX}/toArray`,
               'Callback: toArray'
             ],
             ['parallelCollectionScan', 'toArray']
@@ -286,9 +258,9 @@ tap.test('Collection(Index) Tests', (t) => {
           verify(
             null,
             [
-              'Datastore/statement/MongoDB/esmTestCollection/ensureIndex',
+              `${STATEMENT_PREFIX}/ensureIndex`,
               'Callback: indexed',
-              'Datastore/statement/MongoDB/esmTestCollection/geoHaystackSearch',
+              `${STATEMENT_PREFIX}/geoHaystackSearch`,
               'Callback: done'
             ],
             ['ensureIndex', 'geoHaystackSearch']
@@ -314,11 +286,7 @@ tap.test('Collection(Index) Tests', (t) => {
           { mod10: 8, count: 3, total: 54 },
           { mod10: 9, count: 3, total: 57 }
         ])
-        verify(
-          null,
-          ['Datastore/statement/MongoDB/esmTestCollection/group', 'Callback: done'],
-          ['group']
-        )
+        verify(null, [`${STATEMENT_PREFIX}/group`, 'Callback: done'], ['group'])
       }
 
       function count(obj, prev) {
@@ -336,11 +304,7 @@ tap.test('Collection(Index) Tests', (t) => {
     collection.rename('esmTestCollection2', function done(err) {
       t.error(err)
 
-      verify(
-        null,
-        ['Datastore/statement/MongoDB/esmTestCollection/rename', 'Callback: done'],
-        ['rename']
-      )
+      verify(null, [`${STATEMENT_PREFIX}/rename`, 'Callback: done'], ['rename'])
     })
   })
 
@@ -351,11 +315,7 @@ tap.test('Collection(Index) Tests', (t) => {
       t.equal(data.count, 30)
       t.equal(data.ok, 1)
 
-      verify(
-        null,
-        ['Datastore/statement/MongoDB/esmTestCollection/stats', 'Callback: done'],
-        ['stats']
-      )
+      verify(null, [`${STATEMENT_PREFIX}/stats`, 'Callback: done'], ['stats'])
     })
   })
 })

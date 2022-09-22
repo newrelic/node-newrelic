@@ -8,6 +8,7 @@ import semver from 'semver'
 import { test } from './collection-common.mjs'
 import helper from '../../lib/agent_helper.js'
 import { pkgVersion } from './common.cjs'
+import { STATEMENT_PREFIX } from './common.cjs'
 
 // see test/versioned/mongodb/common.js
 if (semver.satisfies(pkgVersion, '>=3.2.4 <4.1.4')) {
@@ -46,7 +47,7 @@ if (semver.satisfies(pkgVersion, '>=3.2.4 <4.1.4')) {
           t.error(err)
           verify(
             null,
-            ['Datastore/statement/MongoDB/esmTestCollection/unorderedBulk/batch', 'Callback: done'],
+            [`${STATEMENT_PREFIX}/unorderedBulk/batch`, 'Callback: done'],
             ['unorderedBulk']
           )
         })
@@ -75,11 +76,7 @@ if (semver.satisfies(pkgVersion, '>=3.2.4 <4.1.4')) {
 
         bulk.execute(function done(err) {
           t.error(err)
-          verify(
-            null,
-            ['Datastore/statement/MongoDB/esmTestCollection/orderedBulk/batch', 'Callback: done'],
-            ['orderedBulk']
-          )
+          verify(null, [`${STATEMENT_PREFIX}/orderedBulk/batch`, 'Callback: done'], ['orderedBulk'])
         })
       }
     )

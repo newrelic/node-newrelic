@@ -12,7 +12,7 @@ let METRIC_HOST_PORT = null
 const MONGO_SEGMENT_RE = common.MONGO_SEGMENT_RE
 const TRANSACTION_NAME = common.TRANSACTION_NAME
 const DB_NAME = common.DB_NAME
-const { connect, close } = common
+const { connect, close, COLLECTIONS } = common
 
 export {
   MONGO_SEGMENT_RE,
@@ -24,8 +24,6 @@ export {
   test,
   dropTestCollections
 }
-
-const COLLECTIONS = ['esmTestCollection', 'esmTestCollection2']
 
 function test({ suiteName, agent, t }, run) {
   t.test(suiteName, { timeout: 10000 }, function (t) {

@@ -7,7 +7,7 @@ import semver from 'semver'
 import tap from 'tap'
 import { test } from './collection-common.mjs'
 import helper from '../../lib/agent_helper.js'
-import { pkgVersion } from './common.cjs'
+import { pkgVersion, STATEMENT_PREFIX } from './common.cjs'
 
 /**
  * The response from the methods in this file differ between versions
@@ -58,11 +58,7 @@ tap.test('Collection(Update) Tests', (t) => {
         count: 3,
         keyPrefix: 'deleted'
       })
-      verify(
-        null,
-        ['Datastore/statement/MongoDB/esmTestCollection/deleteMany', 'Callback: done'],
-        ['deleteMany']
-      )
+      verify(null, [`${STATEMENT_PREFIX}/deleteMany`, 'Callback: done'], ['deleteMany'])
     })
   })
 
@@ -75,11 +71,7 @@ tap.test('Collection(Update) Tests', (t) => {
         count: 1,
         keyPrefix: 'deleted'
       })
-      verify(
-        null,
-        ['Datastore/statement/MongoDB/esmTestCollection/deleteOne', 'Callback: done'],
-        ['deleteOne']
-      )
+      verify(null, [`${STATEMENT_PREFIX}/deleteOne`, 'Callback: done'], ['deleteOne'])
     })
   })
 
@@ -98,11 +90,7 @@ tap.test('Collection(Update) Tests', (t) => {
         }
       })
 
-      verify(
-        null,
-        ['Datastore/statement/MongoDB/esmTestCollection/insert', 'Callback: done'],
-        ['insert']
-      )
+      verify(null, [`${STATEMENT_PREFIX}/insert`, 'Callback: done'], ['insert'])
     })
   })
 
@@ -122,11 +110,7 @@ tap.test('Collection(Update) Tests', (t) => {
         }
       })
 
-      verify(
-        null,
-        ['Datastore/statement/MongoDB/esmTestCollection/insertMany', 'Callback: done'],
-        ['insertMany']
-      )
+      verify(null, [`${STATEMENT_PREFIX}/insertMany`, 'Callback: done'], ['insertMany'])
     })
   })
 
@@ -144,11 +128,7 @@ tap.test('Collection(Update) Tests', (t) => {
         }
       })
 
-      verify(
-        null,
-        ['Datastore/statement/MongoDB/esmTestCollection/insertOne', 'Callback: done'],
-        ['insertOne']
-      )
+      verify(null, [`${STATEMENT_PREFIX}/insertOne`, 'Callback: done'], ['insertOne'])
     })
   })
 
@@ -162,11 +142,7 @@ tap.test('Collection(Update) Tests', (t) => {
         keyPrefix: 'deleted'
       })
 
-      verify(
-        null,
-        ['Datastore/statement/MongoDB/esmTestCollection/remove', 'Callback: done'],
-        ['remove']
-      )
+      verify(null, [`${STATEMENT_PREFIX}/remove`, 'Callback: done'], ['remove'])
     })
   })
 
@@ -188,11 +164,7 @@ tap.test('Collection(Update) Tests', (t) => {
         }
       })
 
-      verify(
-        null,
-        ['Datastore/statement/MongoDB/esmTestCollection/replaceOne', 'Callback: done'],
-        ['replaceOne']
-      )
+      verify(null, [`${STATEMENT_PREFIX}/replaceOne`, 'Callback: done'], ['replaceOne'])
     })
   })
 
@@ -202,11 +174,7 @@ tap.test('Collection(Update) Tests', (t) => {
         t.error(err)
         t.same(data.result, { ok: 1, n: 1 })
 
-        verify(
-          null,
-          ['Datastore/statement/MongoDB/esmTestCollection/save', 'Callback: done'],
-          ['save']
-        )
+        verify(null, [`${STATEMENT_PREFIX}/save`, 'Callback: done'], ['save'])
       })
     })
   }
@@ -229,11 +197,7 @@ tap.test('Collection(Update) Tests', (t) => {
         }
       })
 
-      verify(
-        null,
-        ['Datastore/statement/MongoDB/esmTestCollection/update', 'Callback: done'],
-        ['update']
-      )
+      verify(null, [`${STATEMENT_PREFIX}/update`, 'Callback: done'], ['update'])
     })
   })
 
@@ -255,11 +219,7 @@ tap.test('Collection(Update) Tests', (t) => {
         }
       })
 
-      verify(
-        null,
-        ['Datastore/statement/MongoDB/esmTestCollection/updateMany', 'Callback: done'],
-        ['updateMany']
-      )
+      verify(null, [`${STATEMENT_PREFIX}/updateMany`, 'Callback: done'], ['updateMany'])
     })
   })
 
@@ -281,11 +241,7 @@ tap.test('Collection(Update) Tests', (t) => {
         }
       })
 
-      verify(
-        null,
-        ['Datastore/statement/MongoDB/esmTestCollection/updateOne', 'Callback: done'],
-        ['updateOne']
-      )
+      verify(null, [`${STATEMENT_PREFIX}/updateOne`, 'Callback: done'], ['updateOne'])
     })
   })
 })
