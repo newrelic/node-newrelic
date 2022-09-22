@@ -1,8 +1,8 @@
 ### v9.1.0 (2022-09-22)
 
-* Added experimental ECAMScript Module(ESM) loader to support instrumentation of CommonJS packages in ESM applications.
-  * [ESM Loaders](https://nodejs.org/api/esm.html#loaders) are marked as experimental, which may break the New Relic Node.js ESM loader.
-  * ESM loader only supports versions of Node.js >= `16.12.0`.
+* Added [experimental loader](https://nodejs.org/api/esm.html#loaders) to support instrumentation of CommonJS packages in ECMAScript Module(ESM) applications.
+  * It only supports versions of Node.js >= `16.12.0`.
+  * It is subject to change due to its experimental stability.
 
 * Enhanced supportability metrics for ESM support.
   * Added new metrics to track usage of ESM loader(`Supportability/Features/ESM/Loader` and `Supportability/Features/ESM/UnsupportedLoader`).
