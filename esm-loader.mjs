@@ -85,6 +85,10 @@ export function addESMSupportabilityMetrics(agent) {
   if (isSupportedVersion()) {
     agent.metrics.getOrCreateMetric(NAMES.FEATURES.ESM.LOADER).incrementCallCount()
   } else {
+    logger.warn(
+      'New Relic for Node.js ESM loader requires a version of Node >= v16.12.0; your version is %s.  Instrumentation will not be registered.',
+      process.version
+    )
     agent.metrics.getOrCreateMetric(NAMES.FEATURES.ESM.UNSUPPORTED_LOADER).incrementCallCount()
   }
 }
