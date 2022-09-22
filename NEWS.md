@@ -1,31 +1,24 @@
 ### v9.1.0 (2022-09-22)
 
-* Added information on using ESM loader to README.md
+* Added experimental ECAMScript Module(ESM) loader to support instrumentation of CommonJS packages in ESM applications.
+  * [ESM Loaders](https://nodejs.org/api/esm.html#loaders) are marked as experimental, which may break the New Relic Node.js ESM loader.
+  * ESM loader only supports versions of Node.js >= `16.12.0`.
 
-* Added gRPC ESM versioned tests.
-
-* Updated the alias for localhost in mongodb instrumentation when dealing with IPv6 addresses.
-
-* Added Pg ESM versioned tests
-
-* Added mongodb ESM versioned tests
-
-* Added test ESM loader to properly mock out agent in versioned tests.
- * Added express ESM versioned tests.
-
-Enhanced supportability metrics for ES Module support
-  * Added new metric to track usage of ES Module loader
-  * Updated instrumentation map to include an optional "friendly name" for tracking metrics
-
-* Updated ESM loader to pass in all arguments to parent resolve methods.
+* Enhanced supportability metrics for ESM support.
+  * Added new metrics to track usage of ESM loader(`Supportability/Features/ESM/Loader` and `Supportability/Features/ESM/UnsupportedLoader`).
+  * Updated instrumentation map to include an optional "friendly name" for tracking metrics.
 
 * Enabled re-throwing ESM import errors of `newrelic.js` so that the user is informed to rename it to `newrelic.cjs`
 
-* Added loader hook to support instrumentation of CommonJS dependencies in ES Module applications
+* Fixed an issue with mongodb instrumentation where IPv6 address([::1]) was not getting mapped to localhost when setting the host attribute on the segment.
+
+* Added a test ESM loader to properly mock out agent in versioned tests.
+
+* Added ESM versioned tests for: `express`, `pg`, `mongodb`, and `@grpc/grpc-js`.
 
 ### v9.0.3 (2022-09-06)
 
-* Updated gRPC client instrumenation to respect `grpc.record_errors` when deciding to log errors on gRPC client requests.
+* Updated gRPC client instrumentation to respect `grpc.record_errors` when deciding to log errors on gRPC client requests.
 
 * Fixed transaction name finalization to properly copy the appropriate transaction name to root segment.
 
