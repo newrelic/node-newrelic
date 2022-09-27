@@ -120,9 +120,11 @@ tap.test('_safeRequest', (t) => {
 
   let method = null
   let options = null
+  let agent = null
 
   t.beforeEach(() => {
-    const agent = { config: { max_payload_size_in_bytes: 100 } }
+    agent = helper.instrumentMockedAgent()
+    agent.config = { max_payload_size_in_bytes: 100 }
     method = new RemoteMethod('test', agent)
     options = {
       host: 'collector.newrelic.com',
@@ -134,10 +136,14 @@ tap.test('_safeRequest', (t) => {
     }
   })
 
+  t.afterEach(() => {
+    helper.unloadAgent(agent)
+  })
+
   t.test('requires an options hash', (t) => {
     t.throws(() => {
       method._safeRequest()
-    }, 'Must include options to make request!')
+    }, new Error('Must include options to make request!'))
     t.end()
   })
 
@@ -145,7 +151,7 @@ tap.test('_safeRequest', (t) => {
     delete options.host
     t.throws(() => {
       method._safeRequest(options)
-    }, 'Must include collector hostname!')
+    }, new Error('Must include collector hostname!'))
     t.end()
   })
 
@@ -153,7 +159,7 @@ tap.test('_safeRequest', (t) => {
     delete options.port
     t.throws(() => {
       method._safeRequest(options)
-    }, 'Must include collector port!')
+    }, new Error('Must include collector port!'))
     t.end()
   })
 
@@ -161,7 +167,7 @@ tap.test('_safeRequest', (t) => {
     delete options.onError
     t.throws(() => {
       method._safeRequest(options)
-    }, 'Must include error handler!')
+    }, new Error('Must include error handler!'))
     t.end()
   })
 
@@ -169,7 +175,7 @@ tap.test('_safeRequest', (t) => {
     delete options.onResponse
     t.throws(() => {
       method._safeRequest(options)
-    }, 'Must include response handler!')
+    }, new Error('Must include response handler!'))
     t.end()
   })
 
@@ -177,7 +183,7 @@ tap.test('_safeRequest', (t) => {
     delete options.body
     t.throws(() => {
       method._safeRequest(options)
-    }, 'Must include body to send to collector!')
+    }, new Error('Must include body to send to collector!'))
     t.end()
   })
 
@@ -185,7 +191,7 @@ tap.test('_safeRequest', (t) => {
     delete options.path
     t.throws(() => {
       method._safeRequest(options)
-    }, 'Must include URL to request!')
+    }, new Error('Must include URL to request!'))
     t.end()
   })
 
@@ -193,7 +199,12 @@ tap.test('_safeRequest', (t) => {
     options.body = 'a'.repeat(method._config.max_payload_size_in_bytes + 1)
     t.throws(() => {
       method._safeRequest(options)
-    }, 'Maximum payload size exceeded')
+    }, new Error('Maximum payload size exceeded'))
+    const { unscoped: metrics } = helper.getMetrics(agent)
+    t.ok(
+      metrics['Supportability/Nodejs/Collector/MaxPayloadSizeLimit/test'],
+      'should log MaxPayloadSizeLimit supportability metric'
+    )
     t.end()
   })
 })
