@@ -28,14 +28,6 @@ exports.config = {
    * attributes include/exclude lists.
    */
   allow_all_headers: true,
-  application_logging: {
-    forwarding: {
-      /**
-       * Toggles whether the agent gathers log records for sending to New Relic.
-       */
-      enabled: true
-    }
-  },
   attributes: {
     /**
      * Prefix of attributes to exclude from all destinations. Allows * as wildcard
