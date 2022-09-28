@@ -232,22 +232,16 @@ tap.test('ES Module Loader', { skip: !esmHelpers.supportedLoaderVersion() }, (t)
     const expectedSource = `
     import wrapModule from 'file://${ESM_SHIM_FILE_PATH}'
     import * as _originalModule from '${MOD_URL}'
-    // lets have as little code in here as possible and push most to
-    // a helper function or class
     const _wrappedModule = wrapModule(_originalModule, 'test-mod', '${TEST_MOD_FILE_PATH}')
-    // Generate matching exports
     
     let _default = _wrappedModule.default
-    // this allows for dynamically mapping to default
     export { _default as default }
 
     let _namedMethod = _wrappedModule.namedMethod
-    // this allows for dynamically mapping to namedMethod
     export { _namedMethod as namedMethod }
   `
     t.equal(data.source, expectedSource, 'should rewrite source accordingly')
     t.equal(data.format, 'module', 'should be of format module')
-    t.ok(data.shortCircuit, 'should apply shortcuit to load hook')
   })
 
   t.test('should call next load if imported url lacks `hasNrInstrumentation`', async (t) => {

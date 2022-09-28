@@ -51,11 +51,11 @@ export async function resolve(specifier, context, nextResolve) {
    * duplicating the logic of the Node.js hook
    */
   const resolvedModule = await nextResolve(specifier, context, nextResolve)
-  const { url, format } = resolvedModule
   const instrumentationName = shimmer.getInstrumentationNameFromModuleName(specifier)
   const instrumentationDefinition = shimmer.registeredInstrumentations[instrumentationName]
 
   if (instrumentationDefinition) {
+    const { url, format } = resolvedModule
     logger.debug(`Instrumentation exists for ${specifier} ${format} package.`)
 
     if (format === 'commonjs') {
@@ -99,7 +99,7 @@ export async function resolve(specifier, context, nextResolve) {
  * @param {string} url the URL returned by the resolve chain
  * @param {object} context metadata about the url, including conditions, format and import assertions
  * @param {Function} nextLoad the subsequent load hook in the chain, or the Node.js default load hook after the last user-supplied load hook
- * @returns {Promise} Promise object representing the resolution of a given specifier
+ * @returns {Promise} Promise object representing the load of a given url
  */
 export async function load(url, context, nextLoad) {
   if (!newrelic.agent || !isSupportedVersion()) {
@@ -134,8 +134,7 @@ export async function load(url, context, nextLoad) {
 
   return {
     format: 'module',
-    source: rewrittenSource,
-    shortCircuit: true
+    source: rewrittenSource
   }
 }
 
@@ -175,15 +174,11 @@ async function wrapEsmSource(url, specifier) {
   return `
     import wrapModule from '${esmShimPath.href}'
     import * as _originalModule from '${url}'
-    // lets have as little code in here as possible and push most to
-    // a helper function or class
     const _wrappedModule = wrapModule(_originalModule, '${specifier}', '${trimmedUrl}')
-    // Generate matching exports
     ${props
       .map((propName) => {
         const propertyExportSource = `
     let _${propName} = _wrappedModule.${propName}
-    // this allows for dynamically mapping to ${propName}
     export { _${propName} as ${propName} }`
 
         return propertyExportSource
