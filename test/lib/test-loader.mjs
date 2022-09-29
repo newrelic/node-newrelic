@@ -59,3 +59,15 @@ export async function resolve(specifier, context, nextResolve) {
 
   return resolvedModuleDetails
 }
+
+export async function load(url, context, nextLoad) {
+  const parsedUrl = new URL(url)
+  const hasNrInstrumentation = parsedUrl.searchParams.get('hasNrInstrumentation')
+
+  if (hasNrInstrumentation) {
+    const agentLoader = await lazyLoadLoader()
+    return agentLoader.load(url, context, nextLoad)
+  }
+
+  return nextLoad(url, context, nextLoad)
+}
