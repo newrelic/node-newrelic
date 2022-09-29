@@ -31,7 +31,7 @@ tap.test('ESM Package Instrumentation', (t) => {
     const { default: parseJson, JSONError } = await import('parse-json')
 
     const output = parseJson(JSON.stringify({ foo: 'bar' }))
-    t.ok(output.isInstrumented, 'it should have the field we add in our test instrumentation')
+    t.ok(output.isInstrumented, 'should have the field we add in our test instrumentation')
 
     try {
       parseJson('{\n\t"foo": true,\n}')
