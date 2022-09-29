@@ -134,7 +134,8 @@ export async function load(url, context, nextLoad) {
 
   return {
     format: 'module',
-    source: rewrittenSource
+    source: rewrittenSource,
+    shortCircuit: true
   }
 }
 
