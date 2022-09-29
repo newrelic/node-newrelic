@@ -2318,10 +2318,10 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 ### eslint
 
-This product includes source derived from [eslint](https://github.com/eslint/eslint) ([v7.32.0](https://github.com/eslint/eslint/tree/v7.32.0)), distributed under the [MIT License](https://github.com/eslint/eslint/blob/v7.32.0/LICENSE):
+This product includes source derived from [eslint](https://github.com/eslint/eslint) ([v8.24.0](https://github.com/eslint/eslint/tree/v8.24.0)), distributed under the [MIT License](https://github.com/eslint/eslint/blob/v8.24.0/LICENSE):
 
 ```
-Copyright JS Foundation and other contributors, https://js.foundation
+Copyright OpenJS Foundation and other contributors, <www.openjsf.org>
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal

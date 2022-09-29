@@ -17,7 +17,8 @@ module.exports = {
     {
       files: ['**/*.mjs'],
       parserOptions: {
-        ecmaVersion: '2020'
+        sourceType: 'module',
+        ecmaVersion: 2022
       },
       rules: {
         // TODO: remove this when we decide on how to address

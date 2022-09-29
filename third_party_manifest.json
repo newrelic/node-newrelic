@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "Thu Sep 22 2022 14:23:37 GMT-0400 (Eastern Daylight Time)",
+  "lastUpdated": "Thu Sep 29 2022 12:10:43 GMT-0400 (Eastern Daylight Time)",
   "projectName": "New Relic Node Agent",
   "projectUrl": "https://github.com/newrelic/node-newrelic",
   "includeOptDeps": true,
@@ -374,15 +374,15 @@
       "licenseTextSource": "file",
       "publisher": "Teddy Katz"
     },
-    "eslint@7.32.0": {
+    "eslint@8.24.0": {
       "name": "eslint",
-      "version": "7.32.0",
-      "range": "^7.32.0",
+      "version": "8.24.0",
+      "range": "^8.24.0",
       "licenses": "MIT",
       "repoUrl": "https://github.com/eslint/eslint",
-      "versionedRepoUrl": "https://github.com/eslint/eslint/tree/v7.32.0",
+      "versionedRepoUrl": "https://github.com/eslint/eslint/tree/v8.24.0",
       "licenseFile": "node_modules/eslint/LICENSE",
-      "licenseUrl": "https://github.com/eslint/eslint/blob/v7.32.0/LICENSE",
+      "licenseUrl": "https://github.com/eslint/eslint/blob/v8.24.0/LICENSE",
       "licenseTextSource": "file",
       "publisher": "Nicholas C. Zakas",
       "email": "nicholas+npm@nczconsulting.com"

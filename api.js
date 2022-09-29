@@ -1298,7 +1298,9 @@ API.prototype.instrumentMessages = function instrumentMessages(moduleName, onReq
 }
 
 /**
- * Applies an instrumentation to an already loaded module.
+ * Applies an instrumentation to an already loaded CommonJs module.
+ *
+ * Note: This function will not work for ESM packages.
  *
  *    // oh no, express was loaded before newrelic
  *    const express   = require('express')

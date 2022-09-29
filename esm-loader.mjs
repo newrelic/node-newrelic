@@ -8,6 +8,7 @@ import shimmer from './lib/shimmer.js'
 import loggingModule from './lib/logger.js'
 import NAMES from './lib/metrics/names.js'
 import semver from 'semver'
+import path from 'node:path'
 
 const isSupportedVersion = () => semver.gte(process.version, 'v16.12.0')
 // This check will prevent resolve hooks executing from within this file
@@ -16,10 +17,18 @@ const isFromEsmLoader = (context) =>
   context && context.parentURL && context.parentURL.includes('newrelic/esm-loader.mjs')
 
 const logger = loggingModule.child({ component: 'esm-loader' })
+const esmShimPath = new URL('./lib/esm-shim.mjs', import.meta.url)
+const customEntryPoint = newrelic.agent.config.api.esm.custom_instrumentation_entrypoint
+
+// Hook point within agent for customers to register their custom instrumentation.
+if (customEntryPoint) {
+  const resolvedEntryPoint = path.resolve(customEntryPoint)
+  logger.debug('Registering custom ESM instrumentation at %s', resolvedEntryPoint)
+  await import(resolvedEntryPoint)
+}
+
 // exporting for testing purposes
 export const registeredSpecifiers = new Map()
-
-const esmShimPath = new URL('./lib/esm-shim.mjs', import.meta.url)
 
 if (newrelic.agent) {
   addESMSupportabilityMetrics(newrelic.agent)

@@ -260,4 +260,9 @@ tap.test('with default properties', (t) => {
     })
     t.end()
   })
+
+  t.test('should default to api.esm.custom_instrumentation_entrypoint to null', (t) => {
+    t.equal(configuration.api.esm.custom_instrumentation_entrypoint, null)
+    t.end()
+  })
 })
