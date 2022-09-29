@@ -242,6 +242,7 @@ tap.test('ES Module Loader', { skip: !esmHelpers.supportedLoaderVersion() }, (t)
   `
     t.equal(data.source, expectedSource, 'should rewrite source accordingly')
     t.equal(data.format, 'module', 'should be of format module')
+    t.ok(data.shortCircuit, 'should set shortCircuit to true to properly return load hook')
   })
 
   t.test('should call next load if imported url lacks `hasNrInstrumentation`', async (t) => {
