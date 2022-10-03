@@ -2224,7 +2224,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 ### eslint-plugin-jsdoc
 
-This product includes source derived from [eslint-plugin-jsdoc](https://github.com/gajus/eslint-plugin-jsdoc) ([v36.1.1](https://github.com/gajus/eslint-plugin-jsdoc/tree/v36.1.1)), distributed under the [BSD-3-Clause License](https://github.com/gajus/eslint-plugin-jsdoc/blob/v36.1.1/LICENSE):
+This product includes source derived from [eslint-plugin-jsdoc](https://github.com/gajus/eslint-plugin-jsdoc) ([v39.3.6](https://github.com/gajus/eslint-plugin-jsdoc/tree/v39.3.6)), distributed under the [BSD-3-Clause License](https://github.com/gajus/eslint-plugin-jsdoc/blob/v39.3.6/LICENSE):
 
 ```
 Copyright (c) 2018, Gajus Kuizinas (http://gajus.com/)
