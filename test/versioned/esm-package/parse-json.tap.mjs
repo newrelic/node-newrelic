@@ -29,6 +29,7 @@ tap.test('ESM Package Instrumentation', (t) => {
 
   t.test('should register our instrumentation', async (t) => {
     const { default: parseJson, JSONError } = await import('parse-json')
+    // console.log('test', JSONError)
 
     const output = parseJson(JSON.stringify({ foo: 'bar' }))
     t.ok(output.isInstrumented, 'should have the field we add in our test instrumentation')
@@ -37,7 +38,8 @@ tap.test('ESM Package Instrumentation', (t) => {
       parseJson('{\n\t"foo": true,\n}')
       t.error(new Error('function succeeded'), 'parseJson should have thrown but did not')
     } catch (err) {
-      t.ok(err instanceof JSONError, 'should still have the original functionality')
+      t.ok(err instanceof JSONError, 'should still be our original error type')
+      t.ok(err.isInstrumented, 'should have been altered by our instrumentation')
     }
 
     t.end()
