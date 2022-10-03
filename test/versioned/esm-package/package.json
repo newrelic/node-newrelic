@@ -1,0 +1,21 @@
+{
+    "name": "esm-package-tests",
+    "description": "Integration test our ESM Loader hooks with an ESM package from the ecosystem",
+    "version": "0.0.0",
+    "type": "module",
+    "private": true,
+    "tests": [
+      {
+        "engines": {
+          "node": ">=16.12.0"
+        },
+        "dependencies": {
+          "parse-json": "6.0.2"
+        },
+        "files": [
+          "parse-json.tap.mjs"
+        ]
+      }
+    ],
+    "dependencies": {}
+  }
