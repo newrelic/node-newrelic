@@ -18,30 +18,27 @@ tap.test('ESM Package Instrumentation', (t) => {
   t.autoend()
 
   let agent
+  let parseJson
+  let JSONError
 
-  t.before(() => {
+  t.before(async () => {
     agent = helper.instrumentMockedAgent()
+    ;({ default: parseJson, JSONError } = await import('parse-json'))
   })
 
   t.teardown(() => {
     helper.unloadAgent(agent)
   })
 
-  t.test('should register our instrumentation', async (t) => {
-    const { default: parseJson, JSONError } = await import('parse-json')
-    // console.log('test', JSONError)
-
+  t.test('should register instrumentation on default exports', (t) => {
     const output = parseJson(JSON.stringify({ foo: 'bar' }))
     t.ok(output.isInstrumented, 'should have the field we add in our test instrumentation')
+    t.end()
+  })
 
-    try {
-      parseJson('{\n\t"foo": true,\n}')
-      t.error(new Error('function succeeded'), 'parseJson should have thrown but did not')
-    } catch (err) {
-      t.ok(err instanceof JSONError, 'should still be our original error type')
-      t.ok(err.isInstrumented, 'should have been altered by our instrumentation')
-    }
-
+  t.test('should register instrumentation on named exports', (t) => {
+    const err = new JSONError('test me')
+    t.ok(err.isInstrumented, 'JSONError should be instrumented')
     t.end()
   })
 })
