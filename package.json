@@ -191,7 +191,7 @@
     "@newrelic/native-metrics": "^9.0.0"
   },
   "devDependencies": {
-    "@newrelic/eslint-config": "^0.1.0",
+    "@newrelic/eslint-config": "^0.2.0",
     "@newrelic/newrelic-oss-cli": "^0.1.2",
     "@newrelic/proxy": "^2.0.0",
     "@newrelic/test-utilities": "^7.1.1",
@@ -201,11 +201,11 @@
     "async": "^3.2.4",
     "chai": "^4.1.2",
     "commander": "^7.0.0",
-    "eslint": "^7.32.0",
+    "eslint": "^8.24.0",
     "eslint-config-prettier": "^8.3.0",
     "eslint-plugin-disable": "^2.0.1",
     "eslint-plugin-header": "^3.1.1",
-    "eslint-plugin-jsdoc": "^36.1.0",
+    "eslint-plugin-jsdoc": "^39.3.6",
     "eslint-plugin-node": "^11.1.0",
     "eslint-plugin-prettier": "^3.4.0",
     "express": "*",

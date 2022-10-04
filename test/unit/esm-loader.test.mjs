@@ -79,7 +79,7 @@ tap.test('ES Module Loader', { skip: !esmHelpers.supportedLoaderVersion() }, (t)
     td.reset()
   })
 
-  t.test('should not update the usage metric if misconfigured', async (t) => {
+  t.test('should not update the loader usage metric if misconfigured', async (t) => {
     delete fakeNewrelic.agent
 
     fakeGetOrCreateMetric.resetHistory()
