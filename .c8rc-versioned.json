@@ -1,0 +1,5 @@
+{
+  "reporter": ["html", "lcov"],
+  "reports-dir": "./coverage/versioned",
+  "exclude": ["**/*.mjs"]
+}
