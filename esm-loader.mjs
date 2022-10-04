@@ -18,7 +18,7 @@ const isFromEsmLoader = (context) =>
 
 const logger = loggingModule.child({ component: 'esm-loader' })
 const esmShimPath = new URL('./lib/esm-shim.mjs', import.meta.url)
-const customEntryPoint = newrelic.agent.config.api.esm.custom_instrumentation_entrypoint
+const customEntryPoint = newrelic?.agent?.config?.api.esm.custom_instrumentation_entrypoint
 
 // Hook point within agent for customers to register their custom instrumentation.
 if (customEntryPoint) {
@@ -27,12 +27,10 @@ if (customEntryPoint) {
   await import(resolvedEntryPoint)
 }
 
+addESMSupportabilityMetrics(newrelic.agent)
+
 // exporting for testing purposes
 export const registeredSpecifiers = new Map()
-
-if (newrelic.agent) {
-  addESMSupportabilityMetrics(newrelic.agent)
-}
 
 /**
  * Hook chain responsible for resolving a file URL for a given module specifier
@@ -156,6 +154,10 @@ export async function load(url, context, nextLoad) {
  * @returns {void}
  */
 function addESMSupportabilityMetrics(agent) {
+  if (!agent) {
+    return
+  }
+
   if (isSupportedVersion()) {
     agent.metrics.getOrCreateMetric(NAMES.FEATURES.ESM.LOADER).incrementCallCount()
   } else {
@@ -164,6 +166,10 @@ function addESMSupportabilityMetrics(agent) {
       process.version
     )
     agent.metrics.getOrCreateMetric(NAMES.FEATURES.ESM.UNSUPPORTED_LOADER).incrementCallCount()
+  }
+
+  if (customEntryPoint) {
+    agent.metrics.getOrCreateMetric(NAMES.FEATURES.ESM.CUSTOM_INSTRUMENTATION).incrementCallCount()
   }
 }
 

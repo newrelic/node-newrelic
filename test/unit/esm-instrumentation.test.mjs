@@ -9,6 +9,7 @@ import path from 'node:path'
 import * as td from 'testdouble'
 import helper from '../lib/agent_helper.js'
 import esmHelpers from '../lib/esm-helpers.mjs'
+import NAMES from '../../lib/metrics/names.js'
 const __dirname = esmHelpers.__dirname(import.meta.url)
 const TEST_MOD_FILE_PATH = path.resolve(`${__dirname}../lib/test-mod.mjs`)
 const MOD_URL = `file://${TEST_MOD_FILE_PATH}`
@@ -40,6 +41,9 @@ tap.test(
       namedMethodResult.endsWith('that we have instrumented.'),
       'should instrument named exports'
     )
+    const metric = fakeAgent.metrics.getMetric(NAMES.FEATURES.ESM.CUSTOM_INSTRUMENTATION)
+    t.ok(metric, 'metric should exist')
+    t.equal(metric.callCount, 1, 'custom instrumentation metric should have been called once')
   }
 )
 
@@ -62,5 +66,7 @@ tap.test(
     t.equal(result, 'this is a test method', 'should not instrument methods on default export')
     const namedMethodResult = mod.namedMethod()
     t.equal(namedMethodResult, 'this is a named method', 'should not instrument named exports')
+    const metric = fakeAgent.metrics.getMetric(NAMES.FEATURES.ESM.CUSTOM_INSTRUMENTATION)
+    t.notOk(metric, 'metric should not exist')
   }
 )
