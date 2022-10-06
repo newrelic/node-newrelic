@@ -37,7 +37,7 @@ fi
 
 if [[ "${NPM7}" = 1 ]];
 then
-  time c8 -c .c8rc-versioned.json ./node_modules/.bin/versioned-tests $VERSIONED_MODE -i 2 --all --strict --samples $SAMPLES $JOBS_ARGS ${directories[@]}
+  time c8 -o ./coverage/versioned ./node_modules/.bin/versioned-tests $VERSIONED_MODE -i 2 --all --strict --samples $SAMPLES $JOBS_ARGS ${directories[@]}
 else
-  time c8 -c .c8rc-versioned.json ./node_modules/.bin/versioned-tests $VERSIONED_MODE -i 2 --strict --samples $SAMPLES $JOBS_ARGS ${directories[@]}
+  time c8 -c ./coverage/versioned ./node_modules/.bin/versioned-tests $VERSIONED_MODE -i 2 --strict --samples $SAMPLES $JOBS_ARGS ${directories[@]}
 fi
