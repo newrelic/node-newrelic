@@ -1,3 +1,19 @@
+### v9.2.0 (2022-10-06)
+
+* Added ability to instrument ES Modules with the New Relic ESM Loader.
+  * [Example ESM application](https://github.com/newrelic/newrelic-node-examples/tree/main/esm-app)
+
+* Added support for custom ESM instrumentation.
+  * There is structure to registering custom ESM instrumentation.  Set the relative path to the instrumentation entry point via `api.esm.custom_instrumentation_entrypoint`
+  * [Sample custom ESM instrumentation entrypoint](https://github.com/newrelic/newrelic-node-examples/blob/main/esm-app/custom-instrumentation/index.js)
+  * All the `newrelic.instrument*` methods will still work except `newrelic.instrumentLoadedModule`.  This is because it is geared toward CommonJS modules. 
+
+* Added test for asserting ESM loader functionality on ESM-only package
+
+* Added supportability metric of `Supportability/Nodejs/Collector/MaxPayloadSizeLimit/<endpoint>` when `max_payload_size_in_bytes` configuration value is exceeded.
+
+* Removed `application_logging.forwarding.enabled` stanza from sample config as the feature is now enabled by default.
+
 ### v9.1.0 (2022-09-22)
 
 * Added [experimental loader](https://nodejs.org/api/esm.html#loaders) to support instrumentation of CommonJS packages in ECMAScript Module(ESM) applications.
