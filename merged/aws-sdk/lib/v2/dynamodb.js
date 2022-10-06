@@ -29,6 +29,8 @@ const DOC_CLIENT_OPERATIONS = [
   'scan'
 ]
 
+const { setDynamoParameters } = require('../util')
+
 function instrument(shim, AWS) {
   shim.setDatastore(shim.DYNAMODB)
 
@@ -43,11 +45,7 @@ function instrument(shim, AWS) {
 
         return {
           name: operationName,
-          parameters: {
-            host: this.endpoint && this.endpoint.host,
-            port_path_or_id: this.endpoint && this.endpoint.port,
-            collection: (params && params.TableName) || 'Unknown'
-          },
+          parameters: setDynamoParameters(this.endpoint, params),
           callback: shim.LAST,
           opaque: true
         }
