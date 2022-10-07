@@ -8,19 +8,15 @@
 const common = require('./collection-common')
 const concat = require('concat-stream')
 const helper = require('../../lib/agent_helper')
-const mongoPackage = require('mongodb/package.json')
 const semver = require('semver')
 const tap = require('tap')
+const { pkgVersion, STATEMENT_PREFIX, COLLECTIONS } = require('./common')
 
 common.test('count', function countTest(t, collection, verify) {
   collection.find({}).count(function onCount(err, data) {
     t.notOk(err, 'should not error')
     t.equal(data, 30, 'should have correct result')
-    verify(
-      null,
-      ['Datastore/statement/MongoDB/testCollection/count', 'Callback: onCount'],
-      ['count']
-    )
+    verify(null, [`${STATEMENT_PREFIX}/count`, 'Callback: onCount'], ['count'])
   })
 })
 
@@ -33,24 +29,16 @@ common.test('explain', function explainTest(t, collection, verify) {
     } else {
       t.ok(data.hasOwnProperty('queryPlanner'), 'should have correct response')
     }
-    verify(
-      null,
-      ['Datastore/statement/MongoDB/testCollection/explain', 'Callback: onExplain'],
-      ['explain']
-    )
+    verify(null, [`${STATEMENT_PREFIX}/explain`, 'Callback: onExplain'], ['explain'])
   })
 })
 
-if (semver.satisfies(mongoPackage.version, '<3')) {
+if (semver.satisfies(pkgVersion, '<3')) {
   common.test('nextObject', function nextObjectTest(t, collection, verify) {
     collection.find({}).nextObject(function onNextObject(err, data) {
       t.notOk(err)
       t.equal(data.i, 0)
-      verify(
-        null,
-        ['Datastore/statement/MongoDB/testCollection/nextObject', 'Callback: onNextObject'],
-        ['nextObject']
-      )
+      verify(null, [`${STATEMENT_PREFIX}/nextObject`, 'Callback: onNextObject'], ['nextObject'])
     })
   })
 }
@@ -59,7 +47,7 @@ common.test('next', function nextTest(t, collection, verify) {
   collection.find({}).next(function onNext(err, data) {
     t.notOk(err)
     t.equal(data.i, 0)
-    verify(null, ['Datastore/statement/MongoDB/testCollection/next', 'Callback: onNext'], ['next'])
+    verify(null, [`${STATEMENT_PREFIX}/next`, 'Callback: onNext'], ['next'])
   })
 })
 
@@ -67,15 +55,11 @@ common.test('toArray', function toArrayTest(t, collection, verify) {
   collection.find({}).toArray(function onToArray(err, data) {
     t.notOk(err)
     t.equal(data[0].i, 0)
-    verify(
-      null,
-      ['Datastore/statement/MongoDB/testCollection/toArray', 'Callback: onToArray'],
-      ['toArray']
-    )
+    verify(null, [`${STATEMENT_PREFIX}/toArray`, 'Callback: onToArray'], ['toArray'])
   })
 })
 
-if (semver.satisfies(mongoPackage.version, '<4')) {
+if (semver.satisfies(pkgVersion, '<4')) {
   tap.test('piping cursor stream hides internal calls', function (t) {
     let agent = helper.instrumentMockedAgent()
     let client = null
@@ -91,7 +75,7 @@ if (semver.satisfies(mongoPackage.version, '<4')) {
 
     const mongodb = require('mongodb')
     common
-      .dropTestCollections(mongodb, ['testCollection'])
+      .dropTestCollections(mongodb)
       .then(() => {
         return common.connect(mongodb)
       })
@@ -99,7 +83,7 @@ if (semver.satisfies(mongoPackage.version, '<4')) {
         client = res.client
         db = res.db
 
-        collection = db.collection('testCollection')
+        collection = db.collection(COLLECTIONS.collection1)
         return common.populate(db, collection)
       })
       .then(runTest)

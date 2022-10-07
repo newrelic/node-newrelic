@@ -6,15 +6,15 @@
 'use strict'
 
 const common = require('./collection-common')
-const mongoPackage = require('mongodb/package.json')
 const semver = require('semver')
+const { pkgVersion, STATEMENT_PREFIX, COLLECTIONS, DB_NAME } = require('./common')
 
 function verifyAggregateData(t, data) {
   t.equal(data.length, 3, 'should have expected amount of results')
   t.same(data, [{ value: 5 }, { value: 15 }, { value: 25 }], 'should have expected results')
 }
 
-if (semver.satisfies(mongoPackage.version, '<4')) {
+if (semver.satisfies(pkgVersion, '<4')) {
   common.test('aggregate', function aggregateTest(t, collection, verify) {
     const cursor = collection.aggregate([
       { $sort: { i: 1 } },
@@ -27,10 +27,7 @@ if (semver.satisfies(mongoPackage.version, '<4')) {
       verifyAggregateData(t, data)
       verify(
         err,
-        [
-          'Datastore/statement/MongoDB/testCollection/aggregate',
-          'Datastore/statement/MongoDB/testCollection/toArray'
-        ],
+        [`${STATEMENT_PREFIX}/aggregate`, `${STATEMENT_PREFIX}/toArray`],
         ['aggregate', 'toArray'],
         { childrenLength: 2, strict: false }
       )
@@ -49,10 +46,7 @@ if (semver.satisfies(mongoPackage.version, '<4')) {
     verifyAggregateData(t, data)
     verify(
       null,
-      [
-        'Datastore/statement/MongoDB/testCollection/aggregate',
-        'Datastore/statement/MongoDB/testCollection/toArray'
-      ],
+      [`${STATEMENT_PREFIX}/aggregate`, `${STATEMENT_PREFIX}/toArray`],
       ['aggregate', 'toArray'],
       { childrenLength: 2 }
     )
@@ -70,11 +64,7 @@ common.test('bulkWrite', function bulkWriteTest(t, collection, verify) {
     t.error(err)
     t.equal(data.insertedCount, 1)
     t.equal(data.deletedCount, 30)
-    verify(
-      null,
-      ['Datastore/statement/MongoDB/testCollection/bulkWrite', 'Callback: onWrite'],
-      ['bulkWrite']
-    )
+    verify(null, [`${STATEMENT_PREFIX}/bulkWrite`, 'Callback: onWrite'], ['bulkWrite'])
   }
 })
 
@@ -82,11 +72,7 @@ common.test('count', function countTest(t, collection, verify) {
   collection.count(function onCount(err, data) {
     t.error(err)
     t.equal(data, 30)
-    verify(
-      null,
-      ['Datastore/statement/MongoDB/testCollection/count', 'Callback: onCount'],
-      ['count']
-    )
+    verify(null, [`${STATEMENT_PREFIX}/count`, 'Callback: onCount'], ['count'])
   })
 })
 
@@ -94,11 +80,7 @@ common.test('distinct', function distinctTest(t, collection, verify) {
   collection.distinct('mod10', function done(err, data) {
     t.error(err)
     t.same(data.sort(), [0, 1, 2, 3, 4, 5, 6, 7, 8, 9])
-    verify(
-      null,
-      ['Datastore/statement/MongoDB/testCollection/distinct', 'Callback: done'],
-      ['distinct']
-    )
+    verify(null, [`${STATEMENT_PREFIX}/distinct`, 'Callback: done'], ['distinct'])
   })
 })
 
@@ -106,11 +88,11 @@ common.test('drop', function dropTest(t, collection, verify) {
   collection.drop(function done(err, data) {
     t.error(err)
     t.equal(data, true)
-    verify(null, ['Datastore/statement/MongoDB/testCollection/drop', 'Callback: done'], ['drop'])
+    verify(null, [`${STATEMENT_PREFIX}/drop`, 'Callback: done'], ['drop'])
   })
 })
 
-if (semver.satisfies(mongoPackage.version, '<3')) {
+if (semver.satisfies(pkgVersion, '<3')) {
   common.test('geoNear', function geoNearTest(t, collection, verify) {
     collection.ensureIndex({ loc: '2d' }, { bucketSize: 1 }, indexed)
 
@@ -132,9 +114,9 @@ if (semver.satisfies(mongoPackage.version, '<3')) {
       verify(
         null,
         [
-          'Datastore/statement/MongoDB/testCollection/ensureIndex',
+          `${STATEMENT_PREFIX}/ensureIndex`,
           'Callback: indexed',
-          'Datastore/statement/MongoDB/testCollection/geoNear',
+          `${STATEMENT_PREFIX}/geoNear`,
           'Callback: done'
         ],
         ['ensureIndex', 'geoNear']
@@ -148,11 +130,7 @@ common.test('isCapped', function isCappedTest(t, collection, verify) {
     t.error(err)
     t.notOk(data)
 
-    verify(
-      null,
-      ['Datastore/statement/MongoDB/testCollection/isCapped', 'Callback: done'],
-      ['isCapped']
-    )
+    verify(null, [`${STATEMENT_PREFIX}/isCapped`, 'Callback: done'], ['isCapped'])
   })
 })
 
@@ -179,11 +157,7 @@ common.test('mapReduce', function mapReduceTest(t, collection, verify) {
     data.sort((a, b) => a._id - b._id)
     t.same(data, expectedData)
 
-    verify(
-      null,
-      ['Datastore/statement/MongoDB/testCollection/mapReduce', 'Callback: done'],
-      ['mapReduce']
-    )
+    verify(null, [`${STATEMENT_PREFIX}/mapReduce`, 'Callback: done'], ['mapReduce'])
   }
 
   /* eslint-disable */
@@ -210,15 +184,11 @@ common.test('options', function optionsTest(t, collection, verify) {
       t.notOk(data, 'should have expected results')
     }
 
-    verify(
-      null,
-      ['Datastore/statement/MongoDB/testCollection/options', 'Callback: done'],
-      ['options']
-    )
+    verify(null, [`${STATEMENT_PREFIX}/options`, 'Callback: done'], ['options'])
   })
 })
 
-if (semver.satisfies(mongoPackage.version, '<4')) {
+if (semver.satisfies(pkgVersion, '<4')) {
   common.test('parallelCollectionScan', function (t, collection, verify) {
     collection.parallelCollectionScan({ numCursors: 1 }, function done(err, cursors) {
       t.error(err)
@@ -235,9 +205,9 @@ if (semver.satisfies(mongoPackage.version, '<4')) {
         verify(
           null,
           [
-            'Datastore/statement/MongoDB/testCollection/parallelCollectionScan',
+            `${STATEMENT_PREFIX}/parallelCollectionScan`,
             'Callback: done',
-            'Datastore/statement/MongoDB/testCollection/toArray',
+            `${STATEMENT_PREFIX}/toArray`,
             'Callback: toArray'
           ],
           ['parallelCollectionScan', 'toArray']
@@ -265,9 +235,9 @@ if (semver.satisfies(mongoPackage.version, '<4')) {
       verify(
         null,
         [
-          'Datastore/statement/MongoDB/testCollection/ensureIndex',
+          `${STATEMENT_PREFIX}/ensureIndex`,
           'Callback: indexed',
-          'Datastore/statement/MongoDB/testCollection/geoHaystackSearch',
+          `${STATEMENT_PREFIX}/geoHaystackSearch`,
           'Callback: done'
         ],
         ['ensureIndex', 'geoHaystackSearch']
@@ -292,11 +262,7 @@ if (semver.satisfies(mongoPackage.version, '<4')) {
         { mod10: 8, count: 3, total: 54 },
         { mod10: 9, count: 3, total: 57 }
       ])
-      verify(
-        null,
-        ['Datastore/statement/MongoDB/testCollection/group', 'Callback: done'],
-        ['group']
-      )
+      verify(null, [`${STATEMENT_PREFIX}/group`, 'Callback: done'], ['group'])
     }
 
     function count(obj, prev) {
@@ -311,24 +277,20 @@ if (semver.satisfies(mongoPackage.version, '<4')) {
 }
 
 common.test('rename', function renameTest(t, collection, verify) {
-  collection.rename('testCollection2', function done(err) {
+  collection.rename(COLLECTIONS.collection2, function done(err) {
     t.error(err)
 
-    verify(
-      null,
-      ['Datastore/statement/MongoDB/testCollection/rename', 'Callback: done'],
-      ['rename']
-    )
+    verify(null, [`${STATEMENT_PREFIX}/rename`, 'Callback: done'], ['rename'])
   })
 })
 
 common.test('stats', function statsTest(t, collection, verify) {
   collection.stats({ i: 5 }, function done(err, data) {
     t.error(err)
-    t.equal(data.ns, common.DB_NAME + '.testCollection')
+    t.equal(data.ns, `${DB_NAME}.${COLLECTIONS.collection1}`)
     t.equal(data.count, 30)
     t.equal(data.ok, 1)
 
-    verify(null, ['Datastore/statement/MongoDB/testCollection/stats', 'Callback: done'], ['stats'])
+    verify(null, [`${STATEMENT_PREFIX}/stats`, 'Callback: done'], ['stats'])
   })
 })

@@ -38,7 +38,7 @@ tap.test('Db tests', (t) => {
   })
 
   t.beforeEach(() => {
-    return dropTestCollections(mongodb, COLLECTIONS)
+    return dropTestCollections(mongodb)
   })
 
   if (semver.satisfies(pkgVersion, '<3')) {
@@ -144,7 +144,7 @@ tap.test('Db tests', (t) => {
   if (semver.satisfies(pkgVersion, '<4')) {
     t.test('collection', (t) => {
       dbTest({ t, agent, mongodb }, function collectionTest(t, db, verify) {
-        db.collection(COLLECTIONS[0], function gotCollection(err, collection) {
+        db.collection(COLLECTIONS.collection1, function gotCollection(err, collection) {
           t.error(err, 'should not have error')
           t.ok(collection, 'collection is not null')
           verify(['Datastore/operation/MongoDB/collection', 'Callback: gotCollection'])
@@ -185,11 +185,11 @@ tap.test('Db tests', (t) => {
 
   t.test('createCollection', (t) => {
     dbTest({ t, agent, mongodb, dropCollections: true }, function collectionTest(t, db, verify) {
-      db.createCollection(COLLECTIONS[0], function gotCollection(err, collection) {
+      db.createCollection(COLLECTIONS.collection1, function gotCollection(err, collection) {
         t.error(err, 'should not have error')
         t.equal(
           collection.collectionName || collection.s.name,
-          COLLECTIONS[0],
+          COLLECTIONS.collection1,
           'new collection should have the right name'
         )
         verify(['Datastore/operation/MongoDB/createCollection', 'Callback: gotCollection'])
@@ -199,7 +199,7 @@ tap.test('Db tests', (t) => {
 
   t.test('createIndex', (t) => {
     dbTest({ t, agent, mongodb }, function collectionTest(t, db, verify) {
-      db.createIndex(COLLECTIONS[0], 'foo', function createdIndex(err, result) {
+      db.createIndex(COLLECTIONS.collection1, 'foo', function createdIndex(err, result) {
         t.error(err, 'should not have error')
         t.equal(result, 'foo_1', 'should have the right result')
         verify(['Datastore/operation/MongoDB/createIndex', 'Callback: createdIndex'])
@@ -209,10 +209,10 @@ tap.test('Db tests', (t) => {
 
   t.test('dropCollection', (t) => {
     dbTest({ t, agent, mongodb }, function collectionTest(t, db, verify) {
-      db.createCollection(COLLECTIONS[0], function gotCollection(err) {
+      db.createCollection(COLLECTIONS.collection1, function gotCollection(err) {
         t.error(err, 'should not have error getting collection')
 
-        db.dropCollection(COLLECTIONS[0], function droppedCollection(err, result) {
+        db.dropCollection(COLLECTIONS.collection1, function droppedCollection(err, result) {
           t.error(err, 'should not have error dropping collection')
           t.ok(result === true, 'result should be boolean true')
           verify([
@@ -239,7 +239,7 @@ tap.test('Db tests', (t) => {
   if (semver.satisfies(pkgVersion, '<4')) {
     t.test('ensureIndex', (t) => {
       dbTest({ t, agent, mongodb }, function collectionTest(t, db, verify) {
-        db.ensureIndex(COLLECTIONS[0], 'foo', function ensuredIndex(err, result) {
+        db.ensureIndex(COLLECTIONS.collection1, 'foo', function ensuredIndex(err, result) {
           t.error(err, 'should not have error')
           t.equal(result, 'foo_1')
           verify(['Datastore/operation/MongoDB/ensureIndex', 'Callback: ensuredIndex'])
@@ -249,9 +249,9 @@ tap.test('Db tests', (t) => {
 
     t.test('indexInformation', (t) => {
       dbTest({ t, agent, mongodb }, function collectionTest(t, db, verify) {
-        db.ensureIndex(COLLECTIONS[0], 'foo', function ensuredIndex(err) {
+        db.ensureIndex(COLLECTIONS.collection1, 'foo', function ensuredIndex(err) {
           t.error(err, 'ensureIndex should not have error')
-          db.indexInformation(COLLECTIONS[0], function gotInfo(err2, result) {
+          db.indexInformation(COLLECTIONS.collection1, function gotInfo(err2, result) {
             t.error(err2, 'indexInformation should not have error')
             t.same(
               result,
@@ -271,9 +271,9 @@ tap.test('Db tests', (t) => {
   } else {
     t.test('indexInformation', (t) => {
       dbTest({ t, agent, mongodb }, function collectionTest(t, db, verify) {
-        db.createIndex(COLLECTIONS[0], 'foo', function createdIndex(err) {
+        db.createIndex(COLLECTIONS.collection1, 'foo', function createdIndex(err) {
           t.error(err, 'createIndex should not have error')
-          db.indexInformation(COLLECTIONS[0], function gotInfo(err2, result) {
+          db.indexInformation(COLLECTIONS.collection1, function gotInfo(err2, result) {
             t.error(err2, 'indexInformation should not have error')
             t.same(
               result,
@@ -294,22 +294,26 @@ tap.test('Db tests', (t) => {
 
   t.test('renameCollection', (t) => {
     dbTest({ t, agent, mongodb }, function collectionTest(t, db, verify) {
-      db.createCollection(COLLECTIONS[0], function gotCollection(err) {
+      db.createCollection(COLLECTIONS.collection1, function gotCollection(err) {
         t.error(err, 'should not have error getting collection')
-        db.renameCollection(COLLECTIONS[0], COLLECTIONS[1], function renamedCollection(err2) {
-          t.error(err2, 'should not have error renaming collection')
-          db.dropCollection(COLLECTIONS[1], function droppedCollection(err3) {
-            t.error(err3)
-            verify([
-              'Datastore/operation/MongoDB/createCollection',
-              'Callback: gotCollection',
-              'Datastore/operation/MongoDB/renameCollection',
-              'Callback: renamedCollection',
-              'Datastore/operation/MongoDB/dropCollection',
-              'Callback: droppedCollection'
-            ])
-          })
-        })
+        db.renameCollection(
+          COLLECTIONS.collection1,
+          COLLECTIONS.collection2,
+          function renamedCollection(err2) {
+            t.error(err2, 'should not have error renaming collection')
+            db.dropCollection(COLLECTIONS.collection2, function droppedCollection(err3) {
+              t.error(err3)
+              verify([
+                'Datastore/operation/MongoDB/createCollection',
+                'Callback: gotCollection',
+                'Datastore/operation/MongoDB/renameCollection',
+                'Callback: renamedCollection',
+                'Datastore/operation/MongoDB/dropCollection',
+                'Callback: droppedCollection'
+              ])
+            })
+          }
+        )
       })
     })
   })

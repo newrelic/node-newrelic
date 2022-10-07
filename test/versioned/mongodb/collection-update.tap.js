@@ -6,8 +6,8 @@
 'use strict'
 
 const common = require('./collection-common')
-const mongoPackage = require('mongodb/package.json')
 const semver = require('semver')
+const { pkgVersion, STATEMENT_PREFIX } = require('./common')
 
 /**
  * The response from the methods in this file differ between versions
@@ -22,7 +22,7 @@ const semver = require('semver')
  * @param {Object} params.legaycValues extra fields to assert on <4.0.0 version of module
  */
 function assertExpectedResult({ t, data, count, keyPrefix, extraValues, legacyValues }) {
-  if (semver.satisfies(mongoPackage.version, '<4')) {
+  if (semver.satisfies(pkgVersion, '<4')) {
     const expectedResult = { ok: 1, ...legacyValues }
     if (count) {
       expectedResult.n = count
@@ -46,11 +46,7 @@ common.test('deleteMany', function deleteManyTest(t, collection, verify) {
       count: 3,
       keyPrefix: 'deleted'
     })
-    verify(
-      null,
-      ['Datastore/statement/MongoDB/testCollection/deleteMany', 'Callback: done'],
-      ['deleteMany']
-    )
+    verify(null, [`${STATEMENT_PREFIX}/deleteMany`, 'Callback: done'], ['deleteMany'])
   })
 })
 
@@ -63,11 +59,7 @@ common.test('deleteOne', function deleteOneTest(t, collection, verify) {
       count: 1,
       keyPrefix: 'deleted'
     })
-    verify(
-      null,
-      ['Datastore/statement/MongoDB/testCollection/deleteOne', 'Callback: done'],
-      ['deleteOne']
-    )
+    verify(null, [`${STATEMENT_PREFIX}/deleteOne`, 'Callback: done'], ['deleteOne'])
   })
 })
 
@@ -86,11 +78,7 @@ common.test('insert', function insertTest(t, collection, verify) {
       }
     })
 
-    verify(
-      null,
-      ['Datastore/statement/MongoDB/testCollection/insert', 'Callback: done'],
-      ['insert']
-    )
+    verify(null, [`${STATEMENT_PREFIX}/insert`, 'Callback: done'], ['insert'])
   })
 })
 
@@ -110,11 +98,7 @@ common.test('insertMany', function insertManyTest(t, collection, verify) {
       }
     })
 
-    verify(
-      null,
-      ['Datastore/statement/MongoDB/testCollection/insertMany', 'Callback: done'],
-      ['insertMany']
-    )
+    verify(null, [`${STATEMENT_PREFIX}/insertMany`, 'Callback: done'], ['insertMany'])
   })
 })
 
@@ -132,11 +116,7 @@ common.test('insertOne', function insertOneTest(t, collection, verify) {
       }
     })
 
-    verify(
-      null,
-      ['Datastore/statement/MongoDB/testCollection/insertOne', 'Callback: done'],
-      ['insertOne']
-    )
+    verify(null, [`${STATEMENT_PREFIX}/insertOne`, 'Callback: done'], ['insertOne'])
   })
 })
 
@@ -150,11 +130,7 @@ common.test('remove', function removeTest(t, collection, verify) {
       keyPrefix: 'deleted'
     })
 
-    verify(
-      null,
-      ['Datastore/statement/MongoDB/testCollection/remove', 'Callback: done'],
-      ['remove']
-    )
+    verify(null, [`${STATEMENT_PREFIX}/remove`, 'Callback: done'], ['remove'])
   })
 })
 
@@ -176,21 +152,17 @@ common.test('replaceOne', function replaceOneTest(t, collection, verify) {
       }
     })
 
-    verify(
-      null,
-      ['Datastore/statement/MongoDB/testCollection/replaceOne', 'Callback: done'],
-      ['replaceOne']
-    )
+    verify(null, [`${STATEMENT_PREFIX}/replaceOne`, 'Callback: done'], ['replaceOne'])
   })
 })
 
-if (semver.satisfies(mongoPackage.version, '<4')) {
+if (semver.satisfies(pkgVersion, '<4')) {
   common.test('save', function saveTest(t, collection, verify) {
     collection.save({ foo: 'bar' }, function done(err, data) {
       t.error(err)
       t.same(data.result, { ok: 1, n: 1 })
 
-      verify(null, ['Datastore/statement/MongoDB/testCollection/save', 'Callback: done'], ['save'])
+      verify(null, [`${STATEMENT_PREFIX}/save`, 'Callback: done'], ['save'])
     })
   })
 }
@@ -213,11 +185,7 @@ common.test('update', function updateTest(t, collection, verify) {
       }
     })
 
-    verify(
-      null,
-      ['Datastore/statement/MongoDB/testCollection/update', 'Callback: done'],
-      ['update']
-    )
+    verify(null, [`${STATEMENT_PREFIX}/update`, 'Callback: done'], ['update'])
   })
 })
 
@@ -239,11 +207,7 @@ common.test('updateMany', function updateManyTest(t, collection, verify) {
       }
     })
 
-    verify(
-      null,
-      ['Datastore/statement/MongoDB/testCollection/updateMany', 'Callback: done'],
-      ['updateMany']
-    )
+    verify(null, [`${STATEMENT_PREFIX}/updateMany`, 'Callback: done'], ['updateMany'])
   })
 })
 
@@ -265,10 +229,6 @@ common.test('updateOne', function updateOneTest(t, collection, verify) {
       }
     })
 
-    verify(
-      null,
-      ['Datastore/statement/MongoDB/testCollection/updateOne', 'Callback: done'],
-      ['updateOne']
-    )
+    verify(null, [`${STATEMENT_PREFIX}/updateOne`, 'Callback: done'], ['updateOne'])
   })
 })

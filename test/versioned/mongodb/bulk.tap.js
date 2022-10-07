@@ -6,11 +6,11 @@
 'use strict'
 
 const common = require('./collection-common')
-const mongoPackage = require('mongodb/package.json')
 const semver = require('semver')
+const { pkgVersion, STATEMENT_PREFIX } = require('./common')
 
 // see test/versioned/mongodb/common.js
-if (semver.satisfies(mongoPackage.version, '>=3.2.4 <4.1.4')) {
+if (semver.satisfies(pkgVersion, '>=3.2.4 <4.1.4')) {
   common.test('unorderedBulkOp', function unorderedBulkOpTest(t, collection, verify) {
     const bulk = collection.initializeUnorderedBulkOp()
     bulk
@@ -30,11 +30,7 @@ if (semver.satisfies(mongoPackage.version, '>=3.2.4 <4.1.4')) {
 
     bulk.execute(function done(err) {
       t.error(err)
-      verify(
-        null,
-        ['Datastore/statement/MongoDB/testCollection/unorderedBulk/batch', 'Callback: done'],
-        ['unorderedBulk']
-      )
+      verify(null, [`${STATEMENT_PREFIX}/unorderedBulk/batch`, 'Callback: done'], ['unorderedBulk'])
     })
   })
 
@@ -58,11 +54,7 @@ if (semver.satisfies(mongoPackage.version, '>=3.2.4 <4.1.4')) {
 
     bulk.execute(function done(err) {
       t.error(err)
-      verify(
-        null,
-        ['Datastore/statement/MongoDB/testCollection/orderedBulk/batch', 'Callback: done'],
-        ['orderedBulk']
-      )
+      verify(null, [`${STATEMENT_PREFIX}/orderedBulk/batch`, 'Callback: done'], ['orderedBulk'])
     })
   })
 }

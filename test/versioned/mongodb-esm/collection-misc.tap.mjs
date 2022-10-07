@@ -7,7 +7,7 @@ import semver from 'semver'
 import tap from 'tap'
 import { test, DB_NAME } from './collection-common.mjs'
 import helper from '../../lib/agent_helper.js'
-import { pkgVersion, STATEMENT_PREFIX } from './common.cjs'
+import { pkgVersion, STATEMENT_PREFIX, COLLECTIONS } from './common.cjs'
 
 function verifyAggregateData(t, data) {
   t.equal(data.length, 3, 'should have expected amount of results')
@@ -39,10 +39,7 @@ tap.test('Collection(Index) Tests', (t) => {
         verifyAggregateData(t, data)
         verify(
           err,
-          [
-            `${STATEMENT_PREFIX}/aggregate`,
-            'Datastore/statement/MongoDB/esmTestCollection/toArray'
-          ],
+          [`${STATEMENT_PREFIX}/aggregate`, `${STATEMENT_PREFIX}/toArray`],
           ['aggregate', 'toArray'],
           { childrenLength: 2, strict: false }
         )
@@ -63,10 +60,7 @@ tap.test('Collection(Index) Tests', (t) => {
         verifyAggregateData(t, data)
         verify(
           null,
-          [
-            `${STATEMENT_PREFIX}/aggregate`,
-            'Datastore/statement/MongoDB/esmTestCollection/toArray'
-          ],
+          [`${STATEMENT_PREFIX}/aggregate`, `${STATEMENT_PREFIX}/toArray`],
           ['aggregate', 'toArray'],
           { childrenLength: 2 }
         )
@@ -301,7 +295,7 @@ tap.test('Collection(Index) Tests', (t) => {
   }
 
   test({ suiteName: 'rename', agent, t }, function renameTest(t, collection, verify) {
-    collection.rename('esmTestCollection2', function done(err) {
+    collection.rename(COLLECTIONS.collection2, function done(err) {
       t.error(err)
 
       verify(null, [`${STATEMENT_PREFIX}/rename`, 'Callback: done'], ['rename'])
@@ -311,7 +305,7 @@ tap.test('Collection(Index) Tests', (t) => {
   test({ suiteName: 'stats', agent, t }, function statsTest(t, collection, verify) {
     collection.stats({ i: 5 }, function done(err, data) {
       t.error(err)
-      t.equal(data.ns, DB_NAME + '.esmTestCollection')
+      t.equal(data.ns, `${DB_NAME}.${COLLECTIONS.collection1}`)
       t.equal(data.count, 30)
       t.equal(data.ok, 1)
 

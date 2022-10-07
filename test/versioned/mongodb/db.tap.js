@@ -8,7 +8,6 @@
 const common = require('./common')
 const collectionCommon = require('./collection-common')
 const helper = require('../../lib/agent_helper')
-const mongoPackage = require('mongodb/package.json')
 const params = require('../../lib/params')
 const semver = require('semver')
 const tap = require('tap')
@@ -16,14 +15,15 @@ const tap = require('tap')
 let MONGO_HOST = null
 let MONGO_PORT = null
 const BAD_MONGO_COMMANDS = ['collection']
+const { pkgVersion, COLLECTIONS } = require('./common')
 
-if (semver.satisfies(mongoPackage.version, '<3')) {
-  mongoTest('open', [], function openTest(t, agent) {
+if (semver.satisfies(pkgVersion, '<3')) {
+  mongoTest('open', function openTest(t, agent) {
     const mongodb = require('mongodb')
     const server = new mongodb.Server(params.mongodb_host, params.mongodb_port)
     const db = new mongodb.Db(common.DB_NAME, server)
 
-    if (semver.satisfies(mongoPackage.version, '2.2.x')) {
+    if (semver.satisfies(pkgVersion, '2.2.x')) {
       BAD_MONGO_COMMANDS.push('authenticate', 'logout')
     }
 
@@ -44,7 +44,7 @@ if (semver.satisfies(mongoPackage.version, '<3')) {
     })
   })
 
-  dbTest('logout', [], function logoutTest(t, db, verify) {
+  dbTest('logout', function logoutTest(t, db, verify) {
     db.logout({}, function loggedOut(err) {
       t.error(err, 'should not have error')
       verify(['Datastore/operation/MongoDB/logout', 'Callback: loggedOut'])
@@ -52,7 +52,7 @@ if (semver.satisfies(mongoPackage.version, '<3')) {
   })
 }
 
-dbTest('addUser, authenticate, removeUser', [], function addUserTest(t, db, verify) {
+dbTest('addUser, authenticate, removeUser', function addUserTest(t, db, verify) {
   const userName = 'user-test'
   const userPass = 'user-test-pass'
 
@@ -113,16 +113,16 @@ dbTest('addUser, authenticate, removeUser', [], function addUserTest(t, db, veri
 })
 
 // removed in v4 https://github.com/mongodb/node-mongodb-native/pull/2817
-if (semver.satisfies(mongoPackage.version, '<4')) {
-  dbTest('collection', ['testCollection'], function collectionTest(t, db, verify) {
-    db.collection('testCollection', function gotCollection(err, collection) {
+if (semver.satisfies(pkgVersion, '<4')) {
+  dbTest('collection', function collectionTest(t, db, verify) {
+    db.collection(COLLECTIONS.collection1, function gotCollection(err, collection) {
       t.error(err, 'should not have error')
       t.ok(collection, 'collection is not null')
       verify(['Datastore/operation/MongoDB/collection', 'Callback: gotCollection'])
     })
   })
 
-  dbTest('eval', [], function evalTest(t, db, verify) {
+  dbTest('eval', function evalTest(t, db, verify) {
     db.eval('function (x) {return x;}', [3], function evaled(err, result) {
       t.error(err, 'should not have error')
       t.equal(3, result, 'should produce the right result')
@@ -131,7 +131,7 @@ if (semver.satisfies(mongoPackage.version, '<4')) {
   })
 }
 
-dbTest('collections', [], function collectionTest(t, db, verify) {
+dbTest('collections', function collectionTest(t, db, verify) {
   db.collections(function gotCollections(err2, collections) {
     t.error(err2, 'should not have error')
     t.ok(Array.isArray(collections), 'got array of collections')
@@ -139,7 +139,7 @@ dbTest('collections', [], function collectionTest(t, db, verify) {
   })
 })
 
-dbTest('command', [], function commandTest(t, db, verify) {
+dbTest('command', function commandTest(t, db, verify) {
   db.command({ ping: 1 }, function onCommand(err, result) {
     t.error(err, 'should not have error')
     t.same(result, { ok: 1 }, 'got correct result')
@@ -147,31 +147,31 @@ dbTest('command', [], function commandTest(t, db, verify) {
   })
 })
 
-dbTest('createCollection', ['testCollection'], function createTest(t, db, verify) {
-  db.createCollection('testCollection', function gotCollection(err, collection) {
+dbTest('createCollection', function createTest(t, db, verify) {
+  db.createCollection(COLLECTIONS.collection1, function gotCollection(err, collection) {
     t.error(err, 'should not have error')
     t.equal(
       collection.collectionName || collection.s.name,
-      'testCollection',
+      COLLECTIONS.collection1,
       'new collection should have the right name'
     )
     verify(['Datastore/operation/MongoDB/createCollection', 'Callback: gotCollection'])
   })
 })
 
-dbTest('createIndex', ['testCollection'], function createIndexTest(t, db, verify) {
-  db.createIndex('testCollection', 'foo', function createdIndex(err, result) {
+dbTest('createIndex', function createIndexTest(t, db, verify) {
+  db.createIndex(COLLECTIONS.collection1, 'foo', function createdIndex(err, result) {
     t.error(err, 'should not have error')
     t.equal(result, 'foo_1', 'should have the right result')
     verify(['Datastore/operation/MongoDB/createIndex', 'Callback: createdIndex'])
   })
 })
 
-dbTest('dropCollection', ['testCollection'], function dropTest(t, db, verify) {
-  db.createCollection('testCollection', function gotCollection(err) {
+dbTest('dropCollection', function dropTest(t, db, verify) {
+  db.createCollection(COLLECTIONS.collection1, function gotCollection(err) {
     t.error(err, 'should not have error getting collection')
 
-    db.dropCollection('testCollection', function droppedCollection(err, result) {
+    db.dropCollection(COLLECTIONS.collection1, function droppedCollection(err, result) {
       t.error(err, 'should not have error dropping collection')
       t.ok(result === true, 'result should be boolean true')
       verify([
@@ -184,7 +184,7 @@ dbTest('dropCollection', ['testCollection'], function dropTest(t, db, verify) {
   })
 })
 
-dbTest('dropDatabase', ['testCollection'], function dropDbTest(t, db, verify) {
+dbTest('dropDatabase', function dropDbTest(t, db, verify) {
   db.dropDatabase(function droppedDatabase(err, result) {
     t.error(err, 'should not have error')
     t.ok(result, 'result should be truthy')
@@ -192,19 +192,19 @@ dbTest('dropDatabase', ['testCollection'], function dropDbTest(t, db, verify) {
   })
 })
 
-if (semver.satisfies(mongoPackage.version, '<4')) {
-  dbTest('ensureIndex', ['testCollection'], function ensureIndexTest(t, db, verify) {
-    db.ensureIndex('testCollection', 'foo', function ensuredIndex(err, result) {
+if (semver.satisfies(pkgVersion, '<4')) {
+  dbTest('ensureIndex', function ensureIndexTest(t, db, verify) {
+    db.ensureIndex(COLLECTIONS.collection1, 'foo', function ensuredIndex(err, result) {
       t.error(err, 'should not have error')
       t.equal(result, 'foo_1')
       verify(['Datastore/operation/MongoDB/ensureIndex', 'Callback: ensuredIndex'])
     })
   })
 
-  dbTest('indexInformation', ['testCollection'], function indexInfoTest(t, db, verify) {
-    db.ensureIndex('testCollection', 'foo', function ensuredIndex(err) {
+  dbTest('indexInformation', function indexInfoTest(t, db, verify) {
+    db.ensureIndex(COLLECTIONS.collection1, 'foo', function ensuredIndex(err) {
       t.error(err, 'ensureIndex should not have error')
-      db.indexInformation('testCollection', function gotInfo(err2, result) {
+      db.indexInformation(COLLECTIONS.collection1, function gotInfo(err2, result) {
         t.error(err2, 'indexInformation should not have error')
         t.same(result, { _id_: [['_id', 1]], foo_1: [['foo', 1]] }, 'result is the expected object')
         verify([
@@ -217,10 +217,10 @@ if (semver.satisfies(mongoPackage.version, '<4')) {
     })
   })
 } else {
-  dbTest('indexInformation', ['testCollection'], function indexInfoTest(t, db, verify) {
-    db.createIndex('testCollection', 'foo', function createdIndex(err) {
+  dbTest('indexInformation', function indexInfoTest(t, db, verify) {
+    db.createIndex(COLLECTIONS.collection1, 'foo', function createdIndex(err) {
       t.error(err, 'createIndex should not have error')
-      db.indexInformation('testCollection', function gotInfo(err2, result) {
+      db.indexInformation(COLLECTIONS.collection1, function gotInfo(err2, result) {
         t.error(err2, 'indexInformation should not have error')
         t.same(result, { _id_: [['_id', 1]], foo_1: [['foo', 1]] }, 'result is the expected object')
         verify([
@@ -234,27 +234,31 @@ if (semver.satisfies(mongoPackage.version, '<4')) {
   })
 }
 
-dbTest('renameCollection', ['testColl', 'testColl2'], function (t, db, verify) {
-  db.createCollection('testColl', function gotCollection(err) {
+dbTest('renameCollection', function (t, db, verify) {
+  db.createCollection(COLLECTIONS.collection1, function gotCollection(err) {
     t.error(err, 'should not have error getting collection')
-    db.renameCollection('testColl', 'testColl2', function renamedCollection(err2) {
-      t.error(err2, 'should not have error renaming collection')
-      db.dropCollection('testColl2', function droppedCollection(err3) {
-        t.error(err3)
-        verify([
-          'Datastore/operation/MongoDB/createCollection',
-          'Callback: gotCollection',
-          'Datastore/operation/MongoDB/renameCollection',
-          'Callback: renamedCollection',
-          'Datastore/operation/MongoDB/dropCollection',
-          'Callback: droppedCollection'
-        ])
-      })
-    })
+    db.renameCollection(
+      COLLECTIONS.collection1,
+      COLLECTIONS.collection2,
+      function renamedCollection(err2) {
+        t.error(err2, 'should not have error renaming collection')
+        db.dropCollection(COLLECTIONS.collection2, function droppedCollection(err3) {
+          t.error(err3)
+          verify([
+            'Datastore/operation/MongoDB/createCollection',
+            'Callback: gotCollection',
+            'Datastore/operation/MongoDB/renameCollection',
+            'Callback: renamedCollection',
+            'Datastore/operation/MongoDB/dropCollection',
+            'Callback: droppedCollection'
+          ])
+        })
+      }
+    )
   })
 })
 
-dbTest('stats', [], function statsTest(t, db, verify) {
+dbTest('stats', function statsTest(t, db, verify) {
   db.stats({}, function gotStats(err, stats) {
     t.error(err, 'should not have error')
     t.ok(stats, 'got stats')
@@ -262,8 +266,8 @@ dbTest('stats', [], function statsTest(t, db, verify) {
   })
 })
 
-function dbTest(name, collections, run) {
-  mongoTest(name, collections, function init(t, agent) {
+function dbTest(name, run) {
+  mongoTest(name, function init(t, agent) {
     const LOCALHOST = agent.config.getHostnameSafe()
     const domainPath = common.getDomainSocketPath()
     const mongodb = require('mongodb')
@@ -278,7 +282,7 @@ function dbTest(name, collections, run) {
         // mongo >= 3.6.9 fails if you try to create an existing collection
         // drop before executing tests
         if (name === 'createCollection') {
-          await collectionCommon.dropTestCollections(mongodb, collections)
+          await collectionCommon.dropTestCollections(mongodb)
         }
         MONGO_HOST = common.getHostName(agent)
         MONGO_PORT = common.getPort()
@@ -322,7 +326,7 @@ function dbTest(name, collections, run) {
         // mongo >= 3.6.9 fails if you try to create an existing collection
         // drop before executing tests
         if (name === 'createCollection') {
-          await collectionCommon.dropTestCollections(mongodb, collections)
+          await collectionCommon.dropTestCollections(mongodb)
         }
         MONGO_HOST = LOCALHOST
         MONGO_PORT = domainPath
@@ -350,10 +354,10 @@ function dbTest(name, collections, run) {
   })
 }
 
-function mongoTest(name, collections, run) {
+function mongoTest(name, run) {
   tap.test(name, function testWrap(t) {
     const mongodb = require('mongodb')
-    collectionCommon.dropTestCollections(mongodb, collections).then(() => {
+    collectionCommon.dropTestCollections(mongodb).then(() => {
       run(t, helper.loadTestAgent(t))
     })
   })
