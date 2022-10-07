@@ -23,6 +23,17 @@ else
   )
 fi
 
+# C8 runs out of heap when running against
+# patch/minor flag.  We will just skip it
+# and figure out another way to get coverage
+# when running on main branch. 
+if [[ $VERSIONED_MODE == '--major' ]];
+then
+  C8="c8 -o ./coverage/verisoned"
+else 
+  C8=""
+fi
+
 export AGENT_PATH=`pwd`
 
 # Runner will default to CPU count if not specified.
@@ -37,7 +48,7 @@ fi
 
 if [[ "${NPM7}" = 1 ]];
 then
-  time c8 -o ./coverage/versioned ./node_modules/.bin/versioned-tests $VERSIONED_MODE -i 2 --all --strict --samples $SAMPLES $JOBS_ARGS ${directories[@]}
+  time $C8 ./node_modules/.bin/versioned-tests $VERSIONED_MODE -i 2 --all --strict --samples $SAMPLES $JOBS_ARGS ${directories[@]}
 else
-  time c8 -o ./coverage/versioned ./node_modules/.bin/versioned-tests $VERSIONED_MODE -i 2 --strict --samples $SAMPLES $JOBS_ARGS ${directories[@]}
+  time $C8 ./node_modules/.bin/versioned-tests $VERSIONED_MODE -i 2 --strict --samples $SAMPLES $JOBS_ARGS ${directories[@]}
 fi
