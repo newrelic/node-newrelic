@@ -7,7 +7,7 @@ import semver from 'semver'
 import tap from 'tap'
 import { test, DB_NAME } from './collection-common.mjs'
 import helper from '../../lib/agent_helper.js'
-import { pkgVersion, STATEMENT_PREFIX } from './common.cjs'
+import { pkgVersion, STATEMENT_PREFIX, COLLECTIONS } from './common.cjs'
 
 tap.test('Collection(Index) Tests', (t) => {
   t.autoend()
@@ -63,7 +63,7 @@ tap.test('Collection(Index) Tests', (t) => {
       // we only connect to a server > 4.3.1 when using the mongodb
       // driver of 4.2.0+
       if (semver.satisfies(pkgVersion, '<4.2.0')) {
-        expectedResult.ns = `${DB_NAME}.esmTestCollection`
+        expectedResult.ns = `${DB_NAME}.${COLLECTIONS[0]}`
       }
       t.same(result, expectedResult, 'should have expected results')
 

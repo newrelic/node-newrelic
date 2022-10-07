@@ -14,10 +14,15 @@ const urltils = require('../../../lib/util/urltils')
 const MONGO_SEGMENT_RE = /^Datastore\/.*?\/MongoDB/
 const TRANSACTION_NAME = 'mongo test'
 const DB_NAME = 'integration'
+const COLLECTIONS = ['testCollection', 'testCollection2']
+const STATEMENT_PREFIX = `Datastore/statement/MongoDB/${COLLECTIONS[0]}`
 
 exports.MONGO_SEGMENT_RE = MONGO_SEGMENT_RE
 exports.TRANSACTION_NAME = TRANSACTION_NAME
 exports.DB_NAME = DB_NAME
+exports.COLLECTIONS = COLLECTIONS
+exports.STATEMENT_PREFIX = STATEMENT_PREFIX
+exports.pkgVersion = mongoPackage.version
 
 // Check package versions to decide which connect function to use below
 exports.connect = function connect() {
@@ -176,12 +181,12 @@ function checkMetrics(t, agent, host, port, metrics) {
       'unscoped operation metric should be called ' + count + ' times'
     )
     t.equal(
-      unscopedMetrics['Datastore/statement/MongoDB/testCollection/' + name].callCount,
+      unscopedMetrics[`${STATEMENT_PREFIX}/` + name].callCount,
       count,
       'unscoped statement metric should be called ' + count + ' times'
     )
     t.equal(
-      scoped['Datastore/statement/MongoDB/testCollection/' + name].callCount,
+      scoped[`${STATEMENT_PREFIX}/` + name].callCount,
       count,
       'scoped statement metric should be called ' + count + ' times'
     )

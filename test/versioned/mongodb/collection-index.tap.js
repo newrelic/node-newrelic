@@ -7,17 +7,13 @@
 
 const common = require('./collection-common')
 const semver = require('semver')
-const mongoPackage = require('mongodb/package.json')
+const { pkgVersion, STATEMENT_PREFIX, DB_NAME, COLLECTIONS } = require('./common')
 
 common.test('createIndex', function createIndexTest(t, collection, verify) {
   collection.createIndex('i', function onIndex(err, data) {
     t.error(err)
     t.equal(data, 'i_1')
-    verify(
-      null,
-      ['Datastore/statement/MongoDB/testCollection/createIndex', 'Callback: onIndex'],
-      ['createIndex']
-    )
+    verify(null, [`${STATEMENT_PREFIX}/createIndex`, 'Callback: onIndex'], ['createIndex'])
   })
 })
 
@@ -30,9 +26,9 @@ common.test('dropIndex', function dropIndexTest(t, collection, verify) {
       verify(
         null,
         [
-          'Datastore/statement/MongoDB/testCollection/createIndex',
+          `${STATEMENT_PREFIX}/createIndex`,
           'Callback: onIndex',
-          'Datastore/statement/MongoDB/testCollection/dropIndex',
+          `${STATEMENT_PREFIX}/dropIndex`,
           'Callback: done'
         ],
         ['createIndex', 'dropIndex']
@@ -55,16 +51,13 @@ common.test('indexes', function indexesTest(t, collection, verify) {
     // https://jira.mongodb.org/browse/SERVER-41696
     // we only connect to a server > 4.3.1 when using the mongodb
     // driver of 4.2.0+
-    if (semver.satisfies(mongoPackage.version, '<4.2.0')) {
-      expectedResult.ns = `${common.DB_NAME}.testCollection`
+    if (semver.satisfies(pkgVersion, '<4.2.0')) {
+      expectedResult.ns = `${DB_NAME}.${COLLECTIONS[0]}`
     }
+
     t.same(result, expectedResult, 'should have expected results')
 
-    verify(
-      null,
-      ['Datastore/statement/MongoDB/testCollection/indexes', 'Callback: done'],
-      ['indexes']
-    )
+    verify(null, [`${STATEMENT_PREFIX}/indexes`, 'Callback: done'], ['indexes'])
   })
 })
 
@@ -73,11 +66,7 @@ common.test('indexExists', function indexExistsTest(t, collection, verify) {
     t.error(err)
     t.equal(data, true)
 
-    verify(
-      null,
-      ['Datastore/statement/MongoDB/testCollection/indexExists', 'Callback: done'],
-      ['indexExists']
-    )
+    verify(null, [`${STATEMENT_PREFIX}/indexExists`, 'Callback: done'], ['indexExists'])
   })
 })
 
@@ -86,24 +75,16 @@ common.test('indexInformation', function indexInformationTest(t, collection, ver
     t.error(err)
     t.same(data && data._id_, [['_id', 1]], 'should have expected results')
 
-    verify(
-      null,
-      ['Datastore/statement/MongoDB/testCollection/indexInformation', 'Callback: done'],
-      ['indexInformation']
-    )
+    verify(null, [`${STATEMENT_PREFIX}/indexInformation`, 'Callback: done'], ['indexInformation'])
   })
 })
 
-if (semver.satisfies(mongoPackage.version, '<4')) {
+if (semver.satisfies(pkgVersion, '<4')) {
   common.test('dropAllIndexes', function dropAllIndexesTest(t, collection, verify) {
     collection.dropAllIndexes(function done(err, data) {
       t.error(err)
       t.equal(data, true)
-      verify(
-        null,
-        ['Datastore/statement/MongoDB/testCollection/dropAllIndexes', 'Callback: done'],
-        ['dropAllIndexes']
-      )
+      verify(null, [`${STATEMENT_PREFIX}/dropAllIndexes`, 'Callback: done'], ['dropAllIndexes'])
     })
   })
 
@@ -111,11 +92,7 @@ if (semver.satisfies(mongoPackage.version, '<4')) {
     collection.ensureIndex('i', function done(err, data) {
       t.error(err)
       t.equal(data, 'i_1')
-      verify(
-        null,
-        ['Datastore/statement/MongoDB/testCollection/ensureIndex', 'Callback: done'],
-        ['ensureIndex']
-      )
+      verify(null, [`${STATEMENT_PREFIX}/ensureIndex`, 'Callback: done'], ['ensureIndex'])
     })
   })
 
@@ -124,11 +101,7 @@ if (semver.satisfies(mongoPackage.version, '<4')) {
       t.error(err)
       t.equal(data, true)
 
-      verify(
-        null,
-        ['Datastore/statement/MongoDB/testCollection/reIndex', 'Callback: done'],
-        ['reIndex']
-      )
+      verify(null, [`${STATEMENT_PREFIX}/reIndex`, 'Callback: done'], ['reIndex'])
     })
   })
 }

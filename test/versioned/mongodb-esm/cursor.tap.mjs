@@ -15,7 +15,7 @@ import {
   TRANSACTION_NAME
 } from './collection-common.mjs'
 import helper from '../../lib/agent_helper.js'
-import { pkgVersion, STATEMENT_PREFIX } from './common.cjs'
+import { pkgVersion, STATEMENT_PREFIX, COLLECTIONS } from './common.cjs'
 
 tap.test('Cursor Tests', (t) => {
   t.autoend()
@@ -85,7 +85,7 @@ tap.test('Cursor Tests', (t) => {
 
       t.before(async () => {
         const { default: mongodb } = await import('mongodb')
-        return dropTestCollections(mongodb, ['esmTestCollection'])
+        return dropTestCollections(mongodb, COLLECTIONS)
           .then(() => {
             return connect(mongodb)
           })
@@ -93,7 +93,7 @@ tap.test('Cursor Tests', (t) => {
             client = res.client
             db = res.db
 
-            collection = db.collection('esmTestCollection')
+            collection = db.collection(COLLECTIONS[0])
             return populate(db, collection)
           })
       })
