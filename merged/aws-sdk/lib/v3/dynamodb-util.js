@@ -4,8 +4,7 @@
  */
 
 'use strict'
-
-const UNKNOWN = 'Unknown'
+const { setDynamoParameters } = require('../util')
 
 /**
  * Returns the spec for Dynamo commands
@@ -18,12 +17,9 @@ const UNKNOWN = 'Unknown'
  */
 function getDynamoSpec(shim, original, name, args) {
   const [{ input }] = args
-  const collection = (input && input.TableName) || UNKNOWN
-  const host = this.endpoint && this.endpoint.hostname
-  const portPathOrId = this.endpoint && this.endpoint.port
   return {
     name: this.commandName,
-    parameters: { host, port_path_or_id: portPathOrId, collection },
+    parameters: setDynamoParameters(this.endpoint, input),
     callback: shim.LAST,
     opaque: true,
     promise: true

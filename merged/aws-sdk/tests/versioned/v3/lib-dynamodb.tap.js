@@ -165,11 +165,12 @@ function finish(t, tests, tx) {
       'should have operation in segment name'
     )
     const attrs = segment.attributes.get(common.SEGMENT_DESTINATION)
+    attrs.port_path_or_id = parseInt(attrs.port_path_or_id, 10)
     t.match(
       attrs,
       {
         'host': String,
-        'port_path_or_id': String,
+        'port_path_or_id': Number,
         'product': 'DynamoDB',
         'collection': String,
         'aws.operation': operation,
