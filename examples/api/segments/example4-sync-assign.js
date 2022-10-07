@@ -30,8 +30,7 @@ function myNextTask(greetings) {
  */
 function someTask() {
   const result = mySyncTask()
-  const output = myNextTask(result)
-  return output
+  return myNextTask(result)
 }
 
 // Segments can only be created inside of transactions. They could be automatically

@@ -35,8 +35,7 @@ async function myNextTask(greetings) {
  */
 async function someTask() {
   const result = await myAsyncTask()
-  const output = await myNextTask(result)
-  return output
+  return await myNextTask(result)
 }
 
 // Segments can only be created inside of transactions. They could be automatically
