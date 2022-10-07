@@ -14,8 +14,8 @@ const urltils = require('../../../lib/util/urltils')
 const MONGO_SEGMENT_RE = /^Datastore\/.*?\/MongoDB/
 const TRANSACTION_NAME = 'mongo test'
 const DB_NAME = 'esmIntegration'
-const COLLECTIONS = ['esmTestCollection', 'esmTestCollection2']
-const STATEMENT_PREFIX = `Datastore/statement/MongoDB/${COLLECTIONS[0]}`
+const COLLECTIONS = { collection1: 'esmTestCollection', collection2: 'esmTestCollection2' }
+const STATEMENT_PREFIX = `Datastore/statement/MongoDB/${COLLECTIONS.collection1}`
 
 exports.MONGO_SEGMENT_RE = MONGO_SEGMENT_RE
 exports.TRANSACTION_NAME = TRANSACTION_NAME
@@ -181,12 +181,12 @@ function checkMetrics(t, agent, host, port, metrics) {
       'unscoped operation metric should be called ' + count + ' times'
     )
     t.equal(
-      unscopedMetrics[`Datastore/statement/MongoDB/${COLLECTIONS[0]}/${name}`].callCount,
+      unscopedMetrics[`Datastore/statement/MongoDB/${COLLECTIONS.collection1}/${name}`].callCount,
       count,
       'unscoped statement metric should be called ' + count + ' times'
     )
     t.equal(
-      scoped[`Datastore/statement/MongoDB/${COLLECTIONS[0]}/${name}`].callCount,
+      scoped[`Datastore/statement/MongoDB/${COLLECTIONS.collection1}/${name}`].callCount,
       count,
       'scoped statement metric should be called ' + count + ' times'
     )

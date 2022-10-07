@@ -63,7 +63,7 @@ tap.test('Collection(Index) Tests', (t) => {
       // we only connect to a server > 4.3.1 when using the mongodb
       // driver of 4.2.0+
       if (semver.satisfies(pkgVersion, '<4.2.0')) {
-        expectedResult.ns = `${DB_NAME}.${COLLECTIONS[0]}`
+        expectedResult.ns = `${DB_NAME}.${COLLECTIONS.collection1}`
       }
       t.same(result, expectedResult, 'should have expected results')
 

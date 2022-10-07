@@ -85,7 +85,7 @@ tap.test('Cursor Tests', (t) => {
 
       t.before(async () => {
         const { default: mongodb } = await import('mongodb')
-        return dropTestCollections(mongodb, COLLECTIONS)
+        return dropTestCollections(mongodb)
           .then(() => {
             return connect(mongodb)
           })
@@ -93,7 +93,7 @@ tap.test('Cursor Tests', (t) => {
             client = res.client
             db = res.db
 
-            collection = db.collection(COLLECTIONS[0])
+            collection = db.collection(COLLECTIONS.collection1)
             return populate(db, collection)
           })
       })

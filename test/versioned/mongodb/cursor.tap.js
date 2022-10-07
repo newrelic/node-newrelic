@@ -75,7 +75,7 @@ if (semver.satisfies(pkgVersion, '<4')) {
 
     const mongodb = require('mongodb')
     common
-      .dropTestCollections(mongodb, COLLECTIONS)
+      .dropTestCollections(mongodb)
       .then(() => {
         return common.connect(mongodb)
       })
@@ -83,7 +83,7 @@ if (semver.satisfies(pkgVersion, '<4')) {
         client = res.client
         db = res.db
 
-        collection = db.collection(COLLECTIONS[0])
+        collection = db.collection(COLLECTIONS.collection1)
         return common.populate(db, collection)
       })
       .then(runTest)

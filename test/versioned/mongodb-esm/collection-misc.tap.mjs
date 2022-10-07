@@ -295,7 +295,7 @@ tap.test('Collection(Index) Tests', (t) => {
   }
 
   test({ suiteName: 'rename', agent, t }, function renameTest(t, collection, verify) {
-    collection.rename(COLLECTIONS[1], function done(err) {
+    collection.rename(COLLECTIONS.collection2, function done(err) {
       t.error(err)
 
       verify(null, [`${STATEMENT_PREFIX}/rename`, 'Callback: done'], ['rename'])
@@ -305,7 +305,7 @@ tap.test('Collection(Index) Tests', (t) => {
   test({ suiteName: 'stats', agent, t }, function statsTest(t, collection, verify) {
     collection.stats({ i: 5 }, function done(err, data) {
       t.error(err)
-      t.equal(data.ns, `${DB_NAME}.${COLLECTIONS[0]}`)
+      t.equal(data.ns, `${DB_NAME}.${COLLECTIONS.collection1}`)
       t.equal(data.count, 30)
       t.equal(data.ok, 1)
 

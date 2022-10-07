@@ -34,7 +34,7 @@ function test({ suiteName, agent, t }, run) {
 
     t.beforeEach(async function () {
       const { default: mongodb } = await import('mongodb')
-      return dropTestCollections(mongodb, COLLECTIONS)
+      return dropTestCollections(mongodb)
         .then(() => {
           METRIC_HOST_NAME = common.getHostName(agent)
           METRIC_HOST_PORT = common.getPort()
@@ -43,7 +43,7 @@ function test({ suiteName, agent, t }, run) {
         .then((res) => {
           client = res.client
           db = res.db
-          collection = db.collection(COLLECTIONS[0])
+          collection = db.collection(COLLECTIONS.collection1)
           return populate(db, collection)
         })
     })
@@ -163,7 +163,7 @@ function populate(db, collection) {
       })
     }
 
-    db.collection(COLLECTIONS[1]).drop(function () {
+    db.collection(COLLECTIONS.collection2).drop(function () {
       collection.deleteMany({}, function (err) {
         if (err) {
           reject(err)
@@ -178,13 +178,9 @@ function populate(db, collection) {
  * Bootstrap a running MongoDB instance by dropping all the collections used
  * by tests.
  * @param {*} mongodb MongoDB module to execute commands on.
- * @param {Array} collections Collections to drop for test.
  */
-async function dropTestCollections(mongodb, collections) {
-  if (!collections.length) {
-    return
-  }
-
+async function dropTestCollections(mongodb) {
+  const collections = Object.values(COLLECTIONS)
   const { client, db } = await common.connect(mongodb)
 
   const dropCollectionPromises = collections.map(async (collection) => {

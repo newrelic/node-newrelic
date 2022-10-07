@@ -14,8 +14,8 @@ const urltils = require('../../../lib/util/urltils')
 const MONGO_SEGMENT_RE = /^Datastore\/.*?\/MongoDB/
 const TRANSACTION_NAME = 'mongo test'
 const DB_NAME = 'integration'
-const COLLECTIONS = ['testCollection', 'testCollection2']
-const STATEMENT_PREFIX = `Datastore/statement/MongoDB/${COLLECTIONS[0]}`
+const COLLECTIONS = { collection1: 'testCollection', collection2: 'testCollection2' }
+const STATEMENT_PREFIX = `Datastore/statement/MongoDB/${COLLECTIONS.collection1}`
 
 exports.MONGO_SEGMENT_RE = MONGO_SEGMENT_RE
 exports.TRANSACTION_NAME = TRANSACTION_NAME
