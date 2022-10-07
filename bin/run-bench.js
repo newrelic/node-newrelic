@@ -1,9 +1,10 @@
 /*
- * Copyright 2020 New Relic Corporation. All rights reserved.
+ * Copyright 2022 New Relic Corporation. All rights reserved.
  * SPDX-License-Identifier: Apache-2.0
  */
 
 'use strict'
+/* eslint-disable sonarjs/no-duplicate-string, sonarjs/cognitive-complexity */
 
 const a = require('async')
 const cp = require('child_process')

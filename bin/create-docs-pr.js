@@ -125,7 +125,7 @@ async function getReleaseNotes(version, releaseNotesFile) {
  * @param {string} file path to NEWS.md
  */
 async function readReleaseNoteFile(file) {
-  const promise = new Promise((resolve, reject) => {
+  return new Promise((resolve, reject) => {
     fs.readFile(file, 'utf8', (err, data) => {
       if (err) {
         return reject(err)
@@ -134,8 +134,6 @@ async function readReleaseNoteFile(file) {
       return resolve(data)
     })
   })
-
-  return promise
 }
 
 /**
