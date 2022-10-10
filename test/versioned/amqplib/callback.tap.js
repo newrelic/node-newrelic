@@ -48,9 +48,6 @@ tap.test('amqplib callback instrumentation', function (t) {
 
     api = new API(agent)
 
-    const instrumentation = require('../../../lib/instrumentation/amqplib')
-    api.instrumentMessages('amqplib/callback_api', instrumentation.instrumentCallbackAPI)
-
     amqplib = require('amqplib/callback_api')
     return new Promise((resolve, reject) => {
       amqpUtils.getChannel(amqplib, function (err, result) {
@@ -265,7 +262,7 @@ tap.test('amqplib callback instrumentation', function (t) {
               function (msg) {
                 const consumeTxnHandle = api.getTransaction()
                 const consumeTxn = consumeTxnHandle._transaction
-                t.notEqual(consumeTxn, tx, 'should not be in original transaction')
+                t.not(consumeTxn, tx, 'should not be in original transaction')
                 t.ok(msg, 'should receive a message')
 
                 const body = msg.content.toString('utf8')

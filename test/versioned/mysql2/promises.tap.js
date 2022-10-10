@@ -101,10 +101,9 @@ tap.test('mysql2 promises', { timeout: 30000 }, (t) => {
   t.test('query with options object rather than sql', (t) => {
     return helper
       .runInTransaction(agent, () => {
-        return client.query({ sql: 'SELECT 1' })
-      })
-      .then(() => {
-        agent.getTransaction().end()
+        return client.query({ sql: 'SELECT 1' }).then(() => {
+          agent.getTransaction().end()
+        })
       })
       .then(() => checkQueries(t, agent))
   })
@@ -112,10 +111,9 @@ tap.test('mysql2 promises', { timeout: 30000 }, (t) => {
   t.test('query with options object and values', (t) => {
     return helper
       .runInTransaction(agent, () => {
-        return client.query({ sql: 'SELECT 1' }, [])
-      })
-      .then(() => {
-        agent.getTransaction().end()
+        return client.query({ sql: 'SELECT 1' }, []).then(() => {
+          agent.getTransaction().end()
+        })
       })
       .then(() => checkQueries(t, agent))
   })
