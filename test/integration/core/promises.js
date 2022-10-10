@@ -6,13 +6,10 @@
 'use strict'
 
 const genericTestDir = '../../integration/instrumentation/promises/'
-
-const tap = require('tap')
 const helper = require('../../lib/agent_helper')
 const util = require('util')
 const testPromiseSegments = require(genericTestDir + 'segments')
 const testTransactionState = require(genericTestDir + 'transaction-state')
-const flags = { new_promise_tracking: true }
 
 module.exports = function runTests(t, flags) {
   t.test('transaction state', function (t) {
