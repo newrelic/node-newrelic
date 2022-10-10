@@ -37,14 +37,12 @@ const DEFAULT_CONFIG = {
 }
 
 function getPreconnectReply(securityPolicies) {
-  const reply = {
+  return {
     return_value: {
       redirect_host: TEST_DOMAIN,
       security_policies: securityPolicies
     }
   }
-
-  return reply
 }
 
 const CONNECT_REPLY = { return_value: { agent_run_id: RUN_ID } }

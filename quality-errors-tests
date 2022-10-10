@@ -1,0 +1,208 @@
+
+/Users/revans/code/node-newrelic/test/integration/collector-remote-method.tap.js
+  106:20  error    Immediately return this expression instead of assigning it to the temporary variable "method"  sonarjs/prefer-immediate-return
+
+/Users/revans/code/node-newrelic/test/integration/core/async_hooks-new-promise.js
+  300:16  error  Update this function so that its implementation is not identical to the one on line 236  sonarjs/no-identical-functions
+  390:16  error  Update this function so that its implementation is not identical to the one on line 236  sonarjs/no-identical-functions
+
+/Users/revans/code/node-newrelic/test/integration/core/async_hooks.js
+  252:16  error  Update this function so that its implementation is not identical to the one on line 172  sonarjs/no-identical-functions
+
+/Users/revans/code/node-newrelic/test/integration/core/promises.tap.js
+   72:14  error  Update this function so that its implementation is not identical to the one on line 39   sonarjs/no-identical-functions
+   87:14  error  Update this function so that its implementation is not identical to the one on line 47   sonarjs/no-identical-functions
+  112:14  error  Update this function so that its implementation is not identical to the one on line 39   sonarjs/no-identical-functions
+  133:14  error  Update this function so that its implementation is not identical to the one on line 47   sonarjs/no-identical-functions
+  191:14  error  Update this function so that its implementation is not identical to the one on line 158  sonarjs/no-identical-functions
+  231:14  error  Update this function so that its implementation is not identical to the one on line 158  sonarjs/no-identical-functions
+  252:14  error  Update this function so that its implementation is not identical to the one on line 206  sonarjs/no-identical-functions
+  277:14  error  Update this function so that its implementation is not identical to the one on line 158  sonarjs/no-identical-functions
+  285:14  error  Update this function so that its implementation is not identical to the one on line 166  sonarjs/no-identical-functions
+  305:14  error  Update this function so that its implementation is not identical to the one on line 158  sonarjs/no-identical-functions
+  313:14  error  Update this function so that its implementation is not identical to the one on line 199  sonarjs/no-identical-functions
+  320:14  error  Update this function so that its implementation is not identical to the one on line 206  sonarjs/no-identical-functions
+  340:14  error  Update this function so that its implementation is not identical to the one on line 158  sonarjs/no-identical-functions
+  348:14  error  Update this function so that its implementation is not identical to the one on line 239  sonarjs/no-identical-functions
+  361:14  error  Update this function so that its implementation is not identical to the one on line 206  sonarjs/no-identical-functions
+  420:14  error  Update this function so that its implementation is not identical to the one on line 166  sonarjs/no-identical-functions
+  560:14  error  Update this function so that its implementation is not identical to the one on line 488  sonarjs/no-identical-functions
+  646:12  error  Update this function so that its implementation is not identical to the one on line 613  sonarjs/no-identical-functions
+
+/Users/revans/code/node-newrelic/test/integration/deep-equal.tap.js
+  56:9  error  Declare one or more properties of this object inside of the object literal syntax instead of using separate statements  sonarjs/prefer-object-literal
+  58:9  error  Declare one or more properties of this object inside of the object literal syntax instead of using separate statements  sonarjs/prefer-object-literal
+
+/Users/revans/code/node-newrelic/test/integration/distributed-tracing/trace-context-cross-agent.tap.js
+  348:59  error  Refactor this function to reduce its Cognitive Complexity from 56 to the 15 allowed             sonarjs/cognitive-complexity
+  479:29  error  Immediately return this expression instead of assigning it to the temporary variable "payload"  sonarjs/prefer-immediate-return
+  536:16  error  Review this usage of "skipTests" as it can only be empty here                                   sonarjs/no-empty-collection
+
+/Users/revans/code/node-newrelic/test/integration/flatten.tap.js
+  31:11  error  Declare one or more properties of this object inside of the object literal syntax instead of using separate statements  sonarjs/prefer-object-literal
+  55:11  error  Declare one or more properties of this object inside of the object literal syntax instead of using separate statements  sonarjs/prefer-object-literal
+
+/Users/revans/code/node-newrelic/test/integration/grpc/reconnect.tap.js
+  232:19  error  Immediately return this expression instead of assigning it to the temporary variable "metrics"  sonarjs/prefer-immediate-return
+
+/Users/revans/code/node-newrelic/test/integration/instrumentation/memcached.tap.js
+  640:72  error  Refactor this function to reduce its Cognitive Complexity from 23 to the 15 allowed  sonarjs/cognitive-complexity
+
+/Users/revans/code/node-newrelic/test/integration/instrumentation/promises/transaction-state.js
+  15:10  error  Refactor this function to reduce its Cognitive Complexity from 20 to the 15 allowed  sonarjs/cognitive-complexity
+
+/Users/revans/code/node-newrelic/test/integration/keep-alive.tap.js
+  117:18  error  Immediately return this expression instead of assigning it to the temporary variable "method"  sonarjs/prefer-immediate-return
+
+/Users/revans/code/node-newrelic/test/integration/newrelic-response-handling.tap.js
+  153:27  error  Refactor this function to reduce its Cognitive Complexity from 25 to the 15 allowed  sonarjs/cognitive-complexity
+
+/Users/revans/code/node-newrelic/test/integration/pricing/vendor-info-tests.js
+  44:10  error  Refactor this function to reduce its Cognitive Complexity from 20 to the 15 allowed  sonarjs/cognitive-complexity
+
+/Users/revans/code/node-newrelic/test/integration/security-policies-cross-agent.tap.js
+   40:17  error  Immediately return this expression instead of assigning it to the temporary variable "reply"  sonarjs/prefer-immediate-return
+  100:24  error  Review this usage of "skipCases" as it can only be empty here                                 sonarjs/no-empty-collection
+
+/Users/revans/code/node-newrelic/test/lib/benchmark.js
+  53:7  error  Refactor this function to reduce its Cognitive Complexity from 26 to the 15 allowed  sonarjs/cognitive-complexity
+
+/Users/revans/code/node-newrelic/test/lib/fake-collector.js
+  159:3  error  Refactor this function to reduce its Cognitive Complexity from 20 to the 15 allowed  sonarjs/cognitive-complexity
+
+/Users/revans/code/node-newrelic/test/lib/metrics_helper.js
+  142:10  error  Refactor this function to reduce its Cognitive Complexity from 41 to the 15 allowed  sonarjs/cognitive-complexity
+
+/Users/revans/code/node-newrelic/test/unit/collector/api-connect.test.js
+  405:12  error  Update this function so that its implementation is not identical to the one on line 318  sonarjs/no-identical-functions
+  679:12  error  Update this function so that its implementation is not identical to the one on line 593  sonarjs/no-identical-functions
+
+/Users/revans/code/node-newrelic/test/unit/collector/api-run-lifecycle.test.js
+   93:12  error  Update this function so that its implementation is not identical to the one on line 59   sonarjs/no-identical-functions
+  161:12  error  Update this function so that its implementation is not identical to the one on line 127  sonarjs/no-identical-functions
+  230:12  error  Update this function so that its implementation is not identical to the one on line 195  sonarjs/no-identical-functions
+  306:12  error  Update this function so that its implementation is not identical to the one on line 59   sonarjs/no-identical-functions
+
+/Users/revans/code/node-newrelic/test/unit/collector/parse-response.test.js
+  124:14  error  Update this function so that its implementation is not identical to the one on line 108  sonarjs/no-identical-functions
+
+/Users/revans/code/node-newrelic/test/unit/config/harvest-config-validator.test.js
+  144:30  error  Immediately return this expression instead of assigning it to the temporary variable "validHarvestConfig"  sonarjs/prefer-immediate-return
+
+/Users/revans/code/node-newrelic/test/unit/context-manager/legacy-context-tests.js
+  161:16  error  Update this function so that its implementation is not identical to the one on line 138  sonarjs/no-identical-functions
+
+/Users/revans/code/node-newrelic/test/unit/db/query-trace-aggregator.test.js
+  604:20  error  Update this function so that its implementation is not identical to the one on line 431  sonarjs/no-identical-functions
+  948:20  error  Update this function so that its implementation is not identical to the one on line 776  sonarjs/no-identical-functions
+
+/Users/revans/code/node-newrelic/test/unit/distributed_tracing/dt-cats.test.js
+  34:32  error  Refactor this function to reduce its Cognitive Complexity from 54 to the 15 allowed  sonarjs/cognitive-complexity
+
+/Users/revans/code/node-newrelic/test/unit/errors/error-collector.test.js
+  1295:27  error  This function expects 1 argument, but 2 were provided  sonarjs/no-extra-arguments
+  1309:27  error  This function expects 1 argument, but 2 were provided  sonarjs/no-extra-arguments
+
+/Users/revans/code/node-newrelic/test/unit/grpc/connection.test.js
+  40:19  error  Immediately return this expression instead of assigning it to the temporary variable "metrics"  sonarjs/prefer-immediate-return
+
+/Users/revans/code/node-newrelic/test/unit/header-processing.test.js
+  112:13  error  Remove this redundant jump  sonarjs/no-redundant-jump
+
+/Users/revans/code/node-newrelic/test/unit/instrumentation/core/promises.test.js
+   40:15  error  Remove this use of the output from "checkTrace"; "checkTrace" doesn't return anything  sonarjs/no-use-of-empty-return-value
+   53:15  error  Remove this use of the output from "checkTrace"; "checkTrace" doesn't return anything  sonarjs/no-use-of-empty-return-value
+   66:15  error  Remove this use of the output from "checkTrace"; "checkTrace" doesn't return anything  sonarjs/no-use-of-empty-return-value
+   82:15  error  Remove this use of the output from "checkTrace"; "checkTrace" doesn't return anything  sonarjs/no-use-of-empty-return-value
+   98:15  error  Remove this use of the output from "checkTrace"; "checkTrace" doesn't return anything  sonarjs/no-use-of-empty-return-value
+  113:15  error  Remove this use of the output from "checkTrace"; "checkTrace" doesn't return anything  sonarjs/no-use-of-empty-return-value
+  128:15  error  Remove this use of the output from "checkTrace"; "checkTrace" doesn't return anything  sonarjs/no-use-of-empty-return-value
+  143:15  error  Remove this use of the output from "checkTrace"; "checkTrace" doesn't return anything  sonarjs/no-use-of-empty-return-value
+  159:15  error  Remove this use of the output from "checkTrace"; "checkTrace" doesn't return anything  sonarjs/no-use-of-empty-return-value
+  176:15  error  Remove this use of the output from "checkTrace"; "checkTrace" doesn't return anything  sonarjs/no-use-of-empty-return-value
+
+/Users/revans/code/node-newrelic/test/unit/instrumentation/http/http.test.js
+  1038:14  error  Update this function so that its implementation is not identical to the one on line 817  sonarjs/no-identical-functions
+
+/Users/revans/code/node-newrelic/test/unit/instrumentation/http/outbound.test.js
+  645:12  error  Refactor this function to reduce its Cognitive Complexity from 30 to the 15 allowed  sonarjs/cognitive-complexity
+
+/Users/revans/code/node-newrelic/test/unit/serverless/aws-lambda.test.js
+   989:16  error  Update this function so that its implementation is not identical to the one on line 921   sonarjs/no-identical-functions
+  1009:16  error  Update this function so that its implementation is not identical to the one on line 941   sonarjs/no-identical-functions
+  1039:16  error  Update this function so that its implementation is not identical to the one on line 971   sonarjs/no-identical-functions
+  1064:16  error  Update this function so that its implementation is not identical to the one on line 971   sonarjs/no-identical-functions
+  1082:16  error  Update this function so that its implementation is not identical to the one on line 921   sonarjs/no-identical-functions
+  1102:16  error  Update this function so that its implementation is not identical to the one on line 941   sonarjs/no-identical-functions
+  1248:14  error  Update this function so that its implementation is not identical to the one on line 1208  sonarjs/no-identical-functions
+  1289:16  error  Update this function so that its implementation is not identical to the one on line 1208  sonarjs/no-identical-functions
+
+/Users/revans/code/node-newrelic/test/unit/shim/datastore-shim.test.js
+  702:22  error  Update this function so that its implementation is not identical to the one on line 421  sonarjs/no-identical-functions
+  725:22  error  Update this function so that its implementation is not identical to the one on line 421  sonarjs/no-identical-functions
+
+/Users/revans/code/node-newrelic/test/unit/shim/message-shim.test.js
+  461:22  error  Update this function so that its implementation is not identical to the one on line 285  sonarjs/no-identical-functions
+  585:16  error  Update this function so that its implementation is not identical to the one on line 550  sonarjs/no-identical-functions
+  790:22  error  Update this function so that its implementation is not identical to the one on line 285  sonarjs/no-identical-functions
+  812:22  error  Update this function so that its implementation is not identical to the one on line 309  sonarjs/no-identical-functions
+
+/Users/revans/code/node-newrelic/test/unit/shim/shim.test.js
+  1337:22  error  Update this function so that its implementation is not identical to the one on line 1323  sonarjs/no-identical-functions
+  1430:22  error  Update this function so that its implementation is not identical to the one on line 1408  sonarjs/no-identical-functions
+  1557:22  error  Update this function so that its implementation is not identical to the one on line 1323  sonarjs/no-identical-functions
+  1574:22  error  Update this function so that its implementation is not identical to the one on line 1323  sonarjs/no-identical-functions
+
+/Users/revans/code/node-newrelic/test/unit/shim/webframework-shim.test.js
+   865:65  error  Refactor this function to reduce its Cognitive Complexity from 25 to the 15 allowed  sonarjs/cognitive-complexity
+  1004:96  error  Refactor this function to reduce its Cognitive Complexity from 25 to the 15 allowed  sonarjs/cognitive-complexity
+
+/Users/revans/code/node-newrelic/test/unit/shimmer.test.js
+  150:44  error  Refactor this function to reduce its Cognitive Complexity from 36 to the 15 allowed  sonarjs/cognitive-complexity
+
+/Users/revans/code/node-newrelic/test/unit/spans/span-streamer.test.js
+  86:19  error  Immediately return this expression instead of assigning it to the temporary variable "metrics"  sonarjs/prefer-immediate-return
+
+/Users/revans/code/node-newrelic/test/versioned/bluebird/methods.js
+  1967:26  error  This always evaluates to truthy. Consider refactoring this code  sonarjs/no-gratuitous-expressions
+
+/Users/revans/code/node-newrelic/test/versioned/cassandra-driver/query.tap.js
+  76:12  error  Refactor this function to reduce its Cognitive Complexity from 26 to the 15 allowed  sonarjs/cognitive-complexity
+
+/Users/revans/code/node-newrelic/test/versioned/generic-pool/basic-v2.tap.js
+  122:7  error  This function expects 1 argument, but 2 were provided  sonarjs/no-extra-arguments
+
+/Users/revans/code/node-newrelic/test/versioned/generic-pool/basic.tap.js
+  111:7  error  This function expects 1 argument, but 2 were provided  sonarjs/no-extra-arguments
+
+/Users/revans/code/node-newrelic/test/versioned/grpc-esm/server-unary.tap.mjs
+  150:14  error  Update this function so that its implementation is not identical to the one on line 101  sonarjs/no-identical-functions
+
+/Users/revans/code/node-newrelic/test/versioned/grpc/client-streaming.tap.js
+  130:35  error  Refactor this function to reduce its Cognitive Complexity from 16 to the 15 allowed  sonarjs/cognitive-complexity
+
+/Users/revans/code/node-newrelic/test/versioned/mongodb-esm/collection-common.mjs
+  29:41  error  Refactor this function to reduce its Cognitive Complexity from 43 to the 15 allowed  sonarjs/cognitive-complexity
+
+/Users/revans/code/node-newrelic/test/versioned/mongodb-esm/db.tap.mjs
+  25:26  error  Refactor this function to reduce its Cognitive Complexity from 29 to the 15 allowed  sonarjs/cognitive-complexity
+
+/Users/revans/code/node-newrelic/test/versioned/mongodb/collection-common.js
+  31:38  error  Refactor this function to reduce its Cognitive Complexity from 145 to the 15 allowed  sonarjs/cognitive-complexity
+
+/Users/revans/code/node-newrelic/test/versioned/pg-esm/pg.common.mjs
+  193:45  error  Refactor this function to reduce its Cognitive Complexity from 97 to the 15 allowed  sonarjs/cognitive-complexity
+
+/Users/revans/code/node-newrelic/test/versioned/pg/pg.common.js
+  195:45  error  Refactor this function to reduce its Cognitive Complexity from 97 to the 15 allowed  sonarjs/cognitive-complexity
+
+/Users/revans/code/node-newrelic/test/versioned/redis/redis.tap.js
+  296:13  error  This function expects no arguments, but 1 was provided  sonarjs/no-extra-arguments
+
+/Users/revans/code/node-newrelic/test/versioned/restify/restify-post-7/transaction-naming.tap.js
+  12:44  error  Refactor this function to reduce its Cognitive Complexity from 27 to the 15 allowed  sonarjs/cognitive-complexity
+
+/Users/revans/code/node-newrelic/test/versioned/restify/restify-pre-7/transaction-naming.tap.js
+  12:44  error  Refactor this function to reduce its Cognitive Complexity from 27 to the 15 allowed  sonarjs/cognitive-complexity
+
+

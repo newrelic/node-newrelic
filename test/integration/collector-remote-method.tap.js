@@ -103,8 +103,7 @@ tap.test('remote method to preconnect', (t) => {
     config.certificates = [read(join(__dirname, '../lib/ca-certificate.crt'), 'utf8')]
 
     const agent = { config, metrics: { measureBytes() {} } }
-    const method = new RemoteMethod('preconnect', agent, endpoint)
-    return method
+    return new RemoteMethod('preconnect', agent, endpoint)
   }
 
   function startMockCollector(t, startedCallback) {

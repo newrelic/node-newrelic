@@ -197,11 +197,9 @@ async function wrapEsmSource(url, specifier) {
     const _wrappedModule = wrapModule(_originalModule, '${specifier}', '${trimmedUrl}')
     ${props
       .map((propName) => {
-        const propertyExportSource = `
+        return `
     let _${propName} = _wrappedModule.${propName}
     export { _${propName} as ${propName} }`
-
-        return propertyExportSource
       })
       .join('\n')}
   `

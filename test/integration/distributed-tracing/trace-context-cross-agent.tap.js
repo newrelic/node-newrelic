@@ -476,8 +476,7 @@ const runTestCase = function (testCase, parentTest) {
         const insertedNewrelicTraces = outboundHeaders.map((headers) => {
           if (headers.newrelic) {
             const rawPayload = Buffer.from(headers.newrelic, 'base64').toString('utf-8')
-            const payload = JSON.parse(rawPayload)
-            return payload
+            return JSON.parse(rawPayload)
           }
         })
 

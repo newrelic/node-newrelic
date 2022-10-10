@@ -37,7 +37,7 @@ const createMetricAggregatorForTests = () => {
   const mapper = new MetricMapper()
   const normalizer = new MetricNormalizer({}, 'metric name')
 
-  const metrics = new MetricAggregator(
+  return new MetricAggregator(
     {
       // runId: RUN_ID,
       apdexT: 0.5,
@@ -46,7 +46,6 @@ const createMetricAggregatorForTests = () => {
     },
     {}
   )
-  return metrics
 }
 
 tap.test('GrpcConnection logic tests', (test) => {
