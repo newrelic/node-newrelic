@@ -1,3 +1,7 @@
+### v5.0.1 (2022-10-10)
+
+* Updated DynamoDB instrumentation to default port to 443 when not specified from the endpoint.
+
 ### v5.0.0 (2022-07-28)
 
 * **BREAKING** Removed support for Node 12.
