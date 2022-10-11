@@ -47,7 +47,7 @@
     "tap": "^16.2.0"
   },
   "peerDependencies": {
-    "newrelic": ">=8.8.0"
+    "newrelic": ">=8.14.0"
   },
   "dependencies": {
     "semver": "^7.3.7"
