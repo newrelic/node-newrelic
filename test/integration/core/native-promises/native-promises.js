@@ -411,6 +411,45 @@ function createPromiseTests(t, config) {
     })
   })
 
+  t.test('maintains context across promise chain', (t) => {
+    const { agent } = setupAgent(t, config)
+    helper.runInTransaction(agent, function (createdTransaction) {
+      let transaction = agent.getTransaction()
+      t.equal(transaction && transaction.id, createdTransaction.id, 'should start in a transaction')
+      firstFunction()
+        .then(() => {
+          transaction = agent.getTransaction()
+          t.equal(transaction && transaction.id, createdTransaction.id)
+          return secondFunction()
+        })
+        .then(() => {
+          transaction = agent.getTransaction()
+          t.equal(transaction && transaction.id, createdTransaction.id)
+          createdTransaction.end()
+          t.end()
+        })
+
+      function firstFunction() {
+        return childFunction()
+      }
+
+      function childFunction() {
+        return new Promise((resolve) => {
+          transaction = agent.getTransaction()
+          t.equal(transaction && transaction.id, createdTransaction.id)
+
+          setTimeout(resolve, 1)
+        })
+      }
+
+      function secondFunction() {
+        return new Promise((resolve) => {
+          setImmediate(resolve)
+        })
+      }
+    })
+  })
+
   t.test('does not crash on multiple resolve calls', function (t) {
     const { agent } = setupAgent(t, config)
     helper.runInTransaction(agent, function () {
