@@ -146,7 +146,7 @@
     "bench": "node ./bin/run-bench.js",
     "docker-env": "./bin/docker-env-vars.sh",
     "docs": "npm ci && jsdoc -c ./jsdoc-conf.json --private -r .",
-    "integration": "npm run prepare-test && npm run sub-install && time c8 -o ./coverage/integration tap test/integration/**/**/*.tap.js --timeout=180 --no-coverage --reporter classic",
+    "integration": "npm run prepare-test && npm run sub-install && time tap --test-regex='(\\/|^test\\/integration\\/.*\\.tap\\.js)$' --timeout=180 --no-coverage --reporter classic",
     "integration:async-local": "npm run prepare-test && npm run sub-install && time tap --test-regex='(\\/|^test\\/integration\\/.*\\.tap\\.js)$' --timeout=180 --no-coverage --reporter classic --test-env=NEW_RELIC_FEATURE_FLAG_ASYNC_LOCAL_CONTEXT=1",
     "prepare-test": "npm run ssl && npm run docker-env",
     "lint": "eslint ./*.{js,mjs} lib test bin examples",
@@ -167,11 +167,11 @@
     "update-changelog-version": "node ./bin/update-changelog-version",
     "checkout-external-versioned": "node ./test/versioned-external/checkout-external-tests.js",
     "versioned": "npm run versioned:npm7",
-    "versioned:major": "npm run checkout-external-versioned && npm run prepare-test && VERSIONED_MODE=--major NPM7=1 time ./bin/run-versioned-tests.sh",
+    "versioned:major": "VERSIONED_MODE=--major npm run versioned:npm7",
     "versioned:npm6": "npm run checkout-external-versioned && npm run prepare-test && time ./bin/run-versioned-tests.sh",
     "versioned:npm7": "npm run checkout-external-versioned && npm run prepare-test && NPM7=1 time ./bin/run-versioned-tests.sh",
-    "versioned:async-local": "npm run checkout-external-versioned && npm run prepare-test && NEW_RELIC_FEATURE_FLAG_ASYNC_LOCAL_CONTEXT=1 NPM7=1 time ./bin/run-versioned-tests.sh",
-    "versioned:async-local:major": "npm run checkout-external-versioned && npm run prepare-test && NEW_RELIC_FEATURE_FLAG_ASYNC_LOCAL_CONTEXT=1 VERSIONED_MODE=--major NPM7=1 time ./bin/run-versioned-tests.sh",
+    "versioned:async-local": "NEW_RELIC_FEATURE_FLAG_ASYNC_LOCAL_CONTEXT=1 npm run versioned:npm7",
+    "versioned:async-local:major": "NEW_RELIC_FEATURE_FLAG_ASYNC_LOCAL_CONTEXT=1 npm run versioned:major",
     "prepare": "husky install"
   },
   "bin": {
