@@ -23,7 +23,7 @@ helpers.makeSink = function makeSink() {
 /**
  * Log lines in and out of a transaction for every logger.
  * @param {object} opts
- * @param {DerivedLogger} opts.logger instance of winston
+ * @param {Logger} opts.logger instance of bunyan
  * @param {object} opts.helper test helpers
  * @param {object} opts.agent new relic agent
  */

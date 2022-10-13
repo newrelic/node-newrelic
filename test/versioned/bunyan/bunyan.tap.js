@@ -9,8 +9,6 @@ const tap = require('tap')
 const helper = require('../../lib/agent_helper')
 const { validateLogLine } = require('../../lib/logging-helper')
 const { LOGGING } = require('../../../lib/metrics/names')
-// winston puts the log line getting construct through formatters on a symbol
-// which is exported from this module
 const { makeSink, logStuff, originalMsgAssertion, logForwardingMsgAssertion } = require('./helpers')
 
 tap.Test.prototype.addAssert('validateAnnotations', 2, validateLogLine)
@@ -30,8 +28,8 @@ tap.test('bunyan instrumentation', (t) => {
   t.afterEach(() => {
     agent && helper.unloadAgent(agent)
     bunyan = null
-    // must purge require cache of winston related instrumentation
-    // otherwise it will not re-register on subsequent test runs
+    // must purge require cache of bunyan related instrumentation
+    // to ensure it re-registers on subsequent test runs
     Object.keys(require.cache).forEach((key) => {
       if (/bunyan/.test(key)) {
         delete require.cache[key]
@@ -194,44 +192,6 @@ tap.test('bunyan instrumentation', (t) => {
   t.test('metrics', (t) => {
     t.autoend()
 
-    t.test('should log unknown for fatal log level', (t) => {
-      setup({
-        application_logging: {
-          enabled: true,
-          metrics: {
-            enabled: true
-          },
-          forwarding: { enabled: false },
-          local_decorating: { enabled: false }
-        }
-      })
-
-      const mockStream = makeSink()
-      const logger = bunyan.createLogger({
-        name: 'test-logger',
-        stream: mockStream
-      })
-
-      helper.runInTransaction(agent, 'custom-log-test', () => {
-        logger.info('info log')
-        logger.fatal('fatal log')
-        const metric = agent.metrics.getMetric(LOGGING.LEVELS.INFO)
-        t.ok(metric, 'info log metric exists')
-        t.equal(metric.callCount, 1, 'info log count is 1')
-        const unknownMetric = agent.metrics.getMetric(LOGGING.LEVELS.UNKNOWN)
-        t.ok(unknownMetric, 'unknown log metric exists')
-        t.equal(unknownMetric.callCount, 1, 'custom log count is 1')
-        const linesMetric = agent.metrics.getMetric(LOGGING.LINES)
-        t.ok(linesMetric, 'logging lines metric should exist')
-        t.equal(
-          linesMetric.callCount,
-          2,
-          'should count both info level and fatal level in logging/lines metric'
-        )
-        t.end()
-      })
-    })
-
     t.test('should count logger metrics', (t) => {
       setup({
         application_logging: {
@@ -256,7 +216,8 @@ tap.test('bunyan instrumentation', (t) => {
           debug: 20,
           info: 5,
           warn: 3,
-          error: 2
+          error: 2,
+          fatal: 1
         }
         for (const [logLevel, maxCount] of Object.entries(logLevels)) {
           for (let count = 0; count < maxCount; count++) {
@@ -300,7 +261,7 @@ tap.test('bunyan instrumentation', (t) => {
           stream: mockStream
         })
 
-        helper.runInTransaction(agent, 'winston-test', () => {
+        helper.runInTransaction(agent, 'bunyan-test', () => {
           logger.info('This is a log message test')
 
           const linesMetric = agent.metrics.getMetric(LOGGING.LINES)
