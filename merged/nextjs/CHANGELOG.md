@@ -1,11 +1,13 @@
 ### v0.3.1 (2022-10-17)
 
 * Updated newrelic peer dependency to be >= 8.14.0. This makes the hasToRemoveScriptWrapper property available for api.getBrowserTimingHeader.
+ 
+  Thanks for your contribution @siuvdlec!
 
 * Updated injecting browser agent snippet in both README and docs.
  * Updated example application to include the browser agent snippet and README to using example project.
 
-Removed browser agent injection test from versioned tests
+ * Removed browser agent injection test from versioned tests
 
 ### v0.3.0 (2022-07-27)
 
