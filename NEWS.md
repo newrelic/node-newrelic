@@ -1,3 +1,13 @@
+### v9.3.0 (2022-10-17)
+
+* Added instrumentation to bunyan to support application logging use cases: forwarding, local decorating, and metrics.
+   
+   Big thanks to @brianphillips for his contribution 🚀
+
+* Added c8 to track code coverage.
+
+* Added documentation about custom instrumentation in ES module applications
+
 ### v9.2.0 (2022-10-06)
 
 * Added ability to instrument ES Modules with the New Relic ESM Loader.
