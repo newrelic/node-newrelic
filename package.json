@@ -1,6 +1,6 @@
 {
   "name": "newrelic",
-  "version": "9.2.0",
+  "version": "9.3.0",
   "author": "New Relic Node.js agent team <nodejs@newrelic.com>",
   "license": "Apache-2.0",
   "contributors": [
@@ -158,7 +158,7 @@
     "sub-install": "node test/bin/install_sub_deps",
     "test": "npm run integration && npm run unit && npm run unit:esm",
     "third-party-updates": "oss third-party manifest --includeOptDeps && oss third-party notices --includeOptDeps && git add THIRD_PARTY_NOTICES.md third_party_manifest.json",
-     "unit": "rm -f newrelic_agent.log && time c8 -o ./coverage/unit tap --test-regex='(\\/|^test\\/unit\\/.*\\.test\\.js)$' --timeout=180 --no-coverage --reporter classic",
+    "unit": "rm -f newrelic_agent.log && time c8 -o ./coverage/unit tap --test-regex='(\\/|^test\\/unit\\/.*\\.test\\.js)$' --timeout=180 --no-coverage --reporter classic",
     "unit:esm": "rm -f newrelic_agent.log && time c8 -o ./coverage/esm-unit --include *.mjs --include **/*.mjs --exclude false tap --test-regex='(\\/|^test\\/unit\\/.*\\.test\\.mjs)$' --timeout=180 --no-coverage --reporter classic --node-arg=--experimental-loader=testdouble",
     "update-cross-agent-tests": "./bin/update-cats.sh",
     "versioned-tests": "./bin/run-versioned-tests.sh",
