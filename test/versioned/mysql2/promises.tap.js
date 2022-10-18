@@ -44,10 +44,11 @@ tap.test('mysql2 promises', { timeout: 30000 }, (t) => {
 
   t.test('basic transaction', (t) => {
     return helper
-      .runInTransaction(agent, () => {
+      .runInTransaction(agent, (tx) => {
         return client.query('SELECT 1').then(() => {
-          t.ok(agent.getTransaction(), 'we should be in a transaction')
-          agent.getTransaction().end()
+          const activeTx = agent.getTransaction()
+          t.equal(tx.name, activeTx.name)
+          tx.end()
         })
       })
       .then(() => checkQueries(t, agent))
@@ -55,10 +56,11 @@ tap.test('mysql2 promises', { timeout: 30000 }, (t) => {
 
   t.test('query with values', (t) => {
     return helper
-      .runInTransaction(agent, () => {
+      .runInTransaction(agent, (tx) => {
         return client.query('SELECT 1', []).then(() => {
-          t.ok(agent.getTransaction(), 'we should be in a transaction')
-          agent.getTransaction().end()
+          const activeTx = agent.getTransaction()
+          t.equal(tx.name, activeTx.name)
+          tx.end()
         })
       })
       .then(() => checkQueries(t, agent))
@@ -66,19 +68,22 @@ tap.test('mysql2 promises', { timeout: 30000 }, (t) => {
 
   t.test('database name should change with use statement', (t) => {
     return helper
-      .runInTransaction(agent, () => {
+      .runInTransaction(agent, (tx) => {
         return client
           .query('create database if not exists test_db')
           .then(() => {
-            t.ok(agent.getTransaction(), 'we should be in a transaction')
+            const activeTx = agent.getTransaction()
+            t.equal(tx.name, activeTx.name)
             return client.query('use test_db')
           })
           .then(() => {
-            t.ok(agent.getTransaction(), 'we should be in a transaction')
+            const activeTx = agent.getTransaction()
+            t.equal(tx.name, activeTx.name)
             return client.query('SELECT 1 + 1 AS solution')
           })
           .then(() => {
-            t.ok(agent.getTransaction(), 'we should be in a transaction')
+            const activeTx = agent.getTransaction()
+            t.equal(tx.name, activeTx.name)
 
             const segment = agent.getTransaction().trace.root.children[2]
             const attributes = segment.getAttributes()
@@ -92,7 +97,7 @@ tap.test('mysql2 promises', { timeout: 30000 }, (t) => {
             t.equal(attributes.database_name, 'test_db', 'should follow use statement')
             t.equal(attributes.port_path_or_id, '3306', 'should set port')
 
-            agent.getTransaction().end()
+            tx.end()
           })
       })
       .then(() => checkQueries(t, agent))
@@ -100,9 +105,11 @@ tap.test('mysql2 promises', { timeout: 30000 }, (t) => {
 
   t.test('query with options object rather than sql', (t) => {
     return helper
-      .runInTransaction(agent, () => {
+      .runInTransaction(agent, (tx) => {
         return client.query({ sql: 'SELECT 1' }).then(() => {
-          agent.getTransaction().end()
+          const activeTx = agent.getTransaction()
+          t.equal(tx.name, activeTx.name)
+          tx.end()
         })
       })
       .then(() => checkQueries(t, agent))
@@ -110,9 +117,11 @@ tap.test('mysql2 promises', { timeout: 30000 }, (t) => {
 
   t.test('query with options object and values', (t) => {
     return helper
-      .runInTransaction(agent, () => {
+      .runInTransaction(agent, (tx) => {
         return client.query({ sql: 'SELECT 1' }, []).then(() => {
-          agent.getTransaction().end()
+          const activeTx = agent.getTransaction()
+          t.equal(tx.name, activeTx.name)
+          tx.end()
         })
       })
       .then(() => checkQueries(t, agent))
