@@ -28,7 +28,7 @@ test('transaction tests', function (t) {
     t.plan(10)
     const connect = require('connect')
     const { version: pkgVersion } = require('connect/package')
-    let server
+    let server = null
     agent.once('transactionFinished', function (transaction) {
       t.equal(transaction.name, 'WebTransaction/Connect/GET//foo')
       t.equal(transaction.url, '/foo', 'URL is left alone')
@@ -43,24 +43,22 @@ test('transaction tests', function (t) {
       server.close()
     })
 
-    helper.runInTransaction(agent, function () {
-      const app = connect()
+    const app = connect()
 
-      function middleware(req, res) {
-        t.ok(agent.getTransaction(), 'transaction should be available')
-        res.end('foo')
-      }
+    function middleware(req, res) {
+      t.ok(agent.getTransaction(), 'transaction should be available')
+      res.end('foo')
+    }
 
-      app.use('/foo', middleware)
-      server = createServerAndMakeRequest({ url: '/foo', expectedData: 'foo', t, app, pkgVersion })
-    })
+    app.use('/foo', middleware)
+    server = createServerAndMakeRequest({ url: '/foo', expectedData: 'foo', t, app, pkgVersion })
   })
 
   t.test('should default to `/` when no route is specified', function (t) {
     t.plan(10)
     const connect = require('connect')
     const { version: pkgVersion } = require('connect/package')
-    let server
+    let server = null
     agent.once('transactionFinished', function (transaction) {
       t.equal(transaction.name, 'WebTransaction/Connect/GET//')
       t.equal(transaction.url, '/foo', 'URL is left alone')
@@ -75,17 +73,15 @@ test('transaction tests', function (t) {
       server.close()
     })
 
-    helper.runInTransaction(agent, function () {
-      const app = connect()
+    const app = connect()
 
-      function middleware(req, res) {
-        t.ok(agent.getTransaction(), 'transaction should be available')
-        res.end('root')
-      }
+    function middleware(req, res) {
+      t.ok(agent.getTransaction(), 'transaction should be available')
+      res.end('root')
+    }
 
-      app.use(middleware)
-      server = createServerAndMakeRequest({ url: '/foo', expectedData: 'root', t, app, pkgVersion })
-    })
+    app.use(middleware)
+    server = createServerAndMakeRequest({ url: '/foo', expectedData: 'root', t, app, pkgVersion })
   })
 })
 

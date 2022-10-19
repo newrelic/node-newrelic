@@ -32,7 +32,7 @@ tap.test('amqplib promise instrumentation', function (t) {
   let api = null
 
   t.beforeEach(function () {
-    // In promise mode, amqplib loads bluebird. In our tests we unwrap the
+    // In promise mode, versions older than 0.10.0 of amqplib load bluebird. In our tests we unwrap the
     // instrumentation after each one. This is fine for first-order modules
     // which the test itself re-requires, but second-order modules (deps of
     // instrumented methods) are not reloaded and thus not re-instrumented. To
@@ -58,9 +58,6 @@ tap.test('amqplib promise instrumentation', function (t) {
     agent.config.trusted_account_ids = [1234]
 
     api = new API(agent)
-
-    const instrumentation = require('../../../lib/instrumentation/amqplib')
-    api.instrumentMessages('amqplib', instrumentation.instrumentPromiseAPI)
 
     amqplib = require('amqplib')
     return amqpUtils.getChannel(amqplib).then(function (result) {
@@ -269,40 +266,31 @@ tap.test('amqplib promise instrumentation', function (t) {
         return channel.bindQueue(queue, exchange, 'consume-tx-key')
       })
       .then(function () {
-        return helper
-          .runInTransaction(agent, function (tx) {
-            return channel
-              .consume(queue, function (msg) {
-                const consumeTxnHandle = api.getTransaction()
-                consumeTxn = consumeTxnHandle._transaction
-                t.not(consumeTxn, tx, 'should not be in original transaction')
-                t.ok(msg, 'should receive a message')
+        return helper.runInTransaction(agent, function (tx) {
+          return channel
+            .consume(queue, function (msg) {
+              const consumeTxnHandle = api.getTransaction()
+              consumeTxn = consumeTxnHandle._transaction
+              t.not(consumeTxn, tx, 'should not be in original transaction')
+              t.ok(msg, 'should receive a message')
 
-                const body = msg.content.toString('utf8')
-                t.equal(body, 'hello', 'should receive expected body')
+              const body = msg.content.toString('utf8')
+              t.equal(body, 'hello', 'should receive expected body')
 
-                channel.ack(msg)
-                tx.end()
-                amqpUtils.verifySubscribe(t, tx, exchange, 'consume-tx-key')
-                consumeTxnHandle.end(function () {
-                  amqpUtils.verifyConsumeTransaction(
-                    t,
-                    consumeTxn,
-                    exchange,
-                    queue,
-                    'consume-tx-key'
-                  )
-                  amqpUtils.verifyCAT(t, tx, consumeTxn)
-                  t.end()
-                })
+              channel.ack(msg)
+              tx.end()
+              amqpUtils.verifySubscribe(t, tx, exchange, 'consume-tx-key')
+              consumeTxnHandle.end(function () {
+                amqpUtils.verifyConsumeTransaction(t, consumeTxn, exchange, queue, 'consume-tx-key')
+                amqpUtils.verifyCAT(t, tx, consumeTxn)
+                t.end()
               })
-              .then(function () {
-                amqpUtils.verifyTransaction(t, tx, 'consume')
-              })
-          })
-          .then(function () {
-            channel.publish(exchange, 'consume-tx-key', Buffer.from('hello'))
-          })
+            })
+            .then(function () {
+              amqpUtils.verifyTransaction(t, tx, 'consume')
+              channel.publish(exchange, 'consume-tx-key', Buffer.from('hello'))
+            })
+        })
       })
       .catch(function (err) {
         t.fail(err)
@@ -329,40 +317,31 @@ tap.test('amqplib promise instrumentation', function (t) {
         return channel.bindQueue(queue, exchange, 'consume-tx-key')
       })
       .then(function () {
-        return helper
-          .runInTransaction(agent, function (tx) {
-            return channel
-              .consume(queue, function (msg) {
-                const consumeTxnHandle = api.getTransaction()
-                consumeTxn = consumeTxnHandle._transaction
-                t.not(consumeTxn, tx, 'should not be in original transaction')
-                t.ok(msg, 'should receive a message')
+        return helper.runInTransaction(agent, function (tx) {
+          return channel
+            .consume(queue, function (msg) {
+              const consumeTxnHandle = api.getTransaction()
+              consumeTxn = consumeTxnHandle._transaction
+              t.not(consumeTxn, tx, 'should not be in original transaction')
+              t.ok(msg, 'should receive a message')
 
-                const body = msg.content.toString('utf8')
-                t.equal(body, 'hello', 'should receive expected body')
+              const body = msg.content.toString('utf8')
+              t.equal(body, 'hello', 'should receive expected body')
 
-                channel.ack(msg)
-                tx.end()
-                amqpUtils.verifySubscribe(t, tx, exchange, 'consume-tx-key')
-                consumeTxnHandle.end(function () {
-                  amqpUtils.verifyConsumeTransaction(
-                    t,
-                    consumeTxn,
-                    exchange,
-                    queue,
-                    'consume-tx-key'
-                  )
-                  amqpUtils.verifyDistributedTrace(t, tx, consumeTxn)
-                  t.end()
-                })
+              channel.ack(msg)
+              tx.end()
+              amqpUtils.verifySubscribe(t, tx, exchange, 'consume-tx-key')
+              consumeTxnHandle.end(function () {
+                amqpUtils.verifyConsumeTransaction(t, consumeTxn, exchange, queue, 'consume-tx-key')
+                amqpUtils.verifyDistributedTrace(t, tx, consumeTxn)
+                t.end()
               })
-              .then(function () {
-                amqpUtils.verifyTransaction(t, tx, 'consume')
-              })
-          })
-          .then(function () {
-            channel.publish(exchange, 'consume-tx-key', Buffer.from('hello'))
-          })
+            })
+            .then(function () {
+              amqpUtils.verifyTransaction(t, tx, 'consume')
+              channel.publish(exchange, 'consume-tx-key', Buffer.from('hello'))
+            })
+        })
       })
       .catch(function (err) {
         t.fail(err)

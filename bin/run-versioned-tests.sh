@@ -7,6 +7,15 @@ set -x
 
 VERSIONED_MODE="${VERSIONED_MODE:---minor}"
 SAMPLES="${SAMPLES:-10}"
+
+# Determine context manager for sanity sake
+if [[ $NEW_RELIC_FEATURE_FLAG_ASYNC_LOCAL_CONTEXT == 1 ]];
+then
+  CTX_MGR="AsyncLocalStorage"
+else
+  CTX_MGR="Legacy"
+fi
+
 set -f
 directories=()
 if [[ "$1" != '' ]];
@@ -39,6 +48,7 @@ export AGENT_PATH=`pwd`
 # Runner will default to CPU count if not specified.
 echo "JOBS = ${JOBS}"
 echo "NPM7 = ${NPM7}"
+echo "CONTEXT MANAGER = ${CTX_MGR}"
 
 # if $JOBS is not empy
 if [ ! -z "$JOBS" ];

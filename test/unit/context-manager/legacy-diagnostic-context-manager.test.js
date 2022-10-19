@@ -8,7 +8,7 @@
 const { test } = require('tap')
 
 const LegacyDiagnosticContextManager = require('../../../lib/context-manager/diagnostics/legacy-diagnostic-context-manager')
-const runLegacyTests = require('./legacy-context-tests')
+const runContextManagerTests = require('./context-manager-tests')
 
 const EXPECTED_REMOVE_MESSAGE = 'Removed from context'
 const EXPECTED_SET_MESSAGE = 'Set in context'
@@ -16,7 +16,7 @@ const EXPECTED_SET_MESSAGE = 'Set in context'
 test('Legacy Diagnostic Context Manager', (t) => {
   t.autoend()
 
-  runLegacyTests(t, createContextManager)
+  runContextManagerTests(t, createContextManager)
 
   t.test('Should call probe on item manually entering context', (t) => {
     const diagnosticTestItem = new DiagnosticTestItem()

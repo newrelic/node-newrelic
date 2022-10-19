@@ -7,13 +7,13 @@
 
 const { test } = require('tap')
 
-const runLegacyTests = require('./legacy-context-tests')
+const runContextManagerTests = require('./context-manager-tests')
 const LegacyContextManager = require('../../../lib/context-manager/legacy-context-manager')
 
 test('Legacy Context Manager', (t) => {
   t.autoend()
 
-  runLegacyTests(t, createLegacyContextManager)
+  runContextManagerTests(t, createLegacyContextManager)
 })
 
 function createLegacyContextManager() {
