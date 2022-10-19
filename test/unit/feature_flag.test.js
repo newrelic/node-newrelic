@@ -18,6 +18,7 @@ chai.should()
 
 // please do not delete flags from here
 const used = [
+  'async_local_context',
   'await_support',
   'cat',
   'custom_instrumentation',

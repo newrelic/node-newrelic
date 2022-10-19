@@ -10,6 +10,8 @@ const timers = require('timers')
 const helper = require('../../lib/agent_helper')
 const verifySegments = require('./verify')
 
+const usingAsyncLocal = process.env.NEW_RELIC_FEATURE_FLAG_ASYNC_LOCAL_CONTEXT
+
 tap.test('setTimeout', function testSetTimeout(t) {
   const { agent } = setupAgent(t)
   helper.runInTransaction(agent, function transactionWrapper() {
@@ -92,7 +94,7 @@ tap.test('setImmediate', function testSetImmediate(t) {
     })
   })
 
-  t.test('should not propagate segments for ended transaction', (t) => {
+  t.test('should not propagate segments for ended transaction', { skip: usingAsyncLocal }, (t) => {
     const { agent, contextManager } = setupAgent(t)
 
     t.notOk(agent.getTransaction(), 'should not start in a transaction')
