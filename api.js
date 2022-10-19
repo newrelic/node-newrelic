@@ -18,6 +18,7 @@ const isValidType = require('./lib/util/attribute-types')
 const TransactionShim = require('./lib/shim/transaction-shim')
 const TransactionHandle = require('./lib/transaction/handle')
 const AwsLambda = require('./lib/serverless/aws-lambda')
+const applicationLogging = require('./lib/util/application-logging')
 
 const ATTR_DEST = require('./lib/config/attribute-filter').DESTINATIONS
 const MODULE_TYPE = require('./lib/shim/constants').MODULE_TYPE
@@ -424,6 +425,64 @@ API.prototype.noticeError = function noticeError(error, customAttributes) {
 
   const transaction = this.agent.tracer.getTransaction()
   this.agent.errors.addUserError(transaction, error, filteredAttributes)
+}
+
+/**
+ * Sends an application log message to New Relic. The agent already
+ * automatically does this for some instrumented logging libraries,
+ * but in case you are using another logging method that is not
+ * already instrumented by the agent, you can use this function
+ * instead.
+ *
+ * If application log forwarding is disabled in the agent
+ * configuration, this function does nothing.
+ *
+ * @param {object} logMessage  The log line object to send.
+ * @param {string} logMessage.message The log message.
+ * @param {string} logMessage.level The log level severity. If this key is
+ *   missing, it will default to UNKNOWN
+ * @param {number} logMessage.timestamp   Unix epoch number denoting the
+ *   time that this log message was produced. If this key is missing,
+ *   it will default to the output of `Date.now()`.
+ */
+API.prototype.recordLogEvent = function recordLogEvent(logMessage) {
+  const metric = this.agent.metrics.getOrCreateMetric(NAMES.SUPPORTABILITY.API + '/recordLogEvent')
+  metric.incrementCallCount()
+
+  if (!applicationLogging.isLogForwardingEnabled(this.agent.config, this.agent)) {
+    logger.warnOnce(
+      'Record logs',
+      'Application log forwarding disabled, method API#recordLogEvent will not record messages'
+    )
+    return
+  }
+
+  // If they don't pass a logMessage object, or it doesn't have the
+  // required `message` key, bail out.
+  if (!logMessage || typeof logMessage !== 'object' || logMessage.message === undefined) {
+    logger.warn(
+      'recordLogEvent requires an object with a `message` attribute for its single argument, got %s (%s)',
+      stringify(logMessage),
+      typeof logMessage
+    )
+    return
+  }
+
+  if (logMessage.level === undefined) {
+    logger.debug('no log level set, setting it to UNKNOWN')
+    logMessage.level = 'UNKNOWN'
+  }
+  if (logMessage.timestamp === undefined) {
+    logger.debug('no timestamp set, setting it to `Date.now()`')
+    logMessage.timestamp = Date.now()
+  }
+
+  if (applicationLogging.isMetricsEnabled(this.agent.config)) {
+    applicationLogging.incrementLoggingLinesMetrics(logMessage.level, this.agent.metrics)
+  }
+
+  const metadata = this.agent.getLinkingMetadata()
+  this.agent.logs.add(Object.assign({}, logMessage, metadata))
 }
 
 /**
