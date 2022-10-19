@@ -159,14 +159,22 @@ test('Cassandra instrumentation', { timeout: 5000 }, async function testInstrume
                 t.ok(getSegment.children.length >= 1, 'get should have a callback segment')
 
                 const getSegmentAttributes = getSegment.getAttributes()
-                t.equal(getSegmentAttributes.product, 'Cassandra', 'should set product attribute')
-                t.equal(getSegmentAttributes.port_path_or_id, '9042', 'should set port attribute')
+                t.equal(
+                  getSegmentAttributes.product,
+                  'Cassandra',
+                  'get should set product attribute'
+                )
+                t.equal(
+                  getSegmentAttributes.port_path_or_id,
+                  '9042',
+                  'get should set port attribute'
+                )
                 t.equal(
                   getSegmentAttributes.database_name,
                   'test',
-                  'should set database_name attribute'
+                  'get should set database_name attribute'
                 )
-                t.equal(getSegmentAttributes.host, os.hostname(), 'should set host attribute')
+                t.equal(getSegmentAttributes.host, os.hostname(), 'get should set host attribute')
 
                 t.ok(getSegment.timer.hrDuration, 'trace segment should have ended')
               }
