@@ -80,6 +80,7 @@ tap.test('Agent API - recordCustomEvent', (t) => {
   })
 
   t.test('adds the proper linking data in a transaction', (t) => {
+    agent.config.entity_guid = 'api-guid'
     const birthday = 365515200000
     const birth = 'a new jordi is here'
 
@@ -95,7 +96,10 @@ tap.test('Agent API - recordCustomEvent', (t) => {
     t.equal(logMessage.timestamp, birthday, 'its timestamp is correct')
     t.ok(logMessage.hostname, 'a hostname was set')
     t.ok(logMessage['trace.id'], 'it has a trace id')
-    t.ok(logMessage['span.id'], 'it has a spand id')
+    t.ok(logMessage['span.id'], 'it has a span id')
+    t.ok(logMessage['entity.type'], 'it has an entity type')
+    t.ok(logMessage['entity.name'], 'it has an entity name')
+    t.equal(logMessage['entity.guid'], 'api-guid', 'it has the right entity guid')
 
     const lineMetric = agent.metrics.getMetric(LOGGING.LINES)
     t.ok(lineMetric, 'line logging metric exists')
