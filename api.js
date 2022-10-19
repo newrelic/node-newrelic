@@ -437,15 +437,22 @@ API.prototype.noticeError = function noticeError(error, customAttributes) {
  * If application log forwarding is disabled in the agent
  * configuration, this function does nothing.
  *
- * @param {object} logMessage  The log line object to send.
- * @param {string} logMessage.message The log message.
- * @param {string} logMessage.level The log level severity. If this key is
+ * @param {object} logEvent The log event object to send. Any
+ *   attributes besides `message`, `level`, `timestamp`, and `error` are
+ *   recorded unchanged.
+ * @param {string} logEvent.message The log message.
+ * @param {string} logEvent.level The log level severity. If this key is
  *   missing, it will default to UNKNOWN
- * @param {number} logMessage.timestamp   Unix epoch number denoting the
+ * @param {number} logEvent.timestamp   ECMAScript epoch number denoting the
  *   time that this log message was produced. If this key is missing,
  *   it will default to the output of `Date.now()`.
+ * @param {object} logEvent.error Object containing error details. Ignored if missing.
+ * @param {string} logEvent.error.message  The error message.
+ * @param {string} logEvent.error.stack The stack trace of the error.
+ * @param {string} logEvent.error.class The type of the error. If this key is missing,
+ *   defaults to 'Error'.
  */
-API.prototype.recordLogEvent = function recordLogEvent(logMessage) {
+API.prototype.recordLogEvent = function recordLogEvent(logEvent = {}) {
   const metric = this.agent.metrics.getOrCreateMetric(NAMES.SUPPORTABILITY.API + '/recordLogEvent')
   metric.incrementCallCount()
 
@@ -457,32 +464,45 @@ API.prototype.recordLogEvent = function recordLogEvent(logMessage) {
     return
   }
 
-  // If they don't pass a logMessage object, or it doesn't have the
+  // If they don't pass a logEvent object, or it doesn't have the
   // required `message` key, bail out.
-  if (!logMessage || typeof logMessage !== 'object' || logMessage.message === undefined) {
+  if (typeof logEvent !== 'object' || logEvent.message === undefined) {
     logger.warn(
       'recordLogEvent requires an object with a `message` attribute for its single argument, got %s (%s)',
-      stringify(logMessage),
-      typeof logMessage
+      stringify(logEvent),
+      typeof logEvent
     )
     return
   }
+  logEvent.message = applicationLogging.truncate(logEvent.message)
 
-  if (logMessage.level === undefined) {
+  if (!logEvent.level) {
     logger.debug('no log level set, setting it to UNKNOWN')
-    logMessage.level = 'UNKNOWN'
+    logEvent.level = 'UNKNOWN'
   }
-  if (logMessage.timestamp === undefined) {
+
+  if (typeof logEvent.timestamp !== 'number') {
     logger.debug('no timestamp set, setting it to `Date.now()`')
-    logMessage.timestamp = Date.now()
+    logEvent.timestamp = Date.now()
+  }
+
+  if (logEvent.error) {
+    logEvent['error.message'] = applicationLogging.truncate(logEvent.error.message)
+    logEvent['error.stack'] = applicationLogging.truncate(logEvent.error.stack)
+    if (!logEvent.error.class) {
+      logEvent['error.class'] = 'Error'
+    } else {
+      logEvent['error.class'] = applicationLogging.truncate(logEvent.error.class)
+    }
+    delete logEvent.error
   }
 
   if (applicationLogging.isMetricsEnabled(this.agent.config)) {
-    applicationLogging.incrementLoggingLinesMetrics(logMessage.level, this.agent.metrics)
+    applicationLogging.incrementLoggingLinesMetrics(logEvent.level, this.agent.metrics)
   }
 
   const metadata = this.agent.getLinkingMetadata()
-  this.agent.logs.add(Object.assign({}, logMessage, metadata))
+  this.agent.logs.add(Object.assign({}, logEvent, metadata))
 }
 
 /**
