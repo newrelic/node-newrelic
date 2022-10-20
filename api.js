@@ -18,6 +18,7 @@ const isValidType = require('./lib/util/attribute-types')
 const TransactionShim = require('./lib/shim/transaction-shim')
 const TransactionHandle = require('./lib/transaction/handle')
 const AwsLambda = require('./lib/serverless/aws-lambda')
+const applicationLogging = require('./lib/util/application-logging')
 
 const ATTR_DEST = require('./lib/config/attribute-filter').DESTINATIONS
 const MODULE_TYPE = require('./lib/shim/constants').MODULE_TYPE
@@ -424,6 +425,86 @@ API.prototype.noticeError = function noticeError(error, customAttributes) {
 
   const transaction = this.agent.tracer.getTransaction()
   this.agent.errors.addUserError(transaction, error, filteredAttributes)
+}
+
+/**
+ * Sends an application log message to New Relic. The agent already
+ * automatically does this for some instrumented logging libraries,
+ * but in case you are using another logging method that is not
+ * already instrumented by the agent, you can use this function
+ * instead.
+ *
+ * If application log forwarding is disabled in the agent
+ * configuration, this function does nothing.
+ *
+ * An example of using this function is
+ *
+ *    newrelic.recordLogEvent({
+ *       message: 'cannot find file',
+ *       level: 'ERROR',
+ *       error: new SystemError('missing.txt')
+ *    })
+ *
+ * @param {object} logEvent The log event object to send. Any
+ *   attributes besides `message`, `level`, `timestamp`, and `error` are
+ *   recorded unchanged. The `logEvent` object itself will be mutated by
+ *   this function.
+ * @param {string} logEvent.message The log message.
+ * @param {string} logEvent.level The log level severity. If this key is
+ *   missing, it will default to UNKNOWN
+ * @param {number} logEvent.timestamp   ECMAScript epoch number denoting the
+ *   time that this log message was produced. If this key is missing,
+ *   it will default to the output of `Date.now()`.
+ * @param {Error} logEvent.error Error associated to this log event. Ignored if missing.
+ */
+API.prototype.recordLogEvent = function recordLogEvent(logEvent = {}) {
+  const metric = this.agent.metrics.getOrCreateMetric(NAMES.SUPPORTABILITY.API + '/recordLogEvent')
+  metric.incrementCallCount()
+
+  if (!applicationLogging.isLogForwardingEnabled(this.agent.config, this.agent)) {
+    logger.warnOnce(
+      'Record logs',
+      'Application log forwarding disabled, method API#recordLogEvent will not record messages'
+    )
+    return
+  }
+
+  // If they don't pass a logEvent object, or it doesn't have the
+  // required `message` key, bail out.
+  if (typeof logEvent !== 'object' || logEvent.message === undefined) {
+    logger.warn(
+      'recordLogEvent requires an object with a `message` attribute for its single argument, got %s (%s)',
+      stringify(logEvent),
+      typeof logEvent
+    )
+    return
+  }
+  logEvent.message = applicationLogging.truncate(logEvent.message)
+
+  if (!logEvent.level) {
+    logger.debug('no log level set, setting it to UNKNOWN')
+    logEvent.level = 'UNKNOWN'
+  }
+
+  if (typeof logEvent.timestamp !== 'number') {
+    logger.debug('no timestamp set, setting it to `Date.now()`')
+    logEvent.timestamp = Date.now()
+  }
+
+  if (logEvent.error) {
+    logEvent['error.message'] = applicationLogging.truncate(logEvent.error.message)
+    logEvent['error.stack'] = applicationLogging.truncate(logEvent.error.stack)
+    logEvent['error.class'] =
+      logEvent.error.name === 'Error' ? logEvent.error.constructor.name : logEvent.error.name
+    delete logEvent.error
+  }
+
+  if (applicationLogging.isMetricsEnabled(this.agent.config)) {
+    applicationLogging.incrementLoggingLinesMetrics(logEvent.level, this.agent.metrics)
+  }
+
+  const metadata = this.agent.getLinkingMetadata()
+  this.agent.logs.add(Object.assign({}, logEvent, metadata))
 }
 
 /**
