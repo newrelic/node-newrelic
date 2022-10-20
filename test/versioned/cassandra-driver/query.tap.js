@@ -135,6 +135,20 @@ test('Cassandra instrumentation', { timeout: 5000 }, async function testInstrume
                 'set should have atleast a dns lookup and callback child'
               )
 
+              const setSegmentAttributes = setSegment.getAttributes()
+              t.equal(setSegmentAttributes.product, 'Cassandra', 'should set product attribute')
+              t.equal(setSegmentAttributes.port_path_or_id, '9042', 'should set port attribute')
+              t.equal(
+                setSegmentAttributes.database_name,
+                'test',
+                'should set database_name attribute'
+              )
+              t.equal(
+                setSegmentAttributes.host,
+                agent.config.getHostnameSafe(),
+                'should set host attribute'
+              )
+
               const childIndex = setSegment.children.length - 1
               const getSegment = setSegment.children[childIndex].children[0]
               t.ok(getSegment, 'trace segment for select should exist')
@@ -146,6 +160,29 @@ test('Cassandra instrumentation', { timeout: 5000 }, async function testInstrume
                 )
 
                 t.ok(getSegment.children.length >= 1, 'get should have a callback segment')
+
+                const getSegmentAttributes = getSegment.getAttributes()
+                t.equal(
+                  getSegmentAttributes.product,
+                  'Cassandra',
+                  'get should set product attribute'
+                )
+                t.equal(
+                  getSegmentAttributes.port_path_or_id,
+                  '9042',
+                  'get should set port attribute'
+                )
+                t.equal(
+                  getSegmentAttributes.database_name,
+                  'test',
+                  'get should set database_name attribute'
+                )
+                t.equal(
+                  getSegmentAttributes.host,
+                  agent.config.getHostnameSafe(),
+                  'get should set host attribute'
+                )
+
                 t.ok(getSegment.timer.hrDuration, 'trace segment should have ended')
               }
             }
