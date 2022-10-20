@@ -437,20 +437,25 @@ API.prototype.noticeError = function noticeError(error, customAttributes) {
  * If application log forwarding is disabled in the agent
  * configuration, this function does nothing.
  *
+ * An example of using this function is
+ *
+ *    newrelic.recordLogEvent({
+ *       message: 'cannot find file',
+ *       level: 'ERROR',
+ *       error: new SystemError('missing.txt')
+ *    })
+ *
  * @param {object} logEvent The log event object to send. Any
  *   attributes besides `message`, `level`, `timestamp`, and `error` are
- *   recorded unchanged.
+ *   recorded unchanged. The `logEvent` object itself will be mutated by
+ *   this function.
  * @param {string} logEvent.message The log message.
  * @param {string} logEvent.level The log level severity. If this key is
  *   missing, it will default to UNKNOWN
  * @param {number} logEvent.timestamp   ECMAScript epoch number denoting the
  *   time that this log message was produced. If this key is missing,
  *   it will default to the output of `Date.now()`.
- * @param {object} logEvent.error Object containing error details. Ignored if missing.
- * @param {string} logEvent.error.message  The error message.
- * @param {string} logEvent.error.stack The stack trace of the error.
- * @param {string} logEvent.error.class The type of the error. If this key is missing,
- *   defaults to 'Error'.
+ * @param {Error} logEvent.error Error associated to this log event. Ignored if missing.
  */
 API.prototype.recordLogEvent = function recordLogEvent(logEvent = {}) {
   const metric = this.agent.metrics.getOrCreateMetric(NAMES.SUPPORTABILITY.API + '/recordLogEvent')
@@ -489,11 +494,8 @@ API.prototype.recordLogEvent = function recordLogEvent(logEvent = {}) {
   if (logEvent.error) {
     logEvent['error.message'] = applicationLogging.truncate(logEvent.error.message)
     logEvent['error.stack'] = applicationLogging.truncate(logEvent.error.stack)
-    if (!logEvent.error.class) {
-      logEvent['error.class'] = 'Error'
-    } else {
-      logEvent['error.class'] = applicationLogging.truncate(logEvent.error.class)
-    }
+    logEvent['error.class'] =
+      logEvent.error.name === 'Error' ? logEvent.error.constructor.name : logEvent.error.name
     delete logEvent.error
   }
 
