@@ -137,7 +137,6 @@ test('built-in http module instrumentation', (t) => {
 
     let transaction = null
     let transaction2 = null
-    let hookCalled = null
     let server = null
     let external = null
 
@@ -146,7 +145,6 @@ test('built-in http module instrumentation', (t) => {
 
       http = require('http')
       agent.config.attributes.enabled = true
-      hookCalled = false
 
       external = http.createServer(function (request, response) {
         response.writeHead(200, {
@@ -191,10 +189,6 @@ test('built-in http module instrumentation', (t) => {
       server.on('request', function () {
         transaction2 = agent.getTransaction()
       })
-
-      server.__NR_onRequestStarted = function () {
-        hookCalled = true
-      }
 
       return new Promise((resolve) => {
         external.listen(8321, 'localhost', function () {
@@ -404,7 +398,6 @@ test('built-in http module instrumentation', (t) => {
           'only create one transaction for the request'
         )
 
-        t.ok(hookCalled, 'called the shim hook')
         t.end()
       }
     })
