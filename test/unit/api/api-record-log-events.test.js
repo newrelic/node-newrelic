@@ -31,25 +31,10 @@ tap.test('Agent API - recordCustomEvent', (t) => {
 
   t.test('can handle a singular log message', (t) => {
     const now = Date.now()
-    const stack = `Error
-      at REPL53:1:1
-      at Script.runInThisContext (node:vm:129:12)
-      at REPLServer.defaultEval (node:repl:572:29)
-      at bound (node:domain:433:15)
-      at REPLServer.runBound [as eval] (node:domain:444:12)
-      at REPLServer.onLine (node:repl:902:10)
-      at REPLServer.emit (node:events:525:35)
-      at REPLServer.emit (node:domain:489:12)
-      at [_onLine] [as _onLine] (node:internal/readline/interface:425:12)
-      at [_line] [as _line] (node:internal/readline/interface:886:18)`
-
+    const error = new Error('testing error')
     api.recordLogEvent({
       message,
-      error: {
-        message: 'REPL is unhappy',
-        stack: stack,
-        class: 'Error'
-      }
+      error
     })
 
     const logMessage = popTopLogMessage(agent)
