@@ -37,7 +37,6 @@ const used = [
   'unreleased',
   'fastify_instrumentation',
   'certificate_bundle',
-  'new_promise_tracking',
   'unresolved_promise_cleanup',
   'undici_instrumentation',
   'undici_async_tracking'
