@@ -8,7 +8,6 @@
 const test = require('tap').test
 const params = require('../../lib/params')
 const helper = require('../../lib/agent_helper')
-const os = require('os')
 
 const agent = helper.instrumentMockedAgent()
 const cassandra = require('cassandra-driver')
@@ -144,7 +143,11 @@ test('Cassandra instrumentation', { timeout: 5000 }, async function testInstrume
                 'test',
                 'should set database_name attribute'
               )
-              t.equal(setSegmentAttributes.host, os.hostname(), 'should set host attribute')
+              t.equal(
+                setSegmentAttributes.host,
+                agent.config.getHostnameSafe(),
+                'should set host attribute'
+              )
 
               const childIndex = setSegment.children.length - 1
               const getSegment = setSegment.children[childIndex].children[0]
@@ -174,7 +177,11 @@ test('Cassandra instrumentation', { timeout: 5000 }, async function testInstrume
                   'test',
                   'get should set database_name attribute'
                 )
-                t.equal(getSegmentAttributes.host, os.hostname(), 'get should set host attribute')
+                t.equal(
+                  getSegmentAttributes.host,
+                  agent.config.getHostnameSafe(),
+                  'get should set host attribute'
+                )
 
                 t.ok(getSegment.timer.hrDuration, 'trace segment should have ended')
               }
