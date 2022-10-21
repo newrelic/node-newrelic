@@ -13,6 +13,8 @@ import NAMES from '../../lib/metrics/names.js'
 const __dirname = esmHelpers.__dirname(import.meta.url)
 const TEST_MOD_FILE_PATH = path.resolve(`${__dirname}../lib/test-mod.mjs`)
 const MOD_URL = `file://${TEST_MOD_FILE_PATH}`
+const TEST_MOD_FILE_PATH_SPECIAL = path.resolve(`${__dirname}../lib/edge%20case/test-mod.mjs`)
+const MOD_URL_SPECIAL = `file://${TEST_MOD_FILE_PATH_SPECIAL}`
 
 tap.test(
   'Register custom ESM instrumentation',
@@ -44,6 +46,41 @@ tap.test(
     const metric = fakeAgent.metrics.getMetric(NAMES.FEATURES.ESM.CUSTOM_INSTRUMENTATION)
     t.ok(metric, 'metric should exist')
     t.equal(metric.callCount, 1, 'custom instrumentation metric should have been called once')
+  }
+)
+
+tap.test(
+  'Register custom ESM instrumentation when filepath has url encoded characters',
+  { skip: !esmHelpers.supportedLoaderVersion() },
+  async (t) => {
+    const fakeAgent = helper.loadMockedAgent()
+    t.teardown(() => {
+      helper.unloadAgent(fakeAgent)
+    })
+    fakeAgent.config.api.esm.custom_instrumentation_entrypoint =
+      './test/lib/edge%20case/test-mod-instrumentation.mjs'
+
+    await td.replaceEsm('../../index.js', {}, { agent: fakeAgent })
+
+    const loader = await import('../../esm-loader.mjs')
+
+    loader.registeredSpecifiers.set(MOD_URL_SPECIAL, 'test-mod')
+    const data = await loader.load(`${MOD_URL_SPECIAL}?hasNrInstrumentation=true`, {}, sinon.stub())
+
+    const mod = await import(
+      `data:application/javascript;base64,${Buffer.from(data.source).toString('base64')}`
+    )
+
+    const result = mod.default.testMethod()
+    t.ok(
+      result.endsWith('that we have instrumented.'),
+      'should instrument methods on default export'
+    )
+    const namedMethodResult = mod.namedMethod()
+    t.ok(
+      namedMethodResult.endsWith('that we have instrumented.'),
+      'should instrument named exports'
+    )
   }
 )
 
