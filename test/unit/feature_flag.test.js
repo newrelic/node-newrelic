@@ -26,6 +26,7 @@ const used = [
   'express5',
   'express_segments',
   'native_metrics',
+  'new_promise_tracking',
   'promise_segments',
   'protocol_17',
   'serverless_mode',
