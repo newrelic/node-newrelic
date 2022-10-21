@@ -8,10 +8,14 @@ import sinon from 'sinon'
 import * as td from 'testdouble'
 import path from 'node:path'
 import esmHelpers from '../lib/esm-helpers.mjs'
+import { fileURLToPath } from 'node:url'
+
 const __dirname = esmHelpers.__dirname(import.meta.url)
 const TEST_MOD_FILE_PATH = path.resolve(`${__dirname}../lib/test-mod.mjs`)
 const ESM_SHIM_FILE_PATH = path.resolve(`${__dirname}../../lib/esm-shim.mjs`)
 const MOD_URL = `file://${TEST_MOD_FILE_PATH}`
+const TEST_MOD_FILE_PATH_SPECIAL = path.resolve(`${__dirname}../lib/edge%20case/test-mod.mjs`)
+const MOD_URL_SPECIAL = `file://${TEST_MOD_FILE_PATH_SPECIAL}`
 
 tap.test('ES Module Loader', { skip: !esmHelpers.supportedLoaderVersion() }, (t) => {
   t.autoend()
@@ -158,13 +162,13 @@ tap.test('ES Module Loader', { skip: !esmHelpers.supportedLoaderVersion() }, (t)
         type: 'generic',
         onRequire: sinon.stub()
       }
-      fakeNextResolve.returns({ url: 'file://path/to/my-test-dep/index.js', format: 'module' })
+      fakeNextResolve.returns({ url: 'file:///path/to/my-test-dep/index.js', format: 'module' })
 
       const expected = await loader.resolve(fakeSpecifier, fakeContext, fakeNextResolve)
 
       t.same(
         expected,
-        { url: 'file://path/to/my-test-dep/index.js?hasNrInstrumentation=true', format: 'module' },
+        { url: 'file:///path/to/my-test-dep/index.js?hasNrInstrumentation=true', format: 'module' },
         'should return an object with url and format'
       )
       t.equal(fakeLoggerChild.debug.callCount, 1, 'should log two debug statements')
@@ -188,13 +192,13 @@ tap.test('ES Module Loader', { skip: !esmHelpers.supportedLoaderVersion() }, (t)
         type: 'generic',
         onRequire: sinon.stub()
       }
-      fakeNextResolve.returns({ url: 'file://path/to/my-test-dep/index.js', format: 'commonjs' })
+      fakeNextResolve.returns({ url: 'file:///path/to/my-test-dep/index.js', format: 'commonjs' })
 
       const expected = await loader.resolve(fakeSpecifier, fakeContext, fakeNextResolve)
 
       t.same(
         expected,
-        { url: 'file://path/to/my-test-dep/index.js', format: 'commonjs' },
+        { url: 'file:///path/to/my-test-dep/index.js', format: 'commonjs' },
         'should return an object with url and format'
       )
       t.equal(fakeLoggerChild.debug.callCount, 2, 'should log two debug statements')
@@ -206,7 +210,7 @@ tap.test('ES Module Loader', { skip: !esmHelpers.supportedLoaderVersion() }, (t)
       )
       t.ok(
         fakeLoggerChild.debug.calledWith(
-          'Registered CommonJS instrumentation for my-test-dep under path/to/my-test-dep/index.js'
+          'Registered CommonJS instrumentation for my-test-dep under /path/to/my-test-dep/index.js'
         ),
         'should log debug about instrumentation registration'
       )
@@ -215,7 +219,7 @@ tap.test('ES Module Loader', { skip: !esmHelpers.supportedLoaderVersion() }, (t)
         {},
         fakeShimmer.registeredInstrumentations['my-test-dep']
       )
-      expectedInstrumentation.moduleName = 'path/to/my-test-dep/index.js'
+      expectedInstrumentation.moduleName = '/path/to/my-test-dep/index.js'
       expectedInstrumentation.specifier = 'my-test-dep'
 
       t.ok(
@@ -225,6 +229,50 @@ tap.test('ES Module Loader', { skip: !esmHelpers.supportedLoaderVersion() }, (t)
     }
   )
 
+  t.test('should register CJS instrumentation if url has urlencoded characters', async (t) => {
+    fakeShimmer.getInstrumentationNameFromModuleName.returnsArg(0)
+    fakeShimmer.registeredInstrumentations['my-test-dep'] = {
+      moduleName: 'my-test-dep',
+      type: 'generic',
+      onRequire: sinon.stub()
+    }
+    fakeNextResolve.returns({
+      url: 'file:///path/that%20leads%20to/my-test-dep/index.js',
+      format: 'commonjs'
+    })
+
+    const expected = await loader.resolve(fakeSpecifier, fakeContext, fakeNextResolve)
+
+    t.same(
+      expected,
+      { url: 'file:///path/that%20leads%20to/my-test-dep/index.js', format: 'commonjs' },
+      'should return an object with url and format'
+    )
+    t.equal(fakeLoggerChild.debug.callCount, 2, 'should log two debug statements')
+    t.ok(
+      fakeLoggerChild.debug.calledWith('Instrumentation exists for my-test-dep commonjs package.'),
+      'should log debug about instrumentation existing'
+    )
+    t.ok(
+      fakeLoggerChild.debug.calledWith(
+        'Registered CommonJS instrumentation for my-test-dep under /path/that leads to/my-test-dep/index.js'
+      ),
+      'should log debug about instrumentation registration'
+    )
+
+    const expectedInstrumentation = Object.assign(
+      {},
+      fakeShimmer.registeredInstrumentations['my-test-dep']
+    )
+    expectedInstrumentation.moduleName = '/path/that leads to/my-test-dep/index.js'
+    expectedInstrumentation.specifier = 'my-test-dep'
+
+    t.ok(
+      fakeShimmer.registerInstrumentation.calledOnceWithExactly(expectedInstrumentation),
+      'should have registered an instrumentation copy'
+    )
+  })
+
   t.test('should rewrite module context if it has instrumentation', async (t) => {
     loader.registeredSpecifiers.set(MOD_URL, 'test-mod')
 
@@ -233,6 +281,28 @@ tap.test('ES Module Loader', { skip: !esmHelpers.supportedLoaderVersion() }, (t)
     import wrapModule from 'file://${ESM_SHIM_FILE_PATH}'
     import * as _originalModule from '${MOD_URL}'
     const _wrappedModule = wrapModule(_originalModule, 'test-mod', '${TEST_MOD_FILE_PATH}')
+    
+    let _default = _wrappedModule.default
+    export { _default as default }
+
+    let _namedMethod = _wrappedModule.namedMethod
+    export { _namedMethod as namedMethod }
+  `
+    t.equal(data.source, expectedSource, 'should rewrite source accordingly')
+    t.equal(data.format, 'module', 'should be of format module')
+    t.ok(data.shortCircuit, 'should set shortCircuit to true to properly return load hook')
+  })
+
+  t.test('should register ESM instrumentation if url has url encoded characters', async (t) => {
+    loader.registeredSpecifiers.set(MOD_URL_SPECIAL, 'test-mod')
+
+    const data = await loader.load(`${MOD_URL_SPECIAL}?hasNrInstrumentation=true`, {}, loadStub)
+    const expectedSource = `
+    import wrapModule from 'file://${ESM_SHIM_FILE_PATH}'
+    import * as _originalModule from '${MOD_URL_SPECIAL}'
+    const _wrappedModule = wrapModule(_originalModule, 'test-mod', '${fileURLToPath(
+      MOD_URL_SPECIAL
+    )}')
     
     let _default = _wrappedModule.default
     export { _default as default }
