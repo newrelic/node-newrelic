@@ -26,6 +26,7 @@ const used = [
   'express5',
   'express_segments',
   'native_metrics',
+  'new_promise_tracking',
   'promise_segments',
   'protocol_17',
   'serverless_mode',
@@ -37,7 +38,6 @@ const used = [
   'unreleased',
   'fastify_instrumentation',
   'certificate_bundle',
-  'new_promise_tracking',
   'unresolved_promise_cleanup',
   'undici_instrumentation',
   'undici_async_tracking'
