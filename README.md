@@ -1,8 +1,7 @@
 [![Community Plus header](https://github.com/newrelic/opensource-website/raw/master/src/images/categories/Community_Plus.png)](https://opensource.newrelic.com/oss-category/#community-plus)
 
-# New Relic's Node.js agent [![Server Smoke Tests][3]][4] [![Node Agent CI][5]][6] [![codecov][7]][8]
-
-[![npm status badge][1]][2]
+# New Relic's Node.js agent
+[![npm status badge][1]][2] [![Server Smoke Tests][3]][4] [![Node Agent CI][5]][6] [![codecov][7]][8]
 
 This package instruments your application for performance monitoring with [New Relic](https://newrelic.com).
 
@@ -263,8 +262,8 @@ The Node.js agent is licensed under the [Apache 2.0](http://apache.org/licenses/
 The Node.js agent also uses source code from third-party libraries. You can find full details on which libraries are used and the terms under which they are licensed in [the third-party notices document](https://github.com/newrelic/node-newrelic/blob/main/THIRD_PARTY_NOTICES.md).
 
 
-[1]: https://nodei.co/npm/newrelic.png
-[2]: https://nodei.co/npm/newrelic
+[1]: https://img.shields.io/npm/v/newrelic.svg
+[2]: https://www.npmjs.com/package/newrelic
 [3]: https://github.com/newrelic/node-newrelic/workflows/Server%20Smoke%20Tests/badge.svg
 [4]: https://github.com/newrelic/node-newrelic/actions?query=workflow%3A%22Server+Smoke+Tests%22
 [5]: https://github.com/newrelic/node-newrelic/workflows/Node%20Agent%20CI/badge.svg
