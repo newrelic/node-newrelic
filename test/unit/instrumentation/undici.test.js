@@ -13,6 +13,7 @@ const helper = require('../../lib/agent_helper')
 const TransactionShim = require('../../../lib/shim/transaction-shim')
 const { DESTINATIONS } = require('../../../lib/config/attribute-filter')
 const hashes = require('../../../lib/util/hashes')
+const symbols = require('../../../lib/symbols')
 
 // diagnostics_channel only exists in Node 15+
 // but we only support even versions so check before running tests
@@ -24,7 +25,6 @@ tap.test('undici instrumentation', { skip: shouldSkip }, function (t) {
   let undiciInstrumentation
   let channels
   let shim
-  let SYMBOLS
   let sandbox
 
   t.autoend()
@@ -54,7 +54,6 @@ tap.test('undici instrumentation', { skip: shouldSkip }, function (t) {
       }
     })
     undiciInstrumentation(agent, 'undici', 'undici', shim)
-    SYMBOLS = undiciInstrumentation.SYMBOLS
   })
 
   function afterEach() {
@@ -115,7 +114,7 @@ tap.test('undici instrumentation', { skip: shouldSkip }, function (t) {
           path: '/foo-2'
         }
         channels.create.publish({ request })
-        t.ok(request[SYMBOLS.PARENT_SEGMENT])
+        t.ok(request[symbols.parentSegment])
         t.equal(request.addHeader.callCount, 1)
         t.same(request.addHeader.args[0], ['x-newrelic-synthetics', 'synthHeader'])
         tx.end()
@@ -163,8 +162,8 @@ tap.test('undici instrumentation', { skip: shouldSkip }, function (t) {
           const request2 = { path: '/path', addHeader }
           channels.create.publish({ request: request2 })
           t.same(
-            request[SYMBOLS.PARENT_SEGMENT],
-            request2[SYMBOLS.PARENT_SEGMENT],
+            request[symbols.parentSegment],
+            request2[symbols.parentSegment],
             'parent segment should be same'
           )
           tx.end()
@@ -183,7 +182,7 @@ tap.test('undici instrumentation', { skip: shouldSkip }, function (t) {
           shim.setActiveSegment(segment)
           const request2 = { path: '/request2', addHeader: sandbox.stub() }
           channels.create.publish({ request: request2 })
-          t.not(request[SYMBOLS.PARENT_SEGMENT], request2[SYMBOLS.PARENT_SEGMENT])
+          t.not(request[symbols.parentSegment], request2[symbols.parentSegment])
           tx.end()
           t.end()
         })
@@ -204,8 +203,8 @@ tap.test('undici instrumentation', { skip: shouldSkip }, function (t) {
           const request2 = { path: '/path', addHeader }
           channels.create.publish({ request: request2 })
           t.not(
-            request[SYMBOLS.PARENT_SEGMENT].name,
-            request2[SYMBOLS.PARENT_SEGMENT].name,
+            request[symbols.parentSegment].name,
+            request2[symbols.parentSegment].name,
             'parent segment should not be same'
           )
           tx.end()
@@ -223,7 +222,7 @@ tap.test('undici instrumentation', { skip: shouldSkip }, function (t) {
       helper.runInTransaction(agent, function (tx) {
         const before = shim.getSegment()
         const request = {}
-        request[SYMBOLS.PARENT_SEGMENT] = { opaque: true }
+        request[symbols.parentSegment] = { opaque: true }
         channels.sendHeaders.publish({ request })
         const after = shim.getSegment()
         t.same(before, after)
@@ -242,9 +241,9 @@ tap.test('undici instrumentation', { skip: shouldSkip }, function (t) {
           method: 'POST',
           path: '/foo?a=b&c=d'
         }
-        request[SYMBOLS.PARENT_SEGMENT] = shim.createSegment('parent')
+        request[symbols.parentSegment] = shim.createSegment('parent')
         channels.sendHeaders.publish({ request, socket })
-        t.ok(request[SYMBOLS.SEGMENT])
+        t.ok(request[symbols.segment])
         const segment = shim.getSegment()
         t.equal(segment.name, 'External/unittesting.com/foo')
         const attrs = segment.attributes.get(DESTINATIONS.SPAN_EVENT)
@@ -267,10 +266,10 @@ tap.test('undici instrumentation', { skip: shouldSkip }, function (t) {
           method: 'POST',
           path: '/foo?a=b&c=d'
         }
-        request[SYMBOLS.PARENT_SEGMENT] = shim.createSegment('parent')
+        request[symbols.parentSegment] = shim.createSegment('parent')
         tx.end()
         channels.sendHeaders.publish({ request, socket })
-        t.notOk(request[SYMBOLS.SEGMENT])
+        t.notOk(request[symbols.segment])
         t.end()
       })
     })
@@ -285,7 +284,7 @@ tap.test('undici instrumentation', { skip: shouldSkip }, function (t) {
           method: 'POST',
           path: '/http'
         }
-        request[SYMBOLS.PARENT_SEGMENT] = shim.createSegment('parent')
+        request[symbols.parentSegment] = shim.createSegment('parent')
         channels.sendHeaders.publish({ request, socket })
         const segment = shim.getSegment()
         t.equal(segment.name, 'External/unittesting.com/http')
@@ -306,7 +305,7 @@ tap.test('undici instrumentation', { skip: shouldSkip }, function (t) {
           method: 'POST',
           path: '/port-https'
         }
-        request[SYMBOLS.PARENT_SEGMENT] = shim.createSegment('parent')
+        request[symbols.parentSegment] = shim.createSegment('parent')
         channels.sendHeaders.publish({ request, socket })
         const segment = shim.getSegment()
         t.equal(segment.name, 'External/unittesting.com:9999/port-https')
@@ -327,7 +326,7 @@ tap.test('undici instrumentation', { skip: shouldSkip }, function (t) {
           method: 'POST',
           path: '/port-http'
         }
-        request[SYMBOLS.PARENT_SEGMENT] = shim.createSegment('parent')
+        request[symbols.parentSegment] = shim.createSegment('parent')
         channels.sendHeaders.publish({ request, socket })
         const segment = shim.getSegment()
         t.equal(segment.name, 'External/unittesting.com:8080/port-http')
@@ -358,7 +357,7 @@ tap.test('undici instrumentation', { skip: shouldSkip }, function (t) {
       helper.runInTransaction(agent, function (tx) {
         const segment = shim.createSegment('active')
         const request = {
-          [SYMBOLS.SEGMENT]: segment
+          [symbols.segment]: segment
         }
         const response = {
           statusCode: 200,
@@ -381,7 +380,7 @@ tap.test('undici instrumentation', { skip: shouldSkip }, function (t) {
         const segment = shim.createSegment('active')
         segment.addAttribute('url', 'https://www.unittesting.com/path')
         const request = {
-          [SYMBOLS.SEGMENT]: segment
+          [symbols.segment]: segment
         }
         const response = {
           headers: {
@@ -411,8 +410,8 @@ tap.test('undici instrumentation', { skip: shouldSkip }, function (t) {
         const segment = shim.createSegment('active')
         shim.setActiveSegment(segment)
         const request = {
-          [SYMBOLS.PARENT_SEGMENT]: parentSegment,
-          [SYMBOLS.SEGMENT]: segment
+          [symbols.parentSegment]: parentSegment,
+          [symbols.segment]: segment
         }
         channels.send.publish({ request })
         t.equal(segment.timer.state, 3, 'previous active segment timer should be stopped')
@@ -437,8 +436,8 @@ tap.test('undici instrumentation', { skip: shouldSkip }, function (t) {
           shim.setActiveSegment(segment)
           const error = new Error('request failed')
           const request = {
-            [SYMBOLS.PARENT_SEGMENT]: parentSegment,
-            [SYMBOLS.SEGMENT]: segment
+            [symbols.parentSegment]: parentSegment,
+            [symbols.segment]: segment
           }
           channels.error.publish({ request, error })
           t.equal(segment.timer.state, 3, 'previous active segment timer should be stopped')
