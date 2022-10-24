@@ -1,13 +1,15 @@
 ### v9.4.0 (2022-10-24)
 
-Removed legacy async hooks context propagation.
+* Removed legacy agent async context propagation. The default behavior is now what was behind the `feature_flag.new_promise_tracking`. You can read more about the difference [here](https://docs.newrelic.com/docs/release-notes/agent-release-notes/nodejs-release-notes/node-agent-7-3-0#new-features). 
 
-Updated ES Module loader to register instrumentation correctly when filepaths include url encoded characters
+* Fixed an issue with the ES Module loader that properly registers instrumentation when the file path included url encoded characters.
 
 * Added an API for enqueuing application logs for forwarding 
+
 ```js
 newrelic.recordLogEvent({ message: 'hello world', level: 'info' })`
 ```
+
 
 **Note**: If you are including a serialized error make sure it is on the `error` key of message: 
 ```js
