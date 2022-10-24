@@ -38,24 +38,25 @@ jobs:
       run: npm ci
     - name: Run Unit Tests
       run: npm run unit
-    - name: Run ESM Unit Tests
-      run: npm run unit:esm
     - name: Post Unit Test Coverage
       uses: codecov/codecov-action@v3
-      if: matrix.node-version == '18.x'
       with:
         token: ${{ secrets.CODECOV_TOKEN }}
         directory: ./coverage/unit/
         files: lcov.info
-        flags: unit-tests
+        flags: unit-tests-${{ matrix.node-version }}
+    - name: Run ESM Unit Tests
+      run: npm run unit:esm
     - name: Post ESM Unit Test Coverage
       uses: codecov/codecov-action@v3
-      if: matrix.node-version == '18.x'
       with:
         token: ${{ secrets.CODECOV_TOKEN }}
         directory: ./coverage/esm-unit/
         files: lcov.info
-        flags: esm-unit-tests
+        flags: esm-unit-tests-${{ matrix.node-version }}
+    - name: Run Async Local Context Unit Tests
+      if: ${{ matrix.node-version != '14.x' }}
+      run: npm run unit:async-local
 
   integration:
     runs-on: ubuntu-latest
@@ -78,12 +79,14 @@ jobs:
       run: npm run integration
     - name: Post Integration Test Coverage
       uses: codecov/codecov-action@v3
-      if: matrix.node-version == '18.x'
       with:
         token: ${{ secrets.CODECOV_TOKEN }}
         directory: ./coverage/integration/
         files: lcov.info
-        flags: integration-tests
+        flags: integration-tests-${{ matrix.node-version }}
+    - name: Run Async Local Context Integration Tests
+      if: ${{ matrix.node-version != '14.x' }}
+      run: npm run integration:async-local
 
   versioned:
     runs-on: ubuntu-latest
@@ -114,80 +117,17 @@ jobs:
       env:
         VERSIONED_MODE: ${{ github.ref == 'refs/heads/main' && '--minor' || '--major' }}
         JOBS: 4 # 2 per CPU seems to be the sweet spot in GHA (July 2022)
-    - name: debugging
-      run: ls -lrth ./coverage
     - name: Post Versioned Test Coverage
       uses: codecov/codecov-action@v3
-      if: matrix.node-version == '18.x' && github.ref != 'refs/heads/main'
+      if: github.ref != 'refs/heads/main'
       with:
         token: ${{ secrets.CODECOV_TOKEN }}
         directory: ./coverage/versioned/
         files: lcov.info
-        flags: versioned-tests
-
-  unit-async-local:
-    name: unit (AsyncLocalContext)
-
-    runs-on: ubuntu-latest
-
-    strategy:
-      matrix:
-        node-version: [16.x, 18.x]
-
-    steps:
-    - uses: actions/checkout@v2
-    - name: Use Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v2
-      with:
-        node-version: ${{ matrix.node-version }}
-    - name: Install Dependencies
-      run: npm ci
-    - name: Run Unit Tests
-      run: npm run unit:async-local
-
-  integration-async-local:
-    name: integration (AsyncLocalContext)
-
-    runs-on: ubuntu-latest
-
-    strategy:
-      matrix:
-        node-version: [16.x, 18.x]
-
-    steps:
-    - uses: actions/checkout@v2
-    - name: Use Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v2
-      with:
-        node-version: ${{ matrix.node-version }}
-    - name: Install Dependencies
-      run: npm ci
-    - name: Run Docker Services
-      run: npm run services
-    - name: Run Integration Tests
-      run: npm run integration:async-local
-
-  versioned-async-local:
-    name: versioned (AsyncLocalContext)
-
-    runs-on: ubuntu-latest
-
-    strategy:
-      matrix:
-        node-version: [16.x, 18.x]
-
-    steps:
-    - uses: actions/checkout@v2
-    - name: Use Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v2
-      with:
-        node-version: ${{ matrix.node-version }}
-    - name: Install Dependencies
-      run: npm ci
-    - name: Run Docker Services
-      run: npm run services
-    - name: Run Versioned Tests
-      run: npm run versioned:async-local
+        flags: versioned-tests-${{ matrix.node-version }}
+    - name: Run Async Local Context Versioned Tests (Node 16+)
+      if: ${{ matrix.node-version != '14.x' }}
+      run: TEST_CHILD_TIMEOUT=600000 npm run versioned:async-local
       env:
         VERSIONED_MODE: ${{ github.ref == 'refs/heads/main' && '--minor' || '--major' }}
         JOBS: 4 # 2 per CPU seems to be the sweet spot in GHA (July 2022)
