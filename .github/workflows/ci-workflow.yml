@@ -113,7 +113,7 @@ jobs:
         JOBS: 4 # 2 per CPU seems to be the sweet spot in GHA (July 2022)
     - name: Post Versioned Test Coverage
       uses: codecov/codecov-action@v3
-      if: matrix.node-version == '18.x' && github.ref != 'refs/heads/main
+      if: matrix.node-version == '18.x' && github.ref != 'refs/heads/main'
       with:
         directory: ./coverage/versioned/
         files: lcov.info
