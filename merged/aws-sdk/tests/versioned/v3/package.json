@@ -179,8 +179,8 @@
         "node": ">=14.0"
       },
       "dependencies": {
-        "@aws-sdk/util-dynamodb": ">=3.0.0 <=3.193.0",
-        "@aws-sdk/client-dynamodb": ">=3.0.0 <=3.193.0",
+        "@aws-sdk/util-dynamodb": "3.193.0",
+        "@aws-sdk/client-dynamodb": "3.193.0",
         "@aws-sdk/lib-dynamodb": {
           "versions": ">=3.0.0 <=3.193.0",
           "samples": 10
