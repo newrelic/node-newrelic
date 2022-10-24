@@ -12,11 +12,11 @@
  * additionalFiles: String array of files/folders to checkout in addition to lib and tests/versioned.
  */
 const repos = [
-  // {
-  //   name: 'aws-sdk',
-  //   repository: 'https://github.com/newrelic/node-newrelic-aws-sdk.git',
-  //   branch: 'main'
-  // },
+  {
+    name: 'aws-sdk',
+    repository: 'https://github.com/newrelic/node-newrelic-aws-sdk.git',
+    branch: 'main'
+  },
   {
     name: 'koa',
     repository: 'https://github.com/newrelic/node-newrelic-koa.git',
