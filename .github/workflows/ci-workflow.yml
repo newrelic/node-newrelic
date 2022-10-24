@@ -115,7 +115,7 @@ jobs:
         VERSIONED_MODE: ${{ github.ref == 'refs/heads/main' && '--minor' || '--major' }}
         JOBS: 4 # 2 per CPU seems to be the sweet spot in GHA (July 2022)
     - name: debugging
-      run: ls -lrth ./coverage/versioned
+      run: ls -lrth ./coverage
     - name: Post Versioned Test Coverage
       uses: codecov/codecov-action@v3
       if: matrix.node-version == '18.x' && github.ref != 'refs/heads/main'
