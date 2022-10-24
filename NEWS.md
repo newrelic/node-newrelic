@@ -1,3 +1,27 @@
+### v9.4.0 (2022-10-24)
+
+Removed legacy async hooks context propagation.
+
+Updated ES Module loader to register instrumentation correctly when filepaths include url encoded characters
+
+* Added an API for enqueuing application logs for forwarding 
+```js
+newrelic.recordLogEvent({ message: 'hello world', level: 'info' })`
+```
+
+**Note**: If you are including a serialized error make sure it is on the `error` key of message: 
+```js
+const error = new Error('testing errors'); 
+newrelic.recordLogEvent({ message: 'error example', level: 'error', error })
+```
+
+* Fixed `cassandra-driver` instrumentation to properly set instance details on query segments/spans.
+
+* Added a new context manager that leverages AsyncLocalStorage for async context propagation.
+    * This will be available via a feature flag  `config.feature_flag.async_local_context`
+    * Alternatively you can set the environment variable of `NEW_RELIC_FEATURE_FLAG_ASYNC_LOCAL_CONTEXT=1`
+    * By enabling this feature flag it should make the agent use less memory and CPU.
+
 ### v9.3.0 (2022-10-17)
 
 * Added instrumentation to bunyan to support application logging use cases: forwarding, local decorating, and metrics.
