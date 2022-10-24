@@ -38,7 +38,7 @@ fi
 # when running on main branch. 
 if [[ $VERSIONED_MODE == '--major' ]];
 then
-  C8="c8 -o ./coverage/verisoned"
+  C8="c8 -o ./coverage/versioned"
 else 
   C8=""
 fi
