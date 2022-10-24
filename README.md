@@ -1,6 +1,6 @@
 [![Community Plus header](https://github.com/newrelic/opensource-website/raw/master/src/images/categories/Community_Plus.png)](https://opensource.newrelic.com/oss-category/#community-plus)
 
-# New Relic's Node.js agent [![Server Smoke Tests][3]][4] [![Node Agent CI][5]][6]
+# New Relic's Node.js agent [![Server Smoke Tests][3]][4] [![Node Agent CI][5]][6] [![codecov](https://codecov.io/gh/newrelic/node-newrelic/branch/main/graph/badge.svg?token=e5l4jAFrK9)](https://codecov.io/gh/newrelic/node-newrelic)
 
 [![npm status badge][1]][2]
 
