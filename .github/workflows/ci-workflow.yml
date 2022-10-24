@@ -44,6 +44,7 @@ jobs:
       uses: codecov/codecov-action@v3
       if: matrix.node-version == '18.x'
       with:
+        token: ${{ secrets.CODECOV_TOKEN }}
         directory: ./coverage/unit/
         files: lcov.info
         flags: unit-tests
@@ -51,6 +52,7 @@ jobs:
       uses: codecov/codecov-action@v3
       if: matrix.node-version == '18.x'
       with:
+        token: ${{ secrets.CODECOV_TOKEN }}
         directory: ./coverage/esm-unit/
         files: lcov.info
         flags: esm-unit-tests
@@ -78,6 +80,7 @@ jobs:
       uses: codecov/codecov-action@v3
       if: matrix.node-version == '18.x'
       with:
+        token: ${{ secrets.CODECOV_TOKEN }}
         directory: ./coverage/integration/
         files: lcov.info
         flags: integration-tests
@@ -115,6 +118,7 @@ jobs:
       uses: codecov/codecov-action@v3
       if: matrix.node-version == '18.x' && github.ref != 'refs/heads/main'
       with:
+        token: ${{ secrets.CODECOV_TOKEN }}
         directory: ./coverage/versioned/
         files: lcov.info
         flags: versioned-tests
