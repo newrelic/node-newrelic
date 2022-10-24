@@ -12,7 +12,7 @@
       },
       "dependencies": {
         "@aws-sdk/client-api-gateway": {
-          "versions": ">=3.0.0",
+          "versions": ">=3.0.0 <=3.193.0",
           "samples": 5
         }
       },
@@ -54,7 +54,7 @@
       },
       "dependencies": {
         "@aws-sdk/client-lambda": {
-          "versions": ">=3.0.0",
+          "versions": ">=3.0.0 <=3.193.0",
           "samples": 2
         }
       },
@@ -96,7 +96,7 @@
       },
       "dependencies": {
         "@aws-sdk/client-rekognition": {
-          "versions": ">=3.0.0",
+          "versions": ">=3.0.0 <=3.193.0",
           "samples": 2
         }
       },
@@ -166,7 +166,7 @@
       },
       "dependencies": {
         "@aws-sdk/client-dynamodb": {
-          "versions": ">=3.0.0",
+          "versions": ">=3.0.0 <=3.193.0",
           "samples": 10
         }
       },
@@ -179,10 +179,10 @@
         "node": ">=14.0"
       },
       "dependencies": {
-        "@aws-sdk/util-dynamodb": "latest",
-        "@aws-sdk/client-dynamodb": "latest",
+        "@aws-sdk/util-dynamodb": ">=3.0.0 <=3.193.0",
+        "@aws-sdk/client-dynamodb": ">=3.0.0 <=3.193.0",
         "@aws-sdk/lib-dynamodb": {
-          "versions": ">=3.0.0",
+          "versions": ">=3.0.0 <=3.193.0",
           "samples": 10
         }
       },
