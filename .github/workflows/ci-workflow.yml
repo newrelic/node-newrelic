@@ -40,6 +40,20 @@ jobs:
       run: npm run unit
     - name: Run ESM Unit Tests
       run: npm run unit:esm
+    - name: Post Unit Test Coverage
+      uses: codecov/codecov-action@v3
+      if: matrix.node-version == '18.x'
+      with:
+        directory: ./coverage/unit/
+        files: lcov.info
+        flags: unit-tests
+    - name: Post ESM Unit Test Coverage
+      uses: codecov/codecov-action@v3
+      if: matrix.node-version == '18.x'
+      with:
+        directory: ./coverage/esm-unit/
+        files: lcov.info
+        flags: esm-unit-tests
 
   integration:
     runs-on: ubuntu-latest
