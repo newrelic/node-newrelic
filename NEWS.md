@@ -11,7 +11,8 @@ newrelic.recordLogEvent({ message: 'hello world', level: 'info' })`
 ```
 
 
-**Note**: If you are including a serialized error make sure it is on the `error` key of message: 
+**Note**: If you are including a serialized error make sure it is on the `error` key of the log event: 
+
 ```js
 const error = new Error('testing errors'); 
 newrelic.recordLogEvent({ message: 'error example', level: 'error', error })
