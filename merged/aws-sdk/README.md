@@ -1,6 +1,7 @@
-[![Community Plus header](https://github.com/newrelic/opensource-website/raw/master/src/images/categories/Community_Plus.png)](https://opensource.newrelic.com/oss-category/#community-plus)
+[![Community Plus header](https://github.com/newrelic/opensource-website/raw/main/src/images/categories/Community_Plus.png)](https://opensource.newrelic.com/oss-category/#community-plus)
 
-# New Relic AWS SDK Instrumentation [![aws-sdk Instrumentation CI][1]][2]
+# New Relic AWS SDK Instrumentation
+[![npm status badge][5]][6] [![aws-sdk Instrumentation CI][1]][2] [![codecov][3]][4]
 
 New Relic's official AWS SDK package instrumentation for use with [the Node.js agent](https://github.com/newrelic/node-newrelic). Provides instrumentation for the [AWS SDK (`aws-sdk`)](https://www.npmjs.com/package/aws-sdk) npm package.
 
@@ -86,3 +87,7 @@ The New Relic AWS SDK Instrumentation package is licensed under the [Apache 2.0]
 
 [1]: https://github.com/newrelic/node-newrelic-aws-sdk/workflows/aws-sdk%20Instrumentation%20CI/badge.svg
 [2]: https://github.com/newrelic/node-newrelic-aws-sdk/actions?query=workflow%3A%22aws-sdk+Instrumentation+CI%22
+[3]: https://codecov.io/gh/newrelic/node-newrelic-aws-sdk/branch/main/graph/badge.svg?token=26ZH9QhLNn
+[4]: https://codecov.io/gh/newrelic/node-newrelic-aws-sdk
+[5]: https://img.shields.io/npm/v/@newrelic/aws-sdk.svg
+[6]: https://www.npmjs.com/package/@newrelic/aws-sdk
