@@ -1,6 +1,6 @@
 ### v9.5.0 (2022-10-26)
 
-* Increased the default limit of custom events from 1,000 events per minute to 3,000 events per minute. In the scenario that custom events were being limited, this change will allow more custom events to be sent to New Relic. There is also a new configurable maximum limit of 100,000 events per minute. To change the limits, see the documentation for [custom_insights_events](https://docs.newrelic.com/docs/apm/agents/nodejs-agent/installation-configuration/nodejs-agent-configuration#custom_events_max_samples_stored). To learn more about the change and how to determine if custom events are being dropped, see our Explorers Hub post.
+* Increased the default limit of custom events from 1,000 events per minute to 3,000 events per minute. In the scenario that custom events were being limited, this change will allow more custom events to be sent to New Relic. There is also a new configurable maximum limit of 100,000 events per minute. To change the limits, see the documentation for [custom_insights_events](https://docs.newrelic.com/docs/apm/agents/nodejs-agent/installation-configuration/nodejs-agent-configuration#custom_events_max_samples_stored). To learn more about the change and how to determine if custom events are being dropped, see our Explorers Hub [post](https://discuss.newrelic.com/t/send-more-custom-events-with-the-latest-apm-agents/190497).
 
  * Updated CI process to include collection of code coverage statistics.
 
