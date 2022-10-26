@@ -1,0 +1,5 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Troubleshooting
+    url:  https://github.com/newrelic/node-newrelic-superagent/blob/main/README.md#support
+    about: Check out the README for troubleshooting directions
