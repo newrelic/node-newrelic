@@ -54,9 +54,6 @@ jobs:
         directory: ./coverage/esm-unit/
         files: lcov.info
         flags: esm-unit-tests-${{ matrix.node-version }}
-    - name: Run Async Local Context Unit Tests
-      if: ${{ matrix.node-version != '14.x' }}
-      run: npm run unit:async-local
 
   integration:
     runs-on: ubuntu-latest
@@ -84,9 +81,6 @@ jobs:
         directory: ./coverage/integration/
         files: lcov.info
         flags: integration-tests-${{ matrix.node-version }}
-    - name: Run Async Local Context Integration Tests
-      if: ${{ matrix.node-version != '14.x' }}
-      run: npm run integration:async-local
 
   versioned:
     runs-on: ubuntu-latest
@@ -125,8 +119,29 @@ jobs:
         directory: ./coverage/versioned/
         files: lcov.info
         flags: versioned-tests-${{ matrix.node-version }}
+
+  async-local-context-tests:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [16.x, 18.x]
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v3
+      with:
+        node-version: ${{ matrix.node-version }}
+    - name: Install Dependencies
+      run: npm ci
+    - name: Run Async Local Context Unit Tests
+      run: npm run unit:async-local
+    - name: Run Docker Services
+      run: npm run services
+    - name: Run Async Local Context Integration Tests
+      run: npm run integration:async-local
     - name: Run Async Local Context Versioned Tests (Node 16+)
-      if: ${{ matrix.node-version != '14.x' }}
       run: TEST_CHILD_TIMEOUT=600000 npm run versioned:async-local
       env:
         VERSIONED_MODE: ${{ github.ref == 'refs/heads/main' && '--minor' || '--major' }}
