@@ -8,7 +8,6 @@
 const tap = require('tap')
 const { EventEmitter } = require('events')
 const helper = require('../../lib/agent_helper')
-const sinon = require('sinon')
 const Shim = require('../../../lib/shim/shim')
 const symbols = require('../../../lib/symbols')
 tap.Test.prototype.addAssert('isNonWritable', 1, helper.isNonWritable)
