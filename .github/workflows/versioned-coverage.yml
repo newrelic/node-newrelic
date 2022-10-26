@@ -1,0 +1,49 @@
+# Daily workflow to gather coverage of our versioned tests from the `main` branch
+
+# Reason: We run the versioned tests on main with the `--minor` flag, which causes
+# c8 to OOM. So instead, we will have this daily job to scrape the coverage every
+# weekday until we can figure out the c8 issue
+
+name: Gather Versioned Test Coverage
+
+on:
+  schedule:
+    - cron:  '0 9 * * 1-5'
+
+jobs:
+  versioned:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [14.x, 16.x, 18.x]
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v3
+      with:
+        node-version: ${{ matrix.node-version }}
+    - name: Install Dependencies
+      run: npm ci
+    - name: Run Docker Services
+      run: npm run services
+    - name: Run Versioned Tests (npm v6 / Node 12/14)
+      if: ${{ matrix.node-version == '14.x' }}
+      run: TEST_CHILD_TIMEOUT=600000 npm run versioned:npm6
+      env:
+        VERSIONED_MODE: --major
+        JOBS: 4 # 2 per CPU seems to be the sweet spot in GHA (July 2022)
+    - name: Run Versioned Tests (npm v7 / Node 16+)
+      if: ${{ matrix.node-version != '14.x' }}
+      run: TEST_CHILD_TIMEOUT=600000 npm run versioned:npm7
+      env:
+        VERSIONED_MODE: --major
+        JOBS: 4 # 2 per CPU seems to be the sweet spot in GHA (July 2022)
+    - name: Post Versioned Test Coverage
+      uses: codecov/codecov-action@v3
+      with:
+        token: ${{ secrets.CODECOV_TOKEN }}
+        directory: ./coverage/versioned/
+        files: lcov.info
+        flags: versioned-tests-${{ matrix.node-version }}
