@@ -120,7 +120,7 @@ jobs:
         files: lcov.info
         flags: versioned-tests-${{ matrix.node-version }}
 
-  async-local-context-tests:
+  async-local-context:
     runs-on: ubuntu-latest
 
     strategy:
