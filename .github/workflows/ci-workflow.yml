@@ -41,6 +41,7 @@ jobs:
     - name: Post Unit Test Coverage
       uses: codecov/codecov-action@v3
       with:
+        fail_ci_if_error: true
         token: ${{ secrets.CODECOV_TOKEN }}
         directory: ./coverage/unit/
         files: lcov.info
@@ -50,6 +51,7 @@ jobs:
     - name: Post ESM Unit Test Coverage
       uses: codecov/codecov-action@v3
       with:
+        fail_ci_if_error: true
         token: ${{ secrets.CODECOV_TOKEN }}
         directory: ./coverage/esm-unit/
         files: lcov.info
@@ -77,6 +79,7 @@ jobs:
     - name: Post Integration Test Coverage
       uses: codecov/codecov-action@v3
       with:
+        fail_ci_if_error: true
         token: ${{ secrets.CODECOV_TOKEN }}
         directory: ./coverage/integration/
         files: lcov.info
@@ -115,6 +118,7 @@ jobs:
       uses: codecov/codecov-action@v3
       if: github.ref != 'refs/heads/main'
       with:
+        fail_ci_if_error: true
         token: ${{ secrets.CODECOV_TOKEN }}
         directory: ./coverage/versioned/
         files: lcov.info
