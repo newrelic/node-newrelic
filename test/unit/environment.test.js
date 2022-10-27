@@ -13,15 +13,13 @@ require('tap').mochaGlobals()
 // environment when testing.
 delete process.env.NODE_ENV
 
-const a = require('async')
 const path = require('path')
-const fs = require('fs')
+const fs = require('fs/promises')
 const spawn = require('child_process').spawn
 const chai = require('chai')
 const expect = chai.expect
 const should = chai.should()
 const environment = require('../../lib/environment')
-const rimraf = require('rimraf')
 
 function find(settings, name) {
   const items = settings.filter(function (candidate) {
@@ -259,11 +257,43 @@ describe('the environment scraper', function () {
 
   describe('with symlinks', function () {
     const nmod = path.resolve(__dirname, '../helpers/node_modules')
-
-    beforeEach(function (done) {
-      if (!fs.existsSync(nmod)) {
-        fs.mkdirSync(nmod)
+    const makeDir = async (dirp, mkdirDb) => {
+      const code = await fs
+        .mkdir(dirp)
+        .then(() => null)
+        .catch((err) => {
+          if (err.code !== 'EEXIST') {
+            return err
+          }
+          return null
+        })
+      // vestigial--mkdirDb is the async callback, invisibly appended to arguments when apply is used
+      if (mkdirDb) {
+        return mkdirDb(code)
       }
+      return code
+    }
+    const makePackage = async (pkg, dep) => {
+      const dir = path.join(nmod, pkg)
+
+      // Make the directory tree.
+      await makeDir(dir) // make the directory
+      await makeDir(path.join(dir, 'node_modules')) // make the modules subdirectory
+
+      // Make the package.json
+      const pkgJSON = { name: pkg, dependencies: {} }
+      pkgJSON.dependencies[dep] = '*'
+      await fs.writeFile(path.join(dir, 'package.json'), JSON.stringify(pkgJSON))
+
+      // Make the dep a symlink.
+      const depModule = path.join(dir, 'node_modules', dep)
+      return fs.symlink(path.join(nmod, dep), depModule, 'dir')
+    }
+
+    beforeEach(async function (done) {
+      await fs.access(nmod).catch(async () => {
+        await fs.mkdir(nmod)
+      })
 
       // node_modules/
       //  a/
@@ -274,54 +304,25 @@ describe('the environment scraper', function () {
       //    package.json
       //    node_modules/
       //      a (symlink)
-      a.parallel([a.apply(makePackage, 'a', 'b'), a.apply(makePackage, 'b', 'a')], done)
+      await makePackage('a', 'b')
+      await makePackage('b', 'a')
+      done()
     })
 
-    afterEach(function (done) {
+    afterEach(async function (done) {
       const aDir = path.join(nmod, 'a')
       const bDir = path.join(nmod, 'b')
-      a.each([aDir, bDir], rimraf, done)
+      await fs.rm(aDir, { recursive: true, force: true })
+      await fs.rm(bDir, { recursive: true, force: true })
+      done()
     })
-
-    function makePackage(pkg, dep, cb) {
-      const dir = path.join(nmod, pkg)
-      a.series(
-        [
-          // Make the directory tree.
-          a.apply(makeDir, dir),
-          a.apply(makeDir, path.join(dir, 'node_modules')),
-
-          // Make the package.json
-          function (pkgCb) {
-            const pkgJSON = { name: pkg, dependencies: {} }
-            pkgJSON.dependencies[dep] = '*'
-            fs.writeFile(path.join(dir, 'package.json'), JSON.stringify(pkgJSON), pkgCb)
-          },
-
-          // Make the dep a symlink.
-          function (symCb) {
-            const depModule = path.join(dir, 'node_modules', dep)
-            fs.symlink(path.join(nmod, dep), depModule, 'dir', function (err) {
-              symCb(err && err.code !== 'EEXIST' ? err : null)
-            })
-          }
-        ],
-        cb
-      )
-
-      function makeDir(dirp, mkdirDb) {
-        fs.mkdir(dirp, function (err) {
-          mkdirDb(err && err.code !== 'EEXIST' ? err : null)
-        })
-      }
-    }
 
     it('should not crash when encountering a cyclical symlink', function (done) {
       execChild(done)
     })
 
-    it('should not crash when encountering a dangling symlink', function (done) {
-      rimraf.sync(path.join(nmod, 'a'))
+    it('should not crash when encountering a dangling symlink', async function (done) {
+      await fs.rm(path.join(nmod, 'a'), { recursive: true, force: true })
       execChild(done)
     })
 
