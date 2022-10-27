@@ -257,8 +257,8 @@ describe('the environment scraper', function () {
 
   describe('with symlinks', function () {
     const nmod = path.resolve(__dirname, '../helpers/node_modules')
-    const makeDir = async (dirp, mkdirDb) => {
-      const code = await fs
+    const makeDir = (dirp) => {
+      return fs
         .mkdir(dirp)
         .then(() => null)
         .catch((err) => {
@@ -267,11 +267,6 @@ describe('the environment scraper', function () {
           }
           return null
         })
-      // vestigial--mkdirDb is the async callback, invisibly appended to arguments when apply is used
-      if (mkdirDb) {
-        return mkdirDb(code)
-      }
-      return code
     }
     const makePackage = async (pkg, dep) => {
       const dir = path.join(nmod, pkg)
