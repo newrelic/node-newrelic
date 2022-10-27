@@ -37,7 +37,7 @@
     "node": ">=14.0.0"
   },
   "devDependencies": {
-    "@newrelic/eslint-config": "^0.0.4",
+    "@newrelic/eslint-config": "^0.2.0",
     "@newrelic/newrelic-oss-cli": "^0.1.2",
     "@newrelic/test-utilities": "^6.5.3",
     "c8": "^7.12.0",

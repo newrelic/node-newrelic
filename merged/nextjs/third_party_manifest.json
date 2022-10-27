@@ -1,33 +1,33 @@
 {
-  "lastUpdated": "Thu Oct 27 2022 15:08:53 GMT-0400 (Eastern Daylight Time)",
+  "lastUpdated": "Thu Oct 27 2022 15:49:54 GMT-0400 (Eastern Daylight Time)",
   "projectName": "New Relic Next.js Instrumentation",
   "projectUrl": "https://github.com/newrelic/newrelic-node-nextjs",
   "includeOptDeps": false,
   "includeDev": true,
   "dependencies": {
-    "semver@7.3.7": {
+    "semver@7.3.8": {
       "name": "semver",
-      "version": "7.3.7",
+      "version": "7.3.8",
       "range": "^7.3.7",
       "licenses": "ISC",
       "repoUrl": "https://github.com/npm/node-semver",
-      "versionedRepoUrl": "https://github.com/npm/node-semver/tree/v7.3.7",
+      "versionedRepoUrl": "https://github.com/npm/node-semver/tree/v7.3.8",
       "licenseFile": "node_modules/semver/LICENSE",
-      "licenseUrl": "https://github.com/npm/node-semver/blob/v7.3.7/LICENSE",
+      "licenseUrl": "https://github.com/npm/node-semver/blob/v7.3.8/LICENSE",
       "licenseTextSource": "file",
       "publisher": "GitHub Inc."
     }
   },
   "devDependencies": {
-    "@newrelic/eslint-config@0.0.4": {
+    "@newrelic/eslint-config@0.2.0": {
       "name": "@newrelic/eslint-config",
-      "version": "0.0.4",
-      "range": "^0.0.4",
+      "version": "0.2.0",
+      "range": "^0.2.0",
       "licenses": "Apache-2.0",
       "repoUrl": "https://github.com/newrelic/eslint-config-newrelic",
-      "versionedRepoUrl": "https://github.com/newrelic/eslint-config-newrelic/tree/v0.0.4",
+      "versionedRepoUrl": "https://github.com/newrelic/eslint-config-newrelic/tree/v0.2.0",
       "licenseFile": "node_modules/@newrelic/eslint-config/LICENSE",
-      "licenseUrl": "https://github.com/newrelic/eslint-config-newrelic/blob/v0.0.4/LICENSE",
+      "licenseUrl": "https://github.com/newrelic/eslint-config-newrelic/blob/v0.2.0/LICENSE",
       "licenseTextSource": "file",
       "publisher": "New Relic Node.js agent team",
       "email": "nodejs@newrelic.com"
@@ -44,15 +44,15 @@
       "licenseTextSource": "file",
       "publisher": "New Relic"
     },
-    "@newrelic/test-utilities@6.5.3": {
+    "@newrelic/test-utilities@6.5.5": {
       "name": "@newrelic/test-utilities",
-      "version": "6.5.3",
+      "version": "6.5.5",
       "range": "^6.5.3",
       "licenses": "Apache-2.0",
       "repoUrl": "https://github.com/newrelic/node-test-utilities",
-      "versionedRepoUrl": "https://github.com/newrelic/node-test-utilities/tree/v6.5.3",
+      "versionedRepoUrl": "https://github.com/newrelic/node-test-utilities/tree/v6.5.5",
       "licenseFile": "node_modules/@newrelic/test-utilities/LICENSE",
-      "licenseUrl": "https://github.com/newrelic/node-test-utilities/blob/v6.5.3/LICENSE",
+      "licenseUrl": "https://github.com/newrelic/node-test-utilities/blob/v6.5.5/LICENSE",
       "licenseTextSource": "file",
       "publisher": "New Relic Node.js agent team",
       "email": "nodejs@newrelic.com"
@@ -83,53 +83,53 @@
       "publisher": "Typicode",
       "email": "typicode@gmail.com"
     },
-    "lint-staged@12.4.2": {
+    "lint-staged@12.5.0": {
       "name": "lint-staged",
-      "version": "12.4.2",
+      "version": "12.5.0",
       "range": "^12.4.2",
       "licenses": "MIT",
       "repoUrl": "https://github.com/okonet/lint-staged",
-      "versionedRepoUrl": "https://github.com/okonet/lint-staged/tree/v12.4.2",
+      "versionedRepoUrl": "https://github.com/okonet/lint-staged/tree/v12.5.0",
       "licenseFile": "node_modules/lint-staged/LICENSE",
-      "licenseUrl": "https://github.com/okonet/lint-staged/blob/v12.4.2/LICENSE",
+      "licenseUrl": "https://github.com/okonet/lint-staged/blob/v12.5.0/LICENSE",
       "licenseTextSource": "file",
       "publisher": "Andrey Okonetchnikov",
       "email": "andrey@okonet.ru"
     },
-    "newrelic@9.0.3": {
+    "newrelic@9.5.0": {
       "name": "newrelic",
-      "version": "9.0.3",
+      "version": "9.5.0",
       "range": "^9.0.3",
       "licenses": "Apache-2.0",
       "repoUrl": "https://github.com/newrelic/node-newrelic",
-      "versionedRepoUrl": "https://github.com/newrelic/node-newrelic/tree/v9.0.3",
+      "versionedRepoUrl": "https://github.com/newrelic/node-newrelic/tree/v9.5.0",
       "licenseFile": "node_modules/newrelic/LICENSE",
-      "licenseUrl": "https://github.com/newrelic/node-newrelic/blob/v9.0.3/LICENSE",
+      "licenseUrl": "https://github.com/newrelic/node-newrelic/blob/v9.5.0/LICENSE",
       "licenseTextSource": "file",
       "publisher": "New Relic Node.js agent team",
       "email": "nodejs@newrelic.com"
     },
-    "sinon@14.0.0": {
+    "sinon@14.0.1": {
       "name": "sinon",
-      "version": "14.0.0",
+      "version": "14.0.1",
       "range": "^14.0.0",
       "licenses": "BSD-3-Clause",
       "repoUrl": "https://github.com/sinonjs/sinon",
-      "versionedRepoUrl": "https://github.com/sinonjs/sinon/tree/v14.0.0",
+      "versionedRepoUrl": "https://github.com/sinonjs/sinon/tree/v14.0.1",
       "licenseFile": "node_modules/sinon/LICENSE",
-      "licenseUrl": "https://github.com/sinonjs/sinon/blob/v14.0.0/LICENSE",
+      "licenseUrl": "https://github.com/sinonjs/sinon/blob/v14.0.1/LICENSE",
       "licenseTextSource": "file",
       "publisher": "Christian Johansen"
     },
-    "tap@16.2.0": {
+    "tap@16.3.0": {
       "name": "tap",
-      "version": "16.2.0",
+      "version": "16.3.0",
       "range": "^16.2.0",
       "licenses": "ISC",
       "repoUrl": "https://github.com/tapjs/node-tap",
-      "versionedRepoUrl": "https://github.com/tapjs/node-tap/tree/v16.2.0",
+      "versionedRepoUrl": "https://github.com/tapjs/node-tap/tree/v16.3.0",
       "licenseFile": "node_modules/tap/LICENSE",
-      "licenseUrl": "https://github.com/tapjs/node-tap/blob/v16.2.0/LICENSE",
+      "licenseUrl": "https://github.com/tapjs/node-tap/blob/v16.3.0/LICENSE",
       "licenseTextSource": "file",
       "publisher": "Isaac Z. Schlueter",
       "email": "i@izs.me",

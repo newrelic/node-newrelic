@@ -33,7 +33,7 @@ code, the source code can be found at [https://github.com/newrelic/newrelic-node
 
 ### semver
 
-This product includes source derived from [semver](https://github.com/npm/node-semver) ([v7.3.7](https://github.com/npm/node-semver/tree/v7.3.7)), distributed under the [ISC License](https://github.com/npm/node-semver/blob/v7.3.7/LICENSE):
+This product includes source derived from [semver](https://github.com/npm/node-semver) ([v7.3.8](https://github.com/npm/node-semver/tree/v7.3.8)), distributed under the [ISC License](https://github.com/npm/node-semver/blob/v7.3.8/LICENSE):
 
 ```
 The ISC License
@@ -59,7 +59,7 @@ IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ### @newrelic/eslint-config
 
-This product includes source derived from [@newrelic/eslint-config](https://github.com/newrelic/eslint-config-newrelic) ([v0.0.4](https://github.com/newrelic/eslint-config-newrelic/tree/v0.0.4)), distributed under the [Apache-2.0 License](https://github.com/newrelic/eslint-config-newrelic/blob/v0.0.4/LICENSE):
+This product includes source derived from [@newrelic/eslint-config](https://github.com/newrelic/eslint-config-newrelic) ([v0.2.0](https://github.com/newrelic/eslint-config-newrelic/tree/v0.2.0)), distributed under the [Apache-2.0 License](https://github.com/newrelic/eslint-config-newrelic/blob/v0.2.0/LICENSE):
 
 ```
                                  Apache License
@@ -476,7 +476,7 @@ This product includes source derived from [@newrelic/newrelic-oss-cli](https://g
 
 ### @newrelic/test-utilities
 
-This product includes source derived from [@newrelic/test-utilities](https://github.com/newrelic/node-test-utilities) ([v6.5.3](https://github.com/newrelic/node-test-utilities/tree/v6.5.3)), distributed under the [Apache-2.0 License](https://github.com/newrelic/node-test-utilities/blob/v6.5.3/LICENSE):
+This product includes source derived from [@newrelic/test-utilities](https://github.com/newrelic/node-test-utilities) ([v6.5.5](https://github.com/newrelic/node-test-utilities/tree/v6.5.5)), distributed under the [Apache-2.0 License](https://github.com/newrelic/node-test-utilities/blob/v6.5.5/LICENSE):
 
 ```
                                  Apache License
@@ -736,7 +736,7 @@ SOFTWARE.
 
 ### lint-staged
 
-This product includes source derived from [lint-staged](https://github.com/okonet/lint-staged) ([v12.4.2](https://github.com/okonet/lint-staged/tree/v12.4.2)), distributed under the [MIT License](https://github.com/okonet/lint-staged/blob/v12.4.2/LICENSE):
+This product includes source derived from [lint-staged](https://github.com/okonet/lint-staged) ([v12.5.0](https://github.com/okonet/lint-staged/tree/v12.5.0)), distributed under the [MIT License](https://github.com/okonet/lint-staged/blob/v12.5.0/LICENSE):
 
 ```
 The MIT License (MIT)
@@ -765,7 +765,7 @@ SOFTWARE.
 
 ### newrelic
 
-This product includes source derived from [newrelic](https://github.com/newrelic/node-newrelic) ([v9.0.3](https://github.com/newrelic/node-newrelic/tree/v9.0.3)), distributed under the [Apache-2.0 License](https://github.com/newrelic/node-newrelic/blob/v9.0.3/LICENSE):
+This product includes source derived from [newrelic](https://github.com/newrelic/node-newrelic) ([v9.5.0](https://github.com/newrelic/node-newrelic/tree/v9.5.0)), distributed under the [Apache-2.0 License](https://github.com/newrelic/node-newrelic/blob/v9.5.0/LICENSE):
 
 ```
                                  Apache License
@@ -973,7 +973,7 @@ This product includes source derived from [newrelic](https://github.com/newrelic
 
 ### sinon
 
-This product includes source derived from [sinon](https://github.com/sinonjs/sinon) ([v14.0.0](https://github.com/sinonjs/sinon/tree/v14.0.0)), distributed under the [BSD-3-Clause License](https://github.com/sinonjs/sinon/blob/v14.0.0/LICENSE):
+This product includes source derived from [sinon](https://github.com/sinonjs/sinon) ([v14.0.1](https://github.com/sinonjs/sinon/tree/v14.0.1)), distributed under the [BSD-3-Clause License](https://github.com/sinonjs/sinon/blob/v14.0.1/LICENSE):
 
 ```
 (The BSD License)
@@ -1008,7 +1008,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ### tap
 
-This product includes source derived from [tap](https://github.com/tapjs/node-tap) ([v16.2.0](https://github.com/tapjs/node-tap/tree/v16.2.0)), distributed under the [ISC License](https://github.com/tapjs/node-tap/blob/v16.2.0/LICENSE):
+This product includes source derived from [tap](https://github.com/tapjs/node-tap) ([v16.3.0](https://github.com/tapjs/node-tap/tree/v16.3.0)), distributed under the [ISC License](https://github.com/tapjs/node-tap/blob/v16.3.0/LICENSE):
 
 ```
 The ISC License
