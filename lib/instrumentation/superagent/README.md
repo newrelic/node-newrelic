@@ -1,6 +1,9 @@
-[![Community Plus header](https://github.com/newrelic/opensource-website/raw/master/src/images/categories/Community_Plus.png)](https://opensource.newrelic.com/oss-category/#community-plus)
+[![Community Plus header](https://github.com/newrelic/opensource-website/raw/main/src/images/categories/Community_Plus.png)](https://opensource.newrelic.com/oss-category/#community-plus)
 
-# New Relic SuperAgent instrumentation [![superagent Instrumentation CI][1]][2]
+# New Relic SuperAgent instrumentation
+
+[![npm status badge][5]][6] [![superagent Instrumentation CI][1]][2] [![codecov][7]][8]
+
 New Relic's official SuperAgent framework instrumentation for use with the
 New Relic [Node.js agent](https://github.com/newrelic/node-newrelic).
 
@@ -87,3 +90,7 @@ New Relic SuperAgent instrumentation also uses source code from third-party libr
 [2]: https://github.com/newrelic/node-newrelic-superagent/actions?query=workflow%3A%22superagent+Instrumentation+CI%22
 [3]: https://docs.newrelic.com/docs/agents/nodejs-agent/installation-configuration/install-nodejs-agent
 [4]: https://docs.newrelic.com/docs/agents/nodejs-agent/getting-started/compatibility-requirements-nodejs-agent
+[5]: https://img.shields.io/npm/v/@newrelic/superagent.svg
+[6]: https://www.npmjs.com/package/@newrelic/superagent
+[7]: https://codecov.io/gh/newrelic/node-newrelic-superagent/branch/main/graph/badge.svg
+[8]: https://codecov.io/gh/newrelic/node-newrelic-superagent
