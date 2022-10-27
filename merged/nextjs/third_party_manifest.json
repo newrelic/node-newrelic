@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "Wed Sep 07 2022 16:26:07 GMT-0400 (Eastern Daylight Time)",
+  "lastUpdated": "Thu Oct 27 2022 15:08:53 GMT-0400 (Eastern Daylight Time)",
   "projectName": "New Relic Next.js Instrumentation",
   "projectUrl": "https://github.com/newrelic/newrelic-node-nextjs",
   "includeOptDeps": false,
@@ -56,6 +56,19 @@
       "licenseTextSource": "file",
       "publisher": "New Relic Node.js agent team",
       "email": "nodejs@newrelic.com"
+    },
+    "c8@7.12.0": {
+      "name": "c8",
+      "version": "7.12.0",
+      "range": "^7.12.0",
+      "licenses": "ISC",
+      "repoUrl": "https://github.com/bcoe/c8",
+      "versionedRepoUrl": "https://github.com/bcoe/c8/tree/v7.12.0",
+      "licenseFile": "node_modules/c8/LICENSE.txt",
+      "licenseUrl": "https://github.com/bcoe/c8/blob/v7.12.0/LICENSE.txt",
+      "licenseTextSource": "file",
+      "publisher": "Ben Coe",
+      "email": "ben@npmjs.com"
     },
     "husky@8.0.1": {
       "name": "husky",

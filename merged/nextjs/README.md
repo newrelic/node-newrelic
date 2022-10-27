@@ -1,6 +1,7 @@
-[![Community Plus header](https://github.com/newrelic/opensource-website/raw/master/src/images/categories/Community_Plus.png)](https://opensource.newrelic.com/oss-category/#community-plus)
+[![Community Plus header](https://github.com/newrelic/opensource-website/raw/main/src/images/categories/Community_Plus.png)](https://opensource.newrelic.com/oss-category/#community-plus)
 
-# New Relic Next.js instrumentation [![Next.js Instrumentation CI][1]][2]
+# New Relic Next.js instrumentation 
+[![npm status badge][5]][6] [![Next.js Instrumentation CI][1]][2] [![codecov][7]][8]
 
 This is New Relic's official Next.js framework instrumentation for use with the New Relic [Node.js agent](https://github.com/newrelic/node-newrelic).
 
@@ -201,3 +202,7 @@ New Relic Next.js instrumentation also uses source code from third-party librari
 [2]: https://github.com/newrelic/node-newrelic-nextjs/actions
 [3]: https://docs.newrelic.com/docs/agents/nodejs-agent/installation-configuration/install-nodejs-agent
 [4]: https://docs.newrelic.com/docs/agents/nodejs-agent/getting-started/compatibility-requirements-nodejs-agent
+[5]: https://img.shields.io/npm/v/@newrelic/next.svg 
+[6]: https://www.npmjs.com/package/@newrelic/next
+[7]: https://codecov.io/gh/newrelic/newrelic-node-nextjs/branch/main/graph/badge.svg?token=89T0ZLX43N
+[8]: https://codecov.io/gh/newrelic/newrelic-node-nextjs
