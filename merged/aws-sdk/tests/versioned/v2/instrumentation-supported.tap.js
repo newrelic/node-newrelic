@@ -31,13 +31,17 @@ tap.test('instrumentation is supported', (t) => {
     AWS = null
   })
 
-  t.test('AWS should have newrelic attributes', (t) => {
-    t.assert(AWS.__NR_instrumented, 'Found __NR_instrumented')
+  t.test('AWS should be instrumented', (t) => {
+    t.equal(
+      AWS.NodeHttpClient.prototype.handleRequest.name,
+      'wrappedHandleRequest',
+      'AWS has a wrapped NodeHttpClient'
+    )
     t.end()
   })
 
   t.test('instrumentation supported function', (t) => {
-    t.assert(
+    t.ok(
       instrumentationHelper.instrumentationSupported(AWS),
       'instrumentationSupported returned true'
     )
