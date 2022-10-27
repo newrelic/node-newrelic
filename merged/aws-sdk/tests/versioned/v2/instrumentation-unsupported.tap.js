@@ -41,8 +41,8 @@ tap.test('instrumentation is not supported', (t) => {
   })
 
   t.test('instrumentation supported function', (t) => {
-    t.ok(
-      !instrumentationHelper.instrumentationSupported(AWS),
+    t.notOk(
+      instrumentationHelper.instrumentationSupported(AWS),
       'instrumentationSupported returned false'
     )
     t.end()
