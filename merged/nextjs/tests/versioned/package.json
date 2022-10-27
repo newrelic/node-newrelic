@@ -17,6 +17,21 @@
         "segments.tap.js",
         "transaction-naming.tap.js"
       ]
+    },
+    {
+      "engines": {
+        "node": ">=14"
+      },
+      "dependencies": {
+        "next": ">=13.0.0",
+        "react": "18.2.0",
+        "react-dom": "18.2.0"
+      },
+      "files": [
+        "attributes.tap.js",
+        "segments.tap.js",
+        "transaction-naming.tap.js"
+      ]
     }
   ],
   "dependencies": {}
