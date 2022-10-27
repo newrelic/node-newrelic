@@ -10,7 +10,7 @@ const utils = require('@newrelic/test-utilities')
 const instrumentationHelper = require('../../../lib/v2/instrumentation-helper')
 utils.assert.extendTap(tap)
 
-tap.test('instrumentation is supported', (t) => {
+tap.test('instrumentation is not supported', (t) => {
   t.autoend()
 
   let helper = null
@@ -31,14 +31,18 @@ tap.test('instrumentation is supported', (t) => {
     AWS = null
   })
 
-  t.test('AWS should not have newrelic attributes', (t) => {
-    t.assert(!AWS.__NR_instrumented, '__NR_instrumented not present')
+  t.test('AWS should not be instrumented', (t) => {
+    t.notEqual(
+      AWS.NodeHttpClient.prototype.handleRequest.name,
+      'wrappedHandleRequest',
+      'AWS does not have a wrapped NodeHttpClient'
+    )
     t.end()
   })
 
   t.test('instrumentation supported function', (t) => {
-    t.assert(
-      !instrumentationHelper.instrumentationSupported(AWS),
+    t.notOk(
+      instrumentationHelper.instrumentationSupported(AWS),
       'instrumentationSupported returned false'
     )
     t.end()
