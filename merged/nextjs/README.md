@@ -204,5 +204,5 @@ New Relic Next.js instrumentation also uses source code from third-party librari
 [4]: https://docs.newrelic.com/docs/agents/nodejs-agent/getting-started/compatibility-requirements-nodejs-agent
 [5]: https://img.shields.io/npm/v/@newrelic/next.svg 
 [6]: https://www.npmjs.com/package/@newrelic/next
-[7]: https://codecov.io/gh/newrelic/newrelic-node-nextjs/branch/main/graph/badge.svg?token=89T0ZLX43N
+[7]: https://codecov.io/gh/newrelic/newrelic-node-nextjs/branch/main/graph/badge.svg?token=UPO8LT1X4W 
 [8]: https://codecov.io/gh/newrelic/newrelic-node-nextjs
