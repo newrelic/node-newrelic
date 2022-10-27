@@ -1,6 +1,8 @@
-[![Community Plus header](https://github.com/newrelic/opensource-website/raw/master/src/images/categories/Community_Plus.png)](https://opensource.newrelic.com/oss-category/#community-plus)
+[![Community Plus header](https://github.com/newrelic/opensource-website/raw/main/src/images/categories/Community_Plus.png)](https://opensource.newrelic.com/oss-category/#community-plus)
 
-# New Relic Koa instrumentation [![koa instrumentation CI][1]][2]
+# New Relic Koa instrumentation
+
+[![npm status badge][5]][6] [![koa instrumentation CI][1]][2] [![codecov][7]][8]
 
 New Relic's official Koa framework instrumentation for use with the
 New Relic [Node.js agent](https://github.com/newrelic/node-newrelic).
@@ -103,3 +105,7 @@ New Relic Koa instrumentation also uses source code from third-party libraries. 
 [2]: https://github.com/newrelic/node-newrelic-koa/actions
 [3]: https://docs.newrelic.com/docs/agents/nodejs-agent/installation-configuration/install-nodejs-agent
 [4]: https://docs.newrelic.com/docs/agents/nodejs-agent/getting-started/compatibility-requirements-nodejs-agent
+[5]: https://img.shields.io/npm/v/@newrelic/koa.svg
+[6]: https://www.npmjs.com/package/@newrelic/koa
+[7]: https://codecov.io/gh/newrelic/node-newrelic-koa/branch/main/graph/badge.svg
+[8]: https://codecov.io/gh/newrelic/node-newrelic-koa
