@@ -16,11 +16,11 @@
   "scripts": {
     "test": "npm run unit && npm run versioned",
     "third-party-updates": "oss third-party manifest && oss third-party notices && git add THIRD_PARTY_NOTICES.md third_party_manifest.json",
-    "unit": "tap tests/unit/**/*.tap.js --no-coverage --reporter classic",
+    "unit": "c8 -o ./coverage/unit tap tests/unit/**/*.tap.js --no-coverage --reporter classic",
     "versioned": "npm run versioned:npm7",
     "versioned:major": "versioned-tests --major --all -i 2 'tests/versioned/*.tap.js'",
-    "versioned:npm6": "versioned-tests --minor -i 2 'tests/versioned/*.tap.js'",
-    "versioned:npm7": "versioned-tests --minor --all -i 2 'tests/versioned/*.tap.js'",
+    "versioned:npm6": "c8 -o ./coverage/versioned versioned-tests --minor -i 2 'tests/versioned/*.tap.js'",
+    "versioned:npm7": "c8 -o ./coverage/versioned versioned-tests --minor --all -i 2 'tests/versioned/*.tap.js'",
     "lint": "eslint *.js lib tests",
     "lint:fix": "eslint --fix *.js lib tests",
     "prepare": "husky install"
@@ -35,6 +35,7 @@
     "@newrelic/eslint-config": "^0.0.2",
     "@newrelic/newrelic-oss-cli": "^0.1.2",
     "@newrelic/test-utilities": "^6.3.0",
+    "c8": "^7.12.0",
     "eslint": "^7.32.0",
     "eslint-config-prettier": "^8.3.0",
     "eslint-plugin-header": "^3.1.1",

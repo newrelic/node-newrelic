@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "Mon Jul 25 2022 13:49:22 GMT-0700 (Pacific Daylight Time)",
+  "lastUpdated": "Thu Oct 27 2022 13:20:51 GMT-0400 (Eastern Daylight Time)",
   "projectName": "New Relic Koa Instrumentation",
   "projectUrl": "https://github.com/newrelic/node-newrelic-koa",
   "includeOptDeps": false,
@@ -56,6 +56,19 @@
       "licenseTextSource": "file",
       "publisher": "New Relic Node.js agent team",
       "email": "nodejs@newrelic.com"
+    },
+    "c8@7.12.0": {
+      "name": "c8",
+      "version": "7.12.0",
+      "range": "^7.12.0",
+      "licenses": "ISC",
+      "repoUrl": "https://github.com/bcoe/c8",
+      "versionedRepoUrl": "https://github.com/bcoe/c8/tree/v7.12.0",
+      "licenseFile": "node_modules/c8/LICENSE.txt",
+      "licenseUrl": "https://github.com/bcoe/c8/blob/v7.12.0/LICENSE.txt",
+      "licenseTextSource": "file",
+      "publisher": "Ben Coe",
+      "email": "ben@npmjs.com"
     },
     "eslint-config-prettier@8.3.0": {
       "name": "eslint-config-prettier",
