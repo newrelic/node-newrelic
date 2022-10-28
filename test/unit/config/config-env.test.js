@@ -10,7 +10,6 @@ const tap = require('tap')
 const { idempotentEnv } = require('./helper')
 
 const VALID_HOST = 'infinite-tracing.test'
-const VALID_PORT = '443'
 const VALID_QUEUE_SIZE = 20000 // should not be 10k which is the default
 
 tap.test('when overriding configuration values via environment variables', (t) => {
@@ -19,13 +18,13 @@ tap.test('when overriding configuration values via environment variables', (t) =
   t.test('should pick up on infinite tracing env vars', (t) => {
     const env = {
       NEW_RELIC_INFINITE_TRACING_TRACE_OBSERVER_HOST: VALID_HOST,
-      NEW_RELIC_INFINITE_TRACING_TRACE_OBSERVER_PORT: VALID_PORT,
+      NEW_RELIC_INFINITE_TRACING_TRACE_OBSERVER_PORT: 500,
       NEW_RELIC_INFINITE_TRACING_SPAN_EVENTS_QUEUE_SIZE: VALID_QUEUE_SIZE
     }
 
     idempotentEnv(env, (config) => {
       t.equal(config.infinite_tracing.trace_observer.host, VALID_HOST)
-      t.equal(config.infinite_tracing.trace_observer.port, VALID_PORT)
+      t.equal(config.infinite_tracing.trace_observer.port, 500)
       t.equal(config.infinite_tracing.span_events.queue_size, VALID_QUEUE_SIZE)
       t.end()
     })
@@ -37,7 +36,7 @@ tap.test('when overriding configuration values via environment variables', (t) =
     }
 
     idempotentEnv(env, (config) => {
-      t.equal(config.infinite_tracing.trace_observer.port, VALID_PORT)
+      t.equal(config.infinite_tracing.trace_observer.port, 443)
       t.end()
     })
   })
@@ -126,8 +125,8 @@ tap.test('when overriding configuration values via environment variables', (t) =
   })
 
   t.test('should pick up the collector port', (t) => {
-    idempotentEnv({ NEW_RELIC_PORT: 7777 }, (tc) => {
-      t.equal(tc.port, '7777')
+    idempotentEnv({ NEW_RELIC_PORT: '7777' }, (tc) => {
+      t.equal(tc.port, 7777)
       t.end()
     })
   })
@@ -195,8 +194,8 @@ tap.test('when overriding configuration values via environment variables', (t) =
   })
 
   t.test('should pick up the number of logical processors of the system', (t) => {
-    idempotentEnv({ NEW_RELIC_UTILIZATION_LOGICAL_PROCESSORS: 123 }, (tc) => {
-      t.equal(tc.utilization.logical_processors, '123')
+    idempotentEnv({ NEW_RELIC_UTILIZATION_LOGICAL_PROCESSORS: '123' }, (tc) => {
+      t.equal(tc.utilization.logical_processors, 123)
       t.end()
     })
   })
@@ -210,8 +209,8 @@ tap.test('when overriding configuration values via environment variables', (t) =
   })
 
   t.test('should pick up the total ram of the system', (t) => {
-    idempotentEnv({ NEW_RELIC_UTILIZATION_TOTAL_RAM_MIB: 123 }, (tc) => {
-      t.equal(tc.utilization.total_ram_mib, '123')
+    idempotentEnv({ NEW_RELIC_UTILIZATION_TOTAL_RAM_MIB: '123' }, (tc) => {
+      t.equal(tc.utilization.total_ram_mib, 123)
       t.end()
     })
   })
@@ -427,8 +426,8 @@ tap.test('when overriding configuration values via environment variables', (t) =
   })
 
   t.test('should pick up the transaction trace Top N scale', (t) => {
-    idempotentEnv({ NEW_RELIC_TRACER_TOP_N: 5 }, (tc) => {
-      t.equal(tc.transaction_tracer.top_n, '5')
+    idempotentEnv({ NEW_RELIC_TRACER_TOP_N: '5' }, (tc) => {
+      t.equal(tc.transaction_tracer.top_n, 5)
       t.end()
     })
   })
@@ -500,6 +499,7 @@ tap.test('when overriding configuration values via environment variables', (t) =
     })
   })
 
+  // NOTE: the conversion is done in lib/collector/facts.js
   t.test('should pick up labels', (t) => {
     idempotentEnv({ NEW_RELIC_LABELS: 'key:value;a:b;' }, (tc) => {
       t.equal(tc.labels, 'key:value;a:b;')
@@ -507,10 +507,14 @@ tap.test('when overriding configuration values via environment variables', (t) =
     })
   })
 
-  t.test('should pickup record_sql', (t) => {
-    idempotentEnv({ NEW_RELIC_RECORD_SQL: 'raw' }, (tc) => {
-      t.equal(tc.transaction_tracer.record_sql, 'raw')
-      t.end()
+  const values = ['off', 'obfuscated', 'raw', 'invalid']
+  values.forEach((val) => {
+    const expectedValue = val === 'invalid' ? 'off' : val
+    t.test(`should pickup record_sql value of ${expectedValue}`, (t) => {
+      idempotentEnv({ NEW_RELIC_RECORD_SQL: val }, (tc) => {
+        t.equal(tc.transaction_tracer.record_sql, expectedValue)
+        t.end()
+      })
     })
   })
 
@@ -627,5 +631,16 @@ tap.test('when overriding configuration values via environment variables', (t) =
         t.end()
       }
     )
+  })
+
+  const ipvValues = ['4', '6', 'bogus']
+  ipvValues.forEach((val) => {
+    const expectedValue = val === 'bogus' ? '4' : val
+    t.test(`should pick up ipv_preference of ${expectedValue}`, (t) => {
+      idempotentEnv({ NEW_RELIC_IPV_PREFERENCE: val }, function (tc) {
+        t.equal(tc.process_host.ipv_preference, expectedValue)
+        t.end()
+      })
+    })
   })
 })
