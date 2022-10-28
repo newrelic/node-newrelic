@@ -17,7 +17,7 @@ const ACCOUNT_ID = '1337'
 const APP_ID = '7331'
 const EXPECTED_DT_METRICS = ['DurationByCaller', 'TransportDuration']
 const EXTERNAL_METRIC_SUFFIXES = ['all', 'http']
-const SYMBOLS = require('../../../lib/shim/constants').SYMBOLS
+const symbols = require('../../../lib/symbols')
 
 let compareSampled = null
 
@@ -301,10 +301,10 @@ tap.test('distributed tracing', (t) => {
     })
   })
 
-  t.test('should be disabled by shim.DISABLE_DT symbol', (t) => {
+  t.test('should be disabled by symbols.disableDT symbol', (t) => {
     helper.runInTransaction(agent, (tx) => {
       const OLD_HEADER = 'x-newrelic-transaction'
-      const headers = { [SYMBOLS.DISABLE_DT]: true }
+      const headers = { [symbols.disableDT]: true }
       get(generateUrl(START_PORT, 'start'), { headers }, (err, body) => {
         t.error(err)
 
