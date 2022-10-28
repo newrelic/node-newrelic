@@ -8,6 +8,7 @@
 const tap = require('tap')
 const helper = require('../../lib/agent_helper')
 const shimmer = require('../../../lib/shimmer')
+const symbols = require('../../../lib/symbols')
 
 tap.test('Test Module Instrumentation Loading', (t) => {
   t.autoend()
@@ -22,7 +23,7 @@ tap.test('Test Module Instrumentation Loading', (t) => {
     agent = null
   })
 
-  t.test('__NR_instrumented set correctly', (t) => {
+  t.test('symbols.instrumented set correctly', (t) => {
     // path to our module fixture from this file
     const modulePathLocal = './module-load-fixture'
 
@@ -48,11 +49,11 @@ tap.test('Test Module Instrumentation Loading', (t) => {
 
     t.ok(module, 'loaded module')
     t.equal(module(), 'hello world', 'module behaves as expected')
-    t.ok(module.__NR_instrumented, '__NR_instrumented set and true')
+    t.ok(module[symbols.instrumented], 'symbols.instrumented set and true')
     t.end()
   })
 
-  t.test('__NR_instrumented_errored set correctly', (t) => {
+  t.test('symbols.instrumentedErrored set correctly', (t) => {
     // path to our module fixture from this file
     const modulePathLocal = './module-load-fixture-errored'
 
@@ -80,7 +81,7 @@ tap.test('Test Module Instrumentation Loading', (t) => {
 
     t.ok(module, 'loaded module')
     t.equal(module(), 'hello world', 'module behaves as expected')
-    t.ok(module.__NR_instrumented_errored, '__NR_instrumented_errored set and true')
+    t.ok(module[symbols.instrumentedErrored], 'symbols.instrumentedErrored set and true')
     t.end()
   })
 })
