@@ -10,6 +10,7 @@ const { EventEmitter } = require('events')
 const helper = require('../../lib/agent_helper')
 const sinon = require('sinon')
 const Shim = require('../../../lib/shim/shim')
+const symbols = require('../../../lib/symbols')
 tap.Test.prototype.addAssert('isNonWritable', 1, helper.isNonWritable)
 tap.Test.prototype.addAssert('compareSegments', 2, helper.compareSegments)
 
@@ -1671,7 +1672,7 @@ tap.test('Shim', function (t) {
       }
 
       t.not(wrapped, original)
-      t.not(wrapped.__NR_original, original)
+      t.not(wrapped[symbols.original], original)
       t.equal(shim.unwrap(wrapped), original)
       t.end()
     })
@@ -1758,7 +1759,7 @@ tap.test('Shim', function (t) {
       }
 
       t.not(wrapped, original)
-      t.not(wrapped.__NR_original, original)
+      t.not(wrapped[symbols.original], original)
       t.not(shim.unwrapOnce(wrapped), original)
       t.end()
     })

@@ -30,6 +30,7 @@ const logger = require('../../lib/logger').child({ component: 'TEST' })
 const shimmer = require('../../lib/shimmer')
 const shims = require('../../lib/shim')
 const EventEmitter = require('events').EventEmitter
+const symbols = require('../../lib/symbols')
 
 const TEST_MODULE_PATH = '../helpers/module'
 const TEST_MODULE = 'sinon'
@@ -178,7 +179,7 @@ describe('shimmer', function () {
         }
       })
 
-      expect(nodule.doubler.__NR_unwrap).a('function')
+      expect(nodule.doubler[symbols.unwrap]).a('function')
 
       nodule.doubler(7, function (z) {
         doubled = z
@@ -204,7 +205,7 @@ describe('shimmer', function () {
         }
       })
 
-      expect(nodule.quadrupler.__NR_unwrap).a('function')
+      expect(nodule.quadrupler[symbols.unwrap]).a('function')
       expect(nodule.quadrupler.test).to.be.a('function')
 
       nodule.quadrupler(7, function (z) {

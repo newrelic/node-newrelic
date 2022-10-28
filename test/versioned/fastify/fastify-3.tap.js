@@ -8,6 +8,7 @@
 const tap = require('tap')
 
 const helper = require('../../lib/agent_helper')
+const symbols = require('../../../lib/symbols')
 
 tap.test('Fastify Instrumentation', (t) => {
   t.autoend()
@@ -34,7 +35,7 @@ tap.test('Fastify Instrumentation', (t) => {
    * arranged to support a variety of import styles.
    */
   t.test('Should propagate fastify exports when instrumented', (t) => {
-    const original = fastifyExport.__NR_original
+    const original = fastifyExport[symbols.original]
 
     // Confirms the original setup matches expectations
     t.equal(original.fastify, original)

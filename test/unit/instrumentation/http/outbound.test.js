@@ -18,6 +18,7 @@ const hashes = require('../../../../lib/util/hashes')
 const nock = require('nock')
 const Segment = require('../../../../lib/transaction/trace/segment')
 const { DESTINATIONS } = require('../../../../lib/config/attribute-filter')
+const symbols = require('../../../../lib/symbols')
 
 const HOSTNAME = 'localhost'
 const PORT = 8890
@@ -176,7 +177,7 @@ tap.test('instrumentOutbound', (t) => {
       })
 
       t.equal(req2, req)
-      t.notOk(req2.__NR_transactionInfo)
+      t.notOk(req2[symbols.transactionInfo])
     })
 
     function makeFakeRequest() {
@@ -196,7 +197,7 @@ tap.test('instrumentOutbound', (t) => {
       })
 
       t.equal(req2, req)
-      t.notOk(req2.__NR_transactionInfo)
+      t.notOk(req2[symbols.transactionInfo])
     })
 
     function makeFakeRequest() {
@@ -215,7 +216,7 @@ tap.test('instrumentOutbound', (t) => {
       })
 
       t.equal(req2, req)
-      t.notOk(req2.__NR_transactionInfo)
+      t.notOk(req2[symbols.transactionInfo])
     })
 
     function makeFakeRequest() {
@@ -235,7 +236,7 @@ tap.test('instrumentOutbound', (t) => {
       })
 
       t.equal(req2, req)
-      t.notOk(req2.__NR_transactionInfo)
+      t.notOk(req2[symbols.transactionInfo])
     })
 
     function makeFakeRequest() {

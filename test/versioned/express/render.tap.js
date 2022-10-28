@@ -12,6 +12,7 @@ const test = require('tap').test
 const request = require('request')
 const helper = require('../../lib/agent_helper')
 const API = require('../../../api')
+const symbols = require('../../../lib/symbols')
 
 const TEST_PATH = '/test'
 const TEST_HOST = 'localhost'
@@ -234,7 +235,11 @@ function runTests(conf) {
           // route middleware doesn't have a name, sentinel is our error handler,
           // neither should be wrapped.
           if (layer.route === undefined && layer.handle.name !== 'sentinel') {
-            t.equal(typeof layer.handle.__NR_original, 'function', 'all middlewares are wrapped')
+            t.equal(
+              typeof layer.handle[symbols.original],
+              'function',
+              'all middlewares are wrapped'
+            )
           }
         }
 

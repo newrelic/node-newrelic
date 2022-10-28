@@ -17,6 +17,7 @@ const copy = require('../../lib/util/copy')
 const { defaultAttributeConfig } = require('./fixtures')
 const { EventEmitter } = require('events')
 const Transaction = require('../../lib/transaction')
+const symbols = require('../../lib/symbols')
 
 const KEYPATH = path.join(__dirname, 'test-key.key')
 const CERTPATH = path.join(__dirname, 'self-signed-test-certificate.crt')
@@ -110,7 +111,7 @@ const helper = (module.exports = {
     _agent.__created = new Error('Only one agent at a time! This one was created at:')
     _agent.recordSupportability = () => {} // Stub supportabilities.
 
-    global.__NR_agent = _agent
+    global[symbols.agent] = _agent
 
     if (setState) {
       _agent.setState('started')
@@ -213,7 +214,7 @@ const helper = (module.exports = {
     agent.stopAggregators()
 
     if (agent === _agent) {
-      global.__NR_agent = null
+      global[symbols.agent] = null
       _agent = null
       _agentApi = null
     }
