@@ -16,7 +16,7 @@ const contextManager = helper.getContextManager()
 const tx = helper.runInTransaction(s.agent, function (_tx) {
   return _tx
 })
-const bound = tracer.bindFunction(shared.getTest(), tx.root, true)
+
 contextManager.setContext(tx.root)
 
 suite.add({
@@ -38,13 +38,6 @@ suite.add({
   fn: function () {
     const test = shared.getTest()
     return tracer.addSegment('test', null, null, true, test.func)
-  }
-})
-
-suite.add({
-  name: 'tracer.getSegmentFromWrapped',
-  fn: function () {
-    return tracer.getSegmentFromWrapped(bound)
   }
 })
 
