@@ -18,7 +18,7 @@ tap.test('when overriding configuration values via environment variables', (t) =
   t.test('should pick up on infinite tracing env vars', (t) => {
     const env = {
       NEW_RELIC_INFINITE_TRACING_TRACE_OBSERVER_HOST: VALID_HOST,
-      NEW_RELIC_INFINITE_TRACING_TRACE_OBSERVER_PORT: 500,
+      NEW_RELIC_INFINITE_TRACING_TRACE_OBSERVER_PORT: '500',
       NEW_RELIC_INFINITE_TRACING_SPAN_EVENTS_QUEUE_SIZE: VALID_QUEUE_SIZE
     }
 
@@ -642,5 +642,16 @@ tap.test('when overriding configuration values via environment variables', (t) =
         t.end()
       })
     })
+  })
+
+  t.test('should pick up error_collector.ignore_messages', (t) => {
+    const config = { Error: ['On no'] }
+    idempotentEnv(
+      { NEW_RELIC_ERROR_COLLECTOR_IGNORE_MESSAGES: JSON.stringify(config) },
+      function (tc) {
+        t.same(tc.error_collector.ignore_messages, config)
+        t.end()
+      }
+    )
   })
 })
