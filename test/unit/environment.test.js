@@ -258,15 +258,14 @@ describe('the environment scraper', function () {
   describe('with symlinks', function () {
     const nmod = path.resolve(__dirname, '../helpers/node_modules')
     const makeDir = (dirp) => {
-      return fs
-        .mkdir(dirp)
-        .then(() => null)
-        .catch((err) => {
-          if (err.code !== 'EEXIST') {
-            return err
-          }
-          return null
-        })
+      try {
+        return fs.mkdir(dirp)
+      } catch (err) {
+        if (err.code !== 'EEXIST') {
+          return err
+        }
+        return null
+      }
     }
     const makePackage = async (pkg, dep) => {
       const dir = path.join(nmod, pkg)
