@@ -9,7 +9,6 @@
 // Below allows use of mocha DSL with tap runner.
 require('tap').mochaGlobals()
 
-// const a = require('async')
 const chai = require('chai')
 const expect = chai.expect
 const should = chai.should()
@@ -175,8 +174,7 @@ describe('TraceAggregator', function () {
       }
 
       // // Add 6 traces. The 6th one should not get added to cached times.
-      const arr = new Array(6)
-      arr.fill(1)
+      const arr = new Array(6).fill(1)
       arr.forEach(selector)
     })
   })
@@ -312,55 +310,44 @@ describe('TraceAggregator', function () {
     agent.config.apdex_t = 0
     agent.config.run_id = 1337
     agent.config.transaction_tracer.enabled = true
+    const maxTraces = 5
 
     // Go through 5 transactions. Note that the names of the transactions must
     // repeat!
 
-    const txnCreator = (n, cb) => {
+    const txnCreator = (n, max, cb) => {
       expect(agent.traces.trace, 'trace waiting to be collected').to.not.exist
       createTransaction(`/test-${n % 3}`, 500)
       expect(agent.traces.trace, `${n}th trace to collect`).to.exist
-      agent.traces.once('finished transaction_sample_data data send.', cb)
+      agent.traces.once('finished transaction_sample_data data send.', () =>
+        cb(null, { idx: n, max })
+      )
       agent.traces.send()
-      console.log('IN TRACES SEND')
     }
 
     const finalCallback = (err) => {
       expect(err).to.not.exist
       // This 6th transaction should not be collected.
       expect(agent.traces.trace).to.not.exist
-      console.log('IN F C')
-      createTransaction(`/test-0`, 500) // gets created
-
-      // / This fails--the sixth trace is created, and shouldn't have been.
-      // / Also there's a one-agent-at-a-time error, so a new agent is created
+      createTransaction(`/test-0`, 500)
       expect(agent.traces.trace, '6th trace to collect').to.not.exist
       done()
     }
 
-    const fakeListener = (err) => {
+    const testCallback = (err, props) => {
       if (err) {
-        console.error(err)
+        return console.error(err)
       }
+      const { idx, max } = props
+      const nextIdx = idx + 1
+      if (nextIdx >= max) {
+        return finalCallback()
+      }
+      return txnCreator(nextIdx, max, testCallback)
     }
 
-    const selector = (el, idx, array) => {
-      txnCreator(idx, fakeListener)
-      if (idx === array.length - 1) {
-        finalCallback()
-      }
-    }
-
-    // // Add 5 traces.
-    const arr = new Array(5)
-    arr.fill(1)
-    arr.forEach(selector)
-
-    // a.timesSeries(
-    //   5,
-    //   txnCreator,
-    //   finalCallback
-    // )
+    // Array iteration is too difficult to slow down, so this steps through recursively
+    txnCreator(0, maxTraces, testCallback)
   })
 
   describe('when request timings are tracked over time', function () {
