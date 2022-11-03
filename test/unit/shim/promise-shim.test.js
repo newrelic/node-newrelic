@@ -6,7 +6,6 @@
 'use strict'
 const tap = require('tap')
 
-const asyncLib = require('async')
 const helper = require('../../lib/agent_helper')
 const PromiseShim = require('../../../lib/shim/promise-shim')
 const Shim = require('../../../lib/shim/shim')
@@ -239,7 +238,7 @@ tap.test('PromiseShim', (t) => {
 
     t.test('should reinstate lost context', async (t) => {
       t.autoend()
-      helper.runInTransaction(agent, (tx) => {
+      helper.runInTransaction(agent, async (tx) => {
         shim.setClass(TestPromise)
         const WrappedPromise = shim.wrapConstructor(TestPromise)
 
@@ -247,7 +246,7 @@ tap.test('PromiseShim', (t) => {
         // with context propagation.
         shim.wrapThen(TestPromise.prototype, 'then')
 
-        const txTest = async (runOutOfContext) => {
+        const txTest = async (runOutOfContext, runNext) => {
           t.sameTransaction(agent.getTransaction(), tx)
           return new WrappedPromise((resolve) => {
             t.sameTransaction(agent.getTransaction(), tx)
@@ -259,19 +258,16 @@ tap.test('PromiseShim', (t) => {
           })
             .then(() => {
               t.sameTransaction(agent.getTransaction(), tx)
+              if (runNext) {
+                return runNext() // < a cheap way of chaining these without async
+              }
             })
             .catch((err) => {
-              console.log('catch err!', err)
-              // return cb(err)
+              t.notOk(err, 'Promise context restore should not error.')
             })
         }
 
-        const a = txTest(false)
-        console.log('did false', a)
-        const b = txTest(true)
-        console.log('did true', b)
-
-        // asyncLib.series([(cb) => txTest(false, cb), (cb) => txTest(true, cb)], t.end)
+        txTest(false, () => txTest(true))
       })
     })
   })
@@ -386,7 +382,7 @@ tap.test('PromiseShim', (t) => {
         // with context propagation.
         shim.wrapThen(TestPromise.prototype, 'then')
 
-        const txTest = async (runOutOfContext, cb) => {
+        const txTest = async (runOutOfContext, runNext) => {
           t.sameTransaction(agent.getTransaction(), tx)
           return new TestPromise((resolve) => {
             t.sameTransaction(agent.getTransaction(), tx)
@@ -397,12 +393,16 @@ tap.test('PromiseShim', (t) => {
           })
             .then(() => {
               t.sameTransaction(agent.getTransaction(), tx)
-              cb()
+              if (runNext) {
+                return runNext()
+              }
+              t.end()
             })
-            .catch(cb)
+            .catch((err) => {
+              t.notOk(err, 'Promise context restore should not error.')
+            })
         }
-
-        asyncLib.series([(cb) => txTest(false, cb), (cb) => txTest(true, cb)], t.end)
+        txTest(false, () => txTest(true))
       })
     })
   })
