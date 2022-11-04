@@ -22,7 +22,7 @@ tap.test('config formatters', (t) => {
       t.end()
     })
 
-    t.test('should create an array with 1 element if no comman exists', (t) => {
+    t.test('should create an array with 1 element if no comma exists', (t) => {
       t.same(formatters.array('hello'), ['hello'])
       t.end()
     })
@@ -133,6 +133,26 @@ tap.test('config formatters', (t) => {
         'New Relic configurator could not deserialize object list:'
       )
       t.match(loggerMock.error.args[1][0], /SyntaxError: Unexpected token i in JSON at position/)
+      t.end()
+    })
+  })
+
+  tap.test('allowList', (t) => {
+    t.autoend()
+
+    t.test('should return value if in allow list', (t) => {
+      const allowList = ['bad', 'good', 'evil']
+      const val = 'good'
+      const result = formatters.allowList(allowList, val)
+      t.same(result, val)
+      t.end()
+    })
+
+    t.test('should return first element in allow list if value is not in list', (t) => {
+      const allowList = ['good', 'bad', 'evil']
+      const val = 'scary'
+      const result = formatters.allowList(allowList, val)
+      t.same(result, 'good')
       t.end()
     })
   })
