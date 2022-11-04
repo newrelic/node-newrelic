@@ -42,13 +42,6 @@ suite.add({
 })
 
 suite.add({
-  name: 'shim.listenerCount',
-  fn: function () {
-    return shim.listenerCount(process, 'uncaughtException')
-  }
-})
-
-suite.add({
   name: 'shim.once',
   fn: function () {
     const test = shared.getTest()
