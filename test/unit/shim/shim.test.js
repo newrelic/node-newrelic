@@ -1928,17 +1928,6 @@ tap.test('Shim', function (t) {
     t.beforeEach(beforeEach)
     t.afterEach(afterEach)
 
-    t.test(
-      'should set a non-enumerable property on the object when `hide_internals` is true',
-      function (t) {
-        agent.config.transaction_tracer.hide_internals = true
-        const keys = Object.keys(wrappable)
-        shim.storeSegment(wrappable, {})
-        t.same(Object.keys(wrappable), keys)
-        t.end()
-      }
-    )
-
     t.test('should store the segment on the object', function (t) {
       const segment = { probe: function () {} }
       shim.storeSegment(wrappable, segment)
