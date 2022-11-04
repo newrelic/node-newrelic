@@ -134,8 +134,9 @@ describe('TraceAggregator', function () {
       agent.config.transaction_tracer.top_n = 5
       agent.traces.capacity = 5
       agent.traces.reported = 10 // needed to override "first 5"
+      const maxTraces = 6
 
-      const txnCreator = (n, cb) => {
+      const txnCreator = (n, max, cb) => {
         expect(agent.traces.trace, 'trace before creation').to.not.exist
         createTransaction(`/test-${n}`, 8000)
         if (n !== 5) {
@@ -143,7 +144,9 @@ describe('TraceAggregator', function () {
         } else {
           expect(agent.traces.trace, 'trace 5 collected').to.not.exist
         }
-        agent.traces.once('finished transaction_sample_data data send.', cb)
+        agent.traces.once('finished transaction_sample_data data send.', (err) =>
+          cb(err, { idx: n, max })
+        )
         agent.traces.send()
         expect(agent.traces.trace, 'trace after harvest').to.not.exist
       }
@@ -160,22 +163,18 @@ describe('TraceAggregator', function () {
         return done()
       }
 
-      const fakeListener = (err) => {
-        if (err) {
-          console.error(err)
+      const testCallback = (err, props) => {
+        expect(err, 'Callback error should be falsy.').to.not.exist
+        const { idx, max } = props
+        const nextIdx = idx + 1
+        if (nextIdx >= max) {
+          return finalCallback()
         }
+        return txnCreator(nextIdx, max, testCallback)
       }
 
-      const selector = (el, idx, array) => {
-        txnCreator(idx, fakeListener)
-        if (idx === array.length - 1) {
-          finalCallback()
-        }
-      }
-
-      // // Add 6 traces. The 6th one should not get added to cached times.
-      const arr = new Array(6).fill(1)
-      arr.forEach(selector)
+      // Step through recursively
+      txnCreator(0, maxTraces, testCallback)
     })
   })
 
@@ -319,8 +318,8 @@ describe('TraceAggregator', function () {
       expect(agent.traces.trace, 'trace waiting to be collected').to.not.exist
       createTransaction(`/test-${n % 3}`, 500)
       expect(agent.traces.trace, `${n}th trace to collect`).to.exist
-      agent.traces.once('finished transaction_sample_data data send.', () =>
-        cb(null, { idx: n, max })
+      agent.traces.once('finished transaction_sample_data data send.', (err) =>
+        cb(err, { idx: n, max })
       )
       agent.traces.send()
     }
@@ -335,9 +334,7 @@ describe('TraceAggregator', function () {
     }
 
     const testCallback = (err, props) => {
-      if (err) {
-        return console.error(err)
-      }
+      expect(err, 'Callback error should be falsy.').to.not.exist
       const { idx, max } = props
       const nextIdx = idx + 1
       if (nextIdx >= max) {
