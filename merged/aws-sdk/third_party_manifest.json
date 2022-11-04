@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "Wed Oct 26 2022 16:16:10 GMT-0400 (Eastern Daylight Time)",
+  "lastUpdated": "Fri Nov 04 2022 10:32:24 GMT-0400 (Eastern Daylight Time)",
   "projectName": "New Relic AWS-SDK Instrumentation",
   "projectUrl": "https://github.com/newrelic/node-newrelic-aws-sdk",
   "includeOptDeps": false,
@@ -31,15 +31,15 @@
       "licenseTextSource": "file",
       "publisher": "New Relic"
     },
-    "@newrelic/test-utilities@6.1.1": {
+    "@newrelic/test-utilities@7.1.1": {
       "name": "@newrelic/test-utilities",
-      "version": "6.1.1",
-      "range": "^6.1.1",
+      "version": "7.1.1",
+      "range": "^7.1.1",
       "licenses": "Apache-2.0",
       "repoUrl": "https://github.com/newrelic/node-test-utilities",
-      "versionedRepoUrl": "https://github.com/newrelic/node-test-utilities/tree/v6.1.1",
+      "versionedRepoUrl": "https://github.com/newrelic/node-test-utilities/tree/v7.1.1",
       "licenseFile": "node_modules/@newrelic/test-utilities/LICENSE",
-      "licenseUrl": "https://github.com/newrelic/node-test-utilities/blob/v6.1.1/LICENSE",
+      "licenseUrl": "https://github.com/newrelic/node-test-utilities/blob/v7.1.1/LICENSE",
       "licenseTextSource": "file",
       "publisher": "New Relic Node.js agent team",
       "email": "nodejs@newrelic.com"
