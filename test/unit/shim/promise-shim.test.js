@@ -6,7 +6,6 @@
 'use strict'
 const tap = require('tap')
 
-const asyncLib = require('async')
 const helper = require('../../lib/agent_helper')
 const PromiseShim = require('../../../lib/shim/promise-shim')
 const Shim = require('../../../lib/shim/shim')
@@ -237,8 +236,9 @@ tap.test('PromiseShim', (t) => {
       })
     })
 
-    t.test('should reinstate lost context', (t) => {
-      helper.runInTransaction(agent, (tx) => {
+    t.test('should reinstate lost context', async (t) => {
+      t.autoend()
+      helper.runInTransaction(agent, async (tx) => {
         shim.setClass(TestPromise)
         const WrappedPromise = shim.wrapConstructor(TestPromise)
 
@@ -246,35 +246,28 @@ tap.test('PromiseShim', (t) => {
         // with context propagation.
         shim.wrapThen(TestPromise.prototype, 'then')
 
-        asyncLib.series(
-          [
-            (cb) => {
-              t.sameTransaction(agent.getTransaction(), tx)
-              new WrappedPromise((resolve) => {
-                t.sameTransaction(agent.getTransaction(), tx)
-                resolve() // <-- Resolve will lose context.
-              })
-                .then(() => {
-                  t.sameTransaction(agent.getTransaction(), tx)
-                  cb()
-                })
-                .catch(cb)
-            },
-            (cb) => {
-              t.sameTransaction(agent.getTransaction(), tx)
-              new WrappedPromise((resolve) => {
-                t.sameTransaction(agent.getTransaction(), tx)
-                helper.runOutOfContext(resolve) // <-- Context loss before resolve.
-              })
-                .then(() => {
-                  t.sameTransaction(agent.getTransaction(), tx)
-                  cb()
-                })
-                .catch(cb)
+        const txTest = async (runOutOfContext, runNext) => {
+          t.sameTransaction(agent.getTransaction(), tx)
+          return new WrappedPromise((resolve) => {
+            t.sameTransaction(agent.getTransaction(), tx)
+            if (runOutOfContext) {
+              helper.runOutOfContext(resolve) // <-- Context loss before resolve.
+            } else {
+              return resolve() // <-- Resolve will lose context.
             }
-          ],
-          t.end
-        )
+          })
+            .then(() => {
+              t.sameTransaction(agent.getTransaction(), tx)
+              if (runNext) {
+                return runNext() // < a cheap way of chaining these without async
+              }
+            })
+            .catch((err) => {
+              t.notOk(err, 'Promise context restore should not error.')
+            })
+        }
+
+        txTest(false, () => txTest(true))
       })
     })
   })
@@ -381,7 +374,7 @@ tap.test('PromiseShim', (t) => {
     })
 
     t.test('should reinstate lost context', (t) => {
-      helper.runInTransaction(agent, (tx) => {
+      helper.runInTransaction(agent, async (tx) => {
         shim.setClass(TestPromise)
         shim.wrapExecutorCaller(TestPromise.prototype, 'executorCaller')
 
@@ -389,35 +382,27 @@ tap.test('PromiseShim', (t) => {
         // with context propagation.
         shim.wrapThen(TestPromise.prototype, 'then')
 
-        asyncLib.series(
-          [
-            (cb) => {
-              t.sameTransaction(agent.getTransaction(), tx)
-              new TestPromise((resolve) => {
-                t.sameTransaction(agent.getTransaction(), tx)
-                resolve() // <-- Resolve will lose context.
-              })
-                .then(() => {
-                  t.sameTransaction(agent.getTransaction(), tx)
-                  cb()
-                })
-                .catch(cb)
-            },
-            (cb) => {
-              t.sameTransaction(agent.getTransaction(), tx)
-              new TestPromise((resolve) => {
-                t.sameTransaction(agent.getTransaction(), tx)
-                helper.runOutOfContext(resolve) // <-- Context loss before resolve.
-              })
-                .then(() => {
-                  t.sameTransaction(agent.getTransaction(), tx)
-                  cb()
-                })
-                .catch(cb)
+        const txTest = async (runOutOfContext, runNext) => {
+          t.sameTransaction(agent.getTransaction(), tx)
+          return new TestPromise((resolve) => {
+            t.sameTransaction(agent.getTransaction(), tx)
+            if (runOutOfContext) {
+              return helper.runOutOfContext(resolve) // <-- Context loss before resolve.
             }
-          ],
-          t.end
-        )
+            return resolve() // <-- Resolve will lose context.
+          })
+            .then(() => {
+              t.sameTransaction(agent.getTransaction(), tx)
+              if (runNext) {
+                return runNext()
+              }
+              t.end()
+            })
+            .catch((err) => {
+              t.notOk(err, 'Promise context restore should not error.')
+            })
+        }
+        txTest(false, () => txTest(true))
       })
     })
   })

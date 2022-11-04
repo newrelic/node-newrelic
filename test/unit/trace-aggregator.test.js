@@ -9,7 +9,6 @@
 // Below allows use of mocha DSL with tap runner.
 require('tap').mochaGlobals()
 
-const a = require('async')
 const chai = require('chai')
 const expect = chai.expect
 const should = chai.should()
@@ -135,36 +134,47 @@ describe('TraceAggregator', function () {
       agent.config.transaction_tracer.top_n = 5
       agent.traces.capacity = 5
       agent.traces.reported = 10 // needed to override "first 5"
+      const maxTraces = 6
 
-      // Add 6 traces. The 6th one should not get added to cached times.
-      a.timesSeries(
-        6,
-        (n, cb) => {
-          expect(agent.traces.trace, 'trace before creation').to.not.exist
-          createTransaction(`/test-${n}`, 8000)
-          if (n !== 5) {
-            expect(agent.traces.trace, `trace ${n} to be collected`).to.exist
-          } else {
-            expect(agent.traces.trace, 'trace 5 collected').to.not.exist
-          }
-          agent.traces.once('finished transaction_sample_data data send.', cb)
-          agent.traces.send()
-          expect(agent.traces.trace, 'trace after harvest').to.not.exist
-        },
-        (err) => {
-          expect(err).to.not.exist
-
-          const times = agent.traces.requestTimes
-          expect(times).to.have.property('WebTransaction/Uri/test-0', 8000)
-          expect(times).to.have.property('WebTransaction/Uri/test-1', 8000)
-          expect(times).to.have.property('WebTransaction/Uri/test-2', 8000)
-          expect(times).to.have.property('WebTransaction/Uri/test-3', 8000)
-          expect(times).to.have.property('WebTransaction/Uri/test-4', 8000)
-          expect(times).to.not.have.property('WebTransaction/Uri/test-5')
-
-          done()
+      const txnCreator = (n, max, cb) => {
+        expect(agent.traces.trace, 'trace before creation').to.not.exist
+        createTransaction(`/test-${n}`, 8000)
+        if (n !== 5) {
+          expect(agent.traces.trace, `trace ${n} to be collected`).to.exist
+        } else {
+          expect(agent.traces.trace, 'trace 5 collected').to.not.exist
         }
-      )
+        agent.traces.once('finished transaction_sample_data data send.', (err) =>
+          cb(err, { idx: n, max })
+        )
+        agent.traces.send()
+        expect(agent.traces.trace, 'trace after harvest').to.not.exist
+      }
+      const finalCallback = (err) => {
+        expect(err).to.not.exist
+
+        const times = agent.traces.requestTimes
+        expect(times).to.have.property('WebTransaction/Uri/test-0', 8000)
+        expect(times).to.have.property('WebTransaction/Uri/test-1', 8000)
+        expect(times).to.have.property('WebTransaction/Uri/test-2', 8000)
+        expect(times).to.have.property('WebTransaction/Uri/test-3', 8000)
+        expect(times).to.have.property('WebTransaction/Uri/test-4', 8000)
+        expect(times).to.not.have.property('WebTransaction/Uri/test-5')
+        return done()
+      }
+
+      const testCallback = (err, props) => {
+        expect(err, 'Callback error should be falsy.').to.not.exist
+        const { idx, max } = props
+        const nextIdx = idx + 1
+        if (nextIdx >= max) {
+          return finalCallback()
+        }
+        return txnCreator(nextIdx, max, testCallback)
+      }
+
+      // Step through recursively
+      txnCreator(0, maxTraces, testCallback)
     })
   })
 
@@ -299,28 +309,42 @@ describe('TraceAggregator', function () {
     agent.config.apdex_t = 0
     agent.config.run_id = 1337
     agent.config.transaction_tracer.enabled = true
+    const maxTraces = 5
 
     // Go through 5 transactions. Note that the names of the transactions must
     // repeat!
-    a.timesSeries(
-      5,
-      (n, cb) => {
-        expect(agent.traces.trace, 'trace waiting to be collected').to.not.exist
-        createTransaction(`/test-${n % 3}`, 500)
-        expect(agent.traces.trace, `${n}th trace to collect`).to.exist
-        agent.traces.once('finished transaction_sample_data data send.', cb)
-        agent.traces.send()
-      },
-      (err) => {
-        expect(err).to.not.exist
 
-        // This 6th transaction should not be collected.
-        expect(agent.traces.trace).to.not.exist
-        createTransaction(`/test-0`, 500)
-        expect(agent.traces.trace, '6th trace to collect').to.not.exist
-        done()
+    const txnCreator = (n, max, cb) => {
+      expect(agent.traces.trace, 'trace waiting to be collected').to.not.exist
+      createTransaction(`/test-${n % 3}`, 500)
+      expect(agent.traces.trace, `${n}th trace to collect`).to.exist
+      agent.traces.once('finished transaction_sample_data data send.', (err) =>
+        cb(err, { idx: n, max })
+      )
+      agent.traces.send()
+    }
+
+    const finalCallback = (err) => {
+      expect(err).to.not.exist
+      // This 6th transaction should not be collected.
+      expect(agent.traces.trace).to.not.exist
+      createTransaction(`/test-0`, 500)
+      expect(agent.traces.trace, '6th trace to collect').to.not.exist
+      done()
+    }
+
+    const testCallback = (err, props) => {
+      expect(err, 'Callback error should be falsy.').to.not.exist
+      const { idx, max } = props
+      const nextIdx = idx + 1
+      if (nextIdx >= max) {
+        return finalCallback()
       }
-    )
+      return txnCreator(nextIdx, max, testCallback)
+    }
+
+    // Array iteration is too difficult to slow down, so this steps through recursively
+    txnCreator(0, maxTraces, testCallback)
   })
 
   describe('when request timings are tracked over time', function () {
