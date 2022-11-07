@@ -62,7 +62,7 @@ jobs:
         NODE_AUTH_TOKEN: ${{ secrets.npm_token }}
     - name: Get Created Tag
       id: get_tag
-      run: echo "::set-output name=latest_tag::$(git describe --tags --abbrev=0)"
+      run: echo "latest_tag=$(git describe --tags --abbrev=0)" >> $GITHUB_OUTPUT
     - name: Create GitHub Release
       run: node ./agent-repo/bin/create-github-release.js --tag ${{ steps.get_tag.outputs.latest_tag }} --repo ${{ github.repository }} --changelog ${{ inputs.changelog_file }}
       env:
