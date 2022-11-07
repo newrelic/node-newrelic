@@ -31,13 +31,7 @@ tap.test('DynamoDB', (t) => {
     })
 
     helper = utils.TestAgent.makeInstrumented()
-    common.registerCoreInstrumentation(helper)
-    helper.registerInstrumentation({
-      moduleName: '@aws-sdk/lib-dynamodb',
-      type: 'datastore',
-      onResolved: require('../../../lib/v3/lib-dynamodb')
-    })
-
+    common.registerInstrumentation(helper)
     const lib = require('@aws-sdk/lib-dynamodb')
     DynamoDBDocumentClient = lib.DynamoDBDocumentClient
     const { DynamoDBClient } = require('@aws-sdk/client-dynamodb')
@@ -53,7 +47,7 @@ tap.test('DynamoDB', (t) => {
     const endpoint = `http://localhost:${server.address().port}`
     client = new DynamoDBClient({
       credentials: FAKE_CREDENTIALS,
-      endpoint: endpoint,
+      endpoint,
       region: 'us-east-1'
     })
 

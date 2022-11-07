@@ -36,6 +36,7 @@ tap.test('DynamoDB', (t) => {
   let BatchExecuteStatementCommand = null
   let UpdateTableCommand = null
   let DeleteTableCommand = null
+  let DynamoDBClient = null
 
   t.beforeEach(async () => {
     server = createEmptyResponseServer()
@@ -45,15 +46,9 @@ tap.test('DynamoDB', (t) => {
     })
 
     helper = utils.TestAgent.makeInstrumented()
-    common.registerCoreInstrumentation(helper)
-    helper.registerInstrumentation({
-      moduleName: '@aws-sdk/client-dynamodb',
-      type: 'datastore',
-      onResolved: require('../../../lib/v3/client-dynamodb')
-    })
-
+    common.registerInstrumentation(helper)
     const lib = require('@aws-sdk/client-dynamodb')
-    const DynamoDBClient = lib.DynamoDBClient
+    DynamoDBClient = lib.DynamoDBClient
     CreateTableCommand = lib.CreateTableCommand
     PutItemCommand = lib.PutItemCommand
     GetItemCommand = lib.GetItemCommand
@@ -98,12 +93,31 @@ tap.test('DynamoDB', (t) => {
     BatchExecuteStatementCommand = null
     UpdateTableCommand = null
     DeleteTableCommand = null
+    DynamoDBClient = null
 
     Object.keys(require.cache).forEach((key) => {
       if (key.includes('@aws-sdk/client-dynamodb') || key.includes('@aws-sdk/smithy-client')) {
         delete require.cache[key]
       }
     })
+  })
+
+  // See: https://github.com/newrelic/node-newrelic-aws-sdk/issues/160
+  // I do not care if this fails. the test is to make sure the instrumentation
+  // does not crash
+  t.test('real endpoint test', async (t) => {
+    const realClient = new DynamoDBClient({
+      credentials: FAKE_CREDENTIALS,
+      region: AWS_REGION
+    })
+
+    const cmd = new QueryCommand(getQueryParams(tableName, 'randomtest'))
+    try {
+      await realClient.send(cmd)
+      throw new Error('this should fail with IncompleteSignatureException')
+    } catch (err) {
+      t.equal(err.name, 'IncompleteSignatureException')
+    }
   })
 
   t.test('commands, promise-style', (t) => {

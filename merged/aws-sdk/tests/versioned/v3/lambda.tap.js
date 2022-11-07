@@ -24,7 +24,7 @@ tap.test('LambdaClient', (t) => {
       server.listen(0, resolve)
     })
     helper = utils.TestAgent.makeInstrumented()
-    common.registerCoreInstrumentation(helper)
+    common.registerInstrumentation(helper)
     const { LambdaClient, ...lib } = require('@aws-sdk/client-lambda')
     AddLayerVersionPermissionCommand = lib.AddLayerVersionPermissionCommand
     const endpoint = `http://localhost:${server.address().port}`

@@ -30,7 +30,7 @@ tap.test('S3 buckets', (t) => {
     })
 
     helper = utils.TestAgent.makeInstrumented()
-    common.registerCoreInstrumentation(helper)
+    common.registerInstrumentation(helper)
     const { S3Client, ...lib } = require('@aws-sdk/client-s3')
     S3 = new S3Client({
       region: 'us-east-1',

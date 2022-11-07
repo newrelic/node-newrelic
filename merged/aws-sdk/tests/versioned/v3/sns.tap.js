@@ -30,12 +30,7 @@ tap.test('SNS', (t) => {
     })
 
     helper = utils.TestAgent.makeInstrumented()
-    common.registerCoreInstrumentation(helper)
-    helper.registerInstrumentation({
-      moduleName: '@aws-sdk/client-sns',
-      type: 'message',
-      onResolved: require('../../../lib/v3/sns')
-    })
+    common.registerInstrumentation(helper)
     const lib = require('@aws-sdk/client-sns')
     const SNSClient = lib.SNSClient
     PublishCommand = lib.PublishCommand
