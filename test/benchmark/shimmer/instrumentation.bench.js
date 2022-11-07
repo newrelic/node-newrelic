@@ -40,12 +40,13 @@ suite.add({
   }
 })
 
-suite.add({
-  name: 'shimmer.reinstrument()',
-  agent: true,
-  fn: function (agent) {
-    return shimmer.reinstrument(agent, 'benchmark')
-  }
-})
+// This causes the cjs loader to fail, with benchmark not being found.
+// suite.add({
+//   name: 'shimmer.reinstrument()',
+//   agent: true,
+//   fn: function (agent) {
+//     return shimmer.reinstrument(agent, 'benchmark')
+//   }
+// })
 
 suite.run()
