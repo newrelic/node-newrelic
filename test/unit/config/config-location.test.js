@@ -13,7 +13,7 @@ const sinon = require('sinon')
 
 const Config = require('../../../lib/config')
 
-tap.test('when overriding the config file location via NR_HOME', (t) => {
+tap.test('when overriding the config file location via NEW_RELIC_HOME', (t) => {
   t.autoend()
 
   const DESTDIR = path.join(__dirname, 'xXxNRHOMETESTxXx')
@@ -36,7 +36,7 @@ tap.test('when overriding the config file location via NR_HOME', (t) => {
     process.chdir(NOPLACEDIR)
     process.env.NEW_RELIC_HOME = DESTDIR
 
-    const sampleConfig = fs.createReadStream(path.join(__dirname, '../../../lib/config/default.js'))
+    const sampleConfig = fs.createReadStream(path.join(__dirname, '../../../newrelic.js'))
     const sandboxedConfig = fs.createWriteStream(CONFIGPATH)
     sampleConfig.pipe(sandboxedConfig)
 
