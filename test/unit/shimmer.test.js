@@ -174,6 +174,13 @@ describe('shimmer', function () {
       }
     }
 
+    it('should not wrap anything without enough information', () => {
+      shimmer.wrapMethod(nodule, 'nodule')
+      expect(shimmer.isWrapped(nodule.doubler)).equal(false)
+      shimmer.wrapMethod(nodule, 'nodule', 'doubler')
+      expect(shimmer.isWrapped(nodule.doubler)).equal(false)
+    })
+
     it('should wrap a method', function () {
       let doubled = 0
       let before = false
@@ -187,6 +194,7 @@ describe('shimmer', function () {
         }
       })
 
+      expect(shimmer.isWrapped(nodule.doubler)).equal(true)
       expect(nodule.doubler[symbols.unwrap]).a('function')
 
       nodule.doubler(7, function (z) {
@@ -273,6 +281,7 @@ describe('shimmer', function () {
       })
 
       it('should replace a property with an accessor', function (done) {
+        shimmer.debug = true // test internal debug code
         const original = shimmer.wrapDeprecated(simple, 'nodule', 'target', {
           get: function () {
             // test will only complete if this is called
@@ -283,6 +292,8 @@ describe('shimmer', function () {
         expect(original).equal(true)
 
         expect(simple.target).equal(false)
+        // internal debug code should unwrap
+        expect(shimmer.unwrapAll).not.throws()
       })
 
       it('should invoke the setter when the accessor is used', function (done) {
