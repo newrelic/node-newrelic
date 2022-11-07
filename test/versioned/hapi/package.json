@@ -10,7 +10,7 @@
       "dependencies": {
         "ejs": "2.5.5",
         "@hapi/hapi": ">=20.1.2",
-        "vision": "latest"
+        "@hapi/vision": "latest"
       },
       "files": [
         "capture-params.tap.js",
@@ -25,10 +25,5 @@
         "vhost.tap.js"
       ]
     }
-  ],
-  "dependencies": {
-    "@hapi/hapi": "^20.1.2",
-    "ejs": "^2.5.5",
-    "vision": "latest"
-  }
+  ]
 }

@@ -5,7 +5,7 @@
 
 'use strict'
 
-const helper = require('../../../lib/agent_helper')
+const helper = require('../../lib/agent_helper')
 const http = require('http')
 const tap = require('tap')
 const utils = require('./hapi-utils')
