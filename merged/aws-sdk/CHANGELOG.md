@@ -2,13 +2,7 @@
 
 * Fixed a crash when using versions >3.192.0 of AWS sdk v3 where a customer would see an error of `error: TypeError: config.endpoint is not a function`.
 
-* Removed one usage of `__NR_instrumented` in the tests.
-
-* Updated versioned tests to exclude 3.194.0 from tests that rely on custom endpoints
-
-Update test semver range for client-s3 to exclude version 3.192.0
-
-* Locked down version of aws-sdk/client-s3 to under 3.192.0, as that version is broken
+* Updated versioned tests to exclude 3.194.0-3.196.0 from tests because they contain breaking changes. 
 
 ### v5.0.1 (2022-10-10)
 
