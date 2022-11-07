@@ -10,6 +10,7 @@ const cp = require('child_process')
 const fs = require('fs')
 const helper = require('../../lib/agent_helper')
 const verifySegments = require('./verify.js')
+const symbols = require('../../../lib/symbols')
 
 test('exec', function (t) {
   const agent = setupAgent(t)
@@ -87,7 +88,7 @@ test('should not break removeListener for multiple events down to single', (t) =
 
     child.removeListener('message', onMessage)
     t.ok(child._events.message)
-    t.equal(child._events.message.__NR_original, onMessage2)
+    t.equal(child._events.message[symbols.original], onMessage2)
 
     child.on('exit', function () {
       t.end()
@@ -162,7 +163,7 @@ test('should not break multiple once() for multiple events down to single', (t) 
       t.ok(invokedMessage1, 'Must have onMessage called for test to be valid.')
       t.ok(invokedMessage2, 'Must have onMessage2 called for test to be valid.')
 
-      t.equal(child._events.message.__NR_original, onMessage3)
+      t.equal(child._events.message[symbols.original], onMessage3)
       t.end()
     })
   })

@@ -7,6 +7,7 @@
 
 const helper = require('../../lib/agent_helper')
 const tap = require('tap')
+const symbols = require('../../../lib/symbols')
 
 tap.test('external requests', function (t) {
   t.autoend()
@@ -187,7 +188,7 @@ tap.test('external requests', function (t) {
           t.end()
         })
       })
-      reqSegment = req.__NR_segment
+      reqSegment = req[symbols.segment]
     })
   })
 })

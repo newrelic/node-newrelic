@@ -14,11 +14,12 @@ Normally, in order to use a shim helper you need to configure and setup an [inst
 //File: test.js
 
 const newrelic = require('newrelic');
+const symbols = require('newrelic/lib/symbols');
 
 // grab the agent instance from cache and manually
 // require the shim library -- normally the agent
 // will handle this for you
-const agent = require.cache.__NR_cache.agent;
+const agent = require.cache[symbols.cache].agent;
 const Shim = require('newrelic/lib/shim/shim');
 
 // do the same fnApply/apply shenangins as the shim library

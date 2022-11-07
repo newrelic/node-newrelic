@@ -9,6 +9,7 @@ const tap = require('tap')
 const API = require('../../../api')
 const agentHelper = require('../../lib/agent_helper')
 const Shim = require('../../../lib/shim/shim')
+const symbols = require('../../../lib/symbols')
 
 tap.test('Agent API - instrumentLoadedModule', (t) => {
   t.autoend()
@@ -84,7 +85,7 @@ tap.test('Agent API - instrumentLoadedModule', (t) => {
     api.instrumentLoadedModule('express', expressMock)
     api.instrumentLoadedModule('express', expressMock)
 
-    const nrOriginal = expressMock.application.use.__NR_original
+    const nrOriginal = expressMock.application.use[symbols.original]
     t.equal(nrOriginal, originalUse)
 
     t.end()

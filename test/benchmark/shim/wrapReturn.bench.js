@@ -6,6 +6,7 @@
 'use strict'
 
 const shared = require('./shared')
+const symbols = require('../../../lib/symbols')
 
 const s = shared.makeSuite('Shim segments')
 const suite = s.suite
@@ -32,7 +33,7 @@ const testFunctions = {
     return test.func.testProp
   },
   'get unwrap': function testGetUnwrap() {
-    return test.func.__NR_unwrap
+    return test.func[symbols.unwrap]
   }
 }
 

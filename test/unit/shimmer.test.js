@@ -30,6 +30,7 @@ const logger = require('../../lib/logger').child({ component: 'TEST' })
 const shimmer = require('../../lib/shimmer')
 const shims = require('../../lib/shim')
 const EventEmitter = require('events').EventEmitter
+const symbols = require('../../lib/symbols')
 
 const TEST_MODULE_PATH = '../helpers/module'
 const TEST_MODULE = 'sinon'
@@ -106,10 +107,18 @@ describe('shimmer', function () {
         expect(counter).to.equal(1)
       })
 
-      it('should clean up NR added properties', () => {
-        const nrKeys = Object.keys(instrumentedModule).filter((key) => key.startsWith('__NR_'))
+      it('should have some NR properties after instrumented', () => {
+        const mod = require(moduleName)
+        const nrKeys = getNRSymbols(mod)
 
-        const message = `Expected keys to be equal but found: ${nrKeys.join(', ')}`
+        const message = `Expected to have Symbol(shim) but found ${nrKeys}.`
+        expect(nrKeys, message).to.include.members(['Symbol(shim)'])
+      })
+
+      it('should clean up NR added properties', () => {
+        const nrKeys = getNRSymbols(instrumentedModule)
+
+        const message = `Expected keys to be equal but found: ${JSON.stringify(nrKeys)}`
         expect(nrKeys.length, message).to.equal(0)
       })
     }
@@ -165,6 +174,13 @@ describe('shimmer', function () {
       }
     }
 
+    it('should not wrap anything without enough information', () => {
+      shimmer.wrapMethod(nodule, 'nodule')
+      expect(shimmer.isWrapped(nodule.doubler)).equal(false)
+      shimmer.wrapMethod(nodule, 'nodule', 'doubler')
+      expect(shimmer.isWrapped(nodule.doubler)).equal(false)
+    })
+
     it('should wrap a method', function () {
       let doubled = 0
       let before = false
@@ -178,7 +194,8 @@ describe('shimmer', function () {
         }
       })
 
-      expect(nodule.doubler.__NR_unwrap).a('function')
+      expect(shimmer.isWrapped(nodule.doubler)).equal(true)
+      expect(nodule.doubler[symbols.unwrap]).a('function')
 
       nodule.doubler(7, function (z) {
         doubled = z
@@ -204,7 +221,7 @@ describe('shimmer', function () {
         }
       })
 
-      expect(nodule.quadrupler.__NR_unwrap).a('function')
+      expect(nodule.quadrupler[symbols.unwrap]).a('function')
       expect(nodule.quadrupler.test).to.be.a('function')
 
       nodule.quadrupler(7, function (z) {
@@ -264,6 +281,7 @@ describe('shimmer', function () {
       })
 
       it('should replace a property with an accessor', function (done) {
+        shimmer.debug = true // test internal debug code
         const original = shimmer.wrapDeprecated(simple, 'nodule', 'target', {
           get: function () {
             // test will only complete if this is called
@@ -274,6 +292,8 @@ describe('shimmer', function () {
         expect(original).equal(true)
 
         expect(simple.target).equal(false)
+        // internal debug code should unwrap
+        expect(shimmer.unwrapAll).not.throws()
       })
 
       it('should invoke the setter when the accessor is used', function (done) {
@@ -603,15 +623,10 @@ tap.test('Should not augment module when no instrumentation hooks provided', (t)
 
   t.equal(loadedModule.foo, 'bar')
 
-  const nrProps = Object.keys(loadedModule).filter((key) => {
-    return key.startsWith('__NR')
-  })
-
   // Future proofing to catch any added symbols. If test  module modified to add own symbol
   // will have to filter out here.
   const nrSymbols = Object.getOwnPropertySymbols(loadedModule)
 
-  t.equal(nrProps.length, 0, `should not have any NR props but found: ${JSON.stringify(nrProps)}`)
   t.equal(nrSymbols.length, 0, `should not have NR symbols but found: ${JSON.stringify(nrSymbols)}`)
 
   t.end()
@@ -838,4 +853,11 @@ function clearCachedModules(modules) {
       return false
     }
   })
+}
+
+function getNRSymbols(thing) {
+  const knownSymbols = Object.values(symbols)
+  return Object.getOwnPropertySymbols(thing)
+    .filter((key) => knownSymbols.includes(key))
+    .map((key) => key.toString())
 }

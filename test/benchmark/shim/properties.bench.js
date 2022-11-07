@@ -12,15 +12,6 @@ const suite = s.suite
 const shim = s.shim
 
 suite.add({
-  name: 'shim.setInternalProperty',
-  fn: function () {
-    const test = shared.getTest()
-    shim.setInternalProperty(test, '__NR_internal', function () {})
-    return test
-  }
-})
-
-suite.add({
   name: 'shim.defineProperty',
   fn: function () {
     const test = shared.getTest()

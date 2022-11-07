@@ -10,6 +10,7 @@ const path = require('path')
 
 const helper = require('../../lib/agent_helper')
 const shimmer = require('../../../lib/shimmer')
+const symbols = require('../../../lib/symbols')
 
 const CUSTOM_MODULE_PATH = './node_modules/customTestPackage'
 const EXPECTED_RESOLVED_METRIC_NAME =
@@ -37,7 +38,7 @@ tap.test('Should properly track module paths to enable shim.require()', function
   require(CUSTOM_MODULE_PATH)
   const mycustomPackage = require(CUSTOM_MODULE_PATH)
 
-  const shim = mycustomPackage.__NR_shim
+  const shim = mycustomPackage[symbols.shim]
   const moduleRoot = shim._moduleRoot
 
   const resolvedPackagePath = path.resolve(__dirname, CUSTOM_MODULE_PATH)
@@ -66,7 +67,7 @@ tap.test('shim.require() should play well with multiple test runs', (t) => {
   require(CUSTOM_MODULE_PATH)
   const mycustomPackage = require(CUSTOM_MODULE_PATH)
 
-  const shim = mycustomPackage.__NR_shim
+  const shim = mycustomPackage[symbols.shim]
   const moduleRoot = shim._moduleRoot
 
   const resolvedPackagePath = path.resolve(__dirname, CUSTOM_MODULE_PATH)

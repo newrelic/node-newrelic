@@ -13,6 +13,7 @@ const AwsLambda = require('../../../lib/serverless/aws-lambda')
 const lambdaSampleEvents = require('./lambda-sample-events')
 
 const ATTR_DEST = require('../../../lib/config/attribute-filter').DESTINATIONS
+const symbols = require('../../../lib/symbols')
 // attribute key names
 const REQ_ID = 'aws.requestId'
 const LAMBDA_ARN = 'aws.lambda.arn'
@@ -87,8 +88,8 @@ tap.test('AwsLambda.patchLambdaHandler', (t) => {
       helper.unloadAgent(agent)
     }
 
-    if (process.emit && process.emit.__NR_unwrap) {
-      process.emit.__NR_unwrap()
+    if (process.emit && process.emit[symbols.unwrap]) {
+      process.emit[symbols.unwrap]()
     }
 
     agent = null

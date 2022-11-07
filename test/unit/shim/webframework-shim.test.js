@@ -10,6 +10,7 @@ const sinon = require('sinon')
 const helper = require('../../lib/agent_helper')
 const Shim = require('../../../lib/shim/shim')
 const WebFrameworkShim = require('../../../lib/shim/webframework-shim')
+const symbols = require('../../../lib/symbols')
 
 test('WebFrameworkShim', function (t) {
   t.autoend()
@@ -43,7 +44,7 @@ test('WebFrameworkShim', function (t) {
       errorHandled: false,
       error: null
     }
-    req = { __NR_transactionInfo: txInfo, params: { foo: 'bar', biz: 'bang' } }
+    req = { [symbols.transactionInfo]: txInfo, params: { foo: 'bar', biz: 'bang' } }
   }
 
   function afterEach() {

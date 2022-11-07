@@ -8,8 +8,8 @@
 const tap = require('tap')
 const { EventEmitter } = require('events')
 const helper = require('../../lib/agent_helper')
-const sinon = require('sinon')
 const Shim = require('../../../lib/shim/shim')
+const symbols = require('../../../lib/symbols')
 tap.Test.prototype.addAssert('isNonWritable', 1, helper.isNonWritable)
 tap.Test.prototype.addAssert('compareSegments', 2, helper.compareSegments)
 
@@ -1671,7 +1671,7 @@ tap.test('Shim', function (t) {
       }
 
       t.not(wrapped, original)
-      t.not(wrapped.__NR_original, original)
+      t.not(wrapped[symbols.original], original)
       t.equal(shim.unwrap(wrapped), original)
       t.end()
     })
@@ -1758,7 +1758,7 @@ tap.test('Shim', function (t) {
       }
 
       t.not(wrapped, original)
-      t.not(wrapped.__NR_original, original)
+      t.not(wrapped[symbols.original], original)
       t.not(shim.unwrapOnce(wrapped), original)
       t.end()
     })
@@ -1927,17 +1927,6 @@ tap.test('Shim', function (t) {
     t.autoend()
     t.beforeEach(beforeEach)
     t.afterEach(afterEach)
-
-    t.test(
-      'should set a non-enumerable property on the object when `hide_internals` is true',
-      function (t) {
-        agent.config.transaction_tracer.hide_internals = true
-        const keys = Object.keys(wrappable)
-        shim.storeSegment(wrappable, {})
-        t.same(Object.keys(wrappable), keys)
-        t.end()
-      }
-    )
 
     t.test('should store the segment on the object', function (t) {
       const segment = { probe: function () {} }
@@ -2610,138 +2599,6 @@ tap.test('Shim', function (t) {
       t.equal(shim.normalizeIndex(args.length, 10), null)
       t.equal(shim.normalizeIndex(args.length, -5), null)
       t.equal(shim.normalizeIndex(args.length, -10), null)
-      t.end()
-    })
-  })
-
-  t.test('#setInternalProperty when `hide_internals` is true', function (t) {
-    t.autoend()
-    t.beforeEach(function () {
-      beforeEach()
-      agent.config.transaction_tracer.hide_internals = true
-    })
-
-    t.afterEach(afterEach)
-
-    t.test('should create a writable, non-enumerable value property', function (t) {
-      // Non enumerable
-      const obj = {}
-      shim.setInternalProperty(obj, 'foo', 'bar')
-      t.equal(obj.foo, 'bar')
-      t.notOk(Object.keys(obj).includes('foo'))
-
-      // Writable
-      t.doesNotThrow(function () {
-        obj.foo = 'fizbang'
-      })
-      t.equal(obj.foo, 'fizbang')
-      t.notOk(Object.keys(obj).includes('foo'))
-      t.end()
-    })
-
-    t.test('should not throw if the object has been frozen', function (t) {
-      const obj = {}
-      Object.freeze(obj)
-
-      /* eslint-disable strict */
-      t.throws(function () {
-        'use strict'
-        obj.fiz = 'bang'
-      })
-      /* eslint-enable strict */
-
-      t.doesNotThrow(function () {
-        shim.setInternalProperty(obj, 'foo', 'bar')
-      })
-      t.end()
-    })
-
-    t.test('should not throw if the property has been sealed', function (t) {
-      const obj = {}
-      Object.seal(obj)
-
-      /* eslint-disable strict */
-      t.throws(function () {
-        'use strict'
-        obj.fiz = 'bang'
-      })
-      /* eslint-enable strict */
-
-      t.doesNotThrow(function () {
-        shim.setInternalProperty(obj, 'foo', 'bar')
-      })
-      t.end()
-    })
-  })
-
-  t.test('#setInternalProperty when `hide_internals` is false', function (t) {
-    t.autoend()
-    t.beforeEach(function () {
-      beforeEach()
-      sinon.spy(Object, 'defineProperty')
-      agent.config.transaction_tracer.hide_internals = false
-    })
-
-    t.afterEach(function () {
-      afterEach()
-      Object.defineProperty.restore()
-    })
-
-    t.test('should create a writable, enumerable value property', function (t) {
-      // Enumerable
-      const obj = {}
-      shim.setInternalProperty(obj, 'foo', 'bar')
-      t.equal(obj.foo, 'bar')
-      t.ok(Object.keys(obj).includes('foo'))
-
-      // Writable
-      t.doesNotThrow(function () {
-        obj.foo = 'fizbang'
-      })
-      t.equal(obj.foo, 'fizbang')
-      t.ok(Object.keys(obj).includes('foo'))
-      t.end()
-    })
-
-    t.test('should not use defineProperty', function (t) {
-      const obj = {}
-      shim.setInternalProperty(obj, 'foo', 'bar')
-
-      t.equal(Object.defineProperty.callCount, 0)
-      t.end()
-    })
-
-    t.test('should not throw if the object has been frozen', function (t) {
-      const obj = {}
-      Object.freeze(obj)
-
-      /* eslint-disable strict */
-      t.throws(function () {
-        'use strict'
-        obj.fiz = 'bang'
-      })
-      /* eslint-enable strict */
-
-      t.doesNotThrow(function () {
-        shim.setInternalProperty(obj, 'foo', 'bar')
-      })
-      t.end()
-    })
-
-    t.test('should not throw if the property has been sealed', function (t) {
-      const obj = {}
-      Object.seal(obj)
-
-      /* eslint-disable strict */
-      t.throws(function () {
-        'use strict'
-        obj.fiz = 'bang'
-      })
-      /* eslint-enable strict */
-
-      t.doesNotThrow(function () {
-        shim.setInternalProperty(obj, 'foo', 'bar')
-      })
       t.end()
     })
   })

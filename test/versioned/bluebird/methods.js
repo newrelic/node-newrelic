@@ -8,6 +8,7 @@
 const helper = require('../../lib/agent_helper')
 const testTransactionState = require('../../integration/instrumentation/promises/transaction-state')
 const util = require('util')
+const symbols = require('../../../lib/symbols')
 
 const runMultiple = testTransactionState.runMultiple
 const tasks = []
@@ -374,8 +375,8 @@ module.exports = function (t, library, loadLibrary) {
     const Promise = loadLibrary()
     const Promise2 = Promise.getNewLibraryCopy()
 
-    t.ok(Promise2.resolve.__NR_original, 'should have wrapped class methods')
-    t.ok(Promise2.prototype.then.__NR_original, 'should have wrapped instance methods')
+    t.ok(Promise2.resolve[symbols.original], 'should have wrapped class methods')
+    t.ok(Promise2.prototype.then[symbols.original], 'should have wrapped instance methods')
     t.end()
   })
 
@@ -521,8 +522,8 @@ module.exports = function (t, library, loadLibrary) {
     const Promise = loadLibrary()
     const Promise2 = Promise.noConflict()
 
-    t.ok(Promise2.resolve.__NR_original, 'should have wrapped class methods')
-    t.ok(Promise2.prototype.then.__NR_original, 'should have wrapped instance methods')
+    t.ok(Promise2.resolve[symbols.original], 'should have wrapped class methods')
+    t.ok(Promise2.prototype.then[symbols.original], 'should have wrapped instance methods')
     t.end()
   })
 
@@ -2222,7 +2223,7 @@ PromiseTap.prototype._check = function (t, source, methods, tested, type) {
 
   methods.forEach(function (method) {
     const wrapped = source[method]
-    const original = wrapped.__NR_original || originalSource[method]
+    const original = wrapped[symbols.original] || originalSource[method]
 
     // Skip this property if it is internal (starts or ends with underscore), is
     // a class (starts with a capital letter), or is not a function.

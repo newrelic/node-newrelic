@@ -8,6 +8,7 @@
 const tap = require('tap')
 const test = tap.test
 const helper = require('../../lib/agent_helper')
+const symbols = require('../../../lib/symbols')
 
 // connect is a loudmouth without this
 process.env.NODE_ENV = 'test'
@@ -36,7 +37,7 @@ test('intercepting errors with connect 2', function (t) {
     t.equal(wrapNop.route, '', 'nop handler defaults to all routes')
     t.ok(wrapNop.handle, 'have nop handle passed above')
     t.equal(wrapNop.handle.name, 'nop', "nop's name is unchanged")
-    t.equal(wrapNop.handle.__NR_original, nop, 'nop is wrapped')
+    t.equal(wrapNop.handle[symbols.original], nop, 'nop is wrapped')
 
     t.end()
   })

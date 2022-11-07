@@ -9,6 +9,7 @@ const tap = require('tap')
 const test = tap.test
 const helper = require('../../lib/agent_helper')
 const EventEmitter = require('events').EventEmitter
+const symbols = require('../../../lib/symbols')
 
 test('bind in transaction', function testBind(t) {
   const { agent, contextManager, tracer } = setupAgent(t)
@@ -143,7 +144,7 @@ test('bind + capture error', function testThrows(t) {
 
       t.equal(err, error, 'should have expected error')
       t.equal(Object.keys(error).length, 0, 'error should not have extra properties')
-      t.notOk(err.__NR_transaction, 'should not hold onto transaction')
+      t.notOk(err[symbols.transaction], 'should not hold onto transaction')
 
       // global error is not tied to a transaction, so its name should not be
       // the transaction name

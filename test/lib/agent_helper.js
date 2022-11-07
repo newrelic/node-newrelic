@@ -110,8 +110,6 @@ const helper = (module.exports = {
     _agent.__created = new Error('Only one agent at a time! This one was created at:')
     _agent.recordSupportability = () => {} // Stub supportabilities.
 
-    global.__NR_agent = _agent
-
     if (setState) {
       _agent.setState('started')
     }
@@ -205,15 +203,11 @@ const helper = (module.exports = {
     shimmer.unwrapAll()
     shimmer.registeredInstrumentations = Object.create(null)
     shimmer.debug = false
-    // On all versions each agent will add an unhandledRejection handler. This
-    // handler needs to be removed on unload.
-    removeListenerByName(process, 'unhandledRejection', '__NR_unhandledRejectionHandler')
 
     // Stop future harvesting by aggregators.
     agent.stopAggregators()
 
     if (agent === _agent) {
-      global.__NR_agent = null
       _agent = null
       _agentApi = null
     }
@@ -526,20 +520,3 @@ const helper = (module.exports = {
     })
   }
 })
-
-/**
- * Removes all listeners with the given name from the emitter.
- *
- * @param {EventEmitter}  emitter       - The emitter with listeners to remove.
- * @param {string}        eventName     - The event to search within.
- * @param {string}        listenerName  - The name of the listeners to remove.
- */
-function removeListenerByName(emitter, eventName, listenerName) {
-  const listeners = emitter.listeners(eventName)
-  for (let i = 0, len = listeners.length; i < len; ++i) {
-    const listener = listeners[i]
-    if (typeof listener === 'function' && listener.name === listenerName) {
-      emitter.removeListener(eventName, listener)
-    }
-  }
-}

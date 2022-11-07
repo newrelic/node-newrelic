@@ -8,6 +8,7 @@
 const benchmark = require('../../lib/benchmark')
 const helper = require('../../lib/agent_helper')
 const WebFrameworkShim = require('../../../lib/shim/webframework-shim')
+const symbols = require('../../../lib/symbols')
 
 const agent = helper.loadMockedAgent()
 const contextManager = helper.getContextManager()
@@ -82,7 +83,7 @@ function getTest() {
 function getReqd() {
   return {
     params: { a: 1, b: 2, c: 3 },
-    __NR_transactionInfo: {
+    [symbols.transactionIinfo]: {
       transaction: transaction,
       segmentStack: [],
       errorHandled: false,

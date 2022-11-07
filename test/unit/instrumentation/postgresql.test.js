@@ -10,6 +10,7 @@ const test = tap.test
 
 const helper = require('../../lib/agent_helper')
 const DatastoreShim = require('../../../lib/shim/datastore-shim.js')
+const symbols = require('../../../lib/symbols')
 
 let agent = null
 let initialize = null
@@ -83,7 +84,7 @@ test('Lazy loading of native PG client', (t) => {
     initialize(agent, mockPg, 'pg', shim)
 
     let pg = mockPg.native
-    t.equal(pg.Client.__NR_original.name, 'NativeClient')
+    t.equal(pg.Client[symbols.original].name, 'NativeClient')
 
     pg = mockPg
     t.equal(pg.Client.name, 'DefaultClient')
@@ -121,13 +122,13 @@ test('Lazy loading of native PG client', (t) => {
 
     initialize(agent, mockPg, 'pg', shim)
     let nativeClient = mockPg.native
-    t.equal(nativeClient.Client.__NR_original.name, 'NativeClient')
+    t.equal(nativeClient.Client[symbols.original].name, 'NativeClient')
     let defaultClient = mockPg
     t.equal(defaultClient.Client.name, 'DefaultClient')
 
     initialize(agent, mockPg, 'pg', shim)
     nativeClient = mockPg.native
-    t.equal(nativeClient.Client.__NR_original.name, 'NativeClient')
+    t.equal(nativeClient.Client[symbols.original].name, 'NativeClient')
     defaultClient = mockPg
     t.equal(defaultClient.Client.name, 'DefaultClient')
 
@@ -140,13 +141,13 @@ test('Lazy loading of native PG client', (t) => {
     // instrument once
     initialize(agent, mockPg, 'pg', shim)
     const pg1 = mockPg.native
-    t.equal(pg1.Client.__NR_original.name, 'NativeClient')
+    t.equal(pg1.Client[symbols.original].name, 'NativeClient')
 
     // simulate deleting from module cache
     mockPg = getMockModule()
     initialize(agent, mockPg, 'pg', shim)
     const pg2 = mockPg.native
-    t.equal(pg2.Client.__NR_original.name, 'NativeClient')
+    t.equal(pg2.Client[symbols.original].name, 'NativeClient')
 
     t.not(pg1, pg2)
 

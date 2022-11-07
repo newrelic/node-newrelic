@@ -8,6 +8,7 @@
 const tap = require('tap')
 const { getTestSecret } = require('../../helpers/secrets')
 const StubApi = require('../../../stub_api')
+const symbols = require('../../../lib/symbols')
 
 const license = getTestSecret('TEST_LICENSE')
 const VERSIONS = ['garbage', '4.0.0']
@@ -19,7 +20,7 @@ tap.test('load agent with bad versions should load stub agent', (t) => {
   t.afterEach(() => {
     // must delete both of these to force a reload
     // of the index.js file
-    delete require.cache.__NR_cache
+    delete require.cache[symbols.cache]
     delete require.cache[require.resolve('../../../index.js')]
   })
 
