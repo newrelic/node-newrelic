@@ -9,10 +9,10 @@ const util = require('util')
 const path = require('path')
 const tap = require('tap')
 const request = require('request')
-const helper = require('../../../lib/agent_helper')
-const API = require('../../../../api')
+const helper = require('../../lib/agent_helper')
+const API = require('../../../api')
 const utils = require('./hapi-utils')
-const fixtures = require('../fixtures')
+const fixtures = require('./fixtures')
 
 tap.test('agent instrumentation of Hapi', function (t) {
   t.autoend()
@@ -110,10 +110,10 @@ tap.test('agent instrumentation of Hapi', function (t) {
     }
 
     server
-      .register(require('vision'))
+      .register(require('@hapi/vision'))
       .then(function () {
         server.views({
-          path: path.join(__dirname, '../views'),
+          path: path.join(__dirname, './views'),
           engines: {
             ejs: require('ejs')
           }
@@ -159,10 +159,10 @@ tap.test('agent instrumentation of Hapi', function (t) {
     })
 
     server
-      .register(require('vision'))
+      .register(require('@hapi/vision'))
       .then(function () {
         server.views({
-          path: path.join(__dirname, '../views'),
+          path: path.join(__dirname, './views'),
           engines: {
             ejs: require('ejs')
           }

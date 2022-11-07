@@ -7,7 +7,7 @@
 
 const tap = require('tap')
 const request = require('request')
-const helper = require('../../../lib/agent_helper')
+const helper = require('../../lib/agent_helper')
 const utils = require('./hapi-utils')
 const Boom = require('@hapi/boom')
 

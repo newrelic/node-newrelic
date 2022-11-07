@@ -6,9 +6,9 @@
 'use strict'
 
 const tap = require('tap')
-const shims = require('../../../../lib/shim')
-const helper = require('../../../lib/agent_helper')
-const instrument = require('../../../../lib/instrumentation/hapi')
+const shims = require('../../../lib/shim')
+const helper = require('../../lib/agent_helper')
+const instrument = require('../../../lib/instrumentation/@hapi/hapi')
 const utils = require('./hapi-utils')
 
 tap.test('instrumentation of Hapi', function (t) {

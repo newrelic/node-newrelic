@@ -5,12 +5,12 @@
 
 'use strict'
 
-const DESTINATIONS = require('../../../../lib/config/attribute-filter').DESTINATIONS
+const { DESTINATIONS } = require('../../../lib/config/attribute-filter')
 const tap = require('tap')
 const request = require('request')
-const helper = require('../../../lib/agent_helper')
+const helper = require('../../lib/agent_helper')
 const utils = require('./hapi-utils')
-const HTTP_ATTS = require('../../../lib/fixtures').httpAttributes
+const HTTP_ATTS = require('../../lib/fixtures').httpAttributes
 
 tap.test('Hapi vhost support', function (t) {
   t.autoend()

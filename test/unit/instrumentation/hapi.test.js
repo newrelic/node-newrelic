@@ -20,7 +20,7 @@ tap.test('an instrumented Hapi application', function (t) {
 
     t.before(function () {
       agent = helper.loadMockedAgent()
-      initialize = require('../../../lib/instrumentation/hapi')
+      initialize = require('../../../lib/instrumentation/@hapi/hapi')
     })
 
     t.teardown(function () {
@@ -68,7 +68,7 @@ tap.test('an instrumented Hapi application', function (t) {
 
       const shim = new shims.WebFrameworkShim(agent, 'hapi')
 
-      require('../../../lib/instrumentation/hapi')(agent, stub, 'hapi', shim)
+      require('../../../lib/instrumentation/@hapi/hapi')(agent, stub, 'hapi', shim)
     })
 
     t.afterEach(function () {
