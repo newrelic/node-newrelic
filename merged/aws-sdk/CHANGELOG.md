@@ -1,3 +1,9 @@
+### v5.0.2 (2022-11-07)
+
+* Fixed a crash when using versions >3.192.0 of AWS sdk v3 where a customer would see an error of `error: TypeError: config.endpoint is not a function`.
+
+* Updated versioned tests to exclude 3.194.0-3.196.0 from tests because they contain breaking changes. 
+
 ### v5.0.1 (2022-10-10)
 
 * Updated DynamoDB instrumentation to default port to 443 when not specified from the endpoint.
