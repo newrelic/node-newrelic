@@ -24,7 +24,7 @@ tap.test('APIGatewayClient', (t) => {
       server.listen(0, resolve)
     })
     helper = utils.TestAgent.makeInstrumented()
-    common.registerCoreInstrumentation(helper)
+    common.registerInstrumentation(helper)
     const { APIGatewayClient, ...lib } = require('@aws-sdk/client-api-gateway')
     CreateApiKeyCommand = lib.CreateApiKeyCommand
     const endpoint = `http://localhost:${server.address().port}`

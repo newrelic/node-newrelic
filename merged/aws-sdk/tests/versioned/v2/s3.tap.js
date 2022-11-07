@@ -28,11 +28,7 @@ tap.test('S3 buckets', (t) => {
     })
 
     helper = utils.TestAgent.makeInstrumented()
-    helper.registerInstrumentation({
-      moduleName: 'aws-sdk',
-      type: 'conglomerate',
-      onRequire: require('../../../lib/v2/instrumentation')
-    })
+    common.registerInstrumentation(helper)
     AWS = require('aws-sdk')
     S3 = new AWS.S3({
       credentials: FAKE_CREDENTIALS,

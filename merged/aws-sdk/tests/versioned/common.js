@@ -44,12 +44,9 @@ function getMatchingSegments(t, segment, pattern, markedSegments = []) {
   return markedSegments
 }
 
-function registerCoreInstrumentation(helper) {
-  helper.registerInstrumentation({
-    moduleName: '@aws-sdk/smithy-client',
-    type: 'generic',
-    onResolved: require('../../lib/v3/smithy-client')
-  })
+function registerInstrumentation(agent) {
+  const hooks = require('../../nr-hooks')
+  hooks.forEach(agent.registerInstrumentation)
 }
 
 function checkExternals({ t, service, operations, tx }) {
@@ -83,6 +80,6 @@ module.exports = {
 
   checkAWSAttributes,
   getMatchingSegments,
-  registerCoreInstrumentation,
+  registerInstrumentation,
   checkExternals
 }

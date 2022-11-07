@@ -24,7 +24,7 @@ tap.test('ElastiCacheClient', (t) => {
       server.listen(0, resolve)
     })
     helper = utils.TestAgent.makeInstrumented()
-    common.registerCoreInstrumentation(helper)
+    common.registerInstrumentation(helper)
     const { ElastiCacheClient, ...lib } = require('@aws-sdk/client-elasticache')
     AddTagsToResourceCommand = lib.AddTagsToResourceCommand
     const endpoint = `http://localhost:${server.address().port}`

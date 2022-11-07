@@ -35,12 +35,7 @@ tap.test('SQS API', (t) => {
     })
 
     helper = utils.TestAgent.makeInstrumented()
-    common.registerCoreInstrumentation(helper)
-    helper.registerInstrumentation({
-      moduleName: '@aws-sdk/client-sqs',
-      type: 'message',
-      onResolved: require('../../../lib/v3/sqs')
-    })
+    common.registerInstrumentation(helper)
 
     const lib = require('@aws-sdk/client-sqs')
     const SQSClient = lib.SQSClient

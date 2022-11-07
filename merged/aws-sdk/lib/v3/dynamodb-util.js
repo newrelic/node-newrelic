@@ -27,6 +27,23 @@ function getDynamoSpec(shim, original, name, args) {
 }
 
 /**
+ * AWS sdk v 3.194?.0 released a breaking change.
+ * See: https://github.com/aws/aws-sdk-js-v3/issues/4122
+ * What this means is config.endpoint is not always a function
+ * unless you provide an endpoint override to your library constructor
+ * This function will derive the endpoint in that scenario by grabbing the region
+ * and building the URL
+ */
+async function getEndpoint(config) {
+  if (typeof config.endpoint === 'function') {
+    return await config.endpoint()
+  }
+
+  const region = await config.region()
+  return new URL(`https://dynamodb.${region}.amazonaws.com`)
+}
+
+/**
  * Middleware hook that records the middleware chain
  * when command is in a list of monitored commands.
  *
@@ -39,7 +56,13 @@ function getDynamoSpec(shim, original, name, args) {
 function dynamoMiddleware(shim, config, next, context) {
   const { commandName } = context
   return async function wrappedMiddleware(args) {
-    const endpoint = await config.endpoint()
+    let endpoint = null
+    try {
+      endpoint = await getEndpoint(config)
+    } catch (err) {
+      shim.logger.debug(err, 'Failed to get the endpoint.')
+    }
+
     const getSpec = getDynamoSpec.bind({ endpoint, commandName })
     const wrappedNext = shim.recordOperation(next, getSpec)
     return wrappedNext(args)

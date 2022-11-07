@@ -24,7 +24,7 @@ tap.test('RekognitionClient', (t) => {
       server.listen(0, resolve)
     })
     helper = utils.TestAgent.makeInstrumented()
-    common.registerCoreInstrumentation(helper)
+    common.registerInstrumentation(helper)
     const { RekognitionClient, ...lib } = require('@aws-sdk/client-rekognition')
     CompareFacesCommand = lib.CompareFacesCommand
     const endpoint = `http://localhost:${server.address().port}`

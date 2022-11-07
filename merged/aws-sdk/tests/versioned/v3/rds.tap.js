@@ -24,7 +24,7 @@ tap.test('RDSClient', (t) => {
       server.listen(0, resolve)
     })
     helper = utils.TestAgent.makeInstrumented()
-    common.registerCoreInstrumentation(helper)
+    common.registerInstrumentation(helper)
     const { RDSClient, ...lib } = require('@aws-sdk/client-rds')
     AddRoleToDBClusterCommand = lib.AddRoleToDBClusterCommand
     const endpoint = `http://localhost:${server.address().port}`

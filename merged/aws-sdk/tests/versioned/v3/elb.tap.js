@@ -24,7 +24,7 @@ tap.test('ElasticLoadBalancingClient', (t) => {
       server.listen(0, resolve)
     })
     helper = utils.TestAgent.makeInstrumented()
-    common.registerCoreInstrumentation(helper)
+    common.registerInstrumentation(helper)
     const { ElasticLoadBalancingClient, ...lib } = require('@aws-sdk/client-elastic-load-balancing')
     AddTagsCommand = lib.AddTagsCommand
     const endpoint = `http://localhost:${server.address().port}`

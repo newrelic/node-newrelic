@@ -8,6 +8,7 @@
 const sinon = require('sinon')
 const tap = require('tap')
 const utils = require('@newrelic/test-utilities')
+const common = require('../common')
 utils.assert.extendTap(tap)
 
 const { createEmptyResponseServer, FAKE_CREDENTIALS } = require('../aws-server-stubs')
@@ -29,11 +30,7 @@ tap.test('aws-sdk', (t) => {
     })
 
     helper = utils.TestAgent.makeInstrumented()
-    helper.registerInstrumentation({
-      moduleName: 'aws-sdk',
-      type: 'conglomerate',
-      onRequire: require('../../../lib/v2/instrumentation')
-    })
+    common.registerInstrumentation(helper)
     AWS = require('aws-sdk')
     AWS.config.update({ region: 'us-east-1' })
 

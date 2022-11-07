@@ -29,11 +29,7 @@ tap.test('SNS', (t) => {
     })
 
     helper = utils.TestAgent.makeInstrumented()
-    helper.registerInstrumentation({
-      moduleName: 'aws-sdk',
-      type: 'conglomerate',
-      onRequire: require('../../../lib/v2/instrumentation')
-    })
+    common.registerInstrumentation(helper)
     AWS = require('aws-sdk')
 
     sns = new AWS.SNS({

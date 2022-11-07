@@ -24,7 +24,7 @@ tap.test('SESClient', (t) => {
       server.listen(0, resolve)
     })
     helper = utils.TestAgent.makeInstrumented()
-    common.registerCoreInstrumentation(helper)
+    common.registerInstrumentation(helper)
     const { SESClient, ...lib } = require('@aws-sdk/client-ses')
     SendEmailCommand = lib.SendEmailCommand
     const endpoint = `http://localhost:${server.address().port}`
