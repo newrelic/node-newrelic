@@ -1,19 +1,12 @@
 ### v9.6.0 (2022-11-09)
 
-* Removed `__NR`-prefixed properties in favour of symbols.
-
 * Dropped support for `vision`, and instead only instrument `@hapi/vision`.
 
 * Updated configuration system to automatically create an environment variable mapping for a new config value.
    * It will follow a convention of `NEW_RELIC_PATH_TO_CONFIG_KEY`.
    * For example if there is a new configuration option of `config.nested.object_path.enabled` the env var would be `NEW_RELIC_NESTED_OBJECT_PATH.ENABLED`.
-
-Intended to drop async from promise shim test
-
-In environment unit test: 
-* Replaced async lib with async functions
-* Replaced fs with fs/promises
-* Replaced rimraf with fs/promises
+   
+* Removed `transaction_tracer.hide_internals` configuration. All of the internal configuration is now handled by Javascript symbols instead of non-enumerable properties, so there is no longer a performance penalty, as symbols are already hidden by default.
 
 ### v9.5.0 (2022-10-26)
 
