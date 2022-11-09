@@ -1,3 +1,13 @@
+### v9.6.0 (2022-11-09)
+
+* Dropped support for `vision`, and instead only instrument `@hapi/vision`.
+
+* Updated configuration system to automatically create an environment variable mapping for a new config value.
+   * It will follow a convention of `NEW_RELIC_PATH_TO_CONFIG_KEY`.
+   * For example if there is a new configuration option of `config.nested.object_path.enabled` the env var would be `NEW_RELIC_NESTED_OBJECT_PATH.ENABLED`.
+   
+* Removed `transaction_tracer.hide_internals` configuration. All of the internal configuration is now handled by Javascript symbols instead of non-enumerable properties, so there is no longer a performance penalty, as symbols are already hidden by default.
+
 ### v9.5.0 (2022-10-26)
 
 * Increased the default limit of custom events from 1,000 events per minute to 3,000 events per minute. In the scenario that custom events were being limited, this change will allow more custom events to be sent to New Relic. There is also a new configurable maximum limit of 100,000 events per minute. To change the limits, see the documentation for [custom_insights_events](https://docs.newrelic.com/docs/apm/agents/nodejs-agent/installation-configuration/nodejs-agent-configuration#custom_events_max_samples_stored). To learn more about the change and how to determine if custom events are being dropped, see our Explorers Hub [post](https://discuss.newrelic.com/t/send-more-custom-events-with-the-latest-apm-agents/190497).
