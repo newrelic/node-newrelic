@@ -21,7 +21,7 @@ const opts = Object.create(null)
 
 process.argv.slice(2).forEach(function forEachFileArg(file) {
   if (/^--/.test(file)) {
-    opts[file.substr(2)] = true
+    opts[file.substring(2)] = true
   } else if (/[*]/.test(file)) {
     globs.push(path.join(benchpath, file))
   } else if (/\.bench\.js$/.test(file)) {
@@ -79,64 +79,66 @@ run()
 function run() {
   const printer = opts.json ? new JSONPrinter() : new ConsolePrinter()
 
-  a.series(
-    [
-      function resolveGlobs(cb) {
-        if (!globs.length) {
-          cb()
-        }
-
-        a.map(globs, glob, function afterGlobbing(err, resolved) {
-          if (err) {
-            console.error('Failed to glob:', err)
-            process.exitCode = -1
-            cb(err)
-          }
-          resolved.forEach(function mergeResolved(files) {
-            files.forEach(function mergeFile(file) {
-              if (tests.indexOf(file) === -1) {
-                tests.push(file)
-              }
-            })
-          })
-          cb()
-        })
-      },
-      function runBenchmarks(cb) {
-        tests.sort()
-        a.eachSeries(
-          tests,
-          function spawnEachFile(file, spawnCb) {
-            const test = path.relative(benchpath, file)
-
-            const args = [file]
-            if (opts.inspect) {
-              args.unshift('--inspect-brk')
-            }
-            const child = cp.spawn('node', args, { cwd: cwd, stdio: 'pipe' })
-            printer.addTest(test, child)
-
-            child.on('error', spawnCb)
-            child.on('exit', function onChildExit(code) {
-              if (code) {
-                spawnCb(new Error('Benchmark exited with code ' + code))
-              }
-              spawnCb()
-            })
-          },
-          function afterSpawnEachFile(err) {
-            if (err) {
-              console.error('Spawning failed:', err)
-              process.exitCode = -2
-              cb(err)
-            }
-            cb()
-          }
-        )
-      }
-    ],
-    () => {
-      printer.finish()
+  const resolveGlobs = (cb) => {
+    if (!globs.length) {
+      cb()
     }
-  )
+
+    a.map(globs, glob, function afterGlobbing(err, resolved) {
+      if (err) {
+        console.error('Failed to glob:', err)
+        process.exitCode = -1
+        cb(err)
+      }
+      resolved.forEach(function mergeResolved(files) {
+        files.forEach(function mergeFile(file) {
+          if (tests.indexOf(file) === -1) {
+            tests.push(file)
+          }
+        })
+      })
+      cb()
+    })
+  }
+
+  const spawnEachFile = (file, spawnCb) => {
+    const test = path.relative(benchpath, file)
+
+    const args = [file]
+    if (opts.inspect) {
+      args.unshift('--inspect-brk')
+    }
+    const child = cp.spawn('node', args, { cwd: cwd, stdio: 'pipe' })
+    printer.addTest(test, child)
+
+    child.on('error', spawnCb)
+    child.on('exit', function onChildExit(code) {
+      if (code) {
+        spawnCb(new Error('Benchmark exited with code ' + code))
+      }
+      spawnCb()
+    })
+  }
+
+  const afterSpawnEachFile = (err, cb) => {
+    if (err) {
+      console.error('Spawning failed:', err)
+      process.exitCode = -2
+      cb(err)
+    }
+    cb()
+  }
+
+  const runBenchmarks = (cb) => {
+    tests.sort()
+    a.eachSeries(
+      tests,
+      (file, spawnCb) => spawnEachFile(file, spawnCb),
+      (err) => afterSpawnEachFile(err, cb)
+    )
+  }
+
+  a.series([(cb) => resolveGlobs(cb), (cb) => runBenchmarks(cb)], () => {
+    printer.finish()
+  })
 }
