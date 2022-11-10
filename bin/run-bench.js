@@ -7,7 +7,7 @@
 
 /* eslint sonarjs/cognitive-complexity: ["error", 21] -- TODO: https://issues.newrelic.com/browse/NEWRELIC-5252 */
 
-const a = require('async')
+// const a = require('async')
 const cp = require('child_process')
 const glob = require('glob')
 const path = require('path')
@@ -18,6 +18,14 @@ const benchpath = path.resolve(cwd, 'test/benchmark')
 const tests = []
 const globs = []
 const opts = Object.create(null)
+
+const fakeCb = (err, payload) => {
+  if (err) {
+    console.error(err)
+    return
+  }
+  return payload
+}
 
 process.argv.slice(2).forEach(function forEachFileArg(file) {
   if (/^--/.test(file)) {
@@ -76,18 +84,22 @@ class JSONPrinter {
 
 run()
 
-function run() {
+const errorAndExit = (err, message, code) => {
+  console.log(message)
+  console.error(err)
+  process.exit(code)
+}
+
+async function run() {
   const printer = opts.json ? new JSONPrinter() : new ConsolePrinter()
 
   const resolveGlobs = (cb) => {
     if (!globs.length) {
       cb()
     }
-
-    a.map(globs, glob, function afterGlobbing(err, resolved) {
+    const afterGlobbing = (err, resolved) => {
       if (err) {
-        console.error('Failed to glob:', err)
-        process.exitCode = -1
+        errorAndExit(err, 'Failed to glob', -1)
         cb(err)
       }
       resolved.forEach(function mergeResolved(files) {
@@ -97,8 +109,11 @@ function run() {
           }
         })
       })
-      cb()
-    })
+      cb() // ambient scope
+    }
+
+    const globbed = globs.map((item) => glob.sync(item))
+    return afterGlobbing(null, globbed)
   }
 
   const spawnEachFile = (file, spawnCb) => {
@@ -108,6 +123,10 @@ function run() {
     if (opts.inspect) {
       args.unshift('--inspect-brk')
     }
+
+    // / TODO: remove diagnostic --trace-warnings
+    args.push('--trace-warnings')
+
     const child = cp.spawn('node', args, { cwd: cwd, stdio: 'pipe' })
     printer.addTest(test, child)
 
@@ -122,23 +141,20 @@ function run() {
 
   const afterSpawnEachFile = (err, cb) => {
     if (err) {
-      console.error('Spawning failed:', err)
-      process.exitCode = -2
-      cb(err)
+      errorAndExit(err, 'Spawning failed:', -2)
+      return cb(err)
     }
     cb()
   }
 
-  const runBenchmarks = (cb) => {
+  const runBenchmarks = async (cb) => {
     tests.sort()
-    a.eachSeries(
-      tests,
-      (file, spawnCb) => spawnEachFile(file, spawnCb),
-      (err) => afterSpawnEachFile(err, cb)
-    )
+    await tests.forEach((file) => spawnEachFile(file, fakeCb))
+    await afterSpawnEachFile(null, fakeCb)
+    return cb()
   }
 
-  a.series([(cb) => resolveGlobs(cb), (cb) => runBenchmarks(cb)], () => {
-    printer.finish()
-  })
+  await resolveGlobs(fakeCb)
+  await runBenchmarks(fakeCb)
+  printer.finish()
 }
