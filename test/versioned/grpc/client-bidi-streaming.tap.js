@@ -141,12 +141,18 @@ tap.test('gRPC Client: Bidi Streaming', (t) => {
     }
   )
 
-  const errorsEnabled = [true, false]
-  errorsEnabled.forEach((enabled) => {
-    t.test(`should ${enabled ? '' : 'not '}record errors in a transaction`, (t) => {
+  const grpcConfigs = [
+    { record_errors: true, ignore_status_codes: [], should: true },
+    { record_errors: false, ignore_status_codes: [], should: false },
+    { record_errors: true, ignore_status_codes: [9], should: false }
+  ]
+  grpcConfigs.forEach((config) => {
+    const should = config.should ? 'should' : 'should not'
+    const testName = `${should} record errors in a transaction when ignoring ${config.ignore_status_codes}`
+    t.test(testName, (t) => {
       const expectedStatusText = ERR_MSG
       const expectedStatusCode = ERR_CODE
-      agent.config.grpc.record_errors = enabled
+      agent.config.grpc = config
       helper.runInTransaction(agent, 'web', async (tx) => {
         tx.name = 'clientTransaction'
         agent.on('transactionFinished', (transaction) => {
@@ -155,7 +161,7 @@ tap.test('gRPC Client: Bidi Streaming', (t) => {
               t,
               transaction,
               errors: agent.errors,
-              expectErrors: enabled,
+              expectErrors: config.should,
               expectedStatusCode,
               expectedStatusText,
               fnName: 'SayErrorBidiStream',

@@ -157,49 +157,50 @@ tap.test('gRPC Server: Unary Requests', (t) => {
     t.end()
   })
 
-  const errorsEnabled = [true, false]
-  errorsEnabled.forEach((enabled) => {
-    t.test(
-      `should ${enabled ? '' : 'not '}record errors if 'grpc.record_errors' is ${
-        enabled ? 'enabled' : 'disabled'
-      }`,
-      async (t) => {
-        agent.config.grpc.record_errors = enabled
-        const expectedStatusCode = ERR_CODE
-        const expectedStatusText = ERR_SERVER_MSG
-        let transaction
-        function transactionFinished(tx) {
-          if (tx.name === getServerTransactionName('SayError')) {
-            transaction = tx
-          }
+  const grpcConfigs = [
+    { record_errors: true, ignore_status_codes: [], should: true },
+    { record_errors: false, ignore_status_codes: [], should: false },
+    { record_errors: true, ignore_status_codes: [9], should: false }
+  ]
+  grpcConfigs.forEach((config) => {
+    const should = config.should ? 'should' : 'should not'
+    const testName = `${should} record errors in a transaction when ignoring ${config.ignore_status_codes}`
+    t.test(testName, async (t) => {
+      agent.config.grpc.record_errors = config.should
+      const expectedStatusCode = ERR_CODE
+      const expectedStatusText = ERR_SERVER_MSG
+      let transaction
+      function transactionFinished(tx) {
+        if (tx.name === getServerTransactionName('SayError')) {
+          transaction = tx
         }
-        agent.on('transactionFinished', transactionFinished)
-        t.teardown(() => {
-          agent.removeListener('transactionFinished', transactionFinished)
-        })
-
-        try {
-          await makeUnaryRequest({
-            client,
-            fnName: 'sayError',
-            payload: { oh: 'noes' }
-          })
-        } catch (err) {
-          // err tested in client tests
-        }
-
-        assertError({
-          t,
-          transaction,
-          errors: agent.errors,
-          agentMetrics: agent.metrics._metrics,
-          expectErrors: enabled,
-          expectedStatusCode,
-          expectedStatusText,
-          fnName: 'SayError'
-        })
-        t.end()
       }
-    )
+      agent.on('transactionFinished', transactionFinished)
+      t.teardown(() => {
+        agent.removeListener('transactionFinished', transactionFinished)
+      })
+
+      try {
+        await makeUnaryRequest({
+          client,
+          fnName: 'sayError',
+          payload: { oh: 'noes' }
+        })
+      } catch (err) {
+        // err tested in client tests
+      }
+
+      assertError({
+        t,
+        transaction,
+        errors: agent.errors,
+        agentMetrics: agent.metrics._metrics,
+        expectErrors: config.should,
+        expectedStatusCode,
+        expectedStatusText,
+        fnName: 'SayError'
+      })
+      t.end()
+    })
   })
 })

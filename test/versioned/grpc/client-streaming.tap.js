@@ -126,12 +126,18 @@ tap.test('gRPC Client: Client Streaming', (t) => {
     t.end()
   })
 
-  const errorsEnabled = [true, false]
-  errorsEnabled.forEach((enabled) => {
-    t.test(`should ${enabled ? '' : 'not '}record errors in a transaction`, (t) => {
+  const grpcConfigs = [
+    { record_errors: true, ignore_status_codes: [], should: true },
+    { record_errors: false, ignore_status_codes: [], should: false },
+    { record_errors: true, ignore_status_codes: [9], should: false }
+  ]
+  grpcConfigs.forEach((config) => {
+    const should = config.should ? 'should' : 'should not'
+    const testName = `${should} record errors in a transaction when ignoring ${config.ignore_status_codes}`
+    t.test(testName, (t) => {
       const expectedStatusText = ERR_MSG
       const expectedStatusCode = ERR_CODE
-      agent.config.grpc.record_errors = enabled
+      agent.config.grpc.record_errors = config.should
       helper.runInTransaction(agent, 'web', async (tx) => {
         tx.name = 'clientTransaction'
         agent.on('transactionFinished', (transaction) => {
@@ -140,7 +146,7 @@ tap.test('gRPC Client: Client Streaming', (t) => {
               t,
               transaction,
               errors: agent.errors,
-              expectErrors: enabled,
+              expectErrors: config.should,
               expectedStatusCode,
               expectedStatusText,
               fnName: 'SayErrorClientStream',
@@ -162,49 +168,44 @@ tap.test('gRPC Client: Client Streaming', (t) => {
       })
     })
 
-    t.test(
-      `should ${
-        enabled ? '' : 'not '
-      }record errors in a transaction when server sends error mid stream`,
-      (t) => {
-        const expectedStatusText = HALT_SERVER_ERR_MSG
-        const expectedStatusCode = HALT_CODE
-        agent.config.grpc.record_errors = enabled
-        helper.runInTransaction(agent, 'web', async (tx) => {
-          tx.name = 'clientTransaction'
-          agent.on('transactionFinished', (transaction) => {
-            if (transaction.name === 'clientTransaction') {
-              assertError({
-                t,
-                transaction,
-                errors: agent.errors,
-                expectErrors: enabled,
-                expectedStatusCode,
-                expectedStatusText,
-                fnName: 'SayErrorClientStream',
-                clientError: true
-              })
-              t.end()
-            }
-          })
-
-          try {
-            const payload = [{ name: 'error' }]
-            await makeClientStreamingRequest({
-              client,
-              fnName: 'sayErrorClientStream',
-              payload,
-              endStream: false
+    t.test(`${should} record errors in a transaction when server sends error mid stream`, (t) => {
+      const expectedStatusText = HALT_SERVER_ERR_MSG
+      const expectedStatusCode = HALT_CODE
+      agent.config.grpc.record_errors = config.should
+      helper.runInTransaction(agent, 'web', async (tx) => {
+        tx.name = 'clientTransaction'
+        agent.on('transactionFinished', (transaction) => {
+          if (transaction.name === 'clientTransaction') {
+            assertError({
+              t,
+              transaction,
+              errors: agent.errors,
+              expectErrors: config.should,
+              expectedStatusCode,
+              expectedStatusText,
+              fnName: 'SayErrorClientStream',
+              clientError: true
             })
-          } catch (err) {
-            t.ok(err, 'should get an error')
-            t.equal(err.code, expectedStatusCode, 'should get the right status code')
-            t.equal(err.details, expectedStatusText, 'should get the correct error message')
-            tx.end()
+            t.end()
           }
         })
-      }
-    )
+
+        try {
+          const payload = [{ name: 'error' }]
+          await makeClientStreamingRequest({
+            client,
+            fnName: 'sayErrorClientStream',
+            payload,
+            endStream: false
+          })
+        } catch (err) {
+          t.ok(err, 'should get an error')
+          t.equal(err.code, expectedStatusCode, 'should get the right status code')
+          t.equal(err.details, expectedStatusText, 'should get the correct error message')
+          tx.end()
+        }
+      })
+    })
   })
 
   t.test('should bind callback to the proper transaction context', (t) => {
