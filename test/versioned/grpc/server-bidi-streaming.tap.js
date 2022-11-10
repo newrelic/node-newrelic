@@ -129,42 +129,43 @@ tap.test('gRPC Server: Bidi Streaming', (t) => {
     t.end()
   })
 
-  const errorsEnabled = [true, false]
-  errorsEnabled.forEach((enabled) => {
-    t.test(
-      `should ${enabled ? '' : 'not '}record errors if 'grpc.record_errors' is ${
-        enabled ? 'enabled' : 'disabled'
-      }`,
-      async (t) => {
-        agent.config.grpc.record_errors = enabled
-        const expectedStatusCode = ERR_CODE
-        const expectedStatusText = ERR_SERVER_MSG
-        let transaction
-        agent.on('transactionFinished', (tx) => {
-          if (tx.name === getServerTransactionName('SayErrorBidiStream')) {
-            transaction = tx
-          }
-        })
-
-        try {
-          const payload = [{ name: 'server-error' }]
-          await makeBidiStreamingRequest({ client, fnName: 'sayErrorBidiStream', payload })
-        } catch (err) {
-          // err tested in client tests
+  const grpcConfigs = [
+    { record_errors: true, ignore_status_codes: [], should: true },
+    { record_errors: false, ignore_status_codes: [], should: false },
+    { record_errors: true, ignore_status_codes: [9], should: false }
+  ]
+  grpcConfigs.forEach((config) => {
+    const should = config.should ? 'should' : 'should not'
+    const testName = `${should} record errors in a transaction when ignoring ${config.ignore_status_codes}`
+    t.test(testName, async (t) => {
+      agent.config.grpc.record_errors = config.should
+      const expectedStatusCode = ERR_CODE
+      const expectedStatusText = ERR_SERVER_MSG
+      let transaction
+      agent.on('transactionFinished', (tx) => {
+        if (tx.name === getServerTransactionName('SayErrorBidiStream')) {
+          transaction = tx
         }
+      })
 
-        assertError({
-          t,
-          transaction,
-          errors: agent.errors,
-          agentMetrics: agent.metrics._metrics,
-          expectErrors: enabled,
-          expectedStatusCode,
-          expectedStatusText,
-          fnName: 'SayErrorBidiStream'
-        })
-        t.end()
+      try {
+        const payload = [{ name: 'server-error' }]
+        await makeBidiStreamingRequest({ client, fnName: 'sayErrorBidiStream', payload })
+      } catch (err) {
+        // err tested in client tests
       }
-    )
+
+      assertError({
+        t,
+        transaction,
+        errors: agent.errors,
+        agentMetrics: agent.metrics._metrics,
+        expectErrors: config.should,
+        expectedStatusCode,
+        expectedStatusText,
+        fnName: 'SayErrorBidiStream'
+      })
+      t.end()
+    })
   })
 })
