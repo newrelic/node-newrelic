@@ -82,7 +82,7 @@ async function createReleaseNotesPr() {
 /**
  * Validates tag matches version we want vX.X.X
  *
- * @param {string} version
+ * @param {string} version string to validate
  * @param {boolean} force flag to skip validation of tag
  */
 function validateTag(version, force) {
@@ -100,8 +100,8 @@ function validateTag(version, force) {
 /**
  * Extracts the relevant changes from the NEWS.md
  *
- * @param {string} version
- * @param {string} releaseNotesFile
+ * @param {string} version the new version
+ * @param {string} releaseNotesFile the filename where the release notes are stored
  */
 async function getReleaseNotes(version, releaseNotesFile) {
   console.log('Retrieving release notes from file: ', releaseNotesFile)
@@ -140,8 +140,8 @@ async function readReleaseNoteFile(file) {
  * Creates a branch in your local `docs-website` fork
  * That follows the pattern `add-node-<new agent version>`
  *
- * @param filePath
- * @param {string} version
+ * @param {string} filePath path to the `docs-website` fork
+ * @param {string} version newest version of agent
  * @param {boolean} dryRun skip branch creation
  */
 async function createBranch(filePath, version, dryRun) {
@@ -164,9 +164,10 @@ async function createBranch(filePath, version, dryRun) {
  * Formats the .mdx to adhere to the docs team standards for
  * release notes.
  *
- * @param {string} releaseDate
- * @param {string} version
+ * @param {string} releaseDate date the release was created
+ * @param {string} version version number
  * @param {string} body list of changes
+ * @returns {string} appropriately formatted release notes
  */
 function formatReleaseNotes(releaseDate, version, body) {
   const releaseNotesBody = [
@@ -190,7 +191,7 @@ function formatReleaseNotes(releaseDate, version, body) {
  * Writes the contents of the release notes to the docs-website fork
  *
  * @param {string} body contents of the .mdx
- * @param {string} version
+ * @param {string} version version number
  */
 function addReleaseNotesFile(body, version) {
   const FILE = getFileName(version)
@@ -216,10 +217,10 @@ function getFileName(version) {
 /**
  * Commits release notes to the local fork and pushes to proper branch.
  *
- * @param {string} version
- * @param {string} remote
- * @param {string} branch
- * @param {boolean} dryRun
+ * @param {string} version version number
+ * @param {string} remote github remote
+ * @param {string} branch github branch
+ * @param {boolean} dryRun whether or not we should actually update the repo
  */
 async function commitReleaseNotes(version, remote, branch, dryRun) {
   if (dryRun) {
@@ -238,10 +239,10 @@ async function commitReleaseNotes(version, remote, branch, dryRun) {
 /**
  * Creates a PR to the newrelic/docs-website with new release notes
  *
- * @param {string} username of fork
- * @param {string} version
- * @param {string} branch
- * @param {boolean} dryRun
+ * @param {string} username fork owner's github username
+ * @param {string} version version number
+ * @param {string} branch github branch
+ * @param {boolean} dryRun whether or not we should actually create the PR
  */
 async function createPR(username, version, branch, dryRun) {
   if (!process.env.GITHUB_TOKEN) {
@@ -271,7 +272,7 @@ async function createPR(username, version, branch, dryRun) {
 /**
  * Logs error and exits script on failure
  *
- * @param {Error} err
+ * @param {Error} err If present, an error that occurred during script execution
  */
 function stopOnError(err) {
   if (err) {
@@ -285,7 +286,7 @@ function stopOnError(err) {
 /**
  * Logs formatted msg
  *
- * @param {string} step
+ * @param {string} step the current step of the script
  */
 function logStep(step) {
   console.log(`\n ----- [Step]: ${step} -----\n`)
