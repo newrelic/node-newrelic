@@ -39,14 +39,10 @@ module.exports = {
       }
     },
     {
-      files: [
-        'test/**/**/**',
-        'tests/**/**/**'
-      ],
+      files: ['test/**/**/**', 'tests/**/**/**'],
       rules: {
         'sonarjs/no-duplicate-string': 'off'
       }
     }
-
   ]
 }
