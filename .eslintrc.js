@@ -41,7 +41,8 @@ module.exports = {
     {
       files: ['test/**/**/**', 'tests/**/**/**'],
       rules: {
-        'sonarjs/no-duplicate-string': 'off'
+        'sonarjs/no-duplicate-string': 'off',
+        'sonarjs/cognitive-complexity': 'off'
       }
     }
   ]
