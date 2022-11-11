@@ -1292,7 +1292,7 @@ tap.test('Errors', (t) => {
 
     t.test('should not generate other error metric for expected non-web errors', (t) => {
       agent.config.error_collector.expected_classes = ['Error']
-      const transaction = createBackgroundTransaction(agent, 200)
+      const transaction = createBackgroundTransaction(agent)
 
       errorCollector.add(transaction, new Error('error1'))
       errorCollector.add(transaction, new Error('error2'))
@@ -1306,7 +1306,7 @@ tap.test('Errors', (t) => {
 
     t.test('should not generate other error metric for ignored non-web errors', (t) => {
       agent.config.error_collector.ignore_classes = ['Error']
-      const transaction = createBackgroundTransaction(agent, 200)
+      const transaction = createBackgroundTransaction(agent)
 
       errorCollector.add(transaction, new Error('error1'))
       errorCollector.add(transaction, new Error('error2'))

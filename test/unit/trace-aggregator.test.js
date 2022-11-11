@@ -333,7 +333,8 @@ describe('TraceAggregator', function () {
       done()
     }
 
-    const testCallback = (err, props) => {
+    // Array iteration is too difficult to slow down, so this steps through recursively
+    txnCreator(0, maxTraces, function testCallback(err, props) {
       expect(err, 'Callback error should be falsy.').to.not.exist
       const { idx, max } = props
       const nextIdx = idx + 1
@@ -341,10 +342,7 @@ describe('TraceAggregator', function () {
         return finalCallback()
       }
       return txnCreator(nextIdx, max, testCallback)
-    }
-
-    // Array iteration is too difficult to slow down, so this steps through recursively
-    txnCreator(0, maxTraces, testCallback)
+    })
   })
 
   describe('when request timings are tracked over time', function () {

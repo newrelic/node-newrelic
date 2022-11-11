@@ -287,7 +287,13 @@ test("the agent's async hook", function (t) {
     helper.runInTransaction(agent, function (txn) {
       t.ok(txn, 'transaction should not be null')
       const segment = txn.trace.root
-      agent.tracer.bindFunction(one, segment)()
+      agent.tracer.bindFunction(function one() {
+        return new Promise(executor).then(() => {
+          const tx = agent.getTransaction()
+          t.equal(tx ? tx.id : null, txn.id)
+          t.end()
+        })
+      }, segment)()
 
       const wrapperTwo = agent.tracer.bindFunction(function () {
         return two()
@@ -296,14 +302,6 @@ test("the agent's async hook", function (t) {
       const wrapperThree = agent.tracer.bindFunction(function () {
         return three()
       }, segment)
-
-      function one() {
-        return new Promise(executor).then(() => {
-          const tx = agent.getTransaction()
-          t.equal(tx ? tx.id : null, txn.id)
-          t.end()
-        })
-      }
 
       function executor(resolve) {
         setImmediate(() => {
@@ -381,19 +379,17 @@ test("the agent's async hook", function (t) {
     helper.runInTransaction(agent, function (txn) {
       t.ok(txn, 'transaction should not be null')
       const segment = txn.trace.root
-      agent.tracer.bindFunction(one, segment)()
-
-      const wrapperTwo = agent.tracer.bindFunction(function () {
-        return two()
-      }, segment)
-
-      function one() {
+      agent.tracer.bindFunction(function one() {
         return new Promise(executor).then(() => {
           const tx = agent.getTransaction()
           t.equal(tx ? tx.id : null, txn.id)
           t.end()
         })
-      }
+      }, segment)()
+
+      const wrapperTwo = agent.tracer.bindFunction(function () {
+        return two()
+      }, segment)
 
       function executor(resolve) {
         tasks.push(() => {

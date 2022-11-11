@@ -11,9 +11,6 @@ const TYPES = require('../../../lib/transaction').TYPES
 const recorder = require('../../../lib/metrics/recorders/distributed-trace')
 const recordSupportability = require('../../../lib/agent').prototype.recordSupportability
 
-/* lists of tests to skip to aid isolating cases*/
-const skipTests = []
-
 const camelCaseToSnakeCase = function (object) {
   const newObject = {}
   for (const [key, value] of Object.entries(object)) {
@@ -530,12 +527,7 @@ const runTestCase = function (testCase, parentTest) {
 tap.test('distributed tracing trace context', (t) => {
   const testCases = require('../../lib/cross_agent_tests/distributed_tracing/trace_context.json')
   for (const [i] of testCases.entries()) {
-    const testCase = testCases[i]
-
-    if (-1 !== skipTests.indexOf(testCase.test_name)) {
-      continue
-    }
-    runTestCase(testCase, t)
+    runTestCase(testCases[i], t)
   }
   t.end()
 })

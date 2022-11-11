@@ -44,7 +44,7 @@ test('Promise trace', { skip: usingAsyncLocal }, (t) => {
         .then(step('b'))
         .then(step('c'))
         .then(step('d'))
-        .then(checkTrace(t, tx))
+        .then(() => checkTrace(t, tx))
         .then(() => {
           t.end()
         })
@@ -57,7 +57,7 @@ test('Promise trace', { skip: usingAsyncLocal }, (t) => {
         .then(step('b'))
         .catch(step('c'))
         .then(step('d'))
-        .then(checkTrace(t, tx))
+        .then(() => checkTrace(t, tx))
         .then(() => {
           t.end()
         })
@@ -70,7 +70,7 @@ test('Promise trace', { skip: usingAsyncLocal }, (t) => {
         .then(step('b'))
         .catch(step('c'))
         .then(step('d'))
-        .then(checkTrace(t, tx))
+        .then(() => checkTrace(t, tx))
         .then(() => {
           t.end()
         })
@@ -86,7 +86,7 @@ test('Promise trace', { skip: usingAsyncLocal }, (t) => {
         .then(step('b'))
         .then(step('c'))
         .then(step('d'))
-        .then(checkTrace(t, tx))
+        .then(() => checkTrace(t, tx))
         .then(() => {
           t.end()
         })
@@ -102,7 +102,7 @@ test('Promise trace', { skip: usingAsyncLocal }, (t) => {
         .then(step('b'))
         .catch(step('c'))
         .then(step('d'))
-        .then(checkTrace(t, tx))
+        .then(() => checkTrace(t, tx))
         .then(() => {
           t.end()
         })
@@ -117,7 +117,7 @@ test('Promise trace', { skip: usingAsyncLocal }, (t) => {
       return b
         .then(step('c'))
         .then(step('d'))
-        .then(checkTrace(t, tx))
+        .then(() => checkTrace(t, tx))
         .then(() => {
           t.end()
         })
@@ -132,7 +132,7 @@ test('Promise trace', { skip: usingAsyncLocal }, (t) => {
       return b
         .catch(step('c'))
         .then(step('d'))
-        .then(checkTrace(t, tx))
+        .then(() => checkTrace(t, tx))
         .then(() => {
           t.end()
         })
@@ -147,7 +147,7 @@ test('Promise trace', { skip: usingAsyncLocal }, (t) => {
       return b
         .then(step('c'))
         .then(step('d'))
-        .then(checkTrace(t, tx))
+        .then(() => checkTrace(t, tx))
         .then(() => {
           t.end()
         })
@@ -163,7 +163,7 @@ test('Promise trace', { skip: usingAsyncLocal }, (t) => {
         })
         .then(step('c'))
         .then(step('d'))
-        .then(checkTrace(t, tx))
+        .then(() => checkTrace(t, tx))
         .then(() => {
           t.end()
         })
@@ -180,7 +180,7 @@ test('Promise trace', { skip: usingAsyncLocal }, (t) => {
         })
         .then(step('c'))
         .then(step('d'))
-        .then(checkTrace(t, tx))
+        .then(() => checkTrace(t, tx))
         .then(() => {
           t.end()
         })

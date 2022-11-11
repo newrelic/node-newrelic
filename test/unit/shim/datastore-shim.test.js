@@ -698,22 +698,22 @@ test('DatastoreShim', function (t) {
 
     t.test('should bind the callback if there is one', function (t) {
       const cb = function () {}
+      const wrapped = shim.recordQuery(
+        function (_query, wrappedCB) {
+          t.not(wrappedCB, cb)
+          t.ok(shim.isWrapped(wrappedCB))
+          t.equal(shim.unwrap(wrappedCB), cb)
 
-      const toWrap = function (_query, wrappedCB) {
-        t.not(wrappedCB, cb)
-        t.ok(shim.isWrapped(wrappedCB))
-        t.equal(shim.unwrap(wrappedCB), cb)
-
-        t.doesNotThrow(function () {
-          wrappedCB()
-        })
-        t.end()
-      }
-
-      const wrapped = shim.recordQuery(toWrap, {
-        query: shim.FIRST,
-        callback: shim.LAST
-      })
+          t.doesNotThrow(function () {
+            wrappedCB()
+          })
+          t.end()
+        },
+        {
+          query: shim.FIRST,
+          callback: shim.LAST
+        }
+      )
 
       helper.runInTransaction(agent, function () {
         wrapped(query, cb)
@@ -722,21 +722,23 @@ test('DatastoreShim', function (t) {
 
     t.test('should bind the row callback if there is one', function (t) {
       const cb = function () {}
-      const toWrap = function (_query, wrappedCB) {
-        t.not(wrappedCB, cb)
-        t.ok(shim.isWrapped(wrappedCB))
-        t.equal(shim.unwrap(wrappedCB), cb)
 
-        t.doesNotThrow(function () {
-          wrappedCB()
-        })
-        t.end()
-      }
+      const wrapped = shim.recordQuery(
+        function (_query, wrappedCB) {
+          t.not(wrappedCB, cb)
+          t.ok(shim.isWrapped(wrappedCB))
+          t.equal(shim.unwrap(wrappedCB), cb)
 
-      const wrapped = shim.recordQuery(toWrap, {
-        query: shim.FIRST,
-        rowCallback: shim.LAST
-      })
+          t.doesNotThrow(function () {
+            wrappedCB()
+          })
+          t.end()
+        },
+        {
+          query: shim.FIRST,
+          rowCallback: shim.LAST
+        }
+      )
 
       helper.runInTransaction(agent, function () {
         wrapped(query, cb)

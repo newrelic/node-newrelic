@@ -65,32 +65,30 @@ module.exports = function runTests(t, flags) {
     let segment
 
     helper.runInTransaction(agent, function inTransaction(transaction) {
-      new Promise(executor).then(next, fail).then(done, fail)
-
-      function executor(accept, reject) {
+      new Promise(function executor(accept, reject) {
         segment = agent.tracer.getSegment()
         setTimeout(function resolve() {
           accept(15)
           reject(10)
         }, 0)
-      }
+      })
+        .then(next, fail)
+        .then(function done(val) {
+          t.equal(this, void 0, 'context should be undefined')
+          process.nextTick(function finish() {
+            t.equal(id(agent.getTransaction()), id(transaction), 'transaction should be preserved')
+            t.equal(val, 15, 'should resolve with the correct value')
+            t.ok(agent.tracer.getSegment() === segment, 'segment should be preserved')
+
+            t.end()
+          })
+        }, fail)
 
       function next(val) {
         t.equal(id(agent.getTransaction()), id(transaction), 'transaction should be preserved')
         t.equal(val, 15, 'should resolve with the correct value')
         t.ok(agent.tracer.getSegment() === segment, 'segment should be preserved')
         return val
-      }
-
-      function done(val) {
-        t.equal(this, void 0, 'context should be undefined')
-        process.nextTick(function finish() {
-          t.equal(id(agent.getTransaction()), id(transaction), 'transaction should be preserved')
-          t.equal(val, 15, 'should resolve with the correct value')
-          t.ok(agent.tracer.getSegment() === segment, 'segment should be preserved')
-
-          t.end()
-        })
       }
 
       function fail() {
@@ -105,15 +103,24 @@ module.exports = function runTests(t, flags) {
     let segment
 
     helper.runInTransaction(agent, function inTransaction(transaction) {
-      new Promise(executor).then(next, fail).then(done, fail)
-
-      function executor(accept, reject) {
+      new Promise(function executor(accept, reject) {
         segment = agent.tracer.getSegment()
         setTimeout(function resolve() {
           accept(15)
           reject(10)
         }, 0)
-      }
+      })
+        .then(next, fail)
+        .then(function done(val) {
+          t.equal(this, void 0, 'context should be undefined')
+          process.nextTick(function finish() {
+            t.equal(id(agent.getTransaction()), id(transaction), 'transaction should be preserved')
+            t.equal(val, 15, 'should resolve with the correct value')
+            t.ok(agent.tracer.getSegment() === segment, 'segment should be preserved')
+
+            t.end()
+          })
+        }, fail)
 
       function next(val) {
         t.equal(id(agent.getTransaction()), id(transaction), 'transaction should be preserved')
@@ -125,17 +132,6 @@ module.exports = function runTests(t, flags) {
           setTimeout(function resolve() {
             accept(val)
           }, 0)
-        })
-      }
-
-      function done(val) {
-        t.equal(this, void 0, 'context should be undefined')
-        process.nextTick(function finish() {
-          t.equal(id(agent.getTransaction()), id(transaction), 'transaction should be preserved')
-          t.equal(val, 15, 'should resolve with the correct value')
-          t.ok(agent.tracer.getSegment() === segment, 'segment should be preserved')
-
-          t.end()
         })
       }
 
@@ -184,15 +180,15 @@ module.exports = function runTests(t, flags) {
     let segment
 
     helper.runInTransaction(agent, function inTransaction(transaction) {
-      new Promise(executor).then(fail, next).then(fail, done)
-
-      function executor(accept, reject) {
+      new Promise(function executor(accept, reject) {
         segment = agent.tracer.getSegment()
         setTimeout(function resolve() {
           reject(10)
           accept(15)
         }, 0)
-      }
+      })
+        .then(fail, next)
+        .then(fail, done)
 
       function next(val) {
         t.equal(id(agent.getTransaction()), id(transaction), 'transaction should be preserved')
@@ -224,15 +220,24 @@ module.exports = function runTests(t, flags) {
     let segment
 
     helper.runInTransaction(agent, function inTransaction(transaction) {
-      new Promise(executor).then(fail, next).then(fail, done)
-
-      function executor(accept, reject) {
+      new Promise(function executor(accept, reject) {
         segment = agent.tracer.getSegment()
         setTimeout(function resolve() {
           reject(10)
           accept(15)
         }, 0)
-      }
+      })
+        .then(fail, next)
+        .then(fail, function done(val) {
+          t.equal(this, void 0, 'context should be undefined')
+          process.nextTick(function finish() {
+            t.equal(id(agent.getTransaction()), id(transaction), 'transaction should be preserved')
+            t.equal(val, 10, 'should resolve with the correct value')
+            t.ok(agent.tracer.getSegment() === segment, 'segment should be preserved')
+
+            t.end()
+          })
+        })
 
       function next(val) {
         t.equal(id(agent.getTransaction()), id(transaction), 'transaction should be preserved')
@@ -244,17 +249,6 @@ module.exports = function runTests(t, flags) {
           setTimeout(function resolve() {
             reject(val)
           }, 0)
-        })
-      }
-
-      function done(val) {
-        t.equal(this, void 0, 'context should be undefined')
-        process.nextTick(function finish() {
-          t.equal(id(agent.getTransaction()), id(transaction), 'transaction should be preserved')
-          t.equal(val, 10, 'should resolve with the correct value')
-          t.ok(agent.tracer.getSegment() === segment, 'segment should be preserved')
-
-          t.end()
         })
       }
 
@@ -270,17 +264,13 @@ module.exports = function runTests(t, flags) {
     let segment
 
     helper.runInTransaction(agent, function inTransaction(transaction) {
-      new Promise(executor).catch(done)
-
-      function executor(accept, reject) {
+      new Promise(function executor(accept, reject) {
         segment = agent.tracer.getSegment()
         setTimeout(function resolve() {
           reject(10)
           accept(15)
         }, 0)
-      }
-
-      function done(val) {
+      }).catch(function done(val) {
         t.equal(this, void 0, 'context should be undefined')
         process.nextTick(function finish() {
           t.equal(id(agent.getTransaction()), id(transaction), 'transaction should be preserved')
@@ -289,7 +279,7 @@ module.exports = function runTests(t, flags) {
 
           t.end()
         })
-      }
+      })
     })
   })
 
@@ -298,33 +288,29 @@ module.exports = function runTests(t, flags) {
     let segment
 
     helper.runInTransaction(agent, function inTransaction(transaction) {
-      new Promise(executor).catch(next).catch(done)
-
-      function executor(accept, reject) {
+      new Promise(function executor(accept, reject) {
         segment = agent.tracer.getSegment()
         setTimeout(function resolve() {
           reject(10)
           accept(15)
         }, 0)
-      }
-
-      function next(val) {
-        t.equal(id(agent.getTransaction()), id(transaction), 'transaction should be preserved')
-        t.equal(val, 10, 'should resolve with the correct value')
-        t.ok(agent.tracer.getSegment() === segment, 'segment should be preserved')
-        throw val
-      }
-
-      function done(val) {
-        t.equal(this, void 0, 'context should be undefined')
-        process.nextTick(function finish() {
+      })
+        .catch(function next(val) {
           t.equal(id(agent.getTransaction()), id(transaction), 'transaction should be preserved')
           t.equal(val, 10, 'should resolve with the correct value')
           t.ok(agent.tracer.getSegment() === segment, 'segment should be preserved')
-
-          t.end()
+          throw val
         })
-      }
+        .catch(function done(val) {
+          t.equal(this, void 0, 'context should be undefined')
+          process.nextTick(function finish() {
+            t.equal(id(agent.getTransaction()), id(transaction), 'transaction should be preserved')
+            t.equal(val, 10, 'should resolve with the correct value')
+            t.ok(agent.tracer.getSegment() === segment, 'segment should be preserved')
+
+            t.end()
+          })
+        })
     })
   })
 
@@ -333,39 +319,35 @@ module.exports = function runTests(t, flags) {
     let segment
 
     helper.runInTransaction(agent, function inTransaction(transaction) {
-      new Promise(executor).catch(next).catch(done)
-
-      function executor(accept, reject) {
+      new Promise(function executor(accept, reject) {
         segment = agent.tracer.getSegment()
         setTimeout(function resolve() {
           reject(10)
           accept(15)
         }, 0)
-      }
-
-      function next(val) {
-        t.equal(id(agent.getTransaction()), id(transaction), 'transaction should be preserved')
-        t.equal(val, 10, 'should resolve with the correct value')
-        t.ok(agent.tracer.getSegment() === segment, 'segment should be preserved')
-
-        return new Promise(function wait(accept, reject) {
-          segment = agent.tracer.getSegment()
-          setTimeout(function resolve() {
-            reject(val)
-          }, 0)
-        })
-      }
-
-      function done(val) {
-        t.equal(this, void 0, 'context should be undefined')
-        process.nextTick(function finish() {
+      })
+        .catch(function next(val) {
           t.equal(id(agent.getTransaction()), id(transaction), 'transaction should be preserved')
           t.equal(val, 10, 'should resolve with the correct value')
           t.ok(agent.tracer.getSegment() === segment, 'segment should be preserved')
 
-          t.end()
+          return new Promise(function wait(accept, reject) {
+            segment = agent.tracer.getSegment()
+            setTimeout(function resolve() {
+              reject(val)
+            }, 0)
+          })
         })
-      }
+        .catch(function done(val) {
+          t.equal(this, void 0, 'context should be undefined')
+          process.nextTick(function finish() {
+            t.equal(id(agent.getTransaction()), id(transaction), 'transaction should be preserved')
+            t.equal(val, 10, 'should resolve with the correct value')
+            t.ok(agent.tracer.getSegment() === segment, 'segment should be preserved')
+
+            t.end()
+          })
+        })
     })
   })
 
@@ -412,19 +394,21 @@ module.exports = function runTests(t, flags) {
             segment = agent.tracer.getSegment()
             throw error
           })
-          .then(fail, done)
+          .then(fail, function done(val) {
+            t.equal(this, void 0, 'context should be undefined')
+            process.nextTick(function finish() {
+              t.equal(
+                id(agent.getTransaction()),
+                id(transaction),
+                'transaction should be preserved'
+              )
+              t.equal(val, 10, 'value should be preserved')
+              t.ok(agent.tracer.getSegment() === segment, 'segment should be preserved')
+
+              t.end()
+            })
+          })
       }, 0)
-
-      function done(val) {
-        t.equal(this, void 0, 'context should be undefined')
-        process.nextTick(function finish() {
-          t.equal(id(agent.getTransaction()), id(transaction), 'transaction should be preserved')
-          t.equal(val, 10, 'value should be preserved')
-          t.ok(agent.tracer.getSegment() === segment, 'segment should be preserved')
-
-          t.end()
-        })
-      }
 
       function fail() {
         t.fail('should not be called')
@@ -552,19 +536,21 @@ module.exports = function runTests(t, flags) {
             segment = agent.tracer.getSegment()
             throw err
           })
-          .then(fail, done)
+          .then(fail, function done(val) {
+            t.equal(this, void 0, 'context should be undefined')
+            process.nextTick(function finish() {
+              t.equal(
+                id(agent.getTransaction()),
+                id(transaction),
+                'transaction should be preserved'
+              )
+              t.same(val, 10, 'value should be preserved')
+              t.ok(agent.tracer.getSegment() === segment, 'segment should be preserved')
+
+              t.end()
+            })
+          })
       }, 0)
-
-      function done(val) {
-        t.equal(this, void 0, 'context should be undefined')
-        process.nextTick(function finish() {
-          t.equal(id(agent.getTransaction()), id(transaction), 'transaction should be preserved')
-          t.same(val, 10, 'value should be preserved')
-          t.ok(agent.tracer.getSegment() === segment, 'segment should be preserved')
-
-          t.end()
-        })
-      }
 
       function fail() {
         t.fail('should not be called')

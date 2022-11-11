@@ -20,8 +20,8 @@ tap.test('systemInfo edge cases', (t) => {
     return new Promise((resolve) => {
       systemInfo(
         agentMock,
-        (err, config) => {
-          resolve(config)
+        (err, result) => {
+          resolve(result)
         },
         1
       )

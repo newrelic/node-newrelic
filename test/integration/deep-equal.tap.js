@@ -53,10 +53,14 @@ test('deepEqual handles all the edge cases', function (t) {
 
   t.ok(deepEqual([0, 1], [0, 1]), 'arrays check out')
 
+  // eslint-disable-next-line sonarjs/prefer-object-literal -- Disabled so we can create cyclical objects
   const cyclicA = {}
   cyclicA.x = cyclicA
+
+  // eslint-disable-next-line sonarjs/prefer-object-literal -- Disabled so we can create cyclical objects
   const cyclicB = {}
   cyclicB.x = cyclicB
+
   t.ok(deepEqual(cyclicA, cyclicB), 'can handle cyclic data structures')
 
   const y = {
