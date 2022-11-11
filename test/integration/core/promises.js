@@ -627,6 +627,7 @@ module.exports = function runTests(t, flags) {
       global.Promise = OriginalPromise
     })
 
+    /* eslint-disable-next-line sonarjs/no-identical-functions -- Disabled due to wrapping behavior and scoping issue */
     function WrappedPromise(executor) {
       const promise = new OriginalPromise(executor)
       promise.__proto__ = WrappedPromise.prototype

@@ -243,91 +243,6 @@ tap.test('succeeds when given a different port number for redirect', (t) => {
   })
 })
 
-tap.test('succeeds after one 503 on preconnect', (t) => {
-  t.autoend()
-
-  let collectorApi = null
-  let agent = null
-
-  const valid = {
-    agent_run_id: RUN_ID
-  }
-
-  const response = { return_value: valid }
-
-  let failure = null
-  let success = null
-  let connection = null
-
-  let bad = null
-  let ssc = null
-
-  t.beforeEach(() => {
-    fastSetTimeoutIncrementRef()
-
-    nock.disableNetConnect()
-
-    agent = setupMockedAgent()
-    collectorApi = new CollectorApi(agent)
-
-    const redirectURL = helper.generateCollectorPath('preconnect')
-    failure = nock(URL).post(redirectURL).reply(503)
-    success = nock(URL)
-      .post(redirectURL)
-      .reply(200, {
-        return_value: { redirect_host: HOST, security_policies: {} }
-      })
-    connection = nock(URL).post(helper.generateCollectorPath('connect')).reply(200, response)
-  })
-
-  t.afterEach(() => {
-    restoreSetTimeout()
-
-    if (!nock.isDone()) {
-      /* eslint-disable no-console */
-      console.error('Cleaning pending mocks: %j', nock.pendingMocks())
-      /* eslint-enable no-console */
-      nock.cleanAll()
-    }
-
-    nock.enableNetConnect()
-    helper.unloadAgent(agent)
-  })
-
-  t.test('should not error out', (t) => {
-    testConnect(t, () => {
-      t.notOk(bad)
-      t.end()
-    })
-  })
-
-  t.test('should have a run ID', (t) => {
-    testConnect(t, () => {
-      t.equal(ssc.agent_run_id, RUN_ID)
-      t.end()
-    })
-  })
-
-  t.test('should pass through server-side configuration untouched', (t) => {
-    testConnect(t, () => {
-      t.same(ssc, valid)
-      t.end()
-    })
-  })
-
-  function testConnect(t, cb) {
-    collectorApi.connect((error, res) => {
-      bad = error
-      ssc = res.payload
-
-      t.ok(failure.isDone())
-      t.ok(success.isDone())
-      t.ok(connection.isDone())
-      cb()
-    })
-  }
-})
-
 // TODO: 503 tests can likely be consolidated into single test func
 // passed to t.test() while specifying different # of 503s.
 tap.test('succeeds after five 503s on preconnect', (t) => {
@@ -656,7 +571,11 @@ tap.test('retries on misconfigured proxy', (t) => {
   })
 
   t.test('should log warning when proxy is misconfigured', (t) => {
-    testConnect(t, () => {
+    collectorApi.connect(() => {
+      t.ok(failure.isDone())
+      t.ok(success.isDone())
+      t.ok(connect.isDone())
+
       const expectErrorMsg =
         'Your proxy server appears to be configured to accept connections \
 over http. When setting `proxy_host` and `proxy_port` New Relic attempts to connect over \
@@ -670,20 +589,14 @@ to a fully qualified URL(e.g http://proxy-host:8080).'
 
   t.test('should not log warning when proxy is configured properly but still get EPROTO', (t) => {
     collectorApi._agent.config.proxy = 'http://test-proxy-server:8080'
-    testConnect(t, () => {
-      t.same(loggerMock.warn.args, [], 'Proxy misconfigured message not logged')
-      t.end()
-    })
-  })
-
-  function testConnect(t, cb) {
     collectorApi.connect(() => {
       t.ok(failure.isDone())
       t.ok(success.isDone())
       t.ok(connect.isDone())
-      cb()
+      t.same(loggerMock.warn.args, [], 'Proxy misconfigured message not logged')
+      t.end()
     })
-  }
+  })
 })
 
 tap.test('in a LASP/CSP enabled agent', (t) => {
