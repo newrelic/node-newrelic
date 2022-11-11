@@ -119,9 +119,7 @@ tap.test('generic-pool', function (t) {
     }
 
     function drain() {
-      run('drain', function (err) {
-        t.error(err, 'should not error when acquired before draining')
-      })
+      run('drain')
 
       helper.runInTransaction(agent, function (tx) {
         p.drain(function () {

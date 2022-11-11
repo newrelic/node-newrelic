@@ -31,25 +31,6 @@ tap.test('gRPC Server: Unary Requests', (t) => {
   let proto
   let grpc
 
-  /*
-  t.beforeEach(async () => {
-    agent = helper.instrumentMockedAgent()
-    grpc = require('@grpc/grpc-js')
-    const data = await createServer(grpc)
-    proto = data.proto
-    server = data.server
-    client = getClient(grpc, proto)
-  })
-
-  t.afterEach(() => {
-    helper.unloadAgent(agent)
-    server.forceShutdown()
-    client.close()
-    grpc = null
-    proto = null
-  })
-  */
-
   t.before(async () => {
     agent = helper.instrumentMockedAgent()
     grpc = await import('@grpc/grpc-js')
@@ -147,14 +128,18 @@ tap.test('gRPC Server: Unary Requests', (t) => {
   t.test('should not add DT headers when `distributed_tracing` is disabled', async (t) => {
     let serverTransaction
     let clientTransaction
-    function transactionFinished(tx) {
+
+    agent.on('transactionFinished', function transactionFinished(tx) {
       if (tx.name === getServerTransactionName('SayHello')) {
         serverTransaction = tx
       }
-    }
-    agent.on('transactionFinished', transactionFinished)
+    })
     t.teardown(() => {
-      agent.removeListener('transactionFinished', transactionFinished)
+      agent.removeListener('transactionFinished', function transactionFinished(tx) {
+        if (tx.name === getServerTransactionName('SayHello')) {
+          serverTransaction = tx
+        }
+      })
     })
 
     agent.config.distributed_tracing.enabled = false

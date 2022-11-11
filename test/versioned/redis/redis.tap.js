@@ -293,7 +293,7 @@ test('Redis instrumentation', { timeout: 20000 }, function (t) {
             t.notOk(err, 'should not fail to set in db 2')
             t.ok(agent.getTransaction(), 'should not lose transaction state')
             transaction.end()
-            verify(transaction)
+            verify()
           })
         })
       })

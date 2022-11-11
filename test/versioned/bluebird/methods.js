@@ -1965,7 +1965,7 @@ function _testPromiseMethod(t, plan, agent, testFunc) {
         function (err) {
           if (err) {
             /* eslint-disable no-console */
-            console.log((err && err.stack) || err)
+            console.log(err.stack)
             /* eslint-enable no-console */
           }
           t.notOk(err, name + 'should not result in error')
