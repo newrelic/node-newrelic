@@ -103,8 +103,7 @@ tap.test('remote method to preconnect', (t) => {
     config.certificates = [read(join(__dirname, '../lib/ca-certificate.crt'), 'utf8')]
 
     const agent = { config, metrics: { measureBytes() {} } }
-    const method = new RemoteMethod('preconnect', agent, endpoint)
-    return method
+    return new RemoteMethod('preconnect', agent, endpoint)
   }
 
   function startMockCollector(t, startedCallback) {
@@ -155,8 +154,8 @@ tap.test('record data usage supportability metrics', (t) => {
       certificates: [read(join(__dirname, '../lib/ca-certificate.crt'), 'utf8')]
     })
     server = await new Promise((resolve, reject) => {
-      collector({ port }, (error, server) => {
-        return error ? reject(error) : resolve(server)
+      collector({ port }, (error, returnedServer) => {
+        return error ? reject(error) : resolve(returnedServer)
       })
     })
     method = new RemoteMethod('preconnect', agent, { host: SSL_HOST, port })

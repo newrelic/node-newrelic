@@ -121,18 +121,16 @@ tap.test('when initialized properly and response status is 200', (t) => {
   })
 
   t.test('should not error on a server exception with no error message', (t) => {
-    function callback(error, res) {
+    const exception = '{"exception":{"error_type":"RuntimeError"}}'
+
+    const parser = parse(methodName, response, function callback(error, res) {
       t.error(error)
 
       t.notOk(res.payload)
       t.equal(res.status, 200)
 
       t.end()
-    }
-
-    const exception = '{"exception":{"error_type":"RuntimeError"}}'
-
-    const parser = parse(methodName, response, callback)
+    })
     parser(null, exception)
   })
 

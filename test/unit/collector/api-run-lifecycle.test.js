@@ -89,18 +89,15 @@ tap.test('should discard HTTP 415 errors', (t) => {
   })
 
   const failure = nock(URL).post(helper.generateCollectorPath('metric_data', RUN_ID)).reply(415)
-
-  function tested(error, command) {
+  const method = collectorApi._methods.metrics
+  collectorApi._runLifecycle(method, null, function tested(error, command) {
     t.error(error)
     t.equal(command.retainData, false)
 
     failure.done()
 
     t.end()
-  }
-
-  const method = collectorApi._methods.metrics
-  collectorApi._runLifecycle(method, null, tested)
+  })
 })
 
 tap.test('should retain after HTTP 500 errors', (t) => {
@@ -157,18 +154,15 @@ tap.test('should retain after HTTP 503 errors', (t) => {
   })
 
   const failure = nock(URL).post(helper.generateCollectorPath('metric_data', RUN_ID)).reply(503)
-
-  function tested(error, command) {
+  const method = collectorApi._methods.metrics
+  collectorApi._runLifecycle(method, null, function tested(error, command) {
     t.error(error)
     t.equal(command.retainData, true)
 
     failure.done()
 
     t.end()
-  }
-
-  const method = collectorApi._methods.metrics
-  collectorApi._runLifecycle(method, null, tested)
+  })
 })
 
 tap.test('should indicate a restart and discard data after 401 errors', (t) => {
@@ -226,8 +220,8 @@ tap.test('should indicate a restart and discard data after 409 errors', (t) => {
   })
 
   const failure = nock(URL).post(helper.generateCollectorPath('metric_data', RUN_ID)).reply(409)
-
-  function tested(error, command) {
+  const method = collectorApi._methods.metrics
+  collectorApi._runLifecycle(method, null, function tested(error, command) {
     t.error(error)
     t.equal(command.retainData, false)
     t.equal(command.shouldRestartRun(), true)
@@ -235,10 +229,7 @@ tap.test('should indicate a restart and discard data after 409 errors', (t) => {
     failure.done()
 
     t.end()
-  }
-
-  const method = collectorApi._methods.metrics
-  collectorApi._runLifecycle(method, null, tested)
+  })
 })
 
 tap.test('should stop the agent on 410 (force disconnect)', (t) => {
@@ -302,18 +293,15 @@ tap.test('should discard unexpected HTTP errors (501)', (t) => {
   })
 
   const failure = nock(URL).post(helper.generateCollectorPath('metric_data', RUN_ID)).reply(501)
-
-  function tested(error, command) {
+  const method = collectorApi._methods.metrics
+  collectorApi._runLifecycle(method, null, function tested(error, command) {
     t.error(error)
     t.equal(command.retainData, false)
 
     failure.done()
 
     t.end()
-  }
-
-  const method = collectorApi._methods.metrics
-  collectorApi._runLifecycle(method, null, tested)
+  })
 })
 
 function setupMockedAgent() {

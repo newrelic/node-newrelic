@@ -979,15 +979,7 @@ tap.test('AwsLambda.patchLambdaHandler', (t) => {
     })
 
     t.test('should notice errors', (t) => {
-      agent.on('harvestStarted', confirmErrorCapture)
-
-      const wrappedHandler = awsLambda.patchLambdaHandler((event, context) => {
-        context.done(error, 'failed')
-      })
-
-      wrappedHandler(stubEvent, stubContext, stubCallback)
-
-      function confirmErrorCapture() {
+      agent.on('harvestStarted', function confirmErrorCapture() {
         t.equal(agent.errors.traceAggregator.errors.length, 1)
         const noticedError = agent.errors.traceAggregator.errors[0]
         t.equal(noticedError[1], expectedBgTransactionName)
@@ -995,19 +987,17 @@ tap.test('AwsLambda.patchLambdaHandler', (t) => {
         t.equal(noticedError[3], 'SyntaxError')
 
         t.end()
-      }
-    })
-
-    t.test('should notice string errors', (t) => {
-      agent.on('harvestStarted', confirmErrorCapture)
+      })
 
       const wrappedHandler = awsLambda.patchLambdaHandler((event, context) => {
-        context.done('failed')
+        context.done(error, 'failed')
       })
 
       wrappedHandler(stubEvent, stubContext, stubCallback)
+    })
 
-      function confirmErrorCapture() {
+    t.test('should notice string errors', (t) => {
+      agent.on('harvestStarted', function confirmErrorCapture() {
         t.equal(agent.errors.traceAggregator.errors.length, 1)
         const noticedError = agent.errors.traceAggregator.errors[0]
         t.equal(noticedError[1], expectedBgTransactionName)
@@ -1018,7 +1008,13 @@ tap.test('AwsLambda.patchLambdaHandler', (t) => {
         t.ok(data.stack_trace)
 
         t.end()
-      }
+      })
+
+      const wrappedHandler = awsLambda.patchLambdaHandler((event, context) => {
+        context.done('failed')
+      })
+
+      wrappedHandler(stubEvent, stubContext, stubCallback)
     })
   })
 
@@ -1028,7 +1024,13 @@ tap.test('AwsLambda.patchLambdaHandler', (t) => {
     t.test('should end appropriately', (t) => {
       let transaction
 
-      stubContext.succeed = confirmEndCallback
+      stubContext.succeed = function confirmEndCallback() {
+        t.equal(transaction.isActive(), false)
+
+        const currentTransaction = agent.tracer.getTransaction()
+        t.equal(currentTransaction, null)
+        t.end()
+      }
 
       const wrappedHandler = awsLambda.patchLambdaHandler((event, context) => {
         transaction = agent.tracer.getTransaction()
@@ -1036,14 +1038,6 @@ tap.test('AwsLambda.patchLambdaHandler', (t) => {
       })
 
       wrappedHandler(stubEvent, stubContext, stubCallback)
-
-      function confirmEndCallback() {
-        t.equal(transaction.isActive(), false)
-
-        const currentTransaction = agent.tracer.getTransaction()
-        t.equal(currentTransaction, null)
-        t.end()
-      }
     })
   })
 
@@ -1053,7 +1047,13 @@ tap.test('AwsLambda.patchLambdaHandler', (t) => {
     t.test('should end appropriately', (t) => {
       let transaction
 
-      stubContext.fail = confirmEndCallback
+      stubContext.fail = function confirmEndCallback() {
+        t.equal(transaction.isActive(), false)
+
+        const currentTransaction = agent.tracer.getTransaction()
+        t.equal(currentTransaction, null)
+        t.end()
+      }
 
       const wrappedHandler = awsLambda.patchLambdaHandler((event, context) => {
         transaction = agent.tracer.getTransaction()
@@ -1061,26 +1061,10 @@ tap.test('AwsLambda.patchLambdaHandler', (t) => {
       })
 
       wrappedHandler(stubEvent, stubContext, stubCallback)
-
-      function confirmEndCallback() {
-        t.equal(transaction.isActive(), false)
-
-        const currentTransaction = agent.tracer.getTransaction()
-        t.equal(currentTransaction, null)
-        t.end()
-      }
     })
 
     t.test('should notice errors', (t) => {
-      agent.on('harvestStarted', confirmErrorCapture)
-
-      const wrappedHandler = awsLambda.patchLambdaHandler((event, context) => {
-        context.fail(error)
-      })
-
-      wrappedHandler(stubEvent, stubContext, stubCallback)
-
-      function confirmErrorCapture() {
+      agent.on('harvestStarted', function confirmErrorCapture() {
         t.equal(agent.errors.traceAggregator.errors.length, 1)
         const noticedError = agent.errors.traceAggregator.errors[0]
         t.equal(noticedError[1], expectedBgTransactionName)
@@ -1088,19 +1072,17 @@ tap.test('AwsLambda.patchLambdaHandler', (t) => {
         t.equal(noticedError[3], 'SyntaxError')
 
         t.end()
-      }
-    })
-
-    t.test('should notice string errors', (t) => {
-      agent.on('harvestStarted', confirmErrorCapture)
+      })
 
       const wrappedHandler = awsLambda.patchLambdaHandler((event, context) => {
-        context.fail('failed')
+        context.fail(error)
       })
 
       wrappedHandler(stubEvent, stubContext, stubCallback)
+    })
 
-      function confirmErrorCapture() {
+    t.test('should notice string errors', (t) => {
+      agent.on('harvestStarted', function confirmErrorCapture() {
         t.equal(agent.errors.traceAggregator.errors.length, 1)
         const noticedError = agent.errors.traceAggregator.errors[0]
         t.equal(noticedError[1], expectedBgTransactionName)
@@ -1111,7 +1093,13 @@ tap.test('AwsLambda.patchLambdaHandler', (t) => {
         t.ok(data.stack_trace)
 
         t.end()
-      }
+      })
+
+      const wrappedHandler = awsLambda.patchLambdaHandler((event, context) => {
+        context.fail('failed')
+      })
+
+      wrappedHandler(stubEvent, stubContext, stubCallback)
     })
   })
 
@@ -1219,7 +1207,16 @@ tap.test('AwsLambda.patchLambdaHandler', (t) => {
   })
 
   t.test('should record error event when func is async and error is thrown', (t) => {
-    agent.on('harvestStarted', confirmErrorCapture)
+    agent.on('harvestStarted', function confirmErrorCapture() {
+      const errors = agent.errors.traceAggregator.errors
+      t.equal(errors.length, 1)
+
+      const noticedError = errors[0]
+      const [, transactionName, message, type] = noticedError
+      t.equal(transactionName, expectedBgTransactionName)
+      t.equal(message, errorMessage)
+      t.equal(type, 'SyntaxError')
+    })
 
     let transaction
     const wrappedHandler = awsLambda.patchLambdaHandler(() => {
@@ -1245,23 +1242,21 @@ tap.test('AwsLambda.patchLambdaHandler', (t) => {
 
         t.end()
       })
-
-    function confirmErrorCapture() {
-      const errors = agent.errors.traceAggregator.errors
-      t.equal(errors.length, 1)
-
-      const noticedError = errors[0]
-      const [, transactionName, message, type] = noticedError
-      t.equal(transactionName, expectedBgTransactionName)
-      t.equal(message, errorMessage)
-      t.equal(type, 'SyntaxError')
-    }
   })
 
   t.test(
     'should record error event when func is async an UnhandledPromiseRejection is thrown',
     (t) => {
-      agent.on('harvestStarted', confirmErrorCapture)
+      agent.on('harvestStarted', function confirmErrorCapture() {
+        const errors = agent.errors.traceAggregator.errors
+        t.equal(errors.length, 1)
+
+        const noticedError = errors[0]
+        const [, transactionName, message, type] = noticedError
+        t.equal(transactionName, expectedBgTransactionName)
+        t.equal(message, errorMessage)
+        t.equal(type, 'SyntaxError')
+      })
 
       let transaction
       const wrappedHandler = awsLambda.patchLambdaHandler(async () => {
@@ -1287,16 +1282,6 @@ tap.test('AwsLambda.patchLambdaHandler', (t) => {
       })
 
       wrappedHandler(stubEvent, stubContext, stubCallback)
-      function confirmErrorCapture() {
-        const errors = agent.errors.traceAggregator.errors
-        t.equal(errors.length, 1)
-
-        const noticedError = errors[0]
-        const [, transactionName, message, type] = noticedError
-        t.equal(transactionName, expectedBgTransactionName)
-        t.equal(message, errorMessage)
-        t.equal(type, 'SyntaxError')
-      }
     }
   )
 

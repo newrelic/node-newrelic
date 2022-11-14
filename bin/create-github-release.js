@@ -98,17 +98,15 @@ async function getReleaseNotes(tagName, releaseNotesFile) {
 }
 
 async function readReleaseNoteFile(file) {
-  const promise = new Promise((resolve, reject) => {
+  return new Promise((resolve, reject) => {
     fs.readFile(file, 'utf8', (err, data) => {
       if (err) {
-        return reject(err)
+        reject(err)
       }
 
-      return resolve(data)
+      resolve(data)
     })
   })
-
-  return promise
 }
 
 function stopOnError(err) {

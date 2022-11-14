@@ -13,8 +13,6 @@ const testCases = require('../lib/cross_agent_tests/lasp/language_agents_securit
 
 const LASP_MAP = require('../../lib/config/lasp').LASP_MAP
 
-const skipCases = []
-
 const TEST_DOMAIN = 'test-collector.newrelic.com'
 const TEST_COLLECTOR_URL = `https://${TEST_DOMAIN}`
 const RUN_ID = 'runId'
@@ -37,14 +35,12 @@ const DEFAULT_CONFIG = {
 }
 
 function getPreconnectReply(securityPolicies) {
-  const reply = {
+  return {
     return_value: {
       redirect_host: TEST_DOMAIN,
       security_policies: securityPolicies
     }
   }
-
-  return reply
 }
 
 const CONNECT_REPLY = { return_value: { agent_run_id: RUN_ID } }
@@ -97,13 +93,8 @@ tap.test('LASP/CSP - Cross Agent Tests', (t) => {
       t.comment('Agent does not support all required features for test, skipping.')
     }
 
-    const manualSkip = skipCases.indexOf(testCase.name) >= 0
-    if (manualSkip) {
-      t.comment('Test configured in skipCases to be skipped.')
-    }
-
     const options = {
-      skip: !hasFeatures || manualSkip
+      skip: !hasFeatures
     }
 
     t.test(testCase.name, options, (t) => {

@@ -272,7 +272,7 @@ async function generateReleaseNotes(owner, repo) {
     }
   })
 
-  const finalData = releaseNoteData.reduce(
+  return releaseNoteData.reduce(
     (result, currentValue) => {
       const trimmedNotes = currentValue.notes.trim()
       if (trimmedNotes) {
@@ -287,8 +287,6 @@ async function generateReleaseNotes(owner, repo) {
       links: ''
     }
   )
-
-  return finalData
 }
 
 function generateUnformattedNotes(originalNotes) {
@@ -302,17 +300,11 @@ function generateUnformattedNotes(originalNotes) {
     unformattedNotes = snykDescription.trim()
   }
 
-  const needsReviewNotes = [
-    '--- NOTES NEEDS REVIEW ---',
-    unformattedNotes,
-    '--------------------------'
-  ].join('\n')
-
-  return needsReviewNotes
+  return ['--- NOTES NEEDS REVIEW ---', unformattedNotes, '--------------------------'].join('\n')
 }
 
 function updateReleaseNotesFile(file, version, newNotes) {
-  const promise = new Promise((resolve, reject) => {
+  return new Promise((resolve, reject) => {
     fs.readFile(file, 'utf8', (err, data) => {
       if (err) {
         reject(err)
@@ -344,12 +336,10 @@ function updateReleaseNotesFile(file, version, newNotes) {
       })
     })
   })
-
-  return promise
 }
 
 function getFormattedPrBody(data) {
-  const body = [
+  return [
     '## Proposed Release Notes',
     data.notes,
     '## Links',
@@ -358,8 +348,6 @@ function getFormattedPrBody(data) {
     '## Details',
     ''
   ].join('\n')
-
-  return body
 }
 
 prepareReleaseNotes()

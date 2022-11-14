@@ -25,6 +25,12 @@ test('built-in http module instrumentation', (t) => {
   let http = null
   let agent = null
 
+  function addSegment() {
+    const transaction = agent.getTransaction()
+    transaction.type = 'web'
+    transaction.baseSegment = new Segment(transaction, 'base-segment')
+  }
+
   const PAYLOAD = JSON.stringify({ msg: 'ok' })
 
   const PAGE =
@@ -807,12 +813,6 @@ test('built-in http module instrumentation', (t) => {
       server.close()
     })
 
-    function addSegment() {
-      const transaction = agent.getTransaction()
-      transaction.type = 'web'
-      transaction.baseSegment = new Segment(transaction, 'base-segment')
-    }
-
     t.test('should use config.obfuscatedId as the x-newrelic-id header', (t) => {
       helper.runInTransaction(agent, function () {
         addSegment() // Add web segment so everything works properly
@@ -1027,12 +1027,6 @@ test('built-in http module instrumentation', (t) => {
         server.close(t.end())
       }
     })
-
-    function addSegment() {
-      const transaction = agent.getTransaction()
-      transaction.type = 'web'
-      transaction.baseSegment = new Segment(transaction, 'base-segment')
-    }
 
     t.end()
   })

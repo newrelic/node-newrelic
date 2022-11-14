@@ -39,7 +39,7 @@ newrelic
     // transaction has ended and this work will not be associated with it.
   })
 
-/**
+/*
  * Function to simulate async function that returns a promise.
  */
 function doSomeWork() {

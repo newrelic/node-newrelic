@@ -4,7 +4,7 @@
  */
 
 'use strict'
-/* eslint-disable no-console */
+/* eslint-disable sonarjs/no-duplicate-string, no-console */
 
 const async = require('async')
 const fs = require('fs')

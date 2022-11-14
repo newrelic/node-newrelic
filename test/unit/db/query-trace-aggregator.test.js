@@ -598,10 +598,7 @@ describe('Query Trace Aggregator', function testQueryTracer() {
 
             assert.deepEqual(keys, ['backtrace'])
             assert.deepEqual(result.backtrace, 'fake stack', 'trace should match')
-            nextSample()
-          })
 
-          function nextSample() {
             const sample2 = data[1]
             assert.equal(sample2[0], 'FakeTransaction', 'should match transaction name')
             assert.equal(sample2[1], '/abc', 'should match transaction url')
@@ -613,16 +610,16 @@ describe('Query Trace Aggregator', function testQueryTracer() {
             assert.equal(sample2[7], 550, 'should match min')
             assert.equal(sample2[8], 550, 'should match max')
 
-            codec.decode(sample2[9], function decoded(error, result) {
+            codec.decode(sample2[9], function (error, nextResult) {
               assert.equal(error, null, 'should not error')
 
-              const keys = Object.keys(result)
+              const nextKey = Object.keys(nextResult)
 
-              assert.deepEqual(keys, ['backtrace'])
-              assert.deepEqual(result.backtrace, 'fake stack', 'trace should match')
+              assert.deepEqual(nextKey, ['backtrace'])
+              assert.deepEqual(nextResult.backtrace, 'fake stack', 'trace should match')
               done()
             })
-          }
+          })
         })
       })
     })
@@ -942,10 +939,7 @@ describe('Query Trace Aggregator', function testQueryTracer() {
 
             assert.deepEqual(keys, ['backtrace'])
             assert.deepEqual(result.backtrace, 'fake stack', 'trace should match')
-            nextSample()
-          })
 
-          function nextSample() {
             const sample2 = data[1]
             assert.equal(sample2[0], 'FakeTransaction', 'should match transaction name')
             assert.equal(sample2[1], '<unknown>', 'should match transaction url')
@@ -957,16 +951,16 @@ describe('Query Trace Aggregator', function testQueryTracer() {
             assert.equal(sample2[7], 550, 'should match min')
             assert.equal(sample2[8], 550, 'should match max')
 
-            codec.decode(sample2[9], function decoded(error, result) {
+            codec.decode(sample2[9], function (error, nextResult) {
               assert.equal(error, null, 'should not error')
 
-              const keys = Object.keys(result)
+              const nextKeys = Object.keys(nextResult)
 
-              assert.deepEqual(keys, ['backtrace'])
-              assert.deepEqual(result.backtrace, 'fake stack', 'trace should match')
+              assert.deepEqual(nextKeys, ['backtrace'])
+              assert.deepEqual(nextResult.backtrace, 'fake stack', 'trace should match')
               done()
             })
-          }
+          })
         })
       })
     })

@@ -141,7 +141,7 @@ tap.test('#isHarvestConfigValid', (t) => {
 })
 
 function getValidHarvestConfig() {
-  const validHarvestConfig = {
+  return {
     report_period_ms: 5000,
     harvest_limits: {
       analytic_event_data: 833,
@@ -150,6 +150,4 @@ function getValidHarvestConfig() {
       span_event_data: 300
     }
   }
-
-  return validHarvestConfig
 }

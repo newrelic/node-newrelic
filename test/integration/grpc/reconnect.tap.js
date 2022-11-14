@@ -229,7 +229,7 @@ function createMetricAggregatorForTests() {
   const mapper = new MetricMapper()
   const normalizer = new MetricNormalizer({}, 'metric name')
 
-  const metrics = new MetricAggregator(
+  return new MetricAggregator(
     {
       apdexT: 0.5,
       mapper: mapper,
@@ -237,5 +237,4 @@ function createMetricAggregatorForTests() {
     },
     {}
   )
-  return metrics
 }

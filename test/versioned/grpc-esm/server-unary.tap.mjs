@@ -128,14 +128,18 @@ tap.test('gRPC Server: Unary Requests', (t) => {
   t.test('should not add DT headers when `distributed_tracing` is disabled', async (t) => {
     let serverTransaction
     let clientTransaction
-    function transactionFinished(tx) {
+
+    agent.on('transactionFinished', function transactionFinished(tx) {
       if (tx.name === getServerTransactionName('SayHello')) {
         serverTransaction = tx
       }
-    }
-    agent.on('transactionFinished', transactionFinished)
+    })
     t.teardown(() => {
-      agent.removeListener('transactionFinished', transactionFinished)
+      agent.removeListener('transactionFinished', function transactionFinished(tx) {
+        if (tx.name === getServerTransactionName('SayHello')) {
+          serverTransaction = tx
+        }
+      })
     })
 
     agent.config.distributed_tracing.enabled = false

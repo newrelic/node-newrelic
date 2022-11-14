@@ -7,7 +7,7 @@
 
 const newrelic = require('newrelic')
 
-/**
+/*
  * We'll stub out an async task that runs as part of monitoring a segment
  */
 async function myAsyncTask() {
@@ -17,11 +17,9 @@ async function myAsyncTask() {
   return 'hello world'
 }
 
-/**
+/*
  * Then we stub out the task that handles that task's result,
  * to show how the result is passed throughthe segment handler.
- *
- * @param greetings
  */
 async function myNextTask(greetings) {
   await new Promise((resolve) => {
@@ -35,8 +33,7 @@ async function myNextTask(greetings) {
  */
 async function someTask() {
   const result = await myAsyncTask()
-  const output = await myNextTask(result)
-  return output
+  return await myNextTask(result)
 }
 
 // Segments can only be created inside of transactions. They could be automatically

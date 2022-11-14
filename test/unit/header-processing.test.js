@@ -109,7 +109,6 @@ describe('header-processing', () => {
           const foundQueueTime = argument.indexOf(invalidRawQueueTime) >= 0
           if (foundQueueTime) {
             didLog = true
-            return
           }
         })
 

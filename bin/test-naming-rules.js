@@ -64,7 +64,7 @@ function run(opts) {
   let appliedRules = []
 
   // responsible for handling default rules provided by the server
-  const defaultNormalizer = loadDefaultNormalizer(config, runtimeRules)
+  const defaultNormalizer = loadDefaultNormalizer(config)
 
   // rules defined by user in local configuration file
   const userNormalizer = loadUserNormalizer(config, runtimeRules)

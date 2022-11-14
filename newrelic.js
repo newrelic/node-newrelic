@@ -35,7 +35,7 @@ exports.config = {
      *
      * NOTE: If excluding headers, they must be in camelCase form to be filtered.
      *
-     * @env NEW_RELIC_ATTRIBUTES_EXCLUDE
+     * @name NEW_RELIC_ATTRIBUTES_EXCLUDE
      */
     exclude: [
       'request.headers.cookie',

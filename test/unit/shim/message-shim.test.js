@@ -458,18 +458,8 @@ tap.test('MessageShim', function (t) {
 
     t.test('should bind the callback if there is one', function (t) {
       const cb = function () {}
-      const toWrap = function (wrappedCB) {
-        t.not(wrappedCB, cb)
-        t.ok(shim.isWrapped(wrappedCB))
-        t.equal(shim.unwrap(wrappedCB), cb)
 
-        t.doesNotThrow(function () {
-          wrappedCB()
-        })
-        t.end()
-      }
-
-      const wrapped = shim.recordConsume(toWrap, function () {
+      const wrapped = shim.recordConsume(helper.checkWrappedCb.bind(t, shim, cb), function () {
         return { callback: shim.LAST }
       })
 
@@ -582,19 +572,20 @@ tap.test('MessageShim', function (t) {
       let segment = null
       const DELAY = 25
 
-      function wrapMe() {
-        segment = shim.getSegment()
-        return new Promise((resolve) => {
-          setTimeout(() => {
-            resolve(msg)
-          }, DELAY)
-        })
-      }
-
-      const wrapped = shim.recordConsume(wrapMe, {
-        destinationName: shim.FIRST,
-        promise: true
-      })
+      const wrapped = shim.recordConsume(
+        function wrapMe() {
+          segment = shim.getSegment()
+          return new Promise((resolve) => {
+            setTimeout(() => {
+              resolve(msg)
+            }, DELAY)
+          })
+        },
+        {
+          destinationName: shim.FIRST,
+          promise: true
+        }
+      )
 
       return helper.runInTransaction(agent, function () {
         return wrapped('foo', function () {}).then(function (message) {
@@ -787,18 +778,10 @@ tap.test('MessageShim', function (t) {
 
     t.test('should bind the callback if there is one', function (t) {
       const cb = function () {}
-      const toWrap = function (wrappedCB) {
-        t.not(wrappedCB, cb)
-        t.ok(shim.isWrapped(wrappedCB))
-        t.equal(shim.unwrap(wrappedCB), cb)
 
-        t.doesNotThrow(function () {
-          wrappedCB()
-        })
-        t.end()
-      }
-
-      const wrapped = shim.recordPurgeQueue(toWrap, { callback: shim.LAST })
+      const wrapped = shim.recordPurgeQueue(helper.checkWrappedCb.bind(t, shim, cb), {
+        callback: shim.LAST
+      })
 
       helper.runInTransaction(agent, function () {
         wrapped(cb)
@@ -809,14 +792,16 @@ tap.test('MessageShim', function (t) {
       const DELAY = 25
       const val = {}
       let segment = null
-      const toWrap = function () {
-        segment = shim.getSegment()
-        return new Promise(function (res) {
-          setTimeout(res, DELAY, val)
-        })
-      }
 
-      const wrapped = shim.recordPurgeQueue(toWrap, { promise: true })
+      const wrapped = shim.recordPurgeQueue(
+        function () {
+          segment = shim.getSegment()
+          return new Promise(function (res) {
+            setTimeout(res, DELAY, val)
+          })
+        },
+        { promise: true }
+      )
 
       return helper.runInTransaction(agent, function () {
         return wrapped().then(function (v) {

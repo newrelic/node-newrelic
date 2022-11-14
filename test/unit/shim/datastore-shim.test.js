@@ -5,7 +5,8 @@
 
 'use strict'
 
-const { test } = require('tap')
+const tap = require('tap')
+const { test } = tap
 const getMetricHostName = require('../../lib/metrics_helper').getMetricHostName
 const helper = require('../../lib/agent_helper')
 const Shim = require('../../../lib/shim/shim')
@@ -418,18 +419,10 @@ test('DatastoreShim', function (t) {
 
     t.test('should bind the callback if there is one', function (t) {
       const cb = function () {}
-      const toWrap = function (wrappedCB) {
-        t.not(wrappedCB, cb)
-        t.ok(shim.isWrapped(wrappedCB))
-        t.equal(shim.unwrap(wrappedCB), cb)
 
-        t.doesNotThrow(function () {
-          wrappedCB()
-        })
-        t.end()
-      }
-
-      const wrapped = shim.recordOperation(toWrap, { callback: shim.LAST })
+      const wrapped = shim.recordOperation(helper.checkWrappedCb.bind(t, shim, cb), {
+        callback: shim.LAST
+      })
 
       helper.runInTransaction(agent, function () {
         wrapped(cb)
@@ -698,19 +691,7 @@ test('DatastoreShim', function (t) {
 
     t.test('should bind the callback if there is one', function (t) {
       const cb = function () {}
-
-      const toWrap = function (_query, wrappedCB) {
-        t.not(wrappedCB, cb)
-        t.ok(shim.isWrapped(wrappedCB))
-        t.equal(shim.unwrap(wrappedCB), cb)
-
-        t.doesNotThrow(function () {
-          wrappedCB()
-        })
-        t.end()
-      }
-
-      const wrapped = shim.recordQuery(toWrap, {
+      const wrapped = shim.recordQuery(helper.checkWrappedCb.bind(t, shim, cb), {
         query: shim.FIRST,
         callback: shim.LAST
       })
@@ -722,18 +703,8 @@ test('DatastoreShim', function (t) {
 
     t.test('should bind the row callback if there is one', function (t) {
       const cb = function () {}
-      const toWrap = function (_query, wrappedCB) {
-        t.not(wrappedCB, cb)
-        t.ok(shim.isWrapped(wrappedCB))
-        t.equal(shim.unwrap(wrappedCB), cb)
 
-        t.doesNotThrow(function () {
-          wrappedCB()
-        })
-        t.end()
-      }
-
-      const wrapped = shim.recordQuery(toWrap, {
+      const wrapped = shim.recordQuery(helper.checkWrappedCb.bind(t, shim, cb), {
         query: shim.FIRST,
         rowCallback: shim.LAST
       })

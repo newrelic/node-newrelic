@@ -6,8 +6,8 @@
 'use strict'
 
 module.exports = {
-  extends: ['@newrelic', 'plugin:jsdoc/recommended'],
-  plugins: ['jsdoc'],
+  extends: ['@newrelic', 'plugin:jsdoc/recommended', 'plugin:sonarjs/recommended'],
+  plugins: ['jsdoc', 'sonarjs'],
   rules: {
     'consistent-return': 'off',
     'jsdoc/require-jsdoc': 'off'
@@ -36,6 +36,14 @@ module.exports = {
       files: ['./lib/shim/*.js', 'lib/transaction/handle.js', 'api.js'],
       rules: {
         'jsdoc/require-jsdoc': 'warn'
+      }
+    },
+    {
+      files: ['test/**/**/**', 'tests/**/**/**'],
+      // TODO: remove these overrides as part of https://issues.newrelic.com/browse/NEWRELIC-5257
+      rules: {
+        'sonarjs/no-duplicate-string': 'off',
+        'sonarjs/cognitive-complexity': 'off'
       }
     }
   ]

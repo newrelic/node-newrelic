@@ -518,5 +518,25 @@ const helper = (module.exports = {
     segments.forEach((segment, index) => {
       this.equal(parent.children[index].id, segment.id, 'should have same ids')
     })
+  },
+  /**
+   * Asserts the wrapped callback is wrapped and the unwrapped version is the original.
+   * It also verifies it does not throw an error
+   *
+   * @param {object} shim shim lib
+   * @param {Function} original callback
+   */
+  checkWrappedCb(shim, cb) {
+    // The wrapped calledback is always the last argument
+    const wrappedCB = arguments[arguments.length - 1]
+    this.not(wrappedCB, cb)
+    this.ok(shim.isWrapped(wrappedCB))
+    this.equal(shim.unwrap(wrappedCB), cb)
+
+    this.doesNotThrow(function () {
+      wrappedCB()
+    })
+
+    this.end()
   }
 })

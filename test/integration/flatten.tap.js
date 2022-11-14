@@ -28,6 +28,7 @@ tap.test('util.flatten', function (t) {
   })
 
   t.test('flattens recursive objects', function (t) {
+    // eslint-disable-next-line sonarjs/prefer-object-literal -- Disabled so we can create cyclical objects
     const obj = {}
     obj.x = obj
     t.same(flatten({}, '', obj), {})
@@ -52,6 +53,7 @@ tap.test('util.flatten.keys', function (t) {
   })
 
   t.test('flattens recursive objects', function (t) {
+    // eslint-disable-next-line sonarjs/prefer-object-literal -- Disabled so we can create cyclical objects
     const obj = {}
     obj.x = obj
     t.same(flatten.keys(obj), [])

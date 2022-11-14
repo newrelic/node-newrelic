@@ -16,7 +16,7 @@ async function version(typeOrVersion, shouldCommitAndTag) {
 }
 
 function execAsPromise(command) {
-  const promise = new Promise((resolve, reject) => {
+  return new Promise((resolve, reject) => {
     console.log(`Executing: '${command}'`)
 
     exec(command, (err, stdout) => {
@@ -27,8 +27,6 @@ function execAsPromise(command) {
       return resolve(stdout)
     })
   })
-
-  return promise
 }
 
 module.exports = {

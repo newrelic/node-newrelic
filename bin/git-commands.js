@@ -15,7 +15,7 @@ async function getPushRemotes() {
   const stdout = await execAsPromise('git remote -v')
 
   const remotes = stdout.split('\n')
-  const processedRemotes = remotes.reduce((remotePairs, currentRemote) => {
+  return remotes.reduce((remotePairs, currentRemote) => {
     const parts = currentRemote.split('\t')
     if (parts.length < 2) {
       return remotePairs
@@ -28,98 +28,72 @@ async function getPushRemotes() {
 
     return remotePairs
   }, {})
-
-  return processedRemotes
 }
 
 async function getLocalChanges() {
   const stdout = await execAsPromise('git status --short --porcelain')
-  const changes = stdout.split('\n').filter((line) => {
+  return stdout.split('\n').filter((line) => {
     return line.length > 0 && !line.includes(AGENT_SUB_REPO || DOCS_SUB_REPO)
   })
-
-  return changes
 }
 
 async function getCurrentBranch() {
   const stdout = await execAsPromise('git branch --show-current')
-  const branch = stdout.trim()
-
-  return branch
+  return stdout.trim()
 }
 
 async function checkoutNewBranch(name) {
   const stdout = await execAsPromise(`git checkout -b ${name}`)
-  const output = stdout.trim()
-
-  return output
+  return stdout.trim()
 }
 
 async function addAllFiles() {
   const stdout = await execAsPromise(`git add . ':!${AGENT_SUB_REPO}'`)
-  const output = stdout.trim()
-
-  return output
+  return stdout.trim()
 }
 
 async function addFiles(files) {
   files = files.join(' ')
   const stdout = await execAsPromise(`git add ${files}`)
-  const output = stdout.trim()
-
-  return output
+  return stdout.trim()
 }
 
 async function commit(message) {
   const stdout = await execAsPromise(`git commit -m "${message}"`)
-  const output = stdout.trim()
-
-  return output
+  return stdout.trim()
 }
 
 async function pushToRemote(remote, branchName) {
   const stdout = await execAsPromise(`git push --set-upstream ${remote} ${branchName}`)
-  const output = stdout.trim()
-
-  return output
+  return stdout.trim()
 }
 
 async function createAnnotatedTag(name, message) {
   const stdout = await execAsPromise(`git tag -a ${name} -m ${message}`)
-  const output = stdout.trim()
-
-  return output
+  return stdout.trim()
 }
 
 async function pushTags() {
   const stdout = await execAsPromise('git push --tags')
-  const output = stdout.trim()
-
-  return output
+  return stdout.trim()
 }
 
 async function checkout(branchName) {
   const stdout = await execAsPromise(`git checkout ${branchName}`)
-  const output = stdout.trim()
-
-  return output
+  return stdout.trim()
 }
 
 async function clone(url, name, args) {
   const argsString = args.join(' ')
   const stdout = await execAsPromise(`git clone ${argsString} ${url} ${name}`)
-  const output = stdout.trim()
-
-  return output
+  return stdout.trim()
 }
 
 async function setSparseCheckoutFolders(folders) {
   const foldersString = folders.join(' ')
 
   const stdout = await execAsPromise(`git sparse-checkout set --no-cone ${foldersString}`)
-  const output = stdout.trim()
-
-  return output
+  return stdout.trim()
 }
 
 async function sparseCloneRepo(repoInfo, checkoutFiles) {
@@ -143,7 +117,7 @@ async function sparseCloneRepo(repoInfo, checkoutFiles) {
 }
 
 function execAsPromise(command) {
-  const promise = new Promise((resolve, reject) => {
+  return new Promise((resolve, reject) => {
     console.log(`Executing: '${command}'`)
 
     exec(command, (err, stdout) => {
@@ -154,8 +128,6 @@ function execAsPromise(command) {
       return resolve(stdout)
     })
   })
-
-  return promise
 }
 
 module.exports = {
