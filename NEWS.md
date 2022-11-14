@@ -1,3 +1,7 @@
+### v9.6.1 (2022-11-14)
+
+* Added new configuration option: `grpc.ignore_status_codes`
+
 ### v9.6.0 (2022-11-09)
 
 * Dropped support for `vision`, and instead only instrument `@hapi/vision`.
