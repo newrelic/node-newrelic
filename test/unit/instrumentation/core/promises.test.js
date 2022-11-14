@@ -40,14 +40,7 @@ test('Promise trace', { skip: usingAsyncLocal }, (t) => {
 
   t.test('should handle straight chains', (t) => {
     return helper.runInTransaction(agent, function (tx) {
-      return start('a')
-        .then(step('b'))
-        .then(step('c'))
-        .then(step('d'))
-        .then(checkTrace(t, tx))
-        .then(() => {
-          t.end()
-        })
+      return start('a').then(step('b')).then(step('c')).then(step('d')).then(checkTrace(t, tx))
     })
   })
 
@@ -58,22 +51,12 @@ test('Promise trace', { skip: usingAsyncLocal }, (t) => {
         .catch(step('c'))
         .then(step('d'))
         .then(checkTrace(t, tx))
-        .then(() => {
-          t.end()
-        })
     })
   })
 
   t.test('should handle jumping over a catch', (t) => {
     return helper.runInTransaction(agent, function (tx) {
-      return start('a')
-        .then(step('b'))
-        .catch(step('c'))
-        .then(step('d'))
-        .then(checkTrace(t, tx))
-        .then(() => {
-          t.end()
-        })
+      return start('a').then(step('b')).catch(step('c')).then(step('d')).then(checkTrace(t, tx))
     })
   })
 
@@ -82,14 +65,7 @@ test('Promise trace', { skip: usingAsyncLocal }, (t) => {
       const a = start('a')
       a.then(step('e')).then(step('f'))
 
-      return a
-        .then(step('b'))
-        .then(step('c'))
-        .then(step('d'))
-        .then(checkTrace(t, tx))
-        .then(() => {
-          t.end()
-        })
+      return a.then(step('b')).then(step('c')).then(step('d')).then(checkTrace(t, tx))
     })
   })
 
@@ -98,14 +74,7 @@ test('Promise trace', { skip: usingAsyncLocal }, (t) => {
       const a = start('a', true)
       a.then(step('e')).catch(step('f'))
 
-      return a
-        .then(step('b'))
-        .catch(step('c'))
-        .then(step('d'))
-        .then(checkTrace(t, tx))
-        .then(() => {
-          t.end()
-        })
+      return a.then(step('b')).catch(step('c')).then(step('d')).then(checkTrace(t, tx))
     })
   })
 
@@ -114,13 +83,7 @@ test('Promise trace', { skip: usingAsyncLocal }, (t) => {
       const b = start('a').then(step('b'))
       b.then(step('e'))
 
-      return b
-        .then(step('c'))
-        .then(step('d'))
-        .then(checkTrace(t, tx))
-        .then(() => {
-          t.end()
-        })
+      return b.then(step('c')).then(step('d')).then(checkTrace(t, tx))
     })
   })
 
@@ -129,13 +92,7 @@ test('Promise trace', { skip: usingAsyncLocal }, (t) => {
       const b = start('a', true).then(step('b'))
       b.catch(step('e'))
 
-      return b
-        .catch(step('c'))
-        .then(step('d'))
-        .then(checkTrace(t, tx))
-        .then(() => {
-          t.end()
-        })
+      return b.catch(step('c')).then(step('d')).then(checkTrace(t, tx))
     })
   })
 
@@ -144,13 +101,7 @@ test('Promise trace', { skip: usingAsyncLocal }, (t) => {
       const b = start('a').catch(step('b'))
       b.then(step('e'))
 
-      return b
-        .then(step('c'))
-        .then(step('d'))
-        .then(checkTrace(t, tx))
-        .then(() => {
-          t.end()
-        })
+      return b.then(step('c')).then(step('d')).then(checkTrace(t, tx))
     })
   })
 
@@ -164,9 +115,6 @@ test('Promise trace', { skip: usingAsyncLocal }, (t) => {
         .then(step('c'))
         .then(step('d'))
         .then(checkTrace(t, tx))
-        .then(() => {
-          t.end()
-        })
     })
   })
 
@@ -181,9 +129,6 @@ test('Promise trace', { skip: usingAsyncLocal }, (t) => {
         .then(step('c'))
         .then(step('d'))
         .then(checkTrace(t, tx))
-        .then(() => {
-          t.end()
-        })
     })
   })
 })
@@ -214,6 +159,10 @@ function checkTrace(t, tx) {
   t.equal(segment.name, 'a')
   t.equal(segment.children.length, 0)
   // verify current segment is same as trace root
-  t.same(segment.name, helper.getContextManager().getContext().name)
-  return segment
+  t.same(
+    segment.name,
+    helper.getContextManager().getContext().name,
+    'current segment is same as one in async context manager'
+  )
+  return Promise.resolve()
 }

@@ -44,6 +44,16 @@ tap.test('Shim', function (t) {
     shim = null
   }
 
+  /**
+   * Helper that verifies the original callback
+   * and wrapped callback are the same
+   */
+  function checkNotWrapped(cb, wrappedCB) {
+    this.equal(wrappedCB, cb)
+    this.notOk(shim.isWrapped(wrappedCB))
+    this.end()
+  }
+
   t.test('constructor', function (t) {
     t.autoend()
     t.beforeEach(beforeEach)
@@ -1335,16 +1345,9 @@ tap.test('Shim', function (t) {
     t.test('should not bind the rowCallback if there is one', function (t) {
       const cb = function () {}
 
-      const wrapped = shim.record(
-        function (wrappedCB) {
-          t.equal(wrappedCB, cb)
-          t.notOk(shim.isWrapped(wrappedCB))
-          t.end()
-        },
-        function () {
-          return { name: 'test segment', rowCallback: shim.LAST }
-        }
-      )
+      const wrapped = shim.record(checkNotWrapped.bind(t, cb), function () {
+        return { name: 'test segment', rowCallback: shim.LAST }
+      })
       wrapped(cb)
     })
   })
@@ -1430,21 +1433,9 @@ tap.test('Shim', function (t) {
     t.test('should bind the rowCallback if there is one', function (t) {
       const cb = function () {}
 
-      const wrapped = shim.record(
-        function (wrappedCB) {
-          t.not(wrappedCB, cb)
-          t.ok(shim.isWrapped(wrappedCB))
-          t.equal(shim.unwrap(wrappedCB), cb)
-
-          t.doesNotThrow(function () {
-            wrappedCB()
-          })
-          t.end()
-        },
-        function () {
-          return { name: 'test segment', rowCallback: shim.LAST }
-        }
-      )
+      const wrapped = shim.record(helper.checkWrappedCb.bind(t, shim, cb), function () {
+        return { name: 'test segment', rowCallback: shim.LAST }
+      })
 
       helper.runInTransaction(agent, function () {
         wrapped(cb)
@@ -1558,16 +1549,9 @@ tap.test('Shim', function (t) {
 
     t.test('should not bind the callback if there is one', function (t) {
       const cb = function () {}
-      const wrapped = shim.record(
-        function (wrappedCB) {
-          t.equal(wrappedCB, cb)
-          t.notOk(shim.isWrapped(wrappedCB))
-          t.end()
-        },
-        function () {
-          return { name: 'test segment', callback: shim.LAST }
-        }
-      )
+      const wrapped = shim.record(checkNotWrapped.bind(t, cb), function () {
+        return { name: 'test segment', callback: shim.LAST }
+      })
 
       helper.runInTransaction(agent, function (tx) {
         tx.end()
@@ -1577,16 +1561,9 @@ tap.test('Shim', function (t) {
 
     t.test('should not bind the rowCallback if there is one', function (t) {
       const cb = function () {}
-      const wrapped = shim.record(
-        function (wrappedCB) {
-          t.equal(wrappedCB, cb)
-          t.notOk(shim.isWrapped(wrappedCB))
-          t.end()
-        },
-        function () {
-          return { name: 'test segment', rowCallback: shim.LAST }
-        }
-      )
+      const wrapped = shim.record(checkNotWrapped.bind(t, cb), function () {
+        return { name: 'test segment', rowCallback: shim.LAST }
+      })
 
       helper.runInTransaction(agent, function (tx) {
         tx.end()

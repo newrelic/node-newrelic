@@ -459,21 +459,9 @@ tap.test('MessageShim', function (t) {
     t.test('should bind the callback if there is one', function (t) {
       const cb = function () {}
 
-      const wrapped = shim.recordConsume(
-        function (wrappedCB) {
-          t.not(wrappedCB, cb)
-          t.ok(shim.isWrapped(wrappedCB))
-          t.equal(shim.unwrap(wrappedCB), cb)
-
-          t.doesNotThrow(function () {
-            wrappedCB()
-          })
-          t.end()
-        },
-        function () {
-          return { callback: shim.LAST }
-        }
-      )
+      const wrapped = shim.recordConsume(helper.checkWrappedCb.bind(t, shim, cb), function () {
+        return { callback: shim.LAST }
+      })
 
       helper.runInTransaction(agent, function () {
         wrapped(cb)
@@ -791,19 +779,9 @@ tap.test('MessageShim', function (t) {
     t.test('should bind the callback if there is one', function (t) {
       const cb = function () {}
 
-      const wrapped = shim.recordPurgeQueue(
-        function (wrappedCB) {
-          t.not(wrappedCB, cb)
-          t.ok(shim.isWrapped(wrappedCB))
-          t.equal(shim.unwrap(wrappedCB), cb)
-
-          t.doesNotThrow(function () {
-            wrappedCB()
-          })
-          t.end()
-        },
-        { callback: shim.LAST }
-      )
+      const wrapped = shim.recordPurgeQueue(helper.checkWrappedCb.bind(t, shim, cb), {
+        callback: shim.LAST
+      })
 
       helper.runInTransaction(agent, function () {
         wrapped(cb)
