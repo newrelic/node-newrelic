@@ -4,7 +4,8 @@
  */
 
 'use strict'
-/* eslint-disable sonarjs/no-duplicate-string, sonarjs/cognitive-complexity -- TODO: https://issues.newrelic.com/browse/NEWRELIC-5252 */
+
+/* eslint sonarjs/cognitive-complexity: ["error", 21] -- TODO: https://issues.newrelic.com/browse/NEWRELIC-5252 */
 
 const a = require('async')
 const cp = require('child_process')
@@ -28,7 +29,7 @@ process.argv.slice(2).forEach(function forEachFileArg(file) {
   } else {
     globs.push(
       path.join(benchpath, file, '*.bench.js'),
-      path.join(benchpath, file + '*.bench.js'),
+      path.join(benchpath, `${file}*.bench.js`),
       path.join(benchpath, file, '**/*.bench.js')
     )
   }
