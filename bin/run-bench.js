@@ -4,7 +4,7 @@
  */
 
 'use strict'
-/* eslint-disable sonarjs/no-duplicate-string, sonarjs/cognitive-complexity */
+/* eslint-disable sonarjs/no-duplicate-string, sonarjs/cognitive-complexity -- TODO: https://issues.newrelic.com/browse/NEWRELIC-5252 */
 
 const a = require('async')
 const cp = require('child_process')

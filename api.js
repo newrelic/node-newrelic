@@ -5,7 +5,7 @@
 
 'use strict'
 
-/* eslint sonarjs/cognitive-complexity: ["error", 21] -- TODO: <insert jira link> */
+/* eslint sonarjs/cognitive-complexity: ["error", 21] -- TODO: https://issues.newrelic.com/browse/NEWRELIC-5252 */
 
 const util = require('util')
 const logger = require('./lib/logger').child({ component: 'api' })
