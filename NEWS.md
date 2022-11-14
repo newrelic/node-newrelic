@@ -1,6 +1,6 @@
 ### v9.7.0 (2022-11-14)
 
-* Added new configuration option: `grpc.ignore_status_codes`
+* Added new configuration option, `grpc.ignore_status_codes`, which can be used to select nonzero gRPC status codes to ignore and not report as errors.
 
 ### v9.6.0 (2022-11-09)
 
