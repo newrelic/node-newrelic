@@ -40,6 +40,7 @@ module.exports = {
     },
     {
       files: ['test/**/**/**', 'tests/**/**/**'],
+      // TODO: remove these overrides as part of https://issues.newrelic.com/browse/NEWRELIC-5257
       rules: {
         'sonarjs/no-duplicate-string': 'off',
         'sonarjs/cognitive-complexity': 'off'
