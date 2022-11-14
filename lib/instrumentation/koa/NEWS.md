@@ -1,3 +1,7 @@
+### v7.1.0 (2022-11-14)
+
+* Removed `__NR` prefixed properties in favor of symbols.
+
 ### v7.0.0 (2022-07-27)
 
 * **BREAKING** Removed support for Node 12.
