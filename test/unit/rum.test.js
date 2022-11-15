@@ -60,6 +60,11 @@ describe('the RUM API', function () {
     })
   })
 
+  it('should not generate header config is missing', function () {
+    agent.config.browser_monitoring = undefined
+    api.getBrowserTimingHeader().should.equal('<!-- NREUM: (2) -->')
+  })
+
   it('should issue a warning if transaction has no name', function () {
     helper.runInTransaction(agent, function () {
       api.getBrowserTimingHeader().should.equal('<!-- NREUM: (3) -->')

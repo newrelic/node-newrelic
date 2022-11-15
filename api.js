@@ -5,8 +5,6 @@
 
 'use strict'
 
-/* eslint sonarjs/cognitive-complexity: ["error", 21] -- TODO: https://issues.newrelic.com/browse/NEWRELIC-5252 */
-
 const util = require('util')
 const logger = require('./lib/logger').child({ component: 'api' })
 const recordWeb = require('./lib/metrics/recorders/http')
@@ -58,7 +56,7 @@ const CUSTOM_EVENT_TYPE_REGEX = /^[a-zA-Z0-9:_ ]+$/
  * You do not need to directly instantiate this class, as an instance of this is
  * the return from `require('newrelic')`.
  *
- * @param agent
+ * @param {object} agent Instantiation of lib/agent.js
  * @class
  */
 function API(agent) {
@@ -78,6 +76,7 @@ function API(agent) {
  *
  * @param {string} name The name you want to give the web request in the New
  *                      Relic UI. Will be prefixed with 'Custom/' when sent.
+ * @returns {void}
  */
 API.prototype.setTransactionName = function setTransactionName(name) {
   const metric = this.agent.metrics.getOrCreateMetric(
@@ -143,8 +142,8 @@ API.prototype.getTransaction = function getTransaction() {
  *   utilization.full_hostname. If utilization.full_hostname is null or empty,
  *   this will be the hostname specified in the connect request as host.
  *
- * @param omitSupportability
- * @returns {LinkingMetadata} The linking object with the data above
+ * @param {boolean} omitSupportability Whether or not to log the supportability metric, true means skip
+ * @returns {object} The LinkingMetadata object with the data above
  */
 API.prototype.getLinkingMetadata = function getLinkingMetadata(omitSupportability) {
   if (omitSupportability !== true) {
@@ -207,6 +206,7 @@ API.prototype.setDispatcher = function setDispatcher(name, version) {
  *                        sent.
  * @param {string} action The action being invoked on the controller. Defaults
  *                        to the HTTP method used for the request.
+ * @returns {void}
  */
 API.prototype.setControllerName = function setControllerName(name, action) {
   const metric = this.agent.metrics.getOrCreateMetric(
@@ -241,6 +241,7 @@ API.prototype.setControllerName = function setControllerName(name, action) {
  *
  * @param {string} key  The key you want displayed in the RPM UI.
  * @param {string} value The value you want displayed. Must be serializable.
+ * @returns {false|undefined} Retruns false when disabled/errored, otherwise undefined
  */
 API.prototype.addCustomAttribute = function addCustomAttribute(key, value) {
   const metric = this.agent.metrics.getOrCreateMetric(
@@ -296,7 +297,7 @@ API.prototype.addCustomAttribute = function addCustomAttribute(key, value) {
  *
  *    newrelic.addCustomAttributes({test: 'value', test2: 'value2'});
  *
- * @param {object} [atts]
+ * @param {object} [atts] Attribute object
  * @param {string} [atts.KEY] The name you want displayed in the RPM UI.
  * @param {string} [atts.KEY.VALUE] The value you want displayed. Must be serializable.
  */
@@ -324,7 +325,7 @@ API.prototype.addCustomAttributes = function addCustomAttributes(atts) {
  *
  *    newrelic.addCustomSpanAttribute({test: 'value', test2: 'value2'})
  *
- * @param {object} [atts]
+ * @param {object} [atts] Attribute object
  * @param {string} [atts.KEY] The name you want displayed in the RPM UI.API.
  * @param {string} [atts.KEY.VALUE] The value you want displayed.  Must be serializable.
  */
@@ -349,6 +350,7 @@ API.prototype.addCustomSpanAttributes = function addCustomSpanAttributes(atts) {
  *
  * @param {string} key  The key you want displayed in the RPM UI.
  * @param {string} value The value you want displayed. Must be serializable.
+ * @returns {false|undefined} Retruns false when disabled/errored, otherwise undefined
  */
 API.prototype.addCustomSpanAttribute = function addCustomSpanAttribute(key, value) {
   const metric = this.agent.metrics.getOrCreateMetric(
@@ -395,6 +397,7 @@ API.prototype.addCustomSpanAttribute = function addCustomSpanAttribute(key, valu
  *  The error to be traced.
  * @param {object} [customAttributes]
  *  Optional. Any custom attributes to be displayed in the New Relic UI.
+ * @returns {false|undefined} Retruns false when disabled/errored, otherwise undefined
  */
 API.prototype.noticeError = function noticeError(error, customAttributes) {
   const metric = this.agent.metrics.getOrCreateMetric(NAMES.SUPPORTABILITY.API + '/noticeError')
@@ -536,6 +539,7 @@ API.prototype.recordLogEvent = function recordLogEvent(logEvent = {}) {
  *
  * @param {RegExp} pattern The pattern to rename (with capture groups).
  * @param {string} name    The name to use for the transaction.
+ * @returns {void}
  */
 API.prototype.addNamingRule = function addNamingRule(pattern, name) {
   const metric = this.agent.metrics.getOrCreateMetric(NAMES.SUPPORTABILITY.API + '/addNamingRule')
@@ -560,6 +564,7 @@ API.prototype.addNamingRule = function addNamingRule(pattern, name) {
  *   newrelic.addIgnoringRule('^/socket\\.io/')
  *
  * @param {RegExp} pattern The pattern to ignore.
+ * @returns {void}
  */
 API.prototype.addIgnoringRule = function addIgnoringRule(pattern) {
   const metric = this.agent.metrics.getOrCreateMetric(NAMES.SUPPORTABILITY.API + '/addIgnoringRule')
@@ -570,6 +575,52 @@ API.prototype.addIgnoringRule = function addIgnoringRule(pattern) {
   }
 
   this.agent.userNormalizer.addSimple(pattern, null)
+}
+
+/**
+ * Gracefully fail.
+ *
+ * Output an HTML comment and log a warning the comment is meant to be
+ * innocuous to the end user.
+ *
+ * @see RUM_ISSUES
+ * @param {number} errorCode Error code from `RUM_ISSUES`.
+ * @param {boolean} [quiet=false] Be quiet about this failure.
+ * @returns {string} HTML comment for debugging purposes with specific error code
+ */
+function _gracefail(errorCode, quiet) {
+  if (quiet) {
+    logger.debug(RUM_ISSUES[errorCode])
+  } else {
+    logger.warn(RUM_ISSUES[errorCode])
+  }
+  return '<!-- NREUM: (' + errorCode + ') -->'
+}
+
+/**
+ * Function for generating a fully formed RUM header based on configuration options
+ *
+ * @param {object} options Configuration options for RUM
+ * @param {string} [options.nonce] Nonce to inject into `<script>` header.
+ * @param {boolean} [options.hasToRemoveScriptWrapper] Used to import agent script without `<script>` tag wrapper.
+ * @param {string} metadata Stringified representation of rumHash metadata
+ * @param {string} loader Agent Loader script
+ * @returns {string} fully formed RUM header
+ */
+function _generateRUMHeader(options = {}, metadata, loader) {
+  const formatArgs = []
+
+  if (options.hasToRemoveScriptWrapper) {
+    formatArgs.push(RUM_STUB)
+  } else if (options.nonce) {
+    formatArgs.push(RUM_STUB_SHELL_WITH_NONCE_PARAM, `nonce="${options.nonce}"`)
+  } else {
+    formatArgs.push(RUM_STUB_SHELL)
+  }
+
+  formatArgs.push(metadata, loader)
+
+  return util.format(...formatArgs)
 }
 
 /**
@@ -587,9 +638,9 @@ API.prototype.addIgnoringRule = function addIgnoringRule(pattern) {
  *
  * Do *not* reuse the headers between users, or even between requests.
  *
+ * @param {object} options configuration options
  * @param {string} [options.nonce] - Nonce to inject into `<script>` header.
  * @param {boolean} [options.hasToRemoveScriptWrapper] - Used to import agent script without `<script>` tag wrapper.
- * @param options
  * @returns {string} The script content to be injected in `<head>` or put inside `<script>` tag (depending on options)
  */
 API.prototype.getBrowserTimingHeader = function getBrowserTimingHeader(options) {
@@ -599,26 +650,6 @@ API.prototype.getBrowserTimingHeader = function getBrowserTimingHeader(options) 
   metric.incrementCallCount()
 
   const config = this.agent.config
-
-  /**
-   * Gracefully fail.
-   *
-   * Output an HTML comment and log a warning the comment is meant to be
-   * innocuous to the end user.
-   *
-   * @param {number} num          - Error code from `RUM_ISSUES`.
-   * @param {bool} [quite=false]  - Be quiet about this failure.
-   * @param quiet
-   * @see RUM_ISSUES
-   */
-  function _gracefail(num, quiet) {
-    if (quiet) {
-      logger.debug(RUM_ISSUES[num])
-    } else {
-      logger.warn(RUM_ISSUES[num])
-    }
-    return '<!-- NREUM: (' + num + ') -->'
-  }
 
   const browserMonitoring = config.browser_monitoring
 
@@ -738,17 +769,7 @@ API.prototype.getBrowserTimingHeader = function getBrowserTimingHeader(options) 
   const json = JSON.stringify(rumHash, null, tabs)
 
   // the complete header to be written to the browser
-  const out =
-    options && options.hasToRemoveScriptWrapper
-      ? util.format(RUM_STUB, json, jsAgentLoader)
-      : options && options.nonce
-      ? util.format(
-          RUM_STUB_SHELL_WITH_NONCE_PARAM,
-          'nonce="' + options.nonce + '"',
-          json,
-          jsAgentLoader
-        )
-      : util.format(RUM_STUB_SHELL, json, jsAgentLoader)
+  const out = _generateRUMHeader(options, json, jsAgentLoader)
 
   logger.trace('generating RUM header', out)
 
@@ -773,7 +794,7 @@ API.prototype.getBrowserTimingHeader = function getBrowserTimingHeader(options) 
  *  })
  * @param {string} name
  *  The name to give the new segment. This will also be the name of the metric.
- * @param {bool} record
+ * @param {boolean} record
  *  Indicates if the segment should be recorded as a metric. Metrics will show
  *  up on the transaction breakdown table and server breakdown graph. Segments
  *  just show up in transaction traces.
@@ -845,6 +866,7 @@ API.prototype.startSegment = function startSegment(name, record, handler, callba
  *  so it should be a generic name and not iclude any variable parameters.
  * @param {Function}  handle
  *  Function that represents the transaction work.
+ * @returns {null|*} Returns null if handle is not a function, otherwise the return value of handle
  */
 API.prototype.startWebTransaction = function startWebTransaction(url, handle) {
   const metric = this.agent.metrics.getOrCreateMetric(
@@ -935,7 +957,8 @@ API.prototype.startBackgroundTransaction = startBackgroundTransaction
  *  https://docs.newrelic.com/docs/apm/applications-menu/monitoring/transactions-page#txn-type-dropdown
  * @param {Function} handle
  *  Function that represents the background work.
- * @memberOf API#
+ * @memberof API#
+ * @returns {null|*} Returns null if handle is not a function, otherwise the return value of handle
  */
 function startBackgroundTransaction(name, group, handle) {
   const metric = this.agent.metrics.getOrCreateMetric(
@@ -1040,7 +1063,7 @@ API.prototype.endTransaction = function endTransaction() {
  *     of these keys match the names of the keys used by the platform API.
  *
  * @param  {string} name  The name of the metric.
- * @param  {number|object} value
+ * @param  {number|object} value The value of the metric to record
  */
 API.prototype.recordMetric = function recordMetric(name, value) {
   const supportMetric = this.agent.metrics.getOrCreateMetric(
@@ -1128,6 +1151,7 @@ API.prototype.incrementMetric = function incrementMetric(name, value) {
  * @param  {object} attributes Object of key and value pairs. The keys must be shorter
  *                             than 255 characters, and the values must be string, number,
  *                             or boolean.
+ * @returns {false|undefined} Returns false explicitly if failed/disabled, otherwise undefined
  */
 API.prototype.recordCustomEvent = function recordCustomEvent(eventType, attributes) {
   const metric = this.agent.metrics.getOrCreateMetric(
@@ -1210,15 +1234,13 @@ API.prototype.recordCustomEvent = function recordCustomEvent(eventType, attribut
  *  - `newrelic.instrument(moduleName, onRequire [,onError])`
  *  - `newrelic.instrument(options)`
  *
- * @param {object} options The options for this custom instrumentation.
- * @param {string} options.moduleName The module name given to require to load the module
- * @param {Function}  options.onResolved The function to call prior to module load after the filepath has been resolved
- * @param {Function}  options.onRequire The function to call when the module has been loaded
- * @param {Function} [options.onError] If provided, should `onRequire` throw an error, the error will be passed to
- *  this function.
- * @param moduleName
- * @param onRequire
- * @param onError
+ * @param {string|object} moduleName The module name given to require to load the module, or the instrumentation specification
+ * @param {string} moduleName.moduleName The module name given to require to load the module
+ * @param {Function}  moduleName.onResolved The function to call prior to module load after the filepath has been resolved
+ * @param {Function}  moduleName.onRequire The function to call when the module has been loaded
+ * @param {Function} [moduleName.onError] If provided, should `onRequire` throw an error, the error will be passed to
+ * @param {Function} onRequire The function to call when the module has been loaded
+ * @param {Function} onError If provided, should `onRequire` throw an error, the error will be passed to this function.
  */
 API.prototype.instrument = function instrument(moduleName, onRequire, onError) {
   const metric = this.agent.metrics.getOrCreateMetric(NAMES.SUPPORTABILITY.API + '/instrument')
@@ -1243,15 +1265,13 @@ API.prototype.instrument = function instrument(moduleName, onRequire, onError) {
  * - `newrelic.instrumentConglomerate(moduleName, onRequire [, onError])`
  * - `newrelic.isntrumentConglomerate(options)`
  *
- * @param {object} options The options for this custom instrumentation.
- * @param {string} options.moduleName The module name given to require to load the module
- * @param {Function}  options.onResolved The function to call prior to module load after the filepath has been resolved
- * @param {Function}  options.onRequire The function to call when the module has been loaded
- * @param {Function} [options.onError] If provided, should `onRequire` throw an error, the error will be passed to
- *  this function.
- * @param moduleName
- * @param onRequire
- * @param onError
+ * @param {string|object} moduleName The module name given to require to load the module, or the instrumentation specification
+ * @param {string} moduleName.moduleName The module name given to require to load the module
+ * @param {Function}  moduleName.onResolved The function to call prior to module load after the filepath has been resolved
+ * @param {Function}  moduleName.onRequire The function to call when the module has been loaded
+ * @param {Function} [moduleName.onError] If provided, should `onRequire` throw an error, the error will be passed to
+ * @param {Function} onRequire The function to call when the module has been loaded
+ * @param {Function} onError If provided, should `onRequire` throw an error, the error will be passed to this function.
  */
 API.prototype.instrumentConglomerate = function instrumentConglomerate(
   moduleName,
@@ -1277,15 +1297,13 @@ API.prototype.instrumentConglomerate = function instrumentConglomerate(
  *  - `newrelic.instrumentDatastore(moduleName, onRequire [,onError])`
  *  - `newrelic.instrumentDatastore(options)`
  *
- * @param {object} options The options for this custom instrumentation.
- * @param {string} options.moduleName The module name given to require to load the module
- * @param {Function}  options.onResolved The function to call prior to module load after the filepath has been resolved
- * @param {Function}  options.onRequire The function to call when the module has been loaded
- * @param {Function} [options.onError] If provided, should `onRequire` throw an error, the error will be passed to
- *  this function.
- * @param moduleName
- * @param onRequire
- * @param onError
+ * @param {string|object} moduleName The module name given to require to load the module, or the instrumentation specification
+ * @param {string} moduleName.moduleName The module name given to require to load the module
+ * @param {Function}  moduleName.onResolved The function to call prior to module load after the filepath has been resolved
+ * @param {Function}  moduleName.onRequire The function to call when the module has been loaded
+ * @param {Function} [moduleName.onError] If provided, should `onRequire` throw an error, the error will be passed to
+ * @param {Function} onRequire The function to call when the module has been loaded
+ * @param {Function} onError If provided, should `onRequire` throw an error, the error will be passed to this function.
  */
 API.prototype.instrumentDatastore = function instrumentDatastore(moduleName, onRequire, onError) {
   const metric = this.agent.metrics.getOrCreateMetric(
@@ -1312,15 +1330,13 @@ API.prototype.instrumentDatastore = function instrumentDatastore(moduleName, onR
  *  - `newrelic.instrumentWebframework(moduleName, onRequire [,onError])`
  *  - `newrelic.instrumentWebframework(options)`
  *
- * @param {object} options The options for this custom instrumentation.
- * @param {string} options.moduleName The module name given to require to load the module
- * @param {Function}  options.onResolved The function to call prior to module load after the filepath has been resolved
- * @param {Function}  options.onRequire The function to call when the module has been loaded
- * @param {Function} [options.onError] If provided, should `onRequire` throw an error, the error will be passed to
- *  this function.
- * @param moduleName
- * @param onRequire
- * @param onError
+ * @param {string|object} moduleName The module name given to require to load the module, or the instrumentation specification
+ * @param {string} moduleName.moduleName The module name given to require to load the module
+ * @param {Function}  moduleName.onResolved The function to call prior to module load after the filepath has been resolved
+ * @param {Function}  moduleName.onRequire The function to call when the module has been loaded
+ * @param {Function} [moduleName.onError] If provided, should `onRequire` throw an error, the error will be passed to
+ * @param {Function} onRequire The function to call when the module has been loaded
+ * @param {Function} onError If provided, should `onRequire` throw an error, the error will be passed to this function.
  */
 API.prototype.instrumentWebframework = function instrumentWebframework(
   moduleName,
@@ -1351,15 +1367,13 @@ API.prototype.instrumentWebframework = function instrumentWebframework(
  *  - `newrelic.instrumentMessages(moduleName, onRequire [,onError])`
  *  - `newrelic.instrumentMessages(options)`
  *
- * @param {object} options The options for this custom instrumentation.
- * @param {string} options.moduleName The module name given to require to load the module
- * @param {Function}  options.onResolved The function to call prior to module load after the filepath has been resolved
- * @param {Function}  options.onRequire The function to call when the module has been loaded
- * @param {Function} [options.onError] If provided, should `onRequire` throw an error, the error will be passed to
- *  this function.
- * @param moduleName
- * @param onRequire
- * @param onError
+ * @param {string|object} moduleName The module name given to require to load the module, or the instrumentation specification
+ * @param {string} moduleName.moduleName The module name given to require to load the module
+ * @param {Function}  moduleName.onResolved The function to call prior to module load after the filepath has been resolved
+ * @param {Function}  moduleName.onRequire The function to call when the module has been loaded
+ * @param {Function} [moduleName.onError] If provided, should `onRequire` throw an error, the error will be passed to
+ * @param {Function} onRequire The function to call when the module has been loaded
+ * @param {Function} onError If provided, should `onRequire` throw an error, the error will be passed to this function.
  */
 API.prototype.instrumentMessages = function instrumentMessages(moduleName, onRequire, onError) {
   const metric = this.agent.metrics.getOrCreateMetric(
@@ -1398,6 +1412,7 @@ API.prototype.instrumentMessages = function instrumentMessages(moduleName, onReq
  *  into an instrumentation key.
  * @param {object} module
  *  The actual module object or function we're instrumenting
+ * @returns {boolean} Whether or not the module was successfully instrumented
  */
 API.prototype.instrumentLoadedModule = function instrumentLoadedModule(moduleName, module) {
   const metric = this.agent.metrics.getOrCreateMetric(
@@ -1458,9 +1473,8 @@ API.prototype.getTraceMetadata = function getTraceMetadata() {
  *  Time in milliseconds to wait before shutting down.
  * @param {boolean} [options.waitForIdle=false]
  *  If true, the agent will not shut down until there are no active transactions.
- * @param {Function} [callback]
+ * @param {Function} [cb]
  *  Callback function that runs when agent stops.
- * @param cb
  */
 API.prototype.shutdown = function shutdown(options, cb) {
   this.agent.metrics.getOrCreateMetric(`${NAMES.SUPPORTABILITY.API}/shutdown`).incrementCallCount()
@@ -1483,9 +1497,31 @@ API.prototype.shutdown = function shutdown(options, cb) {
 }
 
 /**
- * @param api
- * @param options
- * @param callback
+ * Helper function for logging if an error occurs, and where
+ *
+ * @param {Error} error If defined, the error that occurred
+ * @param {string} phase Where in the process the error happened
+ * @returns {void}
+ */
+function _logErrorCallback(error, phase) {
+  if (error) {
+    logger.error(error, `An error occurred during ${phase}`)
+  }
+}
+
+/**
+ * Function for handling the graceful shutdown process, including processing of data and handling errors
+ *
+ * @param {object} api instantiation of this file
+ * @param {object} options shutdown options object
+ * @param {boolean} [options.collectPendingData=false]
+ *  If true, the agent will send any pending data to the collector before
+ *  shutting down.
+ * @param {number} [options.timeout=0]
+ *  Time in milliseconds to wait before shutting down.
+ * @param {boolean} [options.waitForIdle=false]
+ *  If true, the agent will not shut down until there are no active transactions.
+ * @param {Function} callback callback function to execute after shutdown process is complete (successful or not)
  */
 function _doShutdown(api, options, callback) {
   const agent = api.agent
@@ -1503,12 +1539,12 @@ function _doShutdown(api, options, callback) {
   }
 
   /**
-   * @param error
+   * Callback function for after harvest cycles happen as part of shutdown process
+   *
+   * @param {Error} error If defined, the error that occurred during harvest
    */
   function afterHarvest(error) {
-    if (error) {
-      logger.error(error, 'An error occurred while running last harvest before shutdown.')
-    }
+    _logErrorCallback(error, 'last harvest before shutdown')
     agent.stop(callback)
   }
 
@@ -1526,10 +1562,8 @@ function _doShutdown(api, options, callback) {
     })
 
     agent.on('errored', function logShutdownError(error) {
+      _logErrorCallback(error, 'after shutdown')
       agent.stop(callback)
-      if (error) {
-        logger.error(error, 'The agent encountered an error after calling shutdown.')
-      }
     })
   } else if (options.collectPendingData) {
     agent.forceHarvestAll(afterHarvest)
@@ -1539,8 +1573,12 @@ function _doShutdown(api, options, callback) {
 }
 
 /**
- * @param object
- * @param maxLength
+ * Validates that all keys in a given object have values that are less than or equal to a given length
+ * Assumes all values have .length property (string/array)
+ *
+ * @param {object} object The object to validate
+ * @param {number} maxLength The max allowed length
+ * @returns {boolean} Whether or not the object passes validation
  */
 function _checkKeyLength(object, maxLength) {
   const keys = Object.keys(object)
@@ -1571,8 +1609,11 @@ API.prototype.setLambdaHandler = function setLambdaHandler(handler) {
 }
 
 /**
- * @param attributes
- * @param name
+ * Function for removing invalid attribute key/value pairs from an object
+ *
+ * @param {object} attributes The attribute object
+ * @param {string} name Caller name, used for debugging/logging purposes only
+ * @returns {object} Attribute object containing only valid key/value pairs
  */
 function _filterAttributes(attributes, name) {
   const filteredAttributes = Object.create(null)
