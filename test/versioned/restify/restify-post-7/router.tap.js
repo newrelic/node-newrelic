@@ -140,8 +140,9 @@ tap.test('Restify router', function (t) {
           res.send({ status: 'ok' })
           next(true)
         },
-        function second() {
+        function second(req, res, next) {
           t.fail('should not enter this final middleware')
+          next(new Error('request should not have make it here'))
         }
       )
 
@@ -177,26 +178,29 @@ tap.test('Restify router', function (t) {
     _listenAndRequest(t, '/test/foobar')
   })
 
-  t.test('next("other_route"): jump processing', function (t) {
-    t.plan(5)
+  // This functionality is no longer supported in 9.0.0 https://github.com/restify/node-restify/pull/1847
+  if (semver.satisfies(pkgVersion, '< 9')) {
+    t.test('next("other_route"): jump processing', function (t) {
+      t.plan(5)
 
-    server.get({ name: 'first', path: '/test/:id' }, function final(req, res, next) {
-      t.ok(agent.getTransaction(), 'transaction should be available')
-      next('second')
+      server.get({ name: 'first', path: '/test/:id' }, function final(req, res, next) {
+        t.ok(agent.getTransaction(), 'transaction should be available')
+        next('second')
+      })
+
+      server.get({ name: 'second', path: '/other' }, function final(req, res, next) {
+        t.ok(agent.getTransaction(), 'transaction should be available')
+        res.send({ status: 'ok' })
+        next()
+      })
+
+      agent.on('transactionFinished', function (tx) {
+        t.equal(tx.name, 'WebTransaction/Restify/GET//other', 'should have correct name')
+      })
+
+      _listenAndRequest(t, '/test/foobar')
     })
-
-    server.get({ name: 'second', path: '/other' }, function final(req, res, next) {
-      t.ok(agent.getTransaction(), 'transaction should be available')
-      res.send({ status: 'ok' })
-      next()
-    })
-
-    agent.on('transactionFinished', function (tx) {
-      t.equal(tx.name, 'WebTransaction/Restify/GET//other', 'should have correct name')
-    })
-
-    _listenAndRequest(t, '/test/foobar')
-  })
+  }
 
   function _listenAndRequest(t, route) {
     server.listen(0, function () {
