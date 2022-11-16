@@ -595,7 +595,8 @@ tap.test('when overriding configuration values via environment variables', (t) =
       NEW_RELIC_APPLICATION_LOGGING_FORWARDING_ENABLED: 'true',
       NEW_RELIC_APPLICATION_LOGGING_FORWARDING_MAX_SAMPLES_STORED: '12345',
       NEW_RELIC_APPLICATION_LOGGING_METRICS_ENABLED: 'false',
-      NEW_RELIC_APPLICATION_LOGGING_LOCAL_DECORATING_ENABLED: 'true'
+      NEW_RELIC_APPLICATION_LOGGING_LOCAL_DECORATING_ENABLED: 'true',
+      NEW_RELIC_APPLICATION_LOGGING_CAPTURE_CONSOLE: 'true'
     }
     idempotentEnv(config, function (tc) {
       t.strictSame(tc.application_logging, {
@@ -609,6 +610,9 @@ tap.test('when overriding configuration values via environment variables', (t) =
         },
         local_decorating: {
           enabled: true
+        },
+        capture_console: {
+          enabled: false
         }
       })
       t.end()

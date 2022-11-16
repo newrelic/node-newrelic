@@ -256,6 +256,9 @@ tap.test('with default properties', (t) => {
       },
       local_decorating: {
         enabled: false
+      },
+      capture_console: {
+        enabled: false
       }
     })
     t.end()
