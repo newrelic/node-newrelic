@@ -12,7 +12,10 @@ tap.test('systemInfo edge cases', (t) => {
   t.autoend()
 
   const systemInfo = proxyquire('../../lib/system-info', {
-    os: {
+    './utilization/docker-info': {
+      getBootId: (agent, callback) => callback(null)
+    },
+    'os': {
       platform: () => 'something weird'
     }
   })
