@@ -41,9 +41,10 @@ tap.test('Restify', (t) => {
       t.ok(isFramework, 'should indicate that restify is a framework')
     })
 
-    server.get('/hello/:name', function sayHello(req, res) {
+    server.get('/hello/:name', function sayHello(req, res, next) {
       t.ok(agent.getTransaction(), 'transaction should be available in handler')
       res.send('hello ' + req.params.name)
+      next()
     })
 
     server.listen(0, function () {
@@ -80,9 +81,10 @@ tap.test('Restify', (t) => {
         const server = restify.createServer({ key: key, certificate: certificate })
         t.teardown(() => server.close())
 
-        server.get('/hello/:name', function sayHello(req, res) {
+        server.get('/hello/:name', function sayHello(req, res, next) {
           t.ok(agent.getTransaction(), 'transaction should be available in handler')
           res.send('hello ' + req.params.name)
+          next()
         })
 
         server.listen(0, function () {
