@@ -10,7 +10,8 @@ module.exports = {
   plugins: ['jsdoc', 'sonarjs'],
   rules: {
     'consistent-return': 'off',
-    'jsdoc/require-jsdoc': 'off'
+    'jsdoc/require-jsdoc': 'off',
+    'jsdoc/no-undefined-types': ['warn', { definedTypes: ['Agent'] }]
   },
   ignorePatterns: ['test/versioned-external'],
   overrides: [
