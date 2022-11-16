@@ -6,10 +6,16 @@
 'use strict'
 const tap = require('tap')
 const os = require('os')
-const systemInfo = require('../../lib/system-info')
+const proxyquire = require('proxyquire')
 
 tap.test('systemInfo edge cases', (t) => {
   t.autoend()
+
+  const systemInfo = proxyquire('../../lib/system-info', {
+    os: {
+      platform: () => 'something weird'
+    }
+  })
 
   async function callSystemInfo(config) {
     const agentMock = {
@@ -17,15 +23,12 @@ tap.test('systemInfo edge cases', (t) => {
         utilization: config
       }
     }
+
     return new Promise((resolve) => {
-      systemInfo(
-        agentMock,
-        (err, result) => {
-          resolve(result)
-        },
-        1
-      )
-      systemInfo._getProcessorStats(() => {})
+      systemInfo._getProcessorStats = () => {}
+      systemInfo(agentMock, (err, result) => {
+        resolve(result)
+      })
     })
   }
 

@@ -12,6 +12,9 @@ module.exports = {
     'consistent-return': 'off',
     'jsdoc/require-jsdoc': 'off'
   },
+  parserOptions: {
+    ecmaVersion: 2020
+  },
   ignorePatterns: ['test/versioned-external'],
   overrides: [
     {
