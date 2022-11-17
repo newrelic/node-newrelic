@@ -6,9 +6,8 @@
 'use strict'
 
 const helper = require('./agent_helper')
-const async = require('async')
 
-exports.createBenchmark = function createBenchmark(opts) {
+exports.createBenchmark = (opts) => {
   return new Benchmark(opts)
 }
 
@@ -35,8 +34,16 @@ class Benchmark {
   processSamples() {
     const samples = this.samples
     return (this.processedSamples = Object.keys(samples).reduce((acc, sampleName) => {
-      acc[sampleName] = new BenchmarkStats(samples[sampleName])
-      return acc
+      try {
+        acc[sampleName] = new BenchmarkStats(samples[sampleName])
+        return acc
+      } catch (e) {
+        // console.log(`********** ${sampleName} from ${this.name}`)
+        // console.log('this tests:', this.tests)
+        // console.log('err:', e)
+        /* eslint-disable no-console */
+        console.error(e)
+      }
     }, {}))
   }
 
@@ -44,95 +51,111 @@ class Benchmark {
     console.log(JSON.stringify(this.processSamples(), null, 2)) // eslint-disable-line
   }
 
-  run(cb) {
+  async run() {
+    // new
     const suite = this
     let agent = null
 
-    async.eachSeries(
-      this.tests,
-      function startTest(test, callback) {
-        if (test.agent) {
-          agent = helper.instrumentMockedAgent(test.agent.config)
-        }
+    const after = async (test, next, executeCb, prevCpu) => {
+      // The cpu delta is reported in microseconds, so we turn them into
+      // milliseconds
+      const delta = process.cpuUsage(prevCpu).user / 1000
+      const afterCallback = () => next(null, delta) // still sending this to callbackistan
 
-        const testName = test.name
-        const testFn = test.fn
-
-        if (typeof test.initialize === 'function') {
-          test.initialize(agent)
-        }
-
-        async.timesSeries(
-          test.runs,
-          function runTest(n, next) {
-            if (global.gc && test.runGC) {
-              global.gc()
-            }
-
-            if (typeof test.before === 'function') {
-              test.before(agent)
-            }
-
-            if (agent && test.runInTransaction) {
-              return helper.runInTransaction(agent, function inTransaction(txn) {
-                execute(function afterExecute(execCallback) {
-                  txn.end()
-                  execCallback(txn)
-                })
-              })
-            }
-
-            execute()
-
-            function execute(executeCb) {
-              const prevCpu = process.cpuUsage()
-              if (test.async) {
-                testFn(agent, after)
-              } else {
-                testFn(agent)
-                after()
-              }
-              function after() {
-                // The cpu delta is reported in microseconds, so we turn them into
-                // milliseconds
-                const delta = process.cpuUsage(prevCpu).user / 1000
-
-                if (typeof test.after === 'function') {
-                  test.after()
-                }
-
-                if (typeof executeCb === 'function') {
-                  return executeCb(afterCallback)
-                }
-
-                afterCallback()
-                function afterCallback() {
-                  next(null, delta)
-                }
-              }
-            }
-          },
-          function afterTestRuns(err, samples) {
-            if (agent) {
-              helper.unloadAgent(agent)
-            }
-
-            if (typeof test.teardown === 'function') {
-              test.teardown()
-            }
-
-            suite.samples[testName] = samples
-            callback()
-          }
-        )
-      },
-      function onSuiteFinish() {
-        if (typeof cb === 'function') {
-          return cb(suite.samples)
-        }
-        return suite.print()
+      if (typeof test.after === 'function') {
+        test.after()
       }
-    )
+
+      if (typeof executeCb === 'function') {
+        return executeCb(afterCallback)
+      }
+
+      return afterCallback()
+    }
+
+    const execute = async (test, next, executeCb) => {
+      const prevCpu = process.cpuUsage()
+      const testFn = test.fn
+
+      if (test.async) {
+        return testFn(agent, () => after(test, next, executeCb, prevCpu))
+      }
+      await testFn(agent)
+      return after(test, next, executeCb, prevCpu)
+    }
+
+    const runTest = async (n, test, next) => {
+      /*
+        needs:
+        test from startTest
+       */
+      if (global.gc && test.runGC) {
+        global.gc()
+      }
+
+      if (typeof test.before === 'function') {
+        test.before(agent)
+      }
+
+      if (agent && test.runInTransaction) {
+        const inTransaction = (txn) => {
+          const afterExecute = (execCallback) => {
+            txn.end()
+            return execCallback(txn)
+          }
+          return execute(test, next, afterExecute)
+        }
+
+        return helper.runInTransaction(agent, inTransaction)
+      }
+
+      return execute(test, next)
+    }
+
+    const testIterator = async (initiator, idx) => {
+      if (idx >= suite.tests.length) {
+        return true
+      }
+      return initiator(initiator, suite.tests[idx], idx)
+    }
+
+    const afterTestRuns = (initiator, test, samples, idx) => {
+      const testName = test.name
+
+      if (agent) {
+        helper.unloadAgent(agent)
+      }
+
+      if (typeof test.teardown === 'function') {
+        test.teardown()
+      }
+
+      suite.samples[testName] = samples
+      return testIterator(initiator, idx + 1)
+    }
+
+    const startTest = async (initiator, test, idx) => {
+      if (test.agent) {
+        agent = helper.instrumentMockedAgent(test.agent.config)
+      }
+
+      if (typeof test.initialize === 'function') {
+        test.initialize(agent)
+      }
+
+      const samples = []
+      for (let i = 0; i < test.runs; i++) {
+        await runTest(i, test, (err, delta) => {
+          samples.push(delta)
+        }) // reliant on callback; should refactor test simply to return delta
+      }
+
+      return afterTestRuns(initiator, test, samples, idx)
+    }
+
+    await testIterator(startTest, 0) // passing startTest as initiator to avoid circular dependency
+    const onSuiteFinish = () => suite.print()
+    onSuiteFinish()
   }
 }
 

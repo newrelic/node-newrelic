@@ -7,7 +7,6 @@
 
 /* eslint sonarjs/cognitive-complexity: ["error", 21] -- TODO: https://issues.newrelic.com/browse/NEWRELIC-5252 */
 
-// const a = require('async')
 const cp = require('child_process')
 const glob = require('glob')
 const path = require('path')
@@ -19,7 +18,8 @@ const tests = []
 const globs = []
 const opts = Object.create(null)
 
-const fakeCb = (err, payload) => {
+// replacement for former async-lib cb
+const testCb = (err, payload) => {
   if (err) {
     console.error(err)
     return
@@ -124,9 +124,6 @@ async function run() {
       args.unshift('--inspect-brk')
     }
 
-    // / TODO: remove diagnostic --trace-warnings
-    args.push('--trace-warnings')
-
     const child = cp.spawn('node', args, { cwd: cwd, stdio: 'pipe' })
     printer.addTest(test, child)
 
@@ -149,12 +146,12 @@ async function run() {
 
   const runBenchmarks = async (cb) => {
     tests.sort()
-    await tests.forEach((file) => spawnEachFile(file, fakeCb))
-    await afterSpawnEachFile(null, fakeCb)
+    await tests.forEach((file) => spawnEachFile(file, testCb))
+    await afterSpawnEachFile(null, testCb)
     return cb()
   }
 
-  await resolveGlobs(fakeCb)
-  await runBenchmarks(fakeCb)
+  await resolveGlobs(testCb)
+  await runBenchmarks(testCb)
   printer.finish()
 }
