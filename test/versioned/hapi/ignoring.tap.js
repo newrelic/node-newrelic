@@ -52,7 +52,7 @@ test('ignoring a Hapi route', function (t) {
     }
     request.get(params, function (error, res, body) {
       t.equal(res.statusCode, 400, 'got expected error')
-      t.deepEqual(body, { status: 'cartcartcart' }, 'got expected response')
+      t.same(body, { status: 'cartcartcart' }, 'got expected response')
     })
   })
 })
