@@ -11,7 +11,10 @@ module.exports = {
   rules: {
     'consistent-return': 'off',
     'jsdoc/require-jsdoc': 'off',
-    'jsdoc/no-undefined-types': ['warn', { definedTypes: ['Logger', 'Agent', 'Shim'] }]
+    'jsdoc/no-undefined-types': [
+      'warn',
+      { definedTypes: ['Logger', 'Agent', 'Shim', 'TraceSegment'] }
+    ]
   },
   parserOptions: {
     ecmaVersion: '2020'
