@@ -133,7 +133,7 @@ const iterate = async () => {
   const results = files.map(async (file) => {
     return processFile(file)
   })
-  reportResults(null, results)
+  reportResults(results)
 }
 
 iterate()
