@@ -78,7 +78,7 @@ tap.test('Hapi vhost support', function (t) {
       }
       request.get(params, function (error, res, body) {
         t.equal(res.statusCode, 200, 'nothing exploded')
-        t.deepEqual(body, { status: 'ok' }, 'got expected response')
+        t.same(body, { status: 'ok' }, 'got expected response')
         t.end()
       })
     })

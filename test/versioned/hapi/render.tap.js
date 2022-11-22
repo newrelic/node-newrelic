@@ -50,7 +50,7 @@ tap.test('agent instrumentation of Hapi', function (t) {
         t.error(error, 'should not fail to make request')
 
         t.ok(/application\/json/.test(response.headers['content-type']), 'got correct content type')
-        t.deepEqual(JSON.parse(body), { yep: true }, 'response survived')
+        t.same(JSON.parse(body), { yep: true }, 'response survived')
 
         let stats
 

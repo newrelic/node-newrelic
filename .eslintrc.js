@@ -10,7 +10,17 @@ module.exports = {
   plugins: ['jsdoc', 'sonarjs'],
   rules: {
     'consistent-return': 'off',
-    'jsdoc/require-jsdoc': 'off'
+    'jsdoc/require-jsdoc': 'off',
+    'jsdoc/no-undefined-types': [
+      'warn',
+      { definedTypes: ['Logger', 'Agent', 'Shim', 'TraceSegment'] }
+    ]
+  },
+  parserOptions: {
+    ecmaVersion: '2020'
+  },
+  parserOptions: {
+    ecmaVersion: 2020
   },
   ignorePatterns: ['test/versioned-external'],
   overrides: [

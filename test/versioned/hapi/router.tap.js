@@ -54,7 +54,7 @@ tap.test('Hapi router introspection', function (t) {
       }
       request.get(params, function (error, res, body) {
         t.equal(res.statusCode, 200, 'nothing exploded')
-        t.deepEqual(body, { status: 'ok' }, 'got expected response')
+        t.same(body, { status: 'ok' }, 'got expected response')
         t.end()
       })
     })
@@ -84,7 +84,7 @@ tap.test('Hapi router introspection', function (t) {
       }
       request.get(params, function (error, res, body) {
         t.equal(res.statusCode, 200, 'nothing exploded')
-        t.deepEqual(body, { status: 'ok' }, 'got expected response')
+        t.same(body, { status: 'ok' }, 'got expected response')
         t.end()
       })
     })
@@ -111,7 +111,7 @@ tap.test('Hapi router introspection', function (t) {
       }
       request.get(params, function (error, res, body) {
         t.equal(res.statusCode, 200, 'nothing exploded')
-        t.deepEqual(body, { status: 'ok' }, 'got expected response')
+        t.same(body, { status: 'ok' }, 'got expected response')
         t.end()
       })
     })
@@ -161,7 +161,7 @@ tap.test('Hapi router introspection', function (t) {
       }
       request.get(params, function (error, res, body) {
         t.equal(res.statusCode, 200, 'nothing exploded')
-        t.deepEqual(body, { status: 'ok' }, 'got expected response')
+        t.same(body, { status: 'ok' }, 'got expected response')
         t.end()
       })
     })
@@ -193,7 +193,7 @@ tap.test('Hapi router introspection', function (t) {
       }
       request.get(params, function (error, res, body) {
         t.equal(res.statusCode, 200, 'nothing exploded')
-        t.deepEqual(body, { status: 'ok' }, 'got expected response')
+        t.same(body, { status: 'ok' }, 'got expected response')
         t.end()
       })
     })
@@ -242,7 +242,7 @@ tap.test('Hapi router introspection', function (t) {
       }
       request.post(params, function (error, res, body) {
         t.equal(res.statusCode, 200, 'nothing exploded')
-        t.deepEqual(body, { status: 'ok' }, 'got expected response')
+        t.same(body, { status: 'ok' }, 'got expected response')
         t.end()
       })
     })
@@ -265,7 +265,7 @@ tap.test('Hapi router introspection', function (t) {
       }
       request.get(params, function (error, res, body) {
         t.equal(res.statusCode, 404, 'nonexistent route was not found')
-        t.deepEqual(
+        t.same(
           body,
           { statusCode: 404, error: 'Not Found', message: 'Not Found' },
           'got expected response'
@@ -278,8 +278,8 @@ tap.test('Hapi router introspection', function (t) {
   t.test('using shared `pre` config option', function (t) {
     agent.on('transactionFinished', (transaction) => {
       t.equal(
-        'WebTransaction/Hapi/GET//first/{firstId}/second/{secondId}/data',
         transaction.name,
+        'WebTransaction/Hapi/GET//first/{firstId}/second/{secondId}/data',
         'transaction is named correctly'
       )
     })
@@ -362,7 +362,7 @@ tap.test('Hapi router introspection', function (t) {
       }
       request.get(params, function (error, res, body) {
         t.equal(res.statusCode, 200, 'nothing exploded')
-        t.deepEqual(body, { success: 'TRUE' }, 'got expected response')
+        t.same(body, { success: 'TRUE' }, 'got expected response')
         t.end()
       })
     })

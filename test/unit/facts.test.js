@@ -410,11 +410,11 @@ tap.test('utilization', (t) => {
             break
 
           case 'input_total_ram_mib':
-            mockRam = (cb) => cb(testValue)
+            mockRam = async () => Promise.resolve(testValue)
             break
 
           case 'input_logical_processors':
-            mockProc = (cb) => cb({ logical: testValue })
+            mockProc = async () => Promise.resolve({ logical: testValue })
             break
 
           case 'input_ip_address':
@@ -429,7 +429,6 @@ tap.test('utilization', (t) => {
 
           default:
             throw new Error('Unknown test key "' + key + '"')
-            break
         }
       })
 
@@ -554,11 +553,11 @@ tap.test('boot_id', (t) => {
             break
 
           case 'input_total_ram_mib':
-            mockRam = (cb) => cb(testValue)
+            mockRam = async () => Promise.resolve(testValue)
             break
 
           case 'input_logical_processors':
-            mockProc = (cb) => cb({ logical: testValue })
+            mockProc = async () => Promise.resolve({ logical: testValue })
             break
 
           case 'input_boot_id':
@@ -573,7 +572,6 @@ tap.test('boot_id', (t) => {
 
           default:
             throw new Error('Unknown test key "' + key + '"')
-            break
         }
       })
 
