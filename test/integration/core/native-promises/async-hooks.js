@@ -16,7 +16,7 @@ test('await', function (t) {
     let transaction = agent.getTransaction()
     t.equal(transaction && transaction.id, txn.id, 'should start in a transaction')
 
-    const segmentMap = require('../../../../lib/instrumentation/core/async_hooks').segmentMap
+    const segmentMap = require('../../../../lib/instrumentation/core/async-hooks').segmentMap
 
     const promise = new Promise((resolve) => {
       // don't immediately resolve so logic can kick in.
@@ -85,7 +85,7 @@ test("the agent's async hook", function (t) {
     const testResource = new TestResource(1)
     helper.runInTransaction(agent, function () {
       const root = contextManager.getContext()
-      const segmentMap = require('../../../../lib/instrumentation/core/async_hooks').segmentMap
+      const segmentMap = require('../../../../lib/instrumentation/core/async-hooks').segmentMap
 
       t.equal(segmentMap.size, 0, 'no segments should be tracked')
       testResource.doStuff(function () {
@@ -417,7 +417,7 @@ test("the agent's async hook", function (t) {
   t.test('handles multientry callbacks correctly', function (t) {
     const { agent, contextManager } = setupAgent(t)
 
-    const segmentMap = require('../../../../lib/instrumentation/core/async_hooks').segmentMap
+    const segmentMap = require('../../../../lib/instrumentation/core/async-hooks').segmentMap
     helper.runInTransaction(agent, function () {
       const root = contextManager.getContext()
 
@@ -475,7 +475,7 @@ test("the agent's async hook", function (t) {
     { skip: process.env.NEW_RELIC_FEATURE_FLAG_UNRESOLVED_PROMISE_CLEANUP === 'false' },
     (t) => {
       const { agent } = setupAgent(t)
-      const segmentMap = require('../../../../lib/instrumentation/core/async_hooks').segmentMap
+      const segmentMap = require('../../../../lib/instrumentation/core/async-hooks').segmentMap
 
       helper.runInTransaction(agent, () => {
         /* eslint-disable no-unused-vars */
@@ -504,7 +504,7 @@ test("the agent's async hook", function (t) {
     { skip: process.env.NEW_RELIC_FEATURE_FLAG_UNRESOLVED_PROMISE_CLEANUP !== 'false' },
     (t) => {
       const { agent } = setupAgent(t)
-      const segmentMap = require('../../../../lib/instrumentation/core/async_hooks').segmentMap
+      const segmentMap = require('../../../../lib/instrumentation/core/async-hooks').segmentMap
 
       helper.runInTransaction(agent, () => {
         /* eslint-disable no-unused-vars */
