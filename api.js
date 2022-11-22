@@ -390,6 +390,17 @@ API.prototype.addCustomSpanAttribute = function addCustomSpanAttribute(key, valu
  * `Error` or one of its subtypes, but the API will handle strings and objects
  * that have an attached `.message` or `.stack` property.
  *
+ * An example of using this function is
+ *
+ *    try {
+ *      performSomeTask();
+ *    } catch (err) {
+ *      newrelic.noticeError(
+ *        err,
+ *        {extraInformation: "error already handled in the application"}
+ *      );
+ *    }
+ *
  * NOTE: Errors that are recorded using this method do _not_ obey the
  * `ignore_status_codes` configuration.
  *
