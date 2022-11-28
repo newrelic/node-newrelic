@@ -170,11 +170,10 @@ jobs:
         uses: actions/download-artifact@v3
       - name: list artifacts
         run : ls -lrth
-
-      # - name: Post Unit Test Coverage
-      #   uses: codecov/codecov-action@v3
-      #   with:
-      #     token: ${{ secrets.CODECOV_TOKEN }}
-      #     directory: ./coverage/unit/
-      #     files: lcov.info
-      #     flags: unit-tests-${{ matrix.node-version }}
+      - name: Post Unit Test Coverage
+        uses: codecov/codecov-action@v3
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          directory: ./unit-tests-${{ matrix.node-version }}
+          files: lcov.info
+          flags: unit-tests-${{ matrix.node-version }}
