@@ -40,9 +40,9 @@ jobs:
       run: npm run unit
     - name: Archive Unit Test Coverage
       uses: actions/upload-artifact@v3
-        with:
-          name: unit-tests-${{ matrix.node-version }}
-          path: ./coverage/unit/lcov.info
+      with:
+        name: unit-tests-${{ matrix.node-version }}
+        path: ./coverage/unit/lcov.info
     # - name: Post Unit Test Coverage
     #   uses: codecov/codecov-action@v3
     #   with:
@@ -54,9 +54,9 @@ jobs:
       run: npm run unit:esm
     - name: Archive ESM Unit Test Coverage
       uses: actions/upload-artifact@v3
-        with:
-          name: esm-unit-tests-${{ matrix.node-version }}
-          path: ./coverage/esm-unit/lcov.info
+      with:
+        name: esm-unit-tests-${{ matrix.node-version }}
+        path: ./coverage/esm-unit/lcov.info
     # - name: Post ESM Unit Test Coverage
     #   uses: codecov/codecov-action@v3
     #   with:
@@ -86,9 +86,9 @@ jobs:
       run: npm run integration
     - name: Archive Integration Test Coverage 
       uses: actions/upload-artifact@v3
-        with:
-          name: integration-tests-${{ matrix.node-version }}
-          path: ./coverage/integration/lcov.info
+      with:
+        name: integration-tests-${{ matrix.node-version }}
+        path: ./coverage/integration/lcov.info
     # - name: Post Integration Test Coverage
     #   uses: codecov/codecov-action@v3
     #   with:
@@ -129,9 +129,9 @@ jobs:
     - name: Archive Versioned Test Coverage
       uses: actions/upload-artifact@v3
       if: github.ref != 'refs/heads/main'
-        with:
-          name: versioned-tests-${{ matrix.node-version }}
-          path: ./coverage/versioned/lcov.info
+      with:
+        name: versioned-tests-${{ matrix.node-version }}
+        path: ./coverage/versioned/lcov.info
     # - name: Post Versioned Test Coverage
     #   uses: codecov/codecov-action@v3
     #   if: github.ref != 'refs/heads/main'
