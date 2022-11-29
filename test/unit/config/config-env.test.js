@@ -654,4 +654,11 @@ tap.test('when overriding configuration values via environment variables', (t) =
       }
     )
   })
+
+  t.test('should pick up code_level_metrics.enabled', (t) => {
+    idempotentEnv({ NEW_RELIC_CODE_LEVEL_METRICS_ENABLED: 'true' }, function (tc) {
+      t.equal(tc.code_level_metrics.enabled, true)
+      t.end()
+    })
+  })
 })
