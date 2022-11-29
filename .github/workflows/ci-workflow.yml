@@ -146,28 +146,34 @@ jobs:
     steps:
       - name: Download artifacts
         uses: actions/download-artifact@v3
+      - name: list artifacts
+        run : ls -R
       - name: Post Unit Test Coverage
         uses: codecov/codecov-action@v3
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
-          files: ./unit-tests-${{ matrix.node-version }}/lcov.info
+          directory: ./unit-tests-${{ matrix.node-version }}
+          files: lcov.info
           flags: unit-tests-${{ matrix.node-version }}
       - name: Post ESM Unit Test Coverage
         uses: codecov/codecov-action@v3
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
-          files: ./esm-unit-tests-${{ matrix.node-version }}/lcov.info
+          directory: ./esm-unit-tests-${{ matrix.node-version }}
+          files: lcov.info
           flags: esm-unit-tests-${{ matrix.node-version }}
       - name: Post Integration Test Coverage
         uses: codecov/codecov-action@v3
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
-          files: ./integration-tests-${{ matrix.node-version }}/lcov.info
+          directory: ./integration-tests-${{ matrix.node-version }}
+          files: lcov.info
           flags: integration-tests-${{ matrix.node-version }}
       - name: Post Versioned Test Coverage
         uses: codecov/codecov-action@v3
         if: github.ref != 'refs/heads/main'
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
-          files: ./versioned-tests-${{ matrix.node-version }}/lcov.info
+          directory: ./versioned-tests-${{ matrix.node-version }}
+          files: lcov.info
           flags: versioned-tests-${{ matrix.node-version }}
