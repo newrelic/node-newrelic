@@ -154,20 +154,18 @@ jobs:
           token: ${{ secrets.CODECOV_TOKEN }}
           directory: unit-tests-${{ matrix.node-version }}
           flags: unit-tests-${{ matrix.node-version }}
-      # - name: Post ESM Unit Test Coverage
-      #   uses: codecov/codecov-action@v3
-      #   with:
-      #     token: ${{ secrets.CODECOV_TOKEN }}
-      #     directory: ./esm-unit-tests-${{ matrix.node-version }}
-      #     files: lcov.info
-      #     flags: esm-unit-tests-${{ matrix.node-version }}
-      # - name: Post Integration Test Coverage
-      #   uses: codecov/codecov-action@v3
-      #   with:
-      #     token: ${{ secrets.CODECOV_TOKEN }}
-      #     directory: ./integration-tests-${{ matrix.node-version }}
-      #     files: lcov.info
-      #     flags: integration-tests-${{ matrix.node-version }}
+      - name: Post ESM Unit Test Coverage
+        uses: codecov/codecov-action@v3
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          directory: esm-unit-tests-${{ matrix.node-version }}
+          flags: esm-unit-tests-${{ matrix.node-version }}
+      - name: Post Integration Test Coverage
+        uses: codecov/codecov-action@v3
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          directory: integration-tests-${{ matrix.node-version }}
+          flags: integration-tests-${{ matrix.node-version }}
       # - name: Post Versioned Test Coverage
       #   uses: codecov/codecov-action@v3
       #   if: github.ref != 'refs/heads/main'
