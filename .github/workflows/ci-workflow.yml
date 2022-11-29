@@ -136,8 +136,7 @@ jobs:
         JOBS: 4 # 2 per CPU seems to be the sweet spot in GHA (July 2022)
 
   codecov:
-    # needs: [unit, integration, versioned]
-    needs: [unit, integration]
+    needs: [unit, integration, versioned]
     runs-on: ubuntu-latest
 
     strategy:
@@ -166,11 +165,10 @@ jobs:
           token: ${{ secrets.CODECOV_TOKEN }}
           directory: integration-tests-${{ matrix.node-version }}
           flags: integration-tests-${{ matrix.node-version }}
-      # - name: Post Versioned Test Coverage
-      #   uses: codecov/codecov-action@v3
-      #   if: github.ref != 'refs/heads/main'
-      #   with:
-      #     token: ${{ secrets.CODECOV_TOKEN }}
-      #     directory: ./versioned-tests-${{ matrix.node-version }}
-      #     files: lcov.info
-      #     flags: versioned-tests-${{ matrix.node-version }}
+      - name: Post Versioned Test Coverage
+        uses: codecov/codecov-action@v3
+        if: github.ref != 'refs/heads/main'
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          directory: versioned-tests-${{ matrix.node-version }}
+          flags: versioned-tests-${{ matrix.node-version }}
