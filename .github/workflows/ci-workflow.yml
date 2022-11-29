@@ -136,7 +136,8 @@ jobs:
         JOBS: 4 # 2 per CPU seems to be the sweet spot in GHA (July 2022)
 
   codecov:
-    needs: [unit, integration, versioned]
+    # needs: [unit, integration, versioned]
+    needs: [unit]
     runs-on: ubuntu-latest
 
     strategy:
