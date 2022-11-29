@@ -9,7 +9,7 @@ const tap = require('tap')
 const getCLMMeta = require('../../../lib/util/code-level-metrics')
 const { anon, arrow, named } = require('../../lib/clm-helper')
 const path = require('path')
-const helperPath = path.resolve('../lib/clm-helper.js')
+const helperPath = path.resolve(`${__dirname}/../../lib/clm-helper.js`)
 
 tap.test('CLM Meta', (t) => {
   t.autoend()
