@@ -147,7 +147,7 @@ jobs:
       - name: Download artifacts
         uses: actions/download-artifact@v3
       - name: list artifacts
-        run : ls -R
+        run : ls -lrth
       - name: Post Unit Test Coverage
         uses: codecov/codecov-action@v3
         with:
