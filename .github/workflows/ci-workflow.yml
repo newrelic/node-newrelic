@@ -137,7 +137,7 @@ jobs:
 
   codecov:
     # needs: [unit, integration, versioned]
-    needs: [unit]
+    needs: [unit, integration]
     runs-on: ubuntu-latest
 
     strategy:
