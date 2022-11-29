@@ -145,10 +145,9 @@ jobs:
         node-version: [14.x, 16.x, 18.x]
 
     steps:
+      - uses: actions/checkout@v3
       - name: Download artifacts
         uses: actions/download-artifact@v3
-      - name: list artifacts
-        run : ls -lrth
       - name: Post Unit Test Coverage
         uses: codecov/codecov-action@v3
         with:
