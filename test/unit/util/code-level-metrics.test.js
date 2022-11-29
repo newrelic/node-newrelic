@@ -10,6 +10,7 @@ const getCLMMeta = require('../../../lib/util/code-level-metrics')
 const { anon, arrow, named } = require('../../lib/clm-helper')
 const path = require('path')
 const helperPath = path.resolve(`${__dirname}/../../lib/clm-helper.js`)
+const sinon = require('sinon')
 
 tap.test('CLM Meta', (t) => {
   t.autoend()
@@ -20,7 +21,7 @@ tap.test('CLM Meta', (t) => {
     t.same(meta, {
       'code.filepath': __filename,
       'code.function': 'testFunction',
-      'code.lineno': 18
+      'code.lineno': 19
     })
     t.end()
   })
@@ -31,7 +32,7 @@ tap.test('CLM Meta', (t) => {
     t.same(meta, {
       'code.filepath': __filename,
       'code.function': 'testFunction',
-      'code.lineno': 29
+      'code.lineno': 30
     })
     t.end()
   })
@@ -65,6 +66,19 @@ tap.test('CLM Meta', (t) => {
       'code.filepath': helperPath,
       'code.function': 'anonymous',
       'code.lineno': 10
+    })
+    t.end()
+  })
+
+  t.test('should only return code.function if retrieving function metadata fails', (t) => {
+    const fnInspector = require('@contrast/fn-inspect')
+    sinon.stub(fnInspector, 'funcInfo')
+    const err = new Error('failed to get function meta')
+    fnInspector.funcInfo.throws(err)
+    function test() {}
+    const meta = getCLMMeta(test)
+    t.same(meta, {
+      'code.function': 'test'
     })
     t.end()
   })

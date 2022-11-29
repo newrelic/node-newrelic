@@ -1,9 +1,21 @@
 {
-  "lastUpdated": "Mon Nov 28 2022 17:00:31 GMT-0500 (Eastern Standard Time)",
+  "lastUpdated": "Tue Nov 29 2022 12:01:49 GMT-0500 (Eastern Standard Time)",
   "projectName": "New Relic Node Agent",
   "projectUrl": "https://github.com/newrelic/node-newrelic",
   "includeOptDeps": true,
   "optionalDependencies": {
+    "@contrast/fn-inspect@3.2.0": {
+      "name": "@contrast/fn-inspect",
+      "version": "3.2.0",
+      "range": "^3.2.0",
+      "licenses": "MIT",
+      "repoUrl": "https://github.com/Contrast-Security-Inc/node-fn-inspect",
+      "versionedRepoUrl": "https://github.com/Contrast-Security-Inc/node-fn-inspect/tree/v3.2.0",
+      "licenseFile": "node_modules/@contrast/fn-inspect/LICENSE",
+      "licenseUrl": "https://github.com/Contrast-Security-Inc/node-fn-inspect/blob/v3.2.0/LICENSE",
+      "licenseTextSource": "file",
+      "publisher": "Contrast Security"
+    },
     "@newrelic/native-metrics@9.0.0": {
       "name": "@newrelic/native-metrics",
       "version": "9.0.0",
@@ -20,18 +32,6 @@
   },
   "includeDev": true,
   "dependencies": {
-    "@contrast/fn-inspect@3.2.0": {
-      "name": "@contrast/fn-inspect",
-      "version": "3.2.0",
-      "range": "^3.2.0",
-      "licenses": "MIT",
-      "repoUrl": "https://github.com/Contrast-Security-Inc/node-fn-inspect",
-      "versionedRepoUrl": "https://github.com/Contrast-Security-Inc/node-fn-inspect/tree/v3.2.0",
-      "licenseFile": "node_modules/@contrast/fn-inspect/LICENSE",
-      "licenseUrl": "https://github.com/Contrast-Security-Inc/node-fn-inspect/blob/v3.2.0/LICENSE",
-      "licenseTextSource": "file",
-      "publisher": "Contrast Security"
-    },
     "@grpc/grpc-js@1.7.3": {
       "name": "@grpc/grpc-js",
       "version": "1.7.3",
