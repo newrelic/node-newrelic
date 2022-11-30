@@ -1,18 +1,18 @@
 {
-  "lastUpdated": "Tue Nov 29 2022 12:01:49 GMT-0500 (Eastern Standard Time)",
+  "lastUpdated": "Wed Nov 30 2022 17:29:44 GMT-0500 (Eastern Standard Time)",
   "projectName": "New Relic Node Agent",
   "projectUrl": "https://github.com/newrelic/node-newrelic",
   "includeOptDeps": true,
   "optionalDependencies": {
-    "@contrast/fn-inspect@3.2.0": {
+    "@contrast/fn-inspect@3.3.0": {
       "name": "@contrast/fn-inspect",
-      "version": "3.2.0",
-      "range": "^3.2.0",
+      "version": "3.3.0",
+      "range": "^3.3.0",
       "licenses": "MIT",
       "repoUrl": "https://github.com/Contrast-Security-Inc/node-fn-inspect",
-      "versionedRepoUrl": "https://github.com/Contrast-Security-Inc/node-fn-inspect/tree/v3.2.0",
+      "versionedRepoUrl": "https://github.com/Contrast-Security-Inc/node-fn-inspect/tree/v3.3.0",
       "licenseFile": "node_modules/@contrast/fn-inspect/LICENSE",
-      "licenseUrl": "https://github.com/Contrast-Security-Inc/node-fn-inspect/blob/v3.2.0/LICENSE",
+      "licenseUrl": "https://github.com/Contrast-Security-Inc/node-fn-inspect/blob/v3.3.0/LICENSE",
       "licenseTextSource": "file",
       "publisher": "Contrast Security"
     },

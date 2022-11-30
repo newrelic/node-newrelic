@@ -193,7 +193,7 @@
   },
   "optionalDependencies": {
     "@newrelic/native-metrics": "^9.0.0",
-    "@contrast/fn-inspect": "^3.2.0"
+    "@contrast/fn-inspect": "^3.3.0"
   },
   "devDependencies": {
     "@newrelic/eslint-config": "^0.2.0",
