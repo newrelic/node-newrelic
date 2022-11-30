@@ -1,9 +1,21 @@
 {
-  "lastUpdated": "Mon Oct 24 2022 19:59:10 GMT-0400 (Eastern Daylight Time)",
+  "lastUpdated": "Tue Nov 29 2022 12:01:49 GMT-0500 (Eastern Standard Time)",
   "projectName": "New Relic Node Agent",
   "projectUrl": "https://github.com/newrelic/node-newrelic",
   "includeOptDeps": true,
   "optionalDependencies": {
+    "@contrast/fn-inspect@3.2.0": {
+      "name": "@contrast/fn-inspect",
+      "version": "3.2.0",
+      "range": "^3.2.0",
+      "licenses": "MIT",
+      "repoUrl": "https://github.com/Contrast-Security-Inc/node-fn-inspect",
+      "versionedRepoUrl": "https://github.com/Contrast-Security-Inc/node-fn-inspect/tree/v3.2.0",
+      "licenseFile": "node_modules/@contrast/fn-inspect/LICENSE",
+      "licenseUrl": "https://github.com/Contrast-Security-Inc/node-fn-inspect/blob/v3.2.0/LICENSE",
+      "licenseTextSource": "file",
+      "publisher": "Contrast Security"
+    },
     "@newrelic/native-metrics@9.0.0": {
       "name": "@newrelic/native-metrics",
       "version": "9.0.0",
@@ -20,27 +32,27 @@
   },
   "includeDev": true,
   "dependencies": {
-    "@grpc/grpc-js@1.6.9": {
+    "@grpc/grpc-js@1.7.3": {
       "name": "@grpc/grpc-js",
-      "version": "1.6.9",
-      "range": "^1.5.5",
+      "version": "1.7.3",
+      "range": "^1.7.3",
       "licenses": "Apache-2.0",
       "repoUrl": "https://github.com/grpc/grpc-node/tree/master/packages/grpc-js",
-      "versionedRepoUrl": "https://github.com/grpc/grpc-node/tree/master/packages/grpc-js/tree/v1.6.9",
+      "versionedRepoUrl": "https://github.com/grpc/grpc-node/tree/master/packages/grpc-js/tree/v1.7.3",
       "licenseFile": "node_modules/@grpc/grpc-js/LICENSE",
-      "licenseUrl": "https://github.com/grpc/grpc-node/tree/master/packages/grpc-js/blob/v1.6.9/LICENSE",
+      "licenseUrl": "https://github.com/grpc/grpc-node/tree/master/packages/grpc-js/blob/v1.7.3/LICENSE",
       "licenseTextSource": "file",
       "publisher": "Google Inc."
     },
-    "@grpc/proto-loader@0.6.13": {
+    "@grpc/proto-loader@0.7.3": {
       "name": "@grpc/proto-loader",
-      "version": "0.6.13",
-      "range": "^0.6.13",
+      "version": "0.7.3",
+      "range": "^0.7.3",
       "licenses": "Apache-2.0",
       "repoUrl": "https://github.com/grpc/grpc-node",
-      "versionedRepoUrl": "https://github.com/grpc/grpc-node/tree/v0.6.13",
+      "versionedRepoUrl": "https://github.com/grpc/grpc-node/tree/v0.7.3",
       "licenseFile": "node_modules/@grpc/proto-loader/LICENSE",
-      "licenseUrl": "https://github.com/grpc/grpc-node/blob/v0.6.13/LICENSE",
+      "licenseUrl": "https://github.com/grpc/grpc-node/blob/v0.7.3/LICENSE",
       "licenseTextSource": "file",
       "publisher": "Google Inc."
     },
@@ -386,6 +398,17 @@
       "licenseUrl": "https://github.com/prettier/eslint-plugin-prettier/blob/v3.4.1/LICENSE.md",
       "licenseTextSource": "file",
       "publisher": "Teddy Katz"
+    },
+    "eslint-plugin-sonarjs@0.15.0": {
+      "name": "eslint-plugin-sonarjs",
+      "version": "0.15.0",
+      "range": "^0.15.0",
+      "licenses": "LGPL-3.0",
+      "repoUrl": "https://github.com/SonarSource/eslint-plugin-sonarjs",
+      "versionedRepoUrl": "https://github.com/SonarSource/eslint-plugin-sonarjs/tree/v0.15.0",
+      "licenseFile": "node_modules/eslint-plugin-sonarjs/LICENSE",
+      "licenseUrl": "https://github.com/SonarSource/eslint-plugin-sonarjs/blob/v0.15.0/LICENSE",
+      "licenseTextSource": "file"
     },
     "eslint@8.24.0": {
       "name": "eslint",
