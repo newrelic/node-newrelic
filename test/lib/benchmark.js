@@ -38,9 +38,6 @@ class Benchmark {
         acc[sampleName] = new BenchmarkStats(samples[sampleName])
         return acc
       } catch (e) {
-        // console.log(`********** ${sampleName} from ${this.name}`)
-        // console.log('this tests:', this.tests)
-        // console.log('err:', e)
         /* eslint-disable no-console */
         console.error(e)
       }
@@ -52,7 +49,6 @@ class Benchmark {
   }
 
   async run() {
-    // new
     const suite = this
     let agent = null
 
@@ -85,10 +81,6 @@ class Benchmark {
     }
 
     const runTest = async (n, test, next) => {
-      /*
-        needs:
-        test from startTest
-       */
       if (global.gc && test.runGC) {
         global.gc()
       }
