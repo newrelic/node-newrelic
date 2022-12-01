@@ -38,22 +38,18 @@ jobs:
       run: npm ci
     - name: Run Unit Tests
       run: npm run unit
-    - name: Post Unit Test Coverage
-      uses: codecov/codecov-action@v3
+    - name: Archive Unit Test Coverage
+      uses: actions/upload-artifact@v3
       with:
-        token: ${{ secrets.CODECOV_TOKEN }}
-        directory: ./coverage/unit/
-        files: lcov.info
-        flags: unit-tests-${{ matrix.node-version }}
+        name: unit-tests-${{ matrix.node-version }}
+        path: ./coverage/unit/lcov.info
     - name: Run ESM Unit Tests
       run: npm run unit:esm
-    - name: Post ESM Unit Test Coverage
-      uses: codecov/codecov-action@v3
+    - name: Archive ESM Unit Test Coverage
+      uses: actions/upload-artifact@v3
       with:
-        token: ${{ secrets.CODECOV_TOKEN }}
-        directory: ./coverage/esm-unit/
-        files: lcov.info
-        flags: esm-unit-tests-${{ matrix.node-version }}
+        name: esm-unit-tests-${{ matrix.node-version }}
+        path: ./coverage/esm-unit/lcov.info
 
   integration:
     runs-on: ubuntu-latest
@@ -74,13 +70,11 @@ jobs:
       run: npm run services
     - name: Run Integration Tests
       run: npm run integration
-    - name: Post Integration Test Coverage
-      uses: codecov/codecov-action@v3
+    - name: Archive Integration Test Coverage 
+      uses: actions/upload-artifact@v3
       with:
-        token: ${{ secrets.CODECOV_TOKEN }}
-        directory: ./coverage/integration/
-        files: lcov.info
-        flags: integration-tests-${{ matrix.node-version }}
+        name: integration-tests-${{ matrix.node-version }}
+        path: ./coverage/integration/lcov.info
 
   versioned:
     runs-on: ubuntu-latest
@@ -111,14 +105,12 @@ jobs:
       env:
         VERSIONED_MODE: ${{ github.ref == 'refs/heads/main' && '--minor' || '--major' }}
         JOBS: 4 # 2 per CPU seems to be the sweet spot in GHA (July 2022)
-    - name: Post Versioned Test Coverage
-      uses: codecov/codecov-action@v3
+    - name: Archive Versioned Test Coverage
+      uses: actions/upload-artifact@v3
       if: github.ref != 'refs/heads/main'
       with:
-        token: ${{ secrets.CODECOV_TOKEN }}
-        directory: ./coverage/versioned/
-        files: lcov.info
-        flags: versioned-tests-${{ matrix.node-version }}
+        name: versioned-tests-${{ matrix.node-version }}
+        path: ./coverage/versioned/lcov.info
 
   async-local-context:
     runs-on: ubuntu-latest
@@ -142,3 +134,41 @@ jobs:
       env:
         VERSIONED_MODE: ${{ github.ref == 'refs/heads/main' && '--minor' || '--major' }}
         JOBS: 4 # 2 per CPU seems to be the sweet spot in GHA (July 2022)
+
+  codecov:
+    needs: [unit, integration, versioned]
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [14.x, 16.x, 18.x]
+
+    steps:
+      - uses: actions/checkout@v3
+      - name: Download artifacts
+        uses: actions/download-artifact@v3
+      - name: Post Unit Test Coverage
+        uses: codecov/codecov-action@v3
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          directory: unit-tests-${{ matrix.node-version }}
+          flags: unit-tests-${{ matrix.node-version }}
+      - name: Post ESM Unit Test Coverage
+        uses: codecov/codecov-action@v3
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          directory: esm-unit-tests-${{ matrix.node-version }}
+          flags: esm-unit-tests-${{ matrix.node-version }}
+      - name: Post Integration Test Coverage
+        uses: codecov/codecov-action@v3
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          directory: integration-tests-${{ matrix.node-version }}
+          flags: integration-tests-${{ matrix.node-version }}
+      - name: Post Versioned Test Coverage
+        uses: codecov/codecov-action@v3
+        if: github.ref != 'refs/heads/main'
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          directory: versioned-tests-${{ matrix.node-version }}
+          flags: versioned-tests-${{ matrix.node-version }}
