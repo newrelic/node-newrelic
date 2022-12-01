@@ -872,10 +872,79 @@ test('when using a regular expression in path', function (t) {
   })
 })
 
-function setup(t) {
-  agent = helper.instrumentMockedAgent({
-    feature_flag: { express_segments: true }
+const codeLevelMetrics = [true, false]
+codeLevelMetrics.forEach((enabled) => {
+  test(`Code Level Metrics ${enabled}`, function (t) {
+    setup(t, { code_level_metrics: { enabled } })
+
+    function mw1(req, res, next) {
+      next()
+    }
+
+    function mw2(req, res, next) {
+      next()
+    }
+
+    app.get('/chained', mw1, mw2, function (req, res) {
+      res.end()
+    })
+
+    runTest(t, '/chained', function (segments) {
+      const [querySegment, initSegment, routeSegment] = segments
+      const [mw1Segment, mw2Segment, handlerSegment] = routeSegment.children
+      assertCLMAttrs({
+        t,
+        segments: [
+          {
+            segment: querySegment,
+            name: 'query',
+            filepath: 'express/lib/middleware/query.js'
+          },
+          {
+            segment: initSegment,
+            name: 'expressInit',
+            filepath: 'express/lib/middleware/init.js'
+          },
+          {
+            segment: mw1Segment,
+            name: 'mw1'
+          },
+          {
+            segment: mw2Segment,
+            name: 'mw2'
+          },
+          {
+            segment: handlerSegment,
+            name: '(anonymous)'
+          }
+        ],
+        enabled
+      })
+      t.end()
+    })
   })
+})
+
+function assertCLMAttrs({ t, segments, enabled: clmEnabled }) {
+  segments.forEach((segment) => {
+    const attrs = segment.segment.getAttributes()
+    if (clmEnabled) {
+      const filepath = segment.filepath || 'test/versioned/express/segments.tap.js'
+      t.equal(attrs['code.function'], segment.name, 'should have appropriate code.function')
+      t.ok(attrs['code.filepath'].endsWith(filepath), 'should have appropriate code.filepath')
+      t.match(attrs['code.lineno'], /[\d]+/, 'lineno should be a number')
+      t.match(attrs['code.column'], /[\d]+/, 'column should be a number')
+    } else {
+      t.notOk(attrs['code.function'], 'function should not exist')
+      t.notOk(attrs['code.filepath'], 'filepath should not exist')
+      t.notOk(attrs['code.lineno'], 'lineno should not exist')
+      t.notOk(attrs['code.column'], 'column should not exist')
+    }
+  })
+}
+
+function setup(t, config = {}) {
+  agent = helper.instrumentMockedAgent(config)
 
   express = require('express')
   app = express()

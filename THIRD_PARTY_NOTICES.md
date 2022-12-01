@@ -9241,7 +9241,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 ### @contrast/fn-inspect
 
-This product includes source derived from [@contrast/fn-inspect](https://github.com/Contrast-Security-Inc/node-fn-inspect) ([v3.2.0](https://github.com/Contrast-Security-Inc/node-fn-inspect/tree/v3.2.0)), distributed under the [MIT License](https://github.com/Contrast-Security-Inc/node-fn-inspect/blob/v3.2.0/LICENSE):
+This product includes source derived from [@contrast/fn-inspect](https://github.com/Contrast-Security-Inc/node-fn-inspect) ([v3.3.0](https://github.com/Contrast-Security-Inc/node-fn-inspect/tree/v3.3.0)), distributed under the [MIT License](https://github.com/Contrast-Security-Inc/node-fn-inspect/blob/v3.3.0/LICENSE):
 
 ```
 Copyright 2022 Contrast Security, Inc
