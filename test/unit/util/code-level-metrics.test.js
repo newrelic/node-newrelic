@@ -50,7 +50,7 @@ tap.test('CLM Meta', (t) => {
       'code.filepath': __filename,
       'code.function': 'testFunction',
       'code.lineno': 46,
-      'code.column': 25
+      'code.column': 26
     })
     t.end()
   })
@@ -63,7 +63,7 @@ tap.test('CLM Meta', (t) => {
       'code.filepath': __filename,
       'code.function': 'testFunction',
       'code.lineno': 59,
-      'code.column': 34
+      'code.column': 35
     })
     t.end()
   })
@@ -77,7 +77,7 @@ tap.test('CLM Meta', (t) => {
         'code.filepath': helperPath,
         'code.function': 'testFunction',
         'code.lineno': 11,
-        'code.column': 39
+        'code.column': 40
       })
       t.end()
     }
@@ -90,7 +90,7 @@ tap.test('CLM Meta', (t) => {
       'code.filepath': helperPath,
       'code.function': '(anonymous)',
       'code.lineno': 9,
-      'code.column': 26
+      'code.column': 27
     })
     t.end()
   })
@@ -102,7 +102,7 @@ tap.test('CLM Meta', (t) => {
       'code.filepath': helperPath,
       'code.function': '(anonymous)',
       'code.lineno': 10,
-      'code.column': 18
+      'code.column': 19
     })
     t.end()
   })
