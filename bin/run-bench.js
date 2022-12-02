@@ -10,6 +10,7 @@
 const cp = require('child_process')
 const glob = require('glob')
 const path = require('path')
+const { errorAndExit } = require('./utils')
 
 const cwd = path.resolve(__dirname, '..')
 const benchpath = path.resolve(cwd, 'test/benchmark')
@@ -83,12 +84,6 @@ class JSONPrinter {
 }
 
 run()
-
-const errorAndExit = (err, message, code) => {
-  console.log(message)
-  console.error(err)
-  process.exit(code)
-}
 
 async function run() {
   const printer = opts.json ? new JSONPrinter() : new ConsolePrinter()

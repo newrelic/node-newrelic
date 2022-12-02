@@ -7,6 +7,7 @@
 /* eslint-disable sonarjs/no-duplicate-string, no-console */
 
 const fs = require('fs/promises')
+const { errorAndExit } = require('./utils')
 
 if (process.argv.length !== 4) {
   console.log('Usage: %s %s <baseline> <upstream>', process.argv[0], process.argv[1])
@@ -17,25 +18,12 @@ if (process.argv.length !== 4) {
   process.exit(1)
 }
 
-const errorAndExit = (err) => {
-  console.log('Failed to load files.')
-  console.log(err)
-  process.exit(2)
-}
-
 const processFile = async (file) => {
   try {
     const data = await fs.readFile(file, { encoding: 'utf8' })
-    let parsed = null
-    try {
-      parsed = JSON.parse(data)
-    } catch (parseError) {
-      return errorAndExit(parseError)
-    }
-
-    return parsed
+    return JSON.parse(data)
   } catch (err) {
-    return errorAndExit(err)
+    return errorAndExit(err, 'Failed to load files.', 2)
   }
 }
 
