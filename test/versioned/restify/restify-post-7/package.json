@@ -21,6 +21,25 @@
         "transaction-naming.tap.js",
         "with-express.tap.js"
       ]
+    },
+    {
+      "engines": {
+        "node": ">=18"
+      },
+      "dependencies": {
+        "restify": ">=10.0.0",
+        "express": "4.16",
+        "restify-errors": "6.1"
+      },
+      "files": [
+        "capture-params.tap.js",
+        "ignoring.tap.js",
+        "restify.tap.js",
+        "rum.tap.js",
+        "router.tap.js",
+        "transaction-naming.tap.js",
+        "with-express.tap.js"
+      ]
     }
   ],
   "dependencies": {
