@@ -19,6 +19,7 @@ const TransactionShim = require('./lib/shim/transaction-shim')
 const TransactionHandle = require('./lib/transaction/handle')
 const AwsLambda = require('./lib/serverless/aws-lambda')
 const applicationLogging = require('./lib/util/application-logging')
+const { assignCLMSymbol } = require('./lib/util/code-level-metrics')
 
 const ATTR_DEST = require('./lib/config/attribute-filter').DESTINATIONS
 const MODULE_TYPE = require('./lib/shim/constants').MODULE_TYPE
@@ -840,6 +841,7 @@ API.prototype.startSegment = function startSegment(name, record, handler, callba
     return handler(callback)
   }
 
+  assignCLMSymbol(this.shim, handler)
   // Create the segment and call the handler.
   const wrappedHandler = this.shim.record(handler, function handlerNamer(shim) {
     return {
