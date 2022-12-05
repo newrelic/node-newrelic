@@ -21,7 +21,7 @@
   * Addressed cognitive complexity and jsdoc issues in `lib/agent.js`.
   * Addressed cognitive complexity and jsdoc issues in `api.js`.
 
-* added `newrelic.noticeError()` example to our API docs.
+* Added `newrelic.noticeError()` example to our API docs.
 
 * Upgraded @grpc/grpc-js from 1.6.9 to 1.7.3.
 
