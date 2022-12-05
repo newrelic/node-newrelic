@@ -1,36 +1,22 @@
 ### v9.7.1 (2022-12-05)
 
-* Reintroduced throttled reading of dependency tree at startup to prevent EMFILE issues.
+* Reintroduced throttling during reading of instrumented application's dependency tree during startup, to prevent EMFILE issues.
 
 * Improved Restify support
   * Added a new test stanza to run restify >=10 on Node 18.
   * Update our versioned tests to support Restify 9.0.0.
 
-* Enhanced agent to lay foundation for supporting for Code Level Metrics via Codestream. Note that while changes have been made to the agent for [Codestream](https://docs.newrelic.com/docs/codestream/how-use-codestream/performance-monitoring/), this integration is not fully finished and should not be used.
-  * Attached code level metrics attributes to middleware spans when `config.code_level_metrics.enabled` is true.
-  * Added configuration option to toggle Code Level Metrics: `code_level_metrics.enabled`.  
-    * It defaults to false.
-    * The environment variable is `NEW_RELIC_CODE_LEVEL_METRICS_ENABLED`.
-  * Added a utility to retrieve Code Level Metrics(CLM) metadata from a function reference.
+* Laid foundation for supporting Code Level Metrics via [Codestream](https://docs.newrelic.com/docs/codestream/how-use-codestream/performance-monitoring/). Note that this integration is not fully finished and should not be used.
 
 * Improved the readability and maintainability of agent by reducing the [Cognitive Complexity](https://www.sonarsource.com/resources/cognitive-complexity/) of various aspects of the agent.
-  * Refactored the Exception class and its helpers to reduce the cognitive complexity. Additionally, fixed all JSDoc warnings.
-  * Updated deep equality check to use native `util.isDeepStrictEqual()`.
-  * Refactored Error Collector to reduce complexity and fixed/added JSDocs.
-  * Reduced cognitive complexity in `lib/config/attribute-filter.js` and enhance JSDocs.
-  * Refactored `lib/system-info.js` to reduce complexity by switching to async/await instead of callbacks for async control.
-  * Addressed cognitive complexity and jsdoc issues in `lib/agent.js`.
-  * Addressed cognitive complexity and jsdoc issues in `api.js`.
 
-* added `newrelic.noticeError()` example to our API docs.
+* Added `newrelic.noticeError()` example to our API docs.
 
 * Upgraded @grpc/grpc-js from 1.6.9 to 1.7.3.
 
 * Upgraded @grpc/proto-loader from 0.6.13 to 0.7.3.
 
-* Removed deprecated and failing suites from benchmark tests.
-
-* Updated code coverage to upload all reports at end of CI run.
+* Removed async from benchmark tests, fixed failing benchmark suites, and removed deprecated suite.
 
 ### v9.7.0 (2022-11-14)
 
