@@ -7,10 +7,10 @@
 
 /* eslint sonarjs/cognitive-complexity: ["error", 21] -- TODO: https://issues.newrelic.com/browse/NEWRELIC-5252 */
 
-const a = require('async')
 const cp = require('child_process')
 const glob = require('glob')
 const path = require('path')
+const { errorAndExit } = require('./utils')
 
 const cwd = path.resolve(__dirname, '..')
 const benchpath = path.resolve(cwd, 'test/benchmark')
@@ -19,9 +19,18 @@ const tests = []
 const globs = []
 const opts = Object.create(null)
 
+// replacement for former async-lib cb
+const testCb = (err, payload) => {
+  if (err) {
+    console.error(err)
+    return
+  }
+  return payload
+}
+
 process.argv.slice(2).forEach(function forEachFileArg(file) {
   if (/^--/.test(file)) {
-    opts[file.substr(2)] = true
+    opts[file.substring(2)] = true
   } else if (/[*]/.test(file)) {
     globs.push(path.join(benchpath, file))
   } else if (/\.bench\.js$/.test(file)) {
@@ -76,67 +85,68 @@ class JSONPrinter {
 
 run()
 
-function run() {
+async function run() {
   const printer = opts.json ? new JSONPrinter() : new ConsolePrinter()
 
-  a.series(
-    [
-      function resolveGlobs(cb) {
-        if (!globs.length) {
-          cb()
-        }
-
-        a.map(globs, glob, function afterGlobbing(err, resolved) {
-          if (err) {
-            console.error('Failed to glob:', err)
-            process.exitCode = -1
-            cb(err)
-          }
-          resolved.forEach(function mergeResolved(files) {
-            files.forEach(function mergeFile(file) {
-              if (tests.indexOf(file) === -1) {
-                tests.push(file)
-              }
-            })
-          })
-          cb()
-        })
-      },
-      function runBenchmarks(cb) {
-        tests.sort()
-        a.eachSeries(
-          tests,
-          function spawnEachFile(file, spawnCb) {
-            const test = path.relative(benchpath, file)
-
-            const args = [file]
-            if (opts.inspect) {
-              args.unshift('--inspect-brk')
-            }
-            const child = cp.spawn('node', args, { cwd: cwd, stdio: 'pipe' })
-            printer.addTest(test, child)
-
-            child.on('error', spawnCb)
-            child.on('exit', function onChildExit(code) {
-              if (code) {
-                spawnCb(new Error('Benchmark exited with code ' + code))
-              }
-              spawnCb()
-            })
-          },
-          function afterSpawnEachFile(err) {
-            if (err) {
-              console.error('Spawning failed:', err)
-              process.exitCode = -2
-              cb(err)
-            }
-            cb()
-          }
-        )
-      }
-    ],
-    () => {
-      printer.finish()
+  const resolveGlobs = (cb) => {
+    if (!globs.length) {
+      cb()
     }
-  )
+    const afterGlobbing = (err, resolved) => {
+      if (err) {
+        errorAndExit(err, 'Failed to glob', -1)
+        cb(err)
+      }
+      resolved.forEach(function mergeResolved(files) {
+        files.forEach(function mergeFile(file) {
+          if (tests.indexOf(file) === -1) {
+            tests.push(file)
+          }
+        })
+      })
+      cb() // ambient scope
+    }
+
+    const globbed = globs.map((item) => glob.sync(item))
+    return afterGlobbing(null, globbed)
+  }
+
+  const spawnEachFile = (file, spawnCb) => {
+    const test = path.relative(benchpath, file)
+
+    const args = [file]
+    if (opts.inspect) {
+      args.unshift('--inspect-brk')
+    }
+
+    const child = cp.spawn('node', args, { cwd: cwd, stdio: 'pipe' })
+    printer.addTest(test, child)
+
+    child.on('error', spawnCb)
+    child.on('exit', function onChildExit(code) {
+      if (code) {
+        spawnCb(new Error('Benchmark exited with code ' + code))
+      }
+      spawnCb()
+    })
+  }
+
+  const afterSpawnEachFile = (err, cb) => {
+    if (err) {
+      errorAndExit(err, 'Spawning failed:', -2)
+      return cb(err)
+    }
+    cb()
+  }
+
+  const runBenchmarks = async (cb) => {
+    tests.sort()
+    await tests.forEach((file) => spawnEachFile(file, testCb))
+    await afterSpawnEachFile(null, testCb)
+    return cb()
+  }
+
+  await resolveGlobs(testCb)
+  await runBenchmarks(testCb)
+  printer.finish()
 }

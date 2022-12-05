@@ -44,7 +44,7 @@ suite.add({
   name: 'shimmer.reinstrument()',
   agent: true,
   fn: function (agent) {
-    return shimmer.reinstrument(agent, 'benchmark')
+    return shimmer.reinstrument(agent, '../test/lib/benchmark')
   }
 })
 
