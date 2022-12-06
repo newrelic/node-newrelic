@@ -10,8 +10,10 @@ const http = require('http')
 const NAMES = require('../../../lib/metrics/names')
 const assertMetrics = require('../../lib/metrics_helper').assertMetrics
 const assertSegments = require('../../lib/metrics_helper').assertSegments
+const tap = require('tap')
+const { test } = tap
 
-const test = require('tap').test
+tap.Test.prototype.addAssert('clmAttrs', 1, helper.assertCLMAttrs)
 
 let express
 let agent
@@ -892,8 +894,8 @@ codeLevelMetrics.forEach((enabled) => {
     runTest(t, '/chained', function (segments) {
       const [querySegment, initSegment, routeSegment] = segments
       const [mw1Segment, mw2Segment, handlerSegment] = routeSegment.children
-      assertCLMAttrs({
-        t,
+      const defaultPath = 'test/versioned/express/segments.tap.js'
+      t.clmAttrs({
         segments: [
           {
             segment: querySegment,
@@ -907,15 +909,18 @@ codeLevelMetrics.forEach((enabled) => {
           },
           {
             segment: mw1Segment,
-            name: 'mw1'
+            name: 'mw1',
+            filepath: defaultPath
           },
           {
             segment: mw2Segment,
-            name: 'mw2'
+            name: 'mw2',
+            filepath: defaultPath
           },
           {
             segment: handlerSegment,
-            name: '(anonymous)'
+            name: '(anonymous)',
+            filepath: defaultPath
           }
         ],
         enabled
@@ -924,24 +929,6 @@ codeLevelMetrics.forEach((enabled) => {
     })
   })
 })
-
-function assertCLMAttrs({ t, segments, enabled: clmEnabled }) {
-  segments.forEach((segment) => {
-    const attrs = segment.segment.getAttributes()
-    if (clmEnabled) {
-      const filepath = segment.filepath || 'test/versioned/express/segments.tap.js'
-      t.equal(attrs['code.function'], segment.name, 'should have appropriate code.function')
-      t.ok(attrs['code.filepath'].endsWith(filepath), 'should have appropriate code.filepath')
-      t.match(attrs['code.lineno'], /[\d]+/, 'lineno should be a number')
-      t.match(attrs['code.column'], /[\d]+/, 'column should be a number')
-    } else {
-      t.notOk(attrs['code.function'], 'function should not exist')
-      t.notOk(attrs['code.filepath'], 'filepath should not exist')
-      t.notOk(attrs['code.lineno'], 'lineno should not exist')
-      t.notOk(attrs['code.column'], 'column should not exist')
-    }
-  })
-}
 
 function setup(t, config = {}) {
   agent = helper.instrumentMockedAgent(config)
