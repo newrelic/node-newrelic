@@ -1,4 +1,4 @@
-### v9.7.1 (2022-12-05)
+### v9.7.1 (2022-12-06)
 
 * Reintroduced throttling during reading of instrumented application's dependency tree during startup, to prevent EMFILE issues.
 
