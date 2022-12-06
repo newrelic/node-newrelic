@@ -12,6 +12,7 @@
       },
       "files": [
         "add-hook.tap.js",
+        "code-level-metrics-2.js",
         "errors.tap.js",
         "fastify-2-naming.tap.js",
         "new-state-tracking.tap.js"
@@ -27,6 +28,7 @@
       },
       "files": [
         "add-hook.tap.js",
+        "code-level-metrics.js",
         "errors.tap.js",
         "fastify-3.tap.js",
         "fastify-3-naming.tap.js",
