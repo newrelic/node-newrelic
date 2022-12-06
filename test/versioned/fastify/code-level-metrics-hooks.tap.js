@@ -50,7 +50,7 @@ tap.test('Fastify CLM Hook Based', (test) => {
       agent.on('transactionFinished', (transaction) => {
         const baseSegment = transaction.trace.root.children
         const [onRequestSegment, handlerSegment] = baseSegment[0].children
-        const onSendSegment = transaction.trace.root.children[0].children[1].children[0]
+        const onSendSegment = handlerSegment.children[0]
         t.clmAttrs({
           segments: [
             {
