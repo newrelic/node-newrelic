@@ -34,7 +34,7 @@ async function setup(test, config) {
   })
 }
 
-tap.test('Fastify 2.x CLM', (test) => {
+tap.test('Fastify CLM Middleware Based', (test) => {
   test.autoend()
   ;[true, false].forEach((isCLMEnabled) => {
     test.test(isCLMEnabled ? 'should add attributes' : 'should not add attributes', async (t) => {
