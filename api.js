@@ -19,11 +19,15 @@ const TransactionShim = require('./lib/shim/transaction-shim')
 const TransactionHandle = require('./lib/transaction/handle')
 const AwsLambda = require('./lib/serverless/aws-lambda')
 const applicationLogging = require('./lib/util/application-logging')
-const { assignCLMSymbol } = require('./lib/util/code-level-metrics')
+const {
+  assignCLMSymbol,
+  addCLMAttributes: maybeAddCLMAttributes
+} = require('./lib/util/code-level-metrics')
 
 const ATTR_DEST = require('./lib/config/attribute-filter').DESTINATIONS
 const MODULE_TYPE = require('./lib/shim/constants').MODULE_TYPE
 const NAMES = require('./lib/metrics/names')
+
 /*
  *
  * CONSTANTS
@@ -903,6 +907,7 @@ API.prototype.startWebTransaction = function startWebTransaction(url, handle) {
   const tracer = this.agent.tracer
   const parent = tracer.getTransaction()
 
+  assignCLMSymbol(shim, handle)
   return tracer.transactionNestProxy('web', function startWebSegment() {
     const tx = tracer.getTransaction()
 
@@ -928,6 +933,7 @@ API.prototype.startWebTransaction = function startWebTransaction(url, handle) {
     tx.baseSegment.start()
 
     const boundHandle = tracer.bindFunction(handle, tx.baseSegment)
+    maybeAddCLMAttributes(handle, tx.baseSegment)
     let returnResult = boundHandle.call(this)
     if (returnResult && shim.isPromise(returnResult)) {
       returnResult = shim.interceptPromise(returnResult, tx.end.bind(tx))
@@ -1001,6 +1007,7 @@ function startBackgroundTransaction(name, group, handle) {
   const txName = group + '/' + name
   const parent = tracer.getTransaction()
 
+  assignCLMSymbol(shim, handle)
   return tracer.transactionNestProxy('bg', function startBackgroundSegment() {
     const tx = tracer.getTransaction()
 
@@ -1027,6 +1034,7 @@ function startBackgroundTransaction(name, group, handle) {
     tx.baseSegment.start()
 
     const boundHandle = tracer.bindFunction(handle, tx.baseSegment)
+    maybeAddCLMAttributes(handle, tx.baseSegment)
     let returnResult = boundHandle.call(this)
     if (returnResult && shim.isPromise(returnResult)) {
       returnResult = shim.interceptPromise(returnResult, tx.end.bind(tx))
