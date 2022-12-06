@@ -5,6 +5,7 @@
 - [ ] Docker for Mac
 - [ ] XCode or command-line tools for Xcode or however Mac OS does this in the future (installs git too)
 - [ ] Git setup - prob SSL key/cert, username, etc.
+- [ ] Add `gh-actions-<username>@github.com` to your GitHub profile emails (used for release actions)
 - [ ] NVM
 - [ ] Node through NVM
 - [ ] Text Editor / IDE
