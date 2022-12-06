@@ -46,7 +46,7 @@ tap.test('Fastify 2.x CLM', (test) => {
         calls.test++
 
         const baseSegment = transaction.trace.root.children[0]
-        const [middieSegment, mwSegment] = baseSegment.children
+        const [middieSegment, handlerSegment] = baseSegment.children
         t.clmAttrs({
           segments: [
             {
@@ -55,7 +55,7 @@ tap.test('Fastify 2.x CLM', (test) => {
               filepath: 'test/versioned/fastify/node_modules/middie/index.js'
             },
             {
-              segment: mwSegment,
+              segment: handlerSegment,
               name: '(anonymous)',
               filepath: 'test/versioned/fastify/common.js'
             }
