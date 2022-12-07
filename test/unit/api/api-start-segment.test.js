@@ -9,6 +9,8 @@ const tap = require('tap')
 const API = require('../../../api')
 const helper = require('../../lib/agent_helper')
 
+tap.Test.prototype.addAssert('clmAttrs', 1, helper.assertCLMAttrs)
+
 tap.test('Agent API - startSegment', (t) => {
   t.autoend()
 
@@ -136,6 +138,29 @@ tap.test('Agent API - startSegment', (t) => {
 
           t.end()
         })
+    })
+  })
+
+  const clmEnabled = [true, false]
+  clmEnabled.forEach((enabled) => {
+    t.test(`should ${enabled ? 'add' : 'not add'} CLM attributes to segment`, (t) => {
+      agent.config.code_level_metrics.enabled = enabled
+      helper.runInTransaction(agent, function () {
+        api.startSegment('foobar', false, function segmentRecorder() {
+          const segment = api.shim.getSegment()
+          t.clmAttrs({
+            segments: [
+              {
+                segment,
+                name: 'segmentRecorder',
+                filepath: 'test/unit/api/api-start-segment.test.js'
+              }
+            ],
+            enabled
+          })
+          t.end()
+        })
+      })
     })
   })
 })

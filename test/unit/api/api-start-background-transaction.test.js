@@ -8,6 +8,7 @@
 const tap = require('tap')
 const API = require('../../../api')
 const helper = require('../../lib/agent_helper')
+tap.Test.prototype.addAssert('clmAttrs', 1, helper.assertCLMAttrs)
 
 tap.test('Agent API - startBackgroundTransaction', (t) => {
   t.autoend()
@@ -27,6 +28,10 @@ tap.test('Agent API - startBackgroundTransaction', (t) => {
     agent = null
     contextManager = null
   })
+
+  function nested() {
+    api.startBackgroundTransaction('nested', function nestedHandler() {})
+  }
 
   t.test('should not throw when transaction cannot be created', (t) => {
     agent.setState('stopped')
@@ -53,10 +58,6 @@ tap.test('Agent API - startBackgroundTransaction', (t) => {
       const nestedSegment = currentSegment.children[0]
       t.equal(nestedSegment.name, 'Nodejs/nested')
     })
-
-    function nested() {
-      api.startBackgroundTransaction('nested', function () {})
-    }
 
     t.notOk(transaction.isActive())
 
@@ -179,5 +180,55 @@ tap.test('Agent API - startBackgroundTransaction', (t) => {
     t.doesNotThrow(() => api.startBackgroundTransaction('test', 'asdf', 'not a function'))
 
     t.end()
+  })
+
+  const clmEnabled = [true, false]
+  clmEnabled.forEach((enabled) => {
+    t.test(`should ${enabled ? 'add' : 'not add'} CLM attributes to segment`, (t) => {
+      agent.config.code_level_metrics.enabled = enabled
+      api.startBackgroundTransaction('clm-tx', function handler() {
+        const segment = api.shim.getSegment()
+        t.clmAttrs({
+          segments: [
+            {
+              segment,
+              name: 'handler',
+              filepath: 'test/unit/api/api-start-background-transaction.test.js'
+            }
+          ],
+          enabled
+        })
+        t.end()
+      })
+    })
+
+    t.test(
+      `should ${enabled ? 'add' : 'not add'} CLM attributes to nested web transactions`,
+      (t) => {
+        agent.config.code_level_metrics.enabled = enabled
+        api.startBackgroundTransaction('nested-clm-test', function () {
+          nested()
+          const currentSegment = contextManager.getContext()
+          const nestedSegment = currentSegment.children[0]
+          t.clmAttrs({
+            segments: [
+              {
+                segment: currentSegment,
+                name: '(anonymous)',
+                filepath: 'test/unit/api/api-start-background-transaction.test.js'
+              },
+              {
+                segment: nestedSegment,
+                name: 'nestedHandler',
+                filepath: 'test/unit/api/api-start-background-transaction.test.js'
+              }
+            ],
+            enabled
+          })
+        })
+
+        t.end()
+      }
+    )
   })
 })

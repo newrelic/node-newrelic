@@ -8,6 +8,7 @@
 const tap = require('tap')
 const API = require('../../../api')
 const helper = require('../../lib/agent_helper')
+tap.Test.prototype.addAssert('clmAttrs', 1, helper.assertCLMAttrs)
 
 tap.test('Agent API - startWebTransaction', (t) => {
   t.autoend()
@@ -27,6 +28,13 @@ tap.test('Agent API - startWebTransaction', (t) => {
     agent = null
     contextManager = null
   })
+
+  /**
+   * Helper run a web transaction within an existing one
+   */
+  function nested() {
+    api.startWebTransaction('nested', function nestedHandler() {})
+  }
 
   t.test('should not throw when transaction cannot be created', (t) => {
     agent.setState('stopped')
@@ -52,10 +60,6 @@ tap.test('Agent API - startWebTransaction', (t) => {
       const nestedSegment = currentSegment.children[0]
       t.equal(nestedSegment.name, 'nested')
     })
-
-    function nested() {
-      api.startWebTransaction('nested', function () {})
-    }
 
     t.notOk(transaction.isActive())
 
@@ -138,5 +142,55 @@ tap.test('Agent API - startWebTransaction', (t) => {
     api.startWebTransaction('test')
 
     t.end()
+  })
+
+  const clmEnabled = [true, false]
+  clmEnabled.forEach((enabled) => {
+    t.test(`should ${enabled ? 'add' : 'not add'} CLM attributes to segment`, (t) => {
+      agent.config.code_level_metrics.enabled = enabled
+      api.startWebTransaction('clm-tx', function handler() {
+        const segment = api.shim.getSegment()
+        t.clmAttrs({
+          segments: [
+            {
+              segment,
+              name: 'handler',
+              filepath: 'test/unit/api/api-start-web-transaction.test.js'
+            }
+          ],
+          enabled
+        })
+        t.end()
+      })
+    })
+
+    t.test(
+      `should ${enabled ? 'add' : 'not add'} CLM attributes to nested web transactions`,
+      (t) => {
+        agent.config.code_level_metrics.enabled = enabled
+        api.startWebTransaction('clm-nested-test', function () {
+          nested()
+          const currentSegment = contextManager.getContext()
+          const nestedSegment = currentSegment.children[0]
+          t.clmAttrs({
+            segments: [
+              {
+                segment: currentSegment,
+                name: '(anonymous)',
+                filepath: 'test/unit/api/api-start-web-transaction.test.js'
+              },
+              {
+                segment: nestedSegment,
+                name: 'nestedHandler',
+                filepath: 'test/unit/api/api-start-web-transaction.test.js'
+              }
+            ],
+            enabled
+          })
+        })
+
+        t.end()
+      }
+    )
   })
 })
