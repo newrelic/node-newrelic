@@ -12,6 +12,7 @@ const assertMetrics = require('../../lib/metrics_helper').assertMetrics
 const assertSegments = require('../../lib/metrics_helper').assertSegments
 const NAMES = require('../../../lib/metrics/names')
 const utils = require('./hapi-utils')
+tap.Test.prototype.addAssert('clmAttrs', 1, helper.assertCLMAttrs)
 
 let agent
 let server
@@ -125,6 +126,127 @@ tap.test('Hapi segments', function (t) {
       ])
       t.end()
     })
+  })
+
+  const filepath = 'test/versioned/hapi/segments.tap.js'
+
+  ;[true, false].forEach((clmEnabled) => {
+    t.test(
+      `should ${
+        clmEnabled ? 'add' : 'not add'
+      } CLM attribute to extension function and handler function segments when CLM is ${
+        clmEnabled ? 'enabled' : 'disabled'
+      }`,
+      (t) => {
+        agent.config.code_level_metrics.enabled = clmEnabled
+        server.ext('onRequest', function requestExtension(req, h) {
+          return h.continue
+        })
+
+        server.route({
+          method: 'GET',
+          path: '/test',
+          handler: function myHandler() {
+            return 'ok'
+          }
+        })
+
+        runTest(t, function (segments) {
+          const [onRequestSegment, handlerSegment] = segments
+          t.clmAttrs({
+            segments: [
+              {
+                segment: onRequestSegment,
+                name: 'requestExtension',
+                filepath
+              },
+              {
+                segment: handlerSegment,
+                name: 'myHandler',
+                filepath
+              }
+            ],
+            enabled: clmEnabled
+          })
+          t.end()
+        })
+      }
+    )
+
+    t.test(
+      `should ${
+        clmEnabled ? 'add' : 'not add'
+      } CLM attribute to custom handler segments when CLM is ${
+        clmEnabled ? 'enabled' : 'disabled'
+      }`,
+      (t) => {
+        agent.config.code_level_metrics.enabled = clmEnabled
+        server.decorate('handler', 'customHandler', function (route, options) {
+          return function customHandler() {
+            return options.key1
+          }
+        })
+
+        server.route({
+          method: 'GET',
+          path: '/test',
+          handler: { customHandler: { key1: 'val1' } }
+        })
+
+        runTest(t, function ([customHandlerSegment]) {
+          t.clmAttrs({
+            segments: [
+              {
+                segment: customHandlerSegment,
+                name: 'customHandler',
+                filepath
+              }
+            ],
+            enabled: clmEnabled
+          })
+          t.end()
+        })
+      }
+    )
+
+    t.test(
+      `should ${
+        clmEnabled ? 'add' : 'not add'
+      } CLM attribute to plugin handler segments when CLM is ${
+        clmEnabled ? 'enabled' : 'disabled'
+      }`,
+      (t) => {
+        agent.config.code_level_metrics.enabled = clmEnabled
+        const plugin = {
+          register: function (srvr) {
+            srvr.route({
+              method: 'GET',
+              path: '/test',
+              handler: function pluginHandler() {
+                return Promise.resolve('hello')
+              }
+            })
+          },
+          name: 'foobar'
+        }
+
+        server.register(plugin).then(() => {
+          runTest(t, function ([pluginHandlerSegment]) {
+            t.clmAttrs({
+              segments: [
+                {
+                  segment: pluginHandlerSegment,
+                  name: 'pluginHandler',
+                  filepath
+                }
+              ],
+              enabled: clmEnabled
+            })
+            t.end()
+          })
+        })
+      }
+    )
   })
 })
 
