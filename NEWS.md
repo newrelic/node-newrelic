@@ -1,3 +1,7 @@
+### v9.7.2 (2022-12-07)
+
+* Updated `@grpc/grpc-js` instrumentation to work with 1.8.0.
+
 ### v9.7.1 (2022-12-06)
 
 * Reintroduced throttling during reading of instrumented application's dependency tree during startup, to prevent EMFILE issues.
