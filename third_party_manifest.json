@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "Wed Nov 30 2022 17:29:44 GMT-0500 (Eastern Standard Time)",
+  "lastUpdated": "Fri Dec 09 2022 12:21:54 GMT-0500 (Eastern Standard Time)",
   "projectName": "New Relic Node Agent",
   "projectUrl": "https://github.com/newrelic/node-newrelic",
   "includeOptDeps": true,
@@ -499,6 +499,20 @@
       "licenseTextSource": "file",
       "publisher": "Andrey Okonetchnikov",
       "email": "andrey@okonet.ru"
+    },
+    "lockfile-lint@4.9.6": {
+      "name": "lockfile-lint",
+      "version": "4.9.6",
+      "range": "^4.9.6",
+      "licenses": "Apache-2.0",
+      "repoUrl": "https://github.com/lirantal/lockfile-lint",
+      "versionedRepoUrl": "https://github.com/lirantal/lockfile-lint/tree/v4.9.6",
+      "licenseFile": "node_modules/lockfile-lint/LICENSE",
+      "licenseUrl": "https://github.com/lirantal/lockfile-lint/blob/v4.9.6/LICENSE",
+      "licenseTextSource": "file",
+      "publisher": "Liran Tal",
+      "email": "liran.tal@gmail.com",
+      "url": "https://github.com/lirantal"
     },
     "memcached@2.2.2": {
       "name": "memcached",
