@@ -151,6 +151,7 @@
     "prepare-test": "npm run ssl && npm run docker-env",
     "lint": "eslint ./*.{js,mjs} lib test bin examples",
     "lint:fix": "eslint --fix, ./*.{js,mjs} lib test bin examples",
+    "lint:lockfile": "lockfile-lint --path package-lock.json --type npm --allowed-hosts npm --validate-https --validate-checksum --validate-integrity",
     "public-docs": "jsdoc -c ./jsdoc-conf.json --tutorials examples/shim api.js lib/shim/ lib/transaction/handle.js && cp examples/shim/*.png out/",
     "publish-docs": "./bin/publish-docs.sh",
     "services": "./bin/docker-services.sh",
@@ -192,8 +193,8 @@
     "winston-transport": "^4.5.0"
   },
   "optionalDependencies": {
-    "@newrelic/native-metrics": "^9.0.0",
-    "@contrast/fn-inspect": "^3.3.0"
+    "@contrast/fn-inspect": "^3.3.0",
+    "@newrelic/native-metrics": "^9.0.0"
   },
   "devDependencies": {
     "@newrelic/eslint-config": "^0.2.0",
@@ -221,6 +222,7 @@
     "husky": "^6.0.0",
     "jsdoc": "^3.6.3",
     "lint-staged": "^11.0.0",
+    "lockfile-lint": "^4.9.6",
     "memcached": ">=0.2.8",
     "minami": "^1.2.3",
     "nock": "11.8.0",
