@@ -19,6 +19,25 @@ const DESTINATIONS = {
   TRANS_SEGMENT: 0x20
 }
 
+tap.Test.prototype.addAssert('clmAttrs', 1, function ({ segments, clmEnabled }) {
+  segments.forEach(({ segment, name, filepath }) => {
+    const attrs = segment.getAttributes()
+    if (clmEnabled) {
+      this.match(
+        attrs,
+        {
+          'code.function': name,
+          'code.filepath': filepath
+        },
+        'should add code.function and code.filepath when CLM is enabled.'
+      )
+    } else {
+      this.notOk(attrs['code.function'], 'should not add code.function when CLM is disabled.')
+      this.notOk(attrs['code.filepath'], 'should not add code.filepath when CLM is disabled.')
+    }
+  })
+})
+
 tap.test('Next.js', (t) => {
   t.autoend()
   let agent
@@ -44,16 +63,29 @@ tap.test('Next.js', (t) => {
     agent.unload()
   })
 
-  t.test('should capture query params for static, non-dynamic route, page', async (t) => {
-    let endedTransaction = null
-    agent.agent.on('transactionFinished', (transaction) => {
-      endedTransaction = transaction
+  // since we setup agent in before we need to remove
+  // the transactionFinished listener between tests to avoid
+  // context leaking
+  function setupTransactionHandler(t, agent) {
+    t.context.transaction = null
+    function txHandler(transaction) {
+      t.context.transaction = transaction
+    }
+
+    agent.agent.on('transactionFinished', txHandler)
+
+    t.teardown(() => {
+      agent.agent.removeListener('transactionFinished', txHandler)
     })
+  }
+
+  t.test('should capture query params for static, non-dynamic route, page', async (t) => {
+    setupTransactionHandler(t, agent)
 
     const res = await helpers.makeRequest('/static/standard?first=one&second=two')
     t.equal(res.statusCode, 200)
 
-    const agentAttributes = getTransactionEventAgentAttributes(endedTransaction)
+    const agentAttributes = getTransactionEventAgentAttributes(t.context.transaction)
 
     t.match(agentAttributes, {
       'request.parameters.first': 'one',
@@ -62,15 +94,12 @@ tap.test('Next.js', (t) => {
   })
 
   t.test('should capture query and route params for static, dynamic route, page', async (t) => {
-    let endedTransaction = null
-    agent.agent.on('transactionFinished', (transaction) => {
-      endedTransaction = transaction
-    })
+    setupTransactionHandler(t, agent)
 
     const res = await helpers.makeRequest('/static/dynamic/testing?queryParam=queryValue')
     t.equal(res.statusCode, 200)
 
-    const agentAttributes = getTransactionEventAgentAttributes(endedTransaction)
+    const agentAttributes = getTransactionEventAgentAttributes(t.context.transaction)
 
     t.match(agentAttributes, {
       'request.parameters.value': 'testing', // route [value] param
@@ -81,15 +110,11 @@ tap.test('Next.js', (t) => {
   t.test(
     'should capture query params for server-side rendered, non-dynamic route, page',
     async (t) => {
-      let endedTransaction = null
-      agent.agent.on('transactionFinished', (transaction) => {
-        endedTransaction = transaction
-      })
-
+      setupTransactionHandler(t, agent)
       const res = await helpers.makeRequest('/ssr/people?first=one&second=two')
       t.equal(res.statusCode, 200)
 
-      const agentAttributes = getTransactionEventAgentAttributes(endedTransaction)
+      const agentAttributes = getTransactionEventAgentAttributes(t.context.transaction)
 
       t.match(
         agentAttributes,
@@ -101,7 +126,7 @@ tap.test('Next.js', (t) => {
       )
 
       const segmentAttrs = getSegmentAgentAttributes(
-        endedTransaction,
+        t.context.transaction,
         'Nodejs/Nextjs/getServerSideProps//ssr/people'
       )
       t.match(
@@ -117,22 +142,19 @@ tap.test('Next.js', (t) => {
   t.test(
     'should capture query and route params for server-side rendered, dynamic route, page',
     async (t) => {
-      let endedTransaction = null
-      agent.agent.on('transactionFinished', (transaction) => {
-        endedTransaction = transaction
-      })
+      setupTransactionHandler(t, agent)
 
       const res = await helpers.makeRequest('/ssr/dynamic/person/1?queryParam=queryValue')
       t.equal(res.statusCode, 200)
 
-      const agentAttributes = getTransactionEventAgentAttributes(endedTransaction)
+      const agentAttributes = getTransactionEventAgentAttributes(t.context.transaction)
 
       t.match(agentAttributes, {
         'request.parameters.id': '1', // route [id] param
         'request.parameters.queryParam': 'queryValue'
       })
       const segmentAttrs = getSegmentAgentAttributes(
-        endedTransaction,
+        t.context.transaction,
         'Nodejs/Nextjs/getServerSideProps//ssr/dynamic/person/[id]'
       )
       t.match(
@@ -146,15 +168,11 @@ tap.test('Next.js', (t) => {
   )
 
   t.test('should capture query params for API with non-dynamic route', async (t) => {
-    let endedTransaction = null
-    agent.agent.on('transactionFinished', (transaction) => {
-      endedTransaction = transaction
-    })
-
+    setupTransactionHandler(t, agent)
     const res = await helpers.makeRequest('/api/hello?first=one&second=two')
     t.equal(res.statusCode, 200)
 
-    const agentAttributes = getTransactionEventAgentAttributes(endedTransaction)
+    const agentAttributes = getTransactionEventAgentAttributes(t.context.transaction)
 
     t.match(agentAttributes, {
       'request.parameters.first': 'one',
@@ -163,15 +181,12 @@ tap.test('Next.js', (t) => {
   })
 
   t.test('should capture query and route params for API with dynamic route', async (t) => {
-    let endedTransaction = null
-    agent.agent.on('transactionFinished', (transaction) => {
-      endedTransaction = transaction
-    })
+    setupTransactionHandler(t, agent)
 
     const res = await helpers.makeRequest('/api/person/2?queryParam=queryValue')
     t.equal(res.statusCode, 200)
 
-    const agentAttributes = getTransactionEventAgentAttributes(endedTransaction)
+    const agentAttributes = getTransactionEventAgentAttributes(t.context.transaction)
 
     t.match(agentAttributes, {
       'request.parameters.id': '2', // route [id] param
@@ -197,6 +212,81 @@ tap.test('Next.js', (t) => {
 
     t.equal(transaction1Attributes.traceId, transaction2Attributes.traceId)
     t.equal(transaction1Attributes.sampled, transaction2Attributes.sampled)
+  })
+  ;[true, false].forEach((clmEnabled) => {
+    t.test(
+      `should ${clmEnabled ? 'add' : 'not add'} CLM attrs for API with dynamic route`,
+      async (t) => {
+        // need to define config like this as agent version could be less than
+        // when this configuration was defined
+        agent.agent.config.code_level_metrics = { enabled: clmEnabled }
+        setupTransactionHandler(t, agent)
+        await helpers.makeRequest('/api/person/2?queryParam=queryValue')
+        const rootSegment = t.context.transaction.trace.root
+        t.clmAttrs({
+          segments: [
+            {
+              segment: rootSegment.children[0],
+              name: 'handler',
+              filepath: 'pages/api/person/[id]'
+            },
+            {
+              segment: rootSegment.children[0].children[0],
+              name: 'middleware',
+              filepath: 'middleware'
+            }
+          ],
+          clmEnabled
+        })
+      }
+    )
+
+    t.test(`should ${clmEnabled ? 'add' : 'not add'} CLM attrs to server side page`, async (t) => {
+      agent.agent.config.code_level_metrics = { enabled: clmEnabled }
+      setupTransactionHandler(t, agent)
+
+      await helpers.makeRequest('/ssr/people')
+      const rootSegment = t.context.transaction.trace.root
+      t.clmAttrs({
+        segments: [
+          {
+            segment: rootSegment.children[0].children[0],
+            name: 'middleware',
+            filepath: 'middleware'
+          },
+          {
+            segment: rootSegment.children[0].children[1],
+            name: 'getServerSideProps',
+            filepath: 'pages/ssr/people'
+          }
+        ],
+        clmEnabled
+      })
+    })
+
+    t.test('should not add CLM attrs to static page segment', async (t) => {
+      agent.agent.config.code_level_metrics = { enabled: clmEnabled }
+      setupTransactionHandler(t, agent)
+
+      await helpers.makeRequest('/static/dynamic/testing?queryParam=queryValue')
+      const rootSegment = t.context.transaction.trace.root
+
+      // The segment that names the static page will not contain CLM regardless of the
+      // configuration flag
+      t.clmAttrs({ segments: [{ segment: rootSegment.children[0] }], clmEnabled: false })
+
+      // this will exist when CLM is enabled
+      t.clmAttrs({
+        segments: [
+          {
+            segment: rootSegment.children[0].children[0],
+            name: 'middleware',
+            filepath: 'middleware'
+          }
+        ],
+        clmEnabled
+      })
+    })
   })
 
   function getTransactionEventAgentAttributes(transaction) {

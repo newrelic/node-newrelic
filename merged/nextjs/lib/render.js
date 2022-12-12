@@ -5,8 +5,10 @@
 
 'use strict'
 const SPAN_PREFIX = 'Nodejs/Nextjs'
+const { assignCLMAttrs } = require('./utils')
 
 module.exports = function initialize(shim, render) {
+  const { config } = shim.agent
   shim.setFramework(shim.NEXT)
   shim.record(
     render,
@@ -15,6 +17,10 @@ module.exports = function initialize(shim, render) {
       return {
         inContext(segment) {
           segment.addSpanAttributes({ 'next.page': page })
+          assignCLMAttrs(config, segment, {
+            'code.function': 'getServerSideProps',
+            'code.filepath': `pages${page}`
+          })
         },
         req,
         res,
