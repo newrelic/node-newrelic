@@ -34,7 +34,7 @@
     "@koa/router": "^8.0.0",
     "@newrelic/eslint-config": "^0.0.2",
     "@newrelic/newrelic-oss-cli": "^0.1.2",
-    "@newrelic/test-utilities": "^6.3.0",
+    "@newrelic/test-utilities": "^7.2.0",
     "c8": "^7.12.0",
     "eslint": "^7.32.0",
     "eslint-config-prettier": "^8.3.0",
