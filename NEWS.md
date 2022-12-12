@@ -2,8 +2,6 @@
 
 * Added support for Code Level Metrics on API methods: `startSegment`, `startBackgroundTransaction`, and `startWebTransaction`.
 
-* Added lockfile checks to CI workflow to prevent malicious changes to `package-lock.json`.
-
 ### v9.7.2 (2022-12-07)
 
 * Updated `@grpc/grpc-js` instrumentation to work with 1.8.0.
