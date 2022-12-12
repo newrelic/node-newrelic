@@ -1,3 +1,17 @@
+### v9.7.3 (2022-12-12)
+
+* Updated user slack invitation link in contributing manual
+
+* Fixed `infoOnce` logging in Code Level Metrics utility
+
+* Added lockfile checks to CI workflow to prevent malicious changes
+
+* Added CLM versioned tests for Fastify
+
+* Added versioned tests to assert that Code Level Metrics works with Hapi handlers, plugins, extensions, etc.
+
+* Added support for Code Level Metrics on API methods: startSegment, startBackgroundTransaction, and startWebTransaction
+
 ### v9.7.2 (2022-12-07)
 
 * Updated `@grpc/grpc-js` instrumentation to work with 1.8.0.
