@@ -1,3 +1,7 @@
+### v9.7.3 (2022-12-12)
+
+* Added support for Code Level Metrics on API methods: `startSegment`, `startBackgroundTransaction`, and `startWebTransaction`.
+
 ### v9.7.2 (2022-12-07)
 
 * Updated `@grpc/grpc-js` instrumentation to work with 1.8.0.
