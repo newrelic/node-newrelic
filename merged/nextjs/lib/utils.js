@@ -1,3 +1,8 @@
+/*
+ * Copyright 2022 New Relic Corporation. All rights reserved.
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 'use strict'
 const utils = module.exports
 
@@ -20,7 +25,7 @@ utils.assignCLMAttrs = function assignCLMAttrs(config, segment, attrs) {
     return
   }
 
-  for (const attr in attrs) {
-    segment.addAttribute(attr, attrs[attr])
+  for (const [key, value] of Object.entries(attrs)) {
+    segment.addAttribute(key, value)
   }
 }

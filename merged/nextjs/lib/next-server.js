@@ -40,7 +40,7 @@ module.exports = function initialize(shim, nextServer) {
       assignParameters(shim, parameters)
       assignCLMAttrs(config, shim.getActiveSegment(), {
         'code.function': 'handler',
-        'code.filepath': `pages${page}` 
+        'code.filepath': `pages${page}`
       })
 
       return originalFn.apply(this, arguments)
