@@ -1205,7 +1205,7 @@
           "tracestate.sampled",
           "tracestate.priority"
         ],
-        "vendors": [
+        "tracingVendors": [
           "foo",
           "bar"
         ]
@@ -1370,7 +1370,7 @@
           "tracestate.sampled",
           "tracestate.priority"
         ],
-        "vendors": [
+        "tracingVendors": [
         ]
       }
     ],
@@ -1455,7 +1455,7 @@
           "tracestate.parent_application_id",
           "tracestate.timestamp"
         ],
-        "vendors": [
+        "tracingVendors": [
           "44@nr"
         ]
       }

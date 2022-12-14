@@ -91,7 +91,7 @@ const testExpected = function (t, object, fixture) {
 }
 
 const testVendor = function (t, object, vendors) {
-  t.same(object.tracestate.vendors, vendors, 'do vendors match?')
+  t.same(object.tracestate.tracing_vendors, vendors, 'do vendors match?')
 }
 
 // tests a few of the helper functions we wrote for this test case
@@ -236,7 +236,7 @@ const runTestCaseOutboundPayloads = function (t, testCase, context) {
         case 'notequal':
           testNotEqual(t, context[key], fields)
           break
-        case 'vendors':
+        case 'tracingVendors':
           testVendor(t, context[key], fields)
           break
         default:
@@ -305,7 +305,7 @@ const runTestCase = function (testCase, parentTest) {
           'exact',
           'expected',
           'notequal',
-          'vendors',
+          'tracingVendors',
           'unexpected'
         ])
       }
@@ -430,7 +430,7 @@ const runTestCase = function (testCase, parentTest) {
           // Found entry for the correct trust key / tenantId
           // So manually setting for now
           intrinsics.tenantId = tenantId
-          intrinsics.vendors = vendors
+          intrinsics.tracingVendors = vendors
 
           // get payload for how we represent it internally to how tests want it
           const outboundPayload = {
