@@ -1,3 +1,7 @@
+### v9.7.4 (2022-12-14)
+
+* Fixed system info gathering to prevent unhandled promise rejection when an error occurs reading `/proc` information.
+
 ### v9.7.3 (2022-12-12)
 
 * Added support for Code Level Metrics on API methods: `startSegment`, `startBackgroundTransaction`, and `startWebTransaction`.
