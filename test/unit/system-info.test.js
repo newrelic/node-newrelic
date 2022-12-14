@@ -207,6 +207,18 @@ tap.test('getProcessorStats - linux', (t) => {
     }
     t.same(results, expected, 'should return the expected results')
   })
+
+  t.test('should return null if readProc fails', async (t) => {
+    readProcFunction.yields(new Error('oops'))
+
+    const results = await systemInfo._getProcessorStats()
+    const expected = {
+      logical: null,
+      cores: null,
+      packages: null
+    }
+    t.same(results, expected, 'should return the expected results')
+  })
 })
 
 tap.test('getProcessorStats - unknown', (t) => {
@@ -358,6 +370,13 @@ tap.test('getMemoryStats - linux', (t) => {
 
     const results = await systemInfo._getMemoryStats()
     t.equal(results, 1837.953125)
+  })
+
+  t.test('should return null if readProc fails', async (t) => {
+    readProcFunction.yields(new Error('oops'))
+
+    const results = await systemInfo._getMemoryStats()
+    t.equal(results, null)
   })
 })
 
