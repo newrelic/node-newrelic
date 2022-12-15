@@ -5,6 +5,8 @@
 
 'use strict'
 
+const { assignCLMAttrs } = require('./utils')
+
 module.exports = function initialize(shim, nextServer) {
   shim.setFramework(shim.NEXT)
 
@@ -28,6 +30,7 @@ module.exports = function initialize(shim, nextServer) {
   )
 
   shim.wrap(Server.prototype, 'runApi', function wrapRunApi(shim, originalFn) {
+    const { config } = shim.agent
     return function wrappedRunApi() {
       const [, , query, params, page] = arguments
 
@@ -35,6 +38,10 @@ module.exports = function initialize(shim, nextServer) {
 
       const parameters = Object.assign({}, query, params)
       assignParameters(shim, parameters)
+      assignCLMAttrs(config, shim.getActiveSegment(), {
+        'code.function': 'handler',
+        'code.filepath': `pages${page}`
+      })
 
       return originalFn.apply(this, arguments)
     }

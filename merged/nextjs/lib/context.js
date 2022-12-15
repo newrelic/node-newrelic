@@ -7,6 +7,7 @@
 
 const util = require('util')
 const semver = require('semver')
+const { assignCLMAttrs } = require('./utils')
 
 // Version middleware is stable
 // See: https://nextjs.org/docs/advanced-features/middleware
@@ -31,6 +32,7 @@ module.exports = function initialize(shim, ctx) {
   shim.setFramework(shim.NEXT)
 
   shim.wrap(ctx, 'getModuleContext', function middlewareRecorder(shim, getModuleContext) {
+    const { config } = shim.agent
     // define proxy handler that adds a set trap and re-assigns the middleware handler
     // with a wrapped function to record the middleware handler execution.
     const handler = {
@@ -40,6 +42,12 @@ module.exports = function initialize(shim, ctx) {
           const middlewareName = 'middleware'
           return {
             name: `${shim._metrics.MIDDLEWARE}${shim._metrics.PREFIX}/${middlewareName}`,
+            inContext(segment) {
+              assignCLMAttrs(config, segment, {
+                'code.function': 'middleware',
+                'code.filepath': 'middleware'
+              })
+            },
             type: shim.MIDDLEWARE,
             req: args.request,
             route: middlewareName,
