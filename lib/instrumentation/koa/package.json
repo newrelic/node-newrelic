@@ -49,6 +49,7 @@
     "newrelic": "^8.1.0",
     "prettier": "^2.3.2",
     "semver": "^5.7.1",
+    "sinon": "^15.0.1",
     "tap": "^16.0.1"
   },
   "peerDependencies": {
