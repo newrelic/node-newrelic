@@ -1,3 +1,11 @@
+### v0.4.0 (2022-12-15)
+
+* Added ability to capture code level metrics attributes for middleware, `getServerSideProps` functions, and API handlers. 
+   * This will require customers to use New Relic Node.js version >= 9.7.1.
+   * Please note that the integration with CodeStream is not finished. A future release of agent will enable code level metrics by default.
+
+* Updated versioned tests to include v13 of Next.js.
+
 ### v0.3.1 (2022-10-17)
 
 * Updated newrelic peer dependency to be >= 8.14.0. This makes the hasToRemoveScriptWrapper property available for api.getBrowserTimingHeader.
