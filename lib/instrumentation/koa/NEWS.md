@@ -1,3 +1,7 @@
+### v7.1.1 (2022-12-16)
+
+* Updated Koa instrumentation to work in applications using the ES Modules loader.
+
 ### v7.1.0 (2022-11-14)
 
 * Removed `__NR` prefixed properties in favor of symbols.
