@@ -46,7 +46,7 @@
     "koa-route": "^3.2.0",
     "koa-router": "^7.4.0",
     "lint-staged": "^11.1.2",
-    "newrelic": "^9.7.2",
+    "newrelic": "^9.7.4",
     "prettier": "^2.3.2",
     "semver": "^5.7.1",
     "sinon": "^15.0.1",

@@ -990,7 +990,7 @@ SOFTWARE.
 
 ### newrelic
 
-This product includes source derived from [newrelic](https://github.com/newrelic/node-newrelic) ([v9.7.2](https://github.com/newrelic/node-newrelic/tree/v9.7.2)), distributed under the [Apache-2.0 License](https://github.com/newrelic/node-newrelic/blob/v9.7.2/LICENSE):
+This product includes source derived from [newrelic](https://github.com/newrelic/node-newrelic) ([v9.7.4](https://github.com/newrelic/node-newrelic/tree/v9.7.4)), distributed under the [Apache-2.0 License](https://github.com/newrelic/node-newrelic/blob/v9.7.4/LICENSE):
 
 ```
                                  Apache License
