@@ -232,6 +232,14 @@ describe('the environment scraper', function () {
     })
   })
 
+  it('should resolve refresh where deps and deps of deps are symlinked to each other', async function () {
+    process.config.variables.node_prefix = path.join(__dirname, '../lib/example-deps')
+    const data = await environment.getJSON()
+    const pkgs = find(data, 'Dependencies')
+    const customPkgs = pkgs.filter((pkg) => pkg.includes('custom-pkg'))
+    expect(customPkgs.length).to.equal(3)
+  })
+
   it('should not crash when given a file in NODE_PATH', function (done) {
     const env = {
       NODE_PATH: path.join(__dirname, 'environment.test.js'),
