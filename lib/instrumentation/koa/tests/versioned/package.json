@@ -27,7 +27,8 @@
         "koa": ">=2.0.0"
       },
       "files": [
-        "koa.tap.js"
+        "koa.tap.js",
+        "code-level-metrics.tap.js"
       ]
     },
     {
@@ -40,7 +41,8 @@
         "koa-router": ">=7.1.0 <=8.0.2"
       },
       "files": [
-        "koa-router.tap.js"
+        "koa-router.tap.js",
+        "code-level-metrics.tap.js"
       ]
     },
     {
