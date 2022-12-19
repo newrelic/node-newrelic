@@ -1,6 +1,6 @@
 {
   "name": "@newrelic/koa",
-  "version": "7.1.0",
+  "version": "7.1.1",
   "description": "Koa instrumentation for the New Relic Node agent",
   "main": "index.js",
   "directories": {
@@ -49,6 +49,7 @@
     "newrelic": "^9.7.2",
     "prettier": "^2.3.2",
     "semver": "^5.7.1",
+    "sinon": "^15.0.1",
     "tap": "^16.0.1"
   },
   "peerDependencies": {

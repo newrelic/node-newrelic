@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "Mon Dec 12 2022 15:31:07 GMT-0500 (Eastern Standard Time)",
+  "lastUpdated": "Thu Dec 15 2022 16:08:33 GMT-0500 (Eastern Standard Time)",
   "projectName": "New Relic Koa Instrumentation",
   "projectUrl": "https://github.com/newrelic/node-newrelic-koa",
   "includeOptDeps": false,
@@ -227,6 +227,18 @@
       "licenseFile": "node_modules/tap/node_modules/semver/LICENSE",
       "licenseUrl": "https://github.com/npm/node-semver/blob/v5.7.1/LICENSE",
       "licenseTextSource": "file"
+    },
+    "sinon@15.0.1": {
+      "name": "sinon",
+      "version": "15.0.1",
+      "range": "^15.0.1",
+      "licenses": "BSD-3-Clause",
+      "repoUrl": "https://github.com/sinonjs/sinon",
+      "versionedRepoUrl": "https://github.com/sinonjs/sinon/tree/v15.0.1",
+      "licenseFile": "node_modules/sinon/LICENSE",
+      "licenseUrl": "https://github.com/sinonjs/sinon/blob/v15.0.1/LICENSE",
+      "licenseTextSource": "file",
+      "publisher": "Christian Johansen"
     },
     "tap@16.0.1": {
       "name": "tap",
