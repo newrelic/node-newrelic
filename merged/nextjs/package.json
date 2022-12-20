@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "lint": "eslint *.js lib tests",
+    "lint:lockfile": "lockfile-lint --path package-lock.json --type npm --allowed-hosts npm --validate-https --validate-integrity",
     "prepare": "husky install",
     "test": "npm run unit && npm run versioned",
     "third-party-updates": "oss third-party manifest && oss third-party notices && git add THIRD_PARTY_NOTICES.md third_party_manifest.json",
@@ -43,6 +44,7 @@
     "c8": "^7.12.0",
     "husky": "^8.0.1",
     "lint-staged": "^12.4.2",
+    "lockfile-lint": "^4.9.6",
     "newrelic": "^9.0.3",
     "sinon": "^14.0.0",
     "tap": "^16.2.0"
