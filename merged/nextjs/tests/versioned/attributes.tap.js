@@ -22,7 +22,7 @@ const DESTINATIONS = {
   TRANS_SEGMENT: 0x20
 }
 
-tap.Test.prototype.addAssert('clmAttrs', 1, function ({ segments, clmEnabled }) {
+tap.Test.prototype.addAssert('nextCLMAttrs', 1, function ({ segments, clmEnabled }) {
   segments.forEach(({ segment, name, filepath }) => {
     const attrs = segment.getAttributes()
     if (clmEnabled) {
@@ -240,7 +240,7 @@ tap.test('Next.js', (t) => {
             filepath: 'middleware'
           })
         }
-        t.clmAttrs({
+        t.nextCLMAttrs({
           segments,
           clmEnabled
         })
@@ -273,7 +273,7 @@ tap.test('Next.js', (t) => {
         })
       }
 
-      t.clmAttrs({
+      t.nextCLMAttrs({
         segments,
         clmEnabled
       })
@@ -288,11 +288,11 @@ tap.test('Next.js', (t) => {
 
       // The segment that names the static page will not contain CLM regardless of the
       // configuration flag
-      t.clmAttrs({ segments: [{ segment: rootSegment.children[0] }], clmEnabled: false })
+      t.nextCLMAttrs({ segments: [{ segment: rootSegment.children[0] }], clmEnabled: false })
 
       if (middlewareSupported) {
         // this will exist when CLM is enabled
-        t.clmAttrs({
+        t.nextCLMAttrs({
           segments: [
             {
               segment: rootSegment.children[0].children[0],
