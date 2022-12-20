@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "Thu Dec 15 2022 16:08:33 GMT-0500 (Eastern Standard Time)",
+  "lastUpdated": "Mon Dec 19 2022 15:46:50 GMT-0500 (Eastern Standard Time)",
   "projectName": "New Relic Koa Instrumentation",
   "projectUrl": "https://github.com/newrelic/node-newrelic-koa",
   "includeOptDeps": false,
@@ -44,15 +44,15 @@
       "licenseTextSource": "file",
       "publisher": "New Relic"
     },
-    "@newrelic/test-utilities@6.3.0": {
+    "@newrelic/test-utilities@7.2.0": {
       "name": "@newrelic/test-utilities",
-      "version": "6.3.0",
-      "range": "^6.3.0",
+      "version": "7.2.0",
+      "range": "^7.2.0",
       "licenses": "Apache-2.0",
       "repoUrl": "https://github.com/newrelic/node-test-utilities",
-      "versionedRepoUrl": "https://github.com/newrelic/node-test-utilities/tree/v6.3.0",
+      "versionedRepoUrl": "https://github.com/newrelic/node-test-utilities/tree/v7.2.0",
       "licenseFile": "node_modules/@newrelic/test-utilities/LICENSE",
-      "licenseUrl": "https://github.com/newrelic/node-test-utilities/blob/v6.3.0/LICENSE",
+      "licenseUrl": "https://github.com/newrelic/node-test-utilities/blob/v7.2.0/LICENSE",
       "licenseTextSource": "file",
       "publisher": "New Relic Node.js agent team",
       "email": "nodejs@newrelic.com"
@@ -192,15 +192,15 @@
       "publisher": "Andrey Okonetchnikov",
       "email": "andrey@okonet.ru"
     },
-    "newrelic@8.1.0": {
+    "newrelic@9.7.4": {
       "name": "newrelic",
-      "version": "8.1.0",
-      "range": "^8.1.0",
+      "version": "9.7.4",
+      "range": "^9.7.4",
       "licenses": "Apache-2.0",
       "repoUrl": "https://github.com/newrelic/node-newrelic",
-      "versionedRepoUrl": "https://github.com/newrelic/node-newrelic/tree/v8.1.0",
+      "versionedRepoUrl": "https://github.com/newrelic/node-newrelic/tree/v9.7.4",
       "licenseFile": "node_modules/newrelic/LICENSE",
-      "licenseUrl": "https://github.com/newrelic/node-newrelic/blob/v8.1.0/LICENSE",
+      "licenseUrl": "https://github.com/newrelic/node-newrelic/blob/v9.7.4/LICENSE",
       "licenseTextSource": "file",
       "publisher": "New Relic Node.js agent team",
       "email": "nodejs@newrelic.com"
