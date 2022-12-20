@@ -20,6 +20,8 @@ jobs:
       run: npm install
     - name: Run Linting
       run: npm run lint
+    - name: Inspect Lockfile
+      run: npm run lint:lockfile
 
   unit:
     runs-on: ubuntu-latest
