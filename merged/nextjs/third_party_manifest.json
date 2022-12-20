@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "Tue Dec 20 2022 12:24:20 GMT-0500 (Eastern Standard Time)",
+  "lastUpdated": "Tue Dec 20 2022 13:49:39 GMT-0500 (Eastern Standard Time)",
   "projectName": "New Relic Next.js Instrumentation",
   "projectUrl": "https://github.com/newrelic/newrelic-node-nextjs",
   "includeOptDeps": false,
@@ -95,6 +95,20 @@
       "licenseTextSource": "file",
       "publisher": "Andrey Okonetchnikov",
       "email": "andrey@okonet.ru"
+    },
+    "lockfile-lint@4.9.6": {
+      "name": "lockfile-lint",
+      "version": "4.9.6",
+      "range": "^4.9.6",
+      "licenses": "Apache-2.0",
+      "repoUrl": "https://github.com/lirantal/lockfile-lint",
+      "versionedRepoUrl": "https://github.com/lirantal/lockfile-lint/tree/v4.9.6",
+      "licenseFile": "node_modules/lockfile-lint/LICENSE",
+      "licenseUrl": "https://github.com/lirantal/lockfile-lint/blob/v4.9.6/LICENSE",
+      "licenseTextSource": "file",
+      "publisher": "Liran Tal",
+      "email": "liran.tal@gmail.com",
+      "url": "https://github.com/lirantal"
     },
     "newrelic@9.5.0": {
       "name": "newrelic",
