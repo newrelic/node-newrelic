@@ -107,6 +107,18 @@ tap.test('CLM Meta', (t) => {
     t.end()
   })
 
+  t.test('should not add CLM attrs when filePath is null', (t) => {
+    function fn() {}
+    t.comment(
+      'This is testing Express router.route which binds a function thus breaking any function metadata'
+    )
+    const boundFn = fn.bind(null)
+    boundFn[symbols.clm] = true
+    addCLMAttributes(boundFn, segmentStub)
+    t.notOk(segmentStub.addAttribute.callCount)
+    t.end()
+  })
+
   t.test('should not return code attributes if function name > 255', (t) => {
     const fnName = longString(256)
     const fn = new Function(`return function ${fnName}() {}`)()
