@@ -17,6 +17,36 @@ tap.test('Undici request tests', (t) => {
 
   let agent
   let undici
+  let server
+  let REQUEST_URL
+  let HOST
+
+  function createServer() {
+    server = http.createServer((req, res) => {
+      if (req.url.includes('/delay')) {
+        const parts = req.url.split('/')
+        const delayInMs = parts[parts.length - 1]
+        setTimeout(() => {
+          res.writeHead(200)
+          res.end('ok')
+        }, delayInMs)
+      } else if (req.url.includes('/status')) {
+        const parts = req.url.split('/')
+        const statusCode = parts[parts.length - 1]
+        res.writeHead(statusCode)
+        res.end()
+      } else {
+        res.writeHead(200)
+        res.end('ok')
+      }
+    })
+
+    server.listen(0)
+    const { port } = server.address()
+    HOST = `localhost:${port}`
+    REQUEST_URL = `http://${HOST}`
+    return server
+  }
 
   t.before(() => {
     agent = helper.instrumentMockedAgent({
@@ -26,14 +56,16 @@ tap.test('Undici request tests', (t) => {
     })
 
     undici = require('undici')
+    server = createServer()
   })
 
   t.teardown(() => {
     helper.unloadAgent(agent)
+    server.close()
   })
 
   t.test('should not fail if request not in a transaction', async (t) => {
-    const { statusCode } = await undici.request('https://httpbin.org', {
+    const { statusCode } = await undici.request(REQUEST_URL, {
       path: '/post',
       method: 'POST',
       headers: {
@@ -48,7 +80,7 @@ tap.test('Undici request tests', (t) => {
 
   t.test('should properly name segments', (t) => {
     helper.runInTransaction(agent, async (tx) => {
-      const { statusCode } = await undici.request('https://httpbin.org', {
+      const { statusCode } = await undici.request(REQUEST_URL, {
         path: '/post',
         method: 'POST',
         headers: {
@@ -58,52 +90,27 @@ tap.test('Undici request tests', (t) => {
       })
       t.equal(statusCode, 200)
 
-      metrics.assertSegments(tx.trace.root, ['External/httpbin.org/post'], { exact: false })
+      metrics.assertSegments(tx.trace.root, [`External/${HOST}/post`], { exact: false })
       tx.end()
-      t.end()
-    })
-  })
-
-  t.test('should add HTTP port to segment name when provided', (t) => {
-    const server = http.createServer((req, res) => {
-      req.resume()
-      res.end('http')
-    })
-
-    t.teardown(() => {
-      server.close()
-    })
-
-    server.listen(0)
-
-    helper.runInTransaction(agent, async (transaction) => {
-      const { port } = server.address()
-      await undici.request(`http://localhost:${port}`)
-
-      metrics.assertSegments(transaction.trace.root, [`External/localhost:${port}/`], {
-        exact: false
-      })
-
-      transaction.end()
       t.end()
     })
   })
 
   t.test('should add HTTPS port to segment name when provided', async (t) => {
     const [key, cert, ca] = await helper.withSSL()
-    const server = https.createServer({ key, cert }, (req, res) => {
+    const httpsServer = https.createServer({ key, cert }, (req, res) => {
       res.write('SSL response')
       res.end()
     })
 
     t.teardown(() => {
-      server.close()
+      httpsServer.close()
     })
 
-    server.listen(0)
+    httpsServer.listen(0)
 
     await helper.runInTransaction(agent, async (transaction) => {
-      const { port } = server.address()
+      const { port } = httpsServer.address()
 
       const client = new undici.Client(`https://localhost:${port}`, {
         tls: {
@@ -127,14 +134,14 @@ tap.test('Undici request tests', (t) => {
 
   t.test('should add attributes to external segment', (t) => {
     helper.runInTransaction(agent, async (tx) => {
-      const { statusCode } = await undici.request('https://httpbin.org', {
+      const { statusCode } = await undici.request(REQUEST_URL, {
         path: '/get?a=b&c=d',
         method: 'GET'
       })
       t.equal(statusCode, 200)
-      const segment = metrics.findSegment(tx.trace.root, 'External/httpbin.org/get')
+      const segment = metrics.findSegment(tx.trace.root, `External/${HOST}/get`)
       const attrs = segment.getAttributes()
-      t.equal(attrs.url, 'https://httpbin.org/get')
+      t.equal(attrs.url, `${REQUEST_URL}/get`)
       t.equal(attrs.procedure, 'GET')
       const spanAttrs = segment.attributes.get(DESTINATIONS.SPAN_EVENT)
       t.equal(spanAttrs['http.statusCode'], 200)
@@ -149,7 +156,7 @@ tap.test('Undici request tests', (t) => {
 
   t.test('concurrent requests', (t) => {
     helper.runInTransaction(agent, async (tx) => {
-      const req1 = undici.request('https://httpbin.org', {
+      const req1 = undici.request(REQUEST_URL, {
         path: '/post',
         method: 'POST',
         headers: {
@@ -157,7 +164,7 @@ tap.test('Undici request tests', (t) => {
         },
         body: Buffer.from(`{"key":"value"}`)
       })
-      const req2 = undici.request('https://httpbin.org', {
+      const req2 = undici.request(REQUEST_URL, {
         path: '/put',
         method: 'PUT',
         headers: {
@@ -168,11 +175,9 @@ tap.test('Undici request tests', (t) => {
       const [{ statusCode }, { statusCode: statusCode2 }] = await Promise.all([req1, req2])
       t.equal(statusCode, 200)
       t.equal(statusCode2, 200)
-      metrics.assertSegments(
-        tx.trace.root,
-        ['External/httpbin.org/post', 'External/httpbin.org/put'],
-        { exact: false }
-      )
+      metrics.assertSegments(tx.trace.root, [`External/${HOST}/post`, `External/${HOST}/put`], {
+        exact: false
+      })
       tx.end()
       t.end()
     })
@@ -199,8 +204,8 @@ tap.test('Undici request tests', (t) => {
     const abortController = new AbortController()
     helper.runInTransaction(agent, async (tx) => {
       try {
-        const req = undici.request('https://httpbin.org', {
-          path: '/delay/1',
+        const req = undici.request(REQUEST_URL, {
+          path: '/delay/1000',
           signal: abortController.signal
         })
         setTimeout(() => {
@@ -208,7 +213,7 @@ tap.test('Undici request tests', (t) => {
         }, 100)
         await req
       } catch (err) {
-        metrics.assertSegments(tx.trace.root, ['External/httpbin.org/delay/1'], { exact: false })
+        metrics.assertSegments(tx.trace.root, [`External/${HOST}/delay/1000`], { exact: false })
         t.equal(tx.exceptions.length, 1)
         t.equal(tx.exceptions[0].error.message, 'Request aborted')
         tx.end()
@@ -254,12 +259,12 @@ tap.test('Undici request tests', (t) => {
 
   t.test('400 status', (t) => {
     helper.runInTransaction(agent, async (tx) => {
-      const { statusCode } = await undici.request('https://httpbin.org', {
+      const { statusCode } = await undici.request(REQUEST_URL, {
         path: '/status/400',
         method: 'GET'
       })
       t.equal(statusCode, 400)
-      metrics.assertSegments(tx.trace.root, ['External/httpbin.org/status/400'], { exact: false })
+      metrics.assertSegments(tx.trace.root, [`External/${HOST}/status/400`], { exact: false })
       tx.end()
       t.end()
     })
@@ -267,9 +272,9 @@ tap.test('Undici request tests', (t) => {
 
   t.test('fetch', (t) => {
     helper.runInTransaction(agent, async (tx) => {
-      const res = await undici.fetch('https://httpbin.org')
+      const res = await undici.fetch(REQUEST_URL)
       t.equal(res.status, 200)
-      metrics.assertSegments(tx.trace.root, ['External/httpbin.org/'], { exact: false })
+      metrics.assertSegments(tx.trace.root, [`External/${HOST}/`], { exact: false })
       tx.end()
       t.end()
     })
@@ -279,7 +284,7 @@ tap.test('Undici request tests', (t) => {
     const { Writable } = require('stream')
     helper.runInTransaction(agent, async (tx) => {
       await undici.stream(
-        'https://httpbin.org',
+        REQUEST_URL,
         {
           path: '/get'
         },
@@ -292,7 +297,7 @@ tap.test('Undici request tests', (t) => {
           })
         }
       )
-      metrics.assertSegments(tx.trace.root, ['External/httpbin.org/get'], { exact: false })
+      metrics.assertSegments(tx.trace.root, [`External/${HOST}/get`], { exact: false })
       tx.end()
       t.end()
     })
@@ -309,7 +314,7 @@ tap.test('Undici request tests', (t) => {
           }
         }),
         undici.pipeline(
-          'https://httpbin.org',
+          REQUEST_URL,
           {
             path: '/get'
           },
@@ -328,7 +333,7 @@ tap.test('Undici request tests', (t) => {
         }),
         (err) => {
           t.error(err)
-          metrics.assertSegments(tx.trace.root, ['External/httpbin.org/get'], { exact: false })
+          metrics.assertSegments(tx.trace.root, [`External/${HOST}/get`], { exact: false })
           tx.end()
           t.end()
         }
