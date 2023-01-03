@@ -1,3 +1,11 @@
+### v9.7.5 (2023-01-03)
+
+* Added a check to the code level metrics utility to ensure filePath was set before adding the `code.*` attributes.
+
+* Updated to latest version of `@newrelic/test-utilities`
+
+* Fixed issue where listing of dependencies and packages from symlinked nested directories created an infinite loop which caused the agent to never connect.
+
 ### v9.7.4 (2022-12-15)
 
 * Fixed system info gathering to prevent unhandled promise rejection when an error occurs reading `/proc` information.
