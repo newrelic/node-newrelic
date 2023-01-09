@@ -49,10 +49,6 @@ describe('the RUM API', function () {
     api.getBrowserTimingHeader().should.equal('<!-- NREUM: (0) -->')
   })
 
-  it('should issue a warning outside a transaction', function () {
-    api.getBrowserTimingHeader().should.equal('<!-- NREUM: (1) -->')
-  })
-
   it('should issue a warning if the transaction was ignored', function () {
     helper.runInTransaction(agent, function (tx) {
       tx.ignore = true
@@ -141,6 +137,16 @@ describe('the RUM API', function () {
         .should.equal(true)
       timingHeader.endsWith(`}; function() {}</script>`).should.equal(true)
     })
+  })
+
+  it('should get the browser agent script when outside a transaction', function () {
+    const timingHeader = api.getBrowserTimingHeader()
+    timingHeader
+      .startsWith(
+        `<script type=\'text/javascript\'>window.NREUM||(NREUM={});NREUM.info = {"licenseKey":1234,"applicationID":12345,`
+      )
+      .should.equal(true)
+    timingHeader.endsWith(`}; function() {}</script>`).should.equal(true)
   })
 
   it('should get browser agent script with wrapping tag and add nonce attribute to script if passed in options', function () {
