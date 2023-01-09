@@ -717,8 +717,7 @@ function validateContext(config) {
  * option `hasToRemoveScriptWrapper` it can send back only the script content
  * without the `<script>` wrapper. Useful for React component based frontend.
  *
- * This method must be called _during_ a transaction, and must be called every
- * time you want to generate the headers.
+ * This method must be called every time you want to generate the headers.
  *
  * Do *not* reuse the headers between users, or even between requests.
  *
