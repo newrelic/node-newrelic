@@ -40,7 +40,7 @@ const RUM_STUB_SHELL_WITH_NONCE_PARAM = `<script type='text/javascript' %s>${RUM
 // these messages are used in the _gracefail() method below in getBrowserTimingHeader
 const RUM_ISSUES = [
   'NREUM: no browser monitoring headers generated; disabled',
-  'NREUM: transaction missing or ignored while generating browser monitoring headers',
+  'NREUM: transaction ignored while generating browser monitoring headers',
   'NREUM: config.browser_monitoring missing, something is probably wrong',
   'NREUM: browser_monitoring headers need a transaction name',
   'NREUM: browser_monitoring requires valid application_id',
@@ -640,6 +640,74 @@ function _generateRUMHeader(options = {}, metadata, loader) {
 }
 
 /**
+ * Helper method for determining if we have the minimum required
+ * information to generate our Browser Agent script tag
+ *
+ * @param {object} config agent configuration settings
+ * @returns {object} object containing validation results: { isValidContext: boolean, failureIdx?: number, quietMode?: boolean}
+ */
+function validateContext(config) {
+  /*
+   * config.browser_monitoring should always exist, but we don't want the agent
+   * to bail here if something goes wrong
+   */
+  if (!config.browser_monitoring) {
+    return { isValidContext: false, failureIdx: 2 }
+  }
+
+  /*
+   * Can control header generation with configuration this setting is only
+   * available in the newrelic.js config file, it is not ever set by the
+   * server.
+   */
+  if (!config.browser_monitoring.enable) {
+    // It has been disabled by the user; no need to warn them about their own
+    // settings so fail quietly and gracefully.
+    return { isValidContext: false, failureIdx: 0, quietMode: true }
+  }
+
+  /*
+   * This is only going to work if the agent has successfully handshaked with
+   * the collector. If the networks is bad, or there is no license key set in
+   * newrelic.js, there will be no application_id set.  We bail instead of
+   * outputting null/undefined configuration values.
+   */
+  if (!config.application_id) {
+    return { isValidContext: false, failureIdx: 4 }
+  }
+
+  /*
+   * If there is no browser_key, the server has likely decided to disable
+   * browser monitoring.
+   */
+  if (!config.browser_monitoring.browser_key) {
+    return { isValidContext: false, failureIdx: 5 }
+  }
+
+  /*
+   * If there is no agent_loader script, there is no point
+   * in setting the rum data
+   */
+  if (!config.browser_monitoring.js_agent_loader) {
+    return { isValidContext: false, failureIdx: 6 }
+  }
+
+  /*
+   * If rum is enabled, but then later disabled on the server,
+   * this is the only parameter that gets updated.
+   *
+   * This condition should only be met if rum is disabled during
+   * the lifetime of an application, and it should be picked up
+   * on the next ForceRestart by the collector.
+   */
+  if (config.browser_monitoring.loader === 'none') {
+    return { isValidContext: false, failureIdx: 7 }
+  }
+
+  return { isValidContext: true }
+}
+
+/**
  * Get the script header necessary for Browser Monitoring
  * This script must be manually injected into your templates, as high as possible
  * in the header, but _after_ any X-UA-COMPATIBLE HTTP-EQUIV meta tags.
@@ -665,119 +733,77 @@ API.prototype.getBrowserTimingHeader = function getBrowserTimingHeader(options) 
   )
   metric.incrementCallCount()
 
+  const { isValidContext, failureIdx, quietMode } = validateContext(this.agent.config)
+
+  if (!isValidContext) {
+    return _gracefail(failureIdx, quietMode)
+  }
+
   const config = this.agent.config
-
-  const browserMonitoring = config.browser_monitoring
-
-  // config.browser_monitoring should always exist, but we don't want the agent
-  // to bail here if something goes wrong
-  if (!browserMonitoring) {
-    return _gracefail(2)
-  }
-
-  /* Can control header generation with configuration this setting is only
-   * available in the newrelic.js config file, it is not ever set by the
-   * server.
-   */
-  if (!browserMonitoring.enable) {
-    // It has been disabled by the user; no need to warn them about their own
-    // settings so fail quietly and gracefully.
-    return _gracefail(0, true)
-  }
-
-  const trans = this.agent.getTransaction()
-
-  // bail gracefully outside a transaction
-  if (!trans || trans.isIgnored()) {
-    return _gracefail(1)
-  }
-
-  const name = trans.getFullName()
-
-  /* If we're in an unnamed transaction, add a friendly warning this is to
-   * avoid people going crazy, trying to figure out why browser monitoring is
-   * not working when they're missing a transaction name.
-   */
-  if (!name) {
-    return _gracefail(3)
-  }
-
-  const time = trans.timer.getDurationInMillis()
-
-  /*
-   * Only the first 13 chars of the license should be used for hashing with
-   * the transaction name.
-   */
-  const key = config.license_key.substr(0, 13)
-  const appid = config.application_id
-
-  /* This is only going to work if the agent has successfully handshaked with
-   * the collector. If the networks is bad, or there is no license key set in
-   * newrelic.js, there will be no application_id set.  We bail instead of
-   * outputting null/undefined configuration values.
-   */
-  if (!appid) {
-    return _gracefail(4)
-  }
-
-  /* If there is no browser_key, the server has likely decided to disable
-   * browser monitoring.
-   */
-  const licenseKey = browserMonitoring.browser_key
-  if (!licenseKey) {
-    return _gracefail(5)
-  }
-
-  /* If there is no agent_loader script, there is no point
-   * in setting the rum data
-   */
-  const jsAgentLoader = browserMonitoring.js_agent_loader
-  if (!jsAgentLoader) {
-    return _gracefail(6)
-  }
-
-  /* If rum is enabled, but then later disabled on the server,
-   * this is the only parameter that gets updated.
-   *
-   * This condition should only be met if rum is disabled during
-   * the lifetime of an application, and it should be picked up
-   * on the next ForceRestart by the collector.
-   */
-  const loader = browserMonitoring.loader
-  if (loader === 'none') {
-    return _gracefail(7)
-  }
 
   // This hash gets written directly into the browser.
   const rumHash = {
-    agent: browserMonitoring.js_agent_file,
-    beacon: browserMonitoring.beacon,
-    errorBeacon: browserMonitoring.error_beacon,
-    licenseKey: licenseKey,
-    applicationID: appid,
-    applicationTime: time,
-    transactionName: hashes.obfuscateNameUsingKey(name, key),
-    queueTime: trans.queueTime,
-    ttGuid: trans.id,
+    agent: config.browser_monitoring.js_agent_file,
+    beacon: config.browser_monitoring.beacon,
+    errorBeacon: config.browser_monitoring.error_beacon,
+    licenseKey: config.browser_monitoring.browser_key,
+    applicationID: config.application_id,
 
     // we don't use these parameters yet
     agentToken: null
   }
 
-  const attrs = Object.create(null)
+  const trans = this.agent.getTransaction()
+  const hasActiveTransaction = trans !== null
 
-  const customAttrs = trans.trace.custom.get(ATTR_DEST.BROWSER_EVENT)
-  if (!properties.isEmpty(customAttrs)) {
-    attrs.u = customAttrs
-  }
+  if (hasActiveTransaction) {
+    // bail gracefully outside an ignored transaction
+    if (trans.isIgnored()) {
+      return _gracefail(1)
+    }
 
-  const agentAttrs = trans.trace.attributes.get(ATTR_DEST.BROWSER_EVENT)
-  if (!properties.isEmpty(agentAttrs)) {
-    attrs.a = agentAttrs
-  }
+    /* If we're in an unnamed transaction, add a friendly warning this is to
+     * avoid people going crazy, trying to figure out why browser monitoring is
+     * not working when they're missing a transaction name.
+     */
+    const name = trans.getFullName()
+    if (!name) {
+      return _gracefail(3)
+    }
 
-  if (!properties.isEmpty(attrs)) {
-    rumHash.atts = hashes.obfuscateNameUsingKey(JSON.stringify(attrs), key)
+    const time = trans.timer.getDurationInMillis()
+    rumHash.applicationTime = time
+
+    /*
+     * Only the first 13 chars of the license should be used for hashing with
+     * the transaction name.
+     */
+    const key = config.license_key.substr(0, 13)
+    rumHash.transactionName = hashes.obfuscateNameUsingKey(name, key)
+
+    rumHash.queueTime = trans.queueTime
+    rumHash.ttGuid = trans.id
+
+    const attrs = Object.create(null)
+
+    const customAttrs = trans.trace.custom.get(ATTR_DEST.BROWSER_EVENT)
+    if (!properties.isEmpty(customAttrs)) {
+      attrs.u = customAttrs
+    }
+
+    const agentAttrs = trans.trace.attributes.get(ATTR_DEST.BROWSER_EVENT)
+    if (!properties.isEmpty(agentAttrs)) {
+      attrs.a = agentAttrs
+    }
+
+    if (!properties.isEmpty(attrs)) {
+      rumHash.atts = hashes.obfuscateNameUsingKey(JSON.stringify(attrs), key)
+    }
+  } else {
+    logger.debugOnce(
+      'api:getBrowserTimingHeader',
+      'No transaction detected when generating RUM header, continuing without transaction info'
+    )
   }
 
   // if debugging, do pretty format of JSON
@@ -785,7 +811,7 @@ API.prototype.getBrowserTimingHeader = function getBrowserTimingHeader(options) 
   const json = JSON.stringify(rumHash, null, tabs)
 
   // the complete header to be written to the browser
-  const out = _generateRUMHeader(options, json, jsAgentLoader)
+  const out = _generateRUMHeader(options, json, config.browser_monitoring.js_agent_loader)
 
   logger.trace('generating RUM header', out)
 
