@@ -644,7 +644,7 @@ function _generateRUMHeader(options = {}, metadata, loader) {
  * information to generate our Browser Agent script tag
  *
  * @param {object} config agent configuration settings
- * @returns {object} object containing validation results: { isValidContext: boolean, failureIdx?: number, quietMode?: boolean}
+ * @returns {{ isValidContext: boolean, failureIdx?: number, quietMode?: boolean}} object containing validation results
  */
 function validateContext(config) {
   /*
