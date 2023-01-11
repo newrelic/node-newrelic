@@ -49,6 +49,16 @@ describe('the RUM API', function () {
     api.getBrowserTimingHeader().should.equal('<!-- NREUM: (0) -->')
   })
 
+  it('should issue a warning outside a transaction by default', function () {
+    api.getBrowserTimingHeader().should.equal('<!-- NREUM: (1) -->')
+  })
+
+  it('should issue a warning outside a transaction and allowTransactionlessInjection is false', function () {
+    api
+      .getBrowserTimingHeader({ allowTransactionlessInjection: false })
+      .should.equal('<!-- NREUM: (1) -->')
+  })
+
   it('should issue a warning if the transaction was ignored', function () {
     helper.runInTransaction(agent, function (tx) {
       tx.ignore = true
@@ -139,8 +149,8 @@ describe('the RUM API', function () {
     })
   })
 
-  it('should get the browser agent script when outside a transaction', function () {
-    const timingHeader = api.getBrowserTimingHeader()
+  it('should get the browser agent script when outside a transaction and allowTransactionlessInjection is true', function () {
+    const timingHeader = api.getBrowserTimingHeader({ allowTransactionlessInjection: true })
     timingHeader
       .startsWith(
         `<script type=\'text/javascript\'>window.NREUM||(NREUM={});NREUM.info = {"licenseKey":1234,"applicationID":12345,`

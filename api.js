@@ -644,15 +644,17 @@ function _generateRUMHeader(options = {}, metadata, loader) {
  * information to generate our Browser Agent script tag
  *
  * @param {object} config agent configuration settings
- * @returns {{ isValidContext: boolean, failureIdx?: number, quietMode?: boolean}} object containing validation results
+ * @param {Transaction} transaction the active transaction or null
+ * @param {boolean} allowTransactionlessInjection whether or not to allow the Browser Agent to be injected when there is no active transaction
+ * @returns {{ isValidConfig: boolean, failureIdx?: number, quietMode?: boolean }} object containing validation results
  */
-function validateContext(config) {
+function validateBrowserMonitoring(config, transaction, allowTransactionlessInjection) {
   /*
    * config.browser_monitoring should always exist, but we don't want the agent
    * to bail here if something goes wrong
    */
   if (!config.browser_monitoring) {
-    return { isValidContext: false, failureIdx: 2 }
+    return { isValidConfig: false, failureIdx: 2 }
   }
 
   /*
@@ -663,7 +665,7 @@ function validateContext(config) {
   if (!config.browser_monitoring.enable) {
     // It has been disabled by the user; no need to warn them about their own
     // settings so fail quietly and gracefully.
-    return { isValidContext: false, failureIdx: 0, quietMode: true }
+    return { isValidConfig: false, failureIdx: 0, quietMode: true }
   }
 
   /*
@@ -673,7 +675,7 @@ function validateContext(config) {
    * outputting null/undefined configuration values.
    */
   if (!config.application_id) {
-    return { isValidContext: false, failureIdx: 4 }
+    return { isValidConfig: false, failureIdx: 4 }
   }
 
   /*
@@ -681,7 +683,7 @@ function validateContext(config) {
    * browser monitoring.
    */
   if (!config.browser_monitoring.browser_key) {
-    return { isValidContext: false, failureIdx: 5 }
+    return { isValidConfig: false, failureIdx: 5 }
   }
 
   /*
@@ -689,7 +691,7 @@ function validateContext(config) {
    * in setting the rum data
    */
   if (!config.browser_monitoring.js_agent_loader) {
-    return { isValidContext: false, failureIdx: 6 }
+    return { isValidConfig: false, failureIdx: 6 }
   }
 
   /*
@@ -701,10 +703,14 @@ function validateContext(config) {
    * on the next ForceRestart by the collector.
    */
   if (config.browser_monitoring.loader === 'none') {
-    return { isValidContext: false, failureIdx: 7 }
+    return { isValidConfig: false, failureIdx: 7 }
   }
 
-  return { isValidContext: true }
+  if (!allowTransactionlessInjection && !transaction) {
+    return { isValidConfig: false, failureIdx: 1 }
+  }
+
+  return { isValidConfig: true }
 }
 
 /**
@@ -724,17 +730,24 @@ function validateContext(config) {
  * @param {object} options configuration options
  * @param {string} [options.nonce] - Nonce to inject into `<script>` header.
  * @param {boolean} [options.hasToRemoveScriptWrapper] - Used to import agent script without `<script>` tag wrapper.
+ * @param {options} [options.allowTransactionlessInjection] Whether or not to allow the Browser Agent to be injected when there is no active transaction
  * @returns {string} The script content to be injected in `<head>` or put inside `<script>` tag (depending on options)
  */
-API.prototype.getBrowserTimingHeader = function getBrowserTimingHeader(options) {
+API.prototype.getBrowserTimingHeader = function getBrowserTimingHeader(options = {}) {
   const metric = this.agent.metrics.getOrCreateMetric(
     NAMES.SUPPORTABILITY.API + '/getBrowserTimingHeader'
   )
   metric.incrementCallCount()
 
-  const { isValidContext, failureIdx, quietMode } = validateContext(this.agent.config)
+  const trans = this.agent.getTransaction()
 
-  if (!isValidContext) {
+  const { isValidConfig, failureIdx, quietMode } = validateBrowserMonitoring(
+    this.agent.config,
+    trans,
+    options.allowTransactionlessInjection
+  )
+
+  if (!isValidConfig) {
     return _gracefail(failureIdx, quietMode)
   }
 
@@ -752,7 +765,6 @@ API.prototype.getBrowserTimingHeader = function getBrowserTimingHeader(options) 
     agentToken: null
   }
 
-  const trans = this.agent.getTransaction()
   const hasActiveTransaction = trans !== null
 
   if (hasActiveTransaction) {
@@ -799,8 +811,7 @@ API.prototype.getBrowserTimingHeader = function getBrowserTimingHeader(options) 
       rumHash.atts = hashes.obfuscateNameUsingKey(JSON.stringify(attrs), key)
     }
   } else {
-    logger.debugOnce(
-      'api:getBrowserTimingHeader',
+    logger.debug(
       'No transaction detected when generating RUM header, continuing without transaction info'
     )
   }
@@ -810,7 +821,11 @@ API.prototype.getBrowserTimingHeader = function getBrowserTimingHeader(options) 
   const json = JSON.stringify(rumHash, null, tabs)
 
   // the complete header to be written to the browser
-  const out = _generateRUMHeader(options, json, config.browser_monitoring.js_agent_loader)
+  const out = _generateRUMHeader(
+    { nonce: options.nonce, hasToRemoveScriptWrapper: options.hasToRemoveScriptWrapper },
+    json,
+    config.browser_monitoring.js_agent_loader
+  )
 
   logger.trace('generating RUM header', out)
 
