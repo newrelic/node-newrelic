@@ -75,6 +75,27 @@ tap.test('instrumentOutbound', (t) => {
     t.end()
   })
 
+  t.test('should obfuscate url path if url_obfuscation_regex is set', (t) => {
+    helper.unloadAgent(agent)
+    agent = helper.loadMockedAgent({
+      url_obfuscation_regex: /.*/
+    })
+    const req = new events.EventEmitter()
+    helper.runInTransaction(agent, function (transaction) {
+      instrumentOutbound(agent, { host: HOSTNAME, port: PORT }, makeFakeRequest)
+      t.same(transaction.trace.root.children[0].getAttributes(), {
+        procedure: 'GET',
+        url: `http://${HOSTNAME}:${PORT}/***`
+      })
+
+      function makeFakeRequest() {
+        req.path = '/asdf/foo/bar/baz?test=123&test2=456'
+        return req
+      }
+    })
+    t.end()
+  })
+
   t.test('should strip query parameters from path in transaction trace segment', (t) => {
     const req = new events.EventEmitter()
     helper.runInTransaction(agent, function (transaction) {
