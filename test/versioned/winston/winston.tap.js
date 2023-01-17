@@ -85,7 +85,12 @@ tap.test('winston instrumentation', (t) => {
 
   t.test('logging enabled', (t) => {
     setup({ application_logging: { enabled: true } })
+
+    // Add two loggers with two different methods, should still be
+    // just one call count for the whole library.
     winston.createLogger({})
+    winston.loggers.add('local', {})
+
     const metric = agent.metrics.getMetric(LOGGING.LIBS.WINSTON)
     t.equal(metric.callCount, 1, 'should create external module metric')
     t.end()
@@ -224,6 +229,34 @@ tap.test('winston instrumentation', (t) => {
 
       // Example Winston setup to test
       const logger = winston.createLogger({
+        format: winston.format.timestamp('YYYY-MM-DD HH:mm:ss'),
+        transports: [
+          // Log to a stream so we can test the output
+          new winston.transports.Stream({
+            level: 'info',
+            stream: jsonStream
+          })
+        ]
+      })
+
+      logWithAggregator({ logger, stream: jsonStream, t, helper, agent })
+    })
+
+    t.test('should add linking metadata when using `winston.loggers.add`', (t) => {
+      const handleMessages = makeStreamTest(() => {
+        const msgs = agent.logs.getEvents()
+        t.equal(msgs.length, 2, 'should add both logs to aggregator')
+        msgs.forEach((msg) => {
+          logForwardingMsgAssertion(t, msg, agent)
+          t.ok(msg.original_timestamp, 'should put customer timestamp on original_timestamp')
+        })
+        t.end()
+      })
+      const assertFn = originalMsgAssertion.bind(null, { t, timestamp: true })
+      const jsonStream = concat(handleMessages(assertFn))
+
+      // Example Winston setup to test
+      const logger = winston.loggers.add('local', {
         format: winston.format.timestamp('YYYY-MM-DD HH:mm:ss'),
         transports: [
           // Log to a stream so we can test the output
@@ -428,61 +461,66 @@ tap.test('winston instrumentation', (t) => {
       })
     })
 
-    t.test('should count logger metrics', (t) => {
-      setup({
-        application_logging: {
-          enabled: true,
-          metrics: {
-            enabled: true
-          },
-          forwarding: { enabled: false },
-          local_decorating: { enabled: false }
-        }
-      })
-
-      const logger = winston.createLogger({
-        transports: [
-          new winston.transports.Stream({
-            level: 'debug',
-            // We don't care about the output for this test, just
-            // total lines logged
-            stream: nullStream
-          })
-        ]
-      })
-
-      helper.runInTransaction(agent, 'winston-test', () => {
-        const logLevels = {
-          debug: 20,
-          info: 5,
-          warn: 3,
-          error: 2
-        }
-        for (const [logLevel, maxCount] of Object.entries(logLevels)) {
-          for (let count = 0; count < maxCount; count++) {
-            const msg = `This is log message #${count} at ${logLevel} level`
-            logger[logLevel](msg)
+    for (const [createLoggerName, createLogger] of Object.entries({
+      'winston.createLogger': (opts) => winston.createLogger(opts),
+      'winston.loggers.add': (opts) => winston.loggers.add('local', opts)
+    })) {
+      t.test(`should count logger metrics for '${createLoggerName}'`, (t) => {
+        setup({
+          application_logging: {
+            enabled: true,
+            metrics: {
+              enabled: true
+            },
+            forwarding: { enabled: false },
+            local_decorating: { enabled: false }
           }
-        }
+        })
 
-        // Close the stream so that the logging calls are complete
-        nullStream.end()
+        const logger = createLogger({
+          transports: [
+            new winston.transports.Stream({
+              level: 'debug',
+              // We don't care about the output for this test, just
+              // total lines logged
+              stream: nullStream
+            })
+          ]
+        })
 
-        let grandTotal = 0
-        for (const [logLevel, maxCount] of Object.entries(logLevels)) {
-          grandTotal += maxCount
-          const metricName = LOGGING.LEVELS[logLevel.toUpperCase()]
+        helper.runInTransaction(agent, 'winston-test', () => {
+          const logLevels = {
+            debug: 20,
+            info: 5,
+            warn: 3,
+            error: 2
+          }
+          for (const [logLevel, maxCount] of Object.entries(logLevels)) {
+            for (let count = 0; count < maxCount; count++) {
+              const msg = `This is log message #${count} at ${logLevel} level`
+              logger[logLevel](msg)
+            }
+          }
+
+          // Close the stream so that the logging calls are complete
+          nullStream.end()
+
+          let grandTotal = 0
+          for (const [logLevel, maxCount] of Object.entries(logLevels)) {
+            grandTotal += maxCount
+            const metricName = LOGGING.LEVELS[logLevel.toUpperCase()]
+            const metric = agent.metrics.getMetric(metricName)
+            t.ok(metric, `ensure ${metricName} exists`)
+            t.equal(metric.callCount, maxCount, `ensure ${metricName} has the right value`)
+          }
+          const metricName = LOGGING.LINES
           const metric = agent.metrics.getMetric(metricName)
           t.ok(metric, `ensure ${metricName} exists`)
-          t.equal(metric.callCount, maxCount, `ensure ${metricName} has the right value`)
-        }
-        const metricName = LOGGING.LINES
-        const metric = agent.metrics.getMetric(metricName)
-        t.ok(metric, `ensure ${metricName} exists`)
-        t.equal(metric.callCount, grandTotal, `ensure ${metricName} has the right value`)
-        t.end()
+          t.equal(metric.callCount, grandTotal, `ensure ${metricName} has the right value`)
+          t.end()
+        })
       })
-    })
+    }
 
     const configValues = [
       {
