@@ -1,6 +1,6 @@
 ### v9.8.0 (2023-01-17)
 
-* Update `getBrowserTimingHeader` to allow Browser Agent to be generated even when not in a Transaction by adding `allowTransactionlessInjection` to function options. `allowTransactionlessInjection` is a boolean option, and when set to `true`, will allow injection of the Browser Agent when not in a transaction. Note that if you are using this option, you may need to wait until the Node agent has established a connection before calling `getBrowserTimingHeader`. To wait until the agent is connected, you can add the following check to your code: 
+* Updated `getBrowserTimingHeader` to allow Browser Agent to be generated even when not in a Transaction by adding `allowTransactionlessInjection` to function options. `allowTransactionlessInjection` is a boolean option, and when set to `true`, will allow injection of the Browser Agent when not in a transaction. This is intended to be used in frameworks that build Static Site Generation(SSG). Note that if you are using this option, you may need to wait until the Node agent has established a connection before calling `getBrowserTimingHeader`. To wait until the agent is connected, you can add the following check to your code: 
 ```js
 if (!newrelic.agent.collector.isConnected()) {
   await new Promise((resolve) => {
