@@ -86,13 +86,12 @@ tap.test('winston instrumentation', (t) => {
   t.test('logging enabled', (t) => {
     setup({ application_logging: { enabled: true } })
 
-    // Add two loggers with two different methods, should still be
-    // just one call count for the whole library.
+    // If we add two loggers, that counts as two instrumenations.
     winston.createLogger({})
     winston.loggers.add('local', {})
 
     const metric = agent.metrics.getMetric(LOGGING.LIBS.WINSTON)
-    t.equal(metric.callCount, 1, 'should create external module metric')
+    t.equal(metric.callCount, 2, 'should create external module metric')
     t.end()
   })
 
