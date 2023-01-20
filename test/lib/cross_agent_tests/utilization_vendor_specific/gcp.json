@@ -284,5 +284,22 @@
         "zone": "us-central1-c"
       }
     }
+  },
+  {
+    "testname": "Handle numeric-only instance id - escaped string",
+    "uri": {
+      "http://metadata.google.internal/computeMetadata/v1/instance/?recursive=true": {
+        "response": "{\"id\": 3161347020215157123, \"machineType\":\"projects/1234567890/machineTypes/custom-1-1024\",\"name\":\"aef-default-20170501t160547-7gh8\",\"zone\":\"projects/1234567890/zones/us-central1-c\"}",
+        "timeout": false
+      }
+    },
+    "expected_vendors_hash": {
+      "gcp": {
+        "id": "3161347020215157123",
+        "machineType": "custom-1-1024",
+        "name": "aef-default-20170501t160547-7gh8",
+        "zone": "us-central1-c"
+      }
+    }
   }
 ]
