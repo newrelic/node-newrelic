@@ -28,7 +28,7 @@ For more information, please see the agent [installation guide][3].
 
 ## Getting Started
 
-Our [API and developer documentation](http://newrelic.github.io/node-newrelic/docs/) for writing instrumentation will be of help. We particularly recommend the tutorials and various "shim" API documentation.
+Our [API and developer documentation](http://newrelic.github.io/node-newrelic/) for writing instrumentation will be of help. We particularly recommend the tutorials and various "shim" API documentation.
 
 ## Usage
 
