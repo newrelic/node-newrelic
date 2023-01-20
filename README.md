@@ -199,7 +199,7 @@ Here are some resources for learning more about the agent:
 
 - [New Relic's official Node.js agent documentation](https://docs.newrelic.com/docs/agents/nodejs-agent)
 
-- [Developer docs](http://newrelic.github.io/node-newrelic/docs/)
+- [Developer docs](http://newrelic.github.io/node-newrelic/)
 
 - [Configuring the agent using `newrelic.js` or environment variables](https://docs.newrelic.com/docs/agents/nodejs-agent/installation-configuration/nodejs-agent-configuration)
 

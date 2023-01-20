@@ -198,7 +198,7 @@ v3.
 
 ### New API Methods
 
-* [`newrelic.getTransaction()`](https://newrelic.github.io/node-newrelic/docs/API.html#getTransaction)
+* [`newrelic.getTransaction()`](https://newrelic.github.io/node-newrelic/API.html#getTransaction)
 
   This method gets a reference to the currently running transaction. It should
   be used in conjunction with `newrelic.startWebTransaction`,
@@ -206,17 +206,17 @@ v3.
   consumer services. See our [Trouble Shooting][messaging-troubleshooting-doc]
   documentation for more information on its usage.
 
-* [`newrelic.startWebTransaction()`](https://newrelic.github.io/node-newrelic/docs/API.html#startWebTransaction)
-  [`newrelic.startBackgroundTransaction()`](https://newrelic.github.io/node-newrelic/docs/API.html#startBackgroundTransaction)
+* [`newrelic.startWebTransaction()`](https://newrelic.github.io/node-newrelic/API.html#startWebTransaction)
+  [`newrelic.startBackgroundTransaction()`](https://newrelic.github.io/node-newrelic/API.html#startBackgroundTransaction)
 
   These new API methods replace the older `create*Transaction` methods. They
   are easier to use and seamlessly work with promises. Note that unlike the old
   method, the provided callback is invoked immediately.
 
-* [`newrelic.instrument()`](https://newrelic.github.io/node-newrelic/docs/API.html#instrument)
-  [`newrelic.instrumentDatastore()`](https://newrelic.github.io/node-newrelic/docs/API.html#instrumentDatastore)
-  [`newrelic.instrumentWebframework()`](https://newrelic.github.io/node-newrelic/docs/API.html#instrumentWebframework)
-  [`newrelic.instrumentMessages()`](https://newrelic.github.io/node-newrelic/docs/API.html#instrumentMessages)
+* [`newrelic.instrument()`](https://newrelic.github.io/node-newrelic/API.html#instrument)
+  [`newrelic.instrumentDatastore()`](https://newrelic.github.io/node-newrelic/API.html#instrumentDatastore)
+  [`newrelic.instrumentWebframework()`](https://newrelic.github.io/node-newrelic/API.html#instrumentWebframework)
+  [`newrelic.instrumentMessages()`](https://newrelic.github.io/node-newrelic/API.html#instrumentMessages)
 
   These methods can be used to add custom instrumentation for 3rd party modules,
   including those already instrumented by the Node Agent. See our
@@ -266,6 +266,6 @@ $ npm install --global npm@2
 
 [upgrade-doc]: https://docs.newrelic.com/docs/agents/nodejs-agent/installation-configuration/upgrade-node-agent-versions
 [messaging-troubleshooting-doc]: https://docs.newrelic.com/docs/agents/nodejs-agent/troubleshooting/troubleshoot-message-consumers
-[instrumentation-tutorial]: https://newrelic.github.io/node-newrelic/docs/tutorial-Instrumentation-Basics.html
+[instrumentation-tutorial]: https://newrelic.github.io/node-newrelic/tutorial-Instrumentation-Basics.html
 [node-lts-schedule]: https://github.com/nodejs/LTS/tree/2b4253#lts-schedule1
 [node-cassandra-cql]: https://www.npmjs.com/package/node-cassandra-cql

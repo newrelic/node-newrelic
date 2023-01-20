@@ -3168,7 +3168,7 @@ Special thanks to Ryan Copley (@RyanCopley) for the contribution.
     used for instrumenting web frameworks like `restify` or `express`.
 
   Documentation and tutorials for the new API can be found on our GitHub
-  documentation page: http://newrelic.github.io/node-newrelic/docs/
+  documentation page: http://newrelic.github.io/node-newrelic/
 
 * Rewrote built-in instrumentation using the new `Shim` classes.
 
@@ -3257,7 +3257,7 @@ Special thanks to Ryan Copley (@RyanCopley) for the contribution.
   meaning every instrumentation will create Middleware metrics for your server.
 
   Tutorials on using the new instrumentation shim can be found on our API docs:
-  http://newrelic.github.io/node-newrelic/docs/.
+  http://newrelic.github.io/node-newrelic/.
 
 * Removed `express_segments` feature flag.
 
