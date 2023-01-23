@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "Tue Dec 20 2022 12:00:46 GMT-0500 (Eastern Standard Time)",
+  "lastUpdated": "Mon Jan 23 2023 16:01:56 GMT-0500 (Eastern Standard Time)",
   "projectName": "New Relic Node Agent",
   "projectUrl": "https://github.com/newrelic/node-newrelic",
   "includeOptDeps": true,
@@ -134,6 +134,19 @@
       "publisher": "Nathan Rajlich",
       "email": "nathan@tootallnate.net",
       "url": "http://n8.io/"
+    },
+    "json-bigint@1.0.0": {
+      "name": "json-bigint",
+      "version": "1.0.0",
+      "range": "^1.0.0",
+      "licenses": "MIT",
+      "repoUrl": "https://github.com/sidorares/json-bigint",
+      "versionedRepoUrl": "https://github.com/sidorares/json-bigint/tree/v1.0.0",
+      "licenseFile": "node_modules/json-bigint/LICENSE",
+      "licenseUrl": "https://github.com/sidorares/json-bigint/blob/v1.0.0/LICENSE",
+      "licenseTextSource": "file",
+      "publisher": "Andrey Sidorov",
+      "email": "sidorares@yandex.ru"
     },
     "json-stringify-safe@5.0.1": {
       "name": "json-stringify-safe",
