@@ -9,6 +9,7 @@ const path = require('path')
 const nock = require('nock')
 const fs = require('fs')
 const helper = require('../../lib/agent_helper')
+const JSONbig = require('json-bigint')({ useNativeBigInt: true })
 
 module.exports = function (t, vendor) {
   const testFile = path.resolve(
@@ -30,7 +31,7 @@ module.exports = function (t, vendor) {
       return
     }
 
-    const cases = JSON.parse(data)
+    const cases = JSONbig.parse(data)
 
     t.autoend()
     t.ok(cases.length > 0, 'should have tests to run')
@@ -71,7 +72,7 @@ function makeTest(testCase, vendor, getInfo) {
       if (responseData.timeout) {
         redirection = redirection.delay(timeout)
       }
-      redirection.reply(200, JSON.stringify(responseData.response || ''))
+      redirection.reply(200, JSONbig.stringify(responseData.response || ''))
     }
 
     // This may be messy but AWS makes an extra call to get an auth token

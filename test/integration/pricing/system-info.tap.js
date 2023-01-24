@@ -122,7 +122,7 @@ test('pricing system-info gcp', function (t) {
     .get('/computeMetadata/v1/instance/')
     .query({ recursive: true })
     .reply(200, {
-      id: '3161347020215157000',
+      id: '3161347020215157123',
       machineType: 'projects/492690098729/machineTypes/custom-1-1024',
       name: 'aef-default-20170501t160547-7gh8',
       zone: 'projects/492690098729/zones/us-central1-c'
@@ -143,7 +143,7 @@ test('pricing system-info gcp', function (t) {
 
   fetchSystemInfo(agent, function fetchSystemInfoCb(err, systemInfo) {
     const expectedData = {
-      id: '3161347020215157000',
+      id: '3161347020215157123',
       machineType: 'custom-1-1024',
       name: 'aef-default-20170501t160547-7gh8',
       zone: 'us-central1-c'
