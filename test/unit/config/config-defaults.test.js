@@ -270,4 +270,16 @@ tap.test('with default properties', (t) => {
     t.equal(configuration.code_level_metrics.enabled, false)
     t.end()
   })
+
+  t.test('should default `url_obfuscation` accordingly', (t) => {
+    t.same(configuration.url_obfuscation, {
+      enabled: false,
+      regex: {
+        pattern: null,
+        flags: undefined,
+        replacement: undefined
+      }
+    })
+    t.end()
+  })
 })
