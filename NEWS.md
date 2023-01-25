@@ -2,9 +2,6 @@
 
 * Changed GCP metadata parsing to use `json-bigint` to avoid loss of precision from numerical instance ID.
 
-
-* Fixed dead links in the docs.
-
 * Instrumented `winston.loggers.add` so it works like `winston.createLogger`.
 
 ### v9.8.0 (2023-01-17)
