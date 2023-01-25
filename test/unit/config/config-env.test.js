@@ -682,7 +682,6 @@ tap.test('when overriding configuration values via environment variables', (t) =
 
   t.test('shold pick up url_obfuscation.regex parameters', (t) => {
     const env = {
-      // NEW_RELIC_URL_OBFUSCATION_ENABLED: "true",
       NEW_RELIC_URL_OBFUSCATION_REGEX_PATTERN: 'regex',
       NEW_RELIC_URL_OBFUSCATION_REGEX_FLAGS: 'g',
       NEW_RELIC_URL_OBFUSCATION_REGEX_REPLACEMENT: 'replacement'
