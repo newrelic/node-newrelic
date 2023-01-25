@@ -75,10 +75,16 @@ tap.test('instrumentOutbound', (t) => {
     t.end()
   })
 
-  t.test('should obfuscate url path if url_obfuscation_regex is set', (t) => {
+  t.test('should obfuscate url path if url_obfuscation regex pattern is set', (t) => {
     helper.unloadAgent(agent)
     agent = helper.loadMockedAgent({
-      url_obfuscation_regex: /.*/
+      url_obfuscation: {
+        enabled: true,
+        regex: {
+          pattern: '.*',
+          replacement: '***'
+        }
+      }
     })
     const req = new events.EventEmitter()
     helper.runInTransaction(agent, function (transaction) {

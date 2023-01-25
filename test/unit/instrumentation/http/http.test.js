@@ -322,9 +322,14 @@ test('built-in http module instrumentation', (t) => {
       }
     )
 
-    t.test('when url_obfuscation_regex is set, obfuscate segment url attributes', (t) => {
-      agent.config.allow_all_headers = true
-      agent.config.url_obfuscation_regex = /.*/
+    t.test('when url_obfuscation regex pattern is set, obfuscate segment url attributes', (t) => {
+      agent.config.url_obfuscation = {
+        enabled: true,
+        regex: {
+          pattern: '.*',
+          replacement: '***'
+        }
+      }
       transaction = null
       makeRequest(
         {
