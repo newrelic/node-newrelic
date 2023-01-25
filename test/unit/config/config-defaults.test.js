@@ -276,8 +276,8 @@ tap.test('with default properties', (t) => {
       enabled: false,
       regex: {
         pattern: null,
-        flags: undefined,
-        replacement: undefined
+        flags: null,
+        replacement: null
       }
     })
     t.end()
