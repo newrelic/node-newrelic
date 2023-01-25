@@ -284,8 +284,8 @@ describe('NR URL utilities', function () {
           enabled: false,
           regex: {
             pattern: null,
-            flags: undefined,
-            replacement: undefined
+            flags: null,
+            replacement: null
           }
         }
       }
@@ -307,10 +307,10 @@ describe('NR URL utilities', function () {
       expect(urltils.obfuscatePath(config, path)).equal(path)
     })
 
-    it('should obfuscate with `undefined` if replacement is not set and pattern is set', function () {
+    it('should obfuscate with empty string `` if replacement is not set and pattern is set', function () {
       config.url_obfuscation.enabled = true
       config.url_obfuscation.regex.pattern = '/foo/[0-9]+/bar/[0-9]+/baz/[0-9]+'
-      expect(urltils.obfuscatePath(config, path)).equal('/undefined')
+      expect(urltils.obfuscatePath(config, path)).equal('/')
     })
 
     it('should obfuscate with replacement if replacement is set and pattern is set', function () {

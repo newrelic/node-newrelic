@@ -108,6 +108,21 @@ describe('Trace', function () {
         expect(json[4]).to.deep.equal(details.rootNode)
       })
     })
+
+    describe('when url_obfuscation is set', function () {
+      it('should obfuscate the URL', function () {
+        agent.config.url_obfuscation = {
+          enabled: true,
+          regex: {
+            pattern: '.*',
+            replacement: '***'
+          }
+        }
+
+        const json = details.trace.generateJSONSync()
+        expect(json[3]).to.equal('/***')
+      })
+    })
   })
 
   describe('when serializing asynchronously', () => {
@@ -755,6 +770,38 @@ tap.test('should set URI to /Unknown when URL is not known/set on transaction', 
   const traceJSON = await trace.generateJSON()
   const { 3: requestUri } = traceJSON
   t.equal(requestUri, '/Unknown')
+  t.end()
+})
+
+tap.test('should obfuscate URI using regex when pattern is set', async (t) => {
+  const URL = '/abc/123/def'
+  const agent = helper.loadMockedAgent({
+    url_obfuscation: {
+      enabled: true,
+      regex: {
+        pattern: '/[0-9]+',
+        flags: 'g',
+        replacement: '***'
+      }
+    }
+  })
+
+  t.teardown(() => {
+    helper.unloadAgent(agent)
+  })
+
+  const transaction = new Transaction(agent)
+  transaction.url = URL
+  transaction.verb = 'GET'
+
+  const trace = transaction.trace
+  trace.generateJSON = util.promisify(trace.generateJSON)
+
+  trace.end()
+
+  const traceJSON = await trace.generateJSON()
+  const { 3: requestUri } = traceJSON
+  t.equal(requestUri, '/abc/***/def')
   t.end()
 })
 
