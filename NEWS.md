@@ -1,6 +1,6 @@
 ### v9.8.1 (2023-01-25)
 
-Added safety check to enquote GCP IDs the platform reports as numbers. These numbers can be long enough that JS converts them to scientific notation, losing precision. Updated cross-agent test fixtures to expose this, with a new test case for this issue. Closes NR-80407
+* Change GCP metadata parsing to use json-bigint to avoid loss of precision from numerical instance ID.
 
 * Fixed dead links in the docs.
 
