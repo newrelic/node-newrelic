@@ -1,6 +1,6 @@
 ### v9.8.1 (2023-01-25)
 
-* Change GCP metadata parsing to use json-bigint to avoid loss of precision from numerical instance ID.
+* Changed GCP metadata parsing to use json-bigint to avoid loss of precision from numerical instance ID.
 
 * Fixed dead links in the docs.
 
