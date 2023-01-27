@@ -51,101 +51,13 @@ Our [API and developer documentation](http://newrelic.github.io/node-newrelic/) 
 
 ## Client-side Instrumentation
 
-Next.js is a full stack React Framework. This module augments the Node.js New Relic agent, thus any client-side actions will not be instrumented. However, below is a method of adding the [New Relic Browser agent](https://docs.newrelic.com/docs/browser/browser-monitoring/getting-started/introduction-browser-monitoring/) to get more information on client-side actions.
-
-The most appropriate approach would be to follow the [beforeInteractive strategy](https://nextjs.org/docs/basic-features/script#beforeinteractive).  Put the following in your `pages/_document.ts`
-
-```ts
-const newrelic = require('newrelic');
-import Document, {
-  DocumentContext,
-  DocumentInitialProps,
-  Html,
-  Head,
-  Main,
-  NextScript,
-} from 'next/document';
-import Script from 'next/script';
-
-type DocumentProps = {
-  browserTimingHeader: string
-}
-
-class MyDocument extends Document<DocumentProps> {
-  static async getInitialProps(
-    ctx: DocumentContext
-  ): Promise<DocumentInitialProps> {
-    const initialProps = await Document.getInitialProps(ctx);
-
-    const browserTimingHeader = newrelic.getBrowserTimingHeader({
-      hasToRemoveScriptWrapper: true,
-    });
-
-    return {
-      ...initialProps,
-      browserTimingHeader,
-    };
-  }
-
-  render() {
-    const { browserTimingHeader } = this.props
-
-    return (
-      <Html>
-        <Head>{/* whatever you need here */}</Head>
-        <body>
-          <Main />
-          <NextScript />
-          <Script
-            dangerouslySetInnerHTML={{ __html: browserTimingHeader }}
-            strategy="beforeInteractive"
-          ></Script>
-        </body>
-      </Html>
-    );
-  }
-}
-
-export default MyDocument;
-```
-
-For static compiled pages, you can use the [copy-paste method](https://docs.newrelic.com/docs/browser/browser-monitoring/installation/install-browser-monitoring-agent/#copy-paste-app) for enabling the New Relic Browser agent.
+Next.js is a full stack React Framework. This module augments the Node.js New Relic agent, thus any client-side actions will not be instrumented. However, there is an [example](https://github.com/newrelic-experimental/newrelic-nextjs-integration/blob/main/pages/_document.tsx) for injecting [New Relic Browser agent](https://docs.newrelic.com/docs/browser/browser-monitoring/getting-started/introduction-browser-monitoring/) to get more information on client-side actions.
 
 For more information, please see the agent [compatibility and requirements][4].
 
 ### Error Handling
 
-For capturing both the client and server side errors it is best to use `pages/_error.js` pattern recommended by Next.js documentation on [Advanced Error Page Customization](https://nextjs.org/docs/advanced-features/custom-error-page#more-advanced-error-page-customizing)
-
-This pattern can be used to send either client, server or both types of errors to New Relic.
-
-```js
-function Error({ statusCode }) {
-  return (
-    <p>
-      {statusCode
-        ? `An error ${statusCode} occurred on server`
-        : "An error occurred on client"}
-    </p>
-  );
-}
-
-Error.getInitialProps = ({ res, err }) => {
-  if (typeof window === "undefined") {
-    const newrelic = require('newrelic');
-    newrelic.noticeError(err);
-  } else {
-    window.newrelic.noticeError(err);
-  }
-
-  const statusCode = res ? res.statusCode : err ? err.statusCode : 404;
-  return { statusCode };
-};
-
-export default Error;
-```
-
-The example above assumes that both the New Relic Browser and Node.js agents are [integrated](#client-side-instrumentation). The `getInitialProps` function's `if` statement checks whether an error was thrown on the server side (`typeof window === "undefined"`) and if it was the case, it `requires` New Relic Node.js agent and sends an `err` with `noticeError` method. Otherwise it assumes the error was thrown on the front-end side, and uses the browser agent to send the error to New Relic by using `window.newrelic.noticeError(err)`.
+For capturing both the client and server side errors it is best to use `pages/_error.js` pattern recommended by Next.js documentation on [Advanced Error Page Customization](https://nextjs.org/docs/advanced-features/custom-error-page#more-advanced-error-page-customizing). This [example](https://github.com/newrelic-experimental/newrelic-nextjs-integration/blob/main/pages/_error.tsx) can be used to send either client, server or both types of errors to New Relic. The example assumes that both the New Relic Browser and Node.js agents are [integrated](#client-side-instrumentation). The `getInitialProps` function's `if` statement checks whether an error was thrown on the server side (`typeof window === "undefined"`) and if it was the case, it `requires` New Relic Node.js agent and sends an `err` with `noticeError` method. Otherwise it assumes the error was thrown on the front-end side, and uses the browser agent to send the error to New Relic by using `window.newrelic.noticeError(err)`.
 
 ## Testing
 
