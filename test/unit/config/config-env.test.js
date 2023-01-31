@@ -115,6 +115,14 @@ tap.test('when overriding configuration values via environment variables', (t) =
     })
   })
 
+  t.test('should default OTel host if nothing to parse in the license key', (t) => {
+    idempotentEnv({ NEW_RELIC_LICENSE_KEY: 'hambulance' }, (tc) => {
+      t.ok(tc.otlp_endpoint)
+      t.equal(tc.otlp_endpoint, 'otlp.nr-data.net')
+      t.end()
+    })
+  })
+
   t.test('should parse the region off the license key for OTel', (t) => {
     idempotentEnv({ NEW_RELIC_LICENSE_KEY: 'eu01xxhambulance' }, (tc) => {
       t.ok(tc.otlp_endpoint)
