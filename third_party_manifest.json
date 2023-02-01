@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "Mon Jan 23 2023 16:01:56 GMT-0500 (Eastern Standard Time)",
+  "lastUpdated": "Wed Feb 01 2023 11:33:23 GMT-0500 (Eastern Standard Time)",
   "projectName": "New Relic Node Agent",
   "projectUrl": "https://github.com/newrelic/node-newrelic",
   "includeOptDeps": true,
@@ -487,15 +487,15 @@
       "publisher": "Typicode",
       "email": "typicode@gmail.com"
     },
-    "jsdoc@3.6.11": {
+    "jsdoc@4.0.0": {
       "name": "jsdoc",
-      "version": "3.6.11",
-      "range": "^3.6.3",
+      "version": "4.0.0",
+      "range": "^4.0.0",
       "licenses": "Apache-2.0",
       "repoUrl": "https://github.com/jsdoc/jsdoc",
-      "versionedRepoUrl": "https://github.com/jsdoc/jsdoc/tree/v3.6.11",
+      "versionedRepoUrl": "https://github.com/jsdoc/jsdoc/tree/v4.0.0",
       "licenseFile": "node_modules/jsdoc/LICENSE.md",
-      "licenseUrl": "https://github.com/jsdoc/jsdoc/blob/v3.6.11/LICENSE.md",
+      "licenseUrl": "https://github.com/jsdoc/jsdoc/blob/v4.0.0/LICENSE.md",
       "licenseTextSource": "file",
       "publisher": "Michael Mathews",
       "email": "micmath@gmail.com"
@@ -655,15 +655,15 @@
       "licenseTextSource": "file",
       "publisher": "Christian Johansen"
     },
-    "tap@16.3.0": {
+    "tap@16.3.4": {
       "name": "tap",
-      "version": "16.3.0",
-      "range": "^16.0.1",
+      "version": "16.3.4",
+      "range": "^16.3.4",
       "licenses": "ISC",
       "repoUrl": "https://github.com/tapjs/node-tap",
-      "versionedRepoUrl": "https://github.com/tapjs/node-tap/tree/v16.3.0",
+      "versionedRepoUrl": "https://github.com/tapjs/node-tap/tree/v16.3.4",
       "licenseFile": "node_modules/tap/LICENSE",
-      "licenseUrl": "https://github.com/tapjs/node-tap/blob/v16.3.0/LICENSE",
+      "licenseUrl": "https://github.com/tapjs/node-tap/blob/v16.3.4/LICENSE",
       "licenseTextSource": "file",
       "publisher": "Isaac Z. Schlueter",
       "email": "i@izs.me",
