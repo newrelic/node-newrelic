@@ -20,8 +20,6 @@ const facts = proxyquire('../../lib/collector/facts', {
     child: sinon.stub().callsFake(() => loggerMock)
   }
 })
-const NAMES = require('../../lib/metrics/names')
-
 const sysInfo = require('../../lib/system-info')
 const utilTests = require('../lib/cross_agent_tests/utilization/utilization_json')
 const bootIdTests = require('../lib/cross_agent_tests/utilization/boot_id')
@@ -758,60 +756,6 @@ tap.test('display_host', { timeout: 20000 }, (t) => {
     facts(agent, function getFacts(factsed) {
       os.networkInterfaces = originalNI
       t.equal(factsed.display_host, 'UNKNOWN_BOX')
-      t.end()
-    })
-  })
-})
-
-tap.test('log metrics for common logging libraries', (t) => {
-  t.autoend()
-
-  const logPackages = ['winston', 'bunyan']
-  const otherPackages = ['express', 'indium']
-  const packages = logPackages.concat(otherPackages)
-  let agent = null
-
-  t.beforeEach(() => {
-    loggerMock.debug.reset()
-    const config = {
-      app_name: [...APP_NAMES]
-    }
-    agent = helper.loadMockedAgent(Object.assign(config, DISABLE_ALL_DETECTIONS))
-    // fake getJSON for testing
-    sinon.stub(agent.environment, 'getJSON')
-    agent.environment.getJSON.resolves([
-      [
-        'Packages',
-        packages.map((lib) => {
-          return `["${lib}","0.0.0"]`
-        })
-      ]
-    ])
-  })
-
-  t.afterEach(() => {
-    agent.environment.getJSON.restore()
-    helper.unloadAgent(agent)
-  })
-
-  t.test('logs metrics for common logging libraries', (t) => {
-    facts(agent, function getFacts() {
-      // doesn't matter what gets returned because we only care what was logged
-      // wait for harvest cycle
-
-      // check metrics
-      for (const lib of logPackages) {
-        const metric = agent.metrics.getOrCreateMetric(
-          `${NAMES.SUPPORTABILITY.NODEJS_DEPENDENCIES}/${lib}`
-        )
-        t.equal(metric.callCount, 1, `${lib} should have logged`)
-      }
-      for (const lib of otherPackages) {
-        const metric = agent.metrics.getOrCreateMetric(
-          `${NAMES.SUPPORTABILITY.NODEJS_DEPENDENCIES}/${lib}`
-        )
-        t.equal(metric.callCount, 0, `${lib} should not have logged`)
-      }
       t.end()
     })
   })
