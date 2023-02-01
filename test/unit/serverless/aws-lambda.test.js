@@ -890,6 +890,40 @@ tap.test('AwsLambda.patchLambdaHandler', (t) => {
     }
   })
 
+  t.test('should capture ALB event type with multi value headers', (t) => {
+    agent.on('transactionFinished', confirmAgentAttribute)
+
+    stubEvent = lambdaSampleEvents.albEventWithMultiValueParameters
+
+    const wrappedHandler = awsLambda.patchLambdaHandler((event, context, callback) => {
+      callback(null, 'worked')
+    })
+
+    wrappedHandler(stubEvent, stubContext, stubCallback)
+    function confirmAgentAttribute(transaction) {
+      const agentAttributes = transaction.trace.attributes.get(ATTR_DEST.TRANS_TRACE)
+      const segment = transaction.agent.tracer.getSegment()
+      const spanAttributes = segment.attributes.get(ATTR_DEST.SPAN_EVENT)
+
+      t.equal(
+        agentAttributes[EVENTSOURCE_ARN],
+        'arn:aws:elasticloadbalancing:us-east-2:123456789012:targetgroup/lambda-279XGJDqGZ5rsrHC2Fjr/49e9d65c45c6791a'
+      ) // eslint-disable-line max-len
+
+      t.equal(agentAttributes[EVENTSOURCE_TYPE], 'alb')
+
+      t.equal(agentAttributes['request.method'], 'GET')
+
+      t.equal(
+        spanAttributes[EVENTSOURCE_ARN],
+        'arn:aws:elasticloadbalancing:us-east-2:123456789012:targetgroup/lambda-279XGJDqGZ5rsrHC2Fjr/49e9d65c45c6791a'
+      ) // eslint-disable-line max-len
+
+      t.equal(spanAttributes[EVENTSOURCE_TYPE], 'alb')
+      t.end()
+    }
+  })
+
   t.test('when callback used', (t) => {
     t.autoend()
 
