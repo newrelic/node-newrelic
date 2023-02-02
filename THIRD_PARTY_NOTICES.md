@@ -2680,7 +2680,7 @@ SOFTWARE.
 
 ### jsdoc
 
-This product includes source derived from [jsdoc](https://github.com/jsdoc/jsdoc) ([v3.6.11](https://github.com/jsdoc/jsdoc/tree/v3.6.11)), distributed under the [Apache-2.0 License](https://github.com/jsdoc/jsdoc/blob/v3.6.11/LICENSE.md):
+This product includes source derived from [jsdoc](https://github.com/jsdoc/jsdoc) ([v4.0.0](https://github.com/jsdoc/jsdoc/tree/v4.0.0)), distributed under the [Apache-2.0 License](https://github.com/jsdoc/jsdoc/blob/v4.0.0/LICENSE.md):
 
 ```
 # License
@@ -9355,12 +9355,12 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ### tap
 
-This product includes source derived from [tap](https://github.com/tapjs/node-tap) ([v16.3.0](https://github.com/tapjs/node-tap/tree/v16.3.0)), distributed under the [ISC License](https://github.com/tapjs/node-tap/blob/v16.3.0/LICENSE):
+This product includes source derived from [tap](https://github.com/tapjs/node-tap) ([v16.3.4](https://github.com/tapjs/node-tap/tree/v16.3.4)), distributed under the [ISC License](https://github.com/tapjs/node-tap/blob/v16.3.4/LICENSE):
 
 ```
 The ISC License
 
-Copyright (c) 2011-2022 Isaac Z. Schlueter and Contributors
+Copyright (c) 2011-2023 Isaac Z. Schlueter and Contributors
 
 Permission to use, copy, modify, and/or distribute this software for any
 purpose with or without fee is hereby granted, provided that the above
