@@ -115,7 +115,7 @@ describe('Trace', function () {
           enabled: true,
           regex: {
             pattern: '.*',
-            replacement: '***'
+            replacement: '/***'
           }
         }
 
@@ -779,9 +779,9 @@ tap.test('should obfuscate URI using regex when pattern is set', async (t) => {
     url_obfuscation: {
       enabled: true,
       regex: {
-        pattern: '/[0-9]+',
+        pattern: '/[0-9]+/',
         flags: 'g',
-        replacement: '***'
+        replacement: '/***/'
       }
     }
   })

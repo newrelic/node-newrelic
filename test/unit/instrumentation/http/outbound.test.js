@@ -82,7 +82,7 @@ tap.test('instrumentOutbound', (t) => {
         enabled: true,
         regex: {
           pattern: '.*',
-          replacement: '***'
+          replacement: '/***'
         }
       }
     })

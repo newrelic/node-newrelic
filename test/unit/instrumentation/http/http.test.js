@@ -327,7 +327,7 @@ test('built-in http module instrumentation', (t) => {
         enabled: true,
         regex: {
           pattern: '.*',
-          replacement: '***'
+          replacement: '/***'
         }
       }
       transaction = null

@@ -324,13 +324,13 @@ describe('NR URL utilities', function () {
     it('should obfuscate with empty string `` if replacement is not set and pattern is set', function () {
       config.url_obfuscation.enabled = true
       config.url_obfuscation.regex.pattern = '/foo/[0-9]+/bar/[0-9]+/baz/[0-9]+'
-      expect(urltils.obfuscatePath(config, path)).equal('/')
+      expect(urltils.obfuscatePath(config, path)).equal('')
     })
 
     it('should obfuscate with replacement if replacement is set and pattern is set', function () {
       config.url_obfuscation.enabled = true
       config.url_obfuscation.regex.pattern = '/foo/[0-9]+/bar/[0-9]+/baz/[0-9]+'
-      config.url_obfuscation.regex.replacement = '***'
+      config.url_obfuscation.regex.replacement = '/***'
       expect(urltils.obfuscatePath(config, path)).equal('/***')
     })
 
@@ -338,12 +338,12 @@ describe('NR URL utilities', function () {
       config.url_obfuscation.enabled = true
       config.url_obfuscation.regex.pattern = '(/foo/)(.*)(/bar/)(.*)(/baz/)(.*)'
       config.url_obfuscation.regex.replacement = '$1***$3***$5***'
-      expect(urltils.obfuscatePath(config, path)).equal('//foo/***/bar/***/baz/***')
+      expect(urltils.obfuscatePath(config, path)).equal('/foo/***/bar/***/baz/***')
     })
 
     it('should obfuscate as expected with regex patterns and flags', function () {
       config.url_obfuscation.enabled = true
-      config.url_obfuscation.regex.pattern = '/[0-9]+'
+      config.url_obfuscation.regex.pattern = '[0-9]+'
       config.url_obfuscation.regex.flags = 'g'
       config.url_obfuscation.regex.replacement = '***'
       expect(urltils.obfuscatePath(config, path)).equal('/foo/***/bar/***/baz/***')
