@@ -774,7 +774,7 @@ tap.test('should set URI to /Unknown when URL is not known/set on transaction', 
 })
 
 tap.test('should obfuscate URI using regex when pattern is set', async (t) => {
-  const URL = '/abc/123/def'
+  const URL = '/abc/123/def/456/ghi'
   const agent = helper.loadMockedAgent({
     url_obfuscation: {
       enabled: true,
@@ -801,7 +801,7 @@ tap.test('should obfuscate URI using regex when pattern is set', async (t) => {
 
   const traceJSON = await trace.generateJSON()
   const { 3: requestUri } = traceJSON
-  t.equal(requestUri, '/abc/***/def')
+  t.equal(requestUri, '/abc/***/def/***/ghi')
   t.end()
 })
 

@@ -10,7 +10,9 @@
 require('tap').mochaGlobals()
 
 const expect = require('chai').expect
-const urltils = require('../../lib/util/urltils.js')
+const sinon = require('sinon')
+const proxyquire = require('proxyquire')
+const urltils = require('../../lib/util/urltils')
 const url = require('url')
 
 describe('NR URL utilities', function () {
@@ -277,15 +279,31 @@ describe('NR URL utilities', function () {
   describe('obfuscates path by regex', function () {
     let config
     let path
+    let loggerStub
 
     beforeEach(function () {
+      loggerStub = {
+        './util/logger': function () {
+          return { warn: sinon.spy() }
+        },
+        'child': function () {
+          return {
+            logger: {
+              warn: sinon.spy()
+            }
+          }
+        },
+        'warn': sinon.spy()
+      }
+      proxyquire('../../lib/util/urltils', { '../logger': loggerStub })
+
       config = {
         url_obfuscation: {
           enabled: false,
           regex: {
             pattern: null,
-            flags: null,
-            replacement: null
+            flags: '',
+            replacement: ''
           }
         }
       }
@@ -327,12 +345,21 @@ describe('NR URL utilities', function () {
       expect(urltils.obfuscatePath(config, path)).equal('//foo/***/bar/***/baz/***')
     })
 
-    it('shoould obfuscate as expected with regex patterns and flags', function () {
+    it('should obfuscate as expected with regex patterns and flags', function () {
       config.url_obfuscation.enabled = true
       config.url_obfuscation.regex.pattern = '/[0-9]+'
       config.url_obfuscation.regex.flags = 'g'
       config.url_obfuscation.regex.replacement = '***'
       expect(urltils.obfuscatePath(config, path)).equal('/foo/***/bar/***/baz/***')
+    })
+
+    it('should call logger warn if obfuscation is enabled but pattern is invalid', function () {
+      config.url_obfuscation.enabled = true
+      config.url_obfuscation.regex.pattern = '[0-9+'
+
+      urltils.obfuscatePath(config, path)
+
+      expect(loggerStub.warn.calledOnce).to.be.true
     })
   })
 })
