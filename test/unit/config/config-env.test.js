@@ -680,7 +680,7 @@ tap.test('when overriding configuration values via environment variables', (t) =
     })
   })
 
-  t.test('shold pick up url_obfuscation.regex parameters', (t) => {
+  t.test('should pick up url_obfuscation.regex parameters', (t) => {
     const env = {
       NEW_RELIC_URL_OBFUSCATION_REGEX_PATTERN: 'regex',
       NEW_RELIC_URL_OBFUSCATION_REGEX_FLAGS: 'g',
@@ -691,6 +691,17 @@ tap.test('when overriding configuration values via environment variables', (t) =
       t.same(config.url_obfuscation.regex.pattern, /regex/)
       t.equal(config.url_obfuscation.regex.flags, 'g')
       t.equal(config.url_obfuscation.regex.replacement, 'replacement')
+      t.end()
+    })
+  })
+
+  t.test('should set regex to undefined if invalid regex', (t) => {
+    const env = {
+      NEW_RELIC_URL_OBFUSCATION_REGEX_PATTERN: '['
+    }
+
+    idempotentEnv(env, (config) => {
+      t.notOk(config.url_obfuscation.regex.pattern)
       t.end()
     })
   })

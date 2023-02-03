@@ -12,10 +12,22 @@ require('tap').mochaGlobals()
 const expect = require('chai').expect
 const sinon = require('sinon')
 const proxyquire = require('proxyquire')
-const urltils = require('../../lib/util/urltils')
 const url = require('url')
 
 describe('NR URL utilities', function () {
+  let loggerStub
+  let urltils
+  beforeEach(function () {
+    loggerStub = {
+      warn: sinon.stub()
+    }
+    urltils = proxyquire('../../lib/util/urltils', {
+      '../logger': {
+        child: sinon.stub().returns(loggerStub)
+      }
+    })
+  })
+
   describe('scrubbing URLs', function () {
     it('should return "/" if there\'s no leading slash on the path', function () {
       expect(urltils.scrub('?t_u=http://some.com/o/p')).equal('/')
@@ -279,24 +291,8 @@ describe('NR URL utilities', function () {
   describe('obfuscates path by regex', function () {
     let config
     let path
-    let loggerStub
 
-    beforeEach(function () {
-      loggerStub = {
-        './util/logger': function () {
-          return { warn: sinon.spy() }
-        },
-        'child': function () {
-          return {
-            logger: {
-              warn: sinon.spy()
-            }
-          }
-        },
-        'warn': sinon.spy()
-      }
-      proxyquire('../../lib/util/urltils', { '../logger': loggerStub })
-
+    beforeEach(() => {
       config = {
         url_obfuscation: {
           enabled: false,
