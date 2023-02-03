@@ -517,7 +517,11 @@ const albEventWithMultiValueParameters = {
     'x-forwarded-for': ['72.12.164.125'],
     'x-forwarded-port': ['80'],
     'x-forwarded-proto': ['http'],
-    'x-imforwards': ['20']
+    'x-imforwards': ['20'],
+    'Set-Cookie': [
+      'cookie-name=cookie-value;Domain=myweb.com;Secure;HttpOnly',
+      'cookie-name=cookie-other-value'
+    ]
   },
   body: '',
   isBase64Encoded: false
