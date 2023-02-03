@@ -156,4 +156,24 @@ tap.test('config formatters', (t) => {
       t.end()
     })
   })
+
+  tap.test('regex', (t) => {
+    t.autoend()
+
+    t.test('should return regex if valid', (t) => {
+      const val = '/hello/'
+      const result = formatters.regex(val)
+      t.same(result, /\/hello\//)
+      t.end()
+    })
+
+    t.test('should log error and return null if regex is invalid', (t) => {
+      const loggerMock = { error: sinon.stub() }
+      const val = '[a-z'
+      t.notOk(formatters.regex(val, loggerMock))
+      t.equal(loggerMock.error.args[0][0], `New Relic configurator could not validate regex: [a-z`)
+      t.match(loggerMock.error.args[1][0], /SyntaxError: Invalid regular expression/)
+      t.end()
+    })
+  })
 })

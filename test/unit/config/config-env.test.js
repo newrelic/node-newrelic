@@ -396,10 +396,15 @@ tap.test('when overriding configuration values via environment variables', (t) =
   })
 
   t.test('should pick up which status codes are expectedd when using a range', (t) => {
-    idempotentEnv({ NEW_RELIC_ERROR_COLLECTOR_EXPECTED_ERROR_CODES: '401, 420-421, 502' }, (tc) => {
-      t.same(tc.error_collector.expected_status_codes, [401, 420, 421, 502])
-      t.end()
-    })
+    idempotentEnv(
+      {
+        NEW_RELIC_ERROR_COLLECTOR_EXPECTED_ERROR_CODES: '401, 420-421, 502'
+      },
+      (tc) => {
+        t.same(tc.error_collector.expected_status_codes, [401, 420, 421, 502])
+        t.end()
+      }
+    )
   })
 
   t.test('should not add codes given with invalid range', (t) => {
@@ -652,7 +657,9 @@ tap.test('when overriding configuration values via environment variables', (t) =
   t.test('should pick up custom esm entrypoint configuration', (t) => {
     const customEntryPoint = '/patht/to/custom-instrumentation.mjs'
     idempotentEnv(
-      { NEW_RELIC_API_ESM_CUSTOM_INSTRUMENTATION_ENTRYPOINT: customEntryPoint },
+      {
+        NEW_RELIC_API_ESM_CUSTOM_INSTRUMENTATION_ENTRYPOINT: customEntryPoint
+      },
       function (tc) {
         t.equal(tc.api.esm.custom_instrumentation_entrypoint, customEntryPoint)
         t.end()
@@ -685,6 +692,43 @@ tap.test('when overriding configuration values via environment variables', (t) =
   t.test('should pick up code_level_metrics.enabled', (t) => {
     idempotentEnv({ NEW_RELIC_CODE_LEVEL_METRICS_ENABLED: 'true' }, function (tc) {
       t.equal(tc.code_level_metrics.enabled, true)
+      t.end()
+    })
+  })
+
+  t.test('should pick up url_obfuscation.enabled', (t) => {
+    const env = {
+      NEW_RELIC_URL_OBFUSCATION_ENABLED: 'true'
+    }
+
+    idempotentEnv(env, (config) => {
+      t.equal(config.url_obfuscation.enabled, true)
+      t.end()
+    })
+  })
+
+  t.test('should pick up url_obfuscation.regex parameters', (t) => {
+    const env = {
+      NEW_RELIC_URL_OBFUSCATION_REGEX_PATTERN: 'regex',
+      NEW_RELIC_URL_OBFUSCATION_REGEX_FLAGS: 'g',
+      NEW_RELIC_URL_OBFUSCATION_REGEX_REPLACEMENT: 'replacement'
+    }
+
+    idempotentEnv(env, (config) => {
+      t.same(config.url_obfuscation.regex.pattern, /regex/)
+      t.equal(config.url_obfuscation.regex.flags, 'g')
+      t.equal(config.url_obfuscation.regex.replacement, 'replacement')
+      t.end()
+    })
+  })
+
+  t.test('should set regex to undefined if invalid regex', (t) => {
+    const env = {
+      NEW_RELIC_URL_OBFUSCATION_REGEX_PATTERN: '['
+    }
+
+    idempotentEnv(env, (config) => {
+      t.notOk(config.url_obfuscation.regex.pattern)
       t.end()
     })
   })

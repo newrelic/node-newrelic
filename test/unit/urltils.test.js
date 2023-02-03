@@ -10,10 +10,24 @@
 require('tap').mochaGlobals()
 
 const expect = require('chai').expect
-const urltils = require('../../lib/util/urltils.js')
+const sinon = require('sinon')
+const proxyquire = require('proxyquire')
 const url = require('url')
 
 describe('NR URL utilities', function () {
+  let loggerStub
+  let urltils
+  beforeEach(function () {
+    loggerStub = {
+      warn: sinon.stub()
+    }
+    urltils = proxyquire('../../lib/util/urltils', {
+      '../logger': {
+        child: sinon.stub().returns(loggerStub)
+      }
+    })
+  })
+
   describe('scrubbing URLs', function () {
     it('should return "/" if there\'s no leading slash on the path', function () {
       expect(urltils.scrub('?t_u=http://some.com/o/p')).equal('/')
@@ -271,6 +285,77 @@ describe('NR URL utilities', function () {
         existing: 'here',
         firstNew: undefined
       })
+    })
+  })
+
+  describe('obfuscates path by regex', function () {
+    let config
+    let path
+
+    beforeEach(() => {
+      config = {
+        url_obfuscation: {
+          enabled: false,
+          regex: {
+            pattern: null,
+            flags: '',
+            replacement: ''
+          }
+        }
+      }
+      path = '/foo/123/bar/456/baz/789'
+    })
+
+    it('should not obfuscate path by default', function () {
+      expect(urltils.obfuscatePath(config, path)).equal(path)
+    })
+
+    it('should not obfuscate if obfuscation is enabled but pattern is not set', function () {
+      config.url_obfuscation.enabled = true
+      expect(urltils.obfuscatePath(config, path)).equal(path)
+    })
+
+    it('should not obfuscate if obfuscation is enabled but pattern is invalid', function () {
+      config.url_obfuscation.enabled = true
+      config.url_obfuscation.regex.pattern = '/foo/bar/baz/[0-9]+'
+      expect(urltils.obfuscatePath(config, path)).equal(path)
+    })
+
+    it('should obfuscate with empty string `` if replacement is not set and pattern is set', function () {
+      config.url_obfuscation.enabled = true
+      config.url_obfuscation.regex.pattern = '/foo/[0-9]+/bar/[0-9]+/baz/[0-9]+'
+      expect(urltils.obfuscatePath(config, path)).equal('')
+    })
+
+    it('should obfuscate with replacement if replacement is set and pattern is set', function () {
+      config.url_obfuscation.enabled = true
+      config.url_obfuscation.regex.pattern = '/foo/[0-9]+/bar/[0-9]+/baz/[0-9]+'
+      config.url_obfuscation.regex.replacement = '/***'
+      expect(urltils.obfuscatePath(config, path)).equal('/***')
+    })
+
+    it('should obfuscate as expected with capture groups pattern over strings', function () {
+      config.url_obfuscation.enabled = true
+      config.url_obfuscation.regex.pattern = '(/foo/)(.*)(/bar/)(.*)(/baz/)(.*)'
+      config.url_obfuscation.regex.replacement = '$1***$3***$5***'
+      expect(urltils.obfuscatePath(config, path)).equal('/foo/***/bar/***/baz/***')
+    })
+
+    it('should obfuscate as expected with regex patterns and flags', function () {
+      config.url_obfuscation.enabled = true
+      config.url_obfuscation.regex.pattern = '[0-9]+'
+      config.url_obfuscation.regex.flags = 'g'
+      config.url_obfuscation.regex.replacement = '***'
+      expect(urltils.obfuscatePath(config, path)).equal('/foo/***/bar/***/baz/***')
+    })
+
+    it('should call logger warn if obfuscation is enabled but pattern is invalid', function () {
+      config.url_obfuscation.enabled = true
+      config.url_obfuscation.regex.pattern = '[0-9+'
+
+      urltils.obfuscatePath(config, path)
+
+      expect(loggerStub.warn.calledOnce).to.be.true
     })
   })
 })

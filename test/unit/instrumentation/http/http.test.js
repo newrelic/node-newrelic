@@ -322,6 +322,35 @@ test('built-in http module instrumentation', (t) => {
       }
     )
 
+    t.test('when url_obfuscation regex pattern is set, obfuscate segment url attributes', (t) => {
+      agent.config.url_obfuscation = {
+        enabled: true,
+        regex: {
+          pattern: '.*',
+          replacement: '/***'
+        }
+      }
+      transaction = null
+      makeRequest(
+        {
+          port: 8123,
+          host: 'localhost',
+          path: '/foo4/bar4',
+          method: 'GET'
+        },
+        finish
+      )
+
+      function finish() {
+        const segment = transaction.baseSegment
+        const spanAttributes = segment.attributes.get(DESTINATIONS.SPAN_EVENT)
+
+        t.equal(spanAttributes['request.uri'], '/***')
+
+        t.end()
+      }
+    })
+
     t.test('successful request', (t) => {
       transaction = null
       const refererUrl = 'https://www.google.com/search/cats?scrubbed=false'
@@ -687,7 +716,7 @@ test('built-in http module instrumentation', (t) => {
       const traceparent = '00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-00'
       const priority = 0.789
       // eslint-disable-next-line
-        const tracestate = `190@nr=0-0-709288-8599547-f85f42fd82a4cf1d-164d3b4b0d09cb05-1-${priority}-1563574856827`
+        const tracestate = `190@nr=0-0-709288-8599547-f85f42fd82a4cf1d-164d3b4b0d09cb05-1-${priority}-1563574856827`;
       http = require('http')
       agent.config.trusted_account_key = 190
 
