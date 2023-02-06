@@ -1,3 +1,44 @@
+### v9.9.0 (2023-02-06)
+
+* Added support for `url` obfuscation using regex:
+  * for distributed tracing 
+    * incoming and outgoing requests `path` obfuscation
+    * transaction `request.url` attribute obfuscation
+    * span `http.uri` path obfuscation
+  * for transactions
+    *  transaction trace details `url` obfuscation
+
+An example config looks like this:
+
+```js
+url_obfuscation: {
+   enabled: true,
+   regex: {
+     pattern: /(\/api\/v1\/users\/)([\d]+)(\/.*$)/,
+     flags: "i",
+     replacement: '$1**$3'
+  } 
+}
+```
+
+This would turn `/api/v1/users/12345456/edit` to `/api/v1/users/**/edit`
+
+
+Or using env vars:
+```yml
+NEW_RELIC_URL_OBFUSCATION_ENABLED: "true",
+NEW_RELIC_URL_OBFUSCATION_REGEX_PATTERN: '/(\/api\/v1\/users\/)([\d]+)(\/.*$)/',
+NEW_RELIC_URL_OBFUSCATION_REGEX_FLAGS: 'i',
+NEW_RELIC_URL_OBFUSCATION_REGEX_REPLACEMENT: '$1**$3'
+```
+
+Thanks for your contribution @matewilk 🙏🏻
+
+* Add a new tracking type of instrumentation.  This will be responsible for logging `Supportability/Features/Instrumentation/OnResolved/<pkg>` and `Supportability/Features/Instrumentation/OnResolved/<pkg>/Version/<version>` metrics when packages are required.
+
+* Addressed security vulnerabilities in dev dependencies `tap` and `jsdoc`
+* Locked down MongoDB versioned tests to not run on v5 of `mongodb`
+
 ### v9.8.1 (2023-01-25)
 
 * Changed GCP metadata parsing to use `json-bigint` to avoid loss of precision from numerical instance ID.
