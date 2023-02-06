@@ -1,6 +1,6 @@
 {
   "name": "newrelic",
-  "version": "9.8.1",
+  "version": "9.9.0",
   "author": "New Relic Node.js agent team <nodejs@newrelic.com>",
   "license": "Apache-2.0",
   "contributors": [
