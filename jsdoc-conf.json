@@ -14,6 +14,10 @@
   "plugins": [
     "plugins/markdown"
   ],
+  "templates": {
+    "cleverLinks": true,
+    "showInheritedInNav": false
+  },
   "markdown": {
     "hardwrap": false,
     "idInHeadings": true
