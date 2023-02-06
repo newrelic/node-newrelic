@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "Wed Feb 01 2023 11:33:23 GMT-0500 (Eastern Standard Time)",
+  "lastUpdated": "Mon Feb 06 2023 16:15:11 GMT-0500 (Eastern Standard Time)",
   "projectName": "New Relic Node Agent",
   "projectUrl": "https://github.com/newrelic/node-newrelic",
   "includeOptDeps": true,
@@ -324,6 +324,18 @@
       "publisher": "Jake Luer",
       "email": "jake@alogicalparadox.com"
     },
+    "clean-jsdoc-theme@4.2.4": {
+      "name": "clean-jsdoc-theme",
+      "version": "4.2.4",
+      "range": "^4.2.4",
+      "licenses": "MIT",
+      "repoUrl": "https://github.com/ankitskvmdam/clean-jsdoc-theme",
+      "versionedRepoUrl": "https://github.com/ankitskvmdam/clean-jsdoc-theme/tree/v4.2.4",
+      "licenseFile": "node_modules/clean-jsdoc-theme/LICENSE",
+      "licenseUrl": "https://github.com/ankitskvmdam/clean-jsdoc-theme/blob/v4.2.4/LICENSE",
+      "licenseTextSource": "file",
+      "publisher": "Ank"
+    },
     "commander@7.2.0": {
       "name": "commander",
       "version": "7.2.0",
@@ -538,19 +550,6 @@
       "licenseUrl": "https://github.com/3rd-Eden/node-memcached/blob/v2.2.2/LICENSE",
       "licenseTextSource": "file",
       "publisher": "Arnout Kazemier"
-    },
-    "minami@1.2.3": {
-      "name": "minami",
-      "version": "1.2.3",
-      "range": "^1.2.3",
-      "licenses": "Apache-2.0",
-      "repoUrl": "https://github.com/Nijikokun/minami",
-      "versionedRepoUrl": "https://github.com/Nijikokun/minami/tree/v1.2.3",
-      "licenseFile": "node_modules/minami/LICENSE",
-      "licenseUrl": "https://github.com/Nijikokun/minami/blob/v1.2.3/LICENSE",
-      "licenseTextSource": "file",
-      "publisher": "Nijiko Yonskai",
-      "email": "nijikokun@gmail.com"
     },
     "nock@11.8.0": {
       "name": "nock",
