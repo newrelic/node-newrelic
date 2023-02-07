@@ -1,3 +1,32 @@
+### v9.9.0 (2023-02-06)
+* Added support for url obfuscation using regex (Thanks for your contribution @matewilk)
+  * For Distributed Tracing, this means that:
+     * Incoming and outgoing requests' `path` will be obfuscated
+     * Transaction's `request.url` attribute will be obfuscated
+     * Span's `http.uri` path will be obfuscated
+  * For transactions, this means that:
+    * Transaction trace details `url` will be obfuscated
+  * With the following example configuration, url obfuscation will turn `/api/v1/users/12345456/edit` to `/api/v1/users/**/edit`.
+    ```js
+    url_obfuscation: {
+      enabled: true,
+      regex: {
+        pattern: /(\/api\/v1\/users\/)([\d]+)(\/.*$)/,
+        flags: "i",
+        replacement: '$1**$3'
+      }
+    }
+    ```
+  * You can also use environment variables to configure url obfuscation:
+    ```yml
+    NEW_RELIC_URL_OBFUSCATION_ENABLED: "true",
+    NEW_RELIC_URL_OBFUSCATION_REGEX_PATTERN: '/(\/api\/v1\/users\/)([\d]+)(\/.*$)/',
+    NEW_RELIC_URL_OBFUSCATION_REGEX_FLAGS: 'i',
+    NEW_RELIC_URL_OBFUSCATION_REGEX_REPLACEMENT: '$1**$3'
+    ```
+
+* Add a new tracking type of instrumentation.  This will be responsible for logging `Supportability/Features/Instrumentation/OnResolved/<pkg>` and `Supportability/Features/Instrumentation/OnResolved/<pkg>/Version/<version>` metrics when packages are required.
+
 ### v9.8.1 (2023-01-25)
 
 * Changed GCP metadata parsing to use `json-bigint` to avoid loss of precision from numerical instance ID.
