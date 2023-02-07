@@ -646,7 +646,7 @@ function _generateRUMHeader(options = {}, metadata, loader) {
  * @param {object} config agent configuration settings
  * @param {Transaction} transaction the active transaction or null
  * @param {boolean} allowTransactionlessInjection whether or not to allow the Browser Agent to be injected when there is no active transaction
- * @returns {{ isValidConfig: boolean, failureIdx?: number, quietMode?: boolean }} object containing validation results
+ * @returns {{ isValidConfig: boolean, failureIdx: number, quietMode: boolean }} object containing validation results
  */
 function validateBrowserMonitoring(config, transaction, allowTransactionlessInjection) {
   /*
