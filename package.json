@@ -179,7 +179,7 @@
     "newrelic-naming-rules": "./bin/test-naming-rules.js"
   },
   "dependencies": {
-    "@grpc/grpc-js": "^1.7.3",
+    "@grpc/grpc-js": "^1.8.4",
     "@grpc/proto-loader": "^0.7.3",
     "@newrelic/aws-sdk": "^5.0.2",
     "@newrelic/koa": "^7.1.1",
