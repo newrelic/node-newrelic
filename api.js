@@ -27,6 +27,7 @@ const {
 const ATTR_DEST = require('./lib/config/attribute-filter').DESTINATIONS
 const MODULE_TYPE = require('./lib/shim/constants').MODULE_TYPE
 const NAMES = require('./lib/metrics/names')
+const obfuscate = require('./lib/util/sql/obfuscate')
 
 /*
  *
@@ -1667,6 +1668,17 @@ API.prototype.setLambdaHandler = function setLambdaHandler(handler) {
   metric.incrementCallCount()
 
   return this.awsLambda.patchLambdaHandler(handler)
+}
+
+/**
+ * Obfuscates SQL for a given database engine.
+ *
+ * @param {string} sql sql statement
+ * @param {string} dialect engine of the sql (mysql, postgres, cassandra, oracle)
+ * @returns {string} sql that obfuscates raw values
+ */
+API.prototype.obfuscateSql = function obfuscateSql(sql, dialect) {
+  return obfuscate(sql, dialect)
 }
 
 /**
