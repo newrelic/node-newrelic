@@ -2,7 +2,10 @@
   "opts": {
     "destination": "out/",
     "readme": "./README.md",
-    "template": "./node_modules/minami"
+    "template": "./node_modules/clean-jsdoc-theme",
+    "theme_opts": {
+      "search": false
+    }
   },
   "source": {
     "exclude": ["node_modules", "test"],
@@ -14,5 +17,9 @@
   "templates": {
     "cleverLinks": true,
     "showInheritedInNav": false
+  },
+  "markdown": {
+    "hardwrap": false,
+    "idInHeadings": true
   }
 }
