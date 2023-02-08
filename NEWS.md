@@ -1,34 +1,8 @@
 ### v9.10.0 (2023-02-08)
 
-* Exposed a method on API to obfuscate sql `newrelic.obfuscateSql`.
+* Exposed a method on [API](https://newrelic.github.io/node-newrelic/API.html#obfuscateSql) to obfuscate sql: `newrelic.obfuscateSql`.
 
 * Add support for [Multi Value Parameters](https://aws.amazon.com/blogs/compute/support-for-multi-value-parameters-in-amazon-api-gateway) from API Gateway and ALB events for Lambdas (Thank you @Engerim for your contribution 🙏🏻)
-
---- NOTES NEEDS REVIEW ---
-<h3>Snyk has created this PR to upgrade @grpc/proto-loader from 0.7.3 to 0.7.4.</h3>
-
-:information_source: Keep your dependencies up-to-date. This makes it easier to fix existing vulnerabilities and to more quickly identify and fix newly disclosed vulnerabilities when they affect your project.
---------------------------
-
---- NOTES NEEDS REVIEW ---
-<h3>Snyk has created this PR to upgrade @grpc/grpc-js from 1.7.3 to 1.8.4.</h3>
-
-:information_source: Keep your dependencies up-to-date. This makes it easier to fix existing vulnerabilities and to more quickly identify and fix newly disclosed vulnerabilities when they affect your project.
---------------------------
-
---- NOTES NEEDS REVIEW ---
-<h3>Snyk has created this PR to upgrade @newrelic/aws-sdk from 5.0.0 to 5.0.2.</h3>
-
-:information_source: Keep your dependencies up-to-date. This makes it easier to fix existing vulnerabilities and to more quickly identify and fix newly disclosed vulnerabilities when they affect your project.
---------------------------
-
-* Updated public api doc generation process to use new theme
-
---- NOTES NEEDS REVIEW ---
-<h3>Snyk has created this PR to upgrade @newrelic/koa from 7.0.0 to 7.1.1.</h3>
-
-:information_source: Keep your dependencies up-to-date. This makes it easier to fix existing vulnerabilities and to more quickly identify and fix newly disclosed vulnerabilities when they affect your project.
---------------------------
 
 ### v9.9.0 (2023-02-06)
 * Added support for url obfuscation using regex (Thanks for your contribution @matewilk)
