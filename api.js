@@ -1678,6 +1678,9 @@ API.prototype.setLambdaHandler = function setLambdaHandler(handler) {
  * @returns {string} sql that obfuscates raw values
  */
 API.prototype.obfuscateSql = function obfuscateSql(sql, dialect) {
+  const metric = this.agent.metrics.getOrCreateMetric(NAMES.SUPPORTABILITY.API + '/obfuscateSql')
+  metric.incrementCallCount()
+
   return obfuscate(sql, dialect)
 }
 
