@@ -8,7 +8,7 @@
 const tap = require('tap')
 const API = require('../../../stub_api')
 
-const EXPECTED_API_COUNT = 30
+const EXPECTED_API_COUNT = 31
 
 tap.test('Agent API - Stubbed Agent API', (t) => {
   t.autoend()
@@ -19,7 +19,7 @@ tap.test('Agent API - Stubbed Agent API', (t) => {
     api = new API()
   })
 
-  t.test('should export 29 API calls', (t) => {
+  t.test('should export 30 API calls', (t) => {
     const apiKeys = Object.keys(api.constructor.prototype)
     t.equal(apiKeys.length, EXPECTED_API_COUNT)
     t.end()

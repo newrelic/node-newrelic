@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "Mon Feb 06 2023 16:15:11 GMT-0500 (Eastern Standard Time)",
+  "lastUpdated": "Wed Feb 08 2023 10:32:36 GMT-0500 (Eastern Standard Time)",
   "projectName": "New Relic Node Agent",
   "projectUrl": "https://github.com/newrelic/node-newrelic",
   "includeOptDeps": true,
@@ -15,19 +15,6 @@
       "licenseUrl": "https://github.com/Contrast-Security-Inc/node-fn-inspect/blob/v3.3.0/LICENSE",
       "licenseTextSource": "file",
       "publisher": "Contrast Security"
-    },
-    "@newrelic/native-metrics@9.0.0": {
-      "name": "@newrelic/native-metrics",
-      "version": "9.0.0",
-      "range": "^9.0.0",
-      "licenses": "Apache-2.0",
-      "repoUrl": "https://github.com/newrelic/node-native-metrics",
-      "versionedRepoUrl": "https://github.com/newrelic/node-native-metrics/tree/v9.0.0",
-      "licenseFile": "node_modules/@newrelic/native-metrics/LICENSE",
-      "licenseUrl": "https://github.com/newrelic/node-native-metrics/blob/v9.0.0/LICENSE",
-      "licenseTextSource": "file",
-      "publisher": "New Relic Node.js agent team",
-      "email": "nodejs@newrelic.com"
     }
   },
   "includeDev": true,
@@ -199,15 +186,15 @@
     }
   },
   "devDependencies": {
-    "@newrelic/eslint-config@0.2.0": {
+    "@newrelic/eslint-config@0.3.0": {
       "name": "@newrelic/eslint-config",
-      "version": "0.2.0",
-      "range": "^0.2.0",
+      "version": "0.3.0",
+      "range": "^0.3.0",
       "licenses": "Apache-2.0",
       "repoUrl": "https://github.com/newrelic/eslint-config-newrelic",
-      "versionedRepoUrl": "https://github.com/newrelic/eslint-config-newrelic/tree/v0.2.0",
+      "versionedRepoUrl": "https://github.com/newrelic/eslint-config-newrelic/tree/v0.3.0",
       "licenseFile": "node_modules/@newrelic/eslint-config/LICENSE",
-      "licenseUrl": "https://github.com/newrelic/eslint-config-newrelic/blob/v0.2.0/LICENSE",
+      "licenseUrl": "https://github.com/newrelic/eslint-config-newrelic/blob/v0.3.0/LICENSE",
       "licenseTextSource": "file",
       "publisher": "New Relic Node.js agent team",
       "email": "nodejs@newrelic.com"
@@ -424,15 +411,15 @@
       "licenseTextSource": "file",
       "publisher": "Teddy Katz"
     },
-    "eslint-plugin-sonarjs@0.15.0": {
+    "eslint-plugin-sonarjs@0.18.0": {
       "name": "eslint-plugin-sonarjs",
-      "version": "0.15.0",
-      "range": "^0.15.0",
+      "version": "0.18.0",
+      "range": "^0.18.0",
       "licenses": "LGPL-3.0",
       "repoUrl": "https://github.com/SonarSource/eslint-plugin-sonarjs",
-      "versionedRepoUrl": "https://github.com/SonarSource/eslint-plugin-sonarjs/tree/v0.15.0",
+      "versionedRepoUrl": "https://github.com/SonarSource/eslint-plugin-sonarjs/tree/v0.18.0",
       "licenseFile": "node_modules/eslint-plugin-sonarjs/LICENSE",
-      "licenseUrl": "https://github.com/SonarSource/eslint-plugin-sonarjs/blob/v0.15.0/LICENSE",
+      "licenseUrl": "https://github.com/SonarSource/eslint-plugin-sonarjs/blob/v0.18.0/LICENSE",
       "licenseTextSource": "file"
     },
     "eslint@8.24.0": {

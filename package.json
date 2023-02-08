@@ -198,7 +198,7 @@
     "@newrelic/native-metrics": "^9.0.0"
   },
   "devDependencies": {
-    "@newrelic/eslint-config": "^0.2.0",
+    "@newrelic/eslint-config": "^0.3.0",
     "@newrelic/newrelic-oss-cli": "^0.1.2",
     "@newrelic/proxy": "^2.0.0",
     "@newrelic/test-utilities": "^7.2.0",
@@ -217,7 +217,7 @@
     "eslint-plugin-jsdoc": "^39.3.6",
     "eslint-plugin-node": "^11.1.0",
     "eslint-plugin-prettier": "^3.4.0",
-    "eslint-plugin-sonarjs": "^0.15.0",
+    "eslint-plugin-sonarjs": "^0.18.0",
     "express": "*",
     "glob": "^7.1.2",
     "got": "^11.8.5",
