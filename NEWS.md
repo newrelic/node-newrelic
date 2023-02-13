@@ -1,3 +1,7 @@
+### v9.10.1 (2023-02-13)
+
+* Fixed error with Lambda/ALB serverless instrumentation when no response headers were included
+
 ### v9.10.0 (2023-02-09)
 
 * Exposed a method on [API](https://newrelic.github.io/node-newrelic/API.html#obfuscateSql) to obfuscate sql: `newrelic.obfuscateSql`.
