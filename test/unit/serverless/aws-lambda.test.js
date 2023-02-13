@@ -420,6 +420,30 @@ tap.test('AwsLambda.patchLambdaHandler', (t) => {
       }
     })
 
+    t.test('should work when responding without headers', (t) => {
+      agent.on('transactionFinished', confirmAgentAttribute)
+
+      const apiGatewayProxyEvent = lambdaSampleEvents.apiGatewayProxyEvent
+
+      const wrappedHandler = awsLambda.patchLambdaHandler((event, context, callback) => {
+        callback(null, {
+          isBase64Encoded: false,
+          statusCode: 200,
+          body: 'worked'
+        })
+      })
+
+      wrappedHandler(apiGatewayProxyEvent, stubContext, stubCallback)
+
+      function confirmAgentAttribute(transaction) {
+        const agentAttributes = transaction.trace.attributes.get(ATTR_DEST.TRANS_EVENT)
+
+        t.equal(agentAttributes['http.statusCode'], '200')
+
+        t.end()
+      }
+    })
+
     t.test('should detect event type', (t) => {
       agent.on('transactionFinished', confirmAgentAttribute)
 
