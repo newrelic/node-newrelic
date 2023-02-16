@@ -732,4 +732,15 @@ tap.test('when overriding configuration values via environment variables', (t) =
       t.end()
     })
   })
+
+  t.test('should convert NEW_RELIC_GRPC_IGNORE_STATUS_CODES to integers', (t) => {
+    const env = {
+      NEW_RELIC_GRPC_IGNORE_STATUS_CODES: ['9', '5-7', 'blah', 2]
+    }
+
+    idempotentEnv(env, (config) => {
+      t.same(config.grpc.ignore_status_codes, [9, 5, 6, 7, 2])
+      t.end()
+    })
+  })
 })
