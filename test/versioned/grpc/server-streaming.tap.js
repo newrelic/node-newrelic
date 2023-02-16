@@ -139,7 +139,8 @@ tap.test('gRPC Server: Server Streaming', (t) => {
     t.test(testName, async (t) => {
       const expectedStatusCode = ERR_CODE
       const expectedStatusText = ERR_SERVER_MSG
-      agent.config.grpc.record_errors = config.should
+      agent.config.grpc.record_errors = config.record_errors
+      agent.config.grpc.ignore_status_codes = config.ignore_status_codes
       let transaction
       agent.on('transactionFinished', (tx) => {
         if (tx.name === getServerTransactionName('SayErrorServerStream')) {
