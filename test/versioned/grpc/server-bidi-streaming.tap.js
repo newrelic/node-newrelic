@@ -138,7 +138,8 @@ tap.test('gRPC Server: Bidi Streaming', (t) => {
     const should = config.should ? 'should' : 'should not'
     const testName = `${should} record errors in a transaction when ignoring ${config.ignore_status_codes}`
     t.test(testName, async (t) => {
-      agent.config.grpc.record_errors = config.should
+      agent.config.grpc.record_errors = config.record_errors
+      agent.config.grpc.ignore_status_codes = config.ignore_status_codes
       const expectedStatusCode = ERR_CODE
       const expectedStatusText = ERR_SERVER_MSG
       let transaction
