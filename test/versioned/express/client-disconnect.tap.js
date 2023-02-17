@@ -5,30 +5,30 @@
 
 'use strict'
 
-const fork = require('child_process').fork
 const tap = require('tap')
 const helper = require('../../lib/agent_helper')
 const metrics = require('../../lib/metrics_helper')
+const http = require('http')
 
-function generateApp() {
+function generateApp(t) {
   const express = require('express')
   const bodyParser = require('body-parser')
 
   const app = express()
   app.use(bodyParser.json())
 
-  app.post('/test', async function controller(req, res) {
-    try {
-      await new Promise((resolve) =>
-        setTimeout(() => {
-          resolve()
-        }, req.body.timeout)
-      )
+  app.post('/test', function controller(req, res) {
+    const timeout = setTimeout(() => {
+      const err = new Error('should not hit this as request was aborted')
+      t.error(err)
 
       res.status(200).send('OK')
-    } catch (err) {
-      res.status(500).send('Err')
-    }
+    }, req.body.timeout)
+
+    res.on('close', () => {
+      t.comment('cancelling setTimeout')
+      clearTimeout(timeout)
+    })
   })
 
   return app
@@ -37,7 +37,7 @@ function generateApp() {
 tap.test('Client Premature Disconnection', (t) => {
   t.setTimeout(3000)
   const agent = helper.instrumentMockedAgent()
-  const server = generateApp().listen(0)
+  const server = generateApp(t).listen(0)
   const { port } = server.address()
 
   t.teardown(() => {
@@ -67,6 +67,26 @@ tap.test('Client Premature Disconnection', (t) => {
     t.end()
   })
 
-  const forkedRequest = fork(`${__dirname}/helpers/request.js`)
-  forkedRequest.send(port)
+  const postData = JSON.stringify({ timeout: 1500 })
+  const request = http.request(
+    {
+      hostname: 'localhost',
+      port: port,
+      method: 'POST',
+      path: '/test',
+      headers: {
+        'Content-Type': 'application/json',
+        'Content-Length': Buffer.byteLength(postData)
+      }
+    },
+    function () {}
+  )
+  request.on('error', () => t.comment('swallowing request error'))
+  request.write(postData)
+  request.end()
+
+  setTimeout(() => {
+    t.comment('aborting request')
+    request.destroy()
+  }, 100)
 })
