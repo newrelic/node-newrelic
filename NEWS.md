@@ -1,3 +1,21 @@
+### v9.10.2 (2023-02-21)
+
+* fix: Replaced `request.aborted` with `response.close` in HTTP instrumentation.
+
+--- NOTES NEEDS REVIEW ---
+<h3>Snyk has created this PR to upgrade @grpc/grpc-js from 1.8.5 to 1.8.7.</h3>
+
+:information_source: Keep your dependencies up-to-date. This makes it easier to fix existing vulnerabilities and to more quickly identify and fix newly disclosed vulnerabilities when they affect your project.
+--------------------------
+
+* Fixed issue where setting `NEW_RELIC_GRPC_IGNORE_STATUS_CODES` was not properly parsing the codes as integers, thus not ignoring reporting errors of certain status codes.
+
+--- NOTES NEEDS REVIEW ---
+<h3>Snyk has created this PR to upgrade @grpc/grpc-js from 1.8.4 to 1.8.5.</h3>
+
+:information_source: Keep your dependencies up-to-date. This makes it easier to fix existing vulnerabilities and to more quickly identify and fix newly disclosed vulnerabilities when they affect your project.
+--------------------------
+
 ### v9.10.1 (2023-02-13)
 
 * Fixed error with Lambda/ALB serverless instrumentation when no response headers were included
