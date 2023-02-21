@@ -1,3 +1,9 @@
+### v9.10.2 (2023-02-21)
+
+* fix: Replaced `request.aborted` with `response.close` in HTTP instrumentation.
+* Fixed issue where setting `NEW_RELIC_GRPC_IGNORE_STATUS_CODES` was not properly parsing the codes as integers, thus not ignoring reporting errors of certain status codes.
+* Upgraded `@grpc/grpc-js` from 1.8.4 to 1.8.7.
+
 ### v9.10.1 (2023-02-13)
 
 * Fixed error with Lambda/ALB serverless instrumentation when no response headers were included
