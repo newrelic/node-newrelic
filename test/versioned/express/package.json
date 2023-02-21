@@ -17,6 +17,7 @@
         "async-error.tap.js",
         "bare-router.tap.js",
         "captures-params.tap.js",
+        "client-disconnect.tap.js",
         "errors.tap.js",
         "express-enrouten.tap.js",
         "ignoring.tap.js",
