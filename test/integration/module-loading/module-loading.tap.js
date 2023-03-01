@@ -58,11 +58,11 @@ tap.test('should only log supportability metric for tracking type instrumentatio
     agent = null
   })
 
-  const PKG = `${FEATURES.INSTRUMENTATION.ON_REQUIRE}/@prisma/client`
-  const PKG_VERSION = `${FEATURES.INSTRUMENTATION.ON_REQUIRE}/@prisma/client/Version/3`
+  const PKG = `${FEATURES.INSTRUMENTATION.ON_REQUIRE}/knex`
+  const PKG_VERSION = `${FEATURES.INSTRUMENTATION.ON_REQUIRE}/knex/Version/1`
 
   // eslint-disable-next-line node/no-extraneous-require
-  const prisma = require('@prisma/client')
+  const prisma = require('knex')
   const prismaOnRequiredMetric = agent.metrics._metrics.unscoped[PKG]
   t.equal(prismaOnRequiredMetric.callCount, 1, `should record ${PKG}`)
   const prismaVersionMetric = agent.metrics._metrics.unscoped[PKG_VERSION]

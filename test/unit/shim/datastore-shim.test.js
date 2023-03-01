@@ -713,6 +713,24 @@ test('DatastoreShim', function (t) {
         wrapped(query, cb)
       })
     })
+
+    t.test('should execute inContext function when specified in spec', function (t) {
+      shim.recordQuery(wrappable, 'bar', {
+        query: 'select foo from bar;',
+        inContext(segment) {
+          segment.addAttribute('test-attr', 'unit-test')
+        }
+      })
+
+      helper.runInTransaction(agent, (tx) => {
+        wrappable.bar()
+        const rootSegment = agent.tracer.getSegment()
+        const attrs = rootSegment.children[0].getAttributes()
+        t.equal(attrs['test-attr'], 'unit-test', 'should add attribute to segment while in context')
+        tx.end()
+        t.end()
+      })
+    })
   })
 
   t.test('#recordBatchQuery', function (t) {
