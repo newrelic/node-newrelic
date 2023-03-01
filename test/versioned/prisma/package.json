@@ -1,0 +1,24 @@
+{
+  "name": "prisma-tests",
+  "version": "0.0.0",
+  "private": true,
+  "engines": {
+    "node": ">=14"
+  },
+  "tests": [
+    {
+      "engines": {
+        "node": ">=14"
+      },
+      "dependencies": {
+        "@prisma/client": "^4.0.0",
+        "prisma": "latest"
+      },
+      "files": [
+        "prisma.tap.js"
+      ]
+    }
+  ],
+  "dependencies": {
+  }
+}
