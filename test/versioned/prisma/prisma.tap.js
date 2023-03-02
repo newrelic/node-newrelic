@@ -17,9 +17,6 @@ const seed = require('./prisma/seed')
 
 const findMany = `${PRISMA.STATEMENT}user/findMany`
 const update = `${PRISMA.STATEMENT}user/update`
-// Note that in a raw query we get the raw table name, which in this
-// case is capitalised.
-const raw = `${PRISMA.STATEMENT}User/queryRaw(select)`
 
 const expectedUpsertMetrics = {
   [`${DB.ALL}`]: 4,
@@ -132,20 +129,52 @@ tap.test('Basic run through prisma functionality', { timeout: 30 * 1000 }, async
   })
 
   t.test('Raw queries should be recorded', async (t) => {
+    // Note that in raw queries we get the raw table name, which in
+    // this case is capitalised.
+    const queryRaw = `${PRISMA.STATEMENT}User/queryRaw(select)`
+
     // We want to try the query two ways, both with and without
     // namespacing the table, to make sure we always parse correctly
     // and get the table.
     const queries = [
       prisma.$queryRaw`SELECT * FROM "public"."User"`,
-      prisma.$queryRaw`SELECT * FROM "User"`
+      prisma.$queryRaw`SELECT * FROM "User"`,
+      prisma.$queryRawUnsafe('SELECT * FROM "public"."User"'),
+      prisma.$queryRawUnsafe('SELECT * FROM "User"')
     ]
     for (const query of queries) {
       await helper.runInTransaction(agent, async (tx) => {
         const users = await query
         t.equal(users.length, 2, 'should get two users')
         tx.end()
-        const rawSegment = findSegment(tx.trace.root, raw)
-        t.ok(rawSegment, `segment named ${raw} should exist`)
+        const rawSegment = findSegment(tx.trace.root, queryRaw)
+        t.ok(rawSegment, `segment named ${queryRaw} should exist`)
+      })
+    }
+    t.end()
+  })
+
+  t.test('Raw statements should be recorded', async (t) => {
+    // Note that in raw queries we get the raw table name, which in
+    // this case is capitalised.
+    const statementRaw = `${PRISMA.STATEMENT}User/executeRaw(update)`
+
+    // We want to try the query two ways, both with and without
+    // namespacing the table, to make sure we always parse correctly
+    // and get the table.
+    const queries = [
+      prisma.$executeRaw`UPDATE "public"."User" SET "name"='New Relic was here'`,
+      prisma.$executeRaw`UPDATE "User" SET "name"='New Relic was here'`,
+      prisma.$executeRawUnsafe('UPDATE "public"."User" SET "name"=\'New Relic was here\''),
+      prisma.$executeRawUnsafe('UPDATE "User" SET "name"=\'New Relic was here\'')
+    ]
+    for (const query of queries) {
+      await helper.runInTransaction(agent, async (tx) => {
+        const count = await query
+        t.equal(count, 2, 'should modify two users')
+        tx.end()
+        const rawSegment = findSegment(tx.trace.root, statementRaw)
+        t.ok(rawSegment, `segment named ${statementRaw} should exist`)
       })
     }
     t.end()
