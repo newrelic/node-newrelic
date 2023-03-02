@@ -161,8 +161,8 @@ test('PrismaClient unit tests', (t) => {
       t.equal(children.length, 3, 'should have 3 segments')
       const [firstSegment, secondSegment, thirdSegment] = children
       t.equal(firstSegment.name, 'Datastore/statement/Prisma/user/create')
-      t.equal(secondSegment.name, 'Datastore/statement/Prisma/unit-test/executeRaw(select)')
-      t.equal(thirdSegment.name, 'Datastore/statement/Prisma/unit-test/executeRaw(select)')
+      t.equal(secondSegment.name, 'Datastore/statement/Prisma/unit-test/select')
+      t.equal(thirdSegment.name, 'Datastore/statement/Prisma/schema.unit-test/select')
       t.same(firstSegment.getAttributes(), {
         product: 'Prisma',
         host: 'my-host',
@@ -231,7 +231,7 @@ test('PrismaClient unit tests', (t) => {
       await client._executeRequest({ action: 'executeRaw' })
       const { children } = tx.trace.root
       const [firstSegment] = children
-      t.equal(firstSegment.name, 'Datastore/statement/Prisma/other/executeRaw(other)')
+      t.equal(firstSegment.name, 'Datastore/statement/Prisma/other/other')
       t.end()
     })
   })
@@ -261,7 +261,7 @@ test('PrismaClient unit tests', (t) => {
       const firstSegment = children[0]
       const secondSegment = children[1]
       t.equal(firstSegment.name, 'Datastore/statement/Prisma/user/create')
-      t.equal(secondSegment.name, 'Datastore/statement/Prisma/unit-test/executeRaw(select)')
+      t.equal(secondSegment.name, 'Datastore/statement/Prisma/unit-test/select')
       t.same(firstSegment.getAttributes(), {
         product: 'Prisma',
         host: 'my-host',
