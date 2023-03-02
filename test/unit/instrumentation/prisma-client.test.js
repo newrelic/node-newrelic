@@ -290,4 +290,15 @@ test('PrismaClient unit tests', (t) => {
       t.end()
     })
   })
+
+  t.test('should not instrument prisma/client on versions less than 4.0.0', (t) => {
+    const MockPrismaClient = getMockModule()
+    const prisma = { PrismaClient: MockPrismaClient }
+
+    shim.require.returns({ version: '3.8.0' })
+    initialize(agent, prisma, '@prisma/client', shim)
+    const client = new prisma.PrismaClient()
+    t.notOk(shim.isWrapped(client._executeRequest), 'should not instrument @prisma/client')
+    t.end()
+  })
 })
