@@ -48,6 +48,13 @@ else
   docker run -d --name nr_node_postgres -p 5432:5432 postgres:9.2;
 fi
 
+if docker ps -a | grep -q "nr_node_postgres_prisma"; then
+  docker start nr_node_postgres_prisma;
+else
+  # Prisma needs a newer version of Postgres
+  docker run -d --name nr_node_postgres_prisma -p 5434:5432 -e POSTGRES_PASSWORD=postgres postgres:15;
+fi
+
 if docker ps -a | grep -q "nr_node_rabbit"; then
   docker start nr_node_rabbit;
 else

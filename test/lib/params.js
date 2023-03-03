@@ -28,6 +28,7 @@ module.exports = {
 
   postgres_host: process.env.NR_NODE_TEST_POSTGRES_HOST || 'localhost',
   postgres_port: process.env.NR_NODE_TEST_POSTGRES_PORT || 5432,
+  postgres_prisma_port: process.env.NR_NODE_TEST_POSTGRES_PRISMA_PORT || 5434,
   postgres_user: process.env.NR_NODE_TEST_POSTGRES_USER || 'postgres',
   postgres_pass: process.env.NR_NODE_TEST_POSTGRES_PASS,
   postgres_db: process.env.NR_NODE_TEST_POSTGRES_DB || 'postgres',
