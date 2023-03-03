@@ -56,7 +56,6 @@ tap.test('Basic run through prisma functionality', { timeout: 30 * 1000 }, async
     prisma = null
   })
 
-
   function verifyMetrics(t) {
     for (const [metricName, expectedCount] of Object.entries(expectedUpsertMetrics)) {
       const metric = agent.metrics.getMetric(metricName)
