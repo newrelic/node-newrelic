@@ -101,14 +101,12 @@ jobs:
       env:
         VERSIONED_MODE: '--minor'
         JOBS: 4 # 2 per CPU seems to be the sweet spot in GHA (July 2022)
-        PRISMA_CLI_BINARY_TARGETS: debian-openssl-3.0.x,debian-openssl-1.1.x
     - name: Run Versioned Tests (npm v7 / Node 16+)
       if: ${{ matrix.node-version != '14.x' }}
       run: TEST_CHILD_TIMEOUT=600000 npm run versioned:npm7 prisma
       env:
         VERSIONED_MODE: '--minor'
         JOBS: 4 # 2 per CPU seems to be the sweet spot in GHA (July 2022)
-        PRISMA_CLI_BINARY_TARGETS: debian-openssl-3.0.x,debian-openssl-1.1.x
     - name: Archive Versioned Test Coverage
       uses: actions/upload-artifact@v3
       if: github.ref != 'refs/heads/main'
