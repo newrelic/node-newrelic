@@ -13,8 +13,6 @@ const urltils = require('../../../lib/util/urltils')
 
 const { initPrismaApp, getPostgresUrl } = require('./setup')
 const { upsertUsers } = require('./app')
-const seed = require('./prisma/seed')
-
 const findMany = `${PRISMA.STATEMENT}user/findMany`
 const update = `${PRISMA.STATEMENT}user/update`
 
@@ -30,10 +28,15 @@ const expectedUpsertMetrics = {
 }
 
 tap.test('Basic run through prisma functionality', { timeout: 30 * 1000 }, async (t) => {
+  await initPrismaApp()
+  // Require seed after the prisma app has been init
+  const seed = require('./prisma/seed')
+
   let agent = null
   let PrismaClient = null
   let prisma = null
   let host = null
+
   t.beforeEach(async () => {
     process.env.DATABASE_URL = getPostgresUrl()
     agent = helper.instrumentMockedAgent()
@@ -52,7 +55,7 @@ tap.test('Basic run through prisma functionality', { timeout: 30 * 1000 }, async
     PrismaClient = null
     prisma = null
   })
-  await initPrismaApp()
+
 
   function verifyMetrics(t) {
     for (const [metricName, expectedCount] of Object.entries(expectedUpsertMetrics)) {
