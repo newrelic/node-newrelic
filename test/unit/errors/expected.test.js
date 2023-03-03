@@ -20,7 +20,7 @@ const errorHelper = require('../../../lib/errors/helper')
 const expect = chai.expect
 
 describe('Expected Errors', function () {
-  describe('when expeced configuration is present', function () {
+  describe('when expected configuration is present', function () {
     let agent
 
     beforeEach(function () {

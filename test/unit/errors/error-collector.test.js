@@ -289,7 +289,7 @@ tap.test('Errors', (t) => {
       t.end()
     })
 
-    t.test('should not gather appliction errors if it is switched off by user config', (t) => {
+    t.test('should not gather application errors if it is switched off by user config', (t) => {
       const error = new Error('this error will never be seen')
       agent.config.error_collector.enabled = false
 
@@ -1169,7 +1169,7 @@ tap.test('Errors', (t) => {
 
     t.test('should not generate expected error metric for ignored errors', (t) => {
       agent.config.error_collector.expected_classes = ['Error']
-      agent.config.error_collector.ignore_classes = ['Error'] // takes prescedence
+      agent.config.error_collector.ignore_classes = ['Error'] // takes precedence
       const transaction = createTransaction(agent, 200)
 
       errorCollector.add(transaction, new Error('error1'))
