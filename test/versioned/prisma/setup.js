@@ -20,6 +20,9 @@ function getPostgresUrl() {
 }
 async function initPrismaApp() {
   process.env.DATABASE_URL = getPostgresUrl()
+  const prismaVersion = require('prisma/package.json').version
+  // Install client here to ensure it matches the main prisma version
+  await exec(`npm install @prisma/client@${prismaVersion}`)
   await exec('npx prisma generate')
   await exec('npx prisma migrate reset --force')
   delete process.env.DATABASE_URL
