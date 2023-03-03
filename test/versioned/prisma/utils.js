@@ -97,6 +97,7 @@ utils.verifySlowQueries = function verifySlowQueries(t, agent, queries = []) {
   for (const sample of agent.queries.samples.values()) {
     t.equal(sample.trace.query, queries[i], 'Query name should be expected')
     const queryParams = sample.getParams()
+    console.log(queryParams)
 
     t.equal(queryParams.host, metricHostName, 'instance data should show up in slow query params')
 

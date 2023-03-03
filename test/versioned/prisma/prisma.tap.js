@@ -20,13 +20,13 @@ tap.test('Basic run through prisma functionality', { timeout: 30 * 1000 }, (t) =
 
   t.before(async () => {
     await initPrismaApp()
+    await seed()
   })
   t.beforeEach(async () => {
     process.env.DATABASE_URL = getPostgresUrl()
     agent = helper.instrumentMockedAgent()
     PrismaClient = require('@prisma/client').PrismaClient
     prisma = new PrismaClient()
-    await seed()
   })
 
   t.afterEach(async () => {
