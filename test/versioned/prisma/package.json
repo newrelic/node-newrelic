@@ -17,8 +17,5 @@
         "prisma.tap.js"
       ]
     }
-  ],
-  "dependencies": {
-    "@prisma/client": "^4.11.0"
-  }
+  ]
 }
