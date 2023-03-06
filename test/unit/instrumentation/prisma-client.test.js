@@ -42,7 +42,7 @@ test('PrismaClient unit tests', (t) => {
     Engine.prototype.getConfig = sinon.stub()
     let PrismaClient
     if (semver.gte(version, '4.11.0')) {
-      PrismaClient = function PrismaClient() {
+      PrismaClient = function () {
         const libraryInstantiationPromise = new Promise((resolve) => resolve())
         this._engine = {
           libraryInstantiationPromise
@@ -50,7 +50,7 @@ test('PrismaClient unit tests', (t) => {
         this._engine.library = new Engine()
       }
     } else {
-      PrismaClient = function PrismaClient() {
+      PrismaClient = function () {
         this._engine = new Engine()
       }
     }

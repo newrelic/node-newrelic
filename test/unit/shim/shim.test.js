@@ -2442,6 +2442,7 @@ tap.test('Shim', function (t) {
     t.afterEach(afterEach)
     t.test('should detect if an item is a string', function (t) {
       t.ok(shim.isString('foobar'))
+      t.ok(shim.isString(new String('foobar')))
       t.notOk(shim.isString({}))
       t.notOk(shim.isString([]))
       t.notOk(shim.isString(arguments))
