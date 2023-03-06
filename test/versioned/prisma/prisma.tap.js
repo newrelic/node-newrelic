@@ -10,7 +10,6 @@ const { findSegment } = require('../../lib/metrics_helper')
 const { verify, verifySlowQueries, findMany, raw, rawUpdate } = require('./utils')
 const { initPrismaApp, getPostgresUrl } = require('./setup')
 const { upsertUsers } = require('./app')
-const seed = require('./prisma/seed')
 
 tap.test('Basic run through prisma functionality', { timeout: 30 * 1000 }, (t) => {
   t.autoend()
@@ -20,8 +19,8 @@ tap.test('Basic run through prisma functionality', { timeout: 30 * 1000 }, (t) =
 
   t.before(async () => {
     await initPrismaApp()
-    await seed()
   })
+
   t.beforeEach(async () => {
     process.env.DATABASE_URL = getPostgresUrl()
     agent = helper.instrumentMockedAgent()
