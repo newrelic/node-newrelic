@@ -33,4 +33,15 @@ async function seed() {
   await prisma.$disconnect()
 }
 
-module.exports = seed
+seed()
+  .then(async () => {
+    await prisma.$disconnect()
+  })
+  .catch(async (e) => {
+    // eslint-disable-next-line no-console
+    console.error(e)
+
+    await prisma.$disconnect()
+
+    throw e
+  })
