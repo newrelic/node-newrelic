@@ -42,12 +42,15 @@ test('PrismaClient unit tests', (t) => {
     Engine.prototype.getConfig = sinon.stub()
     let PrismaClient
     if (semver.gte(version, '4.11.0')) {
-      PrismaClient = function PrismaClient() {
-        this._engine = {}
+      PrismaClient = function () {
+        const libraryInstantiationPromise = new Promise((resolve) => resolve())
+        this._engine = {
+          libraryInstantiationPromise
+        }
         this._engine.library = new Engine()
       }
     } else {
-      PrismaClient = function PrismaClient() {
+      PrismaClient = function () {
         this._engine = new Engine()
       }
     }
@@ -161,8 +164,8 @@ test('PrismaClient unit tests', (t) => {
       t.equal(children.length, 3, 'should have 3 segments')
       const [firstSegment, secondSegment, thirdSegment] = children
       t.equal(firstSegment.name, 'Datastore/statement/Prisma/user/create')
-      t.equal(secondSegment.name, 'Datastore/statement/Prisma/unit-test/executeRaw(select)')
-      t.equal(thirdSegment.name, 'Datastore/statement/Prisma/unit-test/executeRaw(select)')
+      t.equal(secondSegment.name, 'Datastore/statement/Prisma/unit-test/select')
+      t.equal(thirdSegment.name, 'Datastore/statement/Prisma/schema.unit-test/select')
       t.same(firstSegment.getAttributes(), {
         product: 'Prisma',
         host: 'my-host',
@@ -231,7 +234,7 @@ test('PrismaClient unit tests', (t) => {
       await client._executeRequest({ action: 'executeRaw' })
       const { children } = tx.trace.root
       const [firstSegment] = children
-      t.equal(firstSegment.name, 'Datastore/statement/Prisma/other/executeRaw(other)')
+      t.equal(firstSegment.name, 'Datastore/statement/Prisma/other/other')
       t.end()
     })
   })
@@ -252,16 +255,19 @@ test('PrismaClient unit tests', (t) => {
 
     helper.runInTransaction(agent, async (tx) => {
       await client._executeRequest({ clientMethod: 'user.create', action: 'create' })
+      // need this here to work around the fact inContext is typically sync
+      // but we use it as async. In normal behavior you will have more async
+      // work happening to where it will apply the instance configuration to the active segment accordingly but in unit tests this is wonky
+      await new Promise((resolve) => resolve())
       await client._executeRequest({
         args: [['select test from unit-test;']],
         action: 'executeRaw'
       })
       const { children } = tx.trace.root
-      t.equal(children.length, 2, 'should have 2 segments')
-      const firstSegment = children[0]
-      const secondSegment = children[1]
+      t.equal(children.length, 2, 'should have 3 segments')
+      const [firstSegment, secondSegment] = children
       t.equal(firstSegment.name, 'Datastore/statement/Prisma/user/create')
-      t.equal(secondSegment.name, 'Datastore/statement/Prisma/unit-test/executeRaw(select)')
+      t.equal(secondSegment.name, 'Datastore/statement/Prisma/unit-test/select')
       t.same(firstSegment.getAttributes(), {
         product: 'Prisma',
         host: 'my-host',
@@ -286,6 +292,10 @@ test('PrismaClient unit tests', (t) => {
 
     helper.runInTransaction(agent, async () => {
       await client._executeRequest({ clientMethod: 'user.create', action: 'create' })
+      // need this here to work around the fact inContext is typically sync
+      // but we use it as async. In normal behavior you will have more async
+      // work happening to where it will apply the instance configuration to the active segment accordingly but in unit tests this is wonky
+      await new Promise((resolve) => resolve())
       t.same(client[symbols.prismaConnection], {})
       t.end()
     })
