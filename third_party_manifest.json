@@ -174,6 +174,18 @@
       "email": "i@izs.me",
       "url": "http://blog.izs.me"
     },
+    "nr-node-security-agent@1.0.0-limited-preview": {
+      "name": "nr-node-security-agent",
+      "version": "1.0.0-limited-preview",
+      "range": "github:k2io/nr-node-security-agent#agent_init",
+      "licenses": "Apache-2.0",
+      "repoUrl": "https://github.com/k2io/nr-node-security-agent",
+      "versionedRepoUrl": "https://github.com/k2io/nr-node-security-agent/tree/v1.0.0-limited-preview",
+      "licenseFile": "node_modules/nr-node-security-agent/README.md",
+      "licenseUrl": "https://github.com/k2io/nr-node-security-agent/blob/v1.0.0-limited-preview/README.md",
+      "licenseTextSource": "spdx",
+      "publisher": "newrelic"
+    },
     "readable-stream@3.6.2": {
       "name": "readable-stream",
       "version": "3.6.2",
