@@ -469,7 +469,6 @@ tap.test('Errors', (t) => {
         t.end()
       })
 
-      // ////////////////////
       t.test(
         'should generate transaction error metric for unexpected error via noticeError',
         (t) => {
@@ -508,7 +507,7 @@ tap.test('Errors', (t) => {
 
           const metric = agent.metrics.getMetric('Errors/WebTransaction/TestJS/path')
 
-          t.equal(metric.callCount, 0)
+          t.notOk(metric)
           t.end()
         }
       )
