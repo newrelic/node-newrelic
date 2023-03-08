@@ -1,6 +1,21 @@
+### v9.11.0 (2023-03-08)
+ * Added instrumentation for Prisma(`@prisma/client`).
+   * Miniumum supported version of `@prisma/client` is 4.0.0.
+   * Captures spans for queries. 
+     * It names them based on the model and action.(i.e. Datastore/statement/Prisma/user/create)
+     * For statements and queries using the `$queryRaw`, `$executeRaw`, `$queryRawUnsafe`, and `$executeRawUnsafe` the names will be aligned with the raw SQL.(i.e. Datastore/statement/Prisma/User/select)
+   * Captures database metrics for all statements and queries.
+   * Captures SQL Traces.
+   * Provides connection between application and database server via service maps. 
+
+Huge shoutout to @osmanmrtacar for the original contribution 🙏🏻
+
+ * Updated `@grpc/protoloader` from 0.7.4 to 0.7.5.
+ * Updated `@grpc/grpc-js` from 1.8.7 to 1.8.8. 
+
 ### v9.10.2 (2023-02-21)
 
-* fix: Replaced `request.aborted` with `response.close` in HTTP instrumentation.
+* Replaced `request.aborted` with `response.close` in HTTP instrumentation.
 * Fixed issue where setting `NEW_RELIC_GRPC_IGNORE_STATUS_CODES` was not properly parsing the codes as integers, thus not ignoring reporting errors of certain status codes.
 * Upgraded `@grpc/grpc-js` from 1.8.4 to 1.8.7.
 
