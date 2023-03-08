@@ -16,6 +16,7 @@ const chai = require('chai')
 const should = require('chai').should()
 const urltils = require('../../../lib/util/urltils')
 const errorHelper = require('../../../lib/errors/helper')
+const API = require('../../../api')
 
 const expect = chai.expect
 
@@ -125,6 +126,19 @@ describe('Expected Errors', function () {
         expect(errorExpected[0]['error.expected']).equals(true)
 
         done()
+      })
+    })
+
+    it('expected errors raised via noticeError should not increment apdex frustrating', function () {
+      helper.runInTransaction(agent, function (tx) {
+        const api = new API(agent)
+        api.noticeError(new Error('we expected something to go wrong'), {}, true)
+        const apdexStats = tx.metrics.getOrCreateApdexMetric(NAMES.APDEX)
+        tx._setApdex(NAMES.APDEX, 1, 1)
+        const json = apdexStats.toJSON()
+        tx.end()
+        // no errors in the frustrating column
+        expect(json[2]).equals(0)
       })
     })
 

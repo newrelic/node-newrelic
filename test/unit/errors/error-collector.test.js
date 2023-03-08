@@ -512,8 +512,6 @@ tap.test('Errors', (t) => {
         }
       )
 
-      // ///////////////////////
-
       t.test('should ignore errors if related transaction is ignored', (t) => {
         const transaction = createTransaction(agent, 500)
         transaction.ignore = true
@@ -1721,13 +1719,13 @@ tap.test('Errors', (t) => {
         })
         t.test('unexpected noticeError should default to expected: false', (t) => {
           const error = new Error('another noticed error')
-          api.noticeError(error, null, false)
+          api.noticeError(error)
 
           const attributes = getFirstEventIntrinsicAttributes(aggregator, t)
           t.equal(attributes['error.expected'], false)
           t.end()
         })
-        t.test('noticeError true should be definable without customAttributes', (t) => {
+        t.test('noticeError expected:true should be definable without customAttributes', (t) => {
           const error = new Error('yet another noticed expected error')
           api.noticeError(error, true)
 
@@ -1735,7 +1733,7 @@ tap.test('Errors', (t) => {
           t.equal(attributes['error.expected'], true)
           t.end()
         })
-        t.test('noticeError false should be definable without customAttributes', (t) => {
+        t.test('noticeError expected:false should be definable without customAttributes', (t) => {
           const error = new Error('yet another noticed unexpected error')
           api.noticeError(error, false)
 
@@ -1762,10 +1760,6 @@ tap.test('Errors', (t) => {
             t.end()
           }
         )
-
-        // / local expected:false should override global expected:true
-        // / local expected:true should override global expected:false
-
         t.end()
       })
       t.end()
