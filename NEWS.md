@@ -1,3 +1,37 @@
+### v9.11.0 (2023-03-08)
+
+--- NOTES NEEDS REVIEW ---
+<p>This PR was automatically created by Snyk using the credentials of a real user.</p><br /><h3>Snyk has created this PR to upgrade @grpc/proto-loader from 0.7.4 to 0.7.5.</h3>
+
+:information_source: Keep your dependencies up-to-date. This makes it easier to fix existing vulnerabilities and to more quickly identify and fix newly disclosed vulnerabilities when they affect your project.
+--------------------------
+
+* Updated prisma instrumentation to support the capturing of SQL Traces.
+
+--- NOTES NEEDS REVIEW ---
+Trying to fix the prisma test run on `main`.
+--------------------------
+
+--- NOTES NEEDS REVIEW ---
+<h3>Snyk has created this PR to upgrade @grpc/grpc-js from 1.8.7 to 1.8.8.</h3>
+
+:information_source: Keep your dependencies up-to-date. This makes it easier to fix existing vulnerabilities and to more quickly identify and fix newly disclosed vulnerabilities when they affect your project.
+--------------------------
+
+* Added support for Prisma.
+   * Captures spans for queries. It names them based on the model and action.(i.e. Datastore/statement/Prisma/user/create)
+   * Captures database metrics for queries.
+   * Provides connection between application and database server via service maps. 
+
+Huge shoutout to @osmanmrtacar for the original contribution 🙏🏻
+
+--- NOTES NEEDS REVIEW ---
+I'm not sure if we ever use this but it is using a repo only npm token. I updated to use our org level token.
+
+--------------------------
+
+Reduced cognitive complexity in lib/metrics/normalizer.js
+
 ### v9.10.2 (2023-02-21)
 
 * fix: Replaced `request.aborted` with `response.close` in HTTP instrumentation.
