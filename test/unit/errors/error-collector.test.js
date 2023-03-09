@@ -1755,7 +1755,7 @@ tap.test('Errors', (t) => {
 
             t.equal(Object.keys(customAttributes).length, 2)
             t.ok(customAttributes.c)
-            t.equal(attributes['error.expected'], true) // is false
+            t.equal(attributes['error.expected'], true)
             t.equal(Object.keys(agentAttributes).length, 0)
             t.end()
           }
