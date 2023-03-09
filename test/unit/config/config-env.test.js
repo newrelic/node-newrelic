@@ -743,4 +743,30 @@ tap.test('when overriding configuration values via environment variables', (t) =
       t.end()
     })
   })
+
+  t.test('should convert security env vars accordingly', (t) => {
+    const env = {
+      NEW_RELIC_SECURITY_ENABLED: true,
+      NEW_RELIC_SECURITY_AGENT_ENABLED: true,
+      NEW_RELIC_SECURITY_MODE: 'RASP',
+      NEW_RELIC_SECURITY_VALIDATOR_SERVICE_URL: 'new-url',
+      NEW_RELIC_SECURITY_DETECTION_RCI_ENABLED: false,
+      NEW_RELIC_SECURITY_DETECTION_RXSS_ENABLED: false,
+      NEW_RELIC_SECURITY_DETECTION_DESERIALIZATION_ENABLED: false
+    }
+    idempotentEnv(env, (config) => {
+      t.same(config.security, {
+        enabled: true,
+        agent: { enabled: true },
+        mode: 'RASP',
+        validator_service_url: 'new-url',
+        detection: {
+          rci: { enabled: false },
+          rxss: { enabled: false },
+          deserialization: { enabled: false }
+        }
+      })
+      t.end()
+    })
+  })
 })
