@@ -289,7 +289,7 @@ tap.test('Errors', (t) => {
       t.end()
     })
 
-    t.test('should not gather appliction errors if it is switched off by user config', (t) => {
+    t.test('should not gather application errors if it is switched off by user config', (t) => {
       const error = new Error('this error will never be seen')
       agent.config.error_collector.enabled = false
 
@@ -468,6 +468,49 @@ tap.test('Errors', (t) => {
         t.notOk(metric)
         t.end()
       })
+
+      t.test(
+        'should generate transaction error metric for unexpected error via noticeError',
+        (t) => {
+          const api = new API(agent)
+          const transaction = createTransaction(agent, 200)
+
+          agent.tracer.getTransaction = () => {
+            return transaction
+          }
+
+          api.noticeError(new Error('unexpected error'))
+          api.noticeError(new Error('another unexpected error'))
+
+          finalizeCollector.onTransactionFinished(transaction)
+
+          const metric = agent.metrics.getMetric('Errors/WebTransaction/TestJS/path')
+          t.equal(metric.callCount, 2)
+          t.end()
+        }
+      )
+
+      t.test(
+        'should not generate transaction error metric for expected error via noticeError',
+        (t) => {
+          const api = new API(agent)
+          const transaction = createTransaction(agent, 200)
+
+          agent.tracer.getTransaction = () => {
+            return transaction
+          }
+
+          api.noticeError(new Error('expected error'), {}, true)
+          api.noticeError(new Error('another expected error'), {}, true)
+
+          finalizeCollector.onTransactionFinished(transaction)
+
+          const metric = agent.metrics.getMetric('Errors/WebTransaction/TestJS/path')
+
+          t.notOk(metric)
+          t.end()
+        }
+      )
 
       t.test('should ignore errors if related transaction is ignored', (t) => {
         const transaction = createTransaction(agent, 500)
@@ -1169,7 +1212,7 @@ tap.test('Errors', (t) => {
 
     t.test('should not generate expected error metric for ignored errors', (t) => {
       agent.config.error_collector.expected_classes = ['Error']
-      agent.config.error_collector.ignore_classes = ['Error'] // takes prescedence
+      agent.config.error_collector.ignore_classes = ['Error'] // takes precedence
       const transaction = createTransaction(agent, 200)
 
       errorCollector.add(transaction, new Error('error1'))
@@ -1665,6 +1708,58 @@ tap.test('Errors', (t) => {
           t.equal(Object.keys(agentAttributes).length, 0)
           t.end()
         })
+
+        t.test('should preserve expected flag for noticeError', (t) => {
+          const error = new Error('some noticed error')
+          api.noticeError(error, null, true)
+
+          const attributes = getFirstEventIntrinsicAttributes(aggregator, t)
+          t.equal(attributes['error.expected'], true)
+          t.end()
+        })
+        t.test('unexpected noticeError should default to expected: false', (t) => {
+          const error = new Error('another noticed error')
+          api.noticeError(error)
+
+          const attributes = getFirstEventIntrinsicAttributes(aggregator, t)
+          t.equal(attributes['error.expected'], false)
+          t.end()
+        })
+        t.test('noticeError expected:true should be definable without customAttributes', (t) => {
+          const error = new Error('yet another noticed expected error')
+          api.noticeError(error, true)
+
+          const attributes = getFirstEventIntrinsicAttributes(aggregator, t)
+          t.equal(attributes['error.expected'], true)
+          t.end()
+        })
+        t.test('noticeError expected:false should be definable without customAttributes', (t) => {
+          const error = new Error('yet another noticed unexpected error')
+          api.noticeError(error, false)
+
+          const attributes = getFirstEventIntrinsicAttributes(aggregator, t)
+          t.equal(attributes['error.expected'], false)
+          t.end()
+        })
+        t.test(
+          'noticeError should not interfere with agentAttributes and customAttributes',
+          (t) => {
+            const error = new Error('and even yet another noticed error')
+            let customAttributes = { a: 'b', c: 'd' }
+
+            api.noticeError(error, customAttributes, true)
+
+            const agentAttributes = getFirstEventAgentAttributes(aggregator, t)
+            const attributes = getFirstEventIntrinsicAttributes(aggregator, t)
+            customAttributes = getFirstEventCustomAttributes(aggregator, t)
+
+            t.equal(Object.keys(customAttributes).length, 2)
+            t.ok(customAttributes.c)
+            t.equal(attributes['error.expected'], true)
+            t.equal(Object.keys(agentAttributes).length, 0)
+            t.end()
+          }
+        )
         t.end()
       })
       t.end()

@@ -16,11 +16,12 @@ const chai = require('chai')
 const should = require('chai').should()
 const urltils = require('../../../lib/util/urltils')
 const errorHelper = require('../../../lib/errors/helper')
+const API = require('../../../api')
 
 const expect = chai.expect
 
 describe('Expected Errors', function () {
-  describe('when expeced configuration is present', function () {
+  describe('when expected configuration is present', function () {
     let agent
 
     beforeEach(function () {
@@ -125,6 +126,19 @@ describe('Expected Errors', function () {
         expect(errorExpected[0]['error.expected']).equals(true)
 
         done()
+      })
+    })
+
+    it('expected errors raised via noticeError should not increment apdex frustrating', function () {
+      helper.runInTransaction(agent, function (tx) {
+        const api = new API(agent)
+        api.noticeError(new Error('we expected something to go wrong'), {}, true)
+        const apdexStats = tx.metrics.getOrCreateApdexMetric(NAMES.APDEX)
+        tx._setApdex(NAMES.APDEX, 1, 1)
+        const json = apdexStats.toJSON()
+        tx.end()
+        // no errors in the frustrating column
+        expect(json[2]).equals(0)
       })
     })
 
@@ -247,7 +261,8 @@ describe('Expected Errors', function () {
     it('should not increment error metric call counts, bg transaction', function () {
       helper.runInTransaction(agent, function (tx) {
         agent.config.error_collector.expected_messages = { Error: ['except this error'] }
-        const exception = new Error('except this error')
+        const error = new Error('except this error')
+        const exception = new Exception({ error })
         const result = errorHelper.isExpectedException(tx, exception, agent.config, urltils)
 
         expect(result).equals(true)

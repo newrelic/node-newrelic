@@ -403,7 +403,8 @@ API.prototype.addCustomSpanAttribute = function addCustomSpanAttribute(key, valu
  *    } catch (err) {
  *      newrelic.noticeError(
  *        err,
- *        {extraInformation: "error already handled in the application"}
+ *        {extraInformation: "error already handled in the application"},
+ *        true
  *      );
  *    }
  *
@@ -414,11 +415,20 @@ API.prototype.addCustomSpanAttribute = function addCustomSpanAttribute(key, valu
  *  The error to be traced.
  * @param {object} [customAttributes]
  *  Optional. Any custom attributes to be displayed in the New Relic UI.
- * @returns {false|undefined} Retruns false when disabled/errored, otherwise undefined
+ * @param {boolean} expected
+ *  Optional. False by default. True if the error is expected, meaning it should be collected
+ *  for error events and traces, but should not impact error rate.
+ * @returns {false|undefined} Returns false when disabled/errored, otherwise undefined
  */
-API.prototype.noticeError = function noticeError(error, customAttributes) {
+API.prototype.noticeError = function noticeError(error, customAttributes, expected = false) {
   const metric = this.agent.metrics.getOrCreateMetric(NAMES.SUPPORTABILITY.API + '/noticeError')
   metric.incrementCallCount()
+
+  // let users skip the custom attributes if they want
+  if (customAttributes && typeof customAttributes === 'boolean') {
+    expected = customAttributes
+    customAttributes = null
+  }
 
   if (!this.agent.config.api.notice_error_enabled) {
     logger.debug('Config.api.notice_error_enabled set to false, not collecting error')
@@ -446,7 +456,7 @@ API.prototype.noticeError = function noticeError(error, customAttributes) {
   }
 
   const transaction = this.agent.tracer.getTransaction()
-  this.agent.errors.addUserError(transaction, error, filteredAttributes)
+  this.agent.errors.addUserError(transaction, error, filteredAttributes, expected)
 }
 
 /**
