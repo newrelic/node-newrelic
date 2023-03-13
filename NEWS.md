@@ -1,3 +1,13 @@
+### v9.12.0 (2023-03-13)
+
+--- NOTES NEEDS REVIEW ---
+<p>This PR was automatically created by Snyk using the credentials of a real user.</p><br /><h3>Snyk has created this PR to upgrade @grpc/grpc-js from 1.8.8 to 1.8.9.</h3>
+
+:information_source: Keep your dependencies up-to-date. This makes it easier to fix existing vulnerabilities and to more quickly identify and fix newly disclosed vulnerabilities when they affect your project.
+--------------------------
+
+* Added ability to mark errors as expected when using `newrelic.noticeError`.
+
 ### v9.11.0 (2023-03-08)
  * Added instrumentation for Prisma(`@prisma/client`).
    * Miniumum supported version of `@prisma/client` is 4.0.0.
