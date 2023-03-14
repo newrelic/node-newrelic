@@ -53,7 +53,10 @@ function getPlugin(shim, config) {
  */
 function headerMiddleware(shim, next) {
   return async function wrappedHeaderMw(args) {
-    args.request.headers[shim.DISABLE_DT] = true
+    // this is an indicator in the agent http-outbound instrumentation
+    // to disable DT from AWS requests as they are not necessary
+    // This header will be removed before the http request goes over the wire
+    args.request.headers['x-new-relic-disable-dt'] = 'true'
     return await next(args)
   }
 }
