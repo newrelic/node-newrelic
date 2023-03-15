@@ -1,9 +1,18 @@
-### v9.12.0 (2023-03-13)
+### v9.12.1 (2023-03-15)
+
 * Added ability to mark errors as expected when using `newrelic.noticeError`, by adding an optional boolean: 
   * `newrelic.noticeError(error, {customAttributes}, true|false)` when there are custom error attributes.
   * `newrelic.noticeError(error, true|false)` if there are no custom error attributes.
   * `expected` errors do not affect error metrics or Apdex. 
+
+* Added ability to disable distributed tracing for aws-sdk >= 3.290.0.
+
+* Updated README header image to latest OSS office required images
+  
 * updated @grpc/grpc-js from 1.8.8 to 1.8.9
+
+### v9.12.0 (2023-03-13)
+* Release pipeline did not complete.
 
 ### v9.11.0 (2023-03-08)
  * Added instrumentation for Prisma(`@prisma/client`).
