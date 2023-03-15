@@ -1,3 +1,20 @@
+### v9.12.1 (2023-03-15)
+
+* Update README header image to latest OSS office required images
+
+* Added ability to disable distributed tracing for aws-sdk >= 3.290.0.
+
+* Added ability to mark errors as expected when using `newrelic.noticeError`.
+* Updated @grpc/grpc-js from 1.8.8 to 1.8.9.
+
+--- NOTES NEEDS REVIEW ---
+<p>This PR was automatically created by Snyk using the credentials of a real user.</p><br /><h3>Snyk has created this PR to upgrade @grpc/grpc-js from 1.8.8 to 1.8.9.</h3>
+
+:information_source: Keep your dependencies up-to-date. This makes it easier to fix existing vulnerabilities and to more quickly identify and fix newly disclosed vulnerabilities when they affect your project.
+--------------------------
+
+* Added ability to mark errors as expected when using `newrelic.noticeError`.
+
 ### v9.12.0 (2023-03-13)
 * Added ability to mark errors as expected when using `newrelic.noticeError`, by adding an optional boolean: 
   * `newrelic.noticeError(error, {customAttributes}, true|false)` when there are custom error attributes.
