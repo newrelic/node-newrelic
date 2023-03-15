@@ -7,7 +7,6 @@
 
 const tap = require('tap')
 const utils = require('@newrelic/test-utilities')
-const sinon = require('sinon')
 
 const common = require('../common')
 const { createResponseServer, FAKE_CREDENTIALS } = require('../aws-server-stubs')
@@ -178,30 +177,27 @@ tap.test('SNS', (t) => {
   )
 
   t.test('should mark requests to be dt-disabled', (t) => {
-    // http because we've changed endpoint to be http
-    const http = require('http')
-    sinon.spy(http, 'request')
-    t.teardown(() => {
-      // `afterEach` runs before `tearDown`, so the sinon spy may have already
-      // been removed.
-      if (http.request.restore) {
-        http.request.restore()
-      }
-    })
+    t.plan(3)
 
     helper.runInTransaction(async (tx) => {
       const params = { Message: 'Hiya' }
       const cmd = new ListTopicsCommand(params)
-      await sns.send(cmd)
-      t.ok(http.request.callCount, 1, 'should call http.request once')
-      const { args } = http.request.getCall(0)
-      const [{ headers }] = args
-      const symbols = Object.getOwnPropertySymbols(headers).filter((s) => {
-        return s.toString() === 'Symbol(Disable distributed tracing)'
-      })
-      t.equal(symbols.length, 1, 'should have disabled dt')
+      sns.middlewareStack.add(
+        (next) => async (args) => {
+          const result = await next(args)
+          const headers = result.response.body.req._headers
+          t.notOk(
+            headers['x-new-relic-disable-dt'],
+            'should remove x-newrelic header in outbound instrumentation'
+          )
+          t.notOk(headers.traceparent, 'should not add traceparent header to request')
+          return result
+        },
+        { name: 'TestMw', step: 'deserialize' }
+      )
+      const res = await sns.send(cmd)
       tx.end()
-      t.end()
+      t.ok(res)
     })
   })
 })
