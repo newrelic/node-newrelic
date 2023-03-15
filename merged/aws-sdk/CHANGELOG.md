@@ -1,3 +1,11 @@
+### v5.0.3 (2023-03-15)
+
+* Updated name of header in `NewRelicHeader` middleware to avoid crashing in versions >= 3.290.0
+
+* Updated README header image to latest OSS office required images.
+
+* Added lockfile checks to CI workflow to prevent malicious changes.
+
 ### v5.0.2 (2022-11-07)
 
 * Fixed a crash when using versions >3.192.0 of AWS sdk v3 where a customer would see an error of `error: TypeError: config.endpoint is not a function`.
