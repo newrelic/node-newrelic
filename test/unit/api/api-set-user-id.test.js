@@ -51,6 +51,8 @@ tap.test('Agent API = set user id', (t) => {
       t.equal(loggerMock.warn.callCount, 0, 'should not log warnings when setUserID succeeds')
       const attrs = tx.trace.attributes.get(DESTINATIONS.TRANS_EVENT)
       t.equal(attrs['enduser.id'], id, 'should set enduser.id attribute on transaction')
+      const traceAttrs = tx.trace.attributes.get(DESTINATIONS.TRANS_TRACE)
+      t.equal(traceAttrs['enduser.id'], id, 'should set enduser.id attribute on transaction')
       t.end()
     })
   })
