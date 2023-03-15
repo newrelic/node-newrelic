@@ -265,7 +265,7 @@ tap.test('distributed tracing', (t) => {
       const tx = agent.tracer.getTransaction()
       tx.nameState.appendPath('foobar')
 
-      return get(generateUrl(port, endpoint), (err, body) => {
+      return get(generateUrl(port, endpoint), (err, { body }) => {
         tx.nameState.popPath('foobar')
         createResponse(req, res, body, bodyProperty)
       })
@@ -289,7 +289,7 @@ tap.test('distributed tracing', (t) => {
 
   t.test('should create tracing headers at each step', (t) => {
     helper.runInTransaction(agent, (tx) => {
-      get(generateUrl(START_PORT, 'start'), (err, body) => {
+      get(generateUrl(START_PORT, 'start'), (err, { body }) => {
         t.error(err)
 
         t.ok(body.start.newrelic, 'should have DT headers from the start')
@@ -301,20 +301,24 @@ tap.test('distributed tracing', (t) => {
     })
   })
 
-  t.test('should be disabled by symbols.disableDT symbol', (t) => {
-    helper.runInTransaction(agent, (tx) => {
-      const OLD_HEADER = 'x-newrelic-transaction'
-      const headers = { [symbols.disableDT]: true }
-      get(generateUrl(START_PORT, 'start'), { headers }, (err, body) => {
-        t.error(err)
+  const headers = [symbols.disableDT, 'x-new-relic-disable-dt']
+  headers.forEach((header) => {
+    t.test(`should be disabled by ${header.toString()}`, (t) => {
+      helper.runInTransaction(agent, (tx) => {
+        const OLD_HEADER = 'x-newrelic-transaction'
+        const headers = { [header]: 'true' }
+        get(generateUrl(START_PORT, 'start'), { headers }, (err, { body, reqHeaders }) => {
+          t.error(err)
+          t.notOk(reqHeaders['x-new-relic-disable-dt'], 'should remove x-new-relic-disable-dt')
 
-        t.notOk(body.start.newrelic, 'should not add DT header when disabled')
-        t.notOk(body.start[OLD_HEADER], 'should not add old CAT header either')
-        t.ok(body.middle.newrelic, 'should not stop down-stream DT from working')
+          t.notOk(body.start.newrelic, 'should not add DT header when disabled')
+          t.notOk(body.start[OLD_HEADER], 'should not add old CAT header either')
+          t.ok(body.middle.newrelic, 'should not stop down-stream DT from working')
 
-        t.notOk(tx.isDistributedTrace, 'should not mark transaction as distributed')
+          t.notOk(tx.isDistributedTrace, 'should not mark transaction as distributed')
 
-        t.end()
+          t.end()
+        })
       })
     })
   })
@@ -393,6 +397,8 @@ function get(uri, options, cb) {
     let body = ''
     res.on('data', (data) => (body += data.toString('utf8')))
     res.on('error', (err) => cb(err))
-    res.on('end', () => cb(null, JSON.parse(body)))
+    res.on('end', () => {
+      cb(null, { body: JSON.parse(body), reqHeaders: res.req._headers })
+    })
   })
 }
