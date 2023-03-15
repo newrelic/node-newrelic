@@ -39,7 +39,7 @@
     "husky": "^7.0.2",
     "lint-staged": "^11.1.2",
     "lockfile-lint": "^4.9.6",
-    "newrelic": "^9.7.4",
+    "newrelic": "^9.12.1",
     "prettier": "^2.3.2",
     "sinon": "^7.2.3",
     "tap": "^16.0.1"
