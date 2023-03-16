@@ -28,6 +28,7 @@ const ATTR_DEST = require('./lib/config/attribute-filter').DESTINATIONS
 const MODULE_TYPE = require('./lib/shim/constants').MODULE_TYPE
 const NAMES = require('./lib/metrics/names')
 const obfuscate = require('./lib/util/sql/obfuscate')
+const { DESTINATIONS } = require('./lib/config/attribute-filter')
 
 /*
  *
@@ -1692,6 +1693,28 @@ API.prototype.obfuscateSql = function obfuscateSql(sql, dialect) {
   metric.incrementCallCount()
 
   return obfuscate(sql, dialect)
+}
+
+/**
+ * Assigns `enduser.id` attribute on transaction and trace events. It will also
+ * assign the attribute to errors if they occur within a transaction.
+ *
+ * @param {string} id a unique identifier used to set the `enduser.id` attribute
+ */
+API.prototype.setUserID = function setUserID(id) {
+  const metric = this.agent.metrics.getOrCreateMetric(NAMES.SUPPORTABILITY.API + '/setUserID')
+  metric.incrementCallCount()
+
+  const transaction = this.agent.tracer.getTransaction()
+
+  if (!(id && transaction)) {
+    logger.warn(
+      'User id is empty or not in a transaction, not assigning `enduser.id` attribute to transaction events, trace events, and/or errors.'
+    )
+    return
+  }
+
+  transaction.trace.attributes.addAttribute(DESTINATIONS.TRANS_COMMON, 'enduser.id', id)
 }
 
 /**
