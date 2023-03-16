@@ -1705,14 +1705,12 @@ API.prototype.setUserID = function setUserID(id) {
   const metric = this.agent.metrics.getOrCreateMetric(NAMES.SUPPORTABILITY.API + '/setUserID')
   metric.incrementCallCount()
 
-  if (!id) {
-    logger.warn('User Id is empty, not assign to transaction and/or errors')
-    return
-  }
-
   const transaction = this.agent.tracer.getTransaction()
-  if (!transaction) {
-    logger.warn('No transaction found when trying to assign User Id to transaction')
+
+  if (!(id && transaction)) {
+    logger.warn(
+      'User id is empty or not in a transaction, not assigning `enduser.id` attribute to transaction events, trace events, and/or errors.'
+    )
     return
   }
 

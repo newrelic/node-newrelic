@@ -69,15 +69,15 @@ tap.test('Agent API = set user id', (t) => {
     })
   })
 
+  const WARN_MSG =
+    'User id is empty or not in a transaction, not assigning `enduser.id` attribute to transaction events, trace events, and/or errors.'
+
   const emptyOptions = [null, undefined, '']
   emptyOptions.forEach((value) => {
     t.test(`should not assign enduser.id if id is '${value}'`, (t) => {
       api.setUserID(value)
       t.equal(loggerMock.warn.callCount, 1, 'should warn not id is present')
-      t.equal(
-        loggerMock.warn.args[0][0],
-        'User Id is empty, not assign to transaction and/or errors'
-      )
+      t.equal(loggerMock.warn.args[0][0], WARN_MSG)
       t.end()
     })
   })
@@ -85,10 +85,7 @@ tap.test('Agent API = set user id', (t) => {
   t.test('should not assign enduser.id if no transaction is present', (t) => {
     api.setUserID('my-unit-test-id')
     t.equal(loggerMock.warn.callCount, 1, 'should warn not id is present')
-    t.equal(
-      loggerMock.warn.args[0][0],
-      'No transaction found when trying to assign User Id to transaction'
-    )
+    t.equal(loggerMock.warn.args[0][0], WARN_MSG)
     t.end()
   })
 })
