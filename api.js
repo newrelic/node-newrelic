@@ -1739,4 +1739,49 @@ function _filterAttributes(attributes, name) {
   return filteredAttributes
 }
 
+/**
+ * Function for adding a custom callback to generate Error Group names, which
+ * will be used by the Errors Inbox to group similar errors together via the `error.group.name`
+ * agent attribute.
+ *
+ * Provided functions must return a string, and receive an object as an argument,
+ * which contains information related to the Error that occurred, and has the
+ * following format:
+ *
+ * ```
+ * {
+ *   customAttributes: object,
+ *   'request.uri': string,
+ *   'http.statusCode': string,
+ *   'http.method': string,
+ *   error: Error,
+ *   'error.expected': boolean
+ * }
+ * ```
+ *
+ * Calling this function multiple times will replace previously defined functions
+ *
+ * @param {Function} callback - callback function to generate `error.group.name` attribute
+ * @example
+ * function myCallback(metadata) {
+ *   if (metadata['http.statusCode'] === '400') {
+ *     return 'Bad User Input'
+ *   }
+ * }
+ * newrelic.setErrorGroupCallback(myCallback)
+ */
+API.prototype.setErrorGroupCallback = function setErrorGroupCallback(callback) {
+  const metric = this.agent.metrics.getOrCreateMetric(
+    NAMES.SUPPORTABILITY.API + '/setErrorGroupCallback'
+  )
+  metric.incrementCallCount()
+
+  if (!this.shim.isFunction(callback)) {
+    logger.warn('Error Group callback must be a function, Error Group attribute will not be added')
+    return
+  }
+
+  this.agent.errors.errorGroupCallback = callback
+}
+
 module.exports = API

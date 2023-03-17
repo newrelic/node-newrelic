@@ -8,7 +8,7 @@
 const tap = require('tap')
 const API = require('../../../stub_api')
 
-const EXPECTED_API_COUNT = 32
+const EXPECTED_API_COUNT = 33
 
 tap.test('Agent API - Stubbed Agent API', (t) => {
   t.autoend()
