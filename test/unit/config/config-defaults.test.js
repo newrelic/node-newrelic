@@ -282,4 +282,19 @@ tap.test('with default properties', (t) => {
     })
     t.end()
   })
+
+  t.test('should default security settings accordingly', (t) => {
+    t.same(configuration.security, {
+      enabled: false,
+      agent: { enabled: false },
+      mode: 'IAST',
+      validator_service_url: 'wss://csec.nr-data.net',
+      detection: {
+        rci: { enabled: true },
+        rxss: { enabled: true },
+        deserialization: { enabled: true }
+      }
+    })
+    t.end()
+  })
 })
