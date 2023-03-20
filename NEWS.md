@@ -1,3 +1,11 @@
+### v9.13.0 (2023-03-20)
+
+* Updated http instrumentation to no longer remove the `x-new-relic-disable-dt` header when using AWS SDK v3.  This was done to prevent the "The request signature we calculated does not match the signature you provided. Check your key and signing method." error from AWS SDK.
+
+* Added an API method `setUserID` to provide an ability to associate a unique identifier with a transaction event, transaction trace and errors within transaction.  The attribute will be `enduser.id`.
+
+* Added default configuration for security agent.
+
 ### v9.12.1 (2023-03-15)
 
 * Added ability to mark errors as expected when using `newrelic.noticeError`, by adding an optional boolean: 
