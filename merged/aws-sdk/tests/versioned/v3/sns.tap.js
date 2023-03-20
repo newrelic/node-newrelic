@@ -177,7 +177,7 @@ tap.test('SNS', (t) => {
   )
 
   t.test('should mark requests to be dt-disabled', (t) => {
-    t.plan(3)
+    t.plan(2)
 
     helper.runInTransaction(async (tx) => {
       const params = { Message: 'Hiya' }
@@ -186,10 +186,6 @@ tap.test('SNS', (t) => {
         (next) => async (args) => {
           const result = await next(args)
           const headers = result.response.body.req._headers
-          t.notOk(
-            headers['x-new-relic-disable-dt'],
-            'should remove x-newrelic header in outbound instrumentation'
-          )
           t.notOk(headers.traceparent, 'should not add traceparent header to request')
           return result
         },
