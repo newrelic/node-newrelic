@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "Wed Feb 08 2023 10:32:36 GMT-0500 (Eastern Standard Time)",
+  "lastUpdated": "Fri Mar 17 2023 10:43:36 GMT-0400 (Eastern Daylight Time)",
   "projectName": "New Relic Node Agent",
   "projectUrl": "https://github.com/newrelic/node-newrelic",
   "includeOptDeps": true,
@@ -15,56 +15,69 @@
       "licenseUrl": "https://github.com/Contrast-Security-Inc/node-fn-inspect/blob/v3.3.0/LICENSE",
       "licenseTextSource": "file",
       "publisher": "Contrast Security"
+    },
+    "@newrelic/native-metrics@9.0.0": {
+      "name": "@newrelic/native-metrics",
+      "version": "9.0.0",
+      "range": "^9.0.0",
+      "licenses": "Apache-2.0",
+      "repoUrl": "https://github.com/newrelic/node-native-metrics",
+      "versionedRepoUrl": "https://github.com/newrelic/node-native-metrics/tree/v9.0.0",
+      "licenseFile": "node_modules/@newrelic/native-metrics/LICENSE",
+      "licenseUrl": "https://github.com/newrelic/node-native-metrics/blob/v9.0.0/LICENSE",
+      "licenseTextSource": "file",
+      "publisher": "New Relic Node.js agent team",
+      "email": "nodejs@newrelic.com"
     }
   },
   "includeDev": true,
   "dependencies": {
-    "@grpc/grpc-js@1.7.3": {
+    "@grpc/grpc-js@1.8.12": {
       "name": "@grpc/grpc-js",
-      "version": "1.7.3",
-      "range": "^1.7.3",
+      "version": "1.8.12",
+      "range": "^1.8.10",
       "licenses": "Apache-2.0",
       "repoUrl": "https://github.com/grpc/grpc-node/tree/master/packages/grpc-js",
-      "versionedRepoUrl": "https://github.com/grpc/grpc-node/tree/master/packages/grpc-js/tree/v1.7.3",
+      "versionedRepoUrl": "https://github.com/grpc/grpc-node/tree/master/packages/grpc-js/tree/v1.8.12",
       "licenseFile": "node_modules/@grpc/grpc-js/LICENSE",
-      "licenseUrl": "https://github.com/grpc/grpc-node/tree/master/packages/grpc-js/blob/v1.7.3/LICENSE",
+      "licenseUrl": "https://github.com/grpc/grpc-node/tree/master/packages/grpc-js/blob/v1.8.12/LICENSE",
       "licenseTextSource": "file",
       "publisher": "Google Inc."
     },
-    "@grpc/proto-loader@0.7.3": {
+    "@grpc/proto-loader@0.7.5": {
       "name": "@grpc/proto-loader",
-      "version": "0.7.3",
-      "range": "^0.7.3",
+      "version": "0.7.5",
+      "range": "^0.7.5",
       "licenses": "Apache-2.0",
       "repoUrl": "https://github.com/grpc/grpc-node",
-      "versionedRepoUrl": "https://github.com/grpc/grpc-node/tree/v0.7.3",
+      "versionedRepoUrl": "https://github.com/grpc/grpc-node/tree/v0.7.5",
       "licenseFile": "node_modules/@grpc/proto-loader/LICENSE",
-      "licenseUrl": "https://github.com/grpc/grpc-node/blob/v0.7.3/LICENSE",
+      "licenseUrl": "https://github.com/grpc/grpc-node/blob/v0.7.5/LICENSE",
       "licenseTextSource": "file",
       "publisher": "Google Inc."
     },
-    "@newrelic/aws-sdk@5.0.0": {
+    "@newrelic/aws-sdk@5.0.2": {
       "name": "@newrelic/aws-sdk",
-      "version": "5.0.0",
-      "range": "^5.0.0",
+      "version": "5.0.2",
+      "range": "^5.0.2",
       "licenses": "Apache-2.0",
       "repoUrl": "https://github.com/newrelic/node-newrelic-aws-sdk",
-      "versionedRepoUrl": "https://github.com/newrelic/node-newrelic-aws-sdk/tree/v5.0.0",
+      "versionedRepoUrl": "https://github.com/newrelic/node-newrelic-aws-sdk/tree/v5.0.2",
       "licenseFile": "node_modules/@newrelic/aws-sdk/LICENSE",
-      "licenseUrl": "https://github.com/newrelic/node-newrelic-aws-sdk/blob/v5.0.0/LICENSE",
+      "licenseUrl": "https://github.com/newrelic/node-newrelic-aws-sdk/blob/v5.0.2/LICENSE",
       "licenseTextSource": "file",
       "publisher": "New Relic Node.js agent team",
       "email": "nodejs@newrelic.com"
     },
-    "@newrelic/koa@7.0.0": {
+    "@newrelic/koa@7.1.1": {
       "name": "@newrelic/koa",
-      "version": "7.0.0",
-      "range": "^7.0.0",
+      "version": "7.1.1",
+      "range": "^7.1.1",
       "licenses": "Apache-2.0",
       "repoUrl": "https://github.com/newrelic/node-newrelic-koa",
-      "versionedRepoUrl": "https://github.com/newrelic/node-newrelic-koa/tree/v7.0.0",
+      "versionedRepoUrl": "https://github.com/newrelic/node-newrelic-koa/tree/v7.1.1",
       "licenseFile": "node_modules/@newrelic/koa/LICENSE",
-      "licenseUrl": "https://github.com/newrelic/node-newrelic-koa/blob/v7.0.0/LICENSE",
+      "licenseUrl": "https://github.com/newrelic/node-newrelic-koa/blob/v7.1.1/LICENSE",
       "licenseTextSource": "file",
       "publisher": "New Relic Node.js agent team",
       "email": "nodejs@newrelic.com"
@@ -149,15 +162,15 @@
       "email": "i@izs.me",
       "url": "http://blog.izs.me"
     },
-    "readable-stream@3.6.0": {
+    "readable-stream@3.6.2": {
       "name": "readable-stream",
-      "version": "3.6.0",
-      "range": "^3.6.0",
+      "version": "3.6.2",
+      "range": "^3.6.1",
       "licenses": "MIT",
       "repoUrl": "https://github.com/nodejs/readable-stream",
-      "versionedRepoUrl": "https://github.com/nodejs/readable-stream/tree/v3.6.0",
+      "versionedRepoUrl": "https://github.com/nodejs/readable-stream/tree/v3.6.2",
       "licenseFile": "node_modules/readable-stream/LICENSE",
-      "licenseUrl": "https://github.com/nodejs/readable-stream/blob/v3.6.0/LICENSE",
+      "licenseUrl": "https://github.com/nodejs/readable-stream/blob/v3.6.2/LICENSE",
       "licenseTextSource": "file"
     },
     "semver@5.7.1": {
