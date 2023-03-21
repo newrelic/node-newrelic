@@ -20,7 +20,7 @@ const repos = [
   {
     name: 'koa',
     repository: 'https://github.com/newrelic/node-newrelic-koa.git',
-    branch: 'main'
+    branch: 'shim-fixes'
   },
   {
     name: 'next',
@@ -35,7 +35,7 @@ const repos = [
   {
     name: 'apollo-server',
     repository: 'https://github.com/newrelic/newrelic-node-apollo-server-plugin.git',
-    branch: 'main',
+    branch: 'shim-fixes',
     additionalFiles: [
       'tests/agent-testing.js',
       'tests/create-apollo-server-setup.js',
