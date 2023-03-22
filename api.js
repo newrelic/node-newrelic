@@ -1776,8 +1776,10 @@ API.prototype.setErrorGroupCallback = function setErrorGroupCallback(callback) {
   )
   metric.incrementCallCount()
 
-  if (!this.shim.isFunction(callback)) {
-    logger.warn('Error Group callback must be a function, Error Group attribute will not be added')
+  if (!this.shim.isFunction(callback) || this.shim.isPromise(callback)) {
+    logger.warn(
+      'Error Group callback must be a synchronous function, Error Group attribute will not be added'
+    )
     return
   }
 

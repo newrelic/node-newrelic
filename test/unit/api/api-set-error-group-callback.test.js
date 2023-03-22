@@ -82,4 +82,28 @@ tap.test('Agent API = set Error Group callback', (t) => {
     )
     t.end()
   })
+
+  t.test('should not attach the callback when async function', (t) => {
+    function callback() {
+      return new Promise((resolve) => {
+        setTimeout(() => {
+          resolve()
+        }, 200)
+      }).then(() => 'error-group')
+    }
+    api.setErrorGroupCallback(callback())
+
+    t.equal(loggerMock.warn.callCount, 1, 'should log warning when failed')
+    t.notOk(
+      api.agent.errors.errorGroupCallback,
+      'should not attach the callback on the error collector'
+    )
+    t.equal(
+      api.agent.metrics.getOrCreateMetric(NAMES.SUPPORTABILITY.API + '/setErrorGroupCallback')
+        .callCount,
+      1,
+      'should increment the API tracking metric'
+    )
+    t.end()
+  })
 })
