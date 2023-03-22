@@ -63,11 +63,13 @@ tap.test('ES Module Loader', { skip: !esmHelpers.supportedLoaderVersion() }, (t)
       registerInstrumentation: sinon.stub(),
       getInstrumentationNameFromModuleName: sinon.stub(),
       registeredInstrumentations: {
-        express: {
-          moduleName: 'express',
-          type: 'web-framework',
-          onRequire: sinon.stub()
-        }
+        express: [
+          {
+            moduleName: 'express',
+            type: 'web-framework',
+            onRequire: sinon.stub()
+          }
+        ]
       }
     }
 
@@ -157,11 +159,13 @@ tap.test('ES Module Loader', { skip: !esmHelpers.supportedLoaderVersion() }, (t)
     'should add specifier to map and append hasNrInstrumentation to url if module we are resolving has instrumentation',
     async (t) => {
       fakeShimmer.getInstrumentationNameFromModuleName.returnsArg(0)
-      fakeShimmer.registeredInstrumentations['my-test-dep'] = {
-        moduleName: 'my-test-dep',
-        type: 'generic',
-        onRequire: sinon.stub()
-      }
+      fakeShimmer.registeredInstrumentations['my-test-dep'] = [
+        {
+          moduleName: 'my-test-dep',
+          type: 'generic',
+          onRequire: sinon.stub()
+        }
+      ]
       fakeNextResolve.returns({ url: 'file:///path/to/my-test-dep/index.js', format: 'module' })
 
       const expected = await loader.resolve(fakeSpecifier, fakeContext, fakeNextResolve)
@@ -187,11 +191,13 @@ tap.test('ES Module Loader', { skip: !esmHelpers.supportedLoaderVersion() }, (t)
     'should register a copy of CommonJS instrumentation under the full filepath',
     async (t) => {
       fakeShimmer.getInstrumentationNameFromModuleName.returnsArg(0)
-      fakeShimmer.registeredInstrumentations['my-test-dep'] = {
-        moduleName: 'my-test-dep',
-        type: 'generic',
-        onRequire: sinon.stub()
-      }
+      fakeShimmer.registeredInstrumentations['my-test-dep'] = [
+        {
+          moduleName: 'my-test-dep',
+          type: 'generic',
+          onRequire: sinon.stub()
+        }
+      ]
       fakeNextResolve.returns({ url: 'file:///path/to/my-test-dep/index.js', format: 'commonjs' })
 
       const expected = await loader.resolve(fakeSpecifier, fakeContext, fakeNextResolve)
@@ -215,15 +221,11 @@ tap.test('ES Module Loader', { skip: !esmHelpers.supportedLoaderVersion() }, (t)
         'should log debug about instrumentation registration'
       )
 
-      const expectedInstrumentation = Object.assign(
-        {},
-        fakeShimmer.registeredInstrumentations['my-test-dep']
-      )
-      expectedInstrumentation.moduleName = '/path/to/my-test-dep/index.js'
-      expectedInstrumentation.specifier = 'my-test-dep'
-
+      const expectedInstrumentation = [...fakeShimmer.registeredInstrumentations['my-test-dep']]
+      expectedInstrumentation[0].moduleName = '/path/to/my-test-dep/index.js'
+      expectedInstrumentation[0].specifier = 'my-test-dep'
       t.ok(
-        fakeShimmer.registerInstrumentation.calledOnceWithExactly(expectedInstrumentation),
+        fakeShimmer.registerInstrumentation.calledOnceWithExactly(expectedInstrumentation[0]),
         'should have registered an instrumentation copy'
       )
     }
@@ -231,11 +233,13 @@ tap.test('ES Module Loader', { skip: !esmHelpers.supportedLoaderVersion() }, (t)
 
   t.test('should register CJS instrumentation if url has urlencoded characters', async (t) => {
     fakeShimmer.getInstrumentationNameFromModuleName.returnsArg(0)
-    fakeShimmer.registeredInstrumentations['my-test-dep'] = {
-      moduleName: 'my-test-dep',
-      type: 'generic',
-      onRequire: sinon.stub()
-    }
+    fakeShimmer.registeredInstrumentations['my-test-dep'] = [
+      {
+        moduleName: 'my-test-dep',
+        type: 'generic',
+        onRequire: sinon.stub()
+      }
+    ]
     fakeNextResolve.returns({
       url: 'file:///path/that%20leads%20to/my-test-dep/index.js',
       format: 'commonjs'
@@ -260,15 +264,12 @@ tap.test('ES Module Loader', { skip: !esmHelpers.supportedLoaderVersion() }, (t)
       'should log debug about instrumentation registration'
     )
 
-    const expectedInstrumentation = Object.assign(
-      {},
-      fakeShimmer.registeredInstrumentations['my-test-dep']
-    )
-    expectedInstrumentation.moduleName = '/path/that leads to/my-test-dep/index.js'
-    expectedInstrumentation.specifier = 'my-test-dep'
+    const expectedInstrumentation = [...fakeShimmer.registeredInstrumentations['my-test-dep']]
+    expectedInstrumentation[0].moduleName = '/path/that leads to/my-test-dep/index.js'
+    expectedInstrumentation[0].specifier = 'my-test-dep'
 
     t.ok(
-      fakeShimmer.registerInstrumentation.calledOnceWithExactly(expectedInstrumentation),
+      fakeShimmer.registerInstrumentation.calledOnceWithExactly(expectedInstrumentation[0]),
       'should have registered an instrumentation copy'
     )
   })
