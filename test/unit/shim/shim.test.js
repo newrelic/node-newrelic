@@ -1648,19 +1648,6 @@ tap.test('Shim', function (t) {
       t.end()
     })
 
-    t.test('should fully unwrap nested wrappers', function (t) {
-      for (let i = 0; i < 10; ++i) {
-        wrapped = shim.wrap(wrapped, function () {
-          return function () {}
-        })
-      }
-
-      t.not(wrapped, original)
-      t.not(wrapped[symbols.original], original)
-      t.equal(shim.unwrap(wrapped), original)
-      t.end()
-    })
-
     t.test('should unwrap the first parameter', function (t) {
       t.equal(shim.unwrap(wrapped), original)
       t.end()

@@ -164,7 +164,7 @@ tap.test('MessageShim', function (t) {
       const wrapped = shim.recordProduce(wrappable.bar, function () {})
       t.not(wrapped, wrappable.bar)
       t.ok(shim.isWrapped(wrapped))
-      t.equal(shim.unwrap(wrapped), wrappable.bar)
+      t.equal(helper.unwrap(wrapped), wrappable.bar)
       t.end()
     })
 
@@ -172,7 +172,7 @@ tap.test('MessageShim', function (t) {
       const wrapped = shim.recordProduce(wrappable.bar, null, function () {})
       t.not(wrapped, wrappable.bar)
       t.ok(shim.isWrapped(wrapped))
-      t.equal(shim.unwrap(wrapped), wrappable.bar)
+      t.equal(helper.unwrap(wrapped), wrappable.bar)
       t.end()
     })
 
@@ -181,7 +181,7 @@ tap.test('MessageShim', function (t) {
       shim.recordProduce(wrappable, 'bar', function () {})
       t.not(wrappable.bar, original)
       t.ok(shim.isWrapped(wrappable.bar))
-      t.equal(shim.unwrap(wrappable.bar), original)
+      t.equal(helper.unwrap(wrappable.bar), original)
       t.end()
     })
 
@@ -855,7 +855,7 @@ tap.test('MessageShim', function (t) {
       })
       t.not(wrapped, wrappable.bar)
       t.ok(shim.isWrapped(wrapped))
-      t.equal(shim.unwrap(wrapped), wrappable.bar)
+      t.equal(helper.unwrap(wrapped), wrappable.bar)
       t.end()
     })
 
@@ -867,7 +867,7 @@ tap.test('MessageShim', function (t) {
       })
       t.not(wrapped, wrappable.bar)
       t.ok(shim.isWrapped(wrapped))
-      t.equal(shim.unwrap(wrapped), wrappable.bar)
+      t.equal(helper.unwrap(wrapped), wrappable.bar)
       t.end()
     })
 
@@ -880,7 +880,7 @@ tap.test('MessageShim', function (t) {
       })
       t.not(wrappable.bar, original)
       t.ok(shim.isWrapped(wrappable.bar))
-      t.equal(shim.unwrap(wrappable.bar), original)
+      t.equal(helper.unwrap(wrappable.bar), original)
       t.end()
     })
 

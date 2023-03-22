@@ -17,6 +17,7 @@ const copy = require('../../lib/util/copy')
 const { defaultAttributeConfig } = require('./fixtures')
 const { EventEmitter } = require('events')
 const Transaction = require('../../lib/transaction')
+const symbols = require('../../lib/symbols')
 
 const KEYPATH = path.join(__dirname, 'test-key.key')
 const CERTPATH = path.join(__dirname, 'self-signed-test-certificate.crt')
@@ -564,5 +565,42 @@ const helper = (module.exports = {
         this.notOk(attrs['code.column'], 'column should not exist')
       }
     })
+  },
+  /**
+   * Unwraps one or more items, revealing the original value.
+   *
+   * - `unwrap(nodule, property)`
+   * - `unwrap(func)`
+   *
+   * If called with a `nodule` and properties, the unwrapped values will be put
+   * back on the nodule. Otherwise, the unwrapped function is just returned.
+   *
+   * @param {object | Function} nodule
+   *  The source for the properties to unwrap, or a single function to unwrap.
+   * @param {string|Array.<string>} [properties]
+   *  One or more properties to unwrap. If omitted, the `nodule` parameter is
+   *  assumed to be the function to unwrap.
+   * @returns {object | Function} The first parameter after unwrapping.
+   */
+  unwrap(nodule, properties) {
+    // Don't try to unwrap potentially `null` or `undefined` things.
+    if (!nodule) {
+      return nodule
+    }
+
+    // If we're unwrapping multiple things
+    if (Array.isArray(properties)) {
+      properties.forEach(module.exports.unwrap.bind(this, nodule))
+      return nodule
+    }
+
+    let original = properties ? nodule[properties] : nodule
+    while (original && original[symbols.original]) {
+      original =
+        original[symbols.unwrap] instanceof Function
+          ? original[symbols.unwrap]()
+          : original[symbols.original]
+    }
+    return original
   }
 })
