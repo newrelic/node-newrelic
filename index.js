@@ -14,7 +14,6 @@ require('./lib/util/unwrapped-core')
 
 const featureFlags = require('./lib/feature_flags').prerelease
 const psemver = require('./lib/util/process-version')
-const symbols = require('./lib/symbols')
 let logger = require('./lib/logger') // Gets re-loaded after initialization.
 
 const pkgJSON = require('./package.json')
@@ -24,15 +23,15 @@ logger.info(
   process.version
 )
 
-if (require.cache[symbols.cache]) {
+if (require.cache.__NR_cache) {
   logger.warn(
     'Attempting to load a second copy of newrelic from %s, using cache instead',
     __dirname
   )
-  if (require.cache[symbols.cache].agent) {
-    require.cache[symbols.cache].agent.recordSupportability('Agent/DoubleLoad')
+  if (require.cache.__NR_cache.agent) {
+    require.cache.__NR_cache.agent.recordSupportability('Agent/DoubleLoad')
   }
-  module.exports = require.cache[symbols.cache]
+  module.exports = require.cache.__NR_cache
 } else {
   initialize()
 }
@@ -99,7 +98,7 @@ function initialize() {
     API = require('./stub_api')
   }
 
-  require.cache[symbols.cache] = module.exports = new API(agent)
+  require.cache.__NR_cache = module.exports = new API(agent)
 
   // If we loaded an agent, record a startup time for the agent.
   // NOTE: Metrics are recorded in seconds, so divide the value by 1000.
