@@ -1,3 +1,7 @@
+### v9.14.0 (2023-03-23)
+
+* Added new API function called `setErrorGroupCallback`, which provides a way for you to customize the `error.group.name` attribute of errors that are captured by the agent. This attribute controls how the Errors Inbox functionality groups similar errors together. To learn more about this function, please refer to our [example app](https://github.com/newrelic/newrelic-node-examples).
+
 ### v9.13.0 (2023-03-20)
 
 * Updated http instrumentation to no longer remove the `x-new-relic-disable-dt` header when using AWS SDK v3.  This was done to prevent the "The request signature we calculated does not match the signature you provided. Check your key and signing method." error from AWS SDK.
