@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "Tue Dec 20 2022 10:32:18 GMT-0500 (Eastern Standard Time)",
+  "lastUpdated": "Thu Mar 23 2023 15:53:08 GMT-0400 (Eastern Daylight Time)",
   "projectName": "New Relic Koa Instrumentation",
   "projectUrl": "https://github.com/newrelic/node-newrelic-koa",
   "includeOptDeps": false,
@@ -44,15 +44,15 @@
       "licenseTextSource": "file",
       "publisher": "New Relic"
     },
-    "@newrelic/test-utilities@7.2.0": {
+    "@newrelic/test-utilities@7.3.0": {
       "name": "@newrelic/test-utilities",
-      "version": "7.2.0",
-      "range": "^7.2.0",
+      "version": "7.3.0",
+      "range": "^7.3.0",
       "licenses": "Apache-2.0",
       "repoUrl": "https://github.com/newrelic/node-test-utilities",
-      "versionedRepoUrl": "https://github.com/newrelic/node-test-utilities/tree/v7.2.0",
+      "versionedRepoUrl": "https://github.com/newrelic/node-test-utilities/tree/v7.3.0",
       "licenseFile": "node_modules/@newrelic/test-utilities/LICENSE",
-      "licenseUrl": "https://github.com/newrelic/node-test-utilities/blob/v7.2.0/LICENSE",
+      "licenseUrl": "https://github.com/newrelic/node-test-utilities/blob/v7.3.0/LICENSE",
       "licenseTextSource": "file",
       "publisher": "New Relic Node.js agent team",
       "email": "nodejs@newrelic.com"
@@ -206,15 +206,15 @@
       "email": "liran.tal@gmail.com",
       "url": "https://github.com/lirantal"
     },
-    "newrelic@9.7.4": {
+    "newrelic@9.14.0": {
       "name": "newrelic",
-      "version": "9.7.4",
-      "range": "^9.7.4",
+      "version": "9.14.0",
+      "range": "^9.14.0",
       "licenses": "Apache-2.0",
       "repoUrl": "https://github.com/newrelic/node-newrelic",
-      "versionedRepoUrl": "https://github.com/newrelic/node-newrelic/tree/v9.7.4",
+      "versionedRepoUrl": "https://github.com/newrelic/node-newrelic/tree/v9.14.0",
       "licenseFile": "node_modules/newrelic/LICENSE",
-      "licenseUrl": "https://github.com/newrelic/node-newrelic/blob/v9.7.4/LICENSE",
+      "licenseUrl": "https://github.com/newrelic/node-newrelic/blob/v9.14.0/LICENSE",
       "licenseTextSource": "file",
       "publisher": "New Relic Node.js agent team",
       "email": "nodejs@newrelic.com"
