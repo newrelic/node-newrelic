@@ -188,6 +188,12 @@ const helper = (module.exports = {
 
     shimmer.patchModule(agent)
     shimmer.bootstrapInstrumentation(agent)
+    if (agent.config.security.agent.enabled) {
+      agent.config.security.enabled = true
+      agent.config.security.validator_service_url = 'wss://csec-staging.nr-data.net'
+      const api = helper.getAgentApi(agent)
+      require('nr-node-security-agent').start(api)
+    }
 
     return agent
   },
