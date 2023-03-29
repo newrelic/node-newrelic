@@ -192,7 +192,11 @@ function checkMetrics(t, agent, host, port, metrics) {
     )
   }
 
-  const expectedUnscopedCount = 5 + 2 * metrics.length
+  let expectedUnscopedCount = 5 + 2 * metrics.length
+  // adds a supportability metric to load k2 mongodb instrumentation
+  if (agent.config.security.agent.enabled) {
+    expectedUnscopedCount += 1
+  }
   t.equal(
     unscopedDatastoreNames.length,
     expectedUnscopedCount,
