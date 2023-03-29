@@ -42,10 +42,14 @@ tap.test('Hapi segments', function (t) {
     })
 
     runTest(t, function (segments, transaction) {
+      const exact = !helper.isK2Enabled(agent)
       checkMetrics(t, transaction.metrics, [NAMES.HAPI.MIDDLEWARE + 'myHandler//test'])
-      checkSegments(t, transaction.trace.root.children[0], [
-        NAMES.HAPI.MIDDLEWARE + 'myHandler//test'
-      ])
+      checkSegments(
+        t,
+        transaction.trace.root.children[0],
+        [NAMES.HAPI.MIDDLEWARE + 'myHandler//test'],
+        { exact }
+      )
       t.end()
     })
   })
