@@ -189,14 +189,49 @@ const helper = (module.exports = {
 
     shimmer.patchModule(agent)
     shimmer.bootstrapInstrumentation(agent)
-    if (agent.config.security.agent.enabled) {
-      agent.config.security.enabled = true
-      agent.config.security.validator_service_url = 'wss://csec-staging.nr-data.net'
-      const api = helper.getAgentApi(agent)
-      require('nr-node-security-agent').start(api)
-    }
+    helper.maybeLoadK2Agent(agent)
 
     return agent
+  },
+
+  /**
+   * Helper to check if k2 agent should be loaded
+   *
+   * @param {Agent} Agent with a stubbed configuration
+   * @returns {boolean}
+   */
+  isK2Enabled(agent) {
+    return agent.config.security.agent.enabled
+  },
+
+  /**
+   * Checks if k2 agent _should_ be loaded
+   * and requires it and calls start
+   *
+   * @param {Agent} Agent with a stubbed configuration
+   */
+  maybeLoadK2Agent(agent) {
+    if (helper.isK2Enabled(agent)) {
+      agent.config.security.enabled = true
+      const api = helper.getAgentApi(agent)
+      require(agent.config.k2_agent_name).start(api)
+    }
+  },
+
+  /**
+   * Checks if k2 agent is loaded and deletes all
+   * files in its require cache so it can be re-loaded
+   *
+   * @param {Agent} Agent with a stubbed configuration
+   */
+  maybeUnloadK2Agent(agent) {
+    if (helper.isK2Enabled(agent)) {
+      Object.keys(require.cache).forEach((key) => {
+        if (key.includes(agent.config.k2_agent_name)) {
+          delete require.cache[key]
+        }
+      })
+    }
   },
 
   /**
@@ -211,6 +246,7 @@ const helper = (module.exports = {
     shimmer.unwrapAll()
     shimmer.registeredInstrumentations = Object.create(null)
     shimmer.debug = false
+    helper.maybeUnloadK2Agent(agent)
 
     // Stop future harvesting by aggregators.
     agent.stopAggregators()
