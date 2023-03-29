@@ -184,6 +184,7 @@
     "@grpc/proto-loader": "^0.7.5",
     "@mrleebo/prisma-ast": "^0.5.2",
     "@newrelic/aws-sdk": "^5.0.2",
+    "@newrelic/csec-node-agent": "github:k2io/nr-node-security-agent#main",
     "@newrelic/koa": "^7.1.1",
     "@newrelic/security-agent": "0.0.1",
     "@newrelic/superagent": "^6.0.0",
@@ -192,7 +193,6 @@
     "https-proxy-agent": "^5.0.0",
     "json-bigint": "^1.0.0",
     "json-stringify-safe": "^5.0.0",
-    "nr-node-security-agent": "github:k2io/nr-node-security-agent#main",
     "readable-stream": "^3.6.1",
     "semver": "^5.3.0",
     "winston-transport": "^4.5.0"

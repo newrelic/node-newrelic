@@ -38,7 +38,7 @@ test('ignoring an Express route', function (t) {
 
     const metrics = agent.metrics._metrics.unscoped
     // loading k2 adds instrumentation metrics for things it loads
-    const expectedMetrics = helper.isK2Enabled(agent) ? 8 : 3
+    const expectedMetrics = helper.isK2Enabled(agent) ? 9 : 3
     t.equal(
       Object.keys(metrics).length,
       expectedMetrics,

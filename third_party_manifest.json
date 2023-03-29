@@ -81,6 +81,18 @@
       "publisher": "New Relic Node.js agent team",
       "email": "nodejs@newrelic.com"
     },
+    "@newrelic/csec-node-agent@1.0.0": {
+      "name": "@newrelic/csec-node-agent",
+      "version": "1.0.0",
+      "range": "github:k2io/nr-node-security-agent#main",
+      "licenses": "Apache-2.0",
+      "repoUrl": "https://github.com/k2io/nr-node-security-agent",
+      "versionedRepoUrl": "https://github.com/k2io/nr-node-security-agent/tree/v1.0.0",
+      "licenseFile": "node_modules/@newrelic/csec-node-agent/README.md",
+      "licenseUrl": "https://github.com/k2io/nr-node-security-agent/blob/v1.0.0/README.md",
+      "licenseTextSource": "spdx",
+      "publisher": "newrelic"
+    },
     "@newrelic/koa@7.1.1": {
       "name": "@newrelic/koa",
       "version": "7.1.1",
