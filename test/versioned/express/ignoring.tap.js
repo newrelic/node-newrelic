@@ -38,7 +38,13 @@ test('ignoring an Express route', function (t) {
     t.notOk(agent.traces.trace, 'should have no transaction trace')
 
     const metrics = agent.metrics._metrics.unscoped
-    t.equal(Object.keys(metrics).length, 3, 'only supportability metrics added to agent collection')
+    // loading k2 adds instrumentation metrics for things it loads
+    const expectedMetrics = helper.isK2Enabled(agent) ? 8 : 3
+    t.equal(
+      Object.keys(metrics).length,
+      expectedMetrics,
+      'only supportability metrics added to agent collection'
+    )
 
     const errors = agent.errors.traceAggregator.errors
     t.equal(errors.length, 0, 'no errors noticed')
@@ -55,7 +61,7 @@ test('ignoring an Express route', function (t) {
     const url = 'http://localhost:' + port + '/polling/31337'
     request.get(url, { json: true }, function (error, res, body) {
       t.equal(res.statusCode, 400, 'got expected error')
-      t.deepEqual(body, { status: 'pollpollpoll' }, 'got expected response')
+      t.same(body, { status: 'pollpollpoll' }, 'got expected response')
     })
   })
 })
