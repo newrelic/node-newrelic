@@ -41,8 +41,8 @@ test('Restify router introspection', function (t) {
     // k2 child_process instrumentation, fun fun fun
     const expectedMetrics = helper.isK2Enabled(agent)
       ? semver.lt(pkgVersion, 'v6.0.0')
-        ? 12
-        : 13
+        ? 13
+        : 14
       : 7
     t.equal(
       Object.keys(metrics).length,
