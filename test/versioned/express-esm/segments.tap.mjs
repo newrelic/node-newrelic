@@ -9,20 +9,16 @@ import { assertMetrics, assertSegments } from '../../lib/metrics_helper.js'
 import { test } from 'tap'
 import expressHelpers from './helpers.mjs'
 const { setup, makeRequestAndFinishTransaction } = expressHelpers
+const assertSegmentsOptions = {
+  exact: true
+}
 
 test('transaction segments tests', (t) => {
   t.autoend()
-  let assertSegmentsOptions
 
   let agent
   t.before(() => {
     agent = helper.instrumentMockedAgent()
-    // k2 adds a setTimeout segment at end, we need to ignore this so
-    // set exact to false. The rest of the tree should be the same
-    const exact = helper.isK2Enabled(agent) ? false : true
-    assertSegmentsOptions = {
-      exact
-    }
   })
 
   t.teardown(() => {

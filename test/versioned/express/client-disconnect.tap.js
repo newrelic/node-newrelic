@@ -46,7 +46,6 @@ tap.test('Client Premature Disconnection', (t) => {
   })
 
   agent.on('transactionFinished', (transaction) => {
-    const exact = helper.isK2Enabled(agent) ? false : true
     t.doesNotThrow(function () {
       metrics.assertSegments(
         transaction.trace.root,
@@ -60,7 +59,7 @@ tap.test('Client Premature Disconnection', (t) => {
             ['Nodejs/Middleware/Expressjs/controller', ['timers.setTimeout']]
           ]
         ],
-        { exact }
+        { exact: true }
       )
     }, 'should have expected segments')
 
