@@ -92,8 +92,7 @@ tap.test('fastify hook instrumentation', (t) => {
               ...getExpectedSegments(REQUEST_HOOKS),
               'Nodejs/Middleware/Fastify/routeHandler//add-hook',
               getExpectedSegments(AFTER_HANDLER_HOOKS)
-            ],
-            'timers.setTimeout'
+            ]
           ]
         ]
       } else {
