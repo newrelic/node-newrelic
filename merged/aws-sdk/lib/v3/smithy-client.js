@@ -30,10 +30,23 @@ module.exports = function instrumentSmithyClient(shim, name, resolvedName) {
 function getPlugin(shim, config) {
   return {
     applyToStack: (clientStack) => {
+      /*
+       * `finalizeRequest` only happens when an actual HTTP request
+       * is to be sent over the wire. This used to use the `build` step,
+       * but that caused headaches with using Presigned URLs, which
+       * leverages the `build` step in it's logic. This caused x-new-relic-disable-dt
+       * to be added as a Signed Header to the Presigned URL, which broke customers
+       * because Signed Headers must be provided when calling the Presigned URL.
+       *
+       * See:
+       *   - https://github.com/newrelic/node-newrelic/issues/1571
+       *   - https://aws.amazon.com/blogs/developer/middleware-stack-modular-aws-sdk-js/
+       */
       clientStack.add(headerMiddleware.bind(null, shim), {
         name: 'NewRelicHeader',
-        step: 'build'
+        step: 'finalizeRequest'
       })
+
       clientStack.add(attrMiddleware.bind(null, shim, config), {
         name: 'NewRelicDeserialize',
         step: 'deserialize'
@@ -55,7 +68,6 @@ function headerMiddleware(shim, next) {
   return async function wrappedHeaderMw(args) {
     // this is an indicator in the agent http-outbound instrumentation
     // to disable DT from AWS requests as they are not necessary
-    // This header will be removed before the http request goes over the wire
     args.request.headers['x-new-relic-disable-dt'] = 'true'
     return await next(args)
   }
