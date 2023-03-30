@@ -174,6 +174,8 @@
     "versioned:npm7": "npm run checkout-external-versioned && npm run prepare-test && NPM7=1 time ./bin/run-versioned-tests.sh",
     "versioned:async-local": "NEW_RELIC_FEATURE_FLAG_ASYNC_LOCAL_CONTEXT=1 npm run versioned:npm7",
     "versioned:async-local:major": "NEW_RELIC_FEATURE_FLAG_ASYNC_LOCAL_CONTEXT=1 npm run versioned:major",
+    "versioned:k2": "NEW_RELIC_SECURITY_AGENT_ENABLED=true npm run versioned:7",
+    "versioned:k2:major": "NEW_RELIC_SECURITY_AGENT_ENABLED=true npm run versioned:major",
     "prepare": "husky install"
   },
   "bin": {
