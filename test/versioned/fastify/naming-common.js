@@ -22,7 +22,6 @@ module.exports = function createTests(t, getExpectedSegments) {
         )
 
         let expectedSegments
-        const exact = !helper.isK2Enabled(agent)
         if (helper.isK2Enabled(agent)) {
           // since k2 agent adds an onRequest hook
           // it sometimes has timers.setTimeout depending on route
@@ -37,7 +36,7 @@ module.exports = function createTests(t, getExpectedSegments) {
           ]
         }
 
-        metrics.assertSegments(transaction.trace.root, expectedSegments, { exact })
+        metrics.assertSegments(transaction.trace.root, expectedSegments)
       })
 
       await fastify.listen(0)
