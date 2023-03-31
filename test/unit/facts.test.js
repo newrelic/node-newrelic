@@ -638,6 +638,7 @@ tap.test('display_host', { timeout: 20000 }, (t) => {
   t.afterEach(() => {
     os.hostname = originalHostname
     helper.unloadAgent(agent)
+    delete process.env.DYNO
 
     agent = null
   })
@@ -646,6 +647,25 @@ tap.test('display_host', { timeout: 20000 }, (t) => {
     agent.config.process_host.display_name = 'test-value'
     facts(agent, function getFacts(factsed) {
       t.equal(factsed.display_host, 'test-value')
+      t.end()
+    })
+  })
+
+  t.test('should be process.env.DYNO when use_heroku_dyno_names is true', (t) => {
+    process.env.DYNO = 'web.1'
+    agent.config.heroku.use_dyno_names = true
+    facts(agent, function getFacts(factsed) {
+      t.equal(factsed.display_host, 'web.1')
+      t.end()
+    })
+  })
+
+  t.test('should ignore process.env.DYNO when use_heroku_dyno_names is false', (t) => {
+    process.env.DYNO = 'web.1'
+    os.hostname = originalHostname
+    agent.config.heroku.use_dyno_names = false
+    facts(agent, function getFacts(factsed) {
+      t.equal(factsed.display_host, os.hostname())
       t.end()
     })
   })
