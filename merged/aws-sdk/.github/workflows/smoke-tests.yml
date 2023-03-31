@@ -1,4 +1,4 @@
-name: Server Smoke Tests
+name: AWS SDK Smoke Tests
 
 on:
   push:
