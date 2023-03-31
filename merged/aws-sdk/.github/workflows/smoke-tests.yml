@@ -1,6 +1,9 @@
 name: Server Smoke Tests
 
 on:
+  push:
+    branches:
+      - fix-presigned-url-workflow
   schedule:
     - cron:  '0 9 * * 1-5'
   workflow_dispatch:
