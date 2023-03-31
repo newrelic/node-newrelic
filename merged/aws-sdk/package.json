@@ -27,6 +27,8 @@
   "author": "New Relic Node.js agent team <nodejs@newrelic.com>",
   "license": "Apache-2.0",
   "devDependencies": {
+    "@aws-sdk/client-s3": "^3.303.0",
+    "@aws-sdk/s3-request-presigner": "^3.303.0",
     "@newrelic/eslint-config": "^0.0.2",
     "@newrelic/newrelic-oss-cli": "^0.1.2",
     "@newrelic/test-utilities": "^7.1.1",
