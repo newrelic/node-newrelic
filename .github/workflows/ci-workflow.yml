@@ -22,6 +22,8 @@ jobs:
       run: npm run lint
     - name: Inspect Lockfile
       run: npm run lint:lockfile
+    - name: Run CI Script Unit Tests
+      run: npm run unit:scripts
 
   unit:
     runs-on: ubuntu-latest

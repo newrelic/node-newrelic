@@ -1,9 +1,9 @@
 on:
+  workflow_dispatch:
   push:
     branches:
       - main
-      - add-release-please
-name: release-please
+name: Release Please Workflow
 jobs:
   release-please:
     permissions:

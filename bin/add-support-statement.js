@@ -15,7 +15,7 @@ module.exports = async function updateRelease() {
   const repo = process.env.RELEASE_REPO || 'node-newrelic'
   const tag = process.env.RELEASE_TAG
 
-  if (!tag || tag === '') {
+  if (!tag) {
     throw new Error('RELEASE_TAG is a required environment variable')
   }
 
