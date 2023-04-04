@@ -1,11 +1,37 @@
 {
-  "lastUpdated": "Wed Mar 15 2023 13:50:27 GMT-0400 (Eastern Daylight Time)",
+  "lastUpdated": "Fri Mar 31 2023 12:34:28 GMT-0400 (Eastern Daylight Time)",
   "projectName": "New Relic AWS-SDK Instrumentation",
   "projectUrl": "https://github.com/newrelic/node-newrelic-aws-sdk",
   "includeOptDeps": false,
   "includeDev": true,
   "dependencies": {},
   "devDependencies": {
+    "@aws-sdk/client-s3@3.303.0": {
+      "name": "@aws-sdk/client-s3",
+      "version": "3.303.0",
+      "range": "^3.303.0",
+      "licenses": "Apache-2.0",
+      "repoUrl": "https://github.com/aws/aws-sdk-js-v3",
+      "versionedRepoUrl": "https://github.com/aws/aws-sdk-js-v3/tree/v3.303.0",
+      "licenseFile": "node_modules/@aws-sdk/client-s3/LICENSE",
+      "licenseUrl": "https://github.com/aws/aws-sdk-js-v3/blob/v3.303.0/LICENSE",
+      "licenseTextSource": "file",
+      "publisher": "AWS SDK for JavaScript Team",
+      "url": "https://aws.amazon.com/javascript/"
+    },
+    "@aws-sdk/s3-request-presigner@3.303.0": {
+      "name": "@aws-sdk/s3-request-presigner",
+      "version": "3.303.0",
+      "range": "^3.303.0",
+      "licenses": "Apache-2.0",
+      "repoUrl": "https://github.com/aws/aws-sdk-js-v3",
+      "versionedRepoUrl": "https://github.com/aws/aws-sdk-js-v3/tree/v3.303.0",
+      "licenseFile": "node_modules/@aws-sdk/s3-request-presigner/LICENSE",
+      "licenseUrl": "https://github.com/aws/aws-sdk-js-v3/blob/v3.303.0/LICENSE",
+      "licenseTextSource": "file",
+      "publisher": "AWS SDK for JavaScript Team",
+      "url": "https://aws.amazon.com/javascript/"
+    },
     "@newrelic/eslint-config@0.0.2": {
       "name": "@newrelic/eslint-config",
       "version": "0.0.2",

@@ -11,6 +11,7 @@
     "versioned:npm6": "c8 -o ./coverage/versioned versioned-tests --minor -i 2 tests/versioned/**/*.tap.js",
     "versioned:npm7": "c8 -o ./coverage/versioned versioned-tests --minor --all -i 2 tests/versioned/**/*.tap.js",
     "versioned:major": "c8 -o ./coverage/versioned versioned-tests --major -i 2 tests/versioned/**/*.tap.js",
+    "smoke": "tap tests/smoke/**/*.test.js --timeout=180 --no-coverage --reporter=classic",
     "lint": "eslint *.js lib tests",
     "lint:fix": "eslint --fix *.js lib tests",
     "lint:lockfile": "lockfile-lint --path package-lock.json --type npm --allowed-hosts npm --validate-https --validate-integrity",
@@ -26,6 +27,8 @@
   "author": "New Relic Node.js agent team <nodejs@newrelic.com>",
   "license": "Apache-2.0",
   "devDependencies": {
+    "@aws-sdk/client-s3": "^3.303.0",
+    "@aws-sdk/s3-request-presigner": "^3.303.0",
     "@newrelic/eslint-config": "^0.0.2",
     "@newrelic/newrelic-oss-cli": "^0.1.2",
     "@newrelic/test-utilities": "^7.1.1",
