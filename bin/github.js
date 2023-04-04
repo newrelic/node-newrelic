@@ -30,6 +30,16 @@ class Github {
     return result.data
   }
 
+  async getReleaseByTag(tag) {
+    const results = await octokit.repos.getReleaseByTag({
+      owner: this.repoOwner,
+      repo: this.repository,
+      tag
+    })
+
+    return results.data
+  }
+
   async createRelease(tag, name, body) {
     const result = await octokit.repos.createRelease({
       owner: this.repoOwner,
@@ -143,6 +153,34 @@ class Github {
       body: body,
       draft: draft
     })
+  }
+
+  async updateRelease({ id, body }, retryCount = 1) {
+    const MAX_RETRIES = 3
+
+    if (retryCount > MAX_RETRIES) {
+      throw new Error('Unable to update release with backoff')
+    }
+
+    try {
+      return await octokit.repos.updateRelease({
+        owner: this.owner,
+        repo: this.repository,
+        release_id: id,
+        body
+      })
+    } catch (err) {
+      await new Promise((resolve) => {
+        const retryWait = 2 ** retryCount * 1000
+        console.log(
+          `Update Attempt #${retryCount} failed, waiting ${retryWait} ms before trying again`
+        )
+
+        setTimeout(resolve, retryWait)
+      })
+
+      return await this.updateRelease({ id, body }, retryCount + 1)
+    }
   }
 }
 

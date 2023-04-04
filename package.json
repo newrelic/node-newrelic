@@ -161,6 +161,7 @@
     "test": "npm run integration && npm run unit && npm run unit:esm",
     "third-party-updates": "oss third-party manifest --includeOptDeps && oss third-party notices --includeOptDeps && git add THIRD_PARTY_NOTICES.md third_party_manifest.json",
     "unit": "rm -f newrelic_agent.log && time c8 -o ./coverage/unit tap --test-regex='(\\/|^test\\/unit\\/.*\\.test\\.js)$' --timeout=180 --no-coverage --reporter classic",
+    "unit:scripts": "time c8 -o ./coverage/scripts-unit tap --test-regex='(\\/|^bin\\/test\\/.*\\.test\\.js)$' --timeout=180 --no-coverage --reporter classic",
     "unit:async-local": "rm -f newrelic_agent.log && time tap --test-regex='(\\/|^test\\/unit\\/.*\\.test\\.js)$' --timeout=180 --no-coverage --reporter classic --test-env=NEW_RELIC_FEATURE_FLAG_ASYNC_LOCAL_CONTEXT=1",
     "unit:esm": "rm -f newrelic_agent.log && time c8 -o ./coverage/esm-unit --include *.mjs --include **/*.mjs --exclude false tap --test-regex='(\\/|^test\\/unit\\/.*\\.test\\.mjs)$' --timeout=180 --no-coverage --reporter classic --node-arg=--experimental-loader=testdouble",
     "update-cross-agent-tests": "./bin/update-cats.sh",
