@@ -34,7 +34,7 @@ function getPlugin(shim, config) {
        * `finalizeRequest` only happens when an actual HTTP request
        * is to be sent over the wire. This used to use the `build` step,
        * but that caused headaches with using Presigned URLs, which
-       * leverages the `build` step in it's logic. This caused x-new-relic-disable-dt
+       * leverages the `build` step in its logic. This caused x-new-relic-disable-dt
        * to be added as a Signed Header to the Presigned URL, which broke customers
        * because Signed Headers must be provided when calling the Presigned URL.
        *
