@@ -1,3 +1,7 @@
+### v9.15.0 (2023-04-04)
+
+* Added a new configuration option `heroku.use_dyno_names` to specify whether or not to use `process.env.DYNO` for naming the host name and display host.  This option defaults to true.  If you are on heroku and do not want this functionality set `heroku.use_dyno_names` to `false`.  You can also control this configuration options with the environment variable of `NEW_RELIC_HEROKU_USE_DYNO_NAMES`. Thanks @benney-au-le  for your contribution 🚀
+
 ### v9.14.1 (2023-03-23)
 
 * Restored assigning loaded version of agent to require.cache as `__NR_cache` instead of a symbol to properly detect attempts at loading agent twice.
