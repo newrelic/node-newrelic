@@ -769,4 +769,11 @@ tap.test('when overriding configuration values via environment variables', (t) =
       t.end()
     })
   })
+
+  t.test('should convert NEW_RELIC_HEROKU_USE_DYNO_NAMES accordingly', (t) => {
+    idempotentEnv({ NEW_RELIC_HEROKU_USE_DYNO_NAMES: 'false' }, (config) => {
+      t.equal(config.heroku.use_dyno_names, false)
+      t.end()
+    })
+  })
 })

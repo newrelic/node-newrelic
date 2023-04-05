@@ -297,4 +297,9 @@ tap.test('with default properties', (t) => {
     })
     t.end()
   })
+
+  t.test('should default heroku.use_dyno_names to true', (t) => {
+    t.equal(configuration.heroku.use_dyno_names, true)
+    t.end()
+  })
 })
