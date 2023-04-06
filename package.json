@@ -203,7 +203,7 @@
     "@newrelic/newrelic-oss-cli": "^0.1.2",
     "@newrelic/proxy": "^2.0.0",
     "@newrelic/test-utilities": "^7.2.0",
-    "@octokit/rest": "^18.0.15",
+    "@octokit/rest": "^19.0.7",
     "@slack/bolt": "^3.7.0",
     "ajv": "^6.12.6",
     "async": "^3.2.4",
