@@ -220,7 +220,7 @@
     "eslint-plugin-prettier": "^3.4.0",
     "eslint-plugin-sonarjs": "^0.18.0",
     "express": "*",
-    "glob": "^7.1.2",
+    "glob": "^9.3.4",
     "got": "^11.8.5",
     "husky": "^6.0.0",
     "jsdoc": "^4.0.0",
