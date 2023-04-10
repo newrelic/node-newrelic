@@ -44,7 +44,7 @@ tap.Test.prototype.addAssert('nextCLMAttrs', 1, function ({ segments, clmEnabled
 tap.test('Next.js', (t) => {
   t.autoend()
   let agent
-  let app
+  let server
 
   t.before(async () => {
     await helpers.build(__dirname)
@@ -58,11 +58,11 @@ tap.test('Next.js', (t) => {
 
     // TODO: would be nice to run a new server per test so there are not chained failures
     // but currently has issues. Potentially due to module caching.
-    app = await helpers.start(__dirname)
+    server = await helpers.start(__dirname)
   })
 
-  t.teardown(() => {
-    app.options.httpServer.close()
+  t.teardown(async () => {
+    await server.close()
     agent.unload()
   })
 

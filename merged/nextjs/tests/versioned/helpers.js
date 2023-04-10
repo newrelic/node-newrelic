@@ -12,6 +12,10 @@ const tap = require('tap')
 const utils = require('@newrelic/test-utilities')
 utils.assert.extendTap(tap)
 
+const nextPkg = require('next/package.json')
+const semver = require('semver')
+const newServerResponse = semver.gte(nextPkg.version, '13.3.0')
+
 /**
  * Builds a Next.js app
  * @param {sting} dir directory to run next cli in
@@ -56,8 +60,13 @@ helpers.start = async function start(dir, path = 'app', port = 3001) {
     allowRetry: true
   })
 
+  if (newServerResponse) {
+    // app is actually a shutdown function, so wrap it for convenience
+    return { close: app }
+  }
+
   await app.prepare()
-  return app
+  return app.options.httpServer
 }
 
 /**

@@ -33,7 +33,7 @@ function getChildSegments(uri) {
 tap.test('Next.js', (t) => {
   t.autoend()
   let agent
-  let app
+  let server
 
   t.before(async () => {
     agent = utils.TestAgent.makeInstrumented()
@@ -46,11 +46,11 @@ tap.test('Next.js', (t) => {
     require.cache.__NR_cache = agent.agent
     helpers.registerInstrumentation(agent)
     await helpers.build(__dirname)
-    app = await helpers.start(__dirname)
+    server = await helpers.start(__dirname)
   })
 
-  t.teardown(() => {
-    app.options.httpServer.close()
+  t.teardown(async () => {
+    await server.close()
     agent.unload()
   })
 
