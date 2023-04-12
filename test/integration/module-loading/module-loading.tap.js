@@ -62,15 +62,12 @@ tap.test('should only log supportability metric for tracking type instrumentatio
   const PKG_VERSION = `${FEATURES.INSTRUMENTATION.ON_REQUIRE}/knex/Version/1`
 
   // eslint-disable-next-line node/no-extraneous-require
-  const prisma = require('knex')
-  const prismaOnRequiredMetric = agent.metrics._metrics.unscoped[PKG]
-  t.equal(prismaOnRequiredMetric.callCount, 1, `should record ${PKG}`)
-  const prismaVersionMetric = agent.metrics._metrics.unscoped[PKG_VERSION]
-  t.equal(prismaVersionMetric.callCount, 1, `should record ${PKG_VERSION}`)
-  t.notOk(
-    prisma[symbols.instrumented],
-    'should not try to instrument a package that is of type tracking'
-  )
+  require('knex')
+  const knexOnRequiredMetric = agent.metrics._metrics.unscoped[PKG]
+  t.equal(knexOnRequiredMetric.callCount, 1, `should record ${PKG}`)
+  const knexVersionMetric = agent.metrics._metrics.unscoped[PKG_VERSION]
+  t.equal(knexVersionMetric.callCount, 1, `should record ${PKG_VERSION}`)
+  t.ok(shimmer.isInstrumented('knex'), 'should mark tracking modules as instrumented')
   t.end()
 })
 

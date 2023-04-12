@@ -2717,6 +2717,82 @@ tap.test('Shim', function (t) {
     })
   })
 
+  t.test('assignOriginal', (t) => {
+    const mod = 'originalShimTests'
+    t.autoend()
+    t.beforeEach(beforeEach)
+    t.afterEach(afterEach)
+
+    t.test('should assign shim id to wrapped item as symbol', (t) => {
+      const shim = new Shim(agent, mod, mod)
+      const wrapped = function wrapped() {}
+      const original = function original() {}
+      shim.assignOriginal(wrapped, original)
+      t.equal(wrapped[symbols.wrapped], shim.id)
+      t.end()
+    })
+
+    t.test('should assign original on wrapped item as symbol', (t) => {
+      const shim = new Shim(agent, mod, mod)
+      const wrapped = function wrapped() {}
+      const original = function original() {}
+      shim.assignOriginal(wrapped, original)
+      t.equal(wrapped[symbols.original], original)
+      t.end()
+    })
+
+    t.test('should should overwrite original when forceOrig is true', (t) => {
+      const shim = new Shim(agent, mod, mod)
+      const wrapped = function wrapped() {}
+      const original = function original() {}
+      const firstOriginal = function firstOriginal() {}
+      wrapped[symbols.original] = firstOriginal
+      shim.assignOriginal(wrapped, original, true)
+      t.equal(wrapped[symbols.original], original)
+      t.end()
+    })
+
+    t.test('should not assign original if symbol already exists on wrapped item', (t) => {
+      const shim = new Shim(agent, mod, mod)
+      const wrapped = function wrapped() {}
+      const original = function original() {}
+      const firstOriginal = function firstOriginal() {}
+      wrapped[symbols.original] = firstOriginal
+      shim.assignOriginal(wrapped, original)
+      t.not(wrapped[symbols.original], original)
+      t.equal(wrapped[symbols.original], firstOriginal)
+      t.end()
+    })
+  })
+
+  t.test('assignId', (t) => {
+    const mod1 = 'mod1'
+    const mod2 = 'mod2'
+    t.autoend()
+    t.beforeEach(beforeEach)
+    t.afterEach(afterEach)
+
+    t.test('should assign an id to a shim instance', (t) => {
+      const shim = new Shim(agent, mod1, mod1)
+      t.ok(shim.id)
+      t.end()
+    })
+
+    t.test('should associate same id to a different shim instance when shimName matches', (t) => {
+      const shim = new Shim(agent, mod1, mod1, mod1)
+      const shim2 = new Shim(agent, mod2, mod2, mod1)
+      t.equal(shim.id, shim2.id, 'ids should be the same')
+      t.end()
+    })
+
+    t.test('should not associate id when shimName does not match', (t) => {
+      const shim = new Shim(agent, mod1, mod1, mod1)
+      const shim2 = new Shim(agent, mod2, mod2, mod2)
+      t.not(shim.id, shim2.id, 'ids should not be the same')
+      t.end()
+    })
+  })
+
   t.test('prefixRouteParameters', (t) => {
     t.autoend()
     t.beforeEach(beforeEach)
