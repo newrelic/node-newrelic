@@ -35,7 +35,8 @@ const packageDefinition = protoLoader.loadSync(PROTO_PATH, {
 
 const infiniteTracingService = grpc.loadPackageDefinition(packageDefinition).com.newrelic.trace.v1
 
-tap.test('Inifinite tracing - Connection Handling', (t) => {
+// TODO: test with compression on for both single and batch, test batch without compression too
+tap.test('Infinite tracing - Connection Handling', (t) => {
   t.autoend()
 
   let server = null
@@ -213,6 +214,8 @@ tap.test('Inifinite tracing - Connection Handling', (t) => {
               explain_threshold: Number.MIN_VALUE // force SQL traces
             },
             infinite_tracing: {
+              batching: false,
+              compression: false,
               trace_observer: {
                 host: helper.SSL_HOST,
                 port: port

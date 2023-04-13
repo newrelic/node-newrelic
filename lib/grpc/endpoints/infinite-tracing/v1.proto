@@ -6,6 +6,15 @@ service IngestService {
   // Accepts a stream of Span messages, and returns an irregular stream of
   // RecordStatus messages.
   rpc RecordSpan(stream Span) returns (stream RecordStatus) {}
+
+  // Accepts a stream of SpanBatch messages, and returns an irregular
+  // stream of RecordStatus messages. This endpoint can be used to improve
+  // throughput when Span messages are small
+  rpc RecordSpanBatch(stream SpanBatch) returns (stream RecordStatus) {}
+}
+
+message SpanBatch {
+  repeated Span spans = 1;
 }
 
 message Span {
@@ -27,3 +36,4 @@ message AttributeValue {
 message RecordStatus {
   uint64 messages_seen = 1;
 }
+

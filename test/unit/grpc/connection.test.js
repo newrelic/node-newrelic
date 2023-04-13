@@ -19,8 +19,11 @@ const grpcApi = require('../../../lib/proxy/grpc')
 const protoLoader = require('@grpc/proto-loader')
 
 const fakeTraceObserverConfig = {
-  host: 'host.com',
-  port: '443'
+  compression: true,
+  trace_observer: {
+    host: 'host.com',
+    port: '443'
+  }
 }
 
 class FakeStreamer extends EventEmitter {

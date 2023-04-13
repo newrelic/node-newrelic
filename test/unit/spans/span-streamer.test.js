@@ -96,7 +96,10 @@ const createMetricAggregatorForTests = () => {
 
 tap.test((t) => {
   const metrics = createMetricAggregatorForTests()
-  const spanStreamer = new SpanStreamer('fake-license-key', new GrpcConnection({}, metrics))
+  const spanStreamer = new SpanStreamer(
+    'fake-license-key',
+    new GrpcConnection({ trace_observer: {} }, metrics)
+  )
 
   t.ok(spanStreamer, 'instantiated the object')
   t.end()

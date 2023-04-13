@@ -14,11 +14,15 @@ const sinon = require('sinon')
 const proxyquire = require('proxyquire')
 
 const VALID_HOST = 'infinite-tracing.test'
+const metricsStub = {
+  getOrCreateMetric: sinon.stub().returns({ incrementCallCount: sinon.stub() })
+}
+const collectorStub = sinon.stub()
 
 tap.test('should return standard when trace observer not configured', (t) => {
   const config = Config.initialize({})
 
-  const aggregator = createSpanEventAggregator(config)
+  const aggregator = createSpanEventAggregator(config, collectorStub, metricsStub)
   assertStandardSpanAggregator(t, aggregator)
 
   t.end()
@@ -34,7 +38,7 @@ tap.test('should return standard when in serverless mode, trace observer valid',
     }
   })
 
-  const aggregator = createSpanEventAggregator(config)
+  const aggregator = createSpanEventAggregator(config, collectorStub, metricsStub)
   assertStandardSpanAggregator(t, aggregator)
 
   t.end()
@@ -49,7 +53,7 @@ tap.test('should return streaming when trace observer configured', (t) => {
     }
   })
 
-  const aggregator = createSpanEventAggregator(config)
+  const aggregator = createSpanEventAggregator(config, collectorStub, metricsStub)
   const isStreamingAggregator = aggregator instanceof StreamingSpanEventAggregator
 
   t.ok(isStreamingAggregator)
@@ -67,7 +71,7 @@ tap.test('should trim host and port options when they are strings', (t) => {
     }
   })
 
-  createSpanEventAggregator(config)
+  createSpanEventAggregator(config, collectorStub, metricsStub)
   t.same(config.infinite_tracing.trace_observer, {
     host: VALID_HOST,
     port: '300'
@@ -99,7 +103,7 @@ tap.test(
       '../logger': loggerStub
     })
 
-    const aggregator = createSpanAggrStubbed(config)
+    const aggregator = createSpanAggrStubbed(config, collectorStub, metricsStub)
     assertStandardSpanAggregator(t, aggregator)
     t.same(
       config.infinite_tracing.trace_observer,
