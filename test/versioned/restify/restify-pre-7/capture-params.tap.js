@@ -80,7 +80,7 @@ test('Restify capture params introspection', function (t) {
       // on older versions of node response messages aren't included
       const attributes = transaction.trace.attributes.get(DESTINATIONS.TRANS_TRACE)
       t.equal(
-        attributes['request.parameters.id'],
+        attributes['request.parameters.route.id'],
         '1337',
         'Trace attributes include `id` route param'
       )
@@ -153,7 +153,7 @@ test('Restify capture params introspection', function (t) {
       // on older versions of node response messages aren't included
       const attributes = transaction.trace.attributes.get(DESTINATIONS.TRANS_TRACE)
       t.equal(
-        attributes['request.parameters.id'],
+        attributes['request.parameters.route.id'],
         '1337',
         'Trace attributes include `id` route param'
       )

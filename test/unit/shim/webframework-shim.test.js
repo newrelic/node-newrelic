@@ -599,8 +599,8 @@ test('WebFrameworkShim', function (t) {
 
         t.ok(segment.attributes)
         t.same(segment.getAttributes(), {
-          foo: 'bar',
-          biz: 'bang'
+          'request.parameters.route.foo': 'bar',
+          'request.parameters.route.biz': 'bang'
         })
         t.end()
       })
@@ -1436,61 +1436,6 @@ test('WebFrameworkShim', function (t) {
       t.notOk(called)
       shim.noticeError(req, new Error('test error'))
       t.ok(called)
-      t.end()
-    })
-  })
-
-  t.test('#captureUrlParams', function (t) {
-    t.autoend()
-    t.beforeEach(function () {
-      beforeEach()
-      agent.config.attributes.enabled = true
-    })
-    t.afterEach(afterEach)
-
-    t.test('should copy the provided params onto the segment parameters', function (t) {
-      const segment = { parameters: { foo: 'other', bang: 'bam' } }
-      shim.getSegment = function () {
-        return segment
-      }
-      shim.captureUrlParams({ foo: 'bar', biz: 'baz' })
-      t.same(segment.parameters, {
-        foo: 'other',
-        biz: 'baz',
-        bang: 'bam'
-      })
-      t.end()
-    })
-
-    t.test('should not obey the attributes.enabled configuration', function (t) {
-      agent.config.attributes.enabled = false
-      const segment = { parameters: { foo: 'other', bang: 'bam' } }
-      shim.getSegment = function () {
-        return segment
-      }
-      shim.captureUrlParams({ foo: 'bar', biz: 'baz' })
-      t.same(segment.parameters, { foo: 'other', biz: 'baz', bang: 'bam' })
-      t.end()
-    })
-
-    t.test('should obey high_security mode', function (t) {
-      agent.config.high_security = true
-      const segment = { parameters: { foo: 'other' } }
-      shim.getSegment = function () {
-        return segment
-      }
-      shim.captureUrlParams({ foo: 'bar', biz: 'baz' })
-      t.same(segment.parameters, { foo: 'other' })
-      t.end()
-    })
-
-    t.test('should not throw when out of a transaction', function (t) {
-      shim.getSegment = function () {
-        return null
-      }
-      t.doesNotThrow(function () {
-        shim.captureUrlParams({ foo: 'bar' })
-      })
       t.end()
     })
   })

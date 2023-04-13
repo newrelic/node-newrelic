@@ -66,7 +66,7 @@ tap.test('Hapi capture params support', function (t) {
       t.ok(tx.trace, 'transaction has a trace.')
       const attributes = tx.trace.attributes.get(DESTINATIONS.TRANS_TRACE)
       t.equal(
-        attributes['request.parameters.id'],
+        attributes['request.parameters.route.id'],
         '1337',
         'Trace attributes include `id` route param'
       )
@@ -118,7 +118,7 @@ tap.test('Hapi capture params support', function (t) {
       t.ok(tx.trace, 'transaction has a trace.')
       const attributes = tx.trace.attributes.get(DESTINATIONS.TRANS_TRACE)
       t.equal(
-        attributes['request.parameters.id'],
+        attributes['request.parameters.route.id'],
         '1337',
         'Trace attributes include `id` route param'
       )

@@ -37,7 +37,7 @@ tap.test('Hapi vhost support', function (t) {
         t.ok(attributes[key], 'Trace contains expected HTTP attribute: ' + key)
       })
       t.equal(
-        attributes['request.parameters.id'],
+        attributes['request.parameters.route.id'],
         '1337',
         'Trace attributes include `id` route param'
       )

@@ -59,7 +59,7 @@ tap.test('Restify router', function (t) {
       t.equal(web.name, transaction.name, 'segment name and transaction name match')
       t.equal(web.partialName, 'Restify/GET//test/:id', 'should have partial name for apdex')
       t.equal(
-        web.getAttributes()['request.parameters.id'],
+        web.getAttributes()['request.parameters.route.id'],
         '31337',
         'namer gets parameters out of route'
       )
