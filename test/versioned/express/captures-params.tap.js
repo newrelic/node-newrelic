@@ -229,4 +229,36 @@ tap.test('test attributes.enabled for express', function (t) {
       })
     })
   })
+
+  t.test('query params should not mask route attributes', function (t) {
+    const app = require('express')()
+    const server = require('http').createServer(app)
+    let port = null
+
+    t.teardown(function () {
+      server.close()
+    })
+
+    app.get('/user/:id', function (req, res) {
+      res.end()
+    })
+
+    agent.on('transactionFinished', function (transaction) {
+      const attributes = transaction.trace.attributes.get(DESTINATIONS.TRANS_TRACE)
+      t.equal(
+        attributes['request.parameters.route.id'],
+        '5',
+        'attributes should include route params'
+      )
+      t.equal(attributes['request.parameters.id'], '6', 'attributes should include query params')
+      t.end()
+    })
+
+    helper.randomPort(function (_port) {
+      port = _port
+      server.listen(port, TEST_HOST, function () {
+        helper.makeGetRequest(TEST_URL + port + '/user/5?id=6')
+      })
+    })
+  })
 })
