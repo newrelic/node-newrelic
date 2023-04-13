@@ -18,6 +18,7 @@ module.exports = function initialize(shim, nextServer) {
     function wrapRenderToResponseWithComponents(shim, originalFn) {
       return function wrappedRenderToResponseWithComponents() {
         const { pathname } = arguments[0]
+        // this is not query params but instead url params for dynamic routes
         const { query } = arguments[1]
 
         shim.setTransactionUri(pathname)
@@ -32,12 +33,11 @@ module.exports = function initialize(shim, nextServer) {
   shim.wrap(Server.prototype, 'runApi', function wrapRunApi(shim, originalFn) {
     const { config } = shim.agent
     return function wrappedRunApi() {
-      const [, , query, params, page] = arguments
+      const [, , , params, page] = arguments
 
       shim.setTransactionUri(page)
 
-      const parameters = Object.assign({}, query, params)
-      assignParameters(shim, parameters)
+      assignParameters(shim, params)
       assignCLMAttrs(config, shim.getActiveSegment(), {
         'code.function': 'handler',
         'code.filepath': `pages${page}`
@@ -53,9 +53,11 @@ function assignParameters(shim, parameters) {
   if (activeSegment) {
     const transaction = activeSegment.transaction
 
+    const prefixedParameters = shim.prefixRouteParameters(parameters)
+
     // We have to add params because this framework doesn't
     // follow the traditional middleware/middleware mounter pattern
     // where we'd pull these from middleware.
-    transaction.nameState.appendPath('/', parameters)
+    transaction.nameState.appendPath('/', prefixedParameters)
   }
 }
