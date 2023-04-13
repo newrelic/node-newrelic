@@ -537,7 +537,7 @@ tap.test('MessageShim', function (t) {
       let segment = null
       const DELAY = 25
 
-      function wrapMe() {
+      function wrapMeAsync() {
         segment = shim.getSegment()
         return new Promise((resolve) => {
           setTimeout(() => {
@@ -546,7 +546,7 @@ tap.test('MessageShim', function (t) {
         })
       }
 
-      const wrapped = shim.recordConsume(wrapMe, {
+      const wrapped = shim.recordConsume(wrapMeAsync, {
         destinationName: shim.FIRST,
         promise: true,
         messageHandler: function (shim, fn, name, message) {
@@ -565,6 +565,37 @@ tap.test('MessageShim', function (t) {
           t.equal(attributes.b, 'b')
         })
       })
+    })
+
+    t.test('should handle callback-based APIs', async function (t) {
+      const msg = 'In my younger and more vulnerable days...'
+      let segment = null
+
+      function wrapMeSync(queuName, cb) {
+        segment = shim.getSegment()
+        t.equal(queuName, 'gatsby', 'original function should get the queue name')
+        return cb(msg)
+      }
+
+      const wrapped = shim.recordConsume(wrapMeSync, {
+        destinationName: shim.FIRST,
+        promise: true,
+        callback: shim.LAST,
+        messageHandler: function (shim, fn, name, message) {
+          t.equal(message[0], msg, 'message handler should get the message')
+          return { parameters: { a: 'a', b: 'b', message: message[0] } }
+        }
+      })
+
+      helper.runInTransaction(agent, async () => {
+        return wrapped('gatsby', function (message) {
+          t.equal(message, msg, 'wrapped function should get the message')
+        })
+      })
+      const attributes = segment.getAttributes()
+      t.equal(attributes.a, 'a', 'segment should have "a" attribute')
+      t.equal(attributes.b, 'b', 'segment should have "b" attribute')
+      t.equal(attributes.message, msg, 'segment should have "message" attribute')
     })
 
     t.test('should bind promise even without messageHandler', function (t) {
