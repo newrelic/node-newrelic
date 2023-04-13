@@ -25,7 +25,7 @@ const repos = [
   {
     name: 'next',
     repository: 'https://github.com/newrelic/newrelic-node-nextjs.git',
-    branch: 'main'
+    branch: 'prefix-route-params'
   },
   {
     name: 'superagent',
