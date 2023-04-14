@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "Mon Mar 27 2023 14:12:05 GMT-0400 (Eastern Daylight Time)",
+  "lastUpdated": "Fri Apr 14 2023 10:40:55 GMT-0400 (Eastern Daylight Time)",
   "projectName": "New Relic Node Agent",
   "projectUrl": "https://github.com/newrelic/node-newrelic",
   "includeOptDeps": true,
@@ -238,15 +238,15 @@
       "email": "nathan@tootallnate.net",
       "url": "http://n8.io/"
     },
-    "@newrelic/test-utilities@7.2.0": {
+    "@newrelic/test-utilities@7.3.0": {
       "name": "@newrelic/test-utilities",
-      "version": "7.2.0",
-      "range": "^7.2.0",
+      "version": "7.3.0",
+      "range": "^7.3.0",
       "licenses": "Apache-2.0",
       "repoUrl": "https://github.com/newrelic/node-test-utilities",
-      "versionedRepoUrl": "https://github.com/newrelic/node-test-utilities/tree/v7.2.0",
+      "versionedRepoUrl": "https://github.com/newrelic/node-test-utilities/tree/v7.3.0",
       "licenseFile": "node_modules/@newrelic/test-utilities/LICENSE",
-      "licenseUrl": "https://github.com/newrelic/node-test-utilities/blob/v7.2.0/LICENSE",
+      "licenseUrl": "https://github.com/newrelic/node-test-utilities/blob/v7.3.0/LICENSE",
       "licenseTextSource": "file",
       "publisher": "New Relic Node.js agent team",
       "email": "nodejs@newrelic.com"
@@ -324,15 +324,15 @@
       "publisher": "Jake Luer",
       "email": "jake@alogicalparadox.com"
     },
-    "clean-jsdoc-theme@4.2.4": {
+    "clean-jsdoc-theme@4.2.7": {
       "name": "clean-jsdoc-theme",
-      "version": "4.2.4",
+      "version": "4.2.7",
       "range": "^4.2.4",
       "licenses": "MIT",
       "repoUrl": "https://github.com/ankitskvmdam/clean-jsdoc-theme",
-      "versionedRepoUrl": "https://github.com/ankitskvmdam/clean-jsdoc-theme/tree/v4.2.4",
+      "versionedRepoUrl": "https://github.com/ankitskvmdam/clean-jsdoc-theme/tree/v4.2.7",
       "licenseFile": "node_modules/clean-jsdoc-theme/LICENSE",
-      "licenseUrl": "https://github.com/ankitskvmdam/clean-jsdoc-theme/blob/v4.2.4/LICENSE",
+      "licenseUrl": "https://github.com/ankitskvmdam/clean-jsdoc-theme/blob/v4.2.7/LICENSE",
       "licenseTextSource": "file",
       "publisher": "Ank"
     },
@@ -499,15 +499,15 @@
       "publisher": "Typicode",
       "email": "typicode@gmail.com"
     },
-    "jsdoc@4.0.0": {
+    "jsdoc@4.0.2": {
       "name": "jsdoc",
-      "version": "4.0.0",
+      "version": "4.0.2",
       "range": "^4.0.0",
       "licenses": "Apache-2.0",
       "repoUrl": "https://github.com/jsdoc/jsdoc",
-      "versionedRepoUrl": "https://github.com/jsdoc/jsdoc/tree/v4.0.0",
+      "versionedRepoUrl": "https://github.com/jsdoc/jsdoc/tree/v4.0.2",
       "licenseFile": "node_modules/jsdoc/LICENSE.md",
-      "licenseUrl": "https://github.com/jsdoc/jsdoc/blob/v4.0.0/LICENSE.md",
+      "licenseUrl": "https://github.com/jsdoc/jsdoc/blob/v4.0.2/LICENSE.md",
       "licenseTextSource": "file",
       "publisher": "Michael Mathews",
       "email": "micmath@gmail.com"
