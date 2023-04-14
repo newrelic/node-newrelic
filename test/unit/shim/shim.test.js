@@ -2735,9 +2735,12 @@ tap.test('Shim', function (t) {
     t.beforeEach(beforeEach)
     t.afterEach(afterEach)
 
-    t.test('should return undefined if input is falsey', (t) => {
-      const result = shim.prefixRouteParameters(null)
-      t.equal(result, undefined)
+    t.test('should not prefix parameters when given invalid input', (t) => {
+      const resultNull = shim.prefixRouteParameters(null)
+      t.equal(resultNull, undefined)
+
+      const resultString = shim.prefixRouteParameters('parameters')
+      t.equal(resultString, undefined)
       t.end()
     })
 
