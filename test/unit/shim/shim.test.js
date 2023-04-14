@@ -2729,4 +2729,25 @@ tap.test('Shim', function (t) {
       t.end()
     })
   })
+
+  t.test('prefixRouteParameters', (t) => {
+    t.autoend()
+    t.beforeEach(beforeEach)
+    t.afterEach(afterEach)
+
+    t.test('should return undefined if input is falsey', (t) => {
+      const result = shim.prefixRouteParameters(null)
+      t.equal(result, undefined)
+      t.end()
+    })
+
+    t.test('should return the object with route param prefix applied to keys', (t) => {
+      const result = shim.prefixRouteParameters({ id: '123abc', foo: 'bar' })
+      t.same(result, {
+        'request.parameters.route.id': '123abc',
+        'request.parameters.route.foo': 'bar'
+      })
+      t.end()
+    })
+  })
 })
