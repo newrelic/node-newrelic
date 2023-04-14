@@ -1800,7 +1800,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 ### @newrelic/test-utilities
 
-This product includes source derived from [@newrelic/test-utilities](https://github.com/newrelic/node-test-utilities) ([v7.2.0](https://github.com/newrelic/node-test-utilities/tree/v7.2.0)), distributed under the [Apache-2.0 License](https://github.com/newrelic/node-test-utilities/blob/v7.2.0/LICENSE):
+This product includes source derived from [@newrelic/test-utilities](https://github.com/newrelic/node-test-utilities) ([v7.3.0](https://github.com/newrelic/node-test-utilities/tree/v7.3.0)), distributed under the [Apache-2.0 License](https://github.com/newrelic/node-test-utilities/blob/v7.3.0/LICENSE):
 
 ```
                                  Apache License
@@ -2177,7 +2177,7 @@ SOFTWARE.
 
 ### clean-jsdoc-theme
 
-This product includes source derived from [clean-jsdoc-theme](https://github.com/ankitskvmdam/clean-jsdoc-theme) ([v4.2.4](https://github.com/ankitskvmdam/clean-jsdoc-theme/tree/v4.2.4)), distributed under the [MIT License](https://github.com/ankitskvmdam/clean-jsdoc-theme/blob/v4.2.4/LICENSE):
+This product includes source derived from [clean-jsdoc-theme](https://github.com/ankitskvmdam/clean-jsdoc-theme) ([v4.2.7](https://github.com/ankitskvmdam/clean-jsdoc-theme/tree/v4.2.7)), distributed under the [MIT License](https://github.com/ankitskvmdam/clean-jsdoc-theme/blob/v4.2.7/LICENSE):
 
 ```
 MIT License
@@ -2709,7 +2709,7 @@ SOFTWARE.
 
 ### jsdoc
 
-This product includes source derived from [jsdoc](https://github.com/jsdoc/jsdoc) ([v4.0.0](https://github.com/jsdoc/jsdoc/tree/v4.0.0)), distributed under the [Apache-2.0 License](https://github.com/jsdoc/jsdoc/blob/v4.0.0/LICENSE.md):
+This product includes source derived from [jsdoc](https://github.com/jsdoc/jsdoc) ([v4.0.2](https://github.com/jsdoc/jsdoc/tree/v4.0.2)), distributed under the [Apache-2.0 License](https://github.com/jsdoc/jsdoc/blob/v4.0.2/LICENSE.md):
 
 ```
 # License
