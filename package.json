@@ -132,7 +132,8 @@
     "monitoring",
     "instrumentation",
     "debugging",
-    "profiling"
+    "profiling",
+    "logging"
   ],
   "homepage": "https://github.com/newrelic/node-newrelic",
   "engines": {
