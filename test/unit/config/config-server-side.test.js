@@ -174,10 +174,10 @@ tap.test('when receiving server-side configuration', (t) => {
   })
 
   t.test('should not configure record_sql', (t) => {
-    t.equal(config.transaction_tracer.record_sql, 'off')
+    t.equal(config.transaction_tracer.record_sql, 'obfuscated')
 
     config.onConnect({ 'transaction_tracer.record_sql': 'raw' })
-    t.equal(config.transaction_tracer.record_sql, 'off')
+    t.equal(config.transaction_tracer.record_sql, 'obfuscated')
 
     t.end()
   })
