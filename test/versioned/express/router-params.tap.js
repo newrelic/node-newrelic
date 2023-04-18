@@ -59,8 +59,8 @@ test('Express router introspection', function (t) {
       'should have partial name for apdex'
     )
     const attributes = web.getAttributes()
-    t.equal(attributes['request.parameters.param1'], 'foo', 'should have param1')
-    t.equal(attributes['request.parameters.param2'], 'bar', 'should have param2')
+    t.equal(attributes['request.parameters.route.param1'], 'foo', 'should have param1')
+    t.equal(attributes['request.parameters.route.param2'], 'bar', 'should have param2')
   })
 
   server.listen(0, function () {

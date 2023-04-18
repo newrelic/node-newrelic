@@ -103,7 +103,11 @@ tap.test('test attributes.enabled for express', function (t) {
     agent.on('transactionFinished', function (transaction) {
       t.ok(transaction.trace, 'transaction has a trace.')
       const attributes = transaction.trace.attributes.get(DESTINATIONS.TRANS_TRACE)
-      t.equal(attributes['request.parameters.id'], '5', 'Trace attributes include `id` route param')
+      t.equal(
+        attributes['request.parameters.route.id'],
+        '5',
+        'Trace attributes include `id` route param'
+      )
     })
 
     helper.randomPort(function (_port) {
@@ -193,7 +197,11 @@ tap.test('test attributes.enabled for express', function (t) {
     agent.on('transactionFinished', function (transaction) {
       t.ok(transaction.trace, 'transaction has a trace.')
       const attributes = transaction.trace.attributes.get(DESTINATIONS.TRANS_TRACE)
-      t.equal(attributes['request.parameters.id'], '5', 'Trace attributes include `id` route param')
+      t.equal(
+        attributes['request.parameters.route.id'],
+        '5',
+        'Trace attributes include `id` route param'
+      )
       t.equal(
         attributes['request.parameters.name'],
         'bob',
@@ -222,7 +230,7 @@ tap.test('test attributes.enabled for express', function (t) {
     })
   })
 
-  t.test('query params mask route attributes', function (t) {
+  t.test('query params should not mask route attributes', function (t) {
     const app = require('express')()
     const server = require('http').createServer(app)
     let port = null
@@ -237,6 +245,11 @@ tap.test('test attributes.enabled for express', function (t) {
 
     agent.on('transactionFinished', function (transaction) {
       const attributes = transaction.trace.attributes.get(DESTINATIONS.TRANS_TRACE)
+      t.equal(
+        attributes['request.parameters.route.id'],
+        '5',
+        'attributes should include route params'
+      )
       t.equal(attributes['request.parameters.id'], '6', 'attributes should include query params')
       t.end()
     })

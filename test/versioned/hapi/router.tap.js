@@ -390,7 +390,7 @@ function verifier(t, verb) {
     t.equal(web.partialName, 'Hapi/' + verb + '//test/{id}', 'should have partial name for apdex')
 
     t.equal(
-      web.getAttributes()['request.parameters.id'],
+      web.getAttributes()['request.parameters.route.id'],
       '31337',
       'namer gets attributes out of route'
     )

@@ -1925,8 +1925,8 @@ function setupNameState(transaction) {
   transaction.nameState.setPrefix('Restify')
   transaction.nameState.setVerb('COOL')
   transaction.nameState.setDelimiter('/')
-  transaction.nameState.appendPath('/foo/:foo', { foo: 'biz' })
-  transaction.nameState.appendPath('/bar/:bar', { bar: 'bang' })
+  transaction.nameState.appendPath('/foo/:foo', { 'request.parameters.foo': 'biz' })
+  transaction.nameState.appendPath('/bar/:bar', { 'request.parameters.bar': 'bang' })
 }
 
 function setupHighSecurity(agent) {
