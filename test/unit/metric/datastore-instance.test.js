@@ -35,7 +35,8 @@ describe('Datastore instance metrics collected via the datastore shim', function
         return test.system_hostname
       }
 
-      const shim = new DatastoreShim(agent, 'testModule', null, test.product)
+      const shim = new DatastoreShim(agent, 'testModule', null)
+      shim.setDatastore(test.product)
 
       const testInstrumented = {
         query: function () {}

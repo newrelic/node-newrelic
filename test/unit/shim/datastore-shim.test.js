@@ -21,7 +21,8 @@ test('DatastoreShim', function (t) {
 
   function beforeEach() {
     agent = helper.loadMockedAgent()
-    shim = new DatastoreShim(agent, 'test-cassandra', null, DatastoreShim.CASSANDRA)
+    shim = new DatastoreShim(agent, 'test-cassandra')
+    shim.setDatastore(DatastoreShim.CASSANDRA)
     wrappable = {
       name: 'this is a name',
       bar: function barsName() {

@@ -185,7 +185,8 @@ tap.test('fromSegment()', (t) => {
   t.test('should create an datastore span with an datastore segment', (t) => {
     agent.config.transaction_tracer.record_sql = 'raw'
 
-    const shim = new DatastoreShim(agent, 'test-data-store', '', 'TestStore')
+    const shim = new DatastoreShim(agent, 'test-data-store')
+    shim.setDatastore('TestStore')
 
     const dsConn = { myDbOp: (query, cb) => setTimeout(cb, 50) }
     let longQuery = ''

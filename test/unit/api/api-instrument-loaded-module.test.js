@@ -8,7 +8,6 @@
 const tap = require('tap')
 const API = require('../../../api')
 const agentHelper = require('../../lib/agent_helper')
-const Shim = require('../../../lib/shim/shim')
 const symbols = require('../../../lib/symbols')
 
 tap.test('Agent API - instrumentLoadedModule', (t) => {
@@ -17,7 +16,6 @@ tap.test('Agent API - instrumentLoadedModule', (t) => {
   let agent
   let api
   let expressMock
-  let shimHelper
 
   t.beforeEach(() => {
     agent = agentHelper.instrumentMockedAgent()
@@ -28,8 +26,6 @@ tap.test('Agent API - instrumentLoadedModule', (t) => {
     expressMock.application = {}
     expressMock.application.use = function use() {}
     expressMock.Router = {}
-
-    shimHelper = new Shim(agent, 'fake')
   })
 
   t.afterEach(() => {
@@ -57,7 +53,8 @@ tap.test('Agent API - instrumentLoadedModule', (t) => {
 
     t.type(expressMock, 'object')
 
-    const isWrapped = shimHelper.isWrapped(expressMock.application.use)
+    const shim = expressMock[symbols.shim]
+    const isWrapped = shim.isWrapped(expressMock.application.use)
     t.ok(isWrapped)
 
     t.end()

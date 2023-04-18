@@ -48,12 +48,11 @@ describe('shimmer', function () {
       let agent = null
       let onRequireArgs = null
       let counter = 0
-      let instrumentationOpts = null
       let instrumentedModule = null
 
       beforeEach(function () {
         agent = helper.instrumentMockedAgent()
-        instrumentationOpts = {
+        const instrumentationOpts = {
           moduleName: moduleName,
           onRequire: function (shim, module) {
             instrumentedModule = module
@@ -86,7 +85,7 @@ describe('shimmer', function () {
       })
 
       it('should construct a DatastoreShim if the type is "datastore"', function () {
-        instrumentationOpts.type = 'datastore'
+        shimmer.registeredInstrumentations[moduleName][0].type = 'datastore'
         require(moduleName)
         expect(onRequireArgs[0]).to.be.an.instanceof(shims.DatastoreShim)
       })

@@ -68,19 +68,18 @@ export async function resolve(specifier, context, nextResolve) {
 
     if (format === 'commonjs') {
       // ES Modules translate import statements into fully qualified filepaths, so we create a copy of our instrumentation under this filepath
-      const instrumentationDefinitionCopy = Object.assign({}, instrumentationDefinition)
+      const instrumentationDefinitionCopy = [...instrumentationDefinition]
+      instrumentationDefinitionCopy.forEach((copy) => {
+        // Stripping the prefix is necessary because the code downstream gets this url without it
+        copy.moduleName = fileURLToPath(url)
 
-      // Stripping the prefix is necessary because the code downstream gets this url without it
-      instrumentationDefinitionCopy.moduleName = fileURLToPath(url)
-
-      // Added to keep our Supportability metrics from exploding/including customer info via full filepath
-      instrumentationDefinitionCopy.specifier = specifier
-
-      shimmer.registerInstrumentation(instrumentationDefinitionCopy)
-
-      logger.debug(
-        `Registered CommonJS instrumentation for ${specifier} under ${instrumentationDefinitionCopy.moduleName}`
-      )
+        // Added to keep our Supportability metrics from exploding/including customer info via full filepath
+        copy.specifier = specifier
+        shimmer.registerInstrumentation(copy)
+        logger.debug(
+          `Registered CommonJS instrumentation for ${specifier} under ${copy.moduleName}`
+        )
+      })
     } else if (format === 'module') {
       registeredSpecifiers.set(url, specifier)
       const modifiedUrl = new URL(url)

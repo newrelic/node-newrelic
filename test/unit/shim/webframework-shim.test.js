@@ -22,7 +22,8 @@ test('WebFrameworkShim', function (t) {
 
   function beforeEach() {
     agent = helper.loadMockedAgent()
-    shim = new WebFrameworkShim(agent, 'test-restify', null, WebFrameworkShim.RESTIFY)
+    shim = new WebFrameworkShim(agent, 'test-restify')
+    shim.setFramework(WebFrameworkShim.RESTIFY)
     wrappable = {
       name: 'this is a name',
       bar: function barsName(unused, params) { return 'bar' }, // eslint-disable-line
