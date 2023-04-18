@@ -1,118 +1,43 @@
-### v10.0.0 (2023-04-18)
+### v10.0.0 (2023-04-19)
 
-* Added the ability to register instrumentation multiple hooks (onRequire, onResolved) for the same resolved moduleName.
-    * This has been a limitation of the agent from the beginning.  If a customer used the api to instrument `api.instrument`, `api.instrumentDatastore`, `api.instrumentWebframework`, `api.instrumentMessages`, or `api.instrumentConglomerate`, it would override existing instrumentation hooks.  The effect was that the Node.js agent would not function as designed.  
-  * **DEPRECATION NOTICE**: `shim.unwrap` and `shim.unwrapOnce` will no longer function if you attempt to unwrap an item that has been wrapped multiple times.
+* **BREAKING** - Updated the default of `config.transaction_tracer.record_sql` from `off` to `obfuscated`. This means that sql statements will be captured but obfuscated.
+
+* **BREAKING** - Route (URL) parameters are now stored as `request.parameters.route.*` attributes on Transactions, root Segments and Spans.
+
+    After this change, the following becomes true:
+
+    - Query parameters will be available as attributes prefixed with request.parameters.* on Transactions and Spans.
+
+    - Route parameters will be available as attributes prefixed with request.parameters.route.* on Transactions and Spans.
+
+    - Route parameters (aka url parameters) are a common feature of various web frameworks, where you can create a placeholder as part of an API route definition.
+
+    For example, given the following Express route definition and request url:
+
+    ```js
+    app.get('/api/users/:id', myMiddleware, myController)
+    ```
+
+    ```sh
+    curl http://localhost:3000/api/users/abc123?id=true
+    ```
+
+    The route parameter is `id`, and has a value of `abc123`. This would become `request.parameters.route.id: abc123` on the Transaction, root Segment, and Span attributes. This example also has a query parameter of `id`, which has a value of true. This would become `request.parameters.id: true` on the Transaction, root Segment, and Span attributes.
+
+* **BREAKING** - Removed `captureUrlParams` from `WebFrameworkShim` class.
+  
+* **DEPRECATION NOTICE**: `shim.unwrap` and `shim.unwrapOnce` will no longer function if you attempt to unwrap an item that has been wrapped multiple times.
     * This is because since we now allow instrumenting the same module more than once, you cannot safely unwrap without breaking all registered instrumentation.  We plan to remove `shim.unwrap` and `shim.unwrapOnce` in the next major release.
 
-* **BREAKING** - Route (URL) parameters are now stored as `request.parameters.route.*` attributes on Transactions and Spans
-* **BREAKING** - Removed `captureUrlParams` from `WebFrameworkShim` class
+* Added the ability to register instrumentation multiple hooks (onRequire, onResolved) for the same resolved moduleName.
+    * This has been a limitation of the agent from the beginning.  
+    * If you used the api to instrument `api.instrument`, `api.instrumentDatastore`, `api.instrumentWebframework`, `api.instrumentMessages`, or `api.instrumentConglomerate`, it would override existing instrumentation hooks.  The effect was that the Node.js agent would not function as designed.  
 
-Refactored lib/transaction/tracecontext.js to reduce cognitive complexity
+* Refactored lib/transaction/tracecontext.js to reduce cognitive complexity.
 
-Refactored lib/transaction/trace/index.js to reduce cognitive complexity
+* Refactored lib/transaction/trace/index.js to reduce cognitive complexity.
 
-* **BREAKING** - Updated the default of `config.transaction_tracer.record_sql` from `off` to `obfuscated`.
-
---- NOTES NEEDS REVIEW ---
-Bumps [clean-jsdoc-theme](https://github.com/ankitskvmdam/clean-jsdoc-theme) from 4.2.4 to 4.2.7.
-<details>
-<summary>Commits</summary>
-<ul>
-<li>See full diff in <a href="https://github.com/ankitskvmdam/clean-jsdoc-theme/commits">compare view</a></li>
-</ul>
-</details>
-<br />
-
-
-[![Dependabot compatibility score](https://dependabot-badges.githubapp.com/badges/compatibility_score?dependency-name=clean-jsdoc-theme&package-manager=npm_and_yarn&previous-version=4.2.4&new-version=4.2.7)](https://docs.github.com/en/github/managing-security-vulnerabilities/about-dependabot-security-updates#about-compatibility-scores)
-
-Dependabot will resolve any conflicts with this PR as long as you don't alter it yourself. You can also trigger a rebase manually by commenting `@dependabot rebase`.
-
-[//]: # (dependabot-automerge-start)
-[//]: # (dependabot-automerge-end)
-
----
-
-<details>
-<summary>Dependabot commands and options</summary>
-<br />
-
-You can trigger Dependabot actions by commenting on this PR:
-- `@dependabot rebase` will rebase this PR
-- `@dependabot recreate` will recreate this PR, overwriting any edits that have been made to it
-- `@dependabot merge` will merge this PR after your CI passes on it
-- `@dependabot squash and merge` will squash and merge this PR after your CI passes on it
-- `@dependabot cancel merge` will cancel a previously requested merge and block automerging
-- `@dependabot reopen` will reopen this PR if it is closed
-- `@dependabot close` will close this PR and stop Dependabot recreating it. You can achieve the same result by closing it manually
-- `@dependabot ignore this major version` will close this PR and stop Dependabot creating any more for this major version (unless you reopen the PR or upgrade to it yourself)
-- `@dependabot ignore this minor version` will close this PR and stop Dependabot creating any more for this minor version (unless you reopen the PR or upgrade to it yourself)
-- `@dependabot ignore this dependency` will close this PR and stop Dependabot creating any more for this dependency (unless you reopen the PR or upgrade to it yourself)
-
-
-</details>
---------------------------
-
---- NOTES NEEDS REVIEW ---
-Bumps [jsdoc](https://github.com/jsdoc/jsdoc) from 4.0.0 to 4.0.2.
-<details>
-<summary>Changelog</summary>
-<p><em>Sourced from <a href="https://github.com/jsdoc/jsdoc/blob/4.0.2/CHANGES.md">jsdoc's changelog</a>.</em></p>
-<blockquote>
-<h2>4.0.2 (February 2023)</h2>
-<p>Updates the Babel parser, and enables additional Babel plugins for ECMAScript proposals.</p>
-<h2>4.0.1 (February 2023)</h2>
-<p>If an inline link tag uses a pipe delimiter, and there are spaces around the pipe delimiter, then
-the HTML link no longer contains <code>%20</code> at the end; also, the link text no longer contains extra
-spaces. For example, <code>{@link https://example.com | link text}</code> is now rendered as
-<code>&lt;a href=&quot;https://example.com/&quot;&gt;link text&lt;/a&gt;</code> rather than
-<code>&lt;a href=&quot;https://example.com/%20&quot;&gt; link text&lt;/a&gt;</code>.</p>
-</blockquote>
-</details>
-<details>
-<summary>Commits</summary>
-<ul>
-<li><a href="https://github.com/jsdoc/jsdoc/commit/0b6193f185b66ca7502b145acdc66f4579c63e8d"><code>0b6193f</code></a> 4.0.2</li>
-<li><a href="https://github.com/jsdoc/jsdoc/commit/9d885486c698b81e16f3d6b2257408e7fc67b025"><code>9d88548</code></a> deps: update Babel; enable current Babel plugins in parser</li>
-<li><a href="https://github.com/jsdoc/jsdoc/commit/c2dd2102c47e43872d1468133c72d8d569d4f5a6"><code>c2dd210</code></a> 4.0.1</li>
-<li><a href="https://github.com/jsdoc/jsdoc/commit/3d90c8a8c238270cabbc4ec49c43842d30c2cb0f"><code>3d90c8a</code></a> fix: in inline links, strip spaces around pipe character</li>
-<li><a href="https://github.com/jsdoc/jsdoc/commit/37fc8cd3b359baf6342fa024eb25d6bf31b1ff64"><code>37fc8cd</code></a> chore: tell Prettier not to format files</li>
-<li><a href="https://github.com/jsdoc/jsdoc/commit/a5e4688ea9244af7491e5efaa9200b24f5846a55"><code>a5e4688</code></a> chore(deps): update deps</li>
-<li>See full diff in <a href="https://github.com/jsdoc/jsdoc/compare/4.0.0...4.0.2">compare view</a></li>
-</ul>
-</details>
-<br />
-
-
-[![Dependabot compatibility score](https://dependabot-badges.githubapp.com/badges/compatibility_score?dependency-name=jsdoc&package-manager=npm_and_yarn&previous-version=4.0.0&new-version=4.0.2)](https://docs.github.com/en/github/managing-security-vulnerabilities/about-dependabot-security-updates#about-compatibility-scores)
-
-Dependabot will resolve any conflicts with this PR as long as you don't alter it yourself. You can also trigger a rebase manually by commenting `@dependabot rebase`.
-
-[//]: # (dependabot-automerge-start)
-[//]: # (dependabot-automerge-end)
-
----
-
-<details>
-<summary>Dependabot commands and options</summary>
-<br />
-
-You can trigger Dependabot actions by commenting on this PR:
-- `@dependabot rebase` will rebase this PR
-- `@dependabot recreate` will recreate this PR, overwriting any edits that have been made to it
-- `@dependabot merge` will merge this PR after your CI passes on it
-- `@dependabot squash and merge` will squash and merge this PR after your CI passes on it
-- `@dependabot cancel merge` will cancel a previously requested merge and block automerging
-- `@dependabot reopen` will reopen this PR if it is closed
-- `@dependabot close` will close this PR and stop Dependabot recreating it. You can achieve the same result by closing it manually
-- `@dependabot ignore this major version` will close this PR and stop Dependabot creating any more for this major version (unless you reopen the PR or upgrade to it yourself)
-- `@dependabot ignore this minor version` will close this PR and stop Dependabot creating any more for this minor version (unless you reopen the PR or upgrade to it yourself)
-- `@dependabot ignore this dependency` will close this PR and stop Dependabot creating any more for this dependency (unless you reopen the PR or upgrade to it yourself)
-
-
-</details>
---------------------------
+* Upgraded devDependencies jsdoc, and lean-jsdoc-theme. 
 
 ### v9.15.0 (2023-04-04)
 
