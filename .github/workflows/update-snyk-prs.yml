@@ -1,0 +1,29 @@
+name: Update Snyk Vulnerability PRs
+
+on:
+  pull_request:
+    types:
+      - opened
+      - reopened
+
+jobs:
+  update-snyk-pr:
+    permissions:
+      pull-requests: write
+    runs-on: ubuntu-latest
+    if:  ${{ github.event.sender.login == 'snyk-bot' }} 
+    steps:
+      - uses: actions/checkout@v3
+      - name: Use Node.js LTS
+        uses: actions/setup-node@v3
+        with:
+          node-version: lts/*
+      - name: Install Dependencies
+        run: npm ci
+      - name: Update Snyk PR Title
+        run: node ./bin/update-snyk-pr.js'
+        env:
+          RELEASE_REPO: node-newrelic
+          RELEASE_ORG: newrelic
+          SNYK_PR_ID: ${{ github.event.number }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
