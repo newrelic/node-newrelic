@@ -1,3 +1,17 @@
+### v7.2.0 (2023-04-19)
+
+* Updated the registration of instrumentation to indicate that it will share a shim instance id for checking if items are wrapped.
+
+* Updated README header image to latest OSS office required images
+
+* Fixed dead links in the docs.
+
+* Added testing coverage to ensure Code Level Metrics functionality with Koa instrumentation
+
+* Added lockfile checks to CI workflow to prevent malicious changes
+
+* Updated json5 devDependency to latest.
+
 ### v7.1.1 (2022-12-16)
 
 * Updated Koa instrumentation to work in applications using the ES Modules loader.
