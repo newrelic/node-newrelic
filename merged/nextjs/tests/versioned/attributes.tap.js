@@ -105,7 +105,7 @@ tap.test('Next.js', (t) => {
     const agentAttributes = getTransactionEventAgentAttributes(t.context.transaction)
 
     t.match(agentAttributes, {
-      'request.parameters.value': 'testing', // route [value] param
+      'request.parameters.route.value': 'testing', // route [value] param
       'request.parameters.queryParam': 'queryValue'
     })
   })
@@ -153,7 +153,7 @@ tap.test('Next.js', (t) => {
       const agentAttributes = getTransactionEventAgentAttributes(t.context.transaction)
 
       t.match(agentAttributes, {
-        'request.parameters.id': '1', // route [id] param
+        'request.parameters.route.id': '1', // route [id] param
         'request.parameters.queryParam': 'queryValue'
       })
       const segmentAttrs = getSegmentAgentAttributes(
@@ -192,7 +192,7 @@ tap.test('Next.js', (t) => {
     const agentAttributes = getTransactionEventAgentAttributes(t.context.transaction)
 
     t.match(agentAttributes, {
-      'request.parameters.id': '2', // route [id] param
+      'request.parameters.route.id': '2', // route [id] param
       'request.parameters.queryParam': 'queryValue'
     })
   })
