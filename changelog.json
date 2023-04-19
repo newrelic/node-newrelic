@@ -1,4 +1,22 @@
 {
-    "repository": "newrelic/node-newrelic",
-    "entries": []
+  "repository": "newrelic/node-newrelic",
+  "entries": [
+    {
+      "changes": [
+        {
+          "type": "fix",
+          "sha": "b2714830d770a1ece489eaf78f4b502396a149d0",
+          "message": "Route/URL parameters are now stored on request.parameters.route.* attributes",
+          "issues": [],
+          "breakingChangeNote": "Route/URL parameters are now stored on request.parameters.route.* attributes"
+        }
+      ],
+      "version": "10.0.0",
+      "language": "JAVASCRIPT",
+      "artifactName": "newrelic",
+      "id": "e27f0bc2-e889-4428-bb92-15021df84c05",
+      "createTime": "2023-04-19T15:03:42.774Z"
+    }
+  ],
+  "updateTime": "2023-04-19T15:03:42.774Z"
 }

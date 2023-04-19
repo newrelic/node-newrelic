@@ -39,6 +39,17 @@
 
 * Upgraded devDependencies jsdoc, and lean-jsdoc-theme. 
 
+## [10.0.0](https://github.com/newrelic/node-newrelic/compare/v9.15.0...v10.0.0) (2023-04-19)
+
+
+### ⚠ BREAKING CHANGES
+
+* Route/URL parameters are now stored on request.parameters.route.* attributes
+
+### Bug Fixes
+
+* Route/URL parameters are now stored on request.parameters.route.* attributes ([b271483](https://github.com/newrelic/node-newrelic/commit/b2714830d770a1ece489eaf78f4b502396a149d0))
+
 ### v9.15.0 (2023-04-04)
 
 * Added a new configuration option `heroku.use_dyno_names` to specify whether or not to use `process.env.DYNO` for naming the host name and display host.  This option defaults to true.  If you are on heroku and do not want this functionality set `heroku.use_dyno_names` to `false`.  You can also control this configuration options with the environment variable of `NEW_RELIC_HEROKU_USE_DYNO_NAMES`. Thanks @benney-au-le  for your contribution 🚀
