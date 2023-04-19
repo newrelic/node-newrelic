@@ -68,7 +68,7 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [14.x, 16.x, 18.x]
+        node-version: [16.x, 18.x, 20.x]
 
     steps:
     - uses: actions/checkout@v3
@@ -100,7 +100,7 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [14.x, 16.x, 18.x]
+        node-version: [16.x, 18.x, 20.x]
 
     steps:
     - uses: actions/checkout@v3
@@ -127,7 +127,7 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [14.x, 16.x, 18.x]
+        node-version: [16.x, 18.x, 20.x]
 
     steps:
     - uses: actions/checkout@v3
@@ -139,15 +139,7 @@ jobs:
       run: npm ci
     - name: Run Docker Services
       run: npm run services
-    - name: Run Versioned Tests (npm v6 / Node 12/14)
-      if: ${{ matrix.node-version == '14.x' }}
-      run: TEST_CHILD_TIMEOUT=600000 npm run versioned:npm6
-      env:
-        VERSIONED_MODE: ${{ github.ref == 'refs/heads/main' && '--minor' || '--major' }}
-        JOBS: 4 # 2 per CPU seems to be the sweet spot in GHA (July 2022)
-        C8_REPORTER: lcovonly
     - name: Run Versioned Tests (npm v7 / Node 16+)
-      if: ${{ matrix.node-version != '14.x' }}
       run: TEST_CHILD_TIMEOUT=600000 npm run versioned:npm7
       env:
         VERSIONED_MODE: ${{ github.ref == 'refs/heads/main' && '--minor' || '--major' }}
@@ -165,7 +157,7 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [14.x, 16.x, 18.x]
+        node-version: [16.x, 18.x, 20.x]
 
     steps:
       - uses: actions/checkout@v3
