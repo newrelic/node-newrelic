@@ -36,8 +36,11 @@ jobs:
         run: echo "RELEASE_TAG=${{ steps.release.outputs.tag_name }}" >> $GITHUB_ENV
         if: ${{ steps.release.outputs.release_created }}
       - name: Update GH Release with Support Statement
-        run: RELEASE_REPO=node-newrelic RELEASE_ORG=newrelic node -e 'require("./bin/add-support-statement")()'
+        run: node ./bin/add-support-statement.js'
         if: ${{ steps.release.outputs.release_created }}
+        env:
+          RELEASE_REPO: node-newrelic
+          RELEASE_ORG: newrelic
       - name: Publish to Npm
         run: npm publish
         if: ${{ steps.release.outputs.release_created }}

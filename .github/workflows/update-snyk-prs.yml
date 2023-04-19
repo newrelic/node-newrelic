@@ -21,7 +21,7 @@ jobs:
       - name: Install Dependencies
         run: npm ci
       - name: Update Snyk PR Title
-        run: node -e 'require("./bin/update-snyk-pr")()'
+        run: node ./bin/update-snyk-pr.js'
         env:
           RELEASE_REPO: node-newrelic
           RELEASE_ORG: newrelic
