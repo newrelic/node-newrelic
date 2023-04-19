@@ -1,3 +1,44 @@
+### v10.0.0 (2023-04-19)
+
+* **BREAKING** - Updated the default of `config.transaction_tracer.record_sql` from `off` to `obfuscated`. This means that sql statements will be captured but obfuscated.
+
+* **BREAKING** - Route (URL) parameters are now stored as `request.parameters.route.*` attributes on Transactions, root Segments and Spans.
+
+    After this change, the following becomes true:
+
+    - Query parameters will be available as attributes prefixed with request.parameters.* on Transactions and Spans.
+
+    - Route parameters will be available as attributes prefixed with request.parameters.route.* on Transactions and Spans.
+
+    - Route parameters (aka url parameters) are a common feature of various web frameworks, where you can create a placeholder as part of an API route definition.
+
+    For example, given the following Express route definition and request url:
+
+    ```js
+    app.get('/api/users/:id', myMiddleware, myController)
+    ```
+
+    ```sh
+    curl http://localhost:3000/api/users/abc123?id=true
+    ```
+
+    The route parameter is `id`, and has a value of `abc123`. This would become `request.parameters.route.id: abc123` on the Transaction, root Segment, and Span attributes. This example also has a query parameter of `id`, which has a value of true. This would become `request.parameters.id: true` on the Transaction, root Segment, and Span attributes.
+
+* **BREAKING** - Removed `captureUrlParams` from `WebFrameworkShim` class.
+  
+* **DEPRECATION NOTICE**: `shim.unwrap` and `shim.unwrapOnce` will no longer function if you attempt to unwrap an item that has been wrapped multiple times.
+    * This is because since we now allow instrumenting the same module more than once, you cannot safely unwrap without breaking all registered instrumentation.  We plan to remove `shim.unwrap` and `shim.unwrapOnce` in the next major release.
+
+* Added the ability to register instrumentation multiple hooks (onRequire, onResolved) for the same resolved moduleName.
+    * This has been a limitation of the agent from the beginning.  
+    * If you used the api to instrument `api.instrument`, `api.instrumentDatastore`, `api.instrumentWebframework`, `api.instrumentMessages`, or `api.instrumentConglomerate`, it would override existing instrumentation hooks.  The effect was that the Node.js agent would not function as designed.  
+
+* Refactored lib/transaction/tracecontext.js to reduce cognitive complexity.
+
+* Refactored lib/transaction/trace/index.js to reduce cognitive complexity.
+
+* Upgraded devDependencies jsdoc, and lean-jsdoc-theme. 
+
 ### v9.15.0 (2023-04-04)
 
 * Added a new configuration option `heroku.use_dyno_names` to specify whether or not to use `process.env.DYNO` for naming the host name and display host.  This option defaults to true.  If you are on heroku and do not want this functionality set `heroku.use_dyno_names` to `false`.  You can also control this configuration options with the environment variable of `NEW_RELIC_HEROKU_USE_DYNO_NAMES`. Thanks @benney-au-le  for your contribution 🚀
