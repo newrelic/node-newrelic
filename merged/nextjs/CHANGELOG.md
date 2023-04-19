@@ -1,3 +1,13 @@
+### v0.5.0 (2023-04-19)
+
+* **BREAKING** - Route (URL) parameters are now stored as `request.parameters.route.*` attributes on Transactions
+
+* Updated README header image to latest OSS office required images
+
+* Bumped [json5](https://github.com/json5/json5) from 2.2.1 to 2.2.3.
+
+* Added lockfile checks to CI workflow to prevent malicious changes
+
 ### v0.4.0 (2022-12-15)
 
 * Added ability to capture code level metrics attributes for middleware, `getServerSideProps` functions, and API handlers. 
