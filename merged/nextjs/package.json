@@ -45,7 +45,7 @@
     "husky": "^8.0.1",
     "lint-staged": "^12.4.2",
     "lockfile-lint": "^4.9.6",
-    "newrelic": "^9.0.3",
+    "newrelic": "^10.0.0",
     "sinon": "^14.0.0",
     "tap": "^16.2.0"
   },
