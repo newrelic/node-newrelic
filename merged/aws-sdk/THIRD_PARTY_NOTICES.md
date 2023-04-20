@@ -880,7 +880,7 @@ This product includes source derived from [@newrelic/newrelic-oss-cli](https://g
 
 ### @newrelic/test-utilities
 
-This product includes source derived from [@newrelic/test-utilities](https://github.com/newrelic/node-test-utilities) ([v7.2.0](https://github.com/newrelic/node-test-utilities/tree/v7.2.0)), distributed under the [Apache-2.0 License](https://github.com/newrelic/node-test-utilities/blob/v7.2.0/LICENSE):
+This product includes source derived from [@newrelic/test-utilities](https://github.com/newrelic/node-test-utilities) ([v7.3.0](https://github.com/newrelic/node-test-utilities/tree/v7.3.0)), distributed under the [Apache-2.0 License](https://github.com/newrelic/node-test-utilities/blob/v7.3.0/LICENSE):
 
 ```
                                  Apache License
@@ -1089,7 +1089,7 @@ This product includes source derived from [@newrelic/test-utilities](https://git
 
 ### aws-sdk
 
-This product includes source derived from [aws-sdk](https://github.com/aws/aws-sdk-js) ([v2.1278.0](https://github.com/aws/aws-sdk-js/tree/v2.1278.0)), distributed under the [Apache-2.0 License](https://github.com/aws/aws-sdk-js/blob/v2.1278.0/LICENSE.txt):
+This product includes source derived from [aws-sdk](https://github.com/aws/aws-sdk-js) ([v2.1354.0](https://github.com/aws/aws-sdk-js/tree/v2.1354.0)), distributed under the [Apache-2.0 License](https://github.com/aws/aws-sdk-js/blob/v2.1354.0/LICENSE.txt):
 
 ```
 
@@ -1711,7 +1711,7 @@ This product includes source derived from [lockfile-lint](https://github.com/lir
 
 ### newrelic
 
-This product includes source derived from [newrelic](https://github.com/newrelic/node-newrelic) ([v9.12.1](https://github.com/newrelic/node-newrelic/tree/v9.12.1)), distributed under the [Apache-2.0 License](https://github.com/newrelic/node-newrelic/blob/v9.12.1/LICENSE):
+This product includes source derived from [newrelic](https://github.com/newrelic/node-newrelic) ([v10.0.0](https://github.com/newrelic/node-newrelic/tree/v10.0.0)), distributed under the [Apache-2.0 License](https://github.com/newrelic/node-newrelic/blob/v10.0.0/LICENSE):
 
 ```
                                  Apache License
