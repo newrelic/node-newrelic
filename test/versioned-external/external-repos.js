@@ -20,12 +20,12 @@ const repos = [
   {
     name: 'koa',
     repository: 'https://github.com/newrelic/node-newrelic-koa.git',
-    branch: 'moar-shim-fixes'
+    branch: 'main'
   },
   {
     name: 'next',
     repository: 'https://github.com/newrelic/newrelic-node-nextjs.git',
-    branch: 'prefix-route-params'
+    branch: 'main'
   },
   {
     name: 'superagent',
