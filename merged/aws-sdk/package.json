@@ -31,7 +31,7 @@
     "@aws-sdk/s3-request-presigner": "^3.303.0",
     "@newrelic/eslint-config": "^0.0.2",
     "@newrelic/newrelic-oss-cli": "^0.1.2",
-    "@newrelic/test-utilities": "^7.1.1",
+    "@newrelic/test-utilities": "^7.3.0",
     "aws-sdk": "^2.403.0",
     "c8": "^7.12.0",
     "eslint": "^7.32.0",
@@ -42,7 +42,7 @@
     "husky": "^7.0.2",
     "lint-staged": "^11.1.2",
     "lockfile-lint": "^4.9.6",
-    "newrelic": "^9.12.1",
+    "newrelic": "^10.0.0",
     "prettier": "^2.3.2",
     "sinon": "^7.2.3",
     "tap": "^16.0.1"
