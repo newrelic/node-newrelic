@@ -40,3 +40,7 @@ jobs:
       run: node ./bin/update-system-config-pages.js --version ${{ steps.get_tag.outputs.latest_tag }} --staging-key ${{ secrets.NEW_RELIC_API_KEY_STAGING }} --prod-key ${{ secrets.NEW_RELIC_API_KEY_PRODUCTION }}
     - name: Publish API Docs
       run: npm run publish-docs
+    - name: Create Docs Website PR
+      run: node ./bin/create-docs-pr.js --tag ${{ steps.get_tag.outputs.latest_tag }}
+      env:
+        GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}

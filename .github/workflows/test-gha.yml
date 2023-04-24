@@ -1,0 +1,28 @@
+name: Test Docs PR
+
+on: [push, workflow_dispatch]
+
+jobs:
+  test-docs-pr:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v3
+        with:
+          node-version: '18.x'
+      - name: Install Dependencies
+        run: npm ci
+      - name: Setup GitHub Credentials
+        run: |
+          git config user.name $GITHUB_ACTOR
+          git config user.email gh-actions-${GITHUB_ACTOR}@github.com
+      - name: Get Created Tag
+        id: get_tag
+        run: echo "latest_tag=$(cat package.json | jq .version)" >> $GITHUB_OUTPUT
+      - name: Create Docs Website PR
+        run: node ./bin/create-docs-pr.js --tag v${{ steps.get_tag.outputs.latest_tag }} --repo-owner mrickard
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}

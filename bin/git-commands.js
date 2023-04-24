@@ -64,7 +64,7 @@ async function commit(message) {
 }
 
 async function pushToRemote(remote, branchName) {
-  const stdout = await execAsPromise(`git push --set-upstream ${remote} ${branchName}`)
+  const stdout = await execAsPromise(`git push --set-upstream ${remote} HEAD:${branchName}`)
   return stdout.trim()
 }
 
@@ -116,6 +116,12 @@ async function sparseCloneRepo(repoInfo, checkoutFiles) {
   process.chdir('..')
 }
 
+async function setUser(name, email) {
+  const setName = await execAsPromise(`git config user.name ${name}`)
+  const setEmail = await execAsPromise(`git config user.email ${email}`)
+  return [setName, setEmail].join(' ')
+}
+
 function execAsPromise(command) {
   return new Promise((resolve, reject) => {
     console.log(`Executing: '${command}'`)
@@ -143,5 +149,6 @@ module.exports = {
   checkout,
   clone,
   sparseCloneRepo,
-  addFiles
+  addFiles,
+  setUser
 }
