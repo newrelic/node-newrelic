@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "Thu Mar 23 2023 15:53:08 GMT-0400 (Eastern Daylight Time)",
+  "lastUpdated": "Mon Apr 24 2023 09:59:57 GMT-0400 (Eastern Daylight Time)",
   "projectName": "New Relic Koa Instrumentation",
   "projectUrl": "https://github.com/newrelic/node-newrelic-koa",
   "includeOptDeps": false,
@@ -57,28 +57,28 @@
       "publisher": "New Relic Node.js agent team",
       "email": "nodejs@newrelic.com"
     },
-    "c8@7.12.0": {
+    "c8@7.13.0": {
       "name": "c8",
-      "version": "7.12.0",
+      "version": "7.13.0",
       "range": "^7.12.0",
       "licenses": "ISC",
       "repoUrl": "https://github.com/bcoe/c8",
-      "versionedRepoUrl": "https://github.com/bcoe/c8/tree/v7.12.0",
+      "versionedRepoUrl": "https://github.com/bcoe/c8/tree/v7.13.0",
       "licenseFile": "node_modules/c8/LICENSE.txt",
-      "licenseUrl": "https://github.com/bcoe/c8/blob/v7.12.0/LICENSE.txt",
+      "licenseUrl": "https://github.com/bcoe/c8/blob/v7.13.0/LICENSE.txt",
       "licenseTextSource": "file",
       "publisher": "Ben Coe",
       "email": "ben@npmjs.com"
     },
-    "eslint-config-prettier@8.5.0": {
+    "eslint-config-prettier@8.8.0": {
       "name": "eslint-config-prettier",
-      "version": "8.5.0",
+      "version": "8.8.0",
       "range": "^8.3.0",
       "licenses": "MIT",
       "repoUrl": "https://github.com/prettier/eslint-config-prettier",
-      "versionedRepoUrl": "https://github.com/prettier/eslint-config-prettier/tree/v8.5.0",
+      "versionedRepoUrl": "https://github.com/prettier/eslint-config-prettier/tree/v8.8.0",
       "licenseFile": "node_modules/eslint-config-prettier/LICENSE",
-      "licenseUrl": "https://github.com/prettier/eslint-config-prettier/blob/v8.5.0/LICENSE",
+      "licenseUrl": "https://github.com/prettier/eslint-config-prettier/blob/v8.8.0/LICENSE",
       "licenseTextSource": "file",
       "publisher": "Simon Lydell"
     },
@@ -168,15 +168,15 @@
       "publisher": "Alex Mingoia",
       "email": "talk@alexmingoia.com"
     },
-    "koa@2.14.1": {
+    "koa@2.14.2": {
       "name": "koa",
-      "version": "2.14.1",
+      "version": "2.14.2",
       "range": "^2.6.1",
       "licenses": "MIT",
       "repoUrl": "https://github.com/koajs/koa",
-      "versionedRepoUrl": "https://github.com/koajs/koa/tree/v2.14.1",
+      "versionedRepoUrl": "https://github.com/koajs/koa/tree/v2.14.2",
       "licenseFile": "node_modules/koa/LICENSE",
-      "licenseUrl": "https://github.com/koajs/koa/blob/v2.14.1/LICENSE",
+      "licenseUrl": "https://github.com/koajs/koa/blob/v2.14.2/LICENSE",
       "licenseTextSource": "file"
     },
     "lint-staged@11.2.6": {
@@ -192,42 +192,42 @@
       "publisher": "Andrey Okonetchnikov",
       "email": "andrey@okonet.ru"
     },
-    "lockfile-lint@4.9.6": {
+    "lockfile-lint@4.10.1": {
       "name": "lockfile-lint",
-      "version": "4.9.6",
+      "version": "4.10.1",
       "range": "^4.9.6",
       "licenses": "Apache-2.0",
       "repoUrl": "https://github.com/lirantal/lockfile-lint",
-      "versionedRepoUrl": "https://github.com/lirantal/lockfile-lint/tree/v4.9.6",
+      "versionedRepoUrl": "https://github.com/lirantal/lockfile-lint/tree/v4.10.1",
       "licenseFile": "node_modules/lockfile-lint/LICENSE",
-      "licenseUrl": "https://github.com/lirantal/lockfile-lint/blob/v4.9.6/LICENSE",
+      "licenseUrl": "https://github.com/lirantal/lockfile-lint/blob/v4.10.1/LICENSE",
       "licenseTextSource": "file",
       "publisher": "Liran Tal",
       "email": "liran.tal@gmail.com",
       "url": "https://github.com/lirantal"
     },
-    "newrelic@9.14.0": {
+    "newrelic@10.0.0": {
       "name": "newrelic",
-      "version": "9.14.0",
+      "version": "10.0.0",
       "range": "^9.14.0",
       "licenses": "Apache-2.0",
       "repoUrl": "https://github.com/newrelic/node-newrelic",
-      "versionedRepoUrl": "https://github.com/newrelic/node-newrelic/tree/v9.14.0",
+      "versionedRepoUrl": "https://github.com/newrelic/node-newrelic/tree/v10.0.0",
       "licenseFile": "node_modules/newrelic/LICENSE",
-      "licenseUrl": "https://github.com/newrelic/node-newrelic/blob/v9.14.0/LICENSE",
+      "licenseUrl": "https://github.com/newrelic/node-newrelic/blob/v10.0.0/LICENSE",
       "licenseTextSource": "file",
       "publisher": "New Relic Node.js agent team",
       "email": "nodejs@newrelic.com"
     },
-    "prettier@2.8.1": {
+    "prettier@2.8.7": {
       "name": "prettier",
-      "version": "2.8.1",
+      "version": "2.8.7",
       "range": "^2.3.2",
       "licenses": "MIT",
       "repoUrl": "https://github.com/prettier/prettier",
-      "versionedRepoUrl": "https://github.com/prettier/prettier/tree/v2.8.1",
+      "versionedRepoUrl": "https://github.com/prettier/prettier/tree/v2.8.7",
       "licenseFile": "node_modules/prettier/LICENSE",
-      "licenseUrl": "https://github.com/prettier/prettier/blob/v2.8.1/LICENSE",
+      "licenseUrl": "https://github.com/prettier/prettier/blob/v2.8.7/LICENSE",
       "licenseTextSource": "file",
       "publisher": "James Long"
     },
@@ -242,27 +242,27 @@
       "licenseUrl": "https://github.com/npm/node-semver/blob/v5.7.1/LICENSE",
       "licenseTextSource": "file"
     },
-    "sinon@15.0.1": {
+    "sinon@15.0.3": {
       "name": "sinon",
-      "version": "15.0.1",
+      "version": "15.0.3",
       "range": "^15.0.1",
       "licenses": "BSD-3-Clause",
       "repoUrl": "https://github.com/sinonjs/sinon",
-      "versionedRepoUrl": "https://github.com/sinonjs/sinon/tree/v15.0.1",
+      "versionedRepoUrl": "https://github.com/sinonjs/sinon/tree/v15.0.3",
       "licenseFile": "node_modules/sinon/LICENSE",
-      "licenseUrl": "https://github.com/sinonjs/sinon/blob/v15.0.1/LICENSE",
+      "licenseUrl": "https://github.com/sinonjs/sinon/blob/v15.0.3/LICENSE",
       "licenseTextSource": "file",
       "publisher": "Christian Johansen"
     },
-    "tap@16.3.2": {
+    "tap@16.3.4": {
       "name": "tap",
-      "version": "16.3.2",
+      "version": "16.3.4",
       "range": "^16.0.1",
       "licenses": "ISC",
       "repoUrl": "https://github.com/tapjs/node-tap",
-      "versionedRepoUrl": "https://github.com/tapjs/node-tap/tree/v16.3.2",
+      "versionedRepoUrl": "https://github.com/tapjs/node-tap/tree/v16.3.4",
       "licenseFile": "node_modules/tap/LICENSE",
-      "licenseUrl": "https://github.com/tapjs/node-tap/blob/v16.3.2/LICENSE",
+      "licenseUrl": "https://github.com/tapjs/node-tap/blob/v16.3.4/LICENSE",
       "licenseTextSource": "file",
       "publisher": "Isaac Z. Schlueter",
       "email": "i@izs.me",
