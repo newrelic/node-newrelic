@@ -5,7 +5,6 @@
 
 set -x
 
-NODE_OPTIONS="--max-old-space-size=4096"
 VERSIONED_MODE="${VERSIONED_MODE:---minor}"
 SAMPLES="${SAMPLES:-10}"
 
