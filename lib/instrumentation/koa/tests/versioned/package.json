@@ -8,7 +8,10 @@
         "node": ">=14"
       },
       "dependencies": {
-        "koa": "^1.5.0"
+        "koa": {
+          "versions": "^1.5.0",
+          "samples": 5
+        }
       },
       "files": [
         "koa-v1.tap.js"
@@ -24,7 +27,10 @@
         "node": ">=14"
       },
       "dependencies": {
-        "koa": ">=2.0.0"
+        "koa": {
+          "versions": ">=2.0.0",
+          "samples": 5
+        }
       },
       "files": [
         "koa.tap.js",
@@ -36,8 +42,14 @@
         "node": ">=14"
       },
       "dependencies": {
-        "koa": ">=2.0.0",
-        "koa-router": ">=7.1.0"
+        "koa": {
+          "versions": ">=2.0.0",
+          "samples": 5
+        },
+        "koa-router": {
+          "versions": ">=7.1.0",
+          "samples": 5
+        }
       },
       "files": [
         "koa-router.tap.js",
@@ -49,8 +61,14 @@
         "node": ">=14"
       },
       "dependencies": {
-        "koa": ">=2.0.0",
-        "@koa/router": ">=8.0.0"
+        "koa": {
+          "versions": ">=2.0.0",
+          "samples": 5
+        },
+        "@koa/router": {
+          "versions": ">=8.0.0",
+          "samples": 5
+        }
       },
       "files": [
         "scoped-koa-router.tap.js",
@@ -62,8 +80,14 @@
         "node": ">=14"
       },
       "dependencies": {
-        "koa": ">=2.0.0",
-        "koa-route": ">=3.0.0"
+        "koa": {
+          "versions": ">=2.0.0",
+          "samples": 5
+        },
+        "koa-route": {
+          "versions": ">=3.0.0",
+          "samples": 5
+        }
       },
       "files": [
         "koa-route.tap.js"
