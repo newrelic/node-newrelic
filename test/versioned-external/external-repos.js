@@ -30,7 +30,7 @@ const repos = [
   {
     name: 'superagent',
     repository: 'https://github.com/newrelic/node-newrelic-superagent.git',
-    branch: 'main'
+    branch: 'fix-c8-oom'
   },
   {
     name: 'apollo-server',
