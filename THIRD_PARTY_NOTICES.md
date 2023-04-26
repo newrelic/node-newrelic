@@ -2126,7 +2126,7 @@ THE SOFTWARE.
 
 ### c8
 
-This product includes source derived from [c8](https://github.com/bcoe/c8) ([v7.12.0](https://github.com/bcoe/c8/tree/v7.12.0)), distributed under the [ISC License](https://github.com/bcoe/c8/blob/v7.12.0/LICENSE.txt):
+This product includes source derived from [c8](https://github.com/bcoe/c8) ([v7.13.0](https://github.com/bcoe/c8/tree/v7.13.0)), distributed under the [ISC License](https://github.com/bcoe/c8/blob/v7.13.0/LICENSE.txt):
 
 ```
 Copyright (c) 2017, Contributors
