@@ -1,4 +1,4 @@
 {
   "reporter": ["lcov"],
-  "exclude": ["test/*", "*.mjs", "**/*.mjs"]
+  "include": ["api.js", "index.js", "stub_api.js", "esm-loader.mjs", "lib/*"]
 }
