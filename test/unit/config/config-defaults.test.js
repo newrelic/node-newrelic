@@ -302,4 +302,10 @@ tap.test('with default properties', (t) => {
     t.equal(configuration.heroku.use_dyno_names, true)
     t.end()
   })
+
+  t.test('should default batching and compression to true for infinite tracing', (t) => {
+    t.equal(configuration.infinite_tracing.batching, true)
+    t.equal(configuration.infinite_tracing.compression, true)
+    t.end()
+  })
 })

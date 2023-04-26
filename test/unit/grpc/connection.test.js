@@ -372,3 +372,41 @@ tap.test('grpc stream event handling', (test) => {
 
   test.end()
 })
+
+tap.test('_createClient', (t) => {
+  t.autoend()
+
+  t.test(
+    'should create client with compression when config.infinite_tracing.compression is true',
+    (t) => {
+      const metrics = createMetricAggregatorForTests()
+      const config = { ...fakeTraceObserverConfig, compression: true }
+      const connection = new GrpcConnection(config, metrics)
+      connection._createClient()
+      const metric = metrics.getOrCreateMetric(`${NAMES.INFINITE_TRACING.COMPRESSION}/enabled`)
+      t.equal(metric.callCount, 1, 'incremented compression enabled')
+      const disabledMetric = metrics.getOrCreateMetric(
+        `${NAMES.INFINITE_TRACING.COMPRESSION}/disabled`
+      )
+      t.not(disabledMetric.callCount)
+      t.end()
+    }
+  )
+
+  t.test(
+    'should create client without compression when config.infinite_tracing.compression is false',
+    (t) => {
+      const metrics = createMetricAggregatorForTests()
+      const config = { ...fakeTraceObserverConfig, compression: false }
+      const connection = new GrpcConnection(config, metrics)
+      connection._createClient()
+      const metric = metrics.getOrCreateMetric(`${NAMES.INFINITE_TRACING.COMPRESSION}/disabled`)
+      t.equal(metric.callCount, 1, 'incremented compression disabled')
+      const enabledMetric = metrics.getOrCreateMetric(
+        `${NAMES.INFINITE_TRACING.COMPRESSION}/disabled`
+      )
+      t.not(enabledMetric.callCount)
+      t.end()
+    }
+  )
+})

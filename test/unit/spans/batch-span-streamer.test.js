@@ -198,4 +198,35 @@ tap.test('BatchSpanStreamer', (t) => {
       'SENT metric incremented to 4'
     )
   })
+
+  // this will simulate n full batches and the last being 1/3 full
+  t.test('should send in appropriate batch sizes', (t) => {
+    const SPANS = 10000
+    const BATCH = 750
+    t.plan(Math.ceil(SPANS / BATCH) + 1)
+    const metrics = spanStreamer._metrics
+    spanStreamer.batchSize = BATCH
+    spanStreamer.queue_size = SPANS
+    let i = 0
+    fakeConnection.stream.write = ({ spans }) => {
+      if (i === 13) {
+        t.equal(spans.length, BATCH / 3)
+      } else {
+        t.equal(spans.length, BATCH)
+      }
+      i++
+      return true
+    }
+
+    const spans = Array(SPANS).fill(new SpanStreamerEvent('trace_id', {}, {}))
+    spans.forEach((span) => {
+      spanStreamer.write(span)
+    })
+    t.equal(
+      metrics.getOrCreateMetric(METRIC_NAMES.INFINITE_TRACING.SENT).callCount,
+      SPANS,
+      `SENT metric incremented to ${SPANS}`
+    )
+    t.end()
+  })
 })
