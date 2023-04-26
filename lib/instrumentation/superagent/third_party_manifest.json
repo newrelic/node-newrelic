@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "Mon Dec 12 2022 10:25:10 GMT-0500 (Eastern Standard Time)",
+  "lastUpdated": "Wed Apr 26 2023 09:47:02 GMT-0400 (Eastern Daylight Time)",
   "projectName": "New Relic SuperAgent Instrumentation",
   "projectUrl": "https://github.com/newrelic/node-newrelic-superagent",
   "includeOptDeps": false,
@@ -158,15 +158,15 @@
       "email": "liran.tal@gmail.com",
       "url": "https://github.com/lirantal"
     },
-    "newrelic@8.17.1": {
+    "newrelic@10.0.0": {
       "name": "newrelic",
-      "version": "8.17.1",
-      "range": "^8.1.0",
+      "version": "10.0.0",
+      "range": "^10.0.0",
       "licenses": "Apache-2.0",
       "repoUrl": "https://github.com/newrelic/node-newrelic",
-      "versionedRepoUrl": "https://github.com/newrelic/node-newrelic/tree/v8.17.1",
+      "versionedRepoUrl": "https://github.com/newrelic/node-newrelic/tree/v10.0.0",
       "licenseFile": "node_modules/newrelic/LICENSE",
-      "licenseUrl": "https://github.com/newrelic/node-newrelic/blob/v8.17.1/LICENSE",
+      "licenseUrl": "https://github.com/newrelic/node-newrelic/blob/v10.0.0/LICENSE",
       "licenseTextSource": "file",
       "publisher": "New Relic Node.js agent team",
       "email": "nodejs@newrelic.com"
