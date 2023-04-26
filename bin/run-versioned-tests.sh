@@ -7,6 +7,7 @@ set -x
 
 VERSIONED_MODE="${VERSIONED_MODE:---minor}"
 SAMPLES="${SAMPLES:-10}"
+export NODE_OPTIONS="--max-old-space-size=4096"
 
 # Determine context manager for sanity sake
 if [[ $NEW_RELIC_FEATURE_FLAG_ASYNC_LOCAL_CONTEXT == 1 ]];
