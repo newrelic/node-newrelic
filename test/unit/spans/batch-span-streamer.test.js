@@ -1,305 +1,201 @@
 /*
- * Copyright 2020 New Relic Corporation. All rights reserved.
+ * Copyright 2023 New Relic Corporation. All rights reserved.
  * SPDX-License-Identifier: Apache-2.0
  */
 
 'use strict'
 const tap = require('tap')
 const sinon = require('sinon')
-const GrpcConnection = require('../../../lib/grpc/connection')
 const SpanStreamerEvent = require('../../../lib/spans/streaming-span-event.js')
-const { EventEmitter } = require('events')
 const METRIC_NAMES = require('../../../lib/metrics/names')
-const loggerParent = require('../../../lib/logger')
-const { createMetricAggregator } = require('./span-streamer-helpers')
-
-const fakeLogger = {
-  info: () => {},
-  debug: () => {},
-  trace: () => {},
-  error: () => {},
-  warnOnce: () => {},
-  infoOncePer: () => {},
-  options: {
-    _level: 100
-  }
-}
-
-/**
- * return fakeLogger from loggerParent dependency and must be setup before
- * requiring span-streamer
- */
-sinon.stub(loggerParent, 'child').returns(fakeLogger)
-
+const { createFakeConnection, createMetricAggregator } = require('./span-streamer-helpers')
 const BatchSpanStreamer = require('../../../lib/spans/batch-span-streamer')
-const realStream = require('stream')
-const mockedStream = realStream.Writable
 
-mockedStream._write = () => true
+tap.test('BatchSpanStreamer', (t) => {
+  t.autoend()
+  let fakeConnection
+  let spanStreamer
 
-/**
- * A mocked connection object
- *
- * Exists to give tests an EventEmitter
- * compatible object and mock out internal
- * functions so they don't fail
- */
-class MockConnection extends EventEmitter {
-  /**
-   * Called by span streamer's connect method
-   *
-   * Mocked here to ensure calls to connect don't crash
-   */
-  setConnectionDetails() {}
+  t.beforeEach(() => {
+    fakeConnection = createFakeConnection()
 
-  connectSpans() {
-    this.stream = this.stream ? this.stream : mockedStream
-    this.emit('connected', this.stream)
-  }
+    spanStreamer = new BatchSpanStreamer(
+      'fake-license-key',
+      fakeConnection,
+      createMetricAggregator(),
+      2
+    )
+    fakeConnection.connectSpans()
+  })
 
-  disconnect() {
-    this.emit('disconnected')
-  }
+  t.afterEach(() => {
+    if (spanStreamer.stream) {
+      spanStreamer.stream.destroy()
+    }
+  })
 
-  /* method for testing only */
-  setStream(stream) {
-    this.stream = stream
-  }
-}
+  t.test('should create a spanStreamer instance', (t) => {
+    t.ok(spanStreamer, 'instantiated the object')
+    t.end()
+  })
 
-/**
- * Creates a fake/mocked connection
- *
- * This is the base fake connection class -- each test
- * may add additional methods to the object as needed.
- */
-const createFakeConnection = () => {
-  return new MockConnection()
-}
+  t.test('should setup flush queue for every 5 seconds on connect', (t) => {
+    t.ok(spanStreamer.sendTimer)
+    t.notOk(spanStreamer.sendTimer._destroyed)
+    fakeConnection.disconnect()
+    t.ok(spanStreamer.sendTimer._destroyed)
+    t.end()
+  })
 
-tap.test((t) => {
-  const metrics = createMetricAggregator()
-  const spanStreamer = new BatchSpanStreamer(
-    'fake-license-key',
-    new GrpcConnection({ trace_observer: {} }, metrics)
-  )
+  t.test('Should increment SEEN metric on write', (t) => {
+    const metricsSpy = sinon.spy(spanStreamer._metrics, 'getOrCreateMetric')
+    const fakeSpan = new SpanStreamerEvent('sandwich', {}, {})
+    spanStreamer.write(fakeSpan)
 
-  t.ok(spanStreamer, 'instantiated the object')
-  t.end()
-})
+    t.ok(metricsSpy.firstCall.calledWith(METRIC_NAMES.INFINITE_TRACING.SEEN), 'SEEN metric')
 
-tap.test('should setup flush queue for every 5 seconds on connect', (t) => {
-  const metrics = createMetricAggregator()
-  const fakeConnection = createFakeConnection()
-  const spanStreamer = new BatchSpanStreamer('fake-license-key', fakeConnection, metrics)
-  fakeConnection.connectSpans()
+    t.end()
+  })
 
-  t.ok(spanStreamer, 'instantiated the object')
-  t.ok(spanStreamer.sendTimer)
-  t.notOk(spanStreamer.sendTimer._destroyed)
-  fakeConnection.disconnect()
-  t.ok(spanStreamer.sendTimer._destroyed)
-  t.end()
-})
+  t.test('Should add span to queue on backpressure', (t) => {
+    spanStreamer._writable = false
+    t.equal(spanStreamer.spans.length, 0, 'no spans queued')
+    const fakeSpan = new SpanStreamerEvent('sandwich', {}, {})
+    spanStreamer.write(fakeSpan)
 
-tap.test('Should increment SEEN metric on write', (t) => {
-  const metrics = createMetricAggregator()
-  const metricsSpy = sinon.spy(metrics, 'getOrCreateMetric')
+    t.equal(spanStreamer.spans.length, 1, 'one span queued')
 
-  const spanStreamer = new BatchSpanStreamer('fake-license-key', createFakeConnection(), metrics)
+    t.end()
+  })
 
-  spanStreamer.write({})
+  t.test('Should drain span queue on stream drain event', (t) => {
+    /* simulate backpressure */
+    fakeConnection.stream.write = () => false
+    spanStreamer.queue_size = 1
+    const metrics = spanStreamer._metrics
 
-  t.ok(metricsSpy.firstCall.calledWith(METRIC_NAMES.INFINITE_TRACING.SEEN), 'SEEN metric')
-
-  t.end()
-})
-
-tap.test('Should add span to queue on backpressure', (t) => {
-  const fakeConnection = createFakeConnection()
-
-  const spanStreamer = new BatchSpanStreamer(
-    'fake-license-key',
-    fakeConnection,
-    createMetricAggregator(),
-    2
-  )
-  fakeConnection.connectSpans()
-
-  spanStreamer._writable = false
-  t.equal(spanStreamer.spans.length, 0, 'no spans queued')
-  const fakeSpan = new SpanStreamerEvent('sandwich', {}, {})
-  spanStreamer.write(fakeSpan)
-
-  t.equal(spanStreamer.spans.length, 1, 'one span queued')
-
-  t.end()
-})
-
-tap.test('Should drain span queue on stream drain event', (t) => {
-  const fakeConnection = createFakeConnection()
-  const metrics = createMetricAggregator()
-
-  /* use PassThrough stream for drain emit */
-  const { PassThrough } = require('stream')
-  const fakeStream = new PassThrough()
-
-  /* simulate backpressure */
-  fakeStream.write = () => false
-
-  fakeConnection.setStream(fakeStream)
-
-  const spanStreamer = new BatchSpanStreamer('fake-license-key', fakeConnection, metrics, 1)
-
-  fakeConnection.connectSpans()
-
-  t.equal(spanStreamer.spans.length, 0, 'no spans queued')
-  const fakeSpan = {
-    toStreamingFormat: () => {}
-  }
-
-  spanStreamer.write(fakeSpan)
-  spanStreamer.write(fakeSpan)
-
-  t.equal(spanStreamer.spans.length, 1, 'one span queued')
-
-  /* emit drain event and allow writes */
-  fakeStream.emit('drain', (fakeStream.write = () => true))
-
-  t.equal(spanStreamer.spans.length, 0, 'drained spans')
-  t.equal(
-    metrics.getOrCreateMetric(METRIC_NAMES.INFINITE_TRACING.DRAIN_DURATION).callCount,
-    1,
-    'DRAIN_DURATION metric'
-  )
-
-  t.equal(
-    metrics.getOrCreateMetric(METRIC_NAMES.INFINITE_TRACING.SENT).callCount,
-    2,
-    'SENT metric incremented'
-  )
-
-  fakeStream.destroy()
-
-  t.end()
-})
-
-tap.test('Should properly format spans sent from the queue', (t) => {
-  const fakeConnection = createFakeConnection()
-  const metrics = createMetricAggregator()
-
-  const { PassThrough } = require('stream')
-  const fakeStream = new PassThrough()
-
-  // simulate backpressure
-  fakeStream.write = () => false
-
-  fakeConnection.setStream(fakeStream)
-
-  const spanStreamer = new BatchSpanStreamer('fake-license-key', fakeConnection, metrics, 1)
-
-  fakeConnection.connectSpans()
-
-  t.equal(spanStreamer.spans.length, 0, 'no spans queued')
-
-  const fakeSpan = new SpanStreamerEvent('sandwich', {}, {})
-  const fakeSpanQueued = new SpanStreamerEvent('porridge', {}, {})
-
-  spanStreamer.write(fakeSpan)
-  spanStreamer.write(fakeSpanQueued)
-
-  t.equal(spanStreamer.spans.length, 1, 'one span queued')
-
-  // emit drain event, allow writes and check for span.trace_id
-  fakeStream.emit(
-    'drain',
-    (fakeStream.write = ({ spans }) => {
-      const [span] = spans
-      t.equal(span.trace_id, 'porridge', 'Should have formatted span')
-
-      return true
-    })
-  )
-
-  t.equal(spanStreamer.spans.length, 0, 'drained spans')
-  t.equal(
-    metrics.getOrCreateMetric(METRIC_NAMES.INFINITE_TRACING.DRAIN_DURATION).callCount,
-    1,
-    'DRAIN_DURATION metric'
-  )
-
-  t.equal(
-    metrics.getOrCreateMetric(METRIC_NAMES.INFINITE_TRACING.SENT).callCount,
-    2,
-    'SENT metric incremented'
-  )
-
-  fakeStream.destroy()
-
-  t.end()
-})
-
-tap.test('should send a batch if it exceeds queue', (t) => {
-  const fakeConnection = createFakeConnection()
-  const metrics = createMetricAggregator()
-
-  // use PassThrough stream for drain emit
-  const { PassThrough } = require('stream')
-  const fakeStream = new PassThrough()
-  let i = 0
-  fakeStream.write = ({ spans }) => {
-    i++
-    if (i === 1) {
-      const [span, span2] = spans
-      t.equal(span.trace_id, 'sandwich', 'Should have formatted span')
-      t.equal(span2.trace_id, 'porridge')
-    } else {
-      const [span, span2] = spans
-      t.equal(span.trace_id, 'arepa', 'Should have formatted span')
-      t.equal(span2.trace_id, 'hummus')
+    t.equal(spanStreamer.spans.length, 0, 'no spans queued')
+    const fakeSpan = {
+      toStreamingFormat: () => {}
     }
 
-    return true
-  }
-  fakeConnection.setStream(fakeStream)
+    spanStreamer.write(fakeSpan)
+    spanStreamer.write(fakeSpan)
 
-  const spanStreamer = new BatchSpanStreamer('fake-license-key', fakeConnection, metrics, 2)
+    t.equal(spanStreamer.spans.length, 1, 'one span queued')
 
-  fakeConnection.connectSpans()
+    /* emit drain event and allow writes */
+    spanStreamer.stream.emit('drain', (fakeConnection.stream.write = () => true))
 
-  t.equal(spanStreamer.spans.length, 0, 'no spans queued')
+    t.equal(spanStreamer.spans.length, 0, 'drained spans')
+    t.equal(
+      metrics.getOrCreateMetric(METRIC_NAMES.INFINITE_TRACING.DRAIN_DURATION).callCount,
+      1,
+      'DRAIN_DURATION metric'
+    )
 
-  const fakeSpan = new SpanStreamerEvent('sandwich', {}, {})
-  const fakeSpan2 = new SpanStreamerEvent('porridge', {}, {})
-  const fakeSpan3 = new SpanStreamerEvent('arepa', {}, {})
-  const fakeSpan4 = new SpanStreamerEvent('hummus', {}, {})
+    t.equal(
+      metrics.getOrCreateMetric(METRIC_NAMES.INFINITE_TRACING.SENT).callCount,
+      2,
+      'SENT metric incremented'
+    )
 
-  spanStreamer.write(fakeSpan)
-  t.equal(spanStreamer.spans.length, 1, '1 span in queue')
+    t.end()
+  })
 
-  spanStreamer.write(fakeSpan2)
+  t.test('Should properly format spans sent from the queue', (t) => {
+    /* simulate backpressure */
+    fakeConnection.stream.write = () => false
+    spanStreamer.queue_size = 1
+    const metrics = spanStreamer._metrics
 
-  t.equal(spanStreamer.spans.length, 0, '0 spans in queue')
-  t.equal(
-    metrics.getOrCreateMetric(METRIC_NAMES.INFINITE_TRACING.SENT).callCount,
-    2,
-    'SENT metric incremented'
-  )
+    t.equal(spanStreamer.spans.length, 0, 'no spans queued')
 
-  spanStreamer.write(fakeSpan3)
+    const fakeSpan = new SpanStreamerEvent('sandwich', {}, {})
+    const fakeSpanQueued = new SpanStreamerEvent('porridge', {}, {})
 
-  t.equal(spanStreamer.spans.length, 1, '1 span in queue')
+    spanStreamer.write(fakeSpan)
+    spanStreamer.write(fakeSpanQueued)
 
-  spanStreamer.write(fakeSpan4)
+    t.equal(spanStreamer.spans.length, 1, 'one span queued')
 
-  t.equal(spanStreamer.spans.length, 0, '0 spans in queue')
-  t.equal(
-    metrics.getOrCreateMetric(METRIC_NAMES.INFINITE_TRACING.SENT).callCount,
-    4,
-    'SENT metric incremented'
-  )
+    // emit drain event, allow writes and check for span.trace_id
+    fakeConnection.stream.emit(
+      'drain',
+      (fakeConnection.stream.write = ({ spans }) => {
+        const [span] = spans
+        t.equal(span.trace_id, 'porridge', 'Should have formatted span')
 
-  fakeStream.destroy()
+        return true
+      })
+    )
 
-  t.end()
+    t.equal(spanStreamer.spans.length, 0, 'drained spans')
+    t.equal(
+      metrics.getOrCreateMetric(METRIC_NAMES.INFINITE_TRACING.DRAIN_DURATION).callCount,
+      1,
+      'DRAIN_DURATION metric'
+    )
+
+    t.equal(
+      metrics.getOrCreateMetric(METRIC_NAMES.INFINITE_TRACING.SENT).callCount,
+      2,
+      'SENT metric incremented'
+    )
+
+    t.end()
+  })
+
+  t.test('should send a batch if it exceeds queue', (t) => {
+    t.plan(11)
+    const metrics = spanStreamer._metrics
+
+    let i = 0
+    fakeConnection.stream.write = ({ spans }) => {
+      i++
+      if (i === 1) {
+        const [span, span2] = spans
+        t.equal(span.trace_id, 'sandwich', 'batch 1 span 1 ok')
+        t.equal(span2.trace_id, 'porridge', 'batch 1 span 2 ok')
+      } else {
+        const [span, span2] = spans
+        t.equal(span.trace_id, 'arepa', 'batch 2 span 1 ok')
+        t.equal(span2.trace_id, 'hummus', 'batch 2 span 2 ok')
+      }
+
+      return true
+    }
+
+    t.equal(spanStreamer.spans.length, 0, 'no spans queued')
+
+    const fakeSpan = new SpanStreamerEvent('sandwich', {}, {})
+    const fakeSpan2 = new SpanStreamerEvent('porridge', {}, {})
+    const fakeSpan3 = new SpanStreamerEvent('arepa', {}, {})
+    const fakeSpan4 = new SpanStreamerEvent('hummus', {}, {})
+
+    spanStreamer.write(fakeSpan)
+    t.equal(spanStreamer.spans.length, 1, '1 span in queue')
+
+    spanStreamer.write(fakeSpan2)
+
+    t.equal(spanStreamer.spans.length, 0, '0 spans in queue')
+    t.equal(
+      metrics.getOrCreateMetric(METRIC_NAMES.INFINITE_TRACING.SENT).callCount,
+      2,
+      'SENT metric incremented to 2'
+    )
+
+    spanStreamer.write(fakeSpan3)
+
+    t.equal(spanStreamer.spans.length, 1, '1 span in queue')
+
+    spanStreamer.write(fakeSpan4)
+
+    t.equal(spanStreamer.spans.length, 0, '0 spans in queue')
+    t.equal(
+      metrics.getOrCreateMetric(METRIC_NAMES.INFINITE_TRACING.SENT).callCount,
+      4,
+      'SENT metric incremented to 4'
+    )
+  })
 })
