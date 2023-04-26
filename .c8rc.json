@@ -1,4 +1,4 @@
 {
-  "reporter": ["html", "lcov"],
+  "reporter": ["lcov"],
   "exclude": ["test/*", "*.mjs", "**/*.mjs"]
 }
