@@ -4,15 +4,15 @@
   "projectUrl": "https://github.com/newrelic/node-newrelic",
   "includeOptDeps": true,
   "optionalDependencies": {
-    "@contrast/fn-inspect@3.3.0": {
+    "@contrast/fn-inspect@3.3.1": {
       "name": "@contrast/fn-inspect",
-      "version": "3.3.0",
+      "version": "3.3.1",
       "range": "^3.3.0",
       "licenses": "MIT",
       "repoUrl": "https://github.com/Contrast-Security-Inc/node-fn-inspect",
-      "versionedRepoUrl": "https://github.com/Contrast-Security-Inc/node-fn-inspect/tree/v3.3.0",
+      "versionedRepoUrl": "https://github.com/Contrast-Security-Inc/node-fn-inspect/tree/v3.3.1",
       "licenseFile": "node_modules/@contrast/fn-inspect/LICENSE",
-      "licenseUrl": "https://github.com/Contrast-Security-Inc/node-fn-inspect/blob/v3.3.0/LICENSE",
+      "licenseUrl": "https://github.com/Contrast-Security-Inc/node-fn-inspect/blob/v3.3.1/LICENSE",
       "licenseTextSource": "file",
       "publisher": "Contrast Security"
     },
@@ -32,15 +32,15 @@
   },
   "includeDev": true,
   "dependencies": {
-    "@grpc/grpc-js@1.8.12": {
+    "@grpc/grpc-js@1.8.14": {
       "name": "@grpc/grpc-js",
-      "version": "1.8.12",
+      "version": "1.8.14",
       "range": "^1.8.10",
       "licenses": "Apache-2.0",
       "repoUrl": "https://github.com/grpc/grpc-node/tree/master/packages/grpc-js",
-      "versionedRepoUrl": "https://github.com/grpc/grpc-node/tree/master/packages/grpc-js/tree/v1.8.12",
+      "versionedRepoUrl": "https://github.com/grpc/grpc-node/tree/master/packages/grpc-js/tree/v1.8.14",
       "licenseFile": "node_modules/@grpc/grpc-js/LICENSE",
-      "licenseUrl": "https://github.com/grpc/grpc-node/tree/master/packages/grpc-js/blob/v1.8.12/LICENSE",
+      "licenseUrl": "https://github.com/grpc/grpc-node/tree/master/packages/grpc-js/blob/v1.8.14/LICENSE",
       "licenseTextSource": "file",
       "publisher": "Google Inc."
     },
@@ -69,27 +69,15 @@
       "publisher": "New Relic Node.js agent team",
       "email": "nodejs@newrelic.com"
     },
-    "@newrelic/csec-node-agent@1.0.0": {
-      "name": "@newrelic/csec-node-agent",
-      "version": "1.0.0",
-      "range": "github:k2io/nr-node-security-agent#main",
-      "licenses": "Apache-2.0",
-      "repoUrl": "https://github.com/k2io/nr-node-security-agent",
-      "versionedRepoUrl": "https://github.com/k2io/nr-node-security-agent/tree/v1.0.0",
-      "licenseFile": "node_modules/@newrelic/csec-node-agent/README.md",
-      "licenseUrl": "https://github.com/k2io/nr-node-security-agent/blob/v1.0.0/README.md",
-      "licenseTextSource": "spdx",
-      "publisher": "newrelic"
-    },
-    "@newrelic/koa@7.1.1": {
+    "@newrelic/koa@7.2.0": {
       "name": "@newrelic/koa",
-      "version": "7.1.1",
+      "version": "7.2.0",
       "range": "^7.1.1",
       "licenses": "Apache-2.0",
       "repoUrl": "https://github.com/newrelic/node-newrelic-koa",
-      "versionedRepoUrl": "https://github.com/newrelic/node-newrelic-koa/tree/v7.1.1",
+      "versionedRepoUrl": "https://github.com/newrelic/node-newrelic-koa/tree/v7.2.0",
       "licenseFile": "node_modules/@newrelic/koa/LICENSE",
-      "licenseUrl": "https://github.com/newrelic/node-newrelic-koa/blob/v7.1.1/LICENSE",
+      "licenseUrl": "https://github.com/newrelic/node-newrelic-koa/blob/v7.2.0/LICENSE",
       "licenseTextSource": "file",
       "publisher": "New Relic Node.js agent team",
       "email": "nodejs@newrelic.com"
@@ -471,15 +459,15 @@
       "licenseUrl": "https://github.com/SonarSource/eslint-plugin-sonarjs/blob/v0.18.0/LICENSE",
       "licenseTextSource": "file"
     },
-    "eslint@8.24.0": {
+    "eslint@8.39.0": {
       "name": "eslint",
-      "version": "8.24.0",
+      "version": "8.39.0",
       "range": "^8.24.0",
       "licenses": "MIT",
       "repoUrl": "https://github.com/eslint/eslint",
-      "versionedRepoUrl": "https://github.com/eslint/eslint/tree/v8.24.0",
+      "versionedRepoUrl": "https://github.com/eslint/eslint/tree/v8.39.0",
       "licenseFile": "node_modules/eslint/LICENSE",
-      "licenseUrl": "https://github.com/eslint/eslint/blob/v8.24.0/LICENSE",
+      "licenseUrl": "https://github.com/eslint/eslint/blob/v8.39.0/LICENSE",
       "licenseTextSource": "file",
       "publisher": "Nicholas C. Zakas",
       "email": "nicholas+npm@nczconsulting.com"
@@ -600,15 +588,15 @@
       "publisher": "Pedro Teixeira",
       "email": "pedro.teixeira@gmail.com"
     },
-    "prettier@2.7.1": {
+    "prettier@2.8.8": {
       "name": "prettier",
-      "version": "2.7.1",
+      "version": "2.8.8",
       "range": "^2.3.2",
       "licenses": "MIT",
       "repoUrl": "https://github.com/prettier/prettier",
-      "versionedRepoUrl": "https://github.com/prettier/prettier/tree/v2.7.1",
+      "versionedRepoUrl": "https://github.com/prettier/prettier/tree/v2.8.8",
       "licenseFile": "node_modules/prettier/LICENSE",
-      "licenseUrl": "https://github.com/prettier/prettier/blob/v2.7.1/LICENSE",
+      "licenseUrl": "https://github.com/prettier/prettier/blob/v2.8.8/LICENSE",
       "licenseTextSource": "file",
       "publisher": "James Long"
     },
