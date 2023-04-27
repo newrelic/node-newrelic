@@ -201,7 +201,7 @@ const helper = (module.exports = {
    * @returns {boolean}
    */
   isK2Enabled(agent) {
-    return agent.config.security.agent.enabled
+    return agent.config?.security?.agent?.enabled
   },
 
   /**
