@@ -61,7 +61,6 @@ tap.test('Verify the Nest.js instrumentation', (t) => {
   t.test('should catch stack traces in errors', async (t) => {
     const res = await makeRequest(`${baseUrl}?please_error=yes`)
     t.equal(res.statusCode, 500, 'should return 500 status')
-    console.log(res.body)
     const errors = agent.errors.traceAggregator.errors
     t.equal(errors.length, 1, 'there should be one error')
     t.equal(errors[0][2], 'erroring out, as requested', 'should get the expected error')
