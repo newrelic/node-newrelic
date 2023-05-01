@@ -1,56 +1,6 @@
 ### v5.0.5 (2023-05-01)
 
-* Assigned shimName to v3 instrumentation to avoid duplicate middleware crashes.
-
---- NOTES NEEDS REVIEW ---
-Bumps [xml2js](https://github.com/Leonidas-from-XIV/node-xml2js) from 0.4.19 to 0.5.0.
-<details>
-<summary>Commits</summary>
-<ul>
-<li><a href="https://github.com/Leonidas-from-XIV/node-xml2js/commit/9f730bb5001331b4398909db98c80220eb9577f7"><code>9f730bb</code></a> Update package.json with latest PR</li>
-<li><a href="https://github.com/Leonidas-from-XIV/node-xml2js/commit/50a492aef9729b8b9b291c5cb2746ec7dc1369db"><code>50a492a</code></a> Merge pull request <a href="https://redirect.github.com/Leonidas-from-XIV/node-xml2js/issues/603">#603</a> from autopulated/master</li>
-<li><a href="https://github.com/Leonidas-from-XIV/node-xml2js/commit/7bc3c5d74cf66429dfb804626f3099a17dea1691"><code>7bc3c5d</code></a> Merge pull request <a href="https://redirect.github.com/Leonidas-from-XIV/node-xml2js/issues/598">#598</a> from fnimick/master</li>
-<li><a href="https://github.com/Leonidas-from-XIV/node-xml2js/commit/f412a128b6d68c93d0cea44289484e5102b557f4"><code>f412a12</code></a> Merge pull request <a href="https://redirect.github.com/Leonidas-from-XIV/node-xml2js/issues/635">#635</a> from wisesimpson/patch-1</li>
-<li><a href="https://github.com/Leonidas-from-XIV/node-xml2js/commit/d318ce0ad8e44971d8334c21f91a68ebbdc80466"><code>d318ce0</code></a> Update README.md</li>
-<li><a href="https://github.com/Leonidas-from-XIV/node-xml2js/commit/581b19a62d88f8a3c068b5a45f4542c2d6a495a5"><code>581b19a</code></a> use Object.create(null) to create all parsed objects (prevent prototype repla...</li>
-<li><a href="https://github.com/Leonidas-from-XIV/node-xml2js/commit/a21295009e4cbc1f9847bdff0f9b933b5005e690"><code>a212950</code></a> Add documentation for <code>explicitCharkey</code> option</li>
-<li><a href="https://github.com/Leonidas-from-XIV/node-xml2js/commit/1832e0b6b2de30a5e326d1cf21708cd32305a538"><code>1832e0b</code></a> Merge pull request <a href="https://redirect.github.com/Leonidas-from-XIV/node-xml2js/issues/512">#512</a> from economia/master</li>
-<li><a href="https://github.com/Leonidas-from-XIV/node-xml2js/commit/198063c4d5e051e3c58349a05354b255ef8bd63c"><code>198063c</code></a> Merge pull request <a href="https://redirect.github.com/Leonidas-from-XIV/node-xml2js/issues/556">#556</a> from Omega-Ariston/fix-issue544</li>
-<li><a href="https://github.com/Leonidas-from-XIV/node-xml2js/commit/0d717852434131746d4efe147eecfcc1ebb7f4a8"><code>0d71785</code></a> Merge pull request <a href="https://redirect.github.com/Leonidas-from-XIV/node-xml2js/issues/562">#562</a> from Omega-Ariston/addDocExample</li>
-<li>Additional commits viewable in <a href="https://github.com/Leonidas-from-XIV/node-xml2js/compare/0.4.19...0.5.0">compare view</a></li>
-</ul>
-</details>
-<br />
-
-
-[![Dependabot compatibility score](https://dependabot-badges.githubapp.com/badges/compatibility_score?dependency-name=xml2js&package-manager=npm_and_yarn&previous-version=0.4.19&new-version=0.5.0)](https://docs.github.com/en/github/managing-security-vulnerabilities/about-dependabot-security-updates#about-compatibility-scores)
-
-Dependabot will resolve any conflicts with this PR as long as you don't alter it yourself. You can also trigger a rebase manually by commenting `@dependabot rebase`.
-
-[//]: # (dependabot-automerge-start)
-[//]: # (dependabot-automerge-end)
-
----
-
-<details>
-<summary>Dependabot commands and options</summary>
-<br />
-
-You can trigger Dependabot actions by commenting on this PR:
-- `@dependabot rebase` will rebase this PR
-- `@dependabot recreate` will recreate this PR, overwriting any edits that have been made to it
-- `@dependabot merge` will merge this PR after your CI passes on it
-- `@dependabot squash and merge` will squash and merge this PR after your CI passes on it
-- `@dependabot cancel merge` will cancel a previously requested merge and block automerging
-- `@dependabot reopen` will reopen this PR if it is closed
-- `@dependabot close` will close this PR and stop Dependabot recreating it. You can achieve the same result by closing it manually
-- `@dependabot ignore this major version` will close this PR and stop Dependabot creating any more for this major version (unless you reopen the PR or upgrade to it yourself)
-- `@dependabot ignore this minor version` will close this PR and stop Dependabot creating any more for this minor version (unless you reopen the PR or upgrade to it yourself)
-- `@dependabot ignore this dependency` will close this PR and stop Dependabot creating any more for this dependency (unless you reopen the PR or upgrade to it yourself)
-You can disable automated security fix PRs for this repo from the [Security Alerts page](https://github.com/newrelic/node-newrelic-aws-sdk/network/alerts).
-
-</details>
---------------------------
+* Assigned shimName to v3 instrumentation hooks to avoid duplicate middleware crashes.
 
 ### v5.0.4 (2023-04-04)
 
