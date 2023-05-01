@@ -214,7 +214,7 @@ const helper = (module.exports = {
     if (helper.isK2Enabled(agent)) {
       agent.config.security.enabled = true
       const api = helper.getAgentApi(agent)
-      require(agent.config.k2_agent_name).start(api)
+      require('@newrelic/security-agent').start(api)
     }
   },
 
@@ -227,7 +227,7 @@ const helper = (module.exports = {
   maybeUnloadK2Agent(agent) {
     if (helper.isK2Enabled(agent)) {
       Object.keys(require.cache).forEach((key) => {
-        if (key.includes(agent.config.k2_agent_name)) {
+        if (key.includes('@newrelic/security-agent')) {
           delete require.cache[key]
         }
       })
