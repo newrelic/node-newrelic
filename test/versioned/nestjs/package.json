@@ -1,0 +1,19 @@
+{
+  "name": "nestjs-tests",
+  "version": "0.0.0",
+  "private": true,
+  "tests": [
+    {
+      "engines": {
+        "node": ">=14"
+      },
+      "dependencies": {
+        "@nestjs/cli": ">=8.0.0"
+      },
+      "files": [
+        "nest.tap.js"
+      ]
+    }
+  ],
+  "dependencies": {}
+}
