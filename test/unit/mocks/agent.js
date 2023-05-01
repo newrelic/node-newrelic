@@ -4,15 +4,19 @@
  */
 
 'use strict'
+const { EventEmitter } = require('events')
+const util = require('util')
 const sinon = require('sinon')
+
 module.exports = (sandbox = sinon, metricsMock) => {
-  function MockAgent(config) {
+  function MockAgent(config = {}) {
+    EventEmitter.call(this)
     this.config = config
     this.config.app_name = 'Unit Test App'
     this.metrics = metricsMock
   }
   MockAgent.prototype.start = sandbox.stub()
   MockAgent.prototype.recordSupportability = sandbox.stub()
-  MockAgent.prototype.once = sandbox.stub()
+  util.inherits(MockAgent, EventEmitter)
   return MockAgent
 }
