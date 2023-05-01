@@ -6,11 +6,12 @@ name: Versioned Tests w/ Security Agent
 
 on:
   workflow_dispatch:
+  push:
   schedule:
     - cron:  '0 9 * * 1-5'
 
 jobs:
-  async-local-context:
+  security-agent-tests:
     runs-on: ubuntu-latest
 
     strategy:
