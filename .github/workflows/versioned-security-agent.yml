@@ -1,0 +1,34 @@
+# Daily workflow to run versioned tests with security agent enabled 
+# This also can be used to run versioned tests with a newer versioned of 
+# security agent since we pin it.
+
+name: Versioned Tests w/ Security Agent 
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron:  '0 9 * * 1-5'
+
+jobs:
+  async-local-context:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [14.x, 16.x, 18.x]
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v3
+      with:
+        node-version: ${{ matrix.node-version }}
+    - name: Install Dependencies
+      run: npm ci
+    - name: Run Docker Services
+      run: npm run services
+    - name: Versioned Tests w/ Security Agent 
+      run: npm run versioned:security
+      env:
+        JOBS: 4 # 2 per CPU seems to be the sweet spot in GHA (July 2022)
+
