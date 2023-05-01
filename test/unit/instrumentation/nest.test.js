@@ -29,7 +29,6 @@ test('Nest unit tests', (t) => {
     initialize = require('../../../lib/instrumentation/@nestjs/core.js')
     shim = new WebFrameworkShim(agent, 'nest')
     mockCore = getMockModule()
-    initialize(agent, mockCore, '@nestjs/core', shim)
   })
 
   t.afterEach(() => {
@@ -37,14 +36,24 @@ test('Nest unit tests', (t) => {
   })
 
   t.test('Should record the error when in a transaction', (t) => {
+    // Minimum Nest.js version supported.
+    shim.require = sinon.stub().returns({ version: '8.0.0' })
+    initialize(agent, mockCore, '@nestjs/core', shim)
+
     helper.runInTransaction(agent, (tx) => {
       const err = new Error('something went wrong')
       const exceptionFilter = new mockCore.BaseExceptionFilter()
+      t.not(
+        shim.getOriginal(exceptionFilter.handleUnknownError),
+        exceptionFilter.handleUnknownError,
+        'wrapped and unwrapped handlers should not be equal'
+      )
+
       exceptionFilter.handleUnknownError(err)
       tx.end()
 
       t.equal(
-        shim.unwrap(exceptionFilter.handleUnknownError).callCount,
+        shim.getOriginal(exceptionFilter.handleUnknownError).callCount,
         1,
         'should have called the original error handler once'
       )
@@ -59,17 +68,43 @@ test('Nest unit tests', (t) => {
   })
 
   t.test('Should ignore the error when not in a transaction', (t) => {
+    // Minimum Nest.js version supported.
+    shim.require = sinon.stub().returns({ version: '8.0.0' })
+    initialize(agent, mockCore, '@nestjs/core', shim)
+
     const err = new Error('something went wrong')
     const exceptionFilter = new mockCore.BaseExceptionFilter()
+
+    t.not(
+      shim.getOriginal(exceptionFilter.handleUnknownError),
+      exceptionFilter.handleUnknownError,
+      'wrapped and unwrapped handlers should not be equal'
+    )
+
     exceptionFilter.handleUnknownError(err)
 
     t.equal(
-      shim.unwrap(exceptionFilter.handleUnknownError).callCount,
+      shim.getOriginal(exceptionFilter, 'handleUnknownError').callCount,
       1,
       'should have called the original error handler once'
     )
     const errors = agent.errors.traceAggregator.errors
     t.equal(errors.length, 0, 'there should be no errors')
+
+    t.end()
+  })
+
+  t.test('Should not instrument versions earlier than 8.0.0', (t) => {
+    // Unsupported version
+    shim.require = sinon.stub().returns({ version: '7.4.0' })
+    initialize(agent, mockCore, '@nestjs/core', shim)
+
+    const exceptionFilter = new mockCore.BaseExceptionFilter()
+    t.equal(
+      shim.getOriginal(exceptionFilter.handleUnknownError),
+      exceptionFilter.handleUnknownError,
+      'wrapped and unwrapped handlers should be equal'
+    )
 
     t.end()
   })
