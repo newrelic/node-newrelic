@@ -6,7 +6,7 @@
 'use strict'
 
 const tap = require('tap')
-const request = require('request')
+
 const helper = require('../../../lib/agent_helper')
 
 const MAX_PORT_ATTEMPTS = 5
@@ -68,7 +68,7 @@ tap.test("restify shouldn't affect express query parsing middleware", function (
   server.on('listening', () => {
     const port = server.address().port
 
-    request.get(`http://localhost:${port}/?test=success`, function (err, response) {
+    helper.makeGetRequest(`http://localhost:${port}/?test=success`, function (err, response) {
       if (err) {
         return t.fail(err)
       }

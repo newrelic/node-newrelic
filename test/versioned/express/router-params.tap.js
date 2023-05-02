@@ -6,7 +6,6 @@
 'use strict'
 
 const test = require('tap').test
-const request = require('request')
 const helper = require('../../lib/agent_helper')
 
 test('Express router introspection', function (t) {
@@ -66,10 +65,10 @@ test('Express router introspection', function (t) {
   server.listen(0, function () {
     const port = server.address().port
     const url = 'http://localhost:' + port + '/a/foo/b/bar'
-    request.get(url, { json: true }, function (error, res, body) {
+    helper.makeGetRequest(url, function (error, res, body) {
       t.error(error, 'should not have errored')
       t.equal(res.statusCode, 200, 'should have ok status')
-      t.deepEqual(body, { status: 'ok' }, 'should have expected response')
+      t.same(body, { status: 'ok' }, 'should have expected response')
     })
   })
 })

@@ -5,7 +5,6 @@
 
 'use strict'
 
-const request = require('request')
 const tap = require('tap')
 const helper = require('../../lib/agent_helper')
 const utils = require('./hapi-utils')
@@ -138,7 +137,7 @@ tap.test('Hapi ext', function (t) {
       .start()
       .then(function () {
         port = server.info.port
-        request.get('http://localhost:' + port + '/test', function () {
+        helper.makeGetRequest('http://localhost:' + port + '/test', function () {
           t.end()
         })
       })

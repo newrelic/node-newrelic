@@ -8,7 +8,6 @@
 const util = require('util')
 const path = require('path')
 const tap = require('tap')
-const request = require('request')
 const helper = require('../../lib/agent_helper')
 const API = require('../../../api')
 const utils = require('./hapi-utils')
@@ -46,11 +45,11 @@ tap.test('agent instrumentation of Hapi', function (t) {
 
     server.start().then(function () {
       port = server.info.port
-      request.get('http://localhost:' + port + '/test', function (error, response, body) {
+      helper.makeGetRequest('http://localhost:' + port + '/test', function (error, response, body) {
         t.error(error, 'should not fail to make request')
 
         t.ok(/application\/json/.test(response.headers['content-type']), 'got correct content type')
-        t.same(JSON.parse(body), { yep: true }, 'response survived')
+        t.same(body, { yep: true }, 'response survived')
 
         let stats
 
@@ -122,16 +121,16 @@ tap.test('agent instrumentation of Hapi', function (t) {
       })
       .then(function () {
         port = server.info.port
-        request('http://localhost:' + port + '/test', function (error, response, body) {
-          if (error) {
-            t.fail(error)
+        helper.makeGetRequest(
+          'http://localhost:' + port + '/test',
+          function (error, response, body) {
+            t.error(error)
+            t.equal(response.statusCode, 200, 'response code should be 200')
+            t.equal(body, fixtures.htmlBody, 'template should still render fine')
+
+            t.end()
           }
-
-          t.equal(response.statusCode, 200, 'response code should be 200')
-          t.equal(body, fixtures.htmlBody, 'template should still render fine')
-
-          t.end()
-        })
+        )
       })
   })
 
@@ -171,16 +170,17 @@ tap.test('agent instrumentation of Hapi', function (t) {
       })
       .then(function () {
         port = server.info.port
-        request('http://localhost:' + port + '/test', function (error, response, body) {
-          if (error) {
-            t.fail(error)
+        helper.makeGetRequest(
+          'http://localhost:' + port + '/test',
+          function (error, response, body) {
+            t.error(error)
+
+            t.equal(response.statusCode, 200, 'response code should be 200')
+            t.equal(body, fixtures.htmlBody, 'template should still render fine')
+
+            t.end()
           }
-
-          t.equal(response.statusCode, 200, 'response code should be 200')
-          t.equal(body, fixtures.htmlBody, 'template should still render fine')
-
-          t.end()
-        })
+        )
       })
   })
 
@@ -206,10 +206,8 @@ tap.test('agent instrumentation of Hapi', function (t) {
 
     server.start().then(function () {
       port = server.info.port
-      request.get('http://localhost:' + port + '/test', function (error, response, body) {
-        if (error) {
-          t.fail(error)
-        }
+      helper.makeGetRequest('http://localhost:' + port + '/test', function (error, response, body) {
+        t.error(error)
 
         t.ok(response, 'got a response from Hapi')
         t.ok(body, 'got back a body')

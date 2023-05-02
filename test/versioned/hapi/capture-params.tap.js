@@ -7,7 +7,6 @@
 
 const DESTINATIONS = require('../../../lib/config/attribute-filter').DESTINATIONS
 const tap = require('tap')
-const request = require('request')
 const helper = require('../../lib/agent_helper')
 const utils = require('./hapi-utils')
 const HTTP_ATTS = require('../../lib/fixtures').httpAttributes
@@ -146,11 +145,7 @@ tap.test('Hapi capture params support', function (t) {
 })
 
 function makeRequest(t, uri) {
-  const params = {
-    uri: uri,
-    json: true
-  }
-  request.get(params, function (err, res, body) {
+  helper.makeGetRequest(uri, function (_err, res, body) {
     t.equal(res.statusCode, 200, 'nothing exploded')
     t.same(body, { status: 'ok' }, 'got expected response')
     t.end()

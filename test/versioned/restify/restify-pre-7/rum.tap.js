@@ -6,7 +6,7 @@
 'use strict'
 
 const tap = require('tap')
-const request = require('request').defaults({ json: true })
+
 const helper = require('../../../lib/agent_helper')
 const API = require('../../../../api')
 
@@ -36,7 +36,7 @@ tap.test('Restify router introspection', function (t) {
 
   server.listen(0, function () {
     const port = server.address().port
-    request.get('http://localhost:' + port + '/test/31337', function (error, res, body) {
+    helper.makeGetRequest('http://localhost:' + port + '/test/31337', function (error, res, body) {
       t.equal(res.statusCode, 200, 'nothing exploded')
       t.same(body, { status: 'ok' }, 'got expected respose')
       t.end()

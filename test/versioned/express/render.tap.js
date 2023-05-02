@@ -9,7 +9,6 @@
 process.env.NODE_ENV = 'test'
 
 const test = require('tap').test
-const request = require('request')
 const helper = require('../../lib/agent_helper')
 const API = require('../../../api')
 const symbols = require('../../../lib/symbols')
@@ -80,7 +79,7 @@ function runTests(conf) {
     const server = require('http').createServer(router)
     server.listen(0, function () {
       const port = server.address().port
-      request.get('http://localhost:' + port + '/test', function (error) {
+      helper.makeRequest('http://localhost:' + port + '/test', function (error) {
         server.close()
 
         t.error(error)
@@ -122,7 +121,7 @@ function runTests(conf) {
 
       server.listen(0, TEST_HOST, function () {
         const port = server.address().port
-        request.get(TEST_URL + port + TEST_PATH, function (error, response, body) {
+        helper.makeGetRequest(TEST_URL + port + TEST_PATH, function (error, response, body) {
           t.error(error, 'should not fail making request')
 
           t.ok(
@@ -130,7 +129,7 @@ function runTests(conf) {
             'got correct content type'
           )
 
-          t.same(JSON.parse(body), { yep: true }, 'Express correctly serves.')
+          t.same(body, { yep: true }, 'Express correctly serves.')
 
           let stats
 
@@ -178,7 +177,7 @@ function runTests(conf) {
 
       server.listen(0, TEST_HOST, function () {
         const port = server.address().port
-        request(TEST_URL + port + TEST_PATH, function (error, response, body) {
+        helper.makeGetRequest(TEST_URL + port + TEST_PATH, function (error, response, body) {
           t.error(error, 'should not error making request')
 
           t.equal(response.statusCode, 200, 'response code should be 200')
@@ -212,7 +211,7 @@ function runTests(conf) {
 
       server.listen(0, TEST_HOST, function () {
         const port = server.address().port
-        request(TEST_URL + port + TEST_PATH, function (error, response, body) {
+        helper.makeGetRequest(TEST_URL + port + TEST_PATH, function (error, response, body) {
           t.error(error, 'should not error making request')
 
           t.equal(response.statusCode, 200, 'response code should be 200')
@@ -244,7 +243,7 @@ function runTests(conf) {
         }
 
         const port = server.address().port
-        request.get(TEST_URL + port + TEST_PATH, function (error, response, body) {
+        helper.makeGetRequest(TEST_URL + port + TEST_PATH, function (error, response, body) {
           t.error(error, 'should not error making request')
 
           t.ok(response, 'got a response from Express')
@@ -285,7 +284,7 @@ function runTests(conf) {
 
       server.listen(0, TEST_HOST, function ready() {
         const port = server.address().port
-        request.get(TEST_URL + port + TEST_PATH, function (error, response, body) {
+        helper.makeGetRequest(TEST_URL + port + TEST_PATH, function (error, response, body) {
           t.error(error, 'should not fail making request')
 
           const isFramework = agent.environment.get('Framework').indexOf('Expressjs') > -1
@@ -315,7 +314,7 @@ function runTests(conf) {
       server.listen(0, TEST_HOST, function ready() {
         const port = server.address().port
         const url = TEST_URL + port + TEST_PATH + '/ham'
-        request.get(url, function (error, response, body) {
+        helper.makeGetRequest(url, function (error, response, body) {
           t.error(error, 'should not fail making request')
 
           t.notOk(agent.getTransaction(), "transaction shouldn't be visible from request")
@@ -350,7 +349,7 @@ function runTests(conf) {
 
       server.listen(0, TEST_HOST, function () {
         const port = server.address().port
-        request.get(TEST_URL + port + TEST_PATH, function () {
+        helper.makeGetRequest(TEST_URL + port + TEST_PATH, function () {
           const errors = agent.errors.traceAggregator.errors
           t.equal(errors.length, 1, 'there should be one error')
           t.equal(errors[0][2], 'some error', 'got the expected error')
@@ -387,7 +386,7 @@ function runTests(conf) {
 
       server.listen(0, TEST_HOST, function () {
         const port = server.address().port
-        request.get(TEST_URL + port + TEST_PATH, function () {
+        helper.makeGetRequest(TEST_URL + port + TEST_PATH, function () {
           const errors = agent.errors.traceAggregator.errors
           t.equal(errors.length, 0, 'there should be no errors')
 
@@ -422,7 +421,7 @@ function runTests(conf) {
 
       server.listen(0, TEST_HOST, function () {
         const port = server.address().port
-        request.get(TEST_URL + port + TEST_PATH, function () {
+        helper.makeGetRequest(TEST_URL + port + TEST_PATH, function () {
           const errors = agent.errors.traceAggregator.errors
           t.equal(errors.length, 0, 'there should be no errors')
 
@@ -451,7 +450,7 @@ function runTests(conf) {
 
       server.listen(0, TEST_HOST, function () {
         const port = server.address().port
-        request.get(TEST_URL + port + TEST_PATH, function () {
+        helper.makeGetRequest(TEST_URL + port + TEST_PATH, function () {
           const errors = agent.errors.traceAggregator.errors
           t.equal(errors.length, 1, 'there should be one error')
           t.equal(errors[0][2], 'some error', 'got the expected error')
@@ -486,7 +485,7 @@ function runTests(conf) {
 
       server.listen(0, TEST_HOST, function () {
         const port = server.address().port
-        request.get(TEST_URL + port + TEST_PATH, function () {
+        helper.makeGetRequest(TEST_URL + port + TEST_PATH, function () {
           const errors = agent.errors.traceAggregator.errors
           t.equal(errors.length, 1, 'there should be one error')
           t.equal(errors[0][2], 'some error', 'got the expected error')
@@ -529,7 +528,7 @@ function runTests(conf) {
 
       server.listen(0, TEST_HOST, function () {
         const port = server.address().port
-        request.get(TEST_URL + port + TEST_PATH, function () {
+        helper.makeGetRequest(TEST_URL + port + TEST_PATH, function () {
           const errors = agent.errors.traceAggregator.errors
           t.equal(errors.length, 1, 'there should be one error')
           t.equal(errors[0][2], 'HttpError 400', 'got the expected error')
@@ -566,7 +565,7 @@ function runTests(conf) {
 
       server.listen(0, TEST_HOST, function () {
         const port = server.address().port
-        request.get(TEST_URL + port + TEST_PATH, function () {
+        helper.makeGetRequest(TEST_URL + port + TEST_PATH, function () {
           const errors = agent.errors.traceAggregator.errors
           t.equal(errors.length, 1, 'there should be one error')
           t.equal(errors[0][2], 'HttpError 500', 'got the expected error')
@@ -604,7 +603,7 @@ function runTests(conf) {
     // Make our request.
     server.listen(0, TEST_HOST, function () {
       const port = server.address().port
-      request.get(TEST_URL + port + TEST_PATH, function (err, response, body) {
+      helper.makeGetRequest(TEST_URL + port + TEST_PATH, function (err, response, body) {
         t.equal(body, 'bar', 'should not fail with a proxy layer')
         t.end()
       })

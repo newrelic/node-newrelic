@@ -6,7 +6,7 @@
 'use strict'
 
 const tap = require('tap')
-const request = require('request')
+
 const helper = require('../../../lib/agent_helper')
 const { assertMetrics } = require('../../../lib/metrics_helper')
 
@@ -52,12 +52,12 @@ tap.test('Restify', (t) => {
       t.notOk(agent.getTransaction(), 'transaction should not leak into server')
 
       const url = 'http://localhost:' + port + '/hello/friend'
-      request.get(url, function (error, response, body) {
+      helper.makeGetRequest(url, function (error, response, body) {
         if (error) {
           return t.fail(error)
         }
         t.notOk(agent.getTransaction(), 'transaction should not leak into external request')
-        t.equal(body, '"hello friend"', 'should return expected data')
+        t.equal(body, 'hello friend', 'should return expected data')
       })
     })
   })
@@ -91,15 +91,15 @@ tap.test('Restify', (t) => {
           const port = server.address().port
           t.notOk(agent.getTransaction(), 'transaction should not leak into server')
 
-          const opts = { url: `https://${helper.SSL_HOST}:${port}/hello/friend`, ca }
-          request.get(opts, function (error, response, body) {
+          const url = `https://${helper.SSL_HOST}:${port}/hello/friend`
+          helper.makeGetRequest(url, { ca }, function (error, response, body) {
             if (error) {
               t.fail(error)
               return t.end()
             }
 
             t.notOk(agent.getTransaction(), 'transaction should not leak into external request')
-            t.equal(body, '"hello friend"', 'should return expected data')
+            t.equal(body, 'hello friend', 'should return expected data')
           })
         })
       })
@@ -165,7 +165,7 @@ tap.test('Restify', (t) => {
       const port = server.address().port
       const url = `http://localhost:${port}/foo/bar`
 
-      request.get(url, function (error) {
+      helper.makeGetRequest(url, function (error) {
         t.error(error)
 
         assertMetrics(agent.metrics, expectedMiddlewareMetrics, false, false)

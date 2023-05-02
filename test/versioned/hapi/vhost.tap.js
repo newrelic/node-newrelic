@@ -7,7 +7,6 @@
 
 const { DESTINATIONS } = require('../../../lib/config/attribute-filter')
 const tap = require('tap')
-const request = require('request')
 const helper = require('../../lib/agent_helper')
 const utils = require('./hapi-utils')
 const HTTP_ATTS = require('../../lib/fixtures').httpAttributes
@@ -72,11 +71,8 @@ tap.test('Hapi vhost support', function (t) {
 
     server.start().then(function () {
       port = server.info.port
-      const params = {
-        uri: 'http://localhost:' + port + '/test/1337/2?name=hapi',
-        json: true
-      }
-      request.get(params, function (error, res, body) {
+      const uri = 'http://localhost:' + port + '/test/1337/2?name=hapi'
+      helper.makeRequest(uri, function (_error, res, body) {
         t.equal(res.statusCode, 200, 'nothing exploded')
         t.same(body, { status: 'ok' }, 'got expected response')
         t.end()

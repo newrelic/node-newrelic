@@ -6,7 +6,6 @@
 'use strict'
 
 const test = require('tap').test
-const request = require('request')
 const helper = require('../../lib/agent_helper')
 const API = require('../../../api')
 const utils = require('./hapi-utils')
@@ -46,11 +45,8 @@ test('ignoring a Hapi route', function (t) {
 
   server.start().then(function () {
     const port = server.info.port
-    const params = {
-      uri: 'http://localhost:' + port + '/order/31337',
-      json: true
-    }
-    request.get(params, function (error, res, body) {
+    const uri = 'http://localhost:' + port + '/order/31337'
+    helper.makeGetRequest(uri, function (_error, res, body) {
       t.equal(res.statusCode, 400, 'got expected error')
       t.same(body, { status: 'cartcartcart' }, 'got expected response')
     })

@@ -17,7 +17,7 @@ tap.test('basic director test', function (t) {
 
   function fn0() {
     t.ok(agent.getTransaction(), 'transaction is available')
-    this.res.writeHead(200)
+    this.res.writeHead(200, { 'Content-Type': 'application/json' })
     this.res.end('{"status":"ok"}')
   }
 
@@ -86,7 +86,7 @@ tap.test('basic director test', function (t) {
   helper.randomPort(function (port) {
     server.listen(port, function () {
       const url = 'http://localhost:' + port + '/hello/eric'
-      helper.makeGetRequest(url, { json: true }, function (error, res, body) {
+      helper.makeGetRequest(url, function (error, res, body) {
         t.equal(res.statusCode, 200, 'nothing exploded')
         t.same(body, { status: 'ok' }, 'got expected response')
         t.end()
@@ -102,7 +102,7 @@ tap.test('backward recurse director test', function (t) {
   const director = require('director')
 
   function fn0() {
-    this.res.writeHead(200)
+    this.res.writeHead(200, { 'Content-Type': 'application/json' })
     this.res.end('{"status":"ok"}')
   }
   function fn1() {
@@ -184,7 +184,7 @@ tap.test('two routers with same URI director test', function (t) {
 
   router.get('/helloWorld', function () {})
   router.get('/helloWorld', function () {
-    this.res.writeHead(200)
+    this.res.writeHead(200, { 'Content-Type': 'application/json' })
     this.res.end('{"status":"ok"}')
   })
 

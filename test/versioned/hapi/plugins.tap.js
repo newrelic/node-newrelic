@@ -6,7 +6,6 @@
 'use strict'
 
 const helper = require('../../lib/agent_helper')
-const request = require('request')
 const tap = require('tap')
 const utils = require('./hapi-utils')
 
@@ -73,7 +72,7 @@ tap.test('Hapi Plugins', function (t) {
       })
       .then(function () {
         port = server.info.port
-        request.get('http://localhost:' + port + '/test', function (error, res, body) {
+        helper.makeGetRequest('http://localhost:' + port + '/test', function (_error, _res, body) {
           t.equal(body, 'hello', 'should not interfere with response')
         })
       })
@@ -111,9 +110,12 @@ tap.test('Hapi Plugins', function (t) {
       })
       .then(function () {
         port = server.info.port
-        request.get('http://localhost:' + port + '/prefix/test', function (error, res, body) {
-          t.equal(body, 'hello', 'should not interfere with response')
-        })
+        helper.makeGetRequest(
+          'http://localhost:' + port + '/prefix/test',
+          function (_error, _res, body) {
+            t.equal(body, 'hello', 'should not interfere with response')
+          }
+        )
       })
   })
 })
