@@ -11,13 +11,14 @@ const shimmer = require('../../lib/shimmer')
 const Agent = require('../../lib/agent')
 const API = require('../../api')
 const params = require('../lib/params')
-const request = require('request')
 const zlib = require('zlib')
 const copy = require('../../lib/util/copy')
 const { defaultAttributeConfig } = require('./fixtures')
 const { EventEmitter } = require('events')
 const Transaction = require('../../lib/transaction')
 const symbols = require('../../lib/symbols')
+const http = require('http')
+const https = require('https')
 
 const KEYPATH = path.join(__dirname, 'test-key.key')
 const CERTPATH = path.join(__dirname, 'self-signed-test-certificate.crt')
@@ -390,18 +391,59 @@ const helper = (module.exports = {
     server.listen()
   },
 
+  /**
+   * Get the appropriate request method.
+   * If you pass in ca(certificate authority) we assume
+   * you want to make a https request. Also since this
+   * request is made after instrumentation is registered
+   * we want to make sure we get the original library and not
+   * our instrumented one
+   */
+  getRequestLib(ca) {
+    const request = ca ? https.request : http.request
+    return request[symbols.original] || request
+  },
+
   makeGetRequest: (url, options, callback) => {
+    helper.makeRequest(url, options, callback)
+  },
+
+  makeRequest: (url, options, callback) => {
     if (!options || typeof options === 'function') {
       callback = options
       options = {}
     }
-    request.get(url, options, function requestCb(error, response, body) {
-      if (error && error.code === 'ECONNREFUSED') {
-        request.get(url, options, requestCb)
-      } else if (typeof callback === 'function') {
-        callback(error, response, body)
+
+    const request = helper.getRequestLib(options.ca)
+    const req = request(url, options, function requestCb(res) {
+      const contentType = res.headers['content-type']
+      let rawData = ''
+
+      res.on('data', (chunk) => {
+        rawData += chunk
+      })
+
+      res.on('end', () => {
+        if (typeof callback === 'function') {
+          const body = contentType?.includes('application/json') ? JSON.parse(rawData) : rawData
+          // assign body to res as when this method is promisified it can only return 2 args: err, result
+          res.body = body
+          callback(null, res, body)
+        }
+      })
+    }).on('error', (err) => {
+      if (err.code === 'ECONNREFUSED') {
+        this.makeGetRequest(url, options, callback)
+      } else {
+        callback(err)
       }
     })
+
+    if (options.method === 'POST' && options.body) {
+      req.write(options.body)
+    }
+
+    req.end()
   },
 
   temporarilyRemoveListeners: (t, emitter, evnt) => {
