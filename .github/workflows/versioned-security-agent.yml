@@ -6,6 +6,19 @@ name: Versioned Tests w/ Security Agent
 
 on:
   workflow_dispatch:
+    inputs:
+      mode:
+        description: Versioned test mode
+        type: choice
+        options:
+          - major
+          - minor
+        default: major
+        required: false
+      version:
+        type: string
+        description: Version of security agent to test
+        required: false
   push:
   schedule:
     - cron:  '0 9 * * 1-5'
@@ -26,10 +39,14 @@ jobs:
         node-version: ${{ matrix.node-version }}
     - name: Install Dependencies
       run: npm ci
+    - name: Install Version ${{ inputs.version }} of security agent
+      if: ${{ inputs.version }}
+      run: npm install @newrelic/security-agent@${{ inputs.version }}
     - name: Run Docker Services
       run: npm run services
     - name: Versioned Tests w/ Security Agent 
       run: npm run versioned:security
       env:
+        VERSIONED_MODE: --${{ inputs.mode || 'major' }}
         JOBS: 4 # 2 per CPU seems to be the sweet spot in GHA (July 2022)
 
