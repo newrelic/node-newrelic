@@ -4,9 +4,6 @@
  */
 
 'use strict'
-const request = require('request')
-const util = require('util')
-const requestAsync = util.promisify(request)
 const { program } = require('commander')
 const API_ENDPOINT = '/v2/system_configuration.json'
 const STAGING_HOST = 'https://staging-api.newrelic.com'
@@ -41,15 +38,16 @@ function getPayload(version) {
  * @returns {object} formatted request object
  */
 function formatRequest(host, version, key) {
-  return {
-    uri: `${host}${API_ENDPOINT}`,
+  const opts = {
     method: 'POST',
-    json: true,
     headers: {
-      'X-Api-Key': key
+      'X-Api-Key': key,
+      'Content-Type': 'application/json'
     },
-    body: getPayload(version)
+    body: JSON.stringify(getPayload(version))
   }
+
+  return [`${host}${API_ENDPOINT}`, opts]
 }
 
 /**
@@ -60,13 +58,14 @@ async function updateSystemConfigs() {
   const errors = []
   program.parse()
   const opts = program.opts()
-  const stagingRequest = requestAsync(formatRequest(STAGING_HOST, opts.version, opts.stagingKey))
-  const prodUsRequest = requestAsync(formatRequest(PRD_US_HOST, opts.version, opts.prodKey))
-  const prodEuRequest = requestAsync(formatRequest(PRD_EU_HOST, opts.version, opts.prodKey))
+  const stagingRequest = fetch(...formatRequest(STAGING_HOST, opts.version, opts.stagingKey))
+  const prodUsRequest = fetch(...formatRequest(PRD_US_HOST, opts.version, opts.prodKey))
+  const prodEuRequest = fetch(...formatRequest(PRD_EU_HOST, opts.version, opts.prodKey))
   try {
     const responses = await Promise.all([stagingRequest, prodUsRequest, prodEuRequest])
-    responses.forEach((res) => {
-      if (![200, 201].includes(res.statusCode)) {
+    responses.forEach(async (response) => {
+      const res = await response.json()
+      if (![200, 201].includes(response.status)) {
         errors.push(JSON.stringify(res.body))
       }
     })
