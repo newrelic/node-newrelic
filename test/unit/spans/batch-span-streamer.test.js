@@ -199,10 +199,11 @@ tap.test('BatchSpanStreamer', (t) => {
     )
   })
 
-  // this will simulate n full batches and the last being 1/3 full
   t.test('should send in appropriate batch sizes', (t) => {
+    t.comment('this will simulate n full batches and the last batch being 1/3 full')
     const SPANS = 10000
     const BATCH = 750
+    // set the number of expected assertions to the batches + the sent metric
     t.plan(Math.ceil(SPANS / BATCH) + 1)
     const metrics = spanStreamer._metrics
     spanStreamer.batchSize = BATCH
