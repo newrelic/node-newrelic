@@ -7,7 +7,7 @@
 
 const test = require('tap').test
 
-test('loading the application via index.js with agent disabled', function (t) {
+test('loading the application via index.js with no config', function (t) {
   t.plan(3)
 
   process.env.NEW_RELIC_HOME = '/this/is/not/a/real/path'
