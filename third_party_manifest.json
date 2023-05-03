@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "Tue May 02 2023 09:20:10 GMT-0400 (Eastern Daylight Time)",
+  "lastUpdated": "Thu May 04 2023 13:52:53 GMT-0400 (Eastern Daylight Time)",
   "projectName": "New Relic Node Agent",
   "projectUrl": "https://github.com/newrelic/node-newrelic",
   "includeOptDeps": true,
@@ -44,27 +44,27 @@
       "licenseTextSource": "file",
       "publisher": "Google Inc."
     },
-    "@grpc/proto-loader@0.7.6": {
+    "@grpc/proto-loader@0.7.7": {
       "name": "@grpc/proto-loader",
-      "version": "0.7.6",
+      "version": "0.7.7",
       "range": "^0.7.5",
       "licenses": "Apache-2.0",
       "repoUrl": "https://github.com/grpc/grpc-node",
-      "versionedRepoUrl": "https://github.com/grpc/grpc-node/tree/v0.7.6",
+      "versionedRepoUrl": "https://github.com/grpc/grpc-node/tree/v0.7.7",
       "licenseFile": "node_modules/@grpc/proto-loader/LICENSE",
-      "licenseUrl": "https://github.com/grpc/grpc-node/blob/v0.7.6/LICENSE",
+      "licenseUrl": "https://github.com/grpc/grpc-node/blob/v0.7.7/LICENSE",
       "licenseTextSource": "file",
       "publisher": "Google Inc."
     },
-    "@newrelic/aws-sdk@5.0.4": {
+    "@newrelic/aws-sdk@5.0.5": {
       "name": "@newrelic/aws-sdk",
-      "version": "5.0.4",
+      "version": "5.0.5",
       "range": "^5.0.2",
       "licenses": "Apache-2.0",
       "repoUrl": "https://github.com/newrelic/node-newrelic-aws-sdk",
-      "versionedRepoUrl": "https://github.com/newrelic/node-newrelic-aws-sdk/tree/v5.0.4",
+      "versionedRepoUrl": "https://github.com/newrelic/node-newrelic-aws-sdk/tree/v5.0.5",
       "licenseFile": "node_modules/@newrelic/aws-sdk/LICENSE",
-      "licenseUrl": "https://github.com/newrelic/node-newrelic-aws-sdk/blob/v5.0.4/LICENSE",
+      "licenseUrl": "https://github.com/newrelic/node-newrelic-aws-sdk/blob/v5.0.5/LICENSE",
       "licenseTextSource": "file",
       "publisher": "New Relic Node.js agent team",
       "email": "nodejs@newrelic.com"
@@ -250,15 +250,15 @@
       "email": "nathan@tootallnate.net",
       "url": "http://n8.io/"
     },
-    "@newrelic/test-utilities@7.3.0": {
+    "@newrelic/test-utilities@7.3.1": {
       "name": "@newrelic/test-utilities",
-      "version": "7.3.0",
+      "version": "7.3.1",
       "range": "^7.3.0",
       "licenses": "Apache-2.0",
       "repoUrl": "https://github.com/newrelic/node-test-utilities",
-      "versionedRepoUrl": "https://github.com/newrelic/node-test-utilities/tree/v7.3.0",
+      "versionedRepoUrl": "https://github.com/newrelic/node-test-utilities/tree/v7.3.1",
       "licenseFile": "node_modules/@newrelic/test-utilities/LICENSE",
-      "licenseUrl": "https://github.com/newrelic/node-test-utilities/blob/v7.3.0/LICENSE",
+      "licenseUrl": "https://github.com/newrelic/node-test-utilities/blob/v7.3.1/LICENSE",
       "licenseTextSource": "file",
       "publisher": "New Relic Node.js agent team",
       "email": "nodejs@newrelic.com"
@@ -274,15 +274,15 @@
       "licenseUrl": "https://github.com/octokit/rest.js/blob/v18.12.0/LICENSE",
       "licenseTextSource": "file"
     },
-    "@slack/bolt@3.13.0": {
+    "@slack/bolt@3.13.1": {
       "name": "@slack/bolt",
-      "version": "3.13.0",
+      "version": "3.13.1",
       "range": "^3.7.0",
       "licenses": "MIT",
       "repoUrl": "https://github.com/slackapi/bolt",
-      "versionedRepoUrl": "https://github.com/slackapi/bolt/tree/v3.13.0",
+      "versionedRepoUrl": "https://github.com/slackapi/bolt/tree/v3.13.1",
       "licenseFile": "node_modules/@slack/bolt/LICENSE",
-      "licenseUrl": "https://github.com/slackapi/bolt/blob/v3.13.0/LICENSE",
+      "licenseUrl": "https://github.com/slackapi/bolt/blob/v3.13.1/LICENSE",
       "licenseTextSource": "file",
       "publisher": "Slack Technologies, LLC"
     },

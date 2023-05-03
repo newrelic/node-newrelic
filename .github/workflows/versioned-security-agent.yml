@@ -46,7 +46,7 @@ jobs:
     - name: Run Docker Services
       run: npm run services
     - name: Versioned Tests w/ Security Agent 
-      run: npm run versioned:security
+      run: TEST_CHILD_TIMEOUT=600000 npm run versioned:security 
       env:
         VERSIONED_MODE: --${{ inputs.mode || 'major' }}
         JOBS: 4 # 2 per CPU seems to be the sweet spot in GHA (July 2022)

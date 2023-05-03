@@ -295,7 +295,7 @@ This product includes source derived from [@grpc/grpc-js](https://github.com/grp
 
 ### @grpc/proto-loader
 
-This product includes source derived from [@grpc/proto-loader](https://github.com/grpc/grpc-node) ([v0.7.6](https://github.com/grpc/grpc-node/tree/v0.7.6)), distributed under the [Apache-2.0 License](https://github.com/grpc/grpc-node/blob/v0.7.6/LICENSE):
+This product includes source derived from [@grpc/proto-loader](https://github.com/grpc/grpc-node) ([v0.7.7](https://github.com/grpc/grpc-node/tree/v0.7.7)), distributed under the [Apache-2.0 License](https://github.com/grpc/grpc-node/blob/v0.7.7/LICENSE):
 
 ```
                                  Apache License
@@ -504,7 +504,7 @@ This product includes source derived from [@grpc/proto-loader](https://github.co
 
 ### @newrelic/aws-sdk
 
-This product includes source derived from [@newrelic/aws-sdk](https://github.com/newrelic/node-newrelic-aws-sdk) ([v5.0.4](https://github.com/newrelic/node-newrelic-aws-sdk/tree/v5.0.4)), distributed under the [Apache-2.0 License](https://github.com/newrelic/node-newrelic-aws-sdk/blob/v5.0.4/LICENSE):
+This product includes source derived from [@newrelic/aws-sdk](https://github.com/newrelic/node-newrelic-aws-sdk) ([v5.0.5](https://github.com/newrelic/node-newrelic-aws-sdk/tree/v5.0.5)), distributed under the [Apache-2.0 License](https://github.com/newrelic/node-newrelic-aws-sdk/blob/v5.0.5/LICENSE):
 
 ```
                                  Apache License
@@ -1852,7 +1852,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 ### @newrelic/test-utilities
 
-This product includes source derived from [@newrelic/test-utilities](https://github.com/newrelic/node-test-utilities) ([v7.3.0](https://github.com/newrelic/node-test-utilities/tree/v7.3.0)), distributed under the [Apache-2.0 License](https://github.com/newrelic/node-test-utilities/blob/v7.3.0/LICENSE):
+This product includes source derived from [@newrelic/test-utilities](https://github.com/newrelic/node-test-utilities) ([v7.3.1](https://github.com/newrelic/node-test-utilities/tree/v7.3.1)), distributed under the [Apache-2.0 License](https://github.com/newrelic/node-test-utilities/blob/v7.3.1/LICENSE):
 
 ```
                                  Apache License
@@ -2091,7 +2091,7 @@ THE SOFTWARE.
 
 ### @slack/bolt
 
-This product includes source derived from [@slack/bolt](https://github.com/slackapi/bolt) ([v3.13.0](https://github.com/slackapi/bolt/tree/v3.13.0)), distributed under the [MIT License](https://github.com/slackapi/bolt/blob/v3.13.0/LICENSE):
+This product includes source derived from [@slack/bolt](https://github.com/slackapi/bolt) ([v3.13.1](https://github.com/slackapi/bolt/tree/v3.13.1)), distributed under the [MIT License](https://github.com/slackapi/bolt/blob/v3.13.1/LICENSE):
 
 ```
 The MIT License (MIT)
