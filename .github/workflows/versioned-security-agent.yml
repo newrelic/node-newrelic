@@ -49,4 +49,5 @@ jobs:
       env:
         VERSIONED_MODE: --${{ inputs.mode || 'major' }}
         JOBS: 4 # 2 per CPU seems to be the sweet spot in GHA (July 2022)
+        C8: skip
 
