@@ -13,7 +13,17 @@ module.exports = {
     'jsdoc/require-jsdoc': 'off',
     'jsdoc/no-undefined-types': [
       'warn',
-      { definedTypes: ['Logger', 'Agent', 'Shim', 'TraceSegment', 'Transaction', 'Exception'] }
+      {
+        definedTypes: [
+          'Logger',
+          'Agent',
+          'Shim',
+          'TraceSegment',
+          'Transaction',
+          'Exception',
+          'MetricAggregator'
+        ]
+      }
     ]
   },
   parserOptions: {

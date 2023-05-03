@@ -59,8 +59,10 @@ tap.test('test that connection class reconnects', async (t) => {
     const metrics = createMetricAggregatorForTests()
 
     const traceObserverConfig = {
-      host: helper.SSL_HOST,
-      port: port
+      trace_observer: {
+        host: helper.SSL_HOST,
+        port: port
+      }
     }
 
     // very short backoff to trigger the reconnect in 1 second
@@ -140,8 +142,10 @@ tap.test('Should reconnect even when data sent back', async (t) => {
     const metrics = createMetricAggregatorForTests()
 
     const traceObserverConfig = {
-      host: helper.SSL_HOST,
-      port: port
+      trace_observer: {
+        host: helper.SSL_HOST,
+        port: port
+      }
     }
 
     // very short backoff to trigger the reconnect in 1 second

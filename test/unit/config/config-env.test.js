@@ -19,13 +19,17 @@ tap.test('when overriding configuration values via environment variables', (t) =
     const env = {
       NEW_RELIC_INFINITE_TRACING_TRACE_OBSERVER_HOST: VALID_HOST,
       NEW_RELIC_INFINITE_TRACING_TRACE_OBSERVER_PORT: '500',
-      NEW_RELIC_INFINITE_TRACING_SPAN_EVENTS_QUEUE_SIZE: VALID_QUEUE_SIZE
+      NEW_RELIC_INFINITE_TRACING_SPAN_EVENTS_QUEUE_SIZE: VALID_QUEUE_SIZE,
+      NEW_RELIC_INFINITE_TRACING_COMPRESSION: false,
+      NEW_RELIC_INFINITE_TRACING_BATCHING: false
     }
 
     idempotentEnv(env, (config) => {
       t.equal(config.infinite_tracing.trace_observer.host, VALID_HOST)
       t.equal(config.infinite_tracing.trace_observer.port, 500)
       t.equal(config.infinite_tracing.span_events.queue_size, VALID_QUEUE_SIZE)
+      t.equal(config.infinite_tracing.compression, false)
+      t.equal(config.infinite_tracing.batching, false)
       t.end()
     })
   })
