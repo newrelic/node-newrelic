@@ -20,6 +20,7 @@ on:
         description: Version of security agent to test
         required: false
   push:
+  pull_request:
   schedule:
     - cron:  '0 9 * * 1-5'
 
