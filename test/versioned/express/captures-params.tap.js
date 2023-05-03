@@ -77,7 +77,7 @@ tap.test('test attributes.enabled for express', function (t) {
             'got correct content type'
           )
 
-          t.deepEqual(JSON.parse(body), { yep: true }, 'Express correctly serves.')
+          t.same(body, { yep: true }, 'Express correctly serves.')
           t.end()
         })
       })
@@ -124,7 +124,7 @@ tap.test('test attributes.enabled for express', function (t) {
             'got correct content type'
           )
 
-          t.deepEqual(JSON.parse(body), { yep: true }, 'Express correctly serves.')
+          t.same(body, { yep: true }, 'Express correctly serves.')
           t.end()
         })
       })
@@ -171,7 +171,7 @@ tap.test('test attributes.enabled for express', function (t) {
             'got correct content type'
           )
 
-          t.deepEqual(JSON.parse(body), { yep: true }, 'Express correctly serves.')
+          t.same(body, { yep: true }, 'Express correctly serves.')
           t.end()
         })
       })
@@ -223,7 +223,7 @@ tap.test('test attributes.enabled for express', function (t) {
             'got correct content type'
           )
 
-          t.deepEqual(JSON.parse(body), { yep: true }, 'Express correctly serves.')
+          t.same(body, { yep: true }, 'Express correctly serves.')
           t.end()
         })
       })

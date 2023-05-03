@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "Fri Apr 14 2023 10:40:55 GMT-0400 (Eastern Daylight Time)",
+  "lastUpdated": "Tue May 02 2023 12:59:07 GMT-0400 (Eastern Daylight Time)",
   "projectName": "New Relic Node Agent",
   "projectUrl": "https://github.com/newrelic/node-newrelic",
   "includeOptDeps": true,
@@ -601,19 +601,6 @@
       "publisher": "Kris Kowal",
       "email": "kris@cixar.com",
       "url": "https://github.com/kriskowal"
-    },
-    "request@2.88.2": {
-      "name": "request",
-      "version": "2.88.2",
-      "range": "^2.88.2",
-      "licenses": "Apache-2.0",
-      "repoUrl": "https://github.com/request/request",
-      "versionedRepoUrl": "https://github.com/request/request/tree/v2.88.2",
-      "licenseFile": "node_modules/request/LICENSE",
-      "licenseUrl": "https://github.com/request/request/blob/v2.88.2/LICENSE",
-      "licenseTextSource": "file",
-      "publisher": "Mikeal Rogers",
-      "email": "mikeal.rogers@gmail.com"
     },
     "rimraf@2.7.1": {
       "name": "rimraf",

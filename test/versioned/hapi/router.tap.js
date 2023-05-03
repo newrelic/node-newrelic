@@ -6,7 +6,6 @@
 'use strict'
 
 const tap = require('tap')
-const request = require('request')
 const helper = require('../../lib/agent_helper')
 const utils = require('./hapi-utils')
 const Boom = require('@hapi/boom')
@@ -48,11 +47,9 @@ tap.test('Hapi router introspection', function (t) {
 
     server.start().then(function () {
       port = server.info.port
-      const params = {
-        uri: 'http://localhost:' + port + '/test/31337',
-        json: true
-      }
-      request.get(params, function (error, res, body) {
+      const uri = 'http://localhost:' + port + '/test/31337'
+
+      helper.makeGetRequest(uri, function (_error, res, body) {
         t.equal(res.statusCode, 200, 'nothing exploded')
         t.same(body, { status: 'ok' }, 'got expected response')
         t.end()
@@ -78,11 +75,8 @@ tap.test('Hapi router introspection', function (t) {
 
     server.start().then(function () {
       port = server.info.port
-      const params = {
-        uri: 'http://localhost:' + port + '/test/31337',
-        json: true
-      }
-      request.get(params, function (error, res, body) {
+      const uri = 'http://localhost:' + port + '/test/31337'
+      helper.makeGetRequest(uri, function (_error, res, body) {
         t.equal(res.statusCode, 200, 'nothing exploded')
         t.same(body, { status: 'ok' }, 'got expected response')
         t.end()
@@ -105,11 +99,8 @@ tap.test('Hapi router introspection', function (t) {
 
     server.start().then(function () {
       port = server.info.port
-      const params = {
-        uri: 'http://localhost:' + port + '/test/31337',
-        json: true
-      }
-      request.get(params, function (error, res, body) {
+      const uri = 'http://localhost:' + port + '/test/31337'
+      helper.makeGetRequest(uri, function (_error, res, body) {
         t.equal(res.statusCode, 200, 'nothing exploded')
         t.same(body, { status: 'ok' }, 'got expected response')
         t.end()
@@ -155,11 +146,8 @@ tap.test('Hapi router introspection', function (t) {
 
     server.start().then(function () {
       port = server.info.port
-      const params = {
-        uri: 'http://localhost:' + port + '/test/31337',
-        json: true
-      }
-      request.get(params, function (error, res, body) {
+      const uri = 'http://localhost:' + port + '/test/31337'
+      helper.makeGetRequest(uri, function (_error, res, body) {
         t.equal(res.statusCode, 200, 'nothing exploded')
         t.same(body, { status: 'ok' }, 'got expected response')
         t.end()
@@ -187,11 +175,8 @@ tap.test('Hapi router introspection', function (t) {
 
     server.start().then(function () {
       port = server.info.port
-      const params = {
-        uri: 'http://localhost:' + port + '/test/31337',
-        json: true
-      }
-      request.get(params, function (error, res, body) {
+      const uri = 'http://localhost:' + port + '/test/31337'
+      helper.makeGetRequest(uri, function (_error, res, body) {
         t.equal(res.statusCode, 200, 'nothing exploded')
         t.same(body, { status: 'ok' }, 'got expected response')
         t.end()
@@ -236,11 +221,8 @@ tap.test('Hapi router introspection', function (t) {
 
     server.start().then(function () {
       port = server.info.port
-      const params = {
-        uri: 'http://localhost:' + port + '/test/31337',
-        json: true
-      }
-      request.post(params, function (error, res, body) {
+      const uri = 'http://localhost:' + port + '/test/31337'
+      helper.makeRequest(uri, { method: 'POST' }, function (_error, res, body) {
         t.equal(res.statusCode, 200, 'nothing exploded')
         t.same(body, { status: 'ok' }, 'got expected response')
         t.end()
@@ -259,11 +241,8 @@ tap.test('Hapi router introspection', function (t) {
 
     server.start().then(function () {
       port = server.info.port
-      const params = {
-        uri: 'http://localhost:' + port + '/test',
-        json: true
-      }
-      request.get(params, function (error, res, body) {
+      const uri = 'http://localhost:' + port + '/test'
+      helper.makeGetRequest(uri, function (_error, res, body) {
         t.equal(res.statusCode, 404, 'nonexistent route was not found')
         t.same(
           body,
@@ -356,11 +335,8 @@ tap.test('Hapi router introspection', function (t) {
 
     server.start().then(function () {
       port = server.info.port
-      const params = {
-        uri: 'http://localhost:' + port + '/first/123/second/456/data',
-        json: true
-      }
-      request.get(params, function (error, res, body) {
+      const uri = 'http://localhost:' + port + '/first/123/second/456/data'
+      helper.makeGetRequest(uri, function (_error, res, body) {
         t.equal(res.statusCode, 200, 'nothing exploded')
         t.same(body, { success: 'TRUE' }, 'got expected response')
         t.end()

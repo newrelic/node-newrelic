@@ -7,7 +7,7 @@
 
 const DESTINATIONS = require('../../../../lib/config/attribute-filter').DESTINATIONS
 const test = require('tap').test
-const request = require('request').defaults({ json: true })
+
 const helper = require('../../../lib/agent_helper')
 const HTTP_ATTS = require('../../../lib/fixtures').httpAttributes
 
@@ -59,7 +59,7 @@ test('Restify capture params introspection', function (t) {
 
     server.listen(0, function () {
       port = server.address().port
-      request.get('http://localhost:' + port + '/test', function (error, res, body) {
+      helper.makeGetRequest('http://localhost:' + port + '/test', function (error, res, body) {
         t.equal(res.statusCode, 200, 'nothing exploded')
         t.same(body, { status: 'ok' }, 'got expected respose')
         t.end()
@@ -95,7 +95,7 @@ test('Restify capture params introspection', function (t) {
 
     server.listen(0, function () {
       port = server.address().port
-      request.get('http://localhost:' + port + '/test/1337', function (error, res, body) {
+      helper.makeGetRequest('http://localhost:' + port + '/test/1337', function (error, res, body) {
         t.equal(res.statusCode, 200, 'nothing exploded')
         t.same(body, { status: 'ok' }, 'got expected respose')
         t.end()
@@ -132,7 +132,7 @@ test('Restify capture params introspection', function (t) {
     server.listen(0, function () {
       port = server.address().port
       const url = 'http://localhost:' + port + '/test?name=restify'
-      request.get(url, function (error, res, body) {
+      helper.makeGetRequest(url, function (error, res, body) {
         t.equal(res.statusCode, 200, 'nothing exploded')
         t.same(body, { status: 'ok' }, 'got expected respose')
         t.end()
@@ -174,7 +174,7 @@ test('Restify capture params introspection', function (t) {
     server.listen(0, function () {
       port = server.address().port
       const url = 'http://localhost:' + port + '/test/1337?name=restify'
-      request.get(url, function (error, res, body) {
+      helper.makeGetRequest(url, function (error, res, body) {
         t.equal(res.statusCode, 200, 'nothing exploded')
         t.same(body, { status: 'ok' }, 'got expected respose')
         t.end()

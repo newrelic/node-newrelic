@@ -6,11 +6,9 @@
 'use strict'
 
 const tap = require('tap')
-const requestClient = require('request')
-const { promisify } = require('node:util')
-const makeRequest = promisify(requestClient.get)
-
 const helper = require('../../lib/agent_helper')
+const { promisify } = require('node:util')
+const makeRequest = promisify(helper.makeGetRequest)
 const { initNestApp, deleteNestApp } = require('./setup')
 
 tap.test('Verify the Nest.js instrumentation', (t) => {

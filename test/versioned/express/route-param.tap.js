@@ -7,7 +7,6 @@
 
 const test = require('tap').test
 const helper = require('../../lib/agent_helper')
-const request = require('request').defaults({ json: true })
 
 test('Express route param', function (t) {
   const agent = helper.instrumentMockedAgent()
@@ -81,7 +80,7 @@ test('Express route param', function (t) {
 
 function testRequest(port, param, cb) {
   const url = 'http://localhost:' + port + '/a/b/' + param + '/c'
-  request.get(url, function (err, response, body) {
+  helper.makeGetRequest(url, function (err, _response, body) {
     cb(err, body)
   })
 }

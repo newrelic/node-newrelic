@@ -231,7 +231,6 @@
     "prettier": "^2.3.2",
     "proxyquire": "^1.8.0",
     "q": "*",
-    "request": "^2.88.2",
     "rimraf": "^2.6.3",
     "should": "*",
     "sinon": "^4.5.0",
