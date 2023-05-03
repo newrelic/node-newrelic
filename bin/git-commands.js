@@ -128,10 +128,10 @@ function execAsPromise(command) {
 
     exec(command, (err, stdout) => {
       if (err) {
-        return reject(err)
+        reject(err)
       }
 
-      return resolve(stdout)
+      resolve(stdout)
     })
   })
 }
