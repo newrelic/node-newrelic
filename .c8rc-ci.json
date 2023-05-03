@@ -1,0 +1,5 @@
+{
+  "reporter": ["lcovonly"],
+  "exclude": ["test/*", "*.mjs", "**/*.mjs"],
+  "clean": true
+}
