@@ -37,10 +37,17 @@ fi
 # patch/minor flag.  We will just skip it
 # and figure out another way to get coverage
 # when running on main branch. 
-if [[ $VERSIONED_MODE == '--major' ]];
+if [[ -z "$C8" ]];
 then
-  C8="c8 -o ./coverage/versioned"
+  if [[ $VERSIONED_MODE == '--major' ]];
+  then
+    C8="c8 -o ./coverage/versioned -r lcovonly"
+  else 
+    C8=""
+  fi
 else 
+  # C8 was pass in as an env var which is intended to skip 
+  # running versioned tests with c8
   C8=""
 fi
 
@@ -50,6 +57,7 @@ export AGENT_PATH=`pwd`
 echo "JOBS = ${JOBS}"
 echo "NPM7 = ${NPM7}"
 echo "CONTEXT MANAGER = ${CTX_MGR}"
+echo "C8 = ${C8}"
 
 # if $JOBS is not empy
 if [ ! -z "$JOBS" ];
