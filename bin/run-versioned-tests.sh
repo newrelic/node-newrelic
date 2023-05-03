@@ -33,14 +33,17 @@ else
   )
 fi
 
-# C8 runs out of heap when running against
-# patch/minor flag.  We will just skip it
-# and figure out another way to get coverage
-# when running on main branch. 
+# When C8 is set as an env var the intention is to
+# run versioned tests without coverage.
 if [[ -z "$C8" ]];
 then
+  # C8 runs out of heap when running against
+  # patch/minor flag.  We will just skip it
+  # and figure out another way to get coverage
+  # when running on main branch. 
   if [[ $VERSIONED_MODE == '--major' ]];
   then
+    # lcovonly only generates lcov report which will cut down on amount of time generating reports
     C8="c8 -o ./coverage/versioned -r lcovonly"
   else 
     C8=""
