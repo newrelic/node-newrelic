@@ -43,10 +43,11 @@ function handlePost(req, res) {
   })
 
   req.on('end', () => {
+    const isJson = !!req.headers['x-amz-target']
     const endpoint = `http://localhost:${req.connection.localPort}`
-    const parsed = parseBody(body)
+    const parsed = parseBody(body, req.headers)
 
-    const getDataFunction = createGetDataFromAction(endpoint, parsed)
+    const getDataFunction = createGetDataFromAction(endpoint, parsed, isJson)
 
     getDataFunction((err, data) => {
       if (err) {
@@ -55,25 +56,29 @@ function handlePost(req, res) {
         console.log(err)
       }
 
+      if (isJson) {
+        res.setHeader('x-amz-request-id', data.ResponseMetadata.RequestId)
+        data = JSON.stringify(data)
+      }
       res.end(data)
     })
   })
 }
 
-function createGetDataFromAction(endpoint, body) {
+function createGetDataFromAction(endpoint, body, isJson) {
   switch (body.Action) {
     case 'Publish':
-      return getPublishResponse.bind(null)
+      return getPublishResponse.bind(null, isJson)
     case 'ListTopics':
-      return getListTopicsResponse.bind(null)
+      return getListTopicsResponse.bind(null, isJson)
     case 'CreateQueue':
-      return getCreateQueueResponse.bind(null, endpoint, body.QueueName)
+      return getCreateQueueResponse.bind(null, endpoint, body.QueueName, isJson)
     case 'SendMessage':
-      return getSendMessageResponse.bind(null)
+      return getSendMessageResponse.bind(null, isJson)
     case 'SendMessageBatch':
-      return getSendMessageBatchResponse.bind(null)
+      return getSendMessageBatchResponse.bind(null, isJson)
     case 'ReceiveMessage':
-      return getReceiveMessageResponse.bind(null)
+      return getReceiveMessageResponse.bind(null, isJson)
     case 'SendEmail':
       return getSendEmailResponse.bind(null)
     case 'AcceptReservedNodeExchange':

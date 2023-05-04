@@ -8,16 +8,22 @@ const common = module.exports
 const path = require('path')
 const fs = require('fs')
 
-common.parseBody = function parseBody(body) {
-  const parsed = Object.create(null)
+common.parseBody = function parseBody(body, headers) {
+  try {
+    const parsed = JSON.parse(body)
+    parsed.Action = headers['x-amz-target'].split('.')[1]
+    return parsed
+  } catch {
+    const parsed = Object.create(null)
 
-  const items = body.split('&')
-  items.forEach((item) => {
-    const [key, value] = item.split('=')
-    parsed[key] = value
-  })
+    const items = body.split('&')
+    items.forEach((item) => {
+      const [key, value] = item.split('=')
+      parsed[key] = value
+    })
 
-  return parsed
+    return parsed
+  }
 }
 
 common.readFromXml = function readFromXml(filePath, callback) {

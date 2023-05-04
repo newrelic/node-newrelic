@@ -77,32 +77,38 @@ tap.test('SQS API', (t) => {
 
       helper.runInTransaction((transaction) => {
         const sendMessageParams = getSendMessageParams(queueUrl)
-        sqs.sendMessage(sendMessageParams, (sendErr, sendData) => {
+        sqs.sendMessage(sendMessageParams, function sendMessageCb(sendErr, sendData) {
           t.error(sendErr)
           t.ok(sendData.MessageId)
 
-          sendMessageRequestId = getRequestId(t, sendData)
+          sendMessageRequestId = this.requestId
 
           const sendMessageBatchParams = getSendMessageBatchParams(queueUrl)
-          sqs.sendMessageBatch(sendMessageBatchParams, (sendBatchErr, sendBatchData) => {
-            t.error(sendBatchErr)
-            t.ok(sendBatchData.Successful)
+          sqs.sendMessageBatch(
+            sendMessageBatchParams,
+            function sendBatchCb(sendBatchErr, sendBatchData) {
+              t.error(sendBatchErr)
+              t.ok(sendBatchData.Successful)
 
-            sendMessageBatchRequestId = getRequestId(t, sendBatchData)
+              sendMessageBatchRequestId = this.requestId
 
-            const receiveMessageParams = getReceiveMessageParams(queueUrl)
-            sqs.receiveMessage(receiveMessageParams, (receiveErr, receiveData) => {
-              t.error(receiveErr)
-              t.ok(receiveData.Messages)
+              const receiveMessageParams = getReceiveMessageParams(queueUrl)
+              sqs.receiveMessage(
+                receiveMessageParams,
+                function receiveMsgCb(receiveErr, receiveData) {
+                  t.error(receiveErr)
+                  t.ok(receiveData.Messages)
 
-              receiveMessageRequestId = getRequestId(t, receiveData)
+                  receiveMessageRequestId = this.requestId
 
-              transaction.end()
+                  transaction.end()
 
-              const args = [t, transaction]
-              setImmediate(finish, ...args)
-            })
-          })
+                  const args = [t, transaction]
+                  setImmediate(finish, ...args)
+                }
+              )
+            }
+          )
         })
       })
     })
@@ -121,7 +127,7 @@ tap.test('SQS API', (t) => {
           const sendData = await sqs.sendMessage(sendMessageParams).promise()
           t.ok(sendData.MessageId)
 
-          sendMessageRequestId = getRequestId(t, sendData)
+          sendMessageRequestId = getRequestId(sendData)
         } catch (error) {
           t.error(error)
         }
@@ -131,7 +137,7 @@ tap.test('SQS API', (t) => {
           const sendBatchData = await sqs.sendMessageBatch(sendMessageBatchParams).promise()
           t.ok(sendBatchData.Successful)
 
-          sendMessageBatchRequestId = getRequestId(t, sendBatchData)
+          sendMessageBatchRequestId = getRequestId(sendBatchData)
         } catch (error) {
           t.error(error)
         }
@@ -141,7 +147,7 @@ tap.test('SQS API', (t) => {
           const receiveData = await sqs.receiveMessage(receiveMessageParams).promise()
           t.ok(receiveData.Messages)
 
-          receiveMessageRequestId = getRequestId(t, receiveData)
+          receiveMessageRequestId = getRequestId(receiveData)
         } catch (error) {
           t.error(error)
         }
@@ -207,10 +213,8 @@ function checkAttributes(t, segment, operation, expectedRequestId) {
   )
 }
 
-function getRequestId(t, apiReturnedData) {
-  t.ok(apiReturnedData.ResponseMetadata)
-
-  return apiReturnedData.ResponseMetadata.RequestId
+function getRequestId(data) {
+  return data?.$response?.requestId
 }
 
 function getCreateParams(queueName) {

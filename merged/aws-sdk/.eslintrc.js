@@ -1,4 +1,8 @@
 'use strict'
 module.exports = {
-  extends: '@newrelic'
+  extends: '@newrelic',
+  parserOptions: {
+    ecmaVersion: '2020'
+  },
+
 }
