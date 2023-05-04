@@ -1,3 +1,24 @@
+### v10.1.0 (2023-05-04)
+
+Updated token in post-release job
+
+Added create-release-pr to post-release action.
+
+* Added ability to load security agent when `config.security.agent.enabled` is true.
+
+* Removed request library and updated helper to use http/https to make requests in tests.
+
+* Added batching and compression to infinite tracing.
+   * These options are on by default. 
+   * To restore uncompressed spans set `config.infinite_tracing.compression` to `false`.
+   * To send single spans vs batches set `config.infinite_tracing.batching` to `false`.
+   * The environment variables for these new configurations are: `NEW_RELIC_INFINITE_TRACING_BATCHING` and `NEW_RELIC_INFINITE_TRACING_COMPRESSION`.
+
+* Added support to record Nest.js error stack traces.
+
+Reduced cognitive complexity in lib/serverless/aws-lambda.js
+Fixed JSDoc warnings in lib/collector/serverless
+
 ### v10.0.0 (2023-04-19)
 
 * **BREAKING** - Updated the default of `config.transaction_tracer.record_sql` from `off` to `obfuscated`. This means that sql statements will be captured but obfuscated.
