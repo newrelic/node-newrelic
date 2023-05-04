@@ -25,13 +25,15 @@ program.option(
   'Name of changelog(defaults to NEWS.md)',
   DEFAULT_FILE_NAME
 )
-program.option('-f --force', 'bypass validation')
 program.option('--dry-run', 'executes script but does not commit nor create PR')
 program.option(
   '--repo-path <path',
   'Path to the docs-website fork on local machine',
-  'docs-website'
+  '/tmp/docs-website'
 )
+
+program.option('--repo-owner <owner>', 'Owner of the target repo', 'newrelic')
+
 const RELEASE_NOTES_PATH =
   './src/content/docs/release-notes/agent-release-notes/nodejs-release-notes'
 
@@ -48,6 +50,9 @@ async function createReleaseNotesPr() {
 
   console.log(`Script running with following options: ${JSON.stringify(options)}`)
 
+  const username = options.username || process.env.GITHUB_ACTOR
+  const repoOwner = options.repoOwner
+
   try {
     const version = options.tag.replace('refs/tags/', '')
     console.log(`Getting version from tag: ${version}`)
@@ -56,6 +61,10 @@ async function createReleaseNotesPr() {
     validateTag(version, options.force)
     logStep('Get Release Notes from File')
     const { body, releaseDate } = await getReleaseNotes(version, options.changelog)
+
+    logStep('Set up docs repo')
+    await cloneDocsRepo(options.repoPath, repoOwner)
+
     logStep('Branch Creation')
     const branchName = await createBranch(options.repoPath, version, options.dryRun)
     logStep('Format release notes file')
@@ -65,7 +74,7 @@ async function createReleaseNotesPr() {
     logStep('Commit Release Notes')
     await commitReleaseNotes(version, options.remote, branchName, options.dryRun)
     logStep('Create Pull Request')
-    await createPR(options.username, version, branchName, options.dryRun)
+    await createPR(username, version, branchName, options.dryRun, repoOwner)
     console.log('*** Full Run Successful ***')
   } catch (err) {
     if (err.status && err.status === 404) {
@@ -128,12 +137,27 @@ async function readReleaseNoteFile(file) {
   return new Promise((resolve, reject) => {
     fs.readFile(file, 'utf8', (err, data) => {
       if (err) {
-        return reject(err)
+        reject(err)
       }
 
-      return resolve(data)
+      resolve(data)
     })
   })
+}
+
+/**
+ * Clones docs repo
+ *
+ * @param repoPath
+ * @param repoOwner
+ * @returns {boolean} success or failure
+ */
+async function cloneDocsRepo(repoPath, repoOwner) {
+  const branch = 'develop'
+  const url = `https://x-access-token:${process.env.GITHUB_TOKEN}@github.com/${repoOwner}/docs-website.git`
+  const cloneOptions = [`--branch=${branch}`, '--single-branch']
+
+  return git.clone(url, repoPath, cloneOptions)
 }
 
 /**
@@ -227,6 +251,9 @@ async function commitReleaseNotes(version, remote, branch, dryRun) {
     console.log('Dry run indicated (--dry-run), skipping committing release notes.')
     return
   }
+  const GITHUB_ACTOR = process.env.GITHUB_ACTOR
+  const GITHUB_EMAIL = `gh-actions-${GITHUB_ACTOR}@github.com`
+  await git.setUser(GITHUB_ACTOR, GITHUB_EMAIL)
 
   console.log(`Adding release notes for ${version}`)
   const files = [getFileName(version)]
@@ -243,14 +270,15 @@ async function commitReleaseNotes(version, remote, branch, dryRun) {
  * @param {string} version version number
  * @param {string} branch github branch
  * @param {boolean} dryRun whether or not we should actually create the PR
+ * @param {string} repoOwner Owner of the docs-website repo, if targeting a fork instead of newrelic
  */
-async function createPR(username, version, branch, dryRun) {
+async function createPR(username, version, branch, dryRun, repoOwner) {
   if (!process.env.GITHUB_TOKEN) {
     console.log('GITHUB_TOKEN required to create a pull request')
     stopOnError()
   }
 
-  const github = new Github('newrelic', 'docs-website')
+  const github = new Github(repoOwner, 'docs-website')
   const title = `Node.js Agent ${version} Release Notes`
   const prOptions = {
     head: `${username}:${branch}`,

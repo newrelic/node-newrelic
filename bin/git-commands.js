@@ -116,16 +116,22 @@ async function sparseCloneRepo(repoInfo, checkoutFiles) {
   process.chdir('..')
 }
 
+async function setUser(name, email) {
+  const setName = await execAsPromise(`git config user.name ${name}`)
+  const setEmail = await execAsPromise(`git config user.email ${email}`)
+  return [setName, setEmail].join(' ')
+}
+
 function execAsPromise(command) {
   return new Promise((resolve, reject) => {
     console.log(`Executing: '${command}'`)
 
     exec(command, (err, stdout) => {
       if (err) {
-        return reject(err)
+        reject(err)
       }
 
-      return resolve(stdout)
+      resolve(stdout)
     })
   })
 }
@@ -143,5 +149,6 @@ module.exports = {
   checkout,
   clone,
   sparseCloneRepo,
-  addFiles
+  addFiles,
+  setUser
 }
