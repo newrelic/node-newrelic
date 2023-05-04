@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "Tue May 02 2023 12:59:07 GMT-0400 (Eastern Daylight Time)",
+  "lastUpdated": "Thu May 04 2023 11:13:33 GMT-0400 (Eastern Daylight Time)",
   "projectName": "New Relic Node Agent",
   "projectUrl": "https://github.com/newrelic/node-newrelic",
   "includeOptDeps": true,
@@ -349,6 +349,46 @@
       "publisher": "TJ Holowaychuk",
       "email": "tj@vision-media.ca"
     },
+    "conventional-changelog-conventionalcommits@5.0.0": {
+      "name": "conventional-changelog-conventionalcommits",
+      "version": "5.0.0",
+      "range": "^5.0.0",
+      "licenses": "ISC",
+      "repoUrl": "https://github.com/conventional-changelog/conventional-changelog",
+      "versionedRepoUrl": "https://github.com/conventional-changelog/conventional-changelog/tree/v5.0.0",
+      "licenseFile": "node_modules/conventional-changelog-conventionalcommits/LICENSE.md",
+      "licenseUrl": "https://github.com/conventional-changelog/conventional-changelog/blob/v5.0.0/LICENSE.md",
+      "licenseTextSource": "file",
+      "publisher": "Ben Coe"
+    },
+    "conventional-changelog-writer@5.0.1": {
+      "name": "conventional-changelog-writer",
+      "version": "5.0.1",
+      "range": "^5.0.1",
+      "licenses": "MIT",
+      "repoUrl": "https://github.com/conventional-changelog/conventional-changelog",
+      "versionedRepoUrl": "https://github.com/conventional-changelog/conventional-changelog/tree/v5.0.1",
+      "licenseFile": "node_modules/conventional-changelog-writer/LICENSE.md",
+      "licenseUrl": "https://github.com/conventional-changelog/conventional-changelog/blob/v5.0.1/LICENSE.md",
+      "licenseTextSource": "file",
+      "publisher": "Steve Mao",
+      "email": "maochenyan@gmail.com",
+      "url": "https://github.com/stevemao"
+    },
+    "conventional-commits-parser@3.2.4": {
+      "name": "conventional-commits-parser",
+      "version": "3.2.4",
+      "range": "^3.2.4",
+      "licenses": "MIT",
+      "repoUrl": "https://github.com/conventional-changelog/conventional-changelog",
+      "versionedRepoUrl": "https://github.com/conventional-changelog/conventional-changelog/tree/v3.2.4",
+      "licenseFile": "node_modules/conventional-commits-parser/LICENSE.md",
+      "licenseUrl": "https://github.com/conventional-changelog/conventional-changelog/blob/v3.2.4/LICENSE.md",
+      "licenseTextSource": "file",
+      "publisher": "Steve Mao",
+      "email": "maochenyan@gmail.com",
+      "url": "https://github.com/stevemao"
+    },
     "eslint-config-prettier@8.5.0": {
       "name": "eslint-config-prettier",
       "version": "8.5.0",
@@ -460,6 +500,20 @@
       "licenseTextSource": "file",
       "publisher": "TJ Holowaychuk",
       "email": "tj@vision-media.ca"
+    },
+    "git-raw-commits@2.0.11": {
+      "name": "git-raw-commits",
+      "version": "2.0.11",
+      "range": "^2.0.11",
+      "licenses": "MIT",
+      "repoUrl": "https://github.com/conventional-changelog/conventional-changelog",
+      "versionedRepoUrl": "https://github.com/conventional-changelog/conventional-changelog/tree/v2.0.11",
+      "licenseFile": "node_modules/git-raw-commits/LICENSE.md",
+      "licenseUrl": "https://github.com/conventional-changelog/conventional-changelog/blob/v2.0.11/LICENSE.md",
+      "licenseTextSource": "file",
+      "publisher": "Steve Mao",
+      "email": "maochenyan@gmail.com",
+      "url": "https://github.com/stevemao"
     },
     "glob@7.2.3": {
       "name": "glob",

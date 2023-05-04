@@ -128,6 +128,18 @@ class Github {
     return mergedPullRequests
   }
 
+  async getPullRequestByCommit(sha) {
+    const response = await octokit.repos.listPullRequestsAssociatedWithCommit({
+      owner: this.repoOwner,
+      repo: this.repository,
+      commit_sha: sha
+    })
+
+    if (response.data.length) {
+      return response.data[0]
+    }
+  }
+
   async getLatestWorkflowRun(nameOrId, branch) {
     // Appears to return in latest order.
     const runs = await octokit.actions.listWorkflowRuns({
