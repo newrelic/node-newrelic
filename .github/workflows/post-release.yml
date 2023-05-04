@@ -43,4 +43,4 @@ jobs:
     - name: Create Docs Website PR
       run: node ./bin/create-docs-pr.js --tag ${{ steps.get_tag.outputs.latest_tag }}
       env:
-        GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+        GITHUB_TOKEN: ${{ secrets.NODE_AGENT_GH_TOKEN }}
