@@ -2,7 +2,6 @@
   "name": "@newrelic/koa",
   "version": "7.2.0",
   "description": "Koa instrumentation for the New Relic Node agent",
-  "main": "index.js",
   "directories": {
     "lib": "lib",
     "test": "tests"
@@ -10,7 +9,6 @@
   "files": [
     "/lib/**",
     "nr-hooks.js",
-    "index.js",
     "*.md"
   ],
   "scripts": {
