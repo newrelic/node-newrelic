@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "Tue Apr 25 2023 18:18:18 GMT-0400 (Eastern Daylight Time)",
+  "lastUpdated": "Wed May 03 2023 13:54:43 GMT-0400 (Eastern Daylight Time)",
   "projectName": "New Relic Koa Instrumentation",
   "projectUrl": "https://github.com/newrelic/node-newrelic-koa",
   "includeOptDeps": false,
@@ -44,15 +44,15 @@
       "licenseTextSource": "file",
       "publisher": "New Relic"
     },
-    "@newrelic/test-utilities@7.3.0": {
+    "@newrelic/test-utilities@7.3.1": {
       "name": "@newrelic/test-utilities",
-      "version": "7.3.0",
-      "range": "^7.3.0",
+      "version": "7.3.1",
+      "range": "^7.3.1",
       "licenses": "Apache-2.0",
       "repoUrl": "https://github.com/newrelic/node-test-utilities",
-      "versionedRepoUrl": "https://github.com/newrelic/node-test-utilities/tree/v7.3.0",
+      "versionedRepoUrl": "https://github.com/newrelic/node-test-utilities/tree/v7.3.1",
       "licenseFile": "node_modules/@newrelic/test-utilities/LICENSE",
-      "licenseUrl": "https://github.com/newrelic/node-test-utilities/blob/v7.3.0/LICENSE",
+      "licenseUrl": "https://github.com/newrelic/node-test-utilities/blob/v7.3.1/LICENSE",
       "licenseTextSource": "file",
       "publisher": "New Relic Node.js agent team",
       "email": "nodejs@newrelic.com"
