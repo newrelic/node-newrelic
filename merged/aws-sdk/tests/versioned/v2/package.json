@@ -22,7 +22,7 @@
       },
       "dependencies": {
         "aws-sdk": {
-          "versions": ">=2.380.0 <2.1372.0",
+          "versions": ">=2.380.0",
           "samples": 10
         }
       },
@@ -32,8 +32,22 @@
         "http-services.tap.js",
         "instrumentation-supported.tap.js",
         "s3.tap.js",
-        "sqs.tap.js",
         "sns.tap.js"
+      ]
+    },
+    {
+      "engines": {
+        "node": ">=14.0"
+      },
+      "dependencies": {
+        "aws-sdk": {
+          "versions": ">=2.380.0",
+          "samples": 10
+        },
+        "amazon-dax-client": ">=1.2.5"
+      },
+      "files": [
+        "amazon-dax-client.tap.js"
       ]
     },
     {
@@ -44,11 +58,10 @@
         "aws-sdk": {
           "versions": ">=2.380.0 <2.1372.0",
           "samples": 10
-        },
-        "amazon-dax-client": ">=1.2.5"
+        }
       },
       "files": [
-        "amazon-dax-client.tap.js"
+        "sqs.tap.js"
       ]
     }
   ],
