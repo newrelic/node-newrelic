@@ -214,9 +214,8 @@ class ConventionalChangelog {
    * @param {string} markdownFile path to the markdown file to update, defaults to NEWS.md
    * @returns {void}
    */
-  async writeMarkdownChangelog(newEntry, markdownFile = '../NEWS.md') {
-    const filename = path.resolve(__dirname, markdownFile)
-    const changelog = await readFile(filename, 'utf-8')
+  async writeMarkdownChangelog(newEntry, markdownFile = 'NEWS.md') {
+    const changelog = await readFile(markdownFile, 'utf-8')
 
     const heading = `### v${this.newVersion}`
 
@@ -225,7 +224,7 @@ class ConventionalChangelog {
       return
     }
 
-    await writeFile(filename, `${newEntry}\n${changelog}`, 'utf-8')
+    await writeFile(markdownFile, `${newEntry}\n${changelog}`, 'utf-8')
   }
 
   /**
@@ -237,9 +236,8 @@ class ConventionalChangelog {
    * @param {string} jsonFile path to the markdown file to update, defaults to changelog.json
    * @returns {void}
    */
-  async writeJsonChangelog(newEntry, jsonFile = '../changelog.json') {
-    const filename = path.resolve(__dirname, jsonFile)
-    const rawChangelog = await readFile(filename, 'utf-8')
+  async writeJsonChangelog(newEntry, jsonFile = 'changelog.json') {
+    const rawChangelog = await readFile(jsonFile, 'utf-8')
     const changelog = JSON.parse(rawChangelog)
 
     if (changelog.entries.find((entry) => entry.version === this.newVersion)) {
@@ -248,7 +246,7 @@ class ConventionalChangelog {
     }
 
     changelog.entries.unshift(newEntry)
-    await writeFile(filename, JSON.stringify(changelog, null, 2), 'utf-8')
+    await writeFile(jsonFile, JSON.stringify(changelog, null, 2), 'utf-8')
   }
 }
 
