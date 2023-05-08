@@ -8,6 +8,7 @@ set -x
 VERSIONED_MODE="${VERSIONED_MODE:---minor}"
 SAMPLES="${SAMPLES:-10}"
 export NODE_OPTIONS="--max-old-space-size=4096"
+SKIP_C8="${SKIP_C8:-false}"
 
 # Determine context manager for sanity sake
 if [[ $NEW_RELIC_FEATURE_FLAG_ASYNC_LOCAL_CONTEXT == 1 ]];
@@ -33,10 +34,12 @@ else
   )
 fi
 
-# When C8 is set as an env var the intention is to
-# run versioned tests without coverage.
-if [[ -z "$C8" ]];
+# No coverage as env var is true
+# set C8 to ""
+if [[ "${SKIP_C8}" = "true" ]];
 then
+  C8=""
+else
   # C8 runs out of heap when running against
   # patch/minor flag.  We will just skip it
   # and figure out another way to get coverage
@@ -48,10 +51,6 @@ then
   else 
     C8=""
   fi
-else 
-  # C8 was pass in as an env var which is intended to skip 
-  # running versioned tests with c8
-  C8=""
 fi
 
 export AGENT_PATH=`pwd`
