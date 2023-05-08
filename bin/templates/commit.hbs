@@ -1,0 +1,24 @@
+*{{#if scope}} **{{scope}}:**
+{{~/if}} {{#if subject}}
+  {{~subject}}
+{{~else}}
+  {{~header}}
+{{~/if}}
+
+{{~!-- PR link --}}{{~#if pr}}
+  ([#{{pr.id}}]({{pr.url}}))
+{{~/if}}
+
+{{~!-- commit link --}}{{~#if hash}}
+  ([{{shortHash}}]({{@root.host}}/{{@root.owner}}/{{@root.repository}}/commit/{{hash}}))
+{{~/if}}
+
+{{~!-- commit references --}}
+{{~#if references~}}
+  , closes
+  {{~#each references}} [{{this.issue}}]({{@root.host}}/{{@root.owner}}/{{@root.repository}}/issues/{{this.issue}}){{/each}}
+{{~/if}}
+
+{{#if body}}
+    * {{body}}
+{{/if}}
