@@ -44,3 +44,5 @@ jobs:
       run: node ./bin/create-docs-pr.js --tag v${{ steps.get_tag.outputs.latest_tag }}
       env:
         GITHUB_TOKEN: ${{ secrets.NODE_AGENT_GH_TOKEN }}
+        GITHUB_USER: ${{ secrets.NODE_AGENT_CI_USER_NAME }}
+        GITHUB_EMAIL: ${{ secrets.NODE_AGENT_CI_USER_EMAIL }}
