@@ -57,7 +57,7 @@ tap.test('when overriding the config file location via NEW_RELIC_HOME', (t) => {
     await fsPromises.rm(DESTDIR, { recursive: true, force: true })
 
     process.chdir(startDir)
-    await fsPromises.rmdir(NOPLACEDIR, { recursive: true })
+    await fsPromises.rm(NOPLACEDIR, { recursive: true })
   })
 
   t.test('should load the configuration', (t) => {
@@ -151,6 +151,13 @@ tap.test('Selecting config file path', (t) => {
     fs.rmSync(MAIN_MODULE_DIR, { recursive: true })
 
     process.chdir(originalWorkingDirectory)
+
+    const mainModuleRegex = new RegExp(MAIN_MODULE_DIR)
+    Object.keys(require.cache).forEach((key) => {
+      if (mainModuleRegex.test(key)) {
+        delete require.cache[key]
+      }
+    })
   })
 
   t.test('should load the default newrelic.js config file', (t) => {
@@ -194,6 +201,17 @@ tap.test('Selecting config file path', (t) => {
     t.end()
   })
 
+  t.test('should load even if parsing the config file throws an error', (t) => {
+    const filename = 'newrelic.js'
+    createInvalidConfig(MAIN_MODULE_DIR, filename)
+    process.env.NEW_RELIC_APP_NAME = filename
+
+    const configuration = Config.initialize()
+    t.same(configuration.app_name, [filename])
+
+    t.end()
+  })
+
   function createSampleConfig(dir, filename) {
     CONFIG_PATH = path.join(dir, filename)
 
@@ -202,5 +220,11 @@ tap.test('Selecting config file path', (t) => {
     }
 
     fs.writeFileSync(CONFIG_PATH, `exports.config = ${JSON.stringify(config)}`)
+  }
+
+  function createInvalidConfig(dir, filename) {
+    CONFIG_PATH = path.join(dir, filename)
+
+    fs.writeFileSync(CONFIG_PATH, `exports.config = null.pleaseThrow`)
   }
 })
