@@ -34,6 +34,7 @@ jobs:
       env:
         VERSIONED_MODE: --major 
         JOBS: 4 # 2 per CPU seems to be the sweet spot in GHA (July 2022)
+        SKIP_C8: true 
 
   versioned:
     runs-on: ubuntu-latest
