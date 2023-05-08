@@ -651,6 +651,14 @@ tap.test('display_host', { timeout: 20000 }, (t) => {
     })
   })
 
+  t.test('should change large hostname of more than 255 bytes to safe value', (t) => {
+    agent.config.process_host.display_name = 'lo'.repeat(200)
+    facts(agent, function getFacts(factsed) {
+      t.equal(factsed.display_host, agent.config.getHostnameSafe())
+      t.end()
+    })
+  })
+
   t.test('should be process.env.DYNO when use_heroku_dyno_names is true', (t) => {
     process.env.DYNO = 'web.1'
     agent.config.heroku.use_dyno_names = true

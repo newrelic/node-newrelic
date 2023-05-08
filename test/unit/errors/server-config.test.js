@@ -65,6 +65,18 @@ describe('Server Config', function () {
       })
     })
 
+    it('_fromServer should skip over malformed ignore_classes', function () {
+      helper.runInTransaction(agent, function () {
+        agent.config.error_collector.ignore_classes = ['Foo']
+        const params = { 'error_collector.ignore_classes': ['Bar'] }
+        agent.config._fromServer(params, 'error_collector.ignore_classes')
+        const nonsense = { 'error_collector.ignore_classes': [{ this: 'isNotAClass' }] }
+        agent.config._fromServer(nonsense, 'error_collector.ignore_classes')
+        const expected = ['Foo', 'Bar']
+        expect(agent.config.error_collector.ignore_classes).eql(expected)
+      })
+    })
+
     it('_fromServer should update expected_messages', function () {
       helper.runInTransaction(agent, function () {
         agent.config.error_collector.expected_messages = { Foo: ['bar'] }

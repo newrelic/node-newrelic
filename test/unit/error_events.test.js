@@ -27,8 +27,14 @@ test('Error events', (t) => {
 
     t.test('collector can override', (t) => {
       agent.config.error_collector.capture_events = false
-      t.doesNotThrow(() => agent.config.onConnect({ 'error_collector.capture_events': true }))
+      t.doesNotThrow(() =>
+        agent.config.onConnect({
+          'error_collector.capture_events': true,
+          'error_collector.max_event_samples_stored': 42
+        })
+      )
       t.equal(agent.config.error_collector.capture_events, true)
+      t.equal(agent.config.error_collector.max_event_samples_stored, 42)
 
       t.end()
     })

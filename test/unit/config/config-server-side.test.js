@@ -37,6 +37,13 @@ tap.test('when receiving server-side configuration', (t) => {
     t.end()
   })
 
+  t.test('should set the entity GUID', (t) => {
+    config.onConnect({ entity_guid: 1729 })
+    t.equal(config.entity_guid, 1729)
+
+    t.end()
+  })
+
   t.test('should set the application ID', (t) => {
     config.onConnect({ application_id: 76543 })
     t.equal(config.application_id, 76543)
@@ -241,9 +248,21 @@ tap.test('when receiving server-side configuration', (t) => {
   })
 
   t.test('should not blow up when trusted_account_ids is received', (t) => {
+    config.once('trusted_account_ids', (value) => {
+      t.same(value, [1, 2, 3], 'should get the initial keys')
+    })
+
     t.doesNotThrow(() => {
       config.onConnect({ trusted_account_ids: [1, 2, 3] })
+    }, 'should allow it once')
+
+    config.once('trusted_account_ids', (value) => {
+      t.same(value, [2, 3, 4], 'should get the modified keys')
     })
+
+    t.doesNotThrow(() => {
+      config.onConnect({ trusted_account_ids: [2, 3, 4] })
+    }, 'should allow modification')
 
     t.end()
   })
@@ -305,6 +324,14 @@ tap.test('when receiving server-side configuration', (t) => {
     t.end()
   })
 
+  t.test('should not blow up when browser_monitoring.loader is received', (t) => {
+    t.doesNotThrow(() => {
+      config.onConnect({ 'browser_monitoring.loader': 'none' })
+    })
+
+    t.end()
+  })
+
   t.test('should not blow up when beacon is received', (t) => {
     t.doesNotThrow(() => {
       config.onConnect({ beacon: 'beacon-0.newrelic.com' })
@@ -313,7 +340,7 @@ tap.test('when receiving server-side configuration', (t) => {
     t.end()
   })
 
-  t.test('should not blow up when beacon is received', (t) => {
+  t.test('should not blow up when error beacon is received', (t) => {
     t.doesNotThrow(() => {
       config.onConnect({ error_beacon: null })
     })
@@ -367,6 +394,16 @@ tap.test('when receiving server-side configuration', (t) => {
       config.onConnect({ collect_analytics_events: false })
     })
     t.equal(config.transaction_events.enabled, false)
+
+    t.end()
+  })
+
+  t.test('should not blow up when collect_custom_events is received', (t) => {
+    config.custom_insights_events.enabled = true
+    t.doesNotThrow(() => {
+      config.onConnect({ collect_custom_events: false })
+    })
+    t.equal(config.custom_insights_events.enabled, false)
 
     t.end()
   })
@@ -438,6 +475,17 @@ tap.test('when receiving server-side configuration', (t) => {
         }
       })
       t.same(config.error_collector.ignore_status_codes, [404, 401, 420, 421, 415])
+
+      t.end()
+    })
+
+    t.test('should not error out when ignore status codes are neither numbers nor strings', (t) => {
+      config.onConnect({
+        agent_config: {
+          'error_collector.ignore_status_codes': [{ non: 'sense' }]
+        }
+      })
+      t.same(config.error_collector.ignore_status_codes, [404])
 
       t.end()
     })
@@ -558,6 +606,25 @@ tap.test('when receiving server-side configuration', (t) => {
       config.onConnect({ event_harvest_config: expectedHarvestConfig })
     })
 
+    t.test('should emit null when an invalid report period is provided', (t) => {
+      const invalidHarvestConfig = {
+        report_period_ms: -1,
+        harvest_limits: {
+          analytic_event_data: -1,
+          custom_event_data: -1,
+          error_event_data: -1
+        }
+      }
+
+      config.once('event_harvest_config', function (harvestconfig) {
+        t.same(harvestconfig, null, 'emitted value should be null')
+
+        t.end()
+      })
+
+      config.onConnect({ event_harvest_config: invalidHarvestConfig })
+    })
+
     t.test('should update event_harvest_config when a sub-value changed', (t) => {
       const originalHarvestConfig = {
         report_period_ms: 60000,
@@ -586,6 +653,43 @@ tap.test('when receiving server-side configuration', (t) => {
       })
 
       config.onConnect({ event_harvest_config: expectedHarvestConfig })
+    })
+
+    t.test('should ignore invalid limits on event_harvest_config', (t) => {
+      const originalHarvestConfig = {
+        report_period_ms: 60000,
+        harvest_limits: {
+          analytic_event_data: 10000,
+          custom_event_data: 10000,
+          error_event_data: 100
+        }
+      }
+
+      config.event_harvest_config = originalHarvestConfig
+
+      const invalidHarvestLimits = {
+        report_period_ms: 60000,
+        harvest_limits: {
+          analytic_event_data: -1,
+          custom_event_data: -1,
+          error_event_data: 200
+        }
+      }
+
+      const cleanedHarvestLimits = {
+        report_period_ms: 60000,
+        harvest_limits: {
+          error_event_data: 200
+        }
+      }
+
+      config.once('event_harvest_config', function (harvestconfig) {
+        t.same(harvestconfig, cleanedHarvestLimits, 'should not include invalid limits')
+
+        t.end()
+      })
+
+      config.onConnect({ event_harvest_config: invalidHarvestLimits })
     })
   })
 
