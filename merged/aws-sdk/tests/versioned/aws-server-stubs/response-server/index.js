@@ -68,9 +68,9 @@ function handlePost(req, res) {
 function createGetDataFromAction(endpoint, body, isJson) {
   switch (body.Action) {
     case 'Publish':
-      return getPublishResponse.bind(null, isJson)
+      return getPublishResponse.bind(null)
     case 'ListTopics':
-      return getListTopicsResponse.bind(null, isJson)
+      return getListTopicsResponse.bind(null)
     case 'CreateQueue':
       return getCreateQueueResponse.bind(null, endpoint, body.QueueName, isJson)
     case 'SendMessage':
