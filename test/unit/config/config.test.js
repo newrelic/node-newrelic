@@ -163,4 +163,11 @@ tap.test('#publicSettings', (t) => {
 
     t.end()
   })
+
+  t.test('should turn the app name into an array', (t) => {
+    configuration = Config.initialize({ app_name: 'test app name' })
+    t.same(configuration.applications(), ['test app name'])
+
+    t.end()
+  })
 })
