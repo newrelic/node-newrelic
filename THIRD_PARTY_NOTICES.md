@@ -9417,7 +9417,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 ### testdouble
 
-This product includes source derived from [testdouble](https://github.com/testdouble/testdouble.js) ([v3.16.6](https://github.com/testdouble/testdouble.js/tree/v3.16.6)), distributed under the [MIT License](https://github.com/testdouble/testdouble.js/blob/v3.16.6/LICENSE.txt):
+This product includes source derived from [testdouble](https://github.com/testdouble/testdouble.js) ([v3.17.2](https://github.com/testdouble/testdouble.js/tree/v3.17.2)), distributed under the [MIT License](https://github.com/testdouble/testdouble.js/blob/v3.17.2/LICENSE.txt):
 
 ```
 The MIT License (MIT)
