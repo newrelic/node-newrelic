@@ -283,8 +283,9 @@ async function createPR(version, branch, dryRun, repoOwner) {
 
   const github = new Github(repoOwner, 'docs-website')
   const title = `Node.js Agent ${version} Release Notes`
+  const head = repoOwner === `newrelic` ? branch : `${repoOwner}:${branch}`
   const prOptions = {
-    head: `${branch}`,
+    head,
     base: BASE_BRANCH,
     title,
     body: title
