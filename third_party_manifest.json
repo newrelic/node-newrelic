@@ -499,15 +499,15 @@
       "licenseUrl": "https://github.com/SonarSource/eslint-plugin-sonarjs/blob/v0.18.0/LICENSE",
       "licenseTextSource": "file"
     },
-    "eslint@8.39.0": {
+    "eslint@8.40.0": {
       "name": "eslint",
-      "version": "8.39.0",
+      "version": "8.40.0",
       "range": "^8.24.0",
       "licenses": "MIT",
       "repoUrl": "https://github.com/eslint/eslint",
-      "versionedRepoUrl": "https://github.com/eslint/eslint/tree/v8.39.0",
+      "versionedRepoUrl": "https://github.com/eslint/eslint/tree/v8.40.0",
       "licenseFile": "node_modules/eslint/LICENSE",
-      "licenseUrl": "https://github.com/eslint/eslint/blob/v8.39.0/LICENSE",
+      "licenseUrl": "https://github.com/eslint/eslint/blob/v8.40.0/LICENSE",
       "licenseTextSource": "file",
       "publisher": "Nicholas C. Zakas",
       "email": "nicholas+npm@nczconsulting.com"
