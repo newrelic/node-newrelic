@@ -2740,7 +2740,7 @@ Library.
 
 ### eslint
 
-This product includes source derived from [eslint](https://github.com/eslint/eslint) ([v8.39.0](https://github.com/eslint/eslint/tree/v8.39.0)), distributed under the [MIT License](https://github.com/eslint/eslint/blob/v8.39.0/LICENSE):
+This product includes source derived from [eslint](https://github.com/eslint/eslint) ([v8.40.0](https://github.com/eslint/eslint/tree/v8.40.0)), distributed under the [MIT License](https://github.com/eslint/eslint/blob/v8.40.0/LICENSE):
 
 ```
 Copyright OpenJS Foundation and other contributors, <www.openjsf.org>
