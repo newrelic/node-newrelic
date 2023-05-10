@@ -11,7 +11,7 @@ const helper = require('../../lib/agent_helper')
 const DatastoreShim = require('../../../lib/shim/datastore-shim.js')
 const symbols = require('../../../lib/symbols')
 const sinon = require('sinon')
-const semver = require('semver')
+const proxyquire = require('proxyquire')
 
 let agent = null
 let initialize = null
@@ -19,61 +19,53 @@ let shim = null
 
 test('PrismaClient unit tests', (t) => {
   t.autoend()
+  let getSchemaSpy
+  let sandbox
 
   t.beforeEach(function () {
+    sandbox = sinon.createSandbox()
     // TODO: update to use loadMockedAgent with async local context manager when we drop Node 14
     // enabling async local ctx mgr so I don't have to call instrumentMockedAgent which bootstraps
     // all instrumentation. Need context propagation for the inContext function
     // agent = helper.loadMockedAgent({ feature_flag: { async_local_context: true } })
     agent = helper.instrumentMockedAgent()
-    initialize = require('../../../lib/instrumentation/@prisma/client')
+    const prismaAst = require('@mrleebo/prisma-ast')
+    getSchemaSpy = sandbox.spy(prismaAst, 'getSchema')
+    initialize = proxyquire('../../../lib/instrumentation/@prisma/client', {
+      '@mrleebo/prisma-ast': prismaAst
+    })
     shim = new DatastoreShim(agent, 'prisma')
-    sinon.stub(shim, 'require')
+    sandbox.stub(shim, 'require')
     shim.require.returns({ version: '4.0.0' })
   })
 
   t.afterEach(function () {
     helper.unloadAgent(agent)
+    sandbox.restore()
   })
 
-  function getMockModule(version = '4.0.0') {
-    function Engine() {}
-
-    Engine.prototype.getConfig = sinon.stub()
-    let PrismaClient
-    if (semver.gte(version, '4.11.0')) {
-      PrismaClient = function () {
-        const libraryInstantiationPromise = new Promise((resolve) => resolve())
-        this._engine = {
-          libraryInstantiationPromise
-        }
-        this._engine.library = new Engine()
-      }
-    } else {
-      PrismaClient = function () {
-        this._engine = new Engine()
-      }
+  function getMockModule() {
+    const PrismaClient = function () {
+      this._engine = { datamodel: {}, datasourceOverrides: {} }
     }
 
-    PrismaClient.prototype._executeRequest = sinon.stub().resolves()
+    PrismaClient.prototype._executeRequest = sandbox.stub().resolves()
 
     return PrismaClient
   }
 
-  t.test('should parse connection string from url.value', (t) => {
+  t.test('should get connection string from datasource url', (t) => {
     const MockPrismaClient = getMockModule()
     const prisma = { PrismaClient: MockPrismaClient }
 
     initialize(agent, prisma, '@prisma/client', shim)
     const client = new prisma.PrismaClient()
-    client._engine.getConfig.resolves({
-      datasources: [
-        {
-          provider: 'postgres',
-          url: { value: 'postgresql://postgres:prisma@localhost:5436/db%20with%20spaces' }
-        }
-      ]
-    })
+    client._engine.datamodel = `
+      datasource db {
+        provider = "postgres"
+        url = "postgresql://postgres:prisma@localhost:5436/db%20with%20spaces"
+      }
+    `
 
     helper.runInTransaction(agent, async () => {
       await client._executeRequest({ clientMethod: 'user.create' })
@@ -86,16 +78,19 @@ test('PrismaClient unit tests', (t) => {
     })
   })
 
-  t.test('should parse connection string from url.fromEnvVar', (t) => {
+  t.test('should parse connection string from datasource url env var', (t) => {
     const MockPrismaClient = getMockModule()
     const prisma = { PrismaClient: MockPrismaClient }
 
     initialize(agent, prisma, '@prisma/client', shim)
     const client = new prisma.PrismaClient()
     process.env.TEST_URL = 'postgresql://postgres:prisma@host:5437/'
-    client._engine.getConfig.resolves({
-      datasources: [{ provider: 'postgres', url: { fromEnvVar: 'TEST_URL' } }]
-    })
+    client._engine.datamodel = `
+      datasource db {
+        provider = "postgres"
+        url = env("TEST_URL") 
+      }
+    `
 
     helper.runInTransaction(agent, async () => {
       await client._executeRequest({ clientMethod: 'user.create' })
@@ -108,20 +103,70 @@ test('PrismaClient unit tests', (t) => {
     })
   })
 
-  t.test('should only call _engine.getConfig once per connection', (t) => {
+  t.test('should parse connection string client override', (t) => {
     const MockPrismaClient = getMockModule()
     const prisma = { PrismaClient: MockPrismaClient }
 
     initialize(agent, prisma, '@prisma/client', shim)
     const client = new prisma.PrismaClient()
-    client._engine.getConfig.resolves({
-      datasources: [
-        {
-          provider: 'postgres',
-          url: { value: 'postgresql://postgres:prisma@localhost:5436/db%20with%20spaces' }
-        }
-      ]
+    client._engine.datasourceOverrides = {
+      db: 'postgresql://postgres:prisma@localhost:5433/override-db'
+    }
+    client._engine.datamodel = `
+      datasource db {
+        provider = "postgres"
+        url = "postgresql://postgres:prisma@localhost:5436/db"
+      }
+    `
+    helper.runInTransaction(agent, async () => {
+      await client._executeRequest({ clientMethod: 'user.create' })
+      t.same(client[symbols.prismaConnection], {
+        host: 'localhost',
+        port: '5433',
+        dbName: 'override-db'
+      })
+      t.end()
     })
+  })
+
+  t.test('should not override with client override when datasource name does not match', (t) => {
+    const MockPrismaClient = getMockModule()
+    const prisma = { PrismaClient: MockPrismaClient }
+
+    initialize(agent, prisma, '@prisma/client', shim)
+    const client = new prisma.PrismaClient()
+    client._engine.datasourceOverrides = {
+      temp_db: 'postgresql://postgres:prisma@localhost:5433/override-db'
+    }
+    client._engine.datamodel = `
+      datasource db {
+        provider = "postgres"
+        url = "postgresql://postgres:prisma@localhost:5436/db"
+      }
+    `
+    helper.runInTransaction(agent, async () => {
+      await client._executeRequest({ clientMethod: 'user.create' })
+      t.same(client[symbols.prismaConnection], {
+        host: 'localhost',
+        port: '5436',
+        dbName: 'db'
+      })
+      t.end()
+    })
+  })
+
+  t.test('should only try to parse the schema once per connection', (t) => {
+    const MockPrismaClient = getMockModule()
+    const prisma = { PrismaClient: MockPrismaClient }
+
+    initialize(agent, prisma, '@prisma/client', shim)
+    const client = new prisma.PrismaClient()
+    client._engine.datamodel = `
+      datasource db {
+        provider = "postgres"
+        url = "postgresql://postgres:prisma@localhost:5436/db%20with%20spaces"
+      }
+    `
 
     helper.runInTransaction(agent, async () => {
       await client._executeRequest({ clientMethod: 'user.create', action: 'create' })
@@ -129,11 +174,9 @@ test('PrismaClient unit tests', (t) => {
         args: { query: 'select test from unit-test;' },
         action: 'executeRaw'
       })
-      t.equal(
-        client._engine.getConfig.callCount,
-        1,
-        'should only call getConfig once per connection'
-      )
+
+      t.equal(getSchemaSpy.callCount, 1, 'should only parse schema once')
+
       t.end()
     })
   })
@@ -144,12 +187,12 @@ test('PrismaClient unit tests', (t) => {
 
     initialize(agent, prisma, '@prisma/client', shim)
     const client = new prisma.PrismaClient()
-    client._engine.getConfig.resolves({
-      datasources: [
-        { provider: 'postgres', url: { value: 'postgresql://postgres:prisma@my-host:5436/db' } }
-      ]
-    })
-
+    client._engine.datamodel = `
+      datasource db {
+        provider = "postgres"
+        url = "postgresql://postgres:prisma@my-host:5436/db"
+      }
+    `
     helper.runInTransaction(agent, async (tx) => {
       await client._executeRequest({ clientMethod: 'user.create', action: 'create' })
       await client._executeRequest({
@@ -183,34 +226,12 @@ test('PrismaClient unit tests', (t) => {
 
     initialize(agent, prisma, '@prisma/client', shim)
     const client = new prisma.PrismaClient()
-    client._engine.getConfig.resolves({
-      datasources: [
-        {
-          provider: 'sqlserver',
-          url: {
-            value:
-              'Server=myServerAddress;Database=myDataBase;User Id=myUsername;Password=myPassword;'
-          }
-        }
-      ]
-    })
-
-    helper.runInTransaction(agent, async () => {
-      await client._executeRequest({ clientMethod: 'user.create', action: 'create' })
-      t.same(client[symbols.prismaConnection], {})
-      t.end()
-    })
-  })
-
-  t.test('should not set connection params if it fails to retrieve config', (t) => {
-    const MockPrismaClient = getMockModule()
-    const prisma = { PrismaClient: MockPrismaClient }
-
-    initialize(agent, prisma, '@prisma/client', shim)
-    const client = new prisma.PrismaClient()
-    const err = new Error('i failed')
-    client._engine.getConfig.rejects(err)
-
+    client._engine.datamodel = `
+      datasource db {
+        provider = "postgres"
+        url = "Server=myServerAddress;Database=myDataBase;User Id=myUsername;Password=myPassword;"
+      }
+    `
     helper.runInTransaction(agent, async () => {
       await client._executeRequest({ clientMethod: 'user.create', action: 'create' })
       t.same(client[symbols.prismaConnection], {})
@@ -224,11 +245,12 @@ test('PrismaClient unit tests', (t) => {
 
     initialize(agent, prisma, '@prisma/client', shim)
     const client = new prisma.PrismaClient()
-    client._engine.getConfig.resolves({
-      datasources: [
-        { provider: 'postgres', url: { value: 'postgresql://postgres:prisma@my-host:5436/db' } }
-      ]
-    })
+    client._engine.datamodel = `
+      datasource db {
+        provider = "postgres"
+        url = "postgresql://postgres:prisma@my-host:5436/db"
+      }
+    `
 
     helper.runInTransaction(agent, async (tx) => {
       await client._executeRequest({ action: 'executeRaw' })
@@ -239,26 +261,41 @@ test('PrismaClient unit tests', (t) => {
     })
   })
 
+  t.test('should not crash if it fails to parse prisma schema', (t) => {
+    const MockPrismaClient = getMockModule()
+    const prisma = { PrismaClient: MockPrismaClient }
+
+    initialize(agent, prisma, '@prisma/client', shim)
+    const client = new prisma.PrismaClient()
+    client._engine.datamodel = `
+      datasource db {
+      }
+    `
+
+    helper.runInTransaction(agent, async () => {
+      await client._executeRequest({ action: 'executeRaw' })
+      t.same(client[symbols.prismaConnection], {})
+      t.end()
+    })
+  })
+
   t.test('should work on 4.11.0', (t) => {
     const version = '4.11.0'
-    const MockPrismaClient = getMockModule(version)
+    const MockPrismaClient = getMockModule()
     const prisma = { PrismaClient: MockPrismaClient }
 
     shim.require.returns({ version })
     initialize(agent, prisma, '@prisma/client', shim)
     const client = new prisma.PrismaClient()
-    client._engine.library.getConfig.returns({
-      datasources: [
-        { provider: 'postgres', url: { value: 'postgresql://postgres:prisma@my-host:5436/db' } }
-      ]
-    })
+    client._engine.datamodel = `
+      datasource db {
+        provider = "postgres"
+        url = "postgresql://postgres:prisma@my-host:5436/db"
+      }
+    `
 
     helper.runInTransaction(agent, async (tx) => {
       await client._executeRequest({ clientMethod: 'user.create', action: 'create' })
-      // need this here to work around the fact inContext is typically sync
-      // but we use it as async. In normal behavior you will have more async
-      // work happening to where it will apply the instance configuration to the active segment accordingly but in unit tests this is wonky
-      await new Promise((resolve) => resolve())
       await client._executeRequest({
         args: [['select test from unit-test;']],
         action: 'executeRaw'
@@ -275,28 +312,6 @@ test('PrismaClient unit tests', (t) => {
         database_name: 'db'
       })
       t.same(firstSegment.getAttributes(), secondSegment.getAttributes())
-      t.end()
-    })
-  })
-
-  t.test('should not set connection params in 4.11.0+ if it fails to retrieve config', (t) => {
-    const version = '4.11.0'
-    const MockPrismaClient = getMockModule(version)
-    const prisma = { PrismaClient: MockPrismaClient }
-
-    shim.require.returns({ version })
-    initialize(agent, prisma, '@prisma/client', shim)
-    const client = new prisma.PrismaClient()
-    const err = new Error('i failed')
-    client._engine.library.getConfig.throws(err)
-
-    helper.runInTransaction(agent, async () => {
-      await client._executeRequest({ clientMethod: 'user.create', action: 'create' })
-      // need this here to work around the fact inContext is typically sync
-      // but we use it as async. In normal behavior you will have more async
-      // work happening to where it will apply the instance configuration to the active segment accordingly but in unit tests this is wonky
-      await new Promise((resolve) => resolve())
-      t.same(client[symbols.prismaConnection], {})
       t.end()
     })
   })
