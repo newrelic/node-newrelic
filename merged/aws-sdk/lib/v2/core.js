@@ -46,7 +46,7 @@ function wrapMakeRequest(shim, fn, name, request) {
   }
 
   const service = getServiceName(this)
-  const region = this.config && this.config.region
+  const region = this?.config?.region
   request.on('complete', function onAwsRequestComplete() {
     const httpRequest = request.httpRequest && request.httpRequest.stream
     const segment = shim.getSegment(httpRequest)
@@ -55,8 +55,8 @@ function wrapMakeRequest(shim, fn, name, request) {
       return
     }
 
-    const requestRegion = request.httpRequest.region
-    const requestId = request.response && request.response.requestId
+    const requestRegion = request?.httpRequest?.region
+    const requestId = request?.response?.requestId
 
     segment.addAttribute('aws.operation', request.operation || UNKNOWN)
     segment.addAttribute('aws.requestId', requestId || UNKNOWN)
