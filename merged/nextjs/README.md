@@ -5,8 +5,6 @@
 
 This is New Relic's official Next.js framework instrumentation for use with the New Relic [Node.js agent](https://github.com/newrelic/node-newrelic).
 
-This module is a dependency of the agent and is installed by default when you install the agent.
-
 This module provides instrumentation for server-side rendering via [getServerSideProps](https://nextjs.org/docs/basic-features/data-fetching/get-server-side-props), [middleware](https://nextjs.org/docs/middleware), and New Relic transaction naming for both page and server requests. It does not provide any instrumentation for actions occurring during build or in client-side code.  If you want telemetry data on actions occurring on the client (browser), you can [inject the browser agent](./docs/inject-browser-agent.md).
 
 Here are documents for more in-depth explanations about [transaction naming](./docs/transactions.md), [segments/spans](./docs/segments-and-spans.md), and [injecting the browser agent](./docs/inject-browser-agent.md).
@@ -15,9 +13,7 @@ Here are documents for more in-depth explanations about [transaction naming](./d
 
 ## Installation
 
-Typically, most users use the version auto-installed by the agent. You can see agent install instructions [here](https://github.com/newrelic/node-newrelic#installation-and-getting-started).
-
-In some cases, installing a specific version is ideal. For example, new features or major changes might be released via a major version update to this module, prior to inclusion in the main New Relic Node.js agent.
+Currently this package is not bundled with the agent, and must be installed as a standalone.  However, the package depends on the agent so you will get all the capabilities of the agent when loading this package.
 
 ```
 npm install @newrelic/next
