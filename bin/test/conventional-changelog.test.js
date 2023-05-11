@@ -53,7 +53,6 @@ const exampleCommit = {
 }
 
 const exampleMarkdown = `### v1.0.0 (2020-04-03)
-
 #### ⚠ BREAKING CHANGES
 
 * **thing:** updated Thing to prevent accidental modifications to inputs
