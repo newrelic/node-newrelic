@@ -62,6 +62,30 @@ In general, we try to limit adding third-party production dependencies. If one i
 
 We use eslint to enforce certain coding standards. Please see our [.eslintrc](./.eslintrc.js) file for specific rule configuration.
 
+### Commit Guidelines
+
+We use [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/) to format commit messages for this repository. Conventional Commits provide a standardized format for commit messages that allows for automatic generation of changelogs and easy tracking of changes.
+
+When contributing to this repository, please ensure that your commit messages adhere to the Conventional Commit guidelines. Specifically, your commit messages should:
+
+* Start with a type, indicating the kind of change being made (e.g. `feat` for a new feature, `fix` for a bugfix, etc.). The types we support are:
+  * `build`: changes that affect the build system or external dependencies
+  * `chore`: changes that do not modify source or test files
+  * `ci`: changes to our CI configuration files and scripts
+  * `docs`: documentation additions or updates
+  * `feat`: new features or capabilities added to the agent
+  * `fix`: bugfixes or corrections to existing functionality
+  * `perf`: performance improvements
+  * `refactor`: changes that do not add new feature or fix bugs, but improve code structure or readability
+  * `revert`: revert a previous commit
+  * `security`: changes related to the security of the agent, including the updating of dependencies due to CVE
+  * `style` - changes that do not affect the meaning of the code (e.g. formatting, white-space, etc.)
+  * `test` - adding new tests or modifying existing tests
+* Use the imperative, present tense (e.g. "add feature" instead of "added feature")
+* Optionally, include a scope in parantheses after the type to indicate which part of the repository is affected (e.g. `feat(instrumentation): add support for Prisma Client`)
+
+Please note that we only require commits to the main branch to adhere to our Conventional Commit standards. Commits to other branches or in forks may follow a different convention as long as they are clear and descriptive. We use the [Squash and Merge](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/incorporating-changes-from-a-pull-request/about-pull-request-merges#squash-and-merge-your-commits) method when merging Pull Requests into the main branch. This means that all commits in a Pull Request will be combined into a single commit before merging. The commit message for this single commit must be Conventional, and will be used in our automated release note generation process.
+
 ### Testing Guidelines
 
 The agent includes a suite of unit and functional tests which should be used to
