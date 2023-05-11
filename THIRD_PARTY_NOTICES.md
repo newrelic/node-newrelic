@@ -16,6 +16,7 @@ code, the source code can be found at [https://github.com/newrelic/node-newrelic
 
 * [@grpc/grpc-js](#grpcgrpc-js)
 * [@grpc/proto-loader](#grpcproto-loader)
+* [@mrleebo/prisma-ast](#mrleeboprisma-ast)
 * [@newrelic/aws-sdk](#newrelicaws-sdk)
 * [@newrelic/koa](#newrelickoa)
 * [@newrelic/superagent](#newrelicsuperagent)
@@ -502,6 +503,34 @@ This product includes source derived from [@grpc/proto-loader](https://github.co
    See the License for the specific language governing permissions and
    limitations under the License.
 
+```
+
+### @mrleebo/prisma-ast
+
+This product includes source derived from [@mrleebo/prisma-ast](https://github.com/MrLeebo/prisma-ast) ([v0.5.2](https://github.com/MrLeebo/prisma-ast/tree/v0.5.2)), distributed under the [MIT License](https://github.com/MrLeebo/prisma-ast/blob/v0.5.2/LICENSE):
+
+```
+MIT License
+
+Copyright (c) 2021 Jeremy Liberman
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
 ```
 
 ### @newrelic/aws-sdk
@@ -9417,7 +9446,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 ### testdouble
 
-This product includes source derived from [testdouble](https://github.com/testdouble/testdouble.js) ([v3.16.6](https://github.com/testdouble/testdouble.js/tree/v3.16.6)), distributed under the [MIT License](https://github.com/testdouble/testdouble.js/blob/v3.16.6/LICENSE.txt):
+This product includes source derived from [testdouble](https://github.com/testdouble/testdouble.js) ([v3.17.2](https://github.com/testdouble/testdouble.js/tree/v3.17.2)), distributed under the [MIT License](https://github.com/testdouble/testdouble.js/blob/v3.17.2/LICENSE.txt):
 
 ```
 The MIT License (MIT)

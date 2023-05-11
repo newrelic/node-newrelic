@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "Thu May 04 2023 11:13:33 GMT-0400 (Eastern Daylight Time)",
+  "lastUpdated": "Thu May 11 2023 16:39:40 GMT-0400 (Eastern Daylight Time)",
   "projectName": "New Relic Node Agent",
   "projectUrl": "https://github.com/newrelic/node-newrelic",
   "includeOptDeps": true,
@@ -55,6 +55,18 @@
       "licenseUrl": "https://github.com/grpc/grpc-node/blob/v0.7.5/LICENSE",
       "licenseTextSource": "file",
       "publisher": "Google Inc."
+    },
+    "@mrleebo/prisma-ast@0.5.2": {
+      "name": "@mrleebo/prisma-ast",
+      "version": "0.5.2",
+      "range": "^0.5.2",
+      "licenses": "MIT",
+      "repoUrl": "https://github.com/MrLeebo/prisma-ast",
+      "versionedRepoUrl": "https://github.com/MrLeebo/prisma-ast/tree/v0.5.2",
+      "licenseFile": "node_modules/@mrleebo/prisma-ast/LICENSE",
+      "licenseUrl": "https://github.com/MrLeebo/prisma-ast/blob/v0.5.2/LICENSE",
+      "licenseTextSource": "file",
+      "publisher": "Jeremy Liberman"
     },
     "@newrelic/aws-sdk@5.0.2": {
       "name": "@newrelic/aws-sdk",
@@ -722,15 +734,15 @@
       "publisher": "Bruce Williams",
       "email": "brwcodes@gmail.com"
     },
-    "testdouble@3.16.6": {
+    "testdouble@3.17.2": {
       "name": "testdouble",
-      "version": "3.16.6",
-      "range": "^3.16.6",
+      "version": "3.17.2",
+      "range": "3.17.2",
       "licenses": "MIT",
       "repoUrl": "https://github.com/testdouble/testdouble.js",
-      "versionedRepoUrl": "https://github.com/testdouble/testdouble.js/tree/v3.16.6",
+      "versionedRepoUrl": "https://github.com/testdouble/testdouble.js/tree/v3.17.2",
       "licenseFile": "node_modules/testdouble/LICENSE.txt",
-      "licenseUrl": "https://github.com/testdouble/testdouble.js/blob/v3.16.6/LICENSE.txt",
+      "licenseUrl": "https://github.com/testdouble/testdouble.js/blob/v3.17.2/LICENSE.txt",
       "licenseTextSource": "file",
       "publisher": "Justin Searls",
       "email": "justin@testdouble.com",
