@@ -67,8 +67,10 @@ async function createReleaseNotesPr() {
     logStep('Get Release Notes from File')
     const { body, releaseDate } = await getReleaseNotes(version, options.changelog)
 
-    logStep('Set up docs repo')
-    await cloneDocsRepo(options.repoPath, repoOwner)
+    if (!fs.existsSync(options.repoPath)) {
+      logStep('Clone docs repo')
+      await cloneDocsRepo(options.repoPath, repoOwner)
+    }
 
     logStep('Branch Creation')
     const branchName = await createBranch(options.repoPath, version, options.dryRun)
