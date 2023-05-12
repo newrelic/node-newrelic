@@ -15,6 +15,7 @@ on:
         default: NEWS.md
       use_new_release:
         description: Whether or not to use the new conventional commit release note workflow
+        type: boolean
         required: false
         default: false
 
