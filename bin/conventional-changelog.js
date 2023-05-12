@@ -114,27 +114,43 @@ class ConventionalChangelog {
   }
 
   /**
+   * Helper method to strip out the PR links that Github
+   * likes to add to the end of commit messages when
+   * using squash and merge
+   *
+   * Also since we're already manipulating the string,
+   * use .trim() to strip any trailing or leading whitespace
+   *
+   * @param {string} subject commit message header
+   * @returns {string} the commit message header with any PR links removed and whitespace trimmed
+   */
+  removePrLinks(subject) {
+    return subject.replace(/\(\#\d+\)$/, '').trim()
+  }
+
+  /**
    * Function for generating our front-matter content in a machine readable format
    *
    * @param {object[]} commits list of conventional commits
    * @returns {object} the entry to add to the JSON changelog
    */
   generateJsonChangelog(commits) {
+    const self = this
     const securityChanges = []
     const bugfixChanges = []
     const featureChanges = []
 
     commits.forEach((commit) => {
       if (commit.type === 'security') {
-        securityChanges.push(commit.subject)
+        securityChanges.push(self.removePrLinks(commit.subject))
       }
 
       if (commit.type === 'fix') {
-        bugfixChanges.push(commit.subject)
+        bugfixChanges.push(self.removePrLinks(commit.subject))
       }
 
       if (commit.type === 'feat') {
-        featureChanges.push(commit.subject)
+        featureChanges.push(self.removePrLinks(commit.subject))
       }
     })
 
