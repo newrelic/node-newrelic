@@ -35,6 +35,11 @@ program.option(
   'Path to the docs-website fork on local machine',
   '/tmp/docs-website'
 )
+program.option(
+  '--front-matter-file <json file>',
+  'Name of changelog(defaults to changelog.json)',
+  'changelog.json'
+)
 
 program.option('--repo-owner <owner>', 'Owner of the target repo', 'newrelic')
 
@@ -66,6 +71,7 @@ async function createReleaseNotesPr() {
     validateTag(version, options.force)
     logStep('Get Release Notes from File')
     const { body, releaseDate } = await getReleaseNotes(version, options.changelog)
+    const frontmatter = await getFrontMatter(version, options.frontMatterFile)
 
     if (!fs.existsSync(options.repoPath)) {
       logStep('Clone docs repo')
@@ -75,7 +81,7 @@ async function createReleaseNotesPr() {
     logStep('Branch Creation')
     const branchName = await createBranch(options.repoPath, version, options.dryRun)
     logStep('Format release notes file')
-    const releaseNotesBody = formatReleaseNotes(releaseDate, version, body)
+    const releaseNotesBody = formatReleaseNotes(releaseDate, version, body, frontmatter)
     logStep('Create Release Notes')
     await addReleaseNotesFile(releaseNotesBody, version)
     logStep('Commit Release Notes')
@@ -124,7 +130,7 @@ async function getReleaseNotes(version, releaseNotesFile) {
 
   const data = await readReleaseNoteFile(releaseNotesFile)
 
-  const sections = data.split('### ')
+  const sections = data.split(/^### /m)
   // Iterate over all past releases to find the version we want
   const versionChangeLog = sections.find((section) => section.startsWith(version))
   // e.g. v7.1.2 (2021-02-24)\n\n
@@ -133,6 +139,33 @@ async function getReleaseNotes(version, releaseNotesFile) {
   const [, releaseDate] = headingRegex.exec(versionChangeLog)
 
   return { body, releaseDate }
+}
+
+/**
+ * Pulls the necessary frontmatter content for the given version
+ * from our JSON based changelog
+ *
+ * @param {string} tagName version tag name
+ * @param {string} frontMatterFile JSON changelog file
+ * @returns {object} frontmatter hash containing security, bugfix and feature lists
+ */
+async function getFrontMatter(tagName, frontMatterFile) {
+  console.log(`Retrieving release notes from file: ${frontMatterFile}`)
+
+  const version = tagName.replace('v', '')
+  const data = await readReleaseNoteFile(frontMatterFile)
+  const changelog = JSON.parse(data)
+  const frontmatter = changelog.entries.find((entry) => entry.version === version)
+
+  if (!frontmatter) {
+    throw new Error(`Unable to find ${version} entry in ${frontMatterFile}`)
+  }
+
+  return {
+    security: JSON.stringify(frontmatter.changes.security),
+    bugfixes: JSON.stringify(frontmatter.changes.bugfixes),
+    features: JSON.stringify(frontmatter.changes.features)
+  }
 }
 
 /**
@@ -155,8 +188,8 @@ async function readReleaseNoteFile(file) {
 /**
  * Clones docs repo
  *
- * @param repoPath
- * @param repoOwner
+ * @param {string} repoPath where to checkout the repo
+ * @param {string} repoOwner Github organization/owner name
  * @returns {boolean} success or failure
  */
 async function cloneDocsRepo(repoPath, repoOwner) {
@@ -198,15 +231,19 @@ async function createBranch(filePath, version, dryRun) {
  * @param {string} releaseDate date the release was created
  * @param {string} version version number
  * @param {string} body list of changes
+ * @param {object} frontmatter agent version metadata information about the release
  * @returns {string} appropriately formatted release notes
  */
-function formatReleaseNotes(releaseDate, version, body) {
+function formatReleaseNotes(releaseDate, version, body, frontmatter) {
   const releaseNotesBody = [
     '---',
     'subject: Node.js agent',
     `releaseDate: '${releaseDate}'`,
     `version: ${version.substr(1)}`, // remove the `v` from start of version
     `downloadLink: 'https://www.npmjs.com/package/newrelic'`,
+    `security: ${frontmatter.security}`,
+    `bugs: ${frontmatter.bugfixes}`,
+    `features: ${frontmatter.features}`,
     '---',
     '',
     '## Notes',
@@ -284,13 +321,16 @@ async function createPR(version, branch, dryRun, repoOwner) {
   }
 
   const github = new Github(repoOwner, 'docs-website')
-  const title = `Node.js Agent ${version} Release Notes`
+  const title = `chore: add Node.js Agent ${version} Release Notes`
   const head = repoOwner === `newrelic` ? branch : `${repoOwner}:${branch}`
+  const body =
+    'This is an automated PR generated when the Node.js agent is released. Please merge as soon as possible.'
+
   const prOptions = {
     head,
     base: BASE_BRANCH,
     title,
-    body: title
+    body
   }
 
   console.log(`Creating PR with following options: ${JSON.stringify(prOptions)}\n\n`)
@@ -326,4 +366,17 @@ function logStep(step) {
   console.log(`\n ----- [Step]: ${step} -----\n`)
 }
 
-createReleaseNotesPr()
+/*
+ * Exports slightly differ for tests vs. Github Actions
+ * this allows us to require the function without it executing for tests,
+ * and executing via `node` cli in GHA
+ */
+if (require.main === module) {
+  createReleaseNotesPr()
+} else {
+  module.exports = {
+    getReleaseNotes,
+    getFrontMatter,
+    formatReleaseNotes
+  }
+}

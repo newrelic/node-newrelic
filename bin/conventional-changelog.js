@@ -114,27 +114,43 @@ class ConventionalChangelog {
   }
 
   /**
+   * Helper method to strip out the PR links that Github
+   * likes to add to the end of commit messages when
+   * using squash and merge
+   *
+   * Also since we're already manipulating the string,
+   * use .trim() to strip any trailing or leading whitespace
+   *
+   * @param {string} subject commit message header
+   * @returns {string} the commit message header with any PR links removed and whitespace trimmed
+   */
+  removePrLinks(subject) {
+    return subject.replace(/\(\#\d+\)$/, '').trim()
+  }
+
+  /**
    * Function for generating our front-matter content in a machine readable format
    *
    * @param {object[]} commits list of conventional commits
    * @returns {object} the entry to add to the JSON changelog
    */
   generateJsonChangelog(commits) {
+    const self = this
     const securityChanges = []
     const bugfixChanges = []
     const featureChanges = []
 
     commits.forEach((commit) => {
       if (commit.type === 'security') {
-        securityChanges.push(commit.subject)
+        securityChanges.push(self.removePrLinks(commit.subject))
       }
 
       if (commit.type === 'fix') {
-        bugfixChanges.push(commit.subject)
+        bugfixChanges.push(self.removePrLinks(commit.subject))
       }
 
       if (commit.type === 'feat') {
-        featureChanges.push(commit.subject)
+        featureChanges.push(self.removePrLinks(commit.subject))
       }
     })
 
@@ -214,9 +230,8 @@ class ConventionalChangelog {
    * @param {string} markdownFile path to the markdown file to update, defaults to NEWS.md
    * @returns {void}
    */
-  async writeMarkdownChangelog(newEntry, markdownFile = '../NEWS.md') {
-    const filename = path.resolve(__dirname, markdownFile)
-    const changelog = await readFile(filename, 'utf-8')
+  async writeMarkdownChangelog(newEntry, markdownFile = 'NEWS.md') {
+    const changelog = await readFile(markdownFile, 'utf-8')
 
     const heading = `### v${this.newVersion}`
 
@@ -225,7 +240,7 @@ class ConventionalChangelog {
       return
     }
 
-    await writeFile(filename, `${newEntry}\n${changelog}`, 'utf-8')
+    await writeFile(markdownFile, `${newEntry}\n${changelog}`, 'utf-8')
   }
 
   /**
@@ -237,9 +252,8 @@ class ConventionalChangelog {
    * @param {string} jsonFile path to the markdown file to update, defaults to changelog.json
    * @returns {void}
    */
-  async writeJsonChangelog(newEntry, jsonFile = '../changelog.json') {
-    const filename = path.resolve(__dirname, jsonFile)
-    const rawChangelog = await readFile(filename, 'utf-8')
+  async writeJsonChangelog(newEntry, jsonFile = 'changelog.json') {
+    const rawChangelog = await readFile(jsonFile, 'utf-8')
     const changelog = JSON.parse(rawChangelog)
 
     if (changelog.entries.find((entry) => entry.version === this.newVersion)) {
@@ -248,7 +262,7 @@ class ConventionalChangelog {
     }
 
     changelog.entries.unshift(newEntry)
-    await writeFile(filename, JSON.stringify(changelog, null, 2), 'utf-8')
+    await writeFile(jsonFile, JSON.stringify(changelog, null, 2), 'utf-8')
   }
 }
 

@@ -10,11 +10,11 @@ const fs = require('fs')
 const { program, Option } = require('commander')
 
 const Github = require('./github')
+const ConventionalChangelog = require('./conventional-changelog')
 const git = require('./git-commands')
 const npm = require('./npm-commands')
 
 const PROPOSED_NOTES_HEADER = 'Proposed Release Notes'
-
 const FORCE_RUN_DEAFULT_REMOTE = 'origin'
 
 // Add command line options
@@ -38,6 +38,7 @@ program.option(
   'Repo to work against(Defaults to newrelic/node-newrelic)',
   'newrelic/node-newrelic'
 )
+program.option('--use-new-release', 'use new conventional commit release note process')
 
 function stopOnError(err) {
   if (err) {
@@ -52,29 +53,29 @@ function logStep(step) {
   console.log(`\n ----- [Step]: ${step} -----\n`)
 }
 
+async function isValid(options) {
+  if (options.force) {
+    console.log('--force set. Skipping validation logic')
+    return true
+  }
+  const startingBranch = options.branch.replace('refs/heads/', '')
+  return (
+    (await validateRemote(options.remote)) &&
+    (await validateLocalChanges()) &&
+    (await validateCurrentBranch(startingBranch))
+  )
+}
+
 async function prepareReleaseNotes() {
   // Parse commandline options inputs
   program.parse()
-
   const options = program.opts()
   console.log('Script running with following options: ', JSON.stringify(options))
   const [owner, repo] = options.repo.split('/')
 
   logStep('Validation')
 
-  if (options.force) {
-    console.log('--force set. Skipping validation logic')
-  }
-
-  const startingBranch = options.branch.replace('refs/heads/', '')
-
-  const isValid =
-    options.force ||
-    ((await validateRemote(options.remote)) &&
-      (await validateLocalChanges()) &&
-      (await validateCurrentBranch(startingBranch)))
-
-  if (!isValid) {
+  if (!(await isValid(options))) {
     console.log('Invalid configuration. Halting script.')
     stopOnError()
   }
@@ -115,10 +116,21 @@ async function prepareReleaseNotes() {
       await git.commit(`Setting version to ${version}.`)
     }
 
-    logStep('Create Release Notes')
-
-    const releaseData = await generateReleaseNotes(owner, repo)
-    await updateReleaseNotesFile(options.changelog, version, releaseData.notes)
+    let releaseData
+    if (options.useNewRelease) {
+      logStep('Create Release Notes - Conventional Commit based')
+      const [markdown] = await generateConventionalReleaseNotes(
+        owner,
+        repo,
+        packageInfo.version,
+        options.changelog
+      )
+      releaseData = markdown
+    } else {
+      logStep('Create Release Notes')
+      releaseData = await generateReleaseNotes(owner, repo)
+      await updateReleaseNotesFile(options.changelog, version, releaseData.notes)
+    }
 
     if (options.dryRun) {
       console.log('\nDry run indicated (--dry-run), skipping remaining steps.')
@@ -149,8 +161,18 @@ async function prepareReleaseNotes() {
 
     console.log('Creating draft PR with new release notes for repo owner: ', owner)
     const remoteApi = new Github(owner, repo)
-    const title = `Release ${version}`
-    const body = getFormattedPrBody(releaseData)
+
+    let title
+    let body
+
+    if (options.useNewRelease) {
+      title = `chore: release ${version}`
+      body = releaseData
+    } else {
+      title = `Release ${version}`
+      body = getFormattedPrBody(releaseData)
+    }
+
     const prOptions = {
       head: newBranchName,
       base: 'main',
@@ -289,6 +311,40 @@ async function generateReleaseNotes(owner, repo) {
   )
 }
 
+/**
+ * Function for generating and writing our release notes based on Conventional Commits
+ *
+ * @param {string} owner github repo org
+ * @param {string} repo github repo name
+ * @param {string} newVersion version to be published
+ * @param {string} markdownChangelog filepath of markdown changelog
+ */
+async function generateConventionalReleaseNotes(owner, repo, newVersion, markdownChangelog) {
+  const github = new Github(owner, repo)
+  const latestRelease = await github.getLatestRelease()
+
+  const changelog = new ConventionalChangelog({
+    org: owner,
+    repo,
+    newVersion,
+    previousVersion: latestRelease.tag_name.replace('v', '')
+  })
+
+  const commits = await changelog.getFormattedCommits()
+
+  const [markdown, json] = await Promise.all([
+    changelog.generateMarkdownChangelog(commits),
+    changelog.generateJsonChangelog(commits)
+  ])
+
+  await Promise.all([
+    changelog.writeMarkdownChangelog(markdown, markdownChangelog),
+    changelog.writeJsonChangelog(json)
+  ])
+
+  return [markdown, json]
+}
+
 function generateUnformattedNotes(originalNotes) {
   let unformattedNotes = originalNotes
 
@@ -350,4 +406,16 @@ function getFormattedPrBody(data) {
   ].join('\n')
 }
 
-prepareReleaseNotes()
+/*
+ * Exports slightly differ for tests vs. Github Actions
+ * this allows us to require the function without it executing for tests,
+ * and executing via `node` cli in GHA
+ */
+if (require.main === module) {
+  prepareReleaseNotes()
+} else {
+  module.exports = {
+    generateConventionalReleaseNotes,
+    isValid
+  }
+}

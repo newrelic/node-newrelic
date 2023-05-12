@@ -53,7 +53,6 @@ const exampleCommit = {
 }
 
 const exampleMarkdown = `### v1.0.0 (2020-04-03)
-
 #### ⚠ BREAKING CHANGES
 
 * **thing:** updated Thing to prevent accidental modifications to inputs
@@ -187,10 +186,10 @@ tap.test('Conventional Changelog Class', (testHarness) => {
 
   testHarness.test('generateJsonChangelog - should create the new JSON changelog entry', (t) => {
     const commits = [
-      { type: 'fix', subject: 'Fixed issue one' },
-      { type: 'fix', subject: 'Fixed issue two' },
-      { type: 'feat', subject: 'Added something new' },
-      { type: 'security', subject: 'Bumped some dep' }
+      { type: 'fix', subject: 'Fixed issue one (#1234)' },
+      { type: 'fix', subject: ' Fixed issue two' },
+      { type: 'feat', subject: 'Added something new ' },
+      { type: 'security', subject: ' Bumped some dep (#4567)' }
     ]
     const changelog = new ConventionalChangelog({ newVersion: '1.0.0', previousVersion: '0.9.0' })
 
