@@ -2,7 +2,7 @@
 
 #### Bug Fixes
 
-* updated prisma instrumentation to properly parse database connection strings that work across all versions of prisma ([#1634](https://github.com/newrelic/node-newrelic/issues/1634))
+* updated prisma instrumentation to properly parse database connection strings that work across all versions of prisma
   ([#1634](https://github.com/newrelic/node-newrelic/pull/1634))
   ([b2101fd](https://github.com/newrelic/node-newrelic/commit/b2101fd606af43093b9caf525dbef9e122f6ca7e))
 
@@ -14,34 +14,31 @@
 
 #### Documentation
 
-* update Contribution Guide with Conventional Commit info ([#1635](https://github.com/newrelic/node-newrelic/issues/1635))
+* update Contribution Guide with Conventional Commit info
   ([#1635](https://github.com/newrelic/node-newrelic/pull/1635))
   ([f1a00e5](https://github.com/newrelic/node-newrelic/commit/f1a00e5cc4c907d046bc1f5205082761f620ecf1))
 
 #### Miscellaneous Chores
 
-* pin testdobule to 3.17.2 as 3.18.0 no longer works on node 14 ([#1628](https://github.com/newrelic/node-newrelic/issues/1628))
+* pin testdobule to 3.17.2 as 3.18.0 no longer works on node 14
   ([#1628](https://github.com/newrelic/node-newrelic/pull/1628))
-  ([d68bd9f](https://github.com/newrelic/node-newrelic/commit/d68bd9fa3f6af974b5c978b61732491294b2e5cf)), closes [3180](https://github.com/newrelic/node-newrelic/issues/3180)
-* remove release-please workflow and scripts ([#1624](https://github.com/newrelic/node-newrelic/issues/1624))
+  ([d68bd9f](https://github.com/newrelic/node-newrelic/commit/d68bd9fa3f6af974b5c978b61732491294b2e5cf))
+* remove release-please workflow and scripts
   ([#1624](https://github.com/newrelic/node-newrelic/pull/1624))
-  ([80f7eb8](https://github.com/newrelic/node-newrelic/commit/80f7eb88a4f71e44b4413e3b39c5766046e9ec8a)), closes [1623](https://github.com/newrelic/node-newrelic/issues/1623)
+  ([80f7eb8](https://github.com/newrelic/node-newrelic/commit/80f7eb88a4f71e44b4413e3b39c5766046e9ec8a))
 
 #### Tests
 
-* pin prisma to < 4.14.0 until we fix instrumentation ([#1631](https://github.com/newrelic/node-newrelic/issues/1631))
+* pin prisma to 4.14.0 until we fix instrumentation
   ([#1631](https://github.com/newrelic/node-newrelic/pull/1631))
   ([a60659d](https://github.com/newrelic/node-newrelic/commit/a60659d6929be559854d01c83028d5acfbcd3603))
-* **scripts:** fix failing changelog unit test ([#1626](https://github.com/newrelic/node-newrelic/issues/1626))
+* **scripts:** fix failing changelog unit test
   ([#1626](https://github.com/newrelic/node-newrelic/pull/1626))
   ([08f48b3](https://github.com/newrelic/node-newrelic/commit/08f48b33ce1c402e4a8c42c9c02e5b22e6cbe02a))
-* **config:** add more test coverage for invalid configs
-  ([#1625](https://github.com/newrelic/node-newrelic/pull/1625))
-  ([ec50add](https://github.com/newrelic/node-newrelic/commit/ec50addfc38052a18603057c1f29ab5bf13c54d6))
 * **config:** increase test coverage
   ([#1625](https://github.com/newrelic/node-newrelic/pull/1625))
   ([67f39d8](https://github.com/newrelic/node-newrelic/commit/67f39d8dc89e627d27c7fd9a9cee1ac14ab816e3))
-* **config:** revert changes to lib/config/index.js ([#1630](https://github.com/newrelic/node-newrelic/issues/1630))
+* **config:** revert changes to lib/config/index.js
   ([#1630](https://github.com/newrelic/node-newrelic/pull/1630))
   ([fea1068](https://github.com/newrelic/node-newrelic/commit/fea1068281d9ce8ae966b47923aba6ecef894bc8))
 
@@ -50,22 +47,22 @@
 * changed versioned tests script to use SKIP_C8
   ([#1621](https://github.com/newrelic/node-newrelic/pull/1621))
   ([83e95e3](https://github.com/newrelic/node-newrelic/commit/83e95e31365cd4d48c7ee1dbb789b58231841e41))
-* add --use-new-release functionality ([#1633](https://github.com/newrelic/node-newrelic/issues/1633))
+* add --use-new-release functionality
   ([#1633](https://github.com/newrelic/node-newrelic/pull/1633))
   ([d97b421](https://github.com/newrelic/node-newrelic/commit/d97b421be5acda61f0212fd49a433e58811fc27c))
-* add ability to generate release notes from conventional commits ([#1623](https://github.com/newrelic/node-newrelic/issues/1623))
+* add ability to generate release notes from conventional commits
   ([#1623](https://github.com/newrelic/node-newrelic/pull/1623))
   ([880a88b](https://github.com/newrelic/node-newrelic/commit/880a88b6e816b8cd2694a16bfe74b37fc42231ab))
-* **create-docs-pr:** Set username/email to machine user by default ([#1627](https://github.com/newrelic/node-newrelic/issues/1627))
+* **create-docs-pr:** Set username/email to machine user by default
   ([#1627](https://github.com/newrelic/node-newrelic/pull/1627))
   ([3870a1f](https://github.com/newrelic/node-newrelic/commit/3870a1ff9979e6afde669c69c443d657f1f37af9))
-* fix issue with missing type in the prep-release ([#1638](https://github.com/newrelic/node-newrelic/issues/1638))
+* fix issue with missing type in the prep-release
   ([#1638](https://github.com/newrelic/node-newrelic/pull/1638))
   ([9a906e8](https://github.com/newrelic/node-newrelic/commit/9a906e8e833753808ab779fdf4074aa7c90cd1fa))
-* update prep-release to fetch entire history of caller repo ([#1641](https://github.com/newrelic/node-newrelic/issues/1641))
+* update prep-release to fetch entire history of caller repo
   ([#1641](https://github.com/newrelic/node-newrelic/pull/1641))
   ([428174a](https://github.com/newrelic/node-newrelic/commit/428174afd6cca482382101316b4d03c2f96f9f95))
-* update to conditionally add CLI flag to prep-release ([#1640](https://github.com/newrelic/node-newrelic/issues/1640))
+* update to conditionally add CLI flag to prep-release
   ([#1640](https://github.com/newrelic/node-newrelic/pull/1640))
   ([b167c93](https://github.com/newrelic/node-newrelic/commit/b167c932659cbba073827a6936b65c0aeee98d8a))
 
