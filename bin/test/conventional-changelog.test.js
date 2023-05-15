@@ -23,15 +23,15 @@ const exampleJson = {
 const exampleCommit = {
   type: 'fix',
   scope: 'thing',
-  subject: 'updated Thing to prevent accidental modifications to inputs',
+  subject: 'updated Thing to prevent modifications to inputs',
   merge: null,
-  header: 'fix(thing)!: updated Thing to prevent accidental modifications to inputs',
+  header: 'fix(thing)!: updated Thing to prevent modifications to inputs',
   body: 'Thing no longer mutates provided inputs, but instead clones inputs before performing modifications. Thing will now always return an entirely new output',
   footer: 'Fixes #1234, contributed by @someone',
   notes: [
     {
       title: 'BREAKING CHANGE',
-      text: 'updated Thing to prevent accidental modifications to inputs'
+      text: 'updated Thing to prevent modifications to inputs'
     }
   ],
   references: [
@@ -55,12 +55,11 @@ const exampleCommit = {
 const exampleMarkdown = `### v1.0.0 (2020-04-03)
 #### ⚠ BREAKING CHANGES
 
-* **thing:** updated Thing to prevent accidental modifications to inputs
+* **thing:** updated Thing to prevent modifications to inputs
 
 #### Bug Fixes
 
-* **thing:** updated Thing to prevent accidental modifications to inputs
-  ([#123](https://github.com/newrelic/node-newrelic/pull/123)), closes [1234](https://github.com/newrelic/node-newrelic/issues/1234)
+* **thing:** updated Thing to prevent modifications to inputs ([#123](https://github.com/newrelic/node-newrelic/pull/123)), closes [1234](https://github.com/newrelic/node-newrelic/issues/1234)
     * Thing no longer mutates provided inputs, but instead clones inputs before performing modifications. Thing will now always return an entirely new output
 `
 
@@ -135,7 +134,7 @@ tap.test('Conventional Changelog Class', (testHarness) => {
     })
     mockGitLog.push(
       [
-        'fix(thing)!: updated Thing to prevent accidental modifications to inputs',
+        'fix(thing)!: updated Thing to prevent modifications to inputs (#123)',
         'Thing no longer mutates provided inputs, but instead clones inputs before performing modifications. Thing will now always return an entirely new output',
         'Fixes #1234, contributed by @someone'
       ].join('\n')
@@ -186,10 +185,10 @@ tap.test('Conventional Changelog Class', (testHarness) => {
 
   testHarness.test('generateJsonChangelog - should create the new JSON changelog entry', (t) => {
     const commits = [
-      { type: 'fix', subject: 'Fixed issue one (#1234)' },
-      { type: 'fix', subject: ' Fixed issue two' },
-      { type: 'feat', subject: 'Added something new ' },
-      { type: 'security', subject: ' Bumped some dep (#4567)' }
+      { type: 'fix', subject: 'Fixed issue one' },
+      { type: 'fix', subject: 'Fixed issue two' },
+      { type: 'feat', subject: 'Added something new' },
+      { type: 'security', subject: 'Bumped some dep' }
     ]
     const changelog = new ConventionalChangelog({ newVersion: '1.0.0', previousVersion: '0.9.0' })
 
