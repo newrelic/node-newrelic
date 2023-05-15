@@ -15,9 +15,8 @@ on:
         default: NEWS.md
       use_new_release:
         description: Whether or not to use the new conventional commit release note workflow
-        type: boolean
+        type: string
         required: false
-        default: false
 
 jobs:
   generate-release-notes:
@@ -46,6 +45,6 @@ jobs:
         git config user.name $GITHUB_ACTOR
         git config user.email gh-actions-${GITHUB_ACTOR}@github.com
     - name: Create Release Notes
-      run: node ./agent-repo/bin/prepare-release.js --release-type ${{ inputs.release_type }} --branch ${{ github.ref }} --repo ${{ github.repository }} --changelog ${{ inputs.changelog_file }} --use-new-release ${{ inputs.use_new_release }}
+      run: node ./agent-repo/bin/prepare-release.js --release-type ${{ inputs.release_type }} --branch ${{ github.ref }} --repo ${{ github.repository }} --changelog ${{ inputs.changelog_file }} ${{ inputs.use_new_release == 'true' && '--use-new-release' || '' }}
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
