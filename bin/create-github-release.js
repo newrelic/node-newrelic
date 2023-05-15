@@ -84,7 +84,7 @@ async function getReleaseNotes(tagName, releaseNotesFile) {
     throw new Error(`Current tag (${currentVersionHeader}) not first line of release notes.`)
   }
 
-  const sections = data.split('### ', 2)
+  const sections = data.split(/^### /m, 2)
   if (sections.length !== 2) {
     throw new Error('Did not split into multiple sections. Double check notes format.')
   }
