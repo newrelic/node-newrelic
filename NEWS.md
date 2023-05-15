@@ -2,30 +2,15 @@
 
 #### Bug Fixes
 
-* changed versioned tests script to use SKIP_C8
-  ([#1621](https://github.com/newrelic/node-newrelic/pull/1621))
-  ([83e95e3](https://github.com/newrelic/node-newrelic/commit/83e95e31365cd4d48c7ee1dbb789b58231841e41))
-* **config:** add more test coverage for invalid configs
-  ([#1625](https://github.com/newrelic/node-newrelic/pull/1625))
-  ([ec50add](https://github.com/newrelic/node-newrelic/commit/ec50addfc38052a18603057c1f29ab5bf13c54d6))
-* **config:** increase test coverage
-  ([#1625](https://github.com/newrelic/node-newrelic/pull/1625))
-  ([67f39d8](https://github.com/newrelic/node-newrelic/commit/67f39d8dc89e627d27c7fd9a9cee1ac14ab816e3))
-    * Also removes some dead code that isn't covered because it's dead.
-* **config:** revert changes to lib/config/index.js ([#1630](https://github.com/newrelic/node-newrelic/issues/1630))
-  ([#1630](https://github.com/newrelic/node-newrelic/pull/1630))
-  ([fea1068](https://github.com/newrelic/node-newrelic/commit/fea1068281d9ce8ae966b47923aba6ecef894bc8))
-    * These changes broke smoke tests.
 * updated prisma instrumentation to properly parse database connection strings that work across all versions of prisma ([#1634](https://github.com/newrelic/node-newrelic/issues/1634))
   ([#1634](https://github.com/newrelic/node-newrelic/pull/1634))
   ([b2101fd](https://github.com/newrelic/node-newrelic/commit/b2101fd606af43093b9caf525dbef9e122f6ca7e))
 
 #### Code Refactoring
 
-* **run-versioned-tests.sh:** added ability to run versioned tests and skip collecting coverage by passing in `C8` env var to the job.
+* **run-versioned-tests.sh:** added ability to run versioned tests and skip collecting coverage by passing in `SKIP_C8` env var to the job.
   ([#1621](https://github.com/newrelic/node-newrelic/pull/1621))
   ([0ba9dcb](https://github.com/newrelic/node-newrelic/commit/0ba9dcb38654a8363732c558a0310df7bd032ab1))
-    *  * Updates `.c8rc.json` to remove redundant html reporter as lcov does both lcov and html.
 
 #### Documentation
 
@@ -38,7 +23,6 @@
 * pin testdobule to 3.17.2 as 3.18.0 no longer works on node 14 ([#1628](https://github.com/newrelic/node-newrelic/issues/1628))
   ([#1628](https://github.com/newrelic/node-newrelic/pull/1628))
   ([d68bd9f](https://github.com/newrelic/node-newrelic/commit/d68bd9fa3f6af974b5c978b61732491294b2e5cf)), closes [3180](https://github.com/newrelic/node-newrelic/issues/3180)
-    * <!-- Thank you for submitting a Pull Request.  This code is leveraged to monitor critical services. Please consider the following: * Tests are required. * Performance matters. * Features that are specific to just your app are unlikely to make it in.  Please fill out the relevant sections as follows: * Proposed Release Notes: Bulleted list of recommended release notes for the change(s). * Links: Any relevant links for the change. * Details: In-depth description of changes, other technical notes, etc. -->  ## Proposed Release Notes  ## Links  ## Details We have to pin `testdouble` until we drop support for node 14.
 * remove release-please workflow and scripts ([#1624](https://github.com/newrelic/node-newrelic/issues/1624))
   ([#1624](https://github.com/newrelic/node-newrelic/pull/1624))
   ([80f7eb8](https://github.com/newrelic/node-newrelic/commit/80f7eb88a4f71e44b4413e3b39c5766046e9ec8a)), closes [1623](https://github.com/newrelic/node-newrelic/issues/1623)
@@ -51,17 +35,27 @@
 * **scripts:** fix failing changelog unit test ([#1626](https://github.com/newrelic/node-newrelic/issues/1626))
   ([#1626](https://github.com/newrelic/node-newrelic/pull/1626))
   ([08f48b3](https://github.com/newrelic/node-newrelic/commit/08f48b33ce1c402e4a8c42c9c02e5b22e6cbe02a))
-    * The markdown changelog is generated with a date, updated test harness to use Sinon's fake timers feature to lock the clock to a specific date so our assertion doesn't have to change every day.
+* **config:** add more test coverage for invalid configs
+  ([#1625](https://github.com/newrelic/node-newrelic/pull/1625))
+  ([ec50add](https://github.com/newrelic/node-newrelic/commit/ec50addfc38052a18603057c1f29ab5bf13c54d6))
+* **config:** increase test coverage
+  ([#1625](https://github.com/newrelic/node-newrelic/pull/1625))
+  ([67f39d8](https://github.com/newrelic/node-newrelic/commit/67f39d8dc89e627d27c7fd9a9cee1ac14ab816e3))
+* **config:** revert changes to lib/config/index.js ([#1630](https://github.com/newrelic/node-newrelic/issues/1630))
+  ([#1630](https://github.com/newrelic/node-newrelic/pull/1630))
+  ([fea1068](https://github.com/newrelic/node-newrelic/commit/fea1068281d9ce8ae966b47923aba6ecef894bc8))
 
 #### Continuous Integration
 
+* changed versioned tests script to use SKIP_C8
+  ([#1621](https://github.com/newrelic/node-newrelic/pull/1621))
+  ([83e95e3](https://github.com/newrelic/node-newrelic/commit/83e95e31365cd4d48c7ee1dbb789b58231841e41))
 * add --use-new-release functionality ([#1633](https://github.com/newrelic/node-newrelic/issues/1633))
   ([#1633](https://github.com/newrelic/node-newrelic/pull/1633))
   ([d97b421](https://github.com/newrelic/node-newrelic/commit/d97b421be5acda61f0212fd49a433e58811fc27c))
 * add ability to generate release notes from conventional commits ([#1623](https://github.com/newrelic/node-newrelic/issues/1623))
   ([#1623](https://github.com/newrelic/node-newrelic/pull/1623))
   ([880a88b](https://github.com/newrelic/node-newrelic/commit/880a88b6e816b8cd2694a16bfe74b37fc42231ab))
-    * ci: script to generate release notes from commits  Created the ConventionalChangelog class, which has methods for parsing conventional commits from the git log, as well as methods for generating JSON and Markdown changelogs. JSON changelogs will be used by the docs-website PR script to generate the front-matter for Agent Version Metadata service. Markdown changelogs are for our own documentation and for customers to read
 * **create-docs-pr:** Set username/email to machine user by default ([#1627](https://github.com/newrelic/node-newrelic/issues/1627))
   ([#1627](https://github.com/newrelic/node-newrelic/pull/1627))
   ([3870a1f](https://github.com/newrelic/node-newrelic/commit/3870a1ff9979e6afde669c69c443d657f1f37af9))
