@@ -1,4 +1,19 @@
 {
-    "repository": "newrelic/node-newrelic",
-    "entries": []
+  "repository": "newrelic/node-newrelic",
+  "entries": [
+    {
+      "version": "10.1.1",
+      "changes": {
+        "security": [],
+        "bugfixes": [
+          "updated prisma instrumentation to properly parse database connection strings that work across all versions of prisma",
+          "revert changes to lib/config/index.js",
+          "add more test coverage for invalid configs",
+          "changed versioned tests script to use SKIP_C8",
+          "increase test coverage"
+        ],
+        "features": []
+      }
+    }
+  ]
 }
