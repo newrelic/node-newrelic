@@ -19,7 +19,7 @@
 
 #### Tests
 
-* pin prisma to 4.14.0 until we fix instrum ([#1631](https://github.com/newrelic/node-newrelic/pull/1631)) ([a60659d](https://github.com/newrelic/node-newrelic/commit/a60659d6929be559854d01c83028d5acfbcd3603))
+* pin prisma to 4.14.0 until we fix instrumentation ([#1631](https://github.com/newrelic/node-newrelic/pull/1631)) ([a60659d](https://github.com/newrelic/node-newrelic/commit/a60659d6929be559854d01c83028d5acfbcd3603))
 * **scripts:** fix failing changelog unit test ([#1626](https://github.com/newrelic/node-newrelic/pull/1626)) ([08f48b3](https://github.com/newrelic/node-newrelic/commit/08f48b33ce1c402e4a8c42c9c02e5b22e6cbe02a))
 * **config:** increase test coverage ([#1625](https://github.com/newrelic/node-newrelic/pull/1625)) ([67f39d8](https://github.com/newrelic/node-newrelic/commit/67f39d8dc89e627d27c7fd9a9cee1ac14ab816e3))
 * **config:** revert changes to lib/config/index.js ([#1630](https://github.com/newrelic/node-newrelic/pull/1630)) ([fea1068](https://github.com/newrelic/node-newrelic/commit/fea1068281d9ce8ae966b47923aba6ecef894bc8))
