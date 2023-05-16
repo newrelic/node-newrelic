@@ -2,7 +2,6 @@
   "name": "@newrelic/aws-sdk",
   "version": "5.0.5",
   "description": "New Relic instrumentation of the aws-sdk package.",
-  "main": "index.js",
   "scripts": {
     "test": "npm run unit && npm run versioned",
     "third-party-updates": "oss third-party manifest && oss third-party notices && git add THIRD_PARTY_NOTICES.md third_party_manifest.json",
@@ -51,7 +50,6 @@
     "newrelic": ">=8.7.0"
   },
   "files": [
-    "index.js",
     "nr-hooks.js",
     "lib/**",
     "*.md"

@@ -9,17 +9,6 @@ New Relic's official AWS SDK package instrumentation for use with [the Node.js a
 
 This package is [a dependency of the the Node Agent](https://github.com/newrelic/node-newrelic/blob/2121ffdc5001ea1bf9ab473138b9446c1f2a7eef/package.json#L147), and the average user should not need to install it manually.
 
-If you are not the average user, you can add this package to your project using your package manager of choice (`npm` below), and then `require` the module into your project.
-
-```
-$ npm install @newrelic/aws-sdk
-```
-
-```javascript
-// index.js
-require('@newrelic/aws-sdk')
-```
-
 ## Getting Started
 
 Our instrumentation automatically tracks all SDK calls as "external" activities. In addition, the following have more specific instrumentation to capture additional data store or queue information.
