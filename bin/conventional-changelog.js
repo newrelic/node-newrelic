@@ -73,7 +73,19 @@ class ConventionalChangelog {
       const conventionalCommitsStream = gitRawCommits({
         format: '%B%n-hash-%n%H',
         from: `v${this.previousVersion}`
-      }).pipe(conventionalCommitsParser(config.parserOpts))
+      })
+        .pipe(
+          new stream.Transform({
+            objectMode: true,
+            transform(chunk, encoding, callback) {
+              const commit = chunk.toString().split('\n')
+              commit[0] = self.removePrLinks(commit[0])
+              this.push(commit.join('\n'))
+              callback()
+            }
+          })
+        )
+        .pipe(conventionalCommitsParser(config.parserOpts))
 
       conventionalCommitsStream.on('data', function onData(data) {
         if (RELEASEABLE_PREFIXES.includes(data.type)) {
@@ -135,22 +147,21 @@ class ConventionalChangelog {
    * @returns {object} the entry to add to the JSON changelog
    */
   generateJsonChangelog(commits) {
-    const self = this
     const securityChanges = []
     const bugfixChanges = []
     const featureChanges = []
 
     commits.forEach((commit) => {
       if (commit.type === 'security') {
-        securityChanges.push(self.removePrLinks(commit.subject))
+        securityChanges.push(commit.subject)
       }
 
       if (commit.type === 'fix') {
-        bugfixChanges.push(self.removePrLinks(commit.subject))
+        bugfixChanges.push(commit.subject)
       }
 
       if (commit.type === 'feat') {
-        featureChanges.push(self.removePrLinks(commit.subject))
+        featureChanges.push(commit.subject)
       }
     })
 
@@ -182,7 +193,7 @@ class ConventionalChangelog {
     ])
 
     return new Promise((resolve, reject) => {
-      const commitsStream = new stream.Stream.Readable({
+      const commitsStream = new stream.Readable({
         objectMode: true
       })
 
