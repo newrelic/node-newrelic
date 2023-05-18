@@ -4,10 +4,16 @@
  */
 
 'use strict'
-
+const semver = require('semver')
 const { assignCLMAttrs } = require('./utils')
+const SPAN_PREFIX = 'Nodejs/Nextjs'
+// Version middleware is stable
+// See: https://nextjs.org/docs/advanced-features/middleware
+const MIN_MW_SUPPORTED_VERSION = '12.2.0'
 
 module.exports = function initialize(shim, nextServer) {
+  const nextVersion = shim.require('./package.json').version
+  const { config } = shim.agent
   shim.setFramework(shim.NEXT)
 
   const Server = nextServer.default
@@ -31,7 +37,6 @@ module.exports = function initialize(shim, nextServer) {
   )
 
   shim.wrap(Server.prototype, 'runApi', function wrapRunApi(shim, originalFn) {
-    const { config } = shim.agent
     return function wrappedRunApi() {
       const [, , , params, page] = arguments
 
@@ -46,6 +51,55 @@ module.exports = function initialize(shim, nextServer) {
       return originalFn.apply(this, arguments)
     }
   })
+
+  shim.record(
+    Server.prototype,
+    'renderHTML',
+    function renderHTMLRecorder(shim, renderToHTML, name, [req, res, page]) {
+      return {
+        inContext(segment) {
+          segment.addSpanAttributes({ 'next.page': page })
+          assignCLMAttrs(config, segment, {
+            'code.function': 'getServerSideProps',
+            'code.filepath': `pages${page}`
+          })
+        },
+        req,
+        res,
+        promise: true,
+        name: `${SPAN_PREFIX}/getServerSideProps/${page}`
+      }
+    }
+  )
+
+  if (semver.lt(nextVersion, MIN_MW_SUPPORTED_VERSION)) {
+    shim.logger.warn(
+      `Next.js middleware instrumentation only supported on >=${MIN_MW_SUPPORTED_VERSION}, got %s`,
+      nextVersion
+    )
+    return
+  }
+
+  shim.record(
+    Server.prototype,
+    'runMiddleware',
+    function runMiddlewareRecorder(shim, runMiddleware, name, [args]) {
+      const middlewareName = 'middleware'
+      return {
+        type: shim.MIDDLEWARE,
+        name: `${shim._metrics.MIDDLEWARE}${shim._metrics.PREFIX}/${middlewareName}`,
+        inContext(segment) {
+          assignCLMAttrs(config, segment, {
+            'code.function': middlewareName,
+            'code.filepath': middlewareName
+          })
+        },
+        req: args.request,
+        route: middlewareName,
+        promise: true
+      }
+    }
+  )
 }
 
 function assignParameters(shim, parameters) {
