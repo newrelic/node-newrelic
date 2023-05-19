@@ -267,7 +267,7 @@ tap.test('mysql built-in connection pools', function (t) {
         t.error(err, 'no error occurred')
         t.ok(transaction, 'transaction should exist')
         t.ok(segment, 'segment should exist')
-        t.ok(segment.timer.start > 0, 'starts at a postitive time')
+        t.ok(segment.timer.start > 0, 'starts at a positive time')
         t.ok(segment.timer.start <= Date.now(), 'starts in past')
         t.equal(segment.name, 'MySQL Pool#query', 'is named')
         txn.end()
@@ -285,7 +285,7 @@ tap.test('mysql built-in connection pools', function (t) {
         if (transaction) {
           const segment = agent.tracer.getSegment().parent
           t.ok(segment, 'segment should exist')
-          t.ok(segment.timer.start > 0, 'starts at a postitive time')
+          t.ok(segment.timer.start > 0, 'starts at a positive time')
           t.ok(segment.timer.start <= Date.now(), 'starts in past')
           t.equal(segment.name, 'MySQL Pool#query', 'is named')
         }
@@ -312,7 +312,7 @@ tap.test('mysql built-in connection pools', function (t) {
           t.error(err, 'no error occurred')
           t.ok(transaction, 'transaction should exist')
           t.ok(segment, 'segment should exist')
-          t.ok(segment.timer.start > 0, 'starts at a postitive time')
+          t.ok(segment.timer.start > 0, 'starts at a positive time')
           t.ok(segment.timer.start <= Date.now(), 'starts in past')
           t.equal(segment.name, 'Datastore/statement/MySQL/unknown/select', 'is named')
           txn.end()
@@ -338,7 +338,7 @@ tap.test('mysql built-in connection pools', function (t) {
           if (transaction) {
             const segment = agent.tracer.getSegment().parent
             t.ok(segment, 'segment should exist')
-            t.ok(segment.timer.start > 0, 'starts at a postitive time')
+            t.ok(segment.timer.start > 0, 'starts at a positive time')
             t.ok(segment.timer.start <= Date.now(), 'starts in past')
             t.equal(segment.name, 'Datastore/statement/MySQL/unknown/select', 'is named')
           }
@@ -455,9 +455,10 @@ tap.test('poolCluster', function (t) {
           t.equal(transaction.id, txn.id, 'transaction must be same')
           const segment = agent.tracer.getSegment().parent
           t.ok(segment, 'segment should exist')
-          t.ok(segment.timer.start > 0, 'starts at a postitive time')
+          t.ok(segment.timer.start > 0, 'starts at a positive time')
           t.ok(segment.timer.start <= Date.now(), 'starts in past')
           t.equal(segment.name, 'Datastore/statement/MySQL/unknown/select', 'is named')
+
           txn.end()
           connection.release()
           t.end()
@@ -490,9 +491,10 @@ tap.test('poolCluster', function (t) {
           t.equal(transaction.id, txn.id, 'transaction must be same')
           const segment = agent.tracer.getSegment().parent
           t.ok(segment, 'segment should exist')
-          t.ok(segment.timer.start > 0, 'starts at a postitive time')
+          t.ok(segment.timer.start > 0, 'starts at a positive time')
           t.ok(segment.timer.start <= Date.now(), 'starts in past')
           t.equal(segment.name, 'Datastore/statement/MySQL/unknown/select', 'is named')
+
           txn.end()
           connection.release()
           t.end()
@@ -525,9 +527,10 @@ tap.test('poolCluster', function (t) {
           t.equal(transaction.id, txn.id, 'transaction must be same')
           const segment = agent.tracer.getSegment().parent
           t.ok(segment, 'segment should exist')
-          t.ok(segment.timer.start > 0, 'starts at a postitive time')
+          t.ok(segment.timer.start > 0, 'starts at a positive time')
           t.ok(segment.timer.start <= Date.now(), 'starts in past')
           t.equal(segment.name, 'Datastore/statement/MySQL/unknown/select', 'is named')
+
           txn.end()
           connection.release()
           t.end()
@@ -559,7 +562,7 @@ tap.test('poolCluster', function (t) {
           t.equal(transaction.id, txn.id, 'transaction must be same')
           const segment = agent.tracer.getSegment().parent
           t.ok(segment, 'segment should exist')
-          t.ok(segment.timer.start > 0, 'starts at a postitive time')
+          t.ok(segment.timer.start > 0, 'starts at a positive time')
           t.ok(segment.timer.start <= Date.now(), 'starts in past')
           t.equal(segment.name, 'Datastore/statement/MySQL/unknown/select', 'is named')
 
@@ -596,9 +599,10 @@ tap.test('poolCluster', function (t) {
           t.equal(currentTransaction.id, txn.id, 'transaction must be same')
           const segment = agent.tracer.getSegment().parent
           t.ok(segment, 'segment should exist')
-          t.ok(segment.timer.start > 0, 'starts at a postitive time')
+          t.ok(segment.timer.start > 0, 'starts at a positive time')
           t.ok(segment.timer.start <= Date.now(), 'starts in past')
           t.equal(segment.name, 'Datastore/statement/MySQL/unknown/select', 'is named')
+
           txn.end()
           connection.release()
           t.end()
@@ -621,7 +625,7 @@ tap.test('poolCluster', function (t) {
 
           let segment = agent.tracer.getSegment().children[1]
           t.ok(segment, 'segment should exist')
-          t.ok(segment.timer.start > 0, 'starts at a postitive time')
+          t.ok(segment.timer.start > 0, 'starts at a positive time')
           t.ok(segment.timer.start <= Date.now(), 'starts in past')
 
           t.equal(segment.name, 'Datastore/statement/MySQL/unknown/select', 'is named')
@@ -630,7 +634,7 @@ tap.test('poolCluster', function (t) {
           t.ok(transaction, 'transaction should exit')
           t.equal(transaction, txn, 'transaction must be same')
           t.ok(segment, 'segment should exit')
-          t.ok(segment.timer.start > 0, 'starts at a postitive time')
+          t.ok(segment.timer.start > 0, 'starts at a positive time')
           t.ok(segment.timer.start <= Date.now(), 'starts in past')
           t.equal(segment.name, 'Datastore/statement/MySQL/unknown/select', 'is named')
 
@@ -641,7 +645,7 @@ tap.test('poolCluster', function (t) {
 
             segment = agent.tracer.getSegment().children[1]
             t.ok(segment, 'segment should exist')
-            t.ok(segment.timer.start > 0, 'starts at a postitive time')
+            t.ok(segment.timer.start > 0, 'starts at a positive time')
             t.ok(segment.timer.start <= Date.now(), 'starts in past')
 
             t.equal(segment.name, 'Datastore/statement/MySQL/unknown/select', 'is named')
@@ -650,7 +654,7 @@ tap.test('poolCluster', function (t) {
             t.ok(transaction, 'transaction should exit')
             t.equal(transaction, txn, 'transaction must be same')
             t.ok(segment, 'segment should exit')
-            t.ok(segment.timer.start > 0, 'starts at a postitive time')
+            t.ok(segment.timer.start > 0, 'starts at a positive time')
             t.ok(segment.timer.start <= Date.now(), 'starts in past')
             t.equal(segment.name, 'Datastore/statement/MySQL/unknown/select', 'is named')
 
