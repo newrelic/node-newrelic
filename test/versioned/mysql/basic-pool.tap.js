@@ -63,10 +63,10 @@ tap.test('bad config', function (t) {
       const stack = new Error().stack
       const frames = stack.split('\n').slice(3, 8)
 
-      t.notEqual(frames[0], frames[1], 'do not multi-wrap')
-      t.notEqual(frames[0], frames[2], 'do not multi-wrap')
-      t.notEqual(frames[0], frames[3], 'do not multi-wrap')
-      t.notEqual(frames[0], frames[4], 'do not multi-wrap')
+      t.not(frames[0], frames[1], 'do not multi-wrap')
+      t.not(frames[0], frames[2], 'do not multi-wrap')
+      t.not(frames[0], frames[3], 'do not multi-wrap')
+      t.not(frames[0], frames[4], 'do not multi-wrap')
 
       t.ok(err, 'should be an error')
       poolCluster.end()
