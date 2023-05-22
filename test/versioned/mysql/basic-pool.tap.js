@@ -89,7 +89,8 @@ tap.test('mysql built-in connection pools', function (t) {
   let mysql = null
   let pool = null
 
-  t.beforeEach(function () {
+  t.beforeEach(async function () {
+    await setup(require('mysql'))
     agent = helper.instrumentMockedAgent()
     mysql = require('mysql')
     pool = mysql.createPool(config)
@@ -395,7 +396,8 @@ tap.test('poolCluster', function (t) {
   let mysql = null
   let poolCluster = null
 
-  t.beforeEach(function () {
+  t.beforeEach(async function () {
+    await setup(require('mysql'))
     agent = helper.instrumentMockedAgent()
     mysql = require('mysql')
     poolCluster = mysql.createPoolCluster()
@@ -623,7 +625,7 @@ tap.test('poolCluster', function (t) {
           t.ok(transaction, 'transaction should exist')
           t.equal(transaction, txn, 'transaction must be same')
 
-          let segment = agent.tracer.getSegment().children[1]
+          let segment = agent.tracer.getSegment().parent
           t.ok(segment, 'segment should exist')
           t.ok(segment.timer.start > 0, 'starts at a positive time')
           t.ok(segment.timer.start <= Date.now(), 'starts in past')
@@ -643,7 +645,7 @@ tap.test('poolCluster', function (t) {
             t.ok(transaction, 'transaction should exist')
             t.equal(transaction, txn, 'transaction must be same')
 
-            segment = agent.tracer.getSegment().children[1]
+            segment = agent.tracer.getSegment().parent
             t.ok(segment, 'segment should exist')
             t.ok(segment.timer.start > 0, 'starts at a positive time')
             t.ok(segment.timer.start <= Date.now(), 'starts in past')

@@ -89,7 +89,8 @@ tap.test('mysql2 built-in connection pools', function (t) {
   let mysql = null
   let pool = null
 
-  t.beforeEach(function () {
+  t.beforeEach(async function () {
+    await setup(require('mysql2'))
     agent = helper.instrumentMockedAgent()
     mysql = require('mysql2')
     pool = mysql.createPool(config)
@@ -387,7 +388,8 @@ tap.test('poolCluster', function (t) {
   let mysql = null
   let poolCluster = null
 
-  t.beforeEach(function () {
+  t.beforeEach(async function () {
+    await setup(require('mysql2'))
     agent = helper.instrumentMockedAgent()
     mysql = require('mysql2')
     poolCluster = mysql.createPoolCluster()
