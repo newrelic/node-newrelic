@@ -93,7 +93,6 @@ tap.test('mysql2 built-in connection pools', function (t) {
     agent = helper.instrumentMockedAgent()
     mysql = require('mysql2')
     pool = mysql.createPool(config)
-    return setup(mysql)
   })
 
   t.afterEach(function () {
@@ -391,13 +390,11 @@ tap.test('poolCluster', function (t) {
   t.beforeEach(function () {
     agent = helper.instrumentMockedAgent()
     mysql = require('mysql2')
-    return setup(mysql).then(() => {
-      poolCluster = mysql.createPoolCluster()
+    poolCluster = mysql.createPoolCluster()
 
-      poolCluster.add(config) // anonymous group
-      poolCluster.add('MASTER', config)
-      poolCluster.add('REPLICA', config)
-    })
+    poolCluster.add(config) // anonymous group
+    poolCluster.add('MASTER', config)
+    poolCluster.add('REPLICA', config)
   })
 
   t.afterEach(function () {
@@ -406,6 +403,7 @@ tap.test('poolCluster', function (t) {
 
     agent = null
     mysql = null
+    poolCluster = null
   })
 
   t.test('primer', function (t) {
