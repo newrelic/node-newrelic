@@ -631,9 +631,9 @@ tap.test('poolCluster', function (t) {
           t.equal(segment.name, 'Datastore/statement/MySQL/unknown/select', 'is named')
 
           t.error(err, 'no error occurred')
-          t.ok(transaction, 'transaction should exit')
+          t.ok(transaction, 'transaction should exist')
           t.equal(transaction, txn, 'transaction must be same')
-          t.ok(segment, 'segment should exit')
+          t.ok(segment, 'segment should exist')
           t.ok(segment.timer.start > 0, 'starts at a positive time')
           t.ok(segment.timer.start <= Date.now(), 'starts in past')
           t.equal(segment.name, 'Datastore/statement/MySQL/unknown/select', 'is named')
