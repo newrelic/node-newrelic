@@ -17,5 +17,3 @@ const newrelic = require('newrelic')
 // See: https://github.com/vercel/next.js/blob/canary/packages/next/build/utils.ts#L1217
 newrelic.instrumentWebframework('next/dist/server/next-server', require('./lib/next-server'))
 newrelic.instrumentWebframework('./next-server', require('./lib/next-server'))
-newrelic.instrumentWebframework('./render', require('./lib/render'))
-newrelic.instrumentWebframework('./context', require('./lib/context'))
