@@ -232,40 +232,6 @@ tap.test('mysql2 built-in connection pools', function (t) {
     })
   })
 
-  // The domain socket tests should only be run if there is a domain socket
-  // to connect to, which only happens if there is a MySQL instance running on
-  // the same box as these tests.
-  getDomainSocketPath(function (socketPath) {
-    const shouldTestDomain = socketPath
-    t.test(
-      'ensure host and port are set on segment when using a domain socket',
-      { skip: !shouldTestDomain },
-      function (t) {
-        const socketConfig = getConfig({
-          socketPath: socketPath
-        })
-        const socketPool = mysql.createPool(socketConfig)
-        helper.runInTransaction(agent, function transactionInScope(txn) {
-          socketPool.query('SELECT 1 + 1 AS solution', function (err) {
-            t.error(err, 'should not error making query')
-
-            const seg = getDatastoreSegment(agent.tracer.getSegment())
-            const attributes = seg.getAttributes()
-
-            // In the case where you don't have a server running on localhost
-            // the data will still be correctly associated with the query.
-            t.ok(seg, 'there is a segment')
-            t.equal(attributes.host, agent.config.getHostnameSafe(), 'set host')
-            t.equal(attributes.port_path_or_id, socketPath, 'set path')
-            t.equal(attributes.database_name, DATABASE, 'set database name')
-            txn.end()
-            socketPool.end(t.end)
-          })
-        })
-      }
-    )
-  })
-
   t.test('query with error', function (t) {
     helper.runInTransaction(agent, function transactionInScope(txn) {
       pool.query('BLARG', function (err) {
@@ -378,6 +344,40 @@ tap.test('mysql2 built-in connection pools', function (t) {
         })
       })
     })
+  })
+
+  // The domain socket tests should only be run if there is a domain socket
+  // to connect to, which only happens if there is a MySQL instance running on
+  // the same box as these tests.
+  getDomainSocketPath(function (socketPath) {
+    const shouldTestDomain = socketPath
+    t.test(
+      'ensure host and port are set on segment when using a domain socket',
+      { skip: !shouldTestDomain },
+      function (t) {
+        const socketConfig = getConfig({
+          socketPath: socketPath
+        })
+        const socketPool = mysql.createPool(socketConfig)
+        helper.runInTransaction(agent, function transactionInScope(txn) {
+          socketPool.query('SELECT 1 + 1 AS solution', function (err) {
+            t.error(err, 'should not error making query')
+
+            const seg = getDatastoreSegment(agent.tracer.getSegment())
+            const attributes = seg.getAttributes()
+
+            // In the case where you don't have a server running on localhost
+            // the data will still be correctly associated with the query.
+            t.ok(seg, 'there is a segment')
+            t.equal(attributes.host, agent.config.getHostnameSafe(), 'set host')
+            t.equal(attributes.port_path_or_id, socketPath, 'set path')
+            t.equal(attributes.database_name, DATABASE, 'set database name')
+            txn.end()
+            socketPool.end(t.end)
+          })
+        })
+      }
+    )
   })
 })
 
