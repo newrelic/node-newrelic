@@ -999,7 +999,7 @@ tap.test('MessageShim', function (t) {
 
     t.test('should end the transaction based on a promise rejection', function (t) {
       messageHandler = function () {
-        return { promise: true }
+        return { promise: true, handlePromiseError: true }
       }
 
       wrapped('my.queue', function consumer() {
