@@ -1,3 +1,7 @@
+### v0.5.1 (2023-05-22)
+
+* Updated instrumentation to work in versions >= 13.3.1 as the methods we try to wrap no longer have setters.
+
 ### v0.5.0 (2023-04-19)
 
 * **BREAKING** - Route (URL) parameters are now stored as `request.parameters.route.*` attributes on Transactions
