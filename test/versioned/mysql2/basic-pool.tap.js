@@ -147,10 +147,10 @@ tap.test('mysql2 built-in connection pools', function (t) {
       agent.config.datastore_tracer.instance_reporting.enabled = false
       pool.query('SELECT 1 + 1 AS solution', function (err) {
         const seg = getDatastoreSegment(agent.tracer.getSegment())
-        const attributes = seg.getAttributes()
         t.error(err, 'should not error making query')
         t.ok(seg, 'should have a segment')
 
+        const attributes = seg.getAttributes()
         t.notOk(attributes.host, 'should have no host parameter')
         t.notOk(attributes.port_path_or_id, 'should have no port parameter')
         t.equal(attributes.database_name, DATABASE, 'should set database name')
