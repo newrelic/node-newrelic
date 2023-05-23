@@ -251,11 +251,8 @@ tap.test('mysql built-in connection pools', function (t) {
   t.test('lack of callback does not explode', function (t) {
     helper.runInTransaction(agent, function transactionInScope(txn) {
       pool.query('SET SESSION auto_increment_increment=1')
-      setTimeout(function () {
-        // without the timeout, the pool is closed before the query is able to execute
-        txn.end()
-        t.end()
-      }, 500)
+      txn.end()
+      t.end()
     })
   })
 
