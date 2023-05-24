@@ -3,7 +3,7 @@
 #### Bug Fixes
 
 * Updated mysql instrumentation to properly wrap the connection pool.getConnection and poolCluster.of ([#1647](https://github.com/newrelic/node-newrelic/pull/1647)) ([4caf1db](https://github.com/newrelic/node-newrelic/commit/4caf1db60b930c7b21307e381c13b5dd572e5cc3))
-    *  * Added instrumentation to `PoolNamespace.prototype.query` 
+    * Added instrumentation to `PoolNamespace.prototype.query` 
 
 #### Continuous Integration
 
