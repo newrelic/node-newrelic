@@ -2,6 +2,16 @@
   "repository": "newrelic/node-newrelic",
   "entries": [
     {
+      "version": "10.1.2",
+      "changes": {
+        "security": [],
+        "bugfixes": [
+          "Updated mysql instrumentation to properly wrap the connection pool.getConnection and poolCluster.of"
+        ],
+        "features": []
+      }
+    },
+    {
       "version": "10.1.1",
       "changes": {
         "security": [],

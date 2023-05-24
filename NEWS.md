@@ -1,3 +1,14 @@
+### v10.1.2 (2023-05-24)
+
+#### Bug Fixes
+
+* Updated mysql instrumentation to properly wrap the connection pool.getConnection and poolCluster.of ([#1647](https://github.com/newrelic/node-newrelic/pull/1647)) ([4caf1db](https://github.com/newrelic/node-newrelic/commit/4caf1db60b930c7b21307e381c13b5dd572e5cc3))
+    *  * Added instrumentation to `PoolNamespace.prototype.query` 
+
+#### Continuous Integration
+
+* fix minor release note generation bugs ([#1643](https://github.com/newrelic/node-newrelic/pull/1643)) ([dd6ab9a](https://github.com/newrelic/node-newrelic/commit/dd6ab9addb8ee16de92ba9d6602f71c40527b940))
+
 ### v10.1.1 (2023-05-15)
 
 #### Bug Fixes
