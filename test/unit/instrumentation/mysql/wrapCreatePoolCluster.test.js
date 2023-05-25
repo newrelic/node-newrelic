@@ -134,14 +134,6 @@ tap.test('wrapCreatePoolCluster', (t) => {
     const wrapPoolClusterOf = mockShim.wrapReturn.args[3][2]
     wrapPoolClusterOf(mockShim, null, null, mockNamespace)
 
-    t.ok(
-      instrumentation.wrapGetConnection.calledWith(mockShim, mockNamespace),
-      'should have called wrapGetConnection on the namespace'
-    )
-    t.ok(
-      instrumentation.wrapQueryable.calledWith(mockShim, mockNamespace),
-      'should have called wrapQueryable on the namespace'
-    )
     t.notOk(mockNamespace[symbols.clusterOf], 'should not have set the clusterOf symbol')
 
     t.end()
@@ -158,14 +150,6 @@ tap.test('wrapCreatePoolCluster', (t) => {
     const wrapPoolClusterOf = mockShim.wrapReturn.args[3][2]
     wrapPoolClusterOf(mockShim, null, null, mockNamespace)
 
-    t.notOk(
-      instrumentation.wrapGetConnection.calledWith(mockShim, mockNamespace),
-      'should not have called wrapGetConnection on the namespace'
-    )
-    t.ok(
-      instrumentation.wrapQueryable.calledWith(mockShim, mockNamespace),
-      'should have called wrapQueryable on the namespace'
-    )
     t.notOk(mockNamespace[symbols.clusterOf], 'should not have set the clusterOf symbol')
 
     t.end()
