@@ -7,7 +7,7 @@
 
 const tap = require('tap')
 const sinon = require('sinon')
-const instrumentation = require('../../../../lib/instrumentation/mysql/mysql')
+const proxyquire = require('proxyquire')
 const symbols = require('../../../../lib/symbols')
 
 tap.test('wrapGetConnectionCallback', (t) => {
@@ -16,6 +16,7 @@ tap.test('wrapGetConnectionCallback', (t) => {
   let mockCallback
   let mockConnection
   let mockShim
+  let instrumentation
 
   t.beforeEach(() => {
     mockCallback = sinon.stub().returns('foo')
@@ -23,14 +24,19 @@ tap.test('wrapGetConnectionCallback', (t) => {
     mockShim = {
       logger: {
         debug: sinon.stub().returns()
-      }
+      },
+      isWrapped: sinon.stub().returns(),
+      recordQuery: sinon.stub().returns()
     }
 
-    mockConnection = {}
+    mockConnection = {
+      query: sinon.stub().returns()
+    }
+
+    instrumentation = proxyquire('../../../../lib/instrumentation/mysql/mysql', {})
   })
 
   t.test('should not wrap if the callback received an error', (t) => {
-    instrumentation.wrapQueryable = sinon.stub().returns(false)
     const wrappedGetConnectionCallback = instrumentation.wrapGetConnectionCallback(
       mockShim,
       mockCallback
@@ -46,7 +52,7 @@ tap.test('wrapGetConnectionCallback', (t) => {
 
   t.test('should catch the error if wrapping the callback throws', (t) => {
     const expectedError = new Error('whoops')
-    instrumentation.wrapQueryable = sinon.stub().throws(expectedError)
+    mockShim.isWrapped.throws(expectedError)
     const wrappedGetConnectionCallback = instrumentation.wrapGetConnectionCallback(
       mockShim,
       mockCallback
@@ -60,7 +66,6 @@ tap.test('wrapGetConnectionCallback', (t) => {
   })
 
   t.test('should assign a symbol if wrapping is successful', (t) => {
-    instrumentation.wrapQueryable = sinon.stub().returns(true)
     const wrappedGetConnectionCallback = instrumentation.wrapGetConnectionCallback(
       mockShim,
       mockCallback

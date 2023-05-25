@@ -24,8 +24,12 @@ tap.test('wrapCreatePool', (t) => {
       setDatastore: sinon.stub().returns(),
       wrapReturn: sinon.stub().returns(),
       logger: {
-        debug: sinon.stub().returns()
-      }
+        debug: sinon.stub().returns(),
+        trace: sinon.stub().returns()
+      },
+      isWrapped: sinon.stub().returns(),
+      recordQuery: sinon.stub().returns(),
+      wrap: sinon.stub().returns()
     }
 
     mockMysql = {
@@ -33,6 +37,7 @@ tap.test('wrapCreatePool', (t) => {
     }
 
     mockPool = {
+      getConnection: sinon.stub().returns(),
       query: sinon.stub().returns()
     }
 
@@ -50,35 +55,24 @@ tap.test('wrapCreatePool', (t) => {
   })
 
   t.test('should return early if wrapping symbol exists', (t) => {
-    instrumentation.wrapQueryable = sinon.stub().returns(false)
-    instrumentation.wrapGetConnection = sinon.stub().returns(false)
     mockShim[symbols.unwrapPool] = true
 
     instrumentation.callbackInitialize(mockShim, mockMysql)
     const wrapCreatePool = mockShim.wrapReturn.args[1][2]
     wrapCreatePool(mockShim, null, null, mockPool)
 
-    t.notOk(instrumentation.wrapQueryable.called, 'wrapQueryable should not have been called')
-    t.notOk(
-      instrumentation.wrapGetConnection.called,
-      'wrapGetConnection should not have been called'
-    )
+    t.equal(mockShim.logger.trace.callCount, 0, 'should not have hit the trace logging')
+    t.equal(mockShim.logger.debug.callCount, 0, 'should not have hit the debug logging')
 
     t.end()
   })
 
   t.test('should not set the symbol if wrapQueryable returns false', (t) => {
-    instrumentation.wrapQueryable = sinon.stub().returns(false)
-    instrumentation.wrapGetConnection = sinon.stub().returns(false)
+    mockShim.isWrapped.returns(true)
 
     instrumentation.callbackInitialize(mockShim, mockMysql)
     const wrapCreatePool = mockShim.wrapReturn.args[1][2]
     wrapCreatePool(mockShim, null, null, mockPool)
-
-    t.ok(
-      instrumentation.wrapQueryable.calledWith(mockShim, mockPool, true),
-      'should have called wrapQueryable'
-    )
 
     t.notOk(mockShim[symbols.unwrapPool], 'should not have set the unwrapPool symbol')
 
@@ -86,21 +80,10 @@ tap.test('wrapCreatePool', (t) => {
   })
 
   t.test('should not set the symbol if wrapGetConnection returns false', (t) => {
-    instrumentation.wrapQueryable = sinon.stub().returns(true)
-    instrumentation.wrapGetConnection = sinon.stub().returns(false)
-
+    mockShim.isWrapped.onCall(0).returns(false).returns(true)
     instrumentation.callbackInitialize(mockShim, mockMysql)
     const wrapCreatePool = mockShim.wrapReturn.args[1][2]
     wrapCreatePool(mockShim, null, null, mockPool)
-
-    t.ok(
-      instrumentation.wrapQueryable.calledWith(mockShim, mockPool, true),
-      'should have called wrapQueryable'
-    )
-    t.ok(
-      instrumentation.wrapGetConnection.calledWith(mockShim, mockPool),
-      'should have called wrapGetConnection'
-    )
 
     t.notOk(mockShim[symbols.unwrapPool], 'should not have set the unwrapPool symbol')
 
@@ -108,21 +91,9 @@ tap.test('wrapCreatePool', (t) => {
   })
 
   t.test('should set the symbols if wrapQueryable and wrapGetConnection is successful', (t) => {
-    instrumentation.wrapQueryable = sinon.stub().returns(true)
-    instrumentation.wrapGetConnection = sinon.stub().returns(true)
-
     instrumentation.callbackInitialize(mockShim, mockMysql)
     const wrapCreatePool = mockShim.wrapReturn.args[1][2]
     wrapCreatePool(mockShim, null, null, mockPool)
-
-    t.ok(
-      instrumentation.wrapQueryable.calledWith(mockShim, mockPool, true),
-      'should have called wrapQueryable'
-    )
-    t.ok(
-      instrumentation.wrapGetConnection.calledWith(mockShim, mockPool),
-      'should have called wrapGetConnection'
-    )
 
     t.equal(mockShim[symbols.unwrapPool], true, 'should have set the unwrapPool symbol')
 

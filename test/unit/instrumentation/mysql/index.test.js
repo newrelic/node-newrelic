@@ -55,10 +55,10 @@ tap.test('mysql instrumentation', (t) => {
       mockShim.isWrapped.returns(true)
       instrumentation.promiseInitialize(mockShim, mockMysql)
 
-      t.equal(
-        instrumentation.callbackInitialize.callCount,
-        0,
-        'should not have called callbackInitialize'
+      t.notOk(
+        mockShim[symbols.wrappedPoolConnection],
+
+        'should not have applied the symbol'
       )
       t.end()
     }
@@ -69,10 +69,11 @@ tap.test('mysql instrumentation', (t) => {
     mockShim.isWrapped.returns(false)
     instrumentation.promiseInitialize(mockShim, mockMysql)
 
+    t.ok(mockShim.setDatastore.calledWith('test-mysql'), 'should set the datastore to mysql')
     t.equal(
-      instrumentation.callbackInitialize.callCount,
-      1,
-      'should have called callbackInitialize'
+      mockShim[symbols.wrappedPoolConnection],
+      false,
+      'should default the wrappedPoolConnection symbol to false'
     )
     t.end()
   })
