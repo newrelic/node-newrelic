@@ -9,6 +9,10 @@ VERSIONED_MODE="${VERSIONED_MODE:---minor}"
 SAMPLES="${SAMPLES:-10}"
 export NODE_OPTIONS="--max-old-space-size=4096"
 SKIP_C8="${SKIP_C8:-false}"
+# In CI we only want to run lcovonly
+# but when running locally we want to see the beautiful
+# HTML reports too
+C8_REPORTER="${C8_REPORTER:-lcov}"
 
 # Determine context manager for sanity sake
 if [[ $NEW_RELIC_FEATURE_FLAG_ASYNC_LOCAL_CONTEXT == 1 ]];
@@ -40,17 +44,8 @@ if [[ "${SKIP_C8}" = "true" ]];
 then
   C8=""
 else
-  # C8 runs out of heap when running against
-  # patch/minor flag.  We will just skip it
-  # and figure out another way to get coverage
-  # when running on main branch. 
-  if [[ $VERSIONED_MODE == '--major' ]];
-  then
-    # lcovonly only generates lcov report which will cut down on amount of time generating reports
-    C8="c8 -o ./coverage/versioned -r lcovonly"
-  else 
-    C8=""
-  fi
+  # lcovonly only generates lcov report which will cut down on amount of time generating reports
+  C8="c8 -o ./coverage/versioned --merge-async -r $C8_REPORTER"
 fi
 
 export AGENT_PATH=`pwd`
