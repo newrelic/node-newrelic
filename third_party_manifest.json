@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "Tue May 30 2023 01:10:09 GMT+0530 (India Standard Time)",
+  "lastUpdated": "Tue May 30 2023 12:20:03 GMT+0530 (India Standard Time)",
   "projectName": "New Relic Node Agent",
   "projectUrl": "https://github.com/newrelic/node-newrelic",
   "includeOptDeps": true,
@@ -94,15 +94,15 @@
       "publisher": "New Relic Node.js agent team",
       "email": "nodejs@newrelic.com"
     },
-    "@newrelic/security-agent@1.0.0": {
+    "@newrelic/security-agent@0.1.0": {
       "name": "@newrelic/security-agent",
-      "version": "1.0.0",
-      "range": "^1.0.0",
-      "licenses": "UNKNOWN",
+      "version": "0.1.0",
+      "range": "0.1.0",
+      "licenses": "New Relic Pre-Release",
       "repoUrl": "https://github.com/newrelic/csec-node-agent",
-      "versionedRepoUrl": "https://github.com/newrelic/csec-node-agent/tree/v1.0.0",
+      "versionedRepoUrl": "https://github.com/newrelic/csec-node-agent/tree/v0.1.0",
       "licenseFile": "node_modules/@newrelic/security-agent/LICENSE",
-      "licenseUrl": "https://github.com/newrelic/csec-node-agent/blob/v1.0.0/LICENSE",
+      "licenseUrl": "https://github.com/newrelic/csec-node-agent/blob/v0.1.0/LICENSE",
       "licenseTextSource": "file",
       "publisher": "newrelic"
     },
