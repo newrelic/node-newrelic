@@ -94,15 +94,15 @@
       "publisher": "New Relic Node.js agent team",
       "email": "nodejs@newrelic.com"
     },
-    "@newrelic/security-agent@0.0.4": {
+    "@newrelic/security-agent@0.1.0": {
       "name": "@newrelic/security-agent",
-      "version": "0.0.4",
-      "range": "0.0.4",
-      "licenses": "Apache-2.0",
+      "version": "0.1.0",
+      "range": "0.1.0",
+      "licenses": "New Relic Pre-Release",
       "repoUrl": "https://github.com/newrelic/csec-node-agent",
-      "versionedRepoUrl": "https://github.com/newrelic/csec-node-agent/tree/v0.0.4",
+      "versionedRepoUrl": "https://github.com/newrelic/csec-node-agent/tree/v0.1.0",
       "licenseFile": "node_modules/@newrelic/security-agent/LICENSE",
-      "licenseUrl": "https://github.com/newrelic/csec-node-agent/blob/v0.0.4/LICENSE",
+      "licenseUrl": "https://github.com/newrelic/csec-node-agent/blob/v0.1.0/LICENSE",
       "licenseTextSource": "file",
       "publisher": "newrelic"
     },

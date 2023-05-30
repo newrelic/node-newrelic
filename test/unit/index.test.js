@@ -37,7 +37,7 @@ test('loader metrics', (t) => {
     sandbox.restore()
     delete require.cache.__NR_cache
   })
-  
+
   t.test('should load preload metric when agent is loaded via -r', (t) => {
     process.execArgv = ['-r', 'newrelic']
     const agent = proxyquire('../../index', {
@@ -130,7 +130,6 @@ test('loader metrics', (t) => {
   })
 })
 
-
 test('index tests', (t) => {
   t.autoend()
   let sandbox
@@ -176,7 +175,7 @@ test('index tests', (t) => {
       './lib/logger': loggerMock,
       './lib/agent': MockAgent,
       './lib/config': configMock,
-      './lib/shimmer': shimmerMock, 
+      './lib/shimmer': shimmerMock,
       '@newrelic/security-agent': k2Stub
     })
   }
