@@ -80,7 +80,7 @@ npm run versioned
 New Relic hosts and moderates an online forum where you can interact with New Relic employees as well as other customers to get help and share best practices. Like all official New Relic open source projects, there's a related community topic in the New Relic Explorers Hub. You can find this project's topic/threads here:
 
 * [New Relic Documentation](https://docs.newrelic.com/docs/agents/nodejs-agent/getting-started/introduction-new-relic-nodejs): Comprehensive guidance for using our platform
-* [New Relic Community](https://discuss.newrelic.com/tags/c/telemetry-data-platform/agents/nodeagent): The best place to engage in troubleshooting questions
+* [New Relic Community](https://forum.newrelic.com/): The best place to engage in troubleshooting questions
 * [New Relic Developer](https://developer.newrelic.com/): Resources for building a custom observability applications
 * [New Relic University](https://learn.newrelic.com/): A range of online training for New Relic users of every level
 * [New Relic Technical Support](https://support.newrelic.com/) 24/7/365 ticketed support. Read more about our [Technical Support Offerings](https://docs.newrelic.com/docs/licenses/license-information/general-usage-licenses/support-plan).
