@@ -9,6 +9,8 @@ const path = require('path')
 const fs = require('fs')
 const tap = require('tap')
 const rimraf = require('rimraf')
+const util = require('util')
+const exec = util.promisify(require('child_process').exec)
 
 const DIRNAME = 'XXXNOCONFTEST'
 
@@ -29,6 +31,7 @@ tap.test('logger', function (t) {
         resolve()
       }
     })
+    delete process.env.NEW_RELIC_LOG
   })
 
   t.test('configuration from environment', function (t) {
@@ -47,5 +50,22 @@ tap.test('logger', function (t) {
 
       t.end()
     })
+  })
+})
+
+tap.test('Logger output', (t) => {
+  t.autoend()
+
+  t.test('Check for logger output at debug level', async (t) => {
+    const { stdout, stderr } = await exec('node -r ../../../index.js hello.js', {
+      cwd: `${__dirname}/logger-test-case`
+    })
+    t.equal(stdout, 'Hello cool-app\n', 'should get the normal output')
+    t.match(
+      stderr,
+      /Application was invoked as .*node -r ..\/..\/..\/index.js .*hello.js/,
+      'should contain `node -r` in the logs'
+    )
+    t.end()
   })
 })
