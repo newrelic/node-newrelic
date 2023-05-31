@@ -45,7 +45,7 @@ code, the source code can be found at [https://github.com/newrelic/node-newrelic
 
 ### @aws-sdk/client-s3
 
-This product includes source derived from [@aws-sdk/client-s3](https://github.com/aws/aws-sdk-js-v3) ([v3.303.0](https://github.com/aws/aws-sdk-js-v3/tree/v3.303.0)), distributed under the [Apache-2.0 License](https://github.com/aws/aws-sdk-js-v3/blob/v3.303.0/LICENSE):
+This product includes source derived from [@aws-sdk/client-s3](https://github.com/aws/aws-sdk-js-v3) ([v3.342.0](https://github.com/aws/aws-sdk-js-v3/tree/v3.342.0)), distributed under the [Apache-2.0 License](https://github.com/aws/aws-sdk-js-v3/blob/v3.342.0/LICENSE):
 
 ```
                                 Apache License
@@ -254,7 +254,7 @@ This product includes source derived from [@aws-sdk/client-s3](https://github.co
 
 ### @aws-sdk/s3-request-presigner
 
-This product includes source derived from [@aws-sdk/s3-request-presigner](https://github.com/aws/aws-sdk-js-v3) ([v3.303.0](https://github.com/aws/aws-sdk-js-v3/tree/v3.303.0)), distributed under the [Apache-2.0 License](https://github.com/aws/aws-sdk-js-v3/blob/v3.303.0/LICENSE):
+This product includes source derived from [@aws-sdk/s3-request-presigner](https://github.com/aws/aws-sdk-js-v3) ([v3.342.0](https://github.com/aws/aws-sdk-js-v3/tree/v3.342.0)), distributed under the [Apache-2.0 License](https://github.com/aws/aws-sdk-js-v3/blob/v3.342.0/LICENSE):
 
 ```
                                 Apache License
