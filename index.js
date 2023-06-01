@@ -65,7 +65,12 @@ function initialize() {
 
     logger.debug('Current working directory at module load is %s.', process.cwd())
     logger.debug('Process title is %s.', process.title)
-    logger.debug('Application was invoked as %s.', process.argv.join(' '))
+
+    // execArgv happens before the script name but after the original executable name
+    // https://nodejs.org/api/process.html#process_process_execargv
+    const cliArgs = [process.argv[0], ...process.execArgv, ...process.argv.slice(1)]
+
+    logger.debug('Application was invoked as %s', cliArgs.join(' '))
 
     const config = require('./lib/config').getOrCreateInstance()
 

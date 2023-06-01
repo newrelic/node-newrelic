@@ -9,6 +9,8 @@ const path = require('path')
 const fs = require('fs')
 const tap = require('tap')
 const rimraf = require('rimraf')
+const util = require('util')
+const exec = util.promisify(require('child_process').exec)
 
 const DIRNAME = 'XXXNOCONFTEST'
 
@@ -29,6 +31,7 @@ tap.test('logger', function (t) {
         resolve()
       }
     })
+    delete process.env.NEW_RELIC_LOG
   })
 
   t.test('configuration from environment', function (t) {
@@ -48,4 +51,31 @@ tap.test('logger', function (t) {
       t.end()
     })
   })
+})
+
+tap.test('Logger output', (t) => {
+  t.autoend()
+
+  const execArgs = [
+    { opt: '-r', arg: '../../../index.js' },
+    { opt: '--experimental-loader', arg: '../../../esm-loader.mjs' }
+  ]
+  for (const pair of execArgs) {
+    const { opt, arg } = pair
+    t.test(`Check for ${opt} in logger output at debug level`, async (t) => {
+      const { stdout, stderr } = await exec(`node ${opt} ${arg} hello.js`, {
+        cwd: `${__dirname}/logger-test-case`
+      })
+      t.equal(stdout, 'Hello cool-app\n', 'should get the normal output')
+      t.match(
+        stderr,
+        // The actual output adds the full path to the node executable
+        // and the script path, so that's why we have .* in the regex
+        // here.
+        new RegExp(`Application was invoked as .*node ${opt} ${arg} .*hello.js`),
+        `should contain 'node ${opt}' in the logs`
+      )
+      t.end()
+    })
+  }
 })
