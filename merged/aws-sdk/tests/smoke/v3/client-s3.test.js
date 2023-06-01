@@ -19,8 +19,9 @@ tap.test('@aws-sdk/client-s3 functionality', (t) => {
   let GetObjectCommand
 
   t.before(() => {
-    const { version } = require('@aws-sdk/client-s3/package')
-    console.log(`AWS Version: ${version}`)
+    const { version, name } = require('@aws-sdk/client-s3/package')
+    // eslint-disable-next-line no-console
+    console.log(`AWS package: ${name} version: ${version}`)
   })
 
   t.beforeEach(() => {

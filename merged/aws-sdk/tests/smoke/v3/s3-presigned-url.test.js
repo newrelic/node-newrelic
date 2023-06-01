@@ -18,6 +18,12 @@ tap.test('@aws-sdk/s3-request-presigner functionality', (t) => {
   let GetObjectCommand
   let getSignedUrl
 
+  t.before(() => {
+    const { version, name } = require('@aws-sdk/s3-request-presigner/package')
+    // eslint-disable-next-line no-console
+    console.log(`AWS package: ${name} version: ${version}`)
+  })
+
   t.beforeEach(() => {
     helperAgent = utils.TestAgent.makeInstrumented()
     registerInstrumentation(helperAgent)
