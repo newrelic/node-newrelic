@@ -15,6 +15,7 @@ require('./lib/util/unwrapped-core')
 const featureFlags = require('./lib/feature_flags').prerelease
 const psemver = require('./lib/util/process-version')
 let logger = require('./lib/logger') // Gets re-loaded after initialization.
+const NAMES = require('./lib/metrics/names')
 
 const pkgJSON = require('./package.json')
 logger.info(
@@ -173,10 +174,30 @@ function createAgent(config) {
 }
 
 function addStartupSupportabilities(agent) {
-  // TODO: As new versions come out, make sure to update Angler metrics.
-  const nodeMajor = /^v?(\d+)/.exec(process.version)
-  agent.recordSupportability('Nodejs/Version/' + ((nodeMajor && nodeMajor[1]) || 'unknown'))
+  recordLoaderMetric(agent)
+  recordNodeVersionMetric(agent)
+  recordFeatureFlagMetrics(agent)
+  recordSourceMapMetric(agent)
+}
 
+/**
+ * Records the major version of the Node.js runtiem
+ * TODO: As new versions come out, make sure to update Angler metrics.
+ *
+ * @param {Agent} agent active NR agent
+ */
+function recordNodeVersionMetric(agent) {
+  const nodeMajor = /^v?(\d+)/.exec(process.version)
+  const version = (nodeMajor && nodeMajor[1]) || 'unknown'
+  agent.recordSupportability(`Nodejs/Version/${version}`)
+}
+
+/**
+ * Records all the feature flags configured and if they are enabled/disabled
+ *
+ * @param {Agent} agent active NR agent
+ */
+function recordFeatureFlagMetrics(agent) {
   const configFlags = Object.keys(agent.config.feature_flag)
   for (let i = 0; i < configFlags.length; ++i) {
     const flag = configFlags[i]
@@ -187,5 +208,39 @@ function addStartupSupportabilities(agent) {
         'Nodejs/FeatureFlag/' + flag + '/' + (enabled ? 'enabled' : 'disabled')
       )
     }
+  }
+}
+
+/**
+ * Used to determine how the agent is getting loaded:
+ *  1. -r newrelic
+ *  2. --loader newrelic/esm-loader.mjs
+ *  3. require('newrelic')
+ *
+ *  Then a supportability metric is loaded to decide.
+ *  Note: We already take care of scenario #2 in newrelic/esm-loader.mjs
+ *
+ * @param {Agent} agent active NR agent
+ */
+function recordLoaderMetric(agent) {
+  const dashR = process.execArgv.indexOf('-r')
+  const isESM = agent.metrics.getMetric(NAMES.FEATURES.ESM.LOADER)
+
+  if (process.execArgv[dashR + 1] === 'newrelic') {
+    agent.metrics.getOrCreateMetric(NAMES.FEATURES.CJS.PRELOAD).incrementCallCount()
+  } else if (!isESM) {
+    agent.metrics.getOrCreateMetric(NAMES.FEATURES.CJS.REQUIRE).incrementCallCount()
+  }
+}
+
+/**
+ * Checks to see if `--enable-source-maps` is being used and logs a supportability metric.
+ *
+ * @param {Agent} agent active NR agent
+ */
+function recordSourceMapMetric(agent) {
+  const isSourceMapsEnabled = process.execArgv.indexOf('--enable-source-maps')
+  if (isSourceMapsEnabled > -1) {
+    agent.metrics.getOrCreateMetric(NAMES.FEATURES.SOURCE_MAPS).incrementCallCount()
   }
 }
