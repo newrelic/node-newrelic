@@ -18,6 +18,12 @@ tap.test('@aws-sdk/client-s3 functionality', (t) => {
   let client
   let GetObjectCommand
 
+  t.before(() => {
+    const { version, name } = require('@aws-sdk/client-s3/package')
+    // eslint-disable-next-line no-console
+    console.log(`AWS package: ${name} version: ${version}`)
+  })
+
   t.beforeEach(() => {
     helperAgent = utils.TestAgent.makeInstrumented()
     registerInstrumentation(helperAgent)

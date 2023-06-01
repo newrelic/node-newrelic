@@ -21,7 +21,8 @@ jobs:
       with:
         node-version: ${{ matrix.node-version }}
     - name: Install Dependencies
-      run: npm ci
+      # Purposely running install so it gets latest of aws sdk
+      run: npm install 
     - name: Run Smoke Tests
       run: npm run smoke
       env:
