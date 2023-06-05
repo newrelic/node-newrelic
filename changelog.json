@@ -2,6 +2,18 @@
   "repository": "newrelic/node-newrelic",
   "entries": [
     {
+      "version": "10.2.0",
+      "changes": {
+        "security": [],
+        "bugfixes": [
+          "log execArgs at the debug level"
+        ],
+        "features": [
+          "added supportability metrics to indicate how agent was loaded and if --enable-source-maps was passed to Node.js runtime"
+        ]
+      }
+    },
+    {
       "version": "10.1.2",
       "changes": {
         "security": [],

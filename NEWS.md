@@ -1,3 +1,23 @@
+### v10.2.0 (2023-06-05)
+
+#### Features
+
+* added supportability metrics to indicate how agent was loaded and if --enable-source-maps was passed to Node.js runtime ([#1657](https://github.com/newrelic/node-newrelic/pull/1657)) ([6f6f7e6](https://github.com/newrelic/node-newrelic/commit/6f6f7e68bf382c6082550306aee30a670652347d))
+    *  * `Supportability/Features/CJS/Preload` - recorded if `-r newrelic` was used to load agent  * `Supportability/Features/CJS/Require` - recorded if `require('newrelic')` was used to load agent  * `Supportability/Features/EnableSourceMaps` - recorded if `node --enable-source-maps` was present to start application
+
+#### Bug Fixes
+
+* **logger:** log execArgs at the debug level ([#1654](https://github.com/newrelic/node-newrelic/pull/1654)) ([c85c006](https://github.com/newrelic/node-newrelic/commit/c85c006e722fce1271795b2613e1dd2a96983046))
+
+#### Miscellaneous Chores
+
+* Update c8 to merge v8 coverage reports asynchronously to avoid OOM issues ([#1652](https://github.com/newrelic/node-newrelic/pull/1652)) ([34376d7](https://github.com/newrelic/node-newrelic/commit/34376d7d51c0e0d34a5c94b53785d153341f06b8))
+* update explorer hub link in readme ([#1656](https://github.com/newrelic/node-newrelic/pull/1656)) ([c1e81a7](https://github.com/newrelic/node-newrelic/commit/c1e81a7d04c113dc3659dad3c777d0ce2dd21162))
+
+#### Tests
+
+* added unit tests for MySQL instrumentation ([#1649](https://github.com/newrelic/node-newrelic/pull/1649)) ([b693ba0](https://github.com/newrelic/node-newrelic/commit/b693ba039a42f9034f5206692e6d7a0523e23e51))
+
 ### v10.1.2 (2023-05-24)
 
 #### Bug Fixes
