@@ -181,7 +181,7 @@ function addStartupSupportabilities(agent) {
 }
 
 /**
- * Records the major version of the Node.js runtiem
+ * Records the major version of the Node.js runtime
  * TODO: As new versions come out, make sure to update Angler metrics.
  *
  * @param {Agent} agent active NR agent
@@ -223,12 +223,17 @@ function recordFeatureFlagMetrics(agent) {
  * @param {Agent} agent active NR agent
  */
 function recordLoaderMetric(agent) {
-  const dashR = process.execArgv.indexOf('-r')
   const isESM = agent.metrics.getMetric(NAMES.FEATURES.ESM.LOADER)
+  let isDashR = false
 
-  if (process.execArgv[dashR + 1] === 'newrelic') {
-    agent.metrics.getOrCreateMetric(NAMES.FEATURES.CJS.PRELOAD).incrementCallCount()
-  } else if (!isESM) {
+  process.execArgv.forEach((arg, index) => {
+    if (arg === '-r' && process.execArgv[index + 1] === 'newrelic') {
+      agent.metrics.getOrCreateMetric(NAMES.FEATURES.CJS.PRELOAD).incrementCallCount()
+      isDashR = true
+    }
+  })
+
+  if (!isESM && !isDashR) {
     agent.metrics.getOrCreateMetric(NAMES.FEATURES.CJS.REQUIRE).incrementCallCount()
   }
 }
@@ -239,8 +244,8 @@ function recordLoaderMetric(agent) {
  * @param {Agent} agent active NR agent
  */
 function recordSourceMapMetric(agent) {
-  const isSourceMapsEnabled = process.execArgv.indexOf('--enable-source-maps')
-  if (isSourceMapsEnabled > -1) {
+  const isSourceMapsEnabled = process.execArgv.includes('--enable-source-maps')
+  if (isSourceMapsEnabled) {
     agent.metrics.getOrCreateMetric(NAMES.FEATURES.SOURCE_MAPS).incrementCallCount()
   }
 }

@@ -64,6 +64,24 @@ tap.test('loader metrics', (t) => {
     t.end()
   })
 
+  t.test(
+    'should detect preload metric if newrelic is one of the -r calls but not the first',
+    (t) => {
+      process.execArgv = ['-r', 'some-cool-lib', '--inspect', '-r', 'newrelic']
+      const agent = proxyquire('../../index', {
+        './lib/agent': MockAgent,
+        './lib/shimmer': shimmerMock,
+        './api': ApiMock
+      })
+
+      const metricCall = agent.agent.metrics.getOrCreateMetric
+
+      t.equal(metricCall.args.length, 1)
+      t.equal(metricCall.args[0][0], 'Supportability/Features/CJS/Preload')
+      t.end()
+    }
+  )
+
   t.test('should not load preload nor require metric is esm loader loads agent', (t) => {
     metricsMock.getMetric.withArgs('Supportability/Features/ESM/Loader').returns(true)
     const agent = proxyquire('../../index', {
