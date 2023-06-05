@@ -2,7 +2,7 @@
 
 #### Features
 
-* Added supportability metrics to indicate how agent was loaded and if --enable-source-maps was passed to Node.js runtime ([#1657](https://github.com/newrelic/node-newrelic/pull/1657)) ([6f6f7e6](https://github.com/newrelic/node-newrelic/commit/6f6f7e68bf382c6082550306aee30a670652347d))
+* Added supportability metrics to indicate how agent was loaded and if source maps were enabled ([#1657](https://github.com/newrelic/node-newrelic/pull/1657)) ([6f6f7e6](https://github.com/newrelic/node-newrelic/commit/6f6f7e68bf382c6082550306aee30a670652347d))
     * `Supportability/Features/CJS/Preload` - recorded if `-r newrelic` was used to load agent  
     * `Supportability/Features/CJS/Require` - recorded if `require('newrelic')` was used to load agent  
     * `Supportability/Features/EnableSourceMaps` - recorded if `node --enable-source-maps` was present to start application
@@ -11,7 +11,7 @@
 
 #### Miscellaneous Chores
 
-* Update c8 to merge v8 coverage reports asynchronously to avoid OOM issues ([#1652](https://github.com/newrelic/node-newrelic/pull/1652)) ([34376d7](https://github.com/newrelic/node-newrelic/commit/34376d7d51c0e0d34a5c94b53785d153341f06b8))
+* Updated c8 to merge v8 coverage reports asynchronously to avoid OOM issues ([#1652](https://github.com/newrelic/node-newrelic/pull/1652)) ([34376d7](https://github.com/newrelic/node-newrelic/commit/34376d7d51c0e0d34a5c94b53785d153341f06b8))
 * Updated explorer hub link in readme ([#1656](https://github.com/newrelic/node-newrelic/pull/1656)) ([c1e81a7](https://github.com/newrelic/node-newrelic/commit/c1e81a7d04c113dc3659dad3c777d0ce2dd21162))
 
 #### Tests
