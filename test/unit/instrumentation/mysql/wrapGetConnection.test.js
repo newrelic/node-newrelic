@@ -26,7 +26,8 @@ tap.test('wrapGetConnection', (t) => {
       },
       getSegment: sinon.stub().returns(),
       wrap: sinon.stub().returns(),
-      bindSegment: sinon.stub().returns()
+      bindSegment: sinon.stub().returns(),
+      getOriginalOnce: sinon.stub().returns()
     }
 
     mockConnection = {}
