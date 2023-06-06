@@ -5,11 +5,10 @@
       "version": "10.2.0",
       "changes": {
         "security": [],
-        "bugfixes": [
-          "log execArgs at the debug level"
-        ],
+        "bugfixes": [],
         "features": [
-          "added supportability metrics to indicate how agent was loaded and if --enable-source-maps was passed to Node.js runtime"
+          "added supportability metrics to indicate how agent was loaded and if --enable-source-maps was passed to Node.js runtime",
+          "log execArgs at the debug level"
         ]
       }
     },
