@@ -201,7 +201,7 @@ tap.test('Transaction unit tests', (t) => {
 
     txn._setApdex('Apdex/TestController/another', 1200)
     const another = txn.metrics.getMetric('Apdex/TestController/another')
-    t.equal(another.apdexT, 0.1, 'should not require a key transaction')
+    t.equal(another.apdexT, 0.1, 'should not require a key transaction apdexT')
     t.end()
   })
 })
