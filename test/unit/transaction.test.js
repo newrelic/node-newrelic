@@ -1367,7 +1367,7 @@ tap.test('insertDistributedTraceHeaders', (t) => {
           ty: 'Mobile',
           ac: trustedAccountKey,
           ap: '51424',
-          id: '5f4n74d64b9cc9b2a',
+          id: '5f474d64b9cc9b2a',
           tr: incomingTraceId,
           pr: 0.1234,
           sa: true,
