@@ -1,0 +1,73 @@
+name: Node Agent CI (no-op run)
+
+on: 
+  - push:
+      paths-ignore: &path_anchor
+        - '**.js'
+        - 'bin/**'
+        # If this changed, it means we changed something in the code.
+        # There's bits of code we could change in package.json that
+        # should trigger a build, but more often than not, we'll be
+        # changing the version number in it.
+        - 'package-lock.json'
+  - pull_request:
+      paths-ignore: *path_anchor
+  - workflow_dispatch:
+      paths-ignore: *path_anchor
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [lts/*]
+
+    steps:
+      - run: 'echo "No linting required"'
+  ci:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [lts/*]
+
+    steps:
+      - run: 'echo "No CI of scripts required"'
+  unit:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [14.x, 16.x, 18.x]
+
+    steps:
+      - run: 'echo "No unit tests required"'
+
+  integration:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [14.x, 16.x, 18.x]
+
+    steps:
+      - run: 'echo "No integration tests required"'
+  versioned:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [14.x, 16.x, 18.x]
+
+    steps:
+      - run: 'echo "No versioned tests required"'
+  codecov:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [14.x, 16.x, 18.x]
+
+    steps:
+      - run: 'echo "No code coverage required"'
