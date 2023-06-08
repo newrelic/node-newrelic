@@ -208,26 +208,26 @@ tap.test('Transaction unit tests', (t) => {
 
 tap.test('Transaction naming tests', (t) => {
   t.autoend()
-  const agent = helper.loadMockedAgent({
-    attributes: {
-      enabled: true,
-      include: ['request.parameters.*']
-    }
-  })
-  t.beforeEach(() => {
+  let agent = null
+  let txn = null
+  function beforeEach() {
+    agent = helper.loadMockedAgent({
+      attributes: {
+        enabled: true,
+        include: ['request.parameters.*']
+      }
+    })
     agent.config.emit('attributes.include')
-  })
+    txn = new Transaction(agent)
+  }
 
-  t.teardown(() => {
+  t.afterEach(() => {
     helper.unloadAgent(agent)
   })
 
   t.test('getName', (t) => {
     t.autoend()
-    let txn = null
-    t.beforeEach(() => {
-      txn = new Transaction(agent)
-    })
+    t.beforeEach(beforeEach)
 
     t.test('base test', (t) => {
       t.equal(txn.getName(), null, 'should return `null` if there is no name, partialName, or url')
@@ -261,10 +261,7 @@ tap.test('Transaction naming tests', (t) => {
 
   t.test('isIgnored', (t) => {
     t.autoend()
-    let txn = null
-    t.beforeEach(() => {
-      txn = new Transaction(agent)
-    })
+    t.beforeEach(beforeEach)
 
     t.test('should return true if a transaction is ignored by a rule', (t) => {
       const api = new API(agent)
@@ -277,10 +274,7 @@ tap.test('Transaction naming tests', (t) => {
 
   t.test('getFullName', (t) => {
     t.autoend()
-    let txn = null
-    t.beforeEach(() => {
-      txn = new Transaction(agent)
-    })
+    t.beforeEach(beforeEach)
 
     t.test('should return null if it does not have name, partialName, or url', (t) => {
       t.equal(txn.getFullName(), null, 'should not have a full name')
@@ -330,10 +324,7 @@ tap.test('Transaction naming tests', (t) => {
 
   t.test('with no partial name set', (t) => {
     t.autoend()
-    let txn = null
-    t.beforeEach(() => {
-      txn = new Transaction(agent)
-    })
+    t.beforeEach(beforeEach)
 
     t.test('produces a normalized (backstopped) name when status is 200', (t) => {
       txn.finalizeNameFromUri('/test/string?do=thing&another=thing', 200)
@@ -447,10 +438,9 @@ tap.test('Transaction naming tests', (t) => {
 
   t.test('with a custom partial name set', (t) => {
     t.autoend()
-    let txn = null
 
     t.beforeEach(() => {
-      txn = new Transaction(agent)
+      beforeEach()
       txn.nameState.setPrefix('Custom')
       txn.nameState.appendPath('test')
       agent.transactionNameNormalizer.rules = []
@@ -528,54 +518,50 @@ tap.test('Transaction naming tests', (t) => {
 
   t.test('pathHashes', (t) => {
     t.autoend()
-    let transaction = null
-
-    t.beforeEach(() => {
-      transaction = new Transaction(agent)
-    })
+    t.beforeEach(beforeEach)
 
     t.test('should add up to 10 items to to pathHashes', (t) => {
       const toAdd = ['1', '2', '3', '4', '4', '5', '6', '7', '8', '9', '10', '11']
       const expected = ['10', '9', '8', '7', '6', '5', '4', '3', '2', '1']
 
-      toAdd.forEach(transaction.pushPathHash.bind(transaction))
-      t.same(transaction.pathHashes, expected)
+      toAdd.forEach(txn.pushPathHash.bind(txn))
+      t.same(txn.pathHashes, expected)
       t.end()
     })
 
     t.test('should not include current pathHash in alternatePathHashes', (t) => {
-      transaction.name = '/a/b/c'
-      transaction.referringPathHash = '/d/e/f'
+      txn.name = '/a/b/c'
+      txn.referringPathHash = '/d/e/f'
 
       const curHash = hashes.calculatePathHash(
         agent.config.applications()[0],
-        transaction.name,
-        transaction.referringPathHash
+        txn.name,
+        txn.referringPathHash
       )
 
-      transaction.pathHashes = ['/a', curHash, '/a/b']
-      t.equal(transaction.alternatePathHashes(), '/a,/a/b')
-      transaction.nameState.setPrefix(transaction.name)
-      transaction.name = null
-      transaction.pathHashes = ['/a', '/a/b']
-      t.equal(transaction.alternatePathHashes(), '/a,/a/b')
+      txn.pathHashes = ['/a', curHash, '/a/b']
+      t.equal(txn.alternatePathHashes(), '/a,/a/b')
+      txn.nameState.setPrefix(txn.name)
+      txn.name = null
+      txn.pathHashes = ['/a', '/a/b']
+      t.equal(txn.alternatePathHashes(), '/a,/a/b')
       t.end()
     })
 
     t.test('should return null when no alternate pathHashes exist', (t) => {
-      transaction.nameState.setPrefix('/a/b/c')
-      transaction.referringPathHash = '/d/e/f'
+      txn.nameState.setPrefix('/a/b/c')
+      txn.referringPathHash = '/d/e/f'
 
       const curHash = hashes.calculatePathHash(
         agent.config.applications()[0],
-        transaction.nameState.getName(),
-        transaction.referringPathHash
+        txn.nameState.getName(),
+        txn.referringPathHash
       )
 
-      transaction.pathHashes = [curHash]
-      t.equal(transaction.alternatePathHashes(), null)
-      transaction.pathHashes = []
-      t.equal(transaction.alternatePathHashes(), null)
+      txn.pathHashes = [curHash]
+      t.equal(txn.alternatePathHashes(), null)
+      txn.pathHashes = []
+      t.equal(txn.alternatePathHashes(), null)
       t.end()
     })
   })
