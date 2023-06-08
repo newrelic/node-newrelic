@@ -1,6 +1,19 @@
 name: Node Agent CI
 
-on: [push, pull_request, workflow_dispatch]
+on: 
+  - push:
+      paths: &path_anchor
+        - '**.js'
+        - 'bin/**'
+        # If this changed, it means we changed something in the code.
+        # There's bits of code we could change in package.json that
+        # should trigger a build, but more often than not, we'll be
+        # changing the version number in it.
+        - 'package-lock.json'
+  - pull_request:
+      paths: *path_anchor
+  - workflow_dispatch:
+      paths: *path_anchor
 
 jobs:
   lint:
