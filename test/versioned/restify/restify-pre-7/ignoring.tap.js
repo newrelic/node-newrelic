@@ -44,7 +44,6 @@ test('Restify router introspection', function (t) {
         ? 14
         : 15
       : 7
-    console.log(Object.keys(metrics))
     t.equal(
       Object.keys(metrics).length,
       expectedMetrics,
