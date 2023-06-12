@@ -7,7 +7,7 @@
         "security": [],
         "bugfixes": [],
         "features": [
-          "Load IAST security agent when security.agent.enabled is true"
+          "Added IAST security agent capabilities when security.agent.enabled is true"
         ]
       }
     },

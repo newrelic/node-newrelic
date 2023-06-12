@@ -1,13 +1,12 @@
-### v10.3.0 (2023-06-12)
+### v10.3.0 (2023-06-13)
 
 #### Features
 
-* Load IAST security agent when security.agent.enabled is true ([#1664](https://github.com/newrelic/node-newrelic/pull/1664)) ([3e926e5](https://github.com/newrelic/node-newrelic/commit/3e926e59ab5feba4b2759d8a108c424b237b5eda))
-    *  **NOTE**: The security agent feature is in public preview and should only be used in pre-production environments.   To enable security agent in IAST mode set `config.security.agent.enabled` and `config.security.enabled` to true    
+* Added Interactive Application Security Testing(IAST) mode of security agent when `config.security.agent.enabled` is true. ([#1664](https://github.com/newrelic/node-newrelic/pull/1664)) ([3e926e5](https://github.com/newrelic/node-newrelic/commit/3e926e59ab5feba4b2759d8a108c424b237b5eda))
 
-#### Continuous Integration
+**NOTE**: The security agent IAST mode is in public preview and should only be used in non-production environments.   
 
-* fixed changelog classification of a feature that was marked as a bug ([#1662](https://github.com/newrelic/node-newrelic/pull/1662)) ([504c4b4](https://github.com/newrelic/node-newrelic/commit/504c4b45755d920d14bec4e6d05ef77c4e25e662))
+* To enable the security agent set `config.security.agent.enabled` and `config.security.enabled` to true. 
 
 ### v10.2.0 (2023-06-06)
 
