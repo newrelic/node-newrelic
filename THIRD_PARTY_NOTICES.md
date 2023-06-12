@@ -19,6 +19,7 @@ code, the source code can be found at [https://github.com/newrelic/node-newrelic
 * [@mrleebo/prisma-ast](#mrleeboprisma-ast)
 * [@newrelic/aws-sdk](#newrelicaws-sdk)
 * [@newrelic/koa](#newrelickoa)
+* [@newrelic/security-agent](#newrelicsecurity-agent)
 * [@newrelic/superagent](#newrelicsuperagent)
 * [@tyriar/fibonacci-heap](#tyriarfibonacci-heap)
 * [concat-stream](#concat-stream)
@@ -89,7 +90,7 @@ code, the source code can be found at [https://github.com/newrelic/node-newrelic
 
 ### @grpc/grpc-js
 
-This product includes source derived from [@grpc/grpc-js](https://github.com/grpc/grpc-node/tree/master/packages/grpc-js) ([v1.8.12](https://github.com/grpc/grpc-node/tree/master/packages/grpc-js/tree/v1.8.12)), distributed under the [Apache-2.0 License](https://github.com/grpc/grpc-node/tree/master/packages/grpc-js/blob/v1.8.12/LICENSE):
+This product includes source derived from [@grpc/grpc-js](https://github.com/grpc/grpc-node/tree/master/packages/grpc-js) ([v1.8.14](https://github.com/grpc/grpc-node/tree/master/packages/grpc-js/tree/v1.8.14)), distributed under the [Apache-2.0 License](https://github.com/grpc/grpc-node/tree/master/packages/grpc-js/blob/v1.8.14/LICENSE):
 
 ```
                                  Apache License
@@ -298,7 +299,7 @@ This product includes source derived from [@grpc/grpc-js](https://github.com/grp
 
 ### @grpc/proto-loader
 
-This product includes source derived from [@grpc/proto-loader](https://github.com/grpc/grpc-node) ([v0.7.5](https://github.com/grpc/grpc-node/tree/v0.7.5)), distributed under the [Apache-2.0 License](https://github.com/grpc/grpc-node/blob/v0.7.5/LICENSE):
+This product includes source derived from [@grpc/proto-loader](https://github.com/grpc/grpc-node) ([v0.7.7](https://github.com/grpc/grpc-node/tree/v0.7.7)), distributed under the [Apache-2.0 License](https://github.com/grpc/grpc-node/blob/v0.7.7/LICENSE):
 
 ```
                                  Apache License
@@ -535,7 +536,7 @@ SOFTWARE.
 
 ### @newrelic/aws-sdk
 
-This product includes source derived from [@newrelic/aws-sdk](https://github.com/newrelic/node-newrelic-aws-sdk) ([v5.0.2](https://github.com/newrelic/node-newrelic-aws-sdk/tree/v5.0.2)), distributed under the [Apache-2.0 License](https://github.com/newrelic/node-newrelic-aws-sdk/blob/v5.0.2/LICENSE):
+This product includes source derived from [@newrelic/aws-sdk](https://github.com/newrelic/node-newrelic-aws-sdk) ([v5.0.5](https://github.com/newrelic/node-newrelic-aws-sdk/tree/v5.0.5)), distributed under the [Apache-2.0 License](https://github.com/newrelic/node-newrelic-aws-sdk/blob/v5.0.5/LICENSE):
 
 ```
                                  Apache License
@@ -743,7 +744,7 @@ This product includes source derived from [@newrelic/aws-sdk](https://github.com
 
 ### @newrelic/koa
 
-This product includes source derived from [@newrelic/koa](https://github.com/newrelic/node-newrelic-koa) ([v7.1.1](https://github.com/newrelic/node-newrelic-koa/tree/v7.1.1)), distributed under the [Apache-2.0 License](https://github.com/newrelic/node-newrelic-koa/blob/v7.1.1/LICENSE):
+This product includes source derived from [@newrelic/koa](https://github.com/newrelic/node-newrelic-koa) ([v7.2.0](https://github.com/newrelic/node-newrelic-koa/tree/v7.2.0)), distributed under the [Apache-2.0 License](https://github.com/newrelic/node-newrelic-koa/blob/v7.2.0/LICENSE):
 
 ```
 Apache License
@@ -947,6 +948,57 @@ Apache License
    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
    See the License for the specific language governing permissions and
    limitations under the License.
+
+```
+
+### @newrelic/security-agent
+
+This product includes source derived from [@newrelic/security-agent](https://github.com/newrelic/csec-node-agent) ([v0.1.2](https://github.com/newrelic/csec-node-agent/tree/v0.1.2)), distributed under the [New Relic Pre-Release License](https://github.com/newrelic/csec-node-agent/blob/v0.1.2/LICENSE):
+
+```
+## New Relic Pre-Release Software Notice
+
+### Acceptance
+
+This software license applies to the repositories, directories, or files that it has been associated with (referred to here as the “Pre-Release Software”). In order to get any license under these terms, you must agree to them as both strict obligations and conditions to all your licenses.
+License
+
+New Relic, Inc. (“New Relic”) grants you a license under its copyrights and patents to do everything necessary for you to use the Pre-Release Software for the Permitted Purposes and subject to your compliance with the Confidentiality terms and all other Restrictions on Use.  All other uses are prohibited.
+
+### Permitted Purposes
+
+The Pre-Release Software is solely for use with New Relic’s proprietary SaaS service (“New Relic Service”).   To use the Pre-Release Software you must have a valid and active  subscription agreement to the New Relic Service. You may not use the Pre-Release Software in conjunction with any other similar service. 
+
+Use of the Pre-Release Software is limited to evaluation and feedback, including pull requests, of the pre-release features and capabilities. The use of the Pre-Release Software requires a signed New Relic Pre-Release Agreement.  The New Relic Pre-Release Agreement will control in event of a conflict with this license.  The Pre-Release Software is also subject to the New Relic pre-release policy.  A copy of the New Relic Pre-release policy available at https://docs.newrelic.com/docs/licenses/license-information/referenced-policies/new-relic-pre-release-policy/.
+
+### Confidentiality
+
+Any Pre-Release Software not posted publicly contains New Relic Trade Secrets. You may not disclose the features and capabilities of the Pre-Release Software to any third party by any means. You will use commercially reasonable measures to maintain the secrecy of the features and capabilities of the Pre-Release Software. Without limiting the permissions you receive under any open source software (“OSS”) license, you may not disclose the source code of any OSS included as part of the Pre-Release Software in a way that discloses the New Relic Trade Secrets.
+
+### Restrictions on Use 
+
+1. The use of the Pre-Release Software is limited to you and your organization. You cannot expose the Pre-Release Software to third parties via the network or use the Pre-Release Software on behalf of anyone else.
+2. You cannot modify the Pre-Release Software. You can compile or link the Pre-Release Software into your programs as described in the New Relic Documentation, but you cannot otherwise make any derivative works of the Pre-Release Software.
+3. You cannot reverse engineer or decompile the Pre-Release Software. 
+4. You cannot use the Pre-Release Software for competitive analysis, benchmarking, or any purposes that compete with or are intended to compete with New Relic.
+5. You cannot remove or obscure any proprietary notices in the Pre-Release Software.
+6. You can only copy the Software to the extent needed to use the Pre-Release Software within your organization. You cannot distribute the Software to any third parties.
+7. You can only use the New Relic Services and the Pre-Release Software consistent with New Relic’s product Documentation and Acceptable Use Policy.
+
+### Intellectual Property
+
+Any feedback provided to New Relic about the Pre-Release Software, including feedback provided as source code, comments, or other copyrightable or patentable material, is provided to New Relic under the terms of the Apache Software License, version 2. If you do not provide attribution information or a copy of the license with your feedback, you waive the performance of those requirements of the Apache License with respect to New Relic. The license grant regarding any feedback is irrevocable and persists past the termination of this license.
+
+### Termination
+
+This license terminates when the Pre-Release Software stops being provided by New Relic or when described by the New Relic Pre-Release Agreement, whichever comes first. When this license terminates, you have a commercially reasonable time to either remove the Pre-Release Software from your systems or to upgrade to a publicly released version of the Software.
+
+### Other Terms
+
+1. The Pre-Release Software is provided “AS IS.” New Relic disclaims all warranties, whether express, implied, statutory or otherwise, including warranties of merchantability, fitness for a particular purpose, title and noninfringement.
+2. The Pre-Release Software has known flaws.  You use the Pre-Release Software at your own risk.
+3. To the full extent permitted by law, New Relic will have no liability arising from or related to the Pre-Release Software or from this license for any direct, indirect, special, incidental, or consequential damages of any kind, even if advised of their possibility in advance, and regardless of legal theory (whether contract, tort, negligence, strict liability or otherwise).
+4. The Pre-Release Software may contain third-party software, including open source software. The third party software is governed by its own license and subject to its own terms, disclosed in the provided licensing information associated with the third party components.   If a source code disclosure is required under the terms of the license covering any OSS component, the source code can be requested of New Relic by emailing opensource@newrelic.com. 
 
 ```
 
@@ -1832,7 +1884,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 ### @newrelic/test-utilities
 
-This product includes source derived from [@newrelic/test-utilities](https://github.com/newrelic/node-test-utilities) ([v7.3.0](https://github.com/newrelic/node-test-utilities/tree/v7.3.0)), distributed under the [Apache-2.0 License](https://github.com/newrelic/node-test-utilities/blob/v7.3.0/LICENSE):
+This product includes source derived from [@newrelic/test-utilities](https://github.com/newrelic/node-test-utilities) ([v7.3.1](https://github.com/newrelic/node-test-utilities/tree/v7.3.1)), distributed under the [Apache-2.0 License](https://github.com/newrelic/node-test-utilities/blob/v7.3.1/LICENSE):
 
 ```
                                  Apache License
@@ -2071,7 +2123,7 @@ THE SOFTWARE.
 
 ### @slack/bolt
 
-This product includes source derived from [@slack/bolt](https://github.com/slackapi/bolt) ([v3.12.1](https://github.com/slackapi/bolt/tree/v3.12.1)), distributed under the [MIT License](https://github.com/slackapi/bolt/blob/v3.12.1/LICENSE):
+This product includes source derived from [@slack/bolt](https://github.com/slackapi/bolt) ([v3.13.1](https://github.com/slackapi/bolt/tree/v3.13.1)), distributed under the [MIT License](https://github.com/slackapi/bolt/blob/v3.13.1/LICENSE):
 
 ```
 The MIT License (MIT)
@@ -2180,7 +2232,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ### chai
 
-This product includes source derived from [chai](https://github.com/chaijs/chai) ([v4.3.6](https://github.com/chaijs/chai/tree/v4.3.6)), distributed under the [MIT License](https://github.com/chaijs/chai/blob/v4.3.6/LICENSE):
+This product includes source derived from [chai](https://github.com/chaijs/chai) ([v4.3.7](https://github.com/chaijs/chai/tree/v4.3.7)), distributed under the [MIT License](https://github.com/chaijs/chai/blob/v4.3.7/LICENSE):
 
 ```
 MIT License
@@ -2349,12 +2401,12 @@ SOFTWARE.
 
 ### eslint-config-prettier
 
-This product includes source derived from [eslint-config-prettier](https://github.com/prettier/eslint-config-prettier) ([v8.5.0](https://github.com/prettier/eslint-config-prettier/tree/v8.5.0)), distributed under the [MIT License](https://github.com/prettier/eslint-config-prettier/blob/v8.5.0/LICENSE):
+This product includes source derived from [eslint-config-prettier](https://github.com/prettier/eslint-config-prettier) ([v8.8.0](https://github.com/prettier/eslint-config-prettier/tree/v8.8.0)), distributed under the [MIT License](https://github.com/prettier/eslint-config-prettier/blob/v8.8.0/LICENSE):
 
 ```
 The MIT License (MIT)
 
-Copyright (c) 2017, 2018, 2019, 2020, 2021, 2022 Simon Lydell and contributors
+Copyright (c) 2017, 2018, 2019, 2020, 2021, 2022, 2023 Simon Lydell and contributors
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -2421,7 +2473,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 ### eslint-plugin-jsdoc
 
-This product includes source derived from [eslint-plugin-jsdoc](https://github.com/gajus/eslint-plugin-jsdoc) ([v39.3.6](https://github.com/gajus/eslint-plugin-jsdoc/tree/v39.3.6)), distributed under the [BSD-3-Clause License](https://github.com/gajus/eslint-plugin-jsdoc/blob/v39.3.6/LICENSE):
+This product includes source derived from [eslint-plugin-jsdoc](https://github.com/gajus/eslint-plugin-jsdoc) ([v39.9.1](https://github.com/gajus/eslint-plugin-jsdoc/tree/v39.9.1)), distributed under the [BSD-3-Clause License](https://github.com/gajus/eslint-plugin-jsdoc/blob/v39.9.1/LICENSE):
 
 ```
 Copyright (c) 2018, Gajus Kuizinas (http://gajus.com/)
@@ -2688,7 +2740,7 @@ Library.
 
 ### eslint
 
-This product includes source derived from [eslint](https://github.com/eslint/eslint) ([v8.24.0](https://github.com/eslint/eslint/tree/v8.24.0)), distributed under the [MIT License](https://github.com/eslint/eslint/blob/v8.24.0/LICENSE):
+This product includes source derived from [eslint](https://github.com/eslint/eslint) ([v8.40.0](https://github.com/eslint/eslint/tree/v8.40.0)), distributed under the [MIT License](https://github.com/eslint/eslint/blob/v8.40.0/LICENSE):
 
 ```
 Copyright OpenJS Foundation and other contributors, <www.openjsf.org>
@@ -2715,7 +2767,7 @@ THE SOFTWARE.
 
 ### express
 
-This product includes source derived from [express](https://github.com/expressjs/express) ([v4.18.1](https://github.com/expressjs/express/tree/v4.18.1)), distributed under the [MIT License](https://github.com/expressjs/express/blob/v4.18.1/LICENSE):
+This product includes source derived from [express](https://github.com/expressjs/express) ([v4.18.2](https://github.com/expressjs/express/tree/v4.18.2)), distributed under the [MIT License](https://github.com/expressjs/express/blob/v4.18.2/LICENSE):
 
 ```
 (The MIT License)
@@ -2805,7 +2857,7 @@ https://creativecommons.org/licenses/by-sa/4.0/
 
 ### got
 
-This product includes source derived from [got](https://github.com/sindresorhus/got) ([v11.8.5](https://github.com/sindresorhus/got/tree/v11.8.5)), distributed under the [MIT License](https://github.com/sindresorhus/got/blob/v11.8.5/license):
+This product includes source derived from [got](https://github.com/sindresorhus/got) ([v11.8.6](https://github.com/sindresorhus/got/tree/v11.8.6)), distributed under the [MIT License](https://github.com/sindresorhus/got/blob/v11.8.6/license):
 
 ```
 MIT License
@@ -2990,7 +3042,7 @@ SOFTWARE.
 
 ### lockfile-lint
 
-This product includes source derived from [lockfile-lint](https://github.com/lirantal/lockfile-lint) ([v4.9.6](https://github.com/lirantal/lockfile-lint/tree/v4.9.6)), distributed under the [Apache-2.0 License](https://github.com/lirantal/lockfile-lint/blob/v4.9.6/LICENSE):
+This product includes source derived from [lockfile-lint](https://github.com/lirantal/lockfile-lint) ([v4.10.1](https://github.com/lirantal/lockfile-lint/tree/v4.10.1)), distributed under the [Apache-2.0 License](https://github.com/lirantal/lockfile-lint/blob/v4.10.1/LICENSE):
 
 ```
 
@@ -3243,7 +3295,7 @@ SOFTWARE.
 
 ### prettier
 
-This product includes source derived from [prettier](https://github.com/prettier/prettier) ([v2.7.1](https://github.com/prettier/prettier/tree/v2.7.1)), distributed under the [MIT License](https://github.com/prettier/prettier/blob/v2.7.1/LICENSE):
+This product includes source derived from [prettier](https://github.com/prettier/prettier) ([v2.8.8](https://github.com/prettier/prettier/tree/v2.8.8)), distributed under the [MIT License](https://github.com/prettier/prettier/blob/v2.8.8/LICENSE):
 
 ```
 # Prettier license
@@ -3273,7 +3325,7 @@ Repository: <https://github.com/angular/angular.git>
 
 ----------------------------------------
 
-### @babel/code-frame@v7.16.7
+### @babel/code-frame@v7.18.6
 
 License: MIT
 By: The Babel Team
@@ -3304,7 +3356,7 @@ Repository: <https://github.com/babel/babel.git>
 
 ----------------------------------------
 
-### @babel/helper-validator-identifier@v7.16.7
+### @babel/helper-validator-identifier@v7.19.1
 
 License: MIT
 By: The Babel Team
@@ -3335,7 +3387,7 @@ Repository: <https://github.com/babel/babel.git>
 
 ----------------------------------------
 
-### @babel/highlight@v7.16.10
+### @babel/highlight@v7.18.6
 
 License: MIT
 By: The Babel Team
@@ -3366,7 +3418,7 @@ Repository: <https://github.com/babel/babel.git>
 
 ----------------------------------------
 
-### @babel/parser@v7.18.0
+### @babel/parser@v7.21.3
 
 License: MIT
 By: The Babel Team
@@ -3585,14 +3637,14 @@ License: MIT
 
 ----------------------------------------
 
-### @typescript-eslint/types@v5.27.0
+### @typescript-eslint/types@v5.55.0
 
 License: MIT
 Repository: <https://github.com/typescript-eslint/typescript-eslint.git>
 
 > MIT License
 >
-> Copyright (c) 2019 TypeScript ESLint and other contributors
+> Copyright (c) 2019 typescript-eslint and other contributors
 >
 > Permission is hereby granted, free of charge, to any person obtaining a copy
 > of this software and associated documentation files (the "Software"), to deal
@@ -3614,7 +3666,7 @@ Repository: <https://github.com/typescript-eslint/typescript-eslint.git>
 
 ----------------------------------------
 
-### @typescript-eslint/typescript-estree@v5.27.0
+### @typescript-eslint/typescript-estree@v5.55.0
 
 License: BSD-2-Clause
 Repository: <https://github.com/typescript-eslint/typescript-eslint.git>
@@ -3629,11 +3681,11 @@ Repository: <https://github.com/typescript-eslint/typescript-eslint.git>
 > Redistribution and use in source and binary forms, with or without
 > modification, are permitted provided that the following conditions are met:
 >
->   * Redistributions of source code must retain the above copyright
->     notice, this list of conditions and the following disclaimer.
->   * Redistributions in binary form must reproduce the above copyright
->     notice, this list of conditions and the following disclaimer in the
->     documentation and/or other materials provided with the distribution.
+> - Redistributions of source code must retain the above copyright
+>   notice, this list of conditions and the following disclaimer.
+> - Redistributions in binary form must reproduce the above copyright
+>   notice, this list of conditions and the following disclaimer in the
+>   documentation and/or other materials provided with the distribution.
 >
 > THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
 > AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
@@ -3648,14 +3700,14 @@ Repository: <https://github.com/typescript-eslint/typescript-eslint.git>
 
 ----------------------------------------
 
-### @typescript-eslint/visitor-keys@v5.27.0
+### @typescript-eslint/visitor-keys@v5.55.0
 
 License: MIT
 Repository: <https://github.com/typescript-eslint/typescript-eslint.git>
 
 > MIT License
 >
-> Copyright (c) 2019 TypeScript ESLint and other contributors
+> Copyright (c) 2019 typescript-eslint and other contributors
 >
 > Permission is hereby granted, free of charge, to any person obtaining a copy
 > of this software and associated documentation files (the "Software"), to deal
@@ -3677,14 +3729,14 @@ Repository: <https://github.com/typescript-eslint/typescript-eslint.git>
 
 ----------------------------------------
 
-### acorn@v8.7.0
+### acorn@v8.8.1
 
 License: MIT
 Repository: <https://github.com/acornjs/acorn.git>
 
 > MIT License
 >
-> Copyright (C) 2012-2020 by various contributors (see AUTHORS)
+> Copyright (C) 2012-2022 by various contributors (see AUTHORS)
 >
 > Permission is hereby granted, free of charge, to any person obtaining a copy
 > of this software and associated documentation files (the "Software"), to deal
@@ -4491,42 +4543,15 @@ By: Jon Schlinkert
 
 ----------------------------------------
 
-### debug@v4.3.4
-
-License: MIT
-By: Josh Junon
-Repository: <git://github.com/debug-js/debug.git>
-
-> (The MIT License)
->
-> Copyright (c) 2014-2017 TJ Holowaychuk <tj@vision-media.ca>
-> Copyright (c) 2018-2021 Josh Junon
->
-> Permission is hereby granted, free of charge, to any person obtaining a copy of this software
-> and associated documentation files (the 'Software'), to deal in the Software without restriction,
-> including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense,
-> and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so,
-> subject to the following conditions:
->
-> The above copyright notice and this permission notice shall be included in all copies or substantial
-> portions of the Software.
->
-> THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT
-> LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
-> IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
-> WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
-> SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-
-----------------------------------------
-
-### defaults@v1.0.3
+### defaults@v1.0.4
 
 License: MIT
 By: Elijah Insua
-Repository: <git://github.com/tmpvar/defaults.git>
+Repository: <git://github.com/sindresorhus/node-defaults.git>
 
 > The MIT License (MIT)
 >
+> Copyright (c) 2022 Sindre Sorhus
 > Copyright (c) 2015 Elijah Insua
 >
 > Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -4549,7 +4574,7 @@ Repository: <git://github.com/tmpvar/defaults.git>
 
 ----------------------------------------
 
-### del@v6.0.0
+### del@v6.1.1
 
 License: MIT
 By: Sindre Sorhus
@@ -4667,7 +4692,7 @@ Repository: <git://github.com/editorconfig/editorconfig-core-js.git>
 
 ----------------------------------------
 
-### editorconfig-to-prettier@v0.2.0
+### editorconfig-to-prettier@v1.0.0
 
 License: ISC
 By: Joseph Frazier
@@ -4987,7 +5012,7 @@ By: Toru Nagashima
 
 ----------------------------------------
 
-### espree@v9.3.1
+### espree@v9.4.1
 
 License: BSD-2-Clause
 By: Nicholas C. Zakas
@@ -5095,7 +5120,7 @@ Repository: <https://github.com/justmoon/node-extend.git>
 
 ----------------------------------------
 
-### fast-glob@v3.2.11
+### fast-glob@v3.2.12
 
 License: MIT
 By: Denis Malinochkin
@@ -5154,7 +5179,7 @@ Repository: <git://github.com/epoberezkin/fast-json-stable-stringify.git>
 
 ----------------------------------------
 
-### fastq@v1.13.0
+### fastq@v1.14.0
 
 License: ISC
 By: Matteo Collina
@@ -5328,7 +5353,7 @@ By: Roy Riojas
 
 ----------------------------------------
 
-### flatted@v3.2.5
+### flatted@v3.2.7
 
 License: ISC
 By: Andrea Giammarchi
@@ -5503,7 +5528,7 @@ By: Sindre Sorhus
 
 ----------------------------------------
 
-### glob@v7.2.0
+### glob@v7.2.3
 
 License: ISC
 By: Isaac Z. Schlueter
@@ -5573,14 +5598,14 @@ By: Sindre Sorhus
 
 ----------------------------------------
 
-### graceful-fs@v4.2.9
+### graceful-fs@v4.2.10
 
 License: ISC
 Repository: <https://github.com/isaacs/node-graceful-fs>
 
 > The ISC License
 >
-> Copyright (c) Isaac Z. Schlueter, Ben Noordhuis, and Contributors
+> Copyright (c) 2011-2022 Isaac Z. Schlueter, Ben Noordhuis, and Contributors
 >
 > Permission to use, copy, modify, and/or distribute this software for any
 > purpose with or without fee is hereby granted, provided that the above
@@ -5704,36 +5729,6 @@ By: Titus Wormer
 ----------------------------------------
 
 ### html-tag-names@v2.0.1
-
-License: MIT
-By: Titus Wormer
-
-> (The MIT License)
->
-> Copyright (c) 2016 Titus Wormer <tituswormer@gmail.com>
->
-> Permission is hereby granted, free of charge, to any person obtaining
-> a copy of this software and associated documentation files (the
-> 'Software'), to deal in the Software without restriction, including
-> without limitation the rights to use, copy, modify, merge, publish,
-> distribute, sublicense, and/or sell copies of the Software, and to
-> permit persons to whom the Software is furnished to do so, subject to
-> the following conditions:
->
-> The above copyright notice and this permission notice shall be
-> included in all copies or substantial portions of the Software.
->
-> THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND,
-> EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-> MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
-> IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
-> CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
-> TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
-> SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-
-----------------------------------------
-
-### html-void-elements@v2.0.1
 
 License: MIT
 By: Titus Wormer
@@ -6002,6 +5997,36 @@ Repository: <git@github.com:kaelzhang/node-ignore.git>
 
 ----------------------------------------
 
+### ignore@v5.2.4
+
+License: MIT
+By: kael
+Repository: <git@github.com:kaelzhang/node-ignore.git>
+
+> Copyright (c) 2013 Kael Zhang <i@kael.me>, contributors
+> http://kael.me/
+>
+> Permission is hereby granted, free of charge, to any person obtaining
+> a copy of this software and associated documentation files (the
+> "Software"), to deal in the Software without restriction, including
+> without limitation the rights to use, copy, modify, merge, publish,
+> distribute, sublicense, and/or sell copies of the Software, and to
+> permit persons to whom the Software is furnished to do so, subject to
+> the following conditions:
+>
+> The above copyright notice and this permission notice shall be
+> included in all copies or substantial portions of the Software.
+>
+> THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+> EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+> MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+> NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
+> LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+> OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+> WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+----------------------------------------
+
 ### import-fresh@v3.3.0
 
 License: MIT
@@ -6233,7 +6258,7 @@ Repository: <git://github.com/feross/is-buffer.git>
 
 ----------------------------------------
 
-### is-core-module@v2.8.1
+### is-core-module@v2.11.0
 
 License: MIT
 By: Jordan Harband
@@ -6578,7 +6603,7 @@ Repository: <git+https://github.com/isaacs/isexe.git>
 
 ----------------------------------------
 
-### jest-docblock@v27.5.1
+### jest-docblock@v28.1.1
 
 License: MIT
 Repository: <https://github.com/facebook/jest.git>
@@ -6669,7 +6694,7 @@ By: Kat Marchán
 
 ----------------------------------------
 
-### json5@v2.2.1
+### json5@v2.2.2
 
 License: MIT
 By: Aseem Kishore
@@ -7148,34 +7173,6 @@ Repository: <git://github.com/substack/minimist.git>
 > COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
 > IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 > CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-
-----------------------------------------
-
-### ms@v2.1.2
-
-License: MIT
-
-> The MIT License (MIT)
->
-> Copyright (c) 2016 Zeit, Inc.
->
-> Permission is hereby granted, free of charge, to any person obtaining a copy
-> of this software and associated documentation files (the "Software"), to deal
-> in the Software without restriction, including without limitation the rights
-> to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-> copies of the Software, and to permit persons to whom the Software is
-> furnished to do so, subject to the following conditions:
->
-> The above copyright notice and this permission notice shall be included in all
-> copies or substantial portions of the Software.
->
-> THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-> IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-> FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-> AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-> LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-> OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-> SOFTWARE.
 
 ----------------------------------------
 
@@ -7961,7 +7958,7 @@ By: Jon Schlinkert
 
 ----------------------------------------
 
-### resolve@v1.22.0
+### resolve@v1.22.1
 
 License: MIT
 By: James Halliday
@@ -8147,6 +8144,30 @@ License: ISC
 ----------------------------------------
 
 ### semver@v7.3.7
+
+License: ISC
+By: GitHub Inc.
+Repository: <https://github.com/npm/node-semver.git>
+
+> The ISC License
+>
+> Copyright (c) Isaac Z. Schlueter and Contributors
+>
+> Permission to use, copy, modify, and/or distribute this software for any
+> purpose with or without fee is hereby granted, provided that the above
+> copyright notice and this permission notice appear in all copies.
+>
+> THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+> WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+> MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+> ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+> WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+> ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR
+> IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+
+----------------------------------------
+
+### semver@v7.3.8
 
 License: ISC
 By: GitHub Inc.
@@ -8601,7 +8622,7 @@ Repository: <https://github.com/ajafff/tsutils>
 
 ----------------------------------------
 
-### typescript@v4.7.2
+### typescript@v5.0.2
 
 License: Apache-2.0
 By: Microsoft Corp.
@@ -9509,7 +9530,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 ### @contrast/fn-inspect
 
-This product includes source derived from [@contrast/fn-inspect](https://github.com/Contrast-Security-Inc/node-fn-inspect) ([v3.3.0](https://github.com/Contrast-Security-Inc/node-fn-inspect/tree/v3.3.0)), distributed under the [MIT License](https://github.com/Contrast-Security-Inc/node-fn-inspect/blob/v3.3.0/LICENSE):
+This product includes source derived from [@contrast/fn-inspect](https://github.com/Contrast-Security-Inc/node-fn-inspect) ([v3.3.1](https://github.com/Contrast-Security-Inc/node-fn-inspect/tree/v3.3.1)), distributed under the [MIT License](https://github.com/Contrast-Security-Inc/node-fn-inspect/blob/v3.3.1/LICENSE):
 
 ```
 Copyright 2022 Contrast Security, Inc

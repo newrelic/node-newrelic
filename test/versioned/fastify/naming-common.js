@@ -6,6 +6,7 @@
 'use strict'
 const { routesToTest, makeRequest } = require('./common')
 const metrics = require('../../lib/metrics_helper')
+const helper = require('../../lib/agent_helper')
 
 module.exports = function createTests(t, getExpectedSegments) {
   routesToTest.forEach((uri) => {
@@ -20,10 +21,22 @@ module.exports = function createTests(t, getExpectedSegments) {
           `transaction name matched for ${uri}`
         )
 
-        metrics.assertSegments(transaction.trace.root, [
-          `WebTransaction/WebFrameworkUri/Fastify/GET/${uri}`,
-          getExpectedSegments(uri)
-        ])
+        let expectedSegments
+        if (helper.isSecurityAgentEnabled(agent)) {
+          // since k2 agent adds an onRequest hook
+          // it sometimes has timers.setTimeout depending on route
+          expectedSegments = [
+            `WebTransaction/WebFrameworkUri/Fastify/GET/${uri}`,
+            ['Nodejs/Middleware/Fastify/onRequest/<anonymous>', getExpectedSegments(uri)]
+          ]
+        } else {
+          expectedSegments = [
+            `WebTransaction/WebFrameworkUri/Fastify/GET/${uri}`,
+            getExpectedSegments(uri)
+          ]
+        }
+
+        metrics.assertSegments(transaction.trace.root, expectedSegments)
       })
 
       await fastify.listen(0)

@@ -82,14 +82,30 @@ tap.test('fastify hook instrumentation', (t) => {
       )
       // all the hooks are siblings of the route handler
       // except the AFTER_HANDLER_HOOKS which are children of the route handler
-      metrics.assertSegments(transaction.trace.root, [
-        'WebTransaction/WebFrameworkUri/Fastify/GET//add-hook',
-        [
-          ...getExpectedSegments(REQUEST_HOOKS),
-          'Nodejs/Middleware/Fastify/routeHandler//add-hook',
-          getExpectedSegments(AFTER_HANDLER_HOOKS)
+      let expectedSegments
+      if (helper.isSecurityAgentEnabled(agent)) {
+        expectedSegments = [
+          'WebTransaction/WebFrameworkUri/Fastify/GET//add-hook',
+          [
+            'Nodejs/Middleware/Fastify/onRequest/<anonymous>',
+            [
+              ...getExpectedSegments(REQUEST_HOOKS),
+              'Nodejs/Middleware/Fastify/routeHandler//add-hook',
+              getExpectedSegments(AFTER_HANDLER_HOOKS)
+            ]
+          ]
         ]
-      ])
+      } else {
+        expectedSegments = [
+          'WebTransaction/WebFrameworkUri/Fastify/GET//add-hook',
+          [
+            ...getExpectedSegments(REQUEST_HOOKS),
+            'Nodejs/Middleware/Fastify/routeHandler//add-hook',
+            getExpectedSegments(AFTER_HANDLER_HOOKS)
+          ]
+        ]
+      }
+      metrics.assertSegments(transaction.trace.root, expectedSegments)
     })
 
     await fastify.listen(0)
@@ -123,13 +139,29 @@ tap.test('fastify hook instrumentation', (t) => {
         `transaction name matched`
       )
       // all the hooks are siblings of the route handler
-      metrics.assertSegments(transaction.trace.root, [
-        'WebTransaction/WebFrameworkUri/Fastify/GET//error',
-        [
-          'Nodejs/Middleware/Fastify/errorRoute//error',
-          [`Nodejs/Middleware/Fastify/${hookName}/testHook`]
+      let expectedSegments
+      if (helper.isSecurityAgentEnabled(agent)) {
+        expectedSegments = [
+          'WebTransaction/WebFrameworkUri/Fastify/GET//error',
+          [
+            'Nodejs/Middleware/Fastify/onRequest/<anonymous>',
+            [
+              'Nodejs/Middleware/Fastify/errorRoute//error',
+              [`Nodejs/Middleware/Fastify/${hookName}/testHook`]
+            ]
+          ]
         ]
-      ])
+      } else {
+        expectedSegments = [
+          'WebTransaction/WebFrameworkUri/Fastify/GET//error',
+          [
+            'Nodejs/Middleware/Fastify/errorRoute//error',
+            [`Nodejs/Middleware/Fastify/${hookName}/testHook`]
+          ]
+        ]
+      }
+
+      metrics.assertSegments(transaction.trace.root, expectedSegments)
     })
 
     await fastify.listen(0)

@@ -50,7 +50,6 @@ function initialize() {
         `New Relic for Node.js requires a version of Node ${pkgJSON.engines.node}. \n` +
         `Please upgrade from your current Node version: ${process.version}. Not starting!`
 
-      logger.error(message)
       throw new Error(message)
     }
 
@@ -104,7 +103,8 @@ function initialize() {
     API = require('./stub_api')
   }
 
-  require.cache.__NR_cache = module.exports = new API(agent)
+  const api = new API(agent)
+  require.cache.__NR_cache = module.exports = api
 
   // If we loaded an agent, record a startup time for the agent.
   // NOTE: Metrics are recorded in seconds, so divide the value by 1000.
@@ -118,6 +118,10 @@ function initialize() {
         (Date.now() - agentStart) / 1000
       )
     })
+
+    if (agent.config.security.agent.enabled) {
+      require('@newrelic/security-agent').start(api)
+    }
   }
 }
 
@@ -142,7 +146,6 @@ function createAgent(config) {
       'New Relic requires that you name this application!\n' +
       'Set app_name in your newrelic.js or newrelic.cjs file or set environment variable\n' +
       'NEW_RELIC_APP_NAME. Not starting!'
-    logger.error(message)
     throw new Error(message)
   }
 

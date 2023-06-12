@@ -189,8 +189,49 @@ const helper = (module.exports = {
 
     shimmer.patchModule(agent)
     shimmer.bootstrapInstrumentation(agent)
+    helper.maybeLoadSecurityAgent(agent)
 
     return agent
+  },
+
+  /**
+   * Helper to check if security agent should be loaded
+   *
+   * @param {Agent} Agent with a stubbed configuration
+   * @returns {boolean}
+   */
+  isSecurityAgentEnabled(agent) {
+    return agent.config?.security?.agent?.enabled
+  },
+
+  /**
+   * Checks if security agent _should_ be loaded
+   * and requires it and calls start
+   *
+   * @param {Agent} Agent with a stubbed configuration
+   */
+  maybeLoadSecurityAgent(agent) {
+    if (helper.isSecurityAgentEnabled(agent)) {
+      agent.config.security.enabled = true
+      const api = helper.getAgentApi(agent)
+      require('@newrelic/security-agent').start(api)
+    }
+  },
+
+  /**
+   * Checks if security agent is loaded and deletes all
+   * files in its require cache so it can be re-loaded
+   *
+   * @param {Agent} Agent with a stubbed configuration
+   */
+  maybeUnloadSecurityAgent(agent) {
+    if (helper.isSecurityAgentEnabled(agent)) {
+      Object.keys(require.cache).forEach((key) => {
+        if (key.includes('@newrelic/security-agent')) {
+          delete require.cache[key]
+        }
+      })
+    }
   },
 
   /**
@@ -205,6 +246,7 @@ const helper = (module.exports = {
     shimmer.unwrapAll()
     shimmer.registeredInstrumentations = Object.create(null)
     shimmer.debug = false
+    helper.maybeUnloadSecurityAgent(agent)
 
     // Stop future harvesting by aggregators.
     agent.stopAggregators()

@@ -9,7 +9,6 @@ import { assertMetrics, assertSegments } from '../../lib/metrics_helper.js'
 import { test } from 'tap'
 import expressHelpers from './helpers.mjs'
 const { setup, makeRequestAndFinishTransaction } = expressHelpers
-
 const assertSegmentsOptions = {
   exact: true
 }

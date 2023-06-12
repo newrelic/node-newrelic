@@ -2816,4 +2816,122 @@ tap.test('Shim', function (t) {
       t.end()
     })
   })
+
+  t.test('getOriginalOnce', (t) => {
+    t.autoend()
+    t.beforeEach(beforeEach)
+    t.afterEach(afterEach)
+
+    t.test('should return the function on original symbol', (t) => {
+      const orig = wrappable.bar
+      shim.wrap(wrappable, 'bar', function wrapBar(_shim, fn) {
+        return function wrappedBar() {
+          const ret = fn.apply(this, arguments)
+          return `${ret} wrapped`
+        }
+      })
+
+      t.same(orig, shim.getOriginalOnce(wrappable.bar), 'should get original')
+      t.end()
+    })
+
+    t.test(
+      'should return the function on original symbol for a given property of a module',
+      (t) => {
+        const orig = wrappable.bar
+        shim.wrap(wrappable, 'bar', function wrapBar(_shim, fn) {
+          return function wrappedBar() {
+            const ret = fn.apply(this, arguments)
+            return `${ret} wrapped`
+          }
+        })
+
+        t.same(orig, shim.getOriginalOnce(wrappable, 'bar'), 'should get original')
+        t.end()
+      }
+    )
+
+    t.test('should not return original if wrapped twice', (t) => {
+      const orig = wrappable.bar
+      shim.wrap(wrappable, 'bar', function wrapBar(_shim, fn) {
+        return function wrappedBar() {
+          const ret = fn.apply(this, arguments)
+          return `${ret} wrapped`
+        }
+      })
+
+      shim.wrap(wrappable, 'bar', function wrapBar2(_shim, fn) {
+        return function wrappedBar2() {
+          const ret = fn.apply(this, arguments)
+          return `${ret} wrapped`
+        }
+      })
+
+      const notOrig = shim.getOriginalOnce(wrappable.bar)
+      t.not(orig, notOrig, 'should not be original but first wrapped')
+      t.equal(notOrig.name, 'wrappedBar', 'should be the first wrapped function name')
+      t.end()
+    })
+
+    t.test('should not return if module is undefined', (t) => {
+      const nodule = undefined
+      t.equal(shim.getOriginalOnce(nodule), undefined)
+      t.end()
+    })
+  })
+
+  t.test('getOriginal', (t) => {
+    t.autoend()
+    t.beforeEach(beforeEach)
+    t.afterEach(afterEach)
+
+    t.test('should return the function on original symbol', (t) => {
+      const orig = wrappable.bar
+      shim.wrap(wrappable, 'bar', function wrapBar(_shim, fn) {
+        return function wrappedBar() {
+          const ret = fn.apply(this, arguments)
+          return `${ret} wrapped`
+        }
+      })
+
+      shim.wrap(wrappable, 'bar', function wrapBar2(_shim, fn) {
+        return function wrappedBar2() {
+          const ret = fn.apply(this, arguments)
+          return `${ret} wrapped`
+        }
+      })
+
+      t.same(orig, shim.getOriginal(wrappable.bar), 'should get original')
+      t.end()
+    })
+
+    t.test(
+      'should return the function on original symbol for a given property of a module',
+      (t) => {
+        const orig = wrappable.bar
+        shim.wrap(wrappable, 'bar', function wrapBar(_shim, fn) {
+          return function wrappedBar() {
+            const ret = fn.apply(this, arguments)
+            return `${ret} wrapped`
+          }
+        })
+
+        shim.wrap(wrappable, 'bar', function wrapBar2(_shim, fn) {
+          return function wrappedBar2() {
+            const ret = fn.apply(this, arguments)
+            return `${ret} wrapped`
+          }
+        })
+
+        t.same(orig, shim.getOriginal(wrappable, 'bar'), 'should get original')
+        t.end()
+      }
+    )
+
+    t.test('should not return if module is undefined', (t) => {
+      const nodule = undefined
+      t.equal(shim.getOriginal(nodule), undefined)
+      t.end()
+    })
+  })
 })
