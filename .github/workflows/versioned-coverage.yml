@@ -1,4 +1,4 @@
-# This workflow is intended to be used to run versioned tests for different scenarios(i.e.- async local context manager, agent + security agent, etc)
+# This workflow is intended to be used to run versioned tests for different scenarios(i.e.- async local context manager, etc)
 
 name: Nightly Versioned Scenario Runs 
 
