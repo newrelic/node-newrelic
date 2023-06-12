@@ -2,6 +2,16 @@
   "repository": "newrelic/node-newrelic",
   "entries": [
     {
+      "version": "10.3.0",
+      "changes": {
+        "security": [],
+        "bugfixes": [],
+        "features": [
+          "Load IAST security agent when security.agent.enabled is true"
+        ]
+      }
+    },
+    {
       "version": "10.2.0",
       "changes": {
         "security": [],
