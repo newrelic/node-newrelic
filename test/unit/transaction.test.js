@@ -56,11 +56,11 @@ tap.test('Transaction unit tests', (t) => {
     txn.end()
   })
 
-  t.test('with distributed tracing enabled', (t) => {
+  t.test('with DT enabled, should produce span events when finalizing', (t) => {
     agent.config.distributed_tracing.enabled = true
 
     agent.once('transactionFinished', () => {
-      t.equal(agent.spanEventAggregator.length, 1, 'should produce span events when finalizing')
+      t.equal(agent.spanEventAggregator.length, 1, 'should have a span event')
     })
     helper.runInTransaction(agent, function (inner) {
       const childSegment = inner.trace.add('child')
@@ -71,11 +71,11 @@ tap.test('Transaction unit tests', (t) => {
     t.end()
   })
 
-  t.test('with distributed tracing enabled', (t) => {
+  t.test('with DT enabled, should not produce span events when ignored', (t) => {
     agent.config.distributed_tracing.enabled = true
 
     agent.once('transactionFinished', () => {
-      t.equal(agent.spanEventAggregator.length, 0, 'should not produce span events when ignored')
+      t.equal(agent.spanEventAggregator.length, 0, 'should have no span events')
     })
     helper.runInTransaction(agent, function (inner) {
       const childSegment = inner.trace.add('child')
