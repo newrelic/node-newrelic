@@ -189,29 +189,29 @@ const helper = (module.exports = {
 
     shimmer.patchModule(agent)
     shimmer.bootstrapInstrumentation(agent)
-    helper.maybeLoadK2Agent(agent)
+    helper.maybeLoadSecurityAgent(agent)
 
     return agent
   },
 
   /**
-   * Helper to check if k2 agent should be loaded
+   * Helper to check if security agent should be loaded
    *
    * @param {Agent} Agent with a stubbed configuration
    * @returns {boolean}
    */
-  isK2Enabled(agent) {
+  isSecurityAgentEnabled(agent) {
     return agent.config?.security?.agent?.enabled
   },
 
   /**
-   * Checks if k2 agent _should_ be loaded
+   * Checks if security agent _should_ be loaded
    * and requires it and calls start
    *
    * @param {Agent} Agent with a stubbed configuration
    */
-  maybeLoadK2Agent(agent) {
-    if (helper.isK2Enabled(agent)) {
+  maybeLoadSecurityAgent(agent) {
+    if (helper.isSecurityAgentEnabled(agent)) {
       agent.config.security.enabled = true
       const api = helper.getAgentApi(agent)
       require('@newrelic/security-agent').start(api)
@@ -219,13 +219,13 @@ const helper = (module.exports = {
   },
 
   /**
-   * Checks if k2 agent is loaded and deletes all
+   * Checks if security agent is loaded and deletes all
    * files in its require cache so it can be re-loaded
    *
    * @param {Agent} Agent with a stubbed configuration
    */
-  maybeUnloadK2Agent(agent) {
-    if (helper.isK2Enabled(agent)) {
+  maybeUnloadSecurityAgent(agent) {
+    if (helper.isSecurityAgentEnabled(agent)) {
       Object.keys(require.cache).forEach((key) => {
         if (key.includes('@newrelic/security-agent')) {
           delete require.cache[key]
@@ -246,7 +246,7 @@ const helper = (module.exports = {
     shimmer.unwrapAll()
     shimmer.registeredInstrumentations = Object.create(null)
     shimmer.debug = false
-    helper.maybeUnloadK2Agent(agent)
+    helper.maybeUnloadSecurityAgent(agent)
 
     // Stop future harvesting by aggregators.
     agent.stopAggregators()

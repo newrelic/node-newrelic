@@ -83,7 +83,7 @@ tap.test('fastify hook instrumentation', (t) => {
       // all the hooks are siblings of the route handler
       // except the AFTER_HANDLER_HOOKS which are children of the route handler
       let expectedSegments
-      if (helper.isK2Enabled(agent)) {
+      if (helper.isSecurityAgentEnabled(agent)) {
         expectedSegments = [
           'WebTransaction/WebFrameworkUri/Fastify/GET//add-hook',
           [
@@ -140,7 +140,7 @@ tap.test('fastify hook instrumentation', (t) => {
       )
       // all the hooks are siblings of the route handler
       let expectedSegments
-      if (helper.isK2Enabled(agent)) {
+      if (helper.isSecurityAgentEnabled(agent)) {
         expectedSegments = [
           'WebTransaction/WebFrameworkUri/Fastify/GET//error',
           [

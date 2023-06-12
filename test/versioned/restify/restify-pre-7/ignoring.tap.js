@@ -39,7 +39,7 @@ test('Restify router introspection', function (t) {
     // loading k2 adds instrumentation metrics for things it registers
     // this also differs between major versions of restify. 6+ also loads
     // k2 child_process instrumentation, fun fun fun
-    const expectedMetrics = helper.isK2Enabled(agent)
+    const expectedMetrics = helper.isSecurityAgentEnabled(agent)
       ? semver.lt(pkgVersion, 'v6.0.0')
         ? 14
         : 15

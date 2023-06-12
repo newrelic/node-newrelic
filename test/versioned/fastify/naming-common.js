@@ -22,7 +22,7 @@ module.exports = function createTests(t, getExpectedSegments) {
         )
 
         let expectedSegments
-        if (helper.isK2Enabled(agent)) {
+        if (helper.isSecurityAgentEnabled(agent)) {
           // since k2 agent adds an onRequest hook
           // it sometimes has timers.setTimeout depending on route
           expectedSegments = [

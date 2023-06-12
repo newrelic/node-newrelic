@@ -20,7 +20,7 @@ const repos = [
   {
     name: 'koa',
     repository: 'https://github.com/newrelic/node-newrelic-koa.git',
-    branch: 'update-get-shim'
+    branch: 'main'
   },
   {
     name: 'next',

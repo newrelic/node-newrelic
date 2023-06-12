@@ -48,7 +48,7 @@ async function setup(test, config) {
 
 function assertSegments(test, baseSegment, isCLMEnabled) {
   const { agent } = test.context
-  const { children } = helper.isK2Enabled(agent) ? baseSegment.children[0] : baseSegment
+  const { children } = helper.isSecurityAgentEnabled(agent) ? baseSegment.children[0] : baseSegment
   // TODO: once we drop v2 support, this function can be removed and assert inline in test below
   if (semver.satisfies(pkgVersion, '>=3')) {
     const [middieSegment, handlerSegment] = children
