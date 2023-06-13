@@ -1,3 +1,13 @@
+### v10.3.0 (2023-06-13)
+
+#### Features
+
+* Added Interactive Application Security Testing(IAST) mode of security agent when `config.security.agent.enabled` is true. ([#1664](https://github.com/newrelic/node-newrelic/pull/1664)) ([3e926e5](https://github.com/newrelic/node-newrelic/commit/3e926e59ab5feba4b2759d8a108c424b237b5eda))
+
+**NOTE**: The security agent IAST mode is in public preview and should only be used in non-production environments.   
+
+* To enable the security agent set `config.security.agent.enabled` and `config.security.enabled` to true. 
+
 ### v10.2.0 (2023-06-06)
 
 #### Features
