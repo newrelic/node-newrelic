@@ -5,7 +5,7 @@
   "tests": [
     {
       "engines": {
-        "node": ">=14"
+        "node": ">=16"
       },
       "dependencies": {
         "@nestjs/cli": ">=8.0.0"
@@ -13,7 +13,17 @@
       "files": [
         "nest.tap.js"
       ]
+    },
+    {
+      "engines": {
+        "node": ">=14 < 16"
+      },
+      "dependencies": {
+        "@nestjs/cli": ">=8.0.0 <10.0.0"
+      },
+      "files": [
+        "nest.tap.js"
+      ]
     }
-  ],
-  "dependencies": {}
+  ]
 }
