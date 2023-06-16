@@ -8,7 +8,40 @@
         "node": ">=14"
       },
       "dependencies": {
-        "redis": ">=2.0.0 < 4"
+        "redis": ">=2.0.0 < 2.3.0"
+      },
+      "files": [
+        "redis.tap.js"
+      ]
+    },
+    {
+      "engines": {
+        "node": ">=14"
+      },
+      "dependencies": {
+        "redis": ">=2.3.0 < 2.4.0"
+      },
+      "files": [
+        "redis.tap.js"
+      ]
+    },
+    {
+      "engines": {
+        "node": ">=14"
+      },
+      "dependencies": {
+        "redis": ">=2.4.0 < 2.6.0"
+      },
+      "files": [
+        "redis.tap.js"
+      ]
+    },
+    {
+      "engines": {
+        "node": ">=14"
+      },
+      "dependencies": {
+        "redis": ">=2.6.0 < 4"
       },
       "files": [
         "redis.tap.js"
