@@ -1,9 +1,21 @@
 name: Node Agent CI
 
-on: [push, pull_request, workflow_dispatch]
+on:
+  workflow_dispatch: {}
+  pull_request:
+    types:
+      # Created PR
+      - opened
+      # Added commits to the PR
+      - synchronize
+      # Sometimes we need to do this to trigger a run
+      - reopened
+      # Merged the PR (check below ensures non-merge closing events don't trigger)
+      - closed
 
 jobs:
   lint:
+    if: ${{ !startsWith(github.head_ref, 'release/v') && (github.event.pull_request.merged == true || github.event.action != 'closed') }}
     runs-on: ubuntu-latest
 
     strategy:
@@ -24,6 +36,7 @@ jobs:
       run: npm run lint:lockfile
 
   ci:
+    if: ${{ !startsWith(github.head_ref, 'release/v') && (github.event.pull_request.merged == true || github.event.action != 'closed') }}
     runs-on: ubuntu-latest
 
     strategy:
@@ -42,6 +55,7 @@ jobs:
       run: npm run unit:scripts
 
   unit:
+    if: ${{ !startsWith(github.head_ref, 'release/v') && (github.event.pull_request.merged == true || github.event.action != 'closed') }}
     runs-on: ubuntu-latest
 
     strategy:
@@ -72,6 +86,7 @@ jobs:
         path: ./coverage/esm-unit/lcov.info
 
   integration:
+    if: ${{ !startsWith(github.head_ref, 'release/v') && (github.event.pull_request.merged == true || github.event.action != 'closed') }}
     runs-on: ubuntu-latest
 
     strategy:
@@ -97,6 +112,7 @@ jobs:
         path: ./coverage/integration/lcov.info
 
   versioned:
+    if: ${{ !startsWith(github.head_ref, 'release/v') && (github.event.pull_request.merged == true || github.event.action != 'closed') }}
     runs-on: ubuntu-latest
 
     strategy:
@@ -117,14 +133,14 @@ jobs:
       if: ${{ matrix.node-version == '14.x' }}
       run: TEST_CHILD_TIMEOUT=600000 npm run versioned:npm6
       env:
-        VERSIONED_MODE: ${{ github.ref == 'refs/heads/main' && '--minor' || '--major' }}
+        VERSIONED_MODE: ${{ github.event.pull_request.merged == true && '--minor' || '--major' }}
         JOBS: 4 # 2 per CPU seems to be the sweet spot in GHA (July 2022)
         C8_REPORTER: lcovonly
     - name: Run Versioned Tests (npm v7 / Node 16+)
       if: ${{ matrix.node-version != '14.x' }}
       run: TEST_CHILD_TIMEOUT=600000 npm run versioned:npm7
       env:
-        VERSIONED_MODE: ${{ github.ref == 'refs/heads/main' && '--minor' || '--major' }}
+        VERSIONED_MODE: ${{ github.event.pull_request.merged == true && '--minor' || '--major' }}
         JOBS: 4 # 2 per CPU seems to be the sweet spot in GHA (July 2022)
         C8_REPORTER: lcovonly
     - name: Archive Versioned Test Coverage
