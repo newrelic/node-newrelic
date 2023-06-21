@@ -5,21 +5,19 @@
 
 'use strict'
 
-// TODO: convert to normal tap style.
-// Below allows use of mocha DSL with tap runner.
-require('tap').mochaGlobals()
+const tap = require('tap')
 
-const expect = require('chai').expect
 const ErrorEventAggregator = require('../../../lib/errors/error-event-aggregator')
 const Metrics = require('../../../lib/metrics')
 
 const RUN_ID = 1337
 const LIMIT = 5
 
-describe('Error Event Aggregator', () => {
+tap.test('Error Event Aggregator', (t) => {
+  t.autoend()
   let errorEventAggregator
 
-  beforeEach(() => {
+  t.beforeEach(() => {
     errorEventAggregator = new ErrorEventAggregator(
       {
         runId: RUN_ID,
@@ -30,17 +28,18 @@ describe('Error Event Aggregator', () => {
     )
   })
 
-  afterEach(() => {
+  t.afterEach(() => {
     errorEventAggregator = null
   })
 
-  it('should set the correct default method', () => {
+  t.test('should set the correct default method', (t) => {
     const method = errorEventAggregator.method
 
-    expect(method).to.equal('error_event_data')
+    t.equals(method, 'error_event_data', 'default method should be error_event_data')
+    t.end()
   })
 
-  it('toPayload() should return json format of data', () => {
+  t.test('toPayload() should return json format of data', (t) => {
     const expectedMetrics = {
       reservoir_size: LIMIT,
       events_seen: 1
@@ -51,18 +50,20 @@ describe('Error Event Aggregator', () => {
     errorEventAggregator.add(rawErrorEvent)
 
     const payload = errorEventAggregator._toPayloadSync()
-    expect(payload.length).to.equal(3)
+    t.equal(payload.length, 3, 'payload length should be 3')
 
     const [runId, eventMetrics, errorEventData] = payload
 
-    expect(runId).to.equal(RUN_ID)
-    expect(eventMetrics).to.deep.equal(expectedMetrics)
-    expect(errorEventData).to.deep.equal([rawErrorEvent])
+    t.equal(runId, RUN_ID)
+    t.same(eventMetrics, expectedMetrics)
+    t.same(errorEventData, [rawErrorEvent])
+    t.end()
   })
 
-  it('toPayload() should return nothing with no error event data', () => {
+  t.test('toPayload() should return nothing with no error event data', (t) => {
     const payload = errorEventAggregator._toPayloadSync()
 
-    expect(payload).to.not.exist
+    t.notOk(payload)
+    t.end()
   })
 })
