@@ -25,7 +25,29 @@ module.exports = function initialize(shim, nextServer) {
       return function wrappedRenderToResponseWithComponents() {
         const { pathname } = arguments[0]
         // this is not query params but instead url params for dynamic routes
-        const { query } = arguments[1]
+        const { query, components } = arguments[1]
+
+        if (components.getServerSideProps) {
+          shim.record(
+            components,
+            'getServerSideProps',
+            function recordGetServerSideProps(shim, orig, name, [{ req, res }]) {
+              return {
+                inContext(segment) {
+                  segment.addSpanAttributes({ 'next.page': pathname })
+                  assignCLMAttrs(config, segment, {
+                    'code.function': 'getServerSideProps',
+                    'code.filepath': `pages${pathname}`
+                  })
+                },
+                req,
+                res,
+                promise: true,
+                name: `${SPAN_PREFIX}/getServerSideProps/${pathname}`
+              }
+            }
+          )
+        }
 
         shim.setTransactionUri(pathname)
 
