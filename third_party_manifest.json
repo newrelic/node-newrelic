@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "Sat Jun 10 2023 18:03:00 GMT+0530 (India Standard Time)",
+  "lastUpdated": "Thu Jun 22 2023 11:15:54 GMT-0400 (Eastern Daylight Time)",
   "projectName": "New Relic Node Agent",
   "projectUrl": "https://github.com/newrelic/node-newrelic",
   "includeOptDeps": true,
@@ -16,15 +16,15 @@
       "licenseTextSource": "file",
       "publisher": "Contrast Security"
     },
-    "@newrelic/native-metrics@9.0.0": {
+    "@newrelic/native-metrics@9.0.1": {
       "name": "@newrelic/native-metrics",
-      "version": "9.0.0",
-      "range": "^9.0.0",
+      "version": "9.0.1",
+      "range": "^9.0.1",
       "licenses": "Apache-2.0",
       "repoUrl": "https://github.com/newrelic/node-native-metrics",
-      "versionedRepoUrl": "https://github.com/newrelic/node-native-metrics/tree/v9.0.0",
+      "versionedRepoUrl": "https://github.com/newrelic/node-native-metrics/tree/v9.0.1",
       "licenseFile": "node_modules/@newrelic/native-metrics/LICENSE",
-      "licenseUrl": "https://github.com/newrelic/node-native-metrics/blob/v9.0.0/LICENSE",
+      "licenseUrl": "https://github.com/newrelic/node-native-metrics/blob/v9.0.1/LICENSE",
       "licenseTextSource": "file",
       "publisher": "New Relic Node.js agent team",
       "email": "nodejs@newrelic.com"
@@ -197,16 +197,17 @@
       "licenseUrl": "https://github.com/nodejs/readable-stream/blob/v3.6.2/LICENSE",
       "licenseTextSource": "file"
     },
-    "semver@5.7.1": {
+    "semver@7.5.2": {
       "name": "semver",
-      "version": "5.7.1",
-      "range": "^5.3.0",
+      "version": "7.5.2",
+      "range": "^7.5.2",
       "licenses": "ISC",
       "repoUrl": "https://github.com/npm/node-semver",
-      "versionedRepoUrl": "https://github.com/npm/node-semver/tree/v5.7.1",
+      "versionedRepoUrl": "https://github.com/npm/node-semver/tree/v7.5.2",
       "licenseFile": "node_modules/semver/LICENSE",
-      "licenseUrl": "https://github.com/npm/node-semver/blob/v5.7.1/LICENSE",
-      "licenseTextSource": "file"
+      "licenseUrl": "https://github.com/npm/node-semver/blob/v7.5.2/LICENSE",
+      "licenseTextSource": "file",
+      "publisher": "GitHub Inc."
     },
     "winston-transport@4.5.0": {
       "name": "winston-transport",
@@ -262,15 +263,15 @@
       "email": "nathan@tootallnate.net",
       "url": "http://n8.io/"
     },
-    "@newrelic/test-utilities@7.3.1": {
+    "@newrelic/test-utilities@7.3.2": {
       "name": "@newrelic/test-utilities",
-      "version": "7.3.1",
-      "range": "^7.3.0",
+      "version": "7.3.2",
+      "range": "^7.3.2",
       "licenses": "Apache-2.0",
       "repoUrl": "https://github.com/newrelic/node-test-utilities",
-      "versionedRepoUrl": "https://github.com/newrelic/node-test-utilities/tree/v7.3.1",
+      "versionedRepoUrl": "https://github.com/newrelic/node-test-utilities/tree/v7.3.2",
       "licenseFile": "node_modules/@newrelic/test-utilities/LICENSE",
-      "licenseUrl": "https://github.com/newrelic/node-test-utilities/blob/v7.3.1/LICENSE",
+      "licenseUrl": "https://github.com/newrelic/node-test-utilities/blob/v7.3.2/LICENSE",
       "licenseTextSource": "file",
       "publisher": "New Relic Node.js agent team",
       "email": "nodejs@newrelic.com"
