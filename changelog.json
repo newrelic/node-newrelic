@@ -4,7 +4,9 @@
     {
       "version": "10.3.1",
       "changes": {
-        "security": [],
+        "security": [
+          "Updated semver dependency to 7.5.2, also updating @newrelic/native-metrics, and @newrelic/test-utilities"
+        ],
         "bugfixes": [],
         "features": []
       }
