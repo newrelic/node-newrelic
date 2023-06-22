@@ -5,85 +5,88 @@
 
 'use strict'
 
-// TODO: convert to normal tap style.
-// Below allows use of mocha DSL with tap runner.
-require('tap').mochaGlobals()
+const tap = require('tap')
 
-const expect = require('chai').expect
 const ErrorTraceAggregator = require('../../../lib/errors/error-trace-aggregator')
 
 const RUN_ID = 1337
 const LIMIT = 5
 
-describe('Error Trace Aggregator', () => {
+tap.test('Error Trace Aggregator', (t) => {
+  t.autoend()
   let errorTraceAggregator
 
-  beforeEach(() => {
+  t.beforeEach(() => {
     errorTraceAggregator = new ErrorTraceAggregator({
       runId: RUN_ID,
       limit: LIMIT
     })
   })
 
-  afterEach(() => {
+  t.afterEach(() => {
     errorTraceAggregator = null
   })
 
-  it('should set the correct default method', () => {
+  t.test('should set the correct default method', (t) => {
     const method = errorTraceAggregator.method
 
-    expect(method).to.equal('error_data')
+    t.equals(method, 'error_data', 'default method should be error_data')
+    t.end()
   })
 
-  it('add() should add errors', () => {
+  t.test('add() should add errors', (t) => {
     const rawErrorTrace = [0, 'name', 'message', 'type', {}]
     errorTraceAggregator.add(rawErrorTrace)
 
     const firstError = errorTraceAggregator.errors[0]
-    expect(rawErrorTrace).to.equal(firstError)
+    t.equals(rawErrorTrace, firstError)
+    t.end()
   })
 
-  it('_getMergeData() should return errors', () => {
+  t.test('_getMergeData() should return errors', (t) => {
     const rawErrorTrace = [0, 'name', 'message', 'type', {}]
     errorTraceAggregator.add(rawErrorTrace)
 
     const data = errorTraceAggregator._getMergeData()
-    expect(data.length).to.equal(1)
+    t.equals(data.length, 1, 'there should be one error')
 
     const firstError = data[0]
-    expect(rawErrorTrace).to.equal(firstError)
+    t.equals(rawErrorTrace, firstError, '_getMergeData should return the expected error trace')
+    t.end()
   })
 
-  it('toPayloadSync() should return json format of data', () => {
+  t.test('toPayloadSync() should return json format of data', (t) => {
     const rawErrorTrace = [0, 'name', 'message', 'type', {}]
     errorTraceAggregator.add(rawErrorTrace)
 
     const payload = errorTraceAggregator._toPayloadSync()
-    expect(payload.length).to.equal(2)
+    t.equals(payload.length, 2, 'sync payload should have runId and errorTraceData')
 
     const [runId, errorTraceData] = payload
-    expect(runId).to.equal(RUN_ID)
+    t.equals(runId, RUN_ID, 'run ID should match')
 
     const expectedTraceData = [rawErrorTrace]
-    expect(errorTraceData).to.deep.equal(expectedTraceData)
+    t.same(errorTraceData, expectedTraceData, 'errorTraceData should match')
+    t.end()
   })
 
-  it('toPayload() should return json format of data', () => {
+  t.test('toPayload() should return json format of data', (t) => {
     const rawErrorTrace = [0, 'name', 'message', 'type', {}]
     errorTraceAggregator.add(rawErrorTrace)
 
     errorTraceAggregator._toPayload((err, payload) => {
-      expect(payload.length).to.equal(2)
+      t.equals(payload.length, 2, 'payload should have two elements')
 
       const [runId, errorTraceData] = payload
-      expect(runId).to.equal(RUN_ID)
+      t.equals(runId, RUN_ID, 'run ID should match')
 
       const expectedTraceData = [rawErrorTrace]
-      expect(errorTraceData).to.deep.equal(expectedTraceData)
+      t.same(errorTraceData, expectedTraceData, 'errorTraceData should match')
+      t.end()
     })
   })
 
-  it('_merge() should merge passed-in data in order', () => {
+  t.test('_merge() should merge passed-in data in order', (t) => {
     const rawErrorTrace = [0, 'name1', 'message', 'type', {}]
     errorTraceAggregator.add(rawErrorTrace)
 
@@ -94,15 +97,16 @@ describe('Error Trace Aggregator', () => {
 
     errorTraceAggregator._merge(mergeData)
 
-    expect(errorTraceAggregator.errors.length).to.equal(3)
+    t.equals(errorTraceAggregator.errors.length, 3, 'aggregator should have three errors')
 
     const [error1, error2, error3] = errorTraceAggregator.errors
-    expect(error1[1]).to.equal('name1')
-    expect(error2[1]).to.equal('name2')
-    expect(error3[1]).to.equal('name3')
+    t.equals(error1[1], 'name1', 'error1 should have expected name')
+    t.equals(error2[1], 'name2', 'error2 should have expected name')
+    t.equals(error3[1], 'name3', 'error3 should have expected name')
+    t.end()
   })
 
-  it('_merge() should not merge past limit', () => {
+  t.test('_merge() should not merge past limit', (t) => {
     const rawErrorTrace = [0, 'name1', 'message', 'type', {}]
     errorTraceAggregator.add(rawErrorTrace)
 
@@ -116,24 +120,38 @@ describe('Error Trace Aggregator', () => {
 
     errorTraceAggregator._merge(mergeData)
 
-    expect(errorTraceAggregator.errors.length).to.equal(LIMIT)
+    t.equals(
+      errorTraceAggregator.errors.length,
+      LIMIT,
+      'aggregator should have received five errors'
+    )
 
     const [error1, error2, error3, error4, error5] = errorTraceAggregator.errors
-    expect(error1[1]).to.equal('name1')
-    expect(error2[1]).to.equal('name2')
-    expect(error3[1]).to.equal('name3')
-    expect(error4[1]).to.equal('name4')
-    expect(error5[1]).to.equal('name5')
+    t.equals(error1[1], 'name1', 'error1 should have expected name')
+    t.equals(error2[1], 'name2', 'error2 should have expected name')
+    t.equals(error3[1], 'name3', 'error3 should have expected name')
+    t.equals(error4[1], 'name4', 'error4 should have expected name')
+    t.equals(error5[1], 'name5', 'error5 should have expected name')
+    t.end()
   })
 
-  it('clear() should clear errors', () => {
+  t.test('clear() should clear errors', (t) => {
     const rawErrorTrace = [0, 'name1', 'message', 'type', {}]
     errorTraceAggregator.add(rawErrorTrace)
 
-    expect(errorTraceAggregator.errors.length).to.equal(1)
+    t.equals(
+      errorTraceAggregator.errors.length,
+      1,
+      'before clear(), there should be one error in the aggregator'
+    )
 
     errorTraceAggregator.clear()
 
-    expect(errorTraceAggregator.errors.length).to.equal(0)
+    t.equals(
+      errorTraceAggregator.errors.length,
+      0,
+      'after clear(), there should be nothing in the aggregator'
+    )
+    t.end()
   })
 })
