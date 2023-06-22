@@ -1,3 +1,20 @@
+### v10.3.1 (2023-06-22)
+
+#### Miscellaneous Chores
+
+* Added test for getRedisParams ([#1670](https://github.com/newrelic/node-newrelic/pull/1670)) ([e9f8556](https://github.com/newrelic/node-newrelic/commit/e9f8556750a88314f0faeb993364fe2d67adc231))
+    * Signed-off-by: mrickard <maurice@mauricerickard.com>
+* **deps:** Updated semver, native-metrics, and test utils ([#1685](https://github.com/newrelic/node-newrelic/pull/1685)) ([e207a6b](https://github.com/newrelic/node-newrelic/commit/e207a6b3a5cdd3d927f212f73d66e9aad52c5910))
+    * Signed-off-by: mrickard <maurice@mauricerickard.com>
+* temporarily limit prisma tests to non-breaking version ([#1680](https://github.com/newrelic/node-newrelic/pull/1680)) ([76d3ade](https://github.com/newrelic/node-newrelic/commit/76d3adea11b077a506aeeb6af49391620b0fb1a5))
+* **testing:** convert query-test-aggregator tests to tap style ([#1676](https://github.com/newrelic/node-newrelic/pull/1676)) ([d2e45ad](https://github.com/newrelic/node-newrelic/commit/d2e45ada751e9ae9cdca8b617834230d7d91f7b2))
+* **testing:** Converted error-event-aggregator.test.js to tap ([#1683](https://github.com/newrelic/node-newrelic/pull/1683)) ([9f1d66f](https://github.com/newrelic/node-newrelic/commit/9f1d66f9df88512f353f01d16c1e6c93173dc88f))
+    * Signed-off-by: mrickard <maurice@mauricerickard.com>
+
+#### Continuous Integration
+
+* disable running CI for releases ([#1671](https://github.com/newrelic/node-newrelic/pull/1671)) ([3dc4385](https://github.com/newrelic/node-newrelic/commit/3dc4385718202b7128f1f024bbf9ebaac775f625))
+
 ### v10.3.0 (2023-06-13)
 
 #### Features
