@@ -10,6 +10,7 @@ const SPAN_PREFIX = 'Nodejs/Nextjs'
 // Version middleware is stable
 // See: https://nextjs.org/docs/advanced-features/middleware
 const MIN_MW_SUPPORTED_VERSION = '12.2.0'
+const GET_SERVER_SIDE_PROP_VERSION = '13.4.5'
 
 module.exports = function initialize(shim, nextServer) {
   const nextVersion = shim.require('./package.json').version
@@ -25,7 +26,32 @@ module.exports = function initialize(shim, nextServer) {
       return function wrappedRenderToResponseWithComponents() {
         const { pathname } = arguments[0]
         // this is not query params but instead url params for dynamic routes
-        const { query } = arguments[1]
+        const { query, components } = arguments[1]
+
+        if (
+          semver.gte(nextVersion, GET_SERVER_SIDE_PROP_VERSION) &&
+          components.getServerSideProps
+        ) {
+          shim.record(
+            components,
+            'getServerSideProps',
+            function recordGetServerSideProps(shim, orig, name, [{ req, res }]) {
+              return {
+                inContext(segment) {
+                  segment.addSpanAttributes({ 'next.page': pathname })
+                  assignCLMAttrs(config, segment, {
+                    'code.function': 'getServerSideProps',
+                    'code.filepath': `pages${pathname}`
+                  })
+                },
+                req,
+                res,
+                promise: true,
+                name: `${SPAN_PREFIX}/getServerSideProps/${pathname}`
+              }
+            }
+          )
+        }
 
         shim.setTransactionUri(pathname)
 
@@ -52,25 +78,27 @@ module.exports = function initialize(shim, nextServer) {
     }
   })
 
-  shim.record(
-    Server.prototype,
-    'renderHTML',
-    function renderHTMLRecorder(shim, renderToHTML, name, [req, res, page]) {
-      return {
-        inContext(segment) {
-          segment.addSpanAttributes({ 'next.page': page })
-          assignCLMAttrs(config, segment, {
-            'code.function': 'getServerSideProps',
-            'code.filepath': `pages${page}`
-          })
-        },
-        req,
-        res,
-        promise: true,
-        name: `${SPAN_PREFIX}/getServerSideProps/${page}`
+  if (semver.lt(nextVersion, GET_SERVER_SIDE_PROP_VERSION)) {
+    shim.record(
+      Server.prototype,
+      'renderHTML',
+      function renderHTMLRecorder(shim, renderToHTML, name, [req, res, page]) {
+        return {
+          inContext(segment) {
+            segment.addSpanAttributes({ 'next.page': page })
+            assignCLMAttrs(config, segment, {
+              'code.function': 'getServerSideProps',
+              'code.filepath': `pages${page}`
+            })
+          },
+          req,
+          res,
+          promise: true,
+          name: `${SPAN_PREFIX}/getServerSideProps/${page}`
+        }
       }
-    }
-  )
+    )
+  }
 
   if (semver.lt(nextVersion, MIN_MW_SUPPORTED_VERSION)) {
     shim.logger.warn(
