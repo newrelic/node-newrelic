@@ -27,6 +27,12 @@ function getChildSegments(uri) {
     })
   }
 
+  if (semver.gte(nextPkg.version, '13.4.5')) {
+    segments.push({
+      name: 'timers.setTimeout'
+    })
+  }
+
   return segments
 }
 
