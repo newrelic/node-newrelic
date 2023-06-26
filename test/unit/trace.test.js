@@ -432,7 +432,6 @@ tap.test('when serializing asynchronously', (t) => {
         resolve()
       })
     })
-    t.end()
   })
 
   t.test('when `simple_compression` is `false`, should compress the segment arrays', async (t) => {
@@ -780,7 +779,6 @@ tap.test('should set URI to null when request.uri attribute is excluded globally
 })
 
 tap.test('should set URI to null when request.uri attribute is exluded from traces', async (t) => {
-  t.autoend()
   const URL = '/test'
 
   const agent = helper.loadMockedAgent({
