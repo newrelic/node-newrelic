@@ -807,6 +807,7 @@ tap.test('should set URI to null when request.uri attribute is exluded from trac
   const traceJSON = await trace.generateJSON()
   const { 3: requestUri } = traceJSON
   t.notOk(requestUri)
+  t.end()
 })
 
 tap.test('should set URI to /Unknown when URL is not known/set on transaction', async (t) => {
