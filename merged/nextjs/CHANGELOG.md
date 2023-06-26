@@ -1,3 +1,11 @@
+### v0.5.2 (2023-06-26)
+
+* fixed Next.js `getServerSideProps` instrumentation to register via `renderToResponseWithComponents` instead of `renderHTML`
+
+* Pin Next.js to < 13.4.5 in versioned tests.
+
+* Updated README links to point to new forum link due to repolinter ruleset change
+
 ### v0.5.1 (2023-05-22)
 
 * Updated instrumentation to work in versions >= 13.3.1 as the methods we try to wrap no longer have setters.
