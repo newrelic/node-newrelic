@@ -2,7 +2,6 @@
   "name": "@newrelic/superagent",
   "version": "6.0.0",
   "description": "New Relic instrumentation for the `superagent` package.",
-  "main": "index.js",
   "scripts": {
     "lint": "eslint *.js lib tests",
     "lint:fix": "eslint --fix *.js lib tests",
@@ -48,7 +47,6 @@
   },
   "files": [
     "*.md",
-    "index.js",
     "nr-hooks.js",
     "lib/**"
   ]
