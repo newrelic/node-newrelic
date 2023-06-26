@@ -5,6 +5,7 @@
       "version": "10.3.2",
       "changes": {
         "security": [
+          "Updated security agent to v0.1.3",
           "bump fast-xml-parser and @aws-sdk/client-lambda"
         ],
         "bugfixes": [
