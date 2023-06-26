@@ -429,10 +429,10 @@ tap.test('when serializing asynchronously', (t) => {
 
         t.equal(json[1], 1234)
         t.equal(trace, details.trace)
+        t.end()
         resolve()
       })
     })
-    t.end()
   })
 
   t.test('when `simple_compression` is `false`, should compress the segment arrays', async (t) => {
