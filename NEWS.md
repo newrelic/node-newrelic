@@ -1,3 +1,25 @@
+### v10.3.2 (2023-06-26)
+
+#### Bug Fixes
+
+* **prisma:** check for query args in string property ([#1684](https://github.com/newrelic/node-newrelic/pull/1684)) ([8d9b176](https://github.com/newrelic/node-newrelic/commit/8d9b176e05424d34dd2eafe243a8cee7284efe64))
+
+#### Security Improvements
+
+* **deps:** bump fast-xml-parser and @aws-sdk/client-lambda ([#1697](https://github.com/newrelic/node-newrelic/pull/1697)) ([4376584](https://github.com/newrelic/node-newrelic/commit/437658415a2869ed4236fa31b57128bb9807a2f3))
+    * Signed-off-by: dependabot[bot] <support@github.com> Co-authored-by: dependabot[bot] <49699333+dependabot[bot]@users.noreply.github.com>
+
+#### Miscellaneous Chores
+
+* **deps:** Updated security agent to v0.1.3 ([#1696](https://github.com/newrelic/node-newrelic/pull/1696)) ([0f957bd](https://github.com/newrelic/node-newrelic/commit/0f957bd0e39a32614337b5ade33f07d9729f1897))
+* **test:** Added t.end() to trace unit test ([#1698](https://github.com/newrelic/node-newrelic/pull/1698)) ([254c9c0](https://github.com/newrelic/node-newrelic/commit/254c9c0e2aae73ed154a009d264aa262cb3799e3))
+    * Signed-off-by: mrickard <maurice@mauricerickard.com>
+* **test:** convert error-trace-aggregator.test.js to tap-style ([#1690](https://github.com/newrelic/node-newrelic/pull/1690)) ([44b17ab](https://github.com/newrelic/node-newrelic/commit/44b17abf3c6295661736932e9c9dc5b5a42eb3e1))
+    * Signed-off-by: mrickard <maurice@mauricerickard.com>
+* **test:** convert trace unit test to tap style ([#1692](https://github.com/newrelic/node-newrelic/pull/1692)) ([727c17f](https://github.com/newrelic/node-newrelic/commit/727c17f4163ff44b90be87f71e43ad6924874fe4))
+* **test:** Fixed tap end/autoend calls in trace unit test ([#1700](https://github.com/newrelic/node-newrelic/pull/1700)) ([b4a4948](https://github.com/newrelic/node-newrelic/commit/b4a4948719af7c20c22b12150bb3070f6526c247))
+    * Signed-off-by: mrickard <maurice@mauricerickard.com>
+
 ### v10.3.1 (2023-06-22)
 
 #### Security

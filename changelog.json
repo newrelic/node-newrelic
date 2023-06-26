@@ -2,6 +2,18 @@
   "repository": "newrelic/node-newrelic",
   "entries": [
     {
+      "version": "10.3.2",
+      "changes": {
+        "security": [
+          "bump fast-xml-parser and @aws-sdk/client-lambda"
+        ],
+        "bugfixes": [
+          "check for query args in string property"
+        ],
+        "features": []
+      }
+    },
+    {
       "version": "10.3.1",
       "changes": {
         "security": [
