@@ -2,8 +2,26 @@ name: Node Agent CI
 
 on: [push, pull_request, workflow_dispatch]
 
+
+
 jobs:
+  skip_if_release:
+    runs-on: ubuntu-latest
+
+    outputs:
+      should_skip: ${{ steps.skip_check.outputs.should_skip }}
+
+    steps:
+      - id: skip_check
+        uses: fkirc/skip-duplicate-actions@v5
+        with:
+          paths_ignore: '["NEWS.md", "changelog.json", "package.json", "package-lock.json"]'
+          skip_after_successful_duplicate: false
+          do_not_skip: '["workflow_dispatch", "pull_request"]'
+
   lint:
+    needs: skip_if_release
+    if: needs.skip_if_release.outputs.should_skip != 'true'
     runs-on: ubuntu-latest
 
     strategy:
@@ -24,6 +42,8 @@ jobs:
       run: npm run lint:lockfile
 
   ci:
+    needs: skip_if_release
+    if: needs.skip_if_release.outputs.should_skip != 'true'
     runs-on: ubuntu-latest
 
     strategy:
@@ -42,6 +62,8 @@ jobs:
       run: npm run unit:scripts
 
   unit:
+    needs: skip_if_release
+    if: needs.skip_if_release.outputs.should_skip != 'true'
     runs-on: ubuntu-latest
 
     strategy:
@@ -72,6 +94,8 @@ jobs:
         path: ./coverage/esm-unit/lcov.info
 
   integration:
+    needs: skip_if_release
+    if: needs.skip_if_release.outputs.should_skip != 'true'
     runs-on: ubuntu-latest
 
     strategy:
@@ -90,13 +114,15 @@ jobs:
       run: npm run services
     - name: Run Integration Tests
       run: npm run integration
-    - name: Archive Integration Test Coverage 
+    - name: Archive Integration Test Coverage
       uses: actions/upload-artifact@v3
       with:
         name: integration-tests-${{ matrix.node-version }}
         path: ./coverage/integration/lcov.info
 
   versioned:
+    needs: skip_if_release
+    if: needs.skip_if_release.outputs.should_skip != 'true'
     runs-on: ubuntu-latest
 
     strategy:
