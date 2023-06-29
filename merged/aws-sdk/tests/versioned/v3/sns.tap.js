@@ -49,7 +49,11 @@ tap.test('SNS', (t) => {
     // which files within the modules were cached preventing the instrumenting
     // from running on every test
     Object.keys(require.cache).forEach((key) => {
-      if (key.includes('@aws-sdk/client-sns') || key.includes('@aws-sdk/smithy-client')) {
+      if (
+        key.includes('@aws-sdk/client-sns') ||
+        key.includes('@aws-sdk/smithy-client') ||
+        key.includes('@smithy/smithy-client')
+      ) {
         delete require.cache[key]
       }
     })

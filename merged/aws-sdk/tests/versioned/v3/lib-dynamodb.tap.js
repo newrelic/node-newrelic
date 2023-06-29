@@ -70,7 +70,8 @@ tap.test('DynamoDB', (t) => {
       if (
         key.includes('@aws-sdk/lib-dynamodb') ||
         key.includes('@aws-sdk/client-dynamodb') ||
-        key.includes('@aws-sdk/smithy-client')
+        key.includes('@aws-sdk/smithy-client') ||
+        key.includes('@smithy/smithy-client')
       ) {
         delete require.cache[key]
       }

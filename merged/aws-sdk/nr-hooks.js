@@ -18,6 +18,12 @@ const instrumentations = [
     shimName: 'aws-sdk'
   },
   {
+    type: 'generic',
+    moduleName: '@smithy/smithy-client',
+    onResolved: require('./lib/v3/smithy-client'),
+    shimName: 'aws-sdk'
+  },
+  {
     type: 'message',
     moduleName: '@aws-sdk/client-sns',
     onResolved: require('./lib/v3/sns'),
