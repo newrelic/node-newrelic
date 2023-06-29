@@ -156,43 +156,27 @@ tap.test('the environment scraper', (t) => {
       return reloadEnvironment()
     })
 
-    t.test('should not know whether npm was installed with Node.js', (t) => {
-      t.notOk(find(settings, 'npm installed?'))
-      t.end()
-    })
-
-    t.test('should not know whether WAF was installed with Node.js', (t) => {
-      t.notOk(find(settings, 'WAF build system installed?'))
-      t.end()
-    })
-
-    t.test('should not know whether OpenSSL support was compiled into Node.js', (t) => {
-      t.notOk(find(settings, 'OpenSSL support?'))
-      t.end()
-    })
-
-    t.test('should not know whether OpenSSL was dynamically linked in', (t) => {
-      t.notOk(find(settings, 'Dynamically linked to OpenSSL?'))
-      t.end()
-    })
-
-    t.test('should not know whether V8 was dynamically linked in', (t) => {
-      t.notOk(find(settings, 'Dynamically linked to V8?'))
-      t.end()
-    })
-
-    t.test('should not know whether Zlib was dynamically linked in', (t) => {
-      t.notOk(find(settings, 'Dynamically linked to Zlib?'))
-      t.end()
-    })
-
-    t.test('should not know whether DTrace support was configured', (t) => {
-      t.notOk(find(settings, 'DTrace support?'))
-      t.end()
-    })
-
-    t.test('should not know whether Event Tracing for Windows was configured', (t) => {
-      t.notOk(find(settings, 'Event Tracing for Windows (ETW) support?'))
+    t.test('assertions without process.config', (t) => {
+      t.notOk(
+        find(settings, 'npm installed?'),
+        'should not know whether npm was installed with Node.js'
+      )
+      t.notOk(
+        find(settings, 'WAF build system installed?'),
+        'should not know whether WAF was installed with Node.js'
+      )
+      t.notOk(
+        find(settings, 'OpenSSL support?'),
+        'should not know whether OpenSSL support was compiled into Node.js'
+      )
+      t.notOk(find(settings, 'Dynamically linked to OpenSSL?'), 'Dynamically linked to OpenSSL?')
+      t.notOk(find(settings, 'Dynamically linked to V8?'), 'Dynamically linked to V8?')
+      t.notOk(find(settings, 'Dynamically linked to Zlib?'), 'Dynamically linked to Zlib?')
+      t.notOk(find(settings, 'DTrace support?'), 'DTrace support?')
+      t.notOk(
+        find(settings, 'Event Tracing for Windows (ETW) support?'),
+        'Event Tracing for Windows (ETW) support?'
+      )
       t.end()
     })
     t.end()
