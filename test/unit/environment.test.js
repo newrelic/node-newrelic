@@ -5,9 +5,7 @@
 
 'use strict'
 
-// TODO: convert to normal tap style.
-// Below allows use of mocha DSL with tap runner.
-require('tap').mochaGlobals()
+const tap = require('tap')
 
 // For consistent results, unset this in case the user had it set in their
 // environment when testing.
@@ -16,9 +14,6 @@ delete process.env.NODE_ENV
 const path = require('path')
 const fs = require('fs/promises')
 const spawn = require('child_process').spawn
-const chai = require('chai')
-const expect = chai.expect
-const should = chai.should()
 const environment = require('../../lib/environment')
 
 function find(settings, name) {
@@ -29,130 +24,123 @@ function find(settings, name) {
   return items[0] && items[0][1]
 }
 
-describe('the environment scraper', function () {
+tap.test('the environment scraper', (t) => {
+  t.autoend()
   let settings = null
 
-  before(reloadEnvironment)
+  t.before(reloadEnvironment)
 
-  it('should allow clearing of the dispatcher', function () {
+  t.test('should allow clearing of the dispatcher', (t) => {
     environment.setDispatcher('custom')
 
     const dispatchers = environment.get('Dispatcher')
-    expect(dispatchers).include.members(['custom'])
+    t.has(dispatchers, ['custom'], '')
 
-    expect(function () {
+    t.doesNotThrow(function () {
       environment.clearDispatcher()
-    }).not.throws()
+    })
+    t.end()
   })
 
-  it('should allow setting dispatcher version', function () {
+  t.test('should allow setting dispatcher version', (t) => {
     environment.setDispatcher('custom', '2')
 
     let dispatchers = environment.get('Dispatcher')
-    expect(dispatchers).include.members(['custom'])
+    t.has(dispatchers, ['custom'], '')
 
     dispatchers = environment.get('Dispatcher Version')
-    expect(dispatchers).include.members(['2'])
+    t.has(dispatchers, ['2'], '')
 
-    expect(function () {
+    t.doesNotThrow(function () {
       environment.clearDispatcher()
-    }).not.throws()
+    })
+    t.end()
   })
 
-  it('should collect only a single dispatcher', function () {
+  t.test('should collect only a single dispatcher', (t) => {
     environment.setDispatcher('first')
     let dispatchers = environment.get('Dispatcher')
-    expect(dispatchers).include.members(['first'])
+    t.has(dispatchers, ['first'], '')
 
     environment.setDispatcher('custom')
     dispatchers = environment.get('Dispatcher')
-    expect(dispatchers).include.members(['custom'])
+    t.has(dispatchers, ['custom'], '')
 
-    expect(function () {
+    t.doesNotThrow(function () {
       environment.clearDispatcher()
-    }).not.throws()
+    })
+    t.end()
   })
 
-  it('should allow clearing of the framework', function () {
+  t.test('should allow clearing of the framework', (t) => {
     environment.setFramework('custom')
     environment.setFramework('another')
 
     const frameworks = environment.get('Framework')
-    expect(frameworks).include.members(['custom', 'another'])
+    t.has(frameworks, ['custom', 'another'], '')
 
-    expect(function () {
+    t.doesNotThrow(function () {
       environment.clearFramework()
-    }).not.throws()
+    })
+    t.end()
   })
 
-  it('should persist dispatcher between getJSON()s', async function () {
+  t.test('should persist dispatcher between getJSON()s', async (t) => {
     environment.setDispatcher('test')
-    expect(environment.get('Dispatcher')).to.include.members(['test'])
+    t.has(environment.get('Dispatcher'), ['test'])
 
     await environment.refresh()
-    expect(environment.get('Dispatcher')).to.include.members(['test'])
+    t.has(environment.get('Dispatcher'), ['test'])
+    t.end()
   })
 
-  it('should have some settings', function () {
-    expect(settings.length).to.be.above(1)
+  t.test('access to settings', (t) => {
+    t.ok(settings.length > 1, 'should have some settings')
+    t.ok(find(settings, 'Processors') > 0, 'should find at least one CPU')
+    t.ok(find(settings, 'OS'), 'should have found an operating system')
+    t.ok(find(settings, 'OS version'), 'should have found an operating system version')
+    t.ok(find(settings, 'Architecture'), 'should have found the system architecture')
+    t.end()
   })
 
-  it('should find at least one CPU', function () {
-    expect(find(settings, 'Processors')).to.be.above(0)
+  t.test('Node version', (t) => {
+    t.ok(find(settings, 'Node.js version'), 'should know the Node.js version')
+    t.end()
   })
 
-  it('should have found an operating system', function () {
-    should.exist(find(settings, 'OS'))
+  t.test('Node environment', (t) => {
+    // expected to be run when NODE_ENV is unset
+    t.ok(environment.get('NODE_ENV').length === 0, 'should not find a value for NODE_ENV')
+    t.end()
   })
 
-  it('should have found an operating system version', function () {
-    should.exist(find(settings, 'OS version'))
+  t.test('with process.config', (t) => {
+    t.ok(find(settings, 'npm installed?'), 'should know whether npm was installed with Node.js')
+    t.ok(
+      find(settings, 'OpenSSL support?'),
+      'should know whether OpenSSL support was compiled into Node.js'
+    )
+    t.ok(
+      find(settings, 'Dynamically linked to OpenSSL?'),
+      'should know whether OpenSSL was dynamically linked in'
+    )
+    t.ok(
+      find(settings, 'Dynamically linked to Zlib?'),
+      'should know whether Zlib was dynamically linked in'
+    )
+    t.ok(find(settings, 'DTrace support?'), 'should know whether DTrace support was configured')
+    t.ok(
+      find(settings, 'Event Tracing for Windows (ETW) support?'),
+      'should know whether Event Tracing for Windows was configured'
+    )
+    t.end()
   })
 
-  it('should have found the system architecture', function () {
-    should.exist(find(settings, 'Architecture'))
-  })
-
-  it('should know the Node.js version', function () {
-    should.exist(find(settings, 'Node.js version'))
-  })
-
-  // expected to be run when NODE_ENV is unset
-  it('should not find a value for NODE_ENV', function () {
-    expect(environment.get('NODE_ENV')).to.be.empty
-  })
-
-  describe('with process.config', function () {
-    it('should know whether npm was installed with Node.js', function () {
-      expect(find(settings, 'npm installed?')).to.exist
-    })
-
-    it('should know whether OpenSSL support was compiled into Node.js', function () {
-      should.exist(find(settings, 'OpenSSL support?'))
-    })
-
-    it('should know whether OpenSSL was dynamically linked in', function () {
-      should.exist(find(settings, 'Dynamically linked to OpenSSL?'))
-    })
-
-    it('should know whether Zlib was dynamically linked in', function () {
-      should.exist(find(settings, 'Dynamically linked to Zlib?'))
-    })
-
-    it('should know whether DTrace support was configured', function () {
-      should.exist(find(settings, 'DTrace support?'))
-    })
-
-    it('should know whether Event Tracing for Windows was configured', function () {
-      should.exist(find(settings, 'Event Tracing for Windows (ETW) support?'))
-    })
-  })
-
-  describe('without process.config', function () {
+  t.test('without process.config', (t) => {
     let conf = null
 
-    before(function () {
-      conf = process.config
+    t.before(() => {
+      conf = { ...process.config }
 
       /**
        * TODO: Augmenting process.config has been deprecated in Node 16.
@@ -163,61 +151,56 @@ describe('the environment scraper', function () {
       return reloadEnvironment()
     })
 
-    after(function () {
-      process.config = conf
+    t.teardown(() => {
+      process.config = { ...conf }
       return reloadEnvironment()
     })
 
-    it('should not know whether npm was installed with Node.js', function () {
-      expect(find(settings, 'npm installed?')).to.not.exist
+    t.test('assertions without process.config', (t) => {
+      t.notOk(
+        find(settings, 'npm installed?'),
+        'should not know whether npm was installed with Node.js'
+      )
+      t.notOk(
+        find(settings, 'WAF build system installed?'),
+        'should not know whether WAF was installed with Node.js'
+      )
+      t.notOk(
+        find(settings, 'OpenSSL support?'),
+        'should not know whether OpenSSL support was compiled into Node.js'
+      )
+      t.notOk(find(settings, 'Dynamically linked to OpenSSL?'), 'Dynamically linked to OpenSSL?')
+      t.notOk(find(settings, 'Dynamically linked to V8?'), 'Dynamically linked to V8?')
+      t.notOk(find(settings, 'Dynamically linked to Zlib?'), 'Dynamically linked to Zlib?')
+      t.notOk(find(settings, 'DTrace support?'), 'DTrace support?')
+      t.notOk(
+        find(settings, 'Event Tracing for Windows (ETW) support?'),
+        'Event Tracing for Windows (ETW) support?'
+      )
+      t.end()
     })
-
-    it('should not know whether WAF was installed with Node.js', function () {
-      expect(find(settings, 'WAF build system installed?')).to.not.exist
-    })
-
-    it('should not know whether OpenSSL support was compiled into Node.js', function () {
-      expect(find(settings, 'OpenSSL support?')).to.not.exist
-    })
-
-    it('should not know whether OpenSSL was dynamically linked in', function () {
-      expect(find(settings, 'Dynamically linked to OpenSSL?')).to.not.exist
-    })
-
-    it('should not know whether V8 was dynamically linked in', function () {
-      expect(find(settings, 'Dynamically linked to V8?')).to.not.exist
-    })
-
-    it('should not know whether Zlib was dynamically linked in', function () {
-      expect(find(settings, 'Dynamically linked to Zlib?')).to.not.exist
-    })
-
-    it('should not know whether DTrace support was configured', function () {
-      expect(find(settings, 'DTrace support?')).to.not.exist
-    })
-
-    it('should not know whether Event Tracing for Windows was configured', function () {
-      expect(find(settings, 'Event Tracing for Windows (ETW) support?')).to.not.exist
-    })
+    t.end()
   })
 
-  it('should have built a flattened package list', function () {
+  t.test('should have built a flattened package list', (t) => {
     const packages = find(settings, 'Packages')
-    expect(packages.length).above(5)
+    t.ok(packages.length > 5)
     packages.forEach((pair) => {
-      expect(JSON.parse(pair).length).equal(2)
+      t.equal(JSON.parse(pair).length, 2)
     })
+    t.end()
   })
 
-  it('should have built a flattened dependency list', function () {
+  t.test('should have built a flattened dependency list', (t) => {
     const dependencies = find(settings, 'Dependencies')
-    expect(dependencies.length).above(5)
+    t.ok(dependencies.length > 5)
     dependencies.forEach((pair) => {
-      expect(JSON.parse(pair).length).equal(2)
+      t.equal(JSON.parse(pair).length, 2)
     })
+    t.end()
   })
 
-  it('should get correct version for dependencies', async function () {
+  t.test('should get correct version for dependencies', async (t) => {
     const root = path.join(__dirname, '../lib/example-packages')
     const packages = []
     await environment.listPackages(root, packages)
@@ -226,21 +209,26 @@ describe('the environment scraper', function () {
       return map
     }, {})
 
-    expect(versions).deep.equal({
+    t.same(versions, {
       'invalid-json': '<unknown>',
       'valid-json': '1.2.3'
     })
+    t.end()
   })
 
-  it('should resolve refresh where deps and deps of deps are symlinked to each other', async function () {
-    process.config.variables.node_prefix = path.join(__dirname, '../lib/example-deps')
-    const data = await environment.getJSON()
-    const pkgs = find(data, 'Dependencies')
-    const customPkgs = pkgs.filter((pkg) => pkg.includes('custom-pkg'))
-    expect(customPkgs.length).to.equal(3)
-  })
+  t.test(
+    'should resolve refresh where deps and deps of deps are symlinked to each other',
+    async (t) => {
+      process.config.variables.node_prefix = path.join(__dirname, '../lib/example-deps')
+      const data = await environment.getJSON()
+      const pkgs = find(data, 'Dependencies')
+      const customPkgs = pkgs.filter((pkg) => pkg.includes('custom-pkg'))
+      t.equal(customPkgs.length, 3)
+      t.end()
+    }
+  )
 
-  it('should not crash when given a file in NODE_PATH', function (done) {
+  t.test('should not crash when given a file in NODE_PATH', (t) => {
     const env = {
       NODE_PATH: path.join(__dirname, 'environment.test.js'),
       PATH: process.env.PATH
@@ -257,13 +245,13 @@ describe('the environment scraper', function () {
     const proc = spawn(exec, args, opt)
 
     proc.on('exit', function (code) {
-      expect(code).equal(0)
-
-      done()
+      t.equal(code, 0)
+      t.end()
     })
   })
 
-  describe('with symlinks', function () {
+  t.test('with symlinks', (t) => {
+    t.autoend()
     const nmod = path.resolve(__dirname, '../helpers/node_modules')
     const makeDir = (dirp) => {
       try {
@@ -292,7 +280,7 @@ describe('the environment scraper', function () {
       return fs.symlink(path.join(nmod, dep), depModule, 'dir')
     }
 
-    beforeEach(async function (done) {
+    t.beforeEach(async () => {
       await fs.access(nmod).catch(async () => {
         await fs.mkdir(nmod)
       })
@@ -308,24 +296,30 @@ describe('the environment scraper', function () {
       //      a (symlink)
       await makePackage('a', 'b')
       await makePackage('b', 'a')
-      done()
     })
 
-    afterEach(async function (done) {
+    t.afterEach(async () => {
       const aDir = path.join(nmod, 'a')
       const bDir = path.join(nmod, 'b')
       await fs.rm(aDir, { recursive: true, force: true })
       await fs.rm(bDir, { recursive: true, force: true })
-      done()
     })
 
-    it('should not crash when encountering a cyclical symlink', function (done) {
-      execChild(done)
+    t.test('should not crash when encountering a cyclical symlink', (t) => {
+      execChild((code) => {
+        t.equal(code, 0)
+        t.end()
+      })
     })
 
-    it('should not crash when encountering a dangling symlink', async function (done) {
+    t.test('should not crash when encountering a dangling symlink', async (t) => {
       await fs.rm(path.join(nmod, 'a'), { recursive: true, force: true })
-      execChild(done)
+      return new Promise((resolve) => {
+        execChild((code) => {
+          t.equal(code, 0)
+          resolve()
+        })
+      })
     })
 
     function execChild(cb) {
@@ -342,28 +336,27 @@ describe('the environment scraper', function () {
       proc.stdout.pipe(process.stderr)
       proc.stderr.pipe(process.stderr)
 
-      proc.on('exit', function (code) {
-        expect(code).to.equal(0)
-        cb()
+      proc.on('exit', (code) => {
+        cb(code)
       })
     }
   })
 
-  describe('when NODE_ENV is "production"', function () {
-    let nSettings = null
+  t.test('when NODE_ENV is "production"', async (t) => {
+    process.env.NODE_ENV = 'production'
 
-    before(async function () {
-      process.env.NODE_ENV = 'production'
-      nSettings = await environment.getJSON()
-    })
-
-    after(function () {
+    t.teardown(() => {
       delete process.env.NODE_ENV
     })
 
-    it('should save the NODE_ENV value in the environment settings', function () {
-      find(nSettings, 'NODE_ENV').should.equal('production')
-    })
+    const nSettings = await environment.getJSON()
+
+    t.equal(
+      find(nSettings, 'NODE_ENV'),
+      'production',
+      `should save the NODE_ENV value in the environment settings`
+    )
+    t.end()
   })
 
   async function reloadEnvironment() {
