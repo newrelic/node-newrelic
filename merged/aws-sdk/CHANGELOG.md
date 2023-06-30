@@ -1,3 +1,26 @@
+### v6.0.0 (2023-06-30)
+
+* Fixed instrumentation in AWS 3.363.0.
+
+## Changes included in this PR
+
+- Changes to the following files to upgrade the vulnerable dependencies to a fixed version:
+    - package.json
+    - package-lock.json
+
+## Changes included in this PR
+
+- Changes to the following files to upgrade the vulnerable dependencies to a fixed version:
+    - package.json
+    - package-lock.json
+
+Details
+Realized our smoke tests pin the aws version so we can't test newer versions. Also logging it out.
+
+* Updated README links to point to new forum link due to repolinter ruleset change
+
+BREAKING: Removed ability to run @newrelic/aws-sdk as a standalone module. This package gets bundled with agent and no longer can run as a standalone in v10 of the newrelic agent.
+
 ### v5.0.5 (2023-05-01)
 
 * Assigned shimName to v3 instrumentation hooks to avoid duplicate middleware crashes.
