@@ -1,3 +1,11 @@
+### v6.0.0 (2023-06-30)
+
+* **BREAKING**: Removed ability to run `@newrelic/aws-sdk` as a standalone module. This package gets bundled with agent and no longer can run as a standalone in v10 of the newrelic agent.
+
+* Fixed instrumentation in AWS 3.363.0.
+
+* Updated README links to point to new forum link due to repolinter ruleset change.
+
 ### v5.0.5 (2023-05-01)
 
 * Assigned shimName to v3 instrumentation hooks to avoid duplicate middleware crashes.
