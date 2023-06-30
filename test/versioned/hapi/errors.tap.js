@@ -38,8 +38,8 @@ tap.test('Hapi error handling', function (t) {
     })
 
     runTest(t, function (errors, statusCode) {
-      t.equals(errors.length, 0, 'should have no errors')
-      t.equals(statusCode, 200, 'should have a 200 status code')
+      t.equal(errors.length, 0, 'should have no errors')
+      t.equal(statusCode, 200, 'should have a 200 status code')
       t.end()
     })
   })
@@ -54,11 +54,11 @@ tap.test('Hapi error handling', function (t) {
     })
 
     runTest(t, function (errors, statusCode) {
-      t.equals(errors.length, 1, 'should have one error')
+      t.equal(errors.length, 1, 'should have one error')
 
-      t.equals(errors[0][2], 'rejected promise error', 'should have expected error message')
+      t.equal(errors[0][2], 'rejected promise error', 'should have expected error message')
 
-      t.equals(statusCode, 500, 'should have expected error code')
+      t.equal(statusCode, 500, 'should have expected error code')
       t.end()
     })
   })
@@ -73,9 +73,9 @@ tap.test('Hapi error handling', function (t) {
     })
 
     runTest(t, function (errors, statusCode) {
-      t.equals(errors.length, 1, 'should have one error')
-      t.equals(errors[0][2], 'thrown error', 'should have expected error message')
-      t.equals(statusCode, 500, 'should have expected error code')
+      t.equal(errors.length, 1, 'should have one error')
+      t.equal(errors[0][2], 'thrown error', 'should have expected error message')
+      t.equal(statusCode, 500, 'should have expected error code')
       t.end()
     })
   })
@@ -94,9 +94,9 @@ tap.test('Hapi error handling', function (t) {
     })
 
     runTest(t, function (errors, statusCode) {
-      t.equals(errors.length, 1, 'should have one error')
-      t.equals(errors[0][2], 'middleware error', 'should have expected error message')
-      t.equals(statusCode, 500, 'should have expected error code')
+      t.equal(errors.length, 1, 'should have one error')
+      t.equal(errors[0][2], 'middleware error', 'should have expected error message')
+      t.equal(statusCode, 500, 'should have expected error code')
       t.end()
     })
   })
@@ -117,9 +117,9 @@ tap.test('Hapi error handling', function (t) {
     })
 
     runTest(t, (errors, statusCode) => {
-      t.equals(errors.length, 1, 'has 1 reported error')
-      t.equals(errors[0][2], 'route handler error', 'has correct error message')
-      t.equals(statusCode, 400, 'has expected 400 status code')
+      t.equal(errors.length, 1, 'has 1 reported error')
+      t.equal(errors[0][2], 'route handler error', 'has correct error message')
+      t.equal(statusCode, 400, 'has expected 400 status code')
       t.end()
     })
   })
@@ -140,9 +140,9 @@ tap.test('Hapi error handling', function (t) {
     })
 
     runTest(t, (errors, statusCode) => {
-      t.equals(errors.length, 1, 'has 1 reported error')
-      t.equals(errors[0][2], 'route handler error', 'has correct error message')
-      t.equals(statusCode, 400, 'has expected 400 status code')
+      t.equal(errors.length, 1, 'has 1 reported error')
+      t.equal(errors[0][2], 'route handler error', 'has correct error message')
+      t.equal(statusCode, 400, 'has expected 400 status code')
       t.end()
     })
   })
@@ -162,9 +162,9 @@ tap.test('Hapi error handling', function (t) {
     })
 
     runTest(t, (errors, statusCode) => {
-      t.equals(errors.length, 1, 'has 1 reported error')
-      t.equals(errors[0][2], 'route handler error', 'has correct error message')
-      t.equals(statusCode, 500, 'has expected 500 status code')
+      t.equal(errors.length, 1, 'has 1 reported error')
+      t.equal(errors[0][2], 'route handler error', 'has correct error message')
+      t.equal(statusCode, 500, 'has expected 500 status code')
       t.end()
     })
   })
@@ -184,7 +184,7 @@ tap.test('Hapi error handling', function (t) {
     })
 
     runTest(t, (errors, statusCode) => {
-      t.equals(errors.length, 0, 'has no reported errors')
+      t.equal(errors.length, 0, 'has no reported errors')
       t.ok([200, 204].includes(statusCode), 'has expected 200 or 204 status code')
       t.end()
     })
