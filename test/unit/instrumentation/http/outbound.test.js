@@ -379,7 +379,7 @@ tap.test('should add data from cat header to segment', (t) => {
     })
 
     helper.runInTransaction(agent, handled)
-    const errRegex = /connect ECONNREFUSED( 127.0.0.1:12345)?/
+    const expectedCode = 'ECONNREFUSED'
 
     function handled(transaction) {
       const req = http.get({ host: 'localhost', port: 12345 }, function () {})
@@ -390,7 +390,7 @@ tap.test('should add data from cat header to segment', (t) => {
       })
 
       req.on('error', function (err) {
-        t.match(err.message, errRegex)
+        t.equal(err.code, expectedCode)
       })
 
       req.end()
@@ -401,7 +401,7 @@ tap.test('should add data from cat header to segment', (t) => {
 
       req.on('close', function () {
         t.equal(transaction.exceptions.length, 1)
-        t.match(transaction.exceptions[0].error.message, errRegex)
+        t.equal(transaction.exceptions[0].error.code, expectedCode)
         t.end()
       })
 

@@ -34,10 +34,9 @@ tap.test('synthetics outbound header', (t) => {
     ENCODING_KEY
   )
 
-  const PORT = 9873
+  let port = null
   const CONNECT_PARAMS = {
-    hostname: 'localhost',
-    port: PORT
+    hostname: 'localhost'
   }
 
   t.beforeEach(() => {
@@ -53,7 +52,10 @@ tap.test('synthetics outbound header', (t) => {
     })
 
     return new Promise((resolve) => {
-      server.listen(PORT, resolve)
+      server.listen(0, function () {
+        ;({ port } = this.address())
+        resolve()
+      })
     })
   })
 
@@ -64,10 +66,13 @@ tap.test('synthetics outbound header', (t) => {
     })
   })
 
-  t.test('should be propegated if on tx', (t) => {
+  // TODO: The server doesn't seem to be getting closed
+  // before the test listens on the next
+  t.test('should be propagated if on tx', (t) => {
     helper.runInTransaction(agent, function (transaction) {
       transaction.syntheticsData = SYNTHETICS_DATA
       transaction.syntheticsHeader = SYNTHETICS_HEADER
+      CONNECT_PARAMS.port = port
       const req = http.request(CONNECT_PARAMS, function (res) {
         res.resume()
         transaction.end()
@@ -78,8 +83,9 @@ tap.test('synthetics outbound header', (t) => {
     })
   })
 
-  t.test('should not be propegated if not on tx', (t) => {
+  t.test('should not be propagated if not on tx', (t) => {
     helper.runInTransaction(agent, function (transaction) {
+      CONNECT_PARAMS.port = port
       http.get(CONNECT_PARAMS, function (res) {
         res.resume()
         transaction.end()
@@ -99,11 +105,8 @@ tap.test('should add synthetics inbound header to transaction', (t) => {
   let synthData
 
   const ENCODING_KEY = 'Old Spice'
-
-  const PORT = 9873
   const CONNECT_PARAMS = {
-    hostname: 'localhost',
-    port: PORT
+    hostname: 'localhost'
   }
 
   function createServer(cb, requestHandler) {
@@ -113,7 +116,7 @@ tap.test('should add synthetics inbound header to transaction', (t) => {
       res.end()
       req.resume()
     })
-    s.listen(PORT, cb)
+    s.listen(0, cb)
     return s
   }
 
@@ -150,6 +153,7 @@ tap.test('should add synthetics inbound header to transaction', (t) => {
     }
     server = createServer(
       function onListen() {
+        options.port = this.address().port
         http.get(options, function (res) {
           res.resume()
         })
@@ -177,7 +181,7 @@ tap.test('should add synthetics inbound header to transaction', (t) => {
     )
   })
 
-  t.test('should propegate inbound synthetics header on response', (t) => {
+  t.test('should propagate inbound synthetics header on response', (t) => {
     const synthHeader = hashes.obfuscateNameUsingKey(JSON.stringify(synthData), ENCODING_KEY)
     const options = Object.assign({}, CONNECT_PARAMS)
     options.headers = {
@@ -185,6 +189,7 @@ tap.test('should add synthetics inbound header to transaction', (t) => {
     }
     server = createServer(
       function onListen() {
+        options.port = this.address().port
         http.get(options, function (res) {
           res.resume()
         })

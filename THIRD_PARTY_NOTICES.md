@@ -78,6 +78,8 @@ code, the source code can be found at [https://github.com/newrelic/node-newrelic
 
 **[optionalDependencies](#optionalDependencies)**
 
+* [@contrast/fn-inspect](#contrastfn-inspect)
+* [@newrelic/native-metrics](#newrelicnative-metrics)
 
 **[Additional Licenses](#additional-licenses)**
 
