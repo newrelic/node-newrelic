@@ -1,3 +1,18 @@
+### v10.4.0 (2023-06-30)
+
+#### Miscellaneous Chores
+
+* **test:** Converted 'errors/expected.test.js' to tap-style ([#1695](https://github.com/newrelic/node-newrelic/pull/1695)) ([86025de](https://github.com/newrelic/node-newrelic/commit/86025de673b2380561b29ff6a384babb85df7521))
+* **test:** Converted server-config.test.js to tap-style ([#1702](https://github.com/newrelic/node-newrelic/pull/1702)) ([2c6906d](https://github.com/newrelic/node-newrelic/commit/2c6906de3b21068424acb42229d4ad5fdf6c547c))
+
+#### Continuous Integration
+
+* skip running test suite when merging releases ([#1704](https://github.com/newrelic/node-newrelic/pull/1704)) ([f78b981](https://github.com/newrelic/node-newrelic/commit/f78b98146839b8ff594a066764284ac83b9fdfde))
+
+#### Build System
+
+* updated `@newrelic/aws-sdk` to latest to get the instrumentation fixes for 3.363.0 ([#1707](https://github.com/newrelic/node-newrelic/pull/1707)) ([a2cca08](https://github.com/newrelic/node-newrelic/commit/a2cca08bdbdf509701e1d7f056b479e6947ce344))
+
 ### v10.3.2 (2023-06-26)
 
 #### Bug Fixes
