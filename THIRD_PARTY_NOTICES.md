@@ -536,7 +536,7 @@ SOFTWARE.
 
 ### @newrelic/aws-sdk
 
-This product includes source derived from [@newrelic/aws-sdk](https://github.com/newrelic/node-newrelic-aws-sdk) ([v5.0.5](https://github.com/newrelic/node-newrelic-aws-sdk/tree/v5.0.5)), distributed under the [Apache-2.0 License](https://github.com/newrelic/node-newrelic-aws-sdk/blob/v5.0.5/LICENSE):
+This product includes source derived from [@newrelic/aws-sdk](https://github.com/newrelic/node-newrelic-aws-sdk) ([v6.0.0](https://github.com/newrelic/node-newrelic-aws-sdk/tree/v6.0.0)), distributed under the [Apache-2.0 License](https://github.com/newrelic/node-newrelic-aws-sdk/blob/v6.0.0/LICENSE):
 
 ```
                                  Apache License
