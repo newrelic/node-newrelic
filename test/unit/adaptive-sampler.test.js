@@ -5,53 +5,54 @@
 
 'use strict'
 
-// TODO: convert to normal tap style.
-// Below allows use of mocha DSL with tap runner.
-require('tap').mochaGlobals()
+const tap = require('tap')
 
 const helper = require('../lib/agent_helper')
 const AdaptiveSampler = require('../../lib/adaptive-sampler')
-const expect = require('chai').expect
 const sinon = require('sinon')
 
-describe('AdaptiveSampler', () => {
+tap.test('AdaptiveSampler', (t) => {
   let sampler = null
   const shared = {
-    'should count the number of traces sampled': () => {
-      expect(sampler.sampled).to.equal(0)
-      expect(sampler.shouldSample(0.1234)).to.be.true
-      expect(sampler.sampled).to.equal(1)
+    'should count the number of traces sampled': (t) => {
+      t.equal(sampler.sampled, 0)
+      t.ok(sampler.shouldSample(0.1234))
+      t.equal(sampler.sampled, 1)
+      t.end()
     },
 
-    'should not sample transactions with priorities lower than the min': () => {
-      expect(sampler.sampled).to.equal(0)
+    'should not sample transactions with priorities lower than the min': (t) => {
+      t.equal(sampler.sampled, 0)
       sampler._samplingThreshold = 0.5
-      expect(sampler.shouldSample(0)).to.be.false
-      expect(sampler.sampled).to.equal(0)
-      expect(sampler.shouldSample(1)).to.be.true
-      expect(sampler.sampled).to.equal(1)
+      t.notOk(sampler.shouldSample(0))
+      t.equal(sampler.sampled, 0)
+      t.ok(sampler.shouldSample(1))
+      t.equal(sampler.sampled, 1)
+      t.end()
     },
 
-    'should adjust the min priority when throughput increases': () => {
+    'should adjust the min priority when throughput increases': (t) => {
       sampler._reset(sampler.samplingTarget)
       sampler._seen = 2 * sampler.samplingTarget
       sampler._adjustStats(sampler.samplingTarget)
-      expect(sampler.samplingThreshold).to.equal(0.5)
+      t.equal(sampler.samplingThreshold, 0.5)
+      t.end()
     },
 
-    'should only take the first 10 on the first harvest': () => {
-      expect(sampler.samplingThreshold).to.equal(0)
+    'should only take the first 10 on the first harvest': (t) => {
+      t.equal(sampler.samplingThreshold, 0)
 
       // Change this to maxSampled if we change the way the back off works.
       for (let i = 0; i <= 2 * sampler.samplingTarget; ++i) {
         sampler.shouldSample(0.99999999)
       }
 
-      expect(sampler.sampled).to.equal(10)
-      expect(sampler.samplingThreshold).to.equal(1)
+      t.equal(sampler.sampled, 10)
+      t.equal(sampler.samplingThreshold, 1)
+      t.end()
     },
 
-    'should backoff on sampling after reaching the sampled target': () => {
+    'should backoff on sampling after reaching the sampled target': (t) => {
       sampler._seen = 10 * sampler.samplingTarget
 
       // Flag the sampler as not in the first period
@@ -76,16 +77,20 @@ describe('AdaptiveSampler', () => {
       // Change this to maxSampled if we change the way the back off works.
       for (let i = 0; i <= 2 * sampler.samplingTarget; ++i) {
         const expected = expectedMSP[i]
-        expect(sampler.samplingThreshold).to.be.within(expected - epsilon, expected + epsilon)
+        t.ok(
+          sampler.samplingThreshold >= expected - epsilon &&
+            sampler.samplingThreshold <= expected + epsilon
+        )
 
         sampler.shouldSample(Infinity)
       }
+      t.end()
     }
   }
 
-  describe('in serverless mode', () => {
+  t.test('in serverless mode', (t) => {
     let agent = null
-    beforeEach(() => {
+    t.beforeEach(() => {
       agent = helper.loadMockedAgent({
         serverless_mode: {
           enabled: true
@@ -94,55 +99,65 @@ describe('AdaptiveSampler', () => {
       sampler = agent.transactionSampler
     })
 
-    afterEach(() => {
+    t.afterEach(() => {
       helper.unloadAgent(agent)
       sampler = null
     })
 
     Object.getOwnPropertyNames(shared).forEach((testName) => {
-      it(testName, shared[testName])
+      t.test(testName, shared[testName])
     })
 
-    it('should reset itself after a transaction outside the window has been created', (done) => {
-      const spy = sinon.spy(sampler, '_reset')
-      sampler.samplingPeriod = 50
-      expect(spy.callCount).to.equal(0)
-      agent.emit('transactionStarted', { timer: { start: Date.now() } })
-      expect(spy.callCount).to.equal(1)
-
-      setTimeout(() => {
-        expect(spy.callCount).to.equal(1)
+    t.test(
+      'should reset itself after a transaction outside the window has been created',
+      async (t) => {
+        const spy = sinon.spy(sampler, '_reset')
+        sampler.samplingPeriod = 50
+        t.equal(spy.callCount, 0)
         agent.emit('transactionStarted', { timer: { start: Date.now() } })
-        expect(spy.callCount).to.equal(2)
-        done()
-      }, 100)
-    })
+        t.equal(spy.callCount, 1)
+
+        return new Promise((resolve) => {
+          setTimeout(() => {
+            t.equal(spy.callCount, 1)
+            agent.emit('transactionStarted', { timer: { start: Date.now() } })
+            t.equal(spy.callCount, 2)
+            resolve()
+          }, 100)
+        })
+      }
+    )
+    t.end()
   })
 
-  describe('in standard mode', () => {
-    beforeEach(() => {
+  t.test('in standard mode', (t) => {
+    t.beforeEach(() => {
       sampler = new AdaptiveSampler({
         period: 100,
         target: 10
       })
     })
 
-    afterEach(() => {
+    t.afterEach(() => {
       sampler.samplePeriod = 0 // Clear sample interval.
     })
 
     Object.getOwnPropertyNames(shared).forEach((testName) => {
-      it(testName, shared[testName])
+      t.test(testName, shared[testName])
     })
 
-    it('should reset itself according to the period', (done) => {
+    t.test('should reset itself according to the period', async (t) => {
       const spy = sinon.spy(sampler, '_reset')
       sampler.samplingPeriod = 50
 
-      setTimeout(() => {
-        expect(spy.callCount).to.equal(4)
-        done()
-      }, 235)
+      return new Promise((resolve) => {
+        setTimeout(() => {
+          t.equal(spy.callCount, 4)
+          resolve()
+        }, 235)
+      })
     })
+    t.end()
   })
+  t.end()
 })
