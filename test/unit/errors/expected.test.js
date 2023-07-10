@@ -36,7 +36,7 @@ tap.test('Expected Errors, when expected configuration is present', (t) => {
       const json = apdexStats.toJSON()
       tx.end()
       // no errors in the frustrating column
-      t.equals(json[2], 0)
+      t.equal(json[2], 0)
       t.end()
     })
   })
@@ -57,24 +57,24 @@ tap.test('Expected Errors, when expected configuration is present', (t) => {
       tx.end()
 
       const errorUnexpected = agent.errors.eventAggregator.getEvents()[0]
-      t.equals(
+      t.equal(
         errorUnexpected[0]['error.message'],
         'NOT expected',
         'should be able to test unexpected errors'
       )
-      t.equals(
+      t.equal(
         errorUnexpected[0]['error.expected'],
         false,
         'unexpected errors should not have error.expected'
       )
 
       const errorExpected = agent.errors.eventAggregator.getEvents()[1]
-      t.equals(
+      t.equal(
         errorExpected[0]['error.message'],
         'expected',
         'should be able to test expected errors'
       )
-      t.equals(
+      t.equal(
         errorExpected[0]['error.expected'],
         true,
         'expected errors should have error.expected'
@@ -100,7 +100,7 @@ tap.test('Expected Errors, when expected configuration is present', (t) => {
       tx.end()
 
       const errorUnexpected = agent.errors.eventAggregator.getEvents()[0]
-      t.equals(
+      t.equal(
         errorUnexpected[0]['error.message'],
         'NOT expected',
         'should be able to test class-unexpected error'
@@ -111,12 +111,12 @@ tap.test('Expected Errors, when expected configuration is present', (t) => {
       )
 
       const errorExpected = agent.errors.eventAggregator.getEvents()[1]
-      t.equals(
+      t.equal(
         errorExpected[0]['error.message'],
         'expected',
         'should be able to test class-expected error'
       )
-      t.equals(
+      t.equal(
         errorExpected[0]['error.expected'],
         true,
         'class-expected error should have error.expected'
@@ -144,15 +144,15 @@ tap.test('Expected Errors, when expected configuration is present', (t) => {
       tx.end()
 
       const errorUnexpected = agent.errors.eventAggregator.getEvents()[0]
-      t.equals(errorUnexpected[0]['error.class'], 'Error')
+      t.equal(errorUnexpected[0]['error.class'], 'Error')
       t.notOk(
         errorUnexpected[2]['error.expected'],
         'type-unexpected errors should not have error.expected'
       )
 
       const errorExpected = agent.errors.eventAggregator.getEvents()[1]
-      t.equals(errorExpected[0]['error.class'], 'ReferenceError')
-      t.equals(
+      t.equal(errorExpected[0]['error.class'], 'ReferenceError')
+      t.equal(
         errorExpected[0]['error.expected'],
         true,
         'type-expected errors should have error.expected'
@@ -171,7 +171,7 @@ tap.test('Expected Errors, when expected configuration is present', (t) => {
       const json = apdexStats.toJSON()
       tx.end()
       // no errors in the frustrating column
-      t.equals(json[2], 0)
+      t.equal(json[2], 0)
       t.end()
     })
   })
@@ -194,12 +194,12 @@ tap.test('Expected Errors, when expected configuration is present', (t) => {
 
       const expectedErrorMetric = agent.metrics.getMetric(NAMES.ERRORS.EXPECTED)
 
-      t.equals(
+      t.equal(
         transactionErrorMetric.callCount,
         1,
         'transactionErrorMetric.callCount should equal 1'
       )
-      t.equals(expectedErrorMetric.callCount, 1, 'expectedErrorMetric.callCount should equal 1')
+      t.equal(expectedErrorMetric.callCount, 1, 'expectedErrorMetric.callCount should equal 1')
       t.end()
     })
   })
@@ -224,10 +224,10 @@ tap.test('Expected Errors, when expected configuration is present', (t) => {
       const webErrorMetric = agent.metrics.getMetric(NAMES.ERRORS.WEB)
       const otherErrorMetric = agent.metrics.getMetric(NAMES.ERRORS.OTHER)
 
-      t.equals(transactionErrorMetric.callCount, 1, '')
+      t.equal(transactionErrorMetric.callCount, 1, '')
 
-      t.equals(allErrorMetric.callCount, 1, 'allErrorMetric.callCount should equal 1')
-      t.equals(webErrorMetric.callCount, 1, 'webErrorMetric.callCount should equal 1')
+      t.equal(allErrorMetric.callCount, 1, 'allErrorMetric.callCount should equal 1')
+      t.equal(webErrorMetric.callCount, 1, 'webErrorMetric.callCount should equal 1')
       t.notOk(otherErrorMetric, 'should not create other error metrics')
       t.end()
     })
@@ -283,15 +283,15 @@ tap.test('Expected Errors, when expected configuration is present', (t) => {
       const webErrorMetric = agent.metrics.getMetric(NAMES.ERRORS.WEB)
       const otherErrorMetric = agent.metrics.getMetric(NAMES.ERRORS.OTHER)
 
-      t.equals(
+      t.equal(
         transactionErrorMetric.callCount,
         1,
         'should increment transactionErrorMetric.callCount'
       )
 
-      t.equals(allErrorMetric.callCount, 1, 'should increment allErrorMetric.callCount')
+      t.equal(allErrorMetric.callCount, 1, 'should increment allErrorMetric.callCount')
       t.notOk(webErrorMetric, 'should not increment webErrorMetric')
-      t.equals(otherErrorMetric.callCount, 1, 'should increment otherErrorMetric.callCount')
+      t.equal(otherErrorMetric.callCount, 1, 'should increment otherErrorMetric.callCount')
       t.end()
     })
   })
@@ -303,7 +303,7 @@ tap.test('Expected Errors, when expected configuration is present', (t) => {
       const exception = new Exception({ error })
       const result = errorHelper.isExpectedException(tx, exception, agent.config, urltils)
 
-      t.equals(result, true)
+      t.equal(result, true)
       t.end()
     })
   })
@@ -331,13 +331,13 @@ tap.test('Expected Errors, when expected configuration is present', (t) => {
       exception = new Exception({ error })
       tx.addException(exception)
 
-      t.equals(tx.hasOnlyExpectedErrors(), true)
+      t.equal(tx.hasOnlyExpectedErrors(), true)
 
       tx._setApdex(NAMES.APDEX, 1, 1)
       const json = apdexStats.toJSON()
       tx.end()
       // no errors in the frustrating column
-      t.equals(json[2], 0)
+      t.equal(json[2], 0)
       t.end()
     })
   })
@@ -346,13 +346,13 @@ tap.test('Expected Errors, when expected configuration is present', (t) => {
     helper.runInTransaction(agent, function (tx) {
       tx.statusCode = 500
       const apdexStats = tx.metrics.getOrCreateApdexMetric(NAMES.APDEX)
-      t.equals(tx.hasOnlyExpectedErrors(), false)
+      t.equal(tx.hasOnlyExpectedErrors(), false)
 
       tx._setApdex(NAMES.APDEX, 1, 1)
       const json = apdexStats.toJSON()
       tx.end()
       // should put an error in the frustrating column
-      t.equals(json[2], 1)
+      t.equal(json[2], 1)
       t.end()
     })
   })
@@ -382,7 +382,7 @@ tap.test('Expected Errors, when expected configuration is present', (t) => {
       const json = apdexStats.toJSON()
       tx.end()
       // should have an error in the frustrating column
-      t.equals(json[2], 1)
+      t.equal(json[2], 1)
       t.end()
     })
   })

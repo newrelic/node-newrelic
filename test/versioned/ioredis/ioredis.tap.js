@@ -71,16 +71,16 @@ tap.test('ioredis instrumentation', (t) => {
 
     agent.on('transactionFinished', function (tx) {
       const root = tx.trace.root
-      t.equals(root.children.length, 2, 'root has two children')
+      t.equal(root.children.length, 2, 'root has two children')
 
       const setSegment = root.children[0]
-      t.equals(setSegment.name, 'Datastore/operation/Redis/set')
+      t.equal(setSegment.name, 'Datastore/operation/Redis/set')
 
       // ioredis operations return promise, any 'then' callbacks will be sibling segments
       // of the original redis call
       const getSegment = root.children[1]
-      t.equals(getSegment.name, 'Datastore/operation/Redis/get')
-      t.equals(getSegment.children.length, 0, 'should not contain any segments')
+      t.equal(getSegment.name, 'Datastore/operation/Redis/get')
+      t.equal(getSegment.children.length, 0, 'should not contain any segments')
 
       t.end()
     })

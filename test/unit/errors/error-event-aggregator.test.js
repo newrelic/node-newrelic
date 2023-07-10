@@ -35,7 +35,7 @@ tap.test('Error Event Aggregator', (t) => {
   t.test('should set the correct default method', (t) => {
     const method = errorEventAggregator.method
 
-    t.equals(method, 'error_event_data', 'default method should be error_event_data')
+    t.equal(method, 'error_event_data', 'default method should be error_event_data')
     t.end()
   })
 

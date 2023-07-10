@@ -74,27 +74,27 @@ test('Redis instrumentation', { timeout: 20000 }, function (t) {
           }
 
           t.ok(agent.getTransaction(), 'transaction should still still be visible')
-          t.equals(value, 'arglbargle', 'memcached client should still work')
+          t.equal(value, 'arglbargle', 'memcached client should still work')
 
           const trace = transaction.trace
           t.ok(trace, 'trace should exist')
           t.ok(trace.root, 'root element should exist')
-          t.equals(trace.root.children.length, 1, 'there should be only one child of the root')
+          t.equal(trace.root.children.length, 1, 'there should be only one child of the root')
 
           const setSegment = trace.root.children[0]
           const setAttributes = setSegment.getAttributes()
           t.ok(setSegment, 'trace segment for set should exist')
-          t.equals(setSegment.name, 'Datastore/operation/Redis/set', 'should register the set')
-          t.equals(setAttributes.key, '"testkey"', 'should have the set key as a attribute')
-          t.equals(setSegment.children.length, 1, 'set should have an only child')
+          t.equal(setSegment.name, 'Datastore/operation/Redis/set', 'should register the set')
+          t.equal(setAttributes.key, '"testkey"', 'should have the set key as a attribute')
+          t.equal(setSegment.children.length, 1, 'set should have an only child')
 
           const getSegment = setSegment.children[0].children[0]
           const getAttributes = getSegment.getAttributes()
           t.ok(getSegment, 'trace segment for get should exist')
 
-          t.equals(getSegment.name, 'Datastore/operation/Redis/get', 'should register the get')
+          t.equal(getSegment.name, 'Datastore/operation/Redis/get', 'should register the get')
 
-          t.equals(getAttributes.key, '"testkey"', 'should have the get key as a attribute')
+          t.equal(getAttributes.key, '"testkey"', 'should have the get key as a attribute')
 
           t.ok(getSegment.children.length >= 1, 'get should have a callback segment')
 
@@ -194,7 +194,7 @@ test('Redis instrumentation', { timeout: 20000 }, function (t) {
         t.error(error)
 
         const segment = agent.tracer.getSegment().parent
-        t.equals(segment.getAttributes().key, '"saveme"', 'should have `key` attribute')
+        t.equal(segment.getAttributes().key, '"saveme"', 'should have `key` attribute')
         t.end()
       })
     })
@@ -232,14 +232,14 @@ test('Redis instrumentation', { timeout: 20000 }, function (t) {
         const trace = transaction.trace
         const setSegment = trace.root.children[0]
         const attributes = setSegment.getAttributes()
-        t.equals(attributes.host, METRIC_HOST_NAME, 'should have host as attribute')
-        t.equals(
+        t.equal(attributes.host, METRIC_HOST_NAME, 'should have host as attribute')
+        t.equal(
           attributes.port_path_or_id,
           String(params.redis_port),
           'should have port as attribute'
         )
-        t.equals(attributes.database_name, String(DB_INDEX), 'should have database id as attribute')
-        t.equals(attributes.product, 'Redis', 'should have product attribute')
+        t.equal(attributes.database_name, String(DB_INDEX), 'should have database id as attribute')
+        t.equal(attributes.product, 'Redis', 'should have product attribute')
       })
     })
   })
@@ -260,13 +260,13 @@ test('Redis instrumentation', { timeout: 20000 }, function (t) {
 
         const setSegment = transaction.trace.root.children[0]
         const attributes = setSegment.getAttributes()
-        t.equals(attributes.host, undefined, 'should not have host attribute')
-        t.equals(attributes.port_path_or_id, undefined, 'should not have port attribute')
-        t.equals(attributes.database_name, undefined, 'should not have db name attribute')
+        t.equal(attributes.host, undefined, 'should not have host attribute')
+        t.equal(attributes.port_path_or_id, undefined, 'should not have port attribute')
+        t.equal(attributes.database_name, undefined, 'should not have db name attribute')
 
         transaction.end()
         const unscoped = transaction.metrics.unscoped
-        t.equals(
+        t.equal(
           unscoped['Datastore/instance/Redis/' + HOST_ID],
           undefined,
           'should not have instance metric'
@@ -304,20 +304,20 @@ test('Redis instrumentation', { timeout: 20000 }, function (t) {
       const selectSegment = setSegment1.children[0].children[0]
       const setSegment2 = selectSegment.children[0].children[0]
 
-      t.equals(setSegment1.name, 'Datastore/operation/Redis/set', 'should register the first set')
-      t.equals(
+      t.equal(setSegment1.name, 'Datastore/operation/Redis/set', 'should register the first set')
+      t.equal(
         setSegment1.getAttributes().database_name,
         String(DB_INDEX),
         'should have the starting database id as attribute for the first set'
       )
-      t.equals(selectSegment.name, 'Datastore/operation/Redis/select', 'should register the select')
-      t.equals(
+      t.equal(selectSegment.name, 'Datastore/operation/Redis/select', 'should register the select')
+      t.equal(
         selectSegment.getAttributes().database_name,
         String(DB_INDEX),
         'should have the starting database id as attribute for the select'
       )
-      t.equals(setSegment2.name, 'Datastore/operation/Redis/set', 'should register the second set')
-      t.equals(
+      t.equal(setSegment2.name, 'Datastore/operation/Redis/set', 'should register the second set')
+      t.equal(
         setSegment2.getAttributes().database_name,
         String(SELECTED_DB),
         'should have the selected database id as attribute for the second set'
@@ -330,7 +330,7 @@ function checkMetrics(t, metrics, expected) {
   Object.keys(expected).forEach(function (name) {
     t.ok(metrics[name], 'should have metric ' + name)
     if (metrics[name]) {
-      t.equals(
+      t.equal(
         metrics[name].callCount,
         expected[name],
         'should have ' + expected[name] + ' calls for ' + name

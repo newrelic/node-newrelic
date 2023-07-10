@@ -30,7 +30,7 @@ tap.test('Error Trace Aggregator', (t) => {
   t.test('should set the correct default method', (t) => {
     const method = errorTraceAggregator.method
 
-    t.equals(method, 'error_data', 'default method should be error_data')
+    t.equal(method, 'error_data', 'default method should be error_data')
     t.end()
   })
 
@@ -39,7 +39,7 @@ tap.test('Error Trace Aggregator', (t) => {
     errorTraceAggregator.add(rawErrorTrace)
 
     const firstError = errorTraceAggregator.errors[0]
-    t.equals(rawErrorTrace, firstError)
+    t.equal(rawErrorTrace, firstError)
     t.end()
   })
 
@@ -48,10 +48,10 @@ tap.test('Error Trace Aggregator', (t) => {
     errorTraceAggregator.add(rawErrorTrace)
 
     const data = errorTraceAggregator._getMergeData()
-    t.equals(data.length, 1, 'there should be one error')
+    t.equal(data.length, 1, 'there should be one error')
 
     const firstError = data[0]
-    t.equals(rawErrorTrace, firstError, '_getMergeData should return the expected error trace')
+    t.equal(rawErrorTrace, firstError, '_getMergeData should return the expected error trace')
     t.end()
   })
 
@@ -60,10 +60,10 @@ tap.test('Error Trace Aggregator', (t) => {
     errorTraceAggregator.add(rawErrorTrace)
 
     const payload = errorTraceAggregator._toPayloadSync()
-    t.equals(payload.length, 2, 'sync payload should have runId and errorTraceData')
+    t.equal(payload.length, 2, 'sync payload should have runId and errorTraceData')
 
     const [runId, errorTraceData] = payload
-    t.equals(runId, RUN_ID, 'run ID should match')
+    t.equal(runId, RUN_ID, 'run ID should match')
 
     const expectedTraceData = [rawErrorTrace]
     t.same(errorTraceData, expectedTraceData, 'errorTraceData should match')
@@ -75,10 +75,10 @@ tap.test('Error Trace Aggregator', (t) => {
     errorTraceAggregator.add(rawErrorTrace)
 
     errorTraceAggregator._toPayload((err, payload) => {
-      t.equals(payload.length, 2, 'payload should have two elements')
+      t.equal(payload.length, 2, 'payload should have two elements')
 
       const [runId, errorTraceData] = payload
-      t.equals(runId, RUN_ID, 'run ID should match')
+      t.equal(runId, RUN_ID, 'run ID should match')
 
       const expectedTraceData = [rawErrorTrace]
       t.same(errorTraceData, expectedTraceData, 'errorTraceData should match')
@@ -97,12 +97,12 @@ tap.test('Error Trace Aggregator', (t) => {
 
     errorTraceAggregator._merge(mergeData)
 
-    t.equals(errorTraceAggregator.errors.length, 3, 'aggregator should have three errors')
+    t.equal(errorTraceAggregator.errors.length, 3, 'aggregator should have three errors')
 
     const [error1, error2, error3] = errorTraceAggregator.errors
-    t.equals(error1[1], 'name1', 'error1 should have expected name')
-    t.equals(error2[1], 'name2', 'error2 should have expected name')
-    t.equals(error3[1], 'name3', 'error3 should have expected name')
+    t.equal(error1[1], 'name1', 'error1 should have expected name')
+    t.equal(error2[1], 'name2', 'error2 should have expected name')
+    t.equal(error3[1], 'name3', 'error3 should have expected name')
     t.end()
   })
 
@@ -120,18 +120,18 @@ tap.test('Error Trace Aggregator', (t) => {
 
     errorTraceAggregator._merge(mergeData)
 
-    t.equals(
+    t.equal(
       errorTraceAggregator.errors.length,
       LIMIT,
       'aggregator should have received five errors'
     )
 
     const [error1, error2, error3, error4, error5] = errorTraceAggregator.errors
-    t.equals(error1[1], 'name1', 'error1 should have expected name')
-    t.equals(error2[1], 'name2', 'error2 should have expected name')
-    t.equals(error3[1], 'name3', 'error3 should have expected name')
-    t.equals(error4[1], 'name4', 'error4 should have expected name')
-    t.equals(error5[1], 'name5', 'error5 should have expected name')
+    t.equal(error1[1], 'name1', 'error1 should have expected name')
+    t.equal(error2[1], 'name2', 'error2 should have expected name')
+    t.equal(error3[1], 'name3', 'error3 should have expected name')
+    t.equal(error4[1], 'name4', 'error4 should have expected name')
+    t.equal(error5[1], 'name5', 'error5 should have expected name')
     t.end()
   })
 
@@ -139,7 +139,7 @@ tap.test('Error Trace Aggregator', (t) => {
     const rawErrorTrace = [0, 'name1', 'message', 'type', {}]
     errorTraceAggregator.add(rawErrorTrace)
 
-    t.equals(
+    t.equal(
       errorTraceAggregator.errors.length,
       1,
       'before clear(), there should be one error in the aggregator'
@@ -147,7 +147,7 @@ tap.test('Error Trace Aggregator', (t) => {
 
     errorTraceAggregator.clear()
 
-    t.equals(
+    t.equal(
       errorTraceAggregator.errors.length,
       0,
       'after clear(), there should be nothing in the aggregator'
