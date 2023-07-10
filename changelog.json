@@ -2,6 +2,16 @@
   "repository": "newrelic/node-newrelic",
   "entries": [
     {
+      "version": "10.4.1",
+      "changes": {
+        "security": [
+          "bump protobufjs from 7.2.3 to 7.2.4"
+        ],
+        "bugfixes": [],
+        "features": []
+      }
+    },
+    {
       "version": "10.4.0",
       "changes": {
         "security": [],
