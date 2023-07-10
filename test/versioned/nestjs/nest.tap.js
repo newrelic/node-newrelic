@@ -20,19 +20,12 @@ tap.test('Verify the Nest.js instrumentation', (t) => {
 
   t.before(async () => {
     await initNestApp()
-  })
-
-  t.teardown(async () => {
-    await deleteNestApp()
-  })
-
-  t.beforeEach(async () => {
     agent = helper.instrumentMockedAgent()
     const { bootstrap } = require('./test-app/dist/main.js')
     app = await bootstrap(port)
   })
 
-  t.afterEach(() => {
+  t.teardown(async () => {
     app.close()
     helper.unloadAgent(agent)
     Object.keys(require.cache).forEach((key) => {
@@ -40,8 +33,7 @@ tap.test('Verify the Nest.js instrumentation', (t) => {
         delete require.cache[key]
       }
     })
-    agent = null
-    app = null
+    await deleteNestApp()
   })
 
   t.test('should record a transaction in the base case', async (t) => {
