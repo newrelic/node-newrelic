@@ -1,3 +1,15 @@
+### v10.4.1 (2023-07-10)
+
+#### Security Improvements
+
+* **deps:** bump protobufjs from 7.2.3 to 7.2.4 ([#1713](https://github.com/newrelic/node-newrelic/pull/1713)) ([5fb4606](https://github.com/newrelic/node-newrelic/commit/5fb4606f04f1317bbb5fa1807d149233bb0b84fd))
+
+#### Miscellaneous Chores
+
+* **test:** Converted adaptive-sampler.test.js to tap ([#1709](https://github.com/newrelic/node-newrelic/pull/1709)) ([bb42249](https://github.com/newrelic/node-newrelic/commit/bb4224926dd0576d57dd233596c12088de099183))
+* **test:** converted environment.test.js to tap ([#1705](https://github.com/newrelic/node-newrelic/pull/1705)) ([53b4376](https://github.com/newrelic/node-newrelic/commit/53b4376863f88b9aaa5e778dcce71cba2fe0ee20))
+* **test:** Replaced t.equals with t.equal ([#1711](https://github.com/newrelic/node-newrelic/pull/1711)) ([a0b255e](https://github.com/newrelic/node-newrelic/commit/a0b255e74ded6c9342a5411446a635b38df9f805))
+
 ### v10.4.0 (2023-06-30)
 
 #### Miscellaneous Chores
