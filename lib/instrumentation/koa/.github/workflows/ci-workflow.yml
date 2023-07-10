@@ -28,7 +28,7 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [14.x, 16.x, 18.x]
+        node-version: [16.x, 18.x, 20.x]
 
     steps:
     - uses: actions/checkout@v3
@@ -53,7 +53,7 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [14.x, 16.x, 18.x]
+        node-version: [16.x, 18.x, 20.x]
 
     steps:
     - uses: actions/checkout@v3
@@ -63,12 +63,8 @@ jobs:
         node-version: ${{ matrix.node-version }}
     - name: Install Dependencies
       run: npm install
-    - name: Run Versioned Tests (npm v6 / Node 14)
-      if: ${{ matrix.node-version == '14.x' }}
-      run: npm run versioned:npm6
-    - name: Run Versioned Tests (npm v7+ / Node 16+)
-      if: ${{ matrix.node-version != '14.x' }}
-      run: npm run versioned:npm7
+    - name: Run Versioned Tests
+      run: npm run versioned
     - name: Post Versioned Test Coverage
       uses: codecov/codecov-action@v3
       with:
