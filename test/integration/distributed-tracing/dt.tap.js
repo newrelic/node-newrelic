@@ -10,9 +10,6 @@ const helper = require('../../lib/agent_helper')
 const tap = require('tap')
 const url = require('url')
 
-const START_PORT = 10000
-const MIDDLE_PORT = 10001
-const END_PORT = 10002
 const ACCOUNT_ID = '1337'
 const APP_ID = '7331'
 const EXPECTED_DT_METRICS = ['DurationByCaller', 'TransportDuration']
@@ -54,9 +51,14 @@ tap.test('distributed tracing full integration', (t) => {
     }
   }
 
+  // eslint-disable-next-line prefer-const
+  let MIDDLE_PORT
+  // eslint-disable-next-line prefer-const
+  let END_PORT
+
   // Naming is how the requests will flow through the system, to test that all
   // metrics are generated as expected as well as the dirac events.
-  const start = generateServer(http, api, START_PORT, started, (req, res) => {
+  const start = generateServer(http, api, started, (req, res) => {
     const tx = agent.tracer.getTransaction()
     tx.nameState.appendPath('foobar')
     http.get(generateUrl(MIDDLE_PORT, 'start/middle'), (externRes) => {
@@ -69,7 +71,9 @@ tap.test('distributed tracing full integration', (t) => {
     })
   })
 
-  const middle = generateServer(http, api, MIDDLE_PORT, started, (req, res) => {
+  const START_PORT = start.address().port
+
+  const middle = generateServer(http, api, started, (req, res) => {
     t.ok(req.headers.newrelic, 'middle received newrelic from start')
 
     const tx = agent.tracer.getTransaction()
@@ -84,10 +88,14 @@ tap.test('distributed tracing full integration', (t) => {
     })
   })
 
-  const end = generateServer(http, api, END_PORT, started, (req, res) => {
+  MIDDLE_PORT = middle.address().port
+
+  const end = generateServer(http, api, started, (req, res) => {
     t.ok(req.headers.newrelic, 'end received newrelic from middle')
     res.end()
   })
+
+  END_PORT = end.address().port
 
   t.teardown(() => {
     start.close()
@@ -147,7 +155,7 @@ tap.test('distributed tracing full integration', (t) => {
       t.equal(scopedKeys.length, 1, 'middle should only be the inbound and outbound request.')
       t.same(
         scopedKeys,
-        ['External/localhost:10002/http'],
+        [`External/localhost:${END_PORT}/http`],
         'should have expected scoped metric name'
       )
 
@@ -186,7 +194,7 @@ tap.test('distributed tracing full integration', (t) => {
       t.equal(scopedKeys.length, 1, 'start should only be the inbound and outbound request.')
       t.same(
         scopedKeys,
-        ['External/localhost:10001/http'],
+        [`External/localhost:${MIDDLE_PORT}/http`],
         'should have expected scoped metric name'
       )
 
@@ -242,6 +250,9 @@ tap.test('distributed tracing', (t) => {
   let start = null
   let middle = null
   let end = null
+  let START_PORT
+  let MIDDLE_PORT
+  let END_PORT
 
   t.autoend()
 
@@ -271,15 +282,19 @@ tap.test('distributed tracing', (t) => {
       })
     }
 
-    start = generateServer(http, api, START_PORT, cb, (req, res) => {
+    start = generateServer(http, api, cb, (req, res) => {
       return getNextUrl('start/middle', 'start', MIDDLE_PORT, req, res)
     })
-    middle = generateServer(http, api, MIDDLE_PORT, cb, (req, res) => {
+
+    START_PORT = start.address().port
+    middle = generateServer(http, api, cb, (req, res) => {
       return getNextUrl('middle/end', 'middle', END_PORT, req, res)
     })
-    end = generateServer(http, api, END_PORT, cb, (req, res) => {
+    MIDDLE_PORT = middle.address().port
+    end = generateServer(http, api, cb, (req, res) => {
       return createResponse(req, res, {}, 'end')
     })
+    END_PORT = end.address().port
   })
 
   t.afterEach(async () => {
@@ -322,14 +337,14 @@ tap.test('distributed tracing', (t) => {
   })
 })
 
-function generateServer(http, api, port, started, responseHandler) {
+function generateServer(http, api, started, responseHandler) {
   const server = http.createServer((req, res) => {
     const tx = api.agent.getTransaction()
     tx.nameState.appendPath(req.url)
     req.resume()
     responseHandler(req, res)
   })
-  server.listen(port, () => started())
+  server.listen(() => started())
   return server
 }
 
