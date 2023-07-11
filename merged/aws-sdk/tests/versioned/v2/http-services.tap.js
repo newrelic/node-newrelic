@@ -240,7 +240,7 @@ function finish(t, service, operation, tx) {
   const externals = common.checkAWSAttributes(t, tx.trace.root, common.EXTERN_PATTERN)
   if (t.equal(externals.length, 1, 'should have an aws external')) {
     const attrs = externals[0].attributes.get(common.SEGMENT_DESTINATION)
-    t.matches(
+    t.match(
       attrs,
       {
         'aws.operation': operation,

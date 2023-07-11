@@ -88,7 +88,7 @@ function finish(t, tx) {
   t.equal(externalSegments.length, 0, 'should not have any External segments')
 
   const attrs = messages[0].attributes.get(common.SEGMENT_DESTINATION)
-  t.matches(
+  t.match(
     attrs,
     {
       'aws.operation': 'publish',

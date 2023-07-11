@@ -83,7 +83,7 @@ tap.test('amazon-dax-client', (t) => {
         t.equal(segment.name, 'Datastore/operation/DynamoDB/getItem')
 
         const attrs = segment.attributes.get(common.SEGMENT_DESTINATION)
-        t.matches(
+        t.match(
           attrs,
           {
             host: 'unknown',

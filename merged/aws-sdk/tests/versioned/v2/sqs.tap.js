@@ -193,7 +193,7 @@ tap.test('SQS API', (t) => {
 function checkName(t, name, action, queueName) {
   const specificName = `/${action}/Named/${queueName}`
 
-  t.matches(name, specificName, 'should have correct name')
+  t.match(name, specificName, 'should have correct name')
 }
 
 function checkAttributes(t, segment, operation, expectedRequestId) {
@@ -206,11 +206,7 @@ function checkAttributes(t, segment, operation, expectedRequestId) {
     'aws.region': AWS_REGION
   }
 
-  t.matches(
-    actualAttributes,
-    expectedAttributes,
-    `should have expected attributes for ${operation}`
-  )
+  t.match(actualAttributes, expectedAttributes, `should have expected attributes for ${operation}`)
 }
 
 function getRequestId(data) {

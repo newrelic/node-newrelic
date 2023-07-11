@@ -125,7 +125,7 @@ function finish(t, tests, tx) {
     )
     const attrs = segment.attributes.get(common.SEGMENT_DESTINATION)
     attrs.port_path_or_id = parseInt(attrs.port_path_or_id, 10)
-    t.matches(
+    t.match(
       attrs,
       {
         'host': String,
