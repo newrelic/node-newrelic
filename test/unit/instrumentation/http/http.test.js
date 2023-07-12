@@ -351,6 +351,28 @@ test('built-in http module instrumentation', (t) => {
       }
     })
 
+    t.test('request.uri should not contain request params', (t) => {
+      transaction = null
+      makeRequest(
+        {
+          port: 8123,
+          host: 'localhost',
+          path: '/foo5/bar5?region=here&auth=secretString',
+          method: 'GET'
+        },
+        finish
+      )
+
+      function finish() {
+        const segment = transaction.baseSegment
+        const spanAttributes = segment.attributes.get(DESTINATIONS.SPAN_EVENT)
+
+        t.equal(spanAttributes['request.uri'], '/foo5/bar5')
+
+        t.end()
+      }
+    })
+
     t.test('successful request', (t) => {
       transaction = null
       const refererUrl = 'https://www.google.com/search/cats?scrubbed=false'
