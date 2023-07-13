@@ -2,6 +2,16 @@
   "repository": "newrelic/node-newrelic",
   "entries": [
     {
+      "version": "10.4.2",
+      "changes": {
+        "security": [],
+        "bugfixes": [
+          "Dropped query params from request.uri attribute when obfuscating"
+        ],
+        "features": []
+      }
+    },
+    {
       "version": "10.4.1",
       "changes": {
         "security": [
