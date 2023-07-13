@@ -10,7 +10,7 @@
 
 #### Tests
 
-* pinned prisma to < 5 when running on node 14 ([#1717](https://github.com/newrelic/node-newrelic/pull/1717)) ([b000d7b](https://github.com/newrelic/node-newrelic/commit/b000d7b5915b5f6ca571d627ee31e6082ae66ed2))
+* Pinned prisma to < 5 when running on node 14 ([#1717](https://github.com/newrelic/node-newrelic/pull/1717)) ([b000d7b](https://github.com/newrelic/node-newrelic/commit/b000d7b5915b5f6ca571d627ee31e6082ae66ed2))
 
 ### v10.4.1 (2023-07-10)
 
