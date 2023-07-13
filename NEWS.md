@@ -2,8 +2,7 @@
 
 #### Bug Fixes
 
-* Dropped query params when obfuscating ([#1719](https://github.com/newrelic/node-newrelic/pull/1719)) ([76112a6](https://github.com/newrelic/node-newrelic/commit/76112a6143e503b21096d569cb81c82d83be4dfa))
-    * Signed-off-by: mrickard <maurice@mauricerickard.com>
+* Dropped query params from `request.uri` attribute when obfuscating ([#1719](https://github.com/newrelic/node-newrelic/pull/1719)) ([76112a6](https://github.com/newrelic/node-newrelic/commit/76112a6143e503b21096d569cb81c82d83be4dfa))
 
 #### Miscellaneous Chores
 
