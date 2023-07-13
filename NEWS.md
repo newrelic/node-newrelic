@@ -6,11 +6,11 @@
 
 #### Miscellaneous Chores
 
-* Create story issue template ([#1694](https://github.com/newrelic/node-newrelic/pull/1694)) ([20442c6](https://github.com/newrelic/node-newrelic/commit/20442c6f65c4894aca9e0d9d9da9ade045aca90d))
+* Created story issue template ([#1694](https://github.com/newrelic/node-newrelic/pull/1694)) ([20442c6](https://github.com/newrelic/node-newrelic/commit/20442c6f65c4894aca9e0d9d9da9ade045aca90d))
 
 #### Tests
 
-* pin prisma to < 5 when running on node 14 ([#1717](https://github.com/newrelic/node-newrelic/pull/1717)) ([b000d7b](https://github.com/newrelic/node-newrelic/commit/b000d7b5915b5f6ca571d627ee31e6082ae66ed2))
+* pinned prisma to < 5 when running on node 14 ([#1717](https://github.com/newrelic/node-newrelic/pull/1717)) ([b000d7b](https://github.com/newrelic/node-newrelic/commit/b000d7b5915b5f6ca571d627ee31e6082ae66ed2))
 
 ### v10.4.1 (2023-07-10)
 
