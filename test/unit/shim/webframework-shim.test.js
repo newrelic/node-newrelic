@@ -599,10 +599,14 @@ test('WebFrameworkShim', function (t) {
         const segment = wrapped(req)
 
         t.ok(segment.attributes)
-        t.same(segment.getAttributes(), {
-          'request.parameters.route.foo': 'bar',
-          'request.parameters.route.biz': 'bang'
-        })
+        const attrs = segment.getAttributes()
+        t.equal(attrs['request.parameters.route.foo'], 'bar')
+        t.equal(attrs['request.parameters.route.biz'], 'bang')
+        const filePathSplit = attrs['code.filepath'].split('/')
+        t.equal(filePathSplit[filePathSplit.length - 1], 'webframework-shim.test.js')
+        t.equal(attrs['code.function'], 'getActiveSegment')
+        t.equal(attrs['code.lineno'], 37)
+        t.equal(attrs['code.column'], 50)
         t.end()
       })
     })
@@ -618,7 +622,10 @@ test('WebFrameworkShim', function (t) {
         const segment = wrapped(req)
 
         t.ok(segment.attributes)
-        t.same(segment.getAttributes(), {})
+        const attrs = Object.keys(segment.getAttributes())
+        const requestParameters = /request\.parameters.*/
+
+        t.notOk(attrs.some((attr) => requestParameters.test(attr)))
         t.end()
       })
     })
