@@ -114,7 +114,7 @@ function finish(t, tx) {
 
 function checkAttrs(t, segment, operation) {
   const attrs = segment.attributes.get(common.SEGMENT_DESTINATION)
-  t.matches(
+  t.match(
     attrs,
     {
       'aws.operation': operation,

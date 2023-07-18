@@ -22,7 +22,7 @@
       },
       "dependencies": {
         "aws-sdk": {
-          "versions": ">=2.380.0",
+          "versions": ">=2.463.0",
           "samples": 10
         }
       },
@@ -42,7 +42,7 @@
       },
       "dependencies": {
         "aws-sdk": {
-          "versions": ">=2.380.0",
+          "versions": ">=2.463.0",
           "samples": 10
         },
         "amazon-dax-client": ">=1.2.5"
