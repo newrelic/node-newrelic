@@ -66,9 +66,16 @@ export async function resolve(specifier, context, nextResolve) {
     const { url, format } = resolvedModule
     logger.debug(`Instrumentation exists for ${specifier} ${format} package.`)
 
-    if (format === 'commonjs') {
+    if (registeredSpecifiers.get(url)) {
+      logger.debug(
+        `Instrumentation already registered for ${specifier} under ${fileURLToPath(
+          url
+        )}, skipping resolve hook...`
+      )
+    } else if (format === 'commonjs') {
       // ES Modules translate import statements into fully qualified filepaths, so we create a copy of our instrumentation under this filepath
       const instrumentationDefinitionCopy = [...instrumentationDefinition]
+
       instrumentationDefinitionCopy.forEach((copy) => {
         // Stripping the prefix is necessary because the code downstream gets this url without it
         copy.moduleName = fileURLToPath(url)
@@ -80,6 +87,9 @@ export async function resolve(specifier, context, nextResolve) {
           `Registered CommonJS instrumentation for ${specifier} under ${copy.moduleName}`
         )
       })
+
+      // Keep track of what we've registered so we don't double register (see: https://github.com/newrelic/node-newrelic/issues/1646)
+      registeredSpecifiers.set(url, specifier)
     } else if (format === 'module') {
       registeredSpecifiers.set(url, specifier)
       const modifiedUrl = new URL(url)

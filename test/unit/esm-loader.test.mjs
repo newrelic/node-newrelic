@@ -231,6 +231,52 @@ tap.test('ES Module Loader', { skip: !esmHelpers.supportedLoaderVersion() }, (t)
     }
   )
 
+  t.test('should register a CommonJS instrumentation only once', async (t) => {
+    fakeShimmer.getInstrumentationNameFromModuleName.returnsArg(0)
+    fakeShimmer.registeredInstrumentations['my-test-dep'] = [
+      {
+        moduleName: 'my-test-dep',
+        type: 'generic',
+        onRequire: sinon.stub()
+      }
+    ]
+    fakeNextResolve.returns({ url: 'file:///path/to/my-test-dep/index.js', format: 'commonjs' })
+
+    await loader.resolve(fakeSpecifier, fakeContext, fakeNextResolve)
+
+    t.equal(
+      fakeShimmer.registerInstrumentation.callCount,
+      1,
+      'should have registered instrumentation only once'
+    )
+    t.equal(
+      loader.registeredSpecifiers.get('file:///path/to/my-test-dep/index.js'),
+      'my-test-dep',
+      'should have added instrumentation to registered list'
+    )
+    t.ok(
+      fakeLoggerChild.debug.calledWith(
+        'Registered CommonJS instrumentation for my-test-dep under /path/to/my-test-dep/index.js'
+      ),
+      'should log debug about instrumentation registration'
+    )
+
+    await loader.resolve(fakeSpecifier, fakeContext, fakeNextResolve)
+
+    t.ok(
+      fakeLoggerChild.debug.calledWith(
+        'Instrumentation already registered for my-test-dep under /path/to/my-test-dep/index.js, skipping resolve hook...'
+      ),
+      'should log debug about not double instrumenting'
+    )
+
+    t.equal(
+      fakeShimmer.registerInstrumentation.callCount,
+      1,
+      'registerInstrumentation should not have been called again'
+    )
+  })
+
   t.test('should register CJS instrumentation if url has urlencoded characters', async (t) => {
     fakeShimmer.getInstrumentationNameFromModuleName.returnsArg(0)
     fakeShimmer.registeredInstrumentations['my-test-dep'] = [
