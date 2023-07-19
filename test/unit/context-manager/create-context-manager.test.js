@@ -10,28 +10,25 @@ const semver = require('semver')
 
 const createImplementation = require('../../../lib/context-manager/create-context-manager')
 const LegacyContextManager = require('../../../lib/context-manager/legacy-context-manager')
-const LegacyDiagnosticContextManager = require('../../../lib/context-manager/diagnostics/legacy-diagnostic-context-manager')
 const AsyncLocalContextManager = require('../../../lib/context-manager/async-local-context-manager')
 
-test('Should return LegacyContextManager by default', (t) => {
+test('Should return AsyncLocalContextManager by default', (t) => {
   const contextManager = createImplementation({
     logging: {},
     feature_flag: {}
   })
 
-  t.ok(contextManager instanceof LegacyContextManager)
+  t.ok(contextManager instanceof AsyncLocalContextManager)
   t.end()
 })
 
-test('Should return LegacyDiagnosticsContextManager when diagnostic logging enabled', (t) => {
+test('Should return LegacyContextManager when enabled', (t) => {
   const contextManager = createImplementation({
-    logging: {
-      diagnostics: true
-    },
-    feature_flag: {}
+    logging: {},
+    feature_flag: { legacy_context_manager: true }
   })
 
-  t.ok(contextManager instanceof LegacyDiagnosticContextManager)
+  t.ok(contextManager instanceof LegacyContextManager)
   t.end()
 })
 
@@ -42,9 +39,7 @@ test('Should return AsyncContextManager when feature-flag enabled and version >=
 
   const contextManager = createImplementation({
     logging: {},
-    feature_flag: {
-      async_local_context: true
-    }
+    feature_flag: {}
   })
 
   t.ok(contextManager instanceof AsyncLocalContextManager)
@@ -58,9 +53,7 @@ test('Should return LegacyContextManager when feature-flag enabled and version <
 
   const contextManager = createImplementation({
     logging: {},
-    feature_flag: {
-      async_local_context: true
-    }
+    feature_flag: {}
   })
 
   t.ok(contextManager instanceof LegacyContextManager)
