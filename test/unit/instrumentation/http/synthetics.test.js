@@ -66,8 +66,6 @@ tap.test('synthetics outbound header', (t) => {
     })
   })
 
-  // TODO: The server doesn't seem to be getting closed
-  // before the test listens on the next
   t.test('should be propagated if on tx', (t) => {
     helper.runInTransaction(agent, function (transaction) {
       transaction.syntheticsData = SYNTHETICS_DATA

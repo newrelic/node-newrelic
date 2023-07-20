@@ -19,6 +19,7 @@ const Transaction = require('../../lib/transaction')
 const symbols = require('../../lib/symbols')
 const http = require('http')
 const https = require('https')
+const semver = require('semver')
 
 const KEYPATH = path.join(__dirname, 'test-key.key')
 const CERTPATH = path.join(__dirname, 'self-signed-test-certificate.crt')
@@ -686,5 +687,13 @@ const helper = (module.exports = {
           : original[symbols.original]
     }
     return original
+  },
+  /**
+   * Util that checks if current node version is supported
+   * @param {string} version semver version string
+   * @returns {boolean} if version is supported
+   */
+  isSupportedVersion(version) {
+    return semver.gt(process.version, version)
   }
 })
