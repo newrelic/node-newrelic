@@ -8,7 +8,7 @@
 const tap = require('tap')
 const join = require('path').join
 const https = require('https')
-const proxySetup = require('@newrelic/proxy')
+const { createProxy: proxySetup } = require('proxy')
 const read = require('fs').readFileSync
 const configurator = require('../../lib/config')
 const Agent = require('../../lib/agent')
@@ -25,6 +25,9 @@ const license = getTestSecret('TEST_LICENSE')
 
 tap.test('support ssl to the proxy', (t) => {
   const server = proxySetup(https.createServer(SSL_CONFIG))
+  t.teardown(() => {
+    server.close()
+  })
 
   server.listen(0, () => {
     port = server.address().port
@@ -57,8 +60,6 @@ tap.test('support ssl to the proxy', (t) => {
       api.shutdown((error) => {
         t.notOk(error, 'should have shut down without issue')
         t.notOk(agent.config.run_id, 'run ID should have been cleared by shutdown')
-
-        server.close()
         t.end()
       })
     })
