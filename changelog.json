@@ -2,6 +2,18 @@
   "repository": "newrelic/node-newrelic",
   "entries": [
     {
+      "version": "10.5.0",
+      "changes": {
+        "security": [],
+        "bugfixes": [
+          "prevent ESM loader from loading instrumentation multiple times"
+        ],
+        "features": [
+          "enabled code_level_metrics by default"
+        ]
+      }
+    },
+    {
       "version": "10.4.2",
       "changes": {
         "security": [],
