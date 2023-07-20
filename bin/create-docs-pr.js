@@ -49,7 +49,9 @@ const RELEASE_NOTES_PATH =
 const SUPPORT_STATEMENT = `
 ### Support statement:
 
-* New Relic recommends that you upgrade the agent regularly to ensure that you're getting the latest features and performance benefits. Additionally, older releases will no longer be supported when they reach [end-of-life](/docs/using-new-relic/cross-product-functions/install-configure/notification-changes-new-relic-saas-features-distributed-software).`
+We recommend updating to the latest agent version as soon as it's available. If you can't upgrade to the latest version, update your agents to a version no more than 90 days old. Read more about keeping agents up to date. (https://docs.newrelic.com/docs/new-relic-solutions/new-relic-one/install-configure/update-new-relic-agent/)
+
+See the New Relic Ruby agent EOL policy for information about agent releases and support dates. (https://docs.newrelic.com/docs/apm/agents/nodejs-agent/getting-started/nodejs-agent-eol-policy/)`
 
 async function createReleaseNotesPr() {
   // Parse commandline options inputs
