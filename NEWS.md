@@ -1,3 +1,17 @@
+### v10.5.0 (2023-07-20)
+
+#### Features
+
+* enabled code_level_metrics by default ([#1723](https://github.com/newrelic/node-newrelic/pull/1723)) ([0b96de3](https://github.com/newrelic/node-newrelic/commit/0b96de3fbf8db7be7d3673e29bab706d1d67de42))
+
+#### Bug Fixes
+
+* prevent ESM loader from loading instrumentation multiple times ([#1729](https://github.com/newrelic/node-newrelic/pull/1729)) ([962d172](https://github.com/newrelic/node-newrelic/commit/962d172aa5a9496041fe40e73ab8d183db94bae7))
+
+#### Miscellaneous Chores
+
+* **deps-dev:** bump word-wrap from 1.2.3 to 1.2.4 ([#1730](https://github.com/newrelic/node-newrelic/pull/1730)) ([500a69e](https://github.com/newrelic/node-newrelic/commit/500a69e6c9e94e4073805630e6d380f349d91689))
+
 ### v10.4.2 (2023-07-13)
 
 #### Bug Fixes
