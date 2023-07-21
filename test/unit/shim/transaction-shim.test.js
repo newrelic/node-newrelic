@@ -14,7 +14,7 @@ const notRunningStates = ['stopped', 'stopping', 'errored']
 tap.Test.prototype.addAssert('isNonWritable', 1, helper.isNonWritable)
 
 /**
- * Creates CAT headers to be used in handleCATHeaders
+ * Creates CAT headers to be used in handleMqTracingHeaders
  * tests below
  *
  * @param {Object} config agent config
@@ -427,7 +427,7 @@ tap.test('TransactionShim', function (t) {
     })
   })
 
-  t.test('#handleCATHeaders', function (t) {
+  t.test('#handleMqTracingHeaders', function (t) {
     t.autoend()
 
     t.beforeEach(() => {
@@ -450,7 +450,7 @@ tap.test('TransactionShim', function (t) {
         t.notOk(segment.catTransaction)
         t.notOk(segment.getAttributes().transaction_guid)
 
-        shim.handleCATHeaders(headers, segment)
+        shim.handleMqTracingHeaders(headers, segment)
 
         t.notOk(tx.incomingCatId)
         t.notOk(tx.referringTransactionGuid)
@@ -473,7 +473,7 @@ tap.test('TransactionShim', function (t) {
         t.notOk(segment.catTransaction)
         t.notOk(segment.getAttributes().transaction_guid)
 
-        shim.handleCATHeaders(headers, segment)
+        shim.handleMqTracingHeaders(headers, segment)
 
         t.notOk(tx.incomingCatId)
         t.notOk(tx.referringTransactionGuid)
@@ -495,7 +495,7 @@ tap.test('TransactionShim', function (t) {
         t.notOk(segment.getAttributes().transaction_guid)
 
         t.doesNotThrow(function () {
-          shim.handleCATHeaders(null, segment)
+          shim.handleMqTracingHeaders(null, segment)
         })
 
         t.notOk(tx.incomingCatId)
@@ -522,7 +522,7 @@ tap.test('TransactionShim', function (t) {
 
           helper.runInTransaction(agent, shim.BG, function (tx2) {
             t.not(tx2, tx)
-            shim.handleCATHeaders(headers, segment)
+            shim.handleMqTracingHeaders(headers, segment)
           })
 
           t.equal(tx.incomingCatId, '9876#id')
@@ -546,7 +546,7 @@ tap.test('TransactionShim', function (t) {
           t.notOk(tx.tripId)
           t.notOk(tx.referringPathHash)
 
-          shim.handleCATHeaders(headers)
+          shim.handleMqTracingHeaders(headers)
 
           t.equal(tx.incomingCatId, '9876#id')
           t.equal(tx.referringTransactionGuid, 'trans id')
@@ -572,7 +572,7 @@ tap.test('TransactionShim', function (t) {
 
           helper.runInTransaction(agent, shim.BG, function (tx2) {
             t.not(tx2, tx)
-            shim.handleCATHeaders(headers, segment)
+            shim.handleMqTracingHeaders(headers, segment)
           })
 
           t.equal(tx.incomingCatId, '9876#id')
@@ -595,7 +595,7 @@ tap.test('TransactionShim', function (t) {
         helper.runInTransaction(agent, function (tx) {
           const headers = { traceparent, tracestate }
           const segment = shim.getSegment()
-          shim.handleCATHeaders(headers, segment)
+          shim.handleMqTracingHeaders(headers, segment)
 
           const outboundHeaders = {}
           tx.insertDistributedTraceHeaders(outboundHeaders)
@@ -617,7 +617,7 @@ tap.test('TransactionShim', function (t) {
         helper.runInTransaction(agent, function (tx) {
           const headers = { traceparent }
           const segment = shim.getSegment()
-          shim.handleCATHeaders(headers, segment)
+          shim.handleMqTracingHeaders(headers, segment)
 
           const outboundHeaders = {}
           tx.insertDistributedTraceHeaders(outboundHeaders)
@@ -639,7 +639,7 @@ tap.test('TransactionShim', function (t) {
         helper.runInTransaction(agent, function (tx) {
           const headers = { traceparent, tracestate }
           const segment = shim.getSegment()
-          shim.handleCATHeaders(headers, segment)
+          shim.handleMqTracingHeaders(headers, segment)
 
           const outboundHeaders = {}
           tx.insertDistributedTraceHeaders(outboundHeaders)
@@ -660,7 +660,7 @@ tap.test('TransactionShim', function (t) {
       helper.runInTransaction(agent, function (tx) {
         const headers = { traceparent, tracestate }
         const segment = shim.getSegment()
-        shim.handleCATHeaders(headers, segment)
+        shim.handleMqTracingHeaders(headers, segment)
 
         const outboundHeaders = {}
         tx.insertDistributedTraceHeaders(outboundHeaders)
@@ -686,7 +686,7 @@ tap.test('TransactionShim', function (t) {
 
           helper.runInTransaction(agent, shim.BG, function (tx2) {
             t.not(tx2, tx)
-            shim.handleCATHeaders(headers, segment)
+            shim.handleMqTracingHeaders(headers, segment)
           })
 
           t.equal(segment.catId, '6789#app')
@@ -710,7 +710,7 @@ tap.test('TransactionShim', function (t) {
           t.notOk(segment.catTransaction)
           t.notOk(segment.getAttributes().transaction_guid)
 
-          shim.handleCATHeaders(headers)
+          shim.handleMqTracingHeaders(headers)
 
           t.equal(segment.catId, '6789#app')
           t.equal(segment.catTransaction, 'app data transaction name')
@@ -735,7 +735,7 @@ tap.test('TransactionShim', function (t) {
 
           helper.runInTransaction(agent, shim.BG, function (tx2) {
             t.not(tx2, tx)
-            shim.handleCATHeaders(headers, segment)
+            shim.handleMqTracingHeaders(headers, segment)
           })
 
           t.equal(segment.catId, '6789#app')
@@ -760,7 +760,7 @@ tap.test('TransactionShim', function (t) {
           t.notOk(segment.catTransaction)
           t.notOk(segment.getAttributes().transaction_guid)
 
-          shim.handleCATHeaders(headers)
+          shim.handleMqTracingHeaders(headers)
 
           t.notOk(segment.catId)
           t.notOk(segment.catTransaction)
