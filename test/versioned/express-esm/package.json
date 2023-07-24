@@ -6,7 +6,7 @@
   "tests": [
     {
       "engines": {
-        "node": ">=16.12.0"
+        "node": ">=16.12.0 <20"
       },
       "dependencies": {
         "express": ">=4.6.0",

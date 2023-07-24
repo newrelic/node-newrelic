@@ -53,8 +53,8 @@ function initialize() {
       throw new Error(message)
     }
 
-    // TODO: Update this check when Node v20 support is added
-    if (psemver.satisfies('>=19.0.0')) {
+    // TODO: Update this check when Node v22 support is added
+    if (psemver.satisfies('>=21.0.0')) {
       logger.warn(
         'New Relic for Node.js %s has not been tested on Node.js %s. Please ' +
           'update the agent or downgrade your version of Node.js',

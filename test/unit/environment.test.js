@@ -15,6 +15,7 @@ const path = require('path')
 const fs = require('fs/promises')
 const spawn = require('child_process').spawn
 const environment = require('../../lib/environment')
+const { isSupportedVersion } = require('../lib/agent_helper')
 
 function find(settings, name) {
   const items = settings.filter(function (candidate) {
@@ -136,7 +137,8 @@ tap.test('the environment scraper', (t) => {
     t.end()
   })
 
-  t.test('without process.config', (t) => {
+  // TODO: remove tests when we drop support for node 18
+  t.test('without process.config', { skip: isSupportedVersion('v19.0.0') }, (t) => {
     let conf = null
 
     t.before(() => {
@@ -216,8 +218,10 @@ tap.test('the environment scraper', (t) => {
     t.end()
   })
 
+  // TODO: remove this test when we drop support for node 18
   t.test(
     'should resolve refresh where deps and deps of deps are symlinked to each other',
+    { skip: isSupportedVersion('v19.0.0') },
     async (t) => {
       process.config.variables.node_prefix = path.join(__dirname, '../lib/example-deps')
       const data = await environment.getJSON()

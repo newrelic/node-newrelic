@@ -109,7 +109,7 @@ tap.test('config formatters', (t) => {
       const val = 'invalid'
       t.notOk(formatters.object(val, loggerMock))
       t.equal(loggerMock.error.args[0][0], 'New Relic configurator could not deserialize object:')
-      t.match(loggerMock.error.args[1][0], /SyntaxError: Unexpected token i in JSON at position/)
+      t.match(loggerMock.error.args[1][0], /SyntaxError: Unexpected token/)
       t.end()
     })
   })
@@ -132,7 +132,7 @@ tap.test('config formatters', (t) => {
         loggerMock.error.args[0][0],
         'New Relic configurator could not deserialize object list:'
       )
-      t.match(loggerMock.error.args[1][0], /SyntaxError: Unexpected token i in JSON at position/)
+      t.match(loggerMock.error.args[1][0], /SyntaxError: Unexpected token/)
       t.end()
     })
   })

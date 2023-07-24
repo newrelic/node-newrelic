@@ -254,7 +254,7 @@ tap.test('when the connection fails', (t) => {
     method.invoke({ message: 'none' }, {}, (error) => {
       t.ok(error)
       // regex for either ipv4 or ipv6 localhost
-      t.match(error.message, /connect ECONNREFUSED (127\.0\.0\.1|::1):8765/)
+      t.equal(error.code, 'ECONNREFUSED')
 
       t.end()
     })
