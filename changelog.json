@@ -2,6 +2,14 @@
   "repository": "newrelic/node-newrelic",
   "entries": [
     {
+      "version": "10.6.0",
+      "changes": {
+        "security": [],
+        "bugfixes": [],
+        "features": []
+      }
+    },
+    {
       "version": "10.5.0",
       "changes": {
         "security": [],

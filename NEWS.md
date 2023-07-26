@@ -1,3 +1,15 @@
+### v10.6.0 (2023-07-26)
+
+#### Miscellaneous Chores
+
+* **deps:** Updated @newrelic/security-agent to v0.2.0 ([#1737](https://github.com/newrelic/node-newrelic/pull/1737)) ([9bf2a01](https://github.com/newrelic/node-newrelic/commit/9bf2a011aed846a024d6445f557eb8eb7d2e5efe))
+* restored engines to >=14 until we actually drop support for Node 14 ([#1738](https://github.com/newrelic/node-newrelic/pull/1738)) ([8d66123](https://github.com/newrelic/node-newrelic/commit/8d66123105d25a3f949f0f5c2db53ecb7e9f2df0))
+
+#### Continuous Integration
+
+* Add Node.js 20.x to CI and remove 14.x ([#1603](https://github.com/newrelic/node-newrelic/pull/1603)) ([c4b008c](https://github.com/newrelic/node-newrelic/commit/c4b008c98c758ba3e669768a840e40dd8fe3e681))
+* update support statement ([#1733](https://github.com/newrelic/node-newrelic/pull/1733)) ([3013da9](https://github.com/newrelic/node-newrelic/commit/3013da977ed6dae70bef81b1f1cf0dbf4acbb37b))
+
 ### v10.5.0 (2023-07-20)
 
 #### Features
