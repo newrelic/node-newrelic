@@ -4,7 +4,6 @@
  */
 
 import newrelic from './index.js'
-import shimmer from './lib/shimmer.js'
 import loggingModule from './lib/logger.js'
 import NAMES from './lib/metrics/names.js'
 import semver from 'semver'
@@ -59,47 +58,22 @@ export async function resolve(specifier, context, nextResolve) {
    * duplicating the logic of the Node.js hook
    */
   const resolvedModule = await nextResolve(specifier, context, nextResolve)
-  const instrumentationName = shimmer.getInstrumentationNameFromModuleName(specifier)
-  const instrumentationDefinition = shimmer.registeredInstrumentations[instrumentationName]
 
-  if (instrumentationDefinition) {
-    const { url, format } = resolvedModule
-    logger.debug(`Instrumentation exists for ${specifier} ${format} package.`)
+  if (registeredSpecifiers.get(resolvedModule.url)) {
+    logger.debug(
+      `Instrumentation already registered for ${specifier} under ${fileURLToPath(
+        resolvedModule.url
+      )}, skipping resolve hook...`
+    )
+  }
 
-    if (registeredSpecifiers.get(url)) {
-      logger.debug(
-        `Instrumentation already registered for ${specifier} under ${fileURLToPath(
-          url
-        )}, skipping resolve hook...`
-      )
-    } else if (format === 'commonjs') {
-      // ES Modules translate import statements into fully qualified filepaths, so we create a copy of our instrumentation under this filepath
-      const instrumentationDefinitionCopy = [...instrumentationDefinition]
-
-      instrumentationDefinitionCopy.forEach((copy) => {
-        // Stripping the prefix is necessary because the code downstream gets this url without it
-        copy.moduleName = fileURLToPath(url)
-
-        // Added to keep our Supportability metrics from exploding/including customer info via full filepath
-        copy.specifier = specifier
-        shimmer.registerInstrumentation(copy)
-        logger.debug(
-          `Registered CommonJS instrumentation for ${specifier} under ${copy.moduleName}`
-        )
-      })
-
-      // Keep track of what we've registered so we don't double register (see: https://github.com/newrelic/node-newrelic/issues/1646)
-      registeredSpecifiers.set(url, specifier)
-    } else if (format === 'module') {
-      registeredSpecifiers.set(url, specifier)
-      const modifiedUrl = new URL(url)
-      // add a query param to the resolved url so the load hook below knows
-      // to rewrite and wrap the source code
-      modifiedUrl.searchParams.set('hasNrInstrumentation', 'true')
-      resolvedModule.url = modifiedUrl.href
-    } else {
-      logger.debug(`${specifier} is not a CommonJS nor ESM package, skipping for now.`)
-    }
+  if (resolvedModule.format === 'module') {
+    registeredSpecifiers.set(resolvedModule.url, specifier)
+    const modifiedUrl = new URL(resolvedModule.url)
+    // add a query param to the resolved url so the load hook below knows
+    // to rewrite and wrap the source code
+    modifiedUrl.searchParams.set('hasNrInstrumentation', 'true')
+    resolvedModule.url = modifiedUrl.href
   }
 
   return resolvedModule
