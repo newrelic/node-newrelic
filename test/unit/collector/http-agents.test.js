@@ -8,7 +8,6 @@
 const tap = require('tap')
 
 // keepAliveAgent,
-const { proxyAgent } = require('../../../lib/collector/http-agents')
 const { readFileSync: read } = require('fs')
 const { join } = require('path')
 
@@ -63,9 +62,17 @@ config.certificates && config.certificates.length
 tap.test('proxy agent', (t) => {
   t.autoend()
   let agent
+  let moduleName
+  let proxyAgent
 
+  t.beforeEach(() => {
+    // We do this to avoid the persistent caching of the agent in this module
+    moduleName = require.resolve('../../../lib/collector/http-agents')
+    proxyAgent = require(moduleName).proxyAgent
+  })
   t.afterEach(() => {
     agent = null
+    delete require.cache[moduleName]
   })
 
   t.test('creation without params', (t) => {
@@ -75,6 +82,7 @@ tap.test('proxy agent', (t) => {
   })
 
   t.test('creation with proxy host and proxy port', (t) => {
+    console.log('PROXY AGENT', proxyAgent)
     const config = {
       proxy_host: PROXY_HOST,
       proxy_port: PROXY_PORT
@@ -90,7 +98,7 @@ tap.test('proxy agent', (t) => {
 
   t.test('creation with proxy url:port', (t) => {
     const config = {
-      proxy_url: PROXY_URL_WITH_PORT
+      proxy: PROXY_URL_WITH_PORT
     }
     t.doesNotThrow(() => (agent = proxyAgent(config)), 'should create without throwing')
     t.ok(agent, 'agent is created successfully')
@@ -103,12 +111,12 @@ tap.test('proxy agent', (t) => {
 
   t.test('creation with proxy url only', (t) => {
     const config = {
-      proxy_url: PROXY_URL_WITHOUT_PORT
+      proxy: PROXY_URL_WITHOUT_PORT
     }
     t.doesNotThrow(() => (agent = proxyAgent(config)), 'should create without throwing')
     t.ok(agent, 'agent is created successfully')
     t.equal(agent.proxy.host, PROXY_HOST, 'proxy host should be correct')
-    t.equal(agent.proxy.port, PROXY_PORT, 'proxy port should be correct')
+    t.equal(agent.proxy.port, 80, 'in the absence of a defined port, port should be 80')
     t.equal(agent.proxy.protocol, 'https:', 'should be set to https')
     t.equal(agent.proxy.keepAlive, true, 'should be keepAlive')
     t.end()
@@ -116,7 +124,7 @@ tap.test('proxy agent', (t) => {
 
   t.test('creation with certificates defined', (t) => {
     const config = {
-      proxy_url: PROXY_URL_WITHOUT_PORT,
+      proxy: PROXY_URL_WITH_PORT,
       certificates: [read(join(__dirname, '../../lib/ca-certificate.crt'), 'utf8')]
     }
     t.doesNotThrow(() => (agent = proxyAgent(config)), 'should create without throwing')
