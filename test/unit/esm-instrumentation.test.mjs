@@ -28,8 +28,8 @@ tap.test(
       './test/lib/test-mod-instrumentation.mjs'
     await td.replaceEsm('../../index.js', {}, { agent: fakeAgent })
     const loader = await import('../../esm-loader.mjs')
-    loader.registeredSpecifiers.set(MOD_URL, 'test-mod')
-    const data = await loader.load(`${MOD_URL}?hasNrInstrumentation=true`, {}, sinon.stub())
+    loader.registeredSpecifiers.set(MOD_URL, { specifier: 'test-mod', hasNrInstrumentation: true })
+    const data = await loader.load(MOD_URL, {}, sinon.stub())
     const mod = await import(
       `data:application/javascript;base64,${Buffer.from(data.source).toString('base64')}`
     )
@@ -64,8 +64,11 @@ tap.test(
 
     const loader = await import('../../esm-loader.mjs')
 
-    loader.registeredSpecifiers.set(MOD_URL_SPECIAL, 'test-mod')
-    const data = await loader.load(`${MOD_URL_SPECIAL}?hasNrInstrumentation=true`, {}, sinon.stub())
+    loader.registeredSpecifiers.set(MOD_URL_SPECIAL, {
+      specifier: 'test-mod',
+      hasNrInstrumentation: true
+    })
+    const data = await loader.load(MOD_URL_SPECIAL, {}, sinon.stub())
 
     const mod = await import(
       `data:application/javascript;base64,${Buffer.from(data.source).toString('base64')}`
@@ -94,8 +97,8 @@ tap.test(
     })
     await td.replaceEsm('../../index.js', {}, { agent: fakeAgent })
     const loader = await import('../../esm-loader.mjs')
-    loader.registeredSpecifiers.set(MOD_URL, 'test-mod')
-    const data = await loader.load(`${MOD_URL}?hasNrInstrumentation=true`, {}, sinon.stub())
+    loader.registeredSpecifiers.set(MOD_URL, { specifier: 'test-mod', hasNrInstrumentation: true })
+    const data = await loader.load(MOD_URL, {}, sinon.stub())
     const mod = await import(
       `data:application/javascript;base64,${Buffer.from(data.source).toString('base64')}`
     )

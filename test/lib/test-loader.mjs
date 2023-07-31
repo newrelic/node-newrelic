@@ -21,10 +21,11 @@ async function lazyLoadLoader() {
 }
 
 const TEST_AGENT_API_URL = new URL('./agent-api-test-module.cjs', import.meta.url)
+const testSpecifiers = new Set()
 
 /**
  * The test loader resolve hook does 2 things:
- *   1. Calls the agent loader if the reoslved path matches our registered instrumentation
+ *   1. Calls the agent loader if the resolved path matches our registered instrumentation
  *   2. Updates the resolution of the agent API(./index.js in this context) to use a proxy that
  *      gives us a mocked agent
  */
@@ -37,8 +38,11 @@ export async function resolve(specifier, context, nextResolve) {
   const registeredInstrumentation = shimmer.registeredInstrumentations[instrumentation]
   if (registeredInstrumentation) {
     const agentLoader = await lazyLoadLoader()
-
-    return agentLoader.resolve(specifier, context, nextResolve)
+    const resolvedMod = await agentLoader.resolve(specifier, context, nextResolve)
+    // In the esm loader resolve we add `hasNrInstrumentation`, so we must track
+    // this in a local set because in the load hook below it'll have it in url
+    testSpecifiers.add(resolvedMod.url, true)
+    return resolvedMod
   }
 
   /**
@@ -60,11 +64,12 @@ export async function resolve(specifier, context, nextResolve) {
   return resolvedModuleDetails
 }
 
+/**
+ * Checks that the url is in a local set and passes it off to the
+ * real esm loader
+ */
 export async function load(url, context, nextLoad) {
-  const parsedUrl = new URL(url)
-  const hasNrInstrumentation = parsedUrl.searchParams.get('hasNrInstrumentation')
-
-  if (hasNrInstrumentation) {
+  if (testSpecifiers.has(url)) {
     const agentLoader = await lazyLoadLoader()
     return agentLoader.load(url, context, nextLoad)
   }
