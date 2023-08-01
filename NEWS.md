@@ -1,3 +1,9 @@
+### v10.6.1 (2023-08-01)
+
+#### Security Improvements
+
+* updated ESM loader to track instrumentation by url in a map instead of in url to avoid remote code execution. ([#1741](https://github.com/newrelic/node-newrelic/pull/1741)) ([c8dc779](https://github.com/newrelic/node-newrelic/commit/c8dc779c7799b234290b6f7eb1d0a4e07d692ef9))
+
 ### v10.6.0 (2023-07-26)
 
 #### Miscellaneous Chores
