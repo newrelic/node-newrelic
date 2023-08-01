@@ -5,7 +5,7 @@
       "version": "10.6.1",
       "changes": {
         "security": [
-          "updated esm loader track instrumentation by url in a map instead of in url to avoid remote code executions"
+          "updated ESM loader to track instrumentation by url in a map instead of in url to avoid remote code execution."
         ],
         "bugfixes": [],
         "features": []
