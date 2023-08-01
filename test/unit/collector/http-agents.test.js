@@ -7,58 +7,46 @@
 
 const tap = require('tap')
 
-// keepAliveAgent,
 const { readFileSync: read } = require('fs')
 const { join } = require('path')
 
-// const HOST = 'collector.newrelic.com'
-// const PORT = 443
 const PROXY_HOST = 'unique.newrelic.com'
 const PROXY_PORT = 54532
-// const OTLP_ENDPOINT = 'otlp.nr-data.net'
-// const URL_WITH_PORT = `https://${HOST}:${PORT}`
-// const URL_WITHOUT_PORT = `https://${HOST}`
 const PROXY_URL_WITH_PORT = `https://${PROXY_HOST}:${PROXY_PORT}`
 const PROXY_URL_WITHOUT_PORT = `https://${PROXY_HOST}`
 
-/* options branches
+tap.test('keepAlive agent', (t) => {
+  t.autoend()
+  let agent
+  let moduleName
+  let keepAliveAgent
 
-config.certificates && config.certificates.length
+  t.beforeEach(() => {
+    // We do this to avoid the persistent caching of the agent in this module
+    moduleName = require.resolve('../../../lib/collector/http-agents')
+    keepAliveAgent = require(moduleName).keepAliveAgent
+  })
+  t.afterEach(() => {
+    agent = null
+    delete require.cache[moduleName]
+  })
 
- */
+  t.test('configured without params', (t) => {
+    agent = keepAliveAgent()
+    t.ok(agent, 'should be created successfully')
+    t.equal(agent.protocol, 'https:', 'should be set to https')
+    t.equal(agent.keepAlive, true, 'should be keepAlive')
+    t.end()
+  })
 
-// tap.test('keepalive', (t) => {
-//     t.autoend()
-//     let httpAgent
-//     let request
-//
-//     t.before(() => {
-//         createTestestServer({})
-//     })
-//
-//     t.test('keepAlive agent creation', (t) => {
-//         httpAgent = keepAliveAgent()
-//         t.ok(httpAgent, 'keep alive agent should be ok')
-//         t.ok(httpAgent.options.keepAlive, true)
-//         t.ok(httpAgent.protocol, 'https:', 'should be set to https')
-//         t.end()
-//     })
-//
-//     // t.test('request with keepAlive agent', async (t) => {
-//     //     const requestOptions = setOptions({
-//     //         host: 'staging-collector.newrelic.com'
-//     //     }, httpAgent)
-//     //     request = await https.request(requestOptions)
-//     //     // console.log("request", request)
-//     //     t.end()
-//     // })
-//
-//     t.teardown(() => {
-//         httpAgent = null
-//         // server.close()
-//         //server = null
-//     })
-// })
+  t.test('configured with keepAlive set to false', (t) => {
+    agent = keepAliveAgent({ keepAlive: false })
+    t.ok(agent, 'should be created successfully')
+    t.equal(agent.protocol, 'https:', 'should be set to https')
+    t.equal(agent.keepAlive, true, 'should override config and be keepAlive')
+    t.end()
+  })
+})
 tap.test('proxy agent', (t) => {
   t.autoend()
   let agent
@@ -75,62 +63,62 @@ tap.test('proxy agent', (t) => {
     delete require.cache[moduleName]
   })
 
-  t.test('creation without params', (t) => {
-    t.throws(() => proxyAgent(), 'should throw without config')
-    t.ok(() => proxyAgent({}), 'should create successfully when config has no content')
+  t.test('configured without params', (t) => {
+    t.throws(() => (agent = proxyAgent()), 'should throw without config')
+    t.ok(() => (agent = proxyAgent({})), 'should not throw when config has no content')
+    t.notOk(agent, 'agent should not be created without valid config')
     t.end()
   })
 
-  t.test('creation with proxy host and proxy port', (t) => {
-    console.log('PROXY AGENT', proxyAgent)
+  t.test('configured with proxy host and proxy port', (t) => {
     const config = {
       proxy_host: PROXY_HOST,
       proxy_port: PROXY_PORT
     }
-    t.doesNotThrow(() => (agent = proxyAgent(config)), 'should create without throwing')
-    t.ok(agent, 'agent is created successfully')
-    t.equal(agent.proxy.host, PROXY_HOST, 'proxy host should be correct')
-    t.equal(agent.proxy.port, PROXY_PORT, 'proxy port should be correct')
+    agent = proxyAgent(config)
+    t.ok(agent, 'should be created successfully')
+    t.equal(agent.proxy.host, PROXY_HOST, 'should have correct proxy host')
+    t.equal(agent.proxy.port, PROXY_PORT, 'should have correct proxy port')
     t.equal(agent.proxy.protocol, 'https:', 'should be set to https')
     t.equal(agent.proxy.keepAlive, true, 'should be keepAlive')
     t.end()
   })
 
-  t.test('creation with proxy url:port', (t) => {
+  t.test('configured with proxy url:port', (t) => {
     const config = {
       proxy: PROXY_URL_WITH_PORT
     }
-    t.doesNotThrow(() => (agent = proxyAgent(config)), 'should create without throwing')
-    t.ok(agent, 'agent is created successfully')
-    t.equal(agent.proxy.host, PROXY_HOST, 'proxy host should be correct')
-    t.equal(agent.proxy.port, PROXY_PORT, 'proxy port should be correct')
+    agent = proxyAgent(config)
+    t.ok(agent, 'should be created successfully')
+    t.equal(agent.proxy.host, PROXY_HOST, 'should have correct proxy host')
+    t.equal(agent.proxy.port, PROXY_PORT, 'should have correct proxy port')
     t.equal(agent.proxy.protocol, 'https:', 'should be set to https')
     t.equal(agent.proxy.keepAlive, true, 'should be keepAlive')
     t.end()
   })
 
-  t.test('creation with proxy url only', (t) => {
+  t.test('configured with proxy url only', (t) => {
     const config = {
       proxy: PROXY_URL_WITHOUT_PORT
     }
-    t.doesNotThrow(() => (agent = proxyAgent(config)), 'should create without throwing')
-    t.ok(agent, 'agent is created successfully')
-    t.equal(agent.proxy.host, PROXY_HOST, 'proxy host should be correct')
+    agent = proxyAgent(config)
+    t.ok(agent, 'should be created successfully')
+    t.equal(agent.proxy.host, PROXY_HOST, 'should have correct proxy host')
     t.equal(agent.proxy.port, 80, 'in the absence of a defined port, port should be 80')
     t.equal(agent.proxy.protocol, 'https:', 'should be set to https')
     t.equal(agent.proxy.keepAlive, true, 'should be keepAlive')
     t.end()
   })
 
-  t.test('creation with certificates defined', (t) => {
+  t.test('configured with certificates defined', (t) => {
     const config = {
       proxy: PROXY_URL_WITH_PORT,
       certificates: [read(join(__dirname, '../../lib/ca-certificate.crt'), 'utf8')]
     }
-    t.doesNotThrow(() => (agent = proxyAgent(config)), 'should create without throwing')
-    t.ok(agent, 'agent is created successfully')
-    t.equal(agent.proxy.host, PROXY_HOST, 'proxy host should be correct')
-    t.equal(agent.proxy.port, PROXY_PORT, 'proxy port should be correct')
+    agent = proxyAgent(config)
+    t.ok(agent, 'should be created successfully')
+    t.equal(agent.proxy.host, PROXY_HOST, 'should have correct proxy host')
+    t.equal(agent.proxy.port, PROXY_PORT, 'should have correct proxy port')
     t.equal(agent.proxy.protocol, 'https:', 'should be set to https')
     t.equal(agent.proxy.keepAlive, true, 'should be keepAlive')
     t.end()
