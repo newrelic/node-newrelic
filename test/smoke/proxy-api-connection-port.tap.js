@@ -14,7 +14,7 @@ const configurator = require('../../lib/config')
 const Agent = require('../../lib/agent')
 const CollectorAPI = require('../../lib/collector/api')
 const { getTestSecret } = require('../helpers/secrets')
-const { SSL_HOST } = require('../lib/agent_helper')
+const { SSL_HOST, destroyProxyAgent } = require('../lib/agent_helper')
 
 let port = 0
 const SSL_CONFIG = {
@@ -26,6 +26,7 @@ const license = getTestSecret('TEST_LICENSE')
 tap.test('setting proxy_port should use the proxy agent', (t) => {
   const server = proxySetup(https.createServer(SSL_CONFIG))
   t.teardown(() => {
+    destroyProxyAgent()
     server.close()
   })
 
