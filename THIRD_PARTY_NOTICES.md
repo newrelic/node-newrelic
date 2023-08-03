@@ -34,7 +34,6 @@ code, the source code can be found at [https://github.com/newrelic/node-newrelic
 
 * [@newrelic/eslint-config](#newreliceslint-config)
 * [@newrelic/newrelic-oss-cli](#newrelicnewrelic-oss-cli)
-* [@newrelic/proxy](#newrelicproxy)
 * [@newrelic/test-utilities](#newrelictest-utilities)
 * [@octokit/rest](#octokitrest)
 * [@slack/bolt](#slackbolt)
@@ -66,6 +65,7 @@ code, the source code can be found at [https://github.com/newrelic/node-newrelic
 * [memcached](#memcached)
 * [nock](#nock)
 * [prettier](#prettier)
+* [proxy](#proxy)
 * [proxyquire](#proxyquire)
 * [q](#q)
 * [rimraf](#rimraf)
@@ -1273,7 +1273,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 ### https-proxy-agent
 
-This product includes source derived from [https-proxy-agent](https://github.com/TooTallNate/node-https-proxy-agent) ([v5.0.1](https://github.com/TooTallNate/node-https-proxy-agent/tree/v5.0.1)), distributed under the [MIT License](https://github.com/TooTallNate/node-https-proxy-agent/blob/v5.0.1/README.md):
+This product includes source derived from [https-proxy-agent](https://github.com/TooTallNate/proxy-agents) ([v7.0.1](https://github.com/TooTallNate/proxy-agents/tree/v7.0.1)), distributed under the [MIT License](https://github.com/TooTallNate/proxy-agents/blob/v7.0.1/README.md):
 
 ```
 MIT License
@@ -1864,22 +1864,6 @@ This product includes source derived from [@newrelic/newrelic-oss-cli](https://g
    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
    See the License for the specific language governing permissions and
    limitations under the License.
-```
-
-### @newrelic/proxy
-
-This product includes source derived from [@newrelic/proxy](https://github.com/newrelic/proxy) ([v2.0.0](https://github.com/newrelic/proxy/tree/v2.0.0)), distributed under the [MIT License](https://github.com/newrelic/proxy/blob/v2.0.0/README.md):
-
-```
-MIT License
-
-Copyright (c) <year> <copyright holders>
-
-Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ```
 
 ### @newrelic/test-utilities
@@ -9269,6 +9253,22 @@ By: Ika
 > OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 > SOFTWARE.
 
+```
+
+### proxy
+
+This product includes source derived from [proxy](https://github.com/TooTallNate/proxy-agents) ([v2.1.1](https://github.com/TooTallNate/proxy-agents/tree/v2.1.1)), distributed under the [MIT License](https://github.com/TooTallNate/proxy-agents/blob/v2.1.1/README.md):
+
+```
+MIT License
+
+Copyright (c) <year> <copyright holders>
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ```
 
 ### proxyquire

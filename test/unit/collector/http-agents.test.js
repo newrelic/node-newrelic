@@ -8,7 +8,7 @@
 const tap = require('tap')
 const proxyquire = require('proxyquire')
 const PROXY_HOST = 'unique.newrelic.com'
-const PROXY_PORT = 54532
+const PROXY_PORT = '54532'
 const PROXY_URL_WITH_PORT = `https://${PROXY_HOST}:${PROXY_PORT}`
 const PROXY_URL_WITHOUT_PORT = `https://${PROXY_HOST}`
 
@@ -81,10 +81,10 @@ tap.test('proxy agent', (t) => {
     }
     agent = proxyAgent(config)
     t.ok(agent, 'should be created successfully')
-    t.equal(agent.proxy.host, PROXY_HOST, 'should have correct proxy host')
+    t.equal(agent.proxy.hostname, PROXY_HOST, 'should have correct proxy host')
     t.equal(agent.proxy.port, PROXY_PORT, 'should have correct proxy port')
     t.equal(agent.proxy.protocol, 'https:', 'should be set to https')
-    t.equal(agent.proxy.keepAlive, true, 'should be keepAlive')
+    t.equal(agent.keepAlive, true, 'should be keepAlive')
     t.end()
   })
 
@@ -94,10 +94,10 @@ tap.test('proxy agent', (t) => {
     }
     agent = proxyAgent(config)
     t.ok(agent, 'should be created successfully')
-    t.equal(agent.proxy.host, PROXY_HOST, 'should have correct proxy host')
+    t.equal(agent.proxy.hostname, PROXY_HOST, 'should have correct proxy host')
     t.equal(agent.proxy.port, PROXY_PORT, 'should have correct proxy port')
     t.equal(agent.proxy.protocol, 'https:', 'should be set to https')
-    t.equal(agent.proxy.keepAlive, true, 'should be keepAlive')
+    t.equal(agent.keepAlive, true, 'should be keepAlive')
     t.end()
   })
 
@@ -117,28 +117,28 @@ tap.test('proxy agent', (t) => {
     }
     agent = proxyAgent(config)
     t.ok(agent, 'should be created successfully')
-    t.equal(agent.proxy.host, PROXY_HOST, 'should have correct proxy host')
-    t.equal(agent.proxy.port, 80, 'in the absence of a defined port, port should be 80')
+    t.equal(agent.proxy.hostname, PROXY_HOST, 'should have correct proxy host')
     t.equal(agent.proxy.protocol, 'https:', 'should be set to https')
-    t.equal(agent.proxy.keepAlive, true, 'should be keepAlive')
+    t.equal(agent.keepAlive, true, 'should be keepAlive')
+    t.equal(agent.connectOpts.secureEndpoint, undefined)
     t.end()
   })
 
   t.test('configured with certificates defined', (t) => {
     const { proxyAgent } = proxyquire('../../../lib/collector/http-agents', {
-      'https-proxy-agent': Mock
+      'https-proxy-agent': { HttpsProxyAgent: Mock }
     })
 
     const config = {
       proxy: PROXY_URL_WITH_PORT,
-      certificates: ['cert1']
+      certificates: ['cert1'],
+      ssl: true
     }
-    function Mock(args) {
-      t.same(args.ca, ['cert1'], 'should have correct certs')
-      t.equal(args.host, PROXY_HOST, 'should have correct proxy host')
-      t.equal(args.port, `${PROXY_PORT}`, 'should have correct proxy port')
-      t.equal(args.protocol, 'https:', 'should be set to https')
-      t.equal(args.keepAlive, true, 'should be keepAlive')
+    function Mock(host, opts) {
+      t.equal(host, PROXY_URL_WITH_PORT, 'should have correct proxy url')
+      t.same(opts.ca, ['cert1'], 'should have correct certs')
+      t.equal(opts.keepAlive, true, 'should be keepAlive')
+      t.equal(opts.secureEndpoint, true)
       t.end()
     }
 
@@ -148,28 +148,32 @@ tap.test('proxy agent', (t) => {
   t.test('should default to localhost if no proxy_host or proxy_port is specified', (t) => {
     const config = {
       proxy_user: 'unit-test',
-      proxy_pass: 'secret'
+      proxy_pass: 'secret',
+      ssl: true
     }
     agent = proxyAgent(config)
     t.ok(agent, 'should be created successfully')
-    t.equal(agent.proxy.host, 'localhost', 'should have correct proxy host')
-    t.equal(agent.proxy.port, 80, 'should have correct proxy port')
+    t.equal(agent.proxy.hostname, 'localhost', 'should have correct proxy host')
+    t.equal(agent.proxy.port, '80', 'should have correct proxy port')
     t.equal(agent.proxy.protocol, 'https:', 'should be set to https')
-    t.equal(agent.proxy.auth, 'unit-test:secret', 'should have correct auth')
+    t.equal(agent.proxy.username, 'unit-test', 'should have correct basic auth username')
+    t.equal(agent.proxy.password, 'secret', 'should have correct basic auth password')
+    t.equal(agent.connectOpts.secureEndpoint, true)
     t.end()
   })
 
-  t.test('should not append password to auth if it is an empty string', (t) => {
+  t.test('should not parse basic auth user if password is empty', (t) => {
     const config = {
       proxy_user: 'unit-test',
       proxy_pass: ''
     }
     agent = proxyAgent(config)
     t.ok(agent, 'should be created successfully')
-    t.equal(agent.proxy.host, 'localhost', 'should have correct proxy host')
-    t.equal(agent.proxy.port, 80, 'should have correct proxy port')
+    t.equal(agent.proxy.hostname, 'localhost', 'should have correct proxy host')
+    t.equal(agent.proxy.port, '80', 'should have correct proxy port')
     t.equal(agent.proxy.protocol, 'https:', 'should be set to https')
-    t.equal(agent.proxy.auth, 'unit-test', 'should have correct auth')
+    t.not(agent.proxy.username, 'should not have basic auth username')
+    t.not(agent.proxy.password, 'should not have basic auth password')
     t.end()
   })
 })

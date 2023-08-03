@@ -145,15 +145,15 @@
       "publisher": "Max Ogden",
       "email": "max@maxogden.com"
     },
-    "https-proxy-agent@5.0.1": {
+    "https-proxy-agent@7.0.1": {
       "name": "https-proxy-agent",
-      "version": "5.0.1",
-      "range": "^5.0.0",
+      "version": "7.0.1",
+      "range": "^7.0.1",
       "licenses": "MIT",
-      "repoUrl": "https://github.com/TooTallNate/node-https-proxy-agent",
-      "versionedRepoUrl": "https://github.com/TooTallNate/node-https-proxy-agent/tree/v5.0.1",
+      "repoUrl": "https://github.com/TooTallNate/proxy-agents",
+      "versionedRepoUrl": "https://github.com/TooTallNate/proxy-agents/tree/v7.0.1",
       "licenseFile": "node_modules/https-proxy-agent/README.md",
-      "licenseUrl": "https://github.com/TooTallNate/node-https-proxy-agent/blob/v5.0.1/README.md",
+      "licenseUrl": "https://github.com/TooTallNate/proxy-agents/blob/v7.0.1/README.md",
       "licenseTextSource": "spdx",
       "publisher": "Nathan Rajlich",
       "email": "nathan@tootallnate.net",
@@ -248,20 +248,6 @@
       "licenseUrl": "https://github.com/newrelic/newrelic-oss-cli/blob/v0.1.2/LICENSE",
       "licenseTextSource": "file",
       "publisher": "New Relic"
-    },
-    "@newrelic/proxy@2.0.0": {
-      "name": "@newrelic/proxy",
-      "version": "2.0.0",
-      "range": "^2.0.0",
-      "licenses": "MIT",
-      "repoUrl": "https://github.com/newrelic/proxy",
-      "versionedRepoUrl": "https://github.com/newrelic/proxy/tree/v2.0.0",
-      "licenseFile": "node_modules/@newrelic/proxy/README.md",
-      "licenseUrl": "https://github.com/newrelic/proxy/blob/v2.0.0/README.md",
-      "licenseTextSource": "spdx",
-      "publisher": "Nathan Rajlich",
-      "email": "nathan@tootallnate.net",
-      "url": "http://n8.io/"
     },
     "@newrelic/test-utilities@7.3.2": {
       "name": "@newrelic/test-utilities",
@@ -654,6 +640,20 @@
       "licenseUrl": "https://github.com/prettier/prettier/blob/v2.8.8/LICENSE",
       "licenseTextSource": "file",
       "publisher": "James Long"
+    },
+    "proxy@2.1.1": {
+      "name": "proxy",
+      "version": "2.1.1",
+      "range": "^2.1.1",
+      "licenses": "MIT",
+      "repoUrl": "https://github.com/TooTallNate/proxy-agents",
+      "versionedRepoUrl": "https://github.com/TooTallNate/proxy-agents/tree/v2.1.1",
+      "licenseFile": "node_modules/proxy/README.md",
+      "licenseUrl": "https://github.com/TooTallNate/proxy-agents/blob/v2.1.1/README.md",
+      "licenseTextSource": "spdx",
+      "publisher": "Nathan Rajlich",
+      "email": "nathan@tootallnate.net",
+      "url": "http://n8.io/"
     },
     "proxyquire@1.8.0": {
       "name": "proxyquire",
