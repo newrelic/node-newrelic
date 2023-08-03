@@ -7,6 +7,7 @@
 
 const tap = require('tap')
 const { sink, once } = require('pino/test/helper')
+const split = require('split2')
 const { truncate } = require('../../../lib/util/application-logging')
 const helper = require('../../lib/agent_helper')
 const { LOGGING } = require('../../../lib/metrics/names')
@@ -136,6 +137,19 @@ tap.test('Pino instrumentation', (t) => {
       t.equal(agent.logs.getEvents().length, 1, 'should have 1 log in aggregator')
       const formattedLine = agent.logs.getEvents()[0]()
       t.validateNrLogLine({ line: formattedLine, message, level, config })
+      t.end()
+    })
+
+    t.test('should not crash nor enqueue log line when invalid json', async (t) => {
+      const message = { 'pino "unit test': 'prop' }
+      const level = 'info'
+      const localStream = split((data) => data)
+      const logger = pino({ level: 'debug' }, localStream)
+      logger[level](message)
+      await once(localStream, 'data')
+      t.equal(agent.logs.getEvents().length, 1, 'should have 1 logs in aggregator')
+      t.notOk(agent.logs.getEvents()[0](), 'should not return a log line if invalid')
+      t.notOk(agent.logs._toPayloadSync(), 'should not send any logs')
       t.end()
     })
 
