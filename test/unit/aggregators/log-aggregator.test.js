@@ -98,9 +98,35 @@ test('Log Aggregator', (t) => {
     }
   )
 
+  t.test('toPayload() should only return logs that have data', (t) => {
+    const log2 = JSON.stringify(log)
+    function formatLog() {
+      return JSON.parse(log2)
+    }
+    function formatLog2() {
+      return
+    }
+    logEventAggregator.add(log)
+    logEventAggregator.add(formatLog)
+    logEventAggregator.add(formatLog2)
+    const payload = logEventAggregator._toPayloadSync()
+    t.same(payload, [{ logs: [log, JSON.parse(log2)] }])
+    t.end()
+  })
+
   t.test('toPayload() should return nothing with no log event data', (t) => {
     const payload = logEventAggregator._toPayloadSync()
 
+    t.notOk(payload)
+    t.end()
+  })
+
+  t.test('toPayload() should return nothing when log functions return no data', (t) => {
+    function formatLog() {
+      return
+    }
+    logEventAggregator.add(formatLog)
+    const payload = logEventAggregator._toPayloadSync()
     t.notOk(payload)
     t.end()
   })
