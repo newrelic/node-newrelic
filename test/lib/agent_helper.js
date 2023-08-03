@@ -698,7 +698,7 @@ const helper = (module.exports = {
   },
 
   /**
-   * The https-proxy-server we support finally supporst keep alive
+   * The https-proxy-server we support finally supports keep alive
    * See: https://github.com/TooTallNate/proxy-agents/pull/147
    * In order for tap to shutdown we must destroy the https agent.
    * This assumes the agent already exists as a singleton so we can destroy
