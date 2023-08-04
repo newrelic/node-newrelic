@@ -8,18 +8,6 @@
   "tests": [
     {
       "engines": {
-        "node": "14"
-      },
-      "dependencies": {
-        "@prisma/client": ">=4.0.0 <5.0.0",
-        "prisma": "4.16.2"
-      },
-      "files": [
-        "prisma.tap.js"
-      ]
-    },
-    {
-      "engines": {
         "node": ">=16"
       },
       "dependencies": {
