@@ -8,7 +8,6 @@
 
 * **deps:** Updated @newrelic/security-agent to v0.2.1 ([#1754](https://github.com/newrelic/node-newrelic/pull/1754)) ([0d04f14](https://github.com/newrelic/node-newrelic/commit/0d04f14f1383d903b4c30a787c4079b3dec01323))
 * Fix smoke tests node 20 ([#1745](https://github.com/newrelic/node-newrelic/pull/1745)) ([8c053e0](https://github.com/newrelic/node-newrelic/commit/8c053e00e289f214105fc3919b206ac160e81a2d))
-    * Co-authored-by: Maurice Rickard <maurice@mauricerickard.com>
 * fixed typos in lib/config/index.js comments ([#1749](https://github.com/newrelic/node-newrelic/pull/1749)) ([9000a14](https://github.com/newrelic/node-newrelic/commit/9000a14a48ba6c29ac6b7f0ffeb94eace9d4a37a))
 
 #### Tests
