@@ -1,3 +1,19 @@
+### v10.6.2 (2023-08-07)
+
+#### Bug Fixes
+
+* added defensive code around JSON.parse in formatting pino log lines because pino can return invalid json ([#1750](https://github.com/newrelic/node-newrelic/pull/1750)) ([8f2e11a](https://github.com/newrelic/node-newrelic/commit/8f2e11ab0d018d2a99b928cd3ec189a74ff8d6d6))
+
+#### Miscellaneous Chores
+
+* **deps:** Updated @newrelic/security-agent to v0.2.1 ([#1754](https://github.com/newrelic/node-newrelic/pull/1754)) ([0d04f14](https://github.com/newrelic/node-newrelic/commit/0d04f14f1383d903b4c30a787c4079b3dec01323))
+* Fix smoke tests node 20 ([#1745](https://github.com/newrelic/node-newrelic/pull/1745)) ([8c053e0](https://github.com/newrelic/node-newrelic/commit/8c053e00e289f214105fc3919b206ac160e81a2d))
+* fixed typos in lib/config/index.js comments ([#1749](https://github.com/newrelic/node-newrelic/pull/1749)) ([9000a14](https://github.com/newrelic/node-newrelic/commit/9000a14a48ba6c29ac6b7f0ffeb94eace9d4a37a))
+
+#### Tests
+
+* Added a full suite of unit tests for the collector/http-agents ([#1748](https://github.com/newrelic/node-newrelic/pull/1748)) ([9d4201b](https://github.com/newrelic/node-newrelic/commit/9d4201b9035dc629bd4f4a1c0ea72a6e14172356))
+
 ### v10.6.1 (2023-08-01)
 
 #### Security Improvements
