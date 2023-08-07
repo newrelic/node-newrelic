@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "Mon Jul 24 2023 12:44:47 GMT-0400 (Eastern Daylight Time)",
+  "lastUpdated": "Mon Aug 07 2023 13:24:14 GMT+0530 (India Standard Time)",
   "projectName": "New Relic Node Agent",
   "projectUrl": "https://github.com/newrelic/node-newrelic",
   "includeOptDeps": true,
@@ -94,15 +94,15 @@
       "publisher": "New Relic Node.js agent team",
       "email": "nodejs@newrelic.com"
     },
-    "@newrelic/security-agent@0.2.0": {
+    "@newrelic/security-agent@0.2.1": {
       "name": "@newrelic/security-agent",
-      "version": "0.2.0",
-      "range": "0.2.0",
+      "version": "0.2.1",
+      "range": "0.2.1",
       "licenses": "New Relic Pre-Release",
       "repoUrl": "https://github.com/newrelic/csec-node-agent",
-      "versionedRepoUrl": "https://github.com/newrelic/csec-node-agent/tree/v0.2.0",
+      "versionedRepoUrl": "https://github.com/newrelic/csec-node-agent/tree/v0.2.1",
       "licenseFile": "node_modules/@newrelic/security-agent/LICENSE",
-      "licenseUrl": "https://github.com/newrelic/csec-node-agent/blob/v0.2.0/LICENSE",
+      "licenseUrl": "https://github.com/newrelic/csec-node-agent/blob/v0.2.1/LICENSE",
       "licenseTextSource": "file",
       "publisher": "newrelic"
     },
@@ -197,15 +197,15 @@
       "licenseUrl": "https://github.com/nodejs/readable-stream/blob/v3.6.2/LICENSE",
       "licenseTextSource": "file"
     },
-    "semver@7.5.3": {
+    "semver@7.5.4": {
       "name": "semver",
-      "version": "7.5.3",
+      "version": "7.5.4",
       "range": "^7.5.2",
       "licenses": "ISC",
       "repoUrl": "https://github.com/npm/node-semver",
-      "versionedRepoUrl": "https://github.com/npm/node-semver/tree/v7.5.3",
+      "versionedRepoUrl": "https://github.com/npm/node-semver/tree/v7.5.4",
       "licenseFile": "node_modules/semver/LICENSE",
-      "licenseUrl": "https://github.com/npm/node-semver/blob/v7.5.3/LICENSE",
+      "licenseUrl": "https://github.com/npm/node-semver/blob/v7.5.4/LICENSE",
       "licenseTextSource": "file",
       "publisher": "GitHub Inc."
     },
