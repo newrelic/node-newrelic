@@ -2,6 +2,16 @@
   "repository": "newrelic/node-newrelic",
   "entries": [
     {
+      "version": "10.6.2",
+      "changes": {
+        "security": [],
+        "bugfixes": [
+          "added defensive code around JSON.parse in formatting pino log lines because pino can return invalid json"
+        ],
+        "features": []
+      }
+    },
+    {
       "version": "10.6.1",
       "changes": {
         "security": [
