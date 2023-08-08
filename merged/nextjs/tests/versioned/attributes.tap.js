@@ -9,8 +9,8 @@ const tap = require('tap')
 const helpers = require('./helpers')
 const utils = require('@newrelic/test-utilities')
 const nextPkg = require('next/package.json')
-const semver = require('semver')
-const middlewareSupported = semver.gte(nextPkg.version, '12.2.0')
+const { isMiddlewareInstrumentationSupported } = require('../../lib/utils')
+const middlewareSupported = isMiddlewareInstrumentationSupported(nextPkg.version)
 
 const DESTINATIONS = {
   NONE: 0x00,

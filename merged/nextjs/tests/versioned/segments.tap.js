@@ -13,6 +13,7 @@ const TRANSACTION_PREFX = 'WebTransaction/WebFrameworkUri/Nextjs/GET/'
 const SEGMENT_PREFIX = 'Nodejs/Nextjs/getServerSideProps/'
 const MW_PREFIX = 'Nodejs/Middleware/Nextjs/'
 const nextPkg = require('next/package.json')
+const { isMiddlewareInstrumentationSupported } = require('../../lib/utils')
 
 function getChildSegments(uri) {
   const segments = [
@@ -21,7 +22,7 @@ function getChildSegments(uri) {
     }
   ]
 
-  if (semver.gte(nextPkg.version, '12.2.0')) {
+  if (isMiddlewareInstrumentationSupported(nextPkg.version)) {
     segments.unshift({
       name: `${MW_PREFIX}/middleware`
     })
@@ -103,33 +104,37 @@ tap.test('Next.js', (t) => {
     t.segments(transaction.trace.root, expectedSegments)
   })
 
-  t.test('should record segment for middleware when making API call', async (t) => {
-    let transaction
-    agent.agent.on('transactionFinished', function (tx) {
-      transaction = tx
-    })
+  t.test(
+    'should record segment for middleware when making API call',
+    { skip: !isMiddlewareInstrumentationSupported(nextPkg.version) },
+    async (t) => {
+      let transaction
+      agent.agent.on('transactionFinished', function (tx) {
+        transaction = tx
+      })
 
-    const EXPECTED_URI = '/api/person/[id]'
-    const URI = EXPECTED_URI.replace(/\[id\]/, '1')
+      const EXPECTED_URI = '/api/person/[id]'
+      const URI = EXPECTED_URI.replace(/\[id\]/, '1')
 
-    const res = await helpers.makeRequest(URI)
+      const res = await helpers.makeRequest(URI)
 
-    t.equal(res.statusCode, 200)
-    const expectedSegments = [
-      {
-        name: `${TRANSACTION_PREFX}${EXPECTED_URI}`
-      }
-    ]
-
-    if (semver.gte(nextPkg.version, '12.2.0')) {
-      expectedSegments[0].exact = true
-      expectedSegments[0].children = [
+      t.equal(res.statusCode, 200)
+      const expectedSegments = [
         {
-          name: `${MW_PREFIX}/middleware`
+          name: `${TRANSACTION_PREFX}${EXPECTED_URI}`
         }
       ]
-    }
 
-    t.segments(transaction.trace.root, expectedSegments)
-  })
+      if (semver.gte(nextPkg.version, '12.2.0')) {
+        expectedSegments[0].exact = true
+        expectedSegments[0].children = [
+          {
+            name: `${MW_PREFIX}/middleware`
+          }
+        ]
+      }
+
+      t.segments(transaction.trace.root, expectedSegments)
+    }
+  )
 })

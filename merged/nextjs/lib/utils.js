@@ -4,6 +4,7 @@
  */
 
 'use strict'
+const semver = require('semver')
 const utils = module.exports
 
 /**
@@ -28,4 +29,30 @@ utils.assignCLMAttrs = function assignCLMAttrs(config, segment, attrs) {
   for (const [key, value] of Object.entries(attrs)) {
     segment.addAttribute(key, value)
   }
+}
+
+// Version middleware is stable
+// See: https://nextjs.org/docs/advanced-features/middleware
+const MIN_MW_SUPPORTED_VERSION = '12.2.0'
+// Middleware moved to worker thread
+// We plan on revisiting when we release a stable version of our Next.js instrumentation
+const MAX_MW_SUPPORTED_VERSION = '13.4.12'
+
+utils.MAX_MW_SUPPORTED_VERSION = MAX_MW_SUPPORTED_VERSION
+utils.MIN_MW_SUPPORTED_VERSION = MIN_MW_SUPPORTED_VERSION
+/**
+ * Middlware instrumentation has had quite the journey for us.
+ * As of 8/7/23 it no longer functions because it is running in a worker thread.
+ * Our instrumentation cannot propagate context in threads so for now we will no longer record this
+ * span.
+ *
+ * @param {string} version next.js version
+ * @returns {boolean} is middleware instrumentation supported
+ */
+utils.isMiddlewareInstrumentationSupported = function isMiddlewareInstrumentationSupported(
+  version
+) {
+  return (
+    semver.gte(version, MIN_MW_SUPPORTED_VERSION) && semver.lte(version, MAX_MW_SUPPORTED_VERSION)
+  )
 }
