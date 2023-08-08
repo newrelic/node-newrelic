@@ -55,7 +55,7 @@ helpers.start = async function start(dir, path = 'app', port = 3001) {
   const { startServer } = require(`${dir}/node_modules/next/dist/server/lib/start-server`)
   const app = await startServer({
     dir: fullPath,
-    hostname: 'localhost',
+    hostname: '0.0.0.0',
     port,
     allowRetry: true
   })
@@ -77,7 +77,7 @@ helpers.start = async function start(dir, path = 'app', port = 3001) {
  * @returns {Promise}
  */
 helpers.makeRequest = function (uri, port = 3001) {
-  const url = `http://localhost:${port}${uri}`
+  const url = `http://0.0.0.0:${port}${uri}`
   return new Promise((resolve, reject) => {
     http
       .get(url, (res) => {

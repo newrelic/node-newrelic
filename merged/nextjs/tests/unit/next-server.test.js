@@ -66,7 +66,7 @@ tap.test('middleware tracking', (t) => {
     t.equal(shim.logger.warn.callCount, 1, 'should log warn message')
     const loggerArgs = shim.logger.warn.args[0]
     t.same(loggerArgs, [
-      'Next.js middleware instrumentation only supported on >=12.2.0, got %s',
+      'Next.js middleware instrumentation only supported on >=12.2.0 <=13.4.12, got %s',
       '12.0.1'
     ])
     t.notOk(

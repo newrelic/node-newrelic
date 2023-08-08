@@ -5,11 +5,13 @@
 
 'use strict'
 const semver = require('semver')
-const { assignCLMAttrs } = require('./utils')
+const {
+  assignCLMAttrs,
+  isMiddlewareInstrumentationSupported,
+  MIN_MW_SUPPORTED_VERSION,
+  MAX_MW_SUPPORTED_VERSION
+} = require('./utils')
 const SPAN_PREFIX = 'Nodejs/Nextjs'
-// Version middleware is stable
-// See: https://nextjs.org/docs/advanced-features/middleware
-const MIN_MW_SUPPORTED_VERSION = '12.2.0'
 const GET_SERVER_SIDE_PROP_VERSION = '13.4.5'
 
 module.exports = function initialize(shim, nextServer) {
@@ -24,9 +26,10 @@ module.exports = function initialize(shim, nextServer) {
     'renderToResponseWithComponents',
     function wrapRenderToResponseWithComponents(shim, originalFn) {
       return function wrappedRenderToResponseWithComponents() {
-        const { pathname } = arguments[0]
+        const [ctx, result] = arguments
+        const { pathname } = ctx
         // this is not query params but instead url params for dynamic routes
-        const { query, components } = arguments[1]
+        const { query, components } = result
 
         if (
           semver.gte(nextVersion, GET_SERVER_SIDE_PROP_VERSION) &&
@@ -64,7 +67,7 @@ module.exports = function initialize(shim, nextServer) {
 
   shim.wrap(Server.prototype, 'runApi', function wrapRunApi(shim, originalFn) {
     return function wrappedRunApi() {
-      const [, , , params, page] = arguments
+      const { page, params } = extractAttrs(arguments, nextVersion)
 
       shim.setTransactionUri(page)
 
@@ -100,9 +103,9 @@ module.exports = function initialize(shim, nextServer) {
     )
   }
 
-  if (semver.lt(nextVersion, MIN_MW_SUPPORTED_VERSION)) {
+  if (!isMiddlewareInstrumentationSupported(nextVersion)) {
     shim.logger.warn(
-      `Next.js middleware instrumentation only supported on >=${MIN_MW_SUPPORTED_VERSION}, got %s`,
+      `Next.js middleware instrumentation only supported on >=${MIN_MW_SUPPORTED_VERSION} <=${MAX_MW_SUPPORTED_VERSION}, got %s`,
       nextVersion
     )
     return
@@ -142,4 +145,25 @@ function assignParameters(shim, parameters) {
     // where we'd pull these from middleware.
     transaction.nameState.appendPath('/', prefixedParameters)
   }
+}
+
+/**
+ * Extracts the page and params from an API request
+ *
+ * @param {object} args arguments to runApi
+ * @param {string} version next.js version
+ * @returns {object} { page, params }
+ */
+function extractAttrs(args, version) {
+  let params
+  let page
+  if (semver.gte(version, '13.4.13')) {
+    const [, , query, match] = args
+    page = match?.definition?.pathname
+    params = { ...query, ...match?.params }
+  } else {
+    ;[, , , params, page] = args
+  }
+
+  return { params, page }
 }
