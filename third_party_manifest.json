@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "Wed Aug 09 2023 15:16:54 GMT-0400 (Eastern Daylight Time)",
+  "lastUpdated": "Wed Aug 09 2023 15:25:02 GMT-0400 (Eastern Daylight Time)",
   "projectName": "New Relic Node Agent",
   "projectUrl": "https://github.com/newrelic/node-newrelic",
   "includeOptDeps": true,
