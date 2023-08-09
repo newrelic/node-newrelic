@@ -5,7 +5,7 @@
   "tests": [
     {
       "engines": {
-        "node": ">=14"
+        "node": ">=16"
       },
       "dependencies": {
         "koa": {
@@ -24,7 +24,7 @@
     },
     {
       "engines": {
-        "node": ">=14"
+        "node": ">=16"
       },
       "dependencies": {
         "koa": {
@@ -39,7 +39,7 @@
     },
     {
       "engines": {
-        "node": ">=14"
+        "node": ">=16"
       },
       "dependencies": {
         "koa": {
@@ -58,7 +58,7 @@
     },
     {
       "engines": {
-        "node": ">=14"
+        "node": ">=16"
       },
       "dependencies": {
         "koa": {
@@ -77,7 +77,7 @@
     },
     {
       "engines": {
-        "node": ">=14"
+        "node": ">=16"
       },
       "dependencies": {
         "koa": {
