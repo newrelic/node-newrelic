@@ -188,8 +188,8 @@ const helper = (module.exports = {
 
     const agent = helper.loadMockedAgent(conf, setState)
 
-    shimmer.patchModule(agent)
     shimmer.bootstrapInstrumentation(agent)
+    shimmer.registerHooks(agent)
     helper.maybeLoadSecurityAgent(agent)
 
     return agent
@@ -243,7 +243,7 @@ const helper = (module.exports = {
    */
   unloadAgent: (agent) => {
     agent.emit('unload')
-    shimmer.unpatchModule()
+    shimmer.removeHooks()
     shimmer.unwrapAll()
     shimmer.registeredInstrumentations = Object.create(null)
     shimmer.debug = false

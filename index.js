@@ -150,7 +150,7 @@ function createAgent(config) {
   }
 
   const shimmer = require('./lib/shimmer')
-  shimmer.patchModule(agent)
+  shimmer.registerHooks(agent)
   shimmer.bootstrapInstrumentation(agent)
 
   // Check for already loaded modules and warn about them.

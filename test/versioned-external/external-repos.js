@@ -15,7 +15,7 @@ const repos = [
   {
     name: 'aws-sdk',
     repository: 'https://github.com/newrelic/node-newrelic-aws-sdk.git',
-    branch: 'main'
+    branch: 'ritm-update'
   },
   {
     name: 'koa',
@@ -25,7 +25,7 @@ const repos = [
   {
     name: 'next',
     repository: 'https://github.com/newrelic/newrelic-node-nextjs.git',
-    branch: 'main'
+    branch: 'ritm-update'
   },
   {
     name: 'superagent',

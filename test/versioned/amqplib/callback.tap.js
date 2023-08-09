@@ -64,6 +64,11 @@ tap.test('amqplib callback instrumentation', function (t) {
 
   t.afterEach(function () {
     helper.unloadAgent(agent)
+    Object.keys(require.cache).forEach(function (key) {
+      if (/amqplib/.test(key)) {
+        delete require.cache[key]
+      }
+    })
 
     if (!conn) {
       return

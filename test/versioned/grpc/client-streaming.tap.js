@@ -42,6 +42,11 @@ tap.test('gRPC Client: Client Streaming', (t) => {
     client.close()
     grpc = null
     proto = null
+    Object.keys(require.cache).forEach((key) => {
+      if (key.includes('@grpc/grpc-js')) {
+        delete require.cache[key]
+      }
+    })
   })
 
   t.test('should track client streaming requests as an external when in a transaction', (t) => {
