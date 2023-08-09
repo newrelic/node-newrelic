@@ -8,7 +8,7 @@
 module.exports = [
   {
     type: 'web-framework',
-    moduleName: './next-server',
+    moduleName: 'next/dist/server/next-server',
     onRequire: require('./lib/next-server')
   }
 ]
