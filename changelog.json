@@ -2,6 +2,34 @@
   "repository": "newrelic/node-newrelic",
   "entries": [
     {
+      "version": "10.6.2",
+      "changes": {
+        "security": [],
+        "bugfixes": [
+          "added defensive code around JSON.parse in formatting pino log lines because pino can return invalid json"
+        ],
+        "features": []
+      }
+    },
+    {
+      "version": "10.6.1",
+      "changes": {
+        "security": [
+          "updated ESM loader to track instrumentation by url in a map instead of in url to avoid remote code execution."
+        ],
+        "bugfixes": [],
+        "features": []
+      }
+    },
+    {
+      "version": "10.6.0",
+      "changes": {
+        "security": [],
+        "bugfixes": [],
+        "features": []
+      }
+    },
+    {
       "version": "10.5.0",
       "changes": {
         "security": [],

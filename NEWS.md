@@ -1,3 +1,37 @@
+### v10.6.2 (2023-08-07)
+
+#### Bug Fixes
+
+* added defensive code around JSON.parse in formatting pino log lines because pino can return invalid json ([#1750](https://github.com/newrelic/node-newrelic/pull/1750)) ([8f2e11a](https://github.com/newrelic/node-newrelic/commit/8f2e11ab0d018d2a99b928cd3ec189a74ff8d6d6))
+
+#### Miscellaneous Chores
+
+* **deps:** Updated @newrelic/security-agent to v0.2.1 ([#1754](https://github.com/newrelic/node-newrelic/pull/1754)) ([0d04f14](https://github.com/newrelic/node-newrelic/commit/0d04f14f1383d903b4c30a787c4079b3dec01323))
+* Fix smoke tests node 20 ([#1745](https://github.com/newrelic/node-newrelic/pull/1745)) ([8c053e0](https://github.com/newrelic/node-newrelic/commit/8c053e00e289f214105fc3919b206ac160e81a2d))
+* fixed typos in lib/config/index.js comments ([#1749](https://github.com/newrelic/node-newrelic/pull/1749)) ([9000a14](https://github.com/newrelic/node-newrelic/commit/9000a14a48ba6c29ac6b7f0ffeb94eace9d4a37a))
+
+#### Tests
+
+* Added a full suite of unit tests for the collector/http-agents ([#1748](https://github.com/newrelic/node-newrelic/pull/1748)) ([9d4201b](https://github.com/newrelic/node-newrelic/commit/9d4201b9035dc629bd4f4a1c0ea72a6e14172356))
+
+### v10.6.1 (2023-08-01)
+
+#### Security Improvements
+
+* updated ESM loader to track instrumentation by url in a map instead of in url to avoid remote code execution. ([#1741](https://github.com/newrelic/node-newrelic/pull/1741)) ([c8dc779](https://github.com/newrelic/node-newrelic/commit/c8dc779c7799b234290b6f7eb1d0a4e07d692ef9))
+
+### v10.6.0 (2023-07-26)
+
+#### Miscellaneous Chores
+
+* **deps:** Updated @newrelic/security-agent to v0.2.0 ([#1737](https://github.com/newrelic/node-newrelic/pull/1737)) ([9bf2a01](https://github.com/newrelic/node-newrelic/commit/9bf2a011aed846a024d6445f557eb8eb7d2e5efe))
+* restored engines to >=14 until we actually drop support for Node 14 ([#1738](https://github.com/newrelic/node-newrelic/pull/1738)) ([8d66123](https://github.com/newrelic/node-newrelic/commit/8d66123105d25a3f949f0f5c2db53ecb7e9f2df0))
+
+#### Continuous Integration
+
+* Add Node.js 20.x to CI and remove 14.x ([#1603](https://github.com/newrelic/node-newrelic/pull/1603)) ([c4b008c](https://github.com/newrelic/node-newrelic/commit/c4b008c98c758ba3e669768a840e40dd8fe3e681))
+* update support statement ([#1733](https://github.com/newrelic/node-newrelic/pull/1733)) ([3013da9](https://github.com/newrelic/node-newrelic/commit/3013da977ed6dae70bef81b1f1cf0dbf4acbb37b))
+
 ### v10.5.0 (2023-07-20)
 
 #### Features

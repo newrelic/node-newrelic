@@ -249,9 +249,9 @@ tap.test('ES Module Loader', { skip: !esmHelpers.supportedLoaderVersion() }, (t)
       1,
       'should have registered instrumentation only once'
     )
-    t.equal(
+    t.same(
       loader.registeredSpecifiers.get('file:///path/to/my-test-dep/index.js'),
-      'my-test-dep',
+      { specifier: 'my-test-dep' },
       'should have added instrumentation to registered list'
     )
     t.ok(
@@ -321,9 +321,9 @@ tap.test('ES Module Loader', { skip: !esmHelpers.supportedLoaderVersion() }, (t)
   })
 
   t.test('should rewrite module context if it has instrumentation', async (t) => {
-    loader.registeredSpecifiers.set(MOD_URL, 'test-mod')
+    loader.registeredSpecifiers.set(MOD_URL, { specifier: 'test-mod', hasNrInstrumentation: true })
 
-    const data = await loader.load(`${MOD_URL}?hasNrInstrumentation=true`, {}, loadStub)
+    const data = await loader.load(MOD_URL, {}, loadStub)
     const expectedSource = `
     import wrapModule from 'file://${ESM_SHIM_FILE_PATH}'
     import * as _originalModule from '${MOD_URL}'
@@ -341,9 +341,12 @@ tap.test('ES Module Loader', { skip: !esmHelpers.supportedLoaderVersion() }, (t)
   })
 
   t.test('should register ESM instrumentation if url has url encoded characters', async (t) => {
-    loader.registeredSpecifiers.set(MOD_URL_SPECIAL, 'test-mod')
+    loader.registeredSpecifiers.set(MOD_URL_SPECIAL, {
+      specifier: 'test-mod',
+      hasNrInstrumentation: true
+    })
 
-    const data = await loader.load(`${MOD_URL_SPECIAL}?hasNrInstrumentation=true`, {}, loadStub)
+    const data = await loader.load(MOD_URL_SPECIAL, {}, loadStub)
     const expectedSource = `
     import wrapModule from 'file://${ESM_SHIM_FILE_PATH}'
     import * as _originalModule from '${MOD_URL_SPECIAL}'
@@ -362,17 +365,16 @@ tap.test('ES Module Loader', { skip: !esmHelpers.supportedLoaderVersion() }, (t)
     t.ok(data.shortCircuit, 'should set shortCircuit to true to properly return load hook')
   })
 
-  t.test('should call next load if imported url lacks `hasNrInstrumentation`', async (t) => {
-    await loader.load(MOD_URL, {}, loadStub)
-    t.equal(loader.registeredSpecifiers.get.callCount, 0, 'should have exited early')
+  t.test('should not rewrite module context if passes hasNrInstrumentation in url', async (t) => {
+    loader.registeredSpecifiers.set(MOD_URL, { specifier: 'test-mod' })
+
+    await loader.load(`${MOD_URL}?hasNrInstrumentation=true`, {}, loadStub)
     t.equal(loadStub.callCount, 1, 'should have called next loader')
   })
 
   t.test('should call next load if url is invalid', async (t) => {
     await loader.load('nope', {}, loadStub)
-    t.equal(loader.registeredSpecifiers.get.callCount, 0, 'should have exited early')
     t.equal(loadStub.callCount, 1, 'should have called next loader')
-    t.equal(fakeLoggerChild.error.callCount, 1, 'should log error')
   })
 })
 
@@ -433,13 +435,13 @@ tap.test('Skipped ESM loader', { skip: esmHelpers.supportedLoaderVersion() }, (t
 
   t.test('load should exit early if agent is not running', async (t) => {
     delete mockedAgent.agent
-    await loader.load('/path/to/test-mod.js?hasNrInstrumentation=true', {}, loadStub)
+    await loader.load('/path/to/test-mod.js', {}, loadStub)
     t.equal(loader.registeredSpecifiers.get.callCount, 0, 'should have exited early')
     t.equal(loadStub.callCount, 1, 'should have called next loader')
   })
 
   t.test('load should exit early if the Node.js version is < 16.12.0', async (t) => {
-    await loader.load('/path/to/test-mod.js?hasNrInstrumentation=true', {}, loadStub)
+    await loader.load('/path/to/test-mod.js', {}, loadStub)
     t.equal(loader.registeredSpecifiers.get.callCount, 0, 'should have exited early')
     t.equal(loadStub.callCount, 1, 'should have called next loader')
   })

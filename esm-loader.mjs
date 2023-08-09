@@ -4,6 +4,7 @@
  */
 
 import newrelic from './index.js'
+import shimmer from './lib/shimmer.js'
 import loggingModule from './lib/logger.js'
 import NAMES from './lib/metrics/names.js'
 import semver from 'semver'
@@ -58,25 +59,78 @@ export async function resolve(specifier, context, nextResolve) {
    * duplicating the logic of the Node.js hook
    */
   const resolvedModule = await nextResolve(specifier, context, nextResolve)
+  const instrumentationName = shimmer.getInstrumentationNameFromModuleName(specifier)
+  const instrumentationDefinition = shimmer.registeredInstrumentations[instrumentationName]
 
-  if (registeredSpecifiers.get(resolvedModule.url)) {
-    logger.debug(
-      `Instrumentation already registered for ${specifier} under ${fileURLToPath(
-        resolvedModule.url
-      )}, skipping resolve hook...`
-    )
-  }
+  if (instrumentationDefinition) {
+    const { url, format } = resolvedModule
+    logger.debug(`Instrumentation exists for ${specifier} ${format} package.`)
 
-  if (resolvedModule.format === 'module') {
-    registeredSpecifiers.set(resolvedModule.url, specifier)
-    const modifiedUrl = new URL(resolvedModule.url)
-    // add a query param to the resolved url so the load hook below knows
-    // to rewrite and wrap the source code
-    modifiedUrl.searchParams.set('hasNrInstrumentation', 'true')
-    resolvedModule.url = modifiedUrl.href
+    if (registeredSpecifiers.get(url)) {
+      logger.debug(
+        `Instrumentation already registered for ${specifier} under ${fileURLToPath(
+          url
+        )}, skipping resolve hook...`
+      )
+    } else if (format === 'commonjs') {
+      // ES Modules translate import statements into fully qualified filepaths, so we create a copy of our instrumentation under this filepath
+      const instrumentationDefinitionCopy = [...instrumentationDefinition]
+
+      instrumentationDefinitionCopy.forEach((copy) => {
+        // Stripping the prefix is necessary because the code downstream gets this url without it
+        copy.moduleName = fileURLToPath(url)
+
+        // Added to keep our Supportability metrics from exploding/including customer info via full filepath
+        copy.specifier = specifier
+        shimmer.registerInstrumentation(copy)
+        logger.debug(
+          `Registered CommonJS instrumentation for ${specifier} under ${copy.moduleName}`
+        )
+      })
+
+      // Keep track of what we've registered so we don't double register (see: https://github.com/newrelic/node-newrelic/issues/1646)
+      registeredSpecifiers.set(url, { specifier })
+    } else if (format === 'module') {
+      addNrInstrumentation(resolvedModule)
+      registeredSpecifiers.set(url, { specifier, hasNrInstrumentation: true })
+    } else {
+      logger.debug(`${specifier} is not a CommonJS nor ESM package, skipping for now.`)
+    }
   }
 
   return resolvedModule
+}
+
+/**
+ * This is purely done so that we can import the incoming specifier
+ * in the load hook.  It used to be used to determine if instrumentation existed
+ * for specifier but we found a RCE with that solution.
+ *
+ * @param {object} resolvedModule the result of call resolve on a specifier
+ */
+function addNrInstrumentation(resolvedModule) {
+  const modifiedUrl = new URL(resolvedModule.url)
+  modifiedUrl.searchParams.set('hasNrInstrumentation', 'true')
+  resolvedModule.url = modifiedUrl.href
+}
+
+/**
+ * Extracts the href without query params
+ *
+ * @param {string} url url of specifier
+ * @returns {string} new url without hasNrInstrumentation query param
+ */
+function removeNrInstrumentation(url) {
+  let parsedUrl
+
+  try {
+    parsedUrl = new URL(url)
+    url = parsedUrl.href.split('?')[0]
+  } catch (err) {
+    logger.error('Unable to parse url: %s, msg: %s', url, err.message)
+  }
+
+  return url
 }
 
 /**
@@ -97,30 +151,17 @@ export async function load(url, context, nextLoad) {
     return nextLoad(url, context, nextLoad)
   }
 
-  let parsedUrl
+  url = removeNrInstrumentation(url)
 
-  try {
-    parsedUrl = new URL(url)
-  } catch (err) {
-    logger.error('Unable to parse url: %s, msg: %s', url, err.message)
+  const pkg = registeredSpecifiers.get(url)
+
+  if (!pkg?.hasNrInstrumentation) {
     return nextLoad(url, context, nextLoad)
   }
 
-  const hasNrInstrumentation = parsedUrl.searchParams.get('hasNrInstrumentation')
+  const { specifier } = pkg
 
-  if (!hasNrInstrumentation) {
-    return nextLoad(url, context, nextLoad)
-  }
-
-  /**
-   * undo the work we did in the resolve hook above
-   * so we can properly rewrite source and not get in an infinite loop
-   */
-  parsedUrl.searchParams.delete('hasNrInstrumentation')
-
-  const originalUrl = parsedUrl.href
-  const specifier = registeredSpecifiers.get(originalUrl)
-  const rewrittenSource = await wrapEsmSource(originalUrl, specifier)
+  const rewrittenSource = await wrapEsmSource(url, specifier)
   logger.debug(`Registered module instrumentation for ${specifier}.`)
 
   return {
