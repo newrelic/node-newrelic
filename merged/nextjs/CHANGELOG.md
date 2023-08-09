@@ -1,3 +1,12 @@
+### v0.6.0 (2023-08-09)
+
+* **BREAKING** - Dropped support for Node 14.
+* Added support for Node 20.
+* Updated instrumentation to no longer record spans for middleware execution. Middleware instrumentation is now recorded only for Next.js 12.2.0-13.4.12.
+* Updated instrumentation for api requests to properly extract the params and page.
+* Updated CI to run against versions 16-20.
+* Updated `semver`, `word-wrap`, `protobuf`, `fast-xml-parser`, and `@aws-sdk/client-lambda` to resolve CVEs.
+
 ### v0.5.2 (2023-06-26)
 
 * Fixed Next.js `getServerSideProps` instrumentation to register via `renderToResponseWithComponents` instead of `renderHTML`
