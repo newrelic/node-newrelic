@@ -203,7 +203,7 @@
   "devDependencies": {
     "@newrelic/eslint-config": "^0.3.0",
     "@newrelic/newrelic-oss-cli": "^0.1.2",
-    "@newrelic/test-utilities": "github:newrelic/node-test-utilities#remove-loader",
+    "@newrelic/test-utilities": "https://github.com/newrelic/node-test-utilities.git#remove-loader",
     "@octokit/rest": "^18.0.15",
     "@slack/bolt": "^3.7.0",
     "ajv": "^6.12.6",
