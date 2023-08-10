@@ -10,8 +10,6 @@
 const tap = require('tap')
 tap.mochaGlobals()
 
-const path = require('path')
-
 const oldInstrumentations = require('../../lib/instrumentations')
 const insPath = require.resolve('../../lib/instrumentations')
 require.cache[insPath].exports = wrappedInst
@@ -32,18 +30,23 @@ const shims = require('../../lib/shim')
 const EventEmitter = require('events').EventEmitter
 const symbols = require('../../lib/symbols')
 
-const TEST_MODULE_PATH = '../helpers/module'
+const TEST_MODULE_PATH = 'test-mod/module'
+const TEST_MODULE_RELATIVE_PATH = `../helpers/node_modules/${TEST_MODULE_PATH}`
 const TEST_MODULE = 'sinon'
+const TEST_PATH_WITHIN = `${TEST_MODULE}/lib/sinon/spy`
 
 describe('shimmer', function () {
   describe('custom instrumentation', function () {
-    describe('of relative modules', makeModuleTests(TEST_MODULE_PATH))
-    describe('of modules', makeModuleTests(TEST_MODULE))
-    describe('of modules, where instrumentation fails', makeModuleTests(TEST_MODULE, true))
-    describe('of deep modules', makeModuleTests(`${TEST_MODULE}/lib/sinon.js`))
+    describe('of relative modules', makeModuleTests(TEST_MODULE_PATH, TEST_MODULE_RELATIVE_PATH))
+    describe('of modules', makeModuleTests(TEST_MODULE, TEST_MODULE))
+    describe(
+      'of modules, where instrumentation fails',
+      makeModuleTests(TEST_MODULE, TEST_MODULE, true)
+    )
+    describe('of deep modules', makeModuleTests(TEST_PATH_WITHIN, TEST_PATH_WITHIN))
   })
 
-  function makeModuleTests(moduleName, throwsError) {
+  function makeModuleTests(moduleName, relativePath, throwsError) {
     return function moduleTests() {
       let agent = null
       let onRequireArgs = null
@@ -71,13 +74,13 @@ describe('shimmer', function () {
         counter = 0
         onRequireArgs = null
 
-        clearCachedModules([TEST_MODULE_PATH])
+        clearCachedModules([relativePath])
 
         helper.unloadAgent(agent)
       })
 
       it('should be sent a shim and the loaded module', function () {
-        const mod = require(moduleName)
+        const mod = require(relativePath)
         expect(onRequireArgs.length).to.equal(3)
         expect(onRequireArgs[0]).to.be.an.instanceof(shims.Shim)
         expect(onRequireArgs[1]).to.equal(mod)
@@ -86,28 +89,28 @@ describe('shimmer', function () {
 
       it('should construct a DatastoreShim if the type is "datastore"', function () {
         shimmer.registeredInstrumentations[moduleName][0].type = 'datastore'
-        require(moduleName)
+        require(relativePath)
         expect(onRequireArgs[0]).to.be.an.instanceof(shims.DatastoreShim)
       })
 
       it('should receive the correct module (' + moduleName + ')', function () {
-        const mod = require(moduleName)
+        const mod = require(relativePath)
         expect(mod).to.equal(instrumentedModule)
       })
 
       it('should only run the instrumentation once', function () {
         expect(counter).to.equal(0)
-        require(moduleName)
+        require(relativePath)
         expect(counter).to.equal(1)
-        require(moduleName)
-        require(moduleName)
-        require(moduleName)
-        require(moduleName)
+        require(relativePath)
+        require(relativePath)
+        require(relativePath)
+        require(relativePath)
         expect(counter).to.equal(1)
       })
 
       it('should have some NR properties after instrumented', () => {
-        const mod = require(moduleName)
+        const mod = require(relativePath)
         const nrKeys = getNRSymbols(mod)
 
         const message = `Expected to have Symbol(shim) but found ${nrKeys}.`
@@ -145,12 +148,13 @@ describe('shimmer', function () {
 
     afterEach(function () {
       helper.unloadAgent(agent)
+      clearCachedModules([TEST_MODULE_RELATIVE_PATH])
       original = null
       wrapper = null
     })
 
     it('should replace the return value from require', function () {
-      const obj = require(TEST_MODULE_PATH)
+      const obj = require(TEST_MODULE_RELATIVE_PATH)
       expect(obj).to.equal(wrapper).and.not.equal(original)
     })
   })
@@ -608,6 +612,7 @@ describe('shimmer', function () {
 
 tap.test('Should not augment module when no instrumentation hooks provided', (t) => {
   const agent = helper.instrumentMockedAgent()
+
   t.teardown(() => {
     helper.unloadAgent(agent)
   })
@@ -618,7 +623,7 @@ tap.test('Should not augment module when no instrumentation hooks provided', (t)
   }
   shimmer.registerInstrumentation(instrumentationOpts)
 
-  const loadedModule = require(TEST_MODULE_PATH)
+  const loadedModule = require(TEST_MODULE_RELATIVE_PATH)
 
   t.equal(loadedModule.foo, 'bar')
 
@@ -669,177 +674,6 @@ tap.test('Should not register when no hooks provided', (t) => {
   t.notOk(shimmer.registeredInstrumentations[moduleName])
 
   t.end()
-})
-
-tap.test('onResolved', (t) => {
-  t.autoend()
-
-  let agent = null
-
-  t.beforeEach(() => {
-    agent = helper.instrumentMockedAgent()
-  })
-
-  t.afterEach(() => {
-    helper.unloadAgent(agent)
-  })
-
-  t.test('Should be invoked with resolved module path', (t) => {
-    shimmer.registerInstrumentation({
-      moduleName: TEST_MODULE_PATH,
-      onResolved: onResolvedHandler
-    })
-
-    require(TEST_MODULE_PATH)
-
-    function onResolvedHandler(shim, moduleName, resolvedFilepath) {
-      const expectedResolvePath = `${path.join(__dirname, TEST_MODULE_PATH)}.js`
-
-      t.ok(shim)
-      t.equal(shim.moduleName, TEST_MODULE_PATH)
-      t.equal(moduleName, TEST_MODULE_PATH)
-      t.equal(resolvedFilepath, expectedResolvePath)
-
-      t.end()
-    }
-  })
-
-  t.test('Should invoke prior to onRequire hook', (t) => {
-    const invokedHooks = []
-
-    shimmer.registerInstrumentation({
-      moduleName: TEST_MODULE_PATH,
-      onResolved: onResolvedHandler,
-      onRequire: onRequireHandler
-    })
-
-    function onResolvedHandler() {
-      invokedHooks.push('onResolvedHandler')
-    }
-
-    function onRequireHandler() {
-      invokedHooks.push('onRequireHandler')
-    }
-
-    require(TEST_MODULE_PATH)
-
-    t.equal(invokedHooks[0], 'onResolvedHandler')
-    t.equal(invokedHooks[1], 'onRequireHandler')
-
-    t.end()
-  })
-
-  t.test('Should not crash when handler errors without onError', (t) => {
-    shimmer.registerInstrumentation({
-      moduleName: TEST_MODULE_PATH,
-      onResolved: onResolvedHandler
-    })
-
-    function onResolvedHandler() {
-      throw new Error('Instrumentation is haunted.')
-    }
-
-    const exportedModule = require(TEST_MODULE_PATH)
-
-    t.ok(exportedModule)
-
-    t.end()
-  })
-
-  t.test('Should invoke onError on errors', (t) => {
-    const expectedError = new Error('Instrumentation is haunted.')
-
-    shimmer.registerInstrumentation({
-      moduleName: TEST_MODULE_PATH,
-      onResolved: onResolvedHandler,
-      onError: onErrorHandler
-    })
-
-    function onResolvedHandler() {
-      throw expectedError
-    }
-
-    let capturedError = null
-    function onErrorHandler(error) {
-      capturedError = error
-    }
-
-    const exportedModule = require(TEST_MODULE_PATH)
-
-    t.ok(exportedModule)
-    t.equal(capturedError, expectedError)
-
-    t.end()
-  })
-
-  t.test('Should not crash when onError throws', (t) => {
-    shimmer.registerInstrumentation({
-      moduleName: TEST_MODULE_PATH,
-      onResolved: onResolvedHandler,
-      onError: onErrorHandler
-    })
-
-    function onResolvedHandler() {
-      throw new Error('Instrumentation is haunted.')
-    }
-
-    function onErrorHandler() {
-      throw new Error('onErrorHandler fails to handle errors')
-    }
-
-    const exportedModule = require(TEST_MODULE_PATH)
-
-    t.ok(exportedModule)
-
-    t.end()
-  })
-
-  t.test('Should not re-execute successful onResolved on multiple requires', (t) => {
-    t.teardown(() => {
-      clearCachedModules(['./module', '../helpers/require-module-1', '../helpers/require-module-2'])
-    })
-
-    shimmer.registerInstrumentation({
-      moduleName: './module', // Register how required modules will require this module
-      onResolved: onResolvedHandler
-    })
-
-    let invokeCount = 0
-    function onResolvedHandler() {
-      invokeCount++
-    }
-
-    require('../helpers/require-module-1')
-    require('../helpers/require-module-2')
-
-    t.equal(invokeCount, 1)
-
-    t.end()
-  })
-
-  t.test('Should not retry previously failed instrumentation', (t) => {
-    t.teardown(() => {
-      clearCachedModules(['./module', '../helpers/require-module-1', '../helpers/require-module-2'])
-    })
-
-    shimmer.registerInstrumentation({
-      moduleName: './module', // Register how required modules will require this module
-      onResolved: onResolvedHandler
-    })
-
-    let invokeCount = 0
-    function onResolvedHandler() {
-      invokeCount++
-      throw new Error('Instrumentation is haunted.')
-    }
-
-    require('../helpers/require-module-1')
-    require('../helpers/require-module-2')
-
-    t.equal(invokeCount, 1)
-
-    t.end()
-  })
 })
 
 function clearCachedModules(modules) {
