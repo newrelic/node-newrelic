@@ -8,6 +8,7 @@
 // Record opening times before loading any other files.
 const preAgentTime = process.uptime()
 const agentStart = Date.now()
+const { isMainThread } = require('worker_threads')
 
 // Load unwrapped core now to ensure it gets the freshest properties.
 require('./lib/util/unwrapped-core')
@@ -17,7 +18,14 @@ const psemver = require('./lib/util/process-version')
 let logger = require('./lib/logger') // Gets re-loaded after initialization.
 const NAMES = require('./lib/metrics/names')
 
+// TODO: add the stuff from ESM loader around supportability metrics
+
 const pkgJSON = require('./package.json')
+if (!isMainThread) {
+  logger.warn('Using New Relic for Node.js in worker_threads is not supported. Not starting!')
+  return
+}
+
 logger.info(
   'Using New Relic for Node.js. Agent version: %s; Node version: %s.',
   pkgJSON.version,
