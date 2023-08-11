@@ -5,7 +5,7 @@
 
 export default async function generateApp() {
   const { default: express } = await import('express')
-  // eslint-disable-next-line no-unused-vars
+  // eslint-disable-next-line no-unused-vars,node/no-missing-import
   const { default: swaggerUi } = await import('swagger-ui-express')
   const { default: Routes } = await import('./app/routes.mjs')
 
