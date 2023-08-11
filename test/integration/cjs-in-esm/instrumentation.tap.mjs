@@ -3,6 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
+// eslint-disable-next-line node/no-extraneous-import
 import { test } from 'tap'
 import helper from '../../lib/agent_helper.js'
 import generateApp from './helpers.mjs'
