@@ -3,7 +3,6 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-// eslint-disable-next-line node/no-extraneous-import
 import { test } from 'tap'
 import helper from '../../lib/agent_helper.js'
 import generateApp from './helpers.mjs'
@@ -20,11 +19,6 @@ test('Registering CommonJS instrumentation in ES Module project', async (t) => {
   })
 
   agent.on('transactionFinished', (transaction) => {
-    /**
-     * When using the node 14/16/18 ESM loader, this app would cause transactions
-     * with a name like this:
-     * WebTransaction/Expressjs/GET//weird/weird/weird/weird/looking/path/looking/path
-     */
     t.equal(
       transaction.name,
       'WebTransaction/Expressjs/GET//weird/looking/path',
