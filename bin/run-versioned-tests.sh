@@ -61,6 +61,7 @@ if [ ! -z "$JOBS" ];
 then
   JOBS_ARGS="--jobs $JOBS"
 fi
+export NR_LOADER=./esm-loader.mjs
 
 if [[ "${NPM7}" = 1 ]];
 then
