@@ -11,7 +11,6 @@ const tap = require('tap')
 const rimraf = require('rimraf')
 const util = require('util')
 const exec = util.promisify(require('child_process').exec)
-const { isSupportedVersion } = require('../lib/agent_helper')
 
 const DIRNAME = 'XXXNOCONFTEST'
 
@@ -57,12 +56,10 @@ tap.test('logger', function (t) {
 tap.test('Logger output', (t) => {
   t.autoend()
 
-  const execArgs = [{ opt: '-r', arg: '../../../index.js' }]
-
-  // TODO: add back to array when we fix ESM loader
-  if (!isSupportedVersion('v19.0.0')) {
-    execArgs.push({ opt: '--experimental-loader', arg: '../../../esm-loader.mjs' })
-  }
+  const execArgs = [
+    { opt: '-r', arg: '../../../index.js' },
+    { opt: '--experimental-loader', arg: '../../../esm-loader.mjs' }
+  ]
 
   for (const pair of execArgs) {
     const { opt, arg } = pair
