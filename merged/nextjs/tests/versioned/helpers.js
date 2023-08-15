@@ -15,6 +15,7 @@ utils.assert.extendTap(tap)
 const nextPkg = require('next/package.json')
 const semver = require('semver')
 const newServerResponse = semver.gte(nextPkg.version, '13.3.0')
+const noServerClose = semver.gte(nextPkg.version, '13.4.15')
 
 /**
  * Builds a Next.js app
@@ -59,6 +60,12 @@ helpers.start = async function start(dir, path = 'app', port = 3001) {
     port,
     allowRetry: true
   })
+
+  if (noServerClose) {
+    // 13.4.15 updated startServer to have no return value, so we have to use an event emitter instead for cleanup to fire
+    // See: https://github.com/vercel/next.js/blob/canary/packages/next/src/server/lib/start-server.ts#L192
+    return { close: () => process.emit('exit') }
+  }
 
   if (newServerResponse) {
     // app is actually a shutdown function, so wrap it for convenience
