@@ -261,11 +261,6 @@ tap.test('with default properties', (t) => {
     t.end()
   })
 
-  t.test('should default api.esm.custom_instrumentation_entrypoint to null', (t) => {
-    t.equal(configuration.api.esm.custom_instrumentation_entrypoint, null)
-    t.end()
-  })
-
   t.test('should default `code_level_metrics.enabled` to true', (t) => {
     t.equal(configuration.code_level_metrics.enabled, true)
     t.end()

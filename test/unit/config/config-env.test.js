@@ -658,19 +658,6 @@ tap.test('when overriding configuration values via environment variables', (t) =
     })
   })
 
-  t.test('should pick up custom esm entrypoint configuration', (t) => {
-    const customEntryPoint = '/patht/to/custom-instrumentation.mjs'
-    idempotentEnv(
-      {
-        NEW_RELIC_API_ESM_CUSTOM_INSTRUMENTATION_ENTRYPOINT: customEntryPoint
-      },
-      function (tc) {
-        t.equal(tc.api.esm.custom_instrumentation_entrypoint, customEntryPoint)
-        t.end()
-      }
-    )
-  })
-
   const ipvValues = ['4', '6', 'bogus']
   ipvValues.forEach((val) => {
     const expectedValue = val === 'bogus' ? '4' : val

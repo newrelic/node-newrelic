@@ -78,39 +78,27 @@ $ mv newrelic.js newrelic.cjs
  2. To use the newrelic ESM loader, start your program with node and use the `--experimental-loader` flag and a path to the loader file, like this:
 
 ```sh
-$ node --experimental-loader newrelic/esm-loader.mjs your-program.js
+$ node --experimental-loader newrelic/esm-loader.mjs -r newrelic your-program.js
 ```
 
 **Note**: Unlike the CommonJS methods listed above, there are no alternatives to running the agent without the `--experimental-loader` flag.
 
 ### Custom Instrumentation
 
-The agent supports adding your own custom instrumentation to ES module applications. In order to load custom instrumentation in an ES module app, you'll need to update your `newrelic.cjs` file to include the following:
+The agent supports adding your own custom instrumentation to ES module applications. You can use the instrumentation API methods. The only other difference between CommonJS custom instrumentation and ESM is you must provide a property of `isEsm: true`. 
 
 ```js
-    /* File: newrelic.cjs */
-    'use strict'
-    /**
-     * New Relic agent configuration.
-     *
-     * See lib/config/default.js in the agent distribution for a more complete
-     * description of configuration variables and their potential values.
-     */
-    exports.config = {
-      app_name: ['Your application or service name'],
-      license_key: 'your new relic license key',
-      api: {
-        esm: {
-            custom_instrumentation_entrypoint: '/path/to/my/instrumentation.js'
-        }
+import newrelic from 'newrelic'
+newrelic.instrument({ moduleName: 'parse-json', isEsm: true }, function wrap(shim, parseJson, moduleName) {
+  shim.wrap(parseJson.default, function wrapParseJson(shim, orig) {
+      return function wrappedParseJson() {
+          const result = orig.apply(this, arguments)
+          result.instrumented = true
+          return true
       }
-      /* ... rest of configuration .. */
-    }
+  })
+})
 ```
-
-If you do not use a configuration file, then use the environment variable `NEW_RELIC_API_ESM_CUSTOM_INSTRUMENTATION_ENTRYPOINT` instead.
-
-By updating the configuration, the agent's ES module loader will ensure that your custom instrumentation is added at module load. This is required in ES module applications due to the immutability of module export bindings: we are unable to apply our instrumentation after loading is complete.
 
 We support the following custom instrumentation API methods in ES module apps:
 
