@@ -15,7 +15,6 @@ const skipAsyncLocal = !!process.env.NEW_RELIC_FEATURE_FLAG_LEGACY_CONTEXT_MANAG
 test('AsyncLocalStorage based tracking', { skip: skipAsyncLocal }, (t) => {
   t.autoend()
 
-  // async_local_context is no longer gated with v11.0.0
   const config = {}
 
   createPromiseTests(t, config)

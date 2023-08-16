@@ -43,4 +43,4 @@ Any prerelease flags can be enabled or disabled in your agent config by adding a
 * Enabled by default: `false`
 * Configuration: `{ feature_flag: { legacy_context_manager: true|false }}`
 * Environment Variable: `NEW_RELIC_FEATURE_FLAG_LEGACY_CONTEXT_MANAGER`
-* Description: The legacy context manager was replaced by AsyncLocalStorage for async context propagation. If your application relies on the older behavior, you may want to enable this older context manager. Enabling this feature flag may increase the agent's use of memory and CPU.
+* Description: The legacy context manager was replaced by AsyncLocalContextManager for async context propagation. If your application is not recording certain spans or creating orphaned data, you may want to enable this older context manager. Enabling this feature flag may increase the agent's use of memory and CPU.
