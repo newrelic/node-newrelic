@@ -42,6 +42,9 @@ function wrapSend(shim, send) {
       this[MIDDLEWARE] = true
       for (const mw of middlewares) {
         const localShim = shim.makeSpecializedShim(mw.type, client)
+        // copy the shim id from parent so if you check if something is wrapped
+        // it will be across all instrumentation
+        localShim.assignId('aws-sdk')
         const middleware = mw.middleware.bind(null, localShim, config)
         this.middlewareStack.add(middleware, mw.config)
       }
