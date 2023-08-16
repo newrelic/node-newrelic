@@ -15,11 +15,11 @@ SKIP_C8="${SKIP_C8:-false}"
 C8_REPORTER="${C8_REPORTER:-lcov}"
 
 # Determine context manager for sanity sake
-if [[ $NEW_RELIC_FEATURE_FLAG_ASYNC_LOCAL_CONTEXT == 1 ]];
+if [[ $NEW_RELIC_FEATURE_FLAG_LEGACY_CONTEXT_MANAGER == 1 ]];
 then
-  CTX_MGR="AsyncLocalStorage"
-else
   CTX_MGR="Legacy"
+else
+  CTX_MGR="AsyncLocalStorage"
 fi
 
 set -f

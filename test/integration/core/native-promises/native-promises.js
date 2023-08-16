@@ -6,20 +6,17 @@
 'use strict'
 
 const { test } = require('tap')
-const semver = require('semver')
 
 const helper = require('../../../lib/agent_helper')
 const asyncHooks = require('async_hooks')
 
-const skipAsyncLocal = semver.satisfies(process.version, '<16.4.0')
+const skipAsyncLocal = !!process.env.NEW_RELIC_FEATURE_FLAG_LEGACY_CONTEXT_MANAGER
+
 test('AsyncLocalStorage based tracking', { skip: skipAsyncLocal }, (t) => {
   t.autoend()
 
-  const config = {
-    feature_flag: {
-      async_local_context: true
-    }
-  }
+  // async_local_context is no longer gated with v11.0.0
+  const config = {}
 
   createPromiseTests(t, config)
 

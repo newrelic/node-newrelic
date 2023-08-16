@@ -7,7 +7,7 @@
 
 const exec = require('child_process').execSync
 exec(
-  'NEW_RELIC_FEATURE_FLAG_ASYNC_LOCAL_CONTEXT=0 NEW_RELIC_FEATURE_FLAG_UNRESOLVED_PROMISE_CLEANUP=false node --expose-gc ./async-hooks.js',
+  'NEW_RELIC_FEATURE_FLAG_LEGACY_CONTEXT_MANAGER=1 NEW_RELIC_FEATURE_FLAG_UNRESOLVED_PROMISE_CLEANUP=false node --expose-gc ./async-hooks.js',
   {
     stdio: 'inherit',
     cwd: __dirname
