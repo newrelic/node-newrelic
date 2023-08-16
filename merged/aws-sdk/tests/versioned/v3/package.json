@@ -1,14 +1,14 @@
 {
   "name": "aws-sdk-v3-tests",
   "engines": {
-    "node": ">=14.0"
+    "node": ">=16.0"
   },
   "version": "0.0.0",
   "private": true,
   "tests": [
     {
       "engines": {
-        "node": ">=14.0"
+        "node": ">=16.0"
       },
       "dependencies": {
         "@aws-sdk/client-api-gateway": {
@@ -22,7 +22,7 @@
     },
     {
       "engines": {
-        "node": ">=14.0"
+        "node": ">=16.0"
       },
       "dependencies": {
         "@aws-sdk/client-elasticache": {
@@ -36,7 +36,7 @@
     },
     {
       "engines": {
-        "node": ">=14.0"
+        "node": ">=16.0"
       },
       "dependencies": {
         "@aws-sdk/client-elastic-load-balancing": {
@@ -50,7 +50,7 @@
     },
     {
       "engines": {
-        "node": ">=14.0"
+        "node": ">=16.0"
       },
       "dependencies": {
         "@aws-sdk/client-lambda": {
@@ -64,7 +64,7 @@
     },
     {
       "engines": {
-        "node": ">=14.0"
+        "node": ">=16.0"
       },
       "dependencies": {
         "@aws-sdk/client-rds": {
@@ -78,7 +78,7 @@
     },
     {
       "engines": {
-        "node": ">=14.0"
+        "node": ">=16.0"
       },
       "dependencies": {
         "@aws-sdk/client-redshift": {
@@ -92,7 +92,7 @@
     },
     {
       "engines": {
-        "node": ">=14.0"
+        "node": ">=16.0"
       },
       "dependencies": {
         "@aws-sdk/client-rekognition": {
@@ -106,7 +106,7 @@
     },
     {
       "engines": {
-        "node": ">=14.0"
+        "node": ">=16.0"
       },
       "dependencies": {
         "@aws-sdk/client-s3": {
@@ -120,7 +120,7 @@
     },
     {
       "engines": {
-        "node": ">=14.0"
+        "node": ">=16.0"
       },
       "dependencies": {
         "@aws-sdk/client-ses": {
@@ -134,7 +134,7 @@
     },
     {
       "engines": {
-        "node": ">=14.0"
+        "node": ">=16.0"
       },
       "dependencies": {
         "@aws-sdk/client-sns": {
@@ -148,7 +148,7 @@
     },
     {
       "engines": {
-        "node": ">=14.0"
+        "node": ">=16.0"
       },
       "dependencies": {
         "@aws-sdk/client-sqs": {
@@ -162,7 +162,7 @@
     },
     {
       "engines": {
-        "node": ">=14.0"
+        "node": ">=16.0"
       },
       "dependencies": {
         "@aws-sdk/client-dynamodb": {
@@ -176,7 +176,7 @@
     },
     {
       "engines": {
-        "node": ">=14.0"
+        "node": ">=16.0"
       },
       "dependencies": {
         "@aws-sdk/util-dynamodb": "latest",

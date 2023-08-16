@@ -15,7 +15,7 @@
     "prepare": "husky install"
   },
   "engines": {
-    "node": ">=14.0.0"
+    "node": ">=16.0.0"
   },
   "repository": {
     "type": "git",
@@ -39,7 +39,7 @@
     "husky": "^7.0.2",
     "lint-staged": "^11.1.2",
     "lockfile-lint": "^4.9.6",
-    "newrelic": "^10.3.2",
+    "newrelic": "^10.6.2",
     "prettier": "^2.3.2",
     "sinon": "^7.2.3",
     "tap": "^16.0.1"
