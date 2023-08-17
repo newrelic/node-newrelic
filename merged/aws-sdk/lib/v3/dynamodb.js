@@ -54,6 +54,7 @@ async function getEndpoint(config) {
  * @returns {function}
  */
 function dynamoMiddleware(shim, config, next, context) {
+  shim.setDatastore(shim.DYNAMODB)
   const { commandName } = context
   return async function wrappedMiddleware(args) {
     let endpoint = null
@@ -69,6 +70,16 @@ function dynamoMiddleware(shim, config, next, context) {
   }
 }
 
+const dynamoMiddlewareConfig = {
+  middleware: dynamoMiddleware,
+  type: 'datastore',
+  config: {
+    name: 'NewRelicDynamoMiddleware',
+    step: 'initialize',
+    priority: 'high'
+  }
+}
+
 module.exports = {
-  dynamoMiddleware
+  dynamoMiddlewareConfig
 }

@@ -12,39 +12,15 @@ const instrumentations = [
     onRequire: require('./lib/v2/instrumentation')
   },
   {
-    type: 'generic',
+    type: 'conglomerate',
     moduleName: '@aws-sdk/smithy-client',
-    onResolved: require('./lib/v3/smithy-client'),
+    onRequire: require('./lib/v3/smithy-client'),
     shimName: 'aws-sdk'
   },
   {
-    type: 'generic',
+    type: 'conglomerate',
     moduleName: '@smithy/smithy-client',
-    onResolved: require('./lib/v3/smithy-client'),
-    shimName: 'aws-sdk'
-  },
-  {
-    type: 'message',
-    moduleName: '@aws-sdk/client-sns',
-    onResolved: require('./lib/v3/sns'),
-    shimName: 'aws-sdk'
-  },
-  {
-    type: 'message',
-    moduleName: '@aws-sdk/client-sqs',
-    onResolved: require('./lib/v3/sqs'),
-    shimName: 'aws-sdk'
-  },
-  {
-    type: 'datastore',
-    moduleName: '@aws-sdk/client-dynamodb',
-    onResolved: require('./lib/v3/client-dynamodb'),
-    shimName: 'aws-sdk'
-  },
-  {
-    type: 'datastore',
-    moduleName: '@aws-sdk/lib-dynamodb',
-    onResolved: require('./lib/v3/lib-dynamodb'),
+    onRequire: require('./lib/v3/smithy-client'),
     shimName: 'aws-sdk'
   }
 ]
