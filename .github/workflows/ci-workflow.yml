@@ -85,15 +85,6 @@ jobs:
       with:
         name: unit-tests-${{ matrix.node-version }}
         path: ./coverage/unit/lcov.info
-    - name: Run ESM Unit Tests
-      if: matrix.node-version != '20.x'
-      run: npm run unit:esm
-    - name: Archive ESM Unit Test Coverage
-      uses: actions/upload-artifact@v3
-      with:
-        name: esm-unit-tests-${{ matrix.node-version }}
-        path: ./coverage/esm-unit/lcov.info
-
   integration:
     needs: skip_if_release
     if: needs.skip_if_release.outputs.should_skip != 'true'
@@ -170,12 +161,6 @@ jobs:
           token: ${{ secrets.CODECOV_TOKEN }}
           directory: unit-tests-${{ matrix.node-version }}
           flags: unit-tests-${{ matrix.node-version }}
-      - name: Post ESM Unit Test Coverage
-        uses: codecov/codecov-action@v3
-        with:
-          token: ${{ secrets.CODECOV_TOKEN }}
-          directory: esm-unit-tests-${{ matrix.node-version }}
-          flags: esm-unit-tests-${{ matrix.node-version }}
       - name: Post Integration Test Coverage
         uses: codecov/codecov-action@v3
         with:

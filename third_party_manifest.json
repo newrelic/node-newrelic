@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "Wed Aug 09 2023 15:09:39 GMT-0400 (Eastern Daylight Time)",
+  "lastUpdated": "Tue Aug 15 2023 11:40:15 GMT-0400 (Eastern Daylight Time)",
   "projectName": "New Relic Node Agent",
   "projectUrl": "https://github.com/newrelic/node-newrelic",
   "includeOptDeps": true,
@@ -158,6 +158,19 @@
       "publisher": "Nathan Rajlich",
       "email": "nathan@tootallnate.net",
       "url": "http://n8.io/"
+    },
+    "import-in-the-middle@1.4.2": {
+      "name": "import-in-the-middle",
+      "version": "1.4.2",
+      "range": "^1.4.2",
+      "licenses": "Apache-2.0",
+      "repoUrl": "https://github.com/DataDog/import-in-the-middle",
+      "versionedRepoUrl": "https://github.com/DataDog/import-in-the-middle/tree/v1.4.2",
+      "licenseFile": "node_modules/import-in-the-middle/LICENSE",
+      "licenseUrl": "https://github.com/DataDog/import-in-the-middle/blob/v1.4.2/LICENSE",
+      "licenseTextSource": "file",
+      "publisher": "Bryan English",
+      "email": "bryan.english@datadoghq.com"
     },
     "json-bigint@1.0.0": {
       "name": "json-bigint",
@@ -760,20 +773,6 @@
       "licenseTextSource": "file",
       "publisher": "Bruce Williams",
       "email": "brwcodes@gmail.com"
-    },
-    "testdouble@3.17.2": {
-      "name": "testdouble",
-      "version": "3.17.2",
-      "range": "3.17.2",
-      "licenses": "MIT",
-      "repoUrl": "https://github.com/testdouble/testdouble.js",
-      "versionedRepoUrl": "https://github.com/testdouble/testdouble.js/tree/v3.17.2",
-      "licenseFile": "node_modules/testdouble/LICENSE.txt",
-      "licenseUrl": "https://github.com/testdouble/testdouble.js/blob/v3.17.2/LICENSE.txt",
-      "licenseTextSource": "file",
-      "publisher": "Justin Searls",
-      "email": "justin@testdouble.com",
-      "url": "http://testdouble.com"
     },
     "when@3.7.8": {
       "name": "when",

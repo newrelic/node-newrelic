@@ -163,7 +163,6 @@
     "unit": "rm -f newrelic_agent.log && time c8 -o ./coverage/unit tap --test-regex='(\\/|^test\\/unit\\/.*\\.test\\.js)$' --timeout=180 --no-coverage --reporter classic",
     "unit:scripts": "time c8 -o ./coverage/scripts-unit tap --test-regex='(\\/|^bin\\/test\\/.*\\.test\\.js)$' --timeout=180 --no-coverage --reporter classic",
     "unit:async-local": "rm -f newrelic_agent.log && time tap --test-regex='(\\/|^test\\/unit\\/.*\\.test\\.js)$' --timeout=180 --no-coverage --reporter classic --test-env=NEW_RELIC_FEATURE_FLAG_ASYNC_LOCAL_CONTEXT=1",
-    "unit:esm": "rm -f newrelic_agent.log && time c8 -o ./coverage/esm-unit --include *.mjs --include **/*.mjs --exclude false tap --test-regex='(\\/|^test\\/unit\\/.*\\.test\\.mjs)$' --timeout=180 --no-coverage --reporter classic --node-arg=--experimental-loader=testdouble",
     "update-cross-agent-tests": "./bin/update-cats.sh",
     "versioned-tests": "./bin/run-versioned-tests.sh",
     "update-changelog-version": "node ./bin/update-changelog-version",
@@ -190,6 +189,7 @@
     "@tyriar/fibonacci-heap": "^2.0.7",
     "concat-stream": "^2.0.0",
     "https-proxy-agent": "^7.0.1",
+    "import-in-the-middle": "^1.4.2",
     "json-bigint": "^1.0.0",
     "json-stringify-safe": "^5.0.0",
     "readable-stream": "^3.6.1",
@@ -243,7 +243,6 @@
     "sinon": "^4.5.0",
     "tap": "^16.3.4",
     "temp": "^0.8.1",
-    "testdouble": "3.17.2",
     "when": "*"
   },
   "repository": {

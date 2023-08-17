@@ -11,6 +11,7 @@ import parseJsonInstrumentation from './parse-json-instrumentation.mjs'
 shimmer.registerInstrumentation({
   moduleName: 'parse-json',
   type: 'generic',
+  isEsm: true,
   onRequire: parseJsonInstrumentation
 })
 

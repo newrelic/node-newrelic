@@ -8,6 +8,7 @@
 // Record opening times before loading any other files.
 const preAgentTime = process.uptime()
 const agentStart = Date.now()
+const { isMainThread } = require('worker_threads')
 
 // Load unwrapped core now to ensure it gets the freshest properties.
 require('./lib/util/unwrapped-core')
@@ -16,8 +17,14 @@ const featureFlags = require('./lib/feature_flags').prerelease
 const psemver = require('./lib/util/process-version')
 let logger = require('./lib/logger') // Gets re-loaded after initialization.
 const NAMES = require('./lib/metrics/names')
+const isESMSupported = psemver.satisfies('>=16.2.0')
 
 const pkgJSON = require('./package.json')
+if (!isMainThread) {
+  logger.warn('Using New Relic for Node.js in worker_threads is not supported. Not starting!')
+  return
+}
+
 logger.info(
   'Using New Relic for Node.js. Agent version: %s; Node version: %s.',
   pkgJSON.version,
@@ -221,22 +228,33 @@ function recordFeatureFlagMetrics(agent) {
  *  3. require('newrelic')
  *
  *  Then a supportability metric is loaded to decide.
- *  Note: We already take care of scenario #2 in newrelic/esm-loader.mjs
  *
  * @param {Agent} agent active NR agent
  */
 function recordLoaderMetric(agent) {
-  const isESM = agent.metrics.getMetric(NAMES.FEATURES.ESM.LOADER)
   let isDashR = false
 
   process.execArgv.forEach((arg, index) => {
     if (arg === '-r' && process.execArgv[index + 1] === 'newrelic') {
       agent.metrics.getOrCreateMetric(NAMES.FEATURES.CJS.PRELOAD).incrementCallCount()
       isDashR = true
+    } else if (
+      (arg === '--loader' || arg === '--experimental-loader') &&
+      process.execArgv[index + 1] === 'newrelic/esm-loader.mjs'
+    ) {
+      if (isESMSupported) {
+        agent.metrics.getOrCreateMetric(NAMES.FEATURES.ESM.LOADER).incrementCallCount()
+      } else {
+        agent.metrics.getOrCreateMetric(NAMES.FEATURES.ESM.UNSUPPORTED_LOADER)
+        logger.warn(
+          'New Relic for Node.js ESM loader requires a version of Node >= v16.12.0; your version is %s.  Instrumentation will not be registered.',
+          process.version
+        )
+      }
     }
   })
 
-  if (!isESM && !isDashR) {
+  if (!isDashR) {
     agent.metrics.getOrCreateMetric(NAMES.FEATURES.CJS.REQUIRE).incrementCallCount()
   }
 }

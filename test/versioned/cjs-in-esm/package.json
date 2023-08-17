@@ -1,6 +1,5 @@
 {
-    "name": "esm-package-tests",
-    "description": "Integration test our ESM Loader hooks with an ESM package from the ecosystem",
+    "name": "cjs-in-esm-tests",
     "version": "0.0.0",
     "type": "module",
     "private": true,
@@ -10,12 +9,15 @@
           "node": ">=16.12.0"
         },
         "dependencies": {
-          "parse-json": "6.0.2"
+          "express": "4.18.2",
+          "swagger-ui-express": "5.0.0",
+          "axios": "1.4.0"
         },
         "files": [
-          "parse-json.tap.mjs"
+          "instrumentation.tap.mjs"
         ]
       }
     ],
     "dependencies": {}
   }
+  
