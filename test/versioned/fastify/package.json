@@ -5,7 +5,7 @@
   "tests": [
     {
       "engines": {
-        "node": ">=14"
+        "node": ">=16"
       },
       "dependencies": {
         "fastify": ">=2.0.0 < 3"
@@ -21,7 +21,7 @@
     },
     {
       "engines": {
-        "node": ">=14"
+        "node": ">=16"
       },
       "dependencies": {
         "fastify": ">=3.0.0",
@@ -39,6 +39,6 @@
     }
   ],
   "engines": {
-    "node": ">=14"
+    "node": ">=16"
   }
 }

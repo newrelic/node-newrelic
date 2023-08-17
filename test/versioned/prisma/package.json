@@ -3,21 +3,9 @@
   "version": "0.0.0",
   "private": true,
   "engines": {
-    "node": ">=14"
+    "node": ">=16"
   },
   "tests": [
-    {
-      "engines": {
-        "node": "14"
-      },
-      "dependencies": {
-        "@prisma/client": ">=4.0.0 <5.0.0",
-        "prisma": "4.16.2"
-      },
-      "files": [
-        "prisma.tap.js"
-      ]
-    },
     {
       "engines": {
         "node": ">=16"

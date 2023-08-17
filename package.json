@@ -136,7 +136,7 @@
   ],
   "homepage": "https://github.com/newrelic/node-newrelic",
   "engines": {
-    "node": ">=14",
+    "node": ">=16",
     "npm": ">=6.0.0"
   },
   "directories": {
