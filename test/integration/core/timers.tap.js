@@ -10,8 +10,6 @@ const timers = require('timers')
 const helper = require('../../lib/agent_helper')
 const verifySegments = require('./verify')
 
-const legacyCtxOnly = !!process.env.NEW_RELIC_FEATURE_FLAG_LEGACY_CONTEXT_MANAGER
-
 tap.test('setTimeout', function testSetTimeout(t) {
   const { agent } = setupAgent(t)
   helper.runInTransaction(agent, function transactionWrapper() {
@@ -94,7 +92,7 @@ tap.test('setImmediate', function testSetImmediate(t) {
     })
   })
 
-  t.test('should not propagate segments for ended transaction', { skip: !legacyCtxOnly }, (t) => {
+  t.test('should not propagate segments for ended transaction', (t) => {
     const { agent, contextManager } = setupAgent(t)
 
     t.notOk(agent.getTransaction(), 'should not start in a transaction')
@@ -284,11 +282,11 @@ tap.test('clearTimeout should not ignore parent segment when internal', (t) => {
 
 function setupAgent(t) {
   const config = {
-    feature_flag: {}
+    feature_flag: {
+      legacy_context_manager: true
+    }
   }
-  if (legacyCtxOnly) {
-    config.feature_flag.legacy_context_manager = true
-  }
+
   const agent = helper.instrumentMockedAgent(config)
   const contextManager = helper.getContextManager()
 

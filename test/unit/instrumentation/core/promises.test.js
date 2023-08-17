@@ -9,7 +9,6 @@ const tap = require('tap')
 const test = tap.test
 
 const helper = require('../../../lib/agent_helper')
-const usingLegacyContext = !!process.env.NEW_RELIC_FEATURE_FLAG_LEGACY_CONTEXT_MANAGER
 
 /**
  * Note: These test had more meaning when we had legacy promise tracking.
@@ -18,7 +17,7 @@ const usingLegacyContext = !!process.env.NEW_RELIC_FEATURE_FLAG_LEGACY_CONTEXT_M
  *
  * The tests still exist to prove some more complex promise chains will not lose context
  */
-test('Promise trace', { skip: !usingLegacyContext }, (t) => {
+test('Promise trace', (t) => {
   t.autoend()
 
   let agent = null

@@ -25,8 +25,6 @@ test('PrismaClient unit tests', (t) => {
   t.beforeEach(function () {
     sandbox = sinon.createSandbox()
     agent = helper.loadMockedAgent()
-
-    // agent = helper.instrumentMockedAgent()
     const prismaAst = require('@mrleebo/prisma-ast')
     getSchemaSpy = sandbox.spy(prismaAst, 'getSchema')
     initialize = proxyquire('../../../lib/instrumentation/@prisma/client', {

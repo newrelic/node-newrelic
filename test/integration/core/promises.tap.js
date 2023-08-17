@@ -9,9 +9,7 @@ const { test } = require('tap')
 
 const runTests = require('./promises')
 
-const usingLegacyContext = !!process.env.NEW_RELIC_FEATURE_FLAG_LEGACY_CONTEXT_MANAGER
-
-test('Promises (await_support: false)', { skip: !usingLegacyContext }, (t) => {
+test('Promises (await_support: false)', (t) => {
   t.autoend()
 
   runTests(t, {
@@ -20,7 +18,7 @@ test('Promises (await_support: false)', { skip: !usingLegacyContext }, (t) => {
   })
 })
 
-test('Promises (await_support: true)', { skip: !usingLegacyContext }, (t) => {
+test('Promises (await_support: true)', (t) => {
   t.autoend()
 
   runTests(t, {

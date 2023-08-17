@@ -10,9 +10,7 @@ const { test } = require('tap')
 const helper = require('../../../lib/agent_helper')
 const asyncHooks = require('async_hooks')
 
-const skipAsyncLocal = !!process.env.NEW_RELIC_FEATURE_FLAG_LEGACY_CONTEXT_MANAGER
-
-test('AsyncLocalStorage based tracking', { skip: skipAsyncLocal }, (t) => {
+test('AsyncLocalStorage based tracking', (t) => {
   t.autoend()
 
   const config = {}
