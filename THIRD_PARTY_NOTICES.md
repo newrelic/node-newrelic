@@ -27,6 +27,7 @@ code, the source code can be found at [https://github.com/newrelic/node-newrelic
 * [json-bigint](#json-bigint)
 * [json-stringify-safe](#json-stringify-safe)
 * [readable-stream](#readable-stream)
+* [require-in-the-middle](#require-in-the-middle)
 * [semver](#semver)
 * [winston-transport](#winston-transport)
 
@@ -1390,6 +1391,36 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 IN THE SOFTWARE.
 """
+
+```
+
+### require-in-the-middle
+
+This product includes source derived from [require-in-the-middle](https://github.com/elastic/require-in-the-middle) ([v7.2.0](https://github.com/elastic/require-in-the-middle/tree/v7.2.0)), distributed under the [MIT License](https://github.com/elastic/require-in-the-middle/blob/v7.2.0/LICENSE):
+
+```
+The MIT License (MIT)
+
+Copyright (c) 2016-2019, Thomas Watson Steen
+Copyright (c) 2019-2023, Elasticsearch B.V.
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
 
 ```
 

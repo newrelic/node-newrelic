@@ -13,9 +13,9 @@ const shimmer = require('../../../lib/shimmer')
 const symbols = require('../../../lib/symbols')
 const { FEATURES } = require('../../../lib/metrics/names')
 
-const CUSTOM_MODULE_PATH = './node_modules/customTestPackage'
-const EXPECTED_RESOLVED_METRIC_NAME = `${FEATURES.INSTRUMENTATION.ON_RESOLVED}/${CUSTOM_MODULE_PATH}`
-const EXPECTED_REQUIRE_METRIC_NAME = `${FEATURES.INSTRUMENTATION.ON_REQUIRE}/${CUSTOM_MODULE_PATH}`
+const CUSTOM_MODULE = 'customTestPackage'
+const CUSTOM_MODULE_PATH = `./node_modules/${CUSTOM_MODULE}`
+const EXPECTED_REQUIRE_METRIC_NAME = `${FEATURES.INSTRUMENTATION.ON_REQUIRE}/${CUSTOM_MODULE}`
 
 tap.test('Should properly track module paths to enable shim.require()', function (t) {
   t.autoend()
@@ -28,7 +28,7 @@ tap.test('Should properly track module paths to enable shim.require()', function
   })
 
   shimmer.registerInstrumentation({
-    moduleName: CUSTOM_MODULE_PATH,
+    moduleName: CUSTOM_MODULE,
     onRequire: () => {}
   })
 
@@ -77,7 +77,7 @@ tap.test('shim.require() should play well with multiple test runs', (t) => {
   let agent = helper.instrumentMockedAgent()
 
   shimmer.registerInstrumentation({
-    moduleName: CUSTOM_MODULE_PATH,
+    moduleName: CUSTOM_MODULE,
     onRequire: () => {}
   })
 
@@ -102,58 +102,6 @@ tap.test('shim.require() should play well with multiple test runs', (t) => {
   t.end()
 })
 
-tap.test('Should create usage metric onResolved', (t) => {
-  let agent = helper.instrumentMockedAgent()
-
-  t.teardown(() => {
-    helper.unloadAgent(agent)
-    agent = null
-  })
-
-  shimmer.registerInstrumentation({
-    moduleName: CUSTOM_MODULE_PATH,
-    onResolved: onResolvedHandler
-  })
-
-  require(CUSTOM_MODULE_PATH)
-
-  function onResolvedHandler() {
-    const onResolvedMetric = agent.metrics._metrics.unscoped[EXPECTED_RESOLVED_METRIC_NAME]
-
-    t.ok(onResolvedMetric)
-    t.equal(onResolvedMetric.callCount, 1)
-
-    t.end()
-  }
-})
-
-tap.test('Should create usage version metric onResolved', (t) => {
-  let agent = helper.instrumentMockedAgent()
-
-  t.teardown(() => {
-    helper.unloadAgent(agent)
-    agent = null
-  })
-
-  shimmer.registerInstrumentation({
-    moduleName: CUSTOM_MODULE_PATH,
-    onResolved: onResolvedHandler
-  })
-
-  require(CUSTOM_MODULE_PATH)
-
-  function onResolvedHandler() {
-    const expectedVersionMetricName = `${EXPECTED_RESOLVED_METRIC_NAME}/Version/3`
-
-    const onResolvedMetric = agent.metrics._metrics.unscoped[expectedVersionMetricName]
-
-    t.ok(onResolvedMetric)
-    t.equal(onResolvedMetric.callCount, 1)
-
-    t.end()
-  }
-})
-
 tap.test('Should create usage metric onRequire', (t) => {
   let agent = helper.instrumentMockedAgent()
 
@@ -163,7 +111,7 @@ tap.test('Should create usage metric onRequire', (t) => {
   })
 
   shimmer.registerInstrumentation({
-    moduleName: CUSTOM_MODULE_PATH,
+    moduleName: CUSTOM_MODULE,
     onRequire: onRequireHandler
   })
 
@@ -188,7 +136,7 @@ tap.test('Should create usage version metric onRequire', (t) => {
   })
 
   shimmer.registerInstrumentation({
-    moduleName: CUSTOM_MODULE_PATH,
+    moduleName: CUSTOM_MODULE,
     onRequire: onRequireHandler
   })
 
@@ -210,7 +158,7 @@ function simulateTestLoadAndUnload() {
   const agent = helper.instrumentMockedAgent()
 
   shimmer.registerInstrumentation({
-    moduleName: CUSTOM_MODULE_PATH
+    moduleName: CUSTOM_MODULE
   })
 
   require(CUSTOM_MODULE_PATH)

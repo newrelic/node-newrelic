@@ -7,8 +7,8 @@
 const sinon = require('sinon')
 module.exports = (sandbox = sinon) => {
   return {
-    patchModule: sandbox.stub(),
     bootstrapInstrumentation: sandbox.stub(),
+    registerHooks: sandbox.stub(),
     registeredInstrumentations: {}
   }
 }

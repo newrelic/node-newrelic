@@ -42,6 +42,11 @@ tap.test('gRPC Client: Bidi Streaming', (t) => {
     client.close()
     grpc = null
     proto = null
+    Object.keys(require.cache).forEach((key) => {
+      if (key.includes('@grpc/grpc-js')) {
+        delete require.cache[key]
+      }
+    })
   })
 
   t.test(
