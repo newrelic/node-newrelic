@@ -676,6 +676,32 @@ tap.test('Should not register when no hooks provided', (t) => {
   t.end()
 })
 
+tap.test('should register hooks for ritm and iitm', (t) => {
+  const fakeAgent = {}
+  shimmer.registerHooks(fakeAgent)
+  t.ok(shimmer._ritm, 'should have ritm instance')
+  t.ok(shimmer._iitm, 'should have iitm instance')
+  t.end()
+})
+
+tap.test('should unhook ritm and iitm when calling removeHooks', (t) => {
+  const fakeAgent = {}
+  shimmer.registerHooks(fakeAgent)
+  t.ok(shimmer._ritm, 'should have ritm instance')
+  t.ok(shimmer._iitm, 'should have iitm instance')
+  shimmer.removeHooks()
+  t.notOk(shimmer._iitm, 'should unhook iitm')
+  t.notOk(shimmer._ritm, 'should unhook ritm')
+  t.end()
+})
+
+tap.test('should not throw if you call removeHooks before creating ritm and iitm hooks', (t) => {
+  t.doesNotThrow(() => {
+    shimmer.removeHooks()
+  })
+  t.end()
+})
+
 function clearCachedModules(modules) {
   modules.forEach((moduleName) => {
     try {
