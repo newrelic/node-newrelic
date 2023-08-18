@@ -1,3 +1,20 @@
+### v8.0.0 (2023-08-28)
+
+* **BREAKING**: Removed support for Node 14.
+
+* **BREAKING**: Removed ability to run `@newrelic/koa` as a standalone module. This package gets bundled with agent and no longer can run as a standalone in v10 of the newrelic agent.
+
+* Added support for Node 20.
+
+* Updated vulnerable dependencies:
+    - word-wrap from 1.2.3 to 1.2.4.
+    - protobufjs from 7.2.3 to 7.2.4.
+
+* Added test for registering instrumentation via nr-hooks.
+
+* Updated README links to point to new forum link.
+
+
 ### v7.2.0 (2023-04-19)
 
 * Updated the registration of instrumentation to indicate that it will share a shim instance id for checking if items are wrapped.
