@@ -1,3 +1,15 @@
+### v7.0.0 (2023-08-28)
+
+* **BREAKING**: Removed support for Node 14.
+
+* Added support for Node 20.
+
+* Simplified instrumentation to only register relevant v3 middleware once in the `send` method of the SmithyClient.
+
+* Updated vulnerable dependencies:
+  - word-wrap from 1.2.3 to 1.2.4.
+  - protobufjs from 7.2.3 to 7.2.4.
+
 ### v6.0.0 (2023-06-30)
 
 * **BREAKING**: Removed ability to run `@newrelic/aws-sdk` as a standalone module. This package gets bundled with agent and no longer can run as a standalone in v10 of the newrelic agent.
