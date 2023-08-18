@@ -24,11 +24,7 @@ test('PrismaClient unit tests', (t) => {
 
   t.beforeEach(function () {
     sandbox = sinon.createSandbox()
-    // TODO: update to use loadMockedAgent with async local context manager when we drop Node 14
-    // enabling async local ctx mgr so I don't have to call instrumentMockedAgent which bootstraps
-    // all instrumentation. Need context propagation for the inContext function
-    // agent = helper.loadMockedAgent({ feature_flag: { async_local_context: true } })
-    agent = helper.instrumentMockedAgent()
+    agent = helper.loadMockedAgent()
     const prismaAst = require('@mrleebo/prisma-ast')
     getSchemaSpy = sandbox.spy(prismaAst, 'getSchema')
     initialize = proxyquire('../../../lib/instrumentation/@prisma/client', {

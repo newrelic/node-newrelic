@@ -25,6 +25,7 @@ const used = [
   'custom_metrics',
   'express5',
   'express_segments',
+  'legacy_context_manager',
   'native_metrics',
   'new_promise_tracking',
   'promise_segments',

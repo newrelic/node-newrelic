@@ -6,20 +6,14 @@
 'use strict'
 
 const { test } = require('tap')
-const semver = require('semver')
 
 const helper = require('../../../lib/agent_helper')
 const asyncHooks = require('async_hooks')
 
-const skipAsyncLocal = semver.satisfies(process.version, '<16.4.0')
-test('AsyncLocalStorage based tracking', { skip: skipAsyncLocal }, (t) => {
+test('AsyncLocalStorage based tracking', (t) => {
   t.autoend()
 
-  const config = {
-    feature_flag: {
-      async_local_context: true
-    }
-  }
+  const config = {}
 
   createPromiseTests(t, config)
 

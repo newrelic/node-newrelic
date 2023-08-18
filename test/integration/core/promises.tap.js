@@ -9,22 +9,20 @@ const { test } = require('tap')
 
 const runTests = require('./promises')
 
-const usingAsyncLocal = process.env.NEW_RELIC_FEATURE_FLAG_ASYNC_LOCAL_CONTEXT
-
-test('Promises (await_support: false)', { skip: usingAsyncLocal }, (t) => {
+test('Promises (await_support: false)', (t) => {
   t.autoend()
 
   runTests(t, {
     await_support: false,
-    async_local_context: false
+    legacy_context_manager: true
   })
 })
 
-test('Promises (await_support: true)', { skip: usingAsyncLocal }, (t) => {
+test('Promises (await_support: true)', (t) => {
   t.autoend()
 
   runTests(t, {
     await_support: true,
-    async_local_context: false
+    legacy_context_manager: true
   })
 })

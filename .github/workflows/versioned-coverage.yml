@@ -1,6 +1,6 @@
-# This workflow is intended to be used to run versioned tests for different scenarios(i.e.- async local context manager, etc)
+# This workflow is intended to be used to run versioned tests for different scenarios(i.e.- legacy context manager, etc)
 
-name: Nightly Versioned Scenario Runs 
+name: Nightly Versioned Scenario Runs
 
 on:
   workflow_dispatch:
@@ -8,7 +8,7 @@ on:
     - cron:  '0 9 * * 1-5'
 
 jobs:
-  async-local-context:
+  legacy-context:
     runs-on: ubuntu-latest
 
     strategy:
@@ -25,9 +25,9 @@ jobs:
       run: npm ci
     - name: Run Docker Services
       run: npm run services
-    - name: Run Async Local Context Versioned Tests (Node 16+)
-      run: TEST_CHILD_TIMEOUT=600000 npm run versioned:async-local
+    - name: Run Legacy Context Versioned Tests
+      run: TEST_CHILD_TIMEOUT=600000 npm run versioned:legacy-context
       env:
-        VERSIONED_MODE: --major 
+        VERSIONED_MODE: --major
         JOBS: 4 # 2 per CPU seems to be the sweet spot in GHA (July 2022)
-        SKIP_C8: true 
+        SKIP_C8: true
