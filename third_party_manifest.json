@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "Fri Aug 18 2023 12:19:49 GMT-0400 (Eastern Daylight Time)",
+  "lastUpdated": "Mon Aug 28 2023 12:39:43 GMT-0400 (Eastern Daylight Time)",
   "projectName": "New Relic Node Agent",
   "projectUrl": "https://github.com/newrelic/node-newrelic",
   "includeOptDeps": true,
@@ -28,6 +28,18 @@
       "licenseTextSource": "file",
       "publisher": "New Relic Node.js agent team",
       "email": "nodejs@newrelic.com"
+    },
+    "@prisma/prisma-fmt-wasm@4.17.0-16.27eb2449f178cd9fe1a4b892d732cc4795f75085": {
+      "name": "@prisma/prisma-fmt-wasm",
+      "version": "4.17.0-16.27eb2449f178cd9fe1a4b892d732cc4795f75085",
+      "range": "^4.17.0-16.27eb2449f178cd9fe1a4b892d732cc4795f75085",
+      "licenses": "Apache-2.0",
+      "repoUrl": "https://github.com/prisma/prisma-engines",
+      "versionedRepoUrl": "https://github.com/prisma/prisma-engines/tree/v4.17.0-16.27eb2449f178cd9fe1a4b892d732cc4795f75085",
+      "licenseFile": "node_modules/@prisma/prisma-fmt-wasm/README.md",
+      "licenseUrl": "https://github.com/prisma/prisma-engines/blob/v4.17.0-16.27eb2449f178cd9fe1a4b892d732cc4795f75085/README.md",
+      "licenseTextSource": "spdx",
+      "publisher": "Prisma"
     }
   },
   "includeDev": true,
@@ -55,18 +67,6 @@
       "licenseUrl": "https://github.com/grpc/grpc-node/blob/v0.7.7/LICENSE",
       "licenseTextSource": "file",
       "publisher": "Google Inc."
-    },
-    "@mrleebo/prisma-ast@0.5.2": {
-      "name": "@mrleebo/prisma-ast",
-      "version": "0.5.2",
-      "range": "^0.5.2",
-      "licenses": "MIT",
-      "repoUrl": "https://github.com/MrLeebo/prisma-ast",
-      "versionedRepoUrl": "https://github.com/MrLeebo/prisma-ast/tree/v0.5.2",
-      "licenseFile": "node_modules/@mrleebo/prisma-ast/LICENSE",
-      "licenseUrl": "https://github.com/MrLeebo/prisma-ast/blob/v0.5.2/LICENSE",
-      "licenseTextSource": "file",
-      "publisher": "Jeremy Liberman"
     },
     "@newrelic/aws-sdk@6.0.0": {
       "name": "@newrelic/aws-sdk",

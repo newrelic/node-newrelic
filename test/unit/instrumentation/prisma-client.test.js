@@ -11,7 +11,6 @@ const helper = require('../../lib/agent_helper')
 const DatastoreShim = require('../../../lib/shim/datastore-shim.js')
 const symbols = require('../../../lib/symbols')
 const sinon = require('sinon')
-const proxyquire = require('proxyquire')
 
 let agent = null
 let initialize = null
@@ -19,17 +18,12 @@ let shim = null
 
 test('PrismaClient unit tests', (t) => {
   t.autoend()
-  let getSchemaSpy
   let sandbox
 
   t.beforeEach(function () {
     sandbox = sinon.createSandbox()
     agent = helper.loadMockedAgent()
-    const prismaAst = require('@mrleebo/prisma-ast')
-    getSchemaSpy = sandbox.spy(prismaAst, 'getSchema')
-    initialize = proxyquire('../../../lib/instrumentation/@prisma/client', {
-      '@mrleebo/prisma-ast': prismaAst
-    })
+    initialize = require('../../../lib/instrumentation/@prisma/client')
     shim = new DatastoreShim(agent, 'prisma')
     sandbox.stub(shim, 'require')
     shim.require.returns({ version: '4.0.0' })
@@ -99,58 +93,6 @@ test('PrismaClient unit tests', (t) => {
     })
   })
 
-  t.test('should parse connection string client override', (t) => {
-    const MockPrismaClient = getMockModule()
-    const prisma = { PrismaClient: MockPrismaClient }
-
-    initialize(agent, prisma, '@prisma/client', shim)
-    const client = new prisma.PrismaClient()
-    client._engine.datasourceOverrides = {
-      db: 'postgresql://postgres:prisma@localhost:5433/override-db'
-    }
-    client._engine.datamodel = `
-      datasource db {
-        provider = "postgres"
-        url = "postgresql://postgres:prisma@localhost:5436/db"
-      }
-    `
-    helper.runInTransaction(agent, async () => {
-      await client._executeRequest({ clientMethod: 'user.create' })
-      t.same(client[symbols.prismaConnection], {
-        host: 'localhost',
-        port: '5433',
-        dbName: 'override-db'
-      })
-      t.end()
-    })
-  })
-
-  t.test('should not override with client override when datasource name does not match', (t) => {
-    const MockPrismaClient = getMockModule()
-    const prisma = { PrismaClient: MockPrismaClient }
-
-    initialize(agent, prisma, '@prisma/client', shim)
-    const client = new prisma.PrismaClient()
-    client._engine.datasourceOverrides = {
-      temp_db: 'postgresql://postgres:prisma@localhost:5433/override-db'
-    }
-    client._engine.datamodel = `
-      datasource db {
-        provider = "postgres"
-        url = "postgresql://postgres:prisma@localhost:5436/db"
-      }
-    `
-    helper.runInTransaction(agent, async () => {
-      await client._executeRequest({ clientMethod: 'user.create' })
-      t.same(client[symbols.prismaConnection], {
-        host: 'localhost',
-        port: '5436',
-        dbName: 'db'
-      })
-      t.end()
-    })
-  })
-
   t.test('should only try to parse the schema once per connection', (t) => {
     const MockPrismaClient = getMockModule()
     const prisma = { PrismaClient: MockPrismaClient }
@@ -170,8 +112,6 @@ test('PrismaClient unit tests', (t) => {
         args: { query: 'select test from unit-test;' },
         action: 'executeRaw'
       })
-
-      t.equal(getSchemaSpy.callCount, 1, 'should only parse schema once')
 
       t.end()
     })
