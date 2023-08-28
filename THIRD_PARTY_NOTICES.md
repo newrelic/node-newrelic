@@ -509,7 +509,7 @@ This product includes source derived from [@grpc/proto-loader](https://github.co
 
 ### @newrelic/aws-sdk
 
-This product includes source derived from [@newrelic/aws-sdk](https://github.com/newrelic/node-newrelic-aws-sdk) ([v6.0.0](https://github.com/newrelic/node-newrelic-aws-sdk/tree/v6.0.0)), distributed under the [Apache-2.0 License](https://github.com/newrelic/node-newrelic-aws-sdk/blob/v6.0.0/LICENSE):
+This product includes source derived from [@newrelic/aws-sdk](https://github.com/newrelic/node-newrelic-aws-sdk) ([v7.0.0](https://github.com/newrelic/node-newrelic-aws-sdk/tree/v7.0.0)), distributed under the [Apache-2.0 License](https://github.com/newrelic/node-newrelic-aws-sdk/blob/v7.0.0/LICENSE):
 
 ```
                                  Apache License
@@ -717,7 +717,7 @@ This product includes source derived from [@newrelic/aws-sdk](https://github.com
 
 ### @newrelic/koa
 
-This product includes source derived from [@newrelic/koa](https://github.com/newrelic/node-newrelic-koa) ([v7.2.0](https://github.com/newrelic/node-newrelic-koa/tree/v7.2.0)), distributed under the [Apache-2.0 License](https://github.com/newrelic/node-newrelic-koa/blob/v7.2.0/LICENSE):
+This product includes source derived from [@newrelic/koa](https://github.com/newrelic/node-newrelic-koa) ([v8.0.0](https://github.com/newrelic/node-newrelic-koa/tree/v8.0.0)), distributed under the [Apache-2.0 License](https://github.com/newrelic/node-newrelic-koa/blob/v8.0.0/LICENSE):
 
 ```
 Apache License
@@ -977,7 +977,7 @@ This license terminates when the Pre-Release Software stops being provided by Ne
 
 ### @newrelic/superagent
 
-This product includes source derived from [@newrelic/superagent](https://github.com/newrelic/node-newrelic-superagent) ([v6.0.0](https://github.com/newrelic/node-newrelic-superagent/tree/v6.0.0)), distributed under the [Apache-2.0 License](https://github.com/newrelic/node-newrelic-superagent/blob/v6.0.0/LICENSE):
+This product includes source derived from [@newrelic/superagent](https://github.com/newrelic/node-newrelic-superagent) ([v7.0.0](https://github.com/newrelic/node-newrelic-superagent/tree/v7.0.0)), distributed under the [Apache-2.0 License](https://github.com/newrelic/node-newrelic-superagent/blob/v7.0.0/LICENSE):
 
 ```
                                  Apache License
@@ -1892,7 +1892,7 @@ This product includes source derived from [@newrelic/newrelic-oss-cli](https://g
 
 ### @newrelic/test-utilities
 
-This product includes source derived from [@newrelic/test-utilities](https://github.com/newrelic/node-test-utilities) ([v7.3.2](https://github.com/newrelic/node-test-utilities/tree/v7.3.2)), distributed under the [Apache-2.0 License](https://github.com/newrelic/node-test-utilities/blob/v7.3.2/LICENSE):
+This product includes source derived from [@newrelic/test-utilities](https://github.com/newrelic/node-test-utilities) ([v8.0.0](https://github.com/newrelic/node-test-utilities/tree/v8.0.0)), distributed under the [Apache-2.0 License](https://github.com/newrelic/node-test-utilities/blob/v8.0.0/LICENSE):
 
 ```
                                  Apache License
@@ -9551,7 +9551,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 ### @newrelic/native-metrics
 
-This product includes source derived from [@newrelic/native-metrics](https://github.com/newrelic/node-native-metrics) ([v9.0.1](https://github.com/newrelic/node-native-metrics/tree/v9.0.1)), distributed under the [Apache-2.0 License](https://github.com/newrelic/node-native-metrics/blob/v9.0.1/LICENSE):
+This product includes source derived from [@newrelic/native-metrics](https://github.com/newrelic/node-native-metrics) ([v10.0.0](https://github.com/newrelic/node-native-metrics/tree/v10.0.0)), distributed under the [Apache-2.0 License](https://github.com/newrelic/node-native-metrics/blob/v10.0.0/LICENSE):
 
 ```
                                  Apache License
