@@ -2,6 +2,20 @@
   "repository": "newrelic/node-newrelic",
   "entries": [
     {
+      "version": "11.0.0",
+      "changes": {
+        "security": [],
+        "bugfixes": [
+          "updated prisma instrumentation to parse prisma datamodel with internal package",
+          "Replaced esm loader with import-in-the-middle to fix instrumentation firing for both commonjs and esm"
+        ],
+        "features": [
+          "updated the default context manager to be AsyncLocalContextManager",
+          "Renamed shim.handleCATHeaders to shim.handleMqTracingHeaders"
+        ]
+      }
+    },
+    {
       "version": "10.6.2",
       "changes": {
         "security": [],
