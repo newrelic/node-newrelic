@@ -179,10 +179,10 @@
   "dependencies": {
     "@grpc/grpc-js": "^1.8.10",
     "@grpc/proto-loader": "^0.7.5",
-    "@newrelic/aws-sdk": "^6.0.0",
-    "@newrelic/koa": "^7.1.1",
+    "@newrelic/aws-sdk": "^7.0.0",
+    "@newrelic/koa": "^8.0.0",
     "@newrelic/security-agent": "0.2.1",
-    "@newrelic/superagent": "^6.0.0",
+    "@newrelic/superagent": "^7.0.0",
     "@tyriar/fibonacci-heap": "^2.0.7",
     "concat-stream": "^2.0.0",
     "https-proxy-agent": "^7.0.1",
@@ -196,13 +196,13 @@
   },
   "optionalDependencies": {
     "@contrast/fn-inspect": "^3.3.0",
-    "@newrelic/native-metrics": "^9.0.1",
+    "@newrelic/native-metrics": "^10.0.0",
     "@prisma/prisma-fmt-wasm": "^4.17.0-16.27eb2449f178cd9fe1a4b892d732cc4795f75085"
   },
   "devDependencies": {
     "@newrelic/eslint-config": "^0.3.0",
     "@newrelic/newrelic-oss-cli": "^0.1.2",
-    "@newrelic/test-utilities": "^7.3.2",
+    "@newrelic/test-utilities": "^8.0.0",
     "@octokit/rest": "^18.0.15",
     "@slack/bolt": "^3.7.0",
     "ajv": "^6.12.6",
