@@ -5,8 +5,8 @@
 * Removed support for Node 14.
 * Replaced ESM loader with import-in-the-middle to fix instrumentation firing for both CommonJS and ESM. 
     * You must load both the ESM loader and agent as follows: `node --experimental-loader newrelic/esm-loader.mjs -r newrelic path/to/app.js`.  
-    * Removed `config.esm.custom_instrumentation_entrypoint` to register ESM instrumentation. You can now just call the `newrelic.instrument*` APIs but you must pass in an object and specify `isEsm: true`, [See example](https://github.com/newrelic/newrelic-node-examples/blob/main/esm-app/custom-instrumentation/parse-json.js).
-* Updated agent to use require-in-the-middle to register CommonJS instrumentation. You can no longer use onResolved hook to register custom instrumentation.
+    * Removed `config.esm.custom_instrumentation_entrypoint` to register ESM instrumentation. You can now just call the `newrelic.instrument*` APIs but you must pass in an object and specify `isEsm: true`. [See example](https://github.com/newrelic/newrelic-node-examples/blob/main/esm-app/custom-instrumentation/parse-json.js).
+* Updated agent to use require-in-the-middle to register CommonJS instrumentation. You can no longer use an onResolved hook to register custom instrumentation.
 * Updated the default context manager to be AsyncLocalContextManager.
 * Renamed `shim.handleCATHeaders` to `shim.handleMqTracingHeaders`.
 
