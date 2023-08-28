@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "Wed Aug 16 2023 11:18:45 GMT-0400 (Eastern Daylight Time)",
+  "lastUpdated": "Mon Aug 28 2023 16:34:34 GMT-0400 (Eastern Daylight Time)",
   "projectName": "New Relic Next.js Instrumentation",
   "projectUrl": "https://github.com/newrelic/newrelic-node-nextjs",
   "includeOptDeps": false,
@@ -110,15 +110,15 @@
       "email": "liran.tal@gmail.com",
       "url": "https://github.com/lirantal"
     },
-    "newrelic@10.4.2": {
+    "newrelic@11.0.0": {
       "name": "newrelic",
-      "version": "10.4.2",
-      "range": "^10.3.1",
+      "version": "11.0.0",
+      "range": "^11.0.0",
       "licenses": "Apache-2.0",
       "repoUrl": "https://github.com/newrelic/node-newrelic",
-      "versionedRepoUrl": "https://github.com/newrelic/node-newrelic/tree/v10.4.2",
+      "versionedRepoUrl": "https://github.com/newrelic/node-newrelic/tree/v11.0.0",
       "licenseFile": "node_modules/newrelic/LICENSE",
-      "licenseUrl": "https://github.com/newrelic/node-newrelic/blob/v10.4.2/LICENSE",
+      "licenseUrl": "https://github.com/newrelic/node-newrelic/blob/v11.0.0/LICENSE",
       "licenseTextSource": "file",
       "publisher": "New Relic Node.js agent team",
       "email": "nodejs@newrelic.com"
