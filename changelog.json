@@ -6,11 +6,13 @@
       "changes": {
         "security": [],
         "bugfixes": [
-          "updated prisma instrumentation to parse prisma datamodel with internal package",
-          "Replaced esm loader with import-in-the-middle to fix instrumentation firing for both commonjs and esm"
+          "Updated prisma instrumentation to parse prisma datamodel with internal package.",
+          "Replaced ESM loader with import-in-the-middle to fix instrumentation firing for both CommonJS and ESM."
         ],
         "features": [
-          "updated the default context manager to be AsyncLocalContextManager",
+          "Added support for Node 20",
+          "Removed support for Node 14",
+          "Updated the default context manager to be AsyncLocalContextManager.",
           "Renamed shim.handleCATHeaders to shim.handleMqTracingHeaders"
         ]
       }
