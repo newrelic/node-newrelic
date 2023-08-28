@@ -43,12 +43,12 @@
     "husky": "^8.0.1",
     "lint-staged": "^12.4.2",
     "lockfile-lint": "^4.9.6",
-    "newrelic": "^10.3.1",
+    "newrelic": "^11.0.0",
     "sinon": "^14.0.0",
     "tap": "^16.2.0"
   },
   "peerDependencies": {
-    "newrelic": ">=8.14.0"
+    "newrelic": ">=11.0.0"
   },
   "dependencies": {
     "semver": "^7.3.7"
