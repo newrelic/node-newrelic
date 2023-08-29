@@ -1,10 +1,12 @@
 ### v0.7.0 (2023-08-29)
 
-* **BREAKING**: Updated the module path to properly instrument Next.js with `require-in-the-middle`.
+* Updated the module path to properly instrument Next.js with `require-in-the-middle`.
 
-Updated the contributing docs
+* Updated minimum version of peer dependency `newrelic` to `>=11.0.0` to ensure the new path to Next.js server instrumentation will work.
 
-* update versioned test helper to handle next@13.4.15 changes
+* Updated the contributing docs.
+
+* Updated versioned test helper to handle next@13.4.15 changes.
 
 ### v0.6.0 (2023-08-09)
 
