@@ -1,3 +1,11 @@
+### v0.7.0 (2023-08-29)
+
+* **BREAKING**: Updated the module path to properly instrument Next.js with `require-in-the-middle`.
+
+Updated the contributing docs
+
+* update versioned test helper to handle next@13.4.15 changes
+
 ### v0.6.0 (2023-08-09)
 
 * **BREAKING** - Dropped support for Node 14.
