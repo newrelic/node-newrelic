@@ -1,6 +1,6 @@
 {
   "name": "@newrelic/next",
-  "version": "0.6.0",
+  "version": "0.7.0",
   "description": "Next.js instrumentation for the New Relic Node.js agent. ",
   "main": "index.js",
   "scripts": {
