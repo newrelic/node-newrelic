@@ -25,7 +25,7 @@ const repos = [
   {
     name: 'next',
     repository: 'https://github.com/newrelic/newrelic-node-nextjs.git',
-    branch: 'ritm-update'
+    branch: 'main'
   },
   {
     name: 'superagent',
