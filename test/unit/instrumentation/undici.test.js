@@ -14,6 +14,7 @@ const TransactionShim = require('../../../lib/shim/transaction-shim')
 const { DESTINATIONS } = require('../../../lib/config/attribute-filter')
 const hashes = require('../../../lib/util/hashes')
 const symbols = require('../../../lib/symbols')
+const HOST = 'https://www.example.com'
 
 // diagnostics_channel only exists in Node 15+
 // but we only support even versions so check before running tests
@@ -34,7 +35,6 @@ tap.test('undici instrumentation', { skip: shouldSkip }, function (t) {
     const diagnosticsChannel = require('diagnostics_channel')
     channels = {
       create: diagnosticsChannel.channel('undici:request:create'),
-      sendHeaders: diagnosticsChannel.channel('undici:client:sendHeaders'),
       headers: diagnosticsChannel.channel('undici:request:headers'),
       send: diagnosticsChannel.channel('undici:request:trailers'),
       error: diagnosticsChannel.channel('undici:request:error')
@@ -78,7 +78,7 @@ tap.test('undici instrumentation', { skip: shouldSkip }, function (t) {
     t.afterEach(afterEach)
 
     t.test('should log trace if request is not in an active transaction', function (t) {
-      channels.create.publish({ request: { path: '/foo' } })
+      channels.create.publish({ request: { origin: HOST, path: '/foo' } })
       t.same(loggerMock.trace.args[0], [
         'Not capturing data for outbound request (%s) because parent segment opaque (%s)',
         '/foo',
@@ -93,7 +93,7 @@ tap.test('undici instrumentation', { skip: shouldSkip }, function (t) {
         segment.opaque = true
         segment.start()
         shim.setActiveSegment(segment)
-        channels.create.publish({ request: { path: '/foo' } })
+        channels.create.publish({ request: { origin: HOST, path: '/foo' } })
         t.ok(loggerMock.trace.callCount, 1)
         t.same(loggerMock.trace.args[0], [
           'Not capturing data for outbound request (%s) because parent segment opaque (%s)',
@@ -111,6 +111,7 @@ tap.test('undici instrumentation', { skip: shouldSkip }, function (t) {
         tx.syntheticsHeader = 'synthHeader'
         const request = {
           addHeader: sandbox.stub(),
+          origin: HOST,
           path: '/foo-2'
         }
         channels.create.publish({ request })
@@ -126,7 +127,7 @@ tap.test('undici instrumentation', { skip: shouldSkip }, function (t) {
       agent.config.distributed_tracing.enabled = true
       helper.runInTransaction(agent, function (tx) {
         const addHeader = sandbox.stub()
-        channels.create.publish({ request: { path: '/foo-2', addHeader } })
+        channels.create.publish({ request: { origin: HOST, path: '/foo-2', addHeader } })
         t.equal(addHeader.callCount, 2)
         t.equal(addHeader.args[0][0], 'traceparent')
         t.match(addHeader.args[0][1], /^[\w\d\-]{55}$/)
@@ -140,7 +141,7 @@ tap.test('undici instrumentation', { skip: shouldSkip }, function (t) {
       agent.config.cross_application_tracer.enabled = true
       helper.runInTransaction(agent, function (tx) {
         const addHeader = sandbox.stub()
-        channels.create.publish({ request: { path: '/foo-2', addHeader } })
+        channels.create.publish({ request: { origin: HOST, path: '/foo-2', addHeader } })
         t.equal(addHeader.callCount, 1)
         t.equal(addHeader.args[0][0], 'X-NewRelic-Transaction')
         t.match(addHeader.args[0][1], /^[\w\d/-]{60,80}={0,2}$/)
@@ -154,12 +155,12 @@ tap.test('undici instrumentation', { skip: shouldSkip }, function (t) {
       function (t) {
         helper.runInTransaction(agent, function (tx) {
           const addHeader = sandbox.stub()
-          const request = { path: '/foo-2', addHeader }
+          const request = { origin: HOST, path: '/foo-2', addHeader }
           channels.create.publish({ request })
           const segment = tx.trace.add('another segment')
           segment.start()
           shim.setActiveSegment(segment)
-          const request2 = { path: '/path', addHeader }
+          const request2 = { path: '/path', addHeader, origin: HOST }
           channels.create.publish({ request: request2 })
           t.same(
             request[symbols.parentSegment],
@@ -174,13 +175,13 @@ tap.test('undici instrumentation', { skip: shouldSkip }, function (t) {
 
     t.test('should get diff parent segment across diff async execution contexts', function (t) {
       helper.runInTransaction(agent, function (tx) {
-        const request = { path: '/request1', addHeader: sandbox.stub() }
+        const request = { origin: HOST, path: '/request1', addHeader: sandbox.stub() }
         channels.create.publish({ request })
         Promise.resolve('test').then(() => {
           const segment = tx.trace.add('another segment')
           segment.start()
           shim.setActiveSegment(segment)
-          const request2 = { path: '/request2', addHeader: sandbox.stub() }
+          const request2 = { path: '/request2', addHeader: sandbox.stub(), origin: HOST }
           channels.create.publish({ request: request2 })
           t.not(request[symbols.parentSegment], request2[symbols.parentSegment])
           tx.end()
@@ -195,12 +196,12 @@ tap.test('undici instrumentation', { skip: shouldSkip }, function (t) {
         agent.config.feature_flag.undici_async_tracking = false
         helper.runInTransaction(agent, function (tx) {
           const addHeader = sandbox.stub()
-          const request = { path: '/foo-2', addHeader }
+          const request = { path: '/foo-2', addHeader, origin: HOST }
           channels.create.publish({ request })
           const segment = tx.trace.add('another segment')
           segment.start()
           shim.setActiveSegment(segment)
-          const request2 = { path: '/path', addHeader }
+          const request2 = { path: '/path', addHeader, origin: HOST }
           channels.create.publish({ request: request2 })
           t.not(
             request[symbols.parentSegment].name,
@@ -212,37 +213,16 @@ tap.test('undici instrumentation', { skip: shouldSkip }, function (t) {
         })
       }
     )
-  })
-
-  t.test('client:sendHeaders', function (t) {
-    t.autoend()
-    t.afterEach(afterEach)
-
-    t.test('should not create segment is parent segment is opaque', function (t) {
-      helper.runInTransaction(agent, function (tx) {
-        const before = shim.getSegment()
-        const request = {}
-        request[symbols.parentSegment] = { opaque: true }
-        channels.sendHeaders.publish({ request })
-        const after = shim.getSegment()
-        t.same(before, after)
-        tx.end()
-        t.end()
-      })
-    })
 
     t.test('should name segment with appropriate attrs based on request.path', function (t) {
       helper.runInTransaction(agent, function (tx) {
-        const socket = {
-          remotePort: 443,
-          servername: 'unittesting.com'
-        }
         const request = {
           method: 'POST',
+          origin: 'https://unittesting.com',
           path: '/foo?a=b&c=d'
         }
         request[symbols.parentSegment] = shim.createSegment('parent')
-        channels.sendHeaders.publish({ request, socket })
+        channels.create.publish({ request })
         t.ok(request[symbols.segment])
         const segment = shim.getSegment()
         t.equal(segment.name, 'External/unittesting.com/foo')
@@ -256,36 +236,15 @@ tap.test('undici instrumentation', { skip: shouldSkip }, function (t) {
       })
     })
 
-    t.test('should not create segment if transaction is not active', function (t) {
-      helper.runInTransaction(agent, function (tx) {
-        const socket = {
-          remotePort: 443,
-          servername: 'unittesting.com'
-        }
-        const request = {
-          method: 'POST',
-          path: '/foo?a=b&c=d'
-        }
-        request[symbols.parentSegment] = shim.createSegment('parent')
-        tx.end()
-        channels.sendHeaders.publish({ request, socket })
-        t.notOk(request[symbols.segment])
-        t.end()
-      })
-    })
-
     t.test('should use proper url if http', function (t) {
       helper.runInTransaction(agent, function (tx) {
-        const socket = {
-          remotePort: 80,
-          _host: 'unittesting.com'
-        }
         const request = {
           method: 'POST',
+          origin: 'http://unittesting.com',
           path: '/http'
         }
         request[symbols.parentSegment] = shim.createSegment('parent')
-        channels.sendHeaders.publish({ request, socket })
+        channels.create.publish({ request })
         const segment = shim.getSegment()
         t.equal(segment.name, 'External/unittesting.com/http')
         const attrs = segment.attributes.get(DESTINATIONS.SPAN_EVENT)
@@ -297,16 +256,13 @@ tap.test('undici instrumentation', { skip: shouldSkip }, function (t) {
 
     t.test('should use port in https if not 443', function (t) {
       helper.runInTransaction(agent, function (tx) {
-        const socket = {
-          remotePort: 9999,
-          servername: 'unittesting.com'
-        }
         const request = {
+          origin: 'https://unittesting.com:9999',
           method: 'POST',
           path: '/port-https'
         }
         request[symbols.parentSegment] = shim.createSegment('parent')
-        channels.sendHeaders.publish({ request, socket })
+        channels.create.publish({ request })
         const segment = shim.getSegment()
         t.equal(segment.name, 'External/unittesting.com:9999/port-https')
         const attrs = segment.attributes.get(DESTINATIONS.SPAN_EVENT)
@@ -318,16 +274,13 @@ tap.test('undici instrumentation', { skip: shouldSkip }, function (t) {
 
     t.test('should use port in http if not 80', function (t) {
       helper.runInTransaction(agent, function (tx) {
-        const socket = {
-          remotePort: 8080,
-          _host: 'unittesting.com'
-        }
         const request = {
+          origin: 'http://unittesting.com:8080',
           method: 'POST',
           path: '/port-http'
         }
         request[symbols.parentSegment] = shim.createSegment('parent')
-        channels.sendHeaders.publish({ request, socket })
+        channels.create.publish({ request })
         const segment = shim.getSegment()
         t.equal(segment.name, 'External/unittesting.com:8080/port-http')
         const attrs = segment.attributes.get(DESTINATIONS.SPAN_EVENT)

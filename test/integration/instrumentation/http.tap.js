@@ -139,6 +139,15 @@ test('built-in http instrumentation should handle internal & external requests',
         'should associate outbound HTTP requests with the inbound transaction'
       )
 
+      stats = transaction.metrics.getOrCreateMetric('External/localhost:8321/all')
+      t.equal(stats.callCount, 1, 'should record unscoped outbound HTTP requests in metrics')
+
+      stats = transaction.metrics.getOrCreateMetric('External/allWeb')
+      t.equal(stats.callCount, 1, 'should record unscoped outbound HTTP requests in metrics')
+
+      stats = transaction.metrics.getOrCreateMetric('External/all')
+      t.equal(stats.callCount, 1, 'should record unscoped outbound HTTP requests in metrics')
+
       const attributes = transaction.trace.attributes.get(DESTINATIONS.TRANS_TRACE)
 
       HTTP_ATTRS.forEach(function (key) {
