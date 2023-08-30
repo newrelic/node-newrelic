@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "Mon Aug 28 2023 13:40:33 GMT-0400 (Eastern Daylight Time)",
+  "lastUpdated": "Wed Aug 30 2023 11:23:58 GMT-0400 (Eastern Daylight Time)",
   "projectName": "New Relic Node Agent",
   "projectUrl": "https://github.com/newrelic/node-newrelic",
   "includeOptDeps": true,
@@ -276,15 +276,15 @@
       "licenseTextSource": "file",
       "publisher": "New Relic"
     },
-    "@newrelic/test-utilities@8.0.0": {
+    "@newrelic/test-utilities@8.1.0": {
       "name": "@newrelic/test-utilities",
-      "version": "8.0.0",
-      "range": "^8.0.0",
+      "version": "8.1.0",
+      "range": "^8.1.0",
       "licenses": "Apache-2.0",
       "repoUrl": "https://github.com/newrelic/node-test-utilities",
-      "versionedRepoUrl": "https://github.com/newrelic/node-test-utilities/tree/v8.0.0",
+      "versionedRepoUrl": "https://github.com/newrelic/node-test-utilities/tree/v8.1.0",
       "licenseFile": "node_modules/@newrelic/test-utilities/LICENSE",
-      "licenseUrl": "https://github.com/newrelic/node-test-utilities/blob/v8.0.0/LICENSE",
+      "licenseUrl": "https://github.com/newrelic/node-test-utilities/blob/v8.1.0/LICENSE",
       "licenseTextSource": "file",
       "publisher": "New Relic Node.js agent team",
       "email": "nodejs@newrelic.com"
