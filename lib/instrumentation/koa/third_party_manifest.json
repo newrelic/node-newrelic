@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "Wed Aug 09 2023 15:33:07 GMT-0400 (Eastern Daylight Time)",
+  "lastUpdated": "Wed Aug 30 2023 11:31:47 GMT-0400 (Eastern Daylight Time)",
   "projectName": "New Relic Koa Instrumentation",
   "projectUrl": "https://github.com/newrelic/node-newrelic-koa",
   "includeOptDeps": false,
@@ -44,15 +44,15 @@
       "licenseTextSource": "file",
       "publisher": "New Relic"
     },
-    "@newrelic/test-utilities@7.3.1": {
+    "@newrelic/test-utilities@8.1.0": {
       "name": "@newrelic/test-utilities",
-      "version": "7.3.1",
-      "range": "^7.3.1",
+      "version": "8.1.0",
+      "range": "^8.1.0",
       "licenses": "Apache-2.0",
       "repoUrl": "https://github.com/newrelic/node-test-utilities",
-      "versionedRepoUrl": "https://github.com/newrelic/node-test-utilities/tree/v7.3.1",
+      "versionedRepoUrl": "https://github.com/newrelic/node-test-utilities/tree/v8.1.0",
       "licenseFile": "node_modules/@newrelic/test-utilities/LICENSE",
-      "licenseUrl": "https://github.com/newrelic/node-test-utilities/blob/v7.3.1/LICENSE",
+      "licenseUrl": "https://github.com/newrelic/node-test-utilities/blob/v8.1.0/LICENSE",
       "licenseTextSource": "file",
       "publisher": "New Relic Node.js agent team",
       "email": "nodejs@newrelic.com"
@@ -206,15 +206,15 @@
       "email": "liran.tal@gmail.com",
       "url": "https://github.com/lirantal"
     },
-    "newrelic@10.6.2": {
+    "newrelic@11.0.0": {
       "name": "newrelic",
-      "version": "10.6.2",
-      "range": "^10.6.2",
+      "version": "11.0.0",
+      "range": "^11.0.0",
       "licenses": "Apache-2.0",
       "repoUrl": "https://github.com/newrelic/node-newrelic",
-      "versionedRepoUrl": "https://github.com/newrelic/node-newrelic/tree/v10.6.2",
+      "versionedRepoUrl": "https://github.com/newrelic/node-newrelic/tree/v11.0.0",
       "licenseFile": "node_modules/newrelic/LICENSE",
-      "licenseUrl": "https://github.com/newrelic/node-newrelic/blob/v10.6.2/LICENSE",
+      "licenseUrl": "https://github.com/newrelic/node-newrelic/blob/v11.0.0/LICENSE",
       "licenseTextSource": "file",
       "publisher": "New Relic Node.js agent team",
       "email": "nodejs@newrelic.com"
@@ -231,16 +231,17 @@
       "licenseTextSource": "file",
       "publisher": "James Long"
     },
-    "semver@5.7.1": {
+    "semver@5.7.2": {
       "name": "semver",
-      "version": "5.7.1",
-      "range": "^5.6.0",
+      "version": "5.7.2",
+      "range": "^5.7.1",
       "licenses": "ISC",
       "repoUrl": "https://github.com/npm/node-semver",
-      "versionedRepoUrl": "https://github.com/npm/node-semver/tree/v5.7.1",
-      "licenseFile": "node_modules/tap/node_modules/semver/LICENSE",
-      "licenseUrl": "https://github.com/npm/node-semver/blob/v5.7.1/LICENSE",
-      "licenseTextSource": "file"
+      "versionedRepoUrl": "https://github.com/npm/node-semver/tree/v5.7.2",
+      "licenseFile": "node_modules/semver/LICENSE",
+      "licenseUrl": "https://github.com/npm/node-semver/blob/v5.7.2/LICENSE",
+      "licenseTextSource": "file",
+      "publisher": "GitHub Inc."
     },
     "sinon@15.0.3": {
       "name": "sinon",
