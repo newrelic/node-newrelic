@@ -1,20 +1,20 @@
 {
-  "lastUpdated": "Wed Aug 16 2023 10:51:34 GMT-0400 (Eastern Daylight Time)",
+  "lastUpdated": "Wed Aug 30 2023 11:24:19 GMT-0400 (Eastern Daylight Time)",
   "projectName": "New Relic AWS-SDK Instrumentation",
   "projectUrl": "https://github.com/newrelic/node-newrelic-aws-sdk",
   "includeOptDeps": false,
   "includeDev": true,
   "dependencies": {},
   "devDependencies": {
-    "@aws-sdk/client-s3@3.342.0": {
+    "@aws-sdk/client-s3@3.400.0": {
       "name": "@aws-sdk/client-s3",
-      "version": "3.342.0",
+      "version": "3.400.0",
       "range": "^3.342.0",
       "licenses": "Apache-2.0",
       "repoUrl": "https://github.com/aws/aws-sdk-js-v3",
-      "versionedRepoUrl": "https://github.com/aws/aws-sdk-js-v3/tree/v3.342.0",
+      "versionedRepoUrl": "https://github.com/aws/aws-sdk-js-v3/tree/v3.400.0",
       "licenseFile": "node_modules/@aws-sdk/client-s3/LICENSE",
-      "licenseUrl": "https://github.com/aws/aws-sdk-js-v3/blob/v3.342.0/LICENSE",
+      "licenseUrl": "https://github.com/aws/aws-sdk-js-v3/blob/v3.400.0/LICENSE",
       "licenseTextSource": "file",
       "publisher": "AWS SDK for JavaScript Team",
       "url": "https://aws.amazon.com/javascript/"
@@ -57,15 +57,15 @@
       "licenseTextSource": "file",
       "publisher": "New Relic"
     },
-    "@newrelic/test-utilities@7.3.0": {
+    "@newrelic/test-utilities@8.1.0": {
       "name": "@newrelic/test-utilities",
-      "version": "7.3.0",
-      "range": "^7.3.0",
+      "version": "8.1.0",
+      "range": "^8.1.0",
       "licenses": "Apache-2.0",
       "repoUrl": "https://github.com/newrelic/node-test-utilities",
-      "versionedRepoUrl": "https://github.com/newrelic/node-test-utilities/tree/v7.3.0",
+      "versionedRepoUrl": "https://github.com/newrelic/node-test-utilities/tree/v8.1.0",
       "licenseFile": "node_modules/@newrelic/test-utilities/LICENSE",
-      "licenseUrl": "https://github.com/newrelic/node-test-utilities/blob/v7.3.0/LICENSE",
+      "licenseUrl": "https://github.com/newrelic/node-test-utilities/blob/v8.1.0/LICENSE",
       "licenseTextSource": "file",
       "publisher": "New Relic Node.js agent team",
       "email": "nodejs@newrelic.com"
@@ -197,15 +197,15 @@
       "email": "liran.tal@gmail.com",
       "url": "https://github.com/lirantal"
     },
-    "newrelic@10.6.2": {
+    "newrelic@11.0.0": {
       "name": "newrelic",
-      "version": "10.6.2",
-      "range": "^10.6.2",
+      "version": "11.0.0",
+      "range": "^11.0.0",
       "licenses": "Apache-2.0",
       "repoUrl": "https://github.com/newrelic/node-newrelic",
-      "versionedRepoUrl": "https://github.com/newrelic/node-newrelic/tree/v10.6.2",
+      "versionedRepoUrl": "https://github.com/newrelic/node-newrelic/tree/v11.0.0",
       "licenseFile": "node_modules/newrelic/LICENSE",
-      "licenseUrl": "https://github.com/newrelic/node-newrelic/blob/v10.6.2/LICENSE",
+      "licenseUrl": "https://github.com/newrelic/node-newrelic/blob/v11.0.0/LICENSE",
       "licenseTextSource": "file",
       "publisher": "New Relic Node.js agent team",
       "email": "nodejs@newrelic.com"
