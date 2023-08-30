@@ -493,7 +493,7 @@ This product includes source derived from [@newrelic/newrelic-oss-cli](https://g
 
 ### @newrelic/test-utilities
 
-This product includes source derived from [@newrelic/test-utilities](https://github.com/newrelic/node-test-utilities) ([v7.3.1](https://github.com/newrelic/node-test-utilities/tree/v7.3.1)), distributed under the [Apache-2.0 License](https://github.com/newrelic/node-test-utilities/blob/v7.3.1/LICENSE):
+This product includes source derived from [@newrelic/test-utilities](https://github.com/newrelic/node-test-utilities) ([v8.1.0](https://github.com/newrelic/node-test-utilities/tree/v8.1.0)), distributed under the [Apache-2.0 License](https://github.com/newrelic/node-test-utilities/blob/v8.1.0/LICENSE):
 
 ```
                                  Apache License
@@ -1189,7 +1189,7 @@ This product includes source derived from [lockfile-lint](https://github.com/lir
 
 ### newrelic
 
-This product includes source derived from [newrelic](https://github.com/newrelic/node-newrelic) ([v10.6.2](https://github.com/newrelic/node-newrelic/tree/v10.6.2)), distributed under the [Apache-2.0 License](https://github.com/newrelic/node-newrelic/blob/v10.6.2/LICENSE):
+This product includes source derived from [newrelic](https://github.com/newrelic/node-newrelic) ([v11.0.0](https://github.com/newrelic/node-newrelic/tree/v11.0.0)), distributed under the [Apache-2.0 License](https://github.com/newrelic/node-newrelic/blob/v11.0.0/LICENSE):
 
 ```
                                  Apache License
@@ -7375,7 +7375,7 @@ By: Ika
 
 ### semver
 
-This product includes source derived from [semver](https://github.com/npm/node-semver) ([v5.7.1](https://github.com/npm/node-semver/tree/v5.7.1)), distributed under the [ISC License](https://github.com/npm/node-semver/blob/v5.7.1/LICENSE):
+This product includes source derived from [semver](https://github.com/npm/node-semver) ([v5.7.2](https://github.com/npm/node-semver/tree/v5.7.2)), distributed under the [ISC License](https://github.com/npm/node-semver/blob/v5.7.2/LICENSE):
 
 ```
 The ISC License
