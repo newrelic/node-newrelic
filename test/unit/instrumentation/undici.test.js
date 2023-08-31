@@ -284,6 +284,24 @@ tap.test('undici instrumentation', function (t) {
         t.end()
       })
     })
+
+    t.test('should log warning if it fails to create external segment', function (t) {
+      helper.runInTransaction(agent, function (tx) {
+        const request = {
+          origin: 'blah',
+          method: 'POST',
+          path: '/port-http'
+        }
+        request[symbols.parentSegment] = shim.createSegment('parent')
+        channels.create.publish({ request })
+        t.not(shim.getSegment())
+        t.equal(loggerMock.warn.callCount, 1, 'logs warning')
+        t.equal(loggerMock.warn.args[0][0].message, 'Invalid URL')
+        t.equal(loggerMock.warn.args[0][1], 'Unable to create external segment')
+        tx.end()
+        t.end()
+      })
+    })
   })
 
   t.test('request:headers', function (t) {
