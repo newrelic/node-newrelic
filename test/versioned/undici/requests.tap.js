@@ -49,11 +49,7 @@ tap.test('Undici request tests', (t) => {
   }
 
   t.before(() => {
-    agent = helper.instrumentMockedAgent({
-      feature_flag: {
-        undici_instrumentation: true
-      }
-    })
+    agent = helper.instrumentMockedAgent()
 
     undici = require('undici')
     server = createServer()

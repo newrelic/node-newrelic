@@ -38,7 +38,6 @@ tap.test('undici instrumentation', function (t) {
     agent.config.distributed_tracing.enabled = false
     agent.config.cross_application_tracer.enabled = false
     agent.config.feature_flag = {
-      undici_instrumentation: true,
       undici_async_tracking: true
     }
     shim = new TransactionShim(agent, 'undici')
@@ -58,15 +57,6 @@ tap.test('undici instrumentation', function (t) {
     agent.config.feature_flag.undici_async_tracking = true
     helper.unloadAgent(agent)
   }
-
-  t.test('should log warning if feature flag is not enabled', function (t) {
-    agent.config.feature_flag.undici_instrumentation = false
-    undiciInstrumentation(agent)
-    t.same(loggerMock.warn.args[0], [
-      'diagnostics_channel or feature_flag.undici_instrumentation = false. Skipping undici instrumentation.'
-    ])
-    t.end()
-  })
 
   t.test('request:create', function (t) {
     t.autoend()

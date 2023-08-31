@@ -20,12 +20,6 @@ Any prerelease flags can be enabled or disabled in your agent config by adding a
 * Environment Variable: `NEW_RELIC_FEATURE_FLAG_REVERSE_NAMING_RULES`
 * Description: Naming rules are in forward order by default.  
 
-#### undici_instrumentation
-* Enabled by default: `false`
-* Configuration: `{ feature_flag: { undici_instrumentation: true|false }}`
-* Environment Variable: `NEW_RELIC_FEATURE_FLAG_UNDICI_INSTRUMENTATION`
-* Description: Enable experimental instrumentation for the [undici](https://github.com/nodejs/undici) http client. Note that support for undici client is Node.js 16.x minimum, and requires at minimum [v4.7.0+](https://github.com/nodejs/undici/releases/tag/v4.7.0) of the undici client.
-
 #### undici_async_tracking
 * Enabled by default: `true`
 * Configuration: `{ feature_flag: { undici_async_tracking: true|false }}`
