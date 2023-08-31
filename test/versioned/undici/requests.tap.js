@@ -154,6 +154,36 @@ tap.test('Undici request tests', (t) => {
     })
   })
 
+  t.test('should add unscoped metrics for an external request', (t) => {
+    // make sure metric aggregator is empty before asserting metrics
+    agent.metrics.clear()
+    helper.runInTransaction(agent, async (tx) => {
+      const { statusCode } = await undici.request(REQUEST_URL, {
+        path: '/get?a=b&c=d',
+        method: 'GET'
+      })
+      t.equal(statusCode, 200)
+      tx.end()
+
+      const expectedNames = [
+        `External/${HOST}/undici`,
+        `External/${HOST}/all`,
+        'External/allWeb',
+        'External/all'
+      ]
+      expectedNames.forEach((metricName) => {
+        const metric = agent.metrics.getOrCreateMetric(metricName)
+        t.equal(
+          metric.callCount,
+          1,
+          `should record unscoped external metric of ${metricName} for an undici request`
+        )
+      })
+
+      t.end()
+    })
+  })
+
   t.test('concurrent requests', (t) => {
     helper.runInTransaction(agent, async (tx) => {
       const req1 = undici.request(REQUEST_URL, {
@@ -192,8 +222,8 @@ tap.test('Undici request tests', (t) => {
         })
       } catch (err) {
         t.match(err.message, /getaddrinfo.*invalidurl/)
-        const segment = metrics.findSegment(tx.trace.root, 'External/invalidurl/foo')
-        t.notOk(segment)
+        metrics.assertSegments(tx.trace.root, ['External/invalidurl/foo'], { exact: false })
+        t.equal(tx.exceptions.length, 1)
         tx.end()
         t.end()
       }
