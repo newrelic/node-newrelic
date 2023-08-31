@@ -7,7 +7,6 @@
 
 const tap = require('tap')
 const sinon = require('sinon')
-const semver = require('semver')
 const proxyquire = require('proxyquire')
 const helper = require('../../lib/agent_helper')
 const TransactionShim = require('../../../lib/shim/transaction-shim')
@@ -16,11 +15,7 @@ const hashes = require('../../../lib/util/hashes')
 const symbols = require('../../../lib/symbols')
 const HOST = 'https://www.example.com'
 
-// diagnostics_channel only exists in Node 15+
-// but we only support even versions so check before running tests
-const shouldSkip = semver.satisfies(process.version, '<16')
-
-tap.test('undici instrumentation', { skip: shouldSkip }, function (t) {
+tap.test('undici instrumentation', function (t) {
   let agent
   let loggerMock
   let undiciInstrumentation
@@ -162,9 +157,9 @@ tap.test('undici instrumentation', { skip: shouldSkip }, function (t) {
           shim.setActiveSegment(segment)
           const request2 = { path: '/path', addHeader, origin: HOST }
           channels.create.publish({ request: request2 })
-          t.same(
-            request[symbols.parentSegment],
-            request2[symbols.parentSegment],
+          t.equal(
+            request[symbols.parentSegment].id,
+            request2[symbols.parentSegment].id,
             'parent segment should be same'
           )
           tx.end()
@@ -368,7 +363,7 @@ tap.test('undici instrumentation', { skip: shouldSkip }, function (t) {
         }
         channels.send.publish({ request })
         t.equal(segment.timer.state, 3, 'previous active segment timer should be stopped')
-        t.same(parentSegment, shim.getSegment(), 'parentSegment should now the active')
+        t.equal(parentSegment.id, shim.getSegment().id, 'parentSegment should now the active')
         tx.end()
         t.end()
       })
@@ -394,12 +389,13 @@ tap.test('undici instrumentation', { skip: shouldSkip }, function (t) {
           }
           channels.error.publish({ request, error })
           t.equal(segment.timer.state, 3, 'previous active segment timer should be stopped')
-          t.same(parentSegment, shim.getSegment(), 'parentSegment should now the active')
+          t.equal(parentSegment.id, shim.getSegment().id, 'parentSegment should now the active')
           t.same(loggerMock.trace.args[0], [
             error,
             'Captured outbound error on behalf of the user.'
           ])
-          t.same(tx.agent.errors.add.args[0], [tx, error])
+          t.equal(tx.agent.errors.add.args[0][0].id, tx.id)
+          t.equal(tx.agent.errors.add.args[0][1].message, error.message)
           tx.agent.errors.add.restore()
           tx.end()
           t.end()
