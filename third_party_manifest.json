@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "Wed Aug 30 2023 11:23:58 GMT-0400 (Eastern Daylight Time)",
+  "lastUpdated": "Wed Sep 06 2023 11:19:04 GMT-0400 (Eastern Daylight Time)",
   "projectName": "New Relic Node Agent",
   "projectUrl": "https://github.com/newrelic/node-newrelic",
   "includeOptDeps": true,
@@ -336,15 +336,15 @@
       "licenseTextSource": "file",
       "publisher": "Caolan McMahon"
     },
-    "c8@7.14.0": {
+    "c8@8.0.1": {
       "name": "c8",
-      "version": "7.14.0",
-      "range": "^7.14.0",
+      "version": "8.0.1",
+      "range": "^8.0.1",
       "licenses": "ISC",
       "repoUrl": "https://github.com/bcoe/c8",
-      "versionedRepoUrl": "https://github.com/bcoe/c8/tree/v7.14.0",
+      "versionedRepoUrl": "https://github.com/bcoe/c8/tree/v8.0.1",
       "licenseFile": "node_modules/c8/LICENSE.txt",
-      "licenseUrl": "https://github.com/bcoe/c8/blob/v7.14.0/LICENSE.txt",
+      "licenseUrl": "https://github.com/bcoe/c8/blob/v8.0.1/LICENSE.txt",
       "licenseTextSource": "file",
       "publisher": "Ben Coe",
       "email": "ben@npmjs.com"
