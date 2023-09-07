@@ -18,6 +18,7 @@ test('loader metrics', (t) => {
   let metricsMock
   let MockAgent
   let shimmerMock
+  let loggerMock
   let ApiMock
   let sandbox
 
@@ -26,6 +27,7 @@ test('loader metrics', (t) => {
     metricsMock = createMetricsMock(sandbox)
     MockAgent = createMockAgent(sandbox, metricsMock)
     shimmerMock = createShimmerMock(sandbox)
+    loggerMock = createLoggerMock(sandbox)
 
     ApiMock = function (agent) {
       this.agent = agent
@@ -58,6 +60,7 @@ test('loader metrics', (t) => {
     const agent = proxyquire('../../index', {
       './lib/agent': MockAgent,
       './lib/shimmer': shimmerMock,
+      './lib/logger': loggerMock,
       './api': ApiMock
     })
 
@@ -65,6 +68,11 @@ test('loader metrics', (t) => {
 
     t.equal(metricCall.args.length, 1)
     t.equal(metricCall.args[0][0], 'Supportability/Features/CJS/Require')
+    t.match(
+      loggerMock.debug.args[4][1],
+      /node \-r some-cool-lib.*index\.test\.js/,
+      'should log how the agent is called'
+    )
     t.end()
   })
 
@@ -91,6 +99,7 @@ test('loader metrics', (t) => {
     const agent = proxyquire('../../index', {
       './lib/agent': MockAgent,
       './lib/shimmer': shimmerMock,
+      './lib/logger': loggerMock,
       './api': ApiMock
     })
 
@@ -99,6 +108,11 @@ test('loader metrics', (t) => {
     t.equal(metricCall.args.length, 2)
     t.equal(metricCall.args[0][0], 'Supportability/Features/ESM/Loader')
     t.equal(metricCall.args[1][0], 'Supportability/Features/CJS/Preload')
+    t.match(
+      loggerMock.debug.args[4][1],
+      /node \-\-loader newrelic\/esm-loader.mjs \-r newrelic.*index\.test\.js/,
+      'should log how the agent is called'
+    )
     t.end()
   })
 
