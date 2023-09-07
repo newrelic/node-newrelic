@@ -2,6 +2,18 @@
   "repository": "newrelic/node-newrelic",
   "entries": [
     {
+      "version": "11.1.0",
+      "changes": {
+        "security": [],
+        "bugfixes": [],
+        "features": [
+          "Added instrumentation for fetch.",
+          "Removed undici feature flag. This will now instrument undici by default.",
+          "Updated undici instrumentation to create segment on request create instead of after connection and opening socket to more accurately record time it takes to make an undici request."
+        ]
+      }
+    },
+    {
       "version": "11.0.0",
       "changes": {
         "security": [],
