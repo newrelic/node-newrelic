@@ -8,7 +8,7 @@
         "bugfixes": [],
         "features": [
           "Added instrumentation for fetch.",
-          "Removed undici feature flag. This will now instrument undici by default",
+          "Removed undici feature flag. This will now instrument undici by default.",
           "Updated undici instrumentation to create segment on request create instead of after connection and opening socket to more accurately record time it takes to make an undici request."
         ]
       }
