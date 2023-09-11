@@ -12,6 +12,8 @@ const { truncate } = require('../../../lib/util/application-logging')
 const helper = require('../../lib/agent_helper')
 const { LOGGING } = require('../../../lib/metrics/names')
 const { originalMsgAssertion } = require('./helpers')
+const semver = require('semver')
+const { version: pinoVersion } = require('pino/package')
 
 tap.Test.prototype.addAssert(
   'validateNrLogLine',
@@ -141,15 +143,25 @@ tap.test('Pino instrumentation', (t) => {
     })
 
     t.test('should not crash nor enqueue log line when invalid json', async (t) => {
+      // When you log an object that will be the first arg to the logger level
+      // the 2nd arg is the message
       const message = { 'pino "unit test': 'prop' }
+      const testMsg = 'this is a test'
       const level = 'info'
       const localStream = split((data) => data)
       const logger = pino({ level: 'debug' }, localStream)
-      logger[level](message)
+      logger[level](message, testMsg)
       await once(localStream, 'data')
       t.equal(agent.logs.getEvents().length, 1, 'should have 1 logs in aggregator')
-      t.notOk(agent.logs.getEvents()[0](), 'should not return a log line if invalid')
-      t.notOk(agent.logs._toPayloadSync(), 'should not send any logs')
+      // We added this test when this was broken but has since been fixed in 8.15.1
+      // See: https://github.com/pinojs/pino/pull/1779/files
+      if (semver.gte(pinoVersion, '8.15.1')) {
+        const formattedLine = agent.logs.getEvents()[0]()
+        t.validateNrLogLine({ line: formattedLine, message: testMsg, level, config })
+      } else {
+        t.notOk(agent.logs.getEvents()[0](), 'should not return a log line if invalid')
+        t.notOk(agent.logs._toPayloadSync(), 'should not send any logs')
+      }
       t.end()
     })
 
