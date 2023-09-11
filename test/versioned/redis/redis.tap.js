@@ -74,7 +74,7 @@ test('Redis instrumentation', { timeout: 20000 }, function (t) {
           }
 
           t.ok(agent.getTransaction(), 'transaction should still still be visible')
-          t.equal(value, 'arglbargle', 'memcached client should still work')
+          t.equal(value, 'arglbargle', 'redis client should still work')
 
           const trace = transaction.trace
           t.ok(trace, 'trace should exist')
