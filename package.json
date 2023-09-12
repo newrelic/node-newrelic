@@ -160,6 +160,7 @@
     "test": "npm run integration && npm run unit",
     "third-party-updates": "oss third-party manifest --includeOptDeps && oss third-party notices --includeOptDeps && git add THIRD_PARTY_NOTICES.md third_party_manifest.json",
     "unit": "rm -f newrelic_agent.log && time c8 -o ./coverage/unit tap --test-regex='(\\/|^test\\/unit\\/.*\\.test\\.js)$' --timeout=180 --no-coverage --reporter classic",
+    "unit:elastic": "rm -f newrelic_agent.log && time c8 -o ./coverage/unit tap --test-regex='(\\/|^test\\/unit\\/instrumentation\\/elastic\\.test\\.js)$' --timeout=180 --no-coverage --reporter classic",
     "unit:scripts": "time c8 -o ./coverage/scripts-unit tap --test-regex='(\\/|^bin\\/test\\/.*\\.test\\.js)$' --timeout=180 --no-coverage --reporter classic",
     "update-cross-agent-tests": "./bin/update-cats.sh",
     "versioned-tests": "./bin/run-versioned-tests.sh",
