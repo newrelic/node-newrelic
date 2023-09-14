@@ -50,7 +50,6 @@ else
   -e "discovery.type=single-node" \
   -e "xpack.security.enabled=false" \
   docker.elastic.co/elasticsearch/elasticsearch:8.8.2;
-  # docker cp es01:/usr/share/elasticsearch/config/certs/http_ca.crt .
 fi
 
 if docker ps -a | grep -q "nr_node_postgres"; then
