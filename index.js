@@ -20,28 +20,35 @@ const NAMES = require('./lib/metrics/names')
 const isESMSupported = psemver.satisfies('>=16.2.0')
 
 const pkgJSON = require('./package.json')
-if (!isMainThread) {
+if (isMainThread) {
+  logger.info(
+    'Using New Relic for Node.js. Agent version: %s; Node version: %s.',
+    pkgJSON.version,
+    process.version
+  )
+
+  if (require.cache.__NR_cache) {
+    logger.warn(
+      'Attempting to load a second copy of newrelic from %s, using cache instead',
+      __dirname
+    )
+    if (require.cache.__NR_cache.agent) {
+      require.cache.__NR_cache.agent.recordSupportability('Agent/DoubleLoad')
+    }
+    module.exports = require.cache.__NR_cache
+  } else {
+    initialize()
+  }
+} else {
   logger.warn('Using New Relic for Node.js in worker_threads is not supported. Not starting!')
-  return
+  initApi({ apiPath: './stub_api' })
 }
 
-logger.info(
-  'Using New Relic for Node.js. Agent version: %s; Node version: %s.',
-  pkgJSON.version,
-  process.version
-)
+function initApi({ agent, apiPath }) {
+  const API = require(apiPath)
 
-if (require.cache.__NR_cache) {
-  logger.warn(
-    'Attempting to load a second copy of newrelic from %s, using cache instead',
-    __dirname
-  )
-  if (require.cache.__NR_cache.agent) {
-    require.cache.__NR_cache.agent.recordSupportability('Agent/DoubleLoad')
-  }
-  module.exports = require.cache.__NR_cache
-} else {
-  initialize()
+  const api = new API(agent)
+  require.cache.__NR_cache = module.exports = api
 }
 
 function initialize() {
@@ -103,15 +110,7 @@ function initialize() {
     /* eslint-enable no-console */
   }
 
-  let API = null
-  if (agent) {
-    API = require('./api')
-  } else {
-    API = require('./stub_api')
-  }
-
-  const api = new API(agent)
-  require.cache.__NR_cache = module.exports = api
+  const api = agent ? initApi({ agent, apiPath: './api' }) : initApi({ apiPath: './stub_api' })
 
   // If we loaded an agent, record a startup time for the agent.
   // NOTE: Metrics are recorded in seconds, so divide the value by 1000.
