@@ -155,6 +155,7 @@ test('Elasticsearch instrumentation', { timeout: 20000 }, (t) => {
       const trace = transaction.trace
       t.ok(trace, 'trace should exist')
       t.ok(trace.root, 'root element should exist')
+      debugger
 
       // TODO: Failing here: currently 2 children: PUT and GET
       t.equal(trace.root.children.length, 1, 'there should be only one child of the root')
