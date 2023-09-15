@@ -316,11 +316,15 @@ test('Elasticsearch instrumentation', { timeout: 20000 }, (t) => {
   t.test('should follow selected database', async function (t) {
     t.plan(4)
     let transaction = null
-    await db.createIndex(DB_INDEX_2)
+    const hasIndex2 = await db.indexExists(DB_INDEX_2)
+    if (!hasIndex2) {
+      await db.createIndex(DB_INDEX_2)
+    }
+
     await helper.runInTransaction(agent, async function (tx) {
       transaction = tx
       try {
-        await db.createDocument(DB_INDEX_2, 'select:test:key', {
+        await db.createDocument(DB_INDEX, 'select:test:key', {
           title: 'foo',
           body: 'bar'
         })
@@ -352,28 +356,17 @@ test('Elasticsearch instrumentation', { timeout: 20000 }, (t) => {
 
     function verify() {
       const createSegment1 = transaction?.trace?.root?.children?.[0]
-      // const selectSegment = createSegment1?.children?.[0]?.children?.[0]
       const createSegment2 = transaction?.trace?.root?.children?.[1]
       t.equal(
         createSegment1.name,
-        'Datastore/statement/ElasticSearch/test2/create',
-        'should register the first create'
+        'Datastore/statement/ElasticSearch/test/create',
+        'should register the first create on database "test"'
       )
-      // t.equal(
-      //   createSegment1.getAttributes().database_name,
-      //   String(DB_INDEX),
-      //   'should have the starting database id as attribute for the first set'
-      // )
       t.equal(
         createSegment2.name,
         'Datastore/statement/ElasticSearch/test2/create',
-        'should register the second create'
+        'should register the second create on database "test2'
       )
-      // t.equal(
-      //   createSegment2.getAttributes().database_name,
-      //   String(DB_INDEX_2),
-      //   'should have the selected database id as attribute for the second create'
-      // )
     }
   })
 })
