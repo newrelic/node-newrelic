@@ -9,6 +9,7 @@ const tap = require('tap')
 const test = tap.test
 const helper = require('../../lib/agent_helper')
 const params = require('../../lib/params')
+const urltils = require('../../../lib/util/urltils')
 
 const dbTools = (client) => {
   const createIndex = async (index) => {
@@ -77,13 +78,10 @@ test('Elasticsearch instrumentation', { timeout: 20000 }, (t) => {
   t.beforeEach(async () => {
     agent = helper.instrumentMockedAgent()
 
-    // Elastic isn't using machine name.
-    // METRIC_HOST_NAME = urltils.isLocalhost(params.elastic_host)
-    //   ? agent.config.getHostnameSafe()
-    //   : params.elastic_host
-    METRIC_HOST_NAME = params.elastic_host
-    // metric host id kind of wonky
-    HOST_ID = 'http://' + METRIC_HOST_NAME + ':' + params.elastic_port + '//' + params.elastic_port
+    METRIC_HOST_NAME = urltils.isLocalhost(params.elastic_host)
+      ? agent.config.getHostnameSafe()
+      : params.elastic_host
+    HOST_ID = METRIC_HOST_NAME + '/' + params.elastic_port
 
     // need to capture attributes
     agent.config.attributes.enabled = true
@@ -161,11 +159,7 @@ test('Elasticsearch instrumentation', { timeout: 20000 }, (t) => {
         'Datastore/statement/ElasticSearch/test/create',
         'should register the create'
       )
-      t.equal(
-        createAttributes.host,
-        'http://localhost:9200/',
-        'should have the host as a attribute'
-      )
+      t.equal(createAttributes.host, METRIC_HOST_NAME, 'should have the host as a attribute')
       t.equal(createSegment.children.length, 0, 'create does not have children')
 
       const value = await client.get({ id: 'testkey', index: DB_INDEX })
@@ -269,7 +263,7 @@ test('Elasticsearch instrumentation', { timeout: 20000 }, (t) => {
       const createSegment = trace.root.children[0]
       const attributes = createSegment.getAttributes()
 
-      t.equal(attributes.host, 'http://localhost:9200/', 'should have host as attribute')
+      t.equal(attributes.host, METRIC_HOST_NAME, 'should have host as attribute')
       t.equal(
         attributes.port_path_or_id,
         String(params.elastic_port),
@@ -353,14 +347,13 @@ test('Elasticsearch instrumentation', { timeout: 20000 }, (t) => {
 
       t.ok(agent.getTransaction(), 'should not lose transaction state')
       transaction.end()
-      verify(transaction)
+      verify()
     })
 
-    function verify(transaction) {
+    function verify() {
       const createSegment1 = transaction?.trace?.root?.children?.[0]
       // const selectSegment = createSegment1?.children?.[0]?.children?.[0]
       const createSegment2 = transaction?.trace?.root?.children?.[1]
-      console.log(`createSegment2`, createSegment2)
       t.equal(
         createSegment1.name,
         'Datastore/statement/ElasticSearch/test2/create',
