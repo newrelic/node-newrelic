@@ -13,10 +13,10 @@ const MIDDLEWARE = Symbol('nrMiddleware')
 
 const middlewareByClient = {
   Client: middlewareConfig,
-  SNSClient: [...middlewareConfig, snsMiddlewareConfig],
-  SQSClient: [...middlewareConfig, sqsMiddlewareConfig],
-  DynamoDBClient: [...middlewareConfig, dynamoMiddlewareConfig],
-  DynamoDBDocumentClient: [...middlewareConfig, dynamoMiddlewareConfig]
+  SNS: [...middlewareConfig, snsMiddlewareConfig],
+  SQS: [...middlewareConfig, sqsMiddlewareConfig],
+  DynamoDB: [...middlewareConfig, dynamoMiddlewareConfig],
+  DynamoDBDocument: [...middlewareConfig, dynamoMiddlewareConfig]
 }
 
 module.exports = function instrumentSmithyClient(shim, smithyClientExport) {
@@ -29,7 +29,11 @@ module.exports = function instrumentSmithyClient(shim, smithyClientExport) {
 
 function wrapSend(shim, send) {
   return function wrappedSend() {
-    const client = this?.constructor?.name
+    // most clients we want to instrument aside from smithy-client
+    // extend themselves to provide different names(i.e. - SNS and SNSClient)
+    // we want to handle these the same by registering the sns middleware
+    const client = this.constructor.name.replace(/Client$/, '')
+    shim.logger.trace('Sending with client %s', client)
     const config = this.config
     const middlewares = middlewareByClient[client] || middlewareByClient.Client
 
@@ -41,6 +45,7 @@ function wrapSend(shim, send) {
     if (!this[MIDDLEWARE]) {
       this[MIDDLEWARE] = true
       for (const mw of middlewares) {
+        shim.logger.trace('Registering middleware %s for %s', mw.config.name, client)
         const localShim = shim.makeSpecializedShim(mw.type, client)
         // copy the shim id from parent so if you check if something is wrapped
         // it will be across all instrumentation
