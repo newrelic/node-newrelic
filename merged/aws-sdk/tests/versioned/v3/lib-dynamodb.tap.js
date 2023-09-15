@@ -16,6 +16,7 @@ tap.test('DynamoDB', (t) => {
   let helper = null
   let ddbCommands = null
   let DynamoDBDocumentClient = null
+  let DynamoDBDocument = null
 
   let tableName = null
   let tests = null
@@ -33,6 +34,7 @@ tap.test('DynamoDB', (t) => {
     helper = utils.TestAgent.makeInstrumented()
     common.registerInstrumentation(helper)
     const lib = require('@aws-sdk/lib-dynamodb')
+    DynamoDBDocument = lib.DynamoDBDocument
     DynamoDBDocumentClient = lib.DynamoDBDocumentClient
     const { DynamoDBClient } = require('@aws-sdk/client-dynamodb')
     ddbCommands = {
@@ -123,6 +125,27 @@ tap.test('DynamoDB', (t) => {
 
   t.test('client from commands', (t) => {
     const docClientFrom = DynamoDBDocumentClient.from(client)
+    helper.runInTransaction(async function (tx) {
+      for (let i = 0; i < tests.length; i++) {
+        const cfg = tests[i]
+        t.comment(`Testing ${cfg.operation}`)
+
+        try {
+          await docClientFrom.send(new ddbCommands[cfg.command](cfg.params))
+        } catch (err) {
+          t.error(err)
+        }
+      }
+
+      tx.end()
+
+      const args = [t, tests, tx]
+      setImmediate(finish, ...args)
+    })
+  })
+
+  t.test('DynamoDBDocument client from commands', (t) => {
+    const docClientFrom = DynamoDBDocument.from(client)
     helper.runInTransaction(async function (tx) {
       for (let i = 0; i < tests.length; i++) {
         const cfg = tests[i]
