@@ -126,6 +126,11 @@ test('Elasticsearch instrumentation', { timeout: 20000 }, (t) => {
       t.match(attrs.host, METRIC_HOST_NAME)
       transaction.end()
       // can we inspect recorded query?
+      agent.getTransaction().end()
+      t.ok(agent.queries.samples.size > 0, 'there should be a query sample')
+      for (const query of agent.queries.samples.values()) {
+        t.ok(query.total > 0, 'the samples should have positive duration')
+      }
     })
   })
   t.test('should record search with request body', async function (t) {
@@ -150,6 +155,10 @@ test('Elasticsearch instrumentation', { timeout: 20000 }, (t) => {
       t.match(attrs.host, METRIC_HOST_NAME)
       transaction.end()
       // can we inspect recorded query?
+      t.ok(agent.queries.samples.size > 0, 'there should be a query sample')
+      for (const query of agent.queries.samples.values()) {
+        t.ok(query.total > 0, 'the samples should have positive duration')
+      }
     })
   })
 
@@ -172,6 +181,10 @@ test('Elasticsearch instrumentation', { timeout: 20000 }, (t) => {
       t.match(attrs.host, METRIC_HOST_NAME)
       transaction.end()
       // can we inspect recorded query?
+      t.ok(agent.queries.samples.size > 0, 'there should be a query sample')
+      for (const query of agent.queries.samples.values()) {
+        t.ok(query.total > 0, 'the samples should have positive duration')
+      }
     })
   })
   t.test('should record msearch', async function (t) {
@@ -210,6 +223,10 @@ test('Elasticsearch instrumentation', { timeout: 20000 }, (t) => {
       t.match(attrs.product, 'ElasticSearch')
       t.match(attrs.host, METRIC_HOST_NAME)
       transaction.end()
+      t.ok(agent.queries.samples.size > 0, 'there should be a query sample')
+      for (const query of agent.queries.samples.values()) {
+        t.ok(query.total > 0, 'the samples should have positive duration')
+      }
     })
   })
 
