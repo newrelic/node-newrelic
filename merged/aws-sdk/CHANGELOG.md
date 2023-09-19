@@ -1,3 +1,7 @@
+### v7.0.1 (2023-09-19)
+
+* Updated v3 smithy-client instrumentation to properly handle all types of clients for DynamoDB, SQS, and SNS.
+
 ### v7.0.0 (2023-08-28)
 
 * **BREAKING**: Removed support for Node 14.
