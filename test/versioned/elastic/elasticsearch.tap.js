@@ -47,13 +47,6 @@ test('Elasticsearch instrumentation', { timeout: 20000 }, (t) => {
     if (!db) {
       db = dbTools(client)
     }
-
-    // set up index and test documents
-    const hasIndex = await db.indexExists(DB_INDEX)
-    if (!hasIndex) {
-      await db.createIndex(DB_INDEX)
-      await db.createIndex(DB_INDEX_2)
-    }
   })
 
   t.afterEach(async () => {
@@ -63,6 +56,27 @@ test('Elasticsearch instrumentation', { timeout: 20000 }, (t) => {
   t.teardown(async () => {
     await client.indices.delete({ index: DB_INDEX })
     await client.indices.delete({ index: DB_INDEX_2 })
+  })
+
+  t.test('should be able to record creating an index', async (t) => {
+    await helper.runInTransaction(agent, async function transactionInScope() {
+      t.ok(agent.getTransaction(), 'transaction should be visible')
+      try {
+        await db.createIndex(DB_INDEX)
+        await db.createIndex(DB_INDEX_2)
+      } catch (e) {
+        t.notOk(e, 'indices should be created without error')
+      }
+      const transaction = agent.getTransaction()
+      const trace = transaction.trace
+      t.ok(trace?.root?.children?.[0], 'trace, trace root, and first child should exist')
+      const firstChild = trace.root.children[0]
+      t.equal(
+        firstChild.name,
+        'Datastore/statement/ElasticSearch/test/index.create',
+        'should record index creation'
+      )
+    })
   })
 
   t.test('should record bulk operations', async (t) => {
@@ -101,13 +115,17 @@ test('Elasticsearch instrumentation', { timeout: 20000 }, (t) => {
       const firstChild = trace.root.children[0]
       t.equal(
         firstChild.name,
-        'Datastore/statement/ElasticSearch/other/_bulk',
+        'Datastore/statement/ElasticSearch/any/_bulk.create',
         'should record bulk operation'
       )
     })
   })
 
   t.test('should record search with query string', async function (t) {
+    // enable slow queries
+    agent.config.transaction_tracer.explain_threshold = 0
+    agent.config.transaction_tracer.record_sql = 'raw'
+    agent.config.slow_sql.enabled = true
     await helper.runInTransaction(agent, async function transactionInScope() {
       const search = await client.search({ index: DB_INDEX_2, q: 'sixth' })
       t.ok(search, 'search should return a result')
@@ -118,15 +136,14 @@ test('Elasticsearch instrumentation', { timeout: 20000 }, (t) => {
       const firstChild = trace.root.children[0]
       t.match(
         firstChild.name,
-        'Datastore/statement/ElasticSearch/test2/GET',
-        'querystring search should be recorded as a GET'
+        'Datastore/statement/ElasticSearch/test2/_search',
+        'querystring search should be recorded as a _search'
       )
       const attrs = firstChild.getAttributes()
       t.match(attrs.product, 'ElasticSearch')
       t.match(attrs.host, METRIC_HOST_NAME)
       transaction.end()
       // can we inspect recorded query?
-      agent.getTransaction().end()
       t.ok(agent.queries.samples.size > 0, 'there should be a query sample')
       for (const query of agent.queries.samples.values()) {
         t.ok(query.total > 0, 'the samples should have positive duration')
@@ -134,6 +151,10 @@ test('Elasticsearch instrumentation', { timeout: 20000 }, (t) => {
     })
   })
   t.test('should record search with request body', async function (t) {
+    // enable slow queries
+    agent.config.transaction_tracer.explain_threshold = 0
+    agent.config.transaction_tracer.record_sql = 'raw'
+    agent.config.slow_sql.enabled = true
     await helper.runInTransaction(agent, async function transactionInScope() {
       const search = await client.search({
         index: DB_INDEX,
@@ -147,8 +168,8 @@ test('Elasticsearch instrumentation', { timeout: 20000 }, (t) => {
       const firstChild = trace.root.children[0]
       t.match(
         firstChild.name,
-        'Datastore/statement/ElasticSearch/test/POST',
-        'index is specified, so child name shows the HTTP method'
+        'Datastore/statement/ElasticSearch/test/_search',
+        'search index is specified, so name shows it'
       )
       const attrs = firstChild.getAttributes()
       t.match(attrs.product, 'ElasticSearch')
@@ -163,6 +184,10 @@ test('Elasticsearch instrumentation', { timeout: 20000 }, (t) => {
   })
 
   t.test('should record search across indices', async function (t) {
+    // enable slow queries
+    agent.config.transaction_tracer.explain_threshold = 0
+    agent.config.transaction_tracer.record_sql = 'raw'
+    agent.config.slow_sql.enabled = true
     await helper.runInTransaction(agent, async function transactionInScope() {
       const search = await client.search({ query: { match: { body: 'document' } } })
       t.ok(search, 'search should return a result')
@@ -173,8 +198,8 @@ test('Elasticsearch instrumentation', { timeout: 20000 }, (t) => {
       const firstChild = trace.root.children[0]
       t.match(
         firstChild.name,
-        'Datastore/statement/ElasticSearch/other/_search',
-        'child name should show search'
+        'Datastore/statement/ElasticSearch/any/_search',
+        'child name on all indices should show search'
       )
       const attrs = firstChild.getAttributes()
       t.match(attrs.product, 'ElasticSearch')
@@ -188,6 +213,9 @@ test('Elasticsearch instrumentation', { timeout: 20000 }, (t) => {
     })
   })
   t.test('should record msearch', async function (t) {
+    agent.config.transaction_tracer.explain_threshold = 0
+    agent.config.transaction_tracer.record_sql = 'raw'
+    agent.config.slow_sql.enabled = true
     await helper.runInTransaction(agent, async function transactionInScope() {
       const search = await client.msearch({
         searches: [
@@ -216,7 +244,7 @@ test('Elasticsearch instrumentation', { timeout: 20000 }, (t) => {
       const firstChild = trace.root.children[0]
       t.match(
         firstChild.name,
-        'Datastore/statement/ElasticSearch/other/_msearch',
+        'Datastore/statement/ElasticSearch/any/_msearch',
         'child name should show msearch'
       )
       const attrs = firstChild.getAttributes()
@@ -256,14 +284,14 @@ test('Elasticsearch instrumentation', { timeout: 20000 }, (t) => {
         'Datastore/allWeb': 4,
         'Datastore/ElasticSearch/all': 4,
         'Datastore/ElasticSearch/allWeb': 4,
-        'Datastore/operation/ElasticSearch/PUT': 1,
-        'Datastore/operation/ElasticSearch/GET': 1,
-        'Datastore/operation/ElasticSearch/HEAD': 1,
+        'Datastore/operation/ElasticSearch/_doc.create': 1,
+        'Datastore/operation/ElasticSearch/_doc.search': 1,
+        'Datastore/operation/ElasticSearch/_doc.exists': 1,
         'Datastore/operation/ElasticSearch/_search': 1,
-        'Datastore/statement/ElasticSearch/test/PUT': 1,
-        'Datastore/statement/ElasticSearch/test/GET': 1,
-        'Datastore/statement/ElasticSearch/test/HEAD': 1,
-        'Datastore/statement/ElasticSearch/other/_search': 1
+        'Datastore/statement/ElasticSearch/test/_doc.create': 1,
+        'Datastore/statement/ElasticSearch/test/_doc.search': 1,
+        'Datastore/statement/ElasticSearch/test/_doc.exists': 1,
+        'Datastore/statement/ElasticSearch/any/_search': 1
       }
       expected['Datastore/instance/ElasticSearch/' + HOST_ID] = 4
       checkMetrics(t, unscoped, expected)
@@ -318,6 +346,8 @@ function checkMetrics(t, metrics, expected) {
         expected[name],
         'should have ' + expected[name] + ' calls for ' + name
       )
+    } else {
+      console.log(Object.keys(metrics))
     }
   })
 }
