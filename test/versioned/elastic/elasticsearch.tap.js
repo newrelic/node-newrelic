@@ -281,7 +281,7 @@ test('Elasticsearch instrumentation', { timeout: 20000 }, (t) => {
   })
 
   t.test('should create correct metrics', async function (t) {
-    t.plan(26)
+    t.plan(28)
     await helper.runInTransaction(agent, async function transactionInScope() {
       const transaction = agent.getTransaction()
 
@@ -298,14 +298,15 @@ test('Elasticsearch instrumentation', { timeout: 20000 }, (t) => {
       await client.exists({ id: 'testkey2', index: DB_INDEX })
       await client.get({ id: 'testkey2', index: DB_INDEX })
       await client.search({ query: { match: { body: 'document' } } })
+      await client.delete({ id: 'testkey2', index: DB_INDEX })
       transaction.end()
 
       const unscoped = transaction.metrics.unscoped
       const expected = {
-        'Datastore/all': 4,
-        'Datastore/allWeb': 4,
-        'Datastore/ElasticSearch/all': 4,
-        'Datastore/ElasticSearch/allWeb': 4,
+        'Datastore/all': 5,
+        'Datastore/allWeb': 5,
+        'Datastore/ElasticSearch/all': 5,
+        'Datastore/ElasticSearch/allWeb': 5,
         'Datastore/operation/ElasticSearch/doc.create': 1,
         'Datastore/operation/ElasticSearch/doc.search': 1,
         'Datastore/operation/ElasticSearch/doc.exists': 1,
@@ -313,9 +314,10 @@ test('Elasticsearch instrumentation', { timeout: 20000 }, (t) => {
         'Datastore/statement/ElasticSearch/test/doc.create': 1,
         'Datastore/statement/ElasticSearch/test/doc.search': 1,
         'Datastore/statement/ElasticSearch/test/doc.exists': 1,
+        'Datastore/statement/ElasticSearch/test/doc.delete': 1,
         'Datastore/statement/ElasticSearch/any/search': 1
       }
-      expected['Datastore/instance/ElasticSearch/' + HOST_ID] = 4
+      expected['Datastore/instance/ElasticSearch/' + HOST_ID] = 5
       checkMetrics(t, unscoped, expected)
     })
   })
