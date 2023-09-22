@@ -127,6 +127,7 @@ test('Elasticsearch instrumentation', { timeout: 20000 }, (t) => {
     agent.config.transaction_tracer.record_sql = 'raw'
     agent.config.slow_sql.enabled = true
     await helper.runInTransaction(agent, async function transactionInScope() {
+      const expectedQuery = { q: 'sixth' }
       const search = await client.search({ index: DB_INDEX_2, q: 'sixth' })
       t.ok(search, 'search should return a result')
       const transaction = agent.getTransaction()
@@ -147,6 +148,11 @@ test('Elasticsearch instrumentation', { timeout: 20000 }, (t) => {
       t.ok(agent.queries.samples.size > 0, 'there should be a query sample')
       for (const query of agent.queries.samples.values()) {
         t.ok(query.total > 0, 'the samples should have positive duration')
+        t.match(
+          query.trace.query,
+          JSON.stringify(expectedQuery),
+          'expected query string should have been used'
+        )
       }
     })
   })
@@ -156,10 +162,8 @@ test('Elasticsearch instrumentation', { timeout: 20000 }, (t) => {
     agent.config.transaction_tracer.record_sql = 'raw'
     agent.config.slow_sql.enabled = true
     await helper.runInTransaction(agent, async function transactionInScope() {
-      const search = await client.search({
-        index: DB_INDEX,
-        query: { match: { body: 'document' } }
-      })
+      const expectedQuery = { match: { body: 'document' } }
+      const search = await client.search({ index: DB_INDEX, query: expectedQuery })
       t.ok(search, 'search should return a result')
       const transaction = agent.getTransaction()
       t.ok(transaction, 'transaction should still be visible after search')
@@ -179,6 +183,11 @@ test('Elasticsearch instrumentation', { timeout: 20000 }, (t) => {
       t.ok(agent.queries.samples.size > 0, 'there should be a query sample')
       for (const query of agent.queries.samples.values()) {
         t.ok(query.total > 0, 'the samples should have positive duration')
+        t.match(
+          query.trace.query,
+          JSON.stringify({ query: expectedQuery }),
+          'expected query body should have been recorded'
+        )
       }
     })
   })
@@ -189,7 +198,8 @@ test('Elasticsearch instrumentation', { timeout: 20000 }, (t) => {
     agent.config.transaction_tracer.record_sql = 'raw'
     agent.config.slow_sql.enabled = true
     await helper.runInTransaction(agent, async function transactionInScope() {
-      const search = await client.search({ query: { match: { body: 'document' } } })
+      const expectedQuery = { match: { body: 'document' } }
+      const search = await client.search({ query: expectedQuery })
       t.ok(search, 'search should return a result')
       const transaction = agent.getTransaction()
       t.ok(transaction, 'transaction should still be visible after search')
@@ -209,6 +219,11 @@ test('Elasticsearch instrumentation', { timeout: 20000 }, (t) => {
       t.ok(agent.queries.samples.size > 0, 'there should be a query sample')
       for (const query of agent.queries.samples.values()) {
         t.ok(query.total > 0, 'the samples should have positive duration')
+        t.match(
+          query.trace.query,
+          JSON.stringify({ query: expectedQuery }),
+          'expected query body should have been recorded'
+        )
       }
     })
   })
@@ -217,13 +232,15 @@ test('Elasticsearch instrumentation', { timeout: 20000 }, (t) => {
     agent.config.transaction_tracer.record_sql = 'raw'
     agent.config.slow_sql.enabled = true
     await helper.runInTransaction(agent, async function transactionInScope() {
+      const expectedQuery = [
+        {}, // cross-index searches have can have an empty metadata section
+        { query: { match: { body: 'sixth' } } },
+        {},
+        { query: { match: { body: 'bulk' } } }
+      ]
+
       const search = await client.msearch({
-        searches: [
-          {}, // cross-index searches have can have an empty metadata section
-          { query: { match: { body: 'sixth' } } },
-          {},
-          { query: { match: { body: 'bulk' } } }
-        ]
+        searches: expectedQuery
       })
       t.ok(search?.responses, 'msearch should return results')
       t.equal(search?.responses?.length, 2, 'there should be two responses--one per search')
@@ -254,6 +271,11 @@ test('Elasticsearch instrumentation', { timeout: 20000 }, (t) => {
       t.ok(agent.queries.samples.size > 0, 'there should be a query sample')
       for (const query of agent.queries.samples.values()) {
         t.ok(query.total > 0, 'the samples should have positive duration')
+        t.match(
+          query.trace.query,
+          JSON.stringify(expectedQuery),
+          'expected msearch query should have been recorded'
+        )
       }
     })
   })
@@ -346,8 +368,6 @@ function checkMetrics(t, metrics, expected) {
         expected[name],
         'should have ' + expected[name] + ' calls for ' + name
       )
-    } else {
-      console.log(Object.keys(metrics))
     }
   })
 }
