@@ -115,7 +115,7 @@ test('Elasticsearch instrumentation', { timeout: 20000 }, (t) => {
       const firstChild = trace.root.children[0]
       t.equal(
         firstChild.name,
-        'Datastore/statement/ElasticSearch/any/_bulk.create',
+        'Datastore/statement/ElasticSearch/any/bulk.create',
         'should record bulk operation'
       )
     })
@@ -137,8 +137,8 @@ test('Elasticsearch instrumentation', { timeout: 20000 }, (t) => {
       const firstChild = trace.root.children[0]
       t.match(
         firstChild.name,
-        'Datastore/statement/ElasticSearch/test2/_search',
-        'querystring search should be recorded as a _search'
+        'Datastore/statement/ElasticSearch/test2/search',
+        'querystring search should be recorded as a search'
       )
       const attrs = firstChild.getAttributes()
       t.match(attrs.product, 'ElasticSearch')
@@ -172,7 +172,7 @@ test('Elasticsearch instrumentation', { timeout: 20000 }, (t) => {
       const firstChild = trace.root.children[0]
       t.match(
         firstChild.name,
-        'Datastore/statement/ElasticSearch/test/_search',
+        'Datastore/statement/ElasticSearch/test/search',
         'search index is specified, so name shows it'
       )
       const attrs = firstChild.getAttributes()
@@ -208,7 +208,7 @@ test('Elasticsearch instrumentation', { timeout: 20000 }, (t) => {
       const firstChild = trace.root.children[0]
       t.match(
         firstChild.name,
-        'Datastore/statement/ElasticSearch/any/_search',
+        'Datastore/statement/ElasticSearch/any/search',
         'child name on all indices should show search'
       )
       const attrs = firstChild.getAttributes()
@@ -261,7 +261,7 @@ test('Elasticsearch instrumentation', { timeout: 20000 }, (t) => {
       const firstChild = trace.root.children[0]
       t.match(
         firstChild.name,
-        'Datastore/statement/ElasticSearch/any/_msearch',
+        'Datastore/statement/ElasticSearch/any/msearch',
         'child name should show msearch'
       )
       const attrs = firstChild.getAttributes()
@@ -306,14 +306,14 @@ test('Elasticsearch instrumentation', { timeout: 20000 }, (t) => {
         'Datastore/allWeb': 4,
         'Datastore/ElasticSearch/all': 4,
         'Datastore/ElasticSearch/allWeb': 4,
-        'Datastore/operation/ElasticSearch/_doc.create': 1,
-        'Datastore/operation/ElasticSearch/_doc.search': 1,
-        'Datastore/operation/ElasticSearch/_doc.exists': 1,
-        'Datastore/operation/ElasticSearch/_search': 1,
-        'Datastore/statement/ElasticSearch/test/_doc.create': 1,
-        'Datastore/statement/ElasticSearch/test/_doc.search': 1,
-        'Datastore/statement/ElasticSearch/test/_doc.exists': 1,
-        'Datastore/statement/ElasticSearch/any/_search': 1
+        'Datastore/operation/ElasticSearch/doc.create': 1,
+        'Datastore/operation/ElasticSearch/doc.search': 1,
+        'Datastore/operation/ElasticSearch/doc.exists': 1,
+        'Datastore/operation/ElasticSearch/search': 1,
+        'Datastore/statement/ElasticSearch/test/doc.create': 1,
+        'Datastore/statement/ElasticSearch/test/doc.search': 1,
+        'Datastore/statement/ElasticSearch/test/doc.exists': 1,
+        'Datastore/statement/ElasticSearch/any/search': 1
       }
       expected['Datastore/instance/ElasticSearch/' + HOST_ID] = 4
       checkMetrics(t, unscoped, expected)
