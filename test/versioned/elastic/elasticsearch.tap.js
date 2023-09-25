@@ -68,8 +68,8 @@ test('Elasticsearch instrumentation', { timeout: 20000 }, (t) => {
       const firstChild = trace.root.children[0]
       t.equal(
         firstChild.name,
-        'Datastore/statement/ElasticSearch/test/index.create',
-        'should record index creation'
+        'Datastore/statement/ElasticSearch/test/index.update',
+        'should record index PUT as update'
       )
     })
   })
@@ -306,12 +306,12 @@ test('Elasticsearch instrumentation', { timeout: 20000 }, (t) => {
         'Datastore/allWeb': 5,
         'Datastore/ElasticSearch/all': 5,
         'Datastore/ElasticSearch/allWeb': 5,
-        'Datastore/operation/ElasticSearch/doc.create': 1,
-        'Datastore/operation/ElasticSearch/doc.search': 1,
+        'Datastore/operation/ElasticSearch/doc.update': 1,
+        'Datastore/operation/ElasticSearch/doc.get': 1,
         'Datastore/operation/ElasticSearch/doc.exists': 1,
         'Datastore/operation/ElasticSearch/search': 1,
-        'Datastore/statement/ElasticSearch/test/doc.create': 1,
-        'Datastore/statement/ElasticSearch/test/doc.search': 1,
+        'Datastore/statement/ElasticSearch/test/doc.update': 1,
+        'Datastore/statement/ElasticSearch/test/doc.get': 1,
         'Datastore/statement/ElasticSearch/test/doc.exists': 1,
         'Datastore/statement/ElasticSearch/test/doc.delete': 1,
         'Datastore/statement/ElasticSearch/any/search': 1
