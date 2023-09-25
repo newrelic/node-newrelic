@@ -91,7 +91,7 @@ code, the source code can be found at [https://github.com/newrelic/node-newrelic
 
 ### @grpc/grpc-js
 
-This product includes source derived from [@grpc/grpc-js](https://github.com/grpc/grpc-node/tree/master/packages/grpc-js) ([v1.8.14](https://github.com/grpc/grpc-node/tree/master/packages/grpc-js/tree/v1.8.14)), distributed under the [Apache-2.0 License](https://github.com/grpc/grpc-node/tree/master/packages/grpc-js/blob/v1.8.14/LICENSE):
+This product includes source derived from [@grpc/grpc-js](https://github.com/grpc/grpc-node/tree/master/packages/grpc-js) ([v1.9.2](https://github.com/grpc/grpc-node/tree/master/packages/grpc-js/tree/v1.9.2)), distributed under the [Apache-2.0 License](https://github.com/grpc/grpc-node/tree/master/packages/grpc-js/blob/v1.9.2/LICENSE):
 
 ```
                                  Apache License
@@ -300,7 +300,7 @@ This product includes source derived from [@grpc/grpc-js](https://github.com/grp
 
 ### @grpc/proto-loader
 
-This product includes source derived from [@grpc/proto-loader](https://github.com/grpc/grpc-node) ([v0.7.7](https://github.com/grpc/grpc-node/tree/v0.7.7)), distributed under the [Apache-2.0 License](https://github.com/grpc/grpc-node/blob/v0.7.7/LICENSE):
+This product includes source derived from [@grpc/proto-loader](https://github.com/grpc/grpc-node) ([v0.7.9](https://github.com/grpc/grpc-node/tree/v0.7.9)), distributed under the [Apache-2.0 License](https://github.com/grpc/grpc-node/blob/v0.7.9/LICENSE):
 
 ```
                                  Apache License
@@ -926,7 +926,7 @@ Apache License
 
 ### @newrelic/security-agent
 
-This product includes source derived from [@newrelic/security-agent](https://github.com/newrelic/csec-node-agent) ([v0.2.1](https://github.com/newrelic/csec-node-agent/tree/v0.2.1)), distributed under the [New Relic Pre-Release License](https://github.com/newrelic/csec-node-agent/blob/v0.2.1/LICENSE):
+This product includes source derived from [@newrelic/security-agent](https://github.com/newrelic/csec-node-agent) ([v0.3.0](https://github.com/newrelic/csec-node-agent/tree/v0.3.0)), distributed under the [New Relic Pre-Release License](https://github.com/newrelic/csec-node-agent/blob/v0.3.0/LICENSE):
 
 ```
 ## New Relic Pre-Release Software Notice
@@ -1246,7 +1246,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 ### https-proxy-agent
 
-This product includes source derived from [https-proxy-agent](https://github.com/TooTallNate/proxy-agents) ([v7.0.1](https://github.com/TooTallNate/proxy-agents/tree/v7.0.1)), distributed under the [MIT License](https://github.com/TooTallNate/proxy-agents/blob/v7.0.1/README.md):
+This product includes source derived from [https-proxy-agent](https://github.com/TooTallNate/proxy-agents) ([v7.0.2](https://github.com/TooTallNate/proxy-agents/tree/v7.0.2)), distributed under the [MIT License](https://github.com/TooTallNate/proxy-agents/blob/v7.0.2/README.md):
 
 ```
 MIT License
@@ -2131,7 +2131,7 @@ THE SOFTWARE.
 
 ### @slack/bolt
 
-This product includes source derived from [@slack/bolt](https://github.com/slackapi/bolt) ([v3.13.1](https://github.com/slackapi/bolt/tree/v3.13.1)), distributed under the [MIT License](https://github.com/slackapi/bolt/blob/v3.13.1/LICENSE):
+This product includes source derived from [@slack/bolt](https://github.com/slackapi/bolt) ([v3.13.3](https://github.com/slackapi/bolt/tree/v3.13.3)), distributed under the [MIT License](https://github.com/slackapi/bolt/blob/v3.13.3/LICENSE):
 
 ```
 The MIT License (MIT)
@@ -2240,7 +2240,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ### chai
 
-This product includes source derived from [chai](https://github.com/chaijs/chai) ([v4.3.7](https://github.com/chaijs/chai/tree/v4.3.7)), distributed under the [MIT License](https://github.com/chaijs/chai/blob/v4.3.7/LICENSE):
+This product includes source derived from [chai](https://github.com/chaijs/chai) ([v4.3.8](https://github.com/chaijs/chai/tree/v4.3.8)), distributed under the [MIT License](https://github.com/chaijs/chai/blob/v4.3.8/LICENSE):
 
 ```
 MIT License
@@ -2269,7 +2269,7 @@ SOFTWARE.
 
 ### clean-jsdoc-theme
 
-This product includes source derived from [clean-jsdoc-theme](https://github.com/ankitskvmdam/clean-jsdoc-theme) ([v4.2.7](https://github.com/ankitskvmdam/clean-jsdoc-theme/tree/v4.2.7)), distributed under the [MIT License](https://github.com/ankitskvmdam/clean-jsdoc-theme/blob/v4.2.7/LICENSE):
+This product includes source derived from [clean-jsdoc-theme](https://github.com/ankitskvmdam/clean-jsdoc-theme) ([v4.2.10](https://github.com/ankitskvmdam/clean-jsdoc-theme/tree/v4.2.10)), distributed under the [MIT License](https://github.com/ankitskvmdam/clean-jsdoc-theme/blob/v4.2.10/LICENSE):
 
 ```
 MIT License
@@ -2409,7 +2409,7 @@ SOFTWARE.
 
 ### eslint-config-prettier
 
-This product includes source derived from [eslint-config-prettier](https://github.com/prettier/eslint-config-prettier) ([v8.8.0](https://github.com/prettier/eslint-config-prettier/tree/v8.8.0)), distributed under the [MIT License](https://github.com/prettier/eslint-config-prettier/blob/v8.8.0/LICENSE):
+This product includes source derived from [eslint-config-prettier](https://github.com/prettier/eslint-config-prettier) ([v8.10.0](https://github.com/prettier/eslint-config-prettier/tree/v8.10.0)), distributed under the [MIT License](https://github.com/prettier/eslint-config-prettier/blob/v8.10.0/LICENSE):
 
 ```
 The MIT License (MIT)
@@ -2748,7 +2748,7 @@ Library.
 
 ### eslint
 
-This product includes source derived from [eslint](https://github.com/eslint/eslint) ([v8.40.0](https://github.com/eslint/eslint/tree/v8.40.0)), distributed under the [MIT License](https://github.com/eslint/eslint/blob/v8.40.0/LICENSE):
+This product includes source derived from [eslint](https://github.com/eslint/eslint) ([v8.48.0](https://github.com/eslint/eslint/tree/v8.48.0)), distributed under the [MIT License](https://github.com/eslint/eslint/blob/v8.48.0/LICENSE):
 
 ```
 Copyright OpenJS Foundation and other contributors, <www.openjsf.org>
@@ -3050,7 +3050,7 @@ SOFTWARE.
 
 ### lockfile-lint
 
-This product includes source derived from [lockfile-lint](https://github.com/lirantal/lockfile-lint) ([v4.10.1](https://github.com/lirantal/lockfile-lint/tree/v4.10.1)), distributed under the [Apache-2.0 License](https://github.com/lirantal/lockfile-lint/blob/v4.10.1/LICENSE):
+This product includes source derived from [lockfile-lint](https://github.com/lirantal/lockfile-lint) ([v4.12.1](https://github.com/lirantal/lockfile-lint/tree/v4.12.1)), distributed under the [Apache-2.0 License](https://github.com/lirantal/lockfile-lint/blob/v4.12.1/LICENSE):
 
 ```
 
@@ -9440,7 +9440,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ### tap
 
-This product includes source derived from [tap](https://github.com/tapjs/node-tap) ([v16.3.4](https://github.com/tapjs/node-tap/tree/v16.3.4)), distributed under the [ISC License](https://github.com/tapjs/node-tap/blob/v16.3.4/LICENSE):
+This product includes source derived from [tap](https://github.com/tapjs/node-tap) ([v16.3.8](https://github.com/tapjs/node-tap/tree/v16.3.8)), distributed under the [ISC License](https://github.com/tapjs/node-tap/blob/v16.3.8/LICENSE):
 
 ```
 The ISC License
@@ -9525,7 +9525,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 ### @contrast/fn-inspect
 
-This product includes source derived from [@contrast/fn-inspect](https://github.com/Contrast-Security-Inc/node-fn-inspect) ([v3.3.1](https://github.com/Contrast-Security-Inc/node-fn-inspect/tree/v3.3.1)), distributed under the [MIT License](https://github.com/Contrast-Security-Inc/node-fn-inspect/blob/v3.3.1/LICENSE):
+This product includes source derived from [@contrast/fn-inspect](https://github.com/Contrast-Security-Inc/node-fn-inspect) ([v3.4.0](https://github.com/Contrast-Security-Inc/node-fn-inspect/tree/v3.4.0)), distributed under the [MIT License](https://github.com/Contrast-Security-Inc/node-fn-inspect/blob/v3.4.0/LICENSE):
 
 ```
 Copyright 2022 Contrast Security, Inc
