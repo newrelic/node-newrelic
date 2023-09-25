@@ -10,7 +10,6 @@ const test = tap.test
 const helper = require('../../lib/agent_helper')
 const params = require('../../lib/params')
 const urltils = require('../../../lib/util/urltils')
-const dbTools = require('./dbtools')
 
 test('Elasticsearch instrumentation', { timeout: 20000 }, (t) => {
   t.autoend()
@@ -22,7 +21,6 @@ test('Elasticsearch instrumentation', { timeout: 20000 }, (t) => {
 
   let agent
   let client
-  let db
 
   t.beforeEach(async () => {
     agent = helper.instrumentMockedAgent()
@@ -44,9 +42,6 @@ test('Elasticsearch instrumentation', { timeout: 20000 }, (t) => {
       },
       Connection: HttpConnection
     })
-    if (!db) {
-      db = dbTools(client)
-    }
   })
 
   t.afterEach(async () => {
@@ -62,8 +57,8 @@ test('Elasticsearch instrumentation', { timeout: 20000 }, (t) => {
     await helper.runInTransaction(agent, async function transactionInScope() {
       t.ok(agent.getTransaction(), 'transaction should be visible')
       try {
-        await db.createIndex(DB_INDEX)
-        await db.createIndex(DB_INDEX_2)
+        await client.indices.create({ index: DB_INDEX })
+        await client.indices.create({ index: DB_INDEX_2 })
       } catch (e) {
         t.notOk(e, 'indices should be created without error')
       }
@@ -286,9 +281,13 @@ test('Elasticsearch instrumentation', { timeout: 20000 }, (t) => {
       const transaction = agent.getTransaction()
 
       try {
-        await db.createDocument(DB_INDEX, 'testkey2', {
-          title: 'second document',
-          body: 'body of the second document'
+        await client.index({
+          index: DB_INDEX,
+          id: 'testkey2',
+          document: {
+            title: 'second document',
+            body: 'body of the second document'
+          }
         })
       } catch (e) {
         t.notOk(e, 'Create document should not error')
@@ -333,9 +332,13 @@ test('Elasticsearch instrumentation', { timeout: 20000 }, (t) => {
       const transaction = agent.getTransaction()
 
       try {
-        await db.createDocument(DB_INDEX, 'testkey3', {
-          title: 'third document title',
-          body: 'body of the third document'
+        await client.index({
+          index: DB_INDEX,
+          id: 'testkey3',
+          document: {
+            title: 'third document title',
+            body: 'body of the third document'
+          }
         })
       } catch (e) {
         t.notOk(e, 'Create document should not error')
