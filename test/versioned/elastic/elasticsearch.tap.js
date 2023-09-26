@@ -54,56 +54,44 @@ test('Elasticsearch instrumentation', { timeout: 20000 }, (t) => {
   })
 
   t.test('should be able to record creating an index', async (t) => {
-    await helper.runInTransaction(agent, async function transactionInScope() {
-      t.ok(agent.getTransaction(), 'transaction should be visible')
-      try {
-        await client.indices.create({ index: DB_INDEX })
-        await client.indices.create({ index: DB_INDEX_2 })
-      } catch (e) {
-        t.notOk(e, 'indices should be created without error')
-      }
-      const transaction = agent.getTransaction()
+    await helper.runInTransaction(agent, async function transactionInScope(transaction) {
+      t.ok(transaction, 'transaction should be visible')
+      await client.indices.create({ index: DB_INDEX })
+      await client.indices.create({ index: DB_INDEX_2 })
       const trace = transaction.trace
       t.ok(trace?.root?.children?.[0], 'trace, trace root, and first child should exist')
       const firstChild = trace.root.children[0]
       t.equal(
         firstChild.name,
-        'Datastore/statement/ElasticSearch/test/index.update',
-        'should record index PUT as update'
+        'Datastore/statement/ElasticSearch/test/index.create',
+        'should record index PUT as create'
       )
     })
   })
 
   t.test('should record bulk operations', async (t) => {
-    await helper.runInTransaction(agent, async function transactionInScope() {
-      t.ok(agent.getTransaction(), 'transaction should be visible')
-
-      try {
-        await client.bulk({
-          refresh: true,
-          operations: [
-            { index: { _index: DB_INDEX } },
-            { title: 'First Bulk Doc', body: 'Content of first bulk document' },
-            { index: { _index: DB_INDEX } },
-            { title: 'Second Bulk Doc', body: 'Content of second bulk document.' },
-            { index: { _index: DB_INDEX } },
-            { title: 'Third Bulk Doc', body: 'Content of third bulk document.' },
-            { index: { _index: DB_INDEX } },
-            { title: 'Fourth Bulk Doc', body: 'Content of fourth bulk document.' },
-            { index: { _index: DB_INDEX_2 } },
-            { title: 'Fifth Bulk Doc', body: 'Content of fifth bulk document' },
-            { index: { _index: DB_INDEX_2 } },
-            { title: 'Sixth Bulk Doc', body: 'Content of sixth bulk document.' },
-            { index: { _index: DB_INDEX_2 } },
-            { title: 'Seventh Bulk Doc', body: 'Content of seventh bulk document.' },
-            { index: { _index: DB_INDEX_2 } },
-            { title: 'Eighth Bulk Doc', body: 'Content of eighth bulk document.' }
-          ]
-        })
-      } catch (e) {
-        t.notOk(e, 'Bulk operations should not error')
-      }
-      const transaction = agent.getTransaction()
+    await helper.runInTransaction(agent, async function transactionInScope(transaction) {
+      await client.bulk({
+        refresh: true,
+        operations: [
+          { index: { _index: DB_INDEX } },
+          { title: 'First Bulk Doc', body: 'Content of first bulk document' },
+          { index: { _index: DB_INDEX } },
+          { title: 'Second Bulk Doc', body: 'Content of second bulk document.' },
+          { index: { _index: DB_INDEX } },
+          { title: 'Third Bulk Doc', body: 'Content of third bulk document.' },
+          { index: { _index: DB_INDEX } },
+          { title: 'Fourth Bulk Doc', body: 'Content of fourth bulk document.' },
+          { index: { _index: DB_INDEX_2 } },
+          { title: 'Fifth Bulk Doc', body: 'Content of fifth bulk document' },
+          { index: { _index: DB_INDEX_2 } },
+          { title: 'Sixth Bulk Doc', body: 'Content of sixth bulk document.' },
+          { index: { _index: DB_INDEX_2 } },
+          { title: 'Seventh Bulk Doc', body: 'Content of seventh bulk document.' },
+          { index: { _index: DB_INDEX_2 } },
+          { title: 'Eighth Bulk Doc', body: 'Content of eighth bulk document.' }
+        ]
+      })
       t.ok(transaction, 'transaction should still be visible after bulk create')
       const trace = transaction.trace
       t.ok(trace?.root?.children?.[0], 'trace, trace root, and first child should exist')
@@ -121,11 +109,10 @@ test('Elasticsearch instrumentation', { timeout: 20000 }, (t) => {
     agent.config.transaction_tracer.explain_threshold = 0
     agent.config.transaction_tracer.record_sql = 'raw'
     agent.config.slow_sql.enabled = true
-    await helper.runInTransaction(agent, async function transactionInScope() {
+    await helper.runInTransaction(agent, async function transactionInScope(transaction) {
       const expectedQuery = { q: 'sixth' }
       const search = await client.search({ index: DB_INDEX_2, q: 'sixth' })
       t.ok(search, 'search should return a result')
-      const transaction = agent.getTransaction()
       t.ok(transaction, 'transaction should still be visible after search')
       const trace = transaction.trace
       t.ok(trace?.root?.children?.[0], 'trace, trace root, and first child should exist')
@@ -156,11 +143,10 @@ test('Elasticsearch instrumentation', { timeout: 20000 }, (t) => {
     agent.config.transaction_tracer.explain_threshold = 0
     agent.config.transaction_tracer.record_sql = 'raw'
     agent.config.slow_sql.enabled = true
-    await helper.runInTransaction(agent, async function transactionInScope() {
+    await helper.runInTransaction(agent, async function transactionInScope(transaction) {
       const expectedQuery = { match: { body: 'document' } }
       const search = await client.search({ index: DB_INDEX, query: expectedQuery })
       t.ok(search, 'search should return a result')
-      const transaction = agent.getTransaction()
       t.ok(transaction, 'transaction should still be visible after search')
       const trace = transaction.trace
       t.ok(trace?.root?.children?.[0], 'trace, trace root, and first child should exist')
@@ -192,11 +178,10 @@ test('Elasticsearch instrumentation', { timeout: 20000 }, (t) => {
     agent.config.transaction_tracer.explain_threshold = 0
     agent.config.transaction_tracer.record_sql = 'raw'
     agent.config.slow_sql.enabled = true
-    await helper.runInTransaction(agent, async function transactionInScope() {
+    await helper.runInTransaction(agent, async function transactionInScope(transaction) {
       const expectedQuery = { match: { body: 'document' } }
       const search = await client.search({ query: expectedQuery })
       t.ok(search, 'search should return a result')
-      const transaction = agent.getTransaction()
       t.ok(transaction, 'transaction should still be visible after search')
       const trace = transaction.trace
       t.ok(trace?.root?.children?.[0], 'trace, trace root, and first child should exist')
@@ -226,7 +211,7 @@ test('Elasticsearch instrumentation', { timeout: 20000 }, (t) => {
     agent.config.transaction_tracer.explain_threshold = 0
     agent.config.transaction_tracer.record_sql = 'raw'
     agent.config.slow_sql.enabled = true
-    await helper.runInTransaction(agent, async function transactionInScope() {
+    await helper.runInTransaction(agent, async function transactionInScope(transaction) {
       const expectedQuery = [
         {}, // cross-index searches have can have an empty metadata section
         { query: { match: { body: 'sixth' } } },
@@ -249,7 +234,6 @@ test('Elasticsearch instrumentation', { timeout: 20000 }, (t) => {
         8,
         'second search should return eight results'
       )
-      const transaction = agent.getTransaction()
       t.ok(transaction, 'transaction should still be visible after search')
       const trace = transaction.trace
       t.ok(trace?.root?.children?.[0], 'trace, trace root, and first child should exist')
@@ -277,21 +261,15 @@ test('Elasticsearch instrumentation', { timeout: 20000 }, (t) => {
 
   t.test('should create correct metrics', async function (t) {
     t.plan(28)
-    await helper.runInTransaction(agent, async function transactionInScope() {
-      const transaction = agent.getTransaction()
-
-      try {
-        await client.index({
-          index: DB_INDEX,
-          id: 'testkey2',
-          document: {
-            title: 'second document',
-            body: 'body of the second document'
-          }
-        })
-      } catch (e) {
-        t.notOk(e, 'Create document should not error')
-      }
+    await helper.runInTransaction(agent, async function transactionInScope(transaction) {
+      await client.index({
+        index: DB_INDEX,
+        id: 'testkey2',
+        document: {
+          title: 'second document',
+          body: 'body of the second document'
+        }
+      })
 
       // check metrics/methods for "exists" queries
       await client.exists({ id: 'testkey2', index: DB_INDEX })
@@ -306,11 +284,11 @@ test('Elasticsearch instrumentation', { timeout: 20000 }, (t) => {
         'Datastore/allWeb': 5,
         'Datastore/ElasticSearch/all': 5,
         'Datastore/ElasticSearch/allWeb': 5,
-        'Datastore/operation/ElasticSearch/doc.update': 1,
+        'Datastore/operation/ElasticSearch/doc.create': 1,
         'Datastore/operation/ElasticSearch/doc.get': 1,
         'Datastore/operation/ElasticSearch/doc.exists': 1,
         'Datastore/operation/ElasticSearch/search': 1,
-        'Datastore/statement/ElasticSearch/test/doc.update': 1,
+        'Datastore/statement/ElasticSearch/test/doc.create': 1,
         'Datastore/statement/ElasticSearch/test/doc.get': 1,
         'Datastore/statement/ElasticSearch/test/doc.exists': 1,
         'Datastore/statement/ElasticSearch/test/doc.delete': 1,
@@ -328,24 +306,15 @@ test('Elasticsearch instrumentation', { timeout: 20000 }, (t) => {
     agent.config.datastore_tracer.instance_reporting.enabled = false
     agent.config.datastore_tracer.database_name_reporting.enabled = false
 
-    await helper.runInTransaction(agent, async function transactionInScope() {
-      const transaction = agent.getTransaction()
-
-      try {
-        await client.index({
-          index: DB_INDEX,
-          id: 'testkey3',
-          document: {
-            title: 'third document title',
-            body: 'body of the third document'
-          }
-        })
-      } catch (e) {
-        t.notOk(e, 'Create document should not error')
-        if (!t.error(e)) {
-          return t.end()
+    await helper.runInTransaction(agent, async function transactionInScope(transaction) {
+      await client.index({
+        index: DB_INDEX,
+        id: 'testkey3',
+        document: {
+          title: 'third document title',
+          body: 'body of the third document'
         }
-      }
+      })
 
       const createSegment = transaction.trace.root.children[0]
       const attributes = createSegment.getAttributes()
@@ -359,6 +328,21 @@ test('Elasticsearch instrumentation', { timeout: 20000 }, (t) => {
         unscoped['Datastore/instance/ElasticSearch/' + HOST_ID],
         undefined,
         'should not have instance metric'
+      )
+    })
+  })
+  t.test('edge cases', async (t) => {
+    await helper.runInTransaction(agent, async function transactionInScope(transaction) {
+      try {
+        await client.indices.create({ index: '_search' })
+      } catch (e) {
+        t.ok(e, 'should not be able to create an index named _search')
+      }
+      const firstChild = transaction?.trace?.root?.children[0]
+      t.equal(
+        firstChild.name,
+        'Datastore/statement/ElasticSearch/_search/index.create',
+        'should record the attempted index creation without altering the index name'
       )
     })
   })
