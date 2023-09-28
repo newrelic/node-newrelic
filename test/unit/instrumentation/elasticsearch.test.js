@@ -19,7 +19,7 @@ tap.test('parsePath should behave as expected', (t) => {
   t.autoend()
 
   t.test('indices', function (t) {
-    const path = '/indexName'.split('/')
+    const path = '/indexName'
     methods.forEach((m) => {
       const { collection, operation } = parsePath(path, m.name)
       const expectedOp = `index.${m.expected}`
@@ -29,7 +29,7 @@ tap.test('parsePath should behave as expected', (t) => {
     t.end()
   })
   t.test('search of one index', function (t) {
-    const path = '/indexName/_search'.split('/')
+    const path = '/indexName/_search'
     methods.forEach((m) => {
       const { collection, operation } = parsePath(path, m.name)
       const expectedOp = `search`
@@ -39,7 +39,7 @@ tap.test('parsePath should behave as expected', (t) => {
     t.end()
   })
   t.test('search of all indices', function (t) {
-    const path = '/_search/'.split('/')
+    const path = '/_search/'
     methods.forEach((m) => {
       if (m.name === 'PUT') {
         // skip PUT
@@ -53,7 +53,7 @@ tap.test('parsePath should behave as expected', (t) => {
     t.end()
   })
   t.test('doc', function (t) {
-    const path = '/indexName/_doc/testKey'.split('/')
+    const path = '/indexName/_doc/testKey'
     methods.forEach((m) => {
       const { collection, operation } = parsePath(path, m.name)
       const expectedOp = `doc.${m.expected}`
@@ -63,7 +63,7 @@ tap.test('parsePath should behave as expected', (t) => {
     t.end()
   })
   t.test('path is /', function (t) {
-    const path = '/'.split('/')
+    const path = '/'
     methods.forEach((m) => {
       const { collection, operation } = parsePath(path, m.name)
       const expectedOp = `index.${m.expected}`
