@@ -42,6 +42,16 @@ else
   docker run -d --name nr_node_cassandra -p 9042:9042 zmarcantel/cassandra;
 fi
 
+if docker ps -a | grep -q "nr_node_elastic"; then
+  docker start nr_node_elastic;
+else
+  docker run -d --name nr_node_elastic \
+  -p 9200:9200 \
+  -e "discovery.type=single-node" \
+  -e "xpack.security.enabled=false" \
+  docker.elastic.co/elasticsearch/elasticsearch:8.8.2;
+fi
+
 if docker ps -a | grep -q "nr_node_postgres"; then
   docker start nr_node_postgres;
 else

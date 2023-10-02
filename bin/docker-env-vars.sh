@@ -6,6 +6,7 @@
 IP=`docker-machine ip default 2>/dev/null`
 
 export NR_NODE_TEST_CASSANDRA_HOST=$IP
+export NR_NODE_TEST_ELASTIC_HOST=$IP
 export NR_NODE_TEST_MEMCACHED_HOST=$IP
 export NR_NODE_TEST_MONGODB_HOST=$IP
 export NR_NODE_TEST_MYSQL_HOST=$IP

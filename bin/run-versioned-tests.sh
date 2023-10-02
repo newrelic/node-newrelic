@@ -56,7 +56,7 @@ echo "NPM7 = ${NPM7}"
 echo "CONTEXT MANAGER = ${CTX_MGR}"
 echo "C8 = ${C8}"
 
-# if $JOBS is not empy
+# if $JOBS is not empty
 if [ ! -z "$JOBS" ];
 then
   JOBS_ARGS="--jobs $JOBS"

@@ -71,7 +71,7 @@ test('Redis instrumentation', function (t) {
 
       const value = await client.get('testkey')
       t.ok(agent.getTransaction(), 'transaction should still still be visible')
-      t.equal(value, 'arglbargle', 'memcached client should still work')
+      t.equal(value, 'arglbargle', 'redis client should still work')
 
       const trace = transaction.trace
       t.ok(trace, 'trace should exist')
