@@ -25,6 +25,8 @@ jobs:
       run: npm ci
     - name: Run Docker Services
       run: npm run services
+    - name: Check Available Space
+      run: df -h
     - name: Run Legacy Context Versioned Tests
       run: TEST_CHILD_TIMEOUT=600000 npm run versioned:legacy-context
       env:
