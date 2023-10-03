@@ -4,6 +4,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 set -x
+echo "mode $EXTERNAL_MODE"
 
 VERSIONED_MODE="${VERSIONED_MODE:---minor}"
 SAMPLES="${SAMPLES:-10}"
@@ -13,6 +14,11 @@ SKIP_C8="${SKIP_C8:-false}"
 # but when running locally we want to see the beautiful
 # HTML reports too
 C8_REPORTER="${C8_REPORTER:-lcov}"
+# Options: none, only, include
+# None skips running external 
+# Only runs only external
+# Inclue runs external with "internal"
+EXTERNAL_MODE="${EXTERNAL_MODE:-include}"
 
 # Determine context manager for sanity sake
 if [[ $NEW_RELIC_FEATURE_FLAG_LEGACY_CONTEXT_MANAGER == 1 ]];
@@ -26,16 +32,43 @@ set -f
 directories=()
 if [[ "$1" != '' ]];
 then
-  directories=(
-    "test/versioned/${1}"
-    "test/versioned-external/TEMP_TESTS/${1}"
-    "test/versioned-external/TEMP_TESTS/${1}/tests/versioned"
-  )
+  if [[ "$EXTERNAL_MODE" = "include" ]];
+  then
+    directories=(
+      "test/versioned/${1}"
+      "test/versioned-external/TEMP_TESTS/${1}"
+      "test/versioned-external/TEMP_TESTS/${1}/tests/versioned"
+    )
+  elif [[ "$EXTERNAL_MODE" = "none" ]];
+  then 
+    directories=(
+      "test/versioned/${1}"
+    )
+  elif [[ "$EXTERNAL_MODE" = "only" ]];
+  then
+    directories=(
+      "test/versioned-external/TEMP_TESTS/${1}"
+      "test/versioned-external/TEMP_TESTS/${1}/tests/versioned"
+    )
+  fi
 else
-  directories=(
-    "test/versioned/"
-    "test/versioned-external"
-  )
+  if [[ "$EXTERNAL_MODE" = "include" ]];
+  then
+    directories=(
+      "test/versioned/"
+      "test/versioned-external"
+    )
+  elif [[ "$EXTERNAL_MODE" = "none" ]];
+  then 
+    directories=(
+      "test/versioned/"
+    )
+  elif [[ "$EXTERNAL_MODE" = "only" ]];
+  then
+    directories=(
+      "test/versioned-external"
+    )
+  fi
 fi
 
 # No coverage as env var is true
@@ -52,9 +85,9 @@ export AGENT_PATH=`pwd`
 
 # Runner will default to CPU count if not specified.
 echo "JOBS = ${JOBS}"
-echo "NPM7 = ${NPM7}"
 echo "CONTEXT MANAGER = ${CTX_MGR}"
 echo "C8 = ${C8}"
+echo "EXTERNAL_MODE = ${EXTERNAL_MODE}"
 
 # if $JOBS is not empty
 if [ ! -z "$JOBS" ];
@@ -63,9 +96,4 @@ then
 fi
 export NR_LOADER=./esm-loader.mjs
 
-if [[ "${NPM7}" = 1 ]];
-then
-  time $C8 ./node_modules/.bin/versioned-tests $VERSIONED_MODE -i 2 --all --strict --samples $SAMPLES $JOBS_ARGS ${directories[@]}
-else
-  time $C8 ./node_modules/.bin/versioned-tests $VERSIONED_MODE -i 2 --strict --samples $SAMPLES $JOBS_ARGS ${directories[@]}
-fi
+time $C8 ./node_modules/.bin/versioned-tests $VERSIONED_MODE -i 2 --all --strict --samples $SAMPLES $JOBS_ARGS ${directories[@]}
