@@ -12,6 +12,8 @@ tap.mochaGlobals()
 
 const oldInstrumentations = require('../../lib/instrumentations')
 const insPath = require.resolve('../../lib/instrumentations')
+const proxyquire = require('proxyquire')
+const sinon = require('sinon')
 require.cache[insPath].exports = wrappedInst
 function wrappedInst() {
   const ret = oldInstrumentations()
@@ -52,6 +54,8 @@ describe('shimmer', function () {
       let onRequireArgs = null
       let counter = 0
       let instrumentedModule = null
+      let errorThrown = 0
+      let expectedErr
 
       beforeEach(function () {
         agent = helper.instrumentMockedAgent()
@@ -62,16 +66,22 @@ describe('shimmer', function () {
             ++counter
             onRequireArgs = arguments
             if (throwsError) {
-              throw new Error('This threw an error! Oh no!')
+              expectedErr = 'This threw an error! Oh no!'
+              throw new Error(expectedErr)
             }
           },
-          onError: function () {}
+          onError: function (err) {
+            if (err.message === expectedErr) {
+              errorThrown += 1
+            }
+          }
         }
         shimmer.registerInstrumentation(instrumentationOpts)
       })
 
       afterEach(function () {
         counter = 0
+        errorThrown = 0
         onRequireArgs = null
 
         clearCachedModules([relativePath])
@@ -123,6 +133,13 @@ describe('shimmer', function () {
         const message = `Expected keys to be equal but found: ${JSON.stringify(nrKeys)}`
         expect(nrKeys.length, message).to.equal(0)
       })
+
+      if (throwsError) {
+        it('should send error to onError handler', () => {
+          require(relativePath)
+          expect(errorThrown).to.equal(1)
+        })
+      }
     }
   }
 
@@ -700,6 +717,141 @@ tap.test('should not throw if you call removeHooks before creating ritm and iitm
     shimmer.removeHooks()
   })
   t.end()
+})
+
+tap.test('Shimmer with logger mock', (t) => {
+  t.autoend()
+  let loggerMock
+  let shimmer
+  let sandbox
+  let agent
+  t.before(() => {
+    sandbox = sinon.createSandbox()
+    loggerMock = require('./mocks/logger')(sandbox)
+    shimmer = proxyquire('../../lib/shimmer', {
+      './logger': {
+        child: sandbox.stub().callsFake(() => loggerMock)
+      }
+    })
+  })
+
+  t.beforeEach(() => {
+    agent = helper.instrumentMockedAgent({}, true, shimmer)
+  })
+
+  t.afterEach(() => {
+    sandbox.resetHistory()
+    clearCachedModules([TEST_MODULE_RELATIVE_PATH])
+    helper.unloadAgent(agent, shimmer)
+  })
+
+  t.test('should log warning when onError hook throws', (t) => {
+    const origError = new Error('failed to instrument')
+    const instFail = new Error('Failed to handle instrumentation error')
+    shimmer.registerInstrumentation({
+      moduleName: TEST_MODULE_PATH,
+      onRequire: () => {
+        throw origError
+      },
+      onError: () => {
+        throw instFail
+      }
+    })
+
+    require(TEST_MODULE_RELATIVE_PATH)
+    t.same(loggerMock.warn.args[0], [
+      instFail,
+      origError,
+      'Custom instrumentation for %s failed, then the onError handler threw an error',
+      TEST_MODULE_PATH
+    ])
+    t.end()
+  })
+
+  t.test('should log warning when instrumentation fails and no onError handler', (t) => {
+    const origError = new Error('failed to instrument')
+    shimmer.registerInstrumentation({
+      moduleName: TEST_MODULE_PATH,
+      onRequire: () => {
+        throw origError
+      }
+    })
+
+    require(TEST_MODULE_RELATIVE_PATH)
+    t.same(loggerMock.warn.args[0], [
+      origError,
+      'Custom instrumentation for %s failed. Please report this to the maintainers of the custom instrumentation.',
+      TEST_MODULE_PATH
+    ])
+    t.end()
+  })
+
+  t.test(
+    'should skip instrumentation if hooks for the same package version have already run',
+    (t) => {
+      const opts = {
+        moduleName: TEST_MODULE_PATH,
+        onRequire: () => {}
+      }
+
+      shimmer.registerInstrumentation(opts)
+      require(TEST_MODULE_RELATIVE_PATH)
+      clearCachedModules([TEST_MODULE_RELATIVE_PATH])
+      require(TEST_MODULE_RELATIVE_PATH)
+      t.same(loggerMock.trace.args[2], [
+        'Already instrumented test-mod/module@0.0.1, skipping registering instrumentation'
+      ])
+      t.end()
+    }
+  )
+
+  t.test(
+    'should skip instrumentation if hooks for the same package version have already errored',
+    (t) => {
+      const opts = {
+        moduleName: TEST_MODULE_PATH,
+        onRequire: () => {
+          throw new Error('test')
+        }
+      }
+
+      shimmer.registerInstrumentation(opts)
+      require(TEST_MODULE_RELATIVE_PATH)
+      clearCachedModules([TEST_MODULE_RELATIVE_PATH])
+      require(TEST_MODULE_RELATIVE_PATH)
+      t.same(loggerMock.trace.args[2], [
+        'Failed to instrument test-mod/module@0.0.1, skipping registering instrumentation'
+      ])
+      t.end()
+    }
+  )
+
+  t.test('should return package version from package.json', (t) => {
+    shimmer.registerInstrumentation({
+      moduleName: TEST_MODULE_PATH,
+      onRequire: () => {}
+    })
+
+    require(TEST_MODULE_RELATIVE_PATH)
+    const version = shimmer.getPackageVersion(TEST_MODULE_PATH)
+    t.not(loggerMock.debug.callCount)
+    t.equal(version, '0.0.1', 'should get package version from package.json')
+    t.end()
+  })
+
+  t.test(
+    'should return Node.js version when it cannot obtain package version from package.json',
+    (t) => {
+      const version = shimmer.getPackageVersion('bogus')
+      t.equal(version, process.version)
+      t.same(loggerMock.debug.args[0], [
+        'Failed to get version for `%s`, reason: %s',
+        'bogus',
+        `Cannot destructure property 'basedir' of 'shimmer.registeredInstrumentations[moduleName]' as it is undefined.`
+      ])
+      t.end()
+    }
+  )
 })
 
 function clearCachedModules(modules) {

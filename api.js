@@ -29,6 +29,7 @@ const MODULE_TYPE = require('./lib/shim/constants').MODULE_TYPE
 const NAMES = require('./lib/metrics/names')
 const obfuscate = require('./lib/util/sql/obfuscate')
 const { DESTINATIONS } = require('./lib/config/attribute-filter')
+const parse = require('module-details-from-path')
 
 /*
  *
@@ -1495,8 +1496,9 @@ API.prototype.instrumentLoadedModule = function instrumentLoadedModule(moduleNam
 
   try {
     const resolvedName = require.resolve(moduleName)
+    const parsed = parse(resolvedName)
 
-    return shimmer.instrumentPostLoad(this.agent, module, moduleName, resolvedName)
+    return shimmer.instrumentPostLoad(this.agent, module, moduleName, parsed.basedir)
   } catch (error) {
     logger.error('instrumentLoadedModule encountered an error, module not instrumented: %s', error)
   }
