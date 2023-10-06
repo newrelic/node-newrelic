@@ -26,7 +26,7 @@ module.exports = {
   cassandra_host: process.env.NR_NODE_TEST_CASSANDRA_HOST || 'localhost',
   cassandra_port: process.env.NR_NODE_TEST_CASSANDRA_PORT || 9042,
 
-  elastic_host: process.env.NR_NODE_TEST_ELASTIC_HOST || 'localhost',
+  elastic_host: process.env.NR_NODE_TEST_ELASTIC_HOST || '127.0.0.1',
   elastic_port: process.env.NR_NODE_TEST_ELASTIC_PORT || 9200,
 
   postgres_host: process.env.NR_NODE_TEST_POSTGRES_HOST || 'localhost',

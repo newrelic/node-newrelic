@@ -55,11 +55,12 @@ test('Elasticsearch instrumentation', (t) => {
     console.log('before ping')
     await client.ping()
     console.log('after ping')
-    console.log('before first idx')
+    console.log('before first idx', DB_INDEX)
     await client.indices.create({ index: DB_INDEX })
-    console.log('after first idx')
-    console.log('before 2nd idx')
-    // await client.indices.create({ index: DB_INDEX_2 })
+    console.log('after first idx', DB_INDEX)
+    console.log('before 2nd idx', DB_INDEX_2)
+    await client.indices.create({ index: DB_INDEX_2 })
+    console.log('after 2nd idx', DB_INDEX_2)
   })
 
   t.afterEach(() => {
