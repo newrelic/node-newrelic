@@ -7,7 +7,6 @@
 
 const path = require('path')
 const fs = require('fs').promises
-const shimmer = require('../../lib/shimmer')
 const Agent = require('../../lib/agent')
 const API = require('../../api')
 const params = require('../lib/params')
@@ -183,7 +182,7 @@ const helper = (module.exports = {
    *
    * @returns {Agent} Agent with a stubbed configuration.
    */
-  instrumentMockedAgent: (conf, setState = true) => {
+  instrumentMockedAgent: (conf, setState = true, shimmer = require('../../lib/shimmer')) => {
     shimmer.debug = true
 
     const agent = helper.loadMockedAgent(conf, setState)
@@ -241,7 +240,7 @@ const helper = (module.exports = {
    *
    * @param Agent agent The agent to shut down.
    */
-  unloadAgent: (agent) => {
+  unloadAgent: (agent, shimmer = require('../../lib/shimmer')) => {
     agent.emit('unload')
     shimmer.removeHooks()
     shimmer.unwrapAll()

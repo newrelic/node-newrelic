@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "Tue Oct 03 2023 11:10:41 GMT-0400 (Eastern Daylight Time)",
+  "lastUpdated": "Thu Oct 05 2023 17:12:12 GMT-0400 (Eastern Daylight Time)",
   "projectName": "New Relic Node Agent",
   "projectUrl": "https://github.com/newrelic/node-newrelic",
   "includeOptDeps": true,
@@ -198,6 +198,20 @@
       "publisher": "Isaac Z. Schlueter",
       "email": "i@izs.me",
       "url": "http://blog.izs.me"
+    },
+    "module-details-from-path@1.0.3": {
+      "name": "module-details-from-path",
+      "version": "1.0.3",
+      "range": "^1.0.3",
+      "licenses": "MIT",
+      "repoUrl": "https://github.com/watson/module-details-from-path",
+      "versionedRepoUrl": "https://github.com/watson/module-details-from-path/tree/v1.0.3",
+      "licenseFile": "node_modules/module-details-from-path/LICENSE",
+      "licenseUrl": "https://github.com/watson/module-details-from-path/blob/v1.0.3/LICENSE",
+      "licenseTextSource": "file",
+      "publisher": "Thomas Watson Steen",
+      "email": "w@tson.dk",
+      "url": "https://twitter.com/wa7son"
     },
     "readable-stream@3.6.2": {
       "name": "readable-stream",

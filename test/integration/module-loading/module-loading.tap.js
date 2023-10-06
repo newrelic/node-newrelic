@@ -15,6 +15,7 @@ const { FEATURES } = require('../../../lib/metrics/names')
 
 const CUSTOM_MODULE = 'customTestPackage'
 const CUSTOM_MODULE_PATH = `./node_modules/${CUSTOM_MODULE}`
+const CUSTOM_MODULE_PATH_SUB = `./node_modules/subPkg/node_modules/${CUSTOM_MODULE}`
 const EXPECTED_REQUIRE_METRIC_NAME = `${FEATURES.INSTRUMENTATION.ON_REQUIRE}/${CUSTOM_MODULE}`
 
 tap.test('Should properly track module paths to enable shim.require()', function (t) {
@@ -32,9 +33,6 @@ tap.test('Should properly track module paths to enable shim.require()', function
     onRequire: () => {}
   })
 
-  // As of node 11, this path is being cached, and will not hit our resolve hooks for
-  // subsequent calls.  This extra require call ensures we cover the cached case.
-  require(CUSTOM_MODULE_PATH)
   const mycustomPackage = require(CUSTOM_MODULE_PATH)
 
   const shim = mycustomPackage[symbols.shim]
@@ -46,6 +44,31 @@ tap.test('Should properly track module paths to enable shim.require()', function
   const shimLoadedCustom = shim.require('custom')
   t.ok(shimLoadedCustom, 'shim.require() should load module')
   t.equal(shimLoadedCustom.name, 'customFunction', 'Should grab correct module')
+})
+
+tap.test('should instrument multiple versions of the same package', function (t) {
+  t.autoend()
+
+  let agent = helper.instrumentMockedAgent()
+
+  t.teardown(() => {
+    helper.unloadAgent(agent)
+    agent = null
+  })
+
+  const instrumentation = {
+    moduleName: CUSTOM_MODULE,
+    onRequire: () => {}
+  }
+
+  shimmer.registerInstrumentation(instrumentation)
+
+  const pkg1 = require(CUSTOM_MODULE_PATH)
+  const pkg2 = require(CUSTOM_MODULE_PATH_SUB)
+  t.ok(pkg1[symbols.shim], 'should wrap first package')
+  t.ok(pkg2[symbols.shim], 'should wrap sub package of same name, different version')
+  t.ok(instrumentation[symbols.instrumented].has('3.0.0'))
+  t.ok(instrumentation[symbols.instrumented].has('1.0.0'))
 })
 
 tap.test('should only log supportability metric for tracking type instrumentation', function (t) {

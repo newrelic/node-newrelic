@@ -35,11 +35,13 @@ tap.test('Test Module Instrumentation Loading', (t) => {
     // register our instrumentation == onRequire will be
     // the code that's normally in the "instrument" function
     // that a instrumentation module exports
-    shimmer.registerInstrumentation({
+    const instrumentation = {
       moduleName: modulePathFromShimmer,
       type: null,
       onRequire: () => {}
-    })
+    }
+
+    shimmer.registerInstrumentation(instrumentation)
 
     // use reinstrument helper method to
     // manually instrument our module
@@ -49,7 +51,7 @@ tap.test('Test Module Instrumentation Loading', (t) => {
 
     t.ok(module, 'loaded module')
     t.equal(module(), 'hello world', 'module behaves as expected')
-    t.ok(module[symbols.instrumented], 'symbols.instrumented set and true')
+    t.ok(instrumentation[symbols.instrumented].has(process.version))
     t.end()
   })
 
@@ -65,13 +67,14 @@ tap.test('Test Module Instrumentation Loading', (t) => {
     // register our instrumentation == onRequire will be
     // the code that's normally in the "instrument" function
     // that a instrumentation module exports
-    shimmer.registerInstrumentation({
+    const instrumentation = {
       moduleName: modulePathFromShimmer,
       type: null,
       onRequire: () => {
         throw new Error('our instrumentation errors')
       }
-    })
+    }
+    shimmer.registerInstrumentation(instrumentation)
 
     // use reinstrument helper method to
     // manually instrument our module
@@ -81,7 +84,7 @@ tap.test('Test Module Instrumentation Loading', (t) => {
 
     t.ok(module, 'loaded module')
     t.equal(module(), 'hello world', 'module behaves as expected')
-    t.ok(module[symbols.instrumentedErrored], 'symbols.instrumentedErrored set and true')
+    t.ok(instrumentation[symbols.instrumentedErrored].has(process.version))
     t.end()
   })
 })
