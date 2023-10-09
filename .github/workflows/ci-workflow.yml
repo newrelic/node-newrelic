@@ -5,7 +5,65 @@ on: [push, pull_request, workflow_dispatch]
 
 
 jobs:
-  versioned-internal:
+  skip_if_release:
+    runs-on: ubuntu-latest
+
+    outputs:
+      should_skip: ${{ steps.skip_check.outputs.should_skip }}
+
+    steps:
+      - id: skip_check
+        uses: fkirc/skip-duplicate-actions@v5
+        with:
+          paths_ignore: '["NEWS.md", "changelog.json", "package.json", "package-lock.json"]'
+          skip_after_successful_duplicate: false
+          do_not_skip: '["workflow_dispatch", "pull_request"]'
+
+  lint:
+    needs: skip_if_release
+    if: needs.skip_if_release.outputs.should_skip != 'true'
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [lts/*]
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v3
+      with:
+        node-version: ${{ matrix.node-version }}
+    - name: Install Dependencies
+      run: npm ci
+    - name: Run Linting
+      run: npm run lint
+    - name: Inspect Lockfile
+      run: npm run lint:lockfile
+
+  ci:
+    needs: skip_if_release
+    if: needs.skip_if_release.outputs.should_skip != 'true'
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [lts/*]
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v3
+      with:
+        node-version: ${{ matrix.node-version }}
+    - name: Install Dependencies
+      run: npm ci
+    - name: Run CI Script Unit Tests
+      run: npm run unit:scripts
+
+  unit:
+    needs: skip_if_release
+    if: needs.skip_if_release.outputs.should_skip != 'true'
     runs-on: ubuntu-latest
 
     strategy:
@@ -20,29 +78,121 @@ jobs:
         node-version: ${{ matrix.node-version }}
     - name: Install Dependencies
       run: npm ci
-    - name: docker version
-      run: docker compose -v
+    - name: Run Unit Tests
+      run: npm run unit
+    - name: Archive Unit Test Coverage
+      uses: actions/upload-artifact@v3
+      with:
+        name: unit-tests-${{ matrix.node-version }}
+        path: ./coverage/unit/lcov.info
+  integration:
+    needs: skip_if_release
+    if: needs.skip_if_release.outputs.should_skip != 'true'
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [16.x, 18.x, 20.x]
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v3
+      with:
+        node-version: ${{ matrix.node-version }}
+    - name: Install Dependencies
+      run: npm ci
+    - name: Run Docker Services
+      run: npm run services
+    - name: Run Integration Tests
+      run: npm run integration
+    - name: Archive Integration Test Coverage
+      uses: actions/upload-artifact@v3
+      with:
+        name: integration-tests-${{ matrix.node-version }}
+        path: ./coverage/integration/lcov.info
+
+  versioned-internal:
+    needs: skip_if_release
+    if: needs.skip_if_release.outputs.should_skip != 'true'
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [16.x, 18.x, 20.x]
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v3
+      with:
+        node-version: ${{ matrix.node-version }}
+    - name: Install Dependencies
+      run: npm ci
     - name: Run Docker Services
       run: npm run services
     - name: Run Versioned Tests
       run: TEST_CHILD_TIMEOUT=600000 npm run versioned:internal
       env:
-        VERSIONED_MODE: --minor 
+        VERSIONED_MODE: ${{ github.ref == 'refs/heads/main' && '--minor' || '--major' }}
         JOBS: 4 # 2 per CPU seems to be the sweet spot in GHA (July 2022)
         C8_REPORTER: lcovonly
-    - name: Upload elastic container logs
-      if: failure()
-      uses: jwalton/gh-docker-logs@v2
+    - name: Archive Versioned Test Coverage
+      uses: actions/upload-artifact@v3
       with:
-        images: 'docker.elastic.co/elasticsearch/elasticsearch:8.7.1'
-        dest: './logs'
-    - name: Tar logs
-      if: failure()
-      run: tar cvzf ./logs.tgz ./logs
-    - name: Upload logs to GitHub
-      if: failure()
-      uses: actions/upload-artifact@master
-      with:
-        name: logs.tgz
-        path: ./logs.tgz
+        name: versioned-tests-${{ matrix.node-version }}
+        path: ./coverage/versioned/lcov.info
   
+  # There is no coverage for external as that's tracked in their respective repos
+  versioned-external:
+    needs: skip_if_release
+    if: needs.skip_if_release.outputs.should_skip != 'true'
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [16.x, 18.x, 20.x]
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v3
+      with:
+        node-version: ${{ matrix.node-version }}
+    - name: Install Dependencies
+      run: npm ci
+    - name: Run Versioned Tests
+      run: TEST_CHILD_TIMEOUT=600000 npm run versioned:external
+      env:
+        VERSIONED_MODE: ${{ github.ref == 'refs/heads/main' && '--minor' || '--major' }}
+        JOBS: 4 # 2 per CPU seems to be the sweet spot in GHA (July 2022)
+  codecov:
+    needs: [unit, integration, versioned-internal]
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [16.x, 18.x, 20.x]
+
+    steps:
+      - uses: actions/checkout@v3
+      - name: Download artifacts
+        uses: actions/download-artifact@v3
+      - name: Post Unit Test Coverage
+        uses: codecov/codecov-action@v3
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          directory: unit-tests-${{ matrix.node-version }}
+          flags: unit-tests-${{ matrix.node-version }}
+      - name: Post Integration Test Coverage
+        uses: codecov/codecov-action@v3
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          directory: integration-tests-${{ matrix.node-version }}
+          flags: integration-tests-${{ matrix.node-version }}
+      - name: Post Versioned Test Coverage
+        uses: codecov/codecov-action@v3
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          directory: versioned-tests-${{ matrix.node-version }}
+          flags: versioned-tests-${{ matrix.node-version }}

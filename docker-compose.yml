@@ -5,13 +5,17 @@ services:
     image: docker.elastic.co/elasticsearch/elasticsearch:8.7.1
     environment:
       - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      # Set cluster to single node
+      - "discovery.type=single-node"
+      # Disable high watermarks, used in CI as the runner is constrained on disk space
+      - "cluster.routing.allocation.disk.threshold_enabled=false"
       - "network.host=_site_"
       - "transport.host=127.0.0.1"
-      - "discovery.type=single-node" 
       - "http.host=0.0.0.0"
+      # Disable password
       - "xpack.security.enabled=false"
     ports:
-      - "127.0.0.1:9200:9200"
+      - "9200:9200"
     healthcheck:
       test: ["CMD", "curl", "-f", "http://127.0.0.1:9200"]
       interval: 30s

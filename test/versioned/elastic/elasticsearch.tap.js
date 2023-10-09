@@ -13,9 +13,6 @@ const urltils = require('../../../lib/util/urltils')
 const crypto = require('crypto')
 const DB_INDEX = `test-${randomString()}`
 const DB_INDEX_2 = `test2-${randomString()}`
-const util = require('util')
-const cp = require('child_process')
-const execAsync = util.promisify(cp.exec)
 
 function randomString() {
   return crypto.randomBytes(5).toString('hex')
@@ -41,26 +38,15 @@ test('Elasticsearch instrumentation', (t) => {
     // need to capture attributes
     agent.config.attributes.enabled = true
 
-    const { stderr, stdout } = await execAsync('docker inspect nr_node_elastic')
-    console.log('container details', stdout)
-    console.log('----------------------')
-    console.log('stderr', stderr)
-    console.log('---------------------------')
     const { Client } = require('@elastic/elasticsearch')
-    console.log('paramms', params.elastic_host, params.elastic_port)
     client = new Client({
       node: `http://${params.elastic_host}:${params.elastic_port}`
     })
 
-    console.log('before ping')
-    await client.ping()
-    console.log('after ping')
-    console.log('before first idx', DB_INDEX)
-    await client.indices.create({ index: DB_INDEX })
-    console.log('after first idx', DB_INDEX)
-    console.log('before 2nd idx', DB_INDEX_2)
-    await client.indices.create({ index: DB_INDEX_2 })
-    console.log('after 2nd idx', DB_INDEX_2)
+    return Promise.all([
+      client.indices.create({ index: DB_INDEX }),
+      client.indices.create({ index: DB_INDEX_2 })
+    ])
   })
 
   t.afterEach(() => {
