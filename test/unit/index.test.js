@@ -308,9 +308,10 @@ test('index tests', (t) => {
     processVersionStub.satisfies.onCall(0).returns(true)
     processVersionStub.satisfies.onCall(1).returns(true)
     processVersionStub.satisfies.onCall(2).returns(false)
-    loadIndex()
+    const api = loadIndex()
     t.equal(loggerMock.info.callCount, 2, 'should log info logs')
     t.equal(loggerMock.info.args[1][0], 'No configuration detected. Not starting.')
+    t.equal(api.constructor.name, 'Stub')
     t.end()
   })
 
@@ -319,9 +320,10 @@ test('index tests', (t) => {
     processVersionStub.satisfies.onCall(0).returns(true)
     processVersionStub.satisfies.onCall(1).returns(true)
     processVersionStub.satisfies.onCall(2).returns(false)
-    loadIndex()
+    const api = loadIndex()
     t.equal(loggerMock.info.callCount, 2, 'should log info logs')
     t.equal(loggerMock.info.args[1][0], 'Module disabled in configuration. Not starting.')
+    t.equal(api.constructor.name, 'Stub')
     t.end()
   })
 
@@ -362,15 +364,16 @@ test('index tests', (t) => {
     t.end()
   })
 
-  t.test('should log warning if not in main thread', (t) => {
+  t.test('should log warning if not in main thread and make a stub api', (t) => {
     workerThreadsStub.isMainThread = false
-    loadIndex()
+    const api = loadIndex()
     t.equal(loggerMock.warn.callCount, 1)
     t.equal(
       loggerMock.warn.args[0][0],
       'Using New Relic for Node.js in worker_threads is not supported. Not starting!'
     )
     t.equal(loggerMock.info.callCount, 0, 'should not attempt to initialize agent')
+    t.equal(api.constructor.name, 'Stub')
     t.end()
   })
 })
