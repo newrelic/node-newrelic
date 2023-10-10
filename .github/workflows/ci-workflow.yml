@@ -142,6 +142,20 @@ jobs:
       with:
         name: versioned-tests-${{ matrix.node-version }}
         path: ./coverage/versioned/lcov.info
+    - name: Collect docker logs on failure
+      if: failure()
+      uses: jwalton/gh-docker-logs@v2
+      with:
+        dest: ./logs-${{ matrix.node-version }}
+    - name: Tar logs
+      if: failure()
+      run: tar cvzf ./logs-${{ matrix.node-version }}.tgz ./logs-${{ matrix.node-version }}
+    - name: Upload logs to GitHub
+      if: failure()
+      uses: actions/upload-artifact@master
+      with:
+        name: logs-${{ matrix.node-version }}.tgz
+        path: ./logs-${{ matrix.node-version }}.tgz
   
   # There is no coverage for external as that's tracked in their respective repos
   versioned-external:
