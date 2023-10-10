@@ -28,8 +28,6 @@ module.exports = {
 
   elastic_host: process.env.NR_NODE_TEST_ELASTIC_HOST || 'localhost',
   elastic_port: process.env.NR_NODE_TEST_ELASTIC_PORT || 9200,
-  elastic_user: process.env.NR_NODE_TEST_ELASTIC_USER || 'elastic',
-  elastic_pass: process.env.NR_NODE_TEST_ELASTIC_PASS || 'changeme',
 
   postgres_host: process.env.NR_NODE_TEST_POSTGRES_HOST || 'localhost',
   postgres_port: process.env.NR_NODE_TEST_POSTGRES_PORT || 5432,

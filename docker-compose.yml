@@ -1,0 +1,107 @@
+version: "3"
+services:
+  elasticsearch:
+    container_name: nr_node_elastic
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.7.1
+    environment:
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      # Set cluster to single node
+      - "discovery.type=single-node"
+      # Disable high watermarks, used in CI as the runner is constrained on disk space
+      - "cluster.routing.allocation.disk.threshold_enabled=false"
+      - "network.host=_site_"
+      - "transport.host=127.0.0.1"
+      - "http.host=0.0.0.0"
+      # Disable password
+      - "xpack.security.enabled=false"
+    ports:
+      - "9200:9200"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://127.0.0.1:9200"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+  memcached:
+    container_name: nr_node_memcached
+    image: memcached
+    ports:
+      - "11211:11211"
+  mongodb_3:
+    container_name: nr_node_mongodb
+    platform: linux/amd64
+    image: library/mongo:3
+    ports:
+      - "27017:27017"
+    healthcheck:
+      test: ["CMD", "mongo", "--quiet"]
+      interval: 1s
+      timeout: 10s
+      retries: 30
+  mongodb_5:
+    container_name: nr_node_mongodb_5
+    image: library/mongo:5
+    ports:
+      - "27018:27017"
+    healthcheck:
+      test: ["CMD", "mongo", "--quiet"]
+      interval: 1s
+      timeout: 10s
+      retries: 30
+  mysql:
+    container_name: nr_node_mysql
+    platform: linux/amd64
+    image: mysql:5
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ALLOW_EMPTY_PASSWORD: 1
+    healthcheck:
+      test: ["CMD", "mysql" ,"-h", "mysql", "-P", "3306", "-u", "root", "-e", "SELECT 1"]
+      interval: 1s
+      timeout: 10s
+      retries: 30
+  redis:
+    container_name: nr_node_redis
+    image: redis
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 1s
+      timeout: 10s
+      retries: 30
+  cassandra:
+    container_name: nr_node_cassandra
+    platform: linux/amd64
+    image: zmarcantel/cassandra
+    ports:
+      - "9042:9042"
+    healthcheck:
+      test: [ "CMD", "cqlsh", "-u cassandra", "-p cassandra"]
+      interval: 5s
+      timeout: 10s
+      retries: 6 
+  # pg 9.2 has built in healthcheck
+  pg:
+    container_name: nr_node_postgres
+    image: postgres:9.2
+    ports:
+      - "5432:5432"
+  pg_prisma:
+    container_name: nr_node_postgres_prisma
+    image: postgres:15
+    ports:
+      - "5434:5434"
+    environment:
+      PGPORT: 5434
+      POSTGRES_PASSWORD: postgres
+    healthcheck:
+      test: ["CMD", "pg_isready"]
+      interval: 1s
+      timeout: 10s
+      retries: 30
+  rmq:
+    container_name: nr_node_rabbit
+    image: rabbitmq:3
+    ports:
+      - "5672:5672"

@@ -10,19 +10,24 @@ const test = tap.test
 const helper = require('../../lib/agent_helper')
 const params = require('../../lib/params')
 const urltils = require('../../../lib/util/urltils')
+const crypto = require('crypto')
+const DB_INDEX = `test-${randomString()}`
+const DB_INDEX_2 = `test2-${randomString()}`
 
-test('Elasticsearch instrumentation', { timeout: 20000 }, (t) => {
+function randomString() {
+  return crypto.randomBytes(5).toString('hex')
+}
+
+test('Elasticsearch instrumentation', (t) => {
   t.autoend()
 
   let METRIC_HOST_NAME = null
   let HOST_ID = null
-  const DB_INDEX = `test`
-  const DB_INDEX_2 = `test2`
 
   let agent
   let client
 
-  t.beforeEach(async () => {
+  t.before(async () => {
     agent = helper.instrumentMockedAgent()
 
     METRIC_HOST_NAME = urltils.isLocalhost(params.elastic_host)
@@ -33,37 +38,43 @@ test('Elasticsearch instrumentation', { timeout: 20000 }, (t) => {
     // need to capture attributes
     agent.config.attributes.enabled = true
 
-    const { Client, HttpConnection } = require('@elastic/elasticsearch')
+    const { Client } = require('@elastic/elasticsearch')
     client = new Client({
-      node: `http://${params.elastic_host}:${params.elastic_port}`,
-      auth: {
-        username: params.elastic_user,
-        password: params.elastic_pass
-      },
-      Connection: HttpConnection
+      node: `http://${params.elastic_host}:${params.elastic_port}`
     })
+
+    return Promise.all([
+      client.indices.create({ index: DB_INDEX }),
+      client.indices.create({ index: DB_INDEX_2 })
+    ])
   })
 
-  t.afterEach(async () => {
+  t.afterEach(() => {
+    agent.queries.clear()
+  })
+
+  t.teardown(() => {
     agent && helper.unloadAgent(agent)
-  })
-
-  t.teardown(async () => {
-    await client.indices.delete({ index: DB_INDEX })
-    await client.indices.delete({ index: DB_INDEX_2 })
+    return Promise.all([
+      client.indices.delete({ index: DB_INDEX }),
+      client.indices.delete({ index: DB_INDEX_2 })
+    ])
   })
 
   t.test('should be able to record creating an index', async (t) => {
+    const index = `test-index-${randomString()}`
+    t.teardown(async () => {
+      await client.indices.delete({ index })
+    })
     await helper.runInTransaction(agent, async function transactionInScope(transaction) {
       t.ok(transaction, 'transaction should be visible')
-      await client.indices.create({ index: DB_INDEX })
-      await client.indices.create({ index: DB_INDEX_2 })
+      await client.indices.create({ index })
       const trace = transaction.trace
       t.ok(trace?.root?.children?.[0], 'trace, trace root, and first child should exist')
       const firstChild = trace.root.children[0]
       t.equal(
         firstChild.name,
-        'Datastore/statement/ElasticSearch/test/index.create',
+        `Datastore/statement/ElasticSearch/${index}/index.create`,
         'should record index PUT as create'
       )
     })
@@ -111,7 +122,7 @@ test('Elasticsearch instrumentation', { timeout: 20000 }, (t) => {
     agent.config.slow_sql.enabled = true
     await helper.runInTransaction(agent, async function transactionInScope(transaction) {
       const expectedQuery = { q: 'sixth' }
-      const search = await client.search({ index: DB_INDEX_2, q: 'sixth' })
+      const search = await client.search({ index: DB_INDEX_2, ...expectedQuery })
       t.ok(search, 'search should return a result')
       t.ok(transaction, 'transaction should still be visible after search')
       const trace = transaction.trace
@@ -119,14 +130,13 @@ test('Elasticsearch instrumentation', { timeout: 20000 }, (t) => {
       const firstChild = trace.root.children[0]
       t.match(
         firstChild.name,
-        'Datastore/statement/ElasticSearch/test2/search',
+        `Datastore/statement/ElasticSearch/${DB_INDEX_2}/search`,
         'querystring search should be recorded as a search'
       )
       const attrs = firstChild.getAttributes()
       t.match(attrs.product, 'ElasticSearch')
       t.match(attrs.host, METRIC_HOST_NAME)
       transaction.end()
-      // can we inspect recorded query?
       t.ok(agent.queries.samples.size > 0, 'there should be a query sample')
       for (const query of agent.queries.samples.values()) {
         t.ok(query.total > 0, 'the samples should have positive duration')
@@ -153,14 +163,16 @@ test('Elasticsearch instrumentation', { timeout: 20000 }, (t) => {
       const firstChild = trace.root.children[0]
       t.match(
         firstChild.name,
-        'Datastore/statement/ElasticSearch/test/search',
+        `Datastore/statement/ElasticSearch/${DB_INDEX}/search`,
         'search index is specified, so name shows it'
       )
       const attrs = firstChild.getAttributes()
-      t.match(attrs.product, 'ElasticSearch')
-      t.match(attrs.host, METRIC_HOST_NAME)
+      t.equal(attrs.product, 'ElasticSearch')
+      t.equal(attrs.host, METRIC_HOST_NAME)
+      t.equal(attrs.port_path_or_id, `${params.elastic_port}`)
+      // TODO: update once instrumentation is properly setting database name
+      t.equal(attrs.database_name, 'unknown')
       transaction.end()
-      // can we inspect recorded query?
       t.ok(agent.queries.samples.size > 0, 'there should be a query sample')
       for (const query of agent.queries.samples.values()) {
         t.ok(query.total > 0, 'the samples should have positive duration')
@@ -195,7 +207,6 @@ test('Elasticsearch instrumentation', { timeout: 20000 }, (t) => {
       t.match(attrs.product, 'ElasticSearch')
       t.match(attrs.host, METRIC_HOST_NAME)
       transaction.end()
-      // can we inspect recorded query?
       t.ok(agent.queries.samples.size > 0, 'there should be a query sample')
       for (const query of agent.queries.samples.values()) {
         t.ok(query.total > 0, 'the samples should have positive duration')
@@ -260,11 +271,12 @@ test('Elasticsearch instrumentation', { timeout: 20000 }, (t) => {
   })
 
   t.test('should create correct metrics', async function (t) {
+    const id = `key-${randomString()}`
     t.plan(28)
     await helper.runInTransaction(agent, async function transactionInScope(transaction) {
       await client.index({
         index: DB_INDEX,
-        id: 'testkey2',
+        id,
         document: {
           title: 'second document',
           body: 'body of the second document'
@@ -272,10 +284,10 @@ test('Elasticsearch instrumentation', { timeout: 20000 }, (t) => {
       })
 
       // check metrics/methods for "exists" queries
-      await client.exists({ id: 'testkey2', index: DB_INDEX })
-      await client.get({ id: 'testkey2', index: DB_INDEX })
+      await client.exists({ id, index: DB_INDEX })
+      await client.get({ id, index: DB_INDEX })
       await client.search({ query: { match: { body: 'document' } } })
-      await client.delete({ id: 'testkey2', index: DB_INDEX })
+      await client.delete({ id, index: DB_INDEX })
       transaction.end()
 
       const unscoped = transaction.metrics.unscoped
@@ -288,10 +300,10 @@ test('Elasticsearch instrumentation', { timeout: 20000 }, (t) => {
         'Datastore/operation/ElasticSearch/doc.get': 1,
         'Datastore/operation/ElasticSearch/doc.exists': 1,
         'Datastore/operation/ElasticSearch/search': 1,
-        'Datastore/statement/ElasticSearch/test/doc.create': 1,
-        'Datastore/statement/ElasticSearch/test/doc.get': 1,
-        'Datastore/statement/ElasticSearch/test/doc.exists': 1,
-        'Datastore/statement/ElasticSearch/test/doc.delete': 1,
+        [`Datastore/statement/ElasticSearch/${DB_INDEX}/doc.create`]: 1,
+        [`Datastore/statement/ElasticSearch/${DB_INDEX}/doc.get`]: 1,
+        [`Datastore/statement/ElasticSearch/${DB_INDEX}/doc.exists`]: 1,
+        [`Datastore/statement/ElasticSearch/${DB_INDEX}/doc.delete`]: 1,
         'Datastore/statement/ElasticSearch/any/search': 1
       }
       expected['Datastore/instance/ElasticSearch/' + HOST_ID] = 5
