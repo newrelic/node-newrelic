@@ -16,16 +16,16 @@ const Github = require('./github')
 
 // TODO: for reviewers: decide if we want to show all of these, or if there are some that should always be hidden
 const RELEASE_NOTE_TYPES = [
-  { type: 'build', section: 'Build System', rank: 12 },
-  { type: 'chore', section: 'Miscellaneous Chores', rank: 8 },
-  { type: 'ci', section: 'Continuous Integration', rank: 11 },
+  { type: 'build', section: 'Build system', rank: 12 },
+  { type: 'chore', section: 'Miscellaneous chores', rank: 8 },
+  { type: 'ci', section: 'Continuous integration', rank: 11 },
   { type: 'docs', section: 'Documentation', rank: 7 },
   { type: 'feat', section: 'Features', rank: 0 },
-  { type: 'fix', section: 'Bug Fixes', rank: 1 },
-  { type: 'perf', section: 'Performance Improvements', rank: 4 },
-  { type: 'refactor', section: 'Code Refactoring', rank: 5 },
+  { type: 'fix', section: 'Bug fixes', rank: 1 },
+  { type: 'perf', section: 'Performance improvements', rank: 4 },
+  { type: 'refactor', section: 'Code refactoring', rank: 5 },
   { type: 'revert', section: 'Reverts', rank: 6 },
-  { type: 'security', section: 'Security Improvements', rank: 2 },
+  { type: 'security', section: 'Security improvements', rank: 2 },
   { type: 'style', section: 'Styles', rank: 9 },
   { type: 'test', section: 'Tests', rank: 10 }
 ]
