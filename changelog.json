@@ -6,11 +6,11 @@
       "changes": {
         "security": [],
         "bugfixes": [
-          "updated agent to create a stub api when running in a worker thread",
-          "Updated shimmer to allow registering instrumentation for different versions of the same module"
+          "Updated agent to create a stub api when running in a worker thread to avoid Next.js early return errors.",
+          "Updated shimmer to allow registering instrumentation for different versions of the same module."
         ],
         "features": [
-          "Added instrumentation for ElasticSearch"
+          "Added instrumentation for ElasticSearch."
         ]
       }
     },
