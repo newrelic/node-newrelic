@@ -2,6 +2,19 @@
   "repository": "newrelic/node-newrelic",
   "entries": [
     {
+      "version": "11.2.0",
+      "changes": {
+        "security": [],
+        "bugfixes": [
+          "Updated agent to create a stub api when running in a worker thread to avoid Next.js early return errors.",
+          "Updated shimmer to allow registering instrumentation for different versions of the same module."
+        ],
+        "features": [
+          "Added instrumentation for ElasticSearch."
+        ]
+      }
+    },
+    {
       "version": "11.1.0",
       "changes": {
         "security": [],
