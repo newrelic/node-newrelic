@@ -2,6 +2,19 @@
   "repository": "newrelic/node-newrelic",
   "entries": [
     {
+      "version": "11.2.0",
+      "changes": {
+        "security": [],
+        "bugfixes": [
+          "updated agent to create a stub api when running in a worker thread",
+          "Updated shimmer to allow registering instrumentation for different versions of the same module"
+        ],
+        "features": [
+          "Added instrumentation for ElasticSearch"
+        ]
+      }
+    },
+    {
       "version": "11.1.0",
       "changes": {
         "security": [],
