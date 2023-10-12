@@ -6,7 +6,7 @@
       "changes": {
         "security": [],
         "bugfixes": [
-          "Updated intialization to properly return the api on start up to the security agent"
+          "Updated initialization to properly return the api on start up to the security agent"
         ],
         "features": []
       }
