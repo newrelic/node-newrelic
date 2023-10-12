@@ -269,8 +269,9 @@ test('index tests', (t) => {
 
   t.test('should load k2 agent if config.security.agent.enabled', (t) => {
     mockConfig.security.agent.enabled = true
-    loadIndex()
+    const api = loadIndex()
     t.equal(k2Stub.start.callCount, 1, 'should register security agent')
+    t.same(k2Stub.start.args[0][0], api, 'should call start on security agent with proper args')
     t.end()
   })
 
