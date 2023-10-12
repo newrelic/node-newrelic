@@ -57,7 +57,7 @@ const exampleMarkdown = `### v1.0.0 (2020-04-03)
 
 * **thing:** updated Thing to prevent modifications to inputs
 
-#### Bug Fixes
+#### Bug fixes
 
 * **thing:** updated Thing to prevent modifications to inputs ([#123](https://github.com/newrelic/node-newrelic/pull/123)), closes [1234](https://github.com/newrelic/node-newrelic/issues/1234)
     * Thing no longer mutates provided inputs, but instead clones inputs before performing modifications. Thing will now always return an entirely new output
@@ -95,16 +95,16 @@ tap.test('Conventional Changelog Class', (testHarness) => {
     const changelog = new ConventionalChangelog({ newVersion: '1.0.0', previousVersion: '0.9.0' })
 
     const groupedCommits = [
-      { title: 'Build System', commits: [] },
-      { title: 'Miscellaneous Chores', commits: [] },
-      { title: 'Continuous Integration', commits: [] },
+      { title: 'Build system', commits: [] },
+      { title: 'Miscellaneous chores', commits: [] },
+      { title: 'Continuous integration', commits: [] },
       { title: 'Documentation', commits: [] },
       { title: 'Features', commits: [] },
-      { title: 'Bug Fixes', commits: [] },
-      { title: 'Performance Improvements', commits: [] },
-      { title: 'Code Refactoring', commits: [] },
+      { title: 'Bug fixes', commits: [] },
+      { title: 'Performance improvements', commits: [] },
+      { title: 'Code refactoring', commits: [] },
       { title: 'Reverts', commits: [] },
-      { title: 'Security Improvements', commits: [] },
+      { title: 'Security improvements', commits: [] },
       { title: 'Styles', commits: [] },
       { title: 'Tests', commits: [] }
     ]
@@ -112,17 +112,17 @@ tap.test('Conventional Changelog Class', (testHarness) => {
     groupedCommits.sort(changelog.rankedGroupSort)
 
     t.equal(groupedCommits[0].title, 'Features')
-    t.equal(groupedCommits[1].title, 'Bug Fixes')
-    t.equal(groupedCommits[2].title, 'Security Improvements')
-    t.equal(groupedCommits[3].title, 'Performance Improvements')
-    t.equal(groupedCommits[4].title, 'Code Refactoring')
+    t.equal(groupedCommits[1].title, 'Bug fixes')
+    t.equal(groupedCommits[2].title, 'Security improvements')
+    t.equal(groupedCommits[3].title, 'Performance improvements')
+    t.equal(groupedCommits[4].title, 'Code refactoring')
     t.equal(groupedCommits[5].title, 'Reverts')
     t.equal(groupedCommits[6].title, 'Documentation')
-    t.equal(groupedCommits[7].title, 'Miscellaneous Chores')
+    t.equal(groupedCommits[7].title, 'Miscellaneous chores')
     t.equal(groupedCommits[8].title, 'Styles')
     t.equal(groupedCommits[9].title, 'Tests')
-    t.equal(groupedCommits[10].title, 'Continuous Integration')
-    t.equal(groupedCommits[11].title, 'Build System')
+    t.equal(groupedCommits[10].title, 'Continuous integration')
+    t.equal(groupedCommits[11].title, 'Build system')
 
     t.end()
   })
