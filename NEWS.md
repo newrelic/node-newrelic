@@ -59,6 +59,7 @@
 * Updated agent to use require-in-the-middle to register CommonJS instrumentation. You can no longer use an onResolved hook to register custom instrumentation.
 * Updated the default context manager to be AsyncLocalContextManager.
 * Renamed `shim.handleCATHeaders` to `shim.handleMqTracingHeaders`.
+* Updated agent to only run in the main thread. This is because running in a worker thread does not completely function out of the box. This will reduce the overhead for customers that are naively trying to load this into worker threads.
 
 #### Features
 
