@@ -182,7 +182,7 @@
   },
   "dependencies": {
     "@grpc/grpc-js": "^1.8.10",
-    "@grpc/proto-loader": "^0.7.5",
+    "@grpc/proto-loader": "^0.7.10",
     "@newrelic/aws-sdk": "^7.0.0",
     "@newrelic/koa": "^8.0.0",
     "@newrelic/security-agent": "0.3.0",
