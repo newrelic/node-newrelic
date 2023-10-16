@@ -47,6 +47,7 @@ jobs:
     runs-on: ubuntu-latest
 
     strategy:
+      fail-fast: false
       matrix:
         node-version: [lts/*]
 
@@ -67,6 +68,7 @@ jobs:
     runs-on: ubuntu-latest
 
     strategy:
+      fail-fast: false
       matrix:
         node-version: [16.x, 18.x, 20.x]
 
@@ -91,6 +93,7 @@ jobs:
     runs-on: ubuntu-latest
 
     strategy:
+      fail-fast: false
       matrix:
         node-version: [16.x, 18.x, 20.x]
 
@@ -118,6 +121,7 @@ jobs:
     runs-on: ${{ github.ref == 'refs/heads/main' && vars.NR_RUNNER || 'ubuntu-latest' }}
 
     strategy:
+      fail-fast: false
       matrix:
         node-version: [16.x, 18.x, 20.x]
 
@@ -165,6 +169,7 @@ jobs:
     runs-on: ${{ github.ref == 'refs/heads/main' && vars.NR_RUNNER || 'ubuntu-latest' }}
 
     strategy:
+      fail-fast: false
       matrix:
         node-version: [16.x, 18.x, 20.x]
 
