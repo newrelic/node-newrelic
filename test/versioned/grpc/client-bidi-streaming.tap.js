@@ -26,14 +26,13 @@ tap.test('gRPC Client: Bidi Streaming', (t) => {
   let server
   let proto
   let grpc
+  let port
 
   t.beforeEach(async () => {
     agent = helper.instrumentMockedAgent()
     grpc = require('@grpc/grpc-js')
-    const data = await createServer(grpc)
-    proto = data.proto
-    server = data.server
-    client = getClient(grpc, proto)
+    ;({ port, proto, server } = await createServer(grpc))
+    client = getClient(grpc, proto, port)
   })
 
   t.afterEach(() => {
@@ -57,7 +56,7 @@ tap.test('gRPC Client: Bidi Streaming', (t) => {
         agent.on('transactionFinished', (transaction) => {
           if (transaction.name === 'clientTransaction') {
             // Make sure we're in the client and not server transaction
-            assertExternalSegment({ t, tx: transaction, fnName: 'SayHelloBidiStream' })
+            assertExternalSegment({ t, tx: transaction, fnName: 'SayHelloBidiStream', port })
             t.end()
           }
         })
@@ -141,7 +140,7 @@ tap.test('gRPC Client: Bidi Streaming', (t) => {
       payload.forEach(({ name }, i) => {
         t.equal(responses[i], `Hello ${name}`, 'response stream message should be correct')
       })
-      assertMetricsNotExisting({ t, agent })
+      assertMetricsNotExisting({ t, agent, port })
       t.end()
     }
   )
@@ -164,6 +163,7 @@ tap.test('gRPC Client: Bidi Streaming', (t) => {
         agent.on('transactionFinished', (transaction) => {
           if (transaction.name === 'clientTransaction') {
             assertError({
+              port,
               t,
               transaction,
               errors: agent.errors,

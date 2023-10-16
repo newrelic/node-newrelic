@@ -30,14 +30,13 @@ tap.test('gRPC Server: Unary Requests', (t) => {
   let server
   let proto
   let grpc
+  let port
 
   t.beforeEach(async () => {
     agent = helper.instrumentMockedAgent()
     grpc = require('@grpc/grpc-js')
-    const data = await createServer(grpc)
-    proto = data.proto
-    server = data.server
-    client = getClient(grpc, proto)
+    ;({ port, proto, server } = await createServer(grpc))
+    client = getClient(grpc, proto, port)
   })
 
   t.afterEach(() => {

@@ -26,14 +26,13 @@ tap.test('gRPC Client: Client Streaming', (t) => {
   let server
   let proto
   let grpc
+  let port
 
   t.beforeEach(async () => {
     agent = helper.instrumentMockedAgent()
     grpc = require('@grpc/grpc-js')
-    const data = await createServer(grpc)
-    proto = data.proto
-    server = data.server
-    client = getClient(grpc, proto)
+    ;({ port, proto, server } = await createServer(grpc))
+    client = getClient(grpc, proto, port)
   })
 
   t.afterEach(() => {
@@ -55,7 +54,7 @@ tap.test('gRPC Client: Client Streaming', (t) => {
       agent.on('transactionFinished', (transaction) => {
         if (transaction.name === 'clientTransaction') {
           // Make sure we're in the client and not server transaction
-          assertExternalSegment({ t, tx: transaction, fnName: 'SayHelloClientStream' })
+          assertExternalSegment({ t, tx: transaction, fnName: 'SayHelloClientStream', port })
           t.end()
         }
       })
@@ -127,7 +126,7 @@ tap.test('gRPC Client: Client Streaming', (t) => {
     })
     t.ok(response, 'response exists')
     t.equal(response.message, 'Hello New Relic', 'response message is correct')
-    assertMetricsNotExisting({ t, agent })
+    assertMetricsNotExisting({ t, agent, port })
     t.end()
   })
 
@@ -149,6 +148,7 @@ tap.test('gRPC Client: Client Streaming', (t) => {
         agent.on('transactionFinished', (transaction) => {
           if (transaction.name === 'clientTransaction') {
             assertError({
+              port,
               t,
               transaction,
               errors: agent.errors,
@@ -183,6 +183,7 @@ tap.test('gRPC Client: Client Streaming', (t) => {
         agent.on('transactionFinished', (transaction) => {
           if (transaction.name === 'clientTransaction') {
             assertError({
+              port,
               t,
               transaction,
               errors: agent.errors,
