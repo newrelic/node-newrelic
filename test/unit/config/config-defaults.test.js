@@ -303,4 +303,9 @@ tap.test('with default properties', (t) => {
     t.equal(configuration.infinite_tracing.compression, true)
     t.end()
   })
+
+  t.test('should default worker_threads.enabled to false', (t) => {
+    t.equal(configuration.worker_threads.enabled, false)
+    t.end()
+  })
 })

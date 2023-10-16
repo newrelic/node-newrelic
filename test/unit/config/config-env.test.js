@@ -767,4 +767,11 @@ tap.test('when overriding configuration values via environment variables', (t) =
       t.end()
     })
   })
+
+  t.test('should convert NEW_RELIC_WORKER_THREADS_ENABLED accordingly', (t) => {
+    idempotentEnv({ NEW_RELIC_WORKER_THREADS_ENABLED: 'true' }, (config) => {
+      t.equal(config.worker_threads.enabled, true)
+      t.end()
+    })
+  })
 })

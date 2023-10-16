@@ -20,28 +20,23 @@ const NAMES = require('./lib/metrics/names')
 const isESMSupported = psemver.satisfies('>=16.2.0')
 
 const pkgJSON = require('./package.json')
-if (isMainThread) {
-  logger.info(
-    'Using New Relic for Node.js. Agent version: %s; Node version: %s.',
-    pkgJSON.version,
-    process.version
-  )
+logger.info(
+  'Using New Relic for Node.js. Agent version: %s; Node version: %s.',
+  pkgJSON.version,
+  process.version
+)
 
-  if (require.cache.__NR_cache) {
-    logger.warn(
-      'Attempting to load a second copy of newrelic from %s, using cache instead',
-      __dirname
-    )
-    if (require.cache.__NR_cache.agent) {
-      require.cache.__NR_cache.agent.recordSupportability('Agent/DoubleLoad')
-    }
-    module.exports = require.cache.__NR_cache
-  } else {
-    initialize()
+if (require.cache.__NR_cache) {
+  logger.warn(
+    'Attempting to load a second copy of newrelic from %s, using cache instead',
+    __dirname
+  )
+  if (require.cache.__NR_cache.agent) {
+    require.cache.__NR_cache.agent.recordSupportability('Agent/DoubleLoad')
   }
+  module.exports = require.cache.__NR_cache
 } else {
-  logger.warn('Using New Relic for Node.js in worker_threads is not supported. Not starting!')
-  initApi({ apiPath: './stub_api' })
+  initialize()
 }
 
 function initApi({ agent, apiPath }) {
@@ -97,7 +92,16 @@ function initialize() {
       logger.info('No configuration detected. Not starting.')
     } else if (!config.agent_enabled) {
       logger.info('Module disabled in configuration. Not starting.')
+    } else if (!config.worker_threads.enabled && !isMainThread) {
+      logger.warn(
+        'New Relic for Node.js in worker_threads is not officially supported. Not starting! To bypass this, set `config.worker_threads.enabled` to true in configuration.'
+      )
     } else {
+      if (!isMainThread && config.worker_threads.enabled) {
+        logger.warn(
+          'Attempting to load agent in worker thread. This is not officially supported, use at your own risk.'
+        )
+      }
       agent = createAgent(config)
       addStartupSupportabilities(agent)
     }
