@@ -52,7 +52,7 @@ test('Elasticsearch instrumentation', (t) => {
       const firstChild = transaction?.trace?.root?.children[0]
       t.equal(
         firstChild.name,
-        `External/localhost:9200/`,
+        `External/localhost:9200/${DB_INDEX}`,
         'should record index creation as an external transaction'
       )
       await client.indices.delete({ index: DB_INDEX })
