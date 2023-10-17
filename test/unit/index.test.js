@@ -388,7 +388,7 @@ test('index tests', (t) => {
       t.equal(loggerMock.warn.callCount, 1)
       t.equal(
         loggerMock.warn.args[0][0],
-        'Attempting to load agent in worker thread. This is not officially supported, use at your own risk.'
+        'Attempting to load agent in worker thread. This is not officially supported. Use at your own risk.'
       )
       t.ok(api.agent)
       t.equal(api.agent.constructor.name, 'MockAgent', 'should initialize an agent')

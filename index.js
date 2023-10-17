@@ -99,7 +99,7 @@ function initialize() {
     } else {
       if (!isMainThread && config.worker_threads.enabled) {
         logger.warn(
-          'Attempting to load agent in worker thread. This is not officially supported, use at your own risk.'
+          'Attempting to load agent in worker thread. This is not officially supported. Use at your own risk.'
         )
       }
       agent = createAgent(config)
