@@ -11,11 +11,41 @@ const helper = require('../../lib/agent_helper')
 const params = require('../../lib/params')
 const urltils = require('../../../lib/util/urltils')
 const crypto = require('crypto')
+const { readFile } = require('fs/promises')
+const semver = require('semver')
 const DB_INDEX = `test-${randomString()}`
 const DB_INDEX_2 = `test2-${randomString()}`
 
 function randomString() {
   return crypto.randomBytes(5).toString('hex')
+}
+
+// request bodies are structured differently in ElasticSearch v7.x vs v8.x
+function setRequestBody(body, version) {
+  if (semver.lt(version, '8.0.0')) {
+    return { body }
+  }
+  return body
+}
+function setBulkBody(body, version) {
+  if (semver.lt(version, '8.0.0')) {
+    return {
+      refresh: true,
+      body
+    }
+  }
+  return {
+    refresh: true,
+    operations: body
+  }
+}
+function setMsearch(body, version) {
+  if (semver.lt(version, '8.0.0')) {
+    return { body }
+  }
+  return {
+    searches: body
+  }
 }
 
 test('Elasticsearch instrumentation', (t) => {
@@ -26,8 +56,14 @@ test('Elasticsearch instrumentation', (t) => {
 
   let agent
   let client
+  let pkgVersion
 
   t.before(async () => {
+    // Determine version. ElasticSearch v7 did not export package, so we have to read the file
+    // instead of requiring it, as we can with 8+.
+    const pkg = await readFile(`${__dirname}/node_modules/@elastic/elasticsearch/package.json`)
+    ;({ version: pkgVersion } = JSON.parse(pkg.toString()))
+
     agent = helper.instrumentMockedAgent()
 
     METRIC_HOST_NAME = urltils.isLocalhost(params.elastic_host)
@@ -82,27 +118,26 @@ test('Elasticsearch instrumentation', (t) => {
 
   t.test('should record bulk operations', async (t) => {
     await helper.runInTransaction(agent, async function transactionInScope(transaction) {
-      await client.bulk({
-        refresh: true,
-        operations: [
-          { index: { _index: DB_INDEX } },
-          { title: 'First Bulk Doc', body: 'Content of first bulk document' },
-          { index: { _index: DB_INDEX } },
-          { title: 'Second Bulk Doc', body: 'Content of second bulk document.' },
-          { index: { _index: DB_INDEX } },
-          { title: 'Third Bulk Doc', body: 'Content of third bulk document.' },
-          { index: { _index: DB_INDEX } },
-          { title: 'Fourth Bulk Doc', body: 'Content of fourth bulk document.' },
-          { index: { _index: DB_INDEX_2 } },
-          { title: 'Fifth Bulk Doc', body: 'Content of fifth bulk document' },
-          { index: { _index: DB_INDEX_2 } },
-          { title: 'Sixth Bulk Doc', body: 'Content of sixth bulk document.' },
-          { index: { _index: DB_INDEX_2 } },
-          { title: 'Seventh Bulk Doc', body: 'Content of seventh bulk document.' },
-          { index: { _index: DB_INDEX_2 } },
-          { title: 'Eighth Bulk Doc', body: 'Content of eighth bulk document.' }
-        ]
-      })
+      const operations = [
+        { index: { _index: DB_INDEX } },
+        { title: 'First Bulk Doc', body: 'Content of first bulk document' },
+        { index: { _index: DB_INDEX } },
+        { title: 'Second Bulk Doc', body: 'Content of second bulk document.' },
+        { index: { _index: DB_INDEX } },
+        { title: 'Third Bulk Doc', body: 'Content of third bulk document.' },
+        { index: { _index: DB_INDEX } },
+        { title: 'Fourth Bulk Doc', body: 'Content of fourth bulk document.' },
+        { index: { _index: DB_INDEX_2 } },
+        { title: 'Fifth Bulk Doc', body: 'Content of fifth bulk document' },
+        { index: { _index: DB_INDEX_2 } },
+        { title: 'Sixth Bulk Doc', body: 'Content of sixth bulk document.' },
+        { index: { _index: DB_INDEX_2 } },
+        { title: 'Seventh Bulk Doc', body: 'Content of seventh bulk document.' },
+        { index: { _index: DB_INDEX_2 } },
+        { title: 'Eighth Bulk Doc', body: 'Content of eighth bulk document.' }
+      ]
+
+      await client.bulk(setBulkBody(operations, pkgVersion))
       t.ok(transaction, 'transaction should still be visible after bulk create')
       const trace = transaction.trace
       t.ok(trace?.root?.children?.[0], 'trace, trace root, and first child should exist')
@@ -154,8 +189,10 @@ test('Elasticsearch instrumentation', (t) => {
     agent.config.transaction_tracer.record_sql = 'raw'
     agent.config.slow_sql.enabled = true
     await helper.runInTransaction(agent, async function transactionInScope(transaction) {
-      const expectedQuery = { match: { body: 'document' } }
-      const search = await client.search({ index: DB_INDEX, query: expectedQuery })
+      // We expect this content in the trace of the request, but the request body is different in 7 v 8.
+      const expectedQuery = { query: { match: { body: 'document' } } }
+      const requestBody = setRequestBody(expectedQuery, pkgVersion)
+      const search = await client.search({ index: DB_INDEX, ...requestBody })
       t.ok(search, 'search should return a result')
       t.ok(transaction, 'transaction should still be visible after search')
       const trace = transaction.trace
@@ -178,7 +215,7 @@ test('Elasticsearch instrumentation', (t) => {
         t.ok(query.total > 0, 'the samples should have positive duration')
         t.match(
           query.trace.query,
-          JSON.stringify({ query: expectedQuery }),
+          JSON.stringify({ ...expectedQuery }),
           'expected query body should have been recorded'
         )
       }
@@ -191,8 +228,9 @@ test('Elasticsearch instrumentation', (t) => {
     agent.config.transaction_tracer.record_sql = 'raw'
     agent.config.slow_sql.enabled = true
     await helper.runInTransaction(agent, async function transactionInScope(transaction) {
-      const expectedQuery = { match: { body: 'document' } }
-      const search = await client.search({ query: expectedQuery })
+      const expectedQuery = { query: { match: { body: 'document' } } }
+      const requestBody = setRequestBody(expectedQuery, pkgVersion)
+      const search = await client.search({ ...requestBody })
       t.ok(search, 'search should return a result')
       t.ok(transaction, 'transaction should still be visible after search')
       const trace = transaction.trace
@@ -212,7 +250,7 @@ test('Elasticsearch instrumentation', (t) => {
         t.ok(query.total > 0, 'the samples should have positive duration')
         t.match(
           query.trace.query,
-          JSON.stringify({ query: expectedQuery }),
+          JSON.stringify({ ...expectedQuery }),
           'expected query body should have been recorded'
         )
       }
@@ -229,22 +267,18 @@ test('Elasticsearch instrumentation', (t) => {
         {},
         { query: { match: { body: 'bulk' } } }
       ]
+      const requestBody = setMsearch(expectedQuery, pkgVersion)
+      const search = await client.msearch(requestBody)
+      // 7 and 8 have different result responses
+      let results = search?.responses
+      if (semver.lt(pkgVersion, '8.0.0')) {
+        results = search?.body?.responses
+      }
 
-      const search = await client.msearch({
-        searches: expectedQuery
-      })
-      t.ok(search?.responses, 'msearch should return results')
-      t.equal(search?.responses?.length, 2, 'there should be two responses--one per search')
-      t.equal(
-        search?.responses?.[0]?.hits?.hits?.length,
-        1,
-        'first search should return one result'
-      )
-      t.equal(
-        search?.responses?.[1]?.hits?.hits?.length,
-        8,
-        'second search should return eight results'
-      )
+      t.ok(results, 'msearch should return results')
+      t.equal(results?.length, 2, 'there should be two responses--one per search')
+      t.equal(results?.[0]?.hits?.hits?.length, 1, 'first search should return one result')
+      t.equal(results?.[1]?.hits?.hits?.length, 8, 'second search should return eight results')
       t.ok(transaction, 'transaction should still be visible after search')
       const trace = transaction.trace
       t.ok(trace?.root?.children?.[0], 'trace, trace root, and first child should exist')
@@ -274,19 +308,26 @@ test('Elasticsearch instrumentation', (t) => {
     const id = `key-${randomString()}`
     t.plan(28)
     await helper.runInTransaction(agent, async function transactionInScope(transaction) {
+      const documentProp = setRequestBody(
+        {
+          document: {
+            title: 'second document',
+            body: 'body of the second document'
+          }
+        },
+        pkgVersion
+      )
       await client.index({
         index: DB_INDEX,
         id,
-        document: {
-          title: 'second document',
-          body: 'body of the second document'
-        }
+        ...documentProp
       })
 
       // check metrics/methods for "exists" queries
       await client.exists({ id, index: DB_INDEX })
       await client.get({ id, index: DB_INDEX })
-      await client.search({ query: { match: { body: 'document' } } })
+      const searchQuery = setRequestBody({ query: { match: { body: 'document' } } }, pkgVersion)
+      await client.search(searchQuery)
       await client.delete({ id, index: DB_INDEX })
       transaction.end()
 
@@ -319,13 +360,20 @@ test('Elasticsearch instrumentation', (t) => {
     agent.config.datastore_tracer.database_name_reporting.enabled = false
 
     await helper.runInTransaction(agent, async function transactionInScope(transaction) {
+      const documentProp = setRequestBody(
+        {
+          document: {
+            title: 'third document title',
+            body: 'body of the third document'
+          }
+        },
+        pkgVersion
+      )
+
       await client.index({
         index: DB_INDEX,
         id: 'testkey3',
-        document: {
-          title: 'third document title',
-          body: 'body of the third document'
-        }
+        ...documentProp
       })
 
       const createSegment = transaction.trace.root.children[0]
@@ -356,6 +404,15 @@ test('Elasticsearch instrumentation', (t) => {
         'Datastore/statement/ElasticSearch/_search/index.create',
         'should record the attempted index creation without altering the index name'
       )
+    })
+  })
+  t.test('index existence check should not error', async (t) => {
+    await helper.runInTransaction(agent, async function transactionInScope() {
+      try {
+        await client.indices.exists({ index: DB_INDEX })
+      } catch (e) {
+        t.notOk(e, 'should be able to check for index existence')
+      }
     })
   })
 })
