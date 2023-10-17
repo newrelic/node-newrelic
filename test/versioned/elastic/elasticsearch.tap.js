@@ -59,10 +59,10 @@ test('Elasticsearch instrumentation', (t) => {
   let pkgVersion
 
   t.before(async () => {
-    // determine version
+    // Determine version. ElasticSearch v7 did not export package, so we have to read the file
+    // instead of requiring it, as we can with 8+.
     const pkg = await readFile(`${__dirname}/node_modules/@elastic/elasticsearch/package.json`)
-    const { version: esVersion } = JSON.parse(pkg.toString())
-    pkgVersion = esVersion
+    ;({ version: pkgVersion } = JSON.parse(pkg.toString()))
 
     agent = helper.instrumentMockedAgent()
 
@@ -256,7 +256,6 @@ test('Elasticsearch instrumentation', (t) => {
       }
     })
   })
-  // skipping for 7.x because the client converts body to bulkBody, causing an error
   t.test('should record msearch', async function (t) {
     agent.config.transaction_tracer.explain_threshold = 0
     agent.config.transaction_tracer.record_sql = 'raw'
