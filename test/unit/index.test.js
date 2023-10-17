@@ -210,7 +210,8 @@ test('index tests', (t) => {
       agent_enabled: true,
       logging: {},
       feature_flag: { flag_1: true, flag_2: false },
-      security: { agent: { enabled: false } }
+      security: { agent: { enabled: false } },
+      worker_threads: { enabled: false }
     }
     configMock = {
       getOrCreateInstance: sandbox.stub().returns(mockConfig)
@@ -371,10 +372,28 @@ test('index tests', (t) => {
     t.equal(loggerMock.warn.callCount, 1)
     t.equal(
       loggerMock.warn.args[0][0],
-      'Using New Relic for Node.js in worker_threads is not supported. Not starting!'
+      'New Relic for Node.js in worker_threads is not officially supported. Not starting! To bypass this, set `config.worker_threads.enabled` to true in configuration.'
     )
-    t.equal(loggerMock.info.callCount, 0, 'should not attempt to initialize agent')
+    t.not(api.agent, 'should not initialize an agent')
     t.equal(api.constructor.name, 'Stub')
     t.end()
   })
+
+  t.test(
+    'should log warning if not in main thread and worker_threads.enabled is true and init agent',
+    (t) => {
+      mockConfig.worker_threads.enabled = true
+      workerThreadsStub.isMainThread = false
+      const api = loadIndex()
+      t.equal(loggerMock.warn.callCount, 1)
+      t.equal(
+        loggerMock.warn.args[0][0],
+        'Attempting to load agent in worker thread. This is not officially supported. Use at your own risk.'
+      )
+      t.ok(api.agent)
+      t.equal(api.agent.constructor.name, 'MockAgent', 'should initialize an agent')
+      t.equal(api.constructor.name, 'API')
+      t.end()
+    }
+  )
 })
