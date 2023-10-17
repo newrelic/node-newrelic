@@ -8,7 +8,6 @@ const { program } = require('commander')
 const API_ENDPOINT = '/v2/system_configuration.json'
 const STAGING_HOST = 'https://staging-api.newrelic.com'
 const PRD_US_HOST = 'https://api.newrelic.com'
-const PRD_EU_HOST = 'https://api.eu.newrelic.com'
 
 program.requiredOption('--version <version>', 'New version of node agent')
 program.requiredOption('--staging-key <key>', 'New Relic API key for staging')
@@ -60,9 +59,8 @@ async function updateSystemConfigs() {
   const opts = program.opts()
   const stagingRequest = fetch(...formatRequest(STAGING_HOST, opts.version, opts.stagingKey))
   const prodUsRequest = fetch(...formatRequest(PRD_US_HOST, opts.version, opts.prodKey))
-  const prodEuRequest = fetch(...formatRequest(PRD_EU_HOST, opts.version, opts.prodKey))
   try {
-    const responses = await Promise.all([stagingRequest, prodUsRequest, prodEuRequest])
+    const responses = await Promise.all([stagingRequest, prodUsRequest])
     responses.forEach(async (response) => {
       const res = await response.json()
       if (![200, 201].includes(response.status)) {
