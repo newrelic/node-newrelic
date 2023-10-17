@@ -12,14 +12,22 @@ const serverImpl = require('./grpc-server.cjs')
 const DESTINATIONS = require('../../../lib/config/attribute-filter').DESTINATIONS
 const DESTINATION = DESTINATIONS.TRANS_EVENT | DESTINATIONS.ERROR_EVENT
 
-const SERVER_ADDR = '0.0.0.0:50051'
-const CLIENT_ADDR = 'localhost:50051'
+const SERVER_ADDR = '0.0.0.0'
+const CLIENT_ADDR = 'localhost'
 const SERVER_TX_PREFIX = 'WebTransaction/WebFrameworkUri/gRPC/'
 const { EXTERNAL } = require('../../../lib/metrics/names')
-const rollupHost = `${EXTERNAL.PREFIX}${CLIENT_ADDR}/all`
-const grpcMetricName = `${EXTERNAL.PREFIX}${CLIENT_ADDR}/gRPC`
-const metrics = [grpcMetricName, rollupHost, EXTERNAL.WEB, EXTERNAL.ALL]
-const expectedMetrics = metrics.map((metric) => ({ name: metric }))
+
+function buildMetrics(port) {
+  const clientAddr = `${CLIENT_ADDR}:${port}`
+  const rollupHost = `${EXTERNAL.PREFIX}${clientAddr}/all`
+  const grpcMetricName = `${EXTERNAL.PREFIX}${clientAddr}/gRPC`
+  return [grpcMetricName, rollupHost, EXTERNAL.WEB, EXTERNAL.ALL]
+}
+
+function buildExpectedMetrics(port) {
+  const metrics = buildMetrics(port)
+  return metrics.map((metric) => ({ name: metric }))
+}
 
 /**
  * Iterates over all metrics created during a transaction and asserts no gRPC metrics were created
@@ -28,7 +36,8 @@ const expectedMetrics = metrics.map((metric) => ({ name: metric }))
  * @param {Object} params.t tap test
  * @param {Object} params.agent test agent
  */
-util.assertMetricsNotExisting = function assertMetricsNotExisting({ t, agent }) {
+util.assertMetricsNotExisting = function assertMetricsNotExisting({ t, agent, port }) {
+  const metrics = buildMetrics(port)
   metrics.forEach((metricName) => {
     const metric = agent.metrics.getMetric(metricName)
     t.notOk(metric, `${metricName} should not be recorded`)
@@ -68,8 +77,8 @@ util.createServer = async function createServer(grpc) {
   const serverMethods = serverImpl(server)
   const proto = loadProtobufApi(grpc)
   server.addService(proto.Greeter.service, serverMethods)
-  await new Promise((resolve, reject) => {
-    server.bindAsync(SERVER_ADDR, credentials, (err, port) => {
+  const port = await new Promise((resolve, reject) => {
+    server.bindAsync(`${SERVER_ADDR}:0`, credentials, (err, port) => {
       if (err) {
         reject(err)
       } else {
@@ -78,7 +87,7 @@ util.createServer = async function createServer(grpc) {
     })
   })
   server.start()
-  return { server, proto }
+  return { server, proto, port }
 }
 
 /**
@@ -88,9 +97,9 @@ util.createServer = async function createServer(grpc) {
  * @param {Object} proto protobuf API example.proto
  * @returns {Object} client grpc client for Greeter service
  */
-util.getClient = function getClient(grpc, proto) {
+util.getClient = function getClient(grpc, proto, port) {
   const credentials = grpc.credentials.createInsecure()
-  return new proto.Greeter(CLIENT_ADDR, credentials)
+  return new proto.Greeter(`${CLIENT_ADDR}:${port}`, credentials)
 }
 
 /**
@@ -129,16 +138,17 @@ util.assertExternalSegment = function assertExternalSegment({
   tx,
   fnName,
   expectedStatusCode = 0,
-  expectedStatusText = 'OK'
+  expectedStatusText = 'OK',
+  port
 }) {
   const methodName = util.getRPCName(fnName)
-  const segmentName = `${EXTERNAL.PREFIX}${CLIENT_ADDR}${methodName}`
+  const segmentName = `${EXTERNAL.PREFIX}${CLIENT_ADDR}:${port}${methodName}`
   metricsHelpers.assertSegments(tx.trace.root, [segmentName], { exact: false })
   const segment = metricsHelpers.findSegment(tx.trace.root, segmentName)
   const attributes = segment.getAttributes()
   t.equal(
     attributes['http.url'],
-    `grpc://${CLIENT_ADDR}${methodName}`,
+    `grpc://${CLIENT_ADDR}:${port}${methodName}`,
     'http.url attribute should be correct'
   )
   t.equal(attributes['http.method'], methodName, 'method name should be correct')
@@ -153,6 +163,7 @@ util.assertExternalSegment = function assertExternalSegment({
     `status text should be ${expectedStatusText}`
   )
   t.equal(attributes.component, 'gRPC', 'should have the component set to "gRPC"')
+  const expectedMetrics = buildExpectedMetrics(port)
   metricsHelpers.assertMetrics(tx.metrics, [expectedMetrics], false, false)
 }
 
@@ -364,7 +375,8 @@ util.assertError = function assertError({
   agentMetrics,
   fnName,
   expectedStatusText,
-  expectedStatusCode
+  expectedStatusCode,
+  port
 }) {
   // when testing client the transaction will contain both server and client information. so we need to extract the client error which is always the 2nd
   const errorLength = expectErrors ? (clientError ? 2 : 1) : 0
@@ -383,6 +395,7 @@ util.assertError = function assertError({
       tx: transaction,
       fnName,
       expectedStatusText,
+      port,
       expectedStatusCode
     })
   } else {
