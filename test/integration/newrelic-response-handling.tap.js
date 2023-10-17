@@ -44,7 +44,22 @@ const endpointDataChecks = {
 }
 
 tap.test('New Relic response code handling', (t) => {
-  t.plan(testCases.length)
+  t.autoend()
+  // t.plan(testCases.length)
+
+  t.before(() => {
+    nock.disableNetConnect()
+  })
+
+  t.teardown(() => {
+    if (!nock.isDone()) {
+      // eslint-disable-next-line no-console
+      console.error('Cleaning pending mocks: %j', nock.pendingMocks())
+      nock.cleanAll()
+    }
+
+    nock.enableNetConnect()
+  })
 
   testCases.forEach((testCase) => {
     const testName = `Status code: ${testCase.code}`
@@ -162,8 +177,9 @@ function createStatusCodeTest(testCase) {
 
     let agent = null
 
+    statusCodeTest.autoend()
     statusCodeTest.beforeEach(async () => {
-      nock.disableNetConnect()
+      // nock.disableNetConnect()
 
       testClock = sinon.useFakeTimers({
         toFake: ['setTimeout', 'setInterval', 'Date', 'clearInterval']
@@ -207,19 +223,20 @@ function createStatusCodeTest(testCase) {
       restartEndpoints = null
       shutdown = null
 
-      if (!nock.isDone()) {
+      /* if (!nock.isDone()) {
         // eslint-disable-next-line no-console
         console.error('Cleaning pending mocks: %j', nock.pendingMocks())
         nock.cleanAll()
       }
 
       nock.enableNetConnect()
+      */
     })
 
     // Test behavior for this status code against every endpoint
     // since not all business logic is shared for each.
     const endpointNames = Object.keys(endpointDataChecks)
-    statusCodeTest.plan(endpointNames.length)
+    // statusCodeTest.plan(endpointNames.length)
 
     endpointNames.forEach((endpointName) => {
       const checkHasTestData = endpointDataChecks[endpointName]
