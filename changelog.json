@@ -4,9 +4,7 @@
     {
       "version": "11.3.0",
       "changes": {
-        "security": [
-          "bump @babel/traverse"
-        ],
+        "security": [],
         "bugfixes": [
           "Updated Elasticsearch instrumentation to register only on v7.13.0+"
         ],
