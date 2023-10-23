@@ -1,3 +1,33 @@
+### v11.2.2 (2023-10-23)
+
+#### Features
+
+* Updated agent initialization to allow running in worker threads when config.worker_threads.enabled is true ([#1817](https://github.com/newrelic/node-newrelic/pull/1817)) ([a39f0ef](https://github.com/newrelic/node-newrelic/commit/a39f0ef5ac670d03ab407b24e5aeccd8d5e8c680))
+
+#### Bug fixes
+
+* Updated Elasticsearch instrumentation to only register on v7.13.0+ ([#1816](https://github.com/newrelic/node-newrelic/pull/1816)) ([6437671](https://github.com/newrelic/node-newrelic/commit/6437671b921cd6bd73ed31180b0d62f62cc229a2))
+
+#### Security improvements
+
+* **deps:** bump @babel/traverse ([#1818](https://github.com/newrelic/node-newrelic/pull/1818)) ([d3c8d04](https://github.com/newrelic/node-newrelic/commit/d3c8d04b74b7a84846609b744e3b4922136dbdd6))
+
+#### Miscellaneous chores
+
+* included changelog entry for removing ability to run in worker threads to 11.0.0 ([#1813](https://github.com/newrelic/node-newrelic/pull/1813)) ([cb8bee2](https://github.com/newrelic/node-newrelic/commit/cb8bee2f2c248f8ff307eb7e6f5392ad081b6554))
+* Updated release note headers to follow standard sentence caps ([#1806](https://github.com/newrelic/node-newrelic/pull/1806)) ([91d3600](https://github.com/newrelic/node-newrelic/commit/91d36009e0496af823cfbc3a4bdb2b32a97ba8c5))
+
+#### Tests
+
+* Removed skipping elasticsearch versioned tests on Node 20 ([#1810](https://github.com/newrelic/node-newrelic/pull/1810)) ([31a7ad0](https://github.com/newrelic/node-newrelic/commit/31a7ad01435a0c6acabd824b5b0ba105a407fd0a))
+* updated the grpc versioned tests utils to dynamically bind ports to avoid conflicts between cjs and esm tests ([#1820](https://github.com/newrelic/node-newrelic/pull/1820)) ([95ac917](https://github.com/newrelic/node-newrelic/commit/95ac917da92575e178d8026bdc0badb08ba6fb83))
+
+#### Continuous integration
+
+* disable fail-fast on testing jobs to make sure all versions are run before getting canceled because of a flappy test ([#1819](https://github.com/newrelic/node-newrelic/pull/1819)) ([0928ee3](https://github.com/newrelic/node-newrelic/commit/0928ee3db82533e2386ad2bf4b87074b4f15f33b))
+* Updated CI workflow to use larger runners on versioned tests but only when running against the main branch ([#1812](https://github.com/newrelic/node-newrelic/pull/1812)) ([01eaa14](https://github.com/newrelic/node-newrelic/commit/01eaa14c76a32966f6af8475e6ba6d4e00b03513))
+* Updated post release script to update the nodejs_agent_version only on staging and us prod, eu will get it via replication now ([#1811](https://github.com/newrelic/node-newrelic/pull/1811)) ([317a00a](https://github.com/newrelic/node-newrelic/commit/317a00a9c160b52b053cb1f9f55292551c4c3428))
+
 ### v11.2.1 (2023-10-12)
 
 #### Bug fixes
