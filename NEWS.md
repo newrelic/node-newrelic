@@ -21,7 +21,8 @@
 #### Tests
 
 * Removed skipping elasticsearch versioned tests on Node 20 ([#1810](https://github.com/newrelic/node-newrelic/pull/1810)) ([31a7ad0](https://github.com/newrelic/node-newrelic/commit/31a7ad01435a0c6acabd824b5b0ba105a407fd0a))
-* updated the grpc versioned tests utils to dynamically bind ports to avoid conflicts between cjs and esm tests ([#1820](https://github.com/newrelic/node-newrelic/pull/1820)) ([95ac917](https://github.com/newrelic/node-newrelic/commit/95ac917da92575e178d8026bdc0badb08ba6fb83))
+* Updated the grpc versioned tests utils to dynamically bind ports to avoid conflicts between cjs and esm tests ([#1820](https://github.com/newrelic/node-newrelic/pull/1820)) ([95ac917](https://github.com/newrelic/node-newrelic/commit/95ac917da92575e178d8026bdc0badb08ba6fb83))
+
 
 #### Continuous integration
 
