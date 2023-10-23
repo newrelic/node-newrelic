@@ -8,7 +8,7 @@
           "bump @babel/traverse"
         ],
         "bugfixes": [
-          "Updated Elasticsearch instrumentation to only register on v7.13.0+"
+          "Updated Elasticsearch instrumentation to register only on v7.13.0+"
         ],
         "features": [
           "Updated agent initialization to allow running in worker threads when config.worker_threads.enabled is true"
