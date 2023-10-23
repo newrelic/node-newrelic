@@ -24,7 +24,8 @@
 
 #### Continuous integration
 
-* disable fail-fast on testing jobs to make sure all versions are run before getting canceled because of a flappy test ([#1819](https://github.com/newrelic/node-newrelic/pull/1819)) ([0928ee3](https://github.com/newrelic/node-newrelic/commit/0928ee3db82533e2386ad2bf4b87074b4f15f33b))
+* Disabled fail-fast on testing jobs to make sure all versions are run before getting canceled because of a flappy test ([#1819](https://github.com/newrelic/node-newrelic/pull/1819)) ([0928ee3](https://github.com/newrelic/node-newrelic/commit/0928ee3db82533e2386ad2bf4b87074b4f15f33b))
+
 * Updated CI workflow to use larger runners on versioned tests but only when running against the main branch ([#1812](https://github.com/newrelic/node-newrelic/pull/1812)) ([01eaa14](https://github.com/newrelic/node-newrelic/commit/01eaa14c76a32966f6af8475e6ba6d4e00b03513))
 * Updated post release script to update the nodejs_agent_version only on staging and us prod, eu will get it via replication now ([#1811](https://github.com/newrelic/node-newrelic/pull/1811)) ([317a00a](https://github.com/newrelic/node-newrelic/commit/317a00a9c160b52b053cb1f9f55292551c4c3428))
 
