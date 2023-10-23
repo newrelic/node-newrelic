@@ -10,7 +10,8 @@
 
 #### Security improvements
 
-* **deps:** bump @babel/traverse ([#1818](https://github.com/newrelic/node-newrelic/pull/1818)) ([d3c8d04](https://github.com/newrelic/node-newrelic/commit/d3c8d04b74b7a84846609b744e3b4922136dbdd6))
+* **dev-deps:** Bumped @babel/traverse ([#1818](https://github.com/newrelic/node-newrelic/pull/1818)) ([d3c8d04](https://github.com/newrelic/node-newrelic/commit/d3c8d04b74b7a84846609b744e3b4922136dbdd6))
+
 
 #### Miscellaneous chores
 
