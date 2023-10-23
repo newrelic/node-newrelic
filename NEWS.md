@@ -6,7 +6,7 @@
 
 #### Bug fixes
 
-* Updated Elasticsearch instrumentation to only register on v7.13.0+ ([#1816](https://github.com/newrelic/node-newrelic/pull/1816)) ([6437671](https://github.com/newrelic/node-newrelic/commit/6437671b921cd6bd73ed31180b0d62f62cc229a2))
+* Updated Elasticsearch instrumentation to register on v7.13.0+ only ([#1816](https://github.com/newrelic/node-newrelic/pull/1816)) ([6437671](https://github.com/newrelic/node-newrelic/commit/6437671b921cd6bd73ed31180b0d62f62cc229a2))
 
 #### Security improvements
 
