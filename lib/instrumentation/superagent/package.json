@@ -37,9 +37,6 @@
   "engines": {
     "node": ">=16.0"
   },
-  "peerDependencies": {
-    "newrelic": ">=6.11.0"
-  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/newrelic/node-newrelic-superagent.git"
