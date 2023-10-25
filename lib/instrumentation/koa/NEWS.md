@@ -1,3 +1,10 @@
+### v8.0.1 (2023-10-25)
+
+* Removed `newrelic` as peer dependency since this package only gets bundled with agent.
+* Updated [@babel/traverse](https://github.com/babel/babel/tree/HEAD/packages/babel-traverse) from 7.17.3 and 7.21.4 to 7.23.2.
+
+--------------------------
+
 ### v8.0.0 (2023-08-28)
 
 * **BREAKING**: Removed support for Node 14.
