@@ -2,6 +2,16 @@
   "repository": "newrelic/node-newrelic",
   "entries": [
     {
+      "version": "11.4.0",
+      "changes": {
+        "security": [],
+        "bugfixes": [],
+        "features": [
+          "Added support for parsing container ids from docker versions using cgroups v2."
+        ]
+      }
+    },
+    {
       "version": "11.3.0",
       "changes": {
         "security": [],
