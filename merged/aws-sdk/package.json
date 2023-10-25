@@ -1,6 +1,6 @@
 {
   "name": "@newrelic/aws-sdk",
-  "version": "7.0.1",
+  "version": "7.0.2",
   "description": "New Relic instrumentation of the aws-sdk package.",
   "scripts": {
     "test": "npm run unit && npm run versioned",

@@ -1,3 +1,8 @@
+### v7.0.2 (2023-10-25)
+
+* Removed `newrelic` as peer dependency since this package only gets bundled with agent.
+* Bumped [@babel/traverse](https://github.com/babel/babel/tree/HEAD/packages/babel-traverse) from 7.17.3 and 7.20.5 to 7.23.2
+
 ### v7.0.1 (2023-09-19)
 
 * Updated v3 smithy-client instrumentation to properly handle all types of clients for DynamoDB, SQS, and SNS.
