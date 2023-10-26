@@ -166,7 +166,7 @@ async function prepareReleaseNotes() {
     let body
 
     if (options.useNewRelease) {
-      title = `chore: release ${version}`
+      title = `chore: Release ${version}`
       body = releaseData
     } else {
       title = `Release ${version}`
