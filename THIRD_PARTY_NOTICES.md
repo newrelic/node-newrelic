@@ -927,7 +927,7 @@ Apache License
 
 ### @newrelic/security-agent
 
-This product includes source derived from [@newrelic/security-agent](https://github.com/newrelic/csec-node-agent) ([v0.3.0](https://github.com/newrelic/csec-node-agent/tree/v0.3.0)), distributed under the [New Relic Pre-Release License](https://github.com/newrelic/csec-node-agent/blob/v0.3.0/LICENSE):
+This product includes source derived from [@newrelic/security-agent](https://github.com/newrelic/csec-node-agent) ([v0.4.0](https://github.com/newrelic/csec-node-agent/tree/v0.4.0)), distributed under the [New Relic Pre-Release License](https://github.com/newrelic/csec-node-agent/blob/v0.4.0/LICENSE):
 
 ```
 ## New Relic Pre-Release Software Notice
