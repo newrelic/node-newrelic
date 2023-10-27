@@ -41,7 +41,7 @@ const MAX_MW_SUPPORTED_VERSION = '13.4.12'
 utils.MAX_MW_SUPPORTED_VERSION = MAX_MW_SUPPORTED_VERSION
 utils.MIN_MW_SUPPORTED_VERSION = MIN_MW_SUPPORTED_VERSION
 /**
- * Middlware instrumentation has had quite the journey for us.
+ * Middleware instrumentation has had quite the journey for us.
  * As of 8/7/23 it no longer functions because it is running in a worker thread.
  * Our instrumentation cannot propagate context in threads so for now we will no longer record this
  * span.

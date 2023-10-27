@@ -27,7 +27,7 @@ module.exports = function initialize(shim, nextServer) {
     function wrapRenderToResponseWithComponents(shim, originalFn) {
       return function wrappedRenderToResponseWithComponents() {
         const [ctx, result] = arguments
-        const { pathname } = ctx
+        const { pathname, renderOpts } = ctx
         // this is not query params but instead url params for dynamic routes
         const { query, components } = result
 
@@ -52,7 +52,7 @@ module.exports = function initialize(shim, nextServer) {
 
         shim.setTransactionUri(pathname)
 
-        const urlParams = extractRouteParams(ctx.query, query)
+        const urlParams = extractRouteParams(ctx.query, renderOpts?.params || query)
         assignParameters(shim, urlParams)
 
         return originalFn.apply(this, arguments)

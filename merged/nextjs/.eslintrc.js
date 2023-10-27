@@ -9,5 +9,5 @@ module.exports = {
   parserOptions: {
     ecmaVersion: 2020
   },
-  ignorePatterns: ['tests/versioned/app']
+  ignorePatterns: ['tests/versioned/app', 'tests/versioned/app-dir']
 }
