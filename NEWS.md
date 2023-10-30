@@ -1,3 +1,13 @@
+### v11.4.1 (2023-10-30)
+
+#### Miscellaneous chores
+
+* **dep:** Updated @newrelic/security-agent to v0.4.0 ([#1837](https://github.com/newrelic/node-newrelic/pull/1837)) ([fb06ac9](https://github.com/newrelic/node-newrelic/commit/fb06ac930269b784fcea6c2b8ea5e54158677ec4))
+
+#### Continuous integration
+
+* Disable fail-fast on nightly versioned test runs ([#1836](https://github.com/newrelic/node-newrelic/pull/1836)) ([fe1b4fc](https://github.com/newrelic/node-newrelic/commit/fe1b4fc4c00b2e4ea4c7b6fa5a8c1cd6e864145a))
+
 ### v11.4.0 (2023-10-25)
 
 #### Features
