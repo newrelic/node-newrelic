@@ -197,7 +197,7 @@
     "readable-stream": "^3.6.1",
     "require-in-the-middle": "^7.2.0",
     "semver": "^7.5.2",
-    "winston-transport": "^4.5.0"
+    "winston-transport": "^4.6.0"
   },
   "optionalDependencies": {
     "@contrast/fn-inspect": "^3.3.0",
