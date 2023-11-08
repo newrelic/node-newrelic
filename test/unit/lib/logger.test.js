@@ -80,7 +80,7 @@ tap.test('Bootstrapped Logger', (t) => {
     )
 
     t.ok(
-      fakeFS.createWriteStream.calledOnceWithExactly('/foo/bar/baz', { flags: 'a+' }),
+      fakeFS.createWriteStream.calledOnceWithExactly('/foo/bar/baz', { flags: 'a+', mode: 0o600 }),
       'should create a new write stream to specific file'
     )
 
