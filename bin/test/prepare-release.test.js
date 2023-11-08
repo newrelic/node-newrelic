@@ -8,6 +8,7 @@
 const tap = require('tap')
 const proxyquire = require('proxyquire')
 const sinon = require('sinon')
+const { getReleaseDate } = require('../prepare-release')
 
 tap.test('Prepare Release script', (testHarness) => {
   testHarness.autoend()
@@ -150,5 +151,24 @@ tap.test('Prepare Release script', (testHarness) => {
       t.equal(result, false)
       t.end()
     })
+  })
+})
+
+tap.test('getReleaseDate', async (t) => {
+  t.beforeEach(async (t) => {
+    t.context.now = Date.now
+    Date.now = function now() {
+      return new Date('2023-11-08T22:45:00.000-05:00').getTime()
+    }
+  })
+
+  t.afterEach(async (t) => {
+    Date.now = t.context.now
+  })
+
+  t.test('returns the correct string', async (t) => {
+    const expected = '2023-11-08'
+    const found = getReleaseDate()
+    t.equal(found, expected)
   })
 })
