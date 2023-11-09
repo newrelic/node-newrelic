@@ -5,16 +5,9 @@
 
 'use strict'
 
-// TODO: convert to normal tap style.
-// Below allows use of mocha DSL with tap runner.
-require('tap').mochaGlobals()
-
+const tap = require('tap')
 const flags = require('../../lib/feature_flags')
-const chai = require('chai')
-const assert = require('assert')
 const Config = require('../../lib/config')
-
-chai.should()
 
 // please do not delete flags from here
 const used = [
@@ -41,68 +34,68 @@ const used = [
   'certificate_bundle',
   'unresolved_promise_cleanup',
   'undici_instrumentation',
-  'undici_async_tracking'
+  'undici_async_tracking',
+  'openai_instrumentation'
 ]
 
-describe('feature flags', function () {
-  let prerelease
-  let unreleased
-  let released
-
-  before(function () {
-    prerelease = Object.keys(flags.prerelease)
-    unreleased = flags.unreleased
-    released = flags.released
+tap.test('feature flags', (t) => {
+  t.beforeEach(async (t) => {
+    t.context.prerelease = Object.keys(flags.prerelease)
+    t.context.unreleased = [...flags.unreleased]
+    t.context.released = [...flags.released]
   })
 
-  it('should declare every prerelease feature in the *used* variable', function () {
-    prerelease.forEach(function (key) {
-      assert(used.indexOf(key) >= 0)
+  t.test('should declare every prerelease feature in the *used* variable', async (t) => {
+    t.context.prerelease.forEach((key) => {
+      t.equal(used.includes(key), true)
     })
   })
-  it('should declare every release feature in the *used* variable', function () {
-    released.forEach(function (key) {
-      assert(used.indexOf(key) >= 0)
+
+  t.test('should declare every release feature in the *used* variable', async (t) => {
+    t.context.released.forEach((key) => {
+      t.equal(used.includes(key), true)
     })
   })
-  it('should declare every unrelease feature in the *used* variable', function () {
-    unreleased.forEach(function (key) {
-      assert(used.indexOf(key) >= 0)
+
+  t.test('should declare every unrelease feature in the *used* variable', async (t) => {
+    t.context.unreleased.forEach((key) => {
+      t.equal(used.includes(key), true)
     })
   })
-  it('should not re-declare a flag in prerelease from released', function () {
-    prerelease
-      .filter(function (n) {
-        return released.indexOf(n) !== -1
-      })
-      .length.should.equal(0)
+
+  t.test('should not re-declare a flag in prerelease from released', async (t) => {
+    const { prerelease, released } = t.context
+    const filtered = prerelease.filter((n) => released.includes(n))
+    t.equal(filtered.length, 0)
   })
-  it('should not re-declare a flag in prerelease from unreleased', function () {
-    Object.keys(flags.prerelease)
-      .filter(function (n) {
-        return unreleased.indexOf(n) !== -1
-      })
-      .length.should.equal(0)
+
+  t.test('should not re-declare a flag in prerelease from unreleased', async (t) => {
+    const { prerelease, unreleased } = t.context
+    const filtered = prerelease.filter((n) => unreleased.includes(n))
+    t.equal(filtered.length, 0)
   })
-  it('should account for all *used* keys', function () {
-    used.forEach(function (key) {
-      if (released.indexOf(key) >= 0) {
+
+  t.test('should account for all *used* keys', async (t) => {
+    const { released, unreleased, prerelease } = t.context
+    used.forEach((key) => {
+      if (released.includes(key) === true) {
         return
       }
-      if (unreleased.indexOf(key) >= 0) {
+      if (unreleased.includes(key) === true) {
         return
       }
-      if (prerelease.indexOf(key) >= 0) {
+      if (prerelease.includes(key) === true) {
         return
       }
 
-      throw new Error('Flag not accounted for')
+      throw Error('Flag not accounted for')
     })
   })
-  it('should warn if released flags are still in config', function () {
+
+  t.test('should warn if released flags are still in config', async (t) => {
     let called = false
     Config.prototype.setLogger({
-      warn: function () {
+      warn: () => {
         called = true
       },
       warnOnce: () => {}
@@ -110,12 +103,13 @@ describe('feature flags', function () {
     const config = new Config()
     config.feature_flag.released = true
     config.validateFlags()
-    called.should.equal(true)
+    t.equal(called, true)
   })
-  it('should warn if unreleased flags are still in config', function () {
+
+  t.test('should warn if unreleased flags are still in config', async (t) => {
     let called = false
     Config.prototype.setLogger({
-      warn: function () {
+      warn: () => {
         called = true
       },
       warnOnce: () => {}
@@ -123,6 +117,8 @@ describe('feature flags', function () {
     const config = new Config()
     config.feature_flag.unreleased = true
     config.validateFlags()
-    called.should.equal(true)
+    t.equal(called, true)
   })
+
+  t.end()
 })
