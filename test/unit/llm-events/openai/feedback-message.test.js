@@ -10,9 +10,9 @@ const LlmFeedbackMessage = require('../../../../lib/llm-events/openai/feedback-m
 
 tap.test('LlmFeedbackMessage', (t) => {
   const opts = {
-    conversation_id: 'convo-id',
-    request_id: 'request-id',
-    message_id: 'msg-id',
+    conversationId: 'convo-id',
+    requestId: 'request-id',
+    messageId: 'msg-id',
     category: 'informative',
     rating: '10',
     message: 'This answer was amazing'
@@ -20,6 +20,6 @@ tap.test('LlmFeedbackMessage', (t) => {
   const feedbackMsg = new LlmFeedbackMessage(opts)
   const serialized = feedbackMsg.serialize()
   const expected = `{"id":"${feedbackMsg.id}","conversation_id":"convo-id","request_id":"request-id","message_id":"msg-id","category":"informative","rating":"informative","message":"This answer was amazing","ingest_source":"Node"}`
-  t.equal(serialized, expected)
+  t.same(serialized, JSON.parse(expected))
   t.end()
 })

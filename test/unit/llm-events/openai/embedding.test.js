@@ -31,10 +31,11 @@ tap.test('LlmEmbedding', (t) => {
     const api = helper.getAgentApi()
     helper.runInTransaction(agent, (tx) => {
       api.startSegment('fakeSegment', false, () => {
-        const embeddingEvent = new LlmEmbedding(agent, req, res)
+        const segment = api.shim.getActiveSegment()
+        const embeddingEvent = new LlmEmbedding({ agent, segment, request: req, response: res })
         const serialized = embeddingEvent.serialize()
         const expected = getExpectedResult(tx, embeddingEvent, 'embedding')
-        t.equal(serialized, expected)
+        t.same(serialized, expected)
         t.end()
       })
     })
@@ -43,7 +44,7 @@ tap.test('LlmEmbedding', (t) => {
   t.test('should assign metadata if available on agent.llm.metadata', (t) => {
     const metadata = { key: 'value', meta: 'data', test: true, data: [1, 2, 3] }
     agent.llm = { metadata }
-    const embeddingEvent = new LlmEmbedding(agent, {}, {})
+    const embeddingEvent = new LlmEmbedding({ agent, segment: null, request: {}, response: {} })
     t.same(embeddingEvent.metadata, metadata)
     t.end()
   })
@@ -66,7 +67,12 @@ tap.test('LlmEmbedding', (t) => {
     }
   ].forEach(({ type, value, expected }) => {
     t.test(`should properly seriaize input when it is a ${type}`, (t) => {
-      const embeddingEvent = new LlmEmbedding(agent, { input: value }, {})
+      const embeddingEvent = new LlmEmbedding({
+        agent,
+        segment: null,
+        request: { input: value },
+        response: {}
+      })
       t.equal(embeddingEvent.input, expected)
       t.end()
     })

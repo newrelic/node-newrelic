@@ -26,10 +26,16 @@ tap.test('LlmChatCompletionSummary', (t) => {
     const api = helper.getAgentApi()
     helper.runInTransaction(agent, (tx) => {
       api.startSegment('fakeSegment', false, () => {
-        const chatSummaryEvent = new LlmChatCompletionSummary(agent, req, chatRes)
+        const segment = api.shim.getActiveSegment()
+        const chatSummaryEvent = new LlmChatCompletionSummary({
+          agent,
+          segment,
+          request: req,
+          response: chatRes
+        })
         const serialized = chatSummaryEvent.serialize()
         const expected = getExpectedResult(tx, chatSummaryEvent, 'summary')
-        t.equal(serialized, expected)
+        t.same(serialized, expected)
         t.end()
       })
     })
@@ -40,7 +46,12 @@ tap.test('LlmChatCompletionSummary', (t) => {
     const conversationId = 'convo-id'
     helper.runInTransaction(agent, () => {
       api.addCustomAttribute('conversation_id', conversationId)
-      const chatSummaryEvent = new LlmChatCompletionSummary(agent, {}, {})
+      const chatSummaryEvent = new LlmChatCompletionSummary({
+        agent,
+        segment: null,
+        request: {},
+        response: {}
+      })
       t.equal(chatSummaryEvent.conversation_id, conversationId)
       t.end()
     })
