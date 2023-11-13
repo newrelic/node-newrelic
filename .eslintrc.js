@@ -27,9 +27,6 @@ module.exports = {
     ]
   },
   parserOptions: {
-    ecmaVersion: '2020'
-  },
-  parserOptions: {
     ecmaVersion: 2020
   },
   ignorePatterns: ['test/versioned-external'],
