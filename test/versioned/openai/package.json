@@ -1,0 +1,21 @@
+{
+  "name": "openai-tests",
+  "version": "0.0.0",
+  "private": true,
+  "engines": {
+    "node": ">=16"
+  },
+  "tests": [
+    {
+      "engines": {
+        "node": ">=16"
+      },
+      "dependencies": {
+        "openai": ">=4.0.0"
+      },
+      "files": [
+        "openai.tap.js"
+      ]
+    }
+  ]
+}
