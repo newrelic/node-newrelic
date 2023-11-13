@@ -56,7 +56,7 @@ tap.test('LlmChatCompletionMessage', (t) => {
         segment: {},
         request: {},
         response: {}
-      })
+      }).serialize()
       t.equal(chatMessageEvent.conversation_id, conversationId)
       t.end()
     })
