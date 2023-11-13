@@ -1239,6 +1239,11 @@ tap.test('logging supportability on connect', (t) => {
       t.end()
     })
   })
+
+  t.test('should default llm to an object', (t) => {
+    t.same(agent.llm, {})
+    t.end()
+  })
 })
 
 tap.test('getNRLinkingMetadata', (t) => {
