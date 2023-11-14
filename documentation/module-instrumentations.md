@@ -1,7 +1,7 @@
 
 # Module Instrumentations
 
-An instrumentation allows us to run some code immediately after a Node.js program loads a specific module via the `require` function. This code can then "wrap" (i.e redefine, "monkey-patch", etc.) module methods in order to to create metrics, events, segments, whatever-else, etc. as needed. An instrumentation also uses helper objects called "shims". The methods on these shims can perform tasks that are shared across different sorts of instrumentations, (naming a transaction, creating a segment, etc.).
+An instrumentation allows us to run some code immediately after a Node.js program loads a specific module via the `require` function. This code can then "wrap" (i.e redefine, "monkey-patch", etc.) module methods in order to create metrics, events, segments, whatever-else, etc. as needed. An instrumentation also uses helper objects called "shims". The methods on these shims can perform tasks that are shared across different sorts of instrumentations, (naming a transaction, creating a segment, etc.).
 
 There are three broad and overlapping categories of instrumentations.
 
