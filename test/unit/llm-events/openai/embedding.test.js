@@ -42,8 +42,9 @@ tap.test('LlmEmbedding', (t) => {
   })
 
   t.test('should assign metadata if available on agent.llm.metadata', (t) => {
+    const api = helper.getAgentApi()
     const metadata = { key: 'value', meta: 'data', test: true, data: [1, 2, 3] }
-    agent.llm = { metadata }
+    api.setLlmMetadata(metadata)
     const embeddingEvent = new LlmEmbedding({ agent, segment: null, request: {}, response: {} })
     t.same(embeddingEvent.metadata, metadata)
     t.end()
