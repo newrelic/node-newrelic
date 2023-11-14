@@ -10,10 +10,11 @@ const { isSimpleObject, isNotEmpty } = require('../../../lib/util/objects')
 const fixtures = [
   { name: 'populated object', value: { a: 1, b: 2, c: 3 }, simple: true, nonEmpty: true },
   { name: 'empty object', value: {}, simple: true, nonEmpty: false },
+  { name: 'object', value: { key: 'value' }, simple: true, nonEmpty: true },
   { name: 'null', value: null, simple: false, nonEmpty: false },
   { name: 'undefined', value: undefined, simple: false, nonEmpty: false },
-  { name: 'array', value: [1, 2, 3, 4], simple: true, nonEmpty: true },
-  { name: 'empty array', value: [], simple: true, nonEmpty: false },
+  { name: 'array', value: [1, 2, 3, 4], simple: false, nonEmpty: false },
+  { name: 'empty array', value: [], simple: false, nonEmpty: false },
   { name: 'string', value: 'a string', simple: false, nonEmpty: false },
   { name: 'empty string', value: '', simple: false, nonEmpty: false },
   { name: 'number', value: 42, simple: false, nonEmpty: false },
