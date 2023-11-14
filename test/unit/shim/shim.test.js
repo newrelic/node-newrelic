@@ -960,6 +960,64 @@ tap.test('Shim', function (t) {
         t.end()
       })
     })
+
+    t.test('should call after hook on record when function is done executing', function (t) {
+      helper.runInTransaction(agent, function () {
+        function testAfter() {
+          return 'result'
+        }
+        const wrapped = shim.record(testAfter, function () {
+          return {
+            name: 'test segment',
+            callback: shim.LAST,
+            after(...args) {
+              t.equal(args.length, 6, 'should have 6 args to after hook')
+              const [, fn, fnName, err, val, segment] = args
+              t.equal(segment.name, 'test segment')
+              t.not(err)
+              t.same(fn, testAfter)
+              t.equal(fnName, testAfter.name)
+              t.equal(val, 'result')
+            }
+          }
+        })
+        t.doesNotThrow(function () {
+          wrapped()
+        })
+        t.end()
+      })
+    })
+
+    t.test(
+      'should call after hook on record when the function is done executing after failure',
+      function (t) {
+        const err = new Error('test err')
+        helper.runInTransaction(agent, function () {
+          function testAfter() {
+            throw err
+          }
+          const wrapped = shim.record(testAfter, function () {
+            return {
+              name: 'test segment',
+              callback: shim.LAST,
+              after(...args) {
+                t.equal(args.length, 6, 'should have 6 args to after hook')
+                const [, fn, fnName, expectedErr, val, segment] = args
+                t.equal(segment.name, 'test segment')
+                t.same(expectedErr, err)
+                t.equal(val, undefined)
+                t.same(fn, testAfter)
+                t.equal(fnName, testAfter.name)
+              }
+            }
+          })
+          t.throws(function () {
+            wrapped()
+          })
+          t.end()
+        })
+      }
+    )
   })
 
   t.test('#record with a stream', function (t) {
@@ -1279,6 +1337,66 @@ tap.test('Shim', function (t) {
         ret.then(() => {
           t.end(new Error('Should not have resolved'))
         })
+      })
+
+      setTimeout(function () {
+        promise.reject(result)
+      }, 5)
+    })
+
+    t.test('should call after hook when promise resolves', (t) => {
+      const name = 'test segment'
+      const result = { returned: true }
+      const wrapped = shim.record(toWrap, function () {
+        return {
+          name,
+          promise: true,
+          after(...args) {
+            t.equal(args.length, 6, 'should have 6 args to after hook')
+            const [, fn, fnName, err, val, segment] = args
+            t.same(fn, toWrap)
+            t.equal(fnName, toWrap.name)
+            t.not(err)
+            t.same(val, result)
+            t.equal(segment.name, name)
+            t.end()
+          }
+        }
+      })
+
+      helper.runInTransaction(agent, function () {
+        const ret = wrapped()
+        t.ok(ret instanceof Object.getPrototypeOf(promise).constructor)
+      })
+
+      setTimeout(function () {
+        promise.resolve(result)
+      }, 5)
+    })
+
+    t.test('should call after hook when promise reject', (t) => {
+      const name = 'test segment'
+      const result = { returned: true }
+      const wrapped = shim.record(toWrap, function () {
+        return {
+          name,
+          promise: true,
+          after(...args) {
+            t.equal(args.length, 6, 'should have 6 args to after hook')
+            const [, fn, fnName, err, val, segment] = args
+            t.same(fn, toWrap)
+            t.equal(fnName, toWrap.name)
+            t.same(err, result)
+            t.not(val)
+            t.equal(segment.name, name)
+            t.end()
+          }
+        }
+      })
+
+      helper.runInTransaction(agent, function () {
+        const ret = wrapped()
+        t.ok(ret instanceof Object.getPrototypeOf(promise).constructor)
       })
 
       setTimeout(function () {

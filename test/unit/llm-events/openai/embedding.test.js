@@ -49,7 +49,7 @@ tap.test('LlmEmbedding', (t) => {
       segment: null,
       request: {},
       response: {}
-    }).serialize()
+    })
     t.same(embeddingEvent.metadata, metadata)
     t.end()
   })
