@@ -30,6 +30,7 @@ const NAMES = require('./lib/metrics/names')
 const obfuscate = require('./lib/util/sql/obfuscate')
 const { DESTINATIONS } = require('./lib/config/attribute-filter')
 const parse = require('module-details-from-path')
+const { isSimpleObject } = require('./lib/util/objects')
 
 /*
  *
@@ -1804,7 +1805,7 @@ API.prototype.setLlmMetadata = function setLlmMetadata(metadata) {
   const metric = this.agent.metrics.getOrCreateMetric(NAMES.SUPPORTABILITY.API + '/setLlmMetadata')
   metric.incrementCallCount()
 
-  if (!(metadata?.constructor === Object)) {
+  if (!isSimpleObject(metadata)) {
     logger.warn('metadata must be an object, not assigning LLM metadata.')
     return
   }
