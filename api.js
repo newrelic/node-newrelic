@@ -1794,7 +1794,7 @@ API.prototype.setErrorGroupCallback = function setErrorGroupCallback(callback) {
  * langchain, generative AI methods.
  *
  * If passing in metadata via `api.recordLlmFeedbackEvent`, it will take precedence
- * over what is assigned wit this method.
+ * over what is assigned via this method.
  *
  * @param {object} metadata key/value metadata to be assigned to all LLM Events on creation
  * @example
