@@ -22,7 +22,7 @@ tap.test('LlmEmbedding', (t) => {
     helper.unloadAgent(agent)
   })
 
-  t.test('should properly serialize a LlmEmbedding event', (t) => {
+  t.test('should properly create a LlmEmbedding event', (t) => {
     const req = {
       input: 'This is my test input',
       model: 'gpt-3.5-turbo-0613'
@@ -33,9 +33,8 @@ tap.test('LlmEmbedding', (t) => {
       api.startSegment('fakeSegment', false, () => {
         const segment = api.shim.getActiveSegment()
         const embeddingEvent = new LlmEmbedding({ agent, segment, request: req, response: res })
-        const serialized = embeddingEvent.serialize()
         const expected = getExpectedResult(tx, embeddingEvent, 'embedding')
-        t.same(serialized, expected)
+        t.same(embeddingEvent, expected)
         t.end()
       })
     })

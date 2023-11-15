@@ -22,7 +22,7 @@ tap.test('LlmChatCompletionMessage', (t) => {
     helper.unloadAgent(agent)
   })
 
-  t.test('should properly serialize a LlmChatCompletionMessage event', (t) => {
+  t.test('should create a LlmChatCompletionMessage event', (t) => {
     const api = helper.getAgentApi()
     helper.runInTransaction(agent, (tx) => {
       api.startSegment('fakeSegment', false, () => {
@@ -34,14 +34,13 @@ tap.test('LlmChatCompletionMessage', (t) => {
           response: chatRes,
           index: 0
         })
-        const serialized = chatMessageEvent.serialize()
         const expected = getExpectedResult(
           tx,
           { id: 'res-id-0' },
           'message',
           chatMessageEvent.completion_id
         )
-        t.same(serialized, expected)
+        t.same(chatMessageEvent, expected)
         t.end()
       })
     })
