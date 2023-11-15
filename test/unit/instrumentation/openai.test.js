@@ -39,6 +39,8 @@ test('openai unit tests', (t) => {
     function OpenAI() {}
     OpenAI.prototype.makeRequest = function () {}
     OpenAI.Chat = { Completions }
+    OpenAI.Embeddings = function () {}
+    OpenAI.Embeddings.prototype.create = function () {}
     return OpenAI
   }
 
