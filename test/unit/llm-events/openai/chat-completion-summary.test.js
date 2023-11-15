@@ -22,7 +22,7 @@ tap.test('LlmChatCompletionSummary', (t) => {
     helper.unloadAgent(agent)
   })
 
-  t.test('should properly serialize a LlmChatCompletionSummary event', (t) => {
+  t.test('should properly create a LlmChatCompletionSummary event', (t) => {
     const api = helper.getAgentApi()
     helper.runInTransaction(agent, (tx) => {
       api.startSegment('fakeSegment', false, () => {
@@ -33,9 +33,8 @@ tap.test('LlmChatCompletionSummary', (t) => {
           request: req,
           response: chatRes
         })
-        const serialized = chatSummaryEvent.serialize()
         const expected = getExpectedResult(tx, chatSummaryEvent, 'summary')
-        t.same(serialized, expected)
+        t.same(chatSummaryEvent, expected)
         t.end()
       })
     })

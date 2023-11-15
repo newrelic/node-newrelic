@@ -46,24 +46,62 @@ const req = {
 
 function getExpectedResult(tx, event, type, completionId) {
   const trace = tx.trace.root
-  let serialized = `{"id":"${event.id}","appName":"New Relic for Node.js tests","request_id":"req-id","trace_id":"${tx.traceId}","span_id":"${trace.children[0].id}","transaction_id":"${tx.id}","metadata":"","response.model":"gpt-3.5-turbo-0613","vendor":"openAI","ingest_source":"Node",`
-  const resKeys = `"duration":${trace.children[0].getExclusiveDurationInMillis()},"request.model":"gpt-3.5-turbo-0613","api_key_last_four_digits":"sk-7890","response.organization":"new-relic","response.usage.total_tokens":"100","response.usage.prompt_tokens":"10","response.headers.llmVersion":"1.0.0","response.headers.ratelimitLimitRequests":"100","response.headers.ratelimitLimitTokens":"100","response.headers.ratelimitResetTokens":"100","response.headers.ratelimitRemainingTokens":"10","response.headers.ratelimitRemainingRequests":"10",`
+  let expected = {
+    'id': event.id,
+    'appName': 'New Relic for Node.js tests',
+    'request_id': 'req-id',
+    'trace_id': tx.traceId,
+    'span_id': trace.children[0].id,
+    'transaction_id': tx.id,
+    'metadata': undefined,
+    'response.model': 'gpt-3.5-turbo-0613',
+    'vendor': 'openAI',
+    'ingest_source': 'Node'
+  }
+  const resKeys = {
+    'duration': trace.children[0].getExclusiveDurationInMillis(),
+    'request.model': 'gpt-3.5-turbo-0613',
+    'api_key_last_four_digits': 'sk-7890',
+    'response.organization': 'new-relic',
+    'response.usage.total_tokens': '100',
+    'response.usage.prompt_tokens': '10',
+    'response.headers.llmVersion': '1.0.0',
+    'response.headers.ratelimitLimitRequests': '100',
+    'response.headers.ratelimitLimitTokens': '100',
+    'response.headers.ratelimitResetTokens': '100',
+    'response.headers.ratelimitRemainingTokens': '10',
+    'response.headers.ratelimitRemainingRequests': '10'
+  }
 
   switch (type) {
     case 'embedding':
-      serialized += resKeys
-      serialized += `"input":"This is my test input"}`
+      expected = { ...expected, ...resKeys }
+      expected.input = 'This is my test input'
       break
     case 'summary':
-      serialized += resKeys
-      serialized +=
-        '"conversation_id":"","request.max_tokens":"1000000","request.temperature":"medium-rare","response.number_of_messages":3,"response.usage.completion_tokens":10,"response.choices.finish_reason":"stop"}'
+      expected = {
+        ...expected,
+        ...resKeys,
+        conversation_id: undefined,
+        ['request.max_tokens']: '1000000',
+        ['request.temperature']: 'medium-rare',
+        ['response.number_of_messages']: 3,
+        ['response.usage.completion_tokens']: 10,
+        ['response.choices.finish_reason']: 'stop'
+      }
       break
     case 'message':
-      serialized += `"conversation_id":"","content":"What is a woodchuck?","role":"inquisitive-kid","sequence":"","completion_id":"${completionId}"}`
+      expected = {
+        ...expected,
+        conversation_id: undefined,
+        content: 'What is a woodchuck?',
+        role: 'inquisitive-kid',
+        sequence: 0,
+        completion_id: completionId
+      }
   }
 
-  return JSON.parse(serialized)
+  return expected
 }
 
 module.exports = {

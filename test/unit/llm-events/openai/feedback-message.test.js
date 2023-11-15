@@ -18,8 +18,16 @@ tap.test('LlmFeedbackMessage', (t) => {
     message: 'This answer was amazing'
   }
   const feedbackMsg = new LlmFeedbackMessage(opts)
-  const serialized = feedbackMsg.serialize()
-  const expected = `{"id":"${feedbackMsg.id}","conversation_id":"convo-id","request_id":"request-id","message_id":"msg-id","category":"informative","rating":"informative","message":"This answer was amazing","ingest_source":"Node"}`
-  t.same(serialized, JSON.parse(expected))
+  const expected = {
+    id: feedbackMsg.id,
+    conversation_id: 'convo-id',
+    request_id: 'request-id',
+    message_id: 'msg-id',
+    category: 'informative',
+    rating: 'informative',
+    message: 'This answer was amazing',
+    ingest_source: 'Node'
+  }
+  t.same(feedbackMsg, expected)
   t.end()
 })
