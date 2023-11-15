@@ -1273,9 +1273,9 @@ API.prototype.recordCustomEvent = function recordCustomEvent(eventType, attribut
     fail = true
   }
   // If they don't pass an attributes object, or the attributes argument is not
-  // an object, or if it is an object and but is actually an array, log a
+  // an object, or if it is an object but is actually an array, log a
   // warning and set the fail bit.
-  if (!attributes || typeof attributes !== 'object' || Array.isArray(attributes)) {
+  if (isSimpleObject(attributes) === false) {
     logger.warn(
       'recordCustomEvent requires an object for its second argument, got %s (%s)',
       stringify(attributes),
