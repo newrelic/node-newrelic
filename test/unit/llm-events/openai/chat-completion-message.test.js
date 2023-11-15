@@ -27,19 +27,43 @@ tap.test('LlmChatCompletionMessage', (t) => {
     helper.runInTransaction(agent, (tx) => {
       api.startSegment('fakeSegment', false, () => {
         const segment = api.shim.getActiveSegment()
+        const summaryId = 'chat-summary-id'
         const chatMessageEvent = new LlmChatCompletionMessage({
           agent,
           segment,
           request: req,
           response: chatRes,
+          completionId: summaryId,
+          message: req.messages[0],
           index: 0
         })
-        const expected = getExpectedResult(
-          tx,
-          { id: 'res-id-0' },
-          'message',
-          chatMessageEvent.completion_id
-        )
+        const expected = getExpectedResult(tx, { id: 'res-id-0' }, 'message', summaryId)
+        t.same(chatMessageEvent, expected)
+        t.end()
+      })
+    })
+  })
+
+  t.test('should create a LlmChatCompletionMessage from response choices', (t) => {
+    const api = helper.getAgentApi()
+    helper.runInTransaction(agent, (tx) => {
+      api.startSegment('fakeSegment', false, () => {
+        const segment = api.shim.getActiveSegment()
+        const summaryId = 'chat-summary-id'
+        const chatMessageEvent = new LlmChatCompletionMessage({
+          agent,
+          segment,
+          request: req,
+          response: chatRes,
+          completionId: summaryId,
+          message: chatRes.choices[0].message,
+          index: 2
+        })
+        const expected = getExpectedResult(tx, { id: 'res-id-2' }, 'message', summaryId)
+        expected.sequence = 2
+        expected.content = chatRes.choices[0].message.content
+        expected.role = chatRes.choices[0].message.role
+        expected.is_response = true
         t.same(chatMessageEvent, expected)
         t.end()
       })

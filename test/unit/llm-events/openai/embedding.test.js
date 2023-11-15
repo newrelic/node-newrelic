@@ -39,20 +39,6 @@ tap.test('LlmEmbedding', (t) => {
       })
     })
   })
-
-  t.test('should assign metadata if available on agent.llm.metadata', (t) => {
-    const api = helper.getAgentApi()
-    const metadata = { key: 'value', meta: 'data', test: true, data: [1, 2, 3] }
-    api.setLlmMetadata(metadata)
-    const embeddingEvent = new LlmEmbedding({
-      agent,
-      segment: null,
-      request: {},
-      response: {}
-    })
-    t.same(embeddingEvent.metadata, metadata)
-    t.end()
-  })
   ;[
     { type: 'string', value: 'test input', expected: 'test input' },
     {
@@ -71,7 +57,7 @@ tap.test('LlmEmbedding', (t) => {
       expected: '1,2,3,4,5,6'
     }
   ].forEach(({ type, value, expected }) => {
-    t.test(`should properly seriaize input when it is a ${type}`, (t) => {
+    t.test(`should properly serialize input when it is a ${type}`, (t) => {
       const embeddingEvent = new LlmEmbedding({
         agent,
         segment: null,

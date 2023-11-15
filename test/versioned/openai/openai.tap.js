@@ -42,7 +42,7 @@ tap.test('OpenAI instrumentation', (t) => {
   })
 
   t.test('should create chat completion span on successful chat completion create', (test) => {
-    const { client, agent } = t.context
+    const { client, agent, host, port } = t.context
     helper.runInTransaction(agent, async (tx) => {
       const results = await client.chat.completions.create({
         messages: [{ role: 'user', content: 'You are a mathematician.' }]
@@ -52,8 +52,13 @@ tap.test('OpenAI instrumentation', (t) => {
       test.notOk(results.api_key, 'should remove api_key from user result')
       test.equal(results.choices[0].message.content, '1 plus 2 is 3.')
 
-      const [span] = tx.trace.root.children
-      test.equal(span.name, 'AI/OpenAI/Chat/Completions/Create')
+      test.doesNotThrow(() => {
+        assertSegments(
+          tx.trace.root,
+          ['AI/OpenAI/Chat/Completions/Create', [`External/${host}:${port}/chat/completions`]],
+          { exact: false }
+        )
+      }, 'should have expected segments')
       test.end()
     })
   })
@@ -72,9 +77,9 @@ tap.test('OpenAI instrumentation', (t) => {
       })
 
       const events = agent.customEventAggregator.events.toArray()
-      test.equal(events.length, 3, 'should create a chat completion message and summary event')
+      test.equal(events.length, 4, 'should create a chat completion message and summary event')
       const chatMsgs = events.filter(([{ type }]) => type === 'LlmChatCompletionMessage')
-      const expectedChatMsg = {
+      const baseMsg = {
         'appName': 'New Relic for Node.js tests',
         'request_id': '49dbbffbd3c3f4612aa48def69059aad',
         'trace_id': tx.traceId,
@@ -84,18 +89,26 @@ tap.test('OpenAI instrumentation', (t) => {
         'vendor': 'openAI',
         'ingest_source': 'Node',
         'role': 'user',
+        'is_response': false,
         'completion_id': /[a-f0-9]{36}/
       }
 
       chatMsgs.forEach((msg) => {
+        const expectedChatMsg = { ...baseMsg }
         if (msg[1].sequence === 0) {
           expectedChatMsg.sequence = 0
-          ;(expectedChatMsg.id = 'chatcmpl-87sb95K4EF2nuJRcTs43Tm9ntTeat-0'),
-            (expectedChatMsg.content = 'You are a mathematician.')
-        } else {
+          expectedChatMsg.id = 'chatcmpl-87sb95K4EF2nuJRcTs43Tm9ntTeat-0'
+          expectedChatMsg.content = 'You are a mathematician.'
+        } else if (msg[1].sequence === 1) {
           expectedChatMsg.sequence = 1
-          ;(expectedChatMsg.id = 'chatcmpl-87sb95K4EF2nuJRcTs43Tm9ntTeat-1'),
-            (expectedChatMsg.content = 'What does 1 plus 1 equal?')
+          expectedChatMsg.id = 'chatcmpl-87sb95K4EF2nuJRcTs43Tm9ntTeat-1'
+          expectedChatMsg.content = 'What does 1 plus 1 equal?'
+        } else {
+          expectedChatMsg.sequence = 2
+          expectedChatMsg.role = 'assistant'
+          expectedChatMsg.id = 'chatcmpl-87sb95K4EF2nuJRcTs43Tm9ntTeat-2'
+          expectedChatMsg.content = '1 plus 2 is 3.'
+          expectedChatMsg.is_response = true
         }
 
         test.equal(msg[0].type, 'LlmChatCompletionMessage')
@@ -135,6 +148,35 @@ tap.test('OpenAI instrumentation', (t) => {
     })
   })
 
+  t.test(
+    'chat completion creation - should spread metadata across events if present on agent.llm.metadata',
+    (test) => {
+      const { client, agent } = t.context
+      const api = helper.getAgentApi()
+      helper.runInTransaction(agent, async () => {
+        const meta = { key: 'value', extended: true, vendor: 'overwriteMe', id: 'bogus' }
+        api.setLlmMetadata(meta)
+
+        await client.chat.completions.create({
+          messages: [{ role: 'user', content: 'You are a mathematician.' }]
+        })
+
+        const events = agent.customEventAggregator.events.toArray()
+        events.forEach(([, testEvent]) => {
+          test.equal(testEvent.key, 'value')
+          test.equal(testEvent.extended, true)
+          test.equal(
+            testEvent.vendor,
+            'openAI',
+            'should not override properties of message with metadata'
+          )
+          test.not(testEvent.id, 'bogus', 'should not override properties of message with metadata')
+        })
+        test.end()
+      })
+    }
+  )
+
   t.test('should not create llm events when not in a transaction', async (test) => {
     const { client, agent } = t.context
     await client.chat.completions.create({
@@ -162,7 +204,8 @@ tap.test('OpenAI instrumentation', (t) => {
         request_id: '49dbbffbd3c3f4612aa48def69059aad',
         message_ids: [
           'chatcmpl-87sb95K4EF2nuJRcTs43Tm9ntTeat-0',
-          'chatcmpl-87sb95K4EF2nuJRcTs43Tm9ntTeat-1'
+          'chatcmpl-87sb95K4EF2nuJRcTs43Tm9ntTeat-1',
+          'chatcmpl-87sb95K4EF2nuJRcTs43Tm9ntTeat-2'
         ]
       })
       test.end()
@@ -276,4 +319,33 @@ tap.test('OpenAI instrumentation', (t) => {
       test.end()
     })
   })
+
+  t.test(
+    'embedding - should spread metadata across events if present on agent.llm.metadata',
+    (test) => {
+      const { client, agent } = t.context
+      const api = helper.getAgentApi()
+      helper.runInTransaction(agent, async () => {
+        const meta = { key: 'value', extended: true, vendor: 'overwriteMe', id: 'bogus' }
+        api.setLlmMetadata(meta)
+
+        await client.embeddings.create({
+          input: 'This is an embedding test.',
+          model: 'text-embedding-ada-002'
+        })
+
+        const events = agent.customEventAggregator.events.toArray()
+        const [[, testEvent]] = events
+        test.equal(testEvent.key, 'value')
+        test.equal(testEvent.extended, true)
+        test.equal(
+          testEvent.vendor,
+          'openAI',
+          'should not override properties of message with metadata'
+        )
+        test.not(testEvent.id, 'bogus', 'should not override properties of message with metadata')
+        test.end()
+      })
+    }
+  )
 })

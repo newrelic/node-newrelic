@@ -53,7 +53,6 @@ function getExpectedResult(tx, event, type, completionId) {
     'trace_id': tx.traceId,
     'span_id': trace.children[0].id,
     'transaction_id': tx.id,
-    'metadata': undefined,
     'response.model': 'gpt-3.5-turbo-0613',
     'vendor': 'openAI',
     'ingest_source': 'Node'
@@ -97,7 +96,8 @@ function getExpectedResult(tx, event, type, completionId) {
         content: 'What is a woodchuck?',
         role: 'inquisitive-kid',
         sequence: 0,
-        completion_id: completionId
+        completion_id: completionId,
+        is_response: false
       }
   }
 
