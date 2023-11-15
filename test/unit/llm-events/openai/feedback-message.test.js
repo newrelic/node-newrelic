@@ -24,7 +24,7 @@ tap.test('LlmFeedbackMessage', (t) => {
     request_id: 'request-id',
     message_id: 'msg-id',
     category: 'informative',
-    rating: 'informative',
+    rating: '10',
     message: 'This answer was amazing',
     ingest_source: 'Node'
   }

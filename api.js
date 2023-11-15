@@ -23,6 +23,7 @@ const {
   assignCLMSymbol,
   addCLMAttributes: maybeAddCLMAttributes
 } = require('./lib/util/code-level-metrics')
+const { LlmFeedbackMessage } = require('./lib/llm-events/openai')
 
 const ATTR_DEST = require('./lib/config/attribute-filter').DESTINATIONS
 const MODULE_TYPE = require('./lib/shim/constants').MODULE_TYPE
@@ -60,7 +61,7 @@ const CUSTOM_EVENT_TYPE_REGEX = /^[a-zA-Z0-9:_ ]+$/
 
 /**
  * The exported New Relic API. This contains all of the functions meant to be
- * used by New Relic customers. For now, that means transaction naming.
+ * used by New Relic customers.
  *
  * You do not need to directly instantiate this class, as an instance of this is
  * the return from `require('newrelic')`.
@@ -1535,6 +1536,73 @@ API.prototype.getTraceMetadata = function getTraceMetadata() {
   }
 
   return metadata
+}
+
+/**
+ * Get a set of tracked identifiers
+ *
+ * @param {object} params Input parameters.
+ * @param {string} params.responseId The LLM generated identifier for the
+ * response.
+ * @returns {LlmTrackedIds|undefined} The tracked identifiers.
+ */
+API.prototype.getLlmMessageIds = function getLlmMessageIds({ responseId } = {}) {
+  this.agent.metrics
+    .getOrCreateMetric(`${NAMES.SUPPORTABILITY.API}/getLlmMessageIds`)
+    .incrementCallCount()
+
+  const tx = this.agent.tracer.getTransaction()
+  if (!tx) {
+    return logger.warn('getLlmMessageIds must be called within the scope of a transaction.')
+  }
+  return tx.llm.responses.get(responseId)
+}
+
+/**
+ * Record a LLM feedback event which can be viewed in New Relic API Monitoring.
+ *
+ * @param {object} params Input parameters.
+ * @param {string} [params.conversationId=""] If available, the unique
+ * identifier for the LLM conversation that triggered the event.
+ * @param {string} [params.requestId=""] If available, the request identifier
+ * from the remote service.
+ * @param {string} params.messageId Identifier for the message being rated.
+ * Obtained from {@link getLlmMessageIds}.
+ * @param {string} params.category A tag for the event.
+ * @param {string} params.rating A indicator of how useful the message was.
+ * @param {string} [params.message=""] The message that triggered the event.
+ * @param {object} [params.metadata={}] Additional key-value pairs to associate
+ * with the recorded event.
+ */
+API.prototype.recordLlmFeedbackEvent = function recordLlmFeedbackEvent({
+  conversationId = '',
+  requestId = '',
+  messageId,
+  category,
+  rating,
+  message = '',
+  metadata = {}
+} = {}) {
+  this.agent.metrics
+    .getOrCreateMetric(`${NAMES.SUPPORTABILITY.API}/recordLlmFeedbackEvent`)
+    .incrementCallCount()
+
+  const tx = this.agent.tracer.getTransaction()
+  if (!tx) {
+    return logger.warn(
+      'No message feedback events will be recorded. recordLlmFeedbackEvent must be called within the scope of a transaction.'
+    )
+  }
+
+  const feedback = new LlmFeedbackMessage({
+    conversationId,
+    requestId,
+    messageId,
+    category,
+    rating,
+    message
+  })
+  this.recordCustomEvent('LlmFeedbackMessage', { ...metadata, ...feedback })
 }
 
 /**
