@@ -308,4 +308,9 @@ tap.test('with default properties', (t) => {
     t.equal(configuration.worker_threads.enabled, false)
     t.end()
   })
+
+  t.test('should default ai_monitoring.enabled to false', (t) => {
+    t.equal(configuration.ai_monitoring.enabled, false)
+    t.end()
+  })
 })
