@@ -76,7 +76,7 @@ test('openai unit tests', (t) => {
 
     initialize(agent, MockOpenAi, 'openai', shim)
     t.equal(shim.logger.debug.callCount, 2, 'should log 2 debug messages')
-    t.equal(shim.logger.debug.args[0][0], 'config.feature_flag.openai_instrumentation is disabled.')
+    t.equal(shim.logger.debug.args[0][0], 'config.ai_monitoring.enabled is set to false.')
     t.equal(
       shim.logger.debug.args[1][0],
       'openai instrumentation support is for versions >=4.0.0. Skipping instrumentation.'

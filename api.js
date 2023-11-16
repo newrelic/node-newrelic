@@ -1551,9 +1551,15 @@ API.prototype.getLlmMessageIds = function getLlmMessageIds({ responseId } = {}) 
     .getOrCreateMetric(`${NAMES.SUPPORTABILITY.API}/getLlmMessageIds`)
     .incrementCallCount()
 
+  if (this.agent.config?.ai_monitoring?.enabled !== true) {
+    logger.warn('getLlmMessageIds invoked but ai_monitoring is disabled.')
+    return
+  }
+
   const tx = this.agent.tracer.getTransaction()
   if (!tx) {
-    return logger.warn('getLlmMessageIds must be called within the scope of a transaction.')
+    logger.warn('getLlmMessageIds must be called within the scope of a transaction.')
+    return
   }
   return tx.llm.responses.get(responseId)
 }
@@ -1587,11 +1593,17 @@ API.prototype.recordLlmFeedbackEvent = function recordLlmFeedbackEvent({
     .getOrCreateMetric(`${NAMES.SUPPORTABILITY.API}/recordLlmFeedbackEvent`)
     .incrementCallCount()
 
+  if (this.agent.config?.ai_monitoring?.enabled !== true) {
+    logger.warn('recordLlmFeedbackEvent invoked but ai_monitoring is disabled.')
+    return
+  }
+
   const tx = this.agent.tracer.getTransaction()
   if (!tx) {
-    return logger.warn(
+    logger.warn(
       'No message feedback events will be recorded. recordLlmFeedbackEvent must be called within the scope of a transaction.'
     )
+    return
   }
 
   const feedback = new LlmFeedbackMessage({

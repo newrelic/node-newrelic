@@ -58,4 +58,31 @@ tap.test('Agent API LLM methods', (t) => {
       t.end()
     })
   })
+
+  t.test('getLlmMessageIds is no-op when ai_monitoring is disabled', async (t) => {
+    const { api } = t.context
+    api.agent.config.ai_monitoring.enabled = false
+
+    const trackedIds = api.getLlmMessageIds({ responseId: 'test' })
+    t.equal(trackedIds, undefined)
+    t.equal(loggerMock.warn.callCount, 1)
+    t.equal(loggerMock.warn.args[0][0], 'getLlmMessageIds invoked but ai_monitoring is disabled.')
+  })
+
+  t.test('recordLlmFeedbackEvent is no-op when ai_monitoring is disabled', async (t) => {
+    const { api } = t.context
+    api.agent.config.ai_monitoring.enabled = false
+
+    const result = api.recordLlmFeedbackEvent({
+      messageId: 'test',
+      category: 'test',
+      rating: 'test'
+    })
+    t.equal(result, undefined)
+    t.equal(loggerMock.warn.callCount, 1)
+    t.equal(
+      loggerMock.warn.args[0][0],
+      'recordLlmFeedbackEvent invoked but ai_monitoring is disabled.'
+    )
+  })
 })
