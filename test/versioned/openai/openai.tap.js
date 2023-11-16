@@ -59,6 +59,7 @@ tap.test('OpenAI instrumentation', (t) => {
           { exact: false }
         )
       }, 'should have expected segments')
+      tx.end()
       test.end()
     })
   })
@@ -144,6 +145,7 @@ tap.test('OpenAI instrumentation', (t) => {
         'response.choices.finish_reason': 'stop'
       }
       test.match(chatSummary[1], expectedChatSummary, 'should match chat summary message')
+      tx.end()
       test.end()
     })
   })
@@ -153,7 +155,7 @@ tap.test('OpenAI instrumentation', (t) => {
     (test) => {
       const { client, agent } = t.context
       const api = helper.getAgentApi()
-      helper.runInTransaction(agent, async () => {
+      helper.runInTransaction(agent, async (tx) => {
         const meta = { key: 'value', extended: true, vendor: 'overwriteMe', id: 'bogus' }
         api.setLlmMetadata(meta)
 
@@ -172,6 +174,7 @@ tap.test('OpenAI instrumentation', (t) => {
           )
           test.not(testEvent.id, 'bogus', 'should not override properties of message with metadata')
         })
+        tx.end()
         test.end()
       })
     }
@@ -189,7 +192,7 @@ tap.test('OpenAI instrumentation', (t) => {
 
   t.test('should make tracked ids available', (test) => {
     const { client, agent } = t.context
-    helper.runInTransaction(agent, async () => {
+    helper.runInTransaction(agent, async (tx) => {
       const results = await client.chat.completions.create({
         messages: [
           { role: 'user', content: 'You are a mathematician.' },
@@ -208,6 +211,7 @@ tap.test('OpenAI instrumentation', (t) => {
           'chatcmpl-87sb95K4EF2nuJRcTs43Tm9ntTeat-2'
         ]
       })
+      tx.end()
       test.end()
     })
   })
@@ -215,7 +219,7 @@ tap.test('OpenAI instrumentation', (t) => {
   t.test('can send feedback events', (test) => {
     const { client, agent } = t.context
     const api = helper.getAgentApi()
-    helper.runInTransaction(agent, async () => {
+    helper.runInTransaction(agent, async (tx) => {
       const results = await client.chat.completions.create({
         messages: [{ role: 'user', content: 'You are a mathematician.' }]
       })
@@ -252,6 +256,7 @@ tap.test('OpenAI instrumentation', (t) => {
           })
         })
       )
+      tx.end()
       test.end()
     })
   })
@@ -275,6 +280,7 @@ tap.test('OpenAI instrumentation', (t) => {
           { exact: false }
         )
       }, 'should have expected segments')
+      tx.end()
       test.end()
     })
   })
@@ -316,6 +322,7 @@ tap.test('OpenAI instrumentation', (t) => {
 
       test.equal(embedding[0].type, 'LlmEmbedding')
       test.match(embedding[1], expectedEmbedding, 'should match embedding message')
+      tx.end()
       test.end()
     })
   })
@@ -325,7 +332,7 @@ tap.test('OpenAI instrumentation', (t) => {
     (test) => {
       const { client, agent } = t.context
       const api = helper.getAgentApi()
-      helper.runInTransaction(agent, async () => {
+      helper.runInTransaction(agent, async (tx) => {
         const meta = { key: 'value', extended: true, vendor: 'overwriteMe', id: 'bogus' }
         api.setLlmMetadata(meta)
 
@@ -344,6 +351,7 @@ tap.test('OpenAI instrumentation', (t) => {
           'should not override properties of message with metadata'
         )
         test.not(testEvent.id, 'bogus', 'should not override properties of message with metadata')
+        tx.end()
         test.end()
       })
     }

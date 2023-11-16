@@ -172,7 +172,7 @@
     "versioned:major": "VERSIONED_MODE=--major npm run versioned",
     "versioned": "npm run checkout-external-versioned && npm run prepare-test && time ./bin/run-versioned-tests.sh",
     "versioned:legacy-context": "NEW_RELIC_FEATURE_FLAG_LEGACY_CONTEXT_MANAGER=1 npm run versioned",
-    "versioned:legacy_context:major": "NEW_RELIC_FEATURE_FLAG_LEGACY_CONTEXT_MANAGER=1 npm run versioned:major",
+    "versioned:legacy-context:major": "NEW_RELIC_FEATURE_FLAG_LEGACY_CONTEXT_MANAGER=1 npm run versioned:major",
     "versioned:security": "NEW_RELIC_SECURITY_AGENT_ENABLED=true npm run versioned",
     "versioned:security:major": "NEW_RELIC_SECURITY_AGENT_ENABLED=true npm run versioned:major",
     "prepare": "husky install"
