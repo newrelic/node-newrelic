@@ -226,3 +226,13 @@ tap.test('#applyLasp', (t) => {
     t.end()
   })
 })
+
+tap.test('ai_monitoring should not be enabled in HSM', (t) => {
+  const config = Config.initialize({
+    high_security: 'true'
+  })
+
+  t.equal(config.ai_monitoring.enabled, false)
+
+  t.end()
+})

@@ -8,12 +8,6 @@ Any prerelease flags can be enabled or disabled in your agent config by adding a
 
 ## Current prerelease feature flags
 
-#### openai_instrumentation
-* Enabled by default: `false`
-* Configuration: `{ feature_flag: { openai_instrumentation: true|false }}`
-* Environment Variable: `NEW_RELIC_FEATURE_FLAG_OPENAI_INSTRUMENTATION`
-* Description: Enables instrumenting the `openai` module.
-
 #### promise_segments
 * Enabled by default: `false`  
 * Configuration: `{ feature_flag: { promise_segments: true|false }}`

@@ -34,8 +34,7 @@ const used = [
   'certificate_bundle',
   'unresolved_promise_cleanup',
   'undici_instrumentation',
-  'undici_async_tracking',
-  'openai_instrumentation'
+  'undici_async_tracking'
 ]
 
 tap.test('feature flags', (t) => {
