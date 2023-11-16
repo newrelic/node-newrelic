@@ -11,8 +11,8 @@ const createOpenAIMockServer = require('../../lib/openai-mock-server')
 const { assertSegments } = require('../../lib/metrics_helper')
 // TODO: remove config once we fully release OpenAI instrumentation
 const config = {
-  feature_flag: {
-    openai_instrumentation: true
+  ai_monitoring: {
+    enabled: true
   }
 }
 
