@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "Thu Nov 16 2023 14:05:45 GMT-0500 (Eastern Standard Time)",
+  "lastUpdated": "Fri Nov 17 2023 14:06:10 GMT+0530 (India Standard Time)",
   "projectName": "New Relic Node Agent",
   "projectUrl": "https://github.com/newrelic/node-newrelic",
   "includeOptDeps": true,
@@ -94,15 +94,15 @@
       "publisher": "New Relic Node.js agent team",
       "email": "nodejs@newrelic.com"
     },
-    "@newrelic/security-agent@0.4.0": {
+    "@newrelic/security-agent@0.5.0": {
       "name": "@newrelic/security-agent",
-      "version": "0.4.0",
-      "range": "0.4.0",
-      "licenses": "New Relic Pre-Release",
+      "version": "0.5.0",
+      "range": "0.5.0",
+      "licenses": "UNKNOWN",
       "repoUrl": "https://github.com/newrelic/csec-node-agent",
-      "versionedRepoUrl": "https://github.com/newrelic/csec-node-agent/tree/v0.4.0",
+      "versionedRepoUrl": "https://github.com/newrelic/csec-node-agent/tree/v0.5.0",
       "licenseFile": "node_modules/@newrelic/security-agent/LICENSE",
-      "licenseUrl": "https://github.com/newrelic/csec-node-agent/blob/v0.4.0/LICENSE",
+      "licenseUrl": "https://github.com/newrelic/csec-node-agent/blob/v0.5.0/LICENSE",
       "licenseTextSource": "file",
       "publisher": "newrelic"
     },
@@ -314,15 +314,15 @@
       "licenseUrl": "https://github.com/octokit/rest.js/blob/v18.12.0/LICENSE",
       "licenseTextSource": "file"
     },
-    "@slack/bolt@3.13.3": {
+    "@slack/bolt@3.15.0": {
       "name": "@slack/bolt",
-      "version": "3.13.3",
+      "version": "3.15.0",
       "range": "^3.7.0",
       "licenses": "MIT",
       "repoUrl": "https://github.com/slackapi/bolt",
-      "versionedRepoUrl": "https://github.com/slackapi/bolt/tree/v3.13.3",
+      "versionedRepoUrl": "https://github.com/slackapi/bolt/tree/v3.15.0",
       "licenseFile": "node_modules/@slack/bolt/LICENSE",
-      "licenseUrl": "https://github.com/slackapi/bolt/blob/v3.13.3/LICENSE",
+      "licenseUrl": "https://github.com/slackapi/bolt/blob/v3.15.0/LICENSE",
       "licenseTextSource": "file",
       "publisher": "Slack Technologies, LLC"
     },
