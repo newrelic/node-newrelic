@@ -161,7 +161,7 @@ responses.set('You are a mathematician.', {
 responses.set('Streamed response', {
   headers: {
     'Content-Type': 'text/event-stream',
-    'openai-model': 'gpt-3.5-turbo-0613',
+    'openai-model': 'gpt-4',
     'openai-organization': 'new-relic-nkmd8b',
     'openai-processing-ms': '1469',
     'openai-version': '2020-10-01',
@@ -174,5 +174,18 @@ responses.set('Streamed response', {
     'x-request-id': '49dbbffbd3c3f4612aa48def69059aad'
   },
   code: 200,
-  body: "A streamed response is a way of transmitting data from a server to a client (e.g. from a website to a user's computer or mobile device) in a continuous flow or stream, rather than all at one time. This means the client can start to process the data before all of it has been received, which can improve performance for large amounts of data or slow connections. Streaming is often used for real-time or near-real-time applications like video or audio playback."
+  body: {
+    id: 'chatcmpl-8MzOfSMbLxEy70lYAolSwdCzfguQZ',
+    object: 'chat.completion.chunk',
+    // 2023-11-20T09:00:00-05:00
+    created: 1700488800,
+    model: 'gpt-4',
+    choices: [
+      {
+        finish_reason: 'stop',
+        index: 0
+      }
+    ]
+  },
+  streamData: "A streamed response is a way of transmitting data from a server to a client (e.g. from a website to a user's computer or mobile device) in a continuous flow or stream, rather than all at one time. This means the client can start to process the data before all of it has been received, which can improve performance for large amounts of data or slow connections. Streaming is often used for real-time or near-real-time applications like video or audio playback."
 })

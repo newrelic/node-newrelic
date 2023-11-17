@@ -9,7 +9,7 @@ module.exports = openaiMockServer
 
 const http = require('node:http')
 const { Readable } = require('node:stream')
-const RESPONSES = require('./openai-responses')
+const RESPONSES = require('./mock-responses')
 
 /**
  * Build a mock server that listens on a 127.0.0.1 and a random port that
@@ -65,7 +65,7 @@ function handler(req, res) {
       return
     }
 
-    const { headers, code, body } = RESPONSES.get(prompt)
+    const { headers, code, body, streamData  } = RESPONSES.get(prompt)
     for (const [key, value] of Object.entries(headers)) {
       res.setHeader(key, value)
     }
@@ -75,26 +75,20 @@ function handler(req, res) {
       // OpenAI streamed responses are double newline delimited lines that
       // are prefixed with the string `data: `. The end of the stream is
       // terminated with a `done: [DONE]` string.
-      const parts = body.split(' ')
+      const parts = streamData.split(' ')
       let i = 0
       const outStream = new Readable({
         read() {
+          // This is how the data is streamed from openai
+          // The message response only seems to change and mostly
+          // a stream of content changes via the delta key
           if (i < parts.length) {
             const content = parts.length - 1 === i ? parts[i] : `${parts[i]} `
-            const chunk = JSON.stringify({
-              id: 'chatcmpl-8MzOfSMbLxEy70lYAolSwdCzfguQZ',
-              object: 'chat.completion.chunk',
-              // 2023-11-20T09:00:00-05:00
-              created: 1700488800,
-              model: 'gpt-4',
-              choices: [
-                {
-                  index: 0,
-                  finish_reason: null,
-                  delta: { role: 'assistant', content }
-                }
-              ]
-            })
+            body.choices[0].delta = {
+              role: 'assistant',
+              content: content
+            }
+            const chunk = JSON.stringify(body)
             this.push(`data: ${chunk}\n\n`)
             i += 1
           } else {
