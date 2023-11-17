@@ -927,7 +927,7 @@ Apache License
 
 ### @newrelic/security-agent
 
-This product includes source derived from [@newrelic/security-agent](https://github.com/newrelic/csec-node-agent) ([v0.4.0](https://github.com/newrelic/csec-node-agent/tree/v0.4.0)), distributed under the [New Relic Pre-Release License](https://github.com/newrelic/csec-node-agent/blob/v0.4.0/LICENSE):
+This product includes source derived from [@newrelic/security-agent](https://github.com/newrelic/csec-node-agent) ([v0.5.0](https://github.com/newrelic/csec-node-agent/tree/v0.5.0)), distributed under the [New Relic Pre-Release License](https://github.com/newrelic/csec-node-agent/blob/v0.5.0/LICENSE):
 
 ```
 ## New Relic Pre-Release Software Notice
@@ -2161,7 +2161,7 @@ THE SOFTWARE.
 
 ### @slack/bolt
 
-This product includes source derived from [@slack/bolt](https://github.com/slackapi/bolt) ([v3.13.3](https://github.com/slackapi/bolt/tree/v3.13.3)), distributed under the [MIT License](https://github.com/slackapi/bolt/blob/v3.13.3/LICENSE):
+This product includes source derived from [@slack/bolt](https://github.com/slackapi/bolt) ([v3.15.0](https://github.com/slackapi/bolt/tree/v3.15.0)), distributed under the [MIT License](https://github.com/slackapi/bolt/blob/v3.15.0/LICENSE):
 
 ```
 The MIT License (MIT)
