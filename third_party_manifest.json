@@ -98,7 +98,7 @@
       "name": "@newrelic/security-agent",
       "version": "0.5.0",
       "range": "0.5.0",
-      "licenses": "UNKNOWN",
+      "licenses": "New Relic Pre-Release",
       "repoUrl": "https://github.com/newrelic/csec-node-agent",
       "versionedRepoUrl": "https://github.com/newrelic/csec-node-agent/tree/v0.5.0",
       "licenseFile": "node_modules/@newrelic/security-agent/LICENSE",
