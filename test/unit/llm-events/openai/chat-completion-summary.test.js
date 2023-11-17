@@ -27,6 +27,7 @@ tap.test('LlmChatCompletionSummary', (t) => {
     helper.runInTransaction(agent, (tx) => {
       api.startSegment('fakeSegment', false, () => {
         const segment = api.shim.getActiveSegment()
+        segment.end()
         const chatSummaryEvent = new LlmChatCompletionSummary({
           agent,
           segment,
