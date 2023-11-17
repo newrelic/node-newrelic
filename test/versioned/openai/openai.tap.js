@@ -356,4 +356,76 @@ tap.test('OpenAI instrumentation', (t) => {
       })
     }
   )
+
+  t.test('chat completion auth errors should be tracked', (test) => {
+    const { client, agent } = t.context
+    helper.runInTransaction(agent, async (tx) => {
+      try {
+        await client.chat.completions.create({
+          messages: [{ role: 'user', content: 'Invalid API key.' }]
+        })
+      } catch {}
+
+      t.equal(tx.exceptions.length, 1)
+      t.match(tx.exceptions[0], {
+        error: {
+          http: {
+            statusCode: 401
+          },
+          error: {
+            code: 'invalid_api_key',
+            param: 'null'
+          },
+          completion_id: /[\w\d]{32}/,
+          cause: {
+            message: /Incorrect API key provided:/,
+            type: 'invalid_request_error'
+          }
+        },
+        customAttributes: {},
+        agentAttributes: {
+          spanId: /[\w\d]+/
+        }
+      })
+
+      tx.end()
+      test.end()
+    })
+  })
+
+  t.test('chat completion invalid payload errors should be tracked', (test) => {
+    const { client, agent } = t.context
+    helper.runInTransaction(agent, async (tx) => {
+      try {
+        await client.chat.completions.create({
+          messages: [{ role: 'bad-role', content: 'Invalid role.' }]
+        })
+      } catch {}
+
+      t.equal(tx.exceptions.length, 1)
+      t.match(tx.exceptions[0], {
+        error: {
+          http: {
+            statusCode: 400
+          },
+          error: {
+            code: null,
+            param: null
+          },
+          completion_id: /[\w\d]{32}/,
+          cause: {
+            message: /'bad-role' is not one of/,
+            type: 'invalid_request_error'
+          }
+        },
+        customAttributes: {},
+        agentAttributes: {
+          spanId: /[\w\d]+/
+        }
+      })
+
+      tx.end()
+      test.end()
+    })
+  })
 })

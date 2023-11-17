@@ -158,6 +158,26 @@ responses.set('You are a mathematician.', {
   }
 })
 
+responses.set('Invalid role.', {
+  headers: {
+    'content-type': 'application/json',
+    'x-request-id': '5db943f509e9031e73de8f4a5e46de32',
+    'openai-organization': 'new-relic-nkmd8b',
+    'openai-processing-ms': '4',
+    'openai-version': '2020-10-01'
+  },
+  code: 400,
+  body: {
+    error: {
+      message:
+        "'bad-role' is not one of ['system', 'assistant', 'user', 'function'] - 'messages.0.role'",
+      type: 'invalid_request_error',
+      param: null,
+      code: null
+    }
+  }
+})
+
 responses.set('Streamed response', {
   headers: {
     'Content-Type': 'text/event-stream',
