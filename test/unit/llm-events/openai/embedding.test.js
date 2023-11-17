@@ -32,6 +32,7 @@ tap.test('LlmEmbedding', (t) => {
     helper.runInTransaction(agent, (tx) => {
       api.startSegment('fakeSegment', false, () => {
         const segment = api.shim.getActiveSegment()
+        segment.end()
         const embeddingEvent = new LlmEmbedding({ agent, segment, request: req, response: res })
         const expected = getExpectedResult(tx, embeddingEvent, 'embedding')
         t.same(embeddingEvent, expected)
