@@ -412,7 +412,7 @@ tap.test('OpenAI instrumentation', (t) => {
             code: null,
             param: null
           },
-          completion_id: /[\w\d]{32}/,
+          completion_id: /\w{32}/,
           cause: {
             message: /'bad-role' is not one of/,
             type: 'invalid_request_error'
@@ -420,7 +420,45 @@ tap.test('OpenAI instrumentation', (t) => {
         },
         customAttributes: {},
         agentAttributes: {
-          spanId: /[\w\d]+/
+          spanId: /\w+/
+        }
+      })
+
+      tx.end()
+      test.end()
+    })
+  })
+
+  t.test('embedding invalid payload errors should be tracked', (test) => {
+    const { client, agent } = t.context
+    helper.runInTransaction(agent, async (tx) => {
+      try {
+        await client.embeddings.create({
+          model: 'gpt-4',
+          input: 'Embedding not allowed.'
+        })
+      } catch {}
+
+      t.equal(tx.exceptions.length, 1)
+      t.match(tx.exceptions[0], {
+        error: {
+          http: {
+            statusCode: 403
+          },
+          error: {
+            code: null,
+            param: null
+          },
+          completion_id: undefined,
+          embedding_id: /\w{32}/,
+          cause: {
+            message: 'You are not allowed to generate embeddings from this model',
+            type: 'invalid_request_error'
+          }
+        },
+        customAttributes: {},
+        agentAttributes: {
+          spanId: /\w+/
         }
       })
 

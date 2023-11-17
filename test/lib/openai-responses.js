@@ -178,6 +178,22 @@ responses.set('Invalid role.', {
   }
 })
 
+responses.set('Embedding not allowed.', {
+  headers: {
+    'content-type': 'application/json; charset=utf-8',
+    'x-request-id': '25e22d5a7af9e40b7d5b1828593b52aa'
+  },
+  code: 403,
+  body: {
+    error: {
+      message: 'You are not allowed to generate embeddings from this model',
+      type: 'invalid_request_error',
+      param: null,
+      code: null
+    }
+  }
+})
+
 responses.set('Streamed response', {
   headers: {
     'Content-Type': 'text/event-stream',
