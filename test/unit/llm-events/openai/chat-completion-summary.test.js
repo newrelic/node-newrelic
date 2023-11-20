@@ -55,4 +55,21 @@ tap.test('LlmChatCompletionSummary', (t) => {
       t.end()
     })
   })
+
+  t.test('should set error to true', (t) => {
+    const api = helper.getAgentApi()
+    const conversationId = 'convo-id'
+    helper.runInTransaction(agent, () => {
+      api.addCustomAttribute('conversation_id', conversationId)
+      const chatSummaryEvent = new LlmChatCompletionSummary({
+        agent,
+        segment: null,
+        request: {},
+        response: {},
+        withError: true
+      })
+      t.equal(true, chatSummaryEvent.error)
+      t.end()
+    })
+  })
 })

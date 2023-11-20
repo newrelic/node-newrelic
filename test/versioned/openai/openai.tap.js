@@ -142,7 +142,8 @@ tap.test('OpenAI instrumentation', (t) => {
         'response.headers.ratelimitRemainingRequests': '199',
         'response.number_of_messages': 3,
         'response.usage.completion_tokens': 11,
-        'response.choices.finish_reason': 'stop'
+        'response.choices.finish_reason': 'stop',
+        'error': false
       }
       test.match(chatSummary[1], expectedChatSummary, 'should match chat summary message')
       tx.end()
@@ -317,7 +318,8 @@ tap.test('OpenAI instrumentation', (t) => {
         'response.headers.ratelimitResetTokens': '2ms',
         'response.headers.ratelimitRemainingTokens': '149994',
         'response.headers.ratelimitRemainingRequests': '197',
-        'input': 'This is an embedding test.'
+        'input': 'This is an embedding test.',
+        'error': false
       }
 
       test.equal(embedding[0].type, 'LlmEmbedding')
@@ -369,17 +371,27 @@ tap.test('OpenAI instrumentation', (t) => {
       t.equal(tx.exceptions.length, 1)
       t.match(tx.exceptions[0], {
         error: {
+          status: 401,
+          code: 'invalid_api_key',
+          param: 'null'
+        },
+        customAttributes: {
           'http.statusCode': 401,
           'error.message': /Incorrect API key provided:/,
           'error.code': 'invalid_api_key',
           'error.param': 'null',
           'completion_id': /[\w\d]{32}/
         },
-        customAttributes: {},
         agentAttributes: {
           spanId: /[\w\d]+/
         }
       })
+
+      const summary = agent.customEventAggregator.events.toArray().find((e) => {
+        return e[0].type === 'LlmChatCompletionSummary'
+      })
+      t.ok(summary)
+      t.equal(summary[1].error, true)
 
       tx.end()
       test.end()
@@ -398,13 +410,17 @@ tap.test('OpenAI instrumentation', (t) => {
       t.equal(tx.exceptions.length, 1)
       t.match(tx.exceptions[0], {
         error: {
+          status: 400,
+          code: null,
+          param: null
+        },
+        customAttributes: {
           'http.statusCode': 400,
           'error.message': /'bad-role' is not one of/,
           'error.code': null,
           'error.param': null,
           'completion_id': /\w{32}/
         },
-        customAttributes: {},
         agentAttributes: {
           spanId: /\w+/
         }
@@ -428,6 +444,11 @@ tap.test('OpenAI instrumentation', (t) => {
       t.equal(tx.exceptions.length, 1)
       t.match(tx.exceptions[0], {
         error: {
+          status: 403,
+          code: null,
+          param: null
+        },
+        customAttributes: {
           'http.statusCode': 403,
           'error.message': 'You are not allowed to generate embeddings from this model',
           'error.code': null,
@@ -435,11 +456,13 @@ tap.test('OpenAI instrumentation', (t) => {
           'completion_id': undefined,
           'embedding_id': /\w{32}/
         },
-        customAttributes: {},
         agentAttributes: {
           spanId: /\w+/
         }
       })
+
+      const embedding = agent.customEventAggregator.events.toArray().slice(0, 1)[0][1]
+      t.equal(embedding.error, true)
 
       tx.end()
       test.end()
