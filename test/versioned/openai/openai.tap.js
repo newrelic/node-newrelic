@@ -369,18 +369,11 @@ tap.test('OpenAI instrumentation', (t) => {
       t.equal(tx.exceptions.length, 1)
       t.match(tx.exceptions[0], {
         error: {
-          http: {
-            statusCode: 401
-          },
-          error: {
-            code: 'invalid_api_key',
-            param: 'null'
-          },
-          completion_id: /[\w\d]{32}/,
-          cause: {
-            message: /Incorrect API key provided:/,
-            type: 'invalid_request_error'
-          }
+          'http.statusCode': 401,
+          'error.message': /Incorrect API key provided:/,
+          'error.code': 'invalid_api_key',
+          'error.param': 'null',
+          'completion_id': /[\w\d]{32}/
         },
         customAttributes: {},
         agentAttributes: {
@@ -405,18 +398,11 @@ tap.test('OpenAI instrumentation', (t) => {
       t.equal(tx.exceptions.length, 1)
       t.match(tx.exceptions[0], {
         error: {
-          http: {
-            statusCode: 400
-          },
-          error: {
-            code: null,
-            param: null
-          },
-          completion_id: /\w{32}/,
-          cause: {
-            message: /'bad-role' is not one of/,
-            type: 'invalid_request_error'
-          }
+          'http.statusCode': 400,
+          'error.message': /'bad-role' is not one of/,
+          'error.code': null,
+          'error.param': null,
+          'completion_id': /\w{32}/
         },
         customAttributes: {},
         agentAttributes: {
@@ -442,19 +428,12 @@ tap.test('OpenAI instrumentation', (t) => {
       t.equal(tx.exceptions.length, 1)
       t.match(tx.exceptions[0], {
         error: {
-          http: {
-            statusCode: 403
-          },
-          error: {
-            code: null,
-            param: null
-          },
-          completion_id: undefined,
-          embedding_id: /\w{32}/,
-          cause: {
-            message: 'You are not allowed to generate embeddings from this model',
-            type: 'invalid_request_error'
-          }
+          'http.statusCode': 403,
+          'error.message': 'You are not allowed to generate embeddings from this model',
+          'error.code': null,
+          'error.param': null,
+          'completion_id': undefined,
+          'embedding_id': /\w{32}/
         },
         customAttributes: {},
         agentAttributes: {
