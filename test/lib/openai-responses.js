@@ -157,3 +157,22 @@ responses.set('You are a mathematician.', {
     usage: { completion_tokens: 11, prompt_tokens: 53, total_tokens: 64 }
   }
 })
+
+responses.set('Streamed response', {
+  headers: {
+    'Content-Type': 'text/event-stream',
+    'openai-model': 'gpt-3.5-turbo-0613',
+    'openai-organization': 'new-relic-nkmd8b',
+    'openai-processing-ms': '1469',
+    'openai-version': '2020-10-01',
+    'x-ratelimit-limit-requests': '200',
+    'x-ratelimit-limit-tokens': '40000',
+    'x-ratelimit-remaining-requests': '199',
+    'x-ratelimit-remaining-tokens': '39940',
+    'x-ratelimit-reset-requests': '7m12s',
+    'x-ratelimit-reset-tokens': '90ms',
+    'x-request-id': '49dbbffbd3c3f4612aa48def69059aad'
+  },
+  code: 200,
+  body: "A streamed response is a way of transmitting data from a server to a client (e.g. from a website to a user's computer or mobile device) in a continuous flow or stream, rather than all at one time. This means the client can start to process the data before all of it has been received, which can improve performance for large amounts of data or slow connections. Streaming is often used for real-time or near-real-time applications like video or audio playback."
+})
