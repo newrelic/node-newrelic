@@ -80,6 +80,7 @@ function handler(req, res) {
       const outStream = new Readable({
         read() {
           if (i < parts.length) {
+            const content = parts.length - 1 === i ? parts[i] : `${parts[i]} `
             const chunk = JSON.stringify({
               id: 'chatcmpl-8MzOfSMbLxEy70lYAolSwdCzfguQZ',
               object: 'chat.completion.chunk',
@@ -90,7 +91,7 @@ function handler(req, res) {
                 {
                   index: 0,
                   finish_reason: null,
-                  delta: { role: 'assistant', content: parts[i] }
+                  delta: { role: 'assistant', content }
                 }
               ]
             })
