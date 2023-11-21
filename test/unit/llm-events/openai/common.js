@@ -76,6 +76,7 @@ function getExpectedResult(tx, event, type, completionId) {
     case 'embedding':
       expected = { ...expected, ...resKeys }
       expected.input = 'This is my test input'
+      expected.error = false
       break
     case 'summary':
       expected = {
@@ -86,7 +87,8 @@ function getExpectedResult(tx, event, type, completionId) {
         ['request.temperature']: 'medium-rare',
         ['response.number_of_messages']: 3,
         ['response.usage.completion_tokens']: 10,
-        ['response.choices.finish_reason']: 'stop'
+        ['response.choices.finish_reason']: 'stop',
+        error: false
       }
       break
     case 'message':

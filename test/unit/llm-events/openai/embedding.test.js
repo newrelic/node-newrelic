@@ -68,4 +68,27 @@ tap.test('LlmEmbedding', (t) => {
       t.end()
     })
   })
+
+  t.test('should set error to true', (t) => {
+    const req = {
+      input: 'This is my test input',
+      model: 'gpt-3.5-turbo-0613'
+    }
+
+    const api = helper.getAgentApi()
+    helper.runInTransaction(agent, () => {
+      api.startSegment('fakeSegment', false, () => {
+        const segment = api.shim.getActiveSegment()
+        const embeddingEvent = new LlmEmbedding({
+          agent,
+          segment,
+          request: req,
+          response: res,
+          withError: true
+        })
+        t.equal(true, embeddingEvent.error)
+        t.end()
+      })
+    })
+  })
 })
