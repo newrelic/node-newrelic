@@ -1,4 +1,7 @@
-
+/*
+ * Copyright 2023 New Relic Corporation. All rights reserved.
+ * SPDX-License-Identifier: Apache-2.0
+ */
 
 /*
  * Copyright 2023 New Relic Corporation. All rights reserved.
@@ -11,6 +14,13 @@ const tap = require('tap')
 const helper = require('../../lib/agent_helper')
 const { assertSegments } = require('../../lib/metrics_helper')
 const { beforeHook, afterEachHook, afterHook } = require('./common')
+const { AI } = require('../../../lib/metrics/names')
+
+const fs = require('fs')
+// have to read and not require because openai does not export the package.json
+const { version: pkgVersion } = JSON.parse(
+  fs.readFileSync(`${__dirname}/node_modules/openai/package.json`)
+)
 
 tap.test('OpenAI instrumentation - embedding', (t) => {
   t.autoend()
@@ -40,6 +50,22 @@ tap.test('OpenAI instrumentation - embedding', (t) => {
           { exact: false }
         )
       }, 'should have expected segments')
+      tx.end()
+      test.end()
+    })
+  })
+
+  t.test('should increment tracking metric for each embedding event', (test) => {
+    const { client, agent } = t.context
+    helper.runInTransaction(agent, async (tx) => {
+      await client.embeddings.create({
+        input: 'This is an embedding test.',
+        model: 'text-embedding-ada-002'
+      })
+
+      const metrics = agent.metrics.getOrCreateMetric(`${AI.TRACKING_PREFIX}${pkgVersion}`)
+      t.equal(metrics.callCount > 0, true)
+
       tx.end()
       test.end()
     })
@@ -87,33 +113,30 @@ tap.test('OpenAI instrumentation - embedding', (t) => {
     })
   })
 
-  t.test(
-    'should spread metadata across events if present on agent.llm.metadata',
-    (test) => {
-      const { client, agent } = t.context
-      const api = helper.getAgentApi()
-      helper.runInTransaction(agent, async (tx) => {
-        const meta = { key: 'value', extended: true, vendor: 'overwriteMe', id: 'bogus' }
-        api.setLlmMetadata(meta)
+  t.test('should spread metadata across events if present on agent.llm.metadata', (test) => {
+    const { client, agent } = t.context
+    const api = helper.getAgentApi()
+    helper.runInTransaction(agent, async (tx) => {
+      const meta = { key: 'value', extended: true, vendor: 'overwriteMe', id: 'bogus' }
+      api.setLlmMetadata(meta)
 
-        await client.embeddings.create({
-          input: 'This is an embedding test.',
-          model: 'text-embedding-ada-002'
-        })
-
-        const events = agent.customEventAggregator.events.toArray()
-        const [[, testEvent]] = events
-        test.equal(testEvent.key, 'value')
-        test.equal(testEvent.extended, true)
-        test.equal(
-          testEvent.vendor,
-          'openAI',
-          'should not override properties of message with metadata'
-        )
-        test.not(testEvent.id, 'bogus', 'should not override properties of message with metadata')
-        tx.end()
-        test.end()
+      await client.embeddings.create({
+        input: 'This is an embedding test.',
+        model: 'text-embedding-ada-002'
       })
-    }
-  )
+
+      const events = agent.customEventAggregator.events.toArray()
+      const [[, testEvent]] = events
+      test.equal(testEvent.key, 'value')
+      test.equal(testEvent.extended, true)
+      test.equal(
+        testEvent.vendor,
+        'openAI',
+        'should not override properties of message with metadata'
+      )
+      test.not(testEvent.id, 'bogus', 'should not override properties of message with metadata')
+      tx.end()
+      test.end()
+    })
+  })
 })
