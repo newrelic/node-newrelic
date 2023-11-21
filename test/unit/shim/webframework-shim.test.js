@@ -79,16 +79,14 @@ test('WebFrameworkShim', function (t) {
       t.end()
     })
 
-    t.test('should take an optional `framework`', function (t) {
-      // Test without datastore
-      let _shim = null
-      t.doesNotThrow(function () {
-        _shim = new WebFrameworkShim(agent, 'test-restify')
-      })
-      t.notOk(_shim._metrics)
-
-      // Use one provided for all tests to check constructed with datastore
-      t.ok(shim._metrics)
+    t.test('should assign properties from parent', (t) => {
+      const mod = 'test-mod'
+      const name = mod
+      const version = '1.0.0'
+      const shim = new WebFrameworkShim(agent, mod, mod, name, version)
+      t.equal(shim.moduleName, mod)
+      t.equal(agent, shim._agent)
+      t.equal(shim.pkgVersion, version)
       t.end()
     })
   })

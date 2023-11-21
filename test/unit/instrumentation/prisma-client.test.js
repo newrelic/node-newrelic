@@ -25,8 +25,7 @@ test('PrismaClient unit tests', (t) => {
     agent = helper.loadMockedAgent()
     initialize = require('../../../lib/instrumentation/@prisma/client')
     shim = new DatastoreShim(agent, 'prisma')
-    sandbox.stub(shim, 'require')
-    shim.require.returns({ version: '4.0.0' })
+    shim.pkgVersion = '4.0.0'
   })
 
   t.afterEach(function () {
@@ -220,7 +219,7 @@ test('PrismaClient unit tests', (t) => {
     const MockPrismaClient = getMockModule()
     const prisma = { PrismaClient: MockPrismaClient }
 
-    shim.require.returns({ version })
+    shim.pkgVersion = version
     initialize(agent, prisma, '@prisma/client', shim)
     const client = new prisma.PrismaClient()
     client._engine.datamodel = `
@@ -256,7 +255,7 @@ test('PrismaClient unit tests', (t) => {
     const MockPrismaClient = getMockModule()
     const prisma = { PrismaClient: MockPrismaClient }
 
-    shim.require.returns({ version: '3.8.0' })
+    shim.pkgVersion = '3.8.0'
     initialize(agent, prisma, '@prisma/client', shim)
     const client = new prisma.PrismaClient()
     t.notOk(shim.isWrapped(client._executeRequest), 'should not instrument @prisma/client')

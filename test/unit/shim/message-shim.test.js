@@ -93,6 +93,17 @@ tap.test('MessageShim', function (t) {
       }, /^Shim must be initialized with .*? module name/)
       t.end()
     })
+
+    t.test('should assign properties from parent', (t) => {
+      const mod = 'test-mod'
+      const name = mod
+      const version = '1.0.0'
+      const shim = new MessageShim(agent, mod, mod, name, version)
+      t.equal(shim.moduleName, mod)
+      t.equal(agent, shim._agent)
+      t.equal(shim.pkgVersion, version)
+      t.end()
+    })
   })
 
   t.test('well-known message libraries', function (t) {

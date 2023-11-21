@@ -18,8 +18,7 @@ test('openai unit tests', (t) => {
     const agent = helper.loadMockedAgent()
     agent.config.ai_monitoring = { enabled: true }
     const shim = new GenericShim(agent, 'openai')
-    sandbox.stub(shim, 'require')
-    shim.require.returns({ version: '4.0.0' })
+    shim.pkgVersion = '4.0.0'
     sandbox.stub(shim.logger, 'debug')
 
     t.context.agent = agent
@@ -57,7 +56,7 @@ test('openai unit tests', (t) => {
   t.test('should not register instrumentation if openai is < 4.0.0', (t) => {
     const { shim, agent, initialize } = t.context
     const MockOpenAi = getMockModule()
-    shim.require.returns({ version: '3.7.0' })
+    shim.pkgVersion = '3.7.0'
     initialize(agent, MockOpenAi, 'openai', shim)
     t.equal(shim.logger.debug.callCount, 1, 'should log 2 debug messages')
     t.equal(

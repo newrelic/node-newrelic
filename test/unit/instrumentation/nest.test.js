@@ -37,7 +37,7 @@ test('Nest unit tests', (t) => {
 
   t.test('Should record the error when in a transaction', (t) => {
     // Minimum Nest.js version supported.
-    shim.require = sinon.stub().returns({ version: '8.0.0' })
+    shim.pkgVersion = '8.0.0'
     initialize(agent, mockCore, '@nestjs/core', shim)
 
     helper.runInTransaction(agent, (tx) => {
@@ -69,7 +69,7 @@ test('Nest unit tests', (t) => {
 
   t.test('Should ignore the error when not in a transaction', (t) => {
     // Minimum Nest.js version supported.
-    shim.require = sinon.stub().returns({ version: '8.0.0' })
+    shim.pkgVersion = '8.0.0'
     initialize(agent, mockCore, '@nestjs/core', shim)
 
     const err = new Error('something went wrong')
@@ -96,7 +96,7 @@ test('Nest unit tests', (t) => {
 
   t.test('Should not instrument versions earlier than 8.0.0', (t) => {
     // Unsupported version
-    shim.require = sinon.stub().returns({ version: '7.4.0' })
+    shim.pkgVersion = '7.4.0'
     initialize(agent, mockCore, '@nestjs/core', shim)
 
     const exceptionFilter = new mockCore.BaseExceptionFilter()
