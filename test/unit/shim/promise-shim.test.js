@@ -67,6 +67,17 @@ tap.test('PromiseShim', (t) => {
       t.throws(() => new PromiseShim(agent), /^Shim must be initialized with .*? module name/)
       t.end()
     })
+
+    t.test('should assign properties from parent', (t) => {
+      const mod = 'test-mod'
+      const name = mod
+      const version = '1.0.0'
+      const shim = new PromiseShim(agent, mod, mod, name, version)
+      t.equal(shim.moduleName, mod)
+      t.equal(agent, shim._agent)
+      t.equal(shim.pkgVersion, version)
+      t.end()
+    })
   })
 
   t.test('.Contextualizer', (t) => {
