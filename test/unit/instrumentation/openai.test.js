@@ -20,6 +20,7 @@ test('openai unit tests', (t) => {
     const shim = new GenericShim(agent, 'openai')
     shim.pkgVersion = '4.0.0'
     sandbox.stub(shim.logger, 'debug')
+    sandbox.stub(shim.logger, 'warn')
 
     t.context.agent = agent
     t.context.shim = shim
@@ -34,12 +35,12 @@ test('openai unit tests', (t) => {
 
   function getMockModule() {
     function Completions() {}
-    Completions.prototype.create = function () {}
+    Completions.prototype.create = async function () {}
     function OpenAI() {}
     OpenAI.prototype.makeRequest = function () {}
     OpenAI.Chat = { Completions }
     OpenAI.Embeddings = function () {}
-    OpenAI.Embeddings.prototype.create = function () {}
+    OpenAI.Embeddings.prototype.create = async function () {}
     return OpenAI
   }
 
@@ -50,6 +51,21 @@ test('openai unit tests', (t) => {
     t.equal(shim.logger.debug.callCount, 0, 'should not log debug messages')
     const isWrapped = shim.isWrapped(MockOpenAi.Chat.Completions.prototype.create)
     t.equal(isWrapped, true, 'should wrap chat completions create')
+    t.end()
+  })
+
+  t.test('should not instrument chat completion streams if < 4.12.2', async (t) => {
+    const { shim, agent, initialize } = t.context
+    shim.pkgVersion = '4.12.0'
+    const MockOpenAi = getMockModule()
+    initialize(agent, MockOpenAi, 'openai', shim)
+    const completions = new MockOpenAi.Chat.Completions()
+
+    await completions.create({ stream: true })
+    t.equal(
+      shim.logger.warn.args[0][0],
+      'Instrumenting chat completion streams is only supported with openai version 4.12.2+.'
+    )
     t.end()
   })
 

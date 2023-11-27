@@ -58,7 +58,7 @@ function getExpectedResult(tx, event, type, completionId) {
     'ingest_source': 'Node'
   }
   const resKeys = {
-    'duration': trace.children[0].getExclusiveDurationInMillis(),
+    'duration': trace.children[0].getDurationInMillis(),
     'request.model': 'gpt-3.5-turbo-0613',
     'api_key_last_four_digits': 'sk-7890',
     'response.organization': 'new-relic',
