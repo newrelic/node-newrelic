@@ -3673,7 +3673,7 @@ Special thanks to Ryan Copley (@RyanCopley) for the contribution.
     used for instrumenting web frameworks like `restify` or `express`.
 
   Documentation and tutorials for the new API can be found on our GitHub
-  documentation page: http://newrelic.github.io/node-newrelic/
+  documentation page: https://newrelic.github.io/node-newrelic/
 
 * Rewrote built-in instrumentation using the new `Shim` classes.
 
@@ -3762,7 +3762,7 @@ Special thanks to Ryan Copley (@RyanCopley) for the contribution.
   meaning every instrumentation will create Middleware metrics for your server.
 
   Tutorials on using the new instrumentation shim can be found on our API docs:
-  http://newrelic.github.io/node-newrelic/.
+  https://newrelic.github.io/node-newrelic/.
 
 * Removed `express_segments` feature flag.
 
@@ -4589,7 +4589,7 @@ Special thanks to Ryan Copley (@RyanCopley) for the contribution.
 
 * Advanced Analytics for APM Errors
 
-  With this release, the agent reports [TransactionError events](https://docs.newrelic.com/docs/insights/new-relic-insights/decorating-events/error-event-default-attributes-insights). These new events power the beta feature [Advanced Analytics for APM Errors](https://docs.newrelic.com/docs/apm/applications-menu/events/view-apm-errors-error-traces) (apply [here](https://discuss.newrelic.com/t/join-the-apm-errors-beta-of-real-time-analytics/31123) to participate). The error events are also available today through [New Relic Insights](http://newrelic.com/insights).
+  With this release, the agent reports [TransactionError events](https://docs.newrelic.com/docs/insights/new-relic-insights/decorating-events/error-event-default-attributes-insights). These new events power the beta feature [Advanced Analytics for APM Errors](https://docs.newrelic.com/docs/apm/applications-menu/events/view-apm-errors-error-traces) (apply [here](https://discuss.newrelic.com/t/join-the-apm-errors-beta-of-real-time-analytics/31123) to participate). The error events are also available today through [New Relic Insights](https://newrelic.com/insights).
 
   Advanced Analytics for APM Errors lets you see all of your errors with
   granular detail, filter and group by any attribute to analyze them, and take
@@ -5379,9 +5379,9 @@ Special thanks to Ryan Copley (@RyanCopley) for the contribution.
   10,000 per minute. After that events are statistically sampled. Event data
   includes transaction timing, transaction name, and any custom parameters. You
   can read what is sent in more detail
-  [here](http://docs.newrelic.com/docs/insights/basic-attributes#transaction-defaults).
+  [here](https://docs.newrelic.com/docs/insights/basic-attributes#transaction-defaults).
 
-  You can read more about Insights [here](http://newrelic.com/insights).
+  You can read more about Insights [here](https://newrelic.com/insights).
   Documentation for configuring this feature can be found
   [here](https://docs.newrelic.com/docs/nodejs/customizing-your-nodejs-config-file#tx_events).
 
