@@ -6,11 +6,9 @@
 'use strict'
 const { program } = require('commander')
 const API_ENDPOINT = '/v2/system_configuration.json'
-const STAGING_HOST = 'https://staging-api.newrelic.com'
 const PRD_US_HOST = 'https://api.newrelic.com'
 
 program.requiredOption('--version <version>', 'New version of node agent')
-program.requiredOption('--staging-key <key>', 'New Relic API key for staging')
 program.requiredOption('--prod-key <key>', 'New Relic API Key for prod')
 
 /**
@@ -50,26 +48,17 @@ function formatRequest(host, version, key) {
 }
 
 /**
- * Makes 3 concurrent requests to staging, production US and EU to update
+ * Makes a request to production US to update
  * the system configuration pages for the nodejs_agent_version
  */
 async function updateSystemConfigs() {
-  const errors = []
   program.parse()
   const opts = program.opts()
-  const stagingRequest = fetch(...formatRequest(STAGING_HOST, opts.version, opts.stagingKey))
-  const prodUsRequest = fetch(...formatRequest(PRD_US_HOST, opts.version, opts.prodKey))
   try {
-    const responses = await Promise.all([stagingRequest, prodUsRequest])
-    responses.forEach(async (response) => {
-      const res = await response.json()
-      if (![200, 201].includes(response.status)) {
-        errors.push(JSON.stringify(res.body))
-      }
-    })
-
-    if (errors.length) {
-      throw new Error(errors)
+    const response = await fetch(...formatRequest(PRD_US_HOST, opts.version, opts.prodKey))
+    const res = await response.json()
+    if (![200, 201].includes(response.status)) {
+      throw new Error(JSON.stringify(res.body))
     }
 
     console.log(`Successfully updated the Node.js Agent Version to ${opts.version}`)
