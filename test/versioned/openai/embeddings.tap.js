@@ -14,6 +14,13 @@ const tap = require('tap')
 const helper = require('../../lib/agent_helper')
 const { assertSegments } = require('../../lib/metrics_helper')
 const { beforeHook, afterEachHook, afterHook } = require('./common')
+const { AI } = require('../../../lib/metrics/names')
+
+const fs = require('fs')
+// have to read and not require because openai does not export the package.json
+const { version: pkgVersion } = JSON.parse(
+  fs.readFileSync(`${__dirname}/node_modules/openai/package.json`)
+)
 
 tap.test('OpenAI instrumentation - embedding', (t) => {
   t.autoend()
@@ -43,6 +50,22 @@ tap.test('OpenAI instrumentation - embedding', (t) => {
           { exact: false }
         )
       }, 'should have expected segments')
+      tx.end()
+      test.end()
+    })
+  })
+
+  t.test('should increment tracking metric for each embedding event', (test) => {
+    const { client, agent } = t.context
+    helper.runInTransaction(agent, async (tx) => {
+      await client.embeddings.create({
+        input: 'This is an embedding test.',
+        model: 'text-embedding-ada-002'
+      })
+
+      const metrics = agent.metrics.getOrCreateMetric(`${AI.TRACKING_PREFIX}OpenAI/${pkgVersion}`)
+      t.equal(metrics.callCount > 0, true)
+
       tx.end()
       test.end()
     })

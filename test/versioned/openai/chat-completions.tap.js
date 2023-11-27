@@ -13,6 +13,7 @@
 const tap = require('tap')
 const helper = require('../../lib/agent_helper')
 const { assertSegments } = require('../../lib/metrics_helper')
+const { AI } = require('../../../lib/metrics/names')
 const responses = require('./mock-responses')
 const {
   beforeHook,
@@ -58,6 +59,21 @@ tap.test('OpenAI instrumentation - chat completions', (t) => {
           { exact: false }
         )
       }, 'should have expected segments')
+      tx.end()
+      test.end()
+    })
+  })
+
+  t.test('should increment tracking metric for each chat completion event', (test) => {
+    const { client, agent } = t.context
+    helper.runInTransaction(agent, async (tx) => {
+      await client.chat.completions.create({
+        messages: [{ role: 'user', content: 'You are a mathematician.' }]
+      })
+
+      const metrics = agent.metrics.getOrCreateMetric(`${AI.TRACKING_PREFIX}OpenAI/${pkgVersion}`)
+      t.equal(metrics.callCount > 0, true)
+
       tx.end()
       test.end()
     })
