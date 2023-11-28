@@ -37,7 +37,7 @@ jobs:
       id: get_tag
       run: echo "latest_tag=$(cat package.json | jq .version)" >> $GITHUB_OUTPUT
     - name: Update system configuration pages
-      run: node ./bin/update-system-config-pages.js --version ${{ steps.get_tag.outputs.latest_tag }} --staging-key ${{ secrets.NEW_RELIC_API_KEY_STAGING }} --prod-key ${{ secrets.NEW_RELIC_API_KEY_PRODUCTION }}
+      run: node ./bin/update-system-config-pages.js --version ${{ steps.get_tag.outputs.latest_tag }} --prod-key ${{ secrets.NEW_RELIC_API_KEY_PRODUCTION }}
     - name: Publish API Docs
       run: npm run publish-docs
     - name: Create Docs Website PR
