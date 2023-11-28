@@ -8,15 +8,14 @@
           "Set log file permissions to read/write for Node process only"
         ],
         "bugfixes": [
-          "Add missing configuration check in OpenAI implementation",
-          "updated isSimpleObject util to only check plain objects not arrays"
+          "Updated isSimpleObject util to only check plain objects not arrays"
         ],
         "features": [
-          "Add version tracking metric on OpenAI events",
+          "Added version tracking metric on OpenAI events",
           "Added instrumentation for chat completion streams",
           "Added pkgVersion to shim instances to facilitate semver checking without having to re-parse the package.json",
-          "Ensure API errors are tracked",
-          "Add ai_monitoring configuration",
+          "Ensure openai errors are tracked",
+          "Added ai_monitoring configuration",
           "Added instrumentation for openai embedding creation",
           "Added API for tracking LLM feedback",
           "Added instrumentation for openai chat completion creation",
