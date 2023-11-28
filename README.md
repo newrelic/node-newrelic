@@ -184,7 +184,7 @@ Here are some resources for learning more about the agent:
 
 - [New Relic's official Node.js agent documentation](https://docs.newrelic.com/docs/agents/nodejs-agent)
 
-- [Developer docs](http://newrelic.github.io/node-newrelic/)
+- [Developer docs](https://newrelic.github.io/node-newrelic/)
 
 - [Configuring the agent using `newrelic.js` or environment variables](https://docs.newrelic.com/docs/agents/nodejs-agent/installation-configuration/nodejs-agent-configuration)
 
@@ -242,7 +242,7 @@ To [all contributors](https://github.com/newrelic/node-newrelic/graphs/contribut
 
 ## License
 
-The Node.js agent is licensed under the [Apache 2.0](http://apache.org/licenses/LICENSE-2.0.txt) License.
+The Node.js agent is licensed under the [Apache 2.0](https://apache.org/licenses/LICENSE-2.0.txt) License.
 
 The Node.js agent also uses source code from third-party libraries. You can find full details on which libraries are used and the terms under which they are licensed in [the third-party notices document](https://github.com/newrelic/node-newrelic/blob/main/THIRD_PARTY_NOTICES.md).
 

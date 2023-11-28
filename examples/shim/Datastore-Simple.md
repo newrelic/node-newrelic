@@ -298,11 +298,11 @@ there, please drop us a line on the [community forum](https://discuss.newrelic.c
 
 [1]: https://www.npmjs.com/package/cassandra-driver
 [2]: https://docs.newrelic.com/docs/apm/applications-menu/monitoring/databases-slow-queries-page
-[3]: http://docs.datastax.com/en/latest-nodejs-driver-api/Client.html
+[3]: https://github.com/datastax/nodejs-driver#basic-usage
 [4]: https://docs.newrelic.com/docs/apm/applications-menu/monitoring/transactions-page
 [5]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array
-[6]: http://docs.datastax.com/en/latest-nodejs-driver-api/Client.html#eachRow
-[7]: http://docs.datastax.com/en/latest-nodejs-driver-api/Client.html#execute
-[8]: http://docs.datastax.com/en/latest-nodejs-driver-api/Client.html#stream
+[6]: https://github.com/datastax/nodejs-driver#row-streaming-and-pipes
+[7]: https://github.com/datastax/nodejs-driver#user-defined-types
+[8]: https://github.com/datastax/nodejs-driver#row-streaming-and-pipes
 [9]: https://github.com/datastax/nodejs-driver/blob/master/lib/client.js#L589
-[10]: http://docs.datastax.com/en/latest-nodejs-driver-api/Client.html#batch
+[10]: https://github.com/datastax/nodejs-driver#batch-multiple-statements
