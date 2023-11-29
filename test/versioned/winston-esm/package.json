@@ -1,0 +1,20 @@
+{
+  "name": "winston-esm-tests",
+  "version": "0.0.0",
+  "type": "module",
+  "private": true,
+  "tests": [
+    {
+      "engines": {
+        "node": ">=16"
+      },
+      "dependencies": {
+        "winston": ">=3",
+        "winston-transport": ">=4"
+      },
+      "files": [
+        "winston.tap.mjs"
+      ]
+    }
+  ]
+}
