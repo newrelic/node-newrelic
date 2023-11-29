@@ -233,7 +233,7 @@ tap.test('OpenAI instrumentation - chat completions', (t) => {
           // are asserted in other tests
           t.match(tx.exceptions[0], {
             customAttributes: {
-              'error.message': '"exceeded count"',
+              'error.message': 'Premature close',
               'completion_id': /\w{32}/
             }
           })

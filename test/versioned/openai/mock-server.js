@@ -76,8 +76,21 @@ function handler(req, res) {
       // OpenAI streamed responses are double newline delimited lines that
       // are prefixed with the string `data: `. The end of the stream is
       // terminated with a `done: [DONE]` string.
-      const outStream =
-        streamData !== 'do random' ? goodStream(streamData, { ...body }) : badStream({ ...body })
+      let outStream
+      if (streamData !== 'do random') {
+        outStream = finiteStream(streamData, { ...body })
+      } else {
+        outStream = randomStream({ ...body })
+        let streamChunkCount = 0
+        outStream.on('data', () => {
+          if (streamChunkCount >= 100) {
+            outStream.destroy()
+            res.destroy()
+          }
+          streamChunkCount += 1
+        })
+      }
+
       outStream.pipe(res)
     } else {
       res.write(JSON.stringify(body))
@@ -86,7 +99,17 @@ function handler(req, res) {
   })
 }
 
-function goodStream(dataToStream, chunkTemplate) {
+/**
+ * Splits the provided `dataToStream` into chunks and returns a stream that
+ * sends those chunks as OpenAI data stream messages. This stream has a finite
+ * number of messages that will be sent.
+ *
+ * @param {string} dataToStream A fairly long string to split on space chars.
+ * @param {object} chunkTemplate An object that is shaped like an OpenAI stream
+ * data object.
+ * @returns {Readable} A paused stream.
+ */
+function finiteStream(dataToStream, chunkTemplate) {
   const parts = dataToStream.split(' ')
   let i = 0
   return new Readable({
@@ -105,28 +128,25 @@ function goodStream(dataToStream, chunkTemplate) {
         this.push(null)
       }
     }
-  })
+  }).pause()
 }
 
-function badStream(chunkTemplate) {
-  let count = 0
+/**
+ * Creates a stream that will stream an infinite number of OpenAI stream data
+ * chunks.
+ *
+ * @param {object} chunkTemplate An object that is shaped like an OpenAI stream
+ * data object.
+ * @returns {Readable} A paused stream.
+ */
+function randomStream(chunkTemplate) {
   return new Readable({
     read(size = 16) {
-      if (count > 100) {
-        // something is up with OpenAI
-        // you shouldn't have to do this. a throw would be enough
-        chunkTemplate.error = 'exceeded count'
-        this.push('data: ' + JSON.stringify(chunkTemplate) + '\n\n')
-        this.push(null)
-        return
-      }
-
       const data = crypto.randomBytes(size)
       chunkTemplate.choices[0].delta.content = data.toString('base64')
       this.push('data: ' + JSON.stringify(chunkTemplate) + '\n\n')
-      count += 1
     }
-  })
+  }).pause()
 }
 
 function getShortenedPrompt(reqBody) {
