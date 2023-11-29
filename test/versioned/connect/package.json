@@ -8,7 +8,7 @@
         "node": ">=16"
       },
       "dependencies": {
-        "connect": ">=1.0.0"
+        "connect": ">=2.0.0"
       },
       "files": [
         "error-intercept.tap.js",
