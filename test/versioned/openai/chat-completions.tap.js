@@ -13,7 +13,9 @@
 const tap = require('tap')
 const helper = require('../../lib/agent_helper')
 const { assertSegments } = require('../../lib/metrics_helper')
-const { AI } = require('../../../lib/metrics/names')
+const {
+  AI: { OPENAI }
+} = require('../../../lib/metrics/names')
 const responses = require('./mock-responses')
 const {
   beforeHook,
@@ -55,7 +57,7 @@ tap.test('OpenAI instrumentation - chat completions', (t) => {
       test.doesNotThrow(() => {
         assertSegments(
           tx.trace.root,
-          ['AI/OpenAI/Chat/Completions/Create', [`External/${host}:${port}/chat/completions`]],
+          [OPENAI.COMPLETION, [`External/${host}:${port}/chat/completions`]],
           { exact: false }
         )
       }, 'should have expected segments')
@@ -71,7 +73,7 @@ tap.test('OpenAI instrumentation - chat completions', (t) => {
         messages: [{ role: 'user', content: 'You are a mathematician.' }]
       })
 
-      const metrics = agent.metrics.getOrCreateMetric(`${AI.TRACKING_PREFIX}OpenAI/${pkgVersion}`)
+      const metrics = agent.metrics.getOrCreateMetric(`${OPENAI.TRACKING_PREFIX}/${pkgVersion}`)
       t.equal(metrics.callCount > 0, true)
 
       tx.end()
@@ -138,7 +140,7 @@ tap.test('OpenAI instrumentation - chat completions', (t) => {
         test.doesNotThrow(() => {
           assertSegments(
             tx.trace.root,
-            ['AI/OpenAI/Chat/Completions/Create', [`External/${host}:${port}/chat/completions`]],
+            [OPENAI.COMPLETION, [`External/${host}:${port}/chat/completions`]],
             { exact: false }
           )
         }, 'should have expected segments')

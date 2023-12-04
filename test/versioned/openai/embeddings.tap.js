@@ -14,7 +14,9 @@ const tap = require('tap')
 const helper = require('../../lib/agent_helper')
 const { assertSegments } = require('../../lib/metrics_helper')
 const { beforeHook, afterEachHook, afterHook } = require('./common')
-const { AI } = require('../../../lib/metrics/names')
+const {
+  AI: { OPENAI }
+} = require('../../../lib/metrics/names')
 
 const fs = require('fs')
 // have to read and not require because openai does not export the package.json
@@ -44,11 +46,9 @@ tap.test('OpenAI instrumentation - embedding', (t) => {
       test.equal(results.model, 'text-embedding-ada-002-v2')
 
       test.doesNotThrow(() => {
-        assertSegments(
-          tx.trace.root,
-          ['AI/OpenAI/Embeddings/Create', [`External/${host}:${port}/embeddings`]],
-          { exact: false }
-        )
+        assertSegments(tx.trace.root, [OPENAI.EMBEDDING, [`External/${host}:${port}/embeddings`]], {
+          exact: false
+        })
       }, 'should have expected segments')
       tx.end()
       test.end()
@@ -63,7 +63,7 @@ tap.test('OpenAI instrumentation - embedding', (t) => {
         model: 'text-embedding-ada-002'
       })
 
-      const metrics = agent.metrics.getOrCreateMetric(`${AI.TRACKING_PREFIX}OpenAI/${pkgVersion}`)
+      const metrics = agent.metrics.getOrCreateMetric(`${OPENAI.TRACKING_PREFIX}/${pkgVersion}`)
       t.equal(metrics.callCount > 0, true)
 
       tx.end()
