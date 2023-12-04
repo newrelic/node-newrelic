@@ -9,7 +9,7 @@
         "node": ">=16"
       },
       "dependencies": {
-        "winston": ">=3.4.0",
+        "winston": ">=3",
         "winston-transport": ">=4"
       },
       "files": [
