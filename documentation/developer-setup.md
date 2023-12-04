@@ -43,3 +43,23 @@ There are a variety of ways to get the latest changes into your local branches. 
 
 1. `git checkout main`
 2. `git pull upstream main`
+
+### Testing
+
+In addition to basic unit tests that can be run with `npm run unit`, we have
+a set of "versioned" integration style tests. See the [package.json](../package.json)
+for the full set of scripts, but a short list of common scenarios is:
+
++ `npm run versioned:internal` - to run all versioned tests across all supported
+versions of each instrumented module.
++ `npm run versioned:internal:major` - to run all versioned tests for each
+current major release of each instrumented module.
++ `npm run versioned:internal:major foo` - to run a specific versioned test
+for the latest major version of the instrumented module named "foo" (as an
+example).
+
+Note: when running the versioned test suite on a macOS system, the application
+firewall is likely to issue multiple requests to authorize the `node` binary
+for incoming connections. This can be avoided by running the
+[macos-firewall.sh](../bin/macos-firewall.sh) script to prime the application
+firewall with a rule to allow the connections.
