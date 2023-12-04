@@ -5,6 +5,7 @@
 
 'use strict'
 const { test } = require('tap')
+const zlib = require('zlib')
 const codec = require('../../../lib/util/codec')
 const DATA = { foo: 'bar' }
 const ENCODED = 'eJyrVkrLz1eyUkpKLFKqBQAdegQ0'
@@ -22,13 +23,14 @@ test('codec', function (t) {
     })
 
     t.test('should not error for circular payloads', function (t) {
-      const val = 'eJyrVkrLz1eyUkpKLFLSUcpPygKyo50zi5JLcxKLFOpilWoBuCkK6A=='
+      const val = '{"foo":"bar","obj":"[Circular ~]"}'
       const obj = { foo: 'bar' }
       obj.obj = obj
 
       codec.encode(obj, function (err, encoded) {
         t.error(err)
-        t.equal(encoded, val)
+        const decoded = zlib.inflateSync(Buffer.from(encoded, 'base64')).toString()
+        t.equal(decoded, val)
         t.end()
       })
     })
