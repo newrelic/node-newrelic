@@ -21,7 +21,6 @@ const RECEIVE_COMMANDS = ['ReceiveMessageCommand']
  * @returns {function}
  */
 function sqsMiddleware(shim, config, next, context) {
-  shim.setLibrary(shim.SQS)
   if (SEND_COMMANDS.includes(context.commandName)) {
     return shim.recordProduce(next, getSqsSpec)
   } else if (RECEIVE_COMMANDS.includes(context.commandName)) {
@@ -53,6 +52,9 @@ function getSqsSpec(shim, original, name, args) {
 
 module.exports.sqsMiddlewareConfig = {
   middleware: sqsMiddleware,
+  init(shim) {
+    shim.setLibrary(shim.SQS)
+  },
   type: 'message',
   config: {
     name: 'NewRelicSnsMiddleware',

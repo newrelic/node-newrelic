@@ -10,6 +10,7 @@ const utils = require('@newrelic/test-utilities')
 
 const common = require('../common')
 const { createResponseServer, FAKE_CREDENTIALS } = require('../aws-server-stubs')
+const sinon = require('sinon')
 
 tap.test('SNS', (t) => {
   t.autoend()
@@ -30,6 +31,9 @@ tap.test('SNS', (t) => {
 
     helper = utils.TestAgent.makeInstrumented()
     common.registerInstrumentation(helper)
+    const newrelicLoc = utils.util.getNewRelicLocation()
+    const Shim = require(newrelicLoc + '/lib/shim/message-shim')
+    t.context.setLibrarySpy = sinon.spy(Shim.prototype, 'setLibrary')
     const lib = require('@aws-sdk/client-sns')
     const SNSClient = lib.SNSClient
     PublishCommand = lib.PublishCommand
@@ -45,6 +49,7 @@ tap.test('SNS', (t) => {
   t.afterEach(() => {
     server.destroy()
     server = null
+    t.context.setLibrarySpy.restore()
     // this may be brute force but i could not figure out
     // which files within the modules were cached preventing the instrumenting
     // from running on every test
@@ -224,5 +229,6 @@ function finish(t, tx, destName) {
     'should have expected attributes for PublishCommand'
   )
 
+  t.equal(t.context.setLibrarySpy.callCount, 1, 'should only call setLibrary once and not per call')
   t.end()
 }

@@ -10,6 +10,7 @@ const utils = require('@newrelic/test-utilities')
 
 const common = require('../common')
 const { createEmptyResponseServer, FAKE_CREDENTIALS } = require('../aws-server-stubs')
+const sinon = require('sinon')
 
 const AWS_REGION = 'us-east-1'
 
@@ -47,6 +48,9 @@ tap.test('DynamoDB', (t) => {
 
     helper = utils.TestAgent.makeInstrumented()
     common.registerInstrumentation(helper)
+    const newrelicLoc = utils.util.getNewRelicLocation()
+    const Shim = require(newrelicLoc + '/lib/shim/datastore-shim')
+    t.context.setDatastoreSpy = sinon.spy(Shim.prototype, 'setDatastore')
     const lib = require('@aws-sdk/client-dynamodb')
     DynamoDBClient = lib.DynamoDBClient
     CreateTableCommand = lib.CreateTableCommand
@@ -73,6 +77,7 @@ tap.test('DynamoDB', (t) => {
   })
 
   t.afterEach(async () => {
+    t.context.setDatastoreSpy.restore()
     server.destroy()
     server = null
 
@@ -238,6 +243,11 @@ tap.test('DynamoDB', (t) => {
       )
     })
 
+    t.equal(
+      t.context.setDatastoreSpy.callCount,
+      1,
+      'should only call setDatastore once and not per call'
+    )
     t.end()
   }
 })

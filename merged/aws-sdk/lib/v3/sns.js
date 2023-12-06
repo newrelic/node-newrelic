@@ -15,7 +15,6 @@
  * @returns {function}
  */
 function snsMiddleware(shim, config, next, context) {
-  shim.setLibrary(shim.SNS)
   if (context.commandName === 'PublishCommand') {
     return shim.recordProduce(next, getSnsSpec)
   }
@@ -55,6 +54,9 @@ function getDestinationName({ TopicArn, TargetArn }) {
 
 module.exports.snsMiddlewareConfig = {
   middleware: snsMiddleware,
+  init(shim) {
+    shim.setLibrary(shim.SNS)
+  },
   type: 'message',
   config: {
     name: 'NewRelicSnsMiddleware',
