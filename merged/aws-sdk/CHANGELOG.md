@@ -1,3 +1,9 @@
+### v7.0.3 (2023-12-07)
+
+* Updated aws-sdk v3 instrumentation to only call `shim.setLibrary` and `shim.setDatastore` once instead of on every call to SQS, SNS, and DynamoDB.
+* Updated [axios](https://github.com/axios/axios) from 0.21.4 to 1.6.0 
+* Updated ancestor dependency [newrelic](https://github.com/newrelic/node-newrelic) from 11.0.0 to 11.5.0
+
 ### v7.0.2 (2023-10-25)
 
 * Removed `newrelic` as peer dependency since this package only gets bundled with agent.
