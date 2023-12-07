@@ -32,6 +32,7 @@
         "restify-errors": "6.1"
       },
       "files": [
+        "async-handlers.tap.js",
         "capture-params.tap.js",
         "ignoring.tap.js",
         "restify.tap.js",
