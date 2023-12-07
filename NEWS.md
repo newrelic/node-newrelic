@@ -3,7 +3,6 @@
 #### Bug fixes
 
 * **deps:** Updated @newrelic/aws-sdk to 7.0.3 ([#1902](https://github.com/newrelic/node-newrelic/pull/1902)) ([bf22ae5](https://github.com/newrelic/node-newrelic/commit/bf22ae502ee74d5071dc5578cc77c38039e68778))
-    * Signed-off-by: mrickard <maurice@mauricerickard.com>
 * Updated shimmer to handle instrumenting named and default exports of CommonJS modules in ESM ([#1894](https://github.com/newrelic/node-newrelic/pull/1894)) ([9f7979c](https://github.com/newrelic/node-newrelic/commit/9f7979cd41dcb3735e553cbd4837ad455836e3ff))
 
 #### Code refactoring
