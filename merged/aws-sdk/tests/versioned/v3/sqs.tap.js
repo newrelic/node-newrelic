@@ -10,6 +10,7 @@ const utils = require('@newrelic/test-utilities')
 
 const common = require('../common')
 const { createResponseServer, FAKE_CREDENTIALS } = require('../aws-server-stubs')
+const sinon = require('sinon')
 
 const AWS_REGION = 'us-east-1'
 
@@ -37,6 +38,9 @@ tap.test('SQS API', (t) => {
     helper = utils.TestAgent.makeInstrumented()
     common.registerInstrumentation(helper)
 
+    const newrelicLoc = utils.util.getNewRelicLocation()
+    const Shim = require(newrelicLoc + '/lib/shim/message-shim')
+    t.context.setLibrarySpy = sinon.spy(Shim.prototype, 'setLibrary')
     const lib = require('@aws-sdk/client-sqs')
     const SQSClient = lib.SQSClient
     CreateQueueCommand = lib.CreateQueueCommand
@@ -55,6 +59,7 @@ tap.test('SQS API', (t) => {
 
   t.afterEach(() => {
     helper && helper.unload()
+    t.context.setLibrarySpy.restore()
 
     server.destroy()
     server = null
@@ -123,6 +128,11 @@ tap.test('SQS API', (t) => {
 
     checkName(t, receiveMessage.name, 'Consume', queueName)
     checkAttributes(t, receiveMessage, 'ReceiveMessageCommand')
+    t.equal(
+      t.context.setLibrarySpy.callCount,
+      1,
+      'should only call setLibrary once and not per call'
+    )
   }
 })
 
