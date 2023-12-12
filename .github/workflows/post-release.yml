@@ -8,7 +8,7 @@ on:
       - completed
 
 jobs:
-  update-rpm-and-docs:
+  update-docs:
     # Check if this was a manual invocation*workflow_dispatch) or triggered(workflow_run) and successful
     if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run && github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
@@ -36,8 +36,6 @@ jobs:
     - name: Get Created Tag
       id: get_tag
       run: echo "latest_tag=$(cat package.json | jq .version)" >> $GITHUB_OUTPUT
-    - name: Update system configuration pages
-      run: node ./bin/update-system-config-pages.js --version ${{ steps.get_tag.outputs.latest_tag }} --prod-key ${{ secrets.NEW_RELIC_API_KEY_PRODUCTION }}
     - name: Publish API Docs
       run: npm run publish-docs
     - name: Create Docs Website PR
