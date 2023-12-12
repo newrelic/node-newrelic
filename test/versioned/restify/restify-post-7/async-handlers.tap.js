@@ -36,30 +36,30 @@ tap.test('Restify instrumentation', (t) => {
       numbers[i] = randomNumber()
       i++
       const txn = agent.getTransaction()
-      t.ok(txn, `sync middleware should be in transaction context`)
+      t.ok(txn, `sync middleware should be in transaction context (${req.method} ${req.path()})`)
       return next()
     }
 
-    const useAsyncMiddleware = async () => {
+    const useAsyncMiddleware = async (req) => {
       const txn = agent.getTransaction()
-      t.ok(txn, 'async middleware should be in transaction context')
+      t.ok(txn, `async middleware should be in transaction context (${req.method} ${req.path()})`)
       numbers[i] = await getRandomNumber()
       i++
     }
 
     const handler = (req, res, next) => {
       const txn = agent.getTransaction()
-      t.ok(txn, 'sync handler should be in transaction context')
+      t.ok(txn, `sync handler should be in transaction context (${req.method} ${req.path()})`)
       res.send({ message: 'done with handler', numbers })
       return next()
     }
 
     const asyncHandler = async (req, res) => {
       const txn = agent.getTransaction()
-      t.ok(txn, 'async handler should be in transaction context')
+      t.ok(txn, `async handler should be in transaction context (${req.method} ${req.path()})`)
       numbers[i] = await getRandomNumber()
       i++
-      res.send(JSON.stringify({ message: 'done with handler', numbers }))
+      res.send({ message: 'done with handler', numbers })
     }
 
     server.use(useSyncMiddleware)
@@ -84,8 +84,8 @@ tap.test('Restify instrumentation', (t) => {
     const url = `http://localhost:${port}/sync/handler`
 
     helper.makeGetRequest(url, {}, function (error, res) {
-      t.notOk(error)
-      t.ok(res)
+      t.notOk(error, 'synchronous GET endpoint should not error')
+      t.ok(res, 'synchronous GET response should be ok')
       t.end()
     })
   })
@@ -95,8 +95,8 @@ tap.test('Restify instrumentation', (t) => {
 
     await new Promise((resolve) => {
       helper.makeGetRequest(url, {}, async function (error, res) {
-        t.notOk(error)
-        t.ok(res)
+        t.notOk(error, 'async GET endpoint should not error')
+        t.ok(res, 'async GET response should be ok')
         resolve()
       })
     })
@@ -110,8 +110,8 @@ tap.test('Restify instrumentation', (t) => {
       url,
       { method: 'PUT', body: JSON.stringify({ message: 'hi' }) },
       function (error, res) {
-        t.notOk(error)
-        t.ok(res)
+        t.notOk(error, 'synchronous PUT endpoint should not error')
+        t.ok(res, 'synchronous PUT response should be ok')
         t.end()
       }
     )
@@ -125,8 +125,8 @@ tap.test('Restify instrumentation', (t) => {
         url,
         { method: 'PUT', body: JSON.stringify({ message: 'hi' }) },
         function (error, res) {
-          t.notOk(error)
-          t.ok(res)
+          t.notOk(error, 'async PUT endpoint should not error')
+          t.ok(res, 'async PUT response should be ok')
           resolve()
         }
       )
