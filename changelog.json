@@ -2,6 +2,17 @@
   "repository": "newrelic/node-newrelic",
   "entries": [
     {
+      "version": "11.6.1",
+      "changes": {
+        "security": [],
+        "bugfixes": [
+          "Updated @newrelic/aws-sdk to 7.0.3",
+          "Updated shimmer to handle instrumenting named and default exports of CommonJS modules in ESM"
+        ],
+        "features": []
+      }
+    },
+    {
       "version": "11.6.0",
       "changes": {
         "security": [
