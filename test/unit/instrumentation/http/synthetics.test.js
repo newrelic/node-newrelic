@@ -7,32 +7,19 @@
 
 const tap = require('tap')
 
-const hashes = require('../../../../lib/util/hashes')
 const helper = require('../../../lib/agent_helper')
+const {
+  SYNTHETICS_DATA,
+  SYNTHETICS_INFO,
+  SYNTHETICS_HEADER,
+  SYNTHETICS_INFO_HEADER,
+  ENCODING_KEY
+} = require('../../../helpers/synthetics')
 
 tap.test('synthetics outbound header', (t) => {
   let http
   let server
   let agent
-  const ENCODING_KEY = 'Old Spice'
-  const SYNTHETICS_DATA_ARRAY = [
-    1, // version
-    567, // account id
-    'moe', // synthetics resource id
-    'larry', // synthetics job id
-    'curly' // synthetics monitor id
-  ]
-  const SYNTHETICS_DATA = {
-    version: SYNTHETICS_DATA_ARRAY[0],
-    accountId: SYNTHETICS_DATA_ARRAY[1],
-    resourceId: SYNTHETICS_DATA_ARRAY[2],
-    jobId: SYNTHETICS_DATA_ARRAY[3],
-    monitorId: SYNTHETICS_DATA_ARRAY[4]
-  }
-  const SYNTHETICS_HEADER = hashes.obfuscateNameUsingKey(
-    JSON.stringify(SYNTHETICS_DATA_ARRAY),
-    ENCODING_KEY
-  )
 
   let port = null
   const CONNECT_PARAMS = {
@@ -70,13 +57,19 @@ tap.test('synthetics outbound header', (t) => {
     helper.runInTransaction(agent, function (transaction) {
       transaction.syntheticsData = SYNTHETICS_DATA
       transaction.syntheticsHeader = SYNTHETICS_HEADER
+      transaction.syntheticsInfoData = SYNTHETICS_INFO
+      transaction.syntheticsInfoHeader = SYNTHETICS_INFO_HEADER
       CONNECT_PARAMS.port = port
       const req = http.request(CONNECT_PARAMS, function (res) {
         res.resume()
         transaction.end()
         t.equal(res.headers['x-newrelic-synthetics'], SYNTHETICS_HEADER)
+        t.equal(res.headers['x-newrelic-synthetics-info'], SYNTHETICS_INFO_HEADER)
         t.end()
       })
+      const headers = req.getHeaders()
+      t.equal(headers['x-newrelic-synthetics'], SYNTHETICS_HEADER)
+      t.equal(headers['x-newrelic-synthetics-info'], SYNTHETICS_INFO_HEADER)
       req.end()
     })
   })
@@ -88,6 +81,7 @@ tap.test('synthetics outbound header', (t) => {
         res.resume()
         transaction.end()
         t.notOk(res.headers['x-newrelic-synthetics'])
+        t.notOk(res.headers['x-newrelic-synthetics-info'])
         t.end()
       })
     })
@@ -100,9 +94,6 @@ tap.test('should add synthetics inbound header to transaction', (t) => {
   let http
   let server
   let agent
-  let synthData
-
-  const ENCODING_KEY = 'Old Spice'
   const CONNECT_PARAMS = {
     hostname: 'localhost'
   }
@@ -119,13 +110,6 @@ tap.test('should add synthetics inbound header to transaction', (t) => {
   }
 
   t.beforeEach(() => {
-    synthData = [
-      1, // version
-      567, // account id
-      'moe', // synthetics resource id
-      'larry', // synthetics job id
-      'curly' // synthetics monitor id
-    ]
     agent = helper.instrumentMockedAgent({
       cross_application_tracer: { enabled: true },
       distributed_tracing: { enabled: false },
@@ -144,10 +128,10 @@ tap.test('should add synthetics inbound header to transaction', (t) => {
   })
 
   t.test('should exist if account id and version are ok', (t) => {
-    const synthHeader = hashes.obfuscateNameUsingKey(JSON.stringify(synthData), ENCODING_KEY)
     const options = Object.assign({}, CONNECT_PARAMS)
     options.headers = {
-      'X-NewRelic-Synthetics': synthHeader
+      'X-NewRelic-Synthetics': SYNTHETICS_HEADER,
+      'X-NewRelic-Synthetics-Info': SYNTHETICS_INFO_HEADER
     }
     server = createServer(
       function onListen() {
@@ -162,28 +146,47 @@ tap.test('should add synthetics inbound header to transaction', (t) => {
         t.match(
           tx,
           {
-            syntheticsHeader: synthHeader
+            syntheticsHeader: SYNTHETICS_HEADER,
+            syntheticsInfoHeader: SYNTHETICS_INFO_HEADER
           },
           'synthetics header added to intrinsics with distributed tracing enabled'
         )
         t.type(tx.syntheticsData, 'object')
-        t.match(tx.syntheticsData, {
-          version: synthData[0],
-          accountId: synthData[1],
-          resourceId: synthData[2],
-          jobId: synthData[3],
-          monitorId: synthData[4]
+        t.same(tx.syntheticsData, SYNTHETICS_DATA)
+        t.same(tx.syntheticsInfoData, SYNTHETICS_INFO)
+        t.end()
+      }
+    )
+  })
+
+  t.test('should not exist if account id and version are not ok', (t) => {
+    const options = Object.assign({}, CONNECT_PARAMS)
+    options.headers = {
+      'X-NewRelic-Synthetics': 'bsstuff',
+      'X-NewRelic-Synthetics-Info': 'noinfo'
+    }
+    server = createServer(
+      function onListen() {
+        options.port = this.address().port
+        http.get(options, function (res) {
+          res.resume()
         })
+      },
+      function onRequest() {
+        const tx = agent.getTransaction()
+        t.ok(tx)
+        t.notOk(tx.syntheticsHeader)
+        t.notOk(tx.syntheticsInfoHeader)
         t.end()
       }
     )
   })
 
   t.test('should propagate inbound synthetics header on response', (t) => {
-    const synthHeader = hashes.obfuscateNameUsingKey(JSON.stringify(synthData), ENCODING_KEY)
     const options = Object.assign({}, CONNECT_PARAMS)
     options.headers = {
-      'X-NewRelic-Synthetics': synthHeader
+      'X-NewRelic-Synthetics': SYNTHETICS_HEADER,
+      'X-NewRelic-Synthetics-Info': SYNTHETICS_INFO_HEADER
     }
     server = createServer(
       function onListen() {
@@ -195,7 +198,8 @@ tap.test('should add synthetics inbound header to transaction', (t) => {
       function onRequest(req, res) {
         res.writeHead(200)
         t.match(res.getHeaders(), {
-          'x-newrelic-synthetics': synthHeader
+          'x-newrelic-synthetics': SYNTHETICS_HEADER,
+          'x-newrelic-synthetics-info': SYNTHETICS_INFO_HEADER
         })
         t.end()
       }

@@ -254,6 +254,17 @@ tap.test('Analytics events', function (t) {
         monitorId: 'monId'
       }
 
+      trans.syntheticsInfoData = {
+        version: 1,
+        type: 'unitTest',
+        initiator: 'cli',
+        attributes: {
+          'Attr-Test': 'value',
+          'attr2Test': 'value1',
+          'xTest-Header': 'value2'
+        }
+      }
+
       trans.end()
 
       const events = getTransactionEvents(agent)
@@ -262,6 +273,11 @@ tap.test('Analytics events', function (t) {
       t.equal(attributes['nr.syntheticsResourceId'], 'resId')
       t.equal(attributes['nr.syntheticsJobId'], 'jobId')
       t.equal(attributes['nr.syntheticsMonitorId'], 'monId')
+      t.equal(attributes['nr.syntheticsType'], 'unitTest')
+      t.equal(attributes['nr.syntheticsInitiator'], 'cli')
+      t.equal(attributes['nr.syntheticsAttrTest'], 'value')
+      t.equal(attributes['nr.syntheticsAttr2Test'], 'value1')
+      t.equal(attributes['nr.syntheticsXTestHeader'], 'value2')
       t.end()
     })
 
