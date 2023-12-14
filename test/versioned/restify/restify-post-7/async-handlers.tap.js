@@ -8,129 +8,200 @@
 const tap = require('tap')
 
 const helper = require('../../../lib/agent_helper')
+const { assertMetrics } = require('../../../lib/metrics_helper')
 
-const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
-const randomNumber = () => Math.floor(Math.random() * 1000)
-
-const getRandomNumber = async () => {
-  const number = randomNumber()
-  await wait(number / 10)
-  return number
+const simulateAsyncWork = async () => {
+  const delay = Math.floor(Math.random() * 100)
+  await new Promise((resolve) => setTimeout(resolve, delay))
+  return delay
 }
 
-tap.test('Restify instrumentation', (t) => {
+tap.test('Restify with async handlers should work the same as with sync', (t) => {
   t.autoend()
 
   let agent = null
   let restify = null
   let server = null
-  const numbers = []
-  let i = 0
 
-  t.before(() => {
+  t.beforeEach(() => {
     agent = helper.instrumentMockedAgent()
+
     restify = require('restify')
     server = restify.createServer()
-
-    const useSyncMiddleware = (req, res, next) => {
-      numbers[i] = randomNumber()
-      i++
-      const txn = agent.getTransaction()
-      t.ok(txn, `sync middleware should be in transaction context (${req.method} ${req.path()})`)
-      return next()
-    }
-
-    const useAsyncMiddleware = async (req) => {
-      const txn = agent.getTransaction()
-      t.ok(txn, `async middleware should be in transaction context (${req.method} ${req.path()})`)
-      numbers[i] = await getRandomNumber()
-      i++
-    }
-
-    const handler = (req, res, next) => {
-      const txn = agent.getTransaction()
-      t.ok(txn, `sync handler should be in transaction context (${req.method} ${req.path()})`)
-      res.send({ message: 'done with handler', numbers })
-      return next()
-    }
-
-    const asyncHandler = async (req, res) => {
-      const txn = agent.getTransaction()
-      t.ok(txn, `async handler should be in transaction context (${req.method} ${req.path()})`)
-      numbers[i] = await getRandomNumber()
-      i++
-      res.send({ message: 'done with handler', numbers })
-    }
-
-    server.use(useSyncMiddleware)
-    server.use(useAsyncMiddleware)
-
-    server.get('/sync/:handler', handler)
-    server.put('/sync/:handler', handler)
-
-    server.get('/async/:handler', asyncHandler)
-    server.put('/async/:handler', asyncHandler)
-
-    server.listen(0, function () {})
   })
 
-  t.teardown(() => {
-    server.close()
+  t.afterEach(() => {
+    return new Promise((resolve) => {
+      helper.unloadAgent(agent)
+      if (server) {
+        server.close(resolve)
+      } else {
+        resolve()
+      }
+    })
+  })
+
+  /* very similar synchronous tests are in transaction-naming */
+
+  t.test('transaction name for single async route', (t) => {
+    t.plan(1)
+
+    server.get('/path1', async (req, res) => {
+      res.send()
+    })
+
+    runTest({ t, endpoint: '/path1', expectedName: 'GET//path1' })
+  })
+
+  t.test('transaction name for async route with sync middleware', (t) => {
+    t.plan(1)
+
+    server.use((req, res, next) => {
+      next()
+    })
+    server.get('/path1', async (req, res) => {
+      res.send()
+    })
+
+    runTest({ t, endpoint: '/path1', expectedName: 'GET//path1' })
+  })
+
+  t.test('transaction name for async route with async middleware', (t) => {
+    t.plan(1)
+
+    server.use(async (req) => {
+      req.test = await simulateAsyncWork()
+    })
+    server.get('/path1', async (req, res) => {
+      res.send()
+    })
+
+    runTest({ t, endpoint: '/path1', expectedName: 'GET//path1' })
+  })
+
+  t.test('transaction name for async route with multiple async middleware', (t) => {
+    t.plan(4)
+
+    server.use(async (req) => {
+      t.pass('should enter first `use` middleware')
+      req.test = await simulateAsyncWork()
+    })
+    // eslint-disable-next-line no-unused-vars
+    server.use(async (req) => {
+      t.pass('should enter second `use` middleware')
+      req.test2 = await simulateAsyncWork()
+    })
+    server.get('/path1', async (req, res) => {
+      t.pass('should enter route handler')
+      res.send()
+    })
+
+    runTest({ t, endpoint: '/path1', expectedName: 'GET//path1' })
+  })
+
+  /**
+   * @param {Object} cfg
+   * @property {Object} cfg.t
+   * @property {string} cfg.endpoint
+   * @property {string} [cfg.prefix='Restify']
+   * @property {string} cfg.expectedName
+   * @property {Function} [cfg.cb=t.end]
+   * @property {Object} [cfg.requestOpts=null]
+   */
+  function runTest(cfg) {
+    const t = cfg.t
+    const endpoint = cfg.endpoint
+    const prefix = cfg.prefix || 'Restify'
+    const expectedName = `WebTransaction/${prefix}/${cfg.expectedName}`
+
+    agent.on('transactionFinished', (tx) => {
+      t.equal(tx.name, expectedName, `should have correct name ${expectedName}`)
+
+      console.log('attr', tx.trace.attributes)
+      ;(cfg.cb && cfg.cb()) || t.end()
+    })
+
+    server.listen(() => {
+      const port = server.address().port
+      helper.makeGetRequest(`http://localhost:${port}${endpoint}`, cfg.requestOpts || null)
+    })
+  }
+})
+
+tap.test('Restify metrics for async handlers', (t) => {
+  t.autoend()
+
+  let agent = null
+  let restify = null
+  t.beforeEach(() => {
+    agent = helper.instrumentMockedAgent()
+
+    restify = require('restify')
+  })
+
+  t.afterEach(() => {
     helper.unloadAgent(agent)
   })
 
-  t.test('should instrument sync GET requests', (t) => {
-    const port = server.address().port
-    const url = `http://localhost:${port}/sync/handler`
+  t.test('should generate middleware metrics for async handlers', (t) => {
+    // Metrics for this transaction with the right name.
+    const expectedMiddlewareMetrics = [
+      [{ name: 'WebTransaction/Restify/GET//foo/:bar' }],
+      [{ name: 'WebTransactionTotalTime/Restify/GET//foo/:bar' }],
+      [{ name: 'Apdex/Restify/GET//foo/:bar' }],
 
-    helper.makeGetRequest(url, {}, function (error, res) {
-      t.notOk(error, 'synchronous GET endpoint should not error')
-      t.ok(res, 'synchronous GET response should be ok')
-      t.end()
+      // Unscoped middleware metrics.
+      [{ name: 'Nodejs/Middleware/Restify/middleware//' }],
+      [{ name: 'Nodejs/Middleware/Restify/middleware2//' }],
+      [{ name: 'Nodejs/Middleware/Restify/handler//foo/:bar' }],
+
+      // Scoped middleware metrics.
+      [
+        {
+          name: 'Nodejs/Middleware/Restify/middleware//',
+          scope: 'WebTransaction/Restify/GET//foo/:bar'
+        }
+      ],
+      [
+        {
+          name: 'Nodejs/Middleware/Restify/middleware2//',
+          scope: 'WebTransaction/Restify/GET//foo/:bar'
+        }
+      ],
+      [
+        {
+          name: 'Nodejs/Middleware/Restify/handler//foo/:bar',
+          scope: 'WebTransaction/Restify/GET//foo/:bar'
+        }
+      ]
+    ]
+
+    const server = restify.createServer()
+    t.teardown(() => server.close())
+
+    server.use(async function middleware() {
+      t.ok(agent.getTransaction(), 'should be in transaction context')
     })
-  })
-  t.test('Should instrument async GET requests', async (t) => {
-    const port = server.address().port
-    const url = `http://localhost:${port}/async/handler`
 
-    await new Promise((resolve) => {
-      helper.makeGetRequest(url, {}, async function (error, res) {
-        t.notOk(error, 'async GET endpoint should not error')
-        t.ok(res, 'async GET response should be ok')
-        resolve()
+    server.use(async function middleware2() {
+      t.ok(agent.getTransaction(), 'should be in transaction context')
+    })
+
+    server.get('/foo/:bar', async function handler(req, res) {
+      t.ok(agent.getTransaction(), 'should be in transaction context')
+      res.send({ message: 'done' })
+    })
+
+    server.listen(0, function () {
+      const port = server.address().port
+      const url = `http://localhost:${port}/foo/bar`
+
+      helper.makeGetRequest(url, function (error) {
+        t.error(error)
+
+        assertMetrics(agent.metrics, expectedMiddlewareMetrics, false, false)
+        t.end()
       })
     })
-    t.end()
-  })
-  t.test('Should instrument sync PUT requests', (t) => {
-    const port = server.address().port
-    const url = `http://localhost:${port}/sync/handler`
-
-    helper.makeRequest(
-      url,
-      { method: 'PUT', body: JSON.stringify({ message: 'hi' }) },
-      function (error, res) {
-        t.notOk(error, 'synchronous PUT endpoint should not error')
-        t.ok(res, 'synchronous PUT response should be ok')
-        t.end()
-      }
-    )
-  })
-  t.test('Should instrument async PUT requests', async (t) => {
-    const port = server.address().port
-    const url = `http://localhost:${port}/async/handler`
-
-    await new Promise((resolve) => {
-      helper.makeRequest(
-        url,
-        { method: 'PUT', body: JSON.stringify({ message: 'hi' }) },
-        function (error, res) {
-          t.notOk(error, 'async PUT endpoint should not error')
-          t.ok(res, 'async PUT response should be ok')
-          resolve()
-        }
-      )
-    })
-    t.end()
   })
 })
