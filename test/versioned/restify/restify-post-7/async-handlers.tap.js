@@ -9,6 +9,7 @@ const tap = require('tap')
 
 const helper = require('../../../lib/agent_helper')
 const { assertMetrics } = require('../../../lib/metrics_helper')
+const { runTest } = require('./common')
 
 const simulateAsyncWork = async () => {
   const delay = Math.floor(Math.random() * 100)
@@ -50,7 +51,7 @@ tap.test('Restify with async handlers should work the same as with sync', (t) =>
       res.send()
     })
 
-    runTest({ t, endpoint: '/path1', expectedName: 'GET//path1' })
+    runTest({ agent, server, t, endpoint: '/path1', expectedName: 'GET//path1' })
   })
 
   t.test('transaction name for async route with sync middleware', (t) => {
@@ -63,7 +64,7 @@ tap.test('Restify with async handlers should work the same as with sync', (t) =>
       res.send()
     })
 
-    runTest({ t, endpoint: '/path1', expectedName: 'GET//path1' })
+    runTest({ agent, server, t, endpoint: '/path1', expectedName: 'GET//path1' })
   })
 
   t.test('transaction name for async route with async middleware', (t) => {
@@ -76,7 +77,7 @@ tap.test('Restify with async handlers should work the same as with sync', (t) =>
       res.send()
     })
 
-    runTest({ t, endpoint: '/path1', expectedName: 'GET//path1' })
+    runTest({ agent, server, t, endpoint: '/path1', expectedName: 'GET//path1' })
   })
 
   t.test('transaction name for async route with multiple async middleware', (t) => {
@@ -96,36 +97,8 @@ tap.test('Restify with async handlers should work the same as with sync', (t) =>
       res.send()
     })
 
-    runTest({ t, endpoint: '/path1', expectedName: 'GET//path1' })
+    runTest({ agent, server, t, endpoint: '/path1', expectedName: 'GET//path1' })
   })
-
-  /**
-   * @param {Object} cfg
-   * @property {Object} cfg.t
-   * @property {string} cfg.endpoint
-   * @property {string} [cfg.prefix='Restify']
-   * @property {string} cfg.expectedName
-   * @property {Function} [cfg.cb=t.end]
-   * @property {Object} [cfg.requestOpts=null]
-   */
-  function runTest(cfg) {
-    const t = cfg.t
-    const endpoint = cfg.endpoint
-    const prefix = cfg.prefix || 'Restify'
-    const expectedName = `WebTransaction/${prefix}/${cfg.expectedName}`
-
-    agent.on('transactionFinished', (tx) => {
-      t.equal(tx.name, expectedName, `should have correct name ${expectedName}`)
-
-      console.log('attr', tx.trace.attributes)
-      ;(cfg.cb && cfg.cb()) || t.end()
-    })
-
-    server.listen(() => {
-      const port = server.address().port
-      helper.makeGetRequest(`http://localhost:${port}${endpoint}`, cfg.requestOpts || null)
-    })
-  }
 })
 
 tap.test('Restify metrics for async handlers', (t) => {
