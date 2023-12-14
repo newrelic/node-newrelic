@@ -61,7 +61,7 @@ test('Restify capture params introspection', function (t) {
       port = server.address().port
       helper.makeGetRequest('http://localhost:' + port + '/test', function (error, res, body) {
         t.equal(res.statusCode, 200, 'nothing exploded')
-        t.same(body, { status: 'ok' }, 'got expected respose')
+        t.same(body, { status: 'ok' }, 'got expected response')
         t.end()
       })
     })
