@@ -38,3 +38,9 @@ Any prerelease flags can be enabled or disabled in your agent config by adding a
 * Configuration: `{ feature_flag: { legacy_context_manager: true|false }}`
 * Environment Variable: `NEW_RELIC_FEATURE_FLAG_LEGACY_CONTEXT_MANAGER`
 * Description: The legacy context manager was replaced by AsyncLocalContextManager for async context propagation. If your application is not recording certain spans or creating orphaned data, you may want to enable this older context manager. Enabling this feature flag may increase the agent's use of memory and CPU.
+
+#### aws_bedrock_instrumentation
+* Enabled by default: `false`
+* Configuration: `{ feature_flag: { aws_bedrock_instrumentation: true|false }}`
+* Environment Variable: `NEW_RELIC_FEATURE_FLAG_AWS_BEDROCK_INSTRUMENTATION`
+* Description: Enables instrumentation of AWS Bedrock in `aws-sdk@3`. 
