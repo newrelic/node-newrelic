@@ -654,6 +654,29 @@ tap.test('Transaction methods', (t) => {
       t.end()
     })
 
+    t.test('includes Synthetics Info attributes', (t) => {
+      // spec states must be present too
+      txn.syntheticsData = {}
+      txn.syntheticsInfoData = {
+        version: 1,
+        type: 'unitTest',
+        initiator: 'cli',
+        attributes: {
+          'Attr-Test': 'value',
+          'attr2Test': 'value1',
+          'xTest-Header': 'value2'
+        }
+      }
+
+      const attributes = txn.getIntrinsicAttributes()
+      t.equal(attributes.synthetics_type, 'unitTest')
+      t.equal(attributes.synthetics_initiator, 'cli')
+      t.equal(attributes.synthetics_attr_test, 'value')
+      t.equal(attributes.synthetics_attr_2_test, 'value1')
+      t.equal(attributes.synthetics_x_test_header, 'value2')
+      t.end()
+    })
+
     t.test('returns different object every time', (t) => {
       t.not(txn.getIntrinsicAttributes(), txn.getIntrinsicAttributes())
       t.end()

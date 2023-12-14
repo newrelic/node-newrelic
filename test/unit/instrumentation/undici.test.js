@@ -94,6 +94,7 @@ tap.test('undici instrumentation', function (t) {
       agent.config.encoding_key = 'encKey'
       helper.runInTransaction(agent, function (tx) {
         tx.syntheticsHeader = 'synthHeader'
+        tx.syntheticsInfoHeader = 'synthInfoHeader'
         const request = {
           addHeader: sandbox.stub(),
           origin: HOST,
@@ -101,8 +102,9 @@ tap.test('undici instrumentation', function (t) {
         }
         channels.create.publish({ request })
         t.ok(request[symbols.parentSegment])
-        t.equal(request.addHeader.callCount, 1)
+        t.equal(request.addHeader.callCount, 2)
         t.same(request.addHeader.args[0], ['x-newrelic-synthetics', 'synthHeader'])
+        t.same(request.addHeader.args[1], ['x-newrelic-synthetics-info', 'synthInfoHeader'])
         tx.end()
         t.end()
       })
