@@ -319,7 +319,6 @@
   },
   {
     "testname": "kubernetes service host environment variable",
-    "input_kubernetes_id": null,
     "input_total_ram_mib": null,
     "input_logical_processors": null,
     "input_hostname": "myotherhost",
@@ -350,7 +349,6 @@
   },
   {
     "testname": "only kubernetes service port environment variable",
-    "input_kubernetes_id": null,
     "input_total_ram_mib": null,
     "input_logical_processors": null,
     "input_hostname": "myotherhost",

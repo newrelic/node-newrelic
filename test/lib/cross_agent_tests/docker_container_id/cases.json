@@ -40,6 +40,11 @@
     "expectedMetrics": null
   },
   {
+    "filename": "docker-gcp.txt",
+    "containerId": "f96c541a87e1376f25461f1386cb60208cea35750eac1e24e11566f078715920",
+    "expectedMetrics": null
+  },
+  {
     "filename": "heroku.txt",
     "containerId": null,
     "expectedMetrics": null
@@ -71,6 +76,15 @@
   },
   {
     "filename": "invalid-length.txt",
+    "containerId": null,
+    "expectedMetrics": {
+      "Supportability/utilization/docker/error": {
+        "callCount": 1
+      }
+    }
+  },
+  {
+    "filename": "no_cpu_subsystem.txt",
     "containerId": null,
     "expectedMetrics": null
   }

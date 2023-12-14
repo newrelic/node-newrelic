@@ -91,7 +91,7 @@ const testExpected = function (t, object, fixture) {
 }
 
 const testVendor = function (t, object, vendors) {
-  t.same(object.tracestate.tracing_vendors, vendors, 'do vendors match?')
+  t.same(object.tracestate.vendors, vendors, 'do vendors match?')
 }
 
 // tests a few of the helper functions we wrote for this test case
@@ -236,40 +236,11 @@ const runTestCaseOutboundPayloads = function (t, testCase, context) {
         case 'notequal':
           testNotEqual(t, context[key], fields)
           break
-        case 'tracingVendors':
+        case 'vendors':
           testVendor(t, context[key], fields)
           break
         default:
           throw new Error("I don't know how to test a(n) " + assertType)
-      }
-    }
-  }
-}
-
-function runTestCaseOutboundNewrelicPayloads(t, testCase, newrelicPayloads) {
-  if (!testCase.outbound_newrelic_payloads) {
-    return
-  }
-
-  for (const [index, testToRun] of testCase.outbound_newrelic_payloads.entries()) {
-    for (const [assertType, fields] of Object.entries(testToRun)) {
-      const newrelicPayload = newrelicPayloads[index]
-
-      switch (assertType) {
-        case 'exact':
-          testExact(t, newrelicPayload, fields)
-          break
-        case 'expected':
-          testExpected(t, newrelicPayload, fields)
-          break
-        case 'unexpected':
-          testUnexpected(t, newrelicPayload, fields)
-          break
-        case 'notequal':
-          testNotEqual(t, newrelicPayload, fields)
-          break
-        default:
-          throw new Error('Unexpected assert type for newrelic payloads: ' + assertType)
       }
     }
   }
@@ -294,8 +265,7 @@ const runTestCase = function (testCase, parentTest) {
       'trusted_account_key',
       'web_transaction',
       'comment',
-      'transaction_events_enabled',
-      'outbound_newrelic_payloads'
+      'transaction_events_enabled'
     ])
 
     if (testCase.outbound_payloads) {
@@ -305,7 +275,7 @@ const runTestCase = function (testCase, parentTest) {
           'exact',
           'expected',
           'notequal',
-          'tracingVendors',
+          'vendors',
           'unexpected'
         ])
       }
@@ -394,12 +364,8 @@ const runTestCase = function (testCase, parentTest) {
 
         // Generate outbound payloads
         const outboundTraceContextPayloads = testCase.outbound_payloads || []
-        const outboundNewrelicPayloads = testCase.outbound_newrelic_payloads || []
 
-        const insertCount = Math.max(
-          outboundTraceContextPayloads.length,
-          outboundNewrelicPayloads.length
-        )
+        const insertCount = Math.max(outboundTraceContextPayloads.length)
 
         const outboundHeaders = []
         for (let i = 0; i < insertCount; i++) {
@@ -430,7 +396,7 @@ const runTestCase = function (testCase, parentTest) {
           // Found entry for the correct trust key / tenantId
           // So manually setting for now
           intrinsics.tenantId = tenantId
-          intrinsics.tracingVendors = vendors
+          intrinsics.vendors = vendors
 
           // get payload for how we represent it internally to how tests want it
           const outboundPayload = {
@@ -467,14 +433,12 @@ const runTestCase = function (testCase, parentTest) {
             outboundPayload.traceparent
           )
 
-          return outboundPayload
-        })
-
-        const insertedNewrelicTraces = outboundHeaders.map((headers) => {
           if (headers.newrelic) {
             const rawPayload = Buffer.from(headers.newrelic, 'base64').toString('utf-8')
-            return JSON.parse(rawPayload)
+            outboundPayload.newrelic = JSON.parse(rawPayload)
           }
+
+          return outboundPayload
         })
 
         // end transaction
@@ -506,12 +470,11 @@ const runTestCase = function (testCase, parentTest) {
         // Priority is asserted to have 1-less precision than the incoming, which is not an agent
         // requirement and not something we do. Adjusting so we can have the test in the repository.
         if (testCase.test_name === 'newrelic_origin_trace_id_correctly_transformed_for_w3c') {
-          const payloadTest = testCase.outbound_newrelic_payloads[0]
-          payloadTest.exact['d.pr'] = 1.1234321
+          const payloadTest = testCase.outbound_payloads[0]
+          payloadTest.exact['newrelic.d.pr'] = 1.1234321
         }
 
         runTestCaseOutboundPayloads(t, testCase, insertedTraceContextTraces)
-        runTestCaseOutboundNewrelicPayloads(t, testCase, insertedNewrelicTraces)
         runTestCaseTargetEvents(t, testCase, agent)
         runTestCaseMetrics(t, testCase, agent)
       }

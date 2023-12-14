@@ -9,7 +9,7 @@ const tap = require('tap')
 const nock = require('nock')
 const sinon = require('sinon')
 const helper = require('../lib/agent_helper')
-const testCases = require('../lib/cross_agent_tests/response_code_handling.json')
+const testCases = require('../lib/response_code_handling.json')
 
 const TEST_DOMAIN = 'test-collector.newrelic.com'
 const TEST_COLLECTOR_URL = `https://${TEST_DOMAIN}`

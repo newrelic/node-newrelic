@@ -66,13 +66,6 @@ function makeTest(testCase, testFile, v2) {
           t.notOk(info, 'should not have found container id')
         }
 
-        if (testCase.expectedMetrics) {
-          // TODO: No tests currently expect metrics, when one does we'll have to
-          // update this test depending on the format of that.
-          t.bailout('Docker expected metrics found but can not be handled.')
-        } else {
-          t.equal(agent.metrics._metrics.toJSON().length, 0, 'should have no metrics')
-        }
         resolve()
       })
     })

@@ -9,7 +9,7 @@ const tap = require('tap')
 const nock = require('nock')
 
 const helper = require('../lib/agent_helper')
-const testCases = require('../lib/cross_agent_tests/lasp/language_agents_security_policies.json')
+const testCases = require('../lib/cross_agent_tests/language_agents_security_policies.json')
 
 const LASP_MAP = require('../../lib/config/lasp').LASP_MAP
 
