@@ -360,6 +360,11 @@ tap.test('utilization', (t) => {
             Object.keys(testValue).forEach((name) => {
               process.env[name] = testValue[name]
             })
+
+            if (testValue.hasOwnProperty('KUBERNETES_SERVICE_HOST')) {
+              mockVendorMetadata = 'kubernetes'
+              config.utilization.detect_kubernetes = true
+            }
             break
 
           case 'input_aws_id':
@@ -386,10 +391,12 @@ tap.test('utilization', (t) => {
             break
 
           case 'input_pcf_guid':
+            mockVendorMetadata = 'pcf'
             process.env.CF_INSTANCE_GUID = testValue
             config.utilization.detect_pcf = true
             break
           case 'input_pcf_ip':
+            mockVendorMetadata = 'pcf'
             process.env.CF_INSTANCE_IP = testValue
             config.utilization.detect_pcf = true
             break
@@ -488,6 +495,16 @@ tap.test('utilization', (t) => {
                 machineType: test.input_gcp_type,
                 name: test.input_gcp_name,
                 zone: test.input_gcp_zone
+              }
+            : type === 'pcf'
+            ? {
+                cf_instance_guid: test.input_pcf_guid,
+                cf_instance_ip: test.input_pcf_ip,
+                memory_limit: test.input_pcf_mem_limit
+              }
+            : type === 'kubernetes'
+            ? {
+                kubernetes_service_host: test.input_environment_variables.KUBERNETES_SERVICE_HOST
               }
             : null
         )
