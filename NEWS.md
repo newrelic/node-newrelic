@@ -3,7 +3,9 @@
 #### Features
 
 * Added deserialized X-NewRelic-Synthetics-Info header to transaction and transaction trace intrinsic attributes ([#1912](https://github.com/newrelic/node-newrelic/pull/1912)) ([7ed64bd](https://github.com/newrelic/node-newrelic/commit/7ed64bd1410d7eed6c4dbf153e0a67754e7bcdef))
-    * * The attributes in transactions are: `nr.syntheticsType`, `nr.syntheticsInitiator`, and `nr.synthetics<attributeKey(s)>` * The attributes in transaction traces are: `synthetics_type`, `synthetics_initiator`, and `synthetics_<attribute_key(s)>` * It will also include the `X-NewRelic-Synthetics-Info` header in outgoing http requests
+    * * The attributes in transactions are: `nr.syntheticsType`, `nr.syntheticsInitiator`, and `nr.synthetics<attributeKey(s)>` 
+    * * The attributes in transaction traces are: `synthetics_type`, `synthetics_initiator`, and `synthetics_<attribute_key(s)>` 
+    * * It will also include the `X-NewRelic-Synthetics-Info` header in outgoing http requests
 * Added instrumentation for Restify async handlers ([#1910](https://github.com/newrelic/node-newrelic/pull/1910)) ([1a3f87f](https://github.com/newrelic/node-newrelic/commit/1a3f87ff10dea1c25b35c349550338f327446cb1))
 
 #### Bug fixes
