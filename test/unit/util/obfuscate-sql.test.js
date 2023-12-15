@@ -13,22 +13,20 @@ tap.test('sql obfuscation', (t) => {
   tests.forEach((test) => {
     t.test(test.name, (t) => {
       for (let i = 0; i < test.dialects.length; ++i) {
-        runTest(test, test.dialects[i])
+        runTest(t, test, test.dialects[i])
       }
       t.end()
     })
   })
 
-  function runTest(test, dialect) {
-    t.test(dialect, (t) => {
-      const obfuscated = obfuscate(test.sql, dialect)
-      if (test.obfuscated.length === 1) {
-        t.equal(obfuscated, test.obfuscated[0])
-      } else {
-        t.ok(test.obfuscated.includes(obfuscated))
-      }
-      t.end()
-    })
+  function runTest(t, test, dialect) {
+    t.comment(dialect)
+    const obfuscated = obfuscate(test.sql, dialect)
+    if (test.obfuscated.length === 1) {
+      t.equal(obfuscated, test.obfuscated[0])
+    } else {
+      t.ok(test.obfuscated.includes(obfuscated))
+    }
   }
 
   t.test('should handle line endings', (t) => {

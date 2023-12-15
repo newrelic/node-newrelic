@@ -27,6 +27,10 @@
   {
     "filename": "invalid-length.txt",
     "containerId": null,
-    "expectedMetrics": null 
+    "expectedMetrics": {
+      "Supportability/utilization/docker/error": {
+        "callCount": 1
+      }
+    }
   }
 ]

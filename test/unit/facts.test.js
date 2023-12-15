@@ -9,8 +9,6 @@ const tap = require('tap')
 const os = require('os')
 const hostname = os.hostname
 const networkInterfaces = os.networkInterfaces
-const chai = require('chai')
-const expect = chai.expect
 const helper = require('../lib/agent_helper')
 const sinon = require('sinon')
 const proxyquire = require('proxyquire')
@@ -103,31 +101,31 @@ tap.test('fun facts about apps that New Relic is interested in include', (t) => 
 
   t.test("the current process ID as 'pid'", (t) => {
     facts(agent, function getFacts(factsed) {
-      expect(factsed.pid).equal(process.pid)
+      t.equal(factsed.pid, process.pid)
       t.end()
     })
   })
 
   t.test("the current hostname as 'host' (hope it's not 'localhost' lol)", (t) => {
     facts(agent, function getFacts(factsed) {
-      expect(factsed.host).equal(hostname())
-      expect(factsed.host).not.equal('localhost')
-      expect(factsed.host).not.equal('localhost.local')
-      expect(factsed.host).not.equal('localhost.localdomain')
+      t.equal(factsed.host, hostname())
+      t.not(factsed.host, 'localhost')
+      t.not(factsed.host, 'localhost.local')
+      t.not(factsed.host, 'localhost.localdomain')
       t.end()
     })
   })
 
   t.test("the agent's language (as 'language') to be 'nodejs'", (t) => {
     facts(agent, function getFacts(factsed) {
-      expect(factsed.language).equal('nodejs')
+      t.equal(factsed.language, 'nodejs')
       t.end()
     })
   })
 
   t.test("an array of one or more application names as 'app_name' (sic)", (t) => {
     facts(agent, function getFacts(factsed) {
-      expect(factsed.app_name).an('array')
+      t.ok(Array.isArray(factsed.app_name))
       t.equal(factsed.app_name.length, APP_NAMES.length)
       t.end()
     })
@@ -135,27 +133,27 @@ tap.test('fun facts about apps that New Relic is interested in include', (t) => 
 
   t.test("the module's version as 'agent_version'", (t) => {
     facts(agent, function getFacts(factsed) {
-      expect(factsed.agent_version).equal(agent.version)
+      t.equal(factsed.agent_version, agent.version)
       t.end()
     })
   })
 
   t.test('the environment (see environment.test.js) as crazy nested arrays', (t) => {
     facts(agent, function getFacts(factsed) {
-      expect(factsed.environment).to.be.an('array')
-      expect(factsed.environment).to.have.length.above(1)
+      t.ok(Array.isArray(factsed.environment))
+      t.ok(factsed.environment.length > 1)
       t.end()
     })
   })
 
   t.test("an 'identifier' for this agent", (t) => {
     facts(agent, function (factsed) {
-      expect(factsed).to.have.property('identifier')
-      const identifier = factsed.identifier
-      expect(identifier).to.contain('nodejs')
+      t.ok(factsed.identifier)
+      const { identifier } = factsed
+      t.ok(identifier.includes('nodejs'))
       // Including the host has negative consequences on the server.
-      expect(identifier).to.not.contain(factsed.host)
-      expect(identifier).to.contain([...APP_NAMES].sort().join(','))
+      t.notOk(identifier.includes(factsed.host))
+      t.ok(identifier.includes([...APP_NAMES].sort().join(',')))
       t.end()
     })
   })
@@ -166,10 +164,10 @@ tap.test('fun facts about apps that New Relic is interested in include', (t) => 
     process.env.NEW_RELIC_METADATA_NUMBER = 42
 
     facts(agent, (data) => {
-      expect(data).to.have.property('metadata')
-      expect(data.metadata).to.have.property('NEW_RELIC_METADATA_STRING', 'hello')
-      expect(data.metadata).to.have.property('NEW_RELIC_METADATA_BOOL', 'true')
-      expect(data.metadata).to.have.property('NEW_RELIC_METADATA_NUMBER', '42')
+      t.ok(data.metadata)
+      t.equal(data.metadata.NEW_RELIC_METADATA_STRING, 'hello')
+      t.equal(data.metadata.NEW_RELIC_METADATA_BOOL, 'true')
+      t.equal(data.metadata.NEW_RELIC_METADATA_NUMBER, '42')
       t.same(
         loggerMock.debug.args,
         [
@@ -194,15 +192,14 @@ tap.test('fun facts about apps that New Relic is interested in include', (t) => 
 
   t.test("empty 'metadata' object if no metadata env vars found", (t) => {
     facts(agent, (data) => {
-      expect(data).to.have.property('metadata')
-      expect(data.metadata).to.deep.equal({})
+      t.same(data.metadata, {})
       t.end()
     })
   })
 
   t.test('and nothing else', (t) => {
     facts(agent, function getFacts(factsed) {
-      expect(Object.keys(factsed).sort()).eql(EXPECTED.sort())
+      t.same(Object.keys(factsed).sort(), EXPECTED.sort())
       t.end()
     })
   })
@@ -220,7 +217,7 @@ tap.test('fun facts about apps that New Relic is interested in include', (t) => 
         label_value: Array(256).join('𝌆')
       })
 
-      expect(factsed.labels).deep.equal(expected)
+      t.same(factsed.labels, expected)
       t.end()
     })
   })
@@ -236,7 +233,7 @@ tap.test('fun facts about apps that New Relic is interested in include', (t) => 
         label_value: Array(256).join('𝌆')
       })
 
-      expect(factsed.labels).deep.equal(expected)
+      t.same(factsed.labels, expected)
       t.end()
     })
   })
@@ -264,7 +261,7 @@ tap.test('fun facts about apps that New Relic is interested in include', (t) => 
       }
 
       facts(agent, (factsResult) => {
-        expect(factsResult.event_harvest_config).deep.equal(expectedHarvestConfig)
+        t.same(factsResult.event_harvest_config, expectedHarvestConfig)
         t.end()
       })
     }
@@ -360,6 +357,10 @@ tap.test('utilization', (t) => {
             Object.keys(testValue).forEach((name) => {
               process.env[name] = testValue[name]
             })
+
+            if (testValue.hasOwnProperty('KUBERNETES_SERVICE_HOST')) {
+              config.utilization.detect_kubernetes = true
+            }
             break
 
           case 'input_aws_id':
@@ -386,10 +387,12 @@ tap.test('utilization', (t) => {
             break
 
           case 'input_pcf_guid':
+            mockVendorMetadata = 'pcf'
             process.env.CF_INSTANCE_GUID = testValue
             config.utilization.detect_pcf = true
             break
           case 'input_pcf_ip':
+            mockVendorMetadata = 'pcf'
             process.env.CF_INSTANCE_IP = testValue
             config.utilization.detect_pcf = true
             break
@@ -453,18 +456,18 @@ tap.test('utilization', (t) => {
         mockProc = false
       }
       if (mockVendorMetadata) {
-        common.request = makeMockCommonRequest(test, mockVendorMetadata)
+        common.request = makeMockCommonRequest(t, test, mockVendorMetadata)
       }
       facts(agent, function getFacts(factsed) {
-        expect(factsed.utilization).to.deep.equal(expected)
+        t.same(factsed.utilization, expected)
         t.end()
       })
     })
   })
 
-  function makeMockCommonRequest(test, type) {
+  function makeMockCommonRequest(t, test, type) {
     return (opts, _agent, cb) => {
-      expect(_agent).to.equal(agent)
+      t.equal(_agent, agent)
       setImmediate(
         cb,
         null,
@@ -600,7 +603,7 @@ tap.test('boot_id', (t) => {
         // There are keys in the facts that aren't accounted for in the
         // expected object (namely ip addresses).
         Object.keys(expected).forEach((key) => {
-          expect(factsed.utilization[key]).to.equal(expected[key])
+          t.equal(factsed.utilization[key], expected[key])
         })
         checkMetrics(test.expected_metrics)
         t.end()
@@ -615,7 +618,7 @@ tap.test('boot_id', (t) => {
 
     Object.keys(expectedMetrics).forEach((expectedMetric) => {
       const metric = agent.metrics.getOrCreateMetric(expectedMetric)
-      expect(metric).to.have.property('callCount', expectedMetrics[expectedMetric].call_count)
+      t.equal(metric.callCount, expectedMetrics[expectedMetric].call_count)
     })
   }
 })

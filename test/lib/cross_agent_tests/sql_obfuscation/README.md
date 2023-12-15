@@ -13,10 +13,10 @@ double-quoted string literals are not allowed in PostgreSQL, where
 double-quotes are instead used around identifiers).
 
 Test cases may also contain the following properties:
-  * `malformed`: (boolean) tests who's SQL queries are not valid SQL in any
+  * `malformed`: (boolean) test SQL queries which are not valid SQL in any
   quoting mode. Some agents may choose to attempt to obfuscate these cases,
   and others may instead just replace the query entirely with a placeholder
-  message.
+  message. In some agents (such as .Net), invalid SQL is caught by the driver - which throws an exception - before the obfuscation method is called. In those cases, implementation of the obfuscation test may be unnecessary.
   * `pathological`: (boolean) tests which are designed specifically to break
   specific methods of obfuscation, or contain patterns that are known to be
   difficult to handle correctly
@@ -25,12 +25,12 @@ Test cases may also contain the following properties:
 
 The following database documentation may be helpful in understanding these test
 cases:
-* [MySQL String Literals](https://dev.mysql.com/doc/refman/5.5/en/string-literals.html)
-* [PostgreSQL String Constants](https://www.postgresql.org/docs/8.2/static/sql-syntax-lexical.html#SQL-SYNTAX-CONSTANTS)
+* [MySQL String Literals](http://dev.mysql.com/doc/refman/5.5/en/string-literals.html)
+* [PostgreSQL String Constants](http://www.postgresql.org/docs/8.2/static/sql-syntax-lexical.html#SQL-SYNTAX-CONSTANTS)
 
 SQL Syntax Documentation:
-* [MySQL](https://dev.mysql.com/doc/refman/5.5/en/language-structure.html)
-* [PostgreSQL](https://www.postgresql.org/docs/8.4/static/sql-syntax.html)
-* [Cassandra](https://docs.datastax.com/en/cql/3.1/cql/cql_reference/cql_lexicon_c.html)
-* [Oracle](https://docs.oracle.com/cd/B28359_01/appdev.111/b28370/langelems.htm)
+* [MySQL](http://dev.mysql.com/doc/refman/5.5/en/language-structure.html)
+* [PostgreSQL](http://www.postgresql.org/docs/8.4/static/sql-syntax.html)
+* [Cassandra](http://docs.datastax.com/en/cql/3.1/cql/cql_reference/cql_lexicon_c.html)
+* [Oracle](http://docs.oracle.com/cd/B28359_01/appdev.111/b28370/langelems.htm)
 * [SQLite](https://www.sqlite.org/lang.html)

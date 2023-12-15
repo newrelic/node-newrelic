@@ -79,7 +79,9 @@
       {"match_expression":"^/blah/(.*)",                                          "replacement":"/\\1",                  "ignore":false, "eval_order":2,  "each_segment":false, "terminate_chain":true},
       {"match_expression":"/.*(dude|man)",                                        "replacement":"/*.\\1",                "ignore":false, "eval_order":3,  "each_segment":false, "terminate_chain":true},
       {"match_expression":"^/(bob)",                                              "replacement":"/\\1ert/\\1/\\1ertson", "ignore":false, "eval_order":4,  "each_segment":false, "terminate_chain":true},
-      {"match_expression":"/foo(.*)",                                                                                    "ignore":true,  "eval_order":5,  "each_segment":false, "terminate_chain":true}
+      {"match_expression":"/foo(.*)",                                                                                    "ignore":true,  "eval_order":5,  "each_segment":false, "terminate_chain":true},
+      {"match_expression":"^/(keep)(/)(me)",                                      "replacement":"/\\1\\2\\3",            "ignore":false, "eval_order":6,  "each_segment":false, "terminate_chain":true},
+      {"match_expression":"^/(keep)(/)(me)",                                      "replacement":"/you_werent_kept",      "ignore":false, "eval_order":7,  "each_segment":false, "terminate_chain":true}
     ],
     "tests":
     [
@@ -92,7 +94,8 @@
       {"input":"/oh/hey.dude",                  "expected":"/*.dude"},
       {"input":"/oh/hey/what/up.man",           "expected":"/*.man"},
       {"input":"/foo",                          "expected":null},
-      {"input":"/foo/foobar",                   "expected":null}
+      {"input":"/foo/foobar",                   "expected":null},
+      {"input":"/keep/me",                      "expected":"/keep/me"}
     ]
   },
   {
