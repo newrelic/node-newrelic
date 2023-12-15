@@ -4,51 +4,58 @@
  */
 
 'use strict'
-
-// TODO: convert to normal tap style.
-// Below allows use of mocha DSL with tap runner.
-require('tap').mochaGlobals()
-
-const chai = require('chai')
-const expect = chai.expect
+const tap = require('tap')
 const ApdexStats = require('../../lib/stats/apdex')
+tap.Test.prototype.addAssert(
+  'verifyApdexStats',
+  2,
+  function verifyApdexStats(actualStats, expectedStats) {
+    this.equal(actualStats.satisfying, expectedStats.satisfying)
+    this.equal(actualStats.tolerating, expectedStats.tolerating)
+    this.equal(actualStats.frustrating, expectedStats.frustrating)
+  }
+)
 
-describe('ApdexStats', function () {
-  let statistics
-
-  beforeEach(function () {
-    statistics = new ApdexStats(0.3)
+tap.test('ApdexStats', function (t) {
+  t.autoend()
+  t.beforeEach(function (t) {
+    t.context.statistics = new ApdexStats(0.3)
   })
 
-  it('should throw when created with no tolerating value', function () {
-    /* eslint-disable no-unused-vars */
-    let apdex = null
-    /* eslint-enable no-unused-vars */
-
-    expect(function () {
-      apdex = new ApdexStats()
-    }).throws('Apdex summary must be created with apdexT')
+  t.test('should throw when created with no tolerating value', function (t) {
+    t.throws(function () {
+      // eslint-disable-next-line no-new
+      new ApdexStats()
+    }, 'Apdex summary must be created with apdexT')
+    t.end()
   })
 
-  it('should export apdexT in the 4th field of the timeslice', function () {
-    expect(statistics.toJSON()[3]).equal(0.3)
+  t.test('should export apdexT in the 4th field of the timeslice', function (t) {
+    const { statistics } = t.context
+    t.equal(statistics.toJSON()[3], 0.3)
+    t.end()
   })
 
-  it('should export apdexT in the 5th field (why?) of the timeslice', function () {
-    expect(statistics.toJSON()[4]).equal(0.3)
+  t.test('should export apdexT in the 5th field (why?) of the timeslice', function (t) {
+    const { statistics } = t.context
+    t.equal(statistics.toJSON()[4], 0.3)
+    t.end()
   })
 
-  it('should correctly summarize a sample set of statistics', function () {
+  t.test('should correctly summarize a sample set of statistics', function (t) {
+    const { statistics } = t.context
     statistics.recordValueInMillis(1251)
     statistics.recordValueInMillis(250)
     statistics.recordValueInMillis(487)
 
     const expectedStats = { satisfying: 1, tolerating: 1, frustrating: 1 }
 
-    verifyApdexStats(statistics, expectedStats)
+    t.verifyApdexStats(statistics, expectedStats)
+    t.end()
   })
 
-  it('should correctly summarize another simple set of statistics', function () {
+  t.test('should correctly summarize another simple set of statistics', function (t) {
+    const { statistics } = t.context
     statistics.recordValueInMillis(120)
     statistics.recordValueInMillis(120)
     statistics.recordValueInMillis(120)
@@ -56,16 +63,18 @@ describe('ApdexStats', function () {
 
     const expectedStats = { satisfying: 4, tolerating: 0, frustrating: 0 }
 
-    verifyApdexStats(statistics, expectedStats)
+    t.verifyApdexStats(statistics, expectedStats)
+    t.end()
   })
 
-  it('should correctly merge summaries', function () {
+  t.test('should correctly merge summaries', function (t) {
+    const { statistics } = t.context
     statistics.recordValueInMillis(1251)
     statistics.recordValueInMillis(250)
     statistics.recordValueInMillis(487)
 
     const expectedStats = { satisfying: 1, tolerating: 1, frustrating: 1 }
-    verifyApdexStats(statistics, expectedStats)
+    t.verifyApdexStats(statistics, expectedStats)
 
     const other = new ApdexStats(0.3)
     other.recordValueInMillis(120)
@@ -74,17 +83,12 @@ describe('ApdexStats', function () {
     other.recordValueInMillis(120)
 
     const expectedOtherStats = { satisfying: 4, tolerating: 0, frustrating: 0 }
-    verifyApdexStats(other, expectedOtherStats)
+    t.verifyApdexStats(other, expectedOtherStats)
 
     statistics.merge(other)
 
     const expectedMergedStats = { satisfying: 5, tolerating: 1, frustrating: 1 }
-    verifyApdexStats(statistics, expectedMergedStats)
+    t.verifyApdexStats(statistics, expectedMergedStats)
+    t.end()
   })
-
-  function verifyApdexStats(actualStats, expectedStats) {
-    expect(actualStats.satisfying).equal(expectedStats.satisfying)
-    expect(actualStats.tolerating).equal(expectedStats.tolerating)
-    expect(actualStats.frustrating).equal(expectedStats.frustrating)
-  }
 })

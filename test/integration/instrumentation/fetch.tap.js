@@ -81,7 +81,7 @@ tap.test('fetch', { skip: semver.lte(process.version, '18.0.0') }, function (t) 
       })
       t.equal(status, 200)
 
-      metrics.assertSegments(tx.trace.root, [`External/${HOST}/post`], { exact: false })
+      t.assertSegments(tx.trace.root, [`External/${HOST}/post`], { exact: false })
       tx.end()
       t.end()
     })
@@ -152,7 +152,7 @@ tap.test('fetch', { skip: semver.lte(process.version, '18.0.0') }, function (t) 
       const [{ status }, { status: status2 }] = await Promise.all([req1, req2])
       t.equal(status, 200)
       t.equal(status2, 200)
-      metrics.assertSegments(tx.trace.root, [`External/${HOST}/post`, `External/${HOST}/put`], {
+      t.assertSegments(tx.trace.root, [`External/${HOST}/post`, `External/${HOST}/put`], {
         exact: false
       })
       tx.end()
@@ -168,7 +168,7 @@ tap.test('fetch', { skip: semver.lte(process.version, '18.0.0') }, function (t) 
         })
       } catch (err) {
         t.equal(err.message, 'fetch failed')
-        metrics.assertSegments(tx.trace.root, ['External/invalidurl/foo'], { exact: false })
+        t.assertSegments(tx.trace.root, ['External/invalidurl/foo'], { exact: false })
         t.equal(tx.exceptions.length, 1)
         tx.end()
         t.end()
@@ -188,7 +188,7 @@ tap.test('fetch', { skip: semver.lte(process.version, '18.0.0') }, function (t) 
         }, 100)
         await req
       } catch (err) {
-        metrics.assertSegments(tx.trace.root, [`External/${HOST}/delay/1000`], { exact: false })
+        t.assertSegments(tx.trace.root, [`External/${HOST}/delay/1000`], { exact: false })
         t.equal(tx.exceptions.length, 1)
         t.equal(tx.exceptions[0].error.name, 'AbortError')
         tx.end()
@@ -215,7 +215,7 @@ tap.test('fetch', { skip: semver.lte(process.version, '18.0.0') }, function (t) 
       try {
         await req
       } catch (error) {
-        metrics.assertSegments(transaction.trace.root, [`External/localhost:${port}/`], {
+        t.assertSegments(transaction.trace.root, [`External/localhost:${port}/`], {
           exact: false
         })
 
@@ -236,7 +236,7 @@ tap.test('fetch', { skip: semver.lte(process.version, '18.0.0') }, function (t) 
     helper.runInTransaction(agent, async (tx) => {
       const { status } = await fetch(`${REQUEST_URL}/status/400`)
       t.equal(status, 400)
-      metrics.assertSegments(tx.trace.root, [`External/${HOST}/status/400`], { exact: false })
+      t.assertSegments(tx.trace.root, [`External/${HOST}/status/400`], { exact: false })
       tx.end()
       t.end()
     })

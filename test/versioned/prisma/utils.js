@@ -5,7 +5,7 @@
 
 'use strict'
 const utils = module.exports
-const { assertSegments, findSegment, getMetricHostName } = require('../../lib/metrics_helper')
+const { findSegment, getMetricHostName } = require('../../lib/metrics_helper')
 const { DB, PRISMA } = require('../../../lib/metrics/names')
 const params = require('../../lib/params')
 const expectedUpsertMetrics = {
@@ -59,7 +59,7 @@ function verifyTraces(t, agent, transaction) {
   t.ok(trace, 'trace should exist')
   t.ok(trace.root, 'root element should exist')
 
-  assertSegments(trace.root, [findMany, update, update, findMany], { exact: true })
+  t.assertSegments(trace.root, [findMany, update, update, findMany], { exact: true })
   const findManySegment = findSegment(trace.root, findMany)
   t.ok(findManySegment.timer.hrDuration, 'findMany segment should have ended')
   const updateSegment = findSegment(trace.root, update)

@@ -9,8 +9,6 @@ const tap = require('tap')
 const helper = require('../../lib/agent_helper')
 const common = require('./common')
 
-tap.Test.prototype.addAssert('clmAttrs', 1, helper.assertCLMAttrs)
-
 function setupFastifyServer(fastify) {
   common.setupRoutes(fastify)
 }

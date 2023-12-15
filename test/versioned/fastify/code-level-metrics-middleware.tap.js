@@ -11,8 +11,6 @@ const common = require('./common')
 const semver = require('semver')
 const { version: pkgVersion } = require('fastify/package')
 
-tap.Test.prototype.addAssert('clmAttrs', 1, helper.assertCLMAttrs)
-
 async function setupFastifyServer(fastify, calls) {
   common.setupRoutes(fastify)
   await fastify.register(require('middie'))

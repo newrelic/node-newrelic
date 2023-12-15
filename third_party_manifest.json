@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "Thu Dec 07 2023 10:54:24 GMT-0500 (Eastern Standard Time)",
+  "lastUpdated": "Mon Dec 18 2023 17:19:25 GMT-0500 (Eastern Standard Time)",
   "projectName": "New Relic Node Agent",
   "projectUrl": "https://github.com/newrelic/node-newrelic",
   "includeOptDeps": true,
@@ -159,15 +159,15 @@
       "email": "nathan@tootallnate.net",
       "url": "http://n8.io/"
     },
-    "import-in-the-middle@1.4.2": {
+    "import-in-the-middle@1.6.0": {
       "name": "import-in-the-middle",
-      "version": "1.4.2",
-      "range": "^1.4.2",
+      "version": "1.6.0",
+      "range": "^1.6.0",
       "licenses": "Apache-2.0",
       "repoUrl": "https://github.com/DataDog/import-in-the-middle",
-      "versionedRepoUrl": "https://github.com/DataDog/import-in-the-middle/tree/v1.4.2",
+      "versionedRepoUrl": "https://github.com/DataDog/import-in-the-middle/tree/v1.6.0",
       "licenseFile": "node_modules/import-in-the-middle/LICENSE",
-      "licenseUrl": "https://github.com/DataDog/import-in-the-middle/blob/v1.4.2/LICENSE",
+      "licenseUrl": "https://github.com/DataDog/import-in-the-middle/blob/v1.6.0/LICENSE",
       "licenseTextSource": "file",
       "publisher": "Bryan English",
       "email": "bryan.english@datadoghq.com"
@@ -362,19 +362,6 @@
       "licenseTextSource": "file",
       "publisher": "Ben Coe",
       "email": "ben@npmjs.com"
-    },
-    "chai@4.3.8": {
-      "name": "chai",
-      "version": "4.3.8",
-      "range": "^4.1.2",
-      "licenses": "MIT",
-      "repoUrl": "https://github.com/chaijs/chai",
-      "versionedRepoUrl": "https://github.com/chaijs/chai/tree/v4.3.8",
-      "licenseFile": "node_modules/chai/LICENSE",
-      "licenseUrl": "https://github.com/chaijs/chai/blob/v4.3.8/LICENSE",
-      "licenseTextSource": "file",
-      "publisher": "Jake Luer",
-      "email": "jake@alogicalparadox.com"
     },
     "clean-jsdoc-theme@4.2.10": {
       "name": "clean-jsdoc-theme",

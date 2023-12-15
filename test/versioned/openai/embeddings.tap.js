@@ -12,7 +12,7 @@
 
 const tap = require('tap')
 const helper = require('../../lib/agent_helper')
-const { assertSegments } = require('../../lib/metrics_helper')
+require('../../lib/metrics_helper')
 const { beforeHook, afterEachHook, afterHook } = require('./common')
 const {
   AI: { OPENAI }
@@ -45,11 +45,9 @@ tap.test('OpenAI instrumentation - embedding', (t) => {
       test.notOk(results.api_key, 'should remove api_key from user result')
       test.equal(results.model, 'text-embedding-ada-002-v2')
 
-      test.doesNotThrow(() => {
-        assertSegments(tx.trace.root, [OPENAI.EMBEDDING, [`External/${host}:${port}/embeddings`]], {
-          exact: false
-        })
-      }, 'should have expected segments')
+      t.assertSegments(tx.trace.root, [OPENAI.EMBEDDING, [`External/${host}:${port}/embeddings`]], {
+        exact: false
+      })
       tx.end()
       test.end()
     })

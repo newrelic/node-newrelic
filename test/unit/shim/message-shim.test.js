@@ -11,9 +11,6 @@ const hashes = require('../../../lib/util/hashes')
 const helper = require('../../lib/agent_helper')
 const MessageShim = require('../../../lib/shim/message-shim')
 
-tap.Test.prototype.addAssert('isNonWritable', 1, helper.isNonWritable)
-tap.Test.prototype.addAssert('compareSegments', 2, helper.compareSegments)
-
 tap.test('MessageShim', function (t) {
   t.autoend()
   let agent = null

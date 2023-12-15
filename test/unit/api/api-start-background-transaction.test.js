@@ -8,7 +8,6 @@
 const tap = require('tap')
 const API = require('../../../api')
 const helper = require('../../lib/agent_helper')
-tap.Test.prototype.addAssert('clmAttrs', 1, helper.assertCLMAttrs)
 
 tap.test('Agent API - startBackgroundTransaction', (t) => {
   t.autoend()

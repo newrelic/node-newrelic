@@ -42,7 +42,6 @@ code, the source code can be found at [https://github.com/newrelic/node-newrelic
 * [ajv](#ajv)
 * [async](#async)
 * [c8](#c8)
-* [chai](#chai)
 * [clean-jsdoc-theme](#clean-jsdoc-theme)
 * [commander](#commander)
 * [conventional-changelog-conventionalcommits](#conventional-changelog-conventionalcommits)
@@ -1263,7 +1262,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 ### import-in-the-middle
 
-This product includes source derived from [import-in-the-middle](https://github.com/DataDog/import-in-the-middle) ([v1.4.2](https://github.com/DataDog/import-in-the-middle/tree/v1.4.2)), distributed under the [Apache-2.0 License](https://github.com/DataDog/import-in-the-middle/blob/v1.4.2/LICENSE):
+This product includes source derived from [import-in-the-middle](https://github.com/DataDog/import-in-the-middle) ([v1.6.0](https://github.com/DataDog/import-in-the-middle/tree/v1.6.0)), distributed under the [Apache-2.0 License](https://github.com/DataDog/import-in-the-middle/blob/v1.6.0/LICENSE):
 
 ```
 Copyright 2021 Datadog, Inc.
@@ -2265,35 +2264,6 @@ LIABLE FOR ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES
 OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS,
 WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION,
 ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
-
-```
-
-### chai
-
-This product includes source derived from [chai](https://github.com/chaijs/chai) ([v4.3.8](https://github.com/chaijs/chai/tree/v4.3.8)), distributed under the [MIT License](https://github.com/chaijs/chai/blob/v4.3.8/LICENSE):
-
-```
-MIT License
-
-Copyright (c) 2017 Chai.js Assertion Library
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
 
 ```
 

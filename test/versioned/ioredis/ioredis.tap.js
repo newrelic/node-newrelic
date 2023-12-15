@@ -7,7 +7,7 @@
 
 const tap = require('tap')
 const helper = require('../../lib/agent_helper')
-const assertMetrics = require('../../lib/metrics_helper').assertMetrics
+require('../../lib/metrics_helper')
 const params = require('../../lib/params')
 
 // Indicates unique database in Redis. 0-15 supported.
@@ -41,8 +41,7 @@ tap.test('ioredis instrumentation', (t) => {
   })
 
   t.test('creates expected metrics', { timeout: 5000 }, (t) => {
-    t.plan(1)
-
+    t.plan(6)
     agent.on('transactionFinished', function (tx) {
       const expected = [
         [{ name: 'Datastore/all' }],
@@ -50,9 +49,7 @@ tap.test('ioredis instrumentation', (t) => {
         [{ name: 'Datastore/operation/Redis/set' }]
       ]
 
-      t.doesNotThrow(() => {
-        assertMetrics(tx.metrics, expected, false, false)
-      }, 'should have expected metrics')
+      t.assertMetrics(tx.metrics, expected, false, false)
       t.end()
     })
 

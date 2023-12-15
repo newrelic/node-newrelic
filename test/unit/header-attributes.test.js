@@ -4,31 +4,45 @@
  */
 
 'use strict'
-
-// TODO: convert to normal tap style.
-// Below allows use of mocha DSL with tap runner.
-require('tap').mochaGlobals()
-
+const tap = require('tap')
 const helper = require('../lib/agent_helper')
-const expect = require('chai').expect
 const headerAttributes = require('../../lib/header-attributes')
 
 const DESTINATIONS = require('../../lib/config/attribute-filter').DESTINATIONS
+function beforeEach(t) {
+  const config = {
+    attributes: {
+      exclude: [
+        'request.headers.cookie',
+        'request.headers.authorization',
+        'request.headers.proxyAuthorization',
+        'request.headers.setCookie*',
+        'request.headers.x*',
+        'response.headers.cookie',
+        'response.headers.authorization',
+        'response.headers.proxyAuthorization',
+        'response.headers.setCookie*',
+        'response.headers.x*'
+      ]
+    }
+  }
+  t.context.agent = helper.loadMockedAgent(config)
+}
 
-describe('header-attributes', () => {
-  let agent = null
+function afterEach(t) {
+  helper.unloadAgent(t.context.agent)
+}
 
-  beforeEach(() => {
-    agent = helper.loadMockedAgent()
-  })
+tap.test('header-attributes', (t) => {
+  t.autoend()
 
-  afterEach(() => {
-    helper.unloadAgent(agent)
-    agent = null
-  })
+  t.test('#collectRequestHeaders', (t) => {
+    t.autoend()
+    t.beforeEach(beforeEach)
+    t.afterEach(afterEach)
 
-  describe('#collectRequestHeaders', () => {
-    it('should be case insensitive when allow_all_headers is false', (done) => {
+    t.test('should be case insensitive when allow_all_headers is false', (t) => {
+      const { agent } = t.context
       agent.config.allow_all_headers = false
       const headers = {
         Accept: 'acceptValue'
@@ -38,13 +52,14 @@ describe('header-attributes', () => {
         headerAttributes.collectRequestHeaders(headers, transaction)
 
         const attributes = transaction.trace.attributes.get(DESTINATIONS.TRANS_TRACE)
-        expect(attributes).to.have.property('request.headers.accept', 'acceptValue')
-        expect(attributes).to.not.have.property('Accept')
+        t.equal(attributes['request.headers.accept'], 'acceptValue')
+        t.notOk(attributes.Accept)
         agent.config.allow_all_headers = true
-        done()
+        t.end()
       })
     })
-    it('should strip `-` from headers', (done) => {
+    t.test('should strip `-` from headers', (t) => {
+      const { agent } = t.context
       const headers = {
         'content-type': 'valid-type'
       }
@@ -53,13 +68,14 @@ describe('header-attributes', () => {
         headerAttributes.collectRequestHeaders(headers, transaction)
 
         const attributes = transaction.trace.attributes.get(DESTINATIONS.TRANS_TRACE)
-        expect(attributes).to.have.property('request.headers.contentType', 'valid-type')
-        expect(attributes).to.not.have.property('content-type')
-        done()
+        t.equal(attributes['request.headers.contentType'], 'valid-type')
+        t.notOk(attributes['content-type'])
+        t.end()
       })
     })
 
-    it('should lowercase first letter in headers', (done) => {
+    t.test('should lowercase first letter in headers', (t) => {
+      const { agent } = t.context
       const headers = {
         'Content-Type': 'valid-type'
       }
@@ -68,14 +84,15 @@ describe('header-attributes', () => {
         headerAttributes.collectRequestHeaders(headers, transaction)
 
         const attributes = transaction.trace.attributes.get(DESTINATIONS.TRANS_TRACE)
-        expect(attributes).to.have.property('request.headers.contentType', 'valid-type')
-        expect(attributes).to.not.have.property('Content-Type')
-        expect(attributes).to.not.have.property('ContentType')
-        done()
+        t.equal(attributes['request.headers.contentType'], 'valid-type')
+        t.notOk(attributes['Content-Type'])
+        t.notOk(attributes.ContentType)
+        t.end()
       })
     })
 
-    it('should capture a scrubbed version of the referer header', (done) => {
+    t.test('should capture a scrubbed version of the referer header', (t) => {
+      const { agent } = t.context
       const refererUrl = 'https://www.google.com/search/cats?scrubbed=false'
 
       const headers = {
@@ -87,17 +104,16 @@ describe('header-attributes', () => {
 
         const attributes = transaction.trace.attributes.get(DESTINATIONS.TRANS_TRACE)
 
-        expect(attributes).to.have.property(
-          'request.headers.referer',
-          'https://www.google.com/search/cats'
-        )
+        t.equal(attributes['request.headers.referer'], 'https://www.google.com/search/cats')
 
-        done()
+        t.end()
       })
     })
 
-    describe('with allow_all_headers set to false', () => {
-      it('should only collect allowed agent-specified headers', (done) => {
+    t.test(
+      'with allow_all_headers set to false should only collect allowed agent-specified headers',
+      (t) => {
+        const { agent } = t.context
         agent.config.allow_all_headers = false
 
         const headers = {
@@ -110,17 +126,19 @@ describe('header-attributes', () => {
           headerAttributes.collectRequestHeaders(headers, transaction)
 
           const attributes = transaction.trace.attributes.get(DESTINATIONS.TRANS_TRACE)
-          expect(attributes).to.not.have.property('request.headers.invalid')
-          expect(attributes).to.have.property('request.headers.referer', 'valid-referer')
-          expect(attributes).to.have.property('request.headers.contentType', 'valid-type')
+          t.notOk(attributes['request.headers.invalid'])
+          t.equal(attributes['request.headers.referer'], 'valid-referer')
+          t.equal(attributes['request.headers.contentType'], 'valid-type')
 
-          done()
+          t.end()
         })
-      })
-    })
+      }
+    )
 
-    describe('with allow_all_headers set to false', () => {
-      it('should collect allowed headers as span attributes', (done) => {
+    t.test(
+      'with allow_all_headers set to false should collect allowed headers as span attributes',
+      (t) => {
+        const { agent } = t.context
         agent.config.allow_all_headers = false
 
         const headers = {
@@ -133,22 +151,24 @@ describe('header-attributes', () => {
           headerAttributes.collectRequestHeaders(headers, transaction)
 
           const attributes = transaction.trace.attributes.get(DESTINATIONS.TRANS_TRACE)
-          expect(attributes).to.not.have.property('request.headers.invalid')
-          expect(attributes).to.have.property('request.headers.referer', 'valid-referer')
-          expect(attributes).to.have.property('request.headers.contentType', 'valid-type')
+          t.notOk(attributes['request.headers.invalid'])
+          t.equal(attributes['request.headers.referer'], 'valid-referer')
+          t.equal(attributes['request.headers.contentType'], 'valid-type')
 
           const segment = transaction.agent.tracer.getSegment()
           const spanAttributes = segment.attributes.get(DESTINATIONS.SPAN_EVENT)
 
-          expect(spanAttributes).to.have.property('request.headers.referer', 'valid-referer')
-          expect(spanAttributes).to.have.property('request.headers.contentType', 'valid-type')
-          done()
+          t.equal(spanAttributes['request.headers.referer'], 'valid-referer')
+          t.equal(spanAttributes['request.headers.contentType'], 'valid-type')
+          t.end()
         })
-      })
-    })
+      }
+    )
 
-    describe('with allow_all_headers set to true', () => {
-      it('should collect all headers not filtered by `exclude` rules', (done) => {
+    t.test(
+      'with allow_all_headers set to true should collect all headers not filtered by `exclude` rules',
+      (t) => {
+        const { agent } = t.context
         agent.config.allow_all_headers = true
 
         const headers = {
@@ -162,21 +182,26 @@ describe('header-attributes', () => {
           headerAttributes.collectRequestHeaders(headers, transaction)
 
           const attributes = transaction.trace.attributes.get(DESTINATIONS.TRANS_TRACE)
-          expect(attributes).to.not.have.property('request.headers.x-filtered-out')
-          expect(attributes).to.not.have.property('request.headers.xFilteredOut')
-          expect(attributes).to.not.have.property('request.headers.XFilteredOut')
-          expect(attributes).to.have.property('request.headers.valid', 'header')
-          expect(attributes).to.have.property('request.headers.referer', 'valid-referer')
-          expect(attributes).to.have.property('request.headers.contentType', 'valid-type')
-          done()
+          t.notOk(attributes['request.headers.x-filtered-out'])
+          t.notOk(attributes['request.headers.xFilteredOut'])
+          t.notOk(attributes['request.headers.XFilteredOut'])
+          t.equal(attributes['request.headers.valid'], 'header')
+          t.equal(attributes['request.headers.referer'], 'valid-referer')
+          t.equal(attributes['request.headers.contentType'], 'valid-type')
+          t.end()
         })
-      })
-    })
+      }
+    )
   })
 
-  describe('#collectResponseHeaders', () => {
-    describe('with allow_all_headers set to false', () => {
-      it('should only collect allowed agent-specified headers', (done) => {
+  t.test('#collectResponseHeaders', (t) => {
+    t.autoend()
+    t.beforeEach(beforeEach)
+    t.afterEach(afterEach)
+    t.test(
+      'with allow_all_headers set to false should only collect allowed agent-specified headers',
+      (t) => {
+        const { agent } = t.context
         agent.config.allow_all_headers = false
 
         const headers = {
@@ -188,15 +213,17 @@ describe('header-attributes', () => {
           headerAttributes.collectResponseHeaders(headers, transaction)
 
           const attributes = transaction.trace.attributes.get(DESTINATIONS.TRANS_TRACE)
-          expect(attributes).to.not.have.property('response.headers.invalid')
-          expect(attributes).to.have.property('response.headers.contentType', 'valid-type')
-          done()
+          t.notOk(attributes['response.headers.invalid'])
+          t.equal(attributes['response.headers.contentType'], 'valid-type')
+          t.end()
         })
-      })
-    })
+      }
+    )
 
-    describe('with allow_all_headers set to true', () => {
-      it('should collect all headers not filtered by `exclude` rules', (done) => {
+    t.test(
+      'with allow_all_headers set to true should collect all headers not filtered by `exclude` rules',
+      (t) => {
+        const { agent } = t.context
         agent.config.allow_all_headers = true
 
         const headers = {
@@ -209,14 +236,14 @@ describe('header-attributes', () => {
           headerAttributes.collectResponseHeaders(headers, transaction)
 
           const attributes = transaction.trace.attributes.get(DESTINATIONS.TRANS_TRACE)
-          expect(attributes).to.not.have.property('response.headers.x-filtered-out')
-          expect(attributes).to.not.have.property('response.headers.xFilteredOut')
-          expect(attributes).to.not.have.property('response.headers.XFilteredOut')
-          expect(attributes).to.have.property('response.headers.valid', 'header')
-          expect(attributes).to.have.property('response.headers.contentType', 'valid-type')
-          done()
+          t.notOk(attributes['response.headers.x-filtered-out'])
+          t.notOk(attributes['response.headers.xFilteredOut'])
+          t.notOk(attributes['response.headers.XFilteredOut'])
+          t.equal(attributes['response.headers.valid'], 'header')
+          t.equal(attributes['response.headers.contentType'], 'valid-type')
+          t.end()
         })
-      })
-    })
+      }
+    )
   })
 })

@@ -6,7 +6,6 @@
 'use strict'
 const util = module.exports
 const metricsHelpers = require('../../lib/metrics_helper')
-const assertMetrics = require('../../lib/metrics_helper').assertMetrics
 const protoLoader = require('@grpc/proto-loader')
 const serverImpl = require('./grpc-server.cjs')
 const DESTINATIONS = require('../../../lib/config/attribute-filter').DESTINATIONS
@@ -143,7 +142,7 @@ util.assertExternalSegment = function assertExternalSegment({
 }) {
   const methodName = util.getRPCName(fnName)
   const segmentName = `${EXTERNAL.PREFIX}${CLIENT_ADDR}:${port}${methodName}`
-  metricsHelpers.assertSegments(tx.trace.root, [segmentName], { exact: false })
+  t.assertSegments(tx.trace.root, [segmentName], { exact: false })
   const segment = metricsHelpers.findSegment(tx.trace.root, segmentName)
   const attributes = segment.getAttributes()
   t.equal(
@@ -164,7 +163,7 @@ util.assertExternalSegment = function assertExternalSegment({
   )
   t.equal(attributes.component, 'gRPC', 'should have the component set to "gRPC"')
   const expectedMetrics = buildExpectedMetrics(port)
-  metricsHelpers.assertMetrics(tx.metrics, [expectedMetrics], false, false)
+  t.assertMetrics(tx.metrics, [expectedMetrics], false, false)
 }
 
 /**
@@ -214,9 +213,7 @@ util.assertServerMetrics = function assertServerMetrics({ t, agentMetrics, fnNam
     [{ name: `Apdex/WebFrameworkUri/gRPC//helloworld.Greeter/${fnName}` }],
     [{ name: 'Apdex' }]
   ]
-  t.doesNotThrow(() => {
-    assertMetrics(agentMetrics, expectedServerMetrics, false, false)
-  }, 'should have the expected metrics')
+  t.assertMetrics(agentMetrics, expectedServerMetrics, false, false)
 }
 
 util.assertDistributedTracing = function assertDistributedTracing({

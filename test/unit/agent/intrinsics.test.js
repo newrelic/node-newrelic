@@ -7,8 +7,6 @@
 
 const tap = require('tap')
 const helper = require('../../lib/agent_helper.js')
-const chai = require('chai')
-const assert = chai.assert
 const sinon = require('sinon')
 const Transaction = require('../../../lib/transaction')
 const crossAgentTests = require('../../lib/cross_agent_tests/cat/cat_map.json')
@@ -40,25 +38,23 @@ tap.test('when CAT is disabled (default agent settings)', (t) => {
 
       const attrs = agent._addIntrinsicAttrsFromTransaction(trans)
 
-      chai
-        .expect(Object.keys(attrs))
-        .to.have.members([
-          'duration',
-          'name',
-          'timestamp',
-          'totalTime',
-          'type',
-          'webDuration',
-          'error',
-          'traceId',
-          'guid',
-          'priority',
-          'sampled'
-        ])
+      t.same(Object.keys(attrs), [
+        'webDuration',
+        'timestamp',
+        'name',
+        'duration',
+        'totalTime',
+        'type',
+        'error',
+        'traceId',
+        'guid',
+        'priority',
+        'sampled'
+      ])
 
-      chai.expect(attrs.duration).to.be.closeTo(expectedDuration, 0.001)
-      chai.expect(attrs.webDuration).to.be.closeTo(expectedDuration, 0.001)
-      chai.expect(attrs.totalTime).to.be.closeTo(expectedTotalTime, 0.001)
+      t.equal(attrs.duration, expectedDuration)
+      t.equal(attrs.webDuration, expectedDuration)
+      t.equal(attrs.totalTime, expectedTotalTime)
 
       t.equal(attrs.timestamp, start)
       t.equal(attrs.name, test.transactionName)
@@ -91,7 +87,7 @@ tap.test('when CAT is disabled (default agent settings)', (t) => {
     const transaction = new Transaction(agent)
     transaction.measure(NAMES.DB.ALL, null, 100)
     const attrs = agent._addIntrinsicAttrsFromTransaction(transaction)
-    assert.equal(attrs.databaseDuration, 0.1)
+    t.equal(attrs.databaseDuration, 0.1)
 
     t.end()
   })
@@ -176,17 +172,17 @@ tap.test('when CAT is enabled', (t) => {
       const attrs = agent._addIntrinsicAttrsFromTransaction(trans)
 
       const keys = [
-        'duration',
-        'name',
-        'timestamp',
-        'type',
-        'totalTime',
         'webDuration',
+        'timestamp',
+        'name',
+        'duration',
+        'totalTime',
+        'type',
         'error',
         'nr.guid',
+        'nr.tripId',
         'nr.pathHash',
         'nr.referringPathHash',
-        'nr.tripId',
         'nr.referringTransactionGuid',
         'nr.alternatePathHashes',
         'nr.apdexPerfZone'
@@ -200,12 +196,12 @@ tap.test('when CAT is enabled', (t) => {
         keys.splice(keys.indexOf('nr.apdexPerfZone'), 1)
       }
 
-      chai.expect(Object.keys(attrs)).to.have.members(keys)
+      t.same(Object.keys(attrs), keys)
 
-      chai.expect(attrs.duration).to.be.closeTo(expectedDuration, 0.001)
-      chai.expect(attrs.webDuration).to.be.closeTo(expectedDuration, 0.001)
-      chai.expect(attrs.totalTime).to.be.closeTo(expectedTotalTime, 0.001)
-
+      t.equal(attrs.duration, expectedDuration)
+      t.equal(attrs.webDuration, expectedDuration)
+      t.equal(attrs.totalTime, expectedTotalTime)
+      t.equal(attrs.duration, expectedDuration)
       t.equal(attrs.timestamp, start)
       t.equal(attrs.name, test.transactionName)
       t.equal(attrs.type, 'Transaction')

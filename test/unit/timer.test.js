@@ -4,84 +4,87 @@
  */
 
 'use strict'
-
-// TODO: convert to normal tap style.
-// Below allows use of mocha DSL with tap runner.
-require('tap').mochaGlobals()
-
-const chai = require('chai')
-const expect = chai.expect
+const tap = require('tap')
 const Timer = require('../../lib/timer')
 
-describe('Timer', function () {
-  it("should know when it's active", function () {
+tap.test('Timer', function (t) {
+  t.autoend()
+  t.test("should know when it's active", function (t) {
     const timer = new Timer()
-    expect(timer.isActive()).equal(true)
+    t.equal(timer.isActive(), true)
+    t.end()
   })
 
-  it("should know when it hasn't yet been started", function () {
+  t.test("should know when it hasn't yet been started", function (t) {
     const timer = new Timer()
-    expect(timer.isRunning()).equal(false)
+    t.equal(timer.isRunning(), false)
+    t.end()
   })
 
-  it("should know when it's running", function () {
+  t.test("should know when it's running", function (t) {
     const timer = new Timer()
     timer.begin()
-    expect(timer.isRunning()).equal(true)
+    t.equal(timer.isRunning(), true)
+    t.end()
   })
 
-  it("should know when it's not running", function () {
+  t.test("should know when it's not running", function (t) {
     const timer = new Timer()
-    expect(timer.isRunning()).equal(false)
+    t.equal(timer.isRunning(), false)
 
-    timer.begin()
-    timer.end()
-    expect(timer.isRunning()).equal(false)
-  })
-
-  it("should know when it hasn't yet been stopped", function () {
-    const timer = new Timer()
-    expect(timer.isActive()).equal(true)
-
-    timer.begin()
-    expect(timer.isActive()).equal(true)
-  })
-
-  it("should know when it's stopped", function () {
-    const timer = new Timer()
     timer.begin()
     timer.end()
-
-    expect(timer.isActive()).equal(false)
+    t.equal(timer.isRunning(), false)
+    t.end()
   })
 
-  it('should return the time elapsed of a running timer', function (done) {
+  t.test("should know when it hasn't yet been stopped", function (t) {
+    const timer = new Timer()
+    t.equal(timer.isActive(), true)
+
+    timer.begin()
+    t.equal(timer.isActive(), true)
+    t.end()
+  })
+
+  t.test("should know when it's stopped", function (t) {
+    const timer = new Timer()
+    timer.begin()
+    timer.end()
+
+    t.equal(timer.isActive(), false)
+    t.end()
+  })
+
+  t.test('should return the time elapsed of a running timer', function (t) {
     const timer = new Timer()
     timer.begin()
     setTimeout(function () {
-      expect(timer.getDurationInMillis()).above(3)
+      t.ok(timer.getDurationInMillis() > 3)
 
-      return done()
+      t.end()
     }, 5)
   })
 
-  it('should allow setting the start as well as the duration of the range', function () {
+  t.test('should allow setting the start as well as the duration of the range', function (t) {
     const timer = new Timer()
     const start = Date.now()
     timer.setDurationInMillis(5, start)
 
-    expect(timer.start).equal(start)
+    t.equal(timer.start, start)
+    t.end()
   })
 
-  it('should return a range object', function () {
+  t.test('should return a range object', function (t) {
     const timer = new Timer()
     const start = Date.now()
     timer.setDurationInMillis(5, start)
 
-    expect(timer.toRange()).deep.equal([start, start + 5])
+    t.same(timer.toRange(), [start, start + 5])
+    t.end()
   })
 
-  it('should calculate start times relative to other timers', function () {
+  t.test('should calculate start times relative to other timers', function (t) {
     const first = new Timer()
     first.begin()
 
@@ -92,13 +95,14 @@ describe('Timer', function () {
     second.end()
 
     let delta
-    expect(function () {
+    t.doesNotThrow(function () {
       delta = second.startedRelativeTo(first)
-    }).not.throw()
-    expect(delta).a('number')
+    })
+    t.ok(typeof delta === 'number')
+    t.end()
   })
 
-  it('should support updating the duration with touch', function (done) {
+  t.test('should support updating the duration with touch', function (t) {
     const timer = new Timer()
     timer.begin()
 
@@ -106,77 +110,88 @@ describe('Timer', function () {
       timer.touch()
       const first = timer.getDurationInMillis()
 
-      expect(first).above(0)
-      expect(timer.isActive()).equal(true)
+      t.ok(first > 0)
+      t.equal(timer.isActive(), true)
 
       setTimeout(function () {
         timer.end()
 
         const second = timer.getDurationInMillis()
-        expect(second).above(first)
-        expect(timer.isActive()).equal(false)
+        t.ok(second > first)
+        t.equal(timer.isActive(), false)
 
-        done()
+        t.end()
       }, 20)
     }, 20)
   })
 
-  describe('endsAfter indicates whether the timer ended after another timer', () => {
-    let start
-    let first
-    let second
-
-    beforeEach(function () {
-      start = Date.now()
-      first = new Timer()
+  t.test('endsAfter indicates whether the timer ended after another timer', (t) => {
+    t.autoend()
+    t.beforeEach(function (t) {
+      const start = Date.now()
+      const first = new Timer()
       first.setDurationInMillis(10, start)
-      second = new Timer()
+      t.context.second = new Timer()
+      t.context.start = start
+      t.context.first = first
     })
 
-    it('with the same start and duration', function () {
+    t.test('with the same start and duration', function (t) {
+      const { start, second, first } = t.context
       second.setDurationInMillis(10, start)
-      expect(second.endsAfter(first)).equal(false)
+      t.equal(second.endsAfter(first), false)
+      t.end()
     })
 
-    it('with longer duration', function () {
+    t.test('with longer duration', function (t) {
+      const { start, second, first } = t.context
       second.setDurationInMillis(11, start)
-      expect(second.endsAfter(first)).equal(true)
+      t.equal(second.endsAfter(first), true)
+      t.end()
     })
 
-    it('with shorter duration', function () {
+    t.test('with shorter duration', function (t) {
+      const { start, second, first } = t.context
       second.setDurationInMillis(9, start)
-      expect(second.endsAfter(first)).equal(false)
+      t.equal(second.endsAfter(first), false)
+      t.end()
     })
 
-    it('with earlier start', function () {
+    t.test('with earlier start', function (t) {
+      const { start, second, first } = t.context
       second.setDurationInMillis(10, start - 1)
-      expect(second.endsAfter(first)).equal(false)
+      t.equal(second.endsAfter(first), false)
+      t.end()
     })
 
-    it('with later start', function () {
+    t.test('with later start', function (t) {
+      const { start, second, first } = t.context
       second.setDurationInMillis(10, start + 1)
-      expect(second.endsAfter(first)).equal(true)
+      t.equal(second.endsAfter(first), true)
+      t.end()
     })
   })
 
-  describe('overwriteDurationInMillis', function () {
-    it('stops the timer', function () {
+  t.test('overwriteDurationInMillis', function (t) {
+    t.autoend()
+    t.test('stops the timer', function (t) {
       const timer = new Timer()
       timer.begin()
-      expect(timer.isActive()).equal(true)
+      t.equal(timer.isActive(), true)
 
       timer.overwriteDurationInMillis(10)
-      expect(timer.isActive()).equal(false)
+      t.equal(timer.isActive(), false)
+      t.end()
     })
 
-    it('overwrites duration recorded by end() and touch()', function (done) {
+    t.test('overwrites duration recorded by end() and touch()', function (t) {
       const timer = new Timer()
       timer.begin()
       setTimeout(function () {
-        expect(timer.getDurationInMillis() > 1).equal(true)
+        t.equal(timer.getDurationInMillis() > 1, true)
         timer.overwriteDurationInMillis(1)
-        expect(timer.getDurationInMillis()).equal(1)
-        done()
+        t.equal(timer.getDurationInMillis(), 1)
+        t.end()
       }, 2)
     })
   })

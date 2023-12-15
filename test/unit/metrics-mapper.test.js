@@ -4,85 +4,92 @@
  */
 
 'use strict'
-
-// TODO: convert to normal tap style.
-// Below allows use of mocha DSL with tap runner.
-require('tap').mochaGlobals()
-
-const chai = require('chai')
-const expect = chai.expect
+const tap = require('tap')
 const MetricMapper = require('../../lib/metrics/mapper.js')
 
-describe('MetricMapper', function () {
-  it("shouldn't throw if passed null", function () {
-    expect(function () {
+tap.test('MetricMapper', function (t) {
+  t.test("shouldn't throw if passed null", function (t) {
+    t.doesNotThrow(function () {
       new MetricMapper().load(null)
-    }).not.throws()
+    })
+    t.end()
   })
 
-  it("shouldn't throw if passed undefined", function () {
-    expect(function () {
+  t.test("shouldn't throw if passed undefined", function (t) {
+    t.doesNotThrow(function () {
       new MetricMapper().load(undefined)
-    }).not.throws()
+    })
+    t.end()
   })
 
-  it("shouldn't throw if passed an empty list", function () {
-    expect(function () {
+  t.test("shouldn't throw if passed an empty list", function (t) {
+    t.doesNotThrow(function () {
       new MetricMapper().load([])
-    }).not.throws()
+    })
+    t.end()
   })
 
-  it("shouldn't throw if passed garbage input", function () {
-    expect(function () {
+  t.test("shouldn't throw if passed garbage input", function (t) {
+    t.doesNotThrow(function () {
       new MetricMapper().load({ name: 'garbage' }, 1001)
-    }).not.throws()
+    })
+    t.end()
   })
 
-  describe('when loading mappings at creation', function () {
+  t.test('when loading mappings at creation', function (t) {
     let mapper
 
-    before(function () {
+    t.before(function () {
       mapper = new MetricMapper([
         [{ name: 'Test/RenameMe1' }, 1001],
         [{ name: 'Test/RenameMe2', scope: 'TEST' }, 1002]
       ])
     })
 
-    it('should have loaded all the mappings', function () {
-      expect(mapper.length).equal(2)
+    t.test('should have loaded all the mappings', function (t) {
+      t.equal(mapper.length, 2)
+      t.end()
     })
 
-    it('should apply mappings', function () {
-      expect(mapper.map('Test/RenameMe1')).equal(1001)
-      expect(mapper.map('Test/RenameMe2', 'TEST')).equal(1002)
+    t.test('should apply mappings', function (t) {
+      t.equal(mapper.map('Test/RenameMe1'), 1001)
+      t.equal(mapper.map('Test/RenameMe2', 'TEST'), 1002)
+      t.end()
     })
 
-    it('should turn non-mapped metrics into specs', function () {
-      expect(mapper.map('Test/Metric1')).deep.equal({ name: 'Test/Metric1' })
-      expect(mapper.map('Test/Metric2', 'TEST')).deep.equal({ name: 'Test/Metric2', scope: 'TEST' })
+    t.test('should turn non-mapped metrics into specs', function (t) {
+      t.same(mapper.map('Test/Metric1'), { name: 'Test/Metric1' })
+      t.same(mapper.map('Test/Metric2', 'TEST'), { name: 'Test/Metric2', scope: 'TEST' })
+      t.end()
     })
+    t.end()
   })
 
-  describe('when adding mappings after creation', function () {
+  t.test('when adding mappings after creation', function (t) {
     const mapper = new MetricMapper()
 
-    before(function () {
+    t.before(function () {
       mapper.load([[{ name: 'Test/RenameMe1' }, 1001]])
       mapper.load([[{ name: 'Test/RenameMe2', scope: 'TEST' }, 1002]])
     })
 
-    it('should have loaded all the mappings', function () {
-      expect(mapper.length).equal(2)
+    t.test('should have loaded all the mappings', function (t) {
+      t.equal(mapper.length, 2)
+      t.end()
     })
 
-    it('should apply mappings', function () {
-      expect(mapper.map('Test/RenameMe1')).equal(1001)
-      expect(mapper.map('Test/RenameMe2', 'TEST')).equal(1002)
+    t.test('should apply mappings', function (t) {
+      t.equal(mapper.map('Test/RenameMe1'), 1001)
+      t.equal(mapper.map('Test/RenameMe2', 'TEST'), 1002)
+      t.end()
     })
 
-    it('should turn non-mapped metrics into specs', function () {
-      expect(mapper.map('Test/Metric1')).deep.equal({ name: 'Test/Metric1' })
-      expect(mapper.map('Test/Metric2', 'TEST')).deep.equal({ name: 'Test/Metric2', scope: 'TEST' })
+    t.test('should turn non-mapped metrics into specs', function (t) {
+      t.same(mapper.map('Test/Metric1'), { name: 'Test/Metric1' })
+      t.same(mapper.map('Test/Metric2', 'TEST'), { name: 'Test/Metric2', scope: 'TEST' })
+      t.end()
     })
+    t.end()
   })
+  t.end()
 })

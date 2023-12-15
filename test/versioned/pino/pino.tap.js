@@ -14,37 +14,14 @@ const { LOGGING } = require('../../../lib/metrics/names')
 const { originalMsgAssertion } = require('./helpers')
 const semver = require('semver')
 const { version: pinoVersion } = require('pino/package')
-
-tap.Test.prototype.addAssert(
-  'validateNrLogLine',
-  2,
-  function validateNrLogLine({ line: logLine, message, level, config }) {
-    this.equal(
-      logLine['entity.name'],
-      config.applications()[0],
-      'should have entity name that matches app'
-    )
-    this.equal(logLine['entity.guid'], 'pino-guid', 'should have set entity guid')
-    this.equal(logLine['entity.type'], 'SERVICE', 'should have entity type of SERVICE')
-    this.equal(logLine.hostname, config.getHostnameSafe(), 'should have proper hostname')
-    this.match(logLine.timestamp, /[\d]{10}/, 'should have proper unix timestamp')
-    this.notOk(logLine.message.includes('NR-LINKING'), 'should not contain NR-LINKING metadata')
-    if (message) {
-      this.equal(logLine.message, message, 'message should be the same as log')
-    }
-
-    if (level) {
-      this.equal(logLine.level, level, 'level should be string value not number')
-    }
-  }
-)
+require('../../lib/logging-helper')
 
 tap.test('Pino instrumentation', (t) => {
   t.autoend()
 
   function setupAgent(context, config) {
     context.agent = helper.instrumentMockedAgent(config)
-    context.agent.config.entity_guid = 'pino-guid'
+    context.agent.config.entity_guid = 'test-guid'
     context.pino = require('pino')
     context.stream = sink()
     context.logger = context.pino({ level: 'debug' }, context.stream)
@@ -147,7 +124,7 @@ tap.test('Pino instrumentation', (t) => {
       })
       t.equal(agent.logs.getEvents().length, 1, 'should have 1 log in aggregator')
       const formattedLine = agent.logs.getEvents()[0]()
-      t.validateNrLogLine({ line: formattedLine, message, level, config })
+      t.validateAnnotations({ line: formattedLine, message, level, config })
       t.end()
     })
 
@@ -167,7 +144,7 @@ tap.test('Pino instrumentation', (t) => {
       // See: https://github.com/pinojs/pino/pull/1779/files
       if (semver.gte(pinoVersion, '8.15.1')) {
         const formattedLine = agent.logs.getEvents()[0]()
-        t.validateNrLogLine({ line: formattedLine, message: testMsg, level, config })
+        t.validateAnnotations({ line: formattedLine, message: testMsg, level, config })
       } else {
         t.notOk(agent.logs.getEvents()[0](), 'should not return a log line if invalid')
         t.notOk(agent.logs._toPayloadSync(), 'should not send any logs')
@@ -189,7 +166,7 @@ tap.test('Pino instrumentation', (t) => {
       })
       t.equal(agent.logs.getEvents().length, 1, 'should have 1 log in aggregator')
       const formattedLine = agent.logs.getEvents()[0]()
-      t.validateNrLogLine({
+      t.validateAnnotations({
         line: formattedLine,
         message: err.message,
         level,
@@ -228,7 +205,7 @@ tap.test('Pino instrumentation', (t) => {
         )
 
         const formattedLine = agent.logs.getEvents()[0]()
-        t.validateNrLogLine({ line: formattedLine, message, level, config })
+        t.validateAnnotations({ line: formattedLine, message, level, config })
         t.equal(formattedLine['trace.id'], meta['trace.id'])
         t.equal(formattedLine['span.id'], meta['span.id'])
         t.end()
@@ -249,7 +226,7 @@ tap.test('Pino instrumentation', (t) => {
         t.notOk(line.hostname, 'should not have hostname when overriding base chindings')
         t.equal(agent.logs.getEvents().length, 1, 'should have 1 log in aggregator')
         const formattedLine = agent.logs.getEvents()[0]()
-        t.validateNrLogLine({ line: formattedLine, message, level, config })
+        t.validateAnnotations({ line: formattedLine, message, level, config })
         t.end()
       }
     )
@@ -290,7 +267,7 @@ tap.test('Pino instrumentation', (t) => {
 
         agent.logs.getEvents().forEach((logLine, index) => {
           const formattedLine = logLine()
-          t.validateNrLogLine({
+          t.validateAnnotations({
             line: formattedLine,
             message: messages[index],
             level,

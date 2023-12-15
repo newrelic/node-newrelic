@@ -8,7 +8,7 @@
 const tap = require('tap')
 
 const helper = require('../../../lib/agent_helper')
-const { assertMetrics } = require('../../../lib/metrics_helper')
+require('../../../lib/metrics_helper')
 const { runTest } = require('./common')
 
 const simulateAsyncWork = async () => {
@@ -172,7 +172,7 @@ tap.test('Restify metrics for async handlers', (t) => {
       helper.makeGetRequest(url, function (error) {
         t.error(error)
 
-        assertMetrics(agent.metrics, expectedMiddlewareMetrics, false, false)
+        t.assertMetrics(agent.metrics, expectedMiddlewareMetrics, false, false)
         t.end()
       })
     })

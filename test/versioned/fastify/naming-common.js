@@ -5,7 +5,7 @@
 
 'use strict'
 const { routesToTest, makeRequest } = require('./common')
-const metrics = require('../../lib/metrics_helper')
+require('../../lib/metrics_helper')
 const helper = require('../../lib/agent_helper')
 
 module.exports = function createTests(t, getExpectedSegments) {
@@ -36,7 +36,7 @@ module.exports = function createTests(t, getExpectedSegments) {
           ]
         }
 
-        metrics.assertSegments(transaction.trace.root, expectedSegments)
+        t.assertSegments(transaction.trace.root, expectedSegments)
       })
 
       await fastify.listen(0)

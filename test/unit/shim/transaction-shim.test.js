@@ -11,8 +11,6 @@ const helper = require('../../lib/agent_helper')
 const TransactionShim = require('../../../lib/shim/transaction-shim')
 const notRunningStates = ['stopped', 'stopping', 'errored']
 
-tap.Test.prototype.addAssert('isNonWritable', 1, helper.isNonWritable)
-
 /**
  * Creates CAT headers to be used in handleMqTracingHeaders
  * tests below

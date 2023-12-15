@@ -5,15 +5,15 @@
 
 'use strict'
 
-const assert = require('chai').assert
-const format = require('util').format
+const tap = require('tap')
 const urltils = require('../../lib/util/urltils')
+const { isSimpleObject } = require('../../lib/util/objects')
 
-exports.assertMetrics = assertMetrics
-exports.assertSegments = assertSegments
 exports.findSegment = findSegment
 exports.getMetricHostName = getMetricHostName
-exports.tapAssertMetrics = tapAssertMetrics
+tap.Test.prototype.addAssert('assertMetrics', 4, assertMetrics)
+tap.Test.prototype.addAssert('assertSegments', 3, assertSegments)
+tap.Test.prototype.addAssert('assertMetricValues', 3, assertMetricValues)
 
 /**
  * @param {Metrics} metrics         metrics under test
@@ -37,9 +37,9 @@ function assertMetrics(metrics, expected, exclusive, assertValues) {
   // Assertions about arguments because maybe something returned undefined
   // unexpectedly and is passed in, or a return type changed. This will
   // hopefully help catch that and make it obvious.
-  assert.isObject(metrics, 'first argument required to be an Metrics object')
-  assert.isArray(expected, 'second argument required to be an array of metrics')
-  assert.isBoolean(exclusive, 'third argument required to be a boolean if provided')
+  this.ok(isSimpleObject(metrics), 'first argument required to be an Metrics object')
+  this.ok(Array.isArray(expected), 'second argument required to be an array of metrics')
+  this.ok(typeof exclusive === 'boolean', 'third argument required to be a boolean if provided')
 
   if (assertValues === undefined) {
     assertValues = true
@@ -48,39 +48,19 @@ function assertMetrics(metrics, expected, exclusive, assertValues) {
   for (let i = 0, len = expected.length; i < len; i++) {
     const expectedMetric = expected[i]
     const metric = metrics.getMetric(expectedMetric[0].name, expectedMetric[0].scope)
-    if (!metric) {
-      throw new Error(format('%j is missing from the metrics bucket', expectedMetric[0]))
-    }
+    this.ok(metric)
     if (assertValues) {
-      assert.deepEqual(
-        metric.toJSON(),
-        expectedMetric[1],
-        format(
-          '%j did not match (got %j, expected: %j)',
-          expectedMetric[0],
-          metric.toJSON(),
-          expectedMetric[1]
-        )
-      )
+      this.same(metric.toJSON(), expectedMetric[1])
     }
   }
 
   if (exclusive) {
     const metricsList = metrics.toJSON()
-    assert.equal(
-      metricsList.length,
-      expected.length,
-      format(
-        'exclusive set expected but there is a length mismatch (got: %j, expected %j)',
-        metricsList,
-        expected
-      )
-    )
+    this.equal(metricsList.length, expected.length)
   }
 }
 
 /**
- * @param {Test} tap                tap test object
  * @param {Transaction} transaction Nodejs agent transaction
  * @param {Array} expected          Array of metric data where metric data is in this form:
  *                                  [
@@ -97,7 +77,7 @@ function assertMetrics(metrics, expected, exclusive, assertValues) {
  *                                  ]
  * @param {boolean} exact           When true, found and expected metric lengths should match
  */
-function tapAssertMetrics(tap, transaction, expected, exact) {
+function assertMetricValues(transaction, expected, exact) {
   const metrics = transaction.metrics
 
   for (let i = 0; i < expected.length; ++i) {
@@ -114,14 +94,14 @@ function tapAssertMetrics(tap, transaction, expected, exact) {
     }
 
     const metric = metrics.getMetric(name, scope)
-    tap.ok(metric, 'should have expected metric name')
+    this.ok(metric, 'should have expected metric name')
 
-    tap.strictSame(metric.toJSON(), expectedMetric[1], 'metric values should match')
+    this.strictSame(metric.toJSON(), expectedMetric[1], 'metric values should match')
   }
 
   if (exact) {
     const metricsJSON = metrics.toJSON()
-    tap.equal(metricsJSON.length, expected.length, 'metrics length should match')
+    this.equal(metricsJSON.length, expected.length, 'metrics length should match')
   }
 }
 
@@ -167,7 +147,7 @@ function assertSegments(parent, expected, options) {
 
       if (typeof sequenceItem === 'string') {
         child = children[childCount++]
-        assert.equal(
+        this.equal(
           child ? child.name : undefined,
           sequenceItem,
           'segment "' +
@@ -182,27 +162,18 @@ function assertSegments(parent, expected, options) {
         // child has no children
         if (!Array.isArray(expected[i + 1])) {
           // var children = child.children
-          assert(
+          this.ok(
             getChildren(child).length === 0,
             'segment "' + child.name + '" should not have any children'
           )
         }
       } else if (typeof sequenceItem === 'object') {
-        assertSegments(child, sequenceItem, options)
+        this.assertSegments(child, sequenceItem, options)
       }
     }
 
     // check if correct number of children was found
-    assert.equal(
-      children.length,
-      childCount,
-      format(
-        'segment "%s" expected to have %j children, but got %j',
-        parent.name,
-        childCount,
-        children.length
-      )
-    )
+    this.equal(children.length, childCount)
   } else {
     for (let i = 0; i < expected.length; i++) {
       const sequenceItem = expected[i]
@@ -214,9 +185,9 @@ function assertSegments(parent, expected, options) {
             child = parent.children[j]
           }
         }
-        assert.ok(child, 'segment "' + parent.name + '" should have child "' + sequenceItem + '"')
+        this.ok(child, 'segment "' + parent.name + '" should have child "' + sequenceItem + '"')
         if (typeof expected[i + 1] === 'object') {
-          assertSegments(child, expected[i + 1], exact)
+          this.assertSegments(child, expected[i + 1], exact)
         }
       }
     }

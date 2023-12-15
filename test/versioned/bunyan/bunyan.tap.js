@@ -7,11 +7,9 @@
 
 const tap = require('tap')
 const helper = require('../../lib/agent_helper')
-const { validateLogLine } = require('../../lib/logging-helper')
+require('../../lib/logging-helper')
 const { LOGGING } = require('../../../lib/metrics/names')
 const { makeSink, logStuff, originalMsgAssertion, logForwardingMsgAssertion } = require('./helpers')
-
-tap.Test.prototype.addAssert('validateAnnotations', 2, validateLogLine)
 
 tap.test('bunyan instrumentation', (t) => {
   t.autoend()

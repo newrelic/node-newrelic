@@ -4,13 +4,7 @@
  */
 
 'use strict'
-
-// TODO: convert to normal tap style.
-// Below allows use of mocha DSL with tap runner.
-require('tap').mochaGlobals()
-
-const chai = require('chai')
-const expect = chai.expect
+const tap = require('tap')
 const helper = require('../../lib/agent_helper')
 const generateRecorder = require('../../../lib/metrics/recorders/http_external')
 const Transaction = require('../../../lib/transaction')
@@ -39,79 +33,82 @@ function record(options) {
   recordExternal(segment, options.transaction.name)
 }
 
-describe('recordExternal', function () {
-  let agent
-  let trans
-
-  beforeEach(function () {
-    agent = helper.loadMockedAgent()
-    trans = new Transaction(agent)
+tap.test('recordExternal', function (t) {
+  t.autoend()
+  t.beforeEach(function (t) {
+    const agent = helper.loadMockedAgent()
+    const trans = new Transaction(agent)
     trans.type = Transaction.TYPES.BG
+    t.context.agent = agent
+    t.context.trans = trans
   })
 
-  afterEach(function () {
-    helper.unloadAgent(agent)
+  t.afterEach(function (t) {
+    helper.unloadAgent(t.context.agent)
   })
 
-  describe('when scope is undefined', function () {
-    let segment
-
-    beforeEach(function () {
-      segment = makeSegment({
-        transaction: trans,
-        duration: 0,
-        exclusive: 0
-      })
+  t.test("when scoped is undefined it shouldn't crash on recording", function (t) {
+    const { trans } = t.context
+    const segment = makeSegment({
+      transaction: trans,
+      duration: 0,
+      exclusive: 0
     })
-
-    it("shouldn't crash on recording", function () {
-      expect(function () {
-        recordExternal(segment, undefined)
-      }).to.not.throw()
-    })
-
-    it('should record no scoped metrics', function () {
+    t.doesNotThrow(function () {
       recordExternal(segment, undefined)
-
-      const result = [
-        [{ name: 'External/test.example.com/http' }, [1, 0, 0, 0, 0, 0]],
-        [{ name: 'External/allOther' }, [1, 0, 0, 0, 0, 0]],
-        [{ name: 'External/test.example.com/all' }, [1, 0, 0, 0, 0, 0]],
-        [{ name: 'External/all' }, [1, 0, 0, 0, 0, 0]]
-      ]
-
-      expect(JSON.stringify(trans.metrics)).equal(JSON.stringify(result))
     })
+    t.end()
   })
 
-  describe('with scope', function () {
-    it('should record scoped metrics', function () {
-      trans.type = Transaction.TYPES.WEB
-      record({
-        transaction: trans,
-        url: '/test',
-        code: 200,
-        apdexT: 10,
-        duration: 30,
-        exclusive: 2
-      })
-
-      const result = [
-        [{ name: 'External/test.example.com/http' }, [1, 0.03, 0.002, 0.03, 0.03, 0.0009]],
-        [{ name: 'External/allWeb' }, [1, 0.03, 0.002, 0.03, 0.03, 0.0009]],
-        [{ name: 'External/test.example.com/all' }, [1, 0.03, 0.002, 0.03, 0.03, 0.0009]],
-        [{ name: 'External/all' }, [1, 0.03, 0.002, 0.03, 0.03, 0.0009]],
-        [
-          { name: 'External/test.example.com/http', scope: 'WebTransaction/NormalizedUri/*' },
-          [1, 0.03, 0.002, 0.03, 0.03, 0.0009]
-        ]
-      ]
-
-      expect(JSON.stringify(trans.metrics)).equal(JSON.stringify(result))
+  t.test('when scoped is undefined it should record no scoped metrics', function (t) {
+    const { trans } = t.context
+    const segment = makeSegment({
+      transaction: trans,
+      duration: 0,
+      exclusive: 0
     })
+    recordExternal(segment, undefined)
+
+    const result = [
+      [{ name: 'External/test.example.com/http' }, [1, 0, 0, 0, 0, 0]],
+      [{ name: 'External/allOther' }, [1, 0, 0, 0, 0, 0]],
+      [{ name: 'External/test.example.com/all' }, [1, 0, 0, 0, 0, 0]],
+      [{ name: 'External/all' }, [1, 0, 0, 0, 0, 0]]
+    ]
+
+    t.equal(JSON.stringify(trans.metrics), JSON.stringify(result))
+    t.end()
   })
 
-  it('should report exclusive time correctly', function () {
+  t.test('with scope should record scoped metrics', function (t) {
+    const { trans } = t.context
+    trans.type = Transaction.TYPES.WEB
+    record({
+      transaction: trans,
+      url: '/test',
+      code: 200,
+      apdexT: 10,
+      duration: 30,
+      exclusive: 2
+    })
+
+    const result = [
+      [{ name: 'External/test.example.com/http' }, [1, 0.03, 0.002, 0.03, 0.03, 0.0009]],
+      [{ name: 'External/allWeb' }, [1, 0.03, 0.002, 0.03, 0.03, 0.0009]],
+      [{ name: 'External/test.example.com/all' }, [1, 0.03, 0.002, 0.03, 0.03, 0.0009]],
+      [{ name: 'External/all' }, [1, 0.03, 0.002, 0.03, 0.03, 0.0009]],
+      [
+        { name: 'External/test.example.com/http', scope: 'WebTransaction/NormalizedUri/*' },
+        [1, 0.03, 0.002, 0.03, 0.03, 0.0009]
+      ]
+    ]
+
+    t.equal(JSON.stringify(trans.metrics), JSON.stringify(result))
+    t.end()
+  })
+
+  t.test('should report exclusive time correctly', function (t) {
+    const { trans } = t.context
     const root = trans.trace.root
     const parent = root.add('/parent', recordExternal)
     const child1 = parent.add('/child1', generateRecorder('api.twitter.com', 'https'))
@@ -134,6 +131,7 @@ describe('recordExternal', function () {
     ]
 
     trans.end()
-    expect(JSON.stringify(trans.metrics)).equal(JSON.stringify(result))
+    t.equal(JSON.stringify(trans.metrics), JSON.stringify(result))
+    t.end()
   })
 })
