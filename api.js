@@ -1869,28 +1869,4 @@ API.prototype.setErrorGroupCallback = function setErrorGroupCallback(callback) {
   this.agent.errors.errorGroupCallback = callback
 }
 
-/**
- * Function for assigning metadata to all LLM events. This should only
- * be called once in your application and before executing any openai, bedrock,
- * langchain, generative AI methods.
- *
- * If passing in metadata via `api.recordLlmFeedbackEvent`, it will take precedence
- * over what is assigned via this method.
- *
- * @param {object} metadata key/value metadata to be assigned to all LLM Events on creation
- * @example
- * newrelic.setLlmMetadata({ type: 'openai', framework: 'express', region: 'us' })
- */
-API.prototype.setLlmMetadata = function setLlmMetadata(metadata) {
-  const metric = this.agent.metrics.getOrCreateMetric(NAMES.SUPPORTABILITY.API + '/setLlmMetadata')
-  metric.incrementCallCount()
-
-  if (!isSimpleObject(metadata)) {
-    logger.warn('metadata must be an object, not assigning LLM metadata.')
-    return
-  }
-
-  this.agent.llm.metadata = metadata
-}
-
 module.exports = API

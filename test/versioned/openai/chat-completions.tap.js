@@ -276,33 +276,6 @@ tap.test('OpenAI instrumentation - chat completions', (t) => {
     })
   }
 
-  t.test('should spread metadata across events if present on agent.llm.metadata', (test) => {
-    const { client, agent } = t.context
-    const api = helper.getAgentApi()
-    helper.runInTransaction(agent, async (tx) => {
-      const meta = { key: 'value', extended: true, vendor: 'overwriteMe', id: 'bogus' }
-      api.setLlmMetadata(meta)
-
-      await client.chat.completions.create({
-        messages: [{ role: 'user', content: 'You are a mathematician.' }]
-      })
-
-      const events = agent.customEventAggregator.events.toArray()
-      events.forEach(([, testEvent]) => {
-        test.equal(testEvent.key, 'value')
-        test.equal(testEvent.extended, true)
-        test.equal(
-          testEvent.vendor,
-          'openAI',
-          'should not override properties of message with metadata'
-        )
-        test.not(testEvent.id, 'bogus', 'should not override properties of message with metadata')
-      })
-      tx.end()
-      test.end()
-    })
-  })
-
   t.test('should not create llm events when not in a transaction', async (test) => {
     const { client, agent } = t.context
     await client.chat.completions.create({
