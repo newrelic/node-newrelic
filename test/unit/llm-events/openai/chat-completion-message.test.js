@@ -74,7 +74,7 @@ tap.test('LlmChatCompletionMessage', (t) => {
     const api = helper.getAgentApi()
     const conversationId = 'convo-id'
     helper.runInTransaction(agent, () => {
-      api.addCustomAttribute('conversation_id', conversationId)
+      api.addCustomAttribute('llm.conversation_id', conversationId)
       const chatMessageEvent = new LlmChatCompletionMessage({
         agent,
         segment: {},

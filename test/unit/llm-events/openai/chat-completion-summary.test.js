@@ -45,7 +45,7 @@ tap.test('LlmChatCompletionSummary', (t) => {
     const api = helper.getAgentApi()
     const conversationId = 'convo-id'
     helper.runInTransaction(agent, () => {
-      api.addCustomAttribute('conversation_id', conversationId)
+      api.addCustomAttribute('llm.conversation_id', conversationId)
       const chatSummaryEvent = new LlmChatCompletionSummary({
         agent,
         segment: null,
@@ -61,7 +61,7 @@ tap.test('LlmChatCompletionSummary', (t) => {
     const api = helper.getAgentApi()
     const conversationId = 'convo-id'
     helper.runInTransaction(agent, () => {
-      api.addCustomAttribute('conversation_id', conversationId)
+      api.addCustomAttribute('llm.conversation_id', conversationId)
       const chatSummaryEvent = new LlmChatCompletionSummary({
         agent,
         segment: null,
