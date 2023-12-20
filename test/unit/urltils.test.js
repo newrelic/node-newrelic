@@ -4,249 +4,322 @@
  */
 
 'use strict'
-
-// TODO: convert to normal tap style.
-// Below allows use of mocha DSL with tap runner.
-require('tap').mochaGlobals()
-
-const expect = require('chai').expect
+const tap = require('tap')
 const sinon = require('sinon')
 const proxyquire = require('proxyquire')
 const url = require('url')
 
-describe('NR URL utilities', function () {
-  let loggerStub
-  let urltils
-  beforeEach(function () {
-    loggerStub = {
+tap.test('NR URL utilities', function (t) {
+  t.autoend()
+  t.beforeEach(function () {
+    const loggerStub = {
       warn: sinon.stub()
     }
-    urltils = proxyquire('../../lib/util/urltils', {
+    t.context.urltils = proxyquire('../../lib/util/urltils', {
       '../logger': {
         child: sinon.stub().returns(loggerStub)
       }
     })
+    t.context.loggerStub = loggerStub
   })
 
-  describe('scrubbing URLs', function () {
-    it('should return "/" if there\'s no leading slash on the path', function () {
-      expect(urltils.scrub('?t_u=http://some.com/o/p')).equal('/')
+  t.test('scrubbing URLs should return "/" if there\'s no leading slash on the path', function (t) {
+    const { urltils } = t.context
+    t.equal(urltils.scrub('?t_u=http://some.com/o/p'), '/')
+    t.end()
+  })
+
+  t.test('parsing parameters', function (t) {
+    t.autoend()
+    t.test('should find empty object of params in url lacking query', function (t) {
+      const { urltils } = t.context
+      t.same(urltils.parseParameters('/favicon.ico'), {})
+      t.end()
+    })
+
+    t.test('should find v param in url containing ?v with no value', function (t) {
+      const { urltils } = t.context
+      t.same(urltils.parseParameters('/status?v'), { v: true })
+      t.end()
+    })
+
+    t.test('should find v param with value in url containing ?v=1', function (t) {
+      const { urltils } = t.context
+      t.same(urltils.parseParameters('/status?v=1'), { v: '1' })
+      t.end()
+    })
+
+    t.test('should find v param when passing in an object', function (t) {
+      const { urltils } = t.context
+      t.same(urltils.parseParameters(url.parse('/status?v=1', true)), { v: '1' })
+      t.end()
     })
   })
 
-  describe('parsing parameters', function () {
-    it('should find empty object of params in url lacking query', function () {
-      expect(urltils.parseParameters('/favicon.ico')).deep.equal({})
-    })
-
-    it('should find v param in url containing ?v with no value', function () {
-      expect(urltils.parseParameters('/status?v')).deep.equal({ v: true })
-    })
-
-    it('should find v param with value in url containing ?v=1', function () {
-      expect(urltils.parseParameters('/status?v=1')).deep.equal({ v: '1' })
-    })
-
-    it('should find v param when passing in an object', function () {
-      expect(urltils.parseParameters(url.parse('/status?v=1', true))).deep.equal({ v: '1' })
-    })
-  })
-
-  describe('determining whether an HTTP status code is an error', function () {
+  t.test('determining whether an HTTP status code is an error', function (t) {
+    t.autoend()
     let config = { error_collector: { ignore_status_codes: [] } }
 
-    it('should not throw when called with no params', function () {
-      expect(function () {
+    t.test('should not throw when called with no params', function (t) {
+      const { urltils } = t.context
+      t.doesNotThrow(function () {
         urltils.isError()
-      }).not.throws()
+      })
+      t.end()
     })
 
-    it('should not throw when called with no code', function () {
-      expect(function () {
+    t.test('should not throw when called with no code', function (t) {
+      const { urltils } = t.context
+      t.doesNotThrow(function () {
         urltils.isError(config)
-      }).not.throws()
+      })
+      t.end()
     })
 
-    it('should not throw when config is missing', function () {
-      expect(function () {
+    t.test('should not throw when config is missing', function (t) {
+      const { urltils } = t.context
+      t.doesNotThrow(function () {
         urltils.isError(null, 200)
-      }).not.throws()
+      })
+      t.end()
     })
 
-    it('should NOT mark an OK request as an error', function () {
-      return expect(urltils.isError(config, 200)).false
+    t.test('should NOT mark an OK request as an error', function (t) {
+      const { urltils } = t.context
+      t.equal(urltils.isError(config, 200), false)
+      t.end()
     })
 
-    it('should NOT mark a permanent redirect as an error', function () {
-      return expect(urltils.isError(config, 301)).false
+    t.test('should NOT mark a permanent redirect as an error', function (t) {
+      const { urltils } = t.context
+      t.equal(urltils.isError(config, 301), false)
+      t.end()
     })
 
-    it('should NOT mark a temporary redirect as an error', function () {
-      return expect(urltils.isError(config, 303)).false
+    t.test('should NOT mark a temporary redirect as an error', function (t) {
+      const { urltils } = t.context
+      t.equal(urltils.isError(config, 303), false)
+      t.end()
     })
 
-    it('should mark a bad request as an error', function () {
-      return expect(urltils.isError(config, 400)).true
+    t.test('should mark a bad request as an error', function (t) {
+      const { urltils } = t.context
+      t.equal(urltils.isError(config, 400), true)
+      t.end()
     })
 
-    it('should mark an unauthorized request as an error', function () {
-      return expect(urltils.isError(config, 401)).true
+    t.test('should mark an unauthorized request as an error', function (t) {
+      const { urltils } = t.context
+      t.equal(urltils.isError(config, 401), true)
+      t.end()
     })
 
-    it('should mark a "payment required" request as an error', function () {
-      return expect(urltils.isError(config, 402)).true
+    t.test('should mark a "payment required" request as an error', function (t) {
+      const { urltils } = t.context
+      t.equal(urltils.isError(config, 402), true)
+      t.end()
     })
 
-    it('should mark a forbidden request as an error', function () {
-      return expect(urltils.isError(config, 403)).true
+    t.test('should mark a forbidden request as an error', function (t) {
+      const { urltils } = t.context
+      t.equal(urltils.isError(config, 403), true)
+      t.end()
     })
 
-    it('should mark a not found request as an error', function () {
-      return expect(urltils.isError(config, 404)).true
+    t.test('should mark a not found request as an error', function (t) {
+      const { urltils } = t.context
+      t.equal(urltils.isError(config, 404), true)
+      t.end()
     })
 
-    it('should mark a request with too long a URI as an error', function () {
-      return expect(urltils.isError(config, 414)).true
+    t.test('should mark a request with too long a URI as an error', function (t) {
+      const { urltils } = t.context
+      t.equal(urltils.isError(config, 414), true)
+      t.end()
     })
 
-    it('should mark a method not allowed request as an error', function () {
-      return expect(urltils.isError(config, 405)).true
+    t.test('should mark a method not allowed request as an error', function (t) {
+      const { urltils } = t.context
+      t.equal(urltils.isError(config, 405), true)
+      t.end()
     })
 
-    it('should mark a request with unacceptable types as an error', function () {
-      return expect(urltils.isError(config, 406)).true
+    t.test('should mark a request with unacceptable types as an error', function (t) {
+      const { urltils } = t.context
+      t.equal(urltils.isError(config, 406), true)
+      t.end()
     })
 
-    it('should mark a request requiring proxy auth as an error', function () {
-      return expect(urltils.isError(config, 407)).true
+    t.test('should mark a request requiring proxy auth as an error', function (t) {
+      const { urltils } = t.context
+      t.equal(urltils.isError(config, 407), true)
+      t.end()
     })
 
-    it('should mark a timed out request as an error', function () {
-      return expect(urltils.isError(config, 408)).true
+    t.test('should mark a timed out request as an error', function (t) {
+      const { urltils } = t.context
+      t.equal(urltils.isError(config, 408), true)
+      t.end()
     })
 
-    it('should mark a conflicted request as an error', function () {
-      return expect(urltils.isError(config, 409)).true
+    t.test('should mark a conflicted request as an error', function (t) {
+      const { urltils } = t.context
+      t.equal(urltils.isError(config, 409), true)
+      t.end()
     })
 
-    it('should mark a request for a disappeared resource as an error', function () {
-      return expect(urltils.isError(config, 410)).true
+    t.test('should mark a request for a disappeared resource as an error', function (t) {
+      const { urltils } = t.context
+      t.equal(urltils.isError(config, 410), true)
+      t.end()
     })
 
-    it('should mark a request with a missing length as an error', function () {
-      return expect(urltils.isError(config, 411)).true
+    t.test('should mark a request with a missing length as an error', function (t) {
+      const { urltils } = t.context
+      t.equal(urltils.isError(config, 411), true)
+      t.end()
     })
 
-    it('should mark a request with a failed precondition as an error', function () {
-      return expect(urltils.isError(config, 412)).true
+    t.test('should mark a request with a failed precondition as an error', function (t) {
+      const { urltils } = t.context
+      t.equal(urltils.isError(config, 412), true)
+      t.end()
     })
 
-    it('should mark a too-large request as an error', function () {
-      return expect(urltils.isError(config, 413)).true
+    t.test('should mark a too-large request as an error', function (t) {
+      const { urltils } = t.context
+      t.equal(urltils.isError(config, 413), true)
+      t.end()
     })
 
-    it('should mark a request for an unsupported media type as an error', function () {
-      return expect(urltils.isError(config, 415)).true
+    t.test('should mark a request for an unsupported media type as an error', function (t) {
+      const { urltils } = t.context
+      t.equal(urltils.isError(config, 415), true)
+      t.end()
     })
 
-    it('should mark a request for an unsatisfiable range as an error', function () {
-      return expect(urltils.isError(config, 416)).true
+    t.test('should mark a request for an unsatisfiable range as an error', function (t) {
+      const { urltils } = t.context
+      t.equal(urltils.isError(config, 416), true)
+      t.end()
     })
 
-    it('should mark a request with a failed expectation as an error', function () {
-      return expect(urltils.isError(config, 417)).true
+    t.test('should mark a request with a failed expectation as an error', function (t) {
+      const { urltils } = t.context
+      t.equal(urltils.isError(config, 417), true)
+      t.end()
     })
 
-    it('should mark a request asserting teapotness as an error', function () {
-      return expect(urltils.isError(config, 418)).true
+    t.test('should mark a request asserting teapotness as an error', function (t) {
+      const { urltils } = t.context
+      t.equal(urltils.isError(config, 418), true)
+      t.end()
     })
 
-    it('should mark a request with timed-out auth as an error', function () {
-      return expect(urltils.isError(config, 419)).true
+    t.test('should mark a request with timed-out auth as an error', function (t) {
+      const { urltils } = t.context
+      t.equal(urltils.isError(config, 419), true)
+      t.end()
     })
 
-    it('should mark a request for enhanced calm (brah) as an error', function () {
-      return expect(urltils.isError(config, 420)).true
+    t.test('should mark a request for enhanced calm (brah) as an error', function (t) {
+      const { urltils } = t.context
+      t.equal(urltils.isError(config, 420), true)
+      t.end()
     })
 
-    it('should work with strings', function () {
+    t.test('should work with strings', function (t) {
+      const { urltils } = t.context
       config = { error_collector: { ignore_status_codes: [403] } }
-      expect(urltils.isError(config, '200')).to.be.false
-      expect(urltils.isError(config, '403')).to.be.false
-      expect(urltils.isError(config, '404')).to.be.true
+      t.equal(urltils.isError(config, '200'), false)
+      t.equal(urltils.isError(config, '403'), false)
+      t.equal(urltils.isError(config, '404'), true)
+      t.end()
     })
   })
 
-  describe('isIgnoredError', function () {
+  t.test('isIgnoredError', function (t) {
+    t.autoend()
     const config = { error_collector: { ignore_status_codes: [] } }
 
-    it('returns true if the status code is an HTTP error in the ignored list', () => {
+    t.test('returns true if the status code is an HTTP error in the ignored list', (t) => {
+      const { urltils } = t.context
       const errorCodes = [
         400, 401, 402, 403, 404, 405, 406, 407, 408, 409, 410, 411, 412, 413, 414, 415, 416, 417,
         418, 419, 420, 500, 503
       ]
 
       errorCodes.forEach((code) => {
-        expect(urltils.isIgnoredError(config, code)).equal(false)
+        t.equal(urltils.isIgnoredError(config, code), false)
         config.error_collector.ignore_status_codes = [code]
-        expect(urltils.isIgnoredError(config, code)).equal(true)
+        t.equal(urltils.isIgnoredError(config, code), true)
       })
+      t.end()
     })
 
-    it('returns false if the status code is NOT an HTTP error', function () {
+    t.test('returns false if the status code is NOT an HTTP error', function (t) {
+      const { urltils } = t.context
       const statusCodes = [200]
       statusCodes.forEach((code) => {
-        expect(urltils.isIgnoredError(config, code)).equal(false)
+        t.equal(urltils.isIgnoredError(config, code), false)
         config.error_collector.ignore_status_codes = [code]
-        expect(urltils.isIgnoredError(config, code)).equal(false)
+        t.equal(urltils.isIgnoredError(config, code), false)
       })
+      t.end()
     })
   })
 
-  describe('copying parameters from a query hash', function () {
-    let source
-    let dest
-
-    beforeEach(function () {
-      source = {}
-      dest = {}
+  t.test('copying parameters from a query hash', function (t) {
+    t.autoend()
+    t.beforeEach(function (t) {
+      t.context.source = {}
+      t.context.dest = {}
     })
 
-    it('shouldn not throw on missing configuration', function () {
-      expect(function () {
+    t.test("shouldn't not throw on missing configuration", function (t) {
+      const { urltils, source, dest } = t.context
+      t.doesNotThrow(function () {
         urltils.copyParameters(null, source, dest)
-      }).not.throws()
+      })
+      t.end()
     })
 
-    it('should not throw on missing source', function () {
-      expect(function () {
+    t.test('should not throw on missing source', function (t) {
+      const { urltils, dest } = t.context
+      t.doesNotThrow(function () {
         urltils.copyParameters(null, dest)
-      }).not.throws()
+      })
+      t.end()
     })
 
-    it('should not throw on missing destination', function () {
-      expect(function () {
+    t.test('should not throw on missing destination', function (t) {
+      const { urltils, source } = t.context
+      t.doesNotThrow(function () {
         urltils.copyParameters(source, null)
-      }).not.throws()
+      })
+      t.end()
     })
 
-    it('should copy parameters from source to destination', function () {
+    t.test('should copy parameters from source to destination', function (t) {
+      const { urltils, source, dest } = t.context
       dest.existing = 'here'
       source.firstNew = 'present'
       source.secondNew = 'accounted for'
 
-      expect(function () {
+      t.doesNotThrow(function () {
         urltils.copyParameters(source, dest)
-      }).not.throws()
+      })
 
-      expect(dest).eql({
+      t.same(dest, {
         existing: 'here',
         firstNew: 'present',
         secondNew: 'accounted for'
       })
+      t.end()
     })
 
-    it('should not overwrite existing parameters in destination', function () {
+    t.test('should not overwrite existing parameters in destination', function (t) {
+      const { urltils, source, dest } = t.context
       dest.existing = 'here'
       dest.firstNew = 'already around'
       source.firstNew = 'present'
@@ -254,46 +327,49 @@ describe('NR URL utilities', function () {
 
       urltils.copyParameters(source, dest)
 
-      expect(dest).eql({
+      t.same(dest, {
         existing: 'here',
         firstNew: 'already around',
         secondNew: 'accounted for'
       })
+      t.end()
     })
 
-    it('should not overwrite null parameters in destination', function () {
+    t.test('should not overwrite null parameters in destination', function (t) {
+      const { urltils, source, dest } = t.context
       dest.existing = 'here'
       dest.firstNew = null
       source.firstNew = 'present'
 
       urltils.copyParameters(source, dest)
 
-      expect(dest).eql({
+      t.same(dest, {
         existing: 'here',
         firstNew: null
       })
+      t.end()
     })
 
-    it('should not overwrite undefined parameters in destination', function () {
+    t.test('should not overwrite undefined parameters in destination', function (t) {
+      const { urltils, source, dest } = t.context
       dest.existing = 'here'
       dest.firstNew = undefined
       source.firstNew = 'present'
 
       urltils.copyParameters(source, dest)
 
-      expect(dest).eql({
+      t.same(dest, {
         existing: 'here',
         firstNew: undefined
       })
+      t.end()
     })
   })
 
-  describe('obfuscates path by regex', function () {
-    let config
-    let path
-
-    beforeEach(() => {
-      config = {
+  t.test('obfuscates path by regex', function (t) {
+    t.autoend()
+    t.beforeEach((t) => {
+      t.context.config = {
         url_obfuscation: {
           enabled: false,
           regex: {
@@ -303,59 +379,84 @@ describe('NR URL utilities', function () {
           }
         }
       }
-      path = '/foo/123/bar/456/baz/789'
+      t.context.path = '/foo/123/bar/456/baz/789'
     })
 
-    it('should not obfuscate path by default', function () {
-      expect(urltils.obfuscatePath(config, path)).equal(path)
+    t.test('should not obfuscate path by default', function (t) {
+      const { urltils, config, path } = t.context
+      t.equal(urltils.obfuscatePath(config, path), path)
+      t.end()
     })
 
-    it('should not obfuscate if obfuscation is enabled but pattern is not set', function () {
+    t.test('should not obfuscate if obfuscation is enabled but pattern is not set', function (t) {
+      const { urltils, config, path } = t.context
       config.url_obfuscation.enabled = true
-      expect(urltils.obfuscatePath(config, path)).equal(path)
+      t.equal(urltils.obfuscatePath(config, path), path)
+      t.end()
     })
 
-    it('should not obfuscate if obfuscation is enabled but pattern is invalid', function () {
+    t.test('should not obfuscate if obfuscation is enabled but pattern is invalid', function (t) {
+      const { urltils, config, path } = t.context
       config.url_obfuscation.enabled = true
       config.url_obfuscation.regex.pattern = '/foo/bar/baz/[0-9]+'
-      expect(urltils.obfuscatePath(config, path)).equal(path)
+      t.equal(urltils.obfuscatePath(config, path), path)
+      t.end()
     })
 
-    it('should obfuscate with empty string `` if replacement is not set and pattern is set', function () {
-      config.url_obfuscation.enabled = true
-      config.url_obfuscation.regex.pattern = '/foo/[0-9]+/bar/[0-9]+/baz/[0-9]+'
-      expect(urltils.obfuscatePath(config, path)).equal('')
-    })
+    t.test(
+      'should obfuscate with empty string `` if replacement is not set and pattern is set',
+      function (t) {
+        const { urltils, config, path } = t.context
+        config.url_obfuscation.enabled = true
+        config.url_obfuscation.regex.pattern = '/foo/[0-9]+/bar/[0-9]+/baz/[0-9]+'
+        t.equal(urltils.obfuscatePath(config, path), '')
+        t.end()
+      }
+    )
 
-    it('should obfuscate with replacement if replacement is set and pattern is set', function () {
-      config.url_obfuscation.enabled = true
-      config.url_obfuscation.regex.pattern = '/foo/[0-9]+/bar/[0-9]+/baz/[0-9]+'
-      config.url_obfuscation.regex.replacement = '/***'
-      expect(urltils.obfuscatePath(config, path)).equal('/***')
-    })
+    t.test(
+      'should obfuscate with replacement if replacement is set and pattern is set',
+      function (t) {
+        const { urltils, config, path } = t.context
+        config.url_obfuscation.enabled = true
+        config.url_obfuscation.regex.pattern = '/foo/[0-9]+/bar/[0-9]+/baz/[0-9]+'
+        config.url_obfuscation.regex.replacement = '/***'
+        t.equal(urltils.obfuscatePath(config, path), '/***')
+        t.end()
+      }
+    )
 
-    it('should obfuscate as expected with capture groups pattern over strings', function () {
+    t.test('should obfuscate as expected with capture groups pattern over strings', function (t) {
+      const { urltils, config, path } = t.context
       config.url_obfuscation.enabled = true
       config.url_obfuscation.regex.pattern = '(/foo/)(.*)(/bar/)(.*)(/baz/)(.*)'
       config.url_obfuscation.regex.replacement = '$1***$3***$5***'
-      expect(urltils.obfuscatePath(config, path)).equal('/foo/***/bar/***/baz/***')
+      t.equal(urltils.obfuscatePath(config, path), '/foo/***/bar/***/baz/***')
+      t.end()
     })
 
-    it('should obfuscate as expected with regex patterns and flags', function () {
+    t.test('should obfuscate as expected with regex patterns and flags', function (t) {
+      const { urltils, config, path } = t.context
       config.url_obfuscation.enabled = true
       config.url_obfuscation.regex.pattern = '[0-9]+'
       config.url_obfuscation.regex.flags = 'g'
       config.url_obfuscation.regex.replacement = '***'
-      expect(urltils.obfuscatePath(config, path)).equal('/foo/***/bar/***/baz/***')
+      t.equal(urltils.obfuscatePath(config, path), '/foo/***/bar/***/baz/***')
+      t.end()
     })
 
-    it('should call logger warn if obfuscation is enabled but pattern is invalid', function () {
-      config.url_obfuscation.enabled = true
-      config.url_obfuscation.regex.pattern = '[0-9+'
+    t.test(
+      'should call logger warn if obfuscation is enabled but pattern is invalid',
+      function (t) {
+        const { urltils, config, path } = t.context
+        config.url_obfuscation.enabled = true
+        config.url_obfuscation.regex.pattern = '[0-9+'
 
-      urltils.obfuscatePath(config, path)
+        urltils.obfuscatePath(config, path)
 
-      expect(loggerStub.warn.calledOnce).to.be.true
-    })
+        t.equal(t.context.loggerStub.warn.calledOnce, true)
+        t.end()
+      }
+    )
   })
 })

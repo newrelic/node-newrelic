@@ -5,26 +5,12 @@
 
 'use strict'
 
-// TODO: convert to normal tap style.
-// Below allows use of mocha DSL with tap runner.
 const tap = require('tap')
-tap.mochaGlobals()
-
 const oldInstrumentations = require('../../lib/instrumentations')
 const insPath = require.resolve('../../lib/instrumentations')
 const proxyquire = require('proxyquire')
 const sinon = require('sinon')
-require.cache[insPath].exports = wrappedInst
-function wrappedInst() {
-  const ret = oldInstrumentations()
-  ret['../lib/broken_instrumentation_module'] = {
-    module: '../test/lib/broken_instrumentation_module'
-  }
-  return ret
-}
 
-const chai = require('chai')
-const expect = chai.expect
 const helper = require('../lib/agent_helper')
 const logger = require('../../lib/logger').child({ component: 'TEST' })
 const shimmer = require('../../lib/shimmer')
@@ -37,146 +23,168 @@ const TEST_MODULE_RELATIVE_PATH = `../helpers/node_modules/${TEST_MODULE_PATH}`
 const TEST_MODULE = 'sinon'
 const TEST_PATH_WITHIN = `${TEST_MODULE}/lib/sinon/spy`
 
-describe('shimmer', function () {
-  describe('custom instrumentation', function () {
-    describe('of relative modules', makeModuleTests(TEST_MODULE_PATH, TEST_MODULE_RELATIVE_PATH))
-    describe('of modules', makeModuleTests(TEST_MODULE, TEST_MODULE))
-    describe(
-      'of modules, where instrumentation fails',
-      makeModuleTests(TEST_MODULE, TEST_MODULE, true)
-    )
-    describe('of deep modules', makeModuleTests(TEST_PATH_WITHIN, TEST_PATH_WITHIN))
-  })
-
-  function makeModuleTests(moduleName, relativePath, throwsError) {
-    return function moduleTests() {
-      let agent = null
-      let onRequireArgs = null
-      let counter = 0
-      let instrumentedModule = null
-      let errorThrown = 0
-      let expectedErr
-
-      beforeEach(function () {
-        agent = helper.instrumentMockedAgent()
-        const instrumentationOpts = {
-          moduleName: moduleName,
-          onRequire: function (shim, module) {
-            instrumentedModule = module
-            ++counter
-            onRequireArgs = arguments
-            if (throwsError) {
-              expectedErr = 'This threw an error! Oh no!'
-              throw new Error(expectedErr)
-            }
-          },
-          onError: function (err) {
-            if (err.message === expectedErr) {
-              errorThrown += 1
-            }
-          }
+function makeModuleTests({ moduleName, relativePath, throwsError }, t) {
+  t.autoend()
+  t.beforeEach(function (t) {
+    t.context.counter = 0
+    t.context.errorThrown = 0
+    t.context.agent = helper.instrumentMockedAgent()
+    const instrumentationOpts = {
+      moduleName: moduleName,
+      onRequire: function (shim, module) {
+        t.context.instrumentedModule = module
+        ++t.context.counter
+        t.context.onRequireArgs = arguments
+        if (throwsError) {
+          t.context.expectedErr = 'This threw an error! Oh no!'
+          throw new Error(t.context.expectedErr)
         }
-        shimmer.registerInstrumentation(instrumentationOpts)
-      })
-
-      afterEach(function () {
-        counter = 0
-        errorThrown = 0
-        onRequireArgs = null
-
-        clearCachedModules([relativePath])
-
-        helper.unloadAgent(agent)
-      })
-
-      it('should be sent a shim and the loaded module', function () {
-        const mod = require(relativePath)
-        expect(onRequireArgs.length).to.equal(3)
-        expect(onRequireArgs[0]).to.be.an.instanceof(shims.Shim)
-        expect(onRequireArgs[1]).to.equal(mod)
-        expect(onRequireArgs[2]).to.equal(moduleName)
-      })
-
-      it('should construct a DatastoreShim if the type is "datastore"', function () {
-        shimmer.registeredInstrumentations[moduleName][0].type = 'datastore'
-        require(relativePath)
-        expect(onRequireArgs[0]).to.be.an.instanceof(shims.DatastoreShim)
-      })
-
-      it('should receive the correct module (' + moduleName + ')', function () {
-        const mod = require(relativePath)
-        expect(mod).to.equal(instrumentedModule)
-      })
-
-      it('should only run the instrumentation once', function () {
-        expect(counter).to.equal(0)
-        require(relativePath)
-        expect(counter).to.equal(1)
-        require(relativePath)
-        require(relativePath)
-        require(relativePath)
-        require(relativePath)
-        expect(counter).to.equal(1)
-      })
-
-      it('should have some NR properties after instrumented', () => {
-        const mod = require(relativePath)
-        const nrKeys = getNRSymbols(mod)
-
-        const message = `Expected to have Symbol(shim) but found ${nrKeys}.`
-        expect(nrKeys, message).to.include.members(['Symbol(shim)'])
-      })
-
-      it('should clean up NR added properties', () => {
-        const nrKeys = getNRSymbols(instrumentedModule)
-
-        const message = `Expected keys to be equal but found: ${JSON.stringify(nrKeys)}`
-        expect(nrKeys.length, message).to.equal(0)
-      })
-
-      if (throwsError) {
-        it('should send error to onError handler', () => {
-          require(relativePath)
-          expect(errorThrown).to.equal(1)
-        })
+      },
+      onError: function (err) {
+        if (err.message === t.context.expectedErr) {
+          t.context.errorThrown += 1
+        }
       }
     }
+    shimmer.registerInstrumentation(instrumentationOpts)
+  })
+
+  t.afterEach(function (t) {
+    t.context.onRequireArgs = null
+
+    clearCachedModules([relativePath])
+
+    helper.unloadAgent(t.context.agent)
+  })
+
+  t.test('should be sent a shim and the loaded module', function (t) {
+    const mod = require(relativePath)
+    const { onRequireArgs } = t.context
+    t.equal(onRequireArgs.length, 3)
+    t.ok(onRequireArgs[0] instanceof shims.Shim)
+    t.equal(onRequireArgs[1], mod)
+    t.equal(onRequireArgs[2], moduleName)
+    t.end()
+  })
+
+  t.test('should construct a DatastoreShim if the type is "datastore"', function (t) {
+    shimmer.registeredInstrumentations[moduleName][0].type = 'datastore'
+    require(relativePath)
+    const { onRequireArgs } = t.context
+    t.ok(onRequireArgs[0] instanceof shims.DatastoreShim)
+    t.end()
+  })
+
+  t.test('should receive the correct module (' + moduleName + ')', function (t) {
+    const mod = require(relativePath)
+    t.equal(mod, t.context.instrumentedModule)
+    t.end()
+  })
+
+  t.test('should only run the instrumentation once', function (t) {
+    t.equal(t.context.counter, 0)
+    require(relativePath)
+    t.equal(t.context.counter, 1)
+    require(relativePath)
+    require(relativePath)
+    require(relativePath)
+    require(relativePath)
+    t.equal(t.context.counter, 1)
+    t.end()
+  })
+
+  t.test('should have some NR properties after instrumented', (t) => {
+    const mod = require(relativePath)
+    const nrKeys = getNRSymbols(mod)
+
+    const message = `Expected to have Symbol(shim) but found ${nrKeys}.`
+    t.ok(nrKeys.includes('Symbol(shim)'), message)
+    t.end()
+  })
+
+  t.test('should clean up NR added properties', (t) => {
+    const mod = require(relativePath)
+    shimmer.unwrapAll()
+    const nrKeys = getNRSymbols(mod)
+
+    const message = `Expected keys to be equal but found: ${JSON.stringify(nrKeys)}`
+    t.equal(nrKeys.length, 0, message)
+    t.end()
+  })
+
+  if (throwsError) {
+    t.test('should send error to onError handler', (t) => {
+      require(relativePath)
+      t.equal(t.context.errorThrown, 1)
+      t.end()
+    })
   }
+}
 
-  describe('wrapping exports', function () {
-    let agent = null
-    let original = null
-    let wrapper = null
+tap.test('shimmer', function (t) {
+  t.autoend()
+  t.test('custom instrumentation', function (t) {
+    t.autoend()
+    t.test(
+      'of relative modules',
+      makeModuleTests.bind(this, {
+        moduleName: TEST_MODULE_PATH,
+        relativePath: TEST_MODULE_RELATIVE_PATH
+      })
+    )
+    t.test(
+      'of modules',
+      makeModuleTests.bind(this, { moduleName: TEST_MODULE, relativePath: TEST_MODULE })
+    )
+    t.test(
+      'of modules, where instrumentation fails',
+      makeModuleTests.bind(this, {
+        moduleName: TEST_MODULE,
+        relativePath: TEST_MODULE,
+        throwsError: true
+      })
+    )
+    t.test(
+      'of deep modules',
+      makeModuleTests.bind(this, { moduleName: TEST_PATH_WITHIN, relativePath: TEST_PATH_WITHIN })
+    )
+  })
 
-    beforeEach(function () {
-      agent = helper.instrumentMockedAgent()
+  t.test('wrapping exports', function (t) {
+    t.autoend()
+    t.beforeEach(function (t) {
+      t.context.agent = helper.instrumentMockedAgent()
       shimmer.registerInstrumentation({
         moduleName: TEST_MODULE_PATH,
         onRequire: function (shim, nodule) {
-          original = nodule
-          wrapper = {}
+          const original = nodule
+          const wrapper = {}
 
           shim.wrapExport(original, function () {
             return wrapper
           })
+          t.context.wrapper = wrapper
+          t.context.original = original
         }
       })
     })
 
-    afterEach(function () {
-      helper.unloadAgent(agent)
+    t.afterEach(function (t) {
+      helper.unloadAgent(t.context.agent)
       clearCachedModules([TEST_MODULE_RELATIVE_PATH])
-      original = null
-      wrapper = null
     })
 
-    it('should replace the return value from require', function () {
+    t.test('should replace the return value from require', function (t) {
       const obj = require(TEST_MODULE_RELATIVE_PATH)
-      expect(obj).to.equal(wrapper).and.not.equal(original)
+      const { wrapper, original } = t.context
+      t.equal(obj, wrapper)
+      t.not(obj, original)
+      t.end()
     })
   })
 
-  describe('the instrumentation injector', function () {
+  t.test('the instrumentation injector', function (t) {
+    t.autoend()
     const nodule = {
       c: 2,
       ham: 'ham',
@@ -194,14 +202,15 @@ describe('shimmer', function () {
       }
     }
 
-    it('should not wrap anything without enough information', () => {
+    t.test('should not wrap anything without enough information', (t) => {
       shimmer.wrapMethod(nodule, 'nodule')
-      expect(shimmer.isWrapped(nodule.doubler)).equal(false)
+      t.equal(shimmer.isWrapped(nodule.doubler), false)
       shimmer.wrapMethod(nodule, 'nodule', 'doubler')
-      expect(shimmer.isWrapped(nodule.doubler)).equal(false)
+      t.equal(shimmer.isWrapped(nodule.doubler), false)
+      t.end()
     })
 
-    it('should wrap a method', function () {
+    t.test('should wrap a method', function (t) {
       let doubled = 0
       let before = false
       let after = false
@@ -214,19 +223,20 @@ describe('shimmer', function () {
         }
       })
 
-      expect(shimmer.isWrapped(nodule.doubler)).equal(true)
-      expect(nodule.doubler[symbols.unwrap]).a('function')
+      t.equal(shimmer.isWrapped(nodule.doubler), true)
+      t.ok(typeof nodule.doubler[symbols.unwrap] === 'function')
 
       nodule.doubler(7, function (z) {
         doubled = z
       })
 
-      expect(doubled).equal(16)
-      expect(before).equal(true)
-      expect(after).equal(true)
+      t.equal(doubled, 16)
+      t.equal(before, true)
+      t.equal(after, true)
+      t.end()
     })
 
-    it('should preserve properties on wrapped methods', () => {
+    t.test('should preserve properties on wrapped methods', (t) => {
       let quadrupled = 0
       let before = false
       let after = false
@@ -241,99 +251,123 @@ describe('shimmer', function () {
         }
       })
 
-      expect(nodule.quadrupler[symbols.unwrap]).a('function')
-      expect(nodule.quadrupler.test).to.be.a('function')
+      t.ok(typeof nodule.quadrupler[symbols.unwrap] === 'function')
+      t.ok(typeof nodule.quadrupler.test === 'function')
 
       nodule.quadrupler(7, function (z) {
         quadrupled = z
       })
 
-      expect(quadrupled).equal(30)
-      expect(before).equal(true)
-      expect(after).equal(true)
+      t.equal(quadrupled, 30)
+      t.equal(before, true)
+      t.equal(after, true)
+      t.end()
     })
 
-    it('should not error out on external instrumentations that fail', function () {
-      expect(function () {
+    t.test('should not error out on external instrumentations that fail', function (t) {
+      t.teardown(() => {
+        require.cache[insPath].exports = oldInstrumentations
+      })
+
+      require.cache[insPath].exports = wrappedInst
+      function wrappedInst() {
+        const ret = oldInstrumentations()
+        ret['../lib/broken_instrumentation_module'] = {
+          module: '../test/lib/broken_instrumentation_module'
+        }
+        return ret
+      }
+      t.doesNotThrow(function () {
         require('../lib/broken_instrumentation_module')
-      }).not.throws()
-      require.cache[insPath].exports = oldInstrumentations
+      })
+      t.end()
     })
 
-    describe('with accessor replacement', function () {
-      let simple
+    t.test('with accessor replacement', function (t) {
+      t.autoend()
 
-      beforeEach(function () {
-        simple = { target: true }
+      t.beforeEach(function (t) {
+        t.context.simple = { target: true }
       })
 
-      it("shouldn't throw if called with no params", function () {
-        expect(function () {
+      t.test("shouldn't throw if called with no params", function (t) {
+        t.doesNotThrow(function () {
           shimmer.wrapDeprecated()
-        }).not.throws()
+        })
+        t.end()
       })
 
-      it("shouldn't throw if called with only the original object", function () {
-        expect(function () {
+      t.test("shouldn't throw if called with only the original object", function (t) {
+        const { simple } = t.context
+        t.doesNotThrow(function () {
           shimmer.wrapDeprecated(simple)
-        }).not.throws()
+        })
+        t.end()
       })
 
-      it("shouldn't throw if property to be replaced is omitted", function () {
-        expect(function () {
+      t.test("shouldn't throw if property to be replaced is omitted", function (t) {
+        const { simple } = t.context
+        t.doesNotThrow(function () {
           shimmer.wrapDeprecated(simple, 'nodule', null, {
             get: function () {},
             set: function () {}
           })
-        }).not.throws()
+        })
+        t.end()
       })
 
-      it("shouldn't throw if getter is omitted", function () {
-        expect(function () {
+      t.test("shouldn't throw if getter is omitted", function (t) {
+        const { simple } = t.context
+        t.doesNotThrow(function () {
           shimmer.wrapDeprecated(simple, 'nodule', 'target', { set: function () {} })
-        }).not.throws()
+        })
+        t.end()
       })
 
-      it("shouldn't throw if setter is omitted", function () {
-        expect(function () {
+      t.test("shouldn't throw if setter is omitted", function (t) {
+        const { simple } = t.context
+        t.doesNotThrow(function () {
           shimmer.wrapDeprecated(simple, 'nodule', 'target', { get: function () {} })
-        }).not.throws()
+        })
+        t.end()
       })
 
-      it('should replace a property with an accessor', function (done) {
+      t.test('should replace a property with an accessor', function (t) {
+        const { simple } = t.context
         shimmer.debug = true // test internal debug code
         const original = shimmer.wrapDeprecated(simple, 'nodule', 'target', {
           get: function () {
             // test will only complete if this is called
-            done()
             return false
           }
         })
-        expect(original).equal(true)
+        t.equal(original, true)
 
-        expect(simple.target).equal(false)
+        t.equal(simple.target, false)
         // internal debug code should unwrap
-        expect(shimmer.unwrapAll).not.throws()
+        t.doesNotThrow(shimmer.unwrapAll)
+        t.end()
       })
 
-      it('should invoke the setter when the accessor is used', function (done) {
+      t.test('should invoke the setter when the accessor is used', function (t) {
+        const { simple } = t.context
         const test = 'ham'
         const original = shimmer.wrapDeprecated(simple, 'nodule', 'target', {
           get: function () {
             return test
           },
           set: function (value) {
-            expect(value).equal('eggs')
-            done()
+            t.equal(value, 'eggs')
+            t.end()
           }
         })
-        expect(original).equal(true)
-        expect(simple.target).equal('ham')
+        t.equal(original, true)
+        t.equal(simple.target, 'ham')
         simple.target = 'eggs'
       })
     })
 
-    it('should wrap, then unwrap a method', function () {
+    t.test('should wrap, then unwrap a method', function (t) {
       let tripled = 0
       let before = false
       let after = false
@@ -350,9 +384,9 @@ describe('shimmer', function () {
         tripled = z
       })
 
-      expect(tripled).equal(23)
-      expect(before).equal(true)
-      expect(after).equal(true)
+      t.equal(tripled, 23)
+      t.equal(before, true)
+      t.equal(after, true)
 
       before = false
       after = false
@@ -363,12 +397,13 @@ describe('shimmer', function () {
         tripled = j
       })
 
-      expect(tripled).equal(29)
-      expect(before).equal(false)
-      expect(after).equal(false)
+      t.equal(tripled, 29)
+      t.equal(before, false)
+      t.equal(after, false)
+      t.end()
     })
 
-    it("shouldn't break anything when an NR-wrapped method is wrapped again", function () {
+    t.test("shouldn't break anything when an NR-wrapped method is wrapped again", function (t) {
       let hamceptacle = ''
       let before = false
       let after = false
@@ -393,25 +428,27 @@ describe('shimmer', function () {
         hamceptacle = k
       })
 
-      expect(hamceptacle).equal('hamBurt')
-      expect(before).equal(true)
-      expect(after).equal(true)
-      expect(hammed).equal(true)
+      t.equal(hamceptacle, 'hamBurt')
+      t.equal(before, true)
+      t.equal(after, true)
+      t.equal(hammed, true)
+      t.end()
     })
 
-    describe('with full instrumentation running', function () {
-      let agent
+    t.test('with full instrumentation running', function (t) {
+      t.autoend()
 
-      beforeEach(function () {
-        agent = helper.loadMockedAgent()
+      t.beforeEach(function (t) {
+        t.context.agent = helper.loadMockedAgent()
       })
 
-      afterEach(function () {
-        helper.unloadAgent(agent)
+      t.afterEach(function (t) {
+        helper.unloadAgent(t.context.agent)
       })
 
-      it('should push transactions through process.nextTick', function (done) {
-        expect(agent.getTransaction()).equal(null)
+      t.test('should push transactions through process.nextTick', function (t) {
+        const { agent } = t.context
+        t.equal(agent.getTransaction(), null)
 
         const synchronizer = new EventEmitter()
         const transactions = []
@@ -426,7 +463,7 @@ describe('shimmer', function () {
             process.nextTick(
               agent.tracer.bindFunction(function bindFunctionCb() {
                 const lookup = agent.getTransaction()
-                expect(lookup).equal(current)
+                t.equal(lookup, current)
 
                 synchronizer.emit('inner', lookup, i)
               })
@@ -438,13 +475,13 @@ describe('shimmer', function () {
         let doneCount = 0
         synchronizer.on('inner', function (trans, j) {
           doneCount += 1
-          expect(trans).equal(transactions[j])
-          expect(trans.id).equal(ids[j])
+          t.equal(trans, transactions[j])
+          t.equal(trans.id, ids[j])
 
           trans.end()
 
           if (doneCount === 10) {
-            return done()
+            t.end()
           }
         })
 
@@ -453,8 +490,9 @@ describe('shimmer', function () {
         }
       })
 
-      it('should push transactions through setTimeout', function (done) {
-        expect(agent.getTransaction()).equal(null)
+      t.test('should push transactions through setTimeout', function (t) {
+        const { agent } = t.context
+        t.equal(agent.getTransaction(), null)
 
         const synchronizer = new EventEmitter()
         const transactions = []
@@ -469,7 +507,7 @@ describe('shimmer', function () {
             setTimeout(
               agent.tracer.bindFunction(function bindFunctionCb() {
                 const lookup = agent.getTransaction()
-                expect(lookup).equal(current)
+                t.equal(lookup, current)
 
                 synchronizer.emit('inner', lookup, i)
               }),
@@ -482,13 +520,13 @@ describe('shimmer', function () {
         let doneCount = 0
         synchronizer.on('inner', function (trans, j) {
           doneCount += 1
-          expect(trans).equal(transactions[j])
-          expect(trans.id).equal(ids[j])
+          t.equal(trans, transactions[j])
+          t.equal(trans.id, ids[j])
 
           trans.end()
 
           if (doneCount === 10) {
-            return done()
+            t.end()
           }
         })
 
@@ -499,8 +537,9 @@ describe('shimmer', function () {
         }
       })
 
-      it('should push transactions through EventEmitters', function (done) {
-        expect(agent.getTransaction()).equal(null)
+      t.test('should push transactions through EventEmitters', function (t) {
+        const { agent } = t.context
+        t.equal(agent.getTransaction(), null)
 
         const eventer = new EventEmitter()
         const transactions = []
@@ -519,8 +558,8 @@ describe('shimmer', function () {
               name,
               agent.tracer.bindFunction(function bindFunctionCb() {
                 const lookup = agent.getTransaction()
-                expect(lookup).equal(current)
-                expect(lookup.id).equal(id)
+                t.equal(lookup, current)
+                t.equal(lookup.id, id)
 
                 eventer.emit('inner', lookup, j)
               })
@@ -534,13 +573,13 @@ describe('shimmer', function () {
         let doneCount = 0
         eventer.on('inner', function (trans, j) {
           doneCount += 1
-          expect(trans).equal(transactions[j])
-          expect(trans.id).equal(ids[j])
+          t.equal(trans, transactions[j])
+          t.equal(trans.id, ids[j])
 
           trans.end()
 
           if (doneCount === 10) {
-            return done()
+            t.end()
           }
         })
 
@@ -549,8 +588,9 @@ describe('shimmer', function () {
         }
       })
 
-      it('should handle whatever ridiculous nonsense you throw at it', function (done) {
-        expect(agent.getTransaction()).equal(null)
+      t.test('should handle whatever ridiculous nonsense you throw at it', function (t) {
+        const { agent } = t.context
+        t.equal(agent.getTransaction(), null)
 
         const synchronizer = new EventEmitter()
         const eventer = new EventEmitter()
@@ -568,9 +608,9 @@ describe('shimmer', function () {
             passed ? passed.id : 'missing'
           )
 
-          expect(lookup).equal(passed)
-          expect(lookup).equal(transactions[i])
-          expect(lookup.id).equal(ids[i])
+          t.equal(lookup, passed)
+          t.equal(lookup, transactions[i])
+          t.equal(lookup.id, ids[i])
         }
 
         eventer.on('rntest', function (trans, j) {
@@ -609,13 +649,13 @@ describe('shimmer', function () {
         synchronizer.on('inner', function (trans, j) {
           verify(j, 'synchronizer', trans)
           doneCount += 1
-          expect(trans).equal(transactions[j])
-          expect(trans.id).equal(ids[j])
+          t.equal(trans, transactions[j])
+          t.equal(trans.id, ids[j])
 
           trans.end()
 
           if (doneCount === 10) {
-            return done()
+            t.end()
           }
         })
 

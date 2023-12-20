@@ -4,51 +4,50 @@
  */
 
 'use strict'
-
-// TODO: convert to normal tap style.
-// Below allows use of mocha DSL with tap runner.
-require('tap').mochaGlobals()
-
-const chai = require('chai')
-const expect = chai.expect
+const tap = require('tap')
 const util = require('../../lib/db/utils')
 
-describe('DB Utilities:', function () {
-  describe('use statement parser', function () {
-    const useParser = util.extractDatabaseChangeFromUse
+tap.test('DB Utilities:', function (t) {
+  const useParser = util.extractDatabaseChangeFromUse
 
-    it('should match single statement use expressions', function () {
-      expect(useParser('use test_db;')).equal('test_db')
-      expect(useParser('USE INIT')).equal('INIT')
-    })
-
-    it('should not be sensitive to ; omission', function () {
-      expect(useParser('use test_db')).equal('test_db')
-    })
-
-    it('should not be sensitive to extra ;', function () {
-      expect(useParser('use test_db;;;;;;')).equal('test_db')
-    })
-
-    it('should not be sensitive to extra white space', function () {
-      expect(useParser('            use test_db;')).equal('test_db')
-      expect(useParser('use             test_db;')).equal('test_db')
-      expect(useParser('            use test_db;')).equal('test_db')
-      expect(useParser('use test_db            ;')).equal('test_db')
-      expect(useParser('use test_db;            ')).equal('test_db')
-    })
-
-    it('should match backtick expressions', function () {
-      expect(useParser('use `test_db`;')).equal('`test_db`')
-      expect(useParser('use `☃☃☃☃☃☃`;')).equal('`☃☃☃☃☃☃`')
-    })
-
-    it('should not match malformed use expressions', function () {
-      expect(useParser('use cxvozicjvzocixjv`oasidfjaosdfij`;')).equal(null)
-      expect(useParser('use `oasidfjaosdfij`123;')).equal(null)
-      expect(useParser('use `oasidfjaosdfij` 123;')).equal(null)
-      expect(useParser('use \u0001;')).equal(null)
-      expect(useParser('use oasidfjaosdfij 123;')).equal(null)
-    })
+  t.test('should match single statement use expressions', function (t) {
+    t.equal(useParser('use test_db;'), 'test_db')
+    t.equal(useParser('USE INIT'), 'INIT')
+    t.end()
   })
+
+  t.test('should not be sensitive to ; omission', function (t) {
+    t.equal(useParser('use test_db'), 'test_db')
+    t.end()
+  })
+
+  t.test('should not be sensitive to extra ;', function (t) {
+    t.equal(useParser('use test_db;;;;;;'), 'test_db')
+    t.end()
+  })
+
+  t.test('should not be sensitive to extra white space', function (t) {
+    t.equal(useParser('            use test_db;'), 'test_db')
+    t.equal(useParser('use             test_db;'), 'test_db')
+    t.equal(useParser('            use test_db;'), 'test_db')
+    t.equal(useParser('use test_db            ;'), 'test_db')
+    t.equal(useParser('use test_db;            '), 'test_db')
+    t.end()
+  })
+
+  t.test('should match backtick expressions', function (t) {
+    t.equal(useParser('use `test_db`;'), '`test_db`')
+    t.equal(useParser('use `☃☃☃☃☃☃`;'), '`☃☃☃☃☃☃`')
+    t.end()
+  })
+
+  t.test('should not match malformed use expressions', function (t) {
+    t.equal(useParser('use cxvozicjvzocixjv`oasidfjaosdfij`;'), null)
+    t.equal(useParser('use `oasidfjaosdfij`123;'), null)
+    t.equal(useParser('use `oasidfjaosdfij` 123;'), null)
+    t.equal(useParser('use \u0001;'), null)
+    t.equal(useParser('use oasidfjaosdfij 123;'), null)
+    t.end()
+  })
+  t.end()
 })

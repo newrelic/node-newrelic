@@ -8,11 +8,9 @@
 const tap = require('tap')
 const helper = require('../../lib/agent_helper')
 const http = require('http')
-const assertMetrics = require('../../lib/metrics_helper').assertMetrics
-const assertSegments = require('../../lib/metrics_helper').assertSegments
+require('../../lib/metrics_helper')
 const NAMES = require('../../../lib/metrics/names')
 const utils = require('./hapi-utils')
-tap.Test.prototype.addAssert('clmAttrs', 1, helper.assertCLMAttrs)
 
 let agent
 let server
@@ -43,7 +41,7 @@ tap.test('Hapi segments', function (t) {
 
     runTest(t, function (segments, transaction) {
       checkMetrics(t, transaction.metrics, [NAMES.HAPI.MIDDLEWARE + 'myHandler//test'])
-      checkSegments(t, transaction.trace.root.children[0], [
+      t.assertSegments(transaction.trace.root.children[0], [
         NAMES.HAPI.MIDDLEWARE + 'myHandler//test'
       ])
       t.end()
@@ -65,7 +63,7 @@ tap.test('Hapi segments', function (t) {
 
     runTest(t, function (segments, transaction) {
       checkMetrics(t, transaction.metrics, [NAMES.HAPI.MIDDLEWARE + 'customHandler//test'])
-      checkSegments(t, transaction.trace.root.children[0], [
+      t.assertSegments(transaction.trace.root.children[0], [
         NAMES.HAPI.MIDDLEWARE + 'customHandler//test'
       ])
       t.end()
@@ -90,7 +88,7 @@ tap.test('Hapi segments', function (t) {
         NAMES.HAPI.MIDDLEWARE + '<anonymous>//onRequest',
         NAMES.HAPI.MIDDLEWARE + 'myHandler//test'
       ])
-      checkSegments(t, transaction.trace.root.children[0], [
+      t.assertSegments(transaction.trace.root.children[0], [
         NAMES.HAPI.MIDDLEWARE + '<anonymous>//onRequest',
         NAMES.HAPI.MIDDLEWARE + 'myHandler//test'
       ])
@@ -120,7 +118,7 @@ tap.test('Hapi segments', function (t) {
         NAMES.HAPI.MIDDLEWARE + '<anonymous>//onRequest',
         NAMES.HAPI.MIDDLEWARE + 'customHandler//test'
       ])
-      checkSegments(t, transaction.trace.root.children[0], [
+      t.assertSegments(transaction.trace.root.children[0], [
         NAMES.HAPI.MIDDLEWARE + '<anonymous>//onRequest',
         NAMES.HAPI.MIDDLEWARE + 'customHandler//test'
       ])
@@ -286,11 +284,5 @@ function checkMetrics(t, metrics, expected, path) {
     expectedAll.push([{ name: metric, scope: 'WebTransaction/Hapi/GET/' + path }])
   }
 
-  assertMetrics(metrics, expectedAll, true, false)
-}
-
-function checkSegments(t, segments, expected, opts) {
-  t.doesNotThrow(function () {
-    assertSegments(segments, expected, opts)
-  }, 'should have expected segments')
+  t.assertMetrics(metrics, expectedAll, true, false)
 }

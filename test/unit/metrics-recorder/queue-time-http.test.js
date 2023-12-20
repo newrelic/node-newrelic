@@ -8,7 +8,7 @@
 const tap = require('tap')
 
 const helper = require('../../lib/agent_helper')
-const tapAssertMetrics = require('../../lib/metrics_helper').tapAssertMetrics
+require('../../lib/metrics_helper')
 const recordWeb = require('../../../lib/metrics/recorders/http')
 const Transaction = require('../../../lib/transaction')
 
@@ -80,7 +80,7 @@ tap.test('when recording queueTime', (test) => {
       [{ name: 'Apdex' }, [1, 0, 0, 0.2, 0.2, 0]]
     ]
 
-    tapAssertMetrics(t, trans, result, true)
+    t.assertMetricValues(trans, result, true)
 
     t.end()
   })
@@ -116,7 +116,7 @@ tap.test('when recording queueTime', (test) => {
       [{ name: 'Apdex/NormalizedUri/*' }, [1, 0, 0, 0.2, 0.2, 0]],
       [{ name: 'Apdex' }, [1, 0, 0, 0.2, 0.2, 0]]
     ]
-    tapAssertMetrics(t, trans, result, true)
+    t.assertMetricValues(trans, result, true)
 
     t.end()
   })

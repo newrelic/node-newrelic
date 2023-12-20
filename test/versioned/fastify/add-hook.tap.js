@@ -7,7 +7,7 @@
 
 const tap = require('tap')
 const helper = require('../../lib/agent_helper')
-const metrics = require('../../lib/metrics_helper')
+require('../../lib/metrics_helper')
 const common = require('./common')
 
 // all of these events fire before the route handler
@@ -105,7 +105,7 @@ tap.test('fastify hook instrumentation', (t) => {
           ]
         ]
       }
-      metrics.assertSegments(transaction.trace.root, expectedSegments)
+      t.assertSegments(transaction.trace.root, expectedSegments)
     })
 
     await fastify.listen(0)
@@ -161,7 +161,7 @@ tap.test('fastify hook instrumentation', (t) => {
         ]
       }
 
-      metrics.assertSegments(transaction.trace.root, expectedSegments)
+      t.assertSegments(transaction.trace.root, expectedSegments)
     })
 
     await fastify.listen(0)

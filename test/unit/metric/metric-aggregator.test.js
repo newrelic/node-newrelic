@@ -4,12 +4,7 @@
  */
 
 'use strict'
-
-// TODO: convert to normal tap style.
-// Below allows use of mocha DSL with tap runner.
-require('tap').mochaGlobals()
-
-const expect = require('chai').expect
+const tap = require('tap')
 const sinon = require('sinon')
 const MetricAggregator = require('../../../lib/metrics/metric-aggregator')
 const MetricMapper = require('../../../lib/metrics/mapper')
@@ -20,449 +15,453 @@ const RUN_ID = 1337
 const EXPECTED_METHOD = 'metric_data'
 const EXPECTED_APDEX_T = 0.1
 const EXPECTED_START_SECONDS = 10
+const MEGABYTE = 1024 * 1024
 
-describe('Metric Aggregator', () => {
-  let metricAggregator
-  let fakeCollectorApi = null
-  let mapper = null
-  let normalizer = null
-  let testClock = null
+tap.test('Metric Aggregator', (t) => {
+  t.beforeEach((t) => {
+    t.context.testClock = sinon.useFakeTimers({ now: EXPECTED_START_SECONDS * 1000 })
 
-  beforeEach(() => {
-    testClock = sinon.useFakeTimers({ now: EXPECTED_START_SECONDS * 1000 })
-
-    fakeCollectorApi = {}
+    const fakeCollectorApi = {}
     fakeCollectorApi[EXPECTED_METHOD] = () => {}
 
-    mapper = new MetricMapper()
-    normalizer = new MetricNormalizer({}, 'metric name')
+    t.context.mapper = new MetricMapper()
+    t.context.normalizer = new MetricNormalizer({}, 'metric name')
 
-    metricAggregator = new MetricAggregator(
+    t.context.metricAggregator = new MetricAggregator(
       {
         runId: RUN_ID,
         apdexT: EXPECTED_APDEX_T,
-        mapper: mapper,
-        normalizer: normalizer
+        mapper: t.context.mapper,
+        normalizer: t.context.normalizer
       },
       fakeCollectorApi
     )
   })
 
-  afterEach(() => {
+  t.afterEach((t) => {
+    const { testClock } = t.context
     testClock.restore()
-    testClock = null
-
-    metricAggregator = null
-    fakeCollectorApi = null
-    mapper = null
-    normalizer = null
   })
 
-  it('should set the correct default method', () => {
+  t.test('should set the correct default method', (t) => {
+    const { metricAggregator } = t.context
     const method = metricAggregator.method
 
-    expect(method).to.equal(EXPECTED_METHOD)
+    t.equal(method, EXPECTED_METHOD)
+    t.end()
   })
 
-  describe('reconfigure()', () => {
-    it('should update runId', () => {
-      const expectedRunId = 'new run id'
-      const fakeConfig = { run_id: expectedRunId }
+  t.test('should update runId on reconfigure', (t) => {
+    const { metricAggregator } = t.context
+    const expectedRunId = 'new run id'
+    const fakeConfig = { run_id: expectedRunId }
 
-      metricAggregator.reconfigure(fakeConfig)
+    metricAggregator.reconfigure(fakeConfig)
 
-      expect(metricAggregator.runId).to.equal(expectedRunId)
-    })
-
-    it('should update apdexT', () => {
-      const expectedApdexT = 2000
-      const fakeConfig = {
-        apdex_t: expectedApdexT
-      }
-
-      metricAggregator.reconfigure(fakeConfig)
-
-      expect(metricAggregator._apdexT).to.equal(expectedApdexT)
-      expect(metricAggregator._metrics.apdexT).to.equal(expectedApdexT)
-    })
+    t.equal(metricAggregator.runId, expectedRunId)
+    t.end()
   })
 
-  describe('empty', () => {
-    it('should be true when no metrics added', () => {
-      expect(metricAggregator.empty).to.be.true
-    })
+  t.test('should update apdexT on reconfigure', (t) => {
+    const { metricAggregator } = t.context
+    const expectedApdexT = 2000
+    const fakeConfig = {
+      apdex_t: expectedApdexT
+    }
 
-    it('should be false when metrics added', () => {
-      metricAggregator.getOrCreateMetric('myMetric')
-      expect(metricAggregator.empty).to.be.false
-    })
+    metricAggregator.reconfigure(fakeConfig)
+
+    t.equal(metricAggregator._apdexT, expectedApdexT)
+    t.equal(metricAggregator._metrics.apdexT, expectedApdexT)
+    t.end()
   })
 
-  describe('started', () => {
-    it('should reflect when new metric collection started', () => {
-      expect(metricAggregator.started).to.equal(metricAggregator._metrics.started)
-    })
+  t.test('should be true when no metrics added', (t) => {
+    const { metricAggregator } = t.context
+    t.equal(metricAggregator.empty, true)
+    t.end()
   })
 
-  describe('_getMergeData()', () => {
-    it('should return mergable metric collection', () => {
-      metricAggregator.getOrCreateMetric('metric1', 'scope1')
-      metricAggregator.getOrCreateMetric('metric2')
-
-      const data = metricAggregator._getMergeData()
-      expect(data).to.have.property('started')
-
-      expect(data.empty).to.be.false
-
-      const unscoped = data.unscoped
-      expect(unscoped).to.have.property('metric2')
-
-      const scoped = data.scoped
-      expect(scoped).to.have.property('scope1')
-
-      expect(scoped.scope1).to.have.property('metric1')
-    })
+  t.test('should be false when metrics added', (t) => {
+    const { metricAggregator } = t.context
+    metricAggregator.getOrCreateMetric('myMetric')
+    t.equal(metricAggregator.empty, false)
+    t.end()
   })
 
-  describe('_toPayloadSync()', () => {
-    it('should return json format of data', () => {
-      const secondsToElapse = 5
+  t.test('should reflect when new metric collection started', (t) => {
+    const { metricAggregator } = t.context
+    t.equal(metricAggregator.started, metricAggregator._metrics.started)
+    t.end()
+  })
 
-      const expectedMetricName = 'myMetric'
-      const expectedMetricScope = 'myScope'
+  t.test('_getMergeData() should return mergable metric collection', (t) => {
+    const { metricAggregator } = t.context
+    metricAggregator.getOrCreateMetric('metric1', 'scope1')
+    metricAggregator.getOrCreateMetric('metric2')
 
-      metricAggregator
-        .getOrCreateMetric(expectedMetricName, expectedMetricScope)
-        .recordValue(22, 21)
+    const data = metricAggregator._getMergeData()
+    t.ok(data.started)
+    t.equal(data.empty, false)
 
-      testClock.tick(secondsToElapse * 1000)
+    const unscoped = data.unscoped
+    t.ok(unscoped.metric2)
 
-      const expectedEndSeconds = EXPECTED_START_SECONDS + secondsToElapse
+    const scoped = data.scoped
+    t.ok(scoped.scope1)
 
-      const payload = metricAggregator._toPayloadSync()
+    t.ok(scoped.scope1.metric1)
+    t.end()
+  })
 
-      expect(payload.length).to.equal(4)
+  t.test('_toPayloadSync() should return json format of data', (t) => {
+    const { metricAggregator, testClock } = t.context
+    const secondsToElapse = 5
+
+    const expectedMetricName = 'myMetric'
+    const expectedMetricScope = 'myScope'
+
+    metricAggregator.getOrCreateMetric(expectedMetricName, expectedMetricScope).recordValue(22, 21)
+
+    testClock.tick(secondsToElapse * 1000)
+
+    const expectedEndSeconds = EXPECTED_START_SECONDS + secondsToElapse
+
+    const payload = metricAggregator._toPayloadSync()
+
+    t.equal(payload.length, 4)
+
+    const [runId, startTime, endTime, metricData] = payload
+
+    t.equal(runId, RUN_ID)
+    t.equal(startTime, EXPECTED_START_SECONDS)
+    t.equal(endTime, expectedEndSeconds)
+
+    const firstMetric = metricData[0]
+    t.equal(firstMetric.length, 2)
+
+    const [metricName, metricStats] = firstMetric
+
+    t.equal(metricName.name, expectedMetricName)
+    t.equal(metricName.scope, expectedMetricScope)
+
+    // Before sending, we rely on the Stats toJSON to put in the right format
+    t.same(metricStats.toJSON(), [1, 22, 21, 22, 22, 484])
+    t.end()
+  })
+
+  t.test('_toPayload() should return json format of data', (t) => {
+    const { metricAggregator, testClock } = t.context
+    const secondsToElapse = 5
+
+    const expectedMetricName = 'myMetric'
+    const expectedMetricScope = 'myScope'
+
+    metricAggregator.getOrCreateMetric(expectedMetricName, expectedMetricScope).recordValue(22, 21)
+
+    testClock.tick(secondsToElapse * 1000)
+
+    const expectedEndSeconds = EXPECTED_START_SECONDS + secondsToElapse
+
+    metricAggregator._toPayload((err, payload) => {
+      t.equal(payload.length, 4)
 
       const [runId, startTime, endTime, metricData] = payload
 
-      expect(runId).to.equal(RUN_ID)
-      expect(startTime).to.equal(EXPECTED_START_SECONDS)
-      expect(endTime).to.equal(expectedEndSeconds)
+      t.equal(runId, RUN_ID)
+      t.equal(startTime, EXPECTED_START_SECONDS)
+      t.equal(endTime, expectedEndSeconds)
 
       const firstMetric = metricData[0]
-      expect(firstMetric.length).to.equal(2)
+      t.equal(firstMetric.length, 2)
 
       const [metricName, metricStats] = firstMetric
 
-      expect(metricName).to.have.property('name', expectedMetricName)
-      expect(metricName).to.have.property('scope', expectedMetricScope)
+      t.equal(metricName.name, expectedMetricName)
+      t.equal(metricName.scope, expectedMetricScope)
 
       // Before sending, we rely on the Stats toJSON to put in the right format
-      expect(metricStats.toJSON()).to.deep.equal([1, 22, 21, 22, 22, 484])
+      t.same(metricStats.toJSON(), [1, 22, 21, 22, 22, 484])
+      t.end()
     })
   })
 
-  describe('_toPayload()', () => {
-    it('should return json format of data', () => {
-      const secondsToElapse = 5
+  t.test('_merge() should merge passed in metrics', (t) => {
+    const { metricAggregator, mapper, normalizer } = t.context
+    const expectedMetricName = 'myMetric'
+    const expectedMetricScope = 'myScope'
 
-      const expectedMetricName = 'myMetric'
-      const expectedMetricScope = 'myScope'
+    metricAggregator.getOrCreateMetric(expectedMetricName, expectedMetricScope).recordValue(2, 1)
 
-      metricAggregator
-        .getOrCreateMetric(expectedMetricName, expectedMetricScope)
-        .recordValue(22, 21)
+    const mergeData = new Metrics(EXPECTED_APDEX_T, mapper, normalizer)
+    mergeData.getOrCreateMetric(expectedMetricName, expectedMetricScope).recordValue(4, 2)
 
-      testClock.tick(secondsToElapse * 1000)
+    mergeData.getOrCreateMetric('newMetric').incrementCallCount()
 
-      const expectedEndSeconds = EXPECTED_START_SECONDS + secondsToElapse
+    metricAggregator._merge(mergeData)
 
-      metricAggregator._toPayload((err, payload) => {
-        expect(payload.length).to.equal(4)
+    t.equal(metricAggregator.empty, false)
 
-        const [runId, startTime, endTime, metricData] = payload
+    const newUnscopedMetric = metricAggregator.getMetric('newMetric')
+    t.equal(newUnscopedMetric.callCount, 1)
 
-        expect(runId).to.equal(RUN_ID)
-        expect(startTime).to.equal(EXPECTED_START_SECONDS)
-        expect(endTime).to.equal(expectedEndSeconds)
+    const mergedScopedMetric = metricAggregator.getMetric(expectedMetricName, expectedMetricScope)
 
-        const firstMetric = metricData[0]
-        expect(firstMetric.length).to.equal(2)
-
-        const [metricName, metricStats] = firstMetric
-
-        expect(metricName).to.have.property('name', expectedMetricName)
-        expect(metricName).to.have.property('scope', expectedMetricScope)
-
-        // Before sending, we rely on the Stats toJSON to put in the right format
-        expect(metricStats.toJSON()).to.deep.equal([1, 22, 21, 22, 22, 484])
-      })
-    })
+    t.equal(mergedScopedMetric.callCount, 2)
+    t.equal(mergedScopedMetric.min, 2)
+    t.equal(mergedScopedMetric.max, 4)
+    t.equal(mergedScopedMetric.total, 6)
+    t.equal(mergedScopedMetric.totalExclusive, 3)
+    t.equal(mergedScopedMetric.sumOfSquares, 20)
+    t.end()
   })
 
-  describe('_merge()', () => {
-    it('should merge passed in metrics', () => {
-      const expectedMetricName = 'myMetric'
-      const expectedMetricScope = 'myScope'
+  t.test('_merge() should choose the lowest started', (t) => {
+    const { metricAggregator, mapper, normalizer } = t.context
+    metricAggregator.getOrCreateMetric('metric1').incrementCallCount()
 
-      metricAggregator.getOrCreateMetric(expectedMetricName, expectedMetricScope).recordValue(2, 1)
+    const mergeData = new Metrics(EXPECTED_APDEX_T, mapper, normalizer)
+    mergeData.getOrCreateMetric('metric2').incrementCallCount()
 
-      const mergeData = new Metrics(EXPECTED_APDEX_T, mapper, normalizer)
-      mergeData.getOrCreateMetric(expectedMetricName, expectedMetricScope).recordValue(4, 2)
+    // Artificially move start of merge data
+    mergeData.started = metricAggregator.started - 10
 
-      mergeData.getOrCreateMetric('newMetric').incrementCallCount()
+    metricAggregator._merge(mergeData)
 
-      metricAggregator._merge(mergeData)
+    t.equal(metricAggregator.empty, false)
 
-      expect(metricAggregator.empty).to.be.false
-
-      const newUnscopedMetric = metricAggregator.getMetric('newMetric')
-      expect(newUnscopedMetric).to.have.property('callCount', 1)
-
-      const mergedScopedMetric = metricAggregator.getMetric(expectedMetricName, expectedMetricScope)
-
-      expect(mergedScopedMetric.callCount).to.equal(2)
-      expect(mergedScopedMetric.min).to.equal(2)
-      expect(mergedScopedMetric.max).to.equal(4)
-      expect(mergedScopedMetric.total).to.equal(6)
-      expect(mergedScopedMetric.totalExclusive).to.equal(3)
-      expect(mergedScopedMetric.sumOfSquares).to.equal(20)
-    })
-
-    it('should choose the lowest started', () => {
-      metricAggregator.getOrCreateMetric('metric1').incrementCallCount()
-
-      const mergeData = new Metrics(EXPECTED_APDEX_T, mapper, normalizer)
-      mergeData.getOrCreateMetric('metric2').incrementCallCount()
-
-      // Artificially move start of merge data
-      mergeData.started = metricAggregator.started - 10
-
-      metricAggregator._merge(mergeData)
-
-      expect(metricAggregator.empty).to.be.false
-
-      expect(metricAggregator.started).to.equal(mergeData.started)
-    })
+    t.equal(metricAggregator.started, mergeData.started)
+    t.end()
   })
 
-  describe('clear()', () => {
-    it('should clear metrics', () => {
-      metricAggregator.getOrCreateMetric('metric1', 'scope1').incrementCallCount()
-      metricAggregator.getOrCreateMetric('metric2').incrementCallCount()
+  t.test('clear() should clear metrics', (t) => {
+    const { metricAggregator } = t.context
+    metricAggregator.getOrCreateMetric('metric1', 'scope1').incrementCallCount()
+    metricAggregator.getOrCreateMetric('metric2').incrementCallCount()
 
-      expect(metricAggregator.empty).to.be.false
+    t.equal(metricAggregator.empty, false)
 
-      metricAggregator.clear()
+    metricAggregator.clear()
 
-      expect(metricAggregator.empty).to.be.true
+    t.equal(metricAggregator.empty, true)
 
-      const metric1 = metricAggregator.getMetric('metric1', 'scope1')
-      expect(metric1).to.not.exist
+    const metric1 = metricAggregator.getMetric('metric1', 'scope1')
+    t.notOk(metric1)
 
-      const metric2 = metricAggregator.getMetric('metric2')
-      expect(metric2).to.not.exist
-    })
-
-    it('should reset started', () => {
-      const msToElapse = 5000
-
-      const originalStarted = metricAggregator.started
-
-      metricAggregator.getOrCreateMetric('metric1', 'scope1').incrementCallCount()
-      metricAggregator.getOrCreateMetric('metric2').incrementCallCount()
-
-      expect(metricAggregator.empty).to.be.false
-
-      testClock.tick(msToElapse)
-
-      metricAggregator.clear()
-
-      const newStarted = metricAggregator.started
-
-      expect(newStarted).to.be.greaterThan(originalStarted)
-
-      const expectedNewStarted = originalStarted + msToElapse
-      expect(newStarted).to.equal(expectedNewStarted)
-    })
+    const metric2 = metricAggregator.getMetric('metric2')
+    t.notOk(metric2)
+    t.end()
   })
 
-  describe('merge()', () => {
-    it('should merge passed in metrics', () => {
-      const expectedMetricName = 'myMetric'
-      const expectedMetricScope = 'myScope'
+  t.test('clear() should reset started', (t) => {
+    const { metricAggregator, testClock } = t.context
+    const msToElapse = 5000
 
-      metricAggregator.getOrCreateMetric(expectedMetricName, expectedMetricScope).recordValue(2, 1)
+    const originalStarted = metricAggregator.started
 
-      const mergeData = new Metrics(EXPECTED_APDEX_T, mapper, normalizer)
-      mergeData.getOrCreateMetric(expectedMetricName, expectedMetricScope).recordValue(4, 2)
+    metricAggregator.getOrCreateMetric('metric1', 'scope1').incrementCallCount()
+    metricAggregator.getOrCreateMetric('metric2').incrementCallCount()
 
-      mergeData.getOrCreateMetric('newMetric').incrementCallCount()
+    t.equal(metricAggregator.empty, false)
 
-      metricAggregator.merge(mergeData)
+    testClock.tick(msToElapse)
 
-      expect(metricAggregator.empty).to.be.false
+    metricAggregator.clear()
 
-      const newUnscopedMetric = metricAggregator.getMetric('newMetric')
-      expect(newUnscopedMetric).to.have.property('callCount', 1)
+    const newStarted = metricAggregator.started
 
-      const mergedScopedMetric = metricAggregator.getMetric(expectedMetricName, expectedMetricScope)
+    t.ok(newStarted > originalStarted)
 
-      expect(mergedScopedMetric.callCount).to.equal(2)
-      expect(mergedScopedMetric.min).to.equal(2)
-      expect(mergedScopedMetric.max).to.equal(4)
-      expect(mergedScopedMetric.total).to.equal(6)
-      expect(mergedScopedMetric.totalExclusive).to.equal(3)
-      expect(mergedScopedMetric.sumOfSquares).to.equal(20)
-    })
-
-    it('should not adjust start time when not passed', () => {
-      const originalStarted = metricAggregator.started
-
-      metricAggregator.getOrCreateMetric('metric1').incrementCallCount()
-
-      const mergeData = new Metrics(EXPECTED_APDEX_T, mapper, normalizer)
-      mergeData.getOrCreateMetric('metric2').incrementCallCount()
-
-      // Artificially move start of merge data
-      mergeData.started = metricAggregator.started - 10
-
-      metricAggregator.merge(mergeData)
-
-      expect(metricAggregator.empty).to.be.false
-
-      expect(metricAggregator.started).to.equal(originalStarted)
-    })
-
-    it('should not adjust start time when adjustStartTime false', () => {
-      const originalStarted = metricAggregator.started
-
-      metricAggregator.getOrCreateMetric('metric1').incrementCallCount()
-
-      const mergeData = new Metrics(EXPECTED_APDEX_T, mapper, normalizer)
-      mergeData.getOrCreateMetric('metric2').incrementCallCount()
-
-      // Artificially move start of merge data
-      mergeData.started = metricAggregator.started - 10
-
-      metricAggregator.merge(mergeData, false)
-
-      expect(metricAggregator.empty).to.be.false
-
-      expect(metricAggregator.started).to.equal(originalStarted)
-    })
-
-    it('should choose lowest started when adjustStartTime true', () => {
-      metricAggregator.getOrCreateMetric('metric1').incrementCallCount()
-
-      const mergeData = new Metrics(EXPECTED_APDEX_T, mapper, normalizer)
-      mergeData.getOrCreateMetric('metric2').incrementCallCount()
-
-      // Artificially move start of merge data
-      mergeData.started = metricAggregator.started - 10
-
-      metricAggregator.merge(mergeData, true)
-
-      expect(metricAggregator.empty).to.be.false
-
-      expect(metricAggregator.started).to.equal(mergeData.started)
-    })
+    const expectedNewStarted = originalStarted + msToElapse
+    t.equal(newStarted, expectedNewStarted)
+    t.end()
   })
 
-  describe('getOrCreateMetric()', () => {
-    it('should return value from metrics collection', () => {
-      const spy = sinon.spy(metricAggregator._metrics, 'getOrCreateMetric')
+  t.test('merge() should merge passed in metrics', (t) => {
+    const { metricAggregator, mapper, normalizer } = t.context
+    const expectedMetricName = 'myMetric'
+    const expectedMetricScope = 'myScope'
 
-      const metric = metricAggregator.getOrCreateMetric('newMetric')
-      metric.incrementCallCount()
+    metricAggregator.getOrCreateMetric(expectedMetricName, expectedMetricScope).recordValue(2, 1)
 
-      expect(metric).to.have.property('callCount', 1)
+    const mergeData = new Metrics(EXPECTED_APDEX_T, mapper, normalizer)
+    mergeData.getOrCreateMetric(expectedMetricName, expectedMetricScope).recordValue(4, 2)
 
-      expect(spy.calledOnce).to.be.true
-    })
+    mergeData.getOrCreateMetric('newMetric').incrementCallCount()
+
+    metricAggregator.merge(mergeData)
+
+    t.equal(metricAggregator.empty, false)
+
+    const newUnscopedMetric = metricAggregator.getMetric('newMetric')
+    t.equal(newUnscopedMetric.callCount, 1)
+
+    const mergedScopedMetric = metricAggregator.getMetric(expectedMetricName, expectedMetricScope)
+
+    t.equal(mergedScopedMetric.callCount, 2)
+    t.equal(mergedScopedMetric.min, 2)
+    t.equal(mergedScopedMetric.max, 4)
+    t.equal(mergedScopedMetric.total, 6)
+    t.equal(mergedScopedMetric.totalExclusive, 3)
+    t.equal(mergedScopedMetric.sumOfSquares, 20)
+    t.end()
   })
 
-  describe('measureMilliseconds', () => {
-    it('should return value from metrics collection', () => {
-      const spy = sinon.spy(metricAggregator._metrics, 'measureMilliseconds')
+  t.test('merge() should not adjust start time when not passed', (t) => {
+    const { metricAggregator, mapper, normalizer } = t.context
+    const originalStarted = metricAggregator.started
 
-      const metric = metricAggregator.measureMilliseconds('metric', 'scope', 2000, 1000)
+    metricAggregator.getOrCreateMetric('metric1').incrementCallCount()
 
-      expect(metric).to.exist
+    const mergeData = new Metrics(EXPECTED_APDEX_T, mapper, normalizer)
+    mergeData.getOrCreateMetric('metric2').incrementCallCount()
 
-      expect(metric).to.have.property('callCount', 1)
-      expect(metric).to.have.property('total', 2)
-      expect(metric).to.have.property('totalExclusive', 1)
+    // Artificially move start of merge data
+    mergeData.started = metricAggregator.started - 10
 
-      expect(spy.calledOnce).to.be.true
-    })
+    metricAggregator.merge(mergeData)
+
+    t.equal(metricAggregator.empty, false)
+
+    t.equal(metricAggregator.started, originalStarted)
+    t.end()
   })
 
-  describe('measureBytes', () => {
-    const MEGABYTE = 1024 * 1024
+  t.test('merge() should not adjust start time when adjustStartTime false', (t) => {
+    const { metricAggregator, mapper, normalizer } = t.context
+    const originalStarted = metricAggregator.started
 
-    it('should return value from metrics collection', () => {
-      const spy = sinon.spy(metricAggregator._metrics, 'measureBytes')
+    metricAggregator.getOrCreateMetric('metric1').incrementCallCount()
 
-      const metric = metricAggregator.measureBytes('metric', MEGABYTE)
+    const mergeData = new Metrics(EXPECTED_APDEX_T, mapper, normalizer)
+    mergeData.getOrCreateMetric('metric2').incrementCallCount()
 
-      expect(metric).to.exist
+    // Artificially move start of merge data
+    mergeData.started = metricAggregator.started - 10
 
-      expect(metric).to.have.property('callCount', 1)
-      expect(metric).to.have.property('total', 1)
-      expect(metric).to.have.property('totalExclusive', 1)
+    metricAggregator.merge(mergeData, false)
 
-      expect(spy.calledOnce).to.be.true
-    })
+    t.equal(metricAggregator.empty, false)
 
-    it('should record exclusive bytes', () => {
-      const metric = metricAggregator.measureBytes('metric', MEGABYTE * 2, MEGABYTE)
-
-      expect(metric).to.exist
-
-      expect(metric).to.have.property('callCount', 1)
-      expect(metric).to.have.property('total', 2)
-      expect(metric).to.have.property('totalExclusive', 1)
-    })
-
-    it('should optionally not convert to megabytes', () => {
-      const metric = metricAggregator.measureBytes('metric', 2, 1, true)
-
-      expect(metric).to.exist
-
-      expect(metric).to.have.property('callCount', 1)
-      expect(metric).to.have.property('total', 2)
-      expect(metric).to.have.property('totalExclusive', 1)
-    })
+    t.equal(metricAggregator.started, originalStarted)
+    t.end()
   })
 
-  describe('getMetric()', () => {
-    it('should return value from metrics collection', () => {
-      const expectedName = 'name1'
-      const expectedScope = 'scope1'
+  t.test('merge() should choose lowest started when adjustStartTime true', (t) => {
+    const { metricAggregator, mapper, normalizer } = t.context
+    metricAggregator.getOrCreateMetric('metric1').incrementCallCount()
 
-      const spy = sinon.spy(metricAggregator._metrics, 'getMetric')
+    const mergeData = new Metrics(EXPECTED_APDEX_T, mapper, normalizer)
+    mergeData.getOrCreateMetric('metric2').incrementCallCount()
 
-      metricAggregator.getOrCreateMetric(expectedName, expectedScope).incrementCallCount()
+    // Artificially move start of merge data
+    mergeData.started = metricAggregator.started - 10
 
-      const metric = metricAggregator.getMetric(expectedName, expectedScope)
+    metricAggregator.merge(mergeData, true)
 
-      expect(metric).to.exist
-      expect(metric).to.have.property('callCount', 1)
+    t.equal(metricAggregator.empty, false)
 
-      expect(spy.calledOnce).to.be.true
-    })
+    t.equal(metricAggregator.started, mergeData.started)
+    t.end()
   })
 
-  describe('getOrCreateApdexMetric()', () => {
-    it('should return value from metrics collection', () => {
-      const spy = sinon.spy(metricAggregator._metrics, 'getOrCreateApdexMetric')
+  t.test('getOrCreateMetric() should return value from metrics collection', (t) => {
+    const { metricAggregator } = t.context
+    const spy = sinon.spy(metricAggregator._metrics, 'getOrCreateMetric')
 
-      const metric = metricAggregator.getOrCreateApdexMetric('metric1', 'scope1')
+    const metric = metricAggregator.getOrCreateMetric('newMetric')
+    metric.incrementCallCount()
 
-      expect(metric).to.have.property('apdexT', EXPECTED_APDEX_T)
+    t.equal(metric.callCount, 1)
 
-      expect(spy.calledOnce).to.be.true
-    })
+    t.equal(spy.calledOnce, true)
+    t.end()
   })
+
+  t.test('measureMilliseconds should return value from metrics collection', (t) => {
+    const { metricAggregator } = t.context
+    const spy = sinon.spy(metricAggregator._metrics, 'measureMilliseconds')
+
+    const metric = metricAggregator.measureMilliseconds('metric', 'scope', 2000, 1000)
+
+    t.ok(metric)
+
+    t.equal(metric.callCount, 1)
+    t.equal(metric.total, 2)
+    t.equal(metric.totalExclusive, 1)
+
+    t.equal(spy.calledOnce, true)
+    t.end()
+  })
+
+  t.test('measureBytes should return value from metrics collection', (t) => {
+    const { metricAggregator } = t.context
+    const spy = sinon.spy(metricAggregator._metrics, 'measureBytes')
+
+    const metric = metricAggregator.measureBytes('metric', MEGABYTE)
+
+    t.ok(metric)
+
+    t.equal(metric.callCount, 1)
+    t.equal(metric.total, 1)
+    t.equal(metric.totalExclusive, 1)
+
+    t.equal(spy.calledOnce, true)
+    t.end()
+  })
+
+  t.test('measureBytes should record exclusive bytes', (t) => {
+    const { metricAggregator } = t.context
+    const metric = metricAggregator.measureBytes('metric', MEGABYTE * 2, MEGABYTE)
+
+    t.ok(metric)
+
+    t.equal(metric.callCount, 1)
+    t.equal(metric.total, 2)
+    t.equal(metric.totalExclusive, 1)
+    t.end()
+  })
+
+  t.test('measureBytes should optionally not convert to megabytes', (t) => {
+    const { metricAggregator } = t.context
+    const metric = metricAggregator.measureBytes('metric', 2, 1, true)
+
+    t.ok(metric)
+
+    t.equal(metric.callCount, 1)
+    t.equal(metric.total, 2)
+    t.equal(metric.totalExclusive, 1)
+    t.end()
+  })
+
+  t.test('getMetric() should return value from metrics collection', (t) => {
+    const { metricAggregator } = t.context
+    const expectedName = 'name1'
+    const expectedScope = 'scope1'
+
+    const spy = sinon.spy(metricAggregator._metrics, 'getMetric')
+
+    metricAggregator.getOrCreateMetric(expectedName, expectedScope).incrementCallCount()
+
+    const metric = metricAggregator.getMetric(expectedName, expectedScope)
+
+    t.ok(metric)
+    t.equal(metric.callCount, 1)
+
+    t.equal(spy.calledOnce, true)
+    t.end()
+  })
+
+  t.test('getOrCreateApdexMetric() should return value from metrics collection', (t) => {
+    const { metricAggregator } = t.context
+    const spy = sinon.spy(metricAggregator._metrics, 'getOrCreateApdexMetric')
+
+    const metric = metricAggregator.getOrCreateApdexMetric('metric1', 'scope1')
+
+    t.equal(metric.apdexT, EXPECTED_APDEX_T)
+
+    t.equal(spy.calledOnce, true)
+    t.end()
+  })
+  t.end()
 })

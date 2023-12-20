@@ -7,7 +7,7 @@
 
 const tap = require('tap')
 const helper = require('../../lib/agent_helper')
-const metrics = require('../../lib/metrics_helper')
+require('../../lib/metrics_helper')
 const http = require('http')
 
 function generateApp(t) {
@@ -46,22 +46,20 @@ tap.test('Client Premature Disconnection', (t) => {
   })
 
   agent.on('transactionFinished', (transaction) => {
-    t.doesNotThrow(function () {
-      metrics.assertSegments(
-        transaction.trace.root,
+    t.assertSegments(
+      transaction.trace.root,
+      [
+        'WebTransaction/Expressjs/POST//test',
         [
-          'WebTransaction/Expressjs/POST//test',
-          [
-            'Nodejs/Middleware/Expressjs/query',
-            'Nodejs/Middleware/Expressjs/expressInit',
-            'Nodejs/Middleware/Expressjs/jsonParser',
-            'Expressjs/Route Path: /test',
-            ['Nodejs/Middleware/Expressjs/controller', ['timers.setTimeout']]
-          ]
-        ],
-        { exact: true }
-      )
-    }, 'should have expected segments')
+          'Nodejs/Middleware/Expressjs/query',
+          'Nodejs/Middleware/Expressjs/expressInit',
+          'Nodejs/Middleware/Expressjs/jsonParser',
+          'Expressjs/Route Path: /test',
+          ['Nodejs/Middleware/Expressjs/controller', ['timers.setTimeout']]
+        ]
+      ],
+      { exact: true }
+    )
 
     t.equal(agent.getTransaction(), null, 'should have ended the transaction')
     t.end()

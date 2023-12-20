@@ -12,14 +12,7 @@ const path = require('path')
 const helperPath = path.resolve(`${__dirname}/../../lib/clm-helper.js`)
 const sinon = require('sinon')
 const symbols = require('../../../lib/symbols')
-tap.Test.prototype.addAssert('clmAttrs', 2, function clmAttrs(segmentStub, expectedAttrs) {
-  const attrs = segmentStub.addAttribute.args
-  const attrsObj = attrs.reduce((obj, [key, value]) => {
-    obj[key] = value
-    return obj
-  }, {})
-  this.same(attrsObj, expectedAttrs, 'CLM attrs should match')
-})
+require('../../lib/custom-assertions')
 
 /**
  * Helper to generate a long string
@@ -46,10 +39,10 @@ tap.test('CLM Meta', (t) => {
     function testFunction() {}
     testFunction[symbols.clm] = true
     addCLMAttributes(testFunction, segmentStub)
-    t.clmAttrs(segmentStub, {
+    t.exactClmAttrs(segmentStub, {
       'code.filepath': __filename,
       'code.function': 'testFunction',
-      'code.lineno': 46,
+      'code.lineno': 39,
       'code.column': 26
     })
     t.end()
@@ -59,10 +52,10 @@ tap.test('CLM Meta', (t) => {
     const testFunction = function () {}
     testFunction[symbols.clm] = true
     addCLMAttributes(testFunction, segmentStub)
-    t.clmAttrs(segmentStub, {
+    t.exactClmAttrs(segmentStub, {
       'code.filepath': __filename,
       'code.function': 'testFunction',
-      'code.lineno': 59,
+      'code.lineno': 52,
       'code.column': 35
     })
     t.end()
@@ -73,7 +66,7 @@ tap.test('CLM Meta', (t) => {
     (t) => {
       named[symbols.clm] = true
       addCLMAttributes(named, segmentStub)
-      t.clmAttrs(segmentStub, {
+      t.exactClmAttrs(segmentStub, {
         'code.filepath': helperPath,
         'code.function': 'testFunction',
         'code.lineno': 11,
@@ -86,7 +79,7 @@ tap.test('CLM Meta', (t) => {
   t.test('should return (anonymous) as code.function from (anonymous) function reference', (t) => {
     anon[symbols.clm] = true
     addCLMAttributes(anon, segmentStub)
-    t.clmAttrs(segmentStub, {
+    t.exactClmAttrs(segmentStub, {
       'code.filepath': helperPath,
       'code.function': '(anonymous)',
       'code.lineno': 9,
@@ -98,7 +91,7 @@ tap.test('CLM Meta', (t) => {
   t.test('should return (anonymous) as code.function from arrow function reference', (t) => {
     arrow[symbols.clm] = true
     addCLMAttributes(arrow, segmentStub)
-    t.clmAttrs(segmentStub, {
+    t.exactClmAttrs(segmentStub, {
       'code.filepath': helperPath,
       'code.function': '(anonymous)',
       'code.lineno': 10,

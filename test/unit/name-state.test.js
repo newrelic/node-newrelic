@@ -4,22 +4,19 @@
  */
 
 'use strict'
-
-// TODO: convert to normal tap style.
-// Below allows use of mocha DSL with tap runner.
-require('tap').mochaGlobals()
-
+const tap = require('tap')
 const NameState = require('../../lib/transaction/name-state.js')
-const expect = require('chai').expect
 
-describe('NameState', function () {
-  it('should handle basic naming', function () {
+tap.test('NameState', function (t) {
+  t.autoend()
+  t.test('should handle basic naming', function (t) {
     const state = new NameState('Nodejs', 'GET', '/', 'path1')
     state.appendPath('path2')
-    expect(state.getName()).to.equal('Nodejs/GET//path1/path2')
+    t.equal(state.getName(), 'Nodejs/GET//path1/path2')
+    t.end()
   })
 
-  it('should handle piece-wise naming', function () {
+  t.test('should handle piece-wise naming', function (t) {
     const state = new NameState(null, null, null, null)
     state.setPrefix('Nodejs')
     state.setVerb('GET')
@@ -27,70 +24,77 @@ describe('NameState', function () {
     state.appendPath('path1')
     state.appendPath('path2')
     state.appendPath('path3')
-    expect(state.getName()).to.equal('Nodejs/GET//path1/path2/path3')
+    t.equal(state.getName(), 'Nodejs/GET//path1/path2/path3')
+    t.end()
   })
 
-  it('should handle missing components', function () {
+  t.test('should handle missing components', function (t) {
     let state = new NameState('Nodejs', null, null, 'path1')
-    expect(state.getName()).to.equal('Nodejs/path1')
+    t.equal(state.getName(), 'Nodejs/path1')
 
     state = new NameState('Nodejs', null, '/', 'path1')
-    expect(state.getName()).to.equal('Nodejs//path1')
+    t.equal(state.getName(), 'Nodejs//path1')
 
     state = new NameState(null, null, null, 'path1')
-    expect(state.getName()).to.equal('/path1')
+    t.equal(state.getName(), '/path1')
 
     state = new NameState('Nodejs', null, null, null)
-    expect(state.getName()).to.equal(null)
+    t.equal(state.getName(), null)
+    t.end()
   })
 
-  it('should delete the name when reset', function () {
+  t.test('should delete the name when reset', function (t) {
     const state = new NameState('Nodejs', 'GET', '/', 'path1')
-    expect(state.getName()).to.equal('Nodejs/GET//path1')
+    t.equal(state.getName(), 'Nodejs/GET//path1')
 
     state.reset()
-    expect(state.getName()).to.equal(null)
+    t.equal(state.getName(), null)
+    t.end()
   })
 
-  it('should handle regex paths', function () {
+  t.test('should handle regex paths', function (t) {
     const state = new NameState('Nodejs', 'GET', '/', [])
     state.appendPath(new RegExp('regex1'))
     state.appendPath('path1')
     state.appendPath(/regex2/)
     state.appendPath('path2')
 
-    expect(state.getPath()).to.equal('/regex1/path1/regex2/path2')
-    expect(state.getName()).to.equal('Nodejs/GET//regex1/path1/regex2/path2')
+    t.equal(state.getPath(), '/regex1/path1/regex2/path2')
+    t.equal(state.getName(), 'Nodejs/GET//regex1/path1/regex2/path2')
+    t.end()
   })
 
-  it('should pick the current stack name over marked paths', function () {
+  t.test('should pick the current stack name over marked paths', function (t) {
     const state = new NameState('Nodejs', 'GET', '/')
     state.appendPath('path1')
     state.markPath()
     state.appendPath('path2')
 
-    expect(state.getPath()).to.equal('/path1/path2')
-    expect(state.getName()).to.equal('Nodejs/GET//path1/path2')
+    t.equal(state.getPath(), '/path1/path2')
+    t.equal(state.getName(), 'Nodejs/GET//path1/path2')
+    t.end()
   })
 
-  it('should pick marked paths if the path stack is empty', function () {
+  t.test('should pick marked paths if the path stack is empty', function (t) {
     const state = new NameState('Nodejs', 'GET', '/')
     state.appendPath('path1')
     state.markPath()
     state.popPath()
 
-    expect(state.getPath()).to.equal('/path1')
-    expect(state.getName()).to.equal('Nodejs/GET//path1')
+    t.equal(state.getPath(), '/path1')
+    t.equal(state.getName(), 'Nodejs/GET//path1')
+    t.end()
   })
 
-  it('should not report as empty if a path has been marked', function () {
+  t.test('should not report as empty if a path has been marked', function (t) {
     const state = new NameState('Nodejs', 'GET', '/')
-    expect(state.isEmpty()).to.be.true
+    t.equal(state.isEmpty(), true)
 
     state.appendPath('path1')
     state.markPath()
     state.popPath()
 
-    expect(state.isEmpty()).to.be.false
+    t.equal(state.isEmpty(), false)
+    t.end()
   })
 })

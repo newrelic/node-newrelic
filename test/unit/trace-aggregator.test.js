@@ -4,181 +4,94 @@
  */
 
 'use strict'
-
-// TODO: convert to normal tap style.
-// Below allows use of mocha DSL with tap runner.
-require('tap').mochaGlobals()
-
-const chai = require('chai')
-const expect = chai.expect
-const should = chai.should()
+const tap = require('tap')
 const helper = require('../lib/agent_helper')
 const configurator = require('../../lib/config')
 const TraceAggregator = require('../../lib/transaction/trace/aggregator')
 const Transaction = require('../../lib/transaction')
 
-describe('TraceAggregator', function () {
-  let agent = null
+function createTransaction(agent, name, duration, synth) {
+  const transaction = new Transaction(agent)
+  // gotta create the trace
+  transaction.trace.setDurationInMillis(duration)
+  transaction.url = name
+  transaction.name = 'WebTransaction/Uri' + name
+  transaction.statusCode = 200
 
-  function createTransaction(name, duration, synth) {
-    const transaction = new Transaction(agent)
-    // gotta create the trace
-    transaction.trace.setDurationInMillis(duration)
-    transaction.url = name
-    transaction.name = 'WebTransaction/Uri' + name
-    transaction.statusCode = 200
-
-    if (synth) {
-      transaction.syntheticsData = {
-        version: 1,
-        accountId: 357,
-        resourceId: 'resId',
-        jobId: 'jobId',
-        monitorId: 'monId'
-      }
+  if (synth) {
+    transaction.syntheticsData = {
+      version: 1,
+      accountId: 357,
+      resourceId: 'resId',
+      jobId: 'jobId',
+      monitorId: 'monId'
     }
-
-    return transaction.end()
   }
 
-  beforeEach(function () {
-    agent = helper.loadMockedAgent({ run_id: 1337 })
-    agent.collector._runLifecycle = (remote, payload, cb) => {
-      setImmediate(cb, null, [], { return_value: [] })
-    }
-  })
+  return transaction.end()
+}
 
-  afterEach(function () {
-    helper.unloadAgent(agent)
-  })
+function beforeEach(t) {
+  const agent = helper.loadMockedAgent({ run_id: 1337 })
+  agent.collector._runLifecycle = (remote, payload, cb) => {
+    setImmediate(cb, null, [], { return_value: [] })
+  }
+  t.context.agent = agent
+}
 
-  it('should require a configuration at startup time', function () {
-    expect(() => new TraceAggregator()).to.throw()
+function afterEach(t) {
+  helper.unloadAgent(t.context.agent)
+}
+
+tap.test('TraceAggregator', function (t) {
+  t.autoend()
+
+  t.beforeEach(beforeEach)
+  t.afterEach(afterEach)
+
+  t.test('should require a configuration at startup time', function (t) {
+    t.throws(() => new TraceAggregator())
     const config = configurator.initialize({
       transaction_tracer: {
         enabled: true
       }
     })
 
-    expect(() => new TraceAggregator({ config })).to.not.throw()
+    t.doesNotThrow(() => new TraceAggregator({ config }))
+    t.end()
   })
 
-  it("shouldn't collect a trace if the tracer is disabled", function () {
+  t.test("shouldn't collect a trace if the tracer is disabled", function (t) {
+    const { agent } = t.context
     agent.config.transaction_tracer.enabled = false
-    const tx = createTransaction('/test', 3000)
+    const tx = createTransaction(agent, '/test', 3000)
     agent.traces.add(tx)
-    expect(agent.traces.trace).to.not.exist
+    t.notOk(agent.traces.trace)
+    t.end()
   })
 
-  it("shouldn't collect a trace if collect_traces is false", function () {
+  t.test("shouldn't collect a trace if collect_traces is false", function (t) {
+    const { agent } = t.context
     agent.config.collect_traces = false
-    const tx = createTransaction('/test', 3000)
+    const tx = createTransaction(agent, '/test', 3000)
     agent.traces.add(tx)
-    expect(agent.traces.trace).to.not.exist
+    t.notOk(agent.traces.trace)
+    t.end()
   })
 
-  it('should let the agent decide whether to ignore a transaction', function () {
+  t.test('should let the agent decide whether to ignore a transaction', function (t) {
+    const { agent } = t.context
     const transaction = new Transaction(agent)
     transaction.trace.setDurationInMillis(3000)
     transaction.ignore = true
 
     agent.traces.add(transaction)
-    should.exist(agent.traces.trace)
+    t.ok(agent.traces.trace)
+    t.end()
   })
 
-  describe('with top n support', function () {
-    let config
-
-    beforeEach(function () {
-      config = configurator.initialize({
-        transaction_tracer: {
-          enabled: true
-        }
-      })
-    })
-
-    it('should set n from its configuration', function () {
-      const TOP_N = 21
-      config.transaction_tracer.top_n = TOP_N
-      const aggregator = new TraceAggregator({ config })
-
-      expect(aggregator.capacity).equal(TOP_N)
-    })
-
-    it('should track the top 20 slowest transactions if top_n is unconfigured', () => {
-      const aggregator = new TraceAggregator({ config })
-
-      expect(aggregator.capacity).equal(20)
-    })
-
-    it('should track the slowest transaction in a harvest period if top_n is 0', () => {
-      config.transaction_tracer.top_n = 0
-      const aggregator = new TraceAggregator({ config })
-
-      expect(aggregator.capacity).equal(1)
-    })
-
-    it('should only save a trace for an existing name if new one is slower', () => {
-      const URI = '/simple'
-      const aggregator = new TraceAggregator({ config })
-      aggregator.reported = 10 // needed to override "first 5"
-
-      aggregator.add(createTransaction(URI, 3000))
-      aggregator.add(createTransaction(URI, 2100))
-      expect(aggregator.requestTimes).to.have.property('WebTransaction/Uri/simple', 3000)
-      aggregator.add(createTransaction(URI, 4000))
-      expect(aggregator.requestTimes).to.have.property('WebTransaction/Uri/simple', 4000)
-    })
-
-    it('should only track transactions for the top N names', function (done) {
-      agent.config.transaction_tracer.top_n = 5
-      agent.traces.capacity = 5
-      agent.traces.reported = 10 // needed to override "first 5"
-      const maxTraces = 6
-
-      const txnCreator = (n, max, cb) => {
-        expect(agent.traces.trace, 'trace before creation').to.not.exist
-        createTransaction(`/test-${n}`, 8000)
-        if (n !== 5) {
-          expect(agent.traces.trace, `trace ${n} to be collected`).to.exist
-        } else {
-          expect(agent.traces.trace, 'trace 5 collected').to.not.exist
-        }
-        agent.traces.once('finished transaction_sample_data data send.', (err) =>
-          cb(err, { idx: n, max })
-        )
-        agent.traces.send()
-        expect(agent.traces.trace, 'trace after harvest').to.not.exist
-      }
-      const finalCallback = (err) => {
-        expect(err).to.not.exist
-
-        const times = agent.traces.requestTimes
-        expect(times).to.have.property('WebTransaction/Uri/test-0', 8000)
-        expect(times).to.have.property('WebTransaction/Uri/test-1', 8000)
-        expect(times).to.have.property('WebTransaction/Uri/test-2', 8000)
-        expect(times).to.have.property('WebTransaction/Uri/test-3', 8000)
-        expect(times).to.have.property('WebTransaction/Uri/test-4', 8000)
-        expect(times).to.not.have.property('WebTransaction/Uri/test-5')
-        return done()
-      }
-
-      const testCallback = (err, props) => {
-        expect(err, 'Callback error should be falsy.').to.not.exist
-        const { idx, max } = props
-        const nextIdx = idx + 1
-        if (nextIdx >= max) {
-          return finalCallback()
-        }
-        return txnCreator(nextIdx, max, testCallback)
-      }
-
-      // Step through recursively
-      txnCreator(0, maxTraces, testCallback)
-    })
-  })
-
-  it('should collect traces when the threshold is 0', function () {
+  t.test('should collect traces when the threshold is 0', function (t) {
+    const { agent } = t.context
     const config = configurator.initialize({
       transaction_tracer: {
         transaction_threshold: 0,
@@ -196,10 +109,12 @@ describe('TraceAggregator', function () {
     transaction.statusCode = 200
 
     aggregator.add(transaction)
-    expect(aggregator.requestTimes['WebTransaction/Uri/test']).equal(0)
+    t.equal(aggregator.requestTimes['WebTransaction/Uri/test'], 0)
+    t.end()
   })
 
-  it('should collect traces for transactions that exceed apdex_f', function () {
+  t.test('should collect traces for transactions that exceed apdex_f', function (t) {
+    const { agent } = t.context
     const ABOVE_THRESHOLD = 29
     const APDEXT = 0.007
 
@@ -223,10 +138,12 @@ describe('TraceAggregator', function () {
     transaction.statusCode = 200
 
     aggregator.add(transaction)
-    expect(aggregator.requestTimes['WebTransaction/Uri/test']).equal(ABOVE_THRESHOLD)
+    t.equal(aggregator.requestTimes['WebTransaction/Uri/test'], ABOVE_THRESHOLD)
+    t.end()
   })
 
-  it("should not collect traces for transactions that don't exceed apdex_f", function () {
+  t.test("should not collect traces for transactions that don't exceed apdex_f", function (t) {
+    const { agent } = t.context
     const BELOW_THRESHOLD = 27
     const APDEXT = 0.007
 
@@ -250,10 +167,12 @@ describe('TraceAggregator', function () {
     transaction.statusCode = 200
 
     aggregator.add(transaction)
-    expect(aggregator.requestTimes['WebTransaction/Uri/test']).equal(undefined)
+    t.equal(aggregator.requestTimes['WebTransaction/Uri/test'], undefined)
+    t.end()
   })
 
-  it('should collect traces that exceed explicit trace threshold', () => {
+  t.test('should collect traces that exceed explicit trace threshold', (t) => {
+    const { agent } = t.context
     const ABOVE_THRESHOLD = 29
     const THRESHOLD = 0.028
 
@@ -266,13 +185,15 @@ describe('TraceAggregator', function () {
 
     const aggregator = new TraceAggregator({ config })
     aggregator.reported = 10 // needed to override "first 5"
-    const tx = createTransaction('/test', ABOVE_THRESHOLD)
+    const tx = createTransaction(agent, '/test', ABOVE_THRESHOLD)
     aggregator.add(tx)
 
-    expect(aggregator.requestTimes).to.have.property('WebTransaction/Uri/test', ABOVE_THRESHOLD)
+    t.equal(aggregator.requestTimes['WebTransaction/Uri/test'], ABOVE_THRESHOLD)
+    t.end()
   })
 
-  it('should not collect traces that do not exceed trace threshold', () => {
+  t.test('should not collect traces that do not exceed trace threshold', (t) => {
+    const { agent } = t.context
     const BELOW_THRESHOLD = 29
     const THRESHOLD = 30
 
@@ -285,12 +206,14 @@ describe('TraceAggregator', function () {
 
     const aggregator = new TraceAggregator({ config })
     aggregator.reported = 10 // needed to override "first 5"
-    const tx = createTransaction('/test', BELOW_THRESHOLD)
+    const tx = createTransaction(agent, '/test', BELOW_THRESHOLD)
     aggregator.add(tx)
-    expect(aggregator.requestTimes).to.not.have.property('WebTransaction/Uri/test')
+    t.notOk(aggregator.requestTimes['WebTransaction/Uri/test'])
+    t.end()
   })
 
-  it('should group transactions by the metric name associated with them', () => {
+  t.test('should group transactions by the metric name associated with them', (t) => {
+    const { agent } = t.context
     const config = configurator.initialize({
       transaction_tracer: {
         enabled: true,
@@ -300,12 +223,14 @@ describe('TraceAggregator', function () {
 
     const aggregator = new TraceAggregator({ config })
 
-    const tx = createTransaction('/test', 2100)
+    const tx = createTransaction(agent, '/test', 2100)
     aggregator.add(tx)
-    expect(aggregator.requestTimes).to.have.property('WebTransaction/Uri/test', 2100)
+    t.equal(aggregator.requestTimes['WebTransaction/Uri/test'], 2100)
+    t.end()
   })
 
-  it('should always report slow traces until 5 have been sent', function (done) {
+  t.test('should always report slow traces until 5 have been sent', function (t) {
+    const { agent } = t.context
     agent.config.apdex_t = 0
     agent.config.run_id = 1337
     agent.config.transaction_tracer.enabled = true
@@ -315,9 +240,9 @@ describe('TraceAggregator', function () {
     // repeat!
 
     const txnCreator = (n, max, cb) => {
-      expect(agent.traces.trace, 'trace waiting to be collected').to.not.exist
-      createTransaction(`/test-${n % 3}`, 500)
-      expect(agent.traces.trace, `${n}th trace to collect`).to.exist
+      t.notOk(agent.traces.trace, 'trace waiting to be collected')
+      createTransaction(agent, `/test-${n % 3}`, 500)
+      t.ok(agent.traces.trace, `${n}th trace to collect`)
       agent.traces.once('finished transaction_sample_data data send.', (err) =>
         cb(err, { idx: n, max })
       )
@@ -325,17 +250,17 @@ describe('TraceAggregator', function () {
     }
 
     const finalCallback = (err) => {
-      expect(err).to.not.exist
+      t.error(err)
       // This 6th transaction should not be collected.
-      expect(agent.traces.trace).to.not.exist
-      createTransaction(`/test-0`, 500)
-      expect(agent.traces.trace, '6th trace to collect').to.not.exist
-      done()
+      t.notOk(agent.traces.trace)
+      createTransaction(agent, `/test-0`, 500)
+      t.notOk(agent.traces.trace, '6th trace to collect')
+      t.end()
     }
 
     // Array iteration is too difficult to slow down, so this steps through recursively
     txnCreator(0, maxTraces, function testCallback(err, props) {
-      expect(err, 'Callback error should be falsy.').to.not.exist
+      t.error(err)
       const { idx, max } = props
       const nextIdx = idx + 1
       if (nextIdx >= max) {
@@ -345,62 +270,168 @@ describe('TraceAggregator', function () {
     })
   })
 
-  describe('when request timings are tracked over time', function () {
-    it('should reset timings after 5 harvest cycles with no slow traces', (done) => {
-      agent.config.run_id = 1337
-      agent.config.transaction_tracer.enabled = true
-
-      const aggregator = agent.traces
-      const tx = createTransaction('/test', 5030)
-      aggregator.add(tx)
-
-      let remaining = 4
-      // 2nd-5th harvests: no serialized trace, timing still set
-      const looper = function () {
-        expect(aggregator.requestTimes['WebTransaction/Uri/test']).equal(5030)
-        aggregator.clear()
-
-        remaining--
-        if (remaining < 1) {
-          // 6th harvest: no serialized trace, timings reset
-          agent.traces.once('finished transaction_sample_data data send.', function () {
-            expect(aggregator.requestTimes).to.not.have.property('WebTransaction/Uri/test')
-
-            done()
-          })
-          agent.traces.send()
-        } else {
-          agent.traces.once('finished transaction_sample_data data send.', looper)
-          agent.traces.send()
-        }
-      }
-
-      aggregator.add(tx)
-
-      agent.traces.once('finished transaction_sample_data data send.', function () {
-        expect(aggregator.requestTimes['WebTransaction/Uri/test']).equal(5030)
-        aggregator.clear()
-
-        agent.traces.once('finished transaction_sample_data data send.', looper)
-        agent.traces.send()
-      })
-      agent.traces.send()
-    })
-  })
-
-  it('should reset the syntheticsTraces when resetting trace', function () {
+  t.test('should reset timings after 5 harvest cycles with no slow traces', (t) => {
+    const { agent } = t.context
+    agent.config.run_id = 1337
     agent.config.transaction_tracer.enabled = true
 
     const aggregator = agent.traces
-    createTransaction('/testOne', 503)
-    expect(aggregator.trace).to.exist
+    const tx = createTransaction(agent, '/test', 5030)
+    aggregator.add(tx)
+
+    let remaining = 4
+    // 2nd-5th harvests: no serialized trace, timing still set
+    const looper = function () {
+      t.equal(aggregator.requestTimes['WebTransaction/Uri/test'], 5030)
+      aggregator.clear()
+
+      remaining--
+      if (remaining < 1) {
+        // 6th harvest: no serialized trace, timings reset
+        agent.traces.once('finished transaction_sample_data data send.', function () {
+          t.notOk(aggregator.requestTimes['WebTransaction/Uri/test'])
+
+          t.end()
+        })
+        agent.traces.send()
+      } else {
+        agent.traces.once('finished transaction_sample_data data send.', looper)
+        agent.traces.send()
+      }
+    }
+
+    aggregator.add(tx)
+
+    agent.traces.once('finished transaction_sample_data data send.', function () {
+      t.equal(aggregator.requestTimes['WebTransaction/Uri/test'], 5030)
+      aggregator.clear()
+
+      agent.traces.once('finished transaction_sample_data data send.', looper)
+      agent.traces.send()
+    })
+    agent.traces.send()
+  })
+
+  t.test('should reset the syntheticsTraces when resetting trace', function (t) {
+    const { agent } = t.context
+    agent.config.transaction_tracer.enabled = true
+
+    const aggregator = agent.traces
+    createTransaction(agent, '/testOne', 503)
+    t.ok(aggregator.trace)
     aggregator.clear()
 
-    createTransaction('/testTwo', 406, true)
-    expect(aggregator.trace).to.not.exist
-    expect(aggregator.syntheticsTraces).to.have.length(1)
+    createTransaction(agent, '/testTwo', 406, true)
+    t.notOk(aggregator.trace)
+    t.equal(aggregator.syntheticsTraces.length, 1)
 
     aggregator.clear()
-    expect(aggregator.syntheticsTraces).to.have.length(0)
+    t.equal(aggregator.syntheticsTraces.length, 0)
+    t.end()
+  })
+})
+
+tap.test('TraceAggregator with top n support', function (t) {
+  t.autoend()
+  t.beforeEach(function () {
+    beforeEach(t)
+    t.context.config = configurator.initialize({
+      transaction_tracer: {
+        enabled: true
+      }
+    })
+  })
+
+  t.afterEach(afterEach)
+
+  t.test('should set n from its configuration', function (t) {
+    const { config } = t.context
+    const TOP_N = 21
+    config.transaction_tracer.top_n = TOP_N
+    const aggregator = new TraceAggregator({ config })
+
+    t.equal(aggregator.capacity, TOP_N)
+    t.end()
+  })
+
+  t.test('should track the top 20 slowest transactions if top_n is unconfigured', (t) => {
+    const { config } = t.context
+    const aggregator = new TraceAggregator({ config })
+
+    t.equal(aggregator.capacity, 20)
+    t.end()
+  })
+
+  t.test('should track the slowest transaction in a harvest period if top_n is 0', (t) => {
+    const { config } = t.context
+    config.transaction_tracer.top_n = 0
+    const aggregator = new TraceAggregator({ config })
+
+    t.equal(aggregator.capacity, 1)
+    t.end()
+  })
+
+  t.test('should only save a trace for an existing name if new one is slower', (t) => {
+    const { config, agent } = t.context
+    const URI = '/simple'
+    const aggregator = new TraceAggregator({ config })
+    aggregator.reported = 10 // needed to override "first 5"
+
+    aggregator.add(createTransaction(agent, URI, 3000))
+    aggregator.add(createTransaction(agent, URI, 2100))
+    t.equal(aggregator.requestTimes['WebTransaction/Uri/simple'], 3000)
+    aggregator.add(createTransaction(agent, URI, 4000))
+    t.equal(aggregator.requestTimes['WebTransaction/Uri/simple'], 4000)
+    t.end()
+  })
+
+  t.test('should only track transactions for the top N names', function (t) {
+    const { agent } = t.context
+    agent.config.transaction_tracer.top_n = 5
+    agent.traces.capacity = 5
+    agent.traces.reported = 10 // needed to override "first 5"
+    const maxTraces = 6
+
+    const txnCreator = (n, max, cb) => {
+      t.notOk(agent.traces.trace, 'trace before creation')
+      createTransaction(agent, `/test-${n}`, 8000)
+      if (n !== 5) {
+        t.ok(agent.traces.trace, `trace ${n} to be collected`)
+      } else {
+        t.notOk(agent.traces.trace, 'trace 5 collected')
+      }
+      agent.traces.once('finished transaction_sample_data data send.', (err) =>
+        cb(err, { idx: n, max })
+      )
+      agent.traces.send()
+      t.notOk(agent.traces.trace, 'trace after harvest')
+      if (n === 5) {
+        t.end()
+      }
+    }
+    const finalCallback = (err) => {
+      t.error(err)
+
+      const times = agent.traces.requestTimes
+      t.equal(times['WebTransaction/Uri/test-0'], 8000)
+      t.equal(times['WebTransaction/Uri/test-1'], 8000)
+      t.equal(times['WebTransaction/Uri/test-2'], 8000)
+      t.equal(times['WebTransaction/Uri/test-3'], 8000)
+      t.equal(times['WebTransaction/Uri/test-4'], 8000)
+      t.notOk(times['WebTransaction/Uri/test-5'])
+    }
+
+    const testCallback = (err, props) => {
+      t.error(err)
+      const { idx, max } = props
+      const nextIdx = idx + 1
+      if (nextIdx >= max) {
+        return finalCallback()
+      }
+      return txnCreator(nextIdx, max, testCallback)
+    }
+
+    // Step through recursively
+    txnCreator(0, maxTraces, testCallback)
   })
 })

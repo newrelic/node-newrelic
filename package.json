@@ -213,7 +213,6 @@
     "ajv": "^6.12.6",
     "async": "^3.2.4",
     "c8": "^8.0.1",
-    "chai": "^4.1.2",
     "clean-jsdoc-theme": "^4.2.4",
     "commander": "^7.0.0",
     "conventional-changelog-conventionalcommits": "^5.0.0",

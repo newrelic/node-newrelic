@@ -5,7 +5,7 @@
 
 import helper from '../../lib/agent_helper.js'
 import NAMES from '../../../lib/metrics/names.js'
-import { assertMetrics, assertSegments } from '../../lib/metrics_helper.js'
+import '../../lib/metrics_helper.js'
 import { test } from 'tap'
 import expressHelpers from './helpers.mjs'
 const { setup, makeRequestAndFinishTransaction } = expressHelpers
@@ -33,8 +33,7 @@ test('transaction segments tests', (t) => {
     })
 
     const { rootSegment, transaction } = await runTest({ app, t })
-    checkSegments(
-      t,
+    t.assertSegments(
       rootSegment,
       [
         NAMES.EXPRESS.MIDDLEWARE + 'query',
@@ -69,8 +68,7 @@ test('transaction segments tests', (t) => {
     })
 
     const { rootSegment, transaction } = await runTest({ app, t })
-    checkSegments(
-      t,
+    t.assertSegments(
       rootSegment,
       [
         NAMES.EXPRESS.MIDDLEWARE + 'query',
@@ -92,8 +90,7 @@ test('transaction segments tests', (t) => {
     })
 
     const { rootSegment, transaction } = await runTest({ app, t })
-    checkSegments(
-      t,
+    t.assertSegments(
       rootSegment,
       [
         NAMES.EXPRESS.MIDDLEWARE + 'query',
@@ -140,8 +137,7 @@ test('transaction segments tests', (t) => {
     )
 
     const { rootSegment, transaction } = await runTest({ app, t })
-    checkSegments(
-      t,
+    t.assertSegments(
       rootSegment,
       [
         NAMES.EXPRESS.MIDDLEWARE + 'query',
@@ -169,8 +165,7 @@ test('transaction segments tests', (t) => {
     app.use('/router1', router)
 
     const { rootSegment, transaction } = await runTest({ app, t, endpoint: '/router1/test' })
-    checkSegments(
-      t,
+    t.assertSegments(
       rootSegment,
       [
         NAMES.EXPRESS.MIDDLEWARE + 'query',
@@ -205,8 +200,7 @@ test('transaction segments tests', (t) => {
     app.use('/', router2)
 
     const { rootSegment, transaction } = await runTest({ app, t })
-    checkSegments(
-      t,
+    t.assertSegments(
       rootSegment,
       [
         NAMES.EXPRESS.MIDDLEWARE + 'query',
@@ -232,8 +226,7 @@ test('transaction segments tests', (t) => {
     app.get('*', router1)
 
     const { rootSegment, transaction } = await runTest({ app, t })
-    checkSegments(
-      t,
+    t.assertSegments(
       rootSegment,
       [
         NAMES.EXPRESS.MIDDLEWARE + 'query',
@@ -266,8 +259,7 @@ test('transaction segments tests', (t) => {
     app.use('/router1', router)
 
     const { rootSegment, transaction } = await runTest({ app, t, endpoint: '/router1/test' })
-    checkSegments(
-      t,
+    t.assertSegments(
       rootSegment,
       [
         NAMES.EXPRESS.MIDDLEWARE + 'query',
@@ -297,8 +289,7 @@ test('transaction segments tests', (t) => {
     app.use('/subapp1', subapp)
 
     const { rootSegment, transaction } = await runTest({ app, t, endpoint: '/subapp1/test' })
-    checkSegments(
-      t,
+    t.assertSegments(
       rootSegment,
       [
         NAMES.EXPRESS.MIDDLEWARE + 'query',
@@ -346,8 +337,7 @@ test('transaction segments tests', (t) => {
     app.use('/subapp1', subapp)
 
     const { rootSegment, transaction } = await runTest({ app, t, endpoint: '/subapp1/test' })
-    checkSegments(
-      t,
+    t.assertSegments(
       rootSegment,
       [
         NAMES.EXPRESS.MIDDLEWARE + 'query',
@@ -388,8 +378,7 @@ test('transaction segments tests', (t) => {
     app.use('/subapp1', subapp)
 
     const { rootSegment, transaction } = await runTest({ app, t, endpoint: '/subapp1/test' })
-    checkSegments(
-      t,
+    t.assertSegments(
       rootSegment,
       [
         NAMES.EXPRESS.MIDDLEWARE + 'query',
@@ -433,8 +422,7 @@ test('transaction segments tests', (t) => {
       t,
       endpoint: '/router1/subapp1/test'
     })
-    checkSegments(
-      t,
+    t.assertSegments(
       rootSegment,
       [
         NAMES.EXPRESS.MIDDLEWARE + 'query',
@@ -473,8 +461,7 @@ test('transaction segments tests', (t) => {
     })
 
     const { rootSegment, transaction } = await runTest({ app, t })
-    checkSegments(
-      t,
+    t.assertSegments(
       rootSegment,
       [
         NAMES.EXPRESS.MIDDLEWARE + 'query',
@@ -499,8 +486,7 @@ test('transaction segments tests', (t) => {
     })
 
     const { rootSegment, transaction } = await runTest({ app, t })
-    checkSegments(
-      t,
+    t.assertSegments(
       rootSegment,
       [
         NAMES.EXPRESS.MIDDLEWARE + 'query',
@@ -541,8 +527,7 @@ test('transaction segments tests', (t) => {
     const endpoint = '/router/test'
 
     const { rootSegment, transaction } = await runTest({ app, t, endpoint })
-    checkSegments(
-      t,
+    t.assertSegments(
       rootSegment,
       [
         NAMES.EXPRESS.MIDDLEWARE + 'query',
@@ -588,8 +573,7 @@ test('transaction segments tests', (t) => {
     const endpoint = '/router1/router2/test'
 
     const { rootSegment, transaction } = await runTest({ app, t, endpoint })
-    checkSegments(
-      t,
+    t.assertSegments(
       rootSegment,
       [
         NAMES.EXPRESS.MIDDLEWARE + 'query',
@@ -635,8 +619,7 @@ test('transaction segments tests', (t) => {
     const endpoint = '/router/test'
 
     const { rootSegment, transaction } = await runTest({ app, t, endpoint })
-    checkSegments(
-      t,
+    t.assertSegments(
       rootSegment,
       [
         NAMES.EXPRESS.MIDDLEWARE + 'query',
@@ -679,8 +662,7 @@ test('transaction segments tests', (t) => {
     const endpoint = '/router1/router2/test'
 
     const { rootSegment, transaction } = await runTest({ app, t, endpoint })
-    checkSegments(
-      t,
+    t.assertSegments(
       rootSegment,
       [
         NAMES.EXPRESS.MIDDLEWARE + 'query',
@@ -714,8 +696,7 @@ test('transaction segments tests', (t) => {
     })
 
     const { rootSegment, transaction } = await runTest({ app, t, endpoint: '/a/b' })
-    checkSegments(
-      t,
+    t.assertSegments(
       rootSegment,
       [
         NAMES.EXPRESS.MIDDLEWARE + 'query',
@@ -742,8 +723,7 @@ test('transaction segments tests', (t) => {
     })
 
     const { rootSegment, transaction } = await runTest({ app, t, endpoint: '/abcd' })
-    checkSegments(
-      t,
+    t.assertSegments(
       rootSegment,
       [
         NAMES.EXPRESS.MIDDLEWARE + 'query',
@@ -765,8 +745,7 @@ test('transaction segments tests', (t) => {
     })
 
     const { rootSegment, transaction } = await runTest({ app, t, endpoint: '/a' })
-    checkSegments(
-      t,
+    t.assertSegments(
       rootSegment,
       [
         NAMES.EXPRESS.MIDDLEWARE + 'query',
@@ -788,12 +767,6 @@ test('transaction segments tests', (t) => {
     return { rootSegment, transaction }
   }
 })
-
-function checkSegments(t, segments, expected, opts) {
-  t.doesNotThrow(function () {
-    assertSegments(segments, expected, opts)
-  }, 'should have expected segments')
-}
 
 function checkMetrics(t, metrics, expected, path) {
   if (path === undefined) {
@@ -826,5 +799,5 @@ function checkMetrics(t, metrics, expected, path) {
     expectedAll.push([{ name: metric, scope: 'WebTransaction/Expressjs/GET/' + path }])
   }
 
-  assertMetrics(metrics, expectedAll, true, false)
+  t.assertMetrics(metrics, expectedAll, true, false)
 }

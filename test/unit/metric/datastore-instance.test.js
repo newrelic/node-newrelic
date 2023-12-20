@@ -5,32 +5,29 @@
 
 'use strict'
 
-// TODO: convert to normal tap style.
-// Below allows use of mocha DSL with tap runner.
-require('tap').mochaGlobals()
+const tap = require('tap')
 
-const expect = require('chai').expect
 const helper = require('../../lib/agent_helper')
 const DatastoreShim = require('../../../lib/shim/datastore-shim')
 const ParsedStatement = require('../../../lib/db/parsed-statement')
 const tests = require('../../lib/cross_agent_tests/datastores/datastore_instances')
 
-describe('Datastore instance metrics collected via the datastore shim', function () {
-  let agent = null
-
-  beforeEach(function () {
-    agent = helper.loadMockedAgent()
+tap.test('Datastore instance metrics collected via the datastore shim', function (t) {
+  t.autoend()
+  t.beforeEach(function (t) {
+    t.context.agent = helper.loadMockedAgent()
   })
 
-  afterEach(function () {
+  t.afterEach(function (t) {
+    const { agent } = t.context
     if (agent) {
       helper.unloadAgent(agent)
     }
-    agent = null
   })
 
   tests.forEach(function (test) {
-    it(test.name, function (done) {
+    t.test(test.name, function (t) {
+      const { agent } = t.context
       agent.config.getHostnameSafe = function () {
         return test.system_hostname
       }
@@ -68,29 +65,29 @@ describe('Datastore instance metrics collected via the datastore shim', function
         testInstrumented.query()
 
         tx.end()
-        expect(getMetrics(agent).unscoped).to.have.property(test.expected_instance_metric)
-        done()
+        t.ok(getMetrics(agent).unscoped[test.expected_instance_metric])
+        t.end()
       })
     })
   })
 })
 
-describe('Datastore instance metrics captured through the segment', function () {
-  let agent = null
-
-  beforeEach(function () {
-    agent = helper.loadMockedAgent()
+tap.test('Datastore instance metrics captured through the segment', function (t) {
+  t.autoend()
+  t.beforeEach(function (t) {
+    t.context.agent = helper.loadMockedAgent()
   })
 
-  afterEach(function () {
+  t.afterEach(function (t) {
+    const { agent } = t.context
     if (agent) {
       helper.unloadAgent(agent)
     }
-    agent = null
   })
 
   tests.forEach(function (test) {
-    it(test.name, function (done) {
+    t.test(test.name, function (t) {
+      const { agent } = t.context
       agent.config.getHostnameSafe = function () {
         return test.system_hostname
       }
@@ -125,8 +122,8 @@ describe('Datastore instance metrics captured through the segment', function () 
         child.touch()
 
         tx.end()
-        expect(getMetrics(agent).unscoped).to.have.property(test.expected_instance_metric)
-        done()
+        t.ok(getMetrics(agent).unscoped[test.expected_instance_metric])
+        t.end()
       })
     })
   })

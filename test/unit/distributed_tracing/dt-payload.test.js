@@ -4,68 +4,56 @@
  */
 
 'use strict'
-
-// TODO: convert to normal tap style.
-// Below allows use of mocha DSL with tap runner.
-require('tap').mochaGlobals()
-
-const expect = require('chai').expect
-
+const tap = require('tap')
 const DistributedTracePayload = require('../../../lib/transaction/dt-payload')
 const DistributedTracePayloadStub = DistributedTracePayload.Stub
 
-describe('DistributedTracePayload', function () {
-  it('has a text method that returns the stringified payload', function () {
+tap.test('DistributedTracePayload', function (t) {
+  t.test('has a text method that returns the stringified payload', function (t) {
     const payload = {
       a: 1,
       b: 'test'
     }
     const dt = new DistributedTracePayload(payload)
     const output = JSON.parse(dt.text())
-    expect(output).to.have.property('v').that.is.an('array')
-    expect(output).to.have.property('d').that.is.an('object')
-    const keys = Object.keys(output.d)
-    expect(keys.length).to.equal(2)
-    for (let i = 0; i < keys.length; ++i) {
-      const key = keys[i]
-      expect(output.d[key]).to.equal(payload[key])
-    }
+    t.ok(Array.isArray(output.v))
+    t.same(output.d, payload)
+    t.end()
   })
 
-  it('has a httpSafe method that returns the base64 encoded payload', function () {
+  t.test('has a httpSafe method that returns the base64 encoded payload', function (t) {
     const payload = {
       a: 1,
       b: 'test'
     }
     const dt = new DistributedTracePayload(payload)
     const output = JSON.parse(Buffer.from(dt.httpSafe(), 'base64').toString('utf-8'))
-    expect(output).to.have.property('v').that.is.an('array')
-    expect(output).to.have.property('d').that.is.an('object')
-    const keys = Object.keys(output.d)
-    expect(keys.length).to.equal(2)
-    for (let i = 0; i < keys.length; ++i) {
-      const key = keys[i]
-      expect(output.d[key]).to.equal(payload[key])
-    }
+    t.ok(Array.isArray(output.v))
+    t.same(output.d, payload)
+    t.end()
   })
+  t.end()
 })
 
-describe('DistributedTracePayloadStub', function () {
-  it('has a httpSafe method that returns an empty string', function () {
+tap.test('DistributedTracePayloadStub', function (t) {
+  t.test('has a httpSafe method that returns an empty string', function (t) {
     const payload = {
       a: 1,
       b: 'test'
     }
     const dt = new DistributedTracePayloadStub(payload)
-    expect(dt.httpSafe()).to.equal('')
+    t.equal(dt.httpSafe(), '')
+    t.end()
   })
 
-  it('has a text method that returns an empty string', function () {
+  t.test('has a text method that returns an empty string', function (t) {
     const payload = {
       a: 1,
       b: 'test'
     }
     const dt = new DistributedTracePayloadStub(payload)
-    expect(dt.text()).to.equal('')
+    t.equal(dt.text(), '')
+    t.end()
   })
+  t.end()
 })

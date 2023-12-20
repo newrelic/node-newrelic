@@ -8,12 +8,9 @@
 const helper = require('../../lib/agent_helper')
 const http = require('http')
 const NAMES = require('../../../lib/metrics/names')
-const assertMetrics = require('../../lib/metrics_helper').assertMetrics
-const assertSegments = require('../../lib/metrics_helper').assertSegments
+require('../../lib/metrics_helper')
 const tap = require('tap')
 const { test } = tap
-
-tap.Test.prototype.addAssert('clmAttrs', 1, helper.assertCLMAttrs)
 
 let express
 let agent
@@ -981,9 +978,7 @@ function makeRequest(server, path, callback) {
 }
 
 function checkSegments(t, segments, expected, opts) {
-  t.doesNotThrow(function () {
-    assertSegments(segments, expected, opts)
-  }, 'should have expected segments')
+  t.assertSegments(segments, expected, opts)
 }
 
 function checkMetrics(t, metrics, expected, path) {
@@ -1017,5 +1012,5 @@ function checkMetrics(t, metrics, expected, path) {
     expectedAll.push([{ name: metric, scope: 'WebTransaction/Expressjs/GET/' + path }])
   }
 
-  assertMetrics(metrics, expectedAll, true, false)
+  t.assertMetrics(metrics, expectedAll, true, false)
 }

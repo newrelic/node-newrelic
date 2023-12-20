@@ -5,6 +5,9 @@
 
 'use strict'
 const helpers = module.exports
+const tap = require('tap')
+
+tap.Test.prototype.addAssert('validateAnnotations', 2, validateLogLine)
 
 // NOTE: pino adds hostname to log lines which is why we don't check it here
 helpers.CONTEXT_KEYS = [
@@ -19,7 +22,7 @@ helpers.CONTEXT_KEYS = [
 /**
  * To be registered as a tap assertion
  */
-helpers.validateLogLine = function validateLogLine({ line: logLine, message, level, config }) {
+function validateLogLine({ line: logLine, message, level, config }) {
   this.equal(
     logLine['entity.name'],
     config.applications()[0],

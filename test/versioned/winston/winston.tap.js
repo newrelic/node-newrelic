@@ -8,7 +8,7 @@
 const tap = require('tap')
 const helper = require('../../lib/agent_helper')
 const concat = require('concat-stream')
-const { validateLogLine } = require('../../lib/logging-helper')
+require('../../lib/logging-helper')
 const { Writable } = require('stream')
 const { LOGGING } = require('../../../lib/metrics/names')
 // winston puts the log line getting construct through formatters on a symbol
@@ -21,8 +21,6 @@ const {
   originalMsgAssertion,
   logForwardingMsgAssertion
 } = require('./helpers')
-
-tap.Test.prototype.addAssert('validateAnnotations', 2, validateLogLine)
 
 tap.test('winston instrumentation', (t) => {
   t.autoend()

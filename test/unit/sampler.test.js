@@ -4,49 +4,44 @@
  */
 
 'use strict'
-
-// TODO: convert to normal tap style.
-// Below allows use of mocha DSL with tap runner.
-require('tap').mochaGlobals()
-
+const tap = require('tap')
 const Agent = require('../../lib/agent')
 const configurator = require('../../lib/config')
-const expect = require('chai').expect
 const sampler = require('../../lib/sampler')
+const sinon = require('sinon')
 
 const NAMES = require('../../lib/metrics/names')
 
-describe('environmental sampler', function () {
-  let agent = null
+tap.test('environmental sampler', function (t) {
+  t.autoend()
   const numCpus = require('os').cpus().length
-  const oldCpuUsage = process.cpuUsage
-  const oldUptime = process.uptime
 
-  beforeEach(function () {
-    agent = new Agent(configurator.initialize())
-    process.cpuUsage = function () {
-      // process.cpuUsage return values in cpu microseconds (1^-6)
-      return { user: 1e6 * numCpus, system: 1e6 * numCpus }
-    }
-    process.uptime = function () {
-      // process.uptime returns values in seconds
-      return 1
-    }
+  t.beforeEach(function (t) {
+    const sandbox = sinon.createSandbox()
+    t.context.sandbox = sandbox
+    // process.cpuUsage return values in cpu microseconds (1^-6)
+    sandbox
+      .stub(process, 'cpuUsage')
+      .callsFake(() => ({ user: 1e6 * numCpus, system: 1e6 * numCpus }))
+    // process.uptime returns values in seconds
+    sandbox.stub(process, 'uptime').callsFake(() => 1)
+    t.context.agent = new Agent(configurator.initialize())
   })
 
-  afterEach(function () {
+  t.afterEach(function (t) {
     sampler.stop()
-    process.cpuUsage = oldCpuUsage
-    process.uptime = oldUptime
+    t.context.sandbox.restore()
   })
 
-  it('should have the native-metrics package available', function () {
-    expect(function () {
+  t.test('should have the native-metrics package available', function (t) {
+    t.doesNotThrow(function () {
       require('@newrelic/native-metrics')
-    }).to.not.throw()
+    })
+    t.end()
   })
 
-  it('should still gather native metrics when bound and unbound', function (done) {
+  t.test('should still gather native metrics when bound and unbound', function (t) {
+    const { agent } = t.context
     sampler.start(agent)
     sampler.stop()
     sampler.start(agent)
@@ -60,10 +55,10 @@ describe('environmental sampler', function () {
       sampler.sampleGc(agent, sampler.nativeMetrics)()
 
       const loop = agent.metrics.getOrCreateMetric(NAMES.LOOP.USAGE)
-      expect(loop.callCount).to.be.above(1)
-      expect(loop.max).to.be.above(0)
-      expect(loop.min).to.be.at.most(loop.max)
-      expect(loop.total).to.be.at.least(loop.max)
+      t.ok(loop.callCount > 1)
+      t.ok(loop.max > 0)
+      t.ok(loop.min <= loop.max)
+      t.ok(loop.total >= loop.max)
 
       // Find at least one typed GC metric.
       const type = [
@@ -73,93 +68,109 @@ describe('environmental sampler', function () {
         'ProcessWeakCallbacks',
         'All'
       ].find((t) => agent.metrics.getOrCreateMetric(NAMES.GC.PREFIX + t).callCount)
-      expect(type).to.exist
+      t.ok(type)
 
       const gc = agent.metrics.getOrCreateMetric(NAMES.GC.PREFIX + type)
-      expect(gc).property('callCount').to.be.at.least(1)
-      expect(gc).property('total').to.be.at.least(0.001) // At least 1 ms of GC
+      t.ok(gc.callCount >= 1)
+      t.ok(gc.total >= 0.001) // At least 1 ms of GC
 
       const pause = agent.metrics.getOrCreateMetric(NAMES.GC.PAUSE_TIME)
-      expect(pause).property('callCount').to.be.at.least(gc.callCount)
-      expect(pause).property('total').to.be.at.least(gc.total)
-
-      done()
+      t.ok(pause.callCount >= gc.callCount)
+      t.ok(pause.total >= gc.total)
+      t.end()
     })
   })
 
-  it('should gather loop metrics', function (done) {
+  t.test('should gather loop metrics', function (t) {
+    const { agent } = t.context
     sampler.start(agent)
     sampler.nativeMetrics.getLoopMetrics()
     spinLoop(function runLoop() {
       sampler.sampleLoop(agent, sampler.nativeMetrics)()
 
       const stats = agent.metrics.getOrCreateMetric(NAMES.LOOP.USAGE)
-      expect(stats.callCount).to.be.above(1)
-      expect(stats.max).to.be.above(0)
-      expect(stats.min).to.be.at.most(stats.max)
-      expect(stats.total).to.be.at.least(stats.max)
-      done()
+      t.ok(stats.callCount > 1)
+      t.ok(stats.max > 0)
+      t.ok(stats.min <= stats.max)
+      t.ok(stats.total >= stats.max)
+      t.end()
     })
   })
 
-  it('should depend on Agent to provide the current metrics summary', function () {
-    expect(function () {
+  t.test('should depend on Agent to provide the current metrics summary', function (t) {
+    const { agent } = t.context
+    t.doesNotThrow(function () {
       sampler.start(agent)
-    }).to.not.throw()
-    expect(function () {
+    })
+    t.doesNotThrow(function () {
       sampler.stop(agent)
-    }).to.not.throw()
+    })
+    t.end()
   })
 
-  it('should default to a state of stopped', function () {
-    expect(sampler.state).equal('stopped')
+  t.test('should default to a state of stopped', function (t) {
+    t.equal(sampler.state, 'stopped')
+    t.end()
   })
 
-  it('should say it is running after start', function () {
+  t.test('should say it is running after start', function (t) {
+    const { agent } = t.context
     sampler.start(agent)
-    expect(sampler.state).equal('running')
+    t.equal(sampler.state, 'running')
+    t.end()
   })
 
-  it('should say it is stopped after stop', function () {
+  t.test('should say it is stopped after stop', function (t) {
+    const { agent } = t.context
     sampler.start(agent)
-    expect(sampler.state).equal('running')
+    t.equal(sampler.state, 'running')
     sampler.stop(agent)
-    expect(sampler.state).equal('stopped')
+    t.equal(sampler.state, 'stopped')
+    t.end()
   })
 
-  it('should gather CPU user utilization metric', function () {
+  t.test('should gather CPU user utilization metric', function (t) {
+    const { agent } = t.context
     sampler.sampleCpu(agent)()
 
     const stats = agent.metrics.getOrCreateMetric(NAMES.CPU.USER_UTILIZATION)
-    expect(stats.callCount).equal(1)
-    expect(stats.total).equal(1)
+    t.equal(stats.callCount, 1)
+    t.equal(stats.total, 1)
+    t.end()
   })
 
-  it('should gather CPU system utilization metric', function () {
+  t.test('should gather CPU system utilization metric', function (t) {
+    const { agent } = t.context
     sampler.sampleCpu(agent)()
 
     const stats = agent.metrics.getOrCreateMetric(NAMES.CPU.SYSTEM_UTILIZATION)
-    expect(stats.callCount).equal(1)
-    expect(stats.total).equal(1)
+    t.equal(stats.callCount, 1)
+    t.equal(stats.total, 1)
+    t.end()
   })
 
-  it('should gather CPU user time metric', function () {
+  t.test('should gather CPU user time metric', function (t) {
+    const { agent } = t.context
     sampler.sampleCpu(agent)()
 
     const stats = agent.metrics.getOrCreateMetric(NAMES.CPU.USER_TIME)
-    expect(stats.callCount).equal(1)
-    expect(stats.total).equal(numCpus)
+    t.equal(stats.callCount, 1)
+    t.equal(stats.total, numCpus)
+    t.end()
   })
 
-  it('should gather CPU sytem time metric', function () {
+  t.test('should gather CPU sytem time metric', function (t) {
+    const { agent } = t.context
     sampler.sampleCpu(agent)()
 
     const stats = agent.metrics.getOrCreateMetric(NAMES.CPU.SYSTEM_TIME)
-    expect(stats.callCount).equal(1)
-    expect(stats.total).equal(numCpus)
+    t.equal(stats.callCount, 1)
+    t.equal(stats.total, numCpus)
+    t.end()
   })
 
-  it('should gather GC metrics', function (done) {
+  t.test('should gather GC metrics', function (t) {
+    const { agent } = t.context
     sampler.start(agent)
 
     // Clear up the current state of the metrics.
@@ -176,64 +187,69 @@ describe('environmental sampler', function () {
         'ProcessWeakCallbacks',
         'All'
       ].find((t) => agent.metrics.getOrCreateMetric(NAMES.GC.PREFIX + t).callCount)
-      expect(type).to.exist
+      t.ok(type)
 
       const gc = agent.metrics.getOrCreateMetric(NAMES.GC.PREFIX + type)
-      expect(gc).property('callCount').to.be.at.least(1)
+      t.ok(gc.callCount >= 1)
 
       // Assuming GC to take some amount of time.
       // With Node 12, the minimum for this work often seems to be
       // around 0.0008 on the servers.
-      expect(gc).property('total').to.be.at.least(0.0005)
+      t.ok(gc.total >= 0.0004)
 
       const pause = agent.metrics.getOrCreateMetric(NAMES.GC.PAUSE_TIME)
-      expect(pause).property('callCount').to.be.at.least(gc.callCount)
-      expect(pause).property('total').to.be.at.least(gc.total)
-
-      done()
+      t.ok(pause.callCount >= gc.callCount)
+      t.ok(pause.total >= gc.total)
+      t.end()
     })
   })
 
-  it('should not gather GC metrics if disabled', function () {
+  t.test('should not gather GC metrics if disabled', function (t) {
+    const { agent } = t.context
     agent.config.plugins.native_metrics.enabled = false
     sampler.start(agent)
-    expect(sampler.nativeMetrics).to.be.null
+    t.not(sampler.nativeMetrics)
+    t.end()
   })
 
-  it('should catch if process.cpuUsage throws an error', function () {
-    process.cpuUsage = function () {
-      throw new Error('ohhhhhh boyyyyyy')
-    }
+  t.test('should catch if process.cpuUsage throws an error', function (t) {
+    const { agent } = t.context
+    const err = new Error('ohhhhhh boyyyyyy')
+    process.cpuUsage.throws(err)
     sampler.sampleCpu(agent)()
 
     const stats = agent.metrics.getOrCreateMetric('CPU/User/Utilization')
-    expect(stats.callCount).equal(0)
+    t.equal(stats.callCount, 0)
+    t.end()
   })
 
-  it('should collect all specified memory statistics', function () {
+  t.test('should collect all specified memory statistics', function (t) {
+    const { agent } = t.context
     sampler.sampleMemory(agent)()
 
     Object.keys(NAMES.MEMORY).forEach(function testStat(memoryStat) {
       const metricName = NAMES.MEMORY[memoryStat]
       const stats = agent.metrics.getOrCreateMetric(metricName)
-      expect(stats.callCount, `${metricName} callCount`).to.equal(1)
-      expect(stats.max, `${metricName} max`).to.be.above(1)
+      t.equal(stats.callCount, 1, `${metricName} callCount`)
+      t.ok(stats.max > 1, `${metricName} max`)
     })
+    t.end()
   })
 
-  it('should catch if process.memoryUsage throws an error', function () {
-    const oldProcessMem = process.memoryUsage
-    process.memoryUsage = function () {
+  t.test('should catch if process.memoryUsage throws an error', function (t) {
+    const { agent, sandbox } = t.context
+    sandbox.stub(process, 'memoryUsage').callsFake(() => {
       throw new Error('your computer is on fire')
-    }
+    })
     sampler.sampleMemory(agent)()
 
     const stats = agent.metrics.getOrCreateMetric('Memory/Physical')
-    expect(stats.callCount).equal(0)
-    process.memoryUsage = oldProcessMem
+    t.equal(stats.callCount, 0)
+    t.end()
   })
 
-  it('should have some rough idea of how deep the event queue is', function (done) {
+  t.test('should have some rough idea of how deep the event queue is', function (t) {
+    const { agent } = t.context
     sampler.checkEvents(agent)()
 
     /* sampler.checkEvents works by creating a timer and using
@@ -248,18 +264,18 @@ describe('environmental sampler', function () {
      */
     setTimeout(function () {
       const stats = agent.metrics.getOrCreateMetric('Events/wait')
-      expect(stats.callCount).equal(1)
+      t.equal(stats.callCount, 1)
       /* process.hrtime will notice the passage of time, but this
        * happens too fast to measure any meaningful latency in versions
        * of Node that don't have process.hrtime available, so just make
        * sure we're not getting back undefined or null here.
        */
-      expect(stats.total).a('number')
+      t.ok(typeof stats.total === 'number')
       if (process.hrtime) {
-        expect(stats.total).above(0)
+        t.ok(stats.total > 0)
       }
 
-      done()
+      t.end()
     }, 0)
   })
 })

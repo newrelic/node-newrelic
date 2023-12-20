@@ -4,59 +4,135 @@
  */
 
 'use strict'
-
-// TODO: convert to normal tap style.
-// Below allows use of mocha DSL with tap runner.
-require('tap').mochaGlobals()
-
-const chai = require('chai')
+const tap = require('tap')
 const Config = require('../../../lib/config')
-const expect = chai.expect
 const Normalizer = require('../../../lib/metrics/normalizer')
 
 const stagingRules = require('./staging-rules')
+function beforeEach(t) {
+  const config = { enforce_backstop: true }
+  t.context.normalizer = new Normalizer(config, 'URL')
+}
 
-describe('MetricNormalizer', function () {
-  let normalizer
+tap.test('MetricNormalizer', function (t) {
+  t.autoend()
+  t.test('normalize', (t) => {
+    t.autoend()
+    t.beforeEach(beforeEach)
+    t.test('should throw when instantiated without config', function (t) {
+      t.throws(function () {
+        // eslint-disable-next-line no-new
+        new Normalizer()
+      })
+      t.end()
+    })
 
-  beforeEach(function () {
-    const config = { enforce_backstop: true }
-    normalizer = new Normalizer(config, 'URL')
-  })
+    t.test('should throw when instantiated without type', function (t) {
+      const config = { enforce_backstop: true }
+      t.throws(function () {
+        // eslint-disable-next-line no-new
+        new Normalizer(config)
+      })
+      t.end()
+    })
 
-  it('should throw when instantiated without config', function () {
-    expect(function () {
-      normalizer = new Normalizer()
-    }).throws()
-  })
+    t.test('should normalize even without any rules set', function (t) {
+      const { normalizer } = t.context
+      t.equal(normalizer.normalize('/sample').value, 'NormalizedUri/*')
+      t.end()
+    })
 
-  it('should throw when instantiated without type', function () {
-    const config = { enforce_backstop: true }
-    expect(function () {
-      normalizer = new Normalizer(config)
-    }).throws()
-  })
-
-  it('should normalize even without any rules set', function () {
-    expect(function () {
-      expect(normalizer.normalize('/sample')).to.have.property('value', 'NormalizedUri/*')
-    }).not.throws()
-  })
-
-  it('should normalize with an empty rule set', function () {
-    expect(function () {
+    t.test('should normalize with an empty rule set', function (t) {
+      const { normalizer } = t.context
       normalizer.load([])
 
-      expect(normalizer.normalize('/sample')).to.have.property('value', 'NormalizedUri/*')
-    }).not.throws()
+      t.equal(normalizer.normalize('/sample').value, 'NormalizedUri/*')
+      t.end()
+    })
+
+    t.test('should ignore a matching name', function (t) {
+      const { normalizer } = t.context
+      normalizer.load([
+        {
+          each_segment: false,
+          eval_order: 0,
+          terminate_chain: true,
+          match_expression: '^/long_polling$',
+          replace_all: false,
+          ignore: true,
+          replacement: '*'
+        }
+      ])
+
+      t.equal(normalizer.normalize('/long_polling').ignore, true)
+      t.end()
+    })
+
+    t.test('should apply rules by precedence', function (t) {
+      const { normalizer } = t.context
+      normalizer.load([
+        {
+          each_segment: true,
+          eval_order: 1,
+          terminate_chain: false,
+          match_expression: 'mochi',
+          replace_all: false,
+          ignore: false,
+          replacement: 'millet'
+        },
+        {
+          each_segment: false,
+          eval_order: 0,
+          terminate_chain: false,
+          match_expression: '/rice$',
+          replace_all: false,
+          ignore: false,
+          replacement: '/mochi'
+        }
+      ])
+
+      t.equal(normalizer.normalize('/rice/is/not/rice').value, 'NormalizedUri/rice/is/not/millet')
+      t.end()
+    })
+
+    t.test('should terminate when indicated by rule', function (t) {
+      const { normalizer } = t.context
+      normalizer.load([
+        {
+          each_segment: true,
+          eval_order: 1,
+          terminate_chain: false,
+          match_expression: 'mochi',
+          replace_all: false,
+          ignore: false,
+          replacement: 'millet'
+        },
+        {
+          each_segment: false,
+          eval_order: 0,
+          terminate_chain: true,
+          match_expression: '/rice$',
+          replace_all: false,
+          ignore: false,
+          replacement: '/mochi'
+        }
+      ])
+
+      t.equal(normalizer.normalize('/rice/is/not/rice').value, 'NormalizedUri/rice/is/not/mochi')
+      t.end()
+    })
   })
 
-  describe('with rules captured from the staging collector on 2012-08-29', function () {
-    beforeEach(function () {
+  t.test('with rules captured from the staging collector on 2012-08-29', function (t) {
+    t.autoend()
+    t.beforeEach(function (t) {
+      beforeEach(t)
+      const { normalizer } = t.context
       normalizer.load(stagingRules)
     })
 
-    it('should eliminate duplicate rules as part of loading them', function () {
+    t.test('should eliminate duplicate rules as part of loading them', function (t) {
+      const { normalizer } = t.context
       const patternWithSlash = '^(.*)\\/[0-9][0-9a-f_,-]*\\.([0-9a-z][0-9a-z]*)$'
       const reduced = [
         {
@@ -97,32 +173,35 @@ describe('MetricNormalizer', function () {
         }
       ]
 
-      expect(
+      t.same(
         normalizer.rules.map((r) => {
           return r.toJSON()
-        })
-      ).eql(reduced)
-    })
-
-    it('should normalize a JPEGgy URL', function () {
-      expect(normalizer.normalize('/excessivity.jpeg')).to.have.property(
-        'value',
-        'NormalizedUri/*.jpeg'
+        }),
+        reduced
       )
+      t.end()
     })
 
-    it('should normalize a JPGgy URL', function () {
-      expect(normalizer.normalize('/excessivity.jpg')).to.have.property(
-        'value',
-        'NormalizedUri/*.jpg'
-      )
+    t.test('should normalize a JPEGgy URL', function (t) {
+      const { normalizer } = t.context
+      t.equal(normalizer.normalize('/excessivity.jpeg').value, 'NormalizedUri/*.jpeg')
+      t.end()
     })
 
-    it('should normalize a CSS URL', function () {
-      expect(normalizer.normalize('/style.css')).to.have.property('value', 'NormalizedUri/*.css')
+    t.test('should normalize a JPGgy URL', function (t) {
+      const { normalizer } = t.context
+      t.equal(normalizer.normalize('/excessivity.jpg').value, 'NormalizedUri/*.jpg')
+      t.end()
     })
 
-    it('should drop old rules when reloading', function () {
+    t.test('should normalize a CSS URL', function (t) {
+      const { normalizer } = t.context
+      t.equal(normalizer.normalize('/style.css').value, 'NormalizedUri/*.css')
+      t.end()
+    })
+
+    t.test('should drop old rules when reloading', function (t) {
+      const { normalizer } = t.context
       const newRule = {
         each_segment: false,
         eval_order: 0,
@@ -143,115 +222,54 @@ describe('MetricNormalizer', function () {
         ignore: false,
         replacement: '$1'
       }
-      expect(
+      t.same(
         normalizer.rules.map((r) => {
           return r.toJSON()
-        })
-      ).eql([expected])
+        }),
+        [expected]
+      )
+      t.end()
     })
   })
 
-  it('should ignore a matching name', function () {
-    normalizer.load([
-      {
-        each_segment: false,
-        eval_order: 0,
-        terminate_chain: true,
-        match_expression: '^/long_polling$',
-        replace_all: false,
-        ignore: true,
-        replacement: '*'
-      }
-    ])
-
-    expect(normalizer.normalize('/long_polling')).to.have.property('ignore', true)
-  })
-
-  it('should apply rules by precedence', function () {
-    normalizer.load([
-      {
-        each_segment: true,
-        eval_order: 1,
-        terminate_chain: false,
-        match_expression: 'mochi',
-        replace_all: false,
-        ignore: false,
-        replacement: 'millet'
-      },
-      {
-        each_segment: false,
-        eval_order: 0,
-        terminate_chain: false,
-        match_expression: '/rice$',
-        replace_all: false,
-        ignore: false,
-        replacement: '/mochi'
-      }
-    ])
-
-    expect(normalizer.normalize('/rice/is/not/rice')).to.have.property(
-      'value',
-      'NormalizedUri/rice/is/not/millet'
-    )
-  })
-
-  it('should terminate when indicated by rule', function () {
-    normalizer.load([
-      {
-        each_segment: true,
-        eval_order: 1,
-        terminate_chain: false,
-        match_expression: 'mochi',
-        replace_all: false,
-        ignore: false,
-        replacement: 'millet'
-      },
-      {
-        each_segment: false,
-        eval_order: 0,
-        terminate_chain: true,
-        match_expression: '/rice$',
-        replace_all: false,
-        ignore: false,
-        replacement: '/mochi'
-      }
-    ])
-
-    expect(normalizer.normalize('/rice/is/not/rice')).to.have.property(
-      'value',
-      'NormalizedUri/rice/is/not/mochi'
-    )
-  })
-
-  describe('when calling addSimple', function () {
-    it("won't crash with no parameters", function () {
-      expect(function () {
+  t.test('when calling addSimple', function (t) {
+    t.autoend()
+    t.beforeEach(beforeEach)
+    t.test("won't crash with no parameters", function (t) {
+      const { normalizer } = t.context
+      t.doesNotThrow(function () {
         normalizer.addSimple()
-      }).not.throws()
+      })
+      t.end()
     })
 
-    it("won't crash when name isn't passed", function () {
-      expect(function () {
+    t.test("won't crash when name isn't passed", function (t) {
+      const { normalizer } = t.context
+      t.doesNotThrow(function () {
         normalizer.addSimple('^t')
-      }).not.throws()
+      })
+      t.end()
     })
 
-    it("will ignore matches when name isn't passed", function () {
+    t.test("will ignore matches when name isn't passed", function (t) {
+      const { normalizer } = t.context
       normalizer.addSimple('^t')
-      expect(normalizer.rules[0].ignore).equal(true)
+      t.equal(normalizer.rules[0].ignore, true)
+      t.end()
     })
 
-    it('will create rename rules that work properly', function () {
+    t.test('will create rename rules that work properly', function (t) {
+      const { normalizer } = t.context
       normalizer.addSimple('^/t(.*)$', '/w$1')
-      expect(normalizer.normalize('/test')).to.have.property('value', 'NormalizedUri/west')
+      t.equal(normalizer.normalize('/test').value, 'NormalizedUri/west')
+      t.end()
     })
   })
 
-  describe('when loading from config', function () {
-    let config = null
-
-    beforeEach(function () {
-      config = new Config({
+  t.test('when loading from config', function (t) {
+    t.autoend()
+    t.beforeEach(function (t) {
+      t.context.config = new Config({
         rules: {
           name: [
             { pattern: '^first$', name: 'first', precedence: 500 },
@@ -262,49 +280,33 @@ describe('MetricNormalizer', function () {
         }
       })
 
-      normalizer = new Normalizer(config, 'URL')
+      t.context.normalizer = new Normalizer(t.context.config, 'URL')
     })
 
-    afterEach(function () {
-      config = null
-      normalizer = null
+    t.afterEach(function (t) {
+      t.context.config = null
+      t.context.normalizer = null
     })
 
-    describe('with feature flag reverse_naming_rules', function () {
-      describe('set to true', function () {
-        beforeEach(function () {
-          config.feature_flag = { reverse_naming_rules: true }
-          normalizer.loadFromConfig()
-        })
+    t.test('with feature flag reverse_naming_rules set to true', function (t) {
+      const { config, normalizer } = t.context
+      config.feature_flag = { reverse_naming_rules: true }
+      normalizer.loadFromConfig()
+      t.equal(normalizer.rules[1].replacement, 'third')
+      t.equal(normalizer.rules[2].replacement, 'fourth')
+      t.equal(normalizer.rules[3].replacement, 'second')
+      t.equal(normalizer.rules[4].replacement, 'first')
+      t.end()
+    })
 
-        it('should respect precedence', function () {
-          expect(normalizer.rules[1]).to.have.property('replacement', 'third')
-        })
-
-        it('should have the rules in reverse order', function () {
-          expect(normalizer.rules[1]).to.have.property('replacement', 'third')
-          expect(normalizer.rules[2]).to.have.property('replacement', 'fourth')
-          expect(normalizer.rules[3]).to.have.property('replacement', 'second')
-          expect(normalizer.rules[4]).to.have.property('replacement', 'first')
-        })
-      })
-
-      describe('set to false (default)', function () {
-        beforeEach(function () {
-          normalizer.loadFromConfig()
-        })
-
-        it('should respect precedence', function () {
-          expect(normalizer.rules[1]).to.have.property('replacement', 'third')
-        })
-
-        it('should have the rules in forward order', function () {
-          expect(normalizer.rules[1]).to.have.property('replacement', 'third')
-          expect(normalizer.rules[2]).to.have.property('replacement', 'first')
-          expect(normalizer.rules[3]).to.have.property('replacement', 'second')
-          expect(normalizer.rules[4]).to.have.property('replacement', 'fourth')
-        })
-      })
+    t.test('with feature flag reverse_naming_rules set to false (default)', function (t) {
+      const { normalizer } = t.context
+      normalizer.loadFromConfig()
+      t.equal(normalizer.rules[1].replacement, 'third')
+      t.equal(normalizer.rules[2].replacement, 'first')
+      t.equal(normalizer.rules[3].replacement, 'second')
+      t.equal(normalizer.rules[4].replacement, 'fourth')
+      t.end()
     })
   })
 })

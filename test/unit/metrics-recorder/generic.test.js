@@ -4,13 +4,7 @@
  */
 
 'use strict'
-
-// TODO: convert to normal tap style.
-// Below allows use of mocha DSL with tap runner.
-require('tap').mochaGlobals()
-
-const chai = require('chai')
-const expect = chai.expect
+const tap = require('tap')
 const helper = require('../../lib/agent_helper')
 const recordGeneric = require('../../../lib/metrics/recorders/generic')
 const Transaction = require('../../../lib/transaction')
@@ -35,69 +29,71 @@ function record(options) {
   recordGeneric(segment, options.transaction.name)
 }
 
-describe('recordGeneric', function () {
-  let agent
-  let trans
-
-  beforeEach(function () {
-    agent = helper.loadMockedAgent()
-    trans = new Transaction(agent)
+tap.test('recordGeneric', function (t) {
+  t.autoend()
+  t.beforeEach((t) => {
+    const agent = helper.loadMockedAgent()
+    t.context.trans = new Transaction(agent)
+    t.context.agent = agent
   })
 
-  afterEach(function () {
-    helper.unloadAgent(agent)
+  t.afterEach((t) => {
+    helper.unloadAgent(t.context.agent)
   })
 
-  describe('when scope is undefined', function () {
-    it("shouldn't crash on recording", function () {
-      const segment = makeSegment({
-        transaction: trans,
-        duration: 0,
-        exclusive: 0
-      })
-      expect(function () {
-        recordGeneric(segment, undefined)
-      }).not.throws()
+  t.test("when scoped is undefined it shouldn't crash on recording", function (t) {
+    const { trans } = t.context
+    const segment = makeSegment({
+      transaction: trans,
+      duration: 0,
+      exclusive: 0
     })
-
-    it('should record no scoped metrics', function () {
-      const segment = makeSegment({
-        transaction: trans,
-        duration: 5,
-        exclusive: 5
-      })
+    t.doesNotThrow(function () {
       recordGeneric(segment, undefined)
-
-      const result = [[{ name: 'placeholder' }, [1, 0.005, 0.005, 0.005, 0.005, 0.000025]]]
-
-      expect(JSON.stringify(trans.metrics)).equal(JSON.stringify(result))
     })
+    t.end()
   })
 
-  describe('with scope', function () {
-    it('should record scoped metrics', function () {
-      record({
-        transaction: trans,
-        url: '/test',
-        code: 200,
-        apdexT: 10,
-        duration: 30,
-        exclusive: 2
-      })
+  t.test('when scoped is undefined it should record no scoped metrics', function (t) {
+    const { trans } = t.context
+    const segment = makeSegment({
+      transaction: trans,
+      duration: 5,
+      exclusive: 5
+    })
+    recordGeneric(segment, undefined)
 
-      const result = [
-        [{ name: 'placeholder' }, [1, 0.03, 0.002, 0.03, 0.03, 0.0009]],
-        [
-          { name: 'placeholder', scope: 'WebTransaction/NormalizedUri/*' },
-          [1, 0.03, 0.002, 0.03, 0.03, 0.0009]
-        ]
+    const result = [[{ name: 'placeholder' }, [1, 0.005, 0.005, 0.005, 0.005, 0.000025]]]
+
+    t.equal(JSON.stringify(trans.metrics), JSON.stringify(result))
+    t.end()
+  })
+
+  t.test('with scope should record scoped metrics', function (t) {
+    const { trans } = t.context
+    record({
+      transaction: trans,
+      url: '/test',
+      code: 200,
+      apdexT: 10,
+      duration: 30,
+      exclusive: 2
+    })
+
+    const result = [
+      [{ name: 'placeholder' }, [1, 0.03, 0.002, 0.03, 0.03, 0.0009]],
+      [
+        { name: 'placeholder', scope: 'WebTransaction/NormalizedUri/*' },
+        [1, 0.03, 0.002, 0.03, 0.03, 0.0009]
       ]
+    ]
 
-      expect(JSON.stringify(trans.metrics)).equal(JSON.stringify(result))
-    })
+    t.equal(JSON.stringify(trans.metrics), JSON.stringify(result))
+    t.end()
   })
 
-  it('should report exclusive time correctly', function () {
+  t.test('should report exclusive time correctly', function (t) {
+    const { trans } = t.context
     const root = trans.trace.root
     const parent = root.add('Test/Parent', recordGeneric)
     const child1 = parent.add('Test/Child/1', recordGeneric)
@@ -115,6 +111,7 @@ describe('recordGeneric', function () {
     ]
 
     trans.end()
-    expect(JSON.stringify(trans.metrics)).equal(JSON.stringify(result))
+    t.equal(JSON.stringify(trans.metrics), JSON.stringify(result))
+    t.end()
   })
 })

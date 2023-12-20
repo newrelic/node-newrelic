@@ -11,8 +11,6 @@ const os = require('os')
 const util = require('util')
 const zlib = require('zlib')
 const nock = require('nock')
-const chai = require('chai')
-const expect = chai.expect
 const sinon = require('sinon')
 const fs = require('fs')
 const fsOpenAsync = util.promisify(fs.open)
@@ -281,7 +279,7 @@ tap.test('ServerlessCollector with output to custom pipe', (t) => {
       const buf = Buffer.from(writtenPayload[2], 'base64')
 
       zlib.gunzip(buf, (err, unpack) => {
-        expect(err).to.be.null
+        t.error(err)
         const payload = JSON.parse(unpack)
         t.ok(payload.data)
         t.ok(Object.keys(payload.data).length > 4000, `expected to be > 4000`)

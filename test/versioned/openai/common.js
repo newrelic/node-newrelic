@@ -4,6 +4,7 @@
  */
 
 'use strict'
+const tap = require('tap')
 const common = module.exports
 const createOpenAIMockServer = require('./mock-server')
 const helper = require('../../lib/agent_helper')
@@ -35,14 +36,7 @@ common.afterHook = function afterHook(t) {
   t.context.agent && helper.unloadAgent(t.context.agent)
 }
 
-common.assertChatCompletionMessages = function assertChatCompletionMessages({
-  tx,
-  chatMsgs,
-  id,
-  model,
-  reqContent,
-  resContent
-}) {
+function assertChatCompletionMessages({ tx, chatMsgs, id, model, reqContent, resContent }) {
   const baseMsg = {
     'appName': 'New Relic for Node.js tests',
     'request_id': '49dbbffbd3c3f4612aa48def69059aad',
@@ -80,13 +74,7 @@ common.assertChatCompletionMessages = function assertChatCompletionMessages({
   })
 }
 
-common.assertChatCompletionSummary = function assertChatCompletionSummary({
-  tx,
-  model,
-  chatSummary,
-  tokenUsage,
-  error = false
-}) {
+function assertChatCompletionSummary({ tx, model, chatSummary, tokenUsage, error = false }) {
   let expectedChatSummary = {
     'id': /[a-f0-9]{36}/,
     'appName': 'New Relic for Node.js tests',
@@ -124,3 +112,6 @@ common.assertChatCompletionSummary = function assertChatCompletionSummary({
   this.equal(chatSummary[0].type, 'LlmChatCompletionSummary')
   this.match(chatSummary[1], expectedChatSummary, 'should match chat summary message')
 }
+
+tap.Test.prototype.addAssert('llmMessages', 1, assertChatCompletionMessages)
+tap.Test.prototype.addAssert('llmSummary', 1, assertChatCompletionSummary)

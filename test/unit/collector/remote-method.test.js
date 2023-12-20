@@ -11,7 +11,7 @@ const url = require('url')
 const Config = require('../../../lib/config')
 const RemoteMethod = require('../../../lib/collector/remote-method')
 const helper = require('../../lib/agent_helper')
-const { tapAssertMetrics } = require('../../lib/metrics_helper')
+require('../../lib/metrics_helper')
 const NAMES = require('../../../lib/metrics/names')
 
 const BARE_AGENT = { config: {}, metrics: { measureBytes() {} } }
@@ -812,8 +812,7 @@ tap.test('record data usage supportability metrics', (t) => {
       })
     }
 
-    tapAssertMetrics(
-      t,
+    t.assertMetricValues(
       {
         metrics: agent.metrics
       },
@@ -860,8 +859,7 @@ tap.test('record data usage supportability metrics', (t) => {
       })
     })
 
-    tapAssertMetrics(
-      t,
+    t.assertMetricValues(
       {
         metrics: agent.metrics
       },
@@ -897,8 +895,7 @@ tap.test('record data usage supportability metrics', (t) => {
       method.invoke(payload, resolve)
     })
 
-    tapAssertMetrics(
-      t,
+    t.assertMetricValues(
       {
         metrics: agent.metrics
       },

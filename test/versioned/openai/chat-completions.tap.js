@@ -12,27 +12,19 @@
 
 const tap = require('tap')
 const helper = require('../../lib/agent_helper')
-const { assertSegments } = require('../../lib/metrics_helper')
+// load the assertSegments assertion
+require('../../lib/metrics_helper')
 const {
   AI: { OPENAI }
 } = require('../../../lib/metrics/names')
 const responses = require('./mock-responses')
-const {
-  beforeHook,
-  afterEachHook,
-  afterHook,
-  assertChatCompletionMessages,
-  assertChatCompletionSummary
-} = require('./common')
+const { beforeHook, afterEachHook, afterHook } = require('./common')
 const semver = require('semver')
 const fs = require('fs')
 // have to read and not require because openai does not export the package.json
 const { version: pkgVersion } = JSON.parse(
   fs.readFileSync(`${__dirname}/node_modules/openai/package.json`)
 )
-
-tap.Test.prototype.addAssert('llmMessages', 1, assertChatCompletionMessages)
-tap.Test.prototype.addAssert('llmSummary', 1, assertChatCompletionSummary)
 
 tap.test('OpenAI instrumentation - chat completions', (t) => {
   t.autoend()
@@ -55,7 +47,7 @@ tap.test('OpenAI instrumentation - chat completions', (t) => {
       test.equal(results.choices[0].message.content, '1 plus 2 is 3.')
 
       test.doesNotThrow(() => {
-        assertSegments(
+        test.assertSegments(
           tx.trace.root,
           [OPENAI.COMPLETION, [`External/${host}:${port}/chat/completions`]],
           { exact: false }
@@ -138,7 +130,7 @@ tap.test('OpenAI instrumentation - chat completions', (t) => {
         test.equal(chunk.choices[0].message.content, res)
 
         test.doesNotThrow(() => {
-          assertSegments(
+          test.assertSegments(
             tx.trace.root,
             [OPENAI.COMPLETION, [`External/${host}:${port}/chat/completions`]],
             { exact: false }
@@ -265,7 +257,7 @@ tap.test('OpenAI instrumentation - chat completions', (t) => {
         t.equal(events.length, 0)
         // we will still record the external segment but not the chat completion
         test.doesNotThrow(() => {
-          assertSegments(tx.trace.root, [
+          test.assertSegments(tx.trace.root, [
             'timers.setTimeout',
             `External/${host}:${port}/chat/completions`
           ])

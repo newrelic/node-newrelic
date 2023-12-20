@@ -4,12 +4,7 @@
  */
 
 'use strict'
-
-// TODO: convert to normal tap style.
-// Below allows use of mocha DSL with tap runner.
-require('tap').mochaGlobals()
-
-const expect = require('chai').expect
+const tap = require('tap')
 const CustomEventAggregator = require('../../../lib/custom-events/custom-event-aggregator')
 const Metrics = require('../../../lib/metrics')
 
@@ -17,10 +12,11 @@ const RUN_ID = 1337
 const LIMIT = 5
 const EXPECTED_METHOD = 'custom_event_data'
 
-describe('Custom Event Aggregator', () => {
+tap.test('Custom Event Aggregator', (t) => {
+  t.autoend()
   let eventAggregator
 
-  beforeEach(() => {
+  t.beforeEach(() => {
     eventAggregator = new CustomEventAggregator(
       {
         runId: RUN_ID,
@@ -31,33 +27,36 @@ describe('Custom Event Aggregator', () => {
     )
   })
 
-  afterEach(() => {
+  t.afterEach(() => {
     eventAggregator = null
   })
 
-  it('should set the correct default method', () => {
+  t.test('should set the correct default method', (t) => {
     const method = eventAggregator.method
 
-    expect(method).to.equal(EXPECTED_METHOD)
+    t.equal(method, EXPECTED_METHOD)
+    t.end()
   })
 
-  it('toPayloadSync() should return json format of data', () => {
+  t.test('toPayloadSync() should return json format of data', (t) => {
     const rawEvent = [{ type: 'Custom' }, { foo: 'bar' }]
 
     eventAggregator.add(rawEvent)
 
     const payload = eventAggregator._toPayloadSync()
-    expect(payload.length).to.equal(2)
+    t.equal(payload.length, 2)
 
     const [runId, eventData] = payload
 
-    expect(runId).to.equal(RUN_ID)
-    expect(eventData).to.deep.equal([rawEvent])
+    t.equal(runId, RUN_ID)
+    t.same(eventData, [rawEvent])
+    t.end()
   })
 
-  it('toPayloadSync() should return nothing with no event data', () => {
+  t.test('toPayloadSync() should return nothing with no event data', (t) => {
     const payload = eventAggregator._toPayloadSync()
 
-    expect(payload).to.not.exist
+    t.notOk(payload)
+    t.end()
   })
 })

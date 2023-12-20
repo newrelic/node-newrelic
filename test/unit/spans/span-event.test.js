@@ -7,7 +7,6 @@
 
 const tap = require('tap')
 const DatastoreShim = require('../../../lib/shim/datastore-shim')
-const expect = require('chai').expect
 const helper = require('../../lib/agent_helper')
 const https = require('https')
 const SpanEvent = require('../../../lib/spans/span-event')
@@ -90,7 +89,7 @@ tap.test('fromSegment()', (t) => {
         t.equal(span.intrinsics.name, 'timers.setTimeout')
         t.equal(span.intrinsics.timestamp, segment.timer.start)
 
-        expect(span.intrinsics).to.have.property('duration').within(0.03, 0.3)
+        t.ok(span.intrinsics.duration >= 0.03 && span.intrinsics.duration <= 0.3)
 
         // Generic should not have 'span.kind' or 'component'
         t.equal(span.intrinsics['span.kind'], null)
@@ -154,7 +153,7 @@ tap.test('fromSegment()', (t) => {
           t.equal(span.intrinsics.name, 'External/example.com/')
           t.equal(span.intrinsics.timestamp, segment.timer.start)
 
-          expect(span.intrinsics).to.have.property('duration').within(0.01, 2)
+          t.ok(span.intrinsics.duration >= 0.01 && span.intrinsics.duration <= 2)
 
           // Should have type-specific intrinsics
           t.equal(span.intrinsics.component, 'http')
@@ -240,7 +239,7 @@ tap.test('fromSegment()', (t) => {
         t.equal(span.intrinsics.name, 'Datastore/statement/TestStore/test/test')
         t.equal(span.intrinsics.timestamp, segment.timer.start)
 
-        expect(span.intrinsics).to.have.property('duration').within(0.03, 0.7)
+        t.ok(span.intrinsics.duration >= 0.03 && span.intrinsics.duration <= 0.7)
 
         // Should have (most) type-specific intrinsics
         t.equal(span.intrinsics.component, 'TestStore')

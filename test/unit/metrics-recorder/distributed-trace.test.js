@@ -5,12 +5,9 @@
 
 'use strict'
 
-// TODO: convert to normal tap style.
-// Below allows use of mocha DSL with tap runner.
-require('tap').mochaGlobals()
-
+const tap = require('tap')
 const helper = require('../../lib/agent_helper')
-const assertMetrics = require('../../lib/metrics_helper').assertMetrics
+require('../../lib/metrics_helper')
 const recordDistributedTrace = require('../../../lib/metrics/recorders/distributed-trace')
 const Transaction = require('../../../lib/transaction')
 
@@ -32,31 +29,34 @@ const record = (opts) => {
   recordDistributedTrace(tx, opts.type, duration, exclusive)
 }
 
-describe('recordDistributedTrace', () => {
-  let agent
-  let tx
-
-  beforeEach(() => {
-    agent = helper.loadMockedAgent({
-      distributed_tracing: {
-        enabled: true
-      },
-      cross_application_tracer: { enabled: true }
-    })
-    // Set the DT required data after config runs, since they'll be cleared when
-    // not in serverless_mode
-    ;(agent.config.account_id = '1234'),
-      (agent.config.primary_application_id = '5678'),
-      (agent.config.trusted_account_key = '1234')
-    tx = new Transaction(agent)
+function beforeEach(t) {
+  const agent = helper.loadMockedAgent({
+    distributed_tracing: {
+      enabled: true
+    },
+    cross_application_tracer: { enabled: true }
   })
+  // Set the DT required data after config runs, since they'll be cleared when
+  // not in serverless_mode
+  ;(agent.config.account_id = '1234'),
+    (agent.config.primary_application_id = '5678'),
+    (agent.config.trusted_account_key = '1234')
+  t.context.tx = new Transaction(agent)
+  t.context.agent = agent
+}
 
-  afterEach(() => {
-    helper.unloadAgent(agent)
-  })
+function afterEach(t) {
+  helper.unloadAgent(t.context.agent)
+}
 
-  describe('when a trace payload was received', () => {
-    it('records metrics with payload information', () => {
+tap.test('recordDistributedTrace', (t) => {
+  t.autoend()
+  t.test('when a trace payload was received', (t) => {
+    t.autoend()
+    t.beforeEach(beforeEach)
+    t.afterEach(afterEach)
+    t.test('records metrics with payload information', (t) => {
+      const { tx } = t.context
       const payload = tx._createDistributedTracePayload().text()
       tx.isDistributedTrace = null
       tx._acceptDistributedTracePayload(payload, 'HTTP')
@@ -87,58 +87,63 @@ describe('recordDistributedTrace', () => {
         ]
       ]
 
-      assertMetrics(tx.metrics, result, true, true)
+      t.assertMetrics(tx.metrics, result, true, true)
+      t.end()
     })
 
-    describe('and transaction errors exist', () => {
-      it('includes error-related metrics', () => {
-        const payload = tx._createDistributedTracePayload().text()
-        tx.isDistributedTrace = null
-        tx._acceptDistributedTracePayload(payload, 'HTTP')
+    t.test('and transaction errors exist includes error-related metrics', (t) => {
+      const { tx } = t.context
+      const payload = tx._createDistributedTracePayload().text()
+      tx.isDistributedTrace = null
+      tx._acceptDistributedTracePayload(payload, 'HTTP')
 
-        tx.exceptions.push('some error')
+      tx.exceptions.push('some error')
 
-        record({
-          tx,
-          duration: 55,
-          exclusive: 55,
-          type: 'Web'
-        })
-
-        const result = [
-          [
-            { name: 'DurationByCaller/App/1234/5678/HTTP/all' },
-            [1, 0.055, 0.055, 0.055, 0.055, 0.003025]
-          ],
-          [
-            { name: 'ErrorsByCaller/App/1234/5678/HTTP/all' },
-            [1, 0.055, 0.055, 0.055, 0.055, 0.003025]
-          ],
-          [
-            { name: 'TransportDuration/App/1234/5678/HTTP/all' },
-            [1, 0.055, 0.055, 0.055, 0.055, 0.003025]
-          ],
-          [
-            { name: 'DurationByCaller/App/1234/5678/HTTP/allWeb' },
-            [1, 0.055, 0.055, 0.055, 0.055, 0.003025]
-          ],
-          [
-            { name: 'ErrorsByCaller/App/1234/5678/HTTP/allWeb' },
-            [1, 0.055, 0.055, 0.055, 0.055, 0.003025]
-          ],
-          [
-            { name: 'TransportDuration/App/1234/5678/HTTP/allWeb' },
-            [1, 0.055, 0.055, 0.055, 0.055, 0.003025]
-          ]
-        ]
-
-        assertMetrics(tx.metrics, result, true, true)
+      record({
+        tx,
+        duration: 55,
+        exclusive: 55,
+        type: 'Web'
       })
+
+      const result = [
+        [
+          { name: 'DurationByCaller/App/1234/5678/HTTP/all' },
+          [1, 0.055, 0.055, 0.055, 0.055, 0.003025]
+        ],
+        [
+          { name: 'ErrorsByCaller/App/1234/5678/HTTP/all' },
+          [1, 0.055, 0.055, 0.055, 0.055, 0.003025]
+        ],
+        [
+          { name: 'TransportDuration/App/1234/5678/HTTP/all' },
+          [1, 0.055, 0.055, 0.055, 0.055, 0.003025]
+        ],
+        [
+          { name: 'DurationByCaller/App/1234/5678/HTTP/allWeb' },
+          [1, 0.055, 0.055, 0.055, 0.055, 0.003025]
+        ],
+        [
+          { name: 'ErrorsByCaller/App/1234/5678/HTTP/allWeb' },
+          [1, 0.055, 0.055, 0.055, 0.055, 0.003025]
+        ],
+        [
+          { name: 'TransportDuration/App/1234/5678/HTTP/allWeb' },
+          [1, 0.055, 0.055, 0.055, 0.055, 0.003025]
+        ]
+      ]
+
+      t.assertMetrics(tx.metrics, result, true, true)
+      t.end()
     })
   })
 
-  describe('when no trace payload was received', () => {
-    it('records metrics with Unknown payload information', () => {
+  t.test('when no trace payload was received', (t) => {
+    t.autoend()
+    t.beforeEach(beforeEach)
+    t.afterEach(afterEach)
+    t.test('records metrics with Unknown payload information', (t) => {
+      const { tx } = t.context
       record({
         tx,
         duration: 55,
@@ -157,7 +162,8 @@ describe('recordDistributedTrace', () => {
         ]
       ]
 
-      assertMetrics(tx.metrics, result, true, true)
+      t.assertMetrics(tx.metrics, result, true, true)
+      t.end()
     })
   })
 })

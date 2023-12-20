@@ -4,122 +4,142 @@
  */
 
 'use strict'
-
-// TODO: convert to normal tap style.
-// Below allows use of mocha DSL with tap runner.
-require('tap').mochaGlobals()
-
-const chai = require('chai')
-const expect = chai.expect
+const tap = require('tap')
 const helper = require('../lib/agent_helper')
 const Segment = require('../../lib/transaction/trace/segment')
 
 const notRunningStates = ['stopped', 'stopping', 'errored']
+function beforeEach(t) {
+  const agent = helper.loadMockedAgent()
+  t.context.tracer = agent.tracer
+  t.context.agent = agent
+}
 
-describe('Tracer', function () {
-  let agent = null
-  let tracer = null
+function afterEach(t) {
+  helper.unloadAgent(t.context.agent)
+}
 
-  beforeEach(function () {
-    agent = helper.loadMockedAgent()
-    tracer = agent.tracer
-  })
+tap.test('Tracer', function (t) {
+  t.autoend()
 
-  afterEach(function () {
-    helper.unloadAgent(agent)
-  })
-
-  describe('#transactionProxy', () => {
-    it('should create transaction', () => {
+  t.test('#transactionProxy', (t) => {
+    t.autoend()
+    t.beforeEach(beforeEach)
+    t.afterEach(afterEach)
+    t.test('should create transaction', (t) => {
+      const { tracer } = t.context
       const wrapped = tracer.transactionProxy(() => {
         const transaction = tracer.getTransaction()
-        expect(transaction).to.exist
+        t.ok(transaction)
+        t.end()
       })
 
       wrapped()
     })
 
-    it('should not try to wrap a null handler', function () {
-      expect(tracer.transactionProxy(null)).equal(null)
+    t.test('should not try to wrap a null handler', function (t) {
+      const { tracer } = t.context
+      t.equal(tracer.transactionProxy(null), null)
+      t.end()
     })
 
     notRunningStates.forEach((agentState) => {
-      it(`should not create transaction when agent state is ${agentState}`, () => {
+      t.test(`should not create transaction when agent state is ${agentState}`, (t) => {
+        const { tracer, agent } = t.context
         agent.setState(agentState)
 
         const wrapped = tracer.transactionProxy(() => {
           const transaction = tracer.getTransaction()
-          expect(transaction).to.not.exist
+          t.notOk(transaction)
         })
 
         wrapped()
+        t.end()
       })
     })
   })
 
-  describe('#transactionNestProxy', () => {
-    it('should create transaction', () => {
+  t.test('#transactionNestProxy', (t) => {
+    t.autoend()
+    t.beforeEach(beforeEach)
+    t.afterEach(afterEach)
+    t.test('should create transaction', (t) => {
+      const { tracer } = t.context
       const wrapped = tracer.transactionNestProxy('web', () => {
         const transaction = tracer.getTransaction()
-        expect(transaction).to.exist
+        t.ok(transaction)
       })
 
       wrapped()
+      t.end()
     })
 
     notRunningStates.forEach((agentState) => {
-      it(`should not create transaction when agent state is ${agentState}`, () => {
+      t.test(`should not create transaction when agent state is ${agentState}`, (t) => {
+        const { tracer, agent } = t.context
         agent.setState(agentState)
 
         const wrapped = tracer.transactionNestProxy('web', () => {
           const transaction = tracer.getTransaction()
-          expect(transaction).to.not.exist
+          t.notOk(transaction)
         })
 
         wrapped()
+        t.end()
       })
     })
 
-    describe('when proxying a trace segment', function () {
-      it('should not try to wrap a null handler', function () {
-        helper.runInTransaction(agent, function () {
-          expect(tracer.wrapFunction('123', null, null)).equal(null)
-        })
+    t.test('when proxying a trace segment should not try to wrap a null handler', function (t) {
+      const { tracer, agent } = t.context
+      helper.runInTransaction(agent, function () {
+        t.equal(tracer.wrapFunction('123', null, null), null)
+        t.end()
       })
     })
 
-    describe('when proxying a callback', function () {
-      it('should not try to wrap a null handler', function () {
-        helper.runInTransaction(agent, function () {
-          expect(tracer.bindFunction(null)).equal(null)
-        })
+    t.test('when proxying a callback should not try to wrap a null handler', function (t) {
+      const { tracer, agent } = t.context
+      helper.runInTransaction(agent, function () {
+        t.equal(tracer.bindFunction(null), null)
+        t.end()
       })
     })
 
-    describe('when handling immutable errors', function () {
-      it('should not break in annotation process', function () {
-        helper.runInTransaction(agent, function (trans) {
-          function wrapMe() {
-            const err = new Error('FIREBOMB')
-            Object.freeze(err)
-            throw err
-          }
-          expect(tracer.bindFunction(wrapMe, new Segment(trans, 'name'))).throws()
-        })
+    t.test('when handling immutable errors should not break in annotation process', function (t) {
+      const expectErrMsg = 'FIREBOMB'
+      const { tracer, agent } = t.context
+      helper.runInTransaction(agent, function (trans) {
+        function wrapMe() {
+          const err = new Error(expectErrMsg)
+          Object.freeze(err)
+          throw err
+        }
+        try {
+          // cannot use `t.throws` because we instrument things within the function
+          // so the original throws then another throws and tap does not like that
+          const fn = tracer.bindFunction(wrapMe, new Segment(trans, 'name'))
+          fn()
+        } catch (err) {
+          t.equal(err.message, expectErrMsg)
+          t.end()
+        }
       })
     })
 
-    describe('when a transaction is created inside a transaction', function () {
-      it('should reuse the existing transaction instead of nesting', function () {
+    t.test(
+      'when a transaction is created inside a transaction should reuse the existing transaction instead of nesting',
+      function (t) {
+        const { agent } = t.context
         helper.runInTransaction(agent, function (outerTransaction) {
           const outerId = outerTransaction.id
           helper.runInTransaction(agent, function (innerTransaction) {
             const innerId = innerTransaction.id
 
-            expect(innerId).equal(outerId)
+            t.equal(innerId, outerId)
+            t.end()
           })
         })
-      })
-    })
+      }
+    )
   })
 })
