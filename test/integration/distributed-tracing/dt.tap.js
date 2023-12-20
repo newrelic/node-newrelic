@@ -411,7 +411,7 @@ function get(uri, options, cb) {
     res.on('data', (data) => (body += data.toString('utf8')))
     res.on('error', (err) => cb(err))
     res.on('end', () => {
-      cb(null, { body: JSON.parse(body), reqHeaders: res.req._headers })
+      cb(null, { body: JSON.parse(body), reqHeaders: res.req.headers })
     })
   })
 }
