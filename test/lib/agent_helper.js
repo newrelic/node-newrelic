@@ -19,6 +19,7 @@ const symbols = require('../../lib/symbols')
 const http = require('http')
 const https = require('https')
 const semver = require('semver')
+const crypto = require('crypto')
 
 const KEYPATH = path.join(__dirname, 'test-key.key')
 const CERTPATH = path.join(__dirname, 'self-signed-test-certificate.crt')
@@ -363,7 +364,7 @@ helper.randomPort = (callback) => {
   // Min port: 1024 (without root)
   // Max port: 65535
   // Our range: 1024-65024
-  const port = Math.ceil(Math.random() * 64000 + 1024)
+  const port = crypto.randomInt(1024, 65024)
   const server = net
     .createServer()
     .once('listening', () => {
