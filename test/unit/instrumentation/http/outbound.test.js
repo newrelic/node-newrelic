@@ -272,6 +272,24 @@ tap.test('instrumentOutbound', (t) => {
     }
     t.end()
   })
+
+  t.test('should not crash when req.headers is null', (t) => {
+    const req = new events.EventEmitter()
+    helper.runInTransaction(agent, function (transaction) {
+      const path = '/asdf'
+      const name = NAMES.EXTERNAL.PREFIX + HOSTNAME + ':' + PORT + path
+
+      instrumentOutbound(agent, { headers: null, host: HOSTNAME, port: PORT }, makeFakeRequest)
+      t.equal(transaction.trace.root.children[0].name, name)
+
+      function makeFakeRequest() {
+        req.path = '/asdf?a=b&another=yourself&thing&grownup=true'
+        return req
+      }
+    })
+    t.end()
+  })
+
   t.end()
 })
 
