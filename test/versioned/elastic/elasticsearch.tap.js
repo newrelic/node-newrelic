@@ -15,6 +15,7 @@ const { readFile } = require('fs/promises')
 const semver = require('semver')
 const DB_INDEX = `test-${randomString()}`
 const DB_INDEX_2 = `test2-${randomString()}`
+const DB_INDEX_3 = `test3-${randomString()}`
 
 function randomString() {
   return crypto.randomBytes(5).toString('hex')
@@ -48,7 +49,7 @@ function setMsearch(body, version) {
   }
 }
 
-test('Elasticsearch instrumentation', (t) => {
+test('Elasticsearch instrumentation', { skip: false }, (t) => {
   t.autoend()
 
   let METRIC_HOST_NAME = null
@@ -149,6 +150,51 @@ test('Elasticsearch instrumentation', (t) => {
       )
     })
   })
+
+  t.test(
+    'should record bulk operations triggered by client helpers',
+    { skip: false },
+    async (t) => {
+      await helper.runInTransaction(agent, async function transactionInScope(transaction) {
+        const operations = [
+          { title: 'Ninth Bulk Doc from helpers', body: 'Content of ninth bulk document' },
+          { title: 'Tenth Bulk Doc from helpers', body: 'Content of tenth bulk document.' },
+          { title: 'Eleventh Bulk Doc from helpers', body: 'Content of eleventh bulk document.' },
+          { title: 'Twelfth Bulk Doc from helpers', body: 'Content of twelfth bulk document.' },
+          {
+            title: 'Thirteenth Bulk Doc from helpers',
+            body: 'Content of thirteenth bulk document'
+          },
+          {
+            title: 'Fourteenth Bulk Doc from helpers',
+            body: 'Content of fourteenth bulk document.'
+          },
+          { title: 'Fifteenth Bulk Doc from helpers', body: 'Content of fifteenth bulk document.' },
+          { title: 'Sixteenth Bulk Doc from helpers', body: 'Content of sixteenth bulk document.' }
+        ]
+        await client.helpers.bulk({
+          datasource: operations,
+          onDocument() {
+            return {
+              index: { _index: DB_INDEX_2 }
+            }
+          },
+          refreshOnCompletion: true
+        }) // setBulkBody(operations, pkgVersion)
+        t.ok(transaction, 'transaction should still be visible after bulk create')
+        const trace = transaction.trace
+        t.ok(trace?.root?.children?.[0], 'trace, trace root, and first child should exist')
+        t.ok(trace?.root?.children?.[1], 'trace, trace root, and second child should exist')
+        // helper interface results in a first child of timers.setTimeout, with the second child related to the operation
+        const secondChild = trace.root.children[1]
+        t.equal(
+          secondChild.name,
+          'Datastore/statement/ElasticSearch/any/bulk.create',
+          'should record bulk operation'
+        )
+      })
+    }
+  )
 
   t.test('should record search with query string', async function (t) {
     // enable slow queries
@@ -278,7 +324,56 @@ test('Elasticsearch instrumentation', (t) => {
       t.ok(results, 'msearch should return results')
       t.equal(results?.length, 2, 'there should be two responses--one per search')
       t.equal(results?.[0]?.hits?.hits?.length, 1, 'first search should return one result')
-      t.equal(results?.[1]?.hits?.hits?.length, 8, 'second search should return eight results')
+      t.equal(results?.[1]?.hits?.hits?.length, 10, 'second search should return eight results')
+      t.ok(transaction, 'transaction should still be visible after search')
+      const trace = transaction.trace
+      t.ok(trace?.root?.children?.[0], 'trace, trace root, and first child should exist')
+      const firstChild = trace.root.children[0]
+      t.match(
+        firstChild.name,
+        'Datastore/statement/ElasticSearch/any/msearch',
+        'child name should show msearch'
+      )
+      const attrs = firstChild.getAttributes()
+      t.match(attrs.product, 'ElasticSearch')
+      t.match(attrs.host, METRIC_HOST_NAME)
+      transaction.end()
+      t.ok(agent.queries.samples.size > 0, 'there should be a query sample')
+      for (const query of agent.queries.samples.values()) {
+        t.ok(query.total > 0, 'the samples should have positive duration')
+        t.match(
+          query.trace.query,
+          JSON.stringify(expectedQuery),
+          'expected msearch query should have been recorded'
+        )
+      }
+    })
+  })
+
+  t.test('should record msearch via helpers', { skip: true }, async function (t) {
+    // this fails and breaks metrics
+
+    agent.config.transaction_tracer.explain_threshold = 0
+    agent.config.transaction_tracer.record_sql = 'raw'
+    agent.config.slow_sql.enabled = true
+    await helper.runInTransaction(agent, async function transactionInScope(transaction) {
+      const expectedQuery = [
+        {}, // cross-index searches have can have an empty metadata section
+        { query: { match: { body: 'sixth' } } },
+        {},
+        { query: { match: { body: 'bulk' } } }
+      ]
+      const m = client.helpers.msearch()
+      const searchA = await m.search({}, { query: { match: { body: 'sixth' } } })
+      const searchB = await m.search({}, { query: { match: { body: 'bulk' } } })
+      // 7 and 8 have different result responses
+      const resultsA = searchA?.body?.hits
+      const resultsB = searchB?.body?.hits
+
+      t.ok(resultsA, 'msearch for sixth should return results')
+      t.ok(resultsB, 'msearch for bulk should return results')
+      t.equal(resultsA?.hits?.length, 1, 'first search should return one result')
+      t.equal(resultsB?.hits?.length, 8, 'second search should return eight results')
       t.ok(transaction, 'transaction should still be visible after search')
       const trace = transaction.trace
       t.ok(trace?.root?.children?.[0], 'trace, trace root, and first child should exist')
@@ -414,6 +509,100 @@ test('Elasticsearch instrumentation', (t) => {
         t.notOk(e, 'should be able to check for index existence')
       }
     })
+  })
+})
+
+test('Elasticsearch uninstrumented behavior, to check helpers', (t) => {
+  t.autoend()
+
+  let client
+  // eslint-disable-next-line no-unused-vars
+  let pkgVersion
+
+  t.before(async () => {
+    // Determine version. ElasticSearch v7 did not export package, so we have to read the file
+    // instead of requiring it, as we can with 8+.
+    const pkg = await readFile(`${__dirname}/node_modules/@elastic/elasticsearch/package.json`)
+    ;({ version: pkgVersion } = JSON.parse(pkg.toString()))
+
+    const { Client } = require('@elastic/elasticsearch')
+    client = new Client({
+      node: `http://${params.elastic_host}:${params.elastic_port}`
+    })
+
+    return Promise.all([client.indices.create({ index: DB_INDEX_3 })])
+  })
+
+  t.teardown(() => {
+    return Promise.all([client.indices.delete({ index: DB_INDEX_3 })])
+  })
+
+  t.test('should record bulk operations triggered by client helpers', async (t) => {
+    const operations = [
+      {
+        title: 'Uninstrumented First Bulk Doc from helpers',
+        body: 'Content of uninstrumented first bulk document'
+      },
+      {
+        title: 'Uninstrumented Second Bulk Doc from helpers',
+        body: 'Content of uninstrumented second bulk document.'
+      },
+      {
+        title: 'Uninstrumented Third Bulk Doc from helpers',
+        body: 'Content of uninstrumented third bulk document.'
+      },
+      {
+        title: 'Uninstrumented Fourth Bulk Doc from helpers',
+        body: 'Content of uninstrumented fourth bulk document.'
+      },
+      {
+        title: 'Uninstrumented Fifth Bulk Doc from helpers',
+        body: 'Content of uninstrumented fifth bulk document'
+      },
+      {
+        title: 'Uninstrumented Sixth Bulk Doc from helpers',
+        body: 'Content of uninstrumented sixth bulk document.'
+      },
+      {
+        title: 'Uninstrumented Seventh Bulk Doc from helpers',
+        body: 'Content of uninstrumented seventh bulk document.'
+      },
+      {
+        title: 'Uninstrumented Eighth Bulk Doc from helpers',
+        body: 'Content of uninstrumented eighth bulk document.'
+      }
+    ]
+    const result = await client.helpers.bulk({
+      datasource: operations,
+      onDocument() {
+        return {
+          index: { _index: DB_INDEX_3 }
+        }
+      }
+      // refreshOnCompletion: true
+    }) // setBulkBody(operations, pkgVersion)
+    t.ok(result, 'We should have been able to create bulk entries without error')
+    t.equal(result.total, 8, 'We should have been inserted eight records')
+  })
+  t.test('should be able to check bulk insert with msearch via helpers', async function (t) {
+    const m = client.helpers.msearch()
+    const searchA = await m.search({ index: DB_INDEX_3 }, { query: { match: { body: 'sixth' } } })
+    const searchB = await m.search(
+      { index: DB_INDEX_3 },
+      { query: { match: { body: 'uninstrumented' } } }
+    )
+    // 7 and 8 have different result responses
+    const resultsA = searchA?.body?.hits
+    const resultsB = searchB?.body?.hits
+    // if (semver.lt(pkgVersion, '8.0.0')) {
+    //   resultsA = searchA?.body?.hits?.hits
+    //   resultsB = searchB?.body?.responses
+    // }
+
+    t.ok(resultsA, 'msearch should return results for A')
+    t.ok(resultsB, 'msearch should return results for B')
+    t.equal(resultsA?.hits?.length, 1, 'first search should return one result')
+    t.equal(resultsB?.hits?.length, 8, 'second search should return eight results')
   })
 })
 
