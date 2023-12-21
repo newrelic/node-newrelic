@@ -198,7 +198,10 @@
         "@aws-sdk/client-bedrock-runtime": "^3.474.0"
       },
       "files": [
-        "bedrock-claude.tap.js"
+        "bedrock-ai21.tap.js",
+        "bedrock-amazon.tap.js",
+        "bedrock-claude.tap.js",
+        "bedrock-cohere.tap.js"
       ]
     }
   ],
