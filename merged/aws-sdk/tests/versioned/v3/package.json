@@ -195,7 +195,9 @@
         "node": ">=16.0"
       },
       "dependencies": {
-        "@aws-sdk/client-bedrock-runtime": "^3.474.0"
+        "@aws-sdk/client-bedrock-runtime": "^3.474.0",
+        "@smithy/eventstream-codec": "^2.0.15",
+        "@smithy/util-utf8": "^2.0.2"
       },
       "files": [
         "bedrock-ai21.tap.js",

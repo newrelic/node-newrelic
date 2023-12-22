@@ -25,9 +25,7 @@
   "license": "Apache-2.0",
   "devDependencies": {
     "@aws-sdk/client-s3": "^3.342.0",
-    "@aws-sdk/eventstream-codec": "^3.374.0",
     "@aws-sdk/s3-request-presigner": "^3.342.0",
-    "@aws-sdk/util-utf8": "^3.374.0",
     "@newrelic/eslint-config": "^0.0.2",
     "@newrelic/newrelic-oss-cli": "^0.1.2",
     "@newrelic/test-utilities": "^8.1.0",

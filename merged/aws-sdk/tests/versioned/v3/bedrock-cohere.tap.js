@@ -8,7 +8,8 @@
 const tap = require('tap')
 const utils = require('@newrelic/test-utilities')
 const common = require('../common')
-const { createAiResponseServer, FAKE_CREDENTIALS } = require('../aws-server-stubs')
+const createAiResponseServer = require('../aws-server-stubs/ai-server')
+const { FAKE_CREDENTIALS } = require('../aws-server-stubs')
 const bedrockPath = require.resolve('@aws-sdk/client-bedrock-runtime')
 
 tap.beforeEach(async (t) => {

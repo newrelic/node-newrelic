@@ -9,8 +9,8 @@ module.exports = createAiResponseServer
 
 const http = require('http')
 const { Readable } = require('stream')
-const { EventStreamCodec } = require('@aws-sdk/eventstream-codec')
-const { toUtf8, fromUtf8 } = require('@aws-sdk/util-utf8')
+const { EventStreamCodec } = require('@smithy/eventstream-codec')
+const { toUtf8, fromUtf8 } = require('@smithy/util-utf8')
 const { patchDestroy } = require('../common')
 const responses = require('./responses')
 
