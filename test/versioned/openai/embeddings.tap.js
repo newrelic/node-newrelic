@@ -45,9 +45,13 @@ tap.test('OpenAI instrumentation - embedding', (t) => {
       test.notOk(results.api_key, 'should remove api_key from user result')
       test.equal(results.model, 'text-embedding-ada-002-v2')
 
-      t.assertSegments(tx.trace.root, [OPENAI.EMBEDDING, [`External/${host}:${port}/embeddings`]], {
-        exact: false
-      })
+      test.assertSegments(
+        tx.trace.root,
+        [OPENAI.EMBEDDING, [`External/${host}:${port}/embeddings`]],
+        {
+          exact: false
+        }
+      )
       tx.end()
       test.end()
     })
@@ -62,7 +66,7 @@ tap.test('OpenAI instrumentation - embedding', (t) => {
       })
 
       const metrics = agent.metrics.getOrCreateMetric(`${OPENAI.TRACKING_PREFIX}/${pkgVersion}`)
-      t.equal(metrics.callCount > 0, true)
+      test.equal(metrics.callCount > 0, true)
 
       tx.end()
       test.end()
@@ -122,8 +126,8 @@ tap.test('OpenAI instrumentation - embedding', (t) => {
         })
       } catch {}
 
-      t.equal(tx.exceptions.length, 1)
-      t.match(tx.exceptions[0], {
+      test.equal(tx.exceptions.length, 1)
+      test.match(tx.exceptions[0], {
         error: {
           status: 403,
           code: null,
@@ -143,7 +147,7 @@ tap.test('OpenAI instrumentation - embedding', (t) => {
       })
 
       const embedding = agent.customEventAggregator.events.toArray().slice(0, 1)[0][1]
-      t.equal(embedding.error, true)
+      test.equal(embedding.error, true)
 
       tx.end()
       test.end()

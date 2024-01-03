@@ -46,13 +46,11 @@ tap.test('OpenAI instrumentation - chat completions', (t) => {
       test.notOk(results.api_key, 'should remove api_key from user result')
       test.equal(results.choices[0].message.content, '1 plus 2 is 3.')
 
-      test.doesNotThrow(() => {
-        test.assertSegments(
-          tx.trace.root,
-          [OPENAI.COMPLETION, [`External/${host}:${port}/chat/completions`]],
-          { exact: false }
-        )
-      }, 'should have expected segments')
+      test.assertSegments(
+        tx.trace.root,
+        [OPENAI.COMPLETION, [`External/${host}:${port}/chat/completions`]],
+        { exact: false }
+      )
       tx.end()
       test.end()
     })
@@ -129,13 +127,11 @@ tap.test('OpenAI instrumentation - chat completions', (t) => {
         test.equal(chunk.choices[0].message.content, expectedRes.streamData)
         test.equal(chunk.choices[0].message.content, res)
 
-        test.doesNotThrow(() => {
-          test.assertSegments(
-            tx.trace.root,
-            [OPENAI.COMPLETION, [`External/${host}:${port}/chat/completions`]],
-            { exact: false }
-          )
-        }, 'should have expected segments')
+        test.assertSegments(
+          tx.trace.root,
+          [OPENAI.COMPLETION, [`External/${host}:${port}/chat/completions`]],
+          { exact: false }
+        )
         tx.end()
         test.end()
       })
@@ -216,16 +212,16 @@ tap.test('OpenAI instrumentation - chat completions', (t) => {
             res += chunk.choices[0]?.delta?.content
           }
         } catch (err) {
-          t.ok(res)
-          t.ok(err.message, 'exceeded count')
+          test.ok(res)
+          test.ok(err.message, 'exceeded count')
           const events = agent.customEventAggregator.events.toArray()
-          t.equal(events.length, 4)
+          test.equal(events.length, 4)
           const chatSummary = events.filter(([{ type }]) => type === 'LlmChatCompletionSummary')[0]
           test.llmSummary({ tx, model, chatSummary, error: true })
-          t.equal(tx.exceptions.length, 1)
+          test.equal(tx.exceptions.length, 1)
           // only asserting message and completion_id as the rest of the attrs
           // are asserted in other tests
-          t.match(tx.exceptions[0], {
+          test.match(tx.exceptions[0], {
             customAttributes: {
               'error.message': 'Premature close',
               'completion_id': /\w{32}/
@@ -252,16 +248,14 @@ tap.test('OpenAI instrumentation - chat completions', (t) => {
           res += chunk.choices[0]?.delta?.content
         }
 
-        t.ok(res)
+        test.ok(res)
         const events = agent.customEventAggregator.events.toArray()
-        t.equal(events.length, 0)
+        test.equal(events.length, 0)
         // we will still record the external segment but not the chat completion
-        test.doesNotThrow(() => {
-          test.assertSegments(tx.trace.root, [
-            'timers.setTimeout',
-            `External/${host}:${port}/chat/completions`
-          ])
-        }, 'should have expected segments')
+        test.assertSegments(tx.trace.root, [
+          'timers.setTimeout',
+          `External/${host}:${port}/chat/completions`
+        ])
         tx.end()
         test.end()
       })
@@ -287,7 +281,7 @@ tap.test('OpenAI instrumentation - chat completions', (t) => {
         })
       } catch {}
 
-      t.equal(tx.exceptions.length, 1)
+      test.equal(tx.exceptions.length, 1)
       t.match(tx.exceptions[0], {
         error: {
           status: 401,
@@ -309,8 +303,8 @@ tap.test('OpenAI instrumentation - chat completions', (t) => {
       const summary = agent.customEventAggregator.events.toArray().find((e) => {
         return e[0].type === 'LlmChatCompletionSummary'
       })
-      t.ok(summary)
-      t.equal(summary[1].error, true)
+      test.ok(summary)
+      test.equal(summary[1].error, true)
 
       tx.end()
       test.end()
@@ -326,8 +320,8 @@ tap.test('OpenAI instrumentation - chat completions', (t) => {
         })
       } catch {}
 
-      t.equal(tx.exceptions.length, 1)
-      t.match(tx.exceptions[0], {
+      test.equal(tx.exceptions.length, 1)
+      test.match(tx.exceptions[0], {
         error: {
           status: 400,
           code: null,
