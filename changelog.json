@@ -2,6 +2,18 @@
   "repository": "newrelic/node-newrelic",
   "entries": [
     {
+      "version": "11.8.0",
+      "changes": {
+        "security": [],
+        "bugfixes": [
+          "Ensure opts.headers is defined in http instrumentation"
+        ],
+        "features": [
+          "removed api.setLlmMetadata"
+        ]
+      }
+    },
+    {
       "version": "11.7.0",
       "changes": {
         "security": [],
