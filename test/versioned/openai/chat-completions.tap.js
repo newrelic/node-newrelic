@@ -46,13 +46,11 @@ tap.test('OpenAI instrumentation - chat completions', (t) => {
       test.notOk(results.api_key, 'should remove api_key from user result')
       test.equal(results.choices[0].message.content, '1 plus 2 is 3.')
 
-      test.doesNotThrow(() => {
-        test.assertSegments(
-          tx.trace.root,
-          [OPENAI.COMPLETION, [`External/${host}:${port}/chat/completions`]],
-          { exact: false }
-        )
-      }, 'should have expected segments')
+      test.assertSegments(
+        tx.trace.root,
+        [OPENAI.COMPLETION, [`External/${host}:${port}/chat/completions`]],
+        { exact: false }
+      )
       tx.end()
       test.end()
     })
@@ -129,13 +127,11 @@ tap.test('OpenAI instrumentation - chat completions', (t) => {
         test.equal(chunk.choices[0].message.content, expectedRes.streamData)
         test.equal(chunk.choices[0].message.content, res)
 
-        test.doesNotThrow(() => {
-          test.assertSegments(
-            tx.trace.root,
-            [OPENAI.COMPLETION, [`External/${host}:${port}/chat/completions`]],
-            { exact: false }
-          )
-        }, 'should have expected segments')
+        test.assertSegments(
+          tx.trace.root,
+          [OPENAI.COMPLETION, [`External/${host}:${port}/chat/completions`]],
+          { exact: false }
+        )
         tx.end()
         test.end()
       })
@@ -256,12 +252,10 @@ tap.test('OpenAI instrumentation - chat completions', (t) => {
         const events = agent.customEventAggregator.events.toArray()
         t.equal(events.length, 0)
         // we will still record the external segment but not the chat completion
-        test.doesNotThrow(() => {
-          test.assertSegments(tx.trace.root, [
-            'timers.setTimeout',
-            `External/${host}:${port}/chat/completions`
-          ])
-        }, 'should have expected segments')
+        test.assertSegments(tx.trace.root, [
+          'timers.setTimeout',
+          `External/${host}:${port}/chat/completions`
+        ])
         tx.end()
         test.end()
       })
