@@ -9,7 +9,8 @@
           "Ensure opts.headers is defined in http instrumentation"
         ],
         "features": [
-          "removed api.setLlmMetadata"
+          "Removed api.setLlmMetadata",
+          "Updated SQL obfuscation tokenizer to better handle negative numbers and boolean values"
         ]
       }
     },
