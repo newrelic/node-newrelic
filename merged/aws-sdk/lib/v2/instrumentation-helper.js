@@ -11,6 +11,7 @@
  */
 const instrumentationSupported = function instrumentationSupported(AWS) {
   // instrumentation requires the serviceClientOperationsMap property
+  /* eslint-disable-next-line */
   if (
     !AWS ||
     !AWS.DynamoDB ||

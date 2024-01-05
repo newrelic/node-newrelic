@@ -157,7 +157,7 @@ function createTests(ddb, docClient, tableName) {
   const docItemParams = getDocItemParams(tableName, docUniqueArtist)
   const docQueryParams = getDocQueryParams(tableName, docUniqueArtist)
 
-  const composedTests = [
+  return [
     { api: ddb, method: 'createTable', params: createTblParams, operation: 'createTable' },
     { api: ddb, method: 'putItem', params: putItemParams, operation: 'putItem' },
     { api: ddb, method: 'getItem', params: itemParams, operation: 'getItem' },
@@ -175,12 +175,10 @@ function createTests(ddb, docClient, tableName) {
 
     { api: ddb, method: 'deleteTable', params: deleteTableParams, operation: 'deleteTable' }
   ]
-
-  return composedTests
 }
 
 function getCreateTableParams(tableName) {
-  const params = {
+  return {
     AttributeDefinitions: [
       { AttributeName: 'Artist', AttributeType: 'S' },
       { AttributeName: 'SongTitle', AttributeType: 'S' }
@@ -195,12 +193,10 @@ function getCreateTableParams(tableName) {
     },
     TableName: tableName
   }
-
-  return params
 }
 
 function getPutItemParams(tableName, uniqueArtist) {
-  const params = {
+  return {
     Item: {
       AlbumTitle: { S: 'Somewhat Famous' },
       Artist: { S: uniqueArtist },
@@ -208,44 +204,36 @@ function getPutItemParams(tableName, uniqueArtist) {
     },
     TableName: tableName
   }
-
-  return params
 }
 
 function getItemParams(tableName, uniqueArtist) {
-  const params = {
+  return {
     Key: {
       Artist: { S: uniqueArtist },
       SongTitle: { S: 'Call Me Today' }
     },
     TableName: tableName
   }
-
-  return params
 }
 
 function getQueryParams(tableName, uniqueArtist) {
-  const params = {
+  return {
     ExpressionAttributeValues: {
       ':v1': { S: uniqueArtist }
     },
     KeyConditionExpression: 'Artist = :v1',
     TableName: tableName
   }
-
-  return params
 }
 
 function getDeleteTableParams(tableName) {
-  const params = {
+  return {
     TableName: tableName
   }
-
-  return params
 }
 
 function getDocPutItemParams(tableName, uniqueArtist) {
-  const params = {
+  return {
     Item: {
       AlbumTitle: 'Somewhat Famous',
       Artist: uniqueArtist,
@@ -253,30 +241,24 @@ function getDocPutItemParams(tableName, uniqueArtist) {
     },
     TableName: tableName
   }
-
-  return params
 }
 
 function getDocItemParams(tableName, uniqueArtist) {
-  const params = {
+  return {
     Key: {
       Artist: uniqueArtist,
       SongTitle: 'Call Me Today'
     },
     TableName: tableName
   }
-
-  return params
 }
 
 function getDocQueryParams(tableName, uniqueArtist) {
-  const params = {
+  return {
     ExpressionAttributeValues: {
       ':v1': uniqueArtist
     },
     KeyConditionExpression: 'Artist = :v1',
     TableName: tableName
   }
-
-  return params
 }

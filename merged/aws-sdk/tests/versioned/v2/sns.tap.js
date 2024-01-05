@@ -17,7 +17,7 @@ tap.test('SNS', (t) => {
   let helper = null
   let AWS = null
   let sns = null
-  let TopicArn = null
+  const TopicArn = null
 
   let server = null
 

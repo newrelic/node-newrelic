@@ -45,8 +45,8 @@ tap.test('APIGatewayClient', (t) => {
       const cmd = new CreateApiKeyCommand({
         customerId: 'STRING_VALUE',
         description: 'STRING_VALUE',
-        enabled: true || false,
-        generateDistinctId: true || false,
+        enabled: true,
+        generateDistinctId: true,
         name: 'STRING_VALUE',
         stageKeys: [
           {

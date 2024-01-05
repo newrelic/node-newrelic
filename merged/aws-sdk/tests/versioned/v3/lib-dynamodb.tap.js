@@ -209,7 +209,7 @@ function createTests(tableName) {
   const docItemParams = getDocItemParams(tableName, docUniqueArtist)
   const docQueryParams = getDocQueryParams(tableName, docUniqueArtist)
 
-  const composedTests = [
+  return [
     { params: docPutParams, operation: 'PutItemCommand', command: 'PutCommand' },
     { params: docItemParams, operation: 'GetItemCommand', command: 'GetCommand' },
     { params: docItemParams, operation: 'UpdateItemCommand', command: 'UpdateCommand' },
@@ -217,12 +217,10 @@ function createTests(tableName) {
     { params: docQueryParams, operation: 'QueryCommand', command: 'QueryCommand' },
     { params: docItemParams, operation: 'DeleteItemCommand', command: 'DeleteCommand' }
   ]
-
-  return composedTests
 }
 
 function getDocPutItemParams(tableName, uniqueArtist) {
-  const params = {
+  return {
     Item: {
       AlbumTitle: 'Somewhat Famous',
       Artist: uniqueArtist,
@@ -230,30 +228,24 @@ function getDocPutItemParams(tableName, uniqueArtist) {
     },
     TableName: tableName
   }
-
-  return params
 }
 
 function getDocItemParams(tableName, uniqueArtist) {
-  const params = {
+  return {
     Key: {
       Artist: uniqueArtist,
       SongTitle: 'Call Me Today'
     },
     TableName: tableName
   }
-
-  return params
 }
 
 function getDocQueryParams(tableName, uniqueArtist) {
-  const params = {
+  return {
     ExpressionAttributeValues: {
       ':v1': uniqueArtist
     },
     KeyConditionExpression: 'Artist = :v1',
     TableName: tableName
   }
-
-  return params
 }

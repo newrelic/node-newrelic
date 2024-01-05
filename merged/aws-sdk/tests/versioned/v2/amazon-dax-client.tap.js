@@ -101,13 +101,11 @@ tap.test('amazon-dax-client', (t) => {
 })
 
 function getDocItemParams(tableName, uniqueArtist) {
-  const params = {
+  return {
     Key: {
       Artist: uniqueArtist,
       SongTitle: 'Call Me Today'
     },
     TableName: tableName
   }
-
-  return params
 }

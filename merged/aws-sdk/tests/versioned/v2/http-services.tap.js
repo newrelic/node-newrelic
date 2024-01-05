@@ -52,8 +52,8 @@ tap.test('AWS HTTP Services', (t) => {
         {
           customerId: 'STRING_VALUE',
           description: 'STRING_VALUE',
-          enabled: true || false,
-          generateDistinctId: true || false,
+          enabled: true,
+          generateDistinctId: true,
           name: 'STRING_VALUE',
           stageKeys: [
             {

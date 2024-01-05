@@ -1,46 +1,46 @@
 {
-  "lastUpdated": "Fri Dec 22 2023 08:32:23 GMT-0500 (Eastern Standard Time)",
+  "lastUpdated": "Wed Jan 03 2024 10:00:19 GMT-0500 (Eastern Standard Time)",
   "projectName": "New Relic AWS-SDK Instrumentation",
   "projectUrl": "https://github.com/newrelic/node-newrelic-aws-sdk",
   "includeOptDeps": false,
   "includeDev": true,
   "dependencies": {},
   "devDependencies": {
-    "@aws-sdk/client-s3@3.478.0": {
+    "@aws-sdk/client-s3@3.484.0": {
       "name": "@aws-sdk/client-s3",
-      "version": "3.478.0",
+      "version": "3.484.0",
       "range": "^3.342.0",
       "licenses": "Apache-2.0",
       "repoUrl": "https://github.com/aws/aws-sdk-js-v3",
-      "versionedRepoUrl": "https://github.com/aws/aws-sdk-js-v3/tree/v3.478.0",
+      "versionedRepoUrl": "https://github.com/aws/aws-sdk-js-v3/tree/v3.484.0",
       "licenseFile": "node_modules/@aws-sdk/client-s3/LICENSE",
-      "licenseUrl": "https://github.com/aws/aws-sdk-js-v3/blob/v3.478.0/LICENSE",
+      "licenseUrl": "https://github.com/aws/aws-sdk-js-v3/blob/v3.484.0/LICENSE",
       "licenseTextSource": "file",
       "publisher": "AWS SDK for JavaScript Team",
       "url": "https://aws.amazon.com/javascript/"
     },
-    "@aws-sdk/s3-request-presigner@3.478.0": {
+    "@aws-sdk/s3-request-presigner@3.484.0": {
       "name": "@aws-sdk/s3-request-presigner",
-      "version": "3.478.0",
+      "version": "3.484.0",
       "range": "^3.342.0",
       "licenses": "Apache-2.0",
       "repoUrl": "https://github.com/aws/aws-sdk-js-v3",
-      "versionedRepoUrl": "https://github.com/aws/aws-sdk-js-v3/tree/v3.478.0",
+      "versionedRepoUrl": "https://github.com/aws/aws-sdk-js-v3/tree/v3.484.0",
       "licenseFile": "node_modules/@aws-sdk/s3-request-presigner/LICENSE",
-      "licenseUrl": "https://github.com/aws/aws-sdk-js-v3/blob/v3.478.0/LICENSE",
+      "licenseUrl": "https://github.com/aws/aws-sdk-js-v3/blob/v3.484.0/LICENSE",
       "licenseTextSource": "file",
       "publisher": "AWS SDK for JavaScript Team",
       "url": "https://aws.amazon.com/javascript/"
     },
-    "@newrelic/eslint-config@0.0.2": {
+    "@newrelic/eslint-config@0.4.0": {
       "name": "@newrelic/eslint-config",
-      "version": "0.0.2",
-      "range": "^0.0.2",
+      "version": "0.4.0",
+      "range": "^0.4.0",
       "licenses": "Apache-2.0",
       "repoUrl": "https://github.com/newrelic/eslint-config-newrelic",
-      "versionedRepoUrl": "https://github.com/newrelic/eslint-config-newrelic/tree/v0.0.2",
+      "versionedRepoUrl": "https://github.com/newrelic/eslint-config-newrelic/tree/v0.4.0",
       "licenseFile": "node_modules/@newrelic/eslint-config/LICENSE",
-      "licenseUrl": "https://github.com/newrelic/eslint-config-newrelic/blob/v0.0.2/LICENSE",
+      "licenseUrl": "https://github.com/newrelic/eslint-config-newrelic/blob/v0.4.0/LICENSE",
       "licenseTextSource": "file",
       "publisher": "New Relic Node.js agent team",
       "email": "nodejs@newrelic.com"
@@ -70,15 +70,15 @@
       "publisher": "New Relic Node.js agent team",
       "email": "nodejs@newrelic.com"
     },
-    "aws-sdk@2.1524.0": {
+    "aws-sdk@2.1528.0": {
       "name": "aws-sdk",
-      "version": "2.1524.0",
+      "version": "2.1528.0",
       "range": "^2.1372.0",
       "licenses": "Apache-2.0",
       "repoUrl": "https://github.com/aws/aws-sdk-js",
-      "versionedRepoUrl": "https://github.com/aws/aws-sdk-js/tree/v2.1524.0",
+      "versionedRepoUrl": "https://github.com/aws/aws-sdk-js/tree/v2.1528.0",
       "licenseFile": "node_modules/aws-sdk/LICENSE.txt",
-      "licenseUrl": "https://github.com/aws/aws-sdk-js/blob/v2.1524.0/LICENSE.txt",
+      "licenseUrl": "https://github.com/aws/aws-sdk-js/blob/v2.1528.0/LICENSE.txt",
       "licenseTextSource": "file",
       "publisher": "Amazon Web Services",
       "url": "https://aws.amazon.com/"
@@ -96,63 +96,15 @@
       "publisher": "Ben Coe",
       "email": "ben@npmjs.com"
     },
-    "eslint-config-prettier@8.10.0": {
-      "name": "eslint-config-prettier",
-      "version": "8.10.0",
-      "range": "^8.3.0",
-      "licenses": "MIT",
-      "repoUrl": "https://github.com/prettier/eslint-config-prettier",
-      "versionedRepoUrl": "https://github.com/prettier/eslint-config-prettier/tree/v8.10.0",
-      "licenseFile": "node_modules/eslint-config-prettier/LICENSE",
-      "licenseUrl": "https://github.com/prettier/eslint-config-prettier/blob/v8.10.0/LICENSE",
-      "licenseTextSource": "file",
-      "publisher": "Simon Lydell"
-    },
-    "eslint-plugin-header@3.1.1": {
-      "name": "eslint-plugin-header",
-      "version": "3.1.1",
-      "range": "^3.1.1",
-      "licenses": "MIT",
-      "repoUrl": "https://github.com/Stuk/eslint-plugin-header",
-      "versionedRepoUrl": "https://github.com/Stuk/eslint-plugin-header/tree/v3.1.1",
-      "licenseFile": "node_modules/eslint-plugin-header/README.md",
-      "licenseUrl": "https://github.com/Stuk/eslint-plugin-header/blob/v3.1.1/README.md",
-      "licenseTextSource": "spdx",
-      "publisher": "Stuart Knightley"
-    },
-    "eslint-plugin-node@11.1.0": {
-      "name": "eslint-plugin-node",
-      "version": "11.1.0",
-      "range": "^11.1.0",
-      "licenses": "MIT",
-      "repoUrl": "https://github.com/mysticatea/eslint-plugin-node",
-      "versionedRepoUrl": "https://github.com/mysticatea/eslint-plugin-node/tree/v11.1.0",
-      "licenseFile": "node_modules/eslint-plugin-node/LICENSE",
-      "licenseUrl": "https://github.com/mysticatea/eslint-plugin-node/blob/v11.1.0/LICENSE",
-      "licenseTextSource": "file",
-      "publisher": "Toru Nagashima"
-    },
-    "eslint-plugin-prettier@3.4.1": {
-      "name": "eslint-plugin-prettier",
-      "version": "3.4.1",
-      "range": "^3.4.0",
-      "licenses": "MIT",
-      "repoUrl": "https://github.com/prettier/eslint-plugin-prettier",
-      "versionedRepoUrl": "https://github.com/prettier/eslint-plugin-prettier/tree/v3.4.1",
-      "licenseFile": "node_modules/eslint-plugin-prettier/LICENSE.md",
-      "licenseUrl": "https://github.com/prettier/eslint-plugin-prettier/blob/v3.4.1/LICENSE.md",
-      "licenseTextSource": "file",
-      "publisher": "Teddy Katz"
-    },
-    "eslint@7.32.0": {
+    "eslint@8.56.0": {
       "name": "eslint",
-      "version": "7.32.0",
-      "range": "^7.32.0",
+      "version": "8.56.0",
+      "range": "^8.56.0",
       "licenses": "MIT",
       "repoUrl": "https://github.com/eslint/eslint",
-      "versionedRepoUrl": "https://github.com/eslint/eslint/tree/v7.32.0",
+      "versionedRepoUrl": "https://github.com/eslint/eslint/tree/v8.56.0",
       "licenseFile": "node_modules/eslint/LICENSE",
-      "licenseUrl": "https://github.com/eslint/eslint/blob/v7.32.0/LICENSE",
+      "licenseUrl": "https://github.com/eslint/eslint/blob/v8.56.0/LICENSE",
       "licenseTextSource": "file",
       "publisher": "Nicholas C. Zakas",
       "email": "nicholas+npm@nczconsulting.com"
@@ -209,18 +161,6 @@
       "licenseTextSource": "file",
       "publisher": "New Relic Node.js agent team",
       "email": "nodejs@newrelic.com"
-    },
-    "prettier@2.8.8": {
-      "name": "prettier",
-      "version": "2.8.8",
-      "range": "^2.3.2",
-      "licenses": "MIT",
-      "repoUrl": "https://github.com/prettier/prettier",
-      "versionedRepoUrl": "https://github.com/prettier/prettier/tree/v2.8.8",
-      "licenseFile": "node_modules/prettier/LICENSE",
-      "licenseUrl": "https://github.com/prettier/prettier/blob/v2.8.8/LICENSE",
-      "licenseTextSource": "file",
-      "publisher": "James Long"
     },
     "sinon@7.5.0": {
       "name": "sinon",

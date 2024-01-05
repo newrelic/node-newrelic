@@ -156,18 +156,16 @@ function checkAttributes(t, segment, operation) {
 }
 
 function getCreateParams(queueName) {
-  const params = {
+  return {
     QueueName: queueName,
     Attributes: {
       MessageRetentionPeriod: '1200' // 20 minutes
     }
   }
-
-  return params
 }
 
 function getSendMessageParams(queueUrl) {
-  const params = {
+  return {
     MessageAttributes: {
       Attr1: {
         DataType: 'String',
@@ -177,12 +175,10 @@ function getSendMessageParams(queueUrl) {
     MessageBody: 'This is a test message',
     QueueUrl: queueUrl
   }
-
-  return params
 }
 
 function getSendMessageBatchParams(queueUrl) {
-  const params = {
+  return {
     Entries: [
       {
         Id: 'ONE',
@@ -203,17 +199,13 @@ function getSendMessageBatchParams(queueUrl) {
     ],
     QueueUrl: queueUrl
   }
-
-  return params
 }
 
 function getReceiveMessageParams(queueUrl) {
-  const params = {
+  return {
     AttributeNames: ['SentTimestamp'],
     MaxNumberOfMessages: 2,
     MessageAttributeNames: ['All'],
     QueueUrl: queueUrl
   }
-
-  return params
 }

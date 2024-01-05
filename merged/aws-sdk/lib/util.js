@@ -11,9 +11,7 @@ function grabLastUrlSegment(url = '/') {
   // string for null, undefined, NaN etc.
   url = '' + (url || '/')
   const lastSlashIndex = url.lastIndexOf('/')
-  const lastItem = url.substr(lastSlashIndex + 1)
-
-  return lastItem
+  return url.substr(lastSlashIndex + 1)
 }
 
 /**

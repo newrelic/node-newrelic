@@ -19,13 +19,13 @@ module.exports = function initialize(shim, AWS) {
     return false
   }
   // Validate every instrumentation before attempting to run any of them.
-  for (let instrumentation of INSTRUMENTATIONS) {
+  for (const instrumentation of INSTRUMENTATIONS) {
     if (!instrumentation.validate(shim, AWS)) {
       return false
     }
   }
 
-  for (let instrumentation of INSTRUMENTATIONS) {
+  for (const instrumentation of INSTRUMENTATIONS) {
     const subshim = shim.makeSpecializedShim(instrumentation.type, instrumentation.name)
     instrumentation.instrument(subshim, AWS)
   }

@@ -253,7 +253,7 @@ tap.test('DynamoDB', (t) => {
 })
 
 function getCreateTableParams(tableName) {
-  const params = {
+  return {
     AttributeDefinitions: [
       { AttributeName: 'Artist', AttributeType: 'S' },
       { AttributeName: 'SongTitle', AttributeType: 'S' }
@@ -268,12 +268,10 @@ function getCreateTableParams(tableName) {
     },
     TableName: tableName
   }
-
-  return params
 }
 
 function getPutItemParams(tableName, uniqueArtist) {
-  const params = {
+  return {
     Item: {
       AlbumTitle: { S: 'Somewhat Famous' },
       Artist: { S: uniqueArtist },
@@ -281,40 +279,32 @@ function getPutItemParams(tableName, uniqueArtist) {
     },
     TableName: tableName
   }
-
-  return params
 }
 
 function getItemParams(tableName, uniqueArtist) {
-  const params = {
+  return {
     Key: {
       Artist: { S: uniqueArtist },
       SongTitle: { S: 'Call Me Today' }
     },
     TableName: tableName
   }
-
-  return params
 }
 
 function getQueryParams(tableName, uniqueArtist) {
-  const params = {
+  return {
     ExpressionAttributeValues: {
       ':v1': { S: uniqueArtist }
     },
     KeyConditionExpression: 'Artist = :v1',
     TableName: tableName
   }
-
-  return params
 }
 
 function getDeleteTableParams(tableName) {
-  const params = {
+  return {
     TableName: tableName
   }
-
-  return params
 }
 
 function getBatchWriteItemCommandParams(tableName, uniqueArtist) {
