@@ -11,6 +11,8 @@ const helper = require('../../lib/agent_helper')
 const metrics = require('../../lib/metrics_helper')
 const http = require('http')
 const https = require('https')
+const { version: pkgVersion } = require('undici/package')
+const semver = require('semver')
 
 tap.test('Undici request tests', (t) => {
   t.autoend()
@@ -241,7 +243,10 @@ tap.test('Undici request tests', (t) => {
       } catch (err) {
         t.assertSegments(tx.trace.root, [`External/${HOST}/delay/1000`], { exact: false })
         t.equal(tx.exceptions.length, 1)
-        t.equal(tx.exceptions[0].error.message, 'Request aborted')
+        const expectedErrMsg = semver.gte(pkgVersion, '6.3.0')
+          ? 'This operation was aborted'
+          : 'Request aborted'
+        t.equal(tx.exceptions[0].error.message, expectedErrMsg)
         tx.end()
         t.end()
       }
