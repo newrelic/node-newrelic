@@ -63,7 +63,8 @@ tap.test('OpenAI instrumentation - chat completions', (t) => {
         messages: [{ role: 'user', content: 'You are a mathematician.' }]
       })
 
-      const metrics = agent.metrics.getOrCreateMetric(`${OPENAI.TRACKING_PREFIX}/${pkgVersion}`)
+      console.log(OPENAI.TRACKING_PREFIX)
+      const metrics = agent.metrics.getOrCreateMetric(`Nodejs/ML/OpenAI/${pkgVersion}`)
       t.equal(metrics.callCount > 0, true)
 
       tx.end()
