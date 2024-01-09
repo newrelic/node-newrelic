@@ -27,6 +27,10 @@ const requests = {
   cohere: (prompt, modelId) => ({
     body: JSON.stringify({ prompt }),
     modelId
+  }),
+  llama2: (prompt, modelId) => ({
+    body: JSON.stringify({ prompt }),
+    modelId
   })
 }
 
@@ -76,7 +80,8 @@ tap.afterEach(async (t) => {
   { modelId: 'ai21.j2-ultra-v1', resKey: 'ai21' },
   { modelId: 'amazon.titan-text-express-v1', resKey: 'amazon' },
   { modelId: 'anthropic.claude-v2', resKey: 'claude' },
-  { modelId: 'cohere.command-text-v14', resKey: 'cohere' }
+  { modelId: 'cohere.command-text-v14', resKey: 'cohere' },
+  { modelId: 'meta.llama2-13b-chat-v1', resKey: 'llama2' }
 ].forEach(({ modelId, resKey }) => {
   tap.test(`${modelId}: should properly create completion segment`, (t) => {
     const { bedrock, client, responses, helper, expectedExternalPath } = t.context

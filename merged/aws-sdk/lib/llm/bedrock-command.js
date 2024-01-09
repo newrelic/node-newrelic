@@ -37,6 +37,8 @@ class BedrockCommand {
       result = this.#body.max_tokens_to_sample
     } else if (this.isCohere() === true) {
       result = this.#body.max_tokens
+    } else if (this.isLlama2() === true) {
+      result = this.#body.max_gen_length
     } else if (this.isTitan() === true) {
       result = this.#body.textGenerationConfig?.maxTokenCount
     }
@@ -74,7 +76,12 @@ class BedrockCommand {
       result = this.#body.inputText
     } else if (this.isCohereEmbed() === true) {
       result = this.#body.texts.join(' ')
-    } else if (this.isClaude() === true || this.isAi21() === true || this.isCohere() === true) {
+    } else if (
+      this.isClaude() === true ||
+      this.isAi21() === true ||
+      this.isCohere() === true ||
+      this.isLlama2() === true
+    ) {
       result = this.#body.prompt
     }
     return result
@@ -87,7 +94,12 @@ class BedrockCommand {
     let result
     if (this.isTitan() === true) {
       result = this.#body.textGenerationConfig?.temperature
-    } else if (this.isClaude() === true || this.isAi21() === true || this.isCohere() === true) {
+    } else if (
+      this.isClaude() === true ||
+      this.isAi21() === true ||
+      this.isCohere() === true ||
+      this.isLlama2() === true
+    ) {
       result = this.#body.temperature
     }
     return result
@@ -107,6 +119,10 @@ class BedrockCommand {
 
   isCohereEmbed() {
     return this.#modelId.startsWith('cohere.embed')
+  }
+
+  isLlama2() {
+    return this.#modelId.startsWith('meta.llama2')
   }
 
   isTitan() {

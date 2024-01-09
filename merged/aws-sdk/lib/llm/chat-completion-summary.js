@@ -44,7 +44,7 @@ class LlmChatCompletionSummary extends LlmEvent {
 
     if (cmd.isAi21() === true) {
       this[nm] = 1 + this.bedrockResponse.completions.length
-    } else if (cmd.isClaude() === true) {
+    } else if (cmd.isClaude() === true || cmd.isLlama2() === true) {
       this[nm] = 2
     } else if (cmd.isCohere() === true) {
       this[nm] = 1 + this.bedrockResponse.completions.length

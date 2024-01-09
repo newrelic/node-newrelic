@@ -98,6 +98,12 @@ function handler(req, res) {
         break
       }
 
+      case 'meta.llama2-13b-chat-v1':
+      case 'meta.llama2-70b-chat-v1': {
+        response = responses.llama2.get(payload.prompt)
+        break
+      }
+
       default: {
         response = { statusCode: 418, body: {} }
       }

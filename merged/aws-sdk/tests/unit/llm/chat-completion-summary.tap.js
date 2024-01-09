@@ -54,6 +54,9 @@ tap.beforeEach((t) => {
     isCohere() {
       return false
     },
+    isLlama2() {
+      return false
+    },
     isTitan() {
       return false
     }
@@ -115,6 +118,20 @@ tap.test('creates an claude summary', async (t) => {
 
 tap.test('creates a cohere summary', async (t) => {
   t.context.bedrockCommand.isCohere = () => true
+  const event = new LlmChatCompletionSummary(t.context)
+  t.equal(event.conversation_id, 'conversation-1')
+  t.equal(event.duration, 100)
+  t.equal(event['request.max_tokens'], 25)
+  t.equal(event['request.temperature'], 0.5)
+  t.equal(event['response.choices.finish_reason'], 'done')
+  t.equal(event['response.usage.total_tokens'], 50)
+  t.equal(event['response.usage.prompt_tokens'], 25)
+  t.equal(event['response.usage.completion_tokens'], 25)
+  t.equal(event['response.number_of_messages'], 2)
+})
+
+tap.test('creates a llama2 summary', async (t) => {
+  t.context.bedrockCommand.isLlama2 = () => true
   const event = new LlmChatCompletionSummary(t.context)
   t.equal(event.conversation_id, 'conversation-1')
   t.equal(event.duration, 100)

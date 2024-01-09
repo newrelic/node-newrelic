@@ -38,6 +38,13 @@ const cohereEmbed = {
   }
 }
 
+const llama2 = {
+  modelId: 'meta.llama2-13b-chat-v1',
+  body: {
+    prompt: 'who are you'
+  }
+}
+
 const titan = {
   modelId: 'amazon.titan-text-lite-v1',
   body: {
@@ -65,7 +72,15 @@ tap.beforeEach((t) => {
 
 tap.test('non-conforming command is handled gracefully', async (t) => {
   const cmd = new BedrockCommand(t.context.input)
-  for (const model of ['Ai21', 'Claude', 'Cohere', 'CohereEmbed', 'Titan', 'TitanEmbed']) {
+  for (const model of [
+    'Ai21',
+    'Claude',
+    'Cohere',
+    'CohereEmbed',
+    'Llama2',
+    'Titan',
+    'TitanEmbed'
+  ]) {
     t.equal(cmd[`is${model}`](), false)
   }
   t.equal(cmd.maxTokens, undefined)
@@ -159,6 +174,31 @@ tap.test('cohere embed minimal command works', async (t) => {
   t.equal(cmd.modelType, 'embedding')
   t.same(cmd.prompt, cohereEmbed.body.texts.join(' '))
   t.equal(cmd.temperature, undefined)
+})
+
+tap.test('llama2 minimal command works', async (t) => {
+  t.context.updatePayload(structuredClone(llama2))
+  const cmd = new BedrockCommand(t.context.input)
+  t.equal(cmd.isLlama2(), true)
+  t.equal(cmd.maxTokens, undefined)
+  t.equal(cmd.modelId, llama2.modelId)
+  t.equal(cmd.modelType, 'completion')
+  t.equal(cmd.prompt, llama2.body.prompt)
+  t.equal(cmd.temperature, undefined)
+})
+
+tap.test('llama2 complete command works', async (t) => {
+  const payload = structuredClone(llama2)
+  payload.body.max_gen_length = 25
+  payload.body.temperature = 0.5
+  t.context.updatePayload(payload)
+  const cmd = new BedrockCommand(t.context.input)
+  t.equal(cmd.isLlama2(), true)
+  t.equal(cmd.maxTokens, 25)
+  t.equal(cmd.modelId, payload.modelId)
+  t.equal(cmd.modelType, 'completion')
+  t.equal(cmd.prompt, payload.body.prompt)
+  t.equal(cmd.temperature, payload.body.temperature)
 })
 
 tap.test('titan minimal command works', async (t) => {

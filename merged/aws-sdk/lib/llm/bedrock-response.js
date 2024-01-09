@@ -54,6 +54,8 @@ class BedrockResponse {
     } else if (cmd.isCohere() === true) {
       this.#completions = body.generations?.map((g) => g.text) ?? []
       this.#id = body.id
+    } else if (cmd.isLlama2() === true) {
+      body.generation && this.#completions.push(body.generation)
     } else if (cmd.isTitan() === true) {
       this.#completions = body.results?.map((r) => r.outputText) ?? []
     }
@@ -83,6 +85,8 @@ class BedrockResponse {
       result = this.#parsedBody.stop_reason
     } else if (cmd.isCohere() === true) {
       result = this.#parsedBody.generations?.[0].finish_reason
+    } else if (cmd.isLlama2() === true) {
+      result = this.#parsedBody.stop_reason
     } else if (cmd.isTitan() === true) {
       result = this.#parsedBody.results?.[0]?.completionReason
     }

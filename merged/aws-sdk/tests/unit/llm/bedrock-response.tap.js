@@ -38,6 +38,11 @@ const cohere = {
   ]
 }
 
+const llama2 = {
+  generation: 'llama2-response',
+  stop_reason: 'done'
+}
+
 const titan = {
   results: [
     {
@@ -71,6 +76,9 @@ tap.beforeEach((t) => {
       return false
     },
     isCohere() {
+      return false
+    },
+    isLlama2() {
       return false
     },
     isTitan() {
@@ -171,6 +179,33 @@ tap.test('cohere complete responses work', async (t) => {
   t.equal(res.finishReason, 'done')
   t.same(res.headers, t.context.response.response.headers)
   t.equal(res.id, 'cohere-response-1')
+  t.equal(res.inputTokenCount, 25)
+  t.equal(res.outputTokenCount, 25)
+  t.equal(res.requestId, 'aws-request-1')
+  t.equal(res.statusCode, 200)
+})
+
+tap.test('llama2 malformed responses work', async (t) => {
+  t.context.bedrockCommand.isLlama2 = () => true
+  const res = new BedrockResponse(t.context)
+  t.same(res.completions, [])
+  t.equal(res.finishReason, undefined)
+  t.same(res.headers, t.context.response.response.headers)
+  t.equal(res.id, undefined)
+  t.equal(res.inputTokenCount, 25)
+  t.equal(res.outputTokenCount, 25)
+  t.equal(res.requestId, 'aws-request-1')
+  t.equal(res.statusCode, 200)
+})
+
+tap.test('llama2 complete responses work', async (t) => {
+  t.context.bedrockCommand.isLlama2 = () => true
+  t.context.updatePayload(structuredClone(llama2))
+  const res = new BedrockResponse(t.context)
+  t.same(res.completions, ['llama2-response'])
+  t.equal(res.finishReason, 'done')
+  t.same(res.headers, t.context.response.response.headers)
+  t.equal(res.id, undefined)
   t.equal(res.inputTokenCount, 25)
   t.equal(res.outputTokenCount, 25)
   t.equal(res.requestId, 'aws-request-1')
