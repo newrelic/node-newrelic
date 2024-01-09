@@ -136,7 +136,7 @@ class BedrockResponse {
    * @returns {string}
    */
   get requestId() {
-    return this.#innerOutput.requestId
+    return this.headers?.['x-amzn-requestid']
   }
 
   /**

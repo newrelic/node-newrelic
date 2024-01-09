@@ -13,23 +13,26 @@ const createAiResponseServer = require('../aws-server-stubs/ai-server')
 const { FAKE_CREDENTIALS } = require('../aws-server-stubs')
 const requests = {
   ai21: (prompt, modelId) => ({
-    body: JSON.stringify({ prompt }),
+    body: JSON.stringify({ prompt, temperature: 0.5, maxTokens: 100 }),
     modelId
   }),
   amazon: (prompt, modelId) => ({
-    body: JSON.stringify({ inputText: prompt }),
+    body: JSON.stringify({
+      inputText: prompt,
+      textGenerationConfig: { temperature: 0.5, maxTokenCount: 100 }
+    }),
     modelId
   }),
   claude: (prompt, modelId) => ({
-    body: JSON.stringify({ prompt }),
+    body: JSON.stringify({ prompt, temperature: 0.5, max_tokens_to_sample: 100 }),
     modelId
   }),
   cohere: (prompt, modelId) => ({
-    body: JSON.stringify({ prompt }),
+    body: JSON.stringify({ prompt, temperature: 0.5, max_tokens: 100 }),
     modelId
   }),
   llama2: (prompt, modelId) => ({
-    body: JSON.stringify({ prompt }),
+    body: JSON.stringify({ prompt, max_gen_length: 100, temperature: 0.5 }),
     modelId
   })
 }
@@ -116,7 +119,9 @@ tap.afterEach(async (t) => {
       const command = new bedrock.InvokeModelCommand(input)
 
       const { agent } = helper
+      const api = helper.getAgentApi()
       helper.runInTransaction(async (tx) => {
+        api.addCustomAttribute('llm.conversation_id', 'convo-id')
         await client.send(command)
         const events = agent.customEventAggregator.events.toArray()
         t.equal(events.length, 3)
@@ -152,5 +157,55 @@ tap.afterEach(async (t) => {
     } catch (error) {
       t.equal(error.message, expected.body.message)
     }
+  })
+
+  tap.test('should store ids and record feedback message accordingly', (t) => {
+    const { bedrock, client, helper } = t.context
+    const conversationId = 'convo-id'
+    const prompt = `text ${resKey} ultimate question`
+    const input = requests[resKey](prompt, modelId)
+    const command = new bedrock.InvokeModelCommand(input)
+
+    const { agent } = helper
+    const api = helper.getAgentApi()
+    helper.runInTransaction(async (tx) => {
+      api.addCustomAttribute('llm.conversation_id', conversationId)
+      const response = await client.send(command)
+      const responseId = response.$metadata.requestId
+      const events = agent.customEventAggregator.events.toArray()
+      const chatMsgs = events.filter(([{ type }]) => type === 'LlmChatCompletionMessage')
+      const ids = api.getLlmMessageIds({ responseId })
+      const messageIds = chatMsgs.map((msg) => msg[1].id)
+      t.equal(ids.request_id, responseId)
+      t.equal(ids.conversation_id, conversationId)
+      // message_ids order varies over test run, sort them to assure consistency
+      t.same(ids.message_ids.sort(), messageIds.sort())
+      api.recordLlmFeedbackEvent({
+        conversationId: ids.conversation_id,
+        requestId: ids.request_id,
+        messageId: ids.message_ids[0],
+        category: 'test-event',
+        rating: '5 star',
+        message: 'You are a mathematician.',
+        metadata: { foo: 'foo' }
+      })
+      const recordedEvents = agent.customEventAggregator.getEvents()
+      const [[, feedback]] = recordedEvents.filter(([{ type }]) => type === 'LlmFeedbackMessage')
+
+      t.match(feedback, {
+        id: /[\w\d]{32}/,
+        conversation_id: ids.conversation_id,
+        request_id: ids.request_id,
+        message_id: ids.message_ids[0],
+        category: 'test-event',
+        rating: '5 star',
+        message: 'You are a mathematician.',
+        ingest_source: 'Node',
+        foo: 'foo'
+      })
+
+      tx.end()
+      t.end()
+    })
   })
 })

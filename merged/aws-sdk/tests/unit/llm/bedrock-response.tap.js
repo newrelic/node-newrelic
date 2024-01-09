@@ -57,13 +57,13 @@ tap.beforeEach((t) => {
     response: {
       statusCode: 200,
       headers: {
+        'x-amzn-requestid': 'aws-request-1',
         'x-foo': 'foo',
         ['x-amzn-bedrock-input-token-count']: 25,
         ['x-amzn-bedrock-output-token-count']: 25
       }
     },
     output: {
-      requestId: 'aws-request-1',
       body: new TextEncoder().encode('{"foo":"foo"}')
     }
   }
@@ -100,7 +100,7 @@ tap.test('non-conforming response is handled gracefully', async (t) => {
   t.equal(res.id, undefined)
   t.equal(res.inputTokenCount, 0)
   t.equal(res.outputTokenCount, 0)
-  t.equal(res.requestId, 'aws-request-1')
+  t.equal(res.requestId, undefined)
   t.equal(res.statusCode, 200)
 })
 

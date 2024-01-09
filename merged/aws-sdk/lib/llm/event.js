@@ -64,7 +64,7 @@ class LlmEvent {
     this.span_id = segment.id
     this.transaction_id = segment.transaction.id
     this.trace_id = segment.transaction.traceId
-    this.request_id = this.bedrockResponse.headers['x-amzn-requestid']
+    this.request_id = this.bedrockResponse.requestId
 
     this['response.model'] = this.bedrockCommand.modelId
     this['request.model'] = this.bedrockCommand.modelId

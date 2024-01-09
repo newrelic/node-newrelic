@@ -117,6 +117,7 @@ function assertChatCompletionSummary({ tx, modelId, chatSummary, tokenUsage, err
     'id': /[\w]{8}-[\w]{4}-[\w]{4}-[\w]{4}-[\w]{12}/,
     'appName': 'New Relic for Node.js tests',
     'request_id': 'eda0760a-c3f0-4fc1-9a1e-75559d642866',
+    'conversation_id': 'convo-id',
     'trace_id': tx.traceId,
     'span_id': tx.trace.root.children[0].id,
     'transaction_id': tx.id,
@@ -128,6 +129,8 @@ function assertChatCompletionSummary({ tx, modelId, chatSummary, tokenUsage, err
     'api_key_last_four_digits': 'E ID',
     'response.number_of_messages': 2,
     'response.choices.finish_reason': 'endoftext',
+    'request.temperature': 0.5,
+    'request.max_tokens': 100,
     'error': error
   }
 

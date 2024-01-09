@@ -46,9 +46,7 @@ tap.beforeEach((t) => {
   }
 
   t.context.bedrockResponse = {
-    headers: {
-      'x-amzn-requestid': 'request-1'
-    }
+    requestId: 'request-1'
   }
 
   t.context.bedrockCommand = {
