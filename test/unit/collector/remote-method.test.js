@@ -7,6 +7,8 @@
 
 const tap = require('tap')
 const dns = require('dns')
+const events = require('events')
+const https = require('https')
 
 const url = require('url')
 const Config = require('../../../lib/config')
@@ -242,6 +244,20 @@ tap.test('when the connection fails', (t) => {
   t.autoend()
 
   t.test('should return the connection failure', (t) => {
+    const req = https.request
+    https.request = () => {
+      const error = Error('no server')
+      error.code = 'ECONNREFUSED'
+      const r = new events.EventEmitter()
+      r.end = function () {
+        this.emit('error', error)
+      }
+      return r
+    }
+    t.teardown(() => {
+      https.request = req
+    })
+
     const config = {
       max_payload_size_in_bytes: 100000
     }
