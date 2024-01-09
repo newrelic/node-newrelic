@@ -48,9 +48,9 @@ class LlmChatCompletionMessage extends LlmEvent {
     this.content = content
     this.role = ''
 
+    this.#setId(index)
     if (this.is_response === true) {
       this.role = 'assistant'
-      this.#setId(index)
     } else {
       this.role = 'user'
       this.content = this.bedrockCommand.prompt

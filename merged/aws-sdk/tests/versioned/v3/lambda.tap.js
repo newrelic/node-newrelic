@@ -53,8 +53,7 @@ tap.test('LambdaClient', (t) => {
       })
       await service.send(cmd)
       tx.end()
-      setImmediate(common.checkExternals, {
-        t,
+      setImmediate(t.checkExternals, {
         service: 'Lambda',
         operations: ['AddLayerVersionPermissionCommand'],
         tx

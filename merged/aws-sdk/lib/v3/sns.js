@@ -56,6 +56,7 @@ module.exports.snsMiddlewareConfig = {
   middleware: snsMiddleware,
   init(shim) {
     shim.setLibrary(shim.SNS)
+    return true
   },
   type: 'message',
   config: {

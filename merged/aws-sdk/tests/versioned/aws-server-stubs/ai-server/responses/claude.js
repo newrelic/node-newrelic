@@ -7,7 +7,7 @@
 
 const responses = new Map()
 
-responses.set('insufficient context', {
+responses.set('claude insufficient context', {
   headers: {
     'content-type': 'application/json',
     'x-amzn-requestid': '3d4ce4d4-dd79-44e8-96d5-89d3a733ded6',
@@ -24,24 +24,24 @@ responses.set('insufficient context', {
   }
 })
 
-responses.set('ultimate question', {
+responses.set('text claude ultimate question', {
   headers: {
     'content-type': 'application/json',
-    'x-amzn-requestid': '911bc6d9-84ec-4503-97ec-c2943d13dc89',
+    'x-amzn-requestid': 'eda0760a-c3f0-4fc1-9a1e-75559d642866',
     'x-amzn-bedrock-invocation-latency': '609',
-    'x-amzn-bedrock-output-token-count': '6',
-    'x-amzn-bedrock-input-token-count': '22'
+    'x-amzn-bedrock-output-token-count': '4',
+    'x-amzn-bedrock-input-token-count': '8'
   },
   statusCode: 200,
   body: {
     // "What is the answer to life, the universe, and everything?"
-    completion: ' 42.',
-    stop_reason: 'stop_sequence',
+    completion: '42',
+    stop_reason: 'endoftext',
     stop: '\n\nHuman:'
   }
 })
 
-responses.set('ultimate question stream', {
+responses.set('text claude ultimate question streamed', {
   headers: {
     'content-type': 'application/vnd.amazon.eventstream',
     'x-amzn-requestid': 'dd8de841-8bc0-4014-9e24-735632b2a0f9',
@@ -50,7 +50,7 @@ responses.set('ultimate question stream', {
   statusCode: 200,
   chunks: [
     {
-      body: { completion: ' 42', stop_reason: null, stop: null },
+      body: { completion: '42', stop_reason: null, stop: null },
       headers: {
         ':event-type': { type: 'string', value: 'chunk' },
         ':content-type': { type: 'string', value: 'application/json' },

@@ -73,7 +73,7 @@ class BedrockCommand {
     if (this.isTitan() === true || this.isTitanEmbed() === true) {
       result = this.#body.inputText
     } else if (this.isCohereEmbed() === true) {
-      result = this.#body.texts
+      result = this.#body.texts.join(' ')
     } else if (this.isClaude() === true || this.isAi21() === true || this.isCohere() === true) {
       result = this.#body.prompt
     }

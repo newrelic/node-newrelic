@@ -53,8 +53,7 @@ tap.test('RDSClient', (t) => {
       })
       await service.send(cmd)
       tx.end()
-      setImmediate(common.checkExternals, {
-        t,
+      setImmediate(t.checkExternals, {
         service: 'RDS',
         operations: ['AddRoleToDBClusterCommand'],
         tx

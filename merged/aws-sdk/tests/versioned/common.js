@@ -11,7 +11,14 @@ const SNS_PATTERN = /^MessageBroker\/SNS\/Topic/
 const SQS_PATTERN = /^MessageBroker\/SQS\/Queue/
 
 const SEGMENT_DESTINATION = 0x20
+const tap = require('tap')
 
+tap.Test.prototype.addAssert('checkExternals', 1, checkExternals)
+tap.Test.prototype.addAssert('llmMessages', 1, assertChatCompletionMessages)
+tap.Test.prototype.addAssert('llmSummary', 1, assertChatCompletionSummary)
+
+// TODO:  migrate to tap assertion, issue is variable number of args
+// which doesn't seem to play nice with addAssert in tap
 function checkAWSAttributes(t, segment, pattern, markedSegments = []) {
   const expectedAttrs = {
     'aws.operation': String,
@@ -49,12 +56,12 @@ function registerInstrumentation(agent) {
   hooks.forEach(agent.registerInstrumentation)
 }
 
-function checkExternals({ t, service, operations, tx }) {
-  const externals = checkAWSAttributes(t, tx.trace.root, EXTERN_PATTERN)
-  t.equal(externals.length, operations.length, `should have ${operations.length} aws externals`)
+function checkExternals({ service, operations, tx }) {
+  const externals = checkAWSAttributes(this, tx.trace.root, EXTERN_PATTERN)
+  this.equal(externals.length, operations.length, `should have ${operations.length} aws externals`)
   operations.forEach((operation, index) => {
     const attrs = externals[index].attributes.get(SEGMENT_DESTINATION)
-    t.match(
+    this.match(
       attrs,
       {
         'aws.operation': operation,
@@ -67,7 +74,74 @@ function checkExternals({ t, service, operations, tx }) {
       'should have expected attributes'
     )
   })
-  t.end()
+  this.end()
+}
+
+function assertChatCompletionMessages({ tx, chatMsgs, expectedId, modelId, prompt, resContent }) {
+  const baseMsg = {
+    'appName': 'New Relic for Node.js tests',
+    'request_id': 'eda0760a-c3f0-4fc1-9a1e-75559d642866',
+    'trace_id': tx.traceId,
+    'span_id': tx.trace.root.children[0].id,
+    'transaction_id': tx.id,
+    'response.model': modelId,
+    'vendor': 'bedrock',
+    'ingest_source': 'Node',
+    'role': 'user',
+    'is_response': false,
+    'completion_id': /[\w]{8}-[\w]{4}-[\w]{4}-[\w]{4}-[\w]{12}/
+  }
+
+  chatMsgs.forEach((msg) => {
+    const expectedChatMsg = { ...baseMsg }
+    const id = expectedId ? `${expectedId}-${msg[1].sequence}` : msg[1].id
+    if (msg[1].sequence === 0) {
+      expectedChatMsg.sequence = 0
+      expectedChatMsg.id = id
+      expectedChatMsg.content = prompt
+    } else if (msg[1].sequence === 1) {
+      expectedChatMsg.sequence = 1
+      expectedChatMsg.role = 'assistant'
+      expectedChatMsg.id = id
+      expectedChatMsg.content = resContent
+      expectedChatMsg.is_response = true
+    }
+
+    this.equal(msg[0].type, 'LlmChatCompletionMessage')
+    this.match(msg[1], expectedChatMsg, 'should match chat completion message')
+  })
+}
+
+function assertChatCompletionSummary({ tx, modelId, chatSummary, tokenUsage, error = false }) {
+  let expectedChatSummary = {
+    'id': /[\w]{8}-[\w]{4}-[\w]{4}-[\w]{4}-[\w]{12}/,
+    'appName': 'New Relic for Node.js tests',
+    'request_id': 'eda0760a-c3f0-4fc1-9a1e-75559d642866',
+    'trace_id': tx.traceId,
+    'span_id': tx.trace.root.children[0].id,
+    'transaction_id': tx.id,
+    'response.model': modelId,
+    'vendor': 'bedrock',
+    'ingest_source': 'Node',
+    'request.model': modelId,
+    'duration': tx.trace.root.children[0].getDurationInMillis(),
+    'api_key_last_four_digits': 'E ID',
+    'response.number_of_messages': 2,
+    'response.choices.finish_reason': 'endoftext',
+    'error': error
+  }
+
+  if (tokenUsage) {
+    expectedChatSummary = {
+      ...expectedChatSummary,
+      'response.usage.total_tokens': 12,
+      'response.usage.prompt_tokens': 8,
+      'response.usage.completion_tokens': 4
+    }
+  }
+
+  this.equal(chatSummary[0].type, 'LlmChatCompletionSummary')
+  this.match(chatSummary[1], expectedChatSummary, 'should match chat summary message')
 }
 
 module.exports = {

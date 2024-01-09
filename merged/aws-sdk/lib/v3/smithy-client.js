@@ -9,10 +9,12 @@ const { middlewareConfig } = require('./common')
 const { snsMiddlewareConfig } = require('./sns')
 const { sqsMiddlewareConfig } = require('./sqs')
 const { dynamoMiddlewareConfig } = require('./dynamodb')
+const { bedrockMiddlewareConfig } = require('./bedrock')
 const MIDDLEWARE = Symbol('nrMiddleware')
 
 const middlewareByClient = {
   Client: middlewareConfig,
+  BedrockRuntime: [...middlewareConfig, bedrockMiddlewareConfig],
   SNS: [...middlewareConfig, snsMiddlewareConfig],
   SQS: [...middlewareConfig, sqsMiddlewareConfig],
   DynamoDB: [...middlewareConfig, dynamoMiddlewareConfig],
@@ -50,9 +52,11 @@ function wrapSend(shim, send) {
         // copy the shim id from parent so if you check if something is wrapped
         // it will be across all instrumentation
         localShim.assignId('aws-sdk')
-        mw.init && mw.init(localShim)
-        const middleware = mw.middleware.bind(null, localShim, config)
-        this.middlewareStack.add(middleware, mw.config)
+        const shouldRegisterMiddleware = (mw.init && mw.init(localShim)) || !mw.init
+        if (shouldRegisterMiddleware) {
+          const middleware = mw.middleware.bind(null, localShim, config)
+          this.middlewareStack.add(middleware, mw.config)
+        }
       }
     }
 

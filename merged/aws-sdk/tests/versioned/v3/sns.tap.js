@@ -175,9 +175,8 @@ tap.test('SNS', (t) => {
 
         tx.end()
 
-        setImmediate(common.checkExternals, {
+        setImmediate(t.checkExternals, {
           tx,
-          t,
           service: 'SNS',
           operations: ['ListTopicsCommand']
         })

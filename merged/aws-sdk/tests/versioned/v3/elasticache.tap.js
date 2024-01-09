@@ -54,8 +54,7 @@ tap.test('ElastiCacheClient', (t) => {
       })
       await service.send(cmd)
       tx.end()
-      setImmediate(common.checkExternals, {
-        t,
+      setImmediate(t.checkExternals, {
         service: 'ElastiCache',
         operations: ['AddTagsToResourceCommand'],
         tx

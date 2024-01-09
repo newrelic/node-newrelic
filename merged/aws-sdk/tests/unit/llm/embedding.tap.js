@@ -43,11 +43,18 @@ tap.beforeEach((t) => {
     },
     inputTokenCount: 0
   }
+  t.context.segment = {
+    transaction: { id: '1', traceId: 'id' },
+    getDurationInMillis() {
+      return 1.008
+    }
+  }
 })
 
 tap.test('creates a basic embedding', async (t) => {
   const event = new LlmEmbedding(t.context)
   t.equal(event.input, 'who are you')
+  t.equal(event.duration, 1.008)
   t.equal(event['response.usage.total_tokens'], 0)
   t.equal(event['response.usage.prompt_tokens'], 0)
 })

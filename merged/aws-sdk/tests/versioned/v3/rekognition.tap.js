@@ -59,8 +59,7 @@ tap.test('RekognitionClient', (t) => {
       })
       await service.send(cmd)
       tx.end()
-      setImmediate(common.checkExternals, {
-        t,
+      setImmediate(t.checkExternals, {
         service: 'Rekognition',
         operations: ['CompareFacesCommand'],
         tx

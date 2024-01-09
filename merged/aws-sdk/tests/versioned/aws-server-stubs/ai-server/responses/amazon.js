@@ -7,7 +7,7 @@
 
 const responses = new Map()
 
-responses.set('embed text v1 success', {
+responses.set('embed text amazon success', {
   headers: {
     'content-type': 'application/json',
     'x-amzn-requestid': '743dd35b-744b-4ddf-b5c6-c0f3de2e3142',
@@ -21,29 +21,28 @@ responses.set('embed text v1 success', {
   }
 })
 
-responses.set('text express ultimate question', {
+responses.set('text amazon ultimate question', {
   headers: {
     'content-type': 'application/json',
-    'x-amzn-requestid': '1ecbfdf0-fcce-46a6-963f-78c34ad96d33',
+    'x-amzn-requestid': 'eda0760a-c3f0-4fc1-9a1e-75559d642866',
     'x-amzn-bedrock-invocation-latency': '2420',
-    'x-amzn-bedrock-output-token-count': '41',
-    'x-amzn-bedrock-input-token-count': '13'
+    'x-amzn-bedrock-output-token-count': '4',
+    'x-amzn-bedrock-input-token-count': '8'
   },
   statusCode: 200,
   body: {
     inputTextTokenCount: 13,
     results: [
       {
-        tokenCount: 41,
-        outputText:
-          '\nThe answer to life, the universe, and everything is 42. This is a reference to the popular science fiction novel "The Hitchhiker\'s Guide to the Galaxy" by Douglas Adams.',
-        completionReason: 'FINISH'
+        tokenCount: 4,
+        outputText: '42',
+        completionReason: 'endoftext'
       }
     ]
   }
 })
 
-responses.set('text express ultimate question streamed', {
+responses.set('text amazon ultimate question streamed', {
   headers: {
     'content-type': 'application/vnd.amazon.eventstream',
     'x-amzn-requestid': '9f117b99-3b0a-486d-9d7e-3464f306df1d',

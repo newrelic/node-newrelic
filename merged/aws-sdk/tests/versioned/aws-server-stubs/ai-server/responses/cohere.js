@@ -7,29 +7,29 @@
 
 const responses = new Map()
 
-responses.set('ultimate question', {
+responses.set('text cohere ultimate question', {
   headers: {
     'content-type': 'application/json',
-    'x-amzn-requestid': '0bbc5237-c485-4049-8b87-794cc84c383a',
+    'x-amzn-requestid': 'eda0760a-c3f0-4fc1-9a1e-75559d642866',
     'x-amzn-bedrock-invocation-latency': '9612',
-    'x-amzn-bedrock-output-token-count': '320',
-    'x-amzn-bedrock-input-token-count': '13'
+    'x-amzn-bedrock-output-token-count': '4',
+    'x-amzn-bedrock-input-token-count': '8'
   },
   statusCode: 200,
   body: {
     generations: [
       {
-        finish_reason: 'COMPLETE',
+        finish_reason: 'endoftext',
         id: '3eeb2e13-3d8e-42bb-9cb4-ae57502403c4',
-        text: ' In Douglas Adams\' science fiction novel *The Hitchhiker\'s Guide to the Galaxy*, the answer to the ultimate question of life, the universe, and everything is "42". This answer is a popular cultural reference, and it has been interpreted in many different ways.\n\nIn the novel, a supercomputer named Deep Thought is asked to find the answer to the ultimate question of life, the universe, and everything, and after millions of years of computation, it returns the answer "42". The characters are surprised and confused by this response, as they had expected a meaningful answer.\n\nThe meaning of "42" is not explicitly explained in the novel, but the author has stated that it is a random number that was chosen to be a joke. It is a play on the idea that the answer to life\'s questions should be meaningful and profound, and the fact that the answer is a random number is a way of poking fun at the idea of seeking a definitive answer to such a profound question.\n\nThe meaning of "42" can be interpreted in many ways, and it is often used as a way to explore the absurdity of life and the universe. It is a reminder that the universe is vast and complex, and that we should not expect simple answers to the questions that we ask.\n\nIn the end, the answer to life, the universe, and everything may be an absurdist joke, but it can also be a reminder to appreciate the beauty and mystery of life and the universe, and to approach our questions with a sense of humor and wonder.'
+        text: '42'
       }
     ],
-    id: '0bbc5237-c485-4049-8b87-794cc84c383a',
+    id: '1234',
     prompt: 'What is the answer to life, the universe, and everything?'
   }
 })
 
-responses.set('ultimate question stream', {
+responses.set('text cohere ultimate question streamed', {
   headers: {
     'content-type': 'application/vnd.amazon.eventstream',
     'x-amzn-requestid': '11cd0d6f-08cc-4f71-88ba-211367bd088d',
@@ -64,12 +64,12 @@ responses.set('ultimate question stream', {
   ]
 })
 
-responses.set('embed text', {
+responses.set('embed text cohere success', {
   headers: {
     'content-type': 'application/json',
-    'x-amzn-requestid': '784e35b6-226c-40d2-99f3-71f66e6185da',
-    'x-amzn-bedrock-invocation-latency': '149',
-    'x-amzn-bedrock-input-token-count': '2'
+    'x-amzn-requestid': '743dd35b-744b-4ddf-b5c6-c0f3de2e3142',
+    'x-amzn-bedrock-invocation-latency': '195',
+    'x-amzn-bedrock-input-token-count': '13'
   },
   statusCode: 200,
   body: {
@@ -82,7 +82,7 @@ responses.set('embed text', {
   }
 })
 
-responses.set('embed text stream', {
+responses.set('embed text cohere stream', {
   headers: {
     'content-type': 'application/vnd.amazon.eventstream',
     'x-amzn-requestid': 'fbd3923c-3071-4ece-8761-6ba78058f747',

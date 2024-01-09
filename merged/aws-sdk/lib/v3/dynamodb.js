@@ -73,6 +73,7 @@ const dynamoMiddlewareConfig = {
   middleware: dynamoMiddleware,
   init(shim) {
     shim.setDatastore(shim.DYNAMODB)
+    return true
   },
   type: 'datastore',
   config: {

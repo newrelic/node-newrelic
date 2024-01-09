@@ -47,8 +47,7 @@ tap.test('RedshiftClient', (t) => {
       })
       await service.send(cmd)
       tx.end()
-      setImmediate(common.checkExternals, {
-        t,
+      setImmediate(t.checkExternals, {
         service: 'Redshift',
         operations: ['AcceptReservedNodeExchangeCommand'],
         tx

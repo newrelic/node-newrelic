@@ -58,8 +58,7 @@ tap.test('APIGatewayClient', (t) => {
       })
       await service.send(cmd)
       tx.end()
-      setImmediate(common.checkExternals, {
-        t,
+      setImmediate(t.checkExternals, {
         service: 'API Gateway',
         operations: ['CreateApiKeyCommand'],
         tx

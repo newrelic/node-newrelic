@@ -49,8 +49,7 @@ tap.test('SESClient', (t) => {
       })
       await service.send(cmd)
       tx.end()
-      setImmediate(common.checkExternals, {
-        t,
+      setImmediate(t.checkExternals, {
         service: 'SES',
         operations: ['SendEmailCommand'],
         tx

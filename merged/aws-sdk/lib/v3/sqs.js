@@ -54,6 +54,7 @@ module.exports.sqsMiddlewareConfig = {
   middleware: sqsMiddleware,
   init(shim) {
     shim.setLibrary(shim.SQS)
+    return true
   },
   type: 'message',
   config: {

@@ -157,7 +157,7 @@ tap.test('cohere embed minimal command works', async (t) => {
   t.equal(cmd.maxTokens, undefined)
   t.equal(cmd.modelId, cohereEmbed.modelId)
   t.equal(cmd.modelType, 'embedding')
-  t.same(cmd.prompt, cohereEmbed.body.texts)
+  t.same(cmd.prompt, cohereEmbed.body.texts.join(' '))
   t.equal(cmd.temperature, undefined)
 })
 

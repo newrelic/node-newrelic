@@ -68,12 +68,11 @@ tap.test('S3 buckets', (t) => {
       tx.end()
 
       const args = {
-        t,
         tx,
         service: 'S3',
         operations: ['HeadBucketCommand', 'CreateBucketCommand', 'DeleteBucketCommand']
       }
-      setImmediate(common.checkExternals, args)
+      setImmediate(t.checkExternals, args)
     })
   })
 })

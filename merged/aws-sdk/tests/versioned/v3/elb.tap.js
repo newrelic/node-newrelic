@@ -57,8 +57,7 @@ tap.test('ElasticLoadBalancingClient', (t) => {
       })
       await service.send(cmd)
       tx.end()
-      setImmediate(common.checkExternals, {
-        t,
+      setImmediate(t.checkExternals, {
         service: 'Elastic Load Balancing',
         operations: ['AddTagsCommand'],
         tx

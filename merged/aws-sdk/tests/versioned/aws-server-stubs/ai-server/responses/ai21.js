@@ -7,7 +7,7 @@
 
 const responses = new Map()
 
-responses.set('ultimate question', {
+responses.set('text ai21 ultimate question', {
   headers: {
     'content-type': 'application/json',
     'x-amzn-requestid': 'eda0760a-c3f0-4fc1-9a1e-75559d642866',
@@ -98,7 +98,7 @@ responses.set('ultimate question', {
     completions: [
       {
         data: {
-          text: '\n42',
+          text: '42',
           tokens: [
             {
               generatedToken: {
@@ -144,7 +144,7 @@ responses.set('ultimate question', {
   }
 })
 
-responses.set('ultimate question streamed', {
+responses.set('text ai21 ultimate question streamed', {
   headers: {
     'content-type': 'application/json',
     'x-amzn-requestid': '1d4fd150-296e-4405-aaf9-94ed7a5ff0ed',
