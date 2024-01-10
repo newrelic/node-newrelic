@@ -6,6 +6,9 @@
 'use strict'
 
 const tap = require('tap')
+const dns = require('dns')
+const events = require('events')
+const https = require('https')
 
 const url = require('url')
 const Config = require('../../../lib/config')
@@ -241,6 +244,20 @@ tap.test('when the connection fails', (t) => {
   t.autoend()
 
   t.test('should return the connection failure', (t) => {
+    const req = https.request
+    https.request = () => {
+      const error = Error('no server')
+      error.code = 'ECONNREFUSED'
+      const r = new events.EventEmitter()
+      r.end = function () {
+        this.emit('error', error)
+      }
+      return r
+    }
+    t.teardown(() => {
+      https.request = req
+    })
+
     const config = {
       max_payload_size_in_bytes: 100000
     }
@@ -261,6 +278,16 @@ tap.test('when the connection fails', (t) => {
   })
 
   t.test('should correctly handle a DNS lookup failure', (t) => {
+    const lookup = dns.lookup
+    dns.lookup = (a, b, cb) => {
+      const error = Error('no dns')
+      error.code = dns.NOTFOUND
+      return cb(error)
+    }
+    t.teardown(() => {
+      dns.lookup = lookup
+    })
+
     const config = {
       max_payload_size_in_bytes: 100000
     }
@@ -271,13 +298,7 @@ tap.test('when the connection fails', (t) => {
     const method = new RemoteMethod('TEST', { ...BARE_AGENT, config }, endpoint)
     method.invoke([], {}, (error) => {
       t.ok(error)
-
-      // https://github.com/joyent/node/commit/7295bb9435c
-      t.match(
-        error.message,
-        /^getaddrinfo E(NOENT|NOTFOUND)( failed.domain.cxlrg)?( failed.domain.cxlrg:80)?$/ // eslint-disable-line max-len
-      )
-
+      t.equal(error.message, 'no dns')
       t.end()
     })
   })
