@@ -317,20 +317,14 @@ test('Elasticsearch instrumentation', (t) => {
       const search = await client.msearch(requestBody)
       // 7 and 8 have different result responses
       let results = search?.responses
-      let expectedSecondResults = 10
       if (!search?.responses && semver.lt(pkgVersion, '8.0.0')) {
         results = search?.body?.responses
-        expectedSecondResults = 8
       }
 
       t.ok(results, 'msearch should return results')
       t.equal(results?.length, 2, 'there should be two responses--one per search')
       t.equal(results?.[0]?.hits?.hits?.length, 1, 'first search should return one result')
-      t.equal(
-        results?.[1]?.hits?.hits?.length,
-        expectedSecondResults,
-        'second search should return the right number of results'
-      )
+      t.equal(results?.[1]?.hits?.hits?.length, 10, 'second search should return ten results')
       t.ok(transaction, 'transaction should still be visible after search')
       const trace = transaction.trace
       t.ok(trace?.root?.children?.[0], 'trace, trace root, and first child should exist')
@@ -502,7 +496,7 @@ test('Elasticsearch instrumentation', (t) => {
   })
 })
 
-test('Elasticsearch uninstrumented behavior, to check helpers', { skip: true }, (t) => {
+test('Elasticsearch uninstrumented behavior, to check helpers', { skip: false }, (t) => {
   t.autoend()
 
   let client
