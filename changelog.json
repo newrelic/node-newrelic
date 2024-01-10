@@ -2,6 +2,21 @@
   "repository": "newrelic/node-newrelic",
   "entries": [
     {
+      "version": "11.9.0",
+      "changes": {
+        "security": [
+          "bump follow-redirects from 1.15.2 to 1.15.4"
+        ],
+        "bugfixes": [
+          "Dropped support for ElasticSearch < 7.16.0",
+          "remove extra / in openai framework metric name"
+        ],
+        "features": [
+          "Assign pkgVersion and id of all child shim instances when using shim.makeSpecializedShim with a ConglomerateShim instance"
+        ]
+      }
+    },
+    {
       "version": "11.8.0",
       "changes": {
         "security": [],
