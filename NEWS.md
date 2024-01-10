@@ -12,7 +12,6 @@
 #### Security improvements
 
 * **deps:** bump follow-redirects from 1.15.2 to 1.15.4 ([#1942](https://github.com/newrelic/node-newrelic/pull/1942)) ([c1b04b6](https://github.com/newrelic/node-newrelic/commit/c1b04b69ce15173c88517b4baf920546e187ba07))
-    * Signed-off-by: dependabot[bot] <support@github.com> Co-authored-by: dependabot[bot] <49699333+dependabot[bot]@users.noreply.github.com>
 
 #### Miscellaneous chores
 
