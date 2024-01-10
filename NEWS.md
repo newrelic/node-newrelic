@@ -7,7 +7,8 @@
 #### Bug fixes
 
 * Dropped support for ElasticSearch < 7.16.0 ([#1940](https://github.com/newrelic/node-newrelic/pull/1940)) ([e017768](https://github.com/newrelic/node-newrelic/commit/e017768466c9ca80b16cf1b51155801c3ecf0cc4))
-* remove extra / in openai framework metric name ([#1938](https://github.com/newrelic/node-newrelic/pull/1938)) ([7f586c3](https://github.com/newrelic/node-newrelic/commit/7f586c36f6fc119f4dac6e075468d90d43ff07fe))
+    * Previously, New Relic's Node Agent instrumented ElasticSearch as early as v7.13.0, which was susceptible to crashing when using ElasticSearch's `.helper` API. ElasticSearch [fixed this bug in v7.16.0](https://github.com/elastic/elasticsearch-js/pull/1594), so we now support instrumentation from that version onward, and previous versions are noops.  
+* Removed extra / in openai framework metric name ([#1938](https://github.com/newrelic/node-newrelic/pull/1938)) ([7f586c3](https://github.com/newrelic/node-newrelic/commit/7f586c36f6fc119f4dac6e075468d90d43ff07fe))
 
 #### Security improvements
 
@@ -15,7 +16,7 @@
 
 #### Miscellaneous chores
 
-* removed assigning unused metadata to LLM events ([#1932](https://github.com/newrelic/node-newrelic/pull/1932)) ([2f67d49](https://github.com/newrelic/node-newrelic/commit/2f67d496557d6192835e4b4b9cced8b7a2d932c0))
+* Removed assigning unused metadata to LLM events ([#1932](https://github.com/newrelic/node-newrelic/pull/1932)) ([2f67d49](https://github.com/newrelic/node-newrelic/commit/2f67d496557d6192835e4b4b9cced8b7a2d932c0))
 
 #### Tests
 
