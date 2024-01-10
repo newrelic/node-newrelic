@@ -34,6 +34,7 @@ function shouldSkipInstrumentation(config) {
  * @param {object} params.msg LLM event
  */
 function recordEvent({ agent, type, msg }) {
+  msg.serialize()
   agent.customEventAggregator.add([{ type, timestamp: Date.now() }, msg])
 }
 

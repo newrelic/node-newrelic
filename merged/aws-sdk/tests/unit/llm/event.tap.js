@@ -71,3 +71,12 @@ tap.test('create creates a new instance', async (t) => {
   t.equal(event['request.max_tokens'], null)
   t.equal(event.error, false)
 })
+
+tap.test('serializes the event', (t) => {
+  const event = new LlmEvent(t.context)
+  event.serialize()
+  t.notOk(event.bedrockCommand)
+  t.notOk(event.bedrockResponse)
+  t.notOk(event.constructionParams)
+  t.end()
+})

@@ -92,6 +92,16 @@ class LlmEvent {
     const attrs = tx?.trace?.custom.get(0x01 | 0x02 | 0x04 | 0x08)
     return attrs?.['llm.conversation_id']
   }
+
+  /**
+   * Removes the complex objects from the event
+   * This will be called right before the event is enqueued to the custom event aggregator
+   */
+  serialize() {
+    delete this.bedrockCommand
+    delete this.bedrockResponse
+    delete this.constructionParams
+  }
 }
 
 module.exports = LlmEvent
