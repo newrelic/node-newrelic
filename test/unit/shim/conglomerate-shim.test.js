@@ -75,6 +75,12 @@ test('ConglomerateShim', (t) => {
     t.equal(shim.moduleName, mod)
     t.equal(agent, shim._agent)
     t.equal(shim.pkgVersion, version)
+    function childFn() {}
+    const childShim = shim.makeSpecializedShim(shim.DATASTORE, childFn)
+    t.same(shim._agent, childShim._agent)
+    t.equal(shim.moduleName, childShim.moduleName)
+    t.equal(shim.pkgVersion, childShim.pkgVersion)
+    t.equal(shim.id, childShim.id)
     t.end()
   })
 })
