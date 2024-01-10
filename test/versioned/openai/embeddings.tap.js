@@ -65,7 +65,7 @@ tap.test('OpenAI instrumentation - embedding', (t) => {
         model: 'text-embedding-ada-002'
       })
 
-      const metrics = agent.metrics.getOrCreateMetric(`${OPENAI.TRACKING_PREFIX}/${pkgVersion}`)
+      const metrics = agent.metrics.getOrCreateMetric(`Nodejs/ML/OpenAI/${pkgVersion}`)
       test.equal(metrics.callCount > 0, true)
 
       tx.end()
