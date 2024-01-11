@@ -13,6 +13,8 @@ const {
   BedrockResponse
 } = require('../llm')
 
+let TRACKING_METRIC
+
 /**
  * Helper to determine if we should instrument the bedrock middleware call
  *
@@ -34,6 +36,7 @@ function shouldSkipInstrumentation(config) {
  * @param {object} params.msg LLM event
  */
 function recordEvent({ agent, type, msg }) {
+  agent.metrics.getOrCreateMetric(TRACKING_METRIC).incrementCallCount()
   msg.serialize()
   agent.customEventAggregator.add([{ type, timestamp: Date.now() }, msg])
 }
@@ -182,6 +185,7 @@ module.exports.bedrockMiddlewareConfig = {
       return false
     }
 
+    TRACKING_METRIC = `Nodejs/ML/Bedrock/${shim.pkgVersion}`
     return true
   },
   type: 'generic',

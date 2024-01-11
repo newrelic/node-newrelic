@@ -1599,7 +1599,7 @@ This product includes source derived from [lockfile-lint](https://github.com/lir
 
 ### newrelic
 
-This product includes source derived from [newrelic](https://github.com/newrelic/node-newrelic) ([v11.8.0](https://github.com/newrelic/node-newrelic/tree/v11.8.0)), distributed under the [Apache-2.0 License](https://github.com/newrelic/node-newrelic/blob/v11.8.0/LICENSE):
+This product includes source derived from [newrelic](https://github.com/newrelic/node-newrelic) ([v11.9.0](https://github.com/newrelic/node-newrelic/tree/v11.9.0)), distributed under the [Apache-2.0 License](https://github.com/newrelic/node-newrelic/blob/v11.9.0/LICENSE):
 
 ```
                                  Apache License
