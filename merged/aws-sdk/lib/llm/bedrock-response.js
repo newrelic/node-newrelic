@@ -35,10 +35,16 @@ class BedrockResponse {
    * @param {AwsBedrockMiddlewareResponse} params.response
    * @param {BedrockCommand} params.bedrockCommand
    */
-  constructor({ response, bedrockCommand }) {
-    this.#innerResponse = response.response
-    this.#innerOutput = response.output
+  constructor({ response, bedrockCommand, isError = false }) {
+    this.#innerResponse = isError ? response.$response : response.response
     this.#command = bedrockCommand
+    this.isError = isError
+
+    if (this.isError) {
+      return
+    }
+
+    this.#innerOutput = response.output
 
     const json = new TextDecoder().decode(this.#innerOutput.body)
     this.#parsedBody = JSON.parse(json)
@@ -77,8 +83,13 @@ class BedrockResponse {
    * @returns {string|*}
    */
   get finishReason() {
-    const cmd = this.#command
     let result
+
+    if (this.isError) {
+      return result
+    }
+
+    const cmd = this.#command
     if (cmd.isAi21() === true) {
       result = this.#parsedBody.completions?.[0]?.finishReason.reason
     } else if (cmd.isClaude() === true) {

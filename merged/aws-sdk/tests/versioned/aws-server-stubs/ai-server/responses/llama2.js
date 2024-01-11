@@ -67,4 +67,17 @@ responses.set('text llama2 ultimate question streamed', {
   ]
 })
 
+responses.set('text llama2 ultimate question error', {
+  headers: {
+    'content-type': 'application/json',
+    'x-amzn-requestid': 'eda0760a-c3f0-4fc1-9a1e-75559d642866',
+    'x-amzn-errortype': 'ValidationException:http://internal.amazon.com/coral/com.amazon.bedrock/'
+  },
+  statusCode: 400,
+  body: {
+    message:
+      'Malformed input request: 2 schema violations found, please reformat your input and try again.'
+  }
+})
+
 module.exports = responses

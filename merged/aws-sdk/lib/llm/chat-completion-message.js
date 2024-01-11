@@ -62,7 +62,7 @@ class LlmChatCompletionMessage extends LlmEvent {
     if (cmd.isTitan() === true || cmd.isClaude() === true) {
       this.id = `${this.id}-${index}`
     } else if (cmd.isAi21() === true || cmd.isCohere() === true) {
-      this.id = `${this.bedrockResponse.id}-${index}`
+      this.id = `${this.bedrockResponse.id || this.id}-${index}`
     }
   }
 }

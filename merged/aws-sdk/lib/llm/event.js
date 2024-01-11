@@ -69,8 +69,6 @@ class LlmEvent {
     this['response.model'] = this.bedrockCommand.modelId
     this['request.model'] = this.bedrockCommand.modelId
     this['request.max_tokens'] = null
-
-    this.error = false
   }
 
   /**

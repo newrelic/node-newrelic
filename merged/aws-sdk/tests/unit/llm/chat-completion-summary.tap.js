@@ -85,7 +85,7 @@ tap.test('creates a basic summary', async (t) => {
   t.equal(event['response.usage.total_tokens'], 0)
   t.equal(event['response.usage.prompt_tokens'], 0)
   t.equal(event['response.usage.completion_tokens'], 0)
-  t.equal(event['response.number_of_messages'], undefined)
+  t.equal(event['response.number_of_messages'], 2)
 })
 
 tap.test('creates an ai21 summary', async (t) => {

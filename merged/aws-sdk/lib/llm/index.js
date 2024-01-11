@@ -12,5 +12,6 @@ module.exports = {
   LlmChatCompletionSummary: require('./chat-completion-summary'),
   LlmEmbedding: require('./embedding'),
   LlmEvent: require('./event'),
-  LlmTrackedIds: require('./tracked-ids')
+  LlmTrackedIds: require('./tracked-ids'),
+  LlmError: require('./error')
 }

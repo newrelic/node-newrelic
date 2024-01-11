@@ -127,8 +127,8 @@ function assertChatCompletionSummary({ tx, modelId, chatSummary, tokenUsage, err
     'request.model': modelId,
     'duration': tx.trace.root.children[0].getDurationInMillis(),
     'api_key_last_four_digits': 'E ID',
-    'response.number_of_messages': 2,
-    'response.choices.finish_reason': 'endoftext',
+    'response.number_of_messages': error ? 1 : 2,
+    'response.choices.finish_reason': error ? undefined : 'endoftext',
     'request.temperature': 0.5,
     'request.max_tokens': 100,
     'error': error

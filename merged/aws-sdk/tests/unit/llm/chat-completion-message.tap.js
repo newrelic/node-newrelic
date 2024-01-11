@@ -112,3 +112,18 @@ tap.test('create creates a cohere response instance', async (t) => {
   t.equal(event.role, 'assistant')
   t.match(event.id, /42-0/)
 })
+
+tap.test('create creates a ai21 response instance when response.id is undefined', async (t) => {
+  t.context.bedrockCommand.isAi21 = () => true
+  t.context.content = 'a response'
+  t.context.isResponse = true
+  delete t.context.bedrockResponse.id
+  const event = new LlmChatCompletionMessage(t.context)
+  t.equal(event.is_response, true)
+  t.equal(event.conversation_id, 'conversation-1')
+  t.equal(event.completion_id, 'completion-1')
+  t.equal(event.sequence, 0)
+  t.equal(event.content, 'a response')
+  t.equal(event.role, 'assistant')
+  t.match(event.id, /[\w-]{36}-0/)
+})

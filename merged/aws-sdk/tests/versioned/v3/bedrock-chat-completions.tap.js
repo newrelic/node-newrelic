@@ -211,21 +211,81 @@ tap.afterEach(async (t) => {
     })
   })
 
-  tap.test(
-    `{${modelId}:}: should increment tracking metric for each chat completion event`,
-    (t) => {
-      const { bedrock, client, helper } = t.context
-      const prompt = `text ${resKey} ultimate question`
-      const input = requests[resKey](prompt, modelId)
-      const command = new bedrock.InvokeModelCommand(input)
-      const { agent } = helper
-      helper.runInTransaction(async (tx) => {
+  tap.test(`${modelId}: should increment tracking metric for each chat completion event`, (t) => {
+    const { bedrock, client, helper } = t.context
+    const prompt = `text ${resKey} ultimate question`
+    const input = requests[resKey](prompt, modelId)
+    const command = new bedrock.InvokeModelCommand(input)
+    const { agent } = helper
+    helper.runInTransaction(async (tx) => {
+      await client.send(command)
+      const metrics = agent.metrics.getOrCreateMetric(`Nodejs/ML/Bedrock/${pkgVersion}`)
+      t.equal(metrics.callCount > 0, true)
+      tx.end()
+      t.end()
+    })
+  })
+
+  tap.test(`${modelId}: should properly create errors on create completion`, (t) => {
+    const { bedrock, client, helper, expectedExternalPath } = t.context
+    const prompt = `text ${resKey} ultimate question error`
+    const input = requests[resKey](prompt, modelId)
+
+    const command = new bedrock.InvokeModelCommand(input)
+    const expectedMsg =
+      'Malformed input request: 2 schema violations found, please reformat your input and try again.'
+    const expectedType = 'ValidationException'
+
+    const { agent } = helper
+    const api = helper.getAgentApi()
+    helper.runInTransaction(async (tx) => {
+      api.addCustomAttribute('llm.conversation_id', 'convo-id')
+      try {
         await client.send(command)
-        const metrics = agent.metrics.getOrCreateMetric(`Nodejs/ML/Bedrock/${pkgVersion}`)
-        t.equal(metrics.callCount > 0, true)
-        tx.end()
-        t.end()
+      } catch (err) {
+        t.equal(err.message, expectedMsg)
+        t.equal(err.name, expectedType)
+      }
+
+      t.equal(tx.exceptions.length, 1)
+      t.match(tx.exceptions[0], {
+        error: {
+          name: expectedType,
+          message: expectedMsg
+        },
+        customAttributes: {
+          'http.statusCode': 400,
+          'error.message': expectedMsg,
+          'error.code': expectedType,
+          'completion_id': /[\w]{8}-[\w]{4}-[\w]{4}-[\w]{4}-[\w]{12}/
+        },
+        agentAttributes: {
+          spanId: /[\w\d]+/
+        }
       })
-    }
-  )
+
+      t.segments(tx.trace.root, [
+        {
+          name: 'Llm/completion/Bedrock/InvokeModelCommand',
+          children: [{ name: expectedExternalPath(modelId) }]
+        }
+      ])
+
+      const events = agent.customEventAggregator.events.toArray()
+      t.equal(events.length, 2)
+      const chatSummary = events.filter(([{ type }]) => type === 'LlmChatCompletionSummary')[0]
+      const chatMsgs = events.filter(([{ type }]) => type === 'LlmChatCompletionMessage')
+
+      t.llmMessages({
+        modelId,
+        prompt,
+        tx,
+        chatMsgs
+      })
+
+      t.llmSummary({ tx, modelId, chatSummary, error: true })
+      tx.end()
+      t.end()
+    })
+  })
 })

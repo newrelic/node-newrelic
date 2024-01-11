@@ -69,7 +69,6 @@ tap.test('create creates a new instance', async (t) => {
   t.equal(event['response.model'], 'model-1')
   t.equal(event['request.model'], 'model-1')
   t.equal(event['request.max_tokens'], null)
-  t.equal(event.error, false)
 })
 
 tap.test('serializes the event', (t) => {

@@ -23,7 +23,8 @@ class LlmChatCompletionSummary extends LlmEvent {
   constructor(params = defaultParams) {
     super(params)
 
-    const { agent, segment } = params
+    const { agent, segment, isError } = params
+    this.error = isError
     this.conversation_id = this.conversationId(agent)
     this.duration = segment.getDurationInMillis()
     this['request.max_tokens'] = this.bedrockCommand.maxTokens
@@ -41,16 +42,7 @@ class LlmChatCompletionSummary extends LlmEvent {
     this[utt] = this[upt] + this[uct]
     this[cfr] = this.bedrockResponse.finishReason
     this[rt] = cmd.temperature
-
-    if (cmd.isAi21() === true) {
-      this[nm] = 1 + this.bedrockResponse.completions.length
-    } else if (cmd.isClaude() === true || cmd.isLlama2() === true) {
-      this[nm] = 2
-    } else if (cmd.isCohere() === true) {
-      this[nm] = 1 + this.bedrockResponse.completions.length
-    } else if (cmd.isTitan() === true) {
-      this[nm] = 1 + this.bedrockResponse.completions.length
-    }
+    this[nm] = 1 + this.bedrockResponse.completions.length
   }
 }
 

@@ -238,3 +238,18 @@ tap.test('titan complete responses work', async (t) => {
   t.equal(res.requestId, 'aws-request-1')
   t.equal(res.statusCode, 200)
 })
+
+tap.test('should only set data from raw response on error', (t) => {
+  t.context.response.$response = { ...t.context.response.response }
+  delete t.context.response.response
+  delete t.context.response.output
+  t.context.isError = true
+  const res = new BedrockResponse(t.context)
+  t.same(res.completions, [])
+  t.equal(res.id, undefined)
+  t.equal(res.finishReason, undefined)
+  t.same(res.headers, t.context.response.$response.headers)
+  t.equal(res.requestId, 'aws-request-1')
+  t.equal(res.statusCode, 200)
+  t.end()
+})
