@@ -123,6 +123,16 @@
       "name": "Jessica Lopatta",
       "email": "jlopatta@newrelic.com",
       "web": "https://newrelic.com"
+    },
+    {
+      "name": "James Sumners",
+      "email": "jsumners@newrelic.com",
+      "web": "https://newrelic.com"
+    },
+    {
+      "name": "Svetlana Brennan",
+      "email": "sbrennan@newrelic.com",
+      "web": "https://newrelic.com"
     }
   ],
   "description": "New Relic agent",
