@@ -5,6 +5,9 @@
 
 'use strict'
 const UNKNOWN = 'Unknown'
+const DESTINATIONS = {
+  TRANS_EVENT: 0x01
+}
 
 function grabLastUrlSegment(url = '/') {
   // cast URL as string, and an empty
@@ -31,5 +34,6 @@ function setDynamoParameters(endpoint, params) {
 
 module.exports = {
   grabLastUrlSegment,
-  setDynamoParameters
+  setDynamoParameters,
+  DESTINATIONS
 }

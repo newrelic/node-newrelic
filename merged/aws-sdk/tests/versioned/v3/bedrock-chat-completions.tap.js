@@ -12,6 +12,7 @@ const common = require('../common')
 const createAiResponseServer = require('../aws-server-stubs/ai-server')
 const { FAKE_CREDENTIALS } = require('../aws-server-stubs')
 const { version: pkgVersion } = require('@smithy/smithy-client/package.json')
+const { DESTINATIONS } = require('../../../lib/util')
 
 const requests = {
   ai21: (prompt, modelId) => ({
@@ -284,6 +285,22 @@ tap.afterEach(async (t) => {
       })
 
       t.llmSummary({ tx, modelId, chatSummary, error: true })
+      tx.end()
+      t.end()
+    })
+  })
+
+  tap.test(`{${modelId}:}: should add llm attribute to transaction`, (t) => {
+    const { bedrock, client, helper } = t.context
+    const prompt = `text ${resKey} ultimate question`
+    const input = requests[resKey](prompt, modelId)
+    const command = new bedrock.InvokeModelCommand(input)
+
+    helper.runInTransaction(async (tx) => {
+      await client.send(command)
+      const attributes = tx.trace.attributes.get(DESTINATIONS.TRANS_EVENT)
+      t.equal(attributes.llm, true)
+
       tx.end()
       t.end()
     })

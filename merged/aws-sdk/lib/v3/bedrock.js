@@ -14,6 +14,8 @@ const {
   BedrockResponse
 } = require('../llm')
 
+const { DESTINATIONS } = require('../util')
+
 let TRACKING_METRIC
 
 /**
@@ -213,6 +215,8 @@ function getBedrockSpec({ config, commandName }, _shim, _original, _name, args) 
     after: (shim, _fn, _fnName, err, response, segment) => {
       const { agent } = shim
       const bedrockResponse = createBedrockResponse({ bedrockCommand, response, err })
+
+      segment.transaction.trace.attributes.addAttribute(DESTINATIONS.TRANS_EVENT, 'llm', true)
 
       // end segment to get a consistent segment duration
       // for both the LLM events and the segment
