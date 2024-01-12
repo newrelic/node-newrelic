@@ -9,10 +9,11 @@ const tap = require('tap')
 const dns = require('dns')
 const events = require('events')
 const https = require('https')
-
+const sinon = require('sinon')
+const proxyquire = require('proxyquire')
+const RemoteMethod = require('../../../lib/collector/remote-method')
 const url = require('url')
 const Config = require('../../../lib/config')
-const RemoteMethod = require('../../../lib/collector/remote-method')
 const helper = require('../../lib/agent_helper')
 require('../../lib/metrics_helper')
 const NAMES = require('../../../lib/metrics/names')
@@ -369,7 +370,7 @@ tap.test('when posting to collector', (t) => {
       })
     })
 
-    t.end('should use the right URL', (t) => {
+    t.test('should use the right URL', (t) => {
       const sendMetrics = nockMetricDataUncompressed()
       method._post('[]', {}, (error) => {
         t.error(error)
@@ -378,12 +379,13 @@ tap.test('when posting to collector', (t) => {
       })
     })
 
-    t.end('should respect the put_for_data_send config', (t) => {
+    t.test('should respect the put_for_data_send config', (t) => {
       const putMetrics = nock(URL)
         .put(generate('metric_data', RUN_ID))
         .reply(200, { return_value: [] })
 
       config.put_for_data_send = true
+
       method._post('[]', {}, (error) => {
         t.error(error)
         t.ok(putMetrics.isDone())
@@ -936,4 +938,46 @@ tap.test('record data usage supportability metrics', (t) => {
       ]
     )
   })
+})
+
+tap.test('should redact license key in logs', (t) => {
+  const sandbox = sinon.createSandbox()
+  t.teardown(() => {
+    sandbox.restore()
+  })
+  const loggerMock = require('../mocks/logger')(sandbox)
+  const RemoteMethod = proxyquire('../../../lib/collector/remote-method', {
+    '../logger': {
+      child: sandbox.stub().callsFake(() => loggerMock)
+    }
+  })
+  const method = new RemoteMethod('test', {
+    config: { license_key: 'shhh-dont-tell', max_payload_size_in_bytes: 10000 }
+  })
+  method
+  const options = {
+    host: 'collector.newrelic.com',
+    port: 80,
+    onError: () => {},
+    onResponse: () => {},
+    body: 'test-body',
+    path: '/nonexistent'
+  }
+  sandbox.stub(method, '_request')
+  method._safeRequest(options)
+  t.same(
+    loggerMock.trace.args,
+    [
+      [
+        { body: options.body },
+        'Posting to %s://%s:%s%s',
+        'https',
+        options.host,
+        options.port,
+        '/agent_listener/invoke_raw_method?marshal_format=json&protocol_version=17&license_key=REDACTED&method=test'
+      ]
+    ],
+    'should redact key in trace level log'
+  )
+  t.end()
 })
