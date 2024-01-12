@@ -25,6 +25,7 @@ const fs = require('fs')
 const { version: pkgVersion } = JSON.parse(
   fs.readFileSync(`${__dirname}/node_modules/openai/package.json`)
 )
+const { DESTINATIONS } = require('../../../lib/config/attribute-filter')
 
 tap.test('OpenAI instrumentation - chat completions', (t) => {
   t.autoend()
@@ -338,6 +339,21 @@ tap.test('OpenAI instrumentation - chat completions', (t) => {
           spanId: /\w+/
         }
       })
+
+      tx.end()
+      test.end()
+    })
+  })
+
+  t.test('should add llm attribute to transaction', (test) => {
+    const { client, agent } = t.context
+    helper.runInTransaction(agent, async (tx) => {
+      await client.chat.completions.create({
+        messages: [{ role: 'user', content: 'You are a mathematician.' }]
+      })
+
+      const attributes = tx.trace.attributes.get(DESTINATIONS.TRANS_EVENT)
+      t.equal(attributes.llm, true)
 
       tx.end()
       test.end()
