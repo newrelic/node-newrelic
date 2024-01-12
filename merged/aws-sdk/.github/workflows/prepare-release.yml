@@ -18,5 +18,5 @@ jobs:
     uses: newrelic/node-newrelic/.github/workflows/prep-release.yml@main
     with:
       release_type: ${{ github.event.inputs.release_type }}
-      use_new_relase: ${{ vars.USE_NEW_RELEASE }}
+      use_new_release: ${{ vars.USE_NEW_RELEASE }}
       changelog_file: CHANGELOG.md
