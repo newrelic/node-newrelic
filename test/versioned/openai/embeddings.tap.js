@@ -23,6 +23,7 @@ const fs = require('fs')
 const { version: pkgVersion } = JSON.parse(
   fs.readFileSync(`${__dirname}/node_modules/openai/package.json`)
 )
+const { DESTINATIONS } = require('../../../lib/config/attribute-filter')
 
 tap.test('OpenAI instrumentation - embedding', (t) => {
   t.autoend()
@@ -148,6 +149,22 @@ tap.test('OpenAI instrumentation - embedding', (t) => {
 
       const embedding = agent.customEventAggregator.events.toArray().slice(0, 1)[0][1]
       test.equal(embedding.error, true)
+
+      tx.end()
+      test.end()
+    })
+  })
+
+  t.test('should add llm attribute to transaction', (test) => {
+    const { client, agent } = t.context
+    helper.runInTransaction(agent, async (tx) => {
+      await client.embeddings.create({
+        input: 'This is an embedding test.',
+        model: 'text-embedding-ada-002'
+      })
+
+      const attributes = tx.trace.attributes.get(DESTINATIONS.TRANS_EVENT)
+      t.equal(attributes.llm, true)
 
       tx.end()
       test.end()
