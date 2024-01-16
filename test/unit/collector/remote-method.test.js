@@ -17,7 +17,6 @@ const Config = require('../../../lib/config')
 const helper = require('../../lib/agent_helper')
 require('../../lib/metrics_helper')
 const NAMES = require('../../../lib/metrics/names')
-
 const BARE_AGENT = { config: {}, metrics: { measureBytes() {} } }
 
 function generate(method, runID, protocolVersion) {
@@ -940,44 +939,89 @@ tap.test('record data usage supportability metrics', (t) => {
   })
 })
 
-tap.test('should redact license key in logs', (t) => {
-  const sandbox = sinon.createSandbox()
-  t.teardown(() => {
+tap.test('_safeRequest logging', (t) => {
+  t.autoend()
+  t.beforeEach((t) => {
+    const sandbox = sinon.createSandbox()
+    const loggerMock = require('../mocks/logger')(sandbox)
+    const RemoteMethod = proxyquire('../../../lib/collector/remote-method', {
+      '../logger': {
+        child: sandbox.stub().callsFake(() => loggerMock)
+      }
+    })
+    sandbox.stub(RemoteMethod.prototype, '_request')
+    t.context.loggerMock = loggerMock
+    t.context.RemoteMethod = RemoteMethod
+    t.context.sandbox = sandbox
+    t.context.options = {
+      host: 'collector.newrelic.com',
+      port: 80,
+      onError: () => {},
+      onResponse: () => {},
+      body: 'test-body',
+      path: '/nonexistent'
+    }
+    t.context.config = { license_key: 'shhh-dont-tell', max_payload_size_in_bytes: 10000 }
+  })
+
+  t.afterEach((t) => {
+    const { sandbox } = t.context
     sandbox.restore()
   })
-  const loggerMock = require('../mocks/logger')(sandbox)
-  const RemoteMethod = proxyquire('../../../lib/collector/remote-method', {
-    '../logger': {
-      child: sandbox.stub().callsFake(() => loggerMock)
-    }
-  })
-  const method = new RemoteMethod('test', {
-    config: { license_key: 'shhh-dont-tell', max_payload_size_in_bytes: 10000 }
-  })
-  method
-  const options = {
-    host: 'collector.newrelic.com',
-    port: 80,
-    onError: () => {},
-    onResponse: () => {},
-    body: 'test-body',
-    path: '/nonexistent'
-  }
-  sandbox.stub(method, '_request')
-  method._safeRequest(options)
-  t.same(
-    loggerMock.trace.args,
-    [
+
+  t.test('should redact license key in logs', (t) => {
+    const { RemoteMethod, loggerMock, options, config } = t.context
+    loggerMock.traceEnabled.returns(true)
+    const method = new RemoteMethod('test', { config })
+    method._safeRequest(options)
+    t.same(
+      loggerMock.trace.args,
       [
-        { body: options.body },
-        'Posting to %s://%s:%s%s',
-        'https',
-        options.host,
-        options.port,
-        '/agent_listener/invoke_raw_method?marshal_format=json&protocol_version=17&license_key=REDACTED&method=test'
-      ]
-    ],
-    'should redact key in trace level log'
-  )
-  t.end()
+        [
+          { body: options.body },
+          'Posting to %s://%s:%s%s',
+          'https',
+          options.host,
+          options.port,
+          '/agent_listener/invoke_raw_method?marshal_format=json&protocol_version=17&license_key=REDACTED&method=test'
+        ]
+      ],
+      'should redact key in trace level log'
+    )
+    t.end()
+  })
+
+  t.test('should call logger if trace is not enabled but audit logging is enabled', (t) => {
+    const { RemoteMethod, loggerMock, options, config } = t.context
+    loggerMock.traceEnabled.returns(false)
+    config.logging = { level: 'info' }
+    config.audit_log = { enabled: true, endpoints: ['test'] }
+    const method = new RemoteMethod('test', { config })
+    method._safeRequest(options)
+    t.same(
+      loggerMock.info.args,
+      [
+        [
+          { body: options.body },
+          'Posting to %s://%s:%s%s',
+          'https',
+          options.host,
+          options.port,
+          '/agent_listener/invoke_raw_method?marshal_format=json&protocol_version=17&license_key=REDACTED&method=test'
+        ]
+      ],
+      'should redact key in trace level log'
+    )
+    t.end()
+  })
+
+  t.test('should not call logger if trace or audit logging is not enabled', (t) => {
+    const { RemoteMethod, loggerMock, options, config } = t.context
+    loggerMock.traceEnabled.returns(false)
+    const method = new RemoteMethod('test', { config })
+    method._safeRequest(options)
+    t.ok(loggerMock.trace.callCount === 0, 'should not log outgoing message to collector')
+    t.ok(loggerMock.info.callCount === 0, 'should not log outgoing message to collector')
+    t.end()
+  })
 })
