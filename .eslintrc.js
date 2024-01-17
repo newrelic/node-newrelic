@@ -20,8 +20,10 @@ module.exports = {
           'Shim',
           'TraceSegment',
           'Transaction',
+          'Tracer',
           'Exception',
-          'MetricAggregator'
+          'MetricAggregator',
+          'EventEmitter'
         ]
       }
     ]
