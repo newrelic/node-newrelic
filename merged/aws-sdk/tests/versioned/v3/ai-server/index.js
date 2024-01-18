@@ -12,7 +12,7 @@ const crypto = require('crypto')
 const { Readable } = require('stream')
 const { EventStreamCodec } = require('@smithy/eventstream-codec')
 const { toUtf8, fromUtf8 } = require('@smithy/util-utf8')
-const { patchDestroy } = require('../common')
+const { patchDestroy } = require('../../aws-server-stubs/common')
 const responses = require('./responses')
 
 /**
