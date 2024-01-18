@@ -285,7 +285,7 @@ tap.test('Errors', (t) => {
 
       const errorTraces = getErrorTraces(agent.errors)
       const error = errorTraces[0]
-      t.equal(error[error.length - 2], testError.name)
+      t.equal(error[error.length - 3], testError.name)
       t.end()
     })
 
@@ -667,6 +667,17 @@ tap.test('Errors', (t) => {
         t.notHas(params, 'stack_trace')
         t.end()
       })
+
+      t.test('should have a transaction id', (t) => {
+        const transactionId = errorJSON[5]
+        t.not(transactionId, undefined)
+        t.end()
+      })
+
+      t.test('should have 6 elements in errorJson', (t) => {
+        t.equal(errorJSON.length, 6)
+        t.end()
+      })
     })
 
     t.test('with transaction agent attrs, status code, and no error', (t) => {
@@ -718,6 +729,12 @@ tap.test('Errors', (t) => {
 
       t.test('should not have a stack trace in the params', (t) => {
         t.notHas(params, 'stack_trace')
+        t.end()
+      })
+
+      t.test('should have a transaction id', (t) => {
+        const transactionId = errorJSON[5]
+        t.not(transactionId, undefined)
         t.end()
       })
 
@@ -826,6 +843,12 @@ tap.test('Errors', (t) => {
         t.equal(params.stack_trace[0], 'Error: Dare to be the same!')
         t.end()
       })
+
+      t.test('should have undefined for transaction id', (t) => {
+        const transactionId = errorJSON[5]
+        t.equal(transactionId, undefined)
+        t.end()
+      })
     })
 
     t.test('with a thrown TypeError and a transaction with no params', (t) => {
@@ -876,6 +899,12 @@ tap.test('Errors', (t) => {
         const params = errorJSON[4]
         t.hasProp(params, 'stack_trace')
         t.equal(params.stack_trace[0], 'TypeError: Dare to be different!')
+        t.end()
+      })
+
+      t.test('should have a transaction id', (t) => {
+        const transactionId = errorJSON[5]
+        t.not(transactionId, undefined)
         t.end()
       })
     })
@@ -932,6 +961,12 @@ tap.test('Errors', (t) => {
       t.test('should have a stack trace in the params', (t) => {
         t.hasProp(params, 'stack_trace')
         t.equal(params.stack_trace[0], 'TypeError: wanted JSON, got XML')
+        t.end()
+      })
+
+      t.test('should have a transaction id', (t) => {
+        const transactionId = errorJSON[5]
+        t.not(transactionId, undefined)
         t.end()
       })
 
@@ -999,6 +1034,12 @@ tap.test('Errors', (t) => {
         t.notHas(errorJSON[4], 'stack_trace')
         t.end()
       })
+
+      t.test('should have a transaction id', (t) => {
+        const transactionId = errorJSON[5]
+        t.not(transactionId, undefined)
+        t.end()
+      })
     })
 
     t.test('with a thrown string and a transaction with agent parameters', (t) => {
@@ -1053,6 +1094,12 @@ tap.test('Errors', (t) => {
 
       t.test('should not have a stack trace in the params', (t) => {
         t.notHas(params, 'stack_trace')
+        t.end()
+      })
+
+      t.test('should have a transaction id', (t) => {
+        const transactionId = errorJSON[5]
+        t.not(transactionId, undefined)
         t.end()
       })
 
@@ -2058,9 +2105,9 @@ test('When using the async listener', (t) => {
     })
   })
 
-  t.test('should have 5 elements in the trace', (t) => {
+  t.test('should have 6 elements in the trace', (t) => {
     executeThrowingTransaction(() => {
-      t.equal(json.length, 5)
+      t.equal(json.length, 6)
       t.end()
     })
   })
