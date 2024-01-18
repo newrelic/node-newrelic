@@ -1,3 +1,37 @@
+### v7.1.0 (2024-01-18)
+
+#### Features
+
+* Added Bedrock LLM streamed response handling ([#245](https://github.com/newrelic/node-newrelic-aws-sdk/pull/245)) ([fb1911a](https://github.com/newrelic/node-newrelic-aws-sdk/commit/fb1911a122dd3b40d755b8a28126e81d6946279c))
+* Added initial objects for LLM events ([#236](https://github.com/newrelic/node-newrelic-aws-sdk/pull/236)) ([0543609](https://github.com/newrelic/node-newrelic-aws-sdk/commit/054360929fce51126037b42c6de13142a0557fae))
+* Added instrumentation for InvokeModelCommand ([#239](https://github.com/newrelic/node-newrelic-aws-sdk/pull/239)) ([42d04ff](https://github.com/newrelic/node-newrelic-aws-sdk/commit/42d04ff0912b6c3114df199930dfb63a9acf3ecf))
+* Added LLama2 support to LLM events and mock server ([#238](https://github.com/newrelic/node-newrelic-aws-sdk/pull/238)) ([31dad9c](https://github.com/newrelic/node-newrelic-aws-sdk/commit/31dad9c8e9fcfe979d613bfcbfff8ac7805ce74a))
+* Added llm attribute to all transactions that contain llm spans for bedrock ([#246](https://github.com/newrelic/node-newrelic-aws-sdk/pull/246)) ([3032545](https://github.com/newrelic/node-newrelic-aws-sdk/commit/3032545dfed38e02fa86f779aa9866248948d330))
+* Added ability to store feedback ids by request id ([#240](https://github.com/newrelic/node-newrelic-aws-sdk/pull/240)) ([0bb4ffc](https://github.com/newrelic/node-newrelic-aws-sdk/commit/0bb4ffc56ffdce4dc04a32dcd2398f5a35471a3b))
+* Added handling errors by adding additional attributes to the transaction errors. ([#244](https://github.com/newrelic/node-newrelic-aws-sdk/pull/244)) ([e9584b4](https://github.com/newrelic/node-newrelic-aws-sdk/commit/e9584b4a43cbcc3d02b6663cac4c0e4d4d128741))
+* Record metric on every InvokeModelCommand ([#242](https://github.com/newrelic/node-newrelic-aws-sdk/pull/242)) ([0766bc6](https://github.com/newrelic/node-newrelic-aws-sdk/commit/0766bc6fd61fa87cb61065e83483ca401f34738c))
+
+#### Code refactoring
+
+* Added a serialize method to LlmEvent to remove the complex objects before enqueuing to the custom event aggregator ([#241](https://github.com/newrelic/node-newrelic-aws-sdk/pull/241)) ([993673e](https://github.com/newrelic/node-newrelic-aws-sdk/commit/993673eaa358fc15c9dae156102845abdfc6c012))
+* Removed aws_bedrock_instrumentation feature flag as feature is ready ([#248](https://github.com/newrelic/node-newrelic-aws-sdk/pull/248)) ([e2dc0ad](https://github.com/newrelic/node-newrelic-aws-sdk/commit/e2dc0adb2968132eb01d64d95ede56810c02b850))
+
+#### Miscellaneous chores
+
+* Used latest of test deps for bedrock versioned tests ([#235](https://github.com/newrelic/node-newrelic-aws-sdk/pull/235)) ([bc0fa24](https://github.com/newrelic/node-newrelic-aws-sdk/commit/bc0fa24c25f1197867970389451847f6cca6e5bc))
+
+#### Tests
+
+* Added missing test files to config ([#233](https://github.com/newrelic/node-newrelic-aws-sdk/pull/233)) ([e4b504c](https://github.com/newrelic/node-newrelic-aws-sdk/commit/e4b504c76d1663c54504cd281087f3b69a585f84))
+* Added mock server for Bedrock API ([#230](https://github.com/newrelic/node-newrelic-aws-sdk/pull/230)) ([c1e4c4c](https://github.com/newrelic/node-newrelic-aws-sdk/commit/c1e4c4c3a362923c368af3a072666153a0973df1))
+* Pinned peer deps of @aws-sdk/util-dynamodb and @aws-sdk/client-dynamodb so the older versions of @aws-sdk/lib-dynamodb pass ([#231](https://github.com/newrelic/node-newrelic-aws-sdk/pull/231)) ([0a5773b](https://github.com/newrelic/node-newrelic-aws-sdk/commit/0a5773bf305592743ce37b6502e6e01affcaa877))
+* Resolved issue with testing in main repo ([#234](https://github.com/newrelic/node-newrelic-aws-sdk/pull/234)) ([e5294ed](https://github.com/newrelic/node-newrelic-aws-sdk/commit/e5294edb4ccfe2bf2e8e053569e3edb38bcd63c5))
+
+#### Continuous integration
+
+* Fixed misspelling in prepare-release.yml ([#247](https://github.com/newrelic/node-newrelic-aws-sdk/pull/247)) ([783e474](https://github.com/newrelic/node-newrelic-aws-sdk/commit/783e474dbbb5167c3f76b4e89fe7c2e0853fd92d))
+* Updated prepare-release to use conventional commit based releases. ([#232](https://github.com/newrelic/node-newrelic-aws-sdk/pull/232)) ([5cbb649](https://github.com/newrelic/node-newrelic-aws-sdk/commit/5cbb6497368a6301ad9ae551371c7d22937aba03))
+
 ### v7.0.3 (2023-12-07)
 
 * Updated aws-sdk v3 instrumentation to only call `shim.setLibrary` and `shim.setDatastore` once instead of on every call to SQS, SNS, and DynamoDB.
