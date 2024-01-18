@@ -74,7 +74,7 @@ test('intercepting errors with connect 2', function (t) {
       t.equal(errors.length, 1, 'the error got traced')
 
       const error = errors[0]
-      t.equal(error.length, 5, 'format for traced error is correct')
+      t.equal(error.length, 6, 'format for traced error is correct')
       t.equal(error[3], 'TypeError', 'got the correct class for the error')
 
       server.close()
