@@ -57,8 +57,8 @@ responses.set('text llama2 ultimate question streamed', {
         'generation_token_count': 212,
         'stop_reason': 'endoftext',
         'amazon-bedrock-invocationMetrics': {
-          inputTokenCount: 14,
-          outputTokenCount: 212,
+          inputTokenCount: 8,
+          outputTokenCount: 4,
           invocationLatency: 9825,
           firstByteLatency: 283
         }

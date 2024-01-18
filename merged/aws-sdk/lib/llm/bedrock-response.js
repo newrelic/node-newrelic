@@ -95,11 +95,11 @@ class BedrockResponse {
     } else if (cmd.isClaude() === true) {
       result = this.#parsedBody.stop_reason
     } else if (cmd.isCohere() === true) {
-      result = this.#parsedBody.generations?.[0].finish_reason
+      result = this.#parsedBody.generations?.find((r) => r.finish_reason !== null)?.finish_reason
     } else if (cmd.isLlama2() === true) {
       result = this.#parsedBody.stop_reason
     } else if (cmd.isTitan() === true) {
-      result = this.#parsedBody.results?.[0]?.completionReason
+      result = this.#parsedBody.results?.find((r) => r.completionReason !== null)?.completionReason
     }
     return result
   }

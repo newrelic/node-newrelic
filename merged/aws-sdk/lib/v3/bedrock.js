@@ -11,7 +11,8 @@ const {
   LlmError,
   LlmTrackedIds,
   BedrockCommand,
-  BedrockResponse
+  BedrockResponse,
+  StreamHandler
 } = require('../llm')
 
 const { DESTINATIONS } = require('../util')
@@ -51,7 +52,7 @@ function recordEvent({ agent, type, msg }) {
  *
  * @param {object} params input params
  * @param {Transaction} params.tx active transaction
- * @param {LlmChatCompletionMessage} params.completionMsg chat completion message
+ * @param {LlmChatCompletionMessage} params.msg chat completion message
  * @param {string} params.responseId id of response
  */
 function assignIdsToTx({ tx, msg, responseId }) {
@@ -74,7 +75,6 @@ function assignIdsToTx({ tx, msg, responseId }) {
  * @param {object} params.credentials aws resolved credentials
  * @param {object} params.segment active segment
  * @param {BedrockCommand} params.bedrockCommand parsed input
- * @param {object} params.response response from bedrock
  * @param {Error|null} params.err error from request if exists
  */
 function recordChatCompletionMessages({
@@ -137,7 +137,6 @@ function recordChatCompletionMessages({
  * @param {object} params.credentials aws resolved credentials
  * @param {object} params.segment active segment
  * @param {BedrockCommand} params.bedrockCommand parsed input
- * @param {object} params.response response from bedrock
  * @param {Error|null} params.err error from request if exists
  */
 function recordEmbeddingMessage({
@@ -189,10 +188,11 @@ function createBedrockResponse({ bedrockCommand, response, err }) {
  *
  * @param {object} params { config, commandName } aws config and command name
  * @param {Shim} _shim instance of shim
- * @param {function} _original original middlweare function
+ * @param {function} _original original middleware function
  * @param {string} _name function name
  * @param {array} args argument passed to middleware
- * @returns {object} specification object that records middleware as promise with an after hook to create LLM events
+ * @returns {object} specification object that records middleware as promise
+ * with an after hook to create LLM events
  */
 function getBedrockSpec({ config, commandName }, _shim, _original, _name, args) {
   const { input } = args[0]
@@ -213,51 +213,79 @@ function getBedrockSpec({ config, commandName }, _shim, _original, _name, args) 
     name: `Llm/${modelType}/Bedrock/${commandName}`,
     // eslint-disable-next-line max-params
     after: (shim, _fn, _fnName, err, response, segment) => {
-      const { agent } = shim
-      const bedrockResponse = createBedrockResponse({ bedrockCommand, response, err })
+      const passThroughParams = {
+        shim,
+        err,
+        response,
+        segment,
+        credentials,
+        bedrockCommand,
+        modelType
+      }
 
-      segment.transaction.trace.attributes.addAttribute(DESTINATIONS.TRANS_EVENT, 'llm', true)
-
-      // end segment to get a consistent segment duration
-      // for both the LLM events and the segment
-      segment.end()
-
-      if (modelType === 'completion') {
-        recordChatCompletionMessages({
-          agent,
-          credentials,
-          segment,
-          bedrockCommand,
-          bedrockResponse,
-          err
+      if (err && !response) {
+        handleResponse(passThroughParams)
+      } else if (response.output.body instanceof Uint8Array) {
+        // non-streamed response
+        handleResponse(passThroughParams)
+      } else {
+        // stream response
+        const handler = new StreamHandler({
+          stream: response.output.body,
+          onComplete: handleResponse,
+          passThroughParams
         })
-      } else if (modelType === 'embedding') {
-        recordEmbeddingMessage({
-          agent,
-          credentials,
-          segment,
-          bedrockCommand,
-          bedrockResponse,
-          err
-        })
+        response.output.body = handler.generator(handleResponse)
       }
     }
   }
 }
 
+function handleResponse({ shim, err, response, segment, credentials, bedrockCommand, modelType }) {
+  const { agent } = shim
+  const bedrockResponse = createBedrockResponse({ bedrockCommand, response, err })
+
+  segment.transaction.trace.attributes.addAttribute(DESTINATIONS.TRANS_EVENT, 'llm', true)
+  // end segment to get a consistent segment duration
+  // for both the LLM events and the segment
+  segment.end()
+
+  if (modelType === 'completion') {
+    recordChatCompletionMessages({
+      agent,
+      credentials,
+      segment,
+      bedrockCommand,
+      bedrockResponse,
+      err
+    })
+  } else if (modelType === 'embedding') {
+    recordEmbeddingMessage({
+      agent,
+      credentials,
+      segment,
+      bedrockCommand,
+      bedrockResponse,
+      err
+    })
+  }
+}
+
 /**
- * Middleware function that either instruments when InvokeModelCommand or InvokeModelWithResponseStreamCommand
- * or returns existing middleware chain
+ * Middleware function that either instruments when InvokeModelCommand or
+ * InvokeModelWithResponseStreamCommand or returns existing middleware chain
  *
  * @param {Shim} shim instance of shim
  * @param {object} config AWS configuration object
  * @param {function} next the next middleware function in stack
  * @param {object} context AWS client context info
- * @param {function} instrumented middleware or original
  */
 function bedrockMiddleware(shim, config, next, context) {
   const { commandName } = context
-  if (commandName === 'InvokeModelCommand') {
+  if (
+    commandName === 'InvokeModelCommand' ||
+    commandName === 'InvokeModelWithResponseStreamCommand'
+  ) {
     return shim.record(next, getBedrockSpec.bind(null, { config, commandName }))
   }
 

@@ -44,7 +44,7 @@ responses.set('text claude ultimate question', {
 responses.set('text claude ultimate question streamed', {
   headers: {
     'content-type': 'application/vnd.amazon.eventstream',
-    'x-amzn-requestid': 'dd8de841-8bc0-4014-9e24-735632b2a0f9',
+    'x-amzn-requestid': 'eda0760a-c3f0-4fc1-9a1e-75559d642866',
     'x-amzn-bedrock-content-type': 'application/json'
   },
   statusCode: 200,
@@ -59,12 +59,12 @@ responses.set('text claude ultimate question streamed', {
     },
     {
       body: {
-        'completion': '.',
-        'stop_reason': 'stop_sequence',
+        'completion': '',
+        'stop_reason': 'endoftext',
         'stop': '\n\nHuman:',
         'amazon-bedrock-invocationMetrics': {
-          inputTokenCount: 22,
-          outputTokenCount: 6,
+          inputTokenCount: 8,
+          outputTokenCount: 4,
           invocationLatency: 511,
           firstByteLatency: 358
         }

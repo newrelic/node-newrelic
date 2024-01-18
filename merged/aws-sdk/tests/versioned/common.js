@@ -93,6 +93,12 @@ function assertChatCompletionMessages({ tx, chatMsgs, expectedId, modelId, promp
   }
 
   chatMsgs.forEach((msg) => {
+    if (msg[1].sequence > 1) {
+      // Streamed responses may have more than two messages.
+      // We only care about the start and end of the conversation.
+      return
+    }
+
     const expectedChatMsg = { ...baseMsg }
     const id = expectedId ? `${expectedId}-${msg[1].sequence}` : msg[1].id
     if (msg[1].sequence === 0) {
@@ -112,7 +118,14 @@ function assertChatCompletionMessages({ tx, chatMsgs, expectedId, modelId, promp
   })
 }
 
-function assertChatCompletionSummary({ tx, modelId, chatSummary, tokenUsage, error = false }) {
+function assertChatCompletionSummary({
+  tx,
+  modelId,
+  chatSummary,
+  tokenUsage,
+  error = false,
+  numMsgs = 2
+}) {
   let expectedChatSummary = {
     'id': /[\w]{8}-[\w]{4}-[\w]{4}-[\w]{4}-[\w]{12}/,
     'appName': 'New Relic for Node.js tests',
@@ -127,7 +140,7 @@ function assertChatCompletionSummary({ tx, modelId, chatSummary, tokenUsage, err
     'request.model': modelId,
     'duration': tx.trace.root.children[0].getDurationInMillis(),
     'api_key_last_four_digits': 'E ID',
-    'response.number_of_messages': error ? 1 : 2,
+    'response.number_of_messages': error ? 1 : numMsgs,
     'response.choices.finish_reason': error ? undefined : 'endoftext',
     'request.temperature': 0.5,
     'request.max_tokens': 100,

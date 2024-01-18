@@ -32,7 +32,7 @@ responses.set('text cohere ultimate question', {
 responses.set('text cohere ultimate question streamed', {
   headers: {
     'content-type': 'application/vnd.amazon.eventstream',
-    'x-amzn-requestid': '11cd0d6f-08cc-4f71-88ba-211367bd088d',
+    'x-amzn-requestid': 'eda0760a-c3f0-4fc1-9a1e-75559d642866',
     'x-amzn-bedrock-content-type': 'application/json'
   },
   statusCode: 200,
@@ -46,16 +46,16 @@ responses.set('text cohere ultimate question streamed', {
       body: {
         'generations': [
           {
-            finish_reason: 'COMPLETE',
+            finish_reason: 'endoftext',
             id: 'f4ca64e7-93ce-4722-bebe-2d383440dedf',
-            text: ' In Douglas Adams\' science fiction novel *The Hitchhiker\'s Guide to the Galaxy*, the supercomputer Deep Thought is asked to find the answer to the question "What is the meaning of life, the universe, and everything?" After calculating for 7.5-million years, it returns the answer "42." \n\nWhen asked to explain the answer, Deep Thought says that it is an *"obvious*" solution, but that the answer is so un-obvious that humans are unlikely to understand it.\n\nAdams never intended the answer to be a real solution, but a humorous way to demonstrate the absurdity of expecting an answer to such a vast question. However, the number 42 has become a popular cultural reference and has been used in a variety of contexts to represent the search for meaning in life. \n\nUltimately, the answer to the question "What is the meaning of life, the universe, and everything?" is subjective and will be different for each person. Some may find meaning in relationships, family, work, hobbies, or simply in the act of living and experiencing the world. \n\nIt is also worth noting that the search for meaning can be a lifelong pursuit, and the answers to life\'s questions can change and evolve over time.'
+            text: '42'
           }
         ],
-        'id': '11cd0d6f-08cc-4f71-88ba-211367bd088d',
+        'id': '1234',
         'prompt': 'What is the answer to life, the universe, and everything?',
         'amazon-bedrock-invocationMetrics': {
-          inputTokenCount: 13,
-          outputTokenCount: 257,
+          inputTokenCount: 8,
+          outputTokenCount: 4,
           invocationLatency: 8623,
           firstByteLatency: 8623
         }
@@ -85,7 +85,7 @@ responses.set('embed text cohere success', {
 responses.set('embed text cohere stream', {
   headers: {
     'content-type': 'application/vnd.amazon.eventstream',
-    'x-amzn-requestid': 'fbd3923c-3071-4ece-8761-6ba78058f747',
+    'x-amzn-requestid': 'eda0760a-c3f0-4fc1-9a1e-75559d642866',
     'x-amzn-bedrock-content-type': 'application/json'
   },
   statusCode: 200,
@@ -104,8 +104,8 @@ responses.set('embed text cohere stream', {
         'id': 'fbd3923c-3071-4ece-8761-6ba78058f747',
         'texts': ['foo', 'bar'],
         'amazon-bedrock-invocationMetrics': {
-          inputTokenCount: 2,
-          outputTokenCount: 0,
+          inputTokenCount: 4,
+          outputTokenCount: 8,
           invocationLatency: 492,
           firstByteLatency: 480
         }

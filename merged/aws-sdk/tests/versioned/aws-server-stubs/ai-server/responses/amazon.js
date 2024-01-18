@@ -45,15 +45,14 @@ responses.set('text amazon ultimate question', {
 responses.set('text amazon ultimate question streamed', {
   headers: {
     'content-type': 'application/vnd.amazon.eventstream',
-    'x-amzn-requestid': '9f117b99-3b0a-486d-9d7e-3464f306df1d',
+    'x-amzn-requestid': 'eda0760a-c3f0-4fc1-9a1e-75559d642866',
     'x-amzn-bedrock-content-type': 'application/json'
   },
   statusCode: 200,
   chunks: [
     {
       body: {
-        outputText:
-          '\nThe answer to life, the universe, and everything is 42. This is a reference to the popular science fiction book "The Hitchhiker\'s Guide to the Galaxy" by Douglas Ada',
+        outputText: '42',
         index: 0,
         totalOutputTextTokenCount: null,
         completionReason: null,
@@ -66,15 +65,14 @@ responses.set('text amazon ultimate question streamed', {
     },
     {
       body: {
-        'outputText':
-          'ms. In the book, the answer to the ultimate question of life, the universe, and everything is discovered to be 42 by the supercomputer Deep Thought.',
+        'outputText': '',
         'index': 0,
         'totalOutputTextTokenCount': 75,
-        'completionReason': 'FINISH',
+        'completionReason': 'endoftext',
         'inputTextTokenCount': null,
         'amazon-bedrock-invocationMetrics': {
-          inputTokenCount: 13,
-          outputTokenCount: 75,
+          inputTokenCount: 8,
+          outputTokenCount: 4,
           invocationLatency: 3879,
           firstByteLatency: 3291
         }
@@ -111,6 +109,29 @@ responses.set('embed text amazon error', {
     message:
       'Malformed input request: 2 schema violations found, please reformat your input and try again.'
   }
+})
+
+responses.set('embed text amazon error streamed', {
+  headers: {
+    'content-type': 'application/json',
+    'x-amzn-requestid': 'eda0760a-c3f0-4fc1-9a1e-75559d642866',
+    'x-amzn-errortype': 'ValidationException:http://internal.amazon.com/coral/com.amazon.bedrock/'
+  },
+  statusCode: 400,
+  body: {
+    message: 'The model is unsupported for streaming'
+  }
+})
+
+responses.set('text amazon bad stream', {
+  headers: {
+    'content-type': 'application/json',
+    'x-amzn-requestid': 'eda0760a-c3f0-4fc1-9a1e-75559d642866',
+    'x-amzn-errortype':
+      'InternalServerException:http://internal.amazon.com/coral/com.amazon.bedrock/'
+  },
+  statusCode: 500,
+  body: 'bad stream'
 })
 
 module.exports = responses

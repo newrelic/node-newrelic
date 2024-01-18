@@ -114,7 +114,7 @@ class BedrockCommand {
   }
 
   isCohere() {
-    return this.#modelId.startsWith('cohere.')
+    return this.#modelId.startsWith('cohere.') && this.isCohereEmbed() === false
   }
 
   isCohereEmbed() {
@@ -126,7 +126,7 @@ class BedrockCommand {
   }
 
   isTitan() {
-    return this.#modelId.startsWith('amazon.titan')
+    return this.#modelId.startsWith('amazon.titan') && this.isTitanEmbed() === false
   }
 
   isTitanEmbed() {

@@ -8,6 +8,7 @@
 module.exports = createAiResponseServer
 
 const http = require('http')
+const crypto = require('crypto')
 const { Readable } = require('stream')
 const { EventStreamCodec } = require('@smithy/eventstream-codec')
 const { toUtf8, fromUtf8 } = require('@smithy/util-utf8')
@@ -120,13 +121,40 @@ function handler(req, res) {
       res.setHeader(key, value)
     }
 
-    if (response.headers['content-type'].endsWith('amazon.eventstream') === true) {
+    if (response.body === 'bad stream') {
+      const stream = infiniteStream()
+      let count = 0
+      stream.on('data', () => {
+        if (count >= 100) {
+          stream.destroy()
+          res.destroy()
+        }
+        count += 1
+      })
+      stream.pipe(res)
+      return
+    } else if (response.headers['content-type'].endsWith('amazon.eventstream') === true) {
       encodeChunks(response.chunks).pipe(res)
       return
     }
 
     res.end(JSON.stringify(response.body))
   })
+}
+
+/**
+ * Creates a stream that will generate new stream messages until the stream
+ * is destroyed.
+ *
+ * @returns {Readable}
+ */
+function infiniteStream() {
+  return new Readable({
+    read(size = 16) {
+      const data = crypto.randomBytes(size)
+      this.push(JSON.stringify({ chunk: { bytes: data.toString('base64') } }))
+    }
+  }).pause()
 }
 
 /**

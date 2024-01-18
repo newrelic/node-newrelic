@@ -144,10 +144,10 @@ responses.set('text ai21 ultimate question', {
   }
 })
 
-responses.set('text ai21 ultimate question streamed', {
+responses.set('text ai21 ultimate question error streamed', {
   headers: {
     'content-type': 'application/json',
-    'x-amzn-requestid': '1d4fd150-296e-4405-aaf9-94ed7a5ff0ed',
+    'x-amzn-requestid': 'eda0760a-c3f0-4fc1-9a1e-75559d642866',
     'x-amzn-errortype': 'ValidationException:http://internal.amazon.com/coral/com.amazon.bedrock/'
   },
   statusCode: 400,
