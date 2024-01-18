@@ -285,7 +285,7 @@ tap.test('Errors', (t) => {
 
       const errorTraces = getErrorTraces(agent.errors)
       const error = errorTraces[0]
-      t.equal(error[error.length - 3], testError.name)
+      t.equal(error[error.length - 2], testError.name)
       t.end()
     })
 
@@ -844,9 +844,9 @@ tap.test('Errors', (t) => {
         t.end()
       })
 
-      t.test('should have undefined for transaction id', (t) => {
+      t.test('should not have a transaction id', (t) => {
         const transactionId = errorJSON[5]
-        t.equal(transactionId, undefined)
+        t.notOk(transactionId)
         t.end()
       })
     })
@@ -2105,9 +2105,9 @@ test('When using the async listener', (t) => {
     })
   })
 
-  t.test('should have 6 elements in the trace', (t) => {
+  t.test('should have 5 elements in the trace', (t) => {
     executeThrowingTransaction(() => {
-      t.equal(json.length, 6)
+      t.equal(json.length, 5)
       t.end()
     })
   })
