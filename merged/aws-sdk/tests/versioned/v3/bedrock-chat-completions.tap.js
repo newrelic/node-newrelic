@@ -44,9 +44,6 @@ tap.beforeEach(async (t) => {
   const helper = utils.TestAgent.makeInstrumented({
     ai_monitoring: {
       enabled: true
-    },
-    feature_flag: {
-      aws_bedrock_instrumentation: true
     }
   })
   common.registerInstrumentation(helper)

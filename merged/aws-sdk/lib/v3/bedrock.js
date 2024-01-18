@@ -26,10 +26,7 @@ let TRACKING_METRIC
  * @returns {boolean} to instrument or not to instrument
  */
 function shouldSkipInstrumentation(config) {
-  return !(
-    config?.ai_monitoring?.enabled === true &&
-    config?.feature_flag?.aws_bedrock_instrumentation === true
-  )
+  return !config?.ai_monitoring?.enabled === true
 }
 
 /**

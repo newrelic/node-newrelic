@@ -49,21 +49,14 @@ tap.afterEach(async (t) => {
     }
   })
 })
-;[
-  { aiMmonitoring: false, bedrockInstrumentation: true, name: 'ai_monitoring' },
-  { aiMmonitoring: true, bedrockInstrumentation: false, name: 'aws_bedrock_instrumentation' },
-  {
-    aiMmonitoring: false,
-    bedrockInstrumentation: false,
-    name: 'aws_bedrock_instrumentation and ai_monitoring'
-  }
-].forEach(({ aiMonitoring, bedrockInstrumentation, name }) => {
-  tap.test(`should not register instrumentation middleware when ${name} is not enabled`, (t) => {
+
+tap.test(
+  'should not register instrumentation middleware when ai_monitoring is not enabled',
+  (t) => {
     const { bedrock, client, responses, helper } = t.context
     const resKey = 'amazon'
     const modelId = 'amazon.titan-text-express-v1'
-    helper.agent.config.ai_monitoring = aiMonitoring
-    helper.agent.config.feature_flag.aws_bedrock_instrumentation = bedrockInstrumentation
+    helper.agent.config.ai_monitoring.enabled = false
     const prompt = `text ${resKey} ultimate question`
     const input = {
       body: JSON.stringify({ inputText: prompt }),
@@ -82,5 +75,5 @@ tap.afterEach(async (t) => {
       tx.end()
       t.end()
     })
-  })
-})
+  }
+)
