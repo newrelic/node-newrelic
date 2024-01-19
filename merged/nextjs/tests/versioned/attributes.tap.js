@@ -9,7 +9,10 @@ const tap = require('tap')
 const helpers = require('./helpers')
 const utils = require('@newrelic/test-utilities')
 const nextPkg = require('next/package.json')
-const { isMiddlewareInstrumentationSupported } = require('../../lib/utils')
+const {
+  isMiddlewareInstrumentationSupported,
+  getServerSidePropsSegment
+} = require('../../lib/utils')
 const middlewareSupported = isMiddlewareInstrumentationSupported(nextPkg.version)
 
 const DESTINATIONS = {
@@ -267,7 +270,7 @@ tap.test('Next.js', (t) => {
         })
       } else {
         segments.push({
-          segment: rootSegment.children[0].children[0],
+          segment: getServerSidePropsSegment(rootSegment),
           name: 'getServerSideProps',
           filepath: 'pages/ssr/people'
         })

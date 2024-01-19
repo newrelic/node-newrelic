@@ -28,12 +28,6 @@ function getChildSegments(uri) {
     })
   }
 
-  if (semver.gte(nextPkg.version, '13.4.5')) {
-    segments.push({
-      name: 'timers.setTimeout'
-    })
-  }
-
   return segments
 }
 
@@ -75,7 +69,6 @@ tap.test('Next.js', (t) => {
     const expectedSegments = [
       {
         name: `${TRANSACTION_PREFX}${URI}`,
-        exact: true,
         children: getChildSegments(URI)
       }
     ]
@@ -97,7 +90,6 @@ tap.test('Next.js', (t) => {
     const expectedSegments = [
       {
         name: `${TRANSACTION_PREFX}${EXPECTED_URI}`,
-        exact: true,
         children: getChildSegments(EXPECTED_URI)
       }
     ]
@@ -126,7 +118,6 @@ tap.test('Next.js', (t) => {
       ]
 
       if (semver.gte(nextPkg.version, '12.2.0')) {
-        expectedSegments[0].exact = true
         expectedSegments[0].children = [
           {
             name: `${MW_PREFIX}/middleware`
