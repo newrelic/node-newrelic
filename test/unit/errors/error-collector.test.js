@@ -220,7 +220,7 @@ tap.test('Errors', (t) => {
       errorJSON = errorTraces[0]
 
       const transactionId = errorJSON[5]
-      t.not(transactionId, undefined)
+      t.equal(transactionId, transaction.id)
       transaction.end()
       t.end()
     })
@@ -258,7 +258,7 @@ tap.test('Errors', (t) => {
       errorJSON = errorTraces[0]
 
       const transactionId = errorJSON[5]
-      t.not(transactionId, undefined)
+      t.equal(transactionId, transaction.id)
       transaction.end()
       t.end()
     })
@@ -361,7 +361,7 @@ tap.test('Errors', (t) => {
 
       const errorTraces = getErrorTraces(agent.errors)
       const error = errorTraces[0]
-      t.equal(error[error.length - 2], testError.name)
+      t.equal(error[error.length - 3], testError.name)
       t.end()
     })
 
@@ -698,11 +698,12 @@ tap.test('Errors', (t) => {
       t.autoend()
       let noErrorStatusTracer
       let errorJSON
+      let transaction
 
       t.beforeEach(() => {
         noErrorStatusTracer = agent.errors
 
-        const transaction = new Transaction(agent)
+        transaction = new Transaction(agent)
         transaction.statusCode = 503 // PDX wut wut
 
         noErrorStatusTracer.add(transaction, null)
@@ -746,7 +747,7 @@ tap.test('Errors', (t) => {
 
       t.test('should have a transaction id', (t) => {
         const transactionId = errorJSON[5]
-        t.not(transactionId, undefined)
+        t.equal(transactionId, transaction.id)
         t.end()
       })
 
@@ -759,9 +760,10 @@ tap.test('Errors', (t) => {
     t.test('with transaction agent attrs, status code, and no error', (t) => {
       let errorJSON = null
       let params = null
+      let transaction
 
       t.beforeEach(() => {
-        const transaction = new Transaction(agent)
+        transaction = new Transaction(agent)
         transaction.statusCode = 501
         transaction.url = '/'
         transaction.trace.attributes.addAttributes(DESTS.TRANS_SCOPE, {
@@ -810,7 +812,7 @@ tap.test('Errors', (t) => {
 
       t.test('should have a transaction id', (t) => {
         const transactionId = errorJSON[5]
-        t.not(transactionId, undefined)
+        t.equal(transactionId, transaction.id)
         t.end()
       })
 
@@ -931,11 +933,12 @@ tap.test('Errors', (t) => {
       t.autoend()
       let typeErrorTracer
       let errorJSON
+      let transaction
 
       t.beforeEach(() => {
         typeErrorTracer = agent.errors
 
-        const transaction = new Transaction(agent)
+        transaction = new Transaction(agent)
         const exception = new TypeError('Dare to be different!')
 
         typeErrorTracer.add(transaction, exception)
@@ -980,7 +983,7 @@ tap.test('Errors', (t) => {
 
       t.test('should have a transaction id', (t) => {
         const transactionId = errorJSON[5]
-        t.not(transactionId, undefined)
+        t.equal(transactionId, transaction.id)
         t.end()
       })
     })
@@ -989,9 +992,10 @@ tap.test('Errors', (t) => {
       t.autoend()
       let errorJSON = null
       let params = null
+      let transaction
 
       t.beforeEach(() => {
-        const transaction = new Transaction(agent)
+        transaction = new Transaction(agent)
         const exception = new TypeError('wanted JSON, got XML')
 
         transaction.trace.attributes.addAttributes(DESTS.TRANS_SCOPE, {
@@ -1042,7 +1046,7 @@ tap.test('Errors', (t) => {
 
       t.test('should have a transaction id', (t) => {
         const transactionId = errorJSON[5]
-        t.not(transactionId, undefined)
+        t.equal(transactionId, transaction.id)
         t.end()
       })
 
@@ -1066,11 +1070,12 @@ tap.test('Errors', (t) => {
       t.autoend()
       let thrownTracer
       let errorJSON
+      let transaction
 
       t.beforeEach(() => {
         thrownTracer = agent.errors
 
-        const transaction = new Transaction(agent)
+        transaction = new Transaction(agent)
         const exception = 'Dare to be different!'
 
         thrownTracer.add(transaction, exception)
@@ -1113,7 +1118,7 @@ tap.test('Errors', (t) => {
 
       t.test('should have a transaction id', (t) => {
         const transactionId = errorJSON[5]
-        t.not(transactionId, undefined)
+        t.equal(transactionId, transaction.id)
         t.end()
       })
     })
@@ -1122,9 +1127,10 @@ tap.test('Errors', (t) => {
       t.autoend()
       let errorJSON = null
       let params = null
+      let transaction
 
       t.beforeEach(() => {
-        const transaction = new Transaction(agent)
+        transaction = new Transaction(agent)
         const exception = 'wanted JSON, got XML'
 
         transaction.trace.attributes.addAttributes(DESTS.TRANS_SCOPE, {
@@ -1175,7 +1181,7 @@ tap.test('Errors', (t) => {
 
       t.test('should have a transaction id', (t) => {
         const transactionId = errorJSON[5]
-        t.not(transactionId, undefined)
+        t.equal(transactionId, transaction.id)
         t.end()
       })
 
@@ -2181,9 +2187,9 @@ test('When using the async listener', (t) => {
     })
   })
 
-  t.test('should have 5 elements in the trace', (t) => {
+  t.test('should have 6 elements in the trace', (t) => {
     executeThrowingTransaction(() => {
-      t.equal(json.length, 5)
+      t.equal(json.length, 6)
       t.end()
     })
   })
