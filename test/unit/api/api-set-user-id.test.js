@@ -63,7 +63,7 @@ tap.test('Agent API = set user id', (t) => {
       api.setUserID(id)
       const exception = new Exception(new Error('Test error.'))
       const [...data] = createError(tx, exception, agent.config)
-      const params = data.pop()
+      const params = data.at(-2)
       t.equal(params.agentAttributes['enduser.id'], id, 'should set enduser.id attribute on error')
       t.end()
     })
