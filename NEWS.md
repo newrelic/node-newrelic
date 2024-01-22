@@ -2,12 +2,12 @@
 
 #### Features
 
-* Add llm attribute to all transactions that contain llm spans for openai ([#1946](https://github.com/newrelic/node-newrelic/pull/1946)) ([6312629](https://github.com/newrelic/node-newrelic/commit/6312629326c02fe3de4db91ee293eb71b7ddd042))
+* Added llm attribute to all transactions that contain llm spans for openai ([#1946](https://github.com/newrelic/node-newrelic/pull/1946)) ([6312629](https://github.com/newrelic/node-newrelic/commit/6312629326c02fe3de4db91ee293eb71b7ddd042))
 * Added transaction ID to ErrorTrace event ([#1954](https://github.com/newrelic/node-newrelic/pull/1954)) ([5d0ebcd](https://github.com/newrelic/node-newrelic/commit/5d0ebcd216cb60b3a488b2b5f7c20f71f8d5bbeb))
 
 #### Security improvements
 
-* **remote_method:** redact ingest key in trace level logs ([#1948](https://github.com/newrelic/node-newrelic/pull/1948)) ([04fee88](https://github.com/newrelic/node-newrelic/commit/04fee886bd2f479e568830ea03217d7c9aba87d9))
+* **remote_method:** Redacted ingest key in trace level logs ([#1948](https://github.com/newrelic/node-newrelic/pull/1948)) ([04fee88](https://github.com/newrelic/node-newrelic/commit/04fee886bd2f479e568830ea03217d7c9aba87d9))
 
 #### Code refactoring
 
@@ -16,7 +16,7 @@
 
 #### Miscellaneous chores
 
-* **deps:** updated @newrelic/aws-sdk to latest and removed aws_bedrock_instrumentation feature flag ([#1956](https://github.com/newrelic/node-newrelic/pull/1956)) ([9eae28c](https://github.com/newrelic/node-newrelic/commit/9eae28c7ca06f9287fe09a2d51ad61534d9e8b1d))
+* **deps:** Updated @newrelic/aws-sdk to latest and removed aws_bedrock_instrumentation feature flag ([#1956](https://github.com/newrelic/node-newrelic/pull/1956)) ([9eae28c](https://github.com/newrelic/node-newrelic/commit/9eae28c7ca06f9287fe09a2d51ad61534d9e8b1d))
 * **deps:** Updated @newrelic/security-agent to v0.7.0 ([#1955](https://github.com/newrelic/node-newrelic/pull/1955)) ([e156539](https://github.com/newrelic/node-newrelic/commit/e15653916f4614e17501202f6831459a8104e7a7))
 * Migrated non-sensitive CI values to vars ([#1957](https://github.com/newrelic/node-newrelic/pull/1957)) ([1739378](https://github.com/newrelic/node-newrelic/commit/17393782a278fd3c3289332c78a88a5d6819be7c))
 * updated contributors list to include james and svetlana 🎉 ([#1947](https://github.com/newrelic/node-newrelic/pull/1947)) ([33a59fd](https://github.com/newrelic/node-newrelic/commit/33a59fdcdeb3e4074b4611d88e2fe79a65168fe3))
