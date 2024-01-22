@@ -2,6 +2,19 @@
   "repository": "newrelic/node-newrelic",
   "entries": [
     {
+      "version": "11.10.0",
+      "changes": {
+        "security": [
+          "redact ingest key in trace level logs"
+        ],
+        "bugfixes": [],
+        "features": [
+          "Added transaction ID to ErrorTrace event",
+          "Add llm attribute to all transactions that contain llm spans for openai"
+        ]
+      }
+    },
+    {
       "version": "11.9.0",
       "changes": {
         "security": [
