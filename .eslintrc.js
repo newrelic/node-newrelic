@@ -18,6 +18,7 @@ module.exports = {
           'Logger',
           'Agent',
           'Shim',
+          'MessageShim',
           'TraceSegment',
           'Transaction',
           'Tracer',
