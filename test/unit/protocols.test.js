@@ -36,7 +36,7 @@ tap.test('errors', (t) => {
       t.same(
         errors,
         '[1,[[0,"Unknown","test","Error",{"userAttributes":{},"agentAttributes":{},' +
-          '"intrinsics":{"error.expected":false},"stack_trace":["test stack"]}]]]'
+          '"intrinsics":{"error.expected":false},"stack_trace":["test stack"]},null]]]'
       )
       t.end()
     })

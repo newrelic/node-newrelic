@@ -509,7 +509,7 @@ This product includes source derived from [@grpc/proto-loader](https://github.co
 
 ### @newrelic/aws-sdk
 
-This product includes source derived from [@newrelic/aws-sdk](https://github.com/newrelic/node-newrelic-aws-sdk) ([v7.0.3](https://github.com/newrelic/node-newrelic-aws-sdk/tree/v7.0.3)), distributed under the [Apache-2.0 License](https://github.com/newrelic/node-newrelic-aws-sdk/blob/v7.0.3/LICENSE):
+This product includes source derived from [@newrelic/aws-sdk](https://github.com/newrelic/node-newrelic-aws-sdk) ([v7.1.0](https://github.com/newrelic/node-newrelic-aws-sdk/tree/v7.1.0)), distributed under the [Apache-2.0 License](https://github.com/newrelic/node-newrelic-aws-sdk/blob/v7.1.0/LICENSE):
 
 ```
                                  Apache License
@@ -926,7 +926,7 @@ Apache License
 
 ### @newrelic/security-agent
 
-This product includes source derived from [@newrelic/security-agent](https://github.com/newrelic/csec-node-agent) ([v0.6.0](https://github.com/newrelic/csec-node-agent/tree/v0.6.0)), distributed under the [New Relic Pre-Release License](https://github.com/newrelic/csec-node-agent/blob/v0.6.0/LICENSE):
+This product includes source derived from [@newrelic/security-agent](https://github.com/newrelic/csec-node-agent) ([v0.7.0](https://github.com/newrelic/csec-node-agent/tree/v0.7.0)), distributed under the [UNKNOWN License](https://github.com/newrelic/csec-node-agent/blob/v0.7.0/LICENSE):
 
 ```
 ## New Relic Pre-Release Software Notice

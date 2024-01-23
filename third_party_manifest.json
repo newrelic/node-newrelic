@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "Fri Jan 12 2024 14:52:55 GMT-0500 (Eastern Standard Time)",
+  "lastUpdated": "Thu Jan 18 2024 15:41:06 GMT-0500 (Eastern Standard Time)",
   "projectName": "New Relic Node Agent",
   "projectUrl": "https://github.com/newrelic/node-newrelic",
   "includeOptDeps": true,
@@ -68,15 +68,15 @@
       "licenseTextSource": "file",
       "publisher": "Google Inc."
     },
-    "@newrelic/aws-sdk@7.0.3": {
+    "@newrelic/aws-sdk@7.1.0": {
       "name": "@newrelic/aws-sdk",
-      "version": "7.0.3",
-      "range": "^7.0.3",
+      "version": "7.1.0",
+      "range": "^7.1.0",
       "licenses": "Apache-2.0",
       "repoUrl": "https://github.com/newrelic/node-newrelic-aws-sdk",
-      "versionedRepoUrl": "https://github.com/newrelic/node-newrelic-aws-sdk/tree/v7.0.3",
+      "versionedRepoUrl": "https://github.com/newrelic/node-newrelic-aws-sdk/tree/v7.1.0",
       "licenseFile": "node_modules/@newrelic/aws-sdk/LICENSE",
-      "licenseUrl": "https://github.com/newrelic/node-newrelic-aws-sdk/blob/v7.0.3/LICENSE",
+      "licenseUrl": "https://github.com/newrelic/node-newrelic-aws-sdk/blob/v7.1.0/LICENSE",
       "licenseTextSource": "file",
       "publisher": "New Relic Node.js agent team",
       "email": "nodejs@newrelic.com"
@@ -94,15 +94,15 @@
       "publisher": "New Relic Node.js agent team",
       "email": "nodejs@newrelic.com"
     },
-    "@newrelic/security-agent@0.6.0": {
+    "@newrelic/security-agent@0.7.0": {
       "name": "@newrelic/security-agent",
-      "version": "0.6.0",
-      "range": "0.6.0",
-      "licenses": "New Relic Pre-Release",
+      "version": "0.7.0",
+      "range": "0.7.0",
+      "licenses": "UNKNOWN",
       "repoUrl": "https://github.com/newrelic/csec-node-agent",
-      "versionedRepoUrl": "https://github.com/newrelic/csec-node-agent/tree/v0.6.0",
+      "versionedRepoUrl": "https://github.com/newrelic/csec-node-agent/tree/v0.7.0",
       "licenseFile": "node_modules/@newrelic/security-agent/LICENSE",
-      "licenseUrl": "https://github.com/newrelic/csec-node-agent/blob/v0.6.0/LICENSE",
+      "licenseUrl": "https://github.com/newrelic/csec-node-agent/blob/v0.7.0/LICENSE",
       "licenseTextSource": "file",
       "publisher": "newrelic"
     },
