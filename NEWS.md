@@ -1,3 +1,10 @@
+### v11.10.1 (2024-01-25)
+
+#### Bug fixes
+
+* Updated instrumentation registration to allow for instrumenting of a local file that does not exist within node_modules. 
+  * To properly instrument a local file, you must pass in `absolutePath` with the absolute path to the file that is being instrumented along with the `moduleName` which in this case is just the file name without the extension. ([#1974](https://github.com/newrelic/node-newrelic/pull/1974)) ([f545b4e](https://github.com/newrelic/node-newrelic/commit/f545b4ebc3394f0a7179a51e156c6df28896edf0))
+
 ### v11.10.0 (2024-01-22)
 
 #### Features
