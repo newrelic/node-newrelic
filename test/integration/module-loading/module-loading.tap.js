@@ -13,6 +13,8 @@ const shimmer = require('../../../lib/shimmer')
 const symbols = require('../../../lib/symbols')
 const { FEATURES } = require('../../../lib/metrics/names')
 
+const LOCAL_MODULE = 'local-package'
+const LOCAL_MODULE_PATH = require.resolve('./local-package')
 const CUSTOM_MODULE = 'customTestPackage'
 const CUSTOM_MODULE_PATH = `./node_modules/${CUSTOM_MODULE}`
 const CUSTOM_MODULE_PATH_SUB = `./node_modules/subPkg/node_modules/${CUSTOM_MODULE}`
@@ -173,6 +175,36 @@ tap.test('Should create usage version metric onRequire', (t) => {
     t.ok(onRequireMetric)
     t.equal(onRequireMetric.callCount, 1)
 
+    t.end()
+  }
+})
+
+tap.test('should instrument a local package', (t) => {
+  let agent = helper.instrumentMockedAgent()
+
+  t.teardown(() => {
+    helper.unloadAgent(agent)
+    agent = null
+  })
+
+  shimmer.registerInstrumentation({
+    moduleName: LOCAL_MODULE,
+    absolutePath: LOCAL_MODULE_PATH,
+    onRequire: onRequireHandler
+  })
+
+  require('./local-package')
+
+  function onRequireHandler(shim, localPkg, name) {
+    t.equal(
+      shim.pkgVersion,
+      process.version,
+      'defaults to node version for pkgVersion as this is not a package'
+    )
+    t.ok(shim.id)
+    t.equal(name, LOCAL_MODULE)
+    const result = localPkg()
+    t.same(result, { hello: 'world' })
     t.end()
   }
 })
