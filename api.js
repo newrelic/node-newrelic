@@ -614,6 +614,7 @@ API.prototype.addIgnoringRule = function addIgnoringRule(pattern) {
  * Output an HTML comment and log a warning the comment is meant to be
  * innocuous to the end user.
  *
+ * @private
  * @see RUM_ISSUES
  * @param {number} errorCode Error code from `RUM_ISSUES`.
  * @param {boolean} [quiet=false] Be quiet about this failure.
@@ -631,6 +632,7 @@ function _gracefail(errorCode, quiet) {
 /**
  * Function for generating a fully formed RUM header based on configuration options
  *
+ * @private
  * @param {object} options Configuration options for RUM
  * @param {string} [options.nonce] Nonce to inject into `<script>` header.
  * @param {boolean} [options.hasToRemoveScriptWrapper] Used to import agent script without `<script>` tag wrapper.
@@ -658,6 +660,7 @@ function _generateRUMHeader(options = {}, metadata, loader) {
  * Helper method for determining if we have the minimum required
  * information to generate our Browser Agent script tag
  *
+ * @private
  * @param {object} config agent configuration settings
  * @param {Transaction} transaction the active transaction or null
  * @param {boolean} allowTransactionlessInjection whether or not to allow the Browser Agent to be injected when there is no active transaction
@@ -1655,6 +1658,7 @@ API.prototype.shutdown = function shutdown(options, cb) {
 /**
  * Helper function for logging if an error occurs, and where
  *
+ * @private
  * @param {Error} error If defined, the error that occurred
  * @param {string} phase Where in the process the error happened
  * @returns {void}
@@ -1668,6 +1672,7 @@ function _logErrorCallback(error, phase) {
 /**
  * Function for handling the graceful shutdown process, including processing of data and handling errors
  *
+ * @private
  * @param {object} api instantiation of this file
  * @param {object} options shutdown options object
  * @param {boolean} [options.collectPendingData=false]
@@ -1732,6 +1737,7 @@ function _doShutdown(api, options, callback) {
  * Validates that all keys in a given object have values that are less than or equal to a given length
  * Assumes all values have .length property (string/array)
  *
+ * @private
  * @param {object} object The object to validate
  * @param {number} maxLength The max allowed length
  * @returns {boolean} Whether or not the object passes validation
@@ -1803,6 +1809,7 @@ API.prototype.setUserID = function setUserID(id) {
 /**
  * Function for removing invalid attribute key/value pairs from an object
  *
+ * @private
  * @param {object} attributes The attribute object
  * @param {string} name Caller name, used for debugging/logging purposes only
  * @returns {object} Attribute object containing only valid key/value pairs
