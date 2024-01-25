@@ -1312,7 +1312,7 @@ API.prototype.recordCustomEvent = function recordCustomEvent(eventType, attribut
  *
  * @param {string|object} moduleName The module name given to require to load the module, or the instrumentation specification
  * @param {string} moduleName.moduleName The module name given to require to load the module
- * @param {Function}  moduleName.onResolved The function to call prior to module load after the filepath has been resolved
+ * @param {string} [moduleName.absolutePath] Must provide absolute path to module if it does not exist within node_modules. This is used to instrument a file within the same application.
  * @param {Function}  moduleName.onRequire The function to call when the module has been loaded
  * @param {Function} [moduleName.onError] If provided, should `onRequire` throw an error, the error will be passed to
  * @param {Function} onRequire The function to call when the module has been loaded
@@ -1343,7 +1343,7 @@ API.prototype.instrument = function instrument(moduleName, onRequire, onError) {
  *
  * @param {string|object} moduleName The module name given to require to load the module, or the instrumentation specification
  * @param {string} moduleName.moduleName The module name given to require to load the module
- * @param {Function}  moduleName.onResolved The function to call prior to module load after the filepath has been resolved
+ * @param {string} [moduleName.absolutePath] Must provide absolute path to module if it does not exist within node_modules. This is used to instrument a file within the same application.
  * @param {Function}  moduleName.onRequire The function to call when the module has been loaded
  * @param {Function} [moduleName.onError] If provided, should `onRequire` throw an error, the error will be passed to
  * @param {Function} onRequire The function to call when the module has been loaded
@@ -1375,7 +1375,7 @@ API.prototype.instrumentConglomerate = function instrumentConglomerate(
  *
  * @param {string|object} moduleName The module name given to require to load the module, or the instrumentation specification
  * @param {string} moduleName.moduleName The module name given to require to load the module
- * @param {Function}  moduleName.onResolved The function to call prior to module load after the filepath has been resolved
+ * @param {string} [moduleName.absolutePath] Must provide absolute path to module if it does not exist within node_modules. This is used to instrument a file within the same application.
  * @param {Function}  moduleName.onRequire The function to call when the module has been loaded
  * @param {Function} [moduleName.onError] If provided, should `onRequire` throw an error, the error will be passed to
  * @param {Function} onRequire The function to call when the module has been loaded
@@ -1408,7 +1408,7 @@ API.prototype.instrumentDatastore = function instrumentDatastore(moduleName, onR
  *
  * @param {string|object} moduleName The module name given to require to load the module, or the instrumentation specification
  * @param {string} moduleName.moduleName The module name given to require to load the module
- * @param {Function}  moduleName.onResolved The function to call prior to module load after the filepath has been resolved
+ * @param {string} [moduleName.absolutePath] Must provide absolute path to module if it does not exist within node_modules. This is used to instrument a file within the same application.
  * @param {Function}  moduleName.onRequire The function to call when the module has been loaded
  * @param {Function} [moduleName.onError] If provided, should `onRequire` throw an error, the error will be passed to
  * @param {Function} onRequire The function to call when the module has been loaded
@@ -1445,7 +1445,7 @@ API.prototype.instrumentWebframework = function instrumentWebframework(
  *
  * @param {string|object} moduleName The module name given to require to load the module, or the instrumentation specification
  * @param {string} moduleName.moduleName The module name given to require to load the module
- * @param {Function}  moduleName.onResolved The function to call prior to module load after the filepath has been resolved
+ * @param {string} [moduleName.absolutePath] Must provide absolute path to module if it does not exist within node_modules. This is used to instrument a file within the same application.
  * @param {Function}  moduleName.onRequire The function to call when the module has been loaded
  * @param {Function} [moduleName.onError] If provided, should `onRequire` throw an error, the error will be passed to
  * @param {Function} onRequire The function to call when the module has been loaded
