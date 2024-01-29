@@ -30,15 +30,14 @@ module.exports = {
     ]
   },
   parserOptions: {
-    ecmaVersion: 2020
+    ecmaVersion: 2022
   },
   ignorePatterns: ['test/versioned-external'],
   overrides: [
     {
       files: ['**/*.mjs'],
       parserOptions: {
-        sourceType: 'module',
-        ecmaVersion: 2022
+        sourceType: 'module'
       },
       rules: {
         // TODO: remove this when we decide on how to address
