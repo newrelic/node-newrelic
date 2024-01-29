@@ -30,7 +30,7 @@ module.exports = {
     ]
   },
   parserOptions: {
-    ecmaVersion: 2020
+    ecmaVersion: 'latest'
   },
   ignorePatterns: ['test/versioned-external'],
   overrides: [

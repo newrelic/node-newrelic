@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "Fri Jan 26 2024 08:32:03 GMT-0500 (Eastern Standard Time)",
+  "lastUpdated": "Mon Jan 29 2024 09:11:35 GMT-0500 (Eastern Standard Time)",
   "projectName": "New Relic Node Agent",
   "projectUrl": "https://github.com/newrelic/node-newrelic",
   "includeOptDeps": true,
@@ -16,15 +16,15 @@
       "licenseTextSource": "file",
       "publisher": "Contrast Security"
     },
-    "@newrelic/native-metrics@10.0.0": {
+    "@newrelic/native-metrics@10.0.1": {
       "name": "@newrelic/native-metrics",
-      "version": "10.0.0",
+      "version": "10.0.1",
       "range": "^10.0.0",
       "licenses": "Apache-2.0",
       "repoUrl": "https://github.com/newrelic/node-native-metrics",
-      "versionedRepoUrl": "https://github.com/newrelic/node-native-metrics/tree/v10.0.0",
+      "versionedRepoUrl": "https://github.com/newrelic/node-native-metrics/tree/v10.0.1",
       "licenseFile": "node_modules/@newrelic/native-metrics/LICENSE",
-      "licenseUrl": "https://github.com/newrelic/node-native-metrics/blob/v10.0.0/LICENSE",
+      "licenseUrl": "https://github.com/newrelic/node-native-metrics/blob/v10.0.1/LICENSE",
       "licenseTextSource": "file",
       "publisher": "New Relic Node.js agent team",
       "email": "nodejs@newrelic.com"
@@ -44,27 +44,27 @@
   },
   "includeDev": true,
   "dependencies": {
-    "@grpc/grpc-js@1.9.4": {
+    "@grpc/grpc-js@1.9.14": {
       "name": "@grpc/grpc-js",
-      "version": "1.9.4",
+      "version": "1.9.14",
       "range": "^1.9.4",
       "licenses": "Apache-2.0",
       "repoUrl": "https://github.com/grpc/grpc-node/tree/master/packages/grpc-js",
-      "versionedRepoUrl": "https://github.com/grpc/grpc-node/tree/master/packages/grpc-js/tree/v1.9.4",
+      "versionedRepoUrl": "https://github.com/grpc/grpc-node/tree/master/packages/grpc-js/tree/v1.9.14",
       "licenseFile": "node_modules/@grpc/grpc-js/LICENSE",
-      "licenseUrl": "https://github.com/grpc/grpc-node/tree/master/packages/grpc-js/blob/v1.9.4/LICENSE",
+      "licenseUrl": "https://github.com/grpc/grpc-node/tree/master/packages/grpc-js/blob/v1.9.14/LICENSE",
       "licenseTextSource": "file",
       "publisher": "Google Inc."
     },
-    "@grpc/proto-loader@0.7.9": {
+    "@grpc/proto-loader@0.7.10": {
       "name": "@grpc/proto-loader",
-      "version": "0.7.9",
+      "version": "0.7.10",
       "range": "^0.7.5",
       "licenses": "Apache-2.0",
       "repoUrl": "https://github.com/grpc/grpc-node",
-      "versionedRepoUrl": "https://github.com/grpc/grpc-node/tree/v0.7.9",
+      "versionedRepoUrl": "https://github.com/grpc/grpc-node/tree/v0.7.10",
       "licenseFile": "node_modules/@grpc/proto-loader/LICENSE",
-      "licenseUrl": "https://github.com/grpc/grpc-node/blob/v0.7.9/LICENSE",
+      "licenseUrl": "https://github.com/grpc/grpc-node/blob/v0.7.10/LICENSE",
       "licenseTextSource": "file",
       "publisher": "Google Inc."
     },
@@ -159,15 +159,15 @@
       "email": "nathan@tootallnate.net",
       "url": "http://n8.io/"
     },
-    "import-in-the-middle@1.6.0": {
+    "import-in-the-middle@1.7.3": {
       "name": "import-in-the-middle",
-      "version": "1.6.0",
+      "version": "1.7.3",
       "range": "^1.6.0",
       "licenses": "Apache-2.0",
       "repoUrl": "https://github.com/DataDog/import-in-the-middle",
-      "versionedRepoUrl": "https://github.com/DataDog/import-in-the-middle/tree/v1.6.0",
+      "versionedRepoUrl": "https://github.com/DataDog/import-in-the-middle/tree/v1.7.3",
       "licenseFile": "node_modules/import-in-the-middle/LICENSE",
-      "licenseUrl": "https://github.com/DataDog/import-in-the-middle/blob/v1.6.0/LICENSE",
+      "licenseUrl": "https://github.com/DataDog/import-in-the-middle/blob/v1.7.3/LICENSE",
       "licenseTextSource": "file",
       "publisher": "Bryan English",
       "email": "bryan.english@datadoghq.com"
@@ -250,15 +250,15 @@
       "licenseTextSource": "file",
       "publisher": "GitHub Inc."
     },
-    "winston-transport@4.5.0": {
+    "winston-transport@4.6.0": {
       "name": "winston-transport",
-      "version": "4.5.0",
+      "version": "4.6.0",
       "range": "^4.5.0",
       "licenses": "MIT",
       "repoUrl": "https://github.com/winstonjs/winston-transport",
-      "versionedRepoUrl": "https://github.com/winstonjs/winston-transport/tree/v4.5.0",
+      "versionedRepoUrl": "https://github.com/winstonjs/winston-transport/tree/v4.6.0",
       "licenseFile": "node_modules/winston-transport/LICENSE",
-      "licenseUrl": "https://github.com/winstonjs/winston-transport/blob/v4.5.0/LICENSE",
+      "licenseUrl": "https://github.com/winstonjs/winston-transport/blob/v4.6.0/LICENSE",
       "licenseTextSource": "file",
       "publisher": "Charlie Robbins",
       "email": "charlie.robbins@gmail.com"
@@ -314,15 +314,15 @@
       "licenseUrl": "https://github.com/octokit/rest.js/blob/v18.12.0/LICENSE",
       "licenseTextSource": "file"
     },
-    "@slack/bolt@3.15.0": {
+    "@slack/bolt@3.17.1": {
       "name": "@slack/bolt",
-      "version": "3.15.0",
+      "version": "3.17.1",
       "range": "^3.7.0",
       "licenses": "MIT",
       "repoUrl": "https://github.com/slackapi/bolt",
-      "versionedRepoUrl": "https://github.com/slackapi/bolt/tree/v3.15.0",
+      "versionedRepoUrl": "https://github.com/slackapi/bolt/tree/v3.17.1",
       "licenseFile": "node_modules/@slack/bolt/LICENSE",
-      "licenseUrl": "https://github.com/slackapi/bolt/blob/v3.15.0/LICENSE",
+      "licenseUrl": "https://github.com/slackapi/bolt/blob/v3.17.1/LICENSE",
       "licenseTextSource": "file",
       "publisher": "Slack Technologies, LLC"
     },
@@ -338,15 +338,15 @@
       "licenseTextSource": "file",
       "publisher": "Evgeny Poberezkin"
     },
-    "async@3.2.4": {
+    "async@3.2.5": {
       "name": "async",
-      "version": "3.2.4",
+      "version": "3.2.5",
       "range": "^3.2.4",
       "licenses": "MIT",
       "repoUrl": "https://github.com/caolan/async",
-      "versionedRepoUrl": "https://github.com/caolan/async/tree/v3.2.4",
+      "versionedRepoUrl": "https://github.com/caolan/async/tree/v3.2.5",
       "licenseFile": "node_modules/async/LICENSE",
-      "licenseUrl": "https://github.com/caolan/async/blob/v3.2.4/LICENSE",
+      "licenseUrl": "https://github.com/caolan/async/blob/v3.2.5/LICENSE",
       "licenseTextSource": "file",
       "publisher": "Caolan McMahon"
     },
@@ -363,15 +363,15 @@
       "publisher": "Ben Coe",
       "email": "ben@npmjs.com"
     },
-    "clean-jsdoc-theme@4.2.10": {
+    "clean-jsdoc-theme@4.2.17": {
       "name": "clean-jsdoc-theme",
-      "version": "4.2.10",
+      "version": "4.2.17",
       "range": "^4.2.4",
       "licenses": "MIT",
       "repoUrl": "https://github.com/ankitskvmdam/clean-jsdoc-theme",
-      "versionedRepoUrl": "https://github.com/ankitskvmdam/clean-jsdoc-theme/tree/v4.2.10",
+      "versionedRepoUrl": "https://github.com/ankitskvmdam/clean-jsdoc-theme/tree/v4.2.17",
       "licenseFile": "node_modules/clean-jsdoc-theme/LICENSE",
-      "licenseUrl": "https://github.com/ankitskvmdam/clean-jsdoc-theme/blob/v4.2.10/LICENSE",
+      "licenseUrl": "https://github.com/ankitskvmdam/clean-jsdoc-theme/blob/v4.2.17/LICENSE",
       "licenseTextSource": "file",
       "publisher": "Ank"
     },
@@ -428,18 +428,6 @@
       "email": "maochenyan@gmail.com",
       "url": "https://github.com/stevemao"
     },
-    "eslint-config-prettier@8.10.0": {
-      "name": "eslint-config-prettier",
-      "version": "8.10.0",
-      "range": "^8.3.0",
-      "licenses": "MIT",
-      "repoUrl": "https://github.com/prettier/eslint-config-prettier",
-      "versionedRepoUrl": "https://github.com/prettier/eslint-config-prettier/tree/v8.10.0",
-      "licenseFile": "node_modules/eslint-config-prettier/LICENSE",
-      "licenseUrl": "https://github.com/prettier/eslint-config-prettier/blob/v8.10.0/LICENSE",
-      "licenseTextSource": "file",
-      "publisher": "Simon Lydell"
-    },
     "eslint-plugin-disable@2.0.3": {
       "name": "eslint-plugin-disable",
       "version": "2.0.3",
@@ -452,18 +440,6 @@
       "licenseTextSource": "file",
       "publisher": "Michael Radionov",
       "url": "https://github.com/mradionov"
-    },
-    "eslint-plugin-header@3.1.1": {
-      "name": "eslint-plugin-header",
-      "version": "3.1.1",
-      "range": "^3.1.1",
-      "licenses": "MIT",
-      "repoUrl": "https://github.com/Stuk/eslint-plugin-header",
-      "versionedRepoUrl": "https://github.com/Stuk/eslint-plugin-header/tree/v3.1.1",
-      "licenseFile": "node_modules/eslint-plugin-header/README.md",
-      "licenseUrl": "https://github.com/Stuk/eslint-plugin-header/blob/v3.1.1/README.md",
-      "licenseTextSource": "spdx",
-      "publisher": "Stuart Knightley"
     },
     "eslint-plugin-jsdoc@39.9.1": {
       "name": "eslint-plugin-jsdoc",
@@ -479,30 +455,6 @@
       "email": "gajus@gajus.com",
       "url": "http://gajus.com"
     },
-    "eslint-plugin-node@11.1.0": {
-      "name": "eslint-plugin-node",
-      "version": "11.1.0",
-      "range": "^11.1.0",
-      "licenses": "MIT",
-      "repoUrl": "https://github.com/mysticatea/eslint-plugin-node",
-      "versionedRepoUrl": "https://github.com/mysticatea/eslint-plugin-node/tree/v11.1.0",
-      "licenseFile": "node_modules/eslint-plugin-node/LICENSE",
-      "licenseUrl": "https://github.com/mysticatea/eslint-plugin-node/blob/v11.1.0/LICENSE",
-      "licenseTextSource": "file",
-      "publisher": "Toru Nagashima"
-    },
-    "eslint-plugin-prettier@3.4.1": {
-      "name": "eslint-plugin-prettier",
-      "version": "3.4.1",
-      "range": "^3.4.0",
-      "licenses": "MIT",
-      "repoUrl": "https://github.com/prettier/eslint-plugin-prettier",
-      "versionedRepoUrl": "https://github.com/prettier/eslint-plugin-prettier/tree/v3.4.1",
-      "licenseFile": "node_modules/eslint-plugin-prettier/LICENSE.md",
-      "licenseUrl": "https://github.com/prettier/eslint-plugin-prettier/blob/v3.4.1/LICENSE.md",
-      "licenseTextSource": "file",
-      "publisher": "Teddy Katz"
-    },
     "eslint-plugin-sonarjs@0.18.0": {
       "name": "eslint-plugin-sonarjs",
       "version": "0.18.0",
@@ -514,15 +466,15 @@
       "licenseUrl": "https://github.com/SonarSource/eslint-plugin-sonarjs/blob/v0.18.0/LICENSE",
       "licenseTextSource": "file"
     },
-    "eslint@8.48.0": {
+    "eslint@8.56.0": {
       "name": "eslint",
-      "version": "8.48.0",
+      "version": "8.56.0",
       "range": "^8.24.0",
       "licenses": "MIT",
       "repoUrl": "https://github.com/eslint/eslint",
-      "versionedRepoUrl": "https://github.com/eslint/eslint/tree/v8.48.0",
+      "versionedRepoUrl": "https://github.com/eslint/eslint/tree/v8.56.0",
       "licenseFile": "node_modules/eslint/LICENSE",
-      "licenseUrl": "https://github.com/eslint/eslint/blob/v8.48.0/LICENSE",
+      "licenseUrl": "https://github.com/eslint/eslint/blob/v8.56.0/LICENSE",
       "licenseTextSource": "file",
       "publisher": "Nicholas C. Zakas",
       "email": "nicholas+npm@nczconsulting.com"
@@ -657,18 +609,6 @@
       "publisher": "Pedro Teixeira",
       "email": "pedro.teixeira@gmail.com"
     },
-    "prettier@2.8.8": {
-      "name": "prettier",
-      "version": "2.8.8",
-      "range": "^2.3.2",
-      "licenses": "MIT",
-      "repoUrl": "https://github.com/prettier/prettier",
-      "versionedRepoUrl": "https://github.com/prettier/prettier/tree/v2.8.8",
-      "licenseFile": "node_modules/prettier/LICENSE",
-      "licenseUrl": "https://github.com/prettier/prettier/blob/v2.8.8/LICENSE",
-      "licenseTextSource": "file",
-      "publisher": "James Long"
-    },
     "proxy@2.1.1": {
       "name": "proxy",
       "version": "2.1.1",
@@ -748,15 +688,15 @@
       "licenseTextSource": "file",
       "publisher": "Christian Johansen"
     },
-    "tap@16.3.8": {
+    "tap@16.3.10": {
       "name": "tap",
-      "version": "16.3.8",
+      "version": "16.3.10",
       "range": "^16.3.4",
       "licenses": "ISC",
       "repoUrl": "https://github.com/tapjs/node-tap",
-      "versionedRepoUrl": "https://github.com/tapjs/node-tap/tree/v16.3.8",
+      "versionedRepoUrl": "https://github.com/tapjs/node-tap/tree/v16.3.10",
       "licenseFile": "node_modules/tap/LICENSE",
-      "licenseUrl": "https://github.com/tapjs/node-tap/blob/v16.3.8/LICENSE",
+      "licenseUrl": "https://github.com/tapjs/node-tap/blob/v16.3.10/LICENSE",
       "licenseTextSource": "file",
       "publisher": "Isaac Z. Schlueter",
       "email": "i@izs.me",
