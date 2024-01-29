@@ -11,6 +11,7 @@ const Config = require('../../../lib/config')
 const QueryTraceAggregator = require('../../../lib/db/query-trace-aggregator')
 const codec = require('../../../lib/util/codec')
 const { FakeSegment, FakeTransaction } = require('../../lib/agent_helper')
+const sinon = require('sinon')
 
 const FAKE_STACK = 'Error\nfake stack'
 
@@ -25,7 +26,8 @@ tap.test('Query Trace Aggregator', (t) => {
       }),
       method: 'sql_trace_data'
     }
-    const queries = new QueryTraceAggregator(opts)
+    const harvester = { add: sinon.stub() }
+    const queries = new QueryTraceAggregator(opts, {}, harvester)
 
     let cbCalledWithNull = false
 
@@ -51,7 +53,8 @@ tap.test('Query Trace Aggregator', (t) => {
         }),
         method: 'sql_trace_data'
       }
-      const queries = new QueryTraceAggregator(opts)
+      const harvester = { add: sinon.stub() }
+      const queries = new QueryTraceAggregator(opts, {}, harvester)
 
       const segment = addQuery(queries, 1000)
       t.hasProp(queries.samples, 'size')
@@ -68,7 +71,8 @@ tap.test('Query Trace Aggregator', (t) => {
         }),
         method: 'sql_trace_data'
       }
-      const queries = new QueryTraceAggregator(opts)
+      const harvester = { add: sinon.stub() }
+      const queries = new QueryTraceAggregator(opts, {}, harvester)
 
       const segment = addQuery(queries, 1000)
       t.hasProp(queries.samples, 'size')
@@ -85,7 +89,8 @@ tap.test('Query Trace Aggregator', (t) => {
         }),
         method: 'sql_trace_data'
       }
-      const queries = new QueryTraceAggregator(opts)
+      const harvester = { add: sinon.stub() }
+      const queries = new QueryTraceAggregator(opts, {}, harvester)
 
       const segment = addQuery(queries, 1000)
       t.hasProp(queries.samples, 'size')
@@ -109,7 +114,8 @@ tap.test('Query Trace Aggregator', (t) => {
         }),
         method: 'sql_trace_data'
       }
-      const queries = new QueryTraceAggregator(opts)
+      const harvester = { add: sinon.stub() }
+      const queries = new QueryTraceAggregator(opts, {}, harvester)
 
       const segment = addQuery(queries, 1000)
       t.hasProp(queries.samples, 'size')
@@ -133,7 +139,8 @@ tap.test('Query Trace Aggregator', (t) => {
         }),
         method: 'sql_trace_data'
       }
-      const queries = new QueryTraceAggregator(opts)
+      const harvester = { add: sinon.stub() }
+      const queries = new QueryTraceAggregator(opts, {}, harvester)
 
       const segment = addQuery(queries, 100)
       t.hasProp(queries.samples, 'size')
@@ -160,7 +167,8 @@ tap.test('Query Trace Aggregator', (t) => {
         }),
         method: 'sql_trace_data'
       }
-      const queries = new QueryTraceAggregator(opts)
+      const harvester = { add: sinon.stub() }
+      const queries = new QueryTraceAggregator(opts, {}, harvester)
 
       const segment = addQuery(queries, 1000)
       t.hasProp(queries.samples, 'size')
@@ -177,7 +185,8 @@ tap.test('Query Trace Aggregator', (t) => {
         }),
         method: 'sql_trace_data'
       }
-      const queries = new QueryTraceAggregator(opts)
+      const harvester = { add: sinon.stub() }
+      const queries = new QueryTraceAggregator(opts, {}, harvester)
 
       const segment = addQuery(queries, 1000)
       t.hasProp(queries.samples, 'size')
@@ -194,7 +203,8 @@ tap.test('Query Trace Aggregator', (t) => {
         }),
         method: 'sql_trace_data'
       }
-      const queries = new QueryTraceAggregator(opts)
+      const harvester = { add: sinon.stub() }
+      const queries = new QueryTraceAggregator(opts, {}, harvester)
 
       const segment = addQuery(queries, 1000)
       t.same(
@@ -223,7 +233,8 @@ tap.test('Query Trace Aggregator', (t) => {
         }),
         method: 'sql_trace_data'
       }
-      const queries = new QueryTraceAggregator(opts)
+      const harvester = { add: sinon.stub() }
+      const queries = new QueryTraceAggregator(opts, {}, harvester)
 
       const segment = addQuery(queries, 1000)
       t.same(
@@ -252,7 +263,8 @@ tap.test('Query Trace Aggregator', (t) => {
         }),
         method: 'sql_trace_data'
       }
-      const queries = new QueryTraceAggregator(opts)
+      const harvester = { add: sinon.stub() }
+      const queries = new QueryTraceAggregator(opts, {}, harvester)
 
       const segment = addQuery(queries, 100)
       t.hasProp(queries.samples, 'size')
@@ -284,7 +296,8 @@ tap.test('Query Trace Aggregator', (t) => {
           }),
           method: 'sql_trace_data'
         }
-        queries = new QueryTraceAggregator(opts)
+        const harvester = { add: sinon.stub() }
+        queries = new QueryTraceAggregator(opts, {}, harvester)
       })
 
       t.test('and `simple_compression` is `false`', (t) => {
@@ -482,7 +495,8 @@ tap.test('Query Trace Aggregator', (t) => {
           }),
           method: 'sql_trace_data'
         }
-        const queries = new QueryTraceAggregator(opts)
+        const harvester = { add: sinon.stub() }
+        const queries = new QueryTraceAggregator(opts, {}, harvester)
 
         queries.prepareJSON(function preparedJSON(err, data) {
           t.equal(err, null, 'should not error')
@@ -499,7 +513,8 @@ tap.test('Query Trace Aggregator', (t) => {
           }),
           method: 'sql_trace_data'
         }
-        const queries = new QueryTraceAggregator(opts)
+        const harvester = { add: sinon.stub() }
+        const queries = new QueryTraceAggregator(opts, {}, harvester)
 
         addQuery(queries, 600, '/abc')
 
@@ -538,7 +553,8 @@ tap.test('Query Trace Aggregator', (t) => {
           }),
           method: 'sql_trace_data'
         }
-        const queries = new QueryTraceAggregator(opts)
+        const harvester = { add: sinon.stub() }
+        const queries = new QueryTraceAggregator(opts, {}, harvester)
 
         addQuery(queries, 600, '/abc')
         addQuery(queries, 550, '/abc')
@@ -582,7 +598,8 @@ tap.test('Query Trace Aggregator', (t) => {
           }),
           method: 'sql_trace_data'
         }
-        const queries = new QueryTraceAggregator(opts)
+        const harvester = { add: sinon.stub() }
+        const queries = new QueryTraceAggregator(opts, {}, harvester)
 
         addQuery(queries, 600, '/abc')
         addQuery(queries, 550, '/abc', 'drop table users')
@@ -653,7 +670,8 @@ tap.test('Query Trace Aggregator', (t) => {
           }),
           method: 'sql_trace_data'
         }
-        const queries = new QueryTraceAggregator(opts)
+        const harvester = { add: sinon.stub() }
+        const queries = new QueryTraceAggregator(opts, {}, harvester)
 
         queries.prepareJSON(function preparedJSON(err, data) {
           t.equal(err, null, 'should not error')
@@ -670,7 +688,8 @@ tap.test('Query Trace Aggregator', (t) => {
           }),
           method: 'sql_trace_data'
         }
-        const queries = new QueryTraceAggregator(opts)
+        const harvester = { add: sinon.stub() }
+        const queries = new QueryTraceAggregator(opts, {}, harvester)
 
         addQuery(queries, 600, null)
 
@@ -709,7 +728,8 @@ tap.test('Query Trace Aggregator', (t) => {
           }),
           method: 'sql_trace_data'
         }
-        const queries = new QueryTraceAggregator(opts)
+        const harvester = { add: sinon.stub() }
+        const queries = new QueryTraceAggregator(opts, {}, harvester)
 
         addQuery(queries, 600, null)
         addQuery(queries, 550, null)
@@ -753,7 +773,8 @@ tap.test('Query Trace Aggregator', (t) => {
           }),
           method: 'sql_trace_data'
         }
-        const queries = new QueryTraceAggregator(opts)
+        const harvester = { add: sinon.stub() }
+        const queries = new QueryTraceAggregator(opts, {}, harvester)
 
         addQuery(queries, 600, null)
         addQuery(queries, 550, null, 'drop table users')
@@ -827,7 +848,8 @@ tap.test('Query Trace Aggregator', (t) => {
           }),
           method: 'sql_trace_data'
         }
-        const queries = new QueryTraceAggregator(opts)
+        const harvester = { add: sinon.stub() }
+        const queries = new QueryTraceAggregator(opts, {}, harvester)
 
         queries.prepareJSON(function preparedJSON(err, data) {
           t.equal(err, null, 'should not error')
@@ -844,7 +866,8 @@ tap.test('Query Trace Aggregator', (t) => {
           }),
           method: 'sql_trace_data'
         }
-        const queries = new QueryTraceAggregator(opts)
+        const harvester = { add: sinon.stub() }
+        const queries = new QueryTraceAggregator(opts, {}, harvester)
 
         addQuery(queries, 600, null)
 
@@ -883,7 +906,8 @@ tap.test('Query Trace Aggregator', (t) => {
           }),
           method: 'sql_trace_data'
         }
-        const queries = new QueryTraceAggregator(opts)
+        const harvester = { add: sinon.stub() }
+        const queries = new QueryTraceAggregator(opts, {}, harvester)
 
         addQuery(queries, 600, null)
         addQuery(queries, 550, null)
@@ -927,7 +951,8 @@ tap.test('Query Trace Aggregator', (t) => {
           }),
           method: 'sql_trace_data'
         }
-        const queries = new QueryTraceAggregator(opts)
+        const harvester = { add: sinon.stub() }
+        const queries = new QueryTraceAggregator(opts, {}, harvester)
 
         addQuery(queries, 600, null)
         addQuery(queries, 550, null, 'drop table users')
@@ -999,7 +1024,8 @@ tap.test('Query Trace Aggregator', (t) => {
         }),
         method: 'sql_trace_data'
       }
-      const queries = new QueryTraceAggregator(opts)
+      const harvester = { add: sinon.stub() }
+      const queries = new QueryTraceAggregator(opts, {}, harvester)
 
       addQuery(queries, 600, null)
       addQuery(queries, 550, null, 'create table users')
@@ -1030,7 +1056,8 @@ tap.test('Query Trace Aggregator', (t) => {
         }),
         method: 'sql_trace_data'
       }
-      const queries = new QueryTraceAggregator(opts)
+      const harvester = { add: sinon.stub() }
+      const queries = new QueryTraceAggregator(opts, {}, harvester)
 
       const opts2 = {
         config: new Config({
@@ -1039,7 +1066,7 @@ tap.test('Query Trace Aggregator', (t) => {
         }),
         method: 'sql_trace_data'
       }
-      const queries2 = new QueryTraceAggregator(opts2)
+      const queries2 = new QueryTraceAggregator(opts2, {}, harvester)
 
       addQuery(queries, 600, null)
       addQuery(queries, 650, null, 'create table users')

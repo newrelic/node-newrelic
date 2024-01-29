@@ -7,6 +7,8 @@
 const tap = require('tap')
 const CustomEventAggregator = require('../../../lib/custom-events/custom-event-aggregator')
 const Metrics = require('../../../lib/metrics')
+const NAMES = require('../../../lib/metrics/names')
+const sinon = require('sinon')
 
 const RUN_ID = 1337
 const LIMIT = 5
@@ -20,10 +22,14 @@ tap.test('Custom Event Aggregator', (t) => {
     eventAggregator = new CustomEventAggregator(
       {
         runId: RUN_ID,
-        limit: LIMIT
+        limit: LIMIT,
+        metricNames: NAMES.CUSTOM_EVENTS
       },
-      {},
-      new Metrics(5, {}, {})
+      {
+        collector: {},
+        metrics: new Metrics(5, {}, {}),
+        harvester: { add: sinon.stub() }
+      }
     )
   })
 

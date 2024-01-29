@@ -50,6 +50,7 @@ tap.test('TraceAggregator', function (t) {
   t.afterEach(afterEach)
 
   t.test('should require a configuration at startup time', function (t) {
+    const { agent } = t.context
     t.throws(() => new TraceAggregator())
     const config = configurator.initialize({
       transaction_tracer: {
@@ -57,7 +58,7 @@ tap.test('TraceAggregator', function (t) {
       }
     })
 
-    t.doesNotThrow(() => new TraceAggregator({ config }))
+    t.doesNotThrow(() => new TraceAggregator({ config }, agent.collector, agent.harvester))
     t.end()
   })
 
@@ -100,7 +101,7 @@ tap.test('TraceAggregator', function (t) {
       }
     })
 
-    const aggregator = new TraceAggregator({ config })
+    const aggregator = new TraceAggregator({ config }, agent.collector, agent.harvester)
     const transaction = new Transaction(agent)
 
     transaction.trace.setDurationInMillis(0)
@@ -125,7 +126,7 @@ tap.test('TraceAggregator', function (t) {
       }
     })
 
-    const aggregator = new TraceAggregator({ config })
+    const aggregator = new TraceAggregator({ config }, agent.collector, agent.harvester)
     const transaction = new Transaction(agent)
 
     aggregator.reported = 10 // needed to override "first 5"
@@ -154,7 +155,7 @@ tap.test('TraceAggregator', function (t) {
       }
     })
 
-    const aggregator = new TraceAggregator({ config })
+    const aggregator = new TraceAggregator({ config }, agent.collector, agent.harvester)
     const transaction = new Transaction(agent)
 
     aggregator.reported = 10 // needed to override "first 5"
@@ -183,7 +184,7 @@ tap.test('TraceAggregator', function (t) {
       }
     })
 
-    const aggregator = new TraceAggregator({ config })
+    const aggregator = new TraceAggregator({ config }, agent.collector, agent.harvester)
     aggregator.reported = 10 // needed to override "first 5"
     const tx = createTransaction(agent, '/test', ABOVE_THRESHOLD)
     aggregator.add(tx)
@@ -204,7 +205,7 @@ tap.test('TraceAggregator', function (t) {
       }
     })
 
-    const aggregator = new TraceAggregator({ config })
+    const aggregator = new TraceAggregator({ config }, agent.collector, agent.harvester)
     aggregator.reported = 10 // needed to override "first 5"
     const tx = createTransaction(agent, '/test', BELOW_THRESHOLD)
     aggregator.add(tx)
@@ -221,7 +222,7 @@ tap.test('TraceAggregator', function (t) {
       }
     })
 
-    const aggregator = new TraceAggregator({ config })
+    const aggregator = new TraceAggregator({ config }, agent.collector, agent.harvester)
 
     const tx = createTransaction(agent, '/test', 2100)
     aggregator.add(tx)
@@ -345,27 +346,27 @@ tap.test('TraceAggregator with top n support', function (t) {
   t.afterEach(afterEach)
 
   t.test('should set n from its configuration', function (t) {
-    const { config } = t.context
+    const { config, agent } = t.context
     const TOP_N = 21
     config.transaction_tracer.top_n = TOP_N
-    const aggregator = new TraceAggregator({ config })
+    const aggregator = new TraceAggregator({ config }, agent.collector, agent.harvester)
 
     t.equal(aggregator.capacity, TOP_N)
     t.end()
   })
 
   t.test('should track the top 20 slowest transactions if top_n is unconfigured', (t) => {
-    const { config } = t.context
-    const aggregator = new TraceAggregator({ config })
+    const { config, agent } = t.context
+    const aggregator = new TraceAggregator({ config }, agent.collector, agent.harvester)
 
     t.equal(aggregator.capacity, 20)
     t.end()
   })
 
   t.test('should track the slowest transaction in a harvest period if top_n is 0', (t) => {
-    const { config } = t.context
+    const { config, agent } = t.context
     config.transaction_tracer.top_n = 0
-    const aggregator = new TraceAggregator({ config })
+    const aggregator = new TraceAggregator({ config }, agent.collector, agent.harvester)
 
     t.equal(aggregator.capacity, 1)
     t.end()
@@ -374,7 +375,7 @@ tap.test('TraceAggregator with top n support', function (t) {
   t.test('should only save a trace for an existing name if new one is slower', (t) => {
     const { config, agent } = t.context
     const URI = '/simple'
-    const aggregator = new TraceAggregator({ config })
+    const aggregator = new TraceAggregator({ config }, agent.collector, agent.harvester)
     aggregator.reported = 10 // needed to override "first 5"
 
     aggregator.add(createTransaction(agent, URI, 3000))

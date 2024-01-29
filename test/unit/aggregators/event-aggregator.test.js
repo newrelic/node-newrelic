@@ -9,6 +9,7 @@ const tap = require('tap')
 const EventAggregator = require('../../../lib/aggregators/event-aggregator')
 const PriorityQueue = require('../../../lib/priority-queue')
 const Metrics = require('../../../lib/metrics')
+const sinon = require('sinon')
 
 const RUN_ID = 1337
 const LIMIT = 5
@@ -23,10 +24,12 @@ tap.test('Event Aggregator', (t) => {
   t.autoend()
 
   let metrics = null
+  let harvester = null
   let eventAggregator = null
 
   function beforeTest() {
     metrics = new Metrics(5, {}, {})
+    harvester = { add: sinon.stub() }
 
     eventAggregator = new EventAggregator(
       {
@@ -34,8 +37,11 @@ tap.test('Event Aggregator', (t) => {
         limit: LIMIT,
         metricNames: METRIC_NAMES
       },
-      {},
-      metrics
+      {
+        collector: {},
+        metrics,
+        harvester
+      }
     )
   }
 

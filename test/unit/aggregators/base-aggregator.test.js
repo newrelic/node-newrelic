@@ -19,12 +19,13 @@ tap.test('scheduling', (t) => {
 
   let baseAggregator = null
   let fakeCollectorApi = null
+  let fakeHarvester = null
   let sendInvocation = 0
   let clock = null
 
   t.beforeEach(() => {
-    fakeCollectorApi = {}
-    fakeCollectorApi[METHOD] = () => {}
+    fakeCollectorApi = { send: sinon.stub() }
+    fakeHarvester = { add: sinon.stub() }
 
     baseAggregator = new Aggregator(
       {
@@ -33,7 +34,8 @@ tap.test('scheduling', (t) => {
         limit: LIMIT,
         method: METHOD
       },
-      fakeCollectorApi
+      fakeCollectorApi,
+      fakeHarvester
     )
 
     // Keep track of send invocations, avoiding rest of functionality
@@ -46,6 +48,7 @@ tap.test('scheduling', (t) => {
   t.afterEach(() => {
     baseAggregator = null
     fakeCollectorApi = null
+    fakeHarvester = null
 
     clock.restore()
     clock = null
@@ -122,10 +125,11 @@ tap.test('send', (t) => {
 
   let baseAggregator = null
   let fakeCollectorApi = null
+  let fakeHarvester = null
 
   t.beforeEach(() => {
-    fakeCollectorApi = {}
-    fakeCollectorApi[METHOD] = () => {}
+    fakeCollectorApi = { send: sinon.stub() }
+    fakeHarvester = { add: sinon.stub() }
 
     baseAggregator = new Aggregator(
       {
@@ -134,13 +138,15 @@ tap.test('send', (t) => {
         limit: LIMIT,
         method: METHOD
       },
-      fakeCollectorApi
+      fakeCollectorApi,
+      fakeHarvester
     )
   })
 
   t.afterEach(() => {
     baseAggregator = null
     fakeCollectorApi = null
+    fakeHarvester = null
   })
 
   t.test('should emit proper message with method for starting send', (t) => {
@@ -190,7 +196,7 @@ tap.test('send', (t) => {
 
     let invokedPayload = null
 
-    fakeCollectorApi[METHOD] = (payload) => {
+    fakeCollectorApi.send = (method, payload) => {
       invokedPayload = payload
     }
 
@@ -208,7 +214,7 @@ tap.test('send', (t) => {
     baseAggregator.clear = () => {}
 
     let transportInvocations = 0
-    fakeCollectorApi[METHOD] = () => {
+    fakeCollectorApi.send = () => {
       transportInvocations++
     }
 
@@ -234,7 +240,7 @@ tap.test('send', (t) => {
       mergeData = data
     }
 
-    fakeCollectorApi[METHOD] = (payload, callback) => {
+    fakeCollectorApi.send = (method, payload, callback) => {
       callback(null, { retainData: true })
     }
 
@@ -260,7 +266,7 @@ tap.test('send', (t) => {
       mergeInvocations++
     }
 
-    fakeCollectorApi[METHOD] = (payload, callback) => {
+    fakeCollectorApi.send = (method, payload, callback) => {
       callback(null, { retainData: false })
     }
 
@@ -289,7 +295,7 @@ tap.test('send', (t) => {
       mergeInvocations++
     }
 
-    fakeCollectorApi[METHOD] = (payload, callback) => {
+    fakeCollectorApi.send = (method, payload, callback) => {
       callback(null, { retainData: false })
     }
 
@@ -318,7 +324,7 @@ tap.test('send', (t) => {
       mergeInvocations++
     }
 
-    fakeCollectorApi[METHOD] = (payload, callback) => {
+    fakeCollectorApi.send = (method, payload, callback) => {
       callback(null, { retainData: false })
     }
 
@@ -342,7 +348,7 @@ tap.test('send', (t) => {
       emitFired = true
     })
 
-    fakeCollectorApi[METHOD] = (payload, callback) => {
+    fakeCollectorApi.send = (method, payload, callback) => {
       callback(null, { retainData: false })
     }
 
@@ -354,40 +360,57 @@ tap.test('send', (t) => {
   })
 })
 
-tap.test('reconfigure() should update runid', (t) => {
+tap.test('reconfigure() should update runid and reset enabled flag', (t) => {
   t.autoend()
 
   let baseAggregator = null
   let fakeCollectorApi = null
+  let fakeHarvester = null
 
-  t.beforeEach(() => {
-    fakeCollectorApi = {}
-    fakeCollectorApi[METHOD] = () => {}
+  fakeCollectorApi = { send: sinon.stub() }
+  fakeHarvester = { add: sinon.stub() }
+  const fakeConfig = { testing: { enabled: false } }
 
-    baseAggregator = new Aggregator(
-      {
-        periodMs: PERIOD_MS,
-        runId: RUN_ID,
-        limit: LIMIT,
-        method: METHOD
-      },
-      fakeCollectorApi
-    )
-  })
+  baseAggregator = new Aggregator(
+    {
+      config: fakeConfig,
+      periodMs: PERIOD_MS,
+      runId: RUN_ID,
+      limit: LIMIT,
+      method: METHOD,
+      enabled: (config) => config.testing.enabled
+    },
+    fakeCollectorApi,
+    fakeHarvester
+  )
 
-  t.afterEach(() => {
-    baseAggregator = null
-    fakeCollectorApi = null
-  })
+  const expectedRunId = 'new run id'
+  t.notOk(baseAggregator.enabled)
 
-  t.test('reconfigure() should update runid', (t) => {
-    const expectedRunId = 'new run id'
-    const fakeConfig = { run_id: expectedRunId }
+  fakeConfig.run_id = expectedRunId
+  fakeConfig.testing.enabled = true
+  baseAggregator.reconfigure(fakeConfig)
 
-    baseAggregator.reconfigure(fakeConfig)
+  t.equal(baseAggregator.runId, expectedRunId)
+  t.ok(baseAggregator.enabled)
 
-    t.equal(baseAggregator.runId, expectedRunId)
+  t.end()
+})
 
-    t.end()
-  })
+tap.test('enabled property', (t) => {
+  const fakeCollectorApi = { send: sinon.stub() }
+  const fakeHarvester = { add: sinon.stub() }
+  const baseAggregator = new Aggregator(
+    {
+      periodMs: PERIOD_MS,
+      runId: RUN_ID,
+      limit: LIMIT,
+      method: METHOD
+    },
+    fakeCollectorApi,
+    fakeHarvester
+  )
+  t.ok(baseAggregator.enabled, 'should default to enabled when there is no enabled expression')
+  t.same(fakeHarvester.add.args[0], [baseAggregator], 'should add aggregator to harvester')
+  t.end()
 })

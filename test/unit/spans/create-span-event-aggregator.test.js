@@ -20,11 +20,17 @@ const metricsStub = {
   getOrCreateMetric: sinon.stub().returns({ incrementCallCount: sinon.stub() })
 }
 const collectorStub = sinon.stub()
+const harvesterStub = { add: sinon.stub() }
+const agent = {
+  collector: collectorStub,
+  metrics: metricsStub,
+  harvester: harvesterStub
+}
 
 tap.test('should return standard when trace observer not configured', (t) => {
   const config = Config.initialize({})
 
-  const aggregator = createSpanEventAggregator(config, collectorStub, metricsStub)
+  const aggregator = createSpanEventAggregator(config, agent)
   assertStandardSpanAggregator(t, aggregator)
 
   t.end()
@@ -40,7 +46,7 @@ tap.test('should return standard when in serverless mode, trace observer valid',
     }
   })
 
-  const aggregator = createSpanEventAggregator(config, collectorStub, metricsStub)
+  const aggregator = createSpanEventAggregator(config, agent)
   assertStandardSpanAggregator(t, aggregator)
 
   t.end()
@@ -55,7 +61,7 @@ tap.test('should return streaming when trace observer configured', (t) => {
     }
   })
 
-  const aggregator = createSpanEventAggregator(config, collectorStub, metricsStub)
+  const aggregator = createSpanEventAggregator(config, agent)
   const isStreamingAggregator = aggregator instanceof StreamingSpanEventAggregator
 
   t.ok(isStreamingAggregator)
@@ -74,7 +80,7 @@ tap.test('should create batching streamer when batching is enabled', (t) => {
     }
   })
 
-  const aggregator = createSpanEventAggregator(config, collectorStub, metricsStub)
+  const aggregator = createSpanEventAggregator(config, agent)
   const isBatchStreamer = aggregator.stream instanceof BatchSpanStreamer
   t.ok(isBatchStreamer)
   t.ok(metricsStub.getOrCreateMetric.args[0].length === 1, 'should have only 1 metric set')
@@ -97,7 +103,7 @@ tap.test('should create span streamer when batching is disabled', (t) => {
     }
   })
 
-  const aggregator = createSpanEventAggregator(config, collectorStub, metricsStub)
+  const aggregator = createSpanEventAggregator(config, agent)
   const isSpanStreamer = aggregator.stream instanceof SpanStreamer
   t.ok(isSpanStreamer)
   t.ok(metricsStub.getOrCreateMetric.args[0].length === 1, 'should have only 1 metric set')
@@ -119,7 +125,7 @@ tap.test('should trim host and port options when they are strings', (t) => {
     }
   })
 
-  createSpanEventAggregator(config, collectorStub, metricsStub)
+  createSpanEventAggregator(config, agent)
   t.same(config.infinite_tracing.trace_observer, {
     host: VALID_HOST,
     port: '300'
@@ -151,7 +157,7 @@ tap.test(
       '../logger': loggerStub
     })
 
-    const aggregator = createSpanAggrStubbed(config, collectorStub, metricsStub)
+    const aggregator = createSpanAggrStubbed(config, agent)
     assertStandardSpanAggregator(t, aggregator)
     t.same(
       config.infinite_tracing.trace_observer,
