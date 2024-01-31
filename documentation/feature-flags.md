@@ -44,3 +44,9 @@ Any prerelease flags can be enabled or disabled in your agent config by adding a
 * Configuration: `{ feature_flag: { aws_bedrock_instrumentation: true|false }}`
 * Environment Variable: `NEW_RELIC_FEATURE_FLAG_AWS_BEDROCK_INSTRUMENTATION`
 * Description: Enables instrumentation of AWS Bedrock in `aws-sdk@3`. 
+
+#### langchain_instrumentation
+* Enabled by default: `false`
+* Configuration: `{ feature_flag: { langchain_instrumentation: true|false }}`
+* Environment Variable: `NEW_RELIC_FEATURE_FLAG_LANGCHAIN_INSTRUMENTATION`
+* Description: Enables instrumentation of the LangChain LLM library.
