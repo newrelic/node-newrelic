@@ -14,7 +14,7 @@
 
 #### Tests
 
-* pin prisma instrumentation testing to <5.9.0 until we can fix issues with instrumentation ([#1985](https://github.com/newrelic/node-newrelic/pull/1985)) ([5eae6ee](https://github.com/newrelic/node-newrelic/commit/5eae6ee3c4b3bd7bded3143a811461d67c4b8a3d))
+* Pinned prisma instrumentation testing to <5.9.0 until we can fix issues with instrumentation ([#1985](https://github.com/newrelic/node-newrelic/pull/1985)) ([5eae6ee](https://github.com/newrelic/node-newrelic/commit/5eae6ee3c4b3bd7bded3143a811461d67c4b8a3d))
 
 ### v11.10.1 (2024-01-25)
 
