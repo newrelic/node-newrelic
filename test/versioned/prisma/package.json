@@ -11,7 +11,7 @@
         "node": ">=16"
       },
       "dependencies": {
-        "@prisma/client": ">=5.0.0 <5.9.0",
+        "@prisma/client": ">=5.0.0 <5.9.0 || >=5.9.1",
         "prisma": "latest"
       },
       "files": [
