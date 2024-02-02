@@ -196,8 +196,7 @@
       },
       "dependencies": {
         "@aws-sdk/client-bedrock-runtime": "^3.474.0",
-        "@smithy/eventstream-codec": "latest",
-        "@smithy/util-utf8": "latest"
+        "@newrelic/test-utilities": "latest"
       },
       "files": [
         "bedrock-chat-completions.tap.js",

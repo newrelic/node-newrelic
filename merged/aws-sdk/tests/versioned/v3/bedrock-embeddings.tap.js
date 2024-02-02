@@ -9,7 +9,7 @@ const tap = require('tap')
 const utils = require('@newrelic/test-utilities')
 utils(tap)
 const common = require('../common')
-const createAiResponseServer = require('./ai-server')
+const createAiResponseServer = require('@newrelic/test-utilities/lib/bedrock-server')
 const { FAKE_CREDENTIALS } = require('../aws-server-stubs')
 const { DESTINATIONS } = require('../../../lib/util')
 const requests = {
