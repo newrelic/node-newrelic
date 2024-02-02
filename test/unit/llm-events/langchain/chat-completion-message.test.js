@@ -54,7 +54,7 @@ tap.test('creates entity', async (t) => {
     content: 'hello world'
   })
   t.match(msg, {
-    id: /[a-z0-9-]{36}/,
+    id: 'run-1-1',
     appName: 'test-app',
     conversation_id: 'test-conversation',
     span_id: 'segment-1',
@@ -70,4 +70,12 @@ tap.test('creates entity', async (t) => {
     content: 'hello world',
     completion_id: /[a-z0-9-]{36}/
   })
+})
+
+tap.test('assigns id correctly', async (t) => {
+  let msg = new LangChainCompletionMessage({ ...t.context, runId: '', sequence: 1 })
+  t.match(msg.id, /[a-z0-9-]{36}-1/)
+
+  msg = new LangChainCompletionMessage({ ...t.context, runId: '123456', sequence: 42 })
+  t.equal(msg.id, '123456-42')
 })
