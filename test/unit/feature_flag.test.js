@@ -35,7 +35,8 @@ const used = [
   'unresolved_promise_cleanup',
   'undici_instrumentation',
   'undici_async_tracking',
-  'aws_bedrock_instrumentation'
+  'aws_bedrock_instrumentation',
+  'langchain_instrumentation'
 ]
 
 tap.test('feature flags', (t) => {
