@@ -56,7 +56,7 @@ tap.test('constructs default instance', async (t) => {
     request_id: 'run-1',
     transaction_id: 'tx-1',
     trace_id: 'trace-1',
-    metadata: { foo: 'foo' },
+    ['metadata.foo']: 'foo',
     ingest_source: 'Node',
     vendor: 'langchain',
     virtual_llm: true
@@ -78,5 +78,6 @@ tap.test('params.virtual is handled correctly', async (t) => {
 tap.test('metadata is parsed correctly', async (t) => {
   const event = new LangChainEvent(t.context)
   event.metadata = 'foobar'
-  t.same(event.metadata, { foo: 'foo' })
+  t.same(event['metadata.foo'], 'foo')
+  t.equal(Object.keys(event).filter((k) => k.startsWith('metadata.')).length, 1)
 })
