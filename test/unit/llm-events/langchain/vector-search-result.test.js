@@ -60,7 +60,7 @@ tap.test('create entity', async (t) => {
     span_id: 'segment-1',
     transaction_id: 'tx-1',
     trace_id: 'trace-1',
-    metadata: { foo: 'foo' },
+    ['metadata.foo']: 'foo',
     ingest_source: 'Node',
     vendor: 'langchain',
     virtual_llm: true,
