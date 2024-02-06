@@ -6,7 +6,7 @@
 'use strict'
 
 const tap = require('tap')
-const LangChainCompletionSummary = require('../../../../lib/llm-events/langchain/chat-completion-summary')
+const LangChainTool = require('../../../../lib/llm-events/langchain/tool')
 
 tap.beforeEach((t) => {
   t.context._tx = {
@@ -35,36 +35,40 @@ tap.beforeEach((t) => {
   }
 
   t.context.segment = {
+    getDurationInMillis() {
+      return 1.01
+    },
     id: 'segment-1',
     transaction: {
       id: 'tx-1',
       traceId: 'trace-1'
-    },
-    getDurationInMillis() {
-      return 42
     }
   }
 
   t.context.runId = 'run-1'
   t.context.metadata = { foo: 'foo' }
+  t.context.name = 'test-tool'
+  t.context.description = 'test tool description'
+  t.context.input = 'input'
+  t.context.output = 'output'
 })
 
-tap.test('creates entity', async (t) => {
-  const msg = new LangChainCompletionSummary(t.context)
-  t.match(msg, {
+tap.test('constructs default instance', async (t) => {
+  const event = new LangChainTool(t.context)
+  t.match(event, {
+    input: 'input',
+    output: 'output',
+    name: 'test-tool',
+    description: 'test tool description',
+    run_id: 'run-1',
     id: /[a-z0-9-]{36}/,
     appName: 'test-app',
-    ['llm.conversation_id']: 'test-conversation',
     span_id: 'segment-1',
-    request_id: 'run-1',
     transaction_id: 'tx-1',
     trace_id: 'trace-1',
+    duration: 1.01,
     ['metadata.foo']: 'foo',
     ingest_source: 'Node',
-    vendor: 'langchain',
-    virtual_llm: true,
-    tags: '',
-    duration: 42,
-    ['response.number_of_messages']: 0
+    vendor: 'langchain'
   })
 })
