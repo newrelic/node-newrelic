@@ -1,3 +1,27 @@
+### v11.10.3 (2024-02-07)
+
+#### Features
+
+* Added feature flag for LangChain instrumentation ([#1990](https://github.com/newrelic/node-newrelic/pull/1990)) ([ab04e7a](https://github.com/newrelic/node-newrelic/commit/ab04e7a80b3aa7d669786d469ba256d009a195e6))
+* Added message entities for LangChain ([#1983](https://github.com/newrelic/node-newrelic/pull/1983)) ([6b44a3a](https://github.com/newrelic/node-newrelic/commit/6b44a3ab84690acce71ade9364cb3634b7d42614))
+* Added vectorsearch entities ([#1992](https://github.com/newrelic/node-newrelic/pull/1992)) ([ef74b2e](https://github.com/newrelic/node-newrelic/commit/ef74b2e4426c625e43cadcb4a84e4c389ae06577))
+
+#### Bug fixes
+
+* Updated grpc-js instrumentation to properly track errors and end transactions ([#2001](https://github.com/newrelic/node-newrelic/pull/2001)) ([fda1346](https://github.com/newrelic/node-newrelic/commit/fda134623522e9fde9dccb7606d4a2da89adf511))
+
+#### Documentation
+
+* Removed documentation around aws_bedrock_instrumentation as feature flag has been removed ([#1991](https://github.com/newrelic/node-newrelic/pull/1991)) ([f414564](https://github.com/newrelic/node-newrelic/commit/f414564738ab3ad8df207f96a857f27309d01f0b))
+
+#### Miscellaneous chores
+
+* Fixed third party notices and package-lock as they were out of sync. ([#1999](https://github.com/newrelic/node-newrelic/pull/1999)) ([a89def8](https://github.com/newrelic/node-newrelic/commit/a89def89f5cd7fec29c6466e15740f0f157da9b5))
+
+#### Tests
+
+* Updated prisma versioned test range to skip 5.9.0 as it was broken ([#1993](https://github.com/newrelic/node-newrelic/pull/1993)) ([d885286](https://github.com/newrelic/node-newrelic/commit/d8852867282dc79ea495cac8c414485ee91e7cd1))
+
 ### v11.10.2 (2024-01-31)
 
 #### Bug fixes

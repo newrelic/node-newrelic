@@ -2,6 +2,20 @@
   "repository": "newrelic/node-newrelic",
   "entries": [
     {
+      "version": "11.10.3",
+      "changes": {
+        "security": [],
+        "bugfixes": [
+          "Updated grpc-js instrumentation to properly track errors and end transactions"
+        ],
+        "features": [
+          "Add vectorsearch entities",
+          "Add message entities for LangChain",
+          "Add feature flag for LangChain instrumentation"
+        ]
+      }
+    },
+    {
       "version": "11.10.2",
       "changes": {
         "security": [],
