@@ -5,7 +5,6 @@
 * Added feature flag for LangChain instrumentation ([#1990](https://github.com/newrelic/node-newrelic/pull/1990)) ([ab04e7a](https://github.com/newrelic/node-newrelic/commit/ab04e7a80b3aa7d669786d469ba256d009a195e6))
 * Added message entities for LangChain ([#1983](https://github.com/newrelic/node-newrelic/pull/1983)) ([6b44a3a](https://github.com/newrelic/node-newrelic/commit/6b44a3ab84690acce71ade9364cb3634b7d42614))
 * Added vectorsearch entities ([#1992](https://github.com/newrelic/node-newrelic/pull/1992)) ([ef74b2e](https://github.com/newrelic/node-newrelic/commit/ef74b2e4426c625e43cadcb4a84e4c389ae06577))
-    * Co-authored-by: James Sumners <jsumners@newrelic.com>
 
 #### Bug fixes
 
