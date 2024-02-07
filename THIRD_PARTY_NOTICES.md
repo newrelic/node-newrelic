@@ -86,7 +86,7 @@ code, the source code can be found at [https://github.com/newrelic/node-newrelic
 
 ### @grpc/grpc-js
 
-This product includes source derived from [@grpc/grpc-js](https://github.com/grpc/grpc-node/tree/master/packages/grpc-js) ([v1.9.14](https://github.com/grpc/grpc-node/tree/master/packages/grpc-js/tree/v1.9.14)), distributed under the [Apache-2.0 License](https://github.com/grpc/grpc-node/tree/master/packages/grpc-js/blob/v1.9.14/LICENSE):
+This product includes source derived from [@grpc/grpc-js](https://github.com/grpc/grpc-node/tree/master/packages/grpc-js) ([v1.10.0](https://github.com/grpc/grpc-node/tree/master/packages/grpc-js/tree/v1.10.0)), distributed under the [Apache-2.0 License](https://github.com/grpc/grpc-node/tree/master/packages/grpc-js/blob/v1.10.0/LICENSE):
 
 ```
                                  Apache License
@@ -1443,7 +1443,7 @@ SOFTWARE.
 
 ### semver
 
-This product includes source derived from [semver](https://github.com/npm/node-semver) ([v7.5.4](https://github.com/npm/node-semver/tree/v7.5.4)), distributed under the [ISC License](https://github.com/npm/node-semver/blob/v7.5.4/LICENSE):
+This product includes source derived from [semver](https://github.com/npm/node-semver) ([v7.6.0](https://github.com/npm/node-semver/tree/v7.6.0)), distributed under the [ISC License](https://github.com/npm/node-semver/blob/v7.6.0/LICENSE):
 
 ```
 The ISC License
@@ -1466,7 +1466,7 @@ IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ### winston-transport
 
-This product includes source derived from [winston-transport](https://github.com/winstonjs/winston-transport) ([v4.6.0](https://github.com/winstonjs/winston-transport/tree/v4.6.0)), distributed under the [MIT License](https://github.com/winstonjs/winston-transport/blob/v4.6.0/LICENSE):
+This product includes source derived from [winston-transport](https://github.com/winstonjs/winston-transport) ([v4.7.0](https://github.com/winstonjs/winston-transport/tree/v4.7.0)), distributed under the [MIT License](https://github.com/winstonjs/winston-transport/blob/v4.7.0/LICENSE):
 
 ```
 The MIT License (MIT)
@@ -1916,7 +1916,7 @@ This product includes source derived from [@newrelic/newrelic-oss-cli](https://g
 
 ### @newrelic/test-utilities
 
-This product includes source derived from [@newrelic/test-utilities](https://github.com/newrelic/node-test-utilities) ([v8.1.0](https://github.com/newrelic/node-test-utilities/tree/v8.1.0)), distributed under the [Apache-2.0 License](https://github.com/newrelic/node-test-utilities/blob/v8.1.0/LICENSE):
+This product includes source derived from [@newrelic/test-utilities](https://github.com/newrelic/node-test-utilities) ([v8.2.0](https://github.com/newrelic/node-test-utilities/tree/v8.2.0)), distributed under the [Apache-2.0 License](https://github.com/newrelic/node-test-utilities/blob/v8.2.0/LICENSE):
 
 ```
                                  Apache License
