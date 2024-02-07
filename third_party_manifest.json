@@ -1,19 +1,58 @@
 {
-  "lastUpdated": "Wed Feb 07 2024 10:32:51 GMT-0500 (Eastern Standard Time)",
+  "lastUpdated": "Wed Feb 07 2024 13:26:08 GMT-0500 (Eastern Standard Time)",
   "projectName": "New Relic Node Agent",
   "projectUrl": "https://github.com/newrelic/node-newrelic",
   "includeOptDeps": true,
+  "optionalDependencies": {
+    "@contrast/fn-inspect@3.4.0": {
+      "name": "@contrast/fn-inspect",
+      "version": "3.4.0",
+      "range": "^3.3.0",
+      "licenses": "MIT",
+      "repoUrl": "https://github.com/Contrast-Security-Inc/node-fn-inspect",
+      "versionedRepoUrl": "https://github.com/Contrast-Security-Inc/node-fn-inspect/tree/v3.4.0",
+      "licenseFile": "node_modules/@contrast/fn-inspect/LICENSE",
+      "licenseUrl": "https://github.com/Contrast-Security-Inc/node-fn-inspect/blob/v3.4.0/LICENSE",
+      "licenseTextSource": "file",
+      "publisher": "Contrast Security"
+    },
+    "@newrelic/native-metrics@10.0.1": {
+      "name": "@newrelic/native-metrics",
+      "version": "10.0.1",
+      "range": "^10.0.0",
+      "licenses": "Apache-2.0",
+      "repoUrl": "https://github.com/newrelic/node-native-metrics",
+      "versionedRepoUrl": "https://github.com/newrelic/node-native-metrics/tree/v10.0.1",
+      "licenseFile": "node_modules/@newrelic/native-metrics/LICENSE",
+      "licenseUrl": "https://github.com/newrelic/node-native-metrics/blob/v10.0.1/LICENSE",
+      "licenseTextSource": "file",
+      "publisher": "New Relic Node.js agent team",
+      "email": "nodejs@newrelic.com"
+    },
+    "@prisma/prisma-fmt-wasm@4.17.0-16.27eb2449f178cd9fe1a4b892d732cc4795f75085": {
+      "name": "@prisma/prisma-fmt-wasm",
+      "version": "4.17.0-16.27eb2449f178cd9fe1a4b892d732cc4795f75085",
+      "range": "^4.17.0-16.27eb2449f178cd9fe1a4b892d732cc4795f75085",
+      "licenses": "Apache-2.0",
+      "repoUrl": "https://github.com/prisma/prisma-engines",
+      "versionedRepoUrl": "https://github.com/prisma/prisma-engines/tree/v4.17.0-16.27eb2449f178cd9fe1a4b892d732cc4795f75085",
+      "licenseFile": "node_modules/@prisma/prisma-fmt-wasm/README.md",
+      "licenseUrl": "https://github.com/prisma/prisma-engines/blob/v4.17.0-16.27eb2449f178cd9fe1a4b892d732cc4795f75085/README.md",
+      "licenseTextSource": "spdx",
+      "publisher": "Prisma"
+    }
+  },
   "includeDev": true,
   "dependencies": {
-    "@grpc/grpc-js@1.10.0": {
+    "@grpc/grpc-js@1.9.14": {
       "name": "@grpc/grpc-js",
-      "version": "1.10.0",
+      "version": "1.9.14",
       "range": "^1.9.4",
       "licenses": "Apache-2.0",
       "repoUrl": "https://github.com/grpc/grpc-node/tree/master/packages/grpc-js",
-      "versionedRepoUrl": "https://github.com/grpc/grpc-node/tree/master/packages/grpc-js/tree/v1.10.0",
+      "versionedRepoUrl": "https://github.com/grpc/grpc-node/tree/master/packages/grpc-js/tree/v1.9.14",
       "licenseFile": "node_modules/@grpc/grpc-js/LICENSE",
-      "licenseUrl": "https://github.com/grpc/grpc-node/tree/master/packages/grpc-js/blob/v1.10.0/LICENSE",
+      "licenseUrl": "https://github.com/grpc/grpc-node/tree/master/packages/grpc-js/blob/v1.9.14/LICENSE",
       "licenseTextSource": "file",
       "publisher": "Google Inc."
     },
@@ -402,15 +441,15 @@
       "publisher": "Michael Radionov",
       "url": "https://github.com/mradionov"
     },
-    "eslint-plugin-jsdoc@39.9.1": {
+    "eslint-plugin-jsdoc@48.0.5": {
       "name": "eslint-plugin-jsdoc",
-      "version": "39.9.1",
-      "range": "^39.3.6",
+      "version": "48.0.5",
+      "range": "^48.0.5",
       "licenses": "BSD-3-Clause",
       "repoUrl": "https://github.com/gajus/eslint-plugin-jsdoc",
-      "versionedRepoUrl": "https://github.com/gajus/eslint-plugin-jsdoc/tree/v39.9.1",
+      "versionedRepoUrl": "https://github.com/gajus/eslint-plugin-jsdoc/tree/v48.0.5",
       "licenseFile": "node_modules/eslint-plugin-jsdoc/LICENSE",
-      "licenseUrl": "https://github.com/gajus/eslint-plugin-jsdoc/blob/v39.9.1/LICENSE",
+      "licenseUrl": "https://github.com/gajus/eslint-plugin-jsdoc/blob/v48.0.5/LICENSE",
       "licenseTextSource": "file",
       "publisher": "Gajus Kuizinas",
       "email": "gajus@gajus.com",
@@ -686,45 +725,6 @@
       "licenseFile": "node_modules/when/LICENSE.txt",
       "licenseUrl": "https://github.com/cujojs/when/blob/v3.7.8/LICENSE.txt",
       "licenseTextSource": "file"
-    }
-  },
-  "optionalDependencies": {
-    "@contrast/fn-inspect@3.4.0": {
-      "name": "@contrast/fn-inspect",
-      "version": "3.4.0",
-      "range": "^3.3.0",
-      "licenses": "MIT",
-      "repoUrl": "https://github.com/Contrast-Security-Inc/node-fn-inspect",
-      "versionedRepoUrl": "https://github.com/Contrast-Security-Inc/node-fn-inspect/tree/v3.4.0",
-      "licenseFile": "node_modules/@contrast/fn-inspect/LICENSE",
-      "licenseUrl": "https://github.com/Contrast-Security-Inc/node-fn-inspect/blob/v3.4.0/LICENSE",
-      "licenseTextSource": "file",
-      "publisher": "Contrast Security"
-    },
-    "@newrelic/native-metrics@10.0.1": {
-      "name": "@newrelic/native-metrics",
-      "version": "10.0.1",
-      "range": "^10.0.0",
-      "licenses": "Apache-2.0",
-      "repoUrl": "https://github.com/newrelic/node-native-metrics",
-      "versionedRepoUrl": "https://github.com/newrelic/node-native-metrics/tree/v10.0.1",
-      "licenseFile": "node_modules/@newrelic/native-metrics/LICENSE",
-      "licenseUrl": "https://github.com/newrelic/node-native-metrics/blob/v10.0.1/LICENSE",
-      "licenseTextSource": "file",
-      "publisher": "New Relic Node.js agent team",
-      "email": "nodejs@newrelic.com"
-    },
-    "@prisma/prisma-fmt-wasm@4.17.0-16.27eb2449f178cd9fe1a4b892d732cc4795f75085": {
-      "name": "@prisma/prisma-fmt-wasm",
-      "version": "4.17.0-16.27eb2449f178cd9fe1a4b892d732cc4795f75085",
-      "range": "^4.17.0-16.27eb2449f178cd9fe1a4b892d732cc4795f75085",
-      "licenses": "Apache-2.0",
-      "repoUrl": "https://github.com/prisma/prisma-engines",
-      "versionedRepoUrl": "https://github.com/prisma/prisma-engines/tree/v4.17.0-16.27eb2449f178cd9fe1a4b892d732cc4795f75085",
-      "licenseFile": "node_modules/@prisma/prisma-fmt-wasm/README.md",
-      "licenseUrl": "https://github.com/prisma/prisma-engines/blob/v4.17.0-16.27eb2449f178cd9fe1a4b892d732cc4795f75085/README.md",
-      "licenseTextSource": "spdx",
-      "publisher": "Prisma"
     }
   }
 }
