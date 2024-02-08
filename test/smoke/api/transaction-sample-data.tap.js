@@ -52,7 +52,7 @@ tap.test('Collector API should send transaction traces to staging-collector.newr
 
       const payload = [agent.config.run_id, [encoded]]
 
-      api.transaction_sample_data(payload, function (error, command) {
+      api.send('transaction_sample_data', payload, function (error, command) {
         t.error(error, 'sent transaction trace without error')
         t.notOk(command.returned, 'return value is null')
 
