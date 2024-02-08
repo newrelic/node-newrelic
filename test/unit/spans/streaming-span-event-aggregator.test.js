@@ -6,8 +6,14 @@
 'use strict'
 
 const tap = require('tap')
+const sinon = require('sinon')
 
 const StreamingSpanEventAggregator = require('../../../lib/spans/streaming-span-event-aggregator')
+const agent = {
+  collector: {},
+  metrics: {},
+  harvester: { add: sinon.stub() }
+}
 
 tap.test('Should only attempt to connect on first start() call', (t) => {
   let connectCount = 0
@@ -20,7 +26,7 @@ tap.test('Should only attempt to connect on first start() call', (t) => {
     }
   }
 
-  const streamingSpanAggregator = new StreamingSpanEventAggregator(opts)
+  const streamingSpanAggregator = new StreamingSpanEventAggregator(opts, agent)
 
   streamingSpanAggregator.start()
   t.equal(connectCount, 1)
@@ -43,7 +49,7 @@ tap.test('Should only attempt to disconnect on first stop() call', (t) => {
     }
   }
 
-  const streamingSpanAggregator = new StreamingSpanEventAggregator(opts)
+  const streamingSpanAggregator = new StreamingSpanEventAggregator(opts, agent)
   streamingSpanAggregator.start()
 
   streamingSpanAggregator.stop()
@@ -67,7 +73,7 @@ tap.test('Should attempt to connect on start() after stop() call', (t) => {
     }
   }
 
-  const streamingSpanAggregator = new StreamingSpanEventAggregator(opts)
+  const streamingSpanAggregator = new StreamingSpanEventAggregator(opts, agent)
 
   streamingSpanAggregator.start()
   streamingSpanAggregator.stop()
