@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "Wed Feb 07 2024 13:26:08 GMT-0500 (Eastern Standard Time)",
+  "lastUpdated": "Wed Feb 07 2024 12:18:02 GMT-0500 (Eastern Standard Time)",
   "projectName": "New Relic Node Agent",
   "projectUrl": "https://github.com/newrelic/node-newrelic",
   "includeOptDeps": true,
@@ -44,15 +44,15 @@
   },
   "includeDev": true,
   "dependencies": {
-    "@grpc/grpc-js@1.9.14": {
+    "@grpc/grpc-js@1.10.0": {
       "name": "@grpc/grpc-js",
-      "version": "1.9.14",
+      "version": "1.10.0",
       "range": "^1.9.4",
       "licenses": "Apache-2.0",
       "repoUrl": "https://github.com/grpc/grpc-node/tree/master/packages/grpc-js",
-      "versionedRepoUrl": "https://github.com/grpc/grpc-node/tree/master/packages/grpc-js/tree/v1.9.14",
+      "versionedRepoUrl": "https://github.com/grpc/grpc-node/tree/master/packages/grpc-js/tree/v1.10.0",
       "licenseFile": "node_modules/@grpc/grpc-js/LICENSE",
-      "licenseUrl": "https://github.com/grpc/grpc-node/tree/master/packages/grpc-js/blob/v1.9.14/LICENSE",
+      "licenseUrl": "https://github.com/grpc/grpc-node/tree/master/packages/grpc-js/blob/v1.10.0/LICENSE",
       "licenseTextSource": "file",
       "publisher": "Google Inc."
     },
@@ -94,15 +94,15 @@
       "publisher": "New Relic Node.js agent team",
       "email": "nodejs@newrelic.com"
     },
-    "@newrelic/security-agent@0.7.0": {
+    "@newrelic/security-agent@1.0.1": {
       "name": "@newrelic/security-agent",
-      "version": "0.7.0",
-      "range": "0.7.0",
+      "version": "1.0.1",
+      "range": "^1.0.1",
       "licenses": "UNKNOWN",
       "repoUrl": "https://github.com/newrelic/csec-node-agent",
-      "versionedRepoUrl": "https://github.com/newrelic/csec-node-agent/tree/v0.7.0",
+      "versionedRepoUrl": "https://github.com/newrelic/csec-node-agent/tree/v1.0.1",
       "licenseFile": "node_modules/@newrelic/security-agent/LICENSE",
-      "licenseUrl": "https://github.com/newrelic/csec-node-agent/blob/v0.7.0/LICENSE",
+      "licenseUrl": "https://github.com/newrelic/csec-node-agent/blob/v1.0.1/LICENSE",
       "licenseTextSource": "file",
       "publisher": "newrelic"
     },
@@ -441,15 +441,15 @@
       "publisher": "Michael Radionov",
       "url": "https://github.com/mradionov"
     },
-    "eslint-plugin-jsdoc@48.0.5": {
+    "eslint-plugin-jsdoc@39.9.1": {
       "name": "eslint-plugin-jsdoc",
-      "version": "48.0.5",
-      "range": "^48.0.5",
+      "version": "39.9.1",
+      "range": "^39.3.6",
       "licenses": "BSD-3-Clause",
       "repoUrl": "https://github.com/gajus/eslint-plugin-jsdoc",
-      "versionedRepoUrl": "https://github.com/gajus/eslint-plugin-jsdoc/tree/v48.0.5",
+      "versionedRepoUrl": "https://github.com/gajus/eslint-plugin-jsdoc/tree/v39.9.1",
       "licenseFile": "node_modules/eslint-plugin-jsdoc/LICENSE",
-      "licenseUrl": "https://github.com/gajus/eslint-plugin-jsdoc/blob/v48.0.5/LICENSE",
+      "licenseUrl": "https://github.com/gajus/eslint-plugin-jsdoc/blob/v39.9.1/LICENSE",
       "licenseTextSource": "file",
       "publisher": "Gajus Kuizinas",
       "email": "gajus@gajus.com",
