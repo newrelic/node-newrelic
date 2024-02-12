@@ -3061,4 +3061,48 @@ tap.test('Shim', function (t) {
       t.end()
     })
   })
+
+  t.test('_moduleRoot', (t) => {
+    t.beforeEach((t) => {
+      t.context.agent = helper.loadMockedAgent()
+    })
+
+    t.afterEach((t) => {
+      helper.unloadAgent(t.context.agent)
+    })
+
+    t.test('should set _moduleRoot to `.` if resolvedName is a built-in', (t) => {
+      const { agent } = t.context
+      const shim = new Shim(agent, 'http', 'http')
+      t.equal(shim._moduleRoot, '.')
+      t.end()
+    })
+
+    t.test(
+      'should set _moduleRoot to `.` if resolvedName is undefined but moduleName  is a built-in',
+      (t) => {
+        const { agent } = t.context
+        const shim = new Shim(agent, 'http')
+        t.equal(shim._moduleRoot, '.')
+        t.end()
+      }
+    )
+
+    t.test('should set _moduleRoot to resolvedName not a built-in', (t) => {
+      const { agent } = t.context
+      const root = '/path/to/app/node_modules/rando-mod'
+      const shim = new Shim(agent, 'rando-mod', root)
+      t.equal(shim._moduleRoot, root)
+      t.end()
+    })
+
+    t.test('should properly resolve _moduleRoot as windows path', (t) => {
+      const { agent } = t.context
+      const root = `c:\\path\\to\\app\\node_modules\\@scope\\test`
+      const shim = new Shim(agent, '@scope/test', root)
+      t.equal(shim._moduleRoot, root)
+      t.end()
+    })
+    t.end()
+  })
 })

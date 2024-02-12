@@ -179,6 +179,28 @@ tap.test('Should create usage version metric onRequire', (t) => {
   }
 })
 
+tap.test('Should create usage metric onRequire for built-in', (t) => {
+  const domainMetric = `${FEATURES.INSTRUMENTATION.ON_REQUIRE}/domain`
+  let agent = helper.instrumentMockedAgent()
+
+  t.teardown(() => {
+    helper.unloadAgent(agent)
+    agent = null
+  })
+
+  // eslint-disable-next-line node/no-deprecated-api
+  require('domain')
+
+  const onRequireMetric = agent.metrics._metrics.unscoped[domainMetric]
+
+  t.ok(onRequireMetric)
+  t.equal(onRequireMetric.callCount, 1)
+  const domainMetrics = Object.keys(agent.metrics._metrics.unscoped)
+  t.equal(domainMetrics.length, 1, 'should not log a version metric for a built-in')
+
+  t.end()
+})
+
 tap.test('should instrument a local package', (t) => {
   let agent = helper.instrumentMockedAgent()
 
