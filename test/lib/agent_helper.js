@@ -20,6 +20,7 @@ const http = require('http')
 const https = require('https')
 const semver = require('semver')
 const crypto = require('crypto')
+const util = require('util')
 
 const KEYPATH = path.join(__dirname, 'test-key.key')
 const CERTPATH = path.join(__dirname, 'self-signed-test-certificate.crt')
@@ -422,9 +423,25 @@ helper.getRequestLib = function getRequestLib(ca) {
   return request[symbols.original] || request
 }
 
+/**
+ * Make http get request via callback
+ *
+ * @param {string} url path to request
+ * @param {object} options http options
+ * @param {Function} callback function to execute after request
+ */
 helper.makeGetRequest = (url, options, callback) => {
   helper.makeRequest(url, options, callback)
 }
+
+/**
+ * Make http get request via callback
+ *
+ * @param {string} url path to request
+ * @param {object} options http options
+ * @returns {Promise} promise with response on resolve/reject
+ */
+helper.makeGetRequestAsync = util.promisify(helper.makeGetRequest)
 
 helper.makeRequest = (url, options, callback) => {
   if (!options || typeof options === 'function') {

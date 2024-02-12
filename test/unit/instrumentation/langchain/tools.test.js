@@ -11,8 +11,6 @@ const GenericShim = require('../../../../lib/shim/shim')
 const sinon = require('sinon')
 
 test('langchain/core/tools unit tests', (t) => {
-  t.autoend()
-
   t.beforeEach(function (t) {
     const sandbox = sinon.createSandbox()
     const agent = helper.loadMockedAgent()
@@ -82,4 +80,5 @@ test('langchain/core/tools unit tests', (t) => {
     const unwrapped = shim.unwrap(tool._call)
     t.equal(unwrapped.name, '_call', 'unwrapped _call should have a name of _call')
   })
+  t.end()
 })

@@ -9,12 +9,7 @@ const tap = require('tap')
 const helper = require('../../lib/agent_helper')
 // load the assertSegments assertion
 require('../../lib/metrics_helper')
-const fs = require('fs')
-// have to read and not require because openai does not export the package.json
-const { version: pkgVersion } = JSON.parse(
-  fs.readFileSync(`${__dirname}/node_modules/@langchain/core/package.json`)
-)
-const { DESTINATIONS } = require('../../../lib/config/attribute-filter')
+const { version: pkgVersion } = require('@langchain/core/package.json')
 const config = {
   ai_monitoring: {
     enabled: true
@@ -23,69 +18,80 @@ const config = {
     langchain_instrumentation: true
   }
 }
+const nock = require('nock')
+const baseUrl = 'http://httpbin.org'
+const { DESTINATIONS } = require('../../../lib/config/attribute-filter')
 
 tap.test('Langchain instrumentation - tools', (t) => {
-  t.autoend()
-
   t.before(() => {
-    t.context.agent = helper.instrumentMockedAgent(config)
-    const { WikipediaQueryRun } = require('@langchain/community/tools/wikipedia_query_run')
-    t.context.tool = new WikipediaQueryRun({
-      topKResults: 3,
-      maxDocContentLength: 4000
-    })
+    nock.disableNetConnect()
   })
 
-  t.afterEach(() => {
-    t.context.agent.customEventAggregator.clear()
+  t.beforeEach((t) => {
+    const content = 'Langchain is the best!'
+    nock(baseUrl).get('/langchain').reply(200, { hello: content })
+    t.context.agent = helper.instrumentMockedAgent(config)
+    const TestTool = require('./helpers/custom-tool')
+    const tool = new TestTool({
+      baseUrl
+    })
+    tool.key = 'hello'
+    t.context.tool = tool
+    t.context.content = content
+    t.context.input = 'langchain'
+  })
+
+  t.afterEach((t) => {
+    helper.unloadAgent(t.context.agent)
+    // bust the require-cache so it can re-instrument
+    Object.keys(require.cache).forEach((key) => {
+      if (key.endsWith('@langchain/core/tools.cjs') || key.endsWith('/helpers/custom-tool.js')) {
+        delete require.cache[key]
+      }
+    })
   })
 
   t.teardown(() => {
-    helper.unloadAgent(t.context.agent)
+    nock.enableNetConnect()
   })
 
-  t.test('should create span on successful tools create', (test) => {
-    const { agent, tool } = t.context
+  t.test('should create span on successful tools create', (t) => {
+    const { agent, tool, input } = t.context
     helper.runInTransaction(agent, async (tx) => {
-      const result = await tool.call('Langchain')
-      test.ok(result)
-      test.assertSegments(
-        tx.trace.root,
-        ['Llm/tool/Langchain/wikipedia-api', [`External/en.wikipedia.org/w/api.php`]],
-        { exact: false }
-      )
+      const result = await tool.call(input)
+      t.ok(result)
+      t.assertSegments(tx.trace.root, ['Llm/tool/Langchain/node-agent-test-tool'], { exact: false })
       tx.end()
-      test.end()
+      t.end()
     })
   })
 
-  t.test('should increment tracking metric for each tool event', (test) => {
-    const { tool, agent } = t.context
+  t.test('should increment tracking metric for each tool event', (t) => {
+    const { tool, agent, input } = t.context
     helper.runInTransaction(agent, async (tx) => {
-      await tool.call('Langchain')
+      await tool.call(input)
 
       const metrics = agent.metrics.getOrCreateMetric(
         `Supportability/Nodejs/ML/Langchain/${pkgVersion}`
       )
-      test.equal(metrics.callCount > 0, true)
+      t.equal(metrics.callCount > 0, true)
 
       tx.end()
-      test.end()
+      t.end()
     })
   })
 
-  t.test('should create LlmTool event for every tool.call', (test) => {
-    const { agent, tool } = t.context
+  t.test('should create LlmTool event for every tool.call', (t) => {
+    const { agent, tool, content, input } = t.context
     helper.runInTransaction(agent, async (tx) => {
-      const input = 'Langchain'
       tool.metadata = { key: 'instance-value', hello: 'world' }
       tool.tags = ['tag1', 'tag2']
       await tool.call(input, { metadata: { key: 'value' }, tags: ['tag2', 'tag3'] })
       const events = agent.customEventAggregator.events.toArray()
-      test.equal(events.length, 1, 'should create a LlmTool event')
+      t.equal(events.length, 1, 'should create a LlmTool event')
       const [[{ type }, toolEvent]] = events
-      test.equal(type, 'LlmTool')
-      test.match(toolEvent, {
+      t.equal(type, 'LlmTool')
+      t.match(toolEvent, {
         'id': /[a-f0-9]{36}/,
         'appName': 'New Relic for Node.js tests',
         'span_id': tx.trace.root.children[0].id,
@@ -97,18 +103,18 @@ tap.test('Langchain instrumentation - tools', (t) => {
         'metadata.hello': 'world',
         'tags': 'tag1,tag2,tag3',
         input,
-        'output': /Page: LangChain.*/,
+        'output': content,
         'name': tool.name,
         'description': tool.description,
         'duration': tx.trace.root.children[0].getDurationInMillis(),
         'run_id': undefined
       })
       tx.end()
-      test.end()
+      t.end()
     })
   })
 
-  t.test('should add runId when a callback handler exists', (test) => {
+  t.test('should add runId when a callback handler exists', (t) => {
     const { BaseCallbackHandler } = require('@langchain/core/callbacks/base')
     let runId
     const cbHandler = BaseCallbackHandler.fromMethods({
@@ -117,39 +123,39 @@ tap.test('Langchain instrumentation - tools', (t) => {
       }
     })
 
-    const { agent, tool } = t.context
+    const { agent, tool, input } = t.context
     tool.callbacks = [cbHandler]
     helper.runInTransaction(agent, async (tx) => {
-      const input = 'Langchain'
       await tool.call(input)
       const events = agent.customEventAggregator.events.toArray()
-      test.equal(events.length, 1, 'should create a LlmTool event')
+      t.equal(events.length, 1, 'should create a LlmTool event')
       const [[, toolEvent]] = events
 
-      test.equal(toolEvent.run_id, runId)
+      t.equal(toolEvent.run_id, runId)
       tx.end()
-      test.end()
+      t.end()
     })
   })
 
-  t.test('should not create llm tool events when not in a transaction', async (test) => {
-    const { tool, agent } = t.context
-    await tool.call('Langchain')
+  t.test('should not create llm tool events when not in a transaction', async (t) => {
+    const { tool, agent, input } = t.context
+    await tool.call(input)
 
     const events = agent.customEventAggregator.events.toArray()
-    test.equal(events.length, 0, 'should not create llm events')
+    t.equal(events.length, 0, 'should not create llm events')
   })
 
-  t.test('should add llm attribute to transaction', (test) => {
-    const { tool, agent } = t.context
+  t.test('should add llm attribute to transaction', (t) => {
+    const { tool, agent, input } = t.context
     helper.runInTransaction(agent, async (tx) => {
-      await tool.call('Langchain')
+      await tool.call(input)
 
       const attributes = tx.trace.attributes.get(DESTINATIONS.TRANS_EVENT)
       t.equal(attributes.llm, true)
 
       tx.end()
-      test.end()
+      t.end()
     })
   })
+  t.end()
 })
