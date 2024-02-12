@@ -8,6 +8,7 @@
 const tap = require('tap')
 
 const nock = require('nock')
+const crypto = require('crypto')
 const helper = require('../../lib/agent_helper')
 const CollectorApi = require('../../../lib/collector/api')
 
@@ -73,6 +74,44 @@ tap.test('reportSettings', (t) => {
 
       t.end()
     })
+  })
+
+  t.test('handles excessive payload sizes without blocking subsequent sends', (t) => {
+    const tstamp = 1_707_756_300_000 // 2024-02-12T11:45:00.000-05:00
+    function log(data) {
+      return JSON.stringify({
+        level: 30,
+        time: tstamp,
+        pid: 17035,
+        hostname: 'test-host',
+        msg: data
+      })
+    }
+
+    const kb512 = log(crypto.randomBytes(524_288).toString('base64'))
+    const mb1 = log(crypto.randomBytes(1_048_576).toString('base64'))
+    const toFind = log('find me')
+
+    let sends = 0
+    const ncontext = nock(URL)
+      .post(helper.generateCollectorPath('log_event_data', RUN_ID))
+      .times(2)
+      .reply(200)
+
+    agent.logs.on('finished log_event_data data send.', () => {
+      sends += 1
+      if (sends === 3) {
+        t.equal(ncontext.isDone(), true)
+        t.end()
+      }
+    })
+
+    agent.logs.add(kb512)
+    agent.logs.send()
+    agent.logs.add(mb1)
+    agent.logs.send()
+    agent.logs.add(toFind)
+    agent.logs.send()
   })
 })
 
