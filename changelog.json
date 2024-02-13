@@ -6,7 +6,7 @@
       "changes": {
         "security": [],
         "bugfixes": [
-          "Resolve logs getting blocked when an excessive payload is encoun…",
+          "Resolved application logs getting blocked when an excessive payload is encountered",
           "Updated Shim to properly calculate the _moduleRoot on windows environments"
         ],
         "features": []

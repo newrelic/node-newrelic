@@ -2,17 +2,17 @@
 
 #### Bug fixes
 
-* Resolve logs getting blocked when an excessive payload is encoun… ([#2013](https://github.com/newrelic/node-newrelic/pull/2013)) ([365ded4](https://github.com/newrelic/node-newrelic/commit/365ded432b7781ee9c896bf0e067dac8cc2c45cc))
-* Updated Shim to properly calculate the _moduleRoot on windows environments ([#2014](https://github.com/newrelic/node-newrelic/pull/2014)) ([ab0bd7f](https://github.com/newrelic/node-newrelic/commit/ab0bd7f87a5ed6ea38f51f068a2fc066af8f8d74))
+* Resolved application logs getting blocked when an excessive payload is encountered ([#2013](https://github.com/newrelic/node-newrelic/pull/2013)) ([365ded4](https://github.com/newrelic/node-newrelic/commit/365ded432b7781ee9c896bf0e067dac8cc2c45cc))
+* Updated Shim to properly calculate the `_moduleRoot` on windows environments ([#2014](https://github.com/newrelic/node-newrelic/pull/2014)) ([ab0bd7f](https://github.com/newrelic/node-newrelic/commit/ab0bd7f87a5ed6ea38f51f068a2fc066af8f8d74))
 
 #### Code refactoring
 
 * Abstracted registering of new aggregators into a Harvester class that is responsible for starting, stopping, updating all registered aggregators. ([#1994](https://github.com/newrelic/node-newrelic/pull/1994)) ([1fb85a6](https://github.com/newrelic/node-newrelic/commit/1fb85a6f97c522ce2951911c670fcbddaa218049))
+* Refactored specs into classes for easier code navigation ([#2004](https://github.com/newrelic/node-newrelic/pull/2004)) ([4daedc0](https://github.com/newrelic/node-newrelic/commit/4daedc08c707bec22056466ef15a45b50f20026f))
 
 #### Miscellaneous chores
 
 * **deps:** Updated @newrelic/security agent to v1.0.1 ([#2002](https://github.com/newrelic/node-newrelic/pull/2002)) ([b460c7b](https://github.com/newrelic/node-newrelic/commit/b460c7be589dd6fa801285b756bf66f62e0f10aa))
-* Refactor specs into classes for easier code navigation ([#2004](https://github.com/newrelic/node-newrelic/pull/2004)) ([4daedc0](https://github.com/newrelic/node-newrelic/commit/4daedc08c707bec22056466ef15a45b50f20026f))
 
 #### Tests
 
