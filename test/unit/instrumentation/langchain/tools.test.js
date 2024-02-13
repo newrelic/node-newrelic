@@ -35,7 +35,6 @@ test('langchain/core/tools unit tests', (t) => {
   function getMockModule() {
     function StructuredTool() {}
     StructuredTool.prototype.call = async function call() {}
-    StructuredTool.prototype._call = async function _call() {}
     return { StructuredTool }
   }
 
@@ -65,20 +64,5 @@ test('langchain/core/tools unit tests', (t) => {
     )
   })
 
-  t.test('should only wrap _call once', async (t) => {
-    const { shim, initialize } = t.context
-    const MockTool = getMockModule()
-    initialize(shim, MockTool)
-    const tool = new MockTool.StructuredTool()
-    let wrapped = shim.isWrapped(tool._call)
-    t.notOk(wrapped, 'should not wrap _call until call is invoked')
-    await tool.call()
-    wrapped = shim.isWrapped(tool._call)
-    t.ok(wrapped, '_call is wrapped since call was invoked')
-    await tool.call()
-    t.equal(tool._call.name, 'wrappedCall', '_call name should be named wrappedCall')
-    const unwrapped = shim.unwrap(tool._call)
-    t.equal(unwrapped.name, '_call', 'unwrapped _call should have a name of _call')
-  })
   t.end()
 })

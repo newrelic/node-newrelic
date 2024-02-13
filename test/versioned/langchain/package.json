@@ -11,8 +11,7 @@
         "node": ">=18"
       },
       "dependencies": {
-        "@langchain/core": ">=0.1.17",
-        "@langchain/community": "latest"
+        "@langchain/core": ">=0.1.17"
       },
       "files": [
         "tools.tap.js"

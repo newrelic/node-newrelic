@@ -45,7 +45,7 @@ tap.test('Langchain instrumentation - tools', (t) => {
     helper.unloadAgent(t.context.agent)
     // bust the require-cache so it can re-instrument
     Object.keys(require.cache).forEach((key) => {
-      if (key.endsWith('@langchain/core/tools.cjs') || key.endsWith('/helpers/custom-tool.js')) {
+      if (key.includes('@langchain/core') || key.endsWith('/helpers/custom-tool.js')) {
         delete require.cache[key]
       }
     })
