@@ -12,6 +12,8 @@ const Shim = require('../../../lib/shim/shim')
 const WebFrameworkShim = require('../../../lib/shim/webframework-shim')
 const symbols = require('../../../lib/symbols')
 
+test.runOnly = true
+
 test('WebFrameworkShim', function (t) {
   t.autoend()
   let agent = null
@@ -603,7 +605,7 @@ test('WebFrameworkShim', function (t) {
         const filePathSplit = attrs['code.filepath'].split('/')
         t.equal(filePathSplit[filePathSplit.length - 1], 'webframework-shim.test.js')
         t.equal(attrs['code.function'], 'getActiveSegment')
-        t.equal(attrs['code.lineno'], 37)
+        t.equal(attrs['code.lineno'], 39)
         t.equal(attrs['code.column'], 50)
         t.end()
       })

@@ -230,7 +230,7 @@
     "conventional-commits-parser": "^3.2.4",
     "eslint": "^8.24.0",
     "eslint-plugin-disable": "^2.0.1",
-    "eslint-plugin-jsdoc": "^39.3.6",
+    "eslint-plugin-jsdoc": "^48.0.5",
     "eslint-plugin-sonarjs": "^0.18.0",
     "express": "*",
     "git-raw-commits": "^2.0.11",
