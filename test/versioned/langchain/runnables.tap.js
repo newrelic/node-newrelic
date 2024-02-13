@@ -15,6 +15,8 @@ const fs = require('fs')
 //   fs.readFileSync(`${__dirname}/node_modules/@langchain/core/package.json`)
 // )
 
+const { beforeHook, afterEachHook, afterHook } = require('../openai/common')
+
 const config = {
   ai_monitoring: {
     enabled: true
@@ -29,24 +31,34 @@ tap.test(
   (t) => {
     t.autoend()
 
-    t.before(() => {
-      t.context.agent = helper.instrumentMockedAgent(config)
+    t.before(beforeHook.bind(null, t))
+    t.afterEach(afterEachHook.bind(null, t))
+    t.teardown(afterHook.bind(null, t))
+
+    t.beforeEach(async () => {
+      const { client } = t.context
       const { ChatPromptTemplate } = require('@langchain/core/prompts')
-      const { ChatOpenAI } = require('@langchain/openai')
       const { StringOutputParser } = require('@langchain/core/output_parsers')
-      t.context.prompt = ChatPromptTemplate.fromMessages([
-        ['human', 'tell me a short {type} about {topic}']
-      ])
-      t.context.model = new ChatOpenAI({})
+      const { ChatOpenAI } = require('@langchain/openai')
+
+      t.context.prompt = ChatPromptTemplate.fromMessages([['human', 'You are a {topic}.']])
+      t.context.model = new ChatOpenAI({
+        openAIApiKey: 'fake-key',
+        configuration: {
+          baseURL: client.baseURL
+        }
+      })
       t.context.outputParser = new StringOutputParser()
-      t.context.chain = t.context.prompt.pipe(t.context.model).pipe(t.context.outputParser)
     })
 
     t.test('should create langchain events for every invoke call', (test) => {
-      const { agent, chain } = t.context
+      const { agent, prompt, outputParser, model } = t.context
+
       helper.runInTransaction(agent, async (tx) => {
-        const input = { topic: 'ice cream', type: 'joke' }
+        const input = { topic: 'scientist' }
         const options = { metadata: { key: 'value', hello: 'world' }, tags: ['tag1', 'tag2'] }
+
+        const chain = prompt.pipe(model).pipe(outputParser)
         await chain.invoke(input, options)
 
         const events = agent.customEventAggregator.events.toArray()
@@ -103,12 +115,14 @@ tap.test(
           ingest_source: 'Node',
           vendor: 'langchain',
           // content: '',
-          completionId: lanChainSummaryEvents[0].chainEvent.id,
+          completion_id: lanChainSummaryEvents[0].chainEvent.id,
           // 'conversation_id': '',
           // sequence: 0,
           virtual_llm: true
           // 'run_id': undefined
         })
+
+        afterEachHook.call(null, t)
         tx.end()
         test.end()
       })

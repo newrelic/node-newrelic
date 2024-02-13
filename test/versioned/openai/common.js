@@ -11,6 +11,9 @@ const helper = require('../../lib/agent_helper')
 const config = {
   ai_monitoring: {
     enabled: true
+  },
+  feature_flag: {
+    langchain_instrumentation: true
   }
 }
 
