@@ -87,7 +87,6 @@ function assertChatCompletionSummary({ tx, model, chatSummary, tokenUsage, error
     'ingest_source': 'Node',
     'request.model': model,
     'duration': tx.trace.root.children[0].getDurationInMillis(),
-    'api_key_last_four_digits': 'sk--key',
     'response.organization': 'new-relic-nkmd8b',
     'response.headers.llmVersion': '2020-10-01',
     'response.headers.ratelimitLimitRequests': '200',
