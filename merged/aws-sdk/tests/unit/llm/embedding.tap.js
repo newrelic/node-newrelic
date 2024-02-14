@@ -6,6 +6,9 @@
 'use strict'
 
 const tap = require('tap')
+const {
+  DESTINATIONS: { TRANS_SCOPE }
+} = require('../../../lib/util')
 const LlmEmbedding = require('../../../lib/llm/embedding')
 
 tap.beforeEach((t) => {
@@ -21,7 +24,7 @@ tap.beforeEach((t) => {
           trace: {
             custom: {
               get(key) {
-                t.equal(key, 0x01 | 0x02 | 0x04 | 0x08)
+                t.equal(key, TRANS_SCOPE)
                 return {
                   ['llm.conversation_id']: 'conversation-1'
                 }

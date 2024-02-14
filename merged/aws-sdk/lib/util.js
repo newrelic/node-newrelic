@@ -6,7 +6,14 @@
 'use strict'
 const UNKNOWN = 'Unknown'
 const DESTINATIONS = {
-  TRANS_EVENT: 0x01
+  TRANS_EVENT: 0x01,
+
+  // This magic number is brought to you by:
+  // https://github.com/newrelic/node-newrelic/blob/10762a7/lib/config/attribute-filter.js#L10-L23
+  // We hard code it here because we'd have a cyclic dependency if we tried
+  // to import it from `newrelic` (`newrelic` uses this module to provide
+  // the AWS instrumentation).
+  TRANS_SCOPE: 0x01 | 0x02 | 0x04 | 0x08
 }
 
 function grabLastUrlSegment(url = '/') {

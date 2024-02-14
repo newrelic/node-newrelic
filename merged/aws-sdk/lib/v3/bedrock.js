@@ -35,11 +35,31 @@ function shouldSkipInstrumentation(config) {
  * @param {Agent} params.agent NR agent instance
  * @param {string} params.type LLM event type
  * @param {object} params.msg LLM event
+ * @param {object} params.tx The current transaction.
  */
-function recordEvent({ agent, type, msg }) {
+function recordEvent({ agent, type, msg, tx }) {
   agent.metrics.getOrCreateMetric(TRACKING_METRIC).incrementCallCount()
+  setMetadata({ tx, msg })
   msg.serialize()
   agent.customEventAggregator.add([{ type, timestamp: Date.now() }, msg])
+}
+
+/**
+ * Decorate the outgoing message with metadata that has been set by the
+ * customer via `api.addCustomAttribute()`.
+ *
+ * @param {object} params Function parameters.
+ * @param {object} params.tx The current transaction.
+ * @param {object} params.msg The outgoing message to decorate.
+ */
+function setMetadata({ tx, msg }) {
+  const CONVERSATION_ID = 'llm.conversation_id'
+  const attrs = tx.trace?.custom?.get(DESTINATIONS.TRANS_SCOPE) || {}
+  for (const [key, value] of Object.entries(attrs)) {
+    if (key.startsWith('llm.') && key !== CONVERSATION_ID) {
+      msg[key] = value
+    }
+  }
 }
 
 /**
@@ -65,26 +85,20 @@ function assignIdsToTx({ tx, msg, responseId }) {
 }
 
 /**
- * Creates and enqueues the LlmChatCompletionSummary and n LlmChatCompletionMessage events and adds an error to transaction if it exists. It will also assign the request, conversation and messages ids by the response id
+ * Creates and enqueues the LlmChatCompletionSummary and
+ * LlmChatCompletionMessage events and adds an error to transaction if it
+ * exists. It will also assign the request, conversation and messages ids by
+ * the response id.
  *
  * @param {object} params function params
  * @param {object} params.agent instance of agent
- * @param {object} params.credentials aws resolved credentials
  * @param {object} params.segment active segment
  * @param {BedrockCommand} params.bedrockCommand parsed input
  * @param {Error|null} params.err error from request if exists
  */
-function recordChatCompletionMessages({
-  agent,
-  credentials,
-  segment,
-  bedrockCommand,
-  bedrockResponse,
-  err
-}) {
+function recordChatCompletionMessages({ agent, segment, bedrockCommand, bedrockResponse, err }) {
   const tx = segment.transaction
   const summary = new LlmChatCompletionSummary({
-    credentials,
     agent,
     bedrockResponse,
     bedrockCommand,
@@ -101,7 +115,7 @@ function recordChatCompletionMessages({
     completionId: summary.id
   })
   assignIdsToTx({ tx, responseId: bedrockResponse.requestId, msg })
-  recordEvent({ agent, type: 'LlmChatCompletionMessage', msg })
+  recordEvent({ agent, type: 'LlmChatCompletionMessage', msg, tx })
 
   bedrockResponse.completions.forEach((content, index) => {
     const chatCompletionMessage = new LlmChatCompletionMessage({
@@ -115,10 +129,10 @@ function recordChatCompletionMessages({
       completionId: summary.id
     })
     assignIdsToTx({ tx, responseId: bedrockResponse.requestId, msg: chatCompletionMessage })
-    recordEvent({ agent, type: 'LlmChatCompletionMessage', msg: chatCompletionMessage })
+    recordEvent({ agent, type: 'LlmChatCompletionMessage', msg: chatCompletionMessage, tx })
   })
 
-  recordEvent({ agent, type: 'LlmChatCompletionSummary', msg: summary })
+  recordEvent({ agent, type: 'LlmChatCompletionSummary', msg: summary, tx })
 
   if (err) {
     const llmError = new LlmError({ bedrockResponse, err, summary })
@@ -127,33 +141,25 @@ function recordChatCompletionMessages({
 }
 
 /**
- * Creates and enqueues the LlmEmbedding event and adds an error to transaction if it exists
+ * Creates and enqueues the LlmEmbedding event and adds an error to transaction
+ * if it exists.
  *
  * @param {object} params function params
  * @param {object} params.agent instance of agent
- * @param {object} params.credentials aws resolved credentials
  * @param {object} params.segment active segment
  * @param {BedrockCommand} params.bedrockCommand parsed input
  * @param {Error|null} params.err error from request if exists
  */
-function recordEmbeddingMessage({
-  agent,
-  credentials,
-  segment,
-  bedrockCommand,
-  bedrockResponse,
-  err
-}) {
+function recordEmbeddingMessage({ agent, segment, bedrockCommand, bedrockResponse, err }) {
   const embedding = new LlmEmbedding({
     agent,
-    credentials,
     segment,
     bedrockCommand,
     bedrockResponse,
     isError: err !== null
   })
 
-  recordEvent({ agent, type: 'LlmEmbedding', msg: embedding })
+  recordEvent({ agent, type: 'LlmEmbedding', msg: embedding, tx: agent.getTransaction() })
   if (err) {
     const llmError = new LlmError({ bedrockResponse, err, embedding })
     agent.errors.add(segment.transaction, err, llmError)
@@ -191,20 +197,11 @@ function createBedrockResponse({ bedrockCommand, response, err }) {
  * @returns {object} specification object that records middleware as promise
  * with an after hook to create LLM events
  */
-function getBedrockSpec({ config, commandName }, _shim, _original, _name, args) {
+function getBedrockSpec({ commandName }, _shim, _original, _name, args) {
   const { input } = args[0]
   const bedrockCommand = new BedrockCommand(input)
   const { modelType } = bedrockCommand
 
-  /** 🚨 Code Smell 🚨
-   * spec functions cannot be async, nor can after hooks.
-   * this works due to the nature of the event loop.
-   * the promise resolves before the after hook fires.
-   */
-  let credentials = null
-  config.credentials().then((creds) => {
-    credentials = creds
-  })
   return {
     promise: true,
     name: `Llm/${modelType}/Bedrock/${commandName}`,
@@ -215,7 +212,6 @@ function getBedrockSpec({ config, commandName }, _shim, _original, _name, args) 
         err,
         response,
         segment,
-        credentials,
         bedrockCommand,
         modelType
       }
@@ -238,7 +234,7 @@ function getBedrockSpec({ config, commandName }, _shim, _original, _name, args) 
   }
 }
 
-function handleResponse({ shim, err, response, segment, credentials, bedrockCommand, modelType }) {
+function handleResponse({ shim, err, response, segment, bedrockCommand, modelType }) {
   const { agent } = shim
   const bedrockResponse = createBedrockResponse({ bedrockCommand, response, err })
 
@@ -250,7 +246,6 @@ function handleResponse({ shim, err, response, segment, credentials, bedrockComm
   if (modelType === 'completion') {
     recordChatCompletionMessages({
       agent,
-      credentials,
       segment,
       bedrockCommand,
       bedrockResponse,
@@ -259,7 +254,6 @@ function handleResponse({ shim, err, response, segment, credentials, bedrockComm
   } else if (modelType === 'embedding') {
     recordEmbeddingMessage({
       agent,
-      credentials,
       segment,
       bedrockCommand,
       bedrockResponse,
@@ -283,7 +277,7 @@ function bedrockMiddleware(shim, config, next, context) {
     commandName === 'InvokeModelCommand' ||
     commandName === 'InvokeModelWithResponseStreamCommand'
   ) {
-    return shim.record(next, getBedrockSpec.bind(null, { config, commandName }))
+    return shim.record(next, getBedrockSpec.bind(null, { commandName }))
   }
 
   shim.logger.debug(`Not instrumenting command ${commandName}`)
@@ -301,7 +295,7 @@ module.exports.bedrockMiddlewareConfig = {
       return false
     }
 
-    TRACKING_METRIC = `Nodejs/ML/Bedrock/${shim.pkgVersion}`
+    TRACKING_METRIC = `Supportability/Nodejs/ML/Bedrock/${shim.pkgVersion}`
     return true
   },
   type: 'generic',

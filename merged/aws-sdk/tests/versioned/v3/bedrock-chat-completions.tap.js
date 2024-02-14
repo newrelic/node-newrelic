@@ -248,7 +248,9 @@ tap.afterEach(async (t) => {
     const { agent } = helper
     helper.runInTransaction(async (tx) => {
       await client.send(command)
-      const metrics = agent.metrics.getOrCreateMetric(`Nodejs/ML/Bedrock/${pkgVersion}`)
+      const metrics = agent.metrics.getOrCreateMetric(
+        `Supportability/Nodejs/ML/Bedrock/${pkgVersion}`
+      )
       t.equal(metrics.callCount > 0, true)
       tx.end()
       t.end()
@@ -328,6 +330,36 @@ tap.afterEach(async (t) => {
       await client.send(command)
       const attributes = tx.trace.attributes.get(DESTINATIONS.TRANS_EVENT)
       t.equal(attributes.llm, true)
+
+      tx.end()
+      t.end()
+    })
+  })
+
+  tap.test(`${modelId}: should decorate messages with custom attrs`, (t) => {
+    const { bedrock, client, helper } = t.context
+    const prompt = `text ${resKey} ultimate question`
+    const input = requests[resKey](prompt, modelId)
+    const command = new bedrock.InvokeModelCommand(input)
+
+    helper.runInTransaction(async (tx) => {
+      const api = helper.getAgentApi()
+      api.addCustomAttribute('llm.foo', 'bar')
+
+      await client.send(command)
+
+      const events = tx.agent.customEventAggregator.events.toArray()
+      const summary = events
+        .filter((e) => e[0].type === 'LlmChatCompletionSummary')
+        .map((e) => e[1])
+        .pop()
+      const completion = events
+        .filter((e) => e[0].type === 'LlmChatCompletionMessage')
+        .map((e) => e[1])
+        .pop()
+
+      t.equal(summary['llm.foo'], 'bar')
+      t.equal(completion['llm.foo'], 'bar')
 
       tx.end()
       t.end()

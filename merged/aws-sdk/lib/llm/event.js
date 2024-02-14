@@ -6,15 +6,13 @@
 'use strict'
 
 const { randomUUID } = require('crypto')
+const { DESTINATIONS } = require('../util')
 
 /**
  * @typedef {object} LlmEventParams
  * @property {object} agent A New Relic agent instance.
  * @property {BedrockCommand} bedrockCommand A parsed invoke command.
  * @property {BedrockResponse} bedrockResponse A parsed response from the API.
- * @property {object} credentials An object representing the credentials that
- * will be used by the AWS client. This should match the result of
- * `await client.credentials()`.
  * @property {object} segment The current segment for the trace.
  */
 /**
@@ -24,9 +22,6 @@ const defaultParams = {
   agent: {},
   bedrockCommand: {},
   bedrockResponse: {},
-  credentials: {
-    accessKeyId: ''
-  },
   segment: {
     transaction: {}
   }
@@ -52,7 +47,7 @@ class LlmEvent {
     params = Object.assign({}, defaultParams, params)
     this.constructionParams = params
 
-    const { agent, bedrockCommand, bedrockResponse, credentials, segment } = params
+    const { agent, bedrockCommand, bedrockResponse, segment } = params
     this.bedrockCommand = bedrockCommand
     this.bedrockResponse = bedrockResponse
 
@@ -60,7 +55,6 @@ class LlmEvent {
     this.vendor = 'bedrock'
     this.ingest_source = 'Node'
     this.appName = agent.config.applications()[0]
-    this.api_key_last_four_digits = credentials?.accessKeyId.slice(-4)
     this.span_id = segment.id
     this.transaction_id = segment.transaction.id
     this.trace_id = segment.transaction.traceId
@@ -82,12 +76,7 @@ class LlmEvent {
    */
   conversationId(agent) {
     const tx = agent.tracer.getTransaction()
-    // This magic number is brought to you by:
-    // https://github.com/newrelic/node-newrelic/blob/10762a7/lib/config/attribute-filter.js#L10-L23
-    // We hard code it here because we'd have a cyclic dependency if we tried
-    // to import it from `newrelic` (`newrelic` uses this module to provide
-    // the AWS instrumentation).
-    const attrs = tx?.trace?.custom.get(0x01 | 0x02 | 0x04 | 0x08)
+    const attrs = tx?.trace?.custom.get(DESTINATIONS.TRANS_SCOPE)
     return attrs?.['llm.conversation_id']
   }
 

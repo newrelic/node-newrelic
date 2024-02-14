@@ -114,7 +114,6 @@ tap.afterEach(async (t) => {
         'ingest_source': 'Node',
         'request.model': modelId,
         'duration': tx.trace.root.children[0].getDurationInMillis(),
-        'api_key_last_four_digits': 'E ID',
         'response.usage.total_tokens': 13,
         'response.usage.prompt_tokens': 13,
         'input': prompt,
@@ -198,7 +197,6 @@ tap.afterEach(async (t) => {
         'ingest_source': 'Node',
         'request.model': modelId,
         'duration': tx.trace.root.children[0].getDurationInMillis(),
-        'api_key_last_four_digits': 'E ID',
         'response.usage.total_tokens': 0,
         'response.usage.prompt_tokens': 0,
         'input': prompt,
@@ -223,6 +221,26 @@ tap.afterEach(async (t) => {
       await client.send(command)
       const attributes = tx.trace.attributes.get(DESTINATIONS.TRANS_EVENT)
       t.equal(attributes.llm, true)
+
+      tx.end()
+      t.end()
+    })
+  })
+
+  tap.test(`${modelId}: should decorate messages with custom attrs`, (t) => {
+    const { bedrock, client, helper } = t.context
+    const prompt = `embed text ${resKey} success`
+    const input = requests[resKey](prompt, modelId)
+    const command = new bedrock.InvokeModelCommand(input)
+
+    helper.runInTransaction(async (tx) => {
+      const api = helper.getAgentApi()
+      api.addCustomAttribute('llm.foo', 'bar')
+
+      await client.send(command)
+      const events = tx.agent.customEventAggregator.events.toArray()
+      const msg = events[0][1]
+      t.equal(msg['llm.foo'], 'bar')
 
       tx.end()
       t.end()

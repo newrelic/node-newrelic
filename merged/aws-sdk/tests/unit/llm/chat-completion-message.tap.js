@@ -6,6 +6,9 @@
 'use strict'
 
 const tap = require('tap')
+const {
+  DESTINATIONS: { TRANS_SCOPE }
+} = require('../../../lib/util')
 const LlmChatCompletionMessage = require('../../../lib/llm/chat-completion-message')
 
 tap.beforeEach((t) => {
@@ -21,7 +24,7 @@ tap.beforeEach((t) => {
           trace: {
             custom: {
               get(key) {
-                t.equal(key, 0x01 | 0x02 | 0x04 | 0x08)
+                t.equal(key, TRANS_SCOPE)
                 return {
                   ['llm.conversation_id']: 'conversation-1'
                 }
@@ -31,10 +34,6 @@ tap.beforeEach((t) => {
         }
       }
     }
-  }
-
-  t.context.credentials = {
-    accessKeyId: '123456789'
   }
 
   t.context.completionId = 'completion-1'

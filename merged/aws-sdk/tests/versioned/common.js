@@ -139,7 +139,6 @@ function assertChatCompletionSummary({
     'ingest_source': 'Node',
     'request.model': modelId,
     'duration': tx.trace.root.children[0].getDurationInMillis(),
-    'api_key_last_four_digits': 'E ID',
     'response.number_of_messages': error ? 1 : numMsgs,
     'response.choices.finish_reason': error ? undefined : 'endoftext',
     'request.temperature': 0.5,

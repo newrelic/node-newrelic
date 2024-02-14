@@ -6,6 +6,9 @@
 'use strict'
 
 const tap = require('tap')
+const {
+  DESTINATIONS: { TRANS_SCOPE }
+} = require('../../../lib/util')
 const LlmEvent = require('../../../lib/llm/event')
 
 tap.beforeEach((t) => {
@@ -21,7 +24,7 @@ tap.beforeEach((t) => {
           trace: {
             custom: {
               get(key) {
-                t.equal(key, 0x01 | 0x02 | 0x04 | 0x08)
+                t.equal(key, TRANS_SCOPE)
                 return {
                   ['llm.conversation_id']: 'conversation-1'
                 }
@@ -31,10 +34,6 @@ tap.beforeEach((t) => {
         }
       }
     }
-  }
-
-  t.context.credentials = {
-    accessKeyId: '123456789'
   }
 
   t.context.segment = {
@@ -61,7 +60,6 @@ tap.test('create creates a new instance', async (t) => {
   t.equal(event.vendor, 'bedrock')
   t.equal(event.ingest_source, 'Node')
   t.equal(event.appName, 'test-app')
-  t.equal(event.api_key_last_four_digits, '6789')
   t.equal(event.span_id, 'segment-1')
   t.equal(event.transaction_id, 'tx-1')
   t.equal(event.trace_id, 'trace-1')
