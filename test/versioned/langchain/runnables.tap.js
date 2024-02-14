@@ -13,7 +13,7 @@ const { version: pkgVersion } = require('@langchain/core/package.json')
 
 const { beforeHook, afterEachHook, afterHook } = require('../openai/common')
 
-function assertChatCompletionSummary(test, tx, chatSummary) {
+function assertChatCompletionSummary(test, tx, chatSummary, withCallback) {
   const expectedSummary = {
     'id': /[a-f0-9]{36}/,
     'appName': 'New Relic for Node.js tests',
@@ -27,15 +27,20 @@ function assertChatCompletionSummary(test, tx, chatSummary) {
     'metadata.hello': 'world',
     'tags': 'tag1,tag2',
     'virtual_llm': true,
-    ['response.number_of_messages']: 1
-    // 'duration': tx.trace.root.children[0].getDurationInMillis()
+    ['response.number_of_messages']: 1,
+    'conversation_id': undefined,
+    'duration': tx.trace.root.children[0].getDurationInMillis()
+  }
+
+  if (!withCallback) {
+    expectedSummary.request_id = undefined
   }
 
   test.equal(chatSummary[0].type, 'LlmChatCompletionSummary')
-  test.match(chatSummary[1], expectedSummary)
+  test.match(chatSummary[1], expectedSummary, 'should match chat summary message')
 }
 
-function assertChatCompletionMessages(test, tx, chatMsgs, chatSummary) {
+function assertChatCompletionMessages(test, tx, chatMsgs, chatSummary, withCallback) {
   const baseMsg = {
     id: /[a-f0-9]{36}/,
     appName: 'New Relic for Node.js tests',
@@ -46,7 +51,12 @@ function assertChatCompletionMessages(test, tx, chatMsgs, chatSummary) {
     vendor: 'langchain',
     completion_id: chatSummary.id,
     virtual_llm: true,
-    run_id: /[a-f0-9]{36}/
+    request_id: /[a-f0-9]{36}/,
+    conversation_id: undefined
+  }
+
+  if (!withCallback) {
+    baseMsg.request_id = undefined
   }
 
   chatMsgs.forEach((msg) => {
@@ -60,7 +70,7 @@ function assertChatCompletionMessages(test, tx, chatMsgs, chatSummary) {
     }
 
     test.equal(msg[0].type, 'LlmChatCompletionMessage')
-    test.match(msg[1], expectedChatMsg)
+    test.match(msg[1], expectedChatMsg, 'should match chat completion message')
   })
 }
 
@@ -240,4 +250,52 @@ tap.test('Langchain instrumentation - runnable sequence', (t) => {
       test.end()
     })
   })
+
+  t.test(
+    'should create langchain events for every invoke call on chat prompt + model + parser with callback',
+    (test) => {
+      const { BaseCallbackHandler } = require('@langchain/core/callbacks/base')
+      const cbHandler = BaseCallbackHandler.fromMethods({
+        handleChainStart() {}
+      })
+
+      const { agent, prompt, outputParser, model } = t.context
+
+      helper.runInTransaction(agent, async (tx) => {
+        const input = { topic: 'scientist' }
+        const options = {
+          metadata: { key: 'value', hello: 'world' },
+          callbacks: [cbHandler],
+          tags: ['tag1', 'tag2']
+        }
+
+        const chain = prompt.pipe(model).pipe(outputParser)
+        await chain.invoke(input, options)
+
+        const events = agent.customEventAggregator.events.toArray()
+
+        const langchainEvents = filterLangchainEvents(events)
+        const langChainMessageEvents = filterLangchainMessages(
+          langchainEvents,
+          'LlmChatCompletionMessage'
+        )
+        const langChainSummaryEvents = filterLangchainMessages(
+          langchainEvents,
+          'LlmChatCompletionSummary'
+        )
+
+        assertChatCompletionSummary(test, tx, langChainSummaryEvents[0], cbHandler)
+        assertChatCompletionMessages(
+          test,
+          tx,
+          langChainMessageEvents,
+          langChainSummaryEvents[0][1],
+          cbHandler
+        )
+
+        tx.end()
+        test.end()
+      })
+    }
+  )
 })
