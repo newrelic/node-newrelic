@@ -77,6 +77,8 @@ tap.test('reportSettings', (t) => {
   })
 
   t.test('handles excessive payload sizes without blocking subsequent sends', (t) => {
+    // remove the nock to agent_settings from beforeEach to avoid a console.error on afterEach
+    nock.cleanAll()
     const tstamp = 1_707_756_300_000 // 2024-02-12T11:45:00.000-05:00
     function log(data) {
       return JSON.stringify({
