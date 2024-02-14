@@ -80,7 +80,6 @@ function getExpectedResult(tx, event, type, completionId) {
       expected = {
         ...expected,
         ...resKeys,
-        conversation_id: undefined,
         ['request.max_tokens']: '1000000',
         ['request.temperature']: 'medium-rare',
         ['response.number_of_messages']: 3,
@@ -92,7 +91,6 @@ function getExpectedResult(tx, event, type, completionId) {
     case 'message':
       expected = {
         ...expected,
-        conversation_id: undefined,
         content: 'What is a woodchuck?',
         role: 'inquisitive-kid',
         sequence: 0,

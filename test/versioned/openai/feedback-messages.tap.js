@@ -26,8 +26,11 @@ tap.test('OpenAI instrumentation - feedback messages', (t) => {
   t.test(
     'should store conversation_id, request_id and message_ids on transaction by response_id',
     (test) => {
+      const conversationId = 'convo-id'
       const { client, agent } = t.context
+      const api = helper.getAgentApi()
       helper.runInTransaction(agent, async (tx) => {
+        api.addCustomAttribute('llm.conversation_id', conversationId)
         const results = await client.chat.completions.create({
           messages: [
             { role: 'user', content: 'You are a mathematician.' },
@@ -35,10 +38,9 @@ tap.test('OpenAI instrumentation - feedback messages', (t) => {
           ]
         })
 
-        const api = helper.getAgentApi()
         const trackedIds = api.getLlmMessageIds({ responseId: results.id })
         test.same(trackedIds, {
-          conversation_id: '',
+          conversation_id: conversationId,
           request_id: '49dbbffbd3c3f4612aa48def69059aad',
           message_ids: [
             'chatcmpl-87sb95K4EF2nuJRcTs43Tm9ntTeat-0',

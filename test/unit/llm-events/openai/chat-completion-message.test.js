@@ -81,7 +81,7 @@ tap.test('LlmChatCompletionMessage', (t) => {
         request: {},
         response: {}
       })
-      t.equal(chatMessageEvent.conversation_id, conversationId)
+      t.equal(chatMessageEvent['llm.conversation_id'], conversationId)
       t.end()
     })
   })

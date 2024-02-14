@@ -55,7 +55,7 @@ tap.test('create entity', async (t) => {
   t.match(search, {
     id: /[a-z0-9-]{36}/,
     appName: 'test-app',
-    conversation_id: 'test-conversation',
+    ['llm.conversation_id']: 'test-conversation',
     request_id: 'run-1',
     span_id: 'segment-1',
     transaction_id: 'tx-1',
