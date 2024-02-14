@@ -20,17 +20,15 @@ function assertChatCompletionSummary(test, tx, chatSummary) {
     'span_id': tx.trace.root.children[0].id,
     'trace_id': tx.traceId,
     'transaction_id': tx.id,
-    // 'request_id': '', // this comes from the runId
+    'request_id': /[a-f0-9]{36}/,
     'ingest_source': 'Node',
     'vendor': 'langchain',
     'metadata.key': 'value',
     'metadata.hello': 'world',
     'tags': 'tag1,tag2',
-    // 'conversation_id': '',
     'virtual_llm': true,
     ['response.number_of_messages']: 1
     // 'duration': tx.trace.root.children[0].getDurationInMillis()
-    // 'run_id': ''
   }
 
   test.equal(chatSummary[0].type, 'LlmChatCompletionSummary')
@@ -47,9 +45,8 @@ function assertChatCompletionMessages(test, tx, chatMsgs, chatSummary) {
     ingest_source: 'Node',
     vendor: 'langchain',
     completion_id: chatSummary.id,
-    // 'conversation_id': '',
-    virtual_llm: true
-    // 'run_id': ''
+    virtual_llm: true,
+    run_id: /[a-f0-9]{36}/
   }
 
   chatMsgs.forEach((msg) => {
@@ -206,6 +203,38 @@ tap.test('Langchain instrumentation - runnable sequence', (t) => {
 
       assertChatCompletionSummary(test, tx, langChainSummaryEvents[0])
       assertChatCompletionMessages(test, tx, langChainMessageEvents, langChainSummaryEvents[0][1])
+
+      tx.end()
+      test.end()
+    })
+  })
+
+  t.test('should add runId when a callback handler exists', (test) => {
+    const { BaseCallbackHandler } = require('@langchain/core/callbacks/base')
+    let runId
+    const cbHandler = BaseCallbackHandler.fromMethods({
+      handleChainStart(...args) {
+        runId = args?.[2]
+      }
+    })
+
+    const { agent, prompt, outputParser, model } = t.context
+
+    helper.runInTransaction(agent, async (tx) => {
+      const input = { topic: 'scientist' }
+      const options = {
+        metadata: { key: 'value', hello: 'world' },
+        callbacks: [cbHandler],
+        tags: ['tag1', 'tag2']
+      }
+
+      const chain = prompt.pipe(model).pipe(outputParser)
+      await chain.invoke(input, options)
+
+      const events = agent.customEventAggregator.events.toArray()
+
+      const langchainEvents = filterLangchainEvents(events)
+      t.equal(langchainEvents[0][1].request_id, runId)
 
       tx.end()
       test.end()
