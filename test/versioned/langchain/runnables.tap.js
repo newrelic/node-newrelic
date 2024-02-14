@@ -67,6 +67,20 @@ function assertChatCompletionMessages(test, tx, chatMsgs, chatSummary) {
   })
 }
 
+function filterLangchainEvents(events) {
+  return events.filter((event) => {
+    const [, chainEvent] = event
+    return chainEvent.vendor === 'langchain'
+  })
+}
+
+function filterLangchainMessages(events, msgType) {
+  return events.filter((event) => {
+    const [{ type }] = event
+    return type === msgType
+  })
+}
+
 tap.test('Langchain instrumentation - runnable sequence', (t) => {
   t.autoend()
 
@@ -149,22 +163,15 @@ tap.test('Langchain instrumentation - runnable sequence', (t) => {
 
         const events = agent.customEventAggregator.events.toArray()
 
-        const langchainEvents = events.filter((event) => {
-          const [, chainEvent] = event
-          return chainEvent.vendor === 'langchain'
-        })
-
-        const langChainMessageEvents = langchainEvents
-          .filter((event) => {
-            const [{ type }] = event
-            return type === 'LlmChatCompletionMessage'
-          })
-          .sort((a, b) => a[1].sequence - b[1].sequence)
-
-        const langChainSummaryEvents = langchainEvents.filter((event) => {
-          const [{ type }] = event
-          return type === 'LlmChatCompletionSummary'
-        })
+        const langchainEvents = filterLangchainEvents(events)
+        const langChainMessageEvents = filterLangchainMessages(
+          langchainEvents,
+          'LlmChatCompletionMessage'
+        )
+        const langChainSummaryEvents = filterLangchainMessages(
+          langchainEvents,
+          'LlmChatCompletionSummary'
+        )
 
         assertChatCompletionSummary(test, tx, langChainSummaryEvents[0])
         assertChatCompletionMessages(test, tx, langChainMessageEvents, langChainSummaryEvents[0][1])
@@ -187,22 +194,15 @@ tap.test('Langchain instrumentation - runnable sequence', (t) => {
 
       const events = agent.customEventAggregator.events.toArray()
 
-      const langchainEvents = events.filter((event) => {
-        const [, chainEvent] = event
-        return chainEvent.vendor === 'langchain'
-      })
-
-      const langChainMessageEvents = langchainEvents
-        .filter((event) => {
-          const [{ type }] = event
-          return type === 'LlmChatCompletionMessage'
-        })
-        .sort((a, b) => a[1].sequence - b[1].sequence)
-
-      const langChainSummaryEvents = langchainEvents.filter((event) => {
-        const [{ type }] = event
-        return type === 'LlmChatCompletionSummary'
-      })
+      const langchainEvents = filterLangchainEvents(events)
+      const langChainMessageEvents = filterLangchainMessages(
+        langchainEvents,
+        'LlmChatCompletionMessage'
+      )
+      const langChainSummaryEvents = filterLangchainMessages(
+        langchainEvents,
+        'LlmChatCompletionSummary'
+      )
 
       assertChatCompletionSummary(test, tx, langChainSummaryEvents[0])
       assertChatCompletionMessages(test, tx, langChainMessageEvents, langChainSummaryEvents[0][1])
