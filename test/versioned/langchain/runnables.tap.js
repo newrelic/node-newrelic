@@ -9,84 +9,10 @@ const tap = require('tap')
 const helper = require('../../lib/agent_helper')
 // load the assertSegments assertion
 require('../../lib/metrics_helper')
+const { filterLangchainEvents, filterLangchainMessages } = require('./common')
 const { version: pkgVersion } = require('@langchain/core/package.json')
 
 const { beforeHook, afterEachHook, afterHook } = require('../openai/common')
-
-function assertChatCompletionSummary(test, tx, chatSummary, withCallback) {
-  const expectedSummary = {
-    'id': /[a-f0-9]{36}/,
-    'appName': 'New Relic for Node.js tests',
-    'span_id': tx.trace.root.children[0].id,
-    'trace_id': tx.traceId,
-    'transaction_id': tx.id,
-    'request_id': /[a-f0-9]{36}/,
-    'ingest_source': 'Node',
-    'vendor': 'langchain',
-    'metadata.key': 'value',
-    'metadata.hello': 'world',
-    'tags': 'tag1,tag2',
-    'virtual_llm': true,
-    ['response.number_of_messages']: 1,
-    'conversation_id': undefined,
-    'duration': tx.trace.root.children[0].getDurationInMillis()
-  }
-
-  if (!withCallback) {
-    expectedSummary.request_id = undefined
-  }
-
-  test.equal(chatSummary[0].type, 'LlmChatCompletionSummary')
-  test.match(chatSummary[1], expectedSummary, 'should match chat summary message')
-}
-
-function assertChatCompletionMessages(test, tx, chatMsgs, chatSummary, withCallback) {
-  const baseMsg = {
-    id: /[a-f0-9]{36}/,
-    appName: 'New Relic for Node.js tests',
-    span_id: tx.trace.root.children[0].id,
-    trace_id: tx.traceId,
-    transaction_id: tx.id,
-    ingest_source: 'Node',
-    vendor: 'langchain',
-    completion_id: chatSummary.id,
-    virtual_llm: true,
-    request_id: /[a-f0-9]{36}/,
-    conversation_id: undefined
-  }
-
-  if (!withCallback) {
-    baseMsg.request_id = undefined
-  }
-
-  chatMsgs.forEach((msg) => {
-    const expectedChatMsg = { ...baseMsg }
-    if (msg[1].sequence === 0) {
-      expectedChatMsg.sequence = 0
-      expectedChatMsg.content = '{"topic":"scientist"}'
-    } else if (msg[1].sequence === 1) {
-      expectedChatMsg.sequence = 1
-      expectedChatMsg.content = '212 degrees Fahrenheit is equal to 100 degrees Celsius.'
-    }
-
-    test.equal(msg[0].type, 'LlmChatCompletionMessage')
-    test.match(msg[1], expectedChatMsg, 'should match chat completion message')
-  })
-}
-
-function filterLangchainEvents(events) {
-  return events.filter((event) => {
-    const [, chainEvent] = event
-    return chainEvent.vendor === 'langchain'
-  })
-}
-
-function filterLangchainMessages(events, msgType) {
-  return events.filter((event) => {
-    const [{ type }] = event
-    return type === msgType
-  })
-}
 
 tap.test('Langchain instrumentation - runnable sequence', (t) => {
   t.autoend()
@@ -180,8 +106,16 @@ tap.test('Langchain instrumentation - runnable sequence', (t) => {
           'LlmChatCompletionSummary'
         )
 
-        assertChatCompletionSummary(test, tx, langChainSummaryEvents[0])
-        assertChatCompletionMessages(test, tx, langChainMessageEvents, langChainSummaryEvents[0][1])
+        test.langchainSummary({
+          tx,
+          chatSummary: langChainSummaryEvents[0]
+        })
+
+        test.langchainMessages({
+          tx,
+          chatMsgs: langChainMessageEvents,
+          chatSummary: langChainSummaryEvents[0][1]
+        })
 
         tx.end()
         test.end()
@@ -211,8 +145,16 @@ tap.test('Langchain instrumentation - runnable sequence', (t) => {
         'LlmChatCompletionSummary'
       )
 
-      assertChatCompletionSummary(test, tx, langChainSummaryEvents[0])
-      assertChatCompletionMessages(test, tx, langChainMessageEvents, langChainSummaryEvents[0][1])
+      test.langchainSummary({
+        tx,
+        chatSummary: langChainSummaryEvents[0]
+      })
+
+      test.langchainMessages({
+        tx,
+        chatMsgs: langChainMessageEvents,
+        chatSummary: langChainSummaryEvents[0][1]
+      })
 
       tx.end()
       test.end()
@@ -284,14 +226,18 @@ tap.test('Langchain instrumentation - runnable sequence', (t) => {
           'LlmChatCompletionSummary'
         )
 
-        assertChatCompletionSummary(test, tx, langChainSummaryEvents[0], cbHandler)
-        assertChatCompletionMessages(
-          test,
+        test.langchainSummary({
           tx,
-          langChainMessageEvents,
-          langChainSummaryEvents[0][1],
-          cbHandler
-        )
+          chatSummary: langChainSummaryEvents[0],
+          withCallback: cbHandler
+        })
+
+        test.langchainMessages({
+          tx,
+          chatMsgs: langChainMessageEvents,
+          chatSummary: langChainSummaryEvents[0][1],
+          withCallback: cbHandler
+        })
 
         tx.end()
         test.end()
