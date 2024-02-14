@@ -62,7 +62,7 @@ tap.test('Langchain instrumentation - runnable sequence', (t) => {
     })
   })
 
-  t.test('should increment tracking metric for each langchain prompt event', (test) => {
+  t.test('should increment tracking metric for each langchain chat prompt event', (test) => {
     const { agent, prompt, outputParser, model } = t.context
 
     helper.runInTransaction(agent, async (tx) => {
@@ -123,7 +123,7 @@ tap.test('Langchain instrumentation - runnable sequence', (t) => {
     }
   )
 
-  t.test('should create langchain events for every invoke call on prompt + model', (test) => {
+  t.test('should create langchain events for every invoke call on chat prompt + model', (test) => {
     const { agent, prompt, model } = t.context
 
     helper.runInTransaction(agent, async (tx) => {
@@ -160,6 +160,50 @@ tap.test('Langchain instrumentation - runnable sequence', (t) => {
       test.end()
     })
   })
+
+  t.test(
+    'should create langchain events for every invoke call with parser that returns an array as output',
+    (test) => {
+      const { CommaSeparatedListOutputParser } = require('@langchain/core/output_parsers')
+      const { agent, prompt, model } = t.context
+
+      helper.runInTransaction(agent, async (tx) => {
+        const parser = new CommaSeparatedListOutputParser()
+
+        const input = { topic: 'scientist' }
+        const options = { metadata: { key: 'value', hello: 'world' }, tags: ['tag1', 'tag2'] }
+
+        const chain = prompt.pipe(model).pipe(parser)
+        await chain.invoke(input, options)
+
+        const events = agent.customEventAggregator.events.toArray()
+
+        const langchainEvents = filterLangchainEvents(events)
+        const langChainMessageEvents = filterLangchainMessages(
+          langchainEvents,
+          'LlmChatCompletionMessage'
+        )
+        const langChainSummaryEvents = filterLangchainMessages(
+          langchainEvents,
+          'LlmChatCompletionSummary'
+        )
+
+        test.langchainSummary({
+          tx,
+          chatSummary: langChainSummaryEvents[0]
+        })
+
+        test.langchainMessages({
+          tx,
+          chatMsgs: langChainMessageEvents,
+          chatSummary: langChainSummaryEvents[0][1]
+        })
+
+        tx.end()
+        test.end()
+      })
+    }
+  )
 
   t.test('should add runId when a callback handler exists', (test) => {
     const { BaseCallbackHandler } = require('@langchain/core/callbacks/base')
