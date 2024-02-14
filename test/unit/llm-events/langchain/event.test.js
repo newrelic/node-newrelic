@@ -54,7 +54,7 @@ tap.test('constructs default instance', async (t) => {
   t.match(event, {
     id: /[a-z0-9-]{36}/,
     appName: 'test-app',
-    conversation_id: 'test-conversation',
+    ['llm.conversation_id']: 'test-conversation',
     span_id: 'segment-1',
     request_id: 'run-1',
     transaction_id: 'tx-1',
