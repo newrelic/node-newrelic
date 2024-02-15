@@ -28,7 +28,7 @@ function assertLangChainChatCompletionSummary({ tx, chatSummary, withCallback })
     'span_id': tx.trace.root.children[0].id,
     'trace_id': tx.traceId,
     'transaction_id': tx.id,
-    'request_id': /[a-f0-9]{36}/,
+    'request_id': undefined,
     'ingest_source': 'Node',
     'vendor': 'langchain',
     'metadata.key': 'value',
@@ -39,8 +39,9 @@ function assertLangChainChatCompletionSummary({ tx, chatSummary, withCallback })
     'duration': tx.trace.root.children[0].getDurationInMillis()
   }
 
-  if (!withCallback) {
-    expectedSummary.request_id = undefined
+  if (withCallback) {
+    expectedSummary.request_id = /[a-f0-9\-]{36}/
+    expectedSummary.id = /[a-f0-9\-]{36}/
   }
 
   this.equal(chatSummary[0].type, 'LlmChatCompletionSummary')
@@ -58,11 +59,12 @@ function assertLangChainChatCompletionMessages({ tx, chatMsgs, chatSummary, with
     vendor: 'langchain',
     completion_id: chatSummary.id,
     virtual_llm: true,
-    request_id: /[a-f0-9]{36}/
+    request_id: undefined
   }
 
-  if (!withCallback) {
-    baseMsg.request_id = undefined
+  if (withCallback) {
+    baseMsg.request_id = /[a-f0-9\-]{36}/
+    baseMsg.id = /[a-f0-9\-]{36}/
   }
 
   chatMsgs.forEach((msg) => {
