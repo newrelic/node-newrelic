@@ -239,6 +239,7 @@ function createMetricAggregatorForTests() {
       mapper: mapper,
       normalizer: normalizer
     },
-    {}
+    {},
+    { add() {} }
   )
 }

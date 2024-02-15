@@ -44,7 +44,6 @@ tap.test('OpenAI instrumentation - chat completions', (t) => {
       })
 
       test.notOk(results.headers, 'should remove response headers from user result')
-      test.notOk(results.api_key, 'should remove api_key from user result')
       test.equal(results.choices[0].message.content, '1 plus 2 is 3.')
 
       test.assertSegments(
@@ -64,7 +63,9 @@ tap.test('OpenAI instrumentation - chat completions', (t) => {
         messages: [{ role: 'user', content: 'You are a mathematician.' }]
       })
 
-      const metrics = agent.metrics.getOrCreateMetric(`Nodejs/ML/OpenAI/${pkgVersion}`)
+      const metrics = agent.metrics.getOrCreateMetric(
+        `Supportability/Nodejs/ML/OpenAI/${pkgVersion}`
+      )
       t.equal(metrics.callCount > 0, true)
 
       tx.end()
@@ -122,7 +123,6 @@ tap.test('OpenAI instrumentation - chat completions', (t) => {
           res += chunk.choices[0]?.delta?.content
         }
         test.notOk(chunk.headers, 'should remove response headers from user result')
-        test.notOk(chunk.api_key, 'should remove api_key from user result')
         test.equal(chunk.choices[0].message.role, 'assistant')
         const expectedRes = responses.get(content)
         test.equal(chunk.choices[0].message.content, expectedRes.streamData)

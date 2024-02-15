@@ -318,10 +318,14 @@ tap.test('Errors', (t) => {
   t.test('ErrorCollector', (t) => {
     t.autoend()
     let metrics = null
+    let collector = null
+    let harvester = null
     let errorCollector = null
 
     t.beforeEach(() => {
       metrics = new Metrics(5, {}, {})
+      collector = {}
+      harvester = { add() {} }
 
       errorCollector = new ErrorCollector(
         agent.config,
@@ -331,7 +335,8 @@ tap.test('Errors', (t) => {
             transport: null,
             limit: 20
           },
-          {}
+          collector,
+          harvester
         ),
         new ErrorEventAggregator(
           {
@@ -339,8 +344,11 @@ tap.test('Errors', (t) => {
             transport: null,
             limit: 20
           },
-          {},
-          metrics
+          {
+            collector,
+            metrics,
+            harvester
+          }
         ),
         metrics
       )
@@ -348,6 +356,8 @@ tap.test('Errors', (t) => {
 
     t.afterEach(() => {
       errorCollector = null
+      harvester = null
+      collector = null
       metrics = null
     })
 
@@ -368,6 +378,9 @@ tap.test('Errors', (t) => {
     t.test('should not gather application errors if it is switched off by user config', (t) => {
       const error = new Error('this error will never be seen')
       agent.config.error_collector.enabled = false
+      t.teardown(() => {
+        agent.config.error_collector.enabled = true
+      })
 
       const errorTraces = getErrorTraces(errorCollector)
       t.equal(errorTraces.length, 0)
@@ -376,13 +389,15 @@ tap.test('Errors', (t) => {
 
       t.equal(errorTraces.length, 0)
 
-      agent.config.error_collector.enabled = true
       t.end()
     })
 
     t.test('should not gather user errors if it is switched off by user config', (t) => {
       const error = new Error('this error will never be seen')
       agent.config.error_collector.enabled = false
+      t.teardown(() => {
+        agent.config.error_collector.enabled = true
+      })
 
       const errorTraces = getErrorTraces(errorCollector)
       t.equal(errorTraces.length, 0)
@@ -391,13 +406,15 @@ tap.test('Errors', (t) => {
 
       t.equal(errorTraces.length, 0)
 
-      agent.config.error_collector.enabled = true
       t.end()
     })
 
     t.test('should not gather errors if it is switched off by server config', (t) => {
       const error = new Error('this error will never be seen')
       agent.config.collect_errors = false
+      t.teardown(() => {
+        agent.config.collect_errors = true
+      })
 
       const errorTraces = getErrorTraces(errorCollector)
       t.equal(errorTraces.length, 0)
@@ -406,7 +423,6 @@ tap.test('Errors', (t) => {
 
       t.equal(errorTraces.length, 0)
 
-      agent.config.collect_errors = true
       t.end()
     })
 

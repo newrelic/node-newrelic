@@ -43,7 +43,6 @@ tap.test('OpenAI instrumentation - embedding', (t) => {
       })
 
       test.notOk(results.headers, 'should remove response headers from user result')
-      test.notOk(results.api_key, 'should remove api_key from user result')
       test.equal(results.model, 'text-embedding-ada-002-v2')
 
       test.assertSegments(
@@ -66,7 +65,9 @@ tap.test('OpenAI instrumentation - embedding', (t) => {
         model: 'text-embedding-ada-002'
       })
 
-      const metrics = agent.metrics.getOrCreateMetric(`Nodejs/ML/OpenAI/${pkgVersion}`)
+      const metrics = agent.metrics.getOrCreateMetric(
+        `Supportability/Nodejs/ML/OpenAI/${pkgVersion}`
+      )
       test.equal(metrics.callCount > 0, true)
 
       tx.end()
@@ -96,7 +97,6 @@ tap.test('OpenAI instrumentation - embedding', (t) => {
         'ingest_source': 'Node',
         'request.model': 'text-embedding-ada-002',
         'duration': tx.trace.root.children[0].getDurationInMillis(),
-        'api_key_last_four_digits': 'sk--key',
         'response.organization': 'new-relic-nkmd8b',
         'response.usage.total_tokens': 6,
         'response.usage.prompt_tokens': 6,

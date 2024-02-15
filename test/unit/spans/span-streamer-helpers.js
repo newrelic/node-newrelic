@@ -68,6 +68,7 @@ helpers.createMetricAggregator = function createMetricAggregator() {
       mapper: mapper,
       normalizer: normalizer
     },
-    {}
+    {},
+    { add() {} }
   )
 }

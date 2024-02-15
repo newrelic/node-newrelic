@@ -242,7 +242,9 @@ To [all contributors](https://github.com/newrelic/node-newrelic/graphs/contribut
 
 ## License
 
-The Node.js agent is licensed under the [Apache 2.0](https://apache.org/licenses/LICENSE-2.0.txt) License.
+Except as noted below, the Node.js agent is licensed under the [Apache 2.0](https://apache.org/licenses/LICENSE-2.0.txt) License.
+
+The New Relic [security agent](https://github.com/newrelic/csec-node-agent) is licensed under the New Relic Software License v1.0.  The New Relic security agent module may be integrated like the New Relic Node.js agent.
 
 The Node.js agent also uses source code from third-party libraries. You can find full details on which libraries are used and the terms under which they are licensed in [the third-party notices document](https://github.com/newrelic/node-newrelic/blob/main/THIRD_PARTY_NOTICES.md).
 

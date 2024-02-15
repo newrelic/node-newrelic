@@ -45,7 +45,7 @@ test('Collector API should send metrics to staging-collector.newrelic.com', (t) 
 
     const payload = [agent.config.run_id, metrics.started / 1000, Date.now() / 1000, metrics]
 
-    api.metric_data(payload, function (error, command) {
+    api.send('metric_data', payload, function (error, command) {
       t.notOk(error, 'sent metrics without error')
       t.ok(command, 'got a response')
 

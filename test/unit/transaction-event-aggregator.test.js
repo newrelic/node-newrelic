@@ -5,6 +5,7 @@
 
 'use strict'
 const tap = require('tap')
+const sinon = require('sinon')
 const TransactionEventAggregator = require('../../lib/transaction/transaction-event-aggregator')
 const Metrics = require('../../lib/metrics')
 
@@ -14,8 +15,8 @@ const EXPECTED_METHOD = 'analytic_event_data'
 const SPLIT_THRESHOLD = 3
 
 function beforeEach(t) {
-  const fakeCollectorApi = {}
-  fakeCollectorApi[EXPECTED_METHOD] = () => {}
+  const fakeCollectorApi = { send: sinon.stub() }
+  const fakeHarvester = { add: sinon.stub() }
 
   t.context.eventAggregator = new TransactionEventAggregator(
     {
@@ -23,8 +24,11 @@ function beforeEach(t) {
       limit: LIMIT,
       splitThreshold: SPLIT_THRESHOLD
     },
-    fakeCollectorApi,
-    new Metrics(5, {}, {})
+    {
+      collector: fakeCollectorApi,
+      harvester: fakeHarvester,
+      metrics: new Metrics(5, {}, {})
+    }
   )
   t.context.fakeCollectorApi = fakeCollectorApi
 }
@@ -105,12 +109,12 @@ tap.test('Transaction Event Aggregator - when data over split threshold', (t) =>
     const { eventAggregator, fakeCollectorApi } = t.context
     const payloads = []
 
-    fakeCollectorApi[EXPECTED_METHOD] = (payload, callback) => {
+    fakeCollectorApi.send.callsFake((_method, payload, callback) => {
       payloads.push(payload)
 
       // Needed for both to invoke
       callback(null, { retainData: false })
-    }
+    })
 
     eventAggregator.send()
 
@@ -140,9 +144,9 @@ tap.test('Transaction Event Aggregator - when data over split threshold', (t) =>
     const { eventAggregator, fakeCollectorApi } = t.context
     const originalData = eventAggregator._getMergeData()
 
-    fakeCollectorApi[EXPECTED_METHOD] = (payload, callback) => {
+    fakeCollectorApi.send.callsFake((_method, _payload, callback) => {
       callback(null, { retainData: true })
-    }
+    })
 
     eventAggregator.send()
 
@@ -158,9 +162,9 @@ tap.test('Transaction Event Aggregator - when data over split threshold', (t) =>
 
   t.test('should not merge when transport indicates not to retain', (t) => {
     const { eventAggregator, fakeCollectorApi } = t.context
-    fakeCollectorApi[EXPECTED_METHOD] = (payload, callback) => {
+    fakeCollectorApi.send.callsFake((_method, _payload, callback) => {
       callback(null, { retainData: false })
-    }
+    })
 
     eventAggregator.send()
 
@@ -174,7 +178,7 @@ tap.test('Transaction Event Aggregator - when data over split threshold', (t) =>
     const { eventAggregator, fakeCollectorApi } = t.context
     let payloadCount = 0
     let payloadToRetain = null
-    fakeCollectorApi[EXPECTED_METHOD] = (payload, callback) => {
+    fakeCollectorApi.send.callsFake((_method, payload, callback) => {
       payloadCount++
 
       const shouldRetain = payloadCount > 1
@@ -183,7 +187,7 @@ tap.test('Transaction Event Aggregator - when data over split threshold', (t) =>
       }
 
       callback(null, { retainData: shouldRetain })
-    }
+    })
 
     eventAggregator.send()
 
@@ -204,9 +208,9 @@ tap.test('Transaction Event Aggregator - when data over split threshold', (t) =>
 
     eventAggregator.once(expectedStartEmit, t.end)
 
-    fakeCollectorApi[EXPECTED_METHOD] = (payload, callback) => {
+    fakeCollectorApi.send.callsFake((_method, _payload, callback) => {
       callback(null, { retainData: false })
-    }
+    })
 
     eventAggregator.send()
   })

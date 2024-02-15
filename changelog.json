@@ -2,6 +2,31 @@
   "repository": "newrelic/node-newrelic",
   "entries": [
     {
+      "version": "11.10.4",
+      "changes": {
+        "security": [],
+        "bugfixes": [
+          "Resolved application logs getting blocked when an excessive payload is encountered",
+          "Updated Shim to properly calculate the _moduleRoot on windows environments"
+        ],
+        "features": []
+      }
+    },
+    {
+      "version": "11.10.3",
+      "changes": {
+        "security": [],
+        "bugfixes": [
+          "Updated grpc-js instrumentation to properly track errors and end transactions"
+        ],
+        "features": [
+          "Add vectorsearch entities",
+          "Add message entities for LangChain",
+          "Add feature flag for LangChain instrumentation"
+        ]
+      }
+    },
+    {
       "version": "11.10.2",
       "changes": {
         "security": [],

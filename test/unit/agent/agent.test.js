@@ -203,7 +203,7 @@ tap.test('when forcing transaction ignore status', (t) => {
   })
 })
 
-tap.test('#startAggregators should start all aggregators', (t) => {
+tap.test('#harvest.start should start all aggregators', (t) => {
   // Load agent with default 'stopped' state
   const agent = helper.loadMockedAgent(null, false)
   agent.config.application_logging.forwarding.enabled = true
@@ -212,7 +212,7 @@ tap.test('#startAggregators should start all aggregators', (t) => {
     helper.unloadAgent(agent)
   })
 
-  agent.startAggregators()
+  agent.harvester.start()
 
   t.ok(agent.traces.sendTimer)
   t.ok(agent.errors.traceAggregator.sendTimer)
@@ -225,7 +225,7 @@ tap.test('#startAggregators should start all aggregators', (t) => {
   t.end()
 })
 
-tap.test('#stopAggregators should stop all aggregators', (t) => {
+tap.test('#harvesters.stop should stop all aggregators', (t) => {
   // Load agent with default 'stopped' state
   const agent = helper.loadMockedAgent(null, false)
   agent.config.application_logging.forwarding.enabled = true
@@ -234,8 +234,8 @@ tap.test('#stopAggregators should stop all aggregators', (t) => {
     helper.unloadAgent(agent)
   })
 
-  agent.startAggregators()
-  agent.stopAggregators()
+  agent.harvester.start()
+  agent.harvester.stop()
 
   t.notOk(agent.traces.sendTimer)
   t.notOk(agent.errors.traceAggregator.sendTimer)
@@ -254,14 +254,14 @@ tap.test('#onConnect should reconfigure all the aggregators', (t) => {
   // Load agent with default 'stopped' state
   const agent = helper.loadMockedAgent(null, false)
   agent.config.application_logging.forwarding.enabled = true
+  // mock out the base reconfigure method
+  const proto = agent.traces.__proto__.__proto__.__proto__
+  sinon.stub(proto, 'reconfigure')
 
   t.teardown(() => {
     helper.unloadAgent(agent)
+    proto.reconfigure.restore()
   })
-
-  // mock out the base reconfigure method
-  const proto = agent.traces.__proto__.__proto__.__proto__
-  const mock = sinon.mock(proto)
 
   agent.config.event_harvest_config = {
     report_period_ms: 5000,
@@ -269,9 +269,8 @@ tap.test('#onConnect should reconfigure all the aggregators', (t) => {
       span_event_data: 1
     }
   }
-  mock.expects('reconfigure').exactly(EXPECTED_AGG_COUNT)
   agent.onConnect(false, () => {
-    mock.verify()
+    t.equal(proto.reconfigure.callCount, EXPECTED_AGG_COUNT)
 
     t.end()
   })
@@ -505,16 +504,11 @@ tap.test('initial harvest', (t) => {
   })
 
   t.test('should start aggregators after initial harvest', (t) => {
-    let aggregatorsStarted = false
-
-    agent.startAggregators = () => {
-      aggregatorsStarted = true
-    }
+    sinon.stub(agent.harvester, 'start')
 
     agent.start(() => {
       setTimeout(() => {
-        t.ok(aggregatorsStarted)
-
+        t.equal(agent.harvester.start.callCount, 1)
         t.ok(redirect.isDone())
         t.ok(connect.isDone())
         t.ok(settings.isDone())
@@ -1278,6 +1272,59 @@ tap.test('getNRLinkingMetadata', (t) => {
     const nrLinkingMeta = agent.getNRLinkingMetadata()
     const expectedLinkingMeta = ` NR-LINKING||${agent.config.getHostnameSafe()}|||New%20Relic%20for%20Node.js%20tests|`
     t.equal(nrLinkingMeta, expectedLinkingMeta, 'NR-LINKING metadata should be properly formatted')
+    t.end()
+  })
+})
+
+tap.test('_reset*', (t) => {
+  t.autoend()
+
+  t.beforeEach(() => {
+    const agent = helper.loadMockedAgent()
+    const sandbox = sinon.createSandbox()
+    sandbox.stub(agent.queries, 'clear')
+    sandbox.stub(agent.errors, 'clearAll')
+    sandbox.stub(agent.errors.traceAggregator, 'reconfigure')
+    sandbox.stub(agent.errors.eventAggregator, 'reconfigure')
+    sandbox.stub(agent.transactionEventAggregator, 'clear')
+    sandbox.stub(agent.customEventAggregator, 'clear')
+
+    t.context.agent = agent
+    t.context.sandbox = sandbox
+  })
+
+  t.afterEach(() => {
+    helper.unloadAgent(t.context.agent)
+    t.context.sandbox.restore()
+  })
+
+  t.test('should clear queries on _resetQueries', (t) => {
+    const { agent } = t.context
+    agent._resetQueries()
+    t.equal(agent.queries.clear.callCount, 1)
+    t.end()
+  })
+
+  t.test('should clear all errors and reconfigure error traces and events on _resetErrors', (t) => {
+    const { agent } = t.context
+    agent._resetErrors()
+    t.equal(agent.errors.clearAll.callCount, 1)
+    t.equal(agent.errors.traceAggregator.reconfigure.callCount, 1)
+    t.equal(agent.errors.eventAggregator.reconfigure.callCount, 1)
+    t.end()
+  })
+
+  t.test('should clear transaction events on _resetEvents', (t) => {
+    const { agent } = t.context
+    agent._resetEvents()
+    t.equal(agent.transactionEventAggregator.clear.callCount, 1)
+    t.end()
+  })
+
+  t.test('should clear custom events on _resetCustomEvents', (t) => {
+    const { agent } = t.context
+    agent._resetCustomEvents()
+    t.equal(agent.customEventAggregator.clear.callCount, 1)
     t.end()
   })
 })
