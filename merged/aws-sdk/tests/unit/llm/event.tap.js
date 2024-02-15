@@ -26,7 +26,8 @@ tap.beforeEach((t) => {
               get(key) {
                 t.equal(key, TRANS_SCOPE)
                 return {
-                  ['llm.conversation_id']: 'conversation-1'
+                  ['llm.conversation_id']: 'conversation-1',
+                  omit: 'me'
                 }
               }
             }
@@ -67,6 +68,8 @@ tap.test('create creates a new instance', async (t) => {
   t.equal(event['response.model'], 'model-1')
   t.equal(event['request.model'], 'model-1')
   t.equal(event['request.max_tokens'], null)
+  t.equal(event['llm.conversation_id'], 'conversation-1')
+  t.equal(event.omit, undefined)
 })
 
 tap.test('serializes the event', (t) => {

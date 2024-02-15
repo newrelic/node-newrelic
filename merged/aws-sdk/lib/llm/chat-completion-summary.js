@@ -23,9 +23,8 @@ class LlmChatCompletionSummary extends LlmEvent {
   constructor(params = defaultParams) {
     super(params)
 
-    const { agent, segment, isError } = params
+    const { segment, isError } = params
     this.error = isError
-    this.conversation_id = this.conversationId(agent)
     this.duration = segment.getDurationInMillis()
     this['request.max_tokens'] = this.bedrockCommand.maxTokens
 

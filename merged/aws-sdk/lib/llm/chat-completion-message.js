@@ -39,10 +39,9 @@ class LlmChatCompletionMessage extends LlmEvent {
     params = Object.assign({}, defaultParams, params)
     super(params)
 
-    const { agent, content, isResponse, index, completionId } = params
+    const { content, isResponse, index, completionId } = params
 
     this.is_response = isResponse
-    this.conversation_id = this.conversationId(agent)
     this.completion_id = completionId
     this.sequence = index
     this.content = content

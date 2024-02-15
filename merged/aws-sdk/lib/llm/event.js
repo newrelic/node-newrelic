@@ -59,6 +59,7 @@ class LlmEvent {
     this.transaction_id = segment.transaction.id
     this.trace_id = segment.transaction.traceId
     this.request_id = this.bedrockResponse.requestId
+    this.metadata = agent
 
     this['response.model'] = this.bedrockCommand.modelId
     this['request.model'] = this.bedrockCommand.modelId
@@ -66,18 +67,21 @@ class LlmEvent {
   }
 
   /**
-   * Retrieve the conversation identifier from the custom attributes
-   * stored in the current transaction.
+   * Pull user set `llm.*` attributes from the current transaction and
+   * add them to the event.
    *
    * @param {object} agent The New Relic agent that provides access to the
    * transaction.
-   *
-   * @returns {string}
    */
-  conversationId(agent) {
+  set metadata(agent) {
     const tx = agent.tracer.getTransaction()
-    const attrs = tx?.trace?.custom.get(DESTINATIONS.TRANS_SCOPE)
-    return attrs?.['llm.conversation_id']
+    const attrs = tx?.trace?.custom.get(DESTINATIONS.TRANS_SCOPE) || {}
+    for (const [k, v] of Object.entries(attrs)) {
+      if (k.startsWith('llm.') === false) {
+        continue
+      }
+      this[k] = v
+    }
   }
 
   /**

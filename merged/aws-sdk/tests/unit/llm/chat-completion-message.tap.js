@@ -75,7 +75,7 @@ tap.beforeEach((t) => {
 tap.test('create creates a non-response instance', async (t) => {
   const event = new LlmChatCompletionMessage(t.context)
   t.equal(event.is_response, false)
-  t.equal(event.conversation_id, 'conversation-1')
+  t.equal(event['llm.conversation_id'], 'conversation-1')
   t.equal(event.completion_id, 'completion-1')
   t.equal(event.sequence, 0)
   t.equal(event.content, 'who are you')
@@ -89,7 +89,7 @@ tap.test('create creates a titan response instance', async (t) => {
   t.context.isResponse = true
   const event = new LlmChatCompletionMessage(t.context)
   t.equal(event.is_response, true)
-  t.equal(event.conversation_id, 'conversation-1')
+  t.equal(event['llm.conversation_id'], 'conversation-1')
   t.equal(event.completion_id, 'completion-1')
   t.equal(event.sequence, 0)
   t.equal(event.content, 'a response')
@@ -104,7 +104,7 @@ tap.test('create creates a cohere response instance', async (t) => {
   t.context.bedrockResponse.id = 42
   const event = new LlmChatCompletionMessage(t.context)
   t.equal(event.is_response, true)
-  t.equal(event.conversation_id, 'conversation-1')
+  t.equal(event['llm.conversation_id'], 'conversation-1')
   t.equal(event.completion_id, 'completion-1')
   t.equal(event.sequence, 0)
   t.equal(event.content, 'a response')
@@ -119,7 +119,7 @@ tap.test('create creates a ai21 response instance when response.id is undefined'
   delete t.context.bedrockResponse.id
   const event = new LlmChatCompletionMessage(t.context)
   t.equal(event.is_response, true)
-  t.equal(event.conversation_id, 'conversation-1')
+  t.equal(event['llm.conversation_id'], 'conversation-1')
   t.equal(event.completion_id, 'completion-1')
   t.equal(event.sequence, 0)
   t.equal(event.content, 'a response')

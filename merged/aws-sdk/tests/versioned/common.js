@@ -130,7 +130,7 @@ function assertChatCompletionSummary({
     'id': /[\w]{8}-[\w]{4}-[\w]{4}-[\w]{4}-[\w]{12}/,
     'appName': 'New Relic for Node.js tests',
     'request_id': 'eda0760a-c3f0-4fc1-9a1e-75559d642866',
-    'conversation_id': 'convo-id',
+    'llm.conversation_id': 'convo-id',
     'trace_id': tx.traceId,
     'span_id': tx.trace.root.children[0].id,
     'transaction_id': tx.id,

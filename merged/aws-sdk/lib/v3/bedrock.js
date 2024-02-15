@@ -35,31 +35,11 @@ function shouldSkipInstrumentation(config) {
  * @param {Agent} params.agent NR agent instance
  * @param {string} params.type LLM event type
  * @param {object} params.msg LLM event
- * @param {object} params.tx The current transaction.
  */
-function recordEvent({ agent, type, msg, tx }) {
+function recordEvent({ agent, type, msg }) {
   agent.metrics.getOrCreateMetric(TRACKING_METRIC).incrementCallCount()
-  setMetadata({ tx, msg })
   msg.serialize()
   agent.customEventAggregator.add([{ type, timestamp: Date.now() }, msg])
-}
-
-/**
- * Decorate the outgoing message with metadata that has been set by the
- * customer via `api.addCustomAttribute()`.
- *
- * @param {object} params Function parameters.
- * @param {object} params.tx The current transaction.
- * @param {object} params.msg The outgoing message to decorate.
- */
-function setMetadata({ tx, msg }) {
-  const CONVERSATION_ID = 'llm.conversation_id'
-  const attrs = tx.trace?.custom?.get(DESTINATIONS.TRANS_SCOPE) || {}
-  for (const [key, value] of Object.entries(attrs)) {
-    if (key.startsWith('llm.') && key !== CONVERSATION_ID) {
-      msg[key] = value
-    }
-  }
 }
 
 /**
@@ -78,7 +58,7 @@ function assignIdsToTx({ tx, msg, responseId }) {
     tracker.get(responseId) ??
     new LlmTrackedIds({
       requestId: msg.request_id,
-      conversationId: msg.conversation_id
+      conversationId: msg['llm.conversation_id']
     })
   trackedIds.message_ids.push(msg.id)
   tracker.set(responseId, trackedIds)
@@ -115,7 +95,7 @@ function recordChatCompletionMessages({ agent, segment, bedrockCommand, bedrockR
     completionId: summary.id
   })
   assignIdsToTx({ tx, responseId: bedrockResponse.requestId, msg })
-  recordEvent({ agent, type: 'LlmChatCompletionMessage', msg, tx })
+  recordEvent({ agent, type: 'LlmChatCompletionMessage', msg })
 
   bedrockResponse.completions.forEach((content, index) => {
     const chatCompletionMessage = new LlmChatCompletionMessage({
@@ -129,10 +109,10 @@ function recordChatCompletionMessages({ agent, segment, bedrockCommand, bedrockR
       completionId: summary.id
     })
     assignIdsToTx({ tx, responseId: bedrockResponse.requestId, msg: chatCompletionMessage })
-    recordEvent({ agent, type: 'LlmChatCompletionMessage', msg: chatCompletionMessage, tx })
+    recordEvent({ agent, type: 'LlmChatCompletionMessage', msg: chatCompletionMessage })
   })
 
-  recordEvent({ agent, type: 'LlmChatCompletionSummary', msg: summary, tx })
+  recordEvent({ agent, type: 'LlmChatCompletionSummary', msg: summary })
 
   if (err) {
     const llmError = new LlmError({ bedrockResponse, err, summary })
@@ -159,7 +139,7 @@ function recordEmbeddingMessage({ agent, segment, bedrockCommand, bedrockRespons
     isError: err !== null
   })
 
-  recordEvent({ agent, type: 'LlmEmbedding', msg: embedding, tx: agent.getTransaction() })
+  recordEvent({ agent, type: 'LlmEmbedding', msg: embedding })
   if (err) {
     const llmError = new LlmError({ bedrockResponse, err, embedding })
     agent.errors.add(segment.transaction, err, llmError)
