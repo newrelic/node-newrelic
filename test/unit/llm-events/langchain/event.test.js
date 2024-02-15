@@ -14,7 +14,10 @@ tap.beforeEach((t) => {
       custom: {
         get() {
           return {
-            'llm.conversation_id': 'test-conversation'
+            'llm.conversation_id': 'test-conversation',
+            'llm.foo': 'bar',
+            'llm.bar': 'baz',
+            'customKey': 'customValue'
           }
         }
       }
@@ -51,7 +54,7 @@ tap.test('constructs default instance', async (t) => {
   t.match(event, {
     id: /[a-z0-9-]{36}/,
     appName: 'test-app',
-    conversation_id: 'test-conversation',
+    ['llm.conversation_id']: 'test-conversation',
     span_id: 'segment-1',
     request_id: 'run-1',
     transaction_id: 'tx-1',
@@ -75,9 +78,16 @@ tap.test('params.virtual is handled correctly', async (t) => {
   }
 })
 
-tap.test('metadata is parsed correctly', async (t) => {
+tap.test('langchainMeta is parsed correctly', async (t) => {
   const event = new LangChainEvent(t.context)
-  event.metadata = 'foobar'
+  event.langchainMeta = 'foobar'
   t.same(event['metadata.foo'], 'foo')
   t.equal(Object.keys(event).filter((k) => k.startsWith('metadata.')).length, 1)
+})
+
+tap.test('metadata is parsed correctly', async (t) => {
+  const event = new LangChainEvent(t.context)
+  t.equal(event['llm.foo'], 'bar')
+  t.equal(event['llm.bar'], 'baz')
+  t.notOk(event.customKey)
 })

@@ -11,6 +11,8 @@ module.exports = {
   rules: {
     'consistent-return': 'off',
     'jsdoc/require-jsdoc': 'off',
+    'jsdoc/tag-lines': 'off',
+    'jsdoc/check-types': 'off',
     'jsdoc/no-undefined-types': [
       'warn',
       {

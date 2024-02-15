@@ -16,7 +16,6 @@ const res = {
     'x-ratelimit-remaining-requests': '10'
   },
   model: 'gpt-3.5-turbo-0613',
-  api_key: 'sk-1234567890',
   usage: {
     total_tokens: '100',
     prompt_tokens: '10'
@@ -60,7 +59,6 @@ function getExpectedResult(tx, event, type, completionId) {
   const resKeys = {
     'duration': trace.children[0].getDurationInMillis(),
     'request.model': 'gpt-3.5-turbo-0613',
-    'api_key_last_four_digits': 'sk-7890',
     'response.organization': 'new-relic',
     'response.usage.total_tokens': '100',
     'response.usage.prompt_tokens': '10',
@@ -82,7 +80,6 @@ function getExpectedResult(tx, event, type, completionId) {
       expected = {
         ...expected,
         ...resKeys,
-        conversation_id: undefined,
         ['request.max_tokens']: '1000000',
         ['request.temperature']: 'medium-rare',
         ['response.number_of_messages']: 3,
@@ -94,7 +91,6 @@ function getExpectedResult(tx, event, type, completionId) {
     case 'message':
       expected = {
         ...expected,
-        conversation_id: undefined,
         content: 'What is a woodchuck?',
         role: 'inquisitive-kid',
         sequence: 0,

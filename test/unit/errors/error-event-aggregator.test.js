@@ -9,6 +9,7 @@ const tap = require('tap')
 
 const ErrorEventAggregator = require('../../../lib/errors/error-event-aggregator')
 const Metrics = require('../../../lib/metrics')
+const sinon = require('sinon')
 
 const RUN_ID = 1337
 const LIMIT = 5
@@ -20,12 +21,18 @@ tap.test('Error Event Aggregator', (t) => {
   t.beforeEach(() => {
     errorEventAggregator = new ErrorEventAggregator(
       {
+        config: { error_collector: { enabled: true, capture_events: true } },
         runId: RUN_ID,
-        limit: LIMIT
+        limit: LIMIT,
+        enabled: (config) => config.error_collector.enabled && config.error_collector.capture_events
       },
-      {},
-      new Metrics(5, {}, {})
+      {
+        collector: {},
+        metrics: new Metrics(5, {}, {}),
+        harvester: { add: sinon.stub() }
+      }
     )
+    sinon.stub(errorEventAggregator, 'stop')
   })
 
   t.afterEach(() => {
@@ -65,5 +72,30 @@ tap.test('Error Event Aggregator', (t) => {
 
     t.notOk(payload)
     t.end()
+  })
+  ;[
+    {
+      callCount: 1,
+      msg: 'should stop aggregator',
+      config: { error_collector: { enabled: false, capture_events: true } }
+    },
+    {
+      callCount: 1,
+      msg: 'should stop aggregator',
+      config: { error_collector: { enabled: true, capture_events: false } }
+    },
+    {
+      callCount: 0,
+      msg: 'should not stop aggregator',
+      config: { error_collector: { enabled: true, capture_events: true } }
+    }
+  ].forEach(({ config, msg, callCount }) => {
+    t.test(`${msg} if ${JSON.stringify(config)}`, (t) => {
+      const newConfig = { getAggregatorConfig: sinon.stub(), run_id: 1, ...config }
+      t.ok(errorEventAggregator.enabled)
+      errorEventAggregator.reconfigure(newConfig)
+      t.equal(errorEventAggregator.stop.callCount, callCount, msg)
+      t.end()
+    })
   })
 })

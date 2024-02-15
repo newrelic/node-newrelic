@@ -8,6 +8,7 @@
 const tap = require('tap')
 
 const ErrorTraceAggregator = require('../../../lib/errors/error-trace-aggregator')
+const sinon = require('sinon')
 
 const RUN_ID = 1337
 const LIMIT = 5
@@ -17,10 +18,17 @@ tap.test('Error Trace Aggregator', (t) => {
   let errorTraceAggregator
 
   t.beforeEach(() => {
-    errorTraceAggregator = new ErrorTraceAggregator({
-      runId: RUN_ID,
-      limit: LIMIT
-    })
+    errorTraceAggregator = new ErrorTraceAggregator(
+      {
+        config: { collect_errors: true, error_collector: { enabled: true } },
+        runId: RUN_ID,
+        limit: LIMIT,
+        enabled: (config) => config.error_collector.enabled && config.collect_errors
+      },
+      {},
+      { add: sinon.stub() }
+    )
+    sinon.stub(errorTraceAggregator, 'stop')
   })
 
   t.afterEach(() => {
@@ -153,5 +161,30 @@ tap.test('Error Trace Aggregator', (t) => {
       'after clear(), there should be nothing in the aggregator'
     )
     t.end()
+  })
+  ;[
+    {
+      callCount: 1,
+      msg: 'should stop aggregator',
+      config: { collect_errors: true, error_collector: { enabled: false } }
+    },
+    {
+      callCount: 1,
+      msg: 'should stop aggregator',
+      config: { collect_errors: false, error_collector: { enabled: true } }
+    },
+    {
+      callCount: 0,
+      msg: 'should not stop aggregator',
+      config: { collect_errors: true, error_collector: { enabled: true } }
+    }
+  ].forEach(({ config, msg, callCount }) => {
+    t.test(`${msg} if ${JSON.stringify(config)}`, (t) => {
+      const newConfig = { getAggregatorConfig: sinon.stub(), run_id: 1, ...config }
+      t.ok(errorTraceAggregator.enabled)
+      errorTraceAggregator.reconfigure(newConfig)
+      t.equal(errorTraceAggregator.stop.callCount, callCount, msg)
+      t.end()
+    })
   })
 })

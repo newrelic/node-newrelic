@@ -47,7 +47,8 @@ const createMetricAggregatorForTests = () => {
       mapper: mapper,
       normalizer: normalizer
     },
-    {}
+    {},
+    { add() {} }
   )
 }
 

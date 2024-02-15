@@ -41,27 +41,8 @@ tap.test('LlmChatCompletionSummary', (t) => {
     })
   })
 
-  t.test('should set conversation_id from custom attributes', (t) => {
-    const api = helper.getAgentApi()
-    const conversationId = 'convo-id'
-    helper.runInTransaction(agent, () => {
-      api.addCustomAttribute('llm.conversation_id', conversationId)
-      const chatSummaryEvent = new LlmChatCompletionSummary({
-        agent,
-        segment: null,
-        request: {},
-        response: {}
-      })
-      t.equal(chatSummaryEvent.conversation_id, conversationId)
-      t.end()
-    })
-  })
-
   t.test('should set error to true', (t) => {
-    const api = helper.getAgentApi()
-    const conversationId = 'convo-id'
     helper.runInTransaction(agent, () => {
-      api.addCustomAttribute('llm.conversation_id', conversationId)
       const chatSummaryEvent = new LlmChatCompletionSummary({
         agent,
         segment: null,
@@ -70,6 +51,28 @@ tap.test('LlmChatCompletionSummary', (t) => {
         withError: true
       })
       t.equal(true, chatSummaryEvent.error)
+      t.end()
+    })
+  })
+
+  t.test('should set `llm.` attributes from custom attributes', (t) => {
+    const api = helper.getAgentApi()
+    const conversationId = 'convo-id'
+    helper.runInTransaction(agent, () => {
+      api.addCustomAttribute('llm.conversation_id', conversationId)
+      api.addCustomAttribute('llm.foo', 'bar')
+      api.addCustomAttribute('llm.bar', 'baz')
+      api.addCustomAttribute('rando-key', 'rando-value')
+      const chatSummaryEvent = new LlmChatCompletionSummary({
+        agent,
+        segment: null,
+        request: {},
+        response: {}
+      })
+      t.equal(chatSummaryEvent['llm.conversation_id'], conversationId)
+      t.equal(chatSummaryEvent['llm.foo'], 'bar')
+      t.equal(chatSummaryEvent['llm.bar'], 'baz')
+      t.notOk(chatSummaryEvent['rando-key'])
       t.end()
     })
   })

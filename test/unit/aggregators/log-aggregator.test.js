@@ -21,7 +21,10 @@ test('Log Aggregator', (t) => {
 
   t.beforeEach(() => {
     agentStub = {
-      getTransaction: sinon.stub()
+      getTransaction: sinon.stub(),
+      collector: {},
+      metrics: new Metrics(5, {}, {}),
+      harvester: { add: sinon.stub() }
     }
     // Normally this config is set after connect and in the actual
     // code we only use it after connect, but for unit testing
@@ -38,8 +41,6 @@ test('Log Aggregator', (t) => {
         runId: RUN_ID,
         limit: LIMIT
       },
-      {},
-      new Metrics(5, {}, {}),
       agentStub
     )
     log = {

@@ -8,6 +8,7 @@
 const tap = require('tap')
 
 const nock = require('nock')
+const crypto = require('crypto')
 const helper = require('../../lib/agent_helper')
 const CollectorApi = require('../../../lib/collector/api')
 
@@ -74,6 +75,46 @@ tap.test('reportSettings', (t) => {
       t.end()
     })
   })
+
+  t.test('handles excessive payload sizes without blocking subsequent sends', (t) => {
+    // remove the nock to agent_settings from beforeEach to avoid a console.error on afterEach
+    nock.cleanAll()
+    const tstamp = 1_707_756_300_000 // 2024-02-12T11:45:00.000-05:00
+    function log(data) {
+      return JSON.stringify({
+        level: 30,
+        time: tstamp,
+        pid: 17035,
+        hostname: 'test-host',
+        msg: data
+      })
+    }
+
+    const kb512 = log(crypto.randomBytes(524_288).toString('base64'))
+    const mb1 = log(crypto.randomBytes(1_048_576).toString('base64'))
+    const toFind = log('find me')
+
+    let sends = 0
+    const ncontext = nock(URL)
+      .post(helper.generateCollectorPath('log_event_data', RUN_ID))
+      .times(2)
+      .reply(200)
+
+    agent.logs.on('finished log_event_data data send.', () => {
+      sends += 1
+      if (sends === 3) {
+        t.equal(ncontext.isDone(), true)
+        t.end()
+      }
+    })
+
+    agent.logs.add(kb512)
+    agent.logs.send()
+    agent.logs.add(mb1)
+    agent.logs.send()
+    agent.logs.add(toFind)
+    agent.logs.send()
+  })
 })
 
 /**
@@ -86,7 +127,6 @@ tap.test('reportSettings', (t) => {
 const apiMethods = [
   {
     key: 'error_data',
-    errorMsg: 'errors',
     data: [
       [
         0, // timestamp, which is always ignored
@@ -99,7 +139,6 @@ const apiMethods = [
   },
   {
     key: 'error_event_data',
-    errorMsg: 'errors',
     data: [
       [
         {
@@ -126,7 +165,6 @@ const apiMethods = [
   },
   {
     key: 'sql_trace_data',
-    errorMsg: 'queries',
     data: [
       [
         'TestTransaction/Uri/TEST',
@@ -144,7 +182,6 @@ const apiMethods = [
   },
   {
     key: 'analytic_event_data',
-    errorMsg: 'events',
     data: [
       RUN_ID,
       [
@@ -164,7 +201,6 @@ const apiMethods = [
   },
   {
     key: 'metric_data',
-    errorMsg: 'metrics',
     data: {
       toJSON: function () {
         return [
@@ -177,7 +213,6 @@ const apiMethods = [
   },
   {
     key: 'transaction_sample_data',
-    errorMsg: 'traces',
     data: [
       [
         1543864412869,
@@ -193,7 +228,6 @@ const apiMethods = [
   },
   {
     key: 'span_event_data',
-    errorMsg: 'spans',
     data: [
       [
         {
@@ -216,12 +250,10 @@ const apiMethods = [
   },
   {
     key: 'custom_event_data',
-    errorMsg: 'events',
     data: [[{ type: 'my_custom_typ', timestamp: 1543949274921 }, { foo: 'bar' }]]
   },
   {
     key: 'log_event_data',
-    errorMsg: 'logRecords',
     data: [
       {
         logs: [
@@ -240,7 +272,7 @@ const apiMethods = [
     ]
   }
 ]
-apiMethods.forEach(({ key, errorMsg, data }) => {
+apiMethods.forEach(({ key, data }) => {
   tap.test(key, (t) => {
     t.autoend()
 
@@ -252,9 +284,9 @@ apiMethods.forEach(({ key, errorMsg, data }) => {
         helper.unloadAgent(agent)
       })
 
-      collectorApi[key](null, (err) => {
+      collectorApi.send(key, null, (err) => {
         t.ok(err)
-        t.equal(err.message, `must pass ${errorMsg} to send`)
+        t.equal(err.message, `must pass data for ${key} to send`)
 
         t.end()
       })
@@ -269,7 +301,7 @@ apiMethods.forEach(({ key, errorMsg, data }) => {
       })
 
       t.throws(() => {
-        collectorApi[key]([], null)
+        collectorApi.send(key, [], null)
       }, new Error('callback is required'))
       t.end()
     })
@@ -312,7 +344,7 @@ apiMethods.forEach(({ key, errorMsg, data }) => {
       })
 
       t.test('should not error out', (t) => {
-        collectorApi[key](data, (error) => {
+        collectorApi.send(key, data, (error) => {
           t.error(error)
 
           dataEndpoint.done()
@@ -322,7 +354,8 @@ apiMethods.forEach(({ key, errorMsg, data }) => {
       })
 
       t.test('should return retain state', (t) => {
-        collectorApi[key](data, (error, res) => {
+        collectorApi.send(key, data, (error, res) => {
+          t.error(error)
           const command = res
 
           t.equal(command.retainData, false)

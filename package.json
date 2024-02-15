@@ -1,6 +1,6 @@
 {
   "name": "newrelic",
-  "version": "11.10.2",
+  "version": "11.10.4",
   "author": "New Relic Node.js agent team <nodejs@newrelic.com>",
   "license": "Apache-2.0",
   "contributors": [
@@ -195,7 +195,7 @@
     "@grpc/proto-loader": "^0.7.5",
     "@newrelic/aws-sdk": "^7.1.0",
     "@newrelic/koa": "^8.0.1",
-    "@newrelic/security-agent": "0.7.0",
+    "@newrelic/security-agent": "^1.0.1",
     "@newrelic/superagent": "^7.0.1",
     "@tyriar/fibonacci-heap": "^2.0.7",
     "concat-stream": "^2.0.0",
@@ -230,7 +230,7 @@
     "conventional-commits-parser": "^3.2.4",
     "eslint": "^8.24.0",
     "eslint-plugin-disable": "^2.0.1",
-    "eslint-plugin-jsdoc": "^39.3.6",
+    "eslint-plugin-jsdoc": "^48.0.5",
     "eslint-plugin-sonarjs": "^0.18.0",
     "express": "*",
     "git-raw-commits": "^2.0.11",

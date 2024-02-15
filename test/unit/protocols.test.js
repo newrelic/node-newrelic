@@ -18,7 +18,7 @@ tap.test('errors', (t) => {
     agent.config.attributes.enabled = true
     agent.config.run_id = 1
 
-    agent.errors.reconfigure(agent.config)
+    agent.errors.traceAggregator.reconfigure(agent.config)
   })
 
   t.afterEach(() => {

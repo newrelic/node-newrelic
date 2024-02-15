@@ -30,8 +30,11 @@ tap.test('SpanAggregator', (t) => {
         limit: DEFAULT_LIMIT,
         periodMs: DEFAULT_PERIOD
       },
-      {},
-      new Metrics(5, {}, {})
+      {
+        collector: {},
+        metrics: new Metrics(5, {}, {}),
+        harvester: { add() {} }
+      }
     )
     agent = helper.instrumentMockedAgent({
       distributed_tracing: {
@@ -116,8 +119,11 @@ tap.test('SpanAggregator', (t) => {
         limit: 1,
         metricNames: METRIC_NAMES
       },
-      {},
-      metrics
+      {
+        collector: {},
+        metrics,
+        harvester: { add() {} }
+      }
     )
 
     helper.runInTransaction(agent, (tx) => {

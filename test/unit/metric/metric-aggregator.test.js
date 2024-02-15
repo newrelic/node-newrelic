@@ -21,8 +21,8 @@ tap.test('Metric Aggregator', (t) => {
   t.beforeEach((t) => {
     t.context.testClock = sinon.useFakeTimers({ now: EXPECTED_START_SECONDS * 1000 })
 
-    const fakeCollectorApi = {}
-    fakeCollectorApi[EXPECTED_METHOD] = () => {}
+    const fakeCollectorApi = { send: sinon.stub() }
+    const fakeHarvester = { add: sinon.stub() }
 
     t.context.mapper = new MetricMapper()
     t.context.normalizer = new MetricNormalizer({}, 'metric name')
@@ -34,7 +34,8 @@ tap.test('Metric Aggregator', (t) => {
         mapper: t.context.mapper,
         normalizer: t.context.normalizer
       },
-      fakeCollectorApi
+      fakeCollectorApi,
+      fakeHarvester
     )
   })
 
