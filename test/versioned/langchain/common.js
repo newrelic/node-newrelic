@@ -36,7 +36,6 @@ function assertLangChainChatCompletionSummary({ tx, chatSummary, withCallback })
     'tags': 'tag1,tag2',
     'virtual_llm': true,
     ['response.number_of_messages']: 1,
-    'conversation_id': undefined,
     'duration': tx.trace.root.children[0].getDurationInMillis()
   }
 
@@ -59,8 +58,7 @@ function assertLangChainChatCompletionMessages({ tx, chatMsgs, chatSummary, with
     vendor: 'langchain',
     completion_id: chatSummary.id,
     virtual_llm: true,
-    request_id: /[a-f0-9]{36}/,
-    conversation_id: undefined
+    request_id: /[a-f0-9]{36}/
   }
 
   if (!withCallback) {
