@@ -262,6 +262,10 @@ tap.test('OpenAI instrumentation - chat completions', (t) => {
         test.equal(metrics.callCount > 0, true)
         const attributes = tx.trace.attributes.get(DESTINATIONS.TRANS_EVENT)
         test.equal(attributes.llm, true)
+        const streamingDisabled = agent.metrics.getOrCreateMetric(
+          'Supportability/Nodejs/ML/Streaming/Disabled'
+        )
+        test.equal(streamingDisabled.callCount > 0, true)
         tx.end()
         test.end()
       })
