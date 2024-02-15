@@ -5,7 +5,9 @@
 
 'use strict'
 const { Tool } = require('@langchain/core/tools')
-const { makeGetRequestAsync } = require('../../../lib/agent_helper')
+const data = {
+  langchain: 'Langchain is the best!'
+}
 
 module.exports = class TestTool extends Tool {
   static lc_name() {
@@ -19,15 +21,13 @@ module.exports = class TestTool extends Tool {
   constructor(params) {
     super()
     this.baseUrl = params.baseUrl ?? this.baseUrl
+    this.fakeData = data
   }
 
-  async _call(uri) {
-    const url = `${this.baseUrl}/${uri}`
-    const res = await makeGetRequestAsync(url)
-    if (res.statusCode !== 200) {
-      throw new Error('Failed to make request')
+  async _call(key) {
+    if (this.fakeData[key]) {
+      return this.fakeData[key]
     }
-
-    return res.body[this.key] || res.body
+    throw new Error('Failed to retrieve data')
   }
 }

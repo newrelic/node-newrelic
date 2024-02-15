@@ -18,26 +18,17 @@ const config = {
     langchain_instrumentation: true
   }
 }
-const nock = require('nock')
 const baseUrl = 'http://httpbin.org'
 const { DESTINATIONS } = require('../../../lib/config/attribute-filter')
 
 tap.test('Langchain instrumentation - tools', (t) => {
-  t.before(() => {
-    nock.disableNetConnect()
-  })
-
   t.beforeEach((t) => {
-    const content = 'Langchain is the best!'
-    nock(baseUrl).get('/langchain').reply(200, { hello: content })
     t.context.agent = helper.instrumentMockedAgent(config)
     const TestTool = require('./helpers/custom-tool')
     const tool = new TestTool({
       baseUrl
     })
-    tool.key = 'hello'
     t.context.tool = tool
-    t.context.content = content
     t.context.input = 'langchain'
   })
 
@@ -49,10 +40,6 @@ tap.test('Langchain instrumentation - tools', (t) => {
         delete require.cache[key]
       }
     })
-  })
-
-  t.teardown(() => {
-    nock.enableNetConnect()
   })
 
   t.test('should create span on successful tools create', (t) => {
@@ -82,7 +69,7 @@ tap.test('Langchain instrumentation - tools', (t) => {
   })
 
   t.test('should create LlmTool event for every tool.call', (t) => {
-    const { agent, tool, content, input } = t.context
+    const { agent, tool, input } = t.context
     helper.runInTransaction(agent, async (tx) => {
       tool.metadata = { key: 'instance-value', hello: 'world' }
       tool.tags = ['tag1', 'tag2']
@@ -103,7 +90,7 @@ tap.test('Langchain instrumentation - tools', (t) => {
         'metadata.hello': 'world',
         'tags': 'tag1,tag2,tag3',
         input,
-        'output': content,
+        'output': tool.fakeData[input],
         'name': tool.name,
         'description': tool.description,
         'duration': tx.trace.root.children[0].getDurationInMillis(),
