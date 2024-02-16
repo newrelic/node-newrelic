@@ -2784,14 +2784,14 @@ tap.test('Shim', function (t) {
       t.end()
     })
 
-    t.test('should not replace existing keys', function (t) {
+    t.test('should update existing if existing is null', function (t) {
       const obj = { foo: null }
       const defaults = { foo: 1, bar: 2 }
       const defaulted = shim.setDefaults(obj, defaults)
 
       t.equal(obj, defaulted)
       t.not(obj, defaults)
-      t.same(defaulted, { foo: null, bar: 2 })
+      t.same(defaulted, { foo: 1, bar: 2 })
       t.end()
     })
   })
