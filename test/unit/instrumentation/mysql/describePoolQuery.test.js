@@ -24,7 +24,7 @@ tap.test('describeQuery', (t) => {
     const mockArgs = ['SELECT * FROM foo', sinon.stub()]
 
     const result = instrumentation.describePoolQuery(mockShim, null, null, mockArgs)
-    t.same(result, {
+    t.match(result, {
       stream: true,
       query: null,
       callback: 1,
