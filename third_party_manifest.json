@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "Wed Feb 07 2024 12:18:02 GMT-0500 (Eastern Standard Time)",
+  "lastUpdated": "Fri Feb 16 2024 11:39:08 GMT-0500 (Eastern Standard Time)",
   "projectName": "New Relic Node Agent",
   "projectUrl": "https://github.com/newrelic/node-newrelic",
   "includeOptDeps": true,
@@ -145,16 +145,16 @@
       "publisher": "Max Ogden",
       "email": "max@maxogden.com"
     },
-    "https-proxy-agent@7.0.2": {
+    "https-proxy-agent@7.0.3": {
       "name": "https-proxy-agent",
-      "version": "7.0.2",
+      "version": "7.0.3",
       "range": "^7.0.1",
       "licenses": "MIT",
       "repoUrl": "https://github.com/TooTallNate/proxy-agents",
-      "versionedRepoUrl": "https://github.com/TooTallNate/proxy-agents/tree/v7.0.2",
-      "licenseFile": "node_modules/https-proxy-agent/README.md",
-      "licenseUrl": "https://github.com/TooTallNate/proxy-agents/blob/v7.0.2/README.md",
-      "licenseTextSource": "spdx",
+      "versionedRepoUrl": "https://github.com/TooTallNate/proxy-agents/tree/v7.0.3",
+      "licenseFile": "node_modules/https-proxy-agent/LICENSE",
+      "licenseUrl": "https://github.com/TooTallNate/proxy-agents/blob/v7.0.3/LICENSE",
+      "licenseTextSource": "file",
       "publisher": "Nathan Rajlich",
       "email": "nathan@tootallnate.net",
       "url": "http://n8.io/"
@@ -570,15 +570,15 @@
       "publisher": "Andrey Okonetchnikov",
       "email": "andrey@okonet.ru"
     },
-    "lockfile-lint@4.12.1": {
+    "lockfile-lint@4.13.1": {
       "name": "lockfile-lint",
-      "version": "4.12.1",
+      "version": "4.13.1",
       "range": "^4.9.6",
       "licenses": "Apache-2.0",
       "repoUrl": "https://github.com/lirantal/lockfile-lint",
-      "versionedRepoUrl": "https://github.com/lirantal/lockfile-lint/tree/v4.12.1",
+      "versionedRepoUrl": "https://github.com/lirantal/lockfile-lint/tree/v4.13.1",
       "licenseFile": "node_modules/lockfile-lint/LICENSE",
-      "licenseUrl": "https://github.com/lirantal/lockfile-lint/blob/v4.12.1/LICENSE",
+      "licenseUrl": "https://github.com/lirantal/lockfile-lint/blob/v4.13.1/LICENSE",
       "licenseTextSource": "file",
       "publisher": "Liran Tal",
       "email": "liran.tal@gmail.com",
