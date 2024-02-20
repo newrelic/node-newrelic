@@ -47,6 +47,9 @@ tap.beforeEach(async (t) => {
     }
   })
   common.registerInstrumentation(helper)
+  // TODO: cannot set in config as configuration does not exist on agent
+  // just yet. update this when agent is released
+  helper.agent.config.ai_monitoring.streaming = { enabled: true }
   t.context.helper = helper
 
   const bedrock = require('@aws-sdk/client-bedrock-runtime')
@@ -545,6 +548,67 @@ tap.test(`models should properly create errors on stream interruption`, (t) => {
     t.equal(tx.exceptions.length, 1)
     t.equal(events.length, 2)
     t.equal(summary.error, true)
+
+    tx.end()
+    t.end()
+  })
+})
+
+tap.test('should not instrument stream when disabled', (t) => {
+  const modelId = 'amazon.titan-text-express-v1'
+  const { bedrock, client, helper } = t.context
+  helper.agent.config.ai_monitoring.streaming.enabled = false
+  const prompt = `text amazon ultimate question streamed`
+  const input = requests.amazon(prompt, modelId)
+  const command = new bedrock.InvokeModelWithResponseStreamCommand(input)
+
+  const { agent } = helper
+  helper.runInTransaction(async (tx) => {
+    const response = await client.send(command)
+    let chunk = {}
+    let inputCount = null
+    let completion = ''
+    // build up the response to assert it does not get tainted when streaming is disabled
+    for await (const event of response.body) {
+      const obj = JSON.parse(new TextDecoder('utf-8').decode(event.chunk.bytes))
+      chunk = { ...obj }
+      completion += obj.outputText
+      if (obj.inputTextTokenCount) {
+        inputCount = obj.inputTextTokenCount
+      }
+    }
+    chunk.inputTextTokenCount = inputCount
+    chunk.outputText = completion
+    t.same(
+      chunk,
+      {
+        'outputText': '42',
+        'index': 0,
+        'totalOutputTextTokenCount': 75,
+        'completionReason': 'endoftext',
+        'inputTextTokenCount': 13,
+        'amazon-bedrock-invocationMetrics': {
+          inputTokenCount: 8,
+          outputTokenCount: 4,
+          invocationLatency: 3879,
+          firstByteLatency: 3291
+        }
+      },
+      'should not interfere with stream'
+    )
+
+    const events = agent.customEventAggregator.events.toArray()
+    t.equal(events.length, 0, 'should not create Llm events when streaming is disabled')
+    const attributes = tx.trace.attributes.get(DESTINATIONS.TRANS_EVENT)
+    t.equal(attributes.llm, true, 'should assign llm attribute to transaction trace')
+    const metrics = agent.metrics.getOrCreateMetric(
+      `Supportability/Nodejs/ML/Bedrock/${pkgVersion}`
+    )
+    t.equal(metrics.callCount > 0, true, 'should set framework metric')
+    const supportabilityMetrics = agent.metrics.getOrCreateMetric(
+      `Supportability/Nodejs/ML/Streaming/Disabled`
+    )
+    t.equal(supportabilityMetrics.callCount > 0, true, 'should increment streaming disabled metric')
 
     tx.end()
     t.end()

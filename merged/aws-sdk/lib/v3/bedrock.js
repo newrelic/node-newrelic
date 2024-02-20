@@ -16,6 +16,7 @@ const {
 } = require('../llm')
 
 const { DESTINATIONS } = require('../util')
+const AI_PREFIX = 'Supportability/Nodejs/ML'
 
 let TRACKING_METRIC
 
@@ -30,6 +31,21 @@ function shouldSkipInstrumentation(config) {
 }
 
 /**
+ * Helper to determine if streaming is enabled
+ *
+ * @param {object} params to function
+ * @param {string} params.commandName name of command
+ * @param {object} params.config agent configuration
+ * @returns {boolean} if streaming command and `ai_monitoring.streaming.enabled` is truthy
+ */
+function isStreamingEnabled({ commandName, config }) {
+  return (
+    commandName === 'InvokeModelWithResponseStreamCommand' &&
+    config.ai_monitoring?.streaming?.enabled
+  )
+}
+
+/**
  * Enqueues a LLM event to the custom event aggregator
  * @param {object} params input params
  * @param {Agent} params.agent NR agent instance
@@ -37,9 +53,23 @@ function shouldSkipInstrumentation(config) {
  * @param {object} params.msg LLM event
  */
 function recordEvent({ agent, type, msg }) {
-  agent.metrics.getOrCreateMetric(TRACKING_METRIC).incrementCallCount()
   msg.serialize()
   agent.customEventAggregator.add([{ type, timestamp: Date.now() }, msg])
+}
+
+/**
+ * Increments the tracking metric and sets the llm attribute on transactions
+ *
+ * @param {object} params input params
+ * @param {Agent} params.agent NR agent instance
+ * @param {TraceSegment} params.segment active segment
+ */
+function addLlmMeta({ agent, segment }) {
+  agent.metrics.getOrCreateMetric(TRACKING_METRIC).incrementCallCount()
+  segment.transaction.trace.attributes.addAttribute(DESTINATIONS.TRANS_EVENT, 'llm', true)
+  // end segment to get a consistent segment duration
+  // for both the LLM events and the segment
+  segment.end()
 }
 
 /**
@@ -177,7 +207,8 @@ function createBedrockResponse({ bedrockCommand, response, err }) {
  * @returns {object} specification object that records middleware as promise
  * with an after hook to create LLM events
  */
-function getBedrockSpec({ commandName }, _shim, _original, _name, args) {
+function getBedrockSpec({ commandName }, shim, _original, _name, args) {
+  const { agent } = shim
   const { input } = args[0]
   const bedrockCommand = new BedrockCommand(input)
   const { modelType } = bedrockCommand
@@ -201,7 +232,7 @@ function getBedrockSpec({ commandName }, _shim, _original, _name, args) {
       } else if (response.output.body instanceof Uint8Array) {
         // non-streamed response
         handleResponse(passThroughParams)
-      } else {
+      } else if (isStreamingEnabled({ commandName, config: agent.config })) {
         // stream response
         const handler = new StreamHandler({
           stream: response.output.body,
@@ -209,6 +240,12 @@ function getBedrockSpec({ commandName }, _shim, _original, _name, args) {
           passThroughParams
         })
         response.output.body = handler.generator(handleResponse)
+      } else if (!isStreamingEnabled({ commandName, config: agent.config })) {
+        shim.logger.warn(
+          'ai_monitoring.streaming.enabled is set to `false`, stream will not be instrumented.'
+        )
+        agent.metrics.getOrCreateMetric(`${AI_PREFIX}/Streaming/Disabled`).incrementCallCount()
+        addLlmMeta({ agent, segment })
       }
     }
   }
@@ -218,11 +255,7 @@ function handleResponse({ shim, err, response, segment, bedrockCommand, modelTyp
   const { agent } = shim
   const bedrockResponse = createBedrockResponse({ bedrockCommand, response, err })
 
-  segment.transaction.trace.attributes.addAttribute(DESTINATIONS.TRANS_EVENT, 'llm', true)
-  // end segment to get a consistent segment duration
-  // for both the LLM events and the segment
-  segment.end()
-
+  addLlmMeta({ agent, segment })
   if (modelType === 'completion') {
     recordChatCompletionMessages({
       agent,
@@ -275,7 +308,7 @@ module.exports.bedrockMiddlewareConfig = {
       return false
     }
 
-    TRACKING_METRIC = `Supportability/Nodejs/ML/Bedrock/${shim.pkgVersion}`
+    TRACKING_METRIC = `${AI_PREFIX}/Bedrock/${shim.pkgVersion}`
     return true
   },
   type: 'generic',
