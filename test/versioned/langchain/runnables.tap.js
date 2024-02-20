@@ -11,8 +11,8 @@ const helper = require('../../lib/agent_helper')
 require('../../lib/metrics_helper')
 const { filterLangchainEvents, filterLangchainMessages } = require('./common')
 const { version: pkgVersion } = require('@langchain/core/package.json')
-
 const { beforeHook, afterEachHook, afterHook } = require('../openai/common')
+const { DESTINATIONS } = require('../../../lib/config/attribute-filter')
 
 tap.test('Langchain instrumentation - runnable sequence', (t) => {
   t.autoend()
@@ -288,4 +288,54 @@ tap.test('Langchain instrumentation - runnable sequence', (t) => {
       })
     }
   )
+
+  t.test('should not create langchain events when not in a transaction', async (test) => {
+    const { agent, prompt, outputParser, model } = t.context
+
+    const input = { topic: 'scientist' }
+    const options = { metadata: { key: 'value', hello: 'world' }, tags: ['tag1', 'tag2'] }
+
+    const chain = prompt.pipe(model).pipe(outputParser)
+    await chain.invoke(input, options)
+
+    const events = agent.customEventAggregator.events.toArray()
+    test.equal(events.length, 0, 'should not create langchain events')
+    test.end()
+  })
+
+  t.test('should add llm attribute to transaction', (test) => {
+    const { agent, prompt, model } = t.context
+
+    const input = { topic: 'scientist' }
+    const options = { metadata: { key: 'value', hello: 'world' }, tags: ['tag1', 'tag2'] }
+
+    helper.runInTransaction(agent, async (tx) => {
+      const chain = prompt.pipe(model)
+      await chain.invoke(input, options)
+
+      const attributes = tx.trace.attributes.get(DESTINATIONS.TRANS_EVENT)
+      t.equal(attributes.llm, true)
+
+      tx.end()
+      test.end()
+    })
+  })
+
+  t.test('should create span on successful runnables create', (test) => {
+    const { agent, prompt, model } = t.context
+
+    const input = { topic: 'scientist' }
+    const options = { metadata: { key: 'value', hello: 'world' }, tags: ['tag1', 'tag2'] }
+
+    helper.runInTransaction(agent, async (tx) => {
+      const chain = prompt.pipe(model)
+      const result = await chain.invoke(input, options)
+
+      t.ok(result)
+      t.assertSegments(tx.trace.root, ['Llm/agent/Langchain/invoke'], { exact: false })
+
+      tx.end()
+      test.end()
+    })
+  })
 })
