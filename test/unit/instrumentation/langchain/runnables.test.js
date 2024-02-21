@@ -10,7 +10,7 @@ const helper = require('../../../lib/agent_helper')
 const GenericShim = require('../../../../lib/shim/shim')
 const sinon = require('sinon')
 
-test('langchain/core/tools unit tests', (t) => {
+test('langchain/core/runnables unit tests', (t) => {
   t.beforeEach(function (t) {
     const sandbox = sinon.createSandbox()
     const agent = helper.loadMockedAgent()
@@ -58,7 +58,7 @@ test('langchain/core/tools unit tests', (t) => {
           'langchain instrumentation is disabled.  To enable set `config.ai_monitoring.enabled` to true'
         )
         const isWrapped = shim.isWrapped(MockRunnable.RunnableSequence.prototype.invoke)
-        t.equal(isWrapped, false, 'should not wrap tool create')
+        t.equal(isWrapped, false, 'should not wrap runnable invoke')
         t.end()
       }
     )
