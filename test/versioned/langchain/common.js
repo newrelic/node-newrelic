@@ -7,14 +7,7 @@
 
 const tap = require('tap')
 
-function filterLangchainEvents(events) {
-  return events.filter((event) => {
-    const [, chainEvent] = event
-    return chainEvent.vendor === 'langchain'
-  })
-}
-
-function filterLangchainMessages(events, msgType) {
+function filterLangchainEvents(events, msgType) {
   return events.filter((event) => {
     const [{ type }] = event
     return type === msgType
@@ -86,6 +79,5 @@ tap.Test.prototype.addAssert('langchainMessages', 1, assertLangChainChatCompleti
 tap.Test.prototype.addAssert('langchainSummary', 1, assertLangChainChatCompletionSummary)
 
 module.exports = {
-  filterLangchainEvents,
-  filterLangchainMessages
+  filterLangchainEvents
 }

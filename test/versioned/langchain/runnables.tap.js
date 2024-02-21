@@ -9,7 +9,7 @@ const tap = require('tap')
 const helper = require('../../lib/agent_helper')
 // load the assertSegments assertion
 require('../../lib/metrics_helper')
-const { filterLangchainEvents, filterLangchainMessages } = require('./common')
+const { filterLangchainEvents } = require('./common')
 const { version: pkgVersion } = require('@langchain/core/package.json')
 const { beforeHook, afterEachHook, afterHook } = require('../openai/common')
 const { DESTINATIONS } = require('../../../lib/config/attribute-filter')
@@ -48,14 +48,7 @@ tap.test('Langchain instrumentation - runnable sequence', (t) => {
       await chain.invoke(input, options)
 
       const events = agent.customEventAggregator.events.toArray()
-      test.equal(events.length, 6, 'should create 6 events')
-
-      const langchainEvents = events.filter((event) => {
-        const [, chainEvent] = event
-        return chainEvent.vendor === 'langchain'
-      })
-
-      test.equal(langchainEvents.length, 3, 'should create 3 langchain events')
+      test.equal(events.length, 3, 'should create 3 langchain events')
 
       tx.end()
       test.end()
@@ -96,15 +89,8 @@ tap.test('Langchain instrumentation - runnable sequence', (t) => {
 
         const events = agent.customEventAggregator.events.toArray()
 
-        const langchainEvents = filterLangchainEvents(events)
-        const langChainMessageEvents = filterLangchainMessages(
-          langchainEvents,
-          'LlmChatCompletionMessage'
-        )
-        const langChainSummaryEvents = filterLangchainMessages(
-          langchainEvents,
-          'LlmChatCompletionSummary'
-        )
+        const langChainMessageEvents = filterLangchainEvents(events, 'LlmChatCompletionMessage')
+        const langChainSummaryEvents = filterLangchainEvents(events, 'LlmChatCompletionSummary')
 
         test.langchainSummary({
           tx,
@@ -134,16 +120,8 @@ tap.test('Langchain instrumentation - runnable sequence', (t) => {
       await chain.invoke(input, options)
 
       const events = agent.customEventAggregator.events.toArray()
-
-      const langchainEvents = filterLangchainEvents(events)
-      const langChainMessageEvents = filterLangchainMessages(
-        langchainEvents,
-        'LlmChatCompletionMessage'
-      )
-      const langChainSummaryEvents = filterLangchainMessages(
-        langchainEvents,
-        'LlmChatCompletionSummary'
-      )
+      const langChainMessageEvents = filterLangchainEvents(events, 'LlmChatCompletionMessage')
+      const langChainSummaryEvents = filterLangchainEvents(events, 'LlmChatCompletionSummary')
 
       test.langchainSummary({
         tx,
@@ -178,15 +156,8 @@ tap.test('Langchain instrumentation - runnable sequence', (t) => {
 
         const events = agent.customEventAggregator.events.toArray()
 
-        const langchainEvents = filterLangchainEvents(events)
-        const langChainMessageEvents = filterLangchainMessages(
-          langchainEvents,
-          'LlmChatCompletionMessage'
-        )
-        const langChainSummaryEvents = filterLangchainMessages(
-          langchainEvents,
-          'LlmChatCompletionSummary'
-        )
+        const langChainMessageEvents = filterLangchainEvents(events, 'LlmChatCompletionMessage')
+        const langChainSummaryEvents = filterLangchainEvents(events, 'LlmChatCompletionSummary')
 
         test.langchainSummary({
           tx,
@@ -228,9 +199,7 @@ tap.test('Langchain instrumentation - runnable sequence', (t) => {
       await chain.invoke(input, options)
 
       const events = agent.customEventAggregator.events.toArray()
-
-      const langchainEvents = filterLangchainEvents(events)
-      t.equal(langchainEvents[0][1].request_id, runId)
+      t.equal(events[0][1].request_id, runId)
 
       tx.end()
       test.end()
@@ -260,15 +229,8 @@ tap.test('Langchain instrumentation - runnable sequence', (t) => {
 
         const events = agent.customEventAggregator.events.toArray()
 
-        const langchainEvents = filterLangchainEvents(events)
-        const langChainMessageEvents = filterLangchainMessages(
-          langchainEvents,
-          'LlmChatCompletionMessage'
-        )
-        const langChainSummaryEvents = filterLangchainMessages(
-          langchainEvents,
-          'LlmChatCompletionSummary'
-        )
+        const langChainMessageEvents = filterLangchainEvents(events, 'LlmChatCompletionMessage')
+        const langChainSummaryEvents = filterLangchainEvents(events, 'LlmChatCompletionSummary')
 
         test.langchainSummary({
           tx,
