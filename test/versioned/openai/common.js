@@ -12,9 +12,6 @@ const config = {
   ai_monitoring: {
     enabled: true
   },
-  feature_flag: {
-    langchain_instrumentation: true
-  },
   streaming: {
     enabled: true
   }

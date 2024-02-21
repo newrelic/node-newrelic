@@ -11,18 +11,25 @@ const helper = require('../../lib/agent_helper')
 require('../../lib/metrics_helper')
 const { filterLangchainEvents } = require('./common')
 const { version: pkgVersion } = require('@langchain/core/package.json')
-const { beforeHook, afterEachHook, afterHook } = require('../openai/common')
+const createOpenAIMockServer = require('../openai/mock-server')
+const config = {
+  ai_monitoring: {
+    enabled: true
+  },
+  feature_flag: {
+    langchain_instrumentation: true
+  }
+}
+
 const { DESTINATIONS } = require('../../../lib/config/attribute-filter')
 
 tap.test('Langchain instrumentation - runnable sequence', (t) => {
   t.autoend()
 
-  t.before(beforeHook.bind(null, t))
-  t.afterEach(afterEachHook.bind(null, t))
-  t.teardown(afterHook.bind(null, t))
-
-  t.beforeEach(async () => {
-    const { client } = t.context
+  t.beforeEach(async (t) => {
+    const { host, port, server } = await createOpenAIMockServer()
+    t.context.server = server
+    t.context.agent = helper.instrumentMockedAgent(config)
     const { ChatPromptTemplate } = require('@langchain/core/prompts')
     const { StringOutputParser } = require('@langchain/core/output_parsers')
     const { ChatOpenAI } = require('@langchain/openai')
@@ -31,13 +38,24 @@ tap.test('Langchain instrumentation - runnable sequence', (t) => {
     t.context.model = new ChatOpenAI({
       openAIApiKey: 'fake-key',
       configuration: {
-        baseURL: client.baseURL
+        baseURL: `http://${host}:${port}`
       }
     })
     t.context.outputParser = new StringOutputParser()
   })
 
-  t.test('should create langchain events for every invoke call', (test) => {
+  t.afterEach(async (t) => {
+    t.context?.server?.close()
+    helper.unloadAgent(t.context.agent)
+    // bust the require-cache so it can re-instrument
+    Object.keys(require.cache).forEach((key) => {
+      if (key.includes('@langchain/core') || key.includes('openai')) {
+        delete require.cache[key]
+      }
+    })
+  })
+
+  t.test('should create langchain events for every invoke call', (t) => {
     const { agent, prompt, outputParser, model } = t.context
 
     helper.runInTransaction(agent, async (tx) => {
@@ -48,14 +66,14 @@ tap.test('Langchain instrumentation - runnable sequence', (t) => {
       await chain.invoke(input, options)
 
       const events = agent.customEventAggregator.events.toArray()
-      test.equal(events.length, 3, 'should create 3 langchain events')
+      t.equal(events.length, 3, 'should create 3 langchain events')
 
       tx.end()
-      test.end()
+      t.end()
     })
   })
 
-  t.test('should increment tracking metric for each langchain chat prompt event', (test) => {
+  t.test('should increment tracking metric for each langchain chat prompt event', (t) => {
     const { agent, prompt, outputParser, model } = t.context
 
     helper.runInTransaction(agent, async (tx) => {
@@ -71,13 +89,13 @@ tap.test('Langchain instrumentation - runnable sequence', (t) => {
       t.equal(metrics.callCount > 0, true)
 
       tx.end()
-      test.end()
+      t.end()
     })
   })
 
   t.test(
     'should create langchain events for every invoke call on chat prompt + model + parser',
-    (test) => {
+    (t) => {
       const { agent, prompt, outputParser, model } = t.context
 
       helper.runInTransaction(agent, async (tx) => {
@@ -92,24 +110,24 @@ tap.test('Langchain instrumentation - runnable sequence', (t) => {
         const langChainMessageEvents = filterLangchainEvents(events, 'LlmChatCompletionMessage')
         const langChainSummaryEvents = filterLangchainEvents(events, 'LlmChatCompletionSummary')
 
-        test.langchainSummary({
+        t.langchainSummary({
           tx,
           chatSummary: langChainSummaryEvents[0]
         })
 
-        test.langchainMessages({
+        t.langchainMessages({
           tx,
           chatMsgs: langChainMessageEvents,
           chatSummary: langChainSummaryEvents[0][1]
         })
 
         tx.end()
-        test.end()
+        t.end()
       })
     }
   )
 
-  t.test('should create langchain events for every invoke call on chat prompt + model', (test) => {
+  t.test('should create langchain events for every invoke call on chat prompt + model', (t) => {
     const { agent, prompt, model } = t.context
 
     helper.runInTransaction(agent, async (tx) => {
@@ -123,25 +141,25 @@ tap.test('Langchain instrumentation - runnable sequence', (t) => {
       const langChainMessageEvents = filterLangchainEvents(events, 'LlmChatCompletionMessage')
       const langChainSummaryEvents = filterLangchainEvents(events, 'LlmChatCompletionSummary')
 
-      test.langchainSummary({
+      t.langchainSummary({
         tx,
         chatSummary: langChainSummaryEvents[0]
       })
 
-      test.langchainMessages({
+      t.langchainMessages({
         tx,
         chatMsgs: langChainMessageEvents,
         chatSummary: langChainSummaryEvents[0][1]
       })
 
       tx.end()
-      test.end()
+      t.end()
     })
   })
 
   t.test(
     'should create langchain events for every invoke call with parser that returns an array as output',
-    (test) => {
+    (t) => {
       const { CommaSeparatedListOutputParser } = require('@langchain/core/output_parsers')
       const { agent, prompt, model } = t.context
 
@@ -159,24 +177,24 @@ tap.test('Langchain instrumentation - runnable sequence', (t) => {
         const langChainMessageEvents = filterLangchainEvents(events, 'LlmChatCompletionMessage')
         const langChainSummaryEvents = filterLangchainEvents(events, 'LlmChatCompletionSummary')
 
-        test.langchainSummary({
+        t.langchainSummary({
           tx,
           chatSummary: langChainSummaryEvents[0]
         })
 
-        test.langchainMessages({
+        t.langchainMessages({
           tx,
           chatMsgs: langChainMessageEvents,
           chatSummary: langChainSummaryEvents[0][1]
         })
 
         tx.end()
-        test.end()
+        t.end()
       })
     }
   )
 
-  t.test('should add runId when a callback handler exists', (test) => {
+  t.test('should add runId when a callback handler exists', (t) => {
     const { BaseCallbackHandler } = require('@langchain/core/callbacks/base')
     let runId
     const cbHandler = BaseCallbackHandler.fromMethods({
@@ -202,13 +220,13 @@ tap.test('Langchain instrumentation - runnable sequence', (t) => {
       t.equal(events[0][1].request_id, runId)
 
       tx.end()
-      test.end()
+      t.end()
     })
   })
 
   t.test(
     'should create langchain events for every invoke call on chat prompt + model + parser with callback',
-    (test) => {
+    (t) => {
       const { BaseCallbackHandler } = require('@langchain/core/callbacks/base')
       const cbHandler = BaseCallbackHandler.fromMethods({
         handleChainStart() {}
@@ -232,13 +250,13 @@ tap.test('Langchain instrumentation - runnable sequence', (t) => {
         const langChainMessageEvents = filterLangchainEvents(events, 'LlmChatCompletionMessage')
         const langChainSummaryEvents = filterLangchainEvents(events, 'LlmChatCompletionSummary')
 
-        test.langchainSummary({
+        t.langchainSummary({
           tx,
           chatSummary: langChainSummaryEvents[0],
           withCallback: cbHandler
         })
 
-        test.langchainMessages({
+        t.langchainMessages({
           tx,
           chatMsgs: langChainMessageEvents,
           chatSummary: langChainSummaryEvents[0][1],
@@ -246,12 +264,12 @@ tap.test('Langchain instrumentation - runnable sequence', (t) => {
         })
 
         tx.end()
-        test.end()
+        t.end()
       })
     }
   )
 
-  t.test('should not create langchain events when not in a transaction', async (test) => {
+  t.test('should not create langchain events when not in a transaction', async (t) => {
     const { agent, prompt, outputParser, model } = t.context
 
     const input = { topic: 'scientist' }
@@ -261,11 +279,11 @@ tap.test('Langchain instrumentation - runnable sequence', (t) => {
     await chain.invoke(input, options)
 
     const events = agent.customEventAggregator.events.toArray()
-    test.equal(events.length, 0, 'should not create langchain events')
-    test.end()
+    t.equal(events.length, 0, 'should not create langchain events')
+    t.end()
   })
 
-  t.test('should add llm attribute to transaction', (test) => {
+  t.test('should add llm attribute to transaction', (t) => {
     const { agent, prompt, model } = t.context
 
     const input = { topic: 'scientist' }
@@ -279,11 +297,11 @@ tap.test('Langchain instrumentation - runnable sequence', (t) => {
       t.equal(attributes.llm, true)
 
       tx.end()
-      test.end()
+      t.end()
     })
   })
 
-  t.test('should create span on successful runnables create', (test) => {
+  t.test('should create span on successful runnables create', (t) => {
     const { agent, prompt, model } = t.context
 
     const input = { topic: 'scientist' }
@@ -297,7 +315,7 @@ tap.test('Langchain instrumentation - runnable sequence', (t) => {
       t.assertSegments(tx.trace.root, ['Llm/agent/Langchain/invoke'], { exact: false })
 
       tx.end()
-      test.end()
+      t.end()
     })
   })
 })
