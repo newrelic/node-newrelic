@@ -15,6 +15,7 @@
         "@langchain/openai": "^0.0.14"
       },
       "files": [
+        "tools.tap.js",
         "runnables.tap.js"
       ]
     }

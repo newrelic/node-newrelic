@@ -18,6 +18,7 @@ code, the source code can be found at [https://github.com/newrelic/node-newrelic
 * [@grpc/proto-loader](#grpcproto-loader)
 * [@newrelic/aws-sdk](#newrelicaws-sdk)
 * [@newrelic/koa](#newrelickoa)
+* [@newrelic/ritm](#newrelicritm)
 * [@newrelic/security-agent](#newrelicsecurity-agent)
 * [@newrelic/superagent](#newrelicsuperagent)
 * [@tyriar/fibonacci-heap](#tyriarfibonacci-heap)
@@ -28,7 +29,6 @@ code, the source code can be found at [https://github.com/newrelic/node-newrelic
 * [json-stringify-safe](#json-stringify-safe)
 * [module-details-from-path](#module-details-from-path)
 * [readable-stream](#readable-stream)
-* [require-in-the-middle](#require-in-the-middle)
 * [semver](#semver)
 * [winston-transport](#winston-transport)
 
@@ -86,7 +86,7 @@ code, the source code can be found at [https://github.com/newrelic/node-newrelic
 
 ### @grpc/grpc-js
 
-This product includes source derived from [@grpc/grpc-js](https://github.com/grpc/grpc-node/tree/master/packages/grpc-js) ([v1.9.4](https://github.com/grpc/grpc-node/tree/master/packages/grpc-js/tree/v1.9.4)), distributed under the [Apache-2.0 License](https://github.com/grpc/grpc-node/tree/master/packages/grpc-js/blob/v1.9.4/LICENSE):
+This product includes source derived from [@grpc/grpc-js](https://github.com/grpc/grpc-node/tree/master/packages/grpc-js) ([v1.10.0](https://github.com/grpc/grpc-node/tree/master/packages/grpc-js/tree/v1.10.0)), distributed under the [Apache-2.0 License](https://github.com/grpc/grpc-node/tree/master/packages/grpc-js/blob/v1.10.0/LICENSE):
 
 ```
                                  Apache License
@@ -295,7 +295,7 @@ This product includes source derived from [@grpc/grpc-js](https://github.com/grp
 
 ### @grpc/proto-loader
 
-This product includes source derived from [@grpc/proto-loader](https://github.com/grpc/grpc-node) ([v0.7.9](https://github.com/grpc/grpc-node/tree/v0.7.9)), distributed under the [Apache-2.0 License](https://github.com/grpc/grpc-node/blob/v0.7.9/LICENSE):
+This product includes source derived from [@grpc/proto-loader](https://github.com/grpc/grpc-node) ([v0.7.10](https://github.com/grpc/grpc-node/tree/v0.7.10)), distributed under the [Apache-2.0 License](https://github.com/grpc/grpc-node/blob/v0.7.10/LICENSE):
 
 ```
                                  Apache License
@@ -919,54 +919,79 @@ Apache License
 
 ```
 
-### @newrelic/security-agent
+### @newrelic/ritm
 
-This product includes source derived from [@newrelic/security-agent](https://github.com/newrelic/csec-node-agent) ([v0.7.0](https://github.com/newrelic/csec-node-agent/tree/v0.7.0)), distributed under the [UNKNOWN License](https://github.com/newrelic/csec-node-agent/blob/v0.7.0/LICENSE):
+This product includes source derived from [@newrelic/ritm](https://github.com/newrelic-forks/require-in-the-middle) ([v7.2.0](https://github.com/newrelic-forks/require-in-the-middle/tree/v7.2.0)), distributed under the [MIT License](https://github.com/newrelic-forks/require-in-the-middle/blob/v7.2.0/LICENSE):
 
 ```
-## New Relic Pre-Release Software Notice
+The MIT License (MIT)
+
+Copyright (c) 2016-2019, Thomas Watson Steen
+Copyright (c) 2019-2023, Elasticsearch B.V.
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+```
+
+### @newrelic/security-agent
+
+This product includes source derived from [@newrelic/security-agent](https://github.com/newrelic/csec-node-agent) ([v1.0.1](https://github.com/newrelic/csec-node-agent/tree/v1.0.1)), distributed under the [UNKNOWN License](https://github.com/newrelic/csec-node-agent/blob/v1.0.1/LICENSE):
+
+```
+## New Relic Software License v1.0
 
 ### Acceptance
 
-This software license applies to the repositories, directories, or files that it has been associated with (referred to here as the “Pre-Release Software”). In order to get any license under these terms, you must agree to them as both strict obligations and conditions to all your licenses.
-License
+This software license applies to the repositories, directories, or files that it has been associated with (referred to here as “the Software”). In order to get any license under these terms, you must agree to them as both strict obligations and conditions to all your licenses.
 
-New Relic, Inc. (“New Relic”) grants you a license under its copyrights and patents to do everything necessary for you to use the Pre-Release Software for the Permitted Purposes and subject to your compliance with the Confidentiality terms and all other Restrictions on Use.  All other uses are prohibited.
+### License
+
+New Relic grants you a license for the Software to do everything you might do with the Software that would otherwise infringe the New Relic’s copyrights or patent rights, conditional on only using the Software for Permitted Purposes and compliance with all other Restrictions on Use. All other uses are prohibited. 
 
 ### Permitted Purposes
 
-The Pre-Release Software is solely for use with New Relic’s proprietary SaaS service (“New Relic Service”).   To use the Pre-Release Software you must have a valid and active  subscription agreement to the New Relic Service. You may not use the Pre-Release Software in conjunction with any other similar service. 
+The Software is solely for use with New Relic’s proprietary SaaS service (“New Relic Service”). To use the Software you must have a valid and active subscription agreement to the New Relic Service. You may not use the Software in conjunction with any other similar service.
 
-Use of the Pre-Release Software is limited to evaluation and feedback, including pull requests, of the pre-release features and capabilities. The use of the Pre-Release Software requires a signed New Relic Pre-Release Agreement.  The New Relic Pre-Release Agreement will control in event of a conflict with this license.  The Pre-Release Software is also subject to the New Relic pre-release policy.  A copy of the New Relic Pre-release policy available at https://docs.newrelic.com/docs/licenses/license-information/referenced-policies/new-relic-pre-release-policy/.
+### Restrictions on Use
 
-### Confidentiality
-
-Any Pre-Release Software not posted publicly contains New Relic Trade Secrets. You may not disclose the features and capabilities of the Pre-Release Software to any third party by any means. You will use commercially reasonable measures to maintain the secrecy of the features and capabilities of the Pre-Release Software. Without limiting the permissions you receive under any open source software (“OSS”) license, you may not disclose the source code of any OSS included as part of the Pre-Release Software in a way that discloses the New Relic Trade Secrets.
-
-### Restrictions on Use 
-
-1. The use of the Pre-Release Software is limited to you and your organization. You cannot expose the Pre-Release Software to third parties via the network or use the Pre-Release Software on behalf of anyone else.
-2. You cannot modify the Pre-Release Software. You can compile or link the Pre-Release Software into your programs as described in the New Relic Documentation, but you cannot otherwise make any derivative works of the Pre-Release Software.
-3. You cannot reverse engineer or decompile the Pre-Release Software. 
-4. You cannot use the Pre-Release Software for competitive analysis, benchmarking, or any purposes that compete with or are intended to compete with New Relic.
-5. You cannot remove or obscure any proprietary notices in the Pre-Release Software.
-6. You can only copy the Software to the extent needed to use the Pre-Release Software within your organization. You cannot distribute the Software to any third parties.
-7. You can only use the New Relic Services and the Pre-Release Software consistent with New Relic’s product Documentation and Acceptable Use Policy.
+1. The use of the Software is limited to you and your organization. You cannot expose the Software to third parties via the network or use the Software on behalf of anyone else.
+2. You cannot modify the Software. You can compile or link the Software into your programs as described in the New Relic Documentation, but you cannot otherwise make any derivative works of the Software.
+3. You cannot reverse engineer or decompile the Software. 
+4. You cannot use the Software for competitive analysis, benchmarking, or any purposes that compete with or are intended to compete with New Relic.
+5. You cannot remove or obscure any proprietary notices in the Software.
+6. You can only copy the Software to the extent needed to use the Software within your organization. You cannot distribute the Software to any third parties.
+7. You can only use the New Relic Services and the Software consistent with your subscription agreement with New Relic, New Relic’s product Documentation and Acceptable Use Policy.
 
 ### Intellectual Property
 
-Any feedback provided to New Relic about the Pre-Release Software, including feedback provided as source code, comments, or other copyrightable or patentable material, is provided to New Relic under the terms of the Apache Software License, version 2. If you do not provide attribution information or a copy of the license with your feedback, you waive the performance of those requirements of the Apache License with respect to New Relic. The license grant regarding any feedback is irrevocable and persists past the termination of this license.
+Any feedback provided to New Relic about the Software, including feedback provided as source code, comments, or other copyrightable or patentable material, is provided to New Relic under the terms of the Apache Software License, version 2. If you do not provide attribution information or a copy of the license with your feedback, you waive the performance of those requirements of the Apache License with respect to New Relic. The license grant regarding any feedback is irrevocable and persists past the termination of this license.
 
 ### Termination
 
-This license terminates when the Pre-Release Software stops being provided by New Relic or when described by the New Relic Pre-Release Agreement, whichever comes first. When this license terminates, you have a commercially reasonable time to either remove the Pre-Release Software from your systems or to upgrade to a publicly released version of the Software.
+This license terminates when the Software stops being provided by New Relic or when described by the New Relic subscription agreement, whichever comes first. When this license terminates, you have a commercially reasonable time to either remove the Software from your systems.
 
 ### Other Terms
 
-1. The Pre-Release Software is provided “AS IS.” New Relic disclaims all warranties, whether express, implied, statutory or otherwise, including warranties of merchantability, fitness for a particular purpose, title and noninfringement.
-2. The Pre-Release Software has known flaws.  You use the Pre-Release Software at your own risk.
-3. To the full extent permitted by law, New Relic will have no liability arising from or related to the Pre-Release Software or from this license for any direct, indirect, special, incidental, or consequential damages of any kind, even if advised of their possibility in advance, and regardless of legal theory (whether contract, tort, negligence, strict liability or otherwise).
-4. The Pre-Release Software may contain third-party software, including open source software. The third party software is governed by its own license and subject to its own terms, disclosed in the provided licensing information associated with the third party components.   If a source code disclosure is required under the terms of the license covering any OSS component, the source code can be requested of New Relic by emailing opensource@newrelic.com. 
+1. The Software is provided “AS IS.”  New Relic disclaims all warranties, whether express, implied, statutory or otherwise, including warranties of merchantability, fitness for a particular purpose, title, and noninfringement.
+2. To the full extent permitted by law, New Relic will have no liability arising from or related to the Software or from this license for any direct, indirect, special, incidental, or consequential damages of any kind, even if advised of their possibility in advance, and regardless of legal theory (whether contract, tort, negligence, strict liability or otherwise).
+3. The Software may contain third-party software, including open source software (“OSS”). The third party software is governed by its own license and subject to its own terms, disclosed in the provided licensing information associated with the third party components. If a source code disclosure is required under the terms of the license covering any OSS component, the source code can be requested of New Relic by emailing opensource@newrelic.com.   
+
 
 ```
 
@@ -1257,7 +1282,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 ### import-in-the-middle
 
-This product includes source derived from [import-in-the-middle](https://github.com/DataDog/import-in-the-middle) ([v1.6.0](https://github.com/DataDog/import-in-the-middle/tree/v1.6.0)), distributed under the [Apache-2.0 License](https://github.com/DataDog/import-in-the-middle/blob/v1.6.0/LICENSE):
+This product includes source derived from [import-in-the-middle](https://github.com/DataDog/import-in-the-middle) ([v1.7.3](https://github.com/DataDog/import-in-the-middle/tree/v1.7.3)), distributed under the [Apache-2.0 License](https://github.com/DataDog/import-in-the-middle/blob/v1.7.3/LICENSE):
 
 ```
 Copyright 2021 Datadog, Inc.
@@ -1411,39 +1436,9 @@ IN THE SOFTWARE.
 
 ```
 
-### require-in-the-middle
-
-This product includes source derived from [require-in-the-middle](https://github.com/elastic/require-in-the-middle) ([v7.2.0](https://github.com/elastic/require-in-the-middle/tree/v7.2.0)), distributed under the [MIT License](https://github.com/elastic/require-in-the-middle/blob/v7.2.0/LICENSE):
-
-```
-The MIT License (MIT)
-
-Copyright (c) 2016-2019, Thomas Watson Steen
-Copyright (c) 2019-2023, Elasticsearch B.V.
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
-
-```
-
 ### semver
 
-This product includes source derived from [semver](https://github.com/npm/node-semver) ([v7.5.4](https://github.com/npm/node-semver/tree/v7.5.4)), distributed under the [ISC License](https://github.com/npm/node-semver/blob/v7.5.4/LICENSE):
+This product includes source derived from [semver](https://github.com/npm/node-semver) ([v7.6.0](https://github.com/npm/node-semver/tree/v7.6.0)), distributed under the [ISC License](https://github.com/npm/node-semver/blob/v7.6.0/LICENSE):
 
 ```
 The ISC License
@@ -1466,7 +1461,7 @@ IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ### winston-transport
 
-This product includes source derived from [winston-transport](https://github.com/winstonjs/winston-transport) ([v4.5.0](https://github.com/winstonjs/winston-transport/tree/v4.5.0)), distributed under the [MIT License](https://github.com/winstonjs/winston-transport/blob/v4.5.0/LICENSE):
+This product includes source derived from [winston-transport](https://github.com/winstonjs/winston-transport) ([v4.7.0](https://github.com/winstonjs/winston-transport/tree/v4.7.0)), distributed under the [MIT License](https://github.com/winstonjs/winston-transport/blob/v4.7.0/LICENSE):
 
 ```
 The MIT License (MIT)
@@ -1916,7 +1911,7 @@ This product includes source derived from [@newrelic/newrelic-oss-cli](https://g
 
 ### @newrelic/test-utilities
 
-This product includes source derived from [@newrelic/test-utilities](https://github.com/newrelic/node-test-utilities) ([v8.1.0](https://github.com/newrelic/node-test-utilities/tree/v8.1.0)), distributed under the [Apache-2.0 License](https://github.com/newrelic/node-test-utilities/blob/v8.1.0/LICENSE):
+This product includes source derived from [@newrelic/test-utilities](https://github.com/newrelic/node-test-utilities) ([v8.2.0](https://github.com/newrelic/node-test-utilities/tree/v8.2.0)), distributed under the [Apache-2.0 License](https://github.com/newrelic/node-test-utilities/blob/v8.2.0/LICENSE):
 
 ```
                                  Apache License
@@ -2155,7 +2150,7 @@ THE SOFTWARE.
 
 ### @slack/bolt
 
-This product includes source derived from [@slack/bolt](https://github.com/slackapi/bolt) ([v3.15.0](https://github.com/slackapi/bolt/tree/v3.15.0)), distributed under the [MIT License](https://github.com/slackapi/bolt/blob/v3.15.0/LICENSE):
+This product includes source derived from [@slack/bolt](https://github.com/slackapi/bolt) ([v3.17.1](https://github.com/slackapi/bolt/tree/v3.17.1)), distributed under the [MIT License](https://github.com/slackapi/bolt/blob/v3.17.1/LICENSE):
 
 ```
 The MIT License (MIT)
@@ -2215,7 +2210,7 @@ SOFTWARE.
 
 ### async
 
-This product includes source derived from [async](https://github.com/caolan/async) ([v3.2.4](https://github.com/caolan/async/tree/v3.2.4)), distributed under the [MIT License](https://github.com/caolan/async/blob/v3.2.4/LICENSE):
+This product includes source derived from [async](https://github.com/caolan/async) ([v3.2.5](https://github.com/caolan/async/tree/v3.2.5)), distributed under the [MIT License](https://github.com/caolan/async/blob/v3.2.5/LICENSE):
 
 ```
 Copyright (c) 2010-2018 Caolan McMahon
@@ -2264,7 +2259,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ### clean-jsdoc-theme
 
-This product includes source derived from [clean-jsdoc-theme](https://github.com/ankitskvmdam/clean-jsdoc-theme) ([v4.2.10](https://github.com/ankitskvmdam/clean-jsdoc-theme/tree/v4.2.10)), distributed under the [MIT License](https://github.com/ankitskvmdam/clean-jsdoc-theme/blob/v4.2.10/LICENSE):
+This product includes source derived from [clean-jsdoc-theme](https://github.com/ankitskvmdam/clean-jsdoc-theme) ([v4.2.17](https://github.com/ankitskvmdam/clean-jsdoc-theme/tree/v4.2.17)), distributed under the [MIT License](https://github.com/ankitskvmdam/clean-jsdoc-theme/blob/v4.2.17/LICENSE):
 
 ```
 MIT License
@@ -2431,7 +2426,7 @@ THE SOFTWARE.
 
 ### eslint-plugin-jsdoc
 
-This product includes source derived from [eslint-plugin-jsdoc](https://github.com/gajus/eslint-plugin-jsdoc) ([v39.9.1](https://github.com/gajus/eslint-plugin-jsdoc/tree/v39.9.1)), distributed under the [BSD-3-Clause License](https://github.com/gajus/eslint-plugin-jsdoc/blob/v39.9.1/LICENSE):
+This product includes source derived from [eslint-plugin-jsdoc](https://github.com/gajus/eslint-plugin-jsdoc) ([v48.0.6](https://github.com/gajus/eslint-plugin-jsdoc/tree/v48.0.6)), distributed under the [BSD-3-Clause License](https://github.com/gajus/eslint-plugin-jsdoc/blob/v48.0.6/LICENSE):
 
 ```
 Copyright (c) 2018, Gajus Kuizinas (http://gajus.com/)
@@ -2636,7 +2631,7 @@ Library.
 
 ### eslint
 
-This product includes source derived from [eslint](https://github.com/eslint/eslint) ([v8.48.0](https://github.com/eslint/eslint/tree/v8.48.0)), distributed under the [MIT License](https://github.com/eslint/eslint/blob/v8.48.0/LICENSE):
+This product includes source derived from [eslint](https://github.com/eslint/eslint) ([v8.56.0](https://github.com/eslint/eslint/tree/v8.56.0)), distributed under the [MIT License](https://github.com/eslint/eslint/blob/v8.56.0/LICENSE):
 
 ```
 Copyright OpenJS Foundation and other contributors, <www.openjsf.org>
@@ -3350,7 +3345,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ### tap
 
-This product includes source derived from [tap](https://github.com/tapjs/node-tap) ([v16.3.8](https://github.com/tapjs/node-tap/tree/v16.3.8)), distributed under the [ISC License](https://github.com/tapjs/node-tap/blob/v16.3.8/LICENSE):
+This product includes source derived from [tap](https://github.com/tapjs/node-tap) ([v16.3.10](https://github.com/tapjs/node-tap/tree/v16.3.10)), distributed under the [ISC License](https://github.com/tapjs/node-tap/blob/v16.3.10/LICENSE):
 
 ```
 The ISC License
@@ -3461,7 +3456,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 ### @newrelic/native-metrics
 
-This product includes source derived from [@newrelic/native-metrics](https://github.com/newrelic/node-native-metrics) ([v10.0.0](https://github.com/newrelic/node-native-metrics/tree/v10.0.0)), distributed under the [Apache-2.0 License](https://github.com/newrelic/node-native-metrics/blob/v10.0.0/LICENSE):
+This product includes source derived from [@newrelic/native-metrics](https://github.com/newrelic/node-native-metrics) ([v10.0.1](https://github.com/newrelic/node-native-metrics/tree/v10.0.1)), distributed under the [Apache-2.0 License](https://github.com/newrelic/node-native-metrics/blob/v10.0.1/LICENSE):
 
 ```
                                  Apache License
