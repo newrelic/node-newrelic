@@ -62,4 +62,8 @@ Note: when running the versioned test suite on a macOS system, the application
 firewall is likely to issue multiple requests to authorize the `node` binary
 for incoming connections. This can be avoided by running the
 [macos-firewall.sh](../bin/macos-firewall.sh) script to prime the application
-firewall with a rule to allow the connections.
+firewall with a rule to allow the connections:
+
+```sh
+$ sudo ./bin/macos-firewall.sh
+```

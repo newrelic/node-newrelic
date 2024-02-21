@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "Wed Feb 07 2024 12:18:02 GMT-0500 (Eastern Standard Time)",
+  "lastUpdated": "Wed Feb 21 2024 15:23:19 GMT-0500 (Eastern Standard Time)",
   "projectName": "New Relic Node Agent",
   "projectUrl": "https://github.com/newrelic/node-newrelic",
   "includeOptDeps": true,
@@ -93,6 +93,20 @@
       "licenseTextSource": "file",
       "publisher": "New Relic Node.js agent team",
       "email": "nodejs@newrelic.com"
+    },
+    "@newrelic/ritm@7.2.0": {
+      "name": "@newrelic/ritm",
+      "version": "7.2.0",
+      "range": "^7.2.0",
+      "licenses": "MIT",
+      "repoUrl": "https://github.com/newrelic-forks/require-in-the-middle",
+      "versionedRepoUrl": "https://github.com/newrelic-forks/require-in-the-middle/tree/v7.2.0",
+      "licenseFile": "node_modules/@newrelic/ritm/LICENSE",
+      "licenseUrl": "https://github.com/newrelic-forks/require-in-the-middle/blob/v7.2.0/LICENSE",
+      "licenseTextSource": "file",
+      "publisher": "Thomas Watson Steen",
+      "email": "w@tson.dk",
+      "url": "https://twitter.com/wa7son"
     },
     "@newrelic/security-agent@1.0.1": {
       "name": "@newrelic/security-agent",
@@ -223,20 +237,6 @@
       "licenseFile": "node_modules/readable-stream/LICENSE",
       "licenseUrl": "https://github.com/nodejs/readable-stream/blob/v3.6.2/LICENSE",
       "licenseTextSource": "file"
-    },
-    "require-in-the-middle@7.2.0": {
-      "name": "require-in-the-middle",
-      "version": "7.2.0",
-      "range": "^7.2.0",
-      "licenses": "MIT",
-      "repoUrl": "https://github.com/elastic/require-in-the-middle",
-      "versionedRepoUrl": "https://github.com/elastic/require-in-the-middle/tree/v7.2.0",
-      "licenseFile": "node_modules/require-in-the-middle/LICENSE",
-      "licenseUrl": "https://github.com/elastic/require-in-the-middle/blob/v7.2.0/LICENSE",
-      "licenseTextSource": "file",
-      "publisher": "Thomas Watson Steen",
-      "email": "w@tson.dk",
-      "url": "https://twitter.com/wa7son"
     },
     "semver@7.6.0": {
       "name": "semver",
@@ -441,15 +441,15 @@
       "publisher": "Michael Radionov",
       "url": "https://github.com/mradionov"
     },
-    "eslint-plugin-jsdoc@39.9.1": {
+    "eslint-plugin-jsdoc@48.0.6": {
       "name": "eslint-plugin-jsdoc",
-      "version": "39.9.1",
-      "range": "^39.3.6",
+      "version": "48.0.6",
+      "range": "^48.0.5",
       "licenses": "BSD-3-Clause",
       "repoUrl": "https://github.com/gajus/eslint-plugin-jsdoc",
-      "versionedRepoUrl": "https://github.com/gajus/eslint-plugin-jsdoc/tree/v39.9.1",
+      "versionedRepoUrl": "https://github.com/gajus/eslint-plugin-jsdoc/tree/v48.0.6",
       "licenseFile": "node_modules/eslint-plugin-jsdoc/LICENSE",
-      "licenseUrl": "https://github.com/gajus/eslint-plugin-jsdoc/blob/v39.9.1/LICENSE",
+      "licenseUrl": "https://github.com/gajus/eslint-plugin-jsdoc/blob/v48.0.6/LICENSE",
       "licenseTextSource": "file",
       "publisher": "Gajus Kuizinas",
       "email": "gajus@gajus.com",
