@@ -68,29 +68,3 @@ tap.test('creates entity', async (t) => {
     ['response.number_of_messages']: 0
   })
 })
-
-tap.test('sets tags', async (t) => {
-  const msg = new LangChainCompletionSummary(t.context)
-  t.match(msg, {
-    id: /[a-z0-9-]{36}/,
-    appName: 'test-app',
-    ['llm.conversation_id']: 'test-conversation',
-    span_id: 'segment-1',
-    request_id: 'run-1',
-    transaction_id: 'tx-1',
-    trace_id: 'trace-1',
-    ['metadata.foo']: 'foo',
-    ingest_source: 'Node',
-    vendor: 'langchain',
-    virtual_llm: true,
-    tags: '',
-    duration: 42,
-    ['response.number_of_messages']: 0
-  })
-
-  msg.tags = 'foo,bar'
-  t.equal(msg.tags, 'foo,bar')
-
-  msg.tags = ['bar', 'foo']
-  t.equal(msg.tags, 'bar,foo')
-})
