@@ -309,8 +309,9 @@ tap.test('with default properties', (t) => {
     t.end()
   })
 
-  t.test('should default ai_monitoring.enabled to false', (t) => {
+  t.test('ai_monitoring defaults', (t) => {
     t.equal(configuration.ai_monitoring.enabled, false)
+    t.equal(configuration.ai_monitoring.streaming.enabled, true)
     t.end()
   })
 })

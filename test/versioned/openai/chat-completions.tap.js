@@ -26,6 +26,7 @@ const { version: pkgVersion } = JSON.parse(
   fs.readFileSync(`${__dirname}/node_modules/openai/package.json`)
 )
 const { DESTINATIONS } = require('../../../lib/config/attribute-filter')
+const TRACKING_METRIC = `Supportability/Nodejs/ML/OpenAI/${pkgVersion}`
 
 tap.test('OpenAI instrumentation - chat completions', (t) => {
   t.autoend()
@@ -63,9 +64,7 @@ tap.test('OpenAI instrumentation - chat completions', (t) => {
         messages: [{ role: 'user', content: 'You are a mathematician.' }]
       })
 
-      const metrics = agent.metrics.getOrCreateMetric(
-        `Supportability/Nodejs/ML/OpenAI/${pkgVersion}`
-      )
+      const metrics = agent.metrics.getOrCreateMetric(TRACKING_METRIC)
       t.equal(metrics.callCount > 0, true)
 
       tx.end()
@@ -231,6 +230,44 @@ tap.test('OpenAI instrumentation - chat completions', (t) => {
           tx.end()
           test.end()
         }
+      })
+    })
+
+    t.test('should not create llm events when ai_monitoring.streaming.enabled is false', (test) => {
+      const { client, agent } = t.context
+      agent.config.ai_monitoring.streaming.enabled = false
+      helper.runInTransaction(agent, async (tx) => {
+        const content = 'Streamed response'
+        const model = 'gpt-4'
+        const stream = await client.chat.completions.create({
+          max_tokens: 100,
+          temperature: 0.5,
+          model,
+          messages: [{ role: 'user', content }],
+          stream: true
+        })
+
+        let res = ''
+        let chunk = {}
+
+        for await (chunk of stream) {
+          res += chunk.choices[0]?.delta?.content
+        }
+        const expectedRes = responses.get(content)
+        test.equal(res, expectedRes.streamData)
+
+        const events = agent.customEventAggregator.events.toArray()
+        test.equal(events.length, 0, 'should not llm events when streaming is disabled')
+        const metrics = agent.metrics.getOrCreateMetric(TRACKING_METRIC)
+        test.equal(metrics.callCount > 0, true)
+        const attributes = tx.trace.attributes.get(DESTINATIONS.TRANS_EVENT)
+        test.equal(attributes.llm, true)
+        const streamingDisabled = agent.metrics.getOrCreateMetric(
+          'Supportability/Nodejs/ML/Streaming/Disabled'
+        )
+        test.equal(streamingDisabled.callCount > 0, true)
+        tx.end()
+        test.end()
       })
     })
   } else {
