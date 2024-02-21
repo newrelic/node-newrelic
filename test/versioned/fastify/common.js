@@ -5,9 +5,7 @@
 
 'use strict'
 const common = module.exports
-const util = require('util')
 const helper = require('../../lib/agent_helper')
-const getAsync = util.promisify(helper.makeGetRequest)
 
 const ROUTES = {
   ASYNC_RETURN: '/async-return',
@@ -115,6 +113,6 @@ common.registerMiddlewares = ({ fastify, calls }) => {
  */
 common.makeRequest = async ({ address, port, family }, uri) => {
   const formattedAddress = family === 'IPv6' ? `[${address}]` : address
-  const { body } = await getAsync(`http://${formattedAddress}:${port}${uri}`)
+  const { body } = await helper.makeGetRequestAsync(`http://${formattedAddress}:${port}${uri}`)
   return body
 }

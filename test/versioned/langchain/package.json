@@ -1,0 +1,21 @@
+{
+  "name": "langchain-tests",
+  "version": "0.0.0",
+  "private": true,
+  "engines": {
+    "node": ">=18"
+  },
+  "tests": [
+    {
+      "engines": {
+        "node": ">=18"
+      },
+      "dependencies": {
+        "@langchain/core": ">=0.1.17"
+      },
+      "files": [
+        "tools.tap.js"
+      ]
+    }
+  ]
+}

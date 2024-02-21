@@ -91,3 +91,15 @@ tap.test('metadata is parsed correctly', async (t) => {
   t.equal(event['llm.bar'], 'baz')
   t.notOk(event.customKey)
 })
+
+tap.test('sets tags from array', async (t) => {
+  t.context.tags = ['foo', 'bar']
+  const msg = new LangChainEvent(t.context)
+  t.equal(msg.tags, 'foo,bar')
+})
+
+tap.test('sets tags from string', async (t) => {
+  t.context.tags = 'foo,bar'
+  const msg = new LangChainEvent(t.context)
+  t.equal(msg.tags, 'foo,bar')
+})
