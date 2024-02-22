@@ -355,4 +355,38 @@ tap.test('Langchain instrumentation - runnable sequence', (t) => {
       t.end()
     })
   })
+
+  // testing JSON.stringify on request (input) during creation of LangChainCompletionMessage event
+  t.test(
+    'should use empty string for content property on completion message event when invalid input is used - circular reference',
+    (t) => {
+      const { agent, prompt, outputParser, model } = t.context
+
+      helper.runInTransaction(agent, async (tx) => {
+        const input = { topic: 'scientist' }
+        input.myself = input
+        const options = { metadata: { key: 'value', hello: 'world' }, tags: ['tag1', 'tag2'] }
+
+        const chain = prompt.pipe(model).pipe(outputParser)
+        await chain.invoke(input, options)
+
+        const events = agent.customEventAggregator.events.toArray()
+
+        const langchainEvents = filterLangchainEvents(events)
+        const langChainMessageEvents = filterLangchainMessages(
+          langchainEvents,
+          'LlmChatCompletionMessage'
+        )
+
+        const msgEventEmptyContent = langChainMessageEvents.filter(
+          (event) => event[1].content === ''
+        )
+
+        t.equal(msgEventEmptyContent.length, 1, 'should have 1 event with empty content property')
+
+        tx.end()
+        t.end()
+      })
+    }
+  )
 })
