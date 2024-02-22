@@ -49,7 +49,6 @@ tap.beforeEach((t) => {
 tap.test('creates entity', async (t) => {
   const msg = new LangChainCompletionMessage({
     ...t.context,
-    role: 'human',
     sequence: 1,
     content: 'hello world'
   })
@@ -65,7 +64,6 @@ tap.test('creates entity', async (t) => {
     ingest_source: 'Node',
     vendor: 'langchain',
     virtual_llm: true,
-    role: 'human',
     sequence: 1,
     content: 'hello world',
     completion_id: /[a-z0-9-]{36}/

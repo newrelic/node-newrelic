@@ -11,10 +11,12 @@
         "node": ">=18"
       },
       "dependencies": {
-        "@langchain/core": ">=0.1.17"
+        "@langchain/core": ">=0.1.17",
+        "@langchain/openai": "latest"
       },
       "files": [
-        "tools.tap.js"
+        "tools.tap.js",
+        "runnables.tap.js"
       ]
     }
   ]
