@@ -12,7 +12,7 @@
       },
       "dependencies": {
         "@langchain/core": ">=0.1.17",
-        "@langchain/openai": "^0.0.14"
+        "@langchain/openai": "latest"
       },
       "files": [
         "tools.tap.js",

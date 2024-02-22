@@ -349,7 +349,7 @@ tap.test('Langchain instrumentation - runnable sequence', (t) => {
       const result = await chain.invoke(input, options)
 
       t.ok(result)
-      t.assertSegments(tx.trace.root, ['Llm/agent/Langchain/invoke'], { exact: false })
+      t.assertSegments(tx.trace.root, ['Llm/chain/Langchain/invoke'], { exact: false })
 
       tx.end()
       t.end()
