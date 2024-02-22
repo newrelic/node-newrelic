@@ -161,7 +161,7 @@
     "lint": "eslint ./*.{js,mjs} lib test bin examples",
     "lint:fix": "eslint --fix, ./*.{js,mjs} lib test bin examples",
     "lint:lockfile": "lockfile-lint --path package-lock.json --type npm --allowed-hosts npm --validate-https --validate-integrity",
-    "public-docs": "jsdoc -c ./jsdoc-conf.json --tutorials examples/shim api.js lib/shim/** lib/transaction/handle.js && cp examples/shim/*.png out/",
+    "public-docs": "jsdoc -c ./jsdoc-conf.json --tutorials examples/shim api.js lib/shim/**/* lib/transaction/handle.js && cp examples/shim/*.png out/",
     "publish-docs": "./bin/publish-docs.sh",
     "services": "docker compose up -d --wait",
     "smoke": "npm run ssl && time tap test/smoke/**/**/*.tap.js --timeout=180 --no-coverage",

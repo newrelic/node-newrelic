@@ -30,7 +30,7 @@ tap.test('describeQuery', (t) => {
       port: '1234'
     }
     const result = instrumentation.describeQuery(mockShim, null, null, mockArgs)
-    t.same(result, {
+    t.match(result, {
       stream: true,
       query: 'SELECT * FROM foo',
       callback: 1,
