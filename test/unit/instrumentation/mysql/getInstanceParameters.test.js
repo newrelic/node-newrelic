@@ -34,7 +34,7 @@ tap.test('getInstanceParameters', (t) => {
 
     t.same(
       result,
-      { host: null, port_path_or_id: null, database_name: null },
+      { host: null, port_path_or_id: null, database_name: null, collection: null },
       'should return the default parameters'
     )
     t.ok(
@@ -84,7 +84,12 @@ tap.test('getInstanceParameters', (t) => {
     }
 
     const result = instrumentation.getInstanceParameters(mockShim, mockQueryable, mockQuery)
-    t.same(result, { host: 'example.com', port_path_or_id: '1234', database_name: 'test-database' })
+    t.same(result, {
+      host: 'example.com',
+      port_path_or_id: '1234',
+      database_name: 'test-database',
+      collection: null
+    })
     t.end()
   })
 
@@ -100,7 +105,8 @@ tap.test('getInstanceParameters', (t) => {
     t.same(result, {
       host: 'localhost',
       port_path_or_id: '/var/run/mysqld/mysqld.sock',
-      database_name: 'test-database'
+      database_name: 'test-database',
+      collection: null
     })
     t.end()
   })
