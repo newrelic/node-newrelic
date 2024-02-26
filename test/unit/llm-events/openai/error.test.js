@@ -6,7 +6,7 @@
 'use strict'
 
 const tap = require('tap')
-const LlmErrorMessage = require('../../../../lib/llm-events/openai/error-message')
+const LlmErrorMessage = require('../../../../lib/llm-events/error-message')
 const { req, chatRes } = require('./common')
 
 tap.test('LlmErrorMessage', (t) => {

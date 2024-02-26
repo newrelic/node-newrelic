@@ -37,6 +37,7 @@ tap.test('Langchain instrumentation - runnable sequence', (t) => {
     t.context.prompt = ChatPromptTemplate.fromMessages([['assistant', 'You are a {topic}.']])
     t.context.model = new ChatOpenAI({
       openAIApiKey: 'fake-key',
+      maxRetries: 0,
       configuration: {
         baseURL: `http://${host}:${port}`
       }
@@ -389,4 +390,43 @@ tap.test('Langchain instrumentation - runnable sequence', (t) => {
       })
     }
   )
+
+  t.test('should create error events', (t) => {
+    const { ChatPromptTemplate } = require('@langchain/core/prompts')
+    const prompt = ChatPromptTemplate.fromMessages([['assistant', 'Invalid API key.']])
+    const { agent, outputParser, model } = t.context
+
+    helper.runInTransaction(agent, async (tx) => {
+      const chain = prompt.pipe(model).pipe(outputParser)
+
+      try {
+        await chain.invoke('')
+      } catch (error) {
+        t.ok(error)
+      }
+
+      // We should still get the same 3xLangChain and 3xLLM events as in the
+      // success case:
+      const events = agent.customEventAggregator.events.toArray()
+      t.equal(events.length, 6, 'should create 6 events')
+
+      const langchainEvents = events.filter((event) => {
+        const [, chainEvent] = event
+        return chainEvent.vendor === 'langchain'
+      })
+      t.equal(langchainEvents.length, 3, 'should create 3 langchain events')
+      const summary = langchainEvents.find((e) => e[0].type === 'LlmChatCompletionSummary')?.[1]
+      t.equal(summary.error, true)
+
+      // But, we should also get two error events: 1xLLM and 1xLangChain
+      const exceptions = tx.exceptions
+      for (const e of exceptions) {
+        const str = Object.prototype.toString.call(e.customAttributes)
+        t.equal(str, '[object LlmErrorMessage]')
+      }
+
+      tx.end()
+      t.end()
+    })
+  })
 })
