@@ -156,6 +156,8 @@ tap.test('Langchain instrumentation - tools', (t) => {
 
       const events = agent.customEventAggregator.events.toArray()
       t.equal(events.length, 1)
+      const toolEvent = events.find((e) => e[0].type === 'LlmTool')?.[1]
+      t.equal(toolEvent.error, true)
 
       const exceptions = tx.exceptions
       t.equal(exceptions.length, 1)

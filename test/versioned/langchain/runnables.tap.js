@@ -415,10 +415,12 @@ tap.test('Langchain instrumentation - runnable sequence', (t) => {
         return chainEvent.vendor === 'langchain'
       })
       t.equal(langchainEvents.length, 3, 'should create 3 langchain events')
+      const summary = langchainEvents.find((e) => e[0].type === 'LlmChatCompletionSummary')?.[1]
+      t.equal(summary.error, true)
 
       // But, we should also get two error events: 1xLLM and 1xLangChain
-      const execptions = tx.exceptions
-      for (const e of execptions) {
+      const exceptions = tx.exceptions
+      for (const e of exceptions) {
         const str = Object.prototype.toString.call(e.customAttributes)
         t.equal(str, '[object LlmErrorMessage]')
       }
