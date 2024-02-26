@@ -72,9 +72,11 @@ function assertLangChainChatCompletionMessages({ tx, chatMsgs, chatSummary, with
     if (msg[1].sequence === 0) {
       expectedChatMsg.sequence = 0
       expectedChatMsg.content = '{"topic":"scientist"}'
+      expectedChatMsg.is_response = false
     } else if (msg[1].sequence === 1) {
       expectedChatMsg.sequence = 1
       expectedChatMsg.content = '212 degrees Fahrenheit is equal to 100 degrees Celsius.'
+      expectedChatMsg.is_response = true
     }
 
     this.equal(msg[0].type, 'LlmChatCompletionMessage')
