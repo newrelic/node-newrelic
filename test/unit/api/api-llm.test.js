@@ -35,33 +35,20 @@ tap.test('Agent API LLM methods', (t) => {
     helper.unloadAgent(t.context.api.agent)
   })
 
-  t.test('getLlmMessageIds is no-op when ai_monitoring is disabled', async (t) => {
+  t.test('recordLlmFeedbackEvent is no-op when no traceId is provided', async (t) => {
     const { api } = t.context
-    api.agent.config.ai_monitoring.enabled = false
 
-    const trackedIds = api.getLlmMessageIds({ responseId: 'test' })
-    t.equal(trackedIds, undefined)
-    t.equal(loggerMock.warn.callCount, 1)
-    t.equal(loggerMock.warn.args[0][0], 'getLlmMessageIds invoked but ai_monitoring is disabled.')
-  })
-
-  t.test('geLlmMessageIds is no-op when no transaction is available', async (t) => {
-    const { api } = t.context
-    const trackedIds = api.getLlmMessageIds({ responseId: 'test' })
-    t.equal(trackedIds, undefined)
-    t.equal(loggerMock.warn.callCount, 1)
-    t.equal(
-      loggerMock.warn.args[0][0],
-      'getLlmMessageIds must be called within the scope of a transaction.'
-    )
-  })
-
-  t.test('getLlmMessageIds returns undefined for unrecognized id', async (t) => {
-    const { api } = t.context
     helper.runInTransaction(api.agent, () => {
-      const trackedIds = api.getLlmMessageIds({ responseId: 'test' })
-      t.equal(trackedIds, undefined)
-      t.equal(loggerMock.warn.callCount, 0)
+      const result = api.recordLlmFeedbackEvent({
+        category: 'test',
+        rating: 'test'
+      })
+      t.equal(result, undefined)
+      t.equal(loggerMock.warn.callCount, 1)
+      t.equal(
+        loggerMock.warn.args[0][0],
+        'A feedback event will not be recorded.  recordLlmFeedbackEvent must be called with a traceId.'
+      )
     })
   })
 
@@ -70,7 +57,7 @@ tap.test('Agent API LLM methods', (t) => {
     api.agent.config.ai_monitoring.enabled = false
 
     const result = api.recordLlmFeedbackEvent({
-      messageId: 'test',
+      traceId: 'trace-id',
       category: 'test',
       rating: 'test'
     })
@@ -86,7 +73,7 @@ tap.test('Agent API LLM methods', (t) => {
     const { api } = t.context
 
     const result = api.recordLlmFeedbackEvent({
-      messageId: 'test',
+      traceId: 'trace-id',
       category: 'test',
       rating: 'test'
     })
@@ -94,7 +81,7 @@ tap.test('Agent API LLM methods', (t) => {
     t.equal(loggerMock.warn.callCount, 1)
     t.equal(
       loggerMock.warn.args[0][0],
-      'No message feedback events will be recorded. recordLlmFeedbackEvent must be called within the scope of a transaction.'
+      'A feedback events will not be recorded. recordLlmFeedbackEvent must be called within the scope of a transaction.'
     )
   })
 
@@ -113,7 +100,7 @@ tap.test('Agent API LLM methods', (t) => {
 
     helper.runInTransaction(api.agent, () => {
       const result = api.recordLlmFeedbackEvent({
-        messageId: 'test',
+        traceId: 'trace-id',
         category: 'test-cat',
         rating: '5 star',
         metadata: { foo: 'foo' }
@@ -123,9 +110,7 @@ tap.test('Agent API LLM methods', (t) => {
       t.equal(event.name, 'LlmFeedbackMessage')
       t.match(event.data, {
         id: /[\w\d]{32}/,
-        conversation_id: '',
-        request_id: '',
-        message_id: 'test',
+        trace_id: 'trace-id',
         category: 'test-cat',
         rating: '5 star',
         message: '',

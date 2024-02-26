@@ -23,7 +23,7 @@ const {
   assignCLMSymbol,
   addCLMAttributes: maybeAddCLMAttributes
 } = require('./lib/util/code-level-metrics')
-const { LlmFeedbackMessage } = require('./lib/llm-events/openai')
+const LlmFeedbackMessage = require('./lib/llm-events/feedback-message')
 
 const ATTR_DEST = require('./lib/config/attribute-filter').DESTINATIONS
 const MODULE_TYPE = require('./lib/shim/constants').MODULE_TYPE
@@ -617,7 +617,7 @@ API.prototype.addIgnoringRule = function addIgnoringRule(pattern) {
  * @private
  * @see RUM_ISSUES
  * @param {number} errorCode Error code from `RUM_ISSUES`.
- * @param {boolean} [quiet=false] Be quiet about this failure.
+ * @param {boolean} [quiet] Be quiet about this failure.
  * @returns {string} HTML comment for debugging purposes with specific error code
  */
 function _gracefail(errorCode, quiet) {
@@ -1542,51 +1542,19 @@ API.prototype.getTraceMetadata = function getTraceMetadata() {
 }
 
 /**
- * Get a set of tracked identifiers
- *
- * @param {object} params Input parameters.
- * @param {string} params.responseId The LLM generated identifier for the
- * response.
- * @returns {LlmTrackedIds|undefined} The tracked identifiers.
- */
-API.prototype.getLlmMessageIds = function getLlmMessageIds({ responseId } = {}) {
-  this.agent.metrics
-    .getOrCreateMetric(`${NAMES.SUPPORTABILITY.API}/getLlmMessageIds`)
-    .incrementCallCount()
-
-  if (this.agent.config?.ai_monitoring?.enabled !== true) {
-    logger.warn('getLlmMessageIds invoked but ai_monitoring is disabled.')
-    return
-  }
-
-  const tx = this.agent.tracer.getTransaction()
-  if (!tx) {
-    logger.warn('getLlmMessageIds must be called within the scope of a transaction.')
-    return
-  }
-  return tx.llm.responses.get(responseId)
-}
-
-/**
  * Record a LLM feedback event which can be viewed in New Relic API Monitoring.
  *
  * @param {object} params Input parameters.
- * @param {string} [params.conversationId=""] If available, the unique
- * identifier for the LLM conversation that triggered the event.
- * @param {string} [params.requestId=""] If available, the request identifier
- * from the remote service.
- * @param {string} params.messageId Identifier for the message being rated.
- * Obtained from {@link getLlmMessageIds}.
+ * @param {string} params.traceId Identifier for the feedback event.
+ * Obtained from {@link getTraceMetadata}.
  * @param {string} params.category A tag for the event.
  * @param {string} params.rating A indicator of how useful the message was.
- * @param {string} [params.message=""] The message that triggered the event.
- * @param {object} [params.metadata={}] Additional key-value pairs to associate
+ * @param {string} [params.message] The message that triggered the event.
+ * @param {object} [params.metadata] Additional key-value pairs to associate
  * with the recorded event.
  */
 API.prototype.recordLlmFeedbackEvent = function recordLlmFeedbackEvent({
-  conversationId = '',
-  requestId = '',
-  messageId,
+  traceId,
   category,
   rating,
   message = '',
@@ -1596,6 +1564,13 @@ API.prototype.recordLlmFeedbackEvent = function recordLlmFeedbackEvent({
     .getOrCreateMetric(`${NAMES.SUPPORTABILITY.API}/recordLlmFeedbackEvent`)
     .incrementCallCount()
 
+  if (!traceId) {
+    logger.warn(
+      'A feedback event will not be recorded.  recordLlmFeedbackEvent must be called with a traceId.'
+    )
+    return
+  }
+
   if (this.agent.config?.ai_monitoring?.enabled !== true) {
     logger.warn('recordLlmFeedbackEvent invoked but ai_monitoring is disabled.')
     return
@@ -1604,15 +1579,13 @@ API.prototype.recordLlmFeedbackEvent = function recordLlmFeedbackEvent({
   const tx = this.agent.tracer.getTransaction()
   if (!tx) {
     logger.warn(
-      'No message feedback events will be recorded. recordLlmFeedbackEvent must be called within the scope of a transaction.'
+      'A feedback events will not be recorded. recordLlmFeedbackEvent must be called within the scope of a transaction.'
     )
     return
   }
 
   const feedback = new LlmFeedbackMessage({
-    conversationId,
-    requestId,
-    messageId,
+    traceId,
     category,
     rating,
     message
@@ -1625,12 +1598,12 @@ API.prototype.recordLlmFeedbackEvent = function recordLlmFeedbackEvent({
  *
  * @param {object} [options]
  *  Object with shut down options.
- * @param {boolean} [options.collectPendingData=false]
+ * @param {boolean} [options.collectPendingData]
  *  If true, the agent will send any pending data to the collector before
  *  shutting down.
- * @param {number} [options.timeout=0]
+ * @param {number} [options.timeout]
  *  Time in milliseconds to wait before shutting down.
- * @param {boolean} [options.waitForIdle=false]
+ * @param {boolean} [options.waitForIdle]
  *  If true, the agent will not shut down until there are no active transactions.
  * @param {Function} [cb]
  *  Callback function that runs when agent stops.
@@ -1675,12 +1648,12 @@ function _logErrorCallback(error, phase) {
  * @private
  * @param {object} api instantiation of this file
  * @param {object} options shutdown options object
- * @param {boolean} [options.collectPendingData=false]
+ * @param {boolean} [options.collectPendingData]
  *  If true, the agent will send any pending data to the collector before
  *  shutting down.
- * @param {number} [options.timeout=0]
+ * @param {number} [options.timeout]
  *  Time in milliseconds to wait before shutting down.
- * @param {boolean} [options.waitForIdle=false]
+ * @param {boolean} [options.waitForIdle]
  *  If true, the agent will not shut down until there are no active transactions.
  * @param {Function} callback callback function to execute after shutdown process is complete (successful or not)
  */

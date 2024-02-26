@@ -23,50 +23,17 @@ tap.test('OpenAI instrumentation - feedback messages', (t) => {
 
   t.teardown(afterHook.bind(null, t))
 
-  t.test(
-    'should store conversation_id, request_id and message_ids on transaction by response_id',
-    (test) => {
-      const conversationId = 'convo-id'
-      const { client, agent } = t.context
-      const api = helper.getAgentApi()
-      helper.runInTransaction(agent, async (tx) => {
-        api.addCustomAttribute('llm.conversation_id', conversationId)
-        const results = await client.chat.completions.create({
-          messages: [
-            { role: 'user', content: 'You are a mathematician.' },
-            { role: 'system', content: 'You are a test.' }
-          ]
-        })
-
-        const trackedIds = api.getLlmMessageIds({ responseId: results.id })
-        test.same(trackedIds, {
-          conversation_id: conversationId,
-          request_id: '49dbbffbd3c3f4612aa48def69059aad',
-          message_ids: [
-            'chatcmpl-87sb95K4EF2nuJRcTs43Tm9ntTeat-0',
-            'chatcmpl-87sb95K4EF2nuJRcTs43Tm9ntTeat-1',
-            'chatcmpl-87sb95K4EF2nuJRcTs43Tm9ntTeat-2'
-          ]
-        })
-        tx.end()
-        test.end()
-      })
-    }
-  )
-
   t.test('can send feedback events', (test) => {
     const { client, agent } = t.context
     const api = helper.getAgentApi()
     helper.runInTransaction(agent, async (tx) => {
-      const results = await client.chat.completions.create({
+      await client.chat.completions.create({
         messages: [{ role: 'user', content: 'You are a mathematician.' }]
       })
+      const { traceId } = api.getTraceMetadata()
 
-      const trackedIds = api.getLlmMessageIds({ responseId: results.id })
       api.recordLlmFeedbackEvent({
-        conversationId: trackedIds.conversation_id,
-        requestId: trackedIds.request_id,
-        messageId: trackedIds.message_ids[0],
+        traceId,
         category: 'test-event',
         rating: '5 star',
         message: 'You are a mathematician.',
@@ -83,9 +50,7 @@ tap.test('OpenAI instrumentation - feedback messages', (t) => {
           }
           return test.match(data, {
             id: /[\w\d]{32}/,
-            conversation_id: '',
-            request_id: '49dbbffbd3c3f4612aa48def69059aad',
-            message_id: 'chatcmpl-87sb95K4EF2nuJRcTs43Tm9ntTeat-0',
+            trace_id: traceId,
             category: 'test-event',
             rating: '5 star',
             message: 'You are a mathematician.',
