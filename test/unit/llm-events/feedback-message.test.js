@@ -6,13 +6,11 @@
 'use strict'
 
 const tap = require('tap')
-const LlmFeedbackMessage = require('../../../../lib/llm-events/openai/feedback-message')
+const LlmFeedbackMessage = require('../../../lib/llm-events/feedback-message')
 
 tap.test('LlmFeedbackMessage', (t) => {
   const opts = {
-    conversationId: 'convo-id',
-    requestId: 'request-id',
-    messageId: 'msg-id',
+    traceId: 'trace-id',
     category: 'informative',
     rating: '10',
     message: 'This answer was amazing'
@@ -20,9 +18,7 @@ tap.test('LlmFeedbackMessage', (t) => {
   const feedbackMsg = new LlmFeedbackMessage(opts)
   const expected = {
     id: feedbackMsg.id,
-    conversation_id: 'convo-id',
-    request_id: 'request-id',
-    message_id: 'msg-id',
+    trace_id: 'trace-id',
     category: 'informative',
     rating: '10',
     message: 'This answer was amazing',
