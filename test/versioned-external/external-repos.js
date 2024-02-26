@@ -15,7 +15,7 @@ const repos = [
   {
     name: 'aws-sdk',
     repository: 'https://github.com/newrelic/node-newrelic-aws-sdk.git',
-    branch: 'main'
+    branch: 'update-llm-feedback'
   },
   {
     name: 'koa',
