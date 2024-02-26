@@ -16,6 +16,10 @@ const nextPkg = require('next/package.json')
 const semver = require('semver')
 const newServerResponse = semver.gte(nextPkg.version, '13.3.0')
 const noServerClose = semver.gte(nextPkg.version, '13.4.15')
+// In 14.1.0 they removed handling exit event to close server.
+// SIGTERM existed for a few past versions but not all the way back to 13.4.15
+// just emit SIGTERM after 14.1.0
+const closeEvent = semver.gte(nextPkg.version, '14.1.0') ? 'SIGTERM' : 'exit'
 
 /**
  * Builds a Next.js app
@@ -64,7 +68,7 @@ helpers.start = async function start(dir, path = 'app', port = 3001) {
   if (noServerClose) {
     // 13.4.15 updated startServer to have no return value, so we have to use an event emitter instead for cleanup to fire
     // See: https://github.com/vercel/next.js/blob/canary/packages/next/src/server/lib/start-server.ts#L192
-    return { close: () => process.emit('exit') }
+    return { close: () => process.emit(closeEvent) }
   }
 
   if (newServerResponse) {
