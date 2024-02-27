@@ -2,6 +2,20 @@
   "repository": "newrelic/node-newrelic",
   "entries": [
     {
+      "version": "11.11.0",
+      "changes": {
+        "security": [],
+        "bugfixes": [],
+        "features": [
+          "Added ability to recordLlmFeedbackEvent by traceId",
+          "Add LangChain error events capture",
+          "Add instrumentation for RunnableSequence",
+          "Added instrumentation for langchain tools.",
+          "Added `ai_monitoring.streaming.enabled`. When set to `false` this will not instrument chat completion streams, thus it will not create relevant Llm events."
+        ]
+      }
+    },
+    {
       "version": "11.10.4",
       "changes": {
         "security": [],
