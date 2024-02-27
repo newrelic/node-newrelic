@@ -7,9 +7,12 @@
 
 const tap = require('tap')
 const helper = require('../../lib/agent_helper')
+// load the assertSegments assertion
+require('../../lib/metrics_helper')
 const { version: pkgVersion } = require('@langchain/core/package.json')
 const createOpenAIMockServer = require('../openai/mock-server')
 const { filterLangchainEvents, filterLangchainEventsByType } = require('./common')
+const { DESTINATIONS } = require('../../../lib/config/attribute-filter')
 
 const config = {
   ai_monitoring: {
@@ -49,7 +52,7 @@ tap.test('Langchain instrumentation - vectorstore', (t) => {
     helper.unloadAgent(t.context.agent)
     // bust the require-cache so it can re-instrument
     Object.keys(require.cache).forEach((key) => {
-      if (key.includes('@langchain/core') || key.includes('openai')) {
+      if (key.includes('@langchain/core') || key.includes('openai') || key.includes('langchain')) {
         delete require.cache[key]
       }
     })
@@ -62,7 +65,7 @@ tap.test('Langchain instrumentation - vectorstore', (t) => {
       await vs.similaritySearch('This is an embedding test.', 1)
 
       const events = agent.customEventAggregator.events.toArray()
-      t.equal(events.length, 4, 'should create 4 events')
+      t.equal(events.length, 3, 'should create 3 events')
 
       const langchainEvents = events.filter((event) => {
         const [, chainEvent] = event
@@ -81,9 +84,9 @@ tap.test('Langchain instrumentation - vectorstore', (t) => {
     helper.runInTransaction(agent, async (tx) => {
       const result = await vs.similaritySearch('This is an embedding test.', 1)
       t.ok(result)
-      // t.assertSegments(tx.trace.root, ['Llm/vectorstore/Langchain/similaritySearch'], {
-      //   exact: false
-      // })
+      t.assertSegments(tx.trace.root, ['Llm/vectorstore/Langchain/similaritySearch'], {
+        exact: false
+      })
       tx.end()
       t.end()
     })
@@ -131,4 +134,28 @@ tap.test('Langchain instrumentation - vectorstore', (t) => {
       })
     }
   )
+
+  t.test('should not create vectorstore events when not in a transaction', async (t) => {
+    const { agent, vs } = t.context
+
+    await vs.similaritySearch('This is an embedding test.', 1)
+
+    const events = agent.customEventAggregator.events.toArray()
+    t.equal(events.length, 0, 'should not create vectorstore events')
+    t.end()
+  })
+
+  t.test('should add llm attribute to transaction', (t) => {
+    const { agent, vs } = t.context
+
+    helper.runInTransaction(agent, async (tx) => {
+      await vs.similaritySearch('This is an embedding test.', 1)
+
+      const attributes = tx.trace.attributes.get(DESTINATIONS.TRANS_EVENT)
+      t.equal(attributes.llm, true)
+
+      tx.end()
+      t.end()
+    })
+  })
 })
