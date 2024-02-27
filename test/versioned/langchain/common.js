@@ -48,7 +48,14 @@ function assertLangChainChatCompletionSummary({ tx, chatSummary, withCallback })
   this.match(chatSummary[1], expectedSummary, 'should match chat summary message')
 }
 
-function assertLangChainChatCompletionMessages({ tx, chatMsgs, chatSummary, withCallback }) {
+function assertLangChainChatCompletionMessages({
+  tx,
+  chatMsgs,
+  chatSummary,
+  withCallback,
+  input = '{"topic":"scientist"}',
+  output = '212 degrees Fahrenheit is equal to 100 degrees Celsius.'
+}) {
   const baseMsg = {
     id: /[a-f0-9]{36}/,
     appName: 'New Relic for Node.js tests',
@@ -71,11 +78,11 @@ function assertLangChainChatCompletionMessages({ tx, chatMsgs, chatSummary, with
     const expectedChatMsg = { ...baseMsg }
     if (msg[1].sequence === 0) {
       expectedChatMsg.sequence = 0
-      expectedChatMsg.content = '{"topic":"scientist"}'
+      expectedChatMsg.content = input
       expectedChatMsg.is_response = false
     } else if (msg[1].sequence === 1) {
       expectedChatMsg.sequence = 1
-      expectedChatMsg.content = '212 degrees Fahrenheit is equal to 100 degrees Celsius.'
+      expectedChatMsg.content = output
       expectedChatMsg.is_response = true
     }
 

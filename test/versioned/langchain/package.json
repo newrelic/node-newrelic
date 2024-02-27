@@ -16,7 +16,8 @@
       },
       "files": [
         "tools.tap.js",
-        "runnables.tap.js"
+        "runnables.tap.js",
+        "runnables-streaming.tap.js"
       ]
     }
   ]
