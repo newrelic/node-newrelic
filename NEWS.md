@@ -31,7 +31,8 @@
 
 #### Miscellaneous chores
 
-* Add missing is_response to LangChain completion messages ([#2044](https://github.com/newrelic/node-newrelic/pull/2044)) ([20c7d47](https://github.com/newrelic/node-newrelic/commit/20c7d473e318d50854ab8fefcc92d0b7a3b95b64))
+* Added missing is_response to LangChain completion messages ([#2044](https://github.com/newrelic/node-newrelic/pull/2044)) ([20c7d47](https://github.com/newrelic/node-newrelic/commit/20c7d473e318d50854ab8fefcc92d0b7a3b95b64))
+
 * Attached specs to the `Shim.prototype` for use in custom instrumentation and instrumentation outside of the agent ([#2038](https://github.com/newrelic/node-newrelic/pull/2038)) ([2c97488](https://github.com/newrelic/node-newrelic/commit/2c974887068b7cc522eb29dd781481bb1583bde7))
 * **deps:** Updated to use @newrelic/ritm from require-in-the-middle ([#2034](https://github.com/newrelic/node-newrelic/pull/2034)) ([ffb729f](https://github.com/newrelic/node-newrelic/commit/ffb729f1e9389e7a3d495b09df913eb3b5b43c3f))
 * Updated DatastoreParameters to include collection ([#2039](https://github.com/newrelic/node-newrelic/pull/2039)) ([b9c73ca](https://github.com/newrelic/node-newrelic/commit/b9c73ca482d13d26f2bf54c22cd3ab4f77f413ca))
