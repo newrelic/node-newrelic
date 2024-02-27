@@ -3,7 +3,6 @@
 #### Features
 
 * Add instrumentation for RunnableSequence ([#1996](https://github.com/newrelic/node-newrelic/pull/1996)) ([71ffa37](https://github.com/newrelic/node-newrelic/commit/71ffa373e01d27be4d3ad40464facc8a33f4aeb2))
-    * Co-authored-by: Bob Evans <robert.evans25@gmail.com> Co-authored-by: Bob Evans <revans@newrelic.com> Co-authored-by: github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com> Co-authored-by: James Sumners <jsumners@newrelic.com>
 * Add LangChain error events capture ([#2040](https://github.com/newrelic/node-newrelic/pull/2040)) ([4d0d839](https://github.com/newrelic/node-newrelic/commit/4d0d8396ac3c19dee9d14477d8b408efaae3c24f))
 * Added `ai_monitoring.streaming.enabled`. When set to `false` this will not instrument chat completion streams, thus it will not create relevant Llm events. ([#2021](https://github.com/newrelic/node-newrelic/pull/2021)) ([ff78b51](https://github.com/newrelic/node-newrelic/commit/ff78b514d0afe8127a094ce810f164b08768bcac))
 * Added ability to recordLlmFeedbackEvent by traceId ([#2043](https://github.com/newrelic/node-newrelic/pull/2043)) ([b0a4ed1](https://github.com/newrelic/node-newrelic/commit/b0a4ed10ad7d6e021727d6d5e4746292e7a34ea1))
