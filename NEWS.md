@@ -2,8 +2,10 @@
 
 #### Features
 
-* Add instrumentation for RunnableSequence ([#1996](https://github.com/newrelic/node-newrelic/pull/1996)) ([71ffa37](https://github.com/newrelic/node-newrelic/commit/71ffa373e01d27be4d3ad40464facc8a33f4aeb2))
-* Add LangChain error events capture ([#2040](https://github.com/newrelic/node-newrelic/pull/2040)) ([4d0d839](https://github.com/newrelic/node-newrelic/commit/4d0d8396ac3c19dee9d14477d8b408efaae3c24f))
+* Added instrumentation for RunnableSequence ([#1996](https://github.com/newrelic/node-newrelic/pull/1996)) ([71ffa37](https://github.com/newrelic/node-newrelic/commit/71ffa373e01d27be4d3ad40464facc8a33f4aeb2))
+
+* Added LangChain error events capture ([#2040](https://github.com/newrelic/node-newrelic/pull/2040)) ([4d0d839](https://github.com/newrelic/node-newrelic/commit/4d0d8396ac3c19dee9d14477d8b408efaae3c24f))
+
 * Added `ai_monitoring.streaming.enabled`. When set to `false` this will not instrument chat completion streams, thus it will not create relevant Llm events. ([#2021](https://github.com/newrelic/node-newrelic/pull/2021)) ([ff78b51](https://github.com/newrelic/node-newrelic/commit/ff78b514d0afe8127a094ce810f164b08768bcac))
 * Added ability to recordLlmFeedbackEvent by traceId ([#2043](https://github.com/newrelic/node-newrelic/pull/2043)) ([b0a4ed1](https://github.com/newrelic/node-newrelic/commit/b0a4ed10ad7d6e021727d6d5e4746292e7a34ea1))
 * Added instrumentation for langchain tools. ([#2009](https://github.com/newrelic/node-newrelic/pull/2009)) ([695d10e](https://github.com/newrelic/node-newrelic/commit/695d10e28ee6cbeba252299d7d94c9660137d293))
@@ -11,15 +13,21 @@
 #### Code refactoring
 
 * Updated AIM instrumentation ([#2015](https://github.com/newrelic/node-newrelic/pull/2015)) ([d37d2a8](https://github.com/newrelic/node-newrelic/commit/d37d2a88a4754c23ee039955c5839d8b7d35f875))
-    * * removed capturing last 4 of api key, include all custom attributes prefixed with `llm.` as attributes on all Llm Events and change tracking metric to start with Supportability
+    * removed capturing last 4 of api key
+    * included all custom attributes prefixed with `llm.` as attributes on all Llm events
+    * changed tracking metric to start with Supportability
+
 * Updated capturing conversation_id on Llm Events as `llm.conversation_id` ([#2020](https://github.com/newrelic/node-newrelic/pull/2020)) ([5f93f65](https://github.com/newrelic/node-newrelic/commit/5f93f6571eeb38740d8f3cb59f7706d9cb07c67a))
 * Updated instrumentation to construct specs at source instead of within the shim methods ([#2035](https://github.com/newrelic/node-newrelic/pull/2035)) ([ead8c25](https://github.com/newrelic/node-newrelic/commit/ead8c25e851d49b199cf808529e6483b2a3f024d))
-    * * Simplified the logic in `shim.recordQuery` and `shim.recordOperation` to reduce merging of spec properties and rely on the constructed spec
+    * Simplified the logic in `shim.recordQuery` and `shim.recordOperation` to reduce merging of spec properties and rely on the constructed spec
+
 
 #### Documentation
 
-* Add note about using sudo for firewall script ([#2032](https://github.com/newrelic/node-newrelic/pull/2032)) ([bf106d2](https://github.com/newrelic/node-newrelic/commit/bf106d2a8a84d86443765a27d031233993cbd788))
-* Fix spec objects parameter definitions ([#2024](https://github.com/newrelic/node-newrelic/pull/2024)) ([4378173](https://github.com/newrelic/node-newrelic/commit/4378173b19cd1a7c92c38d6d9d7c6ad22d823fe5))
+* Added note about using sudo for firewall script ([#2032](https://github.com/newrelic/node-newrelic/pull/2032)) ([bf106d2](https://github.com/newrelic/node-newrelic/commit/bf106d2a8a84d86443765a27d031233993cbd788))
+
+* Fixed spec objects parameter definitions ([#2024](https://github.com/newrelic/node-newrelic/pull/2024)) ([4378173](https://github.com/newrelic/node-newrelic/commit/4378173b19cd1a7c92c38d6d9d7c6ad22d823fe5))
+
 
 #### Miscellaneous chores
 
