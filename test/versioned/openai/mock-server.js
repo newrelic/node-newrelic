@@ -153,5 +153,9 @@ function getShortenedPrompt(reqBody) {
   const prompt =
     reqBody.prompt || reqBody.input || reqBody.messages.map((m) => m.content).join('\n')
 
+  if (typeof prompt === 'object') {
+    return prompt[0]
+  }
+
   return prompt.split('\n')[0]
 }

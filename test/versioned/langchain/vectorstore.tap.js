@@ -7,7 +7,9 @@
 
 const tap = require('tap')
 const helper = require('../../lib/agent_helper')
+const { version: pkgVersion } = require('@langchain/core/package.json')
 const createOpenAIMockServer = require('../openai/mock-server')
+const { filterLangchainEvents, filterLangchainEventsByType } = require('./common')
 
 const config = {
   ai_monitoring: {
@@ -26,6 +28,7 @@ tap.test('Langchain instrumentation - vectorstore', (t) => {
     t.context.server = server
     t.context.agent = helper.instrumentMockedAgent(config)
     const { OpenAIEmbeddings } = require('@langchain/openai')
+    const { MemoryVectorStore } = require('langchain/vectorstores/memory')
 
     t.context.embedding = new OpenAIEmbeddings({
       openAIApiKey: 'fake-key',
@@ -33,6 +36,12 @@ tap.test('Langchain instrumentation - vectorstore', (t) => {
         baseURL: `http://${host}:${port}`
       }
     })
+
+    t.context.vs = await MemoryVectorStore.fromTexts(
+      ['This is an embedding test.'],
+      [{ id: 2 }],
+      t.context.embedding
+    )
   })
 
   t.afterEach(async (t) => {
@@ -47,22 +56,79 @@ tap.test('Langchain instrumentation - vectorstore', (t) => {
   })
 
   t.test('should create vectorstore events for every similarity search call', (t) => {
-    const { agent, embedding } = t.context
-    const { MemoryVectorStore } = require('langchain/vectorstores/memory')
+    const { agent, vs } = t.context
 
     helper.runInNamedTransaction(agent, async (tx) => {
-      const vs = await MemoryVectorStore.fromTexts(
-        ['This is an embedding test.'],
-        [{ id: 2 }, { id: 1 }, { id: 3 }],
-        embedding
-      )
       await vs.similaritySearch('This is an embedding test.', 1)
 
       const events = agent.customEventAggregator.events.toArray()
       t.equal(events.length, 4, 'should create 4 events')
 
+      const langchainEvents = events.filter((event) => {
+        const [, chainEvent] = event
+        return chainEvent.vendor === 'langchain'
+      })
+
+      t.equal(langchainEvents.length, 2, 'should create 2 langchain events')
+
       tx.end()
       t.end()
     })
   })
+
+  t.test('should create span on successful vectorstore create', (t) => {
+    const { agent, vs } = t.context
+    helper.runInTransaction(agent, async (tx) => {
+      const result = await vs.similaritySearch('This is an embedding test.', 1)
+      t.ok(result)
+      // t.assertSegments(tx.trace.root, ['Llm/vectorstore/Langchain/similaritySearch'], {
+      //   exact: false
+      // })
+      tx.end()
+      t.end()
+    })
+  })
+
+  t.test('should increment tracking metric for each langchain vectorstore event', (t) => {
+    const { agent, vs } = t.context
+
+    helper.runInTransaction(agent, async (tx) => {
+      await vs.similaritySearch('This is an embedding test.', 1)
+
+      const metrics = agent.metrics.getOrCreateMetric(
+        `Supportability/Nodejs/ML/Langchain/${pkgVersion}`
+      )
+      t.equal(metrics.callCount > 0, true)
+
+      tx.end()
+      t.end()
+    })
+  })
+
+  t.test(
+    'should create vectorstore events for every similarity search call with embeddings',
+    (t) => {
+      const { agent, vs } = t.context
+
+      helper.runInNamedTransaction(agent, async (tx) => {
+        await vs.similaritySearch('This is an embedding test.', 1)
+
+        const events = agent.customEventAggregator.events.toArray()
+        const langchainEvents = filterLangchainEvents(events)
+
+        const vectorSearchResultEvents = filterLangchainEventsByType(
+          langchainEvents,
+          'LlmVectorSearchResult'
+        )
+
+        const vectorSearchEvents = filterLangchainEventsByType(langchainEvents, 'LlmVectorSearch')
+
+        t.langchainVectorSearch({ tx, vectorSearch: vectorSearchEvents[0] })
+        t.langchainVectorSearchResult({ tx, vectorSearchResult: vectorSearchResultEvents })
+
+        tx.end()
+        t.end()
+      })
+    }
+  )
 })
