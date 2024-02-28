@@ -13,7 +13,9 @@
       "dependencies": {
         "@langchain/core": ">=0.1.17",
         "@langchain/openai": "latest",
-        "langchain": "^0.1.22"
+        "langchain": "^0.1.22",
+        "@langchain/community": "^0.0.33",
+        "redis": ">=4"
       },
       "files": [
         "tools.tap.js",
