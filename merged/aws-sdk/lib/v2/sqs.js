@@ -38,10 +38,10 @@ function recordMessageApi(shim, original, name, args) {
   const params = args[0]
   const queueName = grabLastUrlSegment(params.QueueUrl)
 
-  return {
+  return new shim.specs.MessageSpec({
     callback: shim.LAST,
     destinationName: queueName,
     destinationType: shim.QUEUE,
     opaque: true
-  }
+  })
 }

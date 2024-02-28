@@ -27,12 +27,12 @@ function instrument(shim, AWS) {
 }
 
 function wrapPublish(shim, original, name, args) {
-  return {
+  return new shim.specs.MessageSpec({
     callback: shim.LAST,
     destinationName: getDestinationName(args[0]),
     destinationType: shim.TOPIC,
     opaque: true
-  }
+  })
 }
 
 function getDestinationName({ TopicArn, TargetArn }) {

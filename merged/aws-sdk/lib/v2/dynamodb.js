@@ -43,12 +43,16 @@ function instrument(shim, AWS) {
       function wrapMethod(shim, original, operationName, args) {
         const params = args[0]
 
-        return {
+        return new shim.specs.OperationSpec({
           name: operationName,
-          parameters: setDynamoParameters(this.endpoint, params),
+          parameters: setDynamoParameters(
+            shim.specs.params.DatastoreParameters,
+            this.endpoint,
+            params
+          ),
           callback: shim.LAST,
           opaque: true
-        }
+        })
       }
     )
   })
@@ -70,16 +74,16 @@ function instrument(shim, AWS) {
       // the eventual cached endpoint to be hit is not known at this point.
       const endpoint = this.service && this.service.endpoint
 
-      return {
+      return new shim.specs.OperationSpec({
         name: dynamoOperation,
-        parameters: {
-          host: endpoint && endpoint.host,
-          port_path_or_id: endpoint && endpoint.port,
-          collection: (params && params.TableName) || 'Unknown'
-        },
+        parameters: new shim.specs.params.DatastoreParameters({
+          host: endpoint?.host,
+          port_path_or_id: endpoint?.port,
+          collection: params?.TableName || 'Unknown'
+        }),
         callback: shim.LAST,
         opaque: true
-      }
+      })
     }
   )
 }

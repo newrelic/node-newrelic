@@ -187,7 +187,7 @@ function getBedrockSpec({ commandName }, shim, _original, _name, args) {
   const bedrockCommand = new BedrockCommand(input)
   const { modelType } = bedrockCommand
 
-  return {
+  return new shim.specs.RecorderSpec({
     promise: true,
     name: `Llm/${modelType}/Bedrock/${commandName}`,
     // eslint-disable-next-line max-params
@@ -222,7 +222,7 @@ function getBedrockSpec({ commandName }, shim, _original, _name, args) {
         addLlmMeta({ agent, segment })
       }
     }
-  }
+  })
 }
 
 function handleResponse({ shim, err, response, segment, bedrockCommand, modelType }) {

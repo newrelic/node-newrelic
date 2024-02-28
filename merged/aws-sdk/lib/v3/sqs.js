@@ -42,12 +42,12 @@ function sqsMiddleware(shim, config, next, context) {
 function getSqsSpec(shim, original, name, args) {
   const [command] = args
   const { QueueUrl } = command.input
-  return {
+  return new shim.specs.MessageSpec({
     callback: shim.LAST,
     destinationName: grabLastUrlSegment(QueueUrl),
     destinationType: shim.QUEUE,
     opaque: true
-  }
+  })
 }
 
 module.exports.sqsMiddlewareConfig = {

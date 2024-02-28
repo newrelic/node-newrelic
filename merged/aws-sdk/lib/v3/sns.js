@@ -33,13 +33,13 @@ function snsMiddleware(shim, config, next, context) {
  */
 function getSnsSpec(shim, original, name, args) {
   const [command] = args
-  return {
+  return new shim.specs.MessageSpec({
     promise: true,
     callback: shim.LAST,
     destinationName: getDestinationName(command.input),
     destinationType: shim.TOPIC,
     opaque: true
-  }
+  })
 }
 
 /**

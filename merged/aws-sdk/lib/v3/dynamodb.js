@@ -17,13 +17,13 @@ const { setDynamoParameters } = require('../util')
  */
 function getDynamoSpec(shim, original, name, args) {
   const [{ input }] = args
-  return {
+  return new shim.specs.OperationSpec({
     name: this.commandName,
-    parameters: setDynamoParameters(this.endpoint, input),
+    parameters: setDynamoParameters(shim.specs.params.DatastoreParameters, this.endpoint, input),
     callback: shim.LAST,
     opaque: true,
     promise: true
-  }
+  })
 }
 
 /**
