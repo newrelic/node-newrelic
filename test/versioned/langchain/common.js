@@ -28,12 +28,10 @@ function assertLangChainVectorSearch({ tx, vectorSearch }) {
     'span_id': tx.trace.root.children[0].id,
     'trace_id': tx.traceId,
     'transaction_id': tx.id,
-    // 'request_id': undefined,
     'request.k': 1,
     'request.query': 'This is an embedding test.',
     'ingest_source': 'Node',
     'vendor': 'langchain',
-    'tags': '',
     'virtual_llm': true,
     ['response.number_of_documents']: 1,
     'duration': tx.trace.root.children[0].getDurationInMillis()
@@ -45,16 +43,16 @@ function assertLangChainVectorSearch({ tx, vectorSearch }) {
 
 function assertLangChainVectorSearchResult({ tx, vectorSearchResult }) {
   const baseSearchResult = {
-    id: /[a-f0-9]{36}/,
-    appName: 'New Relic for Node.js tests',
-    span_id: tx.trace.root.children[0].id,
-    trace_id: tx.traceId,
-    transaction_id: tx.id,
-    // 'request_id': undefined,
-    ingest_source: 'Node',
-    vendor: 'langchain',
-    tags: '',
-    virtual_llm: true
+    'id': /[a-f0-9]{36}/,
+    'search_id': /[a-f0-9\-]{36}/,
+    'appName': 'New Relic for Node.js tests',
+    'span_id': tx.trace.root.children[0].id,
+    'trace_id': tx.traceId,
+    'transaction_id': tx.id,
+    'ingest_source': 'Node',
+    'vendor': 'langchain',
+    'metadata.id': '2',
+    'virtual_llm': true
   }
 
   vectorSearchResult.forEach((search) => {
