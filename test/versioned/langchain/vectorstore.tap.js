@@ -166,24 +166,23 @@ tap.test('Langchain instrumentation - vectorstore', (t) => {
     const urltils = require('../../../lib/util/urltils')
 
     const redis = require('redis')
-    const { RedisVectorStore } = require('@langchain/redis')
+    const { RedisVectorStore } = require('@langchain/community/vectorstores/redis')
     const { Document } = require('@langchain/core/documents')
     // Indicates unique database in Redis. 0-15 supported.
-    const DB_INDEX = 2
+    const port = 6380
 
     helper.runInNamedTransaction(agent, async (tx) => {
       const client = redis.createClient({
-        socket: { port: params.redis_port, host: params.redis_host }
+        socket: { port, host: params.redis_host }
       })
 
       await client.connect()
       await client.flushAll()
-      await client.select(DB_INDEX)
 
       const METRIC_HOST_NAME = urltils.isLocalhost(params.redis_host)
         ? agent.config.getHostnameSafe()
         : params.redis_host
-      const HOST_ID = METRIC_HOST_NAME + '/' + params.redis_port
+      const HOST_ID = METRIC_HOST_NAME + '/' + port 
 
       const docs = [
         new Document({
@@ -194,9 +193,10 @@ tap.test('Langchain instrumentation - vectorstore', (t) => {
 
       const vectorStore = await RedisVectorStore.fromDocuments(docs, embedding, {
         redisClient: client,
-        indexName: 'docs'
+        indexName: 'docs' 
       })
 
+      debugger
       await vectorStore.similaritySearch('This is an embedding test.', 1)
 
       const events = agent.customEventAggregator.events.toArray()

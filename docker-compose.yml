@@ -70,6 +70,16 @@ services:
       interval: 1s
       timeout: 10s
       retries: 30
+  redis-stack:
+    container_name: nr_node_redis_stack
+    image: redis/redis-stack-server
+    ports:
+      - "6380:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 1s
+      timeout: 10s
+      retries: 30
   cassandra:
     container_name: nr_node_cassandra
     platform: linux/amd64
