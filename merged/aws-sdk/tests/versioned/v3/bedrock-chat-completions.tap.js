@@ -193,9 +193,8 @@ tap.afterEach(async (t) => {
     })
   })
 
-  tap.test('should store ids and record feedback message accordingly', (t) => {
+  tap.test('should record feedback message accordingly', (t) => {
     const { bedrock, client, helper } = t.context
-    const conversationId = 'convo-id'
     const prompt = `text ${resKey} ultimate question`
     const input = requests[resKey](prompt, modelId)
     const command = new bedrock.InvokeModelCommand(input)
@@ -203,21 +202,10 @@ tap.afterEach(async (t) => {
     const { agent } = helper
     const api = helper.getAgentApi()
     helper.runInTransaction(async (tx) => {
-      api.addCustomAttribute('llm.conversation_id', conversationId)
-      const response = await client.send(command)
-      const responseId = response.$metadata.requestId
-      const events = agent.customEventAggregator.events.toArray()
-      const chatMsgs = events.filter(([{ type }]) => type === 'LlmChatCompletionMessage')
-      const ids = api.getLlmMessageIds({ responseId })
-      const messageIds = chatMsgs.map((msg) => msg[1].id)
-      t.equal(ids.request_id, responseId)
-      t.equal(ids.conversation_id, conversationId)
-      // message_ids order varies over test run, sort them to assure consistency
-      t.same(ids.message_ids.sort(), messageIds.sort())
+      await client.send(command)
+      const { traceId } = api.getTraceMetadata()
       api.recordLlmFeedbackEvent({
-        conversationId: ids.conversation_id,
-        requestId: ids.request_id,
-        messageId: ids.message_ids[0],
+        traceId,
         category: 'test-event',
         rating: '5 star',
         message: 'You are a mathematician.',
@@ -228,9 +216,7 @@ tap.afterEach(async (t) => {
 
       t.match(feedback, {
         id: /[\w\d]{32}/,
-        conversation_id: ids.conversation_id,
-        request_id: ids.request_id,
-        message_id: ids.message_ids[0],
+        trace_id: traceId,
         category: 'test-event',
         rating: '5 star',
         message: 'You are a mathematician.',

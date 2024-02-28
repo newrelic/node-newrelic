@@ -9,7 +9,6 @@ const {
   LlmChatCompletionSummary,
   LlmEmbedding,
   LlmError,
-  LlmTrackedIds,
   BedrockCommand,
   BedrockResponse,
   StreamHandler
@@ -73,28 +72,6 @@ function addLlmMeta({ agent, segment }) {
 }
 
 /**
- * Assigns requestId, conversationId and messageIds for a given
- * chat completion response on the active transaction.
- * This is used for generating LlmFeedbackEvent via `api.recordLlmFeedbackEvent`
- *
- * @param {object} params input params
- * @param {Transaction} params.tx active transaction
- * @param {LlmChatCompletionMessage} params.msg chat completion message
- * @param {string} params.responseId id of response
- */
-function assignIdsToTx({ tx, msg, responseId }) {
-  const tracker = tx.llm.responses
-  const trackedIds =
-    tracker.get(responseId) ??
-    new LlmTrackedIds({
-      requestId: msg.request_id,
-      conversationId: msg['llm.conversation_id']
-    })
-  trackedIds.message_ids.push(msg.id)
-  tracker.set(responseId, trackedIds)
-}
-
-/**
  * Creates and enqueues the LlmChatCompletionSummary and
  * LlmChatCompletionMessage events and adds an error to transaction if it
  * exists. It will also assign the request, conversation and messages ids by
@@ -107,7 +84,6 @@ function assignIdsToTx({ tx, msg, responseId }) {
  * @param {Error|null} params.err error from request if exists
  */
 function recordChatCompletionMessages({ agent, segment, bedrockCommand, bedrockResponse, err }) {
-  const tx = segment.transaction
   const summary = new LlmChatCompletionSummary({
     agent,
     bedrockResponse,
@@ -124,7 +100,6 @@ function recordChatCompletionMessages({ agent, segment, bedrockCommand, bedrockR
     index: 0,
     completionId: summary.id
   })
-  assignIdsToTx({ tx, responseId: bedrockResponse.requestId, msg })
   recordEvent({ agent, type: 'LlmChatCompletionMessage', msg })
 
   bedrockResponse.completions.forEach((content, index) => {
@@ -138,7 +113,6 @@ function recordChatCompletionMessages({ agent, segment, bedrockCommand, bedrockR
       content,
       completionId: summary.id
     })
-    assignIdsToTx({ tx, responseId: bedrockResponse.requestId, msg: chatCompletionMessage })
     recordEvent({ agent, type: 'LlmChatCompletionMessage', msg: chatCompletionMessage })
   })
 

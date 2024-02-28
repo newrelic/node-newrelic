@@ -1,33 +1,33 @@
 {
-  "lastUpdated": "Thu Feb 01 2024 13:49:24 GMT-0500 (Eastern Standard Time)",
+  "lastUpdated": "Tue Feb 27 2024 15:25:14 GMT-0500 (Eastern Standard Time)",
   "projectName": "New Relic AWS-SDK Instrumentation",
   "projectUrl": "https://github.com/newrelic/node-newrelic-aws-sdk",
   "includeOptDeps": false,
   "includeDev": true,
   "dependencies": {},
   "devDependencies": {
-    "@aws-sdk/client-s3@3.504.0": {
+    "@aws-sdk/client-s3@3.485.0": {
       "name": "@aws-sdk/client-s3",
-      "version": "3.504.0",
+      "version": "3.485.0",
       "range": "^3.342.0",
       "licenses": "Apache-2.0",
       "repoUrl": "https://github.com/aws/aws-sdk-js-v3",
-      "versionedRepoUrl": "https://github.com/aws/aws-sdk-js-v3/tree/v3.504.0",
+      "versionedRepoUrl": "https://github.com/aws/aws-sdk-js-v3/tree/v3.485.0",
       "licenseFile": "node_modules/@aws-sdk/client-s3/LICENSE",
-      "licenseUrl": "https://github.com/aws/aws-sdk-js-v3/blob/v3.504.0/LICENSE",
+      "licenseUrl": "https://github.com/aws/aws-sdk-js-v3/blob/v3.485.0/LICENSE",
       "licenseTextSource": "file",
       "publisher": "AWS SDK for JavaScript Team",
       "url": "https://aws.amazon.com/javascript/"
     },
-    "@aws-sdk/s3-request-presigner@3.504.0": {
+    "@aws-sdk/s3-request-presigner@3.485.0": {
       "name": "@aws-sdk/s3-request-presigner",
-      "version": "3.504.0",
+      "version": "3.485.0",
       "range": "^3.342.0",
       "licenses": "Apache-2.0",
       "repoUrl": "https://github.com/aws/aws-sdk-js-v3",
-      "versionedRepoUrl": "https://github.com/aws/aws-sdk-js-v3/tree/v3.504.0",
+      "versionedRepoUrl": "https://github.com/aws/aws-sdk-js-v3/tree/v3.485.0",
       "licenseFile": "node_modules/@aws-sdk/s3-request-presigner/LICENSE",
-      "licenseUrl": "https://github.com/aws/aws-sdk-js-v3/blob/v3.504.0/LICENSE",
+      "licenseUrl": "https://github.com/aws/aws-sdk-js-v3/blob/v3.485.0/LICENSE",
       "licenseTextSource": "file",
       "publisher": "AWS SDK for JavaScript Team",
       "url": "https://aws.amazon.com/javascript/"
@@ -70,15 +70,15 @@
       "publisher": "New Relic Node.js agent team",
       "email": "nodejs@newrelic.com"
     },
-    "aws-sdk@2.1548.0": {
+    "aws-sdk@2.1531.0": {
       "name": "aws-sdk",
-      "version": "2.1548.0",
+      "version": "2.1531.0",
       "range": "^2.1372.0",
       "licenses": "Apache-2.0",
       "repoUrl": "https://github.com/aws/aws-sdk-js",
-      "versionedRepoUrl": "https://github.com/aws/aws-sdk-js/tree/v2.1548.0",
+      "versionedRepoUrl": "https://github.com/aws/aws-sdk-js/tree/v2.1531.0",
       "licenseFile": "node_modules/aws-sdk/LICENSE.txt",
-      "licenseUrl": "https://github.com/aws/aws-sdk-js/blob/v2.1548.0/LICENSE.txt",
+      "licenseUrl": "https://github.com/aws/aws-sdk-js/blob/v2.1531.0/LICENSE.txt",
       "licenseTextSource": "file",
       "publisher": "Amazon Web Services",
       "url": "https://aws.amazon.com/"
@@ -149,15 +149,15 @@
       "email": "liran.tal@gmail.com",
       "url": "https://github.com/lirantal"
     },
-    "newrelic@11.10.2": {
+    "newrelic@11.11.0": {
       "name": "newrelic",
-      "version": "11.10.2",
-      "range": "^11.9.0",
+      "version": "11.11.0",
+      "range": "^11.11.0",
       "licenses": "Apache-2.0",
       "repoUrl": "https://github.com/newrelic/node-newrelic",
-      "versionedRepoUrl": "https://github.com/newrelic/node-newrelic/tree/v11.10.2",
+      "versionedRepoUrl": "https://github.com/newrelic/node-newrelic/tree/v11.11.0",
       "licenseFile": "node_modules/newrelic/LICENSE",
-      "licenseUrl": "https://github.com/newrelic/node-newrelic/blob/v11.10.2/LICENSE",
+      "licenseUrl": "https://github.com/newrelic/node-newrelic/blob/v11.11.0/LICENSE",
       "licenseTextSource": "file",
       "publisher": "New Relic Node.js agent team",
       "email": "nodejs@newrelic.com"
