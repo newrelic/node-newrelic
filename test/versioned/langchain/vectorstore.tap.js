@@ -159,49 +159,35 @@ tap.test('Langchain instrumentation - vectorstore', (t) => {
     })
   })
 
-  t.test('test redis', (t) => {
-    const { agent, vs, embedding } = t.context
-
-    const params = require('../../lib/params')
-    const urltils = require('../../../lib/util/urltils')
-
-    const redis = require('redis')
-    const { RedisVectorStore } = require('@langchain/community/vectorstores/redis')
-    const { Document } = require('@langchain/core/documents')
-    // Indicates unique database in Redis. 0-15 supported.
-    const port = 6380
+  t.test('should create error events', (t) => {
+    const { agent, vs } = t.context
 
     helper.runInNamedTransaction(agent, async (tx) => {
-      const client = redis.createClient({
-        socket: { port, host: params.redis_host }
-      })
-
-      await client.connect()
-      await client.flushAll()
-
-      const METRIC_HOST_NAME = urltils.isLocalhost(params.redis_host)
-        ? agent.config.getHostnameSafe()
-        : params.redis_host
-      const HOST_ID = METRIC_HOST_NAME + '/' + port 
-
-      const docs = [
-        new Document({
-          metadata: { foo: 'bar' },
-          pageContent: 'This is an embedding test.'
-        })
-      ]
-
-      const vectorStore = await RedisVectorStore.fromDocuments(docs, embedding, {
-        redisClient: client,
-        indexName: 'docs' 
-      })
-
-      debugger
-      await vectorStore.similaritySearch('This is an embedding test.', 1)
+      try {
+        await vs.similaritySearch('Embedding not allowed.', 1)
+      } catch (error) {
+        t.ok(error)
+      }
 
       const events = agent.customEventAggregator.events.toArray()
+      // Only LlmEmbedding and LlmVectorSearch events will be created
+      // LangChainVectorSearchResult event won't be created since there was an error
+      t.equal(events.length, 2, 'should create 2 events')
 
-      await client.disconnect()
+      const langchainEvents = events.filter((event) => {
+        const [, chainEvent] = event
+        return chainEvent.vendor === 'langchain'
+      })
+
+      t.equal(langchainEvents.length, 1, 'should create 1 langchain vectorsearch event')
+
+      // But, we should also get two error events: 1xLLM and 1xLangChain
+      const exceptions = tx.exceptions
+      for (const e of exceptions) {
+        const str = Object.prototype.toString.call(e.customAttributes)
+        t.equal(str, '[object LlmErrorMessage]')
+      }
+
       tx.end()
       t.end()
     })
