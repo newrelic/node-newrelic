@@ -62,6 +62,7 @@ tap.test('constructs default instance', async (t) => {
     ['metadata.foo']: 'foo',
     ingest_source: 'Node',
     vendor: 'langchain',
+    error: null,
     virtual_llm: true
   })
 })
@@ -102,4 +103,10 @@ tap.test('sets tags from string', async (t) => {
   t.context.tags = 'foo,bar'
   const msg = new LangChainEvent(t.context)
   t.equal(msg.tags, 'foo,bar')
+})
+
+tap.test('sets error property', async (t) => {
+  t.context.error = true
+  const msg = new LangChainEvent(t.context)
+  t.equal(msg.error, true)
 })
