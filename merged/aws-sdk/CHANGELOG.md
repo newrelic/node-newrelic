@@ -1,3 +1,21 @@
+### v7.2.0 (2024-02-29)
+
+#### Features
+
+* Added ability to disable instrumenting streaming via `ai_monitoring.streaming.enabled` = `false` ([#257](https://github.com/newrelic/node-newrelic-aws-sdk/pull/257)) ([9b5abd6](https://github.com/newrelic/node-newrelic-aws-sdk/commit/9b5abd6a454924da065e7dbf29839f338ec8fa6b))
+
+#### Code refactoring
+
+* moved mock server to v3 so deps can be installed during versioned test run ([#250](https://github.com/newrelic/node-newrelic-aws-sdk/pull/250)) ([33bf934](https://github.com/newrelic/node-newrelic-aws-sdk/commit/33bf934bf123f43839cb7d3e0c3d6583ef61bdc5))
+* Removed storing message, request and completion id to be used to post LlmFeedbackEvents ([#261](https://github.com/newrelic/node-newrelic-aws-sdk/pull/261)) ([0ab4890](https://github.com/newrelic/node-newrelic-aws-sdk/commit/0ab4890082e7492429cce22642d22e687c63b105))
+* Updated aws sdk instrumentation to construct specs at instrumentation ([#259](https://github.com/newrelic/node-newrelic-aws-sdk/pull/259)) ([94de420](https://github.com/newrelic/node-newrelic-aws-sdk/commit/94de4208ebbf1161c2c2aaf66aced97a45c610b8))
+
+#### Miscellaneous chores
+
+* Apply LLM updates based on specification changes ([#253](https://github.com/newrelic/node-newrelic-aws-sdk/pull/253)) ([a32f0bd](https://github.com/newrelic/node-newrelic-aws-sdk/commit/a32f0bd4ff5e0d0fc6313e17b40f23d817608383))
+* Refactor LLM user added metadata ([#256](https://github.com/newrelic/node-newrelic-aws-sdk/pull/256)) ([c2a0314](https://github.com/newrelic/node-newrelic-aws-sdk/commit/c2a0314f0c0090763fb6be77808a75e72df3a0a4))
+* Replace inlined bedrock server with test-utils version ([#251](https://github.com/newrelic/node-newrelic-aws-sdk/pull/251)) ([94a2562](https://github.com/newrelic/node-newrelic-aws-sdk/commit/94a2562a641e5b66b0a198a9c205bf1d3d97c0f4))
+
 ### v7.1.0 (2024-01-18)
 
 #### Features

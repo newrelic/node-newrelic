@@ -2,6 +2,16 @@
   "repository": "newrelic/node-newrelic-aws-sdk",
   "entries": [
     {
+      "version": "7.2.0",
+      "changes": {
+        "security": [],
+        "bugfixes": [],
+        "features": [
+          "Added ability to disable instrumenting streaming via `ai_monitoring.streaming.enabled` = `false`"
+        ]
+      }
+    },
+    {
       "version": "7.1.0",
       "changes": {
         "security": [],
