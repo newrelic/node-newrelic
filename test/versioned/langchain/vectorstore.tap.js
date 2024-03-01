@@ -176,4 +176,38 @@ tap.test('Langchain instrumentation - vectorstore', (t) => {
       t.end()
     })
   })
+
+  t.test('should create error events', (t) => {
+    const { agent, vs } = t.context
+
+    helper.runInNamedTransaction(agent, async (tx) => {
+      try {
+        await vs.similaritySearch('Embedding not allowed.', 1)
+      } catch (error) {
+        t.ok(error)
+      }
+
+      const events = agent.customEventAggregator.events.toArray()
+      // Only LlmEmbedding and LlmVectorSearch events will be created
+      // LangChainVectorSearchResult event won't be created since there was an error
+      t.equal(events.length, 2, 'should create 2 events')
+
+      const langchainEvents = events.filter((event) => {
+        const [, chainEvent] = event
+        return chainEvent.vendor === 'langchain'
+      })
+
+      t.equal(langchainEvents.length, 1, 'should create 1 langchain vectorsearch event')
+
+      // But, we should also get two error events: 1xLLM and 1xLangChain
+      const exceptions = tx.exceptions
+      for (const e of exceptions) {
+        const str = Object.prototype.toString.call(e.customAttributes)
+        t.equal(str, '[object LlmErrorMessage]')
+      }
+
+      tx.end()
+      t.end()
+    })
+  })
 })
