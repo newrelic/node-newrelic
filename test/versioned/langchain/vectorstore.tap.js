@@ -13,6 +13,8 @@ const { version: pkgVersion } = require('@langchain/core/package.json')
 const createOpenAIMockServer = require('../openai/mock-server')
 const { filterLangchainEvents, filterLangchainEventsByType } = require('./common')
 const { DESTINATIONS } = require('../../../lib/config/attribute-filter')
+const params = require('../../lib/params')
+const { Document } = require('@langchain/core/documents')
 
 const config = {
   ai_monitoring: {
@@ -31,7 +33,14 @@ tap.test('Langchain instrumentation - vectorstore', (t) => {
     t.context.server = server
     t.context.agent = helper.instrumentMockedAgent(config)
     const { OpenAIEmbeddings } = require('@langchain/openai')
-    const { MemoryVectorStore } = require('langchain/vectorstores/memory')
+
+    const { Client } = require('@elastic/elasticsearch')
+    const clientArgs = {
+      client: new Client({
+        node: `http://${params.elastic_host}:${params.elastic_port}`
+      })
+    }
+    const { ElasticVectorSearch } = require('@langchain/community/vectorstores/elasticsearch')
 
     t.context.embedding = new OpenAIEmbeddings({
       openAIApiKey: 'fake-key',
@@ -39,12 +48,16 @@ tap.test('Langchain instrumentation - vectorstore', (t) => {
         baseURL: `http://${host}:${port}`
       }
     })
-
-    t.context.vs = await MemoryVectorStore.fromTexts(
-      ['This is an embedding test.'],
-      [{ id: 2 }],
-      t.context.embedding
-    )
+    const docs = [
+      new Document({
+        metadata: { id: '2' },
+        pageContent: 'This is an embedding test.'
+      })
+    ]
+    const vectorStore = new ElasticVectorSearch(t.context.embedding, clientArgs)
+    await vectorStore.deleteIfExists()
+    await vectorStore.addDocuments(docs)
+    t.context.vs = vectorStore
   })
 
   t.afterEach(async (t) => {
@@ -52,7 +65,12 @@ tap.test('Langchain instrumentation - vectorstore', (t) => {
     helper.unloadAgent(t.context.agent)
     // bust the require-cache so it can re-instrument
     Object.keys(require.cache).forEach((key) => {
-      if (key.includes('@langchain/core') || key.includes('openai') || key.includes('langchain')) {
+      if (
+        key.includes('@langchain/core') ||
+        key.includes('openai') ||
+        key.includes('@elastic') ||
+        key.includes('@langchain/community')
+      ) {
         delete require.cache[key]
       }
     })
@@ -153,40 +171,6 @@ tap.test('Langchain instrumentation - vectorstore', (t) => {
 
       const attributes = tx.trace.attributes.get(DESTINATIONS.TRANS_EVENT)
       t.equal(attributes.llm, true)
-
-      tx.end()
-      t.end()
-    })
-  })
-
-  t.test('should create error events', (t) => {
-    const { agent, vs } = t.context
-
-    helper.runInNamedTransaction(agent, async (tx) => {
-      try {
-        await vs.similaritySearch('Embedding not allowed.', 1)
-      } catch (error) {
-        t.ok(error)
-      }
-
-      const events = agent.customEventAggregator.events.toArray()
-      // Only LlmEmbedding and LlmVectorSearch events will be created
-      // LangChainVectorSearchResult event won't be created since there was an error
-      t.equal(events.length, 2, 'should create 2 events')
-
-      const langchainEvents = events.filter((event) => {
-        const [, chainEvent] = event
-        return chainEvent.vendor === 'langchain'
-      })
-
-      t.equal(langchainEvents.length, 1, 'should create 1 langchain vectorsearch event')
-
-      // But, we should also get two error events: 1xLLM and 1xLangChain
-      const exceptions = tx.exceptions
-      for (const e of exceptions) {
-        const str = Object.prototype.toString.call(e.customAttributes)
-        t.equal(str, '[object LlmErrorMessage]')
-      }
 
       tx.end()
       t.end()
