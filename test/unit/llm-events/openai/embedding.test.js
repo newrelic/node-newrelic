@@ -92,4 +92,25 @@ tap.test('LlmEmbedding', (t) => {
       })
     })
   })
+
+  t.test('respects record_content', (t) => {
+    const req = {
+      input: 'This is my test input',
+      model: 'gpt-3.5-turbo-0613'
+    }
+    agent.config.ai_monitoring.record_content.enabled = false
+
+    const api = helper.getAgentApi()
+    helper.runInTransaction(agent, () => {
+      const segment = api.shim.getActiveSegment()
+      const embeddingEvent = new LlmEmbedding({
+        agent,
+        segment,
+        request: req,
+        response: res
+      })
+      t.equal(embeddingEvent.input, undefined)
+      t.end()
+    })
+  })
 })
