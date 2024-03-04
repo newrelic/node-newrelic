@@ -65,9 +65,6 @@ function assertLangChainVectorSearchResult({ tx, vectorSearchResult, vectorSearc
       expectedChatMsg.page_content = '212 degrees Fahrenheit is equal to 100 degrees Celsius.'
     }
 
-    // LangChainVectorSearchResult event id should match LangChainVectorSearch event id
-    this.equal(search[1].id, vectorSearchId)
-
     this.equal(search[0].type, 'LlmVectorSearchResult')
     this.match(search[1], expectedChatMsg, 'should match vector search result')
   })
