@@ -85,4 +85,22 @@ tap.test('LlmChatCompletionMessage', (t) => {
       t.end()
     })
   })
+
+  t.test('respects record_content', (t) => {
+    const api = helper.getAgentApi()
+    const conversationId = 'convo-id'
+    agent.config.ai_monitoring.record_content.enabled = false
+
+    helper.runInTransaction(agent, () => {
+      api.addCustomAttribute('llm.conversation_id', conversationId)
+      const chatMessageEvent = new LlmChatCompletionMessage({
+        agent,
+        segment: {},
+        request: {},
+        response: {}
+      })
+      t.equal(chatMessageEvent.content, undefined)
+      t.end()
+    })
+  })
 })

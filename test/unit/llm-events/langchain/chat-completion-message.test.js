@@ -23,6 +23,11 @@ tap.beforeEach((t) => {
 
   t.context.agent = {
     config: {
+      ai_monitoring: {
+        record_content: {
+          enabled: true
+        }
+      },
       applications() {
         return ['test-app']
       }
@@ -76,4 +81,14 @@ tap.test('assigns id correctly', async (t) => {
 
   msg = new LangChainCompletionMessage({ ...t.context, runId: '123456', sequence: 42 })
   t.equal(msg.id, '123456-42')
+})
+
+tap.test('respects record_content setting', async (t) => {
+  t.context.agent.config.ai_monitoring.record_content.enabled = false
+  const search = new LangChainCompletionMessage({
+    ...t.context,
+    sequence: 1,
+    content: 'hello world'
+  })
+  t.equal(search.content, undefined)
 })
