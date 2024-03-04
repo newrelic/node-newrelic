@@ -16,6 +16,12 @@ tap.beforeEach((t) => {
     config: {
       applications() {
         return ['test-app']
+      },
+      ai_monitoring: {
+        enabled: true,
+        record_content: {
+          enabled: true
+        }
       }
     },
     tracer: {
@@ -126,3 +132,13 @@ tap.test('create creates a ai21 response instance when response.id is undefined'
   t.equal(event.role, 'assistant')
   t.match(event.id, /[\w-]{36}-0/)
 })
+
+tap.test(
+  'should not capture content when `ai_monitoring.record_content.enabled` is false',
+  async (t) => {
+    const { agent } = t.context
+    agent.config.ai_monitoring.record_content.enabled = false
+    const event = new LlmChatCompletionMessage(t.context)
+    t.equal(event.content, undefined, 'content should be empty')
+  }
+)

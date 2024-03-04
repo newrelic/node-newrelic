@@ -30,6 +30,9 @@ tap.beforeEach(async (t) => {
     }
   })
   common.registerInstrumentation(helper)
+  // TODO: cannot set in config as configuration does not exist on agent
+  // just yet. update this when agent is released
+  helper.agent.config.ai_monitoring.record_content = { enabled: true }
   t.context.helper = helper
 
   const bedrock = require('@aws-sdk/client-bedrock-runtime')

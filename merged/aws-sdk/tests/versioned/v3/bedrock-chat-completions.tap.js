@@ -43,13 +43,16 @@ const requests = {
 tap.beforeEach(async (t) => {
   const helper = utils.TestAgent.makeInstrumented({
     ai_monitoring: {
-      enabled: true
+      enabled: true,
+      streaming: {
+        enabled: true
+      }
     }
   })
   common.registerInstrumentation(helper)
   // TODO: cannot set in config as configuration does not exist on agent
   // just yet. update this when agent is released
-  helper.agent.config.ai_monitoring.streaming = { enabled: true }
+  helper.agent.config.ai_monitoring.record_content = { enabled: true }
   t.context.helper = helper
 
   const bedrock = require('@aws-sdk/client-bedrock-runtime')

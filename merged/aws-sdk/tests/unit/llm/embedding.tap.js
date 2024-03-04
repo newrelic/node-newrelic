@@ -16,6 +16,12 @@ tap.beforeEach((t) => {
     config: {
       applications() {
         return ['test-app']
+      },
+      ai_monitoring: {
+        enabled: true,
+        record_content: {
+          enabled: true
+        }
       }
     },
     tracer: {
@@ -61,3 +67,13 @@ tap.test('creates a basic embedding', async (t) => {
   t.equal(event['response.usage.total_tokens'], 0)
   t.equal(event['response.usage.prompt_tokens'], 0)
 })
+
+tap.test(
+  'should not capture input when `ai_monitoring.record_content.enabled` is false',
+  async (t) => {
+    const { agent } = t.context
+    agent.config.ai_monitoring.record_content.enabled = false
+    const event = new LlmEmbedding(t.context)
+    t.equal(event.input, undefined, 'input should be empty')
+  }
+)

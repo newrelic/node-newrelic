@@ -19,8 +19,11 @@ const defaultParams = {}
 class LlmEmbedding extends LlmEvent {
   constructor(params = defaultParams) {
     super(params)
+    const { agent } = params
 
-    this.input = this.bedrockCommand.prompt
+    this.input = agent.config?.ai_monitoring?.record_content?.enabled
+      ? this.bedrockCommand.prompt
+      : undefined
     this.error = params.isError
     this.duration = params.segment.getDurationInMillis()
     this['response.usage.total_tokens'] = this.bedrockResponse.inputTokenCount
