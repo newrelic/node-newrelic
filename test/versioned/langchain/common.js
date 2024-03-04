@@ -43,8 +43,8 @@ function assertLangChainVectorSearch({ tx, vectorSearch, responseDocumentSize })
 
 function assertLangChainVectorSearchResult({ tx, vectorSearchResult, vectorSearchId }) {
   const baseSearchResult = {
-    'id': vectorSearchId,
-    'search_id': /[a-f0-9\-]{36}/,
+    'id': /[a-f0-9]{36}/,
+    'search_id': vectorSearchId,
     'appName': 'New Relic for Node.js tests',
     'span_id': tx.trace.root.children[0].id,
     'trace_id': tx.traceId,
