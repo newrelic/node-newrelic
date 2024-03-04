@@ -21,7 +21,7 @@ function filterLangchainEventsByType(events, msgType) {
   })
 }
 
-function assertLangChainVectorSearch({ tx, vectorSearch }) {
+function assertLangChainVectorSearch({ tx, vectorSearch, responseDocumentSize }) {
   const expectedSearch = {
     'id': /[a-f0-9]{36}/,
     'appName': 'New Relic for Node.js tests',
@@ -33,7 +33,7 @@ function assertLangChainVectorSearch({ tx, vectorSearch }) {
     'ingest_source': 'Node',
     'vendor': 'langchain',
     'virtual_llm': true,
-    ['response.number_of_documents']: 1,
+    ['response.number_of_documents']: responseDocumentSize,
     'duration': tx.trace.root.children[0].getDurationInMillis()
   }
 
@@ -41,9 +41,9 @@ function assertLangChainVectorSearch({ tx, vectorSearch }) {
   this.match(vectorSearch[1], expectedSearch, 'should match vector search')
 }
 
-function assertLangChainVectorSearchResult({ tx, vectorSearchResult }) {
+function assertLangChainVectorSearchResult({ tx, vectorSearchResult, vectorSearchId }) {
   const baseSearchResult = {
-    'id': /[a-f0-9]{36}/,
+    'id': vectorSearchId,
     'search_id': /[a-f0-9\-]{36}/,
     'appName': 'New Relic for Node.js tests',
     'span_id': tx.trace.root.children[0].id,
@@ -64,6 +64,9 @@ function assertLangChainVectorSearchResult({ tx, vectorSearchResult }) {
       expectedChatMsg.sequence = 1
       expectedChatMsg.page_content = '212 degrees Fahrenheit is equal to 100 degrees Celsius.'
     }
+
+    // LangChainVectorSearchResult event id should match LangChainVectorSearch event id
+    this.equal(search[1].id, vectorSearchId)
 
     this.equal(search[0].type, 'LlmVectorSearchResult')
     this.match(search[1], expectedChatMsg, 'should match vector search result')

@@ -144,8 +144,51 @@ tap.test('Langchain instrumentation - vectorstore', (t) => {
 
         const vectorSearchEvents = filterLangchainEventsByType(langchainEvents, 'LlmVectorSearch')
 
-        t.langchainVectorSearch({ tx, vectorSearch: vectorSearchEvents[0] })
-        t.langchainVectorSearchResult({ tx, vectorSearchResult: vectorSearchResultEvents })
+        t.langchainVectorSearch({
+          tx,
+          vectorSearch: vectorSearchEvents[0],
+          responseDocumentSize: 1
+        })
+        t.langchainVectorSearchResult({
+          tx,
+          vectorSearchResult: vectorSearchResultEvents,
+          vectorSearchId: vectorSearchEvents[0][1].id
+        })
+
+        tx.end()
+        t.end()
+      })
+    }
+  )
+
+  t.test(
+    'should create only vectorstore search event for similarity search call with embeddings and invalid metadata filter',
+    (t) => {
+      const { agent, vs } = t.context
+
+      helper.runInNamedTransaction(agent, async (tx) => {
+        // search for documents with invalid filter
+        await vs.similaritySearch('This is an embedding test.', 1, {
+          a: 'some filter'
+        })
+
+        const events = agent.customEventAggregator.events.toArray()
+        const langchainEvents = filterLangchainEvents(events)
+
+        const vectorSearchResultEvents = filterLangchainEventsByType(
+          langchainEvents,
+          'LlmVectorSearchResult'
+        )
+
+        const vectorSearchEvents = filterLangchainEventsByType(langchainEvents, 'LlmVectorSearch')
+
+        // there are no documents in vector store with that filter
+        t.equal(vectorSearchResultEvents.length, 0, 'should have 0 events')
+        t.langchainVectorSearch({
+          tx,
+          vectorSearch: vectorSearchEvents[0],
+          responseDocumentSize: 0
+        })
 
         tx.end()
         t.end()
@@ -198,6 +241,7 @@ tap.test('Langchain instrumentation - vectorstore', (t) => {
       })
 
       t.equal(langchainEvents.length, 1, 'should create 1 langchain vectorsearch event')
+      t.equal(langchainEvents[0][1].error, true)
 
       // But, we should also get two error events: 1xLLM and 1xLangChain
       const exceptions = tx.exceptions
@@ -210,4 +254,139 @@ tap.test('Langchain instrumentation - vectorstore', (t) => {
       t.end()
     })
   })
+})
+
+tap.test('Langchain instrumentation - disabled instrumentation', (t) => {
+  t.autoend()
+
+  t.beforeEach(async (t) => {
+    const { host, port, server } = await createOpenAIMockServer()
+    t.context.server = server
+    const { OpenAIEmbeddings } = require('@langchain/openai')
+
+    const { Client } = require('@elastic/elasticsearch')
+    const clientArgs = {
+      client: new Client({
+        node: `http://${params.elastic_host}:${params.elastic_port}`
+      })
+    }
+    const { ElasticVectorSearch } = require('@langchain/community/vectorstores/elasticsearch')
+
+    t.context.embedding = new OpenAIEmbeddings({
+      openAIApiKey: 'fake-key',
+      configuration: {
+        baseURL: `http://${host}:${port}`
+      }
+    })
+    const docs = [
+      new Document({
+        metadata: { id: '2' },
+        pageContent: 'This is an embedding test.'
+      })
+    ]
+    const vectorStore = new ElasticVectorSearch(t.context.embedding, clientArgs)
+    await vectorStore.deleteIfExists()
+    await vectorStore.addDocuments(docs)
+    t.context.vs = vectorStore
+  })
+
+  t.afterEach(async (t) => {
+    t.context?.server?.close()
+    helper.unloadAgent(t.context.agent)
+    // bust the require-cache so it can re-instrument
+    Object.keys(require.cache).forEach((key) => {
+      if (
+        key.includes('@langchain/core') ||
+        key.includes('openai') ||
+        key.includes('@elastic') ||
+        key.includes('@langchain/community')
+      ) {
+        delete require.cache[key]
+      }
+    })
+  })
+
+  t.test(
+    'should skip instrumentation when ai monitoring and langchain instrumentation is disabled',
+    (t) => {
+      config.ai_monitoring = false
+      config.feature_flag.langchain_instrumentation = false
+
+      t.context.agent = helper.instrumentMockedAgent(config)
+      const { agent, vs } = t.context
+
+      helper.runInNamedTransaction(agent, async (tx) => {
+        await vs.similaritySearch('This is an embedding test.', 1)
+
+        const events = agent.customEventAggregator.events.toArray()
+        t.equal(events.length, 0, 'should create 0 events')
+
+        const langchainEvents = events.filter((event) => {
+          const [, chainEvent] = event
+          return chainEvent.vendor === 'langchain'
+        })
+
+        t.equal(langchainEvents.length, 0, 'should create 0 langchain events')
+
+        tx.end()
+        t.end()
+      })
+    }
+  )
+
+  t.test(
+    'should skip instrumentation when ai monitoring is disabled and langchain instrumentation is enabled',
+    (t) => {
+      config.ai_monitoring = false
+      config.feature_flag.langchain_instrumentation = true
+
+      t.context.agent = helper.instrumentMockedAgent(config)
+      const { agent, vs } = t.context
+
+      helper.runInNamedTransaction(agent, async (tx) => {
+        await vs.similaritySearch('This is an embedding test.', 1)
+
+        const events = agent.customEventAggregator.events.toArray()
+        t.equal(events.length, 0, 'should create 0 events')
+
+        const langchainEvents = events.filter((event) => {
+          const [, chainEvent] = event
+          return chainEvent.vendor === 'langchain'
+        })
+
+        t.equal(langchainEvents.length, 0, 'should create 0 langchain events')
+
+        tx.end()
+        t.end()
+      })
+    }
+  )
+
+  t.test(
+    'should skip instrumentation when ai monitoring is enabled and langchain instrumentation disabled',
+    (t) => {
+      config.ai_monitoring = true
+      config.feature_flag.langchain_instrumentation = false
+
+      t.context.agent = helper.instrumentMockedAgent(config)
+      const { agent, vs } = t.context
+
+      helper.runInNamedTransaction(agent, async (tx) => {
+        await vs.similaritySearch('This is an embedding test.', 1)
+
+        const events = agent.customEventAggregator.events.toArray()
+        t.equal(events.length, 0, 'should create 0 events')
+
+        const langchainEvents = events.filter((event) => {
+          const [, chainEvent] = event
+          return chainEvent.vendor === 'langchain'
+        })
+
+        t.equal(langchainEvents.length, 0, 'should create 0 langchain events')
+
+        tx.end()
+        t.end()
+      })
+    }
+  )
 })
