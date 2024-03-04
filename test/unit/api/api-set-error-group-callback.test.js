@@ -84,8 +84,8 @@ tap.test('Agent API = set Error Group callback', (t) => {
   })
 
   t.test('should not attach the callback when async function', (t) => {
-    function callback() {
-      return new Promise((resolve) => {
+    async function callback() {
+      return await new Promise((resolve) => {
         setTimeout(() => {
           resolve()
         }, 200)
