@@ -17,7 +17,7 @@ const res = {
   },
   model: 'gpt-3.5-turbo-0613',
   usage: {
-    total_tokens: '100',
+    total_tokens: '30',
     prompt_tokens: '10'
   }
 }
@@ -28,7 +28,7 @@ const chatRes = {
   choices: [{ finish_reason: 'stop', message: { content: 'a lot', role: 'know-it-all' } }]
 }
 
-chatRes.usage.completion_tokens = 10
+chatRes.usage.completion_tokens = 20
 
 const req = {
   model: 'gpt-3.5-turbo-0613',
@@ -60,7 +60,7 @@ function getExpectedResult(tx, event, type, completionId) {
     'duration': trace.children[0].getDurationInMillis(),
     'request.model': 'gpt-3.5-turbo-0613',
     'response.organization': 'new-relic',
-    'response.usage.total_tokens': '100',
+    'response.usage.total_tokens': '30',
     'response.usage.prompt_tokens': '10',
     'response.headers.llmVersion': '1.0.0',
     'response.headers.ratelimitLimitRequests': '100',
@@ -75,6 +75,7 @@ function getExpectedResult(tx, event, type, completionId) {
       expected = { ...expected, ...resKeys }
       expected.input = 'This is my test input'
       expected.error = false
+      expected.token_count = 10
       break
     case 'summary':
       expected = {
@@ -83,7 +84,7 @@ function getExpectedResult(tx, event, type, completionId) {
         ['request.max_tokens']: '1000000',
         ['request.temperature']: 'medium-rare',
         ['response.number_of_messages']: 3,
-        ['response.usage.completion_tokens']: 10,
+        ['response.usage.completion_tokens']: 20,
         ['response.choices.finish_reason']: 'stop',
         error: false
       }
@@ -95,6 +96,7 @@ function getExpectedResult(tx, event, type, completionId) {
         role: 'inquisitive-kid',
         sequence: 0,
         completion_id: completionId,
+        token_count: 10,
         is_response: false
       }
   }
