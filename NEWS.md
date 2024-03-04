@@ -1,3 +1,17 @@
+### v11.12.0 (2024-03-04)
+
+#### Features
+
+* Added instrumentation for `chain.stream` for langchain js. ([#2052](https://github.com/newrelic/node-newrelic/pull/2052)) ([03abfce](https://github.com/newrelic/node-newrelic/commit/03abfce666d3c48abd0994c44817bb5cbe8655a9))
+
+#### Miscellaneous chores
+
+* Added @azure/openai and @langchain/community/llms/bedrock as tracking packages so we can measure usage with angler ([#2053](https://github.com/newrelic/node-newrelic/pull/2053)) ([4830ea3](https://github.com/newrelic/node-newrelic/commit/4830ea3285726f8cc8fb60820c4cf2d3790e5250))
+
+#### Tests
+
+* Updated aws-sdk branch to main as the necessary code was merged. ([#2051](https://github.com/newrelic/node-newrelic/pull/2051)) ([1e52a5c](https://github.com/newrelic/node-newrelic/commit/1e52a5cd7a8acc8970dbdc6b1bf774c06aa6f5fb))
+
 ### v11.11.0 (2024-02-27)
 
 #### Features

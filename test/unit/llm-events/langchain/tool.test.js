@@ -23,6 +23,11 @@ tap.beforeEach((t) => {
 
   t.context.agent = {
     config: {
+      ai_monitoring: {
+        record_content: {
+          enabled: true
+        }
+      },
       applications() {
         return ['test-app']
       }
@@ -71,4 +76,11 @@ tap.test('constructs default instance', async (t) => {
     ingest_source: 'Node',
     vendor: 'langchain'
   })
+})
+
+tap.test('respects record_content setting', async (t) => {
+  t.context.agent.config.ai_monitoring.record_content.enabled = false
+  const event = new LangChainTool(t.context)
+  t.equal(event.input, undefined)
+  t.equal(event.output, undefined)
 })

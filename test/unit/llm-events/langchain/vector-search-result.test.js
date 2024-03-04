@@ -24,6 +24,11 @@ tap.beforeEach((t) => {
 
   t.context.agent = {
     config: {
+      ai_monitoring: {
+        record_content: {
+          enabled: true
+        }
+      },
       applications() {
         return ['test-app']
       }
@@ -79,4 +84,14 @@ tap.test('create entity', async (t) => {
     page_content: 'hello world',
     search_id: search.id
   })
+})
+
+tap.test('respects record_content setting', async (t) => {
+  t.context.agent.config.ai_monitoring.record_content.enabled = false
+  const search = new LangChainVectorSearchResult({
+    ...t.context,
+    sequence: 1,
+    pageContent: 'hello world'
+  })
+  t.equal(search.page_content, undefined)
 })

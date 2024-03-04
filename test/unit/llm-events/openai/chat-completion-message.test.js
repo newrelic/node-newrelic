@@ -64,6 +64,7 @@ tap.test('LlmChatCompletionMessage', (t) => {
         expected.content = chatRes.choices[0].message.content
         expected.role = chatRes.choices[0].message.role
         expected.is_response = true
+        expected.token_count = 20
         t.same(chatMessageEvent, expected)
         t.end()
       })
@@ -82,6 +83,24 @@ tap.test('LlmChatCompletionMessage', (t) => {
         response: {}
       })
       t.equal(chatMessageEvent['llm.conversation_id'], conversationId)
+      t.end()
+    })
+  })
+
+  t.test('respects record_content', (t) => {
+    const api = helper.getAgentApi()
+    const conversationId = 'convo-id'
+    agent.config.ai_monitoring.record_content.enabled = false
+
+    helper.runInTransaction(agent, () => {
+      api.addCustomAttribute('llm.conversation_id', conversationId)
+      const chatMessageEvent = new LlmChatCompletionMessage({
+        agent,
+        segment: {},
+        request: {},
+        response: {}
+      })
+      t.equal(chatMessageEvent.content, undefined)
       t.end()
     })
   })
