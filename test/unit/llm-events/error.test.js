@@ -6,8 +6,8 @@
 'use strict'
 
 const tap = require('tap')
-const LlmErrorMessage = require('../../../../lib/llm-events/error-message')
-const { req, chatRes } = require('./common')
+const LlmErrorMessage = require('../../../lib/llm-events/error-message')
+const { req, chatRes } = require('./openai/common')
 
 tap.test('LlmErrorMessage', (t) => {
   const res = { ...chatRes, code: 'insufficient_quota', param: 'test-param', status: 429 }
