@@ -28,6 +28,7 @@ class LlmEmbedding extends LlmEvent {
     this.duration = params.segment.getDurationInMillis()
     this['response.usage.total_tokens'] = this.bedrockResponse.inputTokenCount
     this['response.usage.prompt_tokens'] = this.bedrockResponse.inputTokenCount
+    this.token_count = this.bedrockResponse.inputTokenCount
   }
 }
 

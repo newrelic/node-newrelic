@@ -50,8 +50,10 @@ class LlmChatCompletionMessage extends LlmEvent {
     this.#setId(index)
     if (this.is_response === true) {
       this.role = 'assistant'
+      this.token_count = this.bedrockResponse.outputTokenCount
     } else {
       this.role = 'user'
+      this.token_count = this.bedrockResponse.inputTokenCount
       this.content = agent.config?.ai_monitoring?.record_content?.enabled
         ? this.bedrockCommand.prompt
         : undefined

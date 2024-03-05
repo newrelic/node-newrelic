@@ -119,6 +119,7 @@ tap.afterEach(async (t) => {
         'duration': tx.trace.root.children[0].getDurationInMillis(),
         'response.usage.total_tokens': 13,
         'response.usage.prompt_tokens': 13,
+        'token_count': 13,
         'input': prompt,
         'error': false
       }
