@@ -14,10 +14,59 @@ function filterLangchainEvents(events) {
   })
 }
 
-function filterLangchainMessages(events, msgType) {
+function filterLangchainEventsByType(events, msgType) {
   return events.filter((event) => {
     const [{ type }] = event
     return type === msgType
+  })
+}
+
+function assertLangChainVectorSearch({ tx, vectorSearch, responseDocumentSize }) {
+  const expectedSearch = {
+    'id': /[a-f0-9]{36}/,
+    'appName': 'New Relic for Node.js tests',
+    'span_id': tx.trace.root.children[0].id,
+    'trace_id': tx.traceId,
+    'transaction_id': tx.id,
+    'request.k': 1,
+    'request.query': 'This is an embedding test.',
+    'ingest_source': 'Node',
+    'vendor': 'langchain',
+    'virtual_llm': true,
+    ['response.number_of_documents']: responseDocumentSize,
+    'duration': tx.trace.root.children[0].getDurationInMillis()
+  }
+
+  this.equal(vectorSearch[0].type, 'LlmVectorSearch')
+  this.match(vectorSearch[1], expectedSearch, 'should match vector search')
+}
+
+function assertLangChainVectorSearchResult({ tx, vectorSearchResult, vectorSearchId }) {
+  const baseSearchResult = {
+    'id': /[a-f0-9]{36}/,
+    'search_id': vectorSearchId,
+    'appName': 'New Relic for Node.js tests',
+    'span_id': tx.trace.root.children[0].id,
+    'trace_id': tx.traceId,
+    'transaction_id': tx.id,
+    'ingest_source': 'Node',
+    'vendor': 'langchain',
+    'metadata.id': '2',
+    'virtual_llm': true
+  }
+
+  vectorSearchResult.forEach((search) => {
+    const expectedChatMsg = { ...baseSearchResult }
+    if (search[1].sequence === 0) {
+      expectedChatMsg.sequence = 0
+      expectedChatMsg.page_content = 'This is an embedding test.'
+    } else if (search[1].sequence === 1) {
+      expectedChatMsg.sequence = 1
+      expectedChatMsg.page_content = '212 degrees Fahrenheit is equal to 100 degrees Celsius.'
+    }
+
+    this.equal(search[0].type, 'LlmVectorSearchResult')
+    this.match(search[1], expectedChatMsg, 'should match vector search result')
   })
 }
 
@@ -93,8 +142,10 @@ function assertLangChainChatCompletionMessages({
 
 tap.Test.prototype.addAssert('langchainMessages', 1, assertLangChainChatCompletionMessages)
 tap.Test.prototype.addAssert('langchainSummary', 1, assertLangChainChatCompletionSummary)
+tap.Test.prototype.addAssert('langchainVectorSearch', 1, assertLangChainVectorSearch)
+tap.Test.prototype.addAssert('langchainVectorSearchResult', 1, assertLangChainVectorSearchResult)
 
 module.exports = {
   filterLangchainEvents,
-  filterLangchainMessages
+  filterLangchainEventsByType
 }

@@ -7,6 +7,7 @@
 
 const tap = require('tap')
 const LangChainVectorSearchResult = require('../../../../lib/llm-events/langchain/vector-search-result')
+const LangChainVectorSearch = require('../../../../lib/llm-events/langchain/vector-search')
 
 tap.beforeEach((t) => {
   t.context._tx = {
@@ -44,6 +45,9 @@ tap.beforeEach((t) => {
     transaction: {
       id: 'tx-1',
       traceId: 'trace-1'
+    },
+    getDurationInMillis() {
+      return 42
     }
   }
 
@@ -52,12 +56,19 @@ tap.beforeEach((t) => {
 })
 
 tap.test('create entity', async (t) => {
-  const search = new LangChainVectorSearchResult({
+  const search = new LangChainVectorSearch({
+    ...t.context,
+    query: 'hello world',
+    k: 1
+  })
+
+  const searchResult = new LangChainVectorSearchResult({
     ...t.context,
     sequence: 1,
-    pageContent: 'hello world'
+    pageContent: 'hello world',
+    search_id: search.id
   })
-  t.match(search, {
+  t.match(searchResult, {
     id: /[a-z0-9-]{36}/,
     appName: 'test-app',
     ['llm.conversation_id']: 'test-conversation',
@@ -71,7 +82,7 @@ tap.test('create entity', async (t) => {
     virtual_llm: true,
     sequence: 1,
     page_content: 'hello world',
-    search_id: /[a-z0-9-]{36}/
+    search_id: search.id
   })
 })
 

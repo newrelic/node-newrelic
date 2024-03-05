@@ -12,12 +12,15 @@
       },
       "dependencies": {
         "@langchain/core": ">=0.1.17",
-        "@langchain/openai": "latest"
+        "@langchain/openai": "latest",
+        "@langchain/community": "latest",
+        "@elastic/elasticsearch": "latest"
       },
       "files": [
         "tools.tap.js",
         "runnables.tap.js",
-        "runnables-streaming.tap.js"
+        "runnables-streaming.tap.js",
+        "vectorstore.tap.js"
       ]
     }
   ]
