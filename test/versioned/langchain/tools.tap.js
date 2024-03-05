@@ -163,6 +163,7 @@ tap.test('Langchain instrumentation - tools', (t) => {
       t.equal(exceptions.length, 1)
       const str = Object.prototype.toString.call(exceptions[0].customAttributes)
       t.equal(str, '[object LlmErrorMessage]')
+      t.equal(exceptions[0].customAttributes.tool_id, toolEvent.id)
 
       tx.end()
       t.end()
