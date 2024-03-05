@@ -190,6 +190,58 @@ tap.test('OpenAI instrumentation - chat completions', (t) => {
       }
     )
 
+    t.test('should call the tokenCountCallback in streaming', (test) => {
+      const { client, agent } = t.context
+      const promptContent = 'Streamed response'
+      const promptContent2 = 'What does 1 plus 1 equal?'
+      let res = ''
+      const expectedModel = 'gpt-4'
+      const api = helper.getAgentApi()
+      function cb(model, content) {
+        t.equal(model, expectedModel)
+        if (content === promptContent || content === promptContent2) {
+          return 53
+        } else if (content === res) {
+          return 11
+        }
+      }
+      api.setLlmTokenCountCallback(cb)
+      test.teardown(() => {
+        delete agent.llm.tokenCountCallback
+      })
+      helper.runInTransaction(agent, async (tx) => {
+        const stream = await client.chat.completions.create({
+          max_tokens: 100,
+          temperature: 0.5,
+          model: expectedModel,
+          messages: [
+            { role: 'user', content: promptContent },
+            { role: 'user', content: promptContent2 }
+          ],
+          stream: true
+        })
+
+        for await (const chunk of stream) {
+          res += chunk.choices[0]?.delta?.content
+        }
+
+        const events = agent.customEventAggregator.events.toArray()
+        const chatMsgs = events.filter(([{ type }]) => type === 'LlmChatCompletionMessage')
+        test.llmMessages({
+          tokenUsage: true,
+          tx,
+          chatMsgs,
+          id: 'chatcmpl-8MzOfSMbLxEy70lYAolSwdCzfguQZ',
+          model: expectedModel,
+          resContent: res,
+          reqContent: promptContent
+        })
+
+        tx.end()
+        test.end()
+      })
+    })
+
     t.test('handles error in stream', (test) => {
       const { client, agent } = t.context
       helper.runInTransaction(agent, async (tx) => {

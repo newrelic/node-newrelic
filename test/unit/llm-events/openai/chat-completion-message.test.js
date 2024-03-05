@@ -11,8 +11,6 @@ const helper = require('../../../lib/agent_helper')
 const { req, chatRes, getExpectedResult } = require('./common')
 
 tap.test('LlmChatCompletionMessage', (t) => {
-  t.autoend()
-
   let agent
   t.beforeEach(() => {
     agent = helper.loadMockedAgent()
@@ -104,4 +102,115 @@ tap.test('LlmChatCompletionMessage', (t) => {
       t.end()
     })
   })
+
+  t.test('should use token_count from tokenCountCallback for prompt message', (t) => {
+    const api = helper.getAgentApi()
+    const expectedCount = 4
+    function cb(model, content) {
+      t.equal(model, 'gpt-3.5-turbo-0613')
+      t.equal(content, 'What is a woodchuck?')
+      return expectedCount
+    }
+    api.setLlmTokenCountCallback(cb)
+    helper.runInTransaction(agent, () => {
+      api.startSegment('fakeSegment', false, () => {
+        const segment = api.shim.getActiveSegment()
+        const summaryId = 'chat-summary-id'
+        delete chatRes.usage
+        const chatMessageEvent = new LlmChatCompletionMessage({
+          agent,
+          segment,
+          request: req,
+          response: chatRes,
+          completionId: summaryId,
+          message: req.messages[0],
+          index: 0
+        })
+        t.equal(chatMessageEvent.token_count, expectedCount)
+        t.end()
+      })
+    })
+  })
+
+  t.test('should use token_count from tokenCountCallback for completion messages', (t) => {
+    const api = helper.getAgentApi()
+    const expectedCount = 4
+    function cb(model, content) {
+      t.equal(model, 'gpt-3.5-turbo-0613')
+      t.equal(content, 'a lot')
+      return expectedCount
+    }
+    api.setLlmTokenCountCallback(cb)
+    helper.runInTransaction(agent, () => {
+      api.startSegment('fakeSegment', false, () => {
+        const segment = api.shim.getActiveSegment()
+        const summaryId = 'chat-summary-id'
+        delete chatRes.usage
+        const chatMessageEvent = new LlmChatCompletionMessage({
+          agent,
+          segment,
+          request: req,
+          response: chatRes,
+          completionId: summaryId,
+          message: chatRes.choices[0].message,
+          index: 2
+        })
+        t.equal(chatMessageEvent.token_count, expectedCount)
+        t.end()
+      })
+    })
+  })
+
+  t.test('should not set token_count if not set in usage nor a callback registered', (t) => {
+    const api = helper.getAgentApi()
+    helper.runInTransaction(agent, () => {
+      api.startSegment('fakeSegment', false, () => {
+        const segment = api.shim.getActiveSegment()
+        const summaryId = 'chat-summary-id'
+        delete chatRes.usage
+        const chatMessageEvent = new LlmChatCompletionMessage({
+          agent,
+          segment,
+          request: req,
+          response: chatRes,
+          completionId: summaryId,
+          message: chatRes.choices[0].message,
+          index: 2
+        })
+        t.equal(chatMessageEvent.token_count, undefined)
+        t.end()
+      })
+    })
+  })
+
+  t.test(
+    'should not set token_count if not set in usage nor a callback registered returns count',
+    (t) => {
+      const api = helper.getAgentApi()
+      function cb() {
+        // empty cb
+      }
+      api.setLlmTokenCountCallback(cb)
+      helper.runInTransaction(agent, () => {
+        api.startSegment('fakeSegment', false, () => {
+          const segment = api.shim.getActiveSegment()
+          const summaryId = 'chat-summary-id'
+          delete chatRes.usage
+          const chatMessageEvent = new LlmChatCompletionMessage({
+            agent,
+            segment,
+            request: req,
+            response: chatRes,
+            completionId: summaryId,
+            message: chatRes.choices[0].message,
+            index: 2
+          })
+          t.equal(chatMessageEvent.token_count, undefined)
+          t.end()
+        })
+      })
+    }
+  )
+
+  t.end()
 })

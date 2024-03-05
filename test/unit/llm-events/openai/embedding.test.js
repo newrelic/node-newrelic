@@ -113,4 +113,54 @@ tap.test('LlmEmbedding', (t) => {
       t.end()
     })
   })
+
+  t.test('should calculate token count from tokenCountCallback', (t) => {
+    const req = {
+      input: 'This is my test input',
+      model: 'gpt-3.5-turbo-0613'
+    }
+
+    const api = helper.getAgentApi()
+
+    function cb(model, content) {
+      if (model === req.model) {
+        return content.length
+      }
+    }
+
+    api.setLlmTokenCountCallback(cb)
+    helper.runInTransaction(agent, () => {
+      const segment = api.shim.getActiveSegment()
+      delete res.usage
+      const embeddingEvent = new LlmEmbedding({
+        agent,
+        segment,
+        request: req,
+        response: res
+      })
+      t.equal(embeddingEvent.token_count, 21)
+      t.end()
+    })
+  })
+
+  t.test('should not set token count when not present in usage nor tokenCountCallback', (t) => {
+    const req = {
+      input: 'This is my test input',
+      model: 'gpt-3.5-turbo-0613'
+    }
+
+    const api = helper.getAgentApi()
+    helper.runInTransaction(agent, () => {
+      const segment = api.shim.getActiveSegment()
+      delete res.usage
+      const embeddingEvent = new LlmEmbedding({
+        agent,
+        segment,
+        request: req,
+        response: res
+      })
+      t.equal(embeddingEvent.token_count, undefined)
+      t.end()
+    })
+  })
 })
