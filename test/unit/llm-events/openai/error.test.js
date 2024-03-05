@@ -19,7 +19,8 @@ tap.test('LlmErrorMessage', (t) => {
     'error.param': 'test-param',
     'completion_id': undefined,
     'embedding_id': undefined,
-    'vector_store_id': undefined
+    'vector_store_id': undefined,
+    'tool_id': undefined
   }
   t.same(errorMsg, expected)
   t.end()
