@@ -1839,7 +1839,7 @@ API.prototype.setErrorGroupCallback = function setErrorGroupCallback(callback) {
   )
   metric.incrementCallCount()
 
-  if (!this.shim.isFunction(callback) || this.shim.isPromise(callback)) {
+  if (!this.shim.isFunction(callback) || this.shim.isAsyncFunction(callback)) {
     logger.warn(
       'Error Group callback must be a synchronous function, Error Group attribute will not be added'
     )
@@ -1847,6 +1847,39 @@ API.prototype.setErrorGroupCallback = function setErrorGroupCallback(callback) {
   }
 
   this.agent.errors.errorGroupCallback = callback
+}
+
+/**
+ * Registers a callback which will be used for calculating token counts on Llm events when they are not
+ * available. This function will typically only be used if `ai_monitoring.record_content.enabled` is false
+ * and you want to still capture token counts for Llm events.
+ *
+ * Provided callbacks must return an integer value for the token count for a given piece of content.
+ *
+ * @param {Function} callback - synchronous function called to calculate token count for content.
+ * @example
+ * // @param {string} model - name of model (i.e. gpt-3.5-turbo)
+ * // @param {string} content - prompt or completion response
+ * function tokenCallback(model, content) {
+ *  // calculate tokens based on model and content
+ *  // return token count
+ *  return 40
+ * }
+ */
+API.prototype.setLlmTokenCountCallback = function setLlmTokenCountCallback(callback) {
+  const metric = this.agent.metrics.getOrCreateMetric(
+    NAMES.SUPPORTABILITY.API + '/setLlmTokenCountCallback'
+  )
+  metric.incrementCallCount()
+
+  if (!this.shim.isFunction(callback) || this.shim.isAsyncFunction(callback)) {
+    logger.warn(
+      'Llm token count callback must be a synchronous function, callback will not be registered.'
+    )
+    return
+  }
+
+  this.agent.llm.tokenCountCallback = callback
 }
 
 module.exports = API

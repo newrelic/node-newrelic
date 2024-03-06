@@ -28,7 +28,8 @@ tap.test('Agent API LLM methods', (t) => {
     loggerMock.warn.reset()
     const agent = helper.loadMockedAgent()
     t.context.api = new API(agent)
-    t.context.api.agent.config.ai_monitoring.enabled = true
+    agent.config.ai_monitoring.enabled = true
+    t.context.agent = agent
   })
 
   t.afterEach((t) => {
@@ -119,4 +120,49 @@ tap.test('Agent API LLM methods', (t) => {
       })
     })
   })
+
+  t.test('setLlmTokenCount should register callback to calculate token counts', async (t) => {
+    const { api, agent } = t.context
+    function callback(model, content) {
+      if (model === 'foo' && content === 'bar') {
+        return 10
+      }
+
+      return 1
+    }
+    api.setLlmTokenCountCallback(callback)
+    t.same(agent.llm.tokenCountCallback, callback)
+  })
+
+  t.test('should not store token count callback if it is async', async (t) => {
+    const { api, agent } = t.context
+    async function callback(model, content) {
+      return await new Promise((resolve) => {
+        if (model === 'foo' && content === 'bar') {
+          resolve(10)
+        }
+      })
+    }
+    api.setLlmTokenCountCallback(callback)
+    t.same(agent.llm.tokenCountCallback, undefined)
+    t.equal(loggerMock.warn.callCount, 1)
+    t.equal(
+      loggerMock.warn.args[0][0],
+      'Llm token count callback must be a synchronous function, callback will not be registered.'
+    )
+  })
+
+  t.test(
+    'should not store token count callback if callback is not actually a function',
+    async (t) => {
+      const { api, agent } = t.context
+      api.setLlmTokenCountCallback({ unit: 'test' })
+      t.same(agent.llm.tokenCountCallback, undefined)
+      t.equal(loggerMock.warn.callCount, 1)
+      t.equal(
+        loggerMock.warn.args[0][0],
+        'Llm token count callback must be a synchronous function, callback will not be registered.'
+      )
+    }
+  )
 })
