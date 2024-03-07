@@ -111,6 +111,8 @@ tap.test('Next.js', (t) => {
       'request.parameters.route.value': 'testing', // route [value] param
       'request.parameters.queryParam': 'queryValue'
     })
+
+    t.notOk(agentAttributes['request.parameters.route.queryParam'])
   })
 
   t.test(
@@ -130,6 +132,9 @@ tap.test('Next.js', (t) => {
         },
         'should match transaction attributes'
       )
+
+      t.notOk(agentAttributes['request.parameters.route.first'])
+      t.notOk(agentAttributes['request.parameters.route.second'])
 
       const segmentAttrs = getSegmentAgentAttributes(
         t.context.transaction,
@@ -159,6 +164,7 @@ tap.test('Next.js', (t) => {
         'request.parameters.route.id': '1', // route [id] param
         'request.parameters.queryParam': 'queryValue'
       })
+      t.notOk(agentAttributes['request.parameters.route.queryParam'])
       const segmentAttrs = getSegmentAgentAttributes(
         t.context.transaction,
         'Nodejs/Nextjs/getServerSideProps//ssr/dynamic/person/[id]'
@@ -184,6 +190,8 @@ tap.test('Next.js', (t) => {
       'request.parameters.first': 'one',
       'request.parameters.second': 'two'
     })
+    t.notOk(agentAttributes['request.parameters.route.first'])
+    t.notOk(agentAttributes['request.parameters.route.second'])
   })
 
   t.test('should capture query and route params for API with dynamic route', async (t) => {
@@ -198,6 +206,7 @@ tap.test('Next.js', (t) => {
       'request.parameters.route.id': '2', // route [id] param
       'request.parameters.queryParam': 'queryValue'
     })
+    t.notOk(agentAttributes['request.parameters.route.queryParam'])
   })
 
   t.test('should have matching traceId, sampled attributes across internal requests', async (t) => {
