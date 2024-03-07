@@ -93,7 +93,7 @@ tap.test('OpenAI instrumentation - embedding', (t) => {
         'span_id': tx.trace.root.children[0].id,
         'transaction_id': tx.id,
         'response.model': 'text-embedding-ada-002-v2',
-        'vendor': 'openAI',
+        'vendor': 'openai',
         'ingest_source': 'Node',
         'request.model': 'text-embedding-ada-002',
         'duration': tx.trace.root.children[0].getDurationInMillis(),

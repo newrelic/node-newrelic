@@ -53,7 +53,7 @@ function getExpectedResult(tx, event, type, completionId) {
     'span_id': trace.children[0].id,
     'transaction_id': tx.id,
     'response.model': 'gpt-3.5-turbo-0613',
-    'vendor': 'openAI',
+    'vendor': 'openai',
     'ingest_source': 'Node'
   }
   const resKeys = {
