@@ -157,6 +157,7 @@ function recordEmbeddingMessage({ agent, segment, bedrockCommand, bedrockRespons
  * @param {BedrockCommand} params.bedrockCommand parsed input
  * @param {object} params.response response from bedrock
  * @param {Error|null} params.err error from request if exists
+ *
  * @returns {BedrockResponse} parsed response from bedrock
  */
 function createBedrockResponse({ bedrockCommand, response, err }) {

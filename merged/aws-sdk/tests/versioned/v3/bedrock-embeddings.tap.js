@@ -201,8 +201,8 @@ tap.afterEach(async (t) => {
         'ingest_source': 'Node',
         'request.model': modelId,
         'duration': tx.trace.root.children[0].getDurationInMillis(),
-        'response.usage.total_tokens': 0,
-        'response.usage.prompt_tokens': 0,
+        'response.usage.total_tokens': undefined,
+        'response.usage.prompt_tokens': undefined,
         'input': prompt,
         'error': true
       }
@@ -249,5 +249,36 @@ tap.afterEach(async (t) => {
       tx.end()
       t.end()
     })
+  })
+})
+
+tap.test('should utilize tokenCountCallback when set', (t) => {
+  t.plan(3)
+
+  const { bedrock, client, helper } = t.context
+  const prompt = 'embed text amazon token count callback response'
+  const input = requests.amazon(prompt, 'amazon.titan-text-express-v1')
+
+  helper.agent.config.ai_monitoring.record_content.enabled = false
+  helper.agent.llm.tokenCountCallback = function (model, content) {
+    t.equal(model, 'amazon.titan-text-express-v1')
+    t.equal(content, prompt)
+    return content?.split(' ')?.length
+  }
+  const command = new bedrock.InvokeModelCommand(input)
+
+  helper.runInTransaction(async (tx) => {
+    await client.send(command)
+
+    // Chat completion messages should have the correct `token_count` value.
+    const events = helper.agent.customEventAggregator.events.toArray()
+    const completions = events.filter((e) => e[0].type === 'LlmChatCompletionMessage')
+    t.equal(
+      completions.some((e) => e[1].token_count === 7),
+      true
+    )
+
+    tx.end()
+    t.end()
   })
 })

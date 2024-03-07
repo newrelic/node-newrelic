@@ -126,19 +126,19 @@ class BedrockResponse {
    * The number of tokens present in the prompt as determined by the remote
    * API.
    *
-   * @returns {number}
+   * @returns {number|undefined}
    */
   get inputTokenCount() {
-    return parseInt(this.headers?.['x-amzn-bedrock-input-token-count'] || 0, 10)
+    return this.#tokenCount('x-amzn-bedrock-input-token-count')
   }
 
   /**
    * The number of tokens in the LLM response as determined by the remote API.
    *
-   * @returns {number}
+   * @returns {number|undefined}
    */
   get outputTokenCount() {
-    return parseInt(this.headers?.['x-amzn-bedrock-output-token-count'] || 0, 10)
+    return this.#tokenCount('x-amzn-bedrock-output-token-count')
   }
 
   /**
@@ -157,6 +157,14 @@ class BedrockResponse {
    */
   get statusCode() {
     return this.#innerResponse.statusCode
+  }
+
+  #tokenCount(headerName) {
+    const headerVal = this.headers?.[headerName]
+    if (headerVal != null) {
+      return parseInt(headerVal, 10)
+    }
+    return undefined
   }
 }
 

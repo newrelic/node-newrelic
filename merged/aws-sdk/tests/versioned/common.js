@@ -89,7 +89,6 @@ function assertChatCompletionMessages({ tx, chatMsgs, expectedId, modelId, promp
     'ingest_source': 'Node',
     'role': 'user',
     'is_response': false,
-    'token_count': /\d/,
     'completion_id': /[\w]{8}-[\w]{4}-[\w]{4}-[\w]{4}-[\w]{12}/
   }
 

@@ -40,7 +40,7 @@ code, the source code can be found at [https://github.com/newrelic/node-newrelic
 
 ### @aws-sdk/client-s3
 
-This product includes source derived from [@aws-sdk/client-s3](https://github.com/aws/aws-sdk-js-v3) ([v3.485.0](https://github.com/aws/aws-sdk-js-v3/tree/v3.485.0)), distributed under the [Apache-2.0 License](https://github.com/aws/aws-sdk-js-v3/blob/v3.485.0/LICENSE):
+This product includes source derived from [@aws-sdk/client-s3](https://github.com/aws/aws-sdk-js-v3) ([v3.525.0](https://github.com/aws/aws-sdk-js-v3/tree/v3.525.0)), distributed under the [Apache-2.0 License](https://github.com/aws/aws-sdk-js-v3/blob/v3.525.0/LICENSE):
 
 ```
                                 Apache License
@@ -249,7 +249,7 @@ This product includes source derived from [@aws-sdk/client-s3](https://github.co
 
 ### @aws-sdk/s3-request-presigner
 
-This product includes source derived from [@aws-sdk/s3-request-presigner](https://github.com/aws/aws-sdk-js-v3) ([v3.485.0](https://github.com/aws/aws-sdk-js-v3/tree/v3.485.0)), distributed under the [Apache-2.0 License](https://github.com/aws/aws-sdk-js-v3/blob/v3.485.0/LICENSE):
+This product includes source derived from [@aws-sdk/s3-request-presigner](https://github.com/aws/aws-sdk-js-v3) ([v3.525.0](https://github.com/aws/aws-sdk-js-v3/tree/v3.525.0)), distributed under the [Apache-2.0 License](https://github.com/aws/aws-sdk-js-v3/blob/v3.525.0/LICENSE):
 
 ```
                                 Apache License
@@ -875,7 +875,7 @@ This product includes source derived from [@newrelic/newrelic-oss-cli](https://g
 
 ### @newrelic/test-utilities
 
-This product includes source derived from [@newrelic/test-utilities](https://github.com/newrelic/node-test-utilities) ([v8.2.0](https://github.com/newrelic/node-test-utilities/tree/v8.2.0)), distributed under the [Apache-2.0 License](https://github.com/newrelic/node-test-utilities/blob/v8.2.0/LICENSE):
+This product includes source derived from [@newrelic/test-utilities](https://github.com/newrelic/node-test-utilities) ([v8.3.0](https://github.com/newrelic/node-test-utilities/tree/v8.3.0)), distributed under the [Apache-2.0 License](https://github.com/newrelic/node-test-utilities/blob/v8.3.0/LICENSE):
 
 ```
                                  Apache License
@@ -1084,7 +1084,7 @@ This product includes source derived from [@newrelic/test-utilities](https://git
 
 ### aws-sdk
 
-This product includes source derived from [aws-sdk](https://github.com/aws/aws-sdk-js) ([v2.1531.0](https://github.com/aws/aws-sdk-js/tree/v2.1531.0)), distributed under the [Apache-2.0 License](https://github.com/aws/aws-sdk-js/blob/v2.1531.0/LICENSE.txt):
+This product includes source derived from [aws-sdk](https://github.com/aws/aws-sdk-js) ([v2.1571.0](https://github.com/aws/aws-sdk-js/tree/v2.1571.0)), distributed under the [Apache-2.0 License](https://github.com/aws/aws-sdk-js/blob/v2.1571.0/LICENSE.txt):
 
 ```
 
@@ -1316,7 +1316,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ### eslint
 
-This product includes source derived from [eslint](https://github.com/eslint/eslint) ([v8.56.0](https://github.com/eslint/eslint/tree/v8.56.0)), distributed under the [MIT License](https://github.com/eslint/eslint/blob/v8.56.0/LICENSE):
+This product includes source derived from [eslint](https://github.com/eslint/eslint) ([v8.57.0](https://github.com/eslint/eslint/tree/v8.57.0)), distributed under the [MIT License](https://github.com/eslint/eslint/blob/v8.57.0/LICENSE):
 
 ```
 Copyright OpenJS Foundation and other contributors, <www.openjsf.org>
@@ -1401,7 +1401,7 @@ SOFTWARE.
 
 ### lockfile-lint
 
-This product includes source derived from [lockfile-lint](https://github.com/lirantal/lockfile-lint) ([v4.12.1](https://github.com/lirantal/lockfile-lint/tree/v4.12.1)), distributed under the [Apache-2.0 License](https://github.com/lirantal/lockfile-lint/blob/v4.12.1/LICENSE):
+This product includes source derived from [lockfile-lint](https://github.com/lirantal/lockfile-lint) ([v4.13.2](https://github.com/lirantal/lockfile-lint/tree/v4.13.2)), distributed under the [Apache-2.0 License](https://github.com/lirantal/lockfile-lint/blob/v4.13.2/LICENSE):
 
 ```
 
@@ -1599,7 +1599,7 @@ This product includes source derived from [lockfile-lint](https://github.com/lir
 
 ### newrelic
 
-This product includes source derived from [newrelic](https://github.com/newrelic/node-newrelic) ([v11.11.0](https://github.com/newrelic/node-newrelic/tree/v11.11.0)), distributed under the [Apache-2.0 License](https://github.com/newrelic/node-newrelic/blob/v11.11.0/LICENSE):
+This product includes source derived from [newrelic](https://github.com/newrelic/node-newrelic) ([v11.12.0](https://github.com/newrelic/node-newrelic/tree/v11.12.0)), distributed under the [Apache-2.0 License](https://github.com/newrelic/node-newrelic/blob/v11.12.0/LICENSE):
 
 ```
                                  Apache License

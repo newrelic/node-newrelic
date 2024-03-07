@@ -40,23 +40,29 @@ class LlmChatCompletionMessage extends LlmEvent {
     super(params)
 
     const { agent, content, isResponse, index, completionId } = params
+    const recordContent = agent.config?.ai_monitoring?.record_content?.enabled
+    const tokenCB = agent?.llm?.tokenCountCallback
 
     this.is_response = isResponse
     this.completion_id = completionId
     this.sequence = index
-    this.content = agent.config?.ai_monitoring?.record_content?.enabled ? content : undefined
+    this.content = recordContent === true ? content : undefined
     this.role = ''
 
     this.#setId(index)
     if (this.is_response === true) {
       this.role = 'assistant'
       this.token_count = this.bedrockResponse.outputTokenCount
+      if (this.token_count === undefined && typeof tokenCB === 'function') {
+        this.token_count = tokenCB(this.bedrockCommand.modelId, content)
+      }
     } else {
       this.role = 'user'
+      this.content = recordContent === true ? this.bedrockCommand.prompt : undefined
       this.token_count = this.bedrockResponse.inputTokenCount
-      this.content = agent.config?.ai_monitoring?.record_content?.enabled
-        ? this.bedrockCommand.prompt
-        : undefined
+      if (this.token_count === undefined && typeof tokenCB === 'function') {
+        this.token_count = tokenCB(this.bedrockCommand.modelId, this.bedrockCommand.prompt)
+      }
     }
   }
 
