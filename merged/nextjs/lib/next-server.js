@@ -35,30 +35,25 @@ module.exports = function initialize(shim, nextServer) {
           semver.gte(nextVersion, GET_SERVER_SIDE_PROP_VERSION) &&
           components.getServerSideProps
         ) {
-          shim.record(
-            components,
-            'getServerSideProps',
-            function recordGetServerSideProps(shim, orig, name, [{ req, res }]) {
-              return {
-                inContext(segment) {
-                  segment.addSpanAttributes({ 'next.page': pathname })
-                  assignCLMAttrs(config, segment, {
-                    'code.function': 'getServerSideProps',
-                    'code.filepath': `pages${pathname}`
-                  })
-                },
-                req,
-                res,
-                promise: true,
-                name: `${SPAN_PREFIX}/getServerSideProps/${pathname}`
-              }
-            }
-          )
+          shim.record(components, 'getServerSideProps', function recordGetServerSideProps(shim) {
+            return new shim.specs.RecorderSpec({
+              inContext(segment) {
+                segment.addSpanAttributes({ 'next.page': pathname })
+                assignCLMAttrs(config, segment, {
+                  'code.function': 'getServerSideProps',
+                  'code.filepath': `pages${pathname}`
+                })
+              },
+              promise: true,
+              name: `${SPAN_PREFIX}/getServerSideProps/${pathname}`
+            })
+          })
         }
 
         shim.setTransactionUri(pathname)
 
-        assignParameters(shim, query)
+        const urlParams = extractRouteParams(ctx.query, query)
+        assignParameters(shim, urlParams)
 
         return originalFn.apply(this, arguments)
       }
@@ -85,8 +80,8 @@ module.exports = function initialize(shim, nextServer) {
     shim.record(
       Server.prototype,
       'renderHTML',
-      function renderHTMLRecorder(shim, renderToHTML, name, [req, res, page]) {
-        return {
+      function renderHTMLRecorder(shim, renderToHTML, name, [, , page]) {
+        return new shim.specs.RecorderSpec({
           inContext(segment) {
             segment.addSpanAttributes({ 'next.page': page })
             assignCLMAttrs(config, segment, {
@@ -94,11 +89,9 @@ module.exports = function initialize(shim, nextServer) {
               'code.filepath': `pages${page}`
             })
           },
-          req,
-          res,
           promise: true,
           name: `${SPAN_PREFIX}/getServerSideProps/${page}`
-        }
+        })
       }
     )
   }
@@ -111,26 +104,20 @@ module.exports = function initialize(shim, nextServer) {
     return
   }
 
-  shim.record(
-    Server.prototype,
-    'runMiddleware',
-    function runMiddlewareRecorder(shim, runMiddleware, name, [args]) {
-      const middlewareName = 'middleware'
-      return {
-        type: shim.MIDDLEWARE,
-        name: `${shim._metrics.MIDDLEWARE}${shim._metrics.PREFIX}/${middlewareName}`,
-        inContext(segment) {
-          assignCLMAttrs(config, segment, {
-            'code.function': middlewareName,
-            'code.filepath': middlewareName
-          })
-        },
-        req: args.request,
-        route: middlewareName,
-        promise: true
-      }
-    }
-  )
+  shim.record(Server.prototype, 'runMiddleware', function runMiddlewareRecorder(shim) {
+    const middlewareName = 'middleware'
+    return new shim.specs.RecorderSpec({
+      type: shim.MIDDLEWARE,
+      name: `${shim._metrics.MIDDLEWARE}${shim._metrics.PREFIX}/${middlewareName}`,
+      inContext(segment) {
+        assignCLMAttrs(config, segment, {
+          'code.function': middlewareName,
+          'code.filepath': middlewareName
+        })
+      },
+      promise: true
+    })
+  })
 }
 
 function assignParameters(shim, parameters) {
@@ -158,12 +145,33 @@ function extractAttrs(args, version) {
   let params
   let page
   if (semver.gte(version, '13.4.13')) {
-    const [, , query, match] = args
+    const [, , , match] = args
     page = match?.definition?.pathname
-    params = { ...query, ...match?.params }
+    params = { ...match?.params }
   } else {
     ;[, , , params, page] = args
   }
 
   return { params, page }
+}
+
+/**
+ * Extracts route params from an object that contains both
+ * query and route params. The query params are automatically
+ * assigned when transaction finishes based on the url
+ *
+ * @param {object} query query params for given function call
+ * @param {object} params next.js params that contain query, route, and built in params
+ * @returns {object} route params
+ */
+function extractRouteParams(query = {}, params = {}) {
+  const queryParams = Object.keys(query)
+  const urlParams = {}
+  for (const [key, value] of Object.entries(params)) {
+    if (!queryParams.includes(key)) {
+      urlParams[key] = value
+    }
+  }
+
+  return urlParams
 }
