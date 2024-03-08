@@ -100,7 +100,7 @@ tap.test('OpenAI instrumentation - embedding', (t) => {
         'response.organization': 'new-relic-nkmd8b',
         'response.usage.total_tokens': 6,
         'response.usage.prompt_tokens': 6,
-        'token_count': 6,
+        'token_count': undefined,
         'response.headers.llmVersion': '2020-10-01',
         'response.headers.ratelimitLimitRequests': '200',
         'response.headers.ratelimitLimitTokens': '150000',

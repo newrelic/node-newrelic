@@ -75,7 +75,7 @@ function getExpectedResult(tx, event, type, completionId) {
       expected = { ...expected, ...resKeys }
       expected.input = 'This is my test input'
       expected.error = false
-      expected.token_count = 10
+      expected.token_count = undefined
       break
     case 'summary':
       expected = {
@@ -96,7 +96,6 @@ function getExpectedResult(tx, event, type, completionId) {
         role: 'inquisitive-kid',
         sequence: 0,
         completion_id: completionId,
-        token_count: 10,
         is_response: false
       }
   }

@@ -96,8 +96,7 @@ tap.test('OpenAI instrumentation - chat completions', (t) => {
         model,
         id: 'chatcmpl-87sb95K4EF2nuJRcTs43Tm9ntTeat',
         resContent: '1 plus 2 is 3.',
-        reqContent: content,
-        tokenUsage: true
+        reqContent: content
       })
 
       const chatSummary = events.filter(([{ type }]) => type === 'LlmChatCompletionSummary')[0]
