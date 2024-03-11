@@ -52,15 +52,13 @@ class LlmChatCompletionMessage extends LlmEvent {
     this.#setId(index)
     if (this.is_response === true) {
       this.role = 'assistant'
-      this.token_count = this.bedrockResponse.outputTokenCount
-      if (this.token_count === undefined && typeof tokenCB === 'function') {
+      if (typeof tokenCB === 'function') {
         this.token_count = tokenCB(this.bedrockCommand.modelId, content)
       }
     } else {
       this.role = 'user'
       this.content = recordContent === true ? this.bedrockCommand.prompt : undefined
-      this.token_count = this.bedrockResponse.inputTokenCount
-      if (this.token_count === undefined && typeof tokenCB === 'function') {
+      if (typeof tokenCB === 'function') {
         this.token_count = tokenCB(this.bedrockCommand.modelId, this.bedrockCommand.prompt)
       }
     }

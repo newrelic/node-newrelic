@@ -93,7 +93,6 @@ tap.test('create creates a non-response instance', async (t) => {
   t.equal(event.content, 'who are you')
   t.equal(event.role, 'user')
   t.match(event.id, /[\w-]{36}/)
-  t.equal(event.token_count, 8)
 })
 
 tap.test('create creates a titan response instance', async (t) => {
@@ -108,7 +107,6 @@ tap.test('create creates a titan response instance', async (t) => {
   t.equal(event.content, 'a response')
   t.equal(event.role, 'assistant')
   t.match(event.id, /[\w-]{36}-0/)
-  t.equal(event.token_count, 4)
 })
 
 tap.test('create creates a cohere response instance', async (t) => {
@@ -124,7 +122,6 @@ tap.test('create creates a cohere response instance', async (t) => {
   t.equal(event.content, 'a response')
   t.equal(event.role, 'assistant')
   t.match(event.id, /42-0/)
-  t.equal(event.token_count, 4)
 })
 
 tap.test('create creates a ai21 response instance when response.id is undefined', async (t) => {
@@ -140,7 +137,6 @@ tap.test('create creates a ai21 response instance when response.id is undefined'
   t.equal(event.content, 'a response')
   t.equal(event.role, 'assistant')
   t.match(event.id, /[\w-]{36}-0/)
-  t.equal(event.token_count, 4)
 })
 
 tap.test(
