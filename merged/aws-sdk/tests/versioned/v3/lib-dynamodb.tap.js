@@ -144,6 +144,30 @@ tap.test('DynamoDB', (t) => {
     })
   })
 
+  t.test('calling send on client and doc client', (t) => {
+    const docClientFrom = DynamoDBDocumentClient.from(client)
+    let errorOccurred = false
+    helper.runInTransaction(async function (tx) {
+      for (let i = 0; i < tests.length; i++) {
+        const cfg = tests[i]
+        t.comment(`Testing ${cfg.operation}`)
+
+        try {
+          await docClientFrom.send(new ddbCommands[cfg.command](cfg.params))
+          await client.send(new ddbCommands[cfg.command](cfg.params))
+        } catch (err) {
+          errorOccurred = true
+          t.error(err)
+        }
+      }
+
+      t.notOk(errorOccurred, 'should not have a middleware error with two clients')
+
+      tx.end()
+      t.end()
+    })
+  })
+
   t.test('DynamoDBDocument client from commands', (t) => {
     const docClientFrom = DynamoDBDocument.from(client)
     helper.runInTransaction(async function (tx) {

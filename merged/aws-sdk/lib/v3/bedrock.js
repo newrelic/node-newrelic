@@ -289,6 +289,7 @@ module.exports.bedrockMiddlewareConfig = {
   type: 'generic',
   config: {
     name: 'NewRelicBedrockMiddleware',
-    step: 'deserialize'
+    step: 'deserialize',
+    override: true
   }
 }

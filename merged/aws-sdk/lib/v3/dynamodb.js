@@ -79,7 +79,8 @@ const dynamoMiddlewareConfig = {
   config: {
     name: 'NewRelicDynamoMiddleware',
     step: 'initialize',
-    priority: 'high'
+    priority: 'high',
+    override: true
   }
 }
 

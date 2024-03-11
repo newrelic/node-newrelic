@@ -60,6 +60,7 @@ module.exports.sqsMiddlewareConfig = {
   config: {
     name: 'NewRelicSnsMiddleware',
     step: 'initialize',
-    priority: 'high'
+    priority: 'high',
+    override: true
   }
 }

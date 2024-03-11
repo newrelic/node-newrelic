@@ -82,7 +82,8 @@ module.exports.middlewareConfig = [
     config: {
       name: 'NewRelicHeader',
       step: 'finalizeRequest',
-      priority: 'low'
+      priority: 'low',
+      override: true
     }
   },
   {
@@ -90,7 +91,8 @@ module.exports.middlewareConfig = [
     type: 'generic',
     config: {
       name: 'NewRelicDeserialize',
-      step: 'deserialize'
+      step: 'deserialize',
+      override: true
     }
   }
 ]
