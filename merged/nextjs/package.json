@@ -20,6 +20,7 @@
     "THIRD_PARTY_NOTICES.md",
     "index.js",
     "nr-hooks.js",
+    "load-externals.js",
     "lib/"
   ],
   "repository": {
