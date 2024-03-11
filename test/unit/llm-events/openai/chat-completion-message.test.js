@@ -62,7 +62,6 @@ tap.test('LlmChatCompletionMessage', (t) => {
         expected.content = chatRes.choices[0].message.content
         expected.role = chatRes.choices[0].message.role
         expected.is_response = true
-        expected.token_count = 20
         t.same(chatMessageEvent, expected)
         t.end()
       })
