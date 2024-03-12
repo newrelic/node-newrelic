@@ -15,9 +15,6 @@ const createOpenAIMockServer = require('../openai/mock-server')
 const config = {
   ai_monitoring: {
     enabled: true
-  },
-  feature_flag: {
-    langchain_instrumentation: true
   }
 }
 

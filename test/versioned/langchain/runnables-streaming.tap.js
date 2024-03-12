@@ -19,9 +19,6 @@ const config = {
     streaming: {
       enabled: true
     }
-  },
-  feature_flag: {
-    langchain_instrumentation: true
   }
 }
 

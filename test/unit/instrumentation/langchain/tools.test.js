@@ -15,7 +15,6 @@ test('langchain/core/tools unit tests', (t) => {
     const sandbox = sinon.createSandbox()
     const agent = helper.loadMockedAgent()
     agent.config.ai_monitoring = { enabled: true }
-    agent.config.feature_flag = { langchain_instrumentation: true }
     const shim = new GenericShim(agent, 'langchain')
     shim.pkgVersion = '0.1.26'
     sandbox.stub(shim.logger, 'debug')
@@ -37,31 +36,20 @@ test('langchain/core/tools unit tests', (t) => {
     StructuredTool.prototype.call = async function call() {}
     return { StructuredTool }
   }
+  t.test('should not register instrumentation if ai_monitoring is false', (t) => {
+    const { shim, agent, initialize } = t.context
+    const MockTool = getMockModule()
+    agent.config.ai_monitoring.enabled = false
 
-  ;[
-    { aiMonitoring: false, langChain: true },
-    { aiMonitoring: true, langChain: false },
-    { aiMonitoring: false, langChain: false }
-  ].forEach(({ aiMonitoring, langChain }) => {
-    t.test(
-      `should not register instrumentation if ai_monitoring is ${aiMonitoring} and langchain_instrumentation is ${langChain}`,
-      (t) => {
-        const { shim, agent, initialize } = t.context
-        const MockTool = getMockModule()
-        agent.config.ai_monitoring.enabled = aiMonitoring
-        agent.config.feature_flag.langchain_instrumentation = langChain
-
-        initialize(shim, MockTool)
-        t.equal(shim.logger.debug.callCount, 1, 'should log 1 debug messages')
-        t.equal(
-          shim.logger.debug.args[0][0],
-          'langchain instrumentation is disabled.  To enable set `config.ai_monitoring.enabled` to true'
-        )
-        const isWrapped = shim.isWrapped(MockTool.StructuredTool.prototype.call)
-        t.equal(isWrapped, false, 'should not wrap tool create')
-        t.end()
-      }
+    initialize(shim, MockTool)
+    t.equal(shim.logger.debug.callCount, 1, 'should log 1 debug messages')
+    t.equal(
+      shim.logger.debug.args[0][0],
+      'langchain instrumentation is disabled.  To enable set `config.ai_monitoring.enabled` to true'
     )
+    const isWrapped = shim.isWrapped(MockTool.StructuredTool.prototype.call)
+    t.equal(isWrapped, false, 'should not wrap tool create')
+    t.end()
   })
 
   t.end()
