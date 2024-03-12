@@ -17,7 +17,7 @@ jobs:
       with:
         node-version: ${{ matrix.node-version }}
     - name: Install Dependencies
-      run: npm install
+      run: npm ci
     - name: Run Linting
       run: npm run lint
     - name: Inspect Lockfile
@@ -37,7 +37,7 @@ jobs:
       with:
         node-version: ${{ matrix.node-version }}
     - name: Install Dependencies
-      run: npm install
+      run: npm ci
     - name: Run Unit Tests
       run: npm run unit
     - name: Post Unit Test Coverage
@@ -62,7 +62,7 @@ jobs:
       with:
         node-version: ${{ matrix.node-version }}
     - name: Install Dependencies
-      run: npm install
+      run: npm ci
     - name: Run Versioned Tests
       run: npm run versioned
     - name: Post Versioned Test Coverage
