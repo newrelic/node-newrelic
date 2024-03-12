@@ -1,3 +1,9 @@
+### v9.0.0 (2024-03-12)
+
+* **BREAKING CHANGE**: Updated koa instrumentation to construct specs at instrumentation
+  * Must be running v11.11.0 of `newrelic` for this to function.
+* Updated dev deps `follow-redirects`, `@babel/generator`, `@babel/parser`, `@babel/traverse`, `@babel/types`, and `axios` to fix CVEs.
+
 ### v8.0.1 (2023-10-25)
 
 * Removed `newrelic` as peer dependency since this package only gets bundled with agent.
