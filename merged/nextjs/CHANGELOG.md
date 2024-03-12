@@ -1,3 +1,10 @@
+### v0.8.0 (2024-03-12)
+
+* Updated instrumentation to construct spec objects at instrumentation.
+ * Fixed instrumentation to only pass in route parameters to be added to Next.js segments. 
+ * Updated minimum version of agent to 11.12.0.
+ * Updated dev deps `follow-redirects`, `@babel/traverse` to fix bugs and CVEs
+
 ### v0.7.0 (2023-08-29)
 
 * Updated the module path to properly instrument Next.js with `require-in-the-middle`.
