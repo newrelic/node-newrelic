@@ -1,3 +1,19 @@
+### v7.3.0 (2024-03-12)
+
+#### Features
+
+* Added ability to disable capturing of content in LLM events `ai_monitoring.record_content.enabled` ([#268](https://github.com/newrelic/node-newrelic-aws-sdk/pull/268)) ([a36050e](https://github.com/newrelic/node-newrelic-aws-sdk/commit/a36050ed4b7aab0e15da664f33363b4ae4d21eef))
+* Added llm.tokenCountCallback support to Bedrock ([#270](https://github.com/newrelic/node-newrelic-aws-sdk/pull/270)) ([d2af144](https://github.com/newrelic/node-newrelic-aws-sdk/commit/d2af144cf5dcfc031a863fe89a30b3465320758a))
+
+#### Bug fixes
+
+* Added override setting to middleware configuration ([#273](https://github.com/newrelic/node-newrelic-aws-sdk/pull/273)) ([1a291f0](https://github.com/newrelic/node-newrelic-aws-sdk/commit/1a291f0fda0b7793fa24a667f32fe287f45b0921))
+
+#### Miscellaneous chores
+
+* Changed token_count to only use tokenCountCallback ([#272](https://github.com/newrelic/node-newrelic-aws-sdk/pull/272)) ([a9dbf26](https://github.com/newrelic/node-newrelic-aws-sdk/commit/a9dbf267c74f3a9ad089579fd5b89a8c366f8dec))
+* Updated Bedrock entities with token_count ([#269](https://github.com/newrelic/node-newrelic-aws-sdk/pull/269)) ([f6a86cb](https://github.com/newrelic/node-newrelic-aws-sdk/commit/f6a86cb2143f018f3579262a5c014b587f884a2d))
+
 ### v7.2.0 (2024-02-29)
 
 #### Features

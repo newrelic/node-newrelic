@@ -2,6 +2,19 @@
   "repository": "newrelic/node-newrelic-aws-sdk",
   "entries": [
     {
+      "version": "7.3.0",
+      "changes": {
+        "security": [],
+        "bugfixes": [
+          "Added override setting to middleware configuration"
+        ],
+        "features": [
+          "Added llm.tokenCountCallback support to Bedrock",
+          "Added ability to disable capturing of content in LLM events `ai_monitoring.record_content.enabled`"
+        ]
+      }
+    },
+    {
       "version": "7.2.0",
       "changes": {
         "security": [],
