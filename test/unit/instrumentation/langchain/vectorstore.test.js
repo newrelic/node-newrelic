@@ -15,7 +15,6 @@ test('langchain/core/vectorstore unit tests', (t) => {
     const sandbox = sinon.createSandbox()
     const agent = helper.loadMockedAgent()
     agent.config.ai_monitoring = { enabled: true }
-    agent.config.feature_flag = { langchain_instrumentation: true }
     const shim = new GenericShim(agent, 'langchain')
     shim.pkgVersion = '0.1.26'
     sandbox.stub(shim.logger, 'debug')
@@ -38,30 +37,20 @@ test('langchain/core/vectorstore unit tests', (t) => {
     return { VectorStore }
   }
 
-  ;[
-    { aiMonitoring: false, langChain: true },
-    { aiMonitoring: true, langChain: false },
-    { aiMonitoring: false, langChain: false }
-  ].forEach(({ aiMonitoring, langChain }) => {
-    t.test(
-      `should not register instrumentation if ai_monitoring is ${aiMonitoring} and langchain_instrumentation is ${langChain}`,
-      (t) => {
-        const { shim, agent, initialize } = t.context
-        const MockVectorstore = getMockModule()
-        agent.config.ai_monitoring.enabled = aiMonitoring
-        agent.config.feature_flag.langchain_instrumentation = langChain
+  t.test('should not register instrumentation if ai_monitoring is false', (t) => {
+    const { shim, agent, initialize } = t.context
+    const MockVectorstore = getMockModule()
+    agent.config.ai_monitoring.enabled = false
 
-        initialize(shim, MockVectorstore)
-        t.equal(shim.logger.debug.callCount, 1, 'should log 1 debug messages')
-        t.equal(
-          shim.logger.debug.args[0][0],
-          'langchain instrumentation is disabled.  To enable set `config.ai_monitoring.enabled` to true'
-        )
-        const isWrapped = shim.isWrapped(MockVectorstore.VectorStore.prototype.similaritySearch)
-        t.equal(isWrapped, false, 'should not wrap vectorstore similaritySearch')
-        t.end()
-      }
+    initialize(shim, MockVectorstore)
+    t.equal(shim.logger.debug.callCount, 1, 'should log 1 debug messages')
+    t.equal(
+      shim.logger.debug.args[0][0],
+      'langchain instrumentation is disabled.  To enable set `config.ai_monitoring.enabled` to true'
     )
+    const isWrapped = shim.isWrapped(MockVectorstore.VectorStore.prototype.similaritySearch)
+    t.equal(isWrapped, false, 'should not wrap vectorstore similaritySearch')
+    t.end()
   })
 
   t.end()

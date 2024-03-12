@@ -13,9 +13,6 @@ const { version: pkgVersion } = require('@langchain/core/package.json')
 const config = {
   ai_monitoring: {
     enabled: true
-  },
-  feature_flag: {
-    langchain_instrumentation: true
   }
 }
 const baseUrl = 'http://httpbin.org'

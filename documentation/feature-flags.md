@@ -38,9 +38,3 @@ Any prerelease flags can be enabled or disabled in your agent config by adding a
 * Configuration: `{ feature_flag: { legacy_context_manager: true|false }}`
 * Environment Variable: `NEW_RELIC_FEATURE_FLAG_LEGACY_CONTEXT_MANAGER`
 * Description: The legacy context manager was replaced by AsyncLocalContextManager for async context propagation. If your application is not recording certain spans or creating orphaned data, you may want to enable this older context manager. Enabling this feature flag may increase the agent's use of memory and CPU.
-
-#### langchain_instrumentation
-* Enabled by default: `false`
-* Configuration: `{ feature_flag: { langchain_instrumentation: true|false }}`
-* Environment Variable: `NEW_RELIC_FEATURE_FLAG_LANGCHAIN_INSTRUMENTATION`
-* Description: Enables instrumentation of the LangChain LLM library.
