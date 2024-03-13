@@ -5,7 +5,7 @@
 * Added AI Monitoring(AIM) for OpenAI, Amazon Bedrock, and Langchain.
   * To enable set `config.ai_monitoring.enabled` or `NEW_RELIC_AI_MONITORING_ENABLED` to `true`.
   * It is recommended for a full experience to set `config.span_events.max_samples_stored` to `10000`, `config.custom_insights_events.max_samples_stored` to `100000`, and `config.distributed_tracing.enabled` should not be set to false.
-  * **Note**: enabling high_security mode will disable the AIM feature.
+  * **Note**: Enabling [high-security mode](https://docs.newrelic.com/docs/apm/agents/manage-apm-agents/configuration/high-security-mode/) will disable the AIM instrumentation and events. 
 * Added instrumentation for VectorStore.similaritySearch for langchain.js ([#2049](https://github.com/newrelic/node-newrelic/pull/2049)) ([3c50606](https://github.com/newrelic/node-newrelic/commit/3c50606a57a8dc18c91fe36e3b180bafd15a4cbc))
 * Added setLlmTokenCountCallback API endpoint to register a callback for calculating token count when none is provided ([#2065](https://github.com/newrelic/node-newrelic/pull/2065)) ([d2faf1a](https://github.com/newrelic/node-newrelic/commit/d2faf1a4942aacefd8b92e0bc2dc11bd8b687328))
 * Added token_count to LlmEmbedding and LlmChatCompletionMessage for openai ([#2061](https://github.com/newrelic/node-newrelic/pull/2061)) ([47a925e](https://github.com/newrelic/node-newrelic/commit/47a925eccce8e5b5d682b46277bbef5191f8b553))
