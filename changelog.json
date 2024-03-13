@@ -2,6 +2,19 @@
   "repository": "newrelic/node-newrelic",
   "entries": [
     {
+      "version": "11.13.0",
+      "changes": {
+        "security": [],
+        "bugfixes": [],
+        "features": [
+          "Added setLlmTokenCountCallback API endpoint to register a callback for calculating token count when none is provided",
+          "Added tool_id to langchain error event",
+          "Added instrumentation for VectorStore.similaritySearch for langchain.js",
+          "Added token_count to LlmEmbedding and LlmChatCompletionMessage for openai"
+        ]
+      }
+    },
+    {
       "version": "11.12.0",
       "changes": {
         "security": [],
