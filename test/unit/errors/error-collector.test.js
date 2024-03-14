@@ -1937,6 +1937,7 @@ tap.test('Errors', (t) => {
         t.equal(attributes.type, 'TransactionError')
         t.ok(typeof attributes['error.class'] === 'string')
         t.ok(typeof attributes['error.message'] === 'string')
+        t.ok(attributes.guid === transaction.id)
         t.ok(Math.abs(attributes.timestamp - nowSeconds) <= 1)
         t.equal(attributes.transactionName, transaction.name)
         t.end()
@@ -2021,6 +2022,13 @@ tap.test('Errors', (t) => {
           transaction.end()
           const attributes = getFirstEventIntrinsicAttributes(aggregator, t)
           t.equal(attributes['nr.transactionGuid'], transaction.id)
+          t.end()
+        })
+
+        t.test('includes guid attribute', (t) => {
+          transaction.end()
+          const attributes = getFirstEventIntrinsicAttributes(aggregator, t)
+          t.equal(attributes.guid, transaction.id)
           t.end()
         })
 
