@@ -35,7 +35,7 @@ jobs:
       with:
         node-version: ${{ matrix.node-version }}
     - name: Install Dependencies
-      run: npm ci
+      run: npm ci --verbose
     - name: Run Linting
       run: npm run lint
     - name: Inspect Lockfile
@@ -58,7 +58,7 @@ jobs:
       with:
         node-version: ${{ matrix.node-version }}
     - name: Install Dependencies
-      run: npm ci
+      run: npm ci --verbose
     - name: Run CI Script Unit Tests
       run: npm run unit:scripts
 
@@ -79,7 +79,7 @@ jobs:
       with:
         node-version: ${{ matrix.node-version }}
     - name: Install Dependencies
-      run: npm ci
+      run: npm ci --verbose
     - name: Run Unit Tests
       run: npm run unit
     - name: Archive Unit Test Coverage
@@ -104,7 +104,7 @@ jobs:
       with:
         node-version: ${{ matrix.node-version }}
     - name: Install Dependencies
-      run: npm ci
+      run: npm ci --verbose
     - name: Run Docker Services
       run: npm run services
     - name: Run Integration Tests
@@ -132,7 +132,7 @@ jobs:
       with:
         node-version: ${{ matrix.node-version }}
     - name: Install Dependencies
-      run: npm ci
+      run: npm ci --verbose
     - name: Run Docker Services
       run: npm run services
     - name: Run Versioned Tests
@@ -161,7 +161,7 @@ jobs:
       with:
         name: logs-${{ matrix.node-version }}.tgz
         path: ./logs-${{ matrix.node-version }}.tgz
-  
+
   # There is no coverage for external as that's tracked in their respective repos
   versioned-external:
     needs: skip_if_release
@@ -180,7 +180,7 @@ jobs:
       with:
         node-version: ${{ matrix.node-version }}
     - name: Install Dependencies
-      run: npm ci
+      run: npm ci --verbose
     - name: Run Versioned Tests
       run: TEST_CHILD_TIMEOUT=600000 npm run versioned:external
       env:
