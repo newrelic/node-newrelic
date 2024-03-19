@@ -31,6 +31,7 @@
         "mongodb": ">=4.1.4"
       },
       "files": [
+        "bulk.tap.js",
         "collection-find.tap.js",
         "collection-index.tap.js",
         "collection-misc.tap.js",
