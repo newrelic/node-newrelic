@@ -237,6 +237,50 @@ tap.test('Errors', (t) => {
     })
   })
 
+  t.test('guid attribute with distributed tracing enabled', (t) => {
+    t.autoend()
+    let errorJSON
+    let transaction
+    let error
+
+    t.beforeEach(() => {
+      agent.config.distributed_tracing.enabled = true
+      error = new Error('this is an error')
+    })
+
+    t.test('should have a guid attribute when there is a transaction', (t) => {
+      transaction = new Transaction(agent)
+      const aggregator = agent.errors
+
+      agent.errors.add(transaction, error)
+      agent.errors.onTransactionFinished(transaction)
+
+      const errorTraces = getErrorTraces(agent.errors)
+      errorJSON = errorTraces[0]
+      const attributes = getFirstEventIntrinsicAttributes(aggregator, t)
+
+      const transactionId = errorJSON[5]
+      t.equal(transactionId, transaction.id)
+      t.equal(attributes.guid, transaction.id)
+      transaction.end()
+      t.end()
+    })
+
+    t.test('should not have a guid attribute when there is no transaction', (t) => {
+      agent.errors.add(null, error)
+      const aggregator = agent.errors
+
+      const errorTraces = getErrorTraces(agent.errors)
+      errorJSON = errorTraces[0]
+      const attributes = getFirstEventIntrinsicAttributes(aggregator, t)
+
+      const transactionId = errorJSON[5]
+      t.notOk(transactionId)
+      t.notOk(attributes.guid)
+      t.end()
+    })
+  })
+
   t.test('transaction id with distributed tracing disabled', (t) => {
     t.autoend()
     let errorJSON
@@ -271,6 +315,50 @@ tap.test('Errors', (t) => {
 
       const transactionId = errorJSON[5]
       t.notOk(transactionId)
+      t.end()
+    })
+  })
+
+  t.test('guid attribute with distributed tracing disabled', (t) => {
+    t.autoend()
+    let errorJSON
+    let transaction
+    let error
+
+    t.beforeEach(() => {
+      agent.config.distributed_tracing.enabled = false
+      error = new Error('this is an error')
+    })
+
+    t.test('should have a guid attribute when there is a transaction', (t) => {
+      transaction = new Transaction(agent)
+      const aggregator = agent.errors
+
+      agent.errors.add(transaction, error)
+      agent.errors.onTransactionFinished(transaction)
+
+      const errorTraces = getErrorTraces(agent.errors)
+      errorJSON = errorTraces[0]
+      const attributes = getFirstEventIntrinsicAttributes(aggregator, t)
+
+      const transactionId = errorJSON[5]
+      t.equal(transactionId, transaction.id)
+      t.equal(attributes.guid, transaction.id)
+      transaction.end()
+      t.end()
+    })
+
+    t.test('should not have a guid attribute when there is no transaction', (t) => {
+      agent.errors.add(null, error)
+      const aggregator = agent.errors
+
+      const errorTraces = getErrorTraces(agent.errors)
+      errorJSON = errorTraces[0]
+      const attributes = getFirstEventIntrinsicAttributes(aggregator, t)
+
+      const transactionId = errorJSON[5]
+      t.notOk(transactionId)
+      t.notOk(attributes.guid)
       t.end()
     })
   })
@@ -1768,6 +1856,15 @@ tap.test('Errors', (t) => {
           t.end()
         })
 
+        t.test('should not contain guid intrinsic attributes', (t) => {
+          const error = new Error('some error')
+          aggregator.add(null, error)
+
+          const attributes = getFirstEventIntrinsicAttributes(aggregator, t)
+          t.notOk(attributes.guid)
+          t.end()
+        })
+
         t.test('should set transactionName to Unknown', (t) => {
           const error = new Error('some error')
           aggregator.add(null, error)
@@ -1937,6 +2034,7 @@ tap.test('Errors', (t) => {
         t.equal(attributes.type, 'TransactionError')
         t.ok(typeof attributes['error.class'] === 'string')
         t.ok(typeof attributes['error.message'] === 'string')
+        t.equal(attributes.guid, transaction.id)
         t.ok(Math.abs(attributes.timestamp - nowSeconds) <= 1)
         t.equal(attributes.transactionName, transaction.name)
         t.end()
@@ -2021,6 +2119,13 @@ tap.test('Errors', (t) => {
           transaction.end()
           const attributes = getFirstEventIntrinsicAttributes(aggregator, t)
           t.equal(attributes['nr.transactionGuid'], transaction.id)
+          t.end()
+        })
+
+        t.test('includes guid attribute', (t) => {
+          transaction.end()
+          const attributes = getFirstEventIntrinsicAttributes(aggregator, t)
+          t.equal(attributes.guid, transaction.id)
           t.end()
         })
 
