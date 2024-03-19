@@ -5,73 +5,32 @@
 
 'use strict'
 const common = require('./collection-common')
-const semver = require('semver')
-const { pkgVersion, STATEMENT_PREFIX } = require('./common')
+const { STATEMENT_PREFIX } = require('./common')
+const findOpt = { returnDocument: 'after' }
 
-let findOpt = { returnOriginal: false }
-// 4.0.0 changed this opt https://github.com/mongodb/node-mongodb-native/pull/2803/files
-if (semver.satisfies(pkgVersion, '>=4')) {
-  findOpt = { returnDocument: 'after' }
-}
-
-if (semver.satisfies(pkgVersion, '<4')) {
-  common.test('findAndModify', function findAndModifyTest(t, collection, verify) {
-    collection.findAndModify({ i: 1 }, [['i', 1]], { $set: { a: 15 } }, { new: true }, done)
-
-    function done(err, data) {
-      t.error(err)
-      t.equal(data.value.a, 15)
-      t.equal(data.value.i, 1)
-      t.equal(data.ok, 1)
-      verify(null, [`${STATEMENT_PREFIX}/findAndModify`, 'Callback: done'], ['findAndModify'])
-    }
-  })
-
-  common.test('findAndRemove', function findAndRemoveTest(t, collection, verify) {
-    collection.findAndRemove({ i: 1 }, [['i', 1]], function done(err, data) {
-      t.error(err)
-      t.equal(data.value.i, 1)
-      t.equal(data.ok, 1)
-      verify(null, [`${STATEMENT_PREFIX}/findAndRemove`, 'Callback: done'], ['findAndRemove'])
-    })
-  })
-}
-
-common.test('findOne', function findOneTest(t, collection, verify) {
-  collection.findOne({ i: 15 }, function done(err, data) {
-    t.error(err)
-    t.equal(data.i, 15)
-    verify(null, [`${STATEMENT_PREFIX}/findOne`, 'Callback: done'], ['findOne'])
-  })
+common.test('findOne', async function findOneTest(t, collection, verify) {
+  const data = await collection.findOne({ i: 15 })
+  t.equal(data.i, 15)
+  verify(null, [`${STATEMENT_PREFIX}/findOne`], ['findOne'], { strict: false })
 })
 
-common.test('findOneAndDelete', function findOneAndDeleteTest(t, collection, verify) {
-  collection.findOneAndDelete({ i: 15 }, function done(err, data) {
-    t.error(err)
-    t.equal(data.ok, 1)
-    t.equal(data.value.i, 15)
-    verify(null, [`${STATEMENT_PREFIX}/findOneAndDelete`, 'Callback: done'], ['findOneAndDelete'])
-  })
+common.test('findOneAndDelete', async function findOneAndDeleteTest(t, collection, verify) {
+  const data = await collection.findOneAndDelete({ i: 15 })
+  const response = data?.value?.i || data.i
+  t.equal(response, 15)
+  verify(null, [`${STATEMENT_PREFIX}/findOneAndDelete`], ['findOneAndDelete'], { strict: false })
 })
 
-common.test('findOneAndReplace', function findAndReplaceTest(t, collection, verify) {
-  collection.findOneAndReplace({ i: 15 }, { b: 15 }, findOpt, done)
-
-  function done(err, data) {
-    t.error(err)
-    t.equal(data.value.b, 15)
-    t.equal(data.ok, 1)
-    verify(null, [`${STATEMENT_PREFIX}/findOneAndReplace`, 'Callback: done'], ['findOneAndReplace'])
-  }
+common.test('findOneAndReplace', async function findAndReplaceTest(t, collection, verify) {
+  const data = await collection.findOneAndReplace({ i: 15 }, { b: 15 }, findOpt)
+  const response = data?.value?.b || data.b
+  t.equal(response, 15)
+  verify(null, [`${STATEMENT_PREFIX}/findOneAndReplace`], ['findOneAndReplace'], { strict: false })
 })
 
-common.test('findOneAndUpdate', function findOneAndUpdateTest(t, collection, verify) {
-  collection.findOneAndUpdate({ i: 15 }, { $set: { a: 15 } }, findOpt, done)
-
-  function done(err, data) {
-    t.error(err)
-    t.equal(data.value.a, 15)
-    t.equal(data.ok, 1)
-    verify(null, [`${STATEMENT_PREFIX}/findOneAndUpdate`, 'Callback: done'], ['findOneAndUpdate'])
-  }
+common.test('findOneAndUpdate', async function findOneAndUpdateTest(t, collection, verify) {
+  const data = await collection.findOneAndUpdate({ i: 15 }, { $set: { a: 15 } }, findOpt)
+  const response = data?.value?.a || data.a
+  t.equal(response, 15)
+  verify(null, [`${STATEMENT_PREFIX}/findOneAndUpdate`], ['findOneAndUpdate'], { strict: false })
 })

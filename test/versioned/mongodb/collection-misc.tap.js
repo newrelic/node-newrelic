@@ -14,131 +14,94 @@ function verifyAggregateData(t, data) {
   t.same(data, [{ value: 5 }, { value: 15 }, { value: 25 }], 'should have expected results')
 }
 
-if (semver.satisfies(pkgVersion, '<4')) {
-  common.test('aggregate', function aggregateTest(t, collection, verify) {
-    const cursor = collection.aggregate([
+common.test('aggregate', async function aggregateTest(t, collection, verify) {
+  const data = await collection
+    .aggregate([
       { $sort: { i: 1 } },
       { $match: { mod10: 5 } },
       { $limit: 3 },
       { $project: { value: '$i', _id: 0 } }
     ])
+    .toArray()
+  verifyAggregateData(t, data)
+  verify(
+    null,
+    [`${STATEMENT_PREFIX}/aggregate`, `${STATEMENT_PREFIX}/toArray`],
+    ['aggregate', 'toArray'],
+    { childrenLength: 2 }
+  )
+})
 
-    cursor.toArray(function onResult(err, data) {
-      verifyAggregateData(t, data)
-      verify(
-        err,
-        [`${STATEMENT_PREFIX}/aggregate`, `${STATEMENT_PREFIX}/toArray`],
-        ['aggregate', 'toArray'],
-        { childrenLength: 2, strict: false }
-      )
-    })
-  })
-} else {
-  common.test('aggregate v4', async function aggregateTest(t, collection, verify) {
-    const data = await collection
-      .aggregate([
-        { $sort: { i: 1 } },
-        { $match: { mod10: 5 } },
-        { $limit: 3 },
-        { $project: { value: '$i', _id: 0 } }
-      ])
-      .toArray()
-    verifyAggregateData(t, data)
-    verify(
-      null,
-      [`${STATEMENT_PREFIX}/aggregate`, `${STATEMENT_PREFIX}/toArray`],
-      ['aggregate', 'toArray'],
-      { childrenLength: 2 }
-    )
-  })
-}
-
-common.test('bulkWrite', function bulkWriteTest(t, collection, verify) {
-  collection.bulkWrite(
+common.test('bulkWrite', async function bulkWriteTest(t, collection, verify) {
+  const data = await collection.bulkWrite(
     [{ deleteMany: { filter: {} } }, { insertOne: { document: { a: 1 } } }],
-    { ordered: true, w: 1 },
-    onWrite
+    { ordered: true, w: 1 }
   )
 
-  function onWrite(err, data) {
-    t.error(err)
-    t.equal(data.insertedCount, 1)
-    t.equal(data.deletedCount, 30)
-    verify(null, [`${STATEMENT_PREFIX}/bulkWrite`, 'Callback: onWrite'], ['bulkWrite'])
+  t.equal(data.insertedCount, 1)
+  t.equal(data.deletedCount, 30)
+  verify(null, [`${STATEMENT_PREFIX}/bulkWrite`], ['bulkWrite'], { strict: false })
+})
+
+common.test('count', async function countTest(t, collection, verify) {
+  const data = await collection.count()
+  t.equal(data, 30)
+  verify(null, [`${STATEMENT_PREFIX}/count`], ['count'], { strict: false })
+})
+
+common.test('distinct', async function distinctTest(t, collection, verify) {
+  const data = await collection.distinct('mod10')
+  t.same(data.sort(), [0, 1, 2, 3, 4, 5, 6, 7, 8, 9])
+  verify(null, [`${STATEMENT_PREFIX}/distinct`], ['distinct'], { strict: false })
+})
+
+common.test('drop', async function dropTest(t, collection, verify) {
+  const data = await collection.drop()
+  t.equal(data, true)
+  verify(null, [`${STATEMENT_PREFIX}/drop`], ['drop'], { strict: false })
+})
+
+common.test('isCapped', async function isCappedTest(t, collection, verify) {
+  const data = await collection.isCapped()
+  t.notOk(data)
+
+  verify(null, [`${STATEMENT_PREFIX}/isCapped`], ['isCapped'], { strict: false })
+})
+
+common.test('options', async function optionsTest(t, collection, verify) {
+  const data = await collection.options()
+
+  // Depending on the version of the mongo server this will change.
+  if (data) {
+    t.same(data, {}, 'should have expected results')
+  } else {
+    t.notOk(data, 'should have expected results')
   }
+
+  verify(null, [`${STATEMENT_PREFIX}/options`], ['options'], { strict: false })
 })
 
-common.test('count', function countTest(t, collection, verify) {
-  collection.count(function onCount(err, data) {
-    t.error(err)
-    t.equal(data, 30)
-    verify(null, [`${STATEMENT_PREFIX}/count`, 'Callback: onCount'], ['count'])
-  })
+common.test('rename', async function renameTest(t, collection, verify) {
+  await collection.rename(COLLECTIONS.collection2)
+
+  verify(null, [`${STATEMENT_PREFIX}/rename`], ['rename'], { strict: false })
 })
 
-common.test('distinct', function distinctTest(t, collection, verify) {
-  collection.distinct('mod10', function done(err, data) {
-    t.error(err)
-    t.same(data.sort(), [0, 1, 2, 3, 4, 5, 6, 7, 8, 9])
-    verify(null, [`${STATEMENT_PREFIX}/distinct`, 'Callback: done'], ['distinct'])
-  })
-})
+if (semver.satisfies(pkgVersion, '<6.0.0')) {
+  common.test('stats', async function statsTest(t, collection, verify) {
+    const data = await collection.stats({ i: 5 })
+    t.equal(data.ns, `${DB_NAME}.${COLLECTIONS.collection1}`)
+    t.equal(data.count, 30)
+    t.equal(data.ok, 1)
 
-common.test('drop', function dropTest(t, collection, verify) {
-  collection.drop(function done(err, data) {
-    t.error(err)
-    t.equal(data, true)
-    verify(null, [`${STATEMENT_PREFIX}/drop`, 'Callback: done'], ['drop'])
-  })
-})
-
-if (semver.satisfies(pkgVersion, '<3')) {
-  common.test('geoNear', function geoNearTest(t, collection, verify) {
-    collection.ensureIndex({ loc: '2d' }, { bucketSize: 1 }, indexed)
-
-    function indexed(err) {
-      t.error(err)
-      collection.geoNear(20, 20, { maxDistance: 5 }, done)
-    }
-
-    function done(err, data) {
-      t.error(err)
-      t.equal(data.ok, 1)
-      t.equal(data.results.length, 2)
-      t.equal(data.results[0].obj.i, 21)
-      t.equal(data.results[1].obj.i, 17)
-      t.same(data.results[0].obj.loc, [21, 21])
-      t.same(data.results[1].obj.loc, [17, 17])
-      t.equal(data.results[0].dis, 1.4142135623730951)
-      t.equal(data.results[1].dis, 4.242640687119285)
-      verify(
-        null,
-        [
-          `${STATEMENT_PREFIX}/ensureIndex`,
-          'Callback: indexed',
-          `${STATEMENT_PREFIX}/geoNear`,
-          'Callback: done'
-        ],
-        ['ensureIndex', 'geoNear']
-      )
-    }
+    verify(null, [`${STATEMENT_PREFIX}/stats`], ['stats'], { strict: false })
   })
 }
 
-common.test('isCapped', function isCappedTest(t, collection, verify) {
-  collection.isCapped(function done(err, data) {
-    t.error(err)
-    t.notOk(data)
+if (semver.satisfies(pkgVersion, '<5.0.0')) {
+  common.test('mapReduce', async function mapReduceTest(t, collection, verify) {
+    const data = await collection.mapReduce(map, reduce, { out: { inline: 1 } })
 
-    verify(null, [`${STATEMENT_PREFIX}/isCapped`, 'Callback: done'], ['isCapped'])
-  })
-})
-
-common.test('mapReduce', function mapReduceTest(t, collection, verify) {
-  collection.mapReduce(map, reduce, { out: { inline: 1 } }, done)
-
-  function done(err, data) {
-    t.error(err)
     const expectedData = [
       { _id: 0, value: 30 },
       { _id: 1, value: 33 },
@@ -157,140 +120,18 @@ common.test('mapReduce', function mapReduceTest(t, collection, verify) {
     data.sort((a, b) => a._id - b._id)
     t.same(data, expectedData)
 
-    verify(null, [`${STATEMENT_PREFIX}/mapReduce`, 'Callback: done'], ['mapReduce'])
-  }
+    verify(null, [`${STATEMENT_PREFIX}/mapReduce`], ['mapReduce'], { strict: false })
 
-  /* eslint-disable */
-  function map(obj) {
-    emit(this.mod10, this.i)
-  }
-  /* eslint-enable */
-
-  function reduce(key, vals) {
-    return vals.reduce(function sum(prev, val) {
-      return prev + val
-    }, 0)
-  }
-})
-
-common.test('options', function optionsTest(t, collection, verify) {
-  collection.options(function done(err, data) {
-    t.error(err)
-
-    // Depending on the version of the mongo server this will change.
-    if (data) {
-      t.same(data, {}, 'should have expected results')
-    } else {
-      t.notOk(data, 'should have expected results')
+    /* eslint-disable */
+    function map() {
+      emit(this.mod10, this.i)
     }
+    /* eslint-enable */
 
-    verify(null, [`${STATEMENT_PREFIX}/options`, 'Callback: done'], ['options'])
-  })
-})
-
-if (semver.satisfies(pkgVersion, '<4')) {
-  common.test('parallelCollectionScan', function (t, collection, verify) {
-    collection.parallelCollectionScan({ numCursors: 1 }, function done(err, cursors) {
-      t.error(err)
-
-      cursors[0].toArray(function toArray(err, items) {
-        t.error(err)
-        t.equal(items.length, 30)
-
-        const total = items.reduce(function sum(prev, item) {
-          return item.i + prev
-        }, 0)
-
-        t.equal(total, 435)
-        verify(
-          null,
-          [
-            `${STATEMENT_PREFIX}/parallelCollectionScan`,
-            'Callback: done',
-            `${STATEMENT_PREFIX}/toArray`,
-            'Callback: toArray'
-          ],
-          ['parallelCollectionScan', 'toArray']
-        )
-      })
-    })
-  })
-
-  common.test('geoHaystackSearch', function haystackSearchTest(t, collection, verify) {
-    collection.ensureIndex({ loc: 'geoHaystack', type: 1 }, { bucketSize: 1 }, indexed)
-
-    function indexed(err) {
-      t.error(err)
-      collection.geoHaystackSearch(15, 15, { maxDistance: 5, search: {} }, done)
-    }
-
-    function done(err, data) {
-      t.error(err)
-      t.equal(data.ok, 1)
-      t.equal(data.results.length, 2)
-      t.equal(data.results[0].i, 13)
-      t.equal(data.results[1].i, 17)
-      t.same(data.results[0].loc, [13, 13])
-      t.same(data.results[1].loc, [17, 17])
-      verify(
-        null,
-        [
-          `${STATEMENT_PREFIX}/ensureIndex`,
-          'Callback: indexed',
-          `${STATEMENT_PREFIX}/geoHaystackSearch`,
-          'Callback: done'
-        ],
-        ['ensureIndex', 'geoHaystackSearch']
-      )
-    }
-  })
-
-  common.test('group', function groupTest(t, collection, verify) {
-    collection.group(['mod10'], {}, { count: 0, total: 0 }, count, done)
-
-    function done(err, data) {
-      t.error(err)
-      t.same(data.sort(sort), [
-        { mod10: 0, count: 3, total: 30 },
-        { mod10: 1, count: 3, total: 33 },
-        { mod10: 2, count: 3, total: 36 },
-        { mod10: 3, count: 3, total: 39 },
-        { mod10: 4, count: 3, total: 42 },
-        { mod10: 5, count: 3, total: 45 },
-        { mod10: 6, count: 3, total: 48 },
-        { mod10: 7, count: 3, total: 51 },
-        { mod10: 8, count: 3, total: 54 },
-        { mod10: 9, count: 3, total: 57 }
-      ])
-      verify(null, [`${STATEMENT_PREFIX}/group`, 'Callback: done'], ['group'])
-    }
-
-    function count(obj, prev) {
-      prev.total += obj.i
-      prev.count++
-    }
-
-    function sort(a, b) {
-      return a.mod10 - b.mod10
+    function reduce(_key, vals) {
+      return vals.reduce(function sum(prev, val) {
+        return prev + val
+      }, 0)
     }
   })
 }
-
-common.test('rename', function renameTest(t, collection, verify) {
-  collection.rename(COLLECTIONS.collection2, function done(err) {
-    t.error(err)
-
-    verify(null, [`${STATEMENT_PREFIX}/rename`, 'Callback: done'], ['rename'])
-  })
-})
-
-common.test('stats', function statsTest(t, collection, verify) {
-  collection.stats({ i: 5 }, function done(err, data) {
-    t.error(err)
-    t.equal(data.ns, `${DB_NAME}.${COLLECTIONS.collection1}`)
-    t.equal(data.count, 30)
-    t.equal(data.ok, 1)
-
-    verify(null, [`${STATEMENT_PREFIX}/stats`, 'Callback: done'], ['stats'])
-  })
-})

@@ -5,12 +5,12 @@
 
 'use strict'
 
-const common = require('./collection-common')
+const common = require('../collection-common')
 const semver = require('semver')
-const { pkgVersion, STATEMENT_PREFIX } = require('./common')
+const { pkgVersion, STATEMENT_PREFIX } = require('../common')
 
 // see test/versioned/mongodb/common.js
-if (semver.satisfies(pkgVersion, '>=3.2.4 <4.1.4')) {
+if (semver.satisfies(pkgVersion, '>=3.2.4')) {
   common.test('unorderedBulkOp', function unorderedBulkOpTest(t, collection, verify) {
     const bulk = collection.initializeUnorderedBulkOp()
     bulk
