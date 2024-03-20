@@ -34,8 +34,14 @@ exports.connect = function connect() {
   return connectV4.apply(this, arguments)
 }
 
+exports.close = function close() {
+  if (semver.satisfies(mongoPackage.version, '<4')) {
+    return closeLegacy.apply(this, arguments)
+  }
+  return closeAsync.apply(this, arguments)
+}
+
 exports.checkMetrics = checkMetrics
-exports.close = close
 exports.getHostName = getHostName
 exports.getPort = getPort
 exports.getDomainSocketPath = getDomainSocketPath
@@ -95,33 +101,26 @@ function connectV3(mongodb, host, replicaSet = false) {
 // This is same as connectV3 except it uses a different
 // set of params to connect to the mongodb_v4 container
 // it is actually just using the `mongodb:5` image
-function connectV4(mongodb, host, replicaSet = false) {
-  return new Promise((resolve, reject) => {
-    if (host) {
-      host = encodeURIComponent(host)
-    } else {
-      host = params.mongodb_v4_host + ':' + params.mongodb_v4_port
-    }
+async function connectV4(mongodb, host, replicaSet = false) {
+  if (host) {
+    host = encodeURIComponent(host)
+  } else {
+    host = params.mongodb_v4_host + ':' + params.mongodb_v4_port
+  }
 
-    let connString = `mongodb://${host}`
-    let options = {}
+  let connString = `mongodb://${host}`
+  let options = {}
 
-    if (replicaSet) {
-      connString = `mongodb://${host},${host},${host}`
-      options = { useNewUrlParser: true, useUnifiedTopology: true }
-    }
-    mongodb.MongoClient.connect(connString, options, function (err, client) {
-      if (err) {
-        reject(err)
-      }
-
-      const db = client.db(DB_NAME)
-      resolve({ db, client })
-    })
-  })
+  if (replicaSet) {
+    connString = `mongodb://${host},${host},${host}`
+    options = { useNewUrlParser: true, useUnifiedTopology: true }
+  }
+  const client = await mongodb.MongoClient.connect(connString, options)
+  const db = client.db(DB_NAME)
+  return { db, client }
 }
 
-function close(client, db) {
+function closeLegacy(client, db) {
   return new Promise((resolve) => {
     if (db && typeof db.close === 'function') {
       db.close(resolve)
@@ -131,6 +130,14 @@ function close(client, db) {
       resolve()
     }
   })
+}
+
+async function closeAsync(client, db) {
+  if (db && typeof db.close === 'function') {
+    await db.close()
+  } else if (client) {
+    await client.close(true)
+  }
 }
 
 function getHostName(agent) {

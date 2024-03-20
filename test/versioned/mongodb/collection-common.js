@@ -14,16 +14,12 @@ const { version: pkgVersion } = require('mongodb/package')
 let METRIC_HOST_NAME = null
 let METRIC_HOST_PORT = null
 
-exports.MONGO_SEGMENT_RE = common.MONGO_SEGMENT_RE
-exports.TRANSACTION_NAME = common.TRANSACTION_NAME
-exports.DB_NAME = common.DB_NAME
-
 exports.connect = common.connect
 exports.close = common.close
-exports.populate = populate
 exports.test = collectionTest
-
 exports.dropTestCollections = dropTestCollections
+exports.populate = populate
+
 const { COLLECTIONS } = common
 
 function collectionTest(name, run) {
@@ -36,30 +32,25 @@ function collectionTest(name, run) {
 
     t.test('remote connection', function (t) {
       t.autoend()
-      t.beforeEach(function () {
+      t.beforeEach(async function () {
         agent = helper.instrumentMockedAgent()
 
         const mongodb = require('mongodb')
 
-        return dropTestCollections(mongodb)
-          .then(() => {
-            METRIC_HOST_NAME = common.getHostName(agent)
-            METRIC_HOST_PORT = common.getPort()
-            return common.connect(mongodb)
-          })
-          .then((res) => {
-            client = res.client
-            db = res.db
-            collection = db.collection(COLLECTIONS.collection1)
-            return populate(db, collection)
-          })
+        await dropTestCollections(mongodb)
+        METRIC_HOST_NAME = common.getHostName(agent)
+        METRIC_HOST_PORT = common.getPort()
+        const res = await common.connect(mongodb)
+        client = res.client
+        db = res.db
+        collection = db.collection(COLLECTIONS.collection1)
+        await populate(collection)
       })
 
-      t.afterEach(function () {
-        return common.close(client, db).then(() => {
-          helper.unloadAgent(agent)
-          agent = null
-        })
+      t.afterEach(async function () {
+        await common.close(client, db)
+        helper.unloadAgent(agent)
+        agent = null
       })
 
       t.test('should not error outside of a transaction', function (t) {
@@ -200,30 +191,25 @@ function collectionTest(name, run) {
     const shouldTestDomain = domainPath
     t.test('domain socket', { skip: !shouldTestDomain }, function (t) {
       t.autoend()
-      t.beforeEach(function () {
+      t.beforeEach(async function () {
         agent = helper.instrumentMockedAgent()
         METRIC_HOST_NAME = agent.config.getHostnameSafe()
         METRIC_HOST_PORT = domainPath
 
         const mongodb = require('mongodb')
 
-        return dropTestCollections(mongodb)
-          .then(() => {
-            return common.connect(mongodb, domainPath)
-          })
-          .then((res) => {
-            client = res.client
-            db = res.db
-            collection = db.collection(COLLECTIONS.collection1)
-            return populate(db, collection)
-          })
+        await dropTestCollections(mongodb)
+        const res = await common.connect(mongodb, domainPath)
+        client = res.client
+        db = res.db
+        collection = db.collection(COLLECTIONS.collection1)
+        await populate(collection)
       })
 
-      t.afterEach(function () {
-        return common.close(client, db).then(() => {
-          helper.unloadAgent(agent)
-          agent = null
-        })
+      t.afterEach(async function () {
+        await common.close(client, db)
+        helper.unloadAgent(agent)
+        agent = null
       })
 
       t.test('should have domain socket in metrics', function (t) {
@@ -247,30 +233,25 @@ function collectionTest(name, run) {
 
     t.test('domain socket replica set', { skip: !shouldTestDomain }, function (t) {
       t.autoend()
-      t.beforeEach(function () {
+      t.beforeEach(async function () {
         agent = helper.instrumentMockedAgent()
         METRIC_HOST_NAME = agent.config.getHostnameSafe()
         METRIC_HOST_PORT = domainPath
 
         const mongodb = require('mongodb')
 
-        return dropTestCollections(mongodb)
-          .then(() => {
-            return common.connect(mongodb, domainPath, true)
-          })
-          .then((res) => {
-            client = res.client
-            db = res.db
-            collection = db.collection(COLLECTIONS.collection1)
-            return populate(db, collection)
-          })
+        await dropTestCollections(mongodb)
+        const res = await common.connect(mongodb, domainPath)
+        client = res.client
+        db = res.db
+        collection = db.collection(COLLECTIONS.collection1)
+        await populate(collection)
       })
 
-      t.afterEach(function () {
-        return common.close(client, db).then(() => {
-          helper.unloadAgent(agent)
-          agent = null
-        })
+      t.afterEach(async function () {
+        await common.close(client, db)
+        helper.unloadAgent(agent)
+        agent = null
       })
 
       t.test('should have domain socket in metrics', function (t) {
@@ -297,30 +278,25 @@ function collectionTest(name, run) {
     if (semver.satisfies(pkgVersion, '>=3.6.0')) {
       t.test('replica set string remote connection', function (t) {
         t.autoend()
-        t.beforeEach(function () {
+        t.beforeEach(async function () {
           agent = helper.instrumentMockedAgent()
 
           const mongodb = require('mongodb')
 
-          return dropTestCollections(mongodb)
-            .then(() => {
-              METRIC_HOST_NAME = common.getHostName(agent)
-              METRIC_HOST_PORT = common.getPort()
-              return common.connect(mongodb, null, true)
-            })
-            .then((res) => {
-              client = res.client
-              db = res.db
-              collection = db.collection(COLLECTIONS.collection1)
-              return populate(db, collection)
-            })
+          await dropTestCollections(mongodb)
+          METRIC_HOST_NAME = common.getHostName(agent)
+          METRIC_HOST_PORT = common.getPort()
+          const res = await common.connect(mongodb, null, true)
+          client = res.client
+          db = res.db
+          collection = db.collection(COLLECTIONS.collection1)
+          await populate(collection)
         })
 
-        t.afterEach(function () {
-          return common.close(client, db).then(() => {
-            helper.unloadAgent(agent)
-            agent = null
-          })
+        t.afterEach(async function () {
+          await common.close(client, db)
+          helper.unloadAgent(agent)
+          agent = null
         })
 
         t.test('should generate the correct metrics and segments', function (t) {
@@ -410,29 +386,20 @@ function checkSegmentParams(t, segment) {
   t.equal(attributes.port_path_or_id, METRIC_HOST_PORT, 'should have correct port')
 }
 
-function populate(db, collection) {
-  return new Promise((resolve, reject) => {
-    const items = []
-    for (let i = 0; i < 30; ++i) {
-      items.push({
-        i: i,
-        next3: [i + 1, i + 2, i + 3],
-        data: Math.random().toString(36).slice(2),
-        mod10: i % 10,
-        // spiral out
-        loc: [i % 4 && (i + 1) % 4 ? i : -i, (i + 1) % 4 && (i + 2) % 4 ? i : -i]
-      })
-    }
-
-    db.collection(COLLECTIONS.collection2).drop(function () {
-      collection.deleteMany({}, function (err) {
-        if (err) {
-          reject(err)
-        }
-        collection.insert(items, resolve)
-      })
+async function populate(collection) {
+  const items = []
+  for (let i = 0; i < 30; ++i) {
+    items.push({
+      i: i,
+      next3: [i + 1, i + 2, i + 3],
+      data: Math.random().toString(36).slice(2),
+      mod10: i % 10,
+      // spiral out
+      loc: [i % 4 && (i + 1) % 4 ? i : -i, (i + 1) % 4 && (i + 2) % 4 ? i : -i]
     })
-  })
+  }
+
+  await collection.insertMany(items)
 }
 
 /**
