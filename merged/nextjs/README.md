@@ -31,6 +31,21 @@ require('@newrelic/next')
 /* ... the rest of your program ... */
 ```
 
+## Load instrumentation
+
+Since Next.js uses webpack to bundle, auto-instrumentation of 3rd party libraries will not work without a shim.  The Next.js instrumentation will load as the Next.js project externalizes next.js files.  However, other libraries that are being used will not be externalized and thus not instrumented.  Follow these steps to ensure your calls to libraries are properly instrumented.
+
+Add the following to `next.config.js`
+
+```js
+const nrExternals = require('@newrelic/next/load-externals')
+const nextConfig = {
+  webpack: nrExternals 
+};
+
+module.exports = nextConfig;
+```
+
 ### Custom Next.js servers
 
 If you are using next as a [custom server](https://nextjs.org/docs/advanced-features/custom-server), you're probably not running your application with the `next` CLI.  In that scenario we recommend running the Next.js instrumentation as follows.
