@@ -20,7 +20,7 @@ const repos = [
   {
     name: 'koa',
     repository: 'https://github.com/newrelic/node-newrelic-koa.git',
-    branch: 'main'
+    branch: 'fix-paramware'
   },
   {
     name: 'next',
