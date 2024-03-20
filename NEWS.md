@@ -9,7 +9,6 @@
 #### Security improvements
 
 * **deps:** bump follow-redirects from 1.15.5 to 1.15.6 ([#2078](https://github.com/newrelic/node-newrelic/pull/2078)) ([aa86482](https://github.com/newrelic/node-newrelic/commit/aa86482738ba6b17bf6c2c7362931a3ad57736dd))
-    * Signed-off-by: dependabot[bot] <support@github.com> Co-authored-by: dependabot[bot] <49699333+dependabot[bot]@users.noreply.github.com>
 
 #### Documentation
 
@@ -19,7 +18,6 @@
 
 * Added instrumentation tracking class ([#2084](https://github.com/newrelic/node-newrelic/pull/2084)) ([07d7e7d](https://github.com/newrelic/node-newrelic/commit/07d7e7d50edf9cd8a1cd1b465b24bc589409c5dc))
 * **deps:** pin @newrelic/security-agent to 1.0.1 ([#2089](https://github.com/newrelic/node-newrelic/pull/2089)) ([e133c76](https://github.com/newrelic/node-newrelic/commit/e133c76a34f7d2af16610f00958651a6cff8824d))
-* **deps:** Updated @newrelic/security-agent to v1.1.0 ([#2080](https://github.com/newrelic/node-newrelic/pull/2080)) ([f3932f5](https://github.com/newrelic/node-newrelic/commit/f3932f5ffea34bcf3a16c5c2f54892278550a0da))
 
 ### v11.13.0 (2024-03-13)
 
