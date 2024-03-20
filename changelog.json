@@ -2,6 +2,20 @@
   "repository": "newrelic/node-newrelic",
   "entries": [
     {
+      "version": "11.14.0",
+      "changes": {
+        "security": [
+          "bump follow-redirects from 1.15.5 to 1.15.6"
+        ],
+        "bugfixes": [],
+        "features": [
+          "Added instrumentation for `initializeUnorderedBulkOp`, and `initializeOrderedBulkOp` in mongodb 4+",
+          "Added support for Mongo v5+",
+          "Added `guid` attribute to `TransactionError` events"
+        ]
+      }
+    },
+    {
       "version": "11.13.0",
       "changes": {
         "security": [],
