@@ -45,7 +45,6 @@ tap.beforeEach((t) => {
     },
     id: 'segment-1',
     transaction: {
-      id: 'tx-1',
       traceId: 'trace-1'
     }
   }
@@ -69,7 +68,6 @@ tap.test('constructs default instance', async (t) => {
     id: /[a-z0-9-]{36}/,
     appName: 'test-app',
     span_id: 'segment-1',
-    transaction_id: 'tx-1',
     trace_id: 'trace-1',
     duration: 1.01,
     ['metadata.foo']: 'foo',

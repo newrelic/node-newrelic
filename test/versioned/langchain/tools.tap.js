@@ -80,7 +80,6 @@ tap.test('Langchain instrumentation - tools', (t) => {
         'appName': 'New Relic for Node.js tests',
         'span_id': tx.trace.root.children[0].id,
         'trace_id': tx.traceId,
-        'transaction_id': tx.id,
         'ingest_source': 'Node',
         'vendor': 'langchain',
         'metadata.key': 'value',

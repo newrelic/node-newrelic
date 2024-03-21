@@ -43,7 +43,6 @@ tap.beforeEach((t) => {
   t.context.segment = {
     id: 'segment-1',
     transaction: {
-      id: 'tx-1',
       traceId: 'trace-1'
     },
     getDurationInMillis() {
@@ -74,7 +73,6 @@ tap.test('create entity', async (t) => {
     ['llm.conversation_id']: 'test-conversation',
     request_id: 'run-1',
     span_id: 'segment-1',
-    transaction_id: 'tx-1',
     trace_id: 'trace-1',
     ['metadata.foo']: 'foo',
     ingest_source: 'Node',

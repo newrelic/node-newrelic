@@ -51,7 +51,6 @@ function getExpectedResult(tx, event, type, completionId) {
     'request_id': 'req-id',
     'trace_id': tx.traceId,
     'span_id': trace.children[0].id,
-    'transaction_id': tx.id,
     'response.model': 'gpt-3.5-turbo-0613',
     'vendor': 'openai',
     'ingest_source': 'Node'
@@ -60,8 +59,6 @@ function getExpectedResult(tx, event, type, completionId) {
     'duration': trace.children[0].getDurationInMillis(),
     'request.model': 'gpt-3.5-turbo-0613',
     'response.organization': 'new-relic',
-    'response.usage.total_tokens': '30',
-    'response.usage.prompt_tokens': '10',
     'response.headers.llmVersion': '1.0.0',
     'response.headers.ratelimitLimitRequests': '100',
     'response.headers.ratelimitLimitTokens': '100',
@@ -84,7 +81,6 @@ function getExpectedResult(tx, event, type, completionId) {
         ['request.max_tokens']: '1000000',
         ['request.temperature']: 'medium-rare',
         ['response.number_of_messages']: 3,
-        ['response.usage.completion_tokens']: 20,
         ['response.choices.finish_reason']: 'stop',
         error: false
       }
