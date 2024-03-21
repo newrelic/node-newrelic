@@ -15,7 +15,7 @@ const git = require('./git-commands')
 const npm = require('./npm-commands')
 
 const PROPOSED_NOTES_HEADER = 'Proposed Release Notes'
-const FORCE_RUN_DEAFULT_REMOTE = 'origin'
+const FORCE_RUN_DEFAULT_REMOTE = 'origin'
 
 // Add command line options
 program.addOption(
@@ -80,7 +80,7 @@ async function prepareReleaseNotes() {
     stopOnError()
   }
 
-  const remote = options.remote || FORCE_RUN_DEAFULT_REMOTE
+  const remote = options.remote || FORCE_RUN_DEFAULT_REMOTE
   console.log('Using remote: ', remote)
 
   try {
