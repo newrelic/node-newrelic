@@ -72,6 +72,7 @@ async function prepareReleaseNotes() {
   const options = program.opts()
   console.log('Script running with following options: ', JSON.stringify(options))
   const [owner, repo] = options.repo.split('/')
+  const [, , baseBranch] = options.branch.split('/')
 
   logStep('Validation')
 
@@ -175,7 +176,7 @@ async function prepareReleaseNotes() {
 
     const prOptions = {
       head: newBranchName,
-      base: 'main',
+      base: baseBranch,
       title,
       body,
       draft: true
@@ -432,6 +433,7 @@ if (require.main === module) {
   module.exports = {
     generateConventionalReleaseNotes,
     getReleaseDate,
-    isValid
+    isValid,
+    prepareReleaseNotes
   }
 }
