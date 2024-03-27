@@ -21,9 +21,49 @@ on:
         required: false
   schedule:
     - cron:  '0 9 * * 1-5'
+  pull_request:
+    branches:
+      - main
 
 jobs:
+  should_run:
+    # Used to determine if the `@newrelic/security-agent` dependency has
+    # been updated in any new pull requests. This job _must_ always run because
+    # the `security-agent-tests` job depends on the outputs of this job. Thus,
+    # we cannot put a conditional on this job to only run if the event name
+    # is "pull_request".
+    name: Should Run
+    runs-on: ubuntu-latest
+    outputs:
+      previous_version: ${{steps.versions.outputs.PREVIOUS_VAL}}
+      current_version: ${{steps.versions.outputs.CURRENT_VAL}}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+      - uses: tj-actions/changed-files@v44
+        id: changed_files
+        with:
+          files: package.json
+      - name: Get dependency versions
+        id: versions
+        if: steps.changed_files.outputs.any_changed == 'true'
+        run: |
+          current_val=$(cat package.json | jq -r --arg pkg "@newrelic/security-agent" '.dependencies[$pkg]')
+          echo "current_val=${current_val}" >> $GITHUB_OUTPUT
+          
+          git checkout origin/${{github.base_ref}}
+          previous_val=$(cat package.json | jq -r --arg pkg "@newrelic/security-agent" '.dependencies[$pkg]')
+          echo "previous_val=${previous_val}" >> $GITHUB_OUTPUT
+          
+          git checkout ${{github.sha}}
+
   security-agent-tests:
+    needs: [should_run]
+    if: github.event_name == 'workflow_dispatch' ||
+      github.event_name == 'schedule' ||
+      needs.should_run.outputs.previous_version != needs.should_run.outputs.current_version
+
     runs-on: ubuntu-latest
 
     strategy:
