@@ -1,3 +1,14 @@
+### v0.9.0 (2024-03-28)
+
+#### Features
+
+* Added a shim to externalize all 3rd party libraries the Node.js agent instruments ([#175](https://github.com/newrelic/newrelic-node-nextjs/pull/175)) ([127e3c0](https://github.com/newrelic/newrelic-node-nextjs/commit/127e3c01a65a6ff3bef8bc9ae0759e42b69d2065))
+* Added a test suite for App Router. ([#176](https://github.com/newrelic/newrelic-node-nextjs/pull/176)) ([e7bc0db](https://github.com/newrelic/newrelic-node-nextjs/commit/e7bc0db0599713036c2d63b70f960ef86ccde9b0))
+
+#### Miscellaneous chores
+
+* Updated CI process for releases ([#183](https://github.com/newrelic/newrelic-node-nextjs/pull/183)) ([99a61c5](https://github.com/newrelic/newrelic-node-nextjs/commit/99a61c5fb5cb603de692fe813351d3f7f0c43780))
+
 ### v0.8.0 (2024-03-12)
 
 * Updated instrumentation to construct spec objects at instrumentation.
