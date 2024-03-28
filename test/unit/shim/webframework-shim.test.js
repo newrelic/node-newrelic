@@ -11,6 +11,7 @@ const helper = require('../../lib/agent_helper')
 const Shim = require('../../../lib/shim/shim')
 const WebFrameworkShim = require('../../../lib/shim/webframework-shim')
 const symbols = require('../../../lib/symbols')
+const { MiddlewareSpec, RenderSpec } = require('../../../lib/shim/specs')
 
 test.runOnly = true
 
@@ -283,8 +284,10 @@ test('WebFrameworkShim', function (t) {
           t.equal(b, 2)
           t.equal(c, 3)
         },
-        function () {
-          return ++wrapperCallCount
+        {
+          wrapper: function () {
+            return ++wrapperCallCount
+          }
         }
       )
 
@@ -420,14 +423,14 @@ test('WebFrameworkShim', function (t) {
     t.afterEach(afterEach)
 
     t.test('should not wrap non-function objects', function (t) {
-      const wrapped = shim.recordMiddleware(wrappable)
+      const wrapped = shim.recordMiddleware(wrappable, new MiddlewareSpec({}))
       t.equal(wrapped, wrappable)
       t.notOk(shim.isWrapped(wrapped))
       t.end()
     })
 
     t.test('should wrap the first parameter if no properties are given', function (t) {
-      const wrapped = shim.recordMiddleware(wrappable.bar, {})
+      const wrapped = shim.recordMiddleware(wrappable.bar, new MiddlewareSpec({}))
       t.not(wrapped, wrappable.bar)
       t.ok(shim.isWrapped(wrapped))
       t.equal(shim.unwrap(wrapped), wrappable.bar)
@@ -435,7 +438,7 @@ test('WebFrameworkShim', function (t) {
     })
 
     t.test('should wrap the first parameter if `null` is given for properties', function (t) {
-      const wrapped = shim.recordMiddleware(wrappable.bar, null, {})
+      const wrapped = shim.recordMiddleware(wrappable.bar, null, new MiddlewareSpec({}))
       t.not(wrapped, wrappable.bar)
       t.ok(shim.isWrapped(wrapped))
       t.equal(shim.unwrap(wrapped), wrappable.bar)
@@ -444,7 +447,7 @@ test('WebFrameworkShim', function (t) {
 
     t.test('should replace wrapped properties on the original object', function (t) {
       const original = wrappable.bar
-      shim.recordMiddleware(wrappable, 'bar', {})
+      shim.recordMiddleware(wrappable, 'bar', new MiddlewareSpec({}))
       t.not(wrappable.bar, original)
       t.ok(shim.isWrapped(wrappable.bar))
       t.equal(shim.unwrap(wrappable.bar), original)
@@ -452,7 +455,7 @@ test('WebFrameworkShim', function (t) {
     })
 
     t.test('should not mark unwrapped properties as wrapped', function (t) {
-      shim.recordMiddleware(wrappable, 'name', {})
+      shim.recordMiddleware(wrappable, 'name', new MiddlewareSpec({}))
       t.notOk(shim.isWrapped(wrappable.name))
       t.end()
     })
@@ -465,7 +468,7 @@ test('WebFrameworkShim', function (t) {
         t.equal(a, 'a')
         t.equal(b, 'b')
         t.equal(c, 'c')
-      })
+      }, new MiddlewareSpec({}))
 
       helper.runInTransaction(agent, function (tx) {
         txInfo.transaction = tx
@@ -480,10 +483,13 @@ test('WebFrameworkShim', function (t) {
       testType(shim.ERRORWARE, 'Nodejs/Middleware/Restify/getActiveSegment//foo/bar')
 
       function testType(type, expectedName) {
-        const wrapped = shim.recordMiddleware(wrappable.getActiveSegment, {
-          type: type,
-          route: '/foo/bar'
-        })
+        const wrapped = shim.recordMiddleware(
+          wrappable.getActiveSegment,
+          new MiddlewareSpec({
+            type: type,
+            route: '/foo/bar'
+          })
+        )
         helper.runInTransaction(agent, function (tx) {
           txInfo.transaction = tx
           sinon.spy(tx.nameState, 'appendPath')
@@ -507,10 +513,13 @@ test('WebFrameworkShim', function (t) {
       testType(shim.PARAMWARE, 'Nodejs/Middleware/Restify/getActiveSegment//foo/bar')
 
       function testType(type, expectedName) {
-        const wrapped = shim.recordMiddleware(wrappable.getActiveSegment, {
-          type: type,
-          route: '/foo/bar'
-        })
+        const wrapped = shim.recordMiddleware(
+          wrappable.getActiveSegment,
+          new MiddlewareSpec({
+            type: type,
+            route: '/foo/bar'
+          })
+        )
         helper.runInTransaction(agent, function (tx) {
           txInfo.transaction = tx
           const segment = wrapped(req)
@@ -530,10 +539,13 @@ test('WebFrameworkShim', function (t) {
       testType(shim.PARAMWARE, 'Nodejs/Middleware/Restify/getActiveSegment')
 
       function testType(type, expectedName) {
-        const wrapped = shim.recordMiddleware(wrappable.getActiveSegment, {
-          type: type,
-          route: ''
-        })
+        const wrapped = shim.recordMiddleware(
+          wrappable.getActiveSegment,
+          new MiddlewareSpec({
+            type: type,
+            route: ''
+          })
+        )
         helper.runInTransaction(agent, function (tx) {
           txInfo.transaction = tx
           const segment = wrapped(req)
@@ -553,10 +565,13 @@ test('WebFrameworkShim', function (t) {
       testType(shim.PARAMWARE, 'Nodejs/Middleware/Restify/getActiveSegment//one,/two')
 
       function testType(type, expectedName) {
-        const wrapped = shim.recordMiddleware(wrappable.getActiveSegment, {
-          type: type,
-          route: ['/one', '/two']
-        })
+        const wrapped = shim.recordMiddleware(
+          wrappable.getActiveSegment,
+          new MiddlewareSpec({
+            type: type,
+            route: ['/one', '/two']
+          })
+        )
         helper.runInTransaction(agent, function (tx) {
           txInfo.transaction = tx
           const segment = wrapped(req)
@@ -571,10 +586,13 @@ test('WebFrameworkShim', function (t) {
       testType(shim.MIDDLEWARE, 'Nodejs/Middleware/Restify/getActiveSegment')
 
       function testType(type, expectedName) {
-        const wrapped = shim.recordMiddleware(wrappable.getActiveSegment, {
-          type: type,
-          route: ''
-        })
+        const wrapped = shim.recordMiddleware(
+          wrappable.getActiveSegment,
+          new MiddlewareSpec({
+            type: type,
+            route: ''
+          })
+        )
         const tx = helper.runInTransaction(agent, function (_tx) {
           return _tx
         })
@@ -590,10 +608,13 @@ test('WebFrameworkShim', function (t) {
 
     t.test('should capture route parameters when high_security is off', function (t) {
       agent.config.high_security = false
-      const wrapped = shim.recordMiddleware(wrappable.getActiveSegment, {
-        type: shim.MIDDLEWARE,
-        route: ['/one', '/two']
-      })
+      const wrapped = shim.recordMiddleware(
+        wrappable.getActiveSegment,
+        new MiddlewareSpec({
+          type: shim.MIDDLEWARE,
+          route: ['/one', '/two']
+        })
+      )
       helper.runInTransaction(agent, function (tx) {
         txInfo.transaction = tx
         const segment = wrapped(req)
@@ -605,7 +626,7 @@ test('WebFrameworkShim', function (t) {
         const filePathSplit = attrs['code.filepath'].split('/')
         t.equal(filePathSplit[filePathSplit.length - 1], 'webframework-shim.test.js')
         t.equal(attrs['code.function'], 'getActiveSegment')
-        t.equal(attrs['code.lineno'], 39)
+        t.equal(attrs['code.lineno'], 40)
         t.equal(attrs['code.column'], 50)
         t.end()
       })
@@ -613,10 +634,13 @@ test('WebFrameworkShim', function (t) {
 
     t.test('should not capture route parameters when high_security is on', function (t) {
       agent.config.high_security = true
-      const wrapped = shim.recordMiddleware(wrappable.getActiveSegment, {
-        type: shim.MIDDLEWARE,
-        route: ['/one', '/two']
-      })
+      const wrapped = shim.recordMiddleware(
+        wrappable.getActiveSegment,
+        new MiddlewareSpec({
+          type: shim.MIDDLEWARE,
+          route: ['/one', '/two']
+        })
+      )
       helper.runInTransaction(agent, function (tx) {
         txInfo.transaction = tx
         const segment = wrapped(req)
@@ -633,7 +657,7 @@ test('WebFrameworkShim', function (t) {
     t.test('should notice thrown exceptions', function (t) {
       const wrapped = shim.recordMiddleware(function () {
         throw new Error('foobar')
-      })
+      }, new MiddlewareSpec({}))
 
       helper.runInTransaction(agent, function (tx) {
         txInfo.transaction = tx
@@ -648,12 +672,9 @@ test('WebFrameworkShim', function (t) {
     })
 
     t.test('pops the name if error was thrown and there is no next handler', function (t) {
-      const wrapped = shim.recordMiddleware(
-        function () {
-          throw new Error('foobar')
-        },
-        { route: '/foo/bar' }
-      )
+      const wrapped = shim.recordMiddleware(function () {
+        throw new Error('foobar')
+      }, new MiddlewareSpec({ route: '/foo/bar' }))
 
       helper.runInTransaction(agent, function (tx) {
         tx.nameState.appendPath('/')
@@ -668,12 +689,9 @@ test('WebFrameworkShim', function (t) {
     })
 
     t.test('does not pop the name if there was an error and a next handler', function (t) {
-      const wrapped = shim.recordMiddleware(
-        function () {
-          throw new Error('foobar')
-        },
-        { route: '/foo/bar', next: shim.SECOND }
-      )
+      const wrapped = shim.recordMiddleware(function () {
+        throw new Error('foobar')
+      }, new MiddlewareSpec({ route: '/foo/bar', next: shim.SECOND }))
 
       helper.runInTransaction(agent, function (tx) {
         tx.nameState.appendPath('/')
@@ -688,7 +706,8 @@ test('WebFrameworkShim', function (t) {
     })
 
     t.test('should pop the namestate if there was no error', function (t) {
-      const wrapped = shim.recordMiddleware(function () {}, { route: '/foo/bar' })
+      const wrapped = shim.recordMiddleware(function () {},
+      new MiddlewareSpec({ route: '/foo/bar' }))
 
       helper.runInTransaction(agent, function (tx) {
         tx.nameState.appendPath('/')
@@ -701,12 +720,9 @@ test('WebFrameworkShim', function (t) {
     })
 
     t.test('should pop the namestate if error is not an error', function (t) {
-      const wrapped = shim.recordMiddleware(
-        function (r, obj, next) {
-          next(obj)
-        },
-        { route: '/foo/bar' }
-      )
+      const wrapped = shim.recordMiddleware(function (r, obj, next) {
+        next(obj)
+      }, new MiddlewareSpec({ route: '/foo/bar' }))
 
       const err = new Error()
       shim.setErrorPredicate(function (obj) {
@@ -726,12 +742,9 @@ test('WebFrameworkShim', function (t) {
       })
     })
     t.test('should notice errors handed to the callback', function (t) {
-      const wrapped = shim.recordMiddleware(
-        function (_req, next) {
-          setTimeout(next, 10, new Error('foobar'))
-        },
-        { next: shim.LAST }
-      )
+      const wrapped = shim.recordMiddleware(function (_req, next) {
+        setTimeout(next, 10, new Error('foobar'))
+      }, new MiddlewareSpec({ next: shim.LAST }))
 
       helper.runInTransaction(agent, function (tx) {
         txInfo.transaction = tx
@@ -747,12 +760,9 @@ test('WebFrameworkShim', function (t) {
     })
 
     t.test('should not pop the name if there was an error', function (t) {
-      const wrapped = shim.recordMiddleware(
-        function (_req, next) {
-          setTimeout(next, 10, new Error('foobar'))
-        },
-        { route: '/foo/bar', next: shim.LAST }
-      )
+      const wrapped = shim.recordMiddleware(function (_req, next) {
+        setTimeout(next, 10, new Error('foobar'))
+      }, new MiddlewareSpec({ route: '/foo/bar', next: shim.LAST }))
 
       helper.runInTransaction(agent, function (tx) {
         tx.nameState.appendPath('/')
@@ -765,15 +775,12 @@ test('WebFrameworkShim', function (t) {
     })
 
     t.test('should pop the namestate if there was no error', function (t) {
-      const wrapped = shim.recordMiddleware(
-        function (_req, next) {
-          setTimeout(function () {
-            t.equal(txInfo.transaction.nameState.getPath(), '/foo/bar')
-            next()
-          }, 10)
-        },
-        { route: '/foo/bar', next: shim.LAST }
-      )
+      const wrapped = shim.recordMiddleware(function (_req, next) {
+        setTimeout(function () {
+          t.equal(txInfo.transaction.nameState.getPath(), '/foo/bar')
+          next()
+        }, 10)
+      }, new MiddlewareSpec({ route: '/foo/bar', next: shim.LAST }))
 
       helper.runInTransaction(agent, function (tx) {
         tx.nameState.appendPath('/')
@@ -786,11 +793,11 @@ test('WebFrameworkShim', function (t) {
     })
 
     t.test('should not append path and should not pop path', function (t) {
-      const spec = {
+      const spec = new MiddlewareSpec({
         route: '/foo/bar',
         appendPath: false,
         next: shim.LAST
-      }
+      })
 
       const wrapped = shim.recordMiddleware(function (_req, next) {
         setTimeout(function () {
@@ -816,12 +823,15 @@ test('WebFrameworkShim', function (t) {
     t.test('should mark the error as handled', function (t) {
       const wrapped = shim.recordMiddleware(function () {
         throw new Error('foobar')
-      })
+      }, new MiddlewareSpec({}))
 
-      const errorware = shim.recordMiddleware(function () {}, {
-        type: shim.ERRORWARE,
-        req: shim.SECOND
-      })
+      const errorware = shim.recordMiddleware(
+        function () {},
+        new MiddlewareSpec({
+          type: shim.ERRORWARE,
+          req: shim.SECOND
+        })
+      )
 
       helper.runInTransaction(agent, function (tx) {
         txInfo.transaction = tx
@@ -842,14 +852,11 @@ test('WebFrameworkShim', function (t) {
     t.test('should notice if the errorware errors', function (t) {
       const wrapped = shim.recordMiddleware(function () {
         throw new Error('foobar')
-      })
+      }, new MiddlewareSpec({}))
 
-      const errorware = shim.recordMiddleware(
-        function () {
-          throw new Error('errorware error')
-        },
-        { type: shim.ERRORWARE, req: shim.SECOND }
-      )
+      const errorware = shim.recordMiddleware(function () {
+        throw new Error('errorware error')
+      }, new MiddlewareSpec({ type: shim.ERRORWARE, req: shim.SECOND }))
 
       helper.runInTransaction(agent, function (tx) {
         txInfo.transaction = tx
@@ -918,11 +925,14 @@ test('WebFrameworkShim', function (t) {
         })
       }
 
-      wrapped = shim.recordMiddleware(middleware, {
-        route: '/foo/bar',
-        next: shim.LAST,
-        promise: true
-      })
+      wrapped = shim.recordMiddleware(
+        middleware,
+        new MiddlewareSpec({
+          route: '/foo/bar',
+          next: shim.LAST,
+          promise: true
+        })
+      )
     })
     t.afterEach(afterEach)
 
@@ -1058,12 +1068,15 @@ test('WebFrameworkShim', function (t) {
     t.afterEach(afterEach)
 
     t.test('should not append path when spec.appendPath is false', () => {
-      wrapped = shim.recordMiddleware(middleware, {
-        route: '/foo/bar',
-        appendPath: false,
-        next: shim.LAST,
-        promise: true
-      })
+      wrapped = shim.recordMiddleware(
+        middleware,
+        new MiddlewareSpec({
+          route: '/foo/bar',
+          appendPath: false,
+          next: shim.LAST,
+          promise: true
+        })
+      )
       return helper.runInTransaction(agent, (tx) => {
         tx.nameState.appendPath('/')
         txInfo.transaction = tx
@@ -1086,14 +1099,14 @@ test('WebFrameworkShim', function (t) {
     t.afterEach(afterEach)
 
     t.test('should not wrap non-function objects', function (t) {
-      const wrapped = shim.recordParamware(wrappable)
+      const wrapped = shim.recordParamware(wrappable, new MiddlewareSpec({}))
       t.equal(wrapped, wrappable)
       t.notOk(shim.isWrapped(wrapped))
       t.end()
     })
 
     t.test('should wrap the first parameter if no properties are given', function (t) {
-      const wrapped = shim.recordParamware(wrappable.bar, {})
+      const wrapped = shim.recordParamware(wrappable.bar, new MiddlewareSpec({}))
       t.not(wrapped, wrappable.bar)
       t.ok(shim.isWrapped(wrapped))
       t.equal(shim.unwrap(wrapped), wrappable.bar)
@@ -1101,7 +1114,7 @@ test('WebFrameworkShim', function (t) {
     })
 
     t.test('should wrap the first parameter if `null` is given for properties', function (t) {
-      const wrapped = shim.recordParamware(wrappable.bar, null, {})
+      const wrapped = shim.recordParamware(wrappable.bar, null, new MiddlewareSpec({}))
       t.not(wrapped, wrappable.bar)
       t.ok(shim.isWrapped(wrapped))
       t.equal(shim.unwrap(wrapped), wrappable.bar)
@@ -1110,7 +1123,7 @@ test('WebFrameworkShim', function (t) {
 
     t.test('should replace wrapped properties on the original object', function (t) {
       const original = wrappable.bar
-      shim.recordParamware(wrappable, 'bar', {})
+      shim.recordParamware(wrappable, 'bar', new MiddlewareSpec({}))
       t.not(wrappable.bar, original)
       t.ok(shim.isWrapped(wrappable.bar))
       t.equal(shim.unwrap(wrappable.bar), original)
@@ -1118,7 +1131,7 @@ test('WebFrameworkShim', function (t) {
     })
 
     t.test('should not mark unwrapped properties as wrapped', function (t) {
-      shim.recordParamware(wrappable, 'name', {})
+      shim.recordParamware(wrappable, 'name', new MiddlewareSpec({}))
       t.notOk(shim.isWrapped(wrappable.name))
       t.end()
     })
@@ -1131,7 +1144,7 @@ test('WebFrameworkShim', function (t) {
         t.equal(a, 'a')
         t.equal(b, 'b')
         t.equal(c, 'c')
-      })
+      }, new MiddlewareSpec({}))
 
       helper.runInTransaction(agent, function (tx) {
         txInfo.transaction = tx
@@ -1146,10 +1159,13 @@ test('WebFrameworkShim', function (t) {
       testType(shim.PARAMWARE, 'Nodejs/Middleware/Restify/getActiveSegment//[param handler :foo]')
 
       function testType(type, expectedName) {
-        const wrapped = shim.recordParamware(wrappable.getActiveSegment, {
-          type: type,
-          name: 'foo'
-        })
+        const wrapped = shim.recordParamware(
+          wrappable.getActiveSegment,
+          new MiddlewareSpec({
+            type: type,
+            name: 'foo'
+          })
+        )
         helper.runInTransaction(agent, function (tx) {
           txInfo.transaction = tx
           const segment = wrapped(req)
@@ -1163,7 +1179,7 @@ test('WebFrameworkShim', function (t) {
     t.test('should notice thrown exceptions', function (t) {
       const wrapped = shim.recordParamware(function () {
         throw new Error('foobar')
-      })
+      }, new MiddlewareSpec({}))
 
       helper.runInTransaction(agent, function (tx) {
         txInfo.transaction = tx
@@ -1182,12 +1198,9 @@ test('WebFrameworkShim', function (t) {
     })
 
     t.test('should not pop the name if there was an error', function (t) {
-      const wrapped = shim.recordParamware(
-        function () {
-          throw new Error('foobar')
-        },
-        { name: 'bar' }
-      )
+      const wrapped = shim.recordParamware(function () {
+        throw new Error('foobar')
+      }, new MiddlewareSpec({ name: 'bar' }))
 
       helper.runInTransaction(agent, function (tx) {
         tx.nameState.appendPath('/foo/')
@@ -1202,7 +1215,7 @@ test('WebFrameworkShim', function (t) {
     })
 
     t.test('should pop the namestate if there was no error', function (t) {
-      const wrapped = shim.recordParamware(function () {}, { name: 'bar' })
+      const wrapped = shim.recordParamware(function () {}, new MiddlewareSpec({ name: 'bar' }))
 
       helper.runInTransaction(agent, function (tx) {
         tx.nameState.appendPath('/foo')
@@ -1215,12 +1228,9 @@ test('WebFrameworkShim', function (t) {
     })
 
     t.test('should notice errors handed to the callback', function (t) {
-      const wrapped = shim.recordParamware(
-        function (_req, next) {
-          setTimeout(next, 10, new Error('foobar'))
-        },
-        { next: shim.LAST }
-      )
+      const wrapped = shim.recordParamware(function (_req, next) {
+        setTimeout(next, 10, new Error('foobar'))
+      }, new MiddlewareSpec({ next: shim.LAST }))
 
       helper.runInTransaction(agent, function (tx) {
         txInfo.transaction = tx
@@ -1236,12 +1246,9 @@ test('WebFrameworkShim', function (t) {
     })
 
     t.test('should not pop the name if there was an error', function (t) {
-      const wrapped = shim.recordParamware(
-        function (_req, next) {
-          setTimeout(next, 10, new Error('foobar'))
-        },
-        { name: 'bar', next: shim.LAST }
-      )
+      const wrapped = shim.recordParamware(function (_req, next) {
+        setTimeout(next, 10, new Error('foobar'))
+      }, new MiddlewareSpec({ name: 'bar', next: shim.LAST }))
 
       helper.runInTransaction(agent, function (tx) {
         tx.nameState.appendPath('/foo')
@@ -1254,15 +1261,12 @@ test('WebFrameworkShim', function (t) {
     })
 
     t.test('should pop the namestate if there was no error', function (t) {
-      const wrapped = shim.recordParamware(
-        function (_req, next) {
-          setTimeout(function () {
-            t.equal(txInfo.transaction.nameState.getPath(), '/foo/[param handler :bar]')
-            next()
-          }, 10)
-        },
-        { name: 'bar', next: shim.LAST }
-      )
+      const wrapped = shim.recordParamware(function (_req, next) {
+        setTimeout(function () {
+          t.equal(txInfo.transaction.nameState.getPath(), '/foo/[param handler :bar]')
+          next()
+        }, 10)
+      }, new MiddlewareSpec({ name: 'bar', next: shim.LAST }))
 
       helper.runInTransaction(agent, function (tx) {
         tx.nameState.appendPath('/foo')
@@ -1281,14 +1285,14 @@ test('WebFrameworkShim', function (t) {
     t.afterEach(afterEach)
 
     t.test('should not wrap non-function objects', function (t) {
-      const wrapped = shim.recordRender(wrappable)
+      const wrapped = shim.recordRender(wrappable, new RenderSpec({ view: shim.FIRST }))
       t.equal(wrapped, wrappable)
       t.notOk(shim.isWrapped(wrapped))
       t.end()
     })
 
     t.test('should wrap the first parameter if no properties are given', function (t) {
-      const wrapped = shim.recordRender(wrappable.bar, {})
+      const wrapped = shim.recordRender(wrappable.bar, new RenderSpec({ view: shim.FIRST }))
       t.not(wrapped, wrappable.bar)
       t.ok(shim.isWrapped(wrapped))
       t.equal(shim.unwrap(wrapped), wrappable.bar)
@@ -1296,7 +1300,7 @@ test('WebFrameworkShim', function (t) {
     })
 
     t.test('should wrap the first parameter if `null` is given for properties', function (t) {
-      const wrapped = shim.recordRender(wrappable.bar, null, {})
+      const wrapped = shim.recordRender(wrappable.bar, null, new RenderSpec({ view: shim.FIRST }))
       t.not(wrapped, wrappable.bar)
       t.ok(shim.isWrapped(wrapped))
       t.equal(shim.unwrap(wrapped), wrappable.bar)
@@ -1305,7 +1309,7 @@ test('WebFrameworkShim', function (t) {
 
     t.test('should replace wrapped properties on the original object', function (t) {
       const original = wrappable.bar
-      shim.recordRender(wrappable, 'bar', {})
+      shim.recordRender(wrappable, 'bar', new RenderSpec({ view: shim.FIRST }))
       t.not(wrappable.bar, original)
       t.ok(shim.isWrapped(wrappable.bar))
       t.equal(shim.unwrap(wrappable.bar), original)
@@ -1313,7 +1317,7 @@ test('WebFrameworkShim', function (t) {
     })
 
     t.test('should not mark unwrapped properties as wrapped', function (t) {
-      shim.recordRender(wrappable, 'name', {})
+      shim.recordRender(wrappable, 'name', new RenderSpec({ view: shim.FIRST }))
       t.notOk(shim.isWrapped(wrappable.name))
       t.end()
     })
@@ -1322,7 +1326,7 @@ test('WebFrameworkShim', function (t) {
       let called = false
       const wrapped = shim.recordRender(function () {
         called = true
-      })
+      }, new RenderSpec({ view: shim.FIRST }))
 
       t.notOk(called)
       wrapped()
@@ -1331,7 +1335,7 @@ test('WebFrameworkShim', function (t) {
     })
 
     t.test('should create a segment', function (t) {
-      shim.recordRender(wrappable, 'getActiveSegment')
+      shim.recordRender(wrappable, 'getActiveSegment', new RenderSpec({ view: shim.FIRST }))
       helper.runInTransaction(agent, function () {
         const segment = wrappable.getActiveSegment('viewToRender')
         t.equal(segment.name, 'View/viewToRender/Rendering')

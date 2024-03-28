@@ -321,7 +321,10 @@ test('DatastoreShim', function (t) {
     t.test(
       'should create a datastore operation segment but no metric when `record` is false',
       function (t) {
-        shim.recordOperation(wrappable, 'getActiveSegment', { record: false })
+        shim.recordOperation(wrappable, 'getActiveSegment', {
+          record: false,
+          name: 'getActiveSegment'
+        })
 
         helper.runInTransaction(agent, function (tx) {
           const startingSegment = agent.tracer.getSegment()
@@ -336,7 +339,10 @@ test('DatastoreShim', function (t) {
     )
 
     t.test('should create a datastore operation metric when `record` is true', function (t) {
-      shim.recordOperation(wrappable, 'getActiveSegment', { record: true })
+      shim.recordOperation(wrappable, 'getActiveSegment', {
+        record: true,
+        name: 'getActiveSegment'
+      })
 
       helper.runInTransaction(agent, function (tx) {
         const startingSegment = agent.tracer.getSegment()
@@ -350,7 +356,7 @@ test('DatastoreShim', function (t) {
     })
 
     t.test('should create a datastore operation metric when `record` is defaulted', function (t) {
-      shim.recordOperation(wrappable, 'getActiveSegment')
+      shim.recordOperation(wrappable, 'getActiveSegment', { name: 'getActiveSegment' })
 
       helper.runInTransaction(agent, function (tx) {
         const startingSegment = agent.tracer.getSegment()
@@ -623,7 +629,8 @@ test('DatastoreShim', function (t) {
       function (t) {
         shim.recordQuery(wrappable, 'getActiveSegment', {
           query: shim.FIRST,
-          record: false
+          record: false,
+          name: 'getActiveSegment'
         })
 
         helper.runInTransaction(agent, function (tx) {
