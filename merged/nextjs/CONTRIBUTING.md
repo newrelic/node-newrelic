@@ -13,6 +13,30 @@ a description of the expected behavior & use case. Before submitting an Issue,
 please search for similar ones in the [closed
 issues](../../issues?q=is%3Aissue+is%3Aclosed+label%3Aenhancement).
 
+### Commit Guidelines
+
+We use [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/) to format commit messages for this repository. Conventional Commits provide a standardized format for commit messages that allows for automatic generation of changelogs and easy tracking of changes.
+
+When contributing to this repository, please ensure that your commit messages adhere to the Conventional Commit guidelines. Specifically, your commit messages should:
+
+* Start with a type, indicating the kind of change being made (e.g. `feat` for a new feature, `fix` for a bugfix, etc.). The types we support are:
+    * `build`: changes that affect the build system or external dependencies
+    * `chore`: changes that do not modify source or test files
+    * `ci`: changes to our CI configuration files and scripts
+    * `docs`: documentation additions or updates
+    * `feat`: new features or capabilities added to the agent
+    * `fix`: bugfixes or corrections to existing functionality
+    * `perf`: performance improvements
+    * `refactor`: changes that do not add new feature or fix bugs, but improve code structure or readability
+    * `revert`: revert a previous commit
+    * `security`: changes related to the security of the agent, including the updating of dependencies due to CVE
+    * `style` - changes that do not affect the meaning of the code (e.g. formatting, white-space, etc.)
+    * `test` - adding new tests or modifying existing tests
+* Use the imperative, present tense (e.g. "add feature" instead of "added feature")
+* Optionally, include a scope in parantheses after the type to indicate which part of the repository is affected (e.g. `feat(instrumentation): add support for Prisma Client`)
+
+Please note that we use the [Squash and Merge](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/incorporating-changes-from-a-pull-request/about-pull-request-merges#squash-and-merge-your-commits) method when merging Pull Requests into the main branch. We do not use the original commit messages from each individual commit. Instead, we use the Pull Request title as the commit message for the squashed commit, and as such, require that the Pull Request title adheres to our Conventional Commit standards. Any additional documentation or information relevant to the release notes should be added to the "optional extended description" section of the squash commit on merge.
+
 ### Code of Conduct
 
 Before contributing please read the [code of conduct](https://github.com/newrelic/.github/blob/main/CODE_OF_CONDUCT.md)
