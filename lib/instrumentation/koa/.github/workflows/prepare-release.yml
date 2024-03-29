@@ -6,10 +6,17 @@ on:
       release_type:
         description: Type of release. patch or minor (major if breaking)
         required: true
+        type: choice
         default: patch
+        options:
+          - patch
+          - minor
+          - major
 
 jobs:
   release-notes:
     uses: newrelic/node-newrelic/.github/workflows/prep-release.yml@main
     with:
       release_type: ${{ github.event.inputs.release_type }}
+      use_new_relase: ${{ vars.USE_NEW_RELEASE }}
+      changelog_file: CHANGELOG.md
