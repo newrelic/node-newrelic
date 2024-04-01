@@ -64,12 +64,13 @@ tap.test('Prepare Release script', (testHarness) => {
       }
       mockConventionalCommands.generateJsonChangelog.resolves(expectedJson)
 
-      const [markdown, json] = await script.generateConventionalReleaseNotes(
-        'org',
-        'repo',
-        '2.0.0',
-        'changelog.json'
-      )
+      const [markdown, json] = await script.generateConventionalReleaseNotes({
+        owner: 'org',
+        repo: 'repo',
+        newVersion: '2.0.0',
+        markdownChangelog: 'NEWS.md',
+        generateJsonChangelog: true
+      })
 
       t.same(json, expectedJson)
       t.equal(markdown, expectedMarkdown)
@@ -89,16 +90,51 @@ tap.test('Prepare Release script', (testHarness) => {
       t.ok(mockConventionalCommands.generateMarkdownChangelog.calledWith(expectedCommits))
       t.ok(mockConventionalCommands.generateJsonChangelog.calledWith(expectedCommits))
 
-      t.ok(
-        mockConventionalCommands.writeMarkdownChangelog.calledWith(
-          expectedMarkdown,
-          'changelog.json'
-        )
-      )
+      t.ok(mockConventionalCommands.writeMarkdownChangelog.calledWith(expectedMarkdown, 'NEWS.md'))
       t.ok(mockConventionalCommands.writeJsonChangelog.calledWith(expectedJson))
-
-      t.end()
     })
+
+    t.test(
+      'should not generate json file updates when generateJsonChangelog is false',
+      async (t) => {
+        mockGithubCommands.getLatestRelease.resolves({ tag_name: 'v1.2.3' })
+        const expectedCommits = [{ title: 'stuff: commit number one' }]
+        mockConventionalCommands.getFormattedCommits.resolves(expectedCommits)
+        const expectedMarkdown = `
+      ### v2.0.0
+
+      #### Stuff
+        * commit number 1
+
+      ### v1.2.3
+      `
+        mockConventionalCommands.generateMarkdownChangelog.resolves(expectedMarkdown)
+        const expectedJson = {
+          entries: [
+            { version: '2.0.0', changes: [{ type: 'stuff', subject: 'commit number one' }] },
+            { version: '1.2.3', changes: [] }
+          ]
+        }
+        mockConventionalCommands.generateJsonChangelog.resolves(expectedJson)
+
+        const [markdown, json] = await script.generateConventionalReleaseNotes({
+          owner: 'org',
+          repo: 'repo',
+          newVersion: '2.0.0',
+          markdownChangelog: 'NEWS.md'
+        })
+
+        t.same(json, undefined)
+        t.equal(markdown, expectedMarkdown)
+
+        t.ok(mockConventionalCommands.generateMarkdownChangelog.calledWith(expectedCommits))
+        t.ok(
+          mockConventionalCommands.writeMarkdownChangelog.calledWith(expectedMarkdown, 'NEWS.md')
+        )
+        t.equal(mockConventionalCommands.generateJsonChangelog.callCount, 0)
+        t.equal(mockConventionalCommands.writeJsonChangelog.callCount, 0)
+      }
+    )
   })
 
   testHarness.test('isValid', (t) => {
