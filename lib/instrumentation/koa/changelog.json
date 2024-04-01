@@ -1,4 +1,13 @@
 {
   "repository": "newrelic/node-newrelic-koa",
-  "entries": []
+  "entries": [
+    {
+      "version": "9.1.0",
+      "changes": {
+        "security": [],
+        "bugfixes": [],
+        "features": []
+      }
+    }
+  ]
 }

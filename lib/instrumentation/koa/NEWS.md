@@ -1,3 +1,24 @@
+### v9.1.0 (2024-04-01)
+
+#### Miscellaneous chores
+
+* Updated `recordParamware` to construct spec ([#175](https://github.com/newrelic/node-newrelic-koa/pull/175)) ([a8bce24](https://github.com/newrelic/node-newrelic-koa/commit/a8bce243a36bab280e095be88ed21d3b729bd2b1))
+
+#### Tests
+
+* Removed v1 versioned tests ([#177](https://github.com/newrelic/node-newrelic-koa/pull/177)) ([53e78bc](https://github.com/newrelic/node-newrelic-koa/commit/53e78bcda91f17dbd83b78826f5a4c5364cf991d))
+
+#### Continuous integration
+
+* Updated CI process for releases ([#176](https://github.com/newrelic/node-newrelic-koa/pull/176)) ([69f41cd](https://github.com/newrelic/node-newrelic-koa/commit/69f41cdfecfac52322866a6e4349bb20acfec2df))
+* Fixed `changelog_file` to be `NEWS.md` ([#179](https://github.com/newrelic/node-newrelic-koa/pull/179)) ([dfa6c30](https://github.com/newrelic/node-newrelic-koa/commit/dfa6c30b55f29856541eb2546b1e6fd1214ff71a))
+* Fixed spelling of `use_new_release` in prepare-release.yml ([#178](https://github.com/newrelic/node-newrelic-koa/pull/178)) ([4268c5d](https://github.com/newrelic/node-newrelic-koa/commit/4268c5df8eb868044d1b498375269d99ea741167))
+
+#### Build system
+
+* **deps-dev:** bump follow-redirects from 1.15.5 to 1.15.6 ([#173](https://github.com/newrelic/node-newrelic-koa/pull/173)) ([7b13b78](https://github.com/newrelic/node-newrelic-koa/commit/7b13b78c8fee568e23e919a47c69d6ef85a16603))
+    * Bumps [follow-redirects](https://github.com/follow-redirects/follow-redirects) from 1.15.5 to 1.15.6. - [Release notes](https://github.com/follow-redirects/follow-redirects/releases) - [Commits](https://github.com/follow-redirects/follow-redirects/compare/v1.15.5...v1.15.6)
+
 ### v9.0.0 (2024-03-12)
 
 * **BREAKING CHANGE**: Updated koa instrumentation to construct specs at instrumentation
