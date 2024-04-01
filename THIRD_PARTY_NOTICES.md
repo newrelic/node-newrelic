@@ -712,7 +712,7 @@ This product includes source derived from [@newrelic/aws-sdk](https://github.com
 
 ### @newrelic/koa
 
-This product includes source derived from [@newrelic/koa](https://github.com/newrelic/node-newrelic-koa) ([v9.0.0](https://github.com/newrelic/node-newrelic-koa/tree/v9.0.0)), distributed under the [Apache-2.0 License](https://github.com/newrelic/node-newrelic-koa/blob/v9.0.0/LICENSE):
+This product includes source derived from [@newrelic/koa](https://github.com/newrelic/node-newrelic-koa) ([v9.1.0](https://github.com/newrelic/node-newrelic-koa/tree/v9.1.0)), distributed under the [Apache-2.0 License](https://github.com/newrelic/node-newrelic-koa/blob/v9.1.0/LICENSE):
 
 ```
 Apache License
