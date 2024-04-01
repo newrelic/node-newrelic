@@ -9,25 +9,6 @@
       },
       "dependencies": {
         "koa": {
-          "versions": "^1.5.0",
-          "samples": 5
-        }
-      },
-      "files": [
-        "koa-v1.tap.js"
-      ],
-      "notes": [
-        "Koa <2.5.2 had debug as a wide-open dependency (semver check was `*`).",
-        "Debug v4 dropped support for Node <6, thus rendering these older versions",
-        "of Koa inoperable on Node <6."
-      ]
-    },
-    {
-      "engines": {
-        "node": ">=16"
-      },
-      "dependencies": {
-        "koa": {
           "versions": ">=2.0.0",
           "samples": 5
         }
