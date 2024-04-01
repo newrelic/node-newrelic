@@ -40,7 +40,6 @@ tap.beforeEach((t) => {
   t.context.segment = {
     id: 'segment-1',
     transaction: {
-      id: 'tx-1',
       traceId: 'trace-1'
     }
   }
@@ -62,7 +61,6 @@ tap.test('create creates a new instance', async (t) => {
   t.equal(event.ingest_source, 'Node')
   t.equal(event.appName, 'test-app')
   t.equal(event.span_id, 'segment-1')
-  t.equal(event.transaction_id, 'tx-1')
   t.equal(event.trace_id, 'trace-1')
   t.equal(event.request_id, 'request-1')
   t.equal(event['response.model'], 'model-1')

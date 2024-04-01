@@ -181,10 +181,7 @@ class StreamHandler {
       return
     }
 
-    const metrics = parsedEvent['amazon-bedrock-invocationMetrics']
     this.response.response.headers = {
-      'x-amzn-bedrock-input-token-count': metrics.inputTokenCount,
-      'x-amzn-bedrock-output-token-count': metrics.outputTokenCount,
       'x-amzn-requestid': this.passThroughParams.response.response.headers['x-amzn-requestid']
     }
     delete parsedEvent['amazon-bedrock-invocationMetrics']

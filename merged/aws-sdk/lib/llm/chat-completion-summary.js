@@ -28,17 +28,11 @@ class LlmChatCompletionSummary extends LlmEvent {
     this.duration = segment.getDurationInMillis()
     this['request.max_tokens'] = this.bedrockCommand.maxTokens
 
-    const utt = 'response.usage.total_tokens'
     const nm = 'response.number_of_messages'
-    const upt = 'response.usage.prompt_tokens'
-    const uct = 'response.usage.completion_tokens'
     const cfr = 'response.choices.finish_reason'
     const rt = 'request.temperature'
 
     const cmd = this.bedrockCommand
-    this[uct] = this.bedrockResponse.outputTokenCount
-    this[upt] = this.bedrockResponse.inputTokenCount
-    this[utt] = this[upt] + this[uct]
     this[cfr] = this.bedrockResponse.finishReason
     this[rt] = cmd.temperature
     this[nm] = 1 + this.bedrockResponse.completions.length

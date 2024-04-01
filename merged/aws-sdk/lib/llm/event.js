@@ -56,7 +56,6 @@ class LlmEvent {
     this.ingest_source = 'Node'
     this.appName = agent.config.applications()[0]
     this.span_id = segment.id
-    this.transaction_id = segment.transaction.id
     this.trace_id = segment.transaction.traceId
     this.request_id = this.bedrockResponse.requestId
     this.metadata = agent

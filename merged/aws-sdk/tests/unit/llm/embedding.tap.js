@@ -13,6 +13,7 @@ const LlmEmbedding = require('../../../lib/llm/embedding')
 
 tap.beforeEach((t) => {
   t.context.agent = {
+    llm: {},
     config: {
       applications() {
         return ['test-app']
@@ -49,13 +50,10 @@ tap.beforeEach((t) => {
   t.context.bedrockResponse = {
     headers: {
       'x-amzn-requestid': 'request-1'
-    },
-    get inputTokenCount() {
-      return 8
     }
   }
   t.context.segment = {
-    transaction: { id: '1', traceId: 'id' },
+    transaction: { traceId: 'id' },
     getDurationInMillis() {
       return 1.008
     }
@@ -66,9 +64,7 @@ tap.test('creates a basic embedding', async (t) => {
   const event = new LlmEmbedding(t.context)
   t.equal(event.input, 'who are you')
   t.equal(event.duration, 1.008)
-  t.equal(event['response.usage.total_tokens'], 8)
-  t.equal(event['response.usage.prompt_tokens'], 8)
-  t.equal(event.token_count, 8)
+  t.equal(event.token_count, undefined)
 })
 
 tap.test(
@@ -80,3 +76,9 @@ tap.test(
     t.equal(event.input, undefined, 'input should be empty')
   }
 )
+
+tap.test('should capture token_count when callback is defined', async (t) => {
+  t.context.agent.llm.tokenCountCallback = () => 3
+  const event = new LlmEmbedding(t.context)
+  t.equal(event.token_count, 3)
+})

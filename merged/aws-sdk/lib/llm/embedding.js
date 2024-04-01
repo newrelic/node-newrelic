@@ -20,15 +20,16 @@ class LlmEmbedding extends LlmEvent {
   constructor(params = defaultParams) {
     super(params)
     const { agent } = params
+    const tokenCb = agent?.llm?.tokenCountCallback
 
     this.input = agent.config?.ai_monitoring?.record_content?.enabled
       ? this.bedrockCommand.prompt
       : undefined
     this.error = params.isError
     this.duration = params.segment.getDurationInMillis()
-    this['response.usage.total_tokens'] = this.bedrockResponse.inputTokenCount
-    this['response.usage.prompt_tokens'] = this.bedrockResponse.inputTokenCount
-    this.token_count = this.bedrockResponse.inputTokenCount
+    if (typeof tokenCb === 'function') {
+      this.token_count = tokenCb(this.bedrockCommand.modelId, this.bedrockCommand.prompt)
+    }
   }
 }
 

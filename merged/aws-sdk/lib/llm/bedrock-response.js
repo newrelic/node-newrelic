@@ -123,25 +123,6 @@ class BedrockResponse {
   }
 
   /**
-   * The number of tokens present in the prompt as determined by the remote
-   * API.
-   *
-   * @returns {number|undefined}
-   */
-  get inputTokenCount() {
-    return this.#tokenCount('x-amzn-bedrock-input-token-count')
-  }
-
-  /**
-   * The number of tokens in the LLM response as determined by the remote API.
-   *
-   * @returns {number|undefined}
-   */
-  get outputTokenCount() {
-    return this.#tokenCount('x-amzn-bedrock-output-token-count')
-  }
-
-  /**
    * UUID assigned to the initial request as returned by the API.
    *
    * @returns {string}

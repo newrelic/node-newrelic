@@ -83,7 +83,6 @@ function assertChatCompletionMessages({ tx, chatMsgs, expectedId, modelId, promp
     'request_id': 'eda0760a-c3f0-4fc1-9a1e-75559d642866',
     'trace_id': tx.traceId,
     'span_id': tx.trace.root.children[0].id,
-    'transaction_id': tx.id,
     'response.model': modelId,
     'vendor': 'bedrock',
     'ingest_source': 'Node',
@@ -118,22 +117,14 @@ function assertChatCompletionMessages({ tx, chatMsgs, expectedId, modelId, promp
   })
 }
 
-function assertChatCompletionSummary({
-  tx,
-  modelId,
-  chatSummary,
-  tokenUsage,
-  error = false,
-  numMsgs = 2
-}) {
-  let expectedChatSummary = {
+function assertChatCompletionSummary({ tx, modelId, chatSummary, error = false, numMsgs = 2 }) {
+  const expectedChatSummary = {
     'id': /[\w]{8}-[\w]{4}-[\w]{4}-[\w]{4}-[\w]{12}/,
     'appName': 'New Relic for Node.js tests',
     'request_id': 'eda0760a-c3f0-4fc1-9a1e-75559d642866',
     'llm.conversation_id': 'convo-id',
     'trace_id': tx.traceId,
     'span_id': tx.trace.root.children[0].id,
-    'transaction_id': tx.id,
     'response.model': modelId,
     'vendor': 'bedrock',
     'ingest_source': 'Node',
@@ -144,15 +135,6 @@ function assertChatCompletionSummary({
     'request.temperature': 0.5,
     'request.max_tokens': 100,
     'error': error
-  }
-
-  if (tokenUsage) {
-    expectedChatSummary = {
-      ...expectedChatSummary,
-      'response.usage.total_tokens': 12,
-      'response.usage.prompt_tokens': 8,
-      'response.usage.completion_tokens': 4
-    }
   }
 
   this.equal(chatSummary[0].type, 'LlmChatCompletionSummary')

@@ -111,15 +111,11 @@ tap.afterEach(async (t) => {
         'request_id': '743dd35b-744b-4ddf-b5c6-c0f3de2e3142',
         'trace_id': tx.traceId,
         'span_id': tx.trace.root.children[0].id,
-        'transaction_id': tx.id,
         'response.model': modelId,
         'vendor': 'bedrock',
         'ingest_source': 'Node',
         'request.model': modelId,
         'duration': tx.trace.root.children[0].getDurationInMillis(),
-        'response.usage.total_tokens': 13,
-        'response.usage.prompt_tokens': 13,
-        'token_count': 13,
         'input': prompt,
         'error': false
       }
@@ -195,14 +191,11 @@ tap.afterEach(async (t) => {
         'request_id': '743dd35b-744b-4ddf-b5c6-c0f3de2e3142',
         'trace_id': tx.traceId,
         'span_id': tx.trace.root.children[0].id,
-        'transaction_id': tx.id,
         'response.model': modelId,
         'vendor': 'bedrock',
         'ingest_source': 'Node',
         'request.model': modelId,
         'duration': tx.trace.root.children[0].getDurationInMillis(),
-        'response.usage.total_tokens': undefined,
-        'response.usage.prompt_tokens': undefined,
         'input': prompt,
         'error': true
       }
@@ -257,11 +250,12 @@ tap.test('should utilize tokenCountCallback when set', (t) => {
 
   const { bedrock, client, helper } = t.context
   const prompt = 'embed text amazon token count callback response'
-  const input = requests.amazon(prompt, 'amazon.titan-text-express-v1')
+  const modelId = 'amazon.titan-embed-text-v1'
+  const input = requests.amazon(prompt, modelId)
 
   helper.agent.config.ai_monitoring.record_content.enabled = false
   helper.agent.llm.tokenCountCallback = function (model, content) {
-    t.equal(model, 'amazon.titan-text-express-v1')
+    t.equal(model, modelId)
     t.equal(content, prompt)
     return content?.split(' ')?.length
   }
@@ -270,13 +264,10 @@ tap.test('should utilize tokenCountCallback when set', (t) => {
   helper.runInTransaction(async (tx) => {
     await client.send(command)
 
-    // Chat completion messages should have the correct `token_count` value.
     const events = helper.agent.customEventAggregator.events.toArray()
-    const completions = events.filter((e) => e[0].type === 'LlmChatCompletionMessage')
-    t.equal(
-      completions.some((e) => e[1].token_count === 7),
-      true
-    )
+    const embeddings = events.filter((e) => e[0].type === 'LlmEmbedding')
+    const msg = embeddings[0][1]
+    t.equal(msg.token_count, 7)
 
     tx.end()
     t.end()

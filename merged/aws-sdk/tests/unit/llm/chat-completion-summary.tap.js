@@ -70,9 +70,7 @@ tap.beforeEach((t) => {
       'x-amzn-request-id': 'aws-request-1'
     },
     finishReason: 'done',
-    completions: ['completion-1'],
-    inputTokenCount: 25,
-    outputTokenCount: 25
+    completions: ['completion-1']
   }
 })
 
@@ -85,9 +83,6 @@ tap.test('creates a basic summary', async (t) => {
   t.equal(event['request.max_tokens'], 25)
   t.equal(event['request.temperature'], 0.5)
   t.equal(event['response.choices.finish_reason'], 'done')
-  t.equal(event['response.usage.total_tokens'], 0)
-  t.equal(event['response.usage.prompt_tokens'], 0)
-  t.equal(event['response.usage.completion_tokens'], 0)
   t.equal(event['response.number_of_messages'], 2)
 })
 
@@ -99,9 +94,6 @@ tap.test('creates an ai21 summary', async (t) => {
   t.equal(event['request.max_tokens'], 25)
   t.equal(event['request.temperature'], 0.5)
   t.equal(event['response.choices.finish_reason'], 'done')
-  t.equal(event['response.usage.total_tokens'], 50)
-  t.equal(event['response.usage.prompt_tokens'], 25)
-  t.equal(event['response.usage.completion_tokens'], 25)
   t.equal(event['response.number_of_messages'], 2)
 })
 
@@ -113,9 +105,6 @@ tap.test('creates an claude summary', async (t) => {
   t.equal(event['request.max_tokens'], 25)
   t.equal(event['request.temperature'], 0.5)
   t.equal(event['response.choices.finish_reason'], 'done')
-  t.equal(event['response.usage.total_tokens'], 50)
-  t.equal(event['response.usage.prompt_tokens'], 25)
-  t.equal(event['response.usage.completion_tokens'], 25)
   t.equal(event['response.number_of_messages'], 2)
 })
 
@@ -127,9 +116,6 @@ tap.test('creates a cohere summary', async (t) => {
   t.equal(event['request.max_tokens'], 25)
   t.equal(event['request.temperature'], 0.5)
   t.equal(event['response.choices.finish_reason'], 'done')
-  t.equal(event['response.usage.total_tokens'], 50)
-  t.equal(event['response.usage.prompt_tokens'], 25)
-  t.equal(event['response.usage.completion_tokens'], 25)
   t.equal(event['response.number_of_messages'], 2)
 })
 
@@ -141,9 +127,6 @@ tap.test('creates a llama2 summary', async (t) => {
   t.equal(event['request.max_tokens'], 25)
   t.equal(event['request.temperature'], 0.5)
   t.equal(event['response.choices.finish_reason'], 'done')
-  t.equal(event['response.usage.total_tokens'], 50)
-  t.equal(event['response.usage.prompt_tokens'], 25)
-  t.equal(event['response.usage.completion_tokens'], 25)
   t.equal(event['response.number_of_messages'], 2)
 })
 
@@ -155,8 +138,5 @@ tap.test('creates a titan summary', async (t) => {
   t.equal(event['request.max_tokens'], 25)
   t.equal(event['request.temperature'], 0.5)
   t.equal(event['response.choices.finish_reason'], 'done')
-  t.equal(event['response.usage.total_tokens'], 50)
-  t.equal(event['response.usage.prompt_tokens'], 25)
-  t.equal(event['response.usage.completion_tokens'], 25)
   t.equal(event['response.number_of_messages'], 2)
 })

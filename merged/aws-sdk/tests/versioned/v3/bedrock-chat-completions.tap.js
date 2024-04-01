@@ -144,7 +144,7 @@ tap.afterEach(async (t) => {
           chatMsgs
         })
 
-        t.llmSummary({ tx, modelId, chatSummary, tokenUsage: true })
+        t.llmSummary({ tx, modelId, chatSummary })
 
         tx.end()
         t.end()
@@ -189,7 +189,7 @@ tap.afterEach(async (t) => {
         chatMsgs
       })
 
-      t.llmSummary({ tx, modelId, chatSummary, tokenUsage: true, numMsgs: events.length - 1 })
+      t.llmSummary({ tx, modelId, chatSummary, numMsgs: events.length - 1 })
 
       tx.end()
       t.end()

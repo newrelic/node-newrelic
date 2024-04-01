@@ -13,6 +13,7 @@ const LlmChatCompletionMessage = require('../../../lib/llm/chat-completion-messa
 
 tap.beforeEach((t) => {
   t.context.agent = {
+    llm: {},
     config: {
       applications() {
         return ['test-app']
@@ -85,6 +86,7 @@ tap.beforeEach((t) => {
 })
 
 tap.test('create creates a non-response instance', async (t) => {
+  t.context.agent.llm.tokenCountCallback = () => 3
   const event = new LlmChatCompletionMessage(t.context)
   t.equal(event.is_response, false)
   t.equal(event['llm.conversation_id'], 'conversation-1')
@@ -93,6 +95,7 @@ tap.test('create creates a non-response instance', async (t) => {
   t.equal(event.content, 'who are you')
   t.equal(event.role, 'user')
   t.match(event.id, /[\w-]{36}/)
+  t.equal(event.token_count, 3)
 })
 
 tap.test('create creates a titan response instance', async (t) => {

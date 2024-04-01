@@ -58,9 +58,7 @@ tap.beforeEach((t) => {
       statusCode: 200,
       headers: {
         'x-amzn-requestid': 'aws-request-1',
-        'x-foo': 'foo',
-        ['x-amzn-bedrock-input-token-count']: 25,
-        ['x-amzn-bedrock-output-token-count']: 25
+        'x-foo': 'foo'
       }
     },
     output: {
@@ -98,8 +96,6 @@ tap.test('non-conforming response is handled gracefully', async (t) => {
   t.equal(res.finishReason, undefined)
   t.same(res.headers, undefined)
   t.equal(res.id, undefined)
-  t.equal(res.inputTokenCount, undefined)
-  t.equal(res.outputTokenCount, undefined)
   t.equal(res.requestId, undefined)
   t.equal(res.statusCode, 200)
 })
@@ -111,8 +107,6 @@ tap.test('ai21 malformed responses work', async (t) => {
   t.equal(res.finishReason, undefined)
   t.same(res.headers, t.context.response.response.headers)
   t.equal(res.id, undefined)
-  t.equal(res.inputTokenCount, 25)
-  t.equal(res.outputTokenCount, 25)
   t.equal(res.requestId, 'aws-request-1')
   t.equal(res.statusCode, 200)
 })
@@ -125,8 +119,6 @@ tap.test('ai21 complete responses work', async (t) => {
   t.equal(res.finishReason, 'done')
   t.same(res.headers, t.context.response.response.headers)
   t.equal(res.id, 'ai21-response-1')
-  t.equal(res.inputTokenCount, 25)
-  t.equal(res.outputTokenCount, 25)
   t.equal(res.requestId, 'aws-request-1')
   t.equal(res.statusCode, 200)
 })
@@ -138,8 +130,6 @@ tap.test('claude malformed responses work', async (t) => {
   t.equal(res.finishReason, undefined)
   t.same(res.headers, t.context.response.response.headers)
   t.equal(res.id, undefined)
-  t.equal(res.inputTokenCount, 25)
-  t.equal(res.outputTokenCount, 25)
   t.equal(res.requestId, 'aws-request-1')
   t.equal(res.statusCode, 200)
 })
@@ -152,8 +142,6 @@ tap.test('claude complete responses work', async (t) => {
   t.equal(res.finishReason, 'done')
   t.same(res.headers, t.context.response.response.headers)
   t.equal(res.id, undefined)
-  t.equal(res.inputTokenCount, 25)
-  t.equal(res.outputTokenCount, 25)
   t.equal(res.requestId, 'aws-request-1')
   t.equal(res.statusCode, 200)
 })
@@ -165,8 +153,6 @@ tap.test('cohere malformed responses work', async (t) => {
   t.equal(res.finishReason, undefined)
   t.same(res.headers, t.context.response.response.headers)
   t.equal(res.id, undefined)
-  t.equal(res.inputTokenCount, 25)
-  t.equal(res.outputTokenCount, 25)
   t.equal(res.requestId, 'aws-request-1')
   t.equal(res.statusCode, 200)
 })
@@ -179,8 +165,6 @@ tap.test('cohere complete responses work', async (t) => {
   t.equal(res.finishReason, 'done')
   t.same(res.headers, t.context.response.response.headers)
   t.equal(res.id, 'cohere-response-1')
-  t.equal(res.inputTokenCount, 25)
-  t.equal(res.outputTokenCount, 25)
   t.equal(res.requestId, 'aws-request-1')
   t.equal(res.statusCode, 200)
 })
@@ -192,8 +176,6 @@ tap.test('llama2 malformed responses work', async (t) => {
   t.equal(res.finishReason, undefined)
   t.same(res.headers, t.context.response.response.headers)
   t.equal(res.id, undefined)
-  t.equal(res.inputTokenCount, 25)
-  t.equal(res.outputTokenCount, 25)
   t.equal(res.requestId, 'aws-request-1')
   t.equal(res.statusCode, 200)
 })
@@ -206,8 +188,6 @@ tap.test('llama2 complete responses work', async (t) => {
   t.equal(res.finishReason, 'done')
   t.same(res.headers, t.context.response.response.headers)
   t.equal(res.id, undefined)
-  t.equal(res.inputTokenCount, 25)
-  t.equal(res.outputTokenCount, 25)
   t.equal(res.requestId, 'aws-request-1')
   t.equal(res.statusCode, 200)
 })
@@ -219,8 +199,6 @@ tap.test('titan malformed responses work', async (t) => {
   t.equal(res.finishReason, undefined)
   t.same(res.headers, t.context.response.response.headers)
   t.equal(res.id, undefined)
-  t.equal(res.inputTokenCount, 25)
-  t.equal(res.outputTokenCount, 25)
   t.equal(res.requestId, 'aws-request-1')
   t.equal(res.statusCode, 200)
 })
@@ -233,8 +211,6 @@ tap.test('titan complete responses work', async (t) => {
   t.equal(res.finishReason, 'done')
   t.same(res.headers, t.context.response.response.headers)
   t.equal(res.id, undefined)
-  t.equal(res.inputTokenCount, 25)
-  t.equal(res.outputTokenCount, 25)
   t.equal(res.requestId, 'aws-request-1')
   t.equal(res.statusCode, 200)
 })
