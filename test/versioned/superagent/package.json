@@ -1,5 +1,6 @@
 {
   "name": "superagent-tests",
+  "targets": ["superagent"],
   "version": "0.0.0",
   "private": true,
   "tests": [{

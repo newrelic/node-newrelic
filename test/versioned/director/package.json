@@ -1,5 +1,6 @@
 {
   "name": "director-tests",
+  "targets": ["director"],
   "version": "0.0.0",
   "private": true,
   "tests": [
@@ -8,7 +9,7 @@
         "node": ">=16"
       },
       "dependencies": {
-        "director": ">=1.2",
+        "director": ">=1.2.0",
         "express": "4.16"
       },
       "files": [

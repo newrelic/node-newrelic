@@ -1,5 +1,6 @@
 {
   "name": "elasticsearch-tests",
+  "targets": ["@elastic/elasticsearch"],
   "version": "0.0.0",
   "private": true,
   "engines": {
@@ -7,6 +8,8 @@
   },
   "tests": [
     {
+      "supported": false,
+      "comment": "Used to assert our instrumentation does not get loaded on old versions.",
       "engines": {
         "node": ">=16"
       },

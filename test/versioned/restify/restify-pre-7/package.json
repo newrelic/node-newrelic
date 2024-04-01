@@ -1,5 +1,6 @@
 {
   "name": "restify-tests",
+  "targets": ["restify"],
   "version": "0.0.0",
   "private": true,
   "tests": [

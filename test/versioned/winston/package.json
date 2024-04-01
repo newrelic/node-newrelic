@@ -1,5 +1,6 @@
 {
   "name": "winston-tests",
+  "targets": ["winston"],
   "version": "0.0.0",
   "private": true,
   "tests": [
@@ -8,7 +9,7 @@
         "node": ">=16"
       },
       "dependencies": {
-        "winston": ">=3"
+        "winston": ">=3.0.0"
       },
       "files": [
         "winston.tap.js"

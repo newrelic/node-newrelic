@@ -1,5 +1,6 @@
 {
   "name": "grpc-tests",
+  "targets": ["@grpc/grpc-js"],
   "version": "0.0.0",
   "private": true,
   "tests": [

@@ -1,5 +1,6 @@
 {
   "name": "mysql-tests",
+  "targets": ["mysql"],
   "version": "0.0.0",
   "private": true,
   "tests": [

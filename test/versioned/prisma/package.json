@@ -1,5 +1,6 @@
 {
   "name": "prisma-tests",
+  "targets": ["@prisma/client"],
   "version": "0.0.0",
   "private": true,
   "engines": {

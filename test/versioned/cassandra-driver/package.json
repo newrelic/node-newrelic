@@ -1,5 +1,6 @@
 {
   "name": "cassandra-driver-tests",
+  "targets": ["cassandra-driver"],
   "version": "0.0.0",
   "private": true,
   "tests": [

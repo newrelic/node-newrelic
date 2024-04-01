@@ -1,5 +1,6 @@
 {
   "name": "generic-pool-tests",
+  "targets": ["generic-pool"],
   "version": "0.0.0",
   "private": true,
   "tests": [

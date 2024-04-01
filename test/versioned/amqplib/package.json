@@ -1,5 +1,6 @@
 {
   "name": "ampqlib-tests",
+  "targets": ["amqplib"],
   "version": "0.0.0",
   "private": true,
   "tests": [

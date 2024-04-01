@@ -1,5 +1,6 @@
 {
   "name": "bluebird-tests",
+  "targets": ["bluebird"],
   "version": "0.0.0",
   "private": true,
   "tests": [
@@ -8,7 +9,7 @@
         "node": ">=16"
       },
       "dependencies": {
-        "bluebird": ">=2"
+        "bluebird": ">=2.0.0"
       },
       "files": [
         "regressions.tap.js",
@@ -20,7 +21,7 @@
         "node": ">=16"
       },
       "dependencies": {
-        "bluebird": ">=3"
+        "bluebird": ">=3.0.0"
       },
       "files": [
         "methods.tap.js"
