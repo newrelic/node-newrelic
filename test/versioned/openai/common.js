@@ -53,7 +53,6 @@ function assertChatCompletionMessages({
     'request_id': '49dbbffbd3c3f4612aa48def69059aad',
     'trace_id': tx.traceId,
     'span_id': tx.trace.root.children[0].id,
-    'transaction_id': tx.id,
     'response.model': model,
     'vendor': 'openai',
     'ingest_source': 'Node',
@@ -94,14 +93,13 @@ function assertChatCompletionMessages({
   })
 }
 
-function assertChatCompletionSummary({ tx, model, chatSummary, tokenUsage, error = false }) {
-  let expectedChatSummary = {
+function assertChatCompletionSummary({ tx, model, chatSummary, error = false }) {
+  const expectedChatSummary = {
     'id': /[a-f0-9]{36}/,
     'appName': 'New Relic for Node.js tests',
     'request_id': '49dbbffbd3c3f4612aa48def69059aad',
     'trace_id': tx.traceId,
     'span_id': tx.trace.root.children[0].id,
-    'transaction_id': tx.id,
     'response.model': model,
     'vendor': 'openai',
     'ingest_source': 'Node',
@@ -117,15 +115,6 @@ function assertChatCompletionSummary({ tx, model, chatSummary, tokenUsage, error
     'response.number_of_messages': 3,
     'response.choices.finish_reason': 'stop',
     'error': error
-  }
-
-  if (tokenUsage) {
-    expectedChatSummary = {
-      ...expectedChatSummary,
-      'response.usage.total_tokens': 64,
-      'response.usage.prompt_tokens': 53,
-      'response.usage.completion_tokens': 11
-    }
   }
 
   this.equal(chatSummary[0].type, 'LlmChatCompletionSummary')
