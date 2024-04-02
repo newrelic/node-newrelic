@@ -1,3 +1,15 @@
+### v7.4.0 (2024-04-02)
+
+#### Miscellaneous chores
+
+* **deps-dev:** bump follow-redirects from 1.15.5 to 1.15.6 ([#277](https://github.com/newrelic/node-newrelic-aws-sdk/pull/277)) ([ce0d324](https://github.com/newrelic/node-newrelic-aws-sdk/commit/ce0d324a52bf49bc718470c0477e3134d2301c18))
+* Removed unused attributes on LlmChatCompletionSummary and LlmEmbedding ([#278](https://github.com/newrelic/node-newrelic-aws-sdk/pull/278)) ([c1a9978](https://github.com/newrelic/node-newrelic-aws-sdk/commit/c1a9978fe8eac435e238144933f845f5e36d79da))
+* Updated test-utils dependency ([#279](https://github.com/newrelic/node-newrelic-aws-sdk/pull/279)) ([5b037c6](https://github.com/newrelic/node-newrelic-aws-sdk/commit/5b037c68f3332b37efdd79e677fe45be7dbfe60e))
+
+#### Continuous integration
+
+* Updated CI workflows to run `npm ci` instead of `npm install` to catch package-lock.json being out of sync ([#276](https://github.com/newrelic/node-newrelic-aws-sdk/pull/276)) ([87b1f07](https://github.com/newrelic/node-newrelic-aws-sdk/commit/87b1f07b448ff9254fdf09397892011f75f6e644))
+
 ### v7.3.0 (2024-03-12)
 
 #### Features
