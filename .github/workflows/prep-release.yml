@@ -17,6 +17,10 @@ on:
         description: Whether or not to use the new conventional commit release note workflow
         type: string
         required: false
+      changelog_json:
+        description: Whether or not it should generate a changelog.json (should only be for node-newrelic)
+        type: boolean 
+        required: false
 
 jobs:
   generate-release-notes:
@@ -47,6 +51,6 @@ jobs:
         git config user.name $GITHUB_ACTOR
         git config user.email gh-actions-${GITHUB_ACTOR}@github.com
     - name: Create Release Notes
-      run: node ./agent-repo/bin/prepare-release.js --release-type ${{ inputs.release_type }} --branch ${{ github.ref }} --repo ${{ github.repository }} --changelog ${{ inputs.changelog_file }} ${{ inputs.use_new_release == 'true' && '--use-new-release' || '' }}
+      run: node ./agent-repo/bin/prepare-release.js --release-type ${{ inputs.release_type }} --branch ${{ github.ref }} --repo ${{ github.repository }} --changelog ${{ inputs.changelog_file }} ${{ inputs.use_new_release == 'true' && '--use-new-release' || '' }} ${{ inputs.changelog_json == true && '--changelog-json' || ''}}
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
