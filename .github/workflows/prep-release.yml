@@ -18,7 +18,7 @@ on:
         type: string
         required: false
       changelog_json:
-        description: Whether or not it should generate a changelog.json(should only be for node-newrelic)
+        description: Whether or not it should generate a changelog.json (should only be for node-newrelic)
         type: boolean 
         required: false
 

@@ -325,7 +325,7 @@ async function generateReleaseNotes(owner, repo) {
  * @param {string} params.newVersion version to be published
  * @param {string} params.markdownChangelog filepath of markdown changelog
  * @param {boolean} params.generateJsonChangelog indicator if it should update changelog.json
- * @returns {array} generate data of markdown and json
+ * @returns {object[]} generate data of markdown and json
  */
 async function generateConventionalReleaseNotes({
   owner,
