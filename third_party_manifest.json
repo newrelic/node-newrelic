@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "Thu Mar 21 2024 15:16:56 GMT+0530 (India Standard Time)",
+  "lastUpdated": "Mon Apr 01 2024 16:40:41 GMT-0400 (Eastern Daylight Time)",
   "projectName": "New Relic Node Agent",
   "projectUrl": "https://github.com/newrelic/node-newrelic",
   "includeOptDeps": true,
@@ -81,15 +81,15 @@
       "publisher": "New Relic Node.js agent team",
       "email": "nodejs@newrelic.com"
     },
-    "@newrelic/koa@9.0.0": {
+    "@newrelic/koa@9.1.0": {
       "name": "@newrelic/koa",
-      "version": "9.0.0",
-      "range": "^9.0.0",
+      "version": "9.1.0",
+      "range": "^9.1.0",
       "licenses": "Apache-2.0",
       "repoUrl": "https://github.com/newrelic/node-newrelic-koa",
-      "versionedRepoUrl": "https://github.com/newrelic/node-newrelic-koa/tree/v9.0.0",
+      "versionedRepoUrl": "https://github.com/newrelic/node-newrelic-koa/tree/v9.1.0",
       "licenseFile": "node_modules/@newrelic/koa/LICENSE",
-      "licenseUrl": "https://github.com/newrelic/node-newrelic-koa/blob/v9.0.0/LICENSE",
+      "licenseUrl": "https://github.com/newrelic/node-newrelic-koa/blob/v9.1.0/LICENSE",
       "licenseTextSource": "file",
       "publisher": "New Relic Node.js agent team",
       "email": "nodejs@newrelic.com"

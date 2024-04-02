@@ -194,7 +194,7 @@
     "@grpc/grpc-js": "^1.9.4",
     "@grpc/proto-loader": "^0.7.5",
     "@newrelic/aws-sdk": "^7.3.0",
-    "@newrelic/koa": "^9.0.0",
+    "@newrelic/koa": "^9.1.0",
     "@newrelic/ritm": "^7.2.0",
     "@newrelic/security-agent": "^1.1.1",
     "@newrelic/superagent": "^7.0.1",
