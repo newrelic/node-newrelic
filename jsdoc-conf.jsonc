@@ -1,0 +1,38 @@
+{
+  "opts": {
+    "destination": "out/",
+    "readme": "./README.md",
+    "template": "./node_modules/clean-jsdoc-theme",
+    "theme_opts": {
+      "search": false,
+      "shouldRemoveScrollbarStyle": true
+    },
+    "tutorials": "examples/shim",
+    "recurse": true
+  },
+  "source": {
+    "exclude": ["node_modules", "test"],
+    "includePattern": ".+\\.js(doc)?$",
+    // Note: we cannot add patterns to the "include" strings. They must be
+    // explicit strings that point to either specific files or directories.
+    // Recursion is enabled for the `jsdoc` command, thus any directories
+    // specified here will be processed recursively. So make sure any files in
+    // these directories should be included in our public docs.
+    "include": [
+      "lib/shim/",
+      "lib/transaction/handle.js",
+      "lib/instrumentation-descriptor.js"
+    ]
+  },
+  "plugins": [
+    "plugins/markdown"
+  ],
+  "templates": {
+    "cleverLinks": true,
+    "showInheritedInNav": false
+  },
+  "markdown": {
+    "hardwrap": false,
+    "idInHeadings": true
+  }
+}

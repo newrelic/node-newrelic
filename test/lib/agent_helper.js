@@ -16,6 +16,7 @@ const { defaultAttributeConfig } = require('./fixtures')
 const { EventEmitter } = require('events')
 const Transaction = require('../../lib/transaction')
 const symbols = require('../../lib/symbols')
+const InstrumentationTracker = require('../../lib/instrumentation-tracker')
 const http = require('http')
 const https = require('https')
 const semver = require('semver')
@@ -237,7 +238,7 @@ helper.unloadAgent = (agent, shimmer = require('../../lib/shimmer')) => {
   agent.emit('unload')
   shimmer.removeHooks()
   shimmer.unwrapAll()
-  shimmer.registeredInstrumentations = Object.create(null)
+  shimmer.registeredInstrumentations = new InstrumentationTracker()
   shimmer.debug = false
   helper.maybeUnloadSecurityAgent(agent)
 

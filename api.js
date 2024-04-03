@@ -26,7 +26,7 @@ const {
 const LlmFeedbackMessage = require('./lib/llm-events/feedback-message')
 
 const ATTR_DEST = require('./lib/config/attribute-filter').DESTINATIONS
-const MODULE_TYPE = require('./lib/shim/constants').MODULE_TYPE
+const MODULE_TYPE = require('./lib/instrumentation-descriptor').TYPES
 const NAMES = require('./lib/metrics/names')
 const obfuscate = require('./lib/util/sql/obfuscate')
 const { DESTINATIONS } = require('./lib/config/attribute-filter')

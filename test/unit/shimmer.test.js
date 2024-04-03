@@ -68,7 +68,8 @@ function makeModuleTests({ moduleName, relativePath, throwsError }, t) {
   })
 
   t.test('should construct a DatastoreShim if the type is "datastore"', function (t) {
-    shimmer.registeredInstrumentations[moduleName][0].type = 'datastore'
+    shimmer.registeredInstrumentations.getAllByName(moduleName)[0].instrumentation.type =
+      'datastore'
     require(relativePath)
     const { onRequireArgs } = t.context
     t.ok(onRequireArgs[0] instanceof shims.DatastoreShim)
@@ -887,7 +888,7 @@ tap.test('Shimmer with logger mock', (t) => {
       t.same(loggerMock.debug.args[0], [
         'Failed to get version for `%s`, reason: %s',
         'bogus',
-        `Cannot destructure property 'basedir' of 'shimmer.registeredInstrumentations[moduleName]' as it is undefined.`
+        `no tracked items for module 'bogus'`
       ])
       t.end()
     }
