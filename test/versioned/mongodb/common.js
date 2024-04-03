@@ -5,7 +5,6 @@
 
 'use strict'
 
-const fs = require('fs')
 const mongoPackage = require('mongodb/package.json')
 const params = require('../../lib/params')
 const semver = require('semver')
@@ -44,7 +43,6 @@ exports.close = function close() {
 exports.checkMetrics = checkMetrics
 exports.getHostName = getHostName
 exports.getPort = getPort
-exports.getDomainSocketPath = getDomainSocketPath
 
 function connectV2(mongodb, path) {
   return new Promise((resolve, reject) => {
@@ -221,17 +219,6 @@ function checkMetrics(t, agent, host, port, metrics) {
       t.equal(unscopedMetrics[metric].callCount, total, 'should have correct call count')
     }
   })
-}
-
-function getDomainSocketPath() {
-  const files = fs.readdirSync('/tmp')
-  for (let i = 0; i < files.length; ++i) {
-    const file = '/tmp/' + files[i]
-    if (/^\/tmp\/mongodb.*?\.sock$/.test(file)) {
-      return file
-    }
-  }
-  return null
 }
 
 function getMetrics(agent) {

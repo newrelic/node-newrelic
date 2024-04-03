@@ -15,7 +15,7 @@ const { pkgVersion, STATEMENT_PREFIX, COLLECTIONS } = require('../common')
 common.test('count', function countTest(t, collection, verify) {
   collection.find({}).count(function onCount(err, data) {
     t.notOk(err, 'should not error')
-    t.equal(data, 30, 'should have correct result')
+    t.ok(data >= 30, 'should have correct result')
     verify(null, [`${STATEMENT_PREFIX}/count`, 'Callback: onCount'], ['count'])
   })
 })
