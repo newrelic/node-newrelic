@@ -128,26 +128,19 @@ test('resolveSrv', function (t) {
 })
 
 test('reverse', function (t) {
+  const reverse = dns.reverse
+  dns.reverse = (addr, cb) => {
+    cb(undefined, ['localhost'])
+  }
+  t.teardown(() => {
+    dns.reverse = reverse
+  })
+
   const agent = setupAgent(t)
   helper.runInTransaction(agent, function () {
     dns.reverse('127.0.0.1', function (err, names) {
-      t.notOk(err, 'should not error')
-      let expected = []
-      if (names.length > 0) {
-        if (process.env.DOCKERIZED) {
-          if (names.length === 2) {
-            expected = ['127.0.0.1', 'localhost']
-          } else {
-            expected = ['localhost']
-          }
-        } else {
-          expected = ['nettuno', 'travis', 'vagrant']
-        }
-      }
-
-      expected.forEach((name) => {
-        t.not(names.indexOf(name), -1, 'should have expected name')
-      })
+      t.error(err, 'should not error')
+      t.not(names.indexOf('localhost'), -1, 'should have expected name')
       verifySegments(t, agent, 'dns.reverse')
     })
   })
