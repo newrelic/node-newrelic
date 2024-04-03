@@ -19,10 +19,11 @@
     },
     {
       "engines": {
-        "node": ">=16"
+        "node": "16"
       },
       "dependencies": {
-        "@elastic/elasticsearch": ">=7.16.0 <8.5.0"
+        "@elastic/elasticsearch": ">=7.16.0",
+        "@elastic/transport": "8.4.1"
       },
       "files": [
         "elasticsearch.tap.js"
@@ -33,7 +34,7 @@
         "node": ">=18"
       },
       "dependencies": {
-        "@elastic/elasticsearch": ">=8.5.0"
+        "@elastic/elasticsearch": ">=7.16.0"
       },
       "files": [
         "elasticsearch.tap.js"
