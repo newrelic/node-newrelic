@@ -11,7 +11,8 @@
         "node": ">=16"
       },
       "dependencies": {
-        "@elastic/elasticsearch": "7.13.0"
+        "@elastic/elasticsearch": "7.13.0",
+        "@elastic/transport": "8.4.1"
       },
       "files": [
         "elasticsearchNoop.tap.js"
@@ -19,7 +20,7 @@
     },
     {
       "engines": {
-        "node": ">=16"
+        "node": "16"
       },
       "dependencies": {
         "@elastic/elasticsearch": ">=7.16.0",
