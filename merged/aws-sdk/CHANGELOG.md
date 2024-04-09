@@ -1,3 +1,14 @@
+### v7.4.1 (2024-04-09)
+
+#### Miscellaneous chores
+
+* Fixed typo on sqs v3 name ([#282](https://github.com/newrelic/node-newrelic-aws-sdk/pull/282)) ([6836a48](https://github.com/newrelic/node-newrelic-aws-sdk/commit/6836a4896cf98a57d7c1359c36332f78364de698))
+
+#### Continuous integration
+
+* Removed `use_new_release` input from prepare release workflow ([#283](https://github.com/newrelic/node-newrelic-aws-sdk/pull/283)) ([d63bdd2](https://github.com/newrelic/node-newrelic-aws-sdk/commit/d63bdd2716347ae23a280d338f114adaa25f8076))
+* Removed changelog.json file ([#281](https://github.com/newrelic/node-newrelic-aws-sdk/pull/281)) ([e4ac38f](https://github.com/newrelic/node-newrelic-aws-sdk/commit/e4ac38f80f11d52afb2d6e235dbf4e067b689075))
+
 ### v7.4.0 (2024-04-02)
 
 #### Miscellaneous chores
