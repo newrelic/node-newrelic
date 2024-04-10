@@ -52,7 +52,7 @@ jobs:
           current_val=$(cat package.json | jq -r --arg pkg "@newrelic/security-agent" '.dependencies[$pkg]')
           echo "current_val=${current_val}" >> $GITHUB_OUTPUT
           
-          git checkout origin/${{github.base_ref}}
+          git checkout origin/${{github.base_ref || 'main'}}
           previous_val=$(cat package.json | jq -r --arg pkg "@newrelic/security-agent" '.dependencies[$pkg]')
           echo "previous_val=${previous_val}" >> $GITHUB_OUTPUT
           
