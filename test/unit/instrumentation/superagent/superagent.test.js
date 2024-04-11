@@ -6,14 +6,20 @@
 'use strict'
 
 const tap = require('tap')
-const utils = require('@newrelic/test-utilities')
+const helper = require('../../../lib/agent_helper')
 const sinon = require('sinon')
 
-tap.test('SuperAgent instrumentation', (t) => {
-  const helper = utils.TestAgent.makeInstrumented()
-  t.teardown(() => helper.unload())
+tap.beforeEach((t) => {
+  t.context.agent = helper.loadMockedAgent()
+})
 
-  helper.registerInstrumentation({
+tap.afterEach((t) => {
+  helper.unloadAgent(t.context.agent)
+})
+
+tap.test('SuperAgent instrumentation', (t) => {
+  helper.unloadAgent(t.context.agent)
+  t.context.agent = helper.loadMockedAgent({
     moduleName: 'superagent',
     type: 'generic',
     onRequire: '../../lib/instrumentation'
@@ -28,10 +34,9 @@ tap.test('SuperAgent instrumentation', (t) => {
 })
 
 tap.test('should not wrap superagent if it is not a function', (t) => {
-  const mockAgent = new utils.TestAgent()
-  const api = mockAgent.getAgentApi()
+  const api = helper.getAgentApi()
   api.shim.logger.debug = sinon.stub()
-  const instrumentation = require('../../lib/instrumentation')
+  const instrumentation = require('../../../../lib/instrumentation/superagent/lib/instrumentation')
   const superagentMock = { foo: 'bar' }
   instrumentation(api.shim, superagentMock)
   t.equal(api.shim.logger.debug.callCount, 1, 'should call debug logger')
