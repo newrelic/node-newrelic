@@ -19,6 +19,7 @@
     // specified here will be processed recursively. So make sure any files in
     // these directories should be included in our public docs.
     "include": [
+      "api.js",
       "lib/shim/",
       "lib/transaction/handle.js",
       "lib/instrumentation-descriptor.js"
