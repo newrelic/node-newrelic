@@ -81,7 +81,8 @@ tap.test('Serverless mode harvest', (t) => {
             function_version: TEST_FUNC_VERSION,
             execution_environment: TEST_EX_ENV,
             protocol_version: PROTOCOL_VERSION,
-            agent_version: agent.version
+            agent_version: agent.version,
+            agent_language: 'nodejs'
           },
           'metadata object has expected data'
         )
