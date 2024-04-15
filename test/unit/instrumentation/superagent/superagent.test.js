@@ -36,7 +36,7 @@ tap.test('SuperAgent instrumentation', (t) => {
 tap.test('should not wrap superagent if it is not a function', (t) => {
   const api = helper.getAgentApi()
   api.shim.logger.debug = sinon.stub()
-  const instrumentation = require('../../../../lib/instrumentation/superagent/lib/instrumentation')
+  const instrumentation = require('../../../../lib/instrumentation/superagent')
   const superagentMock = { foo: 'bar' }
   instrumentation(api.shim, superagentMock)
   t.equal(api.shim.logger.debug.callCount, 1, 'should call debug logger')
