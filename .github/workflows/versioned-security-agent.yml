@@ -25,6 +25,10 @@ on:
     branches:
       - main
 
+env:
+  # Enable versioned runner quiet mode to make CI output easier to read:
+  OUTPUT_MODE: quiet
+
 jobs:
   should_run:
     # Used to determine if the `@newrelic/security-agent` dependency has

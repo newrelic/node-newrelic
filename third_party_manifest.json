@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "Mon Apr 15 2024 07:50:25 GMT-0400 (Eastern Daylight Time)",
+  "lastUpdated": "Mon Apr 15 2024 12:30:33 GMT-0400 (Eastern Daylight Time)",
   "projectName": "New Relic Node Agent",
   "projectUrl": "https://github.com/newrelic/node-newrelic",
   "includeOptDeps": true,
@@ -277,15 +277,15 @@
       "licenseTextSource": "file",
       "publisher": "New Relic"
     },
-    "@newrelic/test-utilities@8.4.0": {
+    "@newrelic/test-utilities@8.5.0": {
       "name": "@newrelic/test-utilities",
-      "version": "8.4.0",
-      "range": "^8.4.0",
+      "version": "8.5.0",
+      "range": "^8.5.0",
       "licenses": "Apache-2.0",
       "repoUrl": "https://github.com/newrelic/node-test-utilities",
-      "versionedRepoUrl": "https://github.com/newrelic/node-test-utilities/tree/v8.4.0",
+      "versionedRepoUrl": "https://github.com/newrelic/node-test-utilities/tree/v8.5.0",
       "licenseFile": "node_modules/@newrelic/test-utilities/LICENSE",
-      "licenseUrl": "https://github.com/newrelic/node-test-utilities/blob/v8.4.0/LICENSE",
+      "licenseUrl": "https://github.com/newrelic/node-test-utilities/blob/v8.5.0/LICENSE",
       "licenseTextSource": "file",
       "publisher": "New Relic Node.js agent team",
       "email": "nodejs@newrelic.com"
@@ -674,19 +674,6 @@
       "licenseUrl": "https://github.com/sinonjs/sinon/blob/v4.5.0/LICENSE",
       "licenseTextSource": "file",
       "publisher": "Christian Johansen"
-    },
-    "superagent@8.1.2": {
-      "name": "superagent",
-      "version": "8.1.2",
-      "range": "^8.1.2",
-      "licenses": "MIT",
-      "repoUrl": "https://github.com/ladjs/superagent",
-      "versionedRepoUrl": "https://github.com/ladjs/superagent/tree/v8.1.2",
-      "licenseFile": "node_modules/superagent/LICENSE",
-      "licenseUrl": "https://github.com/ladjs/superagent/blob/v8.1.2/LICENSE",
-      "licenseTextSource": "file",
-      "publisher": "TJ Holowaychuk",
-      "email": "tj@vision-media.ca"
     },
     "tap@16.3.10": {
       "name": "tap",

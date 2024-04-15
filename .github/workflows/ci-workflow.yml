@@ -2,7 +2,9 @@ name: Node Agent CI
 
 on: [push, pull_request, workflow_dispatch]
 
-
+env:
+  # Enable versioned runner quiet mode to make CI output easier to read:
+  OUTPUT_MODE: quiet
 
 jobs:
   skip_if_release:
@@ -161,7 +163,7 @@ jobs:
       with:
         name: logs-${{ matrix.node-version }}.tgz
         path: ./logs-${{ matrix.node-version }}.tgz
-  
+
   # There is no coverage for external as that's tracked in their respective repos
   versioned-external:
     needs: skip_if_release

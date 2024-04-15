@@ -15,10 +15,14 @@ SKIP_C8="${SKIP_C8:-false}"
 # HTML reports too
 C8_REPORTER="${C8_REPORTER:-lcov}"
 # Options: none, only, include
-# None skips running external 
+# None skips running external
 # Only runs only external
-# Inclue runs external with "internal"
+# Include runs external with "internal"
 EXTERNAL_MODE="${EXTERNAL_MODE:-include}"
+
+# OUTPUT_MODE maps to `--print` of the versioned-tests runner.
+# Known values are "simple", "pretty", and "quiet".
+OUTPUT_MODE="${OUTPUT_MODE:-pretty}"
 
 # Determine context manager for sanity sake
 if [[ $NEW_RELIC_FEATURE_FLAG_LEGACY_CONTEXT_MANAGER == 1 ]];
@@ -40,7 +44,7 @@ then
       "test/versioned-external/TEMP_TESTS/${1}/tests/versioned"
     )
   elif [[ "$EXTERNAL_MODE" = "none" ]];
-  then 
+  then
     directories=(
       "test/versioned/${1}"
     )
@@ -59,7 +63,7 @@ else
       "test/versioned-external"
     )
   elif [[ "$EXTERNAL_MODE" = "none" ]];
-  then 
+  then
     directories=(
       "test/versioned/"
     )
@@ -96,4 +100,4 @@ then
 fi
 export NR_LOADER=./esm-loader.mjs
 
-time $C8 ./node_modules/.bin/versioned-tests $VERSIONED_MODE -i 2 --all --strict --samples $SAMPLES $JOBS_ARGS ${directories[@]}
+time $C8 ./node_modules/.bin/versioned-tests $VERSIONED_MODE --print $OUTPUT_MODE -i 2 --all --strict --samples $SAMPLES $JOBS_ARGS ${directories[@]}

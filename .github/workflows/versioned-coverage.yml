@@ -7,6 +7,10 @@ on:
   schedule:
     - cron:  '0 9 * * 1-5'
 
+env:
+  # Enable versioned runner quiet mode to make CI output easier to read:
+  OUTPUT_MODE: quiet
+
 jobs:
   legacy-context:
     runs-on: ubuntu-latest
