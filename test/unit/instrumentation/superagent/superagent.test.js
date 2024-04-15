@@ -38,7 +38,7 @@ tap.test('should not wrap superagent if it is not a function', (t) => {
   api.shim.logger.debug = sinon.stub()
   const instrumentation = require('../../../../lib/instrumentation/superagent')
   const superagentMock = { foo: 'bar' }
-  instrumentation(api.shim, superagentMock)
+  instrumentation(t.context.agent, superagentMock, 'superagent', api.shim)
   t.equal(api.shim.logger.debug.callCount, 1, 'should call debug logger')
   t.equal(api.shim.logger.debug.args[0][0], 'Not wrapping export, expected a function.')
   t.end()
