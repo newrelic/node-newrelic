@@ -7,8 +7,8 @@
 
 const tap = require('tap')
 
-const helper = require('../../../lib/agent_helper')
-const API = require('../../../../api')
+const helper = require('../../lib/agent_helper')
+const API = require('../../../api')
 
 tap.test('Restify router introspection', function (t) {
   t.plan(3)

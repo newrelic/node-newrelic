@@ -7,8 +7,8 @@
 
 const tap = require('tap')
 
-const helper = require('../../../lib/agent_helper')
-require('../../../lib/metrics_helper')
+const helper = require('../../lib/agent_helper')
+require('../../lib/metrics_helper')
 const { runTest } = require('./common')
 
 const simulateAsyncWork = async () => {

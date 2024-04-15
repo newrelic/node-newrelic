@@ -5,11 +5,11 @@
 
 'use strict'
 
-const DESTINATIONS = require('../../../../lib/config/attribute-filter').DESTINATIONS
+const DESTINATIONS = require('../../../lib/config/attribute-filter').DESTINATIONS
 const test = require('tap').test
 
-const helper = require('../../../lib/agent_helper')
-const HTTP_ATTS = require('../../../lib/fixtures').httpAttributes
+const helper = require('../../lib/agent_helper')
+const HTTP_ATTS = require('../../lib/fixtures').httpAttributes
 
 test('Restify capture params introspection', function (t) {
   t.autoend()
