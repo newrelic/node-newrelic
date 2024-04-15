@@ -22,7 +22,7 @@ EXTERNAL_MODE="${EXTERNAL_MODE:-include}"
 
 # OUTPUT_MODE maps to `--print` of the versioned-tests runner.
 # Known values are "simple", "pretty", and "quiet".
-OUTPUT_MODE="${OUTPUT_MODE:-quiet}"
+OUTPUT_MODE="${OUTPUT_MODE:-pretty}"
 
 # Determine context manager for sanity sake
 if [[ $NEW_RELIC_FEATURE_FLAG_LEGACY_CONTEXT_MANAGER == 1 ]];
