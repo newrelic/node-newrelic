@@ -1,3 +1,57 @@
+### v11.15.1 (2024-04-15)
+#### ⚠ BREAKING CHANGES
+
+* Dropped Node 14 from engine and versioned tests
+* updated package to no longer allow using as a standalone package
+
+#### Bug fixes
+
+* package.json & package-lock.json to reduce vulnerabilities ([#2141](https://github.com/newrelic/node-newrelic/pull/2141)) ([180800c](https://github.com/newrelic/node-newrelic/commit/180800c0d13a63d71842ebecdbaea47d44360dee))
+    * The following vulnerabilities are fixed with an upgrade: - https://snyk.io/vuln/SNYK-JS-SEMVER-3247795
+
+#### Documentation
+
+* Includes api.js in jsdoc generation ([#2139](https://github.com/newrelic/node-newrelic/pull/2139)) ([3883348](https://github.com/newrelic/node-newrelic/commit/3883348bd0aab54efdbb5e876a4e4c867f5df2e3))
+* update API docs to remove docs/ path component ([#2141](https://github.com/newrelic/node-newrelic/pull/2141)) ([786e8ad](https://github.com/newrelic/node-newrelic/commit/786e8ade5cffeeec62a3fbae07422a1fe34e1246))
+* update slack invite link ([#2141](https://github.com/newrelic/node-newrelic/pull/2141)) ([36c7016](https://github.com/newrelic/node-newrelic/commit/36c7016f95352e430296c0590393db2c64446ae7))
+
+#### Miscellaneous chores
+
+* Dropped Node 14 from engine and versioned tests ([#2141](https://github.com/newrelic/node-newrelic/pull/2141)) ([84594b8](https://github.com/newrelic/node-newrelic/commit/84594b81f3feb0478b1d48eddd7037fc2eabef0f))
+    * Signed-off-by: mrickard <maurice@mauricerickard.com>
+* Edited CHANGELOG.md ([#2141](https://github.com/newrelic/node-newrelic/pull/2141)) ([12504c6](https://github.com/newrelic/node-newrelic/commit/12504c6632b68cf552c58370bf560701654c8118))
+    * Signed-off-by: mrickard <maurice@mauricerickard.com>
+* Fixed versioned security agent CI workflow ([#2135](https://github.com/newrelic/node-newrelic/pull/2135)) ([8013b25](https://github.com/newrelic/node-newrelic/commit/8013b25ef24575946d46c163d6b876dce9a02665))
+* removed newrelic as peer dep as standalone is no longer supported ([#2141](https://github.com/newrelic/node-newrelic/pull/2141)) ([83448f2](https://github.com/newrelic/node-newrelic/commit/83448f299a8ed25ba3613355d5d0f3269e3e8cb1))
+* update explorer hub link in readme ([#2141](https://github.com/newrelic/node-newrelic/pull/2141)) ([c145846](https://github.com/newrelic/node-newrelic/commit/c145846ea4fb6f9d8d0b797d6a6c3693f5dec0c5))
+* update to newest community plus header ([#2141](https://github.com/newrelic/node-newrelic/pull/2141)) ([f544d71](https://github.com/newrelic/node-newrelic/commit/f544d7133affdd367beeca2a97519ded79ed64e2))
+* updated @newrelic/test-utilities and newrelic to latest ([#2141](https://github.com/newrelic/node-newrelic/pull/2141)) ([46e40a9](https://github.com/newrelic/node-newrelic/commit/46e40a962c75cc0b35cfb6495a1d82f9e253a4c7))
+* updated c8 and its configurationt only specify lcov ([#2141](https://github.com/newrelic/node-newrelic/pull/2141)) ([f01672e](https://github.com/newrelic/node-newrelic/commit/f01672e7a4f159b78fed06c55c5a949fce65a6eb))
+* Updated CHANGELOG.md ([#2141](https://github.com/newrelic/node-newrelic/pull/2141)) ([5328879](https://github.com/newrelic/node-newrelic/commit/532887909ac2327395e5c0f424ed8e7a419f8c11))
+    * Signed-off-by: mrickard <maurice@mauricerickard.com>
+* Updated lockfile ([#2141](https://github.com/newrelic/node-newrelic/pull/2141)) ([2e5ad76](https://github.com/newrelic/node-newrelic/commit/2e5ad76f0b09856748cbb72f7afb56a895d2caf4))
+    * Signed-off-by: mrickard <maurice@mauricerickard.com>
+* updated package to no longer allow using as a standalone package ([#2141](https://github.com/newrelic/node-newrelic/pull/2141)) ([69aa641](https://github.com/newrelic/node-newrelic/commit/69aa641d4c41f657488df5a5b55927a090194a6c))
+
+#### Tests
+
+* updated tests to include missing coverage on some edge cases around not binding segments if not in active transaction ([#2141](https://github.com/newrelic/node-newrelic/pull/2141)) ([d2a1b10](https://github.com/newrelic/node-newrelic/commit/d2a1b1093009b9f165a89714922574bae6f4f7c1))
+
+#### Continuous integration
+
+* Add Open Source Policy Workflow ([#2141](https://github.com/newrelic/node-newrelic/pull/2141)) ([d4af41b](https://github.com/newrelic/node-newrelic/commit/d4af41b513cbb5d3c5d2992a2998d4276648007e))
+* Removed `use_new_release` input from prepare release workflow ([#2141](https://github.com/newrelic/node-newrelic/pull/2141)) ([9518f44](https://github.com/newrelic/node-newrelic/commit/9518f4407503a4bff8b4bf50fb0681593742ff00))
+* Updated CI process for releases ([#2141](https://github.com/newrelic/node-newrelic/pull/2141)) ([39e65ed](https://github.com/newrelic/node-newrelic/commit/39e65ed4160f2e2fc43452d4fab76d950479793a))
+
+#### Build system
+
+* **deps-dev:** bump follow-redirects from 1.15.3 to 1.15.4 ([#2141](https://github.com/newrelic/node-newrelic/pull/2141)) ([ac4874b](https://github.com/newrelic/node-newrelic/commit/ac4874ba72ca44ed79e1fb38afc6e8a86088e5dd))
+    * Bumps [follow-redirects](https://github.com/follow-redirects/follow-redirects) from 1.15.3 to 1.15.4. - [Release notes](https://github.com/follow-redirects/follow-redirects/releases) - [Commits](https://github.com/follow-redirects/follow-redirects/compare/v1.15.3...v1.15.4)
+* **deps-dev:** bump follow-redirects from 1.15.4 to 1.15.6 ([#2141](https://github.com/newrelic/node-newrelic/pull/2141)) ([213eb39](https://github.com/newrelic/node-newrelic/commit/213eb39d663251f5942ce713b2dde1832eed9e5e))
+    * Bumps [follow-redirects](https://github.com/follow-redirects/follow-redirects) from 1.15.4 to 1.15.6. - [Release notes](https://github.com/follow-redirects/follow-redirects/releases) - [Commits](https://github.com/follow-redirects/follow-redirects/compare/v1.15.4...v1.15.6)
+* **deps:** bump axios and newrelic ([#2141](https://github.com/newrelic/node-newrelic/pull/2141)) ([e590aec](https://github.com/newrelic/node-newrelic/commit/e590aec2492ee3e898f481fbdb94c21edee953ca))
+    * Bumps [axios](https://github.com/axios/axios) to 1.6.0 and updates ancestor dependency [newrelic](https://github.com/newrelic/node-newrelic). These dependencies need to be updated together.   Updates `axios` from 0.21.4 to 1.6.0 - [Release notes](https://github.com/axios/axios/releases) - [Changelog](https://github.com/axios/axios/blob/v1.x/CHANGELOG.md) - [Commits](https://github.com/axios/axios/compare/v0.21.4...v1.6.0)  Updates `newrelic` from 11.0.0 to 11.5.0 - [Release notes](https://github.com/newrelic/node-newrelic/releases) - [Changelog](https://github.com/newrelic/node-newrelic/blob/main/changelog.json) - [Commits](https://github.com/newrelic/node-newrelic/compare/v11.0.0...v11.5.0)
+
 ### v11.15.0 (2024-04-09)
 
 #### Bug fixes
