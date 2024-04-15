@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "Thu Apr 11 2024 15:48:10 GMT-0400 (Eastern Daylight Time)",
+  "lastUpdated": "Mon Apr 15 2024 07:50:25 GMT-0400 (Eastern Daylight Time)",
   "projectName": "New Relic Node Agent",
   "projectUrl": "https://github.com/newrelic/node-newrelic",
   "includeOptDeps": true,
@@ -108,30 +108,17 @@
       "email": "w@tson.dk",
       "url": "https://twitter.com/wa7son"
     },
-    "@newrelic/security-agent@1.1.1": {
+    "@newrelic/security-agent@1.2.0": {
       "name": "@newrelic/security-agent",
-      "version": "1.1.1",
+      "version": "1.2.0",
       "range": "^1.1.1",
       "licenses": "UNKNOWN",
       "repoUrl": "https://github.com/newrelic/csec-node-agent",
-      "versionedRepoUrl": "https://github.com/newrelic/csec-node-agent/tree/v1.1.1",
+      "versionedRepoUrl": "https://github.com/newrelic/csec-node-agent/tree/v1.2.0",
       "licenseFile": "node_modules/@newrelic/security-agent/LICENSE",
-      "licenseUrl": "https://github.com/newrelic/csec-node-agent/blob/v1.1.1/LICENSE",
+      "licenseUrl": "https://github.com/newrelic/csec-node-agent/blob/v1.2.0/LICENSE",
       "licenseTextSource": "file",
       "publisher": "newrelic"
-    },
-    "@newrelic/superagent@7.0.1": {
-      "name": "@newrelic/superagent",
-      "version": "7.0.1",
-      "range": "^7.0.1",
-      "licenses": "Apache-2.0",
-      "repoUrl": "https://github.com/newrelic/node-newrelic-superagent",
-      "versionedRepoUrl": "https://github.com/newrelic/node-newrelic-superagent/tree/v7.0.1",
-      "licenseFile": "node_modules/@newrelic/superagent/LICENSE",
-      "licenseUrl": "https://github.com/newrelic/node-newrelic-superagent/blob/v7.0.1/LICENSE",
-      "licenseTextSource": "file",
-      "publisher": "New Relic Node.js Agent Team",
-      "email": "nodejs@newrelic.com"
     },
     "@tyriar/fibonacci-heap@2.0.9": {
       "name": "@tyriar/fibonacci-heap",
