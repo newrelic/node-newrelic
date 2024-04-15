@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "Mon Apr 01 2024 16:40:41 GMT-0400 (Eastern Daylight Time)",
+  "lastUpdated": "Mon Apr 15 2024 10:51:46 GMT+0530 (India Standard Time)",
   "projectName": "New Relic Node Agent",
   "projectUrl": "https://github.com/newrelic/node-newrelic",
   "includeOptDeps": true,
@@ -108,15 +108,15 @@
       "email": "w@tson.dk",
       "url": "https://twitter.com/wa7son"
     },
-    "@newrelic/security-agent@1.1.1": {
+    "@newrelic/security-agent@1.2.0": {
       "name": "@newrelic/security-agent",
-      "version": "1.1.1",
-      "range": "^1.1.1",
+      "version": "1.2.0",
+      "range": "^1.2.0",
       "licenses": "UNKNOWN",
       "repoUrl": "https://github.com/newrelic/csec-node-agent",
-      "versionedRepoUrl": "https://github.com/newrelic/csec-node-agent/tree/v1.1.1",
+      "versionedRepoUrl": "https://github.com/newrelic/csec-node-agent/tree/v1.2.0",
       "licenseFile": "node_modules/@newrelic/security-agent/LICENSE",
-      "licenseUrl": "https://github.com/newrelic/csec-node-agent/blob/v1.1.1/LICENSE",
+      "licenseUrl": "https://github.com/newrelic/csec-node-agent/blob/v1.2.0/LICENSE",
       "licenseTextSource": "file",
       "publisher": "newrelic"
     },
@@ -290,15 +290,15 @@
       "licenseTextSource": "file",
       "publisher": "New Relic"
     },
-    "@newrelic/test-utilities@8.2.0": {
+    "@newrelic/test-utilities@8.4.0": {
       "name": "@newrelic/test-utilities",
-      "version": "8.2.0",
-      "range": "^8.1.0",
+      "version": "8.4.0",
+      "range": "^8.4.0",
       "licenses": "Apache-2.0",
       "repoUrl": "https://github.com/newrelic/node-test-utilities",
-      "versionedRepoUrl": "https://github.com/newrelic/node-test-utilities/tree/v8.2.0",
+      "versionedRepoUrl": "https://github.com/newrelic/node-test-utilities/tree/v8.4.0",
       "licenseFile": "node_modules/@newrelic/test-utilities/LICENSE",
-      "licenseUrl": "https://github.com/newrelic/node-test-utilities/blob/v8.2.0/LICENSE",
+      "licenseUrl": "https://github.com/newrelic/node-test-utilities/blob/v8.4.0/LICENSE",
       "licenseTextSource": "file",
       "publisher": "New Relic Node.js agent team",
       "email": "nodejs@newrelic.com"
@@ -363,15 +363,15 @@
       "publisher": "Ben Coe",
       "email": "ben@npmjs.com"
     },
-    "clean-jsdoc-theme@4.2.17": {
+    "clean-jsdoc-theme@4.2.18": {
       "name": "clean-jsdoc-theme",
-      "version": "4.2.17",
-      "range": "^4.2.4",
+      "version": "4.2.18",
+      "range": "^4.2.18",
       "licenses": "MIT",
       "repoUrl": "https://github.com/ankitskvmdam/clean-jsdoc-theme",
-      "versionedRepoUrl": "https://github.com/ankitskvmdam/clean-jsdoc-theme/tree/v4.2.17",
+      "versionedRepoUrl": "https://github.com/ankitskvmdam/clean-jsdoc-theme/tree/v4.2.18",
       "licenseFile": "node_modules/clean-jsdoc-theme/LICENSE",
-      "licenseUrl": "https://github.com/ankitskvmdam/clean-jsdoc-theme/blob/v4.2.17/LICENSE",
+      "licenseUrl": "https://github.com/ankitskvmdam/clean-jsdoc-theme/blob/v4.2.18/LICENSE",
       "licenseTextSource": "file",
       "publisher": "Ank"
     },
@@ -479,15 +479,15 @@
       "publisher": "Nicholas C. Zakas",
       "email": "nicholas+npm@nczconsulting.com"
     },
-    "express@4.18.2": {
+    "express@4.19.2": {
       "name": "express",
-      "version": "4.18.2",
+      "version": "4.19.2",
       "range": "*",
       "licenses": "MIT",
       "repoUrl": "https://github.com/expressjs/express",
-      "versionedRepoUrl": "https://github.com/expressjs/express/tree/v4.18.2",
+      "versionedRepoUrl": "https://github.com/expressjs/express/tree/v4.19.2",
       "licenseFile": "node_modules/express/LICENSE",
-      "licenseUrl": "https://github.com/expressjs/express/blob/v4.18.2/LICENSE",
+      "licenseUrl": "https://github.com/expressjs/express/blob/v4.19.2/LICENSE",
       "licenseTextSource": "file",
       "publisher": "TJ Holowaychuk",
       "email": "tj@vision-media.ca"

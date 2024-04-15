@@ -951,7 +951,7 @@ SOFTWARE.
 
 ### @newrelic/security-agent
 
-This product includes source derived from [@newrelic/security-agent](https://github.com/newrelic/csec-node-agent) ([v1.1.1](https://github.com/newrelic/csec-node-agent/tree/v1.1.1)), distributed under the [UNKNOWN License](https://github.com/newrelic/csec-node-agent/blob/v1.1.1/LICENSE):
+This product includes source derived from [@newrelic/security-agent](https://github.com/newrelic/csec-node-agent) ([v1.2.0](https://github.com/newrelic/csec-node-agent/tree/v1.2.0)), distributed under the [UNKNOWN License](https://github.com/newrelic/csec-node-agent/blob/v1.2.0/LICENSE):
 
 ```
 ## New Relic Software License v1.0
@@ -1911,7 +1911,7 @@ This product includes source derived from [@newrelic/newrelic-oss-cli](https://g
 
 ### @newrelic/test-utilities
 
-This product includes source derived from [@newrelic/test-utilities](https://github.com/newrelic/node-test-utilities) ([v8.2.0](https://github.com/newrelic/node-test-utilities/tree/v8.2.0)), distributed under the [Apache-2.0 License](https://github.com/newrelic/node-test-utilities/blob/v8.2.0/LICENSE):
+This product includes source derived from [@newrelic/test-utilities](https://github.com/newrelic/node-test-utilities) ([v8.4.0](https://github.com/newrelic/node-test-utilities/tree/v8.4.0)), distributed under the [Apache-2.0 License](https://github.com/newrelic/node-test-utilities/blob/v8.4.0/LICENSE):
 
 ```
                                  Apache License
@@ -2259,7 +2259,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ### clean-jsdoc-theme
 
-This product includes source derived from [clean-jsdoc-theme](https://github.com/ankitskvmdam/clean-jsdoc-theme) ([v4.2.17](https://github.com/ankitskvmdam/clean-jsdoc-theme/tree/v4.2.17)), distributed under the [MIT License](https://github.com/ankitskvmdam/clean-jsdoc-theme/blob/v4.2.17/LICENSE):
+This product includes source derived from [clean-jsdoc-theme](https://github.com/ankitskvmdam/clean-jsdoc-theme) ([v4.2.18](https://github.com/ankitskvmdam/clean-jsdoc-theme/tree/v4.2.18)), distributed under the [MIT License](https://github.com/ankitskvmdam/clean-jsdoc-theme/blob/v4.2.18/LICENSE):
 
 ```
 MIT License
@@ -2658,7 +2658,7 @@ THE SOFTWARE.
 
 ### express
 
-This product includes source derived from [express](https://github.com/expressjs/express) ([v4.18.2](https://github.com/expressjs/express/tree/v4.18.2)), distributed under the [MIT License](https://github.com/expressjs/express/blob/v4.18.2/LICENSE):
+This product includes source derived from [express](https://github.com/expressjs/express) ([v4.19.2](https://github.com/expressjs/express/tree/v4.19.2)), distributed under the [MIT License](https://github.com/expressjs/express/blob/v4.19.2/LICENSE):
 
 ```
 (The MIT License)
