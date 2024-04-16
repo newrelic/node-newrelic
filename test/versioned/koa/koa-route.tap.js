@@ -8,7 +8,7 @@
 const tap = require('tap')
 const utils = require('@newrelic/test-utilities')
 const http = require('http')
-const hooks = require('../../nr-hooks')
+const hooks = require('../../../lib/instrumentation/koa/nr-hooks')
 
 utils(tap)
 

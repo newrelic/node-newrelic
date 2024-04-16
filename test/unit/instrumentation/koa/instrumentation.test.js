@@ -7,15 +7,11 @@
 
 const tap = require('tap')
 const sinon = require('sinon')
-const initialize = require('../../lib/instrumentation')
+const initialize = require('../../../../lib/instrumentation/koa/lib/instrumentation')
 
 tap.test('Koa instrumentation', (t) => {
-  t.autoend()
-  let shimMock
-  let KoaMock
-
-  t.beforeEach(() => {
-    shimMock = {
+  t.beforeEach((t) => {
+    t.context.shimMock = {
       KOA: 'koa',
       MIDDLEWARE: 'middleware',
       logger: {
@@ -33,7 +29,7 @@ tap.test('Koa instrumentation', (t) => {
       savePossibleTransactionName: sinon.stub()
     }
 
-    KoaMock = class {
+    t.context.KoaMock = class {
       constructor() {
         this.use = sinon.stub()
         this.createContext = sinon.stub()
@@ -42,8 +38,8 @@ tap.test('Koa instrumentation', (t) => {
     }
   })
 
-  t.test('should work with Koa MJS export', (t) => {
-    t.autoend()
+  t.test('should work with Koa MJS export', async (t) => {
+    const { shimMock, KoaMock } = t.context
 
     initialize(shimMock, { default: KoaMock })
     t.equal(shimMock.logger.debug.callCount, 0, 'should not have called debug')
@@ -56,8 +52,8 @@ tap.test('Koa instrumentation', (t) => {
     t.ok(shimMock.wrap.calledOnceWith(KoaMock.prototype, 'emit'), 'should wrap emit')
   })
 
-  t.test('should log when unable to find the prototype MJS Export', (t) => {
-    t.autoend()
+  t.test('should log when unable to find the prototype MJS Export', async (t) => {
+    const { shimMock } = t.context
 
     initialize(shimMock, { default: {} })
     t.ok(
@@ -68,8 +64,8 @@ tap.test('Koa instrumentation', (t) => {
     )
   })
 
-  t.test('should work with Koa CJS export', (t) => {
-    t.autoend()
+  t.test('should work with Koa CJS export', async (t) => {
+    const { shimMock, KoaMock } = t.context
 
     initialize(shimMock, KoaMock)
     t.equal(shimMock.logger.debug.callCount, 0, 'should not have called debug')
@@ -82,8 +78,8 @@ tap.test('Koa instrumentation', (t) => {
     t.ok(shimMock.wrap.calledOnceWith(KoaMock.prototype, 'emit'), 'should wrap emit')
   })
 
-  t.test('should log when unable to find the prototype CJS Export', (t) => {
-    t.autoend()
+  t.test('should log when unable to find the prototype CJS Export', async (t) => {
+    const { shimMock } = t.context
 
     initialize(shimMock, {})
     t.ok(
@@ -93,4 +89,6 @@ tap.test('Koa instrumentation', (t) => {
       'should have called debug'
     )
   })
+
+  t.end()
 })

@@ -4,7 +4,8 @@
  */
 
 'use strict'
-const hooks = require('../../nr-hooks')
+
+const hooks = require('../../../lib/instrumentation/koa/nr-hooks')
 
 module.exports = (pkg) => {
   const tap = require('tap')
@@ -679,7 +680,7 @@ module.exports = (pkg) => {
       t.autoend()
 
       t.test('should name after most last matched path', (t) => {
-        var router2 = new Router()
+        const router2 = new Router()
         router2.get('/:second', function secondMiddleware(ctx) {
           ctx.body = ' second'
         })

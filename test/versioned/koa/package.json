@@ -1,5 +1,10 @@
 {
   "name": "koa-tests",
+  "targets": [
+    "koa",
+    "koa-router",
+    "@koa/router"
+  ],
   "version": "0.0.0",
   "private": true,
   "tests": [

@@ -8,7 +8,7 @@
 const tap = require('tap')
 const utils = require('@newrelic/test-utilities')
 const http = require('http')
-const hooks = require('../../nr-hooks')
+const hooks = require('../../../lib/instrumentation/koa/nr-hooks')
 
 // This adds all the assertions to tap's `Test` class.
 utils.assert.extendTap(tap)

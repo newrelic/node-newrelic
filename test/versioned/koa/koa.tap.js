@@ -8,7 +8,7 @@
 const tap = require('tap')
 const utils = require('@newrelic/test-utilities')
 const http = require('http')
-const hooks = require('../../nr-hooks')
+const hooks = require('../../../lib/instrumentation/koa/nr-hooks')
 
 utils(tap)
 
@@ -315,7 +315,7 @@ tap.test('Koa instrumentation', (t) => {
     })
 
     helper.agent.on('transactionFinished', (tx) => {
-      var errors = helper.agent.errors.traceAggregator.errors
+      const errors = helper.agent.errors.traceAggregator.errors
       t.equal(errors.length, 0, 'no errors are recorded')
       checkSegments(t, tx)
     })
@@ -338,9 +338,9 @@ tap.test('Koa instrumentation', (t) => {
     })
 
     helper.agent.on('transactionFinished', (tx) => {
-      var errors = helper.agent.errors.traceAggregator.errors
+      const errors = helper.agent.errors.traceAggregator.errors
       t.equal(errors.length, 1, 'recorded expected number of errors')
-      var error = errors[0][2]
+      const error = errors[0][2]
       t.equal(error, 'middleware error', 'recorded expected error')
       checkSegments(t, tx)
     })
@@ -361,9 +361,9 @@ tap.test('Koa instrumentation', (t) => {
     })
 
     helper.agent.on('transactionFinished', (tx) => {
-      var errors = helper.agent.errors.traceAggregator.errors
+      const errors = helper.agent.errors.traceAggregator.errors
       t.equal(errors.length, 1, 'recorded expected number of errors')
-      var error = errors[0][2]
+      const error = errors[0][2]
       t.equal(error, 'middleware error', 'recorded expected error')
       checkSegments(t, tx)
     })
