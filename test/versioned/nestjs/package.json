@@ -1,5 +1,6 @@
 {
   "name": "nestjs-tests",
+  "targets": ["@nestjs/cli"],
   "version": "0.0.0",
   "private": true,
   "tests": [

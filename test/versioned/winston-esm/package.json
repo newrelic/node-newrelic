@@ -1,5 +1,6 @@
 {
   "name": "winston-esm-tests",
+  "targets": ["winston"],
   "version": "0.0.0",
   "type": "module",
   "private": true,
@@ -9,8 +10,8 @@
         "node": ">=16"
       },
       "dependencies": {
-        "winston": ">=3",
-        "winston-transport": ">=4"
+        "winston": ">=3.0.0",
+        "winston-transport": ">=4.0.0"
       },
       "files": [
         "winston.tap.mjs"

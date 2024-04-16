@@ -1,5 +1,6 @@
 {
   "name": "mongodb-tests",
+  "targets": ["mongodb"],
   "version": "0.0.0",
   "private": true,
   "tests": [

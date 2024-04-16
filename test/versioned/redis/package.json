@@ -1,5 +1,6 @@
 {
   "name": "redis-tests",
+  "targets": ["redis"],
   "version": "0.0.0",
   "private": true,
   "tests": [
@@ -41,7 +42,7 @@
         "node": ">=16"
       },
       "dependencies": {
-        "redis": ">=2.6.0 < 4"
+        "redis": ">=2.6.0 < 4.0.0"
       },
       "files": [
         "redis.tap.js"
@@ -52,7 +53,7 @@
         "node": ">=16"
       },
       "dependencies": {
-        "redis": ">=4"
+        "redis": ">=4.0.0"
       },
       "files": [
         "redis-v4.tap.js"

@@ -1,5 +1,6 @@
 {
   "name": "bunyan-tests",
+  "targets": ["bunyan"],
   "version": "0.0.0",
   "private": true,
   "tests": [

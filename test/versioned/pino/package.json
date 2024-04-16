@@ -1,5 +1,6 @@
 {
   "name": "pino-tests",
+  "targets": ["pino"],
   "version": "0.0.0",
   "private": true,
   "tests": [

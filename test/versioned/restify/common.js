@@ -5,7 +5,7 @@
 
 'use strict'
 const common = module.exports
-const helper = require('../../../lib/agent_helper')
+const helper = require('../../lib/agent_helper')
 
 /**
  * @param {object} cfg

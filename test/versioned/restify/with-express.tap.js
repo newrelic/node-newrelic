@@ -7,7 +7,7 @@
 
 const tap = require('tap')
 
-const helper = require('../../../lib/agent_helper')
+const helper = require('../../lib/agent_helper')
 
 const MAX_PORT_ATTEMPTS = 5
 

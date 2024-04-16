@@ -1,5 +1,6 @@
 {
   "name": "hapi-tests",
+  "targets": ["@hapi/hapi"],
   "version": "0.0.0",
   "private": true,
   "tests": [

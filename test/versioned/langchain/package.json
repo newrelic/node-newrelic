@@ -1,5 +1,6 @@
 {
   "name": "langchain-tests",
+  "targets": ["@langchain/core"],
   "version": "0.0.0",
   "private": true,
   "engines": {
