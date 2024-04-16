@@ -1,5 +1,6 @@
 {
   "name": "nextjs-tests",
+  "targets": ["next"],
   "version": "0.0.0",
   "private": true,
   "tests": [
@@ -8,7 +9,7 @@
         "node": ">=16"
       },
       "dependencies": {
-        "next": ">=13.0.0 <14",
+        "next": ">=13.0.0 <14.0.0",
         "react": "18.2.0",
         "react-dom": "18.2.0"
       },
