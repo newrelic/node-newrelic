@@ -1,0 +1,13 @@
+version: 2
+updates:
+  - package-ecosystem: "npm"
+    # Disable version updates for npm dependencies, security updates don't use this configuration
+    # See: https://docs.github.com/en/code-security/dependabot/dependabot-security-updates/configuring-dependabot-security-updates
+    open-pull-requests-limit: 0
+    directory: "/"
+    schedule:
+      interval: "daily"
+    commit-message:
+      prefix: "security"
+      prefix-development: "chore"
+      include: "scope"
