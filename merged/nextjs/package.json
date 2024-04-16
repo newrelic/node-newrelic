@@ -10,8 +10,8 @@
     "test": "npm run unit && npm run versioned",
     "third-party-updates": "oss third-party manifest && oss third-party notices && git add THIRD_PARTY_NOTICES.md third_party_manifest.json",
     "unit": "c8 -o ./coverage/unit tap --test-regex='(\\/|^tests\\/unit\\/.*\\.test\\.js)$' --no-coverage",
-    "versioned": "c8 -o ./coverage/versioned versioned-tests --minor --all -i 2 'tests/versioned/*.tap.js'",
-    "versioned:major": "versioned-tests --major --all -i 2 'tests/versioned/*.tap.js'"
+    "versioned": "./bin/run-versioned-tests.sh",
+    "versioned:major": "VERSIONED_MODE=--major npm run versioned"
   },
   "files": [
     "README.md",
@@ -39,12 +39,12 @@
   "devDependencies": {
     "@newrelic/eslint-config": "^0.2.0",
     "@newrelic/newrelic-oss-cli": "^0.1.2",
-    "@newrelic/test-utilities": "^8.1.0",
+    "@newrelic/test-utilities": "^8.5.0",
     "c8": "^7.12.0",
     "husky": "^8.0.1",
     "lint-staged": "^12.4.2",
     "lockfile-lint": "^4.9.6",
-    "newrelic": "^11.12.0",
+    "newrelic": "^11.15.0",
     "sinon": "^14.0.0",
     "tap": "^16.2.0"
   },

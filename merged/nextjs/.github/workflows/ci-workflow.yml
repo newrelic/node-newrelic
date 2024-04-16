@@ -2,6 +2,10 @@ name: Next.js Instrumentation CI
 
 on: [push, pull_request, workflow_dispatch]
 
+env:
+  # Enable versioned runner quiet mode to make CI output easier to read:
+  OUTPUT_MODE: quiet
+
 jobs:
   lint:
     runs-on: ubuntu-latest
