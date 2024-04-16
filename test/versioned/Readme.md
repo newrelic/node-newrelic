@@ -29,6 +29,9 @@ that are specific to our versioned test runner. The following is a
   // be at least one value that matches a dependency name in a subsequent
   // `tests` block. If this suite is verifying the compatibility of multiple
   // modules, include all such module names in the array.
+  //
+  // If this property is omitted, the tool used to build our compatibility
+  // document(s) will not include any modules from this versioned test suite.
   "targets": ["module"],
   
   // `version` is ignored.

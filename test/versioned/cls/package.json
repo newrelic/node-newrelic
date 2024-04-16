@@ -1,6 +1,5 @@
 {
   "name": "cls-tests",
-  "targets": ["continuation-local-storage"],
   "version": "0.0.0",
   "private": true,
   "tests": [
