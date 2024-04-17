@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "Mon Apr 15 2024 12:30:33 GMT-0400 (Eastern Daylight Time)",
+  "lastUpdated": "Tue Apr 16 2024 15:55:51 GMT-0400 (Eastern Daylight Time)",
   "projectName": "New Relic Node Agent",
   "projectUrl": "https://github.com/newrelic/node-newrelic",
   "includeOptDeps": true,
@@ -77,19 +77,6 @@
       "versionedRepoUrl": "https://github.com/newrelic/node-newrelic-aws-sdk/tree/v7.4.1",
       "licenseFile": "node_modules/@newrelic/aws-sdk/LICENSE",
       "licenseUrl": "https://github.com/newrelic/node-newrelic-aws-sdk/blob/v7.4.1/LICENSE",
-      "licenseTextSource": "file",
-      "publisher": "New Relic Node.js agent team",
-      "email": "nodejs@newrelic.com"
-    },
-    "@newrelic/koa@9.1.0": {
-      "name": "@newrelic/koa",
-      "version": "9.1.0",
-      "range": "^9.1.0",
-      "licenses": "Apache-2.0",
-      "repoUrl": "https://github.com/newrelic/node-newrelic-koa",
-      "versionedRepoUrl": "https://github.com/newrelic/node-newrelic-koa/tree/v9.1.0",
-      "licenseFile": "node_modules/@newrelic/koa/LICENSE",
-      "licenseUrl": "https://github.com/newrelic/node-newrelic-koa/blob/v9.1.0/LICENSE",
       "licenseTextSource": "file",
       "publisher": "New Relic Node.js agent team",
       "email": "nodejs@newrelic.com"
@@ -252,6 +239,19 @@
     }
   },
   "devDependencies": {
+    "@koa/router@12.0.1": {
+      "name": "@koa/router",
+      "version": "12.0.1",
+      "range": "^12.0.1",
+      "licenses": "MIT",
+      "repoUrl": "https://github.com/koajs/router",
+      "versionedRepoUrl": "https://github.com/koajs/router/tree/v12.0.1",
+      "licenseFile": "node_modules/@koa/router/LICENSE",
+      "licenseUrl": "https://github.com/koajs/router/blob/v12.0.1/LICENSE",
+      "licenseTextSource": "file",
+      "publisher": "Alex Mingoia",
+      "email": "talk@alexmingoia.com"
+    },
     "@newrelic/eslint-config@0.3.0": {
       "name": "@newrelic/eslint-config",
       "version": "0.3.0",
@@ -544,6 +544,41 @@
       "publisher": "Michael Mathews",
       "email": "micmath@gmail.com"
     },
+    "koa-route@4.0.1": {
+      "name": "koa-route",
+      "version": "4.0.1",
+      "range": "^4.0.1",
+      "licenses": "MIT",
+      "repoUrl": "https://github.com/koajs/route",
+      "versionedRepoUrl": "https://github.com/koajs/route/tree/v4.0.1",
+      "licenseFile": "node_modules/koa-route/Readme.md",
+      "licenseUrl": "https://github.com/koajs/route/blob/v4.0.1/Readme.md",
+      "licenseTextSource": "spdx"
+    },
+    "koa-router@12.0.1": {
+      "name": "koa-router",
+      "version": "12.0.1",
+      "range": "^12.0.1",
+      "licenses": "MIT",
+      "repoUrl": "https://github.com/koajs/router",
+      "versionedRepoUrl": "https://github.com/koajs/router/tree/v12.0.1",
+      "licenseFile": "node_modules/koa-router/LICENSE",
+      "licenseUrl": "https://github.com/koajs/router/blob/v12.0.1/LICENSE",
+      "licenseTextSource": "file",
+      "publisher": "Alex Mingoia",
+      "email": "talk@alexmingoia.com"
+    },
+    "koa@2.15.3": {
+      "name": "koa",
+      "version": "2.15.3",
+      "range": "^2.15.3",
+      "licenses": "MIT",
+      "repoUrl": "https://github.com/koajs/koa",
+      "versionedRepoUrl": "https://github.com/koajs/koa/tree/v2.15.3",
+      "licenseFile": "node_modules/koa/LICENSE",
+      "licenseUrl": "https://github.com/koajs/koa/blob/v2.15.3/LICENSE",
+      "licenseTextSource": "file"
+    },
     "lint-staged@11.2.6": {
       "name": "lint-staged",
       "version": "11.2.6",
@@ -674,6 +709,19 @@
       "licenseUrl": "https://github.com/sinonjs/sinon/blob/v4.5.0/LICENSE",
       "licenseTextSource": "file",
       "publisher": "Christian Johansen"
+    },
+    "superagent@8.1.2": {
+      "name": "superagent",
+      "version": "8.1.2",
+      "range": "^8.1.2",
+      "licenses": "MIT",
+      "repoUrl": "https://github.com/ladjs/superagent",
+      "versionedRepoUrl": "https://github.com/ladjs/superagent/tree/v8.1.2",
+      "licenseFile": "node_modules/superagent/LICENSE",
+      "licenseUrl": "https://github.com/ladjs/superagent/blob/v8.1.2/LICENSE",
+      "licenseTextSource": "file",
+      "publisher": "TJ Holowaychuk",
+      "email": "tj@vision-media.ca"
     },
     "tap@16.3.10": {
       "name": "tap",

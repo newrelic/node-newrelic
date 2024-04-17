@@ -18,11 +18,6 @@ const repos = [
     branch: 'main'
   },
   {
-    name: 'koa',
-    repository: 'https://github.com/newrelic/node-newrelic-koa.git',
-    branch: 'fix-paramware'
-  },
-  {
     name: 'next',
     repository: 'https://github.com/newrelic/newrelic-node-nextjs.git',
     branch: 'main'

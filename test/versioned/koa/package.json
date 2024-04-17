@@ -1,0 +1,84 @@
+{
+  "name": "koa-tests",
+  "targets": [
+    "koa",
+    "koa-router",
+    "@koa/router"
+  ],
+  "version": "0.0.0",
+  "private": true,
+  "tests": [
+    {
+      "engines": {
+        "node": ">=16"
+      },
+      "dependencies": {
+        "koa": {
+          "versions": ">=2.0.0",
+          "samples": 5
+        }
+      },
+      "files": [
+        "koa.tap.js",
+        "code-level-metrics.tap.js"
+      ]
+    },
+    {
+      "engines": {
+        "node": ">=16"
+      },
+      "dependencies": {
+        "koa": {
+          "versions": ">=2.0.0",
+          "samples": 5
+        },
+        "koa-router": {
+          "versions": ">=7.1.0",
+          "samples": 5
+        }
+      },
+      "files": [
+        "koa-router.tap.js",
+        "code-level-metrics.tap.js"
+      ]
+    },
+    {
+      "engines": {
+        "node": ">=16"
+      },
+      "dependencies": {
+        "koa": {
+          "versions": ">=2.0.0",
+          "samples": 5
+        },
+        "@koa/router": {
+          "versions": ">=8.0.0",
+          "samples": 5
+        }
+      },
+      "files": [
+        "scoped-koa-router.tap.js",
+        "code-level-metrics.tap.js"
+      ]
+    },
+    {
+      "engines": {
+        "node": ">=16"
+      },
+      "dependencies": {
+        "koa": {
+          "versions": ">=2.0.0",
+          "samples": 5
+        },
+        "koa-route": {
+          "versions": ">=3.0.0",
+          "samples": 5
+        }
+      },
+      "files": [
+        "koa-route.tap.js"
+      ]
+    }
+  ],
+  "dependencies": {}
+}
