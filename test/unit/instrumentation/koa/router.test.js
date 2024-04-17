@@ -7,11 +7,10 @@
 
 const tap = require('tap')
 
-const instrumentation = require('../../../../lib/instrumentation/koa/lib/router-instrumentation')
-const { METHODS } = require('../../../../lib/instrumentation/koa/lib/http-methods')
+const instrumentation = require('../../../../lib/instrumentation/koa/router-instrumentation')
+const { METHODS } = require('../../../../lib/instrumentation/http-methods')
 const helper = require('../../../lib/agent_helper')
 const InstrumentationDescriptor = require('../../../../lib/instrumentation-descriptor')
-const symbols = require('../../../../lib/symbols')
 const WRAPPED_METHODS = ['param', 'register', 'routes', 'middleware', 'allowedMethods']
 const UNWRAPPED_METHODS = METHODS.concat([
   'use',
@@ -41,7 +40,7 @@ tap.test('koa-router', (t) => {
     })
 
     t.context.mod = require(koaRouterMod)
-    t.context.shim = t.context.mod[symbols.shim]
+    t.context.shim = helper.getShim(t.context.mod)
   })
 
   t.afterEach((t) => {
@@ -95,7 +94,7 @@ tap.test('koa-router', (t) => {
     })
 
     t.context.mod = require(koaRouterMod)
-    t.context.shim = t.context.mod[symbols.shim]
+    t.context.shim = helper.getShim(t.context.mod)
   })
 
   t.afterEach((t) => {

@@ -5,24 +5,15 @@
 
 'use strict'
 
-const hooks = require('../../../lib/instrumentation/koa/nr-hooks')
-
 module.exports = (pkg) => {
   const tap = require('tap')
-  const utils = require('@newrelic/test-utilities')
-  const http = require('http')
+  require('../../lib/metrics_helper')
+  const helper = require('../../lib/agent_helper')
   const semver = require('semver')
-
-  utils(tap)
+  const { run } = require('./utils')
 
   tap.test(`${pkg} instrumentation`, (t) => {
-    let helper = null
-    let app = null
-    let server = null
-    let router = null
-    let Router = null
-    let pkgVersion = null
-
+    const { version: pkgVersion } = require(`${pkg}/package.json`)
     const paramMiddlewareName = 'Nodejs/Middleware/Koa/middleware//:first'
 
     /**
@@ -43,33 +34,19 @@ module.exports = (pkg) => {
       return spanName
     }
 
-    function testSetup() {
-      ;({ version: pkgVersion } = require(`${pkg}/package.json`))
-      helper = utils.TestAgent.makeInstrumented()
-
-      hooks.forEach((hook) => {
-        helper.registerInstrumentation(hook)
-      })
+    function testSetup(t) {
+      t.context.agent = helper.instrumentMockedAgent()
 
       const Koa = require('koa')
-      app = new Koa()
-      Router = require(pkg)
-      router = new Router()
+      t.context.app = new Koa()
+      const Router = require(pkg)
+      t.context.router = new Router()
+      t.context.Router = Router
     }
 
-    function tearDown() {
-      return new Promise((resolve) => {
-        server.close(() => {
-          app = null
-          router = null
-          Router = null
-          helper && helper.unload()
-
-          server = null
-
-          resolve()
-        })
-      })
+    function tearDown(t) {
+      t.context.server.close()
+      helper.unloadAgent(t.context.agent)
     }
 
     t.test('with single router', (t) => {
@@ -78,6 +55,7 @@ module.exports = (pkg) => {
       t.autoend()
 
       t.test('should name and produce segments for matched path', (t) => {
+        const { agent, router, app } = t.context
         router.get(
           '/:first',
           function firstMiddleware(ctx, next) {
@@ -91,26 +69,16 @@ module.exports = (pkg) => {
         )
 
         app.use(router.routes())
-        helper.agent.on('transactionFinished', (tx) => {
-          t.exactSegments(tx.trace.root, [
-            {
-              name: 'WebTransaction/WebFrameworkUri/Koa/GET//:first',
-              children: [
-                {
-                  name: 'Koa/Router: /',
-                  children: [
-                    {
-                      name: 'Nodejs/Middleware/Koa/firstMiddleware//:first',
-                      children: [
-                        {
-                          name: 'Nodejs/Middleware/Koa/secondMiddleware//:first'
-                        }
-                      ]
-                    }
-                  ]
-                }
+        agent.on('transactionFinished', (tx) => {
+          t.assertSegments(tx.trace.root, [
+            'WebTransaction/WebFrameworkUri/Koa/GET//:first',
+            [
+              'Koa/Router: /',
+              [
+                'Nodejs/Middleware/Koa/firstMiddleware//:first',
+                ['Nodejs/Middleware/Koa/secondMiddleware//:first']
               ]
-            }
+            ]
           ])
           t.equal(
             tx.name,
@@ -119,29 +87,19 @@ module.exports = (pkg) => {
           )
           t.end()
         })
-        run()
+        run({ context: t.context })
       })
 
       t.test('should name after matched path using middleware() alias', (t) => {
+        const { agent, router, app } = t.context
         router.get('/:first', function firstMiddleware(ctx) {
           ctx.body = 'first'
         })
         app.use(router.middleware())
-        helper.agent.on('transactionFinished', (tx) => {
-          t.exactSegments(tx.trace.root, [
-            {
-              name: 'WebTransaction/WebFrameworkUri/Koa/GET//:first',
-              children: [
-                {
-                  name: 'Koa/Router: /',
-                  children: [
-                    {
-                      name: 'Nodejs/Middleware/Koa/firstMiddleware//:first'
-                    }
-                  ]
-                }
-              ]
-            }
+        agent.on('transactionFinished', (tx) => {
+          t.assertSegments(tx.trace.root, [
+            'WebTransaction/WebFrameworkUri/Koa/GET//:first',
+            ['Koa/Router: /', ['Nodejs/Middleware/Koa/firstMiddleware//:first']]
           ])
           t.equal(
             tx.name,
@@ -150,42 +108,33 @@ module.exports = (pkg) => {
           )
           t.end()
         })
-        run()
+        run({ context: t.context })
       })
 
       t.test('should handle transaction state loss', (t) => {
+        const { agent, router, app } = t.context
         let savedCtx = null
         router.get('/:any', (ctx) => {
           savedCtx = ctx
         })
         app.use(router.middleware())
-        helper.agent.on('transactionFinished', () => {
+        agent.on('transactionFinished', () => {
           t.doesNotThrow(() => (savedCtx._matchedRoute = 'test'))
           t.end()
         })
-        run()
+        run({ context: t.context })
       })
 
       t.test('should name and produce segments for matched regex path', (t) => {
+        const { agent, router, app } = t.context
         router.get(/.*rst$/, function firstMiddleware(ctx) {
           ctx.body = 'first'
         })
         app.use(router.routes())
-        helper.agent.on('transactionFinished', (tx) => {
-          t.exactSegments(tx.trace.root, [
-            {
-              name: 'WebTransaction/WebFrameworkUri/Koa/GET//.*rst$',
-              children: [
-                {
-                  name: 'Koa/Router: /',
-                  children: [
-                    {
-                      name: 'Nodejs/Middleware/Koa/firstMiddleware//.*rst$/'
-                    }
-                  ]
-                }
-              ]
-            }
+        agent.on('transactionFinished', (tx) => {
+          t.assertSegments(tx.trace.root, [
+            'WebTransaction/WebFrameworkUri/Koa/GET//.*rst$',
+            ['Koa/Router: /', ['Nodejs/Middleware/Koa/firstMiddleware//.*rst$/']]
           ])
           t.equal(
             tx.name,
@@ -194,29 +143,19 @@ module.exports = (pkg) => {
           )
           t.end()
         })
-        run('/first')
+        run({ path: '/first', context: t.context })
       })
 
       t.test('should name and produce segments for matched wildcard path', (t) => {
+        const { agent, router, app } = t.context
         router.get('/:first/(.*)', function firstMiddleware(ctx) {
           ctx.body = 'first'
         })
         app.use(router.routes())
-        helper.agent.on('transactionFinished', (tx) => {
-          t.exactSegments(tx.trace.root, [
-            {
-              name: 'WebTransaction/WebFrameworkUri/Koa/GET//:first/(.*)',
-              children: [
-                {
-                  name: 'Koa/Router: /',
-                  children: [
-                    {
-                      name: 'Nodejs/Middleware/Koa/firstMiddleware//:first/(.*)'
-                    }
-                  ]
-                }
-              ]
-            }
+        agent.on('transactionFinished', (tx) => {
+          t.assertSegments(tx.trace.root, [
+            'WebTransaction/WebFrameworkUri/Koa/GET//:first/(.*)',
+            ['Koa/Router: /', ['Nodejs/Middleware/Koa/firstMiddleware//:first/(.*)']]
           ])
           t.equal(
             tx.name,
@@ -225,10 +164,11 @@ module.exports = (pkg) => {
           )
           t.end()
         })
-        run('/123/456')
+        run({ path: '/123/456', context: t.context })
       })
 
       t.test('should name and produce segments with router paramware', (t) => {
+        const { agent, router, app } = t.context
         router.param('first', function firstParamware(id, ctx, next) {
           ctx.body = 'first'
           return next()
@@ -237,31 +177,19 @@ module.exports = (pkg) => {
           return next()
         })
         app.use(router.routes())
-        helper.agent.on('transactionFinished', (tx) => {
-          t.exactSegments(tx.trace.root, [
-            {
-              name: 'WebTransaction/WebFrameworkUri/Koa/GET//:first',
-              children: [
-                {
-                  name: 'Koa/Router: /',
-                  children: [
-                    {
-                      name: paramMiddlewareName,
-                      children: [
-                        {
-                          name: 'Nodejs/Middleware/Koa/firstParamware//[param handler :first]',
-                          children: [
-                            {
-                              name: 'Nodejs/Middleware/Koa/firstMiddleware//:first'
-                            }
-                          ]
-                        }
-                      ]
-                    }
-                  ]
-                }
+        agent.on('transactionFinished', (tx) => {
+          t.assertSegments(tx.trace.root, [
+            'WebTransaction/WebFrameworkUri/Koa/GET//:first',
+            [
+              'Koa/Router: /',
+              [
+                paramMiddlewareName,
+                [
+                  'Nodejs/Middleware/Koa/firstParamware//[param handler :first]',
+                  ['Nodejs/Middleware/Koa/firstMiddleware//:first']
+                ]
               ]
-            }
+            ]
           ])
           t.equal(
             tx.name,
@@ -270,38 +198,29 @@ module.exports = (pkg) => {
           )
           t.end()
         })
-        run()
+        run({ context: t.context })
       })
 
       t.test('should name transaction after matched path with erroring parameware', (t) => {
+        const { agent, router, app } = t.context
         router.param('first', function firstParamware() {
           throw new Error('wrong param')
         })
         router.get('/:first', function firstMiddleware() {})
 
         app.use(router.routes())
-        helper.agent.on('transactionFinished', (tx) => {
-          t.exactSegments(tx.trace.root, [
-            {
-              name: 'WebTransaction/WebFrameworkUri/Koa/GET//:first',
-              children: [
-                {
-                  name: 'Koa/Router: /',
-                  children: [
-                    {
-                      name: paramMiddlewareName,
-                      children: [
-                        {
-                          name: 'Nodejs/Middleware/Koa/firstParamware//[param handler :first]'
-                        }
-                      ]
-                    }
-                  ]
-                }
+        agent.on('transactionFinished', (tx) => {
+          t.assertSegments(tx.trace.root, [
+            'WebTransaction/WebFrameworkUri/Koa/GET//:first',
+            [
+              'Koa/Router: /',
+              [
+                paramMiddlewareName,
+                ['Nodejs/Middleware/Koa/firstParamware//[param handler :first]']
               ]
-            }
+            ]
           ])
-          const errors = helper.agent.errors.eventAggregator
+          const errors = agent.errors.eventAggregator
           t.equal(errors.length, 1, 'the error has been recorded')
           t.equal(
             tx.name,
@@ -310,10 +229,11 @@ module.exports = (pkg) => {
           )
           t.end()
         })
-        run()
+        run({ context: t.context })
       })
 
       t.test('should name the transaction after the last matched path (layer)', (t) => {
+        const { agent, router, app } = t.context
         router.get('/:first', function firstMiddleware(ctx, next) {
           ctx.body = 'first'
           return next().then(function someMoreContent() {
@@ -325,26 +245,16 @@ module.exports = (pkg) => {
         })
 
         app.use(router.routes())
-        helper.agent.on('transactionFinished', (tx) => {
-          t.exactSegments(tx.trace.root, [
-            {
-              name: 'WebTransaction/WebFrameworkUri/Koa/GET//:second',
-              children: [
-                {
-                  name: 'Koa/Router: /',
-                  children: [
-                    {
-                      name: 'Nodejs/Middleware/Koa/firstMiddleware//:first',
-                      children: [
-                        {
-                          name: 'Nodejs/Middleware/Koa/secondMiddleware//:second'
-                        }
-                      ]
-                    }
-                  ]
-                }
+        agent.on('transactionFinished', (tx) => {
+          t.assertSegments(tx.trace.root, [
+            'WebTransaction/WebFrameworkUri/Koa/GET//:second',
+            [
+              'Koa/Router: /',
+              [
+                'Nodejs/Middleware/Koa/firstMiddleware//:first',
+                ['Nodejs/Middleware/Koa/secondMiddleware//:second']
               ]
-            }
+            ]
           ])
           t.equal(
             tx.name,
@@ -353,10 +263,11 @@ module.exports = (pkg) => {
           )
           t.end()
         })
-        run()
+        run({ context: t.context })
       })
 
       t.test('tx name should not be named after error handling middleware', (t) => {
+        const { agent, router, app } = t.context
         app.use(function errorHandler(ctx, next) {
           return next().catch((err) => {
             ctx.body = { err: err.message }
@@ -368,28 +279,15 @@ module.exports = (pkg) => {
         })
 
         app.use(router.routes())
-        helper.agent.on('transactionFinished', (tx) => {
-          t.exactSegments(tx.trace.root, [
-            {
-              name: 'WebTransaction/WebFrameworkUri/Koa/GET//:first',
-              children: [
-                {
-                  name: 'Nodejs/Middleware/Koa/errorHandler',
-                  children: [
-                    {
-                      name: 'Koa/Router: /',
-                      children: [
-                        {
-                          name: 'Nodejs/Middleware/Koa/firstMiddleware//:first'
-                        }
-                      ]
-                    }
-                  ]
-                }
-              ]
-            }
+        agent.on('transactionFinished', (tx) => {
+          t.assertSegments(tx.trace.root, [
+            'WebTransaction/WebFrameworkUri/Koa/GET//:first',
+            [
+              'Nodejs/Middleware/Koa/errorHandler',
+              ['Koa/Router: /', ['Nodejs/Middleware/Koa/firstMiddleware//:first']]
+            ]
           ])
-          const errors = helper.agent.errors.eventAggregator
+          const errors = agent.errors.eventAggregator
           t.equal(errors.length, 0, 'should not record error')
           t.equal(
             tx.name,
@@ -398,10 +296,11 @@ module.exports = (pkg) => {
           )
           t.end()
         })
-        run()
+        run({ context: t.context })
       })
 
       t.test('transaction name should not be affected by unhandled error', (t) => {
+        const { agent, router, app } = t.context
         app.use(function errorHandler(ctx, next) {
           return next()
         })
@@ -411,28 +310,15 @@ module.exports = (pkg) => {
         })
 
         app.use(router.routes())
-        helper.agent.on('transactionFinished', (tx) => {
-          t.exactSegments(tx.trace.root, [
-            {
-              name: 'WebTransaction/WebFrameworkUri/Koa/GET//:first',
-              children: [
-                {
-                  name: 'Nodejs/Middleware/Koa/errorHandler',
-                  children: [
-                    {
-                      name: 'Koa/Router: /',
-                      children: [
-                        {
-                          name: 'Nodejs/Middleware/Koa/firstMiddleware//:first'
-                        }
-                      ]
-                    }
-                  ]
-                }
-              ]
-            }
+        agent.on('transactionFinished', (tx) => {
+          t.assertSegments(tx.trace.root, [
+            'WebTransaction/WebFrameworkUri/Koa/GET//:first',
+            [
+              'Nodejs/Middleware/Koa/errorHandler',
+              ['Koa/Router: /', ['Nodejs/Middleware/Koa/firstMiddleware//:first']]
+            ]
           ])
-          const errors = helper.agent.errors.eventAggregator
+          const errors = agent.errors.eventAggregator
           t.equal(errors.length, 1, 'error should be recorded')
           t.equal(
             tx.name,
@@ -441,10 +327,11 @@ module.exports = (pkg) => {
           )
           t.end()
         })
-        run()
+        run({ context: t.context })
       })
 
       t.test('should name tx after route declarations with supported http methods', (t) => {
+        const { agent, router, app } = t.context
         // This will register the same middleware (i.e. secondMiddleware)
         // under both the /:first and /:second routes. Use does not register middleware
         // w/ supported methods they cannot handle routes.
@@ -456,31 +343,19 @@ module.exports = (pkg) => {
           ctx.body = ' second'
         })
         app.use(router.routes())
-        helper.agent.on('transactionFinished', (tx) => {
-          t.exactSegments(tx.trace.root, [
-            {
-              name: 'WebTransaction/WebFrameworkUri/Koa/GET//:second',
-              children: [
-                {
-                  name: 'Koa/Router: /',
-                  children: [
-                    {
-                      name: 'Nodejs/Middleware/Koa/secondMiddleware//:first',
-                      children: [
-                        {
-                          name: 'Nodejs/Middleware/Koa/secondMiddleware//:second',
-                          children: [
-                            {
-                              name: 'Nodejs/Middleware/Koa/terminalMiddleware//:second'
-                            }
-                          ]
-                        }
-                      ]
-                    }
-                  ]
-                }
+        agent.on('transactionFinished', (tx) => {
+          t.assertSegments(tx.trace.root, [
+            'WebTransaction/WebFrameworkUri/Koa/GET//:second',
+            [
+              'Koa/Router: /',
+              [
+                'Nodejs/Middleware/Koa/secondMiddleware//:first',
+                [
+                  'Nodejs/Middleware/Koa/secondMiddleware//:second',
+                  ['Nodejs/Middleware/Koa/terminalMiddleware//:second']
+                ]
               ]
-            }
+            ]
           ])
           t.equal(
             tx.name,
@@ -489,10 +364,11 @@ module.exports = (pkg) => {
           )
           t.end()
         })
-        run()
+        run({ context: t.context })
       })
 
       t.test('names transaction (not found) with array of paths and no handler', (t) => {
+        const { agent, router, app } = t.context
         // This will register the same middleware (i.e. secondMiddleware)
         // under both the /:first and /:second routes.
         router.use(['/:first', '/:second'], function secondMiddleware(ctx, next) {
@@ -500,16 +376,10 @@ module.exports = (pkg) => {
           return next()
         })
         app.use(router.routes())
-        helper.agent.on('transactionFinished', (tx) => {
-          t.exactSegments(tx.trace.root, [
-            {
-              name: 'WebTransaction/WebFrameworkUri/Koa/GET/(not found)',
-              children: [
-                {
-                  name: 'Koa/Router: /'
-                }
-              ]
-            }
+        agent.on('transactionFinished', (tx) => {
+          t.assertSegments(tx.trace.root, [
+            'WebTransaction/WebFrameworkUri/Koa/GET/(not found)',
+            ['Koa/Router: /']
           ])
           t.equal(
             tx.name,
@@ -518,12 +388,13 @@ module.exports = (pkg) => {
           )
           t.end()
         })
-        run()
+        run({ context: t.context })
       })
 
       t.test(
         'names tx (not found) when no matching route and base middleware does not set body',
         (t) => {
+          const { agent, router, app } = t.context
           app.use(function baseMiddleware(ctx, next) {
             next()
           })
@@ -534,21 +405,10 @@ module.exports = (pkg) => {
             ctx.body = 'first'
           })
           app.use(router.routes())
-          helper.agent.on('transactionFinished', (tx) => {
-            t.exactSegments(tx.trace.root, [
-              {
-                name: 'WebTransaction/WebFrameworkUri/Koa/GET/(not found)',
-                children: [
-                  {
-                    name: 'Nodejs/Middleware/Koa/baseMiddleware',
-                    children: [
-                      {
-                        name: 'Koa/Router: /'
-                      }
-                    ]
-                  }
-                ]
-              }
+          agent.on('transactionFinished', (tx) => {
+            t.assertSegments(tx.trace.root, [
+              'WebTransaction/WebFrameworkUri/Koa/GET/(not found)',
+              ['Nodejs/Middleware/Koa/baseMiddleware', ['Koa/Router: /']]
             ])
             t.equal(
               tx.name,
@@ -557,7 +417,7 @@ module.exports = (pkg) => {
             )
             t.end()
           })
-          run('/')
+          run({ path: '/', context: t.context })
         }
       )
     })
@@ -568,7 +428,8 @@ module.exports = (pkg) => {
       t.autoend()
 
       t.test('should name transaction after last route for identical matches', (t) => {
-        Router = require(pkg)
+        const { agent, router, app } = t.context
+        const Router = require(pkg)
         const router2 = new Router()
         router.get('/:first', function firstMiddleware(ctx, next) {
           ctx.body = 'first'
@@ -580,36 +441,21 @@ module.exports = (pkg) => {
         })
         app.use(router.routes())
         app.use(router2.routes())
-        helper.agent.on('transactionFinished', (tx) => {
+        agent.on('transactionFinished', (tx) => {
           // NOTE: due to an implementation detail in koa-compose,
           // sequential middleware will show up as nested. This is due to
           // the dispatch function blocking its returned promise on the
           // resolution of a recursively returned promise.
           // https://github.com/koajs/compose/blob/e754ca3c13e9248b3f453d98ea0b618e09578e2d/index.js#L42-L44
-          t.exactSegments(tx.trace.root, [
-            {
-              name: 'WebTransaction/WebFrameworkUri/Koa/GET//:second',
-              children: [
-                {
-                  name: 'Koa/Router: /',
-                  children: [
-                    {
-                      name: 'Nodejs/Middleware/Koa/firstMiddleware//:first',
-                      children: [
-                        {
-                          name: 'Koa/Router: /',
-                          children: [
-                            {
-                              name: 'Nodejs/Middleware/Koa/secondMiddleware//:second'
-                            }
-                          ]
-                        }
-                      ]
-                    }
-                  ]
-                }
+          t.assertSegments(tx.trace.root, [
+            'WebTransaction/WebFrameworkUri/Koa/GET//:second',
+            [
+              'Koa/Router: /',
+              [
+                'Nodejs/Middleware/Koa/firstMiddleware//:first',
+                ['Koa/Router: /', ['Nodejs/Middleware/Koa/secondMiddleware//:second']]
               ]
-            }
+            ]
           ])
           t.equal(
             tx.name,
@@ -618,11 +464,12 @@ module.exports = (pkg) => {
           )
           t.end()
         })
-        run()
+        run({ context: t.context })
       })
 
       t.test('should name tx after last matched route even if body not set', (t) => {
-        Router = require(pkg)
+        const { agent, router, app } = t.context
+        const Router = require(pkg)
         const router2 = new Router()
         router.get('/first', function firstMiddleware(ctx, next) {
           ctx.body = 'first'
@@ -632,36 +479,21 @@ module.exports = (pkg) => {
         router2.get('/:second', function secondMiddleware() {})
         app.use(router.routes())
         app.use(router2.routes())
-        helper.agent.on('transactionFinished', (tx) => {
+        agent.on('transactionFinished', (tx) => {
           // NOTE: due to an implementation detail in koa-compose,
           // sequential middleware will show up as nested. This is due to
           // the dispatch function blocking its returned promise on the
           // resolution of a recursively returned promise.
           // https://github.com/koajs/compose/blob/e754ca3c13e9248b3f453d98ea0b618e09578e2d/index.js#L42-L44
-          t.exactSegments(tx.trace.root, [
-            {
-              name: 'WebTransaction/WebFrameworkUri/Koa/GET//:second',
-              children: [
-                {
-                  name: 'Koa/Router: /',
-                  children: [
-                    {
-                      name: 'Nodejs/Middleware/Koa/firstMiddleware//first',
-                      children: [
-                        {
-                          name: 'Koa/Router: /',
-                          children: [
-                            {
-                              name: 'Nodejs/Middleware/Koa/secondMiddleware//:second'
-                            }
-                          ]
-                        }
-                      ]
-                    }
-                  ]
-                }
+          t.assertSegments(tx.trace.root, [
+            'WebTransaction/WebFrameworkUri/Koa/GET//:second',
+            [
+              'Koa/Router: /',
+              [
+                'Nodejs/Middleware/Koa/firstMiddleware//first',
+                ['Koa/Router: /', ['Nodejs/Middleware/Koa/secondMiddleware//:second']]
               ]
-            }
+            ]
           ])
           t.equal(
             tx.name,
@@ -670,7 +502,7 @@ module.exports = (pkg) => {
           )
           t.end()
         })
-        run('/first')
+        run({ path: '/first', context: t.context })
       })
     })
 
@@ -680,27 +512,17 @@ module.exports = (pkg) => {
       t.autoend()
 
       t.test('should name after most last matched path', (t) => {
+        const { agent, router, Router, app } = t.context
         const router2 = new Router()
         router2.get('/:second', function secondMiddleware(ctx) {
           ctx.body = ' second'
         })
         router.use('/:first', router2.routes())
         app.use(router.routes())
-        helper.agent.on('transactionFinished', (tx) => {
-          t.exactSegments(tx.trace.root, [
-            {
-              name: 'WebTransaction/WebFrameworkUri/Koa/GET//:first/:second',
-              children: [
-                {
-                  name: 'Koa/Router: /',
-                  children: [
-                    {
-                      name: getNestedSpanName('secondMiddleware')
-                    }
-                  ]
-                }
-              ]
-            }
+        agent.on('transactionFinished', (tx) => {
+          t.assertSegments(tx.trace.root, [
+            'WebTransaction/WebFrameworkUri/Koa/GET//:first/:second',
+            ['Koa/Router: /', [getNestedSpanName('secondMiddleware')]]
           ])
           t.equal(
             tx.name,
@@ -709,10 +531,11 @@ module.exports = (pkg) => {
           )
           t.end()
         })
-        run('/123/456/')
+        run({ path: '/123/456/', context: t.context })
       })
 
       t.test('app-level middleware should not rename tx from matched path', (t) => {
+        const { agent, router, Router, app } = t.context
         app.use(function appLevelMiddleware(ctx, next) {
           return next().then(() => {
             ctx.body = 'do not want this to set the name'
@@ -729,26 +552,13 @@ module.exports = (pkg) => {
         router.use('/:first', nestedRouter.routes())
         app.use(router.routes())
 
-        helper.agent.on('transactionFinished', (tx) => {
-          t.exactSegments(tx.trace.root, [
-            {
-              name: 'WebTransaction/WebFrameworkUri/Koa/GET//:first/second',
-              children: [
-                {
-                  name: 'Nodejs/Middleware/Koa/appLevelMiddleware',
-                  children: [
-                    {
-                      name: 'Koa/Router: /',
-                      children: [
-                        {
-                          name: getNestedSpanName('terminalMiddleware')
-                        }
-                      ]
-                    }
-                  ]
-                }
-              ]
-            }
+        agent.on('transactionFinished', (tx) => {
+          t.assertSegments(tx.trace.root, [
+            'WebTransaction/WebFrameworkUri/Koa/GET//:first/second',
+            [
+              'Nodejs/Middleware/Koa/appLevelMiddleware',
+              ['Koa/Router: /', [getNestedSpanName('terminalMiddleware')]]
+            ]
           ])
           t.equal(
             tx.name,
@@ -757,10 +567,11 @@ module.exports = (pkg) => {
           )
           t.end()
         })
-        run('/123/second')
+        run({ path: '/123/second', context: t.context })
       })
 
       t.test('app-level middleware should not rename tx from matched prefix path', (t) => {
+        const { agent, router, app } = t.context
         app.use(function appLevelMiddleware(ctx, next) {
           return next().then(() => {
             ctx.body = 'do not want this to set the name'
@@ -776,26 +587,13 @@ module.exports = (pkg) => {
         router.prefix('/:first')
         app.use(router.routes())
 
-        helper.agent.on('transactionFinished', (tx) => {
-          t.exactSegments(tx.trace.root, [
-            {
-              name: 'WebTransaction/WebFrameworkUri/Koa/GET//:first/second',
-              children: [
-                {
-                  name: 'Nodejs/Middleware/Koa/appLevelMiddleware',
-                  children: [
-                    {
-                      name: 'Koa/Router: /',
-                      children: [
-                        {
-                          name: 'Nodejs/Middleware/Koa/terminalMiddleware//:first/:second'
-                        }
-                      ]
-                    }
-                  ]
-                }
-              ]
-            }
+        agent.on('transactionFinished', (tx) => {
+          t.assertSegments(tx.trace.root, [
+            'WebTransaction/WebFrameworkUri/Koa/GET//:first/second',
+            [
+              'Nodejs/Middleware/Koa/appLevelMiddleware',
+              ['Koa/Router: /', ['Nodejs/Middleware/Koa/terminalMiddleware//:first/:second']]
+            ]
           ])
           t.equal(
             tx.name,
@@ -804,7 +602,7 @@ module.exports = (pkg) => {
           )
           t.end()
         })
-        run('/123/second')
+        run({ path: '/123/second', context: t.context })
       })
     })
 
@@ -817,57 +615,37 @@ module.exports = (pkg) => {
         t.autoend()
 
         t.test('should name transaction after status `method now allowed` message', (t) => {
+          const { agent, router, app } = t.context
           router.post('/:first', function firstMiddleware() {})
           app.use(router.routes())
           app.use(router.allowedMethods({ throw: true }))
-          helper.agent.on('transactionFinished', (tx) => {
-            t.exactSegments(tx.trace.root, [
-              {
-                name: 'WebTransaction/WebFrameworkUri/Koa/GET/(method not allowed)',
-                children: [
-                  {
-                    name: 'Koa/Router: /',
-                    children: [
-                      {
-                        name: 'Nodejs/Middleware/Koa/allowedMethods'
-                      }
-                    ]
-                  }
-                ]
-              }
+          agent.on('transactionFinished', (tx) => {
+            t.assertSegments(tx.trace.root, [
+              'WebTransaction/WebFrameworkUri/Koa/GET/(method not allowed)',
+              ['Koa/Router: /', ['Nodejs/Middleware/Koa/allowedMethods']]
             ])
             t.equal(
               tx.name,
               'WebTransaction/WebFrameworkUri/Koa/GET/(method not allowed)',
               'transaction should be named after corresponding status code message'
             )
-            const errors = helper.agent.errors.eventAggregator
+            const errors = agent.errors.eventAggregator
             t.equal(errors.length, 1, 'the error has been recorded')
             t.end()
           })
-          run()
+          run({ context: t.context })
         })
 
         t.test('should name transaction after status `not implemented` message', (t) => {
-          router = new Router({ methods: ['POST'] })
+          const { agent, Router, app } = t.context
+          const router = new Router({ methods: ['POST'] })
           router.post('/:first', function firstMiddleware() {})
           app.use(router.routes())
           app.use(router.allowedMethods({ throw: true }))
-          helper.agent.on('transactionFinished', (tx) => {
-            t.exactSegments(tx.trace.root, [
-              {
-                name: 'WebTransaction/WebFrameworkUri/Koa/GET/(not implemented)',
-                children: [
-                  {
-                    name: 'Koa/Router: /',
-                    children: [
-                      {
-                        name: 'Nodejs/Middleware/Koa/allowedMethods'
-                      }
-                    ]
-                  }
-                ]
-              }
+          agent.on('transactionFinished', (tx) => {
+            t.assertSegments(tx.trace.root, [
+              'WebTransaction/WebFrameworkUri/Koa/GET/(not implemented)',
+              ['Koa/Router: /', ['Nodejs/Middleware/Koa/allowedMethods']]
             ])
             t.equal(
               tx.name,
@@ -875,14 +653,15 @@ module.exports = (pkg) => {
               'transaction should be named after corresponding status code message'
             )
 
-            const errors = helper.agent.errors.eventAggregator
+            const errors = agent.errors.eventAggregator
             t.equal(errors.length, 1, 'the error has been recorded')
             t.end()
           })
-          run()
+          run({ context: t.context })
         })
 
         t.test('error handler normalizes tx name if body is reset without status', (t) => {
+          const { agent, router, Router, app } = t.context
           app.use(function errorHandler(ctx, next) {
             return next().catch(() => {
               // resetting the body without manually persisting ctx.status
@@ -899,42 +678,30 @@ module.exports = (pkg) => {
           app.use(router.routes())
           app.use(router.allowedMethods({ throw: true }))
 
-          helper.agent.on('transactionFinished', (tx) => {
-            t.exactSegments(tx.trace.root, [
-              {
-                name: 'WebTransaction/NormalizedUri/*',
-                children: [
-                  {
-                    name: 'Nodejs/Middleware/Koa/errorHandler',
-                    children: [
-                      {
-                        name: 'Koa/Router: /',
-                        children: [
-                          {
-                            name: 'Nodejs/Middleware/Koa/allowedMethods'
-                          }
-                        ]
-                      }
-                    ]
-                  }
-                ]
-              }
+          agent.on('transactionFinished', (tx) => {
+            t.assertSegments(tx.trace.root, [
+              'WebTransaction/NormalizedUri/*',
+              [
+                'Nodejs/Middleware/Koa/errorHandler',
+                ['Koa/Router: /', ['Nodejs/Middleware/Koa/allowedMethods']]
+              ]
             ])
             t.equal(
               tx.name,
               'WebTransaction/NormalizedUri/*',
               'should have normalized transaction name'
             )
-            const errors = helper.agent.errors.eventAggregator
+            const errors = agent.errors.eventAggregator
             t.equal(errors.length, 0, 'error should not be recorded')
             t.end()
           })
-          run('/123/456')
+          run({ path: '/123/456', context: t.context })
         })
 
         t.test(
           'should name tx after status message when base middleware does not set body',
           (t) => {
+            const { agent, router, Router, app } = t.context
             // Because allowedMethods throws & no user catching, it is considered
             // unhandled and will push the base route back on
             app.use(function baseMiddleware(ctx, next) {
@@ -950,38 +717,25 @@ module.exports = (pkg) => {
             app.use(router.routes())
             app.use(router.allowedMethods({ throw: true }))
 
-            helper.agent.on('transactionFinished', (tx) => {
-              t.exactSegments(tx.trace.root, [
-                {
-                  name: 'WebTransaction/WebFrameworkUri/Koa/GET/(method not allowed)',
-                  children: [
-                    {
-                      name: 'Nodejs/Middleware/Koa/baseMiddleware',
-                      children: [
-                        {
-                          name: 'Koa/Router: /',
-                          children: [
-                            {
-                              name: 'Nodejs/Middleware/Koa/allowedMethods'
-                            }
-                          ]
-                        }
-                      ]
-                    }
-                  ]
-                }
+            agent.on('transactionFinished', (tx) => {
+              t.assertSegments(tx.trace.root, [
+                'WebTransaction/WebFrameworkUri/Koa/GET/(method not allowed)',
+                [
+                  'Nodejs/Middleware/Koa/baseMiddleware',
+                  ['Koa/Router: /', ['Nodejs/Middleware/Koa/allowedMethods']]
+                ]
               ])
               t.equal(
                 tx.name,
                 'WebTransaction/WebFrameworkUri/Koa/GET/(method not allowed)',
                 'should name after returned status code'
               )
-              const errors = helper.agent.errors.eventAggregator
+              const errors = agent.errors.eventAggregator
               t.equal(errors.length, 1, 'should notice thrown error')
 
               t.end()
             })
-            run('/123/456')
+            run({ path: '/123/456', context: t.context })
           }
         )
       })
@@ -992,24 +746,14 @@ module.exports = (pkg) => {
         t.autoend()
 
         t.test('should name transaction after status `method now allowed` message', (t) => {
+          const { agent, router, app } = t.context
           router.post('/:first', function firstMiddleware() {})
           app.use(router.routes())
           app.use(router.allowedMethods())
-          helper.agent.on('transactionFinished', (tx) => {
-            t.exactSegments(tx.trace.root, [
-              {
-                name: 'WebTransaction/WebFrameworkUri/Koa/GET/(method not allowed)',
-                children: [
-                  {
-                    name: 'Koa/Router: /',
-                    children: [
-                      {
-                        name: 'Nodejs/Middleware/Koa/allowedMethods'
-                      }
-                    ]
-                  }
-                ]
-              }
+          agent.on('transactionFinished', (tx) => {
+            t.assertSegments(tx.trace.root, [
+              'WebTransaction/WebFrameworkUri/Koa/GET/(method not allowed)',
+              ['Koa/Router: /', ['Nodejs/Middleware/Koa/allowedMethods']]
             ])
             t.equal(
               tx.name,
@@ -1017,33 +761,23 @@ module.exports = (pkg) => {
               'transaction should be named after corresponding status code message'
             )
             // Agent will automatically create error for 405 status code.
-            const errors = helper.agent.errors.eventAggregator
+            const errors = agent.errors.eventAggregator
             t.equal(errors.length, 1, 'the error has been recorded')
             t.end()
           })
-          run()
+          run({ context: t.context })
         })
 
         t.test('should name transaction after status `not implemented` message', (t) => {
-          router = new Router({ methods: ['POST'] })
+          const { agent, app, Router } = t.context
+          const router = new Router({ methods: ['POST'] })
           router.post('/:first', function firstMiddleware() {})
           app.use(router.routes())
           app.use(router.allowedMethods())
-          helper.agent.on('transactionFinished', (tx) => {
-            t.exactSegments(tx.trace.root, [
-              {
-                name: 'WebTransaction/WebFrameworkUri/Koa/GET/(not implemented)',
-                children: [
-                  {
-                    name: 'Koa/Router: /',
-                    children: [
-                      {
-                        name: 'Nodejs/Middleware/Koa/allowedMethods'
-                      }
-                    ]
-                  }
-                ]
-              }
+          agent.on('transactionFinished', (tx) => {
+            t.assertSegments(tx.trace.root, [
+              'WebTransaction/WebFrameworkUri/Koa/GET/(not implemented)',
+              ['Koa/Router: /', ['Nodejs/Middleware/Koa/allowedMethods']]
             ])
             t.equal(
               tx.name,
@@ -1051,14 +785,15 @@ module.exports = (pkg) => {
               'transaction should be named after corresponding status code message'
             )
             // Agent will automatically create error for 501 status code.
-            const errors = helper.agent.errors.eventAggregator
+            const errors = agent.errors.eventAggregator
             t.equal(errors.length, 1, 'the error has been recorded')
             t.end()
           })
-          run()
+          run({ context: t.context })
         })
 
         t.test('should name tx after `method not allowed` with prefixed router', (t) => {
+          const { agent, router, app } = t.context
           app.use(function appLevelMiddleware(ctx, next) {
             return next().then(() => {
               ctx.body = 'should not set the name'
@@ -1071,26 +806,13 @@ module.exports = (pkg) => {
           app.use(router.routes())
           app.use(router.allowedMethods())
 
-          helper.agent.on('transactionFinished', (tx) => {
-            t.exactSegments(tx.trace.root, [
-              {
-                name: 'WebTransaction/WebFrameworkUri/Koa/GET/(method not allowed)',
-                children: [
-                  {
-                    name: 'Nodejs/Middleware/Koa/appLevelMiddleware',
-                    children: [
-                      {
-                        name: 'Koa/Router: /',
-                        children: [
-                          {
-                            name: 'Nodejs/Middleware/Koa/allowedMethods'
-                          }
-                        ]
-                      }
-                    ]
-                  }
-                ]
-              }
+          agent.on('transactionFinished', (tx) => {
+            t.assertSegments(tx.trace.root, [
+              'WebTransaction/WebFrameworkUri/Koa/GET/(method not allowed)',
+              [
+                'Nodejs/Middleware/Koa/appLevelMiddleware',
+                ['Koa/Router: /', ['Nodejs/Middleware/Koa/allowedMethods']]
+              ]
             ])
             t.equal(
               tx.name,
@@ -1099,11 +821,12 @@ module.exports = (pkg) => {
             )
             t.end()
           })
-          run('/123/second')
+          run({ path: '/123/second', context: t.context })
         })
 
         t.test('should name tx after `not implemented` with prefixed router', (t) => {
-          router = new Router({ methods: ['POST'] })
+          const { agent, app, Router } = t.context
+          const router = new Router({ methods: ['POST'] })
 
           app.use(function appLevelMiddleware(ctx, next) {
             return next().then(() => {
@@ -1117,26 +840,13 @@ module.exports = (pkg) => {
           app.use(router.routes())
           app.use(router.allowedMethods())
 
-          helper.agent.on('transactionFinished', (tx) => {
-            t.exactSegments(tx.trace.root, [
-              {
-                name: 'WebTransaction/WebFrameworkUri/Koa/GET/(not implemented)',
-                children: [
-                  {
-                    name: 'Nodejs/Middleware/Koa/appLevelMiddleware',
-                    children: [
-                      {
-                        name: 'Koa/Router: /',
-                        children: [
-                          {
-                            name: 'Nodejs/Middleware/Koa/allowedMethods'
-                          }
-                        ]
-                      }
-                    ]
-                  }
-                ]
-              }
+          agent.on('transactionFinished', (tx) => {
+            t.assertSegments(tx.trace.root, [
+              'WebTransaction/WebFrameworkUri/Koa/GET/(not implemented)',
+              [
+                'Nodejs/Middleware/Koa/appLevelMiddleware',
+                ['Koa/Router: /', ['Nodejs/Middleware/Koa/allowedMethods']]
+              ]
             ])
             t.equal(
               tx.name,
@@ -1145,31 +855,21 @@ module.exports = (pkg) => {
             )
             t.end()
           })
-          run('/123/first')
+          run({ path: '/123/first', context: t.context })
         })
 
         t.test('should name and produce segments for existing matched path', (t) => {
-          router = new Router({ methods: ['GET'] })
+          const { agent, app, Router } = t.context
+          const router = new Router({ methods: ['GET'] })
           router.get('/:first', function firstMiddleware(ctx) {
             ctx.body = 'first'
           })
           app.use(router.routes())
           app.use(router.allowedMethods())
-          helper.agent.on('transactionFinished', (tx) => {
-            t.exactSegments(tx.trace.root, [
-              {
-                name: 'WebTransaction/WebFrameworkUri/Koa/GET//:first',
-                children: [
-                  {
-                    name: 'Koa/Router: /',
-                    children: [
-                      {
-                        name: 'Nodejs/Middleware/Koa/firstMiddleware//:first'
-                      }
-                    ]
-                  }
-                ]
-              }
+          agent.on('transactionFinished', (tx) => {
+            t.assertSegments(tx.trace.root, [
+              'WebTransaction/WebFrameworkUri/Koa/GET//:first',
+              ['Koa/Router: /', ['Nodejs/Middleware/Koa/firstMiddleware//:first']]
             ])
             t.equal(
               tx.name,
@@ -1178,22 +878,10 @@ module.exports = (pkg) => {
             )
             t.end()
           })
-          run()
+          run({ context: t.context })
         })
       })
     })
-
-    t.autoend()
-
-    function run(path) {
-      server = app.listen(0, function () {
-        http
-          .get({
-            port: server.address().port,
-            path: path || '/123'
-          })
-          .end()
-      })
-    }
+    t.end()
   })
 }

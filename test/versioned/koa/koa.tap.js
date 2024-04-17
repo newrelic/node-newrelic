@@ -6,36 +6,27 @@
 'use strict'
 
 const tap = require('tap')
-const utils = require('@newrelic/test-utilities')
 const http = require('http')
-const hooks = require('../../../lib/instrumentation/koa/nr-hooks')
-
-utils(tap)
+const helper = require('../../lib/agent_helper')
+require('../../lib/metrics_helper')
 
 tap.test('Koa instrumentation', (t) => {
   t.autoend()
 
-  let helper = null
-  let app = null
-  let server = null
-  let testShim
-
   t.beforeEach(() => {
-    helper = utils.TestAgent.makeInstrumented()
-    helper.registerInstrumentation(hooks[0])
+    t.context.agent = helper.instrumentMockedAgent()
     const Koa = require('koa')
-    app = new Koa()
-    testShim = helper.getShim(Koa)
+    t.context.app = new Koa()
+    t.context.testShim = helper.getShim(Koa)
   })
 
-  t.afterEach(() => {
-    server && server.close()
-    app = null
-    helper && helper.unload()
+  t.afterEach((t) => {
+    t.context.server.close()
+    helper.unloadAgent(t.context.agent)
   })
 
   t.test('Should name after koa framework and verb when body set', (t) => {
-    t.plan(2)
+    const { agent, app } = t.context
 
     app.use(function one(ctx, next) {
       return next().then(() => {
@@ -47,7 +38,7 @@ tap.test('Koa instrumentation', (t) => {
       ctx.body = 'done'
     })
 
-    helper.agent.on('transactionFinished', (tx) => {
+    agent.on('transactionFinished', (tx) => {
       t.equal(
         tx.name,
         'WebTransaction/WebFrameworkUri/Koa/GET//',
@@ -59,7 +50,7 @@ tap.test('Koa instrumentation', (t) => {
   })
 
   t.test('Should name (not found) when no work is performed', (t) => {
-    t.plan(2)
+    const { agent, app } = t.context
 
     app.use(function one(ctx, next) {
       return next().then(() => {
@@ -71,7 +62,7 @@ tap.test('Koa instrumentation', (t) => {
       // do nothing
     })
 
-    helper.agent.on('transactionFinished', (tx) => {
+    agent.on('transactionFinished', (tx) => {
       t.equal(
         tx.name,
         'WebTransaction/WebFrameworkUri/Koa/GET/(not found)',
@@ -83,20 +74,20 @@ tap.test('Koa instrumentation', (t) => {
   })
 
   t.test('names the transaction after the middleware that sets the body', (t) => {
-    t.plan(2)
+    const { agent, app } = t.context
 
     app.use(function one(ctx, next) {
-      const tx = helper.getTransaction()
+      const tx = agent.getTransaction()
       return next().then(() => tx.nameState.appendPath('one-end'))
     })
 
     app.use(function two(ctx) {
-      const tx = helper.getTransaction()
+      const tx = agent.getTransaction()
       tx.nameState.appendPath('two')
       ctx.body = 'done'
     })
 
-    helper.agent.on('transactionFinished', (tx) => {
+    agent.on('transactionFinished', (tx) => {
       t.equal(
         tx.name,
         'WebTransaction/WebFrameworkUri/Koa/GET//two',
@@ -108,27 +99,27 @@ tap.test('Koa instrumentation', (t) => {
   })
 
   t.test('names the transaction after the last middleware that sets the body', (t) => {
-    t.plan(2)
+    const { agent, app } = t.context
 
     app.use(function one(ctx, next) {
-      const tx = helper.getTransaction()
+      const tx = agent.getTransaction()
       return next().then(() => tx.nameState.appendPath('one-end'))
     })
 
     app.use(function two(ctx, next) {
-      const tx = helper.getTransaction()
+      const tx = agent.getTransaction()
       tx.nameState.appendPath('two')
       ctx.body = 'not actually done'
       return next()
     })
 
     app.use(function three(ctx) {
-      const tx = helper.getTransaction()
+      const tx = agent.getTransaction()
       tx.nameState.appendPath('three')
       ctx.body = 'done'
     })
 
-    helper.agent.on('transactionFinished', (tx) => {
+    agent.on('transactionFinished', (tx) => {
       t.equal(
         tx.name,
         'WebTransaction/WebFrameworkUri/Koa/GET//three',
@@ -140,20 +131,20 @@ tap.test('Koa instrumentation', (t) => {
   })
 
   t.test('names the transaction off the status setting middleware', (t) => {
-    t.plan(4)
+    const { agent, app } = t.context
 
     app.use(function one(ctx, next) {
-      const tx = helper.getTransaction()
+      const tx = agent.getTransaction()
       return next().then(() => tx.nameState.appendPath('one-end'))
     })
 
     app.use(function two(ctx) {
-      const tx = helper.getTransaction()
+      const tx = agent.getTransaction()
       tx.nameState.appendPath('two')
       ctx.status = 202
     })
 
-    helper.agent.on('transactionFinished', (tx) => {
+    agent.on('transactionFinished', (tx) => {
       t.equal(
         tx.name,
         'WebTransaction/WebFrameworkUri/Koa/GET//two',
@@ -164,19 +155,20 @@ tap.test('Koa instrumentation', (t) => {
     run(t, 'Accepted', (err, res) => {
       t.error(err)
       t.equal(res.statusCode, 202, 'should not interfere with status code setting')
+      t.end()
     })
   })
 
   t.test('names the transaction when body set even if status set after', (t) => {
-    t.plan(4)
+    const { agent, app } = t.context
 
     app.use(function one(ctx, next) {
-      const tx = helper.getTransaction()
+      const tx = agent.getTransaction()
       return next().then(() => tx.nameState.appendPath('one-end'))
     })
 
     app.use(function two(ctx) {
-      const tx = helper.getTransaction()
+      const tx = agent.getTransaction()
       tx.nameState.appendPath('two')
       ctx.body = 'done'
 
@@ -184,7 +176,7 @@ tap.test('Koa instrumentation', (t) => {
       ctx.status = 202
     })
 
-    helper.agent.on('transactionFinished', (tx) => {
+    agent.on('transactionFinished', (tx) => {
       t.equal(
         tx.name,
         'WebTransaction/WebFrameworkUri/Koa/GET//two',
@@ -195,11 +187,12 @@ tap.test('Koa instrumentation', (t) => {
     run(t, (err, res) => {
       t.error(err)
       t.equal(res.statusCode, 202, 'should not interfere with status code setting')
+      t.end()
     })
   })
 
   t.test('produces transaction trace with multiple middleware', (t) => {
-    t.plan(2)
+    const { agent, app } = t.context
 
     app.use(function one(ctx, next) {
       return next()
@@ -208,7 +201,7 @@ tap.test('Koa instrumentation', (t) => {
       ctx.response.body = 'done'
     })
 
-    helper.agent.on('transactionFinished', (tx) => {
+    agent.on('transactionFinished', (tx) => {
       checkSegments(t, tx)
     })
 
@@ -216,7 +209,7 @@ tap.test('Koa instrumentation', (t) => {
   })
 
   t.test('correctly records actions interspersed among middleware', (t) => {
-    t.plan(2)
+    const { agent, app, testShim } = t.context
 
     app.use(function one(ctx, next) {
       testShim.createSegment('testSegment')
@@ -233,24 +226,18 @@ tap.test('Koa instrumentation', (t) => {
       ctx.body = 'done'
     })
 
-    helper.agent.on('transactionFinished', (tx) => {
-      t.exactSegments(tx.trace.root, [
-        {
-          name: 'WebTransaction/WebFrameworkUri/Koa/GET//',
-          children: [
-            {
-              name: 'Nodejs/Middleware/Koa/one',
-              children: [
-                { name: 'Truncated/testSegment' },
-                {
-                  name: 'Nodejs/Middleware/Koa/two',
-                  children: [{ name: 'timers.setTimeout' }, { name: 'Nodejs/Middleware/Koa/three' }]
-                },
-                { name: 'Truncated/nestedSegment' }
-              ]
-            }
+    agent.on('transactionFinished', (tx) => {
+      t.assertSegments(tx.trace.root, [
+        'WebTransaction/WebFrameworkUri/Koa/GET//',
+        [
+          'Nodejs/Middleware/Koa/one',
+          [
+            'Truncated/testSegment',
+            'Nodejs/Middleware/Koa/two',
+            ['timers.setTimeout', ['Callback: <anonymous>'], 'Nodejs/Middleware/Koa/three'],
+            'Truncated/nestedSegment'
           ]
-        }
+        ]
       ])
     })
 
@@ -258,29 +245,32 @@ tap.test('Koa instrumentation', (t) => {
   })
 
   t.test('maintains transaction state between middleware', (t) => {
-    t.plan(7)
-
+    const { agent, app } = t.context
     let tx
 
     app.use(async function one(ctx, next) {
-      tx = helper.agent.getTransaction()
+      tx = agent.getTransaction()
 
       await next()
 
-      t.transaction(tx)
+      t.ok(tx)
     })
 
     app.use(async function two(ctx, next) {
-      t.transaction(tx, 'two has transaction context')
+      t.equal(tx.id, agent.getTransaction().id, 'two has transaction context')
       await next()
     })
 
     app.use(function three(ctx, next) {
-      t.transaction(tx, 'three has transaction context')
+      t.equal(tx.id, agent.getTransaction().id, 'three has transaction context')
       return new Promise((resolve) => {
         setImmediate(() => {
           next().then(() => {
-            t.transaction(tx, 'still have context after in-context timer hop')
+            t.equal(
+              tx.id,
+              agent.getTransaction().id,
+              'still have context after in-context timer hop'
+            )
             resolve()
           })
         })
@@ -288,19 +278,28 @@ tap.test('Koa instrumentation', (t) => {
     })
 
     app.use(function four(ctx) {
-      t.transaction(tx, 'four has transaction context')
+      t.equal(tx.id, agent.getTransaction().id, 'four has transaction context')
       ctx.body = 'done'
     })
 
-    helper.agent.on('transactionFinished', function (txn) {
-      checkSegments(t, txn)
+    agent.on('transactionFinished', function (txn) {
+      t.assertSegments(tx.trace.root, [
+        txn.name,
+        [
+          'Nodejs/Middleware/Koa/one',
+          [
+            'Nodejs/Middleware/Koa/two',
+            ['Nodejs/Middleware/Koa/three', ['Nodejs/Middleware/Koa/four']]
+          ]
+        ]
+      ])
     })
 
     run(t)
   })
 
   t.test('errors handled within middleware are not recorded', (t) => {
-    t.plan(4)
+    const { agent, app } = t.context
 
     app.use(function one(ctx, next) {
       return next().catch(function (err) {
@@ -314,8 +313,8 @@ tap.test('Koa instrumentation', (t) => {
       ctx.body = 'done'
     })
 
-    helper.agent.on('transactionFinished', (tx) => {
-      const errors = helper.agent.errors.traceAggregator.errors
+    agent.on('transactionFinished', (tx) => {
+      const errors = agent.errors.traceAggregator.errors
       t.equal(errors.length, 0, 'no errors are recorded')
       checkSegments(t, tx)
     })
@@ -324,7 +323,7 @@ tap.test('Koa instrumentation', (t) => {
   })
 
   t.test('errors not handled by middleware are recorded', (t) => {
-    t.plan(5)
+    const { agent, app } = t.context
 
     app.use(function one(ctx, next) {
       return next().catch(function (err) {
@@ -337,8 +336,8 @@ tap.test('Koa instrumentation', (t) => {
       throw new Error('middleware error')
     })
 
-    helper.agent.on('transactionFinished', (tx) => {
-      const errors = helper.agent.errors.traceAggregator.errors
+    agent.on('transactionFinished', (tx) => {
+      const errors = agent.errors.traceAggregator.errors
       t.equal(errors.length, 1, 'recorded expected number of errors')
       const error = errors[0][2]
       t.equal(error, 'middleware error', 'recorded expected error')
@@ -348,7 +347,7 @@ tap.test('Koa instrumentation', (t) => {
   })
 
   t.test('errors caught by default error listener are recorded', (t) => {
-    t.plan(5)
+    const { agent, app } = t.context
 
     app.use(function one(ctx, next) {
       return next()
@@ -360,8 +359,8 @@ tap.test('Koa instrumentation', (t) => {
       t.equal(err.message, 'middleware error', 'caught expected error')
     })
 
-    helper.agent.on('transactionFinished', (tx) => {
-      const errors = helper.agent.errors.traceAggregator.errors
+    agent.on('transactionFinished', (tx) => {
+      const errors = agent.errors.traceAggregator.errors
       t.equal(errors.length, 1, 'recorded expected number of errors')
       const error = errors[0][2]
       t.equal(error, 'middleware error', 'recorded expected error')
@@ -377,8 +376,8 @@ tap.test('Koa instrumentation', (t) => {
       expected = 'done'
     }
 
-    server = app.listen(0, () => {
-      http.get({ port: server.address().port }, (res) => {
+    t.context.server = t.context.app.listen(0, () => {
+      http.get({ port: t.context.server.address().port }, (res) => {
         let body = ''
         res.on('data', (data) => (body += data.toString('utf8')))
         res.on('error', (err) => cb && cb(err))
@@ -386,9 +385,13 @@ tap.test('Koa instrumentation', (t) => {
           if (expected) {
             t.equal(body, expected, 'should send expected response')
           }
-          if (cb) {
-            cb(null, res)
+
+          if (!cb) {
+            t.end()
+            return
           }
+
+          cb(null, res)
         })
       })
     })
@@ -396,17 +399,10 @@ tap.test('Koa instrumentation', (t) => {
 })
 
 function checkSegments(t, tx) {
-  t.exactSegments(tx.trace.root, [
-    {
-      // Until koa-router is instrumented and transaction naming is addressed,
-      // names will be inconsistent depending on whether there is an error.
-      name: tx.name,
-      children: [
-        {
-          name: 'Nodejs/Middleware/Koa/one',
-          children: [{ name: 'Nodejs/Middleware/Koa/two' }]
-        }
-      ]
-    }
+  t.assertSegments(tx.trace.root, [
+    // Until koa-router is instrumented and transaction naming is addressed,
+    // names will be inconsistent depending on whether there is an error.
+    tx.name,
+    ['Nodejs/Middleware/Koa/one', ['Nodejs/Middleware/Koa/two']]
   ])
 }

@@ -7,7 +7,7 @@
 
 const tap = require('tap')
 const sinon = require('sinon')
-const initialize = require('../../../../lib/instrumentation/koa/lib/instrumentation')
+const initialize = require('../../../../lib/instrumentation/koa/instrumentation')
 
 tap.test('Koa instrumentation', (t) => {
   t.beforeEach((t) => {

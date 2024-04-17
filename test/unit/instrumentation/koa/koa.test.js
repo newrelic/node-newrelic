@@ -8,18 +8,17 @@
 const tap = require('tap')
 const helper = require('../../../lib/agent_helper')
 const InstrumentationDescriptor = require('../../../../lib/instrumentation-descriptor')
-const symbols = require('../../../../lib/symbols')
 
 tap.beforeEach((t) => {
   t.context.agent = helper.instrumentMockedAgent({
     moduleName: 'koa',
     type: InstrumentationDescriptor.TYPE_WEB_FRAMEWORK,
-    onRequire: require('../../../../lib/instrumentation/koa/lib/instrumentation'),
+    onRequire: require('../../../../lib/instrumentation/koa/instrumentation'),
     shimName: 'koa'
   })
 
   t.context.Koa = require('koa')
-  t.context.shim = t.context.Koa[symbols.shim]
+  t.context.shim = helper.getShim(t.context.Koa)
 })
 
 tap.afterEach((t) => {

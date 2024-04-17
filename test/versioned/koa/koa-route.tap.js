@@ -6,49 +6,33 @@
 'use strict'
 
 const tap = require('tap')
-const utils = require('@newrelic/test-utilities')
-const http = require('http')
-const hooks = require('../../../lib/instrumentation/koa/nr-hooks')
-
-utils(tap)
+const helper = require('../../lib/agent_helper')
+require('../../lib/metrics_helper')
+const { run } = require('./utils')
 
 tap.test('koa-route instrumentation', function (t) {
-  let helper = null
-  let app = null
-  let server = null
-  let route = null
-
-  t.beforeEach(function () {
-    helper = utils.TestAgent.makeInstrumented()
-    helper.registerInstrumentation(hooks[0])
-    helper.registerInstrumentation(hooks[3])
+  t.beforeEach(function (t) {
+    t.context.agent = helper.instrumentMockedAgent()
     const Koa = require('koa')
-    app = new Koa()
-    route = require('koa-route')
+    t.context.app = new Koa()
+    t.context.route = require('koa-route')
   })
 
-  t.afterEach(function () {
-    server.close()
-    app = null
-    route = null
-    helper && helper.unload()
+  t.afterEach(function (t) {
+    t.context.server.close()
+    helper.unloadAgent(t.context.agent)
   })
 
   t.test('should name and produce segments for koa-route middleware', function (t) {
+    const { agent, app, route } = t.context
     const first = route.get('/resource', function firstMiddleware(ctx) {
       ctx.body = 'hello'
     })
     app.use(first)
-    helper.agent.on('transactionFinished', function (tx) {
-      t.exactSegments(tx.trace.root, [
-        {
-          name: 'WebTransaction/WebFrameworkUri/Koa/GET//resource',
-          children: [
-            {
-              name: 'Nodejs/Middleware/Koa/firstMiddleware//resource'
-            }
-          ]
-        }
+    agent.on('transactionFinished', function (tx) {
+      t.assertSegments(tx.trace.root, [
+        'WebTransaction/WebFrameworkUri/Koa/GET//resource',
+        ['Nodejs/Middleware/Koa/firstMiddleware//resource']
       ])
       t.equal(
         tx.name,
@@ -57,10 +41,11 @@ tap.test('koa-route instrumentation', function (t) {
       )
       t.end()
     })
-    run('/resource')
+    run({ path: '/resource', context: t.context })
   })
 
   t.test('should name the transaction after the last responder', function (t) {
+    const { agent, app, route } = t.context
     const first = route.get('/:first', function firstMiddleware(ctx, param, next) {
       ctx.body = 'first'
       return next()
@@ -70,21 +55,13 @@ tap.test('koa-route instrumentation', function (t) {
     })
     app.use(first)
     app.use(second)
-    helper.agent.on('transactionFinished', function (tx) {
-      t.exactSegments(tx.trace.root, [
-        {
-          name: 'WebTransaction/WebFrameworkUri/Koa/GET//:second',
-          children: [
-            {
-              name: 'Nodejs/Middleware/Koa/firstMiddleware//:first',
-              children: [
-                {
-                  name: 'Nodejs/Middleware/Koa/secondMiddleware//:second'
-                }
-              ]
-            }
-          ]
-        }
+    agent.on('transactionFinished', function (tx) {
+      t.assertSegments(tx.trace.root, [
+        'WebTransaction/WebFrameworkUri/Koa/GET//:second',
+        [
+          'Nodejs/Middleware/Koa/firstMiddleware//:first',
+          ['Nodejs/Middleware/Koa/secondMiddleware//:second']
+        ]
       ])
       t.equal(
         tx.name,
@@ -93,10 +70,11 @@ tap.test('koa-route instrumentation', function (t) {
       )
       t.end()
     })
-    run()
+    run({ context: t.context })
   })
 
   t.test('should name the transaction properly when responding after next', function (t) {
+    const { agent, app, route } = t.context
     const first = route.get('/:first', function firstMiddleware(ctx, param, next) {
       return next().then(function respond() {
         ctx.body = 'first'
@@ -107,21 +85,13 @@ tap.test('koa-route instrumentation', function (t) {
     })
     app.use(first)
     app.use(second)
-    helper.agent.on('transactionFinished', function (tx) {
-      t.exactSegments(tx.trace.root, [
-        {
-          name: 'WebTransaction/WebFrameworkUri/Koa/GET//:first',
-          children: [
-            {
-              name: 'Nodejs/Middleware/Koa/firstMiddleware//:first',
-              children: [
-                {
-                  name: 'Nodejs/Middleware/Koa/secondMiddleware//:second'
-                }
-              ]
-            }
-          ]
-        }
+    agent.on('transactionFinished', function (tx) {
+      t.assertSegments(tx.trace.root, [
+        'WebTransaction/WebFrameworkUri/Koa/GET//:first',
+        [
+          'Nodejs/Middleware/Koa/firstMiddleware//:first',
+          ['Nodejs/Middleware/Koa/secondMiddleware//:second']
+        ]
       ])
       t.equal(
         tx.name,
@@ -130,10 +100,11 @@ tap.test('koa-route instrumentation', function (t) {
       )
       t.end()
     })
-    run()
+    run({ context: t.context })
   })
 
   t.test('should work with early responding', function (t) {
+    const { agent, app, route } = t.context
     const first = route.get('/:first', function firstMiddleware(ctx) {
       ctx.body = 'first'
       return Promise.resolve()
@@ -143,16 +114,10 @@ tap.test('koa-route instrumentation', function (t) {
     })
     app.use(first)
     app.use(second)
-    helper.agent.on('transactionFinished', function (tx) {
-      t.exactSegments(tx.trace.root, [
-        {
-          name: 'WebTransaction/WebFrameworkUri/Koa/GET//:first',
-          children: [
-            {
-              name: 'Nodejs/Middleware/Koa/firstMiddleware//:first'
-            }
-          ]
-        }
+    agent.on('transactionFinished', function (tx) {
+      t.assertSegments(tx.trace.root, [
+        'WebTransaction/WebFrameworkUri/Koa/GET//:first',
+        ['Nodejs/Middleware/Koa/firstMiddleware//:first']
       ])
       t.equal(
         tx.name,
@@ -161,10 +126,11 @@ tap.test('koa-route instrumentation', function (t) {
       )
       t.end()
     })
-    run()
+    run({ context: t.context })
   })
 
   t.test('should name the transaction after the source of the error that occurred', function (t) {
+    const { agent, app, route } = t.context
     const first = route.get('/:first', function firstMiddleware(ctx, param, next) {
       return next()
     })
@@ -173,21 +139,13 @@ tap.test('koa-route instrumentation', function (t) {
     })
     app.use(first)
     app.use(second)
-    helper.agent.on('transactionFinished', function (tx) {
-      t.exactSegments(tx.trace.root, [
-        {
-          name: 'WebTransaction/WebFrameworkUri/Koa/GET//:second',
-          children: [
-            {
-              name: 'Nodejs/Middleware/Koa/firstMiddleware//:first',
-              children: [
-                {
-                  name: 'Nodejs/Middleware/Koa/secondMiddleware//:second'
-                }
-              ]
-            }
-          ]
-        }
+    agent.on('transactionFinished', function (tx) {
+      t.assertSegments(tx.trace.root, [
+        'WebTransaction/WebFrameworkUri/Koa/GET//:second',
+        [
+          'Nodejs/Middleware/Koa/firstMiddleware//:first',
+          ['Nodejs/Middleware/Koa/secondMiddleware//:second']
+        ]
       ])
       t.equal(
         tx.name,
@@ -196,10 +154,11 @@ tap.test('koa-route instrumentation', function (t) {
       )
       t.end()
     })
-    run()
+    run({ context: t.context })
   })
 
   t.test('should work properly when used along with non-route middleware', function (t) {
+    const { agent, app, route } = t.context
     const first = function firstMiddleware(ctx, next) {
       return next()
     }
@@ -213,26 +172,16 @@ tap.test('koa-route instrumentation', function (t) {
     app.use(first)
     app.use(second)
     app.use(third)
-    helper.agent.on('transactionFinished', function (tx) {
-      t.exactSegments(tx.trace.root, [
-        {
-          name: 'WebTransaction/WebFrameworkUri/Koa/GET//resource',
-          children: [
-            {
-              name: 'Nodejs/Middleware/Koa/firstMiddleware',
-              children: [
-                {
-                  name: 'Nodejs/Middleware/Koa/secondMiddleware//resource',
-                  children: [
-                    {
-                      name: 'Nodejs/Middleware/Koa/thirdMiddleware'
-                    }
-                  ]
-                }
-              ]
-            }
+    agent.on('transactionFinished', function (tx) {
+      t.assertSegments(tx.trace.root, [
+        'WebTransaction/WebFrameworkUri/Koa/GET//resource',
+        [
+          'Nodejs/Middleware/Koa/firstMiddleware',
+          [
+            'Nodejs/Middleware/Koa/secondMiddleware//resource',
+            ['Nodejs/Middleware/Koa/thirdMiddleware']
           ]
-        }
+        ]
       ])
       t.equal(
         tx.name,
@@ -241,19 +190,8 @@ tap.test('koa-route instrumentation', function (t) {
       )
       t.end()
     })
-    run('/resource')
+    run({ path: '/resource', context: t.context })
   })
 
-  t.autoend()
-
-  function run(path) {
-    server = app.listen(0, function () {
-      http
-        .get({
-          port: server.address().port,
-          path: path || '/123'
-        })
-        .end()
-    })
-  }
+  t.end()
 })

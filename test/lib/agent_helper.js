@@ -653,3 +653,12 @@ helper.isSupportedVersion = function isSupportedVersion(version) {
 helper.destroyProxyAgent = function destroyProxyAgent() {
   require('../../lib/collector/http-agents').proxyAgent().destroy()
 }
+
+/**
+ * Gets a shim instance for a package.
+ * @param {object} pkg exported obj that is instrumented
+ * @returns The existing or newly created shim.
+ */
+helper.getShim = function getShim(pkg) {
+  return pkg?.[symbols.shim]
+}

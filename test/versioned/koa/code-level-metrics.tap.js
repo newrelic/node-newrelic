@@ -6,13 +6,8 @@
 'use strict'
 
 const tap = require('tap')
-const utils = require('@newrelic/test-utilities')
+const helper = require('../../lib/agent_helper')
 const http = require('http')
-const hooks = require('../../../lib/instrumentation/koa/nr-hooks')
-
-// This adds all the assertions to tap's `Test` class.
-utils.assert.extendTap(tap)
-
 let koaRouterAvailable
 let atKoaRouterAvailable
 
@@ -31,20 +26,15 @@ try {
 }
 
 async function setupApp({ useKoaRouter, useAtKoaRouter, isCLMEnabled }) {
-  const helper = utils.TestAgent.makeInstrumented({ code_level_metrics: { enabled: isCLMEnabled } })
+  const agent = helper.instrumentMockedAgent({ code_level_metrics: { enabled: isCLMEnabled } })
   let router
 
-  helper.registerInstrumentation(hooks[0])
-
   if (useKoaRouter) {
-    helper.registerInstrumentation(hooks[1])
-
     const Router = require('koa-router')
     router = new Router()
   }
 
   if (useAtKoaRouter) {
-    helper.registerInstrumentation(hooks[2])
     const Router = require('@koa/router')
     router = new Router()
   }
@@ -53,7 +43,7 @@ async function setupApp({ useKoaRouter, useAtKoaRouter, isCLMEnabled }) {
   const app = new Koa()
   const server = await startServer(app)
 
-  return { helper, app, router, server }
+  return { agent, app, router, server }
 }
 
 async function makeRequest(params) {
@@ -87,10 +77,10 @@ async function startServer(app) {
   })
 }
 
-async function teardownApp(server, helper) {
+async function teardownApp(server, agent) {
   return new Promise((resolve) => {
-    if (helper) {
-      helper.unload()
+    if (agent) {
+      helper.unloadAgent(agent)
     }
 
     if (server) {
@@ -104,12 +94,12 @@ async function teardownApp(server, helper) {
 tap.test('Vanilla koa, no router', (t) => {
   t.autoend()
 
-  let helper
+  let agent
   let app
   let server
   ;[true, false].forEach((isCLMEnabled) => {
     t.test(`should ${isCLMEnabled ? 'add' : 'not add'} CLM attributes`, async (t) => {
-      ;({ helper, app, server } = await setupApp({ isCLMEnabled }))
+      ;({ agent, app, server } = await setupApp({ isCLMEnabled }))
 
       app.use(function one(_, next) {
         next()
@@ -119,7 +109,7 @@ tap.test('Vanilla koa, no router', (t) => {
         ctx.body = 'done'
       })
 
-      helper.agent.on('transactionFinished', (transaction) => {
+      agent.on('transactionFinished', (transaction) => {
         const baseSegment = transaction.trace.root.children[0]
         t.clmAttrs({
           segments: [
@@ -144,7 +134,7 @@ tap.test('Vanilla koa, no router', (t) => {
       t.equal(response, 'done', 'should return the correct data')
 
       t.teardown(async () => {
-        await teardownApp(server, helper)
+        await teardownApp(server, agent)
       })
     })
   })
@@ -153,13 +143,13 @@ tap.test('Vanilla koa, no router', (t) => {
 tap.test('Using koa-router', { skip: !koaRouterAvailable }, (t) => {
   t.autoend()
 
-  let helper
+  let agent
   let app
   let server
   let router
   ;[true, false].forEach((isCLMEnabled) => {
     t.test(`should ${isCLMEnabled ? 'add' : 'not add'} CLM attributes`, async (t) => {
-      ;({ helper, app, server, router } = await setupApp({ isCLMEnabled, useKoaRouter: true }))
+      ;({ agent, app, server, router } = await setupApp({ isCLMEnabled, useKoaRouter: true }))
 
       const Router = require('koa-router')
       const nestedRouter = new Router()
@@ -175,7 +165,7 @@ tap.test('Using koa-router', { skip: !koaRouterAvailable }, (t) => {
       router.use('/:first', nestedRouter.routes())
       app.use(router.routes())
 
-      helper.agent.on('transactionFinished', (transaction) => {
+      agent.on('transactionFinished', (transaction) => {
         const baseSegment = transaction.trace.root.children[0]
 
         t.clmAttrs({
@@ -204,7 +194,7 @@ tap.test('Using koa-router', { skip: !koaRouterAvailable }, (t) => {
       const response = await makeRequest({ port: server.address().port, path: '/123/second' })
       t.equal(response, 'winner winner, chicken dinner', 'should return the correct data')
       t.teardown(async () => {
-        await teardownApp(server, helper)
+        await teardownApp(server, agent)
       })
     })
   })
@@ -213,13 +203,13 @@ tap.test('Using koa-router', { skip: !koaRouterAvailable }, (t) => {
 tap.test('Using @koa/router', { skip: !atKoaRouterAvailable }, (t) => {
   t.autoend()
 
-  let helper
+  let agent
   let app
   let server
   let router
   ;[true, false].forEach((isCLMEnabled) => {
     t.test(`should ${isCLMEnabled ? 'add' : 'not add'} CLM attributes`, async (t) => {
-      ;({ helper, app, server, router } = await setupApp({ isCLMEnabled, useAtKoaRouter: true }))
+      ;({ agent, app, server, router } = await setupApp({ isCLMEnabled, useAtKoaRouter: true }))
 
       const Router = require('@koa/router')
       const nestedRouter = new Router()
@@ -235,7 +225,7 @@ tap.test('Using @koa/router', { skip: !atKoaRouterAvailable }, (t) => {
       router.use('/:first', nestedRouter.routes())
       app.use(router.routes())
 
-      helper.agent.on('transactionFinished', (transaction) => {
+      agent.on('transactionFinished', (transaction) => {
         const baseSegment = transaction.trace.root.children[0]
 
         t.clmAttrs({
@@ -265,7 +255,7 @@ tap.test('Using @koa/router', { skip: !atKoaRouterAvailable }, (t) => {
       t.equal(response, 'winner winner, chicken dinner', 'should return the correct data')
 
       t.teardown(async () => {
-        await teardownApp(server, helper)
+        await teardownApp(server, agent)
       })
     })
   })
