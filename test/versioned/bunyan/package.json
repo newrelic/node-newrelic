@@ -1,6 +1,6 @@
 {
   "name": "bunyan-tests",
-  "targets": ["bunyan"],
+  "targets": [{"name":"bunyan", "minAgentVersion": "9.3.0"}],
   "version": "0.0.0",
   "private": true,
   "tests": [

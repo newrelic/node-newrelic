@@ -1,6 +1,6 @@
 {
   "name": "grpc-esm-tests",
-  "targets": ["@grpc/grpc-js"],
+  "targets": [{"name":"@grpc/grpc-js","minAgentVersion":"8.17.0"}],
   "version": "0.0.0",
   "type": "module",
   "private": true,

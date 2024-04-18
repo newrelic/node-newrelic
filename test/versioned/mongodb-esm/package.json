@@ -1,6 +1,6 @@
 {
   "name": "mongodb-esm-tests",
-  "targets": ["mongodb"],
+  "targets": [{"name":"mongodb","minAgentVersion":"1.32.0"}],
   "version": "0.0.0",
   "type": "module",
   "private": true,

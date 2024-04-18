@@ -1,6 +1,6 @@
 {
   "name": "connect-tests",
-  "targets": ["connect"],
+  "targets": [{"name":"connect","minAgentVersion":"2.6.0"}],
   "version": "0.0.0",
   "private": true,
   "tests": [

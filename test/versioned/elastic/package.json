@@ -1,6 +1,6 @@
 {
   "name": "elasticsearch-tests",
-  "targets": ["@elastic/elasticsearch"],
+  "targets": [{"name":"@elastic/elasticsearch","minAgentVersion":"11.9.0"}],
   "version": "0.0.0",
   "private": true,
   "engines": {

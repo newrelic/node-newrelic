@@ -1,6 +1,6 @@
 {
   "name": "bluebird-tests",
-  "targets": ["bluebird"],
+  "targets": [{"name": "bluebird", "minAgentVersion": "1.27.0" }],
   "version": "0.0.0",
   "private": true,
   "tests": [

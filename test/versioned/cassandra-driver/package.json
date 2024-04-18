@@ -1,6 +1,6 @@
 {
   "name": "cassandra-driver-tests",
-  "targets": ["cassandra-driver"],
+  "targets": [{"name":"cassandra-driver","minAgentVersion": "1.7.1"}],
   "version": "0.0.0",
   "private": true,
   "tests": [

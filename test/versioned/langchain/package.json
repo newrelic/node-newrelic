@@ -1,6 +1,6 @@
 {
   "name": "langchain-tests",
-  "targets": ["@langchain/core"],
+  "targets": [{"name":"@langchain/core","minAgentVersion":"11.13.0"}],
   "version": "0.0.0",
   "private": true,
   "engines": {
