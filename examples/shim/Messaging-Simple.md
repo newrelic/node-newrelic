@@ -108,9 +108,7 @@ The first thing the instrumentation should specify is the name of the message br
   shim.setLibrary(shim.RABBITMQ)
 ```
 
-<div style="text-align:center">
-  <img src="./messaging-breakdown-table.png" alt="transaction breakdown"/>
-</div>
+[<img src="./messaging-breakdown-table.png" style="text-align:center;width:100$" alt="transaction breakdown"/>]
 
 ### Producing Messages
 
@@ -157,15 +155,11 @@ The `recordProduce` method wraps the `publish` function, so that when it's calle
 
 The call would be displayed in the transaction trace as:
 
-<div style="text-align:center">
-  <img src="./messaging-produce-segment.png" alt="transaction trace with produce segment"/>
-</div>
+[<img src="./messaging-produce-segment.png" style="text-align:center;width:100%" alt="transaction trace with produce segment"/>]
 
 The transaction trace window also has the Messages tab, which shows all of the messages produced or consumed during the transaction:
 
-<div style="text-align:center">
-  <img src="./messaging-produce-messages.png" alt="transaction trace with produce segment"/>
-</div>
+[<img src="./messaging-produce-messages.png" style="text-align:center;width:100%" alt="transaction trace with produce segment"/>]
 
 The agent will also record a metric that can be be queried in Insights. The format of the metric is:  `MessageBroker/[libraryName]/Queue/Produce/Named/[queueName]`.
 
@@ -210,9 +204,7 @@ Similarly to the produce-messages case, `recordConsume` wraps the function used 
 
 The call would be displayed in the transaction trace as:
 
-<div style="text-align:center">
-  <img src="./messaging-consume-segment.png" alt="transaction trace with consume segment"/>
-</div>
+[<img src="./messaging-consume-segment.png" style="text-align:center;width:100%" alt="transaction trace with consume segment"/>]
 
 The agent will also record a metric that can be be queried in Insights. The format of the metric is `MessageBroker/[libraryName]/Queue/Produce/Named/[queueName]`.
 
@@ -250,9 +242,7 @@ The `messageHandler` parameter works the same as in the `recordConsume` case. Wh
 
 Each message processing will be shown as a separate transaction:
 
-<div style="text-align:center">
-  <img src="./messaging-consume-transaction.png" alt="message transaction"/>
-</div>
+[<img src="./messaging-consume-transaction.png" style="text-align:center;width:100%" alt="message transaction"/>]
 
 ### Cross application traces
 

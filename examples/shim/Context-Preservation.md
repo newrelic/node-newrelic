@@ -230,9 +230,7 @@ transaction, the work done in `secondJob` would be incorrectly associated with
 `'firstTransaction'`.  Now that we have a test case we can start writing our
 instrumentation for the work queue.  This behavior can be seen in the UI:
 
-<div style="text-align:center">
-  [<img src="./confounded-txns.png" style="width:100%" />][5]
-</div>
+[<img src="./confounded-txns.png" alt="confounded transactions" style="text-align:center;width:100%" />][5]
 
 The instrumentation will be relatively simple, we just need to call {@link
 Shim#bindSegment} on the jobs as they are passed in.  The purpose of this
@@ -308,9 +306,7 @@ The correct instrumentation should be noticeable in the UI as now both
 transactions appear, and the timer used by the work queue appears as a segment
 in `'firstTransaction'`
 
-<div style="text-align:center">
-  [<img src="./proper-txns.png" style="width:100%" />][5]
-</div>
+[<img src="./proper-txns.png" alt="transaction breakdown" style="text-align:center;width:100%" />][5]
 
 
 ### Questions?

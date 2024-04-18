@@ -67,9 +67,7 @@ server.get('/shim-demo', function(req, res, next) {
 })
 ```
 
-<div style="text-align:center">
-  [![transaction breakdown](./tx-breakdown.png)][4]
-</div>
+[<img src="./tx-breakdown.png" alt="transaction breakdown" style="text-align:center;width:100%" />][4]
 
 
 --------------------------------------------------------------------------------
@@ -101,9 +99,7 @@ one of the [predefined datastore names]{@link DatastoreShim.DATASTORE_NAMES},
 but we could have also passed in a string like `"Cassandra"` instead. This name
 will show up on the [New Relic APM Databases page][2] like this:
 
-<div style="text-align:center">
-  [![databases overview](./db-overview.png)][2]
-</div>
+[<img src="./db-overview.png" alt="databases overview" style="text-align:center;width:100%" />][2]
 
 
 ### Recording Operations
@@ -125,9 +121,7 @@ them to name our metrics. We can see the results of this on APM in the
 transaction breakdown graph. The green layer labeled `Cassandra connect` is from
 our recorded operation.
 
-<div style="text-align:center">
-  [![transaction breakdown](./tx-breakdown.png)][4]
-</div>
+[<img src="./tx-breakdown.png" alt="transaction breakdown" style="text-align:center;width:100%" />][4]
 
 The third parameter is the ["spec" for this operation]{@link OperationSpec}.
 Specs are simply objects that describe the interface for a function. For
