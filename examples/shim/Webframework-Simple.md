@@ -85,9 +85,7 @@ attributes. It is also displayed in the Environment view.
   shim.setFramework('MyCustom')
 ```
 
-<div style="text-align:center">
-  ![transaction breakdown](./breakdown-table-web-framework.png)
-</div>
+[<img src="./breakdown-table-web-framework.png" alt="transaction breakdown" style="text-align:center;width:100%" />]
 
 ### What to Record
 
@@ -128,9 +126,8 @@ the HTTP request or pass control to another middleware.
 Since there can be many middlewares executed for a single request, it is useful to know
 how much time is spent in each middleware when troubleshooting performance.
 
-<div style="text-align:center">
-  ![transaction breakdown](./tx-breakdown-web-api.png)
-</div>
+[<img src="./tx-breakdown-web-api.png" alt="transaction breakdown" style="text-align:center;width:100%" />]
+
 
 There are two API functions related to middleware - {@link WebFrameworkShim#recordMiddleware}
 and {@link WebFrameworkShim#wrapMiddlewareMounter}. Based on our web app code, we would
@@ -226,9 +223,7 @@ shim.recordRender(Server.prototype, 'render', {
 })
 ```
 
-<div style="text-align:center">
-  ![view segment](./trace-summary-view.png)
-</div>
+[<img src="./trace-summary-view.png" alt="view segment" style="text-align:center;width:100%" />]
 
 Note that in some cases (e.g. in Express) the `render` function may be directly
 on the `req` object and may be invoked without accepting a callback. In this

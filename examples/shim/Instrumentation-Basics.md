@@ -5,9 +5,7 @@ Instrumentation for Node.js holds two purposes. The first is to give users
 detailed information about what happens on their server. The more things
 instrumented, the more detailed this graph can be.
 
-<div style="text-align:center">
-  ![application overview](./overview.png)
-</div>
+[<img src="./overview.png" alt="application overview" style="text-align:center;width:100%" />]
 
 The second purpose is to maintain the transaction context. In order to properly
 associate chunks of work with the correct transactions we must link the context
