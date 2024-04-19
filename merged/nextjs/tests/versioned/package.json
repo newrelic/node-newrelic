@@ -1,6 +1,6 @@
 {
   "name": "nextjs-tests",
-  "targets": ["next"],
+  "targets": [{"name":"next","minAgentVersion":"@newrelic/next@0.7.0"}],
   "version": "0.0.0",
   "private": true,
   "tests": [
