@@ -1,6 +1,6 @@
 {
   "name": "restify-tests",
-  "targets": ["restify"],
+  "targets": [{"name":"restify","minAgentVersion":"2.6.0"}],
   "version": "0.0.0",
   "private": true,
   "tests": [

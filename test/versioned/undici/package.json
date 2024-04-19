@@ -1,6 +1,6 @@
 {
   "name": "undici-tests",
-  "targets": ["undici"],
+  "targets": [{"name":"undici","minAgentVersion":"11.1.0"}],
   "version": "0.0.0",
   "private": true,
   "tests": [

@@ -1,6 +1,6 @@
 {
   "name": "superagent-tests",
-  "targets": ["superagent"],
+  "targets": [{"name":"superagent","minAgentVersion":"4.9.0"}],
   "version": "0.0.0",
   "private": true,
   "tests": [{

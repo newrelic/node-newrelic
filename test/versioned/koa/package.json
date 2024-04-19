@@ -1,9 +1,10 @@
 {
   "name": "koa-tests",
   "targets": [
-    "koa",
-    "koa-router",
-    "@koa/router"
+    {"name": "koa", "minAgentVersion": "3.2.0"},
+    {"name": "koa-route", "minAgentVersion": "3.2.0"},
+    {"name": "koa-router", "minAgentVersion": "3.2.0"},
+    {"name": "@koa/router", "minAgentVersion": "3.2.0"}
   ],
   "version": "0.0.0",
   "private": true,

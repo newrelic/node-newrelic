@@ -1,6 +1,6 @@
 {
   "name": "pg-tests",
-  "targets": ["pg"],
+  "targets": [{"name":"pg","minAgentVersion":"9.0.0"},{"name":"pg-native","minAgentVersion":"9.0.0"}],
   "version": "0.0.0",
   "private": true,
   "tests": [
@@ -10,7 +10,7 @@
       },
       "dependencies": {
         "pg": ">=8.2.0 <8.8.0",
-        "pg-native": ">=2"
+        "pg-native": ">=2.0.0"
       },
       "files": [
         "force-native.tap.js",
@@ -24,7 +24,7 @@
       },
       "dependencies": {
         "pg": ">=8.8.0",
-        "pg-native": ">=3"
+        "pg-native": ">=3.0.0"
       },
       "files": [
         "force-native.tap.js",

@@ -1,6 +1,6 @@
 {
   "name": "winston-tests",
-  "targets": ["winston"],
+  "targets": [{"name":"winston","minAgentVersion":"8.11.0"}],
   "version": "0.0.0",
   "private": true,
   "tests": [

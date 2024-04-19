@@ -1,6 +1,6 @@
 {
   "name": "director-tests",
-  "targets": ["director"],
+  "targets": [{"name":"director","minAgentVersion":"2.0.0"}],
   "version": "0.0.0",
   "private": true,
   "tests": [

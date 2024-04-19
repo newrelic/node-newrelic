@@ -1,6 +1,6 @@
 {
   "name": "fastify-tests",
-  "targets": ["fastify"],
+  "targets": [{"name":"fastify","minAgentVersion":"8.5.0"}],
   "version": "0.0.0",
   "private": true,
   "tests": [

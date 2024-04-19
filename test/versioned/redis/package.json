@@ -1,6 +1,6 @@
 {
   "name": "redis-tests",
-  "targets": ["redis"],
+  "targets": [{"name":"redis","minAgentVersion":"1.31.0"}],
   "version": "0.0.0",
   "private": true,
   "tests": [

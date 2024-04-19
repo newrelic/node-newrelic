@@ -1,6 +1,6 @@
 {
   "name": "express-tests",
-  "targets": ["express"],
+  "targets": [{"name":"express","minAgentVersion":"2.6.0"}],
   "version": "0.0.0",
   "private": true,
   "tests": [
