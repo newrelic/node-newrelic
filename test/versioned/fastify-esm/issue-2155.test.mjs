@@ -9,13 +9,6 @@
 
 import assert from 'assert'
 import http from 'http'
-import helper from '../../lib/agent_helper.js'
-
-helper.instrumentMockedAgent({
-  feature_flag: {
-    fastify_instrumentation: true
-  }
-})
 
 import fastify from 'fastify'
 const server = fastify({
