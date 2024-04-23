@@ -27,7 +27,6 @@ server.route({
 })
 
 const timeout = setTimeout(() => {
-  console.error('time limit exceeded')
   // eslint-disable-next-line no-process-exit
   process.exit(1)
 }, 20_000)
@@ -52,3 +51,10 @@ assert.equal(found, 'ok')
 
 await server.close()
 clearTimeout(timeout)
+
+// We really shouldn't need this `process.exit`, but on Node.js 18 with our
+// versioned tests runner we'll see the runner consistently hang without it.
+// To see it, use Node 18 and `npm run versioned:internal fastify-esm`. Note,
+// that it must be "versioned:internal" and not "versioned:internal:major".
+// eslint-disable-next-line no-process-exit
+process.exit(0)
