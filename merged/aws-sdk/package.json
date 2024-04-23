@@ -1,0 +1,47 @@
+{
+  "name": "@newrelic/aws-sdk",
+  "version": "7.4.1",
+  "description": "New Relic instrumentation of the aws-sdk package.",
+  "scripts": {
+    "test": "npm run unit && npm run versioned",
+    "third-party-updates": "oss third-party manifest && oss third-party notices && git add THIRD_PARTY_NOTICES.md third_party_manifest.json",
+    "unit": "c8 -o ./coverage/unit/ tap --no-coverage --reporter classic 'tests/unit/**/*.tap.js'",
+    "versioned": "c8 -o ./coverage/versioned versioned-tests --strict --minor --all -i 2 tests/versioned/**/*.tap.js",
+    "versioned:major": "c8 -o ./coverage/versioned versioned-tests --strict --major -i 2 tests/versioned/**/*.tap.js",
+    "smoke": "tap tests/smoke/**/*.test.js --timeout=180 --no-coverage --reporter=classic",
+    "lint": "eslint *.js lib tests",
+    "lint:fix": "eslint --fix *.js lib tests",
+    "lint:lockfile": "lockfile-lint --path package-lock.json --type npm --allowed-hosts npm --validate-https --validate-integrity",
+    "prepare": "husky install"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/newrelic/node-newrelic-aws-sdk.git"
+  },
+  "author": "New Relic Node.js agent team <nodejs@newrelic.com>",
+  "license": "Apache-2.0",
+  "devDependencies": {
+    "@aws-sdk/client-s3": "^3.342.0",
+    "@aws-sdk/s3-request-presigner": "^3.342.0",
+    "@newrelic/eslint-config": "^0.4.0",
+    "@newrelic/newrelic-oss-cli": "^0.1.2",
+    "@newrelic/test-utilities": "^8.4.0",
+    "aws-sdk": "^2.1372.0",
+    "c8": "^7.12.0",
+    "eslint": "^8.56.0",
+    "husky": "^7.0.2",
+    "lint-staged": "^11.1.2",
+    "lockfile-lint": "^4.9.6",
+    "newrelic": "^11.14.0",
+    "sinon": "^7.2.3",
+    "tap": "^16.0.1"
+  },
+  "files": [
+    "nr-hooks.js",
+    "lib/**",
+    "*.md"
+  ]
+}
