@@ -1,0 +1,24 @@
+{
+  "name": "fastify-esm-tests",
+  "targets-comment": "omitted as it is covered by the standard fastify tests",
+  "version": "0.0.0",
+  "type": "module",
+  "private": true,
+  "tests": [
+    {
+      "engines": {
+        "node": ">=16"
+      },
+      "dependencies": {
+        "fastify": ">=3.0.0",
+        "middie": "5.3.0"
+      },
+      "files": [
+        "issue-2155.test.mjs"
+      ]
+    }
+  ],
+  "engines": {
+    "node": ">=16"
+  }
+}
