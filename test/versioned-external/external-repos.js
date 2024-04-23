@@ -13,11 +13,6 @@
  */
 const repos = [
   {
-    name: 'aws-sdk',
-    repository: 'https://github.com/newrelic/node-newrelic-aws-sdk.git',
-    branch: 'main'
-  },
-  {
     name: 'next',
     repository: 'https://github.com/newrelic/newrelic-node-nextjs.git',
     branch: 'main'

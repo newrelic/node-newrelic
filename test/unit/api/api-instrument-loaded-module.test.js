@@ -90,18 +90,18 @@ tap.test('Agent API - instrumentLoadedModule', (t) => {
 
   t.test('should not throw if supported module is not installed', function (t) {
     // We need a supported module in our test. We need that module _not_ to be
-    // installed. We'll use aws-sdk.  This first bit ensures
+    // installed. We'll use mysql.  This first bit ensures
     const EMPTY_MODULE = {}
-    let awsSdk = EMPTY_MODULE
+    let mod = EMPTY_MODULE
     try {
       // eslint-disable-next-line node/no-missing-require
-      awsSdk = require('aws-sdk')
+      mod = require('mysql')
     } catch (e) {}
-    t.ok(awsSdk === EMPTY_MODULE, 'aws-sdk is not installed')
+    t.ok(mod === EMPTY_MODULE, 'mysql is not installed')
 
     // attempt to instrument -- if nothing throws we're good
     try {
-      api.instrumentLoadedModule('aws-sdk', awsSdk)
+      api.instrumentLoadedModule('mysql', mod)
     } catch (e) {
       t.error(e)
     }

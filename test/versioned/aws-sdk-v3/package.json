@@ -1,0 +1,217 @@
+{
+  "name": "aws-sdk-v3-tests",
+  "engines": {
+    "node": ">=16.0"
+  },
+  "targets": [
+    {"name": "@aws-sdk/client-sqs", "minAgentVersion": "8.7.1"},
+    {"name": "@aws-sdk/client-sns", "minAgentVersion": "8.7.1"},
+    {"name": "@aws-sdk/client-dynamodb", "minAgentVersion": "8.7.1"},
+    {"name": "@aws-sdk/smithy-client", "minAgentVersion": "8.7.1"},
+    {"name": "@smithy/smithy-client", "minAgentVersion": "11.0.0"},
+    {"name": "@aws-sdk/client-bedrock-runtime", "minAgentVersion": "11.13.0"}
+  ],
+  "version": "0.0.0",
+  "private": true,
+  "tests": [
+    {
+      "engines": {
+        "node": ">=16.0"
+      },
+      "dependencies": {
+        "@aws-sdk/client-api-gateway": {
+          "versions": ">=3.0.0 <=3.193.0 || >3.196.0 <3.377.0 || >3.377.0 ",
+          "samples": 5
+        }
+      },
+      "files": [
+        "api-gateway.tap.js"
+      ]
+    },
+    {
+      "engines": {
+        "node": ">=16.0"
+      },
+      "dependencies": {
+        "@aws-sdk/client-elasticache": {
+          "versions": ">=3.0.0 <=3.193.0 || >3.196.0 <3.377.0 || >3.377.0 ",
+          "samples": 2
+        }
+      },
+      "files": [
+        "elasticache.tap.js"
+      ]
+    },
+    {
+      "engines": {
+        "node": ">=16.0"
+      },
+      "dependencies": {
+        "@aws-sdk/client-elastic-load-balancing": {
+          "versions": ">=3.0.0 <=3.193.0 || >3.196.0 <3.377.0 || >3.377.0 ",
+          "samples": 2
+        }
+      },
+      "files": [
+        "elb.tap.js"
+      ]
+    },
+    {
+      "engines": {
+        "node": ">=16.0"
+      },
+      "dependencies": {
+        "@aws-sdk/client-lambda": {
+          "versions": ">=3.0.0 <=3.193.0 || >3.196.0 <3.377.0 || >3.377.0 ",
+          "samples": 2
+        }
+      },
+      "files": [
+        "lambda.tap.js"
+      ]
+    },
+    {
+      "engines": {
+        "node": ">=16.0"
+      },
+      "dependencies": {
+        "@aws-sdk/client-rds": {
+          "versions": ">=3.0.0 <=3.193.0 || >3.196.0 <3.377.0 || >3.377.0 ",
+          "samples": 2
+        }
+      },
+      "files": [
+        "rds.tap.js"
+      ]
+    },
+    {
+      "engines": {
+        "node": ">=16.0"
+      },
+      "dependencies": {
+        "@aws-sdk/client-redshift": {
+          "versions": ">=3.0.0 <=3.193.0 || >3.196.0 <3.377.0 || >3.377.0 ",
+          "samples": 2
+        }
+      },
+      "files": [
+        "redshift.tap.js"
+      ]
+    },
+    {
+      "engines": {
+        "node": ">=16.0"
+      },
+      "dependencies": {
+        "@aws-sdk/client-rekognition": {
+          "versions": ">=3.0.0 <=3.193.0 || >3.196.0 <3.377.0 || >3.377.0 ",
+          "samples": 2
+        }
+      },
+      "files": [
+        "rekognition.tap.js"
+      ]
+    },
+    {
+      "engines": {
+        "node": ">=16.0"
+      },
+      "dependencies": {
+        "@aws-sdk/client-s3": {
+          "versions": ">=3.0.0 <=3.193.0 || >3.196.0 <3.377.0 || >3.377.0 ",
+          "samples": 5
+        }
+      },
+      "files": [
+        "s3.tap.js"
+      ]
+    },
+    {
+      "engines": {
+        "node": ">=16.0"
+      },
+      "dependencies": {
+        "@aws-sdk/client-ses": {
+          "versions": ">=3.0.0 <=3.193.0 || >3.196.0 <3.377.0 || >3.377.0 ",
+          "samples": 2
+        }
+      },
+      "files": [
+        "ses.tap.js"
+      ]
+    },
+    {
+      "engines": {
+        "node": ">=16.0"
+      },
+      "dependencies": {
+        "@aws-sdk/client-sns": {
+          "versions": ">=3.0.0 <=3.193.0 || >3.196.0 <3.377.0 || >3.377.0 ",
+          "samples": 10
+        }
+      },
+      "files": [
+        "sns.tap.js"
+      ]
+    },
+    {
+      "engines": {
+        "node": ">=16.0"
+      },
+      "dependencies": {
+        "@aws-sdk/client-sqs": {
+          "versions": ">=3.0.0 <=3.193.0 || >3.196.0 <3.377.0 || >3.377.0 ",
+          "samples": 10
+        }
+      },
+      "files": [
+        "sqs.tap.js"
+      ]
+    },
+    {
+      "engines": {
+        "node": ">=16.0"
+      },
+      "dependencies": {
+        "@aws-sdk/client-dynamodb": {
+          "versions": ">=3.0.0 <=3.193.0 || >3.196.0 <3.377.0 || >3.377.0 ",
+          "samples": 10
+        }
+      },
+      "files": [
+        "client-dynamodb.tap.js"
+      ]
+    },
+    {
+      "engines": {
+        "node": ">=16.0"
+      },
+      "dependencies": {
+        "@aws-sdk/util-dynamodb": "latest",
+        "@aws-sdk/client-dynamodb": "3.476.0",
+        "@aws-sdk/lib-dynamodb": {
+          "versions": ">=3.0.0 <=3.193.0 || >3.196.0 <3.377.0 || >3.377.0 ",
+          "samples": 10
+        }
+      },
+      "files": [
+        "lib-dynamodb.tap.js"
+      ]
+    },
+    {
+      "engines": {
+        "node": ">=16.0"
+      },
+      "dependencies": {
+        "@aws-sdk/client-bedrock-runtime": "^3.474.0"
+      },
+      "files": [
+        "bedrock-chat-completions.tap.js",
+        "bedrock-embeddings.tap.js",
+        "bedrock-negative-tests.tap.js"
+      ]
+    }
+  ],
+  "dependencies": {}
+}
+

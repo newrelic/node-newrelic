@@ -1,0 +1,59 @@
+{
+  "name": "aws-sdk-v2-tests",
+  "version": "0.0.0",
+  "targets": [
+    {"name":"aws-sdk","minAgentVersion": "6.2.0"}
+  ],
+  "private": true,
+  "tests": [
+    {
+      "engines": {
+        "node": ">=16.0"
+      },
+      "dependencies": {
+        "aws-sdk": {
+          "versions": "2.2.48"
+        }
+      },
+      "files": [
+        "instrumentation-unsupported.tap.js"
+      ]
+    },
+    {
+      "engines": {
+        "node": ">=16.0"
+      },
+      "dependencies": {
+        "aws-sdk": {
+          "versions": ">=2.463.0",
+          "samples": 10
+        }
+      },
+      "files": [
+        "aws-sdk.tap.js",
+        "dynamodb.tap.js",
+        "http-services.tap.js",
+        "instrumentation-supported.tap.js",
+        "s3.tap.js",
+        "sns.tap.js",
+        "sqs.tap.js"
+      ]
+    },
+    {
+      "engines": {
+        "node": ">=16.0"
+      },
+      "dependencies": {
+        "aws-sdk": {
+          "versions": ">=2.463.0",
+          "samples": 10
+        },
+        "amazon-dax-client": ">=1.2.5"
+      },
+      "files": [
+        "amazon-dax-client.tap.js"
+      ]
+    }
+  ],
+  "dependencies": {}
+}
