@@ -12,6 +12,7 @@ import http from 'http'
 
 import fastify from 'fastify'
 const server = fastify({
+  forceCloseConnections: true,
   logger: {
     level: 'silent'
   }
@@ -24,6 +25,12 @@ server.route({
     res.send('ok')
   }
 })
+
+const timeout = setTimeout(() => {
+  console.error('time limit exceeded')
+  // eslint-disable-next-line no-process-exit
+  process.exit(1)
+}, 20_000)
 
 const address = await server.listen({ host: '127.0.0.1', port: 0 })
 const found = await new Promise((resolve, reject) => {
@@ -44,3 +51,4 @@ const found = await new Promise((resolve, reject) => {
 assert.equal(found, 'ok')
 
 await server.close()
+clearTimeout(timeout)
