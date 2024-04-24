@@ -674,7 +674,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 ### import-in-the-middle
 
-This product includes source derived from [import-in-the-middle](https://github.com/DataDog/import-in-the-middle) ([v1.7.4](https://github.com/DataDog/import-in-the-middle/tree/v1.7.4)), distributed under the [Apache-2.0 License](https://github.com/DataDog/import-in-the-middle/blob/v1.7.4/LICENSE):
+This product includes source derived from [import-in-the-middle](https://github.com/DataDog/import-in-the-middle) ([v1.8.0](https://github.com/DataDog/import-in-the-middle/tree/v1.8.0)), distributed under the [Apache-2.0 License](https://github.com/DataDog/import-in-the-middle/blob/v1.8.0/LICENSE):
 
 ```
 Copyright 2021 Datadog, Inc.
@@ -886,7 +886,7 @@ SOFTWARE.
 
 ### @aws-sdk/client-s3
 
-This product includes source derived from [@aws-sdk/client-s3](https://github.com/aws/aws-sdk-js-v3) ([v3.587.0](https://github.com/aws/aws-sdk-js-v3/tree/v3.587.0)), distributed under the [Apache-2.0 License](https://github.com/aws/aws-sdk-js-v3/blob/v3.587.0/LICENSE):
+This product includes source derived from [@aws-sdk/client-s3](https://github.com/aws/aws-sdk-js-v3) ([v3.592.0](https://github.com/aws/aws-sdk-js-v3/tree/v3.592.0)), distributed under the [Apache-2.0 License](https://github.com/aws/aws-sdk-js-v3/blob/v3.592.0/LICENSE):
 
 ```
                                 Apache License
@@ -1095,7 +1095,7 @@ This product includes source derived from [@aws-sdk/client-s3](https://github.co
 
 ### @aws-sdk/s3-request-presigner
 
-This product includes source derived from [@aws-sdk/s3-request-presigner](https://github.com/aws/aws-sdk-js-v3) ([v3.587.0](https://github.com/aws/aws-sdk-js-v3/tree/v3.587.0)), distributed under the [Apache-2.0 License](https://github.com/aws/aws-sdk-js-v3/blob/v3.587.0/LICENSE):
+This product includes source derived from [@aws-sdk/s3-request-presigner](https://github.com/aws/aws-sdk-js-v3) ([v3.592.0](https://github.com/aws/aws-sdk-js-v3/tree/v3.592.0)), distributed under the [Apache-2.0 License](https://github.com/aws/aws-sdk-js-v3/blob/v3.592.0/LICENSE):
 
 ```
                                 Apache License
@@ -1750,7 +1750,7 @@ This product includes source derived from [@newrelic/newrelic-oss-cli](https://g
 
 ### @newrelic/test-utilities
 
-This product includes source derived from [@newrelic/test-utilities](https://github.com/newrelic/node-test-utilities) ([v8.5.0](https://github.com/newrelic/node-test-utilities/tree/v8.5.0)), distributed under the [Apache-2.0 License](https://github.com/newrelic/node-test-utilities/blob/v8.5.0/LICENSE):
+This product includes source derived from [@newrelic/test-utilities](https://github.com/newrelic/node-test-utilities) ([v8.6.0](https://github.com/newrelic/node-test-utilities/tree/v8.6.0)), distributed under the [Apache-2.0 License](https://github.com/newrelic/node-test-utilities/blob/v8.6.0/LICENSE):
 
 ```
                                  Apache License
@@ -2493,7 +2493,7 @@ THE SOFTWARE.
 
 ### aws-sdk
 
-This product includes source derived from [aws-sdk](https://github.com/aws/aws-sdk-js) ([v2.1631.0](https://github.com/aws/aws-sdk-js/tree/v2.1631.0)), distributed under the [Apache-2.0 License](https://github.com/aws/aws-sdk-js/blob/v2.1631.0/LICENSE.txt):
+This product includes source derived from [aws-sdk](https://github.com/aws/aws-sdk-js) ([v2.1636.0](https://github.com/aws/aws-sdk-js/tree/v2.1636.0)), distributed under the [Apache-2.0 License](https://github.com/aws/aws-sdk-js/blob/v2.1636.0/LICENSE.txt):
 
 ```
 
@@ -2892,7 +2892,7 @@ THE SOFTWARE.
 
 ### eslint-plugin-jsdoc
 
-This product includes source derived from [eslint-plugin-jsdoc](https://github.com/gajus/eslint-plugin-jsdoc) ([v48.2.7](https://github.com/gajus/eslint-plugin-jsdoc/tree/v48.2.7)), distributed under the [BSD-3-Clause License](https://github.com/gajus/eslint-plugin-jsdoc/blob/v48.2.7/LICENSE):
+This product includes source derived from [eslint-plugin-jsdoc](https://github.com/gajus/eslint-plugin-jsdoc) ([v48.2.8](https://github.com/gajus/eslint-plugin-jsdoc/tree/v48.2.8)), distributed under the [BSD-3-Clause License](https://github.com/gajus/eslint-plugin-jsdoc/blob/v48.2.8/LICENSE):
 
 ```
 Copyright (c) 2018, Gajus Kuizinas (http://gajus.com/)
@@ -3941,7 +3941,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 ### @contrast/fn-inspect
 
-This product includes source derived from [@contrast/fn-inspect](https://github.com/Contrast-Security-Inc/node-fn-inspect) ([v3.4.0](https://github.com/Contrast-Security-Inc/node-fn-inspect/tree/v3.4.0)), distributed under the [MIT License](https://github.com/Contrast-Security-Inc/node-fn-inspect/blob/v3.4.0/LICENSE):
+This product includes source derived from [@contrast/fn-inspect](https://github.com/Contrast-Security-Inc/node-fn-inspect) ([v4.2.0](https://github.com/Contrast-Security-Inc/node-fn-inspect/tree/v4.2.0)), distributed under the [MIT License](https://github.com/Contrast-Security-Inc/node-fn-inspect/blob/v4.2.0/LICENSE):
 
 ```
 Copyright 2022 Contrast Security, Inc
