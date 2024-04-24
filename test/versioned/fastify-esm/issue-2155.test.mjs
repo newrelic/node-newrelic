@@ -7,6 +7,9 @@
 // Thus, we cannot write a typical `tap` based test. Instead, we need to rely
 // on this script exiting cleanly to represent a successful test.
 
+import helper from '../../lib/agent_helper.js'
+helper.instrumentMockedAgent()
+
 import assert from 'assert'
 import http from 'http'
 
