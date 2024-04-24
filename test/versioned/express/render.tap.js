@@ -89,7 +89,7 @@ function runTests(conf) {
   })
 
   test('agent instrumentation of Express', function (t) {
-    t.plan(6)
+    t.plan(7)
 
     let agent = null
     let app = null
@@ -137,7 +137,7 @@ function runTests(conf) {
           t.ok(stats, 'found unscoped stats for request path')
           t.equal(stats.callCount, 1, '/test was only requested once')
 
-          stats = agent.metrics.getOrCreateApdexMetric('Apdex/Expressjs/GET//test')
+          stats = agent.metrics.getMetric('Apdex/Expressjs/GET//test')
           t.ok(stats, 'found apdex stats for request path')
           t.equal(stats.satisfying, 1, 'got satisfactory response time')
           t.equal(stats.tolerating, 0, 'got no tolerable requests')
@@ -157,6 +157,40 @@ function runTests(conf) {
             'serialized metrics as expected'
           )
 
+          t.end()
+        })
+      })
+    })
+
+    t.test('ignore apdex when ignoreApdex is true on transaction', { timeout: 1000 }, function (t) {
+      // set apdexT so apdex stats will be recorded
+      agent.config.apdex_t = 1
+
+      app.get(TEST_PATH, function (req, res) {
+        const tx = agent.getTransaction()
+        tx.ignoreApdex = true
+        res.send({ yep: true })
+      })
+
+      server.listen(0, TEST_HOST, function () {
+        const port = server.address().port
+        helper.makeGetRequest(TEST_URL + port + TEST_PATH, function () {
+          let stats
+
+          stats = agent.metrics.getMetric('WebTransaction/Expressjs/GET//test')
+          t.ok(stats, 'found unscoped stats for request path')
+          t.equal(stats.callCount, 1, '/test was only requested once')
+
+          stats = agent.metrics.getMetric('Apdex/Expressjs/GET//test')
+          t.notOk(stats, 'should not have apdex metrics')
+
+          stats = agent.metrics.getMetric('WebTransaction')
+          t.ok(stats, 'found roll-up statistics for web requests')
+          t.equal(stats.callCount, 1, 'only one web request was made')
+
+          stats = agent.metrics.getMetric('HttpDispatcher')
+          t.ok(stats, 'found HTTP dispatcher statistics')
+          t.equal(stats.callCount, 1, 'only one HTTP-dispatched request was made')
           t.end()
         })
       })

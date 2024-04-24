@@ -1882,4 +1882,24 @@ API.prototype.setLlmTokenCountCallback = function setLlmTokenCountCallback(callb
   this.agent.llm.tokenCountCallback = callback
 }
 
+/**
+ * Ignores the current transaction when calculating your {@link https://docs.newrelic.com/docs/apm/new-relic-apm/apdex/apdex-measuring-user-satisfaction/|Apdex score}.
+ * This is useful when you have either very short or very long transactions (such as file downloads) that can skew your Apdex score.
+ */
+API.prototype.ignoreApdex = function ignoreApdex() {
+  const metric = this.agent.metrics.getOrCreateMetric(NAMES.SUPPORTABILITY.API + '/ignoreApdex')
+  metric.incrementCallCount()
+
+  const transaction = this.agent.tracer.getTransaction()
+
+  if (!transaction) {
+    logger.warn(
+      'Apdex will not be ignored. ignoreApdex must be called within the scope of a transaction.'
+    )
+    return
+  }
+
+  transaction.ignoreApdex = true
+}
+
 module.exports = API

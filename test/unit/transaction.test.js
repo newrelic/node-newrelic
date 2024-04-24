@@ -204,6 +204,14 @@ tap.test('Transaction unit tests', (t) => {
     t.equal(another.apdexT, 0.1, 'should not require a key transaction apdexT')
     t.end()
   })
+
+  t.test('should ignore calculating apdex when ignoreApdex is true', (t) => {
+    txn.ignoreApdex = true
+    txn._setApdex('Apdex/TestController/key', 1200, 667)
+    const metric = txn.metrics.getMetric('Apdex/TestController/key')
+    t.notOk(metric)
+    t.end()
+  })
 })
 
 tap.test('Transaction naming tests', (t) => {
