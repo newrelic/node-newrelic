@@ -7,6 +7,7 @@
 
 const tap = require('tap')
 const helper = require('../../lib/agent_helper')
+const { removeModules } = require('../../lib/cache-buster')
 // load the assertSegments assertion
 require('../../lib/metrics_helper')
 const { filterLangchainEvents, filterLangchainEventsByType } = require('./common')
@@ -48,11 +49,7 @@ async function afterEach(t) {
   t.context?.server?.close()
   helper.unloadAgent(t.context.agent)
   // bust the require-cache so it can re-instrument
-  Object.keys(require.cache).forEach((key) => {
-    if (key.includes('@langchain/core') || key.includes('openai')) {
-      delete require.cache[key]
-    }
-  })
+  removeModules(['@langchain/core', 'openai'])
 }
 
 tap.test('Langchain instrumentation - chain streaming', (t) => {

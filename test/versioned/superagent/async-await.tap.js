@@ -7,7 +7,7 @@
 
 const tap = require('tap')
 const helper = require('../../lib/agent_helper')
-
+const { removeModules } = require('../../lib/cache-buster')
 const EXTERNAL_NAME = /External\/newrelic.com(:443)*\//
 
 tap.test('SuperAgent instrumentation with async/await', (t) => {
@@ -17,11 +17,7 @@ tap.test('SuperAgent instrumentation with async/await', (t) => {
   })
   t.afterEach((t) => {
     helper.unloadAgent(t.context.agent)
-    Object.keys(require.cache).forEach((key) => {
-      if (key.includes('superagent')) {
-        delete require.cache[key]
-      }
-    })
+    removeModules(['superagent'])
   })
 
   t.test('should maintain transaction context with promises', (t) => {

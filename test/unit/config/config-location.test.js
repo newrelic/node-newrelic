@@ -11,6 +11,7 @@ const fs = require('fs')
 const fsPromises = require('fs/promises')
 const sinon = require('sinon')
 
+const { removeMatchedModules } = require('../../lib/cache-buster')
 const Config = require('../../../lib/config')
 
 tap.test('when overriding the config file location via NEW_RELIC_HOME', (t) => {
@@ -153,11 +154,7 @@ tap.test('Selecting config file path', (t) => {
     process.chdir(originalWorkingDirectory)
 
     const mainModuleRegex = new RegExp(MAIN_MODULE_DIR)
-    Object.keys(require.cache).forEach((key) => {
-      if (mainModuleRegex.test(key)) {
-        delete require.cache[key]
-      }
-    })
+    removeMatchedModules(mainModuleRegex)
   })
 
   t.test('should load the default newrelic.js config file', (t) => {

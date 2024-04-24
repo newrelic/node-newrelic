@@ -10,6 +10,7 @@ const { sink, once } = require('pino/test/helper')
 const split = require('split2')
 const { truncate } = require('../../../lib/util/application-logging')
 const helper = require('../../lib/agent_helper')
+const { removeMatchedModules } = require('../../lib/cache-buster')
 const { LOGGING } = require('../../../lib/metrics/names')
 const { originalMsgAssertion } = require('./helpers')
 const semver = require('semver')
@@ -29,11 +30,7 @@ tap.test('Pino instrumentation', (t) => {
   }
 
   t.beforeEach(async (t) => {
-    Object.keys(require.cache).forEach((key) => {
-      if (/pino/.test(key)) {
-        delete require.cache[key]
-      }
-    })
+    removeMatchedModules(/pino/)
 
     t.context.pino = null
     t.context.agent = null

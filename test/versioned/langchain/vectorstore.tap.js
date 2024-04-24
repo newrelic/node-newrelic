@@ -7,6 +7,7 @@
 
 const tap = require('tap')
 const helper = require('../../lib/agent_helper')
+const { removeModules } = require('../../lib/cache-buster')
 // load the assertSegments assertion
 require('../../lib/metrics_helper')
 const { version: pkgVersion } = require('@langchain/core/package.json')
@@ -61,16 +62,7 @@ tap.test('Langchain instrumentation - vectorstore', (t) => {
     t.context?.server?.close()
     helper.unloadAgent(t.context.agent)
     // bust the require-cache so it can re-instrument
-    Object.keys(require.cache).forEach((key) => {
-      if (
-        key.includes('@langchain/core') ||
-        key.includes('openai') ||
-        key.includes('@elastic') ||
-        key.includes('@langchain/community')
-      ) {
-        delete require.cache[key]
-      }
-    })
+    removeModules(['@langchain/core', 'openai', '@elastic', '@langchain/community'])
   })
 
   t.test('should create vectorstore events for every similarity search call', (t) => {

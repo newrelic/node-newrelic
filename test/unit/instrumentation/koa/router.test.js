@@ -10,6 +10,7 @@ const tap = require('tap')
 const instrumentation = require('../../../../lib/instrumentation/koa/router-instrumentation')
 const { METHODS } = require('../../../../lib/instrumentation/http-methods')
 const helper = require('../../../lib/agent_helper')
+const { removeModules } = require('../../../lib/cache-buster')
 const InstrumentationDescriptor = require('../../../../lib/instrumentation-descriptor')
 const WRAPPED_METHODS = ['param', 'register', 'routes', 'middleware', 'allowedMethods']
 const UNWRAPPED_METHODS = METHODS.concat([
@@ -45,11 +46,7 @@ tap.test('koa-router', (t) => {
 
   t.afterEach((t) => {
     helper.unloadAgent(t.context.agent)
-    Object.keys(require.cache).forEach((key) => {
-      if (key.includes(koaRouterMod)) {
-        delete require.cache[key]
-      }
-    })
+    removeModules([koaRouterMod])
   })
 
   t.test('mounting paramware', async (t) => {
@@ -99,11 +96,7 @@ tap.test('koa-router', (t) => {
 
   t.afterEach((t) => {
     helper.unloadAgent(t.context.agent)
-    Object.keys(require.cache).forEach((key) => {
-      if (key.includes(koaRouterMod)) {
-        delete require.cache[key]
-      }
-    })
+    removeModules([koaRouterMod])
   })
 
   t.test('mounting paramware', async (t) => {

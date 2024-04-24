@@ -8,6 +8,7 @@
 const amqpUtils = require('./amqp-utils')
 const API = require('../../../api')
 const helper = require('../../lib/agent_helper')
+const { removeMatchedModules } = require('../../lib/cache-buster')
 const tap = require('tap')
 
 /*
@@ -37,11 +38,7 @@ tap.test('amqplib promise instrumentation', function (t) {
     // which the test itself re-requires, but second-order modules (deps of
     // instrumented methods) are not reloaded and thus not re-instrumented. To
     // resolve this we just delete everything. Kill it all.
-    Object.keys(require.cache).forEach(function (key) {
-      if (/amqplib|bluebird/.test(key)) {
-        delete require.cache[key]
-      }
-    })
+    removeMatchedModules(/amqplib|bluebird/)
 
     agent = helper.instrumentMockedAgent({
       attributes: {

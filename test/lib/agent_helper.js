@@ -17,6 +17,7 @@ const { EventEmitter } = require('events')
 const Transaction = require('../../lib/transaction')
 const symbols = require('../../lib/symbols')
 const InstrumentationTracker = require('../../lib/instrumentation-tracker')
+const { removeModules } = require('./cache-buster')
 const http = require('http')
 const https = require('https')
 const semver = require('semver')
@@ -220,11 +221,7 @@ helper.maybeLoadSecurityAgent = function maybeLoadSecurityAgent(agent) {
  */
 helper.maybeUnloadSecurityAgent = function maybeUnloadSecurityAgent(agent) {
   if (helper.isSecurityAgentEnabled(agent)) {
-    Object.keys(require.cache).forEach((key) => {
-      if (key.includes('@newrelic/security-agent')) {
-        delete require.cache[key]
-      }
-    })
+    removeModules(['@newrelic/security-agent'])
   }
 }
 

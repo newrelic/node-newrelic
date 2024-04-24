@@ -7,6 +7,7 @@
 
 const tap = require('tap')
 const helper = require('../../lib/agent_helper')
+const { removeModules } = require('../../lib/cache-buster')
 const DESTINATIONS = require('../../../lib/config/attribute-filter').DESTINATIONS
 const DESTINATION = DESTINATIONS.TRANS_EVENT | DESTINATIONS.ERROR_EVENT
 const { ERR_CODE, ERR_SERVER_MSG } = require('./constants.cjs')
@@ -45,11 +46,7 @@ tap.test('gRPC Server: Bidi Streaming', (t) => {
     client.close()
     grpc = null
     proto = null
-    Object.keys(require.cache).forEach((key) => {
-      if (key.includes('@grpc/grpc-js')) {
-        delete require.cache[key]
-      }
-    })
+    removeModules(['@grpc/grpc-js'])
   })
 
   t.test('should track bidirectional requests', async (t) => {

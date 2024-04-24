@@ -7,6 +7,7 @@
 
 const tap = require('tap')
 const helper = require('../../lib/agent_helper')
+const { removeModules } = require('../../lib/cache-buster')
 const { ERR_CODE, ERR_MSG } = require('./constants.cjs')
 
 const {
@@ -41,11 +42,7 @@ tap.test('gRPC Client: Unary Requests', (t) => {
     client.close()
     grpc = null
     proto = null
-    Object.keys(require.cache).forEach((key) => {
-      if (key.includes('@grpc/grpc-js')) {
-        delete require.cache[key]
-      }
-    })
+    removeModules(['@grpc/grpc-js'])
   })
 
   t.test('should track unary client requests as an external when in a transaction', (t) => {
