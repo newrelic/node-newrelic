@@ -1,0 +1,9 @@
+<AddTagsToResourceResponse xmlns="http://redshift.amazonaws.com/doc/2010-03-31/">
+  <AddTagsToResourceResult>
+    <TagList>node-1</TagList>
+    <MessageId>b8bee936-3b18-5c1c-bd66-b0c969b618b6</MessageId>
+  </AddTagsToResourceResult>
+  <ResponseMetadata>
+    <RequestId>648b4fd5-c97e-5ece-a8ca-162a9a4270a3</RequestId>
+   </ResponseMetadata>
+</AddTagsToResourceResponse>

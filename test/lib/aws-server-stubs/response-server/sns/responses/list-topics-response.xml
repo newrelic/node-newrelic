@@ -1,0 +1,12 @@
+<ListTopicsResponse xmlns="http://sns.amazonaws.com/doc/2010-03-31/">
+  <ListTopicsResult>
+    <Topics>
+      <member>
+        <TopicArn>arn:sns:us-east-1:acctId:topic1</TopicArn>
+      </member>
+      <member>
+        <TopicArn>arn:sns:us-east-1:acctId:topic2</TopicArn>
+      </member>
+    </Topics>
+  </ListTopicsResult>
+</ListTopicsResponse>
