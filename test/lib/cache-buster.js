@@ -21,12 +21,14 @@ module.exports = {
   removeModules(modules = []) {
     let removed = 0
     const keys = Object.keys(require.cache)
-    for (const key of keys) {
-      if (modules.includes(key) === false) {
-        continue
+    for (const mod of modules) {
+      for (const key of keys) {
+        if (key.includes(mod) === false) {
+          continue
+        }
+        delete require.cache[key]
+        removed += 1
       }
-      delete require.cache[key]
-      removed += 1
     }
     return removed
   },
