@@ -7,6 +7,7 @@
 
 const tap = require('tap')
 const helper = require('../../lib/agent_helper')
+const { removeMatchedModules } = require('../../lib/cache-buster')
 require('../../lib/metrics_helper')
 const params = require('../../lib/params')
 
@@ -126,13 +127,6 @@ async function setup(t) {
 }
 
 function clearLoadedModules(t) {
-  let deletedCount = 0
-  Object.keys(require.cache).forEach((key) => {
-    if (key.indexOf('/ioredis/node_modules/ioredis/') >= 0) {
-      delete require.cache[key]
-      deletedCount++
-    }
-  })
-
+  const deletedCount = removeMatchedModules(/ioredis\/node_modules\/ioredis/)
   t.comment(`Cleared ${deletedCount} modules matching '*/ioredis/node_modules/ioredis/*'`)
 }

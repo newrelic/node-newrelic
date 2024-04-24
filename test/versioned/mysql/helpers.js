@@ -4,17 +4,15 @@
  */
 
 'use strict'
+
 const params = require('../../lib/params')
+const { removeMatchedModules } = require('../../lib/cache-buster')
 
 module.exports = async function setupDb(user, db, table, mysql) {
   const regex = new RegExp(/mysql/)
   await createDb(mysql, user, db)
   await createTable(mysql, user, db, table)
-  Object.keys(require.cache).forEach((key) => {
-    if (regex.test(key)) {
-      delete require.cache[key]
-    }
-  })
+  removeMatchedModules(regex)
 }
 
 function runCommand(client, cmd) {

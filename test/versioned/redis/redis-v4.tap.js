@@ -8,6 +8,7 @@
 const tap = require('tap')
 const test = tap.test
 const helper = require('../../lib/agent_helper')
+const { removeMatchedModules } = require('../../lib/cache-buster')
 const params = require('../../lib/params')
 const urltils = require('../../../lib/util/urltils')
 
@@ -52,11 +53,7 @@ test('Redis instrumentation', function (t) {
     }
     // must purge require cache of redis related instrumentation
     // otherwise it will not re-register on subsequent test runs
-    Object.keys(require.cache).forEach((key) => {
-      if (/redis/.test(key)) {
-        delete require.cache[key]
-      }
-    })
+    removeMatchedModules(/redis/)
   })
 
   t.test('should find Redis calls in the transaction trace', function (t) {

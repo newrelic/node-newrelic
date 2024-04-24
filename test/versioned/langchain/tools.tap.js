@@ -7,6 +7,7 @@
 
 const tap = require('tap')
 const helper = require('../../lib/agent_helper')
+const { removeModules, removeMatchedModules } = require('../../lib/cache-buster')
 // load the assertSegments assertion
 require('../../lib/metrics_helper')
 const { version: pkgVersion } = require('@langchain/core/package.json')
@@ -32,11 +33,8 @@ tap.test('Langchain instrumentation - tools', (t) => {
   t.afterEach((t) => {
     helper.unloadAgent(t.context.agent)
     // bust the require-cache so it can re-instrument
-    Object.keys(require.cache).forEach((key) => {
-      if (key.includes('@langchain/core') || key.endsWith('/helpers/custom-tool.js')) {
-        delete require.cache[key]
-      }
-    })
+    removeModules(['@langchain/core'])
+    removeMatchedModules(/helpers\/custom-tool\.js$/)
   })
 
   t.test('should create span on successful tools create', (t) => {

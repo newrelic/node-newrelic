@@ -8,6 +8,7 @@
 const tap = require('tap')
 const { METHODS } = require('../../../../lib/instrumentation/http-methods')
 const helper = require('../../../lib/agent_helper')
+const { removeModules } = require('../../../lib/cache-buster')
 const InstrumentationDescriptor = require('../../../../lib/instrumentation-descriptor')
 
 tap.beforeEach((t) => {
@@ -24,11 +25,7 @@ tap.beforeEach((t) => {
 
 tap.afterEach((t) => {
   helper.unloadAgent(t.context.agent)
-  Object.keys(require.cache).forEach((key) => {
-    if (key.includes('koa-route')) {
-      delete require.cache[key]
-    }
-  })
+  removeModules(['koa-route'])
 })
 
 tap.test('methods', function (t) {

@@ -7,6 +7,7 @@
 
 const tap = require('tap')
 const helper = require('../../lib/agent_helper')
+const { removeMatchedModules } = require('../../lib/cache-buster')
 const concat = require('concat-stream')
 require('../../lib/logging-helper')
 const { Writable } = require('stream')
@@ -39,11 +40,7 @@ tap.test('winston instrumentation', (t) => {
     winston = null
     // must purge require cache of winston related instrumentation
     // otherwise it will not re-register on subsequent test runs
-    Object.keys(require.cache).forEach((key) => {
-      if (/winston/.test(key)) {
-        delete require.cache[key]
-      }
-    })
+    removeMatchedModules(/winston/)
 
     /**
      * since our nr-winston-transport gets registered

@@ -7,6 +7,7 @@
 
 const tap = require('tap')
 const helper = require('../../lib/agent_helper')
+const { removeMatchedModules } = require('../../lib/cache-buster')
 const { promisify } = require('node:util')
 const makeRequest = promisify(helper.makeGetRequest)
 const { initNestApp, deleteNestApp } = require('./setup')
@@ -28,11 +29,7 @@ tap.test('Verify the Nest.js instrumentation', (t) => {
   t.teardown(async () => {
     app.close()
     helper.unloadAgent(agent)
-    Object.keys(require.cache).forEach((key) => {
-      if (/test-app/.test(key)) {
-        delete require.cache[key]
-      }
-    })
+    removeMatchedModules(/test-app/)
     await deleteNestApp()
   })
 

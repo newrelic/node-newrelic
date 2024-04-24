@@ -8,6 +8,7 @@
 const amqpUtils = require('./amqp-utils')
 const API = require('../../../api')
 const helper = require('../../lib/agent_helper')
+const { removeMatchedModules } = require('../../lib/cache-buster')
 const tap = require('tap')
 
 /*
@@ -64,11 +65,7 @@ tap.test('amqplib callback instrumentation', function (t) {
 
   t.afterEach(function () {
     helper.unloadAgent(agent)
-    Object.keys(require.cache).forEach(function (key) {
-      if (/amqplib/.test(key)) {
-        delete require.cache[key]
-      }
-    })
+    removeMatchedModules(/amqplib/)
 
     if (!conn) {
       return
