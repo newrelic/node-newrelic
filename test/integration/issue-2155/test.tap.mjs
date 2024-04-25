@@ -30,6 +30,7 @@ function instrumentation(shim, resolvedModule) {
         const value = _name.call(foo)
         return `wrapped: ${value}`
       }
+      return foo
     }
   })
 }
@@ -53,8 +54,8 @@ tap.afterEach((t) => {
   helper.unloadAgent(t.context.agent)
 })
 
-tap.test('blah', async (t) => {
+tap.test('CJS imported as ESM gets wrapped correctly', async (t) => {
   const { mod } = t.context
-  mod()
-  t.pass()
+  const instance = mod()
+  t.equal(instance.name(), 'wrapped: foo')
 })
