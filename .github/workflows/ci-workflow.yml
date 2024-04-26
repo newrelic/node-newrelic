@@ -121,6 +121,11 @@ jobs:
       with:
         name: integration-tests-${{ matrix.node-version }}
         path: ./coverage/integration/lcov.info
+    - name: Archive Integration (ESM) Test Coverage
+      uses: actions/upload-artifact@v3
+      with:
+        name: integration-tests-${{ matrix.node-version }}
+        path: ./coverage/integration-esm/lcov.info
 
   versioned-internal:
     needs: skip_if_release
