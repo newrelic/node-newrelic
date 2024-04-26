@@ -6,13 +6,26 @@
 import tap from 'tap'
 import { randomUUID } from 'node:crypto'
 import fs from 'node:fs/promises'
+import path from 'node:path'
+import url from 'node:url'
 import semver from 'semver'
 import helper from '../../lib/agent_helper.js'
 import names from '../../../lib/metrics/names.js'
 import { Sink } from './common.mjs'
 
 const { LOGGING } = names
-const winstonPkg = JSON.parse(await fs.readFile('./node_modules/winston/package.json'))
+let pkgPath
+if (import.meta.dirname) {
+  pkgPath = path.join(import.meta.dirname, 'node_modules', 'winston', 'package.json')
+} else {
+  pkgPath = path.join(
+    path.dirname(url.fileURLToPath(import.meta.url)),
+    'node_modules',
+    'winston',
+    'package.json'
+  )
+}
+const winstonPkg = JSON.parse(await fs.readFile(pkgPath))
 
 tap.skip = true
 

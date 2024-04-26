@@ -157,6 +157,7 @@
     "docker-env": "./bin/docker-env-vars.sh",
     "docs": "npm ci && jsdoc -c ./jsdoc-conf.json --private -r .",
     "integration": "npm run prepare-test && npm run sub-install && time c8 -o ./coverage/integration tap --test-regex='(\\/|^test\\/integration\\/.*\\.tap\\.js)$' --timeout=600 --no-coverage --reporter classic",
+    "integration:esm": "time c8 -o ./coverage/integration-esm tap --node-arg='--loader=./esm-loader.mjs' --test-regex='(test\\/integration\\/.*\\.tap\\.mjs)$' --timeout=600 --no-coverage --reporter classic",
     "prepare-test": "npm run ssl && npm run docker-env",
     "lint": "eslint ./*.{js,mjs} lib test bin examples",
     "lint:fix": "eslint --fix, ./*.{js,mjs} lib test bin examples",

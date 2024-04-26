@@ -94,6 +94,9 @@ jobs:
     if: needs.skip_if_release.outputs.should_skip != 'true'
     runs-on: ubuntu-latest
 
+    env:
+      NODE_NO_WARNINGS: 1
+
     strategy:
       fail-fast: false
       matrix:
@@ -111,11 +114,18 @@ jobs:
       run: npm run services
     - name: Run Integration Tests
       run: npm run integration
+    - name: Run ESM Integration Tests
+      run: npm run integration:esm
     - name: Archive Integration Test Coverage
       uses: actions/upload-artifact@v3
       with:
         name: integration-tests-${{ matrix.node-version }}
         path: ./coverage/integration/lcov.info
+    - name: Archive Integration (ESM) Test Coverage
+      uses: actions/upload-artifact@v3
+      with:
+        name: integration-tests-${{ matrix.node-version }}
+        path: ./coverage/integration-esm/lcov.info
 
   versioned-internal:
     needs: skip_if_release
