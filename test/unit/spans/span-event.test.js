@@ -164,7 +164,9 @@ tap.test('fromSegment()', (t) => {
 
           // Should have (most) http properties.
           t.equal(attributes['http.url'], 'https://example.com/')
+          t.equal(attributes['server.address'], 'example.com')
           t.ok(attributes['http.method'])
+          t.ok(attributes['http.request.method'])
           t.equal(attributes['http.statusCode'], 200)
           t.equal(attributes['http.statusText'], 'OK')
 
@@ -251,7 +253,9 @@ tap.test('fromSegment()', (t) => {
         // Should have not http properties.
         const hasOwnAttribute = Object.hasOwnProperty.bind(attributes)
         t.notOk(hasOwnAttribute('http.url'))
+        t.notOk(hasOwnAttribute('server.address'))
         t.notOk(hasOwnAttribute('http.method'))
+        t.notOk(hasOwnAttribute('http.request.method'))
 
         // Should have (most) datastore properties.
         t.ok(attributes['db.instance'])
