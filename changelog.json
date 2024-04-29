@@ -2,6 +2,23 @@
   "repository": "newrelic/node-newrelic",
   "entries": [
     {
+      "version": "11.16.0",
+      "changes": {
+        "security": [
+          "bump formidable and superagent"
+        ],
+        "bugfixes": [
+          "Fixed issue with CJS being imported as ESM"
+        ],
+        "features": [
+          "Added API `ignoreApdex` to ignore calculating apdex for the active transaction",
+          "Migrated @newrelic/superagent into agent",
+          "Migrated @newrelic/aws-sdk into agent",
+          "Migrated @newrelic/koa into mainline agent"
+        ]
+      }
+    },
+    {
       "version": "11.15.0",
       "changes": {
         "security": [],
