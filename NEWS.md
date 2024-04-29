@@ -15,7 +15,6 @@
 #### Documentation
 
 * Fixed images in markdown tutorials ([#2153](https://github.com/newrelic/node-newrelic/pull/2153)) ([ef14948](https://github.com/newrelic/node-newrelic/commit/ef14948a0068e21d7c5aa569b8f2862f07a7f941))
-* Fixed images in markdown tutorials ([#2153](https://github.com/newrelic/node-newrelic/pull/2153)) ([ea8358f](https://github.com/newrelic/node-newrelic/commit/ea8358f6fa5a6e001ad49cab93eab46d7d9a9eb3))
 * Includes api.js in jsdoc generation ([#2139](https://github.com/newrelic/node-newrelic/pull/2139)) ([3883348](https://github.com/newrelic/node-newrelic/commit/3883348bd0aab54efdbb5e876a4e4c867f5df2e3))
 
 #### Miscellaneous chores
@@ -23,7 +22,6 @@
 * Migrated @newrelic/superagent into agent repo ([#2141](https://github.com/newrelic/node-newrelic/pull/2141))
 * Migrated @newrelic/aws-sdk into agent repo ([#2161](https://github.com/newrelic/node-newrelic/pull/2161)) ([a9eb593](https://github.com/newrelic/node-newrelic/commit/a9eb593c1a6b44b770de92c1b2ca2acdf8e2f222))
 * Migrated @newrelic/koa into mainline agent repo ([#2148](https://github.com/newrelic/node-newrelic/pull/2148)) ([33af646](https://github.com/newrelic/node-newrelic/commit/33af646878994d7f12d3cb42680e21410b34322f))
-* migrated koa versioned tests to use agent_helper, moved symbols to lib/symbols, consolidated koa instrumentation into one folder ([#2148](https://github.com/newrelic/node-newrelic/pull/2148)) ([28d478b](https://github.com/newrelic/node-newrelic/commit/28d478b8e31e4d5fc546ac2de17ffb608cdd191c))
 * Removed repetitive cache busting ([#2160](https://github.com/newrelic/node-newrelic/pull/2160)) ([5ac870e](https://github.com/newrelic/node-newrelic/commit/5ac870e7a75ba791060dfaffd49cfa400d60e910))
 * Updated instrumentation to use type constants instead of raw strings ([#2165](https://github.com/newrelic/node-newrelic/pull/2165)) ([c5b42cd](https://github.com/newrelic/node-newrelic/commit/c5b42cd7b2df6bb1054a589ad666890550a01d43))
 * Updated versioned tests readme ([#2159](https://github.com/newrelic/node-newrelic/pull/2159)) ([a957304](https://github.com/newrelic/node-newrelic/commit/a9573041f44462d6ccb287f7dccf672f54b0d7b3))
