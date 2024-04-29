@@ -1,5 +1,5 @@
 #!/bin/sh
 . "$(dirname "$0")/_/husky.sh"
-. "$(dirname "$0")/../bin/update-third-party-notices.sh"
+./"$(dirname "$0")/../bin/update-third-party-notices.sh"
 
 npx lint-staged
