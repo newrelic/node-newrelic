@@ -1,3 +1,260 @@
+### v11.16.0 (2024-04-29)
+#### ⚠ BREAKING CHANGES
+
+* Dropped Node 14 from engine and versioned tests
+* updated package to no longer allow using as a standalone package
+* Dropped Node 14
+* Dropped Node 14
+
+#### Features
+
+* add @koa/router instrumentation ([#2148](https://github.com/newrelic/node-newrelic/pull/2148)) ([006ac27](https://github.com/newrelic/node-newrelic/commit/006ac2763ed2faed84b9fe1a4e47c24d5133dabd))
+* Add Bedrock LLM streamed response handling ([#2161](https://github.com/newrelic/node-newrelic/pull/2161)) ([6dd22f4](https://github.com/newrelic/node-newrelic/commit/6dd22f4cbfbfbca484bed9ac877a92043358ad4f))
+* Add initial objects for LLM events ([#2161](https://github.com/newrelic/node-newrelic/pull/2161)) ([250494f](https://github.com/newrelic/node-newrelic/commit/250494f5da552ba9a1753251b15af3be0d83a8c5))
+* Add instrumentation for InvokeModelCommand ([#2161](https://github.com/newrelic/node-newrelic/pull/2161)) ([44f02c6](https://github.com/newrelic/node-newrelic/commit/44f02c62c5bf452c65dd992fa14da5fab8d43450))
+* Add LLama2 support to LLM events and mock server ([#2161](https://github.com/newrelic/node-newrelic/pull/2161)) ([1d38f77](https://github.com/newrelic/node-newrelic/commit/1d38f77317fd4a16b8bed5a6b946b89fdbcf5ac8))
+* Add llm attribute to all transactions that contain llm spans for bedrock ([#2161](https://github.com/newrelic/node-newrelic/pull/2161)) ([fbfabf7](https://github.com/newrelic/node-newrelic/commit/fbfabf7e4e050775cd22ca1185b8fdde833893f9))
+* Added ability to disable capturing of content in LLM events `ai_monitoring.record_content.enabled` ([#2161](https://github.com/newrelic/node-newrelic/pull/2161)) ([dfe8683](https://github.com/newrelic/node-newrelic/commit/dfe8683c5c489df34132ca58cefa058a0b413539))
+* Added ability to disable instrumenting streaming via `ai_monitoring.streaming.enabled` = `false` ([#2161](https://github.com/newrelic/node-newrelic/pull/2161)) ([f486d81](https://github.com/newrelic/node-newrelic/commit/f486d81fb5086c536afb63f0b4e601c0ed6d2dbb))
+* Added ability to store feedback ids by request id ([#2161](https://github.com/newrelic/node-newrelic/pull/2161)) ([fa20346](https://github.com/newrelic/node-newrelic/commit/fa20346a8b51ba54f380d1331e1fd8e6f745f4d4))
+* Added API `ignoreApdex` to ignore calculating apdex for the active transaction ([#2166](https://github.com/newrelic/node-newrelic/pull/2166)) ([cb21d2c](https://github.com/newrelic/node-newrelic/commit/cb21d2c95e5bb0de7e16535ecd4b2f5a77dc6fb7))
+* Added handling errors by adding additional attributes to the transaction errors. ([#2161](https://github.com/newrelic/node-newrelic/pull/2161)) ([b544041](https://github.com/newrelic/node-newrelic/commit/b544041abccdb361029b63867b1cd98b7fc4bd83))
+* Added llm.tokenCountCallback support to Bedrock ([#2161](https://github.com/newrelic/node-newrelic/pull/2161)) ([dea3b69](https://github.com/newrelic/node-newrelic/commit/dea3b6921ad690b62d0b0d4be5ec927060b7d028))
+* **index:** initial index.js set-up ([#2148](https://github.com/newrelic/node-newrelic/pull/2148)) ([4a14372](https://github.com/newrelic/node-newrelic/commit/4a143725b05c1d9b1c2829bb740533c8bdf0522f))
+* **koa-router:** set transaction based on most specific matched path ([#2148](https://github.com/newrelic/node-newrelic/pull/2148)) ([5a70ff1](https://github.com/newrelic/node-newrelic/commit/5a70ff10d06db2b162f440ec73a0f7fea46b251d))
+* **lib:** add koa instrumentation ([#2148](https://github.com/newrelic/node-newrelic/pull/2148)) ([4e95e3d](https://github.com/newrelic/node-newrelic/commit/4e95e3dbd2309a467fcf23a43383b36167783bd0))
+* **lib:** wrap emit on koa prototype ([#2148](https://github.com/newrelic/node-newrelic/pull/2148)) ([7a3aad9](https://github.com/newrelic/node-newrelic/commit/7a3aad9efbea92172ad8e4fcee2069c4a191a380))
+* Record metric on every InvokeModelCommand ([#2161](https://github.com/newrelic/node-newrelic/pull/2161)) ([41fcc24](https://github.com/newrelic/node-newrelic/commit/41fcc2428ba1b628995e26f35bd6b3446f0d536f))
+    * Co-authored-by: James Sumners <jsumners@newrelic.com>
+* updated aws sdk v3 instrumentation to function with require-in-the-middle ([#2161](https://github.com/newrelic/node-newrelic/pull/2161)) ([af29cc1](https://github.com/newrelic/node-newrelic/commit/af29cc17a8b21bd77266b2b3bcaca5401a63bf7e))
+
+#### Bug fixes
+
+* added @smithy/smithy-client registration to nr-hooks.js because of https://github.com/aws/aws-sdk-js-v3/pull/4873/files. ([#2161](https://github.com/newrelic/node-newrelic/pull/2161)) ([1838d2f](https://github.com/newrelic/node-newrelic/commit/1838d2f3d6db9639d546416d0369701d8abfb031))
+* Added override setting to middleware configuration ([#2161](https://github.com/newrelic/node-newrelic/pull/2161)) ([bea1d1d](https://github.com/newrelic/node-newrelic/commit/bea1d1d3bb7ccf19d303b035f171cf87550cf67c))
+* adjust smithy instrumentation to fix Presigned URL usage ([#2161](https://github.com/newrelic/node-newrelic/pull/2161)) ([2336e00](https://github.com/newrelic/node-newrelic/commit/2336e00314c72744a5ad3db5ebad75e32a334add))
+* Fixed issue with CJS being imported as ESM ([#2168](https://github.com/newrelic/node-newrelic/pull/2168)) ([9a14cb0](https://github.com/newrelic/node-newrelic/commit/9a14cb02dce5bfbe7830aaa25d71edb38447250b))
+* **lib:** check prototype shape before instrumenting ([#2148](https://github.com/newrelic/node-newrelic/pull/2148)) ([6a38d1c](https://github.com/newrelic/node-newrelic/commit/6a38d1c797c07746871c4a09deab129152abd2db))
+* **lib:** redefine ctx.response.body instead of ctx.body ([#2148](https://github.com/newrelic/node-newrelic/pull/2148)) ([5885154](https://github.com/newrelic/node-newrelic/commit/58851548beb8a35267bf8f352736b06902fec04e))
+* package.json & package-lock.json to reduce vulnerabilities ([#2141](https://github.com/newrelic/node-newrelic/pull/2141)) ([180800c](https://github.com/newrelic/node-newrelic/commit/180800c0d13a63d71842ebecdbaea47d44360dee))
+    * The following vulnerabilities are fixed with an upgrade: - https://snyk.io/vuln/SNYK-JS-SEMVER-3247795
+* package.json & package-lock.json to reduce vulnerabilities ([#2161](https://github.com/newrelic/node-newrelic/pull/2161)) ([4cdf9b4](https://github.com/newrelic/node-newrelic/commit/4cdf9b48cbb348096894be393ad8ce6e6a083b5c))
+    * The following vulnerabilities are fixed with an upgrade: - https://snyk.io/vuln/SNYK-JS-SEMVER-3247795
+* package.json & package-lock.json to reduce vulnerabilities ([#2161](https://github.com/newrelic/node-newrelic/pull/2161)) ([30209a5](https://github.com/newrelic/node-newrelic/commit/30209a5b4db8b15a1f1e9cfa94fbeef48e592f03))
+    * The following vulnerabilities are fixed with an upgrade: - https://snyk.io/vuln/SNYK-JS-SEMVER-3247795
+* package.json & package-lock.json to reduce vulnerabilities ([#2148](https://github.com/newrelic/node-newrelic/pull/2148)) ([3c3b131](https://github.com/newrelic/node-newrelic/commit/3c3b13103ef7195eaeabf393e7f728db02da7ea6))
+    * The following vulnerabilities are fixed with an upgrade: - https://snyk.io/vuln/SNYK-JS-SEMVER-3247795
+* removed passing isJson into sns mocked responses ([#2161](https://github.com/newrelic/node-newrelic/pull/2161)) ([1d214bc](https://github.com/newrelic/node-newrelic/commit/1d214bc78560eea27f30a7488ec4e3cc6a8936c3))
+* **test:** add eslint-env ([#2148](https://github.com/newrelic/node-newrelic/pull/2148)) ([1814c39](https://github.com/newrelic/node-newrelic/commit/1814c390b47dbf86febfec7d9f8127e08ef4113a))
+* Updated aws-sdk v3 instrumentation to only call `shim.setLibrary` and `shim.setDatastore` once instead of on every call to sqs/sns/dyanmodb ([#2161](https://github.com/newrelic/node-newrelic/pull/2161)) ([a0debe8](https://github.com/newrelic/node-newrelic/commit/a0debe8d24e235801dcb4a408262a066bc665ac8))
+* updated smithy-client instrumentation to properly handle all types of clients for dynamo, sqs, sns ([#2161](https://github.com/newrelic/node-newrelic/pull/2161)) ([7e9cf9c](https://github.com/newrelic/node-newrelic/commit/7e9cf9c67fdb778ad1d7641a491d3dcea03ccd73))
+* Updated the mock AWS server to handle both XML and JSON. ([#2161](https://github.com/newrelic/node-newrelic/pull/2161)) ([b8cbb36](https://github.com/newrelic/node-newrelic/commit/b8cbb36e4ed2bac1467ddf57b34ff6ebbfa260a3))
+    *  * The SQS clients as of 2.1372.0 and 3.327.0 speak JSON and our mock    server only dealt in XML.
+* upgrade newrelic from 8.7.0 to 8.7.1 ([#2161](https://github.com/newrelic/node-newrelic/pull/2161)) ([a194a0e](https://github.com/newrelic/node-newrelic/commit/a194a0eaccc0479bbdd4885aaed0272cd0c3d336))
+    * Snyk has created this PR to upgrade newrelic from 8.7.0 to 8.7.1.  See this package in npm: https://www.npmjs.com/package/newrelic  See this project in Snyk: https://app.snyk.io/org/newrelic/project/2352b549-5e50-4110-969b-d3dc6a1d3f98?utm_source=github&utm_medium=referral&page=upgrade-pr
+
+#### Security improvements
+
+* **deps:** bump formidable and superagent ([#2162](https://github.com/newrelic/node-newrelic/pull/2162)) ([260f16b](https://github.com/newrelic/node-newrelic/commit/260f16bba6822cfadbf8648bba38a1013b2d19de))
+
+#### Code refactoring
+
+* adds a serialize method to LlmEvent to remove the complex objects before enqueuing to the custom event aggregator ([#2161](https://github.com/newrelic/node-newrelic/pull/2161)) ([65352a2](https://github.com/newrelic/node-newrelic/commit/65352a2dfe62eaefb77434596c28c3bd61cbc343))
+* **index:** don't export initialize ([#2148](https://github.com/newrelic/node-newrelic/pull/2148)) ([d9a0f84](https://github.com/newrelic/node-newrelic/commit/d9a0f840b5a440c1512c54e55acf51b8027b8b3f))
+* **koa-router:** refactor layer matching algorithm ([#2148](https://github.com/newrelic/node-newrelic/pull/2148)) ([2e190a9](https://github.com/newrelic/node-newrelic/commit/2e190a9099b53c530e1d14c9e6aeaa4032d66362))
+* moved mock server to v3 so deps can be installed during versioned test run ([#2161](https://github.com/newrelic/node-newrelic/pull/2161)) ([c7e3f16](https://github.com/newrelic/node-newrelic/commit/c7e3f16a9c49697cad341b9dd01dc895feaeeee0))
+* Moved relevant aws instrumentation and rely on agent commons ([#2161](https://github.com/newrelic/node-newrelic/pull/2161)) ([32624ed](https://github.com/newrelic/node-newrelic/commit/32624ed9e783bcc8c5a76b43f49580a0a264f694))
+* Removed aws_bedrock_instrumentation feature flag as feature is ready ([#2161](https://github.com/newrelic/node-newrelic/pull/2161)) ([a1e5c3a](https://github.com/newrelic/node-newrelic/commit/a1e5c3a9df007b3732d032a22474bf7040719579))
+* Removed storing message, request and completion id to be used to post LlmFeedbackEvents ([#2161](https://github.com/newrelic/node-newrelic/pull/2161)) ([d9c583d](https://github.com/newrelic/node-newrelic/commit/d9c583d45d55abf0c898c6950d40bbfa6f4e80b7))
+* Updated aws sdk instrumentation to construct specs at instrumentation ([#2161](https://github.com/newrelic/node-newrelic/pull/2161)) ([cde0a10](https://github.com/newrelic/node-newrelic/commit/cde0a1080bc4f3f69d6dde12538f1074968ff764))
+* Updated koa instrumentation to construct specs at instrumentation ([#2148](https://github.com/newrelic/node-newrelic/pull/2148)) ([9f1eff7](https://github.com/newrelic/node-newrelic/commit/9f1eff7eaa5ccbf5ed892ca03955c05916f75496))
+
+#### Documentation
+
+* Fixed images in markdown tutorials ([#2153](https://github.com/newrelic/node-newrelic/pull/2153)) ([ef14948](https://github.com/newrelic/node-newrelic/commit/ef14948a0068e21d7c5aa569b8f2862f07a7f941))
+* Fixed images in markdown tutorials ([#2153](https://github.com/newrelic/node-newrelic/pull/2153)) ([ea8358f](https://github.com/newrelic/node-newrelic/commit/ea8358f6fa5a6e001ad49cab93eab46d7d9a9eb3))
+* Includes api.js in jsdoc generation ([#2139](https://github.com/newrelic/node-newrelic/pull/2139)) ([3883348](https://github.com/newrelic/node-newrelic/commit/3883348bd0aab54efdbb5e876a4e4c867f5df2e3))
+* update API docs to remove docs/ path component ([#2141](https://github.com/newrelic/node-newrelic/pull/2141)) ([786e8ad](https://github.com/newrelic/node-newrelic/commit/786e8ade5cffeeec62a3fbae07422a1fe34e1246))
+* update API docs to remove docs/ path component ([#2148](https://github.com/newrelic/node-newrelic/pull/2148)) ([5ddc04e](https://github.com/newrelic/node-newrelic/commit/5ddc04e2e6f1abfe0239bf3dd9ee87166b1ac4a6))
+* update slack invite link ([#2141](https://github.com/newrelic/node-newrelic/pull/2141)) ([36c7016](https://github.com/newrelic/node-newrelic/commit/36c7016f95352e430296c0590393db2c64446ae7))
+* update slack invite link ([#2148](https://github.com/newrelic/node-newrelic/pull/2148)) ([cbd2580](https://github.com/newrelic/node-newrelic/commit/cbd258041c463d0fdffbfd3398a50e010ce9aefe))
+* update slack invite link ([#2161](https://github.com/newrelic/node-newrelic/pull/2161)) ([6213fb5](https://github.com/newrelic/node-newrelic/commit/6213fb512a9d4bba6c8d02b0d0dfb7bbf541023b))
+* updated readme to specify this no longer is a standalone package ([#2148](https://github.com/newrelic/node-newrelic/pull/2148)) ([8a83a82](https://github.com/newrelic/node-newrelic/commit/8a83a820674891a93cb34017bd5d5b78e33f26f8))
+* Updated targets to include minimum agent version for compatibility repo ([#2154](https://github.com/newrelic/node-newrelic/pull/2154)) ([c7cb11a](https://github.com/newrelic/node-newrelic/commit/c7cb11a19601a9ba2890b426a3807ab8d32c5f86))
+* Updated targets to include minimum agent version for compatibility repo ([#2154](https://github.com/newrelic/node-newrelic/pull/2154)) ([6ea8ed7](https://github.com/newrelic/node-newrelic/commit/6ea8ed72c1185931b0c7259c930edba2dfbf77ab))
+
+#### Miscellaneous chores
+
+* add NEWS.md ([#2148](https://github.com/newrelic/node-newrelic/pull/2148)) ([00cf3ee](https://github.com/newrelic/node-newrelic/commit/00cf3eeb0d39bd982a540198c88128d9c19d6c7d))
+* Added JetBrains settings to .gitignore ([#2161](https://github.com/newrelic/node-newrelic/pull/2161)) ([4769860](https://github.com/newrelic/node-newrelic/commit/476986058e09bd2269ffb14f673cc4a23f299c5e))
+    * Signed-off-by: mrickard <maurice@mauricerickard.com>
+* Added language header to serverless metadata ([#2151](https://github.com/newrelic/node-newrelic/pull/2151)) ([1f6cead](https://github.com/newrelic/node-newrelic/commit/1f6ceada4603df0852453bb532788a34a752840b))
+* added node 20 and drop node 14 in CI ([#2161](https://github.com/newrelic/node-newrelic/pull/2161)) ([e67755f](https://github.com/newrelic/node-newrelic/commit/e67755f4f86895cb8dde1137198f1a49b00b1e44))
+* added node 20 and drop node 14 in CI ([#2148](https://github.com/newrelic/node-newrelic/pull/2148)) ([b19ea85](https://github.com/newrelic/node-newrelic/commit/b19ea8592d2bbf5b6b28a441025be97230b1e52d))
+* Apply LLM updates based on specification changes ([#2161](https://github.com/newrelic/node-newrelic/pull/2161)) ([0bc8af4](https://github.com/newrelic/node-newrelic/commit/0bc8af4211d29404bb17ecee8ef1429a013753aa))
+* Changed token_count to only use tokenCountCallback ([#2161](https://github.com/newrelic/node-newrelic/pull/2161)) ([45c460e](https://github.com/newrelic/node-newrelic/commit/45c460e4ced07bfca1af6b8c6d5bc30f429eadea))
+* changelog edits ([#2148](https://github.com/newrelic/node-newrelic/pull/2148)) ([b5154b3](https://github.com/newrelic/node-newrelic/commit/b5154b38e41d2a6b5c717b050f23d336994b5ad6))
+* **deps-dev:** bump follow-redirects from 1.15.5 to 1.15.6 ([#2161](https://github.com/newrelic/node-newrelic/pull/2161)) ([c49ae45](https://github.com/newrelic/node-newrelic/commit/c49ae45b64c1cf3f3cf14bb60b624463b49e223b))
+    * Signed-off-by: dependabot[bot] <support@github.com> Co-authored-by: dependabot[bot] <49699333+dependabot[bot]@users.noreply.github.com>
+* **deps:** bump @babel/traverse ([#2161](https://github.com/newrelic/node-newrelic/pull/2161)) ([2c48aa3](https://github.com/newrelic/node-newrelic/commit/2c48aa359900d739de47db386b10a4b92b35da72))
+    * Bumps  and [@babel/traverse](https://github.com/babel/babel/tree/HEAD/packages/babel-traverse). These dependencies needed to be updated together.  Updates `@babel/traverse` from 7.17.3 to 7.23.2 - [Release notes](https://github.com/babel/babel/releases) - [Changelog](https://github.com/babel/babel/blob/main/CHANGELOG.md) - [Commits](https://github.com/babel/babel/commits/v7.23.2/packages/babel-traverse)  Updates `@babel/traverse` from 7.20.5 to 7.23.2 - [Release notes](https://github.com/babel/babel/releases) - [Changelog](https://github.com/babel/babel/blob/main/CHANGELOG.md) - [Commits](https://github.com/babel/babel/commits/v7.23.2/packages/babel-traverse)
+* **deps:** bump axios and newrelic ([#2161](https://github.com/newrelic/node-newrelic/pull/2161)) ([fc4d1c9](https://github.com/newrelic/node-newrelic/commit/fc4d1c91f581fcc05eb26c98faf7b936c0d27720))
+    * Bumps [axios](https://github.com/axios/axios) to 1.6.0 and updates ancestor dependency [newrelic](https://github.com/newrelic/node-newrelic). These dependencies need to be updated together.   Updates `axios` from 0.21.4 to 1.6.0 - [Release notes](https://github.com/axios/axios/releases) - [Changelog](https://github.com/axios/axios/blob/v1.x/CHANGELOG.md) - [Commits](https://github.com/axios/axios/compare/v0.21.4...v1.6.0)  Updates `newrelic` from 11.0.0 to 11.5.0 - [Release notes](https://github.com/newrelic/node-newrelic/releases) - [Changelog](https://github.com/newrelic/node-newrelic/blob/main/changelog.json) - [Commits](https://github.com/newrelic/node-newrelic/compare/v11.0.0...v11.5.0)
+* Dropped Node 14 ([#2148](https://github.com/newrelic/node-newrelic/pull/2148)) ([bfe96e8](https://github.com/newrelic/node-newrelic/commit/bfe96e8a7b4c45f761d21faf27bf19250c2da4fc))
+    * Signed-off-by: mrickard <maurice@mauricerickard.com>
+* Dropped Node 14 ([#2161](https://github.com/newrelic/node-newrelic/pull/2161)) ([a21e9af](https://github.com/newrelic/node-newrelic/commit/a21e9af5d5c6ce4913984d064bfbee2a509e9dad))
+    * Signed-off-by: mrickard <maurice@mauricerickard.com>
+* Dropped Node 14 from engine and versioned tests ([#2141](https://github.com/newrelic/node-newrelic/pull/2141)) ([84594b8](https://github.com/newrelic/node-newrelic/commit/84594b81f3feb0478b1d48eddd7037fc2eabef0f))
+    * Signed-off-by: mrickard <maurice@mauricerickard.com>
+* Edited CHANGELOG.md ([#2141](https://github.com/newrelic/node-newrelic/pull/2141)) ([12504c6](https://github.com/newrelic/node-newrelic/commit/12504c6632b68cf552c58370bf560701654c8118))
+    * Signed-off-by: mrickard <maurice@mauricerickard.com>
+* Edited CHANGELOG.md ([#2161](https://github.com/newrelic/node-newrelic/pull/2161)) ([453b9c2](https://github.com/newrelic/node-newrelic/commit/453b9c2229a1003c8f9c25036cb1ea66dc9f0d6a))
+    * Signed-off-by: mrickard <maurice@mauricerickard.com>
+* Edited CHANGELOG.md ([#2161](https://github.com/newrelic/node-newrelic/pull/2161)) ([779abd5](https://github.com/newrelic/node-newrelic/commit/779abd530ca4508c3e4995e5ca1088fec2cdafb1))
+    * Signed-off-by: mrickard <maurice@mauricerickard.com>
+* Edited News.md ([#2148](https://github.com/newrelic/node-newrelic/pull/2148)) ([26d7320](https://github.com/newrelic/node-newrelic/commit/26d73206ccfffd4403648bd079cd1a0f3a6173fc))
+    * Signed-off-by: mrickard <maurice@mauricerickard.com>
+* **eslint:** eslint updates ([#2148](https://github.com/newrelic/node-newrelic/pull/2148)) ([9b16dda](https://github.com/newrelic/node-newrelic/commit/9b16dda4df7714138662ddc01a1c29fb413ff09a))
+* **eslint:** update rules ([#2148](https://github.com/newrelic/node-newrelic/pull/2148)) ([55d01bb](https://github.com/newrelic/node-newrelic/commit/55d01bbb138965e9b988065500561dc391738fbe))
+* **eslint:** update rules; add test rules ([#2148](https://github.com/newrelic/node-newrelic/pull/2148)) ([ed73871](https://github.com/newrelic/node-newrelic/commit/ed7387187b6a43acccb867f0d88cff8315ab0579))
+* Fixed typo on sqs v3 name ([#2161](https://github.com/newrelic/node-newrelic/pull/2161)) ([b3ddc80](https://github.com/newrelic/node-newrelic/commit/b3ddc80fe4c13df039e00634f25aab72bc4734b2))
+* Fixed versioned security agent CI workflow ([#2135](https://github.com/newrelic/node-newrelic/pull/2135)) ([8013b25](https://github.com/newrelic/node-newrelic/commit/8013b25ef24575946d46c163d6b876dce9a02665))
+* ignore console.log eslint, add package name and version to both v3 smoke tests ([#2161](https://github.com/newrelic/node-newrelic/pull/2161)) ([e8b7d92](https://github.com/newrelic/node-newrelic/commit/e8b7d92a903617ef3dca3059efe62c8072718bf9))
+* Merged koa external repo into newrelic repo ([#2148](https://github.com/newrelic/node-newrelic/pull/2148)) ([dc7acd0](https://github.com/newrelic/node-newrelic/commit/dc7acd09232e2ecc95964ff02c196583ac9c06ea))
+* Migrated @newrelic/aws-sdk into agent repo ([#2161](https://github.com/newrelic/node-newrelic/pull/2161)) ([a9eb593](https://github.com/newrelic/node-newrelic/commit/a9eb593c1a6b44b770de92c1b2ca2acdf8e2f222))
+* Migrated @newrelic/koa into mainline agent repo ([#2148](https://github.com/newrelic/node-newrelic/pull/2148)) ([33af646](https://github.com/newrelic/node-newrelic/commit/33af646878994d7f12d3cb42680e21410b34322f))
+* migrated koa versioned tests to use agent_helper, moved symbols to lib/symbols, consolidated koa instrumentation into one folder ([#2148](https://github.com/newrelic/node-newrelic/pull/2148)) ([28d478b](https://github.com/newrelic/node-newrelic/commit/28d478b8e31e4d5fc546ac2de17ffb608cdd191c))
+* **npm:** add .npmignore ([#2148](https://github.com/newrelic/node-newrelic/pull/2148)) ([a69fb37](https://github.com/newrelic/node-newrelic/commit/a69fb3799fcafddc8b25ff1ae0243460827af34c))
+* **npm:** add coveralls dep ([#2148](https://github.com/newrelic/node-newrelic/pull/2148)) ([bd1ffdc](https://github.com/newrelic/node-newrelic/commit/bd1ffdc566dd62b2a204a3e25760e52ab76b92f0))
+* **npm:** add newrelic as dev dep ([#2148](https://github.com/newrelic/node-newrelic/pull/2148)) ([47c492e](https://github.com/newrelic/node-newrelic/commit/47c492eacd3d851d2593f62e3bbf56005db9cb1c))
+* **npm:** add newrelic as peer dep ([#2148](https://github.com/newrelic/node-newrelic/pull/2148)) ([dc3a425](https://github.com/newrelic/node-newrelic/commit/dc3a4250d9b168470456ef5ab1e10410a552ff1d))
+* **npm:** add package-lock.json to npmignore ([#2148](https://github.com/newrelic/node-newrelic/pull/2148)) ([04db88b](https://github.com/newrelic/node-newrelic/commit/04db88b6b6c51fc4aec71e8f08d1410a7829c364))
+* **npm:** add versioned script ([#2148](https://github.com/newrelic/node-newrelic/pull/2148)) ([d650c81](https://github.com/newrelic/node-newrelic/commit/d650c81821b473776ad217afe7532c5064dc87f5))
+* **npm:** address PR comments ([#2148](https://github.com/newrelic/node-newrelic/pull/2148)) ([530fa71](https://github.com/newrelic/node-newrelic/commit/530fa713317d4ca559e7ec390ba7bab435b0605f))
+* **npm:** bump newrelic dep version ([#2148](https://github.com/newrelic/node-newrelic/pull/2148)) ([fc01888](https://github.com/newrelic/node-newrelic/commit/fc018881d66970734461b45a320a6587c36ec52a))
+* **npm:** move methods from devDeps to deps ([#2148](https://github.com/newrelic/node-newrelic/pull/2148)) ([00f11ac](https://github.com/newrelic/node-newrelic/commit/00f11aca0200fbedaa7da268f369013590961b74))
+* **npm:** remove tests from npmignore ([#2148](https://github.com/newrelic/node-newrelic/pull/2148)) ([97ee9f9](https://github.com/newrelic/node-newrelic/commit/97ee9f98ed81bc6cdb2901658cec7c45dd3499ee))
+* **npm:** remove tests/ from npmignore ([#2148](https://github.com/newrelic/node-newrelic/pull/2148)) ([03c6744](https://github.com/newrelic/node-newrelic/commit/03c674436634bd7f898eaf0a3c53991927344118))
+* **npm:** update module name ([#2148](https://github.com/newrelic/node-newrelic/pull/2148)) ([ff4ef7a](https://github.com/newrelic/node-newrelic/commit/ff4ef7ac86b0de4715f1d4080607d46a0d3e9c29))
+* **npm:** update package.json ([#2148](https://github.com/newrelic/node-newrelic/pull/2148)) ([f4fb44a](https://github.com/newrelic/node-newrelic/commit/f4fb44a70b228372fd9761a02daa4a68c351fc8b))
+* **npm:** update test-utilities dep version ([#2148](https://github.com/newrelic/node-newrelic/pull/2148)) ([4ea6b23](https://github.com/newrelic/node-newrelic/commit/4ea6b23f888728bfce53528e278e2ad91941f8f1))
+* **npm:** update test-utilities dep version ([#2148](https://github.com/newrelic/node-newrelic/pull/2148)) ([2cfd87f](https://github.com/newrelic/node-newrelic/commit/2cfd87fd81231a54af7a6b2dfe1dc253df462714))
+* prevent testing on version 2.1372.0+ of aws-sdk as it has broken our instrumentation and mock server ([#2161](https://github.com/newrelic/node-newrelic/pull/2161)) ([50b4146](https://github.com/newrelic/node-newrelic/commit/50b414601dc165bd55b0751c95fb87c4942c056a))
+* **README:** add coveralls badge ([#2148](https://github.com/newrelic/node-newrelic/pull/2148)) ([bad9f03](https://github.com/newrelic/node-newrelic/commit/bad9f038cc3f3fd06a31310293c6bbd4b8c43bc6))
+* Refactor LLM user added metadata ([#2161](https://github.com/newrelic/node-newrelic/pull/2161)) ([331c9bb](https://github.com/newrelic/node-newrelic/commit/331c9bb81d6a134c74d2f2201a473066fb711801))
+* release v7.1.0 ([#2161](https://github.com/newrelic/node-newrelic/pull/2161)) ([2a9d62d](https://github.com/newrelic/node-newrelic/commit/2a9d62dbd760d320f1e2bddd4d44e6846e839d4a))
+* release v7.2.0 ([#2161](https://github.com/newrelic/node-newrelic/pull/2161)) ([0c83c06](https://github.com/newrelic/node-newrelic/commit/0c83c067a874c9c33807a6030e1154fbaa58fb86))
+    * Co-authored-by: jsumners-nr <gh-actions-jsumners-nr@github.com>
+* release v7.3.0 ([#2161](https://github.com/newrelic/node-newrelic/pull/2161)) ([04b64a1](https://github.com/newrelic/node-newrelic/commit/04b64a160945dd8028c64ac5bf9c57eb50135b9f))
+    * Co-authored-by: svetlanabrennan <gh-actions-svetlanabrennan@github.com>
+* release v7.4.0 ([#2161](https://github.com/newrelic/node-newrelic/pull/2161)) ([be2903c](https://github.com/newrelic/node-newrelic/commit/be2903cf9073399f7f4769936ef57ea1c3c52333))
+    * Co-authored-by: jsumners-nr <gh-actions-jsumners-nr@github.com> Co-authored-by: James Sumners <jsumners@newrelic.com>
+* release v7.4.1 ([#2161](https://github.com/newrelic/node-newrelic/pull/2161)) ([c4bec5b](https://github.com/newrelic/node-newrelic/commit/c4bec5b425fb988b8123b4f6bb81ee1108f15fe7))
+* release v9.1.0 ([#2148](https://github.com/newrelic/node-newrelic/pull/2148)) ([e9974b6](https://github.com/newrelic/node-newrelic/commit/e9974b62f7e7fb056ad32e606a2c8218a5bf5dbf))
+* Removed agent version check, anticipating Node 18 support ([#2161](https://github.com/newrelic/node-newrelic/pull/2161)) ([527f7f0](https://github.com/newrelic/node-newrelic/commit/527f7f024471914a814a9883490a71824e3fd377))
+    * Signed-off-by: mrickard <maurice@mauricerickard.com>
+* removed newrelic as peer dep as standalone is no longer supported ([#2141](https://github.com/newrelic/node-newrelic/pull/2141)) ([83448f2](https://github.com/newrelic/node-newrelic/commit/83448f299a8ed25ba3613355d5d0f3269e3e8cb1))
+* removed newrelic as peer dep as standalone is no longer supported ([#2148](https://github.com/newrelic/node-newrelic/pull/2148)) ([5983db3](https://github.com/newrelic/node-newrelic/commit/5983db349018b0f54f9df6653ff92a9373868913))
+* removed newrelic as peer dep as standalone is no longer supported ([#2161](https://github.com/newrelic/node-newrelic/pull/2161)) ([bbc34a2](https://github.com/newrelic/node-newrelic/commit/bbc34a2789076ce13099c7b97b7916d5298c2314))
+* Removed repetitive cache busting ([#2160](https://github.com/newrelic/node-newrelic/pull/2160)) ([5ac870e](https://github.com/newrelic/node-newrelic/commit/5ac870e7a75ba791060dfaffd49cfa400d60e910))
+* Removed unused attributes on LlmChatCompletionSummary and LlmEmbedding ([#2161](https://github.com/newrelic/node-newrelic/pull/2161)) ([d34311d](https://github.com/newrelic/node-newrelic/commit/d34311d778290619fa8dd5fce6743acefe0762f5))
+* Replace inlined bedrock server with test-utils version ([#2161](https://github.com/newrelic/node-newrelic/pull/2161)) ([be7f061](https://github.com/newrelic/node-newrelic/commit/be7f06164535a595ff7b133b3c9fa7d937a964f2))
+* Sync package-lock.json with package.json file ([#2161](https://github.com/newrelic/node-newrelic/pull/2161)) ([f070d20](https://github.com/newrelic/node-newrelic/commit/f070d2089af189352af58bdd24372ef84e69ad5c))
+* **travis:** skip linting for earlier versions ([#2148](https://github.com/newrelic/node-newrelic/pull/2148)) ([15cf3e3](https://github.com/newrelic/node-newrelic/commit/15cf3e35c4a72b7ad29622fe9a66f3e5cc779268))
+* update explorer hub link in readme ([#2141](https://github.com/newrelic/node-newrelic/pull/2141)) ([c145846](https://github.com/newrelic/node-newrelic/commit/c145846ea4fb6f9d8d0b797d6a6c3693f5dec0c5))
+* update explorer hub link in readme ([#2148](https://github.com/newrelic/node-newrelic/pull/2148)) ([3d87b4d](https://github.com/newrelic/node-newrelic/commit/3d87b4dd315496317f10af3f9794cad8137a6a6a))
+* update explorer hub links in readme ([#2161](https://github.com/newrelic/node-newrelic/pull/2161)) ([ecf45c4](https://github.com/newrelic/node-newrelic/commit/ecf45c430a0a9ada83aff6178914c4925499bd9b))
+* update to newest community plus header ([#2141](https://github.com/newrelic/node-newrelic/pull/2141)) ([f544d71](https://github.com/newrelic/node-newrelic/commit/f544d7133affdd367beeca2a97519ded79ed64e2))
+* update to newest community plus header ([#2161](https://github.com/newrelic/node-newrelic/pull/2161)) ([46b99fe](https://github.com/newrelic/node-newrelic/commit/46b99feca8d1b19770756a7e64b5a889d8d429e0))
+* update to newest community plus header ([#2148](https://github.com/newrelic/node-newrelic/pull/2148)) ([8b45535](https://github.com/newrelic/node-newrelic/commit/8b455357679b730c2699f6a841371773f4bddcc4))
+* updated @newrelic/test-utilities and newrelic to latest ([#2141](https://github.com/newrelic/node-newrelic/pull/2141)) ([46e40a9](https://github.com/newrelic/node-newrelic/commit/46e40a962c75cc0b35cfb6495a1d82f9e253a4c7))
+* updated @newrelic/test-utilities and newrelic to latest ([#2148](https://github.com/newrelic/node-newrelic/pull/2148)) ([bb5b801](https://github.com/newrelic/node-newrelic/commit/bb5b801f20aa8bdead35d93afb8bd79c84df80c9))
+* updated @newrelic/test-utilities to latest ([#2161](https://github.com/newrelic/node-newrelic/pull/2161)) ([0ab7c2a](https://github.com/newrelic/node-newrelic/commit/0ab7c2a68bfc8970aa17d1265b40b4c9f329a5f3))
+* Updated aws instrumentation to rely on type constants ([#2161](https://github.com/newrelic/node-newrelic/pull/2161)) ([f7fcf7e](https://github.com/newrelic/node-newrelic/commit/f7fcf7e132326c9a5a800b7ced1cf15560ce8e3b))
+* Updated Bedrock entities with token_count ([#2161](https://github.com/newrelic/node-newrelic/pull/2161)) ([d67eae3](https://github.com/newrelic/node-newrelic/commit/d67eae312e8bdc65d2ef4e685b8e8c5a512e03c1))
+* updated c8 and its configurationt only specify lcov ([#2141](https://github.com/newrelic/node-newrelic/pull/2141)) ([f01672e](https://github.com/newrelic/node-newrelic/commit/f01672e7a4f159b78fed06c55c5a949fce65a6eb))
+* Updated CHANGELOG.md ([#2141](https://github.com/newrelic/node-newrelic/pull/2141)) ([5328879](https://github.com/newrelic/node-newrelic/commit/532887909ac2327395e5c0f424ed8e7a419f8c11))
+    * Signed-off-by: mrickard <maurice@mauricerickard.com>
+* Updated CHANGELOG.md ([#2161](https://github.com/newrelic/node-newrelic/pull/2161)) ([f6c244d](https://github.com/newrelic/node-newrelic/commit/f6c244d9ac1ee1c083127c482c3615b2df7bf7fa))
+    * Signed-off-by: mrickard <maurice@mauricerickard.com>
+* Updated CI process for releases ([#2148](https://github.com/newrelic/node-newrelic/pull/2148)) ([cbf31f2](https://github.com/newrelic/node-newrelic/commit/cbf31f268c4e8f0b712e5ae06ea8ed20c3598372))
+* updated instrumentation to assign the same shim id to all child instrumentation ([#2161](https://github.com/newrelic/node-newrelic/pull/2161)) ([102ac9c](https://github.com/newrelic/node-newrelic/commit/102ac9c6c199d2476ac4eb858f12b1f208bda873))
+* Updated instrumentation to use type constants instead of raw strings ([#2165](https://github.com/newrelic/node-newrelic/pull/2165)) ([c5b42cd](https://github.com/newrelic/node-newrelic/commit/c5b42cd7b2df6bb1054a589ad666890550a01d43))
+* Updated lockfile ([#2141](https://github.com/newrelic/node-newrelic/pull/2141)) ([2e5ad76](https://github.com/newrelic/node-newrelic/commit/2e5ad76f0b09856748cbb72f7afb56a895d2caf4))
+    * Signed-off-by: mrickard <maurice@mauricerickard.com>
+* Updated lockfile ([#2148](https://github.com/newrelic/node-newrelic/pull/2148)) ([b713f07](https://github.com/newrelic/node-newrelic/commit/b713f0796166e6f3a9f10d4a1acb5b45ea63f9d0))
+    * Signed-off-by: mrickard <maurice@mauricerickard.com>
+* updated newrelic to get specs on shim instance ([#2148](https://github.com/newrelic/node-newrelic/pull/2148)) ([9ce50cf](https://github.com/newrelic/node-newrelic/commit/9ce50cf711c779bfa6c2af861d078fecd5d12f02))
+* Updated News.md ([#2148](https://github.com/newrelic/node-newrelic/pull/2148)) ([936132c](https://github.com/newrelic/node-newrelic/commit/936132cc064d987d10dc00c1af1f1dcd9c140073))
+    * Signed-off-by: mrickard <maurice@mauricerickard.com>
+* Updated News.md (Node 20 support) ([#2148](https://github.com/newrelic/node-newrelic/pull/2148)) ([4d15a18](https://github.com/newrelic/node-newrelic/commit/4d15a18df60612457fb4ec70cd72b157312727f8))
+    * Signed-off-by: mrickard <maurice@mauricerickard.com>
+* updated package to no longer allow using as a standalone package ([#2141](https://github.com/newrelic/node-newrelic/pull/2141)) ([69aa641](https://github.com/newrelic/node-newrelic/commit/69aa641d4c41f657488df5a5b55927a090194a6c))
+* updated recordParamware to construct spec ([#2148](https://github.com/newrelic/node-newrelic/pull/2148)) ([168fdf5](https://github.com/newrelic/node-newrelic/commit/168fdf515da6b4f170b5ae0ac69bfda1abc567f9))
+* Updated test to address linter warning ([#2161](https://github.com/newrelic/node-newrelic/pull/2161)) ([0fd6b0f](https://github.com/newrelic/node-newrelic/commit/0fd6b0fabcb97793c6be843363af78e7935ffb9a))
+    * Signed-off-by: mrickard <maurice@mauricerickard.com>
+* Updated test-utils dependency ([#2161](https://github.com/newrelic/node-newrelic/pull/2161)) ([86ef13b](https://github.com/newrelic/node-newrelic/commit/86ef13bd4932b20ebc442a5ac396686b230675c0))
+* Updated versioned tests readme ([#2159](https://github.com/newrelic/node-newrelic/pull/2159)) ([a957304](https://github.com/newrelic/node-newrelic/commit/a9573041f44462d6ccb287f7dccf672f54b0d7b3))
+* Updated versioned tests to support upcoming tooling ([#2147](https://github.com/newrelic/node-newrelic/pull/2147)) ([38e47d9](https://github.com/newrelic/node-newrelic/commit/38e47d9d7ffadbea3103c77686e031c4cf954d2c))
+* Updated versioned tests to use quiet output mode ([#2145](https://github.com/newrelic/node-newrelic/pull/2145)) ([63a5ddc](https://github.com/newrelic/node-newrelic/commit/63a5ddcb6c0040918189db17ee236007dba9f993))
+* use latest of test deps for bedrock versioned tests ([#2161](https://github.com/newrelic/node-newrelic/pull/2161)) ([52c2451](https://github.com/newrelic/node-newrelic/commit/52c24519fb6e6e84a61f6b943f4f1a38ba24b02d))
+
+#### Tests
+
+* Add missing test files to config ([#2161](https://github.com/newrelic/node-newrelic/pull/2161)) ([1a3fd80](https://github.com/newrelic/node-newrelic/commit/1a3fd80d0be9815e951865cc7ba57bd9ce82654f))
+    * Co-authored-by: Bob Evans <robert.evans25@gmail.com>
+* Add mock server for Bedrock API ([#2161](https://github.com/newrelic/node-newrelic/pull/2161)) ([4fd82cb](https://github.com/newrelic/node-newrelic/commit/4fd82cb78b07fd548e953bf3e047ef37373a4085))
+    * * test: Add mock server for Bedrock API  * add success test  * add stream support  * add claude v1  * add amazon models  * add ai21 model  * add cohere model
+* **koa-router:** add allowedMethods tests ([#2148](https://github.com/newrelic/node-newrelic/pull/2148)) ([01c5bc1](https://github.com/newrelic/node-newrelic/commit/01c5bc139a67f563af85ce6447991670e402151f))
+* **koa-router:** add allowedMethods/errorHandler test ([#2148](https://github.com/newrelic/node-newrelic/pull/2148)) ([c8f1653](https://github.com/newrelic/node-newrelic/commit/c8f1653fb82d7d2638ba586b78b408627c1721d9))
+* **koa-router:** add regex path unit tests ([#2148](https://github.com/newrelic/node-newrelic/pull/2148)) ([632f78a](https://github.com/newrelic/node-newrelic/commit/632f78ada07a253fc5bd778f70a3ff48a01f6937))
+* **koa-router:** add test using router prefix ([#2148](https://github.com/newrelic/node-newrelic/pull/2148)) ([8e12359](https://github.com/newrelic/node-newrelic/commit/8e123595158be819bbfe92ba55758a7f2296ae67))
+* **koa-router:** add tx naming test for app-level middleware with nested router ([#2148](https://github.com/newrelic/node-newrelic/pull/2148)) ([cccf62e](https://github.com/newrelic/node-newrelic/commit/cccf62ec8b96d195c44c6e646893235800630e4b))
+* **koa:** add instrumentation unit test ([#2148](https://github.com/newrelic/node-newrelic/pull/2148)) ([8c3fe46](https://github.com/newrelic/node-newrelic/commit/8c3fe468072551f37d85a3eefe40380a8f18d117))
+* **koa:** add v1 test ([#2148](https://github.com/newrelic/node-newrelic/pull/2148)) ([d0bb36a](https://github.com/newrelic/node-newrelic/commit/d0bb36addf58acf2cb99540c03857d0356016b11))
+* **koa:** update tests per PR comments ([#2148](https://github.com/newrelic/node-newrelic/pull/2148)) ([13b76e9](https://github.com/newrelic/node-newrelic/commit/13b76e932e0656095f3ceb16846df207ce10da74))
+* **lib:** add response body assertions ([#2148](https://github.com/newrelic/node-newrelic/pull/2148)) ([5739020](https://github.com/newrelic/node-newrelic/commit/5739020eda762592a2a8b1eecbc4f6beca502b15))
+* pin peer deps of @aws-sdk/util-dynamodb and @aws-sdk/client-dynamodb so the older versions of @aws-sdk/lib-dynamodb pass ([#2161](https://github.com/newrelic/node-newrelic/pull/2161)) ([7cbde26](https://github.com/newrelic/node-newrelic/commit/7cbde264f472b6bc1057eb1844d0362a3b875ae3))
+* Removed v1 versioned tests ([#2148](https://github.com/newrelic/node-newrelic/pull/2148)) ([7da8ac6](https://github.com/newrelic/node-newrelic/commit/7da8ac60a02e17d3e59d78aacd4a17e88ec2508b))
+* Resolve issue with testing in main repo ([#2161](https://github.com/newrelic/node-newrelic/pull/2161)) ([a394921](https://github.com/newrelic/node-newrelic/commit/a3949210d6229feea06f1bc0b8d76f71c6e5cf6c))
+* update assertion matches to match to remove deprecation warnings ([#2161](https://github.com/newrelic/node-newrelic/pull/2161)) ([3941a8a](https://github.com/newrelic/node-newrelic/commit/3941a8af681748b96c86787cfc1f8a4f04dd7ce1))
+* update ddb assertion ([#2161](https://github.com/newrelic/node-newrelic/pull/2161)) ([4d7ec8d](https://github.com/newrelic/node-newrelic/commit/4d7ec8d7543ac45e752637fb0bf30e7a02902def))
+* updated min version of aws-sdk v2 to the package that works. i suspect its the reuse connection fix in the changelog but it is so old i do not think it matters ([#2161](https://github.com/newrelic/node-newrelic/pull/2161)) ([6de8a82](https://github.com/newrelic/node-newrelic/commit/6de8a822a1c4045153fe0742896ed0e57297bc05))
+* updated tests to include missing coverage on some edge cases around not binding segments if not in active transaction ([#2141](https://github.com/newrelic/node-newrelic/pull/2141)) ([d2a1b10](https://github.com/newrelic/node-newrelic/commit/d2a1b1093009b9f165a89714922574bae6f4f7c1))
+* **versioned:** add koa instrumentation tests ([#2148](https://github.com/newrelic/node-newrelic/pull/2148)) ([d5734b8](https://github.com/newrelic/node-newrelic/commit/d5734b8913b63dec0fc5cd21b89ea8fa3eb77389))
+
+#### Continuous integration
+
+* Add Open Source Policy Workflow ([#2141](https://github.com/newrelic/node-newrelic/pull/2141)) ([d4af41b](https://github.com/newrelic/node-newrelic/commit/d4af41b513cbb5d3c5d2992a2998d4276648007e))
+* Add Open Source Policy Workflow ([#2161](https://github.com/newrelic/node-newrelic/pull/2161)) ([f615a0c](https://github.com/newrelic/node-newrelic/commit/f615a0cb14df534033cb3c580345295e53c7ba45))
+* Add Open Source Policy Workflow ([#2148](https://github.com/newrelic/node-newrelic/pull/2148)) ([58e03be](https://github.com/newrelic/node-newrelic/commit/58e03bec117e12d71167b23993d0859125b3ea87))
+* changelog edits ([#2161](https://github.com/newrelic/node-newrelic/pull/2161)) ([473eb08](https://github.com/newrelic/node-newrelic/commit/473eb0882de9a317c4d3fbe9205fbd3ed240fee5))
+* Fixed `changelog_file` to be `NEWS.md` ([#2148](https://github.com/newrelic/node-newrelic/pull/2148)) ([e8fe445](https://github.com/newrelic/node-newrelic/commit/e8fe445b89e384b15fbee32b4645afe5445d49ac))
+* fixed misspelling in prepare-release.yml ([#2161](https://github.com/newrelic/node-newrelic/pull/2161)) ([5e0befa](https://github.com/newrelic/node-newrelic/commit/5e0befa99bd58ba0daac353b032f26965a026ac4))
+* Fixed spelling of `use_new_release` in prepare-release.yml ([#2148](https://github.com/newrelic/node-newrelic/pull/2148)) ([8ab4637](https://github.com/newrelic/node-newrelic/commit/8ab4637b1c8c433234a8fc3fd17976c447b8c7ea))
+* Removed `use_new_release` input from prepare release workflow ([#2141](https://github.com/newrelic/node-newrelic/pull/2141)) ([9518f44](https://github.com/newrelic/node-newrelic/commit/9518f4407503a4bff8b4bf50fb0681593742ff00))
+* Removed `use_new_release` input from prepare release workflow ([#2148](https://github.com/newrelic/node-newrelic/pull/2148)) ([54db8c4](https://github.com/newrelic/node-newrelic/commit/54db8c41994ca7e35e77e11f56fa6196fa9a1bdf))
+* Removed `use_new_release` input from prepare release workflow ([#2161](https://github.com/newrelic/node-newrelic/pull/2161)) ([3a48c8b](https://github.com/newrelic/node-newrelic/commit/3a48c8bf4dfb34c9db49b1a58e287277912f15c5))
+* removed changelog.json file ([#2161](https://github.com/newrelic/node-newrelic/pull/2161)) ([9532afa](https://github.com/newrelic/node-newrelic/commit/9532afa86ef2ff42f82fd26fbcdcb34ecd9a379c))
+* removed changelog.json file ([#2148](https://github.com/newrelic/node-newrelic/pull/2148)) ([aedc482](https://github.com/newrelic/node-newrelic/commit/aedc482d65b639c83922bcc75928859286732f2a))
+* skip version 3.377.0 of aws sdk packages as they are broken ([#2161](https://github.com/newrelic/node-newrelic/pull/2161)) ([03eb101](https://github.com/newrelic/node-newrelic/commit/03eb1016321d3bfb1ba3a8bc1abe22be41d5d1fa))
+* Updated CI process for releases ([#2141](https://github.com/newrelic/node-newrelic/pull/2141)) ([39e65ed](https://github.com/newrelic/node-newrelic/commit/39e65ed4160f2e2fc43452d4fab76d950479793a))
+* Updated CI workflows to run `npm ci` instead of `npm install` to catch package-lock.json being out of sync ([#2161](https://github.com/newrelic/node-newrelic/pull/2161)) ([36e7e1f](https://github.com/newrelic/node-newrelic/commit/36e7e1f245f37052fd5323596973881eea2d3e7b))
+* Updated prepare-release to use conventional commit based releases. ([#2161](https://github.com/newrelic/node-newrelic/pull/2161)) ([6e4661a](https://github.com/newrelic/node-newrelic/commit/6e4661a90ee43223d0db113ae41f8767499ef2d9))
+* Updated smoke test workflow to pass in aws secrets for aws sdk sm… ([#2163](https://github.com/newrelic/node-newrelic/pull/2163)) ([301bbff](https://github.com/newrelic/node-newrelic/commit/301bbff2c48aaad676e945825a32578b1315d8a3))
+* updated smoke tests to run npm install to get latest and console log the version so we know what is being tested in CI ([#2161](https://github.com/newrelic/node-newrelic/pull/2161)) ([eaeec05](https://github.com/newrelic/node-newrelic/commit/eaeec05c90616a36f6a85e04f042dfc3ae363cc3))
+
+#### Build system
+
+* **deps-dev:** bump follow-redirects from 1.15.3 to 1.15.4 ([#2141](https://github.com/newrelic/node-newrelic/pull/2141)) ([ac4874b](https://github.com/newrelic/node-newrelic/commit/ac4874ba72ca44ed79e1fb38afc6e8a86088e5dd))
+    * Bumps [follow-redirects](https://github.com/follow-redirects/follow-redirects) from 1.15.3 to 1.15.4. - [Release notes](https://github.com/follow-redirects/follow-redirects/releases) - [Commits](https://github.com/follow-redirects/follow-redirects/compare/v1.15.3...v1.15.4)
+* **deps-dev:** bump follow-redirects from 1.15.4 to 1.15.6 ([#2141](https://github.com/newrelic/node-newrelic/pull/2141)) ([213eb39](https://github.com/newrelic/node-newrelic/commit/213eb39d663251f5942ce713b2dde1832eed9e5e))
+    * Bumps [follow-redirects](https://github.com/follow-redirects/follow-redirects) from 1.15.4 to 1.15.6. - [Release notes](https://github.com/follow-redirects/follow-redirects/releases) - [Commits](https://github.com/follow-redirects/follow-redirects/compare/v1.15.4...v1.15.6)
+* **deps-dev:** bump follow-redirects from 1.15.5 to 1.15.6 ([#2148](https://github.com/newrelic/node-newrelic/pull/2148)) ([29cfb2e](https://github.com/newrelic/node-newrelic/commit/29cfb2e7c2f3e429317d6c2bef230d8b3f2f6a26))
+    * Bumps [follow-redirects](https://github.com/follow-redirects/follow-redirects) from 1.15.5 to 1.15.6. - [Release notes](https://github.com/follow-redirects/follow-redirects/releases) - [Commits](https://github.com/follow-redirects/follow-redirects/compare/v1.15.5...v1.15.6)
+* **deps:** bump axios and newrelic ([#2141](https://github.com/newrelic/node-newrelic/pull/2141)) ([e590aec](https://github.com/newrelic/node-newrelic/commit/e590aec2492ee3e898f481fbdb94c21edee953ca))
+    * Bumps [axios](https://github.com/axios/axios) to 1.6.0 and updates ancestor dependency [newrelic](https://github.com/newrelic/node-newrelic). These dependencies need to be updated together.   Updates `axios` from 0.21.4 to 1.6.0 - [Release notes](https://github.com/axios/axios/releases) - [Changelog](https://github.com/axios/axios/blob/v1.x/CHANGELOG.md) - [Commits](https://github.com/axios/axios/compare/v0.21.4...v1.6.0)  Updates `newrelic` from 11.0.0 to 11.5.0 - [Release notes](https://github.com/newrelic/node-newrelic/releases) - [Changelog](https://github.com/newrelic/node-newrelic/blob/main/changelog.json) - [Commits](https://github.com/newrelic/node-newrelic/compare/v11.0.0...v11.5.0)
+
 ### v11.15.0 (2024-04-09)
 
 #### Bug fixes
