@@ -18,6 +18,7 @@ do
 done
 
 if [ ${PKG_HAS_CHANGED} -eq 0 ]; then
+  echo "package.json has not changed"
   exit 0
 fi
 
@@ -85,4 +86,6 @@ fi
 if [ ${RUN_THIRD_PARTY} -eq 1 ]; then
   echo "package.json changed, running oss manifest and notices"
   npm run third-party-updates
+else
+  echo "package.json has not changed"
 fi
