@@ -8,42 +8,13 @@
           "bump formidable and superagent"
         ],
         "bugfixes": [
-          "Fixed issue with CJS being imported as ESM",
-          "package.json & package-lock.json to reduce vulnerabilities",
-          "Added override setting to middleware configuration",
-          "Updated aws-sdk v3 instrumentation to only call `shim.setLibrary` and `shim.setDatastore` once instead of on every call to sqs/sns/dyanmodb",
-          "updated smithy-client instrumentation to properly handle all types of clients for dynamo, sqs, sns",
-          "added @smithy/smithy-client registration to nr-hooks.js because of https://github.com/aws/aws-sdk-js-v3/pull/4873/files.",
-          "package.json & package-lock.json to reduce vulnerabilities",
-          "package.json & package-lock.json to reduce vulnerabilities",
-          "package.json & package-lock.json to reduce vulnerabilities",
-          "removed passing isJson into sns mocked responses",
-          "Updated the mock AWS server to handle both XML and JSON.",
-          "adjust smithy instrumentation to fix Presigned URL usage",
-          "upgrade newrelic from 8.7.0 to 8.7.1",
-          "add eslint-env",
-          "check prototype shape before instrumenting",
-          "redefine ctx.response.body instead of ctx.body"
+          "Fixed issue with CJS being imported as ESM"
         ],
         "features": [
           "Added API `ignoreApdex` to ignore calculating apdex for the active transaction",
-          "Added llm.tokenCountCallback support to Bedrock",
-          "Added ability to disable capturing of content in LLM events `ai_monitoring.record_content.enabled`",
-          "Added ability to disable instrumenting streaming via `ai_monitoring.streaming.enabled` = `false`",
-          "Add Bedrock LLM streamed response handling",
-          "Add llm attribute to all transactions that contain llm spans for bedrock",
-          "Added handling errors by adding additional attributes to the transaction errors.",
-          "Record metric on every InvokeModelCommand",
-          "Added ability to store feedback ids by request id",
-          "Add LLama2 support to LLM events and mock server",
-          "Add instrumentation for InvokeModelCommand",
-          "Add initial objects for LLM events",
-          "updated aws sdk v3 instrumentation to function with require-in-the-middle",
-          "add @koa/router instrumentation",
-          "set transaction based on most specific matched path",
-          "wrap emit on koa prototype",
-          "add koa instrumentation",
-          "initial index.js set-up"
+          "Migrated @newrelic/superagent into agent",
+          "Migrated @newrelic/aws-sdk into agent",
+          "Migrated @newrelic/koa into mainline agent"
         ]
       }
     },
