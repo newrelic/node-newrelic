@@ -156,7 +156,10 @@ tap.test('fromSegment()', (t) => {
 
           // Should have (most) http properties.
           t.same(agentAttributes['http.url'], { [STRING_TYPE]: 'https://example.com/' })
+          t.same(agentAttributes['server.address'], { [STRING_TYPE]: 'example.com' })
+          t.same(agentAttributes['server.port'], { [INT_TYPE]: 443 })
           t.ok(agentAttributes['http.method'])
+          t.ok(agentAttributes['http.request.method'])
           t.same(agentAttributes['http.statusCode'], { [INT_TYPE]: 200 })
           t.same(agentAttributes['http.statusText'], { [STRING_TYPE]: 'OK' })
 
@@ -246,7 +249,9 @@ tap.test('fromSegment()', (t) => {
         // Should have not http properties.
         const hasOwnAttribute = Object.hasOwnProperty.bind(agentAttributes)
         t.notOk(hasOwnAttribute('http.url'))
+        t.notOk(hasOwnAttribute('server.address'))
         t.notOk(hasOwnAttribute('http.method'))
+        t.notOk(hasOwnAttribute('http.request.method'))
 
         // Should have (most) datastore properties.
         t.ok(agentAttributes['db.instance'])

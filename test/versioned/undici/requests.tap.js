@@ -22,6 +22,7 @@ tap.test('Undici request tests', (t) => {
   let server
   let REQUEST_URL
   let HOST
+  let PORT
 
   function createServer() {
     server = http.createServer((req, res) => {
@@ -45,6 +46,7 @@ tap.test('Undici request tests', (t) => {
 
     server.listen(0)
     const { port } = server.address()
+    PORT = port
     HOST = `localhost:${port}`
     REQUEST_URL = `http://${HOST}`
     return server
@@ -146,7 +148,8 @@ tap.test('Undici request tests', (t) => {
       t.equal(spanAttrs['http.statusText'], 'OK')
       t.equal(spanAttrs['request.parameters.a'], 'b')
       t.equal(spanAttrs['request.parameters.c'], 'd')
-
+      t.equal(spanAttrs.host, 'localhost')
+      t.equal(spanAttrs.port, `${PORT}`)
       tx.end()
       t.end()
     })

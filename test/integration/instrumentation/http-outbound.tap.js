@@ -182,8 +182,11 @@ tap.test('external requests', function (t) {
         res.resume()
         res.on('end', () => {
           const segment = tx.trace.root.children[0]
-          t.equal(segment.getAttributes().url, 'http://example.com/')
-          t.equal(segment.getAttributes().procedure, 'GET')
+          const attrs = segment.getAttributes()
+          t.same(attrs, {
+            url: 'http://example.com/',
+            procedure: 'GET'
+          })
           t.equal(reqSegment, segment, 'should expose external')
           t.end()
         })
