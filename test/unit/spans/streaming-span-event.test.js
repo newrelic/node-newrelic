@@ -157,6 +157,7 @@ tap.test('fromSegment()', (t) => {
           // Should have (most) http properties.
           t.same(agentAttributes['http.url'], { [STRING_TYPE]: 'https://example.com/' })
           t.same(agentAttributes['server.address'], { [STRING_TYPE]: 'example.com' })
+          t.same(agentAttributes['server.port'], { [INT_TYPE]: 443 })
           t.ok(agentAttributes['http.method'])
           t.ok(agentAttributes['http.request.method'])
           t.same(agentAttributes['http.statusCode'], { [INT_TYPE]: 200 })
