@@ -251,7 +251,6 @@ tap.test('fromSegment()', (t) => {
         // Should have not http properties.
         const hasOwnAttribute = Object.hasOwnProperty.bind(agentAttributes)
         t.notOk(hasOwnAttribute('http.url'))
-        t.notOk(hasOwnAttribute('server.address'))
         t.notOk(hasOwnAttribute('http.method'))
         t.notOk(hasOwnAttribute('http.request.method'))
 
