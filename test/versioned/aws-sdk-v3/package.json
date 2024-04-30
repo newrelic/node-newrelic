@@ -188,9 +188,9 @@
       },
       "dependencies": {
         "@aws-sdk/util-dynamodb": "latest",
-        "@aws-sdk/client-dynamodb": "3.476.0",
+        "@aws-sdk/client-dynamodb": "latest",
         "@aws-sdk/lib-dynamodb": {
-          "versions": ">=3.0.0 <=3.193.0 || >3.196.0 <3.377.0 || >3.377.0 ",
+          "versions": ">3.377.0 ",
           "samples": 10
         }
       },
