@@ -107,6 +107,7 @@ tap.test('fromSegment()', (t) => {
         // Should have no datastore properties.
         t.notOk(hasOwnAttribute('db.statement'))
         t.notOk(hasOwnAttribute('db.instance'))
+        t.notOk(hasOwnAttribute('db.system'))
         t.notOk(hasOwnAttribute('peer.hostname'))
         t.notOk(hasOwnAttribute('peer.address'))
 
@@ -167,6 +168,7 @@ tap.test('fromSegment()', (t) => {
           const hasOwnAttribute = Object.hasOwnProperty.bind(agentAttributes)
           t.notOk(hasOwnAttribute('db.statement'))
           t.notOk(hasOwnAttribute('db.instance'))
+          t.notOk(hasOwnAttribute('db.system'))
           t.notOk(hasOwnAttribute('peer.hostname'))
           t.notOk(hasOwnAttribute('peer.address'))
 
@@ -176,7 +178,7 @@ tap.test('fromSegment()', (t) => {
     })
   })
 
-  t.test('should create an datastore span with an datastore segment', (t) => {
+  t.test('should create a datastore span with a datastore segment', (t) => {
     agent.config.transaction_tracer.record_sql = 'raw'
 
     const shim = new DatastoreShim(agent, 'test-data-store')
@@ -249,7 +251,6 @@ tap.test('fromSegment()', (t) => {
         // Should have not http properties.
         const hasOwnAttribute = Object.hasOwnProperty.bind(agentAttributes)
         t.notOk(hasOwnAttribute('http.url'))
-        t.notOk(hasOwnAttribute('server.address'))
         t.notOk(hasOwnAttribute('http.method'))
         t.notOk(hasOwnAttribute('http.request.method'))
 
@@ -258,6 +259,9 @@ tap.test('fromSegment()', (t) => {
         t.same(agentAttributes['db.collection'], { [STRING_TYPE]: 'my-collection' })
         t.same(agentAttributes['peer.hostname'], { [STRING_TYPE]: 'my-db-host' })
         t.same(agentAttributes['peer.address'], { [STRING_TYPE]: 'my-db-host:/path/to/db.sock' })
+        t.same(agentAttributes['db.system'], { [STRING_TYPE]: 'TestStore' }) // same as intrinsics.component
+        t.same(agentAttributes['server.address'], { [STRING_TYPE]: 'my-db-host' })
+        t.same(agentAttributes['server.port'], { [STRING_TYPE]: '/path/to/db.sock' })
 
         const statement = agentAttributes['db.statement']
         t.ok(statement)

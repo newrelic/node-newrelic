@@ -115,6 +115,7 @@ tap.test('fromSegment()', (t) => {
         // Should have no datastore properties.
         t.notOk(hasOwnAttribute('db.statement'))
         t.notOk(hasOwnAttribute('db.instance'))
+        t.notOk(hasOwnAttribute('db.system'))
         t.notOk(hasOwnAttribute('peer.hostname'))
         t.notOk(hasOwnAttribute('peer.address'))
 
@@ -182,6 +183,7 @@ tap.test('fromSegment()', (t) => {
           const hasOwnAttribute = Object.hasOwnProperty.bind(attributes)
           t.notOk(hasOwnAttribute('db.statement'))
           t.notOk(hasOwnAttribute('db.instance'))
+          t.notOk(hasOwnAttribute('db.system'))
           t.notOk(hasOwnAttribute('peer.hostname'))
           t.notOk(hasOwnAttribute('peer.address'))
 
@@ -191,7 +193,7 @@ tap.test('fromSegment()', (t) => {
     })
   })
 
-  t.test('should create an datastore span with an datastore segment', (t) => {
+  t.test('should create a datastore span with a datastore segment', (t) => {
     agent.config.transaction_tracer.record_sql = 'raw'
 
     const shim = new DatastoreShim(agent, 'test-data-store')
@@ -261,7 +263,6 @@ tap.test('fromSegment()', (t) => {
         // Should have not http properties.
         const hasOwnAttribute = Object.hasOwnProperty.bind(attributes)
         t.notOk(hasOwnAttribute('http.url'))
-        t.notOk(hasOwnAttribute('server.address'))
         t.notOk(hasOwnAttribute('http.method'))
         t.notOk(hasOwnAttribute('http.request.method'))
 
@@ -270,6 +271,9 @@ tap.test('fromSegment()', (t) => {
         t.equal(attributes['db.collection'], 'my-collection')
         t.equal(attributes['peer.hostname'], 'my-db-host')
         t.equal(attributes['peer.address'], 'my-db-host:/path/to/db.sock')
+        t.equal(attributes['db.system'], 'TestStore') // same as intrinsics.component
+        t.equal(attributes['server.address'], 'my-db-host')
+        t.equal(attributes['server.port'], '/path/to/db.sock')
 
         const statement = attributes['db.statement']
         t.ok(statement)
