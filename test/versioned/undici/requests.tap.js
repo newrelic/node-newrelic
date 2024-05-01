@@ -148,7 +148,7 @@ tap.test('Undici request tests', (t) => {
       t.equal(spanAttrs['http.statusText'], 'OK')
       t.equal(spanAttrs['request.parameters.a'], 'b')
       t.equal(spanAttrs['request.parameters.c'], 'd')
-      t.equal(spanAttrs.host, 'localhost')
+      t.equal(spanAttrs.hostname, 'localhost')
       t.equal(spanAttrs.port, `${PORT}`)
       tx.end()
       t.end()

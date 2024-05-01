@@ -122,8 +122,8 @@ util.getServerTransactionName = function getRPCName(fnName) {
 }
 
 /**
- * Asserts the gRPC external segment and its relevant attributes: http.url,
- * http.method, grpc.statusCode, grpc.statusText
+ * Asserts the gRPC external segment and its relevant attributes: url,
+ * procedure, grpc.statusCode, grpc.statusText
  *
  * @param {Object} params
  * @param {Object} params.t tap test
@@ -146,11 +146,11 @@ util.assertExternalSegment = function assertExternalSegment({
   const segment = metricsHelpers.findSegment(tx.trace.root, segmentName)
   const attributes = segment.getAttributes()
   t.equal(
-    attributes['http.url'],
+    attributes.url,
     `grpc://${CLIENT_ADDR}:${port}${methodName}`,
     'http.url attribute should be correct'
   )
-  t.equal(attributes['http.method'], methodName, 'method name should be correct')
+  t.equal(attributes.procedure, methodName, 'method name should be correct')
   t.equal(
     attributes['grpc.statusCode'],
     expectedStatusCode,
