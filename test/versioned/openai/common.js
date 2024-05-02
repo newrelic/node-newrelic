@@ -23,7 +23,7 @@ common.beforeHook = async function beforeHook(t) {
   t.context.port = port
   t.context.server = server
   t.context.agent = helper.instrumentMockedAgent(config)
-  const OpenAI = require('openai')
+  const OpenAI = require('openai').default
   t.context.client = new OpenAI({
     apiKey: 'fake-versioned-test-key',
     baseURL: `http://${host}:${port}`
