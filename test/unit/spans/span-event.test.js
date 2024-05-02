@@ -175,7 +175,7 @@ tap.test('fromSegment()', (t) => {
           // should nullify mapped properties
           t.notOk(attributes.library)
           t.notOk(attributes.url)
-          t.notOk(attributes.host)
+          t.notOk(attributes.hostname)
           t.notOk(attributes.port)
           t.notOk(attributes.procedure)
 

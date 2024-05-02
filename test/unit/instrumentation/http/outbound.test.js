@@ -127,7 +127,7 @@ tap.test('instrumentOutbound', (t) => {
       t.same(
         transaction.trace.root.children[0].attributes.get(DESTINATIONS.SPAN_EVENT),
         {
-          'host': HOSTNAME,
+          'hostname': HOSTNAME,
           'port': PORT,
           'url': `http://${HOSTNAME}:${PORT}/asdf`,
           'procedure': 'GET',

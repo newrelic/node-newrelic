@@ -156,6 +156,7 @@ tap.test('fromSegment()', (t) => {
           t.ok(agentAttributes)
 
           // Should have (most) http properties.
+          t.same(agentAttributes['request.parameters.foo'], { [STRING_TYPE]: 'bar' })
           t.same(agentAttributes['http.url'], { [STRING_TYPE]: 'https://example.com/' })
           t.same(agentAttributes['server.address'], { [STRING_TYPE]: 'example.com' })
           t.same(agentAttributes['server.port'], { [INT_TYPE]: 443 })
@@ -164,14 +165,19 @@ tap.test('fromSegment()', (t) => {
           t.same(agentAttributes['http.statusCode'], { [INT_TYPE]: 200 })
           t.same(agentAttributes['http.statusText'], { [STRING_TYPE]: 'OK' })
 
-          // Should have no datastore properties.
           const hasOwnAttribute = Object.hasOwnProperty.bind(agentAttributes)
-          t.notOk(hasOwnAttribute('db.statement'))
-          t.notOk(hasOwnAttribute('db.instance'))
-          t.notOk(hasOwnAttribute('db.system'))
-          t.notOk(hasOwnAttribute('peer.hostname'))
-          t.notOk(hasOwnAttribute('peer.address'))
 
+          // should remove mapped attributes
+          ;['library', 'url', 'hostname', 'port', 'procedure'].forEach((attr) => {
+            t.notOk(hasOwnAttribute(attr))
+          })
+
+          // Should have no datastore properties.
+          ;['db.statement', 'db.instance', 'db.system', 'peer.hostname', 'peer.address'].forEach(
+            (attr) => {
+              t.notOk(hasOwnAttribute(attr))
+            }
+          )
           t.end()
         })
       })
@@ -250,10 +256,22 @@ tap.test('fromSegment()', (t) => {
 
         // Should have not http properties.
         const hasOwnAttribute = Object.hasOwnProperty.bind(agentAttributes)
-        t.notOk(hasOwnAttribute('http.url'))
-        t.notOk(hasOwnAttribute('http.method'))
-        t.notOk(hasOwnAttribute('http.request.method'))
+        ;['http.url', 'http.method', 'http.request.method'].forEach((attr) => {
+          t.notOk(hasOwnAttribute(attr))
+        })
 
+        // Should removed map attributes
+        ;[
+          'product',
+          'collection',
+          'sql',
+          'sql_obfuscated',
+          'database_name',
+          'host',
+          'port_path_or_id'
+        ].forEach((attr) => {
+          t.notOk(hasOwnAttribute(attr))
+        })
         // Should have (most) datastore properties.
         t.ok(agentAttributes['db.instance'])
         t.same(agentAttributes['db.collection'], { [STRING_TYPE]: 'my-collection' })
