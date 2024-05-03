@@ -11,6 +11,5 @@ The error page varies between [Pages Router](https://nextjs.org/docs/pages/build
 
 
  * [Pages Router](https://github.com/newrelic/newrelic-node-examples/blob/e118117470ae9f9038c60d8a171a6f0d440f6291/nextjs-legacy/pages/_error.jsx) error handling example.
- * App Router error handling example coming soon!
 
 
