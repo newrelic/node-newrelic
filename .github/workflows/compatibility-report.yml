@@ -1,0 +1,48 @@
+name: Generate Compatibility Report
+
+on:
+  workflow_dispatch:
+    inputs:
+      repo_target:
+        description: Generate the report for the local repo, the docs repo, or both.
+        required: true
+        type: choice
+        default: both
+        options:
+          - local
+          - docs
+          - both
+
+  pull_request:
+    paths:
+      - 'test/versioned/**/package.json'
+
+jobs:
+  local:
+    runs-on: ubuntu-latest
+    if:
+      github.event_name == 'pull_request' ||
+      (github.event_name == 'workflow_dispatch' &&
+      (input.repo_target == 'local' || input.repo_target == 'both'))
+    steps:
+      - uses: actions/checkout@v4
+      - uses: jaxxstorm/action-install-gh-release@71d17cb091aa850acb2a1a4cf87258d183eb941b
+        with:
+          repo: newrelic/newrelic-node-versions
+          platform: linux
+          arch: amd64
+          cache: enable
+      - run: |
+          nrversions -v -r . 2>status.log >./compatibility.md
+#      - run: |
+#          git config user.name $GITHUB_ACTOR
+#          git config user.email gh-actions-${GITHUB_ACTOR}@github.com
+      - uses: actions/upload-artifact@v4
+        with:
+          name: status.log
+          path: status.log
+      - uses: actions/upload-artifact@v4
+        with:
+          name: compatibility.md
+          path: compatibility.md
+
