@@ -1,19 +1,6 @@
 name: Node Agent CI
 
-on:
-  workflow_dispatch:
-  push:
-    paths:
-      - '**/*.js'
-      - '**/*.cjs'
-      - '**/*.mjs'
-      - '**/*.json'
-  pull_request:
-    paths:
-      - '**/*.js'
-      - '**/*.cjs'
-      - '**/*.mjs'
-      - '**/*.json'
+on: [push, pull_request, workflow_dispatch]
 
 env:
   # Enable versioned runner quiet mode to make CI output easier to read:
