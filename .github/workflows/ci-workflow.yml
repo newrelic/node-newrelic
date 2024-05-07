@@ -7,6 +7,24 @@ env:
   OUTPUT_MODE: quiet
 
 jobs:
+  should_run:
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: read
+    outputs:
+      javascript_changed: ${{ steps.filter.output.javascript }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            javascript:
+              - '**/*.js'
+              - '**/*.json'
+              - '**/*.mjs'
+              - '**/*.cjs'
+
   skip_if_release:
     runs-on: ubuntu-latest
 
@@ -22,8 +40,11 @@ jobs:
           do_not_skip: '["workflow_dispatch", "pull_request"]'
 
   lint:
-    needs: skip_if_release
+    needs:
+      - skip_if_release
+      - should_run
     if: needs.skip_if_release.outputs.should_skip != 'true'
+      && needs.should_run.outputs.javascript_changed == 'true'
     runs-on: ubuntu-latest
 
     strategy:
@@ -44,8 +65,11 @@ jobs:
       run: npm run lint:lockfile
 
   ci:
-    needs: skip_if_release
+    needs:
+      - skip_if_release
+      - should_run
     if: needs.skip_if_release.outputs.should_skip != 'true'
+      && needs.should_run.outputs.javascript_changed == 'true'
     runs-on: ubuntu-latest
 
     strategy:
@@ -65,8 +89,11 @@ jobs:
       run: npm run unit:scripts
 
   unit:
-    needs: skip_if_release
+    needs:
+      - skip_if_release
+      - should_run
     if: needs.skip_if_release.outputs.should_skip != 'true'
+      && needs.should_run.outputs.javascript_changed == 'true'
     runs-on: ubuntu-latest
 
     strategy:
@@ -89,9 +116,13 @@ jobs:
       with:
         name: unit-tests-${{ matrix.node-version }}
         path: ./coverage/unit/lcov.info
+
   integration:
-    needs: skip_if_release
+    needs:
+      - skip_if_release
+      - should_run
     if: needs.skip_if_release.outputs.should_skip != 'true'
+      && needs.should_run.outputs.javascript_changed == 'true'
     runs-on: ubuntu-latest
 
     env:
@@ -128,8 +159,11 @@ jobs:
         path: ./coverage/integration-esm/lcov.info
 
   versioned-internal:
-    needs: skip_if_release
+    needs:
+      - skip_if_release
+      - should_run
     if: needs.skip_if_release.outputs.should_skip != 'true'
+      && needs.should_run.outputs.javascript_changed == 'true'
     runs-on: ${{ github.ref == 'refs/heads/main' && vars.NR_RUNNER || 'ubuntu-latest' }}
 
     strategy:
@@ -176,8 +210,11 @@ jobs:
 
   # There is no coverage for external as that's tracked in their respective repos
   versioned-external:
-    needs: skip_if_release
+    needs:
+      - skip_if_release
+      - should_run
     if: needs.skip_if_release.outputs.should_skip != 'true'
+      && needs.should_run.outputs.javascript_changed == 'true'
     runs-on: ${{ github.ref == 'refs/heads/main' && vars.NR_RUNNER || 'ubuntu-latest' }}
 
     strategy:
@@ -199,6 +236,7 @@ jobs:
         VERSIONED_MODE: ${{ github.ref == 'refs/heads/main' && '--minor' || '--major' }}
         # Run more jobs when using larger runner, otherwise 2 per CPU seems to be the sweet spot in GHA default runners(July 2022)
         JOBS: ${{ github.ref == 'refs/heads/main' && vars.NR_RUNNER && 16 ||  4 }}
+
   codecov:
     needs: [unit, integration, versioned-internal]
     runs-on: ubuntu-latest
@@ -229,3 +267,21 @@ jobs:
           token: ${{ secrets.CODECOV_TOKEN }}
           directory: versioned-tests-${{ matrix.node-version }}
           flags: versioned-tests-${{ matrix.node-version }}
+
+  all-clear:
+    if: always()
+    runs-on: ubuntu-latest
+    needs:
+      - lint
+      - ci
+      - unit
+      - integration
+      - versioned-internal
+      - versioned-external
+    steps:
+      - name: All checks passed
+        if: ${{ !(contains(needs.*.result, 'failure')) }}
+        run: exit 0
+      - name: Some checks failed
+        if: ${{ contains(needs.*.result, 'failure') }}
+        run: exit 1
