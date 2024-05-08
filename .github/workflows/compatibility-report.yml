@@ -13,6 +13,11 @@ on:
           - docs
           - both
 
+  workflow_run:
+    workflows: [ "Create Release" ]
+    types:
+      - completed
+
   push:
     branches:
       - main
@@ -24,6 +29,7 @@ jobs:
     runs-on: ubuntu-latest
     if:
       github.event_name == 'push' ||
+      (github.event.workflow_run && github.event.workflow_run.conclusion == 'success') ||
       (github.event_name == 'workflow_dispatch' &&
       (inputs.repo_target == 'local' || inputs.repo_target == 'both'))
     steps:
