@@ -7,6 +7,7 @@ on:
   pull_request:
     types:
       - opened
+      - reopened
       - edited
       - synchronize
 
@@ -48,6 +49,6 @@ jobs:
       - if: success()
         name: Remove PR comment if valid
         uses: marocchino/sticky-pull-request-comment@v2
-        with:   
+        with:
           header: pr-title-lint-error
           delete: true
