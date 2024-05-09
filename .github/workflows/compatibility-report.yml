@@ -1,0 +1,70 @@
+name: Generate Compatibility Report
+
+on:
+  workflow_dispatch:
+    inputs:
+      repo_target:
+        description: Generate the report for the local repo, the docs repo, or both.
+        required: true
+        type: choice
+        default: both
+        options:
+          - local
+          - docs
+          - both
+
+  workflow_run:
+    workflows: [ "Create Release" ]
+    types:
+      - completed
+
+  push:
+    branches:
+      - main
+    paths:
+      - 'test/versioned/**/package.json'
+
+jobs:
+  local:
+    runs-on: ubuntu-latest
+    if:
+      github.event_name == 'push' ||
+      (github.event.workflow_run && github.event.workflow_run.conclusion == 'success') ||
+      (github.event_name == 'workflow_dispatch' &&
+      (inputs.repo_target == 'local' || inputs.repo_target == 'both'))
+    steps:
+      - uses: actions/checkout@v4
+      - uses: jaxxstorm/action-install-gh-release@71d17cb091aa850acb2a1a4cf87258d183eb941b
+        with:
+          repo: newrelic/newrelic-node-versions
+          platform: linux
+          arch: amd64
+          cache: enable
+      - run: |
+          nrversions -v -r . 2>status.log >./compatibility.md
+
+      # Upload generated artifacts for potential debugging purposes.
+      - uses: actions/upload-artifact@v4
+        with:
+          name: status.log
+          path: status.log
+      - uses: actions/upload-artifact@v4
+        with:
+          name: compatibility.md
+          path: compatibility.md
+
+      # Generate the new PR to update the doc in the repo.
+      - run: |
+          git config user.name $GITHUB_ACTOR
+          git config user.email gh-actions-${GITHUB_ACTOR}@github.com
+      - run: |
+          rm -f status.log
+      - uses: peter-evans/create-pull-request@6d6857d36972b65feb161a90e484f2984215f83e
+        with:
+          title: "docs: Updated compatibility report"
+          commit-message: "docs: Updated compatibility report"
+          branch: "compatibility-report/auto-update"
+          delete-branch: true
+          base: main
+          labels: "documentation"
+
