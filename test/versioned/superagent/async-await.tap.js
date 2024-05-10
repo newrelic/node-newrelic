@@ -7,26 +7,34 @@
 
 const tap = require('tap')
 const helper = require('../../lib/agent_helper')
+const testServer = require('./test-server')
 const { removeModules } = require('../../lib/cache-buster')
-const EXTERNAL_NAME = /External\/newrelic.com(:443)*\//
+const EXTERNAL_NAME = /External\/127.0.0.1:\d+\//
 
 tap.test('SuperAgent instrumentation with async/await', (t) => {
-  t.beforeEach((t) => {
+  t.beforeEach(async (t) => {
+    const { address, server, stopServer } = await testServer()
+    t.context.address = address
+    t.context.server = server
+    t.context.stopServer = stopServer
+
     t.context.agent = helper.instrumentMockedAgent()
     t.context.request = require('superagent')
   })
-  t.afterEach((t) => {
+  t.afterEach(async (t) => {
     helper.unloadAgent(t.context.agent)
     removeModules(['superagent'])
+
+    await t.context.stopServer()
   })
 
   t.test('should maintain transaction context with promises', (t) => {
-    const { agent } = t.context
+    const { address, agent } = t.context
     helper.runInTransaction(agent, async function (tx) {
       t.ok(tx)
 
       const { request } = t.context
-      await request.get('https://newrelic.com')
+      await request.get(address)
 
       const mainSegment = tx.trace.root.children[0]
       t.ok(mainSegment)
@@ -42,8 +50,8 @@ tap.test('SuperAgent instrumentation with async/await', (t) => {
   })
 
   t.test('should not create segment if not in a transaction', async (t) => {
-    const { agent, request } = t.context
-    await request.get('https://newrelic.com')
+    const { address, agent, request } = t.context
+    await request.get(address)
     t.notOk(agent.getTransaction(), 'should not have a transaction')
     t.end()
   })
