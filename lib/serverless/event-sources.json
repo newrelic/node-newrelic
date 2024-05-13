@@ -7,6 +7,7 @@
             "requestContext.elb"
         ]
     },
+
     "apiGateway": {
         "attributes": {
             "aws.lambda.eventSource.accountId": "requestContext.accountId",
@@ -24,6 +25,24 @@
             "requestContext.stage"
         ]
     },
+
+    "apiGatewayV2": {
+        "attributes": {
+            "aws.lambda.eventSource.accountId": "requestContext.accountId",
+            "aws.lambda.eventSource.apiId": "requestContext.apiId",
+            "aws.lambda.eventSource.stage": "requestContext.stage"
+        },
+        "name": "apiGatewayV2",
+        "required_keys": [
+            "version",
+            "headers",
+            "requestContext.http",
+            "requestContext.http.path",
+            "requestContext.http.method",
+            "requestContext.stage"
+        ]
+    },
+
     "cloudFront": {
         "attributes": {},
         "name": "cloudFront",
@@ -31,6 +50,7 @@
             "Records[0].cf"
         ]
     },
+
     "cloudWatchScheduled": {
         "attributes": {
             "aws.lambda.eventSource.account": "account",
@@ -45,6 +65,7 @@
             "source"
         ]
     },
+
     "dynamoStreams": {
         "attributes": {
             "aws.lambda.eventSource.length": "Records.length"
@@ -54,6 +75,7 @@
             "Records[0].dynamodb"
         ]
     },
+
     "firehose": {
         "attributes": {
             "aws.lambda.eventSource.length": "records.length",
@@ -65,6 +87,7 @@
             "records[0].kinesisRecordMetadata"
         ]
     },
+
     "kinesis": {
         "attributes": {
             "aws.lambda.eventSource.length": "Records.length",
@@ -75,6 +98,7 @@
             "Records[0].kinesis"
         ]
     },
+
     "s3": {
         "attributes": {
             "aws.lambda.eventSource.bucketName": "Records[0].s3.bucket.name",
@@ -91,6 +115,7 @@
             "Records[0].s3"
         ]
     },
+
     "ses": {
         "attributes": {
             "aws.lambda.eventSource.date": "Records[0].ses.mail.commonHeaders.date",
@@ -103,6 +128,7 @@
             "Records[0].ses"
         ]
     },
+
     "sns": {
         "attributes": {
             "aws.lambda.eventSource.length": "Records.length",
@@ -116,6 +142,7 @@
             "Records[0].Sns"
         ]
     },
+
     "sqs": {
         "attributes": {
             "aws.lambda.eventSource.length": "Records.length"
