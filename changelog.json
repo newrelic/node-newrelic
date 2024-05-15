@@ -2,6 +2,18 @@
   "repository": "newrelic/node-newrelic",
   "entries": [
     {
+      "version": "11.17.0",
+      "changes": {
+        "security": [],
+        "bugfixes": [
+          "Added support for AWS API Gateway v2 payloads",
+          "Reverted openai instrumentation update to handle broken version of 4.40.1",
+          "Updated instrumentation to handle the different exports in 4.40.1 of `openai`"
+        ],
+        "features": []
+      }
+    },
+    {
       "version": "11.16.0",
       "changes": {
         "security": [
