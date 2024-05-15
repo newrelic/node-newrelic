@@ -3,8 +3,6 @@
 #### Bug fixes
 
 * Added support for AWS API Gateway v2 payloads ([#2191](https://github.com/newrelic/node-newrelic/pull/2191)) ([0ccdc6a](https://github.com/newrelic/node-newrelic/commit/0ccdc6ada757291dc020feb88bf30addb7a4f47b))
-* Reverted openai instrumentation update to handle broken version of 4.40.1 ([#2182](https://github.com/newrelic/node-newrelic/pull/2182)) ([6968f0a](https://github.com/newrelic/node-newrelic/commit/6968f0abaa2c98a79b81de855f004b52ecb3f7cf))
-* Updated instrumentation to handle the different exports in 4.40.1 of `openai` ([#2181](https://github.com/newrelic/node-newrelic/pull/2181)) ([d72d19b](https://github.com/newrelic/node-newrelic/commit/d72d19bb3b4638fcf6324080bffd3f112fefb41f))
 
 #### Code refactoring
 
