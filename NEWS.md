@@ -17,7 +17,7 @@
 #### Miscellaneous chores
 
 * Added otel compliant `server.address`, `server.port`, and `http.request.method` to external http spans ([#2169](https://github.com/newrelic/node-newrelic/pull/2169)) ([b0a3e6d](https://github.com/newrelic/node-newrelic/commit/b0a3e6def7d1ffc1d033842c58eb71979ab208eb))
-* Added otel compliant attributes for database spans ([#2173](https://github.com/newrelic/node-newrelic/pull/2173)) ([3fdcab4](https://github.com/newrelic/node-newrelic/commit/3fdcab42196e5c870fd5dddd136daa9b01e9617d))
+* Added otel compliant `db.system`, `server.address`, and `server.port` attributes to database spans ([#2173](https://github.com/newrelic/node-newrelic/pull/2173)) ([3fdcab4](https://github.com/newrelic/node-newrelic/commit/3fdcab42196e5c870fd5dddd136daa9b01e9617d))
 * Added workflow for generating compatibility doc ([#2183](https://github.com/newrelic/node-newrelic/pull/2183)) ([9b1d5cb](https://github.com/newrelic/node-newrelic/commit/9b1d5cbd82bb8df98ebccf98e068989b35c9964d))
 * Fixed conditionals in CI workflow ([#2188](https://github.com/newrelic/node-newrelic/pull/2188)) ([6b733c0](https://github.com/newrelic/node-newrelic/commit/6b733c0fff3b8ed9d25bdb3b95d48580d2c81686))
 * Fixed superagent versioned tests ([#2190](https://github.com/newrelic/node-newrelic/pull/2190)) ([297bc01](https://github.com/newrelic/node-newrelic/commit/297bc0107bcd2f79d65acb8871ccd1322b056a99))
