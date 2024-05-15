@@ -10,7 +10,10 @@
           "Reverted openai instrumentation update to handle broken version of 4.40.1",
           "Updated instrumentation to handle the different exports in 4.40.1 of `openai`"
         ],
-        "features": []
+        "features": [
+          "Added otel compliant `server.address`, `server.port`, and `http.request.method` to external http spans",
+          "Added otel compliant `db.system`, `server.address`, and `server.port` attributes to database spans"
+        ]
       }
     },
     {
