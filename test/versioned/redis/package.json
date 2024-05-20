@@ -56,7 +56,8 @@
         "redis": ">=4.0.0"
       },
       "files": [
-        "redis-v4.tap.js"
+        "redis-v4.tap.js",
+        "redis-v4-legacy-mode.tap.js"
       ]
     }
   ]
