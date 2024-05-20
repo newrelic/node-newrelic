@@ -25,7 +25,7 @@ test('loading the application via index.js', { timeout: 15000 }, (t) => {
   let metric = agent.metrics.getMetric('Supportability/Nodejs/FeatureFlag/await_support/enabled')
   t.notOk(metric, 'should not create metric for unchanged feature flags')
 
-  metric = agent.metrics.getMetric('Supportability/Nodejs/FeatureFlag/express5/enabled')
+  metric = agent.metrics.getMetric('Supportability/Nodejs/FeatureFlag/internal_test_only/enabled')
   t.ok(metric, 'should create metric for changed feature flags')
 
   function shutdown() {

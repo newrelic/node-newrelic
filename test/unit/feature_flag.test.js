@@ -11,12 +11,13 @@ const Config = require('../../lib/config')
 
 // please do not delete flags from here
 const used = [
+  'internal_test_only',
+
   'async_local_context',
   'await_support',
   'cat',
   'custom_instrumentation',
   'custom_metrics',
-  'express5',
   'express_segments',
   'legacy_context_manager',
   'native_metrics',
