@@ -10,7 +10,17 @@ const helper = require('../../lib/agent_helper')
 const { removeModules } = require('../../lib/cache-buster')
 // load the assertSegments assertion
 require('../../lib/metrics_helper')
-const { version: pkgVersion } = require('@langchain/core/package.json')
+const fs = require('fs')
+let pkgVersion
+try {
+  ;({ version: pkgVersion } = JSON.parse(
+    fs.readFileSync(
+      `${__dirname}/node_modules/@langchain/community/node_modules/@langchain/core/package.json`
+    )
+  ))
+} catch {
+  ;({ version: pkgVersion } = require('@langchain/core/package.json'))
+}
 const createOpenAIMockServer = require('../openai/mock-server')
 const { filterLangchainEvents, filterLangchainEventsByType } = require('./common')
 const { DESTINATIONS } = require('../../../lib/config/attribute-filter')
