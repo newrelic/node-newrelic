@@ -23,7 +23,7 @@ exports.config = {
     enabled: true
   },
   feature_flag: {
-    await_support: false,
-    express5: true
+    internal_test_only: true,
+    await_support: false
   }
 }
