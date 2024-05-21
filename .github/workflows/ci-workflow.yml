@@ -12,7 +12,7 @@ jobs:
     permissions:
       pull-requests: read
     outputs:
-      javascript_changed: ${{ steps.filter.output.javascript }}
+      javascript_changed: ${{ steps.filter.outputs.javascript }}
     steps:
       - uses: actions/checkout@v4
       - uses: dorny/paths-filter@v3
@@ -20,31 +20,17 @@ jobs:
         with:
           filters: |
             javascript:
-              - '**/*.js'
-              - '**/*.json'
-              - '**/*.mjs'
-              - '**/*.cjs'
-
-  skip_if_release:
-    runs-on: ubuntu-latest
-
-    outputs:
-      should_skip: ${{ steps.skip_check.outputs.should_skip }}
-
-    steps:
-      - id: skip_check
-        uses: fkirc/skip-duplicate-actions@v5
-        with:
-          paths_ignore: '["NEWS.md", "changelog.json", "package.json", "package-lock.json"]'
-          skip_after_successful_duplicate: false
-          do_not_skip: '["workflow_dispatch", "pull_request"]'
+              - 'api.js'
+              - 'esm-loader.mjs'
+              - 'index.js'
+              - 'stub_api.js'
+              - 'lib/**/*.{js,json,mjs,cjs}'
+              - 'test/**/*.{js,json,mjs,cjs}'
 
   lint:
     needs:
-      - skip_if_release
       - should_run
-    if: needs.skip_if_release.outputs.should_skip != 'true'
-      || needs.should_run.outputs.javascript_changed == 'true'
+    if: needs.should_run.outputs.javascript_changed == 'true'
     runs-on: ubuntu-latest
 
     strategy:
@@ -66,10 +52,8 @@ jobs:
 
   ci:
     needs:
-      - skip_if_release
       - should_run
-    if: needs.skip_if_release.outputs.should_skip != 'true'
-      || needs.should_run.outputs.javascript_changed == 'true'
+    if: needs.should_run.outputs.javascript_changed == 'true'
     runs-on: ubuntu-latest
 
     strategy:
@@ -90,10 +74,8 @@ jobs:
 
   unit:
     needs:
-      - skip_if_release
       - should_run
-    if: needs.skip_if_release.outputs.should_skip != 'true'
-      || needs.should_run.outputs.javascript_changed == 'true'
+    if: needs.should_run.outputs.javascript_changed == 'true'
     runs-on: ubuntu-latest
 
     strategy:
@@ -119,10 +101,8 @@ jobs:
 
   integration:
     needs:
-      - skip_if_release
       - should_run
-    if: needs.skip_if_release.outputs.should_skip != 'true'
-      || needs.should_run.outputs.javascript_changed == 'true'
+    if: needs.should_run.outputs.javascript_changed == 'true'
     runs-on: ubuntu-latest
 
     env:
@@ -160,10 +140,8 @@ jobs:
 
   versioned-internal:
     needs:
-      - skip_if_release
       - should_run
-    if: needs.skip_if_release.outputs.should_skip != 'true'
-      || needs.should_run.outputs.javascript_changed == 'true'
+    if: needs.should_run.outputs.javascript_changed == 'true'
     runs-on: ${{ github.ref == 'refs/heads/main' && vars.NR_RUNNER || 'ubuntu-latest' }}
 
     strategy:
@@ -211,10 +189,8 @@ jobs:
   # There is no coverage for external as that's tracked in their respective repos
   versioned-external:
     needs:
-      - skip_if_release
       - should_run
-    if: needs.skip_if_release.outputs.should_skip != 'true'
-      || needs.should_run.outputs.javascript_changed == 'true'
+    if: needs.should_run.outputs.javascript_changed == 'true'
     runs-on: ${{ github.ref == 'refs/heads/main' && vars.NR_RUNNER || 'ubuntu-latest' }}
 
     strategy:
