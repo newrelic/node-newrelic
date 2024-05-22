@@ -235,7 +235,61 @@ tap.test('amqplib promise instrumentation', function (t) {
             })
             .then(function () {
               tx.end()
-              amqpUtils.verifyGet(t, tx, exchange, 'consume-tx-key', queue)
+              amqpUtils.verifyGet({
+                t,
+                tx,
+                exchangeName: exchange,
+                routingKey: 'consume-tx-key',
+                queue,
+                assertAttr: true
+              })
+              t.end()
+            })
+        })
+      })
+      .catch(function (err) {
+        t.fail(err)
+        t.end()
+      })
+  })
+
+  t.test('get a message disable parameters', function (t) {
+    agent.config.message_tracer.segment_parameters.enabled = false
+    let queue = null
+    const exchange = amqpUtils.DIRECT_EXCHANGE
+
+    channel
+      .assertExchange(exchange, 'direct')
+      .then(function () {
+        return channel.assertQueue('', { exclusive: true })
+      })
+      .then(function (res) {
+        queue = res.queue
+        return channel.bindQueue(queue, exchange, 'consume-tx-key')
+      })
+      .then(function () {
+        return helper.runInTransaction(agent, function (tx) {
+          channel.publish(exchange, 'consume-tx-key', Buffer.from('hello'))
+          return channel
+            .get(queue)
+            .then(function (msg) {
+              t.ok(msg, 'should receive a message')
+
+              const body = msg.content.toString('utf8')
+              t.equal(body, 'hello', 'should receive expected body')
+
+              amqpUtils.verifyTransaction(t, tx, 'get')
+              channel.ack(msg)
+            })
+            .then(function () {
+              tx.end()
+              amqpUtils.verifyGet({
+                t,
+                tx,
+                exchangeName: exchange,
+                routingKey: 'consume-tx-key',
+                queue
+              })
               t.end()
             })
         })

@@ -979,14 +979,14 @@ tap.test('Shim', function (t) {
           return {
             name: 'test segment',
             callback: shim.LAST,
-            after(...args) {
-              t.equal(args.length, 6, 'should have 6 args to after hook')
-              const [, fn, fnName, err, val, segment] = args
+            after(args) {
+              t.equal(Object.keys(args).length, 6, 'should have 6 args to after hook')
+              const { fn, name, error, result, segment } = args
               t.equal(segment.name, 'test segment')
-              t.not(err)
+              t.not(error)
               t.same(fn, testAfter)
-              t.equal(fnName, testAfter.name)
-              t.equal(val, 'result')
+              t.equal(name, testAfter.name)
+              t.equal(result, 'result')
             }
           }
         })
@@ -1009,14 +1009,14 @@ tap.test('Shim', function (t) {
             return {
               name: 'test segment',
               callback: shim.LAST,
-              after(...args) {
-                t.equal(args.length, 6, 'should have 6 args to after hook')
-                const [, fn, fnName, expectedErr, val, segment] = args
+              after(args) {
+                t.equal(Object.keys(args).length, 6, 'should have 6 args to after hook')
+                const { fn, name, error, result, segment } = args
                 t.equal(segment.name, 'test segment')
-                t.same(expectedErr, err)
-                t.equal(val, undefined)
+                t.same(error, err)
+                t.equal(result, undefined)
                 t.same(fn, testAfter)
-                t.equal(fnName, testAfter.name)
+                t.equal(name, testAfter.name)
               }
             }
           })
@@ -1354,20 +1354,20 @@ tap.test('Shim', function (t) {
     })
 
     t.test('should call after hook when promise resolves', (t) => {
-      const name = 'test segment'
-      const result = { returned: true }
+      const segmentName = 'test segment'
+      const expectedResult = { returned: true }
       const wrapped = shim.record(toWrap, function () {
         return {
-          name,
+          name: segmentName,
           promise: true,
-          after(...args) {
-            t.equal(args.length, 6, 'should have 6 args to after hook')
-            const [, fn, fnName, err, val, segment] = args
+          after(args) {
+            t.equal(Object.keys(args).length, 6, 'should have 6 args to after hook')
+            const { fn, name, error, result, segment } = args
             t.same(fn, toWrap)
-            t.equal(fnName, toWrap.name)
-            t.not(err)
-            t.same(val, result)
-            t.equal(segment.name, name)
+            t.equal(name, toWrap.name)
+            t.not(error)
+            t.same(result, expectedResult)
+            t.equal(segment.name, segmentName)
             t.end()
           }
         }
@@ -1379,25 +1379,24 @@ tap.test('Shim', function (t) {
       })
 
       setTimeout(function () {
-        promise.resolve(result)
+        promise.resolve(expectedResult)
       }, 5)
     })
 
     t.test('should call after hook when promise reject', (t) => {
-      const name = 'test segment'
-      const result = { returned: true }
+      const segmentName = 'test segment'
+      const expectedResult = { returned: true }
       const wrapped = shim.record(toWrap, function () {
         return {
-          name,
+          name: segmentName,
           promise: true,
-          after(...args) {
-            t.equal(args.length, 6, 'should have 6 args to after hook')
-            const [, fn, fnName, err, val, segment] = args
+          after(args) {
+            t.equal(Object.keys(args).length, 5, 'should have 6 args to after hook')
+            const { fn, name, error, segment } = args
             t.same(fn, toWrap)
-            t.equal(fnName, toWrap.name)
-            t.same(err, result)
-            t.not(val)
-            t.equal(segment.name, name)
+            t.equal(name, toWrap.name)
+            t.same(error, expectedResult)
+            t.equal(segment.name, segmentName)
             t.end()
           }
         }
@@ -1409,7 +1408,7 @@ tap.test('Shim', function (t) {
       })
 
       setTimeout(function () {
-        promise.reject(result)
+        promise.reject(expectedResult)
       }, 5)
     })
   })
@@ -2066,7 +2065,7 @@ tap.test('Shim', function (t) {
 
     t.test('should wrap the callback in place', function (t) {
       const args = ['a', cb, 'b']
-      shim.bindCallbackSegment(args, shim.SECOND)
+      shim.bindCallbackSegment({}, args, shim.SECOND)
 
       const [, wrapped] = args
       t.ok(wrapped instanceof Function)
@@ -2079,21 +2078,21 @@ tap.test('Shim', function (t) {
 
     t.test('should work with an array and numeric index', function (t) {
       const args = ['a', cb, 'b']
-      shim.bindCallbackSegment(args, 1)
+      shim.bindCallbackSegment({}, args, 1)
       t.ok(shim.isWrapped(args[1]))
       t.end()
     })
 
     t.test('should work with an object and a string index', function (t) {
       const opts = { a: 'a', cb: cb, b: 'b' }
-      shim.bindCallbackSegment(opts, 'cb')
+      shim.bindCallbackSegment({}, opts, 'cb')
       t.ok(shim.isWrapped(opts, 'cb'))
       t.end()
     })
 
     t.test('should not error if `args` is `null`', function (t) {
       t.doesNotThrow(function () {
-        shim.bindCallbackSegment(null, 1)
+        shim.bindCallbackSegment({}, null, 1)
       })
       t.end()
     })
@@ -2101,7 +2100,7 @@ tap.test('Shim', function (t) {
     t.test('should not error if the callback does not exist', function (t) {
       t.doesNotThrow(function () {
         const args = ['a']
-        shim.bindCallbackSegment(args, 1)
+        shim.bindCallbackSegment({}, args, 1)
       })
       t.end()
     })
@@ -2110,7 +2109,7 @@ tap.test('Shim', function (t) {
       let args
       t.doesNotThrow(function () {
         args = ['a']
-        shim.bindCallbackSegment(args, 0)
+        shim.bindCallbackSegment({}, args, 0)
       })
 
       t.notOk(shim.isWrapped(args[0]))
@@ -2120,7 +2119,7 @@ tap.test('Shim', function (t) {
 
     t.test('should execute the callback', function (t) {
       const args = ['a', 'b', cb]
-      shim.bindCallbackSegment(args, shim.LAST)
+      shim.bindCallbackSegment({}, args, shim.LAST)
 
       t.notOk(cbCalled)
       args[2]()
@@ -2133,7 +2132,7 @@ tap.test('Shim', function (t) {
         const args = [wrappable.getActiveSegment]
         const segment = wrappable.getActiveSegment()
         const parent = shim.createSegment('test segment')
-        shim.bindCallbackSegment(args, shim.LAST, parent)
+        shim.bindCallbackSegment({}, args, shim.LAST, parent)
         const cbSegment = args[0]()
 
         t.not(cbSegment, segment)
@@ -2148,7 +2147,7 @@ tap.test('Shim', function (t) {
         const args = [wrappable.getActiveSegment]
         const parent = shim.createSegment('test segment')
         parent.opaque = true
-        shim.bindCallbackSegment(args, shim.LAST, parent)
+        shim.bindCallbackSegment({}, args, shim.LAST, parent)
         const cbSegment = args[0]()
 
         t.not(cbSegment, parent)
@@ -2162,11 +2161,31 @@ tap.test('Shim', function (t) {
       helper.runInTransaction(agent, function () {
         const args = [wrappable.getActiveSegment]
         const segment = wrappable.getActiveSegment()
-        shim.bindCallbackSegment(args, shim.LAST)
+        shim.bindCallbackSegment({}, args, shim.LAST)
         const cbSegment = args[0]()
 
         t.not(cbSegment, segment)
         t.compareSegments(segment, [cbSegment])
+        t.end()
+      })
+    })
+
+    t.test('should call the after hook if specified on the spec', function (t) {
+      let executed = false
+      const spec = {
+        after() {
+          executed = true
+        }
+      }
+      helper.runInTransaction(agent, function () {
+        const args = [wrappable.getActiveSegment]
+        const segment = wrappable.getActiveSegment()
+        shim.bindCallbackSegment(spec, args, shim.LAST)
+        const cbSegment = args[0]()
+
+        t.not(cbSegment, segment)
+        t.compareSegments(segment, [cbSegment])
+        t.ok(executed)
         t.end()
       })
     })

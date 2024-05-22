@@ -227,7 +227,7 @@ function verifyProduce(t, tx, exchangeName, routingKey) {
   }
 }
 
-function verifyGet(t, tx, exchangeName, routingKey, queue) {
+function verifyGet({ t, tx, exchangeName, routingKey, queue, assertAttr }) {
   const isCallback = !!metrics.findSegment(tx.trace.root, 'Callback: <anonymous>')
   const produceName = 'MessageBroker/RabbitMQ/Exchange/Produce/Named/' + exchangeName
   const consumeName = 'MessageBroker/RabbitMQ/Exchange/Consume/Named/' + queue
@@ -237,6 +237,11 @@ function verifyGet(t, tx, exchangeName, routingKey, queue) {
     t.assertSegments(tx.trace.root, [produceName, consumeName])
   }
   t.assertMetrics(tx.metrics, [[{ name: produceName }], [{ name: consumeName }]], false, false)
+  if (assertAttr) {
+    const segment = metrics.findSegment(tx.trace.root, consumeName)
+    const attributes = segment.getAttributes()
+    t.equal(attributes.routing_key, routingKey, 'should have routing key on get')
+  }
 }
 
 function verifyPurge(t, tx) {
