@@ -18,12 +18,17 @@ jobs:
       - uses: dorny/paths-filter@v3
         id: filter
         with:
+          # We only want the test suites to run when code has changed, or when
+          # a dependency update has occurred. We detect a dependency update
+          # by noticing changes in the package lock (as it only gets changes
+          # when dependencies have changed).
           filters: |
             javascript:
               - 'api.js'
               - 'esm-loader.mjs'
               - 'index.js'
               - 'stub_api.js'
+              - 'package-lock.json'
               - 'lib/**/*.{js,json,mjs,cjs}'
               - 'test/**/*.{js,json,mjs,cjs}'
 
