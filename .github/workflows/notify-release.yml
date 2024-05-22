@@ -15,7 +15,7 @@ jobs:
       with:
         node-version: lts/*
     - name: Install Dependencies
-      run: npm ci
+      run: npm install
     - name: Check for PRs not yet released
       run: node ./bin/pending-prs.js --repos $NR_REPOS --ignore-labels $IGNORE_LABELS
       env:
