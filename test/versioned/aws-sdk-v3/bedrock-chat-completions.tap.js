@@ -11,8 +11,22 @@ const helper = require('../../lib/agent_helper')
 require('../../lib/metrics_helper')
 const createAiResponseServer = require('../../lib/aws-server-stubs/ai-server')
 const { FAKE_CREDENTIALS } = require('../../lib/aws-server-stubs')
-const { version: pkgVersion } = require('@smithy/smithy-client/package.json')
 const { DESTINATIONS } = require('../../../lib/config/attribute-filter')
+
+const pkgVersion = (function () {
+  try {
+    const { version } = require('@smithy/smithy-client/package.json')
+    return version
+  } catch {
+    try {
+      const {
+        version
+      } = require('./node_modules/@aws-sdk/client-bedrock-runtime/node_modules/@smithy/smithy-client/package.json')
+      return version
+    } catch {}
+  }
+  /* eslint-disable-next-line */
+}())
 
 const requests = {
   ai21: (prompt, modelId) => ({
