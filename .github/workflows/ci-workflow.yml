@@ -58,7 +58,7 @@ jobs:
       with:
         node-version: ${{ matrix.node-version }}
     - name: Install Dependencies
-      run: npm ci
+      run: npm install
     - name: Run Linting
       run: npm run lint
     - name: Inspect Lockfile
@@ -84,7 +84,7 @@ jobs:
       with:
         node-version: ${{ matrix.node-version }}
     - name: Install Dependencies
-      run: npm ci
+      run: npm install
     - name: Run CI Script Unit Tests
       run: npm run unit:scripts
 
@@ -108,7 +108,7 @@ jobs:
       with:
         node-version: ${{ matrix.node-version }}
     - name: Install Dependencies
-      run: npm ci
+      run: npm install
     - name: Run Unit Tests
       run: npm run unit
     - name: Archive Unit Test Coverage
@@ -140,7 +140,7 @@ jobs:
       with:
         node-version: ${{ matrix.node-version }}
     - name: Install Dependencies
-      run: npm ci
+      run: npm install
     - name: Run Docker Services
       run: npm run services
     - name: Run Integration Tests
@@ -178,7 +178,7 @@ jobs:
       with:
         node-version: ${{ matrix.node-version }}
     - name: Install Dependencies
-      run: npm ci
+      run: npm install
     - name: Run Docker Services
       run: npm run services
     - name: Run Versioned Tests
@@ -229,7 +229,7 @@ jobs:
       with:
         node-version: ${{ matrix.node-version }}
     - name: Install Dependencies
-      run: npm ci
+      run: npm install
     - name: Run Versioned Tests
       run: TEST_CHILD_TIMEOUT=600000 npm run versioned:external
       env:

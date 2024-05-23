@@ -19,7 +19,7 @@ jobs:
         node-version: ${{ matrix.node-version }}
         registry-url: 'https://registry.npmjs.org'
     - name: Install Dependencies
-      run: npm ci
+      run: npm install
     - run: npm publish
       env:
         NODE_AUTH_TOKEN: ${{ secrets.NODE_AGENT_NPM_TOKEN }}

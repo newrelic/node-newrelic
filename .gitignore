@@ -1,3 +1,4 @@
+package-lock.json
 node_modules
 newrelic_agent.log
 .coverage_data

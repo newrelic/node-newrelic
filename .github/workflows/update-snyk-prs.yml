@@ -11,7 +11,7 @@ jobs:
     permissions:
       pull-requests: write
     runs-on: ubuntu-latest
-    if:  ${{ github.event.sender.login == 'snyk-bot' }} 
+    if:  ${{ github.event.sender.login == 'snyk-bot' }}
     steps:
       - uses: actions/checkout@v3
       - name: Use Node.js LTS
@@ -19,7 +19,7 @@ jobs:
         with:
           node-version: lts/*
       - name: Install Dependencies
-        run: npm ci
+        run: npm install
       - name: Update Snyk PR Title
         run: node ./bin/update-snyk-pr.js'
         env:

@@ -15,7 +15,7 @@ on:
         default: NEWS.md
       changelog_json:
         description: Whether or not it should generate a changelog.json (should only be for node-newrelic)
-        type: boolean 
+        type: boolean
         required: false
 
 jobs:
@@ -41,7 +41,7 @@ jobs:
         node-version: ${{ matrix.node-version }}
     # Only need to install deps in agent-repo because of the bin scripts
     - name: Install Dependencies
-      run: npm ci --prefix agent-repo
+      run: npm install --prefix agent-repo
     - name: Setup GitHub Credentials
       run: |
         git config user.name $GITHUB_ACTOR
