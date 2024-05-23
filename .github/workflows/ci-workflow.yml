@@ -8,34 +8,40 @@ env:
 
 jobs:
   should_run:
+    # We only want the test suites to run when code has changed, or when
+    # a dependency update has occurred.
     runs-on: ubuntu-latest
     permissions:
       pull-requests: read
     outputs:
       javascript_changed: ${{ steps.filter.outputs.javascript }}
+      deps_changed: ${{ steps.deps.outputs.divergent }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
       - uses: dorny/paths-filter@v3
         id: filter
         with:
-          # We only want the test suites to run when code has changed, or when
-          # a dependency update has occurred. We detect a dependency update
-          # by noticing changes in the package lock (as it only gets changes
-          # when dependencies have changed).
           filters: |
             javascript:
               - 'api.js'
               - 'esm-loader.mjs'
               - 'index.js'
               - 'stub_api.js'
-              - 'package-lock.json'
               - 'lib/**/*.{js,json,mjs,cjs}'
               - 'test/**/*.{js,json,mjs,cjs}'
+      - uses: jsumners-nr/gha-node-deps-divergent@643628fe0da51ec025e984c4644f17fd9f9e93f6
+        id: deps
+        with:
+          base-sha: ${{ github.base_ref }}
+          current-sha: ${{ github.sha }}
 
   lint:
     needs:
       - should_run
-    if: needs.should_run.outputs.javascript_changed == 'true'
+    if: needs.should_run.outputs.javascript_changed == 'true' ||
+      needs.should_run.outputs.deps_changed == 'true'
     runs-on: ubuntu-latest
 
     strategy:
@@ -58,7 +64,8 @@ jobs:
   ci:
     needs:
       - should_run
-    if: needs.should_run.outputs.javascript_changed == 'true'
+    if: needs.should_run.outputs.javascript_changed == 'true' ||
+      needs.should_run.outputs.deps_changed == 'true'
     runs-on: ubuntu-latest
 
     strategy:
@@ -80,7 +87,8 @@ jobs:
   unit:
     needs:
       - should_run
-    if: needs.should_run.outputs.javascript_changed == 'true'
+    if: needs.should_run.outputs.javascript_changed == 'true' ||
+      needs.should_run.outputs.deps_changed == 'true'
     runs-on: ubuntu-latest
 
     strategy:
@@ -107,7 +115,8 @@ jobs:
   integration:
     needs:
       - should_run
-    if: needs.should_run.outputs.javascript_changed == 'true'
+    if: needs.should_run.outputs.javascript_changed == 'true' ||
+      needs.should_run.outputs.deps_changed == 'true'
     runs-on: ubuntu-latest
 
     env:
@@ -146,7 +155,8 @@ jobs:
   versioned-internal:
     needs:
       - should_run
-    if: needs.should_run.outputs.javascript_changed == 'true'
+    if: needs.should_run.outputs.javascript_changed == 'true' ||
+      needs.should_run.outputs.deps_changed == 'true'
     runs-on: ${{ github.ref == 'refs/heads/main' && vars.NR_RUNNER || 'ubuntu-latest' }}
 
     strategy:
@@ -195,7 +205,8 @@ jobs:
   versioned-external:
     needs:
       - should_run
-    if: needs.should_run.outputs.javascript_changed == 'true'
+    if: needs.should_run.outputs.javascript_changed == 'true' ||
+      needs.should_run.outputs.deps_changed == 'true'
     runs-on: ${{ github.ref == 'refs/heads/main' && vars.NR_RUNNER || 'ubuntu-latest' }}
 
     strategy:
