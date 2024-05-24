@@ -232,7 +232,58 @@ tap.test('amqplib callback instrumentation', function (t) {
               channel.ack(msg)
               setImmediate(function () {
                 tx.end()
-                amqpUtils.verifyGet(t, tx, exchange, 'consume-tx-key', queue)
+                amqpUtils.verifyGet({
+                  t,
+                  tx,
+                  exchangeName: exchange,
+                  routingKey: 'consume-tx-key',
+                  queue,
+                  assertAttr: true
+                })
+                t.end()
+              })
+            })
+          })
+        })
+      })
+    })
+  })
+
+  t.test('get a message disable parameters', function (t) {
+    agent.config.message_tracer.segment_parameters.enabled = false
+    const exchange = amqpUtils.DIRECT_EXCHANGE
+    let queue = null
+
+    channel.assertExchange(exchange, 'direct', null, function (err) {
+      t.error(err, 'should not error asserting exchange')
+
+      channel.assertQueue('', { exclusive: true }, function (err, res) {
+        t.error(err, 'should not error asserting queue')
+        queue = res.queue
+
+        channel.bindQueue(queue, exchange, 'consume-tx-key', null, function (err) {
+          t.error(err, 'should not error binding queue')
+
+          helper.runInTransaction(agent, function (tx) {
+            channel.publish(exchange, 'consume-tx-key', Buffer.from('hello'))
+            channel.get(queue, {}, function (err, msg) {
+              t.notOk(err, 'should not cause an error')
+              t.ok(msg, 'should receive a message')
+
+              amqpUtils.verifyTransaction(t, tx, 'get')
+              const body = msg.content.toString('utf8')
+              t.equal(body, 'hello', 'should receive expected body')
+
+              channel.ack(msg)
+              setImmediate(function () {
+                tx.end()
+                amqpUtils.verifyGet({
+                  t,
+                  tx,
+                  exchangeName: exchange,
+                  routingKey: 'consume-tx-key',
+                  queue
+                })
                 t.end()
               })
             })

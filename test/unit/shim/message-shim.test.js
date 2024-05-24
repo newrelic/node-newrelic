@@ -476,53 +476,6 @@ tap.test('MessageShim', function (t) {
       })
     })
 
-    t.test('should add parameters to segment', function (t) {
-      function wrapMe(q, cb) {
-        cb()
-        return shim.getSegment()
-      }
-
-      const wrapped = shim.recordConsume(wrapMe, {
-        destinationName: shim.FIRST,
-        callback: shim.LAST,
-        messageHandler: function () {
-          return { parameters: { a: 'a', b: 'b' } }
-        }
-      })
-
-      helper.runInTransaction(agent, function () {
-        const segment = wrapped('foo', function () {})
-        const attributes = segment.getAttributes()
-        t.equal(attributes.a, 'a')
-        t.equal(attributes.b, 'b')
-        t.end()
-      })
-    })
-
-    t.test('should not add parameters when disabled', function (t) {
-      agent.config.message_tracer.segment_parameters.enabled = false
-      function wrapMe(q, cb) {
-        cb()
-        return shim.getSegment()
-      }
-
-      const wrapped = shim.recordConsume(wrapMe, {
-        destinationName: shim.FIRST,
-        callback: shim.LAST,
-        messageHandler: function () {
-          return { parameters: { a: 'a', b: 'b' } }
-        }
-      })
-
-      helper.runInTransaction(agent, function () {
-        const segment = wrapped('foo', function () {})
-        const attributes = segment.getAttributes()
-        t.notOk(attributes.a)
-        t.notOk(attributes.b)
-        t.end()
-      })
-    })
-
     t.test('should be able to get destinationName from arguments', function (t) {
       shim.recordConsume(wrappable, 'getActiveSegment', {
         destinationName: shim.FIRST,
@@ -557,9 +510,8 @@ tap.test('MessageShim', function (t) {
       const wrapped = shim.recordConsume(wrapMe, {
         destinationName: shim.FIRST,
         promise: true,
-        messageHandler: function (shim, fn, name, message) {
-          t.equal(message, msg)
-          return { parameters: { a: 'a', b: 'b' } }
+        after: function ({ result }) {
+          t.equal(result, msg)
         }
       })
 
@@ -568,9 +520,6 @@ tap.test('MessageShim', function (t) {
           const duration = segment.getDurationInMillis()
           t.ok(duration > DELAY - 1, 'segment duration should be at least 100 ms')
           t.equal(message, msg)
-          const attributes = segment.getAttributes()
-          t.equal(attributes.a, 'a')
-          t.equal(attributes.b, 'b')
         })
       })
     })
@@ -616,26 +565,6 @@ tap.test('MessageShim', function (t) {
       helper.runInTransaction(agent, function () {
         t.notOk(executed)
         wrapped()
-        t.ok(executed)
-        t.end()
-      })
-    })
-
-    t.test('should invoke the spec in the context of the wrapped function', function (t) {
-      const original = wrappable.bar
-      let executed = false
-      shim.recordConsume(wrappable, 'bar', function (_, fn, name, args) {
-        executed = true
-        t.equal(fn, original)
-        t.equal(name, 'bar')
-        t.equal(this, wrappable)
-        t.same(args, ['a', 'b', 'c'])
-
-        return { destinationName: 'foobar' }
-      })
-
-      helper.runInTransaction(agent, function () {
-        wrappable.bar('a', 'b', 'c')
         t.ok(executed)
         t.end()
       })
