@@ -13,9 +13,23 @@
       },
       "dependencies": {
         "@langchain/core": ">=0.1.17",
-        "@langchain/openai": "latest",
-        "@langchain/community": "latest",
-        "@elastic/elasticsearch": "latest"
+        "@langchain/openai": "0.0.34"
+      },
+      "files": [
+        "tools.tap.js",
+        "runnables.tap.js",
+        "runnables-streaming.tap.js"
+      ]
+    },
+    {
+      "engines": {
+        "node": ">=18"
+      },
+      "dependencies": {
+        "@langchain/core": ">=0.1.17",
+        "@langchain/openai": "0.0.34",
+        "@langchain/community": "0.2.2",
+        "@elastic/elasticsearch": "8.13.1"
       },
       "files": [
         "tools.tap.js",
