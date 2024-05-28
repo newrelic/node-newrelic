@@ -90,13 +90,17 @@ jobs:
           arch: amd64
           cache: enable
       - run: |
-          nrversions -v -r agent -R ${DOCS_TARGET} 2>docs-status.log
+          nrversions -v -r agent -R ./docs/${DOCS_TARGET} 2>docs-status.log
 
       # Upload generated artifacts for potential debugging purposes.
       - uses: actions/upload-artifact@v4
         with:
           name: docs-status.log
           path: docs-status.log
+      - uses: actions/upload-artifact@v4
+        with:
+          name: compatibility-requirements-nodejs-agent.mdx
+          path: docs/${{ env.DOCS_TARGET }}
 
       # Generate the new PR to update the doc in the repo.
       - run: |
@@ -109,4 +113,5 @@ jobs:
           branch: "nodejs-compatibility-report/auto-update"
           delete-branch: true
           base: develop
+          path: docs
           labels: "documentation"
