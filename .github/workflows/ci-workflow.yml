@@ -1,6 +1,9 @@
 name: Node Agent CI
 
-on: [push, pull_request, workflow_dispatch]
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
 
 env:
   # Enable versioned runner quiet mode to make CI output easier to read:
@@ -40,8 +43,9 @@ jobs:
   lint:
     needs:
       - should_run
-    if: needs.should_run.outputs.javascript_changed == 'true' ||
-      needs.should_run.outputs.deps_changed == 'true'
+    if: github.event_name == 'workflow_dispatch' ||
+      (needs.should_run.outputs.javascript_changed == 'true' ||
+      needs.should_run.outputs.deps_changed == 'true')
     runs-on: ubuntu-latest
 
     strategy:
@@ -62,8 +66,9 @@ jobs:
   ci:
     needs:
       - should_run
-    if: needs.should_run.outputs.javascript_changed == 'true' ||
-      needs.should_run.outputs.deps_changed == 'true'
+    if: github.event_name == 'workflow_dispatch' ||
+      (needs.should_run.outputs.javascript_changed == 'true' ||
+      needs.should_run.outputs.deps_changed == 'true')
     runs-on: ubuntu-latest
 
     strategy:
@@ -85,8 +90,9 @@ jobs:
   unit:
     needs:
       - should_run
-    if: needs.should_run.outputs.javascript_changed == 'true' ||
-      needs.should_run.outputs.deps_changed == 'true'
+    if: github.event_name == 'workflow_dispatch' ||
+      (needs.should_run.outputs.javascript_changed == 'true' ||
+      needs.should_run.outputs.deps_changed == 'true')
     runs-on: ubuntu-latest
 
     strategy:
@@ -113,8 +119,9 @@ jobs:
   integration:
     needs:
       - should_run
-    if: needs.should_run.outputs.javascript_changed == 'true' ||
-      needs.should_run.outputs.deps_changed == 'true'
+    if: github.event_name == 'workflow_dispatch' ||
+      (needs.should_run.outputs.javascript_changed == 'true' ||
+      needs.should_run.outputs.deps_changed == 'true')
     runs-on: ubuntu-latest
 
     env:
@@ -153,8 +160,9 @@ jobs:
   versioned-internal:
     needs:
       - should_run
-    if: needs.should_run.outputs.javascript_changed == 'true' ||
-      needs.should_run.outputs.deps_changed == 'true'
+    if: github.event_name == 'workflow_dispatch' ||
+      (needs.should_run.outputs.javascript_changed == 'true' ||
+      needs.should_run.outputs.deps_changed == 'true')
     runs-on: ${{ github.ref == 'refs/heads/main' && vars.NR_RUNNER || 'ubuntu-latest' }}
 
     strategy:
@@ -203,8 +211,9 @@ jobs:
   versioned-external:
     needs:
       - should_run
-    if: needs.should_run.outputs.javascript_changed == 'true' ||
-      needs.should_run.outputs.deps_changed == 'true'
+    if: github.event_name == 'workflow_dispatch' ||
+      (needs.should_run.outputs.javascript_changed == 'true' ||
+      needs.should_run.outputs.deps_changed == 'true')
     runs-on: ${{ github.ref == 'refs/heads/main' && vars.NR_RUNNER || 'ubuntu-latest' }}
 
     strategy:
