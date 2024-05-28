@@ -55,12 +55,10 @@ jobs:
 
       # Generate the new PR to update the doc in the repo.
       - run: |
-          git config user.name $GITHUB_ACTOR
-          git config user.email gh-actions-${GITHUB_ACTOR}@github.com
-      - run: |
           rm -f status.log
       - uses: peter-evans/create-pull-request@6d6857d36972b65feb161a90e484f2984215f83e
         with:
+          token: ${{ secrets.NODE_AGENT_GH_TOKEN || secrets.GITHUB_TOKEN }}
           title: "docs: Updated compatibility report"
           commit-message: "docs: Updated compatibility report"
           branch: "compatibility-report/auto-update"
@@ -68,3 +66,47 @@ jobs:
           base: main
           labels: "documentation"
 
+  docs:
+    runs-on: ubuntu-latest
+    if:
+      github.event_name == 'push' ||
+      (github.event.workflow_run && github.event.workflow_run.conclusion == 'success') ||
+      (github.event_name == 'workflow_dispatch' &&
+      (inputs.repo_target == 'docs' || inputs.repo_target == 'both'))
+    env:
+      DOCS_TARGET: src/content/docs/apm/agents/nodejs-agent/getting-started/compatibility-requirements-nodejs-agent.mdx
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: agent
+      - uses: actions/checkout@v4
+        with:
+          repository: newrelic/docs-website
+          path: docs
+      - uses: jaxxstorm/action-install-gh-release@71d17cb091aa850acb2a1a4cf87258d183eb941b
+        with:
+          repo: newrelic/newrelic-node-versions
+          platform: linux
+          arch: amd64
+          cache: enable
+      - run: |
+          nrversions -v -r agent -R ${DOCS_TARGET} 2>docs-status.log
+
+      # Upload generated artifacts for potential debugging purposes.
+      - uses: actions/upload-artifact@v4
+        with:
+          name: docs-status.log
+          path: docs-status.log
+
+      # Generate the new PR to update the doc in the repo.
+      - run: |
+          rm -f docs-status.log
+      - uses: peter-evans/create-pull-request@6d6857d36972b65feb161a90e484f2984215f83e
+        with:
+          token: ${{ secrets.NODE_AGENT_GH_TOKEN || secrets.GITHUB_TOKEN }}
+          title: "docs: Updated Node.js agent compatibility report"
+          commit-message: "docs: Updated Node.js agent compatibility report"
+          branch: "nodejs-compatibility-report/auto-update"
+          delete-branch: true
+          base: develop
+          labels: "documentation"
