@@ -34,7 +34,7 @@ jobs:
       - uses: jsumners-nr/gha-node-deps-divergent@643628fe0da51ec025e984c4644f17fd9f9e93f6
         id: deps
         with:
-          base-sha: ${{ github.base_ref }}
+          base-sha: ${{ github.base_ref || 'main' }}
           current-sha: ${{ github.sha }}
 
   lint:
