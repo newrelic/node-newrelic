@@ -9,7 +9,6 @@ const path = require('path')
 const fs = require('fs').promises
 const Agent = require('../../lib/agent')
 const API = require('../../api')
-const params = require('../lib/params')
 const zlib = require('zlib')
 const copy = require('../../lib/util/copy')
 const { defaultAttributeConfig } = require('./fixtures')
@@ -310,21 +309,6 @@ helper.runInSegment = (agent, name, callback) => {
   const tracer = agent.tracer
 
   return tracer.addSegment(name, null, null, null, callback)
-}
-
-/**
- * Stub to bootstrap a memcached instance
- *
- * @param {Function} callback The operations to be performed while the server
- *                            is running.
- */
-helper.bootstrapMemcached = (callback) => {
-  const Memcached = require('memcached')
-  const memcached = new Memcached(params.memcached_host + ':' + params.memcached_port)
-  memcached.flush((err) => {
-    memcached.end()
-    callback(err)
-  })
 }
 
 /**

@@ -1,0 +1,19 @@
+{
+  "name": "memcached-test",
+  "targets": [{"name":"memcached","minAgentVersion":"1.26.2"}],
+  "version": "0.0.0",
+  "private": true,
+  "tests": [
+    {
+      "engines": {
+        "node": ">=16"
+      },
+      "dependencies": {
+        "memcached": ">=2.2.0"
+      },
+      "files": [
+        "memcached.tap.js"
+      ]
+    }
+  ]
+}
