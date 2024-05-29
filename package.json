@@ -164,6 +164,7 @@
     "public-docs": "jsdoc -c ./jsdoc-conf.jsonc && cp examples/shim/*.png out/",
     "publish-docs": "./bin/publish-docs.sh",
     "services": "docker compose up -d --wait",
+    "services:stop": "docker compose down",
     "smoke": "npm run ssl && time tap test/smoke/**/**/*.tap.js --timeout=180 --no-coverage",
     "ssl": "./bin/ssl.sh",
     "sub-install": "node test/bin/install_sub_deps",
