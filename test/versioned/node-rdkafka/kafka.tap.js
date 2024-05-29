@@ -10,9 +10,9 @@ const helper = require('../../lib/agent_helper')
 const { removeModules } = require('../../lib/cache-buster')
 
 tap.beforeEach(async (t) => {
+  t.context.agent = helper.instrumentMockedAgent()
   const Kafka = require('node-rdkafka')
   t.context.Kafka = Kafka
-  t.context.agent = helper.instrumentMockedAgent()
 
   await new Promise((resolve) => {
     const producer = new Kafka.Producer({
