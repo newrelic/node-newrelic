@@ -11,6 +11,7 @@ const { removeModules } = require('../../lib/cache-buster')
 
 tap.beforeEach(async (t) => {
   t.context.agent = helper.instrumentMockedAgent()
+
   const Kafka = require('node-rdkafka')
   t.context.Kafka = Kafka
 
@@ -51,17 +52,20 @@ tap.afterEach(async (t) => {
   })
 })
 
-tap.test('stub', (t) => {
+tap.test('stub', { timeout: 10_000 }, (t) => {
   const { consumer, producer } = t.context
+  const topic = 'test-topic'
 
-  consumer.subscribe(['test-topic'])
-  consumer.consume()
   consumer.on('data', (data) => {
+    console.log('consumed')
     t.equal(data.value.toString(), 'test message')
     t.end()
   })
+  consumer.subscribe([topic])
+  consumer.consume()
 
   setTimeout(() => {
-    producer.produce('test-topic', null, Buffer.from('test message'), null, 0)
+    console.log('producing')
+    producer.produce(topic, null, Buffer.from('test message'), 'key')
   }, 2000)
 })

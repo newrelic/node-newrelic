@@ -23,38 +23,43 @@ services:
       timeout: 10s
       retries: 5
 
+  # Kafka setup based on the e2e tests in node-rdkafka. Needs both the
+  # `zookeeper` and `kafka` services.
+  zookeeper:
+    container_name: nr_node_kafka_zookeeper
+    image: confluentinc/cp-zookeeper
+    ports:
+      - '2181:2181'
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
   kafka:
-    # https://github.com/apache/kafka/tree/8d11d95/docker/examples#single-node
     container_name: nr_node_kafka
-    image: apache/kafka
+    image: confluentinc/cp-kafka
+    links:
+      - zookeeper
     ports:
       - '9092:9092'
+    healthcheck:
+      test: /usr/bin/kafka-cluster cluster-id --bootstrap-server localhost:9092 || exit 1
+      interval: 1s
+      timeout: 60s
+      retries: 60
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: 'zookeeper:2181'
+      KAFKA_ADVERTISED_LISTENERS: 'PLAINTEXT://localhost:9092'
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_DEFAULT_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
 
   memcached:
     container_name: nr_node_memcached
     image: memcached
     ports:
       - "11211:11211"
-    healthcheck:
-      test: /opt/kafka/bin/kafka-cluster.sh cluster-id --bootstrap-server 127.0.0.1:9092 || exit 1
-      interval: 1s
-      timeout: 60s
-      retries: 60
-    environment:
-      KAFKA_NODE_ID: 1
-      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: 'CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT'
-      KAFKA_ADVERTISED_LISTENERS: 'PLAINTEXT_HOST://localhost:9092,PLAINTEXT://broker:19092'
-      KAFKA_PROCESS_ROLES: 'broker,controller'
-      KAFKA_CONTROLLER_QUORUM_VOTERS: '1@broker:29093'
-      KAFKA_LISTENERS: 'CONTROLLER://:29093,PLAINTEXT_HOST://:9092,PLAINTEXT://:19092'
-      KAFKA_INTER_BROKER_LISTENER_NAME: 'PLAINTEXT'
-      KAFKA_CONTROLLER_LISTENER_NAMES: 'CONTROLLER'
-      CLUSTER_ID: '4L6g3nShT-eMCtK--X86sw'
-      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
-      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
-      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
-      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
-      KAFKA_LOG_DIRS: '/tmp/kraft-combined-logs'
 
   mongodb_3:
     container_name: nr_node_mongodb
