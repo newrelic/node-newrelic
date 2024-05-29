@@ -65,11 +65,9 @@ code, the source code can be found at [https://github.com/newrelic/node-newrelic
 * [koa](#koa)
 * [lint-staged](#lint-staged)
 * [lockfile-lint](#lockfile-lint)
-* [memcached](#memcached)
 * [nock](#nock)
 * [proxy](#proxy)
 * [proxyquire](#proxyquire)
-* [q](#q)
 * [rfdc](#rfdc)
 * [rimraf](#rimraf)
 * [should](#should)
@@ -77,7 +75,6 @@ code, the source code can be found at [https://github.com/newrelic/node-newrelic
 * [superagent](#superagent)
 * [tap](#tap)
 * [temp](#temp)
-* [when](#when)
 
 **[optionalDependencies](#optionalDependencies)**
 
@@ -94,7 +91,7 @@ code, the source code can be found at [https://github.com/newrelic/node-newrelic
 
 ### @grpc/grpc-js
 
-This product includes source derived from [@grpc/grpc-js](https://github.com/grpc/grpc-node/tree/master/packages/grpc-js) ([v1.10.7](https://github.com/grpc/grpc-node/tree/master/packages/grpc-js/tree/v1.10.7)), distributed under the [Apache-2.0 License](https://github.com/grpc/grpc-node/tree/master/packages/grpc-js/blob/v1.10.7/LICENSE):
+This product includes source derived from [@grpc/grpc-js](https://github.com/grpc/grpc-node/tree/master/packages/grpc-js) ([v1.10.8](https://github.com/grpc/grpc-node/tree/master/packages/grpc-js/tree/v1.10.8)), distributed under the [Apache-2.0 License](https://github.com/grpc/grpc-node/tree/master/packages/grpc-js/blob/v1.10.8/LICENSE):
 
 ```
                                  Apache License
@@ -889,7 +886,7 @@ SOFTWARE.
 
 ### @aws-sdk/client-s3
 
-This product includes source derived from [@aws-sdk/client-s3](https://github.com/aws/aws-sdk-js-v3) ([v3.572.0](https://github.com/aws/aws-sdk-js-v3/tree/v3.572.0)), distributed under the [Apache-2.0 License](https://github.com/aws/aws-sdk-js-v3/blob/v3.572.0/LICENSE):
+This product includes source derived from [@aws-sdk/client-s3](https://github.com/aws/aws-sdk-js-v3) ([v3.582.0](https://github.com/aws/aws-sdk-js-v3/tree/v3.582.0)), distributed under the [Apache-2.0 License](https://github.com/aws/aws-sdk-js-v3/blob/v3.582.0/LICENSE):
 
 ```
                                 Apache License
@@ -1098,7 +1095,7 @@ This product includes source derived from [@aws-sdk/client-s3](https://github.co
 
 ### @aws-sdk/s3-request-presigner
 
-This product includes source derived from [@aws-sdk/s3-request-presigner](https://github.com/aws/aws-sdk-js-v3) ([v3.572.0](https://github.com/aws/aws-sdk-js-v3/tree/v3.572.0)), distributed under the [Apache-2.0 License](https://github.com/aws/aws-sdk-js-v3/blob/v3.572.0/LICENSE):
+This product includes source derived from [@aws-sdk/s3-request-presigner](https://github.com/aws/aws-sdk-js-v3) ([v3.582.0](https://github.com/aws/aws-sdk-js-v3/tree/v3.582.0)), distributed under the [Apache-2.0 License](https://github.com/aws/aws-sdk-js-v3/blob/v3.582.0/LICENSE):
 
 ```
                                 Apache License
@@ -2496,7 +2493,7 @@ THE SOFTWARE.
 
 ### aws-sdk
 
-This product includes source derived from [aws-sdk](https://github.com/aws/aws-sdk-js) ([v2.1618.0](https://github.com/aws/aws-sdk-js/tree/v2.1618.0)), distributed under the [Apache-2.0 License](https://github.com/aws/aws-sdk-js/blob/v2.1618.0/LICENSE.txt):
+This product includes source derived from [aws-sdk](https://github.com/aws/aws-sdk-js) ([v2.1626.0](https://github.com/aws/aws-sdk-js/tree/v2.1626.0)), distributed under the [Apache-2.0 License](https://github.com/aws/aws-sdk-js/blob/v2.1626.0/LICENSE.txt):
 
 ```
 
@@ -2895,7 +2892,7 @@ THE SOFTWARE.
 
 ### eslint-plugin-jsdoc
 
-This product includes source derived from [eslint-plugin-jsdoc](https://github.com/gajus/eslint-plugin-jsdoc) ([v48.2.4](https://github.com/gajus/eslint-plugin-jsdoc/tree/v48.2.4)), distributed under the [BSD-3-Clause License](https://github.com/gajus/eslint-plugin-jsdoc/blob/v48.2.4/LICENSE):
+This product includes source derived from [eslint-plugin-jsdoc](https://github.com/gajus/eslint-plugin-jsdoc) ([v48.2.5](https://github.com/gajus/eslint-plugin-jsdoc/tree/v48.2.5)), distributed under the [BSD-3-Clause License](https://github.com/gajus/eslint-plugin-jsdoc/blob/v48.2.5/LICENSE):
 
 ```
 Copyright (c) 2018, Gajus Kuizinas (http://gajus.com/)
@@ -3673,32 +3670,6 @@ This product includes source derived from [lockfile-lint](https://github.com/lir
    limitations under the License.
 ```
 
-### memcached
-
-This product includes source derived from [memcached](https://github.com/3rd-Eden/node-memcached) ([v2.2.2](https://github.com/3rd-Eden/node-memcached/tree/v2.2.2)), distributed under the [MIT License](https://github.com/3rd-Eden/node-memcached/blob/v2.2.2/LICENSE):
-
-```
-Copyright (c) 2010 Arnout Kazemier,3rd-Eden
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in
-all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-THE SOFTWARE.
-```
-
 ### nock
 
 This product includes source derived from [nock](https://github.com/nock/nock) ([v11.8.0](https://github.com/nock/nock/tree/v11.8.0)), distributed under the [MIT License](https://github.com/nock/nock/blob/v11.8.0/LICENSE):
@@ -3772,32 +3743,6 @@ HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
 WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 OTHER DEALINGS IN THE SOFTWARE.
-
-```
-
-### q
-
-This product includes source derived from [q](https://github.com/kriskowal/q) ([v1.5.1](https://github.com/kriskowal/q/tree/v1.5.1)), distributed under the [MIT License](https://github.com/kriskowal/q/blob/v1.5.1/LICENSE):
-
-```
-Copyright 2009–2017 Kristopher Michael Kowal. All rights reserved.
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to
-deal in the Software without restriction, including without limitation the
-rights to use, copy, modify, merge, publish, distribute, sublicense, and/or
-sell copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in
-all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
-FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
-IN THE SOFTWARE.
 
 ```
 
@@ -3989,37 +3934,6 @@ COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
 IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-```
-
-### when
-
-This product includes source derived from [when](https://github.com/cujojs/when) ([v3.7.8](https://github.com/cujojs/when/tree/v3.7.8)), distributed under the [MIT License](https://github.com/cujojs/when/blob/v3.7.8/LICENSE.txt):
-
-```
-Open Source Initiative OSI - The MIT License
-
-http://www.opensource.org/licenses/mit-license.php
-
-Copyright (c) 2011 Brian Cavalier
-
-Permission is hereby granted, free of charge, to any person obtaining
-a copy of this software and associated documentation files (the
-"Software"), to deal in the Software without restriction, including
-without limitation the rights to use, copy, modify, merge, publish,
-distribute, sublicense, and/or sell copies of the Software, and to
-permit persons to whom the Software is furnished to do so, subject to
-the following conditions:
-
-The above copyright notice and this permission notice shall be
-included in all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
-EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
-NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
-LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
-OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
-WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ```
 
 
