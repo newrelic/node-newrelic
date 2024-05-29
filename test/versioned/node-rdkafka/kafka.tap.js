@@ -57,7 +57,6 @@ tap.test('stub', { timeout: 10_000 }, (t) => {
   const topic = 'test-topic'
 
   consumer.on('data', (data) => {
-    console.log('consumed')
     t.equal(data.value.toString(), 'test message')
     t.end()
   })
@@ -65,7 +64,6 @@ tap.test('stub', { timeout: 10_000 }, (t) => {
   consumer.consume()
 
   setTimeout(() => {
-    console.log('producing')
     producer.produce(topic, null, Buffer.from('test message'), 'key')
-  }, 2000)
+  }, 500)
 })
