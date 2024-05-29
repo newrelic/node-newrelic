@@ -7,7 +7,10 @@
 
 const tap = require('tap')
 const helper = require('../../lib/agent_helper')
+const params = require('../../lib/params')
 const { removeModules } = require('../../lib/cache-buster')
+
+const broker = `${params.kafka_host}:${params.kafka_port}`
 
 tap.beforeEach(async (t) => {
   t.context.agent = helper.instrumentMockedAgent()
@@ -16,7 +19,7 @@ tap.beforeEach(async (t) => {
   t.context.Kafka = Kafka
   const kafka = new Kafka({
     clientId: 'kafka-test',
-    brokers: ['127.0.0.1:9092']
+    brokers: [broker]
   })
 
   const producer = kafka.producer()
