@@ -26,7 +26,7 @@ tap.beforeEach(async (t) => {
     brokers: [broker],
     logLevel: logLevel.NOTHING
   })
-  utils.createTopic({ topic, kafka })
+  await utils.createTopic({ topic, kafka })
 
   const producer = kafka.producer()
   await producer.connect()
@@ -56,7 +56,7 @@ tap.test('stub', async (t) => {
       }
     })
   })
-  utils.waitForConsumersToJoinGroup(consumer)
+  await utils.waitForConsumersToJoinGroup({ consumer })
   await producer.send({
     acks: 1,
     topic,
