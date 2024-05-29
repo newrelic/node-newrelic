@@ -15,11 +15,12 @@ const broker = `${params.kafka_host}:${params.kafka_port}`
 tap.beforeEach(async (t) => {
   t.context.agent = helper.instrumentMockedAgent()
 
-  const { Kafka } = require('kafkajs')
+  const { Kafka, logLevel } = require('kafkajs')
   t.context.Kafka = Kafka
   const kafka = new Kafka({
     clientId: 'kafka-test',
-    brokers: [broker]
+    brokers: [broker],
+    logLevel: logLevel.NOTHING
   })
 
   const producer = kafka.producer()
