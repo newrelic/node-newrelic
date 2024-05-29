@@ -10,6 +10,7 @@ const helper = require('../../lib/agent_helper')
 const { removeMatchedModules } = require('../../lib/cache-buster')
 require('../../lib/metrics_helper')
 const params = require('../../lib/params')
+const urltils = require('../../../lib/util/urltils')
 
 // Indicates unique database in Redis. 0-15 supported.
 const DB_INDEX = 4
@@ -17,11 +18,17 @@ const DB_INDEX = 4
 tap.test('ioredis instrumentation', function (t) {
   let agent
   let redisClient
+  let METRIC_HOST_NAME
+  let HOST_ID
 
   t.beforeEach(async function () {
     const result = await setup(t)
     agent = result.agent
     redisClient = result.client
+    METRIC_HOST_NAME = urltils.isLocalhost(params.redis_host)
+      ? agent.config.getHostnameSafe()
+      : params.redis_host
+    HOST_ID = METRIC_HOST_NAME + '/' + params.redis_port
   })
 
   t.afterEach(function () {
@@ -40,6 +47,7 @@ tap.test('ioredis instrumentation', function (t) {
         [{ name: 'Datastore/Redis/all' }],
         [{ name: 'Datastore/operation/Redis/set' }]
       ]
+      expected['Datastore/instance/Redis/' + HOST_ID] = 2
       t.assertMetrics(tx.metrics, expected, false, false)
       t.end()
     })
