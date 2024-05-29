@@ -11,7 +11,7 @@ version.
 
 | Package name | Minimum supported version | Latest supported version | Introduced in* |
 | --- | --- | --- | --- |
-| `@apollo/gateway` | 2.3.0 | 2.7.8 | `@newrelic/apollo-server-plugin@1.0.0` |
+| `@apollo/gateway` | 2.3.0 | 2.8.0 | `@newrelic/apollo-server-plugin@1.0.0` |
 | `@apollo/server` | 4.0.0 | 4.10.4 | `@newrelic/apollo-server-plugin@2.1.0` |
 | `@aws-sdk/client-bedrock-runtime` | 3.0.0 | 3.583.0 | 11.13.0 |
 | `@aws-sdk/client-dynamodb` | 3.0.0 | 3.585.0 | 8.7.1 |
@@ -48,7 +48,7 @@ version.
 | `koa-router` | 2.0.0 | 12.0.1 | 3.2.0 |
 | `mongodb` | 2.1.0 | 6.6.2 | 1.32.0 |
 | `mysql` | 2.2.0 | 2.18.1 | 1.32.0 |
-| `mysql2` | 1.3.1 | 3.9.8 | 1.32.0 |
+| `mysql2` | 1.3.1 | 3.9.9 | 1.32.0 |
 | `next` | 13.0.0 | 14.2.3 | `@newrelic/next@0.7.0` |
 | `openai` | 4.0.0 | 4.47.2 | 11.13.0 |
 | `pg` | 8.2.0 | 8.11.5 | 9.0.0 |
@@ -57,7 +57,7 @@ version.
 | `redis` | 2.0.0 | 4.6.14 | 1.31.0 |
 | `restify` | 5.0.0 | 11.1.0 | 2.6.0 |
 | `superagent` | 2.0.0 | 9.0.2 | 4.9.0 |
-| `undici` | 4.7.0 | 6.18.1 | 11.1.0 |
+| `undici` | 4.7.0 | 6.18.2 | 11.1.0 |
 | `winston` | 3.0.0 | 3.13.0 | 8.11.0 |
 
 *When package is not specified, support is within the `newrelic` package.
