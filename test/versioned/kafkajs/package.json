@@ -1,6 +1,6 @@
 {
   "name": "kafka-tests",
-  "targets": [{"name":"node-rdkafka","minAgentVersion":"11.18.0"}],
+  "targets": [{"name":"kafkajs","minAgentVersion":"11.19.0"}],
   "version": "0.0.0",
   "private": true,
   "tests": [
@@ -9,7 +9,7 @@
         "node": ">=16"
       },
       "dependencies": {
-        "node-rdkafka": ">=3.0.0"
+        "kafkajs": ">=2.0.0"
       },
       "files": [
         "kafka.tap.js"
