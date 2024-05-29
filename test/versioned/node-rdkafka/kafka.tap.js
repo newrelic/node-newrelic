@@ -7,7 +7,10 @@
 
 const tap = require('tap')
 const helper = require('../../lib/agent_helper')
+const params = require('../../lib/params')
 const { removeModules } = require('../../lib/cache-buster')
+
+const broker = `${params.kafka_host}:${params.kafka_port}`
 
 tap.beforeEach(async (t) => {
   t.context.agent = helper.instrumentMockedAgent()
@@ -17,7 +20,7 @@ tap.beforeEach(async (t) => {
 
   await new Promise((resolve) => {
     const producer = new Kafka.Producer({
-      'metadata.broker.list': '127.0.0.1:9092'
+      'metadata.broker.list': broker
     })
     producer.connect()
     producer.setPollInterval(10)
@@ -29,7 +32,7 @@ tap.beforeEach(async (t) => {
 
   await new Promise((resolve) => {
     const consumer = new Kafka.KafkaConsumer({
-      'metadata.broker.list': '127.0.0.1:9092',
+      'metadata.broker.list': broker,
       'group.id': 'kafka'
     })
     consumer.connect()
