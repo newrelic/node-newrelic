@@ -43,24 +43,72 @@ tap.afterEach(async (t) => {
   await t.context.producer.disconnect()
 })
 
-tap.test('stub', async (t) => {
-  const { consumer, producer, topic } = t.context
+tap.test('send records correctly', (t) => {
+  t.plan(2)
+
+  const { agent, consumer, producer, topic } = t.context
   const message = 'test message'
 
-  await consumer.subscribe({ topics: [topic], fromBeginning: true })
-  const testPromise = new Promise((resolve) => {
-    consumer.run({
-      eachMessage: async ({ message: actualMessage }) => {
-        t.equal(actualMessage.value.toString(), message)
-        resolve()
-      }
+  agent.on('transactionFinished', (tx) => {
+    const segment = tx.agent.tracer.getSegment()
+    const foundSegment = segment.children.find((s) => s.name.endsWith(topic))
+    t.equal(foundSegment.name, `MessageBroker/Kafka/Topic/Produce/Named/${topic}`)
+    t.end()
+  })
+
+  helper.runInTransaction(agent, async (tx) => {
+    await consumer.subscribe({ topic, fromBeginning: true })
+    const promise = new Promise((resolve) => {
+      consumer.run({
+        eachMessage: async ({ message: actualMessage }) => {
+          t.equal(actualMessage.value.toString(), message)
+          resolve()
+        }
+      })
     })
+    await utils.waitForConsumersToJoinGroup({ consumer })
+    await producer.send({ acks: 1, topic, messages: [{ key: 'key', value: message }] })
+    await promise
+
+    tx.end()
   })
-  await utils.waitForConsumersToJoinGroup({ consumer })
-  await producer.send({
-    acks: 1,
-    topic,
-    messages: [{ key: 'key', value: message }]
+})
+
+tap.test('sendBatch records correctly', (t) => {
+  t.plan(2)
+
+  const { agent, consumer, producer, topic } = t.context
+  const message = 'test message'
+
+  agent.on('transactionFinished', (tx) => {
+    const segment = tx.agent.tracer.getSegment()
+    const foundSegment = segment.children.find((s) => s.name.endsWith(topic))
+    t.equal(foundSegment.name, `MessageBroker/Kafka/Topic/Produce/Named/${topic}`)
+    t.end()
   })
-  await testPromise
+
+  helper.runInTransaction(agent, async (tx) => {
+    await consumer.subscribe({ topic, fromBeginning: true })
+    const promise = new Promise((resolve) => {
+      consumer.run({
+        eachMessage: async ({ message: actualMessage }) => {
+          t.equal(actualMessage.value.toString(), message)
+          resolve()
+        }
+      })
+    })
+    await utils.waitForConsumersToJoinGroup({ consumer })
+    await producer.sendBatch({
+      acks: 1,
+      topicMessages: [
+        {
+          topic,
+          messages: [{ key: 'key', value: message }]
+        }
+      ]
+    })
+    await promise
+
+    tx.end()
+  })
 })
