@@ -140,8 +140,6 @@ jobs:
         node-version: ${{ matrix.node-version }}
     - name: Install Dependencies
       run: npm install
-    - name: Run Docker Services
-      run: npm run services
     - name: Run Integration Tests
       run: npm run integration
     - name: Run ESM Integration Tests

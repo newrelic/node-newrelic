@@ -13,9 +13,21 @@ const findSegment = require('../../lib/metrics_helper').findSegment
 const getMetricHostName = require('../../lib/metrics_helper').getMetricHostName
 const util = require('util')
 
-const bootstrapMemcached = util.promisify(helper.bootstrapMemcached)
-
 const METRICS_ASSERTIONS = 10
+
+/**
+ * Flushes memcached to start clean
+ *
+ * @param {object} memcached instance of memcached
+ */
+function flush(memcached) {
+  return new Promise((resolve, reject) => {
+    memcached.flush((err) => {
+      memcached.end()
+      err ? reject(err) : resolve()
+    })
+  })
+}
 
 test('memcached instrumentation', { timeout: 5000 }, function (t) {
   t.autoend()
@@ -29,20 +41,17 @@ test('memcached instrumentation', { timeout: 5000 }, function (t) {
     t.autoend()
 
     t.beforeEach(async () => {
-      await bootstrapMemcached()
-
       agent = helper.instrumentMockedAgent()
 
       Memcached = require('memcached')
       memcached = new Memcached(params.memcached_host + ':' + params.memcached_port)
-
       const hostName = getMetricHostName(agent, params.memcached_host)
       HOST_ID = hostName + '/' + params.memcached_port
     })
 
-    t.afterEach(() => {
+    t.afterEach(async () => {
       agent && helper.unloadAgent(agent)
-      memcached && memcached.end()
+      await flush(memcached)
     })
 
     t.test('touch()', function (t) {
@@ -412,8 +421,6 @@ test('memcached instrumentation', { timeout: 5000 }, function (t) {
     t.autoend()
 
     t.beforeEach(async () => {
-      await bootstrapMemcached()
-
       agent = helper.instrumentMockedAgent()
 
       // capture attributes
@@ -423,9 +430,9 @@ test('memcached instrumentation', { timeout: 5000 }, function (t) {
       memcached = new Memcached(params.memcached_host + ':' + params.memcached_port)
     })
 
-    t.afterEach(() => {
+    t.afterEach(async () => {
       helper.unloadAgent(agent)
-      memcached.end()
+      await flush(memcached)
     })
 
     t.test('get()', function (t) {
@@ -494,17 +501,15 @@ test('memcached instrumentation', { timeout: 5000 }, function (t) {
     t.autoend()
 
     t.beforeEach(async () => {
-      await bootstrapMemcached()
-
       agent = helper.instrumentMockedAgent()
 
       Memcached = require('memcached')
       memcached = new Memcached(params.memcached_host + ':' + params.memcached_port)
     })
 
-    t.afterEach(() => {
+    t.afterEach(async () => {
       helper.unloadAgent(agent)
-      memcached.end()
+      await flush(memcached)
     })
 
     t.test('get()', function (t) {
@@ -568,8 +573,6 @@ test('memcached instrumentation', { timeout: 5000 }, function (t) {
     t.autoend()
 
     t.beforeEach(async () => {
-      await bootstrapMemcached()
-
       agent = helper.instrumentMockedAgent()
 
       // disable
@@ -579,9 +582,9 @@ test('memcached instrumentation', { timeout: 5000 }, function (t) {
       memcached = new Memcached(params.memcached_host + ':' + params.memcached_port)
     })
 
-    t.afterEach(() => {
+    t.afterEach(async () => {
       helper.unloadAgent(agent)
-      memcached.end()
+      await flush(memcached)
     })
 
     t.test('get()', function (t) {
@@ -643,8 +646,6 @@ test('memcached instrumentation', { timeout: 5000 }, function (t) {
     const realServer = params.memcached_host + ':' + params.memcached_port
 
     t.beforeEach(async () => {
-      await bootstrapMemcached()
-
       Memcached = require('memcached')
       origCommand = Memcached.prototype.command
       /* eslint-disable no-unused-vars */
@@ -664,9 +665,9 @@ test('memcached instrumentation', { timeout: 5000 }, function (t) {
       }
     })
 
-    t.afterEach(() => {
+    t.afterEach(async () => {
       helper.unloadAgent(agent)
-      memcached.end()
+      await flush(memcached)
       if (origCommand) {
         Memcached.prototype.command = origCommand
       }
