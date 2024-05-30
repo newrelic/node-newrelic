@@ -6,6 +6,9 @@
 'use strict'
 
 module.exports = {
+  kafka_host: process.env.NR_NODE_TEST_KAFKA_HOST || '127.0.0.1',
+  kafka_port: process.env.NR_NODE_TEST_KAFKA_PORT || 9092,
+
   memcached_host: process.env.NR_NODE_TEST_MEMCACHED_HOST || 'localhost',
   memcached_port: process.env.NR_NODE_TEST_MEMCACHED_PORT || 11211,
 

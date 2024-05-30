@@ -5,11 +5,6 @@
 
 'use strict'
 
-/**
- * Utility method to remove a set of modules from the require cache.
- *
- * @param {string[]} modules The set of module names to remove from the cache.
- */
 module.exports = {
   /**
    * Removes explicitly named modules from the require cache.

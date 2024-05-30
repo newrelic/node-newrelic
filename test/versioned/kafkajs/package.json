@@ -1,0 +1,19 @@
+{
+  "name": "kafka-tests",
+  "targets": [{"name":"kafkajs","minAgentVersion":"11.19.0"}],
+  "version": "0.0.0",
+  "private": true,
+  "tests": [
+    {
+      "engines": {
+        "node": ">=16"
+      },
+      "dependencies": {
+        "kafkajs": ">=2.0.0"
+      },
+      "files": [
+        "kafka.tap.js"
+      ]
+    }
+  ]
+}

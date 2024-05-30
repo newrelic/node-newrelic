@@ -1,5 +1,6 @@
 version: "3"
 services:
+
   elasticsearch:
     container_name: nr_node_elastic
     image: docker.elastic.co/elasticsearch/elasticsearch:8.8.0
@@ -21,11 +22,45 @@ services:
       interval: 30s
       timeout: 10s
       retries: 5
+
+  # Kafka setup based on the e2e tests in node-rdkafka. Needs both the
+  # `zookeeper` and `kafka` services.
+  zookeeper:
+    container_name: nr_node_kafka_zookeeper
+    image: confluentinc/cp-zookeeper
+    ports:
+      - '2181:2181'
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+  kafka:
+    container_name: nr_node_kafka
+    image: confluentinc/cp-kafka
+    links:
+      - zookeeper
+    ports:
+      - '9092:9092'
+    healthcheck:
+      test: /usr/bin/kafka-cluster cluster-id --bootstrap-server localhost:9092 || exit 1
+      interval: 1s
+      timeout: 60s
+      retries: 60
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: 'zookeeper:2181'
+      KAFKA_ADVERTISED_LISTENERS: 'PLAINTEXT://localhost:9092'
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_DEFAULT_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+
   memcached:
     container_name: nr_node_memcached
     image: memcached
     ports:
       - "11211:11211"
+
   mongodb_3:
     container_name: nr_node_mongodb
     platform: linux/amd64
@@ -37,6 +72,7 @@ services:
       interval: 1s
       timeout: 10s
       retries: 30
+
   mongodb_5:
     container_name: nr_node_mongodb_5
     image: library/mongo:5
@@ -47,6 +83,7 @@ services:
       interval: 1s
       timeout: 10s
       retries: 30
+
   mysql:
     container_name: nr_node_mysql
     platform: linux/amd64
@@ -60,6 +97,7 @@ services:
       interval: 1s
       timeout: 10s
       retries: 30
+
   redis:
     container_name: nr_node_redis
     image: redis
@@ -70,6 +108,7 @@ services:
       interval: 1s
       timeout: 10s
       retries: 30
+
   cassandra:
     container_name: nr_node_cassandra
     platform: linux/amd64
@@ -80,13 +119,15 @@ services:
       test: [ "CMD", "cqlsh", "-u cassandra", "-p cassandra"]
       interval: 5s
       timeout: 10s
-      retries: 6 
+      retries: 6
+
   # pg 9.2 has built in healthcheck
   pg:
     container_name: nr_node_postgres
     image: postgres:9.2
     ports:
       - "5432:5432"
+
   pg_prisma:
     container_name: nr_node_postgres_prisma
     image: postgres:15
@@ -100,6 +141,7 @@ services:
       interval: 1s
       timeout: 10s
       retries: 30
+
   rmq:
     container_name: nr_node_rabbit
     image: rabbitmq:3
