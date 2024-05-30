@@ -1,0 +1,19 @@
+{
+  "name": "q-test",
+  "targets": [{"name":"q","minAgentVersion":"1.26.2"}],
+  "version": "0.0.0",
+  "private": true,
+  "tests": [
+    {
+      "engines": {
+        "node": ">=16"
+      },
+      "dependencies": {
+        "q": ">=1.3.0 <2"
+      },
+      "files": [
+        "q.tap.js"
+      ]
+    }
+  ]
+}
