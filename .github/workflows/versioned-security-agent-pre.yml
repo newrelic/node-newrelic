@@ -1,0 +1,53 @@
+# Daily workflow to run versioned tests with security agent enabled
+# This also can be used to run versioned tests with a newer versioned of
+# security agent since we pin it.
+
+name: Versioned Tests w/ Security Agent
+
+on:
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: Versioned test mode
+        type: choice
+        options:
+          - major
+          - minor
+        default: major
+        required: false
+      version:
+        type: string
+        description: Version of security agent to test
+        required: false
+  schedule:
+    - cron:  '0 9 * * 1-5'
+
+jobs:
+  security-agent-tests:
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        node-version: [16.x, 18.x, 20.x]
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v3
+      with:
+        node-version: ${{ matrix.node-version }}
+    - name: Install Dependencies
+      run: npm ci
+    - name: Install Version ${{ inputs.version }} of security agent
+      if: ${{ inputs.version }}
+      # run: npm install @newrelic/security-agent@${{ inputs.version }}
+      run: npm install github:newrelic/csec-node-agent#{{ inputs.version }}
+    - name: Run Docker Services
+      run: npm run services
+    - name: Versioned Tests w/ Security Agent
+      run: TEST_CHILD_TIMEOUT=600000 npm run versioned:security
+      env:
+        VERSIONED_MODE: --${{ inputs.mode || 'major' }}
+        JOBS: 4 # 2 per CPU seems to be the sweet spot in GHA (July 2022)
+        SKIP_C8: true
