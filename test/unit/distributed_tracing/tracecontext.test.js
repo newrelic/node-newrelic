@@ -255,6 +255,14 @@ tap.test('TraceContext', function (t) {
       t.equal(traceContext._validateAndParseTraceParentHeader(shorterStr).entryValid, false)
       t.end()
     })
+
+    t.test('should handle if traceparent is a buffer', (t) => {
+      const { traceContext } = t.context
+      const traceparent = '00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-00'
+      const bufferTraceParent = Buffer.from(traceparent, 'utf8')
+      t.ok(traceContext._validateAndParseTraceParentHeader(bufferTraceParent).entryValid)
+      t.end()
+    })
   })
 
   t.test('_validateAndParseTraceStateHeader', (t) => {
@@ -268,6 +276,29 @@ tap.test('TraceContext', function (t) {
         /* eslint-disable-next-line max-len */
         '190@nr=0-0-709288-8599547-f85f42fd82a4cf1d-164d3b4b0d09cb05-1-0.789-1563574856827,234234@foo=bar'
       const valid = traceContext._validateAndParseTraceStateHeader(goodTraceStateHeader)
+      t.ok(valid)
+      t.equal(valid.entryFound, true)
+      t.equal(valid.entryValid, true)
+      t.equal(valid.intrinsics.version, 0)
+      t.equal(valid.intrinsics.parentType, 'App')
+      t.equal(valid.intrinsics.accountId, '709288')
+      t.equal(valid.intrinsics.appId, '8599547')
+      t.equal(valid.intrinsics.spanId, 'f85f42fd82a4cf1d')
+      t.equal(valid.intrinsics.transactionId, '164d3b4b0d09cb05')
+      t.equal(valid.intrinsics.sampled, true)
+      t.equal(valid.intrinsics.priority, 0.789)
+      t.equal(valid.intrinsics.timestamp, 1563574856827)
+      t.end()
+    })
+
+    t.test('should pass a valid tracestate header if a buffer', (t) => {
+      const { agent, traceContext } = t.context
+      agent.config.trusted_account_key = '190'
+      const goodTraceStateHeader =
+        /* eslint-disable-next-line max-len */
+        '190@nr=0-0-709288-8599547-f85f42fd82a4cf1d-164d3b4b0d09cb05-1-0.789-1563574856827,234234@foo=bar'
+      const bufferTraceState = Buffer.from(goodTraceStateHeader, 'utf8')
+      const valid = traceContext._validateAndParseTraceStateHeader(bufferTraceState)
       t.ok(valid)
       t.equal(valid.entryFound, true)
       t.equal(valid.entryValid, true)

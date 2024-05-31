@@ -1170,5 +1170,33 @@ tap.test('MessageShim', function (t) {
         t.ok(parent)
       })
     })
+
+    t.test('should wrap object key of consumer', function (t) {
+      t.plan(3)
+      const message = { foo: 'bar' }
+      const subscriber = function subscriber(consumer) {
+        consumer.eachMessage(message)
+      }
+      const wrapped = shim.recordSubscribedConsume(subscriber, {
+        name: 'Channel#subscribe',
+        consumer: shim.FIRST,
+        functions: ['eachMessage'],
+        messageHandler: function (shim, args) {
+          t.same(args[0], message)
+          return {
+            destinationName: 'exchange.foo',
+            destinationType: shim.EXCHANGE
+          }
+        }
+      })
+      wrapped({
+        eachMessage: function consumer(msg) {
+          const segment = shim.getSegment()
+          t.equal(segment.name, 'OtherTransaction/Message/RabbitMQ/Exchange/Named/exchange.foo')
+          t.equal(msg, message)
+          t.end()
+        }
+      })
+    })
   })
 })

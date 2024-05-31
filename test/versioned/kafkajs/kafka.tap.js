@@ -10,6 +10,7 @@ const helper = require('../../lib/agent_helper')
 const params = require('../../lib/params')
 const { removeModules } = require('../../lib/cache-buster')
 const utils = require('./utils')
+const SEGMENT_PREFIX = 'kafkajs.Kafka.consumer#'
 
 const broker = `${params.kafka_host}:${params.kafka_port}`
 
@@ -22,11 +23,13 @@ tap.beforeEach(async (t) => {
 
   const { Kafka, logLevel } = require('kafkajs')
   t.context.Kafka = Kafka
-  const topic = utils.randomTopic()
+  const topic = utils.randomString()
   t.context.topic = topic
+  const clientId = utils.randomString('kafka-test')
+  t.context.clientId = clientId
 
   const kafka = new Kafka({
-    clientId: 'kafka-test',
+    clientId,
     brokers: [broker],
     logLevel: logLevel.NOTHING
   })
@@ -52,21 +55,29 @@ tap.test('send records correctly', (t) => {
 
   const { agent, consumer, producer, topic } = t.context
   const message = 'test message'
+  const expectedName = 'produce-tx'
+  let txCount = 0
 
   agent.on('transactionFinished', (tx) => {
-    const name = `MessageBroker/Kafka/Topic/Produce/Named/${topic}`
-    const segment = tx.agent.tracer.getSegment()
+    txCount++
+    if (tx.name === expectedName) {
+      const name = `MessageBroker/Kafka/Topic/Produce/Named/${topic}`
+      const segment = tx.agent.tracer.getSegment()
 
-    const foundSegment = segment.children.find((s) => s.name.endsWith(topic))
-    t.equal(foundSegment.name, name)
+      const foundSegment = segment.children.find((s) => s.name.endsWith(topic))
+      t.equal(foundSegment.name, name)
 
-    const metric = tx.metrics.getMetric(name)
-    t.equal(metric.callCount, 1)
+      const metric = tx.metrics.getMetric(name)
+      t.equal(metric.callCount, 1)
+    }
 
-    t.end()
+    if (txCount === 2) {
+      t.end()
+    }
   })
 
   helper.runInTransaction(agent, async (tx) => {
+    tx.name = expectedName
     await consumer.subscribe({ topic, fromBeginning: true })
     const promise = new Promise((resolve) => {
       consumer.run({
@@ -98,52 +109,43 @@ tap.test('send records correctly', (t) => {
 })
 
 tap.test('send passes along DT headers', (t) => {
-  // The intent of this test is to verify the scenario:
-  //
-  // 1. A service receives a request
-  // 2. The service builds a payload for Kafka
-  // 3. The produced Kafka data includes the distributed trace data that was
-  // provided to the service handling the request.
-
-  t.plan(5)
-
-  const now = Date.now
-  Date.now = () => 1717426365982
-  t.teardown(() => {
-    Date.now = now
-  })
+  const expectedName = 'produce-tx'
 
   const { agent, consumer, producer, topic } = t.context
-  const messages = ['one', 'two', 'three']
 
   // These agent.config lines are utilized to simulate the inbound
   // distributed trace that we are trying to validate.
   agent.config.account_id = 'account_1'
   agent.config.primary_application_id = 'app_1'
   agent.config.trusted_account_key = 42
+  let produceTx = null
+  let consumeTx = null
+  let txCount = 0
 
   agent.on('transactionFinished', (tx) => {
-    t.equal(tx.isDistributedTrace, true)
+    txCount++
 
-    const headers = {}
-    tx.traceContext.addTraceContextHeaders(headers)
-    t.equal(headers.tracestate.startsWith('42@nr=0-0-account_1-app_1-'), true)
+    if (tx.name === expectedName) {
+      produceTx = tx
+    } else {
+      consumeTx = tx
+    }
 
-    t.end()
+    if (txCount === 2) {
+      utils.verifyDistributedTrace({ t, consumeTx, produceTx })
+      t.end()
+    }
   })
 
   helper.runInTransaction(agent, async (tx) => {
+    tx.name = expectedName
     await consumer.subscribe({ topic, fromBeginning: true })
 
-    let msgCount = 0
     const promise = new Promise((resolve) => {
       consumer.run({
         eachMessage: async ({ message: actualMessage }) => {
-          t.equal(messages.includes(actualMessage.value.toString()), true)
-          msgCount += 1
-          if (msgCount === 3) {
-            resolve()
-          }
+          t.equal(actualMessage.value.toString(), 'one')
+          resolve()
         }
       })
     })
@@ -152,9 +154,7 @@ tap.test('send passes along DT headers', (t) => {
     await producer.send({
       acks: 1,
       topic,
-      messages: messages.map((m) => {
-        return { key: 'key', value: m }
-      })
+      messages: [{ key: 'key', value: 'one' }]
     })
 
     await promise
@@ -168,23 +168,27 @@ tap.test('sendBatch records correctly', (t) => {
 
   const { agent, consumer, producer, topic } = t.context
   const message = 'test message'
+  const expectedName = 'produce-tx'
 
   agent.on('transactionFinished', (tx) => {
-    const name = `MessageBroker/Kafka/Topic/Produce/Named/${topic}`
-    const segment = tx.agent.tracer.getSegment()
+    if (tx.name === expectedName) {
+      const name = `MessageBroker/Kafka/Topic/Produce/Named/${topic}`
+      const segment = tx.agent.tracer.getSegment()
 
-    const foundSegment = segment.children.find((s) => s.name.endsWith(topic))
-    t.equal(foundSegment.name, name)
+      const foundSegment = segment.children.find((s) => s.name.endsWith(topic))
+      t.equal(foundSegment.name, name)
 
-    const metric = tx.metrics.getMetric(name)
-    t.equal(metric.callCount, 1)
+      const metric = tx.metrics.getMetric(name)
+      t.equal(metric.callCount, 1)
 
-    t.equal(tx.isDistributedTrace, true)
+      t.equal(tx.isDistributedTrace, true)
 
-    t.end()
+      t.end()
+    }
   })
 
   helper.runInTransaction(agent, async (tx) => {
+    tx.name = expectedName
     await consumer.subscribe({ topic, fromBeginning: true })
     const promise = new Promise((resolve) => {
       consumer.run({
@@ -214,5 +218,87 @@ tap.test('sendBatch records correctly', (t) => {
     await promise
 
     tx.end()
+  })
+})
+
+tap.test('consume outside of a transaction', async (t) => {
+  const { agent, consumer, producer, topic, clientId } = t.context
+  const message = 'test message'
+
+  const txPromise = new Promise((resolve) => {
+    agent.on('transactionFinished', (tx) => {
+      utils.verifyConsumeTransaction({ t, tx, topic, clientId })
+      resolve()
+    })
+  })
+
+  await consumer.subscribe({ topics: [topic], fromBeginning: true })
+  const testPromise = new Promise((resolve) => {
+    consumer.run({
+      eachMessage: async ({ message: actualMessage }) => {
+        t.equal(actualMessage.value.toString(), message)
+        resolve()
+      }
+    })
+  })
+  await utils.waitForConsumersToJoinGroup({ consumer })
+  await producer.send({
+    acks: 1,
+    topic,
+    messages: [{ key: 'key', value: message }]
+  })
+
+  return Promise.all([txPromise, testPromise])
+})
+
+tap.test('consume inside of a transaction', async (t) => {
+  const { agent, consumer, producer, topic, clientId } = t.context
+  const expectedName = 'testing-tx-consume'
+
+  const messages = ['one', 'two', 'three']
+  let txCount = 0
+  let msgCount = 0
+
+  const txPromise = new Promise((resolve) => {
+    agent.on('transactionFinished', (tx) => {
+      txCount++
+      if (tx.name === expectedName) {
+        t.assertSegments(tx.trace.root, [`${SEGMENT_PREFIX}subscribe`, `${SEGMENT_PREFIX}run`], {
+          exact: false
+        })
+      } else {
+        utils.verifyConsumeTransaction({ t, tx, topic, clientId })
+      }
+
+      if (txCount === messages.length + 1) {
+        resolve()
+      }
+    })
+  })
+
+  await helper.runInTransaction(agent, async (tx) => {
+    tx.name = expectedName
+    await consumer.subscribe({ topics: [topic], fromBeginning: true })
+    const testPromise = new Promise((resolve) => {
+      consumer.run({
+        eachMessage: async ({ message: actualMessage }) => {
+          msgCount++
+          t.ok(messages.includes(actualMessage.value.toString()))
+          if (msgCount === messages.length) {
+            resolve()
+          }
+        }
+      })
+    })
+    await utils.waitForConsumersToJoinGroup({ consumer })
+    const messagePayload = messages.map((m, i) => ({ key: `key-${i}`, value: m }))
+    await producer.send({
+      acks: 1,
+      topic,
+      messages: messagePayload
+    })
+
+    tx.end()
+    return Promise.all([txPromise, testPromise])
   })
 })
