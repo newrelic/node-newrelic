@@ -44,15 +44,21 @@ tap.afterEach(async (t) => {
 })
 
 tap.test('send records correctly', (t) => {
-  t.plan(2)
+  t.plan(3)
 
   const { agent, consumer, producer, topic } = t.context
   const message = 'test message'
 
   agent.on('transactionFinished', (tx) => {
+    const name = `MessageBroker/Kafka/Topic/Produce/Named/${topic}`
     const segment = tx.agent.tracer.getSegment()
+
     const foundSegment = segment.children.find((s) => s.name.endsWith(topic))
-    t.equal(foundSegment.name, `MessageBroker/Kafka/Topic/Produce/Named/${topic}`)
+    t.equal(foundSegment.name, name)
+
+    const metric = tx.metrics.getMetric(name)
+    t.equal(metric.callCount, 1)
+
     t.end()
   })
 
@@ -75,15 +81,21 @@ tap.test('send records correctly', (t) => {
 })
 
 tap.test('sendBatch records correctly', (t) => {
-  t.plan(2)
+  t.plan(3)
 
   const { agent, consumer, producer, topic } = t.context
   const message = 'test message'
 
   agent.on('transactionFinished', (tx) => {
+    const name = `MessageBroker/Kafka/Topic/Produce/Named/${topic}`
     const segment = tx.agent.tracer.getSegment()
+
     const foundSegment = segment.children.find((s) => s.name.endsWith(topic))
-    t.equal(foundSegment.name, `MessageBroker/Kafka/Topic/Produce/Named/${topic}`)
+    t.equal(foundSegment.name, name)
+
+    const metric = tx.metrics.getMetric(name)
+    t.equal(metric.callCount, 1)
+
     t.end()
   })
 
