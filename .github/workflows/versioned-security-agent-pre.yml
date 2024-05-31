@@ -2,7 +2,7 @@
 # This also can be used to run versioned tests with a newer versioned of
 # security agent since we pin it.
 
-name: Versioned Tests w/ Security Agent
+name: Versioned Tests w/ Security Agent-pre
 
 on:
   workflow_dispatch:
