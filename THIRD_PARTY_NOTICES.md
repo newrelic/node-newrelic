@@ -539,7 +539,7 @@ SOFTWARE.
 
 ### @newrelic/security-agent
 
-This product includes source derived from [@newrelic/security-agent](https://github.com/newrelic/csec-node-agent) ([v1.2.0](https://github.com/newrelic/csec-node-agent/tree/v1.2.0)), distributed under the [UNKNOWN License](https://github.com/newrelic/csec-node-agent/blob/v1.2.0/LICENSE):
+This product includes source derived from [@newrelic/security-agent](https://github.com/newrelic/csec-node-agent) ([v1.3.0](https://github.com/newrelic/csec-node-agent/tree/v1.3.0)), distributed under the [UNKNOWN License](https://github.com/newrelic/csec-node-agent/blob/v1.3.0/LICENSE):
 
 ```
 ## New Relic Software License v1.0
@@ -886,7 +886,7 @@ SOFTWARE.
 
 ### @aws-sdk/client-s3
 
-This product includes source derived from [@aws-sdk/client-s3](https://github.com/aws/aws-sdk-js-v3) ([v3.582.0](https://github.com/aws/aws-sdk-js-v3/tree/v3.582.0)), distributed under the [Apache-2.0 License](https://github.com/aws/aws-sdk-js-v3/blob/v3.582.0/LICENSE):
+This product includes source derived from [@aws-sdk/client-s3](https://github.com/aws/aws-sdk-js-v3) ([v3.587.0](https://github.com/aws/aws-sdk-js-v3/tree/v3.587.0)), distributed under the [Apache-2.0 License](https://github.com/aws/aws-sdk-js-v3/blob/v3.587.0/LICENSE):
 
 ```
                                 Apache License
@@ -1095,7 +1095,7 @@ This product includes source derived from [@aws-sdk/client-s3](https://github.co
 
 ### @aws-sdk/s3-request-presigner
 
-This product includes source derived from [@aws-sdk/s3-request-presigner](https://github.com/aws/aws-sdk-js-v3) ([v3.582.0](https://github.com/aws/aws-sdk-js-v3/tree/v3.582.0)), distributed under the [Apache-2.0 License](https://github.com/aws/aws-sdk-js-v3/blob/v3.582.0/LICENSE):
+This product includes source derived from [@aws-sdk/s3-request-presigner](https://github.com/aws/aws-sdk-js-v3) ([v3.587.0](https://github.com/aws/aws-sdk-js-v3/tree/v3.587.0)), distributed under the [Apache-2.0 License](https://github.com/aws/aws-sdk-js-v3/blob/v3.587.0/LICENSE):
 
 ```
                                 Apache License
@@ -2493,7 +2493,7 @@ THE SOFTWARE.
 
 ### aws-sdk
 
-This product includes source derived from [aws-sdk](https://github.com/aws/aws-sdk-js) ([v2.1626.0](https://github.com/aws/aws-sdk-js/tree/v2.1626.0)), distributed under the [Apache-2.0 License](https://github.com/aws/aws-sdk-js/blob/v2.1626.0/LICENSE.txt):
+This product includes source derived from [aws-sdk](https://github.com/aws/aws-sdk-js) ([v2.1631.0](https://github.com/aws/aws-sdk-js/tree/v2.1631.0)), distributed under the [Apache-2.0 License](https://github.com/aws/aws-sdk-js/blob/v2.1631.0/LICENSE.txt):
 
 ```
 
@@ -2892,7 +2892,7 @@ THE SOFTWARE.
 
 ### eslint-plugin-jsdoc
 
-This product includes source derived from [eslint-plugin-jsdoc](https://github.com/gajus/eslint-plugin-jsdoc) ([v48.2.5](https://github.com/gajus/eslint-plugin-jsdoc/tree/v48.2.5)), distributed under the [BSD-3-Clause License](https://github.com/gajus/eslint-plugin-jsdoc/blob/v48.2.5/LICENSE):
+This product includes source derived from [eslint-plugin-jsdoc](https://github.com/gajus/eslint-plugin-jsdoc) ([v48.2.7](https://github.com/gajus/eslint-plugin-jsdoc/tree/v48.2.7)), distributed under the [BSD-3-Clause License](https://github.com/gajus/eslint-plugin-jsdoc/blob/v48.2.7/LICENSE):
 
 ```
 Copyright (c) 2018, Gajus Kuizinas (http://gajus.com/)
