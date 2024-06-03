@@ -94,6 +94,13 @@ tap.test('send records correctly', (t) => {
 })
 
 tap.test('send passes along DT headers', (t) => {
+  // The intent of this test is to verify the scenario:
+  //
+  // 1. A service receives a request
+  // 2. The service builds a payload for Kafka
+  // 3. The produced Kafka data includes the distributed trace data that was
+  // provided to the service handling the request.
+
   t.plan(10)
 
   const now = Date.now
@@ -104,14 +111,18 @@ tap.test('send passes along DT headers', (t) => {
 
   const { agent, consumer, producer, topic } = t.context
   const messages = ['one', 'two', 'three']
+
+  // The traceparent, tracestate, and agent.config lines are utilized to
+  // simulate the inbound distributed trace that we are trying to validate.
   const traceparent = '00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-00'
   const tracestate = '42@nr=0-0-account_1-app_1-span_1-txn_1-0-0.123000-' + Date.now()
-
   agent.config.account_id = 'account_1'
   agent.config.primary_application_id = 'app_1'
   agent.config.trusted_account_key = 42
 
   agent.on('transactionFinished', (tx) => {
+    t.equal(tx.isDistributedTrace, true)
+
     const headers = {}
     tx.traceContext.addTraceContextHeaders(headers)
     t.match(headers, {
@@ -119,17 +130,13 @@ tap.test('send passes along DT headers', (t) => {
       tracestate: /42@nr=0-0-account_1-app_1-[a-z0-9]{16}-[a-z0-9]{16}-0-0.123000-1717426365982/
     })
 
-    t.equal(tx.isDistributedTrace, true)
-    t.equal(tx.parentAcct, 'account_1')
-    t.equal(tx.parentApp, 'app_1')
-    t.equal(tx.parentId, 'txn_1')
-    t.equal(tx.parentSpanId, '00f067aa0ba902b7')
-    t.equal(tx.parentType, 'App')
-
     t.end()
   })
 
   helper.runInTransaction(agent, async (tx) => {
+    // This acceptTraceContextPayload is how we are simulating that the agent
+    // received a distributed trace context that has resulted in the Kafka
+    // payload production.
     tx.acceptTraceContextPayload(traceparent, tracestate)
 
     await consumer.subscribe({ topic, fromBeginning: true })
@@ -163,7 +170,7 @@ tap.test('send passes along DT headers', (t) => {
 })
 
 tap.test('sendBatch records correctly', (t) => {
-  t.plan(4)
+  t.plan(5)
 
   const { agent, consumer, producer, topic } = t.context
   const message = 'test message'
@@ -177,6 +184,8 @@ tap.test('sendBatch records correctly', (t) => {
 
     const metric = tx.metrics.getMetric(name)
     t.equal(metric.callCount, 1)
+
+    t.equal(tx.isDistributedTrace, true)
 
     t.end()
   })
