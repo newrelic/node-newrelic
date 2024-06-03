@@ -258,12 +258,13 @@ helper.loadTestAgent = (t, conf, setState = true) => {
 
 /**
  * Create a transactional scope in which instrumentation that will only add
- * trace segments to existing transactions will funciton.
+ * trace segments to existing transactions will function.
  *
  * If the agent hasn't been started, set to a state that can collect transactions.
  *
  * @param {Agent} agent The agent whose tracer should be used to create the
  *                      transaction.
+ * @param {string} [type='web'] Indicates the class of the transaction.
  * @param {Function} callback The function to be run within the transaction.
  */
 helper.runInTransaction = (agent, type, callback) => {
