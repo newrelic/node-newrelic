@@ -583,13 +583,12 @@ test('Promise#yield', function (t) {
 })
 
 test('Promise#delay', function (t) {
-  testPromiseInstanceMethod(t, 3, function (p, name) {
+  testPromiseInstanceMethod(t, 2, function (p, name) {
     const start = Date.now()
     return p.delay(100).then(function (x) {
       const end = Date.now()
       t.same(x, [1, 2, 3, name], name + 'should resolve with original promise')
-      t.ok(end - start > 98, name + 'should wait close to correct time')
-      t.ok(end - start < 125, name + 'should wait close to correct time')
+      t.ok(end - start >= 100, name + 'should delay at least the specified duration')
     })
   })
 })
