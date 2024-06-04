@@ -3149,4 +3149,18 @@ tap.test('Shim', function (t) {
     t.ok(shim.specs.params.QueueMessageParameters)
     t.end()
   })
+
+  t.test('should not use functions in MessageSubscribeSpec if it is not an array', (t) => {
+    const agent = helper.loadMockedAgent()
+    t.teardown(() => {
+      helper.unloadAgent(agent)
+    })
+
+    const shim = new Shim(agent, 'test-mod')
+    const spec = new shim.specs.MessageSubscribeSpec({
+      functions: 'foo-bar'
+    })
+    t.notOk(spec.functions)
+    t.end()
+  })
 })
