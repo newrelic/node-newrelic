@@ -10,6 +10,7 @@ const tap = require('tap')
 const helper = require('../../lib/agent_helper')
 const DatastoreShim = require('../../../lib/shim/datastore-shim')
 const tests = require('../../lib/cross_agent_tests/datastores/datastore_instances')
+const DatastoreParameters = require('../../../lib/shim/specs/params/datastore')
 
 tap.test('Datastore instance metrics collected via the datastore shim', function (t) {
   t.autoend()
@@ -53,10 +54,10 @@ tap.test('Datastore instance metrics collected via the datastore shim', function
           port = test.unix_socket || test.database_path || test.port
         }
         return {
-          parameters: {
+          parameters: new DatastoreParameters({
             host: dbHost,
             port_path_or_id: port
-          }
+          })
         }
       })
 
