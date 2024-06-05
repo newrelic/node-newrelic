@@ -51,7 +51,7 @@ tap.afterEach(async (t) => {
 })
 
 tap.test('send records correctly', (t) => {
-  t.plan(4)
+  t.plan(5)
 
   const { agent, consumer, producer, topic } = t.context
   const message = 'test message'
@@ -69,6 +69,10 @@ tap.test('send records correctly', (t) => {
 
       const metric = tx.metrics.getMetric(name)
       t.equal(metric.callCount, 1)
+      const sendMetric = agent.metrics.getMetric(
+        'Supportability/Features/Instrumentation/kafkajs/send'
+      )
+      t.equal(sendMetric.callCount, 1)
     }
 
     if (txCount === 2) {
@@ -164,7 +168,7 @@ tap.test('send passes along DT headers', (t) => {
 })
 
 tap.test('sendBatch records correctly', (t) => {
-  t.plan(5)
+  t.plan(6)
 
   const { agent, consumer, producer, topic } = t.context
   const message = 'test message'
@@ -182,6 +186,10 @@ tap.test('sendBatch records correctly', (t) => {
       t.equal(metric.callCount, 1)
 
       t.equal(tx.isDistributedTrace, true)
+      const sendMetric = agent.metrics.getMetric(
+        'Supportability/Features/Instrumentation/kafkajs/sendBatch'
+      )
+      t.equal(sendMetric.callCount, 1)
 
       t.end()
     }
@@ -228,6 +236,10 @@ tap.test('consume outside of a transaction', async (t) => {
   const txPromise = new Promise((resolve) => {
     agent.on('transactionFinished', (tx) => {
       utils.verifyConsumeTransaction({ t, tx, topic, clientId })
+      const sendMetric = agent.metrics.getMetric(
+        'Supportability/Features/Instrumentation/kafkajs/eachMessage'
+      )
+      t.equal(sendMetric.callCount, 1)
       resolve()
     })
   })
@@ -287,6 +299,56 @@ tap.test('consume inside of a transaction', async (t) => {
           if (msgCount === messages.length) {
             resolve()
           }
+        }
+      })
+    })
+    await utils.waitForConsumersToJoinGroup({ consumer })
+    const messagePayload = messages.map((m, i) => ({ key: `key-${i}`, value: m }))
+    await producer.send({
+      acks: 1,
+      topic,
+      messages: messagePayload
+    })
+
+    tx.end()
+    return Promise.all([txPromise, testPromise])
+  })
+})
+
+tap.test('consume batch inside of a transaction', async (t) => {
+  const { agent, consumer, producer, topic } = t.context
+  const expectedName = 'testing-tx-consume'
+
+  const messages = ['one', 'two', 'three', 'four', 'five']
+
+  const txPromise = new Promise((resolve) => {
+    agent.on('transactionFinished', (tx) => {
+      t.assertSegments(tx.trace.root, [`${SEGMENT_PREFIX}subscribe`, `${SEGMENT_PREFIX}run`], {
+        exact: false
+      })
+      resolve()
+    })
+  })
+
+  await helper.runInTransaction(agent, async (tx) => {
+    tx.name = expectedName
+    await consumer.subscribe({ topics: [topic], fromBeginning: true })
+    const testPromise = new Promise((resolve) => {
+      consumer.run({
+        eachBatch: async ({ batch }) => {
+          t.equal(
+            batch.messages.length,
+            messages.length,
+            `should have ${messages.length} messages in batch`
+          )
+          batch.messages.forEach((m) => {
+            t.ok(messages.includes(m.value.toString()), 'should have message')
+          })
+          const sendMetric = agent.metrics.getMetric(
+            'Supportability/Features/Instrumentation/kafkajs/eachBatch'
+          )
+          t.equal(sendMetric.callCount, 1)
+          resolve()
         }
       })
     })
