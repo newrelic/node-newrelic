@@ -1,0 +1,148 @@
+{
+  "bedrock": {
+    "kind": "gateway",
+    "title": "Amazon Bedrock",
+    "models": [
+      {
+        "name": "Claude",
+        "features": [
+          {
+            "title": "Text",
+            "supported": true
+          },
+          {
+            "title": "Image",
+            "supported": false
+          }
+        ]
+      },
+
+      {
+        "name": "Cohere",
+        "features": [
+          {
+            "title": "Text",
+            "supported": true
+          },
+          {
+            "title": "Image",
+            "supported": false
+          }
+        ]
+      },
+
+      {
+        "name": "Jurassic-2",
+        "features": [
+          {
+            "title": "Text",
+            "supported": true
+          },
+          {
+            "title": "Image",
+            "supported": false
+          }
+        ]
+      },
+
+      {
+        "name": "Llama2",
+        "features": [
+          {
+            "title": "Text",
+            "supported": true
+          },
+          {
+            "title": "Image",
+            "supported": false
+          }
+        ]
+      },
+      
+      {
+        "name": "Titan",
+        "features": [
+          {
+            "title": "Text",
+            "supported": true
+          },
+          {
+            "title": "Image",
+            "supported": false
+          }
+        ]
+      }
+    ]
+  },
+
+  "langchain": {
+    "kind": "abstraction",
+    "title": "Langchain",
+    "features": [
+      {
+        "title": "Agents",
+        "supported": true
+      },
+      {
+        "title": "Agents",
+        "supported": true
+      },
+      {
+        "title": "Vectorstores",
+        "supported": true
+      },
+      {
+        "title": "Tools",
+        "supported": true
+      }
+    ],
+    "providers": [
+      {
+        "name": "Azure OpenAI",
+        "supported": false,
+        "transitively": false
+      },
+      {
+        "name": "Amazon Bedrock",
+        "supported": false,
+        "transitively": false
+      },
+      {
+        "name": "OpenAI",
+        "supported": true,
+        "transitively": true
+      }
+    ]
+  },
+
+  "openai": {
+    "kind": "sdk",
+    "title": "OpenAI",
+    "features": [
+      {
+        "title": "Completions",
+        "supported": true
+      },
+      {
+        "title": "Chat",
+        "supported": true
+      },
+      {
+        "title": "Embeddings",
+        "supported": true
+      },
+      {
+        "title": "Files",
+        "supported": false
+      },
+      {
+        "title": "Images",
+        "supported": false
+      },
+      {
+        "title": "Audio",
+        "supported": false
+      }
+    ]
+  }
+}
