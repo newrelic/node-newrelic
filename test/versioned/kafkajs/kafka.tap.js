@@ -51,7 +51,7 @@ tap.afterEach(async (t) => {
 })
 
 tap.test('send records correctly', (t) => {
-  t.plan(5)
+  t.plan(7)
 
   const { agent, consumer, producer, topic } = t.context
   const message = 'test message'
@@ -87,7 +87,9 @@ tap.test('send records correctly', (t) => {
       consumer.run({
         eachMessage: async ({ message: actualMessage }) => {
           t.equal(actualMessage.value.toString(), message)
-          t.match(actualMessage.headers['x-foo'].toString(), 'foo')
+          t.equal(actualMessage.headers['x-foo'].toString(), 'foo')
+          t.equal(actualMessage.headers.newrelic.toString(), '')
+          t.equal(actualMessage.headers.traceparent.toString().startsWith('00-'), true)
           resolve()
         }
       })
@@ -168,7 +170,7 @@ tap.test('send passes along DT headers', (t) => {
 })
 
 tap.test('sendBatch records correctly', (t) => {
-  t.plan(6)
+  t.plan(8)
 
   const { agent, consumer, producer, topic } = t.context
   const message = 'test message'
@@ -203,6 +205,8 @@ tap.test('sendBatch records correctly', (t) => {
         eachMessage: async ({ message: actualMessage }) => {
           t.equal(actualMessage.value.toString(), message)
           t.match(actualMessage.headers['x-foo'].toString(), 'foo')
+          t.equal(actualMessage.headers.newrelic.toString(), '')
+          t.equal(actualMessage.headers.traceparent.toString().startsWith('00-'), true)
           resolve()
         }
       })
