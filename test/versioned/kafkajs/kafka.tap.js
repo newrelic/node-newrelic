@@ -125,7 +125,7 @@ tap.test('send passes along DT headers', (t) => {
   agent.config.primary_application_id = 'app_1'
   agent.config.trusted_account_key = 42
   let produceTx = null
-  let consumeTx = null
+  const consumeTxs = []
   let txCount = 0
 
   agent.on('transactionFinished', (tx) => {
@@ -134,11 +134,11 @@ tap.test('send passes along DT headers', (t) => {
     if (tx.name === expectedName) {
       produceTx = tx
     } else {
-      consumeTx = tx
+      consumeTxs.push(tx)
     }
 
-    if (txCount === 2) {
-      utils.verifyDistributedTrace({ t, consumeTx, produceTx })
+    if (txCount === 3) {
+      utils.verifyDistributedTrace({ t, consumeTxs, produceTx })
       t.end()
     }
   })
@@ -148,10 +148,13 @@ tap.test('send passes along DT headers', (t) => {
     await consumer.subscribe({ topic, fromBeginning: true })
 
     const promise = new Promise((resolve) => {
+      let msgCount = 0
       consumer.run({
-        eachMessage: async ({ message: actualMessage }) => {
-          t.equal(actualMessage.value.toString(), 'one')
-          resolve()
+        eachMessage: async () => {
+          ++msgCount
+          if (msgCount === 2) {
+            resolve()
+          }
         }
       })
     })
@@ -160,7 +163,10 @@ tap.test('send passes along DT headers', (t) => {
     await producer.send({
       acks: 1,
       topic,
-      messages: [{ key: 'key', value: 'one' }]
+      messages: [
+        { key: 'key', value: 'one' },
+        { key: 'key2', value: 'two' }
+      ]
     })
 
     await promise
