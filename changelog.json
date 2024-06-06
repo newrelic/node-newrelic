@@ -2,6 +2,16 @@
   "repository": "newrelic/node-newrelic",
   "entries": [
     {
+      "version": "11.19.0",
+      "changes": {
+        "security": [],
+        "bugfixes": [],
+        "features": [
+          "Added instrumentation for `kafkajs`"
+        ]
+      }
+    },
+    {
       "version": "11.18.0",
       "changes": {
         "security": [],
