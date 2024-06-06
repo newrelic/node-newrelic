@@ -1,5 +1,5 @@
-{
-  "bedrock": {
+[
+  {
     "kind": "gateway",
     "title": "Amazon Bedrock",
     "models": [
@@ -58,7 +58,7 @@
           }
         ]
       },
-      
+
       {
         "name": "Titan",
         "features": [
@@ -75,7 +75,7 @@
     ]
   },
 
-  "langchain": {
+  {
     "kind": "abstraction",
     "title": "Langchain",
     "features": [
@@ -84,7 +84,7 @@
         "supported": true
       },
       {
-        "title": "Agents",
+        "title": "Chains",
         "supported": true
       },
       {
@@ -115,7 +115,7 @@
     ]
   },
 
-  "openai": {
+  {
     "kind": "sdk",
     "title": "OpenAI",
     "features": [
@@ -145,4 +145,4 @@
       }
     ]
   }
-}
+]
