@@ -10,6 +10,10 @@ const DatastoreShim = require('../../../lib/shim/datastore-shim')
 const helper = require('../../lib/agent_helper')
 const https = require('https')
 const StreamingSpanEvent = require('../../../lib/spans/streaming-span-event')
+const {
+  QuerySpec,
+  params: { DatastoreParameters }
+} = require('../../../lib/shim/specs')
 
 const CATEGORIES = {
   HTTP: 'http',
@@ -195,16 +199,20 @@ tap.test('fromSegment()', (t) => {
     while (Buffer.byteLength(longQuery, 'utf8') < 2001) {
       longQuery += 'a'
     }
-    shim.recordQuery(dsConn, 'myDbOp', {
-      callback: shim.LAST,
-      query: shim.FIRST,
-      parameters: {
-        host: 'my-db-host',
-        port_path_or_id: '/path/to/db.sock',
-        database_name: 'my-database',
-        collection: 'my-collection'
-      }
-    })
+    shim.recordQuery(
+      dsConn,
+      'myDbOp',
+      new QuerySpec({
+        callback: shim.LAST,
+        query: shim.FIRST,
+        parameters: new DatastoreParameters({
+          host: 'my-db-host',
+          port_path_or_id: '/path/to/db.sock',
+          database_name: 'my-database',
+          collection: 'my-collection'
+        })
+      })
+    )
 
     shim.setParser((query) => {
       return {
