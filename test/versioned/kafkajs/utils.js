@@ -104,18 +104,18 @@ utils.verifyConsumeTransaction = ({ t, tx, topic, clientId }) => {
  * Asserts the properties on both the produce and consume transactions
  * @param {object} params function params
  * @param {object} params.t test instance
- * @param {object} params.consumeTx consumer transaction
+ * @param {object} params.consumeTxs consumer transactions
  * @param {object} params.produceTx produce transaction
  */
-utils.verifyDistributedTrace = ({ t, consumeTx, produceTx }) => {
+utils.verifyDistributedTrace = ({ t, consumeTxs, produceTx }) => {
   t.ok(produceTx.isDistributedTrace, 'should mark producer as distributed')
-  t.ok(consumeTx.isDistributedTrace, 'should mark consumer as distributed')
-
-  t.equal(consumeTx.incomingCatId, null, 'should not set old CAT properties')
-
-  t.equal(produceTx.id, consumeTx.parentId, 'should have proper parent id')
-  t.equal(produceTx.traceId, consumeTx.traceId, 'should have proper trace id')
   const produceSegment = produceTx.trace.root.children[3]
-  t.equal(produceSegment.id, consumeTx.parentSpanId, 'should have proper parentSpanId')
-  t.equal(consumeTx.parentTransportType, 'Kafka', 'should have correct transport type')
+  consumeTxs.forEach((consumeTx) => {
+    t.ok(consumeTx.isDistributedTrace, 'should mark consumer as distributed')
+    t.equal(consumeTx.incomingCatId, null, 'should not set old CAT properties')
+    t.equal(produceTx.id, consumeTx.parentId, 'should have proper parent id')
+    t.equal(produceTx.traceId, consumeTx.traceId, 'should have proper trace id')
+    t.equal(produceSegment.id, consumeTx.parentSpanId, 'should have proper parentSpanId')
+    t.equal(consumeTx.parentTransportType, 'Kafka', 'should have correct transport type')
+  })
 }

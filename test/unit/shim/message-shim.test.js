@@ -50,6 +50,7 @@ tap.test('MessageShim', function (t) {
       getActiveSegment: function () {
         return agent.tracer.getSegment()
       },
+      sendMessages: function () {},
       withNested: function () {
         const segment = agent.tracer.getSegment()
         segment.add('ChildSegment')
@@ -383,6 +384,59 @@ tap.test('MessageShim', function (t) {
         t.ok(headers.NewRelicID)
         t.ok(headers.NewRelicTransaction)
         t.end()
+      })
+    })
+
+    t.test('should insert distributed trace headers in all messages', function (t) {
+      t.plan(1)
+      const messages = [{}, { headers: { foo: 'foo' } }, {}]
+
+      shim.recordProduce(
+        wrappable,
+        'sendMessages',
+        () =>
+          new MessageSpec({
+            messageHeaders(inject) {
+              for (const msg of messages) {
+                if (msg.headers) {
+                  inject(msg.headers)
+                  continue
+                }
+                msg.headers = {}
+                inject(msg.headers)
+              }
+            }
+          })
+      )
+
+      agent.on('transactionFinished', () => {
+        t.match(messages, [
+          {
+            headers: {
+              newrelic: '',
+              traceparent: /^00-/
+            }
+          },
+          {
+            headers: {
+              newrelic: '',
+              traceparent: /^00-/,
+              foo: 'foo'
+            }
+          },
+          {
+            headers: {
+              newrelic: '',
+              traceparent: /^00-/
+            }
+          }
+        ])
+        t.end()
+      })
+
+      helper.runInTransaction(agent, (tx) => {
+        wrappable.sendMessages()
+        tx.end()
       })
     })
 
