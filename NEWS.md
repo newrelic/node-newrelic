@@ -1,3 +1,36 @@
+### v11.19.0 (2024-06-06)
+
+#### Features
+
+* Added feature flag for `kafkajs` instrumentation ([#2237](https://github.com/newrelic/node-newrelic/pull/2237)) ([354bcb2](https://github.com/newrelic/node-newrelic/commit/354bcb276b99c5c8f3db5118b9688c810965811a))
+* Added instrumentation for `kafkajs.Kafka.consumer` ([#2244](https://github.com/newrelic/node-newrelic/pull/2244)) ([8b1fa5d](https://github.com/newrelic/node-newrelic/commit/8b1fa5d0c66cc2c8f14860cd70095f09140a9e06))
+* Added kafkajs producer instrumentation ([#2236](https://github.com/newrelic/node-newrelic/pull/2236)) ([b235529](https://github.com/newrelic/node-newrelic/commit/b23552957ceb296ceee43b670cabdb90bda9a749))
+* Added supportability metrics `Supportability/Features/Instrumentation/kafkajs/<method>` to track when consumer and producer methods are being used ([#2251](https://github.com/newrelic/node-newrelic/pull/2251)) ([26003d6](https://github.com/newrelic/node-newrelic/commit/26003d681aa3e2bd60747cbe91bf1e054770f515))
+
+#### Documentation
+
+* Updated compatibility report ([#2234](https://github.com/newrelic/node-newrelic/pull/2234)) ([8c96412](https://github.com/newrelic/node-newrelic/commit/8c9641256551154295a457828843db369d6166c3))
+    * Co-authored-by: jsumners-nr <150050532+jsumners-nr@users.noreply.github.com>
+* Updated compatibility report ([#2226](https://github.com/newrelic/node-newrelic/pull/2226)) ([85b3862](https://github.com/newrelic/node-newrelic/commit/85b38620a527c088a24692f570d342b7c2d329cf))
+
+#### Miscellaneous chores
+
+* Added kafkajs instrumentation and versioned tests skeleton ([#2224](https://github.com/newrelic/node-newrelic/pull/2224)) ([fc13916](https://github.com/newrelic/node-newrelic/commit/fc13916b94b813d028270dfccfed292af91875fb))
+    * Co-authored-by: Bob Evans <robert.evans25@gmail.com>
+* Added kafkajs to compatibility list ([#2254](https://github.com/newrelic/node-newrelic/pull/2254)) ([f003ee7](https://github.com/newrelic/node-newrelic/commit/f003ee78204149c7905cb17cb4f084aeac1ba751))
+* Implemented DT header injection for message specs ([#2250](https://github.com/newrelic/node-newrelic/pull/2250)) ([3e6bc6d](https://github.com/newrelic/node-newrelic/commit/3e6bc6d5485fd6e236c6f0a58922d698c00c920f))
+* Removed targets for kafka versioned tests ([#2235](https://github.com/newrelic/node-newrelic/pull/2235)) ([838bab2](https://github.com/newrelic/node-newrelic/commit/838bab2ff425f5acb111a19f397760ed01c1bdde))
+* Updated flaky when test ([#2241](https://github.com/newrelic/node-newrelic/pull/2241)) ([4079a0a](https://github.com/newrelic/node-newrelic/commit/4079a0ae38e584181eec284963560341941c5dd3))
+* Updated readme to remove no longer relevant information ([#2240](https://github.com/newrelic/node-newrelic/pull/2240)) ([01fb53c](https://github.com/newrelic/node-newrelic/commit/01fb53cfe3c7df63bc2ef03d85991edb159569a6))
+* Updated versioned tests due to update in @newrelic/security-agent V1.3.0 ([#2239](https://github.com/newrelic/node-newrelic/pull/2239)) ([982276c](https://github.com/newrelic/node-newrelic/commit/982276cd4fca57bbf64219e846a0a93cdfb3400b))
+
+#### Tests
+
+* Migrated `memcached` tests to versioned tests ([#2231](https://github.com/newrelic/node-newrelic/pull/2231)) ([0b3a928](https://github.com/newrelic/node-newrelic/commit/0b3a9284dc5bdc7755d176739186ea3c15cde23e))
+* Ported `when` and `q` integration tests to versioned tests ([#2233](https://github.com/newrelic/node-newrelic/pull/2233)) ([9a4dddc](https://github.com/newrelic/node-newrelic/commit/9a4dddc64ce69ea63866d1ebaf6b86b9234c99ea))
+* Updated ioredis tests to assert the host metric getting created on ioredis calls ([#2230](https://github.com/newrelic/node-newrelic/pull/2230)) ([89df06a](https://github.com/newrelic/node-newrelic/commit/89df06a6b885f8789e68d2b8047bada61db62e24))
+* Updated unit tests that were missing constructing specs at instrumentation source ([#2252](https://github.com/newrelic/node-newrelic/pull/2252)) ([54ab238](https://github.com/newrelic/node-newrelic/commit/54ab238436717b5a248f40374e174f1b19217a0c))
+
 ### v11.18.0 (2024-05-29)
 
 #### Features
