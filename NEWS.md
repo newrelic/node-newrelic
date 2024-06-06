@@ -2,21 +2,11 @@
 
 #### Features
 
-* Added feature flag for `kafkajs` instrumentation ([#2237](https://github.com/newrelic/node-newrelic/pull/2237)) ([354bcb2](https://github.com/newrelic/node-newrelic/commit/354bcb276b99c5c8f3db5118b9688c810965811a))
-* Added instrumentation for `kafkajs.Kafka.consumer` ([#2244](https://github.com/newrelic/node-newrelic/pull/2244)) ([8b1fa5d](https://github.com/newrelic/node-newrelic/commit/8b1fa5d0c66cc2c8f14860cd70095f09140a9e06))
-* Added kafkajs producer instrumentation ([#2236](https://github.com/newrelic/node-newrelic/pull/2236)) ([b235529](https://github.com/newrelic/node-newrelic/commit/b23552957ceb296ceee43b670cabdb90bda9a749))
-* Added supportability metrics `Supportability/Features/Instrumentation/kafkajs/<method>` to track when consumer and producer methods are being used ([#2251](https://github.com/newrelic/node-newrelic/pull/2251)) ([26003d6](https://github.com/newrelic/node-newrelic/commit/26003d681aa3e2bd60747cbe91bf1e054770f515))
-
-#### Documentation
-
-* Updated compatibility report ([#2234](https://github.com/newrelic/node-newrelic/pull/2234)) ([8c96412](https://github.com/newrelic/node-newrelic/commit/8c9641256551154295a457828843db369d6166c3))
-    * Co-authored-by: jsumners-nr <150050532+jsumners-nr@users.noreply.github.com>
-* Updated compatibility report ([#2226](https://github.com/newrelic/node-newrelic/pull/2226)) ([85b3862](https://github.com/newrelic/node-newrelic/commit/85b38620a527c088a24692f570d342b7c2d329cf))
+* Added instrumentation for `kafkajs` ([#2237](https://github.com/newrelic/node-newrelic/pull/2237)) ([#2244](https://github.com/newrelic/node-newrelic/pull/2244)) ([#2236](https://github.com/newrelic/node-newrelic/pull/2236)) ([#2236](https://github.com/newrelic/node-newrelic/pull/2236)) ([#2251](https://github.com/newrelic/node-newrelic/pull/2251))
 
 #### Miscellaneous chores
 
 * Added kafkajs instrumentation and versioned tests skeleton ([#2224](https://github.com/newrelic/node-newrelic/pull/2224)) ([fc13916](https://github.com/newrelic/node-newrelic/commit/fc13916b94b813d028270dfccfed292af91875fb))
-    * Co-authored-by: Bob Evans <robert.evans25@gmail.com>
 * Added kafkajs to compatibility list ([#2254](https://github.com/newrelic/node-newrelic/pull/2254)) ([f003ee7](https://github.com/newrelic/node-newrelic/commit/f003ee78204149c7905cb17cb4f084aeac1ba751))
 * Implemented DT header injection for message specs ([#2250](https://github.com/newrelic/node-newrelic/pull/2250)) ([3e6bc6d](https://github.com/newrelic/node-newrelic/commit/3e6bc6d5485fd6e236c6f0a58922d698c00c920f))
 * Removed targets for kafka versioned tests ([#2235](https://github.com/newrelic/node-newrelic/pull/2235)) ([838bab2](https://github.com/newrelic/node-newrelic/commit/838bab2ff425f5acb111a19f397760ed01c1bdde))

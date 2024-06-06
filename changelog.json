@@ -7,10 +7,7 @@
         "security": [],
         "bugfixes": [],
         "features": [
-          "Added supportability metrics `Supportability/Features/Instrumentation/kafkajs/<method>` to track when consumer and producer methods are being used",
-          "Added instrumentation for `kafkajs.Kafka.consumer`",
-          "Added kafkajs producer instrumentation",
-          "Added feature flag for `kafkajs` instrumentation"
+          "Added instrumentation for `kafkajs`"
         ]
       }
     },
