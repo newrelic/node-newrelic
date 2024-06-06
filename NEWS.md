@@ -2,7 +2,8 @@
 
 #### Features
 
-* Added instrumentation for `kafkajs` ([#2237](https://github.com/newrelic/node-newrelic/pull/2237)) ([#2244](https://github.com/newrelic/node-newrelic/pull/2244)) ([#2236](https://github.com/newrelic/node-newrelic/pull/2236)) ([#2236](https://github.com/newrelic/node-newrelic/pull/2236)) ([#2251](https://github.com/newrelic/node-newrelic/pull/2251))
+* Added instrumentation for `kafkajs` (enabled through a [feature flag](https://github.com/newrelic/node-newrelic/blob/f003ee78204149c7905cb17cb4f084aeac1ba751/documentation/feature-flags.md#kakfajs_instrumentation)) ([#2237](https://github.com/newrelic/node-newrelic/pull/2237)) ([#2244](https://github.com/newrelic/node-newrelic/pull/2244)) ([#2236](https://github.com/newrelic/node-newrelic/pull/2236)) ([#2236](https://github.com/newrelic/node-newrelic/pull/2236)) ([#2251](https://github.com/newrelic/node-newrelic/pull/2251))
+
 
 #### Miscellaneous chores
 
