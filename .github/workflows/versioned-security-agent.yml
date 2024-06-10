@@ -39,34 +39,25 @@ jobs:
     name: Should Run
     runs-on: ubuntu-latest
     outputs:
-      previous_version: ${{steps.versions.outputs.PREVIOUS_VAL}}
-      current_version: ${{steps.versions.outputs.CURRENT_VAL}}
+      sec_agent_did_change: ${{ steps.check_sec_agent.outputs.divergent }}
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 2
-      - uses: tj-actions/changed-files@v44
-        id: changed_files
-        with:
-          files: package.json
-      - name: Get dependency versions
-        id: versions
+      - name: Check Security Agent Changed
+        id: check_sec_agent
         if: steps.changed_files.outputs.any_changed == 'true'
-        run: |
-          current_val=$(cat package.json | jq -r --arg pkg "@newrelic/security-agent" '.dependencies[$pkg]')
-          echo "current_val=${current_val}" >> $GITHUB_OUTPUT
-          
-          git checkout origin/${{github.base_ref || 'main'}}
-          previous_val=$(cat package.json | jq -r --arg pkg "@newrelic/security-agent" '.dependencies[$pkg]')
-          echo "previous_val=${previous_val}" >> $GITHUB_OUTPUT
-          
-          git checkout ${{github.sha}}
+        uses: jsumners-nr/gha-node-deps-divergent@643628fe0da51ec025e984c4644f17fd9f9e93f6
+        with:
+          base-sha: ${{ github.base_ref || 'main' }}
+          current-sha: ${{ github.sha }}
+          package-name: '@newrelic/security-agent'
 
   security-agent-tests:
     needs: [should_run]
     if: github.event_name == 'workflow_dispatch' ||
       github.event_name == 'schedule' ||
-      needs.should_run.outputs.previous_version != needs.should_run.outputs.current_version
+      needs.should_run.outputs.sec_agent_did_change == 'true'
 
     runs-on: ubuntu-latest
 
