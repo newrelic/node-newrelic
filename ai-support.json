@@ -2,6 +2,8 @@
   {
     "kind": "gateway",
     "title": "Amazon Bedrock",
+    "preamble": "Through the `@aws-sdk/client-bedrock-runtime` module, we support:",
+    "footnote": "Note: if a model supports streaming, we also instrument the streaming variant.",
     "models": [
       {
         "name": "Claude",
@@ -78,6 +80,8 @@
   {
     "kind": "abstraction",
     "title": "Langchain",
+    "featuresPreamble": "The following general features of Langchain are supported:",
+    "providersPreamble": "Models/providers are generally supported transitively by our instrumentation of the provider's module.",
     "features": [
       {
         "title": "Agents",
@@ -118,6 +122,7 @@
   {
     "kind": "sdk",
     "title": "OpenAI",
+    "featuresPreamble": "Through the `openai` module, we support:",
     "features": [
       {
         "title": "Completions",

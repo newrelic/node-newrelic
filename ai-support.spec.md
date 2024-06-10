@@ -16,6 +16,10 @@ An abstraction is a module that provides a single common interface to many
 LLMs or gateways. An abstraction descriptor has the following fields:
 
 + `title` (string): A human readable name for the abstraction.
++ `featuresPreamble` (string): An optional block of text that should be added
+to the document prior to the features table.
++ `providersPreamble` (string): An optional block of text that should be added
+to the document prior to the providers table.  
 + `features` (object[]): An array of feature entities.
 + `providers` (object[]): An array of provider entities.
 
@@ -25,6 +29,10 @@ A gateway is a service that provides access to multiple large language models
 (LLMs) through a single API. A gateway descriptor has the following fields:
 
 + `title` (string): A human readable name for the gateway.
++ `preamble` (string): An optional block of text that should be added to the
+document prior to the models table.
++ `footnote` (string): An optional block of text that should be added to the
+document subsequent to the models table.
 + `models` (object[]): An array of model entities.
 
 ### kind = "sdk"
@@ -33,6 +41,8 @@ A SDK is a module that provides an API that is specific to a single LLM. An SDK
 descriptor has the following fields:
 
 + `title` (string): A human readable name for the SDK.
++ `featuresPreamble` (string): An optional block of text that should be added
+to the document prior to the features table.
 + `features` (object[]): An array of feature entities.
 
 ## Entities
