@@ -23,6 +23,7 @@ on:
       - main
     paths:
       - 'test/versioned/**/package.json'
+      - 'ai-support.json'
 
 jobs:
   local:
