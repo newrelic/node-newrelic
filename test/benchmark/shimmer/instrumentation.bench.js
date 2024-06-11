@@ -11,17 +11,17 @@ const shimmer = require('../../../lib/shimmer')
 const suite = benchmark.createBenchmark({ name: 'shimmer wrapping', delay: 0.01 })
 
 suite.add({
-  name: 'shimmer.patchModule()',
+  name: 'shimmer.registerHooks()',
   agent: true,
   fn: function (agent) {
-    return shimmer.patchModule(agent)
+    return shimmer.registerHooks(agent)
   }
 })
 
 suite.add({
-  name: 'shimmer.unpatchModule()',
+  name: 'shimmer.removeHooks()',
   fn: function () {
-    return shimmer.unpatchModule()
+    return shimmer.removeHooks()
   }
 })
 
