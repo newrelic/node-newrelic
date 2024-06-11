@@ -7,6 +7,7 @@
     {"name": "@aws-sdk/client-sqs", "minAgentVersion": "8.7.1"},
     {"name": "@aws-sdk/client-sns", "minAgentVersion": "8.7.1"},
     {"name": "@aws-sdk/client-dynamodb", "minAgentVersion": "8.7.1"},
+    {"name": "@aws-sdk/lib-dynamodb", "minAgentVersion": "8.7.1"},
     {"name": "@aws-sdk/smithy-client", "minAgentVersion": "8.7.1"},
     {"name": "@smithy/smithy-client", "minAgentVersion": "11.0.0"},
     {"name": "@aws-sdk/client-bedrock-runtime", "minAgentVersion": "11.13.0"}
