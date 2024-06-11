@@ -46,7 +46,6 @@ jobs:
           fetch-depth: 2
       - name: Check Security Agent Changed
         id: check_sec_agent
-        if: steps.changed_files.outputs.any_changed == 'true'
         uses: jsumners-nr/gha-node-deps-divergent@643628fe0da51ec025e984c4644f17fd9f9e93f6
         with:
           base-sha: ${{ github.base_ref || 'main' }}
