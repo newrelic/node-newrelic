@@ -6,7 +6,7 @@
     "footnote": "Note: if a model supports streaming, we also instrument the streaming variant.",
     "models": [
       {
-        "name": "Claude",
+        "name": "Anthropic Claude",
         "features": [
           {
             "title": "Text",
@@ -34,7 +34,7 @@
       },
 
       {
-        "name": "Jurassic-2",
+        "name": "AI21 Labs Jurassic-2",
         "features": [
           {
             "title": "Text",
@@ -48,7 +48,7 @@
       },
 
       {
-        "name": "Llama2",
+        "name": "Meta Llama2",
         "features": [
           {
             "title": "Text",
@@ -62,7 +62,7 @@
       },
 
       {
-        "name": "Titan",
+        "name": "Amazon Titan",
         "features": [
           {
             "title": "Text",
