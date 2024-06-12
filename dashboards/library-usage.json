@@ -1,0 +1,1666 @@
+{
+  "name": "Node.js Library Usage",
+  "description": null,
+  "permissions": "PUBLIC_READ_WRITE",
+  "pages": [
+    {
+      "name": "Instrumented Libraries",
+      "description": "Reports usage by library, agent, and node.js versions",
+      "widgets": [
+        {
+          "title": "@apollo/gateway",
+          "layout": {
+            "column": 1,
+            "row": 1,
+            "width": 4,
+            "height": 3
+          },
+          "linkedEntityGuids": null,
+          "visualization": {
+            "id": "viz.bar"
+          },
+          "rawConfiguration": {
+            "facet": {
+              "showOtherSeries": false
+            },
+            "nrqlQueries": [
+              {
+                "accountIds": [
+                  1
+                ],
+                "query": "FROM NodeMetadataSummary SELECT uniqueCount(entity.guid) where `@apollo/gateway.version` IS NOT NULL and node.version.major >= '16' facet `@apollo/gateway.version`, agentVersion, node.version.major limit max"
+              }
+            ],
+            "platformOptions": {
+              "ignoreTimeRange": false
+            }
+          }
+        },
+        {
+          "title": "@apollo/server",
+          "layout": {
+            "column": 5,
+            "row": 1,
+            "width": 4,
+            "height": 3
+          },
+          "linkedEntityGuids": null,
+          "visualization": {
+            "id": "viz.bar"
+          },
+          "rawConfiguration": {
+            "facet": {
+              "showOtherSeries": false
+            },
+            "nrqlQueries": [
+              {
+                "accountIds": [
+                  1
+                ],
+                "query": "FROM NodeMetadataSummary SELECT uniqueCount(entity.guid) where `@apollo/server.version` IS NOT NULL and node.version.major >= '16' facet `@apollo/server.version`, agentVersion, node.version.major limit max"
+              }
+            ],
+            "platformOptions": {
+              "ignoreTimeRange": false
+            }
+          }
+        },
+        {
+          "title": "@aws-sdk/client-bedrock-runtime",
+          "layout": {
+            "column": 9,
+            "row": 1,
+            "width": 4,
+            "height": 3
+          },
+          "linkedEntityGuids": null,
+          "visualization": {
+            "id": "viz.bar"
+          },
+          "rawConfiguration": {
+            "facet": {
+              "showOtherSeries": false
+            },
+            "nrqlQueries": [
+              {
+                "accountIds": [
+                  1
+                ],
+                "query": "FROM NodeMetadataSummary SELECT uniqueCount(entity.guid) where `@aws-sdk/client-bedrock-runtime.version` IS NOT NULL and node.version.major >= '16' facet `@aws-sdk/client-bedrock-runtime.version`, agentVersion, node.version.major limit max"
+              }
+            ],
+            "platformOptions": {
+              "ignoreTimeRange": false
+            }
+          }
+        },
+        {
+          "title": "@aws-sdk/client-dynamodb",
+          "layout": {
+            "column": 1,
+            "row": 4,
+            "width": 4,
+            "height": 3
+          },
+          "linkedEntityGuids": null,
+          "visualization": {
+            "id": "viz.bar"
+          },
+          "rawConfiguration": {
+            "facet": {
+              "showOtherSeries": false
+            },
+            "nrqlQueries": [
+              {
+                "accountIds": [
+                  1
+                ],
+                "query": "FROM NodeMetadataSummary SELECT uniqueCount(entity.guid) where `@aws-sdk/client-dynamodb.version` IS NOT NULL and node.version.major >= '16' facet `@aws-sdk/client-dynamodb.version`, agentVersion, node.version.major limit max"
+              }
+            ],
+            "platformOptions": {
+              "ignoreTimeRange": false
+            }
+          }
+        },
+        {
+          "title": "@aws-sdk/client-sns",
+          "layout": {
+            "column": 5,
+            "row": 4,
+            "width": 4,
+            "height": 3
+          },
+          "linkedEntityGuids": null,
+          "visualization": {
+            "id": "viz.bar"
+          },
+          "rawConfiguration": {
+            "facet": {
+              "showOtherSeries": false
+            },
+            "nrqlQueries": [
+              {
+                "accountIds": [
+                  1
+                ],
+                "query": "FROM NodeMetadataSummary SELECT uniqueCount(entity.guid) where `@aws-sdk/client-sns.version` IS NOT NULL and node.version.major >= '16' facet `@aws-sdk/client-sns.version`, agentVersion, node.version.major limit max"
+              }
+            ],
+            "platformOptions": {
+              "ignoreTimeRange": false
+            }
+          }
+        },
+        {
+          "title": "@aws-sdk/client-sqs",
+          "layout": {
+            "column": 9,
+            "row": 4,
+            "width": 4,
+            "height": 3
+          },
+          "linkedEntityGuids": null,
+          "visualization": {
+            "id": "viz.bar"
+          },
+          "rawConfiguration": {
+            "facet": {
+              "showOtherSeries": false
+            },
+            "nrqlQueries": [
+              {
+                "accountIds": [
+                  1
+                ],
+                "query": "FROM NodeMetadataSummary SELECT uniqueCount(entity.guid) where `@aws-sdk/client-sqs.version` IS NOT NULL and node.version.major >= '16' facet `@aws-sdk/client-sqs.version`, agentVersion, node.version.major limit max"
+              }
+            ],
+            "platformOptions": {
+              "ignoreTimeRange": false
+            }
+          }
+        },
+        {
+          "title": "@aws-sdk/lib-dynamodb",
+          "layout": {
+            "column": 1,
+            "row": 7,
+            "width": 4,
+            "height": 3
+          },
+          "linkedEntityGuids": null,
+          "visualization": {
+            "id": "viz.bar"
+          },
+          "rawConfiguration": {
+            "facet": {
+              "showOtherSeries": false
+            },
+            "nrqlQueries": [
+              {
+                "accountIds": [
+                  1
+                ],
+                "query": "FROM NodeMetadataSummary SELECT uniqueCount(entity.guid) where `@aws-sdk/lib-dynamodb.version` IS NOT NULL and node.version.major >= '16' facet `@aws-sdk/lib-dynamodb.version`, agentVersion, node.version.major limit max"
+              }
+            ],
+            "platformOptions": {
+              "ignoreTimeRange": false
+            }
+          }
+        },
+        {
+          "title": "@aws-sdk/smithy-client",
+          "layout": {
+            "column": 5,
+            "row": 7,
+            "width": 4,
+            "height": 3
+          },
+          "linkedEntityGuids": null,
+          "visualization": {
+            "id": "viz.bar"
+          },
+          "rawConfiguration": {
+            "facet": {
+              "showOtherSeries": false
+            },
+            "nrqlQueries": [
+              {
+                "accountIds": [
+                  1
+                ],
+                "query": "FROM NodeMetadataSummary SELECT uniqueCount(entity.guid) where `@aws-sdk/smithy-client.version` IS NOT NULL and node.version.major >= '16' facet `@aws-sdk/smithy-client.version`, agentVersion, node.version.major limit max"
+              }
+            ],
+            "platformOptions": {
+              "ignoreTimeRange": false
+            }
+          }
+        },
+        {
+          "title": "@elastic/elasticsearch",
+          "layout": {
+            "column": 9,
+            "row": 7,
+            "width": 4,
+            "height": 3
+          },
+          "linkedEntityGuids": null,
+          "visualization": {
+            "id": "viz.bar"
+          },
+          "rawConfiguration": {
+            "facet": {
+              "showOtherSeries": false
+            },
+            "nrqlQueries": [
+              {
+                "accountIds": [
+                  1
+                ],
+                "query": "FROM NodeMetadataSummary SELECT uniqueCount(entity.guid) where `@elastic/elasticsearch.version` IS NOT NULL and node.version.major >= '16' facet `@elastic/elasticsearch.version`, agentVersion, node.version.major limit max"
+              }
+            ],
+            "platformOptions": {
+              "ignoreTimeRange": false
+            }
+          }
+        },
+        {
+          "title": "@grpc/grpc-js",
+          "layout": {
+            "column": 1,
+            "row": 10,
+            "width": 4,
+            "height": 3
+          },
+          "linkedEntityGuids": null,
+          "visualization": {
+            "id": "viz.bar"
+          },
+          "rawConfiguration": {
+            "facet": {
+              "showOtherSeries": false
+            },
+            "nrqlQueries": [
+              {
+                "accountIds": [
+                  1
+                ],
+                "query": "FROM NodeMetadataSummary SELECT uniqueCount(entity.guid) where `@grpc/grpc-js.version` IS NOT NULL and node.version.major >= '16' facet `@grpc/grpc-js.version`, agentVersion, node.version.major limit max"
+              }
+            ],
+            "platformOptions": {
+              "ignoreTimeRange": false
+            }
+          }
+        },
+        {
+          "title": "@hapi/hapi",
+          "layout": {
+            "column": 5,
+            "row": 10,
+            "width": 4,
+            "height": 3
+          },
+          "linkedEntityGuids": null,
+          "visualization": {
+            "id": "viz.bar"
+          },
+          "rawConfiguration": {
+            "facet": {
+              "showOtherSeries": false
+            },
+            "nrqlQueries": [
+              {
+                "accountIds": [
+                  1
+                ],
+                "query": "FROM NodeMetadataSummary SELECT uniqueCount(entity.guid) where `@hapi/hapi.version` IS NOT NULL and node.version.major >= '16' facet `@hapi/hapi.version`, agentVersion, node.version.major limit max"
+              }
+            ],
+            "platformOptions": {
+              "ignoreTimeRange": false
+            }
+          }
+        },
+        {
+          "title": "@hapi/vision",
+          "layout": {
+            "column": 9,
+            "row": 10,
+            "width": 4,
+            "height": 3
+          },
+          "linkedEntityGuids": null,
+          "visualization": {
+            "id": "viz.bar"
+          },
+          "rawConfiguration": {
+            "facet": {
+              "showOtherSeries": false
+            },
+            "nrqlQueries": [
+              {
+                "accountIds": [
+                  1
+                ],
+                "query": "FROM NodeMetadataSummary SELECT uniqueCount(entity.guid) where `@hapi/vision.version` IS NOT NULL and node.version.major >= '16' facet `@hapi/vision.version`, agentVersion, node.version.major limit max"
+              }
+            ],
+            "platformOptions": {
+              "ignoreTimeRange": false
+            }
+          }
+        },
+        {
+          "title": "@koa/router",
+          "layout": {
+            "column": 1,
+            "row": 13,
+            "width": 4,
+            "height": 3
+          },
+          "linkedEntityGuids": null,
+          "visualization": {
+            "id": "viz.bar"
+          },
+          "rawConfiguration": {
+            "facet": {
+              "showOtherSeries": false
+            },
+            "nrqlQueries": [
+              {
+                "accountIds": [
+                  1
+                ],
+                "query": "FROM NodeMetadataSummary SELECT uniqueCount(entity.guid) where `@koa/router.version` IS NOT NULL and node.version.major >= '16' facet `@koa/router.version`, agentVersion, node.version.major limit max"
+              }
+            ],
+            "platformOptions": {
+              "ignoreTimeRange": false
+            }
+          }
+        },
+        {
+          "title": "@langchain/core",
+          "layout": {
+            "column": 5,
+            "row": 13,
+            "width": 4,
+            "height": 3
+          },
+          "linkedEntityGuids": null,
+          "visualization": {
+            "id": "viz.bar"
+          },
+          "rawConfiguration": {
+            "facet": {
+              "showOtherSeries": false
+            },
+            "nrqlQueries": [
+              {
+                "accountIds": [
+                  1
+                ],
+                "query": "FROM NodeMetadataSummary SELECT uniqueCount(entity.guid) where `@langchain/core.version` IS NOT NULL and node.version.major >= '16' facet `@langchain/core.version`, agentVersion, node.version.major limit max"
+              }
+            ],
+            "platformOptions": {
+              "ignoreTimeRange": false
+            }
+          }
+        },
+        {
+          "title": "@nestjs/cli",
+          "layout": {
+            "column": 9,
+            "row": 13,
+            "width": 4,
+            "height": 3
+          },
+          "linkedEntityGuids": null,
+          "visualization": {
+            "id": "viz.bar"
+          },
+          "rawConfiguration": {
+            "facet": {
+              "showOtherSeries": false
+            },
+            "nrqlQueries": [
+              {
+                "accountIds": [
+                  1
+                ],
+                "query": "FROM NodeMetadataSummary SELECT uniqueCount(entity.guid) where `@nestjs/cli.version` IS NOT NULL and node.version.major >= '16' facet `@nestjs/cli.version`, agentVersion, node.version.major limit max"
+              }
+            ],
+            "platformOptions": {
+              "ignoreTimeRange": false
+            }
+          }
+        },
+        {
+          "title": "@nestjs/core",
+          "layout": {
+            "column": 1,
+            "row": 16,
+            "width": 4,
+            "height": 3
+          },
+          "linkedEntityGuids": null,
+          "visualization": {
+            "id": "viz.bar"
+          },
+          "rawConfiguration": {
+            "facet": {
+              "showOtherSeries": false
+            },
+            "nrqlQueries": [
+              {
+                "accountIds": [
+                  1
+                ],
+                "query": "FROM NodeMetadataSummary SELECT uniqueCount(entity.guid) where `@nestjs/core.version` IS NOT NULL and node.version.major >= '16' facet `@nestjs/core.version`, agentVersion, node.version.major limit max"
+              }
+            ],
+            "platformOptions": {
+              "ignoreTimeRange": false
+            }
+          }
+        },
+        {
+          "title": "@node-redis/client",
+          "layout": {
+            "column": 5,
+            "row": 16,
+            "width": 4,
+            "height": 3
+          },
+          "linkedEntityGuids": null,
+          "visualization": {
+            "id": "viz.bar"
+          },
+          "rawConfiguration": {
+            "facet": {
+              "showOtherSeries": false
+            },
+            "nrqlQueries": [
+              {
+                "accountIds": [
+                  1
+                ],
+                "query": "FROM NodeMetadataSummary SELECT uniqueCount(entity.guid) where `@node-redis/client.version` IS NOT NULL and node.version.major >= '16' facet `@node-redis/client.version`, agentVersion, node.version.major limit max"
+              }
+            ],
+            "platformOptions": {
+              "ignoreTimeRange": false
+            }
+          }
+        },
+        {
+          "title": "@prisma/client",
+          "layout": {
+            "column": 9,
+            "row": 16,
+            "width": 4,
+            "height": 3
+          },
+          "linkedEntityGuids": null,
+          "visualization": {
+            "id": "viz.bar"
+          },
+          "rawConfiguration": {
+            "facet": {
+              "showOtherSeries": false
+            },
+            "nrqlQueries": [
+              {
+                "accountIds": [
+                  1
+                ],
+                "query": "FROM NodeMetadataSummary SELECT uniqueCount(entity.guid) where `@prisma/client.version` IS NOT NULL and node.version.major >= '16' facet `@prisma/client.version`, agentVersion, node.version.major limit max"
+              }
+            ],
+            "platformOptions": {
+              "ignoreTimeRange": false
+            }
+          }
+        },
+        {
+          "title": "@redis/client",
+          "layout": {
+            "column": 1,
+            "row": 19,
+            "width": 4,
+            "height": 3
+          },
+          "linkedEntityGuids": null,
+          "visualization": {
+            "id": "viz.bar"
+          },
+          "rawConfiguration": {
+            "facet": {
+              "showOtherSeries": false
+            },
+            "nrqlQueries": [
+              {
+                "accountIds": [
+                  1
+                ],
+                "query": "FROM NodeMetadataSummary SELECT uniqueCount(entity.guid) where `@redis/client.version` IS NOT NULL and node.version.major >= '16' facet `@redis/client.version`, agentVersion, node.version.major limit max"
+              }
+            ],
+            "platformOptions": {
+              "ignoreTimeRange": false
+            }
+          }
+        },
+        {
+          "title": "@smithy/smithy-client",
+          "layout": {
+            "column": 5,
+            "row": 19,
+            "width": 4,
+            "height": 3
+          },
+          "linkedEntityGuids": null,
+          "visualization": {
+            "id": "viz.bar"
+          },
+          "rawConfiguration": {
+            "facet": {
+              "showOtherSeries": false
+            },
+            "nrqlQueries": [
+              {
+                "accountIds": [
+                  1
+                ],
+                "query": "FROM NodeMetadataSummary SELECT uniqueCount(entity.guid) where `@smithy/smithy-client.version` IS NOT NULL and node.version.major >= '16' facet `@smithy/smithy-client.version`, agentVersion, node.version.major limit max"
+              }
+            ],
+            "platformOptions": {
+              "ignoreTimeRange": false
+            }
+          }
+        },
+        {
+          "title": "amqplib",
+          "layout": {
+            "column": 9,
+            "row": 19,
+            "width": 4,
+            "height": 3
+          },
+          "linkedEntityGuids": null,
+          "visualization": {
+            "id": "viz.bar"
+          },
+          "rawConfiguration": {
+            "facet": {
+              "showOtherSeries": false
+            },
+            "nrqlQueries": [
+              {
+                "accountIds": [
+                  1
+                ],
+                "query": "FROM NodeMetadataSummary SELECT uniqueCount(entity.guid) where `amqplib.version` IS NOT NULL and node.version.major >= '16' facet `amqplib.version`, agentVersion, node.version.major limit max"
+              }
+            ],
+            "platformOptions": {
+              "ignoreTimeRange": false
+            }
+          }
+        },
+        {
+          "title": "apollo-server",
+          "layout": {
+            "column": 1,
+            "row": 22,
+            "width": 4,
+            "height": 3
+          },
+          "linkedEntityGuids": null,
+          "visualization": {
+            "id": "viz.bar"
+          },
+          "rawConfiguration": {
+            "facet": {
+              "showOtherSeries": false
+            },
+            "nrqlQueries": [
+              {
+                "accountIds": [
+                  1
+                ],
+                "query": "FROM NodeMetadataSummary SELECT uniqueCount(entity.guid) where `apollo-server.version` IS NOT NULL and node.version.major >= '16' facet `apollo-server.version`, agentVersion, node.version.major limit max"
+              }
+            ],
+            "platformOptions": {
+              "ignoreTimeRange": false
+            }
+          }
+        },
+        {
+          "title": "apollo-server-express",
+          "layout": {
+            "column": 5,
+            "row": 22,
+            "width": 4,
+            "height": 3
+          },
+          "linkedEntityGuids": null,
+          "visualization": {
+            "id": "viz.bar"
+          },
+          "rawConfiguration": {
+            "facet": {
+              "showOtherSeries": false
+            },
+            "nrqlQueries": [
+              {
+                "accountIds": [
+                  1
+                ],
+                "query": "FROM NodeMetadataSummary SELECT uniqueCount(entity.guid) where `apollo-server-express.version` IS NOT NULL and node.version.major >= '16' facet `apollo-server-express.version`, agentVersion, node.version.major limit max"
+              }
+            ],
+            "platformOptions": {
+              "ignoreTimeRange": false
+            }
+          }
+        },
+        {
+          "title": "apollo-server-fastify",
+          "layout": {
+            "column": 9,
+            "row": 22,
+            "width": 4,
+            "height": 3
+          },
+          "linkedEntityGuids": null,
+          "visualization": {
+            "id": "viz.bar"
+          },
+          "rawConfiguration": {
+            "facet": {
+              "showOtherSeries": false
+            },
+            "nrqlQueries": [
+              {
+                "accountIds": [
+                  1
+                ],
+                "query": "FROM NodeMetadataSummary SELECT uniqueCount(entity.guid) where `apollo-server-fastify.version` IS NOT NULL and node.version.major >= '16' facet `apollo-server-fastify.version`, agentVersion, node.version.major limit max"
+              }
+            ],
+            "platformOptions": {
+              "ignoreTimeRange": false
+            }
+          }
+        },
+        {
+          "title": "apollo-server-hapi",
+          "layout": {
+            "column": 1,
+            "row": 25,
+            "width": 4,
+            "height": 3
+          },
+          "linkedEntityGuids": null,
+          "visualization": {
+            "id": "viz.bar"
+          },
+          "rawConfiguration": {
+            "facet": {
+              "showOtherSeries": false
+            },
+            "nrqlQueries": [
+              {
+                "accountIds": [
+                  1
+                ],
+                "query": "FROM NodeMetadataSummary SELECT uniqueCount(entity.guid) where `apollo-server-hapi.version` IS NOT NULL and node.version.major >= '16' facet `apollo-server-hapi.version`, agentVersion, node.version.major limit max"
+              }
+            ],
+            "platformOptions": {
+              "ignoreTimeRange": false
+            }
+          }
+        },
+        {
+          "title": "apollo-server-koa",
+          "layout": {
+            "column": 5,
+            "row": 25,
+            "width": 4,
+            "height": 3
+          },
+          "linkedEntityGuids": null,
+          "visualization": {
+            "id": "viz.bar"
+          },
+          "rawConfiguration": {
+            "facet": {
+              "showOtherSeries": false
+            },
+            "nrqlQueries": [
+              {
+                "accountIds": [
+                  1
+                ],
+                "query": "FROM NodeMetadataSummary SELECT uniqueCount(entity.guid) where `apollo-server-koa.version` IS NOT NULL and node.version.major >= '16' facet `apollo-server-koa.version`, agentVersion, node.version.major limit max"
+              }
+            ],
+            "platformOptions": {
+              "ignoreTimeRange": false
+            }
+          }
+        },
+        {
+          "title": "apollo-server-lambda",
+          "layout": {
+            "column": 9,
+            "row": 25,
+            "width": 4,
+            "height": 3
+          },
+          "linkedEntityGuids": null,
+          "visualization": {
+            "id": "viz.bar"
+          },
+          "rawConfiguration": {
+            "facet": {
+              "showOtherSeries": false
+            },
+            "nrqlQueries": [
+              {
+                "accountIds": [
+                  1
+                ],
+                "query": "FROM NodeMetadataSummary SELECT uniqueCount(entity.guid) where `apollo-server-lambda.version` IS NOT NULL and node.version.major >= '16' facet `apollo-server-lambda.version`, agentVersion, node.version.major limit max"
+              }
+            ],
+            "platformOptions": {
+              "ignoreTimeRange": false
+            }
+          }
+        },
+        {
+          "title": "aws-sdk",
+          "layout": {
+            "column": 1,
+            "row": 28,
+            "width": 4,
+            "height": 3
+          },
+          "linkedEntityGuids": null,
+          "visualization": {
+            "id": "viz.bar"
+          },
+          "rawConfiguration": {
+            "facet": {
+              "showOtherSeries": false
+            },
+            "nrqlQueries": [
+              {
+                "accountIds": [
+                  1
+                ],
+                "query": "FROM NodeMetadataSummary SELECT uniqueCount(entity.guid) where `aws-sdk.version` IS NOT NULL and node.version.major >= '16' facet `aws-sdk.version`, agentVersion, node.version.major limit max"
+              }
+            ],
+            "platformOptions": {
+              "ignoreTimeRange": false
+            }
+          }
+        },
+        {
+          "title": "bluebird",
+          "layout": {
+            "column": 5,
+            "row": 28,
+            "width": 4,
+            "height": 3
+          },
+          "linkedEntityGuids": null,
+          "visualization": {
+            "id": "viz.bar"
+          },
+          "rawConfiguration": {
+            "facet": {
+              "showOtherSeries": false
+            },
+            "nrqlQueries": [
+              {
+                "accountIds": [
+                  1
+                ],
+                "query": "FROM NodeMetadataSummary SELECT uniqueCount(entity.guid) where `bluebird.version` IS NOT NULL and node.version.major >= '16' facet `bluebird.version`, agentVersion, node.version.major limit max"
+              }
+            ],
+            "platformOptions": {
+              "ignoreTimeRange": false
+            }
+          }
+        },
+        {
+          "title": "bunyan",
+          "layout": {
+            "column": 9,
+            "row": 28,
+            "width": 4,
+            "height": 3
+          },
+          "linkedEntityGuids": null,
+          "visualization": {
+            "id": "viz.bar"
+          },
+          "rawConfiguration": {
+            "facet": {
+              "showOtherSeries": false
+            },
+            "nrqlQueries": [
+              {
+                "accountIds": [
+                  1
+                ],
+                "query": "FROM NodeMetadataSummary SELECT uniqueCount(entity.guid) where `bunyan.version` IS NOT NULL and node.version.major >= '16' facet `bunyan.version`, agentVersion, node.version.major limit max"
+              }
+            ],
+            "platformOptions": {
+              "ignoreTimeRange": false
+            }
+          }
+        },
+        {
+          "title": "cassandra-driver",
+          "layout": {
+            "column": 1,
+            "row": 31,
+            "width": 4,
+            "height": 3
+          },
+          "linkedEntityGuids": null,
+          "visualization": {
+            "id": "viz.bar"
+          },
+          "rawConfiguration": {
+            "facet": {
+              "showOtherSeries": false
+            },
+            "nrqlQueries": [
+              {
+                "accountIds": [
+                  1
+                ],
+                "query": "FROM NodeMetadataSummary SELECT uniqueCount(entity.guid) where `cassandra-driver.version` IS NOT NULL and node.version.major >= '16' facet `cassandra-driver.version`, agentVersion, node.version.major limit max"
+              }
+            ],
+            "platformOptions": {
+              "ignoreTimeRange": false
+            }
+          }
+        },
+        {
+          "title": "connect",
+          "layout": {
+            "column": 5,
+            "row": 31,
+            "width": 4,
+            "height": 3
+          },
+          "linkedEntityGuids": null,
+          "visualization": {
+            "id": "viz.bar"
+          },
+          "rawConfiguration": {
+            "facet": {
+              "showOtherSeries": false
+            },
+            "nrqlQueries": [
+              {
+                "accountIds": [
+                  1
+                ],
+                "query": "FROM NodeMetadataSummary SELECT uniqueCount(entity.guid) where `connect.version` IS NOT NULL and node.version.major >= '16' facet `connect.version`, agentVersion, node.version.major limit max"
+              }
+            ],
+            "platformOptions": {
+              "ignoreTimeRange": false
+            }
+          }
+        },
+        {
+          "title": "director",
+          "layout": {
+            "column": 9,
+            "row": 31,
+            "width": 4,
+            "height": 3
+          },
+          "linkedEntityGuids": null,
+          "visualization": {
+            "id": "viz.bar"
+          },
+          "rawConfiguration": {
+            "facet": {
+              "showOtherSeries": false
+            },
+            "nrqlQueries": [
+              {
+                "accountIds": [
+                  1
+                ],
+                "query": "FROM NodeMetadataSummary SELECT uniqueCount(entity.guid) where `director.version` IS NOT NULL and node.version.major >= '16' facet `director.version`, agentVersion, node.version.major limit max"
+              }
+            ],
+            "platformOptions": {
+              "ignoreTimeRange": false
+            }
+          }
+        },
+        {
+          "title": "express",
+          "layout": {
+            "column": 1,
+            "row": 34,
+            "width": 4,
+            "height": 3
+          },
+          "linkedEntityGuids": null,
+          "visualization": {
+            "id": "viz.bar"
+          },
+          "rawConfiguration": {
+            "facet": {
+              "showOtherSeries": false
+            },
+            "nrqlQueries": [
+              {
+                "accountIds": [
+                  1
+                ],
+                "query": "FROM NodeMetadataSummary SELECT uniqueCount(entity.guid) where `express.version` IS NOT NULL and node.version.major >= '16' facet `express.version`, agentVersion, node.version.major limit max"
+              }
+            ],
+            "platformOptions": {
+              "ignoreTimeRange": false
+            }
+          }
+        },
+        {
+          "title": "fastify",
+          "layout": {
+            "column": 5,
+            "row": 34,
+            "width": 4,
+            "height": 3
+          },
+          "linkedEntityGuids": null,
+          "visualization": {
+            "id": "viz.bar"
+          },
+          "rawConfiguration": {
+            "facet": {
+              "showOtherSeries": false
+            },
+            "nrqlQueries": [
+              {
+                "accountIds": [
+                  1
+                ],
+                "query": "FROM NodeMetadataSummary SELECT uniqueCount(entity.guid) where `fastify.version` IS NOT NULL and node.version.major >= '16' facet `fastify.version`, agentVersion, node.version.major limit max"
+              }
+            ],
+            "platformOptions": {
+              "ignoreTimeRange": false
+            }
+          }
+        },
+        {
+          "title": "generic-pool",
+          "layout": {
+            "column": 9,
+            "row": 34,
+            "width": 4,
+            "height": 3
+          },
+          "linkedEntityGuids": null,
+          "visualization": {
+            "id": "viz.bar"
+          },
+          "rawConfiguration": {
+            "facet": {
+              "showOtherSeries": false
+            },
+            "nrqlQueries": [
+              {
+                "accountIds": [
+                  1
+                ],
+                "query": "FROM NodeMetadataSummary SELECT uniqueCount(entity.guid) where `generic-pool.version` IS NOT NULL and node.version.major >= '16' facet `generic-pool.version`, agentVersion, node.version.major limit max"
+              }
+            ],
+            "platformOptions": {
+              "ignoreTimeRange": false
+            }
+          }
+        },
+        {
+          "title": "ioredis",
+          "layout": {
+            "column": 1,
+            "row": 37,
+            "width": 4,
+            "height": 3
+          },
+          "linkedEntityGuids": null,
+          "visualization": {
+            "id": "viz.bar"
+          },
+          "rawConfiguration": {
+            "facet": {
+              "showOtherSeries": false
+            },
+            "nrqlQueries": [
+              {
+                "accountIds": [
+                  1
+                ],
+                "query": "FROM NodeMetadataSummary SELECT uniqueCount(entity.guid) where `ioredis.version` IS NOT NULL and node.version.major >= '16' facet `ioredis.version`, agentVersion, node.version.major limit max"
+              }
+            ],
+            "platformOptions": {
+              "ignoreTimeRange": false
+            }
+          }
+        },
+        {
+          "title": "kafkajs",
+          "layout": {
+            "column": 5,
+            "row": 37,
+            "width": 4,
+            "height": 3
+          },
+          "linkedEntityGuids": null,
+          "visualization": {
+            "id": "viz.bar"
+          },
+          "rawConfiguration": {
+            "facet": {
+              "showOtherSeries": false
+            },
+            "nrqlQueries": [
+              {
+                "accountIds": [
+                  1
+                ],
+                "query": "FROM NodeMetadataSummary SELECT uniqueCount(entity.guid) where `kafkajs.version` IS NOT NULL and node.version.major >= '16' facet `kafkajs.version`, agentVersion, node.version.major limit max"
+              }
+            ],
+            "platformOptions": {
+              "ignoreTimeRange": false
+            }
+          }
+        },
+        {
+          "title": "koa",
+          "layout": {
+            "column": 9,
+            "row": 37,
+            "width": 4,
+            "height": 3
+          },
+          "linkedEntityGuids": null,
+          "visualization": {
+            "id": "viz.bar"
+          },
+          "rawConfiguration": {
+            "facet": {
+              "showOtherSeries": false
+            },
+            "nrqlQueries": [
+              {
+                "accountIds": [
+                  1
+                ],
+                "query": "FROM NodeMetadataSummary SELECT uniqueCount(entity.guid) where `koa.version` IS NOT NULL and node.version.major >= '16' facet `koa.version`, agentVersion, node.version.major limit max"
+              }
+            ],
+            "platformOptions": {
+              "ignoreTimeRange": false
+            }
+          }
+        },
+        {
+          "title": "koa-route",
+          "layout": {
+            "column": 1,
+            "row": 40,
+            "width": 4,
+            "height": 3
+          },
+          "linkedEntityGuids": null,
+          "visualization": {
+            "id": "viz.bar"
+          },
+          "rawConfiguration": {
+            "facet": {
+              "showOtherSeries": false
+            },
+            "nrqlQueries": [
+              {
+                "accountIds": [
+                  1
+                ],
+                "query": "FROM NodeMetadataSummary SELECT uniqueCount(entity.guid) where `koa-route.version` IS NOT NULL and node.version.major >= '16' facet `koa-route.version`, agentVersion, node.version.major limit max"
+              }
+            ],
+            "platformOptions": {
+              "ignoreTimeRange": false
+            }
+          }
+        },
+        {
+          "title": "koa-router",
+          "layout": {
+            "column": 5,
+            "row": 40,
+            "width": 4,
+            "height": 3
+          },
+          "linkedEntityGuids": null,
+          "visualization": {
+            "id": "viz.bar"
+          },
+          "rawConfiguration": {
+            "facet": {
+              "showOtherSeries": false
+            },
+            "nrqlQueries": [
+              {
+                "accountIds": [
+                  1
+                ],
+                "query": "FROM NodeMetadataSummary SELECT uniqueCount(entity.guid) where `koa-router.version` IS NOT NULL and node.version.major >= '16' facet `koa-router.version`, agentVersion, node.version.major limit max"
+              }
+            ],
+            "platformOptions": {
+              "ignoreTimeRange": false
+            }
+          }
+        },
+        {
+          "title": "memcached",
+          "layout": {
+            "column": 9,
+            "row": 40,
+            "width": 4,
+            "height": 3
+          },
+          "linkedEntityGuids": null,
+          "visualization": {
+            "id": "viz.bar"
+          },
+          "rawConfiguration": {
+            "facet": {
+              "showOtherSeries": false
+            },
+            "nrqlQueries": [
+              {
+                "accountIds": [
+                  1
+                ],
+                "query": "FROM NodeMetadataSummary SELECT uniqueCount(entity.guid) where `memcached.version` IS NOT NULL and node.version.major >= '16' facet `memcached.version`, agentVersion, node.version.major limit max"
+              }
+            ],
+            "platformOptions": {
+              "ignoreTimeRange": false
+            }
+          }
+        },
+        {
+          "title": "mongodb",
+          "layout": {
+            "column": 1,
+            "row": 43,
+            "width": 4,
+            "height": 3
+          },
+          "linkedEntityGuids": null,
+          "visualization": {
+            "id": "viz.bar"
+          },
+          "rawConfiguration": {
+            "facet": {
+              "showOtherSeries": false
+            },
+            "nrqlQueries": [
+              {
+                "accountIds": [
+                  1
+                ],
+                "query": "FROM NodeMetadataSummary SELECT uniqueCount(entity.guid) where `mongodb.version` IS NOT NULL and node.version.major >= '16' facet `mongodb.version`, agentVersion, node.version.major limit max"
+              }
+            ],
+            "platformOptions": {
+              "ignoreTimeRange": false
+            }
+          }
+        },
+        {
+          "title": "mysql",
+          "layout": {
+            "column": 5,
+            "row": 43,
+            "width": 4,
+            "height": 3
+          },
+          "linkedEntityGuids": null,
+          "visualization": {
+            "id": "viz.bar"
+          },
+          "rawConfiguration": {
+            "facet": {
+              "showOtherSeries": false
+            },
+            "nrqlQueries": [
+              {
+                "accountIds": [
+                  1
+                ],
+                "query": "FROM NodeMetadataSummary SELECT uniqueCount(entity.guid) where `mysql.version` IS NOT NULL and node.version.major >= '16' facet `mysql.version`, agentVersion, node.version.major limit max"
+              }
+            ],
+            "platformOptions": {
+              "ignoreTimeRange": false
+            }
+          }
+        },
+        {
+          "title": "mysql2",
+          "layout": {
+            "column": 9,
+            "row": 43,
+            "width": 4,
+            "height": 3
+          },
+          "linkedEntityGuids": null,
+          "visualization": {
+            "id": "viz.bar"
+          },
+          "rawConfiguration": {
+            "facet": {
+              "showOtherSeries": false
+            },
+            "nrqlQueries": [
+              {
+                "accountIds": [
+                  1
+                ],
+                "query": "FROM NodeMetadataSummary SELECT uniqueCount(entity.guid) where `mysql2.version` IS NOT NULL and node.version.major >= '16' facet `mysql2.version`, agentVersion, node.version.major limit max"
+              }
+            ],
+            "platformOptions": {
+              "ignoreTimeRange": false
+            }
+          }
+        },
+        {
+          "title": "next",
+          "layout": {
+            "column": 1,
+            "row": 46,
+            "width": 4,
+            "height": 3
+          },
+          "linkedEntityGuids": null,
+          "visualization": {
+            "id": "viz.bar"
+          },
+          "rawConfiguration": {
+            "facet": {
+              "showOtherSeries": false
+            },
+            "nrqlQueries": [
+              {
+                "accountIds": [
+                  1
+                ],
+                "query": "FROM NodeMetadataSummary SELECT uniqueCount(entity.guid) where `next.version` IS NOT NULL and node.version.major >= '16' facet `next.version`, agentVersion, node.version.major limit max"
+              }
+            ],
+            "platformOptions": {
+              "ignoreTimeRange": false
+            }
+          }
+        },
+        {
+          "title": "openai",
+          "layout": {
+            "column": 5,
+            "row": 46,
+            "width": 4,
+            "height": 3
+          },
+          "linkedEntityGuids": null,
+          "visualization": {
+            "id": "viz.bar"
+          },
+          "rawConfiguration": {
+            "facet": {
+              "showOtherSeries": false
+            },
+            "nrqlQueries": [
+              {
+                "accountIds": [
+                  1
+                ],
+                "query": "FROM NodeMetadataSummary SELECT uniqueCount(entity.guid) where `openai.version` IS NOT NULL and node.version.major >= '16' facet `openai.version`, agentVersion, node.version.major limit max"
+              }
+            ],
+            "platformOptions": {
+              "ignoreTimeRange": false
+            }
+          }
+        },
+        {
+          "title": "pg",
+          "layout": {
+            "column": 9,
+            "row": 46,
+            "width": 4,
+            "height": 3
+          },
+          "linkedEntityGuids": null,
+          "visualization": {
+            "id": "viz.bar"
+          },
+          "rawConfiguration": {
+            "facet": {
+              "showOtherSeries": false
+            },
+            "nrqlQueries": [
+              {
+                "accountIds": [
+                  1
+                ],
+                "query": "FROM NodeMetadataSummary SELECT uniqueCount(entity.guid) where `pg.version` IS NOT NULL and node.version.major >= '16' facet `pg.version`, agentVersion, node.version.major limit max"
+              }
+            ],
+            "platformOptions": {
+              "ignoreTimeRange": false
+            }
+          }
+        },
+        {
+          "title": "pg-native",
+          "layout": {
+            "column": 1,
+            "row": 49,
+            "width": 4,
+            "height": 3
+          },
+          "linkedEntityGuids": null,
+          "visualization": {
+            "id": "viz.bar"
+          },
+          "rawConfiguration": {
+            "facet": {
+              "showOtherSeries": false
+            },
+            "nrqlQueries": [
+              {
+                "accountIds": [
+                  1
+                ],
+                "query": "FROM NodeMetadataSummary SELECT uniqueCount(entity.guid) where `pg-native.version` IS NOT NULL and node.version.major >= '16' facet `pg-native.version`, agentVersion, node.version.major limit max"
+              }
+            ],
+            "platformOptions": {
+              "ignoreTimeRange": false
+            }
+          }
+        },
+        {
+          "title": "pino",
+          "layout": {
+            "column": 5,
+            "row": 49,
+            "width": 4,
+            "height": 3
+          },
+          "linkedEntityGuids": null,
+          "visualization": {
+            "id": "viz.bar"
+          },
+          "rawConfiguration": {
+            "facet": {
+              "showOtherSeries": false
+            },
+            "nrqlQueries": [
+              {
+                "accountIds": [
+                  1
+                ],
+                "query": "FROM NodeMetadataSummary SELECT uniqueCount(entity.guid) where `pino.version` IS NOT NULL and node.version.major >= '16' facet `pino.version`, agentVersion, node.version.major limit max"
+              }
+            ],
+            "platformOptions": {
+              "ignoreTimeRange": false
+            }
+          }
+        },
+        {
+          "title": "q",
+          "layout": {
+            "column": 9,
+            "row": 49,
+            "width": 4,
+            "height": 3
+          },
+          "linkedEntityGuids": null,
+          "visualization": {
+            "id": "viz.bar"
+          },
+          "rawConfiguration": {
+            "facet": {
+              "showOtherSeries": false
+            },
+            "nrqlQueries": [
+              {
+                "accountIds": [
+                  1
+                ],
+                "query": "FROM NodeMetadataSummary SELECT uniqueCount(entity.guid) where `q.version` IS NOT NULL and node.version.major >= '16' facet `q.version`, agentVersion, node.version.major limit max"
+              }
+            ],
+            "platformOptions": {
+              "ignoreTimeRange": false
+            }
+          }
+        },
+        {
+          "title": "redis",
+          "layout": {
+            "column": 1,
+            "row": 52,
+            "width": 4,
+            "height": 3
+          },
+          "linkedEntityGuids": null,
+          "visualization": {
+            "id": "viz.bar"
+          },
+          "rawConfiguration": {
+            "facet": {
+              "showOtherSeries": false
+            },
+            "nrqlQueries": [
+              {
+                "accountIds": [
+                  1
+                ],
+                "query": "FROM NodeMetadataSummary SELECT uniqueCount(entity.guid) where `redis.version` IS NOT NULL and node.version.major >= '16' facet `redis.version`, agentVersion, node.version.major limit max"
+              }
+            ],
+            "platformOptions": {
+              "ignoreTimeRange": false
+            }
+          }
+        },
+        {
+          "title": "restify",
+          "layout": {
+            "column": 5,
+            "row": 52,
+            "width": 4,
+            "height": 3
+          },
+          "linkedEntityGuids": null,
+          "visualization": {
+            "id": "viz.bar"
+          },
+          "rawConfiguration": {
+            "facet": {
+              "showOtherSeries": false
+            },
+            "nrqlQueries": [
+              {
+                "accountIds": [
+                  1
+                ],
+                "query": "FROM NodeMetadataSummary SELECT uniqueCount(entity.guid) where `restify.version` IS NOT NULL and node.version.major >= '16' facet `restify.version`, agentVersion, node.version.major limit max"
+              }
+            ],
+            "platformOptions": {
+              "ignoreTimeRange": false
+            }
+          }
+        },
+        {
+          "title": "superagent",
+          "layout": {
+            "column": 9,
+            "row": 52,
+            "width": 4,
+            "height": 3
+          },
+          "linkedEntityGuids": null,
+          "visualization": {
+            "id": "viz.bar"
+          },
+          "rawConfiguration": {
+            "facet": {
+              "showOtherSeries": false
+            },
+            "nrqlQueries": [
+              {
+                "accountIds": [
+                  1
+                ],
+                "query": "FROM NodeMetadataSummary SELECT uniqueCount(entity.guid) where `superagent.version` IS NOT NULL and node.version.major >= '16' facet `superagent.version`, agentVersion, node.version.major limit max"
+              }
+            ],
+            "platformOptions": {
+              "ignoreTimeRange": false
+            }
+          }
+        },
+        {
+          "title": "undici",
+          "layout": {
+            "column": 1,
+            "row": 55,
+            "width": 4,
+            "height": 3
+          },
+          "linkedEntityGuids": null,
+          "visualization": {
+            "id": "viz.bar"
+          },
+          "rawConfiguration": {
+            "facet": {
+              "showOtherSeries": false
+            },
+            "nrqlQueries": [
+              {
+                "accountIds": [
+                  1
+                ],
+                "query": "FROM NodeMetadataSummary SELECT uniqueCount(entity.guid) where `undici.version` IS NOT NULL and node.version.major >= '16' facet `undici.version`, agentVersion, node.version.major limit max"
+              }
+            ],
+            "platformOptions": {
+              "ignoreTimeRange": false
+            }
+          }
+        },
+        {
+          "title": "when",
+          "layout": {
+            "column": 5,
+            "row": 55,
+            "width": 4,
+            "height": 3
+          },
+          "linkedEntityGuids": null,
+          "visualization": {
+            "id": "viz.bar"
+          },
+          "rawConfiguration": {
+            "facet": {
+              "showOtherSeries": false
+            },
+            "nrqlQueries": [
+              {
+                "accountIds": [
+                  1
+                ],
+                "query": "FROM NodeMetadataSummary SELECT uniqueCount(entity.guid) where `when.version` IS NOT NULL and node.version.major >= '16' facet `when.version`, agentVersion, node.version.major limit max"
+              }
+            ],
+            "platformOptions": {
+              "ignoreTimeRange": false
+            }
+          }
+        },
+        {
+          "title": "winston",
+          "layout": {
+            "column": 9,
+            "row": 55,
+            "width": 4,
+            "height": 3
+          },
+          "linkedEntityGuids": null,
+          "visualization": {
+            "id": "viz.bar"
+          },
+          "rawConfiguration": {
+            "facet": {
+              "showOtherSeries": false
+            },
+            "nrqlQueries": [
+              {
+                "accountIds": [
+                  1
+                ],
+                "query": "FROM NodeMetadataSummary SELECT uniqueCount(entity.guid) where `winston.version` IS NOT NULL and node.version.major >= '16' facet `winston.version`, agentVersion, node.version.major limit max"
+              }
+            ],
+            "platformOptions": {
+              "ignoreTimeRange": false
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
