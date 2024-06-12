@@ -147,12 +147,12 @@ jobs:
     - name: Archive Integration Test Coverage
       uses: actions/upload-artifact@v4
       with:
-        name: integration-tests-${{ matrix.node-version }}
+        name: integration-tests-cjs-${{ matrix.node-version }}
         path: ./coverage/integration/lcov.info
     - name: Archive Integration (ESM) Test Coverage
       uses: actions/upload-artifact@v4
       with:
-        name: integration-tests-${{ matrix.node-version }}
+        name: integration-tests-esm-${{ matrix.node-version }}
         path: ./coverage/integration-esm/lcov.info
 
   versioned-internal:
@@ -200,7 +200,7 @@ jobs:
       run: tar cvzf ./logs-${{ matrix.node-version }}.tgz ./logs-${{ matrix.node-version }}
     - name: Upload logs to GitHub
       if: failure()
-      uses: actions/upload-artifact@master
+      uses: actions/upload-artifact@v4
       with:
         name: logs-${{ matrix.node-version }}.tgz
         path: ./logs-${{ matrix.node-version }}.tgz
