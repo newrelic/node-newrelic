@@ -1,4 +1,3 @@
-version: "3"
 services:
 
   elasticsearch:
@@ -63,7 +62,7 @@ services:
 
   mongodb_3:
     container_name: nr_node_mongodb
-    platform: linux/amd64
+    platform: ${DOCKER_PLATFORM:-linux/amd64}
     image: library/mongo:3
     ports:
       - "27017:27017"
@@ -86,6 +85,8 @@ services:
 
   mysql:
     container_name: nr_node_mysql
+    # The `mysql:5` image does not have a `linux/arm64` build.
+    # We cannot use the latest mysql image because our tests fail.
     platform: linux/amd64
     image: mysql:5
     ports:
@@ -111,15 +112,15 @@ services:
 
   cassandra:
     container_name: nr_node_cassandra
-    platform: linux/amd64
-    image: zmarcantel/cassandra
+    platform: ${DOCKER_PLATFORM:-linux/amd64}
+    image: cassandra
     ports:
       - "9042:9042"
     healthcheck:
       test: [ "CMD", "cqlsh", "-u cassandra", "-p cassandra"]
       interval: 5s
       timeout: 10s
-      retries: 6
+      retries: 20
 
   # pg 9.2 has built in healthcheck
   pg:

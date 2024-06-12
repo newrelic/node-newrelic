@@ -163,7 +163,7 @@
     "lint:fix": "eslint --fix, ./*.{js,mjs} lib test bin examples",
     "public-docs": "jsdoc -c ./jsdoc-conf.jsonc && cp examples/shim/*.png out/",
     "publish-docs": "./bin/publish-docs.sh",
-    "services": "docker compose up -d --wait",
+    "services": "DOCKER_PLATFORM=linux/$(uname -m) docker compose up -d --wait",
     "services:stop": "docker compose down",
     "smoke": "npm run ssl && time tap test/smoke/**/**/*.tap.js --timeout=180 --no-coverage",
     "ssl": "./bin/ssl.sh",
