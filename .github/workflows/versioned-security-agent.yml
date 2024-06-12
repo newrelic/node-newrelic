@@ -82,6 +82,7 @@ jobs:
       run: TEST_CHILD_TIMEOUT=600000 npm run versioned:security
       env:
         VERSIONED_MODE: --${{ inputs.mode || 'major' }}
-        JOBS: 4 # 2 per CPU seems to be the sweet spot in GHA (July 2022)
+        # Run more jobs when using larger runner, otherwise 2 per CPU seems to be the sweet spot in GHA default runners(July 2022)
+        JOBS: ${{ vars.NR_RUNNER && 16 || 4 }}
         SKIP_C8: true
 
