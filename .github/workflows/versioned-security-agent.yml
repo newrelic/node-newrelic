@@ -58,7 +58,7 @@ jobs:
       github.event_name == 'schedule' ||
       needs.should_run.outputs.sec_agent_did_change == 'true'
 
-    runs-on: ubuntu-latest
+    runs-on: {{ vars.NR_RUNNER || 'ubuntu-latest' }}
 
     strategy:
       fail-fast: false
