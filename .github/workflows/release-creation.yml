@@ -13,6 +13,11 @@ on:
         type: string
         required: false
         default: ci-workflow.yml
+      build:
+        description: Flag to run `npm run build` before publishing
+        type: boolean
+        required: false
+        default: false
     secrets:
       # Cannot rely on environment secrets(i.e. from node-newrelic settings or org level)
       # in a reusable workflow.  We must pass it in, see create-release.yml
@@ -48,6 +53,9 @@ jobs:
         npm install
         # Install deps in agent repo
         npm install --prefix agent-repo
+    - name: Build project
+      if: ${{ inputs.build }}
+      run: npm run build
     - name: Setup GitHub Credentials
       run: |
         git config user.name $GITHUB_ACTOR
