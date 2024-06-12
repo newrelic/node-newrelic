@@ -247,19 +247,19 @@ jobs:
       - name: Download artifacts
         uses: actions/download-artifact@v4
       - name: Post Unit Test Coverage
-        uses: code-cov/codecov-action@125fc84a9a348dbcf27191600683ec096ec9021c
+        uses: codecov/codecov-action@125fc84a9a348dbcf27191600683ec096ec9021c
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           directory: unit-tests-${{ matrix.node-version }}
           flags: unit-tests-${{ matrix.node-version }}
       - name: Post Integration Test Coverage
-        uses: code-cov/codecov-action@125fc84a9a348dbcf27191600683ec096ec9021c
+        uses: codecov/codecov-action@125fc84a9a348dbcf27191600683ec096ec9021c
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           directory: integration-tests-${{ matrix.node-version }}
           flags: integration-tests-${{ matrix.node-version }}
       - name: Post Versioned Test Coverage
-        uses: code-cov/codecov-action@125fc84a9a348dbcf27191600683ec096ec9021c
+        uses: codecov/codecov-action@125fc84a9a348dbcf27191600683ec096ec9021c
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           directory: versioned-tests-${{ matrix.node-version }}
