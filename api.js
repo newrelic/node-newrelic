@@ -807,7 +807,7 @@ API.prototype.getBrowserTimingHeader = function getBrowserTimingHeader(options =
      * Only the first 13 chars of the license should be used for hashing with
      * the transaction name.
      */
-    const key = config.license_key.substr(0, 13)
+    const key = config.license_key.substring(0, 13)
     rumHash.transactionName = hashes.obfuscateNameUsingKey(name, key)
 
     rumHash.queueTime = trans.queueTime

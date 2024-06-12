@@ -56,14 +56,14 @@ test('custom naming rules should be applied early for RUM', function (t) {
     function done(res) {
       res.pipe(
         new StreamSink(function (err, header) {
-          t.equal(header.substr(0, 7), '<script', 'should generate RUM headers')
+          t.equal(header.substring(0, 7), '<script', 'should generate RUM headers')
           header.split(';').forEach(function (element) {
-            if (element.substr(0, DATA_PREFIX.length) === DATA_PREFIX) {
-              const dataString = element.substr(DATA_PREFIX.length, element.length)
+            if (element.substring(0, DATA_PREFIX.length) === DATA_PREFIX) {
+              const dataString = element.substring(DATA_PREFIX.length, element.length)
               const data = JSON.parse(dataString)
               const tx = hashes.deobfuscateNameUsingKey(
                 data.transactionName,
-                agent.config.license_key.substr(0, 13)
+                agent.config.license_key.substring(0, 13)
               )
               t.equal(tx, 'WebTransaction/NormalizedUri/WORKING', 'should normalize url before RUM')
             }
@@ -106,14 +106,14 @@ test('custom web transactions should have rules applied for RUM', function (t) {
 
   api.startWebTransaction('/test', function () {
     const header = api.getBrowserTimingHeader()
-    t.equal(header.substr(0, 7), '<script', 'should generate RUM headers')
+    t.equal(header.substring(0, 7), '<script', 'should generate RUM headers')
     header.split(';').forEach(function (element) {
-      if (element.substr(0, DATA_PREFIX.length) === DATA_PREFIX) {
-        const dataString = element.substr(DATA_PREFIX.length, element.length)
+      if (element.substring(0, DATA_PREFIX.length) === DATA_PREFIX) {
+        const dataString = element.substring(DATA_PREFIX.length, element.length)
         const data = JSON.parse(dataString)
         const tx = hashes.deobfuscateNameUsingKey(
           data.transactionName,
-          agent.config.license_key.substr(0, 13)
+          agent.config.license_key.substring(0, 13)
         )
         t.equal(tx, 'WebTransaction/NormalizedUri/WORKING', 'url normalized before RUM')
       }

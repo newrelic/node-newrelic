@@ -241,7 +241,7 @@ function formatReleaseNotes(releaseDate, version, body, frontmatter) {
     '---',
     'subject: Node.js agent',
     `releaseDate: '${releaseDate}'`,
-    `version: ${version.substr(1)}`, // remove the `v` from start of version
+    `version: ${version.substring(1)}`, // remove the `v` from start of version
     `downloadLink: 'https://www.npmjs.com/package/newrelic'`,
     `security: ${frontmatter.security}`,
     `bugs: ${frontmatter.bugfixes}`,
@@ -279,7 +279,7 @@ function addReleaseNotesFile(body, version) {
 
 function getFileName(version) {
   // change `v0.0.0` to `0-0-0`
-  version = version.substr(1).replace(/\./g, '-')
+  version = version.substring(1).replace(/\./g, '-')
   const FILE = `node-agent-${version}.mdx`
   return `${RELEASE_NOTES_PATH}/${FILE}`
 }
