@@ -12,9 +12,9 @@ jobs:
         node-version: [lts/*]
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - name: Use Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v3 # https://github.com/actions/setup-node
+      uses: actions/setup-node@v4 # https://github.com/actions/setup-node
       with:
         node-version: ${{ matrix.node-version }}
         registry-url: 'https://registry.npmjs.org'
