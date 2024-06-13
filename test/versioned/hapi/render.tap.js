@@ -146,7 +146,7 @@ tap.test('agent instrumentation of Hapi', function (t) {
       path: '/test',
       handler: function (req, h) {
         const rum = api.getBrowserTimingHeader()
-        t.equal(rum.substr(0, 7), '<script')
+        t.equal(rum.substring(0, 7), '<script')
         return h.view('index', { title: 'yo dawg', rum: rum })
       }
     })
