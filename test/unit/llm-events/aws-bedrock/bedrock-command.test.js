@@ -23,6 +23,13 @@ const claude = {
   }
 }
 
+const claude3 = {
+  modelId: 'anthropic.claude-3-haiku-20240307-v1:0',
+  body: {
+    messages: [{ content: 'who are you' }]
+  }
+}
+
 const cohere = {
   modelId: 'cohere.command-text-v14',
   body: {
@@ -75,6 +82,7 @@ tap.test('non-conforming command is handled gracefully', async (t) => {
   for (const model of [
     'Ai21',
     'Claude',
+    'Claude3',
     'Cohere',
     'CohereEmbed',
     'Llama2',
@@ -137,6 +145,31 @@ tap.test('claude complete command works', async (t) => {
   t.equal(cmd.modelId, payload.modelId)
   t.equal(cmd.modelType, 'completion')
   t.equal(cmd.prompt, payload.body.prompt)
+  t.equal(cmd.temperature, payload.body.temperature)
+})
+
+tap.test('claude3 minimal command works', async (t) => {
+  t.context.updatePayload(structuredClone(claude3))
+  const cmd = new BedrockCommand(t.context.input)
+  t.equal(cmd.isClaude3(), true)
+  t.equal(cmd.maxTokens, undefined)
+  t.equal(cmd.modelId, claude3.modelId)
+  t.equal(cmd.modelType, 'completion')
+  t.equal(cmd.prompt, claude3.body.messages[0].content)
+  t.equal(cmd.temperature, undefined)
+})
+
+tap.test('claude3 complete command works', async (t) => {
+  const payload = structuredClone(claude3)
+  payload.body.max_tokens = 25
+  payload.body.temperature = 0.5
+  t.context.updatePayload(payload)
+  const cmd = new BedrockCommand(t.context.input)
+  t.equal(cmd.isClaude3(), true)
+  t.equal(cmd.maxTokens, 25)
+  t.equal(cmd.modelId, payload.modelId)
+  t.equal(cmd.modelType, 'completion')
+  t.equal(cmd.prompt, payload.body.messages[0].content)
   t.equal(cmd.temperature, payload.body.temperature)
 })
 

@@ -72,7 +72,7 @@ function handler(req, res) {
     // https://docs.aws.amazon.com/bedrock/latest/userguide/model-ids-arns.html
     const [, model] = /model\/(.+)\/invoke/.exec(req.url)
     let response
-    switch (model) {
+    switch (decodeURIComponent(model)) {
       case 'ai21.j2-mid-v1':
       case 'ai21.j2-ultra-v1': {
         response = responses.ai21.get(payload.prompt)
@@ -91,6 +91,13 @@ function handler(req, res) {
       case 'anthropic.claude-v2':
       case 'anthropic.claude-v2:1': {
         response = responses.claude.get(payload.prompt)
+        break
+      }
+
+      case 'anthropic.claude-3-haiku-20240307-v1:0':
+      case 'anthropic.claude-3-opus-20240229-v1:0':
+      case 'anthropic.claude-3-sonnet-20240229-v1:0': {
+        response = responses.claude3.get(payload?.messages?.[0]?.content)
         break
       }
 
