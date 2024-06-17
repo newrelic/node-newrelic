@@ -9,8 +9,8 @@
         "node": ">=16"
       },
       "dependencies": {
-        "mysql2": ">=1.3.1 <1.6.2 || >= 1.6.3",
-        "generic-pool": "2.4 <2.5"
+        "mysql2": ">=2.0.0",
+        "generic-pool": ">=2.4 <2.5 || latest"
       },
       "files": [
         "basic-pool.tap.js",
@@ -20,9 +20,5 @@
         "transaction.tap.js"
       ]
     }
-  ],
-  "dependencies": {
-    "generic-pool": "^2.4.6",
-    "mysql2": "^1.5.1 <1.6.2"
-  }
+  ]
 }
