@@ -25,7 +25,7 @@
         "node": "16"
       },
       "dependencies": {
-        "@elastic/elasticsearch": ">=7.16.0",
+        "@elastic/elasticsearch": ">=7.16.0 <=8.13.1",
         "@elastic/transport": "8.4.1"
       },
       "files": [
