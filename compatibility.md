@@ -34,7 +34,7 @@ version.
 | `apollo-server-hapi` | 3.0.0 | 3.13.0 | `@newrelic/apollo-server-plugin@1.0.0` |
 | `apollo-server-koa` | 2.14.0 | 3.13.0 | `@newrelic/apollo-server-plugin@1.0.0` |
 | `apollo-server-lambda` | 2.14.0 | 3.13.0 | `@newrelic/apollo-server-plugin@1.0.0` |
-| `aws-sdk` | 2.2.48 | 2.1642.0 | 6.2.0 |
+| `aws-sdk` | 2.2.48 | 2.1643.0 | 6.2.0 |
 | `bluebird` | 2.0.0 | 3.7.2 | 1.27.0 |
 | `bunyan` | 1.8.12 | 1.8.15 | 9.3.0 |
 | `cassandra-driver` | 3.4.0 | 4.7.2 | 1.7.1 |
@@ -61,7 +61,7 @@ version.
 | `redis` | 2.0.0 | 4.6.14 | 1.31.0 |
 | `restify` | 5.0.0 | 11.1.0 | 2.6.0 |
 | `superagent` | 2.0.0 | 9.0.2 | 4.9.0 |
-| `undici` | 4.7.0 | 6.19.0 | 11.1.0 |
+| `undici` | 4.7.0 | 6.19.1 | 11.1.0 |
 | `when` | 3.7.0 | 3.7.8 | 1.26.2 |
 | `winston` | 3.0.0 | 3.13.0 | 8.11.0 |
 
