@@ -10,6 +10,7 @@ const DESTINATIONS = require('../../../lib/config/attribute-filter').DESTINATION
 const hashes = require('../../../lib/util/hashes')
 const helper = require('../../lib/agent_helper')
 const MessageShim = require('../../../lib/shim/message-shim')
+const { MessageSpec, MessageSubscribeSpec } = require('../../../lib/shim/specs')
 
 tap.test('MessageShim', function (t) {
   t.autoend()
@@ -49,6 +50,7 @@ tap.test('MessageShim', function (t) {
       getActiveSegment: function () {
         return agent.tracer.getSegment()
       },
+      sendMessages: function () {},
       withNested: function () {
         const segment = agent.tracer.getSegment()
         segment.add('ChildSegment')
@@ -201,7 +203,7 @@ tap.test('MessageShim', function (t) {
 
     t.test('should create a produce segment', function (t) {
       shim.recordProduce(wrappable, 'getActiveSegment', function () {
-        return { destinationName: 'foobar' }
+        return new MessageSpec({ destinationName: 'foobar' })
       })
 
       helper.runInTransaction(agent, function (tx) {
@@ -217,10 +219,10 @@ tap.test('MessageShim', function (t) {
 
     t.test('should add parameters to segment', function (t) {
       shim.recordProduce(wrappable, 'getActiveSegment', function () {
-        return {
+        return new MessageSpec({
           routingKey: 'foo.bar',
           parameters: { a: 'a', b: 'b' }
-        }
+        })
       })
 
       helper.runInTransaction(agent, function () {
@@ -236,12 +238,12 @@ tap.test('MessageShim', function (t) {
     t.test('should not add parameters when disabled', function (t) {
       agent.config.message_tracer.segment_parameters.enabled = false
       shim.recordProduce(wrappable, 'getActiveSegment', function () {
-        return {
+        return new MessageSpec({
           parameters: {
             a: 'a',
             b: 'b'
           }
-        }
+        })
       })
 
       helper.runInTransaction(agent, function () {
@@ -278,7 +280,7 @@ tap.test('MessageShim', function (t) {
         t.equal(this, wrappable)
         t.same(args, ['a', 'b', 'c'])
 
-        return { destinationName: 'foobar' }
+        return new MessageSpec({ destinationName: 'foobar' })
       })
 
       helper.runInTransaction(agent, function () {
@@ -302,7 +304,7 @@ tap.test('MessageShim', function (t) {
       }
 
       const wrapped = shim.recordProduce(toWrap, function () {
-        return { callback: shim.LAST }
+        return new MessageSpec({ callback: shim.LAST })
       })
 
       helper.runInTransaction(agent, function () {
@@ -322,7 +324,7 @@ tap.test('MessageShim', function (t) {
       }
 
       const wrapped = shim.recordProduce(toWrap, function () {
-        return { promise: true }
+        return new MessageSpec({ promise: true })
       })
 
       return helper.runInTransaction(agent, function () {
@@ -339,7 +341,7 @@ tap.test('MessageShim', function (t) {
 
     t.test('should create a child segment when `opaque` is false', function (t) {
       shim.recordProduce(wrappable, 'withNested', function () {
-        return { destinationName: 'foobar', opaque: false }
+        return new MessageSpec({ destinationName: 'foobar', opaque: false })
       })
 
       helper.runInTransaction(agent, (tx) => {
@@ -356,7 +358,7 @@ tap.test('MessageShim', function (t) {
 
     t.test('should not create a child segment when `opaque` is true', function (t) {
       shim.recordProduce(wrappable, 'withNested', function () {
-        return { destinationName: 'foobar', opaque: true }
+        return new MessageSpec({ destinationName: 'foobar', opaque: true })
       })
 
       helper.runInTransaction(agent, (tx) => {
@@ -374,7 +376,7 @@ tap.test('MessageShim', function (t) {
       agent.config.distributed_tracing.enabled = false
       const headers = {}
       shim.recordProduce(wrappable, 'getActiveSegment', function () {
-        return { headers: headers }
+        return new MessageSpec({ headers })
       })
 
       helper.runInTransaction(agent, function () {
@@ -385,11 +387,64 @@ tap.test('MessageShim', function (t) {
       })
     })
 
+    t.test('should insert distributed trace headers in all messages', function (t) {
+      t.plan(1)
+      const messages = [{}, { headers: { foo: 'foo' } }, {}]
+
+      shim.recordProduce(
+        wrappable,
+        'sendMessages',
+        () =>
+          new MessageSpec({
+            messageHeaders(inject) {
+              for (const msg of messages) {
+                if (msg.headers) {
+                  inject(msg.headers)
+                  continue
+                }
+                msg.headers = {}
+                inject(msg.headers)
+              }
+            }
+          })
+      )
+
+      agent.on('transactionFinished', () => {
+        t.match(messages, [
+          {
+            headers: {
+              newrelic: '',
+              traceparent: /^00-/
+            }
+          },
+          {
+            headers: {
+              newrelic: '',
+              traceparent: /^00-/,
+              foo: 'foo'
+            }
+          },
+          {
+            headers: {
+              newrelic: '',
+              traceparent: /^00-/
+            }
+          }
+        ])
+        t.end()
+      })
+
+      helper.runInTransaction(agent, (tx) => {
+        wrappable.sendMessages()
+        tx.end()
+      })
+    })
+
     t.test('should create message broker metrics', function (t) {
       let transaction = null
 
       shim.recordProduce(wrappable, 'getActiveSegment', function () {
-        return { destinationName: 'my-queue' }
+        return new MessageSpec({ destinationName: 'my-queue' })
       })
 
       helper.runInTransaction(agent, function (tx) {
@@ -450,7 +505,7 @@ tap.test('MessageShim', function (t) {
 
     t.test('should create a consume segment', function (t) {
       shim.recordConsume(wrappable, 'getActiveSegment', function () {
-        return { destinationName: 'foobar' }
+        return new MessageSpec({ destinationName: 'foobar' })
       })
 
       helper.runInTransaction(agent, function (tx) {
@@ -468,7 +523,7 @@ tap.test('MessageShim', function (t) {
       const cb = function () {}
 
       const wrapped = shim.recordConsume(helper.checkWrappedCb.bind(t, shim, cb), function () {
-        return { callback: shim.LAST }
+        return new MessageSpec({ callback: shim.LAST })
       })
 
       helper.runInTransaction(agent, function () {
@@ -559,7 +614,7 @@ tap.test('MessageShim', function (t) {
         executed = true
       }
       const wrapped = shim.recordConsume(toWrap, function () {
-        return { destinationName: 'foo' }
+        return new MessageSpec({ destinationName: 'foo' })
       })
 
       helper.runInTransaction(agent, function () {
@@ -572,7 +627,7 @@ tap.test('MessageShim', function (t) {
 
     t.test('should create a child segment when `opaque` is false', function (t) {
       shim.recordConsume(wrappable, 'withNested', function () {
-        return { destinationName: 'foobar', opaque: false }
+        return new MessageSpec({ destinationName: 'foobar', opaque: false })
       })
 
       helper.runInTransaction(agent, function (tx) {
@@ -589,7 +644,7 @@ tap.test('MessageShim', function (t) {
 
     t.test('should not create a child segment when `opaque` is true', function (t) {
       shim.recordConsume(wrappable, 'withNested', function () {
-        return { destinationName: 'foobar', opaque: true }
+        return new MessageSpec({ destinationName: 'foobar', opaque: true })
       })
 
       helper.runInTransaction(agent, function (tx) {
@@ -603,7 +658,7 @@ tap.test('MessageShim', function (t) {
 
     t.test('should create message broker metrics', function (t) {
       shim.recordConsume(wrappable, 'getActiveSegment', function () {
-        return { destinationName: 'foobar' }
+        return new MessageSpec({ destinationName: 'foobar' })
       })
 
       helper.runInTransaction(agent, function (tx) {
@@ -669,7 +724,7 @@ tap.test('MessageShim', function (t) {
     })
 
     t.test('should create a purge segment and metric', function (t) {
-      shim.recordPurgeQueue(wrappable, 'getActiveSegment', { queue: shim.FIRST })
+      shim.recordPurgeQueue(wrappable, 'getActiveSegment', new MessageSpec({ queue: shim.FIRST }))
 
       helper.runInTransaction(agent, function (tx) {
         const startingSegment = agent.tracer.getSegment()
@@ -687,7 +742,7 @@ tap.test('MessageShim', function (t) {
 
       shim.recordPurgeQueue(wrappable, 'getActiveSegment', function () {
         called = true
-        return { queue: shim.FIRST }
+        return new MessageSpec({ queue: shim.FIRST })
       })
 
       helper.runInTransaction(agent, function () {
@@ -716,9 +771,12 @@ tap.test('MessageShim', function (t) {
     t.test('should bind the callback if there is one', function (t) {
       const cb = function () {}
 
-      const wrapped = shim.recordPurgeQueue(helper.checkWrappedCb.bind(t, shim, cb), {
-        callback: shim.LAST
-      })
+      const wrapped = shim.recordPurgeQueue(
+        helper.checkWrappedCb.bind(t, shim, cb),
+        new MessageSpec({
+          callback: shim.LAST
+        })
+      )
 
       helper.runInTransaction(agent, function () {
         wrapped(cb)
@@ -730,15 +788,12 @@ tap.test('MessageShim', function (t) {
       const val = {}
       let segment = null
 
-      const wrapped = shim.recordPurgeQueue(
-        function () {
-          segment = shim.getSegment()
-          return new Promise(function (res) {
-            setTimeout(res, DELAY, val)
-          })
-        },
-        { promise: true }
-      )
+      const wrapped = shim.recordPurgeQueue(function () {
+        segment = shim.getSegment()
+        return new Promise(function (res) {
+          setTimeout(res, DELAY, val)
+        })
+      }, new MessageSpec({ promise: true }))
 
       return helper.runInTransaction(agent, function () {
         return wrapped().then(function (v) {
@@ -754,7 +809,7 @@ tap.test('MessageShim', function (t) {
 
     t.test('should create message broker metrics', function (t) {
       let transaction = null
-      shim.recordPurgeQueue(wrappable, 'getActiveSegment', { queue: shim.FIRST })
+      shim.recordPurgeQueue(wrappable, 'getActiveSegment', new MessageSpec({ queue: shim.FIRST }))
 
       helper.runInTransaction(agent, function (tx) {
         transaction = tx
@@ -867,7 +922,7 @@ tap.test('MessageShim', function (t) {
           if (messageHandler) {
             return messageHandler.apply(this, arguments)
           }
-          return {
+          return new MessageSubscribeSpec({
             destinationName: 'exchange.foo',
             destinationType: shim.EXCHANGE,
             routingKey: 'routing.key',
@@ -875,7 +930,7 @@ tap.test('MessageShim', function (t) {
               queue_name: 'amq.randomQueueName'
             },
             parameters: { a: 'a', b: 'b' }
-          }
+          })
         }
       })
     })
@@ -914,7 +969,7 @@ tap.test('MessageShim', function (t) {
 
     t.test('should end the transaction based on a promise', function (t) {
       messageHandler = function () {
-        return { promise: true }
+        return new MessageSpec({ promise: true })
       }
 
       wrapped('my.queue', function consumer() {
@@ -936,7 +991,7 @@ tap.test('MessageShim', function (t) {
 
     t.test('should properly time promise based consumers', function (t) {
       messageHandler = function () {
-        return { promise: true }
+        return new MessageSpec({ promise: true })
       }
 
       let segment
@@ -1050,7 +1105,7 @@ tap.test('MessageShim', function (t) {
         consumer: shim.SECOND,
         callback: shim.LAST,
         messageHandler: function () {
-          return {}
+          return new MessageSpec({})
         }
       })
 
@@ -1072,10 +1127,10 @@ tap.test('MessageShim', function (t) {
       ]
 
       messageHandler = function () {
-        return {
+        return new MessageSpec({
           destinationName: null,
           destinationType: shim.EXCHANGE
-        }
+        })
       }
 
       wrapped('my.queue', function consumer() {
@@ -1110,11 +1165,11 @@ tap.test('MessageShim', function (t) {
           NewRelicTransaction: txHeader
         }
 
-        return {
+        return new MessageSpec({
           destinationName: 'foo',
           destingationType: shim.EXCHANGE,
           headers: catHeaders
-        }
+        })
       }
 
       wrapped('my.queue', function consumer() {
@@ -1168,6 +1223,34 @@ tap.test('MessageShim', function (t) {
           t.end()
         })
         t.ok(parent)
+      })
+    })
+
+    t.test('should wrap object key of consumer', function (t) {
+      t.plan(3)
+      const message = { foo: 'bar' }
+      const subscriber = function subscriber(consumer) {
+        consumer.eachMessage(message)
+      }
+      const wrapped = shim.recordSubscribedConsume(subscriber, {
+        name: 'Channel#subscribe',
+        consumer: shim.FIRST,
+        functions: ['eachMessage'],
+        messageHandler: function (shim, args) {
+          t.same(args[0], message)
+          return new MessageSpec({
+            destinationName: 'exchange.foo',
+            destinationType: shim.EXCHANGE
+          })
+        }
+      })
+      wrapped({
+        eachMessage: function consumer(msg) {
+          const segment = shim.getSegment()
+          t.equal(segment.name, 'OtherTransaction/Message/RabbitMQ/Exchange/Named/exchange.foo')
+          t.equal(msg, message)
+          t.end()
+        }
       })
     })
   })

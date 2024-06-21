@@ -1,0 +1,157 @@
+[
+  {
+    "kind": "gateway",
+    "title": "Amazon Bedrock",
+    "preamble": "Through the `@aws-sdk/client-bedrock-runtime` module, we support:",
+    "footnote": "Note: if a model supports streaming, we also instrument the streaming variant.",
+    "models": [
+      {
+        "name": "Anthropic Claude",
+        "features": [
+          {
+            "title": "Text",
+            "supported": true
+          },
+          {
+            "title": "Image",
+            "supported": false
+          },
+          {
+            "title": "Vision",
+            "supported": false
+          }
+        ]
+      },
+
+      {
+        "name": "Cohere",
+        "features": [
+          {
+            "title": "Text",
+            "supported": true
+          },
+          {
+            "title": "Image",
+            "supported": false
+          }
+        ]
+      },
+
+      {
+        "name": "AI21 Labs Jurassic-2",
+        "features": [
+          {
+            "title": "Text",
+            "supported": true
+          },
+          {
+            "title": "Image",
+            "supported": false
+          }
+        ]
+      },
+
+      {
+        "name": "Meta Llama2",
+        "features": [
+          {
+            "title": "Text",
+            "supported": true
+          },
+          {
+            "title": "Image",
+            "supported": false
+          }
+        ]
+      },
+
+      {
+        "name": "Amazon Titan",
+        "features": [
+          {
+            "title": "Text",
+            "supported": true
+          },
+          {
+            "title": "Image",
+            "supported": false
+          }
+        ]
+      }
+    ]
+  },
+
+  {
+    "kind": "abstraction",
+    "title": "Langchain",
+    "featuresPreamble": "The following general features of Langchain are supported:",
+    "providersPreamble": "Models/providers are generally supported transitively by our instrumentation of the provider's module.",
+    "features": [
+      {
+        "title": "Agents",
+        "supported": true
+      },
+      {
+        "title": "Chains",
+        "supported": true
+      },
+      {
+        "title": "Vectorstores",
+        "supported": true
+      },
+      {
+        "title": "Tools",
+        "supported": true
+      }
+    ],
+    "providers": [
+      {
+        "name": "Azure OpenAI",
+        "supported": false,
+        "transitively": false
+      },
+      {
+        "name": "Amazon Bedrock",
+        "supported": false,
+        "transitively": false
+      },
+      {
+        "name": "OpenAI",
+        "supported": true,
+        "transitively": true
+      }
+    ]
+  },
+
+  {
+    "kind": "sdk",
+    "title": "OpenAI",
+    "featuresPreamble": "Through the `openai` module, we support:",
+    "features": [
+      {
+        "title": "Completions",
+        "supported": true
+      },
+      {
+        "title": "Chat",
+        "supported": true
+      },
+      {
+        "title": "Embeddings",
+        "supported": true
+      },
+      {
+        "title": "Files",
+        "supported": false
+      },
+      {
+        "title": "Images",
+        "supported": false
+      },
+      {
+        "title": "Audio",
+        "supported": false
+      }
+    ]
+  }
+]

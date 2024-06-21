@@ -1,4 +1,3 @@
-version: "3"
 services:
 
   elasticsearch:
@@ -63,7 +62,7 @@ services:
 
   mongodb_3:
     container_name: nr_node_mongodb
-    platform: linux/amd64
+    platform: ${DOCKER_PLATFORM:-linux/amd64}
     image: library/mongo:3
     ports:
       - "27017:27017"
@@ -86,8 +85,15 @@ services:
 
   mysql:
     container_name: nr_node_mysql
-    platform: linux/amd64
-    image: mysql:5
+    platform: ${DOCKER_PLATFORM:-linux/amd64}
+    # We cannot use an image later than 8.3 because they have fully removed
+    # the configuration option we need in order to switch back to the native
+    # authentication method. We must use the native authentication method
+    # because the `mysql` package does not support the `caching_sha2_password`
+    # authentication method.
+    image: mysql:8.3
+    volumes:
+      - "./docker/mysql:/etc/mysql/conf.d"
     ports:
       - "3306:3306"
     environment:
@@ -111,15 +117,15 @@ services:
 
   cassandra:
     container_name: nr_node_cassandra
-    platform: linux/amd64
-    image: zmarcantel/cassandra
+    platform: ${DOCKER_PLATFORM:-linux/amd64}
+    image: cassandra
     ports:
       - "9042:9042"
     healthcheck:
       test: [ "CMD", "cqlsh", "-u cassandra", "-p cassandra"]
       interval: 5s
       timeout: 10s
-      retries: 6
+      retries: 20
 
   # pg 9.2 has built in healthcheck
   pg:

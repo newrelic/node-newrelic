@@ -10,6 +10,7 @@ const { EventEmitter } = require('events')
 const helper = require('../../lib/agent_helper')
 const Shim = require('../../../lib/shim/shim')
 const symbols = require('../../../lib/symbols')
+const { RecorderSpec } = require('../../../lib/shim/specs')
 
 tap.test('Shim', function (t) {
   t.autoend()
@@ -911,7 +912,7 @@ tap.test('Shim', function (t) {
 
     t.test('should not create a child segment', function (t) {
       shim.record(wrappable, 'getActiveSegment', function () {
-        return { name: 'internal test segment', internal: true }
+        return new RecorderSpec({ name: 'internal test segment', internal: true })
       })
 
       helper.runInTransaction(agent, function (tx) {
@@ -934,7 +935,7 @@ tap.test('Shim', function (t) {
           t.end()
         },
         function () {
-          return { name: 'test segment', internal: true, callback: shim.LAST }
+          return new RecorderSpec({ name: 'test segment', internal: true, callback: shim.LAST })
         }
       )
 
@@ -955,12 +956,12 @@ tap.test('Shim', function (t) {
             t.equal(agent.getTransaction(), null)
           },
           function () {
-            return {
+            return new RecorderSpec({
               name: 'test segment',
               internal: true,
               callback: shim.LAST,
               parent: tx.trace.root
-            }
+            })
           }
         )
         t.doesNotThrow(function () {
@@ -976,7 +977,7 @@ tap.test('Shim', function (t) {
           return 'result'
         }
         const wrapped = shim.record(testAfter, function () {
-          return {
+          return new RecorderSpec({
             name: 'test segment',
             callback: shim.LAST,
             after(args) {
@@ -988,7 +989,7 @@ tap.test('Shim', function (t) {
               t.equal(name, testAfter.name)
               t.equal(result, 'result')
             }
-          }
+          })
         })
         t.doesNotThrow(function () {
           wrapped()
@@ -1006,7 +1007,7 @@ tap.test('Shim', function (t) {
             throw err
           }
           const wrapped = shim.record(testAfter, function () {
-            return {
+            return new RecorderSpec({
               name: 'test segment',
               callback: shim.LAST,
               after(args) {
@@ -1018,7 +1019,7 @@ tap.test('Shim', function (t) {
                 t.same(fn, testAfter)
                 t.equal(name, testAfter.name)
               }
-            }
+            })
           })
           t.throws(function () {
             wrapped()
@@ -1051,7 +1052,7 @@ tap.test('Shim', function (t) {
 
     t.test('should make the segment translucent when `end` is emitted', function (t) {
       const wrapped = shim.record(toWrap, function () {
-        return { name: 'test segment', stream: true, opaque: true }
+        return new RecorderSpec({ name: 'test segment', stream: true, opaque: true })
       })
 
       helper.runInTransaction(agent, function () {
@@ -1069,7 +1070,7 @@ tap.test('Shim', function (t) {
 
     t.test('should touch the segment when `end` is emitted', function (t) {
       const wrapped = shim.record(toWrap, function () {
-        return { name: 'test segment', stream: true }
+        return new RecorderSpec({ name: 'test segment', stream: true })
       })
 
       helper.runInTransaction(agent, function () {
@@ -1087,7 +1088,7 @@ tap.test('Shim', function (t) {
 
     t.test('should make the segment translucent when `error` is emitted', function (t) {
       const wrapped = shim.record(toWrap, function () {
-        return { name: 'test segment', stream: true, opaque: true }
+        return new RecorderSpec({ name: 'test segment', stream: true, opaque: true })
       })
 
       helper.runInTransaction(agent, function () {
@@ -1106,7 +1107,7 @@ tap.test('Shim', function (t) {
 
     t.test('should touch the segment when `error` is emitted', function (t) {
       const wrapped = shim.record(toWrap, function () {
-        return { name: 'test segment', stream: true }
+        return new RecorderSpec({ name: 'test segment', stream: true })
       })
 
       helper.runInTransaction(agent, function () {
@@ -1125,7 +1126,7 @@ tap.test('Shim', function (t) {
 
     t.test('should throw if there are no other `error` handlers', function (t) {
       const wrapped = shim.record(toWrap, function () {
-        return { name: 'test segment', stream: true }
+        return new RecorderSpec({ name: 'test segment', stream: true })
       })
 
       helper.runInTransaction(agent, function () {
@@ -1141,7 +1142,7 @@ tap.test('Shim', function (t) {
 
     t.test('should bind emit to a child segment', function (t) {
       const wrapped = shim.record(toWrap, function () {
-        return { name: 'test segment', stream: 'foobar' }
+        return new RecorderSpec({ name: 'test segment', stream: 'foobar' })
       })
 
       helper.runInTransaction(agent, function () {
@@ -1159,7 +1160,7 @@ tap.test('Shim', function (t) {
 
     t.test('should create an event segment if an event name is given', function (t) {
       const wrapped = shim.record(toWrap, function () {
-        return { name: 'test segment', stream: 'foobar' }
+        return new RecorderSpec({ name: 'test segment', stream: 'foobar' })
       })
 
       helper.runInTransaction(agent, function () {
@@ -1220,7 +1221,7 @@ tap.test('Shim', function (t) {
 
     t.test('should make the segment translucent when promise resolves', function (t) {
       const wrapped = shim.record(toWrap, function () {
-        return { name: 'test segment', promise: true, opaque: true }
+        return new RecorderSpec({ name: 'test segment', promise: true, opaque: true })
       })
 
       const result = {}
@@ -1245,7 +1246,7 @@ tap.test('Shim', function (t) {
 
     t.test('should touch the segment when promise resolves', function (t) {
       const wrapped = shim.record(toWrap, function () {
-        return { name: 'test segment', promise: true }
+        return new RecorderSpec({ name: 'test segment', promise: true })
       })
 
       const result = {}
@@ -1270,7 +1271,7 @@ tap.test('Shim', function (t) {
 
     t.test('should make the segment translucent when promise rejects', function (t) {
       const wrapped = shim.record(toWrap, function () {
-        return { name: 'test segment', promise: true, opaque: true }
+        return new RecorderSpec({ name: 'test segment', promise: true, opaque: true })
       })
 
       const result = {}
@@ -1300,7 +1301,7 @@ tap.test('Shim', function (t) {
 
     t.test('should touch the segment when promise rejects', function (t) {
       const wrapped = shim.record(toWrap, function () {
-        return { name: 'test segment', promise: true }
+        return new RecorderSpec({ name: 'test segment', promise: true })
       })
 
       const result = {}
@@ -1330,7 +1331,7 @@ tap.test('Shim', function (t) {
 
     t.test('should not affect unhandledRejection event', function (t) {
       const wrapped = shim.record(toWrap, function () {
-        return { name: 'test segment', promise: true }
+        return new RecorderSpec({ name: 'test segment', promise: true })
       })
 
       const result = {}
@@ -1357,7 +1358,7 @@ tap.test('Shim', function (t) {
       const segmentName = 'test segment'
       const expectedResult = { returned: true }
       const wrapped = shim.record(toWrap, function () {
-        return {
+        return new RecorderSpec({
           name: segmentName,
           promise: true,
           after(args) {
@@ -1370,7 +1371,7 @@ tap.test('Shim', function (t) {
             t.equal(segment.name, segmentName)
             t.end()
           }
-        }
+        })
       })
 
       helper.runInTransaction(agent, function () {
@@ -1387,7 +1388,7 @@ tap.test('Shim', function (t) {
       const segmentName = 'test segment'
       const expectedResult = { returned: true }
       const wrapped = shim.record(toWrap, function () {
-        return {
+        return new RecorderSpec({
           name: segmentName,
           promise: true,
           after(args) {
@@ -1399,7 +1400,7 @@ tap.test('Shim', function (t) {
             t.equal(segment.name, segmentName)
             t.end()
           }
-        }
+        })
       })
 
       helper.runInTransaction(agent, function () {
@@ -1419,7 +1420,7 @@ tap.test('Shim', function (t) {
     t.afterEach(afterEach)
     t.test('should not create a segment', function (t) {
       shim.record(wrappable, 'getActiveSegment', function () {
-        return { name: 'test segment' }
+        return new RecorderSpec({ name: 'test segment' })
       })
 
       const segment = wrappable.getActiveSegment()
@@ -1433,7 +1434,7 @@ tap.test('Shim', function (t) {
         executed = true
       }
       const wrapped = shim.record(toWrap, function () {
-        return { name: 'test segment' }
+        return new RecorderSpec({ name: 'test segment' })
       })
 
       t.notOk(executed)
@@ -1463,7 +1464,7 @@ tap.test('Shim', function (t) {
       }
 
       const wrapped = shim.record(toWrap, function () {
-        return { name: 'test segment', callback: shim.LAST }
+        return new RecorderSpec({ name: 'test segment', callback: shim.LAST })
       })
       wrapped(cb)
     })
@@ -1472,7 +1473,7 @@ tap.test('Shim', function (t) {
       const cb = function () {}
 
       const wrapped = shim.record(checkNotWrapped.bind(t, cb), function () {
-        return { name: 'test segment', rowCallback: shim.LAST }
+        return new RecorderSpec({ name: 'test segment', rowCallback: shim.LAST })
       })
       wrapped(cb)
     })
@@ -1484,7 +1485,7 @@ tap.test('Shim', function (t) {
     t.afterEach(afterEach)
     t.test('should create a segment', function (t) {
       shim.record(wrappable, 'getActiveSegment', function () {
-        return { name: 'test segment' }
+        return new RecorderSpec({ name: 'test segment' })
       })
 
       helper.runInTransaction(agent, function (tx) {
@@ -1504,7 +1505,7 @@ tap.test('Shim', function (t) {
         executed = true
       }
       const wrapped = shim.record(toWrap, function () {
-        return { name: 'test segment' }
+        return new RecorderSpec({ name: 'test segment' })
       })
 
       helper.runInTransaction(agent, function () {
@@ -1548,7 +1549,7 @@ tap.test('Shim', function (t) {
       }
 
       const wrapped = shim.record(toWrap, function () {
-        return { name: 'test segment', callback: shim.LAST }
+        return new RecorderSpec({ name: 'test segment', callback: shim.LAST })
       })
 
       helper.runInTransaction(agent, function () {
@@ -1560,7 +1561,7 @@ tap.test('Shim', function (t) {
       const cb = function () {}
 
       const wrapped = shim.record(helper.checkWrappedCb.bind(t, shim, cb), function () {
-        return { name: 'test segment', rowCallback: shim.LAST }
+        return new RecorderSpec({ name: 'test segment', rowCallback: shim.LAST })
       })
 
       helper.runInTransaction(agent, function () {
@@ -1588,7 +1589,11 @@ tap.test('Shim', function (t) {
       }
 
       const wrapped = shim.record(toWrap, function () {
-        return { name: 'test segment', callback: shim.LAST, callbackRequired: true }
+        return new RecorderSpec({
+          name: 'test segment',
+          callback: shim.LAST,
+          callbackRequired: true
+        })
       })
 
       helper.runInTransaction(agent, function () {
@@ -1609,7 +1614,11 @@ tap.test('Shim', function (t) {
       }
 
       const wrapped = shim.record(toWrap, function () {
-        return { name: 'test segment', callback: shim.LAST, callbackRequired: true }
+        return new RecorderSpec({
+          name: 'test segment',
+          callback: shim.LAST,
+          callbackRequired: true
+        })
       })
 
       helper.runInTransaction(agent, function () {
@@ -1629,7 +1638,7 @@ tap.test('Shim', function (t) {
     t.afterEach(afterEach)
     t.test('should not create a segment', function (t) {
       shim.record(wrappable, 'getActiveSegment', function () {
-        return { name: 'test segment' }
+        return new RecorderSpec({ name: 'test segment' })
       })
 
       helper.runInTransaction(agent, function (tx) {
@@ -1647,7 +1656,7 @@ tap.test('Shim', function (t) {
         executed = true
       }
       const wrapped = shim.record(toWrap, function () {
-        return { name: 'test segment' }
+        return new RecorderSpec({ name: 'test segment' })
       })
 
       helper.runInTransaction(agent, function (tx) {
@@ -1676,7 +1685,7 @@ tap.test('Shim', function (t) {
     t.test('should not bind the callback if there is one', function (t) {
       const cb = function () {}
       const wrapped = shim.record(checkNotWrapped.bind(t, cb), function () {
-        return { name: 'test segment', callback: shim.LAST }
+        return new RecorderSpec({ name: 'test segment', callback: shim.LAST })
       })
 
       helper.runInTransaction(agent, function (tx) {
@@ -1688,7 +1697,7 @@ tap.test('Shim', function (t) {
     t.test('should not bind the rowCallback if there is one', function (t) {
       const cb = function () {}
       const wrapped = shim.record(checkNotWrapped.bind(t, cb), function () {
-        return { name: 'test segment', rowCallback: shim.LAST }
+        return new RecorderSpec({ name: 'test segment', rowCallback: shim.LAST })
       })
 
       helper.runInTransaction(agent, function (tx) {
@@ -3147,6 +3156,20 @@ tap.test('Shim', function (t) {
     t.ok(shim.specs.WrapSpec)
     t.ok(shim.specs.params.DatastoreParameters)
     t.ok(shim.specs.params.QueueMessageParameters)
+    t.end()
+  })
+
+  t.test('should not use functions in MessageSubscribeSpec if it is not an array', (t) => {
+    const agent = helper.loadMockedAgent()
+    t.teardown(() => {
+      helper.unloadAgent(agent)
+    })
+
+    const shim = new Shim(agent, 'test-mod')
+    const spec = new shim.specs.MessageSubscribeSpec({
+      functions: 'foo-bar'
+    })
+    t.notOk(spec.functions)
     t.end()
   })
 })

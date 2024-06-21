@@ -17,7 +17,7 @@ jobs:
     steps:
       - name: Pull Request Title is Conventional
         id: lint_pr_title
-        uses: amannn/action-semantic-pull-request@v5
+        uses: amannn/action-semantic-pull-request@e32d7e603df1aa1ba07e981f2a23455dee596825
         with:
           # Recommended Prefixes from https://github.com/conventional-changelog/commitlint/blob/master/%40commitlint/config-conventional/README.md#type-enum
           types: |
@@ -37,7 +37,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - if: failure()
         name: Add PR comment if failed
-        uses: marocchino/sticky-pull-request-comment@v2
+        uses: marocchino/sticky-pull-request-comment@331f8f5b4215f0445d3c07b4967662a32a2d3e31
         with:
           header: pr-title-lint-error
           message: |
@@ -48,7 +48,7 @@ jobs:
             ```
       - if: success()
         name: Remove PR comment if valid
-        uses: marocchino/sticky-pull-request-comment@v2
+        uses: marocchino/sticky-pull-request-comment@331f8f5b4215f0445d3c07b4967662a32a2d3e31
         with:
           header: pr-title-lint-error
           delete: true

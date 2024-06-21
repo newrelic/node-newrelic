@@ -8,14 +8,12 @@
 const test = require('tap').test
 const helper = require('../../../lib/agent_helper')
 const API = require('../../../../api')
-const semver = require('semver')
 
 test('Restify router introspection', function (t) {
   t.plan(7)
 
   const agent = helper.instrumentMockedAgent()
   const api = new API(agent)
-  const { version: pkgVersion } = require('restify/package')
   const server = require('restify').createServer()
 
   t.teardown(function () {
@@ -39,11 +37,7 @@ test('Restify router introspection', function (t) {
     // loading k2 adds instrumentation metrics for things it registers
     // this also differs between major versions of restify. 6+ also loads
     // k2 child_process instrumentation, fun fun fun
-    const expectedMetrics = helper.isSecurityAgentEnabled(agent)
-      ? semver.lt(pkgVersion, 'v6.0.0')
-        ? 14
-        : 15
-      : 7
+    const expectedMetrics = helper.isSecurityAgentEnabled(agent) ? 15 : 7
     t.equal(
       Object.keys(metrics).length,
       expectedMetrics,

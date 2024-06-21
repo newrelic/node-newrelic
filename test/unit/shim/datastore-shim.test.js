@@ -12,6 +12,7 @@ const helper = require('../../lib/agent_helper')
 const Shim = require('../../../lib/shim/shim')
 const DatastoreShim = require('../../../lib/shim/datastore-shim')
 const ParsedStatement = require('../../../lib/db/parsed-statement')
+const { QuerySpec, OperationSpec } = require('../../../lib/shim/specs')
 
 test('DatastoreShim', function (t) {
   t.autoend()
@@ -371,7 +372,7 @@ test('DatastoreShim', function (t) {
 
     t.test('should create a child segment when opaque is false', (t) => {
       shim.recordOperation(wrappable, 'withNested', () => {
-        return { name: 'test', opaque: false }
+        return new OperationSpec({ name: 'test', opaque: false })
       })
       helper.runInTransaction(agent, (tx) => {
         const startingSegment = agent.tracer.getSegment()
@@ -388,7 +389,7 @@ test('DatastoreShim', function (t) {
 
     t.test('should not create a child segment when opaque is true', (t) => {
       shim.recordOperation(wrappable, 'withNested', () => {
-        return { name: 'test', opaque: true }
+        return new OperationSpec({ name: 'test', opaque: true })
       })
       helper.runInTransaction(agent, (tx) => {
         const startingSegment = agent.tracer.getSegment()
@@ -455,7 +456,7 @@ test('DatastoreShim', function (t) {
       beforeEach()
       localhost = getMetricHostName(agent, 'localhost')
       shim.recordOperation(wrappable, 'getActiveSegment', function (s, fn, n, args) {
-        return { parameters: args[0] }
+        return new OperationSpec({ parameters: args[0] })
       })
     })
     t.afterEach(afterEach)
@@ -547,14 +548,14 @@ test('DatastoreShim', function (t) {
     t.beforeEach(function () {
       beforeEach()
       shim.recordOperation(wrappable, 'getActiveSegment', function () {
-        return {
+        return new OperationSpec({
           name: 'op',
           parameters: {
             host: 'some_host',
             port_path_or_id: 1234,
             database_name: 'foobar'
           }
-        }
+        })
       })
 
       return new Promise((resolve) => {
@@ -627,11 +628,15 @@ test('DatastoreShim', function (t) {
     t.test(
       'should create a datastore query segment but no metric when `record` is false',
       function (t) {
-        shim.recordQuery(wrappable, 'getActiveSegment', {
-          query: shim.FIRST,
-          record: false,
-          name: 'getActiveSegment'
-        })
+        shim.recordQuery(
+          wrappable,
+          'getActiveSegment',
+          new QuerySpec({
+            query: shim.FIRST,
+            record: false,
+            name: 'getActiveSegment'
+          })
+        )
 
         helper.runInTransaction(agent, function (tx) {
           const startingSegment = agent.tracer.getSegment()
@@ -646,7 +651,11 @@ test('DatastoreShim', function (t) {
     )
 
     t.test('should create a datastore query metric when `record` is true', function (t) {
-      shim.recordQuery(wrappable, 'getActiveSegment', { query: shim.FIRST, record: true })
+      shim.recordQuery(
+        wrappable,
+        'getActiveSegment',
+        new QuerySpec({ query: shim.FIRST, record: true })
+      )
 
       helper.runInTransaction(agent, function (tx) {
         const startingSegment = agent.tracer.getSegment()
@@ -660,7 +669,7 @@ test('DatastoreShim', function (t) {
     })
 
     t.test('should create a datastore query metric when `record` is defaulted', function (t) {
-      shim.recordQuery(wrappable, 'getActiveSegment', { query: shim.FIRST })
+      shim.recordQuery(wrappable, 'getActiveSegment', new QuerySpec({ query: shim.FIRST }))
 
       helper.runInTransaction(agent, function (tx) {
         const startingSegment = agent.tracer.getSegment()
@@ -691,14 +700,17 @@ test('DatastoreShim', function (t) {
     t.test('should allow after handlers to be specified', function (t) {
       let executed = false
       const toWrap = function () {}
-      const wrapped = shim.recordQuery(toWrap, {
-        query: function () {
-          return 'test'
-        },
-        after: function () {
-          executed = true
-        }
-      })
+      const wrapped = shim.recordQuery(
+        toWrap,
+        new QuerySpec({
+          query: function () {
+            return 'test'
+          },
+          after: function () {
+            executed = true
+          }
+        })
+      )
 
       helper.runInTransaction(agent, function () {
         t.notOk(executed)
@@ -710,10 +722,13 @@ test('DatastoreShim', function (t) {
 
     t.test('should bind the callback if there is one', function (t) {
       const cb = function () {}
-      const wrapped = shim.recordQuery(helper.checkWrappedCb.bind(t, shim, cb), {
-        query: shim.FIRST,
-        callback: shim.LAST
-      })
+      const wrapped = shim.recordQuery(
+        helper.checkWrappedCb.bind(t, shim, cb),
+        new QuerySpec({
+          query: shim.FIRST,
+          callback: shim.LAST
+        })
+      )
 
       helper.runInTransaction(agent, function () {
         wrapped(query, cb)
@@ -723,10 +738,13 @@ test('DatastoreShim', function (t) {
     t.test('should bind the row callback if there is one', function (t) {
       const cb = function () {}
 
-      const wrapped = shim.recordQuery(helper.checkWrappedCb.bind(t, shim, cb), {
-        query: shim.FIRST,
-        rowCallback: shim.LAST
-      })
+      const wrapped = shim.recordQuery(
+        helper.checkWrappedCb.bind(t, shim, cb),
+        new QuerySpec({
+          query: shim.FIRST,
+          rowCallback: shim.LAST
+        })
+      )
 
       helper.runInTransaction(agent, function () {
         wrapped(query, cb)
@@ -734,12 +752,16 @@ test('DatastoreShim', function (t) {
     })
 
     t.test('should execute inContext function when specified in spec', function (t) {
-      shim.recordQuery(wrappable, 'bar', {
-        query: 'select foo from bar;',
-        inContext(segment) {
-          segment.addAttribute('test-attr', 'unit-test')
-        }
-      })
+      shim.recordQuery(
+        wrappable,
+        'bar',
+        new QuerySpec({
+          query: 'select foo from bar;',
+          inContext(segment) {
+            segment.addAttribute('test-attr', 'unit-test')
+          }
+        })
+      )
 
       helper.runInTransaction(agent, (tx) => {
         wrappable.bar()
@@ -797,7 +819,7 @@ test('DatastoreShim', function (t) {
     })
 
     t.test('should create a datastore batch query metric', function (t) {
-      shim.recordBatchQuery(wrappable, 'getActiveSegment', { query: shim.FIRST })
+      shim.recordBatchQuery(wrappable, 'getActiveSegment', new QuerySpec({ query: shim.FIRST }))
 
       helper.runInTransaction(agent, function (tx) {
         const startingSegment = agent.tracer.getSegment()

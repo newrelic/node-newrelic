@@ -39,36 +39,26 @@ jobs:
     name: Should Run
     runs-on: ubuntu-latest
     outputs:
-      previous_version: ${{steps.versions.outputs.PREVIOUS_VAL}}
-      current_version: ${{steps.versions.outputs.CURRENT_VAL}}
+      sec_agent_did_change: ${{ steps.check_sec_agent.outputs.divergent }}
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 2
-      - uses: tj-actions/changed-files@v44
-        id: changed_files
+      - name: Check Security Agent Changed
+        id: check_sec_agent
+        uses: jsumners-nr/gha-node-deps-divergent@643628fe0da51ec025e984c4644f17fd9f9e93f6
         with:
-          files: package.json
-      - name: Get dependency versions
-        id: versions
-        if: steps.changed_files.outputs.any_changed == 'true'
-        run: |
-          current_val=$(cat package.json | jq -r --arg pkg "@newrelic/security-agent" '.dependencies[$pkg]')
-          echo "current_val=${current_val}" >> $GITHUB_OUTPUT
-          
-          git checkout origin/${{github.base_ref || 'main'}}
-          previous_val=$(cat package.json | jq -r --arg pkg "@newrelic/security-agent" '.dependencies[$pkg]')
-          echo "previous_val=${previous_val}" >> $GITHUB_OUTPUT
-          
-          git checkout ${{github.sha}}
+          base-sha: ${{ github.base_ref || 'main' }}
+          current-sha: ${{ github.sha }}
+          package-name: '@newrelic/security-agent'
 
   security-agent-tests:
     needs: [should_run]
     if: github.event_name == 'workflow_dispatch' ||
       github.event_name == 'schedule' ||
-      needs.should_run.outputs.previous_version != needs.should_run.outputs.current_version
+      needs.should_run.outputs.sec_agent_did_change == 'true'
 
-    runs-on: ubuntu-latest
+    runs-on: ${{ vars.NR_RUNNER || 'ubuntu-latest' }}
 
     strategy:
       fail-fast: false
@@ -76,9 +66,9 @@ jobs:
         node-version: [16.x, 18.x, 20.x]
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - name: Use Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v3
+      uses: actions/setup-node@v4
       with:
         node-version: ${{ matrix.node-version }}
     - name: Install Dependencies
@@ -92,6 +82,7 @@ jobs:
       run: TEST_CHILD_TIMEOUT=600000 npm run versioned:security
       env:
         VERSIONED_MODE: --${{ inputs.mode || 'major' }}
-        JOBS: 4 # 2 per CPU seems to be the sweet spot in GHA (July 2022)
+        # Run more jobs when using larger runner, otherwise 2 per CPU seems to be the sweet spot in GHA default runners(July 2022)
+        JOBS: ${{ vars.NR_RUNNER && 16 || 4 }}
         SKIP_C8: true
 

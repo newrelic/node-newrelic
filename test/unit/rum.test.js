@@ -230,7 +230,7 @@ tap.test('the RUM API', function (t) {
       t.ok(payload)
       const deobf = hashes.deobfuscateNameUsingKey(
         payload[1],
-        agent.config.license_key.substr(0, 13)
+        agent.config.license_key.substring(0, 13)
       )
       t.equal(JSON.parse(deobf).u.hello, 1)
       t.end()

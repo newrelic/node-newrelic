@@ -54,6 +54,9 @@ tap.beforeEach((t) => {
     isClaude() {
       return false
     },
+    isClaude3() {
+      return false
+    },
     isCohere() {
       return false
     },

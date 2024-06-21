@@ -29,6 +29,21 @@ const requests = {
     body: JSON.stringify({ prompt, temperature: 0.5, max_tokens_to_sample: 100 }),
     modelId
   }),
+  claude3: (prompt, modelId) => ({
+    body: JSON.stringify({
+      anthropic_version: 'bedrock-2023-05-31',
+      max_tokens: 100,
+      temperature: 0.5,
+      system: 'Please respond in the style of Christopher Walken',
+      messages: [
+        {
+          role: 'user',
+          content: prompt
+        }
+      ]
+    }),
+    modelId
+  }),
   cohere: (prompt, modelId) => ({
     body: JSON.stringify({ prompt, temperature: 0.5, max_tokens: 100 }),
     modelId
@@ -53,7 +68,7 @@ tap.beforeEach(async (t) => {
   t.context.baseUrl = baseUrl
   t.context.responses = responses
   t.context.expectedExternalPath = (modelId, method = 'invoke') =>
-    `External/${host}:${port}/model/${modelId}/${method}`
+    `External/${host}:${port}/model/${encodeURIComponent(modelId)}/${method}`
 
   const client = new bedrock.BedrockRuntimeClient({
     region: 'us-east-1',
@@ -81,6 +96,7 @@ tap.afterEach(async (t) => {
   { modelId: 'ai21.j2-ultra-v1', resKey: 'ai21' },
   { modelId: 'amazon.titan-text-express-v1', resKey: 'amazon' },
   { modelId: 'anthropic.claude-v2', resKey: 'claude' },
+  { modelId: 'anthropic.claude-3-haiku-20240307-v1:0', resKey: 'claude3' },
   { modelId: 'cohere.command-text-v14', resKey: 'cohere' },
   { modelId: 'meta.llama2-13b-chat-v1', resKey: 'llama2' }
 ].forEach(({ modelId, resKey }) => {

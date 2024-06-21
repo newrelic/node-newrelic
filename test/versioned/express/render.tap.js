@@ -234,7 +234,7 @@ function runTests(conf) {
 
       app.get(TEST_PATH, function (req, res) {
         const rum = api.getBrowserTimingHeader()
-        t.equal(rum.substr(0, 7), '<script')
+        t.equal(rum.substring(0, 7), '<script')
         res.render('index', { title: 'yo dawg', rum: rum })
       })
 

@@ -29,7 +29,7 @@ tap.test('Restify router introspection', function (t) {
 
   server.get('/test/:id', function (req, res, next) {
     const rum = api.getBrowserTimingHeader()
-    t.equal(rum.substr(0, 7), '<script')
+    t.equal(rum.substring(0, 7), '<script')
     res.send({ status: 'ok' })
     next()
   })

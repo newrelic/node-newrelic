@@ -10,6 +10,8 @@ const DatastoreShim = require('../../../lib/shim/datastore-shim')
 const helper = require('../../lib/agent_helper')
 const https = require('https')
 const SpanEvent = require('../../../lib/spans/span-event')
+const DatastoreParameters = require('../../../lib/shim/specs/params/datastore')
+const { QuerySpec } = require('../../../lib/shim/specs')
 
 tap.test('#constructor() should construct an empty span event', (t) => {
   const attrs = {}
@@ -204,16 +206,20 @@ tap.test('fromSegment()', (t) => {
     while (Buffer.byteLength(longQuery, 'utf8') < 2001) {
       longQuery += 'a'
     }
-    shim.recordQuery(dsConn, 'myDbOp', {
-      callback: shim.LAST,
-      query: shim.FIRST,
-      parameters: {
-        host: 'my-db-host',
-        port_path_or_id: '/path/to/db.sock',
-        database_name: 'my-database',
-        collection: 'my-collection'
-      }
-    })
+    shim.recordQuery(
+      dsConn,
+      'myDbOp',
+      new QuerySpec({
+        callback: shim.LAST,
+        query: shim.FIRST,
+        parameters: new DatastoreParameters({
+          host: 'my-db-host',
+          port_path_or_id: '/path/to/db.sock',
+          database_name: 'my-database',
+          collection: 'my-collection'
+        })
+      })
+    )
 
     shim.setParser((query) => {
       return {

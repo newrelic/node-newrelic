@@ -42,6 +42,9 @@ tap.beforeEach((t) => {
       isClaude() {
         return false
       },
+      isClaude3() {
+        return false
+      },
       isLlama2() {
         return false
       },
@@ -101,9 +104,39 @@ tap.test('handles claude streams', async (t) => {
   })
 
   const bc = new BedrockCommand({
-    modelId: 'anthropic.claude',
+    modelId: 'anthropic.claude-v1',
     body: JSON.stringify({
       prompt: 'prompt',
+      maxTokens: 5
+    })
+  })
+  const br = new BedrockResponse({ bedrockCommand: bc, response: handler.response })
+  t.equal(br.completions.length, 1)
+  t.equal(br.finishReason, 'done')
+  t.equal(br.requestId, 'aws-req-1')
+  t.equal(br.statusCode, 200)
+})
+
+tap.test('handles claude3streams', async (t) => {
+  t.context.passThroughParams.bedrockCommand.isClaude3 = () => true
+  t.context.chunks = [
+    { type: 'content_block_delta', delta: { type: 'text_delta', text: '42' } },
+    { type: 'message_delta', delta: { stop_reason: 'done' } },
+    { type: 'message_stop', ...t.context.metrics }
+  ]
+  const handler = new StreamHandler(t.context)
+
+  t.equal(handler.generator.name, 'handleClaude3')
+  for await (const event of handler.generator()) {
+    t.type(event.chunk.bytes, Uint8Array)
+  }
+  const foundBody = JSON.parse(new TextDecoder().decode(handler.response.output.body))
+  t.same(foundBody, { completions: ['42'], stop_reason: 'done', type: 'message_stop' })
+
+  const bc = new BedrockCommand({
+    modelId: 'anthropic.claude-3-haiku-20240307-v1:0',
+    body: JSON.stringify({
+      messages: [{ content: 'prompt' }],
       maxTokens: 5
     })
   })
