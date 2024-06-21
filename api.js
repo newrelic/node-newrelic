@@ -244,14 +244,14 @@ API.prototype.setControllerName = function setControllerName(name, action) {
 }
 
 /**
- * Add a custom attribute to the current transaction. Some attributes are
+ * Add a custom attribute to the current transaction and span. Some attributes are
  * reserved (see CUSTOM_DENYLIST for the current, very short list), and
  * as with most API methods, this must be called in the context of an
  * active transaction. Most recently set value wins.
  *
  * @param {string} key  The key you want displayed in the RPM UI.
  * @param {string} value The value you want displayed. Must be serializable.
- * @returns {false|undefined} Retruns false when disabled/errored, otherwise undefined
+ * @returns {false|undefined} Returns false when disabled/errored, otherwise undefined
  */
 API.prototype.addCustomAttribute = function addCustomAttribute(key, value) {
   const metric = this.agent.metrics.getOrCreateMetric(
@@ -298,7 +298,7 @@ API.prototype.addCustomAttribute = function addCustomAttribute(key, value) {
 }
 
 /**
- * Adds all custom attributes in an object to the current transaction.
+ * Adds all custom attributes in an object to the current transaction and span.
  *
  * See documentation for newrelic.addCustomAttribute for more information on
  * setting custom attributes.
@@ -360,7 +360,7 @@ API.prototype.addCustomSpanAttributes = function addCustomSpanAttributes(atts) {
  *
  * @param {string} key  The key you want displayed in the RPM UI.
  * @param {string} value The value you want displayed. Must be serializable.
- * @returns {false|undefined} Retruns false when disabled/errored, otherwise undefined
+ * @returns {false|undefined} Returns false when disabled/errored, otherwise undefined
  */
 API.prototype.addCustomSpanAttribute = function addCustomSpanAttribute(key, value) {
   const metric = this.agent.metrics.getOrCreateMetric(
@@ -938,7 +938,7 @@ API.prototype.startSegment = function startSegment(name, record, handler, callba
  * })
  * @param {string} url
  *  The URL of the transaction.  It is used to name and group related transactions in APM,
- *  so it should be a generic name and not iclude any variable parameters.
+ *  so it should be a generic name and not include any variable parameters.
  * @param {Function}  handle
  *  Function that represents the transaction work.
  * @returns {null|*} Returns null if handle is not a function, otherwise the return value of handle
@@ -1026,7 +1026,7 @@ API.prototype.startBackgroundTransaction = startBackgroundTransaction
  * })
  * @param {string} name
  *  The name of the transaction. It is used to name and group related
- *  transactions in APM, so it should be a generic name and not iclude any
+ *  transactions in APM, so it should be a generic name and not include any
  *  variable parameters.
  * @param {string} [group]
  *  Optional, used for grouping background transactions in APM. For more
@@ -1297,14 +1297,14 @@ API.prototype.recordCustomEvent = function recordCustomEvent(eventType, attribut
   // Filter all object type valued attributes out
   const filteredAttributes = _filterAttributes(attributes, `${eventType} custom event`)
 
-  const instrinics = {
+  const intrinsics = {
     type: eventType,
     timestamp: Date.now()
   }
 
   const tx = this.agent.getTransaction()
   const priority = (tx && tx.priority) || Math.random()
-  this.agent.customEventAggregator.add([instrinics, filteredAttributes], priority)
+  this.agent.customEventAggregator.add([intrinsics, filteredAttributes], priority)
 }
 
 /**
@@ -1342,7 +1342,7 @@ API.prototype.instrument = function instrument(moduleName, onRequire, onError) {
  * Registers an instrumentation function.
  *
  * - `newrelic.instrumentConglomerate(moduleName, onRequire [, onError])`
- * - `newrelic.isntrumentConglomerate(options)`
+ * - `newrelic.instrumentConglomerate(options)`
  *
  * @param {string|object} moduleName The module name given to require to load the module, or the instrumentation specification
  * @param {string} moduleName.moduleName The module name given to require to load the module
