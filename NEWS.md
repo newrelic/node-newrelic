@@ -15,11 +15,6 @@
 #### Documentation
 
 * Updated compatibility report ([#2285](https://github.com/newrelic/node-newrelic/pull/2285)) ([b1b5e3e](https://github.com/newrelic/node-newrelic/commit/b1b5e3e54074cc8b535927f4edad07925618260c))
-* Updated compatibility report ([#2283](https://github.com/newrelic/node-newrelic/pull/2283)) ([d44661e](https://github.com/newrelic/node-newrelic/commit/d44661eed7801fc58202652e32dd0584d880d2f5))
-* Updated compatibility report ([#2279](https://github.com/newrelic/node-newrelic/pull/2279)) ([e036436](https://github.com/newrelic/node-newrelic/commit/e036436b4b86bfd9b2fa1b4518826326b07deae5))
-* Updated compatibility report ([#2264](https://github.com/newrelic/node-newrelic/pull/2264)) ([8bbc8d2](https://github.com/newrelic/node-newrelic/commit/8bbc8d2aaae3a593b821244b38a07467918e9da0))
-* Updated compatibility report ([#2262](https://github.com/newrelic/node-newrelic/pull/2262)) ([7a49c36](https://github.com/newrelic/node-newrelic/commit/7a49c3613a50a808375f85f6c29634086fed0c75))
-* Updated compatibility report ([#2255](https://github.com/newrelic/node-newrelic/pull/2255)) ([46924e5](https://github.com/newrelic/node-newrelic/commit/46924e519f49f738907b1a639a90d19e48eb5516))
 
 #### Miscellaneous chores
 
