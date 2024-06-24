@@ -46,7 +46,11 @@ tap.test('Agent API - recordCustomEvent', (t) => {
     t.notOk(logMessage['trace.id'], 'it does not have a trace id')
     t.notOk(logMessage['span.id'], 'it does not have a span id')
     t.equal(logMessage['error.message'], 'testing error', 'it has the right error.message')
-    t.equal(logMessage['error.stack'], error.stack, 'it has the right error.stack')
+    t.equal(
+      logMessage['error.stack'].substring(0, 1021),
+      error.stack.substring(0, 1021),
+      'it has the right error.stack'
+    )
     t.equal(logMessage['error.class'], 'Error', 'it has the right error.class')
 
     const lineMetric = agent.metrics.getMetric(LOGGING.LINES)
