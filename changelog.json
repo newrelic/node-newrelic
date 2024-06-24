@@ -5,9 +5,7 @@
       "version": "11.20.0",
       "changes": {
         "security": [],
-        "bugfixes": [
-          "Fixed typos"
-        ],
+        "bugfixes": [],
         "features": [
           "Added support for Anthropic Claude 3 messages API"
         ]

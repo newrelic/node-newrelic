@@ -4,16 +4,13 @@
 
 * Added support for Anthropic Claude 3 messages API ([#2278](https://github.com/newrelic/node-newrelic/pull/2278)) ([7e3cab9](https://github.com/newrelic/node-newrelic/commit/7e3cab9739a9924b904ce78380fd70b1e30cd89f))
 
-#### Bug fixes
-
-* Fixed typos ([#2287](https://github.com/newrelic/node-newrelic/pull/2287)) ([7b3c8d1](https://github.com/newrelic/node-newrelic/commit/7b3c8d1445ea9876b36eda31d979dac9b65dad14))
-
 #### Code refactoring
 
 * Replaced instances of `substr()` with `substring()` ([#2274](https://github.com/newrelic/node-newrelic/pull/2274)) ([8f96c73](https://github.com/newrelic/node-newrelic/commit/8f96c734862d42f459dd4de8ed9d498ef7d693de))
 
 #### Documentation
 
+* Fixed typos in API jsdoc ([#2287](https://github.com/newrelic/node-newrelic/pull/2287)) ([7b3c8d1](https://github.com/newrelic/node-newrelic/commit/7b3c8d1445ea9876b36eda31d979dac9b65dad14))
 * Updated compatibility report ([#2285](https://github.com/newrelic/node-newrelic/pull/2285)) ([b1b5e3e](https://github.com/newrelic/node-newrelic/commit/b1b5e3e54074cc8b535927f4edad07925618260c))
 
 #### Miscellaneous chores
