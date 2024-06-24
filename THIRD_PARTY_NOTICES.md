@@ -91,7 +91,7 @@ code, the source code can be found at [https://github.com/newrelic/node-newrelic
 
 ### @grpc/grpc-js
 
-This product includes source derived from [@grpc/grpc-js](https://github.com/grpc/grpc-node/tree/master/packages/grpc-js) ([v1.10.8](https://github.com/grpc/grpc-node/tree/master/packages/grpc-js/tree/v1.10.8)), distributed under the [Apache-2.0 License](https://github.com/grpc/grpc-node/tree/master/packages/grpc-js/blob/v1.10.8/LICENSE):
+This product includes source derived from [@grpc/grpc-js](https://github.com/grpc/grpc-node/tree/master/packages/grpc-js) ([v1.10.9](https://github.com/grpc/grpc-node/tree/master/packages/grpc-js/tree/v1.10.9)), distributed under the [Apache-2.0 License](https://github.com/grpc/grpc-node/tree/master/packages/grpc-js/blob/v1.10.9/LICENSE):
 
 ```
                                  Apache License
@@ -539,7 +539,7 @@ SOFTWARE.
 
 ### @newrelic/security-agent
 
-This product includes source derived from [@newrelic/security-agent](https://github.com/newrelic/csec-node-agent) ([v1.3.0](https://github.com/newrelic/csec-node-agent/tree/v1.3.0)), distributed under the [UNKNOWN License](https://github.com/newrelic/csec-node-agent/blob/v1.3.0/LICENSE):
+This product includes source derived from [@newrelic/security-agent](https://github.com/newrelic/csec-node-agent) ([v1.4.0](https://github.com/newrelic/csec-node-agent/tree/v1.4.0)), distributed under the [UNKNOWN License](https://github.com/newrelic/csec-node-agent/blob/v1.4.0/LICENSE):
 
 ```
 ## New Relic Software License v1.0
@@ -674,7 +674,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 ### import-in-the-middle
 
-This product includes source derived from [import-in-the-middle](https://github.com/DataDog/import-in-the-middle) ([v1.7.4](https://github.com/DataDog/import-in-the-middle/tree/v1.7.4)), distributed under the [Apache-2.0 License](https://github.com/DataDog/import-in-the-middle/blob/v1.7.4/LICENSE):
+This product includes source derived from [import-in-the-middle](https://github.com/DataDog/import-in-the-middle) ([v1.8.1](https://github.com/DataDog/import-in-the-middle/tree/v1.8.1)), distributed under the [Apache-2.0 License](https://github.com/DataDog/import-in-the-middle/blob/v1.8.1/LICENSE):
 
 ```
 Copyright 2021 Datadog, Inc.
@@ -886,7 +886,7 @@ SOFTWARE.
 
 ### @aws-sdk/client-s3
 
-This product includes source derived from [@aws-sdk/client-s3](https://github.com/aws/aws-sdk-js-v3) ([v3.587.0](https://github.com/aws/aws-sdk-js-v3/tree/v3.587.0)), distributed under the [Apache-2.0 License](https://github.com/aws/aws-sdk-js-v3/blob/v3.587.0/LICENSE):
+This product includes source derived from [@aws-sdk/client-s3](https://github.com/aws/aws-sdk-js-v3) ([v3.600.0](https://github.com/aws/aws-sdk-js-v3/tree/v3.600.0)), distributed under the [Apache-2.0 License](https://github.com/aws/aws-sdk-js-v3/blob/v3.600.0/LICENSE):
 
 ```
                                 Apache License
@@ -1095,7 +1095,7 @@ This product includes source derived from [@aws-sdk/client-s3](https://github.co
 
 ### @aws-sdk/s3-request-presigner
 
-This product includes source derived from [@aws-sdk/s3-request-presigner](https://github.com/aws/aws-sdk-js-v3) ([v3.587.0](https://github.com/aws/aws-sdk-js-v3/tree/v3.587.0)), distributed under the [Apache-2.0 License](https://github.com/aws/aws-sdk-js-v3/blob/v3.587.0/LICENSE):
+This product includes source derived from [@aws-sdk/s3-request-presigner](https://github.com/aws/aws-sdk-js-v3) ([v3.600.0](https://github.com/aws/aws-sdk-js-v3/tree/v3.600.0)), distributed under the [Apache-2.0 License](https://github.com/aws/aws-sdk-js-v3/blob/v3.600.0/LICENSE):
 
 ```
                                 Apache License
@@ -1750,7 +1750,7 @@ This product includes source derived from [@newrelic/newrelic-oss-cli](https://g
 
 ### @newrelic/test-utilities
 
-This product includes source derived from [@newrelic/test-utilities](https://github.com/newrelic/node-test-utilities) ([v8.5.0](https://github.com/newrelic/node-test-utilities/tree/v8.5.0)), distributed under the [Apache-2.0 License](https://github.com/newrelic/node-test-utilities/blob/v8.5.0/LICENSE):
+This product includes source derived from [@newrelic/test-utilities](https://github.com/newrelic/node-test-utilities) ([v8.6.0](https://github.com/newrelic/node-test-utilities/tree/v8.6.0)), distributed under the [Apache-2.0 License](https://github.com/newrelic/node-test-utilities/blob/v8.6.0/LICENSE):
 
 ```
                                  Apache License
@@ -1989,7 +1989,7 @@ THE SOFTWARE.
 
 ### @slack/bolt
 
-This product includes source derived from [@slack/bolt](https://github.com/slackapi/bolt) ([v3.18.0](https://github.com/slackapi/bolt/tree/v3.18.0)), distributed under the [MIT License](https://github.com/slackapi/bolt/blob/v3.18.0/LICENSE):
+This product includes source derived from [@slack/bolt](https://github.com/slackapi/bolt) ([v3.19.0](https://github.com/slackapi/bolt/tree/v3.19.0)), distributed under the [MIT License](https://github.com/slackapi/bolt/blob/v3.19.0/LICENSE):
 
 ```
 The MIT License (MIT)
@@ -2493,7 +2493,7 @@ THE SOFTWARE.
 
 ### aws-sdk
 
-This product includes source derived from [aws-sdk](https://github.com/aws/aws-sdk-js) ([v2.1631.0](https://github.com/aws/aws-sdk-js/tree/v2.1631.0)), distributed under the [Apache-2.0 License](https://github.com/aws/aws-sdk-js/blob/v2.1631.0/LICENSE.txt):
+This product includes source derived from [aws-sdk](https://github.com/aws/aws-sdk-js) ([v2.1645.0](https://github.com/aws/aws-sdk-js/tree/v2.1645.0)), distributed under the [Apache-2.0 License](https://github.com/aws/aws-sdk-js/blob/v2.1645.0/LICENSE.txt):
 
 ```
 
@@ -2892,7 +2892,7 @@ THE SOFTWARE.
 
 ### eslint-plugin-jsdoc
 
-This product includes source derived from [eslint-plugin-jsdoc](https://github.com/gajus/eslint-plugin-jsdoc) ([v48.2.7](https://github.com/gajus/eslint-plugin-jsdoc/tree/v48.2.7)), distributed under the [BSD-3-Clause License](https://github.com/gajus/eslint-plugin-jsdoc/blob/v48.2.7/LICENSE):
+This product includes source derived from [eslint-plugin-jsdoc](https://github.com/gajus/eslint-plugin-jsdoc) ([v48.2.12](https://github.com/gajus/eslint-plugin-jsdoc/tree/v48.2.12)), distributed under the [BSD-3-Clause License](https://github.com/gajus/eslint-plugin-jsdoc/blob/v48.2.12/LICENSE):
 
 ```
 Copyright (c) 2018, Gajus Kuizinas (http://gajus.com/)
@@ -3474,7 +3474,7 @@ SOFTWARE.
 
 ### lockfile-lint
 
-This product includes source derived from [lockfile-lint](https://github.com/lirantal/lockfile-lint) ([v4.13.2](https://github.com/lirantal/lockfile-lint/tree/v4.13.2)), distributed under the [Apache-2.0 License](https://github.com/lirantal/lockfile-lint/blob/v4.13.2/LICENSE):
+This product includes source derived from [lockfile-lint](https://github.com/lirantal/lockfile-lint) ([v4.14.0](https://github.com/lirantal/lockfile-lint/tree/v4.14.0)), distributed under the [Apache-2.0 License](https://github.com/lirantal/lockfile-lint/blob/v4.14.0/LICENSE):
 
 ```
 
@@ -3748,7 +3748,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 ### rfdc
 
-This product includes source derived from [rfdc](https://github.com/davidmarkclements/rfdc) ([v1.3.1](https://github.com/davidmarkclements/rfdc/tree/v1.3.1)), distributed under the [MIT License](https://github.com/davidmarkclements/rfdc/blob/v1.3.1/LICENSE):
+This product includes source derived from [rfdc](https://github.com/davidmarkclements/rfdc) ([v1.4.1](https://github.com/davidmarkclements/rfdc/tree/v1.4.1)), distributed under the [MIT License](https://github.com/davidmarkclements/rfdc/blob/v1.4.1/LICENSE):
 
 ```
 Copyright 2019 "David Mark Clements <david.mark.clements@gmail.com>"
