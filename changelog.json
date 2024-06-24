@@ -2,6 +2,16 @@
   "repository": "newrelic/node-newrelic",
   "entries": [
     {
+      "version": "11.20.0",
+      "changes": {
+        "security": [],
+        "bugfixes": [],
+        "features": [
+          "Added support for Anthropic Claude 3 messages API"
+        ]
+      }
+    },
+    {
       "version": "11.19.0",
       "changes": {
         "security": [],
