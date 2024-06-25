@@ -6,6 +6,8 @@
 'use strict'
 
 const tap = require('tap')
+const fs = require('fs')
+const fsAccess = fs.access
 const os = require('os')
 const hostname = os.hostname
 const networkInterfaces = os.networkInterfaces
@@ -518,6 +520,7 @@ tap.test('boot_id', (t) => {
     startingOsPlatform = os.platform
 
     os.platform = () => 'linux'
+    fs.access = (file, mode, cb) => cb(null)
   })
 
   t.afterEach(() => {
@@ -530,6 +533,7 @@ tap.test('boot_id', (t) => {
     sysInfo._getDockerContainerId = startingDockerInfo
     common.readProc = startingCommonReadProc
     os.platform = startingOsPlatform
+    fs.access = fsAccess
 
     startingGetMemory = null
     startingGetProcessor = null
@@ -562,7 +566,9 @@ tap.test('boot_id', (t) => {
             break
 
           case 'input_boot_id':
-            mockReadProc = (file, cb) => cb(null, testValue)
+            mockReadProc = (file, cb) => {
+              cb(null, testValue, agent)
+            }
             break
 
           // Ignore these keys.
