@@ -35,7 +35,7 @@ class Benchmark {
     const samples = this.samples
     return (this.processedSamples = Object.keys(samples).reduce((acc, sampleName) => {
       try {
-        acc[sampleName] = new BenchmarkStats(samples[sampleName])
+        acc[sampleName] = new BenchmarkStats(samples[sampleName], this.name, sampleName)
         return acc
       } catch (e) {
         /* eslint-disable no-console */
@@ -152,9 +152,10 @@ class Benchmark {
 }
 
 class BenchmarkStats {
-  constructor(samples) {
+  constructor(samples, testName, sampleName) {
     if (samples.length < 1) {
-      throw new Error('BenchmarkStats requires additional samples')
+      console.log(`BenchmarkStats for ${testName} has no samples. SampleName: ${sampleName}`)
+      throw new Error('BenchmarkStats requires more than zero samples')
     }
 
     let sortedSamples = samples.slice().sort((a, b) => a - b)
