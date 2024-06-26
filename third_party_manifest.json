@@ -1,18 +1,18 @@
 {
-  "lastUpdated": "Mon Jun 03 2024 11:14:52 GMT+0530 (India Standard Time)",
+  "lastUpdated": "Thu Jun 06 2024 16:54:51 GMT-0400 (Eastern Daylight Time)",
   "projectName": "New Relic Node Agent",
   "projectUrl": "https://github.com/newrelic/node-newrelic",
   "includeOptDeps": true,
   "optionalDependencies": {
-    "@contrast/fn-inspect@3.4.0": {
+    "@contrast/fn-inspect@4.2.0": {
       "name": "@contrast/fn-inspect",
-      "version": "3.4.0",
-      "range": "^3.3.0",
+      "version": "4.2.0",
+      "range": "^4.2.0",
       "licenses": "MIT",
       "repoUrl": "https://github.com/Contrast-Security-Inc/node-fn-inspect",
-      "versionedRepoUrl": "https://github.com/Contrast-Security-Inc/node-fn-inspect/tree/v3.4.0",
+      "versionedRepoUrl": "https://github.com/Contrast-Security-Inc/node-fn-inspect/tree/v4.2.0",
       "licenseFile": "node_modules/@contrast/fn-inspect/LICENSE",
-      "licenseUrl": "https://github.com/Contrast-Security-Inc/node-fn-inspect/blob/v3.4.0/LICENSE",
+      "licenseUrl": "https://github.com/Contrast-Security-Inc/node-fn-inspect/blob/v4.2.0/LICENSE",
       "licenseTextSource": "file",
       "publisher": "Contrast Security"
     },
@@ -134,15 +134,15 @@
       "email": "nathan@tootallnate.net",
       "url": "http://n8.io/"
     },
-    "import-in-the-middle@1.7.4": {
+    "import-in-the-middle@1.8.0": {
       "name": "import-in-the-middle",
-      "version": "1.7.4",
+      "version": "1.8.0",
       "range": "^1.6.0",
       "licenses": "Apache-2.0",
       "repoUrl": "https://github.com/DataDog/import-in-the-middle",
-      "versionedRepoUrl": "https://github.com/DataDog/import-in-the-middle/tree/v1.7.4",
+      "versionedRepoUrl": "https://github.com/DataDog/import-in-the-middle/tree/v1.8.0",
       "licenseFile": "node_modules/import-in-the-middle/LICENSE",
-      "licenseUrl": "https://github.com/DataDog/import-in-the-middle/blob/v1.7.4/LICENSE",
+      "licenseUrl": "https://github.com/DataDog/import-in-the-middle/blob/v1.8.0/LICENSE",
       "licenseTextSource": "file",
       "publisher": "Bryan English",
       "email": "bryan.english@datadoghq.com"
@@ -226,28 +226,28 @@
     }
   },
   "devDependencies": {
-    "@aws-sdk/client-s3@3.587.0": {
+    "@aws-sdk/client-s3@3.592.0": {
       "name": "@aws-sdk/client-s3",
-      "version": "3.587.0",
+      "version": "3.592.0",
       "range": "^3.556.0",
       "licenses": "Apache-2.0",
       "repoUrl": "https://github.com/aws/aws-sdk-js-v3",
-      "versionedRepoUrl": "https://github.com/aws/aws-sdk-js-v3/tree/v3.587.0",
+      "versionedRepoUrl": "https://github.com/aws/aws-sdk-js-v3/tree/v3.592.0",
       "licenseFile": "node_modules/@aws-sdk/client-s3/LICENSE",
-      "licenseUrl": "https://github.com/aws/aws-sdk-js-v3/blob/v3.587.0/LICENSE",
+      "licenseUrl": "https://github.com/aws/aws-sdk-js-v3/blob/v3.592.0/LICENSE",
       "licenseTextSource": "file",
       "publisher": "AWS SDK for JavaScript Team",
       "url": "https://aws.amazon.com/javascript/"
     },
-    "@aws-sdk/s3-request-presigner@3.587.0": {
+    "@aws-sdk/s3-request-presigner@3.592.0": {
       "name": "@aws-sdk/s3-request-presigner",
-      "version": "3.587.0",
+      "version": "3.592.0",
       "range": "^3.556.0",
       "licenses": "Apache-2.0",
       "repoUrl": "https://github.com/aws/aws-sdk-js-v3",
-      "versionedRepoUrl": "https://github.com/aws/aws-sdk-js-v3/tree/v3.587.0",
+      "versionedRepoUrl": "https://github.com/aws/aws-sdk-js-v3/tree/v3.592.0",
       "licenseFile": "node_modules/@aws-sdk/s3-request-presigner/LICENSE",
-      "licenseUrl": "https://github.com/aws/aws-sdk-js-v3/blob/v3.587.0/LICENSE",
+      "licenseUrl": "https://github.com/aws/aws-sdk-js-v3/blob/v3.592.0/LICENSE",
       "licenseTextSource": "file",
       "publisher": "AWS SDK for JavaScript Team",
       "url": "https://aws.amazon.com/javascript/"
@@ -290,15 +290,15 @@
       "licenseTextSource": "file",
       "publisher": "New Relic"
     },
-    "@newrelic/test-utilities@8.5.0": {
+    "@newrelic/test-utilities@8.6.0": {
       "name": "@newrelic/test-utilities",
-      "version": "8.5.0",
+      "version": "8.6.0",
       "range": "^8.5.0",
       "licenses": "Apache-2.0",
       "repoUrl": "https://github.com/newrelic/node-test-utilities",
-      "versionedRepoUrl": "https://github.com/newrelic/node-test-utilities/tree/v8.5.0",
+      "versionedRepoUrl": "https://github.com/newrelic/node-test-utilities/tree/v8.6.0",
       "licenseFile": "node_modules/@newrelic/test-utilities/LICENSE",
-      "licenseUrl": "https://github.com/newrelic/node-test-utilities/blob/v8.5.0/LICENSE",
+      "licenseUrl": "https://github.com/newrelic/node-test-utilities/blob/v8.6.0/LICENSE",
       "licenseTextSource": "file",
       "publisher": "New Relic Node.js agent team",
       "email": "nodejs@newrelic.com"
@@ -376,15 +376,15 @@
       "licenseTextSource": "file",
       "publisher": "Caolan McMahon"
     },
-    "aws-sdk@2.1631.0": {
+    "aws-sdk@2.1636.0": {
       "name": "aws-sdk",
-      "version": "2.1631.0",
+      "version": "2.1636.0",
       "range": "^2.1604.0",
       "licenses": "Apache-2.0",
       "repoUrl": "https://github.com/aws/aws-sdk-js",
-      "versionedRepoUrl": "https://github.com/aws/aws-sdk-js/tree/v2.1631.0",
+      "versionedRepoUrl": "https://github.com/aws/aws-sdk-js/tree/v2.1636.0",
       "licenseFile": "node_modules/aws-sdk/LICENSE.txt",
-      "licenseUrl": "https://github.com/aws/aws-sdk-js/blob/v2.1631.0/LICENSE.txt",
+      "licenseUrl": "https://github.com/aws/aws-sdk-js/blob/v2.1636.0/LICENSE.txt",
       "licenseTextSource": "file",
       "publisher": "Amazon Web Services",
       "url": "https://aws.amazon.com/"
@@ -480,15 +480,15 @@
       "publisher": "Michael Radionov",
       "url": "https://github.com/mradionov"
     },
-    "eslint-plugin-jsdoc@48.2.7": {
+    "eslint-plugin-jsdoc@48.2.8": {
       "name": "eslint-plugin-jsdoc",
-      "version": "48.2.7",
+      "version": "48.2.8",
       "range": "^48.0.5",
       "licenses": "BSD-3-Clause",
       "repoUrl": "https://github.com/gajus/eslint-plugin-jsdoc",
-      "versionedRepoUrl": "https://github.com/gajus/eslint-plugin-jsdoc/tree/v48.2.7",
+      "versionedRepoUrl": "https://github.com/gajus/eslint-plugin-jsdoc/tree/v48.2.8",
       "licenseFile": "node_modules/eslint-plugin-jsdoc/LICENSE",
-      "licenseUrl": "https://github.com/gajus/eslint-plugin-jsdoc/blob/v48.2.7/LICENSE",
+      "licenseUrl": "https://github.com/gajus/eslint-plugin-jsdoc/blob/v48.2.8/LICENSE",
       "licenseTextSource": "file",
       "publisher": "Gajus Kuizinas",
       "email": "gajus@gajus.com",
