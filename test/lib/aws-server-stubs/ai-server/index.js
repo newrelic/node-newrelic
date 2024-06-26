@@ -119,6 +119,12 @@ function handler(req, res) {
         break
       }
 
+      case 'meta.llama3-8b-instruct-v1:0':
+      case 'meta.llama3-70b-instruct-v1:0': {
+        response = responses.llama3.get(payload.prompt)
+        break
+      }
+
       default: {
         response = { statusCode: 418, body: {} }
       }

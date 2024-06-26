@@ -11,6 +11,7 @@ const claude = require('./claude')
 const claude3 = require('./claude3')
 const cohere = require('./cohere')
 const llama2 = require('./llama2')
+const llama3 = require('./llama3')
 
 module.exports = {
   ai21,
@@ -18,5 +19,6 @@ module.exports = {
   claude,
   claude3,
   cohere,
-  llama2
+  llama2,
+  llama3
 }
