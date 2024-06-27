@@ -64,7 +64,19 @@
           }
         ]
       },
-
+      {
+        "name": "Meta Llama3",
+        "features": [
+          {
+            "title": "Text",
+            "supported": true
+          },
+          {
+            "title": "Image",
+            "supported": false
+          }
+        ]
+      },
       {
         "name": "Amazon Titan",
         "features": [
