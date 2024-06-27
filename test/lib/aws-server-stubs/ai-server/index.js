@@ -114,14 +114,11 @@ function handler(req, res) {
       }
 
       case 'meta.llama2-13b-chat-v1':
-      case 'meta.llama2-70b-chat-v1': {
-        response = responses.llama2.get(payload.prompt)
-        break
-      }
-
+      case 'meta.llama2-70b-chat-v1':
+      // llama3 responses are indentical, just return llama2 data
       case 'meta.llama3-8b-instruct-v1:0':
       case 'meta.llama3-70b-instruct-v1:0': {
-        response = responses.llama3.get(payload.prompt)
+        response = responses.llama.get(payload.prompt)
         break
       }
 

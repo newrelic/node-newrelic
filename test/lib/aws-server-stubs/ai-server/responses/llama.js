@@ -8,7 +8,7 @@
 const responses = new Map()
 const { contentType, reqId } = require('./constants')
 
-responses.set('text llama3 ultimate question', {
+responses.set('text llama ultimate question', {
   headers: {
     'content-type': contentType,
     'x-amzn-requestid': reqId,
@@ -25,7 +25,7 @@ responses.set('text llama3 ultimate question', {
   }
 })
 
-responses.set('text llama3 ultimate question streamed', {
+responses.set('text llama ultimate question streamed', {
   headers: {
     'content-type': 'application/vnd.amazon.eventstream',
     'x-amzn-requestid': reqId,
@@ -68,7 +68,7 @@ responses.set('text llama3 ultimate question streamed', {
   ]
 })
 
-responses.set('text llama3 ultimate question error', {
+responses.set('text llama ultimate question error', {
   headers: {
     'content-type': contentType,
     'x-amzn-requestid': reqId,
