@@ -133,6 +133,11 @@
       "name": "Svetlana Brennan",
       "email": "sbrennan@newrelic.com",
       "web": "https://newrelic.com"
+    },
+    {
+      "name": "Amy Chisholm",
+      "email": "achisholm@newrelic.com",
+      "web": "https://newrelic.com"
     }
   ],
   "description": "New Relic agent",
