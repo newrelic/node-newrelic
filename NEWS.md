@@ -2,15 +2,12 @@
 
 #### Features
 
+* Added support for Node 22([#2305](https://github.com/newrelic/node-newrelic/pull/2305)) ([0bf8908](https://github.com/newrelic/node-newrelic/commit/0bf89081a59fe598b22613257f519c171149c454))
 * Added AIM support for Meta Llama3 models in AWS Bedrock ([#2306](https://github.com/newrelic/node-newrelic/pull/2306)) ([ff2e509](https://github.com/newrelic/node-newrelic/commit/ff2e509913c2169c274387db461edffeee896834))
-* Updated minimum supported version to Node 22 ([#2305](https://github.com/newrelic/node-newrelic/pull/2305)) ([0bf8908](https://github.com/newrelic/node-newrelic/commit/0bf89081a59fe598b22613257f519c171149c454))
 
 #### Documentation
 
 * Updated compatibility report ([#2309](https://github.com/newrelic/node-newrelic/pull/2309)) ([7bf77c6](https://github.com/newrelic/node-newrelic/commit/7bf77c6b41d8313c6837293f42901c6e13954af4))
-    * Co-authored-by: amychisholm03 <96320629+amychisholm03@users.noreply.github.com>
-* Updated compatibility report ([#2298](https://github.com/newrelic/node-newrelic/pull/2298)) ([cc3df11](https://github.com/newrelic/node-newrelic/commit/cc3df11353c2bd05434cc57ad0d1a261754a3b5f))
-    * Co-authored-by: mrickard <11327+mrickard@users.noreply.github.com>
 
 #### Miscellaneous chores
 

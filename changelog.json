@@ -7,8 +7,8 @@
         "security": [],
         "bugfixes": [],
         "features": [
-          "Added AIM support for Meta Llama3 models in AWS Bedrock",
-          "Updated minimum supported version to Node 22"
+          "Added supoort for Node 22",
+          "Added AIM support for Meta Llama3 models in AWS Bedrock"
         ]
       }
     },
