@@ -74,7 +74,7 @@ class Benchmark {
       const testFn = test.fn
 
       if (test.async) {
-        return testFn(agent, () => after(test, next, executeCb, prevCpu))
+        return await testFn(agent, () => after(test, next, executeCb, prevCpu))
       }
       await testFn(agent)
       return after(test, next, executeCb, prevCpu)
@@ -108,7 +108,7 @@ class Benchmark {
       if (idx >= suite.tests.length) {
         return true
       }
-      return initiator(initiator, suite.tests[idx], idx)
+      return await initiator(initiator, suite.tests[idx], idx)
     }
 
     const afterTestRuns = (initiator, test, samples, idx) => {
