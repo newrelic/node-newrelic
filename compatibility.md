@@ -26,7 +26,7 @@ version.
 | `@langchain/core` | 0.1.17 | 0.2.10 | 11.13.0 |
 | `@nestjs/cli` | 8.0.0 | 10.3.2 | 10.1.0 |
 | `@prisma/client` | 5.0.0 | 5.16.1 | 11.0.0 |
-| `@smithy/smithy-client` | 3.0.0 | 3.1.4 | 11.0.0 |
+| `@smithy/smithy-client` | 3.0.0 | 3.1.5 | 11.0.0 |
 | `amqplib` | 0.5.0 | 0.10.4 | 2.0.0 |
 | `apollo-server` | 2.14.0 | 3.13.0 | `@newrelic/apollo-server-plugin@1.0.0` |
 | `apollo-server-express` | 2.14.0 | 3.13.0 | `@newrelic/apollo-server-plugin@1.0.0` |
@@ -34,7 +34,7 @@ version.
 | `apollo-server-hapi` | 3.0.0 | 3.13.0 | `@newrelic/apollo-server-plugin@1.0.0` |
 | `apollo-server-koa` | 2.14.0 | 3.13.0 | `@newrelic/apollo-server-plugin@1.0.0` |
 | `apollo-server-lambda` | 2.14.0 | 3.13.0 | `@newrelic/apollo-server-plugin@1.0.0` |
-| `aws-sdk` | 2.2.48 | 2.1649.0 | 6.2.0 |
+| `aws-sdk` | 2.2.48 | 2.1650.0 | 6.2.0 |
 | `bluebird` | 2.0.0 | 3.7.2 | 1.27.0 |
 | `bunyan` | 1.8.12 | 1.8.15 | 9.3.0 |
 | `cassandra-driver` | 3.4.0 | 4.7.2 | 1.7.1 |
@@ -49,7 +49,7 @@ version.
 | `koa-route` | 2.0.0 | 4.0.1 | 3.2.0 |
 | `koa-router` | 2.0.0 | 12.0.1 | 3.2.0 |
 | `memcached` | 2.2.0 | 2.2.2 | 1.26.2 |
-| `mongodb` | 2.1.0 | 6.7.0 | 1.32.0 |
+| `mongodb` | 2.1.0 | 6.8.0 | 1.32.0 |
 | `mysql` | 2.2.0 | 2.18.1 | 1.32.0 |
 | `mysql2` | 2.0.0 | 3.10.1 | 1.32.0 |
 | `next` | 13.0.0 | 14.2.4 | `@newrelic/next@0.7.0` |
