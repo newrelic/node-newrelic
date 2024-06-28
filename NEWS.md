@@ -22,7 +22,7 @@
 
 * Added Node 22 to CI ([#2164](https://github.com/newrelic/node-newrelic/pull/2164)) ([4b12d9e](https://github.com/newrelic/node-newrelic/commit/4b12d9e7d89d8367fdb895b24e2818ff85d67592))
 * Added Node 22 to smoke tests and nightly versioned test runs ([#2316](https://github.com/newrelic/node-newrelic/pull/2316)) ([af00666](https://github.com/newrelic/node-newrelic/commit/af00666d3b1a3458c40bd6f0e3dca6ac2e477335))
-* Move the docs PR job to before api docs publish ([#2300](https://github.com/newrelic/node-newrelic/pull/2300)) ([2e7252e](https://github.com/newrelic/node-newrelic/commit/2e7252ef3281046c3c85722ccede582e5aefa1a9))
+* Moved the docs PR job to before api docs publish ([#2300](https://github.com/newrelic/node-newrelic/pull/2300)) ([2e7252e](https://github.com/newrelic/node-newrelic/commit/2e7252ef3281046c3c85722ccede582e5aefa1a9))
 
 ### v11.21.0 (2024-06-25)
 
