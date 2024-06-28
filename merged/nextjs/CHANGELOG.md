@@ -1,3 +1,32 @@
+### v0.10.0 (2024-06-28)
+
+#### Features
+
+* Added support for Node 22
+
+#### Documentation
+
+* Added FAQs to assist with common issues with next.js instrumentation ([#190](https://github.com/newrelic/newrelic-node-nextjs/pull/190)) ([9a44d17](https://github.com/newrelic/newrelic-node-nextjs/commit/9a44d171cd97713e86d0af5c61f63fe68a1d509e))
+* updated FAQs and README with app router examples ([#192](https://github.com/newrelic/newrelic-node-nextjs/pull/192)) ([ea20b76](https://github.com/newrelic/newrelic-node-nextjs/commit/ea20b76a13c84f4f3c48e9544e18e568b8e41c33))
+* Updated targets to include minimum agent version for compatibility repo ([#189](https://github.com/newrelic/newrelic-node-nextjs/pull/189)) ([92bc602](https://github.com/newrelic/newrelic-node-nextjs/commit/92bc602453b738fc2eee96547fe0d2ca870dbc08))
+* Added missing quotation mark in faq docs ([#202](https://github.com/newrelic/newrelic-node-nextjs/pull/202)) ([db92086](https://github.com/newrelic/newrelic-node-nextjs/commit/db92086e51b2f62dfbe3433b93b32cad8283def0))
+
+#### Miscellaneous chores
+
+* Added Node 22 to CI ([#193](https://github.com/newrelic/newrelic-node-nextjs/pull/193)) ([4a449c8](https://github.com/newrelic/newrelic-node-nextjs/commit/4a449c8c9f706b82ba3cfaced81f6918490455fc))
+* Updated minimum versions of dev dependencies([#203](https://github.com/newrelic/newrelic-node-nextjs/pull/203)) ([e3b832c](https://github.com/newrelic/newrelic-node-nextjs/commit/e3b832cb809933ce412030dbf4dcc7b0c84dd3dc)) ([#204](https://github.com/newrelic/newrelic-node-nextjs/pull/204)) ([a81fd04](https://github.com/newrelic/newrelic-node-nextjs/commit/a81fd0485f26c22b36ebe3bec08b695e1963d1a3))([#206](https://github.com/newrelic/newrelic-node-nextjs/pull/206)) ([31098b1](https://github.com/newrelic/newrelic-node-nextjs/commit/31098b1022bdb34c48ac15a064fb54745948eca3))
+* Enabled quiet mode for CI runs ([#188](https://github.com/newrelic/newrelic-node-nextjs/pull/188)) ([b0b1c6a](https://github.com/newrelic/newrelic-node-nextjs/commit/b0b1c6a282563146a74ea2fffaa611713c7790ff))
+* Made pre-commit hook require dependency changes ([#191](https://github.com/newrelic/newrelic-node-nextjs/pull/191)) ([d4e2a72](https://github.com/newrelic/newrelic-node-nextjs/commit/d4e2a727f22b910bb3938d41bbd2a911a446da05))
+
+#### Tests
+
+* Added targets for compatibility reporting ([#187](https://github.com/newrelic/newrelic-node-nextjs/pull/187)) ([92675fa](https://github.com/newrelic/newrelic-node-nextjs/commit/92675fa99c6bb7d869ef05448763d1615fcc20e8))
+
+#### Continuous integration
+
+* Removed `use_new_release` input from prepare release workflow ([#186](https://github.com/newrelic/newrelic-node-nextjs/pull/186)) ([640500e](https://github.com/newrelic/newrelic-node-nextjs/commit/640500ee0873e551822a040e3347ccd81819f1b3))
+* removed changelog.json file ([#185](https://github.com/newrelic/newrelic-node-nextjs/pull/185)) ([e5fa205](https://github.com/newrelic/newrelic-node-nextjs/commit/e5fa20583e1b6cfb4f216d01db918285a107f5b9))
+
 ### v0.9.0 (2024-03-28)
 
 #### Features
