@@ -2,14 +2,15 @@
 
 ## Machine Setup (Mac)
 
-- [ ] Docker for Mac
-- [ ] XCode or command-line tools for Xcode or however Mac OS does this in the future (installs git too)
-- [ ] Git setup - prob SSL key/cert, username, etc.
-- [ ] NVM
-- [ ] Node through NVM
-- [ ] Text Editor / IDE
+- [ ] [Docker for Mac](https://docs.docker.com/desktop/install/mac-install/)
+- [ ] [Homebrew](https://brew.sh/) (`/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)`)
+- [ ] XCode (`xcode-select --install`) or command-line tools for XCode or however Mac OS does this in the future
+- [ ] Git setup: `brew install git`, then SSL key/certificate, username, etc. ([SSH help](https://docs.github.com/en/enterprise/2.15/user/articles/adding-a-new-ssh-key-to-your-github-account))
+- [ ] NVM (`curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash`, check [here](https://github.com/nvm-sh/nvm) for latest version)
+- [ ] [Node though NVM](https://nodejs.org/en/download/package-manager) (`nvm install 20`, or latest version instead of 20)
 - [ ] `brew install postgresql` (c library required for pg-native tests)
-- [ ] Swap OpenSSL (if necessary)
+- [ ] Text Editor / IDE
+- [ ] Swap OpenSSL (if necessary, see below)
 
 ### Swapping OpenSSL for LibreSSL
 
@@ -17,8 +18,8 @@ LibreSSL doesn’t seem to work w/ our make/tests that rely on OpenSSL functiona
 
 To fix:
 
-1. Install openssl via homebrew (brew install)
-2. Execute brew info openssl
+1. Install openssl via homebrew (`brew install openssl`)
+2. Execute `brew info openssl`
 3. Copy/Paste instructions for "If you need to have this software first in your PATH run:..." section.
 
 ## How We Work
@@ -51,12 +52,12 @@ a set of "versioned" integration style tests. See the [package.json](../package.
 for the full set of scripts, but a short list of common scenarios is:
 
 + `npm run versioned:internal` - to run all versioned tests across all supported
-versions of each instrumented module.
+  versions of each instrumented module.
 + `npm run versioned:internal:major` - to run all versioned tests for each
-current major release of each instrumented module.
+  current major release of each instrumented module.
 + `npm run versioned:internal:major foo` - to run a specific versioned test
-for the latest major version of the instrumented module named "foo" (as an
-example).
+  for the latest major version of the instrumented module named "foo" (as an
+  example).
 
 Note: when running the versioned test suite on a macOS system, the application
 firewall is likely to issue multiple requests to authorize the `node` binary
