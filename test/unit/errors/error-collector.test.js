@@ -2372,26 +2372,25 @@ test('When using the async listener', (t) => {
 })
 
 tap.test('_processErrors', (t) => {
-  let transaction = null
-  let errorCollector = null
-
-  t.beforeEach(() => {
+  t.beforeEach((t) => {
     t.context.agent = helper.loadMockedAgent({
       attributes: {
         enabled: true
       }
     })
 
-    transaction = new Transaction(t.context.agent)
+    const transaction = new Transaction(t.context.agent)
     transaction.url = '/'
-    errorCollector = t.context.agent.errors
+    t.context.transaction = transaction
+    t.context.errorCollector = t.context.agent.errors
   })
 
-  t.afterEach(() => {
+  t.afterEach((t) => {
     helper.unloadAgent(t.context.agent)
   })
 
   t.test('invalid errorType should return no iterableProperty', (t) => {
+    const { errorCollector, transaction } = t.context
     const errorType = 'invalid'
     const result = errorCollector._getIterableProperty(transaction, errorType)
 
@@ -2400,6 +2399,7 @@ tap.test('_processErrors', (t) => {
   })
 
   t.test('if errorType is transaction, should return no iterableProperty', (t) => {
+    const { errorCollector, transaction } = t.context
     const errorType = 'transaction'
     const result = errorCollector._getIterableProperty(transaction, errorType)
 
@@ -2408,6 +2408,7 @@ tap.test('_processErrors', (t) => {
   })
 
   t.test('if type is user, return an array of objects', (t) => {
+    const { errorCollector, transaction } = t.context
     const errorType = 'user'
     const result = errorCollector._getIterableProperty(transaction, errorType)
 
@@ -2416,6 +2417,7 @@ tap.test('_processErrors', (t) => {
   })
 
   t.test('if type is transactionException, return an array of objects', (t) => {
+    const { errorCollector, transaction } = t.context
     const errorType = 'transactionException'
     const result = errorCollector._getIterableProperty(transaction, errorType)
 
@@ -2426,6 +2428,7 @@ tap.test('_processErrors', (t) => {
   t.test(
     'if iterableProperty is null and errorType is not transaction, do not modify collectedErrors or expectedErrors',
     (t) => {
+      const { errorCollector, transaction } = t.context
       const errorType = 'error'
       const collectedErrors = 0
       const expectedErrors = 0
