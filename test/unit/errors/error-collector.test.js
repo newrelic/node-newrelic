@@ -2372,27 +2372,23 @@ test('When using the async listener', (t) => {
 })
 
 tap.test('_processErrors', (t) => {
-  t.autoend()
-  let agent = null
   let transaction = null
   let errorCollector = null
 
   t.beforeEach(() => {
-    if (agent) {
-      helper.unloadAgent(agent)
-    }
-    agent = helper.loadMockedAgent({
+    t.context.agent = helper.loadMockedAgent({
       attributes: {
         enabled: true
       }
     })
-    transaction = new Transaction(agent)
+
+    transaction = new Transaction(t.context.agent)
     transaction.url = '/'
-    errorCollector = agent.errors
+    errorCollector = t.context.agent.errors
   })
 
   t.afterEach(() => {
-    helper.unloadAgent(agent)
+    helper.unloadAgent(t.context.agent)
   })
 
   t.test('invalid errorType should return no iterableProperty', (t) => {
