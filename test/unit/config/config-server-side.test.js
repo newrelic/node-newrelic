@@ -161,6 +161,15 @@ tap.test('when receiving server-side configuration', (t) => {
     t.end()
   })
 
+  t.test('should disable ai monitoring', (t) => {
+    // Default is `false`, but let's verify it anyway.
+    t.equal(config.ai_monitoring.enabled, false)
+    config.onConnect({ collect_ai: false })
+    t.equal(config.ai_monitoring.enabled, false)
+
+    t.end()
+  })
+
   t.test('should configure cross application tracing', (t) => {
     config.cross_application_tracer.enabled = true
 
