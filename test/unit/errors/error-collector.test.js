@@ -2370,3 +2370,80 @@ test('When using the async listener', (t) => {
     })
   }
 })
+
+tap.test('_processErrors', (t) => {
+  t.autoend()
+  let agent = null
+  let transaction = null
+  let errorCollector = null
+
+  t.beforeEach(() => {
+    if (agent) {
+      helper.unloadAgent(agent)
+    }
+    agent = helper.loadMockedAgent({
+      attributes: {
+        enabled: true
+      }
+    })
+    transaction = new Transaction(agent)
+    transaction.url = '/'
+    errorCollector = agent.errors
+  })
+
+  t.afterEach(() => {
+    helper.unloadAgent(agent)
+  })
+
+  t.test('invalid errorType should return no iterableProperty', (t) => {
+    const errorType = 'invalid'
+    const result = errorCollector._getIterableProperty(transaction, errorType)
+
+    t.equal(result, null)
+    t.end()
+  })
+
+  t.test('if errorType is transaction, should return no iterableProperty', (t) => {
+    const errorType = 'transaction'
+    const result = errorCollector._getIterableProperty(transaction, errorType)
+
+    t.equal(result, null)
+    t.end()
+  })
+
+  t.test('if type is user, return an array of objects', (t) => {
+    const errorType = 'user'
+    const result = errorCollector._getIterableProperty(transaction, errorType)
+
+    t.same(result, [])
+    t.end()
+  })
+
+  t.test('if type is transactionException, return an array of objects', (t) => {
+    const errorType = 'transactionException'
+    const result = errorCollector._getIterableProperty(transaction, errorType)
+
+    t.same(result, [])
+    t.end()
+  })
+
+  t.test(
+    'if iterableProperty is null and errorType is not transaction, do not modify collectedErrors or expectedErrors',
+    (t) => {
+      const errorType = 'error'
+      const collectedErrors = 0
+      const expectedErrors = 0
+      const result = errorCollector._processErrors(
+        transaction,
+        collectedErrors,
+        expectedErrors,
+        errorType
+      )
+
+      t.same(result, [collectedErrors, expectedErrors])
+      t.end()
+    }
+  )
+
+  t.end()
+})
