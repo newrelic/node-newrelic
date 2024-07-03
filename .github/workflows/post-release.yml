@@ -2,45 +2,66 @@ name: Agent Post Release
 
 on:
   workflow_dispatch:
+    inputs:
+      repo_target:
+        description: Generate the docs for the local repo, the docs repo, or both.
+        required: true
+        type: choice
+        default: both
+        options:
+          - local
+          - docs
+          - both
+
   workflow_run:
     workflows: ["Create Release"]
     types:
       - completed
 
 jobs:
-  update-docs:
-    # Check if this was a manual invocation*workflow_dispatch) or triggered(workflow_run) and successful
-    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run && github.event.workflow_run.conclusion == 'success' }}
+  local:
     runs-on: ubuntu-latest
-
-    strategy:
-      matrix:
-        node-version: [lts/*]
-
+    if:
+      (github.event.workflow_run && github.event.workflow_run.conclusion == 'success') ||
+      (github.event_name == 'workflow_dispatch' &&
+        (inputs.repo_target == 'local' || inputs.repo_target == 'both'))
     steps:
-    - uses: actions/checkout@v4
-      with:
-        # The script `publish-docs` below needs to perform a merge, so
-        # it needs the full history to perform this merge.
-        fetch-depth: 0
-    - name: Use Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v4
-      with:
-        node-version: ${{ matrix.node-version }}
-    - name: Install Dependencies
-      run: npm install
-    - name: Setup GitHub Credentials
-      run: |
-        git config user.name $GITHUB_ACTOR
-        git config user.email gh-actions-${GITHUB_ACTOR}@github.com
-    - name: Get Created Tag
-      id: get_tag
-      run: echo "latest_tag=$(cat package.json | jq .version)" >> $GITHUB_OUTPUT
-    - name: Create Docs Website PR
-      run: node ./bin/create-docs-pr.js --tag v${{ steps.get_tag.outputs.latest_tag }}
-      env:
-        GITHUB_TOKEN: ${{ secrets.NODE_AGENT_GH_TOKEN }}
-        GITHUB_USER: ${{ vars.NODE_AGENT_CI_USER_NAME }}
-        GITHUB_EMAIL: ${{ vars.NODE_AGENT_CI_USER_EMAIL }}
-    - name: Publish API Docs
-      run: npm run publish-docs
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 'lts/*'
+      - run: npm install
+      - run: |
+          git config user.name ${GITHUB_ACTOR}
+          git config user.email gh-actions-${GITHUB_ACTOR}@github.com
+      - id: get_tag
+        run: echo "latest_tag=$(cat package.json | jq .version)" >> $GITHUB_OUTPUT
+      - run: npm run publish-docs
+
+  docs:
+    runs-on: ubuntu-latest
+    if:
+      (github.event.workflow_run && github.event.workflow_run.conclusion == 'success') ||
+      (github.event_name == 'workflow_dispatch' &&
+      (inputs.repo_target == 'local' || inputs.repo_target == 'both'))
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 'lts/*'
+      - run: npm install
+      - run: |
+          git config user.name ${GITHUB_ACTOR}
+          git config user.email gh-actions-${GITHUB_ACTOR}@github.com
+      - id: get_tag
+        run: echo "latest_tag=$(cat package.json | jq .version)" >> $GITHUB_OUTPUT
+      - name: Create Docs Website PR
+        run: node ./bin/create-docs-pr.js --tag v${{ steps.get_tag.outputs.latest_tag }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.NODE_AGENT_GH_TOKEN }}
+          GITHUB_USER: ${{ vars.NODE_AGENT_CI_USER_NAME }}
+          GITHUB_EMAIL: ${{ vars.NODE_AGENT_CI_USER_EMAIL }}
