@@ -272,3 +272,17 @@ tap.test('should capture request headers', (t) => {
     t.end()
   }
 })
+
+tap.test('should not crash when headers are non-existent', (t) => {
+  const { lambda, event, functionContext, responseBody } = t.context
+  delete event.headers
+
+  const wrappedHandler = lambda.patchLambdaHandler((event, context, callback) => {
+    callback(null, responseBody)
+  })
+
+  t.doesNotThrow(() => {
+    wrappedHandler(event, functionContext, () => {})
+  })
+  t.end()
+})

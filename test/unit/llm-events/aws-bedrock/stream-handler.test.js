@@ -45,7 +45,7 @@ tap.beforeEach((t) => {
       isClaude3() {
         return false
       },
-      isLlama2() {
+      isLlama() {
         return false
       },
       isTitan() {
@@ -242,15 +242,15 @@ tap.test('handles cohere embedding streams', async (t) => {
   t.equal(br.statusCode, 200)
 })
 
-tap.test('handles llama2 streams', async (t) => {
-  t.context.passThroughParams.bedrockCommand.isLlama2 = () => true
+tap.test('handles llama streams', async (t) => {
+  t.context.passThroughParams.bedrockCommand.isLlama = () => true
   t.context.chunks = [
     { generation: '1', stop_reason: null },
     { generation: '2', stop_reason: 'done', ...t.context.metrics }
   ]
   const handler = new StreamHandler(t.context)
 
-  t.equal(handler.generator.name, 'handleLlama2')
+  t.equal(handler.generator.name, 'handleLlama')
   for await (const event of handler.generator()) {
     t.type(event.chunk.bytes, Uint8Array)
   }
@@ -267,7 +267,7 @@ tap.test('handles llama2 streams', async (t) => {
   })
 
   const bc = new BedrockCommand({
-    modelId: 'meta.llama2',
+    modelId: 'meta.llama',
     body: JSON.stringify({
       prompt: 'prompt',
       max_gen_length: 5

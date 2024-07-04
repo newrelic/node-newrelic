@@ -52,6 +52,13 @@ const llama2 = {
   }
 }
 
+const llama3 = {
+  modelId: 'meta.llama3-8b-instruct-v1:0',
+  body: {
+    prompt: 'who are you'
+  }
+}
+
 const titan = {
   modelId: 'amazon.titan-text-lite-v1',
   body: {
@@ -85,7 +92,7 @@ tap.test('non-conforming command is handled gracefully', async (t) => {
     'Claude3',
     'Cohere',
     'CohereEmbed',
-    'Llama2',
+    'Llama',
     'Titan',
     'TitanEmbed'
   ]) {
@@ -212,7 +219,7 @@ tap.test('cohere embed minimal command works', async (t) => {
 tap.test('llama2 minimal command works', async (t) => {
   t.context.updatePayload(structuredClone(llama2))
   const cmd = new BedrockCommand(t.context.input)
-  t.equal(cmd.isLlama2(), true)
+  t.equal(cmd.isLlama(), true)
   t.equal(cmd.maxTokens, undefined)
   t.equal(cmd.modelId, llama2.modelId)
   t.equal(cmd.modelType, 'completion')
@@ -226,7 +233,32 @@ tap.test('llama2 complete command works', async (t) => {
   payload.body.temperature = 0.5
   t.context.updatePayload(payload)
   const cmd = new BedrockCommand(t.context.input)
-  t.equal(cmd.isLlama2(), true)
+  t.equal(cmd.isLlama(), true)
+  t.equal(cmd.maxTokens, 25)
+  t.equal(cmd.modelId, payload.modelId)
+  t.equal(cmd.modelType, 'completion')
+  t.equal(cmd.prompt, payload.body.prompt)
+  t.equal(cmd.temperature, payload.body.temperature)
+})
+
+tap.test('llama3 minimal command works', async (t) => {
+  t.context.updatePayload(structuredClone(llama3))
+  const cmd = new BedrockCommand(t.context.input)
+  t.equal(cmd.isLlama(), true)
+  t.equal(cmd.maxTokens, undefined)
+  t.equal(cmd.modelId, llama3.modelId)
+  t.equal(cmd.modelType, 'completion')
+  t.equal(cmd.prompt, llama3.body.prompt)
+  t.equal(cmd.temperature, undefined)
+})
+
+tap.test('llama3 complete command works', async (t) => {
+  const payload = structuredClone(llama3)
+  payload.body.max_gen_length = 25
+  payload.body.temperature = 0.5
+  t.context.updatePayload(payload)
+  const cmd = new BedrockCommand(t.context.input)
+  t.equal(cmd.isLlama(), true)
   t.equal(cmd.maxTokens, 25)
   t.equal(cmd.modelId, payload.modelId)
   t.equal(cmd.modelType, 'completion')

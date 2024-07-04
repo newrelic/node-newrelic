@@ -38,8 +38,8 @@ const cohere = {
   ]
 }
 
-const llama2 = {
-  generation: 'llama2-response',
+const llama = {
+  generation: 'llama-response',
   stop_reason: 'done'
 }
 
@@ -79,7 +79,7 @@ tap.beforeEach((t) => {
     isCohere() {
       return false
     },
-    isLlama2() {
+    isLlama() {
       return false
     },
     isTitan() {
@@ -172,8 +172,8 @@ tap.test('cohere complete responses work', async (t) => {
   t.equal(res.statusCode, 200)
 })
 
-tap.test('llama2 malformed responses work', async (t) => {
-  t.context.bedrockCommand.isLlama2 = () => true
+tap.test('llama malformed responses work', async (t) => {
+  t.context.bedrockCommand.isLlama = () => true
   const res = new BedrockResponse(t.context)
   t.same(res.completions, [])
   t.equal(res.finishReason, undefined)
@@ -183,11 +183,11 @@ tap.test('llama2 malformed responses work', async (t) => {
   t.equal(res.statusCode, 200)
 })
 
-tap.test('llama2 complete responses work', async (t) => {
-  t.context.bedrockCommand.isLlama2 = () => true
-  t.context.updatePayload(structuredClone(llama2))
+tap.test('llama complete responses work', async (t) => {
+  t.context.bedrockCommand.isLlama = () => true
+  t.context.updatePayload(structuredClone(llama))
   const res = new BedrockResponse(t.context)
-  t.same(res.completions, ['llama2-response'])
+  t.same(res.completions, ['llama-response'])
   t.equal(res.finishReason, 'done')
   t.same(res.headers, t.context.response.response.headers)
   t.equal(res.id, undefined)

@@ -1,6 +1,6 @@
 {
   "name": "newrelic",
-  "version": "11.20.0",
+  "version": "11.22.0",
   "author": "New Relic Node.js agent team <nodejs@newrelic.com>",
   "license": "Apache-2.0",
   "contributors": [
@@ -133,6 +133,11 @@
       "name": "Svetlana Brennan",
       "email": "sbrennan@newrelic.com",
       "web": "https://newrelic.com"
+    },
+    {
+      "name": "Amy Chisholm",
+      "email": "achisholm@newrelic.com",
+      "web": "https://newrelic.com"
     }
   ],
   "description": "New Relic agent",
@@ -208,7 +213,7 @@
     "winston-transport": "^4.5.0"
   },
   "optionalDependencies": {
-    "@contrast/fn-inspect": "^3.3.0",
+    "@contrast/fn-inspect": "^4.2.0",
     "@newrelic/native-metrics": "^10.0.0",
     "@prisma/prisma-fmt-wasm": "^4.17.0-16.27eb2449f178cd9fe1a4b892d732cc4795f75085"
   },

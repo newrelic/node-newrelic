@@ -8,13 +8,13 @@ PACKAGE_VERSION=$(node -e 'console.log(require("./package").version)')
 
 git fetch origin gh-pages
 git checkout gh-pages
-git merge -
+git checkout main
+git branch -fd gh-pages
+git checkout -b gh-pages
 npm run public-docs
-sleep 1
-git rm -r docs
 sleep 1
 mv out docs
 sleep 1
 git add docs
 git commit -m "docs: update for ${PACKAGE_VERSION}"
-git push origin gh-pages
+git push --force origin gh-pages
