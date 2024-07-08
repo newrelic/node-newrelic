@@ -73,9 +73,6 @@ class Benchmark {
       const prevCpu = process.cpuUsage()
       const testFn = test.fn
 
-      if (test.async) {
-        return await testFn(agent, () => after(test, next, executeCb, prevCpu))
-      }
       await testFn(agent)
       return after(test, next, executeCb, prevCpu)
     }
