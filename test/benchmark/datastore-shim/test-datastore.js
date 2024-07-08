@@ -7,15 +7,24 @@
 
 class TestDatastore {
   testOp(cb) {
-    setImmediate(cb)
+    if (typeof cb === 'function') {
+      return setImmediate(cb)
+    }
+    return cb || 'testOp'
   }
 
   testQuery(query, cb) {
-    setImmediate(cb)
+    if (typeof cb === 'function') {
+      return setImmediate(cb)
+    }
+    return cb || 'testQuery'
   }
 
   testBatch(query, cb) {
-    setImmediate(cb)
+    if (typeof cb === 'function') {
+      return setImmediate(cb)
+    }
+    return cb || 'testBatch'
   }
 }
 

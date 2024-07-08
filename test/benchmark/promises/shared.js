@@ -27,7 +27,12 @@ const tests = [
         promises.push(prom.then(function first() {}))
         promises.push(prom.then(function second() {}))
       }
-      Promise.all(promises).then(cb)
+      Promise.all(promises).then(() => {
+        if (typeof cb === 'function') {
+          return cb()
+        }
+        return cb || true
+      })
     }
   },
 
@@ -37,7 +42,12 @@ const tests = [
       for (let i = 0; i < NUM_PROMISES; ++i) {
         prom = prom.then(function () {})
       }
-      prom.then(cb)
+      prom.then(() => {
+        if (typeof cb === 'function') {
+          return cb()
+        }
+        return cb || true
+      })
     }
   },
 
@@ -47,7 +57,12 @@ const tests = [
       for (let i = 0; i < NUM_PROMISES / 2; ++i) {
         prom = prom.then(function () {}).catch(function () {})
       }
-      prom.then(cb)
+      prom.then(() => {
+        if (typeof cb === 'function') {
+          return cb()
+        }
+        return cb || true
+      })
     }
   },
 
@@ -57,7 +72,14 @@ const tests = [
       for (let i = 0; i < NUM_PROMISES - 1; ++i) {
         prom = prom.then(function () {})
       }
-      prom.catch(function () {}).then(cb)
+      prom
+        .catch(function () {})
+        .then(() => {
+          if (typeof cb === 'function') {
+            return cb()
+          }
+          return cb || true
+        })
     }
   },
 
@@ -69,7 +91,10 @@ const tests = [
           res()
         })
       }
-      cb()
+      if (typeof cb === 'function') {
+        return cb()
+      }
+      return cb || true
     }
   },
 
@@ -87,7 +112,12 @@ const tests = [
           })
         )
       }
-      Promise.all(promises).then(cb)
+      Promise.all(promises).then(() => {
+        if (typeof cb === 'function') {
+          return cb()
+        }
+        return cb || true
+      })
     }
   },
 
@@ -101,7 +131,12 @@ const tests = [
           })
         })
       }
-      prom.then(cb)
+      prom.then(() => {
+        if (typeof cb === 'function') {
+          return cb()
+        }
+        return cb || true
+      })
     }
   },
 
@@ -110,7 +145,10 @@ const tests = [
       new Promise(function () {
         throw new Error('Whoops!')
       }).catch(() => {})
-      cb()
+      if (typeof cb === 'function') {
+        return cb()
+      }
+      return cb || true
     }
   }
 ]
