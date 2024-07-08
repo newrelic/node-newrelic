@@ -45,7 +45,7 @@ jobs:
     if:
       (github.event.workflow_run && github.event.workflow_run.conclusion == 'success') ||
       (github.event_name == 'workflow_dispatch' &&
-      (inputs.repo_target == 'local' || inputs.repo_target == 'both'))
+      (inputs.repo_target == 'docs' || inputs.repo_target == 'both'))
     steps:
       - uses: actions/checkout@v4
         with:
