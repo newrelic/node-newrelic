@@ -162,8 +162,8 @@ tap.test('when receiving server-side configuration', (t) => {
   })
 
   t.test('should disable ai monitoring', (t) => {
-    // Default is `false`, but let's verify it anyway.
-    t.equal(config.ai_monitoring.enabled, false)
+    config.ai_monitoring.enabled = true
+    t.equal(config.ai_monitoring.enabled, true)
     config.onConnect({ collect_ai: false })
     t.equal(config.ai_monitoring.enabled, false)
 
