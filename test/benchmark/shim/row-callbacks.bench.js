@@ -9,6 +9,7 @@ const benchmark = require('../../lib/benchmark')
 const EventEmitter = require('events').EventEmitter
 const helper = require('../../lib/agent_helper')
 const Shim = require('../../../lib/shim/shim')
+const { RecorderSpec } = require('../../../lib/shim/specs')
 
 const CYCLES = 1000
 
@@ -28,7 +29,7 @@ const test = {
   }
 }
 shim.record(test, 'streamWrapped', function () {
-  return { name: 'streamer', stream: 'foo' }
+  return new RecorderSpec({ name: 'streamer', stream: 'foo' })
 })
 
 suite.add({
