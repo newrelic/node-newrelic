@@ -7,6 +7,7 @@
 
 const benchmark = require('../../lib/benchmark')
 const DatastoreShim = require('../../../lib/shim/datastore-shim')
+const { OperationSpec, QuerySpec } = require('../../../lib/shim/specs')
 
 const TestDatastore = require('./test-datastore')
 
@@ -27,20 +28,32 @@ function getTestDatastore(agent, instrumented) {
       }
     })
 
-    shim.recordOperation(testDatastore, 'testOp', {
-      name: 'testOp',
-      callback: shim.LAST
-    })
+    shim.recordOperation(
+      testDatastore,
+      'testOp',
+      new OperationSpec({
+        name: 'testOp',
+        callback: shim.LAST
+      })
+    )
 
-    shim.recordQuery(testDatastore, 'testQuery', {
-      name: 'testQuery',
-      callback: shim.LAST
-    })
+    shim.recordQuery(
+      testDatastore,
+      'testQuery',
+      new QuerySpec({
+        name: 'testQuery',
+        callback: shim.LAST
+      })
+    )
 
-    shim.recordBatchQuery(testDatastore, 'testBatch', {
-      name: 'testBatch',
-      callback: shim.LAST
-    })
+    shim.recordBatchQuery(
+      testDatastore,
+      'testBatch',
+      new QuerySpec({
+        name: 'testBatch',
+        callback: shim.LAST
+      })
+    )
   }
   return testDatastore
 }

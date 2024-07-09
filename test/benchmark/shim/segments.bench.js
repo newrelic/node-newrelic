@@ -5,6 +5,7 @@
 
 'use strict'
 
+const { RecorderSpec } = require('../../../lib/shim/specs')
 const helper = require('../../lib/agent_helper')
 const shared = require('./shared')
 
@@ -30,7 +31,7 @@ suite.add({
   fn: function () {
     const test = shared.getTest()
     shim.record(test, 'func', function (shim, fn, name, args) {
-      return { name: name, args: args }
+      return new RecorderSpec({ name: name, args: args })
     })
     return test
   }

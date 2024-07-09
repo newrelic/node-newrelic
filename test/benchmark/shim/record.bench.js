@@ -8,6 +8,7 @@
 const benchmark = require('../../lib/benchmark')
 const helper = require('../../lib/agent_helper')
 const Shim = require('../../../lib/shim/shim')
+const { RecorderSpec } = require('../../../lib/shim/specs')
 
 const agent = helper.loadMockedAgent()
 const contextManager = helper.getContextManager()
@@ -34,7 +35,7 @@ suite.add({
 })
 
 const wrapped = shim.record(getTest(), 'func', function () {
-  return { name: 'foo', callback: shim.LAST }
+  return new RecorderSpec({ name: 'foo', callback: shim.LAST })
 })
 
 suite.add({
