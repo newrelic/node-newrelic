@@ -46,7 +46,7 @@ test('langchain/core/runnables unit tests', (t) => {
     t.equal(shim.logger.debug.callCount, 1, 'should log 1 debug messages')
     t.equal(
       shim.logger.debug.args[0][0],
-      'langchain instrumentation is disabled.  To enable set `config.ai_monitoring.enabled` to true'
+      'langchain instrumentation is disabled. To enable set `config.ai_monitoring.enabled` to true'
     )
     const isWrapped = shim.isWrapped(MockRunnable.RunnableSequence.prototype.invoke)
     t.equal(isWrapped, false, 'should not wrap runnable invoke')
