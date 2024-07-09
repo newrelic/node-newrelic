@@ -13,6 +13,7 @@ const symbols = require('../../../lib/symbols')
 const agent = helper.loadMockedAgent()
 const contextManager = helper.getContextManager()
 const shim = new WebFrameworkShim(agent, 'test-module', './')
+const { MiddlewareSpec } = require('../../../lib/shim/specs')
 const suite = benchmark.createBenchmark({ name: 'recordMiddleware' })
 
 const transaction = helper.runInTransaction(agent, function (tx) {
@@ -93,18 +94,18 @@ function getReqd() {
 }
 
 function implicitSpec() {
-  return {}
+  return new MiddlewareSpec({})
 }
 
 function partialSpec() {
-  return {
+  return new MiddlewareSpec({
     next: shim.LAST,
     req: shim.FIRST
-  }
+  })
 }
 
 function explicitSpec() {
-  return {
+  return new MiddlewareSpec({
     req: shim.FIRST,
     res: shim.SECOND,
     next: shim.LAST,
@@ -112,7 +113,7 @@ function explicitSpec() {
     params: function (shim, fn, name, args) {
       return args[0].params
     }
-  }
+  })
 }
 
 function randomSpec() {
@@ -144,7 +145,7 @@ function noop() {}
 
 function preOptRecordMiddleware() {
   for (let i = 0; i < 1000; ++i) {
-    let m = randomRecord(randomSpec)
+    let m = randomRecord(randomSpec())
     m = typeof m === 'function' ? m : m.func
     for (let j = 0; j < 100; ++j) {
       m(getReqd(), {}, noop)
