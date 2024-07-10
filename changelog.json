@@ -2,6 +2,15 @@
   "repository": "newrelic/node-newrelic",
   "entries": [
     {
+      "version": "11.23.0",
+      "changes": {
+        "security": [],
+        "features": [
+          "Added support for account level governance of AI Monitoring"
+        ]
+      }
+    },
+    {
       "version": "11.22.0",
       "changes": {
         "security": [],
