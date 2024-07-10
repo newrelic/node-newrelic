@@ -5,10 +5,6 @@
       "version": "11.23.0",
       "changes": {
         "security": [],
-        "bugfixes": [
-          "Refactored benchmark tests to complete async functions",
-          "Pinned dependenices of node-gyp that dropped support for Node 16 in patch releases"
-        ],
         "features": [
           "Added support for account level governance of AI Monitoring"
         ]
