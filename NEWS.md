@@ -8,24 +8,21 @@
 
 * Pinned dependenices of node-gyp that dropped support for Node 16 in patch releases ([#2333](https://github.com/newrelic/node-newrelic/pull/2333)) ([7dab36d](https://github.com/newrelic/node-newrelic/commit/7dab36d35582ff23e3ba0764ef06fcf3f0f030f1))
 * Refactored benchmark tests to complete async functions ([#2334](https://github.com/newrelic/node-newrelic/pull/2334)) ([57a4dfb](https://github.com/newrelic/node-newrelic/commit/57a4dfb77c0408cbd81291c71db770005a0f2b5a))
-    * Signed-off-by: mrickard <maurice@mauricerickard.com>
 
 #### Code refactoring
 
-* got rid of redundant isExpected in the Exception class ([#2328](https://github.com/newrelic/node-newrelic/pull/2328)) ([38f9825](https://github.com/newrelic/node-newrelic/commit/38f982564c0e0b93f17146be8beed005f9405ead))
-* reduce duplication in the error-collector ([#2323](https://github.com/newrelic/node-newrelic/pull/2323)) ([10581bf](https://github.com/newrelic/node-newrelic/commit/10581bf8cdad5c61c25dc1309ad97ca36d58cf79))
-    * * Refactored _processUserErrors, _processTransactionExceptions, and _processTransactionErrors into a single function: _processErrors * Created _processErrrors test
+* Removed redundant isExpected in the Exception class ([#2328](https://github.com/newrelic/node-newrelic/pull/2328)) ([38f9825](https://github.com/newrelic/node-newrelic/commit/38f982564c0e0b93f17146be8beed005f9405ead))
+* Reduced duplication in the error-collector ([#2323](https://github.com/newrelic/node-newrelic/pull/2323)) ([10581bf](https://github.com/newrelic/node-newrelic/commit/10581bf8cdad5c61c25dc1309ad97ca36d58cf79))
 
 #### Documentation
 
-* included commands and links for mac setup ([#2327](https://github.com/newrelic/node-newrelic/pull/2327)) ([6eddb72](https://github.com/newrelic/node-newrelic/commit/6eddb721b676b246e5ace28bea75c6cd723d5ddb))
+* Included commands and links for Mac setup ([#2327](https://github.com/newrelic/node-newrelic/pull/2327)) ([6eddb72](https://github.com/newrelic/node-newrelic/commit/6eddb721b676b246e5ace28bea75c6cd723d5ddb))
 * Updated compatibility report ([#2318](https://github.com/newrelic/node-newrelic/pull/2318)) ([3a910ef](https://github.com/newrelic/node-newrelic/commit/3a910ef29c76cfd05903f01fb84d6775f8669578))
 
 #### Miscellaneous chores
 
 * Fixed copy paste error in post release workflow ([#2329](https://github.com/newrelic/node-newrelic/pull/2329)) ([6f2da7a](https://github.com/newrelic/node-newrelic/commit/6f2da7a2a07ce699f8d6ef859b4a90f0bd68df15))
 * Implemented split jobs for post release docs publishing ([#2319](https://github.com/newrelic/node-newrelic/pull/2319)) ([c14ec3b](https://github.com/newrelic/node-newrelic/commit/c14ec3b7020f43f6515609346f3b2f9586e63430))
-* Revert "fix: Pinned dependenices of node-gyp that dropped support for Node 16 in patch releases ([#2333](https://github.com/newrelic/node-newrelic/issues/2333))" ([#2335](https://github.com/newrelic/node-newrelic/pull/2335)) ([f8e2e8e](https://github.com/newrelic/node-newrelic/commit/f8e2e8efab4fe01b7a5650361578c0f1a5dd2e7b))
 
 #### Tests
 
