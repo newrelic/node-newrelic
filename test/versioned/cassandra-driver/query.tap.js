@@ -80,6 +80,7 @@ test('Cassandra instrumentation', { timeout: 5000 }, async function testInstrume
         const transaction = agent.getTransaction()
         t.ok(transaction, 'transaction should be visible')
         t.equal(tx, transaction, 'We got the same transaction')
+
         const colValArr = ['Jim', 'Bob', 'Joe']
         const pkValArr = [111, 222, 333]
         let insQuery = 'INSERT INTO ' + KS + '.' + FAM + ' (' + PK + ',' + COL
@@ -108,6 +109,7 @@ test('Cassandra instrumentation', { timeout: 5000 }, async function testInstrume
 
           let selQuery = 'SELECT * FROM ' + KS + '.' + FAM + ' WHERE '
           selQuery += PK + ' = 111;'
+
           client.execute(selQuery, function (error, value) {
             if (error) {
               return t.fail(error)
@@ -116,108 +118,98 @@ test('Cassandra instrumentation', { timeout: 5000 }, async function testInstrume
             t.ok(agent.getTransaction(), 'transaction should still still be visible')
             t.equal(value.rows[0][COL], colValArr[0], 'Cassandra client should still work')
 
-            const trace = transaction.trace
-            t.ok(trace, 'trace should exist')
-            t.ok(trace.root, 'root element should exist')
-
-            t.equal(trace.root.children.length, 1, 'there should be only one child of the root')
-
-            const setSegment = trace.root.children[0]
-            t.ok(setSegment, 'trace segment for insert should exist')
-            if (setSegment) {
-              t.equal(
-                setSegment.name,
-                'Datastore/statement/Cassandra/test.testFamily/insert/batch',
-                'should register the executeBatch'
-              )
-              t.ok(
-                setSegment.children.length >= 2,
-                'set should have atleast a dns lookup and callback child'
-              )
-
-              const setSegmentAttributes = setSegment.getAttributes()
-              t.equal(setSegmentAttributes.product, 'Cassandra', 'should set product attribute')
-              t.equal(setSegmentAttributes.port_path_or_id, '9042', 'should set port attribute')
-              t.equal(
-                setSegmentAttributes.database_name,
-                'test',
-                'should set database_name attribute'
-              )
-              t.equal(
-                setSegmentAttributes.host,
-                agent.config.getHostnameSafe(),
-                'should set host attribute'
-              )
-
-              const childIndex = setSegment.children.length - 1
-              const getSegment = setSegment.children[childIndex].children[0]
-              t.ok(getSegment, 'trace segment for select should exist')
-              if (getSegment) {
-                t.equal(
-                  getSegment.name,
-                  'Datastore/statement/Cassandra/test.testFamily/select',
-                  'should register the execute'
-                )
-
-                t.ok(getSegment.children.length >= 1, 'get should have a callback segment')
-
-                const getSegmentAttributes = getSegment.getAttributes()
-                t.equal(
-                  getSegmentAttributes.product,
-                  'Cassandra',
-                  'get should set product attribute'
-                )
-                t.equal(
-                  getSegmentAttributes.port_path_or_id,
-                  '9042',
-                  'get should set port attribute'
-                )
-                t.equal(
-                  getSegmentAttributes.database_name,
-                  'test',
-                  'get should set database_name attribute'
-                )
-                t.equal(
-                  getSegmentAttributes.host,
-                  agent.config.getHostnameSafe(),
-                  'get should set host attribute'
-                )
-
-                t.ok(getSegment.timer.hrDuration, 'trace segment should have ended')
-              }
-            }
-
+            verifyTrace(t, transaction.trace)
             transaction.end()
-            checkMetric('Datastore/operation/Cassandra/insert', 1)
-            checkMetric('Datastore/allWeb', 2)
-            checkMetric('Datastore/Cassandra/allWeb', 2)
-            checkMetric('Datastore/Cassandra/all', 2)
-            checkMetric('Datastore/all', 2)
-            checkMetric('Datastore/statement/Cassandra/test.testFamily/insert', 1)
-            checkMetric('Datastore/operation/Cassandra/select', 1)
-            checkMetric('Datastore/statement/Cassandra/test.testFamily/select', 1)
-
+            checkMetric(t);
             t.end()
           })
         })
       })
 
-      function checkMetric(name, count, scoped) {
+      function checkMetric(t, scoped) {
         const agentMetrics = agent.metrics._metrics
-        const metric = agentMetrics[scoped ? 'scoped' : 'unscoped'][name]
-        t.ok(metric, 'metric "' + name + '" should exist')
-        if (!metric) {
-          return
+
+        const expected = {
+          'Datastore/operation/Cassandra/insert': 1,
+          'Datastore/allWeb': 2,
+          'Datastore/Cassandra/allWeb': 2,
+          'Datastore/Cassandra/all': 2,
+          'Datastore/all': 2,
+          'Datastore/statement/Cassandra/test.testFamily/insert': 1,
+          'Datastore/operation/Cassandra/select': 1,
+          'Datastore/statement/Cassandra/test.testFamily/select': 1,
         }
 
-        t.equal(metric.callCount, count, 'should be called ' + count + ' times')
-        t.ok(metric.total, 'should have set total')
-        t.ok(metric.totalExclusive, 'should have set totalExclusive')
-        t.ok(metric.min, 'should have set min')
-        t.ok(metric.max, 'should have set max')
-        t.ok(metric.sumOfSquares, 'should have set sumOfSquares')
+        for ( const expectedMetric in expected) {
+          const count = expected[expectedMetric]
+
+          const metric = agentMetrics[scoped ? 'scoped' : 'unscoped'][expectedMetric]
+          t.ok(metric, 'metric "' + expectedMetric + '" should exist')
+          if (!metric) {
+            return
+          }
+
+          t.equal(metric.callCount, count, 'should be called ' + count + ' times')
+          t.ok(metric.total, 'should have set total')
+          t.ok(metric.totalExclusive, 'should have set totalExclusive')
+          t.ok(metric.min, 'should have set min')
+          t.ok(metric.max, 'should have set max')
+          t.ok(metric.sumOfSquares, 'should have set sumOfSquares')
+        }
       }
     })
+
+    function verifyTrace(t, trace) {
+      t.ok(trace, 'trace should exist')
+      t.ok(trace.root, 'root element should exist')
+      t.equal(trace.root.children.length, 1, 'there should be only one child of the root')
+
+      const setSegment = trace.root.children[0]
+      t.ok(setSegment, 'trace segment for insert should exist')
+
+      if (setSegment) {
+        verifyTraceSegment(t, setSegment, 'insert/batch')
+
+        t.ok(
+          setSegment.children.length >= 2,
+          'set should have atleast a dns lookup and callback child'
+        )
+
+        const childIndex = setSegment.children.length - 1
+        const getSegment = setSegment.children[childIndex].children[0]
+
+        t.ok(getSegment, 'trace segment for select should exist')
+
+        if (getSegment) {
+          verifyTraceSegment(t, getSegment, 'select')
+
+          t.ok(getSegment.children.length >= 1, 'get should have a callback segment')
+          t.ok(getSegment.timer.hrDuration, 'trace segment should have ended')
+        }
+      }
+    }
+
+    function verifyTraceSegment(t, segment, table) {
+      t.equal(
+        segment.name,
+        'Datastore/statement/Cassandra/test.testFamily/' + table,
+        'should register the execute'
+      )
+
+      const segmentAttributes = segment.getAttributes()
+      t.equal(segmentAttributes.product, 'Cassandra', 'should set product attribute')
+      t.equal(segmentAttributes.port_path_or_id, '9042', 'should set port attribute')
+      t.equal(
+        segmentAttributes.database_name,
+        'test',
+        'should set database_name attribute'
+      )
+      t.equal(
+        segmentAttributes.host,
+        agent.config.getHostnameSafe(),
+        'should set host attribute'
+      )
+    }
 
     t.teardown(function tearDown() {
       helper.unloadAgent(agent)
