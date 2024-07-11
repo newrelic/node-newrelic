@@ -2,6 +2,16 @@
   "repository": "newrelic/node-newrelic",
   "entries": [
     {
+      "version": "11.23.1",
+      "changes": {
+        "security": [],
+        "bugfixes": [
+          "Updated redis v4 instrumentation to work with transactions(multi/exec)"
+        ],
+        "features": []
+      }
+    },
+    {
       "version": "11.23.0",
       "changes": {
         "security": [],
