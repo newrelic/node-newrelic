@@ -116,6 +116,30 @@ test('Redis instrumentation', function (t) {
     })
   })
 
+  t.test('should handle multi commands', function (t) {
+    helper.runInTransaction(agent, async function transactionInScope() {
+      const transaction = agent.getTransaction()
+      const results = await client.multi().set('multi-key', 'multi-value').get('multi-key').exec()
+
+      t.same(results, ['OK', 'multi-value'], 'should return expected results')
+      transaction.end()
+      const unscoped = transaction.metrics.unscoped
+      const expected = {
+        'Datastore/all': 4,
+        'Datastore/allWeb': 4,
+        'Datastore/Redis/all': 4,
+        'Datastore/Redis/allWeb': 4,
+        'Datastore/operation/Redis/multi': 1,
+        'Datastore/operation/Redis/set': 1,
+        'Datastore/operation/Redis/get': 1,
+        'Datastore/operation/Redis/exec': 1
+      }
+      expected['Datastore/instance/Redis/' + HOST_ID] = 4
+      checkMetrics(t, unscoped, expected)
+      t.end()
+    })
+  })
+
   t.test('should add `key` attribute to trace segment', function (t) {
     t.notOk(agent.getTransaction(), 'no transaction should be in play')
     agent.config.attributes.enabled = true
