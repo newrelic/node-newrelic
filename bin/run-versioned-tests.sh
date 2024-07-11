@@ -100,4 +100,4 @@ then
 fi
 export NR_LOADER=./esm-loader.mjs
 
-time $C8 ./node_modules/.bin/versioned-tests $VERSIONED_MODE --print $OUTPUT_MODE -i 2 --all --strict --samples $SAMPLES $JOBS_ARGS ${directories[@]}
+time $C8 ./node_modules/.bin/versioned-tests $VERSIONED_MODE --print $OUTPUT_MODE -i 100 --all --strict --samples $SAMPLES $JOBS_ARGS ${directories[@]}
