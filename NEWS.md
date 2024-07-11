@@ -1,3 +1,13 @@
+### v11.23.1 (2024-07-11)
+
+#### Bug fixes
+
+* Updated redis v4 instrumentation to work with transactions(multi/exec) ([#2343](https://github.com/newrelic/node-newrelic/pull/2343)) ([39eb842](https://github.com/newrelic/node-newrelic/commit/39eb8421b84f7fe298acf5c9c89de31ee0cc2604))
+
+#### Documentation
+
+* Updated compatibility report ([#2342](https://github.com/newrelic/node-newrelic/pull/2342)) ([5c9e3e6](https://github.com/newrelic/node-newrelic/commit/5c9e3e6bfa8a388c7dd071ecb0231b069f065645))
+
 ### v11.23.0 (2024-07-10)
 
 #### Features
