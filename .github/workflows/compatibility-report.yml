@@ -46,6 +46,7 @@ jobs:
 
       # Upload generated artifacts for potential debugging purposes.
       - uses: actions/upload-artifact@v4
+        if: always()
         with:
           name: status.log
           path: status.log
@@ -95,6 +96,7 @@ jobs:
 
       # Upload generated artifacts for potential debugging purposes.
       - uses: actions/upload-artifact@v4
+        if: always()
         with:
           name: docs-status.log
           path: docs-status.log
