@@ -7,7 +7,6 @@
 #### Documentation
 
 * Updated compatibility report ([#2342](https://github.com/newrelic/node-newrelic/pull/2342)) ([5c9e3e6](https://github.com/newrelic/node-newrelic/commit/5c9e3e6bfa8a388c7dd071ecb0231b069f065645))
-    * Co-authored-by: jsumners-nr <150050532+jsumners-nr@users.noreply.github.com>
 
 ### v11.23.0 (2024-07-10)
 
