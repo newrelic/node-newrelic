@@ -164,9 +164,9 @@ async function getFrontMatter(tagName, frontMatterFile) {
   }
 
   return {
-    security: JSON.stringify(frontmatter.changes.security),
-    bugfixes: JSON.stringify(frontmatter.changes.bugfixes),
-    features: JSON.stringify(frontmatter.changes.features)
+    security: JSON.stringify(frontmatter.changes.security || []),
+    bugfixes: JSON.stringify(frontmatter.changes.bugfixes || []),
+    features: JSON.stringify(frontmatter.changes.features || [])
   }
 }
 
