@@ -72,6 +72,13 @@ const reportResults = (resultFiles) => {
       const results = baseTests
         .sort()
         .map((test) => {
+          if (!base[test] || !down[test]) {
+            console.error(`**** comparison tests are not matched for ${test}!`)
+            console.log('base case test', base)
+            console.log('downstream test', down)
+            return ''
+          }
+
           const passes = compareResults(base[test], down[test])
           filePassing = filePassing && passes
 
@@ -118,9 +125,11 @@ const reportResults = (resultFiles) => {
 
 const iterate = async () => {
   const files = process.argv.slice(2)
-  const results = files.map(async (file) => {
-    return processFile(file)
-  })
+  const results = await Promise.all(
+    files.map(async (file) => {
+      return await processFile(file)
+    })
+  )
   reportResults(results)
 }
 
