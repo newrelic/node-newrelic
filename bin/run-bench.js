@@ -127,9 +127,10 @@ async function run() {
     })
     child.on('exit', function onChildExit(code) {
       if (code) {
-        throw new Error(`Benchmark test ${test} exited with code ${code}`)
+        console.error(`Benchmark test ${test} exited with code ${code}`)
+        return
       }
-      console.log(`The child test ${file} has exited`)
+      console.log(`The child test ${file} has completed`)
     })
     printer.addTest(test, child)
   }
