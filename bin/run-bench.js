@@ -5,7 +5,7 @@
 
 'use strict'
 
-/* eslint sonarjs/cognitive-complexity: ["error", 23] -- TODO: https://issues.newrelic.com/browse/NEWRELIC-5252 */
+/* eslint sonarjs/cognitive-complexity: ["error", 21] -- TODO: https://issues.newrelic.com/browse/NEWRELIC-5252 */
 
 const cp = require('child_process')
 const glob = require('glob')
@@ -53,7 +53,12 @@ class Printer {
 
     this._tests[name] = new Promise((resolve) => {
       child.stdout.on('end', () => {
-        this._tests[name] = JSON.parse(output)
+        try {
+          this._tests[name] = JSON.parse(output)
+        } catch (e) {
+          console.error(`Error parsing test results for ${name}`, e)
+          this._tests[name] = output
+        }
         resolve()
       })
     })
