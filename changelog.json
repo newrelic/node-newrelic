@@ -15,6 +15,7 @@
       "version": "11.23.0",
       "changes": {
         "security": [],
+        "bugfixes": [],
         "features": [
           "Added support for account level governance of AI Monitoring"
         ]

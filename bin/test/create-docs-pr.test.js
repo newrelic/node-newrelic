@@ -74,6 +74,7 @@ tap.test('Create Docs PR script', (testHarness) => {
     t.test('should throw an error if there is no frontmatter', async (t) => {
       mockFs.readFile.yields(null, JSON.stringify({ entries: [{ version: '1.2.3', changes: [] }] }))
 
+      // eslint-disable-next-line sonarjs/no-duplicate-string
       const func = () => script.getFrontMatter('v2.0.0', 'changelog.json')
       t.rejects(func, 'Unable to find 2.0.0 entry in changelog.json')
 
@@ -103,6 +104,29 @@ tap.test('Create Docs PR script', (testHarness) => {
         security: '["one","two"]',
         bugfixes: '["five","six"]',
         features: '["three","four"]'
+      })
+      t.end()
+    })
+
+    t.test('should return empty arrays if missing changes', async (t) => {
+      mockFs.readFile.yields(
+        null,
+        JSON.stringify({
+          entries: [
+            {
+              version: '2.0.0',
+              changes: {}
+            }
+          ]
+        })
+      )
+
+      const result = await script.getFrontMatter('v2.0.0', 'changelog.json')
+
+      t.same(result, {
+        security: '[]',
+        bugfixes: '[]',
+        features: '[]'
       })
       t.end()
     })
