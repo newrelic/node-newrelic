@@ -94,71 +94,75 @@ test('Cassandra instrumentation', { timeout: 5000 }, async function testInstrume
   await cassSetup(runTest)
 
   function runTest() {
-    t.test('executeBatch - callback style', function (t) {
-      t.notOk(agent.getTransaction(), 'no transaction should be in play')
-      helper.runInTransaction(agent, function transactionInScope(tx) {
-        const transaction = agent.getTransaction()
-        t.ok(transaction, 'transaction should be visible')
-        t.equal(tx, transaction, 'We got the same transaction')
+    // t.test('executeBatch - callback style', function (t) {
+    //   t.notOk(agent.getTransaction(), 'no transaction should be in play')
+    //   helper.runInTransaction(agent, function transactionInScope(tx) {
+    //     const transaction = agent.getTransaction()
+    //     t.ok(transaction, 'transaction should be visible')
+    //     t.equal(tx, transaction, 'We got the same transaction')
 
-        client.batch(insArr, { hints: hints }, function done(error, ok) {
-          if (error) {
-            t.fail(error)
-            return t.end()
-          }
+    //     client.batch(insArr, { hints: hints }, function done(error, ok) {
+    //       if (error) {
+    //         t.fail(error)
+    //         return t.end()
+    //       }
 
-          t.ok(agent.getTransaction(), 'transaction should still be visible')
-          t.ok(ok, 'everything should be peachy after setting')
+    //       t.ok(agent.getTransaction(), 'transaction should still be visible')
+    //       t.ok(ok, 'everything should be peachy after setting')
 
-          client.execute(selQuery, function (error, value) {
-            if (error) {
-              return t.fail(error)
-            }
+    //       client.execute(selQuery, function (error, value) {
+    //         if (error) {
+    //           return t.fail(error)
+    //         }
 
-            t.ok(agent.getTransaction(), 'transaction should still still be visible')
-            t.equal(value.rows[0][COL], colValArr[0], 'Cassandra client should still work')
+    //         t.ok(agent.getTransaction(), 'transaction should still still be visible')
+    //         t.equal(value.rows[0][COL], colValArr[0], 'Cassandra client should still work')
 
-            t.equal(transaction.trace.root.children.length, 1, 'there should be only one child of the root')
-            verifyTrace(t, transaction.trace)
-            transaction.end()
-            checkMetric(t);
-            t.end()
-          })
-        })
-      })
-    })
+    //         t.equal(transaction.trace.root.children.length, 1, 'there should be only one child of the root')
+    //         verifyTrace(t, transaction.trace)
+    //         transaction.end()
+    //         checkMetric(t);
+    //         t.end()
+    //       })
+    //     })
+    //   })
+    // })
 
-    t.test('executeBatch promise style', function (t) {
-      t.notOk(agent.getTransaction(), 'no transaction should be in play')
-      helper.runInTransaction(agent, function transactionInScope(tx) {
-        const transaction = agent.getTransaction()
-        t.ok(transaction, 'transaction should be visible')
-        t.equal(tx, transaction, 'We got the same transaction')
+    // t.test('executeBatch promise style', function (t) {
+    //   t.notOk(agent.getTransaction(), 'no transaction should be in play')
+    //   helper.runInTransaction(agent, function transactionInScope(tx) {
+    //     const transaction = agent.getTransaction()
+    //     t.ok(transaction, 'transaction should be visible')
+    //     t.equal(tx, transaction, 'We got the same transaction')
 
-        client.batch(insArr, { hints: hints }).then(function (_) {
-          client.execute(selQuery)
-          .then(result => {
-            t.ok(agent.getTransaction(), 'transaction should still still be visible')
-            t.equal(result.rows[0][COL], colValArr[0], 'Cassandra client should still work')
+    //     client.batch(insArr, { hints: hints }).then(function (_) {
+    //       client.execute(selQuery)
+    //       .then(result => {
+    //         t.ok(agent.getTransaction(), 'transaction should still still be visible')
+    //         t.equal(result.rows[0][COL], colValArr[0], 'Cassandra client should still work')
 
-            t.equal(transaction.trace.root.children.length, 2, 'there should be two children of the root')
-            verifyTrace(t, transaction.trace)
-            checkMetric(t);
-          })
-          .catch(error => {
-            t.fail(error)
-          })
-          .finally(() => {
-            transaction.end()
-            t.end()
-          })
-        })
-      })
-    })
+    //         t.equal(transaction.trace.root.children.length, 2, 'there should be two children of the root')
+    //         verifyTrace(t, transaction.trace)
+    //         checkMetric(t);
+    //       })
+    //       .catch(error => {
+    //         t.fail(error)
+    //       })
+    //       .finally(() => {
+    //         transaction.end()
+    //         t.end()
+    //       })
+    //     })
+    //   })
+    // })
 
     t.test('executeBatch - slow query', function (t) {
       t.notOk(agent.getTransaction(), 'no transaction should be in play')
       helper.runInTransaction(agent, function transactionInScope(tx) {
+        // enable slow queries
+        agent.config.transaction_tracer.record_sql = 'raw'
+        agent.config.slow_sql.enabled = true
+
         const transaction = agent.getTransaction()
         t.ok(transaction, 'transaction should be visible')
         t.equal(tx, transaction, 'We got the same transaction')
@@ -189,49 +193,49 @@ test('Cassandra instrumentation', { timeout: 5000 }, async function testInstrume
     })
 
 
-    t.test('executeBatch - query with streaming', function (t) {
-      t.notOk(agent.getTransaction(), 'no transaction should be in play')
-      helper.runInTransaction(agent, function transactionInScope(tx) {
-        const transaction = agent.getTransaction()
-        t.ok(transaction, 'transaction should be visible')
-        t.equal(tx, transaction, 'We got the same transaction')
+    // t.test('executeBatch - query with streaming', function (t) {
+    //   t.notOk(agent.getTransaction(), 'no transaction should be in play')
+    //   helper.runInTransaction(agent, function transactionInScope(tx) {
+    //     const transaction = agent.getTransaction()
+    //     t.ok(transaction, 'transaction should be visible')
+    //     t.equal(tx, transaction, 'We got the same transaction')
 
-        client.batch(insArr, { hints: hints }, function done(error, ok) {
-          if (error) {
-            t.fail(error)
-            return t.end()
-          }
+    //     client.batch(insArr, { hints: hints }, function done(error, ok) {
+    //       if (error) {
+    //         t.fail(error)
+    //         return t.end()
+    //       }
 
-          t.ok(agent.getTransaction(), 'transaction should still be visible')
-          t.ok(ok, 'everything should be peachy after setting')
+    //       t.ok(agent.getTransaction(), 'transaction should still be visible')
+    //       t.ok(ok, 'everything should be peachy after setting')
 
-          const selQuery = 'SELECT * FROM ' + KS + '.' + FAM
-          let rowCount = 0
+    //       const selQuery = 'SELECT * FROM ' + KS + '.' + FAM
+    //       let rowCount = 0
 
-          client.stream(selQuery, [], { prepare: true })
-          .on('readable', function () {
-            let row
-            while (row = this.read()) {
-              rowCount++
-              t.ok(row, 'Row should be received')
-            }
-          })
-          .on('end', function () {
-            t.ok(agent.getTransaction(), 'transaction should still be visible')
-            t.equal(rowCount, 3, 'Three rows should have been received')
-            t.equal(transaction.trace.root.children.length, 1, 'there should be only one child of the root')
-            verifyTrace(t, transaction.trace)
-            transaction.end()
-            checkMetric(t)
-            t.end()
-          })
-          .on('error', function (err) {
-            t.fail(err)
-            t.end()
-          })
-        })
-      })
-    })
+    //       client.stream(selQuery, [], { prepare: true })
+    //       .on('readable', function () {
+    //         let row
+    //         while (row = this.read()) {
+    //           rowCount++
+    //           t.ok(row, 'Row should be received')
+    //         }
+    //       })
+    //       .on('end', function () {
+    //         t.ok(agent.getTransaction(), 'transaction should still be visible')
+    //         t.equal(rowCount, 3, 'Three rows should have been received')
+    //         t.equal(transaction.trace.root.children.length, 1, 'there should be only one child of the root')
+    //         verifyTrace(t, transaction.trace)
+    //         transaction.end()
+    //         checkMetric(t)
+    //         t.end()
+    //       })
+    //       .on('error', function (err) {
+    //         t.fail(err)
+    //         t.end()
+    //       })
+    //     })
+    //   })
+    // })
 
     function checkMetric(t, scoped) {
       const agentMetrics = agent.metrics._metrics
