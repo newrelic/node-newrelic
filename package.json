@@ -159,6 +159,7 @@
   },
   "scripts": {
     "bench": "node ./bin/run-bench.js",
+    "benchJson": "node ./bin/run-bench.js --json",
     "docker-env": "./bin/docker-env-vars.sh",
     "docs": "rm -rf ./out && jsdoc -c ./jsdoc-conf.jsonc --private -r .",
     "integration": "npm run prepare-test && npm run sub-install && time c8 -o ./coverage/integration tap --test-regex='(\\/|^test\\/integration\\/.*\\.tap\\.js)$' --timeout=600 --no-coverage --reporter classic",

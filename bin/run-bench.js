@@ -5,7 +5,7 @@
 
 'use strict'
 
-/* eslint sonarjs/cognitive-complexity: ["error", 21] -- TODO: https://issues.newrelic.com/browse/NEWRELIC-5252 */
+/* eslint sonarjs/cognitive-complexity: ["error", 23] -- TODO: https://issues.newrelic.com/browse/NEWRELIC-5252 */
 
 const cp = require('child_process')
 const glob = require('glob')
@@ -16,17 +16,9 @@ const cwd = path.resolve(__dirname, '..')
 const benchpath = path.resolve(cwd, 'test/benchmark')
 
 const tests = []
+const testPromises = []
 const globs = []
 const opts = Object.create(null)
-
-// replacement for former async-lib cb
-const testCb = (err, payload) => {
-  if (err) {
-    console.error(err)
-    return
-  }
-  return payload
-}
 
 process.argv.slice(2).forEach(function forEachFileArg(file) {
   if (/^--/.test(file)) {
@@ -70,10 +62,15 @@ class JSONPrinter {
 
   addTest(name, child) {
     let output = ''
-    this._tests[name] = null
     child.stdout.on('data', (d) => (output += d.toString()))
-    child.stdout.on('end', () => (this._tests[name] = JSON.parse(output)))
     child.stderr.on('data', (d) => process.stderr.write(d))
+
+    this._tests[name] = new Promise((resolve) => {
+      child.stdout.on('end', () => {
+        this._tests[name] = JSON.parse(output)
+        resolve()
+      })
+    })
   }
 
   finish() {
@@ -88,30 +85,33 @@ run()
 async function run() {
   const printer = opts.json ? new JSONPrinter() : new ConsolePrinter()
 
-  const resolveGlobs = (cb) => {
+  const resolveGlobs = () => {
     if (!globs.length) {
-      cb()
+      console.error(`There aren't any globs to resolve.`)
+      return
     }
-    const afterGlobbing = (err, resolved) => {
-      if (err) {
-        errorAndExit(err, 'Failed to glob', -1)
-        cb(err)
+    const afterGlobbing = (resolved) => {
+      if (!resolved) {
+        return errorAndExit(new Error('Failed to glob'), 'Failed to glob', -1)
       }
-      resolved.forEach(function mergeResolved(files) {
-        files.forEach(function mergeFile(file) {
-          if (tests.indexOf(file) === -1) {
-            tests.push(file)
-          }
-        })
-      })
-      cb() // ambient scope
+
+      function mergeFile(file) {
+        if (tests.indexOf(file) === -1) {
+          tests.push(file)
+        }
+      }
+      function mergeResolved(files) {
+        files.forEach(mergeFile)
+      }
+
+      return resolved.forEach(mergeResolved)
     }
 
     const globbed = globs.map((item) => glob.sync(item))
-    return afterGlobbing(null, globbed)
+    return afterGlobbing(globbed)
   }
 
-  const spawnEachFile = (file, spawnCb) => {
+  const spawnEachFile = async (file) => {
     const test = path.relative(benchpath, file)
 
     const args = [file]
@@ -119,34 +119,39 @@ async function run() {
       args.unshift('--inspect-brk')
     }
 
-    const child = cp.spawn('node', args, { cwd: cwd, stdio: 'pipe' })
-    printer.addTest(test, child)
+    const child = cp.spawn('node', args, { cwd: cwd, stdio: 'pipe', silent: true })
 
-    child.on('error', spawnCb)
+    child.on('error', (err) => {
+      console.error(`*** error in child test ${test}`, err)
+      throw err
+    })
     child.on('exit', function onChildExit(code) {
       if (code) {
-        spawnCb(new Error('Benchmark exited with code ' + code))
+        throw new Error(`Benchmark test ${test} exited with code ${code}`)
       }
-      spawnCb()
+      console.log(`The child test ${file} has exited`)
     })
+    printer.addTest(test, child)
   }
 
-  const afterSpawnEachFile = (err, cb) => {
-    if (err) {
-      errorAndExit(err, 'Spawning failed:', -2)
-      return cb(err)
-    }
-    cb()
-  }
-
-  const runBenchmarks = async (cb) => {
+  const runBenchmarks = async () => {
     tests.sort()
-    await tests.forEach((file) => spawnEachFile(file, testCb))
-    await afterSpawnEachFile(null, testCb)
-    return cb()
+    for await (const file of tests) {
+      await spawnEachFile(file)
+    }
+    if (opts.json) {
+      // if json, we need to track promises
+      const keys = Object.keys(printer._tests)
+      for (const key of keys) {
+        testPromises.push(printer._tests[key])
+      }
+    }
   }
 
-  await resolveGlobs(testCb)
-  await runBenchmarks(testCb)
+  await resolveGlobs()
+  await runBenchmarks()
+  if (opts.json) {
+    await Promise.all(testPromises)
+  }
   printer.finish()
 }
