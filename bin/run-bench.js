@@ -5,8 +5,6 @@
 
 'use strict'
 
-/* eslint sonarjs/cognitive-complexity: ["error", 21] -- TODO: https://issues.newrelic.com/browse/NEWRELIC-5252 */
-
 const cp = require('child_process')
 const glob = require('glob')
 const path = require('path')
