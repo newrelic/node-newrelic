@@ -129,7 +129,7 @@ class Benchmark {
       }
 
       if (typeof test.initialize === 'function') {
-        test.initialize(agent)
+        await test.initialize(agent)
       }
 
       const samples = []
