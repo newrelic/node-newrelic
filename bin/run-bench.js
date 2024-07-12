@@ -11,6 +11,7 @@ const cp = require('child_process')
 const glob = require('glob')
 const path = require('path')
 const { errorAndExit } = require('./utils')
+const fs = require('fs/promises')
 
 const cwd = path.resolve(__dirname, '..')
 const benchpath = path.resolve(cwd, 'test/benchmark')
@@ -40,22 +41,7 @@ if (tests.length === 0 && globs.length === 0) {
   globs.push(path.join(benchpath, '*.bench.js'), path.join(benchpath, '**/*.bench.js'))
 }
 
-class ConsolePrinter {
-  /* eslint-disable no-console */
-  addTest(name, child) {
-    console.log(name)
-    child.stdout.on('data', (d) => process.stdout.write(d))
-    child.stderr.on('data', (d) => process.stderr.write(d))
-    child.once('exit', () => console.log(''))
-  }
-
-  finish() {
-    console.log('')
-  }
-  /* eslint-enable no-console */
-}
-
-class JSONPrinter {
+class Printer {
   constructor() {
     this._tests = Object.create(null)
   }
@@ -73,7 +59,14 @@ class JSONPrinter {
     })
   }
 
-  finish() {
+  async finish() {
+    if (opts.json) {
+      const content = JSON.stringify(this._tests, null, 2)
+      const fileName = `benchmark_${new Date().getTime()}.json`
+      await fs.writeFile(fileName, content)
+      console.log(`Done! Test output written to ${fileName}`)
+      return
+    }
     /* eslint-disable no-console */
     console.log(JSON.stringify(this._tests, null, 2))
     /* eslint-enable no-console */
@@ -83,7 +76,8 @@ class JSONPrinter {
 run()
 
 async function run() {
-  const printer = opts.json ? new JSONPrinter() : new ConsolePrinter()
+  const printer = new Printer()
+  let currentTest = 0
 
   const resolveGlobs = () => {
     if (!globs.length) {
@@ -122,15 +116,16 @@ async function run() {
     const child = cp.spawn('node', args, { cwd: cwd, stdio: 'pipe', silent: true })
 
     child.on('error', (err) => {
-      console.error(`*** error in child test ${test}`, err)
+      console.error(`Error in child test ${test}`, err)
       throw err
     })
     child.on('exit', function onChildExit(code) {
+      currentTest = currentTest + 1
       if (code) {
-        console.error(`Benchmark test ${test} exited with code ${code}`)
+        console.error(`(${currentTest}/${tests.length}) FAILED: ${test} exited with code ${code}`)
         return
       }
-      console.log(`The child test ${file} has completed`)
+      console.log(`(${currentTest}/${tests.length}) ${file} has completed`)
     })
     printer.addTest(test, child)
   }
@@ -140,19 +135,14 @@ async function run() {
     for await (const file of tests) {
       await spawnEachFile(file)
     }
-    if (opts.json) {
-      // if json, we need to track promises
-      const keys = Object.keys(printer._tests)
-      for (const key of keys) {
-        testPromises.push(printer._tests[key])
-      }
+    const keys = Object.keys(printer._tests)
+    for (const key of keys) {
+      testPromises.push(printer._tests[key])
     }
   }
 
   await resolveGlobs()
   await runBenchmarks()
-  if (opts.json) {
-    await Promise.all(testPromises)
-  }
+  await Promise.all(testPromises)
   printer.finish()
 }
