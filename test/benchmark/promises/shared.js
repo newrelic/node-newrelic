@@ -8,14 +8,14 @@
 const benchmark = require('../../lib/benchmark')
 
 function makeSuite(name) {
-  return benchmark.createBenchmark({ async: true, name: name, delay: 0.01 })
+  return benchmark.createBenchmark({ name })
 }
 
 const NUM_PROMISES = 300
 
 const tests = [
   function forkedTest(Promise) {
-    return function runTest(agent, cb) {
+    return function runTest() {
       // number of internal nodes on the binary tree of promises
       // this will produce a binary tree with NUM_PROMISES / 2 internal
       // nodes, and NUM_PROMIES / 2 + 1 leaves
@@ -27,79 +27,57 @@ const tests = [
         promises.push(prom.then(function first() {}))
         promises.push(prom.then(function second() {}))
       }
-      Promise.all(promises).then(() => {
-        if (typeof cb === 'function') {
-          return cb()
-        }
-        return cb || true
-      })
+      return Promise.all(promises)
     }
   },
 
   function longTest(Promise) {
-    return function runTest(agent, cb) {
+    return function runTest() {
       let prom = Promise.resolve()
       for (let i = 0; i < NUM_PROMISES; ++i) {
         prom = prom.then(function () {})
       }
-      prom.then(() => {
-        if (typeof cb === 'function') {
-          return cb()
-        }
-        return cb || true
-      })
+      return prom
     }
   },
 
   function longTestWithCatches(Promise) {
-    return function runTest(agent, cb) {
+    return function runTest() {
       let prom = Promise.resolve()
       for (let i = 0; i < NUM_PROMISES / 2; ++i) {
         prom = prom.then(function () {}).catch(function () {})
       }
-      prom.then(() => {
-        if (typeof cb === 'function') {
-          return cb()
-        }
-        return cb || true
-      })
+      return prom
     }
   },
 
   function longThrowToEnd(Promise) {
-    return function runTest(agent, cb) {
+    return function runTest() {
       let prom = Promise.reject()
       for (let i = 0; i < NUM_PROMISES - 1; ++i) {
         prom = prom.then(function () {})
       }
-      prom
-        .catch(function () {})
-        .then(() => {
-          if (typeof cb === 'function') {
-            return cb()
-          }
-          return cb || true
-        })
+      return prom.catch(function () {})
     }
   },
 
   function promiseConstructor(Promise) {
-    return function runTest(agent, cb) {
+    return function runTest() {
+      const promises = []
       for (let i = 0; i < NUM_PROMISES; ++i) {
         /* eslint-disable no-new */
-        new Promise(function (res) {
-          res()
-        })
+        promises.push(
+          new Promise(function (res) {
+            res()
+          })
+        )
       }
-      if (typeof cb === 'function') {
-        return cb()
-      }
-      return cb || true
+      return Promise.all(promises)
     }
   },
 
   function promiseReturningPromise(Promise) {
-    return function runTest(agent, cb) {
+    return function runTest() {
       const promises = []
       for (let i = 0; i < NUM_PROMISES / 2; ++i) {
         promises.push(
@@ -112,17 +90,12 @@ const tests = [
           })
         )
       }
-      Promise.all(promises).then(() => {
-        if (typeof cb === 'function') {
-          return cb()
-        }
-        return cb || true
-      })
+      return Promise.all(promises)
     }
   },
 
   function thenReturningPromise(Promise) {
-    return function runTest(agent, cb) {
+    return function runTest() {
       let prom = Promise.resolve()
       for (let i = 0; i < NUM_PROMISES / 2; ++i) {
         prom = prom.then(function () {
@@ -131,24 +104,15 @@ const tests = [
           })
         })
       }
-      prom.then(() => {
-        if (typeof cb === 'function') {
-          return cb()
-        }
-        return cb || true
-      })
+      return prom
     }
   },
 
   function promiseConstructorThrow(Promise) {
-    return function runTest(agent, cb) {
-      new Promise(function () {
+    return function runTest() {
+      return new Promise(function () {
         throw new Error('Whoops!')
       }).catch(() => {})
-      if (typeof cb === 'function') {
-        return cb()
-      }
-      return cb || true
     }
   }
 ]

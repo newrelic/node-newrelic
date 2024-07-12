@@ -10,7 +10,6 @@ const shared = require('./shared')
 const suite = shared.makeSuite('Promises')
 shared.tests.forEach(function registerTest(testFn) {
   suite.add({
-    defer: true,
     name: testFn.name,
     fn: testFn(Promise),
     agent: {

@@ -9,7 +9,6 @@ const benchmark = require('../lib/benchmark')
 
 const suite = benchmark.createBenchmark({
   name: 'async hooks',
-  async: true,
   fn: runBenchmark
 })
 
@@ -52,10 +51,11 @@ tests.forEach((test) => suite.add(test))
 
 suite.run()
 
-function runBenchmark(agent, cb) {
+function runBenchmark() {
   let p = Promise.resolve()
   for (let i = 0; i < 300; ++i) {
     p = p.then(function noop() {})
   }
-  p.then(cb)
+
+  return p
 }
