@@ -91,8 +91,13 @@ async function cassSetup(runTest) {
 }
 
 test('Cassandra instrumentation', { timeout: 5000 }, async function testInstrumentation(t) {
-  // t.plan(2)
+  t.plan(4)
   await cassSetup(runTest)
+
+  t.afterEach(() => {
+    agent.queries.clear()
+    agent.metrics.clear()
+  })
 
   function runTest() {
     t.test('executeBatch - callback style', function (t) {
@@ -146,7 +151,7 @@ test('Cassandra instrumentation', { timeout: 5000 }, async function testInstrume
             verifyTrace(t, transaction.trace, KS + '.' + FAM)
 
             // TODO: investigate missing metrics
-            // checkMetric(t);
+            // checkMetric(t)
           })
           .catch(error => {
             t.fail(error)
@@ -178,7 +183,6 @@ test('Cassandra instrumentation', { timeout: 5000 }, async function testInstrume
           }
 
           const slowQuery = 'SELECT * FROM ' + KS + '.' + FAM
-
           t.ok(agent.getTransaction(), 'transaction should still be visible')
           t.ok(ok, 'everything should be peachy after setting')
 
@@ -186,7 +190,6 @@ test('Cassandra instrumentation', { timeout: 5000 }, async function testInstrume
             if (error) {
               return t.fail(error)
             }
-            console.log('slow queries', agent.queries.samples)
 
             transaction.end()
             t.ok(agent.queries.samples.size > 0, 'there should be a slow query')
@@ -197,50 +200,47 @@ test('Cassandra instrumentation', { timeout: 5000 }, async function testInstrume
       })
     })
 
+    t.test('executeBatch - query with streaming', function (t) {
+      t.notOk(agent.getTransaction(), 'no transaction should be in play')
+      helper.runInTransaction(agent, function transactionInScope(tx) {
+        const transaction = agent.getTransaction()
+        t.ok(transaction, 'transaction should be visible')
+        t.equal(tx, transaction, 'We got the same transaction')
 
-    // t.test('executeBatch - query with streaming', function (t) {
-    //   t.notOk(agent.getTransaction(), 'no transaction should be in play')
-    //   helper.runInTransaction(agent, function transactionInScope(tx) {
-    //     const transaction = agent.getTransaction()
-    //     t.ok(transaction, 'transaction should be visible')
-    //     t.equal(tx, transaction, 'We got the same transaction')
+        client.batch(insArr, { hints: hints }, function done(error, ok) {
+          if (error) {
+            t.fail(error)
+            return t.end()
+          }
 
-    //     client.batch(insArr, { hints: hints }, function done(error, ok) {
-    //       if (error) {
-    //         t.fail(error)
-    //         return t.end()
-    //       }
+          t.ok(agent.getTransaction(), 'transaction should still be visible')
+          t.ok(ok, 'everything should be peachy after setting')
 
-    //       t.ok(agent.getTransaction(), 'transaction should still be visible')
-    //       t.ok(ok, 'everything should be peachy after setting')
+          client.stream(selQuery, [], { prepare: false })
+          .on('readable', function () {
+            let row
+            while (row = this.read()) {
+              t.ok(row, 'Row should be received')
+            }
+          })
+          .on('end', function () {
+            // TODO: does end of stream end the transaction too?
+            // t.ok(agent.getTransaction(), 'transaction should still be visible')
 
-    //       const selQuery = 'SELECT * FROM ' + KS + '.' + FAM
-    //       let rowCount = 0
-
-    //       client.stream(selQuery, [], { prepare: true })
-    //       .on('readable', function () {
-    //         let row
-    //         while (row = this.read()) {
-    //           rowCount++
-    //           t.ok(row, 'Row should be received')
-    //         }
-    //       })
-    //       .on('end', function () {
-    //         t.ok(agent.getTransaction(), 'transaction should still be visible')
-    //         t.equal(rowCount, 3, 'Three rows should have been received')
-    //         t.equal(transaction.trace.root.children.length, 1, 'there should be only one child of the root')
-    //         verifyTrace(t, transaction.trace, KS + '.' + FAM)
-    //         transaction.end()
-    //         checkMetric(t)
-    //         t.end()
-    //       })
-    //       .on('error', function (err) {
-    //         t.fail(err)
-    //         t.end()
-    //       })
-    //     })
-    //   })
-    // })
+            t.equal(transaction.trace.root.children.length, 1, 'there should be only one child of the root')
+            verifyTrace(t, transaction.trace, KS + '.' + FAM)
+            transaction.end()
+            checkMetric(t)
+            t.end()
+          })
+          .on('error', function (err) {
+            if (err) {
+              return t.fail(err, 'streaming should not fail')
+            }
+          })
+        })
+      })
+    })
 
     function checkMetric(t, scoped) {
       const agentMetrics = agent.metrics._metrics
