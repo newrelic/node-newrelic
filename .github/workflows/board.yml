@@ -82,7 +82,7 @@ jobs:
           # Save the values of project id, status field id and the todo and needs pr column ids
           echo 'PROJECT_ID='$(jq '.data.organization.projectV2.id' project_data.json) >> $GITHUB_ENV
           echo 'STATUS_FIELD_ID='$(jq '.data.organization.projectV2.fields.nodes[] | select(.name== "Status") | .id' project_data.json) >> $GITHUB_ENV
-          echo 'TODO_OPTION_ID='$(jq -r --arg TODO_COL_NAME "$TODO_COL_NAME" '.data.organization.projectV2.fields.nodes[] | select(.name== "Status") | .options[] | select(.name=="$TODO_COL_NAME) |.id' project_data.json) >> $GITHUB_ENV
+          echo 'TODO_OPTION_ID='$(jq -r --arg TODO_COL_NAME "$TODO_COL_NAME" '.data.organization.projectV2.fields.nodes[] | select(.name== "Status") | .options[] | select(.name==$TODO_COL_NAME) |.id' project_data.json) >> $GITHUB_ENV
           echo 'PR_OPTION_ID='$(jq -r --arg PR_COL_NAME "$PR_COL_NAME" '.data.organization.projectV2.fields.nodes[] | select(.name== "Status") | .options[] | select(.name==$PR_COL_NAME) |.id' project_data.json) >> $GITHUB_ENV
     - name: Assign PR to Project
       if: github.event_name == 'pull_request_target'
