@@ -19,9 +19,9 @@ on:
     inputs:
       project_id:
         description: Id of Project in GitHub
-        default: PVT_kwDNe_vOAJMmfQ # Node.js Engineering Board https://github.com/orgs/newrelic/projects/105 
+        default: 'PVT_kwDNe_vOAJMmfQ' # Node.js Engineering Board https://github.com/orgs/newrelic/projects/105 
         required: false
-        type: number
+        type: string 
       todo_column:
         description: Name of the To-Do column in project
         default: 'Triage Needed: Unprioritized Features'
