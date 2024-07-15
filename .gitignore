@@ -20,5 +20,4 @@ nr-security-home
 # Needed for testing
 !test/integration/moduleLoading/node_modules
 # benchmark results
-benchmark_*.json
-benchmark_*.md
+benchmark_results

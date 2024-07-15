@@ -110,7 +110,14 @@ const reportResults = async (resultFiles) => {
   content += '### Details\n\n'
   content += '_Lower is better._\n\n'
   content += `${details}\n`
-  const fileName = `benchmark_comparison_${date.getTime()}.md`
+
+  const resultPath = 'benchmark_results'
+  try {
+    await fs.stat(resultPath)
+  } catch (e) {
+    await fs.mkdir(resultPath)
+  }
+  const fileName = `${resultPath}/comparison_${date.getTime()}.md`
   await fs.writeFile(fileName, content)
   console.log(`Done! Benchmark test comparison written to ${fileName}`)
 

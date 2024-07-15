@@ -63,16 +63,21 @@ class Printer {
   }
 
   async finish() {
-    if (opts.json) {
-      const content = JSON.stringify(this._tests, null, 2)
-      const fileName = `benchmark_${new Date().getTime()}.json`
-      await fs.writeFile(fileName, content)
-      console.log(`Done! Test output written to ${fileName}`)
-      return
+    if (opts.console) {
+      /* eslint-disable no-console */
+      console.log(JSON.stringify(this._tests, null, 2))
+      /* eslint-enable no-console */
     }
-    /* eslint-disable no-console */
-    console.log(JSON.stringify(this._tests, null, 2))
-    /* eslint-enable no-console */
+    const resultPath = 'benchmark_results'
+    try {
+      await fs.stat(resultPath)
+    } catch (e) {
+      await fs.mkdir(resultPath)
+    }
+    const content = JSON.stringify(this._tests, null, 2)
+    const fileName = `${resultPath}/benchmark_${new Date().getTime()}.json`
+    await fs.writeFile(fileName, content)
+    console.log(`Done! Test output written to ${fileName}`)
   }
 }
 
