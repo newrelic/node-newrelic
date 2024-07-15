@@ -19,7 +19,7 @@ on:
     inputs:
       project_id:
         description: Id of Project in GitHub
-        default: 5864688 # Node.js Engineering Board https://github.com/orgs/newrelic/projects/41
+        default: PVT_kwDNe_vOAJMmfQ # Node.js Engineering Board https://github.com/orgs/newrelic/projects/105 
         required: false
         type: number
       todo_column:
