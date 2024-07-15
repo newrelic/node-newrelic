@@ -129,7 +129,7 @@ class Benchmark {
       }
 
       if (typeof test.initialize === 'function') {
-        test.initialize(agent)
+        await test.initialize(agent)
       }
 
       const samples = []
@@ -151,8 +151,7 @@ class Benchmark {
 class BenchmarkStats {
   constructor(samples, testName, sampleName) {
     if (samples.length < 1) {
-      console.log(`BenchmarkStats for ${testName} has no samples. SampleName: ${sampleName}`)
-      throw new Error('BenchmarkStats requires more than zero samples')
+      throw new Error(`BenchmarkStats for ${testName} has no samples. SampleName: ${sampleName}`)
     }
 
     let sortedSamples = samples.slice().sort((a, b) => a - b)

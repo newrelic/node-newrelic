@@ -19,3 +19,5 @@ test/versioned-external/TEMP_TESTS
 nr-security-home
 # Needed for testing
 !test/integration/moduleLoading/node_modules
+# benchmark results
+benchmark_results

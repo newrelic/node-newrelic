@@ -5,28 +5,19 @@
 
 'use strict'
 
-/* eslint sonarjs/cognitive-complexity: ["error", 21] -- TODO: https://issues.newrelic.com/browse/NEWRELIC-5252 */
-
 const cp = require('child_process')
 const glob = require('glob')
 const path = require('path')
 const { errorAndExit } = require('./utils')
+const fs = require('fs/promises')
 
 const cwd = path.resolve(__dirname, '..')
 const benchpath = path.resolve(cwd, 'test/benchmark')
 
 const tests = []
+const testPromises = []
 const globs = []
 const opts = Object.create(null)
-
-// replacement for former async-lib cb
-const testCb = (err, payload) => {
-  if (err) {
-    console.error(err)
-    return
-  }
-  return payload
-}
 
 process.argv.slice(2).forEach(function forEachFileArg(file) {
   if (/^--/.test(file)) {
@@ -48,70 +39,81 @@ if (tests.length === 0 && globs.length === 0) {
   globs.push(path.join(benchpath, '*.bench.js'), path.join(benchpath, '**/*.bench.js'))
 }
 
-class ConsolePrinter {
-  /* eslint-disable no-console */
-  addTest(name, child) {
-    console.log(name)
-    child.stdout.on('data', (d) => process.stdout.write(d))
-    child.stderr.on('data', (d) => process.stderr.write(d))
-    child.once('exit', () => console.log(''))
-  }
-
-  finish() {
-    console.log('')
-  }
-  /* eslint-enable no-console */
-}
-
-class JSONPrinter {
+class Printer {
   constructor() {
     this._tests = Object.create(null)
   }
 
   addTest(name, child) {
     let output = ''
-    this._tests[name] = null
     child.stdout.on('data', (d) => (output += d.toString()))
-    child.stdout.on('end', () => (this._tests[name] = JSON.parse(output)))
     child.stderr.on('data', (d) => process.stderr.write(d))
+
+    this._tests[name] = new Promise((resolve) => {
+      child.stdout.on('end', () => {
+        try {
+          this._tests[name] = JSON.parse(output)
+        } catch (e) {
+          console.error(`Error parsing test results for ${name}`, e)
+          this._tests[name] = output
+        }
+        resolve()
+      })
+    })
   }
 
-  finish() {
-    /* eslint-disable no-console */
-    console.log(JSON.stringify(this._tests, null, 2))
-    /* eslint-enable no-console */
+  async finish() {
+    if (opts.console) {
+      /* eslint-disable no-console */
+      console.log(JSON.stringify(this._tests, null, 2))
+      /* eslint-enable no-console */
+    }
+    const resultPath = 'benchmark_results'
+    try {
+      await fs.stat(resultPath)
+    } catch (e) {
+      await fs.mkdir(resultPath)
+    }
+    const content = JSON.stringify(this._tests, null, 2)
+    const fileName = `${resultPath}/benchmark_${new Date().getTime()}.json`
+    await fs.writeFile(fileName, content)
+    console.log(`Done! Test output written to ${fileName}`)
   }
 }
 
 run()
 
 async function run() {
-  const printer = opts.json ? new JSONPrinter() : new ConsolePrinter()
+  const printer = new Printer()
+  let currentTest = 0
 
-  const resolveGlobs = (cb) => {
+  const resolveGlobs = () => {
     if (!globs.length) {
-      cb()
+      console.error(`There aren't any globs to resolve.`)
+      return
     }
-    const afterGlobbing = (err, resolved) => {
-      if (err) {
-        errorAndExit(err, 'Failed to glob', -1)
-        cb(err)
+    const afterGlobbing = (resolved) => {
+      if (!resolved) {
+        return errorAndExit(new Error('Failed to glob'), 'Failed to glob', -1)
       }
-      resolved.forEach(function mergeResolved(files) {
-        files.forEach(function mergeFile(file) {
-          if (tests.indexOf(file) === -1) {
-            tests.push(file)
-          }
-        })
-      })
-      cb() // ambient scope
+
+      function mergeFile(file) {
+        if (tests.indexOf(file) === -1) {
+          tests.push(file)
+        }
+      }
+      function mergeResolved(files) {
+        files.forEach(mergeFile)
+      }
+
+      return resolved.forEach(mergeResolved)
     }
 
     const globbed = globs.map((item) => glob.sync(item))
-    return afterGlobbing(null, globbed)
+    return afterGlobbing(globbed)
   }
 
-  const spawnEachFile = (file, spawnCb) => {
+  const spawnEachFile = async (file) => {
     const test = path.relative(benchpath, file)
 
     const args = [file]
@@ -119,34 +121,36 @@ async function run() {
       args.unshift('--inspect-brk')
     }
 
-    const child = cp.spawn('node', args, { cwd: cwd, stdio: 'pipe' })
-    printer.addTest(test, child)
+    const child = cp.spawn('node', args, { cwd: cwd, stdio: 'pipe', silent: true })
 
-    child.on('error', spawnCb)
-    child.on('exit', function onChildExit(code) {
-      if (code) {
-        spawnCb(new Error('Benchmark exited with code ' + code))
-      }
-      spawnCb()
+    child.on('error', (err) => {
+      console.error(`Error in child test ${test}`, err)
+      throw err
     })
+    child.on('exit', function onChildExit(code) {
+      currentTest = currentTest + 1
+      if (code) {
+        console.error(`(${currentTest}/${tests.length}) FAILED: ${test} exited with code ${code}`)
+        return
+      }
+      console.log(`(${currentTest}/${tests.length}) ${file} has completed`)
+    })
+    printer.addTest(test, child)
   }
 
-  const afterSpawnEachFile = (err, cb) => {
-    if (err) {
-      errorAndExit(err, 'Spawning failed:', -2)
-      return cb(err)
-    }
-    cb()
-  }
-
-  const runBenchmarks = async (cb) => {
+  const runBenchmarks = async () => {
     tests.sort()
-    await tests.forEach((file) => spawnEachFile(file, testCb))
-    await afterSpawnEachFile(null, testCb)
-    return cb()
+    for await (const file of tests) {
+      await spawnEachFile(file)
+    }
+    const keys = Object.keys(printer._tests)
+    for (const key of keys) {
+      testPromises.push(printer._tests[key])
+    }
   }
 
-  await resolveGlobs(testCb)
-  await runBenchmarks(testCb)
+  await resolveGlobs()
+  await runBenchmarks()
+  await Promise.all(testPromises)
   printer.finish()
 }

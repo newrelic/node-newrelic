@@ -19,31 +19,34 @@ function makeInit(instrumented) {
 
 suite.add({
   name: 'instrumented operation in transaction',
-  async: true,
   agent: {},
   initialize: makeInit(true),
   runInTransaction: true,
-  fn: function (agent, done) {
-    testDatastore.testOp(done)
+  fn: function () {
+    return new Promise((resolve) => {
+      testDatastore.testOp(resolve)
+    })
   }
 })
 
 suite.add({
   name: 'instrumented operation',
-  async: true,
   initialize: makeInit(true),
   agent: {},
-  fn: function (agent, done) {
-    testDatastore.testOp(done)
+  fn: function () {
+    return new Promise((resolve) => {
+      testDatastore.testOp(resolve)
+    })
   }
 })
 
 suite.add({
   name: 'uninstrumented operation',
   initialize: makeInit(false),
-  async: true,
-  fn: function (agent, done) {
-    testDatastore.testOp(done)
+  fn: function () {
+    return new Promise((resolve) => {
+      testDatastore.testOp(resolve)
+    })
   }
 })
 
