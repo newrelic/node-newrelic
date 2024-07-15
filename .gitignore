@@ -21,3 +21,4 @@ nr-security-home
 !test/integration/moduleLoading/node_modules
 # benchmark results
 benchmark_*.json
+benchmark_*.md

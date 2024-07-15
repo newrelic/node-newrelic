@@ -27,7 +27,7 @@ const processFile = async (file) => {
   }
 }
 
-const reportResults = (resultFiles) => {
+const reportResults = async (resultFiles) => {
   const baseline = resultFiles[0]
   const downstream = resultFiles[1]
 
@@ -72,13 +72,6 @@ const reportResults = (resultFiles) => {
       const results = baseTests
         .sort()
         .map((test) => {
-          if (!base[test] || !down[test]) {
-            console.error(`**** comparison tests are not matched for ${test}!`)
-            console.log('base case test', base)
-            console.log('downstream test', down)
-            return ''
-          }
-
           const passes = compareResults(base[test], down[test])
           filePassing = filePassing && passes
 
@@ -95,8 +88,7 @@ const reportResults = (resultFiles) => {
       allPassing = allPassing && filePassing
 
       return [
-        '<details>',
-        `<summary>${testFile}: ${passMark(filePassing)}</summary>`,
+        `#### ${testFile}: ${passMark(filePassing)}`,
         '',
         results,
         '',
@@ -112,11 +104,15 @@ const reportResults = (resultFiles) => {
     console.log('')
   }
 
-  console.log(`### Benchmark Results: ${passMark(allPassing)}`)
-  console.log('')
-  console.log('### Details')
-  console.log('_Lower is better._')
-  console.log(details)
+  const date = new Date()
+  let content = `### Benchmark Results: ${passMark(allPassing)}\n\n\n\n`
+  content += `${date.toISOString()}\n\n`
+  content += '### Details\n\n'
+  content += '_Lower is better._\n\n'
+  content += `${details}\n`
+  const fileName = `benchmark_comparison_${date.getTime()}.md`
+  await fs.writeFile(fileName, content)
+  console.log(`Done! Benchmark test comparison written to ${fileName}`)
 
   if (!allPassing) {
     process.exitCode = -1
