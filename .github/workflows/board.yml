@@ -19,9 +19,9 @@ on:
     inputs:
       project_id:
         description: Id of Project in GitHub
-        default: 'PVT_kwDNe_vOAJMmfQ' # Node.js Engineering Board https://github.com/orgs/newrelic/projects/105 
+        default: 105 # Node.js Engineering Board https://github.com/orgs/newrelic/projects/105 
         required: false
-        type: string 
+        type: number 
       todo_column:
         description: Name of the To-Do column in project
         default: 'Triage Needed: Unprioritized Features'
@@ -48,23 +48,104 @@ jobs:
       # of the given repo
       GITHUB_TOKEN: ${{ secrets.gh_token }}
       PROJECT_ID: ${{ inputs.project_id }}
-      HEADER: "Accept: application/vnd.github.inertia-preview+json"
+      TODO_COL_NAME: ${{ inputs.todo_column}}
+      PR_COL_NAME: ${{ inputs.pr_column }}
     runs-on: ubuntu-latest
     name: Assign Issues and/or PRs to Project
     steps:
+    - name: Get project information
+      run: |
+          gh api graphql -f query='
+            query($org: String!, $number: Int!) {
+              organization(login: $org){
+                projectV2(number: $number) {
+                  id
+                  fields(first:20) {
+                    nodes {
+                      ... on ProjectV2Field {
+                        id
+                        name
+                      }
+                      ... on ProjectV2SingleSelectField {
+                        id
+                        name
+                        options {
+                          id
+                          name
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }' -f org=newrelic -F number=$PROJECT_ID > project_data.json
+            echo 'PROJECT_ID='$(jq '.data.organization.projectV2.id' project_data.json) >> $GITHUB_ENV
+          echo 'STATUS_FIELD_ID='$(jq '.data.organization.projectV2.fields.nodes[] | select(.name== "Status") | .id' project_data.json) >> $GITHUB_ENV
+          echo 'TODO_OPTION_ID='$(jq '.data.organization.projectV2.fields.nodes[] | select(.name== "Status") | .options[] | select(.name==\"$TODO_COL_NAME\") |.id' project_data.json) >> $GITHUB_ENV
+          echo 'PR_OPTION_ID='$(jq '.data.organization.projectV2.fields.nodes[] | select(.name== "Status") | .options[] | select(.name==\"$PR_COL_NAME\") |.id' project_data.json) >> $GITHUB_ENV
     - name: Assign PR to Project
       if: github.event_name == 'pull_request_target'
       run: |
-        PR_ID=${{ github.event.pull_request.id }}
-        COLUMN=$(gh api -H "$HEADER" projects/$PROJECT_ID/columns --jq ".[] | select(.name == \"$COLUMN_NAME\").id")
-        gh api -H "$HEADER" -X POST projects/columns/$COLUMN/cards -f content_type='PullRequest' -F content_id=$PR_ID
+        item_id="$( gh api graphql -f query='
+          mutation($project:ID!, $pr:ID!) {
+            addProjectV2ItemById(input: {projectId: $project, contentId: $pr}) {
+              item {
+                id
+              }
+            }
+          }' -f project=$PROJECT_ID -f pr=$PR_ID --jq '.data.addProjectV2ItemById.item.id')"
+          gh api graphql -f query='
+            mutation (
+              $project: ID!
+              $item: ID!
+              $status_field: ID!
+              $status_value: String!
+            ) {
+              set_status: updateProjectV2ItemFieldValue(input: {
+                projectId: $project
+                itemId: $item
+                fieldId: $status_field
+                value: {
+                  singleSelectOptionId: $status_value
+                  }
+              }) {
+                projectV2Item {
+                  id
+                  }
+              }
+            }' -f project=$PROJECT_ID -f item=$item_id -f status_field=$STATUS_FIELD_ID -f status_value=${{ env.PR_OPTION_ID }} --silent
       env:
-        COLUMN_NAME: ${{ inputs.pr_column}}
+        PR_ID: ${{ github.event.pull_request.node_id }}
     - name: Assign Issue to Project
       if: github.event_name == 'issues'
       run: |
-        ISSUE_ID=${{ github.event.issue.id }}
-        COLUMN=$(gh api -H "$HEADER" projects/$PROJECT_ID/columns --jq ".[] | select(.name == \"$COLUMN_NAME\").id")
-        gh api -H "$HEADER" -X POST projects/columns/$COLUMN/cards -f content_type='Issue' -F content_id=$ISSUE_ID
+        item_id="$( gh api graphql -f query='
+          mutation($project:ID!, $issue:ID!) {
+            addProjectV2ItemById(input: {projectId: $project, contentId: $issue}) {
+              item {
+                id
+              }
+            }
+          }' -f project=$PROJECT_ID -f issue=$ISSUE_ID --jq '.data.addProjectV2ItemById.item.id')"
+          gh api graphql -f query='
+            mutation (
+              $project: ID!
+              $item: ID!
+              $status_field: ID!
+              $status_value: String!
+            ) {
+              set_status: updateProjectV2ItemFieldValue(input: {
+                projectId: $project
+                itemId: $item
+                fieldId: $status_field
+                value: {
+                  singleSelectOptionId: $status_value
+                  }
+              }) {
+                projectV2Item {
+                  id
+                  }
+              }
+            }' -f project=$PROJECT_ID -f item=$item_id -f status_field=$STATUS_FIELD_ID -f status_value=${{ env.TODO_OPTION_ID }} --silent
       env:
-        COLUMN_NAME: ${{ inputs.todo_column}}
+        ISSUE_ID: ${{ github.event.issue.id }}
