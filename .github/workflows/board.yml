@@ -79,13 +79,15 @@ jobs:
                 }
               }
             }' -f org=newrelic -F number=$PROJECT_ID > project_data.json
-            echo 'PROJECT_ID='$(jq '.data.organization.projectV2.id' project_data.json) >> $GITHUB_ENV
+          # Save the values of project id, status field id and the todo and needs pr column ids
+          echo 'PROJECT_ID='$(jq '.data.organization.projectV2.id' project_data.json) >> $GITHUB_ENV
           echo 'STATUS_FIELD_ID='$(jq '.data.organization.projectV2.fields.nodes[] | select(.name== "Status") | .id' project_data.json) >> $GITHUB_ENV
-          echo 'TODO_OPTION_ID='$(jq '.data.organization.projectV2.fields.nodes[] | select(.name== "Status") | .options[] | select(.name==\"$TODO_COL_NAME\") |.id' project_data.json) >> $GITHUB_ENV
-          echo 'PR_OPTION_ID='$(jq '.data.organization.projectV2.fields.nodes[] | select(.name== "Status") | .options[] | select(.name==\"$PR_COL_NAME\") |.id' project_data.json) >> $GITHUB_ENV
+          echo 'TODO_OPTION_ID='$(jq -r --arg TODO_COL_NAME "$TODO_COL_NAME" '.data.organization.projectV2.fields.nodes[] | select(.name== "Status") | .options[] | select(.name=="$TODO_COL_NAME) |.id' project_data.json) >> $GITHUB_ENV
+          echo 'PR_OPTION_ID='$(jq -r --arg PR_COL_NAME "$PR_COL_NAME" '.data.organization.projectV2.fields.nodes[] | select(.name== "Status") | .options[] | select(.name==$PR_COL_NAME) |.id' project_data.json) >> $GITHUB_ENV
     - name: Assign PR to Project
       if: github.event_name == 'pull_request_target'
       run: |
+        # Add PR to board
         item_id="$( gh api graphql -f query='
           mutation($project:ID!, $pr:ID!) {
             addProjectV2ItemById(input: {projectId: $project, contentId: $pr}) {
@@ -94,6 +96,7 @@ jobs:
               }
             }
           }' -f project=$PROJECT_ID -f pr=$PR_ID --jq '.data.addProjectV2ItemById.item.id')"
+          # Update the status to Needs PR Review
           gh api graphql -f query='
             mutation (
               $project: ID!
@@ -119,6 +122,7 @@ jobs:
     - name: Assign Issue to Project
       if: github.event_name == 'issues'
       run: |
+        # Add issue to board
         item_id="$( gh api graphql -f query='
           mutation($project:ID!, $issue:ID!) {
             addProjectV2ItemById(input: {projectId: $project, contentId: $issue}) {
@@ -127,6 +131,7 @@ jobs:
               }
             }
           }' -f project=$PROJECT_ID -f issue=$ISSUE_ID --jq '.data.addProjectV2ItemById.item.id')"
+          # Update the status to Needs PR Review
           gh api graphql -f query='
             mutation (
               $project: ID!
@@ -148,4 +153,4 @@ jobs:
               }
             }' -f project=$PROJECT_ID -f item=$item_id -f status_field=$STATUS_FIELD_ID -f status_value=${{ env.TODO_OPTION_ID }} --silent
       env:
-        ISSUE_ID: ${{ github.event.issue.id }}
+        ISSUE_ID: ${{ github.event.issue.node_id }}
