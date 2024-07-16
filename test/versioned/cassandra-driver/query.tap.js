@@ -124,10 +124,14 @@ test('Cassandra instrumentation', { timeout: 5000 }, async function testInstrume
             t.ok(agent.getTransaction(), 'transaction should still still be visible')
             t.equal(value.rows[0][COL], colValArr[0], 'Cassandra client should still work')
 
-            t.equal(transaction.trace.root.children.length, 1, 'there should be only one child of the root')
+            t.equal(
+              transaction.trace.root.children.length,
+              1,
+              'there should be only one child of the root'
+            )
             verifyTrace(t, transaction.trace, KS + '.' + FAM)
             transaction.end()
-            checkMetric(t);
+            checkMetric(t)
             t.end()
           })
         })
@@ -141,25 +145,29 @@ test('Cassandra instrumentation', { timeout: 5000 }, async function testInstrume
         t.ok(transaction, 'transaction should be visible')
         t.equal(tx, transaction, 'We got the same transaction')
 
-        client.batch(insArr, { hints: hints }).then(function (_) {
-          client.execute(selQuery)
-          .then(result => {
-            t.ok(agent.getTransaction(), 'transaction should still still be visible')
-            t.equal(result.rows[0][COL], colValArr[0], 'Cassandra client should still work')
+        client.batch(insArr, { hints: hints }).then(function () {
+          client
+            .execute(selQuery)
+            .then((result) => {
+              t.ok(agent.getTransaction(), 'transaction should still still be visible')
+              t.equal(result.rows[0][COL], colValArr[0], 'Cassandra client should still work')
 
-            t.equal(transaction.trace.root.children.length, 2, 'there should be two children of the root')
-            verifyTrace(t, transaction.trace, KS + '.' + FAM)
+              t.equal(
+                transaction.trace.root.children.length,
+                2,
+                'there should be two children of the root'
+              )
+              verifyTrace(t, transaction.trace, KS + '.' + FAM)
 
-            // TODO: investigate missing metrics
-            // checkMetric(t)
-          })
-          .catch(error => {
-            t.fail(error)
-          })
-          .finally(() => {
-            transaction.end()
-            t.end()
-          })
+              checkMetric(t)
+            })
+            .catch((error) => {
+              t.fail(error)
+            })
+            .finally(() => {
+              transaction.end()
+              t.end()
+            })
         })
       })
     })
@@ -186,14 +194,14 @@ test('Cassandra instrumentation', { timeout: 5000 }, async function testInstrume
           t.ok(agent.getTransaction(), 'transaction should still be visible')
           t.ok(ok, 'everything should be peachy after setting')
 
-          client.execute(slowQuery, function (error, value) {
+          client.execute(slowQuery, function (error) {
             if (error) {
               return t.fail(error)
             }
 
             transaction.end()
             t.ok(agent.queries.samples.size > 0, 'there should be a slow query')
-            checkMetric(t);
+            checkMetric(t)
             t.end()
           })
         })
@@ -216,28 +224,32 @@ test('Cassandra instrumentation', { timeout: 5000 }, async function testInstrume
           t.ok(agent.getTransaction(), 'transaction should still be visible')
           t.ok(ok, 'everything should be peachy after setting')
 
-          client.stream(selQuery, [], { prepare: false })
-          .on('readable', function () {
-            let row
-            while (row = this.read()) {
-              t.ok(row, 'Row should be received')
-            }
-          })
-          .on('end', function () {
-            // TODO: does end of stream end the transaction too?
-            // t.ok(agent.getTransaction(), 'transaction should still be visible')
+          client
+            .stream(selQuery, [], { prepare: false })
+            .on('readable', function () {
+              let row
+              while ((row = this.read())) {
+                t.ok(row, 'Row should be received')
+              }
+            })
+            .on('end', function () {
+              t.ok(agent.getTransaction(), 'transaction should still be visible')
 
-            t.equal(transaction.trace.root.children.length, 1, 'there should be only one child of the root')
-            verifyTrace(t, transaction.trace, KS + '.' + FAM)
-            transaction.end()
-            checkMetric(t)
-            t.end()
-          })
-          .on('error', function (err) {
-            if (err) {
-              return t.fail(err, 'streaming should not fail')
-            }
-          })
+              t.equal(
+                transaction.trace.root.children.length,
+                1,
+                'there should be only one child of the root'
+              )
+              verifyTrace(t, transaction.trace, KS + '.' + FAM)
+              transaction.end()
+              checkMetric(t)
+              t.end()
+            })
+            .on('error', function (err) {
+              if (err) {
+                return t.fail(err, 'streaming should not fail')
+              }
+            })
         })
       })
     })
@@ -253,32 +265,37 @@ test('Cassandra instrumentation', { timeout: 5000 }, async function testInstrume
         'Datastore/all': 2,
         'Datastore/statement/Cassandra/test.testFamily/insert': 1,
         'Datastore/operation/Cassandra/select': 1,
-        'Datastore/statement/Cassandra/test.testFamily/select': 1,
+        'Datastore/statement/Cassandra/test.testFamily/select': 1
       }
 
-      for ( const expectedMetric in expected) {
-        const count = expected[expectedMetric]
+      for (const expectedMetric in expected) {
+        if (expected.hasOwnProperty(expectedMetric)) {
+          const count = expected[expectedMetric]
 
-        const metric = agentMetrics[scoped ? 'scoped' : 'unscoped'][expectedMetric]
-        t.ok(metric, 'metric "' + expectedMetric + '" should exist')
-        if (!metric) {
-          return
+          const metric = agentMetrics[scoped ? 'scoped' : 'unscoped'][expectedMetric]
+          t.ok(metric, 'metric "' + expectedMetric + '" should exist')
+          if (!metric) {
+            return
+          }
+
+          t.equal(metric.callCount, count, 'should be called ' + count + ' times')
+          t.ok(metric.total, 'should have set total')
+          t.ok(metric.totalExclusive, 'should have set totalExclusive')
+          t.ok(metric.min, 'should have set min')
+          t.ok(metric.max, 'should have set max')
+          t.ok(metric.sumOfSquares, 'should have set sumOfSquares')
         }
-
-        t.equal(metric.callCount, count, 'should be called ' + count + ' times')
-        t.ok(metric.total, 'should have set total')
-        t.ok(metric.totalExclusive, 'should have set totalExclusive')
-        t.ok(metric.min, 'should have set min')
-        t.ok(metric.max, 'should have set max')
-        t.ok(metric.sumOfSquares, 'should have set sumOfSquares')
       }
     }
 
-    function verifyTrace(t, trace, table, queryType) {
+    function verifyTrace(t, trace, table) {
       t.ok(trace, 'trace should exist')
       t.ok(trace.root, 'root element should exist')
 
-      const setSegment = findSegment(trace.root,'Datastore/statement/Cassandra/' + table + '/insert/batch')
+      const setSegment = findSegment(
+        trace.root,
+        'Datastore/statement/Cassandra/' + table + '/insert/batch'
+      )
 
       t.ok(setSegment, 'trace segment for insert should exist')
 
@@ -290,7 +307,10 @@ test('Cassandra instrumentation', { timeout: 5000 }, async function testInstrume
           'set should have atleast a dns lookup and callback child'
         )
 
-        const getSegment = findSegment(trace.root, 'Datastore/statement/Cassandra/' + table + '/select')
+        const getSegment = findSegment(
+          trace.root,
+          'Datastore/statement/Cassandra/' + table + '/select'
+        )
         t.ok(getSegment, 'trace segment for select should exist')
 
         if (getSegment) {
@@ -312,16 +332,8 @@ test('Cassandra instrumentation', { timeout: 5000 }, async function testInstrume
       const segmentAttributes = segment.getAttributes()
       t.equal(segmentAttributes.product, 'Cassandra', 'should set product attribute')
       t.equal(segmentAttributes.port_path_or_id, '9042', 'should set port attribute')
-      t.equal(
-        segmentAttributes.database_name,
-        'test',
-        'should set database_name attribute'
-      )
-      t.equal(
-        segmentAttributes.host,
-        agent.config.getHostnameSafe(),
-        'should set host attribute'
-      )
+      t.equal(segmentAttributes.database_name, 'test', 'should set database_name attribute')
+      t.equal(segmentAttributes.host, agent.config.getHostnameSafe(), 'should set host attribute')
     }
 
     t.teardown(function tearDown() {
