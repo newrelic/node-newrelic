@@ -70,8 +70,6 @@ const CUSTOM_EVENT_TYPE_REGEX = /^[a-zA-Z0-9:_ ]+$/
  * @class
  */
 function API(agent) {
-  // throw 'Test';
-  console.log('debugging agent')
   this.agent = agent
   this.shim = new TransactionShim(agent, 'NewRelicAPI')
   this.awsLambda = new AwsLambda(agent)
