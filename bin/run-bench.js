@@ -73,14 +73,14 @@ class Printer {
       /* eslint-enable no-console */
     }
     const resultPath = 'benchmark_results'
-    const branch = opts.branch ? `${opts.branch}` : 'benchmark'
+    const filePrefix = opts.filename ? `${opts.filename}` : 'benchmark'
     try {
       await fs.stat(resultPath)
     } catch (e) {
       await fs.mkdir(resultPath)
     }
     const content = JSON.stringify(this._tests, null, 2)
-    const fileName = `${resultPath}/${branch}_${new Date().getTime()}.json`
+    const fileName = `${resultPath}/${filePrefix}_${new Date().getTime()}.json`
     await fs.writeFile(fileName, content)
     console.log(`Done! Test output written to ${fileName}`)
   }

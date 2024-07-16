@@ -62,7 +62,7 @@ jobs:
     - name: Install Dependencies
       run: npm install
     - name: Run Benchmark Tests
-      run: node ./bin/run-bench.js --branch=${{ github.base_ref || 'main' }}
+      run: node ./bin/run-bench.js --filename=${{ github.base_ref || 'main' }}_${{ matrix.node-version }}
     - name: Verify Benchmark Output
       run: ls benchmark_results
 
