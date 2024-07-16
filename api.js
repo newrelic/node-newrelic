@@ -70,6 +70,8 @@ const CUSTOM_EVENT_TYPE_REGEX = /^[a-zA-Z0-9:_ ]+$/
  * @class
  */
 function API(agent) {
+  // throw 'Test';
+  console.log('debugging agent')
   this.agent = agent
   this.shim = new TransactionShim(agent, 'NewRelicAPI')
   this.awsLambda = new AwsLambda(agent)
@@ -1900,6 +1902,49 @@ API.prototype.ignoreApdex = function ignoreApdex() {
   }
 
   transaction.ignoreApdex = true
+}
+
+/**
+ * @callback setLlmCustomAttributesCallback
+ * @param {string} type LLM event type
+ * @param {object} msg LLM event
+ * @returns {object} Returns key/value pairs of attributes to be added
+ */
+
+/**
+ * Add custom attributes to the LLM event.
+ *
+ * See documentation for newrelic.setLlmCustomAttributes for more information.
+ *
+ * An example of setting a custom attribute:
+ *
+ *    newrelic.setLlmCustomAttributes((type, llmEvent) => {
+ *      llmEvent['llm.testAttribute'] = 'testValue'
+ *      return llmEvent
+ *    })
+ *
+ * @param {setLlmCustomAttributesCallback} callback A callback to handle recording of every LLM event.
+ */
+API.prototype.setLlmCustomAttributes = function setLlmCustomAttributes(callback) {
+  this.agent.on('recordLlmEvent', function handler(type, msg) {
+    // console.log('record llm events fired', type, msg)
+    const attributes = callback(type, msg)
+
+    for (const key in attributes) {
+      if (Object.hasOwn(attributes, key)) {
+        const value = attributes[key]
+        if (typeof value === 'object' || typeof value === 'function') {
+          delete attributes[key]
+        } else if (key.indexOf('llm.') !== 0) {
+          delete attributes[key]
+          attributes[`llm.${key}`] = value
+        }
+      }
+    }
+
+    Object.assign(msg, attributes || {})
+    // console.log('updated event', msg);
+  })
 }
 
 module.exports = API
