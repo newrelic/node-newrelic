@@ -1916,9 +1916,8 @@ API.prototype.ignoreApdex = function ignoreApdex() {
  *
  * An example of setting a custom attribute:
  *
- *    newrelic.setLlmCustomAttributes((type, llmEvent) => {
- *      llmEvent['llm.testAttribute'] = 'testValue'
- *      return llmEvent
+ *    newrelic.setLlmCustomAttributes((type, msg) => {
+ *      return {'llm.testAttribute': 'testValue'}
  *    })
  *
  * @param {setLlmCustomAttributesCallback} callback A callback to handle recording of every LLM event.
