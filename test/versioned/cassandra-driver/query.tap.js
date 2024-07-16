@@ -142,7 +142,7 @@ test('Cassandra instrumentation', { timeout: 5000 }, async function testInstrume
     })
   })
 
-  t.test('executeBatch promise style', function (t) {
+  t.test('executeBatch - promise style', function (t) {
     t.notOk(agent.getTransaction(), 'no transaction should be in play')
     helper.runInTransaction(agent, function transactionInScope(tx) {
       const transaction = agent.getTransaction()
@@ -202,6 +202,7 @@ test('Cassandra instrumentation', { timeout: 5000 }, async function testInstrume
             return t.error(error)
           }
 
+          verifyTrace(t, transaction.trace, KS + '.' + FAM)
           transaction.end()
           t.ok(agent.queries.samples.size > 0, 'there should be a slow query')
           checkMetric(t)
@@ -261,7 +262,7 @@ test('Cassandra instrumentation', { timeout: 5000 }, async function testInstrume
 
       t.ok(
         setSegment.children.length >= 2,
-        'set should have atleast a dns lookup and callback child'
+        'set should have at least a dns lookup and callback/promise child'
       )
 
       const getSegment = findSegment(
