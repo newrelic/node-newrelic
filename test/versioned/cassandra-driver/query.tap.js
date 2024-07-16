@@ -158,14 +158,13 @@ test('Cassandra instrumentation', { timeout: 5000 }, async function testInstrume
                 'there should be two children of the root'
               )
               verifyTrace(t, transaction.trace, KS + '.' + FAM)
-
+              transaction.end()
               checkMetric(t)
             })
             .catch((error) => {
               t.fail(error)
             })
             .finally(() => {
-              transaction.end()
               t.end()
             })
         })
