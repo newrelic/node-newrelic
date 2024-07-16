@@ -274,7 +274,7 @@ test('Cassandra instrumentation', { timeout: 5000 }, async function testInstrume
       if (getSegment) {
         verifyTraceSegment(t, getSegment, 'select')
 
-        t.ok(getSegment.children.length >= 1, 'get should have a callback segment')
+        t.ok(getSegment.children.length >= 1, 'get should have a callback/promise segment')
         t.ok(getSegment.timer.hrDuration, 'trace segment should have ended')
       }
     }
@@ -283,7 +283,7 @@ test('Cassandra instrumentation', { timeout: 5000 }, async function testInstrume
   function verifyTraceSegment(t, segment, queryType) {
     t.equal(
       segment.name,
-      'Datastore/statement/Cassandra/test.testFamily/' + queryType,
+      'Datastore/statement/Cassandra/' + KS + '.' + FAM + '/' + queryType,
       'should register the execute'
     )
 
