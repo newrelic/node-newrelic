@@ -10,42 +10,7 @@ env:
   OUTPUT_MODE: quiet
 
 jobs:
-  should_run:
-    # We only want the test suites to run when code has changed, or when
-    # a dependency update has occurred.
-    runs-on: ubuntu-latest
-    permissions:
-      pull-requests: read
-    outputs:
-      javascript_changed: ${{ steps.filter.outputs.javascript }}
-      deps_changed: ${{ steps.deps.outputs.divergent }}
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 2
-      - uses: dorny/paths-filter@de90cc6fb38fc0963ad72b210f1f284cd68cea36
-        id: filter
-        with:
-          filters: |
-            javascript:
-              - 'api.js'
-              - 'esm-loader.mjs'
-              - 'index.js'
-              - 'stub_api.js'
-              - 'lib/**/*.{js,json,mjs,cjs}'
-              - 'test/**/*.{js,json,mjs,cjs}'
-      - uses: jsumners-nr/gha-node-deps-divergent@643628fe0da51ec025e984c4644f17fd9f9e93f6
-        id: deps
-        with:
-          base-sha: ${{ github.base_ref || 'main' }}
-          current-sha: ${{ github.sha }}
-
   benchmarks:
-    needs:
-      - should_run
-    if: github.event_name == 'workflow_dispatch' ||
-      (needs.should_run.outputs.javascript_changed == 'true' ||
-      needs.should_run.outputs.deps_changed == 'true')
     runs-on: ubuntu-latest
 
     strategy:
