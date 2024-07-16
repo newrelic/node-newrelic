@@ -1924,15 +1924,25 @@ API.prototype.ignoreApdex = function ignoreApdex() {
  */
 API.prototype.setLlmCustomAttributes = function setLlmCustomAttributes(callback) {
   this.agent.on('recordLlmEvent', function handler(type, msg) {
-    // console.log('record llm events fired', type, msg)
     const attributes = callback(type, msg)
+    if (!attributes) {
+      return
+    }
+    if (typeof attributes !== 'object') {
+      logger.warn(
+        `Invalid attributes provided for ${type} event. Object with key/value pairs like {"llm.attributeName": "someValue"} is expected`
+      )
+      return
+    }
 
     for (const key in attributes) {
       if (Object.hasOwn(attributes, key)) {
         const value = attributes[key]
         if (typeof value === 'object' || typeof value === 'function') {
+          logger.warn(`Invalid attribute type for ${key}. Skipped.`)
           delete attributes[key]
         } else if (key.indexOf('llm.') !== 0) {
+          logger.warn(`Invalid attribute name ${key}. Renamed to "llm.${key}".`)
           delete attributes[key]
           attributes[`llm.${key}`] = value
         }
@@ -1940,7 +1950,6 @@ API.prototype.setLlmCustomAttributes = function setLlmCustomAttributes(callback)
     }
 
     Object.assign(msg, attributes || {})
-    // console.log('updated event', msg);
   })
 }
 
