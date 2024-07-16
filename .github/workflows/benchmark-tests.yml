@@ -40,7 +40,7 @@ jobs:
           base-sha: ${{ github.base_ref || 'main' }}
           current-sha: ${{ github.sha }}
 
-  unit:
+  benchmarks:
     needs:
       - should_run
     if: github.event_name == 'workflow_dispatch' ||
@@ -62,7 +62,7 @@ jobs:
     - name: Install Dependencies
       run: npm install
     - name: Run Benchmark Tests
-      run: npm run bench
+      run: node ./bin/run-bench.js --branch=${{ github.base_ref || 'main' }}
     - name: Verify Benchmark Output
       run: ls benchmark_results
 

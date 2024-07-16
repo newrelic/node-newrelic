@@ -20,7 +20,11 @@ const globs = []
 const opts = Object.create(null)
 
 process.argv.slice(2).forEach(function forEachFileArg(file) {
-  if (/^--/.test(file)) {
+  if (/^--/.test(file) && file.indexOf('=') > -1) {
+    // this one has a value assigned
+    const arg = file.substring(2).split('=')
+    opts[arg[0]] = arg[1]
+  } else if (/^--/.test(file)) {
     opts[file.substring(2)] = true
   } else if (/[*]/.test(file)) {
     globs.push(path.join(benchpath, file))
@@ -69,13 +73,14 @@ class Printer {
       /* eslint-enable no-console */
     }
     const resultPath = 'benchmark_results'
+    const branch = opts.branch ? `${opts.branch}` : 'benchmark'
     try {
       await fs.stat(resultPath)
     } catch (e) {
       await fs.mkdir(resultPath)
     }
     const content = JSON.stringify(this._tests, null, 2)
-    const fileName = `${resultPath}/benchmark_${new Date().getTime()}.json`
+    const fileName = `${resultPath}/${branch}_${new Date().getTime()}.json`
     await fs.writeFile(fileName, content)
     console.log(`Done! Test output written to ${fileName}`)
   }
