@@ -121,6 +121,46 @@ tap.test('Agent API LLM methods', (t) => {
     })
   })
 
+  t.test('setLlmCustom attributes', async (t) => {
+    const { api } = t.context
+    let [verifyType, verifyMsg] = []
+    api.setLlmCustomAttributes((type, msg) => {
+      verifyType = type
+      verifyMsg = msg
+    })
+    const rce = api.recordCustomEvent
+    let event
+    api.recordCustomEvent = (name, data) => {
+      event = { name, data }
+      return rce.call(api, name, data)
+    }
+    t.teardown(() => {
+      api.recordCustomEvent = rce
+    })
+
+    helper.runInTransaction(api.agent, () => {
+      const result = api.recordLlmFeedbackEvent({
+        traceId: 'trace-id',
+        category: 'test-cat',
+        rating: '5 star',
+        metadata: { foo: 'foo' }
+      })
+      t.equal(result, undefined)
+      t.equal(loggerMock.warn.callCount, 0)
+      t.equal(verifyType, 'LlmFeedbackMessage')
+      t.not.not.undefined(verifyMsg)
+      t.match(event.data, {
+        id: /[\w\d]{32}/,
+        trace_id: 'trace-id',
+        category: 'test-cat',
+        rating: '5 star',
+        message: '',
+        foo: 'foo',
+        ingest_source: 'Node'
+      })
+    })
+  })
+
   t.test('setLlmTokenCount should register callback to calculate token counts', async (t) => {
     const { api, agent } = t.context
     function callback(model, content) {
