@@ -853,8 +853,6 @@ test('glob', { skip: nodeMajor < 22 }, function (t) {
 
       tx.end()
       t.ok(checkMetric(['glob'], agent, tx.name), 'metric should exist after transaction end')
-
-      t.end()
     })
   })
 })
