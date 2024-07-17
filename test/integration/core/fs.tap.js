@@ -13,7 +13,7 @@ const helper = require('../../lib/agent_helper')
 const verifySegments = require('./verify')
 const NAMES = require('../../../lib/metrics/names')
 
-const nodeMajor = parseInt(process.version.split('.')[0].replace('v', ''), 10)
+const isGlobSupported = require('semver').satisfies(process.version, '>=22.0.0')
 
 // delete temp files before process exits
 temp.track()
@@ -837,7 +837,7 @@ test('watchFile', function (t) {
   }, 10)
 })
 
-test('glob', { skip: nodeMajor < 22 }, function (t) {
+test('glob', { skip: isGlobSupported === false }, function (t) {
   const name = path.join(tempDir, 'glob-me')
   const content = 'some-content'
   fs.writeFileSync(name, content)
