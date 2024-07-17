@@ -13,6 +13,8 @@ const helper = require('../../lib/agent_helper')
 const verifySegments = require('./verify')
 const NAMES = require('../../../lib/metrics/names')
 
+const nodeMajor = parseInt(process.version.split('.')[0].replace('v', ''), 10)
+
 // delete temp files before process exits
 temp.track()
 
@@ -833,6 +835,28 @@ test('watchFile', function (t) {
       t.error(err, 'should not fail to write to file')
     })
   }, 10)
+})
+
+test('glob', { skip: nodeMajor < 22 }, function (t) {
+  const name = path.join(tempDir, 'glob-me')
+  const content = 'some-content'
+  fs.writeFileSync(name, content)
+  const agent = setupAgent(t)
+  helper.runInTransaction(agent, function (tx) {
+    fs.glob(`${tempDir}${path.sep}*glob-me*`, function (error, matches) {
+      t.error(error)
+
+      const match = matches.find((m) => m.includes('glob-me'))
+      t.ok(match, 'glob found file')
+
+      verifySegments(t, agent, NAMES.FS.PREFIX + 'glob')
+
+      tx.end()
+      t.ok(checkMetric(['glob'], agent, tx.name), 'metric should exist after transaction end')
+
+      t.end()
+    })
+  })
 })
 
 function setupAgent(t) {
