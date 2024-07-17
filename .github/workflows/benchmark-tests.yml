@@ -1,0 +1,38 @@
+name: Benchmark Tests
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron:  '0 10 * * 1'
+
+env:
+  # Enable versioned runner quiet mode to make CI output easier to read:
+  OUTPUT_MODE: quiet
+
+jobs:
+  benchmarks:
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        node-version: [16.x, 18.x, 20.x, 22.x]
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ matrix.node-version }}
+    - name: Install Dependencies
+      run: npm install
+    - name: Run Benchmark Tests
+      run: node ./bin/run-bench.js --filename=${{ github.base_ref || 'main' }}_${{ matrix.node-version }}
+    - name: Verify Benchmark Output
+      run: ls benchmark_results
+    - name: Archive Benchmark Test
+      uses: actions/upload-artifact@v4
+      with:
+        name: benchmark-tests-${{ github.base_ref || 'main' }}-${{ matrix.node-version }}
+        path: ./benchmark_results
+
