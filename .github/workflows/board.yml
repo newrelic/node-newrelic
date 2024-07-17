@@ -90,7 +90,7 @@ jobs:
         # Add Issue/PR to board depending on event type
         item_id="$( gh api graphql -f query='
           mutation($project:ID!, $id:ID!) {
-            addProjectV2ItemById(input: {projectId: $project, contentId: $pr}) {
+            addProjectV2ItemById(input: {projectId: $project, contentId: $id}) {
               item {
                 id
               }
