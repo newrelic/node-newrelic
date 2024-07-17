@@ -30,4 +30,9 @@ jobs:
       run: node ./bin/run-bench.js --filename=${{ github.base_ref || 'main' }}_${{ matrix.node-version }}
     - name: Verify Benchmark Output
       run: ls benchmark_results
+    - name: Archive Benchmark Test
+      uses: actions/upload-artifact@v4
+      with:
+        name: benchmark-tests-${{ github.base_ref || 'main' }}-${{ matrix.node-version }}
+        path: ./benchmark_results
 
