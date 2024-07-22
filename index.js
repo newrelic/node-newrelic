@@ -17,7 +17,6 @@ const featureFlags = require('./lib/feature_flags').prerelease
 const psemver = require('./lib/util/process-version')
 let logger = require('./lib/logger') // Gets re-loaded after initialization.
 const NAMES = require('./lib/metrics/names')
-const isESMSupported = psemver.satisfies('>=16.2.0')
 
 const pkgJSON = require('./package.json')
 logger.info(
@@ -246,15 +245,7 @@ function recordLoaderMetric(agent) {
       (arg === '--loader' || arg === '--experimental-loader') &&
       process.execArgv[index + 1] === 'newrelic/esm-loader.mjs'
     ) {
-      if (isESMSupported) {
-        agent.metrics.getOrCreateMetric(NAMES.FEATURES.ESM.LOADER).incrementCallCount()
-      } else {
-        agent.metrics.getOrCreateMetric(NAMES.FEATURES.ESM.UNSUPPORTED_LOADER)
-        logger.warn(
-          'New Relic for Node.js ESM loader requires a version of Node >= v16.12.0; your version is %s.  Instrumentation will not be registered.',
-          process.version
-        )
-      }
+      agent.metrics.getOrCreateMetric(NAMES.FEATURES.ESM.LOADER).incrementCallCount()
     }
   })
 

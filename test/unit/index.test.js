@@ -132,28 +132,6 @@ test('loader metrics', (t) => {
     t.end()
   })
 
-  t.test('should load preload unsupported metric if node version is <16.2.0', (t) => {
-    const processVersionStub = {
-      satisfies: sandbox.stub()
-    }
-    processVersionStub.satisfies.onCall(0).returns(false)
-    processVersionStub.satisfies.onCall(1).returns(true)
-    processVersionStub.satisfies.onCall(2).returns(true)
-    process.execArgv = ['--loader', 'newrelic/esm-loader.mjs']
-    const agent = proxyquire('../../index', {
-      './lib/util/process-version': processVersionStub,
-      './lib/agent': MockAgent,
-      './lib/shimmer': shimmerMock,
-      './api': ApiMock
-    })
-
-    const metricCall = agent.agent.metrics.getOrCreateMetric
-
-    t.equal(metricCall.args.length, 2)
-    t.equal(metricCall.args[0][0], 'Supportability/Features/ESM/UnsupportedLoader')
-    t.end()
-  })
-
   t.test('should load require metric when agent is required', (t) => {
     const agent = proxyquire('../../index', {
       './lib/agent': MockAgent,
