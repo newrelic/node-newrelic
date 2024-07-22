@@ -331,7 +331,7 @@ tap.test('Serverless mode harvest', (t) => {
       tx.finalizeNameFromUri(expectedUrl, 501)
 
       agent.config.transaction_tracer.record_sql = 'raw'
-      agent.config.transaction_tracer.explain_threshold = 0
+      agent.config.transaction_tracer.slow_query_threshold = 0
       agent.config.slow_sql.enabled = true
 
       const expectedSql = 'select pg_sleep(1)'

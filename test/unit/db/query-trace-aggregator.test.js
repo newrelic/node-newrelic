@@ -22,7 +22,7 @@ tap.test('Query Trace Aggregator', (t) => {
     const opts = {
       config: new Config({
         slow_sql: { enabled: false },
-        transaction_tracer: { record_sql: 'off', explain_threshold: 500 }
+        transaction_tracer: { record_sql: 'off', slow_query_threshold: 500 }
       }),
       method: 'sql_trace_data'
     }
@@ -49,7 +49,7 @@ tap.test('Query Trace Aggregator', (t) => {
       const opts = {
         config: new Config({
           slow_sql: { enabled: false },
-          transaction_tracer: { record_sql: 'off', explain_threshold: 500 }
+          transaction_tracer: { record_sql: 'off', slow_query_threshold: 500 }
         }),
         method: 'sql_trace_data'
       }
@@ -67,7 +67,7 @@ tap.test('Query Trace Aggregator', (t) => {
       const opts = {
         config: new Config({
           slow_sql: { enabled: false },
-          transaction_tracer: { record_sql: 'something else', explain_threshold: 500 }
+          transaction_tracer: { record_sql: 'something else', slow_query_threshold: 500 }
         }),
         method: 'sql_trace_data'
       }
@@ -85,7 +85,7 @@ tap.test('Query Trace Aggregator', (t) => {
       const opts = {
         config: new Config({
           slow_sql: { enabled: false },
-          transaction_tracer: { record_sql: 'obfuscated', explain_threshold: 500 }
+          transaction_tracer: { record_sql: 'obfuscated', slow_query_threshold: 500 }
         }),
         method: 'sql_trace_data'
       }
@@ -110,7 +110,7 @@ tap.test('Query Trace Aggregator', (t) => {
       const opts = {
         config: new Config({
           slow_sql: { enabled: false },
-          transaction_tracer: { record_sql: 'raw', explain_threshold: 500 }
+          transaction_tracer: { record_sql: 'raw', slow_query_threshold: 500 }
         }),
         method: 'sql_trace_data'
       }
@@ -131,11 +131,38 @@ tap.test('Query Trace Aggregator', (t) => {
       t.end()
     })
 
+    t.test('should not record if below legacy threshold', (t) => {
+      const opts = {
+        config: new Config({
+          slow_sql: { enabled: false },
+          // explain_threshold has been replaced by slow_query_threshold.
+          // This test is to verify backward compatibility so that we do not
+          // break existing users.
+          transaction_tracer: { record_sql: 'raw', explain_threshold: 500 }
+        }),
+        method: 'sql_trace_data'
+      }
+      const harvester = { add: sinon.stub() }
+      const queries = new QueryTraceAggregator(opts, {}, harvester)
+
+      const segment = addQuery(queries, 100)
+      t.hasProp(queries.samples, 'size')
+      t.equal(queries.samples.size, 0)
+      t.same(
+        segment.getAttributes(),
+        {
+          sql: 'select * from foo where a=2'
+        },
+        'should record sql in trace'
+      )
+      t.end()
+    })
+
     t.test('should not record if below threshold', (t) => {
       const opts = {
         config: new Config({
           slow_sql: { enabled: false },
-          transaction_tracer: { record_sql: 'raw', explain_threshold: 500 }
+          transaction_tracer: { record_sql: 'raw', slow_query_threshold: 500 }
         }),
         method: 'sql_trace_data'
       }
@@ -163,7 +190,7 @@ tap.test('Query Trace Aggregator', (t) => {
       const opts = {
         config: new Config({
           slow_sql: { enabled: true },
-          transaction_tracer: { record_sql: 'off', explain_threshold: 500 }
+          transaction_tracer: { record_sql: 'off', slow_query_threshold: 500 }
         }),
         method: 'sql_trace_data'
       }
@@ -181,7 +208,7 @@ tap.test('Query Trace Aggregator', (t) => {
       const opts = {
         config: new Config({
           slow_sql: { enabled: true },
-          transaction_tracer: { record_sql: 'something else', explain_threshold: 500 }
+          transaction_tracer: { record_sql: 'something else', slow_query_threshold: 500 }
         }),
         method: 'sql_trace_data'
       }
@@ -199,7 +226,7 @@ tap.test('Query Trace Aggregator', (t) => {
       const opts = {
         config: new Config({
           slow_sql: { enabled: true },
-          transaction_tracer: { record_sql: 'obfuscated', explain_threshold: 500 }
+          transaction_tracer: { record_sql: 'obfuscated', slow_query_threshold: 500 }
         }),
         method: 'sql_trace_data'
       }
@@ -229,7 +256,7 @@ tap.test('Query Trace Aggregator', (t) => {
       const opts = {
         config: new Config({
           slow_sql: { enabled: true },
-          transaction_tracer: { record_sql: 'raw', explain_threshold: 500 }
+          transaction_tracer: { record_sql: 'raw', slow_query_threshold: 500 }
         }),
         method: 'sql_trace_data'
       }
@@ -259,7 +286,7 @@ tap.test('Query Trace Aggregator', (t) => {
       const opts = {
         config: new Config({
           slow_sql: { enabled: true },
-          transaction_tracer: { record_sql: 'raw', explain_threshold: 500 }
+          transaction_tracer: { record_sql: 'raw', slow_query_threshold: 500 }
         }),
         method: 'sql_trace_data'
       }
@@ -292,7 +319,7 @@ tap.test('Query Trace Aggregator', (t) => {
         const opts = {
           config: new Config({
             slow_sql: { enabled: true },
-            transaction_tracer: { record_sql: 'raw', explain_threshold: 500 }
+            transaction_tracer: { record_sql: 'raw', slow_query_threshold: 500 }
           }),
           method: 'sql_trace_data'
         }
@@ -491,7 +518,7 @@ tap.test('Query Trace Aggregator', (t) => {
         const opts = {
           config: new Config({
             slow_sql: { enabled: true },
-            transaction_tracer: { record_sql: 'obfuscated', explain_threshold: 500 }
+            transaction_tracer: { record_sql: 'obfuscated', slow_query_threshold: 500 }
           }),
           method: 'sql_trace_data'
         }
@@ -509,7 +536,7 @@ tap.test('Query Trace Aggregator', (t) => {
         const opts = {
           config: new Config({
             slow_sql: { enabled: true },
-            transaction_tracer: { record_sql: 'obfuscated', explain_threshold: 500 }
+            transaction_tracer: { record_sql: 'obfuscated', slow_query_threshold: 500 }
           }),
           method: 'sql_trace_data'
         }
@@ -549,7 +576,7 @@ tap.test('Query Trace Aggregator', (t) => {
         const opts = {
           config: new Config({
             slow_sql: { enabled: true },
-            transaction_tracer: { record_sql: 'obfuscated', explain_threshold: 500 }
+            transaction_tracer: { record_sql: 'obfuscated', slow_query_threshold: 500 }
           }),
           method: 'sql_trace_data'
         }
@@ -594,7 +621,7 @@ tap.test('Query Trace Aggregator', (t) => {
         const opts = {
           config: new Config({
             slow_sql: { enabled: true },
-            transaction_tracer: { record_sql: 'obfuscated', explain_threshold: 500 }
+            transaction_tracer: { record_sql: 'obfuscated', slow_query_threshold: 500 }
           }),
           method: 'sql_trace_data'
         }
@@ -666,7 +693,7 @@ tap.test('Query Trace Aggregator', (t) => {
         const opts = {
           config: new Config({
             slow_sql: { enabled: true },
-            transaction_tracer: { record_sql: 'raw', explain_threshold: 500 }
+            transaction_tracer: { record_sql: 'raw', slow_query_threshold: 500 }
           }),
           method: 'sql_trace_data'
         }
@@ -684,7 +711,7 @@ tap.test('Query Trace Aggregator', (t) => {
         const opts = {
           config: new Config({
             slow_sql: { enabled: true },
-            transaction_tracer: { record_sql: 'raw', explain_threshold: 500 }
+            transaction_tracer: { record_sql: 'raw', slow_query_threshold: 500 }
           }),
           method: 'sql_trace_data'
         }
@@ -724,7 +751,7 @@ tap.test('Query Trace Aggregator', (t) => {
         const opts = {
           config: new Config({
             slow_sql: { enabled: true },
-            transaction_tracer: { record_sql: 'raw', explain_threshold: 500 }
+            transaction_tracer: { record_sql: 'raw', slow_query_threshold: 500 }
           }),
           method: 'sql_trace_data'
         }
@@ -769,7 +796,7 @@ tap.test('Query Trace Aggregator', (t) => {
         const opts = {
           config: new Config({
             slow_sql: { enabled: true },
-            transaction_tracer: { record_sql: 'raw', explain_threshold: 500 }
+            transaction_tracer: { record_sql: 'raw', slow_query_threshold: 500 }
           }),
           method: 'sql_trace_data'
         }
@@ -844,7 +871,7 @@ tap.test('Query Trace Aggregator', (t) => {
         const opts = {
           config: new Config({
             slow_sql: { enabled: true },
-            transaction_tracer: { record_sql: 'obfuscated', explain_threshold: 500 }
+            transaction_tracer: { record_sql: 'obfuscated', slow_query_threshold: 500 }
           }),
           method: 'sql_trace_data'
         }
@@ -862,7 +889,7 @@ tap.test('Query Trace Aggregator', (t) => {
         const opts = {
           config: new Config({
             slow_sql: { enabled: true },
-            transaction_tracer: { record_sql: 'obfuscated', explain_threshold: 500 }
+            transaction_tracer: { record_sql: 'obfuscated', slow_query_threshold: 500 }
           }),
           method: 'sql_trace_data'
         }
@@ -902,7 +929,7 @@ tap.test('Query Trace Aggregator', (t) => {
         const opts = {
           config: new Config({
             slow_sql: { enabled: true },
-            transaction_tracer: { record_sql: 'obfuscated', explain_threshold: 500 }
+            transaction_tracer: { record_sql: 'obfuscated', slow_query_threshold: 500 }
           }),
           method: 'sql_trace_data'
         }
@@ -947,7 +974,7 @@ tap.test('Query Trace Aggregator', (t) => {
         const opts = {
           config: new Config({
             slow_sql: { enabled: true },
-            transaction_tracer: { record_sql: 'obfuscated', explain_threshold: 500 }
+            transaction_tracer: { record_sql: 'obfuscated', slow_query_threshold: 500 }
           }),
           method: 'sql_trace_data'
         }
@@ -1020,7 +1047,7 @@ tap.test('Query Trace Aggregator', (t) => {
       const opts = {
         config: new Config({
           slow_sql: { enabled: true, max_samples: 2 },
-          transaction_tracer: { record_sql: 'obfuscated', explain_threshold: 500 }
+          transaction_tracer: { record_sql: 'obfuscated', slow_query_threshold: 500 }
         }),
         method: 'sql_trace_data'
       }
@@ -1052,7 +1079,7 @@ tap.test('Query Trace Aggregator', (t) => {
       const opts = {
         config: new Config({
           slow_sql: { enabled: true },
-          transaction_tracer: { record_sql: 'obfuscated', explain_threshold: 500 }
+          transaction_tracer: { record_sql: 'obfuscated', slow_query_threshold: 500 }
         }),
         method: 'sql_trace_data'
       }
@@ -1062,7 +1089,7 @@ tap.test('Query Trace Aggregator', (t) => {
       const opts2 = {
         config: new Config({
           slow_sql: { enabled: true },
-          transaction_tracer: { record_sql: 'obfuscated', explain_threshold: 500 }
+          transaction_tracer: { record_sql: 'obfuscated', slow_query_threshold: 500 }
         }),
         method: 'sql_trace_data'
       }

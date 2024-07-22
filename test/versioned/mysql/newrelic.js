@@ -24,7 +24,7 @@ exports.config = {
   },
   transaction_tracer: {
     record_sql: 'raw',
-    explain_threshold: 0,
+    slow_query_threshold: 0,
     enabled: true
   }
 }

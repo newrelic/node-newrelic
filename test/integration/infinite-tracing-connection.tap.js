@@ -288,7 +288,7 @@ const infiniteTracingService = grpc.loadPackageDefinition(packageDefinition).com
               slow_sql: { enabled: true },
               transaction_tracer: {
                 record_sql: 'obfuscated',
-                explain_threshold: Number.MIN_VALUE // force SQL traces
+                slow_query_threshold: Number.MIN_VALUE // force SQL traces
               },
               infinite_tracing: {
                 ...config,

@@ -561,6 +561,13 @@ tap.test('when overriding configuration values via environment variables', (t) =
     })
   })
 
+  t.test('should pickup slow_query_threshold', (t) => {
+    idempotentEnv({ NEW_RELIC_SLOW_QUERY_THRESHOLD: '100' }, (tc) => {
+      t.equal(tc.transaction_tracer.slow_query_threshold, 100)
+      t.end()
+    })
+  })
+
   t.test('should pickup slow_sql.enabled', (t) => {
     idempotentEnv({ NEW_RELIC_SLOW_SQL_ENABLED: 'true' }, (tc) => {
       t.equal(tc.slow_sql.enabled, true)

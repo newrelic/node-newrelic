@@ -103,7 +103,7 @@ tap.test('Basic run through prisma functionality', { timeout: 30 * 1000 }, (t) =
 
   t.test('should add datastore instance params to slow query traces', (t) => {
     // enable slow queries
-    agent.config.transaction_tracer.explain_threshold = 0
+    agent.config.transaction_tracer.slow_query_threshold = 0
     agent.config.transaction_tracer.record_sql = 'raw'
     agent.config.slow_sql.enabled = true
     helper.runInTransaction(agent, async (tx) => {
@@ -117,7 +117,7 @@ tap.test('Basic run through prisma functionality', { timeout: 30 * 1000 }, (t) =
 
   t.test('should not add datastore instance params to slow query traces when disabled', (t) => {
     // enable slow queries
-    agent.config.transaction_tracer.explain_threshold = 0
+    agent.config.transaction_tracer.slow_query_threshold = 0
     agent.config.transaction_tracer.record_sql = 'raw'
     agent.config.slow_sql.enabled = true
     // disable datastore instance

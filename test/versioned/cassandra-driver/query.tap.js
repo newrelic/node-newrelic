@@ -179,7 +179,7 @@ test('Cassandra instrumentation', { timeout: 5000 }, async function testInstrume
     t.notOk(agent.getTransaction(), 'no transaction should be in play')
     helper.runInTransaction(agent, function transactionInScope(tx) {
       // enable slow queries
-      agent.config.transaction_tracer.explain_threshold = 1
+      agent.config.transaction_tracer.slow_query_threshold = 1
       agent.config.transaction_tracer.record_sql = 'raw'
       agent.config.slow_sql.enabled = true
 

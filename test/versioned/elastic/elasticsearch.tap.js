@@ -198,7 +198,7 @@ test('Elasticsearch instrumentation', (t) => {
 
   t.test('should record search with query string', async function (t) {
     // enable slow queries
-    agent.config.transaction_tracer.explain_threshold = 0
+    agent.config.transaction_tracer.slow_query_threshold = 0
     agent.config.transaction_tracer.record_sql = 'raw'
     agent.config.slow_sql.enabled = true
     await helper.runInTransaction(agent, async function transactionInScope(transaction) {
@@ -231,7 +231,7 @@ test('Elasticsearch instrumentation', (t) => {
   })
   t.test('should record search with request body', async function (t) {
     // enable slow queries
-    agent.config.transaction_tracer.explain_threshold = 0
+    agent.config.transaction_tracer.slow_query_threshold = 0
     agent.config.transaction_tracer.record_sql = 'raw'
     agent.config.slow_sql.enabled = true
     await helper.runInTransaction(agent, async function transactionInScope(transaction) {
@@ -270,7 +270,7 @@ test('Elasticsearch instrumentation', (t) => {
 
   t.test('should record search across indices', async function (t) {
     // enable slow queries
-    agent.config.transaction_tracer.explain_threshold = 0
+    agent.config.transaction_tracer.slow_query_threshold = 0
     agent.config.transaction_tracer.record_sql = 'raw'
     agent.config.slow_sql.enabled = true
     await helper.runInTransaction(agent, async function transactionInScope(transaction) {
@@ -303,7 +303,7 @@ test('Elasticsearch instrumentation', (t) => {
     })
   })
   t.test('should record msearch', async function (t) {
-    agent.config.transaction_tracer.explain_threshold = 0
+    agent.config.transaction_tracer.slow_query_threshold = 0
     agent.config.transaction_tracer.record_sql = 'raw'
     agent.config.slow_sql.enabled = true
     await helper.runInTransaction(agent, async function transactionInScope(transaction) {
@@ -351,7 +351,7 @@ test('Elasticsearch instrumentation', (t) => {
   })
 
   t.test('should record msearch via helpers', async function (t) {
-    agent.config.transaction_tracer.explain_threshold = 0
+    agent.config.transaction_tracer.slow_query_threshold = 0
     agent.config.transaction_tracer.record_sql = 'raw'
     agent.config.slow_sql.enabled = true
     await helper.runInTransaction(agent, async function transactionInScope(transaction) {

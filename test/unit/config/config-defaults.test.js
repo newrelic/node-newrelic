@@ -173,6 +173,11 @@ tap.test('with default properties', (t) => {
     t.end()
   })
 
+  t.test('should have an slow query threshold of 500ms', (t) => {
+    t.equal(configuration.transaction_tracer.slow_query_threshold, 500)
+    t.end()
+  })
+
   t.test('should not capture slow queries', (t) => {
     t.equal(configuration.slow_sql.enabled, false)
     t.end()

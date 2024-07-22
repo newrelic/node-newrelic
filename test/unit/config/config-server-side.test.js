@@ -206,6 +206,14 @@ tap.test('when receiving server-side configuration', (t) => {
     t.end()
   })
 
+  t.test('should not configure slow_query_threshold', (t) => {
+    t.equal(config.transaction_tracer.slow_query_threshold, 500)
+    config.onConnect({ 'transaction_tracer.slow_query_threshold': 100 })
+    t.equal(config.transaction_tracer.slow_query_threshold, 500)
+
+    t.end()
+  })
+
   t.test('should not configure slow_sql.enabled', (t) => {
     t.equal(config.slow_sql.enabled, false)
 

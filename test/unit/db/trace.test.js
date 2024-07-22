@@ -17,7 +17,7 @@ tap.test('SQL trace attributes', function (t) {
       },
       transaction_tracer: {
         record_sql: 'raw',
-        explain_threshold: 0
+        slow_query_threshold: 0
       }
     })
   })
