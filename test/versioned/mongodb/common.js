@@ -7,7 +7,6 @@
 
 const mongoPackage = require('mongodb/package.json')
 const params = require('../../lib/params')
-const semver = require('semver')
 const urltils = require('../../../lib/util/urltils')
 
 const MONGO_SEGMENT_RE = /^Datastore\/.*?\/MongoDB/
@@ -23,87 +22,17 @@ exports.COLLECTIONS = COLLECTIONS
 exports.STATEMENT_PREFIX = STATEMENT_PREFIX
 exports.pkgVersion = mongoPackage.version
 
-// Check package versions to decide which connect function to use below
-exports.connect = function connect() {
-  if (semver.satisfies(mongoPackage.version, '<3')) {
-    return connectV2.apply(this, arguments)
-  } else if (semver.satisfies(mongoPackage.version, '>=3 <4.2.0')) {
-    return connectV3.apply(this, arguments)
-  }
-  return connectV4.apply(this, arguments)
-}
-
-exports.close = function close() {
-  if (semver.satisfies(mongoPackage.version, '<4')) {
-    return closeLegacy.apply(this, arguments)
-  }
-  return closeAsync.apply(this, arguments)
-}
-
+exports.connect = connect
+exports.close = close
 exports.checkMetrics = checkMetrics
 exports.getHostName = getHostName
 exports.getPort = getPort
 
-function connectV2(mongodb, path) {
-  return new Promise((resolve, reject) => {
-    let server = null
-    if (path) {
-      server = new mongodb.Server(path)
-    } else {
-      server = new mongodb.Server(params.mongodb_host, params.mongodb_port, {
-        socketOptions: {
-          connectionTimeoutMS: 30000,
-          socketTimeoutMS: 30000
-        }
-      })
-    }
-
-    const db = new mongodb.Db(DB_NAME, server)
-
-    db.open(function (err) {
-      if (err) {
-        reject(err)
-      }
-
-      resolve({ db, client: null })
-    })
-  })
-}
-
-function connectV3(mongodb, host, replicaSet = false) {
-  return new Promise((resolve, reject) => {
-    if (host) {
-      host = encodeURIComponent(host)
-    } else {
-      host = params.mongodb_host + ':' + params.mongodb_port
-    }
-
-    let connString = `mongodb://${host}`
-    let options = {}
-
-    if (replicaSet) {
-      connString = `mongodb://${host},${host},${host}`
-      options = { useNewUrlParser: true, useUnifiedTopology: true }
-    }
-    mongodb.MongoClient.connect(connString, options, function (err, client) {
-      if (err) {
-        reject(err)
-      }
-
-      const db = client.db(DB_NAME)
-      resolve({ db, client })
-    })
-  })
-}
-
-// This is same as connectV3 except it uses a different
-// set of params to connect to the mongodb_v4 container
-// it is actually just using the `mongodb:5` image
-async function connectV4(mongodb, host, replicaSet = false) {
+async function connect(mongodb, host, replicaSet = false) {
   if (host) {
     host = encodeURIComponent(host)
   } else {
-    host = params.mongodb_v4_host + ':' + params.mongodb_v4_port
+    host = params.mongodb_host + ':' + params.mongodb_port
   }
 
   let connString = `mongodb://${host}`
@@ -118,19 +47,7 @@ async function connectV4(mongodb, host, replicaSet = false) {
   return { db, client }
 }
 
-function closeLegacy(client, db) {
-  return new Promise((resolve) => {
-    if (db && typeof db.close === 'function') {
-      db.close(resolve)
-    } else if (client) {
-      client.close(true, resolve)
-    } else {
-      resolve()
-    }
-  })
-}
-
-async function closeAsync(client, db) {
+async function close(client, db) {
   if (db && typeof db.close === 'function') {
     await db.close()
   } else if (client) {
@@ -139,16 +56,12 @@ async function closeAsync(client, db) {
 }
 
 function getHostName(agent) {
-  const host = semver.satisfies(mongoPackage.version, '>=4.2.0')
-    ? params.mongodb_v4_host
-    : params.mongodb_host
+  const host = params.mongodb_host
   return urltils.isLocalhost(host) ? agent.config.getHostnameSafe() : host
 }
 
 function getPort() {
-  return semver.satisfies(mongoPackage.version, '>=4.2.0')
-    ? String(params.mongodb_v4_port)
-    : String(params.mongodb_port)
+  return String(params.mongodb_port)
 }
 
 function checkMetrics(t, agent, host, port, metrics) {

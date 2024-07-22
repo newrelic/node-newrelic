@@ -9,26 +9,6 @@
         "node": ">=18"
       },
       "dependencies": {
-        "mongodb": {
-          "versions": ">=2.1 < 4.0.0",
-          "samples": "2"
-        }
-      },
-      "files": [
-        "legacy/bulk.tap.js",
-        "legacy/cursor.tap.js",
-        "legacy/db.tap.js",
-        "legacy/find.tap.js",
-        "legacy/index.tap.js",
-        "legacy/misc.tap.js",
-        "legacy/update.tap.js"
-      ]
-    },
-    {
-      "engines": {
-        "node": ">=18"
-      },
-      "dependencies": {
         "mongodb": ">=4.1.4"
       },
       "files": [
@@ -41,9 +21,5 @@
         "db.tap.js"
       ]
     }
-  ],
-  "dependencies": {},
-  "engines": {
-    "node": ">=18"
-  }
+  ]
 }
