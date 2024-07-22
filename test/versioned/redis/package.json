@@ -6,7 +6,7 @@
   "tests": [
     {
       "engines": {
-        "node": ">=16"
+        "node": ">=18"
       },
       "dependencies": {
         "redis": ">=2.0.0 < 2.3.0"
@@ -17,7 +17,7 @@
     },
     {
       "engines": {
-        "node": ">=16"
+        "node": ">=18"
       },
       "dependencies": {
         "redis": ">=2.3.0 < 2.4.0"
@@ -28,7 +28,7 @@
     },
     {
       "engines": {
-        "node": ">=16"
+        "node": ">=18"
       },
       "dependencies": {
         "redis": ">=2.4.0 < 2.6.0"
@@ -39,7 +39,7 @@
     },
     {
       "engines": {
-        "node": ">=16"
+        "node": ">=18"
       },
       "dependencies": {
         "redis": ">=2.6.0 < 4.0.0"
@@ -50,7 +50,7 @@
     },
     {
       "engines": {
-        "node": ">=16"
+        "node": ">=18"
       },
       "dependencies": {
         "redis": ">=4.0.0"

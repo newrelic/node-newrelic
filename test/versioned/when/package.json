@@ -6,7 +6,7 @@
   "tests": [
     {
       "engines": {
-        "node": ">=16"
+        "node": ">=18"
       },
       "dependencies": {
         "when": ">=3.7.0"

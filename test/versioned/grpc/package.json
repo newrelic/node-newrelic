@@ -6,7 +6,7 @@
   "tests": [
     {
       "engines": {
-        "node": ">=16"
+        "node": ">=18"
       },
       "dependencies": {
         "@grpc/grpc-js": ">=1.4.0 <1.8.0"
@@ -24,7 +24,7 @@
     },
     {
       "engines": {
-        "node": ">=16"
+        "node": ">=18"
       },
       "dependencies": {
         "@grpc/grpc-js": ">=1.8.0"
