@@ -9,43 +9,26 @@
 * Updated aws-sdk v3 instrumentation to custom middleware last to properly get the external http span to add aws.* attributes ([#2382](https://github.com/newrelic/node-newrelic/pull/2382)) ([751801b](https://github.com/newrelic/node-newrelic/commit/751801be814343c9ddcee3dd7e83f87a1c6786d4))
 * Updated cassandra-driver instrumentation to properly trace promise based executions ([#2351](https://github.com/newrelic/node-newrelic/pull/2351)) ([bab9a8b](https://github.com/newrelic/node-newrelic/commit/bab9a8bab4ab6af8efa70d8559bdcc7ca6f5df32))
 
-#### Code refactoring
-
-* consolidated adding issue/pr to board and assigning the appropriate status into 1 step ([#2368](https://github.com/newrelic/node-newrelic/pull/2368)) ([5084b06](https://github.com/newrelic/node-newrelic/commit/5084b06a26ff30a95525d9b373164984db2b76fe))
-* fixed syntax error with add to board workflow ([#2370](https://github.com/newrelic/node-newrelic/pull/2370)) ([d16e258](https://github.com/newrelic/node-newrelic/commit/d16e258c9970fefd310810a32f0b68998db85ad0))
-* remove examples/api/ ([#2381](https://github.com/newrelic/node-newrelic/pull/2381)) ([fb964de](https://github.com/newrelic/node-newrelic/commit/fb964de863f8989161f9a780f9eddc6e3ec91138))
-
 #### Documentation
 
+* Remove examples/api/ ([#2381](https://github.com/newrelic/node-newrelic/pull/2381)) ([fb964de](https://github.com/newrelic/node-newrelic/commit/fb964de863f8989161f9a780f9eddc6e3ec91138))
 * Removed out of date ROADMAP_Node.md from root of project ([#2367](https://github.com/newrelic/node-newrelic/pull/2367)) ([4be870c](https://github.com/newrelic/node-newrelic/commit/4be870c758d9b931866ef3e6781d01bf176671a9))
 * Updated compatibility report ([#2345](https://github.com/newrelic/node-newrelic/pull/2345)) ([f08adc3](https://github.com/newrelic/node-newrelic/commit/f08adc3a30bdf3e5d23bd00efeb3b16ac06cd3e5))
-    * Co-authored-by: bizob2828 <1874937+bizob2828@users.noreply.github.com>
 
 #### Miscellaneous chores
 
-* Always upload status logs in compat report CI ([#2341](https://github.com/newrelic/node-newrelic/pull/2341)) ([b3f1ee3](https://github.com/newrelic/node-newrelic/commit/b3f1ee3fe40c38c7484661dfb2e599df4f31003e))
-* fix board refactor ([#2371](https://github.com/newrelic/node-newrelic/pull/2371)) ([5271110](https://github.com/newrelic/node-newrelic/commit/5271110f9793c00b57dcd6917362a696a339e69e))
-* Reverted "ci: Pin Node 22 to 22.4.1" ([#2383](https://github.com/newrelic/node-newrelic/pull/2383)) ([b878930](https://github.com/newrelic/node-newrelic/commit/b878930ff0eb3f71c4ea0a23820cc1dab94a7607))
+* Always upload status logs in compatibility report CI ([#2341](https://github.com/newrelic/node-newrelic/pull/2341)) ([b3f1ee3](https://github.com/newrelic/node-newrelic/commit/b3f1ee3fe40c38c7484661dfb2e599df4f31003e))
 
 #### Tests
 
 * Removed server.start in grpc tests as it is deprecated and no longer needed ([#2372](https://github.com/newrelic/node-newrelic/pull/2372)) ([d212b15](https://github.com/newrelic/node-newrelic/commit/d212b15c929ebca22881f3d41a8d7f99033847a8))
 * Updated benchmark test results to output result files ([#2350](https://github.com/newrelic/node-newrelic/pull/2350)) ([1b51a68](https://github.com/newrelic/node-newrelic/commit/1b51a68200dae14b865a6db06d62655a25a62c2d))
-    * Signed-off-by: mrickard <maurice@mauricerickard.com> Co-authored-by: Bob Evans <robert.evans25@gmail.com>
 
 #### Continuous integration
 
 * Added benchmark test GitHub Action ([#2366](https://github.com/newrelic/node-newrelic/pull/2366)) ([afd3ab4](https://github.com/newrelic/node-newrelic/commit/afd3ab48611ec8409be1472ebbc63db24cff8e73))
-    * Signed-off-by: mrickard <maurice@mauricerickard.com>
-* Changed the default project idea for our org board ([#2355](https://github.com/newrelic/node-newrelic/pull/2355)) ([fb03dbd](https://github.com/newrelic/node-newrelic/commit/fb03dbd02430745f305325ca84329323f6811321))
-* Changed the default project idea for our org board ([#2353](https://github.com/newrelic/node-newrelic/pull/2353)) ([9ed8661](https://github.com/newrelic/node-newrelic/commit/9ed8661b086e1d8fe59eb92062efc18ba98a8761))
-* Fixed issue with obtaining node id for issues in add-to-board ([#2360](https://github.com/newrelic/node-newrelic/pull/2360)) ([57005d7](https://github.com/newrelic/node-newrelic/commit/57005d7b0cb459eb6d914b3748a537c31897c643))
-* Fixed syntax issue with parsing jq ([#2362](https://github.com/newrelic/node-newrelic/pull/2362)) ([2a2a65d](https://github.com/newrelic/node-newrelic/commit/2a2a65d4a8d0b178ea488e0c8e7c6bf59dd6fc5e))
-* Include date created when adding new issue/pr to board ([#2374](https://github.com/newrelic/node-newrelic/pull/2374)) ([3723368](https://github.com/newrelic/node-newrelic/commit/372336828c17cb422e8bd627d2dd9bc7d2076b6e))
-* increase the limit of installs from 2 to a bigger number ([#2346](https://github.com/newrelic/node-newrelic/pull/2346)) ([f85a385](https://github.com/newrelic/node-newrelic/commit/f85a38524f1d41e82b2c5085c41d79d1263b63c3))
-* Pin Node 22 to 22.4.1 ([#2375](https://github.com/newrelic/node-newrelic/pull/2375)) ([c6a822b](https://github.com/newrelic/node-newrelic/commit/c6a822b0d80e2a9380c46bc4a605a7d3553ec531))
+* Increase the limit of installs from 2 to a bigger number for versioned tests ([#2346](https://github.com/newrelic/node-newrelic/pull/2346)) ([f85a385](https://github.com/newrelic/node-newrelic/commit/f85a38524f1d41e82b2c5085c41d79d1263b63c3))
 * Updated `bin/create-docs-pr` to create an empty array if changelog.json is missing security ([#2348](https://github.com/newrelic/node-newrelic/pull/2348)) ([7d5368c](https://github.com/newrelic/node-newrelic/commit/7d5368ce873affbf2593bd6b1cc32259da852e1d))
-* Updated board workflow to use new graphql calls to add items to project board ([#2357](https://github.com/newrelic/node-newrelic/pull/2357)) ([3caf45a](https://github.com/newrelic/node-newrelic/commit/3caf45a66dd1b8984901e2212f787bc400a82a79))
 
 ### v11.23.1 (2024-07-11)
 
