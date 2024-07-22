@@ -32,6 +32,7 @@ const obfuscate = require('./lib/util/sql/obfuscate')
 const { DESTINATIONS } = require('./lib/config/attribute-filter')
 const parse = require('module-details-from-path')
 const { isSimpleObject } = require('./lib/util/objects')
+const { AsyncLocalStorage } = require('async_hooks')
 
 /*
  *
@@ -1951,6 +1952,18 @@ API.prototype.setLlmCustomAttributes = function setLlmCustomAttributes(callback)
 
     Object.assign(msg, attributes || {})
   })
+}
+
+API.prototype.withLlmCustomAttributes = function withLlmCustomAttributes(context, callback) {
+  const transaction = this.agent.tracer.getTransaction()
+
+  if (!transaction) {
+    logger.warn('withLlmCustomAttributes must be called within the scope of a transaction.')
+    return
+  }
+
+  transaction._llmContext = new AsyncLocalStorage()
+  transaction._llmContext.run(context, callback)
 }
 
 module.exports = API
