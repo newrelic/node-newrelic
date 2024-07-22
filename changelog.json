@@ -6,11 +6,11 @@
       "changes": {
         "security": [],
         "bugfixes": [
-          "Updated aws-sdk v3 instrumentation to custom middleware last to properly get the external http span to add aws.* attributes",
+          "Updated aws-sdk v3 instrumentation to load custom middleware last to properly get the external http span to add `aws.*` attributes",
           "Updated cassandra-driver instrumentation to properly trace promise based executions"
         ],
         "features": [
-          "Added support for fs.glob in Node 22+"
+          "Added support for `fs.glob` in Node 22+"
         ]
       }
     },
