@@ -200,8 +200,7 @@ test('index tests', (t) => {
     sandbox.stub(console, 'error')
     k2Stub = { start: sandbox.stub() }
     processVersionStub.satisfies.onCall(0).returns(true)
-    processVersionStub.satisfies.onCall(1).returns(true)
-    processVersionStub.satisfies.onCall(2).returns(false)
+    processVersionStub.satisfies.onCall(1).returns(false)
     mockConfig.applications.returns(['my-app-name'])
     MockAgent.prototype.start.yields(null)
     shimmerMock = createShimmerMock(sandbox)
@@ -265,7 +264,7 @@ test('index tests', (t) => {
   })
 
   t.test('should throw error if using an unsupported version of Node.js', (t) => {
-    processVersionStub.satisfies.onCall(1).returns(false)
+    processVersionStub.satisfies.onCall(0).returns(false)
     loadIndex()
     t.equal(loggerMock.error.callCount, 1, 'should log an error')
     t.match(loggerMock.error.args[0][0], /New Relic for Node.js requires a version of Node/)
@@ -275,7 +274,6 @@ test('index tests', (t) => {
   t.test('should log warning if using an odd version of node', (t) => {
     processVersionStub.satisfies.onCall(0).returns(true)
     processVersionStub.satisfies.onCall(1).returns(true)
-    processVersionStub.satisfies.onCall(2).returns(true)
     configMock.getOrCreateInstance.returns(null)
     loadIndex()
     t.equal(loggerMock.warn.callCount, 1, 'should log an error')
@@ -286,8 +284,7 @@ test('index tests', (t) => {
   t.test('should use stub api if no config detected', (t) => {
     configMock.getOrCreateInstance.returns(null)
     processVersionStub.satisfies.onCall(0).returns(true)
-    processVersionStub.satisfies.onCall(1).returns(true)
-    processVersionStub.satisfies.onCall(2).returns(false)
+    processVersionStub.satisfies.onCall(1).returns(false)
     const api = loadIndex()
     t.equal(loggerMock.info.callCount, 2, 'should log info logs')
     t.equal(loggerMock.info.args[1][0], 'No configuration detected. Not starting.')
@@ -298,8 +295,7 @@ test('index tests', (t) => {
   t.test('should use stub api if agent_enabled is false', (t) => {
     configMock.getOrCreateInstance.returns({ agent_enabled: false })
     processVersionStub.satisfies.onCall(0).returns(true)
-    processVersionStub.satisfies.onCall(1).returns(true)
-    processVersionStub.satisfies.onCall(2).returns(false)
+    processVersionStub.satisfies.onCall(1).returns(false)
     const api = loadIndex()
     t.equal(loggerMock.info.callCount, 2, 'should log info logs')
     t.equal(loggerMock.info.args[1][0], 'Module disabled in configuration. Not starting.')
@@ -310,8 +306,7 @@ test('index tests', (t) => {
   t.test('should log warning when logging diagnostics is enabled', (t) => {
     mockConfig.logging.diagnostics = true
     processVersionStub.satisfies.onCall(0).returns(true)
-    processVersionStub.satisfies.onCall(1).returns(true)
-    processVersionStub.satisfies.onCall(2).returns(false)
+    processVersionStub.satisfies.onCall(1).returns(false)
     loadIndex()
     t.equal(
       loggerMock.warn.args[0][0],
@@ -322,8 +317,7 @@ test('index tests', (t) => {
 
   t.test('should throw error is app name is not set in config', (t) => {
     processVersionStub.satisfies.onCall(0).returns(true)
-    processVersionStub.satisfies.onCall(1).returns(true)
-    processVersionStub.satisfies.onCall(2).returns(false)
+    processVersionStub.satisfies.onCall(1).returns(false)
     mockConfig.applications.returns([])
     loadIndex()
     t.equal(loggerMock.error.callCount, 1, 'should log an error')
@@ -333,8 +327,7 @@ test('index tests', (t) => {
 
   t.test('should log error if agent startup failed', (t) => {
     processVersionStub.satisfies.onCall(0).returns(true)
-    processVersionStub.satisfies.onCall(1).returns(true)
-    processVersionStub.satisfies.onCall(2).returns(false)
+    processVersionStub.satisfies.onCall(1).returns(false)
     mockConfig.applications.returns(['my-app-name'])
     const err = new Error('agent start failed')
     MockAgent.prototype.start.yields(err)
