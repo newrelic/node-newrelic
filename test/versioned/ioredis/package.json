@@ -9,17 +9,6 @@
         "node": ">=18"
       },
       "dependencies": {
-        "ioredis": "3.x"
-      },
-      "files": [
-        "ioredis-3.tap.js"
-      ]
-    },
-    {
-      "engines": {
-        "node": ">=18"
-      },
-      "dependencies": {
         "ioredis": ">=4.0.0"
       },
       "files": [

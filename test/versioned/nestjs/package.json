@@ -9,7 +9,7 @@
         "node": ">=18"
       },
       "dependencies": {
-        "@nestjs/cli": ">=8.0.0"
+        "@nestjs/cli": ">=9.0.0"
       },
       "files": [
         "nest.tap.js"
