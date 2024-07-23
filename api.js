@@ -1924,8 +1924,8 @@ API.prototype.ignoreApdex = function ignoreApdex() {
  * @param {setLlmCustomAttributesCallback} callback A callback to handle recording of every LLM event.
  */
 API.prototype.setLlmCustomAttributes = function setLlmCustomAttributes(callback) {
-  this.agent.on('recordLlmEvent', function handler(type, msg) {
-    const attributes = callback(type, msg)
+  this.agent.on('recordLlmEvent', function handler(type, msg, context) {
+    const attributes = callback(type, msg, context)
     if (!attributes) {
       return
     }
@@ -1959,11 +1959,14 @@ API.prototype.withLlmCustomAttributes = function withLlmCustomAttributes(context
 
   if (!transaction) {
     logger.warn('withLlmCustomAttributes must be called within the scope of a transaction.')
-    return
+    return callback()
   }
 
-  transaction._llmContext = new AsyncLocalStorage()
-  transaction._llmContext.run(context, callback)
+  if (!transaction._llmContext) {
+    transaction._llmContext = new AsyncLocalStorage()
+  }
+  const fullContext = { ...(transaction._llmContext.getStore() ?? {}), ...context }
+  return transaction._llmContext.run(fullContext, callback)
 }
 
 module.exports = API
