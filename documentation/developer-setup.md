@@ -28,7 +28,7 @@ Similar to public contributions, New Relic instrumentation team members also sta
 
 All work is landed to the default branch which we deploy from. Deployments occur at the discretion of the instrumentation team depending on the types and quantity of changes landed to the main repository. When public contributions are landed, the team aims to ship these the same or following-week.
 
-The instrumentation team primarily works via GitHub issues. In progress work can be tracked via the [Node.js Engineering Board](https://github.com/orgs/newrelic/projects/41).
+The instrumentation team primarily works via GitHub issues. In progress work can be tracked via the [Node.js Engineering Board](https://github.com/orgs/newrelic/projects/105).
 
 See the [CONTRIBUTING](../CONTRIBUTING.md) doc for further information submitting issues and pull requests, running tests, etc.
 
