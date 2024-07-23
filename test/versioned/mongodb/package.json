@@ -5,6 +5,7 @@
   "private": true,
   "tests": [
     {
+      "comment": "Only tests promise based instrumentation. Callback based instrumentation is tested for v4 of mongodb in `test/version/mongodb-esm` folder",
       "engines": {
         "node": ">=18"
       },
@@ -21,5 +22,8 @@
         "db.tap.js"
       ]
     }
-  ]
+  ],
+  "engines": {
+    "node": ">=18"
+  }
 }

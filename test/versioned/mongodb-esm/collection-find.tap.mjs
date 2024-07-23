@@ -3,17 +3,11 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import semver from 'semver'
 import tap from 'tap'
 import { test } from './collection-common.mjs'
 import helper from '../../lib/agent_helper.js'
-import { pkgVersion, STATEMENT_PREFIX } from './common.cjs'
-
-let findOpt = { returnOriginal: false }
-// 4.0.0 changed this opt https://github.com/mongodb/node-mongodb-native/pull/2803/files
-if (semver.satisfies(pkgVersion, '>=4')) {
-  findOpt = { returnDocument: 'after' }
-}
+import { STATEMENT_PREFIX } from './common.cjs'
+const findOpt = { returnDocument: 'after' }
 
 tap.test('Collection(Find) Tests', (t) => {
   t.autoend()
@@ -26,35 +20,6 @@ tap.test('Collection(Find) Tests', (t) => {
   t.teardown(() => {
     helper.unloadAgent(agent)
   })
-
-  if (semver.satisfies(pkgVersion, '<4')) {
-    test(
-      { suiteName: 'findAndModify', agent, t },
-      function findAndModifyTest(t, collection, verify) {
-        collection.findAndModify({ i: 1 }, [['i', 1]], { $set: { a: 15 } }, { new: true }, done)
-
-        function done(err, data) {
-          t.error(err)
-          t.equal(data.value.a, 15)
-          t.equal(data.value.i, 1)
-          t.equal(data.ok, 1)
-          verify(null, [`${STATEMENT_PREFIX}/findAndModify`, 'Callback: done'], ['findAndModify'])
-        }
-      }
-    )
-
-    test(
-      { suiteName: 'findAndRemove', agent, t },
-      function findAndRemoveTest(t, collection, verify) {
-        collection.findAndRemove({ i: 1 }, [['i', 1]], function done(err, data) {
-          t.error(err)
-          t.equal(data.value.i, 1)
-          t.equal(data.ok, 1)
-          verify(null, [`${STATEMENT_PREFIX}/findAndRemove`, 'Callback: done'], ['findAndRemove'])
-        })
-      }
-    )
-  }
 
   test({ suiteName: 'findOne', agent, t }, function findOneTest(t, collection, verify) {
     collection.findOne({ i: 15 }, function done(err, data) {
