@@ -12,7 +12,7 @@ const helper = require('../../../lib/agent_helper')
 
 /**
  * Note: These test had more meaning when we had legacy promise tracking.
- * We now rely on async hooks to do to promise async propagation.  But unlike legacy
+ * We now rely on AsyncLocalStorage context maanger to do to promise async propagation.  But unlike legacy
  * promise instrumentation this will only propagate the same base promise segment.
  *
  * The tests still exist to prove some more complex promise chains will not lose context
@@ -23,13 +23,7 @@ test('Promise trace', (t) => {
   let agent = null
 
   t.beforeEach(() => {
-    agent = helper.instrumentMockedAgent({
-      feature_flag: {
-        promise_segments: true,
-        await_support: false,
-        legacy_context_manager: true
-      }
-    })
+    agent = helper.instrumentMockedAgent()
   })
 
   t.afterEach(() => {

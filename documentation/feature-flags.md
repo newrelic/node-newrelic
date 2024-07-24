@@ -33,12 +33,6 @@ Any prerelease flags can be enabled or disabled in your agent config by adding a
 * Description: Now that `new_promise_tracking` is the default async context tracking behavior in the agent, `unresolved_promise_cleanup` is enabled by default. Disabling it can help with performance of agent when an application creates many promises. 
 * **WARNING**: If you set `unresolved_promise_cleanup` to `false`, failure to resolve all promises in your application will result in memory leaks even if those promises are garbage collected.
 
-#### legacy_context_manager
-* Enabled by default: `false`
-* Configuration: `{ feature_flag: { legacy_context_manager: true|false }}`
-* Environment Variable: `NEW_RELIC_FEATURE_FLAG_LEGACY_CONTEXT_MANAGER`
-* Description: The legacy context manager was replaced by AsyncLocalContextManager for async context propagation. If your application is not recording certain spans or creating orphaned data, you may want to enable this older context manager. Enabling this feature flag may increase the agent's use of memory and CPU.
-
 #### kakfajs_instrumentation
 * Enabled by default: `false`
 * Configuration: `{ feature_flag: { kafkajs_instrumentation: true|false }}`

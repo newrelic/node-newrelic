@@ -5,8 +5,8 @@
 
 'use strict'
 
-const helper = require('../../../lib/agent_helper')
-require('../../../lib/metrics_helper')
+const helper = require('../../lib/agent_helper')
+require('../../lib/metrics_helper')
 
 module.exports = runTests
 

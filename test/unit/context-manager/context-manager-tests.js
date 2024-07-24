@@ -9,7 +9,7 @@
  * Add a standard set of Legacy Context Manager test cases for testing
  * either the standard or diagnostic versions.
  */
-function runLegacyTests(t, createContextManager) {
+function runContextMangerTests(t, createContextManager) {
   t.test('Should default to null context', (t) => {
     const contextManager = createContextManager()
 
@@ -170,4 +170,4 @@ function runLegacyTests(t, createContextManager) {
   })
 }
 
-module.exports = runLegacyTests
+module.exports = runContextMangerTests

@@ -6,7 +6,7 @@
 'use strict'
 
 const helper = require('../../lib/agent_helper')
-const testTransactionState = require('../../integration/instrumentation/promises/transaction-state')
+const testTransactionState = require('../../lib/promises/transaction-state')
 const util = require('util')
 const symbols = require('../../../lib/symbols')
 
