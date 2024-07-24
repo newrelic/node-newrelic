@@ -149,6 +149,10 @@
         "@aws-sdk/client-sns": {
           "versions": ">=3.0.0 <=3.193.0 || >3.196.0 <3.377.0 || >3.377.0 ",
           "samples": 10
+        },
+        "@aws-sdk/smithy-client": {
+          "versions": ">=3.47.0 <3.370.0",
+          "samples": 3
         }
       },
       "files": [
@@ -204,7 +208,11 @@
         "node": ">=16.0"
       },
       "dependencies": {
-        "@aws-sdk/client-bedrock-runtime": "^3.474.0"
+        "@aws-sdk/client-bedrock-runtime": "^3.474.0",
+        "@smithy/smithy-client": {
+          "versions": ">=2.0.0",
+          "samples": 3
+        }
       },
       "files": [
         "bedrock-chat-completions.tap.js",
