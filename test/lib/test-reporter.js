@@ -12,18 +12,15 @@
 // See https://nodejs.org/api/test.html#custom-reporters.
 'use strict'
 
+const OUTPUT_MODE = process.env.OUTPUT_MODE?.toLowerCase() ?? 'simple'
+const isSilent = OUTPUT_MODE === 'quiet' || OUTPUT_MODE === 'silent'
+
 const { Transform } = require('node:stream')
 const testReporter = new Transform({
   writableObjectMode: true,
   transform(event, encoding, callback) {
-    if (event.type !== 'test:fail') {
-      // We don't want to write out anything for any cases other than the
-      // failure case.
-      return callback(null, null)
-    }
-
     // Once v18 has been dropped, we might want to revisit the output of
-    // failure cases. The `event` object is supposed to provide things like
+    // cases. The `event` object is supposed to provide things like
     // the failing line number and column, along with the failing test name.
     // But on v18, we seem to only get `1` for both line and column, and the
     // test name gets set to the `file`. So there isn't really any point in
@@ -34,7 +31,22 @@ const testReporter = new Transform({
     // we should revisit this reporter to determine if we can improve it.
     //
     // See https://nodejs.org/api/test.html#event-testfail.
-    callback(null, `failed: ${event.data.file}`)
+    switch (event.type) {
+      case 'test:pass': {
+        if (isSilent === true) {
+          return callback(null, null)
+        }
+        return callback(null, `passed: ${event.data.file}\n`)
+      }
+
+      case 'test:fail': {
+        return callback(null, `failed: ${event.data.file}\n`)
+      }
+
+      default: {
+        callback(null, null)
+      }
+    }
   }
 })
 
