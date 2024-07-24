@@ -6,8 +6,7 @@
 'use strict'
 
 const common = require('./collection-common')
-const semver = require('semver')
-const { COLLECTIONS, DB_NAME, pkgVersion, STATEMENT_PREFIX } = require('./common')
+const { STATEMENT_PREFIX } = require('./common')
 
 common.test('createIndex', async function createIndexTest(t, collection, verify) {
   const data = await collection.createIndex('i')
@@ -34,14 +33,6 @@ common.test('indexes', async function indexesTest(t, collection, verify) {
     v: result && result.v,
     key: { _id: 1 },
     name: '_id_'
-  }
-
-  // this will fail if running a mongodb server > 4.3.1
-  // https://jira.mongodb.org/browse/SERVER-41696
-  // we only connect to a server > 4.3.1 when using the mongodb
-  // driver of 4.2.0+
-  if (semver.satisfies(pkgVersion, '<4.2.0')) {
-    expectedResult.ns = `${DB_NAME}.${COLLECTIONS.collection1}`
   }
 
   t.same(result, expectedResult, 'should have expected results')

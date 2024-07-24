@@ -60,23 +60,11 @@ services:
     ports:
       - "11211:11211"
 
-  mongodb_3:
-    container_name: nr_node_mongodb
-    platform: ${DOCKER_PLATFORM:-linux/amd64}
-    image: library/mongo:3
-    ports:
-      - "27017:27017"
-    healthcheck:
-      test: ["CMD", "mongo", "--quiet"]
-      interval: 1s
-      timeout: 10s
-      retries: 30
-
   mongodb_5:
     container_name: nr_node_mongodb_5
     image: library/mongo:5
     ports:
-      - "27018:27017"
+      - "27017:27017"
     healthcheck:
       test: ["CMD", "mongo", "--quiet"]
       interval: 1s

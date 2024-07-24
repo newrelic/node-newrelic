@@ -3,11 +3,10 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import semver from 'semver'
 import tap from 'tap'
 import { test } from './collection-common.mjs'
 import helper from '../../lib/agent_helper.js'
-import { pkgVersion, STATEMENT_PREFIX } from './common.cjs'
+import { STATEMENT_PREFIX } from './common.cjs'
 
 /**
  * The response from the methods in this file differ between versions
@@ -19,22 +18,13 @@ import { pkgVersion, STATEMENT_PREFIX } from './common.cjs'
  * @param {Number} params.count, optional
  * @param {string} params.keyPrefix prefix where the count exists
  * @param {Object} params.extraValues extra fields to assert on >=4.0.0 version of module
- * @param {Object} params.legaycValues extra fields to assert on <4.0.0 version of module
  */
-function assertExpectedResult({ t, data, count, keyPrefix, extraValues, legacyValues }) {
-  if (semver.satisfies(pkgVersion, '<4')) {
-    const expectedResult = { ok: 1, ...legacyValues }
-    if (count) {
-      expectedResult.n = count
-    }
-    t.same(data.result, expectedResult)
-  } else {
-    const expectedResult = { acknowledged: true, ...extraValues }
-    if (count) {
-      expectedResult[`${keyPrefix}Count`] = count
-    }
-    t.same(data, expectedResult)
+function assertExpectedResult({ t, data, count, keyPrefix, extraValues }) {
+  const expectedResult = { acknowledged: true, ...extraValues }
+  if (count) {
+    expectedResult[`${keyPrefix}Count`] = count
   }
+  t.same(data, expectedResult)
 }
 
 tap.test('Collection(Update) Tests', (t) => {
@@ -120,9 +110,6 @@ tap.test('Collection(Update) Tests', (t) => {
       assertExpectedResult({
         t,
         data,
-        legacyValues: {
-          n: 1
-        },
         extraValues: {
           insertedId: {}
         }
@@ -154,9 +141,6 @@ tap.test('Collection(Update) Tests', (t) => {
         data,
         count: 1,
         keyPrefix: 'modified',
-        legacyValues: {
-          nModified: 1
-        },
         extraValues: {
           matchedCount: 1,
           upsertedCount: 0,
@@ -168,17 +152,6 @@ tap.test('Collection(Update) Tests', (t) => {
     })
   })
 
-  if (semver.satisfies(pkgVersion, '<4')) {
-    test({ suiteName: 'save', agent, t }, function saveTest(t, collection, verify) {
-      collection.save({ foo: 'bar' }, function done(err, data) {
-        t.error(err)
-        t.same(data.result, { ok: 1, n: 1 })
-
-        verify(null, [`${STATEMENT_PREFIX}/save`, 'Callback: done'], ['save'])
-      })
-    })
-  }
-
   test({ suiteName: 'update', agent, t }, function updateTest(t, collection, verify) {
     collection.update({ i: 5 }, { $set: { foo: 'bar' } }, function done(err, data) {
       t.error(err)
@@ -187,9 +160,6 @@ tap.test('Collection(Update) Tests', (t) => {
         data,
         count: 1,
         keyPrefix: 'modified',
-        legacyValues: {
-          nModified: 1
-        },
         extraValues: {
           matchedCount: 1,
           upsertedCount: 0,
@@ -209,9 +179,6 @@ tap.test('Collection(Update) Tests', (t) => {
         data,
         count: 3,
         keyPrefix: 'modified',
-        legacyValues: {
-          nModified: 3
-        },
         extraValues: {
           matchedCount: 3,
           upsertedCount: 0,
@@ -231,9 +198,6 @@ tap.test('Collection(Update) Tests', (t) => {
         data,
         count: 1,
         keyPrefix: 'modified',
-        legacyValues: {
-          nModified: 1
-        },
         extraValues: {
           matchedCount: 1,
           upsertedCount: 0,
