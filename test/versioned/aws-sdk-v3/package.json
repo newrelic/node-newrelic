@@ -152,7 +152,7 @@
         },
         "@aws-sdk/smithy-client": {
           "versions": ">=3.47.0 <3.370.0",
-          "samples": 3
+          "samples": 1
         }
       },
       "files": [
@@ -211,7 +211,7 @@
         "@aws-sdk/client-bedrock-runtime": "^3.474.0",
         "@smithy/smithy-client": {
           "versions": ">=2.0.0",
-          "samples": 3
+          "samples": 1
         }
       },
       "files": [
