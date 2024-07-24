@@ -5,7 +5,7 @@
 
 'use strict'
 
-const helper = require('../../../lib/agent_helper')
+const helper = require('../agent_helper')
 
 const COUNT = 2
 
