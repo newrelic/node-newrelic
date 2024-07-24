@@ -92,6 +92,14 @@ tap.test('Basic run through mysql functionality', { timeout: 30 * 1000 }, functi
           for (const query of agent.queries.samples.values()) {
             t.ok(query.total > 0, 'the samples should have positive duration')
           }
+
+          const metrics = agent.metrics._metrics.unscoped
+          const hostPortMetric = Object.entries(metrics).find((entry) =>
+            /Datastore\/instance\/MySQL\/[0-9a-zA-Z.-]+\/3306/.test(entry[0])
+          )
+          t.ok(hostPortMetric, 'has host:port metric')
+          t.equal(hostPortMetric[1].callCount, 1, 'host:port metric has been incremented')
+
           t.end()
         })
       })
