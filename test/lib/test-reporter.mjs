@@ -10,12 +10,12 @@
 // outputs the failing test file when any failing test has occurred.
 //
 // See https://nodejs.org/api/test.html#custom-reporters.
-'use strict'
 
 const OUTPUT_MODE = process.env.OUTPUT_MODE?.toLowerCase() ?? 'simple'
 const isSilent = OUTPUT_MODE === 'quiet' || OUTPUT_MODE === 'silent'
 
-const { Transform } = require('node:stream')
+import { Transform } from 'node:stream'
+
 const testReporter = new Transform({
   writableObjectMode: true,
   transform(event, encoding, callback) {
@@ -50,4 +50,4 @@ const testReporter = new Transform({
   }
 })
 
-module.exports = testReporter
+export default testReporter
