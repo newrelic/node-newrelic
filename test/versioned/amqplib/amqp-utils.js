@@ -133,6 +133,9 @@ function verifyConsumeTransaction(t, tx, exchange, queue, routingKey) {
     'OtherTransaction/Message/RabbitMQ/Exchange/Named/' + exchange
   )
   t.equal(consume, tx.baseSegment)
+  const segmentAttrs = consume.getAttributes()
+  t.equal(segmentAttrs.host, params.rabbitmq_host, 'should have host on segment')
+  t.equal(segmentAttrs.port, params.rabbitmq_port, 'should have port on segment')
 
   const attributes = tx.trace.attributes.get(DESTINATIONS.TRANS_TRACE)
   t.equal(
@@ -158,6 +161,8 @@ function verifySendToQueue(t, tx) {
     'MessageBroker/RabbitMQ/Exchange/Produce/Named/Default'
   )
   const attributes = segment.getAttributes()
+  t.equal(attributes.host, params.rabbitmq_host, 'should have host on segment')
+  t.equal(attributes.port, params.rabbitmq_port, 'should have port on segment')
   t.equal(attributes.routing_key, 'testQueue', 'should store routing key')
   t.equal(attributes.reply_to, 'my.reply.queue', 'should store reply to')
   t.equal(attributes.correlation_id, 'correlation-id', 'should store correlation id')
@@ -225,6 +230,9 @@ function verifyProduce(t, tx, exchangeName, routingKey) {
   } else {
     t.notOk(attributes.routing_key, 'should not have routing key')
   }
+
+  t.equal(attributes.host, params.rabbitmq_host, 'should have host on segment')
+  t.equal(attributes.port, params.rabbitmq_port, 'should have port on segment')
 }
 
 function verifyGet({ t, tx, exchangeName, routingKey, queue, assertAttr }) {
@@ -240,6 +248,8 @@ function verifyGet({ t, tx, exchangeName, routingKey, queue, assertAttr }) {
   if (assertAttr) {
     const segment = metrics.findSegment(tx.trace.root, consumeName)
     const attributes = segment.getAttributes()
+    t.equal(attributes.host, params.rabbitmq_host, 'should have host on segment')
+    t.equal(attributes.port, params.rabbitmq_port, 'should have port on segment')
     t.equal(attributes.routing_key, routingKey, 'should have routing key on get')
   }
 }

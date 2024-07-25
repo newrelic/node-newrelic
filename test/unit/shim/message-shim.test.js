@@ -505,6 +505,7 @@ tap.test('MessageShim', function (t) {
 
     t.test('should create a consume segment', function (t) {
       shim.recordConsume(wrappable, 'getActiveSegment', function () {
+        t.same(this, wrappable, 'make sure this is in tact')
         return new MessageSpec({ destinationName: 'foobar' })
       })
 
@@ -885,6 +886,19 @@ tap.test('MessageShim', function (t) {
       t.not(shim.isWrapped(wrappable.name))
       t.end()
     })
+
+    t.test('should allow spec to be a function', function (t) {
+      shim.recordSubscribedConsume(wrappable, 'name', function () {
+        t.same(this, wrappable, 'should preserve this context')
+        return {
+          consumer: shim.FIRST,
+          messageHandler: function () {},
+          wrapper: function () {}
+        }
+      })
+      t.not(shim.isWrapped(wrappable.name))
+      t.end()
+    })
   })
 
   t.test('#recordSubscribedConsume wrapper', function (t) {
@@ -1227,7 +1241,7 @@ tap.test('MessageShim', function (t) {
     })
 
     t.test('should wrap object key of consumer', function (t) {
-      t.plan(3)
+      t.plan(4)
       const message = { foo: 'bar' }
       const subscriber = function subscriber(consumer) {
         consumer.eachMessage(message)
@@ -1244,14 +1258,17 @@ tap.test('MessageShim', function (t) {
           })
         }
       })
-      wrapped({
+
+      const handler = {
         eachMessage: function consumer(msg) {
+          t.same(this, handler)
           const segment = shim.getSegment()
           t.equal(segment.name, 'OtherTransaction/Message/RabbitMQ/Exchange/Named/exchange.foo')
           t.equal(msg, message)
           t.end()
         }
-      })
+      }
+      wrapped(handler)
     })
   })
 })
