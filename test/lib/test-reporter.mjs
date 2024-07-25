@@ -14,11 +14,11 @@
 const OUTPUT_MODE = process.env.OUTPUT_MODE?.toLowerCase() ?? 'simple'
 const isSilent = OUTPUT_MODE === 'quiet' || OUTPUT_MODE === 'silent'
 
-import { Transform } from 'node:stream'
+async function* reporter(source) {
+  const passed = new Set()
+  const failed = new Set()
 
-const testReporter = new Transform({
-  writableObjectMode: true,
-  transform(event, encoding, callback) {
+  for await (const event of source) {
     // Once v18 has been dropped, we might want to revisit the output of
     // cases. The `event` object is supposed to provide things like
     // the failing line number and column, along with the failing test name.
@@ -33,21 +33,33 @@ const testReporter = new Transform({
     // See https://nodejs.org/api/test.html#event-testfail.
     switch (event.type) {
       case 'test:pass': {
+        passed.add(event.data.file)
         if (isSilent === true) {
-          return callback(null, null)
+          yield ''
+        } else {
+          yield `passed: ${event.data.file}\n`
         }
-        return callback(null, `passed: ${event.data.file}\n`)
+
+        break
       }
 
       case 'test:fail': {
-        return callback(null, `failed: ${event.data.file}\n`)
+        failed.add(event.data.file)
+        yield `failed: ${event.data.file}\n`
+        break
       }
 
       default: {
-        callback(null, null)
+        yield ''
       }
     }
   }
-})
 
-export default testReporter
+  yield `\n\nFailed tests:\n`
+  for (const file of failed) {
+    yield `${file}\n`
+  }
+  yield `\n\nPassed: ${passed.size}\nFailed: ${failed.size}\nTotal: ${passed.size + failed.size}\n`
+}
+
+export default reporter
