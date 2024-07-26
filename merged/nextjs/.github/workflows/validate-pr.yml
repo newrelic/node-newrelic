@@ -1,0 +1,53 @@
+name: Validate Pull Request
+
+permissions:
+  pull-requests: write
+
+on:
+  pull_request:
+    types:
+      - opened
+      - edited
+      - synchronize
+
+jobs:
+  validate-pr:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Pull Request Title is Conventional
+        id: lint_pr_title
+        uses: amannn/action-semantic-pull-request@v5
+        with:
+          # Recommended Prefixes from https://github.com/conventional-changelog/commitlint/blob/master/%40commitlint/config-conventional/README.md#type-enum
+          types: |
+            build
+            chore
+            ci
+            docs
+            feat
+            fix
+            perf
+            refactor
+            revert
+            security
+            style
+            test
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - if: failure()
+        name: Add PR comment if failed
+        uses: marocchino/sticky-pull-request-comment@v2
+        with:
+          header: pr-title-lint-error
+          message: |
+            Thank you for your contribution! We require all PR titles to follow the [Conventional Commits specification](https://www.conventionalcommits.org/en/v1.0.0/).
+            Please update your PR title with the appropriate type and we'll try again!
+            ```
+            ${{ steps.lint_pr_title.outputs.error_message}}
+            ```
+      - if: success()
+        name: Remove PR comment if valid
+        uses: marocchino/sticky-pull-request-comment@v2
+        with:
+          header: pr-title-lint-error
+          delete: true
