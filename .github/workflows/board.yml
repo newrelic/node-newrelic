@@ -42,6 +42,7 @@ on:
 
 jobs:
   assign_to_project:
+    if: github.event_name == 'pull_request_target' || github.event_name == 'issues'
     env:
       # Cannot use `secrets.GITHUB_TOKEN` because the project board
       # exists at org level. You cannot add permissions outside the scope
@@ -81,28 +82,32 @@ jobs:
             }' -f org=newrelic -F number=$PROJECT_ID > project_data.json
           # Save the values of project id, status field id and the todo and needs pr column ids
           echo 'PROJECT_ID='$(jq '.data.organization.projectV2.id' project_data.json) >> $GITHUB_ENV
+          echo 'DATE_FIELD_ID='$(jq '.data.organization.projectV2.fields.nodes[] | select(.name== "Date created") | .id' project_data.json) >> $GITHUB_ENV
           echo 'STATUS_FIELD_ID='$(jq '.data.organization.projectV2.fields.nodes[] | select(.name== "Status") | .id' project_data.json) >> $GITHUB_ENV
           echo 'TODO_OPTION_ID='$(jq -r --arg TODO_COL_NAME "$TODO_COL_NAME" '.data.organization.projectV2.fields.nodes[] | select(.name== "Status") | .options[] | select(.name==$TODO_COL_NAME) |.id' project_data.json) >> $GITHUB_ENV
           echo 'PR_OPTION_ID='$(jq -r --arg PR_COL_NAME "$PR_COL_NAME" '.data.organization.projectV2.fields.nodes[] | select(.name== "Status") | .options[] | select(.name==$PR_COL_NAME) |.id' project_data.json) >> $GITHUB_ENV
-    - name: Assign PR to Project
-      if: github.event_name == 'pull_request_target'
+          echo 'DATE='$(date +"%Y-%m-%d") >> $GITHUB_ENV
+    - name: Assign Issue/PR to Project
       run: |
-        # Add PR to board
+        # Add Issue/PR to board depending on event type
         item_id="$( gh api graphql -f query='
-          mutation($project:ID!, $pr:ID!) {
-            addProjectV2ItemById(input: {projectId: $project, contentId: $pr}) {
+          mutation($project:ID!, $id:ID!) {
+            addProjectV2ItemById(input: {projectId: $project, contentId: $id}) {
               item {
                 id
               }
             }
-          }' -f project=$PROJECT_ID -f pr=$PR_ID --jq '.data.addProjectV2ItemById.item.id')"
-          # Update the status to Needs PR Review
+          }' -f project=$PROJECT_ID -f id=$ISSUE_OR_PR_ID --jq '.data.addProjectV2ItemById.item.id')"
+          # Update the status to Triage Needed/Needs PR Review depending on event type
+          # and update the date so it shows on top of column
           gh api graphql -f query='
             mutation (
               $project: ID!
               $item: ID!
               $status_field: ID!
               $status_value: String!
+              $date_field: ID!
+              $date_value: Date!
             ) {
               set_status: updateProjectV2ItemFieldValue(input: {
                 projectId: $project
@@ -116,41 +121,18 @@ jobs:
                   id
                   }
               }
-            }' -f project=$PROJECT_ID -f item=$item_id -f status_field=$STATUS_FIELD_ID -f status_value=${{ env.PR_OPTION_ID }} --silent
-      env:
-        PR_ID: ${{ github.event.pull_request.node_id }}
-    - name: Assign Issue to Project
-      if: github.event_name == 'issues'
-      run: |
-        # Add issue to board
-        item_id="$( gh api graphql -f query='
-          mutation($project:ID!, $issue:ID!) {
-            addProjectV2ItemById(input: {projectId: $project, contentId: $issue}) {
-              item {
-                id
-              }
-            }
-          }' -f project=$PROJECT_ID -f issue=$ISSUE_ID --jq '.data.addProjectV2ItemById.item.id')"
-          # Update the status to Needs PR Review
-          gh api graphql -f query='
-            mutation (
-              $project: ID!
-              $item: ID!
-              $status_field: ID!
-              $status_value: String!
-            ) {
-              set_status: updateProjectV2ItemFieldValue(input: {
+              set_date_posted: updateProjectV2ItemFieldValue(input: {
                 projectId: $project
                 itemId: $item
-                fieldId: $status_field
+                fieldId: $date_field
                 value: {
-                  singleSelectOptionId: $status_value
-                  }
+                  date: $date_value
+                }
               }) {
                 projectV2Item {
                   id
-                  }
+                }
               }
-            }' -f project=$PROJECT_ID -f item=$item_id -f status_field=$STATUS_FIELD_ID -f status_value=${{ env.TODO_OPTION_ID }} --silent
+            }' -f project=$PROJECT_ID -f item=$item_id -f status_field=$STATUS_FIELD_ID -f status_value=${{ github.event_name == 'pull_request_target' && env.PR_OPTION_ID || env.TODO_OPTION_ID }} -f date_field=$DATE_FIELD_ID -f date_value=$DATE --silent
       env:
-        ISSUE_ID: ${{ github.event.issue.node_id }}
+        ISSUE_OR_PR_ID: ${{ github.event_name == 'pull_request_target' && github.event.pull_request.node_id || github.event.issue.node_id }}

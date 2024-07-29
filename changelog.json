@@ -2,6 +2,19 @@
   "repository": "newrelic/node-newrelic",
   "entries": [
     {
+      "version": "11.23.2",
+      "changes": {
+        "security": [],
+        "bugfixes": [
+          "Updated aws-sdk v3 instrumentation to load custom middleware last to properly get the external http span to add `aws.*` attributes",
+          "Updated cassandra-driver instrumentation to properly trace promise based executions"
+        ],
+        "features": [
+          "Added support for `fs.glob` in Node 22+"
+        ]
+      }
+    },
+    {
       "version": "11.23.1",
       "changes": {
         "security": [],

@@ -218,7 +218,6 @@ function setupServer(t, sslOpts, recordSpan) {
         if (err) {
           reject(err)
         }
-        server.start()
         resolve(port)
         // shutdown server when tests finish
         t.teardown(() => {
