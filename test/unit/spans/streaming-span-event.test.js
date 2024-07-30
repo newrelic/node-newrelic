@@ -67,6 +67,8 @@ tap.test('fromSegment()', (t) => {
         const segment = agent.tracer.getTransaction().trace.root.children[0]
         const spanContext = segment.getSpanContext()
         spanContext.addCustomAttribute('Span Lee', 'no prize')
+        segment.addSpanAttribute('host', 'my-host')
+        segment.addSpanAttribute('port', 22)
 
         const span = StreamingSpanEvent.fromSegment(segment, 'parent')
 
@@ -101,6 +103,9 @@ tap.test('fromSegment()', (t) => {
 
         const agentAttributes = span._agentAttributes
         t.ok(agentAttributes)
+
+        t.same(agentAttributes['server.address'], { [STRING_TYPE]: 'my-host' })
+        t.same(agentAttributes['server.port'], { [INT_TYPE]: 22 })
 
         // Should have no http properties.
         const hasOwnAttribute = Object.hasOwnProperty.bind(agentAttributes)
