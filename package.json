@@ -212,7 +212,7 @@
   },
   "optionalDependencies": {
     "@contrast/fn-inspect": "^4.2.0",
-    "@newrelic/native-metrics": "^10.0.0",
+    "@newrelic/native-metrics": "^11.0.0",
     "@prisma/prisma-fmt-wasm": "^4.17.0-16.27eb2449f178cd9fe1a4b892d732cc4795f75085"
   },
   "devDependencies": {
