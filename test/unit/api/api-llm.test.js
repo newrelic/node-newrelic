@@ -121,7 +121,7 @@ tap.test('Agent API LLM methods', (t) => {
     })
   })
 
-  t.test('withLlmCustomAttributes attributes', (t) => {
+  t.test('withLlmCustomAttributes', (t) => {
     const { api } = t.context
     helper.runInTransaction(api.agent, (tx) => {
       const contextManager = api.agent._contextManager
