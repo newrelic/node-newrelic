@@ -2,6 +2,35 @@
   "repository": "newrelic/node-newrelic",
   "entries": [
     {
+      "version": "12.0.0",
+      "changes": {
+        "security": [
+          "bump ws"
+        ],
+        "bugfixes": [
+          "add missing quotation mark in faq docs",
+          "package.json & package-lock.json to reduce vulnerabilities",
+          "updated instrumentation to skip registering middleware instrumentation as it runs in a worker thread now and our agent cannot properly track async context",
+          "package.json & package-lock.json to reduce vulnerabilities",
+          "update instrumentation to wrap getServerSideProps from renderToResponseWithComponents",
+          "updated instrumentation to work in versions >= 13.3.1 as the methods we try to hook no longer have setters",
+          "updated readme to call out that this package is not bundled with agent yet",
+          "updated next server setup to handle 13.3.0 changes",
+          "Provide tech writing review"
+        ],
+        "features": [
+          "Added `server.address` to amqplib spans",
+          "Removed support for `redis` < 2.6.0",
+          "Removed legacy context manager",
+          "Removed instrumentation for `director`",
+          "Updated `mongodb` instrumentation to drop support for versions 2 and 3",
+          "Dropped support for Node.js 16",
+          "Added a test suite for App Router.",
+          "Added a shim to externalize all 3rd party libraries the Node.js agent instruments"
+        ]
+      }
+    },
+    {
       "version": "11.23.2",
       "changes": {
         "security": [],
