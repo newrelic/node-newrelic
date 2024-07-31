@@ -93,15 +93,22 @@ tap.test('setImmediate', function testSetImmediate(t) {
   })
 
   t.test('should not propagate segments for ended transaction', (t) => {
-    const { agent, contextManager } = setupAgent(t)
+    const { agent } = setupAgent(t)
 
     t.notOk(agent.getTransaction(), 'should not start in a transaction')
     helper.runInTransaction(agent, (transaction) => {
       transaction.end()
 
-      setImmediate(() => {
-        t.notOk(contextManager.getContext(), 'should not have segment for ended transaction')
-        t.end()
+      helper.runInSegment(agent, 'test-segment', () => {
+        const segment = agent.tracer.getSegment()
+        t.not(segment.name, 'test-segment')
+        t.equal(segment.children.length, 0, 'should not propagate segments when transaction ends')
+        setImmediate(() => {
+          const segment = agent.tracer.getSegment()
+          t.not(segment.name, 'test-segment')
+          t.equal(segment.children.length, 0, 'should not propagate segments when transaction ends')
+          t.end()
+        })
       })
     })
   })
@@ -281,13 +288,7 @@ tap.test('clearTimeout should not ignore parent segment when internal', (t) => {
 })
 
 function setupAgent(t) {
-  const config = {
-    feature_flag: {
-      legacy_context_manager: true
-    }
-  }
-
-  const agent = helper.instrumentMockedAgent(config)
+  const agent = helper.instrumentMockedAgent()
   const contextManager = helper.getContextManager()
 
   t.teardown(function tearDown() {

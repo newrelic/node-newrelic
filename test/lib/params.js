@@ -15,11 +15,6 @@ module.exports = {
   mongodb_host: process.env.NR_NODE_TEST_MONGODB_HOST || 'localhost',
   mongodb_port: process.env.NR_NODE_TEST_MONGODB_PORT || 27017,
 
-  // mongodb 4.2.0 does not allow mongo server v2.
-  // There is now a separate container that maps 27018 to mongo:5
-  mongodb_v4_host: process.env.NR_NODE_TEST_MONGODB_V4_HOST || 'localhost',
-  mongodb_v4_port: process.env.NR_NODE_TEST_MONGODB_V4_PORT || 27018,
-
   mysql_host: process.env.NR_NODE_TEST_MYSQL_HOST || 'localhost',
   mysql_port: process.env.NR_NODE_TEST_MYSQL_PORT || 3306,
 

@@ -6,9 +6,8 @@
 'use strict'
 
 const helper = require('../../lib/agent_helper')
-const TEST_DIR = '../../integration/instrumentation/promises/'
-const testPromiseSegments = require(`${TEST_DIR}/legacy-promise-segments`)
-const testTransactionState = require(`${TEST_DIR}/transaction-state`)
+const testPromiseSegments = require(`./legacy-promise-segments`)
+const testTransactionState = require(`../../lib/promises/transaction-state`)
 
 // grab process emit before tap / async-hooks-domain can mess with it
 const originalEmit = process.emit

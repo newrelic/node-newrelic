@@ -4,8 +4,9 @@
  */
 
 'use strict'
+module.exports = require('../mongodb/common')
 
-const fs = require('fs')
+/* const fs = require('fs')
 const mongoPackage = require('mongodb/package.json')
 const params = require('../../lib/params')
 const semver = require('semver')
@@ -226,3 +227,4 @@ function getDomainSocketPath() {
 function getMetrics(agent) {
   return agent.metrics._metrics
 }
+*/

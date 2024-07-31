@@ -6,11 +6,12 @@
   "private": true,
   "tests": [
     {
+      "comment": "Only tests callback based instrumentation which is only in v4 of mongodb. For promised-based v5+ tests see `test/versioned/mongodb`", 
       "engines": {
-        "node": ">=16.12.0"
+        "node": ">=18"
       },
       "dependencies": {
-        "mongodb": ">=2.1 < 4.0.0 || >= 4.1.4 < 5"
+        "mongodb": ">=4.1.4 <5"
       },
       "files": [
         "bulk.tap.mjs",

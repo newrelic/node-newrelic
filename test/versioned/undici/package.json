@@ -6,21 +6,10 @@
   "tests": [
     {
       "engines": {
-        "node": "16"
-      },
-      "dependencies": {
-        "undici": ">=4.7.0 <6.0.0"
-      },
-      "files": [
-        "requests.tap.js"
-      ]
-    },
-    {
-      "engines": {
         "node": ">=18"
       },
       "dependencies": {
-        "undici": ">=4.7.0"
+        "undici": ">=5.0.0"
       },
       "files": [
         "requests.tap.js"
@@ -28,6 +17,6 @@
     }
   ],
   "engines": {
-    "node": ">=16"
+    "node": ">=18"
   }
 }

@@ -6,24 +6,13 @@
   "tests": [
     {
       "engines": {
-        "node": ">=16"
+        "node": ">=18"
       },
       "dependencies": {
         "generic-pool": ">=3.0.0"
       },
       "files": [
         "basic.tap.js"
-      ]
-    },
-    {
-      "engines": {
-        "node": ">=16"
-      },
-      "dependencies": {
-        "generic-pool": ">=2.4 <3"
-      },
-      "files": [
-        "basic-v2.tap.js"
       ]
     }
   ],

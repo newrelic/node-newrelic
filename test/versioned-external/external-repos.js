@@ -13,11 +13,6 @@
  */
 const repos = [
   {
-    name: 'next',
-    repository: 'https://github.com/newrelic/newrelic-node-nextjs.git',
-    branch: 'main'
-  },
-  {
     name: 'apollo-server',
     repository: 'https://github.com/newrelic/newrelic-node-apollo-server-plugin.git',
     branch: 'main',
