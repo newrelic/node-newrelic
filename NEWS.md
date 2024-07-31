@@ -1,119 +1,41 @@
 ### v12.0.0 (2024-07-31)
 #### ⚠ BREAKING CHANGES
 
-* Removed support for `redis` < 2.6.0
+* Dropped support for Node.js 16
 * Removed legacy context manager
+* Removed support for `redis` < 2.6.0
 * Removed instrumentation for `director`
 * Updated `mongodb` instrumentation to drop support for versions 2 and 3
-* Dropped support for Node.js 16
 
 #### Features
 
-* Added `server.address` to amqplib spans ([#2406](https://github.com/newrelic/node-newrelic/pull/2406)) ([09636a4](https://github.com/newrelic/node-newrelic/commit/09636a4ce90969e7aea229ef008bd35f57e09217))
-* Added a shim to externalize all 3rd party libraries the Node.js agent instruments ([#2409](https://github.com/newrelic/node-newrelic/pull/2409)) ([b55d8e1](https://github.com/newrelic/node-newrelic/commit/b55d8e1ca09e6055ea09f4fcd773a05245e7203f))
-* Added a test suite for App Router. ([#2409](https://github.com/newrelic/node-newrelic/pull/2409)) ([07f08de](https://github.com/newrelic/node-newrelic/commit/07f08de051fb3699890e5588182233f5459633fb))
 * Dropped support for Node.js 16 ([#2394](https://github.com/newrelic/node-newrelic/pull/2394)) ([1870010](https://github.com/newrelic/node-newrelic/commit/1870010a1d7dc417fc03ae526a9709e382b3fe1f))
-* Removed instrumentation for `director` ([#2402](https://github.com/newrelic/node-newrelic/pull/2402)) ([1b355e7](https://github.com/newrelic/node-newrelic/commit/1b355e733aef0e14c5f4cb2899642a3d5b6f18ce))
 * Removed legacy context manager ([#2404](https://github.com/newrelic/node-newrelic/pull/2404)) ([321244c](https://github.com/newrelic/node-newrelic/commit/321244c357bc5dd9b4aeefc308cda5e80b8012b0))
 * Removed support for `redis` < 2.6.0 ([#2405](https://github.com/newrelic/node-newrelic/pull/2405)) ([e2c0a31](https://github.com/newrelic/node-newrelic/commit/e2c0a31b5230e0ffbdc3d4567619190570b7167c))
+* Removed instrumentation for `director` ([#2402](https://github.com/newrelic/node-newrelic/pull/2402)) ([1b355e7](https://github.com/newrelic/node-newrelic/commit/1b355e733aef0e14c5f4cb2899642a3d5b6f18ce))
+* Added `server.address` to amqplib spans ([#2406](https://github.com/newrelic/node-newrelic/pull/2406)) ([09636a4](https://github.com/newrelic/node-newrelic/commit/09636a4ce90969e7aea229ef008bd35f57e09217))
 * Updated `mongodb` instrumentation to drop support for versions 2 and 3 ([#2398](https://github.com/newrelic/node-newrelic/pull/2398)) ([a0ae32a](https://github.com/newrelic/node-newrelic/commit/a0ae32a6a61112e0473d477075543485d02313cf))
-
-#### Bug fixes
-
-* add missing quotation mark in faq docs ([#2409](https://github.com/newrelic/node-newrelic/pull/2409)) ([3376bde](https://github.com/newrelic/node-newrelic/commit/3376bde2dfe07ea9d6e21de1db761edae6f71e0d))
-* **Next.js:** Provide tech writing review ([#2409](https://github.com/newrelic/node-newrelic/pull/2409)) ([45878d1](https://github.com/newrelic/node-newrelic/commit/45878d117a52cbbeee144c94031427ad68f55ee1))
-* package.json & package-lock.json to reduce vulnerabilities ([#2409](https://github.com/newrelic/node-newrelic/pull/2409)) ([026d07f](https://github.com/newrelic/node-newrelic/commit/026d07fb434c3cfaa3010506e310ea727a3b560d))
-    * The following vulnerabilities are fixed with an upgrade: - https://snyk.io/vuln/SNYK-JS-AXIOS-6032459
-* package.json & package-lock.json to reduce vulnerabilities ([#2409](https://github.com/newrelic/node-newrelic/pull/2409)) ([a518dbc](https://github.com/newrelic/node-newrelic/commit/a518dbc13a68a3d823a5995a481bf5ed6ade2833))
-    * The following vulnerabilities are fixed with an upgrade: - https://snyk.io/vuln/SNYK-JS-SEMVER-3247795
-* update instrumentation to wrap getServerSideProps from renderToResponseWithComponents ([#2409](https://github.com/newrelic/node-newrelic/pull/2409)) ([052d377](https://github.com/newrelic/node-newrelic/commit/052d377064ac51c5cd87c31fb029a62fa4e63490))
-* updated instrumentation to skip registering middleware instrumentation as it runs in a worker thread now and our agent cannot properly track async context ([#2409](https://github.com/newrelic/node-newrelic/pull/2409)) ([be57a00](https://github.com/newrelic/node-newrelic/commit/be57a003efe943273e2bdf3e2c2fab8ed509fe3d))
-* updated instrumentation to work in versions >= 13.3.1 as the methods we try to hook no longer have setters ([#2409](https://github.com/newrelic/node-newrelic/pull/2409)) ([4c5c41d](https://github.com/newrelic/node-newrelic/commit/4c5c41d99365565a035a46146cc65f25044abf09))
-* updated next server setup to handle 13.3.0 changes ([#2409](https://github.com/newrelic/node-newrelic/pull/2409)) ([1ca0954](https://github.com/newrelic/node-newrelic/commit/1ca0954b705431d9cdf1ffeb2c421fc3cc754898))
-* updated readme to call out that this package is not bundled with agent yet ([#2409](https://github.com/newrelic/node-newrelic/pull/2409)) ([aaee78b](https://github.com/newrelic/node-newrelic/commit/aaee78b1d8f32a993dbbcbe92b498b33a06e7ac8))
-
-#### Security improvements
-
-* **deps:** bump ws ([#2409](https://github.com/newrelic/node-newrelic/pull/2409)) ([7761a47](https://github.com/newrelic/node-newrelic/commit/7761a476dd4510bc28a67cf7f7ee7ae15ea24304))
-    * Signed-off-by: dependabot[bot] <support@github.com> Co-authored-by: dependabot[bot] <49699333+dependabot[bot]@users.noreply.github.com>
-
-#### Code refactoring
-
-* Migrated Next.js instrumentation into agent ([#2409](https://github.com/newrelic/node-newrelic/pull/2409)) ([2aa18b5](https://github.com/newrelic/node-newrelic/commit/2aa18b5d5a13ce5401e5d9750fb4cd600ff402de))
-* Moved relevant nextjs instrumentation and rely on agent commons ([#2409](https://github.com/newrelic/node-newrelic/pull/2409)) ([d0c3b96](https://github.com/newrelic/node-newrelic/commit/d0c3b96e7e1a82692dabd7be0c96e2953b0e5041))
-* Removed `Supportability/Features/ESM/UnsupportedLoader` as it is no longer applicable in Node.js 18+ ([#2393](https://github.com/newrelic/node-newrelic/pull/2393)) ([d22c368](https://github.com/newrelic/node-newrelic/commit/d22c3688576eeec17515608127cf057d2f7594be))
-* Updated instrumentation to construct spec objects at instrumentation ([#2409](https://github.com/newrelic/node-newrelic/pull/2409)) ([b43057e](https://github.com/newrelic/node-newrelic/commit/b43057ee454859eccc9e52e7ccae8e74f985e1f1))
+* Migrated instrumentation for `next` into agent ([#2409](https://github.com/newrelic/node-newrelic/pull/2409)) ([b55d8e1](https://github.com/newr    elic/node-newrelic/commit/b55d8e1ca09e6055ea09f4fcd773a05245e7203f)) 
+  * You no longer need to load Next.js instrumentation via `@newrelic/next`.
+  * Instead you must load the agent via `NODE_OPTIONS='-r newrelic' next start`
 
 #### Documentation
 
-* Added FAQs to assist with common issues with next.js instrumentation ([#2409](https://github.com/newrelic/node-newrelic/pull/2409)) ([9695618](https://github.com/newrelic/node-newrelic/commit/9695618391b93054e92d24e2e655a12f7aa0e8d8))
-* update API docs to remove docs/ path component ([#2409](https://github.com/newrelic/node-newrelic/pull/2409)) ([dbe3e13](https://github.com/newrelic/node-newrelic/commit/dbe3e13154ab14240f3c0abeab5191ea65916d13))
-* update slack invite link ([#2409](https://github.com/newrelic/node-newrelic/pull/2409)) ([a1270ed](https://github.com/newrelic/node-newrelic/commit/a1270ed5deaaa6f3df782351983531a9c39d2e97))
 * Updated compatibility report ([#2401](https://github.com/newrelic/node-newrelic/pull/2401)) ([a53085d](https://github.com/newrelic/node-newrelic/commit/a53085ddce2f2d7a4c9288fbf63fbf82436fb15f))
-    * Co-authored-by: jsumners-nr <150050532+jsumners-nr@users.noreply.github.com>
-* Updated compatibility report ([#2392](https://github.com/newrelic/node-newrelic/pull/2392)) ([303aa99](https://github.com/newrelic/node-newrelic/commit/303aa999415639499b21c7c445e27c74977a4151))
-* updated FAQs and README with app router examples ([#2409](https://github.com/newrelic/node-newrelic/pull/2409)) ([34816c9](https://github.com/newrelic/node-newrelic/commit/34816c9d5f67e033b5a091336d89622e83e689f0))
-* Updated targets to include minimum agent version for compatibility repo ([#2409](https://github.com/newrelic/node-newrelic/pull/2409)) ([fa95515](https://github.com/newrelic/node-newrelic/commit/fa95515b275e09a03bac7f87430abc507b298d75))
 
 #### Miscellaneous chores
 
-* Add test configs for defined targets in the aws test suite ([#2403](https://github.com/newrelic/node-newrelic/pull/2403)) ([cf514d9](https://github.com/newrelic/node-newrelic/commit/cf514d97b82889b14a342cbded630bae73992c35))
-* added node 20 and drop node 14 in CI ([#2409](https://github.com/newrelic/node-newrelic/pull/2409)) ([773c1e0](https://github.com/newrelic/node-newrelic/commit/773c1e0c9a133c8fc53f7deca7b8a889adff70ae))
-* Added Node 22 to CI ([#2409](https://github.com/newrelic/node-newrelic/pull/2409)) ([ed7daa2](https://github.com/newrelic/node-newrelic/commit/ed7daa2c04034653132f77788b4efe1383eb4b72))
+* Added test configs for defined targets in the aws test suite ([#2403](https://github.com/newrelic/node-newrelic/pull/2403)) ([cf514d9](https://github.com/newrelic/node-newrelic/commit/cf514d97b82889b14a342cbded630bae73992c35))
 * Added producer and consumer metrics to kafkajs instrumentation ([#2407](https://github.com/newrelic/node-newrelic/pull/2407)) ([41c1cc6](https://github.com/newrelic/node-newrelic/commit/41c1cc6d9815a1b89a7ab043b5da5f032969a87e))
-* change node engine to 16 ([#2409](https://github.com/newrelic/node-newrelic/pull/2409)) ([ce9b1ec](https://github.com/newrelic/node-newrelic/commit/ce9b1ece616a9af13ecb87c5bd8dd354ac595095))
-* changelog edits ([#2409](https://github.com/newrelic/node-newrelic/pull/2409)) ([542abad](https://github.com/newrelic/node-newrelic/commit/542abadf87d0913e6b04659e70d62a473badaef9))
-* changelog tweaks ([#2409](https://github.com/newrelic/node-newrelic/pull/2409)) ([381be4d](https://github.com/newrelic/node-newrelic/commit/381be4d2773a43990f429938611d114d27d7b304))
-* **deps-dev:** bump @grpc/grpc-js from 1.9.9 to 1.10.9 ([#2409](https://github.com/newrelic/node-newrelic/pull/2409)) ([1857804](https://github.com/newrelic/node-newrelic/commit/1857804f704d87018c746e0da6d0d39d120c22ce))
-    * Signed-off-by: dependabot[bot] <support@github.com> Co-authored-by: dependabot[bot] <49699333+dependabot[bot]@users.noreply.github.com>
-* **deps-dev:** bump braces from 3.0.2 to 3.0.3 ([#2409](https://github.com/newrelic/node-newrelic/pull/2409)) ([522f8c3](https://github.com/newrelic/node-newrelic/commit/522f8c34b4ea3e6fc8a949d99f332dd1289690d2))
-    * Signed-off-by: dependabot[bot] <support@github.com> Co-authored-by: dependabot[bot] <49699333+dependabot[bot]@users.noreply.github.com>
-* **deps-dev:** bump follow-redirects from 1.15.3 to 1.15.4 ([#2409](https://github.com/newrelic/node-newrelic/pull/2409)) ([8ee7903](https://github.com/newrelic/node-newrelic/commit/8ee79030faed8d72ffa4082b83a28fff902d267d))
-    * Bumps [follow-redirects](https://github.com/follow-redirects/follow-redirects) from 1.15.3 to 1.15.4. - [Release notes](https://github.com/follow-redirects/follow-redirects/releases) - [Commits](https://github.com/follow-redirects/follow-redirects/compare/v1.15.3...v1.15.4)
-* **deps-dev:** bump follow-redirects from 1.15.5 to 1.15.6 ([#2409](https://github.com/newrelic/node-newrelic/pull/2409)) ([043679a](https://github.com/newrelic/node-newrelic/commit/043679ae31c39d8e1a0f351e5f562a2041c16c47))
-    * Bumps [follow-redirects](https://github.com/follow-redirects/follow-redirects) from 1.15.5 to 1.15.6. - [Release notes](https://github.com/follow-redirects/follow-redirects/releases) - [Commits](https://github.com/follow-redirects/follow-redirects/compare/v1.15.5...v1.15.6)
-* **deps:** bump @babel/traverse ([#2409](https://github.com/newrelic/node-newrelic/pull/2409)) ([870bcb1](https://github.com/newrelic/node-newrelic/commit/870bcb1fc0518c8e317ca3aa30fabf37a4e09e9d))
-    * Bumps  and [@babel/traverse](https://github.com/babel/babel/tree/HEAD/packages/babel-traverse). These dependencies needed to be updated together.  Updates `@babel/traverse` from 7.17.3 to 7.23.2 - [Release notes](https://github.com/babel/babel/releases) - [Changelog](https://github.com/babel/babel/blob/main/CHANGELOG.md) - [Commits](https://github.com/babel/babel/commits/v7.23.2/packages/babel-traverse)  Updates `@babel/traverse` from 7.20.0 to 7.23.2 - [Release notes](https://github.com/babel/babel/releases) - [Changelog](https://github.com/babel/babel/blob/main/CHANGELOG.md) - [Commits](https://github.com/babel/babel/commits/v7.23.2/packages/babel-traverse)
-* Edited CHANGELOG.md ([#2409](https://github.com/newrelic/node-newrelic/pull/2409)) ([94d6ae0](https://github.com/newrelic/node-newrelic/commit/94d6ae003de41d566966e1a0fdc035e916e552bc))
-    * Signed-off-by: mrickard <maurice@mauricerickard.com>
-* Enabled quiet mode for CI runs ([#2409](https://github.com/newrelic/node-newrelic/pull/2409)) ([52f1989](https://github.com/newrelic/node-newrelic/commit/52f198975dc01be4ef732036fb8fb3b50d0a255c))
-* fixed deps with CVEs ([#2409](https://github.com/newrelic/node-newrelic/pull/2409)) ([ae1ae84](https://github.com/newrelic/node-newrelic/commit/ae1ae8449561b1876cce967c16d9a7badc3588f8))
-* Made pre-commit hook require dependency changes ([#2409](https://github.com/newrelic/node-newrelic/pull/2409)) ([b1d0497](https://github.com/newrelic/node-newrelic/commit/b1d0497a6fd70149a4ec9f2048035591085c79b3))
-* Merge `next` branch ([#2412](https://github.com/newrelic/node-newrelic/pull/2412)) ([a163ee8](https://github.com/newrelic/node-newrelic/commit/a163ee8422a84ad7eaea2e767899117285ccca89))
-* release v0.10.0 ([#2409](https://github.com/newrelic/node-newrelic/pull/2409)) ([0c4b476](https://github.com/newrelic/node-newrelic/commit/0c4b4762642cf0c2ebe40fbda10ae7c426c8a9d1))
-* release v0.9.0 ([#2409](https://github.com/newrelic/node-newrelic/pull/2409)) ([8f225f3](https://github.com/newrelic/node-newrelic/commit/8f225f30c7bb1af478a2d1529a58aabcaef5784c))
-    * Co-authored-by: jsumners-nr <gh-actions-jsumners-nr@github.com> Co-authored-by: James Sumners <jsumners@newrelic.com>
-* removes skipping of tests on 13.4.13 and above ([#2409](https://github.com/newrelic/node-newrelic/pull/2409)) ([3195ae0](https://github.com/newrelic/node-newrelic/commit/3195ae09322fb786f0cb92f6b35c9784eba11c3f))
-* Switch to using Node built-in test runner ([#2387](https://github.com/newrelic/node-newrelic/pull/2387)) ([b9f64b7](https://github.com/newrelic/node-newrelic/commit/b9f64b76b8777fc790a4694a95318f401a56abdd))
-* update explorer hub link in readme ([#2409](https://github.com/newrelic/node-newrelic/pull/2409)) ([3cac3c2](https://github.com/newrelic/node-newrelic/commit/3cac3c2cd20d7788643eef32a3a0cadfed515a91))
-* update path for ritm ([#2409](https://github.com/newrelic/node-newrelic/pull/2409)) ([0e340cf](https://github.com/newrelic/node-newrelic/commit/0e340cfb3eb3980f063cace4a5ae4b931957c91e))
-* update to newest community plus header ([#2409](https://github.com/newrelic/node-newrelic/pull/2409)) ([6ac1ac2](https://github.com/newrelic/node-newrelic/commit/6ac1ac2113871334d421d6d46b4a408aa358eb56))
-* updated @newrelic/test-utilities to latest ([#2409](https://github.com/newrelic/node-newrelic/pull/2409)) ([54b6b4d](https://github.com/newrelic/node-newrelic/commit/54b6b4dd3c422d872e6d8e9d529c009f67eaefc9))
+* Switched to using Node built-in test runner ([#2387](https://github.com/newrelic/node-newrelic/pull/2387)) ([b9f64b7](https://github.com/newrelic/node-newrelic/commit/b9f64b76b8777fc790a4694a95318f401a56abdd))
 * Updated `@newrelic/native-metrics` to 11.0.0 ([#2412](https://github.com/newrelic/node-newrelic/pull/2412)) ([aef69e2](https://github.com/newrelic/node-newrelic/commit/aef69e28cc3ead2079cfc0bdf9bde74129a3711f))
-* updated agent to latest ([#2409](https://github.com/newrelic/node-newrelic/pull/2409)) ([d4336ae](https://github.com/newrelic/node-newrelic/commit/d4336ae1e26d702c1bcdbe9979b6b13828c4af4e))
-* Updated CI process for releases ([#2409](https://github.com/newrelic/node-newrelic/pull/2409)) ([5e04f1d](https://github.com/newrelic/node-newrelic/commit/5e04f1d15650b8bbd127bf94f4882cab011efcf6))
 * Updated dashboard links in developer-setup.md ([#2397](https://github.com/newrelic/node-newrelic/pull/2397)) ([16866da](https://github.com/newrelic/node-newrelic/commit/16866da381366ad848ea06be44fd838d57c9fb67))
-* updated peer dep to the unreleased version of agent that this instrumentation will now require ([#2409](https://github.com/newrelic/node-newrelic/pull/2409)) ([407ba0c](https://github.com/newrelic/node-newrelic/commit/407ba0c2da289d082353be72fd3728ddd06d559b))
 * Verified MySQL host:port metric is recorded ([#2400](https://github.com/newrelic/node-newrelic/pull/2400)) ([74176f7](https://github.com/newrelic/node-newrelic/commit/74176f77f70247a3cf65b1b49c5414279b4eeca6))
 
 #### Tests
 
-* Added targets for compatibility reporting ([#2409](https://github.com/newrelic/node-newrelic/pull/2409)) ([095d04f](https://github.com/newrelic/node-newrelic/commit/095d04f272dd16faca1598e8a12908fdac42a858))
-* pin versioned tests to < 13.3.1 until [#120](https://github.com/newrelic/node-newrelic/issues/120) is fixed ([#2409](https://github.com/newrelic/node-newrelic/pull/2409)) ([d832957](https://github.com/newrelic/node-newrelic/commit/d832957970d54621b340c4dac6b9ae95ffd358ba))
-* Removed mongodb-esm tests as they are not atomic and conflicting with mongodb tests in CI ([#2416](https://github.com/newrelic/node-newrelic/pull/2416)) ([941902f](https://github.com/newrelic/node-newrelic/commit/941902f5a8b0ae83d629c366a54732e55aaf227c))
 * Removed mongodb-esm tests as they are not atomic and conflicting with mongodb tests in CI ([#2416](https://github.com/newrelic/node-newrelic/pull/2416)) ([e587b9d](https://github.com/newrelic/node-newrelic/commit/e587b9dcb795cca3c29c6e0da18770401c3085a0))
-* skip Next.js 13.4.13 until we can fix the instrumentation ([#2409](https://github.com/newrelic/node-newrelic/pull/2409)) ([20cff41](https://github.com/newrelic/node-newrelic/commit/20cff4191d6180a1c2891308929bdea2ed98090a))
-* skip running Next 14+ versioned tests on Node 16 as support was dropped ([#2409](https://github.com/newrelic/node-newrelic/pull/2409)) ([6020280](https://github.com/newrelic/node-newrelic/commit/6020280f1aa4fceac2c88482222f2516127f66a5))
-* update versioned test helper to handle next@13.4.15 changes ([#2409](https://github.com/newrelic/node-newrelic/pull/2409)) ([8e7a0ac](https://github.com/newrelic/node-newrelic/commit/8e7a0aca656494d66b204b957da8afc7b58d16c6))
-* Updated minimum version of lesser used versions of 3rd party li… ([#2399](https://github.com/newrelic/node-newrelic/pull/2399)) ([ef8c006](https://github.com/newrelic/node-newrelic/commit/ef8c00674c22b4794c6cee823d46ad9db7d67fed))
-* updated test assertions based on segment tree changes in 14.1.0 of Next.js ([#2409](https://github.com/newrelic/node-newrelic/pull/2409)) ([ee09884](https://github.com/newrelic/node-newrelic/commit/ee098840488386e25535152542a4ca8ecb879813))
-* updated test assertions based on segment tree changes in 14.1.0 of Next.js ([#2409](https://github.com/newrelic/node-newrelic/pull/2409)) ([ea15585](https://github.com/newrelic/node-newrelic/commit/ea15585c806e8ed051ebabd475a59e333a19d8e5))
-
-#### Continuous integration
-
-* Removed `use_new_release` input from prepare release workflow ([#2409](https://github.com/newrelic/node-newrelic/pull/2409)) ([d761e5b](https://github.com/newrelic/node-newrelic/commit/d761e5b9ff970c2ec1123a28a51f931ee26854ef))
-* removed changelog.json file ([#2409](https://github.com/newrelic/node-newrelic/pull/2409)) ([d3a73fc](https://github.com/newrelic/node-newrelic/commit/d3a73fc733571be4dc009a4ce0f858850d8a636f))
-* skip Next.js versions >= 13.4.5. getServerSideProps instrumentation is no longer working and it is not clear why ([#2409](https://github.com/newrelic/node-newrelic/pull/2409)) ([2eff567](https://github.com/newrelic/node-newrelic/commit/2eff5670237e9f38c4e23457295009e5ed78976b))
+* Updated minimum version of lesser used versions of 3rd party libraries ([#2399](https://github.com/newrelic/node-newrelic/pull/2399)) ([ef8c006](https://github.com/newrelic/node-newrelic/commit/ef8c00674c22b4794c6cee823d46ad9db7d67fed))
 
 ### v11.23.2 (2024-07-22)
 
