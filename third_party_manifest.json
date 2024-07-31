@@ -493,15 +493,15 @@
       "publisher": "Michael Radionov",
       "url": "https://github.com/mradionov"
     },
-    "eslint-plugin-jsdoc@48.8.0": {
+    "eslint-plugin-jsdoc@48.8.3": {
       "name": "eslint-plugin-jsdoc",
-      "version": "48.8.0",
+      "version": "48.8.3",
       "range": "^48.0.5",
       "licenses": "BSD-3-Clause",
       "repoUrl": "https://github.com/gajus/eslint-plugin-jsdoc",
-      "versionedRepoUrl": "https://github.com/gajus/eslint-plugin-jsdoc/tree/v48.8.0",
+      "versionedRepoUrl": "https://github.com/gajus/eslint-plugin-jsdoc/tree/v48.8.3",
       "licenseFile": "node_modules/eslint-plugin-jsdoc/LICENSE",
-      "licenseUrl": "https://github.com/gajus/eslint-plugin-jsdoc/blob/v48.8.0/LICENSE",
+      "licenseUrl": "https://github.com/gajus/eslint-plugin-jsdoc/blob/v48.8.3/LICENSE",
       "licenseTextSource": "file",
       "publisher": "Gajus Kuizinas",
       "email": "gajus@gajus.com",
@@ -737,6 +737,19 @@
       "email": "i@izs.me",
       "url": "http://blog.izs.me/"
     },
+    "self-cert@2.0.0": {
+      "name": "self-cert",
+      "version": "2.0.0",
+      "range": "^2.0.0",
+      "licenses": "MIT",
+      "repoUrl": "https://github.com/jsumners/self-cert",
+      "versionedRepoUrl": "https://github.com/jsumners/self-cert/tree/v2.0.0",
+      "licenseFile": "node_modules/self-cert/Readme.md",
+      "licenseUrl": "https://github.com/jsumners/self-cert/blob/v2.0.0/Readme.md",
+      "licenseTextSource": "spdx",
+      "publisher": "James Sumners",
+      "email": "james.sumners@gmail.com"
+    },
     "should@13.2.3": {
       "name": "should",
       "version": "13.2.3",
@@ -750,15 +763,15 @@
       "publisher": "TJ Holowaychuk",
       "email": "tj@vision-media.ca"
     },
-    "sinon@4.5.0": {
+    "sinon@5.1.1": {
       "name": "sinon",
-      "version": "4.5.0",
-      "range": "^4.5.0",
+      "version": "5.1.1",
+      "range": "^5.1.1",
       "licenses": "BSD-3-Clause",
       "repoUrl": "https://github.com/sinonjs/sinon",
-      "versionedRepoUrl": "https://github.com/sinonjs/sinon/tree/v4.5.0",
+      "versionedRepoUrl": "https://github.com/sinonjs/sinon/tree/v5.1.1",
       "licenseFile": "node_modules/sinon/LICENSE",
-      "licenseUrl": "https://github.com/sinonjs/sinon/blob/v4.5.0/LICENSE",
+      "licenseUrl": "https://github.com/sinonjs/sinon/blob/v5.1.1/LICENSE",
       "licenseTextSource": "file",
       "publisher": "Christian Johansen"
     },

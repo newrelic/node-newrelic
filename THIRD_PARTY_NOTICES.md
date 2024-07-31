@@ -71,6 +71,7 @@ code, the source code can be found at [https://github.com/newrelic/node-newrelic
 * [proxyquire](#proxyquire)
 * [rfdc](#rfdc)
 * [rimraf](#rimraf)
+* [self-cert](#self-cert)
 * [should](#should)
 * [sinon](#sinon)
 * [superagent](#superagent)
@@ -4023,6 +4024,22 @@ IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ```
 
+### self-cert
+
+This product includes source derived from [self-cert](https://github.com/jsumners/self-cert) ([v2.0.0](https://github.com/jsumners/self-cert/tree/v2.0.0)), distributed under the [MIT License](https://github.com/jsumners/self-cert/blob/v2.0.0/Readme.md):
+
+```
+MIT License
+
+Copyright (c) <year> <copyright holders>
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+```
+
 ### should
 
 This product includes source derived from [should](https://github.com/shouldjs/should.js) ([v13.2.3](https://github.com/shouldjs/should.js/tree/v13.2.3)), distributed under the [MIT License](https://github.com/shouldjs/should.js/blob/v13.2.3/LICENSE):
@@ -4053,7 +4070,7 @@ THE SOFTWARE.
 
 ### sinon
 
-This product includes source derived from [sinon](https://github.com/sinonjs/sinon) ([v4.5.0](https://github.com/sinonjs/sinon/tree/v4.5.0)), distributed under the [BSD-3-Clause License](https://github.com/sinonjs/sinon/blob/v4.5.0/LICENSE):
+This product includes source derived from [sinon](https://github.com/sinonjs/sinon) ([v5.1.1](https://github.com/sinonjs/sinon/tree/v5.1.1)), distributed under the [BSD-3-Clause License](https://github.com/sinonjs/sinon/blob/v5.1.1/LICENSE):
 
 ```
 (The BSD License)
