@@ -50,78 +50,74 @@ tap.afterEach(async (t) => {
   await t.context.producer.disconnect()
 })
 
-try {
-  tap.test('send records correctly', (t) => {
-    t.plan(8)
+tap.test('send records correctly', (t) => {
+  t.plan(8)
 
-    const { agent, consumer, producer, topic } = t.context
-    const message = 'test message'
-    const expectedName = 'produce-tx'
-    let txCount = 0
+  const { agent, consumer, producer, topic } = t.context
+  const message = 'test message'
+  const expectedName = 'produce-tx'
+  let txCount = 0
 
-    agent.on('transactionFinished', (tx) => {
-      txCount++
-      if (tx.name === expectedName) {
-        const name = `MessageBroker/Kafka/Topic/Produce/Named/${topic}`
-        const segment = tx.agent.tracer.getSegment()
+  agent.on('transactionFinished', (tx) => {
+    txCount++
+    if (tx.name === expectedName) {
+      const name = `MessageBroker/Kafka/Topic/Produce/Named/${topic}`
+      const segment = tx.agent.tracer.getSegment()
 
-        const foundSegment = segment.children.find((s) => s.name.endsWith(topic))
-        t.equal(foundSegment.name, name)
+      const foundSegment = segment.children.find((s) => s.name.endsWith(topic))
+      t.equal(foundSegment.name, name)
 
-        const metric = tx.metrics.getMetric(name)
-        t.equal(metric.callCount, 1)
-        const sendMetric = agent.metrics.getMetric(
-          'Supportability/Features/Instrumentation/kafkajs/send'
-        )
-        t.equal(sendMetric.callCount, 1)
+      const metric = tx.metrics.getMetric(name)
+      t.equal(metric.callCount, 1)
+      const sendMetric = agent.metrics.getMetric(
+        'Supportability/Features/Instrumentation/kafkajs/send'
+      )
+      t.equal(sendMetric.callCount, 1)
 
-        const produceTrackingMetric = agent.metrics.getMetric(
-          `MessageBroker/Kafka/Nodes/${broker}/Produce/Named/${topic}`
-        )
-        t.equal(produceTrackingMetric.callCount, 1)
-      }
+      const produceTrackingMetric = agent.metrics.getMetric(
+        `MessageBroker/Kafka/Nodes/${broker}/Produce/Named/${topic}`
+      )
+      t.equal(produceTrackingMetric.callCount, 1)
+    }
 
-      if (txCount === 2) {
-        t.end()
-      }
-    })
-
-    helper.runInTransaction(agent, async (tx) => {
-      tx.name = expectedName
-      await consumer.subscribe({ topic, fromBeginning: true })
-      const promise = new Promise((resolve) => {
-        consumer.run({
-          eachMessage: async ({ message: actualMessage }) => {
-            t.equal(actualMessage.value.toString(), message)
-            t.equal(actualMessage.headers['x-foo'].toString(), 'foo')
-            t.equal(actualMessage.headers.newrelic.toString(), '')
-            t.equal(actualMessage.headers.traceparent.toString().startsWith('00-'), true)
-            resolve()
-          }
-        })
-      })
-      await utils.waitForConsumersToJoinGroup({ consumer })
-      await producer.send({
-        acks: 1,
-        topic,
-        messages: [
-          {
-            key: 'key',
-            value: message,
-            headers: {
-              'x-foo': 'foo'
-            }
-          }
-        ]
-      })
-      await promise
-
-      tx.end()
-    })
+    if (txCount === 2) {
+      t.end()
+    }
   })
-} catch (error) {
-  console.log(error)
-}
+
+  helper.runInTransaction(agent, async (tx) => {
+    tx.name = expectedName
+    await consumer.subscribe({ topic, fromBeginning: true })
+    const promise = new Promise((resolve) => {
+      consumer.run({
+        eachMessage: async ({ message: actualMessage }) => {
+          t.equal(actualMessage.value.toString(), message)
+          t.equal(actualMessage.headers['x-foo'].toString(), 'foo')
+          t.equal(actualMessage.headers.newrelic.toString(), '')
+          t.equal(actualMessage.headers.traceparent.toString().startsWith('00-'), true)
+          resolve()
+        }
+      })
+    })
+    await utils.waitForConsumersToJoinGroup({ consumer })
+    await producer.send({
+      acks: 1,
+      topic,
+      messages: [
+        {
+          key: 'key',
+          value: message,
+          headers: {
+            'x-foo': 'foo'
+          }
+        }
+      ]
+    })
+    await promise
+
+    tx.end()
+  })
+})
 
 tap.test('send passes along DT headers', (t) => {
   const expectedName = 'produce-tx'
