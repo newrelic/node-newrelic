@@ -32,7 +32,6 @@ const obfuscate = require('./lib/util/sql/obfuscate')
 const { DESTINATIONS } = require('./lib/config/attribute-filter')
 const parse = require('module-details-from-path')
 const { isSimpleObject } = require('./lib/util/objects')
-const { AsyncLocalStorage } = require('async_hooks')
 
 /*
  *
@@ -1904,69 +1903,48 @@ API.prototype.ignoreApdex = function ignoreApdex() {
 }
 
 /**
- * @callback setLlmCustomAttributesCallback
- * @param {string} type LLM event type
- * @param {object} msg LLM event
- * @returns {object} Returns key/value pairs of attributes to be added
- */
-
-/**
- * Add custom attributes to the LLM event.
+ * Runs a function synchronously within a provided LLM custom attributes context and returns its return value.
  *
- * See documentation for newrelic.setLlmCustomAttributes for more information.
+ * See documentation for newrelic.withLlmCustomAttributes for more information.
  *
  * An example of setting a custom attribute:
  *
- *    newrelic.setLlmCustomAttributes((type, msg) => {
- *      return {'llm.testAttribute': 'testValue'}
+ *    newrelic.withLlmCustomAttributes({'llm.someAttribute': 'someVallue'}, () => {
+ *      return;
  *    })
- *
- * @param {setLlmCustomAttributesCallback} callback A callback to handle recording of every LLM event.
+ * @param {Object} context LLM custom attributes context
+ * @param {Function} callback synchronous function called within the context
  */
-API.prototype.setLlmCustomAttributes = function setLlmCustomAttributes(callback) {
-  this.agent.on('recordLlmEvent', function handler(type, msg, context) {
-    const attributes = callback(type, msg, context)
-    if (!attributes) {
-      return
-    }
-    if (typeof attributes !== 'object') {
-      logger.warn(
-        `Invalid attributes provided for ${type} event. Object with key/value pairs like {"llm.attributeName": "someValue"} is expected`
-      )
-      return
-    }
-
-    for (const key in attributes) {
-      if (Object.hasOwn(attributes, key)) {
-        const value = attributes[key]
-        if (typeof value === 'object' || typeof value === 'function') {
-          logger.warn(`Invalid attribute type for ${key}. Skipped.`)
-          delete attributes[key]
-        } else if (key.indexOf('llm.') !== 0) {
-          logger.warn(`Invalid attribute name ${key}. Renamed to "llm.${key}".`)
-          delete attributes[key]
-          attributes[`llm.${key}`] = value
-        }
-      }
-    }
-
-    Object.assign(msg, attributes || {})
-  })
-}
-
 API.prototype.withLlmCustomAttributes = function withLlmCustomAttributes(context, callback) {
-  const transaction = this.agent.tracer.getTransaction()
+  const metric = this.agent.metrics.getOrCreateMetric(
+    NAMES.SUPPORTABILITY.API + '/withLlmCustomAttributes'
+  )
+  metric.incrementCallCount()
 
+  const transaction = this.agent.tracer.getTransaction()
   if (!transaction) {
     logger.warn('withLlmCustomAttributes must be called within the scope of a transaction.')
-    return callback()
+    return callback?.()
   }
 
-  if (!transaction._llmContext) {
-    transaction._llmContext = new AsyncLocalStorage()
+  for (const key in context) {
+    if (Object.hasOwn(context, key)) {
+      const value = context[key]
+      if (typeof value === 'object' || typeof value === 'function') {
+        logger.warn(`Invalid attribute type for ${key}. Skipped.`)
+        delete context[key]
+      } else if (key.indexOf('llm.') !== 0) {
+        logger.warn(`Invalid attribute name ${key}. Renamed to "llm.${key}".`)
+        delete context[key]
+        context[`llm.${key}`] = value
+      }
+    }
   }
-  const fullContext = { ...(transaction._llmContext.getStore() ?? {}), ...context }
-  return transaction._llmContext.run(fullContext, callback)
+
+  const parentContext = this.agent._contextManager.getContext()
+
+  const fullContext = parentContext ? Object.assign(parentContext, context || {}) : context
+  return this.agent._contextManager.runInContext(fullContext, callback, this)
 }
 
 module.exports = API

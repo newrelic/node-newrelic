@@ -121,54 +121,56 @@ tap.test('Agent API LLM methods', (t) => {
     })
   })
 
-  const wait = function (time) {
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        resolve()
-      }, time)
-    })
-  }
-
-  t.test('setLlmCustom attributes', async (t) => {
+  t.test('mimic withLlmCustomAttributes', async (t) => {
     const { api } = t.context
-    let [verifyType, verifyMsg] = []
-    api.setLlmCustomAttributes((type, msg) => {
-      // console.log('here');
-      verifyType = type
-      verifyMsg = msg
-    })
-    // console.log(`---test---`);
-    // const rce = api.recordCustomEvent
-    // let event
-    /* api.recordCustomEvent = (name, data) => {
-      event = { name, data }
-      return rce.call(api, name, data)
-    }
-    t.teardown(() => {
-      api.recordCustomEvent = rce
-    })*/
-
-    helper.runInTransaction(api.agent, async () => {
-      const result = api.recordLlmFeedbackEvent({
-        traceId: 'trace-id',
-        category: 'test-cat',
-        rating: '5 star',
-        metadata: { foo: 'foo' }
+    const contextManager = api.agent._contextManager
+    await helper.runInTransaction(api.agent, async () => {
+      await contextManager.runInContext({ test: 1 }, async () => {
+        const context = contextManager.getContext()
+        t.equal(context.test, 1)
       })
-      await wait(10)
-      t.equal(result, undefined)
-      t.equal(loggerMock.warn.callCount, 0)
-      t.equal(verifyType, 'LlmFeedbackMessage')
-      t.notSame(verifyMsg, undefined)
-      /* t.match(event.data, {
-        id: /[\w\d]{32}/,
-        trace_id: 'trace-id',
-        category: 'test-cat',
-        rating: '5 star',
-        message: '',
-        foo: 'foo',
-        ingest_source: 'Node'
-      })*/
+    })
+  })
+
+  t.test('withLlmCustomAttributes attributes', (t) => {
+    const { api } = t.context
+    helper.runInTransaction(api.agent, (tx) => {
+      const contextManager = api.agent._contextManager
+      t.context.agent.tracer.getTransaction = () => {
+        return tx
+      }
+      contextManager.setContext({
+        initial: true
+      })
+
+      api.withLlmCustomAttributes(
+        {
+          'toRename': 'value1',
+          'llm.number': 1,
+          'llm.boolean': true,
+          'toDelete': () => {},
+          'toDelete2': {},
+          'toDelete3': []
+        },
+        () => {
+          const parentContext = contextManager.getContext()
+          t.ok(parentContext.initial)
+          t.equal(parentContext['llm.toRename'], 'value1')
+          t.notOk(parentContext.toDelete)
+          t.notOk(parentContext.toDelete2)
+          t.notOk(parentContext.toDelete3)
+          t.equal(parentContext['llm.number'], 1)
+          t.equal(parentContext['llm.boolean'], true)
+
+          api.withLlmCustomAttributes({ 'llm.someAttribute': 'someValue' }, () => {
+            const context = contextManager.getContext()
+            t.ok(context.initial)
+            t.equal(context[`llm.toRename`], 'value1')
+            t.equal(context['llm.someAttribute'], 'someValue')
+            t.end()
+          })
+        }
+      )
     })
   })
 
