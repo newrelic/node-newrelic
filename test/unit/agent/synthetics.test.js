@@ -5,27 +5,29 @@
 
 'use strict'
 
-const tap = require('tap')
+const test = require('node:test')
+const assert = require('node:assert')
+const promiseResolvers = require('../../lib/promise-resolvers')
 const helper = require('../../lib/agent_helper')
 
-tap.test('synthetics transaction traces', (t) => {
-  t.autoend()
-
-  let agent
-
-  t.beforeEach(() => {
-    agent = helper.loadMockedAgent({
+test('synthetics transaction traces', async (t) => {
+  t.beforeEach((ctx) => {
+    ctx.nr = {}
+    ctx.nr.agent = helper.loadMockedAgent({
       trusted_account_ids: [357]
     })
   })
 
-  t.afterEach(() => {
-    helper.unloadAgent(agent)
+  t.afterEach((ctx) => {
+    helper.unloadAgent(ctx.nr.agent)
   })
 
-  t.test('should include synthetic intrinsics if header is set', (t) => {
-    helper.runInTransaction(agent, function (txn) {
-      txn.syntheticsData = {
+  await t.test('should include synthetic intrinsics if header is set', async (t) => {
+    const { agent } = t.nr
+    const { promise, resolve } = promiseResolvers()
+
+    helper.runInTransaction(agent, function (tx) {
+      tx.syntheticsData = {
         version: 1,
         accountId: 357,
         resourceId: 'resId',
@@ -33,13 +35,15 @@ tap.test('synthetics transaction traces', (t) => {
         monitorId: 'monId'
       }
 
-      txn.end()
-      const trace = txn.trace
-      t.equal(trace.intrinsics.synthetics_resource_id, 'resId')
-      t.equal(trace.intrinsics.synthetics_job_id, 'jobId')
-      t.equal(trace.intrinsics.synthetics_monitor_id, 'monId')
+      tx.end()
+      const trace = tx.trace
+      assert.equal(trace.intrinsics.synthetics_resource_id, 'resId')
+      assert.equal(trace.intrinsics.synthetics_job_id, 'jobId')
+      assert.equal(trace.intrinsics.synthetics_monitor_id, 'monId')
 
-      t.end()
+      resolve()
     })
+
+    await promise
   })
 })
