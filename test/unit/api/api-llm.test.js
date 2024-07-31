@@ -121,17 +121,6 @@ tap.test('Agent API LLM methods', (t) => {
     })
   })
 
-  t.test('mimic withLlmCustomAttributes', async (t) => {
-    const { api } = t.context
-    const contextManager = api.agent._contextManager
-    await helper.runInTransaction(api.agent, async () => {
-      await contextManager.runInContext({ test: 1 }, async () => {
-        const context = contextManager.getContext()
-        t.equal(context.test, 1)
-      })
-    })
-  })
-
   t.test('withLlmCustomAttributes attributes', (t) => {
     const { api } = t.context
     helper.runInTransaction(api.agent, (tx) => {
