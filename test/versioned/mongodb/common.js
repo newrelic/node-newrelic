@@ -14,6 +14,12 @@ const TRANSACTION_NAME = 'mongo test'
 const DB_NAME = 'integration'
 const COLLECTIONS = { collection1: 'testCollection', collection2: 'testCollection2' }
 const STATEMENT_PREFIX = `Datastore/statement/MongoDB/${COLLECTIONS.collection1}`
+const ESM = {
+  DB_NAME: 'esmIntegration',
+  COLLECTIONS: { collection1: 'esmTestCollection', collection2: 'esmTestCollection2' },
+  STATEMENT_PREFIX: 'Datastore/statement/MongoDB/esmTestCollection'
+}
+exports.ESM = ESM
 
 exports.MONGO_SEGMENT_RE = MONGO_SEGMENT_RE
 exports.TRANSACTION_NAME = TRANSACTION_NAME
@@ -28,7 +34,7 @@ exports.checkMetrics = checkMetrics
 exports.getHostName = getHostName
 exports.getPort = getPort
 
-async function connect(mongodb, host, replicaSet = false) {
+async function connect({ mongodb, host, replicaSet = false, name = DB_NAME }) {
   if (host) {
     host = encodeURIComponent(host)
   } else {
@@ -43,7 +49,7 @@ async function connect(mongodb, host, replicaSet = false) {
     options = { useNewUrlParser: true, useUnifiedTopology: true }
   }
   const client = await mongodb.MongoClient.connect(connString, options)
-  const db = client.db(DB_NAME)
+  const db = client.db(name)
   return { db, client }
 }
 
@@ -64,7 +70,7 @@ function getPort() {
   return String(params.mongodb_port)
 }
 
-function checkMetrics(t, agent, host, port, metrics) {
+function checkMetrics({ t, agent, host, port, metrics = [], prefix = STATEMENT_PREFIX }) {
   const agentMetrics = getMetrics(agent)
 
   const unscopedMetrics = agentMetrics.unscoped
@@ -99,12 +105,12 @@ function checkMetrics(t, agent, host, port, metrics) {
       'unscoped operation metric should be called ' + count + ' times'
     )
     t.equal(
-      unscopedMetrics[`${STATEMENT_PREFIX}/` + name].callCount,
+      unscopedMetrics[`${prefix}/` + name].callCount,
       count,
       'unscoped statement metric should be called ' + count + ' times'
     )
     t.equal(
-      scoped[`${STATEMENT_PREFIX}/` + name].callCount,
+      scoped[`${prefix}/` + name].callCount,
       count,
       'scoped statement metric should be called ' + count + ' times'
     )
