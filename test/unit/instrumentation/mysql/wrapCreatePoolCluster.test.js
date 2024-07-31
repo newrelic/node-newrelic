@@ -38,7 +38,7 @@ tap.test('wrapCreatePoolCluster', (t) => {
     }
 
     mockPoolCluster = {
-      of: sinon.stub.returns(),
+      of: sinon.stub().returns(),
       getConnection: sinon.stub().returns()
     }
 
