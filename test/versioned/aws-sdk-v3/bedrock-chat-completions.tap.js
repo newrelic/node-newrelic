@@ -135,25 +135,30 @@ tap.afterEach(async (t) => {
       const api = helper.getAgentApi()
       helper.runInTransaction(agent, async (tx) => {
         api.addCustomAttribute('llm.conversation_id', 'convo-id')
-        await client.send(command)
-        const events = agent.customEventAggregator.events.toArray()
-        t.equal(events.length, 3)
-        const chatSummary = events.filter(([{ type }]) => type === 'LlmChatCompletionSummary')[0]
-        const chatMsgs = events.filter(([{ type }]) => type === 'LlmChatCompletionMessage')
+        api.withLlmCustomAttributes({ 'llm.contextAttribute': 'someValue' }, async () => {
+          await client.send(command)
+          const events = agent.customEventAggregator.events.toArray()
+          t.equal(events.length, 3)
+          const chatSummary = events.filter(([{ type }]) => type === 'LlmChatCompletionSummary')[0]
+          const chatMsgs = events.filter(([{ type }]) => type === 'LlmChatCompletionMessage')
 
-        t.llmMessages({
-          modelId,
-          prompt,
-          resContent: '42',
-          tx,
-          expectedId: modelId.includes('ai21') || modelId.includes('cohere') ? '1234' : null,
-          chatMsgs
+          t.llmMessages({
+            modelId,
+            prompt,
+            resContent: '42',
+            tx,
+            expectedId: modelId.includes('ai21') || modelId.includes('cohere') ? '1234' : null,
+            chatMsgs
+          })
+
+          t.llmSummary({ tx, modelId, chatSummary })
+
+          const [, message] = chatSummary
+          t.ok(message['llm.contextAttribute'])
+
+          tx.end()
+          t.end()
         })
-
-        t.llmSummary({ tx, modelId, chatSummary })
-
-        tx.end()
-        t.end()
       })
     }
   )

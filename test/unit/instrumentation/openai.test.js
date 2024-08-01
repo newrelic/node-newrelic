@@ -119,5 +119,27 @@ test('openai unit tests', (t) => {
     t.equal(isWrapped, false, 'should not wrap chat completions create')
     t.end()
   })
+
+  t.test('should record LLM custom events with attributes', (t) => {
+    const { shim, agent, initialize } = t.context
+    shim.pkgVersion = '4.12.2'
+    const MockOpenAi = getMockModule()
+    agent.config.ai_monitoring.record_content = { enabled: true }
+    initialize(agent, MockOpenAi, 'openai', shim)
+    const completions = new MockOpenAi.Chat.Completions()
+    agent._contextManager.setContext({ initial: true })
+    const api = helper.getAgentApi()
+    helper.runInTransaction(agent, () => {
+      api.withLlmCustomAttributes({ 'llm.attribute': `someValue` }, async () => {
+        await completions.create({ stream: false, messages: [{ role: 'user', content: 'Hello' }] })
+        const events = agent.customEventAggregator.events.toArray()
+        const [[, message]] = events
+        t.notOk(message.initial)
+        t.equal(message['llm.attribute'], 'someValue')
+        t.end()
+      })
+    })
+  })
+
   t.end()
 })
