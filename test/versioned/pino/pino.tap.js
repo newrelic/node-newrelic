@@ -95,7 +95,6 @@ tap.test('Pino instrumentation', (t) => {
       // Verify that merging object only logs get decorated:
       logger.info({ msg: message })
       line = await once(stream, 'data')
-      console.log(line)
       t.equal(line.msg.startsWith(`${message} NR-LINKING|test-guid`), true)
       originalMsgAssertion({
         t,
