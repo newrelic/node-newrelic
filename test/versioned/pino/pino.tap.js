@@ -83,7 +83,7 @@ tap.test('Pino instrumentation', (t) => {
     const message = 'pino decorating test'
     helper.runInTransaction(agent, 'pino-test', async () => {
       logger.info(message)
-      const line = await once(stream, 'data')
+      let line = await once(stream, 'data')
       originalMsgAssertion({
         t,
         includeLocalDecorating: true,
@@ -91,6 +91,19 @@ tap.test('Pino instrumentation', (t) => {
         logLine: line
       })
       t.same(agent.logs.getEvents(), [], 'should not add any logs to log aggregator')
+
+      // Verify that merging object only logs get decorated:
+      logger.info({ msg: message })
+      line = await once(stream, 'data')
+      t.equal(line.msg.startsWith(`${message} NR-LINKING|test-guid`), true)
+      originalMsgAssertion({
+        t,
+        includeLocalDecorating: true,
+        hostname: agent.config.getHostnameSafe(),
+        logLine: line
+      })
+      t.same(agent.logs.getEvents(), [], 'should not add any logs to log aggregator')
+
       t.end()
     })
   })
@@ -374,5 +387,20 @@ tap.test('Pino instrumentation', (t) => {
         })
       })
     })
+  })
+
+  t.test('should honor msg key in merging object (issue 2410)', async (t) => {
+    t.context.config = setupAgent(t.context, { application_logging: { enabled: true } })
+    const { agent, config, pino } = t.context
+    const localStream = sink()
+    const localLogger = pino({ base: undefined }, localStream)
+    const message = 'pino unit test'
+    const level = 'info'
+    localLogger[level]({ msg: message })
+    await once(localStream, 'data')
+    t.equal(agent.logs.getEvents().length, 1, 'should have 1 log in aggregator')
+    const formattedLine = agent.logs.getEvents()[0]()
+    t.validateAnnotations({ line: formattedLine, message, level, config })
+    t.end()
   })
 })
