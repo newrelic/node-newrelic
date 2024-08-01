@@ -55,9 +55,11 @@ async function* reporter(source) {
     }
   }
 
-  yield `\n\nFailed tests:\n`
-  for (const file of failed) {
-    yield `${file}\n`
+  if (failed.size > 0) {
+    yield `\n\nFailed tests:\n`
+    for (const file of failed) {
+      yield `${file}\n`
+    }
   }
   yield `\n\nPassed: ${passed.size}\nFailed: ${failed.size}\nTotal: ${passed.size + failed.size}\n`
 }
