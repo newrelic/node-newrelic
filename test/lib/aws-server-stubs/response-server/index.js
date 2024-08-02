@@ -6,6 +6,8 @@
 'use strict'
 
 const http = require('http')
+const dns = require('node:dns')
+const semver = require('semver')
 const { getAddTagsResponse } = require('./elasticache')
 const { getAcceptExchangeResponse } = require('./redshift')
 const { getSendEmailResponse } = require('./ses')
@@ -30,6 +32,25 @@ function createResponseServer() {
     res.end()
   })
 
+  const lookup = dns.lookup
+  dns.lookup = (...args) => {
+    const address = args[0]
+    if (address === 'sqs.us-east-1.amazonaws.com') {
+      if (semver.satisfies(process.version, '18')) {
+        return args.pop()(null, '127.0.0.1', 4)
+      }
+      // Node >= 20 changes the callback signature.
+      return args.pop()(null, [{ address: '127.0.0.1', family: 4 }])
+    }
+    lookup.apply(dns, args)
+  }
+
+  const close = server.close
+  server.close = () => {
+    close.call(server)
+    dns.lookup = lookup
+  }
+
   patchDestroy(server)
 
   return server
@@ -44,7 +65,7 @@ function handlePost(req, res) {
 
   req.on('end', () => {
     const isJson = !!req.headers['x-amz-target']
-    const endpoint = `http://localhost:${req.connection.localPort}`
+    const endpoint = `http://${req.headers.host}`
     const parsed = parseBody(body, req.headers)
 
     const getDataFunction = createGetDataFromAction(endpoint, parsed, isJson)
