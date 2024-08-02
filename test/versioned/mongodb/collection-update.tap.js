@@ -7,7 +7,7 @@
 
 const common = require('./collection-common')
 const semver = require('semver')
-const { pkgVersion, STATEMENT_PREFIX } = require('./common')
+const { STATEMENT_PREFIX } = require('./common')
 
 /**
  * The response from the methods in this file differ between versions
@@ -132,7 +132,7 @@ common.test('updateOne', async function updateOneTest(t, collection, verify) {
   verify(null, [`${STATEMENT_PREFIX}/updateOne`], ['updateOne'], { strict: false })
 })
 
-if (semver.satisfies(pkgVersion, '<5.0.0')) {
+if (semver.satisfies(common.pkgVersion, '<5.0.0')) {
   common.test('insert', async function insertTest(t, collection, verify) {
     const data = await collection.insert({ foo: 'bar' })
     assertExpectedResult({

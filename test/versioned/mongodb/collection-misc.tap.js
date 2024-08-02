@@ -7,7 +7,7 @@
 
 const common = require('./collection-common')
 const semver = require('semver')
-const { pkgVersion, STATEMENT_PREFIX, COLLECTIONS, DB_NAME } = require('./common')
+const { STATEMENT_PREFIX, COLLECTIONS, DB_NAME } = require('./common')
 
 function verifyAggregateData(t, data) {
   t.equal(data.length, 3, 'should have expected amount of results')
@@ -87,7 +87,7 @@ common.test('rename', async function renameTest(t, collection, verify) {
   verify(null, [`${STATEMENT_PREFIX}/rename`], ['rename'], { strict: false })
 })
 
-if (semver.satisfies(pkgVersion, '<6.0.0')) {
+if (semver.satisfies(common.pkgVersion, '<6.0.0')) {
   common.test('stats', async function statsTest(t, collection, verify) {
     const data = await collection.stats({ i: 5 })
     t.equal(data.ns, `${DB_NAME}.${COLLECTIONS.collection1}`)
@@ -98,7 +98,7 @@ if (semver.satisfies(pkgVersion, '<6.0.0')) {
   })
 }
 
-if (semver.satisfies(pkgVersion, '<5.0.0')) {
+if (semver.satisfies(common.pkgVersion, '<5.0.0')) {
   common.test('mapReduce', async function mapReduceTest(t, collection, verify) {
     const data = await collection.mapReduce(map, reduce, { out: { inline: 1 } })
 
