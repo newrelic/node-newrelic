@@ -179,7 +179,6 @@
     "unit:scripts": "time c8 -o ./coverage/scripts-unit tap --test-regex='(\\/|^bin\\/test\\/.*\\.test\\.js)$' --timeout=180 --no-coverage --reporter classic",
     "update-cross-agent-tests": "./bin/update-cats.sh",
     "versioned-tests": "./bin/run-versioned-tests.sh",
-    "versioned-tests-selected": "./bin/run-versioned-tests.sh langchain",
     "update-changelog-version": "node ./bin/update-changelog-version",
     "checkout-external-versioned": "node ./test/versioned-external/checkout-external-tests.js",
     "versioned:internal:major": "VERSIONED_MODE=--major npm run versioned:internal",
