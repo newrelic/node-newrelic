@@ -5,7 +5,6 @@
 
 'use strict'
 
-const mongoPackage = require('mongodb/package.json')
 const params = require('../../lib/params')
 const urltils = require('../../../lib/util/urltils')
 
@@ -26,7 +25,6 @@ exports.TRANSACTION_NAME = TRANSACTION_NAME
 exports.DB_NAME = DB_NAME
 exports.COLLECTIONS = COLLECTIONS
 exports.STATEMENT_PREFIX = STATEMENT_PREFIX
-exports.pkgVersion = mongoPackage.version
 
 exports.connect = connect
 exports.close = close

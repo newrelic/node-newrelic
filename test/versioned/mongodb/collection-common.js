@@ -8,6 +8,7 @@
 const common = require('./common')
 const tap = require('tap')
 const helper = require('../../lib/agent_helper')
+const mongoPackage = require('mongodb/package.json')
 
 let METRIC_HOST_NAME = null
 let METRIC_HOST_PORT = null
@@ -17,6 +18,7 @@ exports.close = common.close
 exports.test = collectionTest
 exports.dropTestCollections = dropTestCollections
 exports.populate = populate
+exports.pkgVersion = mongoPackage.version
 
 const { COLLECTIONS } = common
 
