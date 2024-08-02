@@ -38,7 +38,7 @@ function collectionTest(name, run) {
         await dropTestCollections(mongodb)
         METRIC_HOST_NAME = common.getHostName(agent)
         METRIC_HOST_PORT = common.getPort()
-        const res = await common.connect(mongodb)
+        const res = await common.connect({ mongodb })
         client = res.client
         db = res.db
         collection = db.collection(COLLECTIONS.collection1)
@@ -124,7 +124,13 @@ function collectionTest(name, run) {
               }
 
               transaction.end()
-              common.checkMetrics(t, agent, METRIC_HOST_NAME, METRIC_HOST_PORT, metrics || [])
+              common.checkMetrics({
+                t,
+                agent,
+                host: METRIC_HOST_NAME,
+                port: METRIC_HOST_PORT,
+                metrics
+              })
               t.end()
             }
           )
@@ -192,7 +198,7 @@ function collectionTest(name, run) {
         await dropTestCollections(mongodb)
         METRIC_HOST_NAME = common.getHostName(agent)
         METRIC_HOST_PORT = common.getPort()
-        const res = await common.connect(mongodb, null, true)
+        const res = await common.connect({ mongodb, replicaSet: true })
         client = res.client
         db = res.db
         collection = db.collection(COLLECTIONS.collection1)
@@ -269,7 +275,13 @@ function collectionTest(name, run) {
               }
 
               transaction.end()
-              common.checkMetrics(t, agent, METRIC_HOST_NAME, METRIC_HOST_PORT, metrics || [])
+              common.checkMetrics({
+                t,
+                agent,
+                host: METRIC_HOST_NAME,
+                port: METRIC_HOST_PORT,
+                metrics
+              })
               t.end()
             }
           )
@@ -314,7 +326,7 @@ async function populate(collection) {
  */
 async function dropTestCollections(mongodb) {
   const collections = Object.values(COLLECTIONS)
-  const { client, db } = await common.connect(mongodb)
+  const { client, db } = await common.connect({ mongodb })
 
   const dropCollectionPromises = collections.map(async (collection) => {
     try {

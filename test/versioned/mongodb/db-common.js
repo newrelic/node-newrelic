@@ -32,7 +32,7 @@ function dbTest(name, run) {
         MONGO_HOST = common.getHostName(agent)
         MONGO_PORT = common.getPort()
 
-        const res = await common.connect(mongodb)
+        const res = await common.connect({ mongodb })
         client = res.client
         db = res.db
       })
