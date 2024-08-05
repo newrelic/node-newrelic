@@ -94,49 +94,65 @@ tap.test('Langchain instrumentation - runnable sequence', (t) => {
     })
   })
 
+  t.test('should support custom attributes on the LLM events', (t) => {
+    const { agent, prompt, outputParser, model } = t.context
+    const api = helper.getAgentApi()
+    helper.runInTransaction(agent, async (tx) => {
+      api.withLlmCustomAttributes({ 'llm.contextAttribute': 'someValue' }, async () => {
+        const input = { topic: 'scientist' }
+        const options = { metadata: { key: 'value', hello: 'world' }, tags: ['tag1', 'tag2'] }
+
+        const chain = prompt.pipe(model).pipe(outputParser)
+        await chain.invoke(input, options)
+
+        const events = agent.customEventAggregator.events.toArray()
+        const [[, message]] = events
+
+        t.ok(message['llm.contextAttribute'])
+
+        tx.end()
+        t.end()
+      })
+    })
+  })
+
   t.test(
     'should create langchain events for every invoke call on chat prompt + model + parser',
     (t) => {
       const { agent, prompt, outputParser, model } = t.context
-      const api = helper.getAgentApi()
       agent._contextManager.setContext({ initial: true })
       helper.runInTransaction(agent, async (tx) => {
-        api.withLlmCustomAttributes({ 'llm.contextAttribute': 'someValue' }, async () => {
-          const input = { topic: 'scientist' }
-          const options = { metadata: { key: 'value', hello: 'world' }, tags: ['tag1', 'tag2'] }
+        const input = { topic: 'scientist' }
+        const options = { metadata: { key: 'value', hello: 'world' }, tags: ['tag1', 'tag2'] }
 
-          const chain = prompt.pipe(model).pipe(outputParser)
-          await chain.invoke(input, options)
+        const chain = prompt.pipe(model).pipe(outputParser)
+        await chain.invoke(input, options)
 
-          const events = agent.customEventAggregator.events.toArray()
+        const events = agent.customEventAggregator.events.toArray()
 
-          const langchainEvents = filterLangchainEvents(events)
-          const langChainMessageEvents = filterLangchainEventsByType(
-            langchainEvents,
-            'LlmChatCompletionMessage'
-          )
-          const langChainSummaryEvents = filterLangchainEventsByType(
-            langchainEvents,
-            'LlmChatCompletionSummary'
-          )
+        const langchainEvents = filterLangchainEvents(events)
+        const langChainMessageEvents = filterLangchainEventsByType(
+          langchainEvents,
+          'LlmChatCompletionMessage'
+        )
+        const langChainSummaryEvents = filterLangchainEventsByType(
+          langchainEvents,
+          'LlmChatCompletionSummary'
+        )
 
-          t.langchainSummary({
-            tx,
-            chatSummary: langChainSummaryEvents[0]
-          })
-          const [[, message]] = events
-
-          t.ok(message['llm.contextAttribute'])
-
-          t.langchainMessages({
-            tx,
-            chatMsgs: langChainMessageEvents,
-            chatSummary: langChainSummaryEvents[0][1]
-          })
-
-          tx.end()
-          t.end()
+        t.langchainSummary({
+          tx,
+          chatSummary: langChainSummaryEvents[0]
         })
+
+        t.langchainMessages({
+          tx,
+          chatMsgs: langChainMessageEvents,
+          chatSummary: langChainSummaryEvents[0][1]
+        })
+
+        tx.end()
+        t.end()
       })
     }
   )
