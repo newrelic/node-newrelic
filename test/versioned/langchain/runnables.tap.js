@@ -104,10 +104,12 @@ tap.test('Langchain instrumentation - runnable sequence', (t) => {
 
         const chain = prompt.pipe(model).pipe(outputParser)
         await chain.invoke(input, options)
-
         const events = agent.customEventAggregator.events.toArray()
-        const [[, message]] = events
-
+        const responses = events.filter((event) => {
+          const [, chainEvent] = event
+          return chainEvent.virtual_llm === true && chainEvent.is_response === true
+        })
+        const [[, message]] = responses
         t.ok(message['llm.contextAttribute'])
 
         tx.end()
