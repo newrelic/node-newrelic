@@ -115,8 +115,9 @@ function checkMetrics({ t, agent, host, port, metrics = [], prefix = STATEMENT_P
   }
 
   let expectedUnscopedCount = 5 + 2 * metrics.length
-  // adds a supportability metric to load k2 mongodb instrumentation
   if (agent.config.security.agent.enabled) {
+    // The security agent adds a `Supportability/API/instrumentDatastore` metric
+    // via `API.prototype.instrumentDatastore`.
     expectedUnscopedCount += 1
   }
   t.equal(
