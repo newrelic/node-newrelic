@@ -1,0 +1,20 @@
+name: Azure Site Extension
+
+on:
+  workflow_dispatch:
+
+env:
+  # Enable versioned runner quiet mode to make CI output easier to read:
+  OUTPUT_MODE: quiet
+
+jobs:
+  test-environment:
+    runs-on: windows-latest
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: Try to run NuGet
+      run: nuget
+    - name: Try to run dotnet
+      run: dotnet
+
