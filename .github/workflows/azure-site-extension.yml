@@ -13,8 +13,12 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
+    - name: Setup dotnet '6.0.x'
+      uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: '6.0.x'
+    - name: Display dotnet version
+      run: dotnet --version
     - name: Try to run NuGet
       run: nuget
-    - name: Try to run dotnet
-      run: dotnet
 
