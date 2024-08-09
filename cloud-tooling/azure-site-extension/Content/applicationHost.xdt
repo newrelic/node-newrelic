@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<configuration xmlns:xdt="http://schemas.microsoft.com/XML-Document-Transform">
+  <system.webServer>
+    <runtime xdt:Transform="InsertIfMissing" >
+      <environmentVariables xdt:Transform="InsertIfMissing">
+        <add name="NEW_RELIC_METADATA_AZURE_APP_SERVICE_NAME" xdt:Locator="Match(name)" xdt:Transform="RemoveAll"/>
+        <add name="NEW_RELIC_METADATA_AZURE_APP_SERVICE_NAME" value="%WEBSITE_SITE_NAME%" xdt:Locator="Match(name)" xdt:Transform="Insert"/>
+      </environmentVariables>
+    </runtime>
+  </system.webServer>
+</configuration>
