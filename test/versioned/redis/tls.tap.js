@@ -20,18 +20,14 @@ tap.test('redis over tls connection', (t) => {
     const { promise, resolve } = promiseResolvers()
     const agent = helper.instrumentMockedAgent()
     const redis = require('redis')
-    const client = await redis
-      .createClient({
-        url: `rediss://${HOST}:${PORT}`,
-        socket: {
-          tls: true,
-          rejectUnauthorized: false
-        }
-      })
-      .on('error', (error) => {
-        throw error
-      })
-      .connect()
+    const client = redis.createClient({
+      url: `rediss://${HOST}:${PORT}`,
+      socket: {
+        tls: true,
+        rejectUnauthorized: false
+      }
+    })
+    await client.connect()
     await client.flushAll()
 
     t.teardown(async () => {
@@ -56,17 +52,13 @@ tap.test('redis over tls connection', (t) => {
     const { promise, resolve } = promiseResolvers()
     const agent = helper.instrumentMockedAgent()
     const redis = require('redis')
-    const client = await redis
-      .createClient({
-        url: `rediss://${HOST}:${PORT}`,
-        socket: {
-          rejectUnauthorized: false
-        }
-      })
-      .on('error', (error) => {
-        throw error
-      })
-      .connect()
+    const client = redis.createClient({
+      url: `rediss://${HOST}:${PORT}`,
+      socket: {
+        rejectUnauthorized: false
+      }
+    })
+    await client.connect()
     await client.flushAll()
 
     t.teardown(async () => {
