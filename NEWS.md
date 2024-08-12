@@ -8,9 +8,7 @@
 #### Documentation
 
 * Updated compatibility report ([#2440](https://github.com/newrelic/node-newrelic/pull/2440)) ([32abe5f](https://github.com/newrelic/node-newrelic/commit/32abe5f90d93d470737986b3bfe6c797915c4215))
-    * Co-authored-by: jsumners-nr <150050532+jsumners-nr@users.noreply.github.com>
 * Updated compatibility report ([#2435](https://github.com/newrelic/node-newrelic/pull/2435)) ([c7e34c4](https://github.com/newrelic/node-newrelic/commit/c7e34c4a7819c433b5412333ae8f8844bb34b065))
-    * Co-authored-by: bizob2828 <1874937+bizob2828@users.noreply.github.com>
 * Updated compatibility report ([#2415](https://github.com/newrelic/node-newrelic/pull/2415)) ([0dfab8c](https://github.com/newrelic/node-newrelic/commit/0dfab8c29a273080c927650f3243bf921ba567a9))
 * Updated examples to properly use specs ([#2422](https://github.com/newrelic/node-newrelic/pull/2422)) ([f7e8c58](https://github.com/newrelic/node-newrelic/commit/f7e8c5831305ac0bcb2c906ec176863552a083c4))
 
