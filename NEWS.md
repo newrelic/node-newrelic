@@ -3,6 +3,7 @@
 #### Bug fixes
 
 * Pick log message from merging object in Pino instrumentation ([#2421](https://github.com/newrelic/node-newrelic/pull/2421)) ([599072b](https://github.com/newrelic/node-newrelic/commit/599072b43b77a8c11c9ef414b08dfe6e04bca9d2))
+* Added TLS verification for Redis ([#2446](https://github.com/newrelic/node-newrelic/pull/2446)) ([9a16b70](https://github.com/newrelic/node-newrelic/commit/9a16b7016a943a0c2817ab2151eaa81f5ea19760))
 
 
 #### Documentation
@@ -14,7 +15,6 @@
 #### Miscellaneous chores
 
 * Added entity relationship attributes to SQS segments ([#2436](https://github.com/newrelic/node-newrelic/pull/2436)) ([578aead](https://github.com/newrelic/node-newrelic/commit/578aead8c0b2d18dced4eaca54b19c769f398868))
-* Added TLS verification for Redis ([#2446](https://github.com/newrelic/node-newrelic/pull/2446)) ([9a16b70](https://github.com/newrelic/node-newrelic/commit/9a16b7016a943a0c2817ab2151eaa81f5ea19760))
 * Converted agent unit tests to node:test ([#2414](https://github.com/newrelic/node-newrelic/pull/2414)) ([b32f793](https://github.com/newrelic/node-newrelic/commit/b32f7934fec5dc9e7b29dee5d1994ab180bb0c37))
 * Fixed mongodb-esm tests in combination with security agent ([#2444](https://github.com/newrelic/node-newrelic/pull/2444)) ([5d617de](https://github.com/newrelic/node-newrelic/commit/5d617de99bc89b678b8c11aaebcad5dcacf0b5c3))
 * Limited superagent tests to avoid new breaking release ([#2439](https://github.com/newrelic/node-newrelic/pull/2439)) ([f1dd8e7](https://github.com/newrelic/node-newrelic/commit/f1dd8e73b8329a075667f6696d2a27bc749e4e7a))
