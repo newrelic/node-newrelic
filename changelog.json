@@ -2,12 +2,21 @@
   "repository": "newrelic/node-newrelic",
   "entries": [
     {
+      "version": "12.1.0",
+      "changes": {
+        "security": [],
+        "bugfixes": [
+          "Pick log message from merging object in Pino instrumentation", 
+          "Added TLS verification for Redis"
+        ],
+        "features": []
+      }
+    },
+    {
       "version": "12.0.0",
       "changes": {
-        "security": [
-        ],
-        "bugfixes": [
-        ],
+        "security": [],
+        "bugfixes": [],
         "features": [
           "Added `server.address` to amqplib spans",
           "Removed support for `redis` < 2.6.0",
