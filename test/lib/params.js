@@ -20,6 +20,8 @@ module.exports = {
 
   redis_host: process.env.NR_NODE_TEST_REDIS_HOST || 'localhost',
   redis_port: process.env.NR_NODE_TEST_REDIS_PORT || 6379,
+  redis_tls_host: process.env.NR_NODE_TEST_REDIS_TLS_HOST || '127.0.0.1',
+  redis_tls_port: process.env.NR_NODE_TEST_REDIS_TLS_PORT || 6380,
 
   cassandra_host: process.env.NR_NODE_TEST_CASSANDRA_HOST || 'localhost',
   cassandra_port: process.env.NR_NODE_TEST_CASSANDRA_PORT || 9042,

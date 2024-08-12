@@ -7,6 +7,7 @@
 
 const tap = require('tap')
 const helper = require('../../lib/agent_helper')
+const { redis_tls_host: HOST, redis_tls_port: PORT } = require('../../lib/params')
 const { removeModules } = require('../../lib/cache-buster')
 
 tap.test('redis over tls connection', (t) => {
@@ -15,9 +16,8 @@ tap.test('redis over tls connection', (t) => {
     t.redis = require('redis')
     t.client = await t.redis
       .createClient({
+        url: `rediss://${HOST}:${PORT}`,
         socket: {
-          port: 6380,
-          host: '127.0.0.1',
           tls: true,
           rejectUnauthorized: false
         }
