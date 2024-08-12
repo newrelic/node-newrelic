@@ -3,7 +3,8 @@
 #### Bug fixes
 
 * Pick log message from merging object in Pino instrumentation ([#2421](https://github.com/newrelic/node-newrelic/pull/2421)) ([599072b](https://github.com/newrelic/node-newrelic/commit/599072b43b77a8c11c9ef414b08dfe6e04bca9d2))
-* typo in doc header ([#2433](https://github.com/newrelic/node-newrelic/pull/2433)) ([9726e23](https://github.com/newrelic/node-newrelic/commit/9726e231fe631623f882df38344df4db9ce67b70))
+* Fixed typo in doc header ([#2433](https://github.com/newrelic/node-newrelic/pull/2433)) ([9726e23](https://github.com/newrelic/node-newrelic/commit/9726e231fe631623f882df38344df4db9ce67b70))
+
 
 #### Documentation
 
