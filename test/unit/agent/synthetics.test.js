@@ -7,7 +7,6 @@
 
 const test = require('node:test')
 const assert = require('node:assert')
-const promiseResolvers = require('../../lib/promise-resolvers')
 const helper = require('../../lib/agent_helper')
 
 test('synthetics transaction traces', async (t) => {
@@ -22,9 +21,8 @@ test('synthetics transaction traces', async (t) => {
     helper.unloadAgent(ctx.nr.agent)
   })
 
-  await t.test('should include synthetic intrinsics if header is set', async (t) => {
+  await t.test('should include synthetic intrinsics if header is set', (t, end) => {
     const { agent } = t.nr
-    const { promise, resolve } = promiseResolvers()
 
     helper.runInTransaction(agent, function (tx) {
       tx.syntheticsData = {
@@ -41,9 +39,7 @@ test('synthetics transaction traces', async (t) => {
       assert.equal(trace.intrinsics.synthetics_job_id, 'jobId')
       assert.equal(trace.intrinsics.synthetics_monitor_id, 'monId')
 
-      resolve()
+      end()
     })
-
-    await promise
   })
 })
