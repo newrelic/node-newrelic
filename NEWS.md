@@ -19,7 +19,8 @@
 * Converted agent unit tests to node:test ([#2414](https://github.com/newrelic/node-newrelic/pull/2414)) ([b32f793](https://github.com/newrelic/node-newrelic/commit/b32f7934fec5dc9e7b29dee5d1994ab180bb0c37))
 * Fixed mongodb-esm tests in combination with security agent ([#2444](https://github.com/newrelic/node-newrelic/pull/2444)) ([5d617de](https://github.com/newrelic/node-newrelic/commit/5d617de99bc89b678b8c11aaebcad5dcacf0b5c3))
 * Limited superagent tests to avoid new breaking release ([#2439](https://github.com/newrelic/node-newrelic/pull/2439)) ([f1dd8e7](https://github.com/newrelic/node-newrelic/commit/f1dd8e73b8329a075667f6696d2a27bc749e4e7a))
-* Remove promise resolvers from callback based agent unit tests ([#2450](https://github.com/newrelic/node-newrelic/pull/2450)) ([3766895](https://github.com/newrelic/node-newrelic/commit/3766895cd7cc8145ba8eef6d49330e0d354158a1))
+* Removed promise resolvers from callback based agent unit tests ([#2450](https://github.com/newrelic/node-newrelic/pull/2450)) ([3766895](https://github.com/newrelic/node-newrelic/commit/3766895cd7cc8145ba8eef6d49330e0d354158a1))
+
 
 #### Tests
 
