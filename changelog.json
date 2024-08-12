@@ -6,7 +6,6 @@
       "changes": {
         "security": [],
         "bugfixes": [
-          "typo in doc header",
           "Pick log message from merging object in Pino instrumentation"
         ],
         "features": []
