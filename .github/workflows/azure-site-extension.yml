@@ -6,9 +6,13 @@ on:
 env:
   # Enable versioned runner quiet mode to make CI output easier to read:
   OUTPUT_MODE: quiet
+  SPEC_FILE_TEMPLATE: 'NewRelic.Azure.WebSites.Extension.NodeAgent.nuspec'
+  PACKAGE_FILENAME: ''
+  SPEC_CONTENT: ''
+  AGENT_VERSION: ''
 
 jobs:
-  test-environment:
+  setup_tools:
     runs-on: windows-latest
 
     steps:
@@ -19,6 +23,57 @@ jobs:
         dotnet-version: '6.0.x'
     - name: Display dotnet version
       run: dotnet --version
-    - name: Try to run NuGet
-      run: nuget
+    - name: Display NuGet version
+      run: nuget ?
+
+  create_extension_bundle:
+    runs-on: windows-latest
+    needs:
+      - setup_tools
+
+    strategy:
+      matrix:
+        node-version: ['18.x', '20.x']
+        # Node 22 isn't yet available on Azure
+
+    steps:
+      - uses: actions/checkout@v4
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+      - name: Print a debug message
+        run: echo "set up node"
+#      - name: find_agent_version
+#        run: |
+#          npm view newrelic version >> ${{ env.AGENT_VERSION }}
+#          cd "cloud-tooling/azure-site-extension"
+#          echo Agent version: ${{ env.AGENT_VERSION }}
+#          echo "NewRelic.Azure.WebSites.Extension.NodeAgent.${{env.AGENT_VERSION}}.${{ matrix.node-version }}" >> ${{ env.PACKAGE_FILENAME }}
+#      - name: install_agent
+#        run: |
+#          cd .\Content
+#          npm i newrelic@${{ env.AGENT_VERSION }}
+#      - name: configure_package
+#        run: |
+#          cd ..
+#          (Get-Content ${{ env.SPEC_FILE_TEMPLATE }}).Replace('{VERSION}', ${{ env.AGENT_VERSION }}).Replace('{NODE_VERSION}', ${{ matrix.node-version }}) | Set-Content ${{ env.PACKAGE_FILENAME }}.nuspec
+#          get-content ${{ env.SPEC_FILE_TEMPLATE }} | %{$_ -replace "{VERSION}","${{ env.AGENT_VERSION }}"} >> ${{NUSPEC_GENERATED}}
+
+#      - name: pack
+#        run: nuget pack "${{ env.PACKAGE_FILENAME }}.nuspec" -OutputDirectory=./azure-site-extension/dist
+#      - name: Archive package for verification
+#        uses: actions/upload-artifact@v4
+#        with:
+#          name: azure-site-extension-test-${{ env.PACKAGE_FILENAME }}
+#          path: ./azure-site-extension/dist/
+
+#      - name: publish_package
+#        run: |
+#          NUGET_API_KEY=$1
+#          NUGET_SOURCE=$2
+#          dotnet nuget push "NewRelic.Azure.WebSites.Extension.NodeAgent.${VERSION}.nupkg" --api-key ${NUGET_API_KEY} --source ${NUGET_SOURCE}
+#
+
+
 
