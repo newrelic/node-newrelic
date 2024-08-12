@@ -1,3 +1,34 @@
+### v12.1.0 (2024-08-12)
+
+#### Bug fixes
+
+* Pick log message from merging object in Pino instrumentation ([#2421](https://github.com/newrelic/node-newrelic/pull/2421)) ([599072b](https://github.com/newrelic/node-newrelic/commit/599072b43b77a8c11c9ef414b08dfe6e04bca9d2))
+* typo in doc header ([#2433](https://github.com/newrelic/node-newrelic/pull/2433)) ([9726e23](https://github.com/newrelic/node-newrelic/commit/9726e231fe631623f882df38344df4db9ce67b70))
+
+#### Documentation
+
+* Updated compatibility report ([#2440](https://github.com/newrelic/node-newrelic/pull/2440)) ([32abe5f](https://github.com/newrelic/node-newrelic/commit/32abe5f90d93d470737986b3bfe6c797915c4215))
+    * Co-authored-by: jsumners-nr <150050532+jsumners-nr@users.noreply.github.com>
+* Updated compatibility report ([#2435](https://github.com/newrelic/node-newrelic/pull/2435)) ([c7e34c4](https://github.com/newrelic/node-newrelic/commit/c7e34c4a7819c433b5412333ae8f8844bb34b065))
+    * Co-authored-by: bizob2828 <1874937+bizob2828@users.noreply.github.com>
+* Updated compatibility report ([#2415](https://github.com/newrelic/node-newrelic/pull/2415)) ([0dfab8c](https://github.com/newrelic/node-newrelic/commit/0dfab8c29a273080c927650f3243bf921ba567a9))
+* Updated examples to properly use specs ([#2422](https://github.com/newrelic/node-newrelic/pull/2422)) ([f7e8c58](https://github.com/newrelic/node-newrelic/commit/f7e8c5831305ac0bcb2c906ec176863552a083c4))
+
+#### Miscellaneous chores
+
+* Added entity relationship attributes to SQS segments ([#2436](https://github.com/newrelic/node-newrelic/pull/2436)) ([578aead](https://github.com/newrelic/node-newrelic/commit/578aead8c0b2d18dced4eaca54b19c769f398868))
+* Added TLS verification for Redis ([#2446](https://github.com/newrelic/node-newrelic/pull/2446)) ([9a16b70](https://github.com/newrelic/node-newrelic/commit/9a16b7016a943a0c2817ab2151eaa81f5ea19760))
+* Converted agent unit tests to node:test ([#2414](https://github.com/newrelic/node-newrelic/pull/2414)) ([b32f793](https://github.com/newrelic/node-newrelic/commit/b32f7934fec5dc9e7b29dee5d1994ab180bb0c37))
+* Fixed mongodb-esm tests in combination with security agent ([#2444](https://github.com/newrelic/node-newrelic/pull/2444)) ([5d617de](https://github.com/newrelic/node-newrelic/commit/5d617de99bc89b678b8c11aaebcad5dcacf0b5c3))
+* Limited superagent tests to avoid new breaking release ([#2439](https://github.com/newrelic/node-newrelic/pull/2439)) ([f1dd8e7](https://github.com/newrelic/node-newrelic/commit/f1dd8e73b8329a075667f6696d2a27bc749e4e7a))
+* Remove promise resolvers from callback based agent unit tests ([#2450](https://github.com/newrelic/node-newrelic/pull/2450)) ([3766895](https://github.com/newrelic/node-newrelic/commit/3766895cd7cc8145ba8eef6d49330e0d354158a1))
+
+#### Tests
+
+* Moved pkgVersion to collection-common to avoid a conflict with ESM tests ([#2438](https://github.com/newrelic/node-newrelic/pull/2438)) ([7260fa3](https://github.com/newrelic/node-newrelic/commit/7260fa36372877bb6f60637f8255312fcf207a0a))
+* Restored mongodb-esm tests ([#2434](https://github.com/newrelic/node-newrelic/pull/2434)) ([67a12e3](https://github.com/newrelic/node-newrelic/commit/67a12e32c6deef0c7f8397ac75c369f3371519e8))
+* Updated custom test reporter to only log failed tests when there are failures ([#2425](https://github.com/newrelic/node-newrelic/pull/2425)) ([baa37ec](https://github.com/newrelic/node-newrelic/commit/baa37ece0d027ca6d57fd5b52ceedfaa97ecbfaa))
+
 ### v12.0.0 (2024-07-31)
 #### ⚠ BREAKING CHANGES
 
