@@ -7,7 +7,6 @@
 
 const test = require('node:test')
 const assert = require('node:assert')
-const promiseResolvers = require('../../lib/promise-resolvers')
 const Collector = require('../../lib/test-collector')
 
 const sinon = require('sinon')
@@ -224,8 +223,7 @@ test('#harvesters.stop should stop all aggregators', (t) => {
   }
 })
 
-test('#onConnect should reconfigure all the aggregators', async (t) => {
-  const { promise, resolve } = promiseResolvers()
+test('#onConnect should reconfigure all the aggregators', (t, end) => {
   const EXPECTED_AGG_COUNT = 9
   const agent = helper.loadMockedAgent(null, false)
   agent.config.application_logging.forwarding.enabled = true
@@ -246,10 +244,8 @@ test('#onConnect should reconfigure all the aggregators', async (t) => {
   }
   agent.onConnect(false, () => {
     assert.equal(proto.reconfigure.callCount, EXPECTED_AGG_COUNT)
-    resolve()
+    end()
   })
-
-  await promise
 })
 
 test('when starting', async (t) => {
@@ -272,81 +268,68 @@ test('when starting', async (t) => {
     assert.throws(() => agent.start(), /callback required/)
   })
 
-  await t.test('should change to "starting"', async (t) => {
-    const { promise, resolve } = promiseResolvers()
+  await t.test('should change to "starting"', (t, end) => {
     const { agent } = t.nr
     agent.collector.connect = function () {
       assert.equal(agent._state, 'starting')
-      resolve()
+      end()
     }
     agent.start(() => {})
-    await promise
   })
 
-  await t.test('should not error when disabled via configuration', async (t) => {
-    const { promise, resolve, reject } = promiseResolvers()
+  await t.test('should not error when disabled via configuration', (t, end) => {
     const { agent } = t.nr
     agent.config.agent_enabled = false
     agent.collector.connect = function () {
-      reject(Error('should not be called'))
+      end(Error('should not be called'))
     }
-    agent.start(() => resolve())
-    await promise
+    agent.start(() => end())
   })
 
-  await t.test('should emit "stopped" when disabled via configuration', async (t) => {
-    const { promise, resolve, reject } = promiseResolvers()
+  await t.test('should emit "stopped" when disabled via configuration', (t, end) => {
     const { agent } = t.nr
     agent.config.agent_enabled = false
     agent.collector.connect = function () {
-      reject(Error('should not be called'))
+      end(Error('should not be called'))
     }
     agent.start(() => {
       assert.equal(agent._state, 'stopped')
-      resolve()
+      end()
     })
-    await promise
   })
 
-  await t.test('should error when no license key is included', async (t) => {
-    const { promise, resolve, reject } = promiseResolvers()
+  await t.test('should error when no license key is included', (t, end) => {
     const { agent } = t.nr
     agent.config.license_key = undefined
     agent.collector.connect = function () {
-      reject(Error('should not be called'))
+      end(Error('should not be called'))
     }
     agent.start((error) => {
       assert.equal(error.message, 'Not starting without license key!')
-      resolve()
+      end()
     })
-    await promise
   })
 
-  await t.test('should call connect when using proxy', async (t) => {
-    const { promise, resolve } = promiseResolvers()
+  await t.test('should call connect when using proxy', (t, end) => {
     const { agent } = t.nr
     agent.config.proxy = 'fake://url'
     agent.collector.connect = function (callback) {
       assert.equal(typeof callback, 'function')
-      resolve()
+      end()
     }
     agent.start(() => {})
-    await promise
   })
 
-  await t.test('should call connect when config is correct', async (t) => {
-    const { promise, resolve } = promiseResolvers()
+  await t.test('should call connect when config is correct', (t, end) => {
     const { agent } = t.nr
     agent.collector.connect = function (callback) {
       assert.equal(typeof callback, 'function')
-      resolve()
+      end()
     }
     agent.start(() => {})
-    await promise
   })
 
-  await t.test('should error when connection fails', async (t) => {
-    const { promise, resolve } = promiseResolvers()
+  await t.test('should error when connection fails', (t, end) => {
     const { agent } = t.nr
     const expected = Error('boom')
     agent.collector.connect = function (callback) {
@@ -354,13 +337,11 @@ test('when starting', async (t) => {
     }
     agent.start((error) => {
       assert.equal(error, expected)
-      resolve()
+      end()
     })
-    await promise
   })
 
-  await t.test('should harvest at connect when metrics are already there', async (t) => {
-    const { promise, resolve } = promiseResolvers()
+  await t.test('should harvest at connect when metrics are already there', (t, end) => {
     const { agent, collector } = t.nr
 
     collector.addHandler(helper.generateCollectorPath('metric_data', RUN_ID), (req, res) => {
@@ -379,11 +360,9 @@ test('when starting', async (t) => {
         assert.equal(error, undefined)
         // assert.equal(metrics.isDone(), true)
         assert.equal(collector.isDone('metric_data'), true)
-        resolve()
+        end()
       })
     })
-
-    await promise
   })
 })
 
@@ -411,22 +390,19 @@ test('initial harvest', async (t) => {
     ctx.nr.collector.close()
   })
 
-  await t.test('should not blow up when harvest cycle runs', async (t) => {
-    const { promise, resolve } = promiseResolvers()
+  await t.test('should not blow up when harvest cycle runs', (t, end) => {
     const { agent, collector } = t.nr
     agent.start(() => {
       setTimeout(() => {
         assert.equal(collector.isDone('preconnect'), true)
         assert.equal(collector.isDone('connect'), true)
         assert.equal(collector.isDone('agent_settings'), true)
-        resolve()
+        end()
       }, 15)
     })
-    await promise
   })
 
-  await t.test('should start aggregators after initial harvest', async (t) => {
-    const { promise, resolve } = promiseResolvers()
+  await t.test('should start aggregators after initial harvest', (t, end) => {
     const { agent, collector } = t.nr
 
     sinon.stub(agent.harvester, 'start')
@@ -438,15 +414,12 @@ test('initial harvest', async (t) => {
         assert.equal(collector.isDone('preconnect'), true)
         assert.equal(collector.isDone('connect'), true)
         assert.equal(collector.isDone('agent_settings'), true)
-        resolve()
+        end()
       }, 15)
     })
-
-    await promise
   })
 
-  await t.test('should not blow up when harvest cycle errors', async (t) => {
-    const { promise, resolve } = promiseResolvers()
+  await t.test('should not blow up when harvest cycle errors', (t, end) => {
     const { agent, collector } = t.nr
 
     collector.addHandler(helper.generateCollectorPath('metric_data', RUN_ID), (req, res) => {
@@ -460,10 +433,9 @@ test('initial harvest', async (t) => {
         assert.equal(collector.isDone('connect'), true)
         assert.equal(collector.isDone('agent_settings'), true)
         assert.equal(collector.isDone('metric_data'), true)
-        resolve()
+        end()
       })
     })
-    await promise
   })
 })
 
@@ -498,14 +470,12 @@ test('when stopping', async (t) => {
     assert.equal(agent._state, 'stopping')
   })
 
-  await t.test('should not shut down connection if not connected', async (t) => {
-    const { promise, resolve } = promiseResolvers()
+  await t.test('should not shut down connection if not connected', (t, end) => {
     const { agent } = t.nr
     agent.stop((error) => {
       assert.equal(error, undefined)
-      resolve()
+      end()
     })
-    await promise
   })
 })
 
@@ -525,8 +495,7 @@ test('when stopping after connected', async (t) => {
     ctx.nr.collector.close()
   })
 
-  await t.test('should call shutdown', async (t) => {
-    const { promise, resolve } = promiseResolvers()
+  await t.test('should call shutdown', (t, end) => {
     const { agent, collector } = t.nr
 
     agent.config.run_id = RUN_ID
@@ -539,13 +508,11 @@ test('when stopping after connected', async (t) => {
       assert.equal(error, undefined)
       assert.equal(agent.config.run_id, null)
       assert.equal(collector.isDone('shutdown'), true)
-      resolve()
+      end()
     })
-    await promise
   })
 
-  await t.test('should pass through error if shutdown fails', async (t) => {
-    const { promise, resolve } = promiseResolvers()
+  await t.test('should pass through error if shutdown fails', (t, end) => {
     const { agent, collector } = t.nr
 
     agent.config.run_id = RUN_ID
@@ -559,9 +526,8 @@ test('when stopping after connected', async (t) => {
     agent.stop((error) => {
       assert.equal(error.message, 'socket hang up')
       assert.equal(shutdownIsDone, true)
-      resolve()
+      end()
     })
-    await promise
   })
 })
 
@@ -588,8 +554,7 @@ test('when connected', async (t) => {
     ctx.nr.collector.close()
   })
 
-  await t.test('should update the metric apdexT value after connect', async (t) => {
-    const { promise, resolve } = promiseResolvers()
+  await t.test('should update the metric apdexT value after connect', (t, end) => {
     const { agent } = t.nr
 
     assert.equal(agent.metrics._apdexT, 0.1)
@@ -597,13 +562,11 @@ test('when connected', async (t) => {
     agent.onConnect(false, () => {
       assert.equal(agent.metrics._apdexT, 0.666)
       assert.equal(agent.metrics._metrics.apdexT, 0.666)
-      resolve()
+      end()
     })
-    await promise
   })
 
-  await t.test('should reset the config and metrics normalizer on connection', async (t) => {
-    const { promise, resolve } = promiseResolvers()
+  await t.test('should reset the config and metrics normalizer on connection', (t, end) => {
     const { agent, collector } = t.nr
     const config = {
       agent_run_id: 1122,
@@ -624,9 +587,8 @@ test('when connected', async (t) => {
       assert.equal(agent.config.run_id, 1122)
       assert.equal(agent.metrics._apdexT, 0.742)
       assert.deepStrictEqual(agent.urlNormalizer.rules, [])
-      resolve()
+      end()
     })
-    await promise
   })
 
   function setupAggregators({ enableAggregator: enableAggregator = true, agent, collector }) {
@@ -684,8 +646,7 @@ test('when connected', async (t) => {
     })
   }
 
-  await t.test('should force harvest of all aggregators 1 second after connect', async (t) => {
-    const { promise, resolve } = promiseResolvers()
+  await t.test('should force harvest of all aggregators 1 second after connect', (t, end) => {
     const { agent, collector } = t.nr
 
     setupAggregators({ agent, collector })
@@ -717,16 +678,14 @@ test('when connected', async (t) => {
         assert.equal(collector.isDone('custom_event_data'), true)
         assert.equal(collector.isDone('error_data'), true)
         assert.equal(collector.isDone('error_event_data'), true)
-        resolve()
+        end()
       })
     })
-    await promise
   })
 
   await t.test(
     'should force harvest of only metric data 1 second after connect when all other aggregators are disabled',
-    async (t) => {
-      const { promise, resolve } = promiseResolvers()
+    (t, end) => {
       const { agent, collector } = t.nr
 
       setupAggregators({ enableAggregator: false, agent, collector })
@@ -758,17 +717,15 @@ test('when connected', async (t) => {
           assert.equal(collector.isDone('custom_event_data'), false)
           assert.equal(collector.isDone('error_data'), false)
           assert.equal(collector.isDone('error_event_data'), false)
-          resolve()
+          end()
         })
       })
-      await promise
     }
   )
 
   await t.test(
     'should not post data when there is none in aggregators during a force harvest',
-    async (t) => {
-      const { promise, resolve } = promiseResolvers()
+    (t, end) => {
       const { agent, collector } = t.nr
 
       setupAggregators({ agent, collector })
@@ -786,9 +743,8 @@ test('when connected', async (t) => {
         assert.equal(collector.isDone('custom_event_data'), false)
         assert.equal(collector.isDone('error_data'), false)
         assert.equal(collector.isDone('error_event_data'), false)
-        resolve()
+        end()
       })
-      await promise
     }
   )
 })
@@ -803,9 +759,8 @@ test('when handling finished transactions', async (t) => {
     helper.unloadAgent(ctx.nr.agent)
   })
 
-  await t.test('should capture the trace off a finished transaction', async (t) => {
+  await t.test('should capture the trace off a finished transaction', (t, end) => {
     const { agent } = t.nr
-    const { promise, resolve } = promiseResolvers()
     const tx = new Transaction(agent)
 
     // Initialize the trace:
@@ -815,15 +770,13 @@ test('when handling finished transactions', async (t) => {
       const trace = agent.traces.trace
       assert.equal(Object.prototype.toString.call(trace), '[object Object]')
       assert.equal(trace.getDurationInMillis(), 2_100)
-      resolve()
+      end()
     })
     tx.end()
-    await promise
   })
 
-  await t.test('should capture the synthetic trace off a finished transaction', async (t) => {
+  await t.test('should capture the synthetic trace off a finished transaction', (t, end) => {
     const { agent } = t.nr
-    const { promise, resolve } = promiseResolvers()
     const tx = new Transaction(agent)
 
     // Initialize trace:
@@ -843,10 +796,9 @@ test('when handling finished transactions', async (t) => {
       const trace = agent.traces.syntheticsTraces[0]
       assert.equal(trace.getDurationInMillis(), 2_100)
 
-      resolve()
+      end()
     })
     tx.end()
-    await promise
   })
 
   await t.test('should not merge metrics when transaction is ignored', (t) => {
@@ -935,76 +887,64 @@ test('when event_harvest_config update on connect with a valid config', async (t
     helper.unloadAgent(ctx.nr.agent)
   })
 
-  await t.test('should generate ReportPeriod supportability', async (t) => {
+  await t.test('should generate ReportPeriod supportability', (t, end) => {
     const { agent, validHarvestConfig } = t.nr
-    const { promise, resolve } = promiseResolvers()
     agent.onConnect(false, () => {
       const expectedMetricName = 'Supportability/EventHarvest/ReportPeriod'
       const metric = agent.metrics.getMetric(expectedMetricName)
       assert.equal(metric.total, validHarvestConfig.report_period_ms)
-      resolve()
+      end()
     })
-    await promise
   })
 
-  await t.test('should generate AnalyticEventData/HarvestLimit supportability', async (t) => {
+  await t.test('should generate AnalyticEventData/HarvestLimit supportability', (t, end) => {
     const { agent, validHarvestConfig } = t.nr
-    const { promise, resolve } = promiseResolvers()
     agent.onConnect(false, () => {
       const expectedMetricName = 'Supportability/EventHarvest/AnalyticEventData/HarvestLimit'
       const metric = agent.metrics.getMetric(expectedMetricName)
       assert.equal(metric.total, validHarvestConfig.harvest_limits.analytic_event_data)
-      resolve()
+      end()
     })
-    await promise
   })
 
-  await t.test('should generate CustomEventData/HarvestLimit supportability', async (t) => {
+  await t.test('should generate CustomEventData/HarvestLimit supportability', (t, end) => {
     const { agent, validHarvestConfig } = t.nr
-    const { promise, resolve } = promiseResolvers()
     agent.onConnect(false, () => {
       const expectedMetricName = 'Supportability/EventHarvest/CustomEventData/HarvestLimit'
       const metric = agent.metrics.getMetric(expectedMetricName)
       assert.equal(metric.total, validHarvestConfig.harvest_limits.custom_event_data)
-      resolve()
+      end()
     })
-    await promise
   })
 
-  await t.test('should generate ErrorEventData/HarvestLimit supportability', async (t) => {
+  await t.test('should generate ErrorEventData/HarvestLimit supportability', (t, end) => {
     const { agent, validHarvestConfig } = t.nr
-    const { promise, resolve } = promiseResolvers()
     agent.onConnect(false, () => {
       const expectedMetricName = 'Supportability/EventHarvest/ErrorEventData/HarvestLimit'
       const metric = agent.metrics.getMetric(expectedMetricName)
       assert.equal(metric.total, validHarvestConfig.harvest_limits.error_event_data)
-      resolve()
+      end()
     })
-    await promise
   })
 
-  await t.test('should generate SpanEventData/HarvestLimit supportability', async (t) => {
+  await t.test('should generate SpanEventData/HarvestLimit supportability', (t, end) => {
     const { agent, validHarvestConfig } = t.nr
-    const { promise, resolve } = promiseResolvers()
     agent.onConnect(false, () => {
       const expectedMetricName = 'Supportability/EventHarvest/SpanEventData/HarvestLimit'
       const metric = agent.metrics.getMetric(expectedMetricName)
       assert.equal(metric.total, validHarvestConfig.harvest_limits.span_event_data)
-      resolve()
+      end()
     })
-    await promise
   })
 
-  await t.test('should generate LogEventData/HarvestLimit supportability', async (t) => {
+  await t.test('should generate LogEventData/HarvestLimit supportability', (t, end) => {
     const { agent, validHarvestConfig } = t.nr
-    const { promise, resolve } = promiseResolvers()
     agent.onConnect(false, () => {
       const expectedMetricName = 'Supportability/EventHarvest/LogEventData/HarvestLimit'
       const metric = agent.metrics.getMetric(expectedMetricName)
       assert.equal(metric.total, validHarvestConfig.harvest_limits.log_event_data)
-      resolve()
+      end()
     })
-    await promise
   })
 })
 
@@ -1020,9 +960,8 @@ test('logging supportability on connect', async (t) => {
     helper.unloadAgent(ctx.nr.agent)
   })
 
-  await t.test('should increment disabled metrics when logging features are off', async (t) => {
+  await t.test('should increment disabled metrics when logging features are off', (t, end) => {
     const { agent } = t.nr
-    const { promise, resolve } = promiseResolvers()
 
     agent.config.application_logging.enabled = true
     agent.config.application_logging.metrics.enabled = false
@@ -1035,16 +974,14 @@ test('logging supportability on connect', async (t) => {
         assert.equal(disabled.callCount, 1)
         assert.equal(enabled, undefined)
       }
-      resolve()
+      end()
     })
-    await promise
   })
 
   await t.test(
     'should increment disabled metrics when logging features are on but application_logging.enabled is false',
-    async (t) => {
+    (t, end) => {
       const { agent } = t.nr
-      const { promise, resolve } = promiseResolvers()
 
       agent.config.application_logging.enabled = false
       agent.config.application_logging.metrics.enabled = true
@@ -1057,15 +994,13 @@ test('logging supportability on connect', async (t) => {
           assert.equal(disabled.callCount, 1)
           assert.equal(enabled, undefined)
         }
-        resolve()
+        end()
       })
-      await promise
     }
   )
 
-  await t.test('should increment disabled metrics when logging features are on', async (t) => {
+  await t.test('should increment disabled metrics when logging features are on', (t, end) => {
     const { agent } = t.nr
-    const { promise, resolve } = promiseResolvers()
 
     agent.config.application_logging.enabled = true
     agent.config.application_logging.metrics.enabled = true
@@ -1078,9 +1013,8 @@ test('logging supportability on connect', async (t) => {
         assert.equal(enabled.callCount, 1)
         assert.equal(disabled, undefined)
       }
-      resolve()
+      end()
     })
-    await promise
   })
 
   await t.test('should default llm to an object', (t) => {
@@ -1099,9 +1033,8 @@ test('getNRLinkingMetadata', async (t) => {
     helper.unloadAgent(ctx.nr.agent)
   })
 
-  await t.test('should properly format the NR-LINKING pipe string', async (t) => {
+  await t.test('should properly format the NR-LINKING pipe string', (t, end) => {
     const { agent } = t.nr
-    const { promise, resolve } = promiseResolvers()
     agent.config.entity_guid = 'unit-test'
     helper.runInTransaction(agent, 'nr-linking-test', (tx) => {
       const nrLinkingMeta = agent.getNRLinkingMetadata()
@@ -1113,9 +1046,8 @@ test('getNRLinkingMetadata', async (t) => {
         expectedLinkingMeta,
         'NR-LINKING metadata should be properly formatted'
       )
-      resolve()
+      end()
     })
-    await promise
   })
 
   await t.test('should properly handle if parts of NR-LINKING are undefined', (t) => {
