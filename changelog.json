@@ -6,7 +6,8 @@
       "changes": {
         "security": [],
         "bugfixes": [
-          "Pick log message from merging object in Pino instrumentation"
+          "Pick log message from merging object in Pino instrumentation", 
+          "Added TLS verification for Redis"
         ],
         "features": []
       }
