@@ -3,15 +3,13 @@
 #### Bug fixes
 
 * Pick log message from merging object in Pino instrumentation ([#2421](https://github.com/newrelic/node-newrelic/pull/2421)) ([599072b](https://github.com/newrelic/node-newrelic/commit/599072b43b77a8c11c9ef414b08dfe6e04bca9d2))
-* Fixed typo in doc header ([#2433](https://github.com/newrelic/node-newrelic/pull/2433)) ([9726e23](https://github.com/newrelic/node-newrelic/commit/9726e231fe631623f882df38344df4db9ce67b70))
 
 
 #### Documentation
 
 * Updated compatibility report ([#2440](https://github.com/newrelic/node-newrelic/pull/2440)) ([32abe5f](https://github.com/newrelic/node-newrelic/commit/32abe5f90d93d470737986b3bfe6c797915c4215))
-* Updated compatibility report ([#2435](https://github.com/newrelic/node-newrelic/pull/2435)) ([c7e34c4](https://github.com/newrelic/node-newrelic/commit/c7e34c4a7819c433b5412333ae8f8844bb34b065))
-* Updated compatibility report ([#2415](https://github.com/newrelic/node-newrelic/pull/2415)) ([0dfab8c](https://github.com/newrelic/node-newrelic/commit/0dfab8c29a273080c927650f3243bf921ba567a9))
 * Updated examples to properly use specs ([#2422](https://github.com/newrelic/node-newrelic/pull/2422)) ([f7e8c58](https://github.com/newrelic/node-newrelic/commit/f7e8c5831305ac0bcb2c906ec176863552a083c4))
+* Fixed typo in doc header ([#2433](https://github.com/newrelic/node-newrelic/pull/2433)) ([9726e23](https://github.com/newrelic/node-newrelic/commit/9726e231fe631623f882df38344df4db9ce67b70))
 
 #### Miscellaneous chores
 
