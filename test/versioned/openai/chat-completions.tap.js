@@ -449,7 +449,7 @@ tap.test('OpenAI instrumentation - chat completions', (t) => {
     })
   })
 
-  t.test('1should create chat completion message and summary for every message sent', (test) => {
+  t.test('should create chat completion message and summary for every message sent', (test) => {
     const { client, agent } = t.context
     helper.runInTransaction(agent, async (tx) => {
       const model = 'gpt-3.5-turbo-0613'
