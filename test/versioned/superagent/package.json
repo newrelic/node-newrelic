@@ -9,7 +9,7 @@
     },
     "dependencies": {
       "superagent": {
-        "versions": ">=3 <7.1.0 ||  >=7.1.1 && <10.0.0",
+        "versions": ">=3 <7.1.0 ||  >=7.1.1",
         "samples": 5
       }
     },
