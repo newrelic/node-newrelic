@@ -5,11 +5,9 @@
 
 'use strict'
 
-const testsDir = '../../integration/instrumentation/promises'
-
 const helper = require('../../lib/agent_helper')
 const tap = require('tap')
-const testTransactionState = require(testsDir + '/transaction-state')
+const testTransactionState = require('../../lib/promises/transaction-state')
 
 tap.test('bluebird', function (t) {
   t.autoend()

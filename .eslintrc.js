@@ -34,7 +34,11 @@ module.exports = {
   parserOptions: {
     ecmaVersion: 2022
   },
-  ignorePatterns: ['test/versioned-external'],
+  ignorePatterns: [
+    'test/versioned-external',
+    'test/versioned/nextjs/app',
+    'test/versioned/nextjs/app-dir'
+  ],
   overrides: [
     {
       files: ['**/*.mjs'],

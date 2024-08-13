@@ -6,7 +6,7 @@
   "tests": [
     {
       "engines": {
-        "node": ">=16"
+        "node": ">=18"
       },
       "dependencies": {
         "bluebird": ">=2.0.0"
@@ -18,7 +18,7 @@
     },
     {
       "engines": {
-        "node": ">=16"
+        "node": ">=18"
       },
       "dependencies": {
         "bluebird": ">=3.0.0"

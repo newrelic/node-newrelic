@@ -51,7 +51,7 @@ tap.afterEach(async (t) => {
 })
 
 tap.test('send records correctly', (t) => {
-  t.plan(7)
+  t.plan(8)
 
   const { agent, consumer, producer, topic } = t.context
   const message = 'test message'
@@ -73,6 +73,11 @@ tap.test('send records correctly', (t) => {
         'Supportability/Features/Instrumentation/kafkajs/send'
       )
       t.equal(sendMetric.callCount, 1)
+
+      const produceTrackingMetric = agent.metrics.getMetric(
+        `MessageBroker/Kafka/Nodes/${broker}/Produce/Named/${topic}`
+      )
+      t.equal(produceTrackingMetric.callCount, 1)
     }
 
     if (txCount === 2) {
@@ -176,7 +181,7 @@ tap.test('send passes along DT headers', (t) => {
 })
 
 tap.test('sendBatch records correctly', (t) => {
-  t.plan(8)
+  t.plan(9)
 
   const { agent, consumer, producer, topic } = t.context
   const message = 'test message'
@@ -198,6 +203,11 @@ tap.test('sendBatch records correctly', (t) => {
         'Supportability/Features/Instrumentation/kafkajs/sendBatch'
       )
       t.equal(sendMetric.callCount, 1)
+
+      const produceTrackingMetric = agent.metrics.getMetric(
+        `MessageBroker/Kafka/Nodes/${broker}/Produce/Named/${topic}`
+      )
+      t.equal(produceTrackingMetric.callCount, 1)
 
       t.end()
     }
@@ -250,6 +260,12 @@ tap.test('consume outside of a transaction', async (t) => {
         'Supportability/Features/Instrumentation/kafkajs/eachMessage'
       )
       t.equal(sendMetric.callCount, 1)
+
+      const consumeTrackingMetric = agent.metrics.getMetric(
+        `MessageBroker/Kafka/Nodes/${broker}/Consume/Named/${topic}`
+      )
+      t.equal(consumeTrackingMetric.callCount, 1)
+
       resolve()
     })
   })
@@ -358,6 +374,12 @@ tap.test('consume batch inside of a transaction', async (t) => {
             'Supportability/Features/Instrumentation/kafkajs/eachBatch'
           )
           t.equal(sendMetric.callCount, 1)
+
+          const consumeTrackingMetric = agent.metrics.getMetric(
+            `MessageBroker/Kafka/Nodes/${broker}/Consume/Named/${topic}`
+          )
+          t.equal(consumeTrackingMetric.callCount, 1)
+
           resolve()
         }
       })

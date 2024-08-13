@@ -141,13 +141,13 @@ let Server = myWebFramework.Server
 shim.wrapMiddlewareMounter(Server.prototype, ['all', 'get'], {
   route: shim.FIRST,
   wrapper: function wrapMiddleware(shim, fn, name, route) {
-    return shim.recordMiddleware(fn, {
+    return shim.recordMiddleware(fn, new shim.specs.MiddlewareSpec({
       route: route,
       type: shim.MIDDLEWARE,
       req: shim.FIRST,
       res: shim.SECOND,
       next: shim.THIRD
-    })
+    }))
   }
 })
 
@@ -217,10 +217,10 @@ do the following in our instrumentation:
 ```js
 let Server = myWebFramework.Server
 
-shim.recordRender(Server.prototype, 'render', {
+shim.recordRender(Server.prototype, 'render', new shim.specs.RenderSpec({
   view: shim.FIRST,
   callback: shim.LAST
-})
+}))
 ```
 
 [<img src="./trace-summary-view.png" alt="view segment" style="text-align:center;width:100%" />]

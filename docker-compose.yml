@@ -60,23 +60,11 @@ services:
     ports:
       - "11211:11211"
 
-  mongodb_3:
-    container_name: nr_node_mongodb
-    platform: ${DOCKER_PLATFORM:-linux/amd64}
-    image: library/mongo:3
-    ports:
-      - "27017:27017"
-    healthcheck:
-      test: ["CMD", "mongo", "--quiet"]
-      interval: 1s
-      timeout: 10s
-      retries: 30
-
   mongodb_5:
     container_name: nr_node_mongodb_5
     image: library/mongo:5
     ports:
-      - "27018:27017"
+      - "27017:27017"
     healthcheck:
       test: ["CMD", "mongo", "--quiet"]
       interval: 1s
@@ -106,9 +94,20 @@ services:
 
   redis:
     container_name: nr_node_redis
-    image: redis
+    image: bitnami/redis
     ports:
       - "6379:6379"
+      - "6380:6380"
+    environment:
+      - ALLOW_EMPTY_PASSWORD=yes
+      - REDIS_TLS_ENABLED=yes
+      - REDIS_TLS_PORT=6380
+      - REDIS_TLS_CERT_FILE=/tls/redis.crt
+      - REDIS_TLS_KEY_FILE=/tls/redis.key
+      - REDIS_TLS_CA_FILE=/tls/ca.crt
+      - REDIS_TLS_AUTH_CLIENTS=no
+    volumes:
+      - "./docker/redis:/tls"
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 1s

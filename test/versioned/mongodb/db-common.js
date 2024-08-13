@@ -5,7 +5,6 @@
 
 'use strict'
 const common = require('./common')
-const semver = require('semver')
 const collectionCommon = require('./collection-common')
 const helper = require('../../lib/agent_helper')
 const tap = require('tap')
@@ -13,9 +12,6 @@ const tap = require('tap')
 let MONGO_HOST = null
 let MONGO_PORT = null
 const BAD_MONGO_COMMANDS = ['collection']
-if (semver.satisfies(common.pkgVersion, '2.2.x')) {
-  BAD_MONGO_COMMANDS.push('authenticate', 'logout')
-}
 
 function dbTest(name, run) {
   mongoTest(name, function init(t, agent) {
@@ -36,7 +32,7 @@ function dbTest(name, run) {
         MONGO_HOST = common.getHostName(agent)
         MONGO_PORT = common.getPort()
 
-        const res = await common.connect(mongodb)
+        const res = await common.connect({ mongodb })
         client = res.client
         db = res.db
       })

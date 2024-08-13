@@ -128,13 +128,13 @@ function instrumentMyMessageBroker(shim, messageBrokerModule, moduleName) {
     // misc key/value parameters can be recorded as a part of the trace segment
     var params = {}
 
-    return {
+    return new shim.specs.MessageSpec({
       callback: shim.LAST,
       destinationName: queueName,
       destinationType: shim.QUEUE,
       headers: headers,
       parameters: params
-    }
+    })
   })
 }
 ```
@@ -177,10 +177,10 @@ instrumentation of this method would look like this:
 function instrumentMyMessageBroker(shim, messageBrokerModule, moduleName) {
   var Client = myMessageBrokerModule.Client
 
-  shim.recordConsume(Client.prototype, 'getMessage', {
+  shim.recordConsume(Client.prototype, 'getMessage', new shim.specs.MessageSpec({
     destinationName: shim.FIRST,
     callback: shim.LAST,
-    messageHandler: function(shim, fn, name, args) {
+    after: function({ shim, args }) {
       var message = args[1]
 
       // These headers are used to set up cross-application tracing.
@@ -196,7 +196,7 @@ function instrumentMyMessageBroker(shim, messageBrokerModule, moduleName) {
         headers: headers
       }
     }
-  })
+  }))
 }
 ```
 
@@ -218,9 +218,9 @@ they are received. The instrumentation in this case would look like this:
 function instrumentMyMessageBroker(shim, messageBrokerModule, moduleName) {
   var Client = myMessageBrokerModule.Client
 
-  shim.recordSubcribedConsume(Client.prototype, 'subscribe', {
+  shim.recordSubcribedConsume(Client.prototype, 'subscribe', new shim.specs.MessageSubscribeSpec({
     consumer: shim.LAST,
-    messageHandler: function(shim, consumer, name, args) {
+    messageHandler: function(shim, args) {
       var message = args[0]
 
       // These headers are used to set up cross-application tracing.
@@ -232,7 +232,7 @@ function instrumentMyMessageBroker(shim, messageBrokerModule, moduleName) {
         headers: headers
       }
     }
-  })
+  }))
 }
 ```
 

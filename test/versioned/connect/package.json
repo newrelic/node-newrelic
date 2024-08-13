@@ -6,10 +6,10 @@
   "tests": [
     {
       "engines": {
-        "node": ">=16"
+        "node": ">=18"
       },
       "dependencies": {
-        "connect": ">=2.0.0"
+        "connect": ">=3.0.0"
       },
       "files": [
         "error-intercept.tap.js",

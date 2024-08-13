@@ -2,6 +2,33 @@
   "repository": "newrelic/node-newrelic",
   "entries": [
     {
+      "version": "12.1.0",
+      "changes": {
+        "security": [],
+        "bugfixes": [
+          "Pick log message from merging object in Pino instrumentation", 
+          "Added TLS verification for Redis"
+        ],
+        "features": []
+      }
+    },
+    {
+      "version": "12.0.0",
+      "changes": {
+        "security": [],
+        "bugfixes": [],
+        "features": [
+          "Added `server.address` to amqplib spans",
+          "Removed support for `redis` < 2.6.0",
+          "Removed legacy context manager",
+          "Removed instrumentation for `director`",
+          "Updated `mongodb` instrumentation to drop support for versions 2 and 3",
+          "Dropped support for Node.js 16",
+          "Migrated instrumentation for `next` into agent"
+        ]
+      }
+    },
+    {
       "version": "11.23.2",
       "changes": {
         "security": [],

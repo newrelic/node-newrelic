@@ -21,7 +21,9 @@ helpers.getCreateQueueResponse = function getCreateQueueResponse(
 }
 
 helpers.formatUrl = function formatUrl(endpoint, queueName) {
-  return `${endpoint}/queue/${queueName}`
+  // See https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-queue-message-identifiers.html#sqs-general-identifiers
+  // for details on the format of an SQS queue URL.
+  return `${endpoint}/1234567890/${queueName}`
 }
 
 helpers.getSendMessageResponse = function getSendMessageResponse(isJson, callback) {

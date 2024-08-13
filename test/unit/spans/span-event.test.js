@@ -68,6 +68,8 @@ tap.test('fromSegment()', (t) => {
       setTimeout(() => {
         const segment = agent.tracer.getTransaction().trace.root.children[0]
         segment.addSpanAttribute('SpiderSpan', 'web')
+        segment.addSpanAttribute('host', 'my-host')
+        segment.addSpanAttribute('port', 222)
 
         const spanContext = segment.getSpanContext()
         spanContext.addCustomAttribute('Span Lee', 'no prize')
@@ -108,6 +110,8 @@ tap.test('fromSegment()', (t) => {
         const hasOwnAttribute = Object.hasOwnProperty.bind(attributes)
 
         t.ok(hasOwnAttribute('SpiderSpan'), 'Should have attribute added through segment')
+        t.equal(attributes['server.address'], 'my-host')
+        t.equal(attributes['server.port'], 222)
 
         // Should have no http properties.
         t.notOk(hasOwnAttribute('externalLibrary'))

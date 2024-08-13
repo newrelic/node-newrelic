@@ -1,25 +1,24 @@
 {
   "name": "mongodb-esm-tests",
-  "targets": [{"name":"mongodb","minAgentVersion":"1.32.0"}],
   "version": "0.0.0",
   "type": "module",
   "private": true,
   "tests": [
     {
       "engines": {
-        "node": ">=16.12.0"
+        "node": ">=18"
       },
       "dependencies": {
-        "mongodb": ">=2.1 < 4.0.0 || >= 4.1.4 < 5"
+        "mongodb": ">= 4.1.4 < 5"
       },
       "files": [
-        "bulk.tap.mjs",
-        "collection-find.tap.mjs",
-        "collection-index.tap.mjs",
-        "collection-misc.tap.mjs",
-        "collection-update.tap.mjs",
-        "cursor.tap.mjs",
-        "db.tap.mjs"
+        "bulk.test.mjs",
+        "collection-find.test.mjs",
+        "collection-index.test.mjs",
+        "collection-misc.test.mjs",
+        "collection-update.test.mjs",
+        "cursor.test.mjs",
+        "db.test.mjs"
       ]
     }
   ],

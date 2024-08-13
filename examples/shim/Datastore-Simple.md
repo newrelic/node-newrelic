@@ -16,12 +16,12 @@ function instrumentCassandra(shim, cassandra, moduleName) {
   shim.setDatastore(shim.CASSANDRA)
 
   var proto = cassandra.Client.prototype
-  shim.recordOperation(proto, ['connect', 'shutdown'], {callback: shim.LAST})
-  shim.recordQuery(proto, '_execute', {query: shim.FIRST, callback: shim.LAST})
-  shim.recordBatchQuery(proto, 'batch', {
+  shim.recordOperation(proto, ['connect', 'shutdown'], new shim.specs.OperationSpec({callback: shim.LAST})
+  shim.recordQuery(proto, '_execute', new shim.specs.QuerySpec({query: shim.FIRST, callback: shim.LAST}))
+  shim.recordBatchQuery(proto, 'batch', new shim.specs.QuerySpec({
     query: findBatchQueryArg,
     callback: shim.LAST
-  })
+  }))
 }
 
 function findBatchQueryArg(shim, batch, fnName, args) {
@@ -106,7 +106,7 @@ will show up on the [New Relic APM Databases page][2] like this:
 
 ```js
   var proto = cassandra.Client.prototype
-  shim.recordOperation(proto, ['connect', 'shutdown'], {callback: shim.LAST})
+  shim.recordOperation(proto, ['connect', 'shutdown'], new shim.specs.OperationSpec({callback: shim.LAST}))
 ```
 
 Now on to the actual instrumentation. In `cassandra-driver`, all of the
@@ -136,8 +136,8 @@ If we didn't like the names of the methods, we could supply an alternate name to
 `shim.recordOperation` in the last parameter like this:
 
 ```js
-  shim.recordOperation(proto, 'connect', {name: 'Connect', callback: shim.LAST})
-  shim.recordOperation(proto, 'shutdown', {name: 'Shutdown', callback: shim.LAST})
+  shim.recordOperation(proto, 'connect', new shim.specs.OperationSpec({name: 'Connect', callback: shim.LAST}))
+  shim.recordOperation(proto, 'shutdown', new shim.specs.OperationSpec({name: 'Shutdown', callback: shim.LAST}))
 ```
 
 Note that since we want these operations named differently, if we specify the
@@ -149,12 +149,12 @@ supplied instead. This function will receive the arguments and the segment, and
 is responsible for connecting the two. Here's how that might look in our case:
 
 ```js
-  shim.recordOperation(proto, ['connect', 'shutdown'], {
+  shim.recordOperation(proto, ['connect', 'shutdown'], new shim.specs.OperationSpec({
     callback: function operationCallbackBinder(shim, opFunc, opName, segment, args) {
       var cb = args[args.length - 1]
       args[args.length - 1] = shim.bindSegment(cb, segment, true)
     }
-  })
+  }))
 ```
 
 Note that the `args` parameter is a proper [`Array`][5], so you can assign back
@@ -164,7 +164,7 @@ into it and use any other array manipulation that you want.
 ### Recording Queries
 
 ```js
-  shim.recordQuery(proto, '_execute', {query: shim.FIRST, callback: shim.LAST})
+  shim.recordQuery(proto, '_execute', new shim.specs.QuerySpec({query: shim.FIRST, callback: shim.LAST}))
 ```
 
 The `cassandra.Client` class has three different methods for performing queries:
@@ -193,10 +193,10 @@ the collection queried (`test.testFamily`) as well as the query operation
 ### Recording Batch Queries
 
 ```js
-  shim.recordBatchQuery(proto, 'batch', {
+  shim.recordBatchQuery(proto, 'batch', new shim.specs.QuerySpec({
     query: findBatchQueryArg,
     callback: shim.LAST
-  })
+  }))
 ```
 
 Recording batches of queries is just like recording a single one, except we need

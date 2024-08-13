@@ -1,3 +1,72 @@
+### v12.1.0 (2024-08-12)
+
+#### Bug fixes
+
+* Pick log message from merging object in Pino instrumentation ([#2421](https://github.com/newrelic/node-newrelic/pull/2421)) ([599072b](https://github.com/newrelic/node-newrelic/commit/599072b43b77a8c11c9ef414b08dfe6e04bca9d2))
+* Added TLS verification for Redis ([#2446](https://github.com/newrelic/node-newrelic/pull/2446)) ([9a16b70](https://github.com/newrelic/node-newrelic/commit/9a16b7016a943a0c2817ab2151eaa81f5ea19760))
+
+
+#### Documentation
+
+* Updated compatibility report ([#2440](https://github.com/newrelic/node-newrelic/pull/2440)) ([32abe5f](https://github.com/newrelic/node-newrelic/commit/32abe5f90d93d470737986b3bfe6c797915c4215))
+* Updated examples to properly use specs ([#2422](https://github.com/newrelic/node-newrelic/pull/2422)) ([f7e8c58](https://github.com/newrelic/node-newrelic/commit/f7e8c5831305ac0bcb2c906ec176863552a083c4))
+* Fixed typo in doc header ([#2433](https://github.com/newrelic/node-newrelic/pull/2433)) ([9726e23](https://github.com/newrelic/node-newrelic/commit/9726e231fe631623f882df38344df4db9ce67b70))
+
+#### Miscellaneous chores
+
+* Added entity relationship attributes to SQS segments ([#2436](https://github.com/newrelic/node-newrelic/pull/2436)) ([578aead](https://github.com/newrelic/node-newrelic/commit/578aead8c0b2d18dced4eaca54b19c769f398868))
+* Converted agent unit tests to node:test ([#2414](https://github.com/newrelic/node-newrelic/pull/2414)) ([b32f793](https://github.com/newrelic/node-newrelic/commit/b32f7934fec5dc9e7b29dee5d1994ab180bb0c37))
+* Fixed mongodb-esm tests in combination with security agent ([#2444](https://github.com/newrelic/node-newrelic/pull/2444)) ([5d617de](https://github.com/newrelic/node-newrelic/commit/5d617de99bc89b678b8c11aaebcad5dcacf0b5c3))
+* Limited superagent tests to avoid new breaking release ([#2439](https://github.com/newrelic/node-newrelic/pull/2439)) ([f1dd8e7](https://github.com/newrelic/node-newrelic/commit/f1dd8e73b8329a075667f6696d2a27bc749e4e7a))
+* Removed promise resolvers from callback based agent unit tests ([#2450](https://github.com/newrelic/node-newrelic/pull/2450)) ([3766895](https://github.com/newrelic/node-newrelic/commit/3766895cd7cc8145ba8eef6d49330e0d354158a1))
+
+
+#### Tests
+
+* Moved pkgVersion to collection-common to avoid a conflict with ESM tests ([#2438](https://github.com/newrelic/node-newrelic/pull/2438)) ([7260fa3](https://github.com/newrelic/node-newrelic/commit/7260fa36372877bb6f60637f8255312fcf207a0a))
+* Restored mongodb-esm tests ([#2434](https://github.com/newrelic/node-newrelic/pull/2434)) ([67a12e3](https://github.com/newrelic/node-newrelic/commit/67a12e32c6deef0c7f8397ac75c369f3371519e8))
+* Updated custom test reporter to only log failed tests when there are failures ([#2425](https://github.com/newrelic/node-newrelic/pull/2425)) ([baa37ec](https://github.com/newrelic/node-newrelic/commit/baa37ece0d027ca6d57fd5b52ceedfaa97ecbfaa))
+* Updated tls redis tests to work with older versions of redis v4 ([#2454](https://github.com/newrelic/node-newrelic/pull/2454)) ([ffd9b17](https://github.com/newrelic/node-newrelic/commit/ffd9b177e85ed73963f88767e9d3e20c57ea372d))
+
+### v12.0.0 (2024-07-31)
+#### ⚠ BREAKING CHANGES
+
+* Dropped support for Node.js 16
+* Removed legacy context manager
+* Removed support for `redis` < 2.6.0
+* Removed instrumentation for `director`
+* Updated `mongodb` instrumentation to drop support for versions 2 and 3
+
+#### Features
+
+* Dropped support for Node.js 16 ([#2394](https://github.com/newrelic/node-newrelic/pull/2394)) ([1870010](https://github.com/newrelic/node-newrelic/commit/1870010a1d7dc417fc03ae526a9709e382b3fe1f))
+* Removed legacy context manager ([#2404](https://github.com/newrelic/node-newrelic/pull/2404)) ([321244c](https://github.com/newrelic/node-newrelic/commit/321244c357bc5dd9b4aeefc308cda5e80b8012b0))
+* Removed support for `redis` < 2.6.0 ([#2405](https://github.com/newrelic/node-newrelic/pull/2405)) ([e2c0a31](https://github.com/newrelic/node-newrelic/commit/e2c0a31b5230e0ffbdc3d4567619190570b7167c))
+* Removed instrumentation for `director` ([#2402](https://github.com/newrelic/node-newrelic/pull/2402)) ([1b355e7](https://github.com/newrelic/node-newrelic/commit/1b355e733aef0e14c5f4cb2899642a3d5b6f18ce))
+* Added `server.address` to amqplib spans ([#2406](https://github.com/newrelic/node-newrelic/pull/2406)) ([09636a4](https://github.com/newrelic/node-newrelic/commit/09636a4ce90969e7aea229ef008bd35f57e09217))
+* Updated `mongodb` instrumentation to drop support for versions 2 and 3 ([#2398](https://github.com/newrelic/node-newrelic/pull/2398)) ([a0ae32a](https://github.com/newrelic/node-newrelic/commit/a0ae32a6a61112e0473d477075543485d02313cf))
+* Migrated instrumentation for `next` into agent ([#2409](https://github.com/newrelic/node-newrelic/pull/2409)) ([b55d8e1](https://github.com/newr    elic/node-newrelic/commit/b55d8e1ca09e6055ea09f4fcd773a05245e7203f)) 
+  * You no longer need to load Next.js instrumentation via `@newrelic/next`.
+  * Instead you must load the agent via `NODE_OPTIONS='-r newrelic' next start`
+
+#### Documentation
+
+* Updated compatibility report ([#2401](https://github.com/newrelic/node-newrelic/pull/2401)) ([a53085d](https://github.com/newrelic/node-newrelic/commit/a53085ddce2f2d7a4c9288fbf63fbf82436fb15f))
+
+#### Miscellaneous chores
+
+* Added test configs for defined targets in the aws test suite ([#2403](https://github.com/newrelic/node-newrelic/pull/2403)) ([cf514d9](https://github.com/newrelic/node-newrelic/commit/cf514d97b82889b14a342cbded630bae73992c35))
+* Added producer and consumer metrics to kafkajs instrumentation ([#2407](https://github.com/newrelic/node-newrelic/pull/2407)) ([41c1cc6](https://github.com/newrelic/node-newrelic/commit/41c1cc6d9815a1b89a7ab043b5da5f032969a87e))
+* Switched to using Node built-in test runner ([#2387](https://github.com/newrelic/node-newrelic/pull/2387)) ([b9f64b7](https://github.com/newrelic/node-newrelic/commit/b9f64b76b8777fc790a4694a95318f401a56abdd))
+* Updated `@newrelic/native-metrics` to 11.0.0 ([#2412](https://github.com/newrelic/node-newrelic/pull/2412)) ([aef69e2](https://github.com/newrelic/node-newrelic/commit/aef69e28cc3ead2079cfc0bdf9bde74129a3711f))
+* Updated dashboard links in developer-setup.md ([#2397](https://github.com/newrelic/node-newrelic/pull/2397)) ([16866da](https://github.com/newrelic/node-newrelic/commit/16866da381366ad848ea06be44fd838d57c9fb67))
+* Verified MySQL host:port metric is recorded ([#2400](https://github.com/newrelic/node-newrelic/pull/2400)) ([74176f7](https://github.com/newrelic/node-newrelic/commit/74176f77f70247a3cf65b1b49c5414279b4eeca6))
+
+#### Tests
+
+* Removed mongodb-esm tests as they are not atomic and conflicting with mongodb tests in CI ([#2416](https://github.com/newrelic/node-newrelic/pull/2416)) ([e587b9d](https://github.com/newrelic/node-newrelic/commit/e587b9dcb795cca3c29c6e0da18770401c3085a0))
+* Updated minimum version of lesser used versions of 3rd party libraries ([#2399](https://github.com/newrelic/node-newrelic/pull/2399)) ([ef8c006](https://github.com/newrelic/node-newrelic/commit/ef8c00674c22b4794c6cee823d46ad9db7d67fed))
+
 ### v11.23.2 (2024-07-22)
 
 #### Features

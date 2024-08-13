@@ -5,11 +5,11 @@
   "private": true,
   "tests": [{
     "engines": {
-      "node": ">=16"
+      "node": ">=18"
     },
     "dependencies": {
       "superagent": {
-        "versions": ">=2 <7.1.0 ||  >=7.1.1",
+        "versions": ">=3 <7.1.0 ||  >=7.1.1 && <10.0.0",
         "samples": 5
       }
     },

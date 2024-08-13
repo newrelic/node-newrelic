@@ -25,8 +25,9 @@ function assertExactClmAttrs(segmentStub, expectedAttrs) {
  * @param {object} params
  * @param {object} params.segments list of segments to assert { segment, filepath, name }
  * @param {boolean} params.enabled if CLM is enabled or not
+ * @param {boolean} params.skipFull flag to skip asserting `code.lineno` and `code.column`
  */
-function assertCLMAttrs({ segments, enabled: clmEnabled }) {
+function assertCLMAttrs({ segments, enabled: clmEnabled, skipFull = false }) {
   segments.forEach((segment) => {
     const attrs = segment.segment.getAttributes()
     if (clmEnabled) {
@@ -35,8 +36,11 @@ function assertCLMAttrs({ segments, enabled: clmEnabled }) {
         attrs['code.filepath'].endsWith(segment.filepath),
         'should have appropriate code.filepath'
       )
-      this.match(attrs['code.lineno'], /[\d]+/, 'lineno should be a number')
-      this.match(attrs['code.column'], /[\d]+/, 'column should be a number')
+
+      if (!skipFull) {
+        this.match(attrs['code.lineno'], /[\d]+/, 'lineno should be a number')
+        this.match(attrs['code.column'], /[\d]+/, 'column should be a number')
+      }
     } else {
       this.notOk(attrs['code.function'], 'function should not exist')
       this.notOk(attrs['code.filepath'], 'filepath should not exist')

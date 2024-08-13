@@ -31,7 +31,7 @@ tap.test('SQS API', (t) => {
 
     t.context.sqs = new SQSClient({
       credentials: FAKE_CREDENTIALS,
-      endpoint: `http://localhost:${server.address().port}`,
+      endpoint: `http://sqs.${AWS_REGION}.amazonaws.com:${server.address().port}`,
       region: AWS_REGION
     })
 
@@ -112,6 +112,15 @@ function finish({ t, transaction, queueName }) {
   checkName(t, receiveMessage.name, 'Consume', queueName)
   checkAttributes(t, receiveMessage, 'ReceiveMessageCommand')
   t.equal(t.context.setLibrarySpy.callCount, 1, 'should only call setLibrary once and not per call')
+
+  // Verify that cloud entity relationship attributes are present:
+  for (const segment of segments) {
+    const attrs = segment.getAttributes()
+    t.equal(attrs['messaging.system'], 'aws_sqs')
+    t.equal(attrs['cloud.region'], 'us-east-1')
+    t.equal(attrs['cloud.account.id'], '1234567890')
+    t.equal(attrs['messaging.destination.name'], queueName)
+  }
 }
 
 function checkName(t, name, action, queueName) {

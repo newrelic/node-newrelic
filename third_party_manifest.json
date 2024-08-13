@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "Thu Jun 06 2024 16:54:51 GMT-0400 (Eastern Daylight Time)",
+  "lastUpdated": "Wed Jul 31 2024 12:48:28 GMT-0400 (Eastern Daylight Time)",
   "projectName": "New Relic Node Agent",
   "projectUrl": "https://github.com/newrelic/node-newrelic",
   "includeOptDeps": true,
@@ -16,15 +16,15 @@
       "licenseTextSource": "file",
       "publisher": "Contrast Security"
     },
-    "@newrelic/native-metrics@10.1.1": {
+    "@newrelic/native-metrics@10.2.0": {
       "name": "@newrelic/native-metrics",
-      "version": "10.1.1",
+      "version": "10.2.0",
       "range": "^10.0.0",
       "licenses": "Apache-2.0",
       "repoUrl": "https://github.com/newrelic/node-native-metrics",
-      "versionedRepoUrl": "https://github.com/newrelic/node-native-metrics/tree/v10.1.1",
+      "versionedRepoUrl": "https://github.com/newrelic/node-native-metrics/tree/v10.2.0",
       "licenseFile": "node_modules/@newrelic/native-metrics/LICENSE",
-      "licenseUrl": "https://github.com/newrelic/node-native-metrics/blob/v10.1.1/LICENSE",
+      "licenseUrl": "https://github.com/newrelic/node-native-metrics/blob/v10.2.0/LICENSE",
       "licenseTextSource": "file",
       "publisher": "New Relic Node.js agent team",
       "email": "nodejs@newrelic.com"
@@ -44,15 +44,15 @@
   },
   "includeDev": true,
   "dependencies": {
-    "@grpc/grpc-js@1.10.8": {
+    "@grpc/grpc-js@1.11.1": {
       "name": "@grpc/grpc-js",
-      "version": "1.10.8",
+      "version": "1.11.1",
       "range": "^1.9.4",
       "licenses": "Apache-2.0",
       "repoUrl": "https://github.com/grpc/grpc-node/tree/master/packages/grpc-js",
-      "versionedRepoUrl": "https://github.com/grpc/grpc-node/tree/master/packages/grpc-js/tree/v1.10.8",
+      "versionedRepoUrl": "https://github.com/grpc/grpc-node/tree/master/packages/grpc-js/tree/v1.11.1",
       "licenseFile": "node_modules/@grpc/grpc-js/LICENSE",
-      "licenseUrl": "https://github.com/grpc/grpc-node/tree/master/packages/grpc-js/blob/v1.10.8/LICENSE",
+      "licenseUrl": "https://github.com/grpc/grpc-node/tree/master/packages/grpc-js/blob/v1.11.1/LICENSE",
       "licenseTextSource": "file",
       "publisher": "Google Inc."
     },
@@ -82,15 +82,15 @@
       "email": "w@tson.dk",
       "url": "https://twitter.com/wa7son"
     },
-    "@newrelic/security-agent@1.3.0": {
+    "@newrelic/security-agent@1.4.0": {
       "name": "@newrelic/security-agent",
-      "version": "1.3.0",
+      "version": "1.4.0",
       "range": "^1.3.0",
       "licenses": "UNKNOWN",
       "repoUrl": "https://github.com/newrelic/csec-node-agent",
-      "versionedRepoUrl": "https://github.com/newrelic/csec-node-agent/tree/v1.3.0",
+      "versionedRepoUrl": "https://github.com/newrelic/csec-node-agent/tree/v1.4.0",
       "licenseFile": "node_modules/@newrelic/security-agent/LICENSE",
-      "licenseUrl": "https://github.com/newrelic/csec-node-agent/blob/v1.3.0/LICENSE",
+      "licenseUrl": "https://github.com/newrelic/csec-node-agent/blob/v1.4.0/LICENSE",
       "licenseTextSource": "file",
       "publisher": "newrelic"
     },
@@ -120,29 +120,29 @@
       "publisher": "Max Ogden",
       "email": "max@maxogden.com"
     },
-    "https-proxy-agent@7.0.4": {
+    "https-proxy-agent@7.0.5": {
       "name": "https-proxy-agent",
-      "version": "7.0.4",
+      "version": "7.0.5",
       "range": "^7.0.1",
       "licenses": "MIT",
       "repoUrl": "https://github.com/TooTallNate/proxy-agents",
-      "versionedRepoUrl": "https://github.com/TooTallNate/proxy-agents/tree/v7.0.4",
+      "versionedRepoUrl": "https://github.com/TooTallNate/proxy-agents/tree/v7.0.5",
       "licenseFile": "node_modules/https-proxy-agent/LICENSE",
-      "licenseUrl": "https://github.com/TooTallNate/proxy-agents/blob/v7.0.4/LICENSE",
+      "licenseUrl": "https://github.com/TooTallNate/proxy-agents/blob/v7.0.5/LICENSE",
       "licenseTextSource": "file",
       "publisher": "Nathan Rajlich",
       "email": "nathan@tootallnate.net",
       "url": "http://n8.io/"
     },
-    "import-in-the-middle@1.8.0": {
+    "import-in-the-middle@1.9.1": {
       "name": "import-in-the-middle",
-      "version": "1.8.0",
+      "version": "1.9.1",
       "range": "^1.6.0",
       "licenses": "Apache-2.0",
-      "repoUrl": "https://github.com/DataDog/import-in-the-middle",
-      "versionedRepoUrl": "https://github.com/DataDog/import-in-the-middle/tree/v1.8.0",
+      "repoUrl": "https://github.com/nodejs/import-in-the-middle",
+      "versionedRepoUrl": "https://github.com/nodejs/import-in-the-middle/tree/v1.9.1",
       "licenseFile": "node_modules/import-in-the-middle/LICENSE",
-      "licenseUrl": "https://github.com/DataDog/import-in-the-middle/blob/v1.8.0/LICENSE",
+      "licenseUrl": "https://github.com/nodejs/import-in-the-middle/blob/v1.9.1/LICENSE",
       "licenseTextSource": "file",
       "publisher": "Bryan English",
       "email": "bryan.english@datadoghq.com"
@@ -199,55 +199,55 @@
       "licenseUrl": "https://github.com/nodejs/readable-stream/blob/v3.6.2/LICENSE",
       "licenseTextSource": "file"
     },
-    "semver@7.6.2": {
+    "semver@7.6.3": {
       "name": "semver",
-      "version": "7.6.2",
+      "version": "7.6.3",
       "range": "^7.5.2",
       "licenses": "ISC",
       "repoUrl": "https://github.com/npm/node-semver",
-      "versionedRepoUrl": "https://github.com/npm/node-semver/tree/v7.6.2",
+      "versionedRepoUrl": "https://github.com/npm/node-semver/tree/v7.6.3",
       "licenseFile": "node_modules/semver/LICENSE",
-      "licenseUrl": "https://github.com/npm/node-semver/blob/v7.6.2/LICENSE",
+      "licenseUrl": "https://github.com/npm/node-semver/blob/v7.6.3/LICENSE",
       "licenseTextSource": "file",
       "publisher": "GitHub Inc."
     },
-    "winston-transport@4.7.0": {
+    "winston-transport@4.7.1": {
       "name": "winston-transport",
-      "version": "4.7.0",
+      "version": "4.7.1",
       "range": "^4.5.0",
       "licenses": "MIT",
       "repoUrl": "https://github.com/winstonjs/winston-transport",
-      "versionedRepoUrl": "https://github.com/winstonjs/winston-transport/tree/v4.7.0",
+      "versionedRepoUrl": "https://github.com/winstonjs/winston-transport/tree/v4.7.1",
       "licenseFile": "node_modules/winston-transport/LICENSE",
-      "licenseUrl": "https://github.com/winstonjs/winston-transport/blob/v4.7.0/LICENSE",
+      "licenseUrl": "https://github.com/winstonjs/winston-transport/blob/v4.7.1/LICENSE",
       "licenseTextSource": "file",
       "publisher": "Charlie Robbins",
       "email": "charlie.robbins@gmail.com"
     }
   },
   "devDependencies": {
-    "@aws-sdk/client-s3@3.592.0": {
+    "@aws-sdk/client-s3@3.616.0": {
       "name": "@aws-sdk/client-s3",
-      "version": "3.592.0",
+      "version": "3.616.0",
       "range": "^3.556.0",
       "licenses": "Apache-2.0",
       "repoUrl": "https://github.com/aws/aws-sdk-js-v3",
-      "versionedRepoUrl": "https://github.com/aws/aws-sdk-js-v3/tree/v3.592.0",
+      "versionedRepoUrl": "https://github.com/aws/aws-sdk-js-v3/tree/v3.616.0",
       "licenseFile": "node_modules/@aws-sdk/client-s3/LICENSE",
-      "licenseUrl": "https://github.com/aws/aws-sdk-js-v3/blob/v3.592.0/LICENSE",
+      "licenseUrl": "https://github.com/aws/aws-sdk-js-v3/blob/v3.616.0/LICENSE",
       "licenseTextSource": "file",
       "publisher": "AWS SDK for JavaScript Team",
       "url": "https://aws.amazon.com/javascript/"
     },
-    "@aws-sdk/s3-request-presigner@3.592.0": {
+    "@aws-sdk/s3-request-presigner@3.616.0": {
       "name": "@aws-sdk/s3-request-presigner",
-      "version": "3.592.0",
+      "version": "3.616.0",
       "range": "^3.556.0",
       "licenses": "Apache-2.0",
       "repoUrl": "https://github.com/aws/aws-sdk-js-v3",
-      "versionedRepoUrl": "https://github.com/aws/aws-sdk-js-v3/tree/v3.592.0",
+      "versionedRepoUrl": "https://github.com/aws/aws-sdk-js-v3/tree/v3.616.0",
       "licenseFile": "node_modules/@aws-sdk/s3-request-presigner/LICENSE",
-      "licenseUrl": "https://github.com/aws/aws-sdk-js-v3/blob/v3.592.0/LICENSE",
+      "licenseUrl": "https://github.com/aws/aws-sdk-js-v3/blob/v3.616.0/LICENSE",
       "licenseTextSource": "file",
       "publisher": "AWS SDK for JavaScript Team",
       "url": "https://aws.amazon.com/javascript/"
@@ -290,15 +290,15 @@
       "licenseTextSource": "file",
       "publisher": "New Relic"
     },
-    "@newrelic/test-utilities@8.6.0": {
+    "@newrelic/test-utilities@8.7.0": {
       "name": "@newrelic/test-utilities",
-      "version": "8.6.0",
+      "version": "8.7.0",
       "range": "^8.5.0",
       "licenses": "Apache-2.0",
       "repoUrl": "https://github.com/newrelic/node-test-utilities",
-      "versionedRepoUrl": "https://github.com/newrelic/node-test-utilities/tree/v8.6.0",
+      "versionedRepoUrl": "https://github.com/newrelic/node-test-utilities/tree/v8.7.0",
       "licenseFile": "node_modules/@newrelic/test-utilities/LICENSE",
-      "licenseUrl": "https://github.com/newrelic/node-test-utilities/blob/v8.6.0/LICENSE",
+      "licenseUrl": "https://github.com/newrelic/node-test-utilities/blob/v8.7.0/LICENSE",
       "licenseTextSource": "file",
       "publisher": "New Relic Node.js agent team",
       "email": "nodejs@newrelic.com"
@@ -314,15 +314,15 @@
       "licenseUrl": "https://github.com/octokit/rest.js/blob/v18.12.0/LICENSE",
       "licenseTextSource": "file"
     },
-    "@slack/bolt@3.18.0": {
+    "@slack/bolt@3.19.0": {
       "name": "@slack/bolt",
-      "version": "3.18.0",
+      "version": "3.19.0",
       "range": "^3.7.0",
       "licenses": "MIT",
       "repoUrl": "https://github.com/slackapi/bolt",
-      "versionedRepoUrl": "https://github.com/slackapi/bolt/tree/v3.18.0",
+      "versionedRepoUrl": "https://github.com/slackapi/bolt/tree/v3.19.0",
       "licenseFile": "node_modules/@slack/bolt/LICENSE",
-      "licenseUrl": "https://github.com/slackapi/bolt/blob/v3.18.0/LICENSE",
+      "licenseUrl": "https://github.com/slackapi/bolt/blob/v3.19.0/LICENSE",
       "licenseTextSource": "file",
       "publisher": "Slack Technologies, LLC"
     },
@@ -376,18 +376,31 @@
       "licenseTextSource": "file",
       "publisher": "Caolan McMahon"
     },
-    "aws-sdk@2.1636.0": {
+    "aws-sdk@2.1659.0": {
       "name": "aws-sdk",
-      "version": "2.1636.0",
+      "version": "2.1659.0",
       "range": "^2.1604.0",
       "licenses": "Apache-2.0",
       "repoUrl": "https://github.com/aws/aws-sdk-js",
-      "versionedRepoUrl": "https://github.com/aws/aws-sdk-js/tree/v2.1636.0",
+      "versionedRepoUrl": "https://github.com/aws/aws-sdk-js/tree/v2.1659.0",
       "licenseFile": "node_modules/aws-sdk/LICENSE.txt",
-      "licenseUrl": "https://github.com/aws/aws-sdk-js/blob/v2.1636.0/LICENSE.txt",
+      "licenseUrl": "https://github.com/aws/aws-sdk-js/blob/v2.1659.0/LICENSE.txt",
       "licenseTextSource": "file",
       "publisher": "Amazon Web Services",
       "url": "https://aws.amazon.com/"
+    },
+    "borp@0.17.0": {
+      "name": "borp",
+      "version": "0.17.0",
+      "range": "^0.17.0",
+      "licenses": "MIT",
+      "repoUrl": "https://github.com/mcollina/borp",
+      "versionedRepoUrl": "https://github.com/mcollina/borp/tree/v0.17.0",
+      "licenseFile": "node_modules/borp/LICENSE",
+      "licenseUrl": "https://github.com/mcollina/borp/blob/v0.17.0/LICENSE",
+      "licenseTextSource": "file",
+      "publisher": "Matteo Collina",
+      "email": "hello@matteocollina.com"
     },
     "c8@8.0.1": {
       "name": "c8",
@@ -480,15 +493,15 @@
       "publisher": "Michael Radionov",
       "url": "https://github.com/mradionov"
     },
-    "eslint-plugin-jsdoc@48.2.8": {
+    "eslint-plugin-jsdoc@48.8.3": {
       "name": "eslint-plugin-jsdoc",
-      "version": "48.2.8",
+      "version": "48.8.3",
       "range": "^48.0.5",
       "licenses": "BSD-3-Clause",
       "repoUrl": "https://github.com/gajus/eslint-plugin-jsdoc",
-      "versionedRepoUrl": "https://github.com/gajus/eslint-plugin-jsdoc/tree/v48.2.8",
+      "versionedRepoUrl": "https://github.com/gajus/eslint-plugin-jsdoc/tree/v48.8.3",
       "licenseFile": "node_modules/eslint-plugin-jsdoc/LICENSE",
-      "licenseUrl": "https://github.com/gajus/eslint-plugin-jsdoc/blob/v48.2.8/LICENSE",
+      "licenseUrl": "https://github.com/gajus/eslint-plugin-jsdoc/blob/v48.8.3/LICENSE",
       "licenseTextSource": "file",
       "publisher": "Gajus Kuizinas",
       "email": "gajus@gajus.com",
@@ -644,15 +657,15 @@
       "publisher": "Andrey Okonetchnikov",
       "email": "andrey@okonet.ru"
     },
-    "lockfile-lint@4.13.2": {
+    "lockfile-lint@4.14.0": {
       "name": "lockfile-lint",
-      "version": "4.13.2",
+      "version": "4.14.0",
       "range": "^4.9.6",
       "licenses": "Apache-2.0",
       "repoUrl": "https://github.com/lirantal/lockfile-lint",
-      "versionedRepoUrl": "https://github.com/lirantal/lockfile-lint/tree/v4.13.2",
+      "versionedRepoUrl": "https://github.com/lirantal/lockfile-lint/tree/v4.14.0",
       "licenseFile": "node_modules/lockfile-lint/LICENSE",
-      "licenseUrl": "https://github.com/lirantal/lockfile-lint/blob/v4.13.2/LICENSE",
+      "licenseUrl": "https://github.com/lirantal/lockfile-lint/blob/v4.14.0/LICENSE",
       "licenseTextSource": "file",
       "publisher": "Liran Tal",
       "email": "liran.tal@gmail.com",
@@ -671,16 +684,16 @@
       "publisher": "Pedro Teixeira",
       "email": "pedro.teixeira@gmail.com"
     },
-    "proxy@2.1.1": {
+    "proxy@2.2.0": {
       "name": "proxy",
-      "version": "2.1.1",
+      "version": "2.2.0",
       "range": "^2.1.1",
       "licenses": "MIT",
       "repoUrl": "https://github.com/TooTallNate/proxy-agents",
-      "versionedRepoUrl": "https://github.com/TooTallNate/proxy-agents/tree/v2.1.1",
-      "licenseFile": "node_modules/proxy/README.md",
-      "licenseUrl": "https://github.com/TooTallNate/proxy-agents/blob/v2.1.1/README.md",
-      "licenseTextSource": "spdx",
+      "versionedRepoUrl": "https://github.com/TooTallNate/proxy-agents/tree/v2.2.0",
+      "licenseFile": "node_modules/proxy/LICENSE",
+      "licenseUrl": "https://github.com/TooTallNate/proxy-agents/blob/v2.2.0/LICENSE",
+      "licenseTextSource": "file",
       "publisher": "Nathan Rajlich",
       "email": "nathan@tootallnate.net",
       "url": "http://n8.io/"
@@ -697,15 +710,15 @@
       "licenseTextSource": "file",
       "publisher": "Thorsten Lorenz"
     },
-    "rfdc@1.3.1": {
+    "rfdc@1.4.1": {
       "name": "rfdc",
-      "version": "1.3.1",
+      "version": "1.4.1",
       "range": "^1.3.1",
       "licenses": "MIT",
       "repoUrl": "https://github.com/davidmarkclements/rfdc",
-      "versionedRepoUrl": "https://github.com/davidmarkclements/rfdc/tree/v1.3.1",
+      "versionedRepoUrl": "https://github.com/davidmarkclements/rfdc/tree/v1.4.1",
       "licenseFile": "node_modules/rfdc/LICENSE",
-      "licenseUrl": "https://github.com/davidmarkclements/rfdc/blob/v1.3.1/LICENSE",
+      "licenseUrl": "https://github.com/davidmarkclements/rfdc/blob/v1.4.1/LICENSE",
       "licenseTextSource": "file",
       "publisher": "David Mark Clements",
       "email": "david.clements@nearform.com"
@@ -724,6 +737,19 @@
       "email": "i@izs.me",
       "url": "http://blog.izs.me/"
     },
+    "self-cert@2.0.0": {
+      "name": "self-cert",
+      "version": "2.0.0",
+      "range": "^2.0.0",
+      "licenses": "MIT",
+      "repoUrl": "https://github.com/jsumners/self-cert",
+      "versionedRepoUrl": "https://github.com/jsumners/self-cert/tree/v2.0.0",
+      "licenseFile": "node_modules/self-cert/Readme.md",
+      "licenseUrl": "https://github.com/jsumners/self-cert/blob/v2.0.0/Readme.md",
+      "licenseTextSource": "spdx",
+      "publisher": "James Sumners",
+      "email": "james.sumners@gmail.com"
+    },
     "should@13.2.3": {
       "name": "should",
       "version": "13.2.3",
@@ -737,15 +763,15 @@
       "publisher": "TJ Holowaychuk",
       "email": "tj@vision-media.ca"
     },
-    "sinon@4.5.0": {
+    "sinon@5.1.1": {
       "name": "sinon",
-      "version": "4.5.0",
-      "range": "^4.5.0",
+      "version": "5.1.1",
+      "range": "^5.1.1",
       "licenses": "BSD-3-Clause",
       "repoUrl": "https://github.com/sinonjs/sinon",
-      "versionedRepoUrl": "https://github.com/sinonjs/sinon/tree/v4.5.0",
+      "versionedRepoUrl": "https://github.com/sinonjs/sinon/tree/v5.1.1",
       "licenseFile": "node_modules/sinon/LICENSE",
-      "licenseUrl": "https://github.com/sinonjs/sinon/blob/v4.5.0/LICENSE",
+      "licenseUrl": "https://github.com/sinonjs/sinon/blob/v5.1.1/LICENSE",
       "licenseTextSource": "file",
       "publisher": "Christian Johansen"
     },

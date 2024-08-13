@@ -61,6 +61,37 @@ If you cannot control how your program is run, you can load the `newrelic` modul
     /* ... the rest of your program ... */
 ```
 
+## Next.js instrumentation
+**Note**: The minimum supported Next.js version is [12.0.9](https://github.com/vercel/next.js/releases/tag/v12.0.9).  If you are using Next.js middleware the minimum supported version is [12.2.0](https://github.com/vercel/next.js/releases/tag/v12.2.0).
+
+The New Relic Node.js agent provides instrumentation for Next.js  The instrumentation provides telemetry for server-side rendering via [getServerSideProps](https://nextjs.org/docs/basic-features/data-fetching/get-server-side-props), [middleware](https://nextjs.org/docs/middleware), and New Relic transaction naming for both page and server requests. It does not provide any instrumentation for actions occurring during build or in client-side code.  If you want telemetry data on actions occurring on the client (browser), you can [inject the browser agent](./documentation/nextjs/faqs/browser-agent.md).
+
+Here are documents for more in-depth explanations about [transaction naming](./documentation/nextjs/transactions.md), and [segments/spans](./documentation/nextjs/segments-and-spans.md).
+
+
+### Setup
+Typically you are running a Next.js app with the `next` cli and you must load the agent via `NODE_OPTIONS`:
+
+```sh
+NODE_OPTIONS='-r newrelic' next start
+```
+
+If you are having trouble getting the `newrelic` package to instrument Next.js, take a look at our [FAQs](./documentation/nextjs/faqs/README.md).
+
+### Next.js example projects
+The following example applications show how to load the `newrelic` instrumentation, inject browser agent, and handle errors:
+
+ * [Pages Router example](https://github.com/newrelic/newrelic-node-examples/tree/58f760e828c45d90391bda3f66764d4420ba4990/nextjs-legacy)
+ * [App Router example](https://github.com/newrelic/newrelic-node-examples/tree/58f760e828c45d90391bda3f66764d4420ba4990/nextjs-app-router)
+
+### Custom Next.js servers
+
+If you are using next as a [custom server](https://nextjs.org/docs/advanced-features/custom-server), you're probably not running your application with the `next` CLI.  In that scenario we recommend running the Next.js instrumentation as follows.
+
+```sh
+node -r newrelic your-program.js
+```
+
 ## ECMAScript Modules
 
 If your application is written with `import` and `export` statements in javascript, you are using [ES Modules](https://nodejs.org/api/esm.html#modules-ecmascript-modules) and must bootstrap the agent in a different way.
