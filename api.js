@@ -1907,7 +1907,7 @@ API.prototype.ignoreApdex = function ignoreApdex() {
  *
  * An example of setting a custom attribute:
  *
- *    newrelic.withLlmCustomAttributes({'llm.someAttribute': 'someVallue'}, () => {
+ *    newrelic.withLlmCustomAttributes({'llm.someAttribute': 'someValue'}, () => {
  *      return;
  *    })
  * @param {Object} context LLM custom attributes context
