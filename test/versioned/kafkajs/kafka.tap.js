@@ -75,7 +75,7 @@ tap.test('send records correctly', (t) => {
       t.equal(sendMetric.callCount, 1)
 
       const produceTrackingMetric = agent.metrics.getMetric(
-        `MessageBroker/Kafka/Nodes/${broker}/Produce/Named/${topic}`
+        `MessageBroker/Kafka/Nodes/${broker}/Produce/${topic}`
       )
       t.equal(produceTrackingMetric.callCount, 1)
     }
@@ -205,7 +205,7 @@ tap.test('sendBatch records correctly', (t) => {
       t.equal(sendMetric.callCount, 1)
 
       const produceTrackingMetric = agent.metrics.getMetric(
-        `MessageBroker/Kafka/Nodes/${broker}/Produce/Named/${topic}`
+        `MessageBroker/Kafka/Nodes/${broker}/Produce/${topic}`
       )
       t.equal(produceTrackingMetric.callCount, 1)
 
@@ -262,7 +262,7 @@ tap.test('consume outside of a transaction', async (t) => {
       t.equal(sendMetric.callCount, 1)
 
       const consumeTrackingMetric = agent.metrics.getMetric(
-        `MessageBroker/Kafka/Nodes/${broker}/Consume/Named/${topic}`
+        `MessageBroker/Kafka/Nodes/${broker}/Consume/${topic}`
       )
       t.equal(consumeTrackingMetric.callCount, 1)
 
@@ -376,7 +376,7 @@ tap.test('consume batch inside of a transaction', async (t) => {
           t.equal(sendMetric.callCount, 1)
 
           const consumeTrackingMetric = agent.metrics.getMetric(
-            `MessageBroker/Kafka/Nodes/${broker}/Consume/Named/${topic}`
+            `MessageBroker/Kafka/Nodes/${broker}/Consume/${topic}`
           )
           t.equal(consumeTrackingMetric.callCount, 1)
 
