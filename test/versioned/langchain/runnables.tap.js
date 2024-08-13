@@ -127,7 +127,6 @@ tap.test('Langchain instrumentation - runnable sequence', (t) => {
     'should create langchain events for every invoke call on chat prompt + model + parser',
     (t) => {
       const { agent, prompt, outputParser, model } = t.context
-      agent._contextManager.setContext({ initial: true })
       helper.runInTransaction(agent, async (tx) => {
         const input = { topic: 'scientist' }
         const options = { metadata: { key: 'value', hello: 'world' }, tags: ['tag1', 'tag2'] }
