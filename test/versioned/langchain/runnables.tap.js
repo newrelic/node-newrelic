@@ -115,7 +115,7 @@ tap.test('Langchain instrumentation - runnable sequence', (t) => {
         })
         */
         const [[, message]] = responses
-        t.ok(message['llm.contextAttribute'])
+        t.equal(message['llm.contextAttribute'], 'someValue')
 
         tx.end()
         t.end()
