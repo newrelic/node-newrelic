@@ -43,12 +43,12 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
-      - name: Test variable definition
-        run: |
-          echo "TEST_VAR=my value" | Out-File -FilePath $env:GITHUB_ENV
-          echo "TEST_VAR=my appended value" | Out-File -FilePath $env:GITHUB_ENV -Append
-          echo "TEST_VAR=my plain old GITHUB_ENV value" | Out-File -FilePath $GITHUB_ENV
-          echo "My value from {{env.TEST_VAR}}: ${{ env.TEST_VAR }}"
+#      - name: Test variable definition
+#        run: |
+#          echo "TEST_VAR=my value" | Out-File -FilePath $env:GITHUB_ENV
+#          echo "TEST_VAR=my appended value" | Out-File -FilePath $env:GITHUB_ENV -Append
+#          echo "TEST_VAR=my plain old GITHUB_ENV value" | Out-File -FilePath $GITHUB_ENV
+#          echo "My value from {{env.TEST_VAR}}: ${{ env.TEST_VAR }}"
       - name: GitHub Example
         id: step_one
         run: |
