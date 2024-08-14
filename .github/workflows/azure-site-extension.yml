@@ -5,11 +5,12 @@ on:
 
 env:
   # Enable versioned runner quiet mode to make CI output easier to read:
-  OUTPUT_MODE: quiet
+  # OUTPUT_MODE: quiet
   SPEC_FILE_TEMPLATE: 'NewRelic.Azure.WebSites.Extension.NodeAgent.nuspec'
-  PACKAGE_FILENAME: ''
-  SPEC_CONTENT: ''
-  AGENT_VERSION: ''
+  PACKAGE_FILENAME: 'default package'
+  SPEC_CONTENT: 'default spec'
+  AGENT_VERSION: 'default agent'
+  TEST_VAR: 'default var'
 
 jobs:
   setup_tools:
@@ -33,7 +34,7 @@ jobs:
 
     strategy:
       matrix:
-        node-version: ['18.x', '20.x']
+        node-version: ['20.x']
         # Node 22 isn't yet available on Azure
 
     steps:
@@ -42,14 +43,24 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
-      - name: find_agent_version
+      - name: Test variable definition
         run: |
-          pwd
+          echo ("TEST_VAR=my_value") >> $env:GITHUB_ENV
+          echo "My value from {{env.TEST_VAR}}: ${{ env.TEST_VAR }}"
+          TEST_STRING="My value from $env:TEST_VAR: "
+          TEST_STRING += $env:TEST_VAR
+          echo $TEST_STRING
+      - name: Find agent version
+        run: |
+          echo "new relic version test"
+          npm view newrelic version
           echo "AGENT_VERSION=$(npm view newrelic version)" >> $env:GITHUB_ENV
           cd "cloud-tooling/azure-site-extension"
           pwd
           echo "Agent version: ${{ env.AGENT_VERSION }}"
-          echo "PACKAGE_FILENAME=NewRelic.Azure.WebSites.Extension.NodeAgent.${{env.AGENT_VERSION}}.${{ matrix.node-version }}" >> $env:GITHUB_ENV
+          echo $env:AGENT_VERSION 
+          echo "Node version: ${{ matrix.node-version }}"
+          echo ("PACKAGE_FILENAME=NewRelic.Azure.WebSites.Extension.NodeAgent.${{env.AGENT_VERSION}}.${{ matrix.node-version }}") >> $env:GITHUB_ENV
           echo "Package filename: ${{ env.PACKAGE_FILENAME }}"
 
 #      - name: install_agent
