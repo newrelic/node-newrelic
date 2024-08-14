@@ -75,21 +75,16 @@ tap.test('amqplib callback instrumentation', function (t) {
   })
 
   t.test('connect in a transaction', function (t) {
-    helper.runInTransaction(agent, function () {
-      t.doesNotThrow(function () {
-        amqplib.connect(amqpUtils.CON_STRING, null, function (err, _conn) {
-          t.error(err, 'should not break connection')
-          if (!t.passing()) {
-            t.bailout('Can not connect to RabbitMQ, stopping tests.')
-          }
-          _conn.close(t.end)
-        })
-      }, 'should not error when connecting')
-
-      // If connect threw, we need to end the test immediately.
-      if (!t.passing()) {
-        t.end()
-      }
+    helper.runInTransaction(agent, function (tx) {
+      amqplib.connect(amqpUtils.CON_STRING, null, function (err, _conn) {
+        t.error(err, 'should not break connection')
+        const [segment] = tx.trace.root.children
+        t.equal(segment.name, 'amqplib.connect')
+        const attrs = segment.getAttributes()
+        t.equal(attrs.host, 'localhost')
+        t.equal(attrs.port_path_or_id, 5672)
+        _conn.close(t.end)
+      })
     })
   })
 
