@@ -45,23 +45,21 @@ jobs:
           node-version: ${{ matrix.node-version }}
       - name: Test variable definition
         run: |
-          echo ("TEST_VAR=my_value") >> $env:GITHUB_ENV
+          echo "TEST_VAR=my value" | Out-File -FilePath $env:GITHUB_ENV
+          # echo "TEST_VAR=my value" | Out-File -FilePath $env:GITHUB_ENV -Append
           echo "My value from {{env.TEST_VAR}}: ${{ env.TEST_VAR }}"
-          TEST_STRING="My value from $env:TEST_VAR: "
-          TEST_STRING += $env:TEST_VAR
-          echo $TEST_STRING
       - name: Find agent version
         run: |
           echo "new relic version test"
           npm view newrelic version
-          echo "AGENT_VERSION=$(npm view newrelic version)" >> $env:GITHUB_ENV
-          cd "cloud-tooling/azure-site-extension"
-          pwd
-          echo "Agent version: ${{ env.AGENT_VERSION }}"
-          echo $env:AGENT_VERSION 
-          echo "Node version: ${{ matrix.node-version }}"
-          echo ("PACKAGE_FILENAME=NewRelic.Azure.WebSites.Extension.NodeAgent.${{env.AGENT_VERSION}}.${{ matrix.node-version }}") >> $env:GITHUB_ENV
-          echo "Package filename: ${{ env.PACKAGE_FILENAME }}"
+#          echo "AGENT_VERSION=$(npm view newrelic version)" >> $env:GITHUB_ENV
+#          cd "cloud-tooling/azure-site-extension"
+#          pwd
+#          echo "Agent version: ${{ env.AGENT_VERSION }}"
+#          echo $env:AGENT_VERSION
+#          echo "Node version: ${{ matrix.node-version }}"
+#          echo ("PACKAGE_FILENAME=NewRelic.Azure.WebSites.Extension.NodeAgent.${{env.AGENT_VERSION}}.${{ matrix.node-version }}") >> $env:GITHUB_ENV
+#          echo "Package filename: ${{ env.PACKAGE_FILENAME }}"
 
 #      - name: install_agent
 #        run: |
