@@ -52,11 +52,15 @@ jobs:
       - name: GitHub Example
         id: step_one
         run: |
+          echo "action_state_no_append=yellow" | Out-File -FilePath $env:GITHUB_ENV
           echo "action_state=yellow" | Out-File -FilePath $env:GITHUB_ENV -Append
+          echo "agent_version=$(npm view newrelic version)" | Out-File -FilePath $env:GITHUB_ENV -Append
       - name: Use the value
         id: step_two
         run: |
           echo "action state: ${{ env.action_state }}" # This will output 'yellow'
+          echo "action state no-append: ${{ env.action_state_no_append }}" 
+          echo "agent_version: ${{ env.agent_version }}" 
 
       - name: Find agent version
         run: |
