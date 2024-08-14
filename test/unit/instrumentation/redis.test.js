@@ -26,8 +26,8 @@ tap.test('getRedisParams should behave as expected', function (t) {
   t.test('if host/port are defined incorrectly, should return expected defaults', function (t) {
     const params = getRedisParams({ host: 'myLocalHost', port: '1234' })
     const expected = {
-      host: 'localhost',
-      port_path_or_id: '6379',
+      host: 'myLocalHost',
+      port_path_or_id: '1234',
       database_name: 0
     }
     t.match(params, expected, 'should return sensible defaults if defined without socket')

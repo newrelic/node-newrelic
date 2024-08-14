@@ -30,7 +30,8 @@ test('Redis instrumentation', function (t) {
     const redis = require('redis')
     client = redis.createClient({
       legacyMode: true,
-      socket: { port: params.redis_port, host: params.redis_host }
+      port: params.redis_port,
+      host: params.redis_host
     })
 
     await client.connect()
