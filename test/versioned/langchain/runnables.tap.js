@@ -106,15 +106,7 @@ tap.test('Langchain instrumentation - runnable sequence', (t) => {
         await chain.invoke(input, options)
         const events = agent.customEventAggregator.events.toArray()
 
-        // Issue: Custom attributes present only for events with `virtual_llm` flag
-        const responses = events
-        /* // Workarround
-        const responses = events.filter((event) => {
-          const [, chainEvent] = event
-          return chainEvent.virtual_llm === true && chainEvent.is_response === true
-        })
-        */
-        const [[, message]] = responses
+        const [[, message]] = events
         t.equal(message['llm.contextAttribute'], 'someValue')
 
         tx.end()

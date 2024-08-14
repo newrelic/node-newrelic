@@ -32,6 +32,7 @@ const obfuscate = require('./lib/util/sql/obfuscate')
 const { DESTINATIONS } = require('./lib/config/attribute-filter')
 const parse = require('module-details-from-path')
 const { isSimpleObject } = require('./lib/util/objects')
+const { AsyncLocalStorage } = require('async_hooks')
 
 /*
  *
@@ -1939,10 +1940,11 @@ API.prototype.withLlmCustomAttributes = function withLlmCustomAttributes(context
     }
   }
 
-  const parentContext = this.agent._contextManager.getContext()
+  transaction._llmContextManager = transaction._llmContextManager || new AsyncLocalStorage()
+  const parentContext = transaction._llmContextManager.getStore()
 
-  const fullContext = parentContext ? Object.assign(parentContext, context || {}) : context
-  return this.agent._contextManager.runInContext(fullContext, callback, this)
+  const fullContext = Object.assign({}, parentContext || {}, context || {})
+  return transaction._llmContextManager.run(fullContext, callback)
 }
 
 module.exports = API

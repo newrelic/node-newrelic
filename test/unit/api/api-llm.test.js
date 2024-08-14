@@ -124,13 +124,9 @@ tap.test('Agent API LLM methods', (t) => {
   t.test('withLlmCustomAttributes', (t) => {
     const { api } = t.context
     helper.runInTransaction(api.agent, (tx) => {
-      const contextManager = api.agent._contextManager
       t.context.agent.tracer.getTransaction = () => {
         return tx
       }
-      contextManager.setContext({
-        initial: true
-      })
 
       api.withLlmCustomAttributes(
         {
@@ -142,8 +138,8 @@ tap.test('Agent API LLM methods', (t) => {
           'toDelete3': []
         },
         () => {
-          const parentContext = contextManager.getContext()
-          t.ok(parentContext.initial)
+          const contextManager = tx._llmContextManager
+          const parentContext = contextManager.getStore()
           t.equal(parentContext['llm.toRename'], 'value1')
           t.notOk(parentContext.toDelete)
           t.notOk(parentContext.toDelete2)
@@ -152,8 +148,8 @@ tap.test('Agent API LLM methods', (t) => {
           t.equal(parentContext['llm.boolean'], true)
 
           api.withLlmCustomAttributes({ 'llm.someAttribute': 'someValue' }, () => {
-            const context = contextManager.getContext()
-            t.ok(context.initial)
+            const contextManager = tx._llmContextManager
+            const context = contextManager.getStore()
             t.equal(context[`llm.toRename`], 'value1')
             t.equal(context['llm.someAttribute'], 'someValue')
             t.end()

@@ -175,7 +175,7 @@ tap.afterEach(async (t) => {
 
           const chatSummary = events.filter(([{ type }]) => type === 'LlmChatCompletionSummary')[0]
           const [, message] = chatSummary
-          t.ok(message['llm.contextAttribute'])
+          t.equal(message['llm.contextAttribute'], 'someValue')
 
           tx.end()
           t.end()
