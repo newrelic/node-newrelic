@@ -59,7 +59,8 @@ jobs:
 #          echo "npm agent version? $env:npm_agent_version"
           echo "AGENT_VERSION=$env:npm_agent_version" | Out-File -FilePath $env:GITHUB_ENV -Append
           cd "cloud-tooling/azure-site-extension"
-          echo "PACKAGE_FILENAME=NewRelic.Azure.WebSites.Extension.NodeAgent.$env:npm_agent_version.${{ matrix.node-version }}" | Out-File -FilePath $env:GITHUB_ENV -Append
+      - name: Set package filename
+        run: echo "PACKAGE_FILENAME=NewRelic.Azure.WebSites.Extension.NodeAgent.${{env.AGENT_VERSION}}.${{ matrix.node-version }}" | Out-File -FilePath $env:GITHUB_ENV -Append
       - name: Verify environment vars # because we can't access GH env vars until the next step
         run: |
           echo "Agent version: ${{ env.AGENT_VERSION }}"
