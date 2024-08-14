@@ -42,14 +42,16 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
-      - name: Print a debug message
-        run: echo "set up node"
-#      - name: find_agent_version
-#        run: |
-#          npm view newrelic version >> ${{ env.AGENT_VERSION }}
-#          cd "cloud-tooling/azure-site-extension"
-#          echo Agent version: ${{ env.AGENT_VERSION }}
-#          echo "NewRelic.Azure.WebSites.Extension.NodeAgent.${{env.AGENT_VERSION}}.${{ matrix.node-version }}" >> ${{ env.PACKAGE_FILENAME }}
+      - name: Show working directory
+        run: echo pwd
+      - name: find_agent_version
+        run: |
+          echo "AGENT_VERSION=$(npm view newrelic version)" >> $GITHUB_ENV
+          cd "cloud-tooling/azure-site-extension"
+          echo Agent version: ${{ env.AGENT_VERSION }}
+          echo "PACKAGE_FILENAME=NewRelic.Azure.WebSites.Extension.NodeAgent.${{env.AGENT_VERSION}}.${{ matrix.node-version }}" >> $GITHUB_ENV
+          echo Package filename: ${{ env.PACKAGE_FILENAME }}
+
 #      - name: install_agent
 #        run: |
 #          cd .\Content
