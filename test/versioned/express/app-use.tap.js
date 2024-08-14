@@ -8,8 +8,11 @@
 const test = require('tap').test
 const helper = require('../../lib/agent_helper')
 const http = require('http')
+const { isExpress5 } = require('./utils')
 
-test('app should be at top of stack when mounted', function (t) {
+// This test is no longer applicable in express 5 as mounting a child router does not emit the same
+// mount event
+test('app should be at top of stack when mounted', { skip: isExpress5 }, function (t) {
   const agent = helper.instrumentMockedAgent()
   const express = require('express')
 

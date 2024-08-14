@@ -20,6 +20,8 @@ const { setup, makeRequest, makeRequestAndFinishTransaction } = expressHelpers
 // const pkgVersion = expressPkg.version
 import { readFileSync } from 'node:fs'
 const { version: pkgVersion } = JSON.parse(readFileSync('./node_modules/express/package.json'))
+// TODO: change to 5.0.0 when officially released
+const isExpress5 = semver.gte(pkgVersion, '5.0.0-beta.3')
 
 test('transaction naming tests', (t) => {
   t.autoend()
@@ -51,8 +53,8 @@ test('transaction naming tests', (t) => {
     })
 
     const endpoint = '/asdf'
-
-    await runTest({ app, t, endpoint, expectedName: '(not found)' })
+    const txPrefix = isExpress5 ? 'WebTransaction/Nodejs' : 'WebTransaction/Expressjs'
+    await runTest({ app, t, endpoint, txPrefix, expectedName: '(not found)' })
   })
 
   t.test('transaction name with route that has multiple handlers', async function (t) {
@@ -248,12 +250,13 @@ test('transaction naming tests', (t) => {
 
   t.test('when using a string pattern in path', async function (t) {
     const { app } = await setup()
+    const path = isExpress5 ? /ab?cd/ : '/ab?cd'
 
-    app.get('/ab?cd', function (req, res) {
+    app.get(path, function (req, res) {
       res.end()
     })
 
-    await runTest({ app, t, endpoint: '/abcd', expectedName: '/ab?cd' })
+    await runTest({ app, t, endpoint: '/abcd', expectedName: path })
   })
 
   t.test('when using a regular expression in path', async function (t) {
@@ -609,12 +612,14 @@ test('transaction naming tests', (t) => {
     return { promise, transactionHandler }
   }
 
-  async function runTest({ app, t, endpoint, expectedName = endpoint }) {
+  async function runTest({
+    app,
+    t,
+    endpoint,
+    expectedName = endpoint,
+    txPrefix = 'WebTransaction/Expressjs'
+  }) {
     const transaction = await makeRequestAndFinishTransaction({ t, app, agent, endpoint })
-    t.equal(
-      transaction.name,
-      'WebTransaction/Expressjs/GET/' + expectedName,
-      'transaction has expected name'
-    )
+    t.equal(transaction.name, `${txPrefix}/GET/${expectedName}`, 'transaction has expected name')
   }
 })

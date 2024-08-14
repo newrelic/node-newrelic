@@ -35,7 +35,7 @@ test('new relic should not break route iteration', function (t) {
   router.use(childA)
   router.use(childB)
 
-  t.deepEqual(findAllRoutes(router, ''), ['/get', ['/test'], ['/hello']])
+  t.same(findAllRoutes(router, ''), ['/get', ['/test'], ['/hello']])
 })
 
 function findAllRoutes(router, path) {
