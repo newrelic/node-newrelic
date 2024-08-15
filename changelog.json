@@ -6,8 +6,8 @@
       "changes": {
         "security": [],
         "bugfixes": [
-          "Updated amqplib instrumentation to properly parse host/port from connect",
-          "Updated redis instrumentation to parse host/port when a url is not provided",
+          "Updated `amqplib` instrumentation to properly parse host/port from connect",
+          "Updated `redis` instrumentation to parse host/port when a url is not provided",
           "Updated the `kafkajs` node metrics to remove `/Named` from the name"
         ],
         "features": []
