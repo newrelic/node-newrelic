@@ -3,9 +3,7 @@
 #### Bug fixes
 
 * Updated `amqplib` instrumentation to properly parse host/port from connect ([#2461](https://github.com/newrelic/node-newrelic/pull/2461)) ([91636a8](https://github.com/newrelic/node-newrelic/commit/91636a8e9702ba4ad1bf9b3941432ea65a3920fe))
-
 * Updated `redis` instrumentation to parse host/port when a url is not provided ([#2463](https://github.com/newrelic/node-newrelic/pull/2463)) ([2b67623](https://github.com/newrelic/node-newrelic/commit/2b67623afef5fb132105c7f5b1d72e23b6d56dc1))
-
 * Updated the `kafkajs` node metrics to remove `/Named` from the name ([#2458](https://github.com/newrelic/node-newrelic/pull/2458)) ([37ce113](https://github.com/newrelic/node-newrelic/commit/37ce1137a91c2efa85541cf6ec252a759e5f48ea))
 
 #### Code refactoring
