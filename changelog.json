@@ -2,11 +2,23 @@
   "repository": "newrelic/node-newrelic",
   "entries": [
     {
+      "version": "12.1.1",
+      "changes": {
+        "security": [],
+        "bugfixes": [
+          "Updated amqplib instrumentation to properly parse host/port from connect",
+          "Updated redis instrumentation to parse host/port when a url is not provided",
+          "Updated the `kafkajs` node metrics to remove `/Named` from the name"
+        ],
+        "features": []
+      }
+    },
+    {
       "version": "12.1.0",
       "changes": {
         "security": [],
         "bugfixes": [
-          "Pick log message from merging object in Pino instrumentation", 
+          "Pick log message from merging object in Pino instrumentation",
           "Added TLS verification for Redis"
         ],
         "features": []
