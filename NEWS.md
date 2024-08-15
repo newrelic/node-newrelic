@@ -13,9 +13,6 @@
 #### Documentation
 
 * Updated compatibility report ([#2460](https://github.com/newrelic/node-newrelic/pull/2460)) ([a4570e9](https://github.com/newrelic/node-newrelic/commit/a4570e93298d10f4464570b75867634b95a61e89))
-    * Co-authored-by: bizob2828 <1874937+bizob2828@users.noreply.github.com>
-* Updated compatibility report ([#2452](https://github.com/newrelic/node-newrelic/pull/2452)) ([41f33c8](https://github.com/newrelic/node-newrelic/commit/41f33c83069c24de5698b669e98bbe2368af632c))
-    * Co-authored-by: svetlanabrennan <50715937+svetlanabrennan@users.noreply.github.com>
 
 #### Miscellaneous chores
 
