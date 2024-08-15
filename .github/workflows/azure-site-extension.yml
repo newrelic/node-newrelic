@@ -44,35 +44,36 @@ jobs:
           $env:npm_agent_version = npm view newrelic version 
           echo "AGENT_VERSION=$env:npm_agent_version" | Out-File -FilePath $env:GITHUB_ENV -Append
       - name: Set package filename
-        run: echo "PACKAGE_FILENAME=NewRelic.Azure.WebSites.Extension.NodeAgent.${{env.AGENT_VERSION}}.${{ matrix.node-version }}" | Out-File -FilePath $env:GITHUB_ENV -Append
+        run: |
+          echo "PACKAGE_FILENAME=NewRelic.Azure.WebSites.Extension.NodeAgent.${{env.AGENT_VERSION}}-${{ matrix.node-version }}" | Out-File -FilePath $env:GITHUB_ENV -Append
       - name: Verify environment vars # because we can't access GH env vars until the next step
         run: |
           echo "Agent version: ${{ env.AGENT_VERSION }}"
           echo "Package filename: ${{ env.PACKAGE_FILENAME }}"
       - name: Install agent
-        run: |
-          cd "cloud-tooling/azure-site-extension/Content"
-          npm i newrelic@${{ env.AGENT_VERSION }}
+        working-directory: cloud-tooling/azure-site-extension/Content
+        run: npm i --prefix Content newrelic@${{ env.AGENT_VERSION }}
 
       - name: Configure package files
+        working-directory: cloud-tooling/azure-site-extension
         run: |
-          pwd
-          (Get-Content cloud-tooling/azure-site-extension/${{ env.SPEC_FILE_TEMPLATE }}).Replace('{VERSION}', "${{ env.AGENT_VERSION }}").Replace('{NODE_VERSION}', "${{ matrix.node-version }}") | Set-Content cloud-tooling/azure-site-extension/${{ env.PACKAGE_FILENAME }}.nuspec
-#          get-content ${{ env.SPEC_FILE_TEMPLATE }} | %{$_ -replace "{VERSION}","${{ env.AGENT_VERSION }}"} >> ${{NUSPEC_GENERATED}}
+          (Get-Content ${{ env.SPEC_FILE_TEMPLATE }}).Replace('{VERSION}', "${{ env.AGENT_VERSION }}").Replace('{NODE_VERSION}', "${{ matrix.node-version }}") | Set-Content ${{ env.PACKAGE_FILENAME }}.nuspec
 
       - name: Create bundle
+        working-directory: cloud-tooling/azure-site-extension
         run: |
-          pwd
-          cd cloud-tooling/azure-site-extension/
+          echo "Going to list Content directory contents"
+          Get-ChildItem -Path Content/* -Recurse -Force
+          echo "==================="
           nuget pack "${{ env.PACKAGE_FILENAME }}.nuspec"
           echo "Going to list directory contents"
           Get-ChildItem -Path .\*.* -Recurse -Force
 
-#      - name: Archive package for verification
-#        uses: actions/upload-artifact@v4
-#        with:
-#          name: azure-site-extension-test-${{ env.PACKAGE_FILENAME }}
-#          path: cloud-tooling/azure-site-extension/.*
+      - name: Archive package for verification
+        uses: actions/upload-artifact@v4
+        with:
+          name: azure-site-extension-test-${{ env.PACKAGE_FILENAME }}
+          path: cloud-tooling/azure-site-extension/${{ env.PACKAGE_FILENAME }}.nupkg
 
 #      - name: publish_package
 #        run: |
