@@ -128,6 +128,11 @@ tap.test('Agent API LLM methods', (t) => {
         return tx
       }
 
+      t.doesNotThrow(() => {
+        api.withLlmCustomAttributes(null, null)
+        t.equal(loggerMock.warn.callCount, 1)
+      })
+
       api.withLlmCustomAttributes(
         {
           'toRename': 'value1',

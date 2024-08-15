@@ -1921,22 +1921,25 @@ API.prototype.withLlmCustomAttributes = function withLlmCustomAttributes(context
   metric.incrementCallCount()
 
   const transaction = this.agent.tracer.getTransaction()
-  if (!transaction) {
-    logger.warn('withLlmCustomAttributes must be called within the scope of a transaction.')
-    return callback?.()
+
+  if (!callback || typeof callback !== 'function') {
+    logger.warn('withLlmCustomAttributes must be used with a valid callback')
+    return
   }
 
-  for (const key in context) {
-    if (Object.hasOwn(context, key)) {
-      const value = context[key]
-      if (typeof value === 'object' || typeof value === 'function') {
-        logger.warn(`Invalid attribute type for ${key}. Skipped.`)
-        delete context[key]
-      } else if (key.indexOf('llm.') !== 0) {
-        logger.warn(`Invalid attribute name ${key}. Renamed to "llm.${key}".`)
-        delete context[key]
-        context[`llm.${key}`] = value
-      }
+  if (!transaction) {
+    logger.warn('withLlmCustomAttributes must be called within the scope of a transaction.')
+    return callback()
+  }
+
+  for (const [key, value] of Object.entries(context)) {
+    if (typeof value === 'object' || typeof value === 'function') {
+      logger.warn(`Invalid attribute type for ${key}. Skipped.`)
+      delete context[key]
+    } else if (key.indexOf('llm.') !== 0) {
+      logger.warn(`Invalid attribute name ${key}. Renamed to "llm.${key}".`)
+      delete context[key]
+      context[`llm.${key}`] = value
     }
   }
 
