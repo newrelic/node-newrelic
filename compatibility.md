@@ -26,11 +26,11 @@ version.
 | `@langchain/core` | 0.1.17 | 0.2.25 | 11.13.0 |
 | `@nestjs/cli` | 9.0.0 | 10.4.4 | 10.1.0 |
 | `@prisma/client` | 5.0.0 | 5.18.0 | 11.0.0 |
-| `@smithy/smithy-client` | 2.0.0 | 3.1.12 | 11.0.0 |
+| `@smithy/smithy-client` | 2.0.0 | 3.2.0 | 11.0.0 |
 | `amqplib` | 0.5.0 | 0.10.4 | 2.0.0 |
 | `apollo-server` | 3.0.0 | 3.13.0 | `@newrelic/apollo-server-plugin@1.0.0` |
 | `apollo-server-express` | 3.0.0 | 3.13.0 | `@newrelic/apollo-server-plugin@1.0.0` |
-| `aws-sdk` | 2.2.48 | 2.1676.0 | 6.2.0 |
+| `aws-sdk` | 2.2.48 | 2.1677.0 | 6.2.0 |
 | `bluebird` | 2.0.0 | 3.7.2 | 1.27.0 |
 | `bunyan` | 1.8.12 | 1.8.15 | 9.3.0 |
 | `cassandra-driver` | 3.4.0 | 4.7.2 | 1.7.1 |
