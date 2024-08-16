@@ -43,16 +43,21 @@ jobs:
         run: |
           $env:npm_agent_version = npm view newrelic version 
           echo "AGENT_VERSION=$env:npm_agent_version" | Out-File -FilePath $env:GITHUB_ENV -Append
+
       - name: Set package filename
         run: |
           echo "PACKAGE_FILENAME=NewRelic.Azure.WebSites.Extension.NodeAgent.${{env.AGENT_VERSION}}-${{ matrix.node-version }}" | Out-File -FilePath $env:GITHUB_ENV -Append
+
       - name: Verify environment vars # because we can't access GH env vars until the next step
         run: |
           echo "Agent version: ${{ env.AGENT_VERSION }}"
           echo "Package filename: ${{ env.PACKAGE_FILENAME }}"
+
       - name: Install agent
         working-directory: cloud-tooling/azure-site-extension/Content
-        run: npm i --prefix Content newrelic@${{ env.AGENT_VERSION }}
+        run: |
+          npm i --prefix Content newrelic@${{ env.AGENT_VERSION }}
+          echo "Agent installed"
 
       - name: Configure package files
         working-directory: cloud-tooling/azure-site-extension
@@ -61,13 +66,7 @@ jobs:
 
       - name: Create bundle
         working-directory: cloud-tooling/azure-site-extension
-        run: |
-          echo "Going to list Content directory contents"
-          Get-ChildItem -Path Content/* -Recurse -Force
-          echo "==================="
-          nuget pack "${{ env.PACKAGE_FILENAME }}.nuspec"
-          echo "Going to list directory contents"
-          Get-ChildItem -Path .\*.* -Recurse -Force
+        run: nuget pack "${{ env.PACKAGE_FILENAME }}.nuspec"
 
       - name: Archive package for verification
         uses: actions/upload-artifact@v4
@@ -76,7 +75,6 @@ jobs:
           path: cloud-tooling/azure-site-extension/${{ env.PACKAGE_FILENAME }}.nupkg
 
 #      - name: publish_package
+#        working-directory: cloud-tooling/azure-site-extension
 #        run: |
-#          NUGET_API_KEY=$1
-#          NUGET_SOURCE=$2
-#          dotnet nuget push "NewRelic.Azure.WebSites.Extension.NodeAgent.${VERSION}.nupkg" --api-key ${NUGET_API_KEY} --source ${NUGET_SOURCE}
+#          dotnet nuget push "${{ env.PACKAGE_FILENAME }}.nupkg" --api-key ${{ secrets.NUGET_API_KEY }} --source ${{ secrets.NUGET_SOURCE }}
