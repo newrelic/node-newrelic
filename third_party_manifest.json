@@ -1,30 +1,30 @@
 {
-  "lastUpdated": "Wed Jul 31 2024 12:48:28 GMT-0400 (Eastern Daylight Time)",
+  "lastUpdated": "Thu Aug 15 2024 12:52:31 GMT-0400 (Eastern Daylight Time)",
   "projectName": "New Relic Node Agent",
   "projectUrl": "https://github.com/newrelic/node-newrelic",
   "includeOptDeps": true,
   "optionalDependencies": {
-    "@contrast/fn-inspect@4.2.0": {
+    "@contrast/fn-inspect@4.3.0": {
       "name": "@contrast/fn-inspect",
-      "version": "4.2.0",
+      "version": "4.3.0",
       "range": "^4.2.0",
       "licenses": "MIT",
       "repoUrl": "https://github.com/Contrast-Security-Inc/node-fn-inspect",
-      "versionedRepoUrl": "https://github.com/Contrast-Security-Inc/node-fn-inspect/tree/v4.2.0",
+      "versionedRepoUrl": "https://github.com/Contrast-Security-Inc/node-fn-inspect/tree/v4.3.0",
       "licenseFile": "node_modules/@contrast/fn-inspect/LICENSE",
-      "licenseUrl": "https://github.com/Contrast-Security-Inc/node-fn-inspect/blob/v4.2.0/LICENSE",
+      "licenseUrl": "https://github.com/Contrast-Security-Inc/node-fn-inspect/blob/v4.3.0/LICENSE",
       "licenseTextSource": "file",
       "publisher": "Contrast Security"
     },
-    "@newrelic/native-metrics@10.2.0": {
+    "@newrelic/native-metrics@11.0.0": {
       "name": "@newrelic/native-metrics",
-      "version": "10.2.0",
-      "range": "^10.0.0",
+      "version": "11.0.0",
+      "range": "^11.0.0",
       "licenses": "Apache-2.0",
       "repoUrl": "https://github.com/newrelic/node-native-metrics",
-      "versionedRepoUrl": "https://github.com/newrelic/node-native-metrics/tree/v10.2.0",
+      "versionedRepoUrl": "https://github.com/newrelic/node-native-metrics/tree/v11.0.0",
       "licenseFile": "node_modules/@newrelic/native-metrics/LICENSE",
-      "licenseUrl": "https://github.com/newrelic/node-native-metrics/blob/v10.2.0/LICENSE",
+      "licenseUrl": "https://github.com/newrelic/node-native-metrics/blob/v11.0.0/LICENSE",
       "licenseTextSource": "file",
       "publisher": "New Relic Node.js agent team",
       "email": "nodejs@newrelic.com"
@@ -82,15 +82,15 @@
       "email": "w@tson.dk",
       "url": "https://twitter.com/wa7son"
     },
-    "@newrelic/security-agent@1.4.0": {
+    "@newrelic/security-agent@1.5.0": {
       "name": "@newrelic/security-agent",
-      "version": "1.4.0",
+      "version": "1.5.0",
       "range": "^1.3.0",
       "licenses": "UNKNOWN",
       "repoUrl": "https://github.com/newrelic/csec-node-agent",
-      "versionedRepoUrl": "https://github.com/newrelic/csec-node-agent/tree/v1.4.0",
+      "versionedRepoUrl": "https://github.com/newrelic/csec-node-agent/tree/v1.5.0",
       "licenseFile": "node_modules/@newrelic/security-agent/LICENSE",
-      "licenseUrl": "https://github.com/newrelic/csec-node-agent/blob/v1.4.0/LICENSE",
+      "licenseUrl": "https://github.com/newrelic/csec-node-agent/blob/v1.5.0/LICENSE",
       "licenseTextSource": "file",
       "publisher": "newrelic"
     },
@@ -134,15 +134,15 @@
       "email": "nathan@tootallnate.net",
       "url": "http://n8.io/"
     },
-    "import-in-the-middle@1.9.1": {
+    "import-in-the-middle@1.11.0": {
       "name": "import-in-the-middle",
-      "version": "1.9.1",
+      "version": "1.11.0",
       "range": "^1.6.0",
       "licenses": "Apache-2.0",
       "repoUrl": "https://github.com/nodejs/import-in-the-middle",
-      "versionedRepoUrl": "https://github.com/nodejs/import-in-the-middle/tree/v1.9.1",
+      "versionedRepoUrl": "https://github.com/nodejs/import-in-the-middle/tree/v1.11.0",
       "licenseFile": "node_modules/import-in-the-middle/LICENSE",
-      "licenseUrl": "https://github.com/nodejs/import-in-the-middle/blob/v1.9.1/LICENSE",
+      "licenseUrl": "https://github.com/nodejs/import-in-the-middle/blob/v1.11.0/LICENSE",
       "licenseTextSource": "file",
       "publisher": "Bryan English",
       "email": "bryan.english@datadoghq.com"
@@ -199,6 +199,20 @@
       "licenseUrl": "https://github.com/nodejs/readable-stream/blob/v3.6.2/LICENSE",
       "licenseTextSource": "file"
     },
+    "require-in-the-middle@7.4.0": {
+      "name": "require-in-the-middle",
+      "version": "7.4.0",
+      "range": "^7.4.0",
+      "licenses": "MIT",
+      "repoUrl": "https://github.com/elastic/require-in-the-middle",
+      "versionedRepoUrl": "https://github.com/elastic/require-in-the-middle/tree/v7.4.0",
+      "licenseFile": "node_modules/require-in-the-middle/LICENSE",
+      "licenseUrl": "https://github.com/elastic/require-in-the-middle/blob/v7.4.0/LICENSE",
+      "licenseTextSource": "file",
+      "publisher": "Thomas Watson Steen",
+      "email": "w@tson.dk",
+      "url": "https://twitter.com/wa7son"
+    },
     "semver@7.6.3": {
       "name": "semver",
       "version": "7.6.3",
@@ -226,28 +240,28 @@
     }
   },
   "devDependencies": {
-    "@aws-sdk/client-s3@3.616.0": {
+    "@aws-sdk/client-s3@3.631.0": {
       "name": "@aws-sdk/client-s3",
-      "version": "3.616.0",
+      "version": "3.631.0",
       "range": "^3.556.0",
       "licenses": "Apache-2.0",
       "repoUrl": "https://github.com/aws/aws-sdk-js-v3",
-      "versionedRepoUrl": "https://github.com/aws/aws-sdk-js-v3/tree/v3.616.0",
+      "versionedRepoUrl": "https://github.com/aws/aws-sdk-js-v3/tree/v3.631.0",
       "licenseFile": "node_modules/@aws-sdk/client-s3/LICENSE",
-      "licenseUrl": "https://github.com/aws/aws-sdk-js-v3/blob/v3.616.0/LICENSE",
+      "licenseUrl": "https://github.com/aws/aws-sdk-js-v3/blob/v3.631.0/LICENSE",
       "licenseTextSource": "file",
       "publisher": "AWS SDK for JavaScript Team",
       "url": "https://aws.amazon.com/javascript/"
     },
-    "@aws-sdk/s3-request-presigner@3.616.0": {
+    "@aws-sdk/s3-request-presigner@3.631.0": {
       "name": "@aws-sdk/s3-request-presigner",
-      "version": "3.616.0",
+      "version": "3.631.0",
       "range": "^3.556.0",
       "licenses": "Apache-2.0",
       "repoUrl": "https://github.com/aws/aws-sdk-js-v3",
-      "versionedRepoUrl": "https://github.com/aws/aws-sdk-js-v3/tree/v3.616.0",
+      "versionedRepoUrl": "https://github.com/aws/aws-sdk-js-v3/tree/v3.631.0",
       "licenseFile": "node_modules/@aws-sdk/s3-request-presigner/LICENSE",
-      "licenseUrl": "https://github.com/aws/aws-sdk-js-v3/blob/v3.616.0/LICENSE",
+      "licenseUrl": "https://github.com/aws/aws-sdk-js-v3/blob/v3.631.0/LICENSE",
       "licenseTextSource": "file",
       "publisher": "AWS SDK for JavaScript Team",
       "url": "https://aws.amazon.com/javascript/"
@@ -314,15 +328,15 @@
       "licenseUrl": "https://github.com/octokit/rest.js/blob/v18.12.0/LICENSE",
       "licenseTextSource": "file"
     },
-    "@slack/bolt@3.19.0": {
+    "@slack/bolt@3.21.0": {
       "name": "@slack/bolt",
-      "version": "3.19.0",
+      "version": "3.21.0",
       "range": "^3.7.0",
       "licenses": "MIT",
       "repoUrl": "https://github.com/slackapi/bolt",
-      "versionedRepoUrl": "https://github.com/slackapi/bolt/tree/v3.19.0",
+      "versionedRepoUrl": "https://github.com/slackapi/bolt/tree/v3.21.0",
       "licenseFile": "node_modules/@slack/bolt/LICENSE",
-      "licenseUrl": "https://github.com/slackapi/bolt/blob/v3.19.0/LICENSE",
+      "licenseUrl": "https://github.com/slackapi/bolt/blob/v3.21.0/LICENSE",
       "licenseTextSource": "file",
       "publisher": "Slack Technologies, LLC"
     },
@@ -376,15 +390,15 @@
       "licenseTextSource": "file",
       "publisher": "Caolan McMahon"
     },
-    "aws-sdk@2.1659.0": {
+    "aws-sdk@2.1675.0": {
       "name": "aws-sdk",
-      "version": "2.1659.0",
+      "version": "2.1675.0",
       "range": "^2.1604.0",
       "licenses": "Apache-2.0",
       "repoUrl": "https://github.com/aws/aws-sdk-js",
-      "versionedRepoUrl": "https://github.com/aws/aws-sdk-js/tree/v2.1659.0",
+      "versionedRepoUrl": "https://github.com/aws/aws-sdk-js/tree/v2.1675.0",
       "licenseFile": "node_modules/aws-sdk/LICENSE.txt",
-      "licenseUrl": "https://github.com/aws/aws-sdk-js/blob/v2.1659.0/LICENSE.txt",
+      "licenseUrl": "https://github.com/aws/aws-sdk-js/blob/v2.1675.0/LICENSE.txt",
       "licenseTextSource": "file",
       "publisher": "Amazon Web Services",
       "url": "https://aws.amazon.com/"
@@ -493,15 +507,15 @@
       "publisher": "Michael Radionov",
       "url": "https://github.com/mradionov"
     },
-    "eslint-plugin-jsdoc@48.8.3": {
+    "eslint-plugin-jsdoc@48.11.0": {
       "name": "eslint-plugin-jsdoc",
-      "version": "48.8.3",
+      "version": "48.11.0",
       "range": "^48.0.5",
       "licenses": "BSD-3-Clause",
       "repoUrl": "https://github.com/gajus/eslint-plugin-jsdoc",
-      "versionedRepoUrl": "https://github.com/gajus/eslint-plugin-jsdoc/tree/v48.8.3",
+      "versionedRepoUrl": "https://github.com/gajus/eslint-plugin-jsdoc/tree/v48.11.0",
       "licenseFile": "node_modules/eslint-plugin-jsdoc/LICENSE",
-      "licenseUrl": "https://github.com/gajus/eslint-plugin-jsdoc/blob/v48.8.3/LICENSE",
+      "licenseUrl": "https://github.com/gajus/eslint-plugin-jsdoc/blob/v48.11.0/LICENSE",
       "licenseTextSource": "file",
       "publisher": "Gajus Kuizinas",
       "email": "gajus@gajus.com",
