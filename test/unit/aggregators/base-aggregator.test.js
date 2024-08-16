@@ -253,7 +253,7 @@ test('send', async (t) => {
 
     const expectedData = ['payloadData']
     baseAggregator._getMergeData = () => expectedData
-    baseAggregator._toPayload = (cb) => cb(null, ['payloadData'])
+    baseAggregator.toPayload = (cb) => cb(null, ['payloadData'])
     baseAggregator.isAsync = true
 
     let mergeInvocations = 0
