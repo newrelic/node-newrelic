@@ -422,7 +422,7 @@ module.exports = (pkg) => {
       )
     })
 
-    t.test('using multipler routers', (t) => {
+    t.test('using multiple routers', (t) => {
       t.beforeEach(testSetup)
       t.afterEach(tearDown)
       t.autoend()
@@ -546,15 +546,12 @@ module.exports = (pkg) => {
         nestedRouter.get('/:second', function terminalMiddleware(ctx) {
           ctx.body = 'this is a test'
         })
-        nestedRouter.get('/second', function secondMiddleware(ctx) {
-          ctx.body = 'want this to set the name'
-        })
         router.use('/:first', nestedRouter.routes())
         app.use(router.routes())
 
         agent.on('transactionFinished', (tx) => {
           t.assertSegments(tx.trace.root, [
-            'WebTransaction/WebFrameworkUri/Koa/GET//:first/second',
+            'WebTransaction/WebFrameworkUri/Koa/GET//:first/:second',
             [
               'Nodejs/Middleware/Koa/appLevelMiddleware',
               ['Koa/Router: /', [getNestedSpanName('terminalMiddleware')]]
@@ -562,7 +559,7 @@ module.exports = (pkg) => {
           ])
           t.equal(
             tx.name,
-            'WebTransaction/WebFrameworkUri/Koa/GET//:first/second',
+            'WebTransaction/WebFrameworkUri/Koa/GET//:first/:second',
             'should be named after last matched route'
           )
           t.end()
@@ -581,15 +578,12 @@ module.exports = (pkg) => {
         router.get('/:second', function terminalMiddleware(ctx) {
           ctx.body = 'this is a test'
         })
-        router.get('/second', function secondMiddleware(ctx) {
-          ctx.body = 'want this to set the name'
-        })
         router.prefix('/:first')
         app.use(router.routes())
 
         agent.on('transactionFinished', (tx) => {
           t.assertSegments(tx.trace.root, [
-            'WebTransaction/WebFrameworkUri/Koa/GET//:first/second',
+            'WebTransaction/WebFrameworkUri/Koa/GET//:first/:second',
             [
               'Nodejs/Middleware/Koa/appLevelMiddleware',
               ['Koa/Router: /', ['Nodejs/Middleware/Koa/terminalMiddleware//:first/:second']]
@@ -597,7 +591,7 @@ module.exports = (pkg) => {
           ])
           t.equal(
             tx.name,
-            'WebTransaction/WebFrameworkUri/Koa/GET//:first/second',
+            'WebTransaction/WebFrameworkUri/Koa/GET//:first/:second',
             'should be named after the last matched path'
           )
           t.end()
@@ -607,6 +601,11 @@ module.exports = (pkg) => {
     })
 
     t.test('using allowedMethods', (t) => {
+      // `@koa/router@13.0.0` changed the allowedMethods middleware function from named to arrow function
+      // update span name for assertions
+      const allowedMethodsFnName = semver.gte(pkgVersion, '13.0.0')
+        ? '<anonymous>'
+        : 'allowedMethods'
       t.autoend()
 
       t.test('with throw: true', (t) => {
@@ -622,7 +621,7 @@ module.exports = (pkg) => {
           agent.on('transactionFinished', (tx) => {
             t.assertSegments(tx.trace.root, [
               'WebTransaction/WebFrameworkUri/Koa/GET/(method not allowed)',
-              ['Koa/Router: /', ['Nodejs/Middleware/Koa/allowedMethods']]
+              ['Koa/Router: /', [`Nodejs/Middleware/Koa/${allowedMethodsFnName}`]]
             ])
             t.equal(
               tx.name,
@@ -645,7 +644,7 @@ module.exports = (pkg) => {
           agent.on('transactionFinished', (tx) => {
             t.assertSegments(tx.trace.root, [
               'WebTransaction/WebFrameworkUri/Koa/GET/(not implemented)',
-              ['Koa/Router: /', ['Nodejs/Middleware/Koa/allowedMethods']]
+              ['Koa/Router: /', [`Nodejs/Middleware/Koa/${allowedMethodsFnName}`]]
             ])
             t.equal(
               tx.name,
@@ -683,7 +682,7 @@ module.exports = (pkg) => {
               'WebTransaction/NormalizedUri/*',
               [
                 'Nodejs/Middleware/Koa/errorHandler',
-                ['Koa/Router: /', ['Nodejs/Middleware/Koa/allowedMethods']]
+                ['Koa/Router: /', [`Nodejs/Middleware/Koa/${allowedMethodsFnName}`]]
               ]
             ])
             t.equal(
@@ -722,7 +721,7 @@ module.exports = (pkg) => {
                 'WebTransaction/WebFrameworkUri/Koa/GET/(method not allowed)',
                 [
                   'Nodejs/Middleware/Koa/baseMiddleware',
-                  ['Koa/Router: /', ['Nodejs/Middleware/Koa/allowedMethods']]
+                  ['Koa/Router: /', [`Nodejs/Middleware/Koa/${allowedMethodsFnName}`]]
                 ]
               ])
               t.equal(
@@ -753,7 +752,7 @@ module.exports = (pkg) => {
           agent.on('transactionFinished', (tx) => {
             t.assertSegments(tx.trace.root, [
               'WebTransaction/WebFrameworkUri/Koa/GET/(method not allowed)',
-              ['Koa/Router: /', ['Nodejs/Middleware/Koa/allowedMethods']]
+              ['Koa/Router: /', [`Nodejs/Middleware/Koa/${allowedMethodsFnName}`]]
             ])
             t.equal(
               tx.name,
@@ -777,7 +776,7 @@ module.exports = (pkg) => {
           agent.on('transactionFinished', (tx) => {
             t.assertSegments(tx.trace.root, [
               'WebTransaction/WebFrameworkUri/Koa/GET/(not implemented)',
-              ['Koa/Router: /', ['Nodejs/Middleware/Koa/allowedMethods']]
+              ['Koa/Router: /', [`Nodejs/Middleware/Koa/${allowedMethodsFnName}`]]
             ])
             t.equal(
               tx.name,
@@ -811,7 +810,7 @@ module.exports = (pkg) => {
               'WebTransaction/WebFrameworkUri/Koa/GET/(method not allowed)',
               [
                 'Nodejs/Middleware/Koa/appLevelMiddleware',
-                ['Koa/Router: /', ['Nodejs/Middleware/Koa/allowedMethods']]
+                ['Koa/Router: /', [`Nodejs/Middleware/Koa/${allowedMethodsFnName}`]]
               ]
             ])
             t.equal(
@@ -845,7 +844,7 @@ module.exports = (pkg) => {
               'WebTransaction/WebFrameworkUri/Koa/GET/(not implemented)',
               [
                 'Nodejs/Middleware/Koa/appLevelMiddleware',
-                ['Koa/Router: /', ['Nodejs/Middleware/Koa/allowedMethods']]
+                ['Koa/Router: /', [`Nodejs/Middleware/Koa/${allowedMethodsFnName}`]]
               ]
             ])
             t.equal(
