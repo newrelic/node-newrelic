@@ -48,7 +48,7 @@ function assertMetrics(metrics, expected, exclusive, assertValues) {
   for (let i = 0, len = expected.length; i < len; i++) {
     const expectedMetric = expected[i]
     const metric = metrics.getMetric(expectedMetric[0].name, expectedMetric[0].scope)
-    this.ok(metric)
+    this.ok(metric, `should find ${expectedMetric[0].name}`)
     if (assertValues) {
       this.same(metric.toJSON(), expectedMetric[1])
     }

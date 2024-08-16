@@ -53,7 +53,7 @@ test('Express router introspection', function (t) {
       const url = 'http://localhost:' + port + '/test'
       helper.makeGetRequest(url, { json: true }, function (error, res, body) {
         t.equal(res.statusCode, 200, 'nothing exploded')
-        t.deepEqual(body, { status: 'ok' }, 'got expected response')
+        t.same(body, { status: 'ok' }, 'got expected response')
       })
     })
   })
