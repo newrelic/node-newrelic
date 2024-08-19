@@ -221,7 +221,7 @@
     "@koa/router": "^12.0.1",
     "@newrelic/eslint-config": "^0.3.0",
     "@newrelic/newrelic-oss-cli": "^0.1.2",
-    "@newrelic/test-utilities": "^8.5.0",
+    "@newrelic/test-utilities": "^9.1.0",
     "@octokit/rest": "^18.0.15",
     "@slack/bolt": "^3.7.0",
     "@smithy/eventstream-codec": "^2.2.0",
