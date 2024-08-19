@@ -19,10 +19,6 @@
 * Reverted to upstream `require-in-the-middle` ([#2473](https://github.com/newrelic/node-newrelic/pull/2473)) ([9bbc41c](https://github.com/newrelic/node-newrelic/commit/9bbc41c5be479af56d5aa0c87291d2fec607e9e4))
 * Updated aggregators unit tests to node:test ([#2481](https://github.com/newrelic/node-newrelic/pull/2481)) ([fd2d76f](https://github.com/newrelic/node-newrelic/commit/fd2d76fb2f6e8debc165700f932d57a02c3d3956))
 
-#### Tests
-
-* Skip `@koa/router@13.0.0` because of failures ([#2478](https://github.com/newrelic/node-newrelic/pull/2478)) ([373cf0d](https://github.com/newrelic/node-newrelic/commit/373cf0d926b03a2a748e8c24ea88e3506e4f4e56))
-
 ### v12.1.1 (2024-08-15)
 
 #### Bug fixes
