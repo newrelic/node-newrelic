@@ -7,7 +7,7 @@
       "search": false,
       "shouldRemoveScrollbarStyle": true
     },
-    "tutorials": "examples/shim",
+    "tutorials": "documentation",
     "recurse": true
   },
   "source": {
