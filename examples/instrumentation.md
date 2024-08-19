@@ -1,4 +1,3 @@
-# node-newrelic examples
 
 We have moved our examples and tutorials over to [newrelic-node-examples](https://github.com/newrelic/newrelic-node-examples) as more robust applications. Here are some quick links for implementing custom instrumentation and using our shim API:
 
