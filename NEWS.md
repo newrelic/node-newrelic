@@ -3,27 +3,20 @@
 #### Features
 
 * Added instrumentation support for Express 5 beta ([#2476](https://github.com/newrelic/node-newrelic/pull/2476)) ([06a4c2f](https://github.com/newrelic/node-newrelic/commit/06a4c2f9d62f7313fd246b4eed7f9f04f8b6345b))
-    * This will be experimental until express@5.0.0 is generally available
+    * This will be experimental until `express@5.0.0` is generally available
 
 #### Bug fixes
 
-* Updated koa instrumentation to properly get the matched route name and to handle changes in `@koa/router@13.0.0` ([#2486](https://github.com/newrelic/node-newrelic/pull/2486)) ([0c2ee2f](https://github.com/newrelic/node-newrelic/commit/0c2ee2fd1698972de35a0ad2685e626a074125ed))
+* Updated `koa` instrumentation to properly get the matched route name and to handle changes in `@koa/router@13.0.0` ([#2486](https://github.com/newrelic/node-newrelic/pull/2486)) ([0c2ee2f](https://github.com/newrelic/node-newrelic/commit/0c2ee2fd1698972de35a0ad2685e626a074125ed))
 
 #### Documentation
 
-* Remove reference to @newrelic/next in README ([#2479](https://github.com/newrelic/node-newrelic/pull/2479)) ([8740539](https://github.com/newrelic/node-newrelic/commit/8740539c4004e421e5f26d0c92216bcffb93c9cc))
+* Remove reference to `@newrelic/next` in README ([#2479](https://github.com/newrelic/node-newrelic/pull/2479)) ([8740539](https://github.com/newrelic/node-newrelic/commit/8740539c4004e421e5f26d0c92216bcffb93c9cc))
 * Updated compatibility report ([#2487](https://github.com/newrelic/node-newrelic/pull/2487)) ([c0a5e64](https://github.com/newrelic/node-newrelic/commit/c0a5e646773c365897a908daf034881703dbd1df))
-    * Co-authored-by: bizob2828 <1874937+bizob2828@users.noreply.github.com>
-* Updated compatibility report ([#2483](https://github.com/newrelic/node-newrelic/pull/2483)) ([6160ea0](https://github.com/newrelic/node-newrelic/commit/6160ea02fb474c8ad4343bde972e5e3e8441a620))
-    * Co-authored-by: bizob2828 <1874937+bizob2828@users.noreply.github.com>
-* Updated compatibility report ([#2480](https://github.com/newrelic/node-newrelic/pull/2480)) ([c2b8879](https://github.com/newrelic/node-newrelic/commit/c2b887977ab32f30822320b5501a28fed2696503))
-    * Co-authored-by: jsumners-nr <150050532+jsumners-nr@users.noreply.github.com>
-* Updated compatibility report ([#2474](https://github.com/newrelic/node-newrelic/pull/2474)) ([1ad8532](https://github.com/newrelic/node-newrelic/commit/1ad85321db048d7fdd29ce7c977ef2a788136706))
-    * Co-authored-by: svetlanabrennan <50715937+svetlanabrennan@users.noreply.github.com>
 
 #### Miscellaneous chores
 
-* Reverted to upstream require-in-the-middle ([#2473](https://github.com/newrelic/node-newrelic/pull/2473)) ([9bbc41c](https://github.com/newrelic/node-newrelic/commit/9bbc41c5be479af56d5aa0c87291d2fec607e9e4))
+* Reverted to upstream `require-in-the-middle` ([#2473](https://github.com/newrelic/node-newrelic/pull/2473)) ([9bbc41c](https://github.com/newrelic/node-newrelic/commit/9bbc41c5be479af56d5aa0c87291d2fec607e9e4))
 * Updated aggregators unit tests to node:test ([#2481](https://github.com/newrelic/node-newrelic/pull/2481)) ([fd2d76f](https://github.com/newrelic/node-newrelic/commit/fd2d76fb2f6e8debc165700f932d57a02c3d3956))
 
 #### Tests
