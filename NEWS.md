@@ -11,7 +11,7 @@
 
 #### Documentation
 
-* Remove reference to `@newrelic/next` in README ([#2479](https://github.com/newrelic/node-newrelic/pull/2479)) ([8740539](https://github.com/newrelic/node-newrelic/commit/8740539c4004e421e5f26d0c92216bcffb93c9cc))
+* Removed reference to `@newrelic/next` in README ([#2479](https://github.com/newrelic/node-newrelic/pull/2479)) ([8740539](https://github.com/newrelic/node-newrelic/commit/8740539c4004e421e5f26d0c92216bcffb93c9cc))
 * Updated compatibility report ([#2487](https://github.com/newrelic/node-newrelic/pull/2487)) ([c0a5e64](https://github.com/newrelic/node-newrelic/commit/c0a5e646773c365897a908daf034881703dbd1df))
 
 #### Miscellaneous chores
