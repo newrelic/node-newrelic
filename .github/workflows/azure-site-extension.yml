@@ -64,6 +64,13 @@ jobs:
         run: |
           (Get-Content ${{ env.SPEC_FILE_TEMPLATE }}).Replace('{VERSION}', "${{ env.AGENT_VERSION }}").Replace('{NODE_VERSION}', "${{ matrix.node-version }}") | Set-Content ${{ env.PACKAGE_FILENAME }}.nuspec
 
+      - name: Update siteextensions.json
+        working-directory: cloud-tooling/azure-site-extension
+        run: |
+          $siteext_content = Get-Content "siteextension.json" -Raw | ConvertFrom-Json
+          $siteext_content.version = "${{ env.AGENT_VERSION }}"
+          $siteext_content | ConvertTo-Json -Depth 10 | Set-Content "siteextension.json"
+
       - name: Create bundle
         working-directory: cloud-tooling/azure-site-extension
         run: nuget pack "${{ env.PACKAGE_FILENAME }}.nuspec"
