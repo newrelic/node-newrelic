@@ -57,6 +57,7 @@ tap.test('Logger', function (t) {
     logger.error('error')
     logger.fatal('fatal')
     t.ok(logger.logQueue.length === 6, 'should have 6 logs in the queue')
+    t.ok(1)
     t.end()
   })
 

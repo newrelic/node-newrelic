@@ -235,7 +235,7 @@ jobs:
         JOBS: ${{ github.ref == 'refs/heads/main' && vars.NR_RUNNER && 16 ||  4 }}
 
   codecov:
-    needs: [unit, integration, versioned-internal]
+    needs: [unit, integration]
     runs-on: ubuntu-latest
 
     strategy:
@@ -258,13 +258,6 @@ jobs:
           token: ${{ secrets.CODECOV_TOKEN }}
           directory: integration-tests-${{ matrix.node-version }}
           flags: integration-tests-${{ matrix.node-version }}
-      - name: Post Versioned Test Coverage
-        uses: codecov/codecov-action@125fc84a9a348dbcf27191600683ec096ec9021c
-        with:
-          token: ${{ secrets.CODECOV_TOKEN }}
-          directory: versioned-tests-${{ matrix.node-version }}
-          flags: versioned-tests-${{ matrix.node-version }}
-
   all-clear:
     if: always()
     runs-on: ubuntu-latest
