@@ -2,6 +2,18 @@
   "repository": "newrelic/node-newrelic",
   "entries": [
     {
+      "version": "12.2.0",
+      "changes": {
+        "security": [],
+        "bugfixes": [
+          "Updated koa instrumentation to properly get the matched route name and to handle changes in `@koa/router@13.0.0`"
+        ],
+        "features": [
+          "Added instrumentation support for Express 5 beta"
+        ]
+      }
+    },
+    {
       "version": "12.1.1",
       "changes": {
         "security": [],
