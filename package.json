@@ -166,7 +166,7 @@
     "prepare-test": "npm run ssl && npm run docker-env",
     "lint": "eslint ./*.{js,mjs} lib test bin examples",
     "lint:fix": "eslint --fix, ./*.{js,mjs} lib test bin examples",
-    "public-docs": "jsdoc -c ./jsdoc-conf.jsonc && cp examples/shim/*.png out/",
+    "public-docs": "jsdoc -c ./jsdoc-conf.jsonc",
     "publish-docs": "./bin/publish-docs.sh",
     "services": "DOCKER_PLATFORM=linux/$(uname -m) docker compose up -d --wait",
     "services:stop": "docker compose down",
