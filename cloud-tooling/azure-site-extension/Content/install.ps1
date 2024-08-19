@@ -42,6 +42,14 @@ function Copy-NodeModules {
     $errorMessage = $_.Exception.Message
     $errorLine = $_.InvocationInfo.ScriptLineNumber
     WriteToInstallLog "Error at line $errorLine : $errorMessage"
+
+    WriteToInstallLog "Explicitly adding node to path"
+    SET PATH=C:\Program Files\Nodejs;%PATH%
+    WriteToInstallLog "Executing npm install newrelic@latest"
+    npm install newrelic@latest
+
+    WriteToInstallLog "End executing install.ps1."
+    WriteToInstallLog "-----------------------------"
     exit 1
   }
 }

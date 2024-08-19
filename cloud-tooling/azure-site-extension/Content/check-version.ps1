@@ -2,7 +2,14 @@
 $UserNodeModulesPath = "$env:HOME"
 $packageName = "newrelic"
 
-Write-Output "Checking installed version..."
+function WriteToInstallLog($output)
+{
+	$logPath = (Split-Path -Parent $PSCommandPath) + "\install.log"
+	Write-Output "[$(Get-Date)] -- $output" | Out-File -FilePath $logPath -Append
+}
+
+
+WriteToInstallLog "Checking installed version..."
 
 # Get installed version using npm list
 $installedVersionOutput = & npm ls $packageName --prefix $UserNodeModulesPath | Select-String -Pattern "$packageName@(\S+)"
@@ -13,27 +20,27 @@ if ($installedVersionOutput) {
     $UserVersion = ""
 }
 
-Write-Output "Installed version is: $installedVersionOutput"
-Write-Output "User version: $UserVersion"
+WriteToInstallLog "Installed version is: $installedVersionOutput"
+WriteToInstallLog "User version: $UserVersion"
 
 if ($UserVersion -eq "") {
-    Write-Output "User package not found. Running install.ps1..."
+    WriteToInstallLog "User package not found. Running install.ps1..."
     & powershell.exe -ExecutionPolicy RemoteSigned -File .\install.ps1
     exit $LASTEXITCODE
 } else {
-    Write-Output "Installed version: $UserVersion"
+    WriteToInstallLog "Installed version: $UserVersion"
     
-    Write-Output "Getting latest version from npm..."
+    WriteToInstallLog "Getting latest version from npm..."
     $LatestVersion = npm show $packageName version
     
-    Write-Output "Latest version: $LatestVersion"
+    WriteToInstallLog "Latest version: $LatestVersion"
 
     if ($UserVersion -ne $LatestVersion) {
-        Write-Output "Installed version ($UserVersion) does not match latest version ($LatestVersion). Running install.ps1..."
+        WriteToInstallLog "Installed version ($UserVersion) does not match latest version ($LatestVersion). Running install.ps1..."
         & powershell.exe -ExecutionPolicy RemoteSigned -File .\install.ps1
         exit $LASTEXITCODE
     } else {
-        Write-Output "Installed version ($UserVersion) matches the latest version ($LatestVersion). Skipping install.ps1..."
+        WriteToInstallLog "Installed version ($UserVersion) matches the latest version ($LatestVersion). Skipping install.ps1..."
         exit 0
     }
 }
