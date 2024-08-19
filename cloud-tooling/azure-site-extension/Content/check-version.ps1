@@ -1,5 +1,5 @@
 # Define the path to the node_modules directory and the package to check
-$UserNodeModulesPath = "D:\home\site\wwwroot"
+$UserNodeModulesPath = "$env:HOME"
 $packageName = "newrelic"
 
 Write-Output "Checking installed version..."

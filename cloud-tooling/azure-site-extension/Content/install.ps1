@@ -1,30 +1,49 @@
 # Define paths
 $extensionModulesPath = "$PSScriptRoot\node_modules"
-$appRootPath = "D:\home\site\wwwroot"
+$appRootPath = "$env:HOME\site\wwwroot"
 $userModulesPath = "$appRootPath\node_modules"
+
+function WriteToInstallLog($output)
+{
+	$logPath = (Split-Path -Parent $PSCommandPath) + "\install.log"
+	Write-Output "[$(Get-Date)] -- $output" | Out-File -FilePath $logPath -Append
+}
 
 # Function to copy contents from extension's node_modules to user's node_modules
 function Copy-NodeModules {
-    param (
-        [string]$sourcePath,
-        [string]$destinationPath
-    )
+  param (
+      [string]$sourcePath,
+      [string]$destinationPath
+  )
+
+  try {
+    WriteToInstallLog "Start executing install.ps1"
 
     if (Test-Path -Path $sourcePath) {
-        Write-Output "Source path exists: $sourcePath"
+      WriteToInstallLog "Source path exists: $sourcePath"
         
         if (-not (Test-Path -Path $destinationPath)) {
-            Write-Output "Destination path does not exist: $destinationPath"
-            Write-Output "Creating destination directory..."
-            New-Item -ItemType Directory -Path $destinationPath
+          WriteToInstallLog "Destination path does not exist: $destinationPath"
+          WriteToInstallLog "Creating destination directory..."
+          WriteToInstallLog -ItemType Directory -Path $destinationPath
         }
 
-        Write-Output "Copying node_modules from $sourcePath to $destinationPath..."
-        Copy-Item -Path "$sourcePath\*" -Destination $destinationPath -Recurse -Force
-        Write-Output "Copy complete."
+        WriteToInstallLog "Moving node_modules from $sourcePath to $destinationPath..."
+        Move-Item -Path "$sourcePath\*" -Destination $destinationPath -Force
+
+        WriteToInstallLog "Copy complete."
+        WriteToInstallLog "End executing install.ps1."
+        WriteToInstallLog "-----------------------------"
+        exit $LASTEXITCODE
     } else {
-        Write-Output "Source path does not exist: $sourcePath. Skipping copy."
+      WriteToInstallLog "Source path does not exist: $sourcePath. Skipping copy."
     }
+  } catch {
+    $errorMessage = $_.Exception.Message
+    $errorLine = $_.InvocationInfo.ScriptLineNumber
+    WriteToInstallLog "Error at line $errorLine : $errorMessage"
+    exit 1
+  }
 }
 
 # Call the function
