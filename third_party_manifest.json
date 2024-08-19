@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "Thu Aug 15 2024 12:52:31 GMT-0400 (Eastern Daylight Time)",
+  "lastUpdated": "Mon Aug 19 2024 14:49:27 GMT-0400 (Eastern Daylight Time)",
   "projectName": "New Relic Node Agent",
   "projectUrl": "https://github.com/newrelic/node-newrelic",
   "includeOptDeps": true,
@@ -67,20 +67,6 @@
       "licenseUrl": "https://github.com/grpc/grpc-node/blob/v0.7.13/LICENSE",
       "licenseTextSource": "file",
       "publisher": "Google Inc."
-    },
-    "@newrelic/ritm@7.2.0": {
-      "name": "@newrelic/ritm",
-      "version": "7.2.0",
-      "range": "^7.2.0",
-      "licenses": "MIT",
-      "repoUrl": "https://github.com/newrelic-forks/require-in-the-middle",
-      "versionedRepoUrl": "https://github.com/newrelic-forks/require-in-the-middle/tree/v7.2.0",
-      "licenseFile": "node_modules/@newrelic/ritm/LICENSE",
-      "licenseUrl": "https://github.com/newrelic-forks/require-in-the-middle/blob/v7.2.0/LICENSE",
-      "licenseTextSource": "file",
-      "publisher": "Thomas Watson Steen",
-      "email": "w@tson.dk",
-      "url": "https://twitter.com/wa7son"
     },
     "@newrelic/security-agent@1.5.0": {
       "name": "@newrelic/security-agent",
@@ -240,28 +226,28 @@
     }
   },
   "devDependencies": {
-    "@aws-sdk/client-s3@3.631.0": {
+    "@aws-sdk/client-s3@3.632.0": {
       "name": "@aws-sdk/client-s3",
-      "version": "3.631.0",
+      "version": "3.632.0",
       "range": "^3.556.0",
       "licenses": "Apache-2.0",
       "repoUrl": "https://github.com/aws/aws-sdk-js-v3",
-      "versionedRepoUrl": "https://github.com/aws/aws-sdk-js-v3/tree/v3.631.0",
+      "versionedRepoUrl": "https://github.com/aws/aws-sdk-js-v3/tree/v3.632.0",
       "licenseFile": "node_modules/@aws-sdk/client-s3/LICENSE",
-      "licenseUrl": "https://github.com/aws/aws-sdk-js-v3/blob/v3.631.0/LICENSE",
+      "licenseUrl": "https://github.com/aws/aws-sdk-js-v3/blob/v3.632.0/LICENSE",
       "licenseTextSource": "file",
       "publisher": "AWS SDK for JavaScript Team",
       "url": "https://aws.amazon.com/javascript/"
     },
-    "@aws-sdk/s3-request-presigner@3.631.0": {
+    "@aws-sdk/s3-request-presigner@3.632.0": {
       "name": "@aws-sdk/s3-request-presigner",
-      "version": "3.631.0",
+      "version": "3.632.0",
       "range": "^3.556.0",
       "licenses": "Apache-2.0",
       "repoUrl": "https://github.com/aws/aws-sdk-js-v3",
-      "versionedRepoUrl": "https://github.com/aws/aws-sdk-js-v3/tree/v3.631.0",
+      "versionedRepoUrl": "https://github.com/aws/aws-sdk-js-v3/tree/v3.632.0",
       "licenseFile": "node_modules/@aws-sdk/s3-request-presigner/LICENSE",
-      "licenseUrl": "https://github.com/aws/aws-sdk-js-v3/blob/v3.631.0/LICENSE",
+      "licenseUrl": "https://github.com/aws/aws-sdk-js-v3/blob/v3.632.0/LICENSE",
       "licenseTextSource": "file",
       "publisher": "AWS SDK for JavaScript Team",
       "url": "https://aws.amazon.com/javascript/"
@@ -304,15 +290,15 @@
       "licenseTextSource": "file",
       "publisher": "New Relic"
     },
-    "@newrelic/test-utilities@8.7.0": {
+    "@newrelic/test-utilities@9.1.0": {
       "name": "@newrelic/test-utilities",
-      "version": "8.7.0",
-      "range": "^8.5.0",
+      "version": "9.1.0",
+      "range": "^9.1.0",
       "licenses": "Apache-2.0",
       "repoUrl": "https://github.com/newrelic/node-test-utilities",
-      "versionedRepoUrl": "https://github.com/newrelic/node-test-utilities/tree/v8.7.0",
+      "versionedRepoUrl": "https://github.com/newrelic/node-test-utilities/tree/v9.1.0",
       "licenseFile": "node_modules/@newrelic/test-utilities/LICENSE",
-      "licenseUrl": "https://github.com/newrelic/node-test-utilities/blob/v8.7.0/LICENSE",
+      "licenseUrl": "https://github.com/newrelic/node-test-utilities/blob/v9.1.0/LICENSE",
       "licenseTextSource": "file",
       "publisher": "New Relic Node.js agent team",
       "email": "nodejs@newrelic.com"
@@ -328,15 +314,15 @@
       "licenseUrl": "https://github.com/octokit/rest.js/blob/v18.12.0/LICENSE",
       "licenseTextSource": "file"
     },
-    "@slack/bolt@3.21.0": {
+    "@slack/bolt@3.21.1": {
       "name": "@slack/bolt",
-      "version": "3.21.0",
+      "version": "3.21.1",
       "range": "^3.7.0",
       "licenses": "MIT",
       "repoUrl": "https://github.com/slackapi/bolt",
-      "versionedRepoUrl": "https://github.com/slackapi/bolt/tree/v3.21.0",
+      "versionedRepoUrl": "https://github.com/slackapi/bolt/tree/v3.21.1",
       "licenseFile": "node_modules/@slack/bolt/LICENSE",
-      "licenseUrl": "https://github.com/slackapi/bolt/blob/v3.21.0/LICENSE",
+      "licenseUrl": "https://github.com/slackapi/bolt/blob/v3.21.1/LICENSE",
       "licenseTextSource": "file",
       "publisher": "Slack Technologies, LLC"
     },
@@ -390,15 +376,15 @@
       "licenseTextSource": "file",
       "publisher": "Caolan McMahon"
     },
-    "aws-sdk@2.1675.0": {
+    "aws-sdk@2.1677.0": {
       "name": "aws-sdk",
-      "version": "2.1675.0",
+      "version": "2.1677.0",
       "range": "^2.1604.0",
       "licenses": "Apache-2.0",
       "repoUrl": "https://github.com/aws/aws-sdk-js",
-      "versionedRepoUrl": "https://github.com/aws/aws-sdk-js/tree/v2.1675.0",
+      "versionedRepoUrl": "https://github.com/aws/aws-sdk-js/tree/v2.1677.0",
       "licenseFile": "node_modules/aws-sdk/LICENSE.txt",
-      "licenseUrl": "https://github.com/aws/aws-sdk-js/blob/v2.1675.0/LICENSE.txt",
+      "licenseUrl": "https://github.com/aws/aws-sdk-js/blob/v2.1677.0/LICENSE.txt",
       "licenseTextSource": "file",
       "publisher": "Amazon Web Services",
       "url": "https://aws.amazon.com/"
@@ -751,15 +737,15 @@
       "email": "i@izs.me",
       "url": "http://blog.izs.me/"
     },
-    "self-cert@2.0.0": {
+    "self-cert@2.0.1": {
       "name": "self-cert",
-      "version": "2.0.0",
+      "version": "2.0.1",
       "range": "^2.0.0",
       "licenses": "MIT",
       "repoUrl": "https://github.com/jsumners/self-cert",
-      "versionedRepoUrl": "https://github.com/jsumners/self-cert/tree/v2.0.0",
+      "versionedRepoUrl": "https://github.com/jsumners/self-cert/tree/v2.0.1",
       "licenseFile": "node_modules/self-cert/Readme.md",
-      "licenseUrl": "https://github.com/jsumners/self-cert/blob/v2.0.0/Readme.md",
+      "licenseUrl": "https://github.com/jsumners/self-cert/blob/v2.0.1/Readme.md",
       "licenseTextSource": "spdx",
       "publisher": "James Sumners",
       "email": "james.sumners@gmail.com"

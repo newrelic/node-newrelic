@@ -16,7 +16,6 @@ code, the source code can be found at [https://github.com/newrelic/node-newrelic
 
 * [@grpc/grpc-js](#grpcgrpc-js)
 * [@grpc/proto-loader](#grpcproto-loader)
-* [@newrelic/ritm](#newrelicritm)
 * [@newrelic/security-agent](#newrelicsecurity-agent)
 * [@tyriar/fibonacci-heap](#tyriarfibonacci-heap)
 * [concat-stream](#concat-stream)
@@ -507,36 +506,6 @@ This product includes source derived from [@grpc/proto-loader](https://github.co
    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
    See the License for the specific language governing permissions and
    limitations under the License.
-
-```
-
-### @newrelic/ritm
-
-This product includes source derived from [@newrelic/ritm](https://github.com/newrelic-forks/require-in-the-middle) ([v7.2.0](https://github.com/newrelic-forks/require-in-the-middle/tree/v7.2.0)), distributed under the [MIT License](https://github.com/newrelic-forks/require-in-the-middle/blob/v7.2.0/LICENSE):
-
-```
-The MIT License (MIT)
-
-Copyright (c) 2016-2019, Thomas Watson Steen
-Copyright (c) 2019-2023, Elasticsearch B.V.
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
 
 ```
 
@@ -1107,7 +1076,7 @@ SOFTWARE.
 
 ### @aws-sdk/client-s3
 
-This product includes source derived from [@aws-sdk/client-s3](https://github.com/aws/aws-sdk-js-v3) ([v3.631.0](https://github.com/aws/aws-sdk-js-v3/tree/v3.631.0)), distributed under the [Apache-2.0 License](https://github.com/aws/aws-sdk-js-v3/blob/v3.631.0/LICENSE):
+This product includes source derived from [@aws-sdk/client-s3](https://github.com/aws/aws-sdk-js-v3) ([v3.632.0](https://github.com/aws/aws-sdk-js-v3/tree/v3.632.0)), distributed under the [Apache-2.0 License](https://github.com/aws/aws-sdk-js-v3/blob/v3.632.0/LICENSE):
 
 ```
                                 Apache License
@@ -1316,7 +1285,7 @@ This product includes source derived from [@aws-sdk/client-s3](https://github.co
 
 ### @aws-sdk/s3-request-presigner
 
-This product includes source derived from [@aws-sdk/s3-request-presigner](https://github.com/aws/aws-sdk-js-v3) ([v3.631.0](https://github.com/aws/aws-sdk-js-v3/tree/v3.631.0)), distributed under the [Apache-2.0 License](https://github.com/aws/aws-sdk-js-v3/blob/v3.631.0/LICENSE):
+This product includes source derived from [@aws-sdk/s3-request-presigner](https://github.com/aws/aws-sdk-js-v3) ([v3.632.0](https://github.com/aws/aws-sdk-js-v3/tree/v3.632.0)), distributed under the [Apache-2.0 License](https://github.com/aws/aws-sdk-js-v3/blob/v3.632.0/LICENSE):
 
 ```
                                 Apache License
@@ -1971,7 +1940,7 @@ This product includes source derived from [@newrelic/newrelic-oss-cli](https://g
 
 ### @newrelic/test-utilities
 
-This product includes source derived from [@newrelic/test-utilities](https://github.com/newrelic/node-test-utilities) ([v8.7.0](https://github.com/newrelic/node-test-utilities/tree/v8.7.0)), distributed under the [Apache-2.0 License](https://github.com/newrelic/node-test-utilities/blob/v8.7.0/LICENSE):
+This product includes source derived from [@newrelic/test-utilities](https://github.com/newrelic/node-test-utilities) ([v9.1.0](https://github.com/newrelic/node-test-utilities/tree/v9.1.0)), distributed under the [Apache-2.0 License](https://github.com/newrelic/node-test-utilities/blob/v9.1.0/LICENSE):
 
 ```
                                  Apache License
@@ -2210,7 +2179,7 @@ THE SOFTWARE.
 
 ### @slack/bolt
 
-This product includes source derived from [@slack/bolt](https://github.com/slackapi/bolt) ([v3.21.0](https://github.com/slackapi/bolt/tree/v3.21.0)), distributed under the [MIT License](https://github.com/slackapi/bolt/blob/v3.21.0/LICENSE):
+This product includes source derived from [@slack/bolt](https://github.com/slackapi/bolt) ([v3.21.1](https://github.com/slackapi/bolt/tree/v3.21.1)), distributed under the [MIT License](https://github.com/slackapi/bolt/blob/v3.21.1/LICENSE):
 
 ```
 The MIT License (MIT)
@@ -2714,7 +2683,7 @@ THE SOFTWARE.
 
 ### aws-sdk
 
-This product includes source derived from [aws-sdk](https://github.com/aws/aws-sdk-js) ([v2.1675.0](https://github.com/aws/aws-sdk-js/tree/v2.1675.0)), distributed under the [Apache-2.0 License](https://github.com/aws/aws-sdk-js/blob/v2.1675.0/LICENSE.txt):
+This product includes source derived from [aws-sdk](https://github.com/aws/aws-sdk-js) ([v2.1677.0](https://github.com/aws/aws-sdk-js/tree/v2.1677.0)), distributed under the [Apache-2.0 License](https://github.com/aws/aws-sdk-js/blob/v2.1677.0/LICENSE.txt):
 
 ```
 
@@ -4057,7 +4026,7 @@ IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ### self-cert
 
-This product includes source derived from [self-cert](https://github.com/jsumners/self-cert) ([v2.0.0](https://github.com/jsumners/self-cert/tree/v2.0.0)), distributed under the [MIT License](https://github.com/jsumners/self-cert/blob/v2.0.0/Readme.md):
+This product includes source derived from [self-cert](https://github.com/jsumners/self-cert) ([v2.0.1](https://github.com/jsumners/self-cert/tree/v2.0.1)), distributed under the [MIT License](https://github.com/jsumners/self-cert/blob/v2.0.1/Readme.md):
 
 ```
 MIT License

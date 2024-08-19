@@ -24,6 +24,14 @@ EXTERNAL_MODE="${EXTERNAL_MODE:-include}"
 # Known values are "simple", "pretty", and "quiet".
 OUTPUT_MODE="${OUTPUT_MODE:-pretty}"
 
+MATRIX_COUNT_ONLY=${MATRIX_COUNT_ONLY:-0}
+if [[ ${MATRIX_COUNT_ONLY} -ne 0 ]]; then
+  MATRIX_COUNT="--matrix-count"
+else
+  MATRIX_COUNT=""
+fi
+
+
 # Determine context manager for sanity sake
 if [[ $NEW_RELIC_FEATURE_FLAG_LEGACY_CONTEXT_MANAGER == 1 ]];
 then
@@ -100,4 +108,4 @@ then
 fi
 export NR_LOADER=./esm-loader.mjs
 
-time $C8 ./node_modules/.bin/versioned-tests $VERSIONED_MODE --print $OUTPUT_MODE -i 100 --all --strict --samples $SAMPLES $JOBS_ARGS ${directories[@]}
+time $C8 ./node_modules/.bin/versioned-tests $VERSIONED_MODE $MATRIX_COUNT --print $OUTPUT_MODE -i 100 --all --strict --samples $SAMPLES $JOBS_ARGS ${directories[@]}
