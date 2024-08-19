@@ -51,14 +51,12 @@ tap.test('Client Premature Disconnection', (t) => {
       [
         'WebTransaction/Expressjs/POST//test',
         [
-          'Nodejs/Middleware/Expressjs/query',
-          'Nodejs/Middleware/Expressjs/expressInit',
           'Nodejs/Middleware/Expressjs/jsonParser',
           'Expressjs/Route Path: /test',
           ['Nodejs/Middleware/Expressjs/controller', ['timers.setTimeout']]
         ]
       ],
-      { exact: true }
+      { exact: false }
     )
 
     t.equal(agent.getTransaction(), null, 'should have ended the transaction')

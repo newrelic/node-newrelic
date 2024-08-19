@@ -1,6 +1,11 @@
 {
   "name": "express-tests",
-  "targets": [{"name":"express","minAgentVersion":"2.6.0"}],
+  "targets": [
+    {
+      "name": "express",
+      "minAgentVersion": "2.6.0"
+    }
+  ],
   "version": "0.0.0",
   "private": true,
   "tests": [
@@ -9,7 +14,10 @@
         "node": ">=18"
       },
       "dependencies": {
-        "express": ">=4.6.0",
+        "express": {
+          "versions": ">=4.6.0",
+          "samples": 5
+        },
         "express-enrouten": "1.1",
         "ejs": "2.5.9"
       },
@@ -32,7 +40,34 @@
         "segments.tap.js",
         "transaction-naming.tap.js"
       ]
+    },
+    {
+      "engines": {
+        "node": ">=18"
+      },
+      "dependencies": {
+        "express": "5.0.0-beta.3",
+        "ejs": "2.5.9"
+      },
+      "files": [
+        "app-use.tap.js",
+        "async-handlers.tap.js",
+        "async-error.tap.js",
+        "bare-router.tap.js",
+        "captures-params.tap.js",
+        "client-disconnect.tap.js",
+        "errors.tap.js",
+        "ignoring.tap.js",
+        "issue171.tap.js",
+        "middleware-name.tap.js",
+        "render.tap.js",
+        "require.tap.js",
+        "route-iteration.tap.js",
+        "route-param.tap.js",
+        "router-params.tap.js",
+        "segments.tap.js",
+        "transaction-naming.tap.js"
+      ]
     }
-  ],
-  "dependencies": {}
+  ]
 }

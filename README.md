@@ -152,7 +152,6 @@ For more information on getting started, [check the Node.js docs](https://docs.n
 There are modules that can be installed and configured to accompany the Node.js agent:
 
  * [@newrelic/apollo-server-plugin](https://github.com/newrelic/newrelic-node-apollo-server-plugin): New Relic's official Apollo Server plugin for use with the Node.js agent.
- * [@newrelic/next](https://github.com/newrelic/newrelic-node-nextjs): Provides instrumentation for the [Next.js](https://github.com/vercel/next.js/) npm package.
 
 There are modules included within the Node.js agent to add more instrumentation for 3rd party modules:
 
