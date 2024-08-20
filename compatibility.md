@@ -23,14 +23,14 @@ version.
 | `@grpc/grpc-js` | 1.4.0 | 1.11.1 | 8.17.0 |
 | `@hapi/hapi` | 20.1.2 | 21.3.10 | 9.0.0 |
 | `@koa/router` | 11.0.2 | 13.0.0 | 3.2.0 |
-| `@langchain/core` | 0.1.17 | 0.2.24 | 11.13.0 |
+| `@langchain/core` | 0.1.17 | 0.2.25 | 11.13.0 |
 | `@nestjs/cli` | 9.0.0 | 10.4.4 | 10.1.0 |
 | `@prisma/client` | 5.0.0 | 5.18.0 | 11.0.0 |
-| `@smithy/smithy-client` | 2.0.0 | 3.1.12 | 11.0.0 |
+| `@smithy/smithy-client` | 2.0.0 | 3.2.0 | 11.0.0 |
 | `amqplib` | 0.5.0 | 0.10.4 | 2.0.0 |
 | `apollo-server` | 3.0.0 | 3.13.0 | `@newrelic/apollo-server-plugin@1.0.0` |
 | `apollo-server-express` | 3.0.0 | 3.13.0 | `@newrelic/apollo-server-plugin@1.0.0` |
-| `aws-sdk` | 2.2.48 | 2.1676.0 | 6.2.0 |
+| `aws-sdk` | 2.2.48 | 2.1677.0 | 6.2.0 |
 | `bluebird` | 2.0.0 | 3.7.2 | 1.27.0 |
 | `bunyan` | 1.8.12 | 1.8.15 | 9.3.0 |
 | `cassandra-driver` | 3.4.0 | 4.7.2 | 1.7.1 |
@@ -48,7 +48,7 @@ version.
 | `mysql` | 2.2.0 | 2.18.1 | 1.32.0 |
 | `mysql2` | 2.0.0 | 3.11.0 | 1.32.0 |
 | `next` | 13.4.19 | 14.2.5 | 12.0.0 |
-| `openai` | 4.0.0 | 4.55.9 | 11.13.0 |
+| `openai` | 4.0.0 | 4.56.0 | 11.13.0 |
 | `pg` | 8.2.0 | 8.12.0 | 9.0.0 |
 | `pg-native` | 2.0.0 | 3.1.0 | 9.0.0 |
 | `pino` | 7.0.0 | 9.3.2 | 8.11.0 |

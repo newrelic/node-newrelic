@@ -16,7 +16,6 @@ code, the source code can be found at [https://github.com/newrelic/node-newrelic
 
 * [@grpc/grpc-js](#grpcgrpc-js)
 * [@grpc/proto-loader](#grpcproto-loader)
-* [@newrelic/ritm](#newrelicritm)
 * [@newrelic/security-agent](#newrelicsecurity-agent)
 * [@tyriar/fibonacci-heap](#tyriarfibonacci-heap)
 * [concat-stream](#concat-stream)
@@ -26,6 +25,7 @@ code, the source code can be found at [https://github.com/newrelic/node-newrelic
 * [json-stringify-safe](#json-stringify-safe)
 * [module-details-from-path](#module-details-from-path)
 * [readable-stream](#readable-stream)
+* [require-in-the-middle](#require-in-the-middle)
 * [semver](#semver)
 * [winston-transport](#winston-transport)
 
@@ -509,39 +509,9 @@ This product includes source derived from [@grpc/proto-loader](https://github.co
 
 ```
 
-### @newrelic/ritm
-
-This product includes source derived from [@newrelic/ritm](https://github.com/newrelic-forks/require-in-the-middle) ([v7.2.0](https://github.com/newrelic-forks/require-in-the-middle/tree/v7.2.0)), distributed under the [MIT License](https://github.com/newrelic-forks/require-in-the-middle/blob/v7.2.0/LICENSE):
-
-```
-The MIT License (MIT)
-
-Copyright (c) 2016-2019, Thomas Watson Steen
-Copyright (c) 2019-2023, Elasticsearch B.V.
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
-
-```
-
 ### @newrelic/security-agent
 
-This product includes source derived from [@newrelic/security-agent](https://github.com/newrelic/csec-node-agent) ([v1.4.0](https://github.com/newrelic/csec-node-agent/tree/v1.4.0)), distributed under the [UNKNOWN License](https://github.com/newrelic/csec-node-agent/blob/v1.4.0/LICENSE):
+This product includes source derived from [@newrelic/security-agent](https://github.com/newrelic/csec-node-agent) ([v1.5.0](https://github.com/newrelic/csec-node-agent/tree/v1.5.0)), distributed under the [UNKNOWN License](https://github.com/newrelic/csec-node-agent/blob/v1.5.0/LICENSE):
 
 ```
 ## New Relic Software License v1.0
@@ -676,7 +646,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 ### import-in-the-middle
 
-This product includes source derived from [import-in-the-middle](https://github.com/nodejs/import-in-the-middle) ([v1.9.1](https://github.com/nodejs/import-in-the-middle/tree/v1.9.1)), distributed under the [Apache-2.0 License](https://github.com/nodejs/import-in-the-middle/blob/v1.9.1/LICENSE):
+This product includes source derived from [import-in-the-middle](https://github.com/nodejs/import-in-the-middle) ([v1.11.0](https://github.com/nodejs/import-in-the-middle/tree/v1.11.0)), distributed under the [Apache-2.0 License](https://github.com/nodejs/import-in-the-middle/blob/v1.11.0/LICENSE):
 
 ```
                                  Apache License
@@ -1018,6 +988,36 @@ IN THE SOFTWARE.
 
 ```
 
+### require-in-the-middle
+
+This product includes source derived from [require-in-the-middle](https://github.com/elastic/require-in-the-middle) ([v7.4.0](https://github.com/elastic/require-in-the-middle/tree/v7.4.0)), distributed under the [MIT License](https://github.com/elastic/require-in-the-middle/blob/v7.4.0/LICENSE):
+
+```
+The MIT License (MIT)
+
+Copyright (c) 2016-2019, Thomas Watson Steen
+Copyright (c) 2019-2023, Elasticsearch B.V.
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+```
+
 ### semver
 
 This product includes source derived from [semver](https://github.com/npm/node-semver) ([v7.6.3](https://github.com/npm/node-semver/tree/v7.6.3)), distributed under the [ISC License](https://github.com/npm/node-semver/blob/v7.6.3/LICENSE):
@@ -1076,7 +1076,7 @@ SOFTWARE.
 
 ### @aws-sdk/client-s3
 
-This product includes source derived from [@aws-sdk/client-s3](https://github.com/aws/aws-sdk-js-v3) ([v3.616.0](https://github.com/aws/aws-sdk-js-v3/tree/v3.616.0)), distributed under the [Apache-2.0 License](https://github.com/aws/aws-sdk-js-v3/blob/v3.616.0/LICENSE):
+This product includes source derived from [@aws-sdk/client-s3](https://github.com/aws/aws-sdk-js-v3) ([v3.632.0](https://github.com/aws/aws-sdk-js-v3/tree/v3.632.0)), distributed under the [Apache-2.0 License](https://github.com/aws/aws-sdk-js-v3/blob/v3.632.0/LICENSE):
 
 ```
                                 Apache License
@@ -1285,7 +1285,7 @@ This product includes source derived from [@aws-sdk/client-s3](https://github.co
 
 ### @aws-sdk/s3-request-presigner
 
-This product includes source derived from [@aws-sdk/s3-request-presigner](https://github.com/aws/aws-sdk-js-v3) ([v3.616.0](https://github.com/aws/aws-sdk-js-v3/tree/v3.616.0)), distributed under the [Apache-2.0 License](https://github.com/aws/aws-sdk-js-v3/blob/v3.616.0/LICENSE):
+This product includes source derived from [@aws-sdk/s3-request-presigner](https://github.com/aws/aws-sdk-js-v3) ([v3.632.0](https://github.com/aws/aws-sdk-js-v3/tree/v3.632.0)), distributed under the [Apache-2.0 License](https://github.com/aws/aws-sdk-js-v3/blob/v3.632.0/LICENSE):
 
 ```
                                 Apache License
@@ -1940,7 +1940,7 @@ This product includes source derived from [@newrelic/newrelic-oss-cli](https://g
 
 ### @newrelic/test-utilities
 
-This product includes source derived from [@newrelic/test-utilities](https://github.com/newrelic/node-test-utilities) ([v8.7.0](https://github.com/newrelic/node-test-utilities/tree/v8.7.0)), distributed under the [Apache-2.0 License](https://github.com/newrelic/node-test-utilities/blob/v8.7.0/LICENSE):
+This product includes source derived from [@newrelic/test-utilities](https://github.com/newrelic/node-test-utilities) ([v9.1.0](https://github.com/newrelic/node-test-utilities/tree/v9.1.0)), distributed under the [Apache-2.0 License](https://github.com/newrelic/node-test-utilities/blob/v9.1.0/LICENSE):
 
 ```
                                  Apache License
@@ -2179,7 +2179,7 @@ THE SOFTWARE.
 
 ### @slack/bolt
 
-This product includes source derived from [@slack/bolt](https://github.com/slackapi/bolt) ([v3.19.0](https://github.com/slackapi/bolt/tree/v3.19.0)), distributed under the [MIT License](https://github.com/slackapi/bolt/blob/v3.19.0/LICENSE):
+This product includes source derived from [@slack/bolt](https://github.com/slackapi/bolt) ([v3.21.1](https://github.com/slackapi/bolt/tree/v3.21.1)), distributed under the [MIT License](https://github.com/slackapi/bolt/blob/v3.21.1/LICENSE):
 
 ```
 The MIT License (MIT)
@@ -2683,7 +2683,7 @@ THE SOFTWARE.
 
 ### aws-sdk
 
-This product includes source derived from [aws-sdk](https://github.com/aws/aws-sdk-js) ([v2.1659.0](https://github.com/aws/aws-sdk-js/tree/v2.1659.0)), distributed under the [Apache-2.0 License](https://github.com/aws/aws-sdk-js/blob/v2.1659.0/LICENSE.txt):
+This product includes source derived from [aws-sdk](https://github.com/aws/aws-sdk-js) ([v2.1677.0](https://github.com/aws/aws-sdk-js/tree/v2.1677.0)), distributed under the [Apache-2.0 License](https://github.com/aws/aws-sdk-js/blob/v2.1677.0/LICENSE.txt):
 
 ```
 
@@ -3111,7 +3111,7 @@ THE SOFTWARE.
 
 ### eslint-plugin-jsdoc
 
-This product includes source derived from [eslint-plugin-jsdoc](https://github.com/gajus/eslint-plugin-jsdoc) ([v48.8.0](https://github.com/gajus/eslint-plugin-jsdoc/tree/v48.8.0)), distributed under the [BSD-3-Clause License](https://github.com/gajus/eslint-plugin-jsdoc/blob/v48.8.0/LICENSE):
+This product includes source derived from [eslint-plugin-jsdoc](https://github.com/gajus/eslint-plugin-jsdoc) ([v48.11.0](https://github.com/gajus/eslint-plugin-jsdoc/tree/v48.11.0)), distributed under the [BSD-3-Clause License](https://github.com/gajus/eslint-plugin-jsdoc/blob/v48.11.0/LICENSE):
 
 ```
 Copyright (c) 2018, Gajus Kuizinas (http://gajus.com/)
@@ -4026,7 +4026,7 @@ IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ### self-cert
 
-This product includes source derived from [self-cert](https://github.com/jsumners/self-cert) ([v2.0.0](https://github.com/jsumners/self-cert/tree/v2.0.0)), distributed under the [MIT License](https://github.com/jsumners/self-cert/blob/v2.0.0/Readme.md):
+This product includes source derived from [self-cert](https://github.com/jsumners/self-cert) ([v2.0.1](https://github.com/jsumners/self-cert/tree/v2.0.1)), distributed under the [MIT License](https://github.com/jsumners/self-cert/blob/v2.0.1/Readme.md):
 
 ```
 MIT License
@@ -4189,7 +4189,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 ### @contrast/fn-inspect
 
-This product includes source derived from [@contrast/fn-inspect](https://github.com/Contrast-Security-Inc/node-fn-inspect) ([v4.2.0](https://github.com/Contrast-Security-Inc/node-fn-inspect/tree/v4.2.0)), distributed under the [MIT License](https://github.com/Contrast-Security-Inc/node-fn-inspect/blob/v4.2.0/LICENSE):
+This product includes source derived from [@contrast/fn-inspect](https://github.com/Contrast-Security-Inc/node-fn-inspect) ([v4.3.0](https://github.com/Contrast-Security-Inc/node-fn-inspect/tree/v4.3.0)), distributed under the [MIT License](https://github.com/Contrast-Security-Inc/node-fn-inspect/blob/v4.3.0/LICENSE):
 
 ```
 Copyright 2022 Contrast Security, Inc
@@ -4215,7 +4215,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 ### @newrelic/native-metrics
 
-This product includes source derived from [@newrelic/native-metrics](https://github.com/newrelic/node-native-metrics) ([v10.2.0](https://github.com/newrelic/node-native-metrics/tree/v10.2.0)), distributed under the [Apache-2.0 License](https://github.com/newrelic/node-native-metrics/blob/v10.2.0/LICENSE):
+This product includes source derived from [@newrelic/native-metrics](https://github.com/newrelic/node-native-metrics) ([v11.0.0](https://github.com/newrelic/node-native-metrics/tree/v11.0.0)), distributed under the [Apache-2.0 License](https://github.com/newrelic/node-native-metrics/blob/v11.0.0/LICENSE):
 
 ```
                                  Apache License

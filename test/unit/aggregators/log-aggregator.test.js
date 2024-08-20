@@ -1,49 +1,44 @@
 /*
- * Copyright 2022 New Relic Corporation. All rights reserved.
+ * Copyright 2024 New Relic Corporation. All rights reserved.
  * SPDX-License-Identifier: Apache-2.0
  */
 
 'use strict'
-const { test } = require('tap')
+
+const test = require('node:test')
+const assert = require('node:assert')
 const LogAggregator = require('../../../lib/aggregators/log-aggregator')
 const Metrics = require('../../../lib/metrics')
-const sinon = require('sinon')
 const helper = require('../../lib/agent_helper')
 
 const RUN_ID = 1337
 const LIMIT = 5
 
-test('Log Aggregator', (t) => {
-  t.autoend()
-  let logEventAggregator
-  let agentStub
-  let log
+test('Log Aggregator', async (t) => {
+  t.beforeEach((ctx) => {
+    ctx.nr = {}
 
-  t.beforeEach(() => {
-    agentStub = {
-      getTransaction: sinon.stub(),
+    ctx.nr.txReturn = undefined
+    ctx.nr.agent = {
+      getTransaction() {
+        return ctx.nr.txReturn
+      },
       collector: {},
       metrics: new Metrics(5, {}, {}),
-      harvester: { add: sinon.stub() }
-    }
-    // Normally this config is set after connect and in the actual
-    // code we only use it after connect, but for unit testing
-    // purposes, we'll set this here.
-    agentStub.config = {
-      event_harvest_config: {
-        harvest_limits: {
-          log_event_data: 42
+      harvester: { add() {} },
+
+      config: {
+        event_harvest_config: {
+          harvest_limits: {
+            log_event_data: 42
+          }
         }
       }
     }
-    logEventAggregator = new LogAggregator(
-      {
-        runId: RUN_ID,
-        limit: LIMIT
-      },
-      agentStub
-    )
-    log = {
+
+    ctx.nr.logEventAggregator = new LogAggregator({ runId: RUN_ID, limit: LIMIT }, ctx.nr.agent)
+
+    ctx.nr.log = {
       'level': 30,
       'timestamp': '1649689872369',
       'pid': 4856,
@@ -57,36 +52,31 @@ test('Log Aggregator', (t) => {
     }
   })
 
-  t.afterEach(() => {
-    logEventAggregator = null
-    log = null
-  })
-
-  t.test('should set the correct default method', (t) => {
+  await t.test('should set the correct default method', (t) => {
+    const { logEventAggregator } = t.nr
     const method = logEventAggregator.method
-
-    t.equal(method, 'log_event_data')
-    t.end()
+    assert.equal(method, 'log_event_data')
   })
 
-  t.test('toPayload() should return json format of data', (t) => {
+  await t.test('toPayload() should return json format of data', (t) => {
+    const { logEventAggregator, log } = t.nr
     const logs = []
 
-    for (let i = 0; i <= 8; i++) {
+    for (let i = 0; i <= 8; i += 1) {
       logEventAggregator.add(log, '1')
       if (logs.length < 5) {
         logs.push(log)
       }
     }
     const payload = logEventAggregator._toPayloadSync()
-    t.equal(payload.length, 1)
-    t.same(payload, [{ logs: logs.reverse() }])
-    t.end()
+    assert.equal(payload.length, 1)
+    assert.deepStrictEqual(payload, [{ logs: logs.reverse() }])
   })
 
-  t.test(
+  await t.test(
     'toPayload() should execute formatter function when an entry in aggregator is a function',
     (t) => {
+      const { logEventAggregator, log } = t.nr
       const log2 = JSON.stringify(log)
       function formatLog() {
         return JSON.parse(log2)
@@ -94,12 +84,12 @@ test('Log Aggregator', (t) => {
       logEventAggregator.add(log)
       logEventAggregator.add(formatLog)
       const payload = logEventAggregator._toPayloadSync()
-      t.same(payload, [{ logs: [log, JSON.parse(log2)] }])
-      t.end()
+      assert.deepStrictEqual(payload, [{ logs: [log, JSON.parse(log2)] }])
     }
   )
 
-  t.test('toPayload() should only return logs that have data', (t) => {
+  await t.test('toPayload() should only return logs that have data', (t) => {
+    const { logEventAggregator, log } = t.nr
     const log2 = JSON.stringify(log)
     function formatLog() {
       return JSON.parse(log2)
@@ -111,90 +101,89 @@ test('Log Aggregator', (t) => {
     logEventAggregator.add(formatLog)
     logEventAggregator.add(formatLog2)
     const payload = logEventAggregator._toPayloadSync()
-    t.same(payload, [{ logs: [log, JSON.parse(log2)] }])
-    t.end()
+    assert.deepStrictEqual(payload, [{ logs: [log, JSON.parse(log2)] }])
   })
 
-  t.test('toPayload() should return nothing with no log event data', (t) => {
+  await t.test('toPayload() should return nothing with no log event data', (t) => {
+    const { logEventAggregator } = t.nr
     const payload = logEventAggregator._toPayloadSync()
-
-    t.notOk(payload)
-    t.end()
+    assert.equal(payload, undefined)
   })
 
-  t.test('toPayload() should return nothing when log functions return no data', (t) => {
+  await t.test('toPayload() should return nothing when log functions return no data', (t) => {
+    const { logEventAggregator } = t.nr
     function formatLog() {
       return
     }
     logEventAggregator.add(formatLog)
     const payload = logEventAggregator._toPayloadSync()
-    t.notOk(payload)
-    t.end()
+    assert.equal(payload, undefined)
   })
 
-  t.test('should add log line to transaction when in transaction context', (t) => {
-    const transaction = { logs: { add: sinon.stub() } }
-    agentStub.getTransaction.returns(transaction)
+  await t.test('should add log line to transaction when in transaction context', (t) => {
+    const { logEventAggregator } = t.nr
+    const line = { key: 'value' }
+    let addCount = 0
+    let addArgs
+    t.nr.txReturn = {
+      logs: {
+        add(...args) {
+          addCount += 1
+          addArgs = args
+        }
+      }
+    }
+
+    logEventAggregator.add(line)
+    assert.equal(addCount, 1, 'should add log to transaction')
+    assert.deepStrictEqual(addArgs, [line])
+    assert.deepStrictEqual(logEventAggregator.getEvents(), [], 'log aggregator should be empty')
+  })
+
+  await t.test('should add log line to aggregator when not in transaction context', (t) => {
+    const { logEventAggregator } = t.nr
     const line = { key: 'value' }
     logEventAggregator.add(line)
-    t.ok(transaction.logs.add.callCount, 1, 'should add log to transaction')
-    t.same(transaction.logs.add.args[0], [line])
-    t.same(logEventAggregator.getEvents(), [], 'log aggregator should be empty')
-    t.end()
+    assert.deepStrictEqual(logEventAggregator.getEvents(), [line])
   })
 
-  t.test('should add log line to aggregator when not in transaction context', (t) => {
-    const line = { key: 'value' }
-    logEventAggregator.add(line)
-    t.same(logEventAggregator.getEvents(), [line])
-    t.end()
-  })
-
-  t.test('should add json log line to aggregator', (t) => {
+  await t.test('should add json log line to aggregator', (t) => {
+    const { logEventAggregator } = t.nr
     const line = { a: 'b' }
     const jsonLine = JSON.stringify(line)
     logEventAggregator.add(jsonLine)
-    t.equal(logEventAggregator.getEvents().length, 1)
-    t.same(
+    assert.deepStrictEqual(
       logEventAggregator.getEvents(),
       [jsonLine],
       'log aggregator should not de-serialize if already string'
     )
-    t.end()
   })
 
-  t.test('should add logs to aggregator in batch with priority', (t) => {
+  await t.test('should add logs to aggregator in batch with priority', (t) => {
+    const { logEventAggregator } = t.nr
     const logs = [{ a: 'b' }, { b: 'c' }, { c: 'd' }]
     const priority = Math.random() + 1
     logEventAggregator.addBatch(logs, priority)
-    t.equal(logEventAggregator.getEvents().length, 3)
-    t.end()
+    assert.equal(logEventAggregator.getEvents().length, 3)
   })
 })
 
-test('big red button', (t) => {
-  t.autoend()
-
-  let agent
-
-  t.beforeEach(() => {
-    // setup agent
-    agent = helper.instrumentMockedAgent()
+test('big red button', async (t) => {
+  t.beforeEach((ctx) => {
+    ctx.nr = {}
+    ctx.nr.agent = helper.instrumentMockedAgent()
   })
 
-  t.afterEach(() => {
-    agent && helper.unloadAgent(agent)
+  t.afterEach((ctx) => {
+    helper.unloadAgent(ctx.nr.agent)
   })
 
-  t.test('should show logs if the config for it is enabled', (t) => {
-    t.plan(2)
-
+  await t.test('should show logs if the config for it is enabled', (t, end) => {
+    const { agent } = t.nr
     agent.config.onConnect({
       event_harvest_config: {
         report_period_ms: 60,
-        harvest_limits: {
-          log_event_data: 42
-        }
+        harvest_limits: { log_event_data: 42 }
       }
     })
     agent.onConnect(false, () => {
@@ -203,26 +192,26 @@ test('big red button', (t) => {
       const payload = agent.logs._toPayloadSync()
       const logMessages = payload[0].logs
       for (const msg of logMessages) {
-        t.ok(['hello', 'world'].includes(msg.msg))
+        assert.equal(['hello', 'world'].includes(msg.msg), true)
       }
+      end()
     })
   })
 
-  t.test('should drop logs if the server disabled logging', (t) => {
-    t.plan(1)
+  await t.test('should drop logs if the server disabled logging', (t, end) => {
+    const { agent } = t.nr
     agent.config.onConnect({
       event_harvest_config: {
         report_period_ms: 60,
-        harvest_limits: {
-          log_event_data: 0
-        }
+        harvest_limits: { log_event_data: 0 }
       }
     })
     agent.onConnect(false, () => {
       agent.logs.add({ msg: 'hello' })
       agent.logs.add({ msg: 'world' })
       const payload = agent.logs._toPayloadSync()
-      t.notOk(payload)
+      assert.equal(payload, undefined)
+      end()
     })
   })
 })
