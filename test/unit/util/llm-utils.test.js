@@ -35,6 +35,12 @@ tap.test('extractLlmContext', (t) => {
     }
   }
 
+  tx._llmContextManager.run(null, () => {
+    const llmContext = extractLlmContext(agent)
+    t.equal(typeof llmContext, 'object')
+    t.equal(Object.entries(llmContext).length, 0)
+  })
+
   tx._llmContextManager.run({ 'llm.test': 1, 'skip': 2 }, () => {
     const llmContext = extractLlmContext(agent)
     t.equal(llmContext['llm.test'], 1)

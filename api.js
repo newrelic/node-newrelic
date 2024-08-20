@@ -1904,7 +1904,7 @@ API.prototype.ignoreApdex = function ignoreApdex() {
 }
 
 /**
- * Runs a function synchronously within a provided LLM custom attributes context and returns its return value.
+ * Run a function with the passed in LLM context as the active context and return its return value.
  *
  * An example of setting a custom attribute:
  *
@@ -1912,7 +1912,7 @@ API.prototype.ignoreApdex = function ignoreApdex() {
  *      return;
  *    })
  * @param {Object} context LLM custom attributes context
- * @param {Function} callback synchronous function called within the context
+ * @param {Function} callback The function to execute in context.
  */
 API.prototype.withLlmCustomAttributes = function withLlmCustomAttributes(context, callback) {
   const metric = this.agent.metrics.getOrCreateMetric(
