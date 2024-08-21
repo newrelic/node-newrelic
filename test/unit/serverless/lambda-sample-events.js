@@ -260,7 +260,10 @@ const cloudFormationCreateRequestEvent = {
 }
 
 const apiGatewayProxyEvent = {
+  version: '1.0',
+  resource: '/{proxy+}',
   path: '/test/hello',
+  httpMethod: 'GET',
   headers: {
     'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
     'Accept-Encoding': 'gzip, deflate, lzma, sdch, br',
@@ -280,9 +283,12 @@ const apiGatewayProxyEvent = {
     'X-Forwarded-Port': '443',
     'X-Forwarded-Proto': 'https'
   },
-  pathParameters: {
-    proxy: 'hello'
+  multiValueHeaders: null,
+  queryStringParameters: {
+    name: 'me',
+    team: 'node agent'
   },
+  multiValueQueryStringParameters: null,
   requestContext: {
     accountId: '123456789012',
     resourceId: 'us4z18',
@@ -305,15 +311,14 @@ const apiGatewayProxyEvent = {
     httpMethod: 'GET',
     apiId: 'wt6mne2s9k'
   },
-  resource: '/{proxy+}',
-  httpMethod: 'GET',
-  queryStringParameters: {
-    name: 'me',
-    team: 'node agent'
+  pathParameters: {
+    proxy: 'hello'
   },
   stageVariables: {
     stageVarName: 'stageVarValue'
-  }
+  },
+  body: null,
+  isBase64Encoded: false
 }
 
 const cloudWatchLogsEvent = {
@@ -490,17 +495,11 @@ const sesEvent = {
 }
 
 const albEventWithMultiValueParameters = {
-  requestContext: {
-    elb: {
-      targetGroupArn:
-        'arn:aws:elasticloadbalancing:us-east-2:123456789012:targetgroup/lambda-279XGJDqGZ5rsrHC2Fjr/49e9d65c45c6791a'
-    }
-  },
-  httpMethod: 'GET',
+  version: '1.0',
+  resource: '/lambda',
   path: '/lambda',
-  multiValueQueryStringParameters: {
-    query: ['1234ABCD', 'other']
-  },
+  httpMethod: 'GET',
+  headers: null,
   multiValueHeaders: {
     'accept': [
       'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8'
@@ -523,6 +522,18 @@ const albEventWithMultiValueParameters = {
       'cookie-name=cookie-other-value'
     ]
   },
+  queryStringParameters: null,
+  multiValueQueryStringParameters: {
+    query: ['1234ABCD', 'other']
+  },
+  requestContext: {
+    elb: {
+      targetGroupArn:
+        'arn:aws:elasticloadbalancing:us-east-2:123456789012:targetgroup/lambda-279XGJDqGZ5rsrHC2Fjr/49e9d65c45c6791a'
+    }
+  },
+  pathParameters: null,
+  stageVariables: null,
   body: '',
   isBase64Encoded: false
 }
