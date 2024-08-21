@@ -3,10 +3,53 @@ $extensionModulesPath = "$PSScriptRoot\node_modules"
 $appRootPath = "$env:HOME\site\wwwroot"
 $userModulesPath = "$appRootPath\node_modules"
 
+# Define the path to the node_modules directory and the package to check
+$UserNodeModulesPath = "$env:HOME"
+$packageName = "newrelic"
+
 function WriteToInstallLog($output)
 {
 	$logPath = (Split-Path -Parent $PSCommandPath) + "\install.log"
 	Write-Output "[$(Get-Date)] -- $output" | Out-File -FilePath $logPath -Append
+}
+
+function Check-Version {
+  WriteToInstallLog "Checking installed version..."
+
+  # Get installed version using npm list
+  $installedVersionOutput = & npm ls $packageName --prefix $UserNodeModulesPath | Select-String -Pattern "$packageName@(\S+)"
+  
+  if ($installedVersionOutput) {
+    $UserVersion = $installedVersionOutput.Matches.Groups[1].Value
+  } else {
+    $UserVersion = ""
+  }
+  
+  WriteToInstallLog "Installed version is: $installedVersionOutput"
+  WriteToInstallLog "User version: $UserVersion"
+  
+  # Check if user package exists
+  if ($UserVersion -eq "") {
+    WriteToInstallLog "User package not found. Running install.ps1..."
+    Copy-NodeModules -sourcePath $extensionModulesPath -destinationPath $userModulesPath
+    exit $LASTEXITCODE
+  } else {
+    WriteToInstallLog "Installed version: $UserVersion"
+    WriteToInstallLog "Getting latest version from npm..."
+
+    $LatestVersion = npm show $packageName version
+    WriteToInstallLog "Latest version: $LatestVersion"
+  
+    # Check if user package version matches the latest version
+    if ($UserVersion -ne $LatestVersion) {
+      WriteToInstallLog "Installed version ($UserVersion) does not match latest version ($LatestVersion). Running install.ps1..."
+      Copy-NodeModules -sourcePath $extensionModulesPath -destinationPath $userModulesPath
+      exit $LASTEXITCODE
+    } else {
+      WriteToInstallLog "Installed version ($UserVersion) matches the latest version ($LatestVersion). Skipping install.ps1..."
+      exit 0
+    }
+  }
 }
 
 # Function to move contents from extension's node_modules to user's node_modules
@@ -44,7 +87,7 @@ function Copy-NodeModules {
     WriteToInstallLog "Error at line $errorLine : $errorMessage"
 
     WriteToInstallLog "Explicitly adding node to path"
-    SET PATH=C:\Program Files\Nodejs;%PATH%
+    $env:PATH = "C:\Program Files\Nodejs;" + $env:PATH
     WriteToInstallLog "Executing npm install newrelic@latest"
     npm install newrelic@latest
 
@@ -55,4 +98,4 @@ function Copy-NodeModules {
 }
 
 # Call the function
-Copy-NodeModules -sourcePath $extensionModulesPath -destinationPath $userModulesPath
+Check-Version
