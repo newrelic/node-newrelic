@@ -62,15 +62,18 @@ function Copy-NodeModules {
   try {
     WriteToInstallLog "Start executing install.ps1"
 
+    # Check if extension's node_module directory exists
     if (Test-Path -Path $sourcePath) {
       WriteToInstallLog "Source path exists: $sourcePath"
 
+      # Check if user's node_modules directory exists and create if it doesn't
       if (-not (Test-Path -Path $destinationPath)) {
         WriteToInstallLog "Destination path does not exist: $destinationPath"
         WriteToInstallLog "Creating destination directory..."
         WriteToInstallLog -ItemType Directory -Path $destinationPath
       }
 
+      # Move node_modules from extension's node_modules directory to users
       WriteToInstallLog "Moving node_modules from $sourcePath to $destinationPath..."
       Move-Item -Path "$sourcePath\*" -Destination $destinationPath -Force
 
@@ -86,6 +89,7 @@ function Copy-NodeModules {
     $errorLine = $_.InvocationInfo.ScriptLineNumber
     WriteToInstallLog "Error at line $errorLine : $errorMessage"
 
+    # Install node agent using npm
     WriteToInstallLog "Explicitly adding node to path"
     $env:PATH = "C:\Program Files\Nodejs;" + $env:PATH
     WriteToInstallLog "Executing npm install newrelic@latest"
