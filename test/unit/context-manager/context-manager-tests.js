@@ -5,22 +5,22 @@
 
 'use strict'
 
+const assert = require('node:assert')
+
 /**
  * Add a standard set of Legacy Context Manager test cases for testing
  * either the standard or diagnostic versions.
  */
-function runContextMangerTests(t, createContextManager) {
-  t.test('Should default to null context', (t) => {
+async function runContextMangerTests(t, createContextManager) {
+  await t.test('Should default to null context', () => {
     const contextManager = createContextManager()
 
     const context = contextManager.getContext()
 
-    t.equal(context, null)
-
-    t.end()
+    assert.equal(context, null)
   })
 
-  t.test('setContext should update the current context', (t) => {
+  await t.test('setContext should update the current context', () => {
     const contextManager = createContextManager()
 
     const expectedContext = { name: 'new context' }
@@ -28,15 +28,11 @@ function runContextMangerTests(t, createContextManager) {
     contextManager.setContext(expectedContext)
     const context = contextManager.getContext()
 
-    t.equal(context, expectedContext)
-
-    t.end()
+    assert.equal(context, expectedContext)
   })
 
-  t.test('runInContext()', (t) => {
-    t.autoend()
-
-    t.test('should execute callback synchronously', (t) => {
+  await t.test('runInContext()', async (t) => {
+    await t.test('should execute callback synchronously', () => {
       const contextManager = createContextManager()
 
       let callbackCalled = false
@@ -44,12 +40,10 @@ function runContextMangerTests(t, createContextManager) {
         callbackCalled = true
       })
 
-      t.equal(callbackCalled, true)
-
-      t.end()
+      assert.equal(callbackCalled, true)
     })
 
-    t.test('should set context to active for life of callback', (t) => {
+    await t.test('should set context to active for life of callback', (t, end) => {
       const contextManager = createContextManager()
 
       const previousContext = { name: 'previous' }
@@ -60,12 +54,12 @@ function runContextMangerTests(t, createContextManager) {
       contextManager.runInContext(newContext, () => {
         const context = contextManager.getContext()
 
-        t.equal(context, newContext)
-        t.end()
+        assert.equal(context, newContext)
+        end()
       })
     })
 
-    t.test('should restore previous context when callback completes', (t) => {
+    await t.test('should restore previous context when callback completes', () => {
       const contextManager = createContextManager()
 
       const previousContext = { name: 'previous' }
@@ -76,12 +70,10 @@ function runContextMangerTests(t, createContextManager) {
 
       const context = contextManager.getContext()
 
-      t.equal(context, previousContext)
-
-      t.end()
+      assert.equal(context, previousContext)
     })
 
-    t.test('should restore previous context on exception', (t) => {
+    await t.test('should restore previous context on exception', () => {
       const contextManager = createContextManager()
 
       const previousContext = { name: 'previous' }
@@ -94,18 +86,16 @@ function runContextMangerTests(t, createContextManager) {
           throw new Error('Something went bad')
         })
       } catch (error) {
-        t.ok(error)
+        assert.ok(error)
         // swallowing error
       }
 
       const context = contextManager.getContext()
 
-      t.equal(context, previousContext)
-
-      t.end()
+      assert.equal(context, previousContext)
     })
 
-    t.test('should apply `cbThis` arg to execution', (t) => {
+    await t.test('should apply `cbThis` arg to execution', (t, end) => {
       const contextManager = createContextManager()
 
       const previousContext = { name: 'previous' }
@@ -117,12 +107,12 @@ function runContextMangerTests(t, createContextManager) {
       contextManager.runInContext(newContext, functionRunInContext, expectedThis)
 
       function functionRunInContext() {
-        t.equal(this, expectedThis)
-        t.end()
+        assert.equal(this, expectedThis)
+        end()
       }
     })
 
-    t.test('should apply args array to execution', (t) => {
+    await t.test('should apply args array to execution', (t, end) => {
       const contextManager = createContextManager()
 
       const previousContext = { name: 'previous' }
@@ -136,13 +126,13 @@ function runContextMangerTests(t, createContextManager) {
       contextManager.runInContext(newContext, functionRunInContext, null, args)
 
       function functionRunInContext(arg1, arg2) {
-        t.equal(arg1, expectedArg1)
-        t.equal(arg2, expectedArg2)
-        t.end()
+        assert.equal(arg1, expectedArg1)
+        assert.equal(arg2, expectedArg2)
+        end()
       }
     })
 
-    t.test('should apply arguments construct to execution', (t) => {
+    await t.test('should apply arguments construct to execution', (t, end) => {
       const contextManager = createContextManager()
 
       const previousContext = { name: 'previous' }
@@ -158,9 +148,9 @@ function runContextMangerTests(t, createContextManager) {
         contextManager.runInContext(
           newContext,
           function functionRunInContext(arg1, arg2) {
-            t.equal(arg1, expectedArg1)
-            t.equal(arg2, expectedArg2)
-            t.end()
+            assert.equal(arg1, expectedArg1)
+            assert.equal(arg2, expectedArg2)
+            end()
           },
           null,
           arguments

@@ -5,15 +5,13 @@
 
 'use strict'
 
-const { test } = require('tap')
+const test = require('node:test')
 
 const runContextManagerTests = require('./context-manager-tests')
 const AsyncLocalContextManager = require('../../../lib/context-manager/async-local-context-manager')
 
-test('Async Local Context Manager', (t) => {
-  t.autoend()
-
-  runContextManagerTests(t, createContextManager)
+test('Async Local Context Manager', async (t) => {
+  await runContextManagerTests(t, createContextManager)
 })
 
 function createContextManager() {
