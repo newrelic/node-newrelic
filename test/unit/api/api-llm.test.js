@@ -123,6 +123,15 @@ tap.test('Agent API LLM methods', (t) => {
 
   t.test('withLlmCustomAttributes', (t) => {
     const { api } = t.context
+    t.doesNotThrow(() => {
+      t.equal(
+        api.withLlmCustomAttributes({ test: 1 }, () => {
+          t.equal(loggerMock.warn.callCount, 1)
+          return 1
+        }),
+        1
+      )
+    })
     helper.runInTransaction(api.agent, (tx) => {
       t.context.agent.tracer.getTransaction = () => {
         return tx
@@ -130,7 +139,7 @@ tap.test('Agent API LLM methods', (t) => {
 
       t.doesNotThrow(() => {
         api.withLlmCustomAttributes(null, null)
-        t.equal(loggerMock.warn.callCount, 1)
+        t.equal(loggerMock.warn.callCount, 2)
       })
 
       api.withLlmCustomAttributes(
