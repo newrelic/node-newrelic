@@ -1932,7 +1932,7 @@ API.prototype.withLlmCustomAttributes = function withLlmCustomAttributes(context
     return callback()
   }
 
-  for (const [key, value] of Object.entries(context)) {
+  for (const [key, value] of Object.entries(context || {})) {
     if (typeof value === 'object' || typeof value === 'function') {
       logger.warn(`Invalid attribute type for ${key}. Skipped.`)
       delete context[key]

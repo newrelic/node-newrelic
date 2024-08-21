@@ -121,27 +121,58 @@ tap.test('Agent API LLM methods', (t) => {
     })
   })
 
-  t.test('withLlmCustomAttributes', (t) => {
+  t.test('withLlmCustomAttributes should handle no active transaction', (t) => {
     const { api } = t.context
-    t.doesNotThrow(() => {
+    t.autoend()
+
+    t.equal(
+      api.withLlmCustomAttributes({ test: 1 }, () => {
+        t.equal(loggerMock.warn.callCount, 1)
+        return 1
+      }),
+      1
+    )
+  })
+
+  t.test('withLlmCustomAttributes should handle an empty store', (t) => {
+    const { api } = t.context
+    const agent = api.agent
+
+    t.autoend()
+    helper.runInTransaction(api.agent, (tx) => {
+      agent.tracer.getTransaction = () => {
+        return tx
+      }
       t.equal(
-        api.withLlmCustomAttributes({ test: 1 }, () => {
-          t.equal(loggerMock.warn.callCount, 1)
+        api.withLlmCustomAttributes(null, () => {
           return 1
         }),
         1
       )
     })
+  })
+
+  t.test('withLlmCustomAttributes should handle no callback', (t) => {
+    const { api } = t.context
+    const agent = api.agent
+    t.autoend()
     helper.runInTransaction(api.agent, (tx) => {
-      t.context.agent.tracer.getTransaction = () => {
+      agent.tracer.getTransaction = () => {
         return tx
       }
+      api.withLlmCustomAttributes({ test: 1 }, null)
+      t.equal(loggerMock.warn.callCount, 1)
+    })
+  })
 
-      t.doesNotThrow(() => {
-        api.withLlmCustomAttributes(null, null)
-        t.equal(loggerMock.warn.callCount, 2)
-      })
-
+  t.test('withLlmCustomAttributes should normalize attributes', (t) => {
+    const { api } = t.context
+    const agent = api.agent
+    t.autoend()
+    helper.runInTransaction(api.agent, (tx) => {
+      agent.tracer.getTransaction = () => {
+        return tx
+      }
       api.withLlmCustomAttributes(
         {
           'toRename': 'value1',
@@ -160,16 +191,37 @@ tap.test('Agent API LLM methods', (t) => {
           t.notOk(parentContext.toDelete3)
           t.equal(parentContext['llm.number'], 1)
           t.equal(parentContext['llm.boolean'], true)
-
-          api.withLlmCustomAttributes({ 'llm.someAttribute': 'someValue' }, () => {
-            const contextManager = tx._llmContextManager
-            const context = contextManager.getStore()
-            t.equal(context[`llm.toRename`], 'value1')
-            t.equal(context['llm.someAttribute'], 'someValue')
-            t.end()
-          })
         }
       )
+    })
+  })
+
+  t.test('withLlmCustomAttributes should support branching', (t) => {
+    const { api } = t.context
+    const agent = api.agent
+    t.autoend()
+    helper.runInTransaction(api.agent, (tx) => {
+      agent.tracer.getTransaction = () => {
+        return tx
+      }
+      api.withLlmCustomAttributes({ 'llm.step': '1', 'llm.path': 'root' }, () => {
+        const contextManager = tx._llmContextManager
+        const context = contextManager.getStore()
+        t.equal(context[`llm.step`], '1')
+        t.equal(context['llm.path'], 'root')
+        api.withLlmCustomAttributes({ 'llm.step': '1.1', 'llm.path': 'root/1' }, () => {
+          const contextManager = tx._llmContextManager
+          const context = contextManager.getStore()
+          t.equal(context[`llm.step`], '1.1')
+          t.equal(context['llm.path'], 'root/1')
+        })
+        api.withLlmCustomAttributes({ 'llm.step': '1.2', 'llm.path': 'root/2' }, () => {
+          const contextManager = tx._llmContextManager
+          const context = contextManager.getStore()
+          t.equal(context[`llm.step`], '1.2')
+          t.equal(context['llm.path'], 'root/2')
+        })
+      })
     })
   })
 
