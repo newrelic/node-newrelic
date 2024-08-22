@@ -5,17 +5,17 @@
 
 'use strict'
 
-const { test } = require('tap')
+const test = require('node:test')
+const assert = require('node:assert')
 
 const createImplementation = require('../../../lib/context-manager/create-context-manager')
 const AsyncLocalContextManager = require('../../../lib/context-manager/async-local-context-manager')
 
-test('Should return AsyncLocalContextManager by default', (t) => {
+test('Should return AsyncLocalContextManager by default', () => {
   const contextManager = createImplementation({
     logging: {},
     feature_flag: {}
   })
 
-  t.ok(contextManager instanceof AsyncLocalContextManager)
-  t.end()
+  assert.equal(contextManager instanceof AsyncLocalContextManager, true)
 })
