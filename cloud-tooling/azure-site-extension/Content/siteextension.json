@@ -1,9 +1,0 @@
-{
-  "id": "New Relic Node Agent Site Extension",
-  "title": "New Relic Node Agent Site Extension",
-  "description": "A New Relic Node Agent site extension for Azure Web Apps.",
-  "version": "12.0.0",
-  "authors": ["New Relic"],
-  "tags": ["Node", "Azure", "Extension"],
-  "type": "WebRoot"
-}
