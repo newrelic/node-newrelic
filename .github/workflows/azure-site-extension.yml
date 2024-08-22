@@ -4,8 +4,6 @@ on:
   workflow_dispatch:
 
 env:
-  # Enable versioned runner quiet mode to make CI output easier to read:
-  # OUTPUT_MODE: quiet
   SPEC_FILE_TEMPLATE: 'NewRelic.Azure.WebSites.Extension.NodeAgent.nuspec'
 
 jobs:
