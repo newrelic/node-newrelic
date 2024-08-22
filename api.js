@@ -32,6 +32,7 @@ const obfuscate = require('./lib/util/sql/obfuscate')
 const { DESTINATIONS } = require('./lib/config/attribute-filter')
 const parse = require('module-details-from-path')
 const { isSimpleObject } = require('./lib/util/objects')
+const { AsyncLocalStorage } = require('async_hooks')
 
 /*
  *
@@ -1900,6 +1901,54 @@ API.prototype.ignoreApdex = function ignoreApdex() {
   }
 
   transaction.ignoreApdex = true
+}
+
+/**
+ * Run a function with the passed in LLM context as the active context and return its return value.
+ *
+ * An example of setting a custom attribute:
+ *
+ *    newrelic.withLlmCustomAttributes({'llm.someAttribute': 'someValue'}, () => {
+ *      return;
+ *    })
+ * @param {Object} context LLM custom attributes context
+ * @param {Function} callback The function to execute in context.
+ */
+API.prototype.withLlmCustomAttributes = function withLlmCustomAttributes(context, callback) {
+  context = context || {}
+  const metric = this.agent.metrics.getOrCreateMetric(
+    NAMES.SUPPORTABILITY.API + '/withLlmCustomAttributes'
+  )
+  metric.incrementCallCount()
+
+  const transaction = this.agent.tracer.getTransaction()
+
+  if (!callback || typeof callback !== 'function') {
+    logger.warn('withLlmCustomAttributes must be used with a valid callback')
+    return
+  }
+
+  if (!transaction) {
+    logger.warn('withLlmCustomAttributes must be called within the scope of a transaction.')
+    return callback()
+  }
+
+  for (const [key, value] of Object.entries(context)) {
+    if (typeof value === 'object' || typeof value === 'function') {
+      logger.warn(`Invalid attribute type for ${key}. Skipped.`)
+      delete context[key]
+    } else if (key.indexOf('llm.') !== 0) {
+      logger.warn(`Invalid attribute name ${key}. Renamed to "llm.${key}".`)
+      delete context[key]
+      context[`llm.${key}`] = value
+    }
+  }
+
+  transaction._llmContextManager = transaction._llmContextManager || new AsyncLocalStorage()
+  const parentContext = transaction._llmContextManager.getStore() || {}
+
+  const fullContext = Object.assign({}, parentContext, context)
+  return transaction._llmContextManager.run(fullContext, callback)
 }
 
 module.exports = API

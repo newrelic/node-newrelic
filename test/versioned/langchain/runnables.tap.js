@@ -52,7 +52,6 @@ tap.test('Langchain instrumentation - runnable sequence', (t) => {
 
   t.test('should create langchain events for every invoke call', (t) => {
     const { agent, prompt, outputParser, model } = t.context
-
     helper.runInTransaction(agent, async (tx) => {
       const input = { topic: 'scientist' }
       const options = { metadata: { key: 'value', hello: 'world' }, tags: ['tag1', 'tag2'] }
@@ -95,11 +94,31 @@ tap.test('Langchain instrumentation - runnable sequence', (t) => {
     })
   })
 
+  t.test('should support custom attributes on the LLM events', (t) => {
+    const { agent, prompt, outputParser, model } = t.context
+    const api = helper.getAgentApi()
+    helper.runInTransaction(agent, async (tx) => {
+      api.withLlmCustomAttributes({ 'llm.contextAttribute': 'someValue' }, async () => {
+        const input = { topic: 'scientist' }
+        const options = { metadata: { key: 'value', hello: 'world' }, tags: ['tag1', 'tag2'] }
+
+        const chain = prompt.pipe(model).pipe(outputParser)
+        await chain.invoke(input, options)
+        const events = agent.customEventAggregator.events.toArray()
+
+        const [[, message]] = events
+        t.equal(message['llm.contextAttribute'], 'someValue')
+
+        tx.end()
+        t.end()
+      })
+    })
+  })
+
   t.test(
     'should create langchain events for every invoke call on chat prompt + model + parser',
     (t) => {
       const { agent, prompt, outputParser, model } = t.context
-
       helper.runInTransaction(agent, async (tx) => {
         const input = { topic: 'scientist' }
         const options = { metadata: { key: 'value', hello: 'world' }, tags: ['tag1', 'tag2'] }

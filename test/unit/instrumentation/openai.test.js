@@ -119,5 +119,6 @@ test('openai unit tests', (t) => {
     t.equal(isWrapped, false, 'should not wrap chat completions create')
     t.end()
   })
+
   t.end()
 })

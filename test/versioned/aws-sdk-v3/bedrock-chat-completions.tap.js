@@ -158,6 +158,32 @@ tap.afterEach(async (t) => {
     }
   )
 
+  tap.test(
+    `${modelId}:  supports custom attributes on LlmChatCompletionMessage(s) and LlmChatCompletionSummary events`,
+    (t) => {
+      const { bedrock, client, agent } = t.context
+      const prompt = `text ${resKey} ultimate question`
+      const input = requests[resKey](prompt, modelId)
+      const command = new bedrock.InvokeModelCommand(input)
+
+      const api = helper.getAgentApi()
+      helper.runInTransaction(agent, async (tx) => {
+        api.addCustomAttribute('llm.conversation_id', 'convo-id')
+        api.withLlmCustomAttributes({ 'llm.contextAttribute': 'someValue' }, async () => {
+          await client.send(command)
+          const events = agent.customEventAggregator.events.toArray()
+
+          const chatSummary = events.filter(([{ type }]) => type === 'LlmChatCompletionSummary')[0]
+          const [, message] = chatSummary
+          t.equal(message['llm.contextAttribute'], 'someValue')
+
+          tx.end()
+          t.end()
+        })
+      })
+    }
+  )
+
   tap.test(`${modelId}: text answer (streamed)`, (t) => {
     if (modelId.includes('ai21')) {
       t.skip('model does not support streaming')

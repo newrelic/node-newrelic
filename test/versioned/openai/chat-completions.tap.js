@@ -448,4 +448,64 @@ tap.test('OpenAI instrumentation - chat completions', (t) => {
       test.end()
     })
   })
+
+  t.test('should record LLM custom events with attributes', (test) => {
+    const { client, agent } = t.context
+    const api = helper.getAgentApi()
+
+    helper.runInTransaction(agent, () => {
+      api.withLlmCustomAttributes({ 'llm.shared': true, 'llm.path': 'root/' }, async () => {
+        await api.withLlmCustomAttributes(
+          { 'llm.path': 'root/branch1', 'llm.attr1': true },
+          async () => {
+            agent.config.ai_monitoring.streaming.enabled = true
+            const model = 'gpt-3.5-turbo-0613'
+            const content = 'You are a mathematician.'
+            await client.chat.completions.create({
+              max_tokens: 100,
+              temperature: 0.5,
+              model,
+              messages: [
+                { role: 'user', content },
+                { role: 'user', content: 'What does 1 plus 1 equal?' }
+              ]
+            })
+          }
+        )
+
+        await api.withLlmCustomAttributes(
+          { 'llm.path': 'root/branch2', 'llm.attr2': true },
+          async () => {
+            agent.config.ai_monitoring.streaming.enabled = true
+            const model = 'gpt-3.5-turbo-0613'
+            const content = 'You are a mathematician.'
+            await client.chat.completions.create({
+              max_tokens: 100,
+              temperature: 0.5,
+              model,
+              messages: [
+                { role: 'user', content },
+                { role: 'user', content: 'What does 1 plus 2 equal?' }
+              ]
+            })
+          }
+        )
+
+        const events = agent.customEventAggregator.events.toArray().map((event) => event[1])
+
+        events.forEach((event) => {
+          t.ok(event['llm.shared'])
+          if (event['llm.path'] === 'root/branch1') {
+            t.ok(event['llm.attr1'])
+            t.notOk(event['llm.attr2'])
+          } else {
+            t.ok(event['llm.attr2'])
+            t.notOk(event['llm.attr1'])
+          }
+        })
+
+        test.end()
+      })
+    })
+  })
 })
