@@ -7,6 +7,9 @@ $userModulesPath = "$appRootPath\node_modules"
 $UserNodeModulesPath = "$env:HOME"
 $packageName = "newrelic"
 
+WriteToInstallLog "Explicitly adding node to path"
+$env:PATH = "C:\Program Files\Nodejs;" + $env:PATH
+
 function WriteToInstallLog($output)
 {
 	$logPath = (Split-Path -Parent $PSCommandPath) + "\install.log"
@@ -90,10 +93,15 @@ function Copy-NodeModules {
     WriteToInstallLog "Error at line $errorLine : $errorMessage"
 
     # Install node agent using npm
-    WriteToInstallLog "Explicitly adding node to path"
-    $env:PATH = "C:\Program Files\Nodejs;" + $env:PATH
     WriteToInstallLog "Executing npm install newrelic@latest"
-    npm install newrelic@latest
+    npm install --prefix "$env:HOME\site\wwwroot" newrelic
+
+    # Check if the installation was successful
+    if ($LASTEXITCODE -ne 0) {
+      WriteToInstallLog "npm install failed with exit code $LASTEXITCODE"
+    } else {
+      WriteToInstallLog "npm install completed successfully"
+    }
 
     WriteToInstallLog "End executing install.ps1."
     WriteToInstallLog "-----------------------------"
