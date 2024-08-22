@@ -37,6 +37,27 @@ class Collector {
         this.end(JSON.stringify(payload))
       }
 
+      req.body = function () {
+        let resolve
+        let reject
+        const promise = new Promise((res, rej) => {
+          resolve = res
+          reject = rej
+        })
+
+        let data = ''
+        this.on('data', (d) => {
+          data += d
+        })
+        this.on('end', () => {
+          resolve(data)
+        })
+        this.on('error', (error) => {
+          reject(error)
+        })
+        return promise
+      }
+
       handler.isDone = true
       handler(req, res)
     })
@@ -135,7 +156,9 @@ class Collector {
    * requests.
    * @param {function} handler A typical `(req, res) => {}` handler. For
    * convenience, `res` is extended with a `json({ payload, code = 200 })`
-   * method for easily sending JSON responses.
+   * method for easily sending JSON responses. Also, `req` is extended with
+   * a `body()` method that returns a promise which resolves to the string
+   * data supplied via POST-like requests.
    */
   addHandler(endpoint, handler) {
     const qs = querystring.decode(endpoint.slice(endpoint.indexOf('?') + 1))
