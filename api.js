@@ -1915,6 +1915,7 @@ API.prototype.ignoreApdex = function ignoreApdex() {
  * @param {Function} callback The function to execute in context.
  */
 API.prototype.withLlmCustomAttributes = function withLlmCustomAttributes(context, callback) {
+  context = context || {}
   const metric = this.agent.metrics.getOrCreateMetric(
     NAMES.SUPPORTABILITY.API + '/withLlmCustomAttributes'
   )
@@ -1932,7 +1933,7 @@ API.prototype.withLlmCustomAttributes = function withLlmCustomAttributes(context
     return callback()
   }
 
-  for (const [key, value] of Object.entries(context || {})) {
+  for (const [key, value] of Object.entries(context)) {
     if (typeof value === 'object' || typeof value === 'function') {
       logger.warn(`Invalid attribute type for ${key}. Skipped.`)
       delete context[key]
@@ -1944,9 +1945,9 @@ API.prototype.withLlmCustomAttributes = function withLlmCustomAttributes(context
   }
 
   transaction._llmContextManager = transaction._llmContextManager || new AsyncLocalStorage()
-  const parentContext = transaction._llmContextManager.getStore()
+  const parentContext = transaction._llmContextManager.getStore() || {}
 
-  const fullContext = Object.assign({}, parentContext || {}, context || {})
+  const fullContext = Object.assign({}, parentContext, context)
   return transaction._llmContextManager.run(fullContext, callback)
 }
 

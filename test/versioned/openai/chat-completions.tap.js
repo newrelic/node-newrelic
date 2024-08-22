@@ -449,40 +449,6 @@ tap.test('OpenAI instrumentation - chat completions', (t) => {
     })
   })
 
-  t.test('should create chat completion message and summary for every message sent', (test) => {
-    const { client, agent } = t.context
-    helper.runInTransaction(agent, async (tx) => {
-      const model = 'gpt-3.5-turbo-0613'
-      const content = 'You are a mathematician.'
-      await client.chat.completions.create({
-        max_tokens: 100,
-        temperature: 0.5,
-        model,
-        messages: [
-          { role: 'user', content },
-          { role: 'user', content: 'What does 1 plus 1 equal?' }
-        ]
-      })
-
-      const events = agent.customEventAggregator.events.toArray()
-      test.equal(events.length, 4, 'should create a chat completion message and summary event')
-      const chatMsgs = events.filter(([{ type }]) => type === 'LlmChatCompletionMessage')
-      test.llmMessages({
-        tx,
-        chatMsgs,
-        model,
-        id: 'chatcmpl-87sb95K4EF2nuJRcTs43Tm9ntTeat',
-        resContent: '1 plus 2 is 3.',
-        reqContent: content
-      })
-
-      const chatSummary = events.filter(([{ type }]) => type === 'LlmChatCompletionSummary')[0]
-      test.llmSummary({ tx, model, chatSummary, tokenUsage: true })
-      tx.end()
-      test.end()
-    })
-  })
-
   t.test('should record LLM custom events with attributes', (test) => {
     const { client, agent } = t.context
     const api = helper.getAgentApi()

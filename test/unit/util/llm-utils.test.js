@@ -24,42 +24,42 @@ tap.test('extractLlmAttributes', (t) => {
 })
 
 tap.test('extractLlmContext', (t) => {
-  let tx
-  let agent
-  t.autoend()
-  t.beforeEach(() => {
-    tx = {
+  t.beforeEach((t) => {
+    const tx = {
       _llmContextManager: new AsyncLocalStorage()
     }
-    agent = {
+    t.context.agent = {
       tracer: {
         getTransaction: () => {
           return tx
         }
       }
     }
+    t.context.tx = tx
   })
 
   t.test('handle empty context', (t) => {
-    t.autoend()
+    const { tx, agent } = t.context
     tx._llmContextManager.run(null, () => {
       const llmContext = extractLlmContext(agent)
       t.equal(typeof llmContext, 'object')
       t.equal(Object.entries(llmContext).length, 0)
+      t.end()
     })
   })
 
   t.test('extract LLM context', (t) => {
-    t.autoend()
+    const { tx, agent } = t.context
     tx._llmContextManager.run({ 'llm.test': 1, 'skip': 2 }, () => {
       const llmContext = extractLlmContext(agent)
       t.equal(llmContext['llm.test'], 1)
       t.notOk(llmContext.skip)
+      t.end()
     })
   })
 
   t.test('no transaction', (t) => {
-    t.autoend()
+    const { tx, agent } = t.context
     agent.tracer.getTransaction = () => {
       return null
     }
@@ -67,6 +67,8 @@ tap.test('extractLlmContext', (t) => {
       const llmContext = extractLlmContext(agent)
       t.equal(typeof llmContext, 'object')
       t.equal(Object.entries(llmContext).length, 0)
+      t.end()
     })
   })
+  t.end()
 })
