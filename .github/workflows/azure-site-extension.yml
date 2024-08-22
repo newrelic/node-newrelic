@@ -74,7 +74,7 @@ jobs:
           name: azure-site-extension-test-${{ env.PACKAGE_FILENAME }}
           path: cloud-tooling/azure-site-extension/${{ env.PACKAGE_FILENAME }}.nupkg
 
-#      - name: Publish site extension
-#        working-directory: cloud-tooling/azure-site-extension
-#        run: |
-#          dotnet nuget push "${{ env.PACKAGE_FILENAME }}.nupkg" --api-key ${{ secrets.NUGET_API_KEY }} --source ${{ secrets.NUGET_SOURCE }}
+      - name: Publish site extension
+        working-directory: cloud-tooling/azure-site-extension
+        run: |
+          dotnet nuget push "${{ env.PACKAGE_FILENAME }}.nupkg" --api-key ${{ secrets.NUGET_API_KEY }} --source ${{ secrets.NUGET_SOURCE }}
