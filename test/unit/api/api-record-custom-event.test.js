@@ -4,79 +4,80 @@
  */
 
 'use strict'
-
-const tap = require('tap')
+const test = require('node:test')
+const assert = require('node:assert')
 const helper = require('../../lib/agent_helper.js')
 const API = require('../../../api.js')
 
 const MAX_CUSTOM_EVENTS = 2
 
-tap.test('Agent API - recordCustomEvent', (t) => {
-  t.autoend()
-
-  let agent = null
-  let api = null
-
-  t.beforeEach(() => {
-    agent = helper.loadMockedAgent({
+test('Agent API - recordCustomEvent', async (t) => {
+  t.beforeEach((ctx) => {
+    ctx.nr = {}
+    const agent = helper.loadMockedAgent({
       custom_insights_events: {
         max_samples_stored: MAX_CUSTOM_EVENTS
       }
     })
-    api = new API(agent)
+    ctx.nr.api = new API(agent)
+    ctx.nr.agent = agent
   })
 
-  t.afterEach(() => {
-    helper.unloadAgent(agent)
-    agent = null
-    api = null
+  t.afterEach((ctx) => {
+    helper.unloadAgent(ctx.nr.agent)
   })
 
-  t.test('can be called without exploding', (t) => {
-    t.doesNotThrow(() => {
+  await t.test('can be called without exploding', (t, end) => {
+    const { api } = t.nr
+    assert.doesNotThrow(() => {
       api.recordCustomEvent('EventName', { key: 'value' })
     })
 
-    t.end()
+    end()
   })
 
-  t.test('does not throw an exception on invalid name', (t) => {
-    t.doesNotThrow(() => {
+  await t.test('does not throw an exception on invalid name', (t, end) => {
+    const { api } = t.nr
+    assert.doesNotThrow(() => {
       api.recordCustomEvent('éventñame', { key: 'value' })
     })
 
-    t.end()
+    end()
   })
 
-  t.test('pushes the event into the customEvents pool', (t) => {
+  await t.test('pushes the event into the customEvents pool', (t, end) => {
+    const { agent, api } = t.nr
     api.recordCustomEvent('EventName', { key: 'value' })
     const myEvent = popTopCustomEvent(agent)
-    t.ok(myEvent)
+    assert.ok(myEvent)
 
-    t.end()
+    end()
   })
 
-  t.test('does not collect events when high security mode is on', (t) => {
+  await t.test('does not collect events when high security mode is on', (t, end) => {
+    const { agent, api } = t.nr
     agent.config.high_security = true
     api.recordCustomEvent('EventName', { key: 'value' })
 
     const events = getCustomEvents(agent)
-    t.equal(events.length, 0)
+    assert.equal(events.length, 0)
 
-    t.end()
+    end()
   })
 
-  t.test('does not collect events when the endpoint is disabled in the config', (t) => {
+  await t.test('does not collect events when the endpoint is disabled in the config', (t, end) => {
+    const { agent, api } = t.nr
     agent.config.api.custom_events_enabled = false
     api.recordCustomEvent('EventName', { key: 'value' })
 
     const events = getCustomEvents(agent)
-    t.equal(events.length, 0)
+    assert.equal(events.length, 0)
 
-    t.end()
+    end()
   })
 
-  t.test('creates the proper intrinsic values when recorded', (t) => {
+  await t.test('creates the proper intrinsic values when recorded', (t, end) => {
+    const { agent, api } = t.nr
     const when = Date.now()
 
     api.recordCustomEvent('EventName', { key: 'value' })
@@ -84,14 +85,15 @@ tap.test('Agent API - recordCustomEvent', (t) => {
     const myEvent = popTopCustomEvent(agent)
     const [intrinsics] = myEvent
 
-    t.ok(intrinsics)
-    t.equal(intrinsics.type, 'EventName')
-    t.ok(intrinsics.timestamp >= when)
+    assert.ok(intrinsics)
+    assert.equal(intrinsics.type, 'EventName')
+    assert.ok(intrinsics.timestamp >= when)
 
-    t.end()
+    end()
   })
 
-  t.test('adds the attributes the user asks for', (t) => {
+  await t.test('adds the attributes the user asks for', (t, end) => {
+    const { agent, api } = t.nr
     const data = {
       string: 'value',
       bool: true,
@@ -102,12 +104,13 @@ tap.test('Agent API - recordCustomEvent', (t) => {
 
     const myEvent = popTopCustomEvent(agent)
     const userAttributes = myEvent[1]
-    t.same(userAttributes, data)
+    assert.deepEqual(userAttributes, data)
 
-    t.end()
+    end()
   })
 
-  t.test('filters object type values from user attributes', (t) => {
+  await t.test('filters object type values from user attributes', (t, end) => {
+    const { agent, api } = t.nr
     const data = {
       string: 'value',
       object: {},
@@ -122,164 +125,180 @@ tap.test('Agent API - recordCustomEvent', (t) => {
     const myEvent = popTopCustomEvent(agent)
     const userAttributes = myEvent[1]
 
-    t.equal(userAttributes.string, 'value')
+    assert.equal(userAttributes.string, 'value')
 
     const hasOwnAttribute = Object.hasOwnProperty.bind(userAttributes)
 
-    t.notOk(hasOwnAttribute('object'))
-    t.notOk(hasOwnAttribute('array'))
-    t.notOk(hasOwnAttribute('function'))
-    t.notOk(hasOwnAttribute('undef'))
-    t.notOk(hasOwnAttribute('symbol'))
+    assert.ok(!hasOwnAttribute('object'))
+    assert.ok(!hasOwnAttribute('array'))
+    assert.ok(!hasOwnAttribute('function'))
+    assert.ok(!hasOwnAttribute('undef'))
+    assert.ok(!hasOwnAttribute('symbol'))
 
-    t.end()
+    end()
   })
 
-  t.test('does not add events with invalid names', (t) => {
+  await t.test('does not add events with invalid names', (t, end) => {
+    const { agent, api } = t.nr
     api.recordCustomEvent('éventñame', { key: 'value' })
 
     const myEvent = popTopCustomEvent(agent)
-    t.notOk(myEvent)
+    assert.ok(!myEvent)
 
-    t.end()
+    end()
   })
 
-  t.test('does not collect events when disabled', (t) => {
+  await t.test('does not collect events when disabled', (t, end) => {
+    const { agent, api } = t.nr
     agent.config.custom_insights_events = false
 
     api.recordCustomEvent('SomeEvent', { key: 'value' })
 
     const myEvent = popTopCustomEvent(agent)
-    t.notOk(myEvent)
+    assert.ok(!myEvent)
 
     agent.config.custom_insights_events = true
-    t.end()
+    end()
   })
 
-  t.test('should sample after the limit of events', (t) => {
+  await t.test('should sample after the limit of events', (t, end) => {
+    const { agent, api } = t.nr
     api.recordCustomEvent('MaybeBumped', { a: 1 })
     api.recordCustomEvent('MaybeBumped', { b: 2 })
     api.recordCustomEvent('MaybeBumped', { c: 3 })
 
     const customEvents = getCustomEvents(agent)
-    t.equal(customEvents.length, MAX_CUSTOM_EVENTS)
+    assert.equal(customEvents.length, MAX_CUSTOM_EVENTS)
 
-    t.end()
+    end()
   })
 
-  t.test('should not throw an exception with too few arguments', (t) => {
-    t.doesNotThrow(() => {
+  await t.test('should not throw an exception with too few arguments', (t, end) => {
+    const { api } = t.nr
+    assert.doesNotThrow(() => {
       api.recordCustomEvent()
     })
 
-    t.doesNotThrow(() => {
+    assert.doesNotThrow(() => {
       api.recordCustomEvent('SomeThing')
     })
 
-    t.end()
+    end()
   })
 
-  t.test('should reject events with object first arg', (t) => {
+  await t.test('should reject events with object first arg', (t, end) => {
+    const { agent, api } = t.nr
     api.recordCustomEvent({}, { alpha: 'beta' })
 
     const customEvent = popTopCustomEvent(agent)
-    t.notOk(customEvent)
+    assert.ok(!customEvent)
 
-    t.end()
+    end()
   })
 
-  t.test('should reject events with array first arg', (t) => {
+  await t.test('should reject events with array first arg', (t, end) => {
+    const { agent, api } = t.nr
     api.recordCustomEvent([], { alpha: 'beta' })
 
     const customEvent = popTopCustomEvent(agent)
-    t.notOk(customEvent)
+    assert.ok(!customEvent)
 
-    t.end()
+    end()
   })
 
-  t.test('should reject events with number first arg', (t) => {
+  await t.test('should reject events with number first arg', (t, end) => {
+    const { agent, api } = t.nr
     api.recordCustomEvent(1, { alpha: 'beta' })
 
     const customEvent = popTopCustomEvent(agent)
-    t.notOk(customEvent)
+    assert.ok(!customEvent)
 
-    t.end()
+    end()
   })
 
-  t.test('should reject events with undfined first arg', (t) => {
+  await t.test('should reject events with undefined first arg', (t, end) => {
+    const { agent, api } = t.nr
     api.recordCustomEvent(undefined, { alpha: 'beta' })
 
     const customEvent = popTopCustomEvent(agent)
-    t.notOk(customEvent)
+    assert.ok(!customEvent)
 
-    t.end()
+    end()
   })
 
-  t.test('should reject events with null first arg', (t) => {
+  await t.test('should reject events with null first arg', (t, end) => {
+    const { agent, api } = t.nr
     api.recordCustomEvent(null, { alpha: 'beta' })
 
     const customEvent = popTopCustomEvent(agent)
-    t.notOk(customEvent)
+    assert.ok(!customEvent)
 
-    t.end()
+    end()
   })
 
-  t.test('should reject events with string second arg', (t) => {
+  await t.test('should reject events with string second arg', (t, end) => {
+    const { agent, api } = t.nr
     api.recordCustomEvent('EventThing', 'thing')
 
     const customEvent = popTopCustomEvent(agent)
-    t.notOk(customEvent)
+    assert.ok(!customEvent)
 
-    t.end()
+    end()
   })
 
-  t.test('should reject events with array second arg', (t) => {
+  await t.test('should reject events with array second arg', (t, end) => {
+    const { agent, api } = t.nr
     api.recordCustomEvent('EventThing', [])
 
     const customEvent = popTopCustomEvent(agent)
-    t.notOk(customEvent)
+    assert.ok(!customEvent)
 
-    t.end()
+    end()
   })
 
-  t.test('should reject events with number second arg', (t) => {
+  await t.test('should reject events with number second arg', (t, end) => {
+    const { agent, api } = t.nr
     api.recordCustomEvent('EventThing', 1)
 
     const customEvent = popTopCustomEvent(agent)
-    t.notOk(customEvent)
+    assert.ok(!customEvent)
 
-    t.end()
+    end()
   })
 
-  t.test('should reject events with undefined second arg', (t) => {
+  await t.test('should reject events with undefined second arg', (t, end) => {
+    const { agent, api } = t.nr
     api.recordCustomEvent('EventThing', undefined)
 
     const customEvent = popTopCustomEvent(agent)
-    t.notOk(customEvent)
+    assert.ok(!customEvent)
 
-    t.end()
+    end()
   })
 
-  t.test('should reject events with null second arg', (t) => {
+  await t.test('should reject events with null second arg', (t, end) => {
+    const { agent, api } = t.nr
     api.recordCustomEvent('EventThing', null)
 
     const customEvent = popTopCustomEvent(agent)
-    t.notOk(customEvent)
+    assert.ok(!customEvent)
 
-    t.end()
+    end()
   })
 
-  t.test('should reject events with a type greater than 255 chars', (t) => {
+  await t.test('should reject events with a type greater than 255 chars', (t, end) => {
+    const { agent, api } = t.nr
     const badType = new Array(257).join('a')
     api.recordCustomEvent(badType, { ship: 'every week' })
 
     const customEvent = popTopCustomEvent(agent)
-    t.notOk(customEvent)
+    assert.ok(!customEvent)
 
-    t.end()
+    end()
   })
 
-  t.test('should reject events with an attribute key greater than 255 chars', (t) => {
+  await t.test('should reject events with an attribute key greater than 255 chars', (t, end) => {
+    const { agent, api } = t.nr
     const badKey = new Array(257).join('b')
     const attributes = {}
     attributes[badKey] = true
@@ -287,9 +306,9 @@ tap.test('Agent API - recordCustomEvent', (t) => {
     api.recordCustomEvent('MyType', attributes)
 
     const customEvent = popTopCustomEvent(agent)
-    t.notOk(customEvent)
+    assert.ok(!customEvent)
 
-    t.end()
+    end()
   })
 })
 

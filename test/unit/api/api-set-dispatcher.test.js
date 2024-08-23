@@ -4,68 +4,68 @@
  */
 
 'use strict'
-
-const tap = require('tap')
+const test = require('node:test')
+const assert = require('node:assert')
 const API = require('../../../api')
 const helper = require('../../lib/agent_helper')
 
-tap.test('Agent API - dispatch setter', (t) => {
-  t.autoend()
-
-  let agent = null
-  let api = null
-
-  t.beforeEach(() => {
-    agent = helper.loadMockedAgent()
-    api = new API(agent)
+test('Agent API - dispatch setter', async (t) => {
+  t.beforeEach((ctx) => {
+    ctx.nr = {}
+    const agent = helper.loadMockedAgent()
+    ctx.nr.api = new API(agent)
+    ctx.nr.agent = agent
   })
 
-  t.afterEach(() => {
+  t.afterEach((ctx) => {
+    const { agent } = ctx.nr
     agent.environment.clearDispatcher()
-
     helper.unloadAgent(agent)
-    agent = null
   })
 
-  t.test('exports a dispatcher setter', (t) => {
-    t.ok(api.setDispatcher)
-    t.type(api.setDispatcher, 'function')
+  await t.test('exports a dispatcher setter', (t, end) => {
+    const { api } = t.nr
+    assert.ok(api.setDispatcher)
+    assert.equal(typeof api.setDispatcher, 'function')
 
-    t.end()
+    end()
   })
 
-  t.test('sets the dispatcher', (t) => {
+  await t.test('sets the dispatcher', (t, end) => {
+    const { agent, api } = t.nr
     api.setDispatcher('test')
 
     const dispatcher = agent.environment.get('Dispatcher')
-    t.ok(dispatcher.includes('test'))
+    assert.ok(dispatcher.includes('test'))
 
-    t.end()
+    end()
   })
 
-  t.test('sets the dispatcher and version', (t) => {
+  await t.test('sets the dispatcher and version', (t, end) => {
+    const { agent, api } = t.nr
     api.setDispatcher('test', 2)
 
-    t.ok(dispatcherIncludes(agent, 'test'))
-    t.ok(dispatcherVersionIncludes(agent, '2'))
+    assert.ok(dispatcherIncludes(agent, 'test'))
+    assert.ok(dispatcherVersionIncludes(agent, '2'))
 
-    t.end()
+    end()
   })
 
-  t.test('does not allow internal calls to setDispatcher to override', (t) => {
+  await t.test('does not allow internal calls to setDispatcher to override', (t, end) => {
+    const { agent, api } = t.nr
     agent.environment.setDispatcher('internal', '3')
-    t.ok(dispatcherIncludes(agent, 'internal'))
-    t.ok(dispatcherVersionIncludes(agent, '3'))
+    assert.ok(dispatcherIncludes(agent, 'internal'))
+    assert.ok(dispatcherVersionIncludes(agent, '3'))
 
     api.setDispatcher('test', 2)
-    t.ok(dispatcherIncludes(agent, 'test'))
-    t.ok(dispatcherVersionIncludes(agent, '2'))
+    assert.ok(dispatcherIncludes(agent, 'test'))
+    assert.ok(dispatcherVersionIncludes(agent, '2'))
 
     agent.environment.setDispatcher('internal', '3')
-    t.ok(dispatcherIncludes(agent, 'test'))
-    t.ok(dispatcherVersionIncludes(agent, '2'))
+    assert.ok(dispatcherIncludes(agent, 'test'))
+    assert.ok(dispatcherVersionIncludes(agent, '2'))
 
-    t.end()
+    end()
   })
 })
 

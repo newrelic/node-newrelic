@@ -4,46 +4,43 @@
  */
 
 'use strict'
-
-const tap = require('tap')
+const test = require('node:test')
+const assert = require('node:assert')
 const helper = require('../../lib/agent_helper')
 const API = require('../../../api')
 const NAMES = require('../../../lib/metrics/names')
 
-tap.test('The API supportability metrics', (t) => {
-  t.autoend()
-
-  let agent = null
-  let api = null
-
+test('The API supportability metrics', async (t) => {
   const apiCalls = Object.keys(API.prototype)
 
-  t.beforeEach(() => {
-    agent = helper.loadMockedAgent()
-    api = new API(agent)
+  t.beforeEach((ctx) => {
+    ctx.nr = {}
+    const agent = helper.loadMockedAgent()
+    ctx.nr.api = new API(agent)
+    ctx.nr.agent = agent
   })
 
-  t.afterEach(() => {
-    helper.unloadAgent(agent)
+  t.afterEach((ctx) => {
+    helper.unloadAgent(ctx.nr.agent)
   })
 
-  for (let i = 0; i < apiCalls.length; i++) {
-    testMetricCalls(apiCalls[i])
+  for (const key of apiCalls) {
+    await testMetricCalls(key)
   }
 
-  function testMetricCalls(name) {
-    const testName = 'should create a metric for API#' + name
-    t.test(testName, (t) => {
+  async function testMetricCalls(name) {
+    await t.test(`should create a metric for API#${name}`, (t, end) => {
+      const { agent, api } = t.nr
       const beforeMetric = agent.metrics.getOrCreateMetric(NAMES.SUPPORTABILITY.API + '/' + name)
-      t.equal(beforeMetric.callCount, 0)
+      assert.equal(beforeMetric.callCount, 0)
 
       // Some api calls required a name to be given rather than just an empty string
       api[name]('test')
 
       const afterMetric = agent.metrics.getOrCreateMetric(NAMES.SUPPORTABILITY.API + '/' + name)
-      t.equal(afterMetric.callCount, 1)
+      assert.equal(afterMetric.callCount, 1)
 
-      t.end()
+      end()
     })
   }
 })

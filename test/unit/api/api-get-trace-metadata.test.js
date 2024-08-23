@@ -4,72 +4,71 @@
  */
 
 'use strict'
-
-const tap = require('tap')
+const test = require('node:test')
+const assert = require('node:assert')
 const API = require('../../../api')
 const helper = require('../../lib/agent_helper')
 
-tap.test('Agent API - trace metadata', (t) => {
-  t.autoend()
-
-  let agent = null
-  let api = null
-
-  t.beforeEach(() => {
-    agent = helper.loadMockedAgent()
+test('Agent API - trace metadata', async (t) => {
+  t.beforeEach((ctx) => {
+    ctx.nr = {}
+    const agent = helper.loadMockedAgent()
     agent.config.distributed_tracing.enabled = true
 
-    api = new API(agent)
+    ctx.nr.api = new API(agent)
+    ctx.nr.agent = agent
   })
 
-  t.afterEach(() => {
-    helper.unloadAgent(agent)
-    agent = null
+  t.afterEach((ctx) => {
+    helper.unloadAgent(ctx.nr.agent)
   })
 
-  t.test('exports a trace metadata function', (t) => {
+  await t.test('exports a trace metadata function', (t, end) => {
+    const { api, agent } = t.nr
     helper.runInTransaction(agent, function (txn) {
-      t.type(api.getTraceMetadata, 'function')
+      assert.equal(typeof api.getTraceMetadata, 'function')
 
       const metadata = api.getTraceMetadata()
-      t.type(metadata, 'object')
+      assert.equal(typeof metadata, 'object')
 
-      t.type(metadata.traceId, 'string')
-      t.equal(metadata.traceId, txn.traceId)
+      assert.equal(typeof metadata.traceId, 'string')
+      assert.equal(metadata.traceId, txn.traceId)
 
-      t.type(metadata.spanId, 'string')
-      t.equal(metadata.spanId, txn.agent.tracer.getSegment().id)
+      assert.equal(typeof metadata.spanId, 'string')
+      assert.equal(metadata.spanId, txn.agent.tracer.getSegment().id)
 
-      t.end()
+      end()
     })
   })
 
-  t.test('should return empty object with DT disabled', (t) => {
+  await t.test('should return empty object with DT disabled', (t, end) => {
+    const { api, agent } = t.nr
     agent.config.distributed_tracing.enabled = false
 
     helper.runInTransaction(agent, function () {
       const metadata = api.getTraceMetadata()
-      t.type(metadata, 'object')
+      assert.equal(typeof metadata, 'object')
 
-      t.same(metadata, {})
-      t.end()
+      assert.deepEqual(metadata, {})
+      end()
     })
   })
 
-  t.test('should not include spanId property with span events disabled', (t) => {
+  await t.test('should not include spanId property with span events disabled', (t, end) => {
+    const { api, agent } = t.nr
     agent.config.span_events.enabled = false
 
     helper.runInTransaction(agent, function (txn) {
       const metadata = api.getTraceMetadata()
-      t.type(metadata, 'object')
+      assert.equal(typeof metadata, 'object')
 
-      t.type(metadata.traceId, 'string')
-      t.equal(metadata.traceId, txn.traceId)
+      assert.equal(typeof metadata.traceId, 'string')
+      assert.equal(metadata.traceId, txn.traceId)
 
       const hasProperty = Object.hasOwnProperty.call(metadata, 'spanId')
-      t.notOk(hasProperty)
+      assert.ok(!hasProperty)
 
-      t.end()
+      end()
     })
   })
 })

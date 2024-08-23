@@ -4,58 +4,59 @@
  */
 
 'use strict'
-
-const tap = require('tap')
+const test = require('node:test')
+const assert = require('node:assert')
 const API = require('../../../api')
 const helper = require('../../lib/agent_helper')
 const SpanEvent = require('../../../lib/spans/span-event')
 
 const DESTINATIONS = require('../../../lib/config/attribute-filter').DESTINATIONS
 
-tap.test('Agent API - custom attributes', (t) => {
-  t.autoend()
-
-  let agent = null
-  let api = null
-
-  t.beforeEach(() => {
-    agent = helper.loadMockedAgent()
+test('Agent API - custom attributes', async (t) => {
+  t.beforeEach((ctx) => {
+    ctx.nr = {}
+    const agent = helper.loadMockedAgent()
     agent.config.attributes.enabled = true
     agent.config.distributed_tracing.enabled = true
 
-    api = new API(agent)
+    ctx.nr.api = new API(agent)
+    ctx.nr.agent = agent
   })
 
-  t.afterEach(() => {
-    helper.unloadAgent(agent)
-    agent = null
+  t.afterEach((ctx) => {
+    helper.unloadAgent(ctx.nr.agent)
   })
 
-  t.test('exports a function for adding multiple custom attributes at once', (t) => {
-    t.ok(api.addCustomAttributes)
-    t.type(api.addCustomAttributes, 'function')
-    t.end()
+  await t.test('exports a function for adding multiple custom attributes at once', (t, end) => {
+    const { api } = t.nr
+    assert.ok(api.addCustomAttributes)
+    assert.equal(typeof api.addCustomAttributes, 'function')
+    end()
   })
 
-  t.test("shouldn't blow up without a transaction", (t) => {
-    // should not throw
-    api.addCustomAttribute('TestName', 'TestValue')
-    t.end()
+  await t.test("shouldn't blow up without a transaction", (t, end) => {
+    const { api } = t.nr
+    assert.doesNotThrow(() => {
+      api.addCustomAttribute('TestName', 'TestValue')
+    })
+    end()
   })
 
-  t.test('should properly add custom attributes', (t) => {
+  await t.test('should properly add custom attributes', (t, end) => {
+    const { agent, api } = t.nr
     helper.runInTransaction(agent, function (transaction) {
       api.addCustomAttribute('test', 1)
       const attributes = transaction.trace.custom.get(DESTINATIONS.TRANS_TRACE)
 
-      t.equal(attributes.test, 1)
+      assert.equal(attributes.test, 1)
 
       transaction.end()
-      t.end()
+      end()
     })
   })
 
-  t.test('should skip if attribute key length limit is exceeded', (t) => {
+  await t.test('should skip if attribute key length limit is exceeded', (t, end) => {
+    const { agent, api } = t.nr
     helper.runInTransaction(agent, function (transaction) {
       const tooLong = [
         'Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
@@ -68,14 +69,15 @@ tap.test('Agent API - custom attributes', (t) => {
       const attributes = transaction.trace.custom.get(DESTINATIONS.TRANS_TRACE)
 
       const hasTooLong = Object.hasOwnProperty.call(attributes, 'tooLong')
-      t.notOk(hasTooLong)
+      assert.ok(!hasTooLong)
 
       transaction.end()
-      t.end()
+      end()
     })
   })
 
-  t.test('should properly add multiple custom attributes', (t) => {
+  await t.test('should properly add multiple custom attributes', (t, end) => {
+    const { agent, api } = t.nr
     helper.runInTransaction(agent, function (transaction) {
       api.addCustomAttributes({
         one: 1,
@@ -83,30 +85,32 @@ tap.test('Agent API - custom attributes', (t) => {
       })
       const attributes = transaction.trace.custom.get(DESTINATIONS.TRANS_TRACE)
 
-      t.equal(attributes.one, 1)
-      t.equal(attributes.two, 2)
+      assert.equal(attributes.one, 1)
+      assert.equal(attributes.two, 2)
 
       transaction.end()
-      t.end()
+      end()
     })
   })
 
-  t.test('should not add custom attributes when disabled', (t) => {
+  await t.test('should not add custom attributes when disabled', (t, end) => {
+    const { agent, api } = t.nr
     helper.runInTransaction(agent, function (transaction) {
       agent.config.api.custom_attributes_enabled = false
       api.addCustomAttribute('test', 1)
       const attributes = transaction.trace.custom.get(DESTINATIONS.TRANS_TRACE)
 
       const hasTest = Object.hasOwnProperty.call(attributes, 'test')
-      t.notOk(hasTest)
+      assert.ok(!hasTest)
 
       agent.config.api.custom_attributes_enabled = true
       transaction.end()
-      t.end()
+      end()
     })
   })
 
-  t.test('should not add multiple custom attributes when disabled', (t) => {
+  await t.test('should not add multiple custom attributes when disabled', (t, end) => {
+    const { agent, api } = t.nr
     helper.runInTransaction(agent, function (transaction) {
       agent.config.api.custom_attributes_enabled = false
       api.addCustomAttributes({
@@ -117,31 +121,33 @@ tap.test('Agent API - custom attributes', (t) => {
 
       const hasOne = Object.hasOwnProperty.call(attributes, 'one')
       const hasTwo = Object.hasOwnProperty.call(attributes, 'two')
-      t.notOk(hasOne)
-      t.notOk(hasTwo)
+      assert.ok(!hasOne)
+      assert.ok(!hasTwo)
 
       agent.config.api.custom_attributes_enabled = true
       transaction.end()
-      t.end()
+      end()
     })
   })
 
-  t.test('should not add custom attributes in high security mode', (t) => {
+  await t.test('should not add custom attributes in high security mode', (t, end) => {
+    const { agent, api } = t.nr
     helper.runInTransaction(agent, function (transaction) {
       agent.config.high_security = true
       api.addCustomAttribute('test', 1)
       const attributes = transaction.trace.custom.get(DESTINATIONS.TRANS_TRACE)
 
       const hasTest = Object.hasOwnProperty.call(attributes, 'test')
-      t.notOk(hasTest)
+      assert.ok(!hasTest)
 
       agent.config.high_security = false
       transaction.end()
-      t.end()
+      end()
     })
   })
 
-  t.test('should not add multiple custom attributes in high security mode', (t) => {
+  await t.test('should not add multiple custom attributes in high security mode', (t, end) => {
+    const { agent, api } = t.nr
     helper.runInTransaction(agent, function (transaction) {
       agent.config.high_security = true
       api.addCustomAttributes({
@@ -152,21 +158,22 @@ tap.test('Agent API - custom attributes', (t) => {
 
       const hasOne = Object.hasOwnProperty.call(attributes, 'one')
       const hasTwo = Object.hasOwnProperty.call(attributes, 'two')
-      t.notOk(hasOne)
-      t.notOk(hasTwo)
+      assert.ok(!hasOne)
+      assert.ok(!hasTwo)
 
       agent.config.high_security = false
       transaction.end()
-      t.end()
+      end()
     })
   })
 
-  t.test('should keep the most-recently seen value', (t) => {
+  await t.test('should keep the most-recently seen value', (t, end) => {
+    const { agent, api } = t.nr
     agent.on('transactionFinished', function (transaction) {
       const attributes = transaction.trace.custom.get(DESTINATIONS.TRANS_TRACE)
-      t.equal(attributes.TestName, 'Third')
+      assert.equal(attributes.TestName, 'Third')
 
-      t.end()
+      end()
     })
 
     helper.runInTransaction(agent, function (transaction) {
@@ -178,7 +185,8 @@ tap.test('Agent API - custom attributes', (t) => {
     })
   })
 
-  t.test('should roll with it if custom attributes are gone', (t) => {
+  await t.test('should roll with it if custom attributes are gone', (t, end) => {
+    const { agent, api } = t.nr
     helper.runInTransaction(agent, function (transaction) {
       const trace = transaction.trace
       delete trace.custom
@@ -186,11 +194,12 @@ tap.test('Agent API - custom attributes', (t) => {
       // should not throw
       api.addCustomAttribute('TestName', 'TestValue')
 
-      t.end()
+      end()
     })
   })
 
-  t.test('should not allow setting of excluded attributes', (t) => {
+  await t.test('should not allow setting of excluded attributes', (t, end) => {
+    const { agent, api } = t.nr
     agent.config.attributes.exclude.push('ignore_me')
     agent.config.emit('attributes.exclude')
 
@@ -198,9 +207,9 @@ tap.test('Agent API - custom attributes', (t) => {
       const attributes = transaction.trace.custom.get(DESTINATIONS.TRANS_TRACE)
 
       const hasIgnore = Object.hasOwnProperty.call(attributes, 'ignore_me')
-      t.notOk(hasIgnore)
+      assert.ok(!hasIgnore)
 
-      t.end()
+      end()
     })
 
     helper.runInTransaction(agent, function (transaction) {
@@ -210,7 +219,8 @@ tap.test('Agent API - custom attributes', (t) => {
     })
   })
 
-  t.test('should properly add custom span attribute', (t) => {
+  await t.test('should properly add custom span attribute', (t, end) => {
+    const { agent, api } = t.nr
     helper.runInTransaction(agent, function (transaction) {
       transaction.name = 'test'
       api.startSegment('foobar', false, function () {
@@ -219,15 +229,16 @@ tap.test('Agent API - custom attributes', (t) => {
         const span = SpanEvent.fromSegment(segment, 'parent')
         const attributes = span.customAttributes
 
-        t.equal(attributes.spannnnnny, 1)
+        assert.equal(attributes.spannnnnny, 1)
       })
 
       transaction.end()
-      t.end()
+      end()
     })
   })
 
-  t.test('should properly add multiple custom span attributes', (t) => {
+  await t.test('should properly add multiple custom span attributes', (t, end) => {
+    const { agent, api } = t.nr
     helper.runInTransaction(agent, function (transaction) {
       api.startSegment('foo', false, () => {
         api.addCustomSpanAttributes({
@@ -238,8 +249,8 @@ tap.test('Agent API - custom attributes', (t) => {
         const span = SpanEvent.fromSegment(segment, 'parent')
         const attributes = span.customAttributes
 
-        t.equal(attributes.one, 1)
-        t.equal(attributes.two, 2)
+        assert.equal(attributes.one, 1)
+        assert.equal(attributes.two, 2)
       })
       api.addCustomAttributes({
         one: 1,
@@ -247,7 +258,7 @@ tap.test('Agent API - custom attributes', (t) => {
       })
 
       transaction.end()
-      t.end()
+      end()
     })
   })
 })
