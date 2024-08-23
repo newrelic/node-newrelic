@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "Mon Aug 19 2024 14:49:27 GMT-0400 (Eastern Daylight Time)",
+  "lastUpdated": "Fri Aug 23 2024 19:22:25 GMT+0200 (Central European Summer Time)",
   "projectName": "New Relic Node Agent",
   "projectUrl": "https://github.com/newrelic/node-newrelic",
   "includeOptDeps": true,
@@ -226,28 +226,28 @@
     }
   },
   "devDependencies": {
-    "@aws-sdk/client-s3@3.632.0": {
+    "@aws-sdk/client-s3@3.637.0": {
       "name": "@aws-sdk/client-s3",
-      "version": "3.632.0",
+      "version": "3.637.0",
       "range": "^3.556.0",
       "licenses": "Apache-2.0",
       "repoUrl": "https://github.com/aws/aws-sdk-js-v3",
-      "versionedRepoUrl": "https://github.com/aws/aws-sdk-js-v3/tree/v3.632.0",
+      "versionedRepoUrl": "https://github.com/aws/aws-sdk-js-v3/tree/v3.637.0",
       "licenseFile": "node_modules/@aws-sdk/client-s3/LICENSE",
-      "licenseUrl": "https://github.com/aws/aws-sdk-js-v3/blob/v3.632.0/LICENSE",
+      "licenseUrl": "https://github.com/aws/aws-sdk-js-v3/blob/v3.637.0/LICENSE",
       "licenseTextSource": "file",
       "publisher": "AWS SDK for JavaScript Team",
       "url": "https://aws.amazon.com/javascript/"
     },
-    "@aws-sdk/s3-request-presigner@3.632.0": {
+    "@aws-sdk/s3-request-presigner@3.637.0": {
       "name": "@aws-sdk/s3-request-presigner",
-      "version": "3.632.0",
+      "version": "3.637.0",
       "range": "^3.556.0",
       "licenses": "Apache-2.0",
       "repoUrl": "https://github.com/aws/aws-sdk-js-v3",
-      "versionedRepoUrl": "https://github.com/aws/aws-sdk-js-v3/tree/v3.632.0",
+      "versionedRepoUrl": "https://github.com/aws/aws-sdk-js-v3/tree/v3.637.0",
       "licenseFile": "node_modules/@aws-sdk/s3-request-presigner/LICENSE",
-      "licenseUrl": "https://github.com/aws/aws-sdk-js-v3/blob/v3.632.0/LICENSE",
+      "licenseUrl": "https://github.com/aws/aws-sdk-js-v3/blob/v3.637.0/LICENSE",
       "licenseTextSource": "file",
       "publisher": "AWS SDK for JavaScript Team",
       "url": "https://aws.amazon.com/javascript/"
@@ -364,27 +364,27 @@
       "licenseTextSource": "file",
       "publisher": "Evgeny Poberezkin"
     },
-    "async@3.2.5": {
+    "async@3.2.6": {
       "name": "async",
-      "version": "3.2.5",
+      "version": "3.2.6",
       "range": "^3.2.4",
       "licenses": "MIT",
       "repoUrl": "https://github.com/caolan/async",
-      "versionedRepoUrl": "https://github.com/caolan/async/tree/v3.2.5",
+      "versionedRepoUrl": "https://github.com/caolan/async/tree/v3.2.6",
       "licenseFile": "node_modules/async/LICENSE",
-      "licenseUrl": "https://github.com/caolan/async/blob/v3.2.5/LICENSE",
+      "licenseUrl": "https://github.com/caolan/async/blob/v3.2.6/LICENSE",
       "licenseTextSource": "file",
       "publisher": "Caolan McMahon"
     },
-    "aws-sdk@2.1677.0": {
+    "aws-sdk@2.1681.0": {
       "name": "aws-sdk",
-      "version": "2.1677.0",
+      "version": "2.1681.0",
       "range": "^2.1604.0",
       "licenses": "Apache-2.0",
       "repoUrl": "https://github.com/aws/aws-sdk-js",
-      "versionedRepoUrl": "https://github.com/aws/aws-sdk-js/tree/v2.1677.0",
+      "versionedRepoUrl": "https://github.com/aws/aws-sdk-js/tree/v2.1681.0",
       "licenseFile": "node_modules/aws-sdk/LICENSE.txt",
-      "licenseUrl": "https://github.com/aws/aws-sdk-js/blob/v2.1677.0/LICENSE.txt",
+      "licenseUrl": "https://github.com/aws/aws-sdk-js/blob/v2.1681.0/LICENSE.txt",
       "licenseTextSource": "file",
       "publisher": "Amazon Web Services",
       "url": "https://aws.amazon.com/"

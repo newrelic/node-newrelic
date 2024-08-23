@@ -1076,7 +1076,7 @@ SOFTWARE.
 
 ### @aws-sdk/client-s3
 
-This product includes source derived from [@aws-sdk/client-s3](https://github.com/aws/aws-sdk-js-v3) ([v3.632.0](https://github.com/aws/aws-sdk-js-v3/tree/v3.632.0)), distributed under the [Apache-2.0 License](https://github.com/aws/aws-sdk-js-v3/blob/v3.632.0/LICENSE):
+This product includes source derived from [@aws-sdk/client-s3](https://github.com/aws/aws-sdk-js-v3) ([v3.637.0](https://github.com/aws/aws-sdk-js-v3/tree/v3.637.0)), distributed under the [Apache-2.0 License](https://github.com/aws/aws-sdk-js-v3/blob/v3.637.0/LICENSE):
 
 ```
                                 Apache License
@@ -1285,7 +1285,7 @@ This product includes source derived from [@aws-sdk/client-s3](https://github.co
 
 ### @aws-sdk/s3-request-presigner
 
-This product includes source derived from [@aws-sdk/s3-request-presigner](https://github.com/aws/aws-sdk-js-v3) ([v3.632.0](https://github.com/aws/aws-sdk-js-v3/tree/v3.632.0)), distributed under the [Apache-2.0 License](https://github.com/aws/aws-sdk-js-v3/blob/v3.632.0/LICENSE):
+This product includes source derived from [@aws-sdk/s3-request-presigner](https://github.com/aws/aws-sdk-js-v3) ([v3.637.0](https://github.com/aws/aws-sdk-js-v3/tree/v3.637.0)), distributed under the [Apache-2.0 License](https://github.com/aws/aws-sdk-js-v3/blob/v3.637.0/LICENSE):
 
 ```
                                 Apache License
@@ -2656,7 +2656,7 @@ SOFTWARE.
 
 ### async
 
-This product includes source derived from [async](https://github.com/caolan/async) ([v3.2.5](https://github.com/caolan/async/tree/v3.2.5)), distributed under the [MIT License](https://github.com/caolan/async/blob/v3.2.5/LICENSE):
+This product includes source derived from [async](https://github.com/caolan/async) ([v3.2.6](https://github.com/caolan/async/tree/v3.2.6)), distributed under the [MIT License](https://github.com/caolan/async/blob/v3.2.6/LICENSE):
 
 ```
 Copyright (c) 2010-2018 Caolan McMahon
@@ -2683,7 +2683,7 @@ THE SOFTWARE.
 
 ### aws-sdk
 
-This product includes source derived from [aws-sdk](https://github.com/aws/aws-sdk-js) ([v2.1677.0](https://github.com/aws/aws-sdk-js/tree/v2.1677.0)), distributed under the [Apache-2.0 License](https://github.com/aws/aws-sdk-js/blob/v2.1677.0/LICENSE.txt):
+This product includes source derived from [aws-sdk](https://github.com/aws/aws-sdk-js) ([v2.1681.0](https://github.com/aws/aws-sdk-js/tree/v2.1681.0)), distributed under the [Apache-2.0 License](https://github.com/aws/aws-sdk-js/blob/v2.1681.0/LICENSE.txt):
 
 ```
 
