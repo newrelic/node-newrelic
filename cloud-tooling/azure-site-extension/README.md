@@ -94,6 +94,8 @@ How to test the site extension in Azure.
 5. Restart application
     - Overview > Restart
 
+6. Send traffic to your application. You should see a `newrelic_agent.log` created in the `/site/wwwroot` directory and data should be flowing to your NR1 account. 
+
 ### Using Kudu to view:
   - Site extension logs:
     - Development Tools > Advanced Tools > Go > Debug console > Powershell > SiteExtensions > Select the site extension > install.log (download the file or click on pencil icon to see it in the console)
