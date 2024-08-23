@@ -93,11 +93,11 @@ test('Query Sample', async (t) => {
       codecCalled = true
     }
     sinon.stub(codec, 'encode').callsFake(fakeCodec)
-    sinon.stub(QuerySample.prototype, 'getParams').callsFake(() => { })
+    sinon.stub(QuerySample.prototype, 'getParams').callsFake(() => {})
 
     const querySample = new QuerySample(fakeTracer, fakeSample)
 
-    querySample.prepareJSON(() => { })
+    querySample.prepareJSON(() => {})
 
     assert.ok(codecCalled)
 
@@ -130,13 +130,13 @@ test('Query Sample', async (t) => {
     const clock = sinon.useFakeTimers({
       toFake: ['nextTick']
     })
-    process.nextTick(() => { })
+    process.nextTick(() => {})
 
-    sinon.stub(QuerySample.prototype, 'getParams').callsFake(() => { })
+    sinon.stub(QuerySample.prototype, 'getParams').callsFake(() => {})
 
     const querySample = new QuerySample(fakeTracer, fakeSample)
 
-    querySample.prepareJSON(() => { })
+    querySample.prepareJSON(() => {})
 
     clock.runAll()
 
@@ -165,7 +165,7 @@ test('Query Sample', async (t) => {
       segment: {
         getAttributes: fakeGetAttributes,
         transaction: {
-          addDistributedTraceIntrinsics: () => { }
+          addDistributedTraceIntrinsics: () => {}
         }
       }
     }

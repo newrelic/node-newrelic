@@ -21,11 +21,9 @@ function clean(sql) {
 }
 
 test('database query parser', async (t) => {
-  
   await t.test('should accept query as a string', function () {
     const ps = parseSql('select * from someTable')
     assert.equal(ps.query, 'select * from someTable')
-    
   })
 
   await t.test('should accept query as a sql property of an object', function () {
@@ -33,11 +31,9 @@ test('database query parser', async (t) => {
       sql: 'select * from someTable'
     })
     assert.equal(ps.query, 'select * from someTable')
-    
   })
 
   await t.test('SELECT SQL', async (t) => {
-    
     await t.test('should parse a simple query', function () {
       const ps = parseSql('Select * from dude')
       assert.ok(ps)
@@ -48,7 +44,6 @@ test('database query parser', async (t) => {
       assert.ok(ps.collection)
       assert.equal(ps.collection, 'dude')
       assert.equal(ps.query, 'Select * from dude')
-      
     })
 
     await t.test('should parse more interesting queries too', function () {
@@ -71,12 +66,10 @@ test('database query parser', async (t) => {
       assert.equal(ps.operation, 'select')
       assert.equal(ps.collection, 'postcodes')
       assert.equal(ps.query, sql)
-      
     })
   })
 
   await t.test('DELETE SQL', async (t) => {
-    
     await t.test('should parse a simple command', function () {
       const ps = parseSql('DELETE\nfrom dude')
       assert.ok(ps)
@@ -87,7 +80,6 @@ test('database query parser', async (t) => {
       assert.ok(ps.collection)
       assert.equal(ps.collection, 'dude')
       assert.equal(ps.query, 'DELETE\nfrom dude')
-      
     })
 
     await t.test('should parse a command with conditions', function () {
@@ -100,12 +92,10 @@ test('database query parser', async (t) => {
       assert.ok(ps.collection)
       assert.equal(ps.collection, 'dude')
       assert.equal(ps.query, "DELETE\nfrom dude where name = 'man'")
-      
     })
   })
 
   await t.test('UPDATE SQL', function (t) {
-    
     t.test('should parse a command with gratuitous white space and conditions', function () {
       const ps = parseSql('  update test set value = 1 where id = 12')
       assert.ok(ps)
@@ -116,12 +106,10 @@ test('database query parser', async (t) => {
       assert.ok(ps.collection)
       assert.equal(ps.collection, 'test')
       assert.equal(ps.query, 'update test set value = 1 where id = 12')
-      
     })
   })
 
   await t.test('INSERT SQL', function (t) {
-    
     t.test('should parse a command with a subquery', function () {
       const ps = parseSql('  insert into\ntest\nselect * from dude')
       assert.ok(ps)
@@ -132,19 +120,16 @@ test('database query parser', async (t) => {
       assert.ok(ps.collection)
       assert.equal(ps.collection, 'test')
       assert.equal(ps.query, 'insert into\ntest\nselect * from dude')
-      
     })
   })
 
   await t.test('invalid SQL', async (t) => {
-    
     await t.test("should return 'other' when handed garbage", function () {
       const ps = parseSql('  bulge into\ndudes\nselect * from dude')
       assert.ok(ps)
       assert.equal(ps.operation, 'other')
       assert.ok(!ps.collection)
       assert.equal(ps.query, 'bulge into\ndudes\nselect * from dude')
-      
     })
 
     await t.test("should return 'other' when handed an object", function () {
@@ -155,7 +140,6 @@ test('database query parser', async (t) => {
       assert.equal(ps.operation, 'other')
       assert.ok(!ps.collection)
       assert.equal(ps.query, '')
-      
     })
   })
 
@@ -164,7 +148,7 @@ test('database query parser', async (t) => {
       await t.test(clean(cat.input), async (t) => {
         const ps = parseSql(cat.input)
 
-        await t.test('should parse the operation as ' + cat.operation, function (t) {
+        await t.test('should parse the operation as ' + cat.operation, function () {
           assert.equal(ps.operation, cat.operation)
         })
 
@@ -173,7 +157,7 @@ test('database query parser', async (t) => {
         } else if (/\w+\.\w+/.test(ps.collection)) {
           await t.test('should strip database names from collection names as ' + cat.table)
         } else {
-          await t.test('should parse the collection as ' + cat.table, function (t) {
+          await t.test('should parse the collection as ' + cat.table, function () {
             assert.equal(ps.collection, cat.table)
           })
         }

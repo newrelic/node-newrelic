@@ -10,7 +10,6 @@ const assert = require('node:assert')
 const helper = require('../../lib/agent_helper')
 
 test('SQL trace attributes', async (t) => {
-
   t.beforeEach(function (t) {
     t.mock.agent = helper.loadMockedAgent({
       slow_sql: {
@@ -50,7 +49,6 @@ test('SQL trace attributes', async (t) => {
         assert.equal(attributes['parent.account'], agent.config.account_id)
         assert.ok(!attributes.parentId)
         assert.ok(!attributes.parentSpanId)
-
       })
     })
   })
@@ -71,7 +69,6 @@ test('SQL trace attributes', async (t) => {
       assert.equal(sample[6], sampleObj.total)
       assert.equal(sample[7], sampleObj.min)
       assert.equal(sample[8], sampleObj.max)
-
     })
   })
 
@@ -94,7 +91,6 @@ test('SQL trace attributes', async (t) => {
         assert.ok(!attributes.parentSpanId)
         assert.equal(tx.sampled, true)
         assert.ok(tx.priority > 1)
-
       })
     })
   })

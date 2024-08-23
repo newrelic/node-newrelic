@@ -41,8 +41,7 @@ test('Query Trace Aggregator', async (t) => {
   })
 
   await t.test('when slow_sql.enabled is false', async (t) => {
-   
-    await  t.test('should not record anything when transaction_tracer.record_sql === "off"', () => {
+    await t.test('should not record anything when transaction_tracer.record_sql === "off"', () => {
       const opts = {
         config: new Config({
           slow_sql: { enabled: false },
@@ -57,7 +56,6 @@ test('Query Trace Aggregator', async (t) => {
       assert.ok('size' in queries.samples)
       assert.equal(queries.samples.size, 0)
       assert.deepStrictEqual(segment.getAttributes(), {}, 'should not record sql in trace')
-      
     })
 
     await t.test('should treat unknown value in transaction_tracer.record_sql as off', () => {
@@ -75,7 +73,6 @@ test('Query Trace Aggregator', async (t) => {
       assert.ok('size' in queries.samples)
       assert.equal(queries.samples.size, 0)
       assert.deepStrictEqual(segment.getAttributes(), {}, 'should not record sql in trace')
-      
     })
 
     await t.test('should record only in trace when record_sql === "obfuscated"', () => {
@@ -100,7 +97,6 @@ test('Query Trace Aggregator', async (t) => {
         },
         'should record sql in trace'
       )
-      
     })
 
     await t.test('should record only in trace when record_sql === "raw"', () => {
@@ -125,7 +121,6 @@ test('Query Trace Aggregator', async (t) => {
         },
         'should record sql in trace'
       )
-      
     })
 
     await t.test('should not record if below threshold', () => {
@@ -149,7 +144,6 @@ test('Query Trace Aggregator', async (t) => {
         },
         'should record sql in trace'
       )
-      
     })
   })
 
@@ -169,7 +163,6 @@ test('Query Trace Aggregator', async (t) => {
       assert.ok('size' in queries.samples)
       assert.equal(queries.samples.size, 0)
       assert.deepStrictEqual(segment.getAttributes(), {}, 'should not record sql in trace')
-      
     })
 
     await t.test('should treat unknown value in transaction_tracer.record_sql as off', () => {
@@ -187,7 +180,6 @@ test('Query Trace Aggregator', async (t) => {
       assert.ok('size' in queries.samples)
       assert.equal(queries.samples.size, 0)
       assert.deepStrictEqual(segment.getAttributes(), {}, 'should not record sql in trace')
-      
     })
 
     await t.test('should record obfuscated trace when record_sql === "obfuscated"', (t) => {
@@ -217,7 +209,6 @@ test('Query Trace Aggregator', async (t) => {
 
       const sample = queries.samples.get('select*fromfoowherea=?')
       verifySample(t, sample, 1, segment)
-      
     })
 
     await t.test('should record raw when record_sql === "raw"', (t) => {
@@ -247,7 +238,6 @@ test('Query Trace Aggregator', async (t) => {
 
       const sample = queries.samples.get('select*fromfoowherea=?')
       verifySample(t, sample, 1, segment)
-      
     })
 
     await t.test('should not record if below threshold', () => {
@@ -271,16 +261,11 @@ test('Query Trace Aggregator', async (t) => {
         },
         'should record sql in trace'
       )
-      
     })
   })
 
   await t.test('prepareJSON', async (t) => {
-   
-
     await t.test('webTransaction when record_sql is "raw"', async (t) => {
-     
-
       let queries
 
       t.beforeEach(() => {
@@ -296,8 +281,6 @@ test('Query Trace Aggregator', async (t) => {
       })
 
       await t.test('and `simple_compression` is `false`', async (t) => {
-       
-
         t.beforeEach(() => {
           queries.config.simple_compression = false
         })
@@ -315,20 +298,17 @@ test('Query Trace Aggregator', async (t) => {
 
               assert.deepStrictEqual(keys, ['backtrace'])
               assert.deepStrictEqual(params.backtrace, 'fake stack', 'trace should match')
-              
             })
           })
         })
       })
 
       await t.test('and `simple_compression` is `true`', async (t) => {
-       
-
         t.beforeEach(() => {
           queries.config.simple_compression = true
         })
 
-        await t.test('should not compress the query parameters', (t) => {
+        await t.test('should not compress the query parameters', () => {
           addQuery(queries, 600, '/abc')
 
           queries.prepareJSON(function preparedJSON(err, data) {
@@ -338,7 +318,6 @@ test('Query Trace Aggregator', async (t) => {
 
             assert.deepStrictEqual(keys, ['backtrace'])
             assert.deepStrictEqual(params.backtrace, 'fake stack', 'trace should match')
-            
           })
         })
       })
@@ -347,7 +326,6 @@ test('Query Trace Aggregator', async (t) => {
         queries.prepareJSON(function preparedJSON(err, data) {
           assert.equal(err, null, 'should not error')
           assert.deepStrictEqual(data, [], 'should return empty array')
-          
         })
       })
 
@@ -376,7 +354,6 @@ test('Query Trace Aggregator', async (t) => {
 
             assert.deepStrictEqual(keys, ['backtrace'])
             assert.deepStrictEqual(result.backtrace, 'fake stack', 'trace should match')
-            
           })
         })
       })
@@ -411,7 +388,6 @@ test('Query Trace Aggregator', async (t) => {
 
             assert.deepStrictEqual(keys, ['backtrace'])
             assert.deepStrictEqual(result.backtrace, 'fake stack', 'trace should match')
-            
           })
         })
       })
@@ -472,7 +448,6 @@ test('Query Trace Aggregator', async (t) => {
 
               assert.deepStrictEqual(keys, ['backtrace'])
               assert.deepStrictEqual(result.backtrace, 'fake stack', 'trace should match')
-              
             })
           }
         })
@@ -480,8 +455,6 @@ test('Query Trace Aggregator', async (t) => {
     })
 
     await t.test('webTransaction when record_sql is "obfuscated"', async (t) => {
-     
-
       await t.test('should record work when empty', () => {
         const opts = {
           config: new Config({
@@ -496,7 +469,6 @@ test('Query Trace Aggregator', async (t) => {
         queries.prepareJSON(function preparedJSON(err, data) {
           assert.equal(err, null, 'should not error')
           assert.deepStrictEqual(data, [], 'should return empty array')
-          
         })
       })
 
@@ -535,7 +507,6 @@ test('Query Trace Aggregator', async (t) => {
 
             assert.deepStrictEqual(keys, ['backtrace'])
             assert.deepStrictEqual(result.backtrace, 'fake stack', 'trace should match')
-            
           })
         })
       })
@@ -580,7 +551,6 @@ test('Query Trace Aggregator', async (t) => {
 
             assert.deepStrictEqual(keys, ['backtrace'])
             assert.deepStrictEqual(result.backtrace, 'fake stack', 'trace should match')
-            
           })
         })
       })
@@ -647,7 +617,6 @@ test('Query Trace Aggregator', async (t) => {
 
               assert.deepStrictEqual(nextKey, ['backtrace'])
               assert.deepStrictEqual(nextResult.backtrace, 'fake stack', 'trace should match')
-              
             })
           })
         })
@@ -655,8 +624,6 @@ test('Query Trace Aggregator', async (t) => {
     })
 
     await t.test('backgroundTransaction when record_sql is "raw"', async (t) => {
-     
-
       await t.test('should record work when empty', () => {
         const opts = {
           config: new Config({
@@ -671,7 +638,6 @@ test('Query Trace Aggregator', async (t) => {
         queries.prepareJSON(function preparedJSON(err, data) {
           assert.equal(err, null, 'should not error')
           assert.deepStrictEqual(data, [], 'should return empty array')
-          
         })
       })
 
@@ -710,7 +676,6 @@ test('Query Trace Aggregator', async (t) => {
 
             assert.deepStrictEqual(keys, ['backtrace'])
             assert.deepStrictEqual(result.backtrace, 'fake stack', 'trace should match')
-            
           })
         })
       })
@@ -755,7 +720,6 @@ test('Query Trace Aggregator', async (t) => {
 
             assert.deepStrictEqual(keys, ['backtrace'])
             assert.deepStrictEqual(result.backtrace, 'fake stack', 'trace should match')
-            
           })
         })
       })
@@ -825,7 +789,6 @@ test('Query Trace Aggregator', async (t) => {
 
               assert.deepStrictEqual(keys, ['backtrace'])
               assert.deepStrictEqual(result.backtrace, 'fake stack', 'trace should match')
-              
             })
           }
         })
@@ -833,8 +796,6 @@ test('Query Trace Aggregator', async (t) => {
     })
 
     await t.test('background when record_sql is "obfuscated"', async (t) => {
-     
-
       await t.test('should record work when empty', () => {
         const opts = {
           config: new Config({
@@ -849,7 +810,6 @@ test('Query Trace Aggregator', async (t) => {
         queries.prepareJSON(function preparedJSON(err, data) {
           assert.equal(err, null, 'should not error')
           assert.deepStrictEqual(data, [], 'should return empty array')
-          
         })
       })
 
@@ -888,7 +848,6 @@ test('Query Trace Aggregator', async (t) => {
 
             assert.deepStrictEqual(keys, ['backtrace'])
             assert.deepStrictEqual(result.backtrace, 'fake stack', 'trace should match')
-            
           })
         })
       })
@@ -933,7 +892,6 @@ test('Query Trace Aggregator', async (t) => {
 
             assert.deepStrictEqual(keys, ['backtrace'])
             assert.deepStrictEqual(result.backtrace, 'fake stack', 'trace should match')
-            
           })
         })
       })
@@ -1000,7 +958,6 @@ test('Query Trace Aggregator', async (t) => {
 
               assert.deepStrictEqual(nextKeys, ['backtrace'])
               assert.deepStrictEqual(nextResult.backtrace, 'fake stack', 'trace should match')
-              
             })
           })
         })
@@ -1009,8 +966,6 @@ test('Query Trace Aggregator', async (t) => {
   })
 
   await t.test('limiting to n slowest', async (t) => {
-   
-
     await t.test('should limit to this.config.max_samples', () => {
       const opts = {
         config: new Config({
@@ -1036,13 +991,10 @@ test('Query Trace Aggregator', async (t) => {
       assert.equal(queries.samples.size, 2)
       assert.ok(queries.samples.has('select*fromfoowherea=?'))
       assert.ok(queries.samples.has('droptableusers'))
-      
     })
   })
 
   await t.test('merging query tracers', async (t) => {
-   
-
     await t.test('should merge queries correctly', () => {
       const opts = {
         config: new Config({
@@ -1090,7 +1042,6 @@ test('Query Trace Aggregator', async (t) => {
       assert.equal(create.min, 500, 'min should be set')
       assert.equal(create.total, 1150, 'total should be set')
       assert.equal(create.trace.duration, 650, 'trace should be set')
-      
     })
   })
 })
