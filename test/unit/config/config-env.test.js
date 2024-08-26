@@ -5,17 +5,16 @@
 
 'use strict'
 
-const tap = require('tap')
+const test = require('node:test')
+const assert = require('node:assert')
 
 const { idempotentEnv } = require('./helper')
 
 const VALID_HOST = 'infinite-tracing.test'
 const VALID_QUEUE_SIZE = 20000 // should not be 10k which is the default
 
-tap.test('when overriding configuration values via environment variables', (t) => {
-  t.autoend()
-
-  t.test('should pick up on infinite tracing env vars', (t) => {
+test('when overriding configuration values via environment variables', async (t) => {
+  await t.test('should pick up on infinite tracing env vars', () => {
     const env = {
       NEW_RELIC_INFINITE_TRACING_TRACE_OBSERVER_HOST: VALID_HOST,
       NEW_RELIC_INFINITE_TRACING_TRACE_OBSERVER_PORT: '500',
@@ -25,172 +24,147 @@ tap.test('when overriding configuration values via environment variables', (t) =
     }
 
     idempotentEnv(env, (config) => {
-      t.equal(config.infinite_tracing.trace_observer.host, VALID_HOST)
-      t.equal(config.infinite_tracing.trace_observer.port, 500)
-      t.equal(config.infinite_tracing.span_events.queue_size, VALID_QUEUE_SIZE)
-      t.equal(config.infinite_tracing.compression, false)
-      t.equal(config.infinite_tracing.batching, false)
-      t.end()
+      assert.equal(config.infinite_tracing.trace_observer.host, VALID_HOST)
+      assert.equal(config.infinite_tracing.trace_observer.port, 500)
+      assert.equal(config.infinite_tracing.span_events.queue_size, VALID_QUEUE_SIZE)
+      assert.equal(config.infinite_tracing.compression, false)
+      assert.equal(config.infinite_tracing.batching, false)
     })
   })
 
-  t.test('should default infinite tracing port to 443', (t) => {
+  await t.test('should default infinite tracing port to 443', () => {
     const env = {
       NEW_RELIC_INFINITE_TRACING_TRACE_OBSERVER_HOST: VALID_HOST
     }
 
     idempotentEnv(env, (config) => {
-      t.equal(config.infinite_tracing.trace_observer.port, 443)
-      t.end()
+      assert.equal(config.infinite_tracing.trace_observer.port, 443)
     })
   })
 
-  t.test('should pick up the application name', (t) => {
+  await t.test('should pick up the application name', () => {
     idempotentEnv({ NEW_RELIC_APP_NAME: 'app one,app two;and app three' }, (tc) => {
-      t.ok(tc.app_name)
-      t.same(tc.app_name, ['app one', 'app two', 'and app three'])
-      t.end()
+      assert.ok(tc.app_name)
+      assert.deepStrictEqual(tc.app_name, ['app one', 'app two', 'and app three'])
     })
   })
 
-  t.test('should trim spaces from multiple application names ', (t) => {
+  await t.test('should trim spaces from multiple application names ', () => {
     idempotentEnv({ NEW_RELIC_APP_NAME: 'zero,one, two,  three;   four' }, (tc) => {
-      t.ok(tc.app_name)
-      t.same(tc.app_name, ['zero', 'one', 'two', 'three', 'four'])
-      t.end()
+      assert.ok(tc.app_name)
+      assert.deepStrictEqual(tc.app_name, ['zero', 'one', 'two', 'three', 'four'])
     })
   })
 
-  t.test('should pick up the license key', (t) => {
+  await t.test('should pick up the license key', () => {
     idempotentEnv({ NEW_RELIC_LICENSE_KEY: 'hambulance' }, (tc) => {
-      t.ok(tc.license_key)
-      t.equal(tc.license_key, 'hambulance')
-      t.equal(tc.host, 'collector.newrelic.com')
-
-      t.end()
+      assert.ok(tc.license_key)
+      assert.equal(tc.license_key, 'hambulance')
+      assert.equal(tc.host, 'collector.newrelic.com')
     })
   })
 
-  t.test('should trim spaces from license key', (t) => {
+  await t.test('should trim spaces from license key', () => {
     idempotentEnv({ NEW_RELIC_LICENSE_KEY: ' license ' }, (tc) => {
-      t.ok(tc.license_key)
-      t.equal(tc.license_key, 'license')
-      t.equal(tc.host, 'collector.newrelic.com')
-
-      t.end()
+      assert.ok(tc.license_key)
+      assert.equal(tc.license_key, 'license')
+      assert.equal(tc.host, 'collector.newrelic.com')
     })
   })
 
-  t.test('should pick up the apdex_t', (t) => {
+  await t.test('should pick up the apdex_t', () => {
     idempotentEnv({ NEW_RELIC_APDEX_T: '111' }, (tc) => {
-      t.ok(tc.apdex_t)
-      t.type(tc.apdex_t, 'number')
-      t.equal(tc.apdex_t, 111)
-
-      t.end()
+      assert.ok(tc.apdex_t)
+      assert.strictEqual(typeof tc.apdex_t, 'number')
+      assert.equal(tc.apdex_t, 111)
     })
   })
 
-  t.test('should pick up the collector host', (t) => {
+  await t.test('should pick up the collector host', () => {
     idempotentEnv({ NEW_RELIC_HOST: 'localhost' }, (tc) => {
-      t.ok(tc.host)
-      t.equal(tc.host, 'localhost')
-
-      t.end()
+      assert.ok(tc.host)
+      assert.equal(tc.host, 'localhost')
     })
   })
 
-  t.test('should parse the region off the license key', (t) => {
+  await t.test('should parse the region off the license key', () => {
     idempotentEnv({ NEW_RELIC_LICENSE_KEY: 'eu01xxhambulance' }, (tc) => {
-      t.ok(tc.host)
-      t.equal(tc.host, 'collector.eu01.nr-data.net')
-      t.end()
+      assert.ok(tc.host)
+      assert.equal(tc.host, 'collector.eu01.nr-data.net')
     })
   })
 
-  t.test('should take an explicit host over the license key parsed host', (t) => {
+  await t.test('should take an explicit host over the license key parsed host', () => {
     idempotentEnv({ NEW_RELIC_LICENSE_KEY: 'eu01xxhambulance' }, function () {
       idempotentEnv({ NEW_RELIC_HOST: 'localhost' }, (tc) => {
-        t.ok(tc.host)
-        t.equal(tc.host, 'localhost')
-
-        t.end()
+        assert.ok(tc.host)
+        assert.equal(tc.host, 'localhost')
       })
     })
   })
 
-  t.test('should default OTel host if nothing to parse in the license key', (t) => {
+  await t.test('should default OTel host if nothing to parse in the license key', () => {
     idempotentEnv({ NEW_RELIC_LICENSE_KEY: 'hambulance' }, (tc) => {
-      t.ok(tc.otlp_endpoint)
-      t.equal(tc.otlp_endpoint, 'otlp.nr-data.net')
-      t.end()
+      assert.ok(tc.otlp_endpoint)
+      assert.equal(tc.otlp_endpoint, 'otlp.nr-data.net')
     })
   })
 
-  t.test('should parse the region off the license key for OTel', (t) => {
+  await t.test('should parse the region off the license key for OTel', () => {
     idempotentEnv({ NEW_RELIC_LICENSE_KEY: 'eu01xxhambulance' }, (tc) => {
-      t.ok(tc.otlp_endpoint)
-      t.equal(tc.otlp_endpoint, 'otlp.eu01.nr-data.net')
-      t.end()
+      assert.ok(tc.otlp_endpoint)
+      assert.equal(tc.otlp_endpoint, 'otlp.eu01.nr-data.net')
     })
   })
 
-  t.test('should take an explicit OTel endpoint over the license key parsed host', (t) => {
+  await t.test('should take an explicit OTel endpoint over the license key parsed host', () => {
     idempotentEnv({ NEW_RELIC_LICENSE_KEY: 'eu01xxhambulance' }, function () {
       idempotentEnv({ NEW_RELIC_OTLP_ENDPOINT: 'localhost' }, (tc) => {
-        t.ok(tc.otlp_endpoint)
-        t.equal(tc.otlp_endpoint, 'localhost')
-
-        t.end()
+        assert.ok(tc.otlp_endpoint)
+        assert.equal(tc.otlp_endpoint, 'localhost')
       })
     })
   })
 
-  t.test('should pick up on feature flags set via environment variables', (t) => {
+  await t.test('should pick up on feature flags set via environment variables', () => {
     const ffNamePrefix = 'NEW_RELIC_FEATURE_FLAG_'
     const awaitFeatureFlag = ffNamePrefix + 'AWAIT_SUPPORT'
     idempotentEnv({ [awaitFeatureFlag]: 'false' }, (tc) => {
-      t.equal(tc.feature_flag.await_support, false)
-      t.end()
+      assert.equal(tc.feature_flag.await_support, false)
     })
   })
 
-  t.test('should pick up the collector port', (t) => {
+  await t.test('should pick up the collector port', () => {
     idempotentEnv({ NEW_RELIC_PORT: '7777' }, (tc) => {
-      t.equal(tc.port, 7777)
-      t.end()
+      assert.equal(tc.port, 7777)
     })
   })
 
-  t.test('should pick up exception message omission settings', (t) => {
+  await t.test('should pick up exception message omission settings', () => {
     idempotentEnv({ NEW_RELIC_STRIP_EXCEPTION_MESSAGES_ENABLED: 'please' }, (tc) => {
-      t.equal(tc.strip_exception_messages.enabled, true)
-      t.end()
+      assert.equal(tc.strip_exception_messages.enabled, true)
     })
   })
 
-  t.test('should pick up the proxy host', (t) => {
+  await t.test('should pick up the proxy host', () => {
     idempotentEnv({ NEW_RELIC_PROXY_HOST: 'proxyhost' }, (tc) => {
-      t.equal(tc.proxy_host, 'proxyhost')
-
-      t.end()
+      assert.equal(tc.proxy_host, 'proxyhost')
     })
   })
 
-  t.test('should pick up on Distributed Tracing env vars', (t) => {
+  await t.test('should pick up on Distributed Tracing env vars', () => {
     const env = {
       NEW_RELIC_DISTRIBUTED_TRACING_ENABLED: 'true',
       NEW_RELIC_DISTRIBUTED_TRACING_EXCLUDE_NEWRELIC_HEADER: 'true'
     }
 
     idempotentEnv(env, (tc) => {
-      t.equal(tc.distributed_tracing.enabled, true)
-      t.equal(tc.distributed_tracing.exclude_newrelic_header, true)
-      t.end()
+      assert.equal(tc.distributed_tracing.enabled, true)
+      assert.equal(tc.distributed_tracing.exclude_newrelic_header, true)
     })
   })
 
-  t.test('should pick up on the span events env vars', (t) => {
+  await t.test('should pick up on the span events env vars', () => {
     const env = {
       NEW_RELIC_SPAN_EVENTS_ENABLED: true,
       NEW_RELIC_SPAN_EVENTS_ATTRIBUTES_ENABLED: true,
@@ -199,84 +173,73 @@ tap.test('when overriding configuration values via environment variables', (t) =
       NEW_RELIC_SPAN_EVENTS_MAX_SAMPLES_STORED: 2000
     }
     idempotentEnv(env, (tc) => {
-      t.equal(tc.span_events.enabled, true)
-      t.equal(tc.span_events.attributes.enabled, true)
-      t.same(tc.span_events.attributes.include, ['one', 'two', 'three'])
-      t.same(tc.span_events.attributes.exclude, ['four', 'five', 'six'])
-      t.equal(tc.span_events.max_samples_stored, 2000)
-
-      t.end()
+      assert.equal(tc.span_events.enabled, true)
+      assert.equal(tc.span_events.attributes.enabled, true)
+      assert.deepStrictEqual(tc.span_events.attributes.include, ['one', 'two', 'three'])
+      assert.deepStrictEqual(tc.span_events.attributes.exclude, ['four', 'five', 'six'])
+      assert.equal(tc.span_events.max_samples_stored, 2000)
     })
   })
 
-  t.test('should pick up on the transaction segments env vars', (t) => {
+  await t.test('should pick up on the transaction segments env vars', () => {
     const env = {
       NEW_RELIC_TRANSACTION_SEGMENTS_ATTRIBUTES_ENABLED: true,
       NEW_RELIC_TRANSACTION_SEGMENTS_ATTRIBUTES_INCLUDE: 'one,two,three',
       NEW_RELIC_TRANSACTION_SEGMENTS_ATTRIBUTES_EXCLUDE: 'four,five,six'
     }
     idempotentEnv(env, (tc) => {
-      t.equal(tc.transaction_segments.attributes.enabled, true)
-      t.same(tc.transaction_segments.attributes.include, ['one', 'two', 'three'])
-      t.same(tc.transaction_segments.attributes.exclude, ['four', 'five', 'six'])
-
-      t.end()
+      assert.equal(tc.transaction_segments.attributes.enabled, true)
+      assert.deepStrictEqual(tc.transaction_segments.attributes.include, ['one', 'two', 'three'])
+      assert.deepStrictEqual(tc.transaction_segments.attributes.exclude, ['four', 'five', 'six'])
     })
   })
 
-  t.test('should pick up the number of logical processors of the system', (t) => {
+  await t.test('should pick up the number of logical processors of the system', () => {
     idempotentEnv({ NEW_RELIC_UTILIZATION_LOGICAL_PROCESSORS: '123' }, (tc) => {
-      t.equal(tc.utilization.logical_processors, 123)
-      t.end()
+      assert.equal(tc.utilization.logical_processors, 123)
     })
   })
 
-  t.test('should pick up the billing hostname', (t) => {
+  await t.test('should pick up the billing hostname', () => {
     const env = 'NEW_RELIC_UTILIZATION_BILLING_HOSTNAME'
     idempotentEnv({ [env]: 'a test string' }, (tc) => {
-      t.equal(tc.utilization.billing_hostname, 'a test string')
-      t.end()
+      assert.equal(tc.utilization.billing_hostname, 'a test string')
     })
   })
 
-  t.test('should pick up the total ram of the system', (t) => {
+  await t.test('should pick up the total ram of the system', () => {
     idempotentEnv({ NEW_RELIC_UTILIZATION_TOTAL_RAM_MIB: '123' }, (tc) => {
-      t.equal(tc.utilization.total_ram_mib, 123)
-      t.end()
+      assert.equal(tc.utilization.total_ram_mib, 123)
     })
   })
 
-  t.test('should pick up the proxy port', (t) => {
+  await t.test('should pick up the proxy port', () => {
     idempotentEnv({ NEW_RELIC_PROXY_PORT: 7777 }, (tc) => {
-      t.equal(tc.proxy_port, '7777')
-      t.end()
+      assert.equal(tc.proxy_port, '7777')
     })
   })
 
-  t.test('should pick up instance reporting', (t) => {
+  await t.test('should pick up instance reporting', () => {
     const env = 'NEW_RELIC_DATASTORE_INSTANCE_REPORTING_ENABLED'
     idempotentEnv({ [env]: false }, (tc) => {
-      t.equal(tc.datastore_tracer.instance_reporting.enabled, false)
-      t.end()
+      assert.equal(tc.datastore_tracer.instance_reporting.enabled, false)
     })
   })
 
-  t.test('should pick up instance database name reporting', (t) => {
+  await t.test('should pick up instance database name reporting', () => {
     const env = 'NEW_RELIC_DATASTORE_DATABASE_NAME_REPORTING_ENABLED'
     idempotentEnv({ [env]: false }, (tc) => {
-      t.equal(tc.datastore_tracer.database_name_reporting.enabled, false)
-      t.end()
+      assert.equal(tc.datastore_tracer.database_name_reporting.enabled, false)
     })
   })
 
-  t.test('should pick up the log level', (t) => {
+  await t.test('should pick up the log level', () => {
     idempotentEnv({ NEW_RELIC_LOG_LEVEL: 'XXNOEXIST' }, function (tc) {
-      t.equal(tc.logging.level, 'XXNOEXIST')
-      t.end()
+      assert.equal(tc.logging.level, 'XXNOEXIST')
     })
   })
 
-  t.test('should have log level aliases', (t) => {
+  await t.test('should have log level aliases', () => {
     const logAliases = {
       verbose: 'trace',
       debugging: 'debug',
@@ -287,188 +250,162 @@ tap.test('when overriding configuration values via environment variables', (t) =
     // eslint-disable-next-line guard-for-in
     for (const key in logAliases) {
       idempotentEnv({ NEW_RELIC_LOG_LEVEL: key }, (tc) => {
-        t.equal(tc.logging.level, logAliases[key])
+        assert.equal(tc.logging.level, logAliases[key])
       })
     }
-
-    t.end()
   })
 
-  t.test('should pick up the log filepath', (t) => {
+  await t.test('should pick up the log filepath', () => {
     idempotentEnv({ NEW_RELIC_LOG: '/highway/to/the/danger/zone' }, (tc) => {
-      t.equal(tc.logging.filepath, '/highway/to/the/danger/zone')
-      t.end()
+      assert.equal(tc.logging.filepath, '/highway/to/the/danger/zone')
     })
   })
 
-  t.test('should pick up whether the agent is enabled', (t) => {
+  await t.test('should pick up whether the agent is enabled', () => {
     idempotentEnv({ NEW_RELIC_ENABLED: 0 }, (tc) => {
-      t.equal(tc.agent_enabled, false)
-      t.end()
+      assert.equal(tc.agent_enabled, false)
     })
   })
 
-  t.test('should pick up whether to capture attributes', (t) => {
+  await t.test('should pick up whether to capture attributes', () => {
     idempotentEnv({ NEW_RELIC_ATTRIBUTES_ENABLED: 'yes' }, (tc) => {
-      t.equal(tc.attributes.enabled, true)
-      t.end()
+      assert.equal(tc.attributes.enabled, true)
     })
   })
 
-  t.test('should pick up whether to add attribute include rules', (t) => {
+  await t.test('should pick up whether to add attribute include rules', () => {
     idempotentEnv({ NEW_RELIC_ATTRIBUTES_INCLUDE_ENABLED: 'yes' }, (tc) => {
-      t.equal(tc.attributes.include_enabled, true)
-      t.end()
+      assert.equal(tc.attributes.include_enabled, true)
     })
   })
 
-  t.test('should pick up excluded attributes', (t) => {
+  await t.test('should pick up excluded attributes', () => {
     idempotentEnv({ NEW_RELIC_ATTRIBUTES_EXCLUDE: 'one,two,three' }, (tc) => {
-      t.same(tc.attributes.exclude, ['one', 'two', 'three'])
-      t.end()
+      assert.deepStrictEqual(tc.attributes.exclude, ['one', 'two', 'three'])
     })
   })
 
-  t.test('should pick up whether the error collector is enabled', (t) => {
+  await t.test('should pick up whether the error collector is enabled', () => {
     idempotentEnv({ NEW_RELIC_ERROR_COLLECTOR_ENABLED: 'NO' }, (tc) => {
-      t.equal(tc.error_collector.enabled, false)
-      t.end()
+      assert.equal(tc.error_collector.enabled, false)
     })
   })
 
-  t.test('should pick up whether error collector attributes are enabled', (t) => {
+  await t.test('should pick up whether error collector attributes are enabled', () => {
     idempotentEnv({ NEW_RELIC_ERROR_COLLECTOR_ATTRIBUTES_ENABLED: 'NO' }, (tc) => {
-      t.equal(tc.error_collector.attributes.enabled, false)
-      t.end()
+      assert.equal(tc.error_collector.attributes.enabled, false)
     })
   })
 
-  t.test('should pick up error collector max_event_samples_stored value', (t) => {
+  await t.test('should pick up error collector max_event_samples_stored value', () => {
     idempotentEnv({ NEW_RELIC_ERROR_COLLECTOR_MAX_EVENT_SAMPLES_STORED: 20 }, (tc) => {
-      t.equal(tc.error_collector.max_event_samples_stored, 20)
-      t.end()
+      assert.equal(tc.error_collector.max_event_samples_stored, 20)
     })
   })
 
-  t.test('should pick up which status codes are ignored', (t) => {
+  await t.test('should pick up which status codes are ignored', () => {
     idempotentEnv({ NEW_RELIC_ERROR_COLLECTOR_IGNORE_ERROR_CODES: '401,404,502' }, (tc) => {
-      t.same(tc.error_collector.ignore_status_codes, [401, 404, 502])
-      t.end()
+      assert.deepStrictEqual(tc.error_collector.ignore_status_codes, [401, 404, 502])
     })
   })
 
-  t.test('should pick up which status codes are ignored when using a range', (t) => {
+  await t.test('should pick up which status codes are ignored when using a range', () => {
     idempotentEnv({ NEW_RELIC_ERROR_COLLECTOR_IGNORE_ERROR_CODES: '401, 420-421, 502' }, (tc) => {
-      t.same(tc.error_collector.ignore_status_codes, [401, 420, 421, 502])
-      t.end()
+      assert.deepStrictEqual(tc.error_collector.ignore_status_codes, [401, 420, 421, 502])
     })
   })
 
-  t.test('should not add codes given with invalid range', (t) => {
+  await t.test('should not add codes given with invalid range', () => {
     idempotentEnv({ NEW_RELIC_ERROR_COLLECTOR_IGNORE_ERROR_CODES: '421-420' }, (tc) => {
-      t.same(tc.error_collector.ignore_status_codes, [])
-      t.end()
+      assert.deepStrictEqual(tc.error_collector.ignore_status_codes, [])
     })
   })
 
-  t.test('should not add codes if given out of range', (t) => {
+  await t.test('should not add codes if given out of range', () => {
     idempotentEnv({ NEW_RELIC_ERROR_COLLECTOR_IGNORE_ERROR_CODES: '1 - 1776' }, (tc) => {
-      t.same(tc.error_collector.ignore_status_codes, [])
-      t.end()
+      assert.deepStrictEqual(tc.error_collector.ignore_status_codes, [])
     })
   })
 
-  t.test('should allow negative status codes ', (t) => {
+  await t.test('should allow negative status codes ', () => {
     idempotentEnv({ NEW_RELIC_ERROR_COLLECTOR_IGNORE_ERROR_CODES: '-7' }, (tc) => {
-      t.same(tc.error_collector.ignore_status_codes, [-7])
-      t.end()
+      assert.deepStrictEqual(tc.error_collector.ignore_status_codes, [-7])
     })
   })
 
-  t.test('should not add codes that parse to NaN ', (t) => {
+  await t.test('should not add codes that parse to NaN ', () => {
     idempotentEnv({ NEW_RELIC_ERROR_COLLECTOR_IGNORE_ERROR_CODES: 'abc' }, (tc) => {
-      t.same(tc.error_collector.ignore_status_codes, [])
-      t.end()
+      assert.deepStrictEqual(tc.error_collector.ignore_status_codes, [])
     })
   })
 
-  t.test('should pick up which status codes are expected', (t) => {
+  await t.test('should pick up which status codes are expected', () => {
     idempotentEnv({ NEW_RELIC_ERROR_COLLECTOR_EXPECTED_ERROR_CODES: '401,404,502' }, (tc) => {
-      t.same(tc.error_collector.expected_status_codes, [401, 404, 502])
-      t.end()
+      assert.deepStrictEqual(tc.error_collector.expected_status_codes, [401, 404, 502])
     })
   })
 
-  t.test('should pick up which status codes are expectedd when using a range', (t) => {
+  await t.test('should pick up which status codes are expectedd when using a range', () => {
     idempotentEnv(
       {
         NEW_RELIC_ERROR_COLLECTOR_EXPECTED_ERROR_CODES: '401, 420-421, 502'
       },
       (tc) => {
-        t.same(tc.error_collector.expected_status_codes, [401, 420, 421, 502])
-        t.end()
+        assert.deepStrictEqual(tc.error_collector.expected_status_codes, [401, 420, 421, 502])
       }
     )
   })
 
-  t.test('should not add codes given with invalid range', (t) => {
+  await t.test('should not add codes given with invalid range', () => {
     idempotentEnv({ NEW_RELIC_ERROR_COLLECTOR_EXPECTED_ERROR_CODES: '421-420' }, (tc) => {
-      t.same(tc.error_collector.expected_status_codes, [])
-      t.end()
+      assert.deepStrictEqual(tc.error_collector.expected_status_codes, [])
     })
   })
 
-  t.test('should not add codes if given out of range', (t) => {
+  await t.test('should not add codes if given out of range', () => {
     idempotentEnv({ NEW_RELIC_ERROR_COLLECTOR_EXPECTED_ERROR_CODES: '1 - 1776' }, (tc) => {
-      t.same(tc.error_collector.expected_status_codes, [])
-      t.end()
+      assert.deepStrictEqual(tc.error_collector.expected_status_codes, [])
     })
   })
 
-  t.test('should allow negative status codes ', (t) => {
+  await t.test('should allow negative status codes ', () => {
     idempotentEnv({ NEW_RELIC_ERROR_COLLECTOR_EXPECTED_ERROR_CODES: '-7' }, (tc) => {
-      t.same(tc.error_collector.expected_status_codes, [-7])
-      t.end()
+      assert.deepStrictEqual(tc.error_collector.expected_status_codes, [-7])
     })
   })
 
-  t.test('should not add codes that parse to NaN ', (t) => {
+  await t.test('should not add codes that parse to NaN ', () => {
     idempotentEnv({ NEW_RELIC_ERROR_COLLECTOR_EXPECTED_ERROR_CODES: 'abc' }, (tc) => {
-      t.same(tc.error_collector.expected_status_codes, [])
-      t.end()
+      assert.deepStrictEqual(tc.error_collector.expected_status_codes, [])
     })
   })
 
-  t.test('should pick up whether the transaction tracer is enabled', (t) => {
+  await t.test('should pick up whether the transaction tracer is enabled', () => {
     idempotentEnv({ NEW_RELIC_TRACER_ENABLED: false }, function (tc) {
-      t.equal(tc.transaction_tracer.enabled, false)
-      t.end()
+      assert.equal(tc.transaction_tracer.enabled, false)
     })
   })
 
-  t.test('should pick up whether transaction tracer attributes are enabled', (t) => {
+  await t.test('should pick up whether transaction tracer attributes are enabled', () => {
     const key = 'NEW_RELIC_TRANSACTION_TRACER_ATTRIBUTES_ENABLED'
     idempotentEnv({ [key]: false }, (tc) => {
-      t.equal(tc.transaction_tracer.attributes.enabled, false)
-      t.end()
+      assert.equal(tc.transaction_tracer.attributes.enabled, false)
     })
   })
 
-  t.test('should pick up the transaction trace threshold', (t) => {
+  await t.test('should pick up the transaction trace threshold', () => {
     idempotentEnv({ NEW_RELIC_TRACER_THRESHOLD: 0.02 }, (tc) => {
-      t.equal(tc.transaction_tracer.transaction_threshold, 0.02)
-      t.end()
+      assert.equal(tc.transaction_tracer.transaction_threshold, 0.02)
     })
   })
 
-  t.test('should pick up the transaction trace Top N scale', (t) => {
+  await t.test('should pick up the transaction trace Top N scale', () => {
     idempotentEnv({ NEW_RELIC_TRACER_TOP_N: '5' }, (tc) => {
-      t.equal(tc.transaction_tracer.top_n, 5)
-      t.end()
+      assert.equal(tc.transaction_tracer.top_n, 5)
     })
   })
 
-  t.test('should pick up the transaction events env vars', (t) => {
+  await t.test('should pick up the transaction events env vars', () => {
     const env = {
       NEW_RELIC_TRANSACTION_EVENTS_ATTRIBUTES_ENABLED: true,
       NEW_RELIC_TRANSACTION_EVENTS_ATTRIBUTES_INCLUDE: 'one,two,three',
@@ -476,156 +413,140 @@ tap.test('when overriding configuration values via environment variables', (t) =
       NEW_RELIC_TRANSACTION_EVENTS_MAX_SAMPLES_STORED: 200
     }
     idempotentEnv(env, (tc) => {
-      t.equal(tc.transaction_events.attributes.enabled, true)
-      t.same(tc.transaction_events.attributes.include, ['one', 'two', 'three'])
-      t.same(tc.transaction_events.attributes.exclude, ['four', 'five', 'six'])
-      t.equal(tc.transaction_events.max_samples_stored, 200)
-
-      t.end()
+      assert.equal(tc.transaction_events.attributes.enabled, true)
+      assert.deepStrictEqual(tc.transaction_events.attributes.include, ['one', 'two', 'three'])
+      assert.deepStrictEqual(tc.transaction_events.attributes.exclude, ['four', 'five', 'six'])
+      assert.equal(tc.transaction_events.max_samples_stored, 200)
     })
   })
 
-  t.test('should pick up the custom insights events max samples stored env var', (t) => {
+  await t.test('should pick up the custom insights events max samples stored env var', () => {
     idempotentEnv({ NEW_RELIC_CUSTOM_INSIGHTS_EVENTS_MAX_SAMPLES_STORED: 88 }, (tc) => {
-      t.equal(tc.custom_insights_events.max_samples_stored, 88)
-      t.end()
+      assert.equal(tc.custom_insights_events.max_samples_stored, 88)
     })
   })
 
-  t.test('should pick up renaming rules', (t) => {
+  await t.test('should pick up renaming rules', () => {
     idempotentEnv(
       {
         NEW_RELIC_NAMING_RULES: '{"name":"u","pattern":"^t"},{"name":"t","pattern":"^u"}'
       },
       (tc) => {
-        t.same(tc.rules.name, [
+        assert.deepStrictEqual(tc.rules.name, [
           { name: 'u', pattern: '^t' },
           { name: 't', pattern: '^u' }
         ])
-
-        t.end()
       }
     )
   })
 
-  t.test('should pick up ignoring rules', (t) => {
+  await t.test('should pick up ignoring rules', () => {
     idempotentEnv(
       {
         NEW_RELIC_IGNORING_RULES: '^/test,^/no_match,^/socket\\.io/,^/api/.*/index$'
       },
       (tc) => {
-        t.same(tc.rules.ignore, ['^/test', '^/no_match', '^/socket\\.io/', '^/api/.*/index$'])
-
-        t.end()
+        assert.deepStrictEqual(tc.rules.ignore, [
+          '^/test',
+          '^/no_match',
+          '^/socket\\.io/',
+          '^/api/.*/index$'
+        ])
       }
     )
   })
 
-  t.test('should pick up whether URL backstop has been turned off', (t) => {
+  await t.test('should pick up whether URL backstop has been turned off', () => {
     idempotentEnv({ NEW_RELIC_ENFORCE_BACKSTOP: 'f' }, (tc) => {
-      t.equal(tc.enforce_backstop, false)
-      t.end()
+      assert.equal(tc.enforce_backstop, false)
     })
   })
 
-  t.test('should pick app name from APP_POOL_ID', (t) => {
+  await t.test('should pick app name from APP_POOL_ID', () => {
     idempotentEnv({ APP_POOL_ID: 'Simple Azure app' }, (tc) => {
-      t.same(tc.applications(), ['Simple Azure app'])
-      t.end()
+      assert.deepStrictEqual(tc.applications(), ['Simple Azure app'])
     })
   })
 
   // NOTE: the conversion is done in lib/collector/facts.js
-  t.test('should pick up labels', (t) => {
+  await t.test('should pick up labels', () => {
     idempotentEnv({ NEW_RELIC_LABELS: 'key:value;a:b;' }, (tc) => {
-      t.equal(tc.labels, 'key:value;a:b;')
-      t.end()
+      assert.equal(tc.labels, 'key:value;a:b;')
     })
   })
 
   const values = ['off', 'obfuscated', 'raw', 'invalid']
-  values.forEach((val) => {
+  for (const val of values) {
     const expectedValue = val === 'invalid' ? 'off' : val
-    t.test(`should pickup record_sql value of ${expectedValue}`, (t) => {
+    await t.test(`should pickup record_sql value of ${expectedValue}`, () => {
       idempotentEnv({ NEW_RELIC_RECORD_SQL: val }, (tc) => {
-        t.equal(tc.transaction_tracer.record_sql, expectedValue)
-        t.end()
+        assert.equal(tc.transaction_tracer.record_sql, expectedValue)
       })
     })
-  })
+  }
 
-  t.test('should pickup explain_threshold', (t) => {
+  await t.test('should pickup explain_threshold', () => {
     idempotentEnv({ NEW_RELIC_EXPLAIN_THRESHOLD: '100' }, (tc) => {
-      t.equal(tc.transaction_tracer.explain_threshold, 100)
-      t.end()
+      assert.equal(tc.transaction_tracer.explain_threshold, 100)
     })
   })
 
-  t.test('should pickup slow_sql.enabled', (t) => {
+  await t.test('should pickup slow_sql.enabled', () => {
     idempotentEnv({ NEW_RELIC_SLOW_SQL_ENABLED: 'true' }, (tc) => {
-      t.equal(tc.slow_sql.enabled, true)
-      t.end()
+      assert.equal(tc.slow_sql.enabled, true)
     })
   })
 
-  t.test('should pickup slow_sql.max_samples', (t) => {
+  await t.test('should pickup slow_sql.max_samples', () => {
     idempotentEnv({ NEW_RELIC_MAX_SQL_SAMPLES: '100' }, (tc) => {
-      t.equal(tc.slow_sql.max_samples, 100)
-      t.end()
+      assert.equal(tc.slow_sql.max_samples, 100)
     })
   })
 
-  t.test('should pick up logging.enabled', (t) => {
+  await t.test('should pick up logging.enabled', () => {
     idempotentEnv({ NEW_RELIC_LOG_ENABLED: 'false' }, (tc) => {
-      t.equal(tc.logging.enabled, false)
-      t.end()
+      assert.equal(tc.logging.enabled, false)
     })
   })
 
-  t.test('should pick up message tracer segment reporting', (t) => {
+  await t.test('should pick up message tracer segment reporting', () => {
     const env = 'NEW_RELIC_MESSAGE_TRACER_SEGMENT_PARAMETERS_ENABLED'
     idempotentEnv({ [env]: false }, (tc) => {
-      t.equal(tc.message_tracer.segment_parameters.enabled, false)
-      t.end()
+      assert.equal(tc.message_tracer.segment_parameters.enabled, false)
     })
   })
 
-  t.test('should pick up disabled utilization detection', (t) => {
+  await t.test('should pick up disabled utilization detection', () => {
     idempotentEnv({ NEW_RELIC_UTILIZATION_DETECT_AWS: false }, (tc) => {
-      t.equal(tc.utilization.detect_aws, false)
-      t.end()
+      assert.equal(tc.utilization.detect_aws, false)
     })
   })
 
-  t.test('should reject disabling ssl', (t) => {
+  await t.test('should reject disabling ssl', () => {
     idempotentEnv({ NEW_RELIC_USE_SSL: false }, (tc) => {
-      t.equal(tc.ssl, true)
-      t.end()
+      assert.equal(tc.ssl, true)
     })
   })
 
-  t.test('should pick up ignored error classes', (t) => {
+  await t.test('should pick up ignored error classes', () => {
     idempotentEnv({ NEW_RELIC_ERROR_COLLECTOR_IGNORE_ERRORS: 'Error, AnotherError' }, (tc) => {
-      t.same(tc.error_collector.ignore_classes, ['Error', 'AnotherError'])
-      t.end()
+      assert.deepStrictEqual(tc.error_collector.ignore_classes, ['Error', 'AnotherError'])
     })
   })
 
-  t.test('should pick up expected error classes', (t) => {
+  await t.test('should pick up expected error classes', () => {
     idempotentEnv({ NEW_RELIC_ERROR_COLLECTOR_EXPECTED_ERRORS: 'QError, AnotherError' }, (tc) => {
-      t.same(tc.error_collector.expected_classes, ['QError', 'AnotherError'])
-      t.end()
+      assert.deepStrictEqual(tc.error_collector.expected_classes, ['QError', 'AnotherError'])
     })
   })
 
-  t.test('should pick up all_all_headers', (t) => {
+  await t.test('should pick up all_all_headers', () => {
     idempotentEnv({ NEW_RELIC_ALLOW_ALL_HEADERS: 'true' }, function (tc) {
-      t.equal(tc.allow_all_headers, true)
-      t.end()
+      assert.equal(tc.allow_all_headers, true)
     })
   })
 
-  t.test('should pick up application logging values', (t) => {
+  await t.test('should pick up application logging values', () => {
     const config = {
       NEW_RELIC_APPLICATION_LOGGING_ENABLED: 'true',
       NEW_RELIC_APPLICATION_LOGGING_FORWARDING_ENABLED: 'true',
@@ -634,7 +555,7 @@ tap.test('when overriding configuration values via environment variables', (t) =
       NEW_RELIC_APPLICATION_LOGGING_LOCAL_DECORATING_ENABLED: 'true'
     }
     idempotentEnv(config, function (tc) {
-      t.strictSame(tc.application_logging, {
+      assert.deepStrictEqual(tc.application_logging, {
         enabled: true,
         forwarding: {
           enabled: true,
@@ -647,131 +568,119 @@ tap.test('when overriding configuration values via environment variables', (t) =
           enabled: true
         }
       })
-      t.end()
     })
   })
 
-  t.test('should pick up ignore_server_configuration', (t) => {
+  await t.test('should pick up ignore_server_configuration', () => {
     idempotentEnv({ NEW_RELIC_IGNORE_SERVER_SIDE_CONFIG: 'true' }, function (tc) {
-      t.equal(tc.ignore_server_configuration, true)
-      t.end()
+      assert.equal(tc.ignore_server_configuration, true)
     })
   })
 
   const ipvValues = ['4', '6', 'bogus']
-  ipvValues.forEach((val) => {
+  for (const val of ipvValues) {
     const expectedValue = val === 'bogus' ? '4' : val
-    t.test(`should pick up ipv_preference of ${expectedValue}`, (t) => {
+    await t.test(`should pick up ipv_preference of ${expectedValue}`, () => {
       idempotentEnv({ NEW_RELIC_IPV_PREFERENCE: val }, function (tc) {
-        t.equal(tc.process_host.ipv_preference, expectedValue)
-        t.end()
+        assert.equal(tc.process_host.ipv_preference, expectedValue)
       })
     })
-  })
 
-  t.test('should pick up error_collector.ignore_messages', (t) => {
-    const config = { Error: ['On no'] }
-    idempotentEnv(
-      { NEW_RELIC_ERROR_COLLECTOR_IGNORE_MESSAGES: JSON.stringify(config) },
-      function (tc) {
-        t.same(tc.error_collector.ignore_messages, config)
-        t.end()
-      }
-    )
-  })
-
-  t.test('should pick up code_level_metrics.enabled', (t) => {
-    idempotentEnv({ NEW_RELIC_CODE_LEVEL_METRICS_ENABLED: 'true' }, function (tc) {
-      t.equal(tc.code_level_metrics.enabled, true)
-      t.end()
-    })
-  })
-
-  t.test('should pick up url_obfuscation.enabled', (t) => {
-    const env = {
-      NEW_RELIC_URL_OBFUSCATION_ENABLED: 'true'
-    }
-
-    idempotentEnv(env, (config) => {
-      t.equal(config.url_obfuscation.enabled, true)
-      t.end()
-    })
-  })
-
-  t.test('should pick up url_obfuscation.regex parameters', (t) => {
-    const env = {
-      NEW_RELIC_URL_OBFUSCATION_REGEX_PATTERN: 'regex',
-      NEW_RELIC_URL_OBFUSCATION_REGEX_FLAGS: 'g',
-      NEW_RELIC_URL_OBFUSCATION_REGEX_REPLACEMENT: 'replacement'
-    }
-
-    idempotentEnv(env, (config) => {
-      t.same(config.url_obfuscation.regex.pattern, /regex/)
-      t.equal(config.url_obfuscation.regex.flags, 'g')
-      t.equal(config.url_obfuscation.regex.replacement, 'replacement')
-      t.end()
-    })
-  })
-
-  t.test('should set regex to undefined if invalid regex', (t) => {
-    const env = {
-      NEW_RELIC_URL_OBFUSCATION_REGEX_PATTERN: '['
-    }
-
-    idempotentEnv(env, (config) => {
-      t.notOk(config.url_obfuscation.regex.pattern)
-      t.end()
-    })
-  })
-
-  t.test('should convert NEW_RELIC_GRPC_IGNORE_STATUS_CODES to integers', (t) => {
-    const env = {
-      NEW_RELIC_GRPC_IGNORE_STATUS_CODES: '5-7,blah,9'
-    }
-
-    idempotentEnv(env, (config) => {
-      t.same(config.grpc.ignore_status_codes, [5, 6, 7, 9])
-      t.end()
-    })
-  })
-
-  t.test('should convert security env vars accordingly', (t) => {
-    const env = {
-      NEW_RELIC_SECURITY_ENABLED: true,
-      NEW_RELIC_SECURITY_AGENT_ENABLED: true,
-      NEW_RELIC_SECURITY_MODE: 'RASP',
-      NEW_RELIC_SECURITY_VALIDATOR_SERVICE_URL: 'new-url',
-      NEW_RELIC_SECURITY_DETECTION_RCI_ENABLED: false,
-      NEW_RELIC_SECURITY_DETECTION_RXSS_ENABLED: false,
-      NEW_RELIC_SECURITY_DETECTION_DESERIALIZATION_ENABLED: false
-    }
-    idempotentEnv(env, (config) => {
-      t.same(config.security, {
-        enabled: true,
-        agent: { enabled: true },
-        mode: 'RASP',
-        validator_service_url: 'new-url',
-        detection: {
-          rci: { enabled: false },
-          rxss: { enabled: false },
-          deserialization: { enabled: false }
+    await t.test('should pick up error_collector.ignore_messages', () => {
+      const config = { Error: ['On no'] }
+      idempotentEnv(
+        { NEW_RELIC_ERROR_COLLECTOR_IGNORE_MESSAGES: JSON.stringify(config) },
+        function (tc) {
+          assert.deepStrictEqual(tc.error_collector.ignore_messages, config)
         }
+      )
+    })
+
+    await t.test('should pick up code_level_metrics.enabled', () => {
+      idempotentEnv({ NEW_RELIC_CODE_LEVEL_METRICS_ENABLED: 'true' }, function (tc) {
+        assert.equal(tc.code_level_metrics.enabled, true)
       })
-      t.end()
     })
-  })
 
-  t.test('should convert NEW_RELIC_HEROKU_USE_DYNO_NAMES accordingly', (t) => {
-    idempotentEnv({ NEW_RELIC_HEROKU_USE_DYNO_NAMES: 'false' }, (config) => {
-      t.equal(config.heroku.use_dyno_names, false)
-      t.end()
-    })
-  })
+    await t.test('should pick up url_obfuscation.enabled', () => {
+      const env = {
+        NEW_RELIC_URL_OBFUSCATION_ENABLED: 'true'
+      }
 
-  t.test('should convert NEW_RELIC_WORKER_THREADS_ENABLED accordingly', (t) => {
-    idempotentEnv({ NEW_RELIC_WORKER_THREADS_ENABLED: 'true' }, (config) => {
-      t.equal(config.worker_threads.enabled, true)
-      t.end()
+      idempotentEnv(env, (config) => {
+        assert.equal(config.url_obfuscation.enabled, true)
+      })
     })
-  })
+
+    await t.test('should pick up url_obfuscation.regex parameters', () => {
+      const env = {
+        NEW_RELIC_URL_OBFUSCATION_REGEX_PATTERN: 'regex',
+        NEW_RELIC_URL_OBFUSCATION_REGEX_FLAGS: 'g',
+        NEW_RELIC_URL_OBFUSCATION_REGEX_REPLACEMENT: 'replacement'
+      }
+
+      idempotentEnv(env, (config) => {
+        assert.deepStrictEqual(config.url_obfuscation.regex.pattern, /regex/)
+        assert.equal(config.url_obfuscation.regex.flags, 'g')
+        assert.equal(config.url_obfuscation.regex.replacement, 'replacement')
+      })
+    })
+
+    await t.test('should set regex to undefined if invalid regex', () => {
+      const env = {
+        NEW_RELIC_URL_OBFUSCATION_REGEX_PATTERN: '['
+      }
+
+      idempotentEnv(env, (config) => {
+        assert.ok(!config.url_obfuscation.regex.pattern)
+      })
+    })
+
+    await t.test('should convert NEW_RELIC_GRPC_IGNORE_STATUS_CODES to integers', () => {
+      const env = {
+        NEW_RELIC_GRPC_IGNORE_STATUS_CODES: '5-7,blah,9'
+      }
+
+      idempotentEnv(env, (config) => {
+        assert.deepStrictEqual(config.grpc.ignore_status_codes, [5, 6, 7, 9])
+      })
+    })
+
+    await t.test('should convert security env vars accordingly', () => {
+      const env = {
+        NEW_RELIC_SECURITY_ENABLED: true,
+        NEW_RELIC_SECURITY_AGENT_ENABLED: true,
+        NEW_RELIC_SECURITY_MODE: 'RASP',
+        NEW_RELIC_SECURITY_VALIDATOR_SERVICE_URL: 'new-url',
+        NEW_RELIC_SECURITY_DETECTION_RCI_ENABLED: false,
+        NEW_RELIC_SECURITY_DETECTION_RXSS_ENABLED: false,
+        NEW_RELIC_SECURITY_DETECTION_DESERIALIZATION_ENABLED: false
+      }
+      idempotentEnv(env, (config) => {
+        assert.deepStrictEqual(config.security, {
+          enabled: true,
+          agent: { enabled: true },
+          mode: 'RASP',
+          validator_service_url: 'new-url',
+          detection: {
+            rci: { enabled: false },
+            rxss: { enabled: false },
+            deserialization: { enabled: false }
+          }
+        })
+      })
+    })
+
+    await t.test('should convert NEW_RELIC_HEROKU_USE_DYNO_NAMES accordingly', () => {
+      idempotentEnv({ NEW_RELIC_HEROKU_USE_DYNO_NAMES: 'false' }, (config) => {
+        assert.equal(config.heroku.use_dyno_names, false)
+      })
+    })
+
+    await t.test('should convert NEW_RELIC_WORKER_THREADS_ENABLED accordingly', () => {
+      idempotentEnv({ NEW_RELIC_WORKER_THREADS_ENABLED: 'true' }, (config) => {
+        assert.equal(config.worker_threads.enabled, true)
+      })
+    })
+  }
 })
