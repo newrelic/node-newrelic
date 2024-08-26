@@ -4,14 +4,15 @@
  */
 
 'use strict'
-
-const tap = require('tap')
+const assert = require('node:assert')
+const test = require('node:test')
 const sinon = require('sinon')
 const initialize = require('../../../../lib/instrumentation/koa/instrumentation')
 
-tap.test('Koa instrumentation', (t) => {
-  t.beforeEach((t) => {
-    t.context.shimMock = {
+test('Koa instrumentation', async (t) => {
+  t.beforeEach((ctx) => {
+    ctx.nr = {}
+    ctx.nr.shimMock = {
       KOA: 'koa',
       MIDDLEWARE: 'middleware',
       logger: {
@@ -29,7 +30,7 @@ tap.test('Koa instrumentation', (t) => {
       savePossibleTransactionName: sinon.stub()
     }
 
-    t.context.KoaMock = class {
+    ctx.nr.KoaMock = class {
       constructor() {
         this.use = sinon.stub()
         this.createContext = sinon.stub()
@@ -38,25 +39,28 @@ tap.test('Koa instrumentation', (t) => {
     }
   })
 
-  t.test('should work with Koa MJS export', async (t) => {
-    const { shimMock, KoaMock } = t.context
+  await t.test('should work with Koa MJS export', async (t) => {
+    const { shimMock, KoaMock } = t.nr
 
     initialize(shimMock, { default: KoaMock })
-    t.equal(shimMock.logger.debug.callCount, 0, 'should not have called debug')
-    t.ok(shimMock.setFramework.calledOnceWith('koa'), 'should set the framework')
-    t.ok(shimMock.wrapMiddlewareMounter.calledOnceWith(KoaMock.prototype, 'use'), 'should wrap use')
-    t.ok(
+    assert.equal(shimMock.logger.debug.callCount, 0, 'should not have called debug')
+    assert.ok(shimMock.setFramework.calledOnceWith('koa'), 'should set the framework')
+    assert.ok(
+      shimMock.wrapMiddlewareMounter.calledOnceWith(KoaMock.prototype, 'use'),
+      'should wrap use'
+    )
+    assert.ok(
       shimMock.wrapReturn.calledOnceWith(KoaMock.prototype, 'createContext'),
       'should wrap createContext'
     )
-    t.ok(shimMock.wrap.calledOnceWith(KoaMock.prototype, 'emit'), 'should wrap emit')
+    assert.ok(shimMock.wrap.calledOnceWith(KoaMock.prototype, 'emit'), 'should wrap emit')
   })
 
-  t.test('should log when unable to find the prototype MJS Export', async (t) => {
-    const { shimMock } = t.context
+  await t.test('should log when unable to find the prototype MJS Export', async (t) => {
+    const { shimMock } = t.nr
 
     initialize(shimMock, { default: {} })
-    t.ok(
+    assert.ok(
       shimMock.logger.debug.calledOnceWith(
         'Koa instrumentation function called with incorrect arguments, not instrumenting.'
       ),
@@ -64,31 +68,32 @@ tap.test('Koa instrumentation', (t) => {
     )
   })
 
-  t.test('should work with Koa CJS export', async (t) => {
-    const { shimMock, KoaMock } = t.context
+  await t.test('should work with Koa CJS export', async (t) => {
+    const { shimMock, KoaMock } = t.nr
 
     initialize(shimMock, KoaMock)
-    t.equal(shimMock.logger.debug.callCount, 0, 'should not have called debug')
-    t.ok(shimMock.setFramework.calledOnceWith('koa'), 'should set the framework')
-    t.ok(shimMock.wrapMiddlewareMounter.calledOnceWith(KoaMock.prototype, 'use'), 'should wrap use')
-    t.ok(
+    assert.equal(shimMock.logger.debug.callCount, 0, 'should not have called debug')
+    assert.ok(shimMock.setFramework.calledOnceWith('koa'), 'should set the framework')
+    assert.ok(
+      shimMock.wrapMiddlewareMounter.calledOnceWith(KoaMock.prototype, 'use'),
+      'should wrap use'
+    )
+    assert.ok(
       shimMock.wrapReturn.calledOnceWith(KoaMock.prototype, 'createContext'),
       'should wrap createContext'
     )
-    t.ok(shimMock.wrap.calledOnceWith(KoaMock.prototype, 'emit'), 'should wrap emit')
+    assert.ok(shimMock.wrap.calledOnceWith(KoaMock.prototype, 'emit'), 'should wrap emit')
   })
 
-  t.test('should log when unable to find the prototype CJS Export', async (t) => {
-    const { shimMock } = t.context
+  await t.test('should log when unable to find the prototype CJS Export', async (t) => {
+    const { shimMock } = t.nr
 
     initialize(shimMock, {})
-    t.ok(
+    assert.ok(
       shimMock.logger.debug.calledOnceWith(
         'Koa instrumentation function called with incorrect arguments, not instrumenting.'
       ),
       'should have called debug'
     )
   })
-
-  t.end()
 })

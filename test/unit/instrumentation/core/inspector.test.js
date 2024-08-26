@@ -5,25 +5,16 @@
 
 'use strict'
 
-const tap = require('tap')
+const test = require('node:test')
+const assert = require('node:assert')
 const helper = require('../../../lib/agent_helper')
 const inspectorInstrumentation = require('../../../../lib/instrumentation/core/inspector')
 
-tap.test('Inspector instrumentation', (t) => {
-  let agent = null
-
-  t.beforeEach(() => {
-    agent = helper.loadMockedAgent()
-  })
-
-  t.afterEach(() => {
+test('Inspector instrumentation', async (t) => {
+  const agent = helper.loadMockedAgent()
+  t.after(() => {
     helper.unloadAgent(agent)
   })
 
-  t.test('should not throw when passed null for the module', (t) => {
-    t.doesNotThrow(inspectorInstrumentation.bind(null, agent, null))
-    t.end()
-  })
-
-  t.end()
+  assert.doesNotThrow(inspectorInstrumentation.bind(null, agent, null))
 })

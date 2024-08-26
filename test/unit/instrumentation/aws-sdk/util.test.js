@@ -4,14 +4,16 @@
  */
 
 'use strict'
-const tap = require('tap')
+const test = require('node:test')
+const assert = require('node:assert')
 const {
   grabLastUrlSegment,
   setDynamoParameters
 } = require('../../../../lib/instrumentation/aws-sdk/util')
+const DatastoreParameters = require('../../../../lib/shim/specs/params/datastore')
 
-tap.test('Utility Functions', (t) => {
-  t.ok(grabLastUrlSegment, 'imported function successfully')
+test('Utility Functions', async () => {
+  assert.ok(grabLastUrlSegment, 'imported function successfully')
 
   const fixtures = [
     {
@@ -34,37 +36,34 @@ tap.test('Utility Functions', (t) => {
 
   for (const [, fixture] of fixtures.entries()) {
     const result = grabLastUrlSegment(fixture.input)
-    t.equal(result, fixture.output, `expecting ${result} to equal ${fixture.output}`)
+    assert.equal(result, fixture.output, `expecting ${result} to equal ${fixture.output}`)
   }
-  t.end()
 })
 
-tap.test('DB parameters', (t) => {
-  t.autoend()
-
-  t.test('default values', (t) => {
+test('DB parameters', async (t) => {
+  await t.test('default values', (t, end) => {
     const input = {}
     const endpoint = {}
     const result = setDynamoParameters(endpoint, input)
-    t.same(
+    assert.deepEqual(
       result,
-      {
+      new DatastoreParameters({
         host: undefined,
         database_name: null,
         port_path_or_id: 443,
         collection: 'Unknown'
-      },
+      }),
       'should set default values for parameters'
     )
-    t.end()
+    end()
   })
 
   // v2 uses host key
-  t.test('host, port, collection', (t) => {
+  await t.test('host, port, collection', (t, end) => {
     const input = { TableName: 'unit-test' }
     const endpoint = { host: 'unit-test-host', port: '123' }
     const result = setDynamoParameters(endpoint, input)
-    t.same(
+    assert.deepEqual(
       result,
       {
         host: endpoint.host,
@@ -74,15 +73,15 @@ tap.test('DB parameters', (t) => {
       },
       'should set appropriate parameters'
     )
-    t.end()
+    end()
   })
 
   // v3 uses hostname key
-  t.test('hostname, port, collection', (t) => {
+  await t.test('hostname, port, collection', (t, end) => {
     const input = { TableName: 'unit-test' }
     const endpoint = { hostname: 'unit-test-host', port: '123' }
     const result = setDynamoParameters(endpoint, input)
-    t.same(
+    assert.deepEqual(
       result,
       {
         host: endpoint.hostname,
@@ -92,6 +91,6 @@ tap.test('DB parameters', (t) => {
       },
       'should set appropriate parameters'
     )
-    t.end()
+    end()
   })
 })

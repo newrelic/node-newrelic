@@ -4,22 +4,16 @@
  */
 
 'use strict'
-
-const tap = require('tap')
+const assert = require('node:assert')
+const test = require('node:test')
 const sinon = require('sinon')
 const proxyquire = require('proxyquire').noPreserveCache()
 const symbols = require('../../../../lib/symbols')
 
-tap.test('wrapCreatePool', (t) => {
-  t.autoend()
-
-  let mockShim
-  let mockMysql
-  let mockPool
-  let instrumentation
-
-  t.beforeEach(() => {
-    mockShim = {
+test('wrapCreatePool', async (t) => {
+  t.beforeEach((ctx) => {
+    ctx.nr = {}
+    ctx.nr.mockShim = {
       MYSQL: 'test-mysql',
       setDatastore: sinon.stub().returns(),
       wrapReturn: sinon.stub().returns(),
@@ -32,71 +26,79 @@ tap.test('wrapCreatePool', (t) => {
       wrap: sinon.stub().returns()
     }
 
-    mockMysql = {
+    ctx.nr.mockMysql = {
       createPool: sinon.stub().returns()
     }
 
-    mockPool = {
+    ctx.nr.mockPool = {
       getConnection: sinon.stub().returns(),
       query: sinon.stub().returns()
     }
 
-    instrumentation = proxyquire('../../../../lib/instrumentation/mysql/mysql', {})
+    ctx.nr.instrumentation = proxyquire('../../../../lib/instrumentation/mysql/mysql', {})
   })
 
-  t.test('should wrap mysql.createPool', (t) => {
+  await t.test('should wrap mysql.createPool', (t, end) => {
+    const { mockShim, mockMysql, instrumentation } = t.nr
     instrumentation.callbackInitialize(mockShim, mockMysql)
-    t.ok(
+    assert.ok(
       mockShim.wrapReturn.calledWith(mockMysql, 'createPool'),
       'should have called wrapReturn for createPool'
     )
 
-    t.end()
+    end()
   })
 
-  t.test('should return early if wrapping symbol exists', (t) => {
+  await t.test('should return early if wrapping symbol exists', (t, end) => {
+    const { mockPool, mockShim, mockMysql, instrumentation } = t.nr
     mockShim[symbols.unwrapPool] = true
 
     instrumentation.callbackInitialize(mockShim, mockMysql)
     const wrapCreatePool = mockShim.wrapReturn.args[1][2]
     wrapCreatePool(mockShim, null, null, mockPool)
 
-    t.equal(mockShim.logger.trace.callCount, 0, 'should not have hit the trace logging')
-    t.equal(mockShim.logger.debug.callCount, 0, 'should not have hit the debug logging')
+    assert.equal(mockShim.logger.trace.callCount, 0, 'should not have hit the trace logging')
+    assert.equal(mockShim.logger.debug.callCount, 0, 'should not have hit the debug logging')
 
-    t.end()
+    end()
   })
 
-  t.test('should not set the symbol if wrapQueryable returns false', (t) => {
+  await t.test('should not set the symbol if wrapQueryable returns false', (t, end) => {
+    const { mockPool, mockShim, mockMysql, instrumentation } = t.nr
     mockShim.isWrapped.returns(true)
 
     instrumentation.callbackInitialize(mockShim, mockMysql)
     const wrapCreatePool = mockShim.wrapReturn.args[1][2]
     wrapCreatePool(mockShim, null, null, mockPool)
 
-    t.notOk(mockShim[symbols.unwrapPool], 'should not have set the unwrapPool symbol')
+    assert.ok(!mockShim[symbols.unwrapPool], 'should not have set the unwrapPool symbol')
 
-    t.end()
+    end()
   })
 
-  t.test('should not set the symbol if wrapGetConnection returns false', (t) => {
+  await t.test('should not set the symbol if wrapGetConnection returns false', (t, end) => {
+    const { mockPool, mockShim, mockMysql, instrumentation } = t.nr
     mockShim.isWrapped.onCall(0).returns(false).returns(true)
     instrumentation.callbackInitialize(mockShim, mockMysql)
     const wrapCreatePool = mockShim.wrapReturn.args[1][2]
     wrapCreatePool(mockShim, null, null, mockPool)
 
-    t.notOk(mockShim[symbols.unwrapPool], 'should not have set the unwrapPool symbol')
+    assert.ok(!mockShim[symbols.unwrapPool], 'should not have set the unwrapPool symbol')
 
-    t.end()
+    end()
   })
 
-  t.test('should set the symbols if wrapQueryable and wrapGetConnection is successful', (t) => {
-    instrumentation.callbackInitialize(mockShim, mockMysql)
-    const wrapCreatePool = mockShim.wrapReturn.args[1][2]
-    wrapCreatePool(mockShim, null, null, mockPool)
+  await t.test(
+    'should set the symbols if wrapQueryable and wrapGetConnection is successful',
+    (t, end) => {
+      const { mockPool, mockShim, mockMysql, instrumentation } = t.nr
+      instrumentation.callbackInitialize(mockShim, mockMysql)
+      const wrapCreatePool = mockShim.wrapReturn.args[1][2]
+      wrapCreatePool(mockShim, null, null, mockPool)
 
-    t.equal(mockShim[symbols.unwrapPool], true, 'should have set the unwrapPool symbol')
+      assert.equal(mockShim[symbols.unwrapPool], true, 'should have set the unwrapPool symbol')
 
-    t.end()
-  })
+      end()
+    }
+  )
 })

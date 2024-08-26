@@ -5,51 +5,41 @@
 
 'use strict'
 
-const tap = require('tap')
+const test = require('node:test')
+const assert = require('node:assert')
 const helper = require('../../lib/agent_helper')
 const Shim = require('../../../lib/shim/shim.js')
 
-tap.test('agent instrumentation of generic-pool', function (t) {
-  t.autoend()
-  let agent
-  let initialize
-  let shim
+test('agent instrumentation of generic-pool', async function (t) {
+  const agent = helper.loadMockedAgent()
+  const shim = new Shim(agent, 'generic-pool')
+  const initialize = require('../../../lib/instrumentation/generic-pool')
 
-  t.before(function () {
-    agent = helper.loadMockedAgent()
-    shim = new Shim(agent, 'generic-pool')
-    initialize = require('../../../lib/instrumentation/generic-pool')
-  })
-
-  t.teardown(function () {
+  t.after(function () {
     helper.unloadAgent(agent)
   })
 
-  t.test("shouldn't cause bootstrapping to fail", function (t) {
-    t.autoend()
-    t.test('when passed no module', function (t) {
-      t.doesNotThrow(function () {
+  await t.test("shouldn't cause bootstrapping to fail", async function (t) {
+    await t.test('when passed no module', async function () {
+      assert.doesNotThrow(function () {
         initialize(agent, null, 'generic-pool', shim)
       })
-      t.end()
     })
 
-    t.test('when passed an empty module', function (t) {
-      t.doesNotThrow(function () {
+    await t.test('when passed an empty module', async function () {
+      assert.doesNotThrow(function () {
         initialize(agent, {}, 'generic-pool', shim)
       })
-      t.end()
     })
   })
 
-  t.test('when wrapping callbacks passed into pool.acquire', function (t) {
-    t.autoend()
+  await t.test('when wrapping callbacks passed into pool.acquire', async function (t) {
     const mockPool = {
       Pool: function (arity) {
         return {
           acquire: function (callback) {
-            t.equal(callback.length, arity)
-            t.doesNotThrow(function () {
+            assert.equal(callback.length, arity)
+            assert.doesNotThrow(function () {
               callback()
             })
           }
@@ -57,39 +47,37 @@ tap.test('agent instrumentation of generic-pool', function (t) {
       }
     }
 
-    t.before(function () {
-      initialize(agent, mockPool, 'generic-pool', shim)
-    })
+    initialize(agent, mockPool, 'generic-pool', shim)
 
-    t.test("must preserve 'callback.length === 0' to keep generic-pool happy", (t) => {
+    await t.test("must preserve 'callback.length === 0' to keep generic-pool happy", (t, end) => {
       const nop = function () {
-        t.end()
+        end()
       }
-      t.equal(nop.length, 0)
+      assert.equal(nop.length, 0)
 
       /* eslint-disable new-cap */
       mockPool.Pool(0).acquire(nop)
       /* eslint-enable new-cap */
     })
 
-    t.test("must preserve 'callback.length === 1' to keep generic-pool happy", (t) => {
+    await t.test("must preserve 'callback.length === 1' to keep generic-pool happy", (t, end) => {
       // eslint-disable-next-line no-unused-vars
       const nop = function (client) {
-        t.end()
+        end()
       }
-      t.equal(nop.length, 1)
+      assert.equal(nop.length, 1)
 
       /* eslint-disable new-cap */
       mockPool.Pool(1).acquire(nop)
       /* eslint-enable new-cap */
     })
 
-    t.test("must preserve 'callback.length === 2' to keep generic-pool happy", (t) => {
+    await t.test("must preserve 'callback.length === 2' to keep generic-pool happy", (t, end) => {
       // eslint-disable-next-line no-unused-vars
       const nop = function (error, client) {
-        t.end()
+        end()
       }
-      t.equal(nop.length, 2)
+      assert.equal(nop.length, 2)
 
       /* eslint-disable new-cap */
       mockPool.Pool(2).acquire(nop)

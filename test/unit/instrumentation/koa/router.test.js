@@ -4,9 +4,8 @@
  */
 
 'use strict'
-
-const tap = require('tap')
-
+const assert = require('node:assert')
+const test = require('node:test')
 const instrumentation = require('../../../../lib/instrumentation/koa/router-instrumentation')
 const { METHODS } = require('../../../../lib/instrumentation/http-methods')
 const helper = require('../../../lib/agent_helper')
@@ -29,102 +28,104 @@ const UNWRAPPED_STATIC_METHODS = ['url']
 //
 // So we unroll that loop.
 
-tap.test('koa-router', (t) => {
+test('koa-router', async (t) => {
   const koaRouterMod = 'koa-router'
 
-  t.beforeEach((t) => {
-    t.context.agent = helper.instrumentMockedAgent({
+  t.beforeEach((ctx) => {
+    ctx.nr = {}
+    ctx.nr.agent = helper.instrumentMockedAgent({
       moduleName: koaRouterMod,
       type: InstrumentationDescriptor.TYPE_WEB_FRAMEWORK,
       onRequire: instrumentation,
       shimName: 'koa'
     })
 
-    t.context.mod = require(koaRouterMod)
-    t.context.shim = helper.getShim(t.context.mod)
+    ctx.nr.mod = require(koaRouterMod)
+    ctx.nr.shim = helper.getShim(ctx.nr.mod)
   })
 
-  t.afterEach((t) => {
-    helper.unloadAgent(t.context.agent)
+  t.afterEach((ctx) => {
+    helper.unloadAgent(ctx.nr.agent)
     removeModules([koaRouterMod])
   })
 
-  t.test('mounting paramware', async (t) => {
-    const { mod: Router, shim } = t.context
+  await t.test('mounting paramware', async (t) => {
+    const { mod: Router, shim } = t.nr
     const router = new Router()
     router.param('second', function () {})
-    t.ok(shim.isWrapped(router.params.second), 'param function should be wrapped')
-    t.end()
+    assert.ok(shim.isWrapped(router.params.second), 'param function should be wrapped')
   })
 
-  t.test('methods', async (t) => {
-    const { mod: Router, shim } = t.context
+  await t.test('methods', async (t) => {
+    const { mod: Router, shim } = t.nr
     WRAPPED_METHODS.forEach(function checkWrapped(method) {
-      t.ok(
+      assert.ok(
         shim.isWrapped(Router.prototype[method]),
         method + ' should be a wrapped method on the prototype'
       )
     })
     UNWRAPPED_METHODS.forEach(function checkUnwrapped(method) {
-      t.not(
+      assert.notEqual(
         shim.isWrapped(Router.prototype[method]),
         method + ' should be a unwrapped method on the prototype'
       )
     })
     UNWRAPPED_STATIC_METHODS.forEach(function checkUnwrappedStatic(method) {
-      t.not(shim.isWrapped(Router[method]), method + ' should be an unwrapped static method')
+      assert.notEqual(
+        shim.isWrapped(Router[method]),
+        method + ' should be an unwrapped static method'
+      )
     })
   })
-
-  t.end()
 })
 
-tap.test('koa-router', (t) => {
+test('@koa/router', async (t) => {
   const koaRouterMod = '@koa/router'
 
-  t.beforeEach((t) => {
-    t.context.agent = helper.instrumentMockedAgent({
+  t.beforeEach((ctx) => {
+    ctx.nr = {}
+    ctx.nr.agent = helper.instrumentMockedAgent({
       moduleName: koaRouterMod,
       type: InstrumentationDescriptor.TYPE_WEB_FRAMEWORK,
       onRequire: instrumentation,
       shimName: 'koa'
     })
 
-    t.context.mod = require(koaRouterMod)
-    t.context.shim = helper.getShim(t.context.mod)
+    ctx.nr.mod = require(koaRouterMod)
+    ctx.nr.shim = helper.getShim(ctx.nr.mod)
   })
 
-  t.afterEach((t) => {
-    helper.unloadAgent(t.context.agent)
+  t.afterEach((ctx) => {
+    helper.unloadAgent(ctx.nr.agent)
     removeModules([koaRouterMod])
   })
 
-  t.test('mounting paramware', async (t) => {
-    const { mod: Router, shim } = t.context
+  await t.test('mounting paramware', async (t) => {
+    const { mod: Router, shim } = t.nr
     const router = new Router()
     router.param('second', function () {})
-    t.ok(shim.isWrapped(router.params.second), 'param function should be wrapped')
-    t.end()
+    assert.ok(shim.isWrapped(router.params.second), 'param function should be wrapped')
   })
 
-  t.test('methods', async (t) => {
-    const { mod: Router, shim } = t.context
+  await t.test('methods', async (t) => {
+    const { mod: Router, shim } = t.nr
     WRAPPED_METHODS.forEach(function checkWrapped(method) {
-      t.ok(
+      assert.ok(
         shim.isWrapped(Router.prototype[method]),
         method + ' should be a wrapped method on the prototype'
       )
     })
     UNWRAPPED_METHODS.forEach(function checkUnwrapped(method) {
-      t.not(
+      assert.notEqual(
         shim.isWrapped(Router.prototype[method]),
         method + ' should be a unwrapped method on the prototype'
       )
     })
     UNWRAPPED_STATIC_METHODS.forEach(function checkUnwrappedStatic(method) {
-      t.not(shim.isWrapped(Router[method]), method + ' should be an unwrapped static method')
+      assert.notEqual(
+        shim.isWrapped(Router[method]),
+        method + ' should be an unwrapped static method'
+      )
     })
   })
-
-  t.end()
 })

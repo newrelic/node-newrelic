@@ -6,36 +6,26 @@
 'use strict'
 
 const helper = require('../../lib/agent_helper')
-const tap = require('tap')
+const test = require('node:test')
+const assert = require('node:assert')
 
-tap.test('agent instrumentation of memcached', function (t) {
-  t.autoend()
-  t.test("shouldn't cause bootstrapping to fail", function (t) {
-    t.autoend()
-    let agent
-    let initialize
+test('agent instrumentation of memcached should not cause bootstrapping to fail', async function (t) {
+  const agent = helper.loadMockedAgent()
+  const initialize = require('../../../lib/instrumentation/memcached')
 
-    t.before(function () {
-      agent = helper.loadMockedAgent()
-      initialize = require('../../../lib/instrumentation/memcached')
+  t.after(function () {
+    helper.unloadAgent(agent)
+  })
+
+  await t.test('when passed no module', async function () {
+    assert.doesNotThrow(() => {
+      initialize(agent)
     })
+  })
 
-    t.teardown(function () {
-      helper.unloadAgent(agent)
-    })
-
-    t.test('when passed no module', function (t) {
-      t.doesNotThrow(() => {
-        initialize(agent)
-      })
-      t.end()
-    })
-
-    t.test('when passed an empty module', function (t) {
-      t.doesNotThrow(() => {
-        initialize(agent, {})
-      })
-      t.end()
+  await t.test('when passed an empty module', async function () {
+    assert.doesNotThrow(() => {
+      initialize(agent, {})
     })
   })
 })

@@ -4,20 +4,16 @@
  */
 
 'use strict'
-
-const tap = require('tap')
+const assert = require('node:assert')
+const test = require('node:test')
 const sinon = require('sinon')
 const instrumentation = require('../../../../lib/instrumentation/mysql/mysql')
 const symbols = require('../../../../lib/symbols')
 
-tap.test('wrapGetConnection', (t) => {
-  t.autoend()
-
-  let mockShim
-  let mockConnection
-
-  t.beforeEach(() => {
-    mockShim = {
+test('wrapGetConnection', async (t) => {
+  t.beforeEach((ctx) => {
+    ctx.nr = {}
+    ctx.nr.mockShim = {
       toArray: sinon.stub().returns(),
       isFunction: sinon.stub().returns(),
       isWrapped: sinon.stub().returns(),
@@ -30,81 +26,94 @@ tap.test('wrapGetConnection', (t) => {
       getOriginalOnce: sinon.stub().returns()
     }
 
-    mockConnection = {}
+    ctx.nr.mockConnection = {}
   })
 
-  t.test('should return false if Connection is undefined', (t) => {
+  await t.test('should return false if Connection is undefined', (t, end) => {
+    const { mockShim } = t.nr
     const result = instrumentation.wrapGetConnection(mockShim, undefined)
 
-    t.equal(result, false)
-    t.ok(
+    assert.equal(result, false)
+    assert.ok(
       mockShim.logger.trace.calledWith(
         { connectable: false, getConnection: false, isWrapped: false },
         'Not wrapping getConnection'
       )
     )
 
-    t.end()
+    end()
   })
 
-  t.test('should return false if getConnection is undefined', (t) => {
+  await t.test('should return false if getConnection is undefined', (t, end) => {
+    const { mockConnection, mockShim } = t.nr
     const result = instrumentation.wrapGetConnection(mockShim, mockConnection)
 
-    t.equal(result, false)
-    t.ok(
+    assert.equal(result, false)
+    assert.ok(
       mockShim.logger.trace.calledWith(
         { connectable: true, getConnection: false, isWrapped: false },
         'Not wrapping getConnection'
       )
     )
 
-    t.end()
+    end()
   })
 
-  t.test('should return false if getConnection is already wrapped', (t) => {
+  await t.test('should return false if getConnection is already wrapped', (t, end) => {
+    const { mockConnection, mockShim } = t.nr
     mockShim.isWrapped.returns(true)
     mockConnection.getConnection = sinon.stub().returns()
     const result = instrumentation.wrapGetConnection(mockShim, mockConnection)
 
-    t.equal(result, false)
-    t.ok(
+    assert.equal(result, false)
+    assert.ok(
       mockShim.logger.trace.calledWith(
         { connectable: true, getConnection: true, isWrapped: true },
         'Not wrapping getConnection'
       )
     )
 
-    t.end()
+    end()
   })
 
-  t.test('should attempt to wrap the getConnection callback if it is not wrapped', (t) => {
-    const mockCallback = sinon.stub().returns('lol')
-    mockConnection.getConnection = sinon.stub().returns()
-    mockShim.isWrapped.returns(false)
-    mockShim.toArray.returns([null, mockCallback])
-    mockShim.isFunction.returns(true)
-    mockShim.wrap.returnsArg(1)
+  await t.test(
+    'should attempt to wrap the getConnection callback if it is not wrapped',
+    (t, end) => {
+      const { mockConnection, mockShim } = t.nr
+      const mockCallback = sinon.stub().returns('lol')
+      mockConnection.getConnection = sinon.stub().returns()
+      mockShim.isWrapped.returns(false)
+      mockShim.toArray.returns([null, mockCallback])
+      mockShim.isFunction.returns(true)
+      mockShim.wrap.returnsArg(1)
 
-    const result = instrumentation.wrapGetConnection(mockShim, mockConnection)
+      const result = instrumentation.wrapGetConnection(mockShim, mockConnection)
 
-    t.equal(result, true)
-    t.ok(mockShim.wrap.calledWithMatch(Object.getPrototypeOf(mockConnection), 'getConnection'))
+      assert.equal(result, true)
+      assert.ok(
+        mockShim.wrap.calledWithMatch(Object.getPrototypeOf(mockConnection), 'getConnection')
+      )
 
-    const wrapper = mockShim.wrap.args[0][2]
-    const callbackWrapper = wrapper(mockShim, mockCallback)
-    callbackWrapper()
+      const wrapper = mockShim.wrap.args[0][2]
+      const callbackWrapper = wrapper(mockShim, mockCallback)
+      callbackWrapper()
 
-    t.equal(mockShim.wrap.callCount, 2)
-    t.ok(
-      mockShim.logger.trace.calledOnceWith({ hasSegment: false }, 'Wrapping callback with segment')
-    )
-    t.ok(mockShim.wrap.calledWith(mockCallback, instrumentation.wrapGetConnectionCallback))
-    t.ok(mockShim.bindSegment.calledOnceWith(instrumentation.wrapGetConnectionCallback))
+      assert.equal(mockShim.wrap.callCount, 2)
+      assert.ok(
+        mockShim.logger.trace.calledOnceWith(
+          { hasSegment: false },
+          'Wrapping callback with segment'
+        )
+      )
+      assert.ok(mockShim.wrap.calledWith(mockCallback, instrumentation.wrapGetConnectionCallback))
+      assert.ok(mockShim.bindSegment.calledOnceWith(instrumentation.wrapGetConnectionCallback))
 
-    t.end()
-  })
+      end()
+    }
+  )
 
-  t.test('should not double wrap getConnection callback', (t) => {
+  await t.test('should not double wrap getConnection callback', (t, end) => {
+    const { mockConnection, mockShim } = t.nr
     const mockCallback = sinon.stub().returns('lol')
     mockConnection.getConnection = sinon.stub().returns()
     mockShim[symbols.wrappedPoolConnection] = true
@@ -115,16 +124,16 @@ tap.test('wrapGetConnection', (t) => {
 
     const result = instrumentation.wrapGetConnection(mockShim, mockConnection)
 
-    t.equal(result, true)
-    t.ok(mockShim.wrap.calledWithMatch(Object.getPrototypeOf(mockConnection), 'getConnection'))
+    assert.equal(result, true)
+    assert.ok(mockShim.wrap.calledWithMatch(Object.getPrototypeOf(mockConnection), 'getConnection'))
 
     const wrapper = mockShim.wrap.args[0][2]
     const callbackWrapper = wrapper(mockShim, mockCallback)
     callbackWrapper()
 
-    t.equal(mockShim.wrap.callCount, 1)
-    t.ok(mockShim.bindSegment.calledOnceWith(mockCallback))
+    assert.equal(mockShim.wrap.callCount, 1)
+    assert.ok(mockShim.bindSegment.calledOnceWith(mockCallback))
 
-    t.end()
+    end()
   })
 })

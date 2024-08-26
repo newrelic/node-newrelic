@@ -4,38 +4,34 @@
  */
 
 'use strict'
-
-const { test } = require('tap')
+const test = require('node:test')
+const assert = require('node:assert')
 const helper = require('../../lib/agent_helper')
 const WebFrameworkShim = require('../../../lib/shim/webframework-shim')
 const sinon = require('sinon')
 
-test('Nest unit tests', (t) => {
-  t.autoend()
+function getMockModule() {
+  class BaseExceptionFilter {}
+  BaseExceptionFilter.prototype.handleUnknownError = sinon.stub()
+  return { BaseExceptionFilter }
+}
 
-  let agent = null
-  let initialize = null
-  let shim = null
-  let mockCore = null
-
-  function getMockModule() {
-    class BaseExceptionFilter {}
-    BaseExceptionFilter.prototype.handleUnknownError = sinon.stub()
-    return { BaseExceptionFilter }
-  }
-
-  t.beforeEach(() => {
-    agent = helper.loadMockedAgent()
-    initialize = require('../../../lib/instrumentation/@nestjs/core.js')
-    shim = new WebFrameworkShim(agent, 'nest')
-    mockCore = getMockModule()
+test('Nest unit.tests', async (t) => {
+  t.beforeEach((ctx) => {
+    ctx.nr = {}
+    const agent = helper.loadMockedAgent()
+    ctx.nr.initialize = require('../../../lib/instrumentation/@nestjs/core.js')
+    ctx.nr.shim = new WebFrameworkShim(agent, 'nest')
+    ctx.nr.mockCore = getMockModule()
+    ctx.nr.agent = agent
   })
 
-  t.afterEach(() => {
-    helper.unloadAgent(agent)
+  t.afterEach((ctx) => {
+    helper.unloadAgent(ctx.nr.agent)
   })
 
-  t.test('Should record the error when in a transaction', (t) => {
+  await t.test('Should record the error when in a transaction', (t, end) => {
+    const { agent, initialize, mockCore, shim } = t.nr
     // Minimum Nest.js version supported.
     shim.pkgVersion = '8.0.0'
     initialize(agent, mockCore, '@nestjs/core', shim)
@@ -43,7 +39,7 @@ test('Nest unit tests', (t) => {
     helper.runInTransaction(agent, (tx) => {
       const err = new Error('something went wrong')
       const exceptionFilter = new mockCore.BaseExceptionFilter()
-      t.not(
+      assert.notEqual(
         shim.getOriginal(exceptionFilter.handleUnknownError),
         exceptionFilter.handleUnknownError,
         'wrapped and unwrapped handlers should not be equal'
@@ -52,22 +48,23 @@ test('Nest unit tests', (t) => {
       exceptionFilter.handleUnknownError(err)
       tx.end()
 
-      t.equal(
+      assert.equal(
         shim.getOriginal(exceptionFilter.handleUnknownError).callCount,
         1,
         'should have called the original error handler once'
       )
 
       const errors = agent.errors.traceAggregator.errors
-      t.equal(errors.length, 1, 'there should be one error')
-      t.equal(errors[0][2], 'something went wrong', 'should get the expected error')
-      t.ok(errors[0][4].stack_trace, 'should have the stack trace')
+      assert.equal(errors.length, 1, 'there should be one error')
+      assert.equal(errors[0][2], 'something went wrong', 'should get the expected error')
+      assert.ok(errors[0][4].stack_trace, 'should have the stack trace')
 
-      t.end()
+      end()
     })
   })
 
-  t.test('Should ignore the error when not in a transaction', (t) => {
+  await t.test('Should ignore the error when not in a transaction', (t, end) => {
+    const { agent, initialize, mockCore, shim } = t.nr
     // Minimum Nest.js version supported.
     shim.pkgVersion = '8.0.0'
     initialize(agent, mockCore, '@nestjs/core', shim)
@@ -75,7 +72,7 @@ test('Nest unit tests', (t) => {
     const err = new Error('something went wrong')
     const exceptionFilter = new mockCore.BaseExceptionFilter()
 
-    t.not(
+    assert.notEqual(
       shim.getOriginal(exceptionFilter.handleUnknownError),
       exceptionFilter.handleUnknownError,
       'wrapped and unwrapped handlers should not be equal'
@@ -83,29 +80,30 @@ test('Nest unit tests', (t) => {
 
     exceptionFilter.handleUnknownError(err)
 
-    t.equal(
+    assert.equal(
       shim.getOriginal(exceptionFilter, 'handleUnknownError').callCount,
       1,
       'should have called the original error handler once'
     )
     const errors = agent.errors.traceAggregator.errors
-    t.equal(errors.length, 0, 'there should be no errors')
+    assert.equal(errors.length, 0, 'there should be no errors')
 
-    t.end()
+    end()
   })
 
-  t.test('Should not instrument versions earlier than 8.0.0', (t) => {
+  await t.test('Should not instrument versions earlier than 8.0.0', (t, end) => {
+    const { agent, initialize, mockCore, shim } = t.nr
     // Unsupported version
     shim.pkgVersion = '7.4.0'
     initialize(agent, mockCore, '@nestjs/core', shim)
 
     const exceptionFilter = new mockCore.BaseExceptionFilter()
-    t.equal(
+    assert.equal(
       shim.getOriginal(exceptionFilter.handleUnknownError),
       exceptionFilter.handleUnknownError,
       'wrapped and unwrapped handlers should be equal'
     )
 
-    t.end()
+    end()
   })
 })
