@@ -7,24 +7,8 @@ env:
   SPEC_FILE_TEMPLATE: 'NewRelic.Azure.WebSites.Extension.NodeAgent.nuspec'
 
 jobs:
-  setup_tools:
-    runs-on: windows-latest
-
-    steps:
-      - uses: actions/checkout@v4
-      - name: Setup dotnet '6.0.x'
-        uses: actions/setup-dotnet@v4
-        with:
-          dotnet-version: '6.0.x'
-      - name: Display dotnet version
-        run: dotnet --version
-      - name: Display NuGet version
-        run: nuget ?
-
   create_extension_bundle:
     runs-on: windows-latest
-    needs:
-      - setup_tools
 
     strategy:
       matrix:
@@ -32,6 +16,12 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+
+      - name: Setup dotnet '6.0.x'
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '6.0.x'
+
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v4
         with:
