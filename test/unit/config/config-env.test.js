@@ -129,15 +129,18 @@ test('when overriding configuration values via environment variables', async (t)
     })
   })
 
-  await t.test('should take an explicit OTel endpoint over the license key parsed host', (t, end) => {
-    idempotentEnv({ NEW_RELIC_LICENSE_KEY: 'eu01xxhambulance' }, function () {
-      idempotentEnv({ NEW_RELIC_OTLP_ENDPOINT: 'localhost' }, (tc) => {
-        assert.ok(tc.otlp_endpoint)
-        assert.equal(tc.otlp_endpoint, 'localhost')
-        end()
+  await t.test(
+    'should take an explicit OTel endpoint over the license key parsed host',
+    (t, end) => {
+      idempotentEnv({ NEW_RELIC_LICENSE_KEY: 'eu01xxhambulance' }, function () {
+        idempotentEnv({ NEW_RELIC_OTLP_ENDPOINT: 'localhost' }, (tc) => {
+          assert.ok(tc.otlp_endpoint)
+          assert.equal(tc.otlp_endpoint, 'localhost')
+          end()
+        })
       })
-    })
-  })
+    }
+  )
 
   await t.test('should pick up on feature flags set via environment variables', (t, end) => {
     const ffNamePrefix = 'NEW_RELIC_FEATURE_FLAG_'
@@ -329,6 +332,7 @@ test('when overriding configuration values via environment variables', async (t)
   await t.test('should pick up whether error collector attributes are enabled', (t, end) => {
     idempotentEnv({ NEW_RELIC_ERROR_COLLECTOR_ATTRIBUTES_ENABLED: 'NO' }, (tc) => {
       assert.equal(tc.error_collector.attributes.enabled, false)
+      end()
     })
   })
 
@@ -403,6 +407,7 @@ test('when overriding configuration values via environment variables', async (t)
   await t.test('should not add codes given with invalid range', (t, end) => {
     idempotentEnv({ NEW_RELIC_ERROR_COLLECTOR_EXPECTED_ERROR_CODES: '421-420' }, (tc) => {
       assert.deepStrictEqual(tc.error_collector.expected_status_codes, [])
+      end()
     })
   })
 
