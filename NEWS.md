@@ -15,7 +15,7 @@
 
 #### Miscellaneous chores
 * Fixed linting scripts ([#2497](https://github.com/newrelic/node-newrelic/pull/2497)) ([c395779](https://github.com/newrelic/node-newrelic/commit/c395779f499cca0ec7f915342c23b2d2381b0163))
-* Remove examples/shim ([#2484](https://github.com/newrelic/node-newrelic/pull/2484)) ([40d1f5c](https://github.com/newrelic/node-newrelic/commit/40d1f5ccc50d49805fc68946806fc9f74179673b))
+* Removed examples/shim ([#2484](https://github.com/newrelic/node-newrelic/pull/2484)) ([40d1f5c](https://github.com/newrelic/node-newrelic/commit/40d1f5ccc50d49805fc68946806fc9f74179673b))
 * Updated test-utils dependency and added matrix-count only ([#2494](https://github.com/newrelic/node-newrelic/pull/2494)) ([5e04c76](https://github.com/newrelic/node-newrelic/commit/5e04c76600b8e6b7bfe331c2bec1b6cfa05ab922))
 
 #### Tests
