@@ -18,8 +18,10 @@ class Collector {
   #handlers = new Map()
   #server
   #address
+  #runId
 
-  constructor() {
+  constructor({ runId = 42 } = {}) {
+    this.#runId = runId
     this.#server = https.createServer({
       key: fakeCert.privateKey,
       cert: fakeCert.certificate
@@ -204,11 +206,14 @@ class Collector {
     // Add handlers for the required agent startup connections. These should
     // be overwritten by tests that exercise the startup phase, but adding these
     // stubs makes it easier to test other connection events.
-    this.addHandler(helper.generateCollectorPath('preconnect', 42), this.preconnectHandler)
-    this.addHandler(helper.generateCollectorPath('connect', 42), (req, res) => {
-      res.json({ payload: { return_value: { agent_run_id: 42 } } })
+    this.addHandler(helper.generateCollectorPath('preconnect', this.#runId), this.preconnectHandler)
+    this.addHandler(helper.generateCollectorPath('connect', this.#runId), (req, res) => {
+      res.json({ payload: { return_value: { agent_run_id: this.#runId } } })
     })
-    this.addHandler(helper.generateCollectorPath('agent_settings', 42), this.agentSettingsHandler)
+    this.addHandler(
+      helper.generateCollectorPath('agent_settings', this.#runId),
+      this.agentSettingsHandler
+    )
 
     return address
   }
