@@ -31,7 +31,7 @@ let _agent = null
 let _agentApi = null
 const tasks = []
 // Load custom tap assertions
-require('./custom-assertions')
+require('./custom-tap-assertions')
 
 const helper = module.exports
 

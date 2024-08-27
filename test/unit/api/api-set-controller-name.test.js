@@ -4,64 +4,58 @@
  */
 
 'use strict'
-
-const tap = require('tap')
+const test = require('node:test')
+const assert = require('node:assert')
 const API = require('../../../api')
 const helper = require('../../lib/agent_helper')
+const TEST_URL = '/test/path/31337'
+const NAME = 'WebTransaction/Uri/test/path/31337'
 
-tap.test('Agent API - setControllerName', (t) => {
-  t.autoend()
-
-  const TEST_URL = '/test/path/31337'
-  const NAME = 'WebTransaction/Uri/test/path/31337'
-
-  let agent = null
-  let api = null
-
-  t.beforeEach(() => {
-    agent = helper.loadMockedAgent()
-    api = new API(agent)
+test('Agent API - setControllerName', async (t) => {
+  t.beforeEach((ctx) => {
+    ctx.nr = {}
+    const agent = helper.loadMockedAgent()
+    ctx.nr.api = new API(agent)
+    ctx.nr.agent = agent
   })
 
-  t.afterEach(() => {
-    helper.unloadAgent(agent)
-    agent = null
+  t.afterEach((ctx) => {
+    helper.unloadAgent(ctx.nr.agent)
   })
 
-  t.test('exports a controller naming function', (t) => {
-    t.ok(api.setControllerName)
-    t.type(api.setControllerName, 'function')
+  await t.test('exports a controller naming function', (t, end) => {
+    const { api } = t.nr
+    assert.ok(api.setControllerName)
+    assert.equal(typeof api.setControllerName, 'function')
 
-    t.end()
+    end()
   })
 
-  t.test('sets the controller in the transaction name', (t) => {
-    goldenPathRenameControllerInTransaction((transaction) => {
-      t.equal(transaction.name, 'WebTransaction/Controller/Test/POST')
-      t.end()
-    })
+  await t.test('sets the controller in the transaction name', async (t) => {
+    const { agent, api } = t.nr
+    const { transaction } = await goldenPathRenameControllerInTransaction({ agent, api })
+    assert.equal(transaction.name, 'WebTransaction/Controller/Test/POST')
   })
 
-  t.test('names the web trace segment after the controller', (t) => {
-    goldenPathRenameControllerInTransaction((transaction, segment) => {
-      t.equal(segment.name, 'WebTransaction/Controller/Test/POST')
-      t.end()
-    })
+  await t.test('names the web trace segment after the controller', async (t) => {
+    const { agent, api } = t.nr
+    const { segment } = await goldenPathRenameControllerInTransaction({ agent, api })
+    assert.equal(segment.name, 'WebTransaction/Controller/Test/POST')
   })
 
-  t.test('leaves the request URL alone', (t) => {
-    goldenPathRenameControllerInTransaction((transaction) => {
-      t.equal(transaction.url, TEST_URL)
-      t.end()
-    })
+  await t.test('leaves the request URL alone', async (t) => {
+    const { agent, api } = t.nr
+    const { transaction } = await goldenPathRenameControllerInTransaction({ agent, api })
+    assert.equal(transaction.url, TEST_URL)
   })
 
-  t.test('uses the HTTP verb for the default action', (t) => {
+  await t.test('uses the HTTP verb for the default action', (t, end) => {
+    const { agent, api } = t.nr
     agent.on('transactionFinished', function (transaction) {
       transaction.finalizeNameFromUri(TEST_URL, 200)
-      t.equal(transaction.name, 'WebTransaction/Controller/Test/DELETE')
+      assert.equal(transaction.name, 'WebTransaction/Controller/Test/DELETE')
 
-      t.end()
+      end()
     })
 
     helper.runInTransaction(agent, function (transaction) {
@@ -78,13 +72,14 @@ tap.test('Agent API - setControllerName', (t) => {
     })
   })
 
-  t.test('allows a custom action', (t) => {
+  await t.test('allows a custom action', (t, end) => {
+    const { agent, api } = t.nr
     agent.on('transactionFinished', function (transaction) {
       transaction.finalizeNameFromUri(TEST_URL, 200)
 
-      t.equal(transaction.name, 'WebTransaction/Controller/Test/index')
+      assert.equal(transaction.name, 'WebTransaction/Controller/Test/index')
 
-      t.end()
+      end()
     })
 
     helper.runInTransaction(agent, function (transaction) {
@@ -99,13 +94,14 @@ tap.test('Agent API - setControllerName', (t) => {
     })
   })
 
-  t.test('uses the last controller set when called multiple times', (t) => {
+  await t.test('uses the last controller set when called multiple times', (t, end) => {
+    const { agent, api } = t.nr
     agent.on('transactionFinished', function (transaction) {
       transaction.finalizeNameFromUri(TEST_URL, 200)
 
-      t.equal(transaction.name, 'WebTransaction/Controller/Test/list')
+      assert.equal(transaction.name, 'WebTransaction/Controller/Test/list')
 
-      t.end()
+      end()
     })
 
     helper.runInTransaction(agent, function (transaction) {
@@ -122,14 +118,16 @@ tap.test('Agent API - setControllerName', (t) => {
       transaction.end()
     })
   })
+})
 
-  function goldenPathRenameControllerInTransaction(cb) {
-    let segment = null
+function goldenPathRenameControllerInTransaction({ agent, api }) {
+  let segment = null
+  return new Promise((resolve) => {
     agent.on('transactionFinished', function (finishedTransaction) {
       finishedTransaction.finalizeNameFromUri(TEST_URL, 200)
       segment.markAsWeb(TEST_URL)
 
-      cb(finishedTransaction, segment)
+      resolve({ transaction: finishedTransaction, segment })
     })
 
     helper.runInTransaction(agent, function (tx) {
@@ -146,5 +144,5 @@ tap.test('Agent API - setControllerName', (t) => {
         tx.end()
       })
     })
-  }
-})
+  })
+}

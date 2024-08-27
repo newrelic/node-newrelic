@@ -4,8 +4,8 @@
  */
 
 'use strict'
-
-const tap = require('tap')
+const test = require('node:test')
+const assert = require('node:assert')
 const sinon = require('sinon')
 const proxyquire = require('proxyquire')
 const loggerMock = require('../mocks/logger')()
@@ -18,72 +18,74 @@ const API = proxyquire('../../../api', {
 })
 const NAMES = require('../../../lib/metrics/names')
 
-tap.test('Agent API = set Error Group callback', (t) => {
-  t.autoend()
-  let agent = null
-  let api
-
-  t.beforeEach(() => {
+test('Agent API = set Error Group callback', async (t) => {
+  t.beforeEach((ctx) => {
+    ctx.nr = {}
     loggerMock.warn.reset()
-    agent = helper.loadMockedAgent({
+    const agent = helper.loadMockedAgent({
       attributes: {
         enabled: true
       }
     })
-    api = new API(agent)
+    ctx.nr.api = new API(agent)
+    ctx.nr.agent = agent
   })
 
-  t.afterEach(() => {
-    helper.unloadAgent(agent)
+  t.afterEach((ctx) => {
+    helper.unloadAgent(ctx.nr.agent)
   })
 
-  t.test('should have a setErrorGroupCallback method', (t) => {
-    t.ok(api.setErrorGroupCallback)
-    t.equal(typeof api.setErrorGroupCallback, 'function')
-    t.end()
+  await t.test('should have a setErrorGroupCallback method', (t, end) => {
+    const { api } = t.nr
+    assert.ok(api.setErrorGroupCallback)
+    assert.equal(typeof api.setErrorGroupCallback, 'function')
+    end()
   })
 
-  t.test('should attach callback function when a function', (t) => {
+  await t.test('should attach callback function when a function', (t, end) => {
+    const { api } = t.nr
     const callback = function myTestCallback() {
       return 'test-error-group-1'
     }
     api.setErrorGroupCallback(callback)
 
-    t.equal(loggerMock.warn.callCount, 0, 'should not log warnings when successful')
-    t.equal(
+    assert.equal(loggerMock.warn.callCount, 0, 'should not log warnings when successful')
+    assert.equal(
       api.agent.errors.errorGroupCallback,
       callback,
       'should attach the callback on the error collector'
     )
-    t.equal(api.agent.errors.errorGroupCallback(), 'test-error-group-1')
-    t.equal(
+    assert.equal(api.agent.errors.errorGroupCallback(), 'test-error-group-1')
+    assert.equal(
       api.agent.metrics.getOrCreateMetric(NAMES.SUPPORTABILITY.API + '/setErrorGroupCallback')
         .callCount,
       1,
       'should increment the API tracking metric'
     )
-    t.end()
+    end()
   })
 
-  t.test('should not attach the callback when not a function', (t) => {
+  await t.test('should not attach the callback when not a function', (t, end) => {
+    const { api } = t.nr
     const callback = 'test-error-group-2'
     api.setErrorGroupCallback(callback)
 
-    t.equal(loggerMock.warn.callCount, 1, 'should log warning when failed')
-    t.notOk(
-      api.agent.errors.errorGroupCallback,
+    assert.equal(loggerMock.warn.callCount, 1, 'should log warning when failed')
+    assert.ok(
+      !api.agent.errors.errorGroupCallback,
       'should not attach the callback on the error collector'
     )
-    t.equal(
+    assert.equal(
       api.agent.metrics.getOrCreateMetric(NAMES.SUPPORTABILITY.API + '/setErrorGroupCallback')
         .callCount,
       1,
       'should increment the API tracking metric'
     )
-    t.end()
+    end()
   })
 
-  t.test('should not attach the callback when async function', (t) => {
+  await t.test('should not attach the callback when async function', (t, end) => {
+    const { api } = t.nr
     async function callback() {
       return await new Promise((resolve) => {
         setTimeout(() => {
@@ -93,17 +95,17 @@ tap.test('Agent API = set Error Group callback', (t) => {
     }
     api.setErrorGroupCallback(callback())
 
-    t.equal(loggerMock.warn.callCount, 1, 'should log warning when failed')
-    t.notOk(
-      api.agent.errors.errorGroupCallback,
+    assert.equal(loggerMock.warn.callCount, 1, 'should log warning when failed')
+    assert.ok(
+      !api.agent.errors.errorGroupCallback,
       'should not attach the callback on the error collector'
     )
-    t.equal(
+    assert.equal(
       api.agent.metrics.getOrCreateMetric(NAMES.SUPPORTABILITY.API + '/setErrorGroupCallback')
         .callCount,
       1,
       'should increment the API tracking metric'
     )
-    t.end()
+    end()
   })
 })

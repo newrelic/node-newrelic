@@ -4,21 +4,21 @@
  */
 
 'use strict'
-
-const tap = require('tap')
+const test = require('node:test')
+const assert = require('node:assert')
 const API = require('../../../api')
 const helper = require('../../lib/agent_helper')
 
-tap.test('Agent API - obfuscateSql', (t) => {
+test('Agent API - obfuscateSql', (t, end) => {
   const agent = helper.instrumentMockedAgent()
   const api = new API(agent)
 
-  t.teardown(() => {
+  t.after(() => {
     helper.unloadAgent(agent)
   })
 
   const sql = `select * from foo where a='b' and c=100;`
   const obfuscated = api.obfuscateSql(sql, 'postgres')
-  t.equal(obfuscated, 'select * from foo where a=? and c=?;')
-  t.end()
+  assert.equal(obfuscated, 'select * from foo where a=? and c=?;')
+  end()
 })

@@ -5,104 +5,107 @@
 
 'use strict'
 
-const tap = require('tap')
+const test = require('node:test')
+const assert = require('node:assert')
 const API = require('../../../api')
 const helper = require('../../lib/agent_helper')
 
-tap.test('Agent API - addIgnoringRule', (t) => {
-  t.autoend()
-
-  let agent = null
-  let api = null
-
+test('Agent API - addIgnoringRule', async (t) => {
   const TEST_URL = '/test/path/31337'
   const NAME = 'WebTransaction/Uri/test/path/31337'
 
-  t.beforeEach(() => {
-    agent = helper.loadMockedAgent()
-    api = new API(agent)
+  t.beforeEach((ctx) => {
+    ctx.nr = {}
+    const agent = helper.loadMockedAgent()
+    ctx.nr.api = new API(agent)
+    ctx.nr.agent = agent
   })
 
-  t.afterEach(() => {
-    helper.unloadAgent(agent)
-    agent = null
+  t.afterEach((ctx) => {
+    helper.unloadAgent(ctx.nr.agent)
   })
 
-  t.test('exports a function for ignoring certain URLs', (t) => {
-    t.ok(api.addIgnoringRule)
-    t.type(api.addIgnoringRule, 'function')
-
-    t.end()
+  await t.test('exports a function for ignoring certain URLs', (t) => {
+    const { api } = t.nr
+    assert.ok(api.addIgnoringRule)
+    assert.equal(typeof api.addIgnoringRule, 'function')
   })
 
-  t.test("should add it to the agent's normalizer", (t) => {
-    t.equal(agent.userNormalizer.rules.length, 1) // default ignore rule
+  await t.test("should add it to the agent's normalizer", (t) => {
+    const { agent, api } = t.nr
+    assert.equal(agent.userNormalizer.rules.length, 1) // default ignore rule
     api.addIgnoringRule('^/simple.*')
-    t.equal(agent.userNormalizer.rules.length, 2)
-
-    t.end()
+    assert.equal(agent.userNormalizer.rules.length, 2)
   })
 
-  t.test("should add it to the agent's normalizer", (t) => {
+  await t.test("should add it to the agent's normalizer", (t, end) => {
+    const { agent, api } = t.nr
     addIgnoringRuleGoldenPath(agent, api, () => {
-      t.equal(agent.urlNormalizer.rules.length, 3)
-      t.equal(agent.userNormalizer.rules.length, 1 + 1) // +1 default rule
+      assert.equal(agent.urlNormalizer.rules.length, 3)
+      assert.equal(agent.userNormalizer.rules.length, 1 + 1) // +1 default rule
 
-      t.end()
+      end()
     })
   })
 
-  t.test('should leave the passed-in pattern alone', (t) => {
+  await t.test('should leave the passed-in pattern alone', (t, end) => {
+    const { agent, api } = t.nr
     addIgnoringRuleGoldenPath(agent, api, (mine) => {
-      t.equal(mine.pattern.source, '^\\/test\\/.*')
-      t.end()
+      assert.equal(mine.pattern.source, '^\\/test\\/.*')
+      end()
     })
   })
 
-  t.test('should have the correct replacement', (t) => {
+  await t.test('should have the correct replacement', (t, end) => {
+    const { agent, api } = t.nr
     addIgnoringRuleGoldenPath(agent, api, (mine) => {
-      t.equal(mine.replacement, '$0')
-      t.end()
+      assert.equal(mine.replacement, '$0')
+      end()
     })
   })
 
-  t.test('should set it to highest precedence', (t) => {
+  await t.test('should set it to highest precedence', (t, end) => {
+    const { agent, api } = t.nr
     addIgnoringRuleGoldenPath(agent, api, (mine) => {
-      t.equal(mine.precedence, 0)
-      t.end()
+      assert.equal(mine.precedence, 0)
+      end()
     })
   })
 
-  t.test('should end further normalization', (t) => {
+  await t.test('should end further normalization', (t, end) => {
+    const { agent, api } = t.nr
     addIgnoringRuleGoldenPath(agent, api, (mine) => {
-      t.equal(mine.isTerminal, true)
-      t.end()
+      assert.equal(mine.isTerminal, true)
+      end()
     })
   })
 
-  t.test('should only apply it to the whole URL', (t) => {
+  await t.test('should only apply it to the whole URL', (t, end) => {
+    const { agent, api } = t.nr
     addIgnoringRuleGoldenPath(agent, api, (mine) => {
-      t.equal(mine.eachSegment, false)
-      t.end()
+      assert.equal(mine.eachSegment, false)
+      end()
     })
   })
 
-  t.test('should ignore transactions related to that URL', (t) => {
+  await t.test('should ignore transactions related to that URL', (t, end) => {
+    const { agent, api } = t.nr
     addIgnoringRuleGoldenPath(agent, api, (mine) => {
-      t.equal(mine.ignore, true)
-      t.end()
+      assert.equal(mine.ignore, true)
+      end()
     })
   })
 
-  t.test('applies a string pattern correctly', (t) => {
+  await t.test('applies a string pattern correctly', (t, end) => {
+    const { agent, api } = t.nr
     api.addIgnoringRule('^/test/.*')
 
     agent.on('transactionFinished', function (transaction) {
       transaction.finalizeNameFromUri(TEST_URL, 200)
 
-      t.equal(transaction.ignore, true)
+      assert.equal(transaction.ignore, true)
 
-      t.end()
+      end()
     })
 
     helper.runInTransaction(agent, function (transaction) {

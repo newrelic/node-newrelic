@@ -4,91 +4,94 @@
  */
 
 'use strict'
-
-const tap = require('tap')
+const test = require('node:test')
+const assert = require('node:assert')
 const API = require('../../../api')
 const agentHelper = require('../../lib/agent_helper')
 const symbols = require('../../../lib/symbols')
 
-tap.test('Agent API - instrumentLoadedModule', (t) => {
-  t.autoend()
+test('Agent API - instrumentLoadedModule', async (t) => {
+  t.beforeEach((ctx) => {
+    ctx.nr = {}
+    const agent = agentHelper.instrumentMockedAgent()
 
-  let agent
-  let api
-  let expressMock
+    ctx.nr.api = new API(agent)
 
-  t.beforeEach(() => {
-    agent = agentHelper.instrumentMockedAgent()
-
-    api = new API(agent)
-
-    expressMock = {}
-    expressMock.application = {}
-    expressMock.application.use = function use() {}
-    expressMock.Router = {}
+    const expressMock = {
+      application: {
+        use: function use() {}
+      },
+      Router: {}
+    }
+    ctx.nr.agent = agent
+    ctx.nr.expressMock = expressMock
   })
 
-  t.afterEach(() => {
-    agentHelper.unloadAgent(agent)
-    agent = null
-    api = null
-    expressMock = null
+  t.afterEach((ctx) => {
+    agentHelper.unloadAgent(ctx.nr.agent)
   })
 
-  t.test('should be callable without an error', (t) => {
+  await t.test('should be callable without an error', (t, end) => {
+    const { api, expressMock } = t.nr
     api.instrumentLoadedModule('express', expressMock)
 
-    t.end()
+    end()
   })
 
-  t.test('should return true when a function is instrumented', (t) => {
+  await t.test('should return true when a function is instrumented', (t, end) => {
+    const { api, expressMock } = t.nr
     const didInstrument = api.instrumentLoadedModule('express', expressMock)
-    t.equal(didInstrument, true)
+    assert.equal(didInstrument, true)
 
-    t.end()
+    end()
   })
 
-  t.test('should wrap express.application.use', (t) => {
+  await t.test('should wrap express.application.use', (t, end) => {
+    const { api, expressMock } = t.nr
     api.instrumentLoadedModule('express', expressMock)
 
-    t.type(expressMock, 'object')
+    assert.equal(typeof expressMock, 'object')
 
     const shim = expressMock[symbols.shim]
     const isWrapped = shim.isWrapped(expressMock.application.use)
-    t.ok(isWrapped)
+    assert.ok(isWrapped)
 
-    t.end()
+    end()
   })
 
-  t.test('should return false when it cannot resolve module', (t) => {
+  await t.test('should return false when it cannot resolve module', (t, end) => {
+    const { api } = t.nr
     const result = api.instrumentLoadedModule('myTestModule')
 
-    t.equal(result, false)
+    assert.equal(result, false)
 
-    t.end()
+    end()
   })
 
-  t.test('should return false when no instrumentation exists', (t) => {
+  await t.test('should return false when no instrumentation exists', (t, end) => {
+    const { api } = t.nr
     const result = api.instrumentLoadedModule('tap', {})
 
-    t.equal(result, false)
+    assert.equal(result, false)
 
-    t.end()
+    end()
   })
 
-  t.test('should not instrument/wrap multiple times on multiple invocations', (t) => {
+  await t.test('should not instrument/wrap multiple times on multiple invocations', (t, end) => {
+    const { api, expressMock } = t.nr
     const originalUse = expressMock.application.use
 
     api.instrumentLoadedModule('express', expressMock)
     api.instrumentLoadedModule('express', expressMock)
 
     const nrOriginal = expressMock.application.use[symbols.original]
-    t.equal(nrOriginal, originalUse)
+    assert.equal(nrOriginal, originalUse)
 
-    t.end()
+    end()
   })
 
-  t.test('should not throw if supported module is not installed', function (t) {
+  await t.test('should not throw if supported module is not installed', function (t, end) {
+    const { api } = t.nr
     // We need a supported module in our test. We need that module _not_ to be
     // installed. We'll use mysql.  This first bit ensures
     const EMPTY_MODULE = {}
@@ -97,14 +100,13 @@ tap.test('Agent API - instrumentLoadedModule', (t) => {
       // eslint-disable-next-line node/no-missing-require
       mod = require('mysql')
     } catch (e) {}
-    t.ok(mod === EMPTY_MODULE, 'mysql is not installed')
+    assert.ok(mod === EMPTY_MODULE, 'mysql is not installed')
 
     // attempt to instrument -- if nothing throws we're good
-    try {
+    assert.doesNotThrow(() => {
       api.instrumentLoadedModule('mysql', mod)
-    } catch (e) {
-      t.error(e)
-    }
-    t.end()
+    })
+
+    end()
   })
 })

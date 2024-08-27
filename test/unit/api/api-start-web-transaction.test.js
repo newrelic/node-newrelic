@@ -4,192 +4,199 @@
  */
 
 'use strict'
-
-const tap = require('tap')
+const test = require('node:test')
+const assert = require('node:assert')
 const API = require('../../../api')
 const helper = require('../../lib/agent_helper')
+const { assertCLMAttrs } = require('../../lib/custom-assertions')
+function nested({ api }) {
+  api.startWebTransaction('nested', function nestedHandler() {})
+}
 
-tap.test('Agent API - startWebTransaction', (t) => {
-  t.autoend()
-
-  let agent = null
-  let contextManager = null
-  let api = null
-
-  t.beforeEach(() => {
-    agent = helper.loadMockedAgent()
-    contextManager = helper.getContextManager()
-    api = new API(agent)
+test('Agent API - startWebTransaction', async (t) => {
+  t.beforeEach((ctx) => {
+    ctx.nr = {}
+    const agent = helper.loadMockedAgent()
+    ctx.nr.contextManager = helper.getContextManager()
+    ctx.nr.api = new API(agent)
+    ctx.nr.agent = agent
   })
 
-  t.afterEach(() => {
-    helper.unloadAgent(agent)
-    agent = null
-    contextManager = null
+  t.afterEach((ctx) => {
+    helper.unloadAgent(ctx.nr.agent)
   })
 
-  /**
-   * Helper run a web transaction within an existing one
-   */
-  function nested() {
-    api.startWebTransaction('nested', function nestedHandler() {})
-  }
-
-  t.test('should not throw when transaction cannot be created', (t) => {
+  await t.test('should not throw when transaction cannot be created', (t, end) => {
+    const { agent, api } = t.nr
     agent.setState('stopped')
     api.startWebTransaction('test', () => {
       const transaction = agent.tracer.getTransaction()
-      t.notOk(transaction)
+      assert.ok(!transaction)
 
-      t.end()
+      end()
     })
   })
 
-  t.test('should add nested transaction as segment to parent transaction', (t) => {
+  await t.test('should add nested transaction as segment to parent transaction', (t, end) => {
+    const { agent, api, contextManager } = t.nr
     let transaction = null
 
     api.startWebTransaction('test', function () {
-      nested()
+      nested({ api })
       transaction = agent.tracer.getTransaction()
-      t.equal(transaction.type, 'web')
-      t.equal(transaction.getFullName(), 'WebTransaction/Custom//test')
-      t.ok(transaction.isActive())
+      assert.equal(transaction.type, 'web')
+      assert.equal(transaction.getFullName(), 'WebTransaction/Custom//test')
+      assert.ok(transaction.isActive())
 
       const currentSegment = contextManager.getContext()
       const nestedSegment = currentSegment.children[0]
-      t.equal(nestedSegment.name, 'nested')
+      assert.equal(nestedSegment.name, 'nested')
     })
 
-    t.notOk(transaction.isActive())
+    assert.ok(!transaction.isActive())
 
-    t.end()
+    end()
   })
 
-  t.test('should end the transaction after the handle returns by default', (t) => {
+  await t.test('should end the transaction after the handle returns by default', (t, end) => {
+    const { agent, api } = t.nr
     let transaction = null
 
     api.startWebTransaction('test', function () {
       transaction = agent.tracer.getTransaction()
-      t.equal(transaction.type, 'web')
-      t.equal(transaction.getFullName(), 'WebTransaction/Custom//test')
-      t.ok(transaction.isActive())
+      assert.equal(transaction.type, 'web')
+      assert.equal(transaction.getFullName(), 'WebTransaction/Custom//test')
+      assert.ok(transaction.isActive())
     })
 
-    t.notOk(transaction.isActive())
-    t.end()
+    assert.ok(!transaction.isActive())
+    end()
   })
 
-  t.test('should end the txn after a promise returned by the txn function resolves', (t) => {
-    let thenCalled = false
-    const FakePromise = {
-      then: function (f) {
-        thenCalled = true
-        f()
-        return this
+  await t.test(
+    'should end the txn after a promise returned by the txn function resolves',
+    (t, end) => {
+      const { agent, api } = t.nr
+      let thenCalled = false
+      const FakePromise = {
+        then: function (f) {
+          thenCalled = true
+          f()
+          return this
+        }
       }
+
+      let transaction = null
+
+      api.startWebTransaction('test', function () {
+        transaction = agent.tracer.getTransaction()
+        assert.equal(transaction.type, 'web')
+        assert.equal(transaction.getFullName(), 'WebTransaction/Custom//test')
+        assert.ok(transaction.isActive())
+
+        assert.ok(!thenCalled)
+        return FakePromise
+      })
+
+      assert.ok(thenCalled)
+      assert.ok(!transaction.isActive())
+
+      end()
     }
+  )
 
+  await t.test('should not end the txn if the txn is being handled externally', (t, end) => {
+    const { agent, api } = t.nr
     let transaction = null
 
     api.startWebTransaction('test', function () {
       transaction = agent.tracer.getTransaction()
-      t.equal(transaction.type, 'web')
-      t.equal(transaction.getFullName(), 'WebTransaction/Custom//test')
-      t.ok(transaction.isActive())
-
-      t.notOk(thenCalled)
-      return FakePromise
-    })
-
-    t.ok(thenCalled)
-    t.notOk(transaction.isActive())
-
-    t.end()
-  })
-
-  t.test('should not end the txn if the txn is being handled externally', (t) => {
-    let transaction = null
-
-    api.startWebTransaction('test', function () {
-      transaction = agent.tracer.getTransaction()
-      t.equal(transaction.type, 'web')
-      t.equal(transaction.getFullName(), 'WebTransaction/Custom//test')
-      t.ok(transaction.isActive())
+      assert.equal(transaction.type, 'web')
+      assert.equal(transaction.getFullName(), 'WebTransaction/Custom//test')
+      assert.ok(transaction.isActive())
 
       transaction.handledExternally = true
     })
 
-    t.ok(transaction.isActive())
+    assert.ok(transaction.isActive())
 
     transaction.end()
-    t.end()
+    end()
   })
 
-  t.test('should call the handler if no url is supplied', (t) => {
+  await t.test('should call the handler if no url is supplied', (t, end) => {
+    const { agent, api } = t.nr
     let transaction = null
 
     api.startWebTransaction(null, function () {
       transaction = agent.tracer.getTransaction()
-      t.notOk(transaction)
+      assert.ok(!transaction)
 
-      t.end()
+      end()
     })
   })
 
-  t.test('should not throw when no handler is supplied', (t) => {
+  await t.test('should not throw when no handler is supplied', (t, end) => {
+    const { api } = t.nr
     // should not throw
-    api.startWebTransaction('test')
+    assert.doesNotThrow(() => {
+      api.startWebTransaction('test')
+    })
 
-    t.end()
+    end()
   })
 
   const clmEnabled = [true, false]
-  clmEnabled.forEach((enabled) => {
-    t.test(`should ${enabled ? 'add' : 'not add'} CLM attributes to segment`, (t) => {
-      agent.config.code_level_metrics.enabled = enabled
-      api.startWebTransaction('clm-tx', function handler() {
-        const segment = api.shim.getSegment()
-        t.clmAttrs({
-          segments: [
-            {
-              segment,
-              name: 'handler',
-              filepath: 'test/unit/api/api-start-web-transaction.test.js'
-            }
-          ],
-          enabled
-        })
-        t.end()
-      })
-    })
-
-    t.test(
-      `should ${enabled ? 'add' : 'not add'} CLM attributes to nested web transactions`,
-      (t) => {
+  await Promise.all(
+    clmEnabled.map(async (enabled) => {
+      await t.test(`should ${enabled ? 'add' : 'not add'} CLM attributes to segment`, (t, end) => {
+        const { agent, api } = t.nr
         agent.config.code_level_metrics.enabled = enabled
-        api.startWebTransaction('clm-nested-test', function () {
-          nested()
-          const currentSegment = contextManager.getContext()
-          const nestedSegment = currentSegment.children[0]
-          t.clmAttrs({
+        api.startWebTransaction('clm-tx', function handler() {
+          const segment = api.shim.getSegment()
+          assertCLMAttrs({
             segments: [
               {
-                segment: currentSegment,
-                name: '(anonymous)',
-                filepath: 'test/unit/api/api-start-web-transaction.test.js'
-              },
-              {
-                segment: nestedSegment,
-                name: 'nestedHandler',
+                segment,
+                name: 'handler',
                 filepath: 'test/unit/api/api-start-web-transaction.test.js'
               }
             ],
             enabled
           })
+          end()
         })
+      })
 
-        t.end()
-      }
-    )
-  })
+      await t.test(
+        `should ${enabled ? 'add' : 'not add'} CLM attributes to nested web transactions`,
+        (t, end) => {
+          const { agent, api, contextManager } = t.nr
+          agent.config.code_level_metrics.enabled = enabled
+          api.startWebTransaction('clm-nested-test', function () {
+            nested({ api })
+            const currentSegment = contextManager.getContext()
+            const nestedSegment = currentSegment.children[0]
+            assertCLMAttrs({
+              segments: [
+                {
+                  segment: currentSegment,
+                  name: '(anonymous)',
+                  filepath: 'test/unit/api/api-start-web-transaction.test.js'
+                },
+                {
+                  segment: nestedSegment,
+                  name: 'nestedHandler',
+                  filepath: 'test/unit/api/api-start-web-transaction.test.js'
+                }
+              ],
+              enabled
+            })
+          })
+
+          end()
+        }
+      )
+    })
+  )
 })

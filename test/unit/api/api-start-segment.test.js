@@ -4,98 +4,100 @@
  */
 
 'use strict'
-
-const tap = require('tap')
+const test = require('node:test')
+const assert = require('node:assert')
 const API = require('../../../api')
 const helper = require('../../lib/agent_helper')
+const { assertCLMAttrs } = require('../../lib/custom-assertions')
 
-tap.test('Agent API - startSegment', (t) => {
-  t.autoend()
-
-  let agent = null
-  let api = null
-
-  t.beforeEach(() => {
-    agent = helper.loadMockedAgent()
-    api = new API(agent)
+test('Agent API - startSegment', async (t) => {
+  t.beforeEach((ctx) => {
+    ctx.nr = {}
+    const agent = helper.loadMockedAgent()
+    ctx.nr.api = new API(agent)
+    ctx.nr.agent = agent
   })
 
-  t.afterEach(() => {
-    helper.unloadAgent(agent)
-    agent = null
+  t.afterEach((ctx) => {
+    helper.unloadAgent(ctx.nr.agent)
   })
 
-  t.test('should name the segment as provided', (t) => {
+  await t.test('should name the segment as provided', (t, end) => {
+    const { agent, api } = t.nr
     helper.runInTransaction(agent, function () {
       api.startSegment('foobar', false, function () {
         const segment = api.shim.getSegment()
-        t.ok(segment)
-        t.equal(segment.name, 'foobar')
+        assert.ok(segment)
+        assert.equal(segment.name, 'foobar')
 
-        t.end()
+        end()
       })
     })
   })
 
-  t.test('should return the return value of the handler', (t) => {
+  await t.test('should return the return value of the handler', (t, end) => {
+    const { agent, api } = t.nr
     helper.runInTransaction(agent, function () {
       const obj = {}
       const ret = api.startSegment('foobar', false, function () {
         return obj
       })
 
-      t.equal(ret, obj)
-      t.end()
+      assert.equal(ret, obj)
+      end()
     })
   })
 
-  t.test('should not record a metric when `record` is `false`', (t) => {
+  await t.test('should not record a metric when `record` is `false`', (t, end) => {
+    const { agent, api } = t.nr
     helper.runInTransaction(agent, function (tx) {
       tx.name = 'test'
       api.startSegment('foobar', false, function () {
         const segment = api.shim.getSegment()
 
-        t.ok(segment)
-        t.equal(segment.name, 'foobar')
+        assert.ok(segment)
+        assert.equal(segment.name, 'foobar')
       })
 
       tx.end()
 
       const hasNameMetric = Object.hasOwnProperty.call(tx.metrics.scoped, tx.name)
-      t.notOk(hasNameMetric)
+      assert.ok(!hasNameMetric)
 
       const hasCustomMetric = Object.hasOwnProperty.call(tx.metrics.unscoped, 'Custom/foobar')
-      t.notOk(hasCustomMetric)
+      assert.ok(!hasCustomMetric)
 
-      t.end()
+      end()
     })
   })
 
-  t.test('should record a metric when `record` is `true`', (t) => {
+  await t.test('should record a metric when `record` is `true`', (t, end) => {
+    const { agent, api } = t.nr
     helper.runInTransaction(agent, function (tx) {
       tx.name = 'test'
       api.startSegment('foobar', true, function () {
         const segment = api.shim.getSegment()
 
-        t.ok(segment)
-        t.equal(segment.name, 'foobar')
+        assert.ok(segment)
+        assert.equal(segment.name, 'foobar')
       })
       tx.end()
 
       const transactionNameMetric = tx.metrics.scoped[tx.name]
-      t.ok(transactionNameMetric)
+      assert.ok(transactionNameMetric)
 
       const transactionScopedCustomMetric = transactionNameMetric['Custom/foobar']
-      t.ok(transactionScopedCustomMetric)
+      assert.ok(transactionScopedCustomMetric)
 
       const unscopedCustomMetric = tx.metrics.unscoped['Custom/foobar']
-      t.ok(unscopedCustomMetric)
+      assert.ok(unscopedCustomMetric)
 
-      t.end()
+      end()
     })
   })
 
-  t.test('should time the segment from the callback if provided', (t) => {
+  await t.test('should time the segment from the callback if provided', (t, end) => {
+    const { agent, api } = t.nr
     helper.runInTransaction(agent, function () {
       api.startSegment(
         'foobar',
@@ -105,20 +107,21 @@ tap.test('Agent API - startSegment', (t) => {
           setTimeout(cb, 150, null, segment)
         },
         function (err, segment) {
-          t.notOk(err)
-          t.ok(segment)
+          assert.ok(!err)
+          assert.ok(segment)
 
           const duration = segment.getDurationInMillis()
           const isExpectedRange = duration >= 100 && duration < 200
-          t.ok(isExpectedRange)
+          assert.ok(isExpectedRange)
 
-          t.end()
+          end()
         }
       )
     })
   })
 
-  t.test('should time the segment from a returned promise', (t) => {
+  await t.test('should time the segment from a returned promise', (t) => {
+    const { agent, api } = t.nr
     return helper.runInTransaction(agent, function () {
       return api
         .startSegment('foobar', false, function () {
@@ -128,37 +131,38 @@ tap.test('Agent API - startSegment', (t) => {
           })
         })
         .then(function (segment) {
-          t.ok(segment)
+          assert.ok(segment)
 
           const duration = segment.getDurationInMillis()
           const isExpectedRange = duration >= 100 && duration < 200
-          t.ok(isExpectedRange)
-
-          t.end()
+          assert.ok(isExpectedRange)
         })
     })
   })
 
   const clmEnabled = [true, false]
-  clmEnabled.forEach((enabled) => {
-    t.test(`should ${enabled ? 'add' : 'not add'} CLM attributes to segment`, (t) => {
-      agent.config.code_level_metrics.enabled = enabled
-      helper.runInTransaction(agent, function () {
-        api.startSegment('foobar', false, function segmentRecorder() {
-          const segment = api.shim.getSegment()
-          t.clmAttrs({
-            segments: [
-              {
-                segment,
-                name: 'segmentRecorder',
-                filepath: 'test/unit/api/api-start-segment.test.js'
-              }
-            ],
-            enabled
+  await Promise.all(
+    clmEnabled.map(async (enabled) => {
+      await t.test(`should ${enabled ? 'add' : 'not add'} CLM attributes to segment`, (t, end) => {
+        const { agent, api } = t.nr
+        agent.config.code_level_metrics.enabled = enabled
+        helper.runInTransaction(agent, function () {
+          api.startSegment('foobar', false, function segmentRecorder() {
+            const segment = api.shim.getSegment()
+            assertCLMAttrs({
+              segments: [
+                {
+                  segment,
+                  name: 'segmentRecorder',
+                  filepath: 'test/unit/api/api-start-segment.test.js'
+                }
+              ],
+              enabled
+            })
+            end()
           })
-          t.end()
         })
       })
     })
-  })
+  )
 })
