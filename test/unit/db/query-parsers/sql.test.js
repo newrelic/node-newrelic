@@ -156,7 +156,7 @@ test('database query parser', async (t) => {
           t.todo('should parse subquery collections as ' + cat.table)
         } else if (/\w+\.\w+/.test(ps.collection)) {
           t.todo('should strip database names from collection names as ' + cat.table)
-        } 
+        }
       })
     }
   })
