@@ -5,13 +5,14 @@
 
 'use strict'
 
-const tap = require('tap')
+const test = require('node:test')
+const assert = require('node:assert')
 const helper = require('../../lib/agent_helper')
 
-tap.test('SQL trace attributes', function (t) {
-  t.autoend()
-  t.beforeEach(function (t) {
-    t.context.agent = helper.loadMockedAgent({
+test('SQL trace attributes', async (t) => {
+  t.beforeEach((ctx) => {
+    ctx.nr = {}
+    ctx.nr.agent = helper.loadMockedAgent({
       slow_sql: {
         enabled: true
       },
@@ -22,60 +23,63 @@ tap.test('SQL trace attributes', function (t) {
     })
   })
 
-  t.afterEach(function (t) {
-    helper.unloadAgent(t.context.agent)
+  t.afterEach((ctx) => {
+    helper.unloadAgent(ctx.nr.agent)
   })
 
-  t.test('should include all DT intrinsics sans parentId and parentSpanId', function (t) {
-    const { agent } = t.context
-    agent.config.distributed_tracing.enabled = true
-    agent.config.primary_application_id = 'test'
-    agent.config.account_id = 1
-    agent.config.simple_compression = true
-    helper.runInTransaction(agent, function (tx) {
-      const payload = tx._createDistributedTracePayload().text()
-      tx.isDistributedTrace = null
-      tx._acceptDistributedTracePayload(payload)
-      agent.queries.add(tx.trace.root, 'postgres', 'select pg_sleep(1)', 'FAKE STACK')
-      agent.queries.prepareJSON((err, samples) => {
-        const sample = samples[0]
-        const attributes = sample[sample.length - 1]
-        t.equal(attributes.traceId, tx.traceId)
-        t.equal(attributes.guid, tx.id)
-        t.equal(attributes.priority, tx.priority)
-        t.equal(attributes.sampled, tx.sampled)
-        t.equal(attributes['parent.type'], 'App')
-        t.equal(attributes['parent.app'], agent.config.primary_application_id)
-        t.equal(attributes['parent.account'], agent.config.account_id)
-        t.notOk(attributes.parentId)
-        t.notOk(attributes.parentSpanId)
-        t.end()
+  await t.test(
+    'should include all DT intrinsics sans parentId and parentSpanId',
+    function (t, end) {
+      const { agent } = t.nr
+      agent.config.distributed_tracing.enabled = true
+      agent.config.primary_application_id = 'test'
+      agent.config.account_id = 1
+      agent.config.simple_compression = true
+      helper.runInTransaction(agent, function (tx) {
+        const payload = tx._createDistributedTracePayload().text()
+        tx.isDistributedTrace = null
+        tx._acceptDistributedTracePayload(payload)
+        agent.queries.add(tx.trace.root, 'postgres', 'select pg_sleep(1)', 'FAKE STACK')
+        agent.queries.prepareJSON((err, samples) => {
+          const sample = samples[0]
+          const attributes = sample[sample.length - 1]
+          assert.equal(attributes.traceId, tx.traceId)
+          assert.equal(attributes.guid, tx.id)
+          assert.equal(attributes.priority, tx.priority)
+          assert.equal(attributes.sampled, tx.sampled)
+          assert.equal(attributes['parent.type'], 'App')
+          assert.equal(attributes['parent.app'], agent.config.primary_application_id)
+          assert.equal(attributes['parent.account'], agent.config.account_id)
+          assert.ok(!attributes.parentId)
+          assert.ok(!attributes.parentSpanId)
+          end()
+        })
       })
-    })
-  })
+    }
+  )
 
-  t.test('should serialize properly using prepareJSONSync', function (t) {
-    const { agent } = t.context
+  await t.test('should serialize properly using prepareJSONSync', function (t, end) {
+    const { agent } = t.nr
     helper.runInTransaction(agent, function (tx) {
       const query = 'select pg_sleep(1)'
       agent.queries.add(tx.trace.root, 'postgres', query, 'FAKE STACK')
       const sampleObj = agent.queries.samples.values().next().value
       const sample = agent.queries.prepareJSONSync()[0]
-      t.equal(sample[0], tx.getFullName())
-      t.equal(sample[1], '<unknown>')
-      t.equal(sample[2], sampleObj.trace.id)
-      t.equal(sample[3], query)
-      t.equal(sample[4], sampleObj.trace.metric)
-      t.equal(sample[5], sampleObj.callCount)
-      t.equal(sample[6], sampleObj.total)
-      t.equal(sample[7], sampleObj.min)
-      t.equal(sample[8], sampleObj.max)
-      t.end()
+      assert.equal(sample[0], tx.getFullName())
+      assert.equal(sample[1], '<unknown>')
+      assert.equal(sample[2], sampleObj.trace.id)
+      assert.equal(sample[3], query)
+      assert.equal(sample[4], sampleObj.trace.metric)
+      assert.equal(sample[5], sampleObj.callCount)
+      assert.equal(sample[6], sampleObj.total)
+      assert.equal(sample[7], sampleObj.min)
+      assert.equal(sample[8], sampleObj.max)
+      end()
     })
   })
 
-  t.test('should include the proper priority on transaction end', function (t) {
-    const { agent } = t.context
+  await t.test('should include the proper priority on transaction end', function (t, end) {
+    const { agent } = t.nr
     agent.config.distributed_tracing.enabled = true
     agent.config.primary_application_id = 'test'
     agent.config.account_id = 1
@@ -85,15 +89,15 @@ tap.test('SQL trace attributes', function (t) {
       agent.queries.prepareJSON((err, samples) => {
         const sample = samples[0]
         const attributes = sample[sample.length - 1]
-        t.equal(attributes.traceId, tx.traceId)
-        t.equal(attributes.guid, tx.id)
-        t.equal(attributes.priority, tx.priority)
-        t.equal(attributes.sampled, tx.sampled)
-        t.notOk(attributes.parentId)
-        t.notOk(attributes.parentSpanId)
-        t.equal(tx.sampled, true)
-        t.ok(tx.priority > 1)
-        t.end()
+        assert.equal(attributes.traceId, tx.traceId)
+        assert.equal(attributes.guid, tx.id)
+        assert.equal(attributes.priority, tx.priority)
+        assert.equal(attributes.sampled, tx.sampled)
+        assert.ok(!attributes.parentId)
+        assert.ok(!attributes.parentSpanId)
+        assert.equal(tx.sampled, true)
+        assert.ok(tx.priority > 1)
+        end()
       })
     })
   })
