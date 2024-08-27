@@ -148,14 +148,14 @@ test('database query parser', async (t) => {
       await t.test(clean(cat.input), async (t) => {
         const ps = parseSql(cat.input)
 
-        await t.test('should parse the operation as ' + cat.operation, function () {
-          assert.equal(ps.operation, cat.operation)
-        })
+        assert.equal(ps.operation, cat.operation, `should parse the operation as ${cat.operation}`)
 
         if (cat.table === '(subquery)') {
           t.todo('should parse subquery collections as ' + cat.table)
         } else if (/\w+\.\w+/.test(ps.collection)) {
           t.todo('should strip database names from collection names as ' + cat.table)
+        } else {
+          assert.equal(ps.collection, cat.table, `should parse the collection as ${cat.table}`)
         }
       })
     }
