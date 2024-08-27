@@ -12,12 +12,8 @@
 #### Documentation
 
 * Updated compatibility report ([#2493](https://github.com/newrelic/node-newrelic/pull/2493)) ([0448927](https://github.com/newrelic/node-newrelic/commit/0448927a49254b5b3c7ed9ff072cec24449fc558))
-    * Co-authored-by: svetlanabrennan <50715937+svetlanabrennan@users.noreply.github.com>
 
 #### Miscellaneous chores
-
-* Converted context-manager unit tests to node:test ([#2508](https://github.com/newrelic/node-newrelic/pull/2508)) ([9363eb0](https://github.com/newrelic/node-newrelic/commit/9363eb08ce8a13e67f94e5378ca95f32a562d504))
-    * Co-authored-by: Bob Evans <robert.evans25@gmail.com>
 * Fixed linting scripts ([#2497](https://github.com/newrelic/node-newrelic/pull/2497)) ([c395779](https://github.com/newrelic/node-newrelic/commit/c395779f499cca0ec7f915342c23b2d2381b0163))
 * Remove examples/shim ([#2484](https://github.com/newrelic/node-newrelic/pull/2484)) ([40d1f5c](https://github.com/newrelic/node-newrelic/commit/40d1f5ccc50d49805fc68946806fc9f74179673b))
 * Updated test-utils dependency and added matrix-count only ([#2494](https://github.com/newrelic/node-newrelic/pull/2494)) ([5e04c76](https://github.com/newrelic/node-newrelic/commit/5e04c76600b8e6b7bfe331c2bec1b6cfa05ab922))
@@ -25,6 +21,7 @@
 #### Tests
 
 * Converted the api unit tests to `node:test` ([#2516](https://github.com/newrelic/node-newrelic/pull/2516)) ([ab91576](https://github.com/newrelic/node-newrelic/commit/ab91576fa949161f902b1604752a7fc38e7f2a74))
+* Converted context-manager unit tests to `node:test` ([#2508](https://github.com/newrelic/node-newrelic/pull/2508)) ([9363eb0](https://github.com/newrelic/node-newrelic/commit/9363eb08ce8a13e67f94e5378ca95f32a562d504))
 
 #### Continuous integration
 
