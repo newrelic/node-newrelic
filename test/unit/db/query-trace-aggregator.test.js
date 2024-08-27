@@ -286,9 +286,7 @@ test('Query Trace Aggregator', async (t) => {
 
   await t.test('prepareJSON', async (t) => {
     await t.test('webTransaction when record_sql is "raw"', async (t) => {
-      let queries
-
-      t.beforeEach(() => {
+      t.beforeEach((ctx) => {
         const opts = {
           config: new Config({
             slow_sql: { enabled: true },
@@ -297,15 +295,17 @@ test('Query Trace Aggregator', async (t) => {
           method: 'sql_trace_data'
         }
         const harvester = { add: sinon.stub() }
-        queries = new QueryTraceAggregator(opts, {}, harvester)
+        ctx.nr = {}
+        ctx.nr.queries = new QueryTraceAggregator(opts, {}, harvester)
       })
 
       await t.test('and `simple_compression` is `false`', async (t) => {
-        t.beforeEach(() => {
-          queries.config.simple_compression = false
+        t.beforeEach((ctx) => {
+          ctx.nr.queries.config.simple_compression = false
         })
 
         await t.test('should compress the query parameters', (t, end) => {
+          const { queries } = t.nr
           addQuery(queries, 600, '/abc')
 
           queries.prepareJSON(function preparedJSON(err, data) {
@@ -325,11 +325,12 @@ test('Query Trace Aggregator', async (t) => {
       })
 
       await t.test('and `simple_compression` is `true`', async (t) => {
-        t.beforeEach(() => {
-          queries.config.simple_compression = true
+        t.beforeEach((ctx) => {
+          ctx.nr.queries.config.simple_compression = true
         })
 
         await t.test('should not compress the query parameters', (t, end) => {
+          const { queries } = t.nr
           addQuery(queries, 600, '/abc')
 
           queries.prepareJSON(function preparedJSON(err, data) {
@@ -345,6 +346,7 @@ test('Query Trace Aggregator', async (t) => {
       })
 
       await t.test('should record work when empty', (t, end) => {
+        const { queries } = t.nr
         queries.prepareJSON(function preparedJSON(err, data) {
           assert.equal(err, null, 'should not error')
           assert.deepStrictEqual(data, [], 'should return empty array')
@@ -353,6 +355,7 @@ test('Query Trace Aggregator', async (t) => {
       })
 
       await t.test('should record work with a single query', (t, end) => {
+        const { queries } = t.nr
         addQuery(queries, 600, '/abc')
 
         queries.prepareJSON(function preparedJSON(err, data) {
@@ -383,6 +386,7 @@ test('Query Trace Aggregator', async (t) => {
       })
 
       await t.test('should record work with a multiple similar queries', (t, end) => {
+        const { queries } = t.nr
         addQuery(queries, 600, '/abc')
         addQuery(queries, 550, '/abc')
 
@@ -418,6 +422,7 @@ test('Query Trace Aggregator', async (t) => {
       })
 
       await t.test('should record work with a multiple unique queries', (t, end) => {
+        const { queries } = t.nr
         addQuery(queries, 600, '/abc')
         addQuery(queries, 550, '/abc', 'drop table users')
 

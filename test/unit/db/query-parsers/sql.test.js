@@ -158,7 +158,7 @@ test('database query parser', async (t) => {
           t.todo('should strip database names from collection names as ' + cat.table)
         } else {
           await t.test('should parse the collection as ' + cat.table, function () {
-            assert.equal(ps.collection, cat.table)
+            assert.equal(ps.collection, cat.table, `should parse the collection as ${cat.table}`)
           })
         }
       })
