@@ -153,9 +153,9 @@ test('database query parser', async (t) => {
         })
 
         if (cat.table === '(subquery)') {
-          await t.test('should parse subquery collections as ' + cat.table)
+          t.todo('should parse subquery collections as ' + cat.table)
         } else if (/\w+\.\w+/.test(ps.collection)) {
-          await t.test('should strip database names from collection names as ' + cat.table)
+          t.todo('should strip database names from collection names as ' + cat.table)
         } else {
           await t.test('should parse the collection as ' + cat.table, function () {
             assert.equal(ps.collection, cat.table)
