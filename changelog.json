@@ -2,6 +2,18 @@
   "repository": "newrelic/node-newrelic",
   "entries": [
     {
+      "version": "12.3.0",
+      "changes": {
+        "security": [],
+        "bugfixes": [
+          "Improved AWS Lambda event detection"
+        ],
+        "features": [
+          "Added new API method `withLlmCustomAttributes` to run a function in a LLM context"
+        ]
+      }
+    },
+    {
       "version": "12.2.0",
       "changes": {
         "security": [],
