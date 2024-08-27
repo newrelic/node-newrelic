@@ -12,10 +12,11 @@ const Config = require('../../../lib/config')
 const securityPolicies = require('../../lib/fixtures').securityPolicies
 const { idempotentEnv } = require('./helper')
 
-test('should pick up the security policies token', () => {
+test('should pick up the security policies token', (t, end) => {
   idempotentEnv({ NEW_RELIC_SECURITY_POLICIES_TOKEN: 'super secure' }, (tc) => {
     assert.ok(tc.security_policies_token)
     assert.equal(tc.security_policies_token, 'super secure')
+    end()
   })
 })
 

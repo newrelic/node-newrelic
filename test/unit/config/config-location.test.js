@@ -60,9 +60,10 @@ test('when overriding the config file location via NEW_RELIC_HOME', async (t) =>
     await fsPromises.rm(NOPLACEDIR, { recursive: true })
   })
 
-  await t.test('should load the configuration', () => {
+  await t.test('should load the configuration', (t, end) => {
     assert.doesNotThrow(() => {
       Config.initialize()
+      end()
     })
   })
 
@@ -71,7 +72,7 @@ test('when overriding the config file location via NEW_RELIC_HOME', async (t) =>
     assert.equal(configuration.newrelic_home, DESTDIR)
   })
 
-  await t.test('should ignore the configuration file completely when so directed', () => {
+  await t.test('should ignore the configuration file completely when so directed', (t, end) => {
     try {
       process.env.NEW_RELIC_NO_CONFIG_FILE = 'true'
       process.env.NEW_RELIC_HOME = '/xxxnoexist/nofile'
@@ -88,6 +89,7 @@ test('when overriding the config file location via NEW_RELIC_HOME', async (t) =>
     } finally {
       delete process.env.NEW_RELIC_NO_CONFIG_FILE
       delete process.env.NEW_RELIC_HOME
+      end()
     }
   })
 })

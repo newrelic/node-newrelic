@@ -19,7 +19,7 @@ const keyMapping = {
 
 test('collector host name', async (t) => {
   for (const testCase of keyTests) {
-    await t.test(testCase.name, async () => {
+    await t.test(testCase.name, async (t, end) => {
       const confSettings = {}
       const envSettings = {}
       Object.keys(testCase).forEach(function assignConfValues(key) {
@@ -32,6 +32,7 @@ test('collector host name', async (t) => {
 
       runWithEnv(confSettings, envSettings, (config) => {
         assert.equal(config.host, testCase.hostname)
+        end()
       })
     })
   }

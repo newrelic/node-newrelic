@@ -130,7 +130,7 @@ test('serverless_mode via configuration input', async (t) => {
     assert.equal(config.logging.enabled, true)
   })
 
-  await t.test('should allow logging to be enabled from env ', () => {
+  await t.test('should allow logging to be enabled from env ', (t, end) => {
     const inputConfig = {
       serverless_mode: { enabled: true }
     }
@@ -141,23 +141,25 @@ test('serverless_mode via configuration input', async (t) => {
 
     idempotentEnv(envVariables, inputConfig, (config) => {
       assert.equal(config.logging.enabled, true)
+      end()
     })
   })
 })
 
 test('serverless mode via ENV variables', async (t) => {
-  await t.test('should pick up serverless_mode', () => {
+  await t.test('should pick up serverless_mode', (t, end) => {
     idempotentEnv(
       {
         NEW_RELIC_SERVERLESS_MODE_ENABLED: true
       },
       (tc) => {
         assert.equal(tc.serverless_mode.enabled, true)
+        end()
       }
     )
   })
 
-  await t.test('should pick up trusted_account_key', () => {
+  await t.test('should pick up trusted_account_key', (t, end) => {
     idempotentEnv(
       {
         NEW_RELIC_SERVERLESS_MODE_ENABLED: true,
@@ -165,11 +167,12 @@ test('serverless mode via ENV variables', async (t) => {
       },
       (tc) => {
         assert.equal(tc.trusted_account_key, '1234')
+        end()
       }
     )
   })
 
-  await t.test('should pick up primary_application_id', () => {
+  await t.test('should pick up primary_application_id', (t, end) => {
     idempotentEnv(
       {
         NEW_RELIC_SERVERLESS_MODE_ENABLED: true,
@@ -177,11 +180,12 @@ test('serverless mode via ENV variables', async (t) => {
       },
       (tc) => {
         assert.equal(tc.primary_application_id, '5678')
+        end()
       }
     )
   })
 
-  await t.test('should pick up account_id', () => {
+  await t.test('should pick up account_id', (t, end) => {
     idempotentEnv(
       {
         NEW_RELIC_SERVERLESS_MODE_ENABLED: true,
@@ -189,13 +193,14 @@ test('serverless mode via ENV variables', async (t) => {
       },
       (tc) => {
         assert.equal(tc.account_id, '91011')
+        end()
       }
     )
   })
 
   await t.test(
     'should clear serverless_mode DT config options when serverless_mode disabled',
-    () => {
+    (t, end) => {
       const env = {
         NEW_RELIC_TRUSTED_ACCOUNT_KEY: 'defined',
         NEW_RELIC_ACCOUNT_ID: 'defined',
@@ -206,11 +211,12 @@ test('serverless mode via ENV variables', async (t) => {
         assert.equal(tc.primary_application_id, null)
         assert.equal(tc.account_id, null)
         assert.equal(tc.trusted_account_key, null)
+        end()
       })
     }
   )
 
-  await t.test('should explicitly disable cross_application_tracer in serverless_mode', () => {
+  await t.test('should explicitly disable cross_application_tracer in serverless_mode', (t, end) => {
     idempotentEnv(
       {
         NEW_RELIC_SERVERLESS_MODE_ENABLED: true
@@ -218,11 +224,12 @@ test('serverless mode via ENV variables', async (t) => {
       (tc) => {
         assert.equal(tc.serverless_mode.enabled, true)
         assert.equal(tc.cross_application_tracer.enabled, false)
+        end()
       }
     )
   })
 
-  await t.test('should allow distributed tracing to be enabled from env', () => {
+  await t.test('should allow distributed tracing to be enabled from env', (t, end) => {
     idempotentEnv(
       {
         NEW_RELIC_SERVERLESS_MODE_ENABLED: true,
@@ -231,11 +238,12 @@ test('serverless mode via ENV variables', async (t) => {
       },
       (config) => {
         assert.equal(config.distributed_tracing.enabled, true)
+        end()
       }
     )
   })
 
-  await t.test('should allow distributed tracing to be enabled from configuration ', () => {
+  await t.test('should allow distributed tracing to be enabled from configuration ', (t, end) => {
     const envVariables = {
       NEW_RELIC_SERVERLESS_MODE_ENABLED: true,
       NEW_RELIC_ACCOUNT_ID: '12345'
@@ -247,10 +255,11 @@ test('serverless mode via ENV variables', async (t) => {
 
     idempotentEnv(envVariables, inputConfig, (config) => {
       assert.equal(config.distributed_tracing.enabled, true)
+      end()
     })
   })
 
-  await t.test('should enable DT in serverless_mode when account_id has been set', () => {
+  await t.test('should enable DT in serverless_mode when account_id has been set', (t, end) => {
     idempotentEnv(
       {
         NEW_RELIC_SERVERLESS_MODE_ENABLED: true,
@@ -259,11 +268,12 @@ test('serverless mode via ENV variables', async (t) => {
       (tc) => {
         assert.equal(tc.serverless_mode.enabled, true)
         assert.equal(tc.distributed_tracing.enabled, true)
+        end()
       }
     )
   })
 
-  await t.test('should not enable distributed tracing when account_id has not been set', () => {
+  await t.test('should not enable distributed tracing when account_id has not been set', (t, end) => {
     idempotentEnv(
       {
         NEW_RELIC_SERVERLESS_MODE_ENABLED: true
@@ -271,11 +281,12 @@ test('serverless mode via ENV variables', async (t) => {
       (tc) => {
         assert.equal(tc.serverless_mode.enabled, true)
         assert.equal(tc.distributed_tracing.enabled, false)
+        end()
       }
     )
   })
 
-  await t.test('should default primary_application_id to Unknown when not set', () => {
+  await t.test('should default primary_application_id to Unknown when not set', (t, end) => {
     idempotentEnv(
       {
         NEW_RELIC_SERVERLESS_MODE_ENABLED: true,
@@ -284,24 +295,25 @@ test('serverless mode via ENV variables', async (t) => {
       (tc) => {
         assert.equal(tc.serverless_mode.enabled, true)
         assert.equal(tc.distributed_tracing.enabled, true)
-
         assert.equal(tc.primary_application_id, 'Unknown')
+        end()
       }
     )
   })
 
-  await t.test('should set serverless_mode from lambda-specific env var if not set by user', () => {
+  await t.test('should set serverless_mode from lambda-specific env var if not set by user', (t, end) => {
     idempotentEnv(
       {
         AWS_LAMBDA_FUNCTION_NAME: 'someFunc'
       },
       (tc) => {
         assert.equal(tc.serverless_mode.enabled, true)
+        end()
       }
     )
   })
 
-  await t.test('should pick app name from AWS_LAMBDA_FUNCTION_NAME', () => {
+  await t.test('should pick app name from AWS_LAMBDA_FUNCTION_NAME', (t, end) => {
     idempotentEnv(
       {
         NEW_RELIC_SERVERLESS_MODE_ENABLED: true,
@@ -310,29 +322,32 @@ test('serverless mode via ENV variables', async (t) => {
       (tc) => {
         assert.ok(tc.app_name)
         assert.deepEqual(tc.applications(), ['MyLambdaFunc'])
+        end()
       }
     )
   })
 
-  await t.test('should default generic app name when no AWS_LAMBDA_FUNCTION_NAME', () => {
+  await t.test('should default generic app name when no AWS_LAMBDA_FUNCTION_NAME', (t, end) => {
     idempotentEnv({ NEW_RELIC_SERVERLESS_MODE_ENABLED: true }, (tc) => {
       assert.ok(tc.app_name)
       assert.deepEqual(tc.applications(), ['Serverless Application'])
+      end()
     })
   })
 
-  await t.test('should default logging to disabled', () => {
+  await t.test('should default logging to disabled', (t, end) => {
     idempotentEnv(
       {
         NEW_RELIC_SERVERLESS_MODE_ENABLED: true
       },
       (config) => {
         assert.equal(config.logging.enabled, false)
+        end()
       }
     )
   })
 
-  await t.test('should allow logging to be enabled from env', () => {
+  await t.test('should allow logging to be enabled from env', (t, end) => {
     idempotentEnv(
       {
         NEW_RELIC_SERVERLESS_MODE_ENABLED: true,
@@ -340,11 +355,12 @@ test('serverless mode via ENV variables', async (t) => {
       },
       (config) => {
         assert.equal(config.logging.enabled, true)
+        end()
       }
     )
   })
 
-  await t.test('should allow logging to be enabled from configuration ', () => {
+  await t.test('should allow logging to be enabled from configuration ', (t,end) => {
     const envVariables = {
       NEW_RELIC_SERVERLESS_MODE_ENABLED: true
     }
@@ -355,10 +371,11 @@ test('serverless mode via ENV variables', async (t) => {
 
     idempotentEnv(envVariables, inputConfig, (config) => {
       assert.equal(config.logging.enabled, true)
+      end()
     })
   })
 
-  await t.test('should enable native_metrics via env variable', () => {
+  await t.test('should enable native_metrics via env variable', (t, end) => {
     const envVariables = {
       NEW_RELIC_SERVERLESS_MODE_ENABLED: true,
       NEW_RELIC_NATIVE_METRICS_ENABLED: true
@@ -374,6 +391,7 @@ test('serverless mode via ENV variables', async (t) => {
 
     idempotentEnv(envVariables, inputConfig, (config) => {
       assert.equal(config.plugins.native_metrics.enabled, true)
+      end()
     })
   })
 })
