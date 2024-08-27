@@ -1,812 +1,552 @@
 /*
- * Copyright 2020 New Relic Corporation. All rights reserved.
+ * Copyright 2024 New Relic Corporation. All rights reserved.
  * SPDX-License-Identifier: Apache-2.0
  */
 
 'use strict'
 
-const tap = require('tap')
-const nock = require('nock')
+const test = require('node:test')
+const assert = require('node:assert')
 
+const promiseResolvers = require('../../lib/promise-resolvers')
+const Collector = require('../../lib/test-collector')
 const helper = require('../../lib/agent_helper')
+const { securityPolicies } = require('../../lib/fixtures')
 const CollectorApi = require('../../../lib/collector/api')
-const securityPolicies = require('../../lib/fixtures').securityPolicies
 
-const HOST = 'collector.newrelic.com'
-const PORT = 8080
-const URL = 'https://' + HOST
 const RUN_ID = 1337
+const SECURITY_POLICIES_TOKEN = 'TEST-TEST-TEST-TEST'
+const baseAgentConfig = {
+  app_name: ['TEST'],
+  ssl: true,
+  license_key: 'license key here',
+  utilization: {
+    detect_aws: false,
+    detect_pcf: false,
+    detect_azure: false,
+    detect_gcp: false,
+    detect_docker: false
+  },
+  browser_monitoring: {},
+  transaction_tracer: {}
+}
 
-tap.test('when high_security: true', (t) => {
-  t.autoend()
+test('when high_security: true', async (t) => {
+  t.beforeEach(async (ctx) => {
+    ctx.nr = {}
 
-  let agent = null
-  let collectorApi = null
+    const collector = new Collector({ runId: RUN_ID })
+    ctx.nr.collector = collector
+    await collector.listen()
 
-  t.beforeEach(() => {
-    agent = setupMockedAgent()
-    agent.config.high_security = true
+    const config = Object.assign({}, baseAgentConfig, collector.agentConfig, {
+      config: { run_id: RUN_ID }
+    })
+    ctx.nr.agent = helper.loadMockedAgent(config)
+    ctx.nr.agent.reconfigure = function () {}
+    ctx.nr.agent.setState = function () {}
+    ctx.nr.agent.config.high_security = true
 
-    collectorApi = new CollectorApi(agent)
-
-    nock.disableNetConnect()
+    ctx.nr.collectorApi = new CollectorApi(ctx.nr.agent)
   })
 
-  t.afterEach(() => {
-    if (!nock.isDone()) {
-      /* eslint-disable no-console */
-      console.error('Cleaning pending mocks: %j', nock.pendingMocks())
-      /* eslint-enable no-console */
-      nock.cleanAll()
-    }
+  t.afterEach(afterEach)
 
-    nock.enableNetConnect()
-
-    helper.unloadAgent(agent)
-    agent = null
-    collectorApi = null
-  })
-
-  t.test('should send high_security:true in preconnect payload', (t) => {
-    const expectedPreconnectBody = [{ high_security: true }]
-
-    const preconnect = nock(URL + ':8080')
-      .post(helper.generateCollectorPath('preconnect'), expectedPreconnectBody)
-      .reply(200, {
-        return_value: {
-          redirect_host: HOST
-        }
-      })
-
-    const connectResponse = { return_value: { agent_run_id: RUN_ID } }
-    const connect = nock(URL)
-      .post(helper.generateCollectorPath('connect'))
-      .reply(200, connectResponse)
-
-    collectorApi._login(function test(err) {
-      // Request will only be successful if body matches expected
-      t.error(err)
-
-      preconnect.done()
-      connect.done()
-      t.end()
+  await t.test('should send high_security:true in preconnect payload', (t, end) => {
+    const { collector, collectorApi } = t.nr
+    let handled = false // effectively a `t.plan` (which we don't have in Node 18)
+    collector.addHandler(helper.generateCollectorPath('preconnect'), async (req, res) => {
+      const body = JSON.parse(await req.body())
+      assert.equal(body[0].high_security, true)
+      handled = true
+      collector.preconnectHandler(req, res)
+    })
+    collectorApi._login((error) => {
+      // Request will only be successful if body matches expected payload.
+      assert.equal(error, undefined)
+      assert.equal(handled, true)
+      end()
     })
   })
 })
 
-tap.test('when high_security: false', (t) => {
-  t.autoend()
+test('when high_security: false', async (t) => {
+  t.beforeEach(async (ctx) => {
+    ctx.nr = {}
 
-  let agent = null
-  let api = null
+    const collector = new Collector({ runId: RUN_ID })
+    ctx.nr.collector = collector
+    await collector.listen()
 
-  t.beforeEach(() => {
-    agent = setupMockedAgent()
-    agent.config.high_security = false
+    const config = Object.assign({}, baseAgentConfig, collector.agentConfig, {
+      config: { run_id: RUN_ID }
+    })
+    ctx.nr.agent = helper.loadMockedAgent(config)
+    ctx.nr.agent.reconfigure = function () {}
+    ctx.nr.agent.setState = function () {}
+    ctx.nr.agent.config.high_security = false
 
-    api = new CollectorApi(agent)
-
-    nock.disableNetConnect()
+    ctx.nr.collectorApi = new CollectorApi(ctx.nr.agent)
   })
 
-  t.afterEach(() => {
-    if (!nock.isDone()) {
-      /* eslint-disable no-console */
-      console.error('Cleaning pending mocks: %j', nock.pendingMocks())
-      /* eslint-enable no-console */
-      nock.cleanAll()
-    }
+  t.afterEach(afterEach)
 
-    nock.enableNetConnect()
-
-    helper.unloadAgent(agent)
-    agent = null
-    api = null
-  })
-
-  t.test('should send high_security:true in preconnect payload', (t) => {
-    const expectedPreconnectBody = [{ high_security: false }]
-
-    const preconnect = nock(URL + ':8080')
-      .post(helper.generateCollectorPath('preconnect'), expectedPreconnectBody)
-      .reply(200, {
-        return_value: {
-          redirect_host: HOST
-        }
-      })
-
-    const connectResponse = { return_value: { agent_run_id: RUN_ID } }
-    const connect = nock(URL)
-      .post(helper.generateCollectorPath('connect'))
-      .reply(200, connectResponse)
-
-    api._login(function test(err) {
-      // Request will only be successful if body matches expected
-      t.error(err)
-
-      preconnect.done()
-      connect.done()
-      t.end()
+  await t.test('should send high_security:false in preconnect payload', (t, end) => {
+    const { collector, collectorApi } = t.nr
+    let handled = false // effectively a `t.plan` (which we don't have in Node 18)
+    collector.addHandler(helper.generateCollectorPath('preconnect'), async (req, res) => {
+      const body = JSON.parse(await req.body())
+      assert.equal(body[0].high_security, false)
+      handled = true
+      collector.preconnectHandler(req, res)
+    })
+    collectorApi._login((error) => {
+      // Request will only be successful if body matches expected payload.
+      assert.equal(error, undefined)
+      assert.equal(handled, true)
+      end()
     })
   })
 })
 
-tap.test('in a LASP-enabled agent', (t) => {
-  const SECURITY_POLICIES_TOKEN = 'TEST-TEST-TEST-TEST'
+test('in a LASP-enabled agent', async (t) => {
+  t.beforeEach(async (ctx) => {
+    ctx.nr = {}
 
-  t.autoend()
+    const collector = new Collector({ runId: RUN_ID })
+    ctx.nr.collector = collector
+    await collector.listen()
 
-  let agent = null
-  let collectorApi = null
-  let policies = null
+    const config = Object.assign({}, baseAgentConfig, collector.agentConfig, {
+      config: { run_id: RUN_ID }
+    })
+    ctx.nr.agent = helper.loadMockedAgent(config)
+    ctx.nr.agent.reconfigure = function () {}
+    ctx.nr.agent.setState = function () {}
+    ctx.nr.agent.config.security_policies_token = SECURITY_POLICIES_TOKEN
 
-  t.beforeEach(() => {
-    agent = setupMockedAgent()
-    agent.config.security_policies_token = SECURITY_POLICIES_TOKEN
+    ctx.nr.policies = securityPolicies()
 
-    collectorApi = new CollectorApi(agent)
-
-    policies = securityPolicies()
-
-    nock.disableNetConnect()
+    ctx.nr.collectorApi = new CollectorApi(ctx.nr.agent)
   })
 
-  t.afterEach(() => {
-    if (!nock.isDone()) {
-      /* eslint-disable no-console */
-      console.error('Cleaning pending mocks: %j', nock.pendingMocks())
-      /* eslint-enable no-console */
-      nock.cleanAll()
-    }
+  t.afterEach(afterEach)
 
-    nock.enableNetConnect()
-
-    helper.unloadAgent(agent)
-    agent = null
-    collectorApi = null
-    policies = null
-  })
-
-  // HSM should never be true when LASP/CSP enabled but payload should still be sent.
-  t.test('should send token in preconnect payload with high_security:false', (t) => {
-    const expectedPreconnectBody = [
-      {
-        security_policies_token: SECURITY_POLICIES_TOKEN,
-        high_security: false
-      }
-    ]
-
-    const preconnect = nock(URL + ':8080')
-      .post(helper.generateCollectorPath('preconnect'), expectedPreconnectBody)
-      .reply(200, {
-        return_value: {
-          redirect_host: HOST,
-          security_policies: {}
-        }
-      })
-
-    collectorApi._login(function test(err) {
-      // Request will only be successful if body matches expected
-      t.error(err)
-
-      preconnect.done()
-      t.end()
+  await t.test('should send token in preconnect payload with high_security:false', (t, end) => {
+    // HSM should never be true when LASP/CSP enabled but payload should still be sent.
+    const { collector, collectorApi } = t.nr
+    let handled = false
+    collector.addHandler(helper.generateCollectorPath('preconnect'), async (req, res) => {
+      const body = JSON.parse(await req.body())
+      assert.equal(body[0].security_policies_token, SECURITY_POLICIES_TOKEN)
+      assert.equal(body[0].high_security, false)
+      handled = true
+      collector.preconnectHandler(req, res)
+    })
+    collectorApi._login((error) => {
+      assert.equal(error, undefined)
+      assert.equal(handled, true)
+      end()
     })
   })
 
-  t.test('should fail if preconnect res is missing expected policies', (t) => {
-    const redirection = nock(URL + ':8080')
-      .post(helper.generateCollectorPath('preconnect'))
-      .reply(200, {
-        return_value: {
-          redirect_host: HOST,
-          security_policies: {}
-        }
-      })
-
-    collectorApi._login(function test(err, response) {
-      t.error(err)
-      t.equal(response.shouldShutdownRun(), true)
-
-      redirection.done()
-      t.end()
+  await t.test('should fail if preconnect res is missing expected policies', (t, end) => {
+    const { collector, collectorApi } = t.nr
+    collectorApi._login((error, res) => {
+      assert.equal(error, undefined)
+      assert.equal(res.shouldShutdownRun(), true)
+      assert.equal(collector.isDone('preconnect'), true)
+      end()
     })
   })
 
-  t.test('should fail if agent is missing required policy', (t) => {
-    policies.test = { required: true }
-
-    const redirection = nock(URL + ':8080')
-      .post(helper.generateCollectorPath('preconnect'))
-      .reply(200, {
-        return_value: {
-          redirect_host: HOST,
-          security_policies: policies
+  await t.test('should fail if agent is missing required property', (t, end) => {
+    const { collector, collectorApi } = t.nr
+    t.nr.policies.test = { required: true }
+    collector.addHandler(helper.generateCollectorPath('preconnect'), (req, res) => {
+      res.json({
+        payload: {
+          return_value: {
+            redirect_host: `${collector.host}:${collector.port}`,
+            security_policies: t.nr.policies
+          }
         }
       })
-
-    collectorApi._login(function test(err, response) {
-      t.error(err)
-      t.equal(response.shouldShutdownRun(), true)
-
-      redirection.done()
-      t.end()
+    })
+    collectorApi._login((error, res) => {
+      assert.equal(error, undefined)
+      assert.equal(res.shouldShutdownRun(), true)
+      assert.equal(collector.isDone('preconnect'), true)
+      end()
     })
   })
 })
 
-tap.test('should copy request headers', (t) => {
-  let agent = null
-  let collectorApi = null
-
-  agent = setupMockedAgent()
-  collectorApi = new CollectorApi(agent)
-
-  nock.disableNetConnect()
-
-  t.teardown(() => {
-    if (!nock.isDone()) {
-      /* eslint-disable no-console */
-      console.error('Cleaning pending mocks: %j', nock.pendingMocks())
-      /* eslint-enable no-console */
-      nock.cleanAll()
-    }
-
-    nock.enableNetConnect()
-
-    helper.unloadAgent(agent)
-    agent = null
-    collectorApi = null
+test('should copy request headers', async (t) => {
+  const { promise, resolve } = promiseResolvers()
+  await beforeEach(t)
+  t.after(async () => {
+    await afterEach(t)
   })
 
-  const reqHeaderMap = {
-    'X-NR-TEST-HEADER': 'TEST VALUE'
-  }
-
-  const valid = {
+  const { collector, collectorApi } = t.nr
+  const validResponse = {
     agent_run_id: RUN_ID,
-    request_headers_map: reqHeaderMap
-  }
-
-  const response = { return_value: valid }
-
-  const redirection = nock(URL + ':8080')
-    .post(helper.generateCollectorPath('preconnect'))
-    .reply(200, { return_value: { redirect_host: HOST, security_policies: {} } })
-
-  const connection = nock(URL).post(helper.generateCollectorPath('connect')).reply(200, response)
-
-  collectorApi._login(function test() {
-    t.same(collectorApi._reqHeadersMap, reqHeaderMap)
-    redirection.done()
-    connection.done()
-
-    t.end()
-  })
-})
-
-tap.test('receiving 200 response, with valid data', (t) => {
-  t.autoend()
-
-  let agent = null
-  let collectorApi = null
-
-  let redirection = null
-  let connection = null
-
-  const validSsc = {
-    agent_run_id: RUN_ID
-  }
-
-  t.beforeEach(() => {
-    agent = setupMockedAgent()
-    collectorApi = new CollectorApi(agent)
-
-    nock.disableNetConnect()
-
-    const response = { return_value: validSsc }
-
-    redirection = nock(URL + ':8080')
-      .post(helper.generateCollectorPath('preconnect'))
-      .reply(200, { return_value: { redirect_host: HOST, security_policies: {} } })
-    connection = nock(URL).post(helper.generateCollectorPath('connect')).reply(200, response)
-  })
-
-  t.afterEach(() => {
-    if (!nock.isDone()) {
-      /* eslint-disable no-console */
-      console.error('Cleaning pending mocks: %j', nock.pendingMocks())
-      /* eslint-enable no-console */
-      nock.cleanAll()
+    request_headers_map: {
+      'X-NR-TEST-HEADER': 'TEST VALUE'
     }
-
-    nock.enableNetConnect()
-
-    helper.unloadAgent(agent)
-    agent = null
-    collectorApi = null
-  })
-
-  t.test('should not error out', (t) => {
-    collectorApi._login(function test(error) {
-      t.error(error)
-
-      redirection.done()
-      connection.done()
-
-      t.end()
-    })
-  })
-
-  t.test('should have a run ID', (t) => {
-    collectorApi._login(function test(error, res) {
-      const ssc = res.payload
-      t.equal(ssc.agent_run_id, RUN_ID)
-
-      redirection.done()
-      connection.done()
-
-      t.end()
-    })
-  })
-
-  t.test('should pass through server-side configuration untouched', (t) => {
-    collectorApi._login(function test(error, res) {
-      const ssc = res.payload
-      t.same(ssc, validSsc)
-
-      redirection.done()
-      connection.done()
-
-      t.end()
-    })
-  })
-})
-
-tap.test('receiving 503 response from preconnect', (t) => {
-  t.autoend()
-
-  let agent = null
-  let collectorApi = null
-
-  let redirection = null
-
-  t.beforeEach(() => {
-    agent = setupMockedAgent()
-    collectorApi = new CollectorApi(agent)
-
-    nock.disableNetConnect()
-
-    redirection = redirection = nock(URL + ':8080')
-      .post(helper.generateCollectorPath('preconnect'))
-      .reply(503)
-  })
-
-  t.afterEach(() => {
-    if (!nock.isDone()) {
-      /* eslint-disable no-console */
-      console.error('Cleaning pending mocks: %j', nock.pendingMocks())
-      /* eslint-enable no-console */
-      nock.cleanAll()
-    }
-
-    nock.enableNetConnect()
-
-    helper.unloadAgent(agent)
-    agent = null
-    collectorApi = null
-  })
-
-  t.test('should not have gotten an error', (t) => {
-    collectorApi._login(function test(error) {
-      t.error(error)
-      redirection.done()
-
-      t.end()
-    })
-  })
-
-  t.test('should have passed on the status code', (t) => {
-    collectorApi._login(function test(error, response) {
-      t.error(error)
-      redirection.done()
-
-      t.equal(response.status, 503)
-
-      t.end()
-    })
-  })
-})
-
-tap.test('receiving no hostname from preconnect', (t) => {
-  t.autoend()
-
-  let agent = null
-  let collectorApi = null
-
-  let redirection = null
-  let connection = null
-
-  const validSsc = {
-    agent_run_id: RUN_ID
   }
-
-  t.beforeEach(() => {
-    agent = setupMockedAgent()
-    collectorApi = new CollectorApi(agent)
-
-    nock.disableNetConnect()
-
-    const response = { return_value: validSsc }
-
-    redirection = nock(URL + ':8080')
-      .post(helper.generateCollectorPath('preconnect'))
-      .reply(200, { return_value: { redirect_host: '', security_policies: {} } })
-
-    connection = nock(URL + ':8080')
-      .post(helper.generateCollectorPath('connect'))
-      .reply(200, response)
+  collector.addHandler(helper.generateCollectorPath('connect', RUN_ID), (req, res) => {
+    res.json({ payload: { return_value: validResponse } })
   })
 
-  t.afterEach(() => {
-    if (!nock.isDone()) {
-      /* eslint-disable no-console */
-      console.error('Cleaning pending mocks: %j', nock.pendingMocks())
-      /* eslint-enable no-console */
-      nock.cleanAll()
-    }
-
-    nock.enableNetConnect()
-
-    helper.unloadAgent(agent)
-    agent = null
-    collectorApi = null
+  collectorApi._login(() => {
+    assert.equal(collectorApi._reqHeadersMap['X-NR-TEST-HEADER'], 'TEST VALUE')
+    resolve()
   })
 
-  t.test('should not error out', (t) => {
-    collectorApi._login(function test(error) {
-      t.error(error)
+  await promise
+})
 
-      redirection.done()
-      connection.done()
+test('receiving 200 response, with valid data', async (t) => {
+  t.beforeEach(beforeEach)
+  t.afterEach(afterEach)
 
-      t.end()
+  await t.test('should not error out', (t, end) => {
+    const { collectorApi } = t.nr
+    collectorApi._login((error) => {
+      assert.equal(error, undefined)
+      end()
     })
   })
 
-  t.test('should use preexisting collector hostname', (t) => {
-    collectorApi._login(function test() {
-      t.equal(agent.config.host, HOST)
-
-      redirection.done()
-      connection.done()
-
-      t.end()
+  await t.test('should have a run ID', (t, end) => {
+    const { collectorApi } = t.nr
+    collectorApi._login((error, res) => {
+      assert.equal(error, undefined)
+      assert.equal(res.payload.agent_run_id, RUN_ID)
+      end()
     })
   })
 
-  t.test('should pass along server-side configuration from collector', (t) => {
-    collectorApi._login(function test(error, res) {
-      const ssc = res.payload
-      t.equal(ssc.agent_run_id, RUN_ID)
-
-      redirection.done()
-      connection.done()
-
-      t.end()
+  await t.test('should pass through server-side configuration untouched', (t, end) => {
+    const { collectorApi } = t.nr
+    collectorApi._login((error, res) => {
+      assert.equal(error, undefined)
+      assert.deepStrictEqual(res.payload, { agent_run_id: RUN_ID })
+      end()
     })
   })
 })
 
-tap.test('receiving a weirdo redirect name from preconnect', (t) => {
-  t.autoend()
+test('receiving 503 response from preconnect', async (t) => {
+  t.beforeEach(async (ctx) => {
+    ctx.nr = {}
 
-  let agent = null
-  let collectorApi = null
+    const collector = new Collector({ runId: RUN_ID })
+    ctx.nr.collector = collector
+    await collector.listen()
 
-  let redirection = null
-  let connection = null
+    collector.addHandler(helper.generateCollectorPath('preconnect'), (req, res) => {
+      res.writeHead(503)
+      res.end()
+    })
 
-  const validSsc = {
-    agent_run_id: RUN_ID
-  }
+    const config = Object.assign({}, baseAgentConfig, collector.agentConfig, {
+      config: { run_id: RUN_ID }
+    })
+    ctx.nr.agent = helper.loadMockedAgent(config)
+    ctx.nr.agent.reconfigure = function () {}
+    ctx.nr.agent.setState = function () {}
 
-  t.beforeEach(() => {
-    agent = setupMockedAgent()
-    collectorApi = new CollectorApi(agent)
+    ctx.nr.collectorApi = new CollectorApi(ctx.nr.agent)
+  })
 
-    nock.disableNetConnect()
+  t.afterEach(afterEach)
 
-    const response = { return_value: validSsc }
+  await t.test('should not have gotten an error', (t, end) => {
+    const { collectorApi } = t.nr
+    collectorApi._login((error) => {
+      assert.equal(error, undefined)
+      end()
+    })
+  })
 
-    redirection = nock(URL + ':8080')
-      .post(helper.generateCollectorPath('preconnect'))
-      .reply(200, {
-        return_value: {
-          redirect_host: HOST + ':chug:8089',
-          security_policies: {}
+  await t.test('should have passed on the status code', (t, end) => {
+    const { collectorApi } = t.nr
+    collectorApi._login((error, res) => {
+      assert.equal(error, undefined)
+      assert.equal(res.status, 503)
+      end()
+    })
+  })
+})
+
+test('receiving no hostname from preconnect', async (t) => {
+  t.beforeEach(async (ctx) => {
+    ctx.nr = {}
+
+    const collector = new Collector({ runId: RUN_ID })
+    ctx.nr.collector = collector
+    await collector.listen()
+
+    collector.addHandler(helper.generateCollectorPath('preconnect'), (req, res) => {
+      res.json({
+        payload: {
+          return_value: {
+            redirect_host: '',
+            security_policies: {}
+          }
         }
       })
+    })
 
-    connection = nock(URL + ':8080')
-      .post(helper.generateCollectorPath('connect'))
-      .reply(200, response)
+    const config = Object.assign({}, baseAgentConfig, collector.agentConfig, {
+      config: { run_id: RUN_ID }
+    })
+    ctx.nr.agent = helper.loadMockedAgent(config)
+    ctx.nr.agent.reconfigure = function () {}
+    ctx.nr.agent.setState = function () {}
+
+    ctx.nr.collectorApi = new CollectorApi(ctx.nr.agent)
   })
 
-  t.afterEach(() => {
-    if (!nock.isDone()) {
-      /* eslint-disable no-console */
-      console.error('Cleaning pending mocks: %j', nock.pendingMocks())
-      /* eslint-enable no-console */
-      nock.cleanAll()
-    }
+  t.afterEach(afterEach)
 
-    nock.enableNetConnect()
-
-    helper.unloadAgent(agent)
-    agent = null
-    collectorApi = null
-  })
-
-  t.test('should not error out', (t) => {
-    collectorApi._login(function test(error) {
-      t.error(error)
-
-      redirection.done()
-      connection.done()
-
-      t.end()
+  await t.test('should not error out', (t, end) => {
+    const { collectorApi } = t.nr
+    collectorApi._login((error) => {
+      assert.equal(error, undefined)
+      end()
     })
   })
 
-  t.test('should use preexisting collector hostname', (t) => {
-    collectorApi._login(function test() {
-      t.equal(agent.config.host, HOST)
-
-      redirection.done()
-      connection.done()
-
-      t.end()
+  await t.test('should not error out', (t, end) => {
+    const { collectorApi } = t.nr
+    collectorApi._login((error) => {
+      assert.equal(error, undefined)
+      end()
     })
   })
 
-  t.test('should use preexisting collector port number', (t) => {
-    collectorApi._login(function test() {
-      t.equal(agent.config.port, PORT)
-
-      redirection.done()
-      connection.done()
-
-      t.end()
+  await t.test('should use preexisting collector hostname', (t, end) => {
+    const { agent, collectorApi } = t.nr
+    collectorApi._login((error) => {
+      assert.equal(error, undefined)
+      assert.equal(agent.config.host, '127.0.0.1')
+      end()
     })
   })
 
-  t.test('should pass along server-side configuration from collector', (t) => {
-    collectorApi._login(function test(error, res) {
-      const ssc = res.payload
-      t.equal(ssc.agent_run_id, RUN_ID)
-
-      redirection.done()
-      connection.done()
-
-      t.end()
+  await t.test('should pass along server-side configuration from collector', (t, end) => {
+    const { collectorApi } = t.nr
+    collectorApi._login((error, res) => {
+      assert.equal(error, undefined)
+      assert.equal(res.payload.agent_run_id, RUN_ID)
+      end()
     })
   })
 })
 
-tap.test('receiving no config back from connect', (t) => {
-  t.autoend()
+test('receiving a weirdo redirect name from preconnect', async (t) => {
+  t.beforeEach(async (ctx) => {
+    ctx.nr = {}
 
-  let agent = null
-  let collectorApi = null
+    const collector = new Collector({ runId: RUN_ID })
+    ctx.nr.collector = collector
+    await collector.listen()
 
-  let redirection = null
-  let connection = null
+    collector.addHandler(helper.generateCollectorPath('preconnect'), (req, res) => {
+      res.json({
+        payload: {
+          return_value: {
+            redirect_host: `${collector.host}:chug:${collector.port}`,
+            security_policies: {}
+          }
+        }
+      })
+    })
 
-  t.beforeEach(() => {
-    agent = setupMockedAgent()
-    collectorApi = new CollectorApi(agent)
+    const config = Object.assign({}, baseAgentConfig, collector.agentConfig, {
+      config: { run_id: RUN_ID }
+    })
+    ctx.nr.agent = helper.loadMockedAgent(config)
+    ctx.nr.agent.reconfigure = function () {}
+    ctx.nr.agent.setState = function () {}
 
-    nock.disableNetConnect()
-
-    redirection = nock(URL + ':8080')
-      .post(helper.generateCollectorPath('preconnect'))
-      .reply(200, { return_value: { redirect_host: HOST, security_policies: {} } })
-
-    connection = nock(URL)
-      .post(helper.generateCollectorPath('connect'))
-      .reply(200, { return_value: null })
+    ctx.nr.collectorApi = new CollectorApi(ctx.nr.agent)
   })
 
-  t.afterEach(() => {
-    if (!nock.isDone()) {
-      /* eslint-disable no-console */
-      console.error('Cleaning pending mocks: %j', nock.pendingMocks())
-      /* eslint-enable no-console */
-      nock.cleanAll()
-    }
+  t.afterEach(afterEach)
 
-    nock.enableNetConnect()
-
-    helper.unloadAgent(agent)
-    agent = null
-    collectorApi = null
-  })
-
-  t.test('should have gotten an error', (t) => {
-    collectorApi._login(function test(error) {
-      t.ok(error)
-
-      redirection.done()
-      connection.done()
-
-      t.end()
+  await t.test('should not error out', (t, end) => {
+    const { collectorApi } = t.nr
+    collectorApi._login((error) => {
+      assert.equal(error, undefined)
+      end()
     })
   })
 
-  t.test('should have gotten an informative error message', (t) => {
-    collectorApi._login(function test(error) {
-      t.equal(error.message, 'No agent run ID received from handshake.')
-
-      redirection.done()
-      connection.done()
-
-      t.end()
+  await t.test('should use preexisting collector hostname and port', (t, end) => {
+    const { agent, collector, collectorApi } = t.nr
+    collectorApi._login((error) => {
+      assert.equal(error, undefined)
+      assert.equal(agent.config.host, collector.host)
+      assert.equal(agent.config.port, collector.port)
+      end()
     })
   })
 
-  t.test('should pass along no server-side configuration from collector', (t) => {
-    collectorApi._login(function test(error, res) {
-      const ssc = res.payload
-      t.notOk(ssc)
-
-      redirection.done()
-      connection.done()
-
-      t.end()
+  await t.test('should pass along server-side configuration from collector', (t, end) => {
+    const { collectorApi } = t.nr
+    collectorApi._login((error, res) => {
+      assert.equal(error, undefined)
+      assert.equal(res.payload.agent_run_id, RUN_ID)
+      end()
     })
   })
 })
 
-tap.test('receiving 503 response from connect', (t) => {
-  t.autoend()
+test('receiving no config back from connect', async (t) => {
+  t.beforeEach(async (ctx) => {
+    ctx.nr = {}
 
-  let agent = null
-  let collectorApi = null
+    const collector = new Collector({ runId: RUN_ID })
+    ctx.nr.collector = collector
+    await collector.listen()
 
-  let redirection = null
-  let connection = null
+    collector.addHandler(helper.generateCollectorPath('connect'), (req, res) => {
+      res.json({
+        payload: {
+          return_value: null
+        }
+      })
+    })
 
-  t.beforeEach(() => {
-    agent = setupMockedAgent()
-    collectorApi = new CollectorApi(agent)
+    const config = Object.assign({}, baseAgentConfig, collector.agentConfig, {
+      config: { run_id: RUN_ID }
+    })
+    ctx.nr.agent = helper.loadMockedAgent(config)
+    ctx.nr.agent.reconfigure = function () {}
+    ctx.nr.agent.setState = function () {}
 
-    nock.disableNetConnect()
-
-    redirection = nock(URL + ':8080')
-      .post(helper.generateCollectorPath('preconnect'))
-      .reply(200, { return_value: { redirect_host: HOST, security_policies: {} } })
-
-    connection = nock(URL).post(helper.generateCollectorPath('connect')).reply(503)
+    ctx.nr.collectorApi = new CollectorApi(ctx.nr.agent)
   })
 
-  t.afterEach(() => {
-    if (!nock.isDone()) {
-      /* eslint-disable no-console */
-      console.error('Cleaning pending mocks: %j', nock.pendingMocks())
-      /* eslint-enable no-console */
-      nock.cleanAll()
-    }
+  t.afterEach(afterEach)
 
-    nock.enableNetConnect()
-
-    helper.unloadAgent(agent)
-    agent = null
-    collectorApi = null
-  })
-
-  t.test('should not have gotten an error', (t) => {
-    collectorApi._login(function test(error) {
-      t.error(error)
-
-      redirection.done()
-      connection.done()
-
-      t.end()
+  await t.test('should have gotten an error', (t, end) => {
+    const { collectorApi } = t.nr
+    collectorApi._login((error) => {
+      assert.equal(error.message, 'No agent run ID received from handshake.')
+      end()
     })
   })
 
-  t.test('should have passed on the status code', (t) => {
-    collectorApi._login(function test(error, response) {
-      t.error(error)
-      redirection.done()
-      connection.done()
-
-      t.equal(response.status, 503)
-
-      t.end()
+  await t.test('should pass along no server-side configuration from collector', (t, end) => {
+    const { collectorApi } = t.nr
+    collectorApi._login((error, res) => {
+      assert.equal(res.payload, undefined)
+      end()
     })
   })
 })
 
-tap.test('receiving 200 response to connect but no data', (t) => {
-  t.autoend()
+test('receiving 503 response from connect', async (t) => {
+  t.beforeEach(async (ctx) => {
+    ctx.nr = {}
 
-  let agent = null
-  let collectorApi = null
+    const collector = new Collector({ runId: RUN_ID })
+    ctx.nr.collector = collector
+    await collector.listen()
 
-  let redirection = null
-  let connection = null
+    collector.addHandler(helper.generateCollectorPath('connect'), (req, res) => {
+      res.writeHead(503)
+      res.end()
+    })
 
-  t.beforeEach(() => {
-    agent = setupMockedAgent()
-    collectorApi = new CollectorApi(agent)
+    const config = Object.assign({}, baseAgentConfig, collector.agentConfig, {
+      config: { run_id: RUN_ID }
+    })
+    ctx.nr.agent = helper.loadMockedAgent(config)
+    ctx.nr.agent.reconfigure = function () {}
+    ctx.nr.agent.setState = function () {}
 
-    nock.disableNetConnect()
-
-    redirection = nock(URL + ':8080')
-      .post(helper.generateCollectorPath('preconnect'))
-      .reply(200, { return_value: { redirect_host: HOST, security_policies: {} } })
-
-    connection = nock(URL).post(helper.generateCollectorPath('connect')).reply(200)
+    ctx.nr.collectorApi = new CollectorApi(ctx.nr.agent)
   })
 
-  t.afterEach(() => {
-    if (!nock.isDone()) {
-      /* eslint-disable no-console */
-      console.error('Cleaning pending mocks: %j', nock.pendingMocks())
-      /* eslint-enable no-console */
-      nock.cleanAll()
-    }
+  t.afterEach(afterEach)
 
-    nock.enableNetConnect()
-
-    helper.unloadAgent(agent)
-    agent = null
-    collectorApi = null
-  })
-
-  t.test('should have gotten an error', (t) => {
-    collectorApi._login(function test(error) {
-      t.ok(error)
-
-      redirection.done()
-      connection.done()
-
-      t.end()
+  await t.test('should not have gotten an error', (t, end) => {
+    const { collectorApi } = t.nr
+    collectorApi._login((error) => {
+      assert.equal(error, undefined)
+      end()
     })
   })
 
-  t.test('should have gotten an informative error message', (t) => {
-    collectorApi._login(function test(error) {
-      t.equal(error.message, 'No agent run ID received from handshake.')
-
-      redirection.done()
-      connection.done()
-
-      t.end()
+  await t.test('should have passed on the status code', (t, end) => {
+    const { collectorApi } = t.nr
+    collectorApi._login((error, res) => {
+      assert.equal(error, undefined)
+      assert.equal(res.status, 503)
+      end()
     })
   })
 })
 
-function setupMockedAgent() {
-  const agent = helper.loadMockedAgent({
-    host: HOST,
-    port: PORT,
-    app_name: ['TEST'],
-    license_key: 'license key here',
-    utilization: {
-      detect_aws: false,
-      detect_pcf: false,
-      detect_azure: false,
-      detect_gcp: false,
-      detect_docker: false
-    },
-    browser_monitoring: {},
-    transaction_tracer: {}
-  })
-  agent.reconfigure = function () {}
-  agent.setState = function () {}
+test('receiving 200 response to connect but no data', async (t) => {
+  t.beforeEach(async (ctx) => {
+    ctx.nr = {}
 
-  return agent
+    const collector = new Collector({ runId: RUN_ID })
+    ctx.nr.collector = collector
+    await collector.listen()
+
+    collector.addHandler(helper.generateCollectorPath('connect'), (req, res) => {
+      res.writeHead(200)
+      res.end()
+    })
+
+    const config = Object.assign({}, baseAgentConfig, collector.agentConfig, {
+      config: { run_id: RUN_ID }
+    })
+    ctx.nr.agent = helper.loadMockedAgent(config)
+    ctx.nr.agent.reconfigure = function () {}
+    ctx.nr.agent.setState = function () {}
+
+    ctx.nr.collectorApi = new CollectorApi(ctx.nr.agent)
+  })
+
+  t.afterEach(afterEach)
+
+  await t.test('should have gotten an error', (t, end) => {
+    const { collectorApi } = t.nr
+    collectorApi._login((error) => {
+      assert.equal(error.message, 'No agent run ID received from handshake.')
+      end()
+    })
+  })
+})
+
+async function beforeEach(ctx) {
+  ctx.nr = {}
+
+  const collector = new Collector({ runId: RUN_ID })
+  ctx.nr.collector = collector
+  await collector.listen()
+
+  const config = Object.assign({}, baseAgentConfig, collector.agentConfig, {
+    config: { run_id: RUN_ID }
+  })
+  ctx.nr.agent = helper.loadMockedAgent(config)
+  ctx.nr.agent.reconfigure = function () {}
+  ctx.nr.agent.setState = function () {}
+
+  ctx.nr.collectorApi = new CollectorApi(ctx.nr.agent)
+}
+
+function afterEach(ctx) {
+  helper.unloadAgent(ctx.nr.agent)
+  ctx.nr.collector.close()
 }

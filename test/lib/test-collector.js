@@ -128,6 +128,19 @@ class Collector {
   }
 
   /**
+   * the most basic `connect` handler. Useful when you do not need to
+   * customize the handler.
+   *
+   * @returns {function}
+   */
+  get connectHandler() {
+    const runId = this.#runId
+    return function (req, res) {
+      res.json({ payload: { return_value: { agent_run_id: runId } } })
+    }
+  }
+
+  /**
    * The most basic `preconnect` handler. Useful when you do not need to
    * customize the handler.
    *
@@ -207,9 +220,7 @@ class Collector {
     // be overwritten by tests that exercise the startup phase, but adding these
     // stubs makes it easier to test other connection events.
     this.addHandler(helper.generateCollectorPath('preconnect', this.#runId), this.preconnectHandler)
-    this.addHandler(helper.generateCollectorPath('connect', this.#runId), (req, res) => {
-      res.json({ payload: { return_value: { agent_run_id: this.#runId } } })
-    })
+    this.addHandler(helper.generateCollectorPath('connect', this.#runId), this.connectHandler)
     this.addHandler(
       helper.generateCollectorPath('agent_settings', this.#runId),
       this.agentSettingsHandler
