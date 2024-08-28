@@ -5,8 +5,8 @@
 
 'use strict'
 
-const tap = require('tap')
-
+const test = require('node:test')
+const assert = require('node:assert')
 const Config = require('../../../lib/config')
 const keyTests = require('../../lib/cross_agent_tests/collector_hostname.json')
 
@@ -17,11 +17,9 @@ const keyMapping = {
   env_override_host: 'NEW_RELIC_HOST'
 }
 
-tap.test('collector host name', (t) => {
-  t.autoend()
-
-  keyTests.forEach(function runTest(testCase) {
-    t.test(testCase.name, (t) => {
+test('collector host name', async (t) => {
+  for (const testCase of keyTests) {
+    await t.test(testCase.name, async () => {
       const confSettings = {}
       const envSettings = {}
       Object.keys(testCase).forEach(function assignConfValues(key) {
@@ -33,11 +31,10 @@ tap.test('collector host name', (t) => {
       })
 
       runWithEnv(confSettings, envSettings, (config) => {
-        t.equal(config.host, testCase.hostname)
-        t.end()
+        assert.equal(config.host, testCase.hostname)
       })
     })
-  })
+  }
 })
 
 function runWithEnv(conf, envObj, callback) {

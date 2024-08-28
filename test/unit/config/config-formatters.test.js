@@ -5,175 +5,146 @@
 
 'use strict'
 
-const tap = require('tap')
+const test = require('node:test')
+const assert = require('node:assert')
 const sinon = require('sinon')
 
 const formatters = require('../../../lib/config/formatters')
-tap.test('config formatters', (t) => {
-  t.autoend()
-
-  tap.test('array', (t) => {
-    t.autoend()
-
-    t.test('should trim string into array', (t) => {
+test('config formatters', async () => {
+  await test('array', async (t) => {
+    await t.test('should trim string into array', () => {
       const val = 'opt1, opt2  ,   opt3 , opt4'
       const options = formatters.array(val)
-      t.same(options, ['opt1', 'opt2', 'opt3', 'opt4'])
-      t.end()
+      assert.deepStrictEqual(options, ['opt1', 'opt2', 'opt3', 'opt4'])
     })
 
-    t.test('should create an array with 1 element if no comma exists', (t) => {
-      t.same(formatters.array('hello'), ['hello'])
-      t.end()
+    await t.test('should create an array with 1 element if no comma exists', () => {
+      assert.deepStrictEqual(formatters.array('hello'), ['hello'])
     })
   })
 
-  tap.test('int', (t) => {
-    t.autoend()
-
-    t.test('should parse number string as int', (t) => {
-      t.equal(formatters.int('100'), 100)
-      t.end()
+  await test('int', async (t) => {
+    await t.test('should parse number string as int', () => {
+      assert.equal(formatters.int('100'), 100)
     })
 
-    t.test('should return isNaN is string is not a number', (t) => {
-      t.ok(isNaN(formatters.int('hello')))
-      t.end()
+    await t.test('should return isNaN is string is not a number', () => {
+      assert.ok(isNaN(formatters.int('hello')))
     })
 
-    t.test('should parse float as int', (t) => {
+    await t.test('should parse float as int', () => {
       const values = ['1.01', 1.01]
       values.forEach((val) => {
-        t.equal(formatters.int(val), 1)
+        assert.equal(formatters.int(val), 1)
       })
-      t.end()
     })
   })
 
-  tap.test('float', (t) => {
-    t.autoend()
-
-    t.test('should parse number string as float', (t) => {
-      t.equal(formatters.float('100'), 100)
-      t.end()
+  await test('float', async (t) => {
+    await t.test('should parse number string as float', () => {
+      assert.equal(formatters.float('100'), 100)
     })
 
-    t.test('should return isNaN is string is not a number', (t) => {
-      t.ok(isNaN(formatters.float('hello')))
-      t.end()
+    await t.test('should return isNaN is string is not a number', () => {
+      assert.ok(isNaN(formatters.float('hello')))
     })
 
-    t.test('should parse float accordingly', (t) => {
+    await t.test('should parse float accordingly', () => {
       const values = ['1.01', 1.01]
       values.forEach((val) => {
-        t.equal(formatters.float(val), 1.01)
+        assert.equal(formatters.float(val), 1.01)
       })
-      t.end()
     })
   })
 
-  tap.test('boolean', (t) => {
-    t.autoend()
-
+  await test('boolean', async (t) => {
     const falseyValues = [null, 'false', 'f', 'no', 'n', 'disabled', '0']
-    falseyValues.forEach((val) => {
-      t.test(`should map ${val} to false`, (t) => {
-        t.equal(formatters.boolean(val), false)
-        t.end()
+    for (const val of falseyValues) {
+      await t.test(`should map ${val} to false`, () => {
+        assert.equal(formatters.boolean(val), false)
       })
-    })
+    }
 
     // these are new tests but do not want to change behavior of this formatter
     // but anything that is not a falsey value above is true ¯\_(ツ)_/¯
     const truthyValues = ['true', 'anything-else', '[]', '{}']
-    truthyValues.forEach((val) => {
-      t.test(`should map ${val} to true`, (t) => {
-        t.equal(formatters.boolean(val), true)
-        t.end()
+    for (const val of truthyValues) {
+      await t.test(`should map ${val} to true`, () => {
+        assert.equal(formatters.boolean(val), true)
       })
-    })
+    }
   })
 
-  tap.test('object', (t) => {
-    t.autoend()
-
-    t.test('should parse json string as an object', (t) => {
+  await test('object', async (t) => {
+    await t.test('should parse json string as an object', () => {
       const val = '{"key": "value"}'
       const result = formatters.object(val)
-      t.same(result, { key: 'value' })
-      t.end()
+      assert.deepStrictEqual(result, { key: 'value' })
     })
 
-    t.test('should log error and return null if it cannot parse option as json', (t) => {
+    await t.test('should log error and return null if it cannot parse option as json', () => {
       const loggerMock = { error: sinon.stub() }
       const val = 'invalid'
-      t.notOk(formatters.object(val, loggerMock))
-      t.equal(loggerMock.error.args[0][0], 'New Relic configurator could not deserialize object:')
-      t.match(loggerMock.error.args[1][0], /SyntaxError: Unexpected token/)
-      t.end()
+      assert.equal(formatters.object(val, loggerMock), null)
+      assert.equal(
+        loggerMock.error.args[0][0],
+        'New Relic configurator could not deserialize object:'
+      )
+      assert.match(loggerMock.error.args[1][0], /SyntaxError: Unexpected token/)
     })
   })
 
-  tap.test('objectList', (t) => {
-    t.autoend()
-
-    t.test('should parse json string a collection with 1 object', (t) => {
+  await test('objectList', async (t) => {
+    await t.test('should parse json string a collection with 1 object', () => {
       const val = '{"key": "value"}'
       const result = formatters.objectList(val)
-      t.same(result, [{ key: 'value' }])
-      t.end()
+      assert.deepStrictEqual(result, [{ key: 'value' }])
     })
 
-    t.test('should log error and return null if it cannot parse option as json', (t) => {
+    await t.test('should log error and return null if it cannot parse option as json', () => {
       const loggerMock = { error: sinon.stub() }
       const val = 'invalid'
-      t.notOk(formatters.objectList(val, loggerMock))
-      t.equal(
+      assert.equal(formatters.objectList(val, loggerMock), null)
+      assert.equal(
         loggerMock.error.args[0][0],
         'New Relic configurator could not deserialize object list:'
       )
-      t.match(loggerMock.error.args[1][0], /SyntaxError: Unexpected token/)
-      t.end()
+      assert.match(loggerMock.error.args[1][0], /SyntaxError: Unexpected token/)
     })
   })
 
-  tap.test('allowList', (t) => {
-    t.autoend()
-
-    t.test('should return value if in allow list', (t) => {
+  await test('allowList', async (t) => {
+    await t.test('should return value if in allow list', () => {
       const allowList = ['bad', 'good', 'evil']
       const val = 'good'
       const result = formatters.allowList(allowList, val)
-      t.same(result, val)
-      t.end()
+      assert.deepStrictEqual(result, val)
     })
 
-    t.test('should return first element in allow list if value is not in list', (t) => {
+    await t.test('should return first element in allow list if value is not in list', () => {
       const allowList = ['good', 'bad', 'evil']
       const val = 'scary'
       const result = formatters.allowList(allowList, val)
-      t.same(result, 'good')
-      t.end()
+      assert.deepStrictEqual(result, 'good')
     })
   })
 
-  tap.test('regex', (t) => {
-    t.autoend()
-
-    t.test('should return regex if valid', (t) => {
+  await test('regex', async (t) => {
+    await t.test('should return regex if valid', () => {
       const val = '/hello/'
       const result = formatters.regex(val)
-      t.same(result, /\/hello\//)
-      t.end()
+      assert.deepStrictEqual(result, /\/hello\//)
     })
 
-    t.test('should log error and return null if regex is invalid', (t) => {
+    await t.test('should log error and return null if regex is invalid', () => {
       const loggerMock = { error: sinon.stub() }
       const val = '[a-z'
-      t.notOk(formatters.regex(val, loggerMock))
-      t.equal(loggerMock.error.args[0][0], `New Relic configurator could not validate regex: [a-z`)
-      t.match(loggerMock.error.args[1][0], /SyntaxError: Invalid regular expression/)
-      t.end()
+      assert.equal(formatters.regex(val, loggerMock), null)
+      assert.equal(
+        loggerMock.error.args[0][0],
+        `New Relic configurator could not validate regex: [a-z`
+      )
+      assert.match(loggerMock.error.args[1][0], /SyntaxError: Invalid regular expression/)
     })
   })
 })
