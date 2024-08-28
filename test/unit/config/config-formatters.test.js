@@ -85,7 +85,7 @@ test('config formatters', async () => {
     await t.test('should log error and return null if it cannot parse option as json', () => {
       const loggerMock = { error: sinon.stub() }
       const val = 'invalid'
-      assert.ok(!formatters.object(val, loggerMock))
+      assert.equal(formatters.object(val, loggerMock), null)
       assert.equal(
         loggerMock.error.args[0][0],
         'New Relic configurator could not deserialize object:'
@@ -104,7 +104,7 @@ test('config formatters', async () => {
     await t.test('should log error and return null if it cannot parse option as json', () => {
       const loggerMock = { error: sinon.stub() }
       const val = 'invalid'
-      assert.ok(!formatters.objectList(val, loggerMock))
+      assert.equal(formatters.objectList(val, loggerMock), null)
       assert.equal(
         loggerMock.error.args[0][0],
         'New Relic configurator could not deserialize object list:'
@@ -139,7 +139,7 @@ test('config formatters', async () => {
     await t.test('should log error and return null if regex is invalid', () => {
       const loggerMock = { error: sinon.stub() }
       const val = '[a-z'
-      assert.ok(!formatters.regex(val, loggerMock))
+      assert.equal(formatters.regex(val, loggerMock), null)
       assert.equal(
         loggerMock.error.args[0][0],
         `New Relic configurator could not validate regex: [a-z`

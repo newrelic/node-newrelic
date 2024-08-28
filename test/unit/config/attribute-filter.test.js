@@ -44,7 +44,7 @@ test('#filter', async (t) => {
       })
     )
 
-    makeFilterAssertions(filter)
+    validateFilter(filter)
   })
 
   await t.test('should not add include rules when they are disabled', () => {
@@ -92,7 +92,7 @@ test('#filter', async (t) => {
       })
     )
 
-    makeFilterAssertions(filter)
+    validateFilter(filter)
   })
 
   await t.test('should match `*` to anything', () => {
@@ -134,7 +134,7 @@ test('#filter', async (t) => {
   })
 })
 
-function makeFilterAssertions(filter) {
+function validateFilter(filter) {
   // Filters down from global rules
   assert.equal(filter.filterTransaction(DESTS.TRANS_SCOPE, 'a'), DESTS.TRANS_COMMON, 'a -> common')
   assert.equal(filter.filterTransaction(DESTS.TRANS_SCOPE, 'ab'), DESTS.TRANS_EVENT, 'ab -> common')

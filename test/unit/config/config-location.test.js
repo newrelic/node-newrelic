@@ -73,24 +73,24 @@ test('when overriding the config file location via NEW_RELIC_HOME', async (t) =>
   })
 
   await t.test('should ignore the configuration file completely when so directed', (t, end) => {
-    try {
-      process.env.NEW_RELIC_NO_CONFIG_FILE = 'true'
-      process.env.NEW_RELIC_HOME = '/xxxnoexist/nofile'
+    process.env.NEW_RELIC_NO_CONFIG_FILE = 'true'
+    process.env.NEW_RELIC_HOME = '/xxxnoexist/nofile'
 
-      let configuration
+    let configuration
 
-      assert.doesNotThrow(() => {
-        configuration = Config.initialize()
-      })
+    assert.doesNotThrow(() => {
+      configuration = Config.initialize()
+    })
 
-      assert.ok(!configuration.newrelic_home)
-      assert.ok(configuration.error_collector)
-      assert.equal(configuration.error_collector.enabled, true)
-    } finally {
+    assert.ok(!configuration.newrelic_home)
+    assert.ok(configuration.error_collector)
+    assert.equal(configuration.error_collector.enabled, true)
+    end()
+
+    t.after(() => {
       delete process.env.NEW_RELIC_NO_CONFIG_FILE
       delete process.env.NEW_RELIC_HOME
-      end()
-    }
+    })
   })
 })
 
