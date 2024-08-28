@@ -1,181 +1,135 @@
 /*
- * Copyright 2020 New Relic Corporation. All rights reserved.
+ * Copyright 2024 New Relic Corporation. All rights reserved.
  * SPDX-License-Identifier: Apache-2.0
  */
 
 'use strict'
 
-const tap = require('tap')
-
+const test = require('node:test')
+const assert = require('node:assert')
 const parse = require('../../../lib/collector/parse-response')
 
-tap.test('should call back with an error if called with no collector method name', (t) => {
-  parse(null, { statusCode: 200 }, (err) => {
-    t.ok(err)
-    t.equal(err.message, 'collector method name required!')
-
-    t.end()
+test('should call back with an error if called with no collector method name', (t, end) => {
+  parse(null, { statusCode: 200 }, (error) => {
+    assert.equal(error.message, 'collector method name required!')
+    end()
   })
 })
 
-tap.test('should call back with an error if called without a response', (t) => {
-  parse('TEST', null, (err) => {
-    t.ok(err)
-    t.equal(err.message, 'HTTP response required!')
-
-    t.end()
+test('should call back with an error if called without a response', (t, end) => {
+  parse('TEST', null, (error) => {
+    assert.equal(error.message, 'HTTP response required!')
+    end()
   })
 })
 
-tap.test('should throw if called without a callback', (t) => {
-  const response = { statusCode: 200 }
-  t.throws(() => {
-    parse('TEST', response, undefined)
-  }, new Error('callback required!'))
-
-  t.end()
+test('should throw if called without a callback', () => {
+  assert.throws(() => {
+    parse('TEST', { statusCode: 200 }, undefined)
+  }, /callback required!/)
 })
 
-tap.test('when initialized properly and response status is 200', (t) => {
-  t.autoend()
-
+test('when initialized properly and response status is 200', async (t) => {
   const response = { statusCode: 200 }
   const methodName = 'TEST'
 
-  t.test('should pass through return value', (t) => {
-    function callback(error, res) {
-      t.same(res.payload, [1, 1, 2, 3, 5, 8])
-
-      t.end()
-    }
-
-    const parser = parse(methodName, response, callback)
+  await t.test('should pass through return value', (t, end) => {
+    const parser = parse(methodName, response, (error, res) => {
+      assert.deepStrictEqual(res.payload, [1, 1, 2, 3, 5, 8])
+      end()
+    })
     parser(null, '{"return_value":[1,1,2,3,5,8]}')
   })
 
-  t.test('should pass through status code', (t) => {
-    function callback(error, res) {
-      t.equal(res.status, 200)
-      t.end()
-    }
-
-    const parser = parse(methodName, response, callback)
+  await t.test('should pass through status code', (t, end) => {
+    const parser = parse(methodName, response, (error, res) => {
+      assert.deepStrictEqual(res.status, 200)
+      end()
+    })
     parser(null, '{"return_value":[1,1,2,3,5,8]}')
   })
 
-  t.test('should pass through even a null return value', (t) => {
-    function callback(error, res) {
-      t.equal(res.payload, null)
-      t.end()
-    }
-
-    const parser = parse(methodName, response, callback)
+  await t.test('should pass through even a null return value', (t, end) => {
+    const parser = parse(methodName, response, (error, res) => {
+      assert.equal(res.payload, null)
+      end()
+    })
     parser(null, '{"return_value":null}')
   })
 
-  t.test('should not error on an explicitly null return value', (t) => {
-    function callback(error) {
-      t.error(error)
-      t.end()
-    }
-
-    const parser = parse(methodName, response, callback)
+  await t.test('should not error on an explicitly null return value', (t, end) => {
+    const parser = parse(methodName, response, (error) => {
+      assert.equal(error, undefined)
+      end()
+    })
     parser(null, '{"return_value":null}')
   })
 
-  t.test('should not error in normal situations', (t) => {
-    function callback(error) {
-      t.error(error)
-      t.end()
-    }
-
-    const parser = parse(methodName, response, callback)
+  await t.test('should not error in normal situations', (t, end) => {
+    const parser = parse(methodName, response, (error) => {
+      assert.equal(error, undefined)
+      end()
+    })
     parser(null, '{"return_value":[1,1,2,3,5,8]}')
   })
 
-  t.test('should not error on a missing body', (t) => {
-    function callback(error, res) {
-      t.error(error)
-      t.equal(res.status, 200)
-      t.end()
-    }
-
-    const parser = parse(methodName, response, callback)
+  await t.test('should not erro on a missing body', (t, end) => {
+    const parser = parse(methodName, response, (error) => {
+      assert.equal(error, undefined)
+      end()
+    })
     parser(null, null)
   })
 
-  t.test('should not error on unparsable return value', (t) => {
-    function callback(error, res) {
-      t.error(error)
-
-      t.notOk(res.payload)
-      t.equal(res.status, 200)
-
-      t.end()
-    }
-
-    const exception = '<html><body>hi</body></html>'
-
-    const parser = parse(methodName, response, callback)
-    parser(null, exception)
-  })
-
-  t.test('should not error on a server exception with no error message', (t) => {
-    const exception = '{"exception":{"error_type":"RuntimeError"}}'
-
-    const parser = parse(methodName, response, function callback(error, res) {
-      t.error(error)
-
-      t.notOk(res.payload)
-      t.equal(res.status, 200)
-
-      t.end()
+  await t.test('should not error on unparseable return value', (t, end) => {
+    const parser = parse(methodName, response, (error, res) => {
+      assert.equal(error, undefined)
+      assert.equal(res.payload, undefined)
+      assert.equal(res.status, 200)
+      end()
     })
-    parser(null, exception)
+    parser(null, '<html><body>hi</body></html>')
   })
 
-  t.test('should pass back passed in errors before missing body errors', (t) => {
-    function callback(error) {
-      t.ok(error)
-      t.equal(error.message, 'oh no!')
+  await t.test('should not error on server exception with no error message', (t, end) => {
+    const parser = parse(methodName, response, (error, res) => {
+      assert.equal(error, undefined)
+      assert.equal(res.payload, undefined)
+      assert.equal(res.status, 200)
+      end()
+    })
+    parser(null, '{"exception":{"error_type":"RuntimeError"}}')
+  })
 
-      t.end()
-    }
-
-    const parser = parse(methodName, response, callback)
-    parser(new Error('oh no!'), null)
+  await t.test('should pass back passed in errors before missing body errors', (t, end) => {
+    const parser = parse(methodName, response, (error) => {
+      assert.equal(error.message, 'oh no!')
+      end()
+    })
+    parser(Error('oh no!'), null)
   })
 })
 
-tap.test('when initialized properly and response status is 503', (t) => {
-  t.autoend()
-
+test('when initialized properly and response status is 503', async (t) => {
   const response = { statusCode: 503 }
   const methodName = 'TEST'
 
-  t.test('should pass through return value despite weird status code', (t) => {
-    function callback(error, res) {
-      t.error(error)
-
-      t.same(res.payload, [1, 1, 2, 3, 5, 8])
-      t.equal(res.status, 503)
-
-      t.end()
-    }
-
-    const parser = parse(methodName, response, callback)
+  await t.test('should pass through return value despite weird status code', (t, end) => {
+    const parser = parse(methodName, response, (error, res) => {
+      assert.equal(error, undefined)
+      assert.deepStrictEqual(res.payload, [1, 1, 2, 3, 5, 8])
+      assert.equal(res.status, 503)
+      end()
+    })
     parser(null, '{"return_value":[1,1,2,3,5,8]}')
   })
 
-  t.test('should not error on no return value or server exception', (t) => {
-    function callback(error, res) {
-      t.error(error)
-      t.equal(res.status, 503)
-
-      t.end()
-    }
-
-    const parser = parse(methodName, response, callback)
+  await t.test('should not error on no return value or server exception', (t, end) => {
+    const parser = parse(methodName, response, (error, res) => {
+      assert.equal(error, undefined)
+      assert.deepStrictEqual(res.status, 503)
+      end()
+    })
     parser(null, '{}')
   })
 })
