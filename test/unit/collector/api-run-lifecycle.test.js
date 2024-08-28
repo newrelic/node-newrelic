@@ -1,328 +1,240 @@
 /*
- * Copyright 2020 New Relic Corporation. All rights reserved.
+ * Copyright 2024 New Relic Corporation. All rights reserved.
  * SPDX-License-Identifier: Apache-2.0
  */
 
 'use strict'
 
-const tap = require('tap')
-const nock = require('nock')
+const test = require('node:test')
+const assert = require('node:assert')
 
+const promiseResolvers = require('../../lib/promise-resolvers')
+const Collector = require('../../lib/test-collector')
 const helper = require('../../lib/agent_helper')
 const CollectorApi = require('../../../lib/collector/api')
 
-const HOST = 'collector.newrelic.com'
-const PORT = 443
-const URL = 'https://' + HOST
 const RUN_ID = 1337
+const baseAgentConfig = {
+  app_name: ['TEST'],
+  ssl: true,
+  license_key: 'license key here',
+  utilization: {
+    detect_aws: false,
+    detect_pcf: false,
+    detect_azure: false,
+    detect_gcp: false,
+    detect_docker: false
+  },
+  browser_monitoring: {},
+  transaction_tracer: {}
+}
 
-tap.test('should bail out if disconnected', (t) => {
-  const agent = setupMockedAgent()
-  const collectorApi = new CollectorApi(agent)
+test('should bail out if disconnected', async (t) => {
+  await beforeEach(t)
+  t.after(() => afterEach(t))
 
-  t.teardown(() => {
-    helper.unloadAgent(agent)
+  const { collectorApi } = t.nr
+  const { promise, resolve } = promiseResolvers()
+  collectorApi._runLifecycle(collectorApi._methods.metric_data, null, (error) => {
+    assert.equal(error.message, 'Not connected to collector.')
+    resolve()
   })
 
-  function tested(error) {
-    t.ok(error)
-    t.equal(error.message, 'Not connected to collector.')
-
-    t.end()
-  }
-
-  const method = collectorApi._methods.metric_data
-  collectorApi._runLifecycle(method, null, tested)
+  await promise
 })
 
-tap.test('should discard HTTP 413 errors', (t) => {
-  const agent = setupMockedAgent()
+test('should discard HTTP 413 errors', async (t) => {
+  await beforeEach(t)
+  t.after(() => afterEach(t))
+
+  const { agent, collector, collectorApi } = t.nr
+  const { promise, resolve } = promiseResolvers()
+  collector.addHandler(helper.generateCollectorPath('metric_data', RUN_ID), (req, res) => {
+    res.writeHead(413)
+    res.end()
+  })
   agent.config.run_id = RUN_ID
-  const collectorApi = new CollectorApi(agent)
-
-  nock.disableNetConnect()
-
-  t.teardown(() => {
-    if (!nock.isDone()) {
-      /* eslint-disable no-console */
-      console.error('Cleaning pending mocks: %j', nock.pendingMocks())
-      /* eslint-enable no-console */
-      nock.cleanAll()
-    }
-
-    nock.enableNetConnect()
-    helper.unloadAgent(agent)
+  collectorApi._runLifecycle(collectorApi._methods.metric_data, null, (error, cmd) => {
+    assert.equal(error, undefined)
+    assert.equal(cmd.retainData, false)
+    assert.equal(collector.isDone('metric_data'), true)
+    resolve()
   })
 
-  const failure = nock(URL).post(helper.generateCollectorPath('metric_data', RUN_ID)).reply(413)
-
-  function tested(error, command) {
-    t.error(error)
-    t.equal(command.retainData, false)
-
-    failure.done()
-
-    t.end()
-  }
-
-  const method = collectorApi._methods.metric_data
-  collectorApi._runLifecycle(method, null, tested)
+  await promise
 })
 
-tap.test('should discard HTTP 415 errors', (t) => {
-  const agent = setupMockedAgent()
+test('should discard HTTP 415 errors', async (t) => {
+  await beforeEach(t)
+  t.after(() => afterEach(t))
+
+  const { agent, collector, collectorApi } = t.nr
+  const { promise, resolve } = promiseResolvers()
+  collector.addHandler(helper.generateCollectorPath('metric_data', RUN_ID), (req, res) => {
+    res.writeHead(415)
+    res.end()
+  })
   agent.config.run_id = RUN_ID
-  const collectorApi = new CollectorApi(agent)
-
-  nock.disableNetConnect()
-
-  t.teardown(() => {
-    if (!nock.isDone()) {
-      /* eslint-disable no-console */
-      console.error('Cleaning pending mocks: %j', nock.pendingMocks())
-      /* eslint-enable no-console */
-      nock.cleanAll()
-    }
-
-    nock.enableNetConnect()
-    helper.unloadAgent(agent)
+  collectorApi._runLifecycle(collectorApi._methods.metric_data, null, (error, cmd) => {
+    assert.equal(error, undefined)
+    assert.equal(cmd.retainData, false)
+    assert.equal(collector.isDone('metric_data'), true)
+    resolve()
   })
 
-  const failure = nock(URL).post(helper.generateCollectorPath('metric_data', RUN_ID)).reply(415)
-  const method = collectorApi._methods.metric_data
-  collectorApi._runLifecycle(method, null, function tested(error, command) {
-    t.error(error)
-    t.equal(command.retainData, false)
-
-    failure.done()
-
-    t.end()
-  })
+  await promise
 })
 
-tap.test('should retain after HTTP 500 errors', (t) => {
-  const agent = setupMockedAgent()
+test('should retain after HTTP 500 errors', async (t) => {
+  await beforeEach(t)
+  t.after(() => afterEach(t))
+
+  const { agent, collector, collectorApi } = t.nr
+  const { promise, resolve } = promiseResolvers()
+  collector.addHandler(helper.generateCollectorPath('metric_data', RUN_ID), (req, res) => {
+    res.writeHead(500)
+    res.end()
+  })
   agent.config.run_id = RUN_ID
-  const collectorApi = new CollectorApi(agent)
-
-  nock.disableNetConnect()
-
-  t.teardown(() => {
-    if (!nock.isDone()) {
-      /* eslint-disable no-console */
-      console.error('Cleaning pending mocks: %j', nock.pendingMocks())
-      /* eslint-enable no-console */
-      nock.cleanAll()
-    }
-
-    nock.enableNetConnect()
-    helper.unloadAgent(agent)
+  collectorApi._runLifecycle(collectorApi._methods.metric_data, null, (error, cmd) => {
+    assert.equal(error, undefined)
+    assert.equal(cmd.retainData, true)
+    assert.equal(collector.isDone('metric_data'), true)
+    resolve()
   })
 
-  const failure = nock(URL).post(helper.generateCollectorPath('metric_data', RUN_ID)).reply(500)
-
-  function tested(error, command) {
-    t.error(error)
-    t.equal(command.retainData, true)
-
-    failure.done()
-
-    t.end()
-  }
-
-  const method = collectorApi._methods.metric_data
-  collectorApi._runLifecycle(method, null, tested)
+  await promise
 })
 
-tap.test('should retain after HTTP 503 errors', (t) => {
-  const agent = setupMockedAgent()
+test('should retain after HTTP 503 errors', async (t) => {
+  await beforeEach(t)
+  t.after(() => afterEach(t))
+
+  const { agent, collector, collectorApi } = t.nr
+  const { promise, resolve } = promiseResolvers()
+  collector.addHandler(helper.generateCollectorPath('metric_data', RUN_ID), (req, res) => {
+    res.writeHead(503)
+    res.end()
+  })
   agent.config.run_id = RUN_ID
-  const collectorApi = new CollectorApi(agent)
-
-  nock.disableNetConnect()
-
-  t.teardown(() => {
-    if (!nock.isDone()) {
-      /* eslint-disable no-console */
-      console.error('Cleaning pending mocks: %j', nock.pendingMocks())
-      /* eslint-enable no-console */
-      nock.cleanAll()
-    }
-
-    nock.enableNetConnect()
-    helper.unloadAgent(agent)
+  collectorApi._runLifecycle(collectorApi._methods.metric_data, null, (error, cmd) => {
+    assert.equal(error, undefined)
+    assert.equal(cmd.retainData, true)
+    assert.equal(collector.isDone('metric_data'), true)
+    resolve()
   })
 
-  const failure = nock(URL).post(helper.generateCollectorPath('metric_data', RUN_ID)).reply(503)
-  const method = collectorApi._methods.metric_data
-  collectorApi._runLifecycle(method, null, function tested(error, command) {
-    t.error(error)
-    t.equal(command.retainData, true)
-
-    failure.done()
-
-    t.end()
-  })
+  await promise
 })
 
-tap.test('should indicate a restart and discard data after 401 errors', (t) => {
-  const agent = setupMockedAgent()
+test('should indicate a restart and discard data after 401 errors', async (t) => {
+  await beforeEach(t)
+  t.after(() => afterEach(t))
+
+  const { agent, collector, collectorApi } = t.nr
+  const { promise, resolve } = promiseResolvers()
+  collector.addHandler(helper.generateCollectorPath('metric_data', RUN_ID), (req, res) => {
+    res.writeHead(401)
+    res.end()
+  })
   agent.config.run_id = RUN_ID
-  const collectorApi = new CollectorApi(agent)
-
-  nock.disableNetConnect()
-
-  t.teardown(() => {
-    if (!nock.isDone()) {
-      /* eslint-disable no-console */
-      console.error('Cleaning pending mocks: %j', nock.pendingMocks())
-      /* eslint-enable no-console */
-      nock.cleanAll()
-    }
-
-    nock.enableNetConnect()
-    helper.unloadAgent(agent)
+  collectorApi._runLifecycle(collectorApi._methods.metric_data, null, (error, cmd) => {
+    assert.equal(error, undefined)
+    assert.equal(cmd.retainData, false)
+    assert.equal(cmd.shouldRestartRun(), true)
+    assert.equal(collector.isDone('metric_data'), true)
+    resolve()
   })
 
-  const failure = nock(URL).post(helper.generateCollectorPath('metric_data', RUN_ID)).reply(401)
-
-  function tested(error, command) {
-    t.error(error)
-    t.equal(command.retainData, false)
-    t.equal(command.shouldRestartRun(), true)
-
-    failure.done()
-
-    t.end()
-  }
-
-  const method = collectorApi._methods.metric_data
-  collectorApi._runLifecycle(method, null, tested)
+  await promise
 })
 
-tap.test('should indicate a restart and discard data after 409 errors', (t) => {
-  const agent = setupMockedAgent()
+test('should indicate a restart and discard data after 409 errors', async (t) => {
+  await beforeEach(t)
+  t.after(() => afterEach(t))
+
+  const { agent, collector, collectorApi } = t.nr
+  const { promise, resolve } = promiseResolvers()
+  collector.addHandler(helper.generateCollectorPath('metric_data', RUN_ID), (req, res) => {
+    res.writeHead(409)
+    res.end()
+  })
   agent.config.run_id = RUN_ID
-  const collectorApi = new CollectorApi(agent)
-
-  nock.disableNetConnect()
-
-  t.teardown(() => {
-    if (!nock.isDone()) {
-      /* eslint-disable no-console */
-      console.error('Cleaning pending mocks: %j', nock.pendingMocks())
-      /* eslint-enable no-console */
-      nock.cleanAll()
-    }
-
-    nock.enableNetConnect()
-    helper.unloadAgent(agent)
+  collectorApi._runLifecycle(collectorApi._methods.metric_data, null, (error, cmd) => {
+    assert.equal(error, undefined)
+    assert.equal(cmd.retainData, false)
+    assert.equal(cmd.shouldRestartRun(), true)
+    assert.equal(collector.isDone('metric_data'), true)
+    resolve()
   })
 
-  const failure = nock(URL).post(helper.generateCollectorPath('metric_data', RUN_ID)).reply(409)
-  const method = collectorApi._methods.metric_data
-  collectorApi._runLifecycle(method, null, function tested(error, command) {
-    t.error(error)
-    t.equal(command.retainData, false)
-    t.equal(command.shouldRestartRun(), true)
-
-    failure.done()
-
-    t.end()
-  })
+  await promise
 })
 
-tap.test('should stop the agent on 410 (force disconnect)', (t) => {
-  const agent = setupMockedAgent()
+test('should stop the agent on 410 (force disconnect)', async (t) => {
+  await beforeEach(t)
+  t.after(() => afterEach(t))
+
+  const { agent, collector, collectorApi } = t.nr
+  const { promise, resolve } = promiseResolvers()
+  collector.addHandler(helper.generateCollectorPath('shutdown', RUN_ID), (req, res) => {
+    res.json({ payload: { return_value: null } })
+  })
+  collector.addHandler(helper.generateCollectorPath('metric_data', RUN_ID), (req, res) => {
+    res.writeHead(410)
+    res.end()
+  })
   agent.config.run_id = RUN_ID
-  const collectorApi = new CollectorApi(agent)
-
-  nock.disableNetConnect()
-
-  t.teardown(() => {
-    if (!nock.isDone()) {
-      /* eslint-disable no-console */
-      console.error('Cleaning pending mocks: %j', nock.pendingMocks())
-      /* eslint-enable no-console */
-      nock.cleanAll()
-    }
-
-    nock.enableNetConnect()
-    helper.unloadAgent(agent)
+  collectorApi._runLifecycle(collectorApi._methods.metric_data, null, (error, cmd) => {
+    assert.equal(error, undefined)
+    assert.equal(cmd.shouldShutdownRun(), true)
+    assert.equal(collector.isDone('metric_data'), true)
+    assert.equal(collector.isDone('shutdown'), true)
+    assert.equal(agent.config.run_id, null)
+    resolve()
   })
 
-  const shutdownEndpoint = nock(URL)
-    .post(helper.generateCollectorPath('shutdown', RUN_ID))
-    .reply(200, { return_value: null })
-
-  const failure = nock(URL).post(helper.generateCollectorPath('metric_data', RUN_ID)).reply(410)
-
-  function tested(error, command) {
-    t.error(error)
-    t.equal(command.shouldShutdownRun(), true)
-
-    t.notOk(agent.config.run_id)
-
-    failure.done()
-    shutdownEndpoint.done()
-
-    t.end()
-  }
-
-  const method = collectorApi._methods.metric_data
-  collectorApi._runLifecycle(method, null, tested)
+  await promise
 })
 
-tap.test('should discard unexpected HTTP errors (501)', (t) => {
-  const agent = setupMockedAgent()
+test('should discard unexpected HTTP errors (501)', async (t) => {
+  await beforeEach(t)
+  t.after(() => afterEach(t))
+
+  const { agent, collector, collectorApi } = t.nr
+  const { promise, resolve } = promiseResolvers()
+  collector.addHandler(helper.generateCollectorPath('metric_data', RUN_ID), (req, res) => {
+    res.writeHead(501)
+    res.end()
+  })
   agent.config.run_id = RUN_ID
-  const collectorApi = new CollectorApi(agent)
-
-  nock.disableNetConnect()
-
-  t.teardown(() => {
-    if (!nock.isDone()) {
-      /* eslint-disable no-console */
-      console.error('Cleaning pending mocks: %j', nock.pendingMocks())
-      /* eslint-enable no-console */
-      nock.cleanAll()
-    }
-
-    nock.enableNetConnect()
-    helper.unloadAgent(agent)
+  collectorApi._runLifecycle(collectorApi._methods.metric_data, null, (error, cmd) => {
+    assert.equal(error, undefined)
+    assert.equal(cmd.retainData, false)
+    resolve()
   })
 
-  const failure = nock(URL).post(helper.generateCollectorPath('metric_data', RUN_ID)).reply(501)
-  const method = collectorApi._methods.metric_data
-  collectorApi._runLifecycle(method, null, function tested(error, command) {
-    t.error(error)
-    t.equal(command.retainData, false)
-
-    failure.done()
-
-    t.end()
-  })
+  await promise
 })
 
-function setupMockedAgent() {
-  const agent = helper.loadMockedAgent({
-    host: HOST,
-    port: PORT,
-    app_name: ['TEST'],
-    ssl: true,
-    license_key: 'license key here',
-    utilization: {
-      detect_aws: false,
-      detect_pcf: false,
-      detect_azure: false,
-      detect_gcp: false,
-      detect_docker: false
-    },
-    browser_monitoring: {},
-    transaction_tracer: {}
-  })
-  agent.reconfigure = function () {}
-  agent.setState = function () {}
+async function beforeEach(ctx) {
+  ctx.nr = {}
 
-  return agent
+  const collector = new Collector({ runId: RUN_ID })
+  ctx.nr.collector = collector
+  await collector.listen()
+
+  const config = Object.assign({}, baseAgentConfig, collector.agentConfig, {
+    config: { run_id: RUN_ID }
+  })
+  ctx.nr.agent = helper.loadMockedAgent(config)
+  ctx.nr.agent.reconfigure = function () {}
+  ctx.nr.agent.setState = function () {}
+
+  ctx.nr.collectorApi = new CollectorApi(ctx.nr.agent)
+}
+
+function afterEach(ctx) {
+  helper.unloadAgent(ctx.nr.agent)
+  ctx.nr.collector.close()
 }
