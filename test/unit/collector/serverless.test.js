@@ -1,87 +1,89 @@
 /*
- * Copyright 2020 New Relic Corporation. All rights reserved.
+ * Copyright 2024 New Relic Corporation. All rights reserved.
  * SPDX-License-Identifier: Apache-2.0
  */
 
 'use strict'
 
-const tap = require('tap')
-
-const os = require('os')
-const util = require('util')
-const zlib = require('zlib')
-const nock = require('nock')
-const sinon = require('sinon')
-const fs = require('fs')
-const fsOpenAsync = util.promisify(fs.open)
-const fsUnlinkAsync = util.promisify(fs.unlink)
+const test = require('node:test')
+const assert = require('node:assert')
+const fs = require('node:fs')
+const os = require('node:os')
+const path = require('node:path')
+const zlib = require('node:zlib')
 const helper = require('../../lib/agent_helper')
+
+const Collector = require('../../lib/test-collector')
 const API = require('../../../lib/collector/serverless')
 const serverfulAPI = require('../../../lib/collector/api')
-const path = require('path')
 
-tap.test('ServerlessCollector API', (t) => {
-  t.autoend()
+const RUN_ID = 1337
 
-  let api = null
-  let agent = null
+test('ServerlessCollector API', async (t) => {
+  async function beforeEach(ctx) {
+    ctx.nr = {}
 
-  function beforeTest() {
-    nock.disableNetConnect()
-    agent = helper.loadMockedAgent({
-      serverless_mode: {
-        enabled: true
-      },
+    const collector = new Collector({ runId: RUN_ID })
+    ctx.nr.collector = collector
+    await collector.listen()
+
+    const baseAgentConfig = {
+      serverless_mode: { enabled: true },
       app_name: ['TEST'],
       license_key: 'license key here'
+    }
+    const config = Object.assign({}, baseAgentConfig, collector.agentConfig, {
+      config: { run_id: RUN_ID }
     })
-    agent.reconfigure = () => {}
-    agent.setState = () => {}
-    api = new API(agent)
+
+    ctx.nr.agent = helper.loadMockedAgent(config)
+    ctx.nr.agent.reconfigure = () => {}
+    ctx.nr.agent.setState = () => {}
+
+    ctx.nr.api = new API(ctx.nr.agent)
+
     process.env.NEWRELIC_PIPE_PATH = os.devNull
   }
 
-  function afterTest() {
-    nock.enableNetConnect()
-    helper.unloadAgent(agent)
+  function afterEach(ctx) {
+    helper.unloadAgent(ctx.nr.agent)
+    ctx.nr.collector.close()
   }
 
-  t.test('has all expected methods shared with the serverful API', (t) => {
+  await t.test('has all expected methods shared with the serverful API', () => {
     const serverfulSpecificPublicMethods = new Set(['connect', 'reportSettings'])
-    const sharedMethods = Object.keys(serverfulAPI.prototype).filter((key) => {
-      return !key.startsWith('_') && !serverfulSpecificPublicMethods.has(key)
-    })
+    const sharedMethods = Object.keys(serverfulAPI.prototype).filter(
+      (key) => key.startsWith('_') === false && serverfulSpecificPublicMethods.has(key) === false
+    )
 
-    sharedMethods.forEach((method) => {
-      t.type(API.prototype[method], 'function', `${method} should exist on serverless collector`)
-    })
-
-    t.end()
+    for (const method of sharedMethods) {
+      assert.equal(
+        typeof API.prototype[method],
+        'function',
+        `${method} should exist on serverless collector`
+      )
+    }
   })
 
-  t.test('#isConnected', (t) => {
-    t.autoend()
+  await t.test('#isConnected', async (t) => {
+    t.beforeEach(beforeEach)
+    t.afterEach(afterEach)
 
-    t.beforeEach(beforeTest)
-    t.afterEach(afterTest)
-
-    t.test('returns true', (t) => {
-      t.equal(api.isConnected(), true)
-      t.end()
+    await t.test('returns true', (t) => {
+      const { api } = t.nr
+      assert.equal(api.isConnected(), true)
     })
   })
 
-  t.test('#shutdown', (t) => {
-    t.autoend()
+  await t.test('#shutdown', async (t) => {
+    t.beforeEach(beforeEach)
+    t.afterEach(afterEach)
 
-    t.beforeEach(beforeTest)
-    t.afterEach(afterTest)
-
-    t.test('enabled to false', (t) => {
-      t.equal(api.enabled, true)
+    await t.test('enabled to false', (t, end) => {
+      const { api } = t.nr
       api.shutdown(() => {
-        t.equal(api.enabled, false)
-        t.end()
+        assert.equal(api.enabled, false)
+        end()
       })
     })
   })
@@ -97,192 +99,190 @@ tap.test('ServerlessCollector API', (t) => {
     { key: 'span_event_data', name: '#spanEvents' },
     { key: 'log_event_data', name: '#logEvents' }
   ]
+  for (const testMethod of testMethods) {
+    const { key, name } = testMethod
+    await t.test(name, async (t) => {
+      t.beforeEach(beforeEach)
+      t.afterEach(afterEach)
 
-  testMethods.forEach(({ key, name }) => {
-    t.test(name, (t) => {
-      t.autoend()
-
-      t.beforeEach(beforeTest)
-      t.afterEach(afterTest)
-
-      t.test(`adds ${key} to the payload object`, (t) => {
+      await t.test(`adds ${key} to the payload object`, (t) => {
+        const { api } = t.nr
         const eventData = { type: key }
         api.send(key, eventData, () => {
-          t.same(api.payload[key], eventData)
-          t.end()
+          assert.deepStrictEqual(api.payload[key], eventData)
         })
       })
 
-      t.test(`does not add ${key} to the payload object when disabled`, (t) => {
-        api.enabled = false
+      await t.test(`does not add ${key} to the payload object when disabled`, (t) => {
+        const { api } = t.nr
         const eventData = { type: key }
+        api.enabled = false
         api.send(key, eventData, () => {
-          t.same(api.payload[key], null)
-          t.end()
+          assert.equal(api.payload[key], null)
         })
       })
     })
-  })
+  }
 
-  t.test('#flushPayloadSync', (t) => {
-    t.autoend()
+  await t.test('#flushPayloadSync', async (t) => {
+    t.beforeEach(beforeEach)
+    t.afterEach(afterEach)
 
-    t.beforeEach(beforeTest)
-    t.afterEach(afterTest)
-
-    t.test('should base64 encode the gzipped payload synchronously', (t) => {
-      const testPayload = {
-        someKey: 'someValue',
-        buyOne: 'getOne'
-      }
+    await t.test('should base64 encode the gzipped payload synchronously', (t) => {
+      const { api } = t.nr
+      const testPayload = { someKey: 'someValue', buyOne: 'getOne' }
       api.payload = testPayload
-      const oldDoFlush = api.constructor.prototype._doFlush
+
+      // const oldDoFlush = api.constructor.prototype._doFlush
+      // t.after(() => {
+      //   api.constructor.prototype._doFlush = oldDoFlush
+      // })
+
+      let flushed = false
       api._doFlush = function testFlush(data) {
         const decoded = JSON.parse(zlib.gunzipSync(Buffer.from(data, 'base64')))
-        t.ok(decoded.metadata)
-        t.ok(decoded.data)
-        t.same(decoded.data, testPayload)
+        assert.notEqual(decoded.metadata, undefined)
+        assert.notEqual(decoded.data, undefined)
+        assert.deepStrictEqual(decoded.data, testPayload)
+        flushed = true
       }
       api.flushPayloadSync()
-      t.equal(Object.keys(api.payload).length, 0)
-      api.constructor.prototype._doFlush = oldDoFlush
-
-      t.end()
+      assert.equal(Object.keys(api.payload).length, 0)
+      assert.equal(flushed, true)
     })
   })
 
-  t.test('#flushPayload', (t) => {
-    t.autoend()
+  await t.test('#flushPayload', async (t) => {
+    t.beforeEach(async (ctx) => {
+      await beforeEach(ctx)
 
-    let outputSpy = null
-
-    t.beforeEach(() => {
-      // We're using NEWRELIC_PIPE_PATH to output to /dev/null so
-      // let's check that we are writing to the device.
-      outputSpy = sinon.spy(fs, 'writeFileSync')
-
-      beforeTest()
+      ctx.nr.writeSync = fs.writeFileSync
+      ctx.nr.outFile = null
+      ctx.nr.outData = null
+      fs.writeFileSync = (dest, payload) => {
+        ctx.nr.outFile = dest
+        ctx.nr.outData = JSON.parse(payload)
+        ctx.nr.writeSync(dest, payload)
+      }
+    })
+    t.afterEach((ctx) => {
+      afterEach(ctx)
+      fs.writeFileSync = ctx.nr.writeSync
     })
 
-    t.afterEach(() => {
-      outputSpy.restore()
-
-      afterTest()
-    })
-
-    t.test('compresses full payload and writes formatted to stdout', (t) => {
+    await t.test('compresses full payload and writes formatted to stdout', (t, end) => {
+      const { api } = t.nr
       api.payload = { type: 'test payload' }
-
       api.flushPayload(() => {
-        const logPayload = JSON.parse(outputSpy.args[0][1])
-
-        t.type(logPayload, Array)
-        t.type(logPayload[0], 'number')
-
-        t.equal(logPayload[1], 'NR_LAMBDA_MONITORING')
-        t.type(logPayload[2], 'string')
-
-        t.end()
+        const { outFile, outData } = t.nr
+        assert.equal(outFile, '/dev/null')
+        assert.equal(Array.isArray(outData), true)
+        assert.equal(outData[0], 1)
+        assert.equal(outData[1], 'NR_LAMBDA_MONITORING')
+        assert.equal(typeof outData[2], 'string')
+        end()
       })
     })
 
-    t.test('handles very large payload and writes formatted to stdout', (t) => {
+    await t.test('handles very large payload and writes formatted to stdout', (t, end) => {
+      const { api } = t.nr
       api.payload = { type: 'test payload' }
-      for (let i = 0; i < 4096; i++) {
-        api.payload[`customMetric${i}`] = Math.floor(Math.random() * 100000)
+      for (let i = 0; i < 4096; i += 1) {
+        api.payload[`customMetric${i}`] = Math.floor(Math.random() * 100_000)
       }
 
       api.flushPayload(() => {
-        let logPayload = null
-
-        logPayload = JSON.parse(outputSpy.args[0][1])
-
-        const buf = Buffer.from(logPayload[2], 'base64')
-
-        zlib.gunzip(buf, (err, unpack) => {
-          t.error(err)
-          const payload = JSON.parse(unpack)
-          t.ok(payload.data)
-          t.ok(Object.keys(payload.data).length > 4000)
-          t.end()
+        const { outData } = t.nr
+        const buf = Buffer.from(outData[2], 'base64')
+        zlib.gunzip(buf, (error, unpacked) => {
+          assert.equal(error, undefined)
+          const payload = JSON.parse(unpacked)
+          assert.notEqual(payload.data, undefined)
+          assert.equal(Object.keys(payload.data).length > 4000, true)
+          end()
         })
       })
     })
   })
 })
 
-tap.test('ServerlessCollector with output to custom pipe', (t) => {
-  t.autoend()
+test('ServerlessCollector with output to custom pipe', async (t) => {
+  t.beforeEach(async (ctx) => {
+    ctx.nr = {}
 
-  const customPath = path.resolve('/tmp', 'custom-output')
-
-  let api = null
-  let agent = null
-  let writeFileSyncStub = null
-
-  t.beforeEach(async () => {
-    nock.disableNetConnect()
-
-    process.env.NEWRELIC_PIPE_PATH = customPath
-    const fd = await fsOpenAsync(customPath, 'w')
-    if (!fd) {
-      throw new Error('fd is null')
+    const uniqueId = Math.floor(Math.random() * 100) + '-' + Date.now()
+    ctx.nr.destPath = path.join(os.tmpdir(), `custom-output-${uniqueId}`)
+    ctx.nr.destFD = await fs.promises.open(ctx.nr.destPath, 'w')
+    if (!ctx.nr.destFD) {
+      throw Error('fd is null')
     }
+    process.env.NEWRELIC_PIPE_PATH = ctx.nr.destPath
 
-    agent = helper.loadMockedAgent({
-      serverless_mode: {
-        enabled: true
-      },
+    const collector = new Collector({ runId: RUN_ID })
+    ctx.nr.collector = collector
+    await collector.listen()
+
+    const baseAgentConfig = {
+      serverless_mode: { enabled: true },
       app_name: ['TEST'],
       license_key: 'license key here',
-      NEWRELIC_PIPE_PATH: customPath
+      NEWRELIC_PIPE_PATH: ctx.nr.destPath
+    }
+    const config = Object.assign({}, baseAgentConfig, collector.agentConfig, {
+      config: { run_id: RUN_ID }
     })
-    agent.reconfigure = () => {}
-    agent.setState = () => {}
-    api = new API(agent)
 
-    writeFileSyncStub = sinon.stub(fs, 'writeFileSync').callsFake(() => {})
+    ctx.nr.agent = helper.loadMockedAgent(config)
+    ctx.nr.agent.reconfigure = () => {}
+    ctx.nr.agent.setState = () => {}
+
+    ctx.nr.api = new API(ctx.nr.agent)
+
+    ctx.nr.writeSync = fs.writeFileSync
+    ctx.nr.outFile = null
+    ctx.nr.outData = null
+    fs.writeFileSync = (dest, payload) => {
+      ctx.nr.outFile = dest
+      ctx.nr.outData = JSON.parse(payload)
+      ctx.nr.writeSync(dest, payload)
+    }
   })
 
-  t.afterEach(async () => {
-    nock.enableNetConnect()
-    helper.unloadAgent(agent)
-
-    writeFileSyncStub.restore()
-
-    await fsUnlinkAsync(customPath)
+  t.afterEach(async (ctx) => {
+    helper.unloadAgent(ctx.nr.agent)
+    ctx.nr.collector.close()
+    fs.writeFileSync = ctx.nr.writeSync
+    await fs.promises.unlink(ctx.nr.destPath)
   })
 
-  t.test('compresses full payload and writes formatted to stdout', (t) => {
+  await t.test('compresses full payload and writes formatted to stdout', (t, end) => {
+    const { api } = t.nr
     api.payload = { type: 'test payload' }
     api.flushPayload(() => {
-      const writtenPayload = JSON.parse(writeFileSyncStub.args[0][1])
-
-      t.type(writtenPayload, Array)
-      t.type(writtenPayload[0], 'number')
-      t.equal(writtenPayload[1], 'NR_LAMBDA_MONITORING')
-      t.type(writtenPayload[2], 'string')
-
-      t.end()
+      const { outData } = t.nr
+      assert.equal(Array.isArray(outData), true)
+      assert.equal(outData[0], 1)
+      assert.equal(outData[1], 'NR_LAMBDA_MONITORING')
+      assert.equal(typeof outData[2], 'string')
+      end()
     })
   })
 
-  t.test('handles very large payload and writes formatted to stdout', (t) => {
-    api.payload = { type: 'test payload' }
-    for (let i = 0; i < 4096; i++) {
-      api.payload[`customMetric${i}`] = Math.floor(Math.random() * 100000)
+  await t.test('handles very large payload and writes formatted to stdout', (t, end) => {
+    const { api } = t.nr
+    for (let i = 0; i < 4096; i += 1) {
+      api.payload[`customMetric${i}`] = Math.floor(Math.random() * 100_000)
     }
 
     api.flushPayload(() => {
-      const writtenPayload = JSON.parse(writeFileSyncStub.getCall(0).args[1])
-      const buf = Buffer.from(writtenPayload[2], 'base64')
-
-      zlib.gunzip(buf, (err, unpack) => {
-        t.error(err)
-        const payload = JSON.parse(unpack)
-        t.ok(payload.data)
-        t.ok(Object.keys(payload.data).length > 4000, `expected to be > 4000`)
-        t.end()
+      const { outData } = t.nr
+      const buf = Buffer.from(outData[2], 'base64')
+      zlib.gunzip(buf, (error, unpacked) => {
+        assert.equal(error, undefined)
+        const payload = JSON.parse(unpacked)
+        assert.notEqual(payload.data, undefined)
+        assert.equal(Object.keys(payload.data).length > 4000, true, 'expected to be > 4000')
+        end()
       })
     })
   })
