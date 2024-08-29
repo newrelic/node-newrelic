@@ -133,11 +133,6 @@ test('ServerlessCollector API', async (t) => {
       const testPayload = { someKey: 'someValue', buyOne: 'getOne' }
       api.payload = testPayload
 
-      // const oldDoFlush = api.constructor.prototype._doFlush
-      // t.after(() => {
-      //   api.constructor.prototype._doFlush = oldDoFlush
-      // })
-
       let flushed = false
       api._doFlush = function testFlush(data) {
         const decoded = JSON.parse(zlib.gunzipSync(Buffer.from(data, 'base64')))
