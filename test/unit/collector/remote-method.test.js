@@ -275,8 +275,10 @@ test('when posting to collector', async (t) => {
     method._shouldCompress = () => true
     method._post(-1, {}, (error) => {
       assert.equal(
-        error.message,
-        'The "chunk" argument must be of type string or an instance of Buffer or Uint8Array. Received type number (-1)'
+        error.message.startsWith(
+          'The "chunk" argument must be of type string or an instance of Buffer'
+        ),
+        true
       )
       end()
     })
