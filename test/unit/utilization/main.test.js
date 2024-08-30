@@ -4,17 +4,16 @@
  */
 
 'use strict'
-const { test } = require('tap')
+const test = require('node:test')
+const assert = require('node:assert')
 const helper = require('../../lib/agent_helper.js')
 const proxyquire = require('proxyquire')
 
-test('getVendors', function (t) {
-  t.autoend()
-  let agent
-
-  t.beforeEach(function () {
-    agent = helper.loadMockedAgent()
-    agent.config.utilization = {
+test('getVendors', async function (t) {
+  t.beforeEach(function (ctx) {
+    ctx.nr = {}
+    ctx.nr.agent = helper.loadMockedAgent()
+    ctx.nr.agent.config.utilization = {
       detect_aws: true,
       detect_azure: true,
       detect_gcp: true,
@@ -24,11 +23,12 @@ test('getVendors', function (t) {
     }
   })
 
-  t.afterEach(function () {
-    helper.unloadAgent(agent)
+  t.afterEach(function (ctx) {
+    helper.unloadAgent(ctx.nr.agent)
   })
 
-  t.test('calls all vendors', function (t) {
+  await t.test('calls all vendors', function (ctx, end) {
+    const { agent } = ctx.nr
     let awsCalled = false
     let azureCalled = false
     let gcpCalled = false
@@ -66,18 +66,19 @@ test('getVendors', function (t) {
     }).getVendors
 
     getVendors(agent, function (err) {
-      t.error(err)
-      t.ok(awsCalled)
-      t.ok(azureCalled)
-      t.ok(gcpCalled)
-      t.ok(dockerCalled)
-      t.ok(kubernetesCalled)
-      t.ok(pcfCalled)
-      t.end()
+      assert.ifError(err)
+      assert.ok(awsCalled)
+      assert.ok(azureCalled)
+      assert.ok(gcpCalled)
+      assert.ok(dockerCalled)
+      assert.ok(kubernetesCalled)
+      assert.ok(pcfCalled)
+      end()
     })
   })
 
-  t.test('returns multiple vendors if available', function (t) {
+  await t.test('returns multiple vendors if available', function (ctx, end) {
+    const { agent } = ctx.nr
     const getVendors = proxyquire('../../../lib/utilization', {
       './aws-info': function (agentArg, cb) {
         cb(null, 'aws info')
@@ -90,10 +91,10 @@ test('getVendors', function (t) {
     }).getVendors
 
     getVendors(agent, function (err, vendors) {
-      t.error(err)
-      t.equal(vendors.aws, 'aws info')
-      t.equal(vendors.docker, 'docker info')
-      t.end()
+      assert.ifError(err)
+      assert.equal(vendors.aws, 'aws info')
+      assert.equal(vendors.docker, 'docker info')
+      end()
     })
   })
 })

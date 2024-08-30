@@ -5,14 +5,13 @@
 
 'use strict'
 
-const tap = require('tap')
+const test = require('node:test')
+const assert = require('node:assert')
 const sinon = require('sinon')
 const proxyquire = require('proxyquire').noPreserveCache()
 const EventEmitter = require('events').EventEmitter
 
-tap.test('Bootstrapped Logger', (t) => {
-  t.autoend()
-
+test('Bootstrapped Logger', async (t) => {
   let fakeLoggerConfigure
   let fakeStreamPipe
   let fakeLogger
@@ -46,7 +45,7 @@ tap.test('Bootstrapped Logger', (t) => {
     global.console.error = originalConsoleError
   })
 
-  t.test('should instantiate a new logger (logging enabled + filepath)', (t) => {
+  await t.test('should instantiate a new logger (logging enabled + filepath)', () => {
     proxyquire('../../../lib/logger', {
       './util/logger': fakeLogger,
       './util/unwrapped-core': { fs: fakeFS },
@@ -61,7 +60,7 @@ tap.test('Bootstrapped Logger', (t) => {
       }
     })
 
-    t.ok(
+    assert.ok(
       fakeLogger.calledOnceWithExactly({
         name: 'newrelic_bootstrap',
         level: 'info',
@@ -70,7 +69,7 @@ tap.test('Bootstrapped Logger', (t) => {
       'should bootstrap sub-logger'
     )
 
-    t.ok(
+    assert.ok(
       fakeLoggerConfigure.calledOnceWithExactly({
         name: 'newrelic',
         level: 'debug',
@@ -79,12 +78,12 @@ tap.test('Bootstrapped Logger', (t) => {
       'should call logger.configure with config options'
     )
 
-    t.ok(
+    assert.ok(
       fakeFS.createWriteStream.calledOnceWithExactly('/foo/bar/baz', { flags: 'a+', mode: 0o600 }),
       'should create a new write stream to specific file'
     )
 
-    t.ok(
+    assert.ok(
       fakeStreamPipe.calledOnceWithExactly(testEmitter),
       'should use a new write stream for output'
     )
@@ -92,20 +91,18 @@ tap.test('Bootstrapped Logger', (t) => {
     const expectedError = new Error('stuff blew up')
     testEmitter.emit('error', expectedError)
 
-    t.ok(
+    assert.ok(
       testEmitterSpy.calledOnceWith('error'),
       'should handle errors emitted from the write stream'
     )
-    t.ok(
+    assert.ok(
       global.console.error.calledWith('New Relic failed to open log file /foo/bar/baz'),
       'should log filepath when error occurs'
     )
-    t.ok(global.console.error.calledWith(expectedError), 'should log error when it occurs')
-
-    t.end()
+    assert.ok(global.console.error.calledWith(expectedError), 'should log error when it occurs')
   })
 
-  t.test('should instantiate a new logger (logging enabled + stderr)', (t) => {
+  await t.test('should instantiate a new logger (logging enabled + stderr)', () => {
     proxyquire('../../../lib/logger', {
       './util/logger': fakeLogger,
       './util/unwrapped-core': { fs: fakeFS },
@@ -120,15 +117,13 @@ tap.test('Bootstrapped Logger', (t) => {
       }
     })
 
-    t.ok(
+    assert.ok(
       fakeStreamPipe.calledOnceWithExactly(process.stderr),
       'should use process.stderr for output'
     )
-
-    t.end()
   })
 
-  t.test('should instantiate a new logger (logging enabled + stdout)', (t) => {
+  await t.test('should instantiate a new logger (logging enabled + stdout)', () => {
     proxyquire('../../../lib/logger', {
       './util/logger': fakeLogger,
       './util/unwrapped-core': { fs: fakeFS },
@@ -143,15 +138,13 @@ tap.test('Bootstrapped Logger', (t) => {
       }
     })
 
-    t.ok(
+    assert.ok(
       fakeStreamPipe.calledOnceWithExactly(process.stdout),
       'should use process.stdout for output'
     )
-
-    t.end()
   })
 
-  t.test('should instantiate a new logger (logging disabled)', (t) => {
+  await t.test('should instantiate a new logger (logging disabled)', () => {
     proxyquire('../../../lib/logger', {
       './util/logger': fakeLogger,
       './util/unwrapped-core': { fs: fakeFS },
@@ -166,7 +159,7 @@ tap.test('Bootstrapped Logger', (t) => {
       }
     })
 
-    t.ok(
+    assert.ok(
       fakeLoggerConfigure.calledOnceWithExactly({
         name: 'newrelic',
         level: 'debug',
@@ -175,12 +168,10 @@ tap.test('Bootstrapped Logger', (t) => {
       'should call logger.configure with config options'
     )
 
-    t.notOk(fakeStreamPipe.called, 'should not call pipe when logging is disabled')
-
-    t.end()
+    assert.ok(!fakeStreamPipe.called, 'should not call pipe when logging is disabled')
   })
 
-  t.test('should instantiate a new logger (no config)', (t) => {
+  await t.test('should instantiate a new logger (no config)', () => {
     proxyquire('../../../lib/logger', {
       './util/logger': fakeLogger,
       './util/unwrapped-core': { fs: fakeFS },
@@ -189,8 +180,6 @@ tap.test('Bootstrapped Logger', (t) => {
       }
     })
 
-    t.notOk(fakeLoggerConfigure.called, 'should not call logger.configure')
-
-    t.end()
+    assert.ok(!fakeLoggerConfigure.called, 'should not call logger.configure')
   })
 })
