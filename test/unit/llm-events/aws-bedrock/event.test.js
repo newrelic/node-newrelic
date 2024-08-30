@@ -5,29 +5,33 @@
 
 'use strict'
 
-const tap = require('tap')
+const test = require('node:test')
+const assert = require('node:assert')
 const {
   DESTINATIONS: { TRANS_SCOPE }
 } = require('../../../../lib/config/attribute-filter')
 const LlmEvent = require('../../../../lib/llm-events/aws-bedrock/event')
 
-tap.beforeEach((t) => {
-  t.context.agent = {
-    config: {
-      applications() {
-        return ['test-app']
-      }
-    },
-    tracer: {
-      getTransaction() {
-        return {
-          trace: {
-            custom: {
-              get(key) {
-                t.equal(key, TRANS_SCOPE)
-                return {
-                  ['llm.conversation_id']: 'conversation-1',
-                  omit: 'me'
+test('all tests', async (t) => {
+  t.beforeEach((ctx) => {
+    ctx.nr = {}
+    ctx.nr.agent = {
+      config: {
+        applications() {
+          return ['test-app']
+        }
+      },
+      tracer: {
+        getTransaction() {
+          return {
+            trace: {
+              custom: {
+                get(key) {
+                  assert.equal(key, TRANS_SCOPE)
+                  return {
+                    ['llm.conversation_id']: 'conversation-1',
+                    omit: 'me'
+                  }
                 }
               }
             }
@@ -35,46 +39,45 @@ tap.beforeEach((t) => {
         }
       }
     }
-  }
 
-  t.context.segment = {
-    id: 'segment-1',
-    transaction: {
-      traceId: 'trace-1'
+    ctx.nr.segment = {
+      id: 'segment-1',
+      transaction: {
+        traceId: 'trace-1'
+      }
     }
-  }
 
-  t.context.bedrockResponse = {
-    requestId: 'request-1'
-  }
+    ctx.nr.bedrockResponse = {
+      requestId: 'request-1'
+    }
 
-  t.context.bedrockCommand = {
-    modelId: 'model-1'
-  }
-})
+    ctx.nr.bedrockCommand = {
+      modelId: 'model-1'
+    }
+  })
 
-tap.test('create creates a new instance', async (t) => {
-  const event = new LlmEvent(t.context)
-  t.ok(event)
-  t.match(event.id, /[a-z0-9]{7}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{12}/)
-  t.equal(event.vendor, 'bedrock')
-  t.equal(event.ingest_source, 'Node')
-  t.equal(event.appName, 'test-app')
-  t.equal(event.span_id, 'segment-1')
-  t.equal(event.trace_id, 'trace-1')
-  t.equal(event.request_id, 'request-1')
-  t.equal(event['response.model'], 'model-1')
-  t.equal(event['request.model'], 'model-1')
-  t.equal(event['request.max_tokens'], null)
-  t.equal(event['llm.conversation_id'], 'conversation-1')
-  t.equal(event.omit, undefined)
-})
+  await t.test('create creates a new instance', async (ctx) => {
+    const event = new LlmEvent(ctx.nr)
+    assert.ok(event)
+    assert.match(event.id, /[a-z0-9]{7}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{12}/)
+    assert.equal(event.vendor, 'bedrock')
+    assert.equal(event.ingest_source, 'Node')
+    assert.equal(event.appName, 'test-app')
+    assert.equal(event.span_id, 'segment-1')
+    assert.equal(event.trace_id, 'trace-1')
+    assert.equal(event.request_id, 'request-1')
+    assert.equal(event['response.model'], 'model-1')
+    assert.equal(event['request.model'], 'model-1')
+    assert.equal(event['request.max_tokens'], null)
+    assert.equal(event['llm.conversation_id'], 'conversation-1')
+    assert.equal(event.omit, undefined)
+  })
 
-tap.test('serializes the event', (t) => {
-  const event = new LlmEvent(t.context)
-  event.serialize()
-  t.notOk(event.bedrockCommand)
-  t.notOk(event.bedrockResponse)
-  t.notOk(event.constructionParams)
-  t.end()
+  await t.test('serializes the event', (ctx) => {
+    const event = new LlmEvent(ctx.nr)
+    event.serialize()
+    assert.ok(!event.bedrockCommand)
+    assert.ok(!event.bedrockResponse)
+    assert.ok(!event.constructionParams)
+  })
 })

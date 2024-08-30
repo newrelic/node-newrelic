@@ -5,325 +5,333 @@
 
 'use strict'
 
-const tap = require('tap')
+const test = require('node:test')
+const assert = require('node:assert')
 const {
   BedrockCommand,
   BedrockResponse,
   StreamHandler
 } = require('../../../../lib/llm-events/aws-bedrock')
 
-tap.beforeEach((t) => {
-  t.context.response = {
-    response: {
-      headers: {
-        'x-amzn-requestid': 'aws-req-1'
+test('all tests', async (t) => {
+  t.beforeEach((ctx) => {
+    ctx.nr = {}
+    ctx.nr.response = {
+      response: {
+        headers: {
+          'x-amzn-requestid': 'aws-req-1'
+        },
+        statusCode: 200
       },
-      statusCode: 200
-    },
-    output: {
-      body: {}
-    }
-  }
-
-  t.context.passThroughParams = {
-    response: t.context.response,
-    segment: {
-      touch() {
-        t.pass()
-      }
-    },
-    bedrockCommand: {
-      isCohere() {
-        return false
-      },
-      isCohereEmbed() {
-        return false
-      },
-      isClaude() {
-        return false
-      },
-      isClaude3() {
-        return false
-      },
-      isLlama() {
-        return false
-      },
-      isTitan() {
-        return false
+      output: {
+        body: {}
       }
     }
-  }
 
-  t.context.onComplete = (params) => {
-    t.same(params, t.context.passThroughParams)
-  }
-
-  t.context.chunks = [{ foo: 'foo' }]
-
-  /* eslint-disable prettier/prettier */ // It doesn't like the IIFE syntax
-  t.context.stream = (async function* originalStream() {
-    const encoder = new TextEncoder()
-    for (const chunk of t.context.chunks) {
-      const json = JSON.stringify(chunk)
-      const bytes = encoder.encode(json)
-      yield { chunk: { bytes } }
-    }
-  }())
-  /* eslint-enable prettier/prettier */
-})
-
-tap.test('unrecognized or unhandled model uses original stream', async (t) => {
-  t.context.modelId = 'amazon.titan-embed-text-v1'
-  const handler = new StreamHandler(t.context)
-  t.equal(handler.generator.name, undefined)
-  t.equal(handler.generator, t.context.stream)
-})
-
-tap.test('handles claude streams', async (t) => {
-  t.context.passThroughParams.bedrockCommand.isClaude = () => true
-  t.context.chunks = [
-    { completion: '1', stop_reason: null },
-    { completion: '2', stop_reason: 'done', ...t.context.metrics }
-  ]
-  const handler = new StreamHandler(t.context)
-
-  t.equal(handler.generator.name, 'handleClaude')
-  for await (const event of handler.generator()) {
-    t.type(event.chunk.bytes, Uint8Array)
-  }
-  t.same(handler.response, {
-    response: {
-      headers: {
-        'x-amzn-requestid': 'aws-req-1'
+    ctx.nr.passThroughParams = {
+      response: ctx.nr.response,
+      segment: {
+        touch() {
+          assert.ok(true)
+        }
       },
-      statusCode: 200
-    },
-    output: {
-      body: new TextEncoder().encode(JSON.stringify({ completion: '12', stop_reason: 'done' }))
+      bedrockCommand: {
+        isCohere() {
+          return false
+        },
+        isCohereEmbed() {
+          return false
+        },
+        isClaude() {
+          return false
+        },
+        isClaude3() {
+          return false
+        },
+        isLlama() {
+          return false
+        },
+        isTitan() {
+          return false
+        }
+      }
     }
+
+    ctx.nr.onComplete = (params) => {
+      assert.deepStrictEqual(params, ctx.nr.passThroughParams)
+    }
+
+    ctx.nr.chunks = [{ foo: 'foo' }]
+
+    /* eslint-disable prettier/prettier */ // It doesn't like the IIFE syntax
+    ctx.nr.stream = (async function* originalStream() {
+      const encoder = new TextEncoder()
+      for (const chunk of ctx.nr.chunks) {
+        const json = JSON.stringify(chunk)
+        const bytes = encoder.encode(json)
+        yield { chunk: { bytes } }
+      }
+    }())
+    /* eslint-enable prettier/prettier */
   })
 
-  const bc = new BedrockCommand({
-    modelId: 'anthropic.claude-v1',
-    body: JSON.stringify({
-      prompt: 'prompt',
-      maxTokens: 5
-    })
+  await t.test('unrecognized or unhandled model uses original stream', async (ctx) => {
+    ctx.nr.modelId = 'amazon.titan-embed-text-v1'
+    const handler = new StreamHandler(ctx.nr)
+    assert.equal(handler.generator.name, undefined)
+    assert.equal(handler.generator, ctx.nr.stream)
   })
-  const br = new BedrockResponse({ bedrockCommand: bc, response: handler.response })
-  t.equal(br.completions.length, 1)
-  t.equal(br.finishReason, 'done')
-  t.equal(br.requestId, 'aws-req-1')
-  t.equal(br.statusCode, 200)
-})
 
-tap.test('handles claude3streams', async (t) => {
-  t.context.passThroughParams.bedrockCommand.isClaude3 = () => true
-  t.context.chunks = [
-    { type: 'content_block_delta', delta: { type: 'text_delta', text: '42' } },
-    { type: 'message_delta', delta: { stop_reason: 'done' } },
-    { type: 'message_stop', ...t.context.metrics }
-  ]
-  const handler = new StreamHandler(t.context)
+  await t.test('handles claude streams', async (ctx) => {
+    ctx.nr.passThroughParams.bedrockCommand.isClaude = () => true
+    ctx.nr.chunks = [
+      { completion: '1', stop_reason: null },
+      { completion: '2', stop_reason: 'done', ...ctx.nr.metrics }
+    ]
+    const handler = new StreamHandler(ctx.nr)
 
-  t.equal(handler.generator.name, 'handleClaude3')
-  for await (const event of handler.generator()) {
-    t.type(event.chunk.bytes, Uint8Array)
-  }
-  const foundBody = JSON.parse(new TextDecoder().decode(handler.response.output.body))
-  t.same(foundBody, { completions: ['42'], stop_reason: 'done', type: 'message_stop' })
-
-  const bc = new BedrockCommand({
-    modelId: 'anthropic.claude-3-haiku-20240307-v1:0',
-    body: JSON.stringify({
-      messages: [{ content: 'prompt' }],
-      maxTokens: 5
-    })
-  })
-  const br = new BedrockResponse({ bedrockCommand: bc, response: handler.response })
-  t.equal(br.completions.length, 1)
-  t.equal(br.finishReason, 'done')
-  t.equal(br.requestId, 'aws-req-1')
-  t.equal(br.statusCode, 200)
-})
-
-tap.test('handles cohere streams', async (t) => {
-  t.context.passThroughParams.bedrockCommand.isCohere = () => true
-  t.context.chunks = [
-    { generations: [{ text: '1', finish_reason: null }] },
-    { generations: [{ text: '2', finish_reason: 'done' }], ...t.context.metrics }
-  ]
-  const handler = new StreamHandler(t.context)
-
-  t.equal(handler.generator.name, 'handleCohere')
-  for await (const event of handler.generator()) {
-    t.type(event.chunk.bytes, Uint8Array)
-  }
-  t.same(handler.response, {
-    response: {
-      headers: {
-        'x-amzn-requestid': 'aws-req-1'
+    assert.equal(handler.generator.name, 'handleClaude')
+    for await (const event of handler.generator()) {
+      assert.equal(event.chunk.bytes.constructor, Uint8Array)
+    }
+    assert.deepStrictEqual(handler.response, {
+      response: {
+        headers: {
+          'x-amzn-requestid': 'aws-req-1'
+        },
+        statusCode: 200
       },
-      statusCode: 200
-    },
-    output: {
-      body: new TextEncoder().encode(
-        JSON.stringify({
-          generations: [
-            { text: '1', finish_reason: null },
-            { text: '2', finish_reason: 'done' }
-          ]
-        })
-      )
-    }
-  })
-
-  const bc = new BedrockCommand({
-    modelId: 'cohere.',
-    body: JSON.stringify({
-      texts: ['prompt'],
-      max_tokens: 5
-    })
-  })
-  const br = new BedrockResponse({ bedrockCommand: bc, response: handler.response })
-  t.equal(br.completions.length, 2)
-  t.equal(br.finishReason, 'done')
-  t.equal(br.requestId, 'aws-req-1')
-  t.equal(br.statusCode, 200)
-})
-
-tap.test('handles cohere embedding streams', async (t) => {
-  t.context.passThroughParams.bedrockCommand.isCohereEmbed = () => true
-  t.context.chunks = [
-    {
-      embeddings: [
-        [1, 2],
-        [3, 4]
-      ],
-      ...t.context.metrics
-    }
-  ]
-  const handler = new StreamHandler(t.context)
-
-  t.equal(handler.generator.name, 'handleCohereEmbed')
-  for await (const event of handler.generator()) {
-    t.type(event.chunk.bytes, Uint8Array)
-  }
-  t.same(handler.response, {
-    response: {
-      headers: {
-        'x-amzn-requestid': 'aws-req-1'
-      },
-      statusCode: 200
-    },
-    output: {
-      body: new TextEncoder().encode(
-        JSON.stringify({
-          embeddings: [
-            [1, 2],
-            [3, 4]
-          ]
-        })
-      )
-    }
-  })
-
-  const bc = new BedrockCommand({
-    modelId: 'cohere.',
-    body: JSON.stringify({
-      texts: ['prompt'],
-      max_tokens: 5
-    })
-  })
-  const br = new BedrockResponse({ bedrockCommand: bc, response: handler.response })
-  t.equal(br.completions.length, 0)
-  t.equal(br.finishReason, undefined)
-  t.equal(br.requestId, 'aws-req-1')
-  t.equal(br.statusCode, 200)
-})
-
-tap.test('handles llama streams', async (t) => {
-  t.context.passThroughParams.bedrockCommand.isLlama = () => true
-  t.context.chunks = [
-    { generation: '1', stop_reason: null },
-    { generation: '2', stop_reason: 'done', ...t.context.metrics }
-  ]
-  const handler = new StreamHandler(t.context)
-
-  t.equal(handler.generator.name, 'handleLlama')
-  for await (const event of handler.generator()) {
-    t.type(event.chunk.bytes, Uint8Array)
-  }
-  t.same(handler.response, {
-    response: {
-      headers: {
-        'x-amzn-requestid': 'aws-req-1'
-      },
-      statusCode: 200
-    },
-    output: {
-      body: new TextEncoder().encode(JSON.stringify({ generation: '12', stop_reason: 'done' }))
-    }
-  })
-
-  const bc = new BedrockCommand({
-    modelId: 'meta.llama',
-    body: JSON.stringify({
-      prompt: 'prompt',
-      max_gen_length: 5
-    })
-  })
-  const br = new BedrockResponse({ bedrockCommand: bc, response: handler.response })
-  t.equal(br.completions.length, 1)
-  t.equal(br.finishReason, 'done')
-  t.equal(br.requestId, 'aws-req-1')
-  t.equal(br.statusCode, 200)
-})
-
-tap.test('handles titan streams', async (t) => {
-  t.context.passThroughParams.bedrockCommand.isTitan = () => true
-  t.context.chunks = [
-    { outputText: '1', completionReason: null },
-    { outputText: '2', completionReason: 'done', ...t.context.metrics }
-  ]
-  const handler = new StreamHandler(t.context)
-
-  t.equal(handler.generator.name, 'handleTitan')
-  for await (const event of handler.generator()) {
-    t.type(event.chunk.bytes, Uint8Array)
-  }
-  t.same(handler.response, {
-    response: {
-      headers: {
-        'x-amzn-requestid': 'aws-req-1'
-      },
-      statusCode: 200
-    },
-    output: {
-      body: new TextEncoder().encode(
-        JSON.stringify({
-          results: [
-            { outputText: '1', completionReason: null },
-            { outputText: '2', completionReason: 'done' }
-          ]
-        })
-      )
-    }
-  })
-
-  const bc = new BedrockCommand({
-    modelId: 'amazon.titan',
-    body: JSON.stringify({
-      inputText: 'prompt',
-      textGenerationConfig: {
-        maxTokenCount: 5,
-        temperature: 0.5
+      output: {
+        body: new TextEncoder().encode(JSON.stringify({ completion: '12', stop_reason: 'done' }))
       }
     })
+
+    const bc = new BedrockCommand({
+      modelId: 'anthropic.claude-v1',
+      body: JSON.stringify({
+        prompt: 'prompt',
+        maxTokens: 5
+      })
+    })
+    const br = new BedrockResponse({ bedrockCommand: bc, response: handler.response })
+    assert.equal(br.completions.length, 1)
+    assert.equal(br.finishReason, 'done')
+    assert.equal(br.requestId, 'aws-req-1')
+    assert.equal(br.statusCode, 200)
   })
-  const br = new BedrockResponse({ bedrockCommand: bc, response: handler.response })
-  t.equal(br.completions.length, 2)
-  t.equal(br.finishReason, 'done')
-  t.equal(br.requestId, 'aws-req-1')
-  t.equal(br.statusCode, 200)
+
+  await t.test('handles claude3streams', async (ctx) => {
+    ctx.nr.passThroughParams.bedrockCommand.isClaude3 = () => true
+    ctx.nr.chunks = [
+      { type: 'content_block_delta', delta: { type: 'text_delta', text: '42' } },
+      { type: 'message_delta', delta: { stop_reason: 'done' } },
+      { type: 'message_stop', ...ctx.nr.metrics }
+    ]
+    const handler = new StreamHandler(ctx.nr)
+
+    assert.equal(handler.generator.name, 'handleClaude3')
+    for await (const event of handler.generator()) {
+      assert.equal(event.chunk.bytes.constructor, Uint8Array)
+    }
+    const foundBody = JSON.parse(new TextDecoder().decode(handler.response.output.body))
+    assert.deepStrictEqual(foundBody, {
+      completions: ['42'],
+      stop_reason: 'done',
+      type: 'message_stop'
+    })
+
+    const bc = new BedrockCommand({
+      modelId: 'anthropic.claude-3-haiku-20240307-v1:0',
+      body: JSON.stringify({
+        messages: [{ content: 'prompt' }],
+        maxTokens: 5
+      })
+    })
+    const br = new BedrockResponse({ bedrockCommand: bc, response: handler.response })
+    assert.equal(br.completions.length, 1)
+    assert.equal(br.finishReason, 'done')
+    assert.equal(br.requestId, 'aws-req-1')
+    assert.equal(br.statusCode, 200)
+  })
+
+  await t.test('handles cohere streams', async (ctx) => {
+    ctx.nr.passThroughParams.bedrockCommand.isCohere = () => true
+    ctx.nr.chunks = [
+      { generations: [{ text: '1', finish_reason: null }] },
+      { generations: [{ text: '2', finish_reason: 'done' }], ...ctx.nr.metrics }
+    ]
+    const handler = new StreamHandler(ctx.nr)
+
+    assert.equal(handler.generator.name, 'handleCohere')
+    for await (const event of handler.generator()) {
+      assert.equal(event.chunk.bytes.constructor, Uint8Array)
+    }
+    assert.deepStrictEqual(handler.response, {
+      response: {
+        headers: {
+          'x-amzn-requestid': 'aws-req-1'
+        },
+        statusCode: 200
+      },
+      output: {
+        body: new TextEncoder().encode(
+          JSON.stringify({
+            generations: [
+              { text: '1', finish_reason: null },
+              { text: '2', finish_reason: 'done' }
+            ]
+          })
+        )
+      }
+    })
+
+    const bc = new BedrockCommand({
+      modelId: 'cohere.',
+      body: JSON.stringify({
+        texts: ['prompt'],
+        max_tokens: 5
+      })
+    })
+    const br = new BedrockResponse({ bedrockCommand: bc, response: handler.response })
+    assert.equal(br.completions.length, 2)
+    assert.equal(br.finishReason, 'done')
+    assert.equal(br.requestId, 'aws-req-1')
+    assert.equal(br.statusCode, 200)
+  })
+
+  await t.test('handles cohere embedding streams', async (ctx) => {
+    ctx.nr.passThroughParams.bedrockCommand.isCohereEmbed = () => true
+    ctx.nr.chunks = [
+      {
+        embeddings: [
+          [1, 2],
+          [3, 4]
+        ],
+        ...ctx.nr.metrics
+      }
+    ]
+    const handler = new StreamHandler(ctx.nr)
+
+    assert.equal(handler.generator.name, 'handleCohereEmbed')
+    for await (const event of handler.generator()) {
+      assert.equal(event.chunk.bytes.constructor, Uint8Array)
+    }
+    assert.deepStrictEqual(handler.response, {
+      response: {
+        headers: {
+          'x-amzn-requestid': 'aws-req-1'
+        },
+        statusCode: 200
+      },
+      output: {
+        body: new TextEncoder().encode(
+          JSON.stringify({
+            embeddings: [
+              [1, 2],
+              [3, 4]
+            ]
+          })
+        )
+      }
+    })
+
+    const bc = new BedrockCommand({
+      modelId: 'cohere.',
+      body: JSON.stringify({
+        texts: ['prompt'],
+        max_tokens: 5
+      })
+    })
+    const br = new BedrockResponse({ bedrockCommand: bc, response: handler.response })
+    assert.equal(br.completions.length, 0)
+    assert.equal(br.finishReason, undefined)
+    assert.equal(br.requestId, 'aws-req-1')
+    assert.equal(br.statusCode, 200)
+  })
+
+  await t.test('handles llama streams', async (ctx) => {
+    ctx.nr.passThroughParams.bedrockCommand.isLlama = () => true
+    ctx.nr.chunks = [
+      { generation: '1', stop_reason: null },
+      { generation: '2', stop_reason: 'done', ...ctx.nr.metrics }
+    ]
+    const handler = new StreamHandler(ctx.nr)
+
+    assert.equal(handler.generator.name, 'handleLlama')
+    for await (const event of handler.generator()) {
+      assert.equal(event.chunk.bytes.constructor, Uint8Array)
+    }
+    assert.deepStrictEqual(handler.response, {
+      response: {
+        headers: {
+          'x-amzn-requestid': 'aws-req-1'
+        },
+        statusCode: 200
+      },
+      output: {
+        body: new TextEncoder().encode(JSON.stringify({ generation: '12', stop_reason: 'done' }))
+      }
+    })
+
+    const bc = new BedrockCommand({
+      modelId: 'meta.llama',
+      body: JSON.stringify({
+        prompt: 'prompt',
+        max_gen_length: 5
+      })
+    })
+    const br = new BedrockResponse({ bedrockCommand: bc, response: handler.response })
+    assert.equal(br.completions.length, 1)
+    assert.equal(br.finishReason, 'done')
+    assert.equal(br.requestId, 'aws-req-1')
+    assert.equal(br.statusCode, 200)
+  })
+
+  await t.test('handles titan streams', async (ctx) => {
+    ctx.nr.passThroughParams.bedrockCommand.isTitan = () => true
+    ctx.nr.chunks = [
+      { outputText: '1', completionReason: null },
+      { outputText: '2', completionReason: 'done', ...ctx.nr.metrics }
+    ]
+    const handler = new StreamHandler(ctx.nr)
+
+    assert.equal(handler.generator.name, 'handleTitan')
+    for await (const event of handler.generator()) {
+      assert.equal(event.chunk.bytes.constructor, Uint8Array)
+    }
+    assert.deepStrictEqual(handler.response, {
+      response: {
+        headers: {
+          'x-amzn-requestid': 'aws-req-1'
+        },
+        statusCode: 200
+      },
+      output: {
+        body: new TextEncoder().encode(
+          JSON.stringify({
+            results: [
+              { outputText: '1', completionReason: null },
+              { outputText: '2', completionReason: 'done' }
+            ]
+          })
+        )
+      }
+    })
+
+    const bc = new BedrockCommand({
+      modelId: 'amazon.titan',
+      body: JSON.stringify({
+        inputText: 'prompt',
+        textGenerationConfig: {
+          maxTokenCount: 5,
+          temperature: 0.5
+        }
+      })
+    })
+    const br = new BedrockResponse({ bedrockCommand: bc, response: handler.response })
+    assert.equal(br.completions.length, 2)
+    assert.equal(br.finishReason, 'done')
+    assert.equal(br.requestId, 'aws-req-1')
+    assert.equal(br.statusCode, 200)
+  })
 })

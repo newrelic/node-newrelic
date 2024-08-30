@@ -165,7 +165,7 @@
     "integration:esm": "NODE_OPTIONS='--loader=./esm-loader.mjs' time c8 -o ./coverage/integration-esm borp --reporter ./test/lib/test-reporter.mjs 'test/integration/**/*.tap.mjs'",
     "prepare-test": "npm run ssl && npm run docker-env",
     "lint": "eslint ./*.{js,mjs} lib test bin",
-    "lint:fix": "eslint --fix, ./*.{js,mjs} lib test bin",
+    "lint:fix": "eslint --fix, ./*.{js,mjs} test",
     "public-docs": "jsdoc -c ./jsdoc-conf.jsonc",
     "publish-docs": "./bin/publish-docs.sh",
     "services": "DOCKER_PLATFORM=linux/$(uname -m) docker compose up -d --wait",
