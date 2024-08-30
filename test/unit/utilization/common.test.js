@@ -5,7 +5,8 @@
 
 'use strict'
 
-const tap = require('tap')
+const test = require('node:test')
+const assert = require('node:assert')
 const common = require('../../../lib/utilization/common')
 const helper = require('../../lib/agent_helper.js')
 const nock = require('nock')
@@ -15,92 +16,80 @@ while (BIG.length < 300) {
   BIG += BIG
 }
 
-tap.test('Utilization Common Components', function (t) {
-  t.autoend()
-  t.test('common.checkValueString', function (t) {
-    t.autoend()
-    t.test('should fail for strings of invalid size', function (t) {
-      t.notOk(common.checkValueString(null))
-      t.notOk(common.checkValueString({}))
-      t.notOk(common.checkValueString(''))
+test('Utilization Common Components', async function (t) {
+  await t.test('common.checkValueString', async function (t) {
+    await t.test('should fail for strings of invalid size', function () {
+      assert.ok(!common.checkValueString(null))
+      assert.ok(!common.checkValueString({}))
+      assert.ok(!common.checkValueString(''))
 
-      t.notOk(common.checkValueString(BIG))
-      t.end()
+      assert.ok(!common.checkValueString(BIG))
     })
 
-    t.test('should fail for strings with invalid characters', function (t) {
-      t.notOk(common.checkValueString('&'))
-      t.notOk(common.checkValueString('foo\0'))
-      t.end()
+    await t.test('should fail for strings with invalid characters', function () {
+      assert.ok(!common.checkValueString('&'))
+      assert.ok(!common.checkValueString('foo\0'))
     })
 
-    t.test('should allow good values', function (t) {
-      t.ok(common.checkValueString('foobar'))
-      t.ok(common.checkValueString('f1B_./- \xff'))
-      t.end()
+    await t.test('should allow good values', function () {
+      assert.ok(common.checkValueString('foobar'))
+      assert.ok(common.checkValueString('f1B_./- \xff'))
     })
   })
 
-  t.test('common.getKeys', function (t) {
-    t.autoend()
-    t.test('should return null if any key is missing', function (t) {
-      t.equal(common.getKeys({}, ['foo']), null)
-      t.equal(common.getKeys({ foo: 'bar' }, ['foo', 'bar']), null)
-      t.equal(common.getKeys(null, ['foo']), null)
-      t.end()
+  await t.test('common.getKeys', async function (t) {
+    await t.test('should return null if any key is missing', function () {
+      assert.equal(common.getKeys({}, ['foo']), null)
+      assert.equal(common.getKeys({ foo: 'bar' }, ['foo', 'bar']), null)
+      assert.equal(common.getKeys(null, ['foo']), null)
     })
 
-    t.test('should return null if any key is invalid', function (t) {
-      t.equal(common.getKeys({ foo: 'foo\0' }, ['foo']), null)
-      t.equal(common.getKeys({ foo: 'foo', bar: 'bar\0' }, ['foo', 'bar']), null)
-      t.end()
+    await t.test('should return null if any key is invalid', function () {
+      assert.equal(common.getKeys({ foo: 'foo\0' }, ['foo']), null)
+      assert.equal(common.getKeys({ foo: 'foo', bar: 'bar\0' }, ['foo', 'bar']), null)
     })
 
-    t.test('should return null if any value is too large', function (t) {
-      t.equal(common.getKeys({ foo: BIG }, ['foo']), null)
-      t.end()
+    await t.test('should return null if any value is too large', function () {
+      assert.equal(common.getKeys({ foo: BIG }, ['foo']), null)
     })
 
-    t.test('should pull only the desired values', function (t) {
-      t.same(common.getKeys({ foo: 'foo', bar: 'bar', baz: 'baz' }, ['foo', 'baz']), {
+    await t.test('should pull only the desired values', function () {
+      assert.deepEqual(common.getKeys({ foo: 'foo', bar: 'bar', baz: 'baz' }, ['foo', 'baz']), {
         foo: 'foo',
         baz: 'baz'
       })
-      t.end()
     })
 
-    t.test('should not fail with "clean" objects', function (t) {
+    await t.test('should not fail with "clean" objects', function () {
       const obj = Object.create(null)
       obj.foo = 'foo'
-      t.same(common.getKeys(obj, ['foo']), { foo: 'foo' })
-      t.end()
+      assert.deepEqual(common.getKeys(obj, ['foo']), { foo: 'foo' })
     })
   })
 
-  t.test('common.request', (t) => {
-    t.autoend()
-    let agent = null
-
+  await t.test('common.request', async (t) => {
     t.before(() => {
       nock.disableNetConnect()
       nock('http://fakedomain').persist().get('/timeout').delay(150).reply(200, 'wohoo')
     })
 
-    t.beforeEach(function () {
-      agent = helper.loadMockedAgent()
+    t.beforeEach(function (ctx) {
+      ctx.nr = {}
+      ctx.nr.agent = helper.loadMockedAgent()
     })
 
-    t.afterEach(function () {
-      helper.unloadAgent(agent)
-      agent = null
+    t.afterEach(function (ctx) {
+      helper.unloadAgent(ctx.nr.agent)
+      ctx.nr.agent = null
     })
 
-    t.teardown(() => {
+    t.after(() => {
       nock.cleanAll()
       nock.enableNetConnect()
     })
 
-    t.test('should not timeout when request succeeds', (t) => {
+    await t.test('should not timeout when request succeeds', (ctx, end) => {
+      const agent = ctx.nr.agent
       let invocationCount = 0
       common.request(
         {
@@ -111,24 +100,25 @@ tap.test('Utilization Common Components', function (t) {
         },
         agent,
         (err, data) => {
-          t.error(err)
-          t.equal(data, 'wohoo')
+          assert.ifError(err)
+          assert.equal(data, 'wohoo')
           invocationCount++
         }
       )
 
       // need to give enough time for second to have chance to run.
-      // sinon and http dont quite seem to work well enough to do this
+      // sinon and http don't quite seem to work well enough to do this
       // totally faked synchronously.
       setTimeout(verifyInvocations, 250)
 
       function verifyInvocations() {
-        t.equal(invocationCount, 1)
-        t.end()
+        assert.equal(invocationCount, 1)
+        end()
       }
     })
 
-    t.test('should not invoke callback multiple times on timeout', (t) => {
+    await t.test('should not invoke callback multiple times on timeout', (ctx, end) => {
+      const agent = ctx.nr.agent
       let invocationCount = 0
       common.request(
         {
@@ -139,8 +129,8 @@ tap.test('Utilization Common Components', function (t) {
         },
         agent,
         (err) => {
-          t.ok(err)
-          t.equal(err.code, 'ECONNRESET', 'error should be socket timeout')
+          assert.ok(err)
+          assert.equal(err.code, 'ECONNRESET', 'error should be socket timeout')
           invocationCount++
         }
       )
@@ -151,8 +141,8 @@ tap.test('Utilization Common Components', function (t) {
       setTimeout(verifyInvocations, 200)
 
       function verifyInvocations() {
-        t.equal(invocationCount, 1)
-        t.end()
+        assert.equal(invocationCount, 1)
+        end()
       }
     })
   })
