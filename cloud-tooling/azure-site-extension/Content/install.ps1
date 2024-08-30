@@ -1,10 +1,7 @@
-# Define paths
+# Define the path to the node_modules directory and the package to check
 $extensionModulesPath = "$PSScriptRoot\node_modules"
 $appRootPath = "$env:HOME\site\wwwroot"
 $userModulesPath = "$appRootPath\node_modules"
-
-# Define the path to the node_modules directory and the package to check
-$UserNodeModulesPath = "$env:HOME"
 $packageName = "newrelic"
 
 WriteToInstallLog "Explicitly adding node to path"
@@ -20,7 +17,7 @@ function Check-Version {
   WriteToInstallLog "Checking installed version..."
 
   # Get installed version using npm list
-  $installedVersionOutput = & npm ls $packageName --prefix $UserNodeModulesPath | Select-String -Pattern "$packageName@(\S+)"
+  $installedVersionOutput = & npm ls $packageName --prefix "$env:HOME" | Select-String -Pattern "$packageName@(\S+)"
   
   if ($installedVersionOutput) {
     $UserVersion = $installedVersionOutput.Matches.Groups[1].Value
@@ -94,7 +91,7 @@ function Copy-NodeModules {
 
     # Install node agent using npm
     WriteToInstallLog "Executing npm install newrelic@latest"
-    npm install --prefix "$env:HOME\site\wwwroot" newrelic
+    npm install --prefix $appRootPath newrelic
 
     # Check if the installation was successful
     if ($LASTEXITCODE -ne 0) {
