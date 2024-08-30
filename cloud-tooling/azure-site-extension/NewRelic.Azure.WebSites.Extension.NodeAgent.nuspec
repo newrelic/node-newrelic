@@ -1,9 +1,9 @@
 <?xml version="1.0"?>
 <package>
   <metadata>
-    <id>NewRelic.Azure.WebSites.Extension.NodeAgent</id>
-    <version>{VERSION}</version>
-    <title>New Relic Node Agent {VERSION}</title>
+    <id>NewRelic.Azure.WebSites.Extension.NodeAgent-{ARCH}</id>
+    <version>{VERSION}-{ARCH}</version>
+    <title>New Relic Node Agent {VERSION} (Arch {ARCH})</title>
     <authors>New Relic</authors>
     <license type="expression">Apache-2.0</license>
     <projectUrl>https://github.com/newrelic/node-newrelic</projectUrl>

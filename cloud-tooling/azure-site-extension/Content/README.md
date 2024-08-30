@@ -25,10 +25,9 @@ If the extension fails to install, a log file is created at `C:\home\SiteExtensi
 ## Configuration
 The New Relic Node agent is configured with the `newrelic.js` file, or via environment variables. [See our documentation for more detailed configuration](https://docs.newrelic.com/docs/apm/agents/nodejs-agent/installation-configuration/nodejs-agent-configuration/).
 
-Once the site extension is installed, you'll need to manually enter two configuration items before restarting your application.
+Once the site extension is installed, you'll need to manually enter one configuration item before restarting your application.
   - On the options listed on the left, scroll down to "Environment variables" located under the "Settings" category and add the following:
     - `NEW_RELIC_LICENSE_KEY` - Your New Relic license key value
-    - `NEW_RELIC_APP_NAME` - The Node agent will automatically set the application name to the value of `WEBSITE_SITE_NAME` in azure for you application but you can override that by setting the `NEW_RELIC_APP_NAME` environment variable. 
 
 The Node agent automatically adds the `NODE_OPTIONS` environment variable with a value of `-r newrelic` which starts the agent. 
   - Note: Any previously `NODE_OPTIONS` will be removed and reset with `-r newrelic`. 
