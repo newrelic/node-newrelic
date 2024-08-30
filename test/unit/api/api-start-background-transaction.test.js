@@ -4,81 +4,80 @@
  */
 
 'use strict'
-
-const tap = require('tap')
+const test = require('node:test')
+const assert = require('node:assert')
 const API = require('../../../api')
 const helper = require('../../lib/agent_helper')
+const { assertCLMAttrs } = require('../../lib/custom-assertions')
 
-tap.test('Agent API - startBackgroundTransaction', (t) => {
-  t.autoend()
+function nested({ api }) {
+  api.startBackgroundTransaction('nested', function nestedHandler() {})
+}
 
-  let agent = null
-  let contextManager = null
-  let api = null
-
-  t.beforeEach(() => {
-    agent = helper.loadMockedAgent()
-    contextManager = helper.getContextManager()
-    api = new API(agent)
+test('Agent API - startBackgroundTransaction', async (t) => {
+  t.beforeEach((ctx) => {
+    ctx.nr = {}
+    const agent = helper.loadMockedAgent()
+    ctx.nr.contextManager = helper.getContextManager()
+    ctx.nr.api = new API(agent)
+    ctx.nr.agent = agent
   })
 
-  t.afterEach(() => {
-    helper.unloadAgent(agent)
-    agent = null
-    contextManager = null
+  t.afterEach((ctx) => {
+    helper.unloadAgent(ctx.nr.agent)
   })
 
-  function nested() {
-    api.startBackgroundTransaction('nested', function nestedHandler() {})
-  }
-
-  t.test('should not throw when transaction cannot be created', (t) => {
+  await t.test('should not throw when transaction cannot be created', (t, end) => {
+    const { agent, api } = t.nr
     agent.setState('stopped')
     api.startBackgroundTransaction('test', () => {
       const transaction = agent.tracer.getTransaction()
-      t.notOk(transaction)
+      assert.ok(!transaction)
 
-      t.end()
+      end()
     })
   })
 
-  t.test('should add nested transaction as segment to parent transaction', (t) => {
+  await t.test('should add nested transaction as segment to parent transaction', (t, end) => {
+    const { agent, api, contextManager } = t.nr
     let transaction = null
 
     api.startBackgroundTransaction('test', function () {
-      nested()
+      nested({ api })
       transaction = agent.tracer.getTransaction()
 
-      t.equal(transaction.type, 'bg')
-      t.equal(transaction.getFullName(), 'OtherTransaction/Nodejs/test')
-      t.ok(transaction.isActive())
+      assert.equal(transaction.type, 'bg')
+      assert.equal(transaction.getFullName(), 'OtherTransaction/Nodejs/test')
+      assert.ok(transaction.isActive())
 
       const currentSegment = contextManager.getContext()
       const nestedSegment = currentSegment.children[0]
-      t.equal(nestedSegment.name, 'Nodejs/nested')
+      assert.equal(nestedSegment.name, 'Nodejs/nested')
     })
 
-    t.notOk(transaction.isActive())
+    assert.ok(!transaction.isActive())
 
-    t.end()
+    end()
   })
 
-  t.test('should end the transaction after the handle returns by default', (t) => {
+  await t.test('should end the transaction after the handle returns by default', (t, end) => {
+    const { agent, api } = t.nr
     let transaction = null
 
     api.startBackgroundTransaction('test', function () {
       transaction = agent.tracer.getTransaction()
-      t.equal(transaction.type, 'bg')
-      t.equal(transaction.getFullName(), 'OtherTransaction/Nodejs/test')
-      t.ok(transaction.isActive())
+      assert.equal(transaction.type, 'bg')
+      assert.equal(transaction.getFullName(), 'OtherTransaction/Nodejs/test')
+      assert.ok(transaction.isActive())
     })
 
-    t.notOk(transaction.isActive())
+    assert.ok(!transaction.isActive())
 
-    t.end()
+    end()
   })
 
-  t.test('should be namable with setTransactionName', (t) => {
+  await t.test('should be namable with setTransactionName', (t, end) => {
+    const { agent, api } = t.nr
     let handle = null
     let transaction = null
     api.startBackgroundTransaction('test', function () {
@@ -86,148 +85,162 @@ tap.test('Agent API - startBackgroundTransaction', (t) => {
       handle = api.getTransaction()
       api.setTransactionName('custom name')
 
-      t.equal(transaction.type, 'bg')
-      t.equal(transaction.getFullName(), 'OtherTransaction/Custom/custom name')
-      t.ok(transaction.isActive())
+      assert.equal(transaction.type, 'bg')
+      assert.equal(transaction.getFullName(), 'OtherTransaction/Custom/custom name')
+      assert.ok(transaction.isActive())
     })
 
     process.nextTick(function () {
       handle.end()
 
-      t.notOk(transaction.isActive())
-      t.equal(transaction.getFullName(), 'OtherTransaction/Custom/custom name')
+      assert.ok(!transaction.isActive())
+      assert.equal(transaction.getFullName(), 'OtherTransaction/Custom/custom name')
 
-      t.end()
+      end()
     })
   })
 
-  t.test('should start a background txn with the given name as the name and group', (t) => {
-    let transaction = null
-    api.startBackgroundTransaction('test', 'group', function () {
-      transaction = agent.tracer.getTransaction()
-      t.ok(transaction)
+  await t.test(
+    'should start a background txn with the given name as the name and group',
+    (t, end) => {
+      const { agent, api } = t.nr
+      let transaction = null
+      api.startBackgroundTransaction('test', 'group', function () {
+        transaction = agent.tracer.getTransaction()
+        assert.ok(transaction)
 
-      t.equal(transaction.type, 'bg')
-      t.equal(transaction.getFullName(), 'OtherTransaction/group/test')
-      t.ok(transaction.isActive())
-    })
+        assert.equal(transaction.type, 'bg')
+        assert.equal(transaction.getFullName(), 'OtherTransaction/group/test')
+        assert.ok(transaction.isActive())
+      })
 
-    t.notOk(transaction.isActive())
+      assert.ok(!transaction.isActive())
 
-    t.end()
-  })
-
-  t.test('should end the txn after a promise returned by the txn function resolves', (t) => {
-    let thenCalled = false
-    const FakePromise = {
-      then: function (f) {
-        thenCalled = true
-        f()
-        return this
-      }
+      end()
     }
+  )
 
+  await t.test(
+    'should end the txn after a promise returned by the txn function resolves',
+    (t, end) => {
+      const { agent, api } = t.nr
+      let thenCalled = false
+      const FakePromise = {
+        then: function (f) {
+          thenCalled = true
+          f()
+          return this
+        }
+      }
+
+      let transaction = null
+      api.startBackgroundTransaction('test', function () {
+        transaction = agent.tracer.getTransaction()
+
+        assert.equal(transaction.type, 'bg')
+        assert.equal(transaction.getFullName(), 'OtherTransaction/Nodejs/test')
+        assert.ok(transaction.isActive())
+
+        assert.ok(!thenCalled)
+        return FakePromise
+      })
+
+      assert.ok(thenCalled)
+
+      assert.ok(!transaction.isActive())
+
+      end()
+    }
+  )
+
+  await t.test('should not end the txn if the txn is being handled externally', (t, end) => {
+    const { agent, api } = t.nr
     let transaction = null
     api.startBackgroundTransaction('test', function () {
       transaction = agent.tracer.getTransaction()
 
-      t.equal(transaction.type, 'bg')
-      t.equal(transaction.getFullName(), 'OtherTransaction/Nodejs/test')
-      t.ok(transaction.isActive())
-
-      t.notOk(thenCalled)
-      return FakePromise
-    })
-
-    t.ok(thenCalled)
-
-    t.notOk(transaction.isActive())
-
-    t.end()
-  })
-
-  t.test('should not end the txn if the txn is being handled externally', (t) => {
-    let transaction = null
-    api.startBackgroundTransaction('test', function () {
-      transaction = agent.tracer.getTransaction()
-
-      t.equal(transaction.type, 'bg')
-      t.equal(transaction.getFullName(), 'OtherTransaction/Nodejs/test')
-      t.ok(transaction.isActive())
+      assert.equal(transaction.type, 'bg')
+      assert.equal(transaction.getFullName(), 'OtherTransaction/Nodejs/test')
+      assert.ok(transaction.isActive())
 
       transaction.handledExternally = true
     })
 
-    t.ok(transaction.isActive())
+    assert.ok(transaction.isActive())
 
     transaction.end()
-    t.end()
+    end()
   })
 
-  t.test('should call the handler if no name is supplied', (t) => {
+  await t.test('should call the handler if no name is supplied', (t, end) => {
+    const { agent, api } = t.nr
     api.startBackgroundTransaction(null, function () {
       const transaction = agent.tracer.getTransaction()
-      t.notOk(transaction)
+      assert.ok(!transaction)
 
-      t.end()
+      end()
     })
   })
 
-  t.test('should not throw when no handler is supplied', (t) => {
-    t.doesNotThrow(() => api.startBackgroundTransaction('test'))
-    t.doesNotThrow(() => api.startBackgroundTransaction('test', 'asdf'))
-    t.doesNotThrow(() => api.startBackgroundTransaction('test', 'asdf', 'not a function'))
+  await t.test('should not throw when no handler is supplied', (t, end) => {
+    const { api } = t.nr
+    assert.doesNotThrow(() => api.startBackgroundTransaction('test'))
+    assert.doesNotThrow(() => api.startBackgroundTransaction('test', 'asdf'))
+    assert.doesNotThrow(() => api.startBackgroundTransaction('test', 'asdf', 'not a function'))
 
-    t.end()
+    end()
   })
 
   const clmEnabled = [true, false]
-  clmEnabled.forEach((enabled) => {
-    t.test(`should ${enabled ? 'add' : 'not add'} CLM attributes to segment`, (t) => {
-      agent.config.code_level_metrics.enabled = enabled
-      api.startBackgroundTransaction('clm-tx', function handler() {
-        const segment = api.shim.getSegment()
-        t.clmAttrs({
-          segments: [
-            {
-              segment,
-              name: 'handler',
-              filepath: 'test/unit/api/api-start-background-transaction.test.js'
-            }
-          ],
-          enabled
-        })
-        t.end()
-      })
-    })
-
-    t.test(
-      `should ${enabled ? 'add' : 'not add'} CLM attributes to nested web transactions`,
-      (t) => {
+  await Promise.all(
+    clmEnabled.map(async (enabled) => {
+      await t.test(`should ${enabled ? 'add' : 'not add'} CLM attributes to segment`, (t, end) => {
+        const { agent, api } = t.nr
         agent.config.code_level_metrics.enabled = enabled
-        api.startBackgroundTransaction('nested-clm-test', function () {
-          nested()
-          const currentSegment = contextManager.getContext()
-          const nestedSegment = currentSegment.children[0]
-          t.clmAttrs({
+        api.startBackgroundTransaction('clm-tx', function handler() {
+          const segment = api.shim.getSegment()
+          assertCLMAttrs({
             segments: [
               {
-                segment: currentSegment,
-                name: '(anonymous)',
-                filepath: 'test/unit/api/api-start-background-transaction.test.js'
-              },
-              {
-                segment: nestedSegment,
-                name: 'nestedHandler',
+                segment,
+                name: 'handler',
                 filepath: 'test/unit/api/api-start-background-transaction.test.js'
               }
             ],
             enabled
           })
+          end()
         })
+      })
 
-        t.end()
-      }
-    )
-  })
+      await t.test(
+        `should ${enabled ? 'add' : 'not add'} CLM attributes to nested web transactions`,
+        (t, end) => {
+          const { agent, api, contextManager } = t.nr
+          agent.config.code_level_metrics.enabled = enabled
+          api.startBackgroundTransaction('nested-clm-test', function () {
+            nested({ api })
+            const currentSegment = contextManager.getContext()
+            const nestedSegment = currentSegment.children[0]
+            assertCLMAttrs({
+              segments: [
+                {
+                  segment: currentSegment,
+                  name: '(anonymous)',
+                  filepath: 'test/unit/api/api-start-background-transaction.test.js'
+                },
+                {
+                  segment: nestedSegment,
+                  name: 'nestedHandler',
+                  filepath: 'test/unit/api/api-start-background-transaction.test.js'
+                }
+              ],
+              enabled
+            })
+            end()
+          })
+        }
+      )
+    })
+  )
 })

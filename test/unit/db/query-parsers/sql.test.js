@@ -5,7 +5,8 @@
 
 'use strict'
 
-const { test } = require('tap')
+const test = require('node:test')
+const assert = require('node:assert')
 const parseSql = require('../../../../lib/db/query-parsers/sql')
 const CATs = require('../../../lib/cross_agent_tests/sql_parsing')
 
@@ -19,38 +20,33 @@ function clean(sql) {
   return '"' + sql.replace(/\n/gm, '\\n').replace(/\r/gm, '\\r').replace(/\t/gm, '\\t') + '"'
 }
 
-test('database query parser', function (t) {
-  t.autoend()
-  t.test('should accept query as a string', function (t) {
+test('database query parser', async (t) => {
+  await t.test('should accept query as a string', function () {
     const ps = parseSql('select * from someTable')
-    t.equal(ps.query, 'select * from someTable')
-    t.end()
+    assert.equal(ps.query, 'select * from someTable')
   })
 
-  t.test('should accept query as a sql property of an object', function (t) {
+  await t.test('should accept query as a sql property of an object', function () {
     const ps = parseSql({
       sql: 'select * from someTable'
     })
-    t.equal(ps.query, 'select * from someTable')
-    t.end()
+    assert.equal(ps.query, 'select * from someTable')
   })
 
-  t.test('SELECT SQL', function (t) {
-    t.autoend()
-    t.test('should parse a simple query', function (t) {
+  await t.test('SELECT SQL', async (t) => {
+    await t.test('should parse a simple query', function () {
       const ps = parseSql('Select * from dude')
-      t.ok(ps)
+      assert.ok(ps)
 
-      t.ok(ps.operation)
-      t.equal(ps.operation, 'select')
+      assert.ok(ps.operation)
+      assert.equal(ps.operation, 'select')
 
-      t.ok(ps.collection)
-      t.equal(ps.collection, 'dude')
-      t.equal(ps.query, 'Select * from dude')
-      t.end()
+      assert.ok(ps.collection)
+      assert.equal(ps.collection, 'dude')
+      assert.equal(ps.query, 'Select * from dude')
     })
 
-    t.test('should parse more interesting queries too', function (t) {
+    await t.test('should parse more interesting queries too', function () {
       const sql = [
         'SELECT P.postcode, ',
         'P.suburb, ',
@@ -66,121 +62,102 @@ test('database query parser', function (t) {
         'LIMIT 1'
       ].join('\n')
       const ps = parseSql(sql)
-      t.ok(ps)
-      t.equal(ps.operation, 'select')
-      t.equal(ps.collection, 'postcodes')
-      t.equal(ps.query, sql)
-      t.end()
+      assert.ok(ps)
+      assert.equal(ps.operation, 'select')
+      assert.equal(ps.collection, 'postcodes')
+      assert.equal(ps.query, sql)
     })
   })
 
-  t.test('DELETE SQL', function (t) {
-    t.autoend()
-    t.test('should parse a simple command', function (t) {
+  await t.test('DELETE SQL', async (t) => {
+    await t.test('should parse a simple command', function () {
       const ps = parseSql('DELETE\nfrom dude')
-      t.ok(ps)
+      assert.ok(ps)
 
-      t.ok(ps.operation)
-      t.equal(ps.operation, 'delete')
+      assert.ok(ps.operation)
+      assert.equal(ps.operation, 'delete')
 
-      t.ok(ps.collection)
-      t.equal(ps.collection, 'dude')
-      t.equal(ps.query, 'DELETE\nfrom dude')
-      t.end()
+      assert.ok(ps.collection)
+      assert.equal(ps.collection, 'dude')
+      assert.equal(ps.query, 'DELETE\nfrom dude')
     })
 
-    t.test('should parse a command with conditions', function (t) {
+    await t.test('should parse a command with conditions', function () {
       const ps = parseSql("DELETE\nfrom dude where name = 'man'")
-      t.ok(ps)
+      assert.ok(ps)
 
-      t.ok(ps.operation)
-      t.equal(ps.operation, 'delete')
+      assert.ok(ps.operation)
+      assert.equal(ps.operation, 'delete')
 
-      t.ok(ps.collection)
-      t.equal(ps.collection, 'dude')
-      t.equal(ps.query, "DELETE\nfrom dude where name = 'man'")
-      t.end()
+      assert.ok(ps.collection)
+      assert.equal(ps.collection, 'dude')
+      assert.equal(ps.query, "DELETE\nfrom dude where name = 'man'")
     })
   })
 
-  t.test('UPDATE SQL', function (t) {
-    t.autoend()
-    t.test('should parse a command with gratuitous white space and conditions', function (t) {
+  await t.test('UPDATE SQL', function (t) {
+    t.test('should parse a command with gratuitous white space and conditions', function () {
       const ps = parseSql('  update test set value = 1 where id = 12')
-      t.ok(ps)
+      assert.ok(ps)
 
-      t.ok(ps.operation)
-      t.equal(ps.operation, 'update')
+      assert.ok(ps.operation)
+      assert.equal(ps.operation, 'update')
 
-      t.ok(ps.collection)
-      t.equal(ps.collection, 'test')
-      t.equal(ps.query, 'update test set value = 1 where id = 12')
-      t.end()
+      assert.ok(ps.collection)
+      assert.equal(ps.collection, 'test')
+      assert.equal(ps.query, 'update test set value = 1 where id = 12')
     })
   })
 
-  t.test('INSERT SQL', function (t) {
-    t.autoend()
-    t.test('should parse a command with a subquery', function (t) {
+  await t.test('INSERT SQL', function (t) {
+    t.test('should parse a command with a subquery', function () {
       const ps = parseSql('  insert into\ntest\nselect * from dude')
-      t.ok(ps)
+      assert.ok(ps)
 
-      t.ok(ps.operation)
-      t.equal(ps.operation, 'insert')
+      assert.ok(ps.operation)
+      assert.equal(ps.operation, 'insert')
 
-      t.ok(ps.collection)
-      t.equal(ps.collection, 'test')
-      t.equal(ps.query, 'insert into\ntest\nselect * from dude')
-      t.end()
+      assert.ok(ps.collection)
+      assert.equal(ps.collection, 'test')
+      assert.equal(ps.query, 'insert into\ntest\nselect * from dude')
     })
   })
 
-  t.test('invalid SQL', function (t) {
-    t.autoend()
-    t.test("should return 'other' when handed garbage", function (t) {
+  await t.test('invalid SQL', async (t) => {
+    await t.test("should return 'other' when handed garbage", function () {
       const ps = parseSql('  bulge into\ndudes\nselect * from dude')
-      t.ok(ps)
-      t.equal(ps.operation, 'other')
-      t.notOk(ps.collection)
-      t.equal(ps.query, 'bulge into\ndudes\nselect * from dude')
-      t.end()
+      assert.ok(ps)
+      assert.equal(ps.operation, 'other')
+      assert.ok(!ps.collection)
+      assert.equal(ps.query, 'bulge into\ndudes\nselect * from dude')
     })
 
-    t.test("should return 'other' when handed an object", function (t) {
+    await t.test("should return 'other' when handed an object", function () {
       const ps = parseSql({
         key: 'value'
       })
-      t.ok(ps)
-      t.equal(ps.operation, 'other')
-      t.notOk(ps.collection)
-      t.equal(ps.query, '')
-      t.end()
+      assert.ok(ps)
+      assert.equal(ps.operation, 'other')
+      assert.ok(!ps.collection)
+      assert.equal(ps.query, '')
     })
   })
 
-  t.test('CAT', function (t) {
-    t.autoend()
-    CATs.forEach(function (cat) {
-      t.test(clean(cat.input), function (t) {
-        t.autoend()
+  await t.test('CAT', async function (t) {
+    for (const cat of CATs) {
+      await t.test(clean(cat.input), async (t) => {
         const ps = parseSql(cat.input)
 
-        t.test('should parse the operation as ' + cat.operation, function (t) {
-          t.equal(ps.operation, cat.operation)
-          t.end()
-        })
+        assert.equal(ps.operation, cat.operation, `should parse the operation as ${cat.operation}`)
 
         if (cat.table === '(subquery)') {
-          t.test('should parse subquery collections as ' + cat.table)
+          t.todo('should parse subquery collections as ' + cat.table)
         } else if (/\w+\.\w+/.test(ps.collection)) {
-          t.test('should strip database names from collection names as ' + cat.table)
+          t.todo('should strip database names from collection names as ' + cat.table)
         } else {
-          t.test('should parse the collection as ' + cat.table, function (t) {
-            t.equal(ps.collection, cat.table)
-            t.end()
-          })
+          assert.equal(ps.collection, cat.table, `should parse the collection as ${cat.table}`)
         }
       })
-    })
+    }
   })
 })

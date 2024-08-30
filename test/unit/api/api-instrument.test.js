@@ -4,64 +4,62 @@
  */
 
 'use strict'
-
-const tap = require('tap')
+const test = require('node:test')
+const assert = require('node:assert')
 const API = require('../../../api')
 const helper = require('../../lib/agent_helper')
 const sinon = require('sinon')
 const shimmer = require('../../../lib/shimmer')
 
-tap.test('Agent API - instrument', (t) => {
-  t.autoend()
-
-  let agent = null
-  let api = null
-
-  t.beforeEach(() => {
-    agent = helper.loadMockedAgent()
-    api = new API(agent)
+test('Agent API - instrument', async (t) => {
+  t.beforeEach((ctx) => {
+    ctx.nr = {}
+    const agent = helper.loadMockedAgent()
+    ctx.nr.api = new API(agent)
 
     sinon.spy(shimmer, 'registerInstrumentation')
+    ctx.nr.agent = agent
   })
 
-  t.afterEach(() => {
-    helper.unloadAgent(agent)
-    agent = null
-
+  t.afterEach((ctx) => {
+    helper.unloadAgent(ctx.nr.agent)
     shimmer.registerInstrumentation.restore()
   })
 
-  t.test('exports a function for adding custom instrumentation', (t) => {
-    t.ok(api.instrument)
-    t.type(api.instrument, 'function')
+  await t.test('exports a function for adding custom instrumentation', (t, end) => {
+    const { api } = t.nr
+    assert.ok(api.instrument)
+    assert.equal(typeof api.instrument, 'function')
 
-    t.end()
+    end()
   })
 
-  t.test('should register the instrumentation with shimmer', (t) => {
+  await t.test('should register the instrumentation with shimmer', (t, end) => {
+    const { api } = t.nr
     const opts = {
       moduleName: 'foobar',
       onRequire: function () {}
     }
     api.instrument(opts)
 
-    t.ok(shimmer.registerInstrumentation.calledOnce)
+    assert.ok(shimmer.registerInstrumentation.calledOnce)
     const args = shimmer.registerInstrumentation.getCall(0).args
-    t.equal(args[0], opts)
+    assert.equal(args[0], opts)
 
-    t.end()
+    end()
   })
 
-  t.test('should convert separate args into an options object', (t) => {
+  await t.test('should convert separate args into an options object', (t, end) => {
+    const { api } = t.nr
     function onRequire() {}
     function onError() {}
     api.instrument('foobar', onRequire, onError)
 
     const opts = shimmer.registerInstrumentation.getCall(0).args[0]
-    t.equal(opts.moduleName, 'foobar')
-    t.equal(opts.onRequire, onRequire)
-    t.equal(opts.onError, onError)
+    assert.equal(opts.moduleName, 'foobar')
+    assert.equal(opts.onRequire, onRequire)
+    assert.equal(opts.onError, onError)
 
-    t.end()
+    end()
   })
 })

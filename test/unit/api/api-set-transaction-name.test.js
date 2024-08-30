@@ -4,65 +4,59 @@
  */
 
 'use strict'
-
-const tap = require('tap')
+const test = require('node:test')
+const assert = require('node:assert')
 const API = require('../../../api')
 const helper = require('../../lib/agent_helper')
+const TEST_URL = '/test/path/31337'
+const NAME = 'WebTransaction/Uri/test/path/31337'
 
-tap.test('Agent API - setTranasactionName', (t) => {
-  t.autoend()
-
-  let agent = null
-  let api = null
-
-  const TEST_URL = '/test/path/31337'
-  const NAME = 'WebTransaction/Uri/test/path/31337'
-
-  t.beforeEach(() => {
-    agent = helper.loadMockedAgent()
-    api = new API(agent)
+test('Agent API - setTransactionName', async (t) => {
+  t.beforeEach((ctx) => {
+    ctx.nr = {}
+    const agent = helper.loadMockedAgent()
+    ctx.nr.api = new API(agent)
+    ctx.nr.agent = agent
   })
 
-  t.afterEach(() => {
-    helper.unloadAgent(agent)
-    agent = null
+  t.afterEach((ctx) => {
+    helper.unloadAgent(ctx.nr.agent)
   })
 
-  t.test('exports a transaction naming function', (t) => {
-    t.ok(api.setTransactionName)
-    t.type(api.setTransactionName, 'function')
+  await t.test('exports a transaction naming function', (t, end) => {
+    const { api } = t.nr
+    assert.ok(api.setTransactionName)
+    assert.equal(typeof api.setTransactionName, 'function')
 
-    t.end()
+    end()
   })
 
-  t.test('sets the transaction name to the custom name', (t) => {
-    setTranasactionNameGoldenPath((transaction) => {
-      t.equal(transaction.name, 'WebTransaction/Custom/Test')
-      t.end()
-    })
+  await t.test('sets the transaction name to the custom name', async (t) => {
+    const { agent, api } = t.nr
+    const { transaction } = await setTranasactionNameGoldenPath({ agent, api })
+    assert.equal(transaction.name, 'WebTransaction/Custom/Test')
   })
 
-  t.test('names the web trace segment after the custom name', (t) => {
-    setTranasactionNameGoldenPath((transaction, segment) => {
-      t.equal(segment.name, 'WebTransaction/Custom/Test')
-      t.end()
-    })
+  await t.test('names the web trace segment after the custom name', async (t) => {
+    const { agent, api } = t.nr
+    const { segment } = await setTranasactionNameGoldenPath({ agent, api })
+    assert.equal(segment.name, 'WebTransaction/Custom/Test')
   })
 
-  t.test('leaves the request URL alone', (t) => {
-    setTranasactionNameGoldenPath((transaction) => {
-      t.equal(transaction.url, TEST_URL)
-      t.end()
-    })
+  await t.test('leaves the request URL alone', async (t) => {
+    const { agent, api } = t.nr
+    const { transaction } = await setTranasactionNameGoldenPath({ agent, api })
+    assert.equal(transaction.url, TEST_URL)
   })
 
-  t.test('uses the last name set when called multiple times', (t) => {
+  await t.test('uses the last name set when called multiple times', (t, end) => {
+    const { agent, api } = t.nr
     agent.on('transactionFinished', function (transaction) {
       transaction.finalizeNameFromUri(TEST_URL, 200)
 
-      t.equal(transaction.name, 'WebTransaction/Custom/List')
+      assert.equal(transaction.name, 'WebTransaction/Custom/List')
 
-      t.end()
+      end()
     })
 
     helper.runInTransaction(agent, function (transaction) {
@@ -79,14 +73,15 @@ tap.test('Agent API - setTranasactionName', (t) => {
       transaction.end()
     })
   })
+})
 
-  function setTranasactionNameGoldenPath(cb) {
-    let segment = null
-
+function setTranasactionNameGoldenPath({ agent, api }) {
+  let segment = null
+  return new Promise((resolve) => {
     agent.on('transactionFinished', function (finishedTransaction) {
       finishedTransaction.finalizeNameFromUri(TEST_URL, 200)
       segment.markAsWeb(TEST_URL)
-      cb(finishedTransaction, segment)
+      resolve({ transaction: finishedTransaction, segment })
     })
 
     helper.runInTransaction(agent, function (tx) {
@@ -104,5 +99,5 @@ tap.test('Agent API - setTranasactionName', (t) => {
         tx.end()
       })
     })
-  }
-})
+  })
+}

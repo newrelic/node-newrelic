@@ -12,7 +12,7 @@ const path = require('path')
 const helperPath = path.resolve(`${__dirname}/../../lib/clm-helper.js`)
 const sinon = require('sinon')
 const symbols = require('../../../lib/symbols')
-require('../../lib/custom-assertions')
+require('../../lib/custom-tap-assertions')
 
 /**
  * Helper to generate a long string

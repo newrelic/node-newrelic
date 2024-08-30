@@ -5,7 +5,8 @@
 
 'use strict'
 
-const tap = require('tap')
+const test = require('node:test')
+const assert = require('node:assert')
 const path = require('path')
 const fs = require('fs')
 const fsPromises = require('fs/promises')
@@ -14,9 +15,7 @@ const sinon = require('sinon')
 const { removeMatchedModules } = require('../../lib/cache-buster')
 const Config = require('../../../lib/config')
 
-tap.test('when overriding the config file location via NEW_RELIC_HOME', (t) => {
-  t.autoend()
-
+test('when overriding the config file location via NEW_RELIC_HOME', async (t) => {
   const DESTDIR = path.join(__dirname, 'xXxNRHOMETESTxXx')
   const NOPLACEDIR = path.join(__dirname, 'NOHEREHERECHAMP')
   const CONFIGPATH = path.join(DESTDIR, 'newrelic.js')
@@ -61,48 +60,41 @@ tap.test('when overriding the config file location via NEW_RELIC_HOME', (t) => {
     await fsPromises.rm(NOPLACEDIR, { recursive: true })
   })
 
-  t.test('should load the configuration', (t) => {
-    t.doesNotThrow(() => {
+  await t.test('should load the configuration', (t, end) => {
+    assert.doesNotThrow(() => {
       Config.initialize()
+      end()
     })
-
-    t.end()
   })
 
-  t.test('should export the home directory on the resulting object', (t) => {
+  await t.test('should export the home directory on the resulting object', () => {
     const configuration = Config.initialize()
-    t.equal(configuration.newrelic_home, DESTDIR)
-
-    t.end()
+    assert.equal(configuration.newrelic_home, DESTDIR)
   })
 
-  t.test('should ignore the configuration file completely when so directed', (t) => {
+  await t.test('should ignore the configuration file completely when so directed', (t, end) => {
     process.env.NEW_RELIC_NO_CONFIG_FILE = 'true'
     process.env.NEW_RELIC_HOME = '/xxxnoexist/nofile'
 
-    t.teardown(() => {
-      delete process.env.NEW_RELIC_NO_CONFIG_FILE
-      delete process.env.NEW_RELIC_HOME
-    })
-
     let configuration
 
-    t.doesNotThrow(() => {
+    assert.doesNotThrow(() => {
       configuration = Config.initialize()
     })
 
-    t.notOk(configuration.newrelic_home)
+    assert.ok(!configuration.newrelic_home)
+    assert.ok(configuration.error_collector)
+    assert.equal(configuration.error_collector.enabled, true)
+    end()
 
-    t.ok(configuration.error_collector)
-    t.equal(configuration.error_collector.enabled, true)
-
-    t.end()
+    t.after(() => {
+      delete process.env.NEW_RELIC_NO_CONFIG_FILE
+      delete process.env.NEW_RELIC_HOME
+    })
   })
 })
 
-tap.test('Selecting config file path', (t) => {
-  t.autoend()
-
+test('Selecting config file path', async (t) => {
   const DESTDIR = path.join(__dirname, 'test_NEW_RELIC_CONFIG_FILENAME')
   const NOPLACEDIR = path.join(__dirname, 'test_NEW_RELIC_CONFIG_FILENAME_dummy')
   const MAIN_MODULE_DIR = path.join(__dirname, 'test_NEW_RELIC_CONFIG_FILENAME_MAIN_MODULE')
@@ -157,56 +149,49 @@ tap.test('Selecting config file path', (t) => {
     removeMatchedModules(mainModuleRegex)
   })
 
-  t.test('should load the default newrelic.js config file', (t) => {
+  await t.test('should load the default newrelic.js config file', () => {
     const filename = 'newrelic.js'
     createSampleConfig(DESTDIR, filename)
 
     const configuration = Config.initialize()
-    t.equal(configuration.app_name, filename)
-
-    t.end()
+    assert.equal(configuration.app_name, filename)
   })
 
-  t.test('should load the default newrelic.cjs config file', (t) => {
+  await t.test('should load the default newrelic.cjs config file', () => {
     const filename = 'newrelic.cjs'
     createSampleConfig(DESTDIR, filename)
 
     const configuration = Config.initialize()
-    t.equal(configuration.app_name, filename)
-
-    t.end()
+    assert.equal(configuration.app_name, filename)
   })
 
-  t.test('should load config when overriding the default with NEW_RELIC_CONFIG_FILENAME', (t) => {
-    const filename = 'some-file-name.js'
-    process.env.NEW_RELIC_CONFIG_FILENAME = filename
-    createSampleConfig(DESTDIR, filename)
+  await t.test(
+    'should load config when overriding the default with NEW_RELIC_CONFIG_FILENAME',
+    () => {
+      const filename = 'some-file-name.js'
+      process.env.NEW_RELIC_CONFIG_FILENAME = filename
+      createSampleConfig(DESTDIR, filename)
 
-    const configuration = Config.initialize()
-    t.equal(configuration.app_name, filename)
+      const configuration = Config.initialize()
+      assert.equal(configuration.app_name, filename)
+    }
+  )
 
-    t.end()
-  })
-
-  t.test("should load config from the main module's filepath", (t) => {
+  await t.test("should load config from the main module's filepath", () => {
     const filename = 'newrelic.js'
     createSampleConfig(MAIN_MODULE_DIR, filename)
 
     const configuration = Config.initialize()
-    t.equal(configuration.app_name, filename)
-
-    t.end()
+    assert.equal(configuration.app_name, filename)
   })
 
-  t.test('should load even if parsing the config file throws an error', (t) => {
+  await t.test('should load even if parsing the config file throws an error', () => {
     const filename = 'newrelic.js'
     createInvalidConfig(MAIN_MODULE_DIR, filename)
     process.env.NEW_RELIC_APP_NAME = filename
 
     const configuration = Config.initialize()
-    t.same(configuration.app_name, [filename])
-
-    t.end()
+    assert.deepStrictEqual(configuration.app_name, [filename])
   })
 
   function createSampleConfig(dir, filename) {

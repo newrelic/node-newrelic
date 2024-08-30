@@ -4,8 +4,8 @@
  */
 
 'use strict'
-
-const tap = require('tap')
+const test = require('node:test')
+const assert = require('node:assert')
 const sinon = require('sinon')
 const proxyquire = require('proxyquire')
 const loggerMock = require('../mocks/logger')()
@@ -17,42 +17,41 @@ const API = proxyquire('../../../api', {
   }
 })
 
-tap.test('Agent API = ignore apdex', (t) => {
-  let agent = null
-  let api
-
-  t.beforeEach(() => {
+test('Agent API = ignore apdex', async (t) => {
+  t.beforeEach((ctx) => {
+    ctx.nr = {}
     loggerMock.warn.reset()
-    agent = helper.loadMockedAgent({
+    const agent = helper.loadMockedAgent({
       attributes: {
         enabled: true
       }
     })
-    api = new API(agent)
+    ctx.nr.api = new API(agent)
+    ctx.nr.agent = agent
   })
 
-  t.afterEach(() => {
-    helper.unloadAgent(agent)
+  t.afterEach((ctx) => {
+    helper.unloadAgent(ctx.nr.agent)
   })
 
-  t.test('should set ignoreApdex on active transaction', (t) => {
+  await t.test('should set ignoreApdex on active transaction', (t, end) => {
+    const { agent, api } = t.nr
     helper.runInTransaction(agent, (tx) => {
       api.ignoreApdex()
-      t.equal(tx.ignoreApdex, true)
-      t.equal(loggerMock.warn.callCount, 0)
-      t.end()
+      assert.equal(tx.ignoreApdex, true)
+      assert.equal(loggerMock.warn.callCount, 0)
+      end()
     })
   })
 
-  t.test('should log warning if not in active transaction', (t) => {
+  await t.test('should log warning if not in active transaction', (t, end) => {
+    const { api } = t.nr
     api.ignoreApdex()
-    t.equal(loggerMock.warn.callCount, 1)
-    t.equal(
+    assert.equal(loggerMock.warn.callCount, 1)
+    assert.equal(
       loggerMock.warn.args[0][0],
       'Apdex will not be ignored. ignoreApdex must be called within the scope of a transaction.'
     )
-    t.end()
+    end()
   })
-
-  t.end()
 })

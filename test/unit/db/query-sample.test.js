@@ -5,15 +5,14 @@
 
 'use strict'
 
-const tap = require('tap')
+const test = require('node:test')
+const assert = require('node:assert')
 const sinon = require('sinon')
 const QuerySample = require('../../../lib/db/query-sample')
 const codec = require('../../../lib/util/codec')
 
-tap.test('Query Sample', (t) => {
-  t.autoend()
-
-  t.test('should set trace to query with longest duration', (t) => {
+test('Query Sample', async (t) => {
+  await t.test('should set trace to query with longest duration', () => {
     const trace = {
       duration: 3
     }
@@ -25,12 +24,10 @@ tap.test('Query Sample', (t) => {
     const querySample = new QuerySample(tracer, trace)
     querySample.aggregate(slowQuery)
 
-    t.equal(querySample.trace.duration, 30)
-
-    t.end()
+    assert.equal(querySample.trace.duration, 30)
   })
 
-  t.test('should not set trace to query with shorter duration', (t) => {
+  await t.test('should not set trace to query with shorter duration', () => {
     const trace = {
       duration: 30
     }
@@ -42,12 +39,10 @@ tap.test('Query Sample', (t) => {
     const querySample = new QuerySample(tracer, trace)
     querySample.aggregate(slowQuery)
 
-    t.equal(querySample.trace.duration, 30)
-
-    t.end()
+    assert.equal(querySample.trace.duration, 30)
   })
 
-  t.test('should merge sample with longer duration', (t) => {
+  await t.test('should merge sample with longer duration', () => {
     const slowSample = {
       trace: {
         duration: 30
@@ -61,12 +56,10 @@ tap.test('Query Sample', (t) => {
     const querySample = new QuerySample(tracer, trace)
     querySample.merge(slowSample)
 
-    t.equal(querySample.trace.duration, 30)
-
-    t.end()
+    assert.equal(querySample.trace.duration, 30)
   })
 
-  t.test('should not merge sample with shorter duration', (t) => {
+  await t.test('should not merge sample with shorter duration', () => {
     const slowSample = {
       trace: {
         duration: 3
@@ -80,12 +73,10 @@ tap.test('Query Sample', (t) => {
     const querySample = new QuerySample(tracer, trace)
     querySample.merge(slowSample)
 
-    t.equal(querySample.trace.duration, 30)
-
-    t.end()
+    assert.equal(querySample.trace.duration, 30)
   })
 
-  t.test('should encode json when simple_compression is disabled', (t) => {
+  await t.test('should encode json when simple_compression is disabled', () => {
     const fakeTracer = {
       config: {
         simple_compression: false
@@ -108,15 +99,13 @@ tap.test('Query Sample', (t) => {
 
     querySample.prepareJSON(() => {})
 
-    t.ok(codecCalled)
+    assert.ok(codecCalled)
 
     QuerySample.prototype.getParams.restore()
     codec.encode.restore()
-
-    t.end()
   })
 
-  t.test('should call _getJSON when simple_compression is enabled', (t) => {
+  await t.test('should call _getJSON when simple_compression is enabled', () => {
     const fakeTracer = {
       config: {
         simple_compression: true,
@@ -151,15 +140,13 @@ tap.test('Query Sample', (t) => {
 
     clock.runAll()
 
-    t.ok(getFullNameCalled)
+    assert.ok(getFullNameCalled)
 
     clock.restore()
     QuerySample.prototype.getParams.restore()
-
-    t.end()
   })
 
-  t.test('should return segment attributes as params if present', (t) => {
+  await t.test('should return segment attributes as params if present', () => {
     const expectedParams = {
       host: 'host',
       port_path_or_id: 1,
@@ -187,14 +174,12 @@ tap.test('Query Sample', (t) => {
 
     const result = querySample.getParams()
 
-    t.equal(result.host, expectedParams.host)
-    t.equal(result.port_path_or_id, expectedParams.port_path_or_id)
-    t.equal(result.database_name, expectedParams.database_name)
-
-    t.end()
+    assert.equal(result.host, expectedParams.host)
+    assert.equal(result.port_path_or_id, expectedParams.port_path_or_id)
+    assert.equal(result.database_name, expectedParams.database_name)
   })
 
-  t.test('should add DT intrinsics when DT enabled', (t) => {
+  await t.test('should add DT intrinsics when DT enabled', () => {
     let addDtIntrinsicsCalled = false
     const fakeTracer = {
       config: {
@@ -219,12 +204,10 @@ tap.test('Query Sample', (t) => {
 
     querySample.getParams()
 
-    t.equal(addDtIntrinsicsCalled, true)
-
-    t.end()
+    assert.equal(addDtIntrinsicsCalled, true)
   })
 
-  t.test('should not add DT intrinsics when DT disabled', (t) => {
+  await t.test('should not add DT intrinsics when DT disabled', () => {
     let addDtIntrinsicsCalled = false
     const fakeTracer = {
       config: {
@@ -249,8 +232,6 @@ tap.test('Query Sample', (t) => {
 
     querySample.getParams()
 
-    t.equal(addDtIntrinsicsCalled, false)
-
-    t.end()
+    assert.equal(addDtIntrinsicsCalled, false)
   })
 })

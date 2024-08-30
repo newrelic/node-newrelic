@@ -4,60 +4,44 @@
  */
 
 'use strict'
-
-const tap = require('tap')
+const test = require('node:test')
+const assert = require('node:assert')
 const API = require('../../../api')
 const helper = require('../../lib/agent_helper')
 const sinon = require('sinon')
 
-tap.test('Agent API - shutdown', (t) => {
-  t.autoend()
-
-  let agent = null
-  let api = null
-
-  function setupAgentApi() {
-    agent = helper.loadMockedAgent()
-    api = new API(agent)
+test('Agent API - shutdown', async (t) => {
+  t.beforeEach((ctx) => {
+    ctx.nr = {}
+    const agent = helper.loadMockedAgent()
+    ctx.nr.api = new API(agent)
 
     agent.config.attributes.enabled = true
-  }
-
-  function cleanupAgentApi() {
-    helper.unloadAgent(agent)
-    agent = null
-  }
-
-  t.test('exports a shutdown function', (t) => {
-    setupAgentApi()
-    t.teardown(() => {
-      cleanupAgentApi()
-    })
-
-    t.ok(api.shutdown)
-    t.type(api.shutdown, 'function')
-
-    t.end()
+    ctx.nr.agent = agent
   })
 
-  t.test('calls agent stop', (t) => {
-    setupAgentApi()
-    t.teardown(() => {
-      cleanupAgentApi()
-    })
+  t.afterEach((ctx) => {
+    helper.unloadAgent(ctx.nr.agent)
+  })
 
+  await t.test('exports a shutdown function', (t, end) => {
+    const { api } = t.nr
+    assert.ok(api.shutdown)
+    assert.equal(typeof api.shutdown, 'function')
+    end()
+  })
+
+  await t.test('calls agent stop', (t, end) => {
+    const { agent, api } = t.nr
     const mock = sinon.mock(agent)
     mock.expects('stop').once()
     api.shutdown()
     mock.verify()
-
-    t.end()
+    end()
   })
 
-  t.test('accepts callback as second argument', (t) => {
-    setupAgentApi()
-    t.teardown(cleanupAgentApi)
-
+  await t.test('accepts callback as second argument', (t, end) => {
+    const { agent, api } = t.nr
     agent.stop = function (cb) {
       cb()
     }
@@ -65,14 +49,12 @@ tap.test('Agent API - shutdown', (t) => {
     const callback = sinon.spy()
     api.shutdown({}, callback)
 
-    t.equal(callback.called, true)
-    t.end()
+    assert.equal(callback.called, true)
+    end()
   })
 
-  t.test('accepts callback as first argument', (t) => {
-    setupAgentApi()
-    t.teardown(cleanupAgentApi)
-
+  await t.test('accepts callback as first argument', (t, end) => {
+    const { agent, api } = t.nr
     agent.stop = function (cb) {
       cb()
     }
@@ -80,120 +62,109 @@ tap.test('Agent API - shutdown', (t) => {
     const callback = sinon.spy()
     api.shutdown(callback)
 
-    t.equal(callback.called, true)
-    t.end()
+    assert.equal(callback.called, true)
+    end()
   })
 
-  t.test('does not error when no callback is provided', (t) => {
-    setupAgentApi()
-    t.teardown(cleanupAgentApi)
-
-    // should not throw
-    api.shutdown()
-
-    t.end()
+  await t.test('does not error when no callback is provided', (t, end) => {
+    const { api } = t.nr
+    assert.doesNotThrow(() => {
+      api.shutdown()
+    })
+    end()
   })
 
-  t.test('when `options.collectPendingData` is `true`', (t) => {
-    t.autoend()
+  await t.test('calls forceHarvestAll when state is `started`', (t, end) => {
+    const { agent, api } = t.nr
+    const mock = sinon.mock(agent)
+    agent.setState('started')
+    mock.expects('forceHarvestAll').once()
+    api.shutdown({ collectPendingData: true })
+    mock.verify()
 
-    t.beforeEach(setupAgentApi)
-    t.afterEach(cleanupAgentApi)
-
-    t.test('calls forceHarvestAll when state is `started`', (t) => {
-      const mock = sinon.mock(agent)
-      agent.setState('started')
-      mock.expects('forceHarvestAll').once()
-      api.shutdown({ collectPendingData: true })
-      mock.verify()
-
-      t.end()
-    })
-
-    t.test('calls forceHarvestAll when state changes to "started"', (t) => {
-      const mock = sinon.mock(agent)
-      agent.setState('starting')
-      mock.expects('forceHarvestAll').once()
-      api.shutdown({ collectPendingData: true })
-      agent.setState('started')
-      mock.verify()
-
-      t.end()
-    })
-
-    t.test('does not call forceHarvestAll when state is not "started"', (t) => {
-      const mock = sinon.mock(agent)
-      agent.setState('starting')
-      mock.expects('forceHarvestAll').never()
-      api.shutdown({ collectPendingData: true })
-      mock.verify()
-
-      t.end()
-    })
-
-    t.test('calls stop when timeout is not given and state changes to "errored"', (t) => {
-      const mock = sinon.mock(agent)
-      agent.setState('starting')
-      mock.expects('stop').once()
-      api.shutdown({ collectPendingData: true })
-      agent.setState('errored')
-      mock.verify()
-
-      t.end()
-    })
-
-    t.test('calls stop when timeout is given and state changes to "errored"', (t) => {
-      const mock = sinon.mock(agent)
-      agent.setState('starting')
-      mock.expects('stop').once()
-      api.shutdown({ collectPendingData: true, timeout: 1000 })
-      agent.setState('errored')
-      mock.verify()
-
-      t.end()
-    })
+    end()
   })
 
-  t.test('when `options.waitForIdle` is `true`', (t) => {
-    t.autoend()
+  await t.test('calls forceHarvestAll when state changes to "started"', (t, end) => {
+    const { agent, api } = t.nr
+    const mock = sinon.mock(agent)
+    agent.setState('starting')
+    mock.expects('forceHarvestAll').once()
+    api.shutdown({ collectPendingData: true })
+    agent.setState('started')
+    mock.verify()
 
-    t.beforeEach(setupAgentApi)
-    t.afterEach(cleanupAgentApi)
+    end()
+  })
 
-    t.test('calls stop when there are no active transactions', (t) => {
-      const mock = sinon.mock(agent)
-      agent.setState('started')
-      mock.expects('stop').once()
+  await t.test('does not call forceHarvestAll when state is not "started"', (t, end) => {
+    const { agent, api } = t.nr
+    const mock = sinon.mock(agent)
+    agent.setState('starting')
+    mock.expects('forceHarvestAll').never()
+    api.shutdown({ collectPendingData: true })
+    mock.verify()
+
+    end()
+  })
+
+  await t.test('calls stop when timeout is not given and state changes to "errored"', (t, end) => {
+    const { agent, api } = t.nr
+    const mock = sinon.mock(agent)
+    agent.setState('starting')
+    mock.expects('stop').once()
+    api.shutdown({ collectPendingData: true })
+    agent.setState('errored')
+    mock.verify()
+
+    end()
+  })
+
+  await t.test('calls stop when timeout is given and state changes to "errored"', (t, end) => {
+    const { agent, api } = t.nr
+    const mock = sinon.mock(agent)
+    agent.setState('starting')
+    mock.expects('stop').once()
+    api.shutdown({ collectPendingData: true, timeout: 1000 })
+    agent.setState('errored')
+    mock.verify()
+
+    end()
+  })
+
+  await t.test('calls stop when there are no active transactions', (t, end) => {
+    const { agent, api } = t.nr
+    const mock = sinon.mock(agent)
+    agent.setState('started')
+    mock.expects('stop').once()
+    api.shutdown({ waitForIdle: true })
+    mock.verify()
+
+    end()
+  })
+
+  await t.test('calls stop after transactions complete when there are some', (t, end) => {
+    const { agent, api } = t.nr
+    let mock = sinon.mock(agent)
+    agent.setState('started')
+    mock.expects('stop').never()
+    helper.runInTransaction(agent, (tx) => {
       api.shutdown({ waitForIdle: true })
       mock.verify()
+      mock.restore()
 
-      t.end()
-    })
-
-    t.test('calls stop after transactions complete when there are some', (t) => {
-      let mock = sinon.mock(agent)
-      agent.setState('started')
-      mock.expects('stop').never()
-      helper.runInTransaction(agent, (tx) => {
-        api.shutdown({ waitForIdle: true })
+      mock = sinon.mock(agent)
+      mock.expects('stop').once()
+      tx.end()
+      setImmediate(() => {
         mock.verify()
-        mock.restore()
-
-        mock = sinon.mock(agent)
-        mock.expects('stop').once()
-        tx.end()
-        setImmediate(() => {
-          mock.verify()
-          t.end()
-        })
+        end()
       })
     })
   })
 
-  t.test('calls forceHarvestAll when a timeout is given and not reached', (t) => {
-    setupAgentApi()
-    t.teardown(cleanupAgentApi)
-
+  await t.test('calls forceHarvestAll when a timeout is given and not reached', (t, end) => {
+    const { agent, api } = t.nr
     const mock = sinon.mock(agent)
     agent.setState('starting')
     mock.expects('forceHarvestAll').once()
@@ -201,12 +172,11 @@ tap.test('Agent API - shutdown', (t) => {
     agent.setState('started')
     mock.verify()
 
-    t.end()
+    end()
   })
 
-  t.test('calls stop when timeout is reached and does not forceHarvestAll', (t) => {
-    setupAgentApi()
-
+  await t.test('calls stop when timeout is reached and does not forceHarvestAll', (t, end) => {
+    const { agent, api } = t.nr
     const originalSetTimeout = setTimeout
     let timeoutHandle = null
     global.setTimeout = function patchedSetTimeout() {
@@ -221,11 +191,10 @@ tap.test('Agent API - shutdown', (t) => {
       return timeoutHandle
     }
 
-    t.teardown(() => {
+    t.after(() => {
       timeoutHandle.unref()
       timeoutHandle = null
       global.setTimeout = originalSetTimeout
-      cleanupAgentApi()
     })
 
     let didCallForceHarvestAll = false
@@ -244,17 +213,15 @@ tap.test('Agent API - shutdown', (t) => {
     agent.setState('starting')
 
     api.shutdown({ collectPendingData: true, timeout: 1000 }, function sdCallback() {
-      t.notOk(didCallForceHarvestAll)
-      t.equal(stopCallCount, 1)
+      assert.ok(!didCallForceHarvestAll)
+      assert.equal(stopCallCount, 1)
 
-      t.end()
+      end()
     })
   })
 
-  t.test('calls forceHarvestAll when timeout is not a number', (t) => {
-    setupAgentApi()
-    t.teardown(cleanupAgentApi)
-
+  await t.test('calls forceHarvestAll when timeout is not a number', (t, end) => {
+    const { agent, api } = t.nr
     agent.setState('starting')
 
     agent.stop = function mockedStop(cb) {
@@ -270,17 +237,16 @@ tap.test('Agent API - shutdown', (t) => {
     }
 
     api.shutdown({ collectPendingData: true, timeout: 'xyz' }, function () {
-      t.equal(forceHarvestCallCount, 1)
-      t.end()
+      assert.equal(forceHarvestCallCount, 1)
+      end()
     })
 
     // Waits for agent to start before harvesting and shutting down
     agent.setState('started')
   })
 
-  t.test('calls stop after harvest', (t) => {
-    setupAgentApi()
-    t.teardown(cleanupAgentApi)
+  await t.test('calls stop after harvest', (t, end) => {
+    const { agent, api } = t.nr
 
     agent.setState('starting')
 
@@ -292,22 +258,21 @@ tap.test('Agent API - shutdown', (t) => {
     }
 
     agent.forceHarvestAll = function mockedForceHarvest(cb) {
-      t.equal(stopCallCount, 0)
+      assert.equal(stopCallCount, 0)
       setImmediate(cb)
     }
 
     api.shutdown({ collectPendingData: true }, function () {
-      t.equal(stopCallCount, 1)
-      t.end()
+      assert.equal(stopCallCount, 1)
+      end()
     })
 
     // Waits for agent to start before harvesting and shutting down
     agent.setState('started')
   })
 
-  t.test('calls stop when harvest errors', (t) => {
-    setupAgentApi()
-    t.teardown(cleanupAgentApi)
+  await t.test('calls stop when harvest errors', (t, end) => {
+    const { agent, api } = t.nr
 
     agent.setState('starting')
 
@@ -319,7 +284,7 @@ tap.test('Agent API - shutdown', (t) => {
     }
 
     agent.forceHarvestAll = function mockedForceHarvest(cb) {
-      t.equal(stopCallCount, 0)
+      assert.equal(stopCallCount, 0)
 
       setImmediate(() => {
         cb(new Error('some error'))
@@ -327,8 +292,8 @@ tap.test('Agent API - shutdown', (t) => {
     }
 
     api.shutdown({ collectPendingData: true }, function () {
-      t.equal(stopCallCount, 1)
-      t.end()
+      assert.equal(stopCallCount, 1)
+      end()
     })
 
     // Waits for agent to start before harvesting and shutting down

@@ -4,56 +4,55 @@
  */
 
 'use strict'
-
-const tap = require('tap')
+const test = require('node:test')
+const assert = require('node:assert')
 const API = require('../../../api')
 const helper = require('../../lib/agent_helper')
 
-tap.test('Agent API - custom metrics', (t) => {
-  t.autoend()
-
-  let agent = null
-  let api = null
-
-  t.beforeEach(() => {
-    agent = helper.loadMockedAgent()
-    api = new API(agent)
+test('Agent API - custom metrics', async (t) => {
+  t.beforeEach((ctx) => {
+    ctx.nr = {}
+    const agent = helper.loadMockedAgent()
+    ctx.nr.api = new API(agent)
+    ctx.nr.agent = agent
   })
 
-  t.afterEach(() => {
-    helper.unloadAgent(agent)
-    agent = null
+  t.afterEach((ctx) => {
+    helper.unloadAgent(ctx.nr.agent)
   })
 
-  t.test('should prepend "Custom" in front of name', (t) => {
+  await t.test('should prepend "Custom" in front of name', (t, end) => {
+    const { api } = t.nr
     api.recordMetric('metric/thing', 3)
     api.recordMetric('metric/thing', 4)
     api.recordMetric('metric/thing', 5)
 
     const metric = api.agent.metrics.getMetric('Custom/metric/thing')
-    t.ok(metric)
+    assert.ok(metric)
 
-    t.end()
+    end()
   })
 
-  t.test('it should aggregate metric values', (t) => {
+  await t.test('it should aggregate metric values', (t, end) => {
+    const { api } = t.nr
     api.recordMetric('metric/thing', 3)
     api.recordMetric('metric/thing', 4)
     api.recordMetric('metric/thing', 5)
 
     const metric = api.agent.metrics.getMetric('Custom/metric/thing')
 
-    t.equal(metric.total, 12)
-    t.equal(metric.totalExclusive, 12)
-    t.equal(metric.min, 3)
-    t.equal(metric.max, 5)
-    t.equal(metric.sumOfSquares, 50)
-    t.equal(metric.callCount, 3)
+    assert.equal(metric.total, 12)
+    assert.equal(metric.totalExclusive, 12)
+    assert.equal(metric.min, 3)
+    assert.equal(metric.max, 5)
+    assert.equal(metric.sumOfSquares, 50)
+    assert.equal(metric.callCount, 3)
 
-    t.end()
+    end()
   })
 
-  t.test('it should merge metrics', (t) => {
+  await t.test('it should merge metrics', (t, end) => {
+    const { api } = t.nr
     api.recordMetric('metric/thing', 3)
     api.recordMetric('metric/thing', {
       total: 9,
@@ -65,40 +64,41 @@ tap.test('Agent API - custom metrics', (t) => {
 
     const metric = api.agent.metrics.getMetric('Custom/metric/thing')
 
-    t.equal(metric.total, 12)
-    t.equal(metric.totalExclusive, 12)
-    t.equal(metric.min, 3)
-    t.equal(metric.max, 5)
-    t.equal(metric.sumOfSquares, 50)
-    t.equal(metric.callCount, 3)
+    assert.equal(metric.total, 12)
+    assert.equal(metric.totalExclusive, 12)
+    assert.equal(metric.min, 3)
+    assert.equal(metric.max, 5)
+    assert.equal(metric.sumOfSquares, 50)
+    assert.equal(metric.callCount, 3)
 
-    t.end()
+    end()
   })
 
-  t.test('it should increment properly', (t) => {
+  await t.test('it should increment properly', (t, end) => {
+    const { api } = t.nr
     api.incrementMetric('metric/thing')
     api.incrementMetric('metric/thing')
     api.incrementMetric('metric/thing')
 
     const metric = api.agent.metrics.getMetric('Custom/metric/thing')
 
-    t.equal(metric.total, 0)
-    t.equal(metric.totalExclusive, 0)
-    t.equal(metric.min, 0)
-    t.equal(metric.max, 0)
-    t.equal(metric.sumOfSquares, 0)
-    t.equal(metric.callCount, 3)
+    assert.equal(metric.total, 0)
+    assert.equal(metric.totalExclusive, 0)
+    assert.equal(metric.min, 0)
+    assert.equal(metric.max, 0)
+    assert.equal(metric.sumOfSquares, 0)
+    assert.equal(metric.callCount, 3)
 
     api.incrementMetric('metric/thing', 4)
     api.incrementMetric('metric/thing', 5)
 
-    t.equal(metric.total, 0)
-    t.equal(metric.totalExclusive, 0)
-    t.equal(metric.min, 0)
-    t.equal(metric.max, 0)
-    t.equal(metric.sumOfSquares, 0)
-    t.equal(metric.callCount, 12)
+    assert.equal(metric.total, 0)
+    assert.equal(metric.totalExclusive, 0)
+    assert.equal(metric.min, 0)
+    assert.equal(metric.max, 0)
+    assert.equal(metric.sumOfSquares, 0)
+    assert.equal(metric.callCount, 12)
 
-    t.end()
+    end()
   })
 })
