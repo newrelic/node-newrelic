@@ -4,7 +4,8 @@
  */
 
 'use strict'
-const tap = require('tap')
+const test = require('node:test')
+const assert = require('node:assert')
 const CustomEventAggregator = require('../../../lib/custom-events/custom-event-aggregator')
 const Metrics = require('../../../lib/metrics')
 const NAMES = require('../../../lib/metrics/names')
@@ -14,12 +15,10 @@ const RUN_ID = 1337
 const LIMIT = 5
 const EXPECTED_METHOD = 'custom_event_data'
 
-tap.test('Custom Event Aggregator', (t) => {
-  t.autoend()
-  let eventAggregator
-
-  t.beforeEach(() => {
-    eventAggregator = new CustomEventAggregator(
+test('Custom Event Aggregator', async (t) => {
+  t.beforeEach((ctx) => {
+    ctx.nr = {}
+    ctx.nr.eventAggregator = new CustomEventAggregator(
       {
         runId: RUN_ID,
         limit: LIMIT,
@@ -33,36 +32,34 @@ tap.test('Custom Event Aggregator', (t) => {
     )
   })
 
-  t.afterEach(() => {
-    eventAggregator = null
+  t.afterEach((ctx) => {
+    ctx.nr.eventAggregator = null
   })
 
-  t.test('should set the correct default method', (t) => {
+  await t.test('should set the correct default method', (ctx) => {
+    const { eventAggregator } = ctx.nr
     const method = eventAggregator.method
-
-    t.equal(method, EXPECTED_METHOD)
-    t.end()
+    assert.equal(method, EXPECTED_METHOD)
   })
 
-  t.test('toPayloadSync() should return json format of data', (t) => {
+  await t.test('toPayloadSync() should return json format of data', (ctx) => {
+    const { eventAggregator } = ctx.nr
     const rawEvent = [{ type: 'Custom' }, { foo: 'bar' }]
 
     eventAggregator.add(rawEvent)
 
     const payload = eventAggregator._toPayloadSync()
-    t.equal(payload.length, 2)
+    assert.equal(payload.length, 2)
 
     const [runId, eventData] = payload
 
-    t.equal(runId, RUN_ID)
-    t.same(eventData, [rawEvent])
-    t.end()
+    assert.equal(runId, RUN_ID)
+    assert.deepStrictEqual(eventData, [rawEvent])
   })
 
-  t.test('toPayloadSync() should return nothing with no event data', (t) => {
+  await t.test('toPayloadSync() should return nothing with no event data', (ctx) => {
+    const { eventAggregator } = ctx.nr
     const payload = eventAggregator._toPayloadSync()
-
-    t.notOk(payload)
-    t.end()
+    assert.equal(payload, null)
   })
 })

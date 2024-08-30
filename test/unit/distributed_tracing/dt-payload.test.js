@@ -4,56 +4,51 @@
  */
 
 'use strict'
-const tap = require('tap')
+const test = require('node:test')
+const assert = require('node:assert')
 const DistributedTracePayload = require('../../../lib/transaction/dt-payload')
 const DistributedTracePayloadStub = DistributedTracePayload.Stub
 
-tap.test('DistributedTracePayload', function (t) {
-  t.test('has a text method that returns the stringified payload', function (t) {
+test('DistributedTracePayload', async function (t) {
+  await t.test('has a text method that returns the stringified payload', function () {
     const payload = {
       a: 1,
       b: 'test'
     }
     const dt = new DistributedTracePayload(payload)
     const output = JSON.parse(dt.text())
-    t.ok(Array.isArray(output.v))
-    t.same(output.d, payload)
-    t.end()
+    assert.ok(Array.isArray(output.v))
+    assert.deepStrictEqual(output.d, payload)
   })
 
-  t.test('has a httpSafe method that returns the base64 encoded payload', function (t) {
+  await t.test('has a httpSafe method that returns the base64 encoded payload', function () {
     const payload = {
       a: 1,
       b: 'test'
     }
     const dt = new DistributedTracePayload(payload)
     const output = JSON.parse(Buffer.from(dt.httpSafe(), 'base64').toString('utf-8'))
-    t.ok(Array.isArray(output.v))
-    t.same(output.d, payload)
-    t.end()
+    assert.ok(Array.isArray(output.v))
+    assert.deepStrictEqual(output.d, payload)
   })
-  t.end()
 })
 
-tap.test('DistributedTracePayloadStub', function (t) {
-  t.test('has a httpSafe method that returns an empty string', function (t) {
+test('DistributedTracePayloadStub', async function (t) {
+  await t.test('has a httpSafe method that returns an empty string', function () {
     const payload = {
       a: 1,
       b: 'test'
     }
     const dt = new DistributedTracePayloadStub(payload)
-    t.equal(dt.httpSafe(), '')
-    t.end()
+    assert.equal(dt.httpSafe(), '')
   })
 
-  t.test('has a text method that returns an empty string', function (t) {
+  await t.test('has a text method that returns an empty string', function () {
     const payload = {
       a: 1,
       b: 'test'
     }
     const dt = new DistributedTracePayloadStub(payload)
-    t.equal(dt.text(), '')
-    t.end()
+    assert.equal(dt.text(), '')
   })
-  t.end()
 })

@@ -4,7 +4,8 @@
  */
 
 'use strict'
-const tap = require('tap')
+const test = require('node:test')
+const assert = require('node:assert')
 const Exception = require('../../../lib/errors').Exception
 const helper = require('../../lib/agent_helper')
 const recorder = require('../../../lib/metrics/recorders/distributed-trace')
@@ -14,21 +15,21 @@ const recordSupportability = require('../../../lib/agent').prototype.recordSuppo
 
 const testCases = require('../../lib/cross_agent_tests/distributed_tracing/distributed_tracing.json')
 
-tap.test('distributed tracing', function (t) {
-  t.autoend()
-  t.beforeEach((t) => {
+test('distributed tracing', async function (t) {
+  t.beforeEach((ctx) => {
+    ctx.nr = {}
     const agent = helper.loadMockedAgent({ distributed_tracing: { enabled: true } })
     agent.recordSupportability = recordSupportability
-    t.context.agent = agent
+    ctx.nr.agent = agent
   })
 
-  t.afterEach((t) => {
-    helper.unloadAgent(t.context.agent)
+  t.afterEach((ctx) => {
+    helper.unloadAgent(ctx.nr.agent)
   })
 
-  testCases.forEach((testCase) => {
-    t.test(testCase.test_name, (t) => {
-      const { agent } = t.context
+  for (const testCase of testCases) {
+    await t.test(testCase.test_name, (ctx, end) => {
+      const { agent } = ctx.nr
       agent.config.trusted_account_key = testCase.trusted_account_key
       agent.config.account_id = testCase.account_id
       agent.config.primary_application_id = 'test app'
@@ -71,21 +72,21 @@ tap.test('distributed tracing', function (t) {
             Object.keys(exact).forEach((key) => {
               const match = keyRegex.exec(key)
               if (match) {
-                t.equal(created.d[match[1]], exact[key])
+                assert.equal(created.d[match[1]], exact[key])
               } else {
-                t.same(created.v, exact.v)
+                assert.deepStrictEqual(created.v, exact.v)
               }
             })
 
             if (outbound.expected) {
               outbound.expected.forEach((key) => {
-                t.ok(created.d.hasOwnProperty(keyRegex.exec(key)[1]))
+                assert.ok(created.d.hasOwnProperty(keyRegex.exec(key)[1]))
               })
             }
 
             if (outbound.unexpected) {
               outbound.unexpected.forEach((key) => {
-                t.notOk(created.d.hasOwnProperty(keyRegex.exec(key)[1]))
+                assert.ok(!created.d.hasOwnProperty(keyRegex.exec(key)[1]))
               })
             }
           })
@@ -95,7 +96,7 @@ tap.test('distributed tracing', function (t) {
         tx.end()
         const intrinsics = testCase.intrinsics
         intrinsics.target_events.forEach((type) => {
-          t.ok(['Transaction', 'TransactionError', 'Span'].includes(type))
+          assert.ok(['Transaction', 'TransactionError', 'Span'].includes(type))
 
           const common = intrinsics.common
           const specific = intrinsics[type] || {}
@@ -116,7 +117,7 @@ tap.test('distributed tracing', function (t) {
           const arbitrary = (specific.expected || []).concat(common.expected || [])
           const unexpected = (specific.unexpected || []).concat(common.unexpected || [])
 
-          t.ok(toCheck.length > 0)
+          assert.ok(toCheck.length > 0)
           toCheck.forEach((event) => {
             // Span events are not payload-formatted straight out of the
             // aggregator.
@@ -126,13 +127,13 @@ tap.test('distributed tracing', function (t) {
 
             const attributes = event[0]
             arbitrary.forEach((key) => {
-              t.ok(attributes[`${key}`], `${type} should have ${key}`)
+              assert.ok(attributes[`${key}`], `${type} should have ${key}`)
             })
             unexpected.forEach((key) => {
-              t.notOk(attributes[`${key}`], `${type} should not have ${key}`)
+              assert.ok(!attributes[`${key}`], `${type} should not have ${key}`)
             })
             Object.keys(exact).forEach((key) => {
-              t.equal(attributes[key], exact[key], `${type} should have equal ${key}`)
+              assert.equal(attributes[key], exact[key], `${type} should have equal ${key}`)
             })
           })
         })
@@ -142,10 +143,10 @@ tap.test('distributed tracing', function (t) {
           const metricName = metricPair[0]
           const callCount = metrics.getOrCreateMetric(metricName).callCount
           const metricCount = metricPair[1]
-          t.equal(callCount, metricCount, `${metricName} should have ${metricCount} samples`)
+          assert.equal(callCount, metricCount, `${metricName} should have ${metricCount} samples`)
         })
-        t.end()
+        end()
       })
     })
-  })
+  }
 })
