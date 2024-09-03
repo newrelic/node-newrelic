@@ -5,75 +5,75 @@
 
 'use strict'
 
-const tap = require('tap')
+const test = require('node:test')
+const assert = require('node:assert')
 const LlmChatCompletionSummary = require('../../../../lib/llm-events/openai/chat-completion-summary')
 const helper = require('../../../lib/agent_helper')
 const { req, chatRes, getExpectedResult } = require('./common')
 
-tap.test('LlmChatCompletionSummary', (t) => {
-  t.autoend()
+test.beforeEach((ctx) => {
+  ctx.nr = {}
+  ctx.nr.agent = helper.loadMockedAgent()
+})
 
-  let agent
-  t.beforeEach(() => {
-    agent = helper.loadMockedAgent()
-  })
+test.afterEach((ctx) => {
+  helper.unloadAgent(ctx.nr.agent)
+})
 
-  t.afterEach(() => {
-    helper.unloadAgent(agent)
-  })
-
-  t.test('should properly create a LlmChatCompletionSummary event', (t) => {
-    const api = helper.getAgentApi()
-    helper.runInTransaction(agent, (tx) => {
-      api.startSegment('fakeSegment', false, () => {
-        const segment = api.shim.getActiveSegment()
-        segment.end()
-        const chatSummaryEvent = new LlmChatCompletionSummary({
-          agent,
-          segment,
-          request: req,
-          response: chatRes
-        })
-        const expected = getExpectedResult(tx, chatSummaryEvent, 'summary')
-        t.same(chatSummaryEvent, expected)
-        t.end()
-      })
-    })
-  })
-
-  t.test('should set error to true', (t) => {
-    helper.runInTransaction(agent, () => {
+test('should properly create a LlmChatCompletionSummary event', (ctx, end) => {
+  const { agent } = ctx.nr
+  const api = helper.getAgentApi()
+  helper.runInTransaction(agent, (tx) => {
+    api.startSegment('fakeSegment', false, () => {
+      const segment = api.shim.getActiveSegment()
+      segment.end()
       const chatSummaryEvent = new LlmChatCompletionSummary({
         agent,
-        segment: null,
-        request: {},
-        response: {},
-        withError: true
+        segment,
+        request: req,
+        response: chatRes
       })
-      t.equal(true, chatSummaryEvent.error)
-      t.end()
+      const expected = getExpectedResult(tx, chatSummaryEvent, 'summary')
+      assert.deepEqual(chatSummaryEvent, expected)
+      end()
     })
   })
+})
 
-  t.test('should set `llm.` attributes from custom attributes', (t) => {
-    const api = helper.getAgentApi()
-    const conversationId = 'convo-id'
-    helper.runInTransaction(agent, () => {
-      api.addCustomAttribute('llm.conversation_id', conversationId)
-      api.addCustomAttribute('llm.foo', 'bar')
-      api.addCustomAttribute('llm.bar', 'baz')
-      api.addCustomAttribute('rando-key', 'rando-value')
-      const chatSummaryEvent = new LlmChatCompletionSummary({
-        agent,
-        segment: null,
-        request: {},
-        response: {}
-      })
-      t.equal(chatSummaryEvent['llm.conversation_id'], conversationId)
-      t.equal(chatSummaryEvent['llm.foo'], 'bar')
-      t.equal(chatSummaryEvent['llm.bar'], 'baz')
-      t.notOk(chatSummaryEvent['rando-key'])
-      t.end()
+test('should set error to true', (ctx, end) => {
+  const { agent } = ctx.nr
+  helper.runInTransaction(agent, () => {
+    const chatSummaryEvent = new LlmChatCompletionSummary({
+      agent,
+      segment: null,
+      request: {},
+      response: {},
+      withError: true
     })
+    assert.equal(true, chatSummaryEvent.error)
+    end()
+  })
+})
+
+test('should set `llm.` attributes from custom attributes', (ctx, end) => {
+  const { agent } = ctx.nr
+  const api = helper.getAgentApi()
+  const conversationId = 'convo-id'
+  helper.runInTransaction(agent, () => {
+    api.addCustomAttribute('llm.conversation_id', conversationId)
+    api.addCustomAttribute('llm.foo', 'bar')
+    api.addCustomAttribute('llm.bar', 'baz')
+    api.addCustomAttribute('rando-key', 'rando-value')
+    const chatSummaryEvent = new LlmChatCompletionSummary({
+      agent,
+      segment: null,
+      request: {},
+      response: {}
+    })
+    assert.equal(chatSummaryEvent['llm.conversation_id'], conversationId)
+    assert.equal(chatSummaryEvent['llm.foo'], 'bar')
+    assert.equal(chatSummaryEvent['llm.bar'], 'baz')
+    assert.ok(!chatSummaryEvent['rando-key'])
+    end()
   })
 })

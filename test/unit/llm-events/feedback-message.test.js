@@ -25,10 +25,5 @@ test('LlmFeedbackMessage', () => {
     message: 'This answer was amazing',
     ingest_source: 'Node'
   }
-  assert.equal(feedbackMsg.id, expected.id)
-  assert.equal(feedbackMsg.trace_id, expected.trace_id)
-  assert.equal(feedbackMsg.category, expected.category)
-  assert.equal(feedbackMsg.rating, expected.rating)
-  assert.equal(feedbackMsg.message, expected.message)
-  assert.equal(feedbackMsg.ingest_source, expected.ingest_source)
+  assert.deepEqual(feedbackMsg, expected)
 })

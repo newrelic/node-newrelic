@@ -5,162 +5,165 @@
 
 'use strict'
 
-const tap = require('tap')
+const test = require('node:test')
+const assert = require('node:assert')
 const LlmEmbedding = require('../../../../lib/llm-events/openai/embedding')
 const helper = require('../../../lib/agent_helper')
 const { res, getExpectedResult } = require('./common')
 
-tap.test('LlmEmbedding', (t) => {
-  t.autoend()
+test.beforeEach((ctx) => {
+  ctx.nr = {}
+  ctx.nr.agent = helper.loadMockedAgent()
+})
 
-  let agent
-  t.beforeEach(() => {
-    agent = helper.loadMockedAgent()
-  })
+test.afterEach((ctx) => {
+  helper.unloadAgent(ctx.nr.agent)
+})
 
-  t.afterEach(() => {
-    helper.unloadAgent(agent)
-  })
+test('should properly create a LlmEmbedding event', (ctx, end) => {
+  const { agent } = ctx.nr
+  const req = {
+    input: 'This is my test input',
+    model: 'gpt-3.5-turbo-0613'
+  }
 
-  t.test('should properly create a LlmEmbedding event', (t) => {
-    const req = {
-      input: 'This is my test input',
-      model: 'gpt-3.5-turbo-0613'
-    }
-
-    const api = helper.getAgentApi()
-    helper.runInTransaction(agent, (tx) => {
-      api.startSegment('fakeSegment', false, () => {
-        const segment = api.shim.getActiveSegment()
-        segment.end()
-        const embeddingEvent = new LlmEmbedding({ agent, segment, request: req, response: res })
-        const expected = getExpectedResult(tx, embeddingEvent, 'embedding')
-        t.same(embeddingEvent, expected)
-        t.end()
-      })
+  const api = helper.getAgentApi()
+  helper.runInTransaction(agent, (tx) => {
+    api.startSegment('fakeSegment', false, () => {
+      const segment = api.shim.getActiveSegment()
+      segment.end()
+      const embeddingEvent = new LlmEmbedding({ agent, segment, request: req, response: res })
+      const expected = getExpectedResult(tx, embeddingEvent, 'embedding')
+      assert.deepEqual(embeddingEvent, expected)
+      end()
     })
   })
-  ;[
-    { type: 'string', value: 'test input', expected: 'test input' },
-    {
-      type: 'array of strings',
-      value: ['test input', 'test input2'],
-      expected: 'test input,test input2'
-    },
-    { type: 'array of numbers', value: [1, 2, 3, 4], expected: '1,2,3,4' },
-    {
-      type: 'array of array of numbers',
-      value: [
-        [1, 2],
-        [3, 4],
-        [5, 6]
-      ],
-      expected: '1,2,3,4,5,6'
-    }
-  ].forEach(({ type, value, expected }) => {
-    t.test(`should properly serialize input when it is a ${type}`, (t) => {
-      const embeddingEvent = new LlmEmbedding({
-        agent,
-        segment: null,
-        request: { input: value },
-        response: {}
-      })
-      t.equal(embeddingEvent.input, expected)
-      t.end()
+})
+;[
+  { type: 'string', value: 'test input', expected: 'test input' },
+  {
+    type: 'array of strings',
+    value: ['test input', 'test input2'],
+    expected: 'test input,test input2'
+  },
+  { type: 'array of numbers', value: [1, 2, 3, 4], expected: '1,2,3,4' },
+  {
+    type: 'array of array of numbers',
+    value: [
+      [1, 2],
+      [3, 4],
+      [5, 6]
+    ],
+    expected: '1,2,3,4,5,6'
+  }
+].forEach(({ type, value, expected }) => {
+  test(`should properly serialize input when it is a ${type}`, (ctx, end) => {
+    const { agent } = ctx.nr
+    const embeddingEvent = new LlmEmbedding({
+      agent,
+      segment: null,
+      request: { input: value },
+      response: {}
     })
+    assert.equal(embeddingEvent.input, expected)
+    end()
   })
+})
 
-  t.test('should set error to true', (t) => {
-    const req = {
-      input: 'This is my test input',
-      model: 'gpt-3.5-turbo-0613'
-    }
+test('should set error to true', (ctx, end) => {
+  const { agent } = ctx.nr
+  const req = {
+    input: 'This is my test input',
+    model: 'gpt-3.5-turbo-0613'
+  }
 
-    const api = helper.getAgentApi()
-    helper.runInTransaction(agent, () => {
-      api.startSegment('fakeSegment', false, () => {
-        const segment = api.shim.getActiveSegment()
-        const embeddingEvent = new LlmEmbedding({
-          agent,
-          segment,
-          request: req,
-          response: res,
-          withError: true
-        })
-        t.equal(true, embeddingEvent.error)
-        t.end()
-      })
-    })
-  })
-
-  t.test('respects record_content', (t) => {
-    const req = {
-      input: 'This is my test input',
-      model: 'gpt-3.5-turbo-0613'
-    }
-    agent.config.ai_monitoring.record_content.enabled = false
-
-    const api = helper.getAgentApi()
-    helper.runInTransaction(agent, () => {
+  const api = helper.getAgentApi()
+  helper.runInTransaction(agent, () => {
+    api.startSegment('fakeSegment', false, () => {
       const segment = api.shim.getActiveSegment()
       const embeddingEvent = new LlmEmbedding({
         agent,
         segment,
         request: req,
-        response: res
+        response: res,
+        withError: true
       })
-      t.equal(embeddingEvent.input, undefined)
-      t.end()
+      assert.equal(true, embeddingEvent.error)
+      end()
     })
   })
+})
 
-  t.test('should calculate token count from tokenCountCallback', (t) => {
-    const req = {
-      input: 'This is my test input',
-      model: 'gpt-3.5-turbo-0613'
-    }
+test('respects record_content', (ctx, end) => {
+  const { agent } = ctx.nr
+  const req = {
+    input: 'This is my test input',
+    model: 'gpt-3.5-turbo-0613'
+  }
+  agent.config.ai_monitoring.record_content.enabled = false
 
-    const api = helper.getAgentApi()
-
-    function cb(model, content) {
-      if (model === req.model) {
-        return content.length
-      }
-    }
-
-    api.setLlmTokenCountCallback(cb)
-    helper.runInTransaction(agent, () => {
-      const segment = api.shim.getActiveSegment()
-      delete res.usage
-      const embeddingEvent = new LlmEmbedding({
-        agent,
-        segment,
-        request: req,
-        response: res
-      })
-      t.equal(embeddingEvent.token_count, 21)
-      t.end()
+  const api = helper.getAgentApi()
+  helper.runInTransaction(agent, () => {
+    const segment = api.shim.getActiveSegment()
+    const embeddingEvent = new LlmEmbedding({
+      agent,
+      segment,
+      request: req,
+      response: res
     })
+    assert.equal(embeddingEvent.input, undefined)
+    end()
   })
+})
 
-  t.test('should not set token count when not present in usage nor tokenCountCallback', (t) => {
-    const req = {
-      input: 'This is my test input',
-      model: 'gpt-3.5-turbo-0613'
+test('should calculate token count from tokenCountCallback', (ctx, end) => {
+  const { agent } = ctx.nr
+  const req = {
+    input: 'This is my test input',
+    model: 'gpt-3.5-turbo-0613'
+  }
+
+  const api = helper.getAgentApi()
+
+  function cb(model, content) {
+    if (model === req.model) {
+      return content.length
     }
+  }
 
-    const api = helper.getAgentApi()
-    helper.runInTransaction(agent, () => {
-      const segment = api.shim.getActiveSegment()
-      delete res.usage
-      const embeddingEvent = new LlmEmbedding({
-        agent,
-        segment,
-        request: req,
-        response: res
-      })
-      t.equal(embeddingEvent.token_count, undefined)
-      t.end()
+  api.setLlmTokenCountCallback(cb)
+  helper.runInTransaction(agent, () => {
+    const segment = api.shim.getActiveSegment()
+    delete res.usage
+    const embeddingEvent = new LlmEmbedding({
+      agent,
+      segment,
+      request: req,
+      response: res
     })
+    assert.equal(embeddingEvent.token_count, 21)
+    end()
+  })
+})
+
+test('should not set token count when not present in usage nor tokenCountCallback', (ctx, end) => {
+  const { agent } = ctx.nr
+  const req = {
+    input: 'This is my test input',
+    model: 'gpt-3.5-turbo-0613'
+  }
+
+  const api = helper.getAgentApi()
+  helper.runInTransaction(agent, () => {
+    const segment = api.shim.getActiveSegment()
+    delete res.usage
+    const embeddingEvent = new LlmEmbedding({
+      agent,
+      segment,
+      request: req,
+      response: res
+    })
+    assert.equal(embeddingEvent.token_count, undefined)
+    end()
   })
 })
