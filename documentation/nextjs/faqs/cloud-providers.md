@@ -21,32 +21,35 @@ To setup Next.js to load OpenTelemetry data to New Relic you must do the followi
 2. Install OpenTelemetry packages.
 
 ```sh
-npm install @opentelemetry/sdk-node @opentelemetry/resources @opentelemetry/semantic-conventions @opentelemetry/sdk-trace-node @opentelemetry/exporter-trace-otlp-http
+npm @opentelemetry/api @opentelemetry/auto-instrumentations-node @opentelemetry/exporter-metrics-otlp-proto @opentelemetry/exporter-trace-otlp-proto @opentelemetry/sdk-metrics @opentelemetry/sdk-node @opentelemetry/sdk-trace-node"
 ```
-
 3. Setup OpenTelemetry configuration in `new-relic-instrumentation.js` 
 
 ```js
-const { NodeSDK } = require('@opentelemetry/sdk-node')
-const { getNodeAutoInstrumentations } = require('@opentelemetry/auto-instrumentations-node')
-const { OTLPTraceExporter } = require('@opentelemetry/exporter-trace-otlp-http')
-const { Resource } = require('@opentelemetry/resources')
-const { SemanticResourceAttributes } = require('@opentelemetry/semantic-conventions')
-const { SimpleSpanProcessor } = require('@opentelemetry/sdk-trace-node')
- 
-const sdk = new NodeSDK({
-  resource: new Resource({
-    [SemanticResourceAttributes.SERVICE_NAME]: 'next-app',
+const opentelemetry = require('@opentelemetry/sdk-node');
+const {
+  getNodeAutoInstrumentations,
+} = require('@opentelemetry/auto-instrumentations-node');
+const {
+  OTLPTraceExporter,
+} = require('@opentelemetry/exporter-trace-otlp-proto');
+const {
+  OTLPMetricExporter,
+} = require('@opentelemetry/exporter-metrics-otlp-proto');
+const { PeriodicExportingMetricReader } = require('@opentelemetry/sdk-metrics');
+const { diag, DiagConsoleLogger, DiagLogLevel } = require('@opentelemetry/api');
+
+diag.setLogger(new DiagConsoleLogger(), DiagLogLevel.INFO);
+
+const sdk = new opentelemetry.NodeSDK({
+  traceExporter: new OTLPTraceExporter(),
+  metricReader: new PeriodicExportingMetricReader({
+    exporter: new OTLPMetricExporter(),
   }),
-  spanProcessor: new SimpleSpanProcessor(new OTLPTraceExporter({
-    url: 'https://otlp.nr-data.net',
-    headers: {
-      'api-key': process.env.NEW_RELIC_API_KEY
-    }
-  })),
-  instrumentations: [getNodeAutoInstrumentations()]
-})
-sdk.start()
+  instrumentations: [getNodeAutoInstrumentations()],
+});
+
+sdk.start();
 ```
 
 4. Add the following to `instrumentation.ts` in the root of your Next.js project:
@@ -58,4 +61,22 @@ export async function register() {
   }
 }
 ```
+
+5. Export the following environment variables:
+
+**Note**: `<your_license_key>` should be a New Relic ingest key.
+
+```sh
+export OTEL_SERVICE_NAME=nextjs-otel-app
+export OTEL_RESOURCE_ATTRIBUTES=service.instance.id=123
+export OTEL_EXPORTER_OTLP_ENDPOINT=https://otlp.nr-data.net
+export OTEL_EXPORTER_OTLP_HEADERS=api-key=<your_license_key>
+export OTEL_ATTRIBUTE_VALUE_LENGTH_LIMIT=4095
+export OTEL_EXPORTER_OTLP_COMPRESSION=gzip
+export OTEL_EXPORTER_OTLP_PROTOCOL=http/protobuf
+export OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE=delta
+```
+
+For more information on using OpenTelemetry with New Relic, check out this [example application](https://github.com/newrelic/newrelic-opentelemetry-examples/tree/7154872abd2bfd466fa77af4049b4189dcfff99f/getting-started-guides/javascript)
+
 
