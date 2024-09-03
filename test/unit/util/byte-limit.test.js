@@ -4,79 +4,65 @@
  */
 
 'use strict'
-
-const { test } = require('tap')
+const assert = require('node:assert')
+const test = require('node:test')
 const byteUtils = require('../../../lib/util/byte-limit')
 
-test('byte-limit', (t) => {
-  t.autoend()
-
-  t.test('#isValidLength', (t) => {
-    t.autoend()
-    t.test('returns false when the string is larger than the limit', (t) => {
-      t.notOk(byteUtils.isValidLength('12345', 4))
-      t.end()
+test('byte-limit', async (t) => {
+  await t.test('#isValidLength', async (t) => {
+    await t.test('returns false when the string is larger than the limit', () => {
+      assert.ok(!byteUtils.isValidLength('12345', 4))
     })
 
-    t.test('returns true when the string is equal to the limit', (t) => {
-      t.ok(byteUtils.isValidLength('12345', 5))
-      t.end()
+    await t.test('returns true when the string is equal to the limit', () => {
+      assert.ok(byteUtils.isValidLength('12345', 5))
     })
 
-    t.test('returns true when the string is smaller than the limit', (t) => {
-      t.ok(byteUtils.isValidLength('12345', 6))
-      t.end()
+    await t.test('returns true when the string is smaller than the limit', () => {
+      assert.ok(byteUtils.isValidLength('12345', 6))
     })
   })
-  t.test('#compareLength', (t) => {
-    t.autoend()
-    t.test('returns -1 when the string is smaller than the limit', (t) => {
+
+  await t.test('#compareLength', async (t) => {
+    await t.test('returns -1 when the string is smaller than the limit', () => {
       const str = '123456789'
       const cmpVal = byteUtils.compareLength(str, 255)
-      t.ok(cmpVal < 0)
-      t.end()
+      assert.ok(cmpVal < 0)
     })
-    t.test('returns 0 when the string is equal than the limit', (t) => {
+    await t.test('returns 0 when the string is equal than the limit', () => {
       const str = '123456789'
       const cmpVal = byteUtils.compareLength(str, 9)
-      t.equal(cmpVal, 0)
-      t.end()
+      assert.equal(cmpVal, 0)
     })
-    t.test('returns 1 when the string is larger than the limit', (t) => {
+    await t.test('returns 1 when the string is larger than the limit', () => {
       const str = '123456789'
       const cmpVal = byteUtils.compareLength(str, 2)
-      t.ok(cmpVal > 0)
-      t.end()
+      assert.ok(cmpVal > 0)
     })
   })
 
-  t.test('#truncate', (t) => {
-    t.autoend()
-    t.test('truncates string value to given limit', (t) => {
+  await t.test('#truncate', async (t) => {
+    await t.test('truncates string value to given limit', () => {
       let str = '123456789'
       str = byteUtils.truncate(str, 5)
-      t.equal(str, '12345')
-      t.end()
+      assert.equal(str, '12345')
     })
-    t.test('returns original string if within limit', (t) => {
+    await t.test('returns original string if within limit', () => {
       let str = '123456789'
       str = byteUtils.truncate(str, 10)
-      t.equal(str, '123456789')
-      t.end()
+      assert.equal(str, '123456789')
     })
-    t.test('respects multibyte characters', (t) => {
+    await t.test('respects multibyte characters', () => {
       let str = '\uD87E\uDC04\uD87E\uDC04'
-      t.equal(Buffer.byteLength(str, 'utf8'), 8)
+      assert.equal(Buffer.byteLength(str, 'utf8'), 8)
       str = byteUtils.truncate(str, 3)
-      t.equal(str, '\uD87E')
-      t.end()
+      assert.equal(str, '\uD87E')
     })
-    t.test('should strings with split unicode characters properly', (t) => {
+    await t.test('should strings with split unicode characters properly', () => {
       let str = '\uD87E\uDC04\uD87E\uDC04'
-      t.equal(Buffer.byteLength(str, 'utf8'), 8)
+      assert.equal(Buffer.byteLength(str, 'utf8'), 8)
       str = byteUtils.truncate(str, 2)
-      t.equal(str, '')
-      t.end()
+      assert.equal(str, '')
     })
   })
 })
