@@ -23,6 +23,7 @@ test('LlmErrorMessage', async () => {
     'vector_store_id': undefined,
     'tool_id': undefined
   }
+  assert.ok(errorMsg.toString(), 'LlmErrorMessage')  
   assert.equal(errorMsg['http.statusCode'], expected['http.statusCode'])
   assert.equal(errorMsg['error.message'], expected['error.message'])
   assert.equal(errorMsg['error.code'], expected['error.code'])
