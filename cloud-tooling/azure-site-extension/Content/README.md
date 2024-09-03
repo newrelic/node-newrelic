@@ -19,8 +19,12 @@ Once installed, the extension creates the following artifacts:
 
 - Folder: `C:\home\SiteExtensions\NewRelic.Azure.Websites.Extension.NodeAgent`
 - XDT: `applicationHost.xdt` that will add the necessary `NODE_OPTIONS` environment variable on application startup
+- The New Relic Node agent and dependencies will be installed into `C:\home\site\wwwroot\node_modules`
 
 If the extension fails to install, a log file is created at `C:\home\SiteExtensions\NewRelic.Azure.Websites.Extension.NodeAgent\install.log`.
+
+If the New Relic agent has been installed successfully and logging has been enabled, the agent will append its logs to a file at `C:\home\site\wwwroot\newrelic_agent.log`.
+
 
 ## Configuration
 The New Relic Node agent is configured with the `newrelic.js` file, or via environment variables. [See our documentation for more detailed configuration](https://docs.newrelic.com/docs/apm/agents/nodejs-agent/installation-configuration/nodejs-agent-configuration/).
@@ -40,6 +44,6 @@ Below is a description of the files that make up the extension. This can be help
   - `Content/applicationHost.xdt` - XDT transformation to add the necessary agent startup environment variable to the app config when the app starts up
   - `Content/install.cmd` - Simple batch file that wraps a call to the Powershell `install.ps1` script
   - `Content/install.ps1` - Powershell script that moves/installs the agent bundle to the proper location on the host
-  - `Content/uninstall.cmd` - Simple batch file that will remove the Node installtion artifacts when the extension is removed
+  - `Content/uninstall.cmd` - Simple batch file that will remove the Node installation artifacts when the extension is removed
 
-
+Note: We recommend installing or removing this Azure site extension while your web application is stopped.   
