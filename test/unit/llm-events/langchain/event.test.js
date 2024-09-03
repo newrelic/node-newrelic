@@ -5,11 +5,13 @@
 
 'use strict'
 
-const tap = require('tap')
+const test = require('node:test')
+const assert = require('node:assert')
 const LangChainEvent = require('../../../../lib/llm-events/langchain/event')
 
-tap.beforeEach((t) => {
-  t.context._tx = {
+test.beforeEach((ctx) => {
+  ctx.nr = {}
+  ctx.nr._tx = {
     trace: {
       custom: {
         get() {
@@ -24,7 +26,7 @@ tap.beforeEach((t) => {
     }
   }
 
-  t.context.agent = {
+  ctx.nr.agent = {
     config: {
       applications() {
         return ['test-app']
@@ -32,79 +34,77 @@ tap.beforeEach((t) => {
     },
     tracer: {
       getTransaction() {
-        return t.context._tx
+        return ctx.nr._tx
       }
     }
   }
 
-  t.context.segment = {
+  ctx.nr.segment = {
     id: 'segment-1',
     transaction: {
       traceId: 'trace-1'
     }
   }
 
-  t.context.runId = 'run-1'
-  t.context.metadata = { foo: 'foo' }
+  ctx.nr.runId = 'run-1'
+  ctx.nr.metadata = { foo: 'foo' }
 })
 
-tap.test('constructs default instance', async (t) => {
-  const event = new LangChainEvent(t.context)
-  t.match(event, {
-    id: /[a-z0-9-]{36}/,
-    appName: 'test-app',
-    ['llm.conversation_id']: 'test-conversation',
-    span_id: 'segment-1',
-    request_id: 'run-1',
-    trace_id: 'trace-1',
-    ['metadata.foo']: 'foo',
-    ingest_source: 'Node',
-    vendor: 'langchain',
-    error: null,
-    virtual_llm: true
-  })
+test('constructs default instance', async (ctx) => {
+  const event = new LangChainEvent(ctx.nr)
+  assert.match(event.id, /[a-z0-9-]{36}/)
+  assert.equal(event.appName, 'test-app')
+  assert.equal(event['llm.conversation_id'], 'test-conversation')
+  assert.equal(event.span_id, 'segment-1')
+  assert.equal(event.request_id, 'run-1')
+  assert.equal(event.trace_id, 'trace-1')
+  assert.equal(event['metadata.foo'], 'foo')
+  assert.equal(event.ingest_source, 'Node')
+  assert.equal(event.vendor, 'langchain')
+  assert.equal(event.error, null)
+  assert.equal(event.virtual_llm, true)
 })
 
-tap.test('params.virtual is handled correctly', async (t) => {
-  const event = new LangChainEvent({ ...t.context, virtual: false })
-  t.equal(event.virtual_llm, false)
+test('params.virtual is handled correctly', async (ctx) => {
+  const event = new LangChainEvent({ ...ctx.nr, virtual: false })
+  assert.equal(event.virtual_llm, false)
 
   try {
-    const _ = new LangChainEvent({ ...t.context, virtual: 'false' })
-    t.fail(_)
+    const _ = new LangChainEvent({ ...ctx.nr, virtual: 'false' })
+    assert.fail(_)
   } catch (error) {
-    t.match(error, /params\.virtual must be a primitive boolean/)
+    assert.equal(error.message, 'params.virtual must be a primitive boolean')
   }
 })
 
-tap.test('langchainMeta is parsed correctly', async (t) => {
-  const event = new LangChainEvent(t.context)
+test('langchainMeta is parsed correctly', async (ctx) => {
+  const event = new LangChainEvent(ctx.nr)
   event.langchainMeta = 'foobar'
-  t.same(event['metadata.foo'], 'foo')
-  t.equal(Object.keys(event).filter((k) => k.startsWith('metadata.')).length, 1)
+  assert.deepStrictEqual(event['metadata.foo'], 'foo')
+  assert.equal(Object.keys(event).filter((k) => k.startsWith('metadata.')).length, 1)
 })
 
-tap.test('metadata is parsed correctly', async (t) => {
-  const event = new LangChainEvent(t.context)
-  t.equal(event['llm.foo'], 'bar')
-  t.equal(event['llm.bar'], 'baz')
-  t.notOk(event.customKey)
+test('metadata is parsed correctly', async (ctx) => {
+  const event = new LangChainEvent(ctx.nr)
+  assert.equal(event['llm.foo'], 'bar')
+  assert.equal(event['llm.bar'], 'baz')
+  assert.ok(!event.customKey)
 })
 
-tap.test('sets tags from array', async (t) => {
-  t.context.tags = ['foo', 'bar']
-  const msg = new LangChainEvent(t.context)
-  t.equal(msg.tags, 'foo,bar')
+test('sets tags from array', async (ctx) => {
+  ctx.nr.tags = ['foo', 'bar']
+  const msg = new LangChainEvent(ctx.nr)
+  assert.equal(msg.tags, 'foo,bar')
 })
 
-tap.test('sets tags from string', async (t) => {
-  t.context.tags = 'foo,bar'
-  const msg = new LangChainEvent(t.context)
-  t.equal(msg.tags, 'foo,bar')
+test('sets tags from string', async (ctx) => {
+  ctx.nr.tags = 'foo,bar'
+  const msg = new LangChainEvent(ctx.nr)
+  assert.equal(msg.tags, 'foo,bar')
 })
 
-tap.test('sets error property', async (t) => {
-  t.context.error = true
-  const msg = new LangChainEvent(t.context)
-  t.equal(msg.error, true)
+test('sets error property', async (ctx) => {
+  ctx.nr.error = true
+  const msg = new LangChainEvent(ctx.nr)
+  assert.equal(msg.error, true)
 })

@@ -5,11 +5,13 @@
 
 'use strict'
 
-const tap = require('tap')
+const test = require('node:test')
+const assert = require('node:assert')
 const LangChainCompletionMessage = require('../../../../lib/llm-events/langchain/chat-completion-message')
 
-tap.beforeEach((t) => {
-  t.context._tx = {
+test.beforeEach((ctx) => {
+  ctx.nr = {}
+  ctx.nr._tx = {
     trace: {
       custom: {
         get() {
@@ -21,7 +23,7 @@ tap.beforeEach((t) => {
     }
   }
 
-  t.context.agent = {
+  ctx.nr.agent = {
     config: {
       ai_monitoring: {
         record_content: {
@@ -34,59 +36,57 @@ tap.beforeEach((t) => {
     },
     tracer: {
       getTransaction() {
-        return t.context._tx
+        return ctx.nr._tx
       }
     }
   }
 
-  t.context.segment = {
+  ctx.nr.segment = {
     id: 'segment-1',
     transaction: {
       traceId: 'trace-1'
     }
   }
 
-  t.context.runId = 'run-1'
-  t.context.metadata = { foo: 'foo' }
+  ctx.nr.runId = 'run-1'
+  ctx.nr.metadata = { foo: 'foo' }
 })
 
-tap.test('creates entity', async (t) => {
+test('creates entity', async (ctx) => {
   const msg = new LangChainCompletionMessage({
-    ...t.context,
+    ...ctx.nr,
     sequence: 1,
     content: 'hello world'
   })
-  t.match(msg, {
-    id: 'run-1-1',
-    appName: 'test-app',
-    ['llm.conversation_id']: 'test-conversation',
-    span_id: 'segment-1',
-    request_id: 'run-1',
-    trace_id: 'trace-1',
-    ['metadata.foo']: 'foo',
-    ingest_source: 'Node',
-    vendor: 'langchain',
-    virtual_llm: true,
-    sequence: 1,
-    content: 'hello world',
-    completion_id: /[a-z0-9-]{36}/
-  })
+  assert.equal(msg.id, 'run-1-1')
+  assert.equal(msg.appName, 'test-app')
+  assert.equal(msg['llm.conversation_id'], 'test-conversation')
+  assert.equal(msg.span_id, 'segment-1')
+  assert.equal(msg.request_id, 'run-1')
+  assert.equal(msg.trace_id, 'trace-1')
+  assert.equal(msg['metadata.foo'], 'foo')
+  assert.equal(msg.ingest_source, 'Node')
+  assert.equal(msg.vendor, 'langchain')
+  assert.equal(msg.virtual_llm, true)
+  assert.equal(msg.sequence, 1)
+  assert.equal(msg.content, 'hello world')
+  assert.match(msg.completion_id, /[a-z0-9-]{36}/)
 })
 
-tap.test('assigns id correctly', async (t) => {
-  let msg = new LangChainCompletionMessage({ ...t.context, runId: '', sequence: 1 })
-  t.match(msg.id, /[a-z0-9-]{36}-1/)
+test('assigns id correctly', async (ctx) => {
+  let msg = new LangChainCompletionMessage({ ...ctx.nr, runId: '', sequence: 1 })
+  assert.match(msg.id, /[a-z0-9-]{36}-1/)
 
-  msg = new LangChainCompletionMessage({ ...t.context, runId: '123456', sequence: 42 })
-  t.equal(msg.id, '123456-42')
+  msg = new LangChainCompletionMessage({ ...ctx.nr, runId: '123456', sequence: 42 })
+  assert.equal(msg.id, '123456-42')
 })
 
-tap.test('respects record_content setting', async (t) => {
-  t.context.agent.config.ai_monitoring.record_content.enabled = false
+test('respects record_content setting', async (ctx) => {
+  ctx.nr.agent.config.ai_monitoring.record_content.enabled = false
   const search = new LangChainCompletionMessage({
-    ...t.context,
+    ...ctx.nr,
     sequence: 1,
     content: 'hello world'
   })
-  t.equal(search.content, undefined)
+  assert.equal(search.content, undefined)
 })
