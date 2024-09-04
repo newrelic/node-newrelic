@@ -5,7 +5,7 @@
 
 'use strict'
 const assert = require('node:assert')
-const helper = require('../../../lib/agent_helper')
+const helper = require('../../../../lib/agent_helper')
 const agent = helper.instrumentMockedAgent()
 process.once('unhandledRejection', function () {})
 

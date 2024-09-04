@@ -1025,11 +1025,11 @@ test('built-in http module instrumentation', async (t) => {
 })
 
 test('http.createServer should trace errors in top-level handlers', () => {
-  helper.execSync({ cwd: __dirname, script: 'http-create-server-uncaught-exception.js' })
+  helper.execSync({ cwd: __dirname, script: './fixtures/http-create-server-uncaught-exception.js' })
 })
 
 test('http.request should trace errors in listeners', () => {
-  helper.execSync({ cwd: __dirname, script: 'http-request-uncaught-exception.js' })
+  helper.execSync({ cwd: __dirname, script: './fixtures/http-request-uncaught-exception.js' })
 })
 
 function createHeadersAndInsertTrace(transaction) {

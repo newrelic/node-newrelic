@@ -6,7 +6,7 @@
 'use strict'
 const assert = require('node:assert')
 const http = require('http')
-const helper = require('../../../lib/agent_helper')
+const helper = require('../../../../lib/agent_helper')
 const agent = helper.instrumentMockedAgent()
 const err = new Error('whoops')
 

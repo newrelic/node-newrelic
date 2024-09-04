@@ -15,23 +15,32 @@ function nextulator(req, res, next) {
 }
 
 test("shouldn't cause bootstrapping to fail", async function (t) {
-  // testing some stuff further down that needs to be non-strict
+  // only enabled strict on this test suite
+  // the suites that have tests with a function static
+  // would get a syntax error if `use strict` was declared
   'use strict'
-  const agent = helper.loadMockedAgent()
-  const shim = new WebShim(agent, 'connect')
-  const initialize = require('../../../lib/instrumentation/connect')
 
-  t.after(function () {
-    helper.unloadAgent(agent)
+  t.beforeEach((ctx) => {
+    ctx.nr = {}
+    const agent = helper.loadMockedAgent()
+    ctx.nr.shim = new WebShim(agent, 'connect')
+    ctx.nr.initialize = require('../../../lib/instrumentation/connect')
+    ctx.nr.agent = agent
   })
 
-  await t.test('when passed no module', async function () {
+  t.afterEach((ctx) => {
+    helper.unloadAgent(ctx.nr.agent)
+  })
+
+  await t.test('when passed no module', async function (t) {
+    const { agent, initialize, shim } = t.nr
     assert.doesNotThrow(() => {
       initialize(agent, null, 'connect', shim)
     })
   })
 
-  await t.test('when passed an empty module', async function () {
+  await t.test('when passed an empty module', async function (t) {
+    const { agent, initialize, shim } = t.nr
     assert.doesNotThrow(() => {
       initialize(agent, {}, 'connect', shim)
     })

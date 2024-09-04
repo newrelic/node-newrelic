@@ -10,7 +10,7 @@ const assert = require('node:assert')
 const helper = require('../../../lib/agent_helper')
 
 test('unhandledRejection should not report it if there is another handler', () => {
-  helper.execSync({ cwd: __dirname, script: 'unhandled-rejection.js' })
+  helper.execSync({ cwd: __dirname, script: './fixtures/unhandled-rejection.js' })
 })
 
 test('should catch early throws with long chains', (t, end) => {
