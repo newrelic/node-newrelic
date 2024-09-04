@@ -4,14 +4,15 @@
  */
 
 'use strict'
-
-const { test } = require('tap')
+const assert = require('node:assert')
+const test = require('node:test')
 const helper = require('../../../lib/agent_helper')
 const GenericShim = require('../../../../lib/shim/shim')
 const sinon = require('sinon')
 
-test('langchain/core/runnables unit tests', (t) => {
-  t.beforeEach(function (t) {
+test('langchain/core/runnables unit.tests', async (t) => {
+  t.beforeEach(function (ctx) {
+    ctx.nr = {}
     const sandbox = sinon.createSandbox()
     const agent = helper.loadMockedAgent()
     agent.config.ai_monitoring = { enabled: true }
@@ -20,15 +21,15 @@ test('langchain/core/runnables unit tests', (t) => {
     sandbox.stub(shim.logger, 'debug')
     sandbox.stub(shim.logger, 'warn')
 
-    t.context.agent = agent
-    t.context.shim = shim
-    t.context.sandbox = sandbox
-    t.context.initialize = require('../../../../lib/instrumentation/langchain/runnable')
+    ctx.nr.agent = agent
+    ctx.nr.shim = shim
+    ctx.nr.sandbox = sandbox
+    ctx.nr.initialize = require('../../../../lib/instrumentation/langchain/runnable')
   })
 
-  t.afterEach(function (t) {
-    helper.unloadAgent(t.context.agent)
-    t.context.sandbox.restore()
+  t.afterEach(function (ctx) {
+    helper.unloadAgent(ctx.nr.agent)
+    ctx.nr.sandbox.restore()
   })
 
   function getMockModule() {
@@ -37,21 +38,18 @@ test('langchain/core/runnables unit tests', (t) => {
     return { RunnableSequence }
   }
 
-  t.test('should not register instrumentation if ai_monitoring is false', (t) => {
-    const { shim, agent, initialize } = t.context
+  await t.test('should not register instrumentation if ai_monitoring is false', (t) => {
+    const { shim, agent, initialize } = t.nr
     const MockRunnable = getMockModule()
     agent.config.ai_monitoring.enabled = false
 
     initialize(shim, MockRunnable)
-    t.equal(shim.logger.debug.callCount, 1, 'should log 1 debug messages')
-    t.equal(
+    assert.equal(shim.logger.debug.callCount, 1, 'should log 1 debug messages')
+    assert.equal(
       shim.logger.debug.args[0][0],
       'langchain instrumentation is disabled. To enable set `config.ai_monitoring.enabled` to true'
     )
     const isWrapped = shim.isWrapped(MockRunnable.RunnableSequence.prototype.invoke)
-    t.equal(isWrapped, false, 'should not wrap runnable invoke')
-    t.end()
+    assert.equal(isWrapped, false, 'should not wrap runnable invoke')
   })
-
-  t.end()
 })

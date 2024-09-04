@@ -4,14 +4,15 @@
  */
 
 'use strict'
-
-const { test } = require('tap')
+const test = require('node:test')
+const assert = require('node:assert')
 const helper = require('../../lib/agent_helper')
 const GenericShim = require('../../../lib/shim/shim')
 const sinon = require('sinon')
 
-test('openai unit tests', (t) => {
-  t.beforeEach(function (t) {
+test('openai unit.tests', async (t) => {
+  t.beforeEach(function (ctx) {
+    ctx.nr = {}
     const sandbox = sinon.createSandbox()
     const agent = helper.loadMockedAgent()
     agent.config.ai_monitoring = { enabled: true, streaming: { enabled: true } }
@@ -20,15 +21,15 @@ test('openai unit tests', (t) => {
     sandbox.stub(shim.logger, 'debug')
     sandbox.stub(shim.logger, 'warn')
 
-    t.context.agent = agent
-    t.context.shim = shim
-    t.context.sandbox = sandbox
-    t.context.initialize = require('../../../lib/instrumentation/openai')
+    ctx.nr.agent = agent
+    ctx.nr.shim = shim
+    ctx.nr.sandbox = sandbox
+    ctx.nr.initialize = require('../../../lib/instrumentation/openai')
   })
 
-  t.afterEach(function (t) {
-    helper.unloadAgent(t.context.agent)
-    t.context.sandbox.restore()
+  t.afterEach(function (ctx) {
+    helper.unloadAgent(ctx.nr.agent)
+    ctx.nr.sandbox.restore()
   })
 
   function getMockModule() {
@@ -42,20 +43,20 @@ test('openai unit tests', (t) => {
     return OpenAI
   }
 
-  t.test('should instrument openapi if >= 4.0.0', (t) => {
-    const { shim, agent, initialize } = t.context
+  await t.test('should instrument openapi if >= 4.0.0', (t, end) => {
+    const { shim, agent, initialize } = t.nr
     const MockOpenAi = getMockModule()
     initialize(agent, MockOpenAi, 'openai', shim)
-    t.equal(shim.logger.debug.callCount, 0, 'should not log debug messages')
+    assert.equal(shim.logger.debug.callCount, 0, 'should not log debug messages')
     const isWrapped = shim.isWrapped(MockOpenAi.Chat.Completions.prototype.create)
-    t.equal(isWrapped, true, 'should wrap chat completions create')
-    t.end()
+    assert.equal(isWrapped, true, 'should wrap chat completions create')
+    end()
   })
 
-  t.test(
+  await t.test(
     'should not instrument chat completion streams if ai_monitoring.streaming.enabled is false',
-    (t) => {
-      const { shim, agent, initialize } = t.context
+    (t, end) => {
+      const { shim, agent, initialize } = t.nr
       agent.config.ai_monitoring.streaming.enabled = false
       shim.pkgVersion = '4.12.3'
       const MockOpenAi = getMockModule()
@@ -64,61 +65,61 @@ test('openai unit tests', (t) => {
 
       helper.runInTransaction(agent, async () => {
         await completions.create({ stream: true })
-        t.equal(
+        assert.equal(
           shim.logger.warn.args[0][0],
           '`ai_monitoring.streaming.enabled` is set to `false`, stream will not be instrumented.'
         )
-        t.end()
+        end()
       })
     }
   )
 
-  t.test('should not instrument chat completion streams if < 4.12.2', async (t) => {
-    const { shim, agent, initialize } = t.context
+  await t.test('should not instrument chat completion streams if < 4.12.2', async (t) => {
+    const { shim, agent, initialize } = t.nr
     shim.pkgVersion = '4.12.0'
     const MockOpenAi = getMockModule()
     initialize(agent, MockOpenAi, 'openai', shim)
     const completions = new MockOpenAi.Chat.Completions()
 
     await completions.create({ stream: true })
-    t.equal(
+    assert.equal(
       shim.logger.warn.args[0][0],
       'Instrumenting chat completion streams is only supported with openai version 4.12.2+.'
     )
-    t.end()
   })
 
-  t.test('should not register instrumentation if openai is < 4.0.0', (t) => {
-    const { shim, agent, initialize } = t.context
+  await t.test('should not register instrumentation if openai is < 4.0.0', (t, end) => {
+    const { shim, agent, initialize } = t.nr
     const MockOpenAi = getMockModule()
     shim.pkgVersion = '3.7.0'
     initialize(agent, MockOpenAi, 'openai', shim)
-    t.equal(shim.logger.debug.callCount, 1, 'should log 2 debug messages')
-    t.equal(
+    assert.equal(shim.logger.debug.callCount, 1, 'should log 2 debug messages')
+    assert.equal(
       shim.logger.debug.args[0][0],
       'openai instrumentation support is for versions >=4.0.0. Skipping instrumentation.'
     )
     const isWrapped = shim.isWrapped(MockOpenAi.Chat.Completions.prototype.create)
-    t.equal(isWrapped, false, 'should not wrap chat completions create')
-    t.end()
+    assert.equal(isWrapped, false, 'should not wrap chat completions create')
+    end()
   })
 
-  t.test('should not register instrumentation if ai_monitoring.enabled is false', (t) => {
-    const { shim, agent, initialize } = t.context
-    const MockOpenAi = getMockModule()
-    agent.config.ai_monitoring = { enabled: false }
+  await t.test(
+    'should not register instrumentation if ai_monitoring.enabled is false',
+    (t, end) => {
+      const { shim, agent, initialize } = t.nr
+      const MockOpenAi = getMockModule()
+      agent.config.ai_monitoring = { enabled: false }
 
-    initialize(agent, MockOpenAi, 'openai', shim)
-    t.equal(shim.logger.debug.callCount, 2, 'should log 2 debug messages')
-    t.equal(shim.logger.debug.args[0][0], 'config.ai_monitoring.enabled is set to false.')
-    t.equal(
-      shim.logger.debug.args[1][0],
-      'openai instrumentation support is for versions >=4.0.0. Skipping instrumentation.'
-    )
-    const isWrapped = shim.isWrapped(MockOpenAi.Chat.Completions.prototype.create)
-    t.equal(isWrapped, false, 'should not wrap chat completions create')
-    t.end()
-  })
-
-  t.end()
+      initialize(agent, MockOpenAi, 'openai', shim)
+      assert.equal(shim.logger.debug.callCount, 2, 'should log 2 debug messages')
+      assert.equal(shim.logger.debug.args[0][0], 'config.ai_monitoring.enabled is set to false.')
+      assert.equal(
+        shim.logger.debug.args[1][0],
+        'openai instrumentation support is for versions >=4.0.0. Skipping instrumentation.'
+      )
+      const isWrapped = shim.isWrapped(MockOpenAi.Chat.Completions.prototype.create)
+      assert.equal(isWrapped, false, 'should not wrap chat completions create')
+      end()
+    }
+  )
 })

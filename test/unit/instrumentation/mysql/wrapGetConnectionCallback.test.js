@@ -4,24 +4,18 @@
  */
 
 'use strict'
-
-const tap = require('tap')
+const assert = require('node:assert')
+const test = require('node:test')
 const sinon = require('sinon')
 const proxyquire = require('proxyquire')
 const symbols = require('../../../../lib/symbols')
 
-tap.test('wrapGetConnectionCallback', (t) => {
-  t.autoend()
+test('wrapGetConnectionCallback', async (t) => {
+  t.beforeEach((ctx) => {
+    ctx.nr = {}
+    ctx.nr.mockCallback = sinon.stub().returns('foo')
 
-  let mockCallback
-  let mockConnection
-  let mockShim
-  let instrumentation
-
-  t.beforeEach(() => {
-    mockCallback = sinon.stub().returns('foo')
-
-    mockShim = {
+    ctx.nr.mockShim = {
       logger: {
         debug: sinon.stub().returns()
       },
@@ -29,14 +23,15 @@ tap.test('wrapGetConnectionCallback', (t) => {
       recordQuery: sinon.stub().returns()
     }
 
-    mockConnection = {
+    ctx.nr.mockConnection = {
       query: sinon.stub().returns()
     }
 
-    instrumentation = proxyquire('../../../../lib/instrumentation/mysql/mysql', {})
+    ctx.nr.instrumentation = proxyquire('../../../../lib/instrumentation/mysql/mysql', {})
   })
 
-  t.test('should not wrap if the callback received an error', (t) => {
+  await t.test('should not wrap if the callback received an error', (t, end) => {
+    const { mockCallback, mockShim, instrumentation } = t.nr
     const wrappedGetConnectionCallback = instrumentation.wrapGetConnectionCallback(
       mockShim,
       mockCallback
@@ -45,12 +40,13 @@ tap.test('wrapGetConnectionCallback', (t) => {
     const expectedError = new Error('whoops')
     wrappedGetConnectionCallback(expectedError)
 
-    t.ok(mockCallback.calledOnceWith(expectedError), 'should still have called the callback')
-    t.notOk(mockShim[symbols.wrappedPoolConnection], 'should not have added the symbol')
-    t.end()
+    assert.ok(mockCallback.calledOnceWith(expectedError), 'should still have called the callback')
+    assert.ok(!mockShim[symbols.wrappedPoolConnection], 'should not have added the symbol')
+    end()
   })
 
-  t.test('should catch the error if wrapping the callback throws', (t) => {
+  await t.test('should catch the error if wrapping the callback throws', (t, end) => {
+    const { mockCallback, mockShim, mockConnection, instrumentation } = t.nr
     const expectedError = new Error('whoops')
     mockShim.isWrapped.throws(expectedError)
     const wrappedGetConnectionCallback = instrumentation.wrapGetConnectionCallback(
@@ -60,12 +56,16 @@ tap.test('wrapGetConnectionCallback', (t) => {
 
     wrappedGetConnectionCallback(null, mockConnection)
 
-    t.ok(mockCallback.calledOnceWith(null, mockConnection), 'should still have called the callback')
-    t.notOk(mockShim[symbols.wrappedPoolConnection], 'should not have added the symbol')
-    t.end()
+    assert.ok(
+      mockCallback.calledOnceWith(null, mockConnection),
+      'should still have called the callback'
+    )
+    assert.ok(!mockShim[symbols.wrappedPoolConnection], 'should not have added the symbol')
+    end()
   })
 
-  t.test('should assign a symbol if wrapping is successful', (t) => {
+  await t.test('should assign a symbol if wrapping is successful', (t, end) => {
+    const { mockCallback, mockShim, mockConnection, instrumentation } = t.nr
     const wrappedGetConnectionCallback = instrumentation.wrapGetConnectionCallback(
       mockShim,
       mockCallback
@@ -73,8 +73,11 @@ tap.test('wrapGetConnectionCallback', (t) => {
 
     wrappedGetConnectionCallback(null, mockConnection)
 
-    t.ok(mockCallback.calledOnceWith(null, mockConnection), 'should still have called the callback')
-    t.ok(mockShim[symbols.wrappedPoolConnection], 'should have added the symbol')
-    t.end()
+    assert.ok(
+      mockCallback.calledOnceWith(null, mockConnection),
+      'should still have called the callback'
+    )
+    assert.ok(mockShim[symbols.wrappedPoolConnection], 'should have added the symbol')
+    end()
   })
 })

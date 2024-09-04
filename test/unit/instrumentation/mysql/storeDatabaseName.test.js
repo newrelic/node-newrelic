@@ -4,78 +4,76 @@
  */
 
 'use strict'
-
-const tap = require('tap')
+const assert = require('node:assert')
+const test = require('node:test')
 const sinon = require('sinon')
 const proxyquire = require('proxyquire')
 const symbols = require('../../../../lib/symbols')
 
-tap.test('storeDatabaseName', (t) => {
-  t.autoend()
-
-  let mockDbUtils
-  let instrumentation
-
-  t.beforeEach(() => {
-    mockDbUtils = {
+test('storeDatabaseName', async (t) => {
+  t.beforeEach((ctx) => {
+    ctx.nr = {}
+    const mockDbUtils = {
       extractDatabaseChangeFromUse: sinon.stub()
     }
-    instrumentation = proxyquire('../../../../lib/instrumentation/mysql/mysql', {
+    ctx.nr.instrumentation = proxyquire('../../../../lib/instrumentation/mysql/mysql', {
       '../../db/utils': mockDbUtils
     })
+    ctx.nr.mockDbUtils = mockDbUtils
+    ctx.nr.mockQuery = 'SELECT * FROM foo'
+    ctx.nr.mockQueryable = {}
   })
 
-  t.test('should do nothing if the storeDatabase symbol is missing', (t) => {
-    const mockQueryable = {}
-    const mockQuery = 'SELECT * FROM foo'
-
+  await t.test('should do nothing if the storeDatabase symbol is missing', (t, end) => {
+    const { mockDbUtils, mockQuery, mockQueryable, instrumentation } = t.nr
     instrumentation.storeDatabaseName(mockQueryable, mockQuery)
 
-    t.equal(
+    assert.equal(
       mockDbUtils.extractDatabaseChangeFromUse.callCount,
       0,
       'should not have tried to extract the name'
     )
-    t.notOk(mockQueryable[symbols.databaseName])
+    assert.ok(!mockQueryable[symbols.databaseName])
 
-    t.end()
+    end()
   })
 
-  t.test('should do nothing if unable to determine the name from the use statement', (t) => {
-    const mockQueryable = {}
+  await t.test(
+    'should do nothing if unable to determine the name from the use statement',
+    (t, end) => {
+      const { mockDbUtils, mockQuery, mockQueryable, instrumentation } = t.nr
+      mockQueryable[symbols.storeDatabase] = true
+
+      instrumentation.storeDatabaseName(mockQueryable, mockQuery)
+
+      assert.ok(
+        mockDbUtils.extractDatabaseChangeFromUse.calledWith(mockQuery),
+        'should try to extract the name'
+      )
+      assert.ok(!mockQueryable[symbols.databaseName])
+
+      end()
+    }
+  )
+
+  await t.test('should store the database name on a symbol', (t, end) => {
+    const { mockDbUtils, mockQuery, mockQueryable, instrumentation } = t.nr
     mockQueryable[symbols.storeDatabase] = true
-    const mockQuery = 'SELECT * FROM foo'
-
-    instrumentation.storeDatabaseName(mockQueryable, mockQuery)
-
-    t.ok(
-      mockDbUtils.extractDatabaseChangeFromUse.calledWith(mockQuery),
-      'should try to extract the name'
-    )
-    t.notOk(mockQueryable[symbols.databaseName])
-
-    t.end()
-  })
-
-  t.test('should store the database name on a symbol', (t) => {
-    const mockQueryable = {}
-    mockQueryable[symbols.storeDatabase] = true
-    const mockQuery = 'SELECT * FROM foo'
 
     mockDbUtils.extractDatabaseChangeFromUse.returns('mockDb')
 
     instrumentation.storeDatabaseName(mockQueryable, mockQuery)
 
-    t.ok(
+    assert.ok(
       mockDbUtils.extractDatabaseChangeFromUse.calledWith(mockQuery),
       'should try to extract the name'
     )
-    t.equal(
+    assert.equal(
       mockQueryable[symbols.databaseName],
       'mockDb',
       'should set the database name on the appropriate symbol'
     )
 
-    t.end()
+    end()
   })
 })

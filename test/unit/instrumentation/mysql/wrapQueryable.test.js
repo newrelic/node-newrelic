@@ -4,20 +4,16 @@
  */
 
 'use strict'
-
-const tap = require('tap')
+const assert = require('node:assert')
+const test = require('node:test')
 const sinon = require('sinon')
 const instrumentation = require('../../../../lib/instrumentation/mysql/mysql')
 const symbols = require('../../../../lib/symbols')
 
-tap.test('wrapQueryable', (t) => {
-  t.autoend()
-
-  let mockShim
-  let mockQueryable
-
-  t.beforeEach(() => {
-    mockShim = {
+test('wrapQueryable', async (t) => {
+  t.beforeEach((ctx) => {
+    ctx.nr = {}
+    ctx.nr.mockShim = {
       isWrapped: sinon.stub().returns(),
       logger: {
         debug: sinon.stub().returns()
@@ -26,10 +22,11 @@ tap.test('wrapQueryable', (t) => {
     }
   })
 
-  t.test('should return false if queryable definition is undefined', (t) => {
+  await t.test('should return false if queryable definition is undefined', (t, end) => {
+    const { mockShim } = t.nr
     const result = instrumentation.wrapQueryable(mockShim, undefined)
-    t.equal(result, false)
-    t.ok(
+    assert.equal(result, false)
+    assert.ok(
       mockShim.logger.debug.calledOnceWith(
         {
           queryable: false,
@@ -40,14 +37,15 @@ tap.test('wrapQueryable', (t) => {
       )
     )
 
-    t.end()
+    end()
   })
 
-  t.test('should return false if query function is missing', (t) => {
-    mockQueryable = {}
+  await t.test('should return false if query function is missing', (t, end) => {
+    const { mockShim } = t.nr
+    const mockQueryable = {}
     const result = instrumentation.wrapQueryable(mockShim, mockQueryable)
-    t.equal(result, false)
-    t.ok(
+    assert.equal(result, false)
+    assert.ok(
       mockShim.logger.debug.calledOnceWith(
         {
           queryable: true,
@@ -58,17 +56,18 @@ tap.test('wrapQueryable', (t) => {
       )
     )
 
-    t.end()
+    end()
   })
 
-  t.test('should return false if query function is already wrapped', (t) => {
-    mockQueryable = {
+  await t.test('should return false if query function is already wrapped', (t, end) => {
+    const { mockShim } = t.nr
+    const mockQueryable = {
       query: sinon.stub().returns()
     }
     mockShim.isWrapped.returns(true)
     const result = instrumentation.wrapQueryable(mockShim, mockQueryable)
-    t.equal(result, false)
-    t.ok(
+    assert.equal(result, false)
+    assert.ok(
       mockShim.logger.debug.calledOnceWith(
         {
           queryable: true,
@@ -79,19 +78,20 @@ tap.test('wrapQueryable', (t) => {
       )
     )
 
-    t.end()
+    end()
   })
 
-  t.test('should wrap query when using pooling', (t) => {
-    mockQueryable = {
+  await t.test('should wrap query when using pooling', (t, end) => {
+    const { mockShim } = t.nr
+    const mockQueryable = {
       query: sinon.stub().returns()
     }
 
     const result = instrumentation.wrapQueryable(mockShim, mockQueryable, true)
-    t.equal(result, true)
-    t.equal(mockShim.logger.debug.callCount, 0)
+    assert.equal(result, true)
+    assert.equal(mockShim.logger.debug.callCount, 0)
 
-    t.ok(
+    assert.ok(
       mockShim.recordQuery.calledOnceWith(
         Object.getPrototypeOf(mockQueryable),
         'query',
@@ -99,40 +99,42 @@ tap.test('wrapQueryable', (t) => {
       )
     )
 
-    t.end()
+    end()
   })
 
-  t.test('should wrap query', (t) => {
-    mockQueryable = {
+  await t.test('should wrap query', (t, end) => {
+    const { mockShim } = t.nr
+    const mockQueryable = {
       query: sinon.stub().returns()
     }
 
     const result = instrumentation.wrapQueryable(mockShim, mockQueryable)
-    t.equal(result, true)
-    t.equal(mockShim.logger.debug.callCount, 0)
+    assert.equal(result, true)
+    assert.equal(mockShim.logger.debug.callCount, 0)
 
-    t.ok(
+    assert.ok(
       mockShim.recordQuery.calledOnceWith(
         Object.getPrototypeOf(mockQueryable),
         'query',
         instrumentation.describeQuery
       )
     )
-    t.equal(Object.getPrototypeOf(mockQueryable)[symbols.databaseName], null)
+    assert.equal(Object.getPrototypeOf(mockQueryable)[symbols.databaseName], null)
 
-    t.end()
+    end()
   })
-  t.test('should wrap execute if it is defined', (t) => {
-    mockQueryable = {
+  await t.test('should wrap execute if it is defined', (t, end) => {
+    const { mockShim } = t.nr
+    const mockQueryable = {
       query: sinon.stub().returns(),
       execute: sinon.stub().returns()
     }
 
     const result = instrumentation.wrapQueryable(mockShim, mockQueryable)
-    t.equal(result, true)
-    t.equal(mockShim.logger.debug.callCount, 0)
+    assert.equal(result, true)
+    assert.equal(mockShim.logger.debug.callCount, 0)
 
-    t.ok(
+    assert.ok(
       mockShim.recordQuery.calledWith(
         Object.getPrototypeOf(mockQueryable),
         'execute',
@@ -140,6 +142,6 @@ tap.test('wrapQueryable', (t) => {
       )
     )
 
-    t.end()
+    end()
   })
 })

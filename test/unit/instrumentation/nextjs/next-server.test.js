@@ -4,74 +4,75 @@
  */
 
 'use strict'
-
-const tap = require('tap')
+const assert = require('node:assert')
+const test = require('node:test')
 const sinon = require('sinon')
 const initialize = require('../../../../lib/instrumentation/nextjs/next-server')
 const helper = require('../../../lib/agent_helper')
 
-tap.test('middleware tracking', (t) => {
-  t.autoend()
-  let MockServer
-  let agent
-  let shim
-
-  function createMockServer() {
-    function FakeServer() {}
-    FakeServer.prototype.renderToResponseWithComponents = sinon.stub()
-    FakeServer.prototype.runApi = sinon.stub()
-    FakeServer.prototype.renderHTML = sinon.stub()
-    FakeServer.prototype.runMiddleware = sinon.stub()
-    return FakeServer
-  }
-
-  t.beforeEach(() => {
-    agent = helper.loadMockedAgent()
+test('middleware tracking', async (t) => {
+  t.beforeEach((ctx) => {
+    ctx.nr = {}
+    const agent = helper.loadMockedAgent()
     const Shim = require(`../../../../lib/shim/webframework-shim`)
-    shim = new Shim(agent, './next-server')
+    const shim = new Shim(agent, './next-server')
     sinon.stub(shim, 'require')
     sinon.stub(shim, 'setFramework')
     shim.require.returns({ version: '12.2.0' })
     sinon.spy(shim.logger, 'warn')
-
-    MockServer = createMockServer()
-    initialize(shim, { default: MockServer })
+    ctx.nr.agent = agent
+    ctx.nr.shim = shim
   })
 
-  t.afterEach(() => {
-    helper.unloadAgent(agent)
+  t.afterEach((ctx) => {
+    helper.unloadAgent(ctx.nr.agent)
   })
 
-  t.test(
+  await t.test(
     'should instrument renderHTML, runMiddleware, runApi, and renderToResponseWithComponents',
-    (t) => {
-      t.ok(shim.isWrapped(MockServer.prototype.runMiddleware))
-      t.ok(shim.isWrapped(MockServer.prototype.runApi))
-      t.ok(shim.isWrapped(MockServer.prototype.renderHTML))
-      t.ok(shim.isWrapped(MockServer.prototype.renderToResponseWithComponents))
-      t.equal(
+    (t, end) => {
+      const { shim } = t.nr
+      const MockServer = createMockServer()
+      initialize(shim, { default: MockServer })
+
+      assert.ok(shim.isWrapped(MockServer.prototype.runMiddleware))
+      assert.ok(shim.isWrapped(MockServer.prototype.runApi))
+      assert.ok(shim.isWrapped(MockServer.prototype.renderHTML))
+      assert.ok(shim.isWrapped(MockServer.prototype.renderToResponseWithComponents))
+      assert.equal(
         shim.logger.warn.callCount,
         0,
         'should not long warning on middleware not being instrumented'
       )
-      t.end()
+      end()
     }
   )
 
-  t.test('should not instrument runMiddleware if Next.js < 12.2.0', (t) => {
+  await t.test('should not instrument runMiddleware if Next.js < 12.2.0', (t, end) => {
+    const { shim } = t.nr
     shim.require.returns({ version: '12.0.1' })
     const NewFakeServer = createMockServer()
     initialize(shim, { default: NewFakeServer })
-    t.equal(shim.logger.warn.callCount, 1, 'should log warn message')
+    assert.equal(shim.logger.warn.callCount, 1, 'should log warn message')
     const loggerArgs = shim.logger.warn.args[0]
-    t.same(loggerArgs, [
+    assert.deepEqual(loggerArgs, [
       'Next.js middleware instrumentation only supported on >=12.2.0 <=13.4.12, got %s',
       '12.0.1'
     ])
-    t.notOk(
+    assert.equal(
       shim.isWrapped(NewFakeServer.prototype.runMiddleware),
+      false,
       'should not wrap getModuleContext when version is less than 12.2.0'
     )
-    t.end()
+    end()
   })
 })
+
+function createMockServer() {
+  function FakeServer() {}
+  FakeServer.prototype.renderToResponseWithComponents = sinon.stub()
+  FakeServer.prototype.runApi = sinon.stub()
+  FakeServer.prototype.renderHTML = sinon.stub()
+  FakeServer.prototype.runMiddleware = sinon.stub()
+  return FakeServer
+}

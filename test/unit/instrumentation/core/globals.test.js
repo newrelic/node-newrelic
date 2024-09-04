@@ -5,64 +5,43 @@
 
 'use strict'
 
-const tap = require('tap')
-const test = tap.test
+const test = require('node:test')
+const assert = require('node:assert')
 const helper = require('../../../lib/agent_helper')
 
-test('Unhandled rejection', (t) => {
-  t.autoend()
+test('unhandledRejection should not report it if there is another handler', () => {
+  helper.execSync({ cwd: __dirname, script: './fixtures/unhandled-rejection.js' })
+})
 
-  let agent = null
-
-  t.beforeEach((t) => {
-    helper.temporarilyOverrideTapUncaughtBehavior(tap, t)
-
-    agent = helper.instrumentMockedAgent()
-  })
-
-  t.afterEach(() => {
+test('should catch early throws with long chains', (t, end) => {
+  const agent = helper.instrumentMockedAgent()
+  t.after(() => {
     helper.unloadAgent(agent)
   })
+  let segment
 
-  t.test('should not report it if there is another handler', (t) => {
-    process.once('unhandledRejection', function () {})
-
-    helper.runInTransaction(agent, function (transaction) {
-      Promise.reject('test rejection')
-
-      setTimeout(function () {
-        t.equal(transaction.exceptions.length, 0)
-        t.end()
-      }, 15)
+  helper.runInTransaction(agent, function (transaction) {
+    new Promise(function (resolve) {
+      segment = agent.tracer.getSegment()
+      setTimeout(resolve, 0)
     })
-  })
-
-  t.test('should catch early throws with long chains', (t) => {
-    let segment
-
-    helper.runInTransaction(agent, function (transaction) {
-      new Promise(function (resolve) {
-        segment = agent.tracer.getSegment()
-        setTimeout(resolve, 0)
+      .then(function () {
+        throw new Error('some error')
       })
-        .then(function () {
-          throw new Error('some error')
-        })
-        .then(function () {
-          throw new Error("We shouldn't be here!")
-        })
-        .catch(function (err) {
-          process.nextTick(function () {
-            const currentSegment = agent.tracer.getSegment()
-            const currentTransaction = agent.getTransaction()
+      .then(function () {
+        throw new Error("We shouldn't be here!")
+      })
+      .catch(function (err) {
+        process.nextTick(function () {
+          const currentSegment = agent.tracer.getSegment()
+          const currentTransaction = agent.getTransaction()
 
-            t.equal(currentSegment, segment)
-            t.equal(err.message, 'some error')
-            t.equal(currentTransaction, transaction)
+          assert.equal(currentSegment, segment)
+          assert.equal(err.message, 'some error')
+          assert.equal(currentTransaction, transaction)
 
-            t.end()
-          })
+          end()
         })
-    })
+      })
   })
 })

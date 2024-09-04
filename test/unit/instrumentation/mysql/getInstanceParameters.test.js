@@ -4,49 +4,45 @@
  */
 
 'use strict'
-
-const tap = require('tap')
+const assert = require('node:assert')
+const test = require('node:test')
 const sinon = require('sinon')
 const instrumentation = require('../../../../lib/instrumentation/mysql/mysql')
 const symbols = require('../../../../lib/symbols')
 
-tap.test('getInstanceParameters', (t) => {
-  t.autoend()
-
-  let mockShim
-  let mockQueryable
-  let mockQuery
-
-  t.beforeEach(() => {
-    mockShim = {
+test('getInstanceParameters', async (t) => {
+  t.beforeEach((ctx) => {
+    ctx.nr = {}
+    ctx.nr.mockShim = {
       logger: {
         trace: sinon.stub().returns()
       }
     }
 
-    mockQueryable = {}
-
-    mockQuery = 'SELECT * FROM foo'
+    ctx.nr.mockQuery = 'SELECT * FROM foo'
   })
 
-  t.test('should log if unable to find configuration to pull info', (t) => {
+  await t.test('should log if unable to find configuration to pull info', (t, end) => {
+    const { mockQuery, mockShim } = t.nr
+    const mockQueryable = {}
     const result = instrumentation.getInstanceParameters(mockShim, mockQueryable, mockQuery)
 
-    t.same(
+    assert.deepEqual(
       result,
       { host: null, port_path_or_id: null, database_name: null, collection: null },
       'should return the default parameters'
     )
-    t.ok(
+    assert.ok(
       mockShim.logger.trace.calledWith('No query config detected, not collecting db instance data'),
       'should log'
     )
 
-    t.end()
+    end()
   })
 
-  t.test('should favor connectionConfig over config', (t) => {
-    mockQueryable = {
+  await t.test('should favor connectionConfig over config', (t, end) => {
+    const { mockQuery, mockShim } = t.nr
+    const mockQueryable = {
       config: {
         port: '1234',
         connectionConfig: {
@@ -56,12 +52,13 @@ tap.test('getInstanceParameters', (t) => {
     }
 
     const result = instrumentation.getInstanceParameters(mockShim, mockQueryable, mockQuery)
-    t.equal(result.port_path_or_id, '5678')
-    t.end()
+    assert.equal(result.port_path_or_id, '5678')
+    end()
   })
 
-  t.test('should favor the symbol DB name over config', (t) => {
-    mockQueryable = {
+  await t.test('should favor the symbol DB name over config', (t, end) => {
+    const { mockQuery, mockShim } = t.nr
+    const mockQueryable = {
       config: {
         database: 'database-a'
       }
@@ -70,12 +67,13 @@ tap.test('getInstanceParameters', (t) => {
     mockQueryable[symbols.databaseName] = 'database-b'
 
     const result = instrumentation.getInstanceParameters(mockShim, mockQueryable, mockQuery)
-    t.equal(result.database_name, 'database-b')
-    t.end()
+    assert.equal(result.database_name, 'database-b')
+    end()
   })
 
-  t.test('should set the appropriate parameters for "normal" connections', (t) => {
-    mockQueryable = {
+  await t.test('should set the appropriate parameters for "normal" connections', (t, end) => {
+    const { mockQuery, mockShim } = t.nr
+    const mockQueryable = {
       config: {
         database: 'test-database',
         host: 'example.com',
@@ -84,17 +82,18 @@ tap.test('getInstanceParameters', (t) => {
     }
 
     const result = instrumentation.getInstanceParameters(mockShim, mockQueryable, mockQuery)
-    t.same(result, {
+    assert.deepEqual(result, {
       host: 'example.com',
       port_path_or_id: '1234',
       database_name: 'test-database',
       collection: null
     })
-    t.end()
+    end()
   })
 
-  t.test('should set the appropriate parameters for unix socket connections', (t) => {
-    mockQueryable = {
+  await t.test('should set the appropriate parameters for unix socket connections', (t, end) => {
+    const { mockQuery, mockShim } = t.nr
+    const mockQueryable = {
       config: {
         database: 'test-database',
         socketPath: '/var/run/mysqld/mysqld.sock'
@@ -102,12 +101,12 @@ tap.test('getInstanceParameters', (t) => {
     }
 
     const result = instrumentation.getInstanceParameters(mockShim, mockQueryable, mockQuery)
-    t.same(result, {
+    assert.deepEqual(result, {
       host: 'localhost',
       port_path_or_id: '/var/run/mysqld/mysqld.sock',
       database_name: 'test-database',
       collection: null
     })
-    t.end()
+    end()
   })
 })

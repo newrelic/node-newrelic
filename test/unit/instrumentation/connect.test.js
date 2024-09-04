@@ -5,7 +5,8 @@
 
 /* eslint-disable strict */
 
-const tap = require('tap')
+const test = require('node:test')
+const assert = require('node:assert')
 const helper = require('../../lib/agent_helper')
 const WebShim = require('../../../lib/shim/webframework-shim')
 
@@ -13,225 +14,211 @@ function nextulator(req, res, next) {
   return next()
 }
 
-tap.test('an instrumented Connect stack', function (t) {
-  t.autoend()
+test("shouldn't cause bootstrapping to fail", async function (t) {
+  // only enabled strict on this test suite
+  // the suites that have tests with a function static
+  // would get a syntax error if `use strict` was declared
+  'use strict'
 
-  t.test("shouldn't cause bootstrapping to fail", function (t) {
-    // testing some stuff further down that needs to be non-strict
-    'use strict'
+  t.beforeEach((ctx) => {
+    ctx.nr = {}
+    const agent = helper.loadMockedAgent()
+    ctx.nr.shim = new WebShim(agent, 'connect')
+    ctx.nr.initialize = require('../../../lib/instrumentation/connect')
+    ctx.nr.agent = agent
+  })
 
-    t.autoend()
-    let agent
-    let initialize
-    let shim
+  t.afterEach((ctx) => {
+    helper.unloadAgent(ctx.nr.agent)
+  })
 
-    t.before(function () {
-      agent = helper.loadMockedAgent()
-      shim = new WebShim(agent, 'connect')
-      initialize = require('../../../lib/instrumentation/connect')
-    })
-
-    t.teardown(function () {
-      helper.unloadAgent(agent)
-    })
-
-    t.test('when passed no module', function (t) {
-      t.doesNotThrow(() => {
-        initialize(agent, null, 'connect', shim)
-      })
-      t.end()
-    })
-
-    t.test('when passed an empty module', function (t) {
-      t.doesNotThrow(() => {
-        initialize(agent, {}, 'connect', shim)
-      })
-      t.end()
+  await t.test('when passed no module', async function (t) {
+    const { agent, initialize, shim } = t.nr
+    assert.doesNotThrow(() => {
+      initialize(agent, null, 'connect', shim)
     })
   })
 
-  t.test('for Connect 1 (stubbed)', function (t) {
-    t.autoend()
-    let agent
-    let stub
-    let app
-    let shim
-
-    t.beforeEach(function () {
-      agent = helper.instrumentMockedAgent()
-
-      stub = {
-        version: '1.0.1',
-        HTTPServer: {
-          prototype: {
-            use: function (route, middleware) {
-              if (this.stack && typeof middleware === 'function') {
-                this.stack.push({ route: route, handle: middleware })
-              } else if (this.stack && typeof route === 'function') {
-                this.stack.push({ route: '', handle: route })
-              }
-
-              return this
-            }
-          }
-        }
-      }
-
-      shim = new WebShim(agent, 'connect')
-      require('../../../lib/instrumentation/connect')(agent, stub, 'connect', shim)
-
-      app = stub.HTTPServer.prototype
-    })
-
-    t.afterEach(function () {
-      helper.unloadAgent(agent)
-    })
-
-    t.test("shouldn't throw if there's no middleware chain", function (t) {
-      t.doesNotThrow(() => {
-        app.use.call(app, nextulator)
-      })
-      t.end()
-    })
-
-    t.test("shouldn't throw if there's a middleware link with no handler", function (t) {
-      app.stack = []
-
-      t.doesNotThrow(function () {
-        app.use.call(app, '/')
-      })
-      t.end()
-    })
-
-    t.test(
-      "shouldn't throw if there's a middleware link with a non-function handler",
-      function (t) {
-        app.stack = []
-
-        t.doesNotThrow(function () {
-          app.use.call(app, '/', 'hamburglar')
-        })
-        t.end()
-      }
-    )
-
-    t.test("shouldn't break use", function (t) {
-      function errulator(err, req, res, next) {
-        return next(err)
-      }
-
-      app.stack = []
-
-      app.use.call(app, '/', nextulator)
-      app.use.call(app, '/test', nextulator)
-      app.use.call(app, '/error1', errulator)
-      app.use.call(app, '/help', nextulator)
-      app.use.call(app, '/error2', errulator)
-
-      t.equal(app.stack.length, 5)
-      t.end()
-    })
-
-    t.test("shouldn't barf on functions with ES5 future reserved keyword names", function (t) {
-      // doin this on porpoise
-      /* eslint-disable */
-      function static(req, res, next) {
-        return next()
-      }
-
-      app.stack = []
-
-      t.doesNotThrow(function () { app.use.call(app, '/', static); })
-      t.end()
+  await t.test('when passed an empty module', async function (t) {
+    const { agent, initialize, shim } = t.nr
+    assert.doesNotThrow(() => {
+      initialize(agent, {}, 'connect', shim)
     })
   })
+})
 
-  t.test("for Connect 2 (stubbed)", function (t) {
-    t.autoend()
+test('for Connect 1 (stubbed)', async function (t) {
+  t.beforeEach(function (ctx) {
+    ctx.nr = {}
+    const agent = helper.instrumentMockedAgent()
 
-    let agent
-    let stub
-    let app
-    let shim
-
-
-    t.beforeEach(function () {
-      agent = helper.instrumentMockedAgent()
-
-      stub = {
-        version : '2.7.2',
-        proto : {
-          use : function (route, middleware) {
+    const stub = {
+      version: '1.0.1',
+      HTTPServer: {
+        prototype: {
+          use: function (route, middleware) {
             if (this.stack && typeof middleware === 'function') {
-              this.stack.push({route : route, handle : middleware})
-            }
-            else if (this.stack && typeof route === 'function') {
-              this.stack.push({route : '', handle : route})
+              this.stack.push({ route: route, handle: middleware })
+            } else if (this.stack && typeof route === 'function') {
+              this.stack.push({ route: '', handle: route })
             }
 
             return this
           }
         }
       }
+    }
 
-      shim = new WebShim(agent, 'connect')
-      require('../../../lib/instrumentation/connect')(agent, stub, 'connect', shim)
+    const shim = new WebShim(agent, 'connect')
+    require('../../../lib/instrumentation/connect')(agent, stub, 'connect', shim)
 
-      app = stub.proto
+    ctx.nr.app = stub.HTTPServer.prototype
+    ctx.nr.agent = agent
+  })
+
+  t.afterEach(function (ctx) {
+    helper.unloadAgent(ctx.nr.agent)
+  })
+
+  await t.test("shouldn't throw if there's no middleware chain", async function (t) {
+    const { app } = t.nr
+    assert.doesNotThrow(() => {
+      app.use.call(app, nextulator)
     })
+  })
 
-    t.afterEach(function () {
-      helper.unloadAgent(agent)
+  await t.test("shouldn't throw if there's a middleware link with no handler", async function (t) {
+    const { app } = t.nr
+    app.stack = []
+
+    assert.doesNotThrow(function () {
+      app.use.call(app, '/')
     })
+  })
 
-    t.test("shouldn't throw if there's no middleware chain", function (t) {
-      const app = stub.proto
-      t.doesNotThrow(function () { app.use.call(app, nextulator); })
-      t.end()
-    })
-
-    t.test("shouldn't throw if there's a middleware link with no handler", function (t) {
+  await t.test(
+    "shouldn't throw if there's a middleware link with a non-function handler",
+    async function (t) {
+      const { app } = t.nr
       app.stack = []
 
-      t.doesNotThrow(function () { app.use.call(app, '/'); })
-      t.end()
-    })
+      assert.doesNotThrow(function () {
+        app.use.call(app, '/', 'hamburglar')
+      })
+    }
+  )
 
-    t.test("shouldn't throw if there's a middleware link with a non-function handler", function (t) {
-      app.stack = []
+  await t.test("shouldn't break use", async function (t) {
+    const { app } = t.nr
+    function errulator(err, req, res, next) {
+      return next(err)
+    }
 
-      t.doesNotThrow(function () { app.use.call(app, '/', 'hamburglar'); })
-      t.end()
-    })
+    app.stack = []
 
-    t.test("shouldn't break use", function (t) {
-      function errulator(err, req, res, next) {
-        return next(err)
-      }
+    app.use.call(app, '/', nextulator)
+    app.use.call(app, '/test', nextulator)
+    app.use.call(app, '/error1', errulator)
+    app.use.call(app, '/help', nextulator)
+    app.use.call(app, '/error2', errulator)
 
-      app.stack = []
+    assert.equal(app.stack.length, 5)
+  })
 
-      app.use.call(app, '/', nextulator)
-      app.use.call(app, '/test', nextulator)
-      app.use.call(app, '/error1', errulator)
-      app.use.call(app, '/help', nextulator)
-      app.use.call(app, '/error2', errulator)
-
-      t.equal(app.stack.length, 5)
-      t.end()
-    })
-
-    t.test("shouldn't barf on functions with ES5 future reserved keyword names", function (t) {
+  await t.test(
+    "shouldn't barf on functions with ES5 future reserved keyword names",
+    async function (t) {
+      const { app } = t.nr
       // doin this on porpoise
-      function static(req, res, next) {
-        return next()
+      /* eslint-disable */
+    function static(req, res, next) {
+      return next()
+    }
+
+    app.stack = []
+
+    assert.doesNotThrow(function () { app.use.call(app, '/', static); })
+  })
+})
+
+test("for Connect 2 (stubbed)", async function(t) {
+  t.beforeEach(function (ctx) {
+    ctx.nr = {}
+    const agent = helper.instrumentMockedAgent()
+
+    const stub = {
+      version : '2.7.2',
+      proto : {
+        use : function (route, middleware) {
+          if (this.stack && typeof middleware === 'function') {
+            this.stack.push({route : route, handle : middleware})
+          }
+          else if (this.stack && typeof route === 'function') {
+            this.stack.push({route : '', handle : route})
+          }
+
+          return this
+        }
       }
+    }
 
-      app.stack = []
+    const shim = new WebShim(agent, 'connect')
+    require('../../../lib/instrumentation/connect')(agent, stub, 'connect', shim)
 
-      t.doesNotThrow(function () { app.use.call(app, '/', static); })
-      t.end()
-    })
+    ctx.nr.app = stub.proto
+    ctx.nr.agent = agent
+  })
+
+  t.afterEach(function (ctx) {
+    helper.unloadAgent(ctx.nr.agent)
+  })
+
+  await t.test("shouldn't throw if there's no middleware chain", async function(t) {
+    const { app } = t.nr
+    assert.doesNotThrow(function () { app.use.call(app, nextulator); })
+  })
+
+  await t.test("shouldn't throw if there's a middleware link with no handler", async function(t) {
+    const { app } = t.nr
+    app.stack = []
+
+    assert.doesNotThrow(function () { app.use.call(app, '/'); })
+  })
+
+  await t.test("shouldn't throw if there's a middleware link with a non-function handler", async function(t) {
+    const { app } = t.nr
+    app.stack = []
+
+    assert.doesNotThrow(function () { app.use.call(app, '/', 'hamburglar'); })
+  })
+
+  await t.test("shouldn't break use", async function(t) {
+    const { app } = t.nr
+    function errulator(err, req, res, next) {
+      return next(err)
+    }
+
+    app.stack = []
+
+    app.use.call(app, '/', nextulator)
+    app.use.call(app, '/test', nextulator)
+    app.use.call(app, '/error1', errulator)
+    app.use.call(app, '/help', nextulator)
+    app.use.call(app, '/error2', errulator)
+
+    assert.equal(app.stack.length, 5)
+  })
+
+  await t.test("shouldn't barf on functions with ES5 future reserved keyword names", async function(t) {
+    const { app } = t.nr
+    // doin this on porpoise
+    function static(req, res, next) {
+      return next()
+    }
+
+    app.stack = []
+
+    assert.doesNotThrow(function () { app.use.call(app, '/', static); })
   })
 })
 

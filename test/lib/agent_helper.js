@@ -22,6 +22,7 @@ const https = require('https')
 const semver = require('semver')
 const crypto = require('crypto')
 const util = require('util')
+const cp = require('child_process')
 
 const KEYPATH = path.join(__dirname, 'test-key.key')
 const CERTPATH = path.join(__dirname, 'self-signed-test-certificate.crt')
@@ -643,4 +644,25 @@ helper.destroyProxyAgent = function destroyProxyAgent() {
  */
 helper.getShim = function getShim(pkg) {
   return pkg?.[symbols.shim]
+}
+
+/**
+ * Executes a file in a child_process. This is intended to be
+ * used when you have to test destructive behavior that would be caught
+ * by `node:test`
+ *
+ * @param {object} params to function
+ * @param {string} params.cwd working directory of script
+ * @param {string} params.script script name
+ */
+helper.execSync = function execSync({ cwd, script }) {
+  try {
+    cp.execSync(`node ./${script}`, {
+      stdio: 'pipe',
+      encoding: 'utf8',
+      cwd
+    })
+  } catch (err) {
+    throw err.stderr
+  }
 }

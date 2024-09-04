@@ -4,23 +4,16 @@
  */
 
 'use strict'
-
-const tap = require('tap')
+const assert = require('node:assert')
+const test = require('node:test')
 const sinon = require('sinon')
 const proxyquire = require('proxyquire').noPreserveCache()
 const symbols = require('../../../../lib/symbols')
 
-tap.test('wrapCreatePoolCluster', (t) => {
-  t.autoend()
-
-  let mockShim
-  let mockMysql
-  let mockPoolCluster
-  let mockNamespace
-  let instrumentation
-
-  t.beforeEach(() => {
-    mockShim = {
+test('wrapCreatePoolCluster', async (t) => {
+  t.beforeEach((ctx) => {
+    ctx.nr = {}
+    ctx.nr.mockShim = {
       MYSQL: 'test-mysql',
       setDatastore: sinon.stub().returns(),
       wrapReturn: sinon.stub().returns(),
@@ -33,76 +26,89 @@ tap.test('wrapCreatePoolCluster', (t) => {
       recordQuery: sinon.stub().returns()
     }
 
-    mockMysql = {
+    ctx.nr.mockMysql = {
       createPoolCluster: sinon.stub().returns()
     }
 
-    mockPoolCluster = {
+    ctx.nr.mockPoolCluster = {
       of: sinon.stub().returns(),
       getConnection: sinon.stub().returns()
     }
 
-    mockNamespace = {
+    ctx.nr.mockNamespace = {
       query: sinon.stub().returns(),
       getConnection: sinon.stub().returns()
     }
 
-    instrumentation = proxyquire('../../../../lib/instrumentation/mysql/mysql', {})
+    ctx.nr.instrumentation = proxyquire('../../../../lib/instrumentation/mysql/mysql', {})
   })
 
-  t.test('should wrap mysql.createPoolCluster', (t) => {
+  await t.test('should wrap mysql.createPoolCluster', (t, end) => {
+    const { mockShim, mockMysql, instrumentation } = t.nr
     instrumentation.callbackInitialize(mockShim, mockMysql)
-    t.ok(
+    assert.ok(
       mockShim.wrapReturn.calledWith(mockMysql, 'createPoolCluster'),
       'should have called wrapReturn for createPoolCluster'
     )
 
-    t.end()
+    end()
   })
 
-  t.test('should return early if createPoolCluster symbol exists', (t) => {
+  await t.test('should return early if createPoolCluster symbol exists', (t, end) => {
+    const { mockPoolCluster, mockShim, mockMysql, instrumentation } = t.nr
     mockShim[symbols.createPoolCluster] = true
     instrumentation.callbackInitialize(mockShim, mockMysql)
 
     const wrapCreatePool = mockShim.wrapReturn.args[2][2]
     wrapCreatePool(mockShim, null, null, mockPoolCluster)
-    t.notOk(
+    assert.equal(
       instrumentation.wrapGetConnection.called,
+      undefined,
       'wrapGetConnection should not have been called'
     )
 
-    t.end()
+    end()
   })
 
-  t.test('should not set createPoolCluster symbol if wrapGetConnection returns false', (t) => {
-    mockShim.isWrapped.returns(true)
-    instrumentation.callbackInitialize(mockShim, mockMysql)
+  await t.test(
+    'should not set createPoolCluster symbol if wrapGetConnection returns false',
+    (t, end) => {
+      const { mockPoolCluster, mockShim, mockMysql, instrumentation } = t.nr
+      mockShim.isWrapped.returns(true)
+      instrumentation.callbackInitialize(mockShim, mockMysql)
 
-    const wrapCreatePool = mockShim.wrapReturn.args[2][2]
-    wrapCreatePool(mockShim, null, null, mockPoolCluster)
-    t.notOk(
-      mockShim[symbols.createPoolCluster],
-      'should not have assigned the createPoolCluster symbol'
-    )
+      const wrapCreatePool = mockShim.wrapReturn.args[2][2]
+      wrapCreatePool(mockShim, null, null, mockPoolCluster)
+      assert.equal(
+        mockShim[symbols.createPoolCluster],
+        null,
+        'should not have assigned the createPoolCluster symbol'
+      )
 
-    t.end()
-  })
+      end()
+    }
+  )
 
-  t.test('should set createPoolCluster symbol if wrapGetConnection returns true', (t) => {
-    instrumentation.callbackInitialize(mockShim, mockMysql)
+  await t.test(
+    'should set createPoolCluster symbol if wrapGetConnection returns true',
+    (t, end) => {
+      const { mockPoolCluster, mockShim, mockMysql, instrumentation } = t.nr
+      instrumentation.callbackInitialize(mockShim, mockMysql)
 
-    const wrapCreatePool = mockShim.wrapReturn.args[2][2]
-    wrapCreatePool(mockShim, null, null, mockPoolCluster)
-    t.equal(
-      mockShim[symbols.createPoolCluster],
-      true,
-      'should have assigned the createPoolCluster symbol'
-    )
+      const wrapCreatePool = mockShim.wrapReturn.args[2][2]
+      wrapCreatePool(mockShim, null, null, mockPoolCluster)
+      assert.equal(
+        mockShim[symbols.createPoolCluster],
+        true,
+        'should have assigned the createPoolCluster symbol'
+      )
 
-    t.end()
-  })
+      end()
+    }
+  )
 
-  t.test('should return early if PoolCluster.of is already wrapped', (t) => {
+  await t.test('should return early if PoolCluster.of is already wrapped', (t, end) => {
+    const { mockNamespace, mockPoolCluster, mockShim, mockMysql, instrumentation } = t.nr
     mockNamespace[symbols.clusterOf] = true
 
     instrumentation.callbackInitialize(mockShim, mockMysql)
@@ -113,16 +119,17 @@ tap.test('wrapCreatePoolCluster', (t) => {
     const wrapPoolClusterOf = mockShim.wrapReturn.args[3][2]
     wrapPoolClusterOf(mockShim, null, null, mockNamespace)
 
-    t.equal(
+    assert.equal(
       mockShim.isWrapped.callCount,
       1,
       'should only have called isWrapped once for the PoolCluster.getConnection'
     )
 
-    t.end()
+    end()
   })
 
-  t.test('should not set the symbol if wrapGetConnection returns false', (t) => {
+  await t.test('should not set the symbol if wrapGetConnection returns false', (t, end) => {
+    const { mockNamespace, mockPoolCluster, mockShim, mockMysql, instrumentation } = t.nr
     mockShim.isWrapped.returns(true)
     instrumentation.callbackInitialize(mockShim, mockMysql)
 
@@ -132,12 +139,13 @@ tap.test('wrapCreatePoolCluster', (t) => {
     const wrapPoolClusterOf = mockShim.wrapReturn.args[3][2]
     wrapPoolClusterOf(mockShim, null, null, mockNamespace)
 
-    t.notOk(mockNamespace[symbols.clusterOf], 'should not have set the clusterOf symbol')
+    assert.ok(!mockNamespace[symbols.clusterOf], 'should not have set the clusterOf symbol')
 
-    t.end()
+    end()
   })
 
-  t.test('should not set the symbol if wrapQueryable returns false', (t) => {
+  await t.test('should not set the symbol if wrapQueryable returns false', (t, end) => {
+    const { mockNamespace, mockPoolCluster, mockShim, mockMysql, instrumentation } = t.nr
     mockShim.isWrapped.onCall(0).returns(false).returns(true)
     instrumentation.callbackInitialize(mockShim, mockMysql)
 
@@ -147,12 +155,13 @@ tap.test('wrapCreatePoolCluster', (t) => {
     const wrapPoolClusterOf = mockShim.wrapReturn.args[3][2]
     wrapPoolClusterOf(mockShim, null, null, mockNamespace)
 
-    t.notOk(mockNamespace[symbols.clusterOf], 'should not have set the clusterOf symbol')
+    assert.ok(!mockNamespace[symbols.clusterOf], 'should not have set the clusterOf symbol')
 
-    t.end()
+    end()
   })
 
-  t.test('should wrap PoolCluster.of', (t) => {
+  await t.test('should wrap PoolCluster.of', (t, end) => {
+    const { mockNamespace, mockPoolCluster, mockShim, mockMysql, instrumentation } = t.nr
     instrumentation.callbackInitialize(mockShim, mockMysql)
 
     const wrapCreatePool = mockShim.wrapReturn.args[2][2]
@@ -161,8 +170,8 @@ tap.test('wrapCreatePoolCluster', (t) => {
     const wrapPoolClusterOf = mockShim.wrapReturn.args[3][2]
     wrapPoolClusterOf(mockShim, null, null, mockNamespace)
 
-    t.equal(mockNamespace[symbols.clusterOf], true, 'should have set the clusterOf symbol')
+    assert.equal(mockNamespace[symbols.clusterOf], true, 'should have set the clusterOf symbol')
 
-    t.end()
+    end()
   })
 })

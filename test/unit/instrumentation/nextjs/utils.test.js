@@ -4,46 +4,48 @@
  */
 
 'use strict'
-
-const tap = require('tap')
+const assert = require('node:assert')
+const test = require('node:test')
 const sinon = require('sinon')
 const { assignCLMAttrs } = require('../../../../lib/instrumentation/nextjs/utils')
 
-tap.test('assignCLMAttrs', (t) => {
-  t.autoend()
+test('assignCLMAttrs', async (t) => {
   const config = { code_level_metrics: { enabled: true } }
-  let segmentStub
 
-  t.beforeEach(() => {
-    segmentStub = {
+  t.beforeEach((ctx) => {
+    ctx.nr = {}
+    ctx.nr.segmentStub = {
       addAttribute: sinon.stub()
     }
   })
 
-  t.test('should add attrs to segment', (t) => {
+  await t.test('should add attrs to segment', (t, end) => {
+    const { segmentStub } = t.nr
     const attrs = {
       'code.function': 'foo',
       'code.filepath': 'pages/foo/bar'
     }
     assignCLMAttrs(config, segmentStub, attrs)
-    t.equal(segmentStub.addAttribute.callCount, 2)
-    t.same(segmentStub.addAttribute.args, [
+    assert.equal(segmentStub.addAttribute.callCount, 2)
+    assert.deepEqual(segmentStub.addAttribute.args, [
       ['code.function', 'foo'],
       ['code.filepath', 'pages/foo/bar']
     ])
-    t.end()
+    end()
   })
 
-  t.test('should not add attr is code_level_metrics is disabled', (t) => {
+  await t.test('should not add attr is code_level_metrics is disabled', (t, end) => {
+    const { segmentStub } = t.nr
     config.code_level_metrics = null
     assignCLMAttrs(config, segmentStub)
-    t.notOk(segmentStub.addAttribute.callCount)
-    t.end()
+    assert.ok(!segmentStub.addAttribute.callCount)
+    end()
   })
 
-  t.test('should not add attribute if segment is undefined', (t) => {
+  await t.test('should not add attribute if segment is undefined', (t, end) => {
+    const { segmentStub } = t.nr
     assignCLMAttrs(config, null)
-    t.notOk(segmentStub.addAttribute.callCount)
-    t.end()
+    assert.ok(!segmentStub.addAttribute.callCount)
+    end()
   })
 })

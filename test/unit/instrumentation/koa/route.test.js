@@ -4,34 +4,34 @@
  */
 
 'use strict'
-
-const tap = require('tap')
+const assert = require('node:assert')
+const test = require('node:test')
 const { METHODS } = require('../../../../lib/instrumentation/http-methods')
 const helper = require('../../../lib/agent_helper')
 const { removeModules } = require('../../../lib/cache-buster')
 const InstrumentationDescriptor = require('../../../../lib/instrumentation-descriptor')
 
-tap.beforeEach((t) => {
-  t.context.agent = helper.instrumentMockedAgent({
+test.beforeEach((ctx) => {
+  ctx.nr = {}
+  ctx.nr.agent = helper.instrumentMockedAgent({
     moduleName: 'koa-route',
     type: InstrumentationDescriptor.TYPE_WEB_FRAMEWORK,
     onRequire: require('../../../../lib/instrumentation/koa/route-instrumentation'),
     shimName: 'koa'
   })
 
-  t.context.KoaRoute = require('koa-route')
-  t.context.shim = helper.getShim(t.context.KoaRoute)
+  ctx.nr.KoaRoute = require('koa-route')
+  ctx.nr.shim = helper.getShim(ctx.nr.KoaRoute)
 })
 
-tap.afterEach((t) => {
-  helper.unloadAgent(t.context.agent)
+test.afterEach((ctx) => {
+  helper.unloadAgent(ctx.nr.agent)
   removeModules(['koa-route'])
 })
 
-tap.test('methods', function (t) {
-  const { KoaRoute: route, shim } = t.context
+test('methods', async function (t) {
+  const { KoaRoute: route, shim } = t.nr
   METHODS.forEach(function checkWrapped(method) {
-    t.ok(shim.isWrapped(route[method]), method + ' should be wrapped')
+    assert.ok(shim.isWrapped(route[method]), method + ' should be wrapped')
   })
-  t.end()
 })
