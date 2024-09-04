@@ -6,22 +6,18 @@
 
 #### Documentation
 
-* cleaned up formatting of api.js to properly inject example snippets when rendering on API docs site ([#2524](https://github.com/newrelic/node-newrelic/pull/2524)) ([4b34f3d](https://github.com/newrelic/node-newrelic/commit/4b34f3dbab45a55ec447b6e21b69c7621b41e539))
+* Cleaned up formatting of api.js to properly inject example snippets when rendering on API docs site ([#2524](https://github.com/newrelic/node-newrelic/pull/2524)) ([4b34f3d](https://github.com/newrelic/node-newrelic/commit/4b34f3dbab45a55ec447b6e21b69c7621b41e539))
 * Updated compatibility report ([#2523](https://github.com/newrelic/node-newrelic/pull/2523)) ([29784ea](https://github.com/newrelic/node-newrelic/commit/29784ea766b2a9388c050f271ab7190895bc22ed))
-    * Co-authored-by: bizob2828 <1874937+bizob2828@users.noreply.github.com>
-* Updated formatting of cloud-providers.md ([#2538](https://github.com/newrelic/node-newrelic/pull/2538)) ([f004ebf](https://github.com/newrelic/node-newrelic/commit/f004ebfdfab7c53d6bbcb859e38f7fbb5a2676f0))
 * Updated Next.js Otel cloud provider FAQ ([#2537](https://github.com/newrelic/node-newrelic/pull/2537)) ([6553807](https://github.com/newrelic/node-newrelic/commit/655380760a89193c5b6cd47d3955d1244cd79e7b))
-
-#### Miscellaneous chores
-
-* Added a match function for tests ([#2541](https://github.com/newrelic/node-newrelic/pull/2541)) ([51e7f34](https://github.com/newrelic/node-newrelic/commit/51e7f34e733202a9c2c024d9d9a7f3c207dfc4b0))
-* Convert `config` to `node:test` ([#2517](https://github.com/newrelic/node-newrelic/pull/2517)) ([1534a73](https://github.com/newrelic/node-newrelic/commit/1534a734995b6800c4cab3b6712f1b6b1329ed5e))
 
 #### Tests
 
-* Convert db unit tests to node:test ([#2514](https://github.com/newrelic/node-newrelic/pull/2514)) ([bea4548](https://github.com/newrelic/node-newrelic/commit/bea45481a8a04099096929b36532203fbb8b6921))
-* Convert grpc, lib, and utilization tests to `node:test` ([#2532](https://github.com/newrelic/node-newrelic/pull/2532)) ([c207e1e](https://github.com/newrelic/node-newrelic/commit/c207e1e3de75a9c3a2c4a05fa1bc318d3e455ef9))
-* Replace distributed tracing tests with `node:test` ([#2527](https://github.com/newrelic/node-newrelic/pull/2527)) ([8184c56](https://github.com/newrelic/node-newrelic/commit/8184c5676155b9028c84adc0da3902803ee9d107))
+* Converted db unit tests to node:test ([#2514](https://github.com/newrelic/node-newrelic/pull/2514)) ([bea4548](https://github.com/newrelic/node-newrelic/commit/bea45481a8a04099096929b36532203fbb8b6921))
+* Converted grpc, lib, and utilization tests to `node:test` ([#2532](https://github.com/newrelic/node-newrelic/pull/2532)) ([c207e1e](https://github.com/newrelic/node-newrelic/commit/c207e1e3de75a9c3a2c4a05fa1bc318d3e455ef9))
+* Replaced distributed tracing tests with `node:test` ([#2527](https://github.com/newrelic/node-newrelic/pull/2527)) ([8184c56](https://github.com/newrelic/node-newrelic/commit/8184c5676155b9028c84adc0da3902803ee9d107))
+* Added a match function for tests ([#2541](https://github.com/newrelic/node-newrelic/pull/2541)) ([51e7f34](https://github.com/newrelic/node-newrelic/commit/51e7f34e733202a9c2c024d9d9a7f3c207dfc4b0))
+* Converted `config` to `node:test` ([#2517](https://github.com/newrelic/node-newrelic/pull/2517)) ([1534a73](https://github.com/newrelic/node-newrelic/commit/1534a734995b6800c4cab3b6712f1b6b1329ed5e))
+
 
 ### v12.3.0 (2024-08-27)
 
