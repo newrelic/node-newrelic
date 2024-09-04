@@ -55,8 +55,8 @@ test.beforeEach((ctx) => {
   }
 })
 
-test('create creates a new instance', async (ctx) => {
-  const event = new LlmEvent(ctx.nr)
+test('create creates a new instance', async (t) => {
+  const event = new LlmEvent(t.nr)
   assert.ok(event)
   assert.match(event.id, /[a-z0-9]{7}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{12}/)
   assert.equal(event.vendor, 'bedrock')
@@ -72,8 +72,8 @@ test('create creates a new instance', async (ctx) => {
   assert.equal(event.omit, undefined)
 })
 
-test('serializes the event', (ctx) => {
-  const event = new LlmEvent(ctx.nr)
+test('serializes the event', (t) => {
+  const event = new LlmEvent(t.nr)
   event.serialize()
   assert.ok(!event.bedrockCommand)
   assert.ok(!event.bedrockResponse)

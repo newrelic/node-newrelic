@@ -20,8 +20,8 @@ test.afterEach((ctx) => {
   helper.unloadAgent(ctx.nr.agent)
 })
 
-test('should create a LlmChatCompletionMessage event', (ctx, end) => {
-  const { agent } = ctx.nr
+test('should create a LlmChatCompletionMessage event', (t, end) => {
+  const { agent } = t.nr
   const api = helper.getAgentApi()
   helper.runInTransaction(agent, (tx) => {
     api.startSegment('fakeSegment', false, () => {
@@ -43,8 +43,8 @@ test('should create a LlmChatCompletionMessage event', (ctx, end) => {
   })
 })
 
-test('should create a LlmChatCompletionMessage from response choices', (ctx, end) => {
-  const { agent } = ctx.nr
+test('should create a LlmChatCompletionMessage from response choices', (t, end) => {
+  const { agent } = t.nr
   const api = helper.getAgentApi()
   helper.runInTransaction(agent, (tx) => {
     api.startSegment('fakeSegment', false, () => {
@@ -70,8 +70,8 @@ test('should create a LlmChatCompletionMessage from response choices', (ctx, end
   })
 })
 
-test('should set conversation_id from custom attributes', (ctx, end) => {
-  const { agent } = ctx.nr
+test('should set conversation_id from custom attributes', (t, end) => {
+  const { agent } = t.nr
   const api = helper.getAgentApi()
   const conversationId = 'convo-id'
   helper.runInTransaction(agent, () => {
@@ -87,8 +87,8 @@ test('should set conversation_id from custom attributes', (ctx, end) => {
   })
 })
 
-test('respects record_content', (ctx, end) => {
-  const { agent } = ctx.nr
+test('respects record_content', (t, end) => {
+  const { agent } = t.nr
   const api = helper.getAgentApi()
   const conversationId = 'convo-id'
   agent.config.ai_monitoring.record_content.enabled = false
@@ -106,8 +106,8 @@ test('respects record_content', (ctx, end) => {
   })
 })
 
-test('should use token_count from tokenCountCallback for prompt message', (ctx, end) => {
-  const { agent } = ctx.nr
+test('should use token_count from tokenCountCallback for prompt message', (t, end) => {
+  const { agent } = t.nr
   const api = helper.getAgentApi()
   const expectedCount = 4
   function cb(model, content) {
@@ -136,8 +136,8 @@ test('should use token_count from tokenCountCallback for prompt message', (ctx, 
   })
 })
 
-test('should use token_count from tokenCountCallback for completion messages', (ctx, end) => {
-  const { agent } = ctx.nr
+test('should use token_count from tokenCountCallback for completion messages', (t, end) => {
+  const { agent } = t.nr
   const api = helper.getAgentApi()
   const expectedCount = 4
   function cb(model, content) {
@@ -166,8 +166,8 @@ test('should use token_count from tokenCountCallback for completion messages', (
   })
 })
 
-test('should not set token_count if not set in usage nor a callback registered', (ctx, end) => {
-  const { agent } = ctx.nr
+test('should not set token_count if not set in usage nor a callback registered', (t, end) => {
+  const { agent } = t.nr
   const api = helper.getAgentApi()
   helper.runInTransaction(agent, () => {
     api.startSegment('fakeSegment', false, () => {
@@ -189,8 +189,8 @@ test('should not set token_count if not set in usage nor a callback registered',
   })
 })
 
-test('should not set token_count if not set in usage nor a callback registered returns count', (ctx, end) => {
-  const { agent } = ctx.nr
+test('should not set token_count if not set in usage nor a callback registered returns count', (t, end) => {
+  const { agent } = t.nr
   const api = helper.getAgentApi()
   function cb() {
     // empty cb

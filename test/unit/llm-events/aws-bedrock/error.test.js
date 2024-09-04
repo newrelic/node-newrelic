@@ -25,8 +25,8 @@ test.beforeEach((ctx) => {
   }
 })
 
-test('create creates a new instance', (ctx) => {
-  const err = new LlmError(ctx.nr)
+test('create creates a new instance', (t) => {
+  const err = new LlmError(t.nr)
   assert.equal(err['http.statusCode'], 400)
   assert.equal(err['error.message'], 'No soup for you')
   assert.equal(err['error.code'], 'SoupRule')
@@ -34,10 +34,10 @@ test('create creates a new instance', (ctx) => {
   assert.ok(!err.embedding_id)
 })
 
-test('create error with embedding_id', (ctx) => {
-  delete ctx.nr.summary
-  ctx.nr.embedding = { id: 'embedding-id' }
-  const err = new LlmError(ctx.nr)
+test('create error with embedding_id', (t) => {
+  delete t.nr.summary
+  t.nr.embedding = { id: 'embedding-id' }
+  const err = new LlmError(t.nr)
   assert.equal(err['http.statusCode'], 400)
   assert.equal(err['error.message'], 'No soup for you')
   assert.equal(err['error.code'], 'SoupRule')

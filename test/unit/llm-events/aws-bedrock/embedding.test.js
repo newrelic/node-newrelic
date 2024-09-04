@@ -62,22 +62,22 @@ test.beforeEach((ctx) => {
   }
 })
 
-test('creates a basic embedding', async (ctx) => {
-  const event = new LlmEmbedding(ctx.nr)
+test('creates a basic embedding', async (t) => {
+  const event = new LlmEmbedding(t.nr)
   assert.equal(event.input, 'who are you')
   assert.equal(event.duration, 1.008)
   assert.equal(event.token_count, undefined)
 })
 
-test('should not capture input when `ai_monitoring.record_content.enabled` is false', async (ctx) => {
-  const { agent } = ctx.nr
+test('should not capture input when `ai_monitoring.record_content.enabled` is false', async (t) => {
+  const { agent } = t.nr
   agent.config.ai_monitoring.record_content.enabled = false
-  const event = new LlmEmbedding(ctx.nr)
+  const event = new LlmEmbedding(t.nr)
   assert.equal(event.input, undefined, 'input should be empty')
 })
 
-test('should capture token_count when callback is defined', async (ctx) => {
-  ctx.nr.agent.llm.tokenCountCallback = () => 3
-  const event = new LlmEmbedding(ctx.nr)
+test('should capture token_count when callback is defined', async (t) => {
+  t.nr.agent.llm.tokenCountCallback = () => 3
+  const event = new LlmEmbedding(t.nr)
   assert.equal(event.token_count, 3)
 })

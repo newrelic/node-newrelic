@@ -56,15 +56,15 @@ test.beforeEach((ctx) => {
   ctx.nr.metadata = { foo: 'foo' }
 })
 
-test('create entity', async (ctx) => {
+test('create entity', async (t) => {
   const search = new LangChainVectorSearch({
-    ...ctx.nr,
+    ...t.nr,
     query: 'hello world',
     k: 1
   })
 
   const searchResult = new LangChainVectorSearchResult({
-    ...ctx.nr,
+    ...t.nr,
     sequence: 1,
     pageContent: 'hello world',
     search_id: search.id
@@ -84,10 +84,10 @@ test('create entity', async (ctx) => {
   assert.equal(searchResult.search_id, search.id)
 })
 
-test('respects record_content setting', async (ctx) => {
-  ctx.nr.agent.config.ai_monitoring.record_content.enabled = false
+test('respects record_content setting', async (t) => {
+  t.nr.agent.config.ai_monitoring.record_content.enabled = false
   const search = new LangChainVectorSearchResult({
-    ...ctx.nr,
+    ...t.nr,
     sequence: 1,
     pageContent: 'hello world'
   })

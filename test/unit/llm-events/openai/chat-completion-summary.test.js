@@ -20,8 +20,8 @@ test.afterEach((ctx) => {
   helper.unloadAgent(ctx.nr.agent)
 })
 
-test('should properly create a LlmChatCompletionSummary event', (ctx, end) => {
-  const { agent } = ctx.nr
+test('should properly create a LlmChatCompletionSummary event', (t, end) => {
+  const { agent } = t.nr
   const api = helper.getAgentApi()
   helper.runInTransaction(agent, (tx) => {
     api.startSegment('fakeSegment', false, () => {
@@ -55,8 +55,8 @@ test('should set error to true', (ctx, end) => {
   })
 })
 
-test('should set `llm.` attributes from custom attributes', (ctx, end) => {
-  const { agent } = ctx.nr
+test('should set `llm.` attributes from custom attributes', (t, end) => {
+  const { agent } = t.nr
   const api = helper.getAgentApi()
   const conversationId = 'convo-id'
   helper.runInTransaction(agent, () => {

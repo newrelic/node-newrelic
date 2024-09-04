@@ -53,9 +53,9 @@ test.beforeEach((ctx) => {
   ctx.nr.runId = 'run-1'
 })
 
-test('create entity', async (ctx) => {
+test('create entity', async (t) => {
   const search = new LangChainVectorSearch({
-    ...ctx.nr,
+    ...t.nr,
     query: 'hello world',
     k: 1
   })
@@ -74,10 +74,10 @@ test('create entity', async (ctx) => {
   assert.equal(search['response.number_of_documents'], 0)
 })
 
-test('respects record_content setting', async (ctx) => {
-  ctx.nr.agent.config.ai_monitoring.record_content.enabled = false
+test('respects record_content setting', async (t) => {
+  t.nr.agent.config.ai_monitoring.record_content.enabled = false
   const search = new LangChainVectorSearch({
-    ...ctx.nr,
+    ...t.nr,
     k: 1,
     query: 'hello world'
   })

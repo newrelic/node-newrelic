@@ -59,8 +59,8 @@ test.beforeEach((ctx) => {
   ctx.nr.output = 'output'
 })
 
-test('constructs default instance', async (ctx) => {
-  const event = new LangChainTool(ctx.nr)
+test('constructs default instance', async (t) => {
+  const event = new LangChainTool(t.nr)
   assert.equal(event.input, 'input')
   assert.equal(event.output, 'output')
   assert.equal(event.name, 'test-tool')
@@ -76,9 +76,9 @@ test('constructs default instance', async (ctx) => {
   assert.equal(event.vendor, 'langchain')
 })
 
-test('respects record_content setting', async (ctx) => {
-  ctx.nr.agent.config.ai_monitoring.record_content.enabled = false
-  const event = new LangChainTool(ctx.nr)
+test('respects record_content setting', async (t) => {
+  t.nr.agent.config.ai_monitoring.record_content.enabled = false
+  const event = new LangChainTool(t.nr)
   assert.equal(event.input, undefined)
   assert.equal(event.output, undefined)
 })

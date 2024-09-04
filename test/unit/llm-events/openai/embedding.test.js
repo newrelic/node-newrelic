@@ -20,8 +20,8 @@ test.afterEach((ctx) => {
   helper.unloadAgent(ctx.nr.agent)
 })
 
-test('should properly create a LlmEmbedding event', (ctx, end) => {
-  const { agent } = ctx.nr
+test('should properly create a LlmEmbedding event', (t, end) => {
+  const { agent } = t.nr
   const req = {
     input: 'This is my test input',
     model: 'gpt-3.5-turbo-0613'
@@ -57,8 +57,8 @@ test('should properly create a LlmEmbedding event', (ctx, end) => {
     expected: '1,2,3,4,5,6'
   }
 ].forEach(({ type, value, expected }) => {
-  test(`should properly serialize input when it is a ${type}`, (ctx, end) => {
-    const { agent } = ctx.nr
+  test(`should properly serialize input when it is a ${type}`, (t, end) => {
+    const { agent } = t.nr
     const embeddingEvent = new LlmEmbedding({
       agent,
       segment: null,
@@ -70,8 +70,8 @@ test('should properly create a LlmEmbedding event', (ctx, end) => {
   })
 })
 
-test('should set error to true', (ctx, end) => {
-  const { agent } = ctx.nr
+test('should set error to true', (t, end) => {
+  const { agent } = t.nr
   const req = {
     input: 'This is my test input',
     model: 'gpt-3.5-turbo-0613'
@@ -94,8 +94,8 @@ test('should set error to true', (ctx, end) => {
   })
 })
 
-test('respects record_content', (ctx, end) => {
-  const { agent } = ctx.nr
+test('respects record_content', (t, end) => {
+  const { agent } = t.nr
   const req = {
     input: 'This is my test input',
     model: 'gpt-3.5-turbo-0613'
@@ -116,8 +116,8 @@ test('respects record_content', (ctx, end) => {
   })
 })
 
-test('should calculate token count from tokenCountCallback', (ctx, end) => {
-  const { agent } = ctx.nr
+test('should calculate token count from tokenCountCallback', (t, end) => {
+  const { agent } = t.nr
   const req = {
     input: 'This is my test input',
     model: 'gpt-3.5-turbo-0613'
@@ -146,8 +146,8 @@ test('should calculate token count from tokenCountCallback', (ctx, end) => {
   })
 })
 
-test('should not set token count when not present in usage nor tokenCountCallback', (ctx, end) => {
-  const { agent } = ctx.nr
+test('should not set token count when not present in usage nor tokenCountCallback', (t, end) => {
+  const { agent } = t.nr
   const req = {
     input: 'This is my test input',
     model: 'gpt-3.5-turbo-0613'

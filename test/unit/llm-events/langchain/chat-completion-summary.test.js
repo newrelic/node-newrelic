@@ -50,8 +50,8 @@ test.beforeEach((ctx) => {
   ctx.nr.metadata = { foo: 'foo' }
 })
 
-test('creates entity', async (ctx) => {
-  const msg = new LangChainCompletionSummary(ctx.nr)
+test('creates entity', async (t) => {
+  const msg = new LangChainCompletionSummary(t.nr)
   assert.match(msg.id, /[a-z0-9-]{36}/)
   assert.equal(msg.appName, 'test-app')
   assert.equal(msg['llm.conversation_id'], 'test-conversation')

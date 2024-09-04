@@ -90,9 +90,9 @@ test.beforeEach((ctx) => {
   }
 })
 
-test('create creates a non-response instance', async (ctx) => {
-  ctx.nr.agent.llm.tokenCountCallback = () => 3
-  const event = new LlmChatCompletionMessage(ctx.nr)
+test('create creates a non-response instance', async (t) => {
+  t.nr.agent.llm.tokenCountCallback = () => 3
+  const event = new LlmChatCompletionMessage(t.nr)
   assert.equal(event.is_response, false)
   assert.equal(event['llm.conversation_id'], 'conversation-1')
   assert.equal(event.completion_id, 'completion-1')
@@ -103,11 +103,11 @@ test('create creates a non-response instance', async (ctx) => {
   assert.equal(event.token_count, 3)
 })
 
-test('create creates a titan response instance', async (ctx) => {
-  ctx.nr.bedrockCommand.isTitan = () => true
-  ctx.nr.content = 'a response'
-  ctx.nr.isResponse = true
-  const event = new LlmChatCompletionMessage(ctx.nr)
+test('create creates a titan response instance', async (t) => {
+  t.nr.bedrockCommand.isTitan = () => true
+  t.nr.content = 'a response'
+  t.nr.isResponse = true
+  const event = new LlmChatCompletionMessage(t.nr)
   assert.equal(event.is_response, true)
   assert.equal(event['llm.conversation_id'], 'conversation-1')
   assert.equal(event.completion_id, 'completion-1')
@@ -117,12 +117,12 @@ test('create creates a titan response instance', async (ctx) => {
   assert.match(event.id, /[\w-]{36}-0/)
 })
 
-test('create creates a cohere response instance', async (ctx) => {
-  ctx.nr.bedrockCommand.isCohere = () => true
-  ctx.nr.content = 'a response'
-  ctx.nr.isResponse = true
-  ctx.nr.bedrockResponse.id = 42
-  const event = new LlmChatCompletionMessage(ctx.nr)
+test('create creates a cohere response instance', async (t) => {
+  t.nr.bedrockCommand.isCohere = () => true
+  t.nr.content = 'a response'
+  t.nr.isResponse = true
+  t.nr.bedrockResponse.id = 42
+  const event = new LlmChatCompletionMessage(t.nr)
   assert.equal(event.is_response, true)
   assert.equal(event['llm.conversation_id'], 'conversation-1')
   assert.equal(event.completion_id, 'completion-1')
@@ -132,12 +132,12 @@ test('create creates a cohere response instance', async (ctx) => {
   assert.match(event.id, /42-0/)
 })
 
-test('create creates a ai21 response instance when response.id is undefined', async (ctx) => {
-  ctx.nr.bedrockCommand.isAi21 = () => true
-  ctx.nr.content = 'a response'
-  ctx.nr.isResponse = true
-  delete ctx.nr.bedrockResponse.id
-  const event = new LlmChatCompletionMessage(ctx.nr)
+test('create creates a ai21 response instance when response.id is undefined', async (t) => {
+  t.nr.bedrockCommand.isAi21 = () => true
+  t.nr.content = 'a response'
+  t.nr.isResponse = true
+  delete t.nr.bedrockResponse.id
+  const event = new LlmChatCompletionMessage(t.nr)
   assert.equal(event.is_response, true)
   assert.equal(event['llm.conversation_id'], 'conversation-1')
   assert.equal(event.completion_id, 'completion-1')
@@ -147,9 +147,9 @@ test('create creates a ai21 response instance when response.id is undefined', as
   assert.match(event.id, /[\w-]{36}-0/)
 })
 
-test('should not capture content when `ai_monitoring.record_content.enabled` is false', async (ctx) => {
-  const { agent } = ctx.nr
+test('should not capture content when `ai_monitoring.record_content.enabled` is false', async (t) => {
+  const { agent } = t.nr
   agent.config.ai_monitoring.record_content.enabled = false
-  const event = new LlmChatCompletionMessage(ctx.nr)
+  const event = new LlmChatCompletionMessage(t.nr)
   assert.equal(event.content, undefined, 'content should be empty')
 })

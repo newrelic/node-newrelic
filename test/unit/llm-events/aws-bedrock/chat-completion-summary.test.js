@@ -79,10 +79,10 @@ test.beforeEach((ctx) => {
   }
 })
 
-test('creates a basic summary', async (ctx) => {
-  ctx.nr.bedrockResponse.inputTokenCount = 0
-  ctx.nr.bedrockResponse.outputTokenCount = 0
-  const event = new LlmChatCompletionSummary(ctx.nr)
+test('creates a basic summary', async (t) => {
+  t.nr.bedrockResponse.inputTokenCount = 0
+  t.nr.bedrockResponse.outputTokenCount = 0
+  const event = new LlmChatCompletionSummary(t.nr)
   assert.equal(event['llm.conversation_id'], 'conversation-1')
   assert.equal(event.duration, 100)
   assert.equal(event['request.max_tokens'], 25)
@@ -91,9 +91,9 @@ test('creates a basic summary', async (ctx) => {
   assert.equal(event['response.number_of_messages'], 2)
 })
 
-test('creates an ai21 summary', async (ctx) => {
-  ctx.nr.bedrockCommand.isAi21 = () => true
-  const event = new LlmChatCompletionSummary(ctx.nr)
+test('creates an ai21 summary', async (t) => {
+  t.nr.bedrockCommand.isAi21 = () => true
+  const event = new LlmChatCompletionSummary(t.nr)
   assert.equal(event['llm.conversation_id'], 'conversation-1')
   assert.equal(event.duration, 100)
   assert.equal(event['request.max_tokens'], 25)
@@ -102,9 +102,9 @@ test('creates an ai21 summary', async (ctx) => {
   assert.equal(event['response.number_of_messages'], 2)
 })
 
-test('creates an claude summary', async (ctx) => {
-  ctx.nr.bedrockCommand.isClaude = () => true
-  const event = new LlmChatCompletionSummary(ctx.nr)
+test('creates an claude summary', async (t) => {
+  t.nr.bedrockCommand.isClaude = () => true
+  const event = new LlmChatCompletionSummary(t.nr)
   assert.equal(event['llm.conversation_id'], 'conversation-1')
   assert.equal(event.duration, 100)
   assert.equal(event['request.max_tokens'], 25)
@@ -113,9 +113,9 @@ test('creates an claude summary', async (ctx) => {
   assert.equal(event['response.number_of_messages'], 2)
 })
 
-test('creates a cohere summary', async (ctx) => {
-  ctx.nr.bedrockCommand.isCohere = () => true
-  const event = new LlmChatCompletionSummary(ctx.nr)
+test('creates a cohere summary', async (t) => {
+  t.nr.bedrockCommand.isCohere = () => true
+  const event = new LlmChatCompletionSummary(t.nr)
   assert.equal(event['llm.conversation_id'], 'conversation-1')
   assert.equal(event.duration, 100)
   assert.equal(event['request.max_tokens'], 25)
@@ -124,9 +124,9 @@ test('creates a cohere summary', async (ctx) => {
   assert.equal(event['response.number_of_messages'], 2)
 })
 
-test('creates a llama2 summary', async (ctx) => {
-  ctx.nr.bedrockCommand.isLlama2 = () => true
-  const event = new LlmChatCompletionSummary(ctx.nr)
+test('creates a llama2 summary', async (t) => {
+  t.nr.bedrockCommand.isLlama2 = () => true
+  const event = new LlmChatCompletionSummary(t.nr)
   assert.equal(event['llm.conversation_id'], 'conversation-1')
   assert.equal(event.duration, 100)
   assert.equal(event['request.max_tokens'], 25)
@@ -135,9 +135,9 @@ test('creates a llama2 summary', async (ctx) => {
   assert.equal(event['response.number_of_messages'], 2)
 })
 
-test('creates a titan summary', async (ctx) => {
-  ctx.nr.bedrockCommand.isTitan = () => true
-  const event = new LlmChatCompletionSummary(ctx.nr)
+test('creates a titan summary', async (t) => {
+  t.nr.bedrockCommand.isTitan = () => true
+  const event = new LlmChatCompletionSummary(t.nr)
   assert.equal(event['llm.conversation_id'], 'conversation-1')
   assert.equal(event.duration, 100)
   assert.equal(event['request.max_tokens'], 25)

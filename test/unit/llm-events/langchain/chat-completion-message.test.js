@@ -52,9 +52,9 @@ test.beforeEach((ctx) => {
   ctx.nr.metadata = { foo: 'foo' }
 })
 
-test('creates entity', async (ctx) => {
+test('creates entity', async (t) => {
   const msg = new LangChainCompletionMessage({
-    ...ctx.nr,
+    ...t.nr,
     sequence: 1,
     content: 'hello world'
   })
@@ -73,18 +73,18 @@ test('creates entity', async (ctx) => {
   assert.match(msg.completion_id, /[a-z0-9-]{36}/)
 })
 
-test('assigns id correctly', async (ctx) => {
-  let msg = new LangChainCompletionMessage({ ...ctx.nr, runId: '', sequence: 1 })
+test('assigns id correctly', async (t) => {
+  let msg = new LangChainCompletionMessage({ ...t.nr, runId: '', sequence: 1 })
   assert.match(msg.id, /[a-z0-9-]{36}-1/)
 
-  msg = new LangChainCompletionMessage({ ...ctx.nr, runId: '123456', sequence: 42 })
+  msg = new LangChainCompletionMessage({ ...t.nr, runId: '123456', sequence: 42 })
   assert.equal(msg.id, '123456-42')
 })
 
-test('respects record_content setting', async (ctx) => {
-  ctx.nr.agent.config.ai_monitoring.record_content.enabled = false
+test('respects record_content setting', async (t) => {
+  t.nr.agent.config.ai_monitoring.record_content.enabled = false
   const search = new LangChainCompletionMessage({
-    ...ctx.nr,
+    ...t.nr,
     sequence: 1,
     content: 'hello world'
   })

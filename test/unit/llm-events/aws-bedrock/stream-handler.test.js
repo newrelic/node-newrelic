@@ -74,20 +74,20 @@ test.beforeEach((ctx) => {
   /* eslint-enable prettier/prettier */
 })
 
-test('unrecognized or unhandled model uses original stream', async (ctx) => {
-  ctx.nr.modelId = 'amazon.titan-embed-text-v1'
-  const handler = new StreamHandler(ctx.nr)
+test('unrecognized or unhandled model uses original stream', async (t) => {
+  t.nr.modelId = 'amazon.titan-embed-text-v1'
+  const handler = new StreamHandler(t.nr)
   assert.equal(handler.generator.name, undefined)
-  assert.equal(handler.generator, ctx.nr.stream)
+  assert.equal(handler.generator, t.nr.stream)
 })
 
-test('handles claude streams', async (ctx) => {
-  ctx.nr.passThroughParams.bedrockCommand.isClaude = () => true
-  ctx.nr.chunks = [
+test('handles claude streams', async (t) => {
+  t.nr.passThroughParams.bedrockCommand.isClaude = () => true
+  t.nr.chunks = [
     { completion: '1', stop_reason: null },
-    { completion: '2', stop_reason: 'done', ...ctx.nr.metrics }
+    { completion: '2', stop_reason: 'done', ...t.nr.metrics }
   ]
-  const handler = new StreamHandler(ctx.nr)
+  const handler = new StreamHandler(t.nr)
 
   assert.equal(handler.generator.name, 'handleClaude')
   for await (const event of handler.generator()) {
@@ -119,14 +119,14 @@ test('handles claude streams', async (ctx) => {
   assert.equal(br.statusCode, 200)
 })
 
-test('handles claude3streams', async (ctx) => {
-  ctx.nr.passThroughParams.bedrockCommand.isClaude3 = () => true
-  ctx.nr.chunks = [
+test('handles claude3streams', async (t) => {
+  t.nr.passThroughParams.bedrockCommand.isClaude3 = () => true
+  t.nr.chunks = [
     { type: 'content_block_delta', delta: { type: 'text_delta', text: '42' } },
     { type: 'message_delta', delta: { stop_reason: 'done' } },
-    { type: 'message_stop', ...ctx.nr.metrics }
+    { type: 'message_stop', ...t.nr.metrics }
   ]
-  const handler = new StreamHandler(ctx.nr)
+  const handler = new StreamHandler(t.nr)
 
   assert.equal(handler.generator.name, 'handleClaude3')
   for await (const event of handler.generator()) {
@@ -153,13 +153,13 @@ test('handles claude3streams', async (ctx) => {
   assert.equal(br.statusCode, 200)
 })
 
-test('handles cohere streams', async (ctx) => {
-  ctx.nr.passThroughParams.bedrockCommand.isCohere = () => true
-  ctx.nr.chunks = [
+test('handles cohere streams', async (t) => {
+  t.nr.passThroughParams.bedrockCommand.isCohere = () => true
+  t.nr.chunks = [
     { generations: [{ text: '1', finish_reason: null }] },
-    { generations: [{ text: '2', finish_reason: 'done' }], ...ctx.nr.metrics }
+    { generations: [{ text: '2', finish_reason: 'done' }], ...t.nr.metrics }
   ]
-  const handler = new StreamHandler(ctx.nr)
+  const handler = new StreamHandler(t.nr)
 
   assert.equal(handler.generator.name, 'handleCohere')
   for await (const event of handler.generator()) {
@@ -198,18 +198,18 @@ test('handles cohere streams', async (ctx) => {
   assert.equal(br.statusCode, 200)
 })
 
-test('handles cohere embedding streams', async (ctx) => {
-  ctx.nr.passThroughParams.bedrockCommand.isCohereEmbed = () => true
-  ctx.nr.chunks = [
+test('handles cohere embedding streams', async (t) => {
+  t.nr.passThroughParams.bedrockCommand.isCohereEmbed = () => true
+  t.nr.chunks = [
     {
       embeddings: [
         [1, 2],
         [3, 4]
       ],
-      ...ctx.nr.metrics
+      ...t.nr.metrics
     }
   ]
-  const handler = new StreamHandler(ctx.nr)
+  const handler = new StreamHandler(t.nr)
 
   assert.equal(handler.generator.name, 'handleCohereEmbed')
   for await (const event of handler.generator()) {
@@ -248,13 +248,13 @@ test('handles cohere embedding streams', async (ctx) => {
   assert.equal(br.statusCode, 200)
 })
 
-test('handles llama streams', async (ctx) => {
-  ctx.nr.passThroughParams.bedrockCommand.isLlama = () => true
-  ctx.nr.chunks = [
+test('handles llama streams', async (t) => {
+  t.nr.passThroughParams.bedrockCommand.isLlama = () => true
+  t.nr.chunks = [
     { generation: '1', stop_reason: null },
-    { generation: '2', stop_reason: 'done', ...ctx.nr.metrics }
+    { generation: '2', stop_reason: 'done', ...t.nr.metrics }
   ]
-  const handler = new StreamHandler(ctx.nr)
+  const handler = new StreamHandler(t.nr)
 
   assert.equal(handler.generator.name, 'handleLlama')
   for await (const event of handler.generator()) {
@@ -286,13 +286,13 @@ test('handles llama streams', async (ctx) => {
   assert.equal(br.statusCode, 200)
 })
 
-test('handles titan streams', async (ctx) => {
-  ctx.nr.passThroughParams.bedrockCommand.isTitan = () => true
-  ctx.nr.chunks = [
+test('handles titan streams', async (t) => {
+  t.nr.passThroughParams.bedrockCommand.isTitan = () => true
+  t.nr.chunks = [
     { outputText: '1', completionReason: null },
-    { outputText: '2', completionReason: 'done', ...ctx.nr.metrics }
+    { outputText: '2', completionReason: 'done', ...t.nr.metrics }
   ]
-  const handler = new StreamHandler(ctx.nr)
+  const handler = new StreamHandler(t.nr)
 
   assert.equal(handler.generator.name, 'handleTitan')
   for await (const event of handler.generator()) {

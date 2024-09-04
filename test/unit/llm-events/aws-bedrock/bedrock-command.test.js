@@ -86,8 +86,8 @@ test.beforeEach((ctx) => {
   }
 })
 
-test('non-conforming command is handled gracefully', async (ctx) => {
-  const cmd = new BedrockCommand(ctx.nr.input)
+test('non-conforming command is handled gracefully', async (t) => {
+  const cmd = new BedrockCommand(t.nr.input)
   for (const model of [
     'Ai21',
     'Claude',
@@ -107,9 +107,9 @@ test('non-conforming command is handled gracefully', async (ctx) => {
   assert.equal(cmd.temperature, undefined)
 })
 
-test('ai21 minimal command works', async (ctx) => {
-  ctx.nr.updatePayload(structuredClone(ai21))
-  const cmd = new BedrockCommand(ctx.nr.input)
+test('ai21 minimal command works', async (t) => {
+  t.nr.updatePayload(structuredClone(ai21))
+  const cmd = new BedrockCommand(t.nr.input)
   assert.equal(cmd.isAi21(), true)
   assert.equal(cmd.maxTokens, undefined)
   assert.equal(cmd.modelId, ai21.modelId)
@@ -118,12 +118,12 @@ test('ai21 minimal command works', async (ctx) => {
   assert.equal(cmd.temperature, undefined)
 })
 
-test('ai21 complete command works', async (ctx) => {
+test('ai21 complete command works', async (t) => {
   const payload = structuredClone(ai21)
   payload.body.maxTokens = 25
   payload.body.temperature = 0.5
-  ctx.nr.updatePayload(payload)
-  const cmd = new BedrockCommand(ctx.nr.input)
+  t.nr.updatePayload(payload)
+  const cmd = new BedrockCommand(t.nr.input)
   assert.equal(cmd.isAi21(), true)
   assert.equal(cmd.maxTokens, 25)
   assert.equal(cmd.modelId, payload.modelId)
@@ -132,9 +132,9 @@ test('ai21 complete command works', async (ctx) => {
   assert.equal(cmd.temperature, payload.body.temperature)
 })
 
-test('claude minimal command works', async (ctx) => {
-  ctx.nr.updatePayload(structuredClone(claude))
-  const cmd = new BedrockCommand(ctx.nr.input)
+test('claude minimal command works', async (t) => {
+  t.nr.updatePayload(structuredClone(claude))
+  const cmd = new BedrockCommand(t.nr.input)
   assert.equal(cmd.isClaude(), true)
   assert.equal(cmd.maxTokens, undefined)
   assert.equal(cmd.modelId, claude.modelId)
@@ -143,12 +143,12 @@ test('claude minimal command works', async (ctx) => {
   assert.equal(cmd.temperature, undefined)
 })
 
-test('claude complete command works', async (ctx) => {
+test('claude complete command works', async (t) => {
   const payload = structuredClone(claude)
   payload.body.max_tokens_to_sample = 25
   payload.body.temperature = 0.5
-  ctx.nr.updatePayload(payload)
-  const cmd = new BedrockCommand(ctx.nr.input)
+  t.nr.updatePayload(payload)
+  const cmd = new BedrockCommand(t.nr.input)
   assert.equal(cmd.isClaude(), true)
   assert.equal(cmd.maxTokens, 25)
   assert.equal(cmd.modelId, payload.modelId)
@@ -157,9 +157,9 @@ test('claude complete command works', async (ctx) => {
   assert.equal(cmd.temperature, payload.body.temperature)
 })
 
-test('claude3 minimal command works', async (ctx) => {
-  ctx.nr.updatePayload(structuredClone(claude3))
-  const cmd = new BedrockCommand(ctx.nr.input)
+test('claude3 minimal command works', async (t) => {
+  t.nr.updatePayload(structuredClone(claude3))
+  const cmd = new BedrockCommand(t.nr.input)
   assert.equal(cmd.isClaude3(), true)
   assert.equal(cmd.maxTokens, undefined)
   assert.equal(cmd.modelId, claude3.modelId)
@@ -168,12 +168,12 @@ test('claude3 minimal command works', async (ctx) => {
   assert.equal(cmd.temperature, undefined)
 })
 
-test('claude3 complete command works', async (ctx) => {
+test('claude3 complete command works', async (t) => {
   const payload = structuredClone(claude3)
   payload.body.max_tokens = 25
   payload.body.temperature = 0.5
-  ctx.nr.updatePayload(payload)
-  const cmd = new BedrockCommand(ctx.nr.input)
+  t.nr.updatePayload(payload)
+  const cmd = new BedrockCommand(t.nr.input)
   assert.equal(cmd.isClaude3(), true)
   assert.equal(cmd.maxTokens, 25)
   assert.equal(cmd.modelId, payload.modelId)
@@ -182,9 +182,9 @@ test('claude3 complete command works', async (ctx) => {
   assert.equal(cmd.temperature, payload.body.temperature)
 })
 
-test('cohere minimal command works', async (ctx) => {
-  ctx.nr.updatePayload(structuredClone(cohere))
-  const cmd = new BedrockCommand(ctx.nr.input)
+test('cohere minimal command works', async (t) => {
+  t.nr.updatePayload(structuredClone(cohere))
+  const cmd = new BedrockCommand(t.nr.input)
   assert.equal(cmd.isCohere(), true)
   assert.equal(cmd.maxTokens, undefined)
   assert.equal(cmd.modelId, cohere.modelId)
@@ -193,12 +193,12 @@ test('cohere minimal command works', async (ctx) => {
   assert.equal(cmd.temperature, undefined)
 })
 
-test('cohere complete command works', async (ctx) => {
+test('cohere complete command works', async (t) => {
   const payload = structuredClone(cohere)
   payload.body.max_tokens = 25
   payload.body.temperature = 0.5
-  ctx.nr.updatePayload(payload)
-  const cmd = new BedrockCommand(ctx.nr.input)
+  t.nr.updatePayload(payload)
+  const cmd = new BedrockCommand(t.nr.input)
   assert.equal(cmd.isCohere(), true)
   assert.equal(cmd.maxTokens, 25)
   assert.equal(cmd.modelId, payload.modelId)
@@ -207,9 +207,9 @@ test('cohere complete command works', async (ctx) => {
   assert.equal(cmd.temperature, payload.body.temperature)
 })
 
-test('cohere embed minimal command works', async (ctx) => {
-  ctx.nr.updatePayload(structuredClone(cohereEmbed))
-  const cmd = new BedrockCommand(ctx.nr.input)
+test('cohere embed minimal command works', async (t) => {
+  t.nr.updatePayload(structuredClone(cohereEmbed))
+  const cmd = new BedrockCommand(t.nr.input)
   assert.equal(cmd.isCohereEmbed(), true)
   assert.equal(cmd.maxTokens, undefined)
   assert.equal(cmd.modelId, cohereEmbed.modelId)
@@ -218,9 +218,9 @@ test('cohere embed minimal command works', async (ctx) => {
   assert.equal(cmd.temperature, undefined)
 })
 
-test('llama2 minimal command works', async (ctx) => {
-  ctx.nr.updatePayload(structuredClone(llama2))
-  const cmd = new BedrockCommand(ctx.nr.input)
+test('llama2 minimal command works', async (t) => {
+  t.nr.updatePayload(structuredClone(llama2))
+  const cmd = new BedrockCommand(t.nr.input)
   assert.equal(cmd.isLlama(), true)
   assert.equal(cmd.maxTokens, undefined)
   assert.equal(cmd.modelId, llama2.modelId)
@@ -229,12 +229,12 @@ test('llama2 minimal command works', async (ctx) => {
   assert.equal(cmd.temperature, undefined)
 })
 
-test('llama2 complete command works', async (ctx) => {
+test('llama2 complete command works', async (t) => {
   const payload = structuredClone(llama2)
   payload.body.max_gen_length = 25
   payload.body.temperature = 0.5
-  ctx.nr.updatePayload(payload)
-  const cmd = new BedrockCommand(ctx.nr.input)
+  t.nr.updatePayload(payload)
+  const cmd = new BedrockCommand(t.nr.input)
   assert.equal(cmd.isLlama(), true)
   assert.equal(cmd.maxTokens, 25)
   assert.equal(cmd.modelId, payload.modelId)
@@ -243,9 +243,9 @@ test('llama2 complete command works', async (ctx) => {
   assert.equal(cmd.temperature, payload.body.temperature)
 })
 
-test('llama3 minimal command works', async (ctx) => {
-  ctx.nr.updatePayload(structuredClone(llama3))
-  const cmd = new BedrockCommand(ctx.nr.input)
+test('llama3 minimal command works', async (t) => {
+  t.nr.updatePayload(structuredClone(llama3))
+  const cmd = new BedrockCommand(t.nr.input)
   assert.equal(cmd.isLlama(), true)
   assert.equal(cmd.maxTokens, undefined)
   assert.equal(cmd.modelId, llama3.modelId)
@@ -254,12 +254,12 @@ test('llama3 minimal command works', async (ctx) => {
   assert.equal(cmd.temperature, undefined)
 })
 
-test('llama3 complete command works', async (ctx) => {
+test('llama3 complete command works', async (t) => {
   const payload = structuredClone(llama3)
   payload.body.max_gen_length = 25
   payload.body.temperature = 0.5
-  ctx.nr.updatePayload(payload)
-  const cmd = new BedrockCommand(ctx.nr.input)
+  t.nr.updatePayload(payload)
+  const cmd = new BedrockCommand(t.nr.input)
   assert.equal(cmd.isLlama(), true)
   assert.equal(cmd.maxTokens, 25)
   assert.equal(cmd.modelId, payload.modelId)
@@ -268,9 +268,9 @@ test('llama3 complete command works', async (ctx) => {
   assert.equal(cmd.temperature, payload.body.temperature)
 })
 
-test('titan minimal command works', async (ctx) => {
-  ctx.nr.updatePayload(structuredClone(titan))
-  const cmd = new BedrockCommand(ctx.nr.input)
+test('titan minimal command works', async (t) => {
+  t.nr.updatePayload(structuredClone(titan))
+  const cmd = new BedrockCommand(t.nr.input)
   assert.equal(cmd.isTitan(), true)
   assert.equal(cmd.maxTokens, undefined)
   assert.equal(cmd.modelId, titan.modelId)
@@ -279,14 +279,14 @@ test('titan minimal command works', async (ctx) => {
   assert.equal(cmd.temperature, undefined)
 })
 
-test('titan complete command works', async (ctx) => {
+test('titan complete command works', async (t) => {
   const payload = structuredClone(titan)
   payload.body.textGenerationConfig = {
     maxTokenCount: 25,
     temperature: 0.5
   }
-  ctx.nr.updatePayload(payload)
-  const cmd = new BedrockCommand(ctx.nr.input)
+  t.nr.updatePayload(payload)
+  const cmd = new BedrockCommand(t.nr.input)
   assert.equal(cmd.isTitan(), true)
   assert.equal(cmd.maxTokens, 25)
   assert.equal(cmd.modelId, payload.modelId)
@@ -295,9 +295,9 @@ test('titan complete command works', async (ctx) => {
   assert.equal(cmd.temperature, payload.body.textGenerationConfig.temperature)
 })
 
-test('titan embed minimal command works', async (ctx) => {
-  ctx.nr.updatePayload(structuredClone(titanEmbed))
-  const cmd = new BedrockCommand(ctx.nr.input)
+test('titan embed minimal command works', async (t) => {
+  t.nr.updatePayload(structuredClone(titanEmbed))
+  const cmd = new BedrockCommand(t.nr.input)
   assert.equal(cmd.isTitanEmbed(), true)
   assert.equal(cmd.maxTokens, undefined)
   assert.equal(cmd.modelId, titanEmbed.modelId)
