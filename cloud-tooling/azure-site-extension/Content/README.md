@@ -11,7 +11,9 @@ From the Azure Home page, do the following:
 - Click the name of the target application in the displayed list
 - On the options listed on the left, scroll down to "Extensions" located under the Development Tools category
 - Click on + Add at the top of the page
-- From the extension drop down, select New Relic Node Agent
+- From the extension drop down, select New Relic Node Agent. 
+  - If your application runs on Win 32, select the x86 version of the site extension.
+  - If your application runs on Win 64, select the x64 version of the site extension.
 - Check the box for accepting the legal terms
 - Click Add on the bottom of the page. This will begin installation of the extension.
 
@@ -25,6 +27,9 @@ If the extension fails to install, a log file is created at `C:\home\SiteExtensi
 
 If the New Relic agent has been installed successfully and logging has been enabled, the agent will append its logs to a file at `C:\home\site\wwwroot\newrelic_agent.log`.
 
+### Compatibility: 
+
+For Node 18 on Win 32, full Code Level Metrics support (file path, line, column) is not available, and profiling will fall back to function name only. 
 
 ## Configuration
 The New Relic Node agent is configured with the `newrelic.js` file, or via environment variables. [See our documentation for more detailed configuration](https://docs.newrelic.com/docs/apm/agents/nodejs-agent/installation-configuration/nodejs-agent-configuration/).
