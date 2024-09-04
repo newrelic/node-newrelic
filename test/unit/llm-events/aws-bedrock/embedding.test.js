@@ -5,14 +5,16 @@
 
 'use strict'
 
-const tap = require('tap')
+const test = require('node:test')
+const assert = require('node:assert')
 const {
   DESTINATIONS: { TRANS_SCOPE }
 } = require('../../../../lib/config/attribute-filter')
 const LlmEmbedding = require('../../../../lib/llm-events/aws-bedrock/embedding')
 
-tap.beforeEach((t) => {
-  t.context.agent = {
+test.beforeEach((ctx) => {
+  ctx.nr = {}
+  ctx.nr.agent = {
     llm: {},
     config: {
       applications() {
@@ -31,7 +33,7 @@ tap.beforeEach((t) => {
           trace: {
             custom: {
               get(key) {
-                t.equal(key, TRANS_SCOPE)
+                assert.equal(key, TRANS_SCOPE)
                 return {
                   ['llm.conversation_id']: 'conversation-1'
                 }
@@ -43,16 +45,16 @@ tap.beforeEach((t) => {
     }
   }
 
-  t.context.bedrockCommand = {
+  ctx.nr.bedrockCommand = {
     prompt: 'who are you'
   }
 
-  t.context.bedrockResponse = {
+  ctx.nr.bedrockResponse = {
     headers: {
       'x-amzn-requestid': 'request-1'
     }
   }
-  t.context.segment = {
+  ctx.nr.segment = {
     transaction: { traceId: 'id' },
     getDurationInMillis() {
       return 1.008
@@ -60,25 +62,22 @@ tap.beforeEach((t) => {
   }
 })
 
-tap.test('creates a basic embedding', async (t) => {
-  const event = new LlmEmbedding(t.context)
-  t.equal(event.input, 'who are you')
-  t.equal(event.duration, 1.008)
-  t.equal(event.token_count, undefined)
+test('creates a basic embedding', async (t) => {
+  const event = new LlmEmbedding(t.nr)
+  assert.equal(event.input, 'who are you')
+  assert.equal(event.duration, 1.008)
+  assert.equal(event.token_count, undefined)
 })
 
-tap.test(
-  'should not capture input when `ai_monitoring.record_content.enabled` is false',
-  async (t) => {
-    const { agent } = t.context
-    agent.config.ai_monitoring.record_content.enabled = false
-    const event = new LlmEmbedding(t.context)
-    t.equal(event.input, undefined, 'input should be empty')
-  }
-)
+test('should not capture input when `ai_monitoring.record_content.enabled` is false', async (t) => {
+  const { agent } = t.nr
+  agent.config.ai_monitoring.record_content.enabled = false
+  const event = new LlmEmbedding(t.nr)
+  assert.equal(event.input, undefined, 'input should be empty')
+})
 
-tap.test('should capture token_count when callback is defined', async (t) => {
-  t.context.agent.llm.tokenCountCallback = () => 3
-  const event = new LlmEmbedding(t.context)
-  t.equal(event.token_count, 3)
+test('should capture token_count when callback is defined', async (t) => {
+  t.nr.agent.llm.tokenCountCallback = () => 3
+  const event = new LlmEmbedding(t.nr)
+  assert.equal(event.token_count, 3)
 })

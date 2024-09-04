@@ -5,10 +5,11 @@
 
 'use strict'
 
-const tap = require('tap')
+const test = require('node:test')
+const assert = require('node:assert')
 const LlmFeedbackMessage = require('../../../lib/llm-events/feedback-message')
 
-tap.test('LlmFeedbackMessage', (t) => {
+test('LlmFeedbackMessage', () => {
   const opts = {
     traceId: 'trace-id',
     category: 'informative',
@@ -24,6 +25,5 @@ tap.test('LlmFeedbackMessage', (t) => {
     message: 'This answer was amazing',
     ingest_source: 'Node'
   }
-  t.same(feedbackMsg, expected)
-  t.end()
+  assert.deepEqual(feedbackMsg, expected)
 })

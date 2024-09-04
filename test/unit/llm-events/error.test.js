@@ -5,11 +5,12 @@
 
 'use strict'
 
-const tap = require('tap')
+const test = require('node:test')
+const assert = require('node:assert')
 const LlmErrorMessage = require('../../../lib/llm-events/error-message')
 const { req, chatRes } = require('./openai/common')
 
-tap.test('LlmErrorMessage', (t) => {
+test('LlmErrorMessage', async () => {
   const res = { ...chatRes, code: 'insufficient_quota', param: 'test-param', status: 429 }
   const errorMsg = new LlmErrorMessage({ request: req, response: res })
   const expected = {
@@ -22,6 +23,13 @@ tap.test('LlmErrorMessage', (t) => {
     'vector_store_id': undefined,
     'tool_id': undefined
   }
-  t.same(errorMsg, expected)
-  t.end()
+  assert.ok(errorMsg.toString(), 'LlmErrorMessage')
+  assert.equal(errorMsg['http.statusCode'], expected['http.statusCode'])
+  assert.equal(errorMsg['error.message'], expected['error.message'])
+  assert.equal(errorMsg['error.code'], expected['error.code'])
+  assert.equal(errorMsg['error.param'], expected['error.param'])
+  assert.equal(errorMsg.completion_id, expected.completion_id)
+  assert.equal(errorMsg.embedding_id, expected.embedding_id)
+  assert.equal(errorMsg.vector_store_id, expected.vector_store_id)
+  assert.equal(errorMsg.tool_id, expected.tool_id)
 })

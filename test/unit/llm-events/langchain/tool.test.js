@@ -5,11 +5,13 @@
 
 'use strict'
 
-const tap = require('tap')
+const test = require('node:test')
+const assert = require('node:assert')
 const LangChainTool = require('../../../../lib/llm-events/langchain/tool')
 
-tap.beforeEach((t) => {
-  t.context._tx = {
+test.beforeEach((ctx) => {
+  ctx.nr = {}
+  ctx.nr._tx = {
     trace: {
       custom: {
         get() {
@@ -21,7 +23,7 @@ tap.beforeEach((t) => {
     }
   }
 
-  t.context.agent = {
+  ctx.nr.agent = {
     config: {
       ai_monitoring: {
         record_content: {
@@ -34,12 +36,12 @@ tap.beforeEach((t) => {
     },
     tracer: {
       getTransaction() {
-        return t.context._tx
+        return ctx.nr._tx
       }
     }
   }
 
-  t.context.segment = {
+  ctx.nr.segment = {
     getDurationInMillis() {
       return 1.01
     },
@@ -49,36 +51,34 @@ tap.beforeEach((t) => {
     }
   }
 
-  t.context.runId = 'run-1'
-  t.context.metadata = { foo: 'foo' }
-  t.context.name = 'test-tool'
-  t.context.description = 'test tool description'
-  t.context.input = 'input'
-  t.context.output = 'output'
+  ctx.nr.runId = 'run-1'
+  ctx.nr.metadata = { foo: 'foo' }
+  ctx.nr.name = 'test-tool'
+  ctx.nr.description = 'test tool description'
+  ctx.nr.input = 'input'
+  ctx.nr.output = 'output'
 })
 
-tap.test('constructs default instance', async (t) => {
-  const event = new LangChainTool(t.context)
-  t.match(event, {
-    input: 'input',
-    output: 'output',
-    name: 'test-tool',
-    description: 'test tool description',
-    run_id: 'run-1',
-    id: /[a-z0-9-]{36}/,
-    appName: 'test-app',
-    span_id: 'segment-1',
-    trace_id: 'trace-1',
-    duration: 1.01,
-    ['metadata.foo']: 'foo',
-    ingest_source: 'Node',
-    vendor: 'langchain'
-  })
+test('constructs default instance', async (t) => {
+  const event = new LangChainTool(t.nr)
+  assert.equal(event.input, 'input')
+  assert.equal(event.output, 'output')
+  assert.equal(event.name, 'test-tool')
+  assert.equal(event.description, 'test tool description')
+  assert.equal(event.run_id, 'run-1')
+  assert.match(event.id, /[a-z0-9-]{36}/)
+  assert.equal(event.appName, 'test-app')
+  assert.equal(event.span_id, 'segment-1')
+  assert.equal(event.trace_id, 'trace-1')
+  assert.equal(event.duration, 1.01)
+  assert.equal(event['metadata.foo'], 'foo')
+  assert.equal(event.ingest_source, 'Node')
+  assert.equal(event.vendor, 'langchain')
 })
 
-tap.test('respects record_content setting', async (t) => {
-  t.context.agent.config.ai_monitoring.record_content.enabled = false
-  const event = new LangChainTool(t.context)
-  t.equal(event.input, undefined)
-  t.equal(event.output, undefined)
+test('respects record_content setting', async (t) => {
+  t.nr.agent.config.ai_monitoring.record_content.enabled = false
+  const event = new LangChainTool(t.nr)
+  assert.equal(event.input, undefined)
+  assert.equal(event.output, undefined)
 })

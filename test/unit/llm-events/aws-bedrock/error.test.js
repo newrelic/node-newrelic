@@ -5,52 +5,51 @@
 
 'use strict'
 
-const tap = require('tap')
+const test = require('node:test')
+const assert = require('node:assert')
 const LlmError = require('../../../../lib/llm-events/aws-bedrock/error')
 
-tap.beforeEach((t) => {
-  t.context.bedrockResponse = {
+test.beforeEach((ctx) => {
+  ctx.nr = {}
+  ctx.nr.bedrockResponse = {
     statusCode: 400
   }
 
-  t.context.err = {
+  ctx.nr.err = {
     message: 'No soup for you',
     name: 'SoupRule'
   }
 
-  t.context.summary = {
+  ctx.nr.summary = {
     id: 'completion-id'
   }
 })
 
-tap.test('create creates a new instance', (t) => {
-  const err = new LlmError(t.context)
-  t.equal(err['http.statusCode'], 400)
-  t.equal(err['error.message'], 'No soup for you')
-  t.equal(err['error.code'], 'SoupRule')
-  t.equal(err.completion_id, 'completion-id')
-  t.notOk(err.embedding_id)
-  t.end()
+test('create creates a new instance', (t) => {
+  const err = new LlmError(t.nr)
+  assert.equal(err['http.statusCode'], 400)
+  assert.equal(err['error.message'], 'No soup for you')
+  assert.equal(err['error.code'], 'SoupRule')
+  assert.equal(err.completion_id, 'completion-id')
+  assert.ok(!err.embedding_id)
 })
 
-tap.test('create error with embedding_id', (t) => {
-  delete t.context.summary
-  t.context.embedding = { id: 'embedding-id' }
-  const err = new LlmError(t.context)
-  t.equal(err['http.statusCode'], 400)
-  t.equal(err['error.message'], 'No soup for you')
-  t.equal(err['error.code'], 'SoupRule')
-  t.equal(err.embedding_id, 'embedding-id')
-  t.notOk(err.completion_id)
-  t.end()
+test('create error with embedding_id', (t) => {
+  delete t.nr.summary
+  t.nr.embedding = { id: 'embedding-id' }
+  const err = new LlmError(t.nr)
+  assert.equal(err['http.statusCode'], 400)
+  assert.equal(err['error.message'], 'No soup for you')
+  assert.equal(err['error.code'], 'SoupRule')
+  assert.equal(err.embedding_id, 'embedding-id')
+  assert.ok(!err.completion_id)
 })
 
-tap.test('empty error', (t) => {
+test('empty error', () => {
   const err = new LlmError()
-  t.notOk(err['http.statusCode'])
-  t.notOk(err['error.message'])
-  t.notOk(err['error.code'])
-  t.notOk(err.completion_id)
-  t.notOk(err.embedding_id)
-  t.end()
+  assert.ok(!err['http.statusCode'])
+  assert.ok(!err['error.message'])
+  assert.ok(!err['error.code'])
+  assert.ok(!err.completion_id)
+  assert.ok(!err.embedding_id)
 })

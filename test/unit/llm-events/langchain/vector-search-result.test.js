@@ -5,12 +5,14 @@
 
 'use strict'
 
-const tap = require('tap')
+const test = require('node:test')
+const assert = require('node:assert')
 const LangChainVectorSearchResult = require('../../../../lib/llm-events/langchain/vector-search-result')
 const LangChainVectorSearch = require('../../../../lib/llm-events/langchain/vector-search')
 
-tap.beforeEach((t) => {
-  t.context._tx = {
+test.beforeEach((ctx) => {
+  ctx.nr = {}
+  ctx.nr._tx = {
     trace: {
       custom: {
         get() {
@@ -22,7 +24,7 @@ tap.beforeEach((t) => {
     }
   }
 
-  t.context.agent = {
+  ctx.nr.agent = {
     config: {
       ai_monitoring: {
         record_content: {
@@ -35,12 +37,12 @@ tap.beforeEach((t) => {
     },
     tracer: {
       getTransaction() {
-        return t.context._tx
+        return ctx.nr._tx
       }
     }
   }
 
-  t.context.segment = {
+  ctx.nr.segment = {
     id: 'segment-1',
     transaction: {
       traceId: 'trace-1'
@@ -50,46 +52,44 @@ tap.beforeEach((t) => {
     }
   }
 
-  t.context.runId = 'run-1'
-  t.context.metadata = { foo: 'foo' }
+  ctx.nr.runId = 'run-1'
+  ctx.nr.metadata = { foo: 'foo' }
 })
 
-tap.test('create entity', async (t) => {
+test('create entity', async (t) => {
   const search = new LangChainVectorSearch({
-    ...t.context,
+    ...t.nr,
     query: 'hello world',
     k: 1
   })
 
   const searchResult = new LangChainVectorSearchResult({
-    ...t.context,
+    ...t.nr,
     sequence: 1,
     pageContent: 'hello world',
     search_id: search.id
   })
-  t.match(searchResult, {
-    id: /[a-z0-9-]{36}/,
-    appName: 'test-app',
-    ['llm.conversation_id']: 'test-conversation',
-    request_id: 'run-1',
-    span_id: 'segment-1',
-    trace_id: 'trace-1',
-    ['metadata.foo']: 'foo',
-    ingest_source: 'Node',
-    vendor: 'langchain',
-    virtual_llm: true,
-    sequence: 1,
-    page_content: 'hello world',
-    search_id: search.id
-  })
+  assert.match(searchResult.id, /[a-z0-9-]{36}/)
+  assert.equal(searchResult.appName, 'test-app')
+  assert.equal(searchResult['llm.conversation_id'], 'test-conversation')
+  assert.equal(searchResult.span_id, 'segment-1')
+  assert.equal(searchResult.request_id, 'run-1')
+  assert.equal(searchResult.trace_id, 'trace-1')
+  assert.equal(searchResult['metadata.foo'], 'foo')
+  assert.equal(searchResult.ingest_source, 'Node')
+  assert.equal(searchResult.vendor, 'langchain')
+  assert.equal(searchResult.virtual_llm, true)
+  assert.equal(searchResult.sequence, 1)
+  assert.equal(searchResult.page_content, 'hello world')
+  assert.equal(searchResult.search_id, search.id)
 })
 
-tap.test('respects record_content setting', async (t) => {
-  t.context.agent.config.ai_monitoring.record_content.enabled = false
+test('respects record_content setting', async (t) => {
+  t.nr.agent.config.ai_monitoring.record_content.enabled = false
   const search = new LangChainVectorSearchResult({
-    ...t.context,
+    ...t.nr,
     sequence: 1,
     pageContent: 'hello world'
   })
-  t.equal(search.page_content, undefined)
+  assert.equal(search.page_content, undefined)
 })

@@ -5,14 +5,16 @@
 
 'use strict'
 
-const tap = require('tap')
+const test = require('node:test')
+const assert = require('node:assert')
 const {
   DESTINATIONS: { TRANS_SCOPE }
 } = require('../../../../lib/config/attribute-filter')
 const LlmChatCompletionSummary = require('../../../../lib/llm-events/aws-bedrock/chat-completion-summary')
 
-tap.beforeEach((t) => {
-  t.context.agent = {
+test.beforeEach((ctx) => {
+  ctx.nr = {}
+  ctx.nr.agent = {
     config: {
       applications() {
         return ['test-app']
@@ -24,7 +26,7 @@ tap.beforeEach((t) => {
           trace: {
             custom: {
               get(key) {
-                t.equal(key, TRANS_SCOPE)
+                assert.equal(key, TRANS_SCOPE)
                 return {
                   ['llm.conversation_id']: 'conversation-1'
                 }
@@ -36,7 +38,7 @@ tap.beforeEach((t) => {
     }
   }
 
-  t.context.segment = {
+  ctx.nr.segment = {
     transaction: {
       id: 'tx-1'
     },
@@ -45,7 +47,7 @@ tap.beforeEach((t) => {
     }
   }
 
-  t.context.bedrockCommand = {
+  ctx.nr.bedrockCommand = {
     maxTokens: 25,
     temperature: 0.5,
     isAi21() {
@@ -68,7 +70,7 @@ tap.beforeEach((t) => {
     }
   }
 
-  t.context.bedrockResponse = {
+  ctx.nr.bedrockResponse = {
     headers: {
       'x-amzn-request-id': 'aws-request-1'
     },
@@ -77,69 +79,69 @@ tap.beforeEach((t) => {
   }
 })
 
-tap.test('creates a basic summary', async (t) => {
-  t.context.bedrockResponse.inputTokenCount = 0
-  t.context.bedrockResponse.outputTokenCount = 0
-  const event = new LlmChatCompletionSummary(t.context)
-  t.equal(event['llm.conversation_id'], 'conversation-1')
-  t.equal(event.duration, 100)
-  t.equal(event['request.max_tokens'], 25)
-  t.equal(event['request.temperature'], 0.5)
-  t.equal(event['response.choices.finish_reason'], 'done')
-  t.equal(event['response.number_of_messages'], 2)
+test('creates a basic summary', async (t) => {
+  t.nr.bedrockResponse.inputTokenCount = 0
+  t.nr.bedrockResponse.outputTokenCount = 0
+  const event = new LlmChatCompletionSummary(t.nr)
+  assert.equal(event['llm.conversation_id'], 'conversation-1')
+  assert.equal(event.duration, 100)
+  assert.equal(event['request.max_tokens'], 25)
+  assert.equal(event['request.temperature'], 0.5)
+  assert.equal(event['response.choices.finish_reason'], 'done')
+  assert.equal(event['response.number_of_messages'], 2)
 })
 
-tap.test('creates an ai21 summary', async (t) => {
-  t.context.bedrockCommand.isAi21 = () => true
-  const event = new LlmChatCompletionSummary(t.context)
-  t.equal(event['llm.conversation_id'], 'conversation-1')
-  t.equal(event.duration, 100)
-  t.equal(event['request.max_tokens'], 25)
-  t.equal(event['request.temperature'], 0.5)
-  t.equal(event['response.choices.finish_reason'], 'done')
-  t.equal(event['response.number_of_messages'], 2)
+test('creates an ai21 summary', async (t) => {
+  t.nr.bedrockCommand.isAi21 = () => true
+  const event = new LlmChatCompletionSummary(t.nr)
+  assert.equal(event['llm.conversation_id'], 'conversation-1')
+  assert.equal(event.duration, 100)
+  assert.equal(event['request.max_tokens'], 25)
+  assert.equal(event['request.temperature'], 0.5)
+  assert.equal(event['response.choices.finish_reason'], 'done')
+  assert.equal(event['response.number_of_messages'], 2)
 })
 
-tap.test('creates an claude summary', async (t) => {
-  t.context.bedrockCommand.isClaude = () => true
-  const event = new LlmChatCompletionSummary(t.context)
-  t.equal(event['llm.conversation_id'], 'conversation-1')
-  t.equal(event.duration, 100)
-  t.equal(event['request.max_tokens'], 25)
-  t.equal(event['request.temperature'], 0.5)
-  t.equal(event['response.choices.finish_reason'], 'done')
-  t.equal(event['response.number_of_messages'], 2)
+test('creates an claude summary', async (t) => {
+  t.nr.bedrockCommand.isClaude = () => true
+  const event = new LlmChatCompletionSummary(t.nr)
+  assert.equal(event['llm.conversation_id'], 'conversation-1')
+  assert.equal(event.duration, 100)
+  assert.equal(event['request.max_tokens'], 25)
+  assert.equal(event['request.temperature'], 0.5)
+  assert.equal(event['response.choices.finish_reason'], 'done')
+  assert.equal(event['response.number_of_messages'], 2)
 })
 
-tap.test('creates a cohere summary', async (t) => {
-  t.context.bedrockCommand.isCohere = () => true
-  const event = new LlmChatCompletionSummary(t.context)
-  t.equal(event['llm.conversation_id'], 'conversation-1')
-  t.equal(event.duration, 100)
-  t.equal(event['request.max_tokens'], 25)
-  t.equal(event['request.temperature'], 0.5)
-  t.equal(event['response.choices.finish_reason'], 'done')
-  t.equal(event['response.number_of_messages'], 2)
+test('creates a cohere summary', async (t) => {
+  t.nr.bedrockCommand.isCohere = () => true
+  const event = new LlmChatCompletionSummary(t.nr)
+  assert.equal(event['llm.conversation_id'], 'conversation-1')
+  assert.equal(event.duration, 100)
+  assert.equal(event['request.max_tokens'], 25)
+  assert.equal(event['request.temperature'], 0.5)
+  assert.equal(event['response.choices.finish_reason'], 'done')
+  assert.equal(event['response.number_of_messages'], 2)
 })
 
-tap.test('creates a llama2 summary', async (t) => {
-  t.context.bedrockCommand.isLlama2 = () => true
-  const event = new LlmChatCompletionSummary(t.context)
-  t.equal(event['llm.conversation_id'], 'conversation-1')
-  t.equal(event.duration, 100)
-  t.equal(event['request.max_tokens'], 25)
-  t.equal(event['request.temperature'], 0.5)
-  t.equal(event['response.choices.finish_reason'], 'done')
-  t.equal(event['response.number_of_messages'], 2)
+test('creates a llama2 summary', async (t) => {
+  t.nr.bedrockCommand.isLlama2 = () => true
+  const event = new LlmChatCompletionSummary(t.nr)
+  assert.equal(event['llm.conversation_id'], 'conversation-1')
+  assert.equal(event.duration, 100)
+  assert.equal(event['request.max_tokens'], 25)
+  assert.equal(event['request.temperature'], 0.5)
+  assert.equal(event['response.choices.finish_reason'], 'done')
+  assert.equal(event['response.number_of_messages'], 2)
 })
 
-tap.test('creates a titan summary', async (t) => {
-  t.context.bedrockCommand.isTitan = () => true
-  const event = new LlmChatCompletionSummary(t.context)
-  t.equal(event['llm.conversation_id'], 'conversation-1')
-  t.equal(event.duration, 100)
-  t.equal(event['request.max_tokens'], 25)
-  t.equal(event['request.temperature'], 0.5)
-  t.equal(event['response.choices.finish_reason'], 'done')
-  t.equal(event['response.number_of_messages'], 2)
+test('creates a titan summary', async (t) => {
+  t.nr.bedrockCommand.isTitan = () => true
+  const event = new LlmChatCompletionSummary(t.nr)
+  assert.equal(event['llm.conversation_id'], 'conversation-1')
+  assert.equal(event.duration, 100)
+  assert.equal(event['request.max_tokens'], 25)
+  assert.equal(event['request.temperature'], 0.5)
+  assert.equal(event['response.choices.finish_reason'], 'done')
+  assert.equal(event['response.number_of_messages'], 2)
 })

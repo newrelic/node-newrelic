@@ -5,11 +5,13 @@
 
 'use strict'
 
-const tap = require('tap')
+const test = require('node:test')
+const assert = require('node:assert')
 const LangChainVectorSearch = require('../../../../lib/llm-events/langchain/vector-search')
 
-tap.beforeEach((t) => {
-  t.context._tx = {
+test.beforeEach((ctx) => {
+  ctx.nr = {}
+  ctx.nr._tx = {
     trace: {
       custom: {
         get() {
@@ -21,7 +23,7 @@ tap.beforeEach((t) => {
     }
   }
 
-  t.context.agent = {
+  ctx.nr.agent = {
     config: {
       ai_monitoring: {
         record_content: {
@@ -34,12 +36,12 @@ tap.beforeEach((t) => {
     },
     tracer: {
       getTransaction() {
-        return t.context._tx
+        return ctx.nr._tx
       }
     }
   }
 
-  t.context.segment = {
+  ctx.nr.segment = {
     id: 'segment-1',
     transaction: {
       traceId: 'trace-1'
@@ -48,38 +50,36 @@ tap.beforeEach((t) => {
       return 42
     }
   }
-  t.context.runId = 'run-1'
+  ctx.nr.runId = 'run-1'
 })
 
-tap.test('create entity', async (t) => {
+test('create entity', async (t) => {
   const search = new LangChainVectorSearch({
-    ...t.context,
+    ...t.nr,
     query: 'hello world',
     k: 1
   })
-  t.match(search, {
-    'id': /[a-z0-9-]{36}/,
-    'appName': 'test-app',
-    ['llm.conversation_id']: 'test-conversation',
-    'request_id': 'run-1',
-    'span_id': 'segment-1',
-    'trace_id': 'trace-1',
-    'ingest_source': 'Node',
-    'vendor': 'langchain',
-    'virtual_llm': true,
-    'request.query': 'hello world',
-    'request.k': 1,
-    'duration': 42,
-    'response.number_of_documents': 0
-  })
+  assert.match(search.id, /[a-z0-9-]{36}/)
+  assert.equal(search.appName, 'test-app')
+  assert.equal(search['llm.conversation_id'], 'test-conversation')
+  assert.equal(search.request_id, 'run-1')
+  assert.equal(search.span_id, 'segment-1')
+  assert.equal(search.trace_id, 'trace-1')
+  assert.equal(search.ingest_source, 'Node')
+  assert.equal(search.vendor, 'langchain')
+  assert.equal(search.virtual_llm, true)
+  assert.equal(search['request.query'], 'hello world')
+  assert.equal(search['request.k'], 1)
+  assert.equal(search.duration, 42)
+  assert.equal(search['response.number_of_documents'], 0)
 })
 
-tap.test('respects record_content setting', async (t) => {
-  t.context.agent.config.ai_monitoring.record_content.enabled = false
+test('respects record_content setting', async (t) => {
+  t.nr.agent.config.ai_monitoring.record_content.enabled = false
   const search = new LangChainVectorSearch({
-    ...t.context,
+    ...t.nr,
     k: 1,
     query: 'hello world'
   })
-  t.equal(search.page_content, undefined)
+  assert.equal(search.page_content, undefined)
 })

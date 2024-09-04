@@ -5,7 +5,8 @@
 
 'use strict'
 
-const tap = require('tap')
+const test = require('node:test')
+const assert = require('node:assert')
 const structuredClone = require('./clone')
 const BedrockResponse = require('../../../../lib/llm-events/aws-bedrock/bedrock-response')
 
@@ -52,8 +53,9 @@ const titan = {
   ]
 }
 
-tap.beforeEach((t) => {
-  t.context.response = {
+test.beforeEach((ctx) => {
+  ctx.nr = {}
+  ctx.nr.response = {
     response: {
       statusCode: 200,
       headers: {
@@ -66,7 +68,7 @@ tap.beforeEach((t) => {
     }
   }
 
-  t.context.bedrockCommand = {
+  ctx.nr.bedrockCommand = {
     isAi21() {
       return false
     },
@@ -87,148 +89,147 @@ tap.beforeEach((t) => {
     }
   }
 
-  t.context.updatePayload = (payload) => {
-    t.context.response.output.body = new TextEncoder().encode(JSON.stringify(payload))
+  ctx.nr.updatePayload = (payload) => {
+    ctx.nr.response.output.body = new TextEncoder().encode(JSON.stringify(payload))
   }
 })
 
-tap.test('non-conforming response is handled gracefully', async (t) => {
-  delete t.context.response.response.headers
-  const res = new BedrockResponse(t.context)
-  t.same(res.completions, [])
-  t.equal(res.finishReason, undefined)
-  t.same(res.headers, undefined)
-  t.equal(res.id, undefined)
-  t.equal(res.requestId, undefined)
-  t.equal(res.statusCode, 200)
+test('non-conforming response is handled gracefully', async (t) => {
+  delete t.nr.response.response.headers
+  const res = new BedrockResponse(t.nr)
+  assert.deepStrictEqual(res.completions, [])
+  assert.equal(res.finishReason, undefined)
+  assert.deepStrictEqual(res.headers, undefined)
+  assert.equal(res.id, undefined)
+  assert.equal(res.requestId, undefined)
+  assert.equal(res.statusCode, 200)
 })
 
-tap.test('ai21 malformed responses work', async (t) => {
-  t.context.bedrockCommand.isAi21 = () => true
-  const res = new BedrockResponse(t.context)
-  t.same(res.completions, [])
-  t.equal(res.finishReason, undefined)
-  t.same(res.headers, t.context.response.response.headers)
-  t.equal(res.id, undefined)
-  t.equal(res.requestId, 'aws-request-1')
-  t.equal(res.statusCode, 200)
+test('ai21 malformed responses work', async (t) => {
+  t.nr.bedrockCommand.isAi21 = () => true
+  const res = new BedrockResponse(t.nr)
+  assert.deepStrictEqual(res.completions, [])
+  assert.equal(res.finishReason, undefined)
+  assert.deepStrictEqual(res.headers, t.nr.response.response.headers)
+  assert.equal(res.id, undefined)
+  assert.equal(res.requestId, 'aws-request-1')
+  assert.equal(res.statusCode, 200)
 })
 
-tap.test('ai21 complete responses work', async (t) => {
-  t.context.bedrockCommand.isAi21 = () => true
-  t.context.updatePayload(structuredClone(ai21))
-  const res = new BedrockResponse(t.context)
-  t.same(res.completions, ['ai21-response'])
-  t.equal(res.finishReason, 'done')
-  t.same(res.headers, t.context.response.response.headers)
-  t.equal(res.id, 'ai21-response-1')
-  t.equal(res.requestId, 'aws-request-1')
-  t.equal(res.statusCode, 200)
+test('ai21 complete responses work', async (t) => {
+  t.nr.bedrockCommand.isAi21 = () => true
+  t.nr.updatePayload(structuredClone(ai21))
+  const res = new BedrockResponse(t.nr)
+  assert.deepStrictEqual(res.completions, ['ai21-response'])
+  assert.equal(res.finishReason, 'done')
+  assert.deepStrictEqual(res.headers, t.nr.response.response.headers)
+  assert.equal(res.id, 'ai21-response-1')
+  assert.equal(res.requestId, 'aws-request-1')
+  assert.equal(res.statusCode, 200)
 })
 
-tap.test('claude malformed responses work', async (t) => {
-  t.context.bedrockCommand.isClaude = () => true
-  const res = new BedrockResponse(t.context)
-  t.same(res.completions, [])
-  t.equal(res.finishReason, undefined)
-  t.same(res.headers, t.context.response.response.headers)
-  t.equal(res.id, undefined)
-  t.equal(res.requestId, 'aws-request-1')
-  t.equal(res.statusCode, 200)
+test('claude malformed responses work', async (t) => {
+  t.nr.bedrockCommand.isClaude = () => true
+  const res = new BedrockResponse(t.nr)
+  assert.deepStrictEqual(res.completions, [])
+  assert.equal(res.finishReason, undefined)
+  assert.deepStrictEqual(res.headers, t.nr.response.response.headers)
+  assert.equal(res.id, undefined)
+  assert.equal(res.requestId, 'aws-request-1')
+  assert.equal(res.statusCode, 200)
 })
 
-tap.test('claude complete responses work', async (t) => {
-  t.context.bedrockCommand.isClaude = () => true
-  t.context.updatePayload(structuredClone(claude))
-  const res = new BedrockResponse(t.context)
-  t.same(res.completions, ['claude-response'])
-  t.equal(res.finishReason, 'done')
-  t.same(res.headers, t.context.response.response.headers)
-  t.equal(res.id, undefined)
-  t.equal(res.requestId, 'aws-request-1')
-  t.equal(res.statusCode, 200)
+test('claude complete responses work', async (t) => {
+  t.nr.bedrockCommand.isClaude = () => true
+  t.nr.updatePayload(structuredClone(claude))
+  const res = new BedrockResponse(t.nr)
+  assert.deepStrictEqual(res.completions, ['claude-response'])
+  assert.equal(res.finishReason, 'done')
+  assert.deepStrictEqual(res.headers, t.nr.response.response.headers)
+  assert.equal(res.id, undefined)
+  assert.equal(res.requestId, 'aws-request-1')
+  assert.equal(res.statusCode, 200)
 })
 
-tap.test('cohere malformed responses work', async (t) => {
-  t.context.bedrockCommand.isCohere = () => true
-  const res = new BedrockResponse(t.context)
-  t.same(res.completions, [])
-  t.equal(res.finishReason, undefined)
-  t.same(res.headers, t.context.response.response.headers)
-  t.equal(res.id, undefined)
-  t.equal(res.requestId, 'aws-request-1')
-  t.equal(res.statusCode, 200)
+test('cohere malformed responses work', async (t) => {
+  t.nr.bedrockCommand.isCohere = () => true
+  const res = new BedrockResponse(t.nr)
+  assert.deepStrictEqual(res.completions, [])
+  assert.equal(res.finishReason, undefined)
+  assert.deepStrictEqual(res.headers, t.nr.response.response.headers)
+  assert.equal(res.id, undefined)
+  assert.equal(res.requestId, 'aws-request-1')
+  assert.equal(res.statusCode, 200)
 })
 
-tap.test('cohere complete responses work', async (t) => {
-  t.context.bedrockCommand.isCohere = () => true
-  t.context.updatePayload(structuredClone(cohere))
-  const res = new BedrockResponse(t.context)
-  t.same(res.completions, ['cohere-response'])
-  t.equal(res.finishReason, 'done')
-  t.same(res.headers, t.context.response.response.headers)
-  t.equal(res.id, 'cohere-response-1')
-  t.equal(res.requestId, 'aws-request-1')
-  t.equal(res.statusCode, 200)
+test('cohere complete responses work', async (t) => {
+  t.nr.bedrockCommand.isCohere = () => true
+  t.nr.updatePayload(structuredClone(cohere))
+  const res = new BedrockResponse(t.nr)
+  assert.deepStrictEqual(res.completions, ['cohere-response'])
+  assert.equal(res.finishReason, 'done')
+  assert.deepStrictEqual(res.headers, t.nr.response.response.headers)
+  assert.equal(res.id, 'cohere-response-1')
+  assert.equal(res.requestId, 'aws-request-1')
+  assert.equal(res.statusCode, 200)
 })
 
-tap.test('llama malformed responses work', async (t) => {
-  t.context.bedrockCommand.isLlama = () => true
-  const res = new BedrockResponse(t.context)
-  t.same(res.completions, [])
-  t.equal(res.finishReason, undefined)
-  t.same(res.headers, t.context.response.response.headers)
-  t.equal(res.id, undefined)
-  t.equal(res.requestId, 'aws-request-1')
-  t.equal(res.statusCode, 200)
+test('llama malformed responses work', async (t) => {
+  t.nr.bedrockCommand.isLlama = () => true
+  const res = new BedrockResponse(t.nr)
+  assert.deepStrictEqual(res.completions, [])
+  assert.equal(res.finishReason, undefined)
+  assert.deepStrictEqual(res.headers, t.nr.response.response.headers)
+  assert.equal(res.id, undefined)
+  assert.equal(res.requestId, 'aws-request-1')
+  assert.equal(res.statusCode, 200)
 })
 
-tap.test('llama complete responses work', async (t) => {
-  t.context.bedrockCommand.isLlama = () => true
-  t.context.updatePayload(structuredClone(llama))
-  const res = new BedrockResponse(t.context)
-  t.same(res.completions, ['llama-response'])
-  t.equal(res.finishReason, 'done')
-  t.same(res.headers, t.context.response.response.headers)
-  t.equal(res.id, undefined)
-  t.equal(res.requestId, 'aws-request-1')
-  t.equal(res.statusCode, 200)
+test('llama complete responses work', async (t) => {
+  t.nr.bedrockCommand.isLlama = () => true
+  t.nr.updatePayload(structuredClone(llama))
+  const res = new BedrockResponse(t.nr)
+  assert.deepStrictEqual(res.completions, ['llama-response'])
+  assert.equal(res.finishReason, 'done')
+  assert.deepStrictEqual(res.headers, t.nr.response.response.headers)
+  assert.equal(res.id, undefined)
+  assert.equal(res.requestId, 'aws-request-1')
+  assert.equal(res.statusCode, 200)
 })
 
-tap.test('titan malformed responses work', async (t) => {
-  t.context.bedrockCommand.isTitan = () => true
-  const res = new BedrockResponse(t.context)
-  t.same(res.completions, [])
-  t.equal(res.finishReason, undefined)
-  t.same(res.headers, t.context.response.response.headers)
-  t.equal(res.id, undefined)
-  t.equal(res.requestId, 'aws-request-1')
-  t.equal(res.statusCode, 200)
+test('titan malformed responses work', async (t) => {
+  t.nr.bedrockCommand.isTitan = () => true
+  const res = new BedrockResponse(t.nr)
+  assert.deepStrictEqual(res.completions, [])
+  assert.equal(res.finishReason, undefined)
+  assert.deepStrictEqual(res.headers, t.nr.response.response.headers)
+  assert.equal(res.id, undefined)
+  assert.equal(res.requestId, 'aws-request-1')
+  assert.equal(res.statusCode, 200)
 })
 
-tap.test('titan complete responses work', async (t) => {
-  t.context.bedrockCommand.isTitan = () => true
-  t.context.updatePayload(structuredClone(titan))
-  const res = new BedrockResponse(t.context)
-  t.same(res.completions, ['titan-response'])
-  t.equal(res.finishReason, 'done')
-  t.same(res.headers, t.context.response.response.headers)
-  t.equal(res.id, undefined)
-  t.equal(res.requestId, 'aws-request-1')
-  t.equal(res.statusCode, 200)
+test('titan complete responses work', async (t) => {
+  t.nr.bedrockCommand.isTitan = () => true
+  t.nr.updatePayload(structuredClone(titan))
+  const res = new BedrockResponse(t.nr)
+  assert.deepStrictEqual(res.completions, ['titan-response'])
+  assert.equal(res.finishReason, 'done')
+  assert.deepStrictEqual(res.headers, t.nr.response.response.headers)
+  assert.equal(res.id, undefined)
+  assert.equal(res.requestId, 'aws-request-1')
+  assert.equal(res.statusCode, 200)
 })
 
-tap.test('should only set data from raw response on error', (t) => {
-  t.context.response.$response = { ...t.context.response.response }
-  delete t.context.response.response
-  delete t.context.response.output
-  t.context.isError = true
-  const res = new BedrockResponse(t.context)
-  t.same(res.completions, [])
-  t.equal(res.id, undefined)
-  t.equal(res.finishReason, undefined)
-  t.same(res.headers, t.context.response.$response.headers)
-  t.equal(res.requestId, 'aws-request-1')
-  t.equal(res.statusCode, 200)
-  t.end()
+test('should only set data from raw response on error', (t) => {
+  t.nr.response.$response = { ...t.nr.response.response }
+  delete t.nr.response.response
+  delete t.nr.response.output
+  t.nr.isError = true
+  const res = new BedrockResponse(t.nr)
+  assert.deepStrictEqual(res.completions, [])
+  assert.equal(res.id, undefined)
+  assert.equal(res.finishReason, undefined)
+  assert.deepStrictEqual(res.headers, t.nr.response.$response.headers)
+  assert.equal(res.requestId, 'aws-request-1')
+  assert.equal(res.statusCode, 200)
 })
