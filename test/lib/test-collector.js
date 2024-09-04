@@ -18,8 +18,10 @@ class Collector {
   #handlers = new Map()
   #server
   #address
+  #runId
 
-  constructor() {
+  constructor({ runId = 42 } = {}) {
+    this.#runId = runId
     this.#server = https.createServer({
       key: fakeCert.privateKey,
       cert: fakeCert.certificate
@@ -35,6 +37,27 @@ class Collector {
       res.json = function ({ payload, code = 200 }) {
         this.writeHead(code, { 'content-type': 'application/json' })
         this.end(JSON.stringify(payload))
+      }
+
+      req.body = function () {
+        let resolve
+        let reject
+        const promise = new Promise((res, rej) => {
+          resolve = res
+          reject = rej
+        })
+
+        let data = ''
+        this.on('data', (d) => {
+          data += d
+        })
+        this.on('end', () => {
+          resolve(data)
+        })
+        this.on('error', (error) => {
+          reject(error)
+        })
+        return promise
       }
 
       handler.isDone = true
@@ -105,6 +128,19 @@ class Collector {
   }
 
   /**
+   * the most basic `connect` handler. Useful when you do not need to
+   * customize the handler.
+   *
+   * @returns {function}
+   */
+  get connectHandler() {
+    const runId = this.#runId
+    return function (req, res) {
+      res.json({ payload: { return_value: { agent_run_id: runId } } })
+    }
+  }
+
+  /**
    * The most basic `preconnect` handler. Useful when you do not need to
    * customize the handler.
    *
@@ -135,7 +171,9 @@ class Collector {
    * requests.
    * @param {function} handler A typical `(req, res) => {}` handler. For
    * convenience, `res` is extended with a `json({ payload, code = 200 })`
-   * method for easily sending JSON responses.
+   * method for easily sending JSON responses. Also, `req` is extended with
+   * a `body()` method that returns a promise which resolves to the string
+   * data supplied via POST-like requests.
    */
   addHandler(endpoint, handler) {
     const qs = querystring.decode(endpoint.slice(endpoint.indexOf('?') + 1))
@@ -181,11 +219,12 @@ class Collector {
     // Add handlers for the required agent startup connections. These should
     // be overwritten by tests that exercise the startup phase, but adding these
     // stubs makes it easier to test other connection events.
-    this.addHandler(helper.generateCollectorPath('preconnect', 42), this.preconnectHandler)
-    this.addHandler(helper.generateCollectorPath('connect', 42), (req, res) => {
-      res.json({ payload: { return_value: { agent_run_id: 42 } } })
-    })
-    this.addHandler(helper.generateCollectorPath('agent_settings', 42), this.agentSettingsHandler)
+    this.addHandler(helper.generateCollectorPath('preconnect', this.#runId), this.preconnectHandler)
+    this.addHandler(helper.generateCollectorPath('connect', this.#runId), this.connectHandler)
+    this.addHandler(
+      helper.generateCollectorPath('agent_settings', this.#runId),
+      this.agentSettingsHandler
+    )
 
     return address
   }

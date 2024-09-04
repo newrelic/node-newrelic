@@ -1,249 +1,209 @@
 /*
- * Copyright 2020 New Relic Corporation. All rights reserved.
+ * Copyright 2024 New Relic Corporation. All rights reserved.
  * SPDX-License-Identifier: Apache-2.0
  */
 
 'use strict'
 
-const tap = require('tap')
-const dns = require('dns')
-const events = require('events')
-const https = require('https')
-const sinon = require('sinon')
+const test = require('node:test')
+const assert = require('node:assert')
+const https = require('node:https')
+const events = require('node:events')
+const dns = require('node:dns')
+const url = require('node:url')
 const proxyquire = require('proxyquire')
-const RemoteMethod = require('../../../lib/collector/remote-method')
-const url = require('url')
-const Config = require('../../../lib/config')
 const helper = require('../../lib/agent_helper')
-require('../../lib/metrics_helper')
+const Config = require('../../../lib/config')
+const Collector = require('../../lib/test-collector')
+const { assertMetricValues } = require('../../lib/assert-metrics')
+const RemoteMethod = require('../../../lib/collector/remote-method')
+
 const NAMES = require('../../../lib/metrics/names')
+const RUN_ID = 1337
 const BARE_AGENT = { config: {}, metrics: { measureBytes() {} } }
 
-function generate(method, runID, protocolVersion) {
-  protocolVersion = protocolVersion || 17
-  let fragment =
-    '/agent_listener/invoke_raw_method?' +
-    `marshal_format=json&protocol_version=${protocolVersion}&` +
-    `license_key=license%20key%20here&method=${method}`
-
-  if (runID) {
-    fragment += `&run_id=${runID}`
-  }
-
-  return fragment
-}
-
-tap.test('should require a name for the method to call', (t) => {
-  t.throws(() => {
-    new RemoteMethod() // eslint-disable-line no-new
-  })
-  t.end()
+test('should require a name for the method to call', () => {
+  assert.throws(() => new RemoteMethod())
 })
 
-tap.test('should require an agent for the method to call', (t) => {
-  t.throws(() => {
-    new RemoteMethod('test') // eslint-disable-line no-new
-  })
-  t.end()
+test('should require an agent for the method to call', () => {
+  assert.throws(() => new RemoteMethod('test'))
 })
 
-tap.test('should expose a call method as its public API', (t) => {
-  t.type(new RemoteMethod('test', BARE_AGENT).invoke, 'function')
-  t.end()
+test('should expose a call method as its public API', () => {
+  const method = new RemoteMethod('test', BARE_AGENT)
+  assert.equal(typeof method.invoke, 'function')
 })
 
-tap.test('should expose its name', (t) => {
-  t.equal(new RemoteMethod('test', BARE_AGENT).name, 'test')
-  t.end()
+test('should expose its name', () => {
+  const method = new RemoteMethod('test', BARE_AGENT)
+  assert.equal(method.name, 'test')
 })
 
-tap.test('should default to protocol 17', (t) => {
-  t.equal(new RemoteMethod('test', BARE_AGENT)._protocolVersion, 17)
-  t.end()
+test('should default to protocol 17', () => {
+  const method = new RemoteMethod('test', BARE_AGENT)
+  assert.equal(method._protocolVersion, 17)
 })
 
-tap.test('serialize', (t) => {
-  t.autoend()
-
-  let method = null
-
-  t.beforeEach(() => {
-    method = new RemoteMethod('test', BARE_AGENT)
+test('serialize', async (t) => {
+  t.beforeEach((ctx) => {
+    ctx.nr = {}
+    ctx.nr.method = new RemoteMethod('test', BARE_AGENT)
   })
 
-  t.test('should JSON-encode the given payload', (t) => {
-    method.serialize({ foo: 'bar' }, (err, encoded) => {
-      t.error(err)
-
-      t.equal(encoded, '{"foo":"bar"}')
-      t.end()
+  await t.test('should JSON-encode the given payload', (t, end) => {
+    const { method } = t.nr
+    method.serialize({ foo: 'bar' }, (error, encoded) => {
+      assert.equal(error, undefined)
+      assert.equal(encoded, '{"foo":"bar"}')
+      end()
     })
   })
 
-  t.test('should not error with circular payloads', (t) => {
+  await t.test('should not error with circular payloads', (t, end) => {
+    const { method } = t.nr
     const obj = { foo: 'bar' }
     obj.obj = obj
-    method.serialize(obj, (err, encoded) => {
-      t.error(err)
-
-      t.equal(encoded, '{"foo":"bar","obj":"[Circular ~]"}')
-      t.end()
+    method.serialize(obj, (error, encoded) => {
+      assert.equal(error, undefined)
+      assert.equal(encoded, '{"foo":"bar","obj":"[Circular ~]"}')
+      end()
     })
   })
 
-  t.test('should be able to handle a bigint', (t) => {
-    const obj = { big: BigInt('1729') }
-    method.serialize(obj, (err, encoded) => {
-      t.error(err)
-      t.equal(encoded, '{"big":"1729"}')
-      t.end()
+  await t.test('should be able to handle a bigint', (t, end) => {
+    const { method } = t.nr
+    const obj = { big: 1729n }
+    method.serialize(obj, (error, encoded) => {
+      assert.equal(error, undefined)
+      assert.equal(encoded, '{"big":"1729"}')
+      end()
     })
   })
 
-  t.test('should catch serialization errors', (t) => {
-    method.serialize(
-      {
-        toJSON: () => {
-          throw new Error('fake serialization error')
-        }
-      },
-      (err, encoded) => {
-        t.ok(err)
-        t.equal(err.message, 'fake serialization error')
-
-        t.notOk(encoded)
-        t.end()
+  await t.test('should catch serialization errors', (t, end) => {
+    const { method } = t.nr
+    const obj = {
+      toJSON() {
+        throw Error('fake serialization error')
       }
-    )
+    }
+    method.serialize(obj, (error, encoded) => {
+      assert.equal(error.message, 'fake serialization error')
+      assert.equal(encoded, undefined)
+      end()
+    })
   })
 })
 
-tap.test('_safeRequest', (t) => {
-  t.autoend()
+test('_safeRequest', async (t) => {
+  t.beforeEach((ctx) => {
+    ctx.nr = {}
 
-  let method = null
-  let options = null
-  let agent = null
+    ctx.nr.agent = helper.instrumentMockedAgent()
+    ctx.nr.agent.config = { max_payload_size_in_bytes: 100 }
 
-  t.beforeEach(() => {
-    agent = helper.instrumentMockedAgent()
-    agent.config = { max_payload_size_in_bytes: 100 }
-    method = new RemoteMethod('test', agent)
-    options = {
+    ctx.nr.method = new RemoteMethod('test', ctx.nr.agent)
+
+    ctx.nr.options = {
       host: 'collector.newrelic.com',
       port: 80,
-      onError: () => {},
-      onResponse: () => {},
+      onError() {},
+      onResponse() {},
       body: [],
       path: '/nonexistent'
     }
   })
 
-  t.afterEach(() => {
-    helper.unloadAgent(agent)
+  t.afterEach((ctx) => {
+    helper.unloadAgent(ctx.nr.agent)
   })
 
-  t.test('requires an options hash', (t) => {
-    t.throws(() => {
-      method._safeRequest()
-    }, new Error('Must include options to make request!'))
-    t.end()
+  await t.test('requires an options hash', (t) => {
+    const { method } = t.nr
+    assert.throws(() => method._safeRequest(), /Must include options to make request!/)
   })
 
-  t.test('requires a collector hostname', (t) => {
+  await t.test('requires a collector hostname', (t) => {
+    const { method, options } = t.nr
     delete options.host
-    t.throws(() => {
-      method._safeRequest(options)
-    }, new Error('Must include collector hostname!'))
-    t.end()
+    assert.throws(() => method._safeRequest(options), /Must include collector hostname!/)
   })
 
-  t.test('requires a collector port', (t) => {
+  await t.test('requires a collector port', (t) => {
+    const { method, options } = t.nr
     delete options.port
-    t.throws(() => {
-      method._safeRequest(options)
-    }, new Error('Must include collector port!'))
-    t.end()
+    assert.throws(() => method._safeRequest(options), /Must include collector port!/)
   })
 
-  t.test('requires an error callback', (t) => {
+  await t.test('requires an error callback', (t) => {
+    const { method, options } = t.nr
     delete options.onError
-    t.throws(() => {
-      method._safeRequest(options)
-    }, new Error('Must include error handler!'))
-    t.end()
+    assert.throws(() => method._safeRequest(options), /Must include error handler!/)
   })
 
-  t.test('requires a response callback', (t) => {
+  await t.test('requires a response callback', (t) => {
+    const { method, options } = t.nr
     delete options.onResponse
-    t.throws(() => {
-      method._safeRequest(options)
-    }, new Error('Must include response handler!'))
-    t.end()
+    assert.throws(() => method._safeRequest(options), /Must include response handler!/)
   })
 
-  t.test('requires a request body', (t) => {
+  await t.test('requires a request body', (t) => {
+    const { method, options } = t.nr
     delete options.body
-    t.throws(() => {
-      method._safeRequest(options)
-    }, new Error('Must include body to send to collector!'))
-    t.end()
+    assert.throws(() => method._safeRequest(options), /Must include body to send to collector!/)
   })
 
-  t.test('requires a request URL', (t) => {
+  await t.test('requires a request URL', (t) => {
+    const { method, options } = t.nr
     delete options.path
-    t.throws(() => {
-      method._safeRequest(options)
-    }, new Error('Must include URL to request!'))
-    t.end()
+    assert.throws(() => method._safeRequest(options), /Must include URL to request!/)
   })
 
-  t.test('requires a request body within the maximum payload size limit', (t) => {
+  await t.test('requires a request body within the maximum payload size limit', (t) => {
+    const { agent, method, options } = t.nr
     options.body = 'a'.repeat(method._config.max_payload_size_in_bytes + 1)
-    t.throws(() => {
+
+    try {
       method._safeRequest(options)
-    }, new Error('Maximum payload size exceeded'))
+    } catch (error) {
+      assert.equal(error.message, 'Maximum payload size exceeded')
+      assert.equal(error.code, 'NR_REMOTE_METHOD_MAX_PAYLOAD_SIZE_EXCEEDED')
+    }
+
     const { unscoped: metrics } = helper.getMetrics(agent)
-    t.ok(
-      metrics['Supportability/Nodejs/Collector/MaxPayloadSizeLimit/test'],
-      'should log MaxPayloadSizeLimit supportability metric'
+    assert.equal(
+      metrics['Supportability/Nodejs/Collector/MaxPayloadSizeLimit/test'].callCount,
+      1,
+      'should log MaxPayloadSizeLimit supportibility metric'
     )
-    t.end()
   })
 })
 
-tap.test('when calling a method on the collector', (t) => {
-  t.autoend()
-
-  t.test('should not throw when dealing with compressed data', (t) => {
+test('when calling a method on the collector', async (t) => {
+  await t.test('should not throw when dealing with compressed data', (t, end) => {
     const method = new RemoteMethod('test', BARE_AGENT, { host: 'localhost' })
     method._shouldCompress = () => true
     method._safeRequest = (options) => {
-      t.equal(options.body.readUInt8(0), 31)
-      t.equal(options.body.length, 26)
-
-      t.end()
+      assert.equal(options.body.readUInt8(0), 31)
+      assert.equal(options.body.length, 26)
+      end()
     }
-
     method.invoke('data', {})
   })
 
-  t.test('should not throw when preparing uncompressed data', (t) => {
+  await t.test('should not throw when preparing uncompressed data', (t, end) => {
     const method = new RemoteMethod('test', BARE_AGENT, { host: 'localhost' })
     method._safeRequest = (options) => {
-      t.equal(options.body, '"data"')
-
-      t.end()
+      assert.equal(options.body, '"data"')
+      end()
     }
-
     method.invoke('data', {})
   })
 })
 
-tap.test('when the connection fails', (t) => {
-  t.autoend()
-
-  t.test('should return the connection failure', (t) => {
+test('when the connection fails', async (t) => {
+  await t.test('should return the connection failure', (t, end) => {
     const req = https.request
     https.request = () => {
       const error = Error('no server')
@@ -254,616 +214,438 @@ tap.test('when the connection fails', (t) => {
       }
       return r
     }
-    t.teardown(() => {
+    t.after(() => {
       https.request = req
     })
 
-    const config = {
-      max_payload_size_in_bytes: 100000
-    }
-
-    const endpoint = {
-      host: 'localhost',
-      port: 8765
-    }
-
+    const config = { max_payload_size_in_bytes: 100_000 }
+    const endpoint = { host: 'localhost', port: 8765 }
     const method = new RemoteMethod('TEST', { ...BARE_AGENT, config }, endpoint)
     method.invoke({ message: 'none' }, {}, (error) => {
-      t.ok(error)
-      // regex for either ipv4 or ipv6 localhost
-      t.equal(error.code, 'ECONNREFUSED')
-
-      t.end()
+      assert.equal(error.code, 'ECONNREFUSED')
+      end()
     })
   })
 
-  t.test('should correctly handle a DNS lookup failure', (t) => {
+  await t.test('should correctly handle a DNS lookup failure', (t, end) => {
     const lookup = dns.lookup
     dns.lookup = (a, b, cb) => {
       const error = Error('no dns')
       error.code = dns.NOTFOUND
       return cb(error)
     }
-    t.teardown(() => {
+    t.after(() => {
       dns.lookup = lookup
     })
 
-    const config = {
-      max_payload_size_in_bytes: 100000
-    }
-    const endpoint = {
-      host: 'failed.domain.cxlrg',
-      port: 80
-    }
+    const config = { max_payload_size_in_bytes: 100_000 }
+    const endpoint = { host: 'failed.domain.cxlrg', port: 80 }
     const method = new RemoteMethod('TEST', { ...BARE_AGENT, config }, endpoint)
     method.invoke([], {}, (error) => {
-      t.ok(error)
-      t.equal(error.message, 'no dns')
-      t.end()
+      assert.equal(error.message, 'no dns')
+      end()
     })
   })
 })
 
-tap.test('when posting to collector', (t) => {
-  t.autoend()
+test('when posting to collector', async (t) => {
+  t.beforeEach(async (ctx) => {
+    process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0'
+    ctx.nr = {}
 
-  const RUN_ID = 1337
-  const URL = 'https://collector.newrelic.com'
-  let nock = null
-  let config = null
-  let method = null
+    const collector = new Collector({ runId: RUN_ID })
+    ctx.nr.collector = collector
+    await collector.listen()
 
-  t.beforeEach(() => {
-    // TODO: is this true?
-    // order dependency: requiring nock at the top of the file breaks other tests
-    nock = require('nock')
-    nock.disableNetConnect()
-
-    config = new Config({
+    ctx.nr.config = new Config({
       ssl: true,
       run_id: RUN_ID,
       license_key: 'license key here'
     })
+    ctx.nr.endpoint = { host: collector.host, port: collector.port }
 
-    const endpoint = {
-      host: 'collector.newrelic.com',
-      port: 443
-    }
-
-    method = new RemoteMethod('metric_data', { ...BARE_AGENT, config }, endpoint)
+    ctx.nr.method = new RemoteMethod(
+      'metric_data',
+      { ...BARE_AGENT, config: ctx.nr.config },
+      ctx.nr.endpoint
+    )
   })
 
-  t.afterEach(() => {
-    config = null
-    method = null
-    nock.cleanAll()
-    nock.enableNetConnect()
+  t.afterEach((ctx) => {
+    process.env.NODE_TLS_REJECT_UNAUTHORIZED = '1'
+    ctx.nr.collector.close()
   })
 
-  t.test('should pass through error when compression fails', (t) => {
-    method = new RemoteMethod('test', BARE_AGENT, { host: 'localhost' })
+  await t.test('should pass through error when compression fails', (t, end) => {
+    const { method } = t.nr
     method._shouldCompress = () => true
-    // zlib.deflate really wants a stringlike entity
     method._post(-1, {}, (error) => {
-      t.ok(error)
-
-      t.end()
+      assert.equal(
+        error.message.startsWith(
+          'The "chunk" argument must be of type string or an instance of Buffer'
+        ),
+        true
+      )
+      end()
     })
   })
 
-  t.test('successfully', (t) => {
-    t.autoend()
+  await t.test('successfully', async (t) => {
+    t.beforeEach((ctx) => {
+      ctx.nr.requestMethod = ''
+      ctx.nr.headers = {}
+      ctx.nr.collector.addHandler(
+        helper.generateCollectorPath('metric_data', RUN_ID),
+        (req, res) => {
+          const encoding = req.headers['content-encoding']
+          assert.equal(['identity', 'deflate', 'gzip'].includes(encoding), true)
+          ctx.nr.requestMethod = req.method
+          ctx.nr.headers = req.headers
+          res.json({ payload: { return_value: [] } })
+        }
+      )
+    })
 
-    function nockMetricDataUncompressed() {
-      return nock(URL)
-        .post(generate('metric_data', RUN_ID))
-        .matchHeader('Content-Encoding', 'identity')
-        .reply(200, { return_value: [] })
-    }
-
-    t.test('should invoke the callback without error', (t) => {
-      nockMetricDataUncompressed()
+    await t.test('should invoke the callback without error', (t, end) => {
+      const { collector, method } = t.nr
       method._post('[]', {}, (error) => {
-        t.error(error)
-        t.end()
+        assert.equal(error, undefined)
+        assert.equal(collector.isDone('metric_data'), true)
+        end()
       })
     })
 
-    t.test('should use the right URL', (t) => {
-      const sendMetrics = nockMetricDataUncompressed()
+    await t.test('should use the right URL', (t, end) => {
+      const { collector, method } = t.nr
       method._post('[]', {}, (error) => {
-        t.error(error)
-        t.ok(sendMetrics.isDone())
-        t.end()
+        assert.equal(error, undefined)
+        assert.equal(collector.isDone('metric_data'), true)
+        end()
       })
     })
 
-    t.test('should respect the put_for_data_send config', (t) => {
-      const putMetrics = nock(URL)
-        .put(generate('metric_data', RUN_ID))
-        .reply(200, { return_value: [] })
-
-      config.put_for_data_send = true
-
+    await t.test('should respect the put_for_data_send config', (t, end) => {
+      const { collector, method } = t.nr
+      t.nr.config.put_for_data_send = true
       method._post('[]', {}, (error) => {
-        t.error(error)
-        t.ok(putMetrics.isDone())
-
-        t.end()
+        assert.equal(error, undefined)
+        assert.equal(collector.isDone('metric_data'), true)
+        assert.equal(t.nr.requestMethod, 'PUT')
+        end()
       })
     })
 
-    t.test('should default to gzip compression', (t) => {
-      const sendGzippedMetrics = nock(URL)
-        .post(generate('metric_data', RUN_ID))
-        .matchHeader('Content-Encoding', 'gzip')
-        .reply(200, { return_value: [] })
-
+    await t.test('should default to gzip compression', (t, end) => {
+      const { collector, method } = t.nr
+      t.nr.config.put_for_data_send = true
       method._shouldCompress = () => true
       method._post('[]', {}, (error) => {
-        t.error(error)
-
-        t.ok(sendGzippedMetrics.isDone())
-
-        t.end()
+        assert.equal(error, undefined)
+        assert.equal(collector.isDone('metric_data'), true)
+        assert.equal(t.nr.headers['content-encoding'].includes('gzip'), true)
+        end()
       })
     })
 
-    t.test('should use deflate compression when requested', (t) => {
+    await t.test('should use deflate compression when requested', (t, end) => {
+      const { collector, method } = t.nr
+      t.nr.config.put_for_data_send = true
+      method._shouldCompress = () => true
       method._agent.config.compressed_content_encoding = 'deflate'
-      const sendDeflatedMetrics = nock(URL)
-        .post(generate('metric_data', RUN_ID))
-        .matchHeader('Content-Encoding', 'deflate')
-        .reply(200, { return_value: [] })
+      method._post('[]', {}, (error) => {
+        assert.equal(error, undefined)
+        assert.equal(collector.isDone('metric_data'), true)
+        assert.equal(t.nr.headers['content-encoding'].includes('deflate'), true)
+        end()
+      })
+    })
 
+    await t.test('should respect the compressed_content_encoding config', (t, end) => {
+      const { collector, method } = t.nr
+      t.nr.config.put_for_data_send = true
+      // gzip is the default, so use deflate to give a value to verify.
+      t.nr.config.compressed_content_encoding = 'deflate'
       method._shouldCompress = () => true
       method._post('[]', {}, (error) => {
-        t.error(error)
-
-        t.ok(sendDeflatedMetrics.isDone())
-
-        t.end()
-      })
-    })
-
-    t.test('should respect the compressed_content_encoding config', (t) => {
-      const sendGzippedMetrics = nock(URL)
-        .post(generate('metric_data', RUN_ID))
-        .matchHeader('Content-Encoding', 'gzip')
-        .reply(200, { return_value: [] })
-
-      config.compressed_content_encoding = 'gzip'
-      method._shouldCompress = () => true
-      method._post('[]', {}, (error) => {
-        t.error(error)
-
-        t.ok(sendGzippedMetrics.isDone())
-        t.end()
-      })
-    })
-  })
-
-  t.test('unsuccessfully', (t) => {
-    t.autoend()
-
-    function nockMetric500() {
-      return nock(URL).post(generate('metric_data', RUN_ID)).reply(500, { return_value: [] })
-    }
-
-    t.test('should invoke the callback without error', (t) => {
-      nockMetric500()
-      method._post('[]', {}, (error) => {
-        t.error(error)
-        t.end()
-      })
-    })
-
-    t.test('should include status code in response', (t) => {
-      const sendMetrics = nockMetric500()
-      method._post('[]', {}, (error, response) => {
-        t.error(error)
-        t.equal(response.status, 500)
-        t.ok(sendMetrics.isDone())
-
-        t.end()
-      })
-    })
-  })
-
-  t.test('with an error', (t) => {
-    t.autoend()
-
-    let thrown = null
-    let originalSafeRequest = null
-
-    t.beforeEach(() => {
-      thrown = new Error('whoops!')
-      originalSafeRequest = method._safeRequest
-      method._safeRequest = () => {
-        throw thrown
-      }
-    })
-
-    t.afterEach(() => {
-      method._safeRequest = originalSafeRequest
-    })
-
-    t.test('should not allow the error to go uncaught', (t) => {
-      method._post('[]', null, (caught) => {
-        t.equal(caught, thrown)
-        t.end()
-      })
-    })
-  })
-
-  t.test('parsing successful response', (t) => {
-    t.autoend()
-
-    const response = {
-      return_value: 'collector-42.newrelic.com'
-    }
-
-    t.beforeEach(() => {
-      const successConfig = new Config({
-        ssl: true,
-        license_key: 'license key here'
-      })
-
-      const endpoint = {
-        host: 'collector.newrelic.com',
-        port: 443
-      }
-
-      const agent = { config: successConfig, metrics: { measureBytes() {} } }
-      method = new RemoteMethod('preconnect', agent, endpoint)
-
-      nock(URL).post(generate('preconnect')).reply(200, response)
-    })
-
-    t.test('should not error', (t) => {
-      method.invoke(null, {}, (error) => {
-        t.error(error)
-
-        t.end()
-      })
-    })
-
-    t.test('should find the expected value', (t) => {
-      method.invoke(null, {}, (error, res) => {
-        t.equal(res.payload, 'collector-42.newrelic.com')
-
-        t.end()
-      })
-    })
-  })
-
-  t.test('parsing error response', (t) => {
-    t.autoend()
-
-    const response = {}
-
-    t.beforeEach(() => {
-      nock(URL).post(generate('metric_data', RUN_ID)).reply(409, response)
-    })
-
-    t.test('should include status in callback response', (t) => {
-      method.invoke([], {}, (error, res) => {
-        t.error(error)
-        t.equal(res.status, 409)
-
-        t.end()
+        assert.equal(error, undefined)
+        assert.equal(collector.isDone('metric_data'), true)
+        assert.equal(t.nr.headers['content-encoding'].includes('deflate'), true)
+        end()
       })
     })
   })
 })
 
-tap.test('when generating headers for a plain request', (t) => {
-  t.autoend()
+test('when generating headers for a plain request', async (t) => {
+  t.beforeEach(async (ctx) => {
+    process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0'
+    ctx.nr = {}
 
-  let headers = null
-  let options = null
-  let method = null
+    const collector = new Collector({ runId: RUN_ID })
+    ctx.nr.collector = collector
+    await collector.listen()
 
-  t.beforeEach(() => {
-    const config = new Config({
-      run_id: 12
-    })
-
-    const endpoint = {
-      host: 'collector.newrelic.com',
-      port: '80'
-    }
+    ctx.nr.config = new Config({ run_id: RUN_ID })
+    ctx.nr.endpoint = { host: collector.host, port: collector.port }
 
     const body = 'test☃'
-    method = new RemoteMethod(body, { config }, endpoint)
-
-    options = {
+    ctx.nr.method = new RemoteMethod(
       body,
-      compressed: false
-    }
+      { ...BARE_AGENT, config: ctx.nr.config },
+      ctx.nr.endpoint
+    )
 
-    headers = method._headers(options)
+    ctx.nr.options = { body, compressed: false }
+    ctx.nr.headers = ctx.nr.method._headers(ctx.nr.options)
   })
 
-  t.test('should use the content type from the parameter', (t) => {
-    t.equal(headers['CONTENT-ENCODING'], 'identity')
-    t.end()
+  t.afterEach((ctx) => {
+    process.env.NODE_TLS_REJECT_UNAUTHORIZED = '1'
+    ctx.nr.collector.close()
   })
 
-  t.test('should generate the content length from the body parameter', (t) => {
-    t.equal(headers['Content-Length'], 7)
-    t.end()
+  await t.test('should use the content type from the parameter', (t) => {
+    assert.equal(t.nr.headers['CONTENT-ENCODING'], 'identity')
   })
 
-  t.test('should use a keepalive connection', (t) => {
-    t.equal(headers.Connection, 'Keep-Alive')
-    t.end()
+  await t.test('should generate the content length from the body parameter', (t) => {
+    assert.equal(t.nr.headers['Content-Length'], 7)
   })
 
-  t.test('should have the host from the configuration', (t) => {
-    t.equal(headers.Host, 'collector.newrelic.com')
-    t.end()
+  await t.test('should use keepalive connection', (t) => {
+    assert.equal(t.nr.headers.Connection, 'Keep-Alive')
   })
 
-  t.test('should tell the server we are sending JSON', (t) => {
-    t.equal(headers['Content-Type'], 'application/json')
-    t.end()
+  await t.test('should have the host from the configuration', (t) => {
+    assert.equal(t.nr.headers.Host, t.nr.collector.host)
   })
 
-  t.test('should have a user-agent string', (t) => {
-    t.ok(headers['User-Agent'])
-    t.end()
+  await t.test('should tell the server we are sending JSON', (t) => {
+    assert.equal(t.nr.headers['Content-Type'], 'application/json')
   })
 
-  t.test('should include stored NR headers in outgoing request headers', (t) => {
+  await t.test('should have a user-agent string', (t) => {
+    assert.equal(t.nr.headers['User-Agent'].startsWith('NewRelic-NodeAgent'), true)
+  })
+
+  await t.test('should include stored NR headers in outgoing request headers', (t) => {
+    const { method, options } = t.nr
     options.nrHeaders = {
       'X-NR-Run-Token': 'AFBE4546FEADDEAD1243',
       'X-NR-Metadata': '12BAED78FC89BAFE1243'
     }
-    headers = method._headers(options)
-
-    t.equal(headers['X-NR-Run-Token'], 'AFBE4546FEADDEAD1243')
-    t.equal(headers['X-NR-Metadata'], '12BAED78FC89BAFE1243')
-
-    t.end()
+    const headers = method._headers(options)
+    assert.equal(headers['X-NR-Run-Token'], 'AFBE4546FEADDEAD1243')
+    assert.equal(headers['X-NR-Metadata'], '12BAED78FC89BAFE1243')
   })
 })
 
-tap.test('when generating headers for a compressed request', (t) => {
-  t.autoend()
+test('when generating headers for a compressed request', async (t) => {
+  t.beforeEach(async (ctx) => {
+    process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0'
+    ctx.nr = {}
 
-  let headers = null
+    const collector = new Collector({ runId: RUN_ID })
+    ctx.nr.collector = collector
+    await collector.listen()
 
-  t.beforeEach(() => {
-    const config = new Config({
-      run_id: 12
-    })
-
-    const endpoint = {
-      host: 'collector.newrelic.com',
-      port: '80'
-    }
+    ctx.nr.config = new Config({ run_id: RUN_ID })
+    ctx.nr.endpoint = { host: collector.host, port: collector.port }
 
     const body = 'test☃'
-    const method = new RemoteMethod(body, { config }, endpoint)
-
-    const options = {
+    ctx.nr.method = new RemoteMethod(
       body,
-      compressed: true
-    }
+      { ...BARE_AGENT, config: ctx.nr.config },
+      ctx.nr.endpoint
+    )
 
-    headers = method._headers(options)
+    ctx.nr.options = { body, compressed: true }
+    ctx.nr.headers = ctx.nr.method._headers(ctx.nr.options)
   })
 
-  t.test('should use the content type from the parameter', (t) => {
-    t.equal(headers['CONTENT-ENCODING'], 'gzip')
-    t.end()
+  t.afterEach((ctx) => {
+    process.env.NODE_TLS_REJECT_UNAUTHORIZED = '1'
+    ctx.nr.collector.close()
   })
 
-  t.test('should generate the content length from the body parameter', (t) => {
-    t.equal(headers['Content-Length'], 7)
-    t.end()
+  await t.test('should use the content type from the parameter', (t) => {
+    assert.equal(t.nr.headers['CONTENT-ENCODING'], 'gzip')
   })
 
-  t.test('should use a keepalive connection', (t) => {
-    t.equal(headers.Connection, 'Keep-Alive')
-    t.end()
+  await t.test('should generate the content length from the body parameter', (t) => {
+    assert.equal(t.nr.headers['Content-Length'], 7)
   })
 
-  t.test('should have the host from the configuration', (t) => {
-    t.equal(headers.Host, 'collector.newrelic.com')
-    t.end()
+  await t.test('should use keepalive connection', (t) => {
+    assert.equal(t.nr.headers.Connection, 'Keep-Alive')
   })
 
-  t.test('should tell the server we are sending JSON', (t) => {
-    t.equal(headers['Content-Type'], 'application/json')
-    t.end()
+  await t.test('should have the host from the configuration', (t) => {
+    assert.equal(t.nr.headers.Host, t.nr.collector.host)
   })
 
-  t.test('should have a user-agent string', (t) => {
-    t.ok(headers['User-Agent'])
-    t.end()
+  await t.test('should tell the server we are sending JSON', (t) => {
+    assert.equal(t.nr.headers['Content-Type'], 'application/json')
+  })
+
+  await t.test('should have a user-agent string', (t) => {
+    assert.equal(t.nr.headers['User-Agent'].startsWith('NewRelic-NodeAgent'), true)
   })
 })
 
-tap.test('when generating a request URL', (t) => {
-  t.autoend()
-
+test('when generating headers request URL', async (t) => {
   const TEST_RUN_ID = Math.floor(Math.random() * 3000) + 1
   const TEST_METHOD = 'TEST_METHOD'
   const TEST_LICENSE = 'hamburtson'
-  let config = null
-  let endpoint = null
-  let parsed = null
 
-  function reconstitute(generated) {
-    return url.parse(generated, true, false)
-  }
+  t.beforeEach(async (ctx) => {
+    process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0'
+    ctx.nr = {}
 
-  t.beforeEach(() => {
-    config = new Config({
-      license_key: TEST_LICENSE
-    })
+    const collector = new Collector({ runId: RUN_ID })
+    ctx.nr.collector = collector
+    await collector.listen()
 
-    endpoint = {
-      host: 'collector.newrelic.com',
-      port: 80
-    }
+    ctx.nr.config = new Config({ license_key: TEST_LICENSE })
+    ctx.nr.endpoint = { host: collector.host, port: collector.port }
 
-    const method = new RemoteMethod(TEST_METHOD, { config }, endpoint)
-    parsed = reconstitute(method._path())
+    ctx.nr.method = new RemoteMethod(
+      TEST_METHOD,
+      { ...BARE_AGENT, config: ctx.nr.config },
+      ctx.nr.endpoint
+    )
+
+    ctx.nr.parsed = url.parse(ctx.nr.method._path(), true, false)
   })
 
-  t.test('should say that it supports protocol 17', (t) => {
-    t.equal(parsed.query.protocol_version, '17')
-    t.end()
+  t.afterEach((ctx) => {
+    process.env.NODE_TLS_REJECT_UNAUTHORIZED = '1'
+    ctx.nr.collector.close()
   })
 
-  t.test('should tell the collector it is sending JSON', (t) => {
-    t.equal(parsed.query.marshal_format, 'json')
-    t.end()
+  await t.test('should say that it supports protocol 17', (t) => {
+    assert.equal(t.nr.parsed.query.protocol_version, 17)
   })
 
-  t.test('should pass through the license key', (t) => {
-    t.equal(parsed.query.license_key, TEST_LICENSE)
-    t.end()
+  await t.test('should tell the collector it is sending JSON', (t) => {
+    assert.equal(t.nr.parsed.query.marshal_format, 'json')
   })
 
-  t.test('should include the method', (t) => {
-    t.equal(parsed.query.method, TEST_METHOD)
-    t.end()
+  await t.test('should pass through the license key', (t) => {
+    assert.equal(t.nr.parsed.query.license_key, TEST_LICENSE)
   })
 
-  t.test('should not include the agent run ID when not set', (t) => {
-    const method = new RemoteMethod(TEST_METHOD, { config }, endpoint)
-    parsed = reconstitute(method._path())
-    t.notOk(parsed.query.run_id)
-
-    t.end()
+  await t.test('should include the method', (t) => {
+    assert.equal(t.nr.parsed.query.method, TEST_METHOD)
   })
 
-  t.test('should include the agent run ID when set', (t) => {
-    config.run_id = TEST_RUN_ID
-    const method = new RemoteMethod(TEST_METHOD, { config }, endpoint)
-    parsed = reconstitute(method._path())
-    t.equal(parsed.query.run_id, '' + TEST_RUN_ID)
-
-    t.end()
+  await t.test('should not include the agent run ID when not set', (t) => {
+    const method = new RemoteMethod(TEST_METHOD, { config: t.nr.config }, t.nr.endpoint)
+    const parsed = url.parse(method._path(), true, false)
+    assert.equal(parsed.query.run_id, undefined)
   })
 
-  t.test('should start with the (old-style) path', (t) => {
-    t.equal(parsed.pathname.indexOf('/agent_listener/invoke_raw_method'), 0)
-    t.end()
+  await t.test('should include the agent run ID when set', (t) => {
+    t.nr.config.run_id = TEST_RUN_ID
+    const method = new RemoteMethod(TEST_METHOD, { config: t.nr.config }, t.nr.endpoint)
+    const parsed = url.parse(method._path(), true, false)
+    assert.equal(parsed.query.run_id, TEST_RUN_ID)
+  })
+
+  await t.test('should start with the (old-style) path', (t) => {
+    assert.equal(t.nr.parsed.pathname.indexOf('/agent_listener/invoke_raw_method'), 0)
   })
 })
 
-tap.test('when generating the User-Agent string', (t) => {
-  t.autoend()
-
+test('when generating the User-Agent string', async (t) => {
   const TEST_VERSION = '0-test'
-  let userAgent = null
-  let version = null
-  let pkg = null
+  const pkg = require('../../../package.json')
 
-  t.beforeEach(() => {
-    pkg = require('../../../package.json')
-    version = pkg.version
+  t.beforeEach(async (ctx) => {
+    ctx.nr = {}
+
+    ctx.nr.version = pkg.version
     pkg.version = TEST_VERSION
-    const config = new Config({})
-    const method = new RemoteMethod('test', { config }, {})
 
-    userAgent = method._userAgent()
+    ctx.nr.config = new Config({})
+    ctx.nr.method = new RemoteMethod('test', { config: ctx.nr.config }, {})
+    ctx.nr.userAgent = ctx.nr.method._userAgent()
   })
 
-  t.afterEach(() => {
-    pkg.version = version
+  t.afterEach((ctx) => {
+    pkg.version = ctx.nr.version
   })
 
-  t.test('should clearly indicate it is New Relic for Node', (t) => {
-    t.match(userAgent, 'NewRelic-NodeAgent')
-    t.end()
+  await t.test('should clearly indicate it is New Relic for Node', (t) => {
+    assert.equal(t.nr.userAgent.startsWith('NewRelic-NodeAgent'), true)
   })
 
-  t.test('should include the agent version', (t) => {
-    t.match(userAgent, TEST_VERSION)
-    t.end()
+  await t.test('should include the agent version', (t) => {
+    assert.equal(t.nr.userAgent.includes(TEST_VERSION), true)
   })
 
-  t.test('should include node version', (t) => {
-    t.match(userAgent, process.versions.node)
-    t.end()
+  await t.test('should include node version', (t) => {
+    assert.equal(t.nr.userAgent.includes(process.versions.node), true)
   })
 
-  t.test('should include node platform and architecture', (t) => {
-    t.match(userAgent, process.platform + '-' + process.arch)
-    t.end()
+  await t.test('should include node platform and architecture', (t) => {
+    assert.equal(t.nr.userAgent.includes(process.platform + '-' + process.arch), true)
   })
 })
 
-tap.test('record data usage supportability metrics', (t) => {
-  t.autoend()
+test('record data usage supportability metrics', async (t) => {
+  t.beforeEach(async (ctx) => {
+    process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0'
+    ctx.nr = {}
 
-  let endpoint
+    const collector = new Collector({ runId: RUN_ID })
+    ctx.nr.collector = collector
+    await collector.listen()
 
-  let agent
+    ctx.nr.config = new Config({ license_key: 'license key here' })
+    ctx.nr.endpoint = { host: collector.host, port: collector.port }
 
-  t.beforeEach(() => {
-    agent = helper.instrumentMockedAgent()
-    endpoint = {
-      host: agent.config.host,
-      port: agent.config.port
-    }
+    ctx.nr.agent = helper.instrumentMockedAgent(collector.agentConfig)
   })
 
-  t.afterEach(() => {
-    agent && helper.unloadAgent(agent)
+  t.afterEach((ctx) => {
+    process.env.NODE_TLS_REJECT_UNAUTHORIZED = '1'
+    helper.unloadAgent(ctx.nr.agent)
+    ctx.nr.collector.close()
   })
 
-  t.test('should aggregate bytes of uploaded payloads', async (t) => {
+  await t.test('should aggregate bytes of uploaded payloads', async (t) => {
+    const { agent, endpoint } = t.nr
+
     const method1 = new RemoteMethod('preconnect', agent, endpoint)
     const method2 = new RemoteMethod('connect', agent, endpoint)
     const payload = [{ hello: 'world' }]
     const expectedSize = 19
-    const totalMetric = [2, expectedSize * 2, 0, expectedSize, expectedSize, 722]
-    const singleMetric = [1, expectedSize, 0, expectedSize, expectedSize, 361]
+    const totalMetric = [2, expectedSize * 2, 79, expectedSize, expectedSize, 722]
+    const preconnectMetric = [1, expectedSize, 58, expectedSize, expectedSize, 361]
+    const connectMetric = [1, expectedSize, 21, expectedSize, expectedSize, 361]
+
     for (const method of [method1, method2]) {
       await new Promise((resolve, reject) => {
-        method.invoke(payload, (err) => {
-          err ? reject(err) : resolve()
+        method.invoke(payload, (error) => {
+          error ? reject(error) : resolve()
         })
       })
     }
 
-    t.assertMetricValues(
-      {
-        metrics: agent.metrics
-      },
+    assertMetricValues({ metrics: agent.metrics }, [
+      [{ name: NAMES.DATA_USAGE.COLLECTOR }, totalMetric],
       [
-        [
-          {
-            name: NAMES.DATA_USAGE.COLLECTOR
-          },
-          totalMetric
-        ],
-        [
-          {
-            name: `${NAMES.DATA_USAGE.PREFIX}/preconnect/${NAMES.DATA_USAGE.SUFFIX}`
-          },
-          singleMetric
-        ],
-        [
-          {
-            name: `${NAMES.DATA_USAGE.PREFIX}/connect/${NAMES.DATA_USAGE.SUFFIX}`
-          },
-          singleMetric
-        ]
-      ]
-    )
-
-    t.end()
+        { name: `${NAMES.DATA_USAGE.PREFIX}/preconnect/${NAMES.DATA_USAGE.SUFFIX}` },
+        preconnectMetric
+      ],
+      [{ name: `${NAMES.DATA_USAGE.PREFIX}/connect/${NAMES.DATA_USAGE.SUFFIX}` }, connectMetric]
+    ])
   })
 
-  t.test('should report response size ok', async (t) => {
+  await t.test('should report response size ok', async (t) => {
+    const { agent, endpoint } = t.nr
+
     const byteLength = (data) => Buffer.byteLength(JSON.stringify(data), 'utf8')
     const payload = [{ hello: 'world' }]
     const response = { hello: 'galaxy' }
@@ -871,111 +653,97 @@ tap.test('record data usage supportability metrics', (t) => {
     const responseSize = byteLength(response)
     const metric = [1, payloadSize, responseSize, 19, 19, 361]
     const method = new RemoteMethod('preconnect', agent, endpoint)
-    // stub call to NR so we can test response payload metrics
+
+    // Stub call to NR so we can test response payload metrics:
     method._post = (data, nrHeaders, callback) => {
       callback(null, { payload: response })
     }
+
     await new Promise((resolve, reject) => {
-      method.invoke(payload, (err) => {
-        err ? reject(err) : resolve()
+      method.invoke(payload, (error) => {
+        error ? reject(error) : resolve()
       })
     })
 
-    t.assertMetricValues(
-      {
-        metrics: agent.metrics
-      },
-      [
-        [
-          {
-            name: NAMES.DATA_USAGE.COLLECTOR
-          },
-          metric
-        ],
-        [
-          {
-            name: `${NAMES.SUPPORTABILITY.NODEJS}/Collector/preconnect/${NAMES.DATA_USAGE.SUFFIX}`
-          },
-          metric
-        ]
-      ]
-    )
+    assertMetricValues({ metrics: agent.metrics }, [
+      [{ name: NAMES.DATA_USAGE.COLLECTOR }, metric],
+      [{ name: `${NAMES.DATA_USAGE.PREFIX}/preconnect/${NAMES.DATA_USAGE.SUFFIX}` }, metric]
+    ])
   })
 
-  t.test('should record metrics even if posting a payload fails', async (t) => {
+  await t.test('should record metrics even if posting a payload fails', async (t) => {
+    const { agent, endpoint } = t.nr
+
     const byteLength = (data) => Buffer.byteLength(JSON.stringify(data), 'utf8')
     const payload = [{ hello: 'world' }]
     const payloadSize = byteLength(payload)
     const metric = [1, payloadSize, 0, 19, 19, 361]
     const method = new RemoteMethod('preconnect', agent, endpoint)
-    // stub call to NR so we can test response payload metrics
+
+    // Stub call to NR so we can test response payload metrics:
     method._post = (data, nrHeaders, callback) => {
-      const err = new Error('')
-      callback(err)
+      callback(Error(''))
     }
+
     await new Promise((resolve) => {
       method.invoke(payload, resolve)
     })
 
-    t.assertMetricValues(
-      {
-        metrics: agent.metrics
-      },
-      [
-        [
-          {
-            name: NAMES.DATA_USAGE.COLLECTOR
-          },
-          metric
-        ],
-        [
-          {
-            name: `${NAMES.DATA_USAGE.PREFIX}/preconnect/${NAMES.DATA_USAGE.SUFFIX}`
-          },
-          metric
-        ]
-      ]
-    )
+    assertMetricValues({ metrics: agent.metrics }, [
+      [{ name: NAMES.DATA_USAGE.COLLECTOR }, metric],
+      [{ name: `${NAMES.DATA_USAGE.PREFIX}/preconnect/${NAMES.DATA_USAGE.SUFFIX}` }, metric]
+    ])
   })
 })
 
-tap.test('_safeRequest logging', (t) => {
-  t.autoend()
-  t.beforeEach((t) => {
-    const sandbox = sinon.createSandbox()
-    const loggerMock = require('../mocks/logger')(sandbox)
-    const RemoteMethod = proxyquire('../../../lib/collector/remote-method', {
-      '../logger': {
-        child: sandbox.stub().callsFake(() => loggerMock)
+test('_safeRequest logging', async (t) => {
+  t.beforeEach((ctx) => {
+    ctx.nr = {}
+
+    ctx.nr.logs = {
+      info: [],
+      trace: []
+    }
+    ctx.nr.logger = {
+      child() {
+        return this
+      },
+      info(...args) {
+        ctx.nr.logs.info.push(args)
+      },
+      trace(...args) {
+        ctx.nr.logs.trace.push(args)
+      },
+      traceEnabled() {
+        return true
       }
+    }
+    const RemoteMethod = proxyquire('../../../lib/collector/remote-method', {
+      '../logger': ctx.nr.logger
     })
-    sandbox.stub(RemoteMethod.prototype, '_request')
-    t.context.loggerMock = loggerMock
-    t.context.RemoteMethod = RemoteMethod
-    t.context.sandbox = sandbox
-    t.context.options = {
-      host: 'collector.newrelic.com',
+    RemoteMethod.prototype._request = () => {}
+    ctx.nr.RemoteMethod = RemoteMethod
+
+    ctx.nr.options = {
+      host: 'something',
       port: 80,
-      onError: () => {},
-      onResponse: () => {},
+      onError() {},
+      onResponse() {},
       body: 'test-body',
       path: '/nonexistent'
     }
-    t.context.config = { license_key: 'shhh-dont-tell', max_payload_size_in_bytes: 10000 }
+    ctx.nr.config = {
+      license_key: 'shhh-dont-tell',
+      max_payload_size_in_bytes: 10_000
+    }
   })
 
-  t.afterEach((t) => {
-    const { sandbox } = t.context
-    sandbox.restore()
-  })
-
-  t.test('should redact license key in logs', (t) => {
-    const { RemoteMethod, loggerMock, options, config } = t.context
-    loggerMock.traceEnabled.returns(true)
+  await t.test('should redact license key in logs', (t) => {
+    const { RemoteMethod, options, config } = t.nr
     const method = new RemoteMethod('test', { config })
     method._safeRequest(options)
-    t.same(
-      loggerMock.trace.args,
+    assert.deepStrictEqual(
+      t.nr.logs.trace,
       [
         [
           { body: options.body },
@@ -988,18 +756,18 @@ tap.test('_safeRequest logging', (t) => {
       ],
       'should redact key in trace level log'
     )
-    t.end()
   })
 
-  t.test('should call logger if trace is not enabled but audit logging is enabled', (t) => {
-    const { RemoteMethod, loggerMock, options, config } = t.context
-    loggerMock.traceEnabled.returns(false)
+  await t.test('should call logger if trace is not enabled but audit logging is enabled', (t) => {
+    const { RemoteMethod, options, config, logger } = t.nr
+    logger.traceEnabled = () => false
     config.logging = { level: 'info' }
     config.audit_log = { enabled: true, endpoints: ['test'] }
+
     const method = new RemoteMethod('test', { config })
     method._safeRequest(options)
-    t.same(
-      loggerMock.info.args,
+    assert.deepStrictEqual(
+      t.nr.logs.info,
       [
         [
           { body: options.body },
@@ -1012,16 +780,15 @@ tap.test('_safeRequest logging', (t) => {
       ],
       'should redact key in trace level log'
     )
-    t.end()
   })
 
-  t.test('should not call logger if trace or audit logging is not enabled', (t) => {
-    const { RemoteMethod, loggerMock, options, config } = t.context
-    loggerMock.traceEnabled.returns(false)
+  await t.test('should not call logger if trace or audit logging is not enabled', (t) => {
+    const { RemoteMethod, options, config, logger } = t.nr
+    logger.traceEnabled = () => false
+
     const method = new RemoteMethod('test', { config })
     method._safeRequest(options)
-    t.ok(loggerMock.trace.callCount === 0, 'should not log outgoing message to collector')
-    t.ok(loggerMock.info.callCount === 0, 'should not log outgoing message to collector')
-    t.end()
+    assert.equal(t.nr.logs.info.length, 0)
+    assert.equal(t.nr.logs.trace.length, 0)
   })
 })

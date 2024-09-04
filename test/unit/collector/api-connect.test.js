@@ -1,343 +1,227 @@
 /*
- * Copyright 2020 New Relic Corporation. All rights reserved.
+ * Copyright 2024 New Relic Corporation. All rights reserved.
  * SPDX-License-Identifier: Apache-2.0
  */
 
 'use strict'
 
-const tap = require('tap')
+const test = require('node:test')
+const assert = require('node:assert')
 const nock = require('nock')
-const sinon = require('sinon')
 const proxyquire = require('proxyquire')
 
-const helper = require('../../lib/agent_helper')
-const CollectorApi = require('../../../lib/collector/api')
+const Collector = require('../../lib/test-collector')
 const CollectorResponse = require('../../../lib/collector/response')
-const securityPolicies = require('../../lib/fixtures').securityPolicies
+const helper = require('../../lib/agent_helper')
+const { securityPolicies } = require('../../lib/fixtures')
+const CollectorApi = require('../../../lib/collector/api')
 
-const HOST = 'collector.newrelic.com'
-const REDIRECT_HOST = 'unique.newrelic.com'
-const PORT = 443
-const URL = 'https://' + HOST
-const CONNECT_URL = `https://${REDIRECT_HOST}`
 const RUN_ID = 1337
+const baseAgentConfig = {
+  app_name: ['TEST'],
+  ssl: true,
+  license_key: 'license key here',
+  utilization: {
+    detect_aws: false,
+    detect_pcf: false,
+    detect_azure: false,
+    detect_gcp: false,
+    detect_docker: false
+  },
+  browser_monitoring: {},
+  transaction_tracer: {}
+}
 
-const timeout = global.setTimeout
+test('requires a callback', (t) => {
+  const agent = helper.loadMockedAgent(baseAgentConfig)
+  agent.reconfigure = () => {}
+  agent.setState = () => {}
+  t.after(() => {
+    helper.unloadAgent(agent)
+  })
 
-tap.test('requires a callback', (t) => {
-  const agent = setupMockedAgent()
   const collectorApi = new CollectorApi(agent)
-
-  t.teardown(() => {
-    helper.unloadAgent(agent)
-  })
-
-  t.throws(() => {
-    collectorApi.connect(null)
-  }, 'callback is required')
-
-  t.end()
+  assert.throws(
+    () => {
+      collectorApi.connect(null)
+    },
+    { message: 'callback is required' }
+  )
 })
 
-tap.test('receiving 200 response, with valid data', (t) => {
-  t.autoend()
+test('receiving 200 response, with valid data', async (t) => {
+  t.beforeEach(beforeEach)
+  t.afterEach(afterEach)
 
-  let agent = null
-  let collectorApi = null
-
-  let redirection = null
-  let connection = null
-
-  const validSsc = {
-    agent_run_id: RUN_ID
-  }
-
-  t.beforeEach(() => {
-    agent = setupMockedAgent()
-    collectorApi = new CollectorApi(agent)
-
-    nock.disableNetConnect()
-
-    const response = { return_value: validSsc }
-
-    redirection = nock(URL + ':443')
-      .post(helper.generateCollectorPath('preconnect'))
-      .reply(200, { return_value: { redirect_host: REDIRECT_HOST, security_policies: {} } })
-
-    connection = nock(CONNECT_URL)
-      .post(helper.generateCollectorPath('connect'))
-      .reply(200, response)
-  })
-
-  t.afterEach(() => {
-    if (!nock.isDone()) {
-      /* eslint-disable no-console */
-      console.error('Cleaning pending mocks: %j', nock.pendingMocks())
-      /* eslint-enable no-console */
-      nock.cleanAll()
-    }
-
-    nock.enableNetConnect()
-
-    helper.unloadAgent(agent)
-    agent = null
-    collectorApi = null
-  })
-
-  t.test('should not error out', (t) => {
+  await t.test('should not error out', (t, end) => {
+    const { collectorApi } = t.nr
     collectorApi.connect((error) => {
-      t.error(error)
-
-      redirection.done()
-      connection.done()
-
-      t.end()
+      assert.equal(error, undefined)
+      end()
     })
   })
 
-  t.test('should pass through server-side configuration untouched', (t) => {
+  await t.test('should pass through server-side configuration untouched', (t, end) => {
+    const { collectorApi } = t.nr
     collectorApi.connect((error, res) => {
-      const ssc = res.payload
-      t.same(ssc, validSsc)
-
-      redirection.done()
-      connection.done()
-
-      t.end()
+      assert.equal(error, undefined)
+      assert.deepStrictEqual(res.payload, { agent_run_id: RUN_ID })
+      end()
     })
   })
 })
 
-tap.test('succeeds when given a different port number for redirect', (t) => {
-  t.autoend()
+test('succeeds when given a different port number for redirect', async (t) => {
+  t.beforeEach(beforeEach)
+  t.afterEach(afterEach)
 
-  let agent = null
-  let collectorApi = null
-
-  let redirection = null
-  let connection = null
-
-  const validSsc = {
-    agent_run_id: RUN_ID
-  }
-
-  t.beforeEach(() => {
-    agent = setupMockedAgent()
-    collectorApi = new CollectorApi(agent)
-
-    nock.disableNetConnect()
-
-    const response = { return_value: validSsc }
-
-    redirection = nock(URL + ':443')
-      .post(helper.generateCollectorPath('preconnect'))
-      .reply(200, {
-        return_value: { redirect_host: REDIRECT_HOST + ':8089', security_policies: {} }
-      })
-
-    connection = nock(CONNECT_URL + ':8089')
-      .post(helper.generateCollectorPath('connect'))
-      .reply(200, response)
-  })
-
-  t.afterEach(() => {
-    if (!nock.isDone()) {
-      /* eslint-disable no-console */
-      console.error('Cleaning pending mocks: %j', nock.pendingMocks())
-      /* eslint-enable no-console */
-      nock.cleanAll()
-    }
-
-    nock.enableNetConnect()
-
-    helper.unloadAgent(agent)
-    agent = null
-    collectorApi = null
-  })
-
-  t.test('should not error out', (t) => {
+  await t.test('should not error out', (t, end) => {
+    const { collectorApi } = t.nr
     collectorApi.connect((error) => {
-      t.error(error)
-
-      t.end()
+      assert.equal(error, undefined)
+      end()
     })
   })
 
-  t.test('should have the correct hostname', (t) => {
+  await t.test('should have the correct hostname', (t, end) => {
+    const { collector, collectorApi } = t.nr
     collectorApi.connect(() => {
       const methods = collectorApi._methods
       Object.keys(methods)
-        .filter((key) => {
-          return key !== 'preconnect'
-        })
+        .filter((key) => key !== 'preconnect')
         .forEach((key) => {
-          t.equal(methods[key].endpoint.host, REDIRECT_HOST)
+          assert.equal(methods[key].endpoint.host, collector.host)
         })
-
-      t.end()
+      end()
     })
   })
 
-  t.test('should not change config host', (t) => {
+  await t.test('should not change config host', (t, end) => {
+    const { collector, collectorApi } = t.nr
     collectorApi.connect(() => {
-      t.equal(collectorApi._agent.config.host, HOST)
-
-      t.end()
+      assert.equal(collectorApi._agent.config.host, collector.host)
+      end()
     })
   })
 
-  t.test('should update endpoints with correct port number', (t) => {
+  await t.test('should update endpoints with correct port number', (t, end) => {
+    const { collector, collectorApi } = t.nr
     collectorApi.connect(() => {
       const methods = collectorApi._methods
       Object.keys(methods)
-        .filter((key) => {
-          return key !== 'preconnect'
-        })
+        .filter((key) => key !== 'preconnect')
         .forEach((key) => {
-          t.equal(methods[key].endpoint.port, '8089')
+          assert.equal(methods[key].endpoint.port, collector.port)
         })
-
-      t.end()
+      end()
     })
   })
 
-  t.test('should not update preconnect endpoint', (t) => {
+  await t.test('should not update preconnect endpoint', (t, end) => {
+    const { collector, collectorApi } = t.nr
     collectorApi.connect(() => {
-      t.equal(collectorApi._methods.preconnect.endpoint.host, HOST)
-      t.equal(collectorApi._methods.preconnect.endpoint.port, 443)
-
-      t.end()
+      assert.equal(collectorApi._methods.preconnect.endpoint.host, collector.host)
+      assert.equal(collectorApi._methods.preconnect.endpoint.port, collector.port)
+      end()
     })
   })
 
-  t.test('should not change config port number', (t) => {
+  await t.test('should not change config port number', (t, end) => {
+    const { collector, collectorApi } = t.nr
     collectorApi.connect(() => {
-      t.equal(collectorApi._agent.config.port, 443)
-
-      t.end()
+      assert.equal(collectorApi._agent.config.port, collector.port)
+      end()
     })
   })
 
-  t.test('should have a run ID', (t) => {
-    collectorApi.connect(function test(error, res) {
-      const ssc = res.payload
-      t.equal(ssc.agent_run_id, RUN_ID)
-
-      redirection.done()
-      connection.done()
-
-      t.end()
+  await t.test('should have a run ID', (t, end) => {
+    const { collectorApi } = t.nr
+    collectorApi.connect((error, res) => {
+      assert.equal(res.payload.agent_run_id, RUN_ID)
+      end()
     })
   })
 
-  t.test('should pass through server-side configuration untouched', (t) => {
-    collectorApi.connect(function test(error, res) {
-      const ssc = res.payload
-      t.same(ssc, validSsc)
-
-      redirection.done()
-      connection.done()
-
-      t.end()
+  await t.test('should pass through server-side configuration untouched', (t, end) => {
+    const { collectorApi } = t.nr
+    collectorApi.connect((error, res) => {
+      assert.deepStrictEqual(res.payload, { agent_run_id: RUN_ID })
+      end()
     })
   })
 })
 
-const retryCount = [1, 5]
+const retryCounts = [1, 5]
+for (const retryCount of retryCounts) {
+  test(`retry count: ${retryCount}`, async (t) => {
+    t.beforeEach(async (ctx) => {
+      ctx.nr = {}
 
-retryCount.forEach((count) => {
-  tap.test(`succeeds after ${count} 503s on preconnect`, (t) => {
-    t.autoend()
+      patchSetTimeout(ctx)
 
-    let collectorApi = null
-    let agent = null
+      const collector = new Collector({ runId: RUN_ID })
+      ctx.nr.collector = collector
+      await collector.listen()
 
-    const valid = {
-      agent_run_id: RUN_ID
-    }
-
-    const response = { return_value: valid }
-
-    let failure = null
-    let success = null
-    let connection = null
-
-    let bad = null
-    let ssc = null
-
-    t.beforeEach(() => {
-      fastSetTimeoutIncrementRef()
-
-      nock.disableNetConnect()
-
-      agent = setupMockedAgent()
-      collectorApi = new CollectorApi(agent)
-
-      const redirectURL = helper.generateCollectorPath('preconnect')
-      failure = nock(URL).post(redirectURL).times(count).reply(503)
-      success = nock(URL)
-        .post(redirectURL)
-        .reply(200, {
-          return_value: { redirect_host: HOST, security_policies: {} }
+      let retries = 0
+      collector.addHandler(helper.generateCollectorPath('preconnect'), (req, res) => {
+        if (retries < retryCount) {
+          retries += 1
+          res.writeHead(503)
+          res.end()
+          return
+        }
+        res.json({
+          return_value: {
+            redirect_host: `${collector.host}:${collector.port}`,
+            security_policies: {}
+          }
         })
-      connection = nock(URL).post(helper.generateCollectorPath('connect')).reply(200, response)
+      })
+
+      const config = Object.assign({}, baseAgentConfig, collector.agentConfig, {
+        config: { run_id: RUN_ID }
+      })
+      ctx.nr.agent = helper.loadMockedAgent(config)
+      ctx.nr.agent.reconfigure = function () {}
+      ctx.nr.agent.setState = function () {}
+
+      ctx.nr.collectorApi = new CollectorApi(ctx.nr.agent)
     })
 
-    t.afterEach(() => {
-      restoreSetTimeout()
-
-      if (!nock.isDone()) {
-        /* eslint-disable no-console */
-        console.error('Cleaning pending mocks: %j', nock.pendingMocks())
-        /* eslint-enable no-console */
-        nock.cleanAll()
-      }
-
-      nock.enableNetConnect()
-      helper.unloadAgent(agent)
+    t.afterEach((ctx) => {
+      restoreTimeout(ctx)
+      helper.unloadAgent(ctx.nr.agent)
+      ctx.nr.collector.close()
     })
 
-    t.test('should not error out', (t) => {
-      testConnect(t, () => {
-        t.notOk(bad)
-        t.end()
+    await t.test('should not error out', (t, end) => {
+      const { collectorApi } = t.nr
+      collectorApi.connect((error) => {
+        assert.equal(error, undefined)
+        end()
       })
     })
 
-    t.test('should have a run ID', (t) => {
-      testConnect(t, () => {
-        t.equal(ssc.agent_run_id, RUN_ID)
-        t.end()
-      })
-    })
-
-    t.test('should pass through server-side configuration untouched', (t) => {
-      testConnect(t, () => {
-        t.same(ssc, valid)
-        t.end()
-      })
-    })
-
-    function testConnect(t, cb) {
+    await t.test('should have a run ID', (t, end) => {
+      const { collectorApi } = t.nr
       collectorApi.connect((error, res) => {
-        bad = error
-        ssc = res.payload
-
-        t.ok(failure.isDone())
-        t.ok(success.isDone())
-        t.ok(connection.isDone())
-        cb()
+        assert.equal(res.payload.agent_run_id, RUN_ID)
+        end()
       })
-    }
+    })
+
+    await t.test('should pass through server-side configuration untouched', (t, end) => {
+      const { collectorApi } = t.nr
+      collectorApi.connect((error, res) => {
+        assert.deepStrictEqual(res.payload, { agent_run_id: RUN_ID })
+        end()
+      })
+    })
   })
-})
+}
 
-tap.test('disconnects on force disconnect (410)', (t) => {
-  t.autoend()
-
-  let collectorApi = null
-  let agent = null
-
+test('disconnects on force disconnect (410)', async (t) => {
   const exception = {
     exception: {
       message: 'fake force disconnect',
@@ -345,61 +229,50 @@ tap.test('disconnects on force disconnect (410)', (t) => {
     }
   }
 
-  let disconnect = null
+  t.beforeEach(async (ctx) => {
+    ctx.nr = {}
 
-  t.beforeEach(() => {
-    fastSetTimeoutIncrementRef()
+    const collector = new Collector({ runId: RUN_ID })
+    ctx.nr.collector = collector
+    await collector.listen()
 
-    nock.disableNetConnect()
+    collector.addHandler(helper.generateCollectorPath('preconnect'), (req, res) => {
+      res.json({ code: 410, payload: exception })
+    })
 
-    agent = setupMockedAgent()
-    collectorApi = new CollectorApi(agent)
+    const config = Object.assign({}, baseAgentConfig, collector.agentConfig, {
+      config: { run_id: RUN_ID }
+    })
+    ctx.nr.agent = helper.loadMockedAgent(config)
+    ctx.nr.agent.reconfigure = function () {}
+    ctx.nr.agent.setState = function () {}
 
-    const redirectURL = helper.generateCollectorPath('preconnect')
-    disconnect = nock(URL).post(redirectURL).times(1).reply(410, exception)
+    ctx.nr.collectorApi = new CollectorApi(ctx.nr.agent)
   })
 
-  t.afterEach(() => {
-    restoreSetTimeout()
+  t.afterEach(afterEach)
 
-    if (!nock.isDone()) {
-      /* eslint-disable no-console */
-      console.error('Cleaning pending mocks: %j', nock.pendingMocks())
-      /* eslint-enable no-console */
-      nock.cleanAll()
-    }
-
-    nock.enableNetConnect()
-    helper.unloadAgent(agent)
-  })
-
-  t.test('should not have errored', (t) => {
-    collectorApi.connect((err) => {
-      t.error(err)
-
-      t.ok(disconnect.isDone())
-
-      t.end()
+  await t.test('should not have errored', (t, end) => {
+    const { collector, collectorApi } = t.nr
+    collectorApi.connect((error) => {
+      assert.equal(error, undefined)
+      assert.equal(collector.isDone('preconnect'), true)
+      end()
     })
   })
 
-  t.test('should not have a response body', (t) => {
-    collectorApi.connect((err, response) => {
-      t.notOk(response.payload)
-
-      t.ok(disconnect.isDone())
-
-      t.end()
+  await t.test('should not have a response body', (t, end) => {
+    const { collector, collectorApi } = t.nr
+    collectorApi.connect((error, res) => {
+      assert.equal(res.payload, undefined)
+      assert.equal(collector.isDone('preconnect'), true)
+      end()
     })
   })
 })
 
-tap.test('retries preconnect until forced to disconnect (410)', (t) => {
-  t.autoend()
-
-  let collectorApi = null
-  let agent = null
-
+test(`retries preconnect until forced to disconnect (410)`, async (t) => {
+  const retryCount = 500
   const exception = {
     exception: {
       message: 'fake force disconnect',
@@ -407,339 +280,315 @@ tap.test('retries preconnect until forced to disconnect (410)', (t) => {
     }
   }
 
-  let failure = null
-  let disconnect = null
+  t.beforeEach(async (ctx) => {
+    ctx.nr = {}
 
-  let capturedResponse = null
+    patchSetTimeout(ctx)
 
-  t.beforeEach(() => {
-    fastSetTimeoutIncrementRef()
+    const collector = new Collector({ runId: RUN_ID })
+    ctx.nr.collector = collector
+    await collector.listen()
 
-    nock.disableNetConnect()
+    let retries = 0
+    collector.addHandler(helper.generateCollectorPath('preconnect'), (req, res) => {
+      if (retries < retryCount) {
+        retries += 1
+        res.writeHead(503)
+        res.end()
+        return
+      }
+      res.json({ code: 410, payload: exception })
+    })
 
-    agent = setupMockedAgent()
-    collectorApi = new CollectorApi(agent)
+    const config = Object.assign({}, baseAgentConfig, collector.agentConfig, {
+      config: { run_id: RUN_ID }
+    })
+    ctx.nr.agent = helper.loadMockedAgent(config)
+    ctx.nr.agent.reconfigure = function () {}
+    ctx.nr.agent.setState = function () {}
 
-    const redirectURL = helper.generateCollectorPath('preconnect')
-    failure = nock(URL).post(redirectURL).times(500).reply(503)
-    disconnect = nock(URL).post(redirectURL).times(1).reply(410, exception)
+    ctx.nr.collectorApi = new CollectorApi(ctx.nr.agent)
   })
 
-  t.afterEach(() => {
-    restoreSetTimeout()
-
-    if (!nock.isDone()) {
-      /* eslint-disable no-console */
-      console.error('Cleaning pending mocks: %j', nock.pendingMocks())
-      /* eslint-enable no-console */
-      nock.cleanAll()
-    }
-
-    nock.enableNetConnect()
-    helper.unloadAgent(agent)
+  t.afterEach((ctx) => {
+    restoreTimeout(ctx)
+    helper.unloadAgent(ctx.nr.agent)
+    ctx.nr.collector.close()
   })
 
-  t.test('should have received shutdown response', (t) => {
-    testConnect(t, () => {
+  await t.test('should have received shutdown response', (t, end) => {
+    const { collectorApi } = t.nr
+    collectorApi.connect((error, res) => {
       const shutdownCommand = CollectorResponse.AGENT_RUN_BEHAVIOR.SHUTDOWN
-
-      t.ok(capturedResponse)
-      t.equal(capturedResponse.agentRun, shutdownCommand)
-
-      t.end()
+      assert.deepStrictEqual(res.agentRun, shutdownCommand)
+      end()
     })
   })
-
-  function testConnect(t, cb) {
-    collectorApi.connect((error, response) => {
-      capturedResponse = response
-
-      t.ok(failure.isDone())
-      t.ok(disconnect.isDone())
-      cb()
-    })
-  }
 })
 
-tap.test('retries on receiving invalid license key (401)', (t) => {
-  t.autoend()
+test(`retries on receiving invalid license key (401)`, async (t) => {
+  const retryCount = 5
 
-  let collectorApi = null
-  let agent = null
+  t.beforeEach(async (ctx) => {
+    ctx.nr = {}
 
-  let failure = null
-  let success = null
-  let connect = null
+    patchSetTimeout(ctx)
 
-  t.beforeEach(() => {
-    fastSetTimeoutIncrementRef()
+    const collector = new Collector({ runId: RUN_ID })
+    ctx.nr.collector = collector
+    await collector.listen()
 
-    nock.disableNetConnect()
+    let retries = 0
+    collector.addHandler(helper.generateCollectorPath('preconnect'), (req, res) => {
+      if (retries < retryCount) {
+        retries += 1
+        res.writeHead(401)
+        res.end()
+        return
+      }
+      ctx.nr.retries = retries
+      res.json({
+        return_value: {}
+      })
+    })
+    // We specify RUN_ID in the path so that we replace the existing connect
+    // handler with one that returns our unique run id.
+    collector.addHandler(helper.generateCollectorPath('connect', RUN_ID), (req, res) => {
+      res.json({ payload: { return_value: { agent_run_id: 31338 } } })
+    })
 
-    agent = setupMockedAgent()
-    collectorApi = new CollectorApi(agent)
+    const config = Object.assign({}, baseAgentConfig, collector.agentConfig, {
+      config: { run_id: RUN_ID }
+    })
+    ctx.nr.agent = helper.loadMockedAgent(config)
+    ctx.nr.agent.reconfigure = function () {}
+    ctx.nr.agent.setState = function () {}
 
-    const preconnectURL = helper.generateCollectorPath('preconnect')
-    failure = nock(URL).post(preconnectURL).times(5).reply(401)
-    success = nock(URL).post(preconnectURL).reply(200, { return_value: {} })
-    connect = nock(URL)
-      .post(helper.generateCollectorPath('connect'))
-      .reply(200, { return_value: { agent_run_id: 31338 } })
+    ctx.nr.collectorApi = new CollectorApi(ctx.nr.agent)
   })
 
-  t.afterEach(() => {
-    restoreSetTimeout()
-
-    if (!nock.isDone()) {
-      /* eslint-disable no-console */
-      console.error('Cleaning pending mocks: %j', nock.pendingMocks())
-      /* eslint-enable no-console */
-      nock.cleanAll()
-    }
-
-    nock.enableNetConnect()
-    helper.unloadAgent(agent)
+  t.afterEach((ctx) => {
+    restoreTimeout(ctx)
+    helper.unloadAgent(ctx.nr.agent)
+    ctx.nr.collector.close()
   })
 
-  t.test('should call the expected number of times', (t) => {
-    testConnect(t, () => {
-      t.end()
+  await t.test('should call the expected number of times', (t, end) => {
+    const { collectorApi } = t.nr
+    collectorApi.connect((error, res) => {
+      assert.equal(t.nr.retries, 5)
+      assert.equal(res.payload.agent_run_id, 31338)
+      end()
     })
   })
-
-  function testConnect(t, cb) {
-    collectorApi.connect(() => {
-      t.ok(failure.isDone())
-      t.ok(success.isDone())
-      t.ok(connect.isDone())
-
-      cb()
-    })
-  }
 })
 
-tap.test('retries on misconfigured proxy', (t) => {
-  const sandbox = sinon.createSandbox()
-  const loggerMock = require('../mocks/logger')(sandbox)
-  const CollectorApiTest = proxyquire('../../../lib/collector/api', {
-    '../logger': {
-      child: sandbox.stub().callsFake(() => loggerMock)
-    }
-  })
-  t.autoend()
+test(`retries on misconfigured proxy`, async (t) => {
+  // We are using `nock` for these tests because it provides its own socket
+  // implementation that is able to fake a bad connection to a server.
+  // Basically, these tests are attempting to verify conditions around
+  // establishing connections to a proxy server, and we need to be able to
+  // simulate those connections not establishing correctly. The best we can
+  // do with our in-process HTTP server is to generate an abruptly closed
+  // request, but that will not meet the "is misconfigured proxy" assertion
+  // the agent uses. We'd like a better way of dealing with this, but for now
+  // (2024-08), we are moving on so that this does not block our conversion
+  // from `tap` to `node:test`.
+  //
+  // See https://github.com/nock/nock/blob/66eb7f48a7bdf50ee79face6403326b02d23253b/lib/socket.js#L81-L88.
+  // That `destroy` method is what ends up implementing the functionality
+  // behind `nock.replyWithError`.
 
-  let collectorApi = null
-  let agent = null
+  const expectedError = { code: 'EPROTO' }
 
-  const error = {
-    code: 'EPROTO'
-  }
+  t.beforeEach(async (ctx) => {
+    ctx.nr = {}
 
-  let failure = null
-  let success = null
-  let connect = null
-
-  t.beforeEach(() => {
-    fastSetTimeoutIncrementRef()
-
+    patchSetTimeout(ctx)
     nock.disableNetConnect()
 
-    agent = setupMockedAgent()
-    agent.config.proxy_port = '8080'
-    agent.config.proxy_host = 'test-proxy-server'
-    collectorApi = new CollectorApiTest(agent)
+    ctx.nr.agent = helper.loadMockedAgent({
+      host: 'collector.newrelic.com',
+      port: 443,
+      ...baseAgentConfig
+    })
+    ctx.nr.agent.reconfigure = function () {}
+    ctx.nr.agent.setState = function () {}
+    ctx.nr.agent.config.proxy_port = '8080'
+    ctx.nr.agent.config.proxy_host = 'test-proxy-server'
 
+    const baseURL = 'https://collector.newrelic.com'
     const preconnectURL = helper.generateCollectorPath('preconnect')
-    failure = nock(URL).post(preconnectURL).times(1).replyWithError(error)
-    success = nock(URL).post(preconnectURL).reply(200, { return_value: {} })
-    connect = nock(URL)
+    ctx.nr.failure = nock(baseURL).post(preconnectURL).times(1).replyWithError(expectedError)
+    ctx.nr.success = nock(baseURL).post(preconnectURL).reply(200, { return_value: {} })
+    ctx.nr.connect = nock(baseURL)
       .post(helper.generateCollectorPath('connect'))
       .reply(200, { return_value: { agent_run_id: 31338 } })
+
+    ctx.nr.logs = []
+    const CAPI = proxyquire('../../../lib/collector/api', {
+      '../logger': {
+        child() {
+          return this
+        },
+        debug() {},
+        error() {},
+        info() {},
+        warn(...args) {
+          ctx.nr.logs.push(args)
+        },
+        trace() {}
+      }
+    })
+    ctx.nr.collectorApi = new CAPI(ctx.nr.agent)
   })
 
-  t.afterEach(() => {
-    sandbox.resetHistory()
-    restoreSetTimeout()
-
-    if (!nock.isDone()) {
-      /* eslint-disable no-console */
-      console.error('Cleaning pending mocks: %j', nock.pendingMocks())
-      /* eslint-enable no-console */
-      nock.cleanAll()
-    }
-
+  t.afterEach((ctx) => {
+    restoreTimeout(ctx)
+    helper.unloadAgent(ctx.nr.agent)
     nock.enableNetConnect()
-    helper.unloadAgent(agent)
   })
 
-  t.test('should log warning when proxy is misconfigured', (t) => {
-    collectorApi.connect(() => {
-      t.ok(failure.isDone())
-      t.ok(success.isDone())
-      t.ok(connect.isDone())
+  await t.test('should log warning when proxy is misconfigured', (t, end) => {
+    const { collectorApi } = t.nr
+    collectorApi.connect((error, res) => {
+      assert.equal(t.nr.failure.isDone(), true)
+      assert.equal(t.nr.success.isDone(), true)
+      assert.equal(t.nr.connect.isDone(), true)
+      assert.equal(res.payload.agent_run_id, 31338)
 
       const expectErrorMsg =
         'Your proxy server appears to be configured to accept connections \
 over http. When setting `proxy_host` and `proxy_port` New Relic attempts to connect over \
 SSL(https). If your proxy is configured to accept connections over http, try setting `proxy` \
 to a fully qualified URL(e.g http://proxy-host:8080).'
+      assert.deepStrictEqual(
+        t.nr.logs,
+        [[expectedError, expectErrorMsg]],
+        'Proxy misconfigured message correct'
+      )
 
-      t.same(loggerMock.warn.args, [[error, expectErrorMsg]], 'Proxy misconfigured message correct')
-      t.end()
+      end()
     })
   })
 
-  t.test('should not log warning when proxy is configured properly but still get EPROTO', (t) => {
-    collectorApi._agent.config.proxy = 'http://test-proxy-server:8080'
-    collectorApi.connect(() => {
-      t.ok(failure.isDone())
-      t.ok(success.isDone())
-      t.ok(connect.isDone())
-      t.same(loggerMock.warn.args, [], 'Proxy misconfigured message not logged')
-      t.end()
-    })
-  })
+  await t.test(
+    'should not log warning when proxy is configured properly but still get EPROTO',
+    (t, end) => {
+      const { collectorApi } = t.nr
+      collectorApi._agent.config.proxy = 'http://test-proxy-server:8080'
+      collectorApi.connect((error, res) => {
+        assert.equal(t.nr.failure.isDone(), true)
+        assert.equal(t.nr.success.isDone(), true)
+        assert.equal(t.nr.connect.isDone(), true)
+        assert.equal(res.payload.agent_run_id, 31338)
+
+        assert.deepStrictEqual(t.nr.logs, [], 'Proxy misconfigured message not logged')
+
+        end()
+      })
+    }
+  )
 })
 
-tap.test('in a LASP/CSP enabled agent', (t) => {
+test('in a LASP/CSP enabled agent', async (t) => {
   const SECURITY_POLICIES_TOKEN = 'TEST-TEST-TEST-TEST'
 
-  t.autoend()
+  t.beforeEach(async (ctx) => {
+    ctx.nr = {}
 
-  let agent = null
-  let collectorApi = null
-  let policies = null
+    const collector = new Collector({ runId: RUN_ID })
+    ctx.nr.collector = collector
+    await collector.listen()
 
-  t.beforeEach(() => {
-    agent = setupMockedAgent()
-    agent.config.security_policies_token = SECURITY_POLICIES_TOKEN
+    const config = Object.assign({}, baseAgentConfig, collector.agentConfig, {
+      config: { run_id: RUN_ID }
+    })
+    ctx.nr.agent = helper.loadMockedAgent(config)
+    ctx.nr.agent.reconfigure = function () {}
+    ctx.nr.agent.setState = function () {}
+    ctx.nr.agent.config.security_policies_token = SECURITY_POLICIES_TOKEN
 
-    collectorApi = new CollectorApi(agent)
+    ctx.nr.collectorApi = new CollectorApi(ctx.nr.agent)
+    ctx.nr.policies = securityPolicies()
 
-    policies = securityPolicies()
-
-    nock.disableNetConnect()
-  })
-
-  t.afterEach(() => {
-    if (!nock.isDone()) {
-      /* eslint-disable no-console */
-      console.error('Cleaning pending mocks: %j', nock.pendingMocks())
-      /* eslint-enable no-console */
-      nock.cleanAll()
-    }
-
-    nock.enableNetConnect()
-
-    helper.unloadAgent(agent)
-    agent = null
-    collectorApi = null
-    policies = null
-  })
-
-  t.test('should include security policies in api callback response', (t) => {
-    const valid = {
-      agent_run_id: RUN_ID,
-      security_policies: policies
-    }
-
-    const response = { return_value: valid }
-
-    const redirection = nock(URL + ':443')
-      .post(helper.generateCollectorPath('preconnect'))
-      .reply(200, {
-        return_value: {
-          redirect_host: HOST,
-          security_policies: policies
+    ctx.nr.validResponse = { agent_run_id: RUN_ID, security_policies: ctx.nr.policies }
+    collector.addHandler(helper.generateCollectorPath('preconnect'), (req, res) => {
+      res.json({
+        payload: {
+          return_value: {
+            redirect_host: `https://${collector.host}:${collector.port}`,
+            security_policies: ctx.nr.policies
+          }
         }
       })
-
-    const connection = nock(URL).post(helper.generateCollectorPath('connect')).reply(200, response)
-
-    collectorApi.connect(function test(error, res) {
-      t.same(res.payload, valid)
-
-      redirection.done()
-      connection.done()
-
-      t.end()
+    })
+    collector.addHandler(helper.generateCollectorPath('connect'), (req, res) => {
+      res.json({ payload: { return_value: ctx.nr.validResponse } })
     })
   })
 
-  t.test('drops data collected before connect when policies are updated', (t) => {
+  t.afterEach(afterEach)
+
+  await t.test('should include security policies in api callback response', (t, end) => {
+    const { collectorApi } = t.nr
+    collectorApi.connect((error, res) => {
+      assert.equal(error, undefined)
+      assert.deepStrictEqual(res.payload, t.nr.validResponse)
+      end()
+    })
+  })
+
+  await t.test('drops data collected before connect when policies are update', (t, end) => {
+    const { agent, collectorApi } = t.nr
     agent.config.api.custom_events_enabled = true
-
     agent.customEventAggregator.add(['will be overwritten'])
-    t.equal(agent.customEventAggregator.length, 1)
-
-    const valid = {
-      agent_run_id: RUN_ID,
-      security_policies: policies
-    }
-
-    const response = { return_value: valid }
-
-    const redirection = nock(URL + ':443')
-      .post(helper.generateCollectorPath('preconnect'))
-      .reply(200, {
-        return_value: {
-          redirect_host: HOST,
-          security_policies: policies
-        }
-      })
-
-    const connection = nock(URL).post(helper.generateCollectorPath('connect')).reply(200, response)
-
-    collectorApi.connect(function test(error, res) {
-      t.same(res.payload, valid)
-
-      t.equal(agent.customEventAggregator.length, 0)
-
-      redirection.done()
-      connection.done()
-
-      t.end()
+    assert.equal(agent.customEventAggregator.length, 1)
+    collectorApi.connect((error, res) => {
+      assert.equal(error, undefined)
+      assert.deepStrictEqual(res.payload, t.nr.validResponse)
+      assert.equal(agent.customEventAggregator.length, 0)
+      end()
     })
   })
 })
 
-function fastSetTimeoutIncrementRef() {
-  global.setTimeout = function (cb) {
-    const nodeTimeout = timeout(cb, 0)
+async function beforeEach(ctx) {
+  ctx.nr = {}
 
-    // This is a hack to keep tap from shutting down test early.
-    // Is there a better way to do this?
+  const collector = new Collector({ runId: RUN_ID })
+  ctx.nr.collector = collector
+  await collector.listen()
+
+  const config = Object.assign({}, baseAgentConfig, collector.agentConfig, {
+    config: { run_id: RUN_ID }
+  })
+  ctx.nr.agent = helper.loadMockedAgent(config)
+  ctx.nr.agent.reconfigure = function () {}
+  ctx.nr.agent.setState = function () {}
+
+  ctx.nr.collectorApi = new CollectorApi(ctx.nr.agent)
+}
+
+function afterEach(ctx) {
+  helper.unloadAgent(ctx.nr.agent)
+  ctx.nr.collector.close()
+}
+
+function patchSetTimeout(ctx) {
+  ctx.nr.setTimeout = global.setTimeout
+  global.setTimeout = function (cb) {
+    const nodeTimeout = ctx.nr.setTimeout(cb, 0)
+
+    // This is a hack to keep the test runner from reaping the test before
+    // the retries are complete. Is there a better way to do this?
     setImmediate(() => {
       nodeTimeout.ref()
     })
-
     return nodeTimeout
   }
 }
 
-function restoreSetTimeout() {
-  global.setTimeout = timeout
-}
-
-function setupMockedAgent() {
-  const agent = helper.loadMockedAgent({
-    host: HOST,
-    port: PORT,
-    app_name: ['TEST'],
-    ssl: true,
-    license_key: 'license key here',
-    utilization: {
-      detect_aws: false,
-      detect_pcf: false,
-      detect_azure: false,
-      detect_gcp: false,
-      detect_docker: false
-    },
-    browser_monitoring: {},
-    transaction_tracer: {}
-  })
-  agent.reconfigure = function () {}
-  agent.setState = function () {}
-
-  return agent
+function restoreTimeout(ctx) {
+  global.setTimeout = ctx.nr.setTimeout
 }

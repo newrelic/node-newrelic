@@ -1,84 +1,57 @@
 /*
- * Copyright 2020 New Relic Corporation. All rights reserved.
+ * Copyright 2024 New Relic Corporation. All rights reserved.
  * SPDX-License-Identifier: Apache-2.0
  */
 
 'use strict'
 
-const tap = require('tap')
+const test = require('node:test')
+const assert = require('node:assert')
+const crypto = require('node:crypto')
 
-const nock = require('nock')
-const crypto = require('crypto')
+const Collector = require('../../lib/test-collector')
 const helper = require('../../lib/agent_helper')
 const CollectorApi = require('../../../lib/collector/api')
 
-const HOST = 'collector.newrelic.com'
-const PORT = 443
-const URL = 'https://' + HOST
 const RUN_ID = 1337
 
-tap.test('reportSettings', (t) => {
-  t.autoend()
+test('reportSettings', async (t) => {
+  t.beforeEach(async (ctx) => {
+    ctx.nr = {}
 
-  let agent = null
-  let collectorApi = null
+    const collector = new Collector()
+    ctx.nr.collector = collector
+    await collector.listen()
 
-  let settings = null
+    const config = Object.assign({}, collector.agentConfig, { config: { run_id: RUN_ID } })
+    ctx.nr.agent = helper.loadMockedAgent(config)
 
-  const emptySettingsPayload = {
-    return_value: []
-  }
-
-  t.beforeEach(() => {
-    agent = setupMockedAgent()
-    agent.config.run_id = RUN_ID
-    collectorApi = new CollectorApi(agent)
-
-    nock.disableNetConnect()
-
-    settings = nock(URL)
-      .post(helper.generateCollectorPath('agent_settings', RUN_ID))
-      .reply(200, emptySettingsPayload)
+    ctx.nr.collectorApi = new CollectorApi(ctx.nr.agent)
   })
 
-  t.afterEach(() => {
-    if (!nock.isDone()) {
-      /* eslint-disable no-console */
-      console.error('Cleaning pending mocks: %j', nock.pendingMocks())
-      /* eslint-enable no-console */
-      nock.cleanAll()
-    }
-
-    nock.enableNetConnect()
-
-    helper.unloadAgent(agent)
-    agent = null
-    collectorApi = null
+  t.afterEach((ctx) => {
+    helper.unloadAgent(ctx.nr.agent)
+    ctx.nr.collector.close()
   })
 
-  t.test('should not error out', (t) => {
+  await t.test('should not error out', (t, end) => {
+    const { collectorApi } = t.nr
     collectorApi.reportSettings((error) => {
-      t.error(error)
-
-      settings.done()
-
-      t.end()
+      assert.equal(error, undefined)
+      end()
     })
   })
 
-  t.test('should return the expected `empty` response', (t) => {
+  await t.test('should return the expected `empty` response', (t, end) => {
+    const { collectorApi } = t.nr
     collectorApi.reportSettings((error, res) => {
-      t.same(res.payload, emptySettingsPayload.return_value)
-
-      settings.done()
-
-      t.end()
+      assert.deepStrictEqual(res.payload, [])
+      end()
     })
   })
 
-  t.test('handles excessive payload sizes without blocking subsequent sends', (t) => {
-    // remove the nock to agent_settings from beforeEach to avoid a console.error on afterEach
-    nock.cleanAll()
+  await t.test('handles excessive payload sizes without blocking subsequent sends', (t, end) => {
+    const { agent } = t.nr
     const tstamp = 1_707_756_300_000 // 2024-02-12T11:45:00.000-05:00
     function log(data) {
       return JSON.stringify({
@@ -95,16 +68,13 @@ tap.test('reportSettings', (t) => {
     const toFind = log('find me')
 
     let sends = 0
-    const ncontext = nock(URL)
-      .post(helper.generateCollectorPath('log_event_data', RUN_ID))
-      .times(2)
-      .reply(200)
-
     agent.logs.on('finished log_event_data data send.', () => {
       sends += 1
       if (sends === 3) {
-        t.equal(ncontext.isDone(), true)
-        t.end()
+        const logs = agent.logs.events.toArray()
+        const found = logs.find((l) => /find me/.test(l))
+        assert.notEqual(found, undefined)
+        end()
       }
     })
 
@@ -114,6 +84,79 @@ tap.test('reportSettings', (t) => {
     agent.logs.send()
     agent.logs.add(toFind)
     agent.logs.send()
+  })
+})
+
+test('shutdown', async (t) => {
+  t.beforeEach(async (ctx) => {
+    ctx.nr = {}
+
+    const collector = new Collector()
+    ctx.nr.collector = collector
+    await collector.listen()
+    collector.addHandler(helper.generateCollectorPath('shutdown', RUN_ID), (req, res) => {
+      res.writeHead(503)
+      res.end()
+    })
+
+    const config = Object.assign({}, collector.agentConfig, {
+      app_name: ['TEST'],
+      utilization: {
+        detect_aws: false,
+        detect_pcf: false,
+        detect_azure: false,
+        detect_gcp: false,
+        detect_docker: false
+      },
+      browser_monitoring: {},
+      transaction_tracer: {}
+    })
+    ctx.nr.agent = helper.loadMockedAgent(config)
+    ctx.nr.agent.reconfig = () => {}
+    ctx.nr.agent.setState = () => {}
+
+    ctx.nr.collectorApi = new CollectorApi(ctx.nr.agent)
+  })
+
+  t.afterEach((ctx) => {
+    helper.unloadAgent(ctx.nr.agent)
+    ctx.nr.collector.close()
+  })
+
+  await t.test('should not error out', (t, end) => {
+    const { collectorApi } = t.nr
+
+    collectorApi.shutdown((error) => {
+      assert.equal(error, undefined)
+      end()
+    })
+  })
+
+  await t.test('should no longer have agent run id', (t, end) => {
+    const { agent, collectorApi } = t.nr
+
+    collectorApi.shutdown(() => {
+      assert.equal(agent.config.run_id, undefined)
+      end()
+    })
+  })
+
+  await t.test('should tell the requester to shut down', (t, end) => {
+    const { collectorApi } = t.nr
+
+    collectorApi.shutdown((error, res) => {
+      assert.equal(error, undefined)
+      assert.equal(res.shouldShutdownRun(), true)
+      end()
+    })
+  })
+
+  await t.test('throws if no callback provided', (t) => {
+    try {
+      t.nr.collectorApi.shutdown()
+    } catch (error) {
+      assert.equal(error.message, 'callback is required')
+    }
   })
 })
 
@@ -272,264 +315,146 @@ const apiMethods = [
     ]
   }
 ]
-apiMethods.forEach(({ key, data }) => {
-  tap.test(key, (t) => {
-    t.autoend()
 
-    t.test('requires errors to send', (t) => {
-      const agent = setupMockedAgent()
-      const collectorApi = new CollectorApi(agent)
+test('api methods', async (t) => {
+  t.beforeEach(async (ctx) => {
+    ctx.nr = {}
 
-      t.teardown(() => {
-        helper.unloadAgent(agent)
-      })
+    const collector = new Collector()
+    ctx.nr.collector = collector
+    await collector.listen()
 
-      collectorApi.send(key, null, (err) => {
-        t.ok(err)
-        t.equal(err.message, `must pass data for ${key} to send`)
+    const config = Object.assign({}, collector.agentConfig, {
+      app_name: ['TEST'],
+      utilization: {
+        detect_aws: false,
+        detect_pcf: false,
+        detect_azure: false,
+        detect_gcp: false,
+        detect_docker: false
+      },
+      browser_monitoring: {},
+      transaction_tracer: {}
+    })
+    ctx.nr.agent = helper.loadMockedAgent(config)
+    ctx.nr.agent.reconfigure = () => {}
+    ctx.nr.agent.setState = () => {}
+    ctx.nr.agent.config.run_id = RUN_ID
 
-        t.end()
+    ctx.nr.collectorApi = new CollectorApi(ctx.nr.agent)
+  })
+
+  t.afterEach((ctx) => {
+    helper.unloadAgent(ctx.nr.agent)
+    ctx.nr.collector.close()
+  })
+
+  for (const method of apiMethods) {
+    await t.test(`${method.key}: requires errors to send`, (t, end) => {
+      const { collectorApi } = t.nr
+
+      collectorApi.send(method.key, null, (error) => {
+        assert.equal(error.message, `must pass data for ${method.key} to send`)
+        end()
       })
     })
 
-    t.test('requires a callback', (t) => {
-      const agent = setupMockedAgent()
-      const collectorApi = new CollectorApi(agent)
+    await t.test(`${method.key}: requires a callback`, (t) => {
+      const { collectorApi } = t.nr
 
-      t.teardown(() => {
-        helper.unloadAgent(agent)
-      })
-
-      t.throws(() => {
-        collectorApi.send(key, [], null)
-      }, new Error('callback is required'))
-      t.end()
+      assert.throws(
+        () => {
+          collectorApi.send(method.key, [], null)
+        },
+        { message: 'callback is required' }
+      )
     })
 
-    t.test('receiving 200 response, with valid data', (t) => {
-      t.autoend()
+    await t.test(`${method.key}: should receive 200 without error`, (t, end) => {
+      const { collector, collectorApi } = t.nr
+      collector.addHandler(helper.generateCollectorPath(method.key, RUN_ID), async (req, res) => {
+        const body = await req.body()
+        const found = JSON.parse(body)
 
-      let agent = null
-      let collectorApi = null
-
-      let dataEndpoint = null
-
-      t.beforeEach(() => {
-        agent = setupMockedAgent()
-        agent.config.run_id = RUN_ID
-        collectorApi = new CollectorApi(agent)
-
-        nock.disableNetConnect()
-
-        const response = { return_value: [] }
-
-        dataEndpoint = nock(URL)
-          .post(helper.generateCollectorPath(key, RUN_ID))
-          .reply(200, response)
-      })
-
-      t.afterEach(() => {
-        if (!nock.isDone()) {
-          /* eslint-disable no-console */
-          console.error('Cleaning pending mocks: %j', nock.pendingMocks())
-          /* eslint-enable no-console */
-          nock.cleanAll()
+        let expected = method.data
+        if (method.data.toJSON) {
+          expected = method.data.toJSON()
         }
+        assert.deepStrictEqual(found, expected)
 
-        nock.enableNetConnect()
-
-        helper.unloadAgent(agent)
-        agent = null
-        collectorApi = null
+        res.json({ payload: { return_value: [] } })
       })
-
-      t.test('should not error out', (t) => {
-        collectorApi.send(key, data, (error) => {
-          t.error(error)
-
-          dataEndpoint.done()
-
-          t.end()
-        })
+      collectorApi.send(method.key, method.data, (error) => {
+        assert.equal(error, undefined)
+        end()
       })
+    })
 
-      t.test('should return retain state', (t) => {
-        collectorApi.send(key, data, (error, res) => {
-          t.error(error)
-          const command = res
-
-          t.equal(command.retainData, false)
-
-          dataEndpoint.done()
-
-          t.end()
-        })
+    await t.test(`${method.key}: should retain state for 200 responses`, (t, end) => {
+      const { collector, collectorApi } = t.nr
+      collector.addHandler(
+        helper.generateCollectorPath(method.key, RUN_ID),
+        collector.agentSettingsHandler
+      )
+      collectorApi.send(method.key, method.data, (error, res) => {
+        assert.equal(error, undefined)
+        assert.equal(res.retainData, false)
+        end()
       })
+    })
+  }
+})
+
+test('send', async (t) => {
+  t.beforeEach(async (ctx) => {
+    ctx.nr = {}
+
+    const collector = new Collector()
+    ctx.nr.collector = collector
+    await collector.listen()
+
+    const config = Object.assign({}, collector.agentConfig, {
+      app_name: ['TEST'],
+      utilization: {
+        detect_aws: false,
+        detect_pcf: false,
+        detect_azure: false,
+        detect_gcp: false,
+        detect_docker: false
+      },
+      browser_monitoring: {},
+      transaction_tracer: {},
+      max_payload_size_in_bytes: 100
+    })
+    ctx.nr.agent = helper.loadMockedAgent(config)
+    ctx.nr.agent.reconfigure = () => {}
+    ctx.nr.agent.setState = () => {}
+    ctx.nr.agent.config.run_id = RUN_ID
+
+    ctx.nr.collectorApi = new CollectorApi(ctx.nr.agent)
+  })
+
+  t.afterEach((ctx) => {
+    helper.unloadAgent(ctx.nr.agent)
+    ctx.nr.collector.close()
+  })
+
+  await t.test('handles payloads of excessive size', (t, end) => {
+    const { agent, collector, collectorApi } = t.nr
+    const data = [
+      [
+        { type: 'my_custom_typ', timestamp: 1543949274921 },
+        { foo: 'a'.repeat(agent.config.max_payload_size_in_bytes + 1) }
+      ]
+    ]
+    collector.addHandler(helper.generateCollectorPath('custom_event_data', RUN_ID), (req, res) => {
+      res.writeHead(413)
+      res.end()
+    })
+    collectorApi.send('custom_event_data', data, (error, result) => {
+      assert.equal(error, undefined)
+      assert.deepStrictEqual(result, { retainData: false })
+      end()
     })
   })
 })
-
-tap.test('shutdown', (t) => {
-  t.autoend()
-
-  t.test('requires a callback', (t) => {
-    const agent = setupMockedAgent()
-    const collectorApi = new CollectorApi(agent)
-
-    t.teardown(() => {
-      helper.unloadAgent(agent)
-    })
-
-    t.throws(() => {
-      collectorApi.shutdown(null)
-    }, new Error('callback is required'))
-
-    t.end()
-  })
-
-  t.test('receiving 200 response, with valid data', (t) => {
-    t.autoend()
-
-    let agent = null
-    let collectorApi = null
-
-    let shutdownEndpoint = null
-
-    t.beforeEach(() => {
-      agent = setupMockedAgent()
-      agent.config.run_id = RUN_ID
-      collectorApi = new CollectorApi(agent)
-
-      nock.disableNetConnect()
-
-      const response = { return_value: null }
-
-      shutdownEndpoint = nock(URL)
-        .post(helper.generateCollectorPath('shutdown', RUN_ID))
-        .reply(200, response)
-    })
-
-    t.afterEach(() => {
-      if (!nock.isDone()) {
-        /* eslint-disable no-console */
-        console.error('Cleaning pending mocks: %j', nock.pendingMocks())
-        /* eslint-enable no-console */
-        nock.cleanAll()
-      }
-
-      nock.enableNetConnect()
-
-      helper.unloadAgent(agent)
-      agent = null
-      collectorApi = null
-    })
-
-    t.test('should not error out', (t) => {
-      collectorApi.shutdown((error) => {
-        t.error(error)
-
-        shutdownEndpoint.done()
-
-        t.end()
-      })
-    })
-
-    t.test('should return null', (t) => {
-      collectorApi.shutdown((error, res) => {
-        t.equal(res.payload, null)
-
-        shutdownEndpoint.done()
-
-        t.end()
-      })
-    })
-  })
-
-  t.test('fail on a 503 status code', (t) => {
-    t.autoend()
-
-    let agent = null
-    let collectorApi = null
-
-    let shutdownEndpoint = null
-
-    t.beforeEach(() => {
-      agent = setupMockedAgent()
-      agent.config.run_id = RUN_ID
-      collectorApi = new CollectorApi(agent)
-
-      nock.disableNetConnect()
-
-      shutdownEndpoint = nock(URL).post(helper.generateCollectorPath('shutdown', RUN_ID)).reply(503)
-    })
-
-    t.afterEach(() => {
-      if (!nock.isDone()) {
-        /* eslint-disable no-console */
-        console.error('Cleaning pending mocks: %j', nock.pendingMocks())
-        /* eslint-enable no-console */
-        nock.cleanAll()
-      }
-
-      nock.enableNetConnect()
-
-      helper.unloadAgent(agent)
-      agent = null
-      collectorApi = null
-    })
-
-    t.test('should not error out', (t) => {
-      collectorApi.shutdown((error) => {
-        t.error(error)
-
-        shutdownEndpoint.done()
-
-        t.end()
-      })
-    })
-
-    t.test('should no longer have agent run id', (t) => {
-      collectorApi.shutdown(() => {
-        t.notOk(agent.config.run_id)
-
-        shutdownEndpoint.done()
-
-        t.end()
-      })
-    })
-
-    t.test('should tell the requester to shut down', (t) => {
-      collectorApi.shutdown((error, res) => {
-        const command = res
-        t.equal(command.shouldShutdownRun(), true)
-
-        shutdownEndpoint.done()
-
-        t.end()
-      })
-    })
-  })
-})
-
-function setupMockedAgent() {
-  const agent = helper.loadMockedAgent({
-    host: HOST,
-    port: PORT,
-    app_name: ['TEST'],
-    ssl: true,
-    license_key: 'license key here',
-    utilization: {
-      detect_aws: false,
-      detect_pcf: false,
-      detect_azure: false,
-      detect_gcp: false,
-      detect_docker: false
-    },
-    browser_monitoring: {},
-    transaction_tracer: {}
-  })
-  agent.reconfigure = function () {}
-  agent.setState = function () {}
-
-  return agent
-}
