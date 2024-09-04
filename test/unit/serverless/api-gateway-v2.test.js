@@ -13,7 +13,7 @@ const AwsLambda = require('../../../lib/serverless/aws-lambda')
 
 const ATTR_DEST = require('../../../lib/config/attribute-filter').DESTINATIONS
 
-const { gatewayV2Event: v2Event } = require('./fixtures')
+const { httpApiGatewayV2Event: v2Event } = require('./fixtures')
 
 tap.beforeEach((t) => {
   // This env var suppresses console output we don't need to inspect.
