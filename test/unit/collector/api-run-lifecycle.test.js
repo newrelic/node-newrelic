@@ -217,6 +217,25 @@ test('should discard unexpected HTTP errors (501)', async (t) => {
   await promise
 })
 
+test('should handle error in invoked method', async (t) => {
+  await beforeEach(t)
+  t.after(() => afterEach(t))
+
+  const { agent, collector, collectorApi } = t.nr
+  const { promise, resolve } = promiseResolvers()
+  collector.addHandler(helper.generateCollectorPath('metric_data', RUN_ID), (req) => {
+    req.destroy()
+  })
+  agent.config.run_id = RUN_ID
+  collectorApi._runLifecycle(collectorApi._methods.metric_data, null, (error) => {
+    assert.equal(error.message, 'socket hang up')
+    assert.equal(error.code, 'ECONNRESET')
+    resolve()
+  })
+
+  await promise
+})
+
 async function beforeEach(ctx) {
   ctx.nr = {}
 

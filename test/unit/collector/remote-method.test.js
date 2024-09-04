@@ -163,7 +163,13 @@ test('_safeRequest', async (t) => {
   await t.test('requires a request body within the maximum payload size limit', (t) => {
     const { agent, method, options } = t.nr
     options.body = 'a'.repeat(method._config.max_payload_size_in_bytes + 1)
-    assert.throws(() => method._safeRequest(options), /Maximum payload size exceeded/)
+
+    try {
+      method._safeRequest(options)
+    } catch (error) {
+      assert.equal(error.message, 'Maximum payload size exceeded')
+      assert.equal(error.code, 'NR_REMOTE_METHOD_MAX_PAYLOAD_SIZE_EXCEEDED')
+    }
 
     const { unscoped: metrics } = helper.getMetrics(agent)
     assert.equal(

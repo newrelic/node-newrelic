@@ -150,6 +150,14 @@ test('shutdown', async (t) => {
       end()
     })
   })
+
+  await t.test('throws if no callback provided', (t) => {
+    try {
+      t.nr.collectorApi.shutdown()
+    } catch (error) {
+      assert.equal(error.message, 'callback is required')
+    }
+  })
 })
 
 /**
@@ -395,4 +403,58 @@ test('api methods', async (t) => {
       })
     })
   }
+})
+
+test('send', async (t) => {
+  t.beforeEach(async (ctx) => {
+    ctx.nr = {}
+
+    const collector = new Collector()
+    ctx.nr.collector = collector
+    await collector.listen()
+
+    const config = Object.assign({}, collector.agentConfig, {
+      app_name: ['TEST'],
+      utilization: {
+        detect_aws: false,
+        detect_pcf: false,
+        detect_azure: false,
+        detect_gcp: false,
+        detect_docker: false
+      },
+      browser_monitoring: {},
+      transaction_tracer: {},
+      max_payload_size_in_bytes: 100
+    })
+    ctx.nr.agent = helper.loadMockedAgent(config)
+    ctx.nr.agent.reconfigure = () => {}
+    ctx.nr.agent.setState = () => {}
+    ctx.nr.agent.config.run_id = RUN_ID
+
+    ctx.nr.collectorApi = new CollectorApi(ctx.nr.agent)
+  })
+
+  t.afterEach((ctx) => {
+    helper.unloadAgent(ctx.nr.agent)
+    ctx.nr.collector.close()
+  })
+
+  await t.test('handles payloads of excessive size', (t, end) => {
+    const { agent, collector, collectorApi } = t.nr
+    const data = [
+      [
+        { type: 'my_custom_typ', timestamp: 1543949274921 },
+        { foo: 'a'.repeat(agent.config.max_payload_size_in_bytes + 1) }
+      ]
+    ]
+    collector.addHandler(helper.generateCollectorPath('custom_event_data', RUN_ID), (req, res) => {
+      res.writeHead(413)
+      res.end()
+    })
+    collectorApi.send('custom_event_data', data, (error, result) => {
+      assert.equal(error, undefined)
+      assert.deepStrictEqual(result, { retainData: false })
+      end()
+    })
+  })
 })
