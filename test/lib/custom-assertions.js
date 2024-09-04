@@ -80,9 +80,74 @@ function compareSegments(parent, segments) {
   })
 }
 
+/**
+ * Like `tap.prototype.match`. Verifies that `actual` satisfies the shape
+ * provided by `expected`.
+ *
+ * This may eventually make its way into `node:assert`. See
+ * https://github.com/fastify/fastify/discussions/5628#discussioncomment-10392942
+ *
+ * @example
+ * const input = {
+ *   foo: /^foo.+bar$/,
+ *   bar: [1, 2, '3']
+ * }
+ * // true
+ * match(input, {
+ *   foo: 'foo is bar',
+ *   bar: [1, 2, '3']
+ * })
+ * // false
+ * match(input, {
+ *   foo: 'foo is bar',
+ *   bar: [1, 2, '3', 4]
+ * })
+ *
+ * @param {string|object} actual The entity to verify.
+ * @param {string|object} expected What the entity should match against.
+ *
+ * @returns {boolean} `true` if `actual` satisfies `expected`. `false`
+ * otherwise.
+ */
+function match(actual, expected) {
+  if (typeof actual === 'string' && typeof expected === 'string') {
+    const patterns = expected
+      .trim()
+      .split(/\r?\n/)
+      .map((s) => s.trim())
+
+    let lastIndex = -1
+    for (const pattern of patterns) {
+      const index = actual.indexOf(pattern)
+      if (index === -1 || index < lastIndex) {
+        return false
+      }
+      lastIndex = index
+    }
+    return true
+  }
+
+  for (const key in expected) {
+    if (key in actual) {
+      if (typeof expected[key] === 'object' && expected[key] !== null) {
+        /* c8 ignore next 3 */
+        if (!match(actual[key], expected[key])) {
+          return false
+        }
+      } else if (actual[key] !== expected[key]) {
+        return false
+      }
+    } else {
+      return false
+    }
+  }
+  return true
+}
+
 module.exports = {
   assertCLMAttrs,
   assertExactClmAttrs,
   compareSegments,
-  isNonWritable
+  isNonWritable,
+  match
 }
