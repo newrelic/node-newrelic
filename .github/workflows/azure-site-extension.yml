@@ -13,7 +13,7 @@ jobs:
     strategy:
       matrix:
         node-version: ['lts/*']
-        arch: [ x86, x64 ]
+        arch: [ x64 ]
 
     steps:
       - uses: actions/checkout@v4
@@ -36,7 +36,7 @@ jobs:
 
       - name: Set package filename
         run: |
-          echo "PACKAGE_FILENAME=NewRelic.Azure.WebSites.Extension.NodeAgent-${{matrix.arch}}.${{env.AGENT_VERSION}}-${{matrix.arch}}" | Out-File -FilePath $env:GITHUB_ENV -Append
+          echo "PACKAGE_FILENAME=NewRelic.Azure.WebSites.Extension.NodeAgent-${{env.AGENT_VERSION}}-${{matrix.arch}}" | Out-File -FilePath $env:GITHUB_ENV -Append
 
       - name: Verify environment vars # because we can't access GH env vars until the next step
         run: |
@@ -52,7 +52,7 @@ jobs:
       - name: Configure package files
         working-directory: cloud-tooling/azure-site-extension
         run: |
-          (Get-Content ${{ env.SPEC_FILE_TEMPLATE }}).Replace('{VERSION}', "${{ env.AGENT_VERSION }}").Replace('{ARCH}', "${{ matrix.arch }}") | Set-Content ${{ env.PACKAGE_FILENAME }}.nuspec
+          (Get-Content ${{ env.SPEC_FILE_TEMPLATE }}).Replace('{VERSION}', "${{ env.AGENT_VERSION }}") | Set-Content ${{ env.PACKAGE_FILENAME }}.nuspec
 
       - name: Create bundle
         working-directory: cloud-tooling/azure-site-extension
