@@ -102,7 +102,7 @@ test('Error Group functionality', async (t) => {
       assert.equal(match(errorEvents[0][2], {}), true)
 
       function myCallback() {
-        throw { 'error.group.name': 'blah' }
+        return { 'error.group.name': 'blah' }
       }
     }
   )
