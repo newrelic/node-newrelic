@@ -1,0 +1,71 @@
+name: Azure Site Extension
+
+on:
+  workflow_dispatch:
+
+env:
+  SPEC_FILE_TEMPLATE: 'NewRelic.Azure.WebSites.Extension.NodeAgent.nuspec'
+
+jobs:
+  create_extension_bundle:
+    runs-on: windows-latest
+
+    strategy:
+      matrix:
+        node-version: ['lts/*']
+        arch: [ x64 ]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup dotnet '6.0.x'
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '6.0.x'
+
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          architecture: ${{ matrix.arch }}
+
+      - name: Find agent version
+        run: |
+          $env:npm_agent_version = npm view newrelic version 
+          echo "AGENT_VERSION=$env:npm_agent_version" | Out-File -FilePath $env:GITHUB_ENV -Append
+
+      - name: Set package filename
+        run: |
+          echo "PACKAGE_FILENAME=NewRelic.Azure.WebSites.Extension.NodeAgent-${{env.AGENT_VERSION}}" | Out-File -FilePath $env:GITHUB_ENV -Append
+
+      - name: Verify environment vars # because we can't access GH env vars until the next step
+        run: |
+          echo "Agent version: ${{ env.AGENT_VERSION }}"
+          echo "Package filename: ${{ env.PACKAGE_FILENAME }}"
+
+      - name: Install agent
+        working-directory: cloud-tooling/azure-site-extension/Content
+        run: |
+          npm i --prefix . newrelic@${{ env.AGENT_VERSION }}
+          echo "Agent installed"
+
+      - name: Configure package files
+        working-directory: cloud-tooling/azure-site-extension
+        run: |
+          (Get-Content ${{ env.SPEC_FILE_TEMPLATE }}).Replace('{VERSION}', "${{ env.AGENT_VERSION }}") | Set-Content ${{ env.PACKAGE_FILENAME }}.nuspec
+
+      - name: Create bundle
+        working-directory: cloud-tooling/azure-site-extension
+        run: nuget pack "${{ env.PACKAGE_FILENAME }}.nuspec"
+
+      # This step is for us to check what's going to be published
+      - name: Archive package for verification
+        uses: actions/upload-artifact@v4
+        with:
+          name: azure-site-extension-test-${{ env.PACKAGE_FILENAME }}
+          path: cloud-tooling/azure-site-extension/${{ env.PACKAGE_FILENAME }}.nupkg
+
+      - name: Publish site extension
+        working-directory: cloud-tooling/azure-site-extension
+        run: |
+          dotnet nuget push "${{ env.PACKAGE_FILENAME }}.nupkg" --api-key ${{ secrets.NUGET_API_KEY }} --source ${{ secrets.NUGET_SOURCE }}

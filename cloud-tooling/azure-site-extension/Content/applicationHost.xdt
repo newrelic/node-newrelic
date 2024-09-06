@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<configuration xmlns:xdt="http://schemas.microsoft.com/XML-Document-Transform">
+  <system.webServer>
+    <runtime xdt:Transform="InsertIfMissing" >
+      <environmentVariables xdt:Transform="InsertIfMissing">
+        <add name="NEW_RELIC_APP_NAME" xdt:Locator="Match(name)" xdt:Transform="RemoveAll"/>
+        <add name="NEW_RELIC_APP_NAME" value="%WEBSITE_SITE_NAME%" xdt:Locator="Match(name)" xdt:Transform="Insert"/>
+        <add name="NODE_OPTIONS" xdt:Locator="Match(name)" xdt:Transform="RemoveAll"/>
+        <add name="NODE_OPTIONS" value="-r newrelic" xdt:Locator="Match(name)" xdt:Transform="Insert"/>
+      </environmentVariables>
+    </runtime>
+  </system.webServer>
+</configuration>
