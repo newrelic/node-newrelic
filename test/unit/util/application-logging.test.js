@@ -54,14 +54,13 @@ test('truncate', async (t) => {
     { value: [], type: 'array' },
     { value: function () {}, type: 'function' }
   ]
-  await Promise.all(
-    negativeTests.map(async ({ value, type }) => {
-      await t.test(`should not truncate ${type}`, () => {
-        const newValue = loggingUtils.truncate(value)
-        assert.deepEqual(value, newValue)
-      })
+  for (const negativeTest of negativeTests) {
+    const { value, type } = negativeTest
+    await t.test(`should not truncate ${type}`, () => {
+      const newValue = loggingUtils.truncate(value)
+      assert.deepEqual(value, newValue)
     })
-  )
+  }
 })
 
 test('Application Logging Config Tests', async (t) => {
@@ -129,6 +128,7 @@ test('Application Logging Config Tests', async (t) => {
 
 test('incrementLoggingLinesMetrics', async (t) => {
   t.beforeEach((ctx) => {
+    console.log('before test')
     ctx.nr = {}
     const callCountStub = { incrementCallCount: sinon.stub() }
     ctx.nr.metricsStub = {
