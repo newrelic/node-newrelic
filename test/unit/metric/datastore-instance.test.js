@@ -5,29 +5,29 @@
 
 'use strict'
 
-const tap = require('tap')
-
+const test = require('node:test')
+const assert = require('node:assert')
 const helper = require('../../lib/agent_helper')
 const DatastoreShim = require('../../../lib/shim/datastore-shim')
 const tests = require('../../lib/cross_agent_tests/datastores/datastore_instances')
 const DatastoreParameters = require('../../../lib/shim/specs/params/datastore')
 
-tap.test('Datastore instance metrics collected via the datastore shim', function (t) {
-  t.autoend()
-  t.beforeEach(function (t) {
-    t.context.agent = helper.loadMockedAgent()
+test('Datastore instance metrics collected via the datastore shim', async function (t) {
+  t.beforeEach(function (ctx) {
+    ctx.nr = {}
+    ctx.nr.agent = helper.loadMockedAgent()
   })
 
-  t.afterEach(function (t) {
-    const { agent } = t.context
+  t.afterEach(function (ctx) {
+    const { agent } = ctx.nr
     if (agent) {
       helper.unloadAgent(agent)
     }
   })
 
-  tests.forEach(function (test) {
-    t.test(test.name, function (t) {
-      const { agent } = t.context
+  for (const test of tests) {
+    await t.test(test.name, function (t, end) {
+      const { agent } = t.nr
       agent.config.getHostnameSafe = function () {
         return test.system_hostname
       }
@@ -65,11 +65,11 @@ tap.test('Datastore instance metrics collected via the datastore shim', function
         testInstrumented.query()
 
         tx.end()
-        t.ok(getMetrics(agent).unscoped[test.expected_instance_metric])
-        t.end()
+        assert.ok(getMetrics(agent).unscoped[test.expected_instance_metric])
+        end()
       })
     })
-  })
+  }
 })
 
 function getMetrics(agent) {
