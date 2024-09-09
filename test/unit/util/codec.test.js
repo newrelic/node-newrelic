@@ -4,55 +4,50 @@
  */
 
 'use strict'
-const { test } = require('tap')
+const assert = require('node:assert')
+const test = require('node:test')
 const zlib = require('zlib')
 const codec = require('../../../lib/util/codec')
 const DATA = { foo: 'bar' }
 const ENCODED = 'eJyrVkrLz1eyUkpKLFKqBQAdegQ0'
 
-test('codec', function (t) {
-  t.autoend()
-  t.test('.encode', function (t) {
-    t.autoend()
-    t.test('should zip and base-64 encode the data', function (t) {
-      codec.encode(DATA, function (err, encoded) {
-        t.error(err)
-        t.equal(encoded, ENCODED)
-        t.end()
-      })
-    })
-
-    t.test('should not error for circular payloads', function (t) {
-      const val = '{"foo":"bar","obj":"[Circular ~]"}'
-      const obj = { foo: 'bar' }
-      obj.obj = obj
-
-      codec.encode(obj, function (err, encoded) {
-        t.error(err)
-        const decoded = zlib.inflateSync(Buffer.from(encoded, 'base64')).toString()
-        t.equal(decoded, val)
-        t.end()
-      })
+test('codec', async function (t) {
+  await t.test('.encode should zip and base-64 encode the data', function (t, end) {
+    codec.encode(DATA, function (err, encoded) {
+      assert.equal(err, null)
+      assert.equal(encoded, ENCODED)
+      end()
     })
   })
 
-  t.test('.decode should parse the encoded payload', function (t) {
+  await t.test('.encode should not error for circular payloads', function (t, end) {
+    const val = '{"foo":"bar","obj":"[Circular ~]"}'
+    const obj = { foo: 'bar' }
+    obj.obj = obj
+
+    codec.encode(obj, function (err, encoded) {
+      assert.equal(err, null)
+      const decoded = zlib.inflateSync(Buffer.from(encoded, 'base64')).toString()
+      assert.equal(decoded, val)
+      end()
+    })
+  })
+
+  await t.test('.decode should parse the encoded payload', function (t, end) {
     codec.decode(ENCODED, function (err, data) {
-      t.error(err)
-      t.same(data, DATA)
-      t.end()
+      assert.equal(err, null)
+      assert.deepEqual(data, DATA)
+      end()
     })
   })
 
-  t.test('.encodeSync should zip and base-64 encode the data', function (t) {
+  await t.test('.encodeSync should zip and base-64 encode the data', function () {
     const encoded = codec.encodeSync(DATA)
-    t.equal(encoded, ENCODED)
-    t.end()
+    assert.equal(encoded, ENCODED)
   })
 
-  t.test('.decodeSync should parse the encoded payload', function (t) {
+  await t.test('.decodeSync should parse the encoded payload', function () {
     const data = codec.decodeSync(ENCODED)
-    t.same(data, DATA)
-    t.end()
+    assert.deepEqual(data, DATA)
   })
 })
