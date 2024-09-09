@@ -6,14 +6,15 @@
 'use strict'
 
 const tap = require('tap')
+const assert = require('node:assert')
 const urltils = require('../../lib/util/urltils')
 const { isSimpleObject } = require('../../lib/util/objects')
 
 exports.findSegment = findSegment
 exports.getMetricHostName = getMetricHostName
-tap.Test.prototype.addAssert('assertMetrics', 4, assertMetrics)
+exports.assertMetrics = assertMetrics
+exports.assertMetricValues = assertMetricValues
 tap.Test.prototype.addAssert('assertSegments', 3, assertSegments)
-tap.Test.prototype.addAssert('assertMetricValues', 3, assertMetricValues)
 
 /**
  * @param {Metrics} metrics         metrics under test
@@ -37,9 +38,9 @@ function assertMetrics(metrics, expected, exclusive, assertValues) {
   // Assertions about arguments because maybe something returned undefined
   // unexpectedly and is passed in, or a return type changed. This will
   // hopefully help catch that and make it obvious.
-  this.ok(isSimpleObject(metrics), 'first argument required to be an Metrics object')
-  this.ok(Array.isArray(expected), 'second argument required to be an array of metrics')
-  this.ok(typeof exclusive === 'boolean', 'third argument required to be a boolean if provided')
+  assert.ok(isSimpleObject(metrics), 'first argument required to be an Metrics object')
+  assert.ok(Array.isArray(expected), 'second argument required to be an array of metrics')
+  assert.ok(typeof exclusive === 'boolean', 'third argument required to be a boolean if provided')
 
   if (assertValues === undefined) {
     assertValues = true
@@ -48,15 +49,15 @@ function assertMetrics(metrics, expected, exclusive, assertValues) {
   for (let i = 0, len = expected.length; i < len; i++) {
     const expectedMetric = expected[i]
     const metric = metrics.getMetric(expectedMetric[0].name, expectedMetric[0].scope)
-    this.ok(metric, `should find ${expectedMetric[0].name}`)
+    assert.ok(metric, `should find ${expectedMetric[0].name}`)
     if (assertValues) {
-      this.same(metric.toJSON(), expectedMetric[1])
+      assert.deepEqual(metric.toJSON(), expectedMetric[1])
     }
   }
 
   if (exclusive) {
     const metricsList = metrics.toJSON()
-    this.equal(metricsList.length, expected.length)
+    assert.equal(metricsList.length, expected.length)
   }
 }
 
@@ -94,14 +95,14 @@ function assertMetricValues(transaction, expected, exact) {
     }
 
     const metric = metrics.getMetric(name, scope)
-    this.ok(metric, 'should have expected metric name')
+    assert.ok(metric, 'should have expected metric name')
 
-    this.strictSame(metric.toJSON(), expectedMetric[1], 'metric values should match')
+    assert.deepStrictEqual(metric.toJSON(), expectedMetric[1], 'metric values should match')
   }
 
   if (exact) {
     const metricsJSON = metrics.toJSON()
-    this.equal(metricsJSON.length, expected.length, 'metrics length should match')
+    assert.equal(metricsJSON.length, expected.length, 'metrics length should match')
   }
 }
 

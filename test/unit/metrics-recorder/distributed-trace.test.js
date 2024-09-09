@@ -5,9 +5,9 @@
 
 'use strict'
 
-const tap = require('tap')
+const test = require('node:test')
 const helper = require('../../lib/agent_helper')
-require('../../lib/metrics_helper')
+const { assertMetrics } = require('../../lib/metrics_helper')
 const recordDistributedTrace = require('../../../lib/metrics/recorders/distributed-trace')
 const Transaction = require('../../../lib/transaction')
 
@@ -29,7 +29,8 @@ const record = (opts) => {
   recordDistributedTrace(tx, opts.type, duration, exclusive)
 }
 
-function beforeEach(t) {
+function beforeEach(ctx) {
+  ctx.nr = {}
   const agent = helper.loadMockedAgent({
     distributed_tracing: {
       enabled: true
@@ -41,22 +42,20 @@ function beforeEach(t) {
   ;(agent.config.account_id = '1234'),
     (agent.config.primary_application_id = '5678'),
     (agent.config.trusted_account_key = '1234')
-  t.context.tx = new Transaction(agent)
-  t.context.agent = agent
+  ctx.nr.tx = new Transaction(agent)
+  ctx.nr.agent = agent
 }
 
-function afterEach(t) {
-  helper.unloadAgent(t.context.agent)
+function afterEach(ctx) {
+  helper.unloadAgent(ctx.nr.agent)
 }
 
-tap.test('recordDistributedTrace', (t) => {
-  t.autoend()
-  t.test('when a trace payload was received', (t) => {
-    t.autoend()
+test('recordDistributedTrace', async (t) => {
+  await t.test('when a trace payload was received', async (t) => {
     t.beforeEach(beforeEach)
     t.afterEach(afterEach)
-    t.test('records metrics with payload information', (t) => {
-      const { tx } = t.context
+    await t.test('records metrics with payload information', (t) => {
+      const { tx } = t.nr
       const payload = tx._createDistributedTracePayload().text()
       tx.isDistributedTrace = null
       tx._acceptDistributedTracePayload(payload, 'HTTP')
@@ -87,12 +86,11 @@ tap.test('recordDistributedTrace', (t) => {
         ]
       ]
 
-      t.assertMetrics(tx.metrics, result, true, true)
-      t.end()
+      assertMetrics(tx.metrics, result, true, true)
     })
 
-    t.test('and transaction errors exist includes error-related metrics', (t) => {
-      const { tx } = t.context
+    await t.test('and transaction errors exist includes error-related metrics', (t) => {
+      const { tx } = t.nr
       const payload = tx._createDistributedTracePayload().text()
       tx.isDistributedTrace = null
       tx._acceptDistributedTracePayload(payload, 'HTTP')
@@ -133,17 +131,15 @@ tap.test('recordDistributedTrace', (t) => {
         ]
       ]
 
-      t.assertMetrics(tx.metrics, result, true, true)
-      t.end()
+      assertMetrics(tx.metrics, result, true, true)
     })
   })
 
-  t.test('when no trace payload was received', (t) => {
-    t.autoend()
+  await t.test('when no trace payload was received', async (t) => {
     t.beforeEach(beforeEach)
     t.afterEach(afterEach)
-    t.test('records metrics with Unknown payload information', (t) => {
-      const { tx } = t.context
+    await t.test('records metrics with Unknown payload information', (t) => {
+      const { tx } = t.nr
       record({
         tx,
         duration: 55,
@@ -162,8 +158,7 @@ tap.test('recordDistributedTrace', (t) => {
         ]
       ]
 
-      t.assertMetrics(tx.metrics, result, true, true)
-      t.end()
+      assertMetrics(tx.metrics, result, true, true)
     })
   })
 })
