@@ -768,5 +768,19 @@ test('when overriding configuration values via environment variables', async (t)
         end()
       })
     })
+
+    await t.test('should convert NEW_RELIC_INSTRUMENTATION*  accordingly', (t, end) => {
+      const env = {
+        NEW_RELIC_INSTRUMENTATION_IOREDIS_ENABLED: 'false',
+        ['NEW_RELIC_INSTRUMENTATION_@GRPC/GRPC-JS_ENABLED']: 'false',
+        NEW_RELIC_INSTRUMENTATION_KNEX_ENABLED: 'false'
+      }
+      idempotentEnv(env, (config) => {
+        assert.equal(config.instrumentation.ioredis.enabled, false)
+        assert.equal(config.instrumentation['@grpc/grpc-js'].enabled, false)
+        assert.equal(config.instrumentation.knex.enabled, false)
+        end()
+      })
+    })
   }
 })

@@ -262,4 +262,10 @@ test('with default properties', async (t) => {
     assert.equal(configuration.ai_monitoring.enabled, false)
     assert.equal(configuration.ai_monitoring.streaming.enabled, true)
   })
+
+  await t.test('instrumentation defaults', () => {
+    assert.equal(configuration.instrumentation.express.enabled, true)
+    assert.equal(configuration.instrumentation['@prisma/client'].enabled, true)
+    assert.equal(configuration.instrumentation.npmlog.enabled, true)
+  })
 })
