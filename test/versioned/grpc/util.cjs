@@ -142,7 +142,7 @@ util.assertExternalSegment = function assertExternalSegment({
 }) {
   const methodName = util.getRPCName(fnName)
   const segmentName = `${EXTERNAL.PREFIX}${CLIENT_ADDR}:${port}${methodName}`
-  t.assertSegments(tx.trace.root, [segmentName], { exact: false })
+  metricsHelpers.assertSegments(tx.trace.root, [segmentName], { exact: false })
   const segment = metricsHelpers.findSegment(tx.trace.root, segmentName)
   const attributes = segment.getAttributes()
   t.equal(
@@ -163,7 +163,7 @@ util.assertExternalSegment = function assertExternalSegment({
   )
   t.equal(attributes.component, 'gRPC', 'should have the component set to "gRPC"')
   const expectedMetrics = buildExpectedMetrics(port)
-  t.assertMetrics(tx.metrics, [expectedMetrics], false, false)
+  metricsHelpers.assertMetrics(tx.metrics, [expectedMetrics], false, false)
 }
 
 /**
@@ -213,7 +213,7 @@ util.assertServerMetrics = function assertServerMetrics({ t, agentMetrics, fnNam
     [{ name: `Apdex/WebFrameworkUri/gRPC//helloworld.Greeter/${fnName}` }],
     [{ name: 'Apdex' }]
   ]
-  t.assertMetrics(agentMetrics, expectedServerMetrics, false, false)
+  metricsHelpers.assertMetrics(agentMetrics, expectedServerMetrics, false, false)
 }
 
 util.assertDistributedTracing = function assertDistributedTracing({

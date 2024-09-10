@@ -7,7 +7,7 @@
 
 const { makeRequest, setup } = require('./utils')
 const NAMES = require('../../../lib/metrics/names')
-const { findSegment, assertSegments } = require('../../lib/metrics_helper')
+const { findSegment, assertSegments, assertMetrics } = require('../../lib/metrics_helper')
 const tap = require('tap')
 const { test } = tap
 
@@ -923,5 +923,5 @@ function checkMetrics(t, metrics, expected, path) {
     expectedAll.push([{ name: metric, scope: 'WebTransaction/Expressjs/GET/' + path }])
   }
 
-  metrics.assertMetrics(metrics, expectedAll, false, false)
+  assertMetrics(metrics, expectedAll, false, false)
 }
