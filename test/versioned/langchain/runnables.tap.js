@@ -8,8 +8,7 @@
 const tap = require('tap')
 const helper = require('../../lib/agent_helper')
 const { removeModules } = require('../../lib/cache-buster')
-// load the assertSegments assertion
-require('../../lib/metrics_helper')
+const { assertSegments } = require('../../lib/metrics_helper')
 const { filterLangchainEvents, filterLangchainEventsByType } = require('./common')
 const { version: pkgVersion } = require('@langchain/core/package.json')
 const createOpenAIMockServer = require('../openai/mock-server')
@@ -363,7 +362,7 @@ tap.test('Langchain instrumentation - runnable sequence', (t) => {
       const result = await chain.invoke(input, options)
 
       t.ok(result)
-      t.assertSegments(tx.trace.root, ['Llm/chain/Langchain/invoke'], { exact: false })
+      assertSegments(tx.trace.root, ['Llm/chain/Langchain/invoke'], { exact: false })
 
       tx.end()
       t.end()

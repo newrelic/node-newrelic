@@ -12,8 +12,7 @@
 
 const tap = require('tap')
 const helper = require('../../lib/agent_helper')
-// load the assertSegments assertion
-require('../../lib/metrics_helper')
+const { assertSegments } = require('../../lib/metrics_helper')
 const {
   AI: { OPENAI }
 } = require('../../../lib/metrics/names')
@@ -47,7 +46,7 @@ tap.test('OpenAI instrumentation - chat completions', (t) => {
       test.notOk(results.headers, 'should remove response headers from user result')
       test.equal(results.choices[0].message.content, '1 plus 2 is 3.')
 
-      test.assertSegments(
+      assertSegments(
         tx.trace.root,
         [OPENAI.COMPLETION, [`External/${host}:${port}/chat/completions`]],
         { exact: false }
@@ -127,7 +126,7 @@ tap.test('OpenAI instrumentation - chat completions', (t) => {
         test.equal(chunk.choices[0].message.content, expectedRes.streamData)
         test.equal(chunk.choices[0].message.content, res)
 
-        test.assertSegments(
+        assertSegments(
           tx.trace.root,
           [OPENAI.COMPLETION, [`External/${host}:${port}/chat/completions`]],
           { exact: false }
@@ -342,7 +341,7 @@ tap.test('OpenAI instrumentation - chat completions', (t) => {
         const events = agent.customEventAggregator.events.toArray()
         test.equal(events.length, 0)
         // we will still record the external segment but not the chat completion
-        test.assertSegments(tx.trace.root, [
+        assertSegments(tx.trace.root, [
           'timers.setTimeout',
           `External/${host}:${port}/chat/completions`
         ])

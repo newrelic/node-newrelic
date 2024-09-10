@@ -7,7 +7,7 @@
 
 const tap = require('tap')
 const helper = require('../../lib/agent_helper')
-require('../../lib/metrics_helper')
+const { assertSegments } = require('../../lib/metrics_helper')
 const http = require('http')
 
 function generateApp(t) {
@@ -46,7 +46,7 @@ tap.test('Client Premature Disconnection', (t) => {
   })
 
   agent.on('transactionFinished', (transaction) => {
-    t.assertSegments(
+    assertSegments(
       transaction.trace.root,
       [
         'WebTransaction/Expressjs/POST//test',

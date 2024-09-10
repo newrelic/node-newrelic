@@ -5,7 +5,6 @@
 
 'use strict'
 
-const tap = require('tap')
 const assert = require('node:assert')
 const urltils = require('../../lib/util/urltils')
 const { isSimpleObject } = require('../../lib/util/objects')
@@ -14,7 +13,7 @@ exports.findSegment = findSegment
 exports.getMetricHostName = getMetricHostName
 exports.assertMetrics = assertMetrics
 exports.assertMetricValues = assertMetricValues
-tap.Test.prototype.addAssert('assertSegments', 3, assertSegments)
+exports.assertSegments = assertSegments
 
 /**
  * @param {Metrics} metrics         metrics under test
@@ -148,33 +147,33 @@ function assertSegments(parent, expected, options) {
 
       if (typeof sequenceItem === 'string') {
         child = children[childCount++]
-        this.equal(
+        assert.equal(
           child ? child.name : undefined,
           sequenceItem,
           'segment "' +
-            parent.name +
-            '" should have child "' +
-            sequenceItem +
-            '" in position ' +
-            childCount
+          parent.name +
+          '" should have child "' +
+          sequenceItem +
+          '" in position ' +
+          childCount
         )
 
         // If the next expected item is not array, then check that the current
         // child has no children
         if (!Array.isArray(expected[i + 1])) {
           // var children = child.children
-          this.ok(
+          assert.ok(
             getChildren(child).length === 0,
             'segment "' + child.name + '" should not have any children'
           )
         }
       } else if (typeof sequenceItem === 'object') {
-        this.assertSegments(child, sequenceItem, options)
+        assertSegments(child, sequenceItem, options)
       }
     }
 
     // check if correct number of children was found
-    this.equal(children.length, childCount)
+    assert.equal(children.length, childCount)
   } else {
     for (let i = 0; i < expected.length; i++) {
       const sequenceItem = expected[i]
@@ -186,9 +185,9 @@ function assertSegments(parent, expected, options) {
             child = parent.children[j]
           }
         }
-        this.ok(child, 'segment "' + parent.name + '" should have child "' + sequenceItem + '"')
+        assert.ok(child, 'segment "' + parent.name + '" should have child "' + sequenceItem + '"')
         if (typeof expected[i + 1] === 'object') {
-          this.assertSegments(child, expected[i + 1], exact)
+          assertSegments(child, expected[i + 1], exact)
         }
       }
     }

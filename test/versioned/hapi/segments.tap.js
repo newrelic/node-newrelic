@@ -8,7 +8,7 @@
 const tap = require('tap')
 const helper = require('../../lib/agent_helper')
 const http = require('http')
-require('../../lib/metrics_helper')
+const { assertSegments, assertMetrics } = require('../../lib/metrics_helper')
 const NAMES = require('../../../lib/metrics/names')
 const utils = require('./hapi-utils')
 
@@ -41,7 +41,7 @@ tap.test('Hapi segments', function (t) {
 
     runTest(t, function (segments, transaction) {
       checkMetrics(t, transaction.metrics, [NAMES.HAPI.MIDDLEWARE + 'myHandler//test'])
-      t.assertSegments(transaction.trace.root.children[0], [
+      assertSegments(transaction.trace.root.children[0], [
         NAMES.HAPI.MIDDLEWARE + 'myHandler//test'
       ])
       t.end()
@@ -63,7 +63,7 @@ tap.test('Hapi segments', function (t) {
 
     runTest(t, function (segments, transaction) {
       checkMetrics(t, transaction.metrics, [NAMES.HAPI.MIDDLEWARE + 'customHandler//test'])
-      t.assertSegments(transaction.trace.root.children[0], [
+      assertSegments(transaction.trace.root.children[0], [
         NAMES.HAPI.MIDDLEWARE + 'customHandler//test'
       ])
       t.end()
@@ -88,7 +88,7 @@ tap.test('Hapi segments', function (t) {
         NAMES.HAPI.MIDDLEWARE + '<anonymous>//onRequest',
         NAMES.HAPI.MIDDLEWARE + 'myHandler//test'
       ])
-      t.assertSegments(transaction.trace.root.children[0], [
+      assertSegments(transaction.trace.root.children[0], [
         NAMES.HAPI.MIDDLEWARE + '<anonymous>//onRequest',
         NAMES.HAPI.MIDDLEWARE + 'myHandler//test'
       ])
@@ -118,7 +118,7 @@ tap.test('Hapi segments', function (t) {
         NAMES.HAPI.MIDDLEWARE + '<anonymous>//onRequest',
         NAMES.HAPI.MIDDLEWARE + 'customHandler//test'
       ])
-      t.assertSegments(transaction.trace.root.children[0], [
+      assertSegments(transaction.trace.root.children[0], [
         NAMES.HAPI.MIDDLEWARE + '<anonymous>//onRequest',
         NAMES.HAPI.MIDDLEWARE + 'customHandler//test'
       ])
@@ -284,5 +284,5 @@ function checkMetrics(t, metrics, expected, path) {
     expectedAll.push([{ name: metric, scope: 'WebTransaction/Hapi/GET/' + path }])
   }
 
-  t.assertMetrics(metrics, expectedAll, true, false)
+  assertMetrics(metrics, expectedAll, true, false)
 }

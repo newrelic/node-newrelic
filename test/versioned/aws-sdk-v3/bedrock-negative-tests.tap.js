@@ -8,7 +8,6 @@
 const tap = require('tap')
 require('./common')
 const helper = require('../../lib/agent_helper')
-require('../../lib/metrics_helper')
 const createAiResponseServer = require('../../lib/aws-server-stubs/ai-server')
 const { FAKE_CREDENTIALS } = require('../../lib/aws-server-stubs')
 const sinon = require('sinon')

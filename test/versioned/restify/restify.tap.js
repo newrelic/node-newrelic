@@ -8,7 +8,7 @@
 const tap = require('tap')
 
 const helper = require('../../lib/agent_helper')
-require('../../lib/metrics_helper')
+const { assertMetrics } = require('../../lib/metrics_helper')
 
 const METRIC = 'WebTransaction/Restify/GET//hello/:name'
 
@@ -168,7 +168,7 @@ tap.test('Restify', (t) => {
       helper.makeGetRequest(url, function (error) {
         t.error(error)
 
-        t.assertMetrics(agent.metrics, expectedMiddlewareMetrics, false, false)
+        assertMetrics(agent.metrics, expectedMiddlewareMetrics, false, false)
         t.end()
       })
     })

@@ -8,7 +8,7 @@
 const tap = require('tap')
 require('./common')
 const helper = require('../../lib/agent_helper')
-require('../../lib/metrics_helper')
+const { assertSegments } = require('../../lib/metrics_helper')
 const createAiResponseServer = require('../../lib/aws-server-stubs/ai-server')
 const { FAKE_CREDENTIALS } = require('../../lib/aws-server-stubs')
 const { DESTINATIONS } = require('../../../lib/config/attribute-filter')
@@ -77,7 +77,7 @@ tap.afterEach(async (t) => {
       const body = JSON.parse(response.body.transformToString('utf8'))
       t.equal(response.$metadata.requestId, expected.headers['x-amzn-requestid'])
       t.same(body, expected.body)
-      t.assertSegments(
+      assertSegments(
         tx.trace.root,
         ['Llm/embedding/Bedrock/InvokeModelCommand', [expectedExternalPath(modelId)]],
         { exact: false }
@@ -168,7 +168,7 @@ tap.afterEach(async (t) => {
         }
       })
 
-      t.assertSegments(
+      assertSegments(
         tx.trace.root,
         ['Llm/embedding/Bedrock/InvokeModelCommand', [expectedExternalPath(modelId)]],
         { exact: false }

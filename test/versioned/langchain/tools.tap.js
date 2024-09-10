@@ -8,8 +8,7 @@
 const tap = require('tap')
 const helper = require('../../lib/agent_helper')
 const { removeModules, removeMatchedModules } = require('../../lib/cache-buster')
-// load the assertSegments assertion
-require('../../lib/metrics_helper')
+const { assertSegments } = require('../../lib/metrics_helper')
 const { version: pkgVersion } = require('@langchain/core/package.json')
 const config = {
   ai_monitoring: {
@@ -42,7 +41,7 @@ tap.test('Langchain instrumentation - tools', (t) => {
     helper.runInTransaction(agent, async (tx) => {
       const result = await tool.call(input)
       t.ok(result)
-      t.assertSegments(tx.trace.root, ['Llm/tool/Langchain/node-agent-test-tool'], { exact: false })
+      assertSegments(tx.trace.root, ['Llm/tool/Langchain/node-agent-test-tool'], { exact: false })
       tx.end()
       t.end()
     })

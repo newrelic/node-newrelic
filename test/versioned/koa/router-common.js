@@ -7,7 +7,7 @@
 
 module.exports = (pkg) => {
   const tap = require('tap')
-  require('../../lib/metrics_helper')
+  const { assertSegments } = require('../../lib/metrics_helper')
   const helper = require('../../lib/agent_helper')
   const semver = require('semver')
   const { run } = require('./utils')
@@ -70,7 +70,7 @@ module.exports = (pkg) => {
 
         app.use(router.routes())
         agent.on('transactionFinished', (tx) => {
-          t.assertSegments(tx.trace.root, [
+          assertSegments(tx.trace.root, [
             'WebTransaction/WebFrameworkUri/Koa/GET//:first',
             [
               'Koa/Router: /',
@@ -97,7 +97,7 @@ module.exports = (pkg) => {
         })
         app.use(router.middleware())
         agent.on('transactionFinished', (tx) => {
-          t.assertSegments(tx.trace.root, [
+          assertSegments(tx.trace.root, [
             'WebTransaction/WebFrameworkUri/Koa/GET//:first',
             ['Koa/Router: /', ['Nodejs/Middleware/Koa/firstMiddleware//:first']]
           ])
@@ -132,7 +132,7 @@ module.exports = (pkg) => {
         })
         app.use(router.routes())
         agent.on('transactionFinished', (tx) => {
-          t.assertSegments(tx.trace.root, [
+          assertSegments(tx.trace.root, [
             'WebTransaction/WebFrameworkUri/Koa/GET//.*rst$',
             ['Koa/Router: /', ['Nodejs/Middleware/Koa/firstMiddleware//.*rst$/']]
           ])
@@ -153,7 +153,7 @@ module.exports = (pkg) => {
         })
         app.use(router.routes())
         agent.on('transactionFinished', (tx) => {
-          t.assertSegments(tx.trace.root, [
+          assertSegments(tx.trace.root, [
             'WebTransaction/WebFrameworkUri/Koa/GET//:first/(.*)',
             ['Koa/Router: /', ['Nodejs/Middleware/Koa/firstMiddleware//:first/(.*)']]
           ])
@@ -178,7 +178,7 @@ module.exports = (pkg) => {
         })
         app.use(router.routes())
         agent.on('transactionFinished', (tx) => {
-          t.assertSegments(tx.trace.root, [
+          assertSegments(tx.trace.root, [
             'WebTransaction/WebFrameworkUri/Koa/GET//:first',
             [
               'Koa/Router: /',
@@ -210,7 +210,7 @@ module.exports = (pkg) => {
 
         app.use(router.routes())
         agent.on('transactionFinished', (tx) => {
-          t.assertSegments(tx.trace.root, [
+          assertSegments(tx.trace.root, [
             'WebTransaction/WebFrameworkUri/Koa/GET//:first',
             [
               'Koa/Router: /',
@@ -246,7 +246,7 @@ module.exports = (pkg) => {
 
         app.use(router.routes())
         agent.on('transactionFinished', (tx) => {
-          t.assertSegments(tx.trace.root, [
+          assertSegments(tx.trace.root, [
             'WebTransaction/WebFrameworkUri/Koa/GET//:second',
             [
               'Koa/Router: /',
@@ -280,7 +280,7 @@ module.exports = (pkg) => {
 
         app.use(router.routes())
         agent.on('transactionFinished', (tx) => {
-          t.assertSegments(tx.trace.root, [
+          assertSegments(tx.trace.root, [
             'WebTransaction/WebFrameworkUri/Koa/GET//:first',
             [
               'Nodejs/Middleware/Koa/errorHandler',
@@ -311,7 +311,7 @@ module.exports = (pkg) => {
 
         app.use(router.routes())
         agent.on('transactionFinished', (tx) => {
-          t.assertSegments(tx.trace.root, [
+          assertSegments(tx.trace.root, [
             'WebTransaction/WebFrameworkUri/Koa/GET//:first',
             [
               'Nodejs/Middleware/Koa/errorHandler',
@@ -344,7 +344,7 @@ module.exports = (pkg) => {
         })
         app.use(router.routes())
         agent.on('transactionFinished', (tx) => {
-          t.assertSegments(tx.trace.root, [
+          assertSegments(tx.trace.root, [
             'WebTransaction/WebFrameworkUri/Koa/GET//:second',
             [
               'Koa/Router: /',
@@ -377,7 +377,7 @@ module.exports = (pkg) => {
         })
         app.use(router.routes())
         agent.on('transactionFinished', (tx) => {
-          t.assertSegments(tx.trace.root, [
+          assertSegments(tx.trace.root, [
             'WebTransaction/WebFrameworkUri/Koa/GET/(not found)',
             ['Koa/Router: /']
           ])
@@ -406,7 +406,7 @@ module.exports = (pkg) => {
           })
           app.use(router.routes())
           agent.on('transactionFinished', (tx) => {
-            t.assertSegments(tx.trace.root, [
+            assertSegments(tx.trace.root, [
               'WebTransaction/WebFrameworkUri/Koa/GET/(not found)',
               ['Nodejs/Middleware/Koa/baseMiddleware', ['Koa/Router: /']]
             ])
@@ -447,7 +447,7 @@ module.exports = (pkg) => {
           // the dispatch function blocking its returned promise on the
           // resolution of a recursively returned promise.
           // https://github.com/koajs/compose/blob/e754ca3c13e9248b3f453d98ea0b618e09578e2d/index.js#L42-L44
-          t.assertSegments(tx.trace.root, [
+          assertSegments(tx.trace.root, [
             'WebTransaction/WebFrameworkUri/Koa/GET//:second',
             [
               'Koa/Router: /',
@@ -485,7 +485,7 @@ module.exports = (pkg) => {
           // the dispatch function blocking its returned promise on the
           // resolution of a recursively returned promise.
           // https://github.com/koajs/compose/blob/e754ca3c13e9248b3f453d98ea0b618e09578e2d/index.js#L42-L44
-          t.assertSegments(tx.trace.root, [
+          assertSegments(tx.trace.root, [
             'WebTransaction/WebFrameworkUri/Koa/GET//:second',
             [
               'Koa/Router: /',
@@ -520,7 +520,7 @@ module.exports = (pkg) => {
         router.use('/:first', router2.routes())
         app.use(router.routes())
         agent.on('transactionFinished', (tx) => {
-          t.assertSegments(tx.trace.root, [
+          assertSegments(tx.trace.root, [
             'WebTransaction/WebFrameworkUri/Koa/GET//:first/:second',
             ['Koa/Router: /', [getNestedSpanName('secondMiddleware')]]
           ])
@@ -550,7 +550,7 @@ module.exports = (pkg) => {
         app.use(router.routes())
 
         agent.on('transactionFinished', (tx) => {
-          t.assertSegments(tx.trace.root, [
+          assertSegments(tx.trace.root, [
             'WebTransaction/WebFrameworkUri/Koa/GET//:first/:second',
             [
               'Nodejs/Middleware/Koa/appLevelMiddleware',
@@ -582,7 +582,7 @@ module.exports = (pkg) => {
         app.use(router.routes())
 
         agent.on('transactionFinished', (tx) => {
-          t.assertSegments(tx.trace.root, [
+          assertSegments(tx.trace.root, [
             'WebTransaction/WebFrameworkUri/Koa/GET//:first/:second',
             [
               'Nodejs/Middleware/Koa/appLevelMiddleware',
@@ -619,7 +619,7 @@ module.exports = (pkg) => {
           app.use(router.routes())
           app.use(router.allowedMethods({ throw: true }))
           agent.on('transactionFinished', (tx) => {
-            t.assertSegments(tx.trace.root, [
+            assertSegments(tx.trace.root, [
               'WebTransaction/WebFrameworkUri/Koa/GET/(method not allowed)',
               ['Koa/Router: /', [`Nodejs/Middleware/Koa/${allowedMethodsFnName}`]]
             ])
@@ -642,7 +642,7 @@ module.exports = (pkg) => {
           app.use(router.routes())
           app.use(router.allowedMethods({ throw: true }))
           agent.on('transactionFinished', (tx) => {
-            t.assertSegments(tx.trace.root, [
+            assertSegments(tx.trace.root, [
               'WebTransaction/WebFrameworkUri/Koa/GET/(not implemented)',
               ['Koa/Router: /', [`Nodejs/Middleware/Koa/${allowedMethodsFnName}`]]
             ])
@@ -678,7 +678,7 @@ module.exports = (pkg) => {
           app.use(router.allowedMethods({ throw: true }))
 
           agent.on('transactionFinished', (tx) => {
-            t.assertSegments(tx.trace.root, [
+            assertSegments(tx.trace.root, [
               'WebTransaction/NormalizedUri/*',
               [
                 'Nodejs/Middleware/Koa/errorHandler',
@@ -717,7 +717,7 @@ module.exports = (pkg) => {
             app.use(router.allowedMethods({ throw: true }))
 
             agent.on('transactionFinished', (tx) => {
-              t.assertSegments(tx.trace.root, [
+              assertSegments(tx.trace.root, [
                 'WebTransaction/WebFrameworkUri/Koa/GET/(method not allowed)',
                 [
                   'Nodejs/Middleware/Koa/baseMiddleware',
@@ -750,7 +750,7 @@ module.exports = (pkg) => {
           app.use(router.routes())
           app.use(router.allowedMethods())
           agent.on('transactionFinished', (tx) => {
-            t.assertSegments(tx.trace.root, [
+            assertSegments(tx.trace.root, [
               'WebTransaction/WebFrameworkUri/Koa/GET/(method not allowed)',
               ['Koa/Router: /', [`Nodejs/Middleware/Koa/${allowedMethodsFnName}`]]
             ])
@@ -774,7 +774,7 @@ module.exports = (pkg) => {
           app.use(router.routes())
           app.use(router.allowedMethods())
           agent.on('transactionFinished', (tx) => {
-            t.assertSegments(tx.trace.root, [
+            assertSegments(tx.trace.root, [
               'WebTransaction/WebFrameworkUri/Koa/GET/(not implemented)',
               ['Koa/Router: /', [`Nodejs/Middleware/Koa/${allowedMethodsFnName}`]]
             ])
@@ -806,7 +806,7 @@ module.exports = (pkg) => {
           app.use(router.allowedMethods())
 
           agent.on('transactionFinished', (tx) => {
-            t.assertSegments(tx.trace.root, [
+            assertSegments(tx.trace.root, [
               'WebTransaction/WebFrameworkUri/Koa/GET/(method not allowed)',
               [
                 'Nodejs/Middleware/Koa/appLevelMiddleware',
@@ -840,7 +840,7 @@ module.exports = (pkg) => {
           app.use(router.allowedMethods())
 
           agent.on('transactionFinished', (tx) => {
-            t.assertSegments(tx.trace.root, [
+            assertSegments(tx.trace.root, [
               'WebTransaction/WebFrameworkUri/Koa/GET/(not implemented)',
               [
                 'Nodejs/Middleware/Koa/appLevelMiddleware',
@@ -866,7 +866,7 @@ module.exports = (pkg) => {
           app.use(router.routes())
           app.use(router.allowedMethods())
           agent.on('transactionFinished', (tx) => {
-            t.assertSegments(tx.trace.root, [
+            assertSegments(tx.trace.root, [
               'WebTransaction/WebFrameworkUri/Koa/GET//:first',
               ['Koa/Router: /', ['Nodejs/Middleware/Koa/firstMiddleware//:first']]
             ])
