@@ -7,7 +7,7 @@
 
 const { makeRequest, setup } = require('./utils')
 const NAMES = require('../../../lib/metrics/names')
-const { findSegment } = require('../../lib/metrics_helper')
+const { findSegment, assertSegments } = require('../../lib/metrics_helper')
 const tap = require('tap')
 const { test } = tap
 
