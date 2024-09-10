@@ -203,7 +203,7 @@ util.assertServerTransaction = function assertServerTransaction({
   t.equal(attributes['request.uri'], expectedUri, `should have server uri ${expectedUri}`)
 }
 
-util.assertServerMetrics = function assertServerMetrics({ t, agentMetrics, fnName }) {
+util.assertServerMetrics = function assertServerMetrics({ agentMetrics, fnName }) {
   const expectedServerMetrics = [
     [{ name: 'WebTransaction' }],
     [{ name: 'WebTransactionTotalTime' }],

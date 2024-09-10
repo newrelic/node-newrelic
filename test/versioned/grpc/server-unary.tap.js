@@ -64,7 +64,7 @@ tap.test('gRPC Server: Unary Requests', (t) => {
     t.equal(response.message, 'Hello New Relic', 'response message is correct')
     t.ok(transaction, 'transaction exists')
     assertServerTransaction({ t, transaction, fnName: 'SayHello' })
-    assertServerMetrics({ t, agentMetrics: agent.metrics._metrics, fnName: 'SayHello' })
+    assertServerMetrics({ agentMetrics: agent.metrics._metrics, fnName: 'SayHello' })
     t.end()
   })
 

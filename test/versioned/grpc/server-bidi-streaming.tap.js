@@ -67,7 +67,7 @@ tap.test('gRPC Server: Bidi Streaming', (t) => {
 
     t.ok(transaction, 'transaction exists')
     assertServerTransaction({ t, transaction, fnName: 'SayHelloBidiStream' })
-    assertServerMetrics({ t, agentMetrics: agent.metrics._metrics, fnName: 'SayHelloBidiStream' })
+    assertServerMetrics({ agentMetrics: agent.metrics._metrics, fnName: 'SayHelloBidiStream' })
     t.end()
   })
 
