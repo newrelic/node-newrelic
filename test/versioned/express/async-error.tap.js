@@ -8,6 +8,7 @@
 const path = require('path')
 const test = require('tap').test
 const fork = require('child_process').fork
+const { isExpress5 } = require('./utils')
 
 /*
  *
@@ -16,7 +17,7 @@ const fork = require('child_process').fork
  */
 const COMPLETION = 27
 
-test('Express async throw', function (t) {
+test('Express async throw', { skip: isExpress5() }, function (t) {
   const erk = fork(path.join(__dirname, 'erk.js'))
   let timer
 

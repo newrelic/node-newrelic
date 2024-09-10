@@ -5,10 +5,10 @@
 
 'use strict'
 
-const { makeRequest, setup } = require('./utils')
+const { makeRequest, setup, isExpress5 } = require('./utils')
 const { test } = require('tap')
 
-test('should properly track async handlers', (t) => {
+test('should properly track async handlers', { skip: !isExpress5() }, (t) => {
   setup(t)
   const { app } = t.context
   const mwTimeout = 20
@@ -44,7 +44,7 @@ test('should properly track async handlers', (t) => {
   })
 })
 
-test('should properly handle errors in async handlers', (t) => {
+test('should properly handle errors in async handlers', { skip: !isExpress5() }, (t) => {
   setup(t)
   const { app } = t.context
 

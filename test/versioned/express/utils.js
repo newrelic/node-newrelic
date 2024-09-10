@@ -10,8 +10,7 @@ const semver = require('semver')
 
 function isExpress5() {
   const { version } = require('express/package')
-  // TODO: change to 5.0.0 when officially released
-  return semver.gte(version, '5.0.0-beta.3')
+  return semver.gte(version, '5.0.0')
 }
 
 function makeRequest(server, path, callback) {
