@@ -52,9 +52,9 @@ function verifySubscribe(t, tx, exchange, routingKey) {
     ]
   }
 
-  metrics.assertSegments(tx.trace.root, segments)
+  t.assertSegments(tx.trace.root, segments)
 
-  metrics.assertMetrics(
+  t.assertMetrics(
     tx.metrics,
     [[{ name: 'MessageBroker/RabbitMQ/Exchange/Produce/Named/' + exchange }]],
     false,
@@ -108,7 +108,7 @@ function verifyDistributedTrace(t, produceTransaction, consumeTransaction) {
 
 function verifyConsumeTransaction(t, tx, exchange, queue, routingKey) {
   t.doesNotThrow(function () {
-    metrics.assertMetrics(
+    t.assertMetrics(
       tx.metrics,
       [
         [{ name: 'OtherTransaction/Message/RabbitMQ/Exchange/Named/' + exchange }],
@@ -147,9 +147,9 @@ function verifyConsumeTransaction(t, tx, exchange, queue, routingKey) {
 }
 
 function verifySendToQueue(t, tx) {
-  metrics.assertSegments(tx.trace.root, ['MessageBroker/RabbitMQ/Exchange/Produce/Named/Default'])
+  t.assertSegments(tx.trace.root, ['MessageBroker/RabbitMQ/Exchange/Produce/Named/Default'])
 
-  metrics.assertMetrics(
+  t.assertMetrics(
     tx.metrics,
     [[{ name: 'MessageBroker/RabbitMQ/Exchange/Produce/Named/Default' }]],
     false,
@@ -211,9 +211,9 @@ function verifyProduce(t, tx, exchangeName, routingKey) {
     ]
   }
 
-  metrics.assertSegments(tx.trace.root, segments, 'should have expected segments')
+  t.assertSegments(tx.trace.root, segments, 'should have expected segments')
 
-  metrics.assertMetrics(
+  t.assertMetrics(
     tx.metrics,
     [[{ name: 'MessageBroker/RabbitMQ/Exchange/Produce/Named/' + exchangeName }]],
     false,
@@ -240,16 +240,11 @@ function verifyGet({ t, tx, exchangeName, routingKey, queue, assertAttr }) {
   const produceName = 'MessageBroker/RabbitMQ/Exchange/Produce/Named/' + exchangeName
   const consumeName = 'MessageBroker/RabbitMQ/Exchange/Consume/Named/' + queue
   if (isCallback) {
-    metrics.assertSegments(tx.trace.root, [produceName, consumeName, ['Callback: <anonymous>']])
+    t.assertSegments(tx.trace.root, [produceName, consumeName, ['Callback: <anonymous>']])
   } else {
-    metrics.assertSegments(tx.trace.root, [produceName, consumeName])
+    t.assertSegments(tx.trace.root, [produceName, consumeName])
   }
-  metrics.assertMetrics(
-    tx.metrics,
-    [[{ name: produceName }], [{ name: consumeName }]],
-    false,
-    false
-  )
+  t.assertMetrics(tx.metrics, [[{ name: produceName }], [{ name: consumeName }]], false, false)
   if (assertAttr) {
     const segment = metrics.findSegment(tx.trace.root, consumeName)
     const attributes = segment.getAttributes()
@@ -299,14 +294,9 @@ function verifyPurge(t, tx) {
     ]
   }
 
-  metrics.assertSegments(tx.trace.root, segments, 'should have expected segments')
+  t.assertSegments(tx.trace.root, segments, 'should have expected segments')
 
-  metrics.assertMetrics(
-    tx.metrics,
-    [[{ name: 'MessageBroker/RabbitMQ/Queue/Purge/Temp' }]],
-    false,
-    false
-  )
+  t.assertMetrics(tx.metrics, [[{ name: 'MessageBroker/RabbitMQ/Queue/Purge/Temp' }]], false, false)
 }
 
 function verifyTransaction(t, tx, msg) {

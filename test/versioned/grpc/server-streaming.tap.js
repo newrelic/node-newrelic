@@ -66,7 +66,7 @@ tap.test('gRPC Server: Server Streaming', (t) => {
     })
     t.ok(transaction, 'transaction exists')
     assertServerTransaction({ t, transaction, fnName: 'SayHelloServerStream' })
-    assertServerMetrics({ agentMetrics: agent.metrics._metrics, fnName: 'SayHelloServerStream' })
+    assertServerMetrics({ t, agentMetrics: agent.metrics._metrics, fnName: 'SayHelloServerStream' })
     t.end()
   })
 

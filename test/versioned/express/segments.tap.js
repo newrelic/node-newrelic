@@ -7,7 +7,7 @@
 
 const { makeRequest, setup } = require('./utils')
 const NAMES = require('../../../lib/metrics/names')
-const { findSegment, assertSegments, assertMetrics } = require('../../lib/metrics_helper')
+const { findSegment } = require('../../lib/metrics_helper')
 const tap = require('tap')
 const { test } = tap
 
@@ -898,7 +898,7 @@ function runTest(t, options, callback) {
 }
 
 function checkSegments(t, segments, expected, opts) {
-  assertSegments(segments, expected, opts)
+  t.assertSegments(segments, expected, opts)
 }
 
 function checkMetrics(t, metrics, expected, path) {
@@ -923,5 +923,5 @@ function checkMetrics(t, metrics, expected, path) {
     expectedAll.push([{ name: metric, scope: 'WebTransaction/Expressjs/GET/' + path }])
   }
 
-  assertMetrics(metrics, expectedAll, false, false)
+  t.assertMetrics(metrics, expectedAll, false, false)
 }

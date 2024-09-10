@@ -151,11 +151,11 @@ function assertSegments(parent, expected, options) {
           child ? child.name : undefined,
           sequenceItem,
           'segment "' +
-            parent.name +
-            '" should have child "' +
-            sequenceItem +
-            '" in position ' +
-            childCount
+          parent.name +
+          '" should have child "' +
+          sequenceItem +
+          '" in position ' +
+          childCount
         )
 
         // If the next expected item is not array, then check that the current

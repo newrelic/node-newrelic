@@ -142,7 +142,7 @@ util.assertExternalSegment = function assertExternalSegment({
 }) {
   const methodName = util.getRPCName(fnName)
   const segmentName = `${EXTERNAL.PREFIX}${CLIENT_ADDR}:${port}${methodName}`
-  metricsHelpers.assertSegments(tx.trace.root, [segmentName], { exact: false })
+  t.assertSegments(tx.trace.root, [segmentName], { exact: false })
   const segment = metricsHelpers.findSegment(tx.trace.root, segmentName)
   const attributes = segment.getAttributes()
   t.equal(
@@ -163,7 +163,7 @@ util.assertExternalSegment = function assertExternalSegment({
   )
   t.equal(attributes.component, 'gRPC', 'should have the component set to "gRPC"')
   const expectedMetrics = buildExpectedMetrics(port)
-  metricsHelpers.assertMetrics(tx.metrics, [expectedMetrics], false, false)
+  t.assertMetrics(tx.metrics, [expectedMetrics], false, false)
 }
 
 /**
@@ -203,7 +203,7 @@ util.assertServerTransaction = function assertServerTransaction({
   t.equal(attributes['request.uri'], expectedUri, `should have server uri ${expectedUri}`)
 }
 
-util.assertServerMetrics = function assertServerMetrics({ agentMetrics, fnName }) {
+util.assertServerMetrics = function assertServerMetrics({ t, agentMetrics, fnName }) {
   const expectedServerMetrics = [
     [{ name: 'WebTransaction' }],
     [{ name: 'WebTransactionTotalTime' }],
@@ -213,7 +213,7 @@ util.assertServerMetrics = function assertServerMetrics({ agentMetrics, fnName }
     [{ name: `Apdex/WebFrameworkUri/gRPC//helloworld.Greeter/${fnName}` }],
     [{ name: 'Apdex' }]
   ]
-  metricsHelpers.assertMetrics(agentMetrics, expectedServerMetrics, false, false)
+  t.assertMetrics(agentMetrics, expectedServerMetrics, false, false)
 }
 
 util.assertDistributedTracing = function assertDistributedTracing({

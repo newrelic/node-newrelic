@@ -13,7 +13,7 @@ const url = require('url')
 const collector = require('../lib/fake-collector')
 const RemoteMethod = require('../../lib/collector/remote-method')
 const NAMES = require('../../lib/metrics/names')
-const { assertMetricValues } = require('../lib/metrics_helper')
+require('../lib/metrics_helper')
 const { instrumentMockedAgent, unloadAgent } = require('../lib/agent_helper')
 const { SSL_HOST } = require('../lib/agent_helper')
 
@@ -176,7 +176,7 @@ tap.test('record data usage supportability metrics', (t) => {
       method.invoke(payload, resolve)
     })
 
-    assertMetricValues(
+    t.assertMetricValues(
       {
         metrics: agent.metrics
       },

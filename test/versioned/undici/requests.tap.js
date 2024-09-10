@@ -90,7 +90,7 @@ tap.test('Undici request tests', (t) => {
       })
       t.equal(statusCode, 200)
 
-      metrics.assertSegments(tx.trace.root, [`External/${HOST}/post`], { exact: false })
+      t.assertSegments(tx.trace.root, [`External/${HOST}/post`], { exact: false })
       tx.end()
       t.end()
     })
@@ -124,7 +124,7 @@ tap.test('Undici request tests', (t) => {
 
       await client.request({ path: '/', method: 'GET' })
 
-      metrics.assertSegments(transaction.trace.root, [`External/localhost:${port}/`], {
+      t.assertSegments(transaction.trace.root, [`External/localhost:${port}/`], {
         exact: false
       })
 
@@ -206,7 +206,7 @@ tap.test('Undici request tests', (t) => {
       const [{ statusCode }, { statusCode: statusCode2 }] = await Promise.all([req1, req2])
       t.equal(statusCode, 200)
       t.equal(statusCode2, 200)
-      metrics.assertSegments(tx.trace.root, [`External/${HOST}/post`, `External/${HOST}/put`], {
+      t.assertSegments(tx.trace.root, [`External/${HOST}/post`, `External/${HOST}/put`], {
         exact: false
       })
       tx.end()
@@ -223,7 +223,7 @@ tap.test('Undici request tests', (t) => {
         })
       } catch (err) {
         t.ok(err)
-        metrics.assertSegments(tx.trace.root, ['External/invalidurl/foo'], { exact: false })
+        t.assertSegments(tx.trace.root, ['External/invalidurl/foo'], { exact: false })
         t.equal(tx.exceptions.length, 1)
         tx.end()
         t.end()
@@ -244,7 +244,7 @@ tap.test('Undici request tests', (t) => {
         }, 100)
         await req
       } catch (err) {
-        metrics.assertSegments(tx.trace.root, [`External/${HOST}/delay/1000`], { exact: false })
+        t.assertSegments(tx.trace.root, [`External/${HOST}/delay/1000`], { exact: false })
         t.equal(tx.exceptions.length, 1)
         const expectedErrMsg = semver.gte(pkgVersion, '6.3.0')
           ? 'This operation was aborted'
@@ -274,7 +274,7 @@ tap.test('Undici request tests', (t) => {
       try {
         await req
       } catch (error) {
-        metrics.assertSegments(transaction.trace.root, [`External/localhost:${port}/`], {
+        t.assertSegments(transaction.trace.root, [`External/localhost:${port}/`], {
           exact: false
         })
 
@@ -298,7 +298,7 @@ tap.test('Undici request tests', (t) => {
         method: 'GET'
       })
       t.equal(statusCode, 400)
-      metrics.assertSegments(tx.trace.root, [`External/${HOST}/status/400`], { exact: false })
+      t.assertSegments(tx.trace.root, [`External/${HOST}/status/400`], { exact: false })
       tx.end()
       t.end()
     })
@@ -308,7 +308,7 @@ tap.test('Undici request tests', (t) => {
     helper.runInTransaction(agent, async (tx) => {
       const res = await undici.fetch(REQUEST_URL)
       t.equal(res.status, 200)
-      metrics.assertSegments(tx.trace.root, [`External/${HOST}/`], { exact: false })
+      t.assertSegments(tx.trace.root, [`External/${HOST}/`], { exact: false })
       tx.end()
       t.end()
     })
@@ -331,7 +331,7 @@ tap.test('Undici request tests', (t) => {
           })
         }
       )
-      metrics.assertSegments(tx.trace.root, [`External/${HOST}/get`], { exact: false })
+      t.assertSegments(tx.trace.root, [`External/${HOST}/get`], { exact: false })
       tx.end()
       t.end()
     })
@@ -367,7 +367,7 @@ tap.test('Undici request tests', (t) => {
         }),
         (err) => {
           t.error(err)
-          metrics.assertSegments(tx.trace.root, [`External/${HOST}/get`], { exact: false })
+          t.assertSegments(tx.trace.root, [`External/${HOST}/get`], { exact: false })
           tx.end()
           t.end()
         }

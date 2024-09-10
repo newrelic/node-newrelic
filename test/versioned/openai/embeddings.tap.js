@@ -45,9 +45,13 @@ tap.test('OpenAI instrumentation - embedding', (t) => {
       test.notOk(results.headers, 'should remove response headers from user result')
       test.equal(results.model, 'text-embedding-ada-002-v2')
 
-      assertSegments(tx.trace.root, [OPENAI.EMBEDDING, [`External/${host}:${port}/embeddings`]], {
-        exact: false
-      })
+      assertSegments(
+        tx.trace.root,
+        [OPENAI.EMBEDDING, [`External/${host}:${port}/embeddings`]],
+        {
+          exact: false
+        }
+      )
       tx.end()
       test.end()
     })

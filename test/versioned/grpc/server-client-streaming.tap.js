@@ -68,7 +68,7 @@ tap.test('gRPC Server: Client Streaming', (t) => {
       'response message is correct'
     )
     assertServerTransaction({ t, transaction, fnName: 'SayHelloClientStream' })
-    assertServerMetrics({ agentMetrics: agent.metrics._metrics, fnName: 'SayHelloClientStream' })
+    assertServerMetrics({ t, agentMetrics: agent.metrics._metrics, fnName: 'SayHelloClientStream' })
   })
 
   t.test('should add DT headers when `distributed_tracing` is enabled', async (t) => {
@@ -200,6 +200,7 @@ tap.test('gRPC Server: Client Streaming', (t) => {
       expectedStatusCode: ERR_CODE
     })
     assertServerMetrics({
+      t,
       agentMetrics: agent.metrics._metrics,
       fnName: 'SayErrorClientStream',
       expectedStatusCode: ERR_CODE
@@ -239,6 +240,7 @@ tap.test('gRPC Server: Client Streaming', (t) => {
         expectedStatusCode: HALT_CODE
       })
       assertServerMetrics({
+        t,
         agentMetrics: agent.metrics._metrics,
         fnName: 'SayErrorClientStream',
         expectedStatusCode: HALT_CODE
