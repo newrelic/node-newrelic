@@ -244,7 +244,12 @@ function verifyGet({ t, tx, exchangeName, routingKey, queue, assertAttr }) {
   } else {
     metrics.assertSegments(tx.trace.root, [produceName, consumeName])
   }
-  metrics.assertMetrics(tx.metrics, [[{ name: produceName }], [{ name: consumeName }]], false, false)
+  metrics.assertMetrics(
+    tx.metrics,
+    [[{ name: produceName }], [{ name: consumeName }]],
+    false,
+    false
+  )
   if (assertAttr) {
     const segment = metrics.findSegment(tx.trace.root, consumeName)
     const attributes = segment.getAttributes()
@@ -296,7 +301,12 @@ function verifyPurge(t, tx) {
 
   metrics.assertSegments(tx.trace.root, segments, 'should have expected segments')
 
-  metrics.assertMetrics(tx.metrics, [[{ name: 'MessageBroker/RabbitMQ/Queue/Purge/Temp' }]], false, false)
+  metrics.assertMetrics(
+    tx.metrics,
+    [[{ name: 'MessageBroker/RabbitMQ/Queue/Purge/Temp' }]],
+    false,
+    false
+  )
 }
 
 function verifyTransaction(t, tx, msg) {
