@@ -6,6 +6,7 @@
 'use strict'
 
 const tap = require('tap')
+const { assertSegments } = require('../../lib/metrics_helper')
 const helper = require('../../lib/agent_helper')
 const params = require('../../lib/params')
 const { removeModules } = require('../../lib/cache-buster')
@@ -301,7 +302,7 @@ tap.test('consume inside of a transaction', async (t) => {
     agent.on('transactionFinished', (tx) => {
       txCount++
       if (tx.name === expectedName) {
-        t.assertSegments(tx.trace.root, [`${SEGMENT_PREFIX}subscribe`, `${SEGMENT_PREFIX}run`], {
+        assertSegments(tx.trace.root, [`${SEGMENT_PREFIX}subscribe`, `${SEGMENT_PREFIX}run`], {
           exact: false
         })
       } else {
@@ -349,7 +350,7 @@ tap.test('consume batch inside of a transaction', async (t) => {
 
   const txPromise = new Promise((resolve) => {
     agent.on('transactionFinished', (tx) => {
-      t.assertSegments(tx.trace.root, [`${SEGMENT_PREFIX}subscribe`, `${SEGMENT_PREFIX}run`], {
+      assertSegments(tx.trace.root, [`${SEGMENT_PREFIX}subscribe`, `${SEGMENT_PREFIX}run`], {
         exact: false
       })
       resolve()

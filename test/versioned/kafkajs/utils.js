@@ -77,7 +77,7 @@ utils.waitForConsumersToJoinGroup = ({ consumer, maxWait = 10000 }) =>
  */
 utils.verifyConsumeTransaction = ({ t, tx, topic, clientId }) => {
   const expectedName = `OtherTransaction/Message/Kafka/Topic/Consume/Named/${topic}`
-  t.assertMetrics(
+  metrics.assertMetrics(
     tx.metrics,
     [
       [{ name: expectedName }],

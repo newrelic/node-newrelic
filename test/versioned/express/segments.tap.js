@@ -898,7 +898,7 @@ function runTest(t, options, callback) {
 }
 
 function checkSegments(t, segments, expected, opts) {
-  t.assertSegments(segments, expected, opts)
+  assertSegments(segments, expected, opts)
 }
 
 function checkMetrics(t, metrics, expected, path) {
@@ -923,5 +923,5 @@ function checkMetrics(t, metrics, expected, path) {
     expectedAll.push([{ name: metric, scope: 'WebTransaction/Expressjs/GET/' + path }])
   }
 
-  t.assertMetrics(metrics, expectedAll, false, false)
+  metrics.assertMetrics(metrics, expectedAll, false, false)
 }
