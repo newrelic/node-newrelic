@@ -4,7 +4,8 @@
  */
 
 'use strict'
-const tap = require('tap')
+const test = require('node:test')
+const assert = require('node:assert')
 const helper = require('../../lib/agent_helper')
 const generateRecorder = require('../../../lib/metrics/recorders/http_external')
 const Transaction = require('../../../lib/transaction')
@@ -33,35 +34,34 @@ function record(options) {
   recordExternal(segment, options.transaction.name)
 }
 
-tap.test('recordExternal', function (t) {
-  t.autoend()
-  t.beforeEach(function (t) {
+test('recordExternal', async function (t) {
+  t.beforeEach(function (ctx) {
+    ctx.nr = {}
     const agent = helper.loadMockedAgent()
     const trans = new Transaction(agent)
     trans.type = Transaction.TYPES.BG
-    t.context.agent = agent
-    t.context.trans = trans
+    ctx.nr.agent = agent
+    ctx.nr.trans = trans
   })
 
-  t.afterEach(function (t) {
-    helper.unloadAgent(t.context.agent)
+  t.afterEach(function (ctx) {
+    helper.unloadAgent(ctx.nr.agent)
   })
 
-  t.test("when scoped is undefined it shouldn't crash on recording", function (t) {
-    const { trans } = t.context
+  await t.test("when scoped is undefined it shouldn't crash on recording", function (t) {
+    const { trans } = t.nr
     const segment = makeSegment({
       transaction: trans,
       duration: 0,
       exclusive: 0
     })
-    t.doesNotThrow(function () {
+    assert.doesNotThrow(function () {
       recordExternal(segment, undefined)
     })
-    t.end()
   })
 
-  t.test('when scoped is undefined it should record no scoped metrics', function (t) {
-    const { trans } = t.context
+  await t.test('when scoped is undefined it should record no scoped metrics', function (t) {
+    const { trans } = t.nr
     const segment = makeSegment({
       transaction: trans,
       duration: 0,
@@ -76,12 +76,11 @@ tap.test('recordExternal', function (t) {
       [{ name: 'External/all' }, [1, 0, 0, 0, 0, 0]]
     ]
 
-    t.equal(JSON.stringify(trans.metrics), JSON.stringify(result))
-    t.end()
+    assert.equal(JSON.stringify(trans.metrics), JSON.stringify(result))
   })
 
-  t.test('with scope should record scoped metrics', function (t) {
-    const { trans } = t.context
+  await t.test('with scope should record scoped metrics', function (t) {
+    const { trans } = t.nr
     trans.type = Transaction.TYPES.WEB
     record({
       transaction: trans,
@@ -103,12 +102,11 @@ tap.test('recordExternal', function (t) {
       ]
     ]
 
-    t.equal(JSON.stringify(trans.metrics), JSON.stringify(result))
-    t.end()
+    assert.equal(JSON.stringify(trans.metrics), JSON.stringify(result))
   })
 
-  t.test('should report exclusive time correctly', function (t) {
-    const { trans } = t.context
+  await t.test('should report exclusive time correctly', function (t) {
+    const { trans } = t.nr
     const root = trans.trace.root
     const parent = root.add('/parent', recordExternal)
     const child1 = parent.add('/child1', generateRecorder('api.twitter.com', 'https'))
@@ -131,7 +129,6 @@ tap.test('recordExternal', function (t) {
     ]
 
     trans.end()
-    t.equal(JSON.stringify(trans.metrics), JSON.stringify(result))
-    t.end()
+    assert.equal(JSON.stringify(trans.metrics), JSON.stringify(result))
   })
 })

@@ -5,10 +5,9 @@
 
 'use strict'
 
-const tap = require('tap')
-
+const test = require('node:test')
 const helper = require('../../lib/agent_helper')
-require('../../lib/metrics_helper')
+const { assertMetricValues } = require('../../lib/custom-assertions')
 const recordWeb = require('../../../lib/metrics/recorders/http')
 const Transaction = require('../../../lib/transaction')
 
@@ -34,20 +33,19 @@ function record(options) {
   recordWeb(segment, options.transaction.name)
 }
 
-tap.test('when recording queueTime', (test) => {
-  let agent
-  let trans
-
-  test.beforeEach(() => {
-    agent = helper.instrumentMockedAgent()
-    trans = new Transaction(agent)
+test('when recording queueTime', async (t) => {
+  t.beforeEach((ctx) => {
+    ctx.nr = {}
+    ctx.nr.agent = helper.instrumentMockedAgent()
+    ctx.nr.trans = new Transaction(ctx.nr.agent)
   })
 
-  test.afterEach(() => {
-    helper.unloadAgent(agent)
+  t.afterEach((ctx) => {
+    helper.unloadAgent(ctx.nr.agent)
   })
 
-  test.test('non zero times should record a metric', (t) => {
+  await t.test('non zero times should record a metric', (t) => {
+    const { trans } = t.nr
     record({
       transaction: trans,
       apdexT: 0.2,
@@ -80,12 +78,11 @@ tap.test('when recording queueTime', (test) => {
       [{ name: 'Apdex' }, [1, 0, 0, 0.2, 0.2, 0]]
     ]
 
-    t.assertMetricValues(trans, result, true)
-
-    t.end()
+    assertMetricValues(trans, result, true)
   })
 
-  test.test('zero times should not record a metric', (t) => {
+  await t.test('zero times should not record a metric', (t) => {
+    const { trans } = t.nr
     record({
       transaction: trans,
       apdexT: 0.2,
@@ -116,9 +113,6 @@ tap.test('when recording queueTime', (test) => {
       [{ name: 'Apdex/NormalizedUri/*' }, [1, 0, 0, 0.2, 0.2, 0]],
       [{ name: 'Apdex' }, [1, 0, 0, 0.2, 0.2, 0]]
     ]
-    t.assertMetricValues(trans, result, true)
-
-    t.end()
+    assertMetricValues(trans, result, true)
   })
-  test.end()
 })
