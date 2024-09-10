@@ -19,18 +19,6 @@
         "segments.tap.mjs",
         "transaction-naming.tap.mjs"
       ]
-    },
-    {
-      "engines": {
-        "node": ">=18"
-      },
-      "dependencies": {
-        "express": "5.0.0-beta.3"
-      },
-      "files": [
-        "segments.tap.mjs",
-        "transaction-naming.tap.mjs"
-      ]
     }
   ],
   "dependencies": {}

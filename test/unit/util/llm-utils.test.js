@@ -4,12 +4,12 @@
  */
 
 'use strict'
-
-const tap = require('tap')
+const assert = require('node:assert')
+const test = require('node:test')
 const { extractLlmAttributes, extractLlmContext } = require('../../../lib/util/llm-utils')
 const { AsyncLocalStorage } = require('async_hooks')
 
-tap.test('extractLlmAttributes', (t) => {
+test('extractLlmAttributes', () => {
   const context = {
     'skip': 1,
     'llm.get': 2,
@@ -17,58 +17,57 @@ tap.test('extractLlmAttributes', (t) => {
   }
 
   const llmContext = extractLlmAttributes(context)
-  t.notOk(llmContext.skip)
-  t.notOk(llmContext['fllm.skip'])
-  t.equal(llmContext['llm.get'], 2)
-  t.end()
+  assert.ok(!llmContext.skip)
+  assert.ok(!llmContext['fllm.skip'])
+  assert.equal(llmContext['llm.get'], 2)
 })
 
-tap.test('extractLlmContext', (t) => {
-  t.beforeEach((t) => {
+test('extractLlmContext', async (t) => {
+  t.beforeEach((ctx) => {
+    ctx.nr = {}
     const tx = {
       _llmContextManager: new AsyncLocalStorage()
     }
-    t.context.agent = {
+    ctx.nr.agent = {
       tracer: {
         getTransaction: () => {
           return tx
         }
       }
     }
-    t.context.tx = tx
+    ctx.nr.tx = tx
   })
 
-  t.test('handle empty context', (t) => {
-    const { tx, agent } = t.context
+  await t.test('handle empty context', (t, end) => {
+    const { tx, agent } = t.nr
     tx._llmContextManager.run(null, () => {
       const llmContext = extractLlmContext(agent)
-      t.equal(typeof llmContext, 'object')
-      t.equal(Object.entries(llmContext).length, 0)
-      t.end()
+      assert.equal(typeof llmContext, 'object')
+      assert.equal(Object.entries(llmContext).length, 0)
+      end()
     })
   })
 
-  t.test('extract LLM context', (t) => {
-    const { tx, agent } = t.context
+  await t.test('extract LLM context', (t, end) => {
+    const { tx, agent } = t.nr
     tx._llmContextManager.run({ 'llm.test': 1, 'skip': 2 }, () => {
       const llmContext = extractLlmContext(agent)
-      t.equal(llmContext['llm.test'], 1)
-      t.notOk(llmContext.skip)
-      t.end()
+      assert.equal(llmContext['llm.test'], 1)
+      assert.ok(!llmContext.skip)
+      end()
     })
   })
 
-  t.test('no transaction', (t) => {
-    const { tx, agent } = t.context
+  await t.test('no transaction', (t, end) => {
+    const { tx, agent } = t.nr
     agent.tracer.getTransaction = () => {
       return null
     }
     tx._llmContextManager.run(null, () => {
       const llmContext = extractLlmContext(agent)
-      t.equal(typeof llmContext, 'object')
-      t.equal(Object.entries(llmContext).length, 0)
-      t.end()
+      assert.equal(typeof llmContext, 'object')
+      assert.equal(Object.entries(llmContext).length, 0)
+      end()
     })
   })
-  t.end()
 })

@@ -1,0 +1,22 @@
+{
+  "name": "disabled-instrumentation-tests",
+  "targets": [],
+  "version": "0.0.0",
+  "private": true,
+  "tests": [
+    {
+      "engines": {
+        "node": ">=18"
+      },
+      "dependencies": {
+        "express": "latest",
+        "ioredis": "latest",
+        "mongodb": "latest"
+      },
+      "files": [
+        "disabled-express.test.js",
+        "disabled-ioredis.test.js"
+      ]
+    }
+  ]
+}

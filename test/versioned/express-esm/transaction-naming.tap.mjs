@@ -20,8 +20,7 @@ const { setup, makeRequest, makeRequestAndFinishTransaction } = expressHelpers
 // const pkgVersion = expressPkg.version
 import { readFileSync } from 'node:fs'
 const { version: pkgVersion } = JSON.parse(readFileSync('./node_modules/express/package.json'))
-// TODO: change to 5.0.0 when officially released
-const isExpress5 = semver.gte(pkgVersion, '5.0.0-beta.3')
+const isExpress5 = semver.gte(pkgVersion, '5.0.0')
 
 test('transaction naming tests', (t) => {
   t.autoend()

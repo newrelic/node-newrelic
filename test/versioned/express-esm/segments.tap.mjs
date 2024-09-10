@@ -20,8 +20,7 @@ const assertSegmentsOptions = {
 // const pkgVersion = expressPkg.version
 import { readFileSync } from 'node:fs'
 const { version: pkgVersion } = JSON.parse(readFileSync('./node_modules/express/package.json'))
-// TODO: change to 5.0.0 when officially released
-const isExpress5 = semver.gte(pkgVersion, '5.0.0-beta.3')
+const isExpress5 = semver.gte(pkgVersion, '5.0.0')
 
 test('transaction segments tests', (t) => {
   t.autoend()
@@ -215,14 +214,25 @@ test('transaction segments tests', (t) => {
       res.send('test')
     })
 
-    const path = isExpress5 ? '(.*)' : '*'
+    let path = '*'
+    let segmentPath = '/*'
+    let metricsPath = segmentPath
+
+    // express 5 router must be regular expressions
+    // need to handle the nuance of the segment vs metric name in express 5
+    if (isExpress5) {
+      path = /(.*)/
+      segmentPath = '/(.*)/'
+      metricsPath = '/(.*)'
+    }
+
     app.get(path, router1)
 
     const { rootSegment, transaction } = await runTest({ app, t })
     t.assertSegments(
       rootSegment,
       [
-        `Expressjs/Route Path: /${path}`,
+        `Expressjs/Route Path: ${segmentPath}`,
         [
           'Expressjs/Router: /',
           ['Expressjs/Route Path: /test', [NAMES.EXPRESS.MIDDLEWARE + 'testHandler']]
@@ -234,8 +244,8 @@ test('transaction segments tests', (t) => {
     checkMetrics(
       t,
       transaction.metrics,
-      [`${NAMES.EXPRESS.MIDDLEWARE}testHandler//${path}/test`],
-      `/${path}/test`
+      [`${NAMES.EXPRESS.MIDDLEWARE}testHandler/${metricsPath}/test`],
+      `${metricsPath}/test`
     )
   })
 

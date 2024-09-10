@@ -10,8 +10,9 @@
 
 const test = require('tap').test
 const helper = require('../../lib/agent_helper')
+const { isExpress5 } = require('./utils')
 
-test('Express + express-enrouten compatibility test', function (t) {
+test('Express + express-enrouten compatibility test', { skip: isExpress5() }, function (t) {
   t.plan(2)
 
   const agent = helper.instrumentMockedAgent()
