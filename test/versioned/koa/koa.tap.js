@@ -8,7 +8,7 @@
 const tap = require('tap')
 const http = require('http')
 const helper = require('../../lib/agent_helper')
-const { assertSegments } = require('../../lib/metrics_helper')
+require('../../lib/metrics_helper')
 
 tap.test('Koa instrumentation', (t) => {
   t.autoend()
@@ -227,7 +227,7 @@ tap.test('Koa instrumentation', (t) => {
     })
 
     agent.on('transactionFinished', (tx) => {
-      assertSegments(tx.trace.root, [
+      t.assertSegments(tx.trace.root, [
         'WebTransaction/WebFrameworkUri/Koa/GET//',
         [
           'Nodejs/Middleware/Koa/one',
@@ -283,7 +283,7 @@ tap.test('Koa instrumentation', (t) => {
     })
 
     agent.on('transactionFinished', function (txn) {
-      assertSegments(tx.trace.root, [
+      t.assertSegments(tx.trace.root, [
         txn.name,
         [
           'Nodejs/Middleware/Koa/one',
@@ -399,7 +399,7 @@ tap.test('Koa instrumentation', (t) => {
 })
 
 function checkSegments(t, tx) {
-  assertSegments(tx.trace.root, [
+  t.assertSegments(tx.trace.root, [
     // Until koa-router is instrumented and transaction naming is addressed,
     // names will be inconsistent depending on whether there is an error.
     tx.name,

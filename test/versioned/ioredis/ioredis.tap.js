@@ -7,7 +7,7 @@
 
 const tap = require('tap')
 const helper = require('../../lib/agent_helper')
-const { assertMetrics } = require('../../lib/metrics_helper')
+require('../../lib/metrics_helper')
 const params = require('../../lib/params')
 const urltils = require('../../../lib/util/urltils')
 
@@ -57,7 +57,7 @@ tap.test('ioredis instrumentation', (t) => {
       ]
       expected['Datastore/instance/Redis/' + HOST_ID] = 2
 
-      assertMetrics(tx.metrics, expected, false, false)
+      t.assertMetrics(tx.metrics, expected, false, false)
       t.end()
     })
 

@@ -8,7 +8,8 @@
 const tap = require('tap')
 const helper = require('../../lib/agent_helper')
 const { removeModules } = require('../../lib/cache-buster')
-const { assertSegments } = require('../../lib/metrics_helper')
+// load the assertSegments assertion
+require('../../lib/metrics_helper')
 const fs = require('fs')
 let pkgVersion
 try {
@@ -100,7 +101,7 @@ tap.test('Langchain instrumentation - vectorstore', (t) => {
     helper.runInTransaction(agent, async (tx) => {
       const result = await vs.similaritySearch('This is an embedding test.', 1)
       t.ok(result)
-      assertSegments(tx.trace.root, ['Llm/vectorstore/Langchain/similaritySearch'], {
+      t.assertSegments(tx.trace.root, ['Llm/vectorstore/Langchain/similaritySearch'], {
         exact: false
       })
       tx.end()

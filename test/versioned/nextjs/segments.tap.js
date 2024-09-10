@@ -16,7 +16,7 @@ const {
   isMiddlewareInstrumentationSupported
 } = require('../../../lib/instrumentation/nextjs/utils')
 const agentHelper = require('../../lib/agent_helper')
-const { assertSegments } = require('../../lib/metrics_helper')
+require('../../lib/metrics_helper')
 
 function getChildSegments(uri) {
   const segments = [
@@ -72,7 +72,7 @@ tap.test('Next.js', (t) => {
         children: getChildSegments(URI)
       }
     ]
-    assertSegments(tx.trace.root, expectedSegments, { exact: false })
+    t.assertSegments(tx.trace.root, expectedSegments, { exact: false })
   })
 
   t.test('should properly name getServerSideProps segments on dynamic pages', async (t) => {
@@ -91,7 +91,7 @@ tap.test('Next.js', (t) => {
         children: getChildSegments(EXPECTED_URI)
       }
     ]
-    assertSegments(tx.trace.root, expectedSegments, { exact: false })
+    t.assertSegments(tx.trace.root, expectedSegments, { exact: false })
   })
 
   t.test(
@@ -121,7 +121,7 @@ tap.test('Next.js', (t) => {
         ]
       }
 
-      assertSegments(tx.trace.root, expectedSegments, { exact: false })
+      t.assertSegments(tx.trace.root, expectedSegments, { exact: false })
     }
   )
 })

@@ -4,8 +4,7 @@
  */
 
 'use strict'
-const test = require('node:test')
-const assert = require('node:assert')
+const tap = require('tap')
 const helper = require('../../lib/agent_helper')
 const recordGeneric = require('../../../lib/metrics/recorders/generic')
 const Transaction = require('../../../lib/transaction')
@@ -30,32 +29,33 @@ function record(options) {
   recordGeneric(segment, options.transaction.name)
 }
 
-test('recordGeneric', async function (t) {
-  t.beforeEach((ctx) => {
-    ctx.nr = {}
+tap.test('recordGeneric', function (t) {
+  t.autoend()
+  t.beforeEach((t) => {
     const agent = helper.loadMockedAgent()
-    ctx.nr.trans = new Transaction(agent)
-    ctx.nr.agent = agent
+    t.context.trans = new Transaction(agent)
+    t.context.agent = agent
   })
 
-  t.afterEach((ctx) => {
-    helper.unloadAgent(ctx.nr.agent)
+  t.afterEach((t) => {
+    helper.unloadAgent(t.context.agent)
   })
 
-  await t.test("when scoped is undefined it shouldn't crash on recording", function (t) {
-    const { trans } = t.nr
+  t.test("when scoped is undefined it shouldn't crash on recording", function (t) {
+    const { trans } = t.context
     const segment = makeSegment({
       transaction: trans,
       duration: 0,
       exclusive: 0
     })
-    assert.doesNotThrow(function () {
+    t.doesNotThrow(function () {
       recordGeneric(segment, undefined)
     })
+    t.end()
   })
 
-  await t.test('when scoped is undefined it should record no scoped metrics', function (t) {
-    const { trans } = t.nr
+  t.test('when scoped is undefined it should record no scoped metrics', function (t) {
+    const { trans } = t.context
     const segment = makeSegment({
       transaction: trans,
       duration: 5,
@@ -65,11 +65,12 @@ test('recordGeneric', async function (t) {
 
     const result = [[{ name: 'placeholder' }, [1, 0.005, 0.005, 0.005, 0.005, 0.000025]]]
 
-    assert.equal(JSON.stringify(trans.metrics), JSON.stringify(result))
+    t.equal(JSON.stringify(trans.metrics), JSON.stringify(result))
+    t.end()
   })
 
-  await t.test('with scope should record scoped metrics', function (t) {
-    const { trans } = t.nr
+  t.test('with scope should record scoped metrics', function (t) {
+    const { trans } = t.context
     record({
       transaction: trans,
       url: '/test',
@@ -87,11 +88,12 @@ test('recordGeneric', async function (t) {
       ]
     ]
 
-    assert.equal(JSON.stringify(trans.metrics), JSON.stringify(result))
+    t.equal(JSON.stringify(trans.metrics), JSON.stringify(result))
+    t.end()
   })
 
-  await t.test('should report exclusive time correctly', function (t) {
-    const { trans } = t.nr
+  t.test('should report exclusive time correctly', function (t) {
+    const { trans } = t.context
     const root = trans.trace.root
     const parent = root.add('Test/Parent', recordGeneric)
     const child1 = parent.add('Test/Child/1', recordGeneric)
@@ -109,6 +111,7 @@ test('recordGeneric', async function (t) {
     ]
 
     trans.end()
-    assert.equal(JSON.stringify(trans.metrics), JSON.stringify(result))
+    t.equal(JSON.stringify(trans.metrics), JSON.stringify(result))
+    t.end()
   })
 })

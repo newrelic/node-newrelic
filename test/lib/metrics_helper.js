@@ -5,15 +5,15 @@
 
 'use strict'
 
-const assert = require('node:assert')
+const tap = require('tap')
 const urltils = require('../../lib/util/urltils')
 const { isSimpleObject } = require('../../lib/util/objects')
 
 exports.findSegment = findSegment
 exports.getMetricHostName = getMetricHostName
-exports.assertMetrics = assertMetrics
-exports.assertMetricValues = assertMetricValues
-exports.assertSegments = assertSegments
+tap.Test.prototype.addAssert('assertMetrics', 4, assertMetrics)
+tap.Test.prototype.addAssert('assertSegments', 3, assertSegments)
+tap.Test.prototype.addAssert('assertMetricValues', 3, assertMetricValues)
 
 /**
  * @param {Metrics} metrics         metrics under test
@@ -37,9 +37,9 @@ function assertMetrics(metrics, expected, exclusive, assertValues) {
   // Assertions about arguments because maybe something returned undefined
   // unexpectedly and is passed in, or a return type changed. This will
   // hopefully help catch that and make it obvious.
-  assert.ok(isSimpleObject(metrics), 'first argument required to be an Metrics object')
-  assert.ok(Array.isArray(expected), 'second argument required to be an array of metrics')
-  assert.ok(typeof exclusive === 'boolean', 'third argument required to be a boolean if provided')
+  this.ok(isSimpleObject(metrics), 'first argument required to be an Metrics object')
+  this.ok(Array.isArray(expected), 'second argument required to be an array of metrics')
+  this.ok(typeof exclusive === 'boolean', 'third argument required to be a boolean if provided')
 
   if (assertValues === undefined) {
     assertValues = true
@@ -48,15 +48,15 @@ function assertMetrics(metrics, expected, exclusive, assertValues) {
   for (let i = 0, len = expected.length; i < len; i++) {
     const expectedMetric = expected[i]
     const metric = metrics.getMetric(expectedMetric[0].name, expectedMetric[0].scope)
-    assert.ok(metric, `should find ${expectedMetric[0].name}`)
+    this.ok(metric, `should find ${expectedMetric[0].name}`)
     if (assertValues) {
-      assert.deepEqual(metric.toJSON(), expectedMetric[1])
+      this.same(metric.toJSON(), expectedMetric[1])
     }
   }
 
   if (exclusive) {
     const metricsList = metrics.toJSON()
-    assert.equal(metricsList.length, expected.length)
+    this.equal(metricsList.length, expected.length)
   }
 }
 
@@ -94,14 +94,14 @@ function assertMetricValues(transaction, expected, exact) {
     }
 
     const metric = metrics.getMetric(name, scope)
-    assert.ok(metric, 'should have expected metric name')
+    this.ok(metric, 'should have expected metric name')
 
-    assert.deepStrictEqual(metric.toJSON(), expectedMetric[1], 'metric values should match')
+    this.strictSame(metric.toJSON(), expectedMetric[1], 'metric values should match')
   }
 
   if (exact) {
     const metricsJSON = metrics.toJSON()
-    assert.equal(metricsJSON.length, expected.length, 'metrics length should match')
+    this.equal(metricsJSON.length, expected.length, 'metrics length should match')
   }
 }
 
@@ -147,33 +147,33 @@ function assertSegments(parent, expected, options) {
 
       if (typeof sequenceItem === 'string') {
         child = children[childCount++]
-        assert.equal(
+        this.equal(
           child ? child.name : undefined,
           sequenceItem,
           'segment "' +
-          parent.name +
-          '" should have child "' +
-          sequenceItem +
-          '" in position ' +
-          childCount
+            parent.name +
+            '" should have child "' +
+            sequenceItem +
+            '" in position ' +
+            childCount
         )
 
         // If the next expected item is not array, then check that the current
         // child has no children
         if (!Array.isArray(expected[i + 1])) {
           // var children = child.children
-          assert.ok(
+          this.ok(
             getChildren(child).length === 0,
             'segment "' + child.name + '" should not have any children'
           )
         }
       } else if (typeof sequenceItem === 'object') {
-        assertSegments(child, sequenceItem, options)
+        this.assertSegments(child, sequenceItem, options)
       }
     }
 
     // check if correct number of children was found
-    assert.equal(children.length, childCount)
+    this.equal(children.length, childCount)
   } else {
     for (let i = 0; i < expected.length; i++) {
       const sequenceItem = expected[i]
@@ -185,9 +185,9 @@ function assertSegments(parent, expected, options) {
             child = parent.children[j]
           }
         }
-        assert.ok(child, 'segment "' + parent.name + '" should have child "' + sequenceItem + '"')
+        this.ok(child, 'segment "' + parent.name + '" should have child "' + sequenceItem + '"')
         if (typeof expected[i + 1] === 'object') {
-          assertSegments(child, expected[i + 1], exact)
+          this.assertSegments(child, expected[i + 1], exact)
         }
       }
     }
