@@ -4,8 +4,8 @@
  */
 
 'use strict'
-
-const tap = require('tap')
+const assert = require('node:assert')
+const test = require('node:test')
 const sinon = require('sinon')
 
 const helper = require('../../lib/agent_helper')
@@ -17,14 +17,10 @@ const DEFAULT_LIMIT = 2000
 const MAX_LIMIT = 10000
 const DEFAULT_PERIOD = 60000
 
-tap.test('SpanAggregator', (t) => {
-  t.autoend()
-
-  let spanEventAggregator = null
-  let agent = null
-
-  t.beforeEach(() => {
-    spanEventAggregator = new SpanEventAggregator(
+test('SpanAggregator', async (t) => {
+  t.beforeEach((ctx) => {
+    ctx.nr = {}
+    ctx.nr.spanEventAggregator = new SpanEventAggregator(
       {
         runId: RUN_ID,
         limit: DEFAULT_LIMIT,
@@ -36,26 +32,25 @@ tap.test('SpanAggregator', (t) => {
         harvester: { add() {} }
       }
     )
-    agent = helper.instrumentMockedAgent({
+    ctx.nr.agent = helper.instrumentMockedAgent({
       distributed_tracing: {
         enabled: true
       }
     })
   })
 
-  t.afterEach(() => {
-    spanEventAggregator = null
-    helper.unloadAgent(agent)
+  t.afterEach((ctx) => {
+    helper.unloadAgent(ctx.nr.agent)
   })
 
-  t.test('should set the correct default method', (t) => {
+  await t.test('should set the correct default method', (t) => {
+    const { spanEventAggregator } = t.nr
     const method = spanEventAggregator.method
-    t.equal(method, 'span_event_data')
-
-    t.end()
+    assert.equal(method, 'span_event_data')
   })
 
-  t.test('should add a span event from the given segment', (t) => {
+  await t.test('should add a span event from the given segment', (t, end) => {
+    const { agent, spanEventAggregator } = t.nr
     helper.runInTransaction(agent, (tx) => {
       tx.priority = 42
       tx.sample = true
@@ -63,48 +58,50 @@ tap.test('SpanAggregator', (t) => {
       setTimeout(() => {
         const segment = agent.tracer.getSegment()
 
-        t.equal(spanEventAggregator.length, 0)
+        assert.equal(spanEventAggregator.length, 0)
 
         spanEventAggregator.addSegment(segment, 'p')
-        t.equal(spanEventAggregator.length, 1)
+        assert.equal(spanEventAggregator.length, 1)
 
         const event = spanEventAggregator.getEvents()[0]
 
-        t.ok(event.intrinsics)
-        t.equal(event.intrinsics.name, segment.name)
-        t.equal(event.intrinsics.parentId, 'p')
+        assert.ok(event.intrinsics)
+        assert.equal(event.intrinsics.name, segment.name)
+        assert.equal(event.intrinsics.parentId, 'p')
 
-        t.end()
+        end()
       }, 10)
     })
   })
 
-  t.test('should default the parent id', (t) => {
+  await t.test('should default the parent id', (t, end) => {
+    const { agent, spanEventAggregator } = t.nr
     helper.runInTransaction(agent, (tx) => {
       tx.priority = 42
       tx.sample = true
 
       setTimeout(() => {
         const segment = agent.tracer.getSegment()
-        t.equal(spanEventAggregator.length, 0)
+        assert.equal(spanEventAggregator.length, 0)
 
         spanEventAggregator.addSegment(segment)
-        t.equal(spanEventAggregator.length, 1)
+        assert.equal(spanEventAggregator.length, 1)
 
         const event = spanEventAggregator.getEvents()[0]
 
-        t.ok(event.intrinsics)
-        t.equal(event.intrinsics.name, segment.name)
-        t.equal(event.intrinsics.parentId, null)
+        assert.ok(event.intrinsics)
+        assert.equal(event.intrinsics.name, segment.name)
+        assert.equal(event.intrinsics.parentId, null)
 
-        t.notOk(event.intrinsics.grandparentId)
+        assert.ok(!event.intrinsics.grandparentId)
 
-        t.end()
+        end()
       }, 10)
     })
   })
 
-  t.test('should indicate if the segment is accepted', (t) => {
+  await t.test('should indicate if the segment is accepted', (t, end) => {
+    const { agent } = t.nr
     const METRIC_NAMES = {
       SEEN: '/SEEN',
       SENT: '/SENT',
@@ -113,7 +110,7 @@ tap.test('SpanAggregator', (t) => {
 
     const metrics = new Metrics(5, {}, {})
 
-    spanEventAggregator = new SpanEventAggregator(
+    const spanEventAggregator = new SpanEventAggregator(
       {
         runId: RUN_ID,
         limit: 1,
@@ -133,41 +130,42 @@ tap.test('SpanAggregator', (t) => {
       setTimeout(() => {
         const segment = agent.tracer.getSegment()
 
-        t.equal(spanEventAggregator.length, 0)
-        t.equal(spanEventAggregator.seen, 0)
+        assert.equal(spanEventAggregator.length, 0)
+        assert.equal(spanEventAggregator.seen, 0)
 
         // First segment is added regardless of priority.
-        t.equal(spanEventAggregator.addSegment(segment), true)
-        t.equal(spanEventAggregator.length, 1)
-        t.equal(spanEventAggregator.seen, 1)
+        assert.equal(spanEventAggregator.addSegment(segment), true)
+        assert.equal(spanEventAggregator.length, 1)
+        assert.equal(spanEventAggregator.seen, 1)
 
         // Higher priority should be added.
         tx.priority = 100
-        t.equal(spanEventAggregator.addSegment(segment), true)
-        t.equal(spanEventAggregator.length, 1)
-        t.equal(spanEventAggregator.seen, 2)
+        assert.equal(spanEventAggregator.addSegment(segment), true)
+        assert.equal(spanEventAggregator.length, 1)
+        assert.equal(spanEventAggregator.seen, 2)
         const event1 = spanEventAggregator.getEvents()[0]
 
         // Lower priority should not be added.
         tx.priority = 1
-        t.equal(spanEventAggregator.addSegment(segment), false)
-        t.equal(spanEventAggregator.length, 1)
-        t.equal(spanEventAggregator.seen, 3)
+        assert.equal(spanEventAggregator.addSegment(segment), false)
+        assert.equal(spanEventAggregator.length, 1)
+        assert.equal(spanEventAggregator.seen, 3)
         const event2 = spanEventAggregator.getEvents()[0]
 
         const metric = metrics.getMetric(METRIC_NAMES.SEEN)
 
-        t.equal(metric.callCount, 3)
+        assert.equal(metric.callCount, 3)
 
         // Shouldn't change the event in the aggregator.
-        t.equal(event1, event2)
+        assert.equal(event1, event2)
 
-        t.end()
+        end()
       }, 10)
     })
   })
 
-  t.test('_toPayloadSync() should return json format of data', (t) => {
+  await t.test('_toPayloadSync() should return json format of data', (t, end) => {
+    const { agent, spanEventAggregator } = t.nr
     helper.runInTransaction(agent, (tx) => {
       tx.priority = 1
       tx.sample = true
@@ -181,23 +179,24 @@ tap.test('SpanAggregator', (t) => {
 
         const [runId, metrics, events] = payload
 
-        t.equal(runId, RUN_ID)
+        assert.equal(runId, RUN_ID)
 
-        t.ok(metrics.reservoir_size)
-        t.ok(metrics.events_seen)
-        t.equal(metrics.reservoir_size, DEFAULT_LIMIT)
-        t.equal(metrics.events_seen, 1)
+        assert.ok(metrics.reservoir_size)
+        assert.ok(metrics.events_seen)
+        assert.equal(metrics.reservoir_size, DEFAULT_LIMIT)
+        assert.equal(metrics.events_seen, 1)
 
-        t.ok(events[0])
-        t.ok(events[0].intrinsics)
-        t.equal(events[0].intrinsics.type, 'Span')
+        assert.ok(events[0])
+        assert.ok(events[0].intrinsics)
+        assert.equal(events[0].intrinsics.type, 'Span')
 
-        t.end()
+        end()
       }, 10)
     })
   })
 
-  t.test('should use default value for periodMs', (t) => {
+  await t.test('should use default value for periodMs', (t) => {
+    const { spanEventAggregator } = t.nr
     const fakeConfig = {
       getAggregatorConfig: sinon.stub().returns(null),
       span_events: {
@@ -205,16 +204,15 @@ tap.test('SpanAggregator', (t) => {
       }
     }
     spanEventAggregator.reconfigure(fakeConfig)
-    t.equal(
+    assert.equal(
       spanEventAggregator.periodMs,
       DEFAULT_PERIOD,
       `should default periodMs to ${DEFAULT_PERIOD}`
     )
-
-    t.end()
   })
 
-  t.test('should use default value for limit when user cleared', (t) => {
+  await t.test('should use default value for limit when user cleared', (t) => {
+    const { spanEventAggregator } = t.nr
     const fakeConfig = {
       getAggregatorConfig: sinon.stub().returns(null),
       span_events: {
@@ -225,16 +223,20 @@ tap.test('SpanAggregator', (t) => {
 
     spanEventAggregator.reconfigure(fakeConfig)
 
-    t.equal(spanEventAggregator.limit, DEFAULT_LIMIT, `should default limit to ${DEFAULT_LIMIT}`)
-    t.equal(
+    assert.equal(
+      spanEventAggregator.limit,
+      DEFAULT_LIMIT,
+      `should default limit to ${DEFAULT_LIMIT}`
+    )
+    assert.equal(
       spanEventAggregator._items.limit,
       DEFAULT_LIMIT,
       `should set queue limit to ${DEFAULT_LIMIT}`
     )
-    t.end()
   })
 
-  t.test('should use `span_event_harvest_config.report_period_ms` from server', (t) => {
+  await t.test('should use `span_event_harvest_config.report_period_ms` from server', (t) => {
+    const { spanEventAggregator } = t.nr
     const fakeConfig = {
       span_event_harvest_config: {
         report_period_ms: 4000,
@@ -247,15 +249,15 @@ tap.test('SpanAggregator', (t) => {
     }
     spanEventAggregator.reconfigure(fakeConfig)
 
-    t.equal(
+    assert.equal(
       spanEventAggregator.periodMs,
       4000,
       `should use span_event_harvest_config.report_period_ms`
     )
-    t.end()
   })
 
-  t.test(`should use 'span_event_harvest_config.harvest_limit' from server`, (t) => {
+  await t.test(`should use 'span_event_harvest_config.harvest_limit' from server`, (t) => {
+    const { spanEventAggregator } = t.nr
     const fakeConfig = {
       span_event_harvest_config: {
         harvest_limit: 2000
@@ -266,12 +268,16 @@ tap.test('SpanAggregator', (t) => {
       }
     }
     spanEventAggregator.reconfigure(fakeConfig)
-    t.equal(spanEventAggregator.limit, 2000, 'should use span_event_harvest_config.harvest_limit')
-    t.equal(spanEventAggregator._items.limit, 2000, `should set queue limit`)
-    t.end()
+    assert.equal(
+      spanEventAggregator.limit,
+      2000,
+      'should use span_event_harvest_config.harvest_limit'
+    )
+    assert.equal(spanEventAggregator._items.limit, 2000, `should set queue limit`)
   })
 
-  t.test(`should use 'span_event_harvest_config.harvest_limit' from server`, (t) => {
+  await t.test(`should use 'span_event_harvest_config.harvest_limit' from server`, (t) => {
+    const { spanEventAggregator } = t.nr
     const fakeConfig = {
       span_event_harvest_config: {
         harvest_limit: 2000
@@ -282,12 +288,16 @@ tap.test('SpanAggregator', (t) => {
       }
     }
     spanEventAggregator.reconfigure(fakeConfig)
-    t.equal(spanEventAggregator.limit, 2000, 'should use span_event_harvest_config.harvest_limit')
-    t.equal(spanEventAggregator._items.limit, 2000, `should set queue limit`)
-    t.end()
+    assert.equal(
+      spanEventAggregator.limit,
+      2000,
+      'should use span_event_harvest_config.harvest_limit'
+    )
+    assert.equal(spanEventAggregator._items.limit, 2000, `should set queue limit`)
   })
 
-  t.test('should use max_samples_stored as-is when no span harvest config', (t) => {
+  await t.test('should use max_samples_stored as-is when no span harvest config', (t) => {
+    const { spanEventAggregator } = t.nr
     const expectedLimit = 5000
     const fakeConfig = {
       getAggregatorConfig: sinon.stub().returns(null),
@@ -298,12 +308,12 @@ tap.test('SpanAggregator', (t) => {
 
     spanEventAggregator.reconfigure(fakeConfig)
 
-    t.equal(spanEventAggregator.limit, expectedLimit)
-    t.equal(spanEventAggregator._items.limit, expectedLimit)
-    t.end()
+    assert.equal(spanEventAggregator.limit, expectedLimit)
+    assert.equal(spanEventAggregator._items.limit, expectedLimit)
   })
 
-  t.test('should use fall-back maximum when no span harvest config sent', (t) => {
+  await t.test('should use fall-back maximum when no span harvest config sent', (t) => {
+    const { spanEventAggregator } = t.nr
     const maxSamples = 20000
     const fakeConfig = {
       getAggregatorConfig: sinon.stub().returns(null),
@@ -312,14 +322,14 @@ tap.test('SpanAggregator', (t) => {
       }
     }
 
-    t.ok(maxSamples > MAX_LIMIT, 'failed test setup expectations')
+    assert.ok(maxSamples > MAX_LIMIT, 'failed test setup expectations')
 
     spanEventAggregator.reconfigure(fakeConfig)
-    t.equal(spanEventAggregator.limit, MAX_LIMIT, `should set limit to ${MAX_LIMIT}`)
-    t.end()
+    assert.equal(spanEventAggregator.limit, MAX_LIMIT, `should set limit to ${MAX_LIMIT}`)
   })
 
-  t.test('should report SpanEvent/Limit supportability metric', (t) => {
+  await t.test('should report SpanEvent/Limit supportability metric', (t) => {
+    const { spanEventAggregator } = t.nr
     const recordValueStub = sinon.stub()
     spanEventAggregator._metrics.getOrCreateMetric = sinon
       .stub()
@@ -334,12 +344,11 @@ tap.test('SpanAggregator', (t) => {
 
     spanEventAggregator.reconfigure(fakeConfig)
 
-    t.equal(
+    assert.equal(
       spanEventAggregator._metrics.getOrCreateMetric.args[0][0],
       'Supportability/SpanEvent/Limit',
       'should name event appropriately'
     )
-    t.equal(recordValueStub.args[0][0], harvestLimit, `should set limit to ${harvestLimit}`)
-    t.end()
+    assert.equal(recordValueStub.args[0][0], harvestLimit, `should set limit to ${harvestLimit}`)
   })
 })

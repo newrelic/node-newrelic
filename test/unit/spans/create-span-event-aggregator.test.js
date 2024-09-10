@@ -4,8 +4,8 @@
  */
 
 'use strict'
-
-const tap = require('tap')
+const assert = require('node:assert')
+const test = require('node:test')
 const Config = require('../../../lib/config')
 const SpanEventAggregator = require('../../../lib/spans/span-event-aggregator')
 const StreamingSpanEventAggregator = require('../../../lib/spans/streaming-span-event-aggregator')
@@ -27,16 +27,14 @@ const agent = {
   harvester: harvesterStub
 }
 
-tap.test('should return standard when trace observer not configured', (t) => {
+test('should return standard when trace observer not configured', async () => {
   const config = Config.initialize({})
 
   const aggregator = createSpanEventAggregator(config, agent)
-  assertStandardSpanAggregator(t, aggregator)
-
-  t.end()
+  assertStandardSpanAggregator(aggregator)
 })
 
-tap.test('should return standard when in serverless mode, trace observer valid', (t) => {
+test('should return standard when in serverless mode, trace observer valid', async () => {
   const config = Config.initialize({
     serverless_mode: { enabled: true },
     infinite_tracing: {
@@ -47,12 +45,10 @@ tap.test('should return standard when in serverless mode, trace observer valid',
   })
 
   const aggregator = createSpanEventAggregator(config, agent)
-  assertStandardSpanAggregator(t, aggregator)
-
-  t.end()
+  assertStandardSpanAggregator(aggregator)
 })
 
-tap.test('should return streaming when trace observer configured', (t) => {
+test('should return streaming when trace observer configured', async () => {
   const config = Config.initialize({
     infinite_tracing: {
       trace_observer: {
@@ -64,12 +60,10 @@ tap.test('should return streaming when trace observer configured', (t) => {
   const aggregator = createSpanEventAggregator(config, agent)
   const isStreamingAggregator = aggregator instanceof StreamingSpanEventAggregator
 
-  t.ok(isStreamingAggregator)
-
-  t.end()
+  assert.ok(isStreamingAggregator)
 })
 
-tap.test('should create batching streamer when batching is enabled', (t) => {
+test('should create batching streamer when batching is enabled', async () => {
   metricsStub.getOrCreateMetric.resetHistory()
   const config = Config.initialize({
     infinite_tracing: {
@@ -82,17 +76,16 @@ tap.test('should create batching streamer when batching is enabled', (t) => {
 
   const aggregator = createSpanEventAggregator(config, agent)
   const isBatchStreamer = aggregator.stream instanceof BatchSpanStreamer
-  t.ok(isBatchStreamer)
-  t.ok(metricsStub.getOrCreateMetric.args[0].length === 1, 'should have only 1 metric set')
-  t.ok(
+  assert.ok(isBatchStreamer)
+  assert.ok(metricsStub.getOrCreateMetric.args[0].length === 1, 'should have only 1 metric set')
+  assert.ok(
     metricsStub.getOrCreateMetric.args[0][0],
     'Supportability/InfiniteTracing/gRPC/Batching/enabled',
     'should set batching enabled supportability metric'
   )
-  t.end()
 })
 
-tap.test('should create span streamer when batching is disabled', (t) => {
+test('should create span streamer when batching is disabled', async () => {
   metricsStub.getOrCreateMetric.resetHistory()
   const config = Config.initialize({
     infinite_tracing: {
@@ -105,17 +98,16 @@ tap.test('should create span streamer when batching is disabled', (t) => {
 
   const aggregator = createSpanEventAggregator(config, agent)
   const isSpanStreamer = aggregator.stream instanceof SpanStreamer
-  t.ok(isSpanStreamer)
-  t.ok(metricsStub.getOrCreateMetric.args[0].length === 1, 'should have only 1 metric set')
-  t.ok(
+  assert.ok(isSpanStreamer)
+  assert.ok(metricsStub.getOrCreateMetric.args[0].length === 1, 'should have only 1 metric set')
+  assert.ok(
     metricsStub.getOrCreateMetric.args[0][0],
     'Supportability/InfiniteTracing/gRPC/Batching/disaabled',
     'should set batching disabled supportability metric'
   )
-  t.end()
 })
 
-tap.test('should trim host and port options when they are strings', (t) => {
+test('should trim host and port options when they are strings', async () => {
   const config = Config.initialize({
     infinite_tracing: {
       trace_observer: {
@@ -126,62 +118,55 @@ tap.test('should trim host and port options when they are strings', (t) => {
   })
 
   createSpanEventAggregator(config, agent)
-  t.same(config.infinite_tracing.trace_observer, {
+  assert.deepEqual(config.infinite_tracing.trace_observer, {
     host: VALID_HOST,
     port: '300'
   })
-
-  t.end()
 })
 
-tap.test(
-  'should revert to standard aggregator when it fails to create streaming aggregator',
-  (t) => {
-    const config = Config.initialize({
-      infinite_tracing: {
-        trace_observer: {
-          host: VALID_HOST
-        }
+test('should revert to standard aggregator when it fails to create streaming aggregator', () => {
+  const config = Config.initialize({
+    infinite_tracing: {
+      trace_observer: {
+        host: VALID_HOST
       }
-    })
-
-    const err = new Error('failed to craete streaming aggregator')
-    const stub = sinon.stub().throws(err)
-    const loggerStub = {
-      warn: sinon.stub(),
-      trace: sinon.stub()
     }
+  })
 
-    const createSpanAggrStubbed = proxyquire('../../../lib/spans/create-span-event-aggregator', {
-      './streaming-span-event-aggregator': stub,
-      '../logger': loggerStub
-    })
-
-    const aggregator = createSpanAggrStubbed(config, agent)
-    assertStandardSpanAggregator(t, aggregator)
-    t.same(
-      config.infinite_tracing.trace_observer,
-      { host: '', port: '' },
-      'should set host and port to empty strings when failing to create streaming aggregator'
-    )
-    t.same(
-      loggerStub.warn.args[0],
-      [
-        err,
-        'Failed to create streaming span event aggregator for infinite tracing. ' +
-          'Reverting to standard span event aggregator and disabling infinite tracing'
-      ],
-      'should log warning about failed streaming construction'
-    )
-
-    t.end()
+  const err = new Error('failed to craete streaming aggregator')
+  const stub = sinon.stub().throws(err)
+  const loggerStub = {
+    warn: sinon.stub(),
+    trace: sinon.stub()
   }
-)
 
-function assertStandardSpanAggregator(t, aggregator) {
+  const createSpanAggrStubbed = proxyquire('../../../lib/spans/create-span-event-aggregator', {
+    './streaming-span-event-aggregator': stub,
+    '../logger': loggerStub
+  })
+
+  const aggregator = createSpanAggrStubbed(config, agent)
+  assertStandardSpanAggregator(aggregator)
+  assert.deepEqual(
+    config.infinite_tracing.trace_observer,
+    { host: '', port: '' },
+    'should set host and port to empty strings when failing to create streaming aggregator'
+  )
+  assert.deepEqual(
+    loggerStub.warn.args[0],
+    [
+      err,
+      'Failed to create streaming span event aggregator for infinite tracing. ' +
+        'Reverting to standard span event aggregator and disabling infinite tracing'
+    ],
+    'should log warning about failed streaming construction'
+  )
+})
+
+function assertStandardSpanAggregator(aggregator) {
   const isSpanEventAggregator = aggregator instanceof SpanEventAggregator
   const isStreamingAggregator = aggregator instanceof StreamingSpanEventAggregator
 
-  t.ok(isSpanEventAggregator)
-  t.notOk(isStreamingAggregator)
+  assert.ok(isSpanEventAggregator)
+  assert.ok(!isStreamingAggregator)
 }

@@ -4,12 +4,12 @@
  */
 
 'use strict'
-
-const tap = require('tap')
+const assert = require('node:assert')
+const test = require('node:test')
 
 const StreamingSpanAttributes = require('../../../lib/spans/streaming-span-attributes')
 
-tap.test('addAttribute() should add a valid value', (t) => {
+test('addAttribute() should add a valid value', () => {
   const testKey = 'testKey'
   const testValue = 'testValue'
   const expected = {
@@ -21,11 +21,10 @@ tap.test('addAttribute() should add a valid value', (t) => {
   const attributes = new StreamingSpanAttributes()
   attributes.addAttribute(testKey, testValue)
 
-  t.same(attributes, expected)
-  t.end()
+  assert.deepEqual(attributes, expected)
 })
 
-tap.test('addAttribute() should drp an invalid value', (t) => {
+test('addAttribute() should drp an invalid value', () => {
   const testKey = 'testKey'
   const testValue = {}
   const expected = {} // no attribute added
@@ -33,11 +32,10 @@ tap.test('addAttribute() should drp an invalid value', (t) => {
   const attributes = new StreamingSpanAttributes()
   attributes.addAttribute(testKey, testValue)
 
-  t.same(attributes, expected)
-  t.end()
+  assert.deepEqual(attributes, expected)
 })
 
-tap.test('addAttributes() should add all valid values', (t) => {
+test('addAttributes() should add all valid values', () => {
   const incomingAttributes = {
     strTest: 'value1',
     boolTest: true,
@@ -55,11 +53,10 @@ tap.test('addAttributes() should add all valid values', (t) => {
   const attributes = new StreamingSpanAttributes()
   attributes.addAttributes(incomingAttributes)
 
-  t.same(attributes, expected)
-  t.end()
+  assert.deepEqual(attributes, expected)
 })
 
-tap.test('addAttributes() should drop all invalid values', (t) => {
+test('addAttributes() should drop all invalid values', () => {
   const incomingAttributes = {
     validBool: true,
     validDouble: 99.99,
@@ -76,11 +73,10 @@ tap.test('addAttributes() should drop all invalid values', (t) => {
   const attributes = new StreamingSpanAttributes()
   attributes.addAttributes(incomingAttributes)
 
-  t.same(attributes, expected)
-  t.end()
+  assert.deepEqual(attributes, expected)
 })
 
-tap.test('constructor should add all valid values', (t) => {
+test('constructor should add all valid values', () => {
   const incomingAttributes = {
     strTest: 'value1',
     boolTest: true,
@@ -97,11 +93,10 @@ tap.test('constructor should add all valid values', (t) => {
 
   const attributes = new StreamingSpanAttributes(incomingAttributes)
 
-  t.same(attributes, expected)
-  t.end()
+  assert.deepEqual(attributes, expected)
 })
 
-tap.test('addAttributes() should drop all invalid values', (t) => {
+test('addAttributes() should drop all invalid values', () => {
   const incomingAttributes = {
     validBool: true,
     validDouble: 99.99,
@@ -117,6 +112,5 @@ tap.test('addAttributes() should drop all invalid values', (t) => {
 
   const attributes = new StreamingSpanAttributes(incomingAttributes)
 
-  t.same(attributes, expected)
-  t.end()
+  assert.deepEqual(attributes, expected)
 })

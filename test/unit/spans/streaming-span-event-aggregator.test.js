@@ -4,8 +4,8 @@
  */
 
 'use strict'
-
-const tap = require('tap')
+const assert = require('node:assert')
+const test = require('node:test')
 const sinon = require('sinon')
 
 const StreamingSpanEventAggregator = require('../../../lib/spans/streaming-span-event-aggregator')
@@ -15,7 +15,7 @@ const agent = {
   harvester: { add: sinon.stub() }
 }
 
-tap.test('Should only attempt to connect on first start() call', (t) => {
+test('Should only attempt to connect on first start() call', () => {
   let connectCount = 0
 
   const opts = {
@@ -29,22 +29,20 @@ tap.test('Should only attempt to connect on first start() call', (t) => {
   const streamingSpanAggregator = new StreamingSpanEventAggregator(opts, agent)
 
   streamingSpanAggregator.start()
-  t.equal(connectCount, 1)
+  assert.equal(connectCount, 1)
 
   streamingSpanAggregator.start()
-  t.equal(connectCount, 1)
-
-  t.end()
+  assert.equal(connectCount, 1)
 })
 
-tap.test('Should only attempt to disconnect on first stop() call', (t) => {
-  let disonnectCount = 0
+test('Should only attempt to disconnect on first stop() call', () => {
+  let disconnectCount = 0
 
   const opts = {
     span_streamer: {
       connect: () => {},
       disconnect: () => {
-        disonnectCount++
+        disconnectCount++
       }
     }
   }
@@ -53,15 +51,13 @@ tap.test('Should only attempt to disconnect on first stop() call', (t) => {
   streamingSpanAggregator.start()
 
   streamingSpanAggregator.stop()
-  t.equal(disonnectCount, 1)
+  assert.equal(disconnectCount, 1)
 
   streamingSpanAggregator.stop()
-  t.equal(disonnectCount, 1)
-
-  t.end()
+  assert.equal(disconnectCount, 1)
 })
 
-tap.test('Should attempt to connect on start() after stop() call', (t) => {
+test('Should attempt to connect on start() after stop() call', () => {
   let connectCount = 0
 
   const opts = {
@@ -79,7 +75,5 @@ tap.test('Should attempt to connect on start() after stop() call', (t) => {
   streamingSpanAggregator.stop()
 
   streamingSpanAggregator.start()
-  t.equal(connectCount, 2)
-
-  t.end()
+  assert.equal(connectCount, 2)
 })

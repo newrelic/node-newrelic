@@ -4,8 +4,8 @@
  */
 
 'use strict'
-
-const tap = require('tap')
+const assert = require('node:assert')
+const test = require('node:test')
 const DatastoreShim = require('../../../lib/shim/datastore-shim')
 const helper = require('../../lib/agent_helper')
 const https = require('https')
@@ -26,39 +26,35 @@ const BOOL_TYPE = 'bool_value'
 const INT_TYPE = 'int_value'
 const DOUBLE_TYPE = 'double_value'
 
-tap.test('#constructor() should construct an empty span event', (t) => {
+test('#constructor() should construct an empty span event', () => {
   const attrs = {}
   const span = new StreamingSpanEvent(attrs)
 
-  t.ok(span)
-  t.ok(span instanceof StreamingSpanEvent)
-  t.same(span._agentAttributes, attrs)
+  assert.ok(span)
+  assert.ok(span instanceof StreamingSpanEvent)
+  assert.deepEqual(span._agentAttributes, attrs)
 
-  t.ok(span._intrinsicAttributes)
-  t.same(span._intrinsicAttributes.type, { [STRING_TYPE]: 'Span' })
-  t.same(span._intrinsicAttributes.category, { [STRING_TYPE]: CATEGORIES.GENERIC })
-
-  t.end()
+  assert.ok(span._intrinsicAttributes)
+  assert.deepEqual(span._intrinsicAttributes.type, { [STRING_TYPE]: 'Span' })
+  assert.deepEqual(span._intrinsicAttributes.category, { [STRING_TYPE]: CATEGORIES.GENERIC })
 })
 
-tap.test('fromSegment()', (t) => {
-  t.autoend()
-
-  let agent = null
-
-  t.beforeEach(() => {
-    agent = helper.instrumentMockedAgent({
+test('fromSegment()', async (t) => {
+  t.beforeEach((ctx) => {
+    ctx.nr = {}
+    ctx.nr.agent = helper.instrumentMockedAgent({
       distributed_tracing: {
         enabled: true
       }
     })
   })
 
-  t.afterEach(() => {
-    helper.unloadAgent(agent)
+  t.afterEach((ctx) => {
+    helper.unloadAgent(ctx.nr.agent)
   })
 
-  t.test('should create a generic span with a random segment', (t) => {
+  await t.test('should create a generic span with a random segment', (t, end) => {
+    const { agent } = t.nr
     helper.runInTransaction(agent, (transaction) => {
       transaction.sampled = true
       transaction.priority = 42
@@ -73,59 +69,60 @@ tap.test('fromSegment()', (t) => {
         const span = StreamingSpanEvent.fromSegment(segment, 'parent')
 
         // Should have all the normal properties.
-        t.ok(span)
-        t.ok(span instanceof StreamingSpanEvent)
+        assert.ok(span)
+        assert.ok(span instanceof StreamingSpanEvent)
 
-        t.ok(span._intrinsicAttributes)
-        t.same(span._intrinsicAttributes.type, { [STRING_TYPE]: 'Span' })
-        t.same(span._intrinsicAttributes.category, { [STRING_TYPE]: CATEGORIES.GENERIC })
+        assert.ok(span._intrinsicAttributes)
+        assert.deepEqual(span._intrinsicAttributes.type, { [STRING_TYPE]: 'Span' })
+        assert.deepEqual(span._intrinsicAttributes.category, { [STRING_TYPE]: CATEGORIES.GENERIC })
 
-        t.same(span._intrinsicAttributes.traceId, { [STRING_TYPE]: transaction.traceId })
-        t.same(span._intrinsicAttributes.guid, { [STRING_TYPE]: segment.id })
-        t.same(span._intrinsicAttributes.parentId, { [STRING_TYPE]: 'parent' })
-        t.same(span._intrinsicAttributes.transactionId, { [STRING_TYPE]: transaction.id })
-        t.same(span._intrinsicAttributes.sampled, { [BOOL_TYPE]: true })
-        t.same(span._intrinsicAttributes.priority, { [INT_TYPE]: 42 })
-        t.same(span._intrinsicAttributes.name, { [STRING_TYPE]: 'timers.setTimeout' })
-        t.same(span._intrinsicAttributes.timestamp, { [INT_TYPE]: segment.timer.start })
+        assert.deepEqual(span._intrinsicAttributes.traceId, { [STRING_TYPE]: transaction.traceId })
+        assert.deepEqual(span._intrinsicAttributes.guid, { [STRING_TYPE]: segment.id })
+        assert.deepEqual(span._intrinsicAttributes.parentId, { [STRING_TYPE]: 'parent' })
+        assert.deepEqual(span._intrinsicAttributes.transactionId, { [STRING_TYPE]: transaction.id })
+        assert.deepEqual(span._intrinsicAttributes.sampled, { [BOOL_TYPE]: true })
+        assert.deepEqual(span._intrinsicAttributes.priority, { [INT_TYPE]: 42 })
+        assert.deepEqual(span._intrinsicAttributes.name, { [STRING_TYPE]: 'timers.setTimeout' })
+        assert.deepEqual(span._intrinsicAttributes.timestamp, { [INT_TYPE]: segment.timer.start })
 
-        t.ok(span._intrinsicAttributes.duration)
-        t.ok(span._intrinsicAttributes.duration[DOUBLE_TYPE])
+        assert.ok(span._intrinsicAttributes.duration)
+        assert.ok(span._intrinsicAttributes.duration[DOUBLE_TYPE])
 
         // Generic should not have 'span.kind' or 'component'
         const hasIntrinsic = Object.hasOwnProperty.bind(span._intrinsicAttributes)
-        t.notOk(hasIntrinsic('span.kind'))
-        t.notOk(hasIntrinsic('component'))
+        assert.ok(!hasIntrinsic('span.kind'))
+        assert.ok(!hasIntrinsic('component'))
 
         const customAttributes = span._customAttributes
-        t.ok(customAttributes)
-        t.same(customAttributes['Span Lee'], { [STRING_TYPE]: 'no prize' })
+        assert.ok(customAttributes)
+        assert.deepEqual(customAttributes['Span Lee'], { [STRING_TYPE]: 'no prize' })
 
         const agentAttributes = span._agentAttributes
-        t.ok(agentAttributes)
+        assert.ok(agentAttributes)
 
-        t.same(agentAttributes['server.address'], { [STRING_TYPE]: 'my-host' })
-        t.same(agentAttributes['server.port'], { [INT_TYPE]: 22 })
+        assert.deepEqual(agentAttributes['server.address'], { [STRING_TYPE]: 'my-host' })
+        assert.deepEqual(agentAttributes['server.port'], { [INT_TYPE]: 22 })
 
         // Should have no http properties.
         const hasOwnAttribute = Object.hasOwnProperty.bind(agentAttributes)
-        t.notOk(hasOwnAttribute('externalLibrary'))
-        t.notOk(hasOwnAttribute('externalUri'))
-        t.notOk(hasOwnAttribute('externalProcedure'))
+        assert.ok(!hasOwnAttribute('externalLibrary'))
+        assert.ok(!hasOwnAttribute('externalUri'))
+        assert.ok(!hasOwnAttribute('externalProcedure'))
 
         // Should have no datastore properties.
-        t.notOk(hasOwnAttribute('db.statement'))
-        t.notOk(hasOwnAttribute('db.instance'))
-        t.notOk(hasOwnAttribute('db.system'))
-        t.notOk(hasOwnAttribute('peer.hostname'))
-        t.notOk(hasOwnAttribute('peer.address'))
+        assert.ok(!hasOwnAttribute('db.statement'))
+        assert.ok(!hasOwnAttribute('db.instance'))
+        assert.ok(!hasOwnAttribute('db.system'))
+        assert.ok(!hasOwnAttribute('peer.hostname'))
+        assert.ok(!hasOwnAttribute('peer.address'))
 
-        t.end()
+        end()
       }, 50)
     })
   })
 
-  t.test('should create an http span with a external segment', (t) => {
+  await t.test('should create an http span with a external segment', (t, end) => {
+    const { agent } = t.nr
     helper.runInTransaction(agent, (transaction) => {
       transaction.sampled = true
       transaction.priority = 42
@@ -137,63 +134,70 @@ tap.test('fromSegment()', (t) => {
           const span = StreamingSpanEvent.fromSegment(segment, 'parent')
 
           // Should have all the normal properties.
-          t.ok(span)
-          t.ok(span instanceof StreamingSpanEvent)
+          assert.ok(span)
+          assert.ok(span instanceof StreamingSpanEvent)
 
-          t.ok(span._intrinsicAttributes)
-          t.same(span._intrinsicAttributes.type, { [STRING_TYPE]: 'Span' })
-          t.same(span._intrinsicAttributes.category, { [STRING_TYPE]: CATEGORIES.HTTP })
+          assert.ok(span._intrinsicAttributes)
+          assert.deepEqual(span._intrinsicAttributes.type, { [STRING_TYPE]: 'Span' })
+          assert.deepEqual(span._intrinsicAttributes.category, { [STRING_TYPE]: CATEGORIES.HTTP })
 
-          t.same(span._intrinsicAttributes.traceId, { [STRING_TYPE]: transaction.traceId })
-          t.same(span._intrinsicAttributes.guid, { [STRING_TYPE]: segment.id })
-          t.same(span._intrinsicAttributes.parentId, { [STRING_TYPE]: 'parent' })
-          t.same(span._intrinsicAttributes.transactionId, { [STRING_TYPE]: transaction.id })
-          t.same(span._intrinsicAttributes.sampled, { [BOOL_TYPE]: true })
-          t.same(span._intrinsicAttributes.priority, { [INT_TYPE]: 42 })
+          assert.deepEqual(span._intrinsicAttributes.traceId, {
+            [STRING_TYPE]: transaction.traceId
+          })
+          assert.deepEqual(span._intrinsicAttributes.guid, { [STRING_TYPE]: segment.id })
+          assert.deepEqual(span._intrinsicAttributes.parentId, { [STRING_TYPE]: 'parent' })
+          assert.deepEqual(span._intrinsicAttributes.transactionId, {
+            [STRING_TYPE]: transaction.id
+          })
+          assert.deepEqual(span._intrinsicAttributes.sampled, { [BOOL_TYPE]: true })
+          assert.deepEqual(span._intrinsicAttributes.priority, { [INT_TYPE]: 42 })
 
-          t.same(span._intrinsicAttributes.name, { [STRING_TYPE]: 'External/example.com/' })
-          t.same(span._intrinsicAttributes.timestamp, { [INT_TYPE]: segment.timer.start })
+          assert.deepEqual(span._intrinsicAttributes.name, {
+            [STRING_TYPE]: 'External/example.com/'
+          })
+          assert.deepEqual(span._intrinsicAttributes.timestamp, { [INT_TYPE]: segment.timer.start })
 
-          t.ok(span._intrinsicAttributes.duration)
-          t.ok(span._intrinsicAttributes.duration[DOUBLE_TYPE])
+          assert.ok(span._intrinsicAttributes.duration)
+          assert.ok(span._intrinsicAttributes.duration[DOUBLE_TYPE])
 
           // Should have type-specific intrinsics
-          t.same(span._intrinsicAttributes.component, { [STRING_TYPE]: 'http' })
-          t.same(span._intrinsicAttributes['span.kind'], { [STRING_TYPE]: 'client' })
+          assert.deepEqual(span._intrinsicAttributes.component, { [STRING_TYPE]: 'http' })
+          assert.deepEqual(span._intrinsicAttributes['span.kind'], { [STRING_TYPE]: 'client' })
 
           const agentAttributes = span._agentAttributes
-          t.ok(agentAttributes)
+          assert.ok(agentAttributes)
 
           // Should have (most) http properties.
-          t.same(agentAttributes['request.parameters.foo'], { [STRING_TYPE]: 'bar' })
-          t.same(agentAttributes['http.url'], { [STRING_TYPE]: 'https://example.com/' })
-          t.same(agentAttributes['server.address'], { [STRING_TYPE]: 'example.com' })
-          t.same(agentAttributes['server.port'], { [INT_TYPE]: 443 })
-          t.ok(agentAttributes['http.method'])
-          t.ok(agentAttributes['http.request.method'])
-          t.same(agentAttributes['http.statusCode'], { [INT_TYPE]: 200 })
-          t.same(agentAttributes['http.statusText'], { [STRING_TYPE]: 'OK' })
+          assert.deepEqual(agentAttributes['request.parameters.foo'], { [STRING_TYPE]: 'bar' })
+          assert.deepEqual(agentAttributes['http.url'], { [STRING_TYPE]: 'https://example.com/' })
+          assert.deepEqual(agentAttributes['server.address'], { [STRING_TYPE]: 'example.com' })
+          assert.deepEqual(agentAttributes['server.port'], { [INT_TYPE]: 443 })
+          assert.ok(agentAttributes['http.method'])
+          assert.ok(agentAttributes['http.request.method'])
+          assert.deepEqual(agentAttributes['http.statusCode'], { [INT_TYPE]: 200 })
+          assert.deepEqual(agentAttributes['http.statusText'], { [STRING_TYPE]: 'OK' })
 
           const hasOwnAttribute = Object.hasOwnProperty.bind(agentAttributes)
 
           // should remove mapped attributes
           ;['library', 'url', 'hostname', 'port', 'procedure'].forEach((attr) => {
-            t.notOk(hasOwnAttribute(attr))
+            assert.ok(!hasOwnAttribute(attr))
           })
 
           // Should have no datastore properties.
           ;['db.statement', 'db.instance', 'db.system', 'peer.hostname', 'peer.address'].forEach(
             (attr) => {
-              t.notOk(hasOwnAttribute(attr))
+              assert.ok(!hasOwnAttribute(attr))
             }
           )
-          t.end()
+          end()
         })
       })
     })
   })
 
-  t.test('should create a datastore span with a datastore segment', (t) => {
+  await t.test('should create a datastore span with a datastore segment', (t, end) => {
+    const { agent } = t.nr
     agent.config.transaction_tracer.record_sql = 'raw'
 
     const shim = new DatastoreShim(agent, 'test-data-store')
@@ -237,40 +241,42 @@ tap.test('fromSegment()', (t) => {
         const span = StreamingSpanEvent.fromSegment(segment, 'parent')
 
         // Should have all the normal properties.
-        t.ok(span)
-        t.ok(span instanceof StreamingSpanEvent)
+        assert.ok(span)
+        assert.ok(span instanceof StreamingSpanEvent)
 
-        t.ok(span._intrinsicAttributes)
-        t.same(span._intrinsicAttributes.type, { [STRING_TYPE]: 'Span' })
-        t.same(span._intrinsicAttributes.category, { [STRING_TYPE]: CATEGORIES.DATASTORE })
+        assert.ok(span._intrinsicAttributes)
+        assert.deepEqual(span._intrinsicAttributes.type, { [STRING_TYPE]: 'Span' })
+        assert.deepEqual(span._intrinsicAttributes.category, {
+          [STRING_TYPE]: CATEGORIES.DATASTORE
+        })
 
-        t.same(span._intrinsicAttributes.traceId, { [STRING_TYPE]: transaction.traceId })
-        t.same(span._intrinsicAttributes.guid, { [STRING_TYPE]: segment.id })
-        t.same(span._intrinsicAttributes.parentId, { [STRING_TYPE]: 'parent' })
-        t.same(span._intrinsicAttributes.transactionId, { [STRING_TYPE]: transaction.id })
-        t.same(span._intrinsicAttributes.sampled, { [BOOL_TYPE]: true })
-        t.same(span._intrinsicAttributes.priority, { [INT_TYPE]: 42 })
+        assert.deepEqual(span._intrinsicAttributes.traceId, { [STRING_TYPE]: transaction.traceId })
+        assert.deepEqual(span._intrinsicAttributes.guid, { [STRING_TYPE]: segment.id })
+        assert.deepEqual(span._intrinsicAttributes.parentId, { [STRING_TYPE]: 'parent' })
+        assert.deepEqual(span._intrinsicAttributes.transactionId, { [STRING_TYPE]: transaction.id })
+        assert.deepEqual(span._intrinsicAttributes.sampled, { [BOOL_TYPE]: true })
+        assert.deepEqual(span._intrinsicAttributes.priority, { [INT_TYPE]: 42 })
 
-        t.same(span._intrinsicAttributes.name, {
+        assert.deepEqual(span._intrinsicAttributes.name, {
           [STRING_TYPE]: 'Datastore/statement/TestStore/test/test'
         })
 
-        t.same(span._intrinsicAttributes.timestamp, { [INT_TYPE]: segment.timer.start })
+        assert.deepEqual(span._intrinsicAttributes.timestamp, { [INT_TYPE]: segment.timer.start })
 
-        t.ok(span._intrinsicAttributes.duration)
-        t.ok(span._intrinsicAttributes.duration[DOUBLE_TYPE])
+        assert.ok(span._intrinsicAttributes.duration)
+        assert.ok(span._intrinsicAttributes.duration[DOUBLE_TYPE])
 
         // Should have (most) type-specific intrinsics
-        t.same(span._intrinsicAttributes.component, { [STRING_TYPE]: 'TestStore' })
-        t.same(span._intrinsicAttributes['span.kind'], { [STRING_TYPE]: 'client' })
+        assert.deepEqual(span._intrinsicAttributes.component, { [STRING_TYPE]: 'TestStore' })
+        assert.deepEqual(span._intrinsicAttributes['span.kind'], { [STRING_TYPE]: 'client' })
 
         const agentAttributes = span._agentAttributes
-        t.ok(agentAttributes)
+        assert.ok(agentAttributes)
 
         // Should have not http properties.
         const hasOwnAttribute = Object.hasOwnProperty.bind(agentAttributes)
         ;['http.url', 'http.method', 'http.request.method'].forEach((attr) => {
-          t.notOk(hasOwnAttribute(attr))
+          assert.ok(!hasOwnAttribute(attr))
         })
 
         // Should removed map attributes
@@ -283,32 +289,35 @@ tap.test('fromSegment()', (t) => {
           'host',
           'port_path_or_id'
         ].forEach((attr) => {
-          t.notOk(hasOwnAttribute(attr))
+          assert.ok(!hasOwnAttribute(attr))
         })
         // Should have (most) datastore properties.
-        t.ok(agentAttributes['db.instance'])
-        t.same(agentAttributes['db.collection'], { [STRING_TYPE]: 'my-collection' })
-        t.same(agentAttributes['peer.hostname'], { [STRING_TYPE]: 'my-db-host' })
-        t.same(agentAttributes['peer.address'], { [STRING_TYPE]: 'my-db-host:/path/to/db.sock' })
-        t.same(agentAttributes['db.system'], { [STRING_TYPE]: 'TestStore' }) // same as intrinsics.component
-        t.same(agentAttributes['server.address'], { [STRING_TYPE]: 'my-db-host' })
-        t.same(agentAttributes['server.port'], { [STRING_TYPE]: '/path/to/db.sock' })
+        assert.ok(agentAttributes['db.instance'])
+        assert.deepEqual(agentAttributes['db.collection'], { [STRING_TYPE]: 'my-collection' })
+        assert.deepEqual(agentAttributes['peer.hostname'], { [STRING_TYPE]: 'my-db-host' })
+        assert.deepEqual(agentAttributes['peer.address'], {
+          [STRING_TYPE]: 'my-db-host:/path/to/db.sock'
+        })
+        assert.deepEqual(agentAttributes['db.system'], { [STRING_TYPE]: 'TestStore' }) // same as intrinsics.component
+        assert.deepEqual(agentAttributes['server.address'], { [STRING_TYPE]: 'my-db-host' })
+        assert.deepEqual(agentAttributes['server.port'], { [STRING_TYPE]: '/path/to/db.sock' })
 
         const statement = agentAttributes['db.statement']
-        t.ok(statement)
+        assert.ok(statement)
 
         // Testing query truncation
         const actualValue = statement[STRING_TYPE]
-        t.ok(actualValue)
-        t.ok(actualValue.endsWith('...'))
-        t.equal(Buffer.byteLength(actualValue, 'utf8'), 2000)
+        assert.ok(actualValue)
+        assert.ok(actualValue.endsWith('...'))
+        assert.equal(Buffer.byteLength(actualValue, 'utf8'), 2000)
 
-        t.end()
+        end()
       })
     })
   })
 
-  t.test('should serialize to proper format with toStreamingFormat()', (t) => {
+  await t.test('should serialize to proper format with toStreamingFormat()', (t, end) => {
+    const { agent } = t.nr
     helper.runInTransaction(agent, (transaction) => {
       transaction.priority = 42
       transaction.sampled = true
@@ -330,22 +339,23 @@ tap.test('fromSegment()', (t) => {
           agent_attributes: agentAttributes
         } = serializedSpan
 
-        t.equal(traceId, transaction.traceId)
+        assert.equal(traceId, transaction.traceId)
 
         // Spot check a few known attributes
-        t.same(intrinsics.type, { [STRING_TYPE]: 'Span' })
-        t.same(intrinsics.traceId, { [STRING_TYPE]: transaction.traceId })
+        assert.deepEqual(intrinsics.type, { [STRING_TYPE]: 'Span' })
+        assert.deepEqual(intrinsics.traceId, { [STRING_TYPE]: transaction.traceId })
 
-        t.same(userAttributes.customKey, { [STRING_TYPE]: 'customValue' })
+        assert.deepEqual(userAttributes.customKey, { [STRING_TYPE]: 'customValue' })
 
-        t.same(agentAttributes.anAgentAttribute, { [BOOL_TYPE]: true })
+        assert.deepEqual(agentAttributes.anAgentAttribute, { [BOOL_TYPE]: true })
 
-        t.end()
+        end()
       }, 10)
     })
   })
 
-  t.test('should populate intrinsics from span context', (t) => {
+  await t.test('should populate intrinsics from span context', (t, end) => {
+    const { agent } = t.nr
     helper.runInTransaction(agent, (transaction) => {
       transaction.priority = 42
       transaction.sampled = true
@@ -361,15 +371,16 @@ tap.test('fromSegment()', (t) => {
         const serializedSpan = span.toStreamingFormat()
         const { intrinsics } = serializedSpan
 
-        t.same(intrinsics['intrinsic.1'], { [INT_TYPE]: 1 })
-        t.same(intrinsics['intrinsic.2'], { [INT_TYPE]: 2 })
+        assert.deepEqual(intrinsics['intrinsic.1'], { [INT_TYPE]: 1 })
+        assert.deepEqual(intrinsics['intrinsic.2'], { [INT_TYPE]: 2 })
 
-        t.end()
+        end()
       }, 10)
     })
   })
 
-  t.test('should handle truncated http spans', (t) => {
+  await t.test('should handle truncated http spans', (t, end) => {
+    const { agent } = t.nr
     helper.runInTransaction(agent, (transaction) => {
       https.get('https://example.com?foo=bar', (res) => {
         transaction.end() // prematurely end to truncate
@@ -377,37 +388,38 @@ tap.test('fromSegment()', (t) => {
         res.resume()
         res.on('end', () => {
           const segment = transaction.trace.root.children[0]
-          t.ok(segment.name.startsWith('Truncated'))
+          assert.ok(segment.name.startsWith('Truncated'))
 
           const span = StreamingSpanEvent.fromSegment(segment)
-          t.ok(span)
-          t.ok(span instanceof StreamingSpanEvent)
+          assert.ok(span)
+          assert.ok(span instanceof StreamingSpanEvent)
 
-          t.ok(span._intrinsicAttributes)
-          t.same(span._intrinsicAttributes.category, { [STRING_TYPE]: CATEGORIES.HTTP })
-          t.same(span._intrinsicAttributes['span.kind'], { [STRING_TYPE]: 'client' })
+          assert.ok(span._intrinsicAttributes)
+          assert.deepEqual(span._intrinsicAttributes.category, { [STRING_TYPE]: CATEGORIES.HTTP })
+          assert.deepEqual(span._intrinsicAttributes['span.kind'], { [STRING_TYPE]: 'client' })
 
-          t.end()
+          end()
         })
       })
     })
   })
 
-  t.test('should handle truncated datastore spans', (t) => {
+  await t.test('should handle truncated datastore spans', (t, end) => {
+    const { agent } = t.nr
     helper.runInTransaction(agent, (transaction) => {
       const segment = transaction.trace.root.add('Datastore/operation/something')
       transaction.end() // end before segment to trigger truncate
 
-      t.ok(segment.name.startsWith('Truncated'))
+      assert.ok(segment.name.startsWith('Truncated'))
 
       const span = StreamingSpanEvent.fromSegment(segment)
-      t.ok(span)
-      t.ok(span instanceof StreamingSpanEvent)
+      assert.ok(span)
+      assert.ok(span instanceof StreamingSpanEvent)
 
-      t.same(span._intrinsicAttributes.category, { [STRING_TYPE]: CATEGORIES.DATASTORE })
-      t.same(span._intrinsicAttributes['span.kind'], { [STRING_TYPE]: 'client' })
+      assert.deepEqual(span._intrinsicAttributes.category, { [STRING_TYPE]: CATEGORIES.DATASTORE })
+      assert.deepEqual(span._intrinsicAttributes['span.kind'], { [STRING_TYPE]: 'client' })
 
-      t.end()
+      end()
     })
   })
 })

@@ -4,101 +4,81 @@
  */
 
 'use strict'
-
-const tap = require('tap')
+const assert = require('node:assert')
+const test = require('node:test')
 
 const mapToStreamingType = require('../../../lib/spans/map-to-streaming-type')
 
-tap.test('should corectly convert strings', (t) => {
+test('should corectly convert strings', async () => {
   const stringValue = 'myString'
   const expected = {
     string_value: stringValue
   }
-
   const result = mapToStreamingType(stringValue)
-  t.same(result, expected)
-  t.end()
+  assert.deepEqual(result, expected)
 })
 
-tap.test('should not drop empty strings', (t) => {
+test('should not drop empty strings', async () => {
   const stringValue = ''
   const expected = {
     string_value: stringValue
   }
-
   const result = mapToStreamingType(stringValue)
-  t.same(result, expected)
-  t.end()
+  assert.deepEqual(result, expected)
 })
 
-tap.test('should correctly convert bools when true', (t) => {
+test('should correctly convert bools when true', async () => {
   const boolValue = true
   const expected = {
     bool_value: boolValue
   }
-
   const result = mapToStreamingType(boolValue)
-  t.same(result, expected)
-  t.end()
+  assert.deepEqual(result, expected)
 })
 
-tap.test('should correctly convert bools when false', (t) => {
+test('should correctly convert bools when false', async () => {
   const boolValue = false
   const expected = {
     bool_value: boolValue
   }
-
   const result = mapToStreamingType(boolValue)
-  t.same(result, expected)
-  t.end()
+  assert.deepEqual(result, expected)
 })
 
-tap.test('should correctly convert integers', (t) => {
+test('should correctly convert integers', async () => {
   const intValue = 9999999999999999
   const expected = {
     int_value: intValue
   }
-
   const result = mapToStreamingType(intValue)
-  t.same(result, expected)
-  t.end()
+  assert.deepEqual(result, expected)
 })
 
-tap.test('should correctly convert doubles', (t) => {
+test('should correctly convert doubles', async () => {
   const doubleValue = 999.99
   const expected = {
     double_value: doubleValue
   }
-
   const result = mapToStreamingType(doubleValue)
-  t.same(result, expected)
-  t.end()
+  assert.deepEqual(result, expected)
 })
 
-tap.test('should drop nulls', (t) => {
+test('should drop nulls', async () => {
   const result = mapToStreamingType(null)
-
-  t.equal(result, undefined)
-  t.end()
+  assert.equal(result, undefined)
 })
 
-tap.test('should drop undefined', (t) => {
+test('should drop undefined', async () => {
   const result = mapToStreamingType()
-
-  t.equal(result, undefined)
-  t.end()
+  assert.equal(result, undefined)
 })
 
-tap.test('should drop objects', (t) => {
+test('should drop objects', async () => {
   const result = mapToStreamingType({})
-
-  t.equal(result, undefined)
-  t.end()
+  assert.equal(result, undefined)
 })
 
-tap.test('should drop functions', (t) => {
+test('should drop functions', async () => {
   const result = mapToStreamingType(() => {})
-
-  t.equal(result, undefined)
-  t.end()
+  assert.equal(result, undefined)
 })
