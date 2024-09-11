@@ -9,7 +9,6 @@ const test = require('node:test')
 const assert = require('node:assert')
 const TxSegmentNormalizer = require('../../../lib/metrics/normalizer/tx_segment')
 const txTestData = require('../../lib/cross_agent_tests/transaction_segment_terms')
-const { CostExplorer } = require('aws-sdk')
 
 test('The TxSegmentNormalizer', async (t) => {
   // iterate over the cross_agent_tests

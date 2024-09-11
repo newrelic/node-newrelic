@@ -331,5 +331,5 @@ module.exports = {
   assertSegments,
   compareSegments,
   isNonWritable,
-  match,
+  match
 }
