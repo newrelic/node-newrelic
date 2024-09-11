@@ -9,7 +9,7 @@
     <projectUrl>https://github.com/newrelic/node-newrelic</projectUrl>
     <requireLicenseAcceptance>true</requireLicenseAcceptance>
     <description>This extension adds the New Relic Node Agent to your Azure WebSite.</description>
-    <readme>Content\README.md</readme>
+    <readme>content\README.md</readme>
     <iconUrl>https://newrelic.com/static-assets/images/icons/avatar-newrelic.png</iconUrl>
 	<icon>images\icon.png</icon>
     <copyright>New Relic, Inc., 2024</copyright>
