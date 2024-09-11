@@ -68,7 +68,7 @@ test('reportSettings', async (t) => {
     const toFind = log('find me')
 
     let sends = 0
-    agent.logs.on('finished log_event_data data send.', () => {
+    agent.logs.on('finished_data_send-log_event_data', () => {
       sends += 1
       if (sends === 3) {
         const logs = agent.logs.events.toArray()

@@ -90,7 +90,7 @@ tap.test('Transaction Event Aggregator - when data over split threshold', (t) =>
 
   t.test('should emit proper message with method for starting send', (t) => {
     const { eventAggregator } = t.context
-    const expectedStartEmit = `starting ${EXPECTED_METHOD} data send.`
+    const expectedStartEmit = `starting_data_send-${EXPECTED_METHOD}`
 
     eventAggregator.once(expectedStartEmit, t.end)
 
@@ -204,9 +204,9 @@ tap.test('Transaction Event Aggregator - when data over split threshold', (t) =>
 
   t.test('should emit proper message with method for finishing send', (t) => {
     const { eventAggregator, fakeCollectorApi } = t.context
-    const expectedStartEmit = `finished ${EXPECTED_METHOD} data send.`
+    const expectedEndEmit = `finished_data_send-${EXPECTED_METHOD}`
 
-    eventAggregator.once(expectedStartEmit, t.end)
+    eventAggregator.once(expectedEndEmit, t.end)
 
     fakeCollectorApi.send.callsFake((_method, _payload, callback) => {
       callback(null, { retainData: false })
