@@ -5,6 +5,7 @@
 
 'use strict'
 const assert = require('node:assert')
+const { isSimpleObject } = require('../../lib/util/objects')
 
 function assertExactClmAttrs(segmentStub, expectedAttrs) {
   const attrs = segmentStub.addAttribute.args
@@ -232,9 +233,101 @@ function match(actual, expected) {
   return true
 }
 
+/**
+ * @param {Metrics} metrics         metrics under test
+ * @param {Array} expected          Array of metric data where metric data is in this form:
+ *                                  [
+ *                                    {
+ *                                      “name”:”name of metric”,
+ *                                      “scope”:”scope of metric”,
+ *                                    },
+ *                                    [count,
+ *                                      total time,
+ *                                      exclusive time,
+ *                                      min time,
+ *                                      max time,
+ *                                      sum of squares]
+ *                                  ]
+ * @param {boolean} exclusive       When true, found and expected metric lengths should match
+ * @param {boolean} assertValues    When true, metric values must match expected
+ */
+function assertMetrics(metrics, expected, exclusive, assertValues) {
+  // Assertions about arguments because maybe something returned undefined
+  // unexpectedly and is passed in, or a return type changed. This will
+  // hopefully help catch that and make it obvious.
+  assert.ok(isSimpleObject(metrics), 'first argument required to be an Metrics object')
+  assert.ok(Array.isArray(expected), 'second argument required to be an array of metrics')
+  assert.ok(typeof exclusive === 'boolean', 'third argument required to be a boolean if provided')
+
+  if (assertValues === undefined) {
+    assertValues = true
+  }
+
+  for (let i = 0, len = expected.length; i < len; i++) {
+    const expectedMetric = expected[i]
+    const metric = metrics.getMetric(expectedMetric[0].name, expectedMetric[0].scope)
+    assert.ok(metric, `should find ${expectedMetric[0].name}`)
+    if (assertValues) {
+      assert.deepEqual(metric.toJSON(), expectedMetric[1])
+    }
+  }
+
+  if (exclusive) {
+    const metricsList = metrics.toJSON()
+    assert.equal(metricsList.length, expected.length)
+  }
+}
+
+/**
+ * @param {Transaction} transaction Nodejs agent transaction
+ * @param {Array} expected          Array of metric data where metric data is in this form:
+ *                                  [
+ *                                    {
+ *                                      “name”:”name of metric”,
+ *                                      “scope”:”scope of metric”,
+ *                                    },
+ *                                    [count,
+ *                                      total time,
+ *                                      exclusive time,
+ *                                      min time,
+ *                                      max time,
+ *                                      sum of squares]
+ *                                  ]
+ * @param {boolean} exact           When true, found and expected metric lengths should match
+ */
+function assertMetricValues(transaction, expected, exact) {
+  const metrics = transaction.metrics
+
+  for (let i = 0; i < expected.length; ++i) {
+    let expectedMetric = Object.assign({}, expected[i])
+    let name = null
+    let scope = null
+
+    if (typeof expectedMetric === 'string') {
+      name = expectedMetric
+      expectedMetric = {}
+    } else {
+      name = expectedMetric[0].name
+      scope = expectedMetric[0].scope
+    }
+
+    const metric = metrics.getMetric(name, scope)
+    assert.ok(metric, 'should have expected metric name')
+
+    assert.deepStrictEqual(metric.toJSON(), expectedMetric[1], 'metric values should match')
+  }
+
+  if (exact) {
+    const metricsJSON = metrics.toJSON()
+    assert.equal(metricsJSON.length, expected.length, 'metrics length should match')
+  }
+}
+
 module.exports = {
   assertCLMAttrs,
   assertExactClmAttrs,
+  assertMetrics,
+  assertMetricValues,
   assertSegments,
   compareSegments,
   isNonWritable,

@@ -4,14 +4,14 @@
  */
 
 'use strict'
-const tap = require('tap')
+const test = require('node:test')
+const assert = require('node:assert')
 const Rule = require('../../../lib/metrics/normalizer/rule')
 
-tap.test('NormalizerRule', function (t) {
-  t.autoend()
-  t.test('with a very simple specification', function (t) {
-    t.autoend()
-    t.beforeEach(function (t) {
+test('NormalizerRule', async function (t) {
+  await t.test('with a very simple specification', async function (t) {
+    t.beforeEach(function (ctx) {
+      ctx.nr = {}
       // sample rule sent by staging collector 1 on 2012-08-29
       const sample = {
         each_segment: false,
@@ -23,97 +23,88 @@ tap.test('NormalizerRule', function (t) {
         replacement: '\\1'
       }
 
-      t.context.rule = new Rule(sample)
+      ctx.nr.rule = new Rule(sample)
     })
 
-    t.test('should know whether the rule terminates normalization', function (t) {
-      const { rule } = t.context
-      t.equal(rule.isTerminal, true)
-      t.end()
+    await t.test('should know whether the rule terminates normalization', function (t) {
+      const { rule } = t.nr
+      assert.equal(rule.isTerminal, true)
     })
 
-    t.test('should know its own precedence', function (t) {
-      const { rule } = t.context
-      t.equal(rule.precedence, 0)
-      t.end()
+    await t.test('should know its own precedence', function (t) {
+      const { rule } = t.nr
+      assert.equal(rule.precedence, 0)
     })
 
-    t.test('should correctly compile the included regexp', function (t) {
-      const { rule } = t.context
-      t.equal(rule.matches('test_match_nothing'), true)
-      t.equal(rule.matches('a test_match_nothing'), false)
-      t.equal(rule.matches("test_match_nothin'"), false)
-      t.end()
+    await t.test('should correctly compile the included regexp', function (t) {
+      const { rule } = t.nr
+      assert.equal(rule.matches('test_match_nothing'), true)
+      assert.equal(rule.matches('a test_match_nothing'), false)
+      assert.equal(rule.matches("test_match_nothin'"), false)
     })
 
-    t.test("shouldn't throw if the regexp doesn't compile", function (t) {
+    await t.test("shouldn't throw if the regexp doesn't compile", function () {
       const whoops = { match_expression: '$[ad^' }
       let bad
-      t.doesNotThrow(function () {
+      assert.doesNotThrow(function () {
         bad = new Rule(whoops)
       })
-      t.equal(bad.matches(''), true)
-      t.end()
+      assert.equal(bad.matches(''), true)
     })
 
-    t.test("should know if the regexp is applied to each 'segment' in the URL", function (t) {
-      const { rule } = t.context
-      t.equal(rule.eachSegment, false)
-      t.end()
+    await t.test("should know if the regexp is applied to each 'segment' in the URL", function (t) {
+      const { rule } = t.nr
+      assert.equal(rule.eachSegment, false)
     })
 
-    t.test('should know if the regexp replaces all instances in the URL', function (t) {
-      const { rule } = t.context
-      t.equal(rule.replaceAll, false)
-      t.end()
+    await t.test('should know if the regexp replaces all instances in the URL', function (t) {
+      const { rule } = t.nr
+      assert.equal(rule.replaceAll, false)
     })
 
-    t.test('should parse the replacement pattern', function (t) {
-      const { rule } = t.context
-      t.equal(rule.replacement, '$1')
-      t.end()
+    await t.test('should parse the replacement pattern', function (t) {
+      const { rule } = t.nr
+      assert.equal(rule.replacement, '$1')
     })
 
-    t.test('should know whether to ignore the URL', function (t) {
-      const { rule } = t.context
-      t.equal(rule.ignore, false)
-      t.end()
+    await t.test('should know whether to ignore the URL', function (t) {
+      const { rule } = t.nr
+      assert.equal(rule.ignore, false)
     })
 
-    t.test('should be able to take in a non-normalized URL and return it normalized', (t) => {
-      const { rule } = t.context
-      t.equal(rule.apply('test_match_nothing'), 'test_match_nothing')
-      t.end()
+    await t.test('should be able to take in a non-normalized URL and return it normalized', (t) => {
+      const { rule } = t.nr
+      assert.equal(rule.apply('test_match_nothing'), 'test_match_nothing')
     })
   })
 
-  t.test("with Saxon's patterns", function (t) {
-    t.autoend()
-    t.test("including '^(?!account|application).*'", function (t) {
-      t.autoend()
-      t.beforeEach(function (t) {
-        t.context.rule = new Rule({
+  await t.test("with Saxon's patterns", async function (t) {
+    await t.test("including '^(?!account|application).*'", async function (t) {
+      t.beforeEach(function (ctx) {
+        ctx.nr = {}
+        ctx.nr.rule = new Rule({
           each_segment: true,
           match_expression: '^(?!account|application).*',
           replacement: '*'
         })
       })
 
-      t.test(
+      await t.test(
         "implies '/account/myacc/application/test' -> '/account/*/application/*'",
         function (t) {
-          const { rule } = t.context
-          t.equal(rule.apply('/account/myacc/application/test'), '/account/*/application/*')
-          t.end()
+          const { rule } = t.nr
+          assert.equal(rule.apply('/account/myacc/application/test'), '/account/*/application/*')
         }
       )
 
-      t.test(
+      await t.test(
         "implies '/oh/dude/account/myacc/application' -> '/*/*/account/*/application'",
         function (t) {
-          const { rule } = t.context
-          t.equal(rule.apply('/oh/dude/account/myacc/application'), '/*/*/account/*/application')
-          t.end()
+          const { rule } = t.nr
+          assert.equal(
+            rule.apply('/oh/dude/account/myacc/application'),
+            '/*/*/account/*/application'
+          )
         }
       )
     })
@@ -121,27 +112,26 @@ tap.test('NormalizerRule', function (t) {
     const expression =
       '^(?!channel|download|popups|search|tap|user' + '|related|admin|api|genres|notification).*'
 
-    t.test(`including '${expression}'`, function (t) {
-      t.autoend()
-      t.beforeEach(function (t) {
-        t.context.rule = new Rule({
+    await t.test(`including '${expression}'`, async function (t) {
+      t.beforeEach(function (ctx) {
+        ctx.nr = {}
+        ctx.nr.rule = new Rule({
           each_segment: true,
           match_expression: expression,
           replacement: '*'
         })
       })
 
-      t.test("implies '/tap/stuff/user/gfy77t/view' -> '/tap/*/user/*/*'", function (t) {
-        const { rule } = t.context
-        t.equal(rule.apply('/tap/stuff/user/gfy77t/view'), '/tap/*/user/*/*')
-        t.end()
+      await t.test("implies '/tap/stuff/user/gfy77t/view' -> '/tap/*/user/*/*'", function (t) {
+        const { rule } = t.nr
+        assert.equal(rule.apply('/tap/stuff/user/gfy77t/view'), '/tap/*/user/*/*')
       })
     })
   })
 
-  t.test('with a more complex substitution rule', function (t) {
-    t.autoend()
-    t.beforeEach(function (t) {
+  await t.test('with a more complex substitution rule', async function (t) {
+    t.beforeEach(function (ctx) {
+      ctx.nr = {}
       // sample rule sent by staging collector 1 on 2012-08-29
       const sample = {
         each_segment: true,
@@ -153,61 +143,53 @@ tap.test('NormalizerRule', function (t) {
         replacement: '*'
       }
 
-      t.context.rule = new Rule(sample)
+      ctx.nr.rule = new Rule(sample)
     })
 
-    t.test('should know whether the rule terminates normalization', function (t) {
-      const { rule } = t.context
-      t.equal(rule.isTerminal, false)
-      t.end()
+    await t.test('should know whether the rule terminates normalization', function (t) {
+      const { rule } = t.nr
+      assert.equal(rule.isTerminal, false)
     })
 
-    t.test('should know its own precedence', function (t) {
-      const { rule } = t.context
-      t.equal(rule.precedence, 1)
-      t.end()
+    await t.test('should know its own precedence', function (t) {
+      const { rule } = t.nr
+      assert.equal(rule.precedence, 1)
     })
 
-    t.test('should correctly compile the included regexp', function (t) {
-      const { rule } = t.context
-      t.equal(rule.matches('/00dead_beef_00,b/hamburt'), true)
-      t.equal(rule.matches('a test_match_nothing'), false)
-      t.equal(rule.matches('/00 dead dad/nomatch'), false)
-      t.end()
+    await t.test('should correctly compile the included regexp', function (t) {
+      const { rule } = t.nr
+      assert.equal(rule.matches('/00dead_beef_00,b/hamburt'), true)
+      assert.equal(rule.matches('a test_match_nothing'), false)
+      assert.equal(rule.matches('/00 dead dad/nomatch'), false)
     })
 
-    t.test("should know if the regexp is applied to each 'segment' in the URL", function (t) {
-      const { rule } = t.context
-      t.equal(rule.eachSegment, true)
-      t.end()
+    await t.test("should know if the regexp is applied to each 'segment' in the URL", function (t) {
+      const { rule } = t.nr
+      assert.equal(rule.eachSegment, true)
     })
 
-    t.test('should know if the regexp replaces all instances in the URL', function (t) {
-      const { rule } = t.context
-      t.equal(rule.replaceAll, false)
-      t.end()
+    await t.test('should know if the regexp replaces all instances in the URL', function (t) {
+      const { rule } = t.nr
+      assert.equal(rule.replaceAll, false)
     })
 
-    t.test('should parse the replacement pattern', function (t) {
-      const { rule } = t.context
-      t.equal(rule.replacement, '*')
-      t.end()
+    await t.test('should parse the replacement pattern', function (t) {
+      const { rule } = t.nr
+      assert.equal(rule.replacement, '*')
     })
 
-    t.test('should know whether to ignore the URL', function (t) {
-      const { rule } = t.context
-      t.equal(rule.ignore, false)
-      t.end()
+    await t.test('should know whether to ignore the URL', function (t) {
+      const { rule } = t.nr
+      assert.equal(rule.ignore, false)
     })
 
-    t.test('should be able to take in a non-normalized URL and return it normalized', (t) => {
-      const { rule } = t.context
-      t.equal(rule.apply('/00dead_beef_00,b/hamburt'), '/*/hamburt')
-      t.end()
+    await t.test('should be able to take in a non-normalized URL and return it normalized', (t) => {
+      const { rule } = t.nr
+      assert.equal(rule.apply('/00dead_beef_00,b/hamburt'), '/*/hamburt')
     })
   })
 
-  t.test('should replace all the instances of a pattern when so specified', function (t) {
+  await t.test('should replace all the instances of a pattern when so specified', function () {
     const sample = {
       each_segment: false,
       eval_order: 0,
@@ -219,65 +201,53 @@ tap.test('NormalizerRule', function (t) {
     }
     const rule = new Rule(sample)
 
-    t.equal(rule.pattern.global, true)
-    t.equal(rule.apply('/test/xXxxXx0xXxzxxxxXx'), '/test/yy0yzyy')
-    t.end()
+    assert.equal(rule.pattern.global, true)
+    assert.equal(rule.apply('/test/xXxxXx0xXxzxxxxXx'), '/test/yy0yzyy')
   })
 
-  t.test('when given an incomplete specification', function (t) {
-    t.autoend()
-    t.test("shouldn't throw (but it can log!)", function (t) {
-      t.doesNotThrow(function () {
+  await t.test('when given an incomplete specification', async function (t) {
+    await t.test("shouldn't throw (but it can log!)", function () {
+      assert.doesNotThrow(function () {
         // eslint-disable-next-line no-new
         new Rule()
       })
-      t.end()
     })
 
-    t.test('should default to not applying the rule to each segment', function (t) {
-      t.equal(new Rule().eachSegment, false)
-      t.end()
+    await t.test('should default to not applying the rule to each segment', function () {
+      assert.equal(new Rule().eachSegment, false)
     })
 
-    t.test("should default the rule's precedence to 0", function (t) {
-      t.equal(new Rule().precedence, 0)
-      t.end()
+    await t.test("should default the rule's precedence to 0", function () {
+      assert.equal(new Rule().precedence, 0)
     })
 
-    t.test('should default to not terminating rule evaluation', function (t) {
-      t.equal(new Rule().isTerminal, false)
-      t.end()
+    await t.test('should default to not terminating rule evaluation', function () {
+      assert.equal(new Rule().isTerminal, false)
     })
 
-    t.test('should have a regexp that matches the empty string', function (t) {
-      t.same(new Rule().pattern, /^$/i)
-      t.end()
+    await t.test('should have a regexp that matches the empty string', function () {
+      assert.deepEqual(new Rule().pattern, /^$/i)
     })
 
-    t.test('should use the entire match as the replacement value', function (t) {
-      t.equal(new Rule().replacement, '$0')
-      t.end()
+    await t.test('should use the entire match as the replacement value', function () {
+      assert.equal(new Rule().replacement, '$0')
     })
 
-    t.test('should default to not replacing all instances', function (t) {
-      t.equal(new Rule().replaceAll, false)
-      t.end()
+    await t.test('should default to not replacing all instances', function () {
+      assert.equal(new Rule().replaceAll, false)
     })
 
-    t.test('should default to not ignoring matching URLs', function (t) {
-      t.equal(new Rule().ignore, false)
-      t.end()
+    await t.test('should default to not ignoring matching URLs', function () {
+      assert.equal(new Rule().ignore, false)
     })
 
-    t.test('should silently pass through the input if applied', function (t) {
-      t.equal(new Rule().apply('sample/input'), 'sample/input')
-      t.end()
+    await t.test('should silently pass through the input if applied', function () {
+      assert.equal(new Rule().apply('sample/input'), 'sample/input')
     })
   })
 
-  t.test('when given a RegExp', function (t) {
-    t.autoend()
-    t.test('should merge flags', function (t) {
+  await t.test('when given a RegExp', async function (t) {
+    await t.test('should merge flags', function () {
       const r = new Rule({
         each_segment: false,
         eval_order: 0,
@@ -289,15 +259,14 @@ tap.test('NormalizerRule', function (t) {
       })
 
       const re = r.pattern
-      t.equal(re.ignoreCase, true)
-      t.equal(re.multiline, true)
-      t.equal(re.global, true)
-      t.end()
+      assert.equal(re.ignoreCase, true)
+      assert.equal(re.multiline, true)
+      assert.equal(re.global, true)
     })
 
-    t.test('should not die on duplicated flags', function (t) {
+    await t.test('should not die on duplicated flags', function () {
       let r = null
-      t.doesNotThrow(function () {
+      assert.doesNotThrow(function () {
         r = new Rule({
           each_segment: false,
           eval_order: 0,
@@ -310,10 +279,9 @@ tap.test('NormalizerRule', function (t) {
       })
 
       const re = r.pattern
-      t.equal(re.ignoreCase, true)
-      t.equal(re.multiline, false)
-      t.equal(re.global, true)
-      t.end()
+      assert.equal(re.ignoreCase, true)
+      assert.equal(re.multiline, false)
+      assert.equal(re.global, true)
     })
   })
 })
