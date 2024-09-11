@@ -2,6 +2,20 @@
   "repository": "newrelic/node-newrelic",
   "entries": [
     {
+      "version": "12.4.0",
+      "changes": {
+        "security": [],
+        "bugfixes": [
+          "Nuget pack generates packagName.semver and not packageName-semver"
+        ],
+        "features": [
+          "Provided ability to disable instrumentation for a 3rd party package",
+          "Added support for `express@5`",
+          "Added Azure site extension installation scripts"
+        ]
+      }
+    },
+    {
       "version": "12.3.1",
       "changes": {
         "security": [],
