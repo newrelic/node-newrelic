@@ -14,12 +14,12 @@ test('The TxSegmentNormalizer', async (t) => {
   // iterate over the cross_agent_tests
   for (const test of txTestData) {
     // create the test and bind the test data to it.
-    t.test(`should be ${test.testname}`, () => {
+    await t.test(`should be ${test.testname}`, () => {
       runTest(test)
     })
   }
 
-  t.test('should reject non array to load', () => {
+  await t.test('should reject non array to load', () => {
     const normalizer = new TxSegmentNormalizer()
     normalizer.load(1)
     assert.ok(Array.isArray(normalizer.terms))
