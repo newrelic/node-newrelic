@@ -226,14 +226,14 @@ function createStatusCodeTest(testCase) {
 
 function whenAllAggregatorsSend(agent) {
   const metricPromise = new Promise((resolve) => {
-    agent.metrics.once('finished metric_data data send.', function onMetricsFinished() {
+    agent.metrics.once('finished_data_send-metric_data', function onMetricsFinished() {
       resolve()
     })
   })
 
   const spanPromise = new Promise((resolve) => {
     agent.spanEventAggregator.once(
-      'finished span_event_data data send.',
+      'finished_data_send-span_event_data',
       function onSpansFinished() {
         resolve()
       }
@@ -242,7 +242,7 @@ function whenAllAggregatorsSend(agent) {
 
   const customEventPromise = new Promise((resolve) => {
     agent.customEventAggregator.once(
-      'finished custom_event_data data send.',
+      'finished_data_send-custom_event_data',
       function onCustomEventsFinished() {
         resolve()
       }
@@ -251,7 +251,7 @@ function whenAllAggregatorsSend(agent) {
 
   const transactionEventPromise = new Promise((resolve) => {
     agent.transactionEventAggregator.once(
-      'finished analytic_event_data data send.',
+      'finished_data_send-analytic_event_data',
       function onTransactionEventsFinished() {
         resolve()
       }
@@ -259,20 +259,20 @@ function whenAllAggregatorsSend(agent) {
   })
 
   const transactionTracePromise = new Promise((resolve) => {
-    agent.traces.once('finished transaction_sample_data data send.', function onTracesFinished() {
+    agent.traces.once('finished_data_send-transaction_sample_data', function onTracesFinished() {
       resolve()
     })
   })
 
   const sqlTracePromise = new Promise((resolve) => {
-    agent.queries.once('finished sql_trace_data data send.', function onSqlTracesFinished() {
+    agent.queries.once('finished_data_send-sql_trace_data', function onSqlTracesFinished() {
       resolve()
     })
   })
 
   const errorTracePromise = new Promise((resolve) => {
     agent.errors.traceAggregator.once(
-      'finished error_data data send.',
+      'finished_data_send-error_data',
       function onErrorTracesFinished() {
         resolve()
       }
@@ -281,7 +281,7 @@ function whenAllAggregatorsSend(agent) {
 
   const errorEventPromise = new Promise((resolve) => {
     agent.errors.eventAggregator.once(
-      'finished error_event_data data send.',
+      'finished_data_send-error_event_data',
       function onErrorEventsFinished() {
         resolve()
       }

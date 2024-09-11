@@ -19,7 +19,7 @@ class FakeAggregator extends EventEmitter {
 
   start() {}
   send() {
-    this.emit(`finished ${this.method} data send.`)
+    this.emit(`finished_data_send-${this.method}`)
   }
 
   stop() {}

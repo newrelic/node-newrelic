@@ -244,7 +244,7 @@ tap.test('TraceAggregator', function (t) {
       t.notOk(agent.traces.trace, 'trace waiting to be collected')
       createTransaction(agent, `/test-${n % 3}`, 500)
       t.ok(agent.traces.trace, `${n}th trace to collect`)
-      agent.traces.once('finished transaction_sample_data data send.', (err) =>
+      agent.traces.once('finished_data_send-transaction_sample_data', (err) =>
         cb(err, { idx: n, max })
       )
       agent.traces.send()
@@ -289,25 +289,25 @@ tap.test('TraceAggregator', function (t) {
       remaining--
       if (remaining < 1) {
         // 6th harvest: no serialized trace, timings reset
-        agent.traces.once('finished transaction_sample_data data send.', function () {
+        agent.traces.once('finished_data_send-transaction_sample_data', function () {
           t.notOk(aggregator.requestTimes['WebTransaction/Uri/test'])
 
           t.end()
         })
         agent.traces.send()
       } else {
-        agent.traces.once('finished transaction_sample_data data send.', looper)
+        agent.traces.once('finished_data_send-transaction_sample_data', looper)
         agent.traces.send()
       }
     }
 
     aggregator.add(tx)
 
-    agent.traces.once('finished transaction_sample_data data send.', function () {
+    agent.traces.once('finished_data_send-transaction_sample_data', function () {
       t.equal(aggregator.requestTimes['WebTransaction/Uri/test'], 5030)
       aggregator.clear()
 
-      agent.traces.once('finished transaction_sample_data data send.', looper)
+      agent.traces.once('finished_data_send-transaction_sample_data', looper)
       agent.traces.send()
     })
     agent.traces.send()
@@ -401,7 +401,7 @@ tap.test('TraceAggregator with top n support', function (t) {
       } else {
         t.notOk(agent.traces.trace, 'trace 5 collected')
       }
-      agent.traces.once('finished transaction_sample_data data send.', (err) =>
+      agent.traces.once('finished_data_send-transaction_sample_data', (err) =>
         cb(err, { idx: n, max })
       )
       agent.traces.send()
