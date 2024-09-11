@@ -4,6 +4,9 @@
 
 * Added support for `express@5` ([#2555](https://github.com/newrelic/node-newrelic/pull/2555)) ([252f3b2](https://github.com/newrelic/node-newrelic/commit/252f3b2bc1206dad52d914b98a2352da317da2d5))
 * Provided ability to disable instrumentation for a 3rd party package ([#2551](https://github.com/newrelic/node-newrelic/pull/2551)) ([abfb9f0](https://github.com/newrelic/node-newrelic/commit/abfb9f029a4f6c25966c35d3284ddae0d46dfecb))
+  * To disable instrumentation set `config.instrumentation.<library>.enabled` to false.  The values of `<library>` are the keys listed [here](https://github.com/newrelic/node-newrelic/blob/main/lib/instrumentations.js)
+  * This feature is use at your own risk.  Disabling instrumentation for a library could affect instrumentation of other libraries executed afterwards.  
+  
 
 #### Miscellaneous chores
 
