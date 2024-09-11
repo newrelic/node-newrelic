@@ -9,15 +9,16 @@ const test = require('node:test')
 const assert = require('node:assert')
 const TxSegmentNormalizer = require('../../../lib/metrics/normalizer/tx_segment')
 const txTestData = require('../../lib/cross_agent_tests/transaction_segment_terms')
+const { CostExplorer } = require('aws-sdk')
 
 test('The TxSegmentNormalizer', async (t) => {
   // iterate over the cross_agent_tests
-  txTestData.forEach((test) => {
+  for (const test of txTestData) {
     // create the test and bind the test data to it.
     t.test(`should be ${test.testname}`, () => {
       runTest(test)
     })
-  })
+  }
 
   t.test('should reject non array to load', () => {
     const normalizer = new TxSegmentNormalizer()
@@ -42,7 +43,7 @@ function runTest(data) {
   const normalizer = new TxSegmentNormalizer()
   normalizer.load(data.transaction_segment_terms)
 
-  data.tests.forEach((test) => {
+  for (const test of data.tests) {
     assert.deepEqual(normalizer.normalize(test.input).value, test.expected)
-  })
+  }
 }

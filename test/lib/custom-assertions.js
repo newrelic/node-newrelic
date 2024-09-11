@@ -326,10 +326,10 @@ function assertMetricValues(transaction, expected, exact) {
 module.exports = {
   assertCLMAttrs,
   assertExactClmAttrs,
+  assertMetrics,
+  assertMetricValues,
   assertSegments,
   compareSegments,
   isNonWritable,
   match,
-  assertMetrics,
-  assertMetricValues
 }
