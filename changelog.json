@@ -2,6 +2,18 @@
   "repository": "newrelic/node-newrelic",
   "entries": [
     {
+      "version": "12.5.0",
+      "changes": {
+        "security": [],
+        "bugfixes": [
+          "Ensured README displays for Azure site extension"
+        ],
+        "features": [
+          "Added utilization info for ECS"
+        ]
+      }
+    },
+    {
       "version": "12.4.0",
       "changes": {
         "security": [],

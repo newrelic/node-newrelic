@@ -1,3 +1,22 @@
+### v12.5.0 (2024-09-12)
+
+#### Features
+
+* Added utilization info for ECS ([#2565](https://github.com/newrelic/node-newrelic/pull/2565)) ([6f92073](https://github.com/newrelic/node-newrelic/commit/6f92073a6c01124d8ab1b54d06c176a36fbc3441))
+
+#### Bug fixes
+
+* Ensured README displays for Azure site extension ([#2564](https://github.com/newrelic/node-newrelic/pull/2564)) ([a30aed5](https://github.com/newrelic/node-newrelic/commit/a30aed5cf31c0c89678618e51215063562331848))
+
+#### Documentation
+
+* Updated compatibility report ([#2562](https://github.com/newrelic/node-newrelic/pull/2562)) ([8f7aebe](https://github.com/newrelic/node-newrelic/commit/8f7aebe7e4274ce45cfe961537a09b34077b3aa0))
+
+#### Tests
+
+* Convert `metric` and `metrics-recorder` tests to `node:test` ([#2552](https://github.com/newrelic/node-newrelic/pull/2552)) ([7ae4af4](https://github.com/newrelic/node-newrelic/commit/7ae4af4c8adfabadd3c865bd2fdd0e8ba5317eef))
+* Updated `serverless` unit tests to `node:test` ([#2549](https://github.com/newrelic/node-newrelic/pull/2549)) ([619f23c](https://github.com/newrelic/node-newrelic/commit/619f23c938bf39c360a6da9a307c178986c70902))
+
 ### v12.4.0 (2024-09-11)
 
 #### Features
