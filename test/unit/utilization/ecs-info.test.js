@@ -62,6 +62,29 @@ test('returns null if error encountered', (t, end) => {
   }
 })
 
+test('returns null if got null', (t, end) => {
+  const agent = helper.loadMockedAgent({
+    utilization: {
+      detect_aws: true
+    }
+  })
+  t.after(() => helper.unloadAgent(agent))
+
+  fetchEcsInfo(
+    agent,
+    (error, data) => {
+      assert.equal(error, null)
+      assert.equal(data, null)
+      end()
+    },
+    { getEcsContainerId }
+  )
+
+  function getEcsContainerId({ callback }) {
+    callback(null, null)
+  }
+})
+
 test('returns container id', (t, end) => {
   const agent = helper.loadMockedAgent({
     utilization: {
