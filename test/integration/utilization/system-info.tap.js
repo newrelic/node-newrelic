@@ -13,6 +13,10 @@ const fetchSystemInfo = require('../../../lib/system-info')
 
 test('pricing system-info aws', function (t) {
   const awsHost = 'http://169.254.169.254'
+  process.env.ECS_CONTAINER_METADATA_URI_V4 = awsHost + '/docker'
+  t.teardown(() => {
+    delete process.env.ECS_CONTAINER_METADATA_URI_V4
+  })
 
   const awsResponses = {
     'dynamic/instance-identity/document': {
@@ -22,6 +26,7 @@ test('pricing system-info aws', function (t) {
     }
   }
 
+  const ecsScope = nock(awsHost).get('/docker').reply(200, { DockerId: 'ecs-container-1' })
   const awsRedirect = nock(awsHost)
   awsRedirect.put('/latest/api/token').reply(200, 'awsToken')
   // eslint-disable-next-line guard-for-in
@@ -51,6 +56,7 @@ test('pricing system-info aws', function (t) {
 
     // This will throw an error if the sys info isn't being cached properly
     t.ok(awsRedirect.isDone(), 'should exhaust nock endpoints')
+    t.ok(ecsScope.isDone())
     fetchSystemInfo(agent, function checkCache(err, cachedInfo) {
       t.same(cachedInfo.vendors.aws, {
         instanceType: 'test.type',

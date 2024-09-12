@@ -54,6 +54,9 @@ tap.test('Connect calls re-generate harvest limits from original config values',
       host: TEST_DOMAIN,
       application_logging: {
         enabled: true
+      },
+      utilization: {
+        detect_aws: false
       }
     })
   })

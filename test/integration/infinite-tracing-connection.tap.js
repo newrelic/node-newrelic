@@ -290,6 +290,9 @@ const infiniteTracingService = grpc.loadPackageDefinition(packageDefinition).com
                 record_sql: 'obfuscated',
                 explain_threshold: Number.MIN_VALUE // force SQL traces
               },
+              utilization: {
+                detect_aws: false
+              },
               infinite_tracing: {
                 ...config,
                 span_events: {
