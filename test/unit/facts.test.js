@@ -439,11 +439,6 @@ tap.test('utilization', (t) => {
       // We don't collect full hostnames
       delete expected.full_hostname
 
-      // Stub out docker container id query to make this consistent on all OSes.
-      sysInfo._getDockerContainerId = (_agent, callback) => {
-        return callback(null)
-      }
-
       agent = helper.loadMockedAgent(config)
       if (mockHostname) {
         agent.config.getHostnameSafe = mockHostname
@@ -470,33 +465,36 @@ tap.test('utilization', (t) => {
   function makeMockCommonRequest(t, test, type) {
     return (opts, _agent, cb) => {
       t.equal(_agent, agent)
-      setImmediate(
-        cb,
-        null,
-        JSON.stringify(
-          type === 'aws'
-            ? {
-                instanceId: test.input_aws_id,
-                instanceType: test.input_aws_type,
-                availabilityZone: test.input_aws_zone
-              }
-            : type === 'azure'
-            ? {
-                location: test.input_azure_location,
-                name: test.input_azure_name,
-                vmId: test.input_azure_id,
-                vmSize: test.input_azure_size
-              }
-            : type === 'gcp'
-            ? {
-                id: test.input_gcp_id,
-                machineType: test.input_gcp_type,
-                name: test.input_gcp_name,
-                zone: test.input_gcp_zone
-              }
-            : null
-        )
-      )
+      let payload = null
+      switch (type) {
+        case 'aws': {
+          payload = {
+            instanceId: test.input_aws_id,
+            instanceType: test.input_aws_type,
+            availabilityZone: test.input_aws_zone
+          }
+          break
+        }
+        case 'azure': {
+          payload = {
+            location: test.input_azure_location,
+            name: test.input_azure_name,
+            vmId: test.input_azure_id,
+            vmSize: test.input_azure_size
+          }
+          break
+        }
+        case 'gcp': {
+          payload = {
+            id: test.input_gcp_id,
+            machineType: test.input_gcp_type,
+            name: test.input_gcp_name,
+            zone: test.input_gcp_zone
+          }
+          break
+        }
+      }
+      setImmediate(cb, null, JSON.stringify(payload))
     }
   }
 })
@@ -583,11 +581,6 @@ tap.test('boot_id', (t) => {
       })
 
       const expected = test.expected_output_json
-
-      // Stub out docker container id query to make this consistent on all OSes.
-      sysInfo._getDockerContainerId = (_agent, callback) => {
-        return callback(null)
-      }
 
       agent = helper.loadMockedAgent(DISABLE_ALL_DETECTIONS)
       if (mockHostname) {
