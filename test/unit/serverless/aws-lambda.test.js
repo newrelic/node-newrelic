@@ -9,6 +9,7 @@ const test = require('node:test')
 const assert = require('node:assert')
 const os = require('node:os')
 
+const { tspl } = require('@matteo.collina/tspl')
 const helper = require('../../lib/agent_helper')
 const tempRemoveListeners = require('../../lib/temp-remove-listeners')
 const tempOverrideUncaught = require('../../lib/temp-override-uncaught')
@@ -1396,40 +1397,38 @@ test('AwsLambda.patchLambdaHandler', async (t) => {
     }
   )
 
-  // This test is not triggering any sort of uncaught exception handler when
-  // it _really_ should be.
-  await t.todo('should record error event when error is thrown', (t, end) => {
+  await t.test('should record error event when error is thrown', (t, end) => {
+    const plan = tspl(t, { plan: 8 })
     const { agent, awsLambda, error, stubEvent, stubContext, stubCallback } = t.nr
-    // helper.temporarilyOverrideTapUncaughtBehavior(tap, t)
-    tempOverrideUncaught({ t, handler })
-    // tempOverrideUncaught({ t, handler, type: tempOverrideUncaught.REJECTION })
-
-    function handler(error) {
-      console.log('!!!', error)
-      end()
-    }
 
     agent.on('harvestStarted', function confirmErrorCapture() {
       const errors = agent.errors.traceAggregator.errors
-      assert.equal(errors.length, 1)
+      plan.equal(errors.length, 1)
 
       const noticedError = errors[0]
       const [, transactionName, message, type] = noticedError
-      assert.equal(transactionName, expectedBgTransactionName)
-      assert.equal(message, errorMessage)
-      assert.equal(type, 'SyntaxError')
+      plan.equal(transactionName, expectedBgTransactionName)
+      plan.equal(message, errorMessage)
+      plan.equal(type, 'SyntaxError')
     })
     const wrappedHandler = awsLambda.patchLambdaHandler(() => {
       const transaction = agent.tracer.getTransaction()
-      assert.ok(transaction)
-      assert.equal(transaction.type, 'bg')
-      assert.equal(transaction.getFullName(), expectedBgTransactionName)
-      assert.ok(transaction.isActive())
+      plan.ok(transaction)
+      plan.equal(transaction.type, 'bg')
+      plan.equal(transaction.getFullName(), expectedBgTransactionName)
+      plan.ok(transaction.isActive())
 
       throw error
     })
 
-    wrappedHandler(stubEvent, stubContext, stubCallback)
+    try {
+      wrappedHandler(stubEvent, stubContext, stubCallback)
+    } catch (error) {
+      if (error.name !== 'SyntaxError') {
+        throw error
+      }
+      end()
+    }
   })
 
   await t.test('should not end transactions twice', (t, end) => {
