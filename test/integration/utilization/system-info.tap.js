@@ -53,6 +53,7 @@ test('pricing system-info aws', function (t) {
       instanceId: 'test.id',
       availabilityZone: 'us-west-2b'
     })
+    t.same(systemInfo.vendors.ecs, { ecsDockerId: 'ecs-container-1' })
 
     // This will throw an error if the sys info isn't being cached properly
     t.ok(awsRedirect.isDone(), 'should exhaust nock endpoints')
