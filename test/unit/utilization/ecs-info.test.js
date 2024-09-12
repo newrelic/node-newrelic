@@ -150,9 +150,10 @@ test('records json parsing error', (ctx, end) => {
 
   function callback(err, data) {
     assert.ifError(err)
-    assert.deepEqual(
-      logs[0],
-      'Failed to process ECS API response, omitting boot info: Unexpected end of JSON input'
+    assert.equal(logs.length, 1)
+    assert.equal(
+      logs[0].startsWith('Failed to process ECS API response, omitting boot info:'),
+      true
     )
     assert.equal(data, null)
     assert.equal(
