@@ -4,8 +4,9 @@
  */
 
 'use strict'
-
-const tap = require('tap')
+const assert = require('node:assert')
+const test = require('node:test')
+const { isNonWritable } = require('../../lib/custom-assertions')
 const hashes = require('../../../lib/util/hashes')
 const helper = require('../../lib/agent_helper')
 const { TransactionSpec } = require('../../../lib/shim/specs')
@@ -50,17 +51,12 @@ function createCATHeaders(config, altNames) {
       }
 }
 
-tap.test('TransactionShim', function (t) {
-  t.autoend()
-  let agent = null
-  let shim = null
-  let wrappable = null
-
-  function beforeEach() {
-    // implicitly disabling distributed tracing to match original config base settings
-    agent = helper.loadMockedAgent()
-    shim = new TransactionShim(agent, 'test-module')
-    wrappable = {
+test('TransactionShim', async function (t) {
+  function beforeEach(ctx) {
+    ctx.nr = {}
+    const agent = helper.loadMockedAgent()
+    ctx.nr.shim = new TransactionShim(agent, 'test-module')
+    ctx.nr.wrappable = {
       name: 'this is a name',
       bar: function barsName(unused, params) { return 'bar' }, // eslint-disable-line
       fiz: function fizsName() {
@@ -82,140 +78,135 @@ tap.test('TransactionShim', function (t) {
     agent.config.trusted_account_ids = [9876, 6789]
     agent.config._fromServer(params, 'encoding_key')
     agent.config._fromServer(params, 'cross_process_id')
+    ctx.nr.agent = agent
   }
 
-  function afterEach() {
-    helper.unloadAgent(agent)
-    agent = null
-    shim = null
+  function afterEach(ctx) {
+    helper.unloadAgent(ctx.nr.agent)
   }
 
-  t.test('constructor', function (t) {
-    t.autoend()
+  await t.test('constructor', async function (t) {
     t.beforeEach(beforeEach)
     t.afterEach(afterEach)
-    t.test('should require an agent parameter', function (t) {
-      t.throws(function () {
+    await t.test('should require an agent parameter', function () {
+      assert.throws(function () {
         return new TransactionShim()
-      }, /^Shim must be initialized with .*? agent/)
-      t.end()
+      }, 'Error: Shim must be initialized with agent and module name')
     })
 
-    t.test('should require a module name parameter', function (t) {
-      t.throws(function () {
+    await t.test('should require a module name parameter', function (t) {
+      const { agent } = t.nr
+      assert.throws(function () {
         return new TransactionShim(agent)
-      }, /^Shim must be initialized with .*? module name/)
-      t.end()
+      }, 'Error: Shim must be initialized with agent and module name')
     })
 
-    t.test('should assign properties from parent', (t) => {
+    await t.test('should assign properties from parent', (t) => {
+      const { agent } = t.nr
       const mod = 'test-mod'
       const name = mod
       const version = '1.0.0'
       const shim = new TransactionShim(agent, mod, mod, name, version)
-      t.equal(shim.moduleName, mod)
-      t.equal(agent, shim._agent)
-      t.equal(shim.pkgVersion, version)
-      t.end()
+      assert.equal(shim.moduleName, mod)
+      assert.equal(agent, shim._agent)
+      assert.equal(shim.pkgVersion, version)
     })
   })
 
-  t.test('#WEB, #BG, #MESSAGE', function (t) {
-    t.autoend()
+  await t.test('#WEB, #BG, #MESSAGE', async function (t) {
     t.beforeEach(beforeEach)
     t.afterEach(afterEach)
     const keys = ['WEB', 'BG', 'MESSAGE']
 
-    keys.forEach((key) => {
-      t.test(`${key} should be a non-writable property`, function (t) {
-        t.isNonWritable({ obj: shim, key })
-        t.end()
+    for (const key of keys) {
+      await t.test(`${key} should be a non-writable property`, function (t) {
+        const { shim } = t.nr
+        isNonWritable({ obj: shim, key })
       })
 
-      t.test(`${key} should be transaction types`, function (t) {
-        t.equal(shim[key], key.toLowerCase())
-        t.end()
+      await t.test(`${key} should be transaction types`, function (t) {
+        const { shim } = t.nr
+        assert.equal(shim[key], key.toLowerCase())
       })
-    })
+    }
   })
 
-  t.test('#bindCreateTransaction', function (t) {
-    t.autoend()
+  await t.test('#bindCreateTransaction', async function (t) {
     t.beforeEach(beforeEach)
     t.afterEach(afterEach)
 
-    t.test('should not wrap non-functions', function (t) {
+    await t.test('should not wrap non-functions', function (t) {
+      const { shim, wrappable } = t.nr
       shim.bindCreateTransaction(wrappable, 'name', new TransactionSpec({ type: shim.WEB }))
-      t.notOk(shim.isWrapped(wrappable.name))
-      t.end()
+      assert.equal(shim.isWrapped(wrappable.name), false)
     })
 
-    t.test('should wrap the first parameter if no properties are given', function (t) {
+    await t.test('should wrap the first parameter if no properties are given', function (t) {
+      const { shim, wrappable } = t.nr
       const wrapped = shim.bindCreateTransaction(
         wrappable.bar,
         new TransactionSpec({ type: shim.WEB })
       )
-      t.not(wrapped, wrappable.bar)
-      t.ok(shim.isWrapped(wrapped))
-      t.equal(shim.unwrap(wrapped), wrappable.bar)
-      t.end()
+      assert.notEqual(wrapped, wrappable.bar)
+      assert.equal(shim.isWrapped(wrapped), true)
+      assert.equal(shim.unwrap(wrapped), wrappable.bar)
     })
 
-    t.test('should wrap the first parameter if `null` is given for properties', function (t) {
+    await t.test('should wrap the first parameter if `null` is given for properties', function (t) {
+      const { shim, wrappable } = t.nr
       const wrapped = shim.bindCreateTransaction(
         wrappable.bar,
         null,
         new TransactionSpec({ type: shim.WEB })
       )
-      t.not(wrapped, wrappable.bar)
-      t.ok(shim.isWrapped(wrapped))
-      t.equal(shim.unwrap(wrapped), wrappable.bar)
-      t.end()
+      assert.notEqual(wrapped, wrappable.bar)
+      assert.equal(shim.isWrapped(wrapped), true)
+      assert.equal(shim.unwrap(wrapped), wrappable.bar)
     })
 
-    t.test('should replace wrapped properties on the original object', function (t) {
+    await t.test('should replace wrapped properties on the original object', function (t) {
+      const { shim, wrappable } = t.nr
       const original = wrappable.bar
       shim.bindCreateTransaction(wrappable, 'bar', new TransactionSpec({ type: shim.WEB }))
-      t.not(wrappable.bar, original)
-      t.ok(shim.isWrapped(wrappable, 'bar'))
-      t.equal(shim.unwrap(wrappable, 'bar'), original)
-      t.end()
+      assert.notEqual(wrappable.bar, original)
+      assert.equal(shim.isWrapped(wrappable, 'bar'), true)
+      assert.equal(shim.unwrap(wrappable, 'bar'), original)
     })
   })
 
-  t.test('#bindCreateTransaction wrapper', function (t) {
-    t.autoend()
+  await t.test('#bindCreateTransaction wrapper', async function (t) {
     t.beforeEach(beforeEach)
     t.afterEach(afterEach)
 
-    t.test('should execute the wrapped function', function (t) {
+    await t.test('should execute the wrapped function', function (t) {
+      const { shim } = t.nr
       let executed = false
       const context = {}
       const value = {}
       const wrapped = shim.bindCreateTransaction(function (a, b, c) {
         executed = true
-        t.equal(this, context)
-        t.equal(a, 'a')
-        t.equal(b, 'b')
-        t.equal(c, 'c')
+        assert.equal(this, context)
+        assert.equal(a, 'a')
+        assert.equal(b, 'b')
+        assert.equal(c, 'c')
         return value
       }, new TransactionSpec({ type: shim.WEB }))
 
-      t.notOk(executed)
+      assert.ok(!executed)
       const ret = wrapped.call(context, 'a', 'b', 'c')
-      t.ok(executed)
-      t.equal(ret, value)
-      t.end()
+      assert.equal(executed, true)
+      assert.equal(ret, value)
     })
 
-    t.test('should create a transaction with the correct type', function (t) {
+    await t.test('should create a transaction with the correct type', function (t) {
+      const { shim, wrappable } = t.nr
       shim.bindCreateTransaction(
         wrappable,
         'getActiveSegment',
         new TransactionSpec({ type: shim.WEB })
       )
       const segment = wrappable.getActiveSegment()
-      t.equal(segment.transaction.type, shim.WEB)
+      assert.equal(segment.transaction.type, shim.WEB)
 
       shim.unwrap(wrappable, 'getActiveSegment')
       shim.bindCreateTransaction(
@@ -224,11 +215,11 @@ tap.test('TransactionShim', function (t) {
         new TransactionSpec({ type: shim.BG })
       )
       const bgSegment = wrappable.getActiveSegment()
-      t.equal(bgSegment.transaction.type, shim.BG)
-      t.end()
+      assert.equal(bgSegment.transaction.type, shim.BG)
     })
 
-    t.test('should not create a nested transaction when `spec.nest` is false', function (t) {
+    await t.test('should not create a nested transaction when `spec.nest` is false', function (t) {
+      const { shim } = t.nr
       let webTx = null
       let bgTx = null
       let webCalled = false
@@ -244,14 +235,14 @@ tap.test('TransactionShim', function (t) {
       }, new TransactionSpec({ type: shim.WEB }))
 
       web()
-      t.ok(webCalled)
-      t.ok(bgCalled)
-      t.equal(webTx, bgTx)
-      t.end()
+      assert.equal(webCalled, true)
+      assert.equal(bgCalled, true)
+      assert.equal(webTx, bgTx)
     })
 
-    notRunningStates.forEach((agentState) => {
-      t.test(`should not create transaction when agent state is ${agentState}`, (t) => {
+    for (const agentState of notRunningStates) {
+      await t.test(`should not create transaction when agent state is ${agentState}`, (t) => {
+        const { agent, shim } = t.nr
         agent.setState(agentState)
 
         let callbackCalled = false
@@ -263,78 +254,74 @@ tap.test('TransactionShim', function (t) {
 
         wrapped()
 
-        t.ok(callbackCalled)
-        t.equal(transaction, null)
-        t.end()
+        assert.equal(callbackCalled, true)
+        assert.equal(transaction, null)
       })
-    })
+    }
   })
 
-  t.test('#bindCreateTransaction when `spec.nest` is `true`', function (t) {
-    t.autoend()
-
-    let transactions = null
-    let web = null
-    let bg = null
-
-    t.beforeEach(function () {
-      beforeEach()
-      transactions = []
-      web = shim.bindCreateTransaction(function (cb) {
-        transactions.push(shim.getSegment().transaction)
+  await t.test('#bindCreateTransaction when `spec.nest` is `true`', async function (t) {
+    t.beforeEach(function (ctx) {
+      beforeEach(ctx)
+      const { shim } = ctx.nr
+      ctx.nr.transactions = []
+      ctx.nr.web = shim.bindCreateTransaction(function (cb) {
+        ctx.nr.transactions.push(shim.getSegment().transaction)
         if (cb) {
           cb()
         }
       }, new TransactionSpec({ type: shim.WEB, nest: true }))
 
-      bg = shim.bindCreateTransaction(function (cb) {
-        transactions.push(shim.getSegment().transaction)
+      ctx.nr.bg = shim.bindCreateTransaction(function (cb) {
+        ctx.nr.transactions.push(shim.getSegment().transaction)
         if (cb) {
           cb()
         }
       }, new TransactionSpec({ type: shim.BG, nest: true }))
     })
+
     t.afterEach(afterEach)
 
-    t.test('should create a nested transaction if the types differ', function (t) {
+    await t.test('should create a nested transaction if the types differ', function (t) {
+      const { bg, web } = t.nr
       web(bg)
-      t.equal(transactions.length, 2)
-      t.not(transactions[0], transactions[1])
+      assert.equal(t.nr.transactions.length, 2)
+      assert.notEqual(t.nr.transactions[0], t.nr.transactions[1])
 
-      transactions = []
+      t.nr.transactions = []
       bg(web)
-      t.equal(transactions.length, 2)
-      t.not(transactions[0], transactions[1])
-      t.end()
+      assert.equal(t.nr.transactions.length, 2)
+      assert.notEqual(t.nr.transactions[0], t.nr.transactions[1])
     })
 
-    t.test('should not create nested transactions if the types are the same', function (t) {
+    await t.test('should not create nested transactions if the types are the same', function (t) {
+      const { bg, web } = t.nr
       web(web)
-      t.equal(transactions.length, 2)
-      t.equal(transactions[0], transactions[1])
+      assert.equal(t.nr.transactions.length, 2)
+      assert.equal(t.nr.transactions[0], t.nr.transactions[1])
 
-      transactions = []
+      t.nr.transactions = []
       bg(bg)
-      t.equal(transactions.length, 2)
-      t.equal(transactions[0], transactions[1])
-      t.end()
+      assert.equal(t.nr.transactions.length, 2)
+      assert.equal(t.nr.transactions[0], t.nr.transactions[1])
     })
 
-    t.test('should create transactions if the types alternate', function (t) {
+    await t.test('should create transactions if the types alternate', function (t) {
+      const { bg, web } = t.nr
       web(bg.bind(null, web.bind(null, bg)))
-      t.equal(transactions.length, 4)
-      for (let i = 0; i < transactions.length; ++i) {
-        const tx1 = transactions[i]
-        for (let j = i + 1; j < transactions.length; ++j) {
-          const tx2 = transactions[j]
-          t.not(tx1, tx2, `tx ${i} should not equal tx ${j}`)
+      assert.equal(t.nr.transactions.length, 4)
+      for (let i = 0; i < t.nr.transactions.length; ++i) {
+        const tx1 = t.nr.transactions[i]
+        for (let j = i + 1; j < t.nr.transactions.length; ++j) {
+          const tx2 = t.nr.transactions[j]
+          assert.notEqual(tx1, tx2, `tx ${i} should noassert.equal tx ${j}`)
         }
       }
-      t.end()
     })
 
-    notRunningStates.forEach((agentState) => {
-      t.test(`should not create transaction when agent state is ${agentState}`, (t) => {
+    for (const agentState of notRunningStates) {
+      await t.test(`should not create transaction when agent state is ${agentState}`, (t) => {
+        const { agent, shim } = t.nr
         agent.setState(agentState)
 
         let callbackCalled = false
@@ -346,251 +333,257 @@ tap.test('TransactionShim', function (t) {
 
         wrapped()
 
-        t.ok(callbackCalled)
-        t.equal(transaction, null)
-        t.end()
+        assert.equal(callbackCalled, true)
+        assert.equal(transaction, null)
       })
-    })
+    }
   })
 
-  t.test('#pushTransactionName', function (t) {
-    t.autoend()
+  await t.test('#pushTransactionName', async function (t) {
     t.beforeEach(beforeEach)
     t.afterEach(afterEach)
-    t.test('should not fail when called outside of a transaction', function (t) {
-      t.doesNotThrow(function () {
+    await t.test('should not fail when called outside of a transaction', function (t) {
+      const { shim } = t.nr
+      assert.doesNotThrow(function () {
         shim.pushTransactionName('foobar')
       })
-      t.end()
     })
 
-    t.test('should append the given string to the name state stack', function (t) {
+    await t.test('should append the given string to the name state stack', function (t, end) {
+      const { agent, shim } = t.nr
       helper.runInTransaction(agent, function (tx) {
         shim.pushTransactionName('foobar')
-        t.equal(tx.nameState.getName(), '/foobar')
-        t.end()
+        assert.equal(tx.nameState.getName(), '/foobar')
+        end()
       })
     })
   })
 
-  t.test('#popTransactionName', function (t) {
-    t.autoend()
+  await t.test('#popTransactionName', async function (t) {
     t.beforeEach(beforeEach)
     t.afterEach(afterEach)
-    t.test('should not fail when called outside of a transaction', function (t) {
-      t.doesNotThrow(function () {
+    await t.test('should not fail when called outside of a transaction', function (t) {
+      const { shim } = t.nr
+      assert.doesNotThrow(function () {
         shim.popTransactionName('foobar')
       })
-      t.end()
     })
 
-    t.test('should pop to the given string in the name state stack', function (t) {
+    await t.test('should pop to the given string in the name state stack', function (t, end) {
+      const { agent, shim } = t.nr
       helper.runInTransaction(agent, function (tx) {
         shim.pushTransactionName('foo')
         shim.pushTransactionName('bar')
         shim.pushTransactionName('bazz')
-        t.equal(tx.nameState.getName(), '/foo/bar/bazz')
+        assert.equal(tx.nameState.getName(), '/foo/bar/bazz')
 
         shim.popTransactionName('bar')
-        t.equal(tx.nameState.getName(), '/foo')
-        t.end()
+        assert.equal(tx.nameState.getName(), '/foo')
+        end()
       })
     })
 
-    t.test('should pop just the last item if no string is given', function (t) {
+    await t.test('should pop just the last item if no string is given', function (t, end) {
+      const { agent, shim } = t.nr
       helper.runInTransaction(agent, function (tx) {
         shim.pushTransactionName('foo')
         shim.pushTransactionName('bar')
         shim.pushTransactionName('bazz')
-        t.equal(tx.nameState.getName(), '/foo/bar/bazz')
+        assert.equal(tx.nameState.getName(), '/foo/bar/bazz')
 
         shim.popTransactionName()
-        t.equal(tx.nameState.getName(), '/foo/bar')
-        t.end()
+        assert.equal(tx.nameState.getName(), '/foo/bar')
+        end()
       })
     })
   })
 
-  t.test('#setTransactionName', function (t) {
-    t.autoend()
+  await t.test('#setTransactionName', async function (t) {
     t.beforeEach(beforeEach)
     t.afterEach(afterEach)
-    t.test('should not fail when called outside of a transaction', function (t) {
-      t.doesNotThrow(function () {
+    await t.test('should not fail when called outside of a transaction', function (t) {
+      const { shim } = t.nr
+      assert.doesNotThrow(function () {
         shim.setTransactionName('foobar')
       })
-      t.end()
     })
 
-    t.test('should set the transaction partial name', function (t) {
+    await t.test('should set the transaction partial name', function (t, end) {
+      const { agent, shim } = t.nr
       helper.runInTransaction(agent, function (tx) {
         shim.setTransactionName('fizz bang')
-        t.equal(tx.getName(), 'fizz bang')
-        t.end()
+        assert.equal(tx.getName(), 'fizz bang')
+        end()
       })
     })
   })
 
-  t.test('#handleMqTracingHeaders', function (t) {
-    t.autoend()
-
-    t.beforeEach(() => {
-      beforeEach()
+  await t.test('#handleMqTracingHeaders', async function (t) {
+    t.beforeEach((ctx) => {
+      beforeEach(ctx)
+      const { agent } = ctx.nr
       agent.config.cross_application_tracer.enabled = true
       agent.config.distributed_tracing.enabled = false
     })
     t.afterEach(afterEach)
 
-    t.test('should not run if disabled', function (t) {
+    await t.test('should not run if disabled', function (t, end) {
+      const { agent, shim } = t.nr
       helper.runInTransaction(agent, function (tx) {
         agent.config.cross_application_tracer.enabled = false
 
         const headers = createCATHeaders(agent.config)
         const segment = shim.getSegment()
 
-        t.notOk(tx.incomingCatId)
-        t.notOk(tx.referringTransactionGuid)
-        t.notOk(segment.catId)
-        t.notOk(segment.catTransaction)
-        t.notOk(segment.getAttributes().transaction_guid)
+        assert.ok(!tx.incomingCatId)
+        assert.ok(!tx.referringTransactionGuid)
+        assert.ok(!segment.catId)
+        assert.ok(!segment.catTransaction)
+        assert.ok(!segment.getAttributes().transaction_guid)
 
         shim.handleMqTracingHeaders(headers, segment)
 
-        t.notOk(tx.incomingCatId)
-        t.notOk(tx.referringTransactionGuid)
-        t.notOk(segment.catId)
-        t.notOk(segment.catTransaction)
-        t.notOk(segment.getAttributes().transaction_guid)
-        t.end()
+        assert.ok(!tx.incomingCatId)
+        assert.ok(!tx.referringTransactionGuid)
+        assert.ok(!segment.catId)
+        assert.ok(!segment.catTransaction)
+        assert.ok(!segment.getAttributes().transaction_guid)
+        end()
       })
     })
 
-    t.test('should not run if the encoding key is missing', function (t) {
+    await t.test('should not run if the encoding key is missing', function (t, end) {
+      const { agent, shim } = t.nr
       helper.runInTransaction(agent, function (tx) {
         const headers = createCATHeaders(agent.config)
         const segment = shim.getSegment()
         delete agent.config.encoding_key
 
-        t.notOk(tx.incomingCatId)
-        t.notOk(tx.referringTransactionGuid)
-        t.notOk(segment.catId)
-        t.notOk(segment.catTransaction)
-        t.notOk(segment.getAttributes().transaction_guid)
+        assert.ok(!tx.incomingCatId)
+        assert.ok(!tx.referringTransactionGuid)
+        assert.ok(!segment.catId)
+        assert.ok(!segment.catTransaction)
+        assert.ok(!segment.getAttributes().transaction_guid)
 
         shim.handleMqTracingHeaders(headers, segment)
 
-        t.notOk(tx.incomingCatId)
-        t.notOk(tx.referringTransactionGuid)
-        t.notOk(segment.catId)
-        t.notOk(segment.catTransaction)
-        t.notOk(segment.getAttributes().transaction_guid)
-        t.end()
+        assert.ok(!tx.incomingCatId)
+        assert.ok(!tx.referringTransactionGuid)
+        assert.ok(!segment.catId)
+        assert.ok(!segment.catTransaction)
+        assert.ok(!segment.getAttributes().transaction_guid)
+        end()
       })
     })
 
-    t.test('should fail gracefully when no headers are given', function (t) {
+    await t.test('should fail gracefully when no headers are given', function (t, end) {
+      const { agent, shim } = t.nr
       helper.runInTransaction(agent, function (tx) {
         const segment = shim.getSegment()
 
-        t.notOk(tx.incomingCatId)
-        t.notOk(tx.referringTransactionGuid)
-        t.notOk(segment.catId)
-        t.notOk(segment.catTransaction)
-        t.notOk(segment.getAttributes().transaction_guid)
+        assert.ok(!tx.incomingCatId)
+        assert.ok(!tx.referringTransactionGuid)
+        assert.ok(!segment.catId)
+        assert.ok(!segment.catTransaction)
+        assert.ok(!segment.getAttributes().transaction_guid)
 
-        t.doesNotThrow(function () {
+        assert.doesNotThrow(function () {
           shim.handleMqTracingHeaders(null, segment)
         })
 
-        t.notOk(tx.incomingCatId)
-        t.notOk(tx.referringTransactionGuid)
-        t.notOk(segment.catId)
-        t.notOk(segment.catTransaction)
-        t.notOk(segment.getAttributes().transaction_guid)
-        t.end()
+        assert.ok(!tx.incomingCatId)
+        assert.ok(!tx.referringTransactionGuid)
+        assert.ok(!segment.catId)
+        assert.ok(!segment.catTransaction)
+        assert.ok(!segment.getAttributes().transaction_guid)
+        end()
       })
     })
 
-    t.test(
+    await t.test(
       'should attach the CAT info to the provided segment transaction - DT disabled, id and transaction are provided',
-      function (t) {
+      function (t, end) {
+        const { agent, shim } = t.nr
         helper.runInTransaction(agent, shim.WEB, function (tx) {
           const headers = createCATHeaders(agent.config)
           const segment = shim.getSegment()
           delete headers['X-NewRelic-App-Data']
 
-          t.notOk(tx.incomingCatId)
-          t.notOk(tx.referringTransactionGuid)
-          t.notOk(tx.tripId)
-          t.notOk(tx.referringPathHash)
+          assert.ok(!tx.incomingCatId)
+          assert.ok(!tx.referringTransactionGuid)
+          assert.ok(!tx.tripId)
+          assert.ok(!tx.referringPathHash)
 
           helper.runInTransaction(agent, shim.BG, function (tx2) {
-            t.not(tx2, tx)
+            assert.notEqual(tx2, tx)
             shim.handleMqTracingHeaders(headers, segment)
           })
 
-          t.equal(tx.incomingCatId, '9876#id')
-          t.equal(tx.referringTransactionGuid, 'trans id')
-          t.equal(tx.tripId, 'trip id')
-          t.equal(tx.referringPathHash, 'path hash')
-          t.end()
+          assert.equal(tx.incomingCatId, '9876#id')
+          assert.equal(tx.referringTransactionGuid, 'trans id')
+          assert.equal(tx.tripId, 'trip id')
+          assert.equal(tx.referringPathHash, 'path hash')
+          end()
         })
       }
     )
 
-    t.test(
+    await t.test(
       'should attach the CAT info to current transaction if not provided - DT disabled, id and transaction are provided',
-      function (t) {
+      function (t, end) {
+        const { agent, shim } = t.nr
         helper.runInTransaction(agent, function (tx) {
           const headers = createCATHeaders(agent.config)
           delete headers['X-NewRelic-App-Data']
 
-          t.notOk(tx.incomingCatId)
-          t.notOk(tx.referringTransactionGuid)
-          t.notOk(tx.tripId)
-          t.notOk(tx.referringPathHash)
+          assert.ok(!tx.incomingCatId)
+          assert.ok(!tx.referringTransactionGuid)
+          assert.ok(!tx.tripId)
+          assert.ok(!tx.referringPathHash)
 
           shim.handleMqTracingHeaders(headers)
 
-          t.equal(tx.incomingCatId, '9876#id')
-          t.equal(tx.referringTransactionGuid, 'trans id')
-          t.equal(tx.tripId, 'trip id')
-          t.equal(tx.referringPathHash, 'path hash')
-          t.end()
+          assert.equal(tx.incomingCatId, '9876#id')
+          assert.equal(tx.referringTransactionGuid, 'trans id')
+          assert.equal(tx.tripId, 'trip id')
+          assert.equal(tx.referringPathHash, 'path hash')
+          end()
         })
       }
     )
 
-    t.test(
+    await t.test(
       'should work with alternate header names - DT disabled, id and transaction are provided',
-      function (t) {
+      function (t, end) {
+        const { agent, shim } = t.nr
         helper.runInTransaction(agent, shim.WEB, function (tx) {
           const headers = createCATHeaders(agent.config, true)
           const segment = shim.getSegment()
           delete headers.NewRelicAppData
 
-          t.notOk(tx.incomingCatId)
-          t.notOk(tx.referringTransactionGuid)
-          t.notOk(tx.tripId)
-          t.notOk(tx.referringPathHash)
+          assert.ok(!tx.incomingCatId)
+          assert.ok(!tx.referringTransactionGuid)
+          assert.ok(!tx.tripId)
+          assert.ok(!tx.referringPathHash)
 
           helper.runInTransaction(agent, shim.BG, function (tx2) {
-            t.not(tx2, tx)
+            assert.notEqual(tx2, tx)
             shim.handleMqTracingHeaders(headers, segment)
           })
 
-          t.equal(tx.incomingCatId, '9876#id')
-          t.equal(tx.referringTransactionGuid, 'trans id')
-          t.equal(tx.tripId, 'trip id')
-          t.equal(tx.referringPathHash, 'path hash')
-          t.end()
+          assert.equal(tx.incomingCatId, '9876#id')
+          assert.equal(tx.referringTransactionGuid, 'trans id')
+          assert.equal(tx.tripId, 'trip id')
+          assert.equal(tx.referringPathHash, 'path hash')
+          end()
         })
       }
     )
 
-    t.test(
+    await t.test(
       'Should propagate w3c tracecontext header when present, id and transaction are provided',
-      function (t) {
+      function (t, end) {
+        const { agent, shim } = t.nr
         agent.config.distributed_tracing.enabled = true
 
         const traceparent = '00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-00'
@@ -604,16 +597,17 @@ tap.test('TransactionShim', function (t) {
           const outboundHeaders = {}
           tx.insertDistributedTraceHeaders(outboundHeaders)
 
-          t.ok(outboundHeaders.traceparent.startsWith('00-4bf92f3577b3'))
-          t.ok(outboundHeaders.tracestate.endsWith(tracestate))
-          t.end()
+          assert.ok(outboundHeaders.traceparent.startsWith('00-4bf92f3577b3'))
+          assert.ok(outboundHeaders.tracestate.endsWith(tracestate))
+          end()
         })
       }
     )
 
-    t.test(
+    await t.test(
       'Should propagate w3c tracecontext header when no tracestate, id and transaction are provided',
-      function (t) {
+      function (t, end) {
+        const { agent, shim } = t.nr
         agent.config.distributed_tracing.enabled = true
 
         const traceparent = '00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-00'
@@ -626,15 +620,16 @@ tap.test('TransactionShim', function (t) {
           const outboundHeaders = {}
           tx.insertDistributedTraceHeaders(outboundHeaders)
 
-          t.ok(outboundHeaders.traceparent.startsWith('00-4bf92f3577b3'))
-          t.end()
+          assert.ok(outboundHeaders.traceparent.startsWith('00-4bf92f3577b3'))
+          end()
         })
       }
     )
 
-    t.test(
+    await t.test(
       'Should propagate w3c tracecontext header when tracestate empty string, id and transaction are provided',
-      function (t) {
+      function (t, end) {
+        const { agent, shim } = t.nr
         agent.config.distributed_tracing.enabled = true
 
         const traceparent = '00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-00'
@@ -648,13 +643,14 @@ tap.test('TransactionShim', function (t) {
           const outboundHeaders = {}
           tx.insertDistributedTraceHeaders(outboundHeaders)
 
-          t.ok(outboundHeaders.traceparent.startsWith('00-4bf92f3577b3'))
-          t.end()
+          assert.ok(outboundHeaders.traceparent.startsWith('00-4bf92f3577b3'))
+          end()
         })
       }
     )
 
-    t.test('should propagate w3c headers when CAT expicitly disabled', (t) => {
+    await t.test('should propagate w3c headers when CAT explicitly disabled', (t, end) => {
+      const { agent, shim } = t.nr
       agent.config.cross_application_tracer.enabled = false
       agent.config.distributed_tracing.enabled = true
 
@@ -669,90 +665,94 @@ tap.test('TransactionShim', function (t) {
         const outboundHeaders = {}
         tx.insertDistributedTraceHeaders(outboundHeaders)
 
-        t.ok(outboundHeaders.traceparent.startsWith('00-4bf92f3577b3'))
-        t.ok(outboundHeaders.tracestate.endsWith(tracestate))
-        t.end()
+        assert.ok(outboundHeaders.traceparent.startsWith('00-4bf92f3577b3'))
+        assert.ok(outboundHeaders.tracestate.endsWith(tracestate))
+        end()
       })
     })
 
-    t.test(
+    await t.test(
       'should attach the CAT info to the provided segment - DT disabled, app data is provided',
-      function (t) {
+      function (t, end) {
+        const { agent, shim } = t.nr
         helper.runInTransaction(agent, shim.WEB, function (tx) {
           const headers = createCATHeaders(agent.config)
           const segment = shim.getSegment()
           delete headers['X-NewRelic-Id']
           delete headers['X-NewRelic-Transaction']
 
-          t.notOk(segment.catId)
-          t.notOk(segment.catTransaction)
-          t.notOk(segment.getAttributes().transaction_guid)
+          assert.ok(!segment.catId)
+          assert.ok(!segment.catTransaction)
+          assert.ok(!segment.getAttributes().transaction_guid)
 
           helper.runInTransaction(agent, shim.BG, function (tx2) {
-            t.not(tx2, tx)
+            assert.notEqual(tx2, tx)
             shim.handleMqTracingHeaders(headers, segment)
           })
 
-          t.equal(segment.catId, '6789#app')
-          t.equal(segment.catTransaction, 'app data transaction name')
-          t.equal(segment.getAttributes().transaction_guid, 'app trans id')
-          t.end()
+          assert.equal(segment.catId, '6789#app')
+          assert.equal(segment.catTransaction, 'app data transaction name')
+          assert.equal(segment.getAttributes().transaction_guid, 'app trans id')
+          end()
         })
       }
     )
 
-    t.test(
+    await t.test(
       'should attach the CAT info to current segment if not provided - DT disabled, app data is provided',
-      function (t) {
+      function (t, end) {
+        const { agent, shim } = t.nr
         helper.runInTransaction(agent, function () {
           const headers = createCATHeaders(agent.config)
           const segment = shim.getSegment()
           delete headers['X-NewRelic-Id']
           delete headers['X-NewRelic-Transaction']
 
-          t.notOk(segment.catId)
-          t.notOk(segment.catTransaction)
-          t.notOk(segment.getAttributes().transaction_guid)
+          assert.ok(!segment.catId)
+          assert.ok(!segment.catTransaction)
+          assert.ok(!segment.getAttributes().transaction_guid)
 
           shim.handleMqTracingHeaders(headers)
 
-          t.equal(segment.catId, '6789#app')
-          t.equal(segment.catTransaction, 'app data transaction name')
-          t.equal(segment.getAttributes().transaction_guid, 'app trans id')
-          t.end()
+          assert.equal(segment.catId, '6789#app')
+          assert.equal(segment.catTransaction, 'app data transaction name')
+          assert.equal(segment.getAttributes().transaction_guid, 'app trans id')
+          end()
         })
       }
     )
 
-    t.test(
+    await t.test(
       'should work with alternate header names - DT disabled, app data is provided',
-      function (t) {
+      function (t, end) {
+        const { agent, shim } = t.nr
         helper.runInTransaction(agent, shim.WEB, function (tx) {
           const headers = createCATHeaders(agent.config, true)
           const segment = shim.getSegment()
           delete headers.NewRelicID
           delete headers.NewRelicTransaction
 
-          t.notOk(segment.catId)
-          t.notOk(segment.catTransaction)
-          t.notOk(segment.getAttributes().transaction_guid)
+          assert.ok(!segment.catId)
+          assert.ok(!segment.catTransaction)
+          assert.ok(!segment.getAttributes().transaction_guid)
 
           helper.runInTransaction(agent, shim.BG, function (tx2) {
-            t.not(tx2, tx)
+            assert.notEqual(tx2, tx)
             shim.handleMqTracingHeaders(headers, segment)
           })
 
-          t.equal(segment.catId, '6789#app')
-          t.equal(segment.catTransaction, 'app data transaction name')
-          t.equal(segment.getAttributes().transaction_guid, 'app trans id')
-          t.end()
+          assert.equal(segment.catId, '6789#app')
+          assert.equal(segment.catTransaction, 'app data transaction name')
+          assert.equal(segment.getAttributes().transaction_guid, 'app trans id')
+          end()
         })
       }
     )
 
-    t.test(
+    await t.test(
       'should not attach any CAT data to the segment, app data is for an untrusted application',
-      function (t) {
+      function (t, end) {
+        const { agent, shim } = t.nr
         helper.runInTransaction(agent, function () {
           const headers = createCATHeaders(agent.config)
           const segment = shim.getSegment()
@@ -760,118 +760,131 @@ tap.test('TransactionShim', function (t) {
           delete headers['X-NewRelic-Transaction']
           agent.config.trusted_account_ids = []
 
-          t.notOk(segment.catId)
-          t.notOk(segment.catTransaction)
-          t.notOk(segment.getAttributes().transaction_guid)
+          assert.ok(!segment.catId)
+          assert.ok(!segment.catTransaction)
+          assert.ok(!segment.getAttributes().transaction_guid)
 
           shim.handleMqTracingHeaders(headers)
 
-          t.notOk(segment.catId)
-          t.notOk(segment.catTransaction)
-          t.notOk(segment.getAttributes().transaction_guid)
-          t.end()
+          assert.ok(!segment.catId)
+          assert.ok(!segment.catTransaction)
+          assert.ok(!segment.getAttributes().transaction_guid)
+          end()
         })
       }
     )
   })
 
-  t.test('#insertCATRequestHeaders', function (t) {
-    t.autoend()
-    t.beforeEach(() => {
-      beforeEach()
+  await t.test('#insertCATRequestHeaders', async function (t) {
+    t.beforeEach((ctx) => {
+      beforeEach(ctx)
+      const { agent } = ctx.nr
       agent.config.cross_application_tracer.enabled = true
       agent.config.distributed_tracing.enabled = false
     })
     t.afterEach(afterEach)
-    t.test('should not run if disabled', function (t) {
+    await t.test('should not run if disabled', function (t, end) {
+      const { agent, shim } = t.nr
       helper.runInTransaction(agent, function () {
         agent.config.cross_application_tracer.enabled = false
         const headers = {}
 
         shim.insertCATRequestHeaders(headers)
 
-        t.notOk(headers['X-NewRelic-Id'])
-        t.notOk(headers['X-NewRelic-Transaction'])
-        t.end()
+        assert.ok(!headers['X-NewRelic-Id'])
+        assert.ok(!headers['X-NewRelic-Transaction'])
+        end()
       })
     })
 
-    t.test('should not run if the encoding key is missing', function (t) {
+    await t.test('should not run if the encoding key is missing', function (t, end) {
+      const { agent, shim } = t.nr
       helper.runInTransaction(agent, function () {
         delete agent.config.encoding_key
         const headers = {}
 
         shim.insertCATRequestHeaders(headers)
 
-        t.notOk(headers['X-NewRelic-Id'])
-        t.notOk(headers['X-NewRelic-Transaction'])
-        t.end()
+        assert.ok(!headers['X-NewRelic-Id'])
+        assert.ok(!headers['X-NewRelic-Transaction'])
+        end()
       })
     })
 
-    t.test('should fail gracefully when no headers are given', function (t) {
+    await t.test('should fail gracefully when no headers are given', function (t) {
+      const { agent, shim } = t.nr
       helper.runInTransaction(agent, function () {
-        t.doesNotThrow(function () {
+        assert.doesNotThrow(function () {
           shim.insertCATRequestHeaders(null)
         })
-        t.end()
       })
     })
 
-    t.test('should use X-Http-Style-Headers when useAlt is false - DT disabled', function (t) {
-      helper.runInTransaction(agent, function () {
-        const headers = {}
-        shim.insertCATRequestHeaders(headers)
-
-        t.notOk(headers.NewRelicID)
-        t.notOk(headers.NewRelicTransaction)
-        t.equal(headers['X-NewRelic-Id'], 'RVpaRwNdQBJQ')
-        t.match(headers['X-NewRelic-Transaction'], /^[a-zA-Z0-9/-]{60,80}={0,2}$/)
-        t.end()
-      })
-    })
-
-    t.test(
-      'should use MessageQueueStyleHeaders when useAlt is true with DT disabled',
-      function (t) {
+    await t.test(
+      'should use X-Http-Style-Headers when useAlt is false - DT disabled',
+      function (t, end) {
+        const { agent, shim } = t.nr
         helper.runInTransaction(agent, function () {
           const headers = {}
-          shim.insertCATRequestHeaders(headers, true)
+          shim.insertCATRequestHeaders(headers)
 
-          t.notOk(headers['X-NewRelic-Id'])
-          t.notOk(headers['X-NewRelic-Transaction'])
-          t.equal(headers.NewRelicID, 'RVpaRwNdQBJQ')
-          t.match(headers.NewRelicTransaction, /^[a-zA-Z0-9/-]{60,80}={0,2}$/)
-          t.end()
+          assert.ok(!headers.NewRelicID)
+          assert.ok(!headers.NewRelicTransaction)
+          assert.equal(headers['X-NewRelic-Id'], 'RVpaRwNdQBJQ')
+          assert.match(headers['X-NewRelic-Transaction'], /^[a-zA-Z0-9/-]{60,80}={0,2}$/)
+          end()
         })
       }
     )
 
-    t.test('should append the current path hash to the transaction - DT disabled', function (t) {
-      helper.runInTransaction(agent, function (tx) {
-        tx.nameState.appendPath('foobar')
-        t.equal(tx.pathHashes.length, 0)
+    await t.test(
+      'should use MessageQueueStyleHeaders when useAlt is true with DT disabled',
+      function (t, end) {
+        const { agent, shim } = t.nr
+        helper.runInTransaction(agent, function () {
+          const headers = {}
+          shim.insertCATRequestHeaders(headers, true)
 
-        const headers = {}
-        shim.insertCATRequestHeaders(headers)
+          assert.ok(!headers['X-NewRelic-Id'])
+          assert.ok(!headers['X-NewRelic-Transaction'])
+          assert.equal(headers.NewRelicID, 'RVpaRwNdQBJQ')
+          assert.match(headers.NewRelicTransaction, /^[a-zA-Z0-9/-]{60,80}={0,2}$/)
+          end()
+        })
+      }
+    )
 
-        t.equal(tx.pathHashes.length, 1)
-        t.equal(tx.pathHashes[0], '0f9570a6')
-        t.end()
-      })
-    })
+    await t.test(
+      'should append the current path hash to the transaction - DT disabled',
+      function (t, end) {
+        const { agent, shim } = t.nr
+        helper.runInTransaction(agent, function (tx) {
+          tx.nameState.appendPath('foobar')
+          assert.equal(tx.pathHashes.length, 0)
 
-    t.test('should be an obfuscated value - DT disabled, id header', function (t) {
+          const headers = {}
+          shim.insertCATRequestHeaders(headers)
+
+          assert.equal(tx.pathHashes.length, 1)
+          assert.equal(tx.pathHashes[0], '0f9570a6')
+          end()
+        })
+      }
+    )
+
+    await t.test('should be an obfuscated value - DT disabled, id header', function (t, end) {
+      const { agent, shim } = t.nr
       helper.runInTransaction(agent, function () {
         const headers = {}
         shim.insertCATRequestHeaders(headers)
 
-        t.match(headers['X-NewRelic-Id'], /^[a-zA-Z0-9/-]+={0,2}$/)
-        t.end()
+        assert.match(headers['X-NewRelic-Id'], /^[a-zA-Z0-9/-]+={0,2}$/)
+        end()
       })
     })
 
-    t.test('should deobfuscate to the app id - DT disabled, id header', function (t) {
+    await t.test('should deobfuscate to the app id - DT disabled, id header', function (t, end) {
+      const { agent, shim } = t.nr
       helper.runInTransaction(agent, function () {
         const headers = {}
         shim.insertCATRequestHeaders(headers)
@@ -880,24 +893,29 @@ tap.test('TransactionShim', function (t) {
           headers['X-NewRelic-Id'],
           agent.config.encoding_key
         )
-        t.equal(id, '1234#4321')
-        t.end()
+        assert.equal(id, '1234#4321')
+        end()
       })
     })
 
-    t.test('should be an obfuscated value - DT disabled, transaction header', function (t) {
-      helper.runInTransaction(agent, function () {
-        const headers = {}
-        shim.insertCATRequestHeaders(headers)
+    await t.test(
+      'should be an obfuscated value - DT disabled, transaction header',
+      function (t, end) {
+        const { agent, shim } = t.nr
+        helper.runInTransaction(agent, function () {
+          const headers = {}
+          shim.insertCATRequestHeaders(headers)
 
-        t.match(headers['X-NewRelic-Transaction'], /^[a-zA-Z0-9/-]{60,80}={0,2}$/)
-        t.end()
-      })
-    })
+          assert.match(headers['X-NewRelic-Transaction'], /^[a-zA-Z0-9/-]{60,80}={0,2}$/)
+          end()
+        })
+      }
+    )
 
-    t.test(
+    await t.test(
       'should deobfuscate to transaction information - DT disabled, transaction header',
-      function (t) {
+      function (t, end) {
+        const { agent, shim } = t.nr
         helper.runInTransaction(agent, function () {
           const headers = {}
           shim.insertCATRequestHeaders(headers)
@@ -907,95 +925,107 @@ tap.test('TransactionShim', function (t) {
             agent.config.encoding_key
           )
 
-          t.doesNotThrow(function () {
+          assert.doesNotThrow(function () {
             txInfo = JSON.parse(txInfo)
           })
 
-          t.ok(Array.isArray(txInfo))
-          t.equal(txInfo.length, 4)
-          t.end()
+          assert.ok(Array.isArray(txInfo))
+          assert.equal(txInfo.length, 4)
+          end()
         })
       }
     )
   })
 
-  t.test('#insertCATReplyHeader', function (t) {
-    t.autoend()
-    t.beforeEach(() => {
-      beforeEach()
+  await t.test('#insertCATReplyHeader', async function (t) {
+    t.beforeEach((ctx) => {
+      beforeEach(ctx)
+      const { agent } = ctx.nr
       agent.config.cross_application_tracer.enabled = true
       agent.config.distributed_tracing.enabled = false
     })
     t.afterEach(afterEach)
 
-    t.test('should not run if disabled', function (t) {
+    await t.test('should not run if disabled', function (t, end) {
+      const { agent, shim } = t.nr
       helper.runInTransaction(agent, function () {
         agent.config.cross_application_tracer.enabled = false
         const headers = {}
 
         shim.insertCATReplyHeader(headers)
 
-        t.notOk(headers['X-NewRelic-App-Data'])
-        t.end()
+        assert.ok(!headers['X-NewRelic-App-Data'])
+        end()
       })
     })
 
-    t.test('should not run if the encoding key is missing', function (t) {
+    await t.test('should not run if the encoding key is missing', function (t, end) {
+      const { agent, shim } = t.nr
       helper.runInTransaction(agent, function () {
         delete agent.config.encoding_key
         const headers = {}
 
         shim.insertCATReplyHeader(headers)
 
-        t.notOk(headers['X-NewRelic-App-Data'])
-        t.end()
+        assert.ok(!headers['X-NewRelic-App-Data'])
+        end()
       })
     })
 
-    t.test('should fail gracefully when no headers are given', function (t) {
+    await t.test('should fail gracefully when no headers are given', function (t) {
+      const { agent, shim } = t.nr
       helper.runInTransaction(agent, function () {
-        t.doesNotThrow(function () {
+        assert.doesNotThrow(function () {
           shim.insertCATReplyHeader(null)
         })
-        t.end()
       })
     })
 
-    t.test('should use X-Http-Style-Headers when useAlt is false - DT disabled', function (t) {
+    await t.test(
+      'should use X-Http-Style-Headers when useAlt is false - DT disabled',
+      function (t, end) {
+        const { agent, shim } = t.nr
+        helper.runInTransaction(agent, function () {
+          const headers = {}
+          shim.insertCATReplyHeader(headers)
+
+          assert.ok(!headers.NewRelicAppData)
+          assert.match(headers['X-NewRelic-App-Data'], /^[a-zA-Z0-9/-]{60,80}={0,2}$/)
+          end()
+        })
+      }
+    )
+
+    await t.test(
+      'should use MessageQueueStyleHeaders when useAlt is true - DT disabled',
+      function (t, end) {
+        const { agent, shim } = t.nr
+        helper.runInTransaction(agent, function () {
+          const headers = {}
+          shim.insertCATReplyHeader(headers, true)
+
+          assert.ok(!headers['X-NewRelic-App-Data'])
+          assert.match(headers.NewRelicAppData, /^[a-zA-Z0-9/-]{60,80}={0,2}$/)
+          end()
+        })
+      }
+    )
+
+    await t.test('should be an obfuscated value - DT disabled, app data header', function (t, end) {
+      const { agent, shim } = t.nr
       helper.runInTransaction(agent, function () {
         const headers = {}
         shim.insertCATReplyHeader(headers)
 
-        t.notOk(headers.NewRelicAppData)
-        t.match(headers['X-NewRelic-App-Data'], /^[a-zA-Z0-9/-]{60,80}={0,2}$/)
-        t.end()
+        assert.match(headers['X-NewRelic-App-Data'], /^[a-zA-Z0-9/-]{60,80}={0,2}$/)
+        end()
       })
     })
 
-    t.test('should use MessageQueueStyleHeaders when useAlt is true - DT disabled', function (t) {
-      helper.runInTransaction(agent, function () {
-        const headers = {}
-        shim.insertCATReplyHeader(headers, true)
-
-        t.notOk(headers['X-NewRelic-App-Data'])
-        t.match(headers.NewRelicAppData, /^[a-zA-Z0-9/-]{60,80}={0,2}$/)
-        t.end()
-      })
-    })
-
-    t.test('should be an obfuscated value - DT disabled, app data header', function (t) {
-      helper.runInTransaction(agent, function () {
-        const headers = {}
-        shim.insertCATReplyHeader(headers)
-
-        t.match(headers['X-NewRelic-App-Data'], /^[a-zA-Z0-9/-]{60,80}={0,2}$/)
-        t.end()
-      })
-    })
-
-    t.test(
+    await t.test(
       'should deobfuscate to CAT application data - DT disabled, app data header',
-      function (t) {
+      function (t, end) {
+        const { agent, shim } = t.nr
         helper.runInTransaction(agent, function () {
           const headers = {}
           shim.insertCATReplyHeader(headers)
@@ -1005,13 +1035,13 @@ tap.test('TransactionShim', function (t) {
             agent.config.encoding_key
           )
 
-          t.doesNotThrow(function () {
+          assert.doesNotThrow(function () {
             appData = JSON.parse(appData)
           })
 
-          t.equal(appData.length, 7)
-          t.ok(Array.isArray(appData))
-          t.end()
+          assert.equal(appData.length, 7)
+          assert.ok(Array.isArray(appData))
+          end()
         })
       }
     )

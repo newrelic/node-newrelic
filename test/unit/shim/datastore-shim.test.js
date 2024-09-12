@@ -4,27 +4,23 @@
  */
 
 'use strict'
-
-const tap = require('tap')
-const { test } = tap
+const assert = require('node:assert')
+const test = require('node:test')
 const getMetricHostName = require('../../lib/metrics_helper').getMetricHostName
 const helper = require('../../lib/agent_helper')
 const Shim = require('../../../lib/shim/shim')
 const DatastoreShim = require('../../../lib/shim/datastore-shim')
 const ParsedStatement = require('../../../lib/db/parsed-statement')
 const { QuerySpec, OperationSpec } = require('../../../lib/shim/specs')
+const { checkWrappedCb } = require('../../lib/custom-assertions')
 
-test('DatastoreShim', function (t) {
-  t.autoend()
-  let agent = null
-  let shim = null
-  let wrappable = null
-
-  function beforeEach() {
-    agent = helper.loadMockedAgent()
-    shim = new DatastoreShim(agent, 'test-cassandra')
+test('DatastoreShim', async function (t) {
+  function beforeEach(ctx) {
+    ctx.nr = {}
+    const agent = helper.loadMockedAgent()
+    const shim = new DatastoreShim(agent, 'test-cassandra')
     shim.setDatastore(DatastoreShim.CASSANDRA)
-    wrappable = {
+    ctx.nr.wrappable = {
       name: 'this is a name',
       bar: function barsName() {
         return 'bar'
@@ -43,62 +39,65 @@ test('DatastoreShim', function (t) {
         return segment
       }
     }
+    ctx.nr.agent = agent
+    ctx.nr.shim = shim
   }
 
-  function afterEach() {
-    helper.unloadAgent(agent)
-    agent = null
-    shim = null
+  function afterEach(ctx) {
+    helper.unloadAgent(ctx.nr.agent)
   }
 
-  t.test('constructor', (t) => {
-    t.autoend()
+  await t.test('constructor', async (t) => {
     t.beforeEach(beforeEach)
     t.afterEach(afterEach)
 
-    t.test('should inherit from Shim', function (t) {
-      t.ok(shim instanceof DatastoreShim)
-      t.ok(shim instanceof Shim)
-      t.end()
+    await t.test('should inherit from Shim', function (t) {
+      const { shim } = t.nr
+      assert.ok(shim instanceof DatastoreShim)
+      assert.ok(shim instanceof Shim)
     })
 
-    t.test('should require the `agent` parameter', function (t) {
-      t.throws(() => new DatastoreShim(), /^Shim must be initialized with .*? agent/)
-      t.end()
+    await t.test('should require the `agent` parameter', function () {
+      assert.throws(
+        () => new DatastoreShim(),
+        'Error: Shim must be initialized with an agent and module name.'
+      )
     })
 
-    t.test('should require the `moduleName` parameter', function (t) {
-      t.throws(() => new DatastoreShim(agent), /^Shim must be initialized with .*? module name/)
-      t.end()
+    await t.test('should require the `moduleName` parameter', function (t) {
+      const { agent } = t.nr
+      assert.throws(
+        () => new DatastoreShim(agent),
+        'Error: Shim must be initialized with an agent and module name.'
+      )
     })
 
-    t.test('should take an optional `datastore`', function (t) {
+    await t.test('should take an optional `datastore`', function (t) {
+      const { agent, shim } = t.nr
       // Test without datastore
       let _shim = null
-      t.doesNotThrow(function () {
+      assert.doesNotThrow(function () {
         _shim = new DatastoreShim(agent, 'test-cassandra')
       })
-      t.notOk(_shim._metrics)
+      assert.ok(!_shim._metrics)
 
       // Use one provided for all tests to check constructed with datastore
-      t.ok(shim._metrics)
-      t.end()
+      assert.ok(shim._metrics)
     })
 
-    t.test('should assign properties from parent', (t) => {
+    await t.test('should assign properties from parent', (t) => {
+      const { agent } = t.nr
       const mod = 'test-mod'
       const name = mod
       const version = '1.0.0'
       const shim = new DatastoreShim(agent, mod, mod, name, version)
-      t.equal(shim.moduleName, mod)
-      t.equal(agent, shim._agent)
-      t.equal(shim.pkgVersion, version)
-      t.end()
+      assert.equal(shim.moduleName, mod)
+      assert.equal(agent, shim._agent)
+      assert.equal(shim.pkgVersion, version)
     })
   })
 
-  t.test('well-known datastores', (t) => {
-    t.autoend()
+  await t.test('well-known datastores', async (t) => {
     t.beforeEach(beforeEach)
     t.afterEach(afterEach)
 
@@ -112,216 +111,213 @@ test('DatastoreShim', function (t) {
       'REDIS',
       'POSTGRES'
     ]
-    datastores.forEach((ds) => {
-      t.test(`should have property ${ds}`, (t) => {
-        t.ok(DatastoreShim[ds])
-        t.ok(shim[ds])
-        t.end()
+    for (const ds of datastores) {
+      await t.test(`should have property ${ds}`, (t) => {
+        const { shim } = t.nr
+        assert.ok(DatastoreShim[ds])
+        assert.ok(shim[ds])
       })
-    })
+    }
   })
 
-  t.test('#logger', (t) => {
-    t.autoend()
+  await t.test('#logger', async (t) => {
     t.beforeEach(beforeEach)
     t.afterEach(afterEach)
 
-    t.test('logger should be a non-writable property', function (t) {
-      t.throws(function () {
+    await t.test('logger should be a non-writable property', function (t) {
+      const { shim } = t.nr
+      assert.throws(function () {
         shim.logger = 'foobar'
       })
 
-      t.ok(shim.logger)
-      t.not(shim.logger, 'foobar')
-      t.end()
+      assert.ok(shim.logger)
+      assert.notDeepEqual(shim.logger, 'foobar')
     })
 
     const logLevels = ['trace', 'debug', 'info', 'warn', 'error']
-    logLevels.forEach((level) => {
-      t.test(`logger should have ${level} as a function`, (t) => {
-        t.ok(shim.logger[level] instanceof Function, 'should be function')
-        t.end()
+    for (const level of logLevels) {
+      await t.test(`logger should have ${level} as a function`, (t) => {
+        const { shim } = t.nr
+        assert.ok(shim.logger[level] instanceof Function, 'should be function')
       })
+    }
+  })
+
+  await t.test('#setDatastore', async (t) => {
+    t.beforeEach(function (ctx) {
+      ctx.nr = {}
+      const agent = helper.loadMockedAgent()
+      ctx.nr.shim = new DatastoreShim(agent, 'test-cassandra')
+      ctx.nr.agent = agent
+    })
+
+    t.afterEach(function (ctx) {
+      helper.unloadAgent(ctx.nr.agent)
+    })
+
+    await t.test('should accept the id of a well-known datastore', function (t) {
+      const { shim } = t.nr
+      assert.doesNotThrow(function () {
+        shim.setDatastore(shim.CASSANDRA)
+      })
+
+      assert.equal(shim._metrics.PREFIX, 'Cassandra')
+    })
+
+    await t.test(
+      'should create custom metric names if the `datastoreId` is a string',
+      function (t) {
+        const { shim } = t.nr
+        assert.doesNotThrow(function () {
+          shim.setDatastore('Fake Datastore')
+        })
+
+        assert.equal(shim._metrics.PREFIX, 'Fake Datastore')
+      }
+    )
+
+    await t.test("should update the shim's logger", function (t) {
+      const { shim } = t.nr
+      const original = shim.logger
+      shim.setDatastore(shim.CASSANDRA)
+      assert.notEqual(shim.logger, original)
+      assert.equal(shim.logger.extra.datastore, 'Cassandra')
     })
   })
 
-  t.test('#setDatastore', (t) => {
-    t.autoend()
-    let dsAgent = null
-    let dsShim = null
-
-    t.beforeEach(function () {
-      dsAgent = helper.loadMockedAgent()
-      dsShim = new DatastoreShim(dsAgent, 'test-cassandra')
+  await t.test('#setParser', async (t) => {
+    t.beforeEach(function (ctx) {
+      ctx.nr = {}
+      const agent = helper.loadMockedAgent()
+      // Use a shim without a parser set for these tests.
+      const shim = new DatastoreShim(agent, 'test')
+      shim._metrics = { PREFIX: '' }
+      ctx.nr.shim = shim
+      ctx.nr.agent = agent
     })
 
-    t.afterEach(function () {
-      dsShim = null
-      dsAgent = helper.unloadAgent(dsAgent)
+    t.afterEach(function (ctx) {
+      helper.unloadAgent(ctx.nr.agent)
     })
 
-    t.test('should accept the id of a well-known datastore', function (t) {
-      t.doesNotThrow(function () {
-        dsShim.setDatastore(dsShim.CASSANDRA)
-      })
-
-      t.ok(dsShim._metrics.PREFIX, 'Cassandra')
-      t.end()
-    })
-
-    t.test('should create custom metric names if the `datastoreId` is a string', function (t) {
-      t.doesNotThrow(function () {
-        dsShim.setDatastore('Fake Datastore')
-      })
-
-      t.ok(dsShim._metrics.PREFIX, 'Fake Datastore')
-      t.end()
-    })
-
-    t.test("should update the dsShim's logger", function (t) {
-      const original = dsShim.logger
-      dsShim.setDatastore(dsShim.CASSANDRA)
-      t.not(dsShim.logger, original)
-      t.ok(dsShim.logger.extra.datastore, 'Cassandra')
-      t.end()
-    })
-  })
-
-  t.test('#setParser', (t) => {
-    t.autoend()
-    let parserAgent = null
-    let parserShim = null
-
-    t.beforeEach(function () {
-      parserAgent = helper.loadMockedAgent()
-      // Use a parserShim without a parser set for these tests.
-      parserShim = new DatastoreShim(parserAgent, 'test')
-      parserShim._metrics = { PREFIX: '' }
-    })
-
-    t.afterEach(function () {
-      parserShim = null
-      parserAgent = helper.unloadAgent(parserAgent)
-    })
-
-    t.test('should default to an SQL parser', function (t) {
-      parserShim.agent.config.transaction_tracer.record_sql = 'raw'
+    await t.test('should default to an SQL parser', function (t) {
+      const { shim } = t.nr
+      shim.agent.config.transaction_tracer.record_sql = 'raw'
       const query = 'SELECT 1 FROM test'
-      const parsed = parserShim.parseQuery(query)
-      t.equal(parsed.operation, 'select')
-      t.equal(parsed.collection, 'test')
-      t.equal(parsed.raw, query)
-      t.end()
+      const parsed = shim.parseQuery(query)
+      assert.equal(parsed.operation, 'select')
+      assert.equal(parsed.collection, 'test')
+      assert.equal(parsed.raw, query)
     })
 
-    t.test('should allow for the parser to be set', function (t) {
+    await t.test('should allow for the parser to be set', function (t) {
+      const { shim } = t.nr
       let testValue = false
-      parserShim.setParser(function fakeParser(query) {
-        t.equal(query, 'foobar')
+      shim.setParser(function fakeParser(query) {
+        assert.equal(query, 'foobar')
         testValue = true
         return {
           operation: 'test'
         }
       })
-      parserShim.parseQuery('foobar')
-      t.ok(testValue)
-      t.end()
+      shim.parseQuery('foobar')
+      assert.ok(testValue)
     })
 
-    t.test('should have constants to set the query parser with', function (t) {
-      parserShim.agent.config.transaction_tracer.record_sql = 'raw'
-      parserShim.setParser(parserShim.SQL_PARSER)
+    await t.test('should have constants to set the query parser with', function (t) {
+      const { shim } = t.nr
+      shim.agent.config.transaction_tracer.record_sql = 'raw'
+      shim.setParser(shim.SQL_PARSER)
       const query = 'SELECT 1 FROM test'
-      const parsed = parserShim.parseQuery(query)
-      t.equal(parsed.operation, 'select')
-      t.equal(parsed.collection, 'test')
-      t.equal(parsed.raw, query)
-      t.end()
+      const parsed = shim.parseQuery(query)
+      assert.equal(parsed.operation, 'select')
+      assert.equal(parsed.collection, 'test')
+      assert.equal(parsed.raw, query)
     })
 
-    t.test('should not set parser to a new parser with invalid string', function (t) {
+    await t.test('should not set parser to a new parser with invalid string', function (t) {
+      const { shim } = t.nr
       let testValue = false
-      parserShim.setParser(function fakeParser(query) {
-        t.equal(query, 'SELECT 1 FROM test')
+      shim.setParser(function fakeParser(query) {
+        assert.equal(query, 'SELECT 1 FROM test')
         testValue = true
         return {
           operation: 'test'
         }
       })
-      parserShim.setParser('bad string')
+      shim.setParser('bad string')
       const query = 'SELECT 1 FROM test'
-      parserShim.parseQuery(query)
-      t.ok(testValue)
-      t.end()
+      shim.parseQuery(query)
+      assert.ok(testValue)
     })
 
-    t.test('should not set parser to a new parser with an object', function (t) {
+    await t.test('should not set parser to a new parser with an object', function (t) {
+      const { shim } = t.nr
       let testValue = false
-      parserShim.setParser(function fakeParser(query) {
-        t.equal(query, 'SELECT 1 FROM test')
+      shim.setParser(function fakeParser(query) {
+        assert.equal(query, 'SELECT 1 FROM test')
         testValue = true
         return {
           operation: 'test'
         }
       })
-      parserShim.setParser({
+      shim.setParser({
         parser: function shouldNotBeCalled() {
           throw new Error('get me outta here')
         }
       })
       const query = 'SELECT 1 FROM test'
-      parserShim.parseQuery(query)
-      t.ok(testValue)
-      t.end()
+      shim.parseQuery(query)
+      assert.ok(testValue)
     })
   })
-  t.test('#recordOperation', (t) => {
-    t.autoend()
+
+  await t.test('#recordOperation', async (t) => {
     t.beforeEach(beforeEach)
     t.afterEach(afterEach)
 
-    t.test('should not wrap non-function objects', function (t) {
+    await t.test('should not wrap non-function objects', function (t) {
+      const { shim, wrappable } = t.nr
       const wrapped = shim.recordOperation(wrappable)
-      t.equal(wrapped, wrappable)
-      t.not(shim.isWrapped(wrapped))
-      t.end()
+      assert.equal(wrapped, wrappable)
+      assert.equal(shim.isWrapped(wrapped), false)
     })
 
-    t.test('should wrap the first parameter if no properties are given', function (t) {
+    await t.test('should wrap the first parameter if no properties are given', function (t) {
+      const { shim, wrappable } = t.nr
       const wrapped = shim.recordOperation(wrappable.bar, {})
-      t.not(wrapped, wrappable.bar)
-      t.ok(shim.isWrapped(wrapped))
-      t.equal(shim.unwrap(wrapped), wrappable.bar)
-      t.end()
+      assert.notEqual(wrapped, wrappable.bar)
+      assert.equal(shim.isWrapped(wrapped), true)
+      assert.equal(shim.unwrap(wrapped), wrappable.bar)
     })
 
-    t.test('should wrap the first parameter if `null` is given for properties', function (t) {
+    await t.test('should wrap the first parameter if `null` is given for properties', function (t) {
+      const { shim, wrappable } = t.nr
       const wrapped = shim.recordOperation(wrappable.bar, null, {})
-      t.not(wrapped, wrappable.bar)
-      t.ok(shim.isWrapped(wrapped))
-      t.ok(shim.isWrapped(wrapped))
-      t.equal(shim.unwrap(wrapped), wrappable.bar)
-      t.end()
+      assert.notEqual(wrapped, wrappable.bar)
+      assert.equal(shim.isWrapped(wrapped), true)
+      assert.equal(shim.unwrap(wrapped), wrappable.bar)
     })
 
-    t.test('should replace wrapped properties on the original object', function (t) {
+    await t.test('should replace wrapped properties on the original object', function (t) {
+      const { shim, wrappable } = t.nr
       const original = wrappable.bar
       shim.recordOperation(wrappable, 'bar', {})
-      t.not(wrappable.bar, original)
-      t.ok(shim.isWrapped(wrappable.bar))
-      t.equal(shim.unwrap(wrappable.bar), original)
-      t.end()
+      assert.notEqual(wrappable.bar, original)
+      assert.equal(shim.isWrapped(wrappable.bar), true)
+      assert.equal(shim.unwrap(wrappable.bar), original)
     })
 
-    t.test('should not mark unwrapped properties as wrapped', function (t) {
+    await t.test('should not mark unwrapped properties as wrapped', function (t) {
+      const { shim, wrappable } = t.nr
       shim.recordOperation(wrappable, 'name', {})
-      t.not(shim.isWrapped(wrappable.name))
-      t.end()
+      assert.equal(shim.isWrapped(wrappable.name), false)
     })
 
-    t.test(
+    await t.test(
       'should create a datastore operation segment but no metric when `record` is false',
-      function (t) {
+      function (t, end) {
+        const { agent, shim, wrappable } = t.nr
         shim.recordOperation(wrappable, 'getActiveSegment', {
           record: false,
           name: 'getActiveSegment'
@@ -330,79 +326,90 @@ test('DatastoreShim', function (t) {
         helper.runInTransaction(agent, function (tx) {
           const startingSegment = agent.tracer.getSegment()
           const segment = wrappable.getActiveSegment()
-          t.not(segment, startingSegment)
-          t.equal(segment.transaction, tx)
-          t.equal(segment.name, 'getActiveSegment')
-          t.equal(agent.tracer.getSegment(), startingSegment)
-          t.end()
+          assert.notEqual(segment, startingSegment)
+          assert.equal(segment.transaction, tx)
+          assert.equal(segment.name, 'getActiveSegment')
+          assert.equal(agent.tracer.getSegment(), startingSegment)
+          end()
         })
       }
     )
 
-    t.test('should create a datastore operation metric when `record` is true', function (t) {
-      shim.recordOperation(wrappable, 'getActiveSegment', {
-        record: true,
-        name: 'getActiveSegment'
-      })
+    await t.test(
+      'should create a datastore operation metric when `record` is true',
+      function (t, end) {
+        const { agent, shim, wrappable } = t.nr
+        shim.recordOperation(wrappable, 'getActiveSegment', {
+          record: true,
+          name: 'getActiveSegment'
+        })
 
-      helper.runInTransaction(agent, function (tx) {
-        const startingSegment = agent.tracer.getSegment()
-        const segment = wrappable.getActiveSegment()
-        t.not(segment, startingSegment)
-        t.equal(segment.transaction, tx)
-        t.equal(segment.name, 'Datastore/operation/Cassandra/getActiveSegment')
-        t.equal(agent.tracer.getSegment(), startingSegment)
-        t.end()
-      })
-    })
+        helper.runInTransaction(agent, function (tx) {
+          const startingSegment = agent.tracer.getSegment()
+          const segment = wrappable.getActiveSegment()
+          assert.notEqual(segment, startingSegment)
+          assert.equal(segment.transaction, tx)
+          assert.equal(segment.name, 'Datastore/operation/Cassandra/getActiveSegment')
+          assert.equal(agent.tracer.getSegment(), startingSegment)
+          end()
+        })
+      }
+    )
 
-    t.test('should create a datastore operation metric when `record` is defaulted', function (t) {
-      shim.recordOperation(wrappable, 'getActiveSegment', { name: 'getActiveSegment' })
+    await t.test(
+      'should create a datastore operation metric when `record` is defaulted',
+      function (t, end) {
+        const { agent, shim, wrappable } = t.nr
+        shim.recordOperation(wrappable, 'getActiveSegment', { name: 'getActiveSegment' })
 
-      helper.runInTransaction(agent, function (tx) {
-        const startingSegment = agent.tracer.getSegment()
-        const segment = wrappable.getActiveSegment()
-        t.not(segment, startingSegment)
-        t.equal(segment.transaction, tx)
-        t.equal(segment.name, 'Datastore/operation/Cassandra/getActiveSegment')
-        t.equal(agent.tracer.getSegment(), startingSegment)
-        t.end()
-      })
-    })
+        helper.runInTransaction(agent, function (tx) {
+          const startingSegment = agent.tracer.getSegment()
+          const segment = wrappable.getActiveSegment()
+          assert.notEqual(segment, startingSegment)
+          assert.equal(segment.transaction, tx)
+          assert.equal(segment.name, 'Datastore/operation/Cassandra/getActiveSegment')
+          assert.equal(agent.tracer.getSegment(), startingSegment)
+          end()
+        })
+      }
+    )
 
-    t.test('should create a child segment when opaque is false', (t) => {
+    await t.test('should create a child segment when opaque is false', (t, end) => {
+      const { agent, shim, wrappable } = t.nr
       shim.recordOperation(wrappable, 'withNested', () => {
         return new OperationSpec({ name: 'test', opaque: false })
       })
       helper.runInTransaction(agent, (tx) => {
         const startingSegment = agent.tracer.getSegment()
         const segment = wrappable.withNested()
-        t.not(segment, startingSegment)
-        t.equal(segment.transaction, tx)
-        t.equal(segment.name, 'Datastore/operation/Cassandra/test')
-        t.equal(segment.children.length, 1)
+        assert.notEqual(segment, startingSegment)
+        assert.equal(segment.transaction, tx)
+        assert.equal(segment.name, 'Datastore/operation/Cassandra/test')
+        assert.equal(segment.children.length, 1)
         const [childSegment] = segment.children
-        t.equal(childSegment.name, 'ChildSegment')
-        t.end()
+        assert.equal(childSegment.name, 'ChildSegment')
+        end()
       })
     })
 
-    t.test('should not create a child segment when opaque is true', (t) => {
+    await t.test('should not create a child segment when opaque is true', (t, end) => {
+      const { agent, shim, wrappable } = t.nr
       shim.recordOperation(wrappable, 'withNested', () => {
         return new OperationSpec({ name: 'test', opaque: true })
       })
       helper.runInTransaction(agent, (tx) => {
         const startingSegment = agent.tracer.getSegment()
         const segment = wrappable.withNested()
-        t.not(segment, startingSegment)
-        t.equal(segment.transaction, tx)
-        t.equal(segment.name, 'Datastore/operation/Cassandra/test')
-        t.equal(segment.children.length, 0)
-        t.end()
+        assert.notEqual(segment, startingSegment)
+        assert.equal(segment.transaction, tx)
+        assert.equal(segment.name, 'Datastore/operation/Cassandra/test')
+        assert.equal(segment.children.length, 0)
+        end()
       })
     })
 
-    t.test('should execute the wrapped function', function (t) {
+    await t.test('should execute the wrapped function', function (t, end) {
+      const { agent, shim } = t.nr
       let executed = false
       const toWrap = function () {
         executed = true
@@ -410,224 +417,225 @@ test('DatastoreShim', function (t) {
       const wrapped = shim.recordOperation(toWrap, {})
 
       helper.runInTransaction(agent, function () {
-        t.not(executed)
+        assert.equal(executed, false)
         wrapped()
-        t.ok(executed)
-        t.end()
+        assert.equal(executed, true)
+        end()
       })
     })
 
-    t.test('should invoke the spec in the context of the wrapped function', function (t) {
-      const original = wrappable.bar
-      let executed = false
-      shim.recordOperation(wrappable, 'bar', function (_, fn, name, args) {
-        executed = true
-        t.equal(fn, original)
-        t.equal(name, 'bar')
-        t.equal(this, wrappable)
-        t.same(args, ['a', 'b', 'c'])
-        return {}
-      })
+    await t.test(
+      'should invoke the spec in the context of the wrapped function',
+      function (t, end) {
+        const { agent, shim, wrappable } = t.nr
+        const original = wrappable.bar
+        let executed = false
+        shim.recordOperation(wrappable, 'bar', function (_, fn, name, args) {
+          executed = true
+          assert.equal(fn, original)
+          assert.equal(name, 'bar')
+          assert.equal(this, wrappable)
+          assert.deepEqual(args, ['a', 'b', 'c'])
+          return {}
+        })
 
-      helper.runInTransaction(agent, function () {
-        wrappable.bar('a', 'b', 'c')
-        t.ok(executed)
-        t.end()
-      })
-    })
+        helper.runInTransaction(agent, function () {
+          wrappable.bar('a', 'b', 'c')
+          assert.equal(executed, true)
+          end()
+        })
+      }
+    )
 
-    t.test('should bind the callback if there is one', function (t) {
-      const cb = function () {}
-
-      const wrapped = shim.recordOperation(helper.checkWrappedCb.bind(t, shim, cb), {
+    await t.test('should bind the callback if there is one', function (t, end) {
+      const { agent, shim } = t.nr
+      const wrapped = shim.recordOperation(checkWrappedCb.bind(null, shim, end), {
         callback: shim.LAST
       })
 
       helper.runInTransaction(agent, function () {
-        wrapped(cb)
+        wrapped(end)
       })
     })
   })
 
-  t.test('with `parameters`', function (t) {
-    t.autoend()
-    let localhost = null
-    t.beforeEach(function () {
-      beforeEach()
-      localhost = getMetricHostName(agent, 'localhost')
+  await t.test('with `parameters`', async function (t) {
+    t.beforeEach(function (ctx) {
+      beforeEach(ctx)
+      const { agent, shim, wrappable } = ctx.nr
+      ctx.nr.localhost = getMetricHostName(agent, 'localhost')
       shim.recordOperation(wrappable, 'getActiveSegment', function (s, fn, n, args) {
         return new OperationSpec({ parameters: args[0] })
       })
     })
     t.afterEach(afterEach)
 
-    function run(parameters, cb) {
+    function run(ctx, parameters, cb) {
+      const { agent, wrappable } = ctx.nr
       helper.runInTransaction(agent, function () {
         const segment = wrappable.getActiveSegment(parameters)
         cb(segment)
       })
     }
 
-    t.test('should set datatastore attributes accordingly', function (t) {
+    await t.test('should set datastore attributes accordingly', function (t, end) {
+      const { localhost } = t.nr
       run(
+        t,
         {
           host: 'localhost',
           port_path_or_id: 1234,
           database_name: 'foobar'
         },
         function (segment) {
-          t.ok(segment.attributes)
+          assert.ok(segment.attributes)
           const attributes = segment.getAttributes()
-          t.equal(attributes.host, localhost)
-          t.equal(attributes.port_path_or_id, '1234')
-          t.equal(attributes.database_name, 'foobar')
-          t.end()
+          assert.equal(attributes.host, localhost)
+          assert.equal(attributes.port_path_or_id, '1234')
+          assert.equal(attributes.database_name, 'foobar')
+          end()
         }
       )
     })
 
-    t.test('should default undefined attributes to `unknown`', function (t) {
+    await t.test('should default undefined attributes to `unknown`', function (t, end) {
       run(
+        t,
         {
           host: 'some_other_host',
           port_path_or_id: null,
           database_name: null
         },
         function (segment) {
-          t.ok(segment.attributes)
+          assert.ok(segment.attributes)
           const attributes = segment.getAttributes()
-          t.equal(attributes.host, 'some_other_host')
-          t.equal(attributes.port_path_or_id, 'unknown')
-          t.equal(attributes.database_name, 'unknown')
-          t.end()
+          assert.equal(attributes.host, 'some_other_host')
+          assert.equal(attributes.port_path_or_id, 'unknown')
+          assert.equal(attributes.database_name, 'unknown')
+          end()
         }
       )
     })
 
-    t.test('should remove `database_name` if disabled', function (t) {
-      agent.config.datastore_tracer.database_name_reporting.enabled = false
+    await t.test('should remove `database_name` if disabled', function (t, end) {
+      const { localhost } = t.nr
+      t.nr.agent.config.datastore_tracer.database_name_reporting.enabled = false
       run(
+        t,
         {
           host: 'localhost',
           port_path_or_id: 1234,
           database_name: 'foobar'
         },
         function (segment) {
-          t.ok(segment.attributes)
+          assert.ok(segment.attributes)
           const attributes = segment.getAttributes()
-          t.equal(attributes.host, localhost)
-          t.equal(attributes.port_path_or_id, '1234')
-          t.notOk(attributes.database_name)
-          t.end()
+          assert.equal(attributes.host, localhost)
+          assert.equal(attributes.port_path_or_id, '1234')
+          assert.ok(!attributes.database_name)
+          end()
         }
       )
     })
 
-    t.test('should remove `host` and `port_path_or_id` if disabled', function (t) {
-      agent.config.datastore_tracer.instance_reporting.enabled = false
+    await t.test('should remove `host` and `port_path_or_id` if disabled', function (t, end) {
+      t.nr.agent.config.datastore_tracer.instance_reporting.enabled = false
       run(
+        t,
         {
           host: 'localhost',
           port_path_or_id: 1234,
           database_name: 'foobar'
         },
         function (segment) {
-          t.ok(segment.attributes)
+          assert.ok(segment.attributes)
           const attributes = segment.getAttributes()
-          t.notOk(attributes.host)
-          t.notOk(attributes.port_path_or_id)
-          t.equal(attributes.database_name, 'foobar')
-          t.end()
+          assert.ok(!attributes.host)
+          assert.ok(!attributes.port_path_or_id)
+          assert.equal(attributes.database_name, 'foobar')
+          end()
         }
       )
     })
   })
 
-  t.test('recorder', function (t) {
-    t.autoend()
-    t.beforeEach(function () {
-      beforeEach()
-      shim.recordOperation(wrappable, 'getActiveSegment', function () {
-        return new OperationSpec({
-          name: 'op',
-          parameters: {
-            host: 'some_host',
-            port_path_or_id: 1234,
-            database_name: 'foobar'
-          }
-        })
-      })
-
-      return new Promise((resolve) => {
-        helper.runInTransaction(agent, function (tx) {
-          wrappable.getActiveSegment()
-          tx.end()
-          resolve()
-        })
+  await t.test('recorder should create unscoped datastore metrics', function (t, end) {
+    beforeEach(t)
+    const { agent, shim, wrappable } = t.nr
+    t.after(afterEach)
+    shim.recordOperation(wrappable, 'getActiveSegment', function () {
+      return new OperationSpec({
+        name: 'op',
+        parameters: {
+          host: 'some_host',
+          port_path_or_id: 1234,
+          database_name: 'foobar'
+        }
       })
     })
 
-    t.afterEach(afterEach)
-
-    t.test('should create unscoped datastore metrics', function (t) {
+    helper.runInTransaction(agent, function (tx) {
+      wrappable.getActiveSegment()
+      tx.end()
       const { unscoped: metrics } = helper.getMetrics(agent)
-      t.ok(metrics['Datastore/all'])
-      t.ok(metrics['Datastore/allWeb'])
-      t.ok(metrics['Datastore/Cassandra/all'])
-      t.ok(metrics['Datastore/Cassandra/allWeb'])
-      t.ok(metrics['Datastore/operation/Cassandra/op'])
-      t.ok(metrics['Datastore/instance/Cassandra/some_host/1234'])
-      t.end()
+      assert.ok(metrics['Datastore/all'])
+      assert.ok(metrics['Datastore/allWeb'])
+      assert.ok(metrics['Datastore/Cassandra/all'])
+      assert.ok(metrics['Datastore/Cassandra/allWeb'])
+      assert.ok(metrics['Datastore/operation/Cassandra/op'])
+      assert.ok(metrics['Datastore/instance/Cassandra/some_host/1234'])
+      end()
     })
   })
 
-  t.test('#recordQuery', function (t) {
+  await t.test('#recordQuery', async function (t) {
     const query = 'SELECT property FROM my_table'
-    t.autoend()
+
     t.beforeEach(beforeEach)
     t.afterEach(afterEach)
 
-    t.test('should not wrap non-function objects', function (t) {
+    await t.test('should not wrap non-function objects', function (t) {
+      const { shim, wrappable } = t.nr
       const wrapped = shim.recordQuery(wrappable)
-      t.equal(wrapped, wrappable)
-      t.notOk(shim.isWrapped(wrapped))
-      t.end()
+      assert.equal(wrapped, wrappable)
+      assert.ok(!shim.isWrapped(wrapped))
     })
 
-    t.test('should wrap the first parameter if no properties are given', function (t) {
+    await t.test('should wrap the first parameter if no properties are given', function (t) {
+      const { shim, wrappable } = t.nr
       const wrapped = shim.recordQuery(wrappable.bar, {})
-      t.not(wrapped, wrappable.bar)
-      t.ok(shim.isWrapped(wrapped))
-      t.equal(shim.unwrap(wrapped), wrappable.bar)
-      t.end()
+      assert.notEqual(wrapped, wrappable.bar)
+      assert.equal(shim.isWrapped(wrapped), true)
+      assert.equal(shim.unwrap(wrapped), wrappable.bar)
     })
 
-    t.test('should wrap the first parameter if `null` is given for properties', function (t) {
+    await t.test('should wrap the first parameter if `null` is given for properties', function (t) {
+      const { shim, wrappable } = t.nr
       const wrapped = shim.recordQuery(wrappable.bar, null, {})
-      t.not(wrapped, wrappable.bar)
-      t.ok(shim.isWrapped(wrapped))
-      t.equal(shim.unwrap(wrapped), wrappable.bar)
-      t.end()
+      assert.notEqual(wrapped, wrappable.bar)
+      assert.equal(shim.isWrapped(wrapped), true)
+      assert.equal(shim.unwrap(wrapped), wrappable.bar)
     })
 
-    t.test('should replace wrapped properties on the original object', function (t) {
+    await t.test('should replace wrapped properties on the original object', function (t) {
+      const { shim, wrappable } = t.nr
       const original = wrappable.bar
       shim.recordQuery(wrappable, 'bar', {})
-      t.not(wrappable.bar, original)
-      t.ok(shim.isWrapped(wrappable.bar))
-      t.equal(shim.unwrap(wrappable.bar), original)
-      t.end()
+      assert.notEqual(wrappable.bar, original)
+      assert.equal(shim.isWrapped(wrappable.bar), true)
+      assert.equal(shim.unwrap(wrappable.bar), original)
     })
 
-    t.test('should not mark unwrapped properties as wrapped', function (t) {
+    await t.test('should not mark unwrapped properties as wrapped', function (t) {
+      const { shim, wrappable } = t.nr
       shim.recordQuery(wrappable, 'name', {})
-      t.notOk(shim.isWrapped(wrappable.name))
-      t.end()
+      assert.ok(!shim.isWrapped(wrappable.name))
     })
 
-    t.test(
+    await t.test(
       'should create a datastore query segment but no metric when `record` is false',
-      function (t) {
+      function (t, end) {
+        const { agent, shim, wrappable } = t.nr
         shim.recordQuery(
           wrappable,
           'getActiveSegment',
@@ -641,16 +649,17 @@ test('DatastoreShim', function (t) {
         helper.runInTransaction(agent, function (tx) {
           const startingSegment = agent.tracer.getSegment()
           const segment = wrappable.getActiveSegment(query)
-          t.not(segment, startingSegment)
-          t.equal(segment.transaction, tx)
-          t.equal(segment.name, 'getActiveSegment')
-          t.equal(agent.tracer.getSegment(), startingSegment)
-          t.end()
+          assert.notEqual(segment, startingSegment)
+          assert.equal(segment.transaction, tx)
+          assert.equal(segment.name, 'getActiveSegment')
+          assert.equal(agent.tracer.getSegment(), startingSegment)
+          end()
         })
       }
     )
 
-    t.test('should create a datastore query metric when `record` is true', function (t) {
+    await t.test('should create a datastore query metric when `record` is true', function (t, end) {
+      const { agent, shim, wrappable } = t.nr
       shim.recordQuery(
         wrappable,
         'getActiveSegment',
@@ -660,29 +669,34 @@ test('DatastoreShim', function (t) {
       helper.runInTransaction(agent, function (tx) {
         const startingSegment = agent.tracer.getSegment()
         const segment = wrappable.getActiveSegment(query)
-        t.not(segment, startingSegment)
-        t.equal(segment.transaction, tx)
-        t.equal(segment.name, 'Datastore/statement/Cassandra/my_table/select')
-        t.equal(agent.tracer.getSegment(), startingSegment)
-        t.end()
+        assert.notEqual(segment, startingSegment)
+        assert.equal(segment.transaction, tx)
+        assert.equal(segment.name, 'Datastore/statement/Cassandra/my_table/select')
+        assert.equal(agent.tracer.getSegment(), startingSegment)
+        end()
       })
     })
 
-    t.test('should create a datastore query metric when `record` is defaulted', function (t) {
-      shim.recordQuery(wrappable, 'getActiveSegment', new QuerySpec({ query: shim.FIRST }))
+    await t.test(
+      'should create a datastore query metric when `record` is defaulted',
+      function (t, end) {
+        const { agent, shim, wrappable } = t.nr
+        shim.recordQuery(wrappable, 'getActiveSegment', new QuerySpec({ query: shim.FIRST }))
 
-      helper.runInTransaction(agent, function (tx) {
-        const startingSegment = agent.tracer.getSegment()
-        const segment = wrappable.getActiveSegment(query)
-        t.not(segment, startingSegment)
-        t.equal(segment.transaction, tx)
-        t.equal(segment.name, 'Datastore/statement/Cassandra/my_table/select')
-        t.equal(agent.tracer.getSegment(), startingSegment)
-        t.end()
-      })
-    })
+        helper.runInTransaction(agent, function (tx) {
+          const startingSegment = agent.tracer.getSegment()
+          const segment = wrappable.getActiveSegment(query)
+          assert.notEqual(segment, startingSegment)
+          assert.equal(segment.transaction, tx)
+          assert.equal(segment.name, 'Datastore/statement/Cassandra/my_table/select')
+          assert.equal(agent.tracer.getSegment(), startingSegment)
+          end()
+        })
+      }
+    )
 
-    t.test('should execute the wrapped function', function (t) {
+    await t.test('should execute the wrapped function', function (t, end) {
+      const { agent, shim } = t.nr
       let executed = false
       const toWrap = function () {
         executed = true
@@ -690,14 +704,15 @@ test('DatastoreShim', function (t) {
       const wrapped = shim.recordQuery(toWrap, {})
 
       helper.runInTransaction(agent, function () {
-        t.notOk(executed)
+        assert.equal(executed, false)
         wrapped()
-        t.ok(executed)
-        t.end()
+        assert.equal(executed, true)
+        end()
       })
     })
 
-    t.test('should allow after handlers to be specified', function (t) {
+    await t.test('should allow after handlers to be specified', function (t, end) {
+      const { agent, shim } = t.nr
       let executed = false
       const toWrap = function () {}
       const wrapped = shim.recordQuery(
@@ -713,17 +728,17 @@ test('DatastoreShim', function (t) {
       )
 
       helper.runInTransaction(agent, function () {
-        t.notOk(executed)
+        assert.equal(executed, false)
         wrapped()
-        t.ok(executed)
-        t.end()
+        assert.equal(executed, true)
+        end()
       })
     })
 
-    t.test('should bind the callback if there is one', function (t) {
-      const cb = function () {}
+    await t.test('should bind the callback if there is one', function (t, end) {
+      const { agent, shim } = t.nr
       const wrapped = shim.recordQuery(
-        helper.checkWrappedCb.bind(t, shim, cb),
+        checkWrappedCb.bind(null, shim, end),
         new QuerySpec({
           query: shim.FIRST,
           callback: shim.LAST
@@ -731,15 +746,14 @@ test('DatastoreShim', function (t) {
       )
 
       helper.runInTransaction(agent, function () {
-        wrapped(query, cb)
+        wrapped(query, end)
       })
     })
 
-    t.test('should bind the row callback if there is one', function (t) {
-      const cb = function () {}
-
+    await t.test('should bind the row callback if there is one', function (t, end) {
+      const { agent, shim } = t.nr
       const wrapped = shim.recordQuery(
-        helper.checkWrappedCb.bind(t, shim, cb),
+        checkWrappedCb.bind(null, shim, end),
         new QuerySpec({
           query: shim.FIRST,
           rowCallback: shim.LAST
@@ -747,11 +761,12 @@ test('DatastoreShim', function (t) {
       )
 
       helper.runInTransaction(agent, function () {
-        wrapped(query, cb)
+        wrapped(query, end)
       })
     })
 
-    t.test('should execute inContext function when specified in spec', function (t) {
+    await t.test('should execute inContext function when specified in spec', function (t, end) {
+      const { agent, shim, wrappable } = t.nr
       shim.recordQuery(
         wrappable,
         'bar',
@@ -767,147 +782,151 @@ test('DatastoreShim', function (t) {
         wrappable.bar()
         const rootSegment = agent.tracer.getSegment()
         const attrs = rootSegment.children[0].getAttributes()
-        t.equal(attrs['test-attr'], 'unit-test', 'should add attribute to segment while in context')
+        assert.equal(
+          attrs['test-attr'],
+          'unit-test',
+          'should add attribute to segment while in context'
+        )
         tx.end()
-        t.end()
+        end()
       })
     })
   })
 
-  t.test('#recordBatchQuery', function (t) {
+  await t.test('#recordBatchQuery', async function (t) {
     const query = 'SELECT property FROM my_table'
-    t.autoend()
+
     t.beforeEach(beforeEach)
     t.afterEach(afterEach)
 
-    t.test('should not wrap non-function objects', function (t) {
+    await t.test('should not wrap non-function objects', function (t) {
+      const { shim, wrappable } = t.nr
       const wrapped = shim.recordBatchQuery(wrappable)
-      t.equal(wrapped, wrappable)
-      t.notOk(shim.isWrapped(wrapped))
-      t.end()
+      assert.equal(wrapped, wrappable)
+      assert.ok(!shim.isWrapped(wrapped))
     })
 
-    t.test('should wrap the first parameter if no properties are given', function (t) {
+    await t.test('should wrap the first parameter if no properties are given', function (t) {
+      const { shim, wrappable } = t.nr
       const wrapped = shim.recordBatchQuery(wrappable.bar, {})
-      t.not(wrapped, wrappable.bar)
-      t.ok(shim.isWrapped(wrapped))
-      t.equal(shim.unwrap(wrapped), wrappable.bar)
-      t.end()
+      assert.notEqual(wrapped, wrappable.bar)
+      assert.equal(shim.isWrapped(wrapped), true)
+      assert.equal(shim.unwrap(wrapped), wrappable.bar)
     })
 
-    t.test('should wrap the first parameter if `null` is given for properties', function (t) {
+    await t.test('should wrap the first parameter if `null` is given for properties', function (t) {
+      const { shim, wrappable } = t.nr
       const wrapped = shim.recordBatchQuery(wrappable.bar, null, {})
-      t.not(wrapped, wrappable.bar)
-      t.ok(shim.isWrapped(wrapped))
-      t.equal(shim.unwrap(wrapped), wrappable.bar)
-      t.end()
+      assert.notEqual(wrapped, wrappable.bar)
+      assert.equal(shim.isWrapped(wrapped), true)
+      assert.equal(shim.unwrap(wrapped), wrappable.bar)
     })
 
-    t.test('should replace wrapped properties on the original object', function (t) {
+    await t.test('should replace wrapped properties on the original object', function (t) {
+      const { shim, wrappable } = t.nr
       const original = wrappable.bar
       shim.recordBatchQuery(wrappable, 'bar', {})
-      t.not(wrappable.bar, original)
-      t.ok(shim.isWrapped(wrappable.bar))
-      t.equal(shim.unwrap(wrappable.bar), original)
-      t.end()
+      assert.notEqual(wrappable.bar, original)
+      assert.equal(shim.isWrapped(wrappable.bar), true)
+      assert.equal(shim.unwrap(wrappable.bar), original)
     })
 
-    t.test('should not mark unwrapped properties as wrapped', function (t) {
+    await t.test('should not mark unwrapped properties as wrapped', function (t) {
+      const { shim, wrappable } = t.nr
       shim.recordBatchQuery(wrappable, 'name', {})
-      t.notOk(shim.isWrapped(wrappable.name))
-      t.end()
+      assert.equal(shim.isWrapped(wrappable.name), false)
     })
 
-    t.test('should create a datastore batch query metric', function (t) {
+    await t.test('should create a datastore batch query metric', function (t, end) {
+      const { agent, shim, wrappable } = t.nr
       shim.recordBatchQuery(wrappable, 'getActiveSegment', new QuerySpec({ query: shim.FIRST }))
 
       helper.runInTransaction(agent, function (tx) {
         const startingSegment = agent.tracer.getSegment()
         const segment = wrappable.getActiveSegment(query)
-        t.not(segment, startingSegment)
-        t.equal(segment.transaction, tx)
-        t.equal(segment.name, 'Datastore/statement/Cassandra/my_table/select/batch')
-        t.equal(agent.tracer.getSegment(), startingSegment)
-        t.end()
+        assert.notEqual(segment, startingSegment)
+        assert.equal(segment.transaction, tx)
+        assert.equal(segment.name, 'Datastore/statement/Cassandra/my_table/select/batch')
+        assert.equal(agent.tracer.getSegment(), startingSegment)
+        end()
       })
     })
 
-    t.test('should execute the wrapped function', function (t) {
+    await t.test('should execute the wrapped function', function (t) {
+      const { shim } = t.nr
       let executed = false
       const toWrap = function () {
         executed = true
       }
       const wrapped = shim.recordBatchQuery(toWrap, {})
-      t.notOk(executed)
+      assert.equal(executed, false)
       wrapped()
-      t.ok(executed)
-      t.end()
+      assert.equal(executed, true)
     })
   })
 
-  t.test('#parseQuery', function (t) {
-    t.autoend()
+  await t.test('#parseQuery', async function (t) {
     t.beforeEach(beforeEach)
     t.afterEach(afterEach)
 
-    t.test('should parse a query string into a ParsedStatement', function (t) {
+    await t.test('should parse a query string into a ParsedStatement', function (t) {
+      const { shim } = t.nr
       const statement = shim.parseQuery('SELECT * FROM table')
-      t.ok(statement instanceof ParsedStatement)
-      t.end()
+      assert.ok(statement instanceof ParsedStatement)
     })
 
-    t.test('should strip enclosing special characters from collection', function (t) {
-      t.equal(shim.parseQuery('select * from [table]').collection, 'table')
-      t.equal(shim.parseQuery('select * from {table}').collection, 'table')
-      t.equal(shim.parseQuery("select * from 'table'").collection, 'table')
-      t.equal(shim.parseQuery('select * from "table"').collection, 'table')
-      t.equal(shim.parseQuery('select * from `table`').collection, 'table')
-      t.end()
+    await t.test('should strip enclosing special characters from collection', function (t) {
+      const { shim } = t.nr
+      assert.equal(shim.parseQuery('select * from [table]').collection, 'table')
+      assert.equal(shim.parseQuery('select * from {table}').collection, 'table')
+      assert.equal(shim.parseQuery("select * from 'table'").collection, 'table')
+      assert.equal(shim.parseQuery('select * from "table"').collection, 'table')
+      assert.equal(shim.parseQuery('select * from `table`').collection, 'table')
     })
   })
 
-  t.test('#bindRowCallbackSegment', function (t) {
-    t.autoend()
+  await t.test('#bindRowCallbackSegment', async function (t) {
     t.beforeEach(beforeEach)
     t.afterEach(afterEach)
 
-    t.test('should wrap the identified argument', function (t) {
+    await t.test('should wrap the identified argument', function (t) {
+      const { shim, wrappable } = t.nr
       const args = [1, 2, wrappable.bar]
       shim.bindRowCallbackSegment(args, shim.LAST)
 
-      t.not(args[2], wrappable.bar)
-      t.ok(shim.isWrapped(args[2]))
-      t.equal(shim.unwrap(args[2]), wrappable.bar)
-      t.end()
+      assert.notEqual(args[2], wrappable.bar)
+      assert.equal(shim.isWrapped(args[2]), true)
+      assert.equal(shim.unwrap(args[2]), wrappable.bar)
     })
 
-    t.test('should not wrap if the index is invalid', function (t) {
+    await t.test('should not wrap if the index is invalid', function (t) {
+      const { shim, wrappable } = t.nr
       const args = [1, 2, wrappable.bar]
 
-      t.doesNotThrow(function () {
+      assert.doesNotThrow(function () {
         shim.bindRowCallbackSegment(args, 50)
       })
 
-      t.equal(args[2], wrappable.bar)
-      t.notOk(shim.isWrapped(args[2]))
-      t.end()
+      assert.equal(args[2], wrappable.bar)
+      assert.ok(!shim.isWrapped(args[2]))
     })
 
-    t.test('should not wrap the argument if it is not a function', function (t) {
+    await t.test('should not wrap the argument if it is not a function', function (t) {
+      const { shim, wrappable } = t.nr
       const args = [1, 2, wrappable.bar]
 
-      t.doesNotThrow(function () {
+      assert.doesNotThrow(function () {
         shim.bindRowCallbackSegment(args, 1)
       })
 
-      t.equal(args[1], 2)
-      t.notOk(shim.isWrapped(args[1]))
-      t.equal(args[2], wrappable.bar)
-      t.notOk(shim.isWrapped(args[2]))
-      t.end()
+      assert.equal(args[1], 2)
+      assert.ok(!shim.isWrapped(args[1]))
+      assert.equal(args[2], wrappable.bar)
+      assert.ok(!shim.isWrapped(args[2]))
     })
 
-    t.test('should create a new segment on the first call', function (t) {
+    await t.test('should create a new segment on the first call', function (t, end) {
+      const { agent, shim, wrappable } = t.nr
       helper.runInTransaction(agent, function () {
         const args = [1, 2, wrappable.getActiveSegment]
         shim.bindRowCallbackSegment(args, shim.LAST)
@@ -915,13 +934,14 @@ test('DatastoreShim', function (t) {
         // Check the segment
         const segment = shim.getSegment()
         const cbSegment = args[2]()
-        t.not(cbSegment, segment)
-        t.not(segment.children.includes(cbSegment))
-        t.end()
+        assert.notEqual(cbSegment, segment)
+        assert.ok(segment.children.includes(cbSegment))
+        end()
       })
     })
 
-    t.test('should not create a new segment for calls after the first', function (t) {
+    await t.test('should not create a new segment for calls after the first', function (t, end) {
+      const { agent, shim, wrappable } = t.nr
       helper.runInTransaction(agent, function () {
         const args = [1, 2, wrappable.getActiveSegment]
         shim.bindRowCallbackSegment(args, shim.LAST)
@@ -929,53 +949,54 @@ test('DatastoreShim', function (t) {
         // Check the segment from the first call.
         const segment = shim.getSegment()
         const cbSegment = args[2]()
-        t.not(cbSegment, segment)
-        t.ok(segment.children.includes(cbSegment))
-        t.equal(segment.children.length, 1)
+        assert.notEqual(cbSegment, segment)
+        assert.ok(segment.children.includes(cbSegment))
+        assert.equal(segment.children.length, 1)
 
         // Call it a second time and see if we have the same segment.
         const cbSegment2 = args[2]()
-        t.equal(cbSegment2, cbSegment)
-        t.equal(segment.children.length, 1)
-        t.end()
+        assert.equal(cbSegment2, cbSegment)
+        assert.equal(segment.children.length, 1)
+        end()
       })
     })
 
-    t.test('should name the segment based on number of calls', function (t) {
+    await t.test('should name the segment based on number of calls', function (t, end) {
+      const { agent, shim, wrappable } = t.nr
       helper.runInTransaction(agent, function () {
         const args = [1, 2, wrappable.getActiveSegment]
         shim.bindRowCallbackSegment(args, shim.LAST)
 
         // Check the segment from the first call.
         const cbSegment = args[2]()
-        t.match(cbSegment.name, /^Callback: getActiveSegment/)
-        t.equal(cbSegment.getAttributes().count, 1)
+        assert.match(cbSegment.name, /^Callback: getActiveSegment/)
+        assert.equal(cbSegment.getAttributes().count, 1)
 
         // Call it a second time and see if the name changed.
         args[2]()
-        t.equal(cbSegment.getAttributes().count, 2)
+        assert.equal(cbSegment.getAttributes().count, 2)
 
         // And a third time, why not?
         args[2]()
-        t.equal(cbSegment.getAttributes().count, 3)
-        t.end()
+        assert.equal(cbSegment.getAttributes().count, 3)
+        end()
       })
     })
   })
 
-  t.test('#captureInstanceAttributes', function (t) {
-    t.autoend()
+  await t.test('#captureInstanceAttributes', async function (t) {
     t.beforeEach(beforeEach)
     t.afterEach(afterEach)
 
-    t.test('should not crash outside of a transaction', function (t) {
-      t.doesNotThrow(function () {
+    await t.test('should not crash outside of a transaction', function (t) {
+      const { shim } = t.nr
+      assert.doesNotThrow(function () {
         shim.captureInstanceAttributes('foo', 123, 'bar')
       })
-      t.end()
     })
 
-    t.test('should not add parameters to segments it did not create', function (t) {
+    await t.test('should not add parameters to segments it did not create', function (t, end) {
+      const { agent, shim } = t.nr
       const bound = agent.tracer.wrapFunction(
         'foo',
         null,
@@ -990,16 +1011,17 @@ test('DatastoreShim', function (t) {
 
       helper.runInTransaction(agent, function () {
         const segment = bound('foobar', 123, 'bar')
-        t.ok(segment.attributes)
+        assert.ok(segment.attributes)
         const attributes = segment.getAttributes()
-        t.notOk(attributes.host)
-        t.notOk(attributes.port_path_or_id)
-        t.notOk(attributes.database_name)
-        t.end()
+        assert.ok(!attributes.host)
+        assert.ok(!attributes.port_path_or_id)
+        assert.ok(!attributes.database_name)
+        end()
       })
     })
 
-    t.test('should add normalized attributes to its own segments', function (t) {
+    await t.test('should add normalized attributes to its own segments', function (t, end) {
+      const { agent, shim } = t.nr
       const wrapped = shim.recordOperation(function (host, port, db) {
         shim.captureInstanceAttributes(host, port, db)
         return shim.getSegment()
@@ -1007,58 +1029,57 @@ test('DatastoreShim', function (t) {
 
       helper.runInTransaction(agent, function () {
         const segment = wrapped('foobar', 123, 'bar')
-        t.ok(segment.attributes)
+        assert.ok(segment.attributes)
         const attributes = segment.getAttributes()
-        t.equal(attributes.host, 'foobar')
-        t.equal(attributes.port_path_or_id, '123')
-        t.equal(attributes.database_name, 'bar')
-        t.end()
+        assert.equal(attributes.host, 'foobar')
+        assert.equal(attributes.port_path_or_id, '123')
+        assert.equal(attributes.database_name, 'bar')
+        end()
       })
     })
   })
 
-  t.test('#getDatabaseNameFromUseQuery', (t) => {
-    t.autoend()
+  await t.test('#getDatabaseNameFromUseQuery', async (t) => {
     t.beforeEach(beforeEach)
     t.afterEach(afterEach)
 
-    t.test('should match single statement use expressions', (t) => {
-      t.equal(shim.getDatabaseNameFromUseQuery('use test_db;'), 'test_db')
-      t.equal(shim.getDatabaseNameFromUseQuery('USE INIT'), 'INIT')
-      t.end()
+    await t.test('should match single statement use expressions', (t) => {
+      const { shim } = t.nr
+      assert.equal(shim.getDatabaseNameFromUseQuery('use test_db;'), 'test_db')
+      assert.equal(shim.getDatabaseNameFromUseQuery('USE INIT'), 'INIT')
     })
 
-    t.test('should not be sensitive to ; omission', (t) => {
-      t.equal(shim.getDatabaseNameFromUseQuery('use test_db'), 'test_db')
-      t.end()
+    await t.test('should not be sensitive to ; omission', (t) => {
+      const { shim } = t.nr
+      assert.equal(shim.getDatabaseNameFromUseQuery('use test_db'), 'test_db')
     })
 
-    t.test('should not be sensitive to extra ;', (t) => {
-      t.equal(shim.getDatabaseNameFromUseQuery('use test_db;;;;;;'), 'test_db')
-      t.end()
+    await t.test('should not be sensitive to extra ;', (t) => {
+      const { shim } = t.nr
+      assert.equal(shim.getDatabaseNameFromUseQuery('use test_db;;;;;;'), 'test_db')
     })
 
-    t.test('should not be sensitive to extra white space', (t) => {
-      t.equal(shim.getDatabaseNameFromUseQuery('            use test_db;'), 'test_db')
-      t.equal(shim.getDatabaseNameFromUseQuery('use             test_db;'), 'test_db')
-      t.equal(shim.getDatabaseNameFromUseQuery('use test_db            ;'), 'test_db')
-      t.equal(shim.getDatabaseNameFromUseQuery('use test_db;            '), 'test_db')
-      t.end()
+    await t.test('should not be sensitive to extra white space', (t) => {
+      const { shim } = t.nr
+      assert.equal(shim.getDatabaseNameFromUseQuery('            use test_db;'), 'test_db')
+      assert.equal(shim.getDatabaseNameFromUseQuery('use             test_db;'), 'test_db')
+      assert.equal(shim.getDatabaseNameFromUseQuery('use test_db            ;'), 'test_db')
+      assert.equal(shim.getDatabaseNameFromUseQuery('use test_db;            '), 'test_db')
     })
 
-    t.test('should match backtick expressions', (t) => {
-      t.equal(shim.getDatabaseNameFromUseQuery('use `test_db`;'), '`test_db`')
-      t.equal(shim.getDatabaseNameFromUseQuery('use `☃☃☃☃☃☃`;'), '`☃☃☃☃☃☃`')
-      t.end()
+    await t.test('should match backtick expressions', (t) => {
+      const { shim } = t.nr
+      assert.equal(shim.getDatabaseNameFromUseQuery('use `test_db`;'), '`test_db`')
+      assert.equal(shim.getDatabaseNameFromUseQuery('use `☃☃☃☃☃☃`;'), '`☃☃☃☃☃☃`')
     })
 
-    t.test('should not match malformed use expressions', (t) => {
-      t.equal(shim.getDatabaseNameFromUseQuery('use cxvozicjvzocixjv`oasidfjaosdfij`;'), null)
-      t.equal(shim.getDatabaseNameFromUseQuery('use `oasidfjaosdfij`123;'), null)
-      t.equal(shim.getDatabaseNameFromUseQuery('use `oasidfjaosdfij` 123;'), null)
-      t.equal(shim.getDatabaseNameFromUseQuery('use \u0001;'), null)
-      t.equal(shim.getDatabaseNameFromUseQuery('use oasidfjaosdfij 123;'), null)
-      t.end()
+    await t.test('should not match malformed use expressions', (t) => {
+      const { shim } = t.nr
+      assert.equal(shim.getDatabaseNameFromUseQuery('use cxvozicjvzocixjv`oasidfjaosdfij`;'), null)
+      assert.equal(shim.getDatabaseNameFromUseQuery('use `oasidfjaosdfij`123;'), null)
+      assert.equal(shim.getDatabaseNameFromUseQuery('use `oasidfjaosdfij` 123;'), null)
+      assert.equal(shim.getDatabaseNameFromUseQuery('use \u0001;'), null)
+      assert.equal(shim.getDatabaseNameFromUseQuery('use oasidfjaosdfij 123;'), null)
     })
   })
 })

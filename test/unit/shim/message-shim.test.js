@@ -4,43 +4,33 @@
  */
 
 'use strict'
-const tap = require('tap')
+const assert = require('node:assert')
+const test = require('node:test')
+const { tspl } = require('@matteo.collina/tspl')
 const API = require('../../../api')
 const DESTINATIONS = require('../../../lib/config/attribute-filter').DESTINATIONS
 const hashes = require('../../../lib/util/hashes')
 const helper = require('../../lib/agent_helper')
 const MessageShim = require('../../../lib/shim/message-shim')
 const { MessageSpec, MessageSubscribeSpec } = require('../../../lib/shim/specs')
+const {
+  compareSegments,
+  checkWrappedCb,
+  isNonWritable,
+  match
+} = require('../../lib/custom-assertions')
 
-tap.test('MessageShim', function (t) {
-  t.autoend()
-  let agent = null
-  let shim = null
-  let wrappable = null
-  let interval = null
-  const tasks = []
-
-  t.before(function () {
-    interval = setInterval(function () {
-      if (tasks.length) {
-        tasks.pop()()
-      }
-    }, 10)
-  })
-
-  t.teardown(function () {
-    clearInterval(interval)
-  })
-
-  function beforeEach() {
-    agent = helper.instrumentMockedAgent({
+test('MessageShim', async function (t) {
+  function beforeEach(ctx) {
+    ctx.nr = {}
+    const agent = helper.instrumentMockedAgent({
       span_events: {
         attributes: { enabled: true, include: ['message.parameters.*'] }
       }
     })
-    shim = new MessageShim(agent, 'test-module')
+    const shim = new MessageShim(agent, 'test-module')
     shim.setLibrary(shim.RABBITMQ)
-    wrappable = {
+    ctx.nr.wrappable = {
       name: 'this is a name',
       bar: function barsName(unused, params) { return 'bar' }, // eslint-disable-line
       fiz: function fizsName() {
@@ -66,142 +56,123 @@ tap.test('MessageShim', function (t) {
     agent.config.trusted_account_ids = [9876, 6789]
     agent.config._fromServer(params, 'encoding_key')
     agent.config._fromServer(params, 'cross_process_id')
+    ctx.nr.agent = agent
+    ctx.nr.shim = shim
   }
 
-  function afterEach() {
-    helper.unloadAgent(agent)
-    agent = null
-    shim = null
+  function afterEach(ctx) {
+    helper.unloadAgent(ctx.nr.agent)
   }
 
-  t.test('constructor', function (t) {
-    t.autoend()
+  await t.test('constructor', async function (t) {
     t.beforeEach(beforeEach)
     t.afterEach(afterEach)
 
-    t.test('should require an agent parameter', function (t) {
-      t.throws(function () {
+    await t.test('should require an agent parameter', function () {
+      assert.throws(function () {
         return new MessageShim()
-      }, /^Shim must be initialized with .*? agent/)
-      t.end()
+      }, 'Shim must be initialized with agent and module name')
     })
 
-    t.test('should require a module name parameter', function (t) {
-      t.throws(function () {
+    await t.test('should require a module name parameter', function (t) {
+      const { agent } = t.nr
+      assert.throws(function () {
         return new MessageShim(agent)
-      }, /^Shim must be initialized with .*? module name/)
-      t.end()
+      }, 'Error: Shim must be initialized with agent and module name')
     })
 
-    t.test('should assign properties from parent', (t) => {
+    await t.test('should assign properties from parent', (t) => {
+      const { agent } = t.nr
       const mod = 'test-mod'
       const name = mod
       const version = '1.0.0'
       const shim = new MessageShim(agent, mod, mod, name, version)
-      t.equal(shim.moduleName, mod)
-      t.equal(agent, shim._agent)
-      t.equal(shim.pkgVersion, version)
-      t.end()
+      assert.equal(shim.moduleName, mod)
+      assert.equal(agent, shim._agent)
+      assert.equal(shim.pkgVersion, version)
     })
   })
 
-  t.test('well-known message libraries', function (t) {
-    t.autoend()
+  await t.test('well-known libraries/destination types', async function (t) {
     t.beforeEach(beforeEach)
     t.afterEach(afterEach)
-    const messageLibs = ['RABBITMQ']
+    const messageLibs = ['RABBITMQ', 'EXCHANGE', 'QUEUE', 'TOPIC']
 
-    t.test('should be enumerated on the class and prototype', function (t) {
-      messageLibs.forEach(function (lib) {
-        t.isNonWritable({ obj: MessageShim, key: lib })
-        t.isNonWritable({ obj: shim, key: lib })
+    for (const lib of messageLibs) {
+      await t.test(`should be enumerated on the class and prototype of ${lib}`, function (t) {
+        const { shim } = t.nr
+        isNonWritable({ obj: MessageShim, key: lib })
+        isNonWritable({ obj: shim, key: lib })
       })
-      t.end()
-    })
+    }
   })
 
-  t.test('well-known destination types', function (t) {
-    t.autoend()
-    t.beforeEach(beforeEach)
-    t.afterEach(afterEach)
-    const messageLibs = ['EXCHANGE', 'QUEUE', 'TOPIC']
-
-    t.test('should be enumerated on the class and prototype', function (t) {
-      messageLibs.forEach(function (lib) {
-        t.isNonWritable({ obj: MessageShim, key: lib })
-        t.isNonWritable({ obj: shim, key: lib })
-      })
-      t.end()
-    })
-  })
-
-  t.test('#setLibrary', function (t) {
-    t.autoend()
+  await t.test('#setLibrary', async function (t) {
     t.beforeEach(beforeEach)
     t.afterEach(afterEach)
 
-    t.test('should create broker metric names', function (t) {
+    await t.test('should create broker metric names', function (t) {
+      const { agent } = t.nr
       const s = new MessageShim(agent, 'test')
-      t.notOk(s._metrics)
+      assert.ok(!s._metrics)
       s.setLibrary('foobar')
-      t.equal(s._metrics.PREFIX, 'MessageBroker/')
-      t.equal(s._metrics.LIBRARY, 'foobar')
-      t.end()
+      assert.equal(s._metrics.PREFIX, 'MessageBroker/')
+      assert.equal(s._metrics.LIBRARY, 'foobar')
     })
 
-    t.test("should update the shim's logger", function (t) {
+    await t.test("should update the shim's logger", function (t) {
+      const { agent } = t.nr
       const s = new MessageShim(agent, 'test')
       const { logger } = s
       s.setLibrary('foobar')
-      t.not(s.logger, logger)
-      t.end()
+      assert.notEqual(s.logger, logger)
     })
   })
 
-  t.test('#recordProduce', function (t) {
-    t.autoend()
+  await t.test('#recordProduce', async function (t) {
     t.beforeEach(beforeEach)
     t.afterEach(afterEach)
 
-    t.test('should not wrap non-function objects', function (t) {
+    await t.test('should not wrap non-function objects', function (t) {
+      const { shim, wrappable } = t.nr
       const wrapped = shim.recordProduce(wrappable, function () {})
-      t.equal(wrapped, wrappable)
-      t.notOk(shim.isWrapped(wrapped))
-      t.end()
+      assert.equal(wrapped, wrappable)
+      assert.ok(!shim.isWrapped(wrapped))
     })
 
-    t.test('should wrap the first parameter if no properties are given', function (t) {
+    await t.test('should wrap the first parameter if no properties are given', function (t) {
+      const { shim, wrappable } = t.nr
       const wrapped = shim.recordProduce(wrappable.bar, function () {})
-      t.not(wrapped, wrappable.bar)
-      t.ok(shim.isWrapped(wrapped))
-      t.equal(helper.unwrap(wrapped), wrappable.bar)
-      t.end()
+      assert.notEqual(wrapped, wrappable.bar)
+      assert.equal(shim.isWrapped(wrapped), true)
+      assert.equal(helper.unwrap(wrapped), wrappable.bar)
     })
 
-    t.test('should wrap the first parameter if `null` is given for properties', function (t) {
+    await t.test('should wrap the first parameter if `null` is given for properties', function (t) {
+      const { shim, wrappable } = t.nr
       const wrapped = shim.recordProduce(wrappable.bar, null, function () {})
-      t.not(wrapped, wrappable.bar)
-      t.ok(shim.isWrapped(wrapped))
-      t.equal(helper.unwrap(wrapped), wrappable.bar)
-      t.end()
+      assert.notEqual(wrapped, wrappable.bar)
+      assert.equal(shim.isWrapped(wrapped), true)
+      assert.equal(helper.unwrap(wrapped), wrappable.bar)
     })
 
-    t.test('should replace wrapped properties on the original object', function (t) {
+    await t.test('should replace wrapped properties on the original object', function (t) {
+      const { shim, wrappable } = t.nr
       const original = wrappable.bar
       shim.recordProduce(wrappable, 'bar', function () {})
-      t.not(wrappable.bar, original)
-      t.ok(shim.isWrapped(wrappable.bar))
-      t.equal(helper.unwrap(wrappable.bar), original)
-      t.end()
+      assert.notEqual(wrappable.bar, original)
+      assert.equal(shim.isWrapped(wrappable.bar), true)
+      assert.equal(helper.unwrap(wrappable.bar), original)
     })
 
-    t.test('should not mark unwrapped properties as wrapped', function (t) {
+    await t.test('should not mark unwrapped properties as wrapped', function (t) {
+      const { shim, wrappable } = t.nr
       shim.recordProduce(wrappable, 'name', function () {})
-      t.not(shim.isWrapped(wrappable.name))
-      t.end()
+      assert.equal(shim.isWrapped(wrappable.name), false)
     })
 
-    t.test('should create a produce segment', function (t) {
+    await t.test('should create a produce segment', function (t, end) {
+      const { agent, shim, wrappable } = t.nr
       shim.recordProduce(wrappable, 'getActiveSegment', function () {
         return new MessageSpec({ destinationName: 'foobar' })
       })
@@ -209,15 +180,16 @@ tap.test('MessageShim', function (t) {
       helper.runInTransaction(agent, function (tx) {
         const startingSegment = agent.tracer.getSegment()
         const segment = wrappable.getActiveSegment()
-        t.not(segment, startingSegment)
-        t.equal(segment.transaction, tx)
-        t.equal(segment.name, 'MessageBroker/RabbitMQ/Exchange/Produce/Named/foobar')
-        t.equal(agent.tracer.getSegment(), startingSegment)
-        t.end()
+        assert.notEqual(segment, startingSegment)
+        assert.equal(segment.transaction, tx)
+        assert.equal(segment.name, 'MessageBroker/RabbitMQ/Exchange/Produce/Named/foobar')
+        assert.equal(agent.tracer.getSegment(), startingSegment)
+        end()
       })
     })
 
-    t.test('should add parameters to segment', function (t) {
+    await t.test('should add parameters to segment', function (t, end) {
+      const { agent, shim, wrappable } = t.nr
       shim.recordProduce(wrappable, 'getActiveSegment', function () {
         return new MessageSpec({
           routingKey: 'foo.bar',
@@ -228,14 +200,15 @@ tap.test('MessageShim', function (t) {
       helper.runInTransaction(agent, function () {
         const segment = wrappable.getActiveSegment()
         const attributes = segment.getAttributes()
-        t.equal(attributes.routing_key, 'foo.bar')
-        t.equal(attributes.a, 'a')
-        t.equal(attributes.b, 'b')
-        t.end()
+        assert.equal(attributes.routing_key, 'foo.bar')
+        assert.equal(attributes.a, 'a')
+        assert.equal(attributes.b, 'b')
+        end()
       })
     })
 
-    t.test('should not add parameters when disabled', function (t) {
+    await t.test('should not add parameters when disabled', function (t, end) {
+      const { agent, shim, wrappable } = t.nr
       agent.config.message_tracer.segment_parameters.enabled = false
       shim.recordProduce(wrappable, 'getActiveSegment', function () {
         return new MessageSpec({
@@ -249,13 +222,14 @@ tap.test('MessageShim', function (t) {
       helper.runInTransaction(agent, function () {
         const segment = wrappable.getActiveSegment()
         const attributes = segment.getAttributes()
-        t.notOk(attributes.a)
-        t.notOk(attributes.b)
-        t.end()
+        assert.ok(!attributes.a)
+        assert.ok(!attributes.b)
+        end()
       })
     })
 
-    t.test('should execute the wrapped function', function (t) {
+    await t.test('should execute the wrapped function', function (t, end) {
+      const { agent, shim } = t.nr
       let executed = false
       const toWrap = function () {
         executed = true
@@ -263,44 +237,49 @@ tap.test('MessageShim', function (t) {
       const wrapped = shim.recordProduce(toWrap, function () {})
 
       helper.runInTransaction(agent, function () {
-        t.notOk(executed)
+        assert.equal(executed, false)
         wrapped()
-        t.ok(executed)
-        t.end()
+        assert.equal(executed, true)
+        end()
       })
     })
 
-    t.test('should invoke the spec in the context of the wrapped function', function (t) {
-      const original = wrappable.bar
-      let executed = false
-      shim.recordProduce(wrappable, 'bar', function (_, fn, name, args) {
-        executed = true
-        t.equal(fn, original)
-        t.equal(name, 'bar')
-        t.equal(this, wrappable)
-        t.same(args, ['a', 'b', 'c'])
+    await t.test(
+      'should invoke the spec in the context of the wrapped function',
+      function (t, end) {
+        const { agent, shim, wrappable } = t.nr
+        const original = wrappable.bar
+        let executed = false
+        shim.recordProduce(wrappable, 'bar', function (_, fn, name, args) {
+          executed = true
+          assert.equal(fn, original)
+          assert.equal(name, 'bar')
+          assert.equal(this, wrappable)
+          assert.deepEqual(args, ['a', 'b', 'c'])
 
-        return new MessageSpec({ destinationName: 'foobar' })
-      })
+          return new MessageSpec({ destinationName: 'foobar' })
+        })
 
-      helper.runInTransaction(agent, function () {
-        wrappable.bar('a', 'b', 'c')
-        t.ok(executed)
-        t.end()
-      })
-    })
+        helper.runInTransaction(agent, function () {
+          wrappable.bar('a', 'b', 'c')
+          assert.equal(executed, true)
+          end()
+        })
+      }
+    )
 
-    t.test('should bind the callback if there is one', function (t) {
+    await t.test('should bind the callback if there is one', function (t, end) {
+      const { agent, shim } = t.nr
       const cb = function () {}
       const toWrap = function (wrappedCB) {
-        t.not(wrappedCB, cb)
-        t.ok(shim.isWrapped(wrappedCB))
-        t.equal(shim.unwrap(wrappedCB), cb)
+        assert.notEqual(wrappedCB, cb)
+        assert.equal(shim.isWrapped(wrappedCB), true)
+        assert.equal(shim.unwrap(wrappedCB), cb)
 
-        t.doesNotThrow(function () {
+        assert.doesNotThrow(function () {
           wrappedCB()
         })
-        t.end()
+        end()
       }
 
       const wrapped = shim.recordProduce(toWrap, function () {
@@ -312,7 +291,8 @@ tap.test('MessageShim', function (t) {
       })
     })
 
-    t.test('should link the promise if one is returned', function (t) {
+    await t.test('should link the promise if one is returned', async function (t) {
+      const { agent, shim } = t.nr
       const DELAY = 25
       let segment = null
       const val = {}
@@ -329,9 +309,9 @@ tap.test('MessageShim', function (t) {
 
       return helper.runInTransaction(agent, function () {
         return wrapped().then(function (v) {
-          t.equal(v, val)
+          assert.equal(v, val)
           const duration = segment.getDurationInMillis()
-          t.ok(
+          assert.ok(
             duration > DELAY - 1,
             `Segment duration: ${duration} should be > Timer duration: ${DELAY - 1}`
           )
@@ -339,39 +319,42 @@ tap.test('MessageShim', function (t) {
       })
     })
 
-    t.test('should create a child segment when `opaque` is false', function (t) {
+    await t.test('should create a child segment when `opaque` is false', function (t, end) {
+      const { agent, shim, wrappable } = t.nr
       shim.recordProduce(wrappable, 'withNested', function () {
         return new MessageSpec({ destinationName: 'foobar', opaque: false })
       })
 
       helper.runInTransaction(agent, (tx) => {
         const segment = wrappable.withNested()
-        t.equal(segment.transaction, tx)
-        t.equal(segment.name, 'MessageBroker/RabbitMQ/Exchange/Produce/Named/foobar')
+        assert.equal(segment.transaction, tx)
+        assert.equal(segment.name, 'MessageBroker/RabbitMQ/Exchange/Produce/Named/foobar')
 
-        t.equal(segment.children.length, 1)
+        assert.equal(segment.children.length, 1)
         const [childSegment] = segment.children
-        t.equal(childSegment.name, 'ChildSegment')
-        t.end()
+        assert.equal(childSegment.name, 'ChildSegment')
+        end()
       })
     })
 
-    t.test('should not create a child segment when `opaque` is true', function (t) {
+    await t.test('should not create a child segment when `opaque` is true', function (t, end) {
+      const { agent, shim, wrappable } = t.nr
       shim.recordProduce(wrappable, 'withNested', function () {
         return new MessageSpec({ destinationName: 'foobar', opaque: true })
       })
 
       helper.runInTransaction(agent, (tx) => {
         const segment = wrappable.withNested()
-        t.equal(segment.transaction, tx)
-        t.equal(segment.name, 'MessageBroker/RabbitMQ/Exchange/Produce/Named/foobar')
+        assert.equal(segment.transaction, tx)
+        assert.equal(segment.name, 'MessageBroker/RabbitMQ/Exchange/Produce/Named/foobar')
 
-        t.equal(segment.children.length, 0)
-        t.end()
+        assert.equal(segment.children.length, 0)
+        end()
       })
     })
 
-    t.test('should insert CAT request headers', function (t) {
+    await t.test('should insert CAT request headers', function (t, end) {
+      const { agent, shim, wrappable } = t.nr
       agent.config.cross_application_tracer.enabled = true
       agent.config.distributed_tracing.enabled = false
       const headers = {}
@@ -381,14 +364,15 @@ tap.test('MessageShim', function (t) {
 
       helper.runInTransaction(agent, function () {
         wrappable.getActiveSegment()
-        t.ok(headers.NewRelicID)
-        t.ok(headers.NewRelicTransaction)
-        t.end()
+        assert.ok(headers.NewRelicID)
+        assert.ok(headers.NewRelicTransaction)
+        end()
       })
     })
 
-    t.test('should insert distributed trace headers in all messages', function (t) {
-      t.plan(1)
+    await t.test('should insert distributed trace headers in all messages', function (t, end) {
+      const plan = tspl(t, { plan: 1 })
+      const { agent, shim, wrappable } = t.nr
       const messages = [{}, { headers: { foo: 'foo' } }, {}]
 
       shim.recordProduce(
@@ -409,8 +393,10 @@ tap.test('MessageShim', function (t) {
           })
       )
 
+      let called = 0
       agent.on('transactionFinished', () => {
-        t.match(messages, [
+        called++
+        match(messages, [
           {
             headers: {
               newrelic: '',
@@ -431,7 +417,8 @@ tap.test('MessageShim', function (t) {
             }
           }
         ])
-        t.end()
+        plan.equal(called, 1)
+        end()
       })
 
       helper.runInTransaction(agent, (tx) => {
@@ -440,7 +427,8 @@ tap.test('MessageShim', function (t) {
       })
     })
 
-    t.test('should create message broker metrics', function (t) {
+    await t.test('should create message broker metrics', function (t, end) {
+      const { agent, shim, wrappable } = t.nr
       let transaction = null
 
       shim.recordProduce(wrappable, 'getActiveSegment', function () {
@@ -453,86 +441,86 @@ tap.test('MessageShim', function (t) {
         tx.end()
         const { unscoped } = helper.getMetrics(agent)
         const scoped = transaction.metrics.unscoped
-        t.ok(unscoped['MessageBroker/RabbitMQ/Exchange/Produce/Named/my-queue'])
-        t.ok(scoped['MessageBroker/RabbitMQ/Exchange/Produce/Named/my-queue'])
-        t.end()
+        assert.ok(unscoped['MessageBroker/RabbitMQ/Exchange/Produce/Named/my-queue'])
+        assert.ok(scoped['MessageBroker/RabbitMQ/Exchange/Produce/Named/my-queue'])
+        end()
       })
     })
   })
 
-  t.test('#recordConsume', function (t) {
-    t.autoend()
+  await t.test('#recordConsume', async function (t) {
     t.beforeEach(beforeEach)
     t.afterEach(afterEach)
 
-    t.test('should not wrap non-function objects', function (t) {
+    await t.test('should not wrap non-function objects', function (t) {
+      const { shim, wrappable } = t.nr
       const wrapped = shim.recordConsume(wrappable, function () {})
-      t.equal(wrapped, wrappable)
-      t.notOk(shim.isWrapped(wrapped))
-      t.end()
+      assert.equal(wrapped, wrappable)
+      assert.ok(!shim.isWrapped(wrapped))
     })
 
-    t.test('should wrap the first parameter if no properties are given', function (t) {
+    await t.test('should wrap the first parameter if no properties are given', function (t) {
+      const { shim, wrappable } = t.nr
       const wrapped = shim.recordConsume(wrappable.bar, function () {})
-      t.not(wrapped, wrappable.bar)
-      t.ok(shim.isWrapped(wrapped))
-      t.equal(shim.unwrap(wrapped), wrappable.bar)
-      t.end()
+      assert.notEqual(wrapped, wrappable.bar)
+      assert.equal(shim.isWrapped(wrapped), true)
+      assert.equal(shim.unwrap(wrapped), wrappable.bar)
     })
 
-    t.test('should wrap the first parameter if `null` is given for properties', function (t) {
+    await t.test('should wrap the first parameter if `null` is given for properties', function (t) {
+      const { shim, wrappable } = t.nr
       const wrapped = shim.recordConsume(wrappable.bar, null, function () {})
-      t.not(wrapped, wrappable.bar)
-      t.ok(shim.isWrapped(wrapped))
-      t.equal(shim.unwrap(wrapped), wrappable.bar)
-      t.end()
+      assert.notEqual(wrapped, wrappable.bar)
+      assert.equal(shim.isWrapped(wrapped), true)
+      assert.equal(shim.unwrap(wrapped), wrappable.bar)
     })
 
-    t.test('should replace wrapped properties on the original object', function (t) {
+    await t.test('should replace wrapped properties on the original object', function (t) {
+      const { shim, wrappable } = t.nr
       const original = wrappable.bar
       shim.recordConsume(wrappable, 'bar', function () {})
-      t.not(wrappable.bar, original)
-      t.ok(shim.isWrapped(wrappable.bar))
-      t.equal(shim.unwrap(wrappable.bar), original)
-      t.end()
+      assert.notEqual(wrappable.bar, original)
+      assert.equal(shim.isWrapped(wrappable.bar), true)
+      assert.equal(shim.unwrap(wrappable.bar), original)
     })
 
-    t.test('should not mark unwrapped properties as wrapped', function (t) {
+    await t.test('should not mark unwrapped properties as wrapped', function (t) {
+      const { shim, wrappable } = t.nr
       shim.recordConsume(wrappable, 'name', function () {})
-      t.notOk(shim.isWrapped(wrappable.name))
-      t.end()
+      assert.equal(shim.isWrapped(wrappable.name), false)
     })
 
-    t.test('should create a consume segment', function (t) {
+    await t.test('should create a consume segment', function (t, end) {
+      const { agent, shim, wrappable } = t.nr
       shim.recordConsume(wrappable, 'getActiveSegment', function () {
-        t.same(this, wrappable, 'make sure this is in tact')
+        assert.deepEqual(this, wrappable, 'make sure this is in tact')
         return new MessageSpec({ destinationName: 'foobar' })
       })
 
       helper.runInTransaction(agent, function (tx) {
         const startingSegment = agent.tracer.getSegment()
         const segment = wrappable.getActiveSegment()
-        t.not(segment, startingSegment)
-        t.equal(segment.transaction, tx)
-        t.equal(segment.name, 'MessageBroker/RabbitMQ/Exchange/Consume/Named/foobar')
-        t.equal(agent.tracer.getSegment(), startingSegment)
-        t.end()
+        assert.notEqual(segment, startingSegment)
+        assert.equal(segment.transaction, tx)
+        assert.equal(segment.name, 'MessageBroker/RabbitMQ/Exchange/Consume/Named/foobar')
+        assert.equal(agent.tracer.getSegment(), startingSegment)
+        end()
       })
     })
 
-    t.test('should bind the callback if there is one', function (t) {
-      const cb = function () {}
-
-      const wrapped = shim.recordConsume(helper.checkWrappedCb.bind(t, shim, cb), function () {
+    await t.test('should bind the callback if there is one', function (t, end) {
+      const { agent, shim } = t.nr
+      const wrapped = shim.recordConsume(checkWrappedCb.bind(t, shim, end), function () {
         return new MessageSpec({ callback: shim.LAST })
       })
 
       helper.runInTransaction(agent, function () {
-        wrapped(cb)
+        wrapped(end)
       })
     })
 
-    t.test('should be able to get destinationName from arguments', function (t) {
+    await t.test('should be able to get destinationName from arguments', function (t, end) {
+      const { agent, shim, wrappable } = t.nr
       shim.recordConsume(wrappable, 'getActiveSegment', {
         destinationName: shim.FIRST,
         destinationType: shim.EXCHANGE
@@ -541,15 +529,16 @@ tap.test('MessageShim', function (t) {
       helper.runInTransaction(agent, function (tx) {
         const startingSegment = agent.tracer.getSegment()
         const segment = wrappable.getActiveSegment('fizzbang')
-        t.not(segment, startingSegment)
-        t.equal(segment.transaction, tx)
-        t.equal(segment.name, 'MessageBroker/RabbitMQ/Exchange/Consume/Named/fizzbang')
-        t.equal(agent.tracer.getSegment(), startingSegment)
-        t.end()
+        assert.notEqual(segment, startingSegment)
+        assert.equal(segment.transaction, tx)
+        assert.equal(segment.name, 'MessageBroker/RabbitMQ/Exchange/Consume/Named/fizzbang')
+        assert.equal(agent.tracer.getSegment(), startingSegment)
+        end()
       })
     })
 
-    t.test('should handle promise-based APIs', function (t) {
+    await t.test('should handle promise-based APIs', async function (t) {
+      const { agent, shim } = t.nr
       const msg = {}
       let segment = null
       const DELAY = 25
@@ -567,20 +556,21 @@ tap.test('MessageShim', function (t) {
         destinationName: shim.FIRST,
         promise: true,
         after: function ({ result }) {
-          t.equal(result, msg)
+          assert.equal(result, msg)
         }
       })
 
       return helper.runInTransaction(agent, function () {
         return wrapped('foo', function () {}).then(function (message) {
           const duration = segment.getDurationInMillis()
-          t.ok(duration > DELAY - 1, 'segment duration should be at least 100 ms')
-          t.equal(message, msg)
+          assert.ok(duration > DELAY - 1, 'segment duration should be at least 100 ms')
+          assert.equal(message, msg)
         })
       })
     })
 
-    t.test('should bind promise even without messageHandler', function (t) {
+    await t.test('should bind promise even without messageHandler', async function (t) {
+      const { agent, shim } = t.nr
       const msg = {}
       let segment = null
       const DELAY = 25
@@ -603,13 +593,14 @@ tap.test('MessageShim', function (t) {
       return helper.runInTransaction(agent, function () {
         return wrapped('foo', function () {}).then(function (message) {
           const duration = segment.getDurationInMillis()
-          t.ok(duration > DELAY - 1, 'segment duration should be at least 100 ms')
-          t.equal(message, msg)
+          assert.ok(duration > DELAY - 1, 'segment duration should be at least 100 ms')
+          assert.equal(message, msg)
         })
       })
     })
 
-    t.test('should execute the wrapped function', function (t) {
+    await t.test('should execute the wrapped function', function (t, end) {
+      const { agent, shim } = t.nr
       let executed = false
       const toWrap = function () {
         executed = true
@@ -619,45 +610,48 @@ tap.test('MessageShim', function (t) {
       })
 
       helper.runInTransaction(agent, function () {
-        t.notOk(executed)
+        assert.equal(executed, false)
         wrapped()
-        t.ok(executed)
-        t.end()
+        assert.equal(executed, true)
+        end()
       })
     })
 
-    t.test('should create a child segment when `opaque` is false', function (t) {
+    await t.test('should create a child segment when `opaque` is false', function (t, end) {
+      const { agent, shim, wrappable } = t.nr
       shim.recordConsume(wrappable, 'withNested', function () {
         return new MessageSpec({ destinationName: 'foobar', opaque: false })
       })
 
       helper.runInTransaction(agent, function (tx) {
         const segment = wrappable.withNested()
-        t.equal(segment.transaction, tx)
-        t.equal(segment.name, 'MessageBroker/RabbitMQ/Exchange/Consume/Named/foobar')
+        assert.equal(segment.transaction, tx)
+        assert.equal(segment.name, 'MessageBroker/RabbitMQ/Exchange/Consume/Named/foobar')
 
-        t.equal(segment.children.length, 1)
+        assert.equal(segment.children.length, 1)
         const [childSegment] = segment.children
-        t.equal(childSegment.name, 'ChildSegment')
-        t.end()
+        assert.equal(childSegment.name, 'ChildSegment')
+        end()
       })
     })
 
-    t.test('should not create a child segment when `opaque` is true', function (t) {
+    await t.test('should not create a child segment when `opaque` is true', function (t, end) {
+      const { agent, shim, wrappable } = t.nr
       shim.recordConsume(wrappable, 'withNested', function () {
         return new MessageSpec({ destinationName: 'foobar', opaque: true })
       })
 
       helper.runInTransaction(agent, function (tx) {
         const segment = wrappable.withNested()
-        t.equal(segment.transaction, tx)
-        t.equal(segment.name, 'MessageBroker/RabbitMQ/Exchange/Consume/Named/foobar')
-        t.equal(segment.children.length, 0)
-        t.end()
+        assert.equal(segment.transaction, tx)
+        assert.equal(segment.name, 'MessageBroker/RabbitMQ/Exchange/Consume/Named/foobar')
+        assert.equal(segment.children.length, 0)
+        end()
       })
     })
 
-    t.test('should create message broker metrics', function (t) {
+    await t.test('should create message broker metrics', function (t, end) {
+      const { agent, shim, wrappable } = t.nr
       shim.recordConsume(wrappable, 'getActiveSegment', function () {
         return new MessageSpec({ destinationName: 'foobar' })
       })
@@ -670,75 +664,76 @@ tap.test('MessageShim', function (t) {
 
       agent.on('transactionFinished', function () {
         const metrics = helper.getMetrics(agent)
-        t.ok(metrics.unscoped['MessageBroker/RabbitMQ/Exchange/Consume/Named/foobar'])
-        t.ok(
+        assert.ok(metrics.unscoped['MessageBroker/RabbitMQ/Exchange/Consume/Named/foobar'])
+        assert.ok(
           metrics.scoped['WebTransaction/test-transaction'][
             'MessageBroker/RabbitMQ/Exchange/Consume/Named/foobar'
           ]
         )
-        t.end()
+        end()
       })
     })
   })
 
-  t.test('#recordPurgeQueue', function (t) {
-    t.autoend()
+  await t.test('#recordPurgeQueue', async function (t) {
     t.beforeEach(beforeEach)
     t.afterEach(afterEach)
 
-    t.test('should not wrap non-function objects', function (t) {
+    await t.test('should not wrap non-function objects', function (t) {
+      const { shim, wrappable } = t.nr
       const wrapped = shim.recordPurgeQueue(wrappable, {})
-      t.equal(wrapped, wrappable)
-      t.notOk(shim.isWrapped(wrapped))
-      t.end()
+      assert.equal(wrapped, wrappable)
+      assert.ok(!shim.isWrapped(wrapped))
     })
 
-    t.test('should wrap the first parameter if no properties are given', function (t) {
+    await t.test('should wrap the first parameter if no properties are given', function (t) {
+      const { shim, wrappable } = t.nr
       const wrapped = shim.recordPurgeQueue(wrappable.bar, {})
-      t.not(wrapped, wrappable.bar)
-      t.ok(shim.isWrapped(wrapped))
-      t.equal(shim.unwrap(wrapped), wrappable.bar)
-      t.end()
+      assert.notEqual(wrapped, wrappable.bar)
+      assert.equal(shim.isWrapped(wrapped), true)
+      assert.equal(shim.unwrap(wrapped), wrappable.bar)
     })
 
-    t.test('should wrap the first parameter if `null` is given for properties', function (t) {
+    await t.test('should wrap the first parameter if `null` is given for properties', function (t) {
+      const { shim, wrappable } = t.nr
       const wrapped = shim.recordPurgeQueue(wrappable.bar, null, {})
-      t.not(wrapped, wrappable.bar)
-      t.ok(shim.isWrapped(wrapped))
-      t.equal(shim.unwrap(wrapped), wrappable.bar)
-      t.end()
+      assert.notEqual(wrapped, wrappable.bar)
+      assert.equal(shim.isWrapped(wrapped), true)
+      assert.equal(shim.unwrap(wrapped), wrappable.bar)
     })
 
-    t.test('should replace wrapped properties on the original object', function (t) {
+    await t.test('should replace wrapped properties on the original object', function (t) {
+      const { shim, wrappable } = t.nr
       const original = wrappable.bar
       shim.recordPurgeQueue(wrappable, 'bar', {})
-      t.not(wrappable.bar, original)
-      t.ok(shim.isWrapped(wrappable.bar))
-      t.equal(shim.unwrap(wrappable.bar), original)
-      t.end()
+      assert.notEqual(wrappable.bar, original)
+      assert.equal(shim.isWrapped(wrappable.bar), true)
+      assert.equal(shim.unwrap(wrappable.bar), original)
     })
 
-    t.test('should not mark unwrapped properties as wrapped', function (t) {
+    await t.test('should not mark unwrapped properties as wrapped', function (t) {
+      const { shim, wrappable } = t.nr
       shim.recordPurgeQueue(wrappable, 'name', {})
-      t.notOk(shim.isWrapped(wrappable.name))
-      t.end()
+      assert.equal(shim.isWrapped(wrappable.name), false)
     })
 
-    t.test('should create a purge segment and metric', function (t) {
+    await t.test('should create a purge segment and metric', function (t, end) {
+      const { agent, shim, wrappable } = t.nr
       shim.recordPurgeQueue(wrappable, 'getActiveSegment', new MessageSpec({ queue: shim.FIRST }))
 
       helper.runInTransaction(agent, function (tx) {
         const startingSegment = agent.tracer.getSegment()
         const segment = wrappable.getActiveSegment('foobar')
-        t.not(segment, startingSegment)
-        t.equal(segment.transaction, tx)
-        t.equal(segment.name, 'MessageBroker/RabbitMQ/Queue/Purge/Named/foobar')
-        t.equal(agent.tracer.getSegment(), startingSegment)
-        t.end()
+        assert.notEqual(segment, startingSegment)
+        assert.equal(segment.transaction, tx)
+        assert.equal(segment.name, 'MessageBroker/RabbitMQ/Queue/Purge/Named/foobar')
+        assert.equal(agent.tracer.getSegment(), startingSegment)
+        end()
       })
     })
 
-    t.test('should call the spec if it is not static', function (t) {
+    await t.test('should call the spec if it is not static', function (t, end) {
+      const { agent, shim, wrappable } = t.nr
       let called = false
 
       shim.recordPurgeQueue(wrappable, 'getActiveSegment', function () {
@@ -747,14 +742,15 @@ tap.test('MessageShim', function (t) {
       })
 
       helper.runInTransaction(agent, function () {
-        t.notOk(called)
+        assert.equal(called, false)
         wrappable.getActiveSegment('foobar')
-        t.ok(called)
-        t.end()
+        assert.equal(called, true)
+        end()
       })
     })
 
-    t.test('should execute the wrapped function', function (t) {
+    await t.test('should execute the wrapped function', function (t, end) {
+      const { agent, shim } = t.nr
       let executed = false
       const toWrap = function () {
         executed = true
@@ -762,29 +758,29 @@ tap.test('MessageShim', function (t) {
       const wrapped = shim.recordPurgeQueue(toWrap, {})
 
       helper.runInTransaction(agent, function () {
-        t.notOk(executed)
+        assert.equal(executed, false)
         wrapped()
-        t.ok(executed)
-        t.end()
+        assert.equal(executed, true)
+        end()
       })
     })
 
-    t.test('should bind the callback if there is one', function (t) {
-      const cb = function () {}
-
+    await t.test('should bind the callback if there is one', function (t, end) {
+      const { agent, shim } = t.nr
       const wrapped = shim.recordPurgeQueue(
-        helper.checkWrappedCb.bind(t, shim, cb),
+        checkWrappedCb.bind(null, shim, end),
         new MessageSpec({
           callback: shim.LAST
         })
       )
 
       helper.runInTransaction(agent, function () {
-        wrapped(cb)
+        wrapped(end)
       })
     })
 
-    t.test('should link the promise if one is returned', function (t) {
+    await t.test('should link the promise if one is returned', async function (t) {
+      const { agent, shim } = t.nr
       const DELAY = 25
       const val = {}
       let segment = null
@@ -798,9 +794,9 @@ tap.test('MessageShim', function (t) {
 
       return helper.runInTransaction(agent, function () {
         return wrapped().then(function (v) {
-          t.equal(v, val)
+          assert.equal(v, val)
           const duration = segment.getDurationInMillis()
-          t.ok(
+          assert.ok(
             duration > DELAY - 1,
             `Segment duration: ${duration} should be > Timer duration: ${DELAY - 1}`
           )
@@ -808,7 +804,8 @@ tap.test('MessageShim', function (t) {
       })
     })
 
-    t.test('should create message broker metrics', function (t) {
+    await t.test('should create message broker metrics', function (t, end) {
+      const { agent, shim, wrappable } = t.nr
       let transaction = null
       shim.recordPurgeQueue(wrappable, 'getActiveSegment', new MessageSpec({ queue: shim.FIRST }))
 
@@ -818,123 +815,117 @@ tap.test('MessageShim', function (t) {
         tx.end()
         const { unscoped } = helper.getMetrics(agent)
         const scoped = transaction.metrics.unscoped
-        t.ok(unscoped['MessageBroker/RabbitMQ/Queue/Purge/Named/my-queue'])
-        t.ok(scoped['MessageBroker/RabbitMQ/Queue/Purge/Named/my-queue'])
-        t.end()
+        assert.ok(unscoped['MessageBroker/RabbitMQ/Queue/Purge/Named/my-queue'])
+        assert.ok(scoped['MessageBroker/RabbitMQ/Queue/Purge/Named/my-queue'])
+        end()
       })
     })
   })
 
-  t.test('#recordSubscribedConsume', function (t) {
-    t.autoend()
+  await t.test('#recordSubscribedConsume', async function (t) {
     t.beforeEach(beforeEach)
     t.afterEach(afterEach)
 
-    t.test('should not wrap non-function objects', function (t) {
+    await t.test('should not wrap non-function objects', function (t) {
+      const { shim, wrappable } = t.nr
       const wrapped = shim.recordSubscribedConsume(wrappable, {
         consumer: shim.FIRST,
         messageHandler: function () {}
       })
-      t.equal(wrapped, wrappable)
-      t.notOk(shim.isWrapped(wrapped))
-      t.end()
+      assert.equal(wrapped, wrappable)
+      assert.ok(!shim.isWrapped(wrapped))
     })
 
-    t.test('should wrap the first parameter if no properties are given', function (t) {
+    await t.test('should wrap the first parameter if no properties are given', function (t) {
+      const { shim, wrappable } = t.nr
       const wrapped = shim.recordSubscribedConsume(wrappable.bar, {
         consumer: shim.FIRST,
         messageHandler: function () {},
         wrapper: function () {}
       })
-      t.not(wrapped, wrappable.bar)
-      t.ok(shim.isWrapped(wrapped))
-      t.equal(helper.unwrap(wrapped), wrappable.bar)
-      t.end()
+      assert.notEqual(wrapped, wrappable.bar)
+      assert.equal(shim.isWrapped(wrapped), true)
+      assert.equal(helper.unwrap(wrapped), wrappable.bar)
     })
 
-    t.test('should wrap the first parameter if `null` is given for properties', function (t) {
+    await t.test('should wrap the first parameter if `null` is given for properties', function (t) {
+      const { shim, wrappable } = t.nr
       const wrapped = shim.recordSubscribedConsume(wrappable.bar, null, {
         consumer: shim.FIRST,
         messageHandler: function () {},
         wrapper: function () {}
       })
-      t.not(wrapped, wrappable.bar)
-      t.ok(shim.isWrapped(wrapped))
-      t.equal(helper.unwrap(wrapped), wrappable.bar)
-      t.end()
+      assert.notEqual(wrapped, wrappable.bar)
+      assert.equal(shim.isWrapped(wrapped), true)
+      assert.equal(helper.unwrap(wrapped), wrappable.bar)
     })
 
-    t.test('should replace wrapped properties on the original object', function (t) {
+    await t.test('should replace wrapped properties on the original object', function (t) {
+      const { shim, wrappable } = t.nr
       const original = wrappable.bar
       shim.recordSubscribedConsume(wrappable, 'bar', {
         consumer: shim.FIRST,
         messageHandler: function () {},
         wrapper: function () {}
       })
-      t.not(wrappable.bar, original)
-      t.ok(shim.isWrapped(wrappable.bar))
-      t.equal(helper.unwrap(wrappable.bar), original)
-      t.end()
+      assert.notEqual(wrappable.bar, original)
+      assert.equal(shim.isWrapped(wrappable.bar), true)
+      assert.equal(helper.unwrap(wrappable.bar), original)
     })
 
-    t.test('should not mark unwrapped properties as wrapped', function (t) {
+    await t.test('should not mark unwrapped properties as wrapped', function (t) {
+      const { shim, wrappable } = t.nr
       shim.recordSubscribedConsume(wrappable, 'name', {
         consumer: shim.FIRST,
         messageHandler: function () {},
         wrapper: function () {}
       })
-      t.not(shim.isWrapped(wrappable.name))
-      t.end()
+      assert.equal(shim.isWrapped(wrappable.name), false)
     })
 
-    t.test('should allow spec to be a function', function (t) {
+    await t.test('should allow spec to be a function', function (t, end) {
+      const { shim, wrappable } = t.nr
       shim.recordSubscribedConsume(wrappable, 'name', function () {
-        t.same(this, wrappable, 'should preserve this context')
+        assert.deepEqual(this, wrappable, 'should preserve this context')
         return {
           consumer: shim.FIRST,
           messageHandler: function () {},
           wrapper: function () {}
         }
       })
-      t.not(shim.isWrapped(wrappable.name))
-      t.end()
+      assert.equal(shim.isWrapped(wrappable.name), false)
+      end()
     })
   })
 
-  t.test('#recordSubscribedConsume wrapper', function (t) {
-    let message = null
-    let messageHandler = null
-    let subscriber = null
-    let wrapped = null
-    let handlerCalled = false
-    let subscriberCalled = false
+  await t.test('#recordSubscribedConsume wrapper', async function (t) {
+    t.beforeEach(function (ctx) {
+      beforeEach(ctx)
+      const { shim } = ctx.nr
 
-    t.autoend()
-
-    t.beforeEach(function () {
-      beforeEach()
-
-      message = {}
-      subscriber = function consumeSubscriber(queue, consumer, cb) {
-        subscriberCalled = true
+      ctx.nr.message = {}
+      ctx.nr.handlerCalled = false
+      ctx.nr.subscriberCalled = false
+      const subscriber = function consumeSubscriber(queue, consumer, cb) {
+        ctx.nr.subscriberCalled = true
         if (cb) {
           setImmediate(cb)
         }
         if (consumer) {
-          setImmediate(consumer, message)
+          setImmediate(consumer, ctx.nr.message)
         }
         return shim.getSegment()
       }
 
-      wrapped = shim.recordSubscribedConsume(subscriber, {
+      ctx.nr.wrapped = shim.recordSubscribedConsume(subscriber, {
         name: 'Channel#subscribe',
         queue: shim.FIRST,
         consumer: shim.SECOND,
         callback: shim.LAST,
         messageHandler: function (shim) {
-          handlerCalled = true
-          if (messageHandler) {
-            return messageHandler.apply(this, arguments)
+          ctx.nr.handlerCalled = true
+          if (ctx.nr.messageHandler) {
+            return ctx.nr.messageHandler.apply(this, arguments)
           }
           return new MessageSubscribeSpec({
             destinationName: 'exchange.foo',
@@ -947,64 +938,61 @@ tap.test('MessageShim', function (t) {
           })
         }
       })
+      ctx.nr.subscriber = subscriber
     })
 
-    t.afterEach(function () {
-      afterEach()
-      message = null
-      subscriber = null
-      wrapped = null
-      messageHandler = null
-      subscriberCalled = false
-      handlerCalled = false
-    })
+    t.afterEach(afterEach)
 
-    t.test('should start a new transaction in the consumer', function (t) {
+    await t.test('should start a new transaction in the consumer', function (t, end) {
+      const { shim, wrapped } = t.nr
       const parent = wrapped('my.queue', function consumer() {
         const segment = shim.getSegment()
-        t.not(segment.name, 'Callback: consumer')
-        t.equal(segment.transaction.type, 'message')
-        t.end()
+        assert.notEqual(segment.name, 'Callback: consumer')
+        assert.equal(segment.transaction.type, 'message')
+        end()
       })
 
-      t.notOk(parent)
+      assert.ok(!parent)
     })
 
-    t.test('should end the transaction immediately if not handled', function (t) {
+    await t.test('should end the transaction immediately if not handled', function (t, end) {
+      const { shim, wrapped } = t.nr
       wrapped('my.queue', function consumer() {
         const tx = shim.getSegment().transaction
-        t.ok(tx.isActive())
+        assert.equal(tx.isActive(), true)
         setTimeout(function () {
-          t.notOk(tx.isActive())
-          t.end()
+          assert.equal(tx.isActive(), false)
+          end()
         }, 5)
       })
     })
 
-    t.test('should end the transaction based on a promise', function (t) {
-      messageHandler = function () {
+    await t.test('should end the transaction based on a promise', function (t, end) {
+      const { shim, wrapped } = t.nr
+      t.nr.messageHandler = function () {
         return new MessageSpec({ promise: true })
       }
 
       wrapped('my.queue', function consumer() {
         const tx = shim.getSegment().transaction
-        t.ok(tx.isActive())
+        assert.equal(tx.isActive(), true)
 
         return new Promise(function (resolve) {
-          t.ok(tx.isActive())
+          assert.equal(tx.isActive(), true)
           setImmediate(resolve)
         }).then(function () {
-          t.ok(tx.isActive())
+          assert.equal(tx.isActive(), true)
           setTimeout(function () {
-            t.notOk(tx.isActive())
-            t.end()
+            assert.equal(tx.isActive(), false)
+            end()
           }, 5)
         })
       })
     })
 
-    t.test('should properly time promise based consumers', function (t) {
-      messageHandler = function () {
+    await t.test('should properly time promise based consumers', function (t, end) {
+      const { shim, wrapped } = t.nr
+      t.nr.messageHandler = function () {
         return new MessageSpec({ promise: true })
       }
 
@@ -1017,76 +1005,82 @@ tap.test('MessageShim', function (t) {
         }).then(function () {
           setImmediate(() => {
             const duration = segment.getDurationInMillis()
-            t.ok(duration > DELAY - 1, 'promised based consumers should be timed properly')
-            t.end()
+            assert.ok(duration > DELAY - 1, 'promised based consumers should be timed properly')
+            end()
           })
         })
       })
     })
 
-    t.test('should end the transaction when the handle says to', function (t) {
+    await t.test('should end the transaction when the handle says to', function (t, end) {
+      const { agent, shim, wrapped } = t.nr
       const api = new API(agent)
 
       wrapped('my.queue', function consumer() {
         const tx = shim.getSegment().transaction
         const handle = api.getTransaction()
 
-        t.ok(tx.isActive())
+        assert.equal(tx.isActive(), true)
         setTimeout(function () {
-          t.ok(tx.isActive())
+          assert.equal(tx.isActive(), true)
           handle.end()
           setTimeout(function () {
-            t.notOk(tx.isActive())
-            t.end()
+            assert.equal(tx.isActive(), false)
+            end()
           }, 5)
         }, 5)
       })
     })
 
-    t.test('should call spec.messageHandler before consumer is invoked', function (t) {
+    await t.test('should call spec.messageHandler before consumer is invoked', function (t, end) {
+      const { wrapped } = t.nr
       wrapped('my.queue', function consumer() {
-        t.ok(handlerCalled)
-        t.end()
+        assert.equal(t.nr.handlerCalled, true)
+        end()
       })
 
-      t.notOk(handlerCalled)
+      assert.equal(t.nr.handlerCalled, false)
     })
 
-    t.test('should add agent attributes (e.g. routing key)', function (t) {
+    await t.test('should add agent attributes (e.g. routing key)', function (t, end) {
+      const { shim, wrapped } = t.nr
       wrapped('my.queue', function consumer() {
         const segment = shim.getSegment()
         const tx = segment.transaction
         const traceParams = tx.trace.attributes.get(DESTINATIONS.TRANS_TRACE)
 
-        t.equal(traceParams['message.routingKey'], 'routing.key')
-        t.equal(traceParams['message.queueName'], 'my.queue')
-        t.end()
+        assert.equal(traceParams['message.routingKey'], 'routing.key')
+        assert.equal(traceParams['message.queueName'], 'my.queue')
+        end()
       })
     })
 
-    t.test('should add agent attributes (e.g. routing key) to Spans', function (t) {
+    await t.test('should add agent attributes (e.g. routing key) to Spans', function (t, end) {
+      const { shim, wrapped } = t.nr
       wrapped('my.queue', function consumer() {
         const segment = shim.getSegment()
         const spanParams = segment.attributes.get(DESTINATIONS.SPAN_EVENT)
 
-        t.equal(spanParams['message.routingKey'], 'routing.key')
-        t.equal(spanParams['message.queueName'], 'my.queue')
-        t.end()
+        assert.equal(spanParams['message.routingKey'], 'routing.key')
+        assert.equal(spanParams['message.queueName'], 'my.queue')
+        end()
       })
     })
 
-    t.test('should add message.paremeters.* attributes to Spans', function (t) {
+    await t.test('should add message.parameters.* attributes to Spans', function (t, end) {
+      const { shim, wrapped } = t.nr
       wrapped('my.queue', function consumer() {
         const segment = shim.getSegment()
         const spanParams = segment.attributes.get(DESTINATIONS.SPAN_EVENT)
 
-        t.equal(spanParams['message.parameters.a'], 'a')
-        t.equal(spanParams['message.parameters.b'], 'b')
-        t.end()
+        assert.equal(spanParams['message.parameters.a'], 'a')
+        assert.equal(spanParams['message.parameters.b'], 'b')
+        end()
       })
     })
 
-    t.test('should create message transaction metrics', function (t) {
+    await t.test('should create message transaction metrics', function (t, end) {
+      const { agent, wrapped } = t.nr
       const metricNames = [
         'OtherTransaction/Message/RabbitMQ/Exchange/Named/exchange.foo',
         'OtherTransactionTotalTime/Message/RabbitMQ/Exchange/Named/exchange.foo',
@@ -1099,14 +1093,15 @@ tap.test('MessageShim', function (t) {
         setTimeout(function () {
           const metrics = helper.getMetrics(agent)
           metricNames.forEach(function (name) {
-            t.equal(metrics.unscoped[name].callCount, 1)
+            assert.equal(metrics.unscoped[name].callCount, 1)
           })
-          t.end()
+          end()
         }, 15) // Let tx end from instrumentation
       })
     })
 
-    t.test('should be able to get destinationName from arguments', function (t) {
+    await t.test('should be able to get destinationName from arguments', function (t, end) {
+      const { agent, shim, subscriber } = t.nr
       const metricNames = [
         'OtherTransaction/Message/RabbitMQ/Exchange/Named/my.exchange',
         'OtherTransactionTotalTime/Message/RabbitMQ/Exchange/Named/my.exchange'
@@ -1127,20 +1122,21 @@ tap.test('MessageShim', function (t) {
         setTimeout(function () {
           const metrics = helper.getMetrics(agent)
           metricNames.forEach(function (name) {
-            t.equal(metrics.unscoped[name].callCount, 1)
+            assert.equal(metrics.unscoped[name].callCount, 1)
           })
-          t.end()
+          end()
         }, 15) // Let tx end from instrumentation
       })
     })
 
-    t.test('should handle a missing destination name as temp', function (t) {
+    await t.test('should handle a missing destination name as temp', function (t, end) {
+      const { agent, shim, wrapped } = t.nr
       const metricNames = [
         'OtherTransaction/Message/RabbitMQ/Exchange/Temp',
         'OtherTransactionTotalTime/Message/RabbitMQ/Exchange/Temp'
       ]
 
-      messageHandler = function () {
+      t.nr.messageHandler = function () {
         return new MessageSpec({
           destinationName: null,
           destinationType: shim.EXCHANGE
@@ -1151,14 +1147,15 @@ tap.test('MessageShim', function (t) {
         setTimeout(function () {
           const metrics = helper.getMetrics(agent)
           metricNames.forEach(function (name) {
-            t.equal(metrics.unscoped[name].callCount, 1)
+            assert.equal(metrics.unscoped[name].callCount, 1)
           })
-          t.end()
+          end()
         }, 15) // Let tx end from instrumentation
       })
     })
 
-    t.test('should extract CAT headers from the message', function (t) {
+    await t.test('should extract CAT headers from the message', function (t, end) {
+      const { agent, shim, wrapped } = t.nr
       agent.config.cross_application_tracer.enabled = true
       agent.config.distributed_tracing.enabled = false
       const params = {
@@ -1173,7 +1170,7 @@ tap.test('MessageShim', function (t) {
       let txHeader = JSON.stringify(['trans id', false, 'trip id', 'path hash'])
       txHeader = hashes.obfuscateNameUsingKey(txHeader, agent.config.encoding_key)
 
-      messageHandler = function () {
+      t.nr.messageHandler = function () {
         const catHeaders = {
           NewRelicID: idHeader,
           NewRelicTransaction: txHeader
@@ -1181,7 +1178,7 @@ tap.test('MessageShim', function (t) {
 
         return new MessageSpec({
           destinationName: 'foo',
-          destingationType: shim.EXCHANGE,
+          destinationType: shim.EXCHANGE,
           headers: catHeaders
         })
       }
@@ -1189,59 +1186,64 @@ tap.test('MessageShim', function (t) {
       wrapped('my.queue', function consumer() {
         const tx = shim.getSegment().transaction
 
-        t.equal(tx.incomingCatId, '9876#id')
-        t.equal(tx.referringTransactionGuid, 'trans id')
-        t.equal(tx.tripId, 'trip id')
-        t.equal(tx.referringPathHash, 'path hash')
-        t.equal(tx.invalidIncomingExternalTransaction, false)
-        t.end()
+        assert.equal(tx.incomingCatId, '9876#id')
+        assert.equal(tx.referringTransactionGuid, 'trans id')
+        assert.equal(tx.tripId, 'trip id')
+        assert.equal(tx.referringPathHash, 'path hash')
+        assert.equal(tx.invalidIncomingExternalTransaction, false)
+        end()
       })
     })
 
-    t.test('should invoke the consumer with the correct arguments', function (t) {
+    await t.test('should invoke the consumer with the correct arguments', function (t, end) {
+      const { wrapped } = t.nr
       wrapped('my.queue', function consumer(msg) {
-        t.equal(msg, message)
-        t.end()
+        assert.equal(msg, t.nr.message)
+        end()
       })
     })
 
-    t.test('should create a subscribe segment', function (t) {
+    await t.test('should create a subscribe segment', function (t, end) {
+      const { agent, wrapped } = t.nr
       helper.runInTransaction(agent, function () {
-        t.notOk(subscriberCalled)
+        assert.equal(t.nr.subscriberCalled, false)
         const segment = wrapped('my.queue')
-        t.ok(subscriberCalled)
-        t.equal(segment.name, 'Channel#subscribe')
-        t.end()
+        assert.equal(t.nr.subscriberCalled, true)
+        assert.equal(segment.name, 'Channel#subscribe')
+        end()
       })
     })
 
-    t.test('should bind the subscribe callback', function (t) {
+    await t.test('should bind the subscribe callback', function (t, end) {
+      const { agent, shim, wrapped } = t.nr
       helper.runInTransaction(agent, function () {
         const parent = wrapped('my.queue', null, function subCb() {
           const segment = shim.getSegment()
-          t.equal(segment.name, 'Callback: subCb')
-          t.compareSegments(parent, [segment])
-          t.end()
+          assert.equal(segment.name, 'Callback: subCb')
+          compareSegments(parent, [segment])
+          end()
         })
-        t.ok(parent)
+        assert.ok(parent)
       })
     })
 
-    t.test('should still start a new transaction in the consumer', function (t) {
+    await t.test('should still start a new transaction in the consumer', function (t, end) {
+      const { agent, shim, wrapped } = t.nr
       helper.runInTransaction(agent, function () {
         const parent = wrapped('my.queue', function consumer() {
           const segment = shim.getSegment()
-          t.not(segment.name, 'Callback: consumer')
-          t.ok(segment.transaction.id)
-          t.not(segment.transaction.id, parent.transaction.id)
-          t.end()
+          assert.notEqual(segment.name, 'Callback: consumer')
+          assert.ok(segment.transaction.id)
+          assert.notEqual(segment.transaction.id, parent.transaction.id)
+          end()
         })
-        t.ok(parent)
+        assert.ok(parent)
       })
     })
 
-    t.test('should wrap object key of consumer', function (t) {
-      t.plan(4)
+    await t.test('should wrap object key of consumer', function (t, end) {
+      const plan = tspl(t, { plan: 4 })
+      const { shim } = t.nr
       const message = { foo: 'bar' }
       const subscriber = function subscriber(consumer) {
         consumer.eachMessage(message)
@@ -1251,7 +1253,7 @@ tap.test('MessageShim', function (t) {
         consumer: shim.FIRST,
         functions: ['eachMessage'],
         messageHandler: function (shim, args) {
-          t.same(args[0], message)
+          plan.deepEqual(args[0], message)
           return new MessageSpec({
             destinationName: 'exchange.foo',
             destinationType: shim.EXCHANGE
@@ -1261,11 +1263,11 @@ tap.test('MessageShim', function (t) {
 
       const handler = {
         eachMessage: function consumer(msg) {
-          t.same(this, handler)
+          plan.deepEqual(this, handler)
           const segment = shim.getSegment()
-          t.equal(segment.name, 'OtherTransaction/Message/RabbitMQ/Exchange/Named/exchange.foo')
-          t.equal(msg, message)
-          t.end()
+          plan.equal(segment.name, 'OtherTransaction/Message/RabbitMQ/Exchange/Named/exchange.foo')
+          plan.equal(msg, message)
+          end()
         }
       }
       wrapped(handler)

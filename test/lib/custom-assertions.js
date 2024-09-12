@@ -55,15 +55,25 @@ function assertCLMAttrs({ segments, enabled: clmEnabled, skipFull = false }) {
  * @param {string} params.key key to assign value
  * @param {string} params.value expected value of obj[key]
  */
-function isNonWritable({ obj, key, value }) {
+function isNonWritable({ obj, key, value, complex }) {
   assert.throws(function () {
     obj[key] = 'testNonWritable test value'
   }, new RegExp("(read only property '" + key + "'|Cannot set property " + key + ')'))
 
   if (value) {
     assert.equal(obj[key], value)
+  } else if (complex) {
+    assert.notStrictEqual(
+      obj[key],
+      'testNonWritable test value',
+      'should not set value when non-writable'
+    )
   } else {
-    assert.ok(!obj[key], 'testNonWritable test value', 'should not set value when non-writable')
+    assert.notEqual(
+      obj[key],
+      'testNonWritable test value',
+      'should not set value when non-writable'
+    )
   }
 }
 
@@ -323,12 +333,50 @@ function assertMetricValues(transaction, expected, exact) {
   }
 }
 
+/**
+ * Asserts the wrapped callback is wrapped and the unwrapped version is the original.
+ * It also verifies it does not throw an error
+ *
+ * @param {object} shim shim lib
+ * @param {Function} original callback
+ */
+function checkWrappedCb(shim, cb) {
+  // The wrapped callback is always the last argument
+  const wrappedCB = arguments[arguments.length - 1]
+  assert.notStrictEqual(wrappedCB, cb)
+  assert.ok(shim.isWrapped(wrappedCB))
+  assert.equal(shim.unwrap(wrappedCB), cb)
+
+  assert.doesNotThrow(function () {
+    wrappedCB()
+  })
+}
+
+/**
+ * Helper that verifies the original callback
+ * and wrapped callback are the same
+ *
+ * @param {object} shim shim lib
+ * @param {Function} original callback
+ */
+function checkNotWrappedCb(shim, cb) {
+  // The callback is always the last argument
+  const wrappedCB = arguments[arguments.length - 1]
+  assert.equal(wrappedCB, cb)
+  assert.equal(shim.isWrapped(wrappedCB), false)
+  assert.doesNotThrow(function () {
+    wrappedCB()
+  })
+}
+
 module.exports = {
   assertCLMAttrs,
   assertExactClmAttrs,
   assertMetrics,
   assertMetricValues,
   assertSegments,
+  checkWrappedCb,
+  checkNotWrappedCb,
   compareSegments,
   isNonWritable,
   match
