@@ -34,7 +34,7 @@
           "samples": 5
         },
         "koa-router": {
-          "versions": ">=11.0.2",
+          "versions": ">=11.0.2 && <13.0.0",
           "samples": 5
         }
       },
@@ -53,7 +53,7 @@
           "samples": 5
         },
         "@koa/router": {
-          "versions": ">=11.0.2",
+          "versions": ">=11.0.2 && <13.0.0",
           "samples": 5
         }
       },
