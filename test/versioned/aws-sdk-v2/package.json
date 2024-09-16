@@ -44,10 +44,6 @@
         "node": ">=18.0"
       },
       "dependencies": {
-        "aws-sdk": {
-          "versions": ">=2.463.0",
-          "samples": 10
-        },
         "amazon-dax-client": ">=1.2.5"
       },
       "files": [

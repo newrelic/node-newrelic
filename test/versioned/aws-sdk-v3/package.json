@@ -9,7 +9,7 @@
     {"name": "@aws-sdk/client-dynamodb", "minAgentVersion": "8.7.1"},
     {"name": "@aws-sdk/lib-dynamodb", "minAgentVersion": "8.7.1"},
     {"name": "@aws-sdk/smithy-client", "minAgentVersion": "8.7.1"},
-    {"name": "@smithy/smithy-client", "minAgentVersion": "11.0.0"},
+    {"name": "@smithy/smithy-client", "minSupported": "3.47.0", "minAgentVersion": "11.0.0"},
     {"name": "@aws-sdk/client-bedrock-runtime", "minAgentVersion": "11.13.0"}
   ],
   "version": "0.0.0",
@@ -149,10 +149,6 @@
         "@aws-sdk/client-sns": {
           "versions": ">=3.0.0 <=3.193.0 || >3.196.0 <3.377.0 || >3.377.0 ",
           "samples": 10
-        },
-        "@aws-sdk/smithy-client": {
-          "versions": ">=3.47.0 <3.370.0",
-          "samples": 1
         }
       },
       "files": [
@@ -192,8 +188,6 @@
         "node": ">=18.0"
       },
       "dependencies": {
-        "@aws-sdk/util-dynamodb": "latest",
-        "@aws-sdk/client-dynamodb": "latest",
         "@aws-sdk/lib-dynamodb": {
           "versions": ">3.377.0 ",
           "samples": 10
@@ -208,11 +202,7 @@
         "node": ">=18.0"
       },
       "dependencies": {
-        "@aws-sdk/client-bedrock-runtime": "^3.474.0",
-        "@smithy/smithy-client": {
-          "versions": ">=2.0.0",
-          "samples": 1
-        }
+        "@aws-sdk/client-bedrock-runtime": ">=3.474.0"
       },
       "files": [
         "bedrock-chat-completions.tap.js",
