@@ -1,6 +1,6 @@
 {
   "name": "langchain-tests",
-  "targets": [{"name":"@langchain/core","minAgentVersion":"11.13.0"}],
+  "targets": [{"name":"@langchain/core","minSupported": "0.1.17", "minAgentVersion":"11.13.0"}],
   "version": "0.0.0",
   "private": true,
   "engines": {
@@ -11,9 +11,9 @@
       "engines": {
         "node": ">=18"
       },
+      "comment": "This is implicitly testing `@langchain/core` as it's a peer dep",
       "dependencies": {
-        "@langchain/core": ">=0.1.17",
-        "@langchain/openai": "0.0.34"
+        "@langchain/openai": ">=0.0.34"
       },
       "files": [
         "tools.tap.js",
@@ -25,16 +25,13 @@
       "engines": {
         "node": ">=18"
       },
+      "comment": "Using latest of `@langchain/openai` only as it is being used to seed embeddings, nothing to test that hasn't been done in the above stanza",
       "dependencies": {
-        "@langchain/core": ">=0.1.17",
-        "@langchain/openai": "0.0.34",
-        "@langchain/community": "0.2.2",
+        "@langchain/openai": "latest",
+        "@langchain/community": ">=0.2.2",
         "@elastic/elasticsearch": "8.13.1"
       },
       "files": [
-        "tools.tap.js",
-        "runnables.tap.js",
-        "runnables-streaming.tap.js",
         "vectorstore.tap.js"
       ]
     }
