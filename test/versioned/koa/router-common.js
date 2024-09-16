@@ -45,7 +45,10 @@ module.exports = (pkg) => {
     }
 
     function tearDown(t) {
-      t.context.server.close()
+      if (t.context.server) {
+        // t.context.server is defined by `run(t.context)`.
+        t.context.server.close()
+      }
       helper.unloadAgent(t.context.agent)
     }
 
@@ -148,18 +151,18 @@ module.exports = (pkg) => {
 
       t.test('should name and produce segments for matched wildcard path', (t) => {
         const { agent, router, app } = t.context
-        router.get('/:first/(.*)', function firstMiddleware(ctx) {
+        router.get('/:first/{*any}', function firstMiddleware(ctx) {
           ctx.body = 'first'
         })
         app.use(router.routes())
         agent.on('transactionFinished', (tx) => {
           t.assertSegments(tx.trace.root, [
-            'WebTransaction/WebFrameworkUri/Koa/GET//:first/(.*)',
-            ['Koa/Router: /', ['Nodejs/Middleware/Koa/firstMiddleware//:first/(.*)']]
+            'WebTransaction/WebFrameworkUri/Koa/GET//:first/{*any}',
+            ['Koa/Router: /', ['Nodejs/Middleware/Koa/firstMiddleware//:first/{*any}']]
           ])
           t.equal(
             tx.name,
-            'WebTransaction/WebFrameworkUri/Koa/GET//:first/(.*)',
+            'WebTransaction/WebFrameworkUri/Koa/GET//:first/{*any}',
             'transaction should be named after the matched regex path'
           )
           t.end()
@@ -346,16 +349,7 @@ module.exports = (pkg) => {
         agent.on('transactionFinished', (tx) => {
           t.assertSegments(tx.trace.root, [
             'WebTransaction/WebFrameworkUri/Koa/GET//:second',
-            [
-              'Koa/Router: /',
-              [
-                'Nodejs/Middleware/Koa/secondMiddleware//:first',
-                [
-                  'Nodejs/Middleware/Koa/secondMiddleware//:second',
-                  ['Nodejs/Middleware/Koa/terminalMiddleware//:second']
-                ]
-              ]
-            ]
+            ['Koa/Router: /', ['Nodejs/Middleware/Koa/terminalMiddleware//:second']]
           ])
           t.equal(
             tx.name,
