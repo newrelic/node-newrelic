@@ -2,6 +2,10 @@ name: Azure Site Extension
 
 on:
   workflow_dispatch:
+  workflow_run:
+    workflows: ["Create Release"]
+    types:
+      - completed
 
 env:
   SPEC_FILE_TEMPLATE: 'NewRelic.Azure.WebSites.Extension.NodeAgent.nuspec'
@@ -9,6 +13,9 @@ env:
 jobs:
   create_extension_bundle:
     runs-on: windows-latest
+    if:
+      (github.event.workflow_run && github.event.workflow_run.conclusion == 'success') ||
+      (github.event_name == 'workflow_dispatch')
 
     strategy:
       matrix:
