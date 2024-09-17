@@ -4,7 +4,8 @@
  */
 
 'use strict'
-const tap = require('tap')
+const test = require('node:test')
+const assert = require('node:assert')
 const sinon = require('sinon')
 const TransactionEventAggregator = require('../../lib/transaction/transaction-event-aggregator')
 const Metrics = require('../../lib/metrics')
@@ -14,11 +15,12 @@ const LIMIT = 5
 const EXPECTED_METHOD = 'analytic_event_data'
 const SPLIT_THRESHOLD = 3
 
-function beforeEach(t) {
+function beforeEach(ctx) {
   const fakeCollectorApi = { send: sinon.stub() }
   const fakeHarvester = { add: sinon.stub() }
 
-  t.context.eventAggregator = new TransactionEventAggregator(
+  ctx.nr = {}
+  ctx.nr.eventAggregator = new TransactionEventAggregator(
     {
       runId: RUN_ID,
       limit: LIMIT,
@@ -30,23 +32,21 @@ function beforeEach(t) {
       metrics: new Metrics(5, {}, {})
     }
   )
-  t.context.fakeCollectorApi = fakeCollectorApi
+  ctx.nr.fakeCollectorApi = fakeCollectorApi
 }
 
-tap.test('Transaction Event Aggregator', (t) => {
-  t.autoend()
+test('Transaction Event Aggregator', async (t) => {
   t.beforeEach(beforeEach)
 
-  t.test('should set the correct default method', (t) => {
-    const { eventAggregator } = t.context
+  await t.test('should set the correct default method', (t) => {
+    const { eventAggregator } = t.nr
     const method = eventAggregator.method
 
-    t.equal(method, EXPECTED_METHOD)
-    t.end()
+    assert.equal(method, EXPECTED_METHOD)
   })
 
-  t.test('toPayload() should return json format of data', (t) => {
-    const { eventAggregator } = t.context
+  await t.test('toPayload() should return json format of data', (t) => {
+    const { eventAggregator } = t.nr
     const expectedMetrics = {
       reservoir_size: LIMIT,
       events_seen: 1
@@ -57,30 +57,27 @@ tap.test('Transaction Event Aggregator', (t) => {
     eventAggregator.add(rawEvent)
 
     const payload = eventAggregator._toPayloadSync()
-    t.equal(payload.length, 3)
+    assert.equal(payload.length, 3)
 
     const [runId, eventMetrics, eventData] = payload
 
-    t.equal(runId, RUN_ID)
-    t.same(eventMetrics, expectedMetrics)
-    t.same(eventData, [rawEvent])
-    t.end()
+    assert.equal(runId, RUN_ID)
+    assert.deepEqual(eventMetrics, expectedMetrics)
+    assert.deepEqual(eventData, [rawEvent])
   })
 
-  t.test('toPayload() should return nothing with no event data', (t) => {
-    const { eventAggregator } = t.context
+  await t.test('toPayload() should return nothing with no event data', (t) => {
+    const { eventAggregator } = t.nr
     const payload = eventAggregator._toPayloadSync()
 
-    t.notOk(payload)
-    t.end()
+    assert.equal(payload, null)
   })
 })
 
-tap.test('Transaction Event Aggregator - when data over split threshold', (t) => {
-  t.autoend()
+test('Transaction Event Aggregator - when data over split threshold', async (t) => {
   t.beforeEach((t) => {
     beforeEach(t)
-    const { eventAggregator } = t.context
+    const { eventAggregator } = t.nr
     eventAggregator.add([{ type: 'Transaction', error: false }, { num: 1 }])
     eventAggregator.add([{ type: 'Transaction', error: false }, { num: 2 }])
     eventAggregator.add([{ type: 'Transaction', error: false }, { num: 3 }])
@@ -88,25 +85,24 @@ tap.test('Transaction Event Aggregator - when data over split threshold', (t) =>
     eventAggregator.add([{ type: 'Transaction', error: false }, { num: 5 }])
   })
 
-  t.test('should emit proper message with method for starting send', (t) => {
-    const { eventAggregator } = t.context
+  await t.test('should emit proper message with method for starting send', (t, end) => {
+    const { eventAggregator } = t.nr
     const expectedStartEmit = `starting_data_send-${EXPECTED_METHOD}`
 
-    eventAggregator.once(expectedStartEmit, t.end)
+    eventAggregator.once(expectedStartEmit, end)
 
     eventAggregator.send()
   })
 
-  t.test('should clear existing data', (t) => {
-    const { eventAggregator } = t.context
+  await t.test('should clear existing data', (t) => {
+    const { eventAggregator } = t.nr
     eventAggregator.send()
 
-    t.equal(eventAggregator.events.length, 0)
-    t.end()
+    assert.equal(eventAggregator.events.length, 0)
   })
 
-  t.test('should call transport for two payloads', (t) => {
-    const { eventAggregator, fakeCollectorApi } = t.context
+  await t.test('should call transport for two payloads', (t) => {
+    const { eventAggregator, fakeCollectorApi } = t.nr
     const payloads = []
 
     fakeCollectorApi.send.callsFake((_method, payload, callback) => {
@@ -118,30 +114,29 @@ tap.test('Transaction Event Aggregator - when data over split threshold', (t) =>
 
     eventAggregator.send()
 
-    t.equal(payloads.length, 2)
+    assert.equal(payloads.length, 2)
 
     const [firstPayload, secondPayload] = payloads
 
     const [firstRunId, firstMetrics, firstEventData] = firstPayload
-    t.equal(firstRunId, RUN_ID)
-    t.same(firstMetrics, {
+    assert.equal(firstRunId, RUN_ID)
+    assert.deepEqual(firstMetrics, {
       reservoir_size: 2,
       events_seen: 2
     })
-    t.equal(firstEventData.length, 2)
+    assert.equal(firstEventData.length, 2)
 
     const [secondRunId, secondMetrics, secondEventData] = secondPayload
-    t.equal(secondRunId, RUN_ID)
-    t.same(secondMetrics, {
+    assert.equal(secondRunId, RUN_ID)
+    assert.deepEqual(secondMetrics, {
       reservoir_size: 3,
       events_seen: 3
     })
-    t.equal(secondEventData.length, 3)
-    t.end()
+    assert.equal(secondEventData.length, 3)
   })
 
-  t.test('should call merge with original data when transport indicates retain', (t) => {
-    const { eventAggregator, fakeCollectorApi } = t.context
+  await t.test('should call merge with original data when transport indicates retain', (t) => {
+    const { eventAggregator, fakeCollectorApi } = t.nr
     const originalData = eventAggregator._getMergeData()
 
     fakeCollectorApi.send.callsFake((_method, _payload, callback) => {
@@ -151,17 +146,16 @@ tap.test('Transaction Event Aggregator - when data over split threshold', (t) =>
     eventAggregator.send()
 
     const currentData = eventAggregator._getMergeData()
-    t.equal(currentData.length, originalData.length)
+    assert.equal(currentData.length, originalData.length)
 
     const originalEvents = originalData.toArray().sort(sortEventsByNum)
     const currentEvents = currentData.toArray().sort(sortEventsByNum)
 
-    t.same(currentEvents, originalEvents)
-    t.end()
+    assert.deepEqual(currentEvents, originalEvents)
   })
 
-  t.test('should not merge when transport indicates not to retain', (t) => {
-    const { eventAggregator, fakeCollectorApi } = t.context
+  await t.test('should not merge when transport indicates not to retain', (t) => {
+    const { eventAggregator, fakeCollectorApi } = t.nr
     fakeCollectorApi.send.callsFake((_method, _payload, callback) => {
       callback(null, { retainData: false })
     })
@@ -170,12 +164,11 @@ tap.test('Transaction Event Aggregator - when data over split threshold', (t) =>
 
     const currentData = eventAggregator._getMergeData()
 
-    t.equal(currentData.length, 0)
-    t.end()
+    assert.equal(currentData.length, 0)
   })
 
-  t.test('should handle payload retain values individually', (t) => {
-    const { eventAggregator, fakeCollectorApi } = t.context
+  await t.test('should handle payload retain values individually', (t) => {
+    const { eventAggregator, fakeCollectorApi } = t.nr
     let payloadCount = 0
     let payloadToRetain = null
     fakeCollectorApi.send.callsFake((_method, payload, callback) => {
@@ -194,19 +187,17 @@ tap.test('Transaction Event Aggregator - when data over split threshold', (t) =>
     const eventsToRetain = payloadToRetain[2].sort(sortEventsByNum)
 
     const currentData = eventAggregator._getMergeData()
-    t.equal(currentData.length, eventsToRetain.length)
+    assert.equal(currentData.length, eventsToRetain.length)
 
     const currentEvents = currentData.toArray().sort(sortEventsByNum)
-
-    t.same(currentEvents, eventsToRetain)
-    t.end()
+    assert.deepEqual(currentEvents, eventsToRetain)
   })
 
-  t.test('should emit proper message with method for finishing send', (t) => {
-    const { eventAggregator, fakeCollectorApi } = t.context
+  await t.test('should emit proper message with method for finishing send', (t, end) => {
+    const { eventAggregator, fakeCollectorApi } = t.nr
     const expectedEndEmit = `finished_data_send-${EXPECTED_METHOD}`
 
-    eventAggregator.once(expectedEndEmit, t.end)
+    eventAggregator.once(expectedEndEmit, end)
 
     fakeCollectorApi.send.callsFake((_method, _payload, callback) => {
       callback(null, { retainData: false })
