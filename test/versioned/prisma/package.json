@@ -12,8 +12,7 @@
         "node": ">=18"
       },
       "dependencies": {
-        "@prisma/client": ">=5.0.0 <5.9.0 || >=5.9.1",
-        "prisma": "latest"
+        "@prisma/client": ">=5.0.0 <5.9.0 || >=5.9.1"
       },
       "files": [
         "prisma.tap.js"

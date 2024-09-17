@@ -9,9 +9,7 @@
         "node": ">=18"
       },
       "dependencies": {
-        "next": ">=13.4.19",
-        "react": "18.2.0",
-        "react-dom": "18.2.0"
+        "next": ">=13.4.19"
       },
       "files": [
         "app-dir.tap.js"
@@ -22,9 +20,7 @@
         "node": ">=18"
       },
       "dependencies": {
-        "next": ">=14.0.0",
-        "react": "18.2.0",
-        "react-dom": "18.2.0"
+        "next": ">=14.0.0"
       },
       "files": [
         "attributes.tap.js",

@@ -108,7 +108,7 @@ tap.test('fastify hook instrumentation', (t) => {
       t.assertSegments(transaction.trace.root, expectedSegments)
     })
 
-    await fastify.listen(0)
+    await fastify.listen({ port: 0 })
     const address = fastify.server.address()
     const result = await common.makeRequest(address, '/add-hook')
     t.same(result, { hello: 'world' })
@@ -164,7 +164,7 @@ tap.test('fastify hook instrumentation', (t) => {
       t.assertSegments(transaction.trace.root, expectedSegments)
     })
 
-    await fastify.listen(0)
+    await fastify.listen({ port: 0 })
     const address = fastify.server.address()
     const result = await common.makeRequest(address, '/error')
     t.ok(ok)
