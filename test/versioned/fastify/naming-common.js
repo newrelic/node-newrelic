@@ -39,7 +39,7 @@ module.exports = function createTests(t, getExpectedSegments) {
         t.assertSegments(transaction.trace.root, expectedSegments)
       })
 
-      await fastify.listen(0)
+      await fastify.listen({ port: 0 })
       const address = fastify.server.address()
       const result = await makeRequest(address, uri)
       t.equal(result.called, uri, `${uri} url did not error`)

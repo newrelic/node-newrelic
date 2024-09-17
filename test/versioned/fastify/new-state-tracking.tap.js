@@ -37,7 +37,7 @@ tap.test('fastify with new state tracking', (t) => {
       return { hello: 'world' }
     })
 
-    await fastify.listen(0)
+    await fastify.listen({ port: 0 })
 
     const address = fastify.server.address()
 
@@ -65,7 +65,7 @@ tap.test('fastify with new state tracking', (t) => {
       })
     }
 
-    await fastify.listen(0)
+    await fastify.listen({ port: 0 })
 
     const address = fastify.server.address()
 

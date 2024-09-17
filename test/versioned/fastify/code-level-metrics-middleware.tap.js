@@ -103,7 +103,7 @@ tap.test('Fastify CLM Middleware Based', (test) => {
         assertSegments(t, transaction.trace.root.children[0], isCLMEnabled)
       })
 
-      await fastify.listen(0)
+      await fastify.listen({ port: 0 })
       const address = fastify.server.address()
       const result = await common.makeRequest(address, uri)
 
