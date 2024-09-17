@@ -73,7 +73,7 @@ tap.test('Fastify CLM Hook Based', (test) => {
         })
       })
 
-      await fastify.listen(0)
+      await fastify.listen({ port: 0 })
       const address = fastify.server.address()
       const result = await common.makeRequest(address, '/add-hook')
 

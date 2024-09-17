@@ -31,7 +31,7 @@ tap.test('Test Errors', async (test) => {
     next(err)
   })
 
-  await fastify.listen(0)
+  await fastify.listen({ port: 0 })
   const address = fastify.server.address()
   const res = await makeRequest(address, '/404-via-reply')
   test.equal(res.statusCode, 404)
