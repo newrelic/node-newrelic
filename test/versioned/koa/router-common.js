@@ -4,6 +4,27 @@
  */
 
 'use strict'
+const fs = require('fs')
+
+/**
+ * koa-router and @koa/router updated how they defined wildcard routing
+ * It used to be native and then relied on `path-to-regexp`. If `path-to-regexp`
+ * is present get the version. For post 8 it relies on different syntax to define
+ * routes. If it is not present assume the pre 8 behavior of `path-to-regexp`
+ * is the same. Also cannot use require because `path-to-regexp` defines exports
+ * and package.json is not a defined export.
+ */
+function getPathToRegexpVersion() {
+  let pathToRegexVersion
+  try {
+    ;({ version: pathToRegexVersion } = JSON.parse(
+      fs.readFileSync(`${__dirname}/node_modules/path-to-regexp/package.json`)
+    ))
+  } catch {
+    pathToRegexVersion = '6.0.0'
+  }
+  return pathToRegexVersion
+}
 
 module.exports = (pkg) => {
   const tap = require('tap')
@@ -15,6 +36,7 @@ module.exports = (pkg) => {
   tap.test(`${pkg} instrumentation`, (t) => {
     const { version: pkgVersion } = require(`${pkg}/package.json`)
     const paramMiddlewareName = 'Nodejs/Middleware/Koa/middleware//:first'
+    const pathToRegexVersion = getPathToRegexpVersion()
 
     /**
      * Helper to decide how to name nested route segments
@@ -149,7 +171,7 @@ module.exports = (pkg) => {
       t.test('should name and produce segments for matched wildcard path', (t) => {
         const { agent, router, app } = t.context
         let path = '(.*)'
-        if (semver.gte(pkgVersion, '13.0.1')) {
+        if (semver.gte(pathToRegexVersion, '8.0.0')) {
           path = '{*any}'
         }
         router.get(`/:first/${path}`, function firstMiddleware(ctx) {
@@ -347,7 +369,7 @@ module.exports = (pkg) => {
           ctx.body = ' second'
         })
 
-        const segmentTree = semver.gte(pkgVersion, '13.0.1')
+        const segmentTree = semver.gte(pathToRegexVersion, '8.0.0')
           ? ['Nodejs/Middleware/Koa/terminalMiddleware//:second']
           : [
               'Nodejs/Middleware/Koa/secondMiddleware//:first',
