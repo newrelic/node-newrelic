@@ -149,7 +149,7 @@ module.exports = (pkg) => {
       t.test('should name and produce segments for matched wildcard path', (t) => {
         const { agent, router, app } = t.context
         let path = '(.*)'
-        if (semver.gte(pkgVersion, '13.0.1')) {
+        if (pkg === 'koa-router' && semver.gte(pkgVersion, '13.0.1')) {
           path = '{*any}'
         }
         router.get(`/:first/${path}`, function firstMiddleware(ctx) {
@@ -347,15 +347,16 @@ module.exports = (pkg) => {
           ctx.body = ' second'
         })
 
-        const segmentTree = semver.gte(pkgVersion, '13.0.1')
-          ? ['Nodejs/Middleware/Koa/terminalMiddleware//:second']
-          : [
-              'Nodejs/Middleware/Koa/secondMiddleware//:first',
-              [
-                'Nodejs/Middleware/Koa/secondMiddleware//:second',
-                ['Nodejs/Middleware/Koa/terminalMiddleware//:second']
+        const segmentTree =
+          pkg === 'koa-router' && semver.gte(pkgVersion, '13.0.1')
+            ? ['Nodejs/Middleware/Koa/terminalMiddleware//:second']
+            : [
+                'Nodejs/Middleware/Koa/secondMiddleware//:first',
+                [
+                  'Nodejs/Middleware/Koa/secondMiddleware//:second',
+                  ['Nodejs/Middleware/Koa/terminalMiddleware//:second']
+                ]
               ]
-            ]
         app.use(router.routes())
         agent.on('transactionFinished', (tx) => {
           t.assertSegments(tx.trace.root, [
