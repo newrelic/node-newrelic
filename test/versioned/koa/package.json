@@ -81,5 +81,7 @@
       ]
     }
   ],
-  "dependencies": {}
+  "engines": {
+    "node": ">=18"
+  }
 }
