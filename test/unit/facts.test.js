@@ -1,30 +1,33 @@
 /*
- * Copyright 2020 New Relic Corporation. All rights reserved.
+ * Copyright 2024 New Relic Corporation. All rights reserved.
  * SPDX-License-Identifier: Apache-2.0
  */
 
 'use strict'
 
-const tap = require('tap')
-const fs = require('fs')
-const fsAccess = fs.access
-const os = require('os')
-const hostname = os.hostname
-const networkInterfaces = os.networkInterfaces
+const test = require('node:test')
+const assert = require('node:assert')
+const os = require('node:os')
+const fs = require('node:fs')
+const net = require('node:net')
+
 const helper = require('../lib/agent_helper')
-const sinon = require('sinon')
-const proxyquire = require('proxyquire')
-const loggerMock = require('./mocks/logger')()
-const facts = proxyquire('../../lib/collector/facts', {
-  '../logger': {
-    child: sinon.stub().callsFake(() => loggerMock)
-  }
-})
+const { match } = require('../lib/custom-assertions')
 const sysInfo = require('../../lib/system-info')
 const utilTests = require('../lib/cross_agent_tests/utilization/utilization_json')
 const bootIdTests = require('../lib/cross_agent_tests/utilization/boot_id')
 
-const EXPECTED = [
+const APP_NAMES = ['a', 'c', 'b']
+const DISABLE_ALL_DETECTIONS = {
+  utilization: {
+    detect_aws: false,
+    detect_azure: false,
+    detect_gcp: false,
+    detect_pcf: false,
+    detect_docker: false
+  }
+}
+const EXPECTED_FACTS = [
   'pid',
   'host',
   'language',
@@ -41,210 +44,196 @@ const EXPECTED = [
   'event_harvest_config'
 ]
 
-const ip6Digits = '(?:25[0-5]|(?:2[0-4]|1{0,1}[0-9]){0,1}[0-9])'
-const ip6Nums = '(?:(?:' + ip6Digits + '.){3,3}' + ip6Digits + ')'
-const IP_V6_PATTERN = new RegExp(
-  '(?:(?:[0-9a-fA-F]{1,4}:){7,7}[0-9a-fA-F]{1,4}|' +
-    '(?:[0-9a-fA-F]{1,4}:){1,7}:|' +
-    '(?:[0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4}|' +
-    '(?:[0-9a-fA-F]{1,4}:){1,5}(?::[0-9a-fA-F]{1,4}){1,2}|' +
-    '(?:[0-9a-fA-F]{1,4}:){1,4}(?::[0-9a-fA-F]{1,4}){1,3}|' +
-    '(?:[0-9a-fA-F]{1,4}:){1,3}(?::[0-9a-fA-F]{1,4}){1,4}|' +
-    '(?:[0-9a-fA-F]{1,4}:){1,2}(?::[0-9a-fA-F]{1,4}){1,5}|' +
-    '[0-9a-fA-F]{1,4}:(?:(?::[0-9a-fA-F]{1,4}){1,6})|' +
-    ':(?:(?::[0-9a-fA-F]{1,4}){1,7}|:)|' +
-    'fe80:(?::[0-9a-fA-F]{0,4}){0,4}%[0-9a-zA-Z]{1,}|' +
-    '::(?:ffff(?::0{1,4}){0,1}:){0,1}(?:' +
-    ip6Nums +
-    ')|' +
-    '(?:[0-9a-fA-F]{1,4}:){1,4}:(?:' +
-    ip6Nums +
-    '))'
-)
+test('fun facts about apps that New Relic is interested in including', async (t) => {
+  t.beforeEach((ctx) => {
+    ctx.nr = {}
 
-const IP_V4_PATTERN = new RegExp(
-  '(?:(?:25[0-5]|(?:2[0-4]|1{0,1}[0-9]){0,1}[0-9]).){3,3}' +
-    '(?:25[0-5]|(?:2[0-4]|1{0,1}[0-9]){0,1}[0-9])'
-)
-
-const DISABLE_ALL_DETECTIONS = {
-  utilization: {
-    detect_aws: false,
-    detect_azure: false,
-    detect_gcp: false,
-    detect_pcf: false,
-    detect_docker: false
-  }
-}
-
-const APP_NAMES = ['a', 'c', 'b']
-
-tap.test('fun facts about apps that New Relic is interested in include', (t) => {
-  t.autoend()
-
-  let agent = null
-
-  t.beforeEach(() => {
-    loggerMock.debug.reset()
-    const config = {
-      app_name: [...APP_NAMES]
+    const logs = {
+      debug: [],
+      trace: []
     }
-    agent = helper.loadMockedAgent(Object.assign(config, DISABLE_ALL_DETECTIONS))
+    const logger = {
+      debug(...args) {
+        logs.debug.push(args)
+      },
+      trace(...args) {
+        logs.trace.push(args)
+      }
+    }
+    ctx.nr.logger = logger
+    ctx.nr.logs = logs
+
+    const facts = require('../../lib/collector/facts')
+    ctx.nr.facts = function (agent, callback) {
+      return facts(agent, callback, { logger: ctx.nr.logger })
+    }
+
+    const config = { app_name: [...APP_NAMES] }
+    ctx.nr.agent = helper.loadMockedAgent(Object.assign(config, DISABLE_ALL_DETECTIONS))
+
     // Undo agent helper override.
-    agent.config.applications = () => {
+    ctx.nr.agent.config.applications = () => {
       return config.app_name
     }
   })
 
-  t.afterEach(() => {
-    helper.unloadAgent(agent)
-    os.networkInterfaces = networkInterfaces
+  t.afterEach((ctx) => {
+    helper.unloadAgent(ctx.nr.agent)
   })
 
-  t.test("the current process ID as 'pid'", (t) => {
-    facts(agent, function getFacts(factsed) {
-      t.equal(factsed.pid, process.pid)
-      t.end()
+  await t.test('the current process ID as `pid`', (t, end) => {
+    const { agent, facts } = t.nr
+    facts(agent, (result) => {
+      assert.equal(result.pid, process.pid)
+      end()
     })
   })
 
-  t.test("the current hostname as 'host' (hope it's not 'localhost' lol)", (t) => {
-    facts(agent, function getFacts(factsed) {
-      t.equal(factsed.host, hostname())
-      t.not(factsed.host, 'localhost')
-      t.not(factsed.host, 'localhost.local')
-      t.not(factsed.host, 'localhost.localdomain')
-      t.end()
+  await t.test('the current hostname as `host`', (t, end) => {
+    const { agent, facts } = t.nr
+    facts(agent, (result) => {
+      assert.equal(result.host, os.hostname())
+      assert.notEqual(result.host, 'localhost')
+      assert.notEqual(result.host, 'localhost.local')
+      assert.notEqual(result.host, 'localhost.localdomain')
+      end()
     })
   })
 
-  t.test("the agent's language (as 'language') to be 'nodejs'", (t) => {
-    facts(agent, function getFacts(factsed) {
-      t.equal(factsed.language, 'nodejs')
-      t.end()
+  await t.test('the agent`s language (as `language`) to be `nodejs`', (t, end) => {
+    const { agent, facts } = t.nr
+    facts(agent, (result) => {
+      assert.equal(result.language, 'nodejs')
+      end()
     })
   })
 
-  t.test("an array of one or more application names as 'app_name' (sic)", (t) => {
-    facts(agent, function getFacts(factsed) {
-      t.ok(Array.isArray(factsed.app_name))
-      t.equal(factsed.app_name.length, APP_NAMES.length)
-      t.end()
+  await t.test('an array of one or more application names as `app_name`', (t, end) => {
+    const { agent, facts } = t.nr
+    facts(agent, (result) => {
+      assert.equal(Array.isArray(result.app_name), true)
+      assert.deepStrictEqual(result.app_name, APP_NAMES)
+      end()
     })
   })
 
-  t.test("the module's version as 'agent_version'", (t) => {
-    facts(agent, function getFacts(factsed) {
-      t.equal(factsed.agent_version, agent.version)
-      t.end()
+  await t.test('the module`s version as `agent_version`', (t, end) => {
+    const { agent, facts } = t.nr
+    facts(agent, (result) => {
+      assert.equal(result.agent_version, agent.version)
+      end()
     })
   })
 
-  t.test('the environment (see environment.test.js) as crazy nested arrays', (t) => {
-    facts(agent, function getFacts(factsed) {
-      t.ok(Array.isArray(factsed.environment))
-      t.ok(factsed.environment.length > 1)
-      t.end()
+  await t.test('the environment as nested arrays', (t, end) => {
+    const { agent, facts } = t.nr
+    facts(agent, (result) => {
+      assert.equal(Array.isArray(result.environment), true)
+      assert.equal(result.environment.length > 1, true)
+      end()
     })
   })
 
-  t.test("an 'identifier' for this agent", (t) => {
-    facts(agent, function (factsed) {
-      t.ok(factsed.identifier)
-      const { identifier } = factsed
-      t.ok(identifier.includes('nodejs'))
+  await t.test('an `identifier` for this agent', (t, end) => {
+    const { agent, facts } = t.nr
+    facts(agent, (result) => {
+      const { identifier } = result
+      assert.ok(identifier)
+      assert.ok(identifier.includes('nodejs'))
       // Including the host has negative consequences on the server.
-      t.notOk(identifier.includes(factsed.host))
-      t.ok(identifier.includes([...APP_NAMES].sort().join(',')))
-      t.end()
+      assert.equal(identifier.includes(result.host), false)
+      assert.ok(identifier.includes([...APP_NAMES].sort().join(',')))
+      end()
     })
   })
 
-  t.test("'metadata' with NEW_RELIC_METADATA_-prefixed env vars", (t) => {
+  await t.test('`metadata` with NEW_RELIC_METADATA_-prefixed env vars', (t, end) => {
     process.env.NEW_RELIC_METADATA_STRING = 'hello'
     process.env.NEW_RELIC_METADATA_BOOL = true
     process.env.NEW_RELIC_METADATA_NUMBER = 42
-
-    facts(agent, (data) => {
-      t.ok(data.metadata)
-      t.equal(data.metadata.NEW_RELIC_METADATA_STRING, 'hello')
-      t.equal(data.metadata.NEW_RELIC_METADATA_BOOL, 'true')
-      t.equal(data.metadata.NEW_RELIC_METADATA_NUMBER, '42')
-      t.same(
-        loggerMock.debug.args,
-        [
-          [
-            'New Relic metadata %o',
-            {
-              NEW_RELIC_METADATA_STRING: 'hello',
-              NEW_RELIC_METADATA_BOOL: 'true',
-              NEW_RELIC_METADATA_NUMBER: '42'
-            }
-          ]
-        ],
-        'New relic metadata not logged properly'
-      )
-
+    t.after(() => {
       delete process.env.NEW_RELIC_METADATA_STRING
       delete process.env.NEW_RELIC_METADATA_BOOL
       delete process.env.NEW_RELIC_METADATA_NUMBER
-      t.end()
+    })
+
+    const { agent, facts } = t.nr
+    facts(agent, (result) => {
+      assert.ok(result.metadata)
+      assert.equal(result.metadata.NEW_RELIC_METADATA_STRING, 'hello')
+      assert.equal(result.metadata.NEW_RELIC_METADATA_BOOL, 'true')
+      assert.equal(result.metadata.NEW_RELIC_METADATA_NUMBER, '42')
+
+      const expectedLogs = [
+        [
+          'New Relic metadata %o',
+          {
+            NEW_RELIC_METADATA_STRING: 'hello',
+            NEW_RELIC_METADATA_BOOL: 'true',
+            NEW_RELIC_METADATA_NUMBER: '42'
+          }
+        ]
+      ]
+      assert.equal(match(t.nr.logs.debug, expectedLogs), true, 'New Relic metadata logged properly')
+      end()
     })
   })
 
-  t.test("empty 'metadata' object if no metadata env vars found", (t) => {
-    facts(agent, (data) => {
-      t.same(data.metadata, {})
-      t.end()
+  await t.test('empty `metadata` object if no metadata env vars found', (t, end) => {
+    const { agent, facts } = t.nr
+    facts(agent, (result) => {
+      assert.equal(match(result.metadata, {}), true)
+      end()
     })
   })
 
-  t.test('and nothing else', (t) => {
-    facts(agent, function getFacts(factsed) {
-      t.same(Object.keys(factsed).sort(), EXPECTED.sort())
-      t.end()
+  await t.test('only returns expected facts', (t, end) => {
+    const { agent, facts } = t.nr
+    facts(agent, (result) => {
+      assert.equal(match(Object.keys(result).sort(), EXPECTED_FACTS.sort()), true)
+      end()
     })
   })
 
-  t.test('should convert label object to expected format', (t) => {
-    const longKey = Array(257).join('€')
-    const longValue = Array(257).join('𝌆')
-    agent.config.labels = {}
-    agent.config.labels.a = 'b'
-    agent.config.labels[longKey] = longValue
-    facts(agent, function getFacts(factsed) {
-      const expected = [{ label_type: 'a', label_value: 'b' }]
-      expected.push({
-        label_type: Array(256).join('€'),
-        label_value: Array(256).join('𝌆')
-      })
-
-      t.same(factsed.labels, expected)
-      t.end()
+  await t.test('should convert label object to expected format', (t, end) => {
+    const { agent, facts } = t.nr
+    const longKey = '€'.repeat(257)
+    const longValue = '𝌆'.repeat(257)
+    agent.config.labels = {
+      a: 'b',
+      [longKey]: longValue
+    }
+    facts(agent, (result) => {
+      const expected = [
+        { label_type: 'a', label_value: 'b' },
+        { label_type: '€'.repeat(255), label_value: '𝌆'.repeat(255) }
+      ]
+      assert.equal(match(result.labels, expected), true)
+      end()
     })
   })
 
-  t.test('should convert label string to expected format', (t) => {
-    const longKey = Array(257).join('€')
-    const longValue = Array(257).join('𝌆')
-    agent.config.labels = 'a: b; ' + longKey + ' : ' + longValue
-    facts(agent, function getFacts(factsed) {
-      const expected = [{ label_type: 'a', label_value: 'b' }]
-      expected.push({
-        label_type: Array(256).join('€'),
-        label_value: Array(256).join('𝌆')
-      })
-
-      t.same(factsed.labels, expected)
-      t.end()
+  await t.test('should convert label string to expected format', (t, end) => {
+    const { agent, facts } = t.nr
+    const longKey = '€'.repeat(257)
+    const longValue = '𝌆'.repeat(257)
+    agent.config.labels = `a: b; ${longKey}: ${longValue}`
+    facts(agent, (result) => {
+      const expected = [
+        { label_type: 'a', label_value: 'b' },
+        { label_type: '€'.repeat(255), label_value: '𝌆'.repeat(255) }
+      ]
+      assert.equal(match(result.labels, expected), true)
+      end()
     })
   })
 
   // Every call connect needs to use the original values of max_samples_stored as the server overwrites
   // these with derived samples based on harvest cycle frequencies
-  t.test(
+  await t.test(
     'should add harvest_limits from their respective config values on every call to generate facts',
-    (t) => {
+    (t, end) => {
+      const { agent, facts } = t.nr
       const expectedValue = 10
       agent.config.transaction_events.max_samples_stored = expectedValue
       agent.config.custom_insights_events.max_samples_stored = expectedValue
@@ -262,45 +251,45 @@ tap.test('fun facts about apps that New Relic is interested in include', (t) => 
         }
       }
 
-      facts(agent, (factsResult) => {
-        t.same(factsResult.event_harvest_config, expectedHarvestConfig)
-        t.end()
+      facts(agent, (result) => {
+        assert.equal(match(result.event_harvest_config, expectedHarvestConfig), true)
+        end()
       })
     }
   )
 })
 
-tap.test('utilization', (t) => {
-  t.autoend()
-
-  let agent = null
+test('utilization facts', async (t) => {
   const awsInfo = require('../../lib/utilization/aws-info')
   const azureInfo = require('../../lib/utilization/azure-info')
   const gcpInfo = require('../../lib/utilization/gcp-info')
   const kubernetesInfo = require('../../lib/utilization/kubernetes-info')
   const common = require('../../lib/utilization/common')
 
-  let startingEnv = null
-  let startingGetMemory = null
-  let startingGetProcessor = null
-  let startingDockerInfo = null
-  let startingCommonRequest = null
-  let startingCommonReadProc = null
+  t.beforeEach((ctx) => {
+    ctx.nr = {}
 
-  t.beforeEach(() => {
-    startingEnv = {}
-    Object.keys(process.env).forEach((key) => {
-      startingEnv[key] = process.env[key]
-    })
+    const startingEnv = {}
+    for (const [key, value] of Object.entries(process.env)) {
+      startingEnv[key] = value
+    }
+    ctx.nr.startingEnv = startingEnv
 
-    startingGetMemory = sysInfo._getMemoryStats
-    startingGetProcessor = sysInfo._getProcessorStats
-    startingDockerInfo = sysInfo._getDockerContainerId
-    startingCommonRequest = common.request
-    startingCommonReadProc = common.readProc
+    ctx.nr.startingGetMemory = sysInfo._getMemoryStats
+    ctx.nr.startingGetProcessor = sysInfo._getProcessorStats
+    ctx.nr.startingDockerInfo = sysInfo._getDockerContainerId
+    ctx.nr.startingCommonRequest = common.request
+    ctx.nr.startingCommonReadProc = common.readProc
 
     common.readProc = (file, cb) => {
       setImmediate(cb, null, null)
+    }
+
+    ctx.nr.networkInterfaces = os.networkInterfaces
+
+    const facts = require('../../lib/collector/facts')
+    ctx.nr.facts = function (agent, callback) {
+      return facts(agent, callback, { logger: ctx.nr.logger })
     }
 
     awsInfo.clearCache()
@@ -309,452 +298,456 @@ tap.test('utilization', (t) => {
     kubernetesInfo.clearCache()
   })
 
-  t.afterEach(() => {
-    if (agent) {
-      helper.unloadAgent(agent)
-    }
+  t.afterEach((ctx) => {
+    os.networkInterfaces = ctx.nr.networkInterfaces
+    sysInfo._getMemoryStats = ctx.nr.startingGetMemory
+    sysInfo._getProcessorStats = ctx.nr.startingGetProcessor
+    sysInfo._getDockerContainerId = ctx.nr.startingDockerInfo
+    common.request = ctx.nr.startingCommonRequest
+    common.readProc = ctx.nr.startingCommonReadProc
 
-    os.networkInterfaces = networkInterfaces
-    process.env = startingEnv
-    sysInfo._getMemoryStats = startingGetMemory
-    sysInfo._getProcessorStats = startingGetProcessor
-    sysInfo._getDockerContainerId = startingDockerInfo
-    common.request = startingCommonRequest
-    common.readProc = startingCommonReadProc
-
-    startingEnv = null
-    startingGetMemory = null
-    startingGetProcessor = null
-    startingDockerInfo = null
-    startingCommonRequest = null
-    startingCommonReadProc = null
+    process.env = ctx.nr.startingEnv
 
     awsInfo.clearCache()
     azureInfo.clearCache()
     gcpInfo.clearCache()
   })
 
-  utilTests.forEach((test) => {
-    t.test(test.testname, (t) => {
-      let mockHostname = false
-      let mockRam = false
-      let mockProc = false
-      let mockVendorMetadata = false
-      const config = {
-        utilization: {
-          detect_aws: false,
-          detect_azure: false,
-          detect_gcp: false,
-          detect_pcf: false,
-          detect_docker: false,
-          detect_kubernetes: false
-        }
-      }
+  for (const testCase of utilTests) {
+    await t.test(testCase.testname, (t, end) => {
+      let mockHostname
+      let mockRam
+      let mockProc
+      let mockVendorMetadata
+      const config = structuredClone(DISABLE_ALL_DETECTIONS)
 
-      Object.keys(test).forEach(function setVal(key) {
-        const testValue = test[key]
+      for (const key of Object.keys(testCase)) {
+        const testValue = testCase[key]
 
         switch (key) {
-          case 'input_environment_variables':
-            Object.keys(testValue).forEach((name) => {
-              process.env[name] = testValue[name]
-            })
-
-            if (testValue.hasOwnProperty('KUBERNETES_SERVICE_HOST')) {
+          case 'input_environment_variables': {
+            for (const [k, v] of Object.entries(testValue)) {
+              process.env[k] = v
+            }
+            if (Object.hasOwn(testValue, 'KUBERNETES_SERVICE_HOST') === true) {
               config.utilization.detect_kubernetes = true
             }
             break
+          }
 
           case 'input_aws_id':
           case 'input_aws_type':
-          case 'input_aws_zone':
+          case 'input_aws_zone': {
             mockVendorMetadata = 'aws'
             config.utilization.detect_aws = true
             break
+          }
 
           case 'input_azure_location':
           case 'input_azure_name':
           case 'input_azure_id':
-          case 'input_azure_size':
+          case 'input_azure_size': {
             mockVendorMetadata = 'azure'
             config.utilization.detect_azure = true
             break
+          }
 
           case 'input_gcp_id':
           case 'input_gcp_type':
           case 'input_gcp_name':
-          case 'input_gcp_zone':
+          case 'input_gcp_zone': {
             mockVendorMetadata = 'gcp'
             config.utilization.detect_gcp = true
             break
+          }
 
-          case 'input_pcf_guid':
+          case 'input_pcf_guid': {
             mockVendorMetadata = 'pcf'
             process.env.CF_INSTANCE_GUID = testValue
             config.utilization.detect_pcf = true
             break
-          case 'input_pcf_ip':
+          }
+          case 'input_pcf_ip': {
             mockVendorMetadata = 'pcf'
             process.env.CF_INSTANCE_IP = testValue
             config.utilization.detect_pcf = true
             break
-          case 'input_pcf_mem_limit':
+          }
+          case 'input_pcf_mem_limit': {
             process.env.MEMORY_LIMIT = testValue
             config.utilization.detect_pcf = true
             break
+          }
 
-          case 'input_kubernetes_id':
+          case 'input_kubernetes_id': {
             mockVendorMetadata = 'kubernetes'
             config.utilization.detect_kubernetes = true
             break
+          }
 
-          case 'input_hostname':
+          case 'input_hostname': {
             mockHostname = () => testValue
             break
+          }
 
-          case 'input_total_ram_mib':
-            mockRam = async () => Promise.resolve(testValue)
+          case 'input_total_ram_mib': {
+            mockRam = () => Promise.resolve(testValue)
             break
+          }
 
-          case 'input_logical_processors':
-            mockProc = async () => Promise.resolve({ logical: testValue })
+          case 'input_logical_processors': {
+            mockProc = () => Promise.resolve({ logical: testValue })
             break
+          }
 
-          case 'input_ip_address':
+          case 'input_ip_address': {
             mockIpAddresses(testValue)
             break
+          }
 
           // Ignore these keys.
           case 'testname':
-          case 'input_full_hostname': // We don't collect full hostnames
-          case 'expected_output_json':
+          case 'input_full_hostname': // We don't collect full hostnames.
+          case 'expected_output_json': {
             break
+          }
 
-          default:
-            throw new Error('Unknown test key "' + key + '"')
+          default: {
+            throw Error(`Unknown test key "${key}"`)
+          }
         }
-      })
+      }
 
-      const expected = test.expected_output_json
-      // We don't collect full hostnames
+      const expected = testCase.expected_output_json
+      // We don't collect full hostnames.
       delete expected.full_hostname
 
-      agent = helper.loadMockedAgent(config)
+      const agent = helper.loadMockedAgent(config)
+      t.after(() => {
+        helper.unloadAgent(agent)
+      })
+
       if (mockHostname) {
         agent.config.getHostnameSafe = mockHostname
-        mockHostname = false
       }
       if (mockRam) {
         sysInfo._getMemoryStats = mockRam
-        mockRam = false
       }
       if (mockProc) {
         sysInfo._getProcessorStats = mockProc
-        mockProc = false
       }
       if (mockVendorMetadata) {
-        common.request = makeMockCommonRequest(t, test, mockVendorMetadata)
+        common.request = makeMockCommonRequest(testCase, mockVendorMetadata)
       }
-      facts(agent, function getFacts(factsed) {
-        t.same(factsed.utilization, expected)
-        t.end()
-      })
-    })
-  })
 
-  function makeMockCommonRequest(t, test, type) {
-    return (opts, _agent, cb) => {
-      t.equal(_agent, agent)
-      let payload = null
-      switch (type) {
-        case 'aws': {
-          payload = {
-            instanceId: test.input_aws_id,
-            instanceType: test.input_aws_type,
-            availabilityZone: test.input_aws_zone
+      t.nr.facts(agent, (result) => {
+        assert.equal(match(result.utilization, expected), true)
+        end()
+      })
+
+      function makeMockCommonRequest(tCase, type) {
+        return (opts, _agent, cb) => {
+          assert.equal(_agent, agent)
+          let payload
+          switch (type) {
+            case 'aws': {
+              payload = {
+                instanceId: tCase.input_aws_id,
+                instanceType: tCase.input_aws_type,
+                availabilityZone: tCase.input_aws_zone
+              }
+              break
+            }
+
+            case 'azure': {
+              payload = {
+                location: tCase.input_azure_location,
+                name: tCase.input_azure_name,
+                vmId: tCase.input_azure_id,
+                vmSize: tCase.input_azure_size
+              }
+              break
+            }
+
+            case 'gcp': {
+              payload = {
+                id: tCase.input_gcp_id,
+                machineType: tCase.input_gcp_type,
+                name: tCase.input_gcp_name,
+                zone: tCase.input_gcp_zone
+              }
+              break
+            }
           }
-          break
-        }
-        case 'azure': {
-          payload = {
-            location: test.input_azure_location,
-            name: test.input_azure_name,
-            vmId: test.input_azure_id,
-            vmSize: test.input_azure_size
-          }
-          break
-        }
-        case 'gcp': {
-          payload = {
-            id: test.input_gcp_id,
-            machineType: test.input_gcp_type,
-            name: test.input_gcp_name,
-            zone: test.input_gcp_zone
-          }
-          break
+
+          setImmediate(cb, null, JSON.stringify(payload))
         }
       }
-      setImmediate(cb, null, JSON.stringify(payload))
-    }
+    })
   }
 })
 
-tap.test('boot_id', (t) => {
-  t.autoend()
-  let agent = null
+test('boot id facts', async (t) => {
   const common = require('../../lib/utilization/common')
 
-  let startingGetMemory = null
-  let startingGetProcessor = null
-  let startingDockerInfo = null
-  let startingCommonReadProc = null
-  let startingOsPlatform = null
+  t.beforeEach((ctx) => {
+    ctx.nr = {}
 
-  t.beforeEach(() => {
-    startingGetMemory = sysInfo._getMemoryStats
-    startingGetProcessor = sysInfo._getProcessorStats
-    startingDockerInfo = sysInfo._getDockerContainerId
-    startingCommonReadProc = common.readProc
-    startingOsPlatform = os.platform
-
-    os.platform = () => 'linux'
-    fs.access = (file, mode, cb) => cb(null)
-  })
-
-  t.afterEach(() => {
-    if (agent) {
-      helper.unloadAgent(agent)
+    const facts = require('../../lib/collector/facts')
+    ctx.nr.facts = function (agent, callback) {
+      return facts(agent, callback, { logger: ctx.nr.logger })
     }
 
-    sysInfo._getMemoryStats = startingGetMemory
-    sysInfo._getProcessorStats = startingGetProcessor
-    sysInfo._getDockerContainerId = startingDockerInfo
-    common.readProc = startingCommonReadProc
-    os.platform = startingOsPlatform
-    fs.access = fsAccess
+    ctx.nr.startingGetMemory = sysInfo._getMemoryStats
+    ctx.nr.startingGetProcessor = sysInfo._getProcessorStats
+    ctx.nr.startingDockerInfo = sysInfo._getDockerContainerId
+    ctx.nr.startingCommonReadProc = common.readProc
+    ctx.nr.startingOsPlatform = os.platform
+    ctx.nr.startingFsAccess = fs.access
 
-    startingGetMemory = null
-    startingGetProcessor = null
-    startingDockerInfo = null
-    startingCommonReadProc = null
-    startingOsPlatform = null
+    os.platform = () => {
+      return 'linux'
+    }
+    fs.access = (file, mode, cb) => {
+      cb(null)
+    }
   })
 
-  bootIdTests.forEach((test) => {
-    t.test(test.testname, (t) => {
-      let mockHostname = false
-      let mockRam = false
-      let mockProc = false
-      let mockReadProc = false
+  t.afterEach((ctx) => {
+    sysInfo._getMemoryStats = ctx.nr.startingGetMemory
+    sysInfo._getProcessorStats = ctx.nr.startingGetProcessor
+    sysInfo._getDockerContainerId = ctx.nr.startingDockerInfo
+    common.readProc = ctx.nr.startingCommonReadProc
+    os.platform = ctx.nr.startingOsPlatform
+    fs.access = ctx.nr.startingFsAccess
+  })
 
-      Object.keys(test).forEach(function setVal(key) {
-        const testValue = test[key]
+  for (const testCase of bootIdTests) {
+    await t.test(testCase.testname, (t, end) => {
+      let agent = null
+      let mockHostname
+      let mockRam
+      let mockProc
+      let mockReadProc
+
+      for (const key of Object.keys(testCase)) {
+        const testValue = testCase[key]
 
         switch (key) {
-          case 'input_hostname':
+          case 'input_hostname': {
             mockHostname = () => testValue
             break
+          }
 
-          case 'input_total_ram_mib':
-            mockRam = async () => Promise.resolve(testValue)
+          case 'input_total_ram_mib': {
+            mockRam = () => Promise.resolve(testValue)
             break
+          }
 
-          case 'input_logical_processors':
-            mockProc = async () => Promise.resolve({ logical: testValue })
+          case 'input_logical_processors': {
+            mockProc = () => Promise.resolve({ logical: testValue })
             break
+          }
 
-          case 'input_boot_id':
-            mockReadProc = (file, cb) => {
-              cb(null, testValue, agent)
-            }
+          case 'input_boot_id': {
+            mockReadProc = (file, cb) => cb(null, testValue, agent)
             break
+          }
 
           // Ignore these keys.
           case 'testname':
           case 'expected_output_json':
-          case 'expected_metrics':
+          case 'expected_metrics': {
             break
+          }
 
-          default:
-            throw new Error('Unknown test key "' + key + '"')
+          default: {
+            throw Error(`Unknown test key "${key}"`)
+          }
         }
-      })
+      }
 
-      const expected = test.expected_output_json
+      const expected = testCase.expected_output_json
+      agent = helper.loadMockedAgent(structuredClone(DISABLE_ALL_DETECTIONS))
+      t.after(() => helper.unloadAgent(agent))
 
-      agent = helper.loadMockedAgent(DISABLE_ALL_DETECTIONS)
       if (mockHostname) {
         agent.config.getHostnameSafe = mockHostname
-        mockHostname = false
       }
       if (mockRam) {
         sysInfo._getMemoryStats = mockRam
-        mockRam = false
       }
       if (mockProc) {
         sysInfo._getProcessorStats = mockProc
-        mockProc = false
       }
       if (mockReadProc) {
         common.readProc = mockReadProc
       }
-      facts(agent, function getFacts(factsed) {
-        // There are keys in the facts that aren't accounted for in the
-        // expected object (namely ip addresses).
-        Object.keys(expected).forEach((key) => {
-          t.equal(factsed.utilization[key], expected[key])
-        })
-        checkMetrics(test.expected_metrics)
-        t.end()
+
+      t.nr.facts(agent, (result) => {
+        // There are keys in the facts that aren't account for in the
+        // expected object (namely ip addreses).
+        for (const [key, value] of Object.entries(expected)) {
+          assert.equal(result.utilization[key], value)
+        }
+        checkMetrics(testCase.expected_metrics, agent)
+        end()
       })
     })
-  })
+  }
 
-  function checkMetrics(expectedMetrics) {
+  function checkMetrics(expectedMetrics, agent) {
     if (!expectedMetrics) {
       return
     }
 
-    Object.keys(expectedMetrics).forEach((expectedMetric) => {
-      const metric = agent.metrics.getOrCreateMetric(expectedMetric)
-      t.equal(metric.callCount, expectedMetrics[expectedMetric].call_count)
-    })
+    for (const [key, value] of Object.entries(expectedMetrics)) {
+      const metric = agent.metrics.getOrCreateMetric(key)
+      assert.equal(metric.callCount, value.call_count)
+    }
   }
 })
 
-tap.test('display_host', { timeout: 20000 }, (t) => {
-  t.autoend()
+test('display_host facts', async (t) => {
+  t.beforeEach((ctx) => {
+    ctx.nr = {}
 
-  const originalHostname = os.hostname
+    const facts = require('../../lib/collector/facts')
+    ctx.nr.facts = function (agent, callback) {
+      return facts(agent, callback, { logger: ctx.nr.logger })
+    }
 
-  let agent = null
+    ctx.nr.agent = helper.loadMockedAgent(structuredClone(DISABLE_ALL_DETECTIONS))
+    ctx.nr.agent.config.utilization = null
 
-  t.beforeEach(() => {
-    agent = helper.loadMockedAgent(DISABLE_ALL_DETECTIONS)
-    agent.config.utilization = null
+    ctx.nr.osNetworkInterfaces = os.networkInterfaces
+    ctx.nr.osHostname = os.hostname
     os.hostname = () => {
       throw 'BROKEN'
     }
   })
 
-  t.afterEach(() => {
-    os.hostname = originalHostname
-    helper.unloadAgent(agent)
+  t.afterEach((ctx) => {
+    helper.unloadAgent(ctx.nr.agent)
+    os.hostname = ctx.nr.osHostname
+    os.networkInterfaces = ctx.nr.osNetworkInterfaces
     delete process.env.DYNO
-
-    agent = null
   })
 
-  t.test('should be set to what the user specifies (happy path)', (t) => {
+  await t.test('should be set to what the user specifies (happy path)', (t, end) => {
+    const { agent, facts } = t.nr
     agent.config.process_host.display_name = 'test-value'
-    facts(agent, function getFacts(factsed) {
-      t.equal(factsed.display_host, 'test-value')
-      t.end()
+    facts(agent, (result) => {
+      assert.equal(result.display_host, 'test-value')
+      end()
     })
   })
 
-  t.test('should change large hostname of more than 255 bytes to safe value', (t) => {
+  await t.test('should change large hostname of more than 255 bytes to safe value', (t, end) => {
+    const { agent, facts } = t.nr
     agent.config.process_host.display_name = 'lo'.repeat(200)
-    facts(agent, function getFacts(factsed) {
-      t.equal(factsed.display_host, agent.config.getHostnameSafe())
-      t.end()
+    facts(agent, (result) => {
+      assert.equal(result.display_host, agent.config.getHostnameSafe())
+      end()
     })
   })
 
-  t.test('should be process.env.DYNO when use_heroku_dyno_names is true', (t) => {
+  await t.test('should be process.env.DYNO when use_heroku_dyno_names is true', (t, end) => {
+    const { agent, facts } = t.nr
     process.env.DYNO = 'web.1'
     agent.config.heroku.use_dyno_names = true
-    facts(agent, function getFacts(factsed) {
-      t.equal(factsed.display_host, 'web.1')
-      t.end()
+    facts(agent, (result) => {
+      assert.equal(result.display_host, 'web.1')
+      end()
     })
   })
 
-  t.test('should ignore process.env.DYNO when use_heroku_dyno_names is false', (t) => {
-    process.env.DYNO = 'web.1'
-    os.hostname = originalHostname
+  await t.test('should ignore process.env.DYNO when use_heroku_dyno_names is false', (t, end) => {
+    const { agent, facts } = t.nr
+    process.env.DYNO = 'ignored'
+    os.hostname = t.nr.osHostname
     agent.config.heroku.use_dyno_names = false
-    facts(agent, function getFacts(factsed) {
-      t.equal(factsed.display_host, os.hostname())
-      t.end()
+    facts(agent, (result) => {
+      assert.equal(result.display_host, os.hostname())
+      end()
     })
   })
 
-  t.test('should be cached along with hostname in config', (t) => {
+  await t.test('should be cached along with hostname in config', (t, end) => {
+    const { agent, facts } = t.nr
     agent.config.process_host.display_name = 'test-value'
-    facts(agent, function getFacts(factsed) {
-      const displayHost1 = factsed.display_host
-      const host1 = factsed.host
+    facts(agent, (result) => {
+      const displayHost1 = result.display_host
+      const host1 = result.host
 
-      os.hostname = originalHostname
+      os.hostname = t.nr.osHostname
       agent.config.process_host.display_name = 'test-value2'
 
-      facts(agent, function getFacts2(factsed2) {
-        t.same(factsed2.display_host, displayHost1)
-        t.same(factsed2.host, host1)
+      facts(agent, (result2) => {
+        assert.equal(match(result2.display_host, displayHost1), true)
+        assert.equal(match(result2.host, host1), true)
 
         agent.config.clearHostnameCache()
         agent.config.clearDisplayHostCache()
 
-        facts(agent, function getFacts3(factsed3) {
-          t.same(factsed3.display_host, 'test-value2')
-          t.same(factsed3.host, os.hostname())
+        facts(agent, (result3) => {
+          assert.equal(match(result3.display_host, 'test-value2'), true)
+          assert.equal(match(result3.host, os.hostname()), true)
 
-          t.end()
+          end()
         })
       })
     })
   })
 
-  t.test('should be set as os.hostname() (if available) when not specified', (t) => {
-    os.hostname = originalHostname
-    facts(agent, function getFacts(factsed) {
-      t.equal(factsed.display_host, os.hostname())
-      t.end()
+  await t.test('should be set as os.hostname() (if available) when not specified', (t, end) => {
+    const { agent, facts } = t.nr
+    os.hostname = t.nr.osHostname
+    facts(agent, (result) => {
+      assert.equal(result.display_host, os.hostname())
+      end()
     })
   })
 
-  t.test('should be ipv4 when ipv_preference === 4', (t) => {
+  await t.test('should be ipv4 when ipv_preference === 4', (t, end) => {
+    const { agent, facts } = t.nr
     agent.config.process_host.ipv_preference = '4'
-
-    facts(agent, function getFacts(factsed) {
-      t.match(factsed.display_host, IP_V4_PATTERN)
-      t.end()
+    facts(agent, (result) => {
+      assert.equal(net.isIPv4(result.display_host), true)
+      end()
     })
   })
 
-  t.test('should be ipv6 when ipv_preference === 6', (t) => {
+  await t.test('should be ipv6 when ipv_preference === 6', (t, end) => {
+    const { agent, facts } = t.nr
     if (!agent.config.getIPAddresses().ipv6) {
-      /* eslint-disable no-console */
-      console.log('this machine does not have an ipv6 address, skipping')
-      /* eslint-enable no-console */
-      return t.end()
+      t.diagnostic('this machine does not have an ipv6 address, skipping')
+      return end()
     }
+
     agent.config.process_host.ipv_preference = '6'
-
-    facts(agent, function getFacts(factsed) {
-      t.match(factsed.display_host, IP_V6_PATTERN)
-      t.end()
+    facts(agent, (result) => {
+      assert.equal(net.isIPv6(result.display_host), true)
+      end()
     })
   })
 
-  t.test('should be ipv4 when invalid ipv_preference', (t) => {
+  await t.test('should be ipv4 when invalid ipv_preference', (t, end) => {
+    const { agent, facts } = t.nr
     agent.config.process_host.ipv_preference = '9'
-
-    facts(agent, function getFacts(factsed) {
-      t.match(factsed.display_host, IP_V4_PATTERN)
-
-      t.end()
+    facts(agent, (result) => {
+      assert.equal(net.isIPv4(result.display_host), true)
+      end()
     })
   })
 
-  t.test('returns no ipv4, hostname should be ipv6 if possible', (t) => {
+  await t.test('returns no ipv4, hostname should be ipv6 if possible', (t, end) => {
+    const { agent, facts } = t.nr
     if (!agent.config.getIPAddresses().ipv6) {
-      /* eslint-disable no-console */
-      console.log('this machine does not have an ipv6 address, skipping')
-      /* eslint-enable no-console */
-      return t.end()
+      t.diagnostic('this machine does not have an ipv6 address, skipping')
+      return end()
     }
+
     const mockedNI = {
       lo: [],
       en0: [
@@ -767,35 +760,27 @@ tap.test('display_host', { timeout: 20000 }, (t) => {
         }
       ]
     }
-    const originalNI = os.networkInterfaces
-    os.networkInterfaces = createMock(mockedNI)
+    os.networkInterfaces = () => mockedNI
 
-    facts(agent, function getFacts(factsed) {
-      t.match(factsed.display_host, IP_V6_PATTERN)
-      os.networkInterfaces = originalNI
-
-      t.end()
+    facts(agent, (result) => {
+      assert.equal(net.isIPv6(result.display_host), true)
+      end()
     })
   })
 
-  t.test('returns no ip addresses, hostname should be UNKNOWN_BOX (everything broke)', (t) => {
-    const mockedNI = { lo: [], en0: [] }
-    const originalNI = os.networkInterfaces
-    os.networkInterfaces = createMock(mockedNI)
-
-    facts(agent, function getFacts(factsed) {
-      os.networkInterfaces = originalNI
-      t.equal(factsed.display_host, 'UNKNOWN_BOX')
-      t.end()
-    })
-  })
+  await t.test(
+    'returns no ip addresses, hostname should be UNKNOWN_BOX (everything broke)',
+    (t, end) => {
+      const { agent, facts } = t.nr
+      const mockedNI = { lo: [], en0: [] }
+      os.networkInterfaces = () => mockedNI
+      facts(agent, (result) => {
+        assert.equal(result.display_host, 'UNKNOWN_BOX')
+        end()
+      })
+    }
+  )
 })
-
-function createMock(output) {
-  return function mock() {
-    return output
-  }
-}
 
 function mockIpAddresses(values) {
   os.networkInterfaces = () => {
