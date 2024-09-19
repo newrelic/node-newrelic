@@ -5,10 +5,13 @@
 
 'use strict'
 
-const tap = require('tap')
-const Harvester = require('../../lib/harvester')
-const { EventEmitter } = require('events')
+const test = require('node:test')
+const assert = require('node:assert')
+const { EventEmitter } = require('node:events')
 const sinon = require('sinon')
+
+const { match } = require('../lib/custom-assertions')
+const Harvester = require('../../lib/harvester')
 
 class FakeAggregator extends EventEmitter {
   constructor(opts) {
@@ -32,73 +35,68 @@ function createAggregator(sandbox, opts) {
   sandbox.stub(aggregator, 'start')
   sandbox.stub(aggregator, 'stop')
   sandbox.stub(aggregator, 'reconfigure')
-  sandbox.spy(aggregator, 'send')
+  sandbox.stub(aggregator, 'send')
   return aggregator
 }
 
-tap.beforeEach((t) => {
+test.beforeEach((ctx) => {
+  ctx.nr = {}
+
   const sandbox = sinon.createSandbox()
   const aggregators = [
     createAggregator(sandbox, { enabled: true, method: 'agg1' }),
     createAggregator(sandbox, { enabled: false, method: 'agg2' })
   ]
   const harvester = new Harvester()
-  aggregators.forEach((aggregator) => {
-    harvester.add(aggregator)
-  })
-  t.context.sandbox = sandbox
-  t.context.aggregators = aggregators
-  t.context.harvester = harvester
+  aggregators.forEach((a) => harvester.add(a))
+
+  ctx.nr.sandbox = sandbox
+  ctx.nr.aggregators = aggregators
+  ctx.nr.harvester = harvester
 })
 
-tap.afterEach((t) => {
-  t.context.sandbox.restore()
+test.afterEach((ctx) => {
+  ctx.nr.sandbox.restore()
 })
 
-tap.test('Harvester should have aggregators property', (t) => {
+test('should have aggregators property', () => {
   const harvester = new Harvester()
-  t.same(harvester.aggregators, [])
-  t.end()
+  assert.deepStrictEqual(harvester.aggregators, [])
 })
 
-tap.test('Harvester should add aggregator to this.aggregators', (t) => {
-  const { harvester, aggregators } = t.context
-  t.ok(harvester.aggregators.length, 2, 'should add 2 aggregators')
-  t.same(harvester.aggregators, aggregators)
-  t.end()
+test('should add aggregator to this.aggregators', (t) => {
+  const { harvester, aggregators } = t.nr
+  assert.equal(harvester.aggregators.length, 2, 'should add 2 aggregators')
+  assert.deepStrictEqual(harvester.aggregators, aggregators)
 })
 
-tap.test('Harvester should start all aggregators that are enabled', (t) => {
-  const { aggregators, harvester } = t.context
+test('should start all aggregators that are enabled', (t) => {
+  const { harvester, aggregators } = t.nr
   harvester.start()
-  t.equal(aggregators[0].start.callCount, 1, 'should start enabled aggregator')
-  t.equal(aggregators[1].start.callCount, 0, 'should not start disabled aggregator')
-  t.end()
+  assert.equal(aggregators[0].start.callCount, 1, 'should start enabled aggregator')
+  assert.equal(aggregators[1].start.callCount, 0, 'should not start disabled aggregator')
 })
 
-tap.test('Harvester should stop all aggregators', (t) => {
-  const { aggregators, harvester } = t.context
+test('should stop all aggregators', (t) => {
+  const { harvester, aggregators } = t.nr
   harvester.stop()
-  t.equal(aggregators[0].stop.callCount, 1, 'should stop enabled aggregator')
-  t.equal(aggregators[1].stop.callCount, 1, 'should stop disabled aggregator')
-  t.end()
+  assert.equal(aggregators[0].stop.callCount, 1, 'should stop enabled aggregator')
+  assert.equal(aggregators[1].stop.callCount, 1, 'should stop disabled aggregator')
 })
 
-tap.test('Harvester should reconfigure all aggregators', (t) => {
-  const { aggregators, harvester } = t.context
+test('should reconfigure all aggregators', (t) => {
+  const { aggregators, harvester } = t.nr
   const config = { key: 'value' }
   harvester.update(config)
-  t.equal(aggregators[0].reconfigure.callCount, 1, 'should stop enabled aggregator')
-  t.equal(aggregators[1].reconfigure.callCount, 1, 'should stop disabled aggregator')
-  t.same(aggregators[0].reconfigure.args[0], [config])
-  t.end()
+  assert.equal(aggregators[0].reconfigure.callCount, 1, 'should stop enabled aggregator')
+  assert.equal(aggregators[1].reconfigure.callCount, 1, 'should stop disabled aggregator')
+  assert.equal(match(aggregators[0].reconfigure.args[0], [config]), true)
 })
 
-tap.test('should resolve when all data is sent', (t) => {
-  const { aggregators, harvester } = t.context
-  harvester.clear(() => {
-    t.equal(aggregators[0].send.callCount, 1, 'should call send on enabled aggregator')
-    t.equal(aggregators[1].send.callCount, 0, 'should not call send on disabled aggregator')
-    t.end()
+test('resolve when all data is sent', async (t) => {
+  const { aggregators, harvester } = t.nr
+  await harvester.clear(() => {
+    assert.equal(aggregators[0].send.callCount, 1, 'should call send on enabled aggregator')
+    assert.equal(aggregators[1].send.callCount, 0, 'should not call send on disabled aggregator')
   })
 })
