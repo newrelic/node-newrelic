@@ -11,6 +11,7 @@ const { EventEmitter } = require('node:events')
 const sinon = require('sinon')
 
 const { match } = require('../lib/custom-assertions')
+const promiseResolvers = require('../lib/promise-resolvers')
 const Harvester = require('../../lib/harvester')
 
 class FakeAggregator extends EventEmitter {
@@ -35,7 +36,7 @@ function createAggregator(sandbox, opts) {
   sandbox.stub(aggregator, 'start')
   sandbox.stub(aggregator, 'stop')
   sandbox.stub(aggregator, 'reconfigure')
-  sandbox.stub(aggregator, 'send')
+  sandbox.spy(aggregator, 'send')
   return aggregator
 }
 
@@ -94,9 +95,12 @@ test('should reconfigure all aggregators', (t) => {
 })
 
 test('resolve when all data is sent', async (t) => {
+  const { promise, resolve } = promiseResolvers()
   const { aggregators, harvester } = t.nr
   await harvester.clear(() => {
     assert.equal(aggregators[0].send.callCount, 1, 'should call send on enabled aggregator')
     assert.equal(aggregators[1].send.callCount, 0, 'should not call send on disabled aggregator')
+    resolve()
   })
+  await promise
 })
