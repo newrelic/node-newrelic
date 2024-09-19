@@ -1,49 +1,47 @@
 /*
- * Copyright 2020 New Relic Corporation. All rights reserved.
+ * Copyright 2024 New Relic Corporation. All rights reserved.
  * SPDX-License-Identifier: Apache-2.0
  */
 
 'use strict'
 
-const tap = require('tap')
+const test = require('node:test')
+const assert = require('node:assert')
+
 const testData = require('../lib/obfuscation-data')
 const hashes = require('../../lib/util/hashes')
 
-tap.test('obfuscation', (t) => {
-  t.test('should objuscate strings correctly', (t) => {
-    testData.forEach(function (test) {
-      t.equal(hashes.obfuscateNameUsingKey(test.input, test.key), test.output)
-    })
-    t.end()
+const major = process.version.slice(1).split('.').map(Number).shift()
+
+test('obfuscation', async (t) => {
+  await t.test('should obfuscate strings correctly', () => {
+    for (const data of testData) {
+      assert.equal(hashes.obfuscateNameUsingKey(data.input, data.key), data.output)
+    }
   })
-  t.end()
 })
 
-tap.test('deobfuscation', (t) => {
-  t.test('should deobjuscate strings correctly', (t) => {
-    testData.forEach(function (test) {
-      t.equal(hashes.deobfuscateNameUsingKey(test.output, test.key), test.input)
-    })
-    t.end()
+test('deobfuscation', async (t) => {
+  await t.test('should deobfuscate strings correctly', () => {
+    for (const data of testData) {
+      assert.equal(hashes.deobfuscateNameUsingKey(data.output, data.key), data.input)
+    }
   })
-  t.end()
 })
 
-tap.test('getHash', (t) => {
+// TODO: remove this test when we drop support for node 18
+test('getHash', { skip: major > 18 }, async (t) => {
   /**
    * TODO: crypto.DEFAULT_ENCODING has been deprecated.
    * When fully disabled, this test can likely be removed.
    * https://nodejs.org/api/deprecations.html#DEP0091
    */
   /* eslint-disable node/no-deprecated-api */
-  t.test('should not crash when changing the DEFAULT_ENCODING key on crypto', (t) => {
-    const crypto = require('crypto')
+  await t.test('should not crash when changing the DEFAULT_ENCODING key on crypto', () => {
+    const crypto = require('node:crypto')
     const oldEncoding = crypto.DEFAULT_ENCODING
     crypto.DEFAULT_ENCODING = 'utf-8'
-    t.doesNotThrow(hashes.getHash.bind(null, 'TEST_APP', 'TEST_TXN'))
+    assert.doesNotThrow(hashes.getHash.bind(null, 'TEST_APP', 'TEST_TXN'))
     crypto.DEFAULT_ENCODING = oldEncoding
-    t.end()
   })
-  /* eslint-enable node/no-deprecated-api */
-  t.end()
 })
