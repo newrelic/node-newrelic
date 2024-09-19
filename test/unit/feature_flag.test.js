@@ -1,15 +1,17 @@
 /*
- * Copyright 2020 New Relic Corporation. All rights reserved.
+ * Copyright 2024 New Relic Corporation. All rights reserved.
  * SPDX-License-Identifier: Apache-2.0
  */
 
 'use strict'
 
-const tap = require('tap')
+const test = require('node:test')
+const assert = require('node:assert')
+
 const flags = require('../../lib/feature_flags')
 const Config = require('../../lib/config')
 
-// please do not delete flags from here
+// Please do not delete flags from here.
 const used = [
   'internal_test_only',
 
@@ -41,87 +43,89 @@ const used = [
   'kafkajs_instrumentation'
 ]
 
-tap.test('feature flags', (t) => {
-  t.beforeEach(async (t) => {
-    t.context.prerelease = Object.keys(flags.prerelease)
-    t.context.unreleased = [...flags.unreleased]
-    t.context.released = [...flags.released]
+test.beforeEach((ctx) => {
+  ctx.nr = {}
+  ctx.nr.prerelease = Object.keys(flags.prerelease)
+  ctx.nr.unreleased = [...flags.unreleased]
+  ctx.nr.released = [...flags.released]
+
+  ctx.nr.setLogger = Config.prototype.setLogger
+})
+
+test.afterEach((ctx) => {
+  Config.prototype.setLogger = ctx.nr.setLogger
+})
+
+test('should declare every prerelease feature in the *used* variable', (t) => {
+  for (const key of t.nr.prerelease) {
+    assert.equal(used.includes(key), true)
+  }
+})
+
+test('should declare every release feature in the *used* variable', (t) => {
+  for (const key of t.nr.released) {
+    assert.equal(used.includes(key), true)
+  }
+})
+
+test('should declare every unreleased feature in the *used* variable', (t) => {
+  for (const key of t.nr.unreleased) {
+    assert.equal(used.includes(key), true)
+  }
+})
+
+test('should not re-declare a flag in prerelease from released', (t) => {
+  const { prerelease, released } = t.nr
+  const filtered = prerelease.filter((n) => released.includes(n))
+  assert.equal(filtered.length, 0)
+})
+
+test('should not re-declare a flag in prerelease from unreleased', (t) => {
+  const { prerelease, unreleased } = t.nr
+  const filtered = prerelease.filter((n) => unreleased.includes(n))
+  assert.equal(filtered.length, 0)
+})
+
+test('should account for all *used* keys', (t) => {
+  const { released, unreleased, prerelease } = t.nr
+  for (const key of used) {
+    if (released.includes(key) === true) {
+      continue
+    }
+    if (unreleased.includes(key) === true) {
+      continue
+    }
+    if (prerelease.includes(key) === true) {
+      continue
+    }
+    throw Error(`Flag "${key}" not accounted for.`)
+  }
+})
+
+test('should warn if released flags are still in config', () => {
+  let called = false
+  Config.prototype.setLogger({
+    warn() {
+      called = true
+    },
+    warnOnce() {}
   })
+  const config = new Config()
+  config.feature_flag.released = true
+  config.validateFlags()
+  assert.equal(called, true)
+})
 
-  t.test('should declare every prerelease feature in the *used* variable', async (t) => {
-    t.context.prerelease.forEach((key) => {
-      t.equal(used.includes(key), true)
-    })
+test('should warn if unreleased flags are still in config', () => {
+  let called = false
+  Config.prototype.setLogger({
+    warn() {
+      called = true
+    },
+    warnOnce() {}
   })
-
-  t.test('should declare every release feature in the *used* variable', async (t) => {
-    t.context.released.forEach((key) => {
-      t.equal(used.includes(key), true)
-    })
-  })
-
-  t.test('should declare every unrelease feature in the *used* variable', async (t) => {
-    t.context.unreleased.forEach((key) => {
-      t.equal(used.includes(key), true)
-    })
-  })
-
-  t.test('should not re-declare a flag in prerelease from released', async (t) => {
-    const { prerelease, released } = t.context
-    const filtered = prerelease.filter((n) => released.includes(n))
-    t.equal(filtered.length, 0)
-  })
-
-  t.test('should not re-declare a flag in prerelease from unreleased', async (t) => {
-    const { prerelease, unreleased } = t.context
-    const filtered = prerelease.filter((n) => unreleased.includes(n))
-    t.equal(filtered.length, 0)
-  })
-
-  t.test('should account for all *used* keys', async (t) => {
-    const { released, unreleased, prerelease } = t.context
-    used.forEach((key) => {
-      if (released.includes(key) === true) {
-        return
-      }
-      if (unreleased.includes(key) === true) {
-        return
-      }
-      if (prerelease.includes(key) === true) {
-        return
-      }
-
-      throw Error('Flag not accounted for')
-    })
-  })
-
-  t.test('should warn if released flags are still in config', async (t) => {
-    let called = false
-    Config.prototype.setLogger({
-      warn: () => {
-        called = true
-      },
-      warnOnce: () => {}
-    })
-    const config = new Config()
-    config.feature_flag.released = true
-    config.validateFlags()
-    t.equal(called, true)
-  })
-
-  t.test('should warn if unreleased flags are still in config', async (t) => {
-    let called = false
-    Config.prototype.setLogger({
-      warn: () => {
-        called = true
-      },
-      warnOnce: () => {}
-    })
-    const config = new Config()
-    config.feature_flag.unreleased = true
-    config.validateFlags()
-    t.equal(called, true)
-  })
-
-  t.end()
+  const config = new Config()
+  config.feature_flag.unreleased = true
+  config.validateFlags()
+  assert.equal(called, true)
 })
