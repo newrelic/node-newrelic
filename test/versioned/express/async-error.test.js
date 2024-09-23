@@ -4,9 +4,9 @@
  */
 
 'use strict'
-
+const assert = require('node:assert')
 const path = require('path')
-const test = require('tap').test
+const test = require('node:test')
 const fork = require('child_process').fork
 const { isExpress5 } = require('./utils')
 
@@ -17,26 +17,26 @@ const { isExpress5 } = require('./utils')
  */
 const COMPLETION = 27
 
-test('Express async throw', { skip: isExpress5() }, function (t) {
+test('Express async throw', { skip: isExpress5() }, function (t, end) {
   const erk = fork(path.join(__dirname, 'erk.js'))
   let timer
 
   erk.on('error', function (error) {
-    t.fail(error)
-    t.end()
+    assert.ok(!error)
+    end()
   })
 
   erk.on('exit', function (code) {
     clearTimeout(timer)
-    t.notEqual(code, COMPLETION, "request didn't complete")
-    t.end()
+    assert.notEqual(code, COMPLETION, "request didn't complete")
+    end()
   })
 
   // wait for the child vm to boot
   erk.on('message', function (message) {
     if (message === 'ready') {
       timer = setTimeout(function () {
-        t.fail('hung waiting for exit')
+        end(new Error('hung waiting for exit'))
         erk.kill()
       }, 1000)
       timer.unref()

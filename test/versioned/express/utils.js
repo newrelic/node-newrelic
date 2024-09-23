@@ -7,30 +7,44 @@
 const http = require('http')
 const helper = require('../../lib/agent_helper')
 const semver = require('semver')
+const promiseResolvers = require('../../lib/promise-resolvers')
+const TEST_HOST = 'localhost'
+const TEST_URL = `http://${TEST_HOST}`
 
 function isExpress5() {
   const { version } = require('express/package')
   return semver.gte(version, '5.0.0')
 }
 
-function makeRequest(server, path, callback) {
-  const port = server.address().port
-  http.request({ port: port, path: path }, callback).end()
+function makeRequest(port, path, callback) {
+  http.request({ port, path }, callback).end()
 }
 
-function setup(t, config = {}) {
-  t.context.agent = helper.instrumentMockedAgent(config)
-  t.context.isExpress5 = isExpress5()
+async function setup(ctx, config = {}) {
+  ctx.nr = {}
+  ctx.nr.agent = helper.instrumentMockedAgent(config)
+  ctx.nr.isExpress5 = isExpress5()
 
-  t.context.express = require('express')
-  t.context.app = t.context.express()
-  t.teardown(() => {
-    helper.unloadAgent(t.context.agent)
-  })
+  ctx.nr.express = require('express')
+  ctx.nr.app = ctx.nr.express()
+  const { promise, resolve } = promiseResolvers()
+  const server = require('http').createServer(ctx.nr.app)
+  server.listen(0, TEST_HOST, resolve)
+  await promise
+  ctx.nr.server = server
+  ctx.nr.port = server.address().port
+}
+
+function teardown(ctx) {
+  const { server, agent } = ctx.nr
+  server.close()
+  helper.unloadAgent(agent)
 }
 
 module.exports = {
   isExpress5,
   makeRequest,
-  setup
+  setup,
+  teardown,
+  TEST_URL
 }
