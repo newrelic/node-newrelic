@@ -5,23 +5,28 @@
 
 'use strict'
 
-const tap = require('tap')
+const test = require('node:test')
+const assert = require('node:assert')
+
 const loadExternals = require('../../load-externals')
 
-tap.test('should load libs to webpack externals', async (t) => {
+test('should load libs to webpack externals', async () => {
   const config = {
     target: 'node-20.x',
     externals: ['next']
   }
   loadExternals(config)
-  t.ok(config.externals.length > 1, 'should add all libraries agent supports to the externals list')
+  assert.ok(
+    config.externals.length > 1,
+    'should add all libraries agent supports to the externals list'
+  )
 })
 
-tap.test('should not add externals when target is not node', async (t) => {
+test('should not add externals when target is not node', async () => {
   const config = {
     target: 'web',
     externals: ['next']
   }
   loadExternals(config)
-  t.ok(config.externals.length === 1, 'should not agent libraries when target is not node')
+  assert.ok(config.externals.length === 1, 'should not agent libraries when target is not node')
 })
