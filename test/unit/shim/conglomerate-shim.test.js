@@ -4,8 +4,8 @@
  */
 
 'use strict'
-
-const { test } = require('tap')
+const assert = require('node:assert')
+const test = require('node:test')
 const ConglomerateShim = require('../../../lib/shim/conglomerate-shim')
 const DatastoreShim = require('../../../lib/shim/datastore-shim')
 const helper = require('../../lib/agent_helper')
@@ -15,72 +15,73 @@ const Shim = require('../../../lib/shim/shim')
 const TransactionShim = require('../../../lib/shim/transaction-shim')
 const WebFrameworkShim = require('../../../lib/shim/webframework-shim')
 
-test('ConglomerateShim', (t) => {
-  t.autoend()
-  let agent = null
-  let shim = null
-
-  t.beforeEach(() => {
-    agent = helper.loadMockedAgent()
-    shim = new ConglomerateShim(agent, 'test-module')
+test('ConglomerateShim', async (t) => {
+  t.beforeEach((ctx) => {
+    ctx.nr = {}
+    const agent = helper.loadMockedAgent()
+    ctx.nr.shim = new ConglomerateShim(agent, 'test-module')
+    ctx.nr.agent = agent
   })
 
-  t.afterEach(() => {
-    helper.unloadAgent(agent)
-    agent = null
-    shim = null
+  t.afterEach((ctx) => {
+    helper.unloadAgent(ctx.nr.agent)
   })
 
-  t.test('should require an agent parameter', (t) => {
-    t.throws(() => new ConglomerateShim(), /^Shim must be initialized with .*? agent/)
-    t.end()
+  await t.test('should require an agent parameter', () => {
+    assert.throws(
+      () => new ConglomerateShim(),
+      'Error: Shim must be initialized with an agent and module name.'
+    )
   })
-  t.test('should require a module name parameter', (t) => {
-    t.throws(() => new ConglomerateShim(agent), /^Shim must be initialized with .*? module name/)
-    t.end()
-  })
-
-  t.test('should exist for each shim type', (t) => {
-    t.ok(shim.GENERIC, 'generic')
-    t.ok(shim.DATASTORE, 'datastore')
-    t.ok(shim.MESSAGE, 'message')
-    t.ok(shim.PROMISE, 'promise')
-    t.ok(shim.TRANSACTION, 'transaction')
-    t.ok(shim.WEB_FRAMEWORK, 'web-framework')
-    t.end()
+  await t.test('should require a module name parameter', (t) => {
+    const { agent } = t.nr
+    assert.throws(
+      () => new ConglomerateShim(agent),
+      'Error: Shim must be initialized with an agent and module name.'
+    )
   })
 
-  t.test('should construct a new shim', (t) => {
+  await t.test('should exist for each shim type', (t) => {
+    const { shim } = t.nr
+    assert.equal(shim.GENERIC, 'generic')
+    assert.equal(shim.DATASTORE, 'datastore')
+    assert.equal(shim.MESSAGE, 'message')
+    assert.equal(shim.PROMISE, 'promise')
+    assert.equal(shim.TRANSACTION, 'transaction')
+    assert.equal(shim.WEB_FRAMEWORK, 'web-framework')
+  })
+
+  await t.test('should construct a new shim', (t) => {
+    const { shim } = t.nr
     const specialShim = shim.makeSpecializedShim(shim.GENERIC, 'foobar')
-    t.ok(specialShim instanceof Shim)
-    t.not(specialShim, shim)
-    t.end()
+    assert.ok(specialShim instanceof Shim)
+    assert.notEqual(specialShim, shim)
   })
 
-  t.test('should be an instance of the correct class', (t) => {
-    t.ok(shim.makeSpecializedShim(shim.GENERIC, 'foobar') instanceof Shim)
-    t.ok(shim.makeSpecializedShim(shim.DATASTORE, 'foobar') instanceof DatastoreShim)
-    t.ok(shim.makeSpecializedShim(shim.MESSAGE, 'foobar') instanceof MessageShim)
-    t.ok(shim.makeSpecializedShim(shim.PROMISE, 'foobar') instanceof PromiseShim)
-    t.ok(shim.makeSpecializedShim(shim.TRANSACTION, 'foobar') instanceof TransactionShim)
-    t.ok(shim.makeSpecializedShim(shim.WEB_FRAMEWORK, 'foobar') instanceof WebFrameworkShim)
-    t.end()
+  await t.test('should be an instance of the correct class', (t) => {
+    const { shim } = t.nr
+    assert.ok(shim.makeSpecializedShim(shim.GENERIC, 'foobar') instanceof Shim)
+    assert.ok(shim.makeSpecializedShim(shim.DATASTORE, 'foobar') instanceof DatastoreShim)
+    assert.ok(shim.makeSpecializedShim(shim.MESSAGE, 'foobar') instanceof MessageShim)
+    assert.ok(shim.makeSpecializedShim(shim.PROMISE, 'foobar') instanceof PromiseShim)
+    assert.ok(shim.makeSpecializedShim(shim.TRANSACTION, 'foobar') instanceof TransactionShim)
+    assert.ok(shim.makeSpecializedShim(shim.WEB_FRAMEWORK, 'foobar') instanceof WebFrameworkShim)
   })
 
-  t.test('should assign properties from parent', (t) => {
+  await t.test('should assign properties from parent', (t) => {
+    const { agent } = t.nr
     const mod = 'test-mod'
     const name = mod
     const version = '1.0.0'
     const shim = new ConglomerateShim(agent, mod, mod, name, version)
-    t.equal(shim.moduleName, mod)
-    t.equal(agent, shim._agent)
-    t.equal(shim.pkgVersion, version)
+    assert.equal(shim.moduleName, mod)
+    assert.equal(agent, shim._agent)
+    assert.equal(shim.pkgVersion, version)
     function childFn() {}
     const childShim = shim.makeSpecializedShim(shim.DATASTORE, childFn)
-    t.same(shim._agent, childShim._agent)
-    t.equal(shim.moduleName, childShim.moduleName)
-    t.equal(shim.pkgVersion, childShim.pkgVersion)
-    t.equal(shim.id, childShim.id)
-    t.end()
+    assert.deepEqual(shim._agent, childShim._agent)
+    assert.equal(shim.moduleName, childShim.moduleName)
+    assert.equal(shim.pkgVersion, childShim.pkgVersion)
+    assert.equal(shim.id, childShim.id)
   })
 })
