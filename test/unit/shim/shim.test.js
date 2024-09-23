@@ -190,7 +190,7 @@ test('Shim', async function (t) {
 
     await t.test('should be a non-writable property', function (t) {
       const { shim } = t.nr
-      isNonWritable({ obj: shim, key: 'logger', complex: true })
+      isNonWritable({ obj: shim, key: 'logger' })
     })
 
     await t.test('should be a logger to use with the shim', function (t) {
