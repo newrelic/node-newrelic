@@ -20,7 +20,6 @@ module.exports = function tempRemoveListeners({ t, emitter, event }) {
     return
   }
 
-  t.diagnostic(`Removing listeners for ${event}`)
   const listeners = emitter.listeners(event)
   emitter.removeAllListeners(event)
 
@@ -28,7 +27,6 @@ module.exports = function tempRemoveListeners({ t, emitter, event }) {
   // be one `t.after` handler per test, and putting in here obscures the fact
   // that it has been added.
   t.after(() => {
-    t.diagnostic(`Re-adding listeners for ${event}`)
     for (const l of listeners) {
       emitter.on(event, l)
     }
