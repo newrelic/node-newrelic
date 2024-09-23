@@ -5,27 +5,22 @@
 
 'use strict'
 
-const { test } = require('tap')
+const test = require('node:test')
+const assert = require('node:assert')
+
+const { match } = require('../lib/custom-assertions')
 
 const parseMemInfo = require('../../lib/parse-proc-meminfo')
 
-/**
- * Most functionality is covered in-depth via cross-agent tests in
- * test/integration/pricing/proc_meminfo.tap.js
- */
+// Most functionality is covered in-depth via cross-agent tests in
+// test/integration/pricing/proc_meminfo.tap.js
 
-test('Should return `null` when data is null', (t) => {
+test('Should return `null` when data is null', () => {
   const result = parseMemInfo(null)
-
-  t.same(result, null)
-
-  t.end()
+  assert.equal(match(result, null), true)
 })
 
-test('Should return `null` when data is undefined', (t) => {
+test('Should return `null` when data is undefined', () => {
   const result = parseMemInfo(undefined)
-
-  t.same(result, undefined)
-
-  t.end()
+  assert.equal(match(result, undefined), true)
 })
