@@ -1,43 +1,40 @@
 /*
- * Copyright 2020 New Relic Corporation. All rights reserved.
+ * Copyright 2024 New Relic Corporation. All rights reserved.
  * SPDX-License-Identifier: Apache-2.0
  */
 
 'use strict'
 
-const tap = require('tap')
+const test = require('node:test')
+const assert = require('node:assert')
 
 const helper = require('../lib/agent_helper')
+
 const { PrioritizedAttributes, ATTRIBUTE_PRIORITY } = require('../../lib/prioritized-attributes')
 const AttributeFilter = require('../../lib/config/attribute-filter')
 
 const DESTINATIONS = AttributeFilter.DESTINATIONS
 const TRANSACTION_SCOPE = 'transaction'
 
-tap.test('#addAttribute', (t) => {
-  t.autoend()
-
-  let agent = null
-
-  t.beforeEach(() => {
-    agent = helper.loadMockedAgent()
+test('#addAttribute', async (t) => {
+  t.beforeEach((ctx) => {
+    ctx.nr = {}
+    ctx.nr.agent = helper.loadMockedAgent()
   })
 
-  t.afterEach(() => {
-    helper.unloadAgent(agent)
+  t.afterEach((ctx) => {
+    helper.unloadAgent(ctx.nr.agent)
   })
 
-  t.test('adds an attribute to instance', (t) => {
+  await t.test('adds an attribute to instance', () => {
     const inst = new PrioritizedAttributes(TRANSACTION_SCOPE)
     inst.addAttribute(DESTINATIONS.TRANS_SCOPE, 'test', 'success')
     const attributes = inst.get(DESTINATIONS.TRANS_SCOPE)
 
-    t.equal(attributes.test, 'success')
-
-    t.end()
+    assert.equal(attributes.test, 'success')
   })
 
-  t.test('does not add attribute if key length limit is exceeded', (t) => {
+  await t.test('does not add attribute if key length limit is exceeded', () => {
     const tooLong = [
       'Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
       'Cras id lacinia erat. Suspendisse mi nisl, sodales vel est eu,',
@@ -48,26 +45,12 @@ tap.test('#addAttribute', (t) => {
     const inst = new PrioritizedAttributes(TRANSACTION_SCOPE)
     inst.addAttribute(DESTINATIONS.TRANS_SCOPE, tooLong, 'will fail')
 
-    t.notOk(inst.has(tooLong))
-
-    t.end()
+    assert.equal(inst.has(tooLong), undefined)
   })
 })
 
-tap.test('#addAttribute - high priority', (t) => {
-  t.autoend()
-
-  let agent = null
-
-  t.beforeEach(() => {
-    agent = helper.loadMockedAgent()
-  })
-
-  t.afterEach(() => {
-    helper.unloadAgent(agent)
-  })
-
-  t.test('should overwrite existing high priority attribute', (t) => {
+test('#addAttribute - high priority', async (t) => {
+  await t.test('should overwrite existing high priority attribute', () => {
     const inst = new PrioritizedAttributes(TRANSACTION_SCOPE, 2)
     inst.addAttribute(0x01, 'Roboto', 1, false, ATTRIBUTE_PRIORITY.HIGH)
 
@@ -75,13 +58,11 @@ tap.test('#addAttribute - high priority', (t) => {
 
     const res = inst.get(0x01)
 
-    t.equal(Object.keys(res).length, 1)
-    t.equal(res.Roboto, 99)
-
-    t.end()
+    assert.equal(Object.keys(res).length, 1)
+    assert.equal(res.Roboto, 99)
   })
 
-  t.test('should overwrite existing low priority attribute', (t) => {
+  await t.test('should overwrite existing low priority attribute', () => {
     const inst = new PrioritizedAttributes(TRANSACTION_SCOPE, 2)
     inst.addAttribute(0x01, 'Roboto', 1, false, ATTRIBUTE_PRIORITY.LOW)
 
@@ -89,13 +70,11 @@ tap.test('#addAttribute - high priority', (t) => {
 
     const res = inst.get(0x01)
 
-    t.equal(Object.keys(res).length, 1)
-    t.equal(res.Roboto, 99)
-
-    t.end()
+    assert.equal(Object.keys(res).length, 1)
+    assert.equal(res.Roboto, 99)
   })
 
-  t.test('should overwrite existing attribute even when at maximum', (t) => {
+  await t.test('should overwrite existing attribute even when at maximum', () => {
     const maxAttributeCount = 1
     const inst = new PrioritizedAttributes(TRANSACTION_SCOPE, maxAttributeCount)
     inst.addAttribute(0x01, 'Roboto', 1, false, ATTRIBUTE_PRIORITY.LOW)
@@ -104,81 +83,82 @@ tap.test('#addAttribute - high priority', (t) => {
 
     const res = inst.get(0x01)
 
-    t.equal(Object.keys(res).length, 1)
-    t.equal(res.Roboto, 99)
-
-    t.end()
+    assert.equal(Object.keys(res).length, 1)
+    assert.equal(res.Roboto, 99)
   })
 
-  t.test('should not add new attribute past maximum when no lower priority attributes', (t) => {
-    const maxAttributeCount = 1
-    const inst = new PrioritizedAttributes(TRANSACTION_SCOPE, maxAttributeCount)
-    inst.addAttribute(0x01, 'old', 1, false, ATTRIBUTE_PRIORITY.HIGH)
+  await t.test(
+    'should not add new attribute past maximum when no lower priority attributes',
+    () => {
+      const maxAttributeCount = 1
+      const inst = new PrioritizedAttributes(TRANSACTION_SCOPE, maxAttributeCount)
+      inst.addAttribute(0x01, 'old', 1, false, ATTRIBUTE_PRIORITY.HIGH)
 
-    inst.addAttribute(0x01, 'new', 99, false, ATTRIBUTE_PRIORITY.HIGH)
+      inst.addAttribute(0x01, 'new', 99, false, ATTRIBUTE_PRIORITY.HIGH)
 
-    const res = inst.get(0x01)
-    const hasAttribute = Object.hasOwnProperty.bind(res)
+      const res = inst.get(0x01)
+      const hasAttribute = Object.hasOwnProperty.bind(res)
 
-    t.equal(Object.keys(res).length, maxAttributeCount)
-    t.equal(res.old, 1)
-    t.notOk(hasAttribute('new'))
+      assert.equal(Object.keys(res).length, maxAttributeCount)
+      assert.equal(res.old, 1)
+      assert.equal(hasAttribute('new'), false)
+    }
+  )
 
-    t.end()
-  })
+  await t.test(
+    'should add new attribute, drop newest low priority attribute, when at maximum',
+    () => {
+      const maxAttributeCount = 4
+      const inst = new PrioritizedAttributes(TRANSACTION_SCOPE, maxAttributeCount)
+      inst.addAttribute(0x01, 'old-low', 1, false, ATTRIBUTE_PRIORITY.LOW)
+      inst.addAttribute(0x01, 'old-high', 1, false, ATTRIBUTE_PRIORITY.HIGH)
+      inst.addAttribute(0x01, 'new-low', 99, false, ATTRIBUTE_PRIORITY.LOW)
+      inst.addAttribute(0x01, 'newish-high', 50, false, ATTRIBUTE_PRIORITY.HIGH)
 
-  t.test('should add new attribute, drop newest low priority attribute, when at maximum', (t) => {
-    const maxAttributeCount = 4
-    const inst = new PrioritizedAttributes(TRANSACTION_SCOPE, maxAttributeCount)
-    inst.addAttribute(0x01, 'old-low', 1, false, ATTRIBUTE_PRIORITY.LOW)
-    inst.addAttribute(0x01, 'old-high', 1, false, ATTRIBUTE_PRIORITY.HIGH)
-    inst.addAttribute(0x01, 'new-low', 99, false, ATTRIBUTE_PRIORITY.LOW)
-    inst.addAttribute(0x01, 'newish-high', 50, false, ATTRIBUTE_PRIORITY.HIGH)
+      inst.addAttribute(0x01, 'new-high', 99, false, ATTRIBUTE_PRIORITY.HIGH)
 
-    inst.addAttribute(0x01, 'new-high', 99, false, ATTRIBUTE_PRIORITY.HIGH)
+      const res = inst.get(0x01)
+      const hasAttribute = Object.hasOwnProperty.bind(res)
 
-    const res = inst.get(0x01)
-    const hasAttribute = Object.hasOwnProperty.bind(res)
+      assert.equal(Object.keys(res).length, maxAttributeCount)
+      assert.equal(res['old-low'], 1)
+      assert.equal(res['old-high'], 1)
+      assert.equal(res['newish-high'], 50)
+      assert.equal(res['new-high'], 99)
+      assert.equal(hasAttribute('new-low'), false)
+    }
+  )
 
-    t.equal(Object.keys(res).length, maxAttributeCount)
-    t.equal(res['old-low'], 1)
-    t.equal(res['old-high'], 1)
-    t.equal(res['newish-high'], 50)
-    t.equal(res['new-high'], 99)
-    t.notOk(hasAttribute('new-low'))
+  await t.test(
+    'should stop adding attributes after all low priority dropped, when at maximum',
+    () => {
+      const maxAttributeCount = 3
+      const inst = new PrioritizedAttributes(TRANSACTION_SCOPE, maxAttributeCount)
+      inst.addAttribute(0x01, 'old-low', 1, false, ATTRIBUTE_PRIORITY.LOW)
+      inst.addAttribute(0x01, 'oldest-high', 1, false, ATTRIBUTE_PRIORITY.HIGH)
+      inst.addAttribute(0x01, 'new-low', 99, false, ATTRIBUTE_PRIORITY.LOW)
+      inst.addAttribute(0x01, 'older-high', 50, false, ATTRIBUTE_PRIORITY.HIGH)
+      inst.addAttribute(0x01, 'newish-high', 99, false, ATTRIBUTE_PRIORITY.HIGH)
 
-    t.end()
-  })
+      inst.addAttribute(0x01, 'failed-new-high', 999, false, ATTRIBUTE_PRIORITY.HIGH)
 
-  t.test('should stop adding attributes after all low priority dropped, when at maximum', (t) => {
-    const maxAttributeCount = 3
-    const inst = new PrioritizedAttributes(TRANSACTION_SCOPE, maxAttributeCount)
-    inst.addAttribute(0x01, 'old-low', 1, false, ATTRIBUTE_PRIORITY.LOW)
-    inst.addAttribute(0x01, 'oldest-high', 1, false, ATTRIBUTE_PRIORITY.HIGH)
-    inst.addAttribute(0x01, 'new-low', 99, false, ATTRIBUTE_PRIORITY.LOW)
-    inst.addAttribute(0x01, 'older-high', 50, false, ATTRIBUTE_PRIORITY.HIGH)
-    inst.addAttribute(0x01, 'newish-high', 99, false, ATTRIBUTE_PRIORITY.HIGH)
+      const res = inst.get(0x01)
+      const hasAttribute = Object.hasOwnProperty.bind(res)
 
-    inst.addAttribute(0x01, 'failed-new-high', 999, false, ATTRIBUTE_PRIORITY.HIGH)
+      assert.equal(Object.keys(res).length, maxAttributeCount)
+      assert.equal(res['oldest-high'], 1)
+      assert.equal(res['older-high'], 50)
+      assert.equal(res['newish-high'], 99)
 
-    const res = inst.get(0x01)
-    const hasAttribute = Object.hasOwnProperty.bind(res)
+      assert.equal(hasAttribute('old-low'), false)
+      assert.equal(hasAttribute('new-low'), false)
+      assert.equal(hasAttribute('failed-new-high'), false)
+    }
+  )
 
-    t.equal(Object.keys(res).length, maxAttributeCount)
-    t.equal(res['oldest-high'], 1)
-    t.equal(res['older-high'], 50)
-    t.equal(res['newish-high'], 99)
-
-    t.notOk(hasAttribute('old-low'))
-    t.notOk(hasAttribute('new-low'))
-    t.notOk(hasAttribute('failed-new-high'))
-
-    t.end()
-  })
-
-  t.test(
+  await t.test(
     'should not drop low priority attribute overwritten by high priority, when at maximum',
-    (t) => {
+    () => {
       const maxAttributeCount = 4
       const inst = new PrioritizedAttributes(TRANSACTION_SCOPE, maxAttributeCount)
       inst.addAttribute(0x01, 'old-low', 1, false, ATTRIBUTE_PRIORITY.LOW)
@@ -198,33 +178,19 @@ tap.test('#addAttribute - high priority', (t) => {
       const res = inst.get(0x01)
       const hasAttribute = Object.hasOwnProperty.bind(res)
 
-      t.equal(Object.keys(res).length, maxAttributeCount)
-      t.equal(res['old-high'], 1)
-      t.equal(res['newish-high'], 50)
-      t.equal(res['new-high'], 99)
+      assert.equal(Object.keys(res).length, maxAttributeCount)
+      assert.equal(res['old-high'], 1)
+      assert.equal(res['newish-high'], 50)
+      assert.equal(res['new-high'], 99)
 
-      t.equal(res.overwritten, 'high')
-      t.notOk(hasAttribute('old-low'))
-
-      t.end()
+      assert.equal(res.overwritten, 'high')
+      assert.equal(hasAttribute('old-low'), false)
     }
   )
 })
 
-tap.test('#addAttribute - low priority', (t) => {
-  t.autoend()
-
-  let agent = null
-
-  t.beforeEach(() => {
-    agent = helper.loadMockedAgent()
-  })
-
-  t.afterEach(() => {
-    helper.unloadAgent(agent)
-  })
-
-  t.test('should overwrite existing low priority attribute', (t) => {
+test('#addAttribute - low priority', async (t) => {
+  await t.test('should overwrite existing low priority attribute', () => {
     const inst = new PrioritizedAttributes(TRANSACTION_SCOPE, 2)
     inst.addAttribute(0x01, 'Roboto', 1, false, ATTRIBUTE_PRIORITY.LOW)
 
@@ -232,13 +198,11 @@ tap.test('#addAttribute - low priority', (t) => {
 
     const res = inst.get(0x01)
 
-    t.equal(Object.keys(res).length, 1)
-    t.equal(res.Roboto, 99)
-
-    t.end()
+    assert.equal(Object.keys(res).length, 1)
+    assert.equal(res.Roboto, 99)
   })
 
-  t.test('should overwrite existing low priority attribute even when at maximum', (t) => {
+  await t.test('should overwrite existing low priority attribute even when at maximum', () => {
     const inst = new PrioritizedAttributes(TRANSACTION_SCOPE, 1)
     inst.addAttribute(0x01, 'Roboto', 1, false, ATTRIBUTE_PRIORITY.LOW)
 
@@ -246,13 +210,11 @@ tap.test('#addAttribute - low priority', (t) => {
 
     const res = inst.get(0x01)
 
-    t.equal(Object.keys(res).length, 1)
-    t.equal(res.Roboto, 99)
-
-    t.end()
+    assert.equal(Object.keys(res).length, 1)
+    assert.equal(res.Roboto, 99)
   })
 
-  t.test('should not overwrite existing high priority attribute', (t) => {
+  await t.test('should not overwrite existing high priority attribute', () => {
     const inst = new PrioritizedAttributes(TRANSACTION_SCOPE, 1)
     inst.addAttribute(0x01, 'Roboto', 1, false, ATTRIBUTE_PRIORITY.HIGH)
 
@@ -260,13 +222,11 @@ tap.test('#addAttribute - low priority', (t) => {
 
     const res = inst.get(0x01)
 
-    t.equal(Object.keys(res).length, 1)
-    t.equal(res.Roboto, 1)
-
-    t.end()
+    assert.equal(Object.keys(res).length, 1)
+    assert.equal(res.Roboto, 1)
   })
 
-  t.test('should not add new attribute past maximum', (t) => {
+  await t.test('should not add new attribute past maximum', () => {
     const maxAttributeCount = 2
     const inst = new PrioritizedAttributes(TRANSACTION_SCOPE, maxAttributeCount)
     inst.addAttribute(0x01, 'old-high', 1, false, ATTRIBUTE_PRIORITY.HIGH)
@@ -277,40 +237,24 @@ tap.test('#addAttribute - low priority', (t) => {
     const res = inst.get(0x01)
     const hasAttribute = Object.hasOwnProperty.bind(res)
 
-    t.equal(Object.keys(res).length, maxAttributeCount)
-    t.equal(res['old-high'], 1)
-    t.equal(res['old-low'], 99)
-    t.notOk(hasAttribute('failed-new-low'))
-
-    t.end()
+    assert.equal(Object.keys(res).length, maxAttributeCount)
+    assert.equal(res['old-high'], 1)
+    assert.equal(res['old-low'], 99)
+    assert.equal(hasAttribute('failed-new-low'), false)
   })
 })
 
-tap.test('#addAttributes', (t) => {
-  t.autoend()
-
-  let agent = null
-
-  t.beforeEach(() => {
-    agent = helper.loadMockedAgent()
-  })
-
-  t.afterEach(() => {
-    helper.unloadAgent(agent)
-  })
-
-  t.test('adds multiple attributes to instance', (t) => {
+test('#addAttributes', async (t) => {
+  await t.test('adds multiple attributes to instance', () => {
     const inst = new PrioritizedAttributes(TRANSACTION_SCOPE)
     inst.addAttributes(DESTINATIONS.TRANS_SCOPE, { one: '1', two: '2' })
     const attributes = inst.get(DESTINATIONS.TRANS_SCOPE)
 
-    t.equal(attributes.one, '1')
-    t.equal(attributes.two, '2')
-
-    t.end()
+    assert.equal(attributes.one, '1')
+    assert.equal(attributes.two, '2')
   })
 
-  t.test('only allows non-null-type primitive attribute values', (t) => {
+  await t.test('only allows non-null-type primitive attribute values', () => {
     const inst = new PrioritizedAttributes(TRANSACTION_SCOPE, 10)
     const attributes = {
       first: 'first',
@@ -327,20 +271,18 @@ tap.test('#addAttributes', (t) => {
     inst.addAttributes(DESTINATIONS.TRANS_SCOPE, attributes)
 
     const res = inst.get(DESTINATIONS.TRANS_SCOPE)
-    t.equal(Object.keys(res).length, 3)
+    assert.equal(Object.keys(res).length, 3)
 
     const hasAttribute = Object.hasOwnProperty.bind(res)
-    t.notOk(hasAttribute('second'))
-    t.notOk(hasAttribute('third'))
-    t.notOk(hasAttribute('sixth'))
-    t.notOk(hasAttribute('seventh'))
-    t.notOk(hasAttribute('eighth'))
-    t.notOk(hasAttribute('ninth'))
-
-    t.end()
+    assert.equal(hasAttribute('second'), false)
+    assert.equal(hasAttribute('third'), false)
+    assert.equal(hasAttribute('sixth'), false)
+    assert.equal(hasAttribute('seventh'), false)
+    assert.equal(hasAttribute('eighth'), false)
+    assert.equal(hasAttribute('ninth'), false)
   })
 
-  t.test('disallows adding more than maximum allowed attributes', (t) => {
+  await t.test('disallows adding more than maximum allowed attributes', () => {
     const inst = new PrioritizedAttributes(TRANSACTION_SCOPE, 3)
     const attributes = {
       first: 1,
@@ -352,39 +294,23 @@ tap.test('#addAttributes', (t) => {
     inst.addAttributes(DESTINATIONS.TRANS_SCOPE, attributes)
     const res = inst.get(DESTINATIONS.TRANS_SCOPE)
 
-    t.equal(Object.keys(res).length, 3)
-
-    t.end()
+    assert.equal(Object.keys(res).length, 3)
   })
 
-  t.test('Overwrites value of added attribute with same key', (t) => {
+  await t.test('Overwrites value of added attribute with same key', () => {
     const inst = new PrioritizedAttributes(TRANSACTION_SCOPE, 2)
     inst.addAttribute(0x01, 'Roboto', 1)
     inst.addAttribute(0x01, 'Roboto', 99)
 
     const res = inst.get(0x01)
 
-    t.equal(Object.keys(res).length, 1)
-    t.equal(res.Roboto, 99)
-
-    t.end()
+    assert.equal(Object.keys(res).length, 1)
+    assert.equal(res.Roboto, 99)
   })
 })
 
-tap.test('#get', (t) => {
-  t.autoend()
-
-  let agent = null
-
-  t.beforeEach(() => {
-    agent = helper.loadMockedAgent()
-  })
-
-  t.afterEach(() => {
-    helper.unloadAgent(agent)
-  })
-
-  t.test('gets attributes by destination, truncating values if necessary', (t) => {
+test('#get', async (t) => {
+  await t.test('gets attributes by destination, truncating values if necessary', () => {
     const longVal = [
       'Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
       'Cras id lacinia erat. Suspendisse mi nisl, sodales vel est eu,',
@@ -398,17 +324,15 @@ tap.test('#get', (t) => {
     inst.addAttribute(0x01, 'tooLong', longVal)
     inst.addAttribute(0x08, 'wrongDest', 'hello')
 
-    t.ok(Buffer.byteLength(longVal) > 255)
+    assert.ok(Buffer.byteLength(longVal) > 255)
 
     const res = inst.get(0x01)
-    t.equal(res.valid, 50)
+    assert.equal(res.valid, 50)
 
-    t.equal(Buffer.byteLength(res.tooLong), 255)
-
-    t.end()
+    assert.equal(Buffer.byteLength(res.tooLong), 255)
   })
 
-  t.test('only returns attributes up to specified limit', (t) => {
+  await t.test('only returns attributes up to specified limit', () => {
     const inst = new PrioritizedAttributes(TRANSACTION_SCOPE, 2)
     inst.addAttribute(0x01, 'first', 'first')
     inst.addAttribute(0x01, 'second', 'second')
@@ -417,44 +341,38 @@ tap.test('#get', (t) => {
     const res = inst.get(0x01)
     const hasAttribute = Object.hasOwnProperty.bind(res)
 
-    t.equal(Object.keys(res).length, 2)
-    t.notOk(hasAttribute('third'))
-
-    t.end()
+    assert.equal(Object.keys(res).length, 2)
+    assert.equal(hasAttribute('third'), false)
   })
 })
 
-tap.test('#hasValidDestination', (t) => {
-  t.autoend()
-
-  let agent = null
-
-  t.beforeEach(() => {
-    agent = helper.loadMockedAgent()
+test('#hasValidDestination', async (t) => {
+  t.beforeEach((ctx) => {
+    ctx.nr = {}
+    ctx.nr.agent = helper.loadMockedAgent()
   })
 
-  t.afterEach(() => {
-    helper.unloadAgent(agent)
+  t.afterEach((ctx) => {
+    helper.unloadAgent(ctx.nr.agent)
   })
 
-  t.test('should return true if single destination valid', (t) => {
+  await t.test('should return true if single destination valid', () => {
     const attributes = new PrioritizedAttributes(TRANSACTION_SCOPE)
     const hasDestination = attributes.hasValidDestination(DESTINATIONS.TRANS_EVENT, 'testAttr')
 
-    t.equal(hasDestination, true)
-    t.end()
+    assert.equal(hasDestination, true)
   })
 
-  t.test('should return true if all destinations valid', (t) => {
+  await t.test('should return true if all destinations valid', () => {
     const attributes = new PrioritizedAttributes(TRANSACTION_SCOPE)
     const destinations = DESTINATIONS.TRANS_EVENT | DESTINATIONS.TRANS_TRACE
     const hasDestination = attributes.hasValidDestination(destinations, 'testAttr')
 
-    t.equal(hasDestination, true)
-    t.end()
+    assert.equal(hasDestination, true)
   })
 
-  t.test('should return true if only one destination valid', (t) => {
+  await t.test('should return true if only one destination valid', (t) => {
+    const { agent } = t.nr
     const attributeName = 'testAttr'
     agent.config.transaction_events.attributes.exclude = [attributeName]
     agent.config.emit('transaction_events.attributes.exclude')
@@ -463,11 +381,11 @@ tap.test('#hasValidDestination', (t) => {
     const destinations = DESTINATIONS.TRANS_EVENT | DESTINATIONS.TRANS_TRACE
     const hasDestination = attributes.hasValidDestination(destinations, attributeName)
 
-    t.equal(hasDestination, true)
-    t.end()
+    assert.equal(hasDestination, true)
   })
 
-  t.test('should return false if no valid destinations', (t) => {
+  await t.test('should return false if no valid destinations', (t) => {
+    const { agent } = t.nr
     const attributeName = 'testAttr'
     agent.config.attributes.exclude = [attributeName]
     agent.config.emit('attributes.exclude')
@@ -476,25 +394,12 @@ tap.test('#hasValidDestination', (t) => {
     const destinations = DESTINATIONS.TRANS_EVENT | DESTINATIONS.TRANS_TRACE
     const hasDestination = attributes.hasValidDestination(destinations, attributeName)
 
-    t.equal(hasDestination, false)
-    t.end()
+    assert.equal(hasDestination, false)
   })
 })
 
-tap.test('#reset', (t) => {
-  t.autoend()
-
-  let agent = null
-
-  t.beforeEach(() => {
-    agent = helper.loadMockedAgent()
-  })
-
-  t.afterEach(() => {
-    helper.unloadAgent(agent)
-  })
-
-  t.test('resets instance attributes', (t) => {
+test('#reset', async (t) => {
+  await t.test('resets instance attributes', () => {
     const inst = new PrioritizedAttributes(TRANSACTION_SCOPE)
     inst.addAttribute(0x01, 'first', 'first')
     inst.addAttribute(0x01, 'second', 'second')
@@ -502,10 +407,8 @@ tap.test('#reset', (t) => {
 
     inst.reset()
 
-    t.notOk(inst.has('first'))
-    t.notOk(inst.has('second'))
-    t.notOk(inst.has('third'))
-
-    t.end()
+    assert.equal(inst.has('first'), undefined)
+    assert.equal(inst.has('second'), undefined)
+    assert.equal(inst.has('third'), undefined)
   })
 })
