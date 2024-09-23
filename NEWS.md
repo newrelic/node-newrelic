@@ -32,7 +32,6 @@
 #### Continuous integration
 
 * Added workflow run trigger to Azure site extension publish job ([#2575](https://github.com/newrelic/node-newrelic/pull/2575)) ([e8ae942](https://github.com/newrelic/node-newrelic/commit/e8ae94249553c8c648e43adec271e9e2900c574a))
-    * Signed-off-by: mrickard <maurice@mauricerickard.com>
 
 ### v12.5.0 (2024-09-12)
 
