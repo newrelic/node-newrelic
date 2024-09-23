@@ -1,15 +1,21 @@
 /*
- * Copyright 2020 New Relic Corporation. All rights reserved.
+ * Copyright 2024 New Relic Corporation. All rights reserved.
  * SPDX-License-Identifier: Apache-2.0
  */
 
 'use strict'
-const tap = require('tap')
+
+const test = require('node:test')
+const assert = require('node:assert')
+
 const helper = require('../lib/agent_helper')
 const headerAttributes = require('../../lib/header-attributes')
 
-const DESTINATIONS = require('../../lib/config/attribute-filter').DESTINATIONS
-function beforeEach(t) {
+const { DESTINATIONS } = require('../../lib/config/attribute-filter')
+
+function beforeEach(ctx) {
+  ctx.nr = {}
+
   const config = {
     attributes: {
       exclude: [
@@ -26,41 +32,96 @@ function beforeEach(t) {
       ]
     }
   }
-  t.context.agent = helper.loadMockedAgent(config)
+  ctx.nr.agent = helper.loadMockedAgent(config)
 }
 
-function afterEach(t) {
-  helper.unloadAgent(t.context.agent)
+function afterEach(ctx) {
+  helper.unloadAgent(ctx.nr.agent)
 }
 
-tap.test('header-attributes', (t) => {
-  t.autoend()
+test('#collectRequestHeaders', async (t) => {
+  t.beforeEach(beforeEach)
+  t.afterEach(afterEach)
 
-  t.test('#collectRequestHeaders', (t) => {
-    t.autoend()
-    t.beforeEach(beforeEach)
-    t.afterEach(afterEach)
+  await t.test('should be case insensitive when allow_all_headers is false', (t, end) => {
+    const { agent } = t.nr
+    agent.config.allow_all_headers = false
+    const headers = {
+      Accept: 'acceptValue'
+    }
 
-    t.test('should be case insensitive when allow_all_headers is false', (t) => {
-      const { agent } = t.context
-      agent.config.allow_all_headers = false
-      const headers = {
-        Accept: 'acceptValue'
-      }
+    helper.runInTransaction(agent, (transaction) => {
+      headerAttributes.collectRequestHeaders(headers, transaction)
 
-      helper.runInTransaction(agent, (transaction) => {
-        headerAttributes.collectRequestHeaders(headers, transaction)
-
-        const attributes = transaction.trace.attributes.get(DESTINATIONS.TRANS_TRACE)
-        t.equal(attributes['request.headers.accept'], 'acceptValue')
-        t.notOk(attributes.Accept)
-        agent.config.allow_all_headers = true
-        t.end()
-      })
+      const attributes = transaction.trace.attributes.get(DESTINATIONS.TRANS_TRACE)
+      assert.equal(attributes['request.headers.accept'], 'acceptValue')
+      assert.equal(attributes.Accept, undefined)
+      agent.config.allow_all_headers = true
+      end()
     })
-    t.test('should strip `-` from headers', (t) => {
-      const { agent } = t.context
+  })
+
+  await t.test('should strip `-` from headers', (t, end) => {
+    const { agent } = t.nr
+    const headers = {
+      'content-type': 'valid-type'
+    }
+
+    helper.runInTransaction(agent, (transaction) => {
+      headerAttributes.collectRequestHeaders(headers, transaction)
+
+      const attributes = transaction.trace.attributes.get(DESTINATIONS.TRANS_TRACE)
+      assert.equal(attributes['request.headers.contentType'], 'valid-type')
+      assert.equal(attributes['content-type'], undefined)
+      end()
+    })
+  })
+
+  await t.test('should lowercase first letter in headers', (t, end) => {
+    const { agent } = t.nr
+    const headers = {
+      'Content-Type': 'valid-type'
+    }
+
+    helper.runInTransaction(agent, (transaction) => {
+      headerAttributes.collectRequestHeaders(headers, transaction)
+
+      const attributes = transaction.trace.attributes.get(DESTINATIONS.TRANS_TRACE)
+      assert.equal(attributes['request.headers.contentType'], 'valid-type')
+      assert.equal(attributes['Content-Type'], undefined)
+      assert.equal(attributes.ContentType, undefined)
+      end()
+    })
+  })
+
+  await t.test('should capture a scrubbed version of the referer header', (t, end) => {
+    const { agent } = t.nr
+    const refererUrl = 'https://www.google.com/search/cats?scrubbed=false'
+
+    const headers = {
+      referer: refererUrl
+    }
+
+    helper.runInTransaction(agent, (transaction) => {
+      headerAttributes.collectRequestHeaders(headers, transaction)
+
+      const attributes = transaction.trace.attributes.get(DESTINATIONS.TRANS_TRACE)
+
+      assert.equal(attributes['request.headers.referer'], 'https://www.google.com/search/cats')
+
+      end()
+    })
+  })
+
+  await t.test(
+    'with allow_all_headers set to false should only collect allowed agent-specified headers',
+    (t, end) => {
+      const { agent } = t.nr
+      agent.config.allow_all_headers = false
+
       const headers = {
+        'invalid': 'header',
+        'referer': 'valid-referer',
         'content-type': 'valid-type'
       }
 
@@ -68,182 +129,123 @@ tap.test('header-attributes', (t) => {
         headerAttributes.collectRequestHeaders(headers, transaction)
 
         const attributes = transaction.trace.attributes.get(DESTINATIONS.TRANS_TRACE)
-        t.equal(attributes['request.headers.contentType'], 'valid-type')
-        t.notOk(attributes['content-type'])
-        t.end()
-      })
-    })
+        assert.equal(attributes['request.headers.invalid'], undefined)
+        assert.equal(attributes['request.headers.referer'], 'valid-referer')
+        assert.equal(attributes['request.headers.contentType'], 'valid-type')
 
-    t.test('should lowercase first letter in headers', (t) => {
-      const { agent } = t.context
+        end()
+      })
+    }
+  )
+
+  await t.test(
+    'with allow_all_headers set to false should collect allowed headers as span attributes',
+    (t, end) => {
+      const { agent } = t.nr
+      agent.config.allow_all_headers = false
+
       const headers = {
-        'Content-Type': 'valid-type'
+        'invalid': 'header',
+        'referer': 'valid-referer',
+        'content-type': 'valid-type'
       }
 
       helper.runInTransaction(agent, (transaction) => {
         headerAttributes.collectRequestHeaders(headers, transaction)
 
         const attributes = transaction.trace.attributes.get(DESTINATIONS.TRANS_TRACE)
-        t.equal(attributes['request.headers.contentType'], 'valid-type')
-        t.notOk(attributes['Content-Type'])
-        t.notOk(attributes.ContentType)
-        t.end()
-      })
-    })
+        assert.equal(attributes['request.headers.invalid'], undefined)
+        assert.equal(attributes['request.headers.referer'], 'valid-referer')
+        assert.equal(attributes['request.headers.contentType'], 'valid-type')
 
-    t.test('should capture a scrubbed version of the referer header', (t) => {
-      const { agent } = t.context
-      const refererUrl = 'https://www.google.com/search/cats?scrubbed=false'
+        const segment = transaction.agent.tracer.getSegment()
+        const spanAttributes = segment.attributes.get(DESTINATIONS.SPAN_EVENT)
+
+        assert.equal(spanAttributes['request.headers.referer'], 'valid-referer')
+        assert.equal(spanAttributes['request.headers.contentType'], 'valid-type')
+        end()
+      })
+    }
+  )
+
+  await t.test(
+    'with allow_all_headers set to true should collect all headers not filtered by `exclude` rules',
+    (t, end) => {
+      const { agent } = t.nr
+      agent.config.allow_all_headers = true
 
       const headers = {
-        referer: refererUrl
+        'valid': 'header',
+        'referer': 'valid-referer',
+        'content-type': 'valid-type',
+        'X-filtered-out': 'invalid'
       }
 
       helper.runInTransaction(agent, (transaction) => {
         headerAttributes.collectRequestHeaders(headers, transaction)
 
         const attributes = transaction.trace.attributes.get(DESTINATIONS.TRANS_TRACE)
-
-        t.equal(attributes['request.headers.referer'], 'https://www.google.com/search/cats')
-
-        t.end()
+        assert.equal(attributes['request.headers.x-filtered-out'], undefined)
+        assert.equal(attributes['request.headers.xFilteredOut'], undefined)
+        assert.equal(attributes['request.headers.XFilteredOut'], undefined)
+        assert.equal(attributes['request.headers.valid'], 'header')
+        assert.equal(attributes['request.headers.referer'], 'valid-referer')
+        assert.equal(attributes['request.headers.contentType'], 'valid-type')
+        end()
       })
-    })
+    }
+  )
+})
 
-    t.test(
-      'with allow_all_headers set to false should only collect allowed agent-specified headers',
-      (t) => {
-        const { agent } = t.context
-        agent.config.allow_all_headers = false
+test('#collectResponseHeaders', async (t) => {
+  t.beforeEach(beforeEach)
+  t.afterEach(afterEach)
 
-        const headers = {
-          'invalid': 'header',
-          'referer': 'valid-referer',
-          'content-type': 'valid-type'
-        }
+  await t.test(
+    'with allow_all_headers set to false should only collect allowed agent-specified headers',
+    (t, end) => {
+      const { agent } = t.nr
+      agent.config.allow_all_headers = false
 
-        helper.runInTransaction(agent, (transaction) => {
-          headerAttributes.collectRequestHeaders(headers, transaction)
-
-          const attributes = transaction.trace.attributes.get(DESTINATIONS.TRANS_TRACE)
-          t.notOk(attributes['request.headers.invalid'])
-          t.equal(attributes['request.headers.referer'], 'valid-referer')
-          t.equal(attributes['request.headers.contentType'], 'valid-type')
-
-          t.end()
-        })
+      const headers = {
+        'invalid': 'header',
+        'content-type': 'valid-type'
       }
-    )
 
-    t.test(
-      'with allow_all_headers set to false should collect allowed headers as span attributes',
-      (t) => {
-        const { agent } = t.context
-        agent.config.allow_all_headers = false
+      helper.runInTransaction(agent, (transaction) => {
+        headerAttributes.collectResponseHeaders(headers, transaction)
 
-        const headers = {
-          'invalid': 'header',
-          'referer': 'valid-referer',
-          'content-type': 'valid-type'
-        }
+        const attributes = transaction.trace.attributes.get(DESTINATIONS.TRANS_TRACE)
+        assert.equal(attributes['response.headers.invalid'], undefined)
+        assert.equal(attributes['response.headers.contentType'], 'valid-type')
+        end()
+      })
+    }
+  )
 
-        helper.runInTransaction(agent, (transaction) => {
-          headerAttributes.collectRequestHeaders(headers, transaction)
+  await t.test(
+    'with allow_all_headers set to true should collect all headers not filtered by `exclude` rules',
+    (t, end) => {
+      const { agent } = t.nr
+      agent.config.allow_all_headers = true
 
-          const attributes = transaction.trace.attributes.get(DESTINATIONS.TRANS_TRACE)
-          t.notOk(attributes['request.headers.invalid'])
-          t.equal(attributes['request.headers.referer'], 'valid-referer')
-          t.equal(attributes['request.headers.contentType'], 'valid-type')
-
-          const segment = transaction.agent.tracer.getSegment()
-          const spanAttributes = segment.attributes.get(DESTINATIONS.SPAN_EVENT)
-
-          t.equal(spanAttributes['request.headers.referer'], 'valid-referer')
-          t.equal(spanAttributes['request.headers.contentType'], 'valid-type')
-          t.end()
-        })
+      const headers = {
+        'valid': 'header',
+        'content-type': 'valid-type',
+        'X-filtered-out': 'invalid'
       }
-    )
 
-    t.test(
-      'with allow_all_headers set to true should collect all headers not filtered by `exclude` rules',
-      (t) => {
-        const { agent } = t.context
-        agent.config.allow_all_headers = true
+      helper.runInTransaction(agent, (transaction) => {
+        headerAttributes.collectResponseHeaders(headers, transaction)
 
-        const headers = {
-          'valid': 'header',
-          'referer': 'valid-referer',
-          'content-type': 'valid-type',
-          'X-filtered-out': 'invalid'
-        }
-
-        helper.runInTransaction(agent, (transaction) => {
-          headerAttributes.collectRequestHeaders(headers, transaction)
-
-          const attributes = transaction.trace.attributes.get(DESTINATIONS.TRANS_TRACE)
-          t.notOk(attributes['request.headers.x-filtered-out'])
-          t.notOk(attributes['request.headers.xFilteredOut'])
-          t.notOk(attributes['request.headers.XFilteredOut'])
-          t.equal(attributes['request.headers.valid'], 'header')
-          t.equal(attributes['request.headers.referer'], 'valid-referer')
-          t.equal(attributes['request.headers.contentType'], 'valid-type')
-          t.end()
-        })
-      }
-    )
-  })
-
-  t.test('#collectResponseHeaders', (t) => {
-    t.autoend()
-    t.beforeEach(beforeEach)
-    t.afterEach(afterEach)
-    t.test(
-      'with allow_all_headers set to false should only collect allowed agent-specified headers',
-      (t) => {
-        const { agent } = t.context
-        agent.config.allow_all_headers = false
-
-        const headers = {
-          'invalid': 'header',
-          'content-type': 'valid-type'
-        }
-
-        helper.runInTransaction(agent, (transaction) => {
-          headerAttributes.collectResponseHeaders(headers, transaction)
-
-          const attributes = transaction.trace.attributes.get(DESTINATIONS.TRANS_TRACE)
-          t.notOk(attributes['response.headers.invalid'])
-          t.equal(attributes['response.headers.contentType'], 'valid-type')
-          t.end()
-        })
-      }
-    )
-
-    t.test(
-      'with allow_all_headers set to true should collect all headers not filtered by `exclude` rules',
-      (t) => {
-        const { agent } = t.context
-        agent.config.allow_all_headers = true
-
-        const headers = {
-          'valid': 'header',
-          'content-type': 'valid-type',
-          'X-filtered-out': 'invalid'
-        }
-
-        helper.runInTransaction(agent, (transaction) => {
-          headerAttributes.collectResponseHeaders(headers, transaction)
-
-          const attributes = transaction.trace.attributes.get(DESTINATIONS.TRANS_TRACE)
-          t.notOk(attributes['response.headers.x-filtered-out'])
-          t.notOk(attributes['response.headers.xFilteredOut'])
-          t.notOk(attributes['response.headers.XFilteredOut'])
-          t.equal(attributes['response.headers.valid'], 'header')
-          t.equal(attributes['response.headers.contentType'], 'valid-type')
-          t.end()
-        })
-      }
-    )
-  })
+        const attributes = transaction.trace.attributes.get(DESTINATIONS.TRANS_TRACE)
+        assert.equal(attributes['response.headers.x-filtered-out'], undefined)
+        assert.equal(attributes['response.headers.xFilteredOut'], undefined)
+        assert.equal(attributes['response.headers.XFilteredOut'], undefined)
+        assert.equal(attributes['response.headers.valid'], 'header')
+        assert.equal(attributes['response.headers.contentType'], 'valid-type')
+        end()
+      })
+    }
+  )
 })
