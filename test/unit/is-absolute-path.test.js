@@ -5,10 +5,12 @@
 
 'use strict'
 
-const tap = require('tap')
+const test = require('node:test')
+const assert = require('node:assert')
+
 const isAbsolutePath = require('../../lib/util/is-absolute-path')
 
-tap.test('verifies paths correctly', async (t) => {
+test('verifies paths correctly', async () => {
   const tests = [
     ['./foo/bar.js', true],
     ['/foo/bar.cjs', true],
@@ -19,6 +21,6 @@ tap.test('verifies paths correctly', async (t) => {
   ]
 
   for (const [input, expected] of tests) {
-    t.equal(isAbsolutePath(input), expected)
+    assert.equal(isAbsolutePath(input), expected)
   }
 })
