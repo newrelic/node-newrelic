@@ -16,6 +16,19 @@
       "files": [
         "pino.tap.js"
       ]
+    },
+
+    {
+      "engines": {
+        "node": ">=18"
+      },
+      "dependencies": {
+        "pino": ">=7.0.0",
+        "pino-http": ">=10.3.0"
+      },
+      "files": [
+        "issue-2595.test.js"
+      ]
     }
   ]
 }
