@@ -11,11 +11,11 @@ const os = require('node:os')
 const fs = require('node:fs')
 const net = require('node:net')
 
-const helper = require('../lib/agent_helper')
-const { match } = require('../lib/custom-assertions')
-const sysInfo = require('../../lib/system-info')
-const utilTests = require('../lib/cross_agent_tests/utilization/utilization_json')
-const bootIdTests = require('../lib/cross_agent_tests/utilization/boot_id')
+const helper = require('../../lib/agent_helper')
+const { match } = require('../../lib/custom-assertions')
+const sysInfo = require('../../../lib/system-info')
+const utilTests = require('../../lib/cross_agent_tests/utilization/utilization_json')
+const bootIdTests = require('../../lib/cross_agent_tests/utilization/boot_id')
 
 const APP_NAMES = ['a', 'c', 'b']
 const DISABLE_ALL_DETECTIONS = {
@@ -63,7 +63,7 @@ test('fun facts about apps that New Relic is interested in including', async (t)
     ctx.nr.logger = logger
     ctx.nr.logs = logs
 
-    const facts = require('../../lib/collector/facts')
+    const facts = require('../../../lib/collector/facts')
     ctx.nr.facts = function (agent, callback) {
       return facts(agent, callback, { logger: ctx.nr.logger })
     }
@@ -260,11 +260,11 @@ test('fun facts about apps that New Relic is interested in including', async (t)
 })
 
 test('utilization facts', async (t) => {
-  const awsInfo = require('../../lib/utilization/aws-info')
-  const azureInfo = require('../../lib/utilization/azure-info')
-  const gcpInfo = require('../../lib/utilization/gcp-info')
-  const kubernetesInfo = require('../../lib/utilization/kubernetes-info')
-  const common = require('../../lib/utilization/common')
+  const awsInfo = require('../../../lib/utilization/aws-info')
+  const azureInfo = require('../../../lib/utilization/azure-info')
+  const gcpInfo = require('../../../lib/utilization/gcp-info')
+  const kubernetesInfo = require('../../../lib/utilization/kubernetes-info')
+  const common = require('../../../lib/utilization/common')
 
   t.beforeEach((ctx) => {
     ctx.nr = {}
@@ -287,7 +287,7 @@ test('utilization facts', async (t) => {
 
     ctx.nr.networkInterfaces = os.networkInterfaces
 
-    const facts = require('../../lib/collector/facts')
+    const facts = require('../../../lib/collector/facts')
     ctx.nr.facts = function (agent, callback) {
       return facts(agent, callback, { logger: ctx.nr.logger })
     }
@@ -488,12 +488,12 @@ test('utilization facts', async (t) => {
 })
 
 test('boot id facts', async (t) => {
-  const common = require('../../lib/utilization/common')
+  const common = require('../../../lib/utilization/common')
 
   t.beforeEach((ctx) => {
     ctx.nr = {}
 
-    const facts = require('../../lib/collector/facts')
+    const facts = require('../../../lib/collector/facts')
     ctx.nr.facts = function (agent, callback) {
       return facts(agent, callback, { logger: ctx.nr.logger })
     }
@@ -612,7 +612,7 @@ test('display_host facts', async (t) => {
   t.beforeEach((ctx) => {
     ctx.nr = {}
 
-    const facts = require('../../lib/collector/facts')
+    const facts = require('../../../lib/collector/facts')
     ctx.nr.facts = function (agent, callback) {
       return facts(agent, callback, { logger: ctx.nr.logger })
     }
