@@ -17,7 +17,7 @@ test('Express route param', async function (t) {
 
   t.afterEach(teardown)
 
-  await t.test('pass-through param', function (t, end) {
+  await t.test('pass-through param', async function (t) {
     const { agent, port } = t.nr
     const plan = tsplan(t, { plan: 4 })
 
@@ -33,11 +33,11 @@ test('Express route param', async function (t) {
       plan.ok(!err, 'should not have errored')
       plan.equal(body.action, 'foo', 'should pass through correct parameter value')
       plan.equal(body.name, 'action', 'should pass through correct parameter name')
-      end()
     })
+    await plan.completed
   })
 
-  await t.test('respond from param', function (t, end) {
+  await t.test('respond from param', async function (t) {
     const { agent, port } = t.nr
     const plan = tsplan(t, { plan: 3 })
 
@@ -52,11 +52,11 @@ test('Express route param', async function (t) {
     testRequest(port, 'deny', function (err, body) {
       plan.ok(!err, 'should not have errored')
       plan.equal(body, 'denied', 'should have responded from within paramware')
-      end()
     })
+    await plan.completed
   })
 
-  await t.test('in-active transaction in param handler', function (t, end) {
+  await t.test('in-active transaction in param handler', async function (t) {
     const { agent, port } = t.nr
     const plan = tsplan(t, { plan: 4 })
 
@@ -72,8 +72,8 @@ test('Express route param', async function (t) {
       plan.ok(!err, 'should not have errored')
       plan.equal(body.action, 'preempt', 'should pass through correct parameter value')
       plan.equal(body.name, 'action', 'should pass through correct parameter name')
-      end()
     })
+    await plan.completed
   })
 })
 

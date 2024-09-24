@@ -327,7 +327,7 @@ test('transactions running in parallel should be recorded correctly', function (
   }
 })
 
-test('names transaction when request is aborted', function (t, end) {
+test('names transaction when request is aborted', async function (t) {
   const plan = tsplan(t, { plan: 5 })
 
   const { agent, app, port } = t.nr
@@ -349,7 +349,6 @@ test('names transaction when request is aborted', function (t, end) {
   app.use(function (error, req, res, next) {
     plan.ok(agent.getTransaction() == null, 'no active transaction when responding')
     res.end()
-    end()
   })
 
   request = http.request(
@@ -370,9 +369,10 @@ test('names transaction when request is aborted', function (t, end) {
   agent.on('transactionFinished', function (tx) {
     plan.equal(tx.name, 'WebTransaction/Expressjs/GET//test')
   })
+  await plan.completed
 })
 
-test('Express transaction names are unaffected by errorware', function (t, end) {
+test('Express transaction names are unaffected by errorware', async function (t) {
   const plan = tsplan(t, { plan: 1 })
 
   const { agent, app, port } = t.nr
@@ -380,7 +380,6 @@ test('Express transaction names are unaffected by errorware', function (t, end) 
   agent.on('transactionFinished', function (tx) {
     const expected = 'WebTransaction/Expressjs/GET//test'
     plan.equal(tx.trace.root.children[0].name, expected)
-    end()
   })
 
   app.use('/test', function () {
@@ -393,9 +392,10 @@ test('Express transaction names are unaffected by errorware', function (t, end) 
   })
 
   http.request({ port, path: '/test' }).end()
+  await plan.completed
 })
 
-test('when next is called after transaction state loss', function (t, end) {
+test('when next is called after transaction state loss', async function (t) {
   // Uninstrumented work queue. This must be set up before the agent is loaded
   // so that no transaction state is maintained.
   const tasks = []
@@ -446,7 +446,6 @@ test('when next is called after transaction state loss', function (t, end) {
     res.resume()
     res.on('end', function () {
       plan.equal(transactionsFinished, 2, 'should have two transactions done')
-      end()
     })
   })
 
@@ -457,14 +456,15 @@ test('when next is called after transaction state loss', function (t, end) {
       res.resume()
     })
   }, 100)
+  await plan.completed
 })
 
 // express did not add array based middleware registration
 // without path until 4.9.2
 // https://github.com/expressjs/express/blob/master/History.md#492--2014-09-17
 if (semver.satisfies(pkgVersion, '>=4.9.2')) {
-  test('transaction name with array of middleware with unspecified mount path', (t, end) => {
-    const plan = tsplan(t, { plan: 2 })
+  test('transaction name with array of middleware with unspecified mount path', async (t) => {
+    const plan = tsplan(t, { plan: 3 })
     const { app } = t.nr
 
     function mid1(req, res, next) {
@@ -483,11 +483,12 @@ if (semver.satisfies(pkgVersion, '>=4.9.2')) {
       res.end()
     })
 
-    runTest({ t, end, endpoint: '/path1' })
+    runTest({ t, localAssert: plan, endpoint: '/path1' })
+    await plan.completed
   })
 
-  test('transaction name when ending in array of unmounted middleware', (t, end) => {
-    const plan = tsplan(t, { plan: 2 })
+  test('transaction name when ending in array of unmounted middleware', async (t) => {
+    const plan = tsplan(t, { plan: 3 })
     const { app } = t.nr
 
     function mid1(req, res, next) {
@@ -504,7 +505,8 @@ if (semver.satisfies(pkgVersion, '>=4.9.2')) {
 
     app.use(mid1)
 
-    runTest({ t, end, endpoint: '/path1', expectedName: '/' })
+    runTest({ t, localAssert: plan, endpoint: '/path1', expectedName: '/' })
+    await plan.completed
   })
 }
 
@@ -534,18 +536,32 @@ function makeMultiRunner({ t, endpoint, expectedName, numTests, end }) {
   }
 }
 
-function runTest({ t, endpoint, expectedName, end }) {
+/**
+ * Makes a request and waits for transaction to finish before ending test.
+ * You can pass in the assertion library, this is for tests that rely on `tspl`
+ * end is optionally called and will be ommitted when tests rely on `tspl`
+ * to end.
+ *
+ * @param {object} params to function
+ * @param {object} params.t test context
+ * @param {string} params.endpoint
+ * @param {string} [params.expectedName] defaults to endpoint if not specified
+ * @param {function} [params.end] function that tells test to end
+ * @param {object} params.localAssert library for assertions, defaults to `node:assert`
+ *
+ */
+function runTest({ t, endpoint, expectedName, end, localAssert = require('node:assert') }) {
   const { agent, port } = t.nr
   if (!expectedName) {
     expectedName = endpoint
   }
   agent.on('transactionFinished', function (transaction) {
-    assert.equal(
+    localAssert.equal(
       transaction.name,
       'WebTransaction/Expressjs/GET/' + expectedName,
       'transaction has expected name'
     )
-    end()
+    end?.()
   })
   makeRequest(port, endpoint)
 }

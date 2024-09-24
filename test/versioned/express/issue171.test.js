@@ -16,7 +16,7 @@ test.beforeEach(async (ctx) => {
 
 test.afterEach(teardown)
 
-test("adding 'handle' middleware", function (t, end) {
+test("adding 'handle' middleware", async function (t) {
   const { app, port } = t.nr
   const plan = tsplan(t, { plan: 2 })
 
@@ -40,7 +40,7 @@ test("adding 'handle' middleware", function (t, end) {
       res.pipe(process.stderr)
 
       plan.equal(res.statusCode, 500)
-      end()
     })
     .end()
+  await plan.completed
 })

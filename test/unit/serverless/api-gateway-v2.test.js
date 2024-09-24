@@ -64,7 +64,7 @@ test('should pick up the arn', async (t) => {
   assert.equal(agent.collector.metadata.arn, functionContext.invokedFunctionArn)
 })
 
-test('should create a web transaction', (t, end) => {
+test('should create a web transaction', async (t) => {
   const plan = tspl(t, { plan: 8 })
   const { agent, lambda, event, functionContext, responseBody } = t.nr
   agent.on('transactionFinished', verifyAttributes)
@@ -90,21 +90,16 @@ test('should create a web transaction', (t, end) => {
     plan.equal(agentAttributes['request.uri'], '/my/path')
     plan.equal(spanAttributes['request.method'], 'POST')
     plan.equal(spanAttributes['request.uri'], '/my/path')
-
-    end()
   }
+  await plan.completed
 })
 
-test('should set w3c tracecontext on transaction if present on request header', (t, end) => {
+test('should set w3c tracecontext on transaction if present on request header', async (t) => {
   const plan = tspl(t, { plan: 2 })
 
   const expectedTraceId = '4bf92f3577b34da6a3ce929d0e0e4736'
   const traceparent = `00-${expectedTraceId}-00f067aa0ba902b7-00`
   const { agent, lambda, event, functionContext, responseBody } = t.nr
-  agent.on('transactionFinished', () => {
-    end()
-  })
-
   agent.config.distributed_tracing.enabled = true
   event.headers.traceparent = traceparent
 
@@ -124,15 +119,13 @@ test('should set w3c tracecontext on transaction if present on request header', 
   })
 
   wrappedHandler(event, functionContext, () => {})
+  await plan.completed
 })
 
-test('should add w3c tracecontext to transaction if not present on request header', (t, end) => {
+test('should add w3c tracecontext to transaction if not present on request header', async (t) => {
   const plan = tspl(t, { plan: 2 })
 
   const { agent, lambda, event, functionContext, responseBody } = t.nr
-  agent.on('transactionFinished', () => {
-    end()
-  })
 
   agent.config.account_id = 'AccountId1'
   agent.config.primary_application_id = 'AppId1'
@@ -152,9 +145,10 @@ test('should add w3c tracecontext to transaction if not present on request heade
   })
 
   wrappedHandler(event, functionContext, () => {})
+  await plan.completed
 })
 
-test('should capture request parameters', (t, end) => {
+test('should capture request parameters', async (t) => {
   const plan = tspl(t, { plan: 5 })
 
   const { agent, lambda, event, functionContext, responseBody } = t.nr
@@ -182,12 +176,11 @@ test('should capture request parameters', (t, end) => {
     plan.equal(spanAttributes['request.parameters.team'], 'node agent')
 
     plan.equal(agentAttributes['request.parameters.parameter1'], 'value1,value2')
-
-    end()
   }
+  await plan.completed
 })
 
-test('should capture request headers', (t, end) => {
+test('should capture request headers', async (t) => {
   const plan = tspl(t, { plan: 2 })
 
   const { agent, lambda, event, functionContext, responseBody } = t.nr
@@ -203,9 +196,8 @@ test('should capture request headers', (t, end) => {
 
     plan.equal(attrs['request.headers.accept'], 'application/json')
     plan.equal(attrs['request.headers.header2'], 'value1,value2')
-
-    end()
   }
+  await plan.completed
 })
 
 test('should not crash when headers are non-existent', (t) => {

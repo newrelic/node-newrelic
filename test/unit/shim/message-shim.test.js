@@ -370,7 +370,7 @@ test('MessageShim', async function (t) {
       })
     })
 
-    await t.test('should insert distributed trace headers in all messages', function (t, end) {
+    await t.test('should insert distributed trace headers in all messages', async function (t) {
       const plan = tspl(t, { plan: 1 })
       const { agent, shim, wrappable } = t.nr
       const messages = [{}, { headers: { foo: 'foo' } }, {}]
@@ -418,13 +418,13 @@ test('MessageShim', async function (t) {
           }
         ])
         plan.equal(called, 1)
-        end()
       })
 
       helper.runInTransaction(agent, (tx) => {
         wrappable.sendMessages()
         tx.end()
       })
+      await plan.completed
     })
 
     await t.test('should create message broker metrics', function (t, end) {
@@ -1241,7 +1241,7 @@ test('MessageShim', async function (t) {
       })
     })
 
-    await t.test('should wrap object key of consumer', function (t, end) {
+    await t.test('should wrap object key of consumer', async function (t) {
       const plan = tspl(t, { plan: 4 })
       const { shim } = t.nr
       const message = { foo: 'bar' }
@@ -1267,10 +1267,10 @@ test('MessageShim', async function (t) {
           const segment = shim.getSegment()
           plan.equal(segment.name, 'OtherTransaction/Message/RabbitMQ/Exchange/Named/exchange.foo')
           plan.equal(msg, message)
-          end()
         }
       }
       wrapped(handler)
+      await plan.completed
     })
   })
 })

@@ -17,7 +17,7 @@ test.beforeEach(async (ctx) => {
 
 test.afterEach(teardown)
 
-test('ignoring an Express route', function (t, end) {
+test('ignoring an Express route', async function (t) {
   const { agent, app, port } = t.nr
   const plan = tsplan(t, { plan: 7 })
 
@@ -57,6 +57,6 @@ test('ignoring an Express route', function (t, end) {
   helper.makeGetRequest(url, function (error, res, body) {
     plan.equal(res.statusCode, 400, 'got expected error')
     plan.deepEqual(body, { status: 'pollpollpoll' }, 'got expected response')
-    end()
   })
+  await plan.completed
 })

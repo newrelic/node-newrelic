@@ -20,7 +20,7 @@ test.beforeEach(async (ctx) => {
 
 test.afterEach(teardown)
 
-test('Express + express-enrouten compatibility test', { skip: isExpress5() }, function (t, end) {
+test('Express + express-enrouten compatibility test', { skip: isExpress5() }, async function (t) {
   const { app, port } = t.nr
   const plan = tsplan(t, { plan: 2 })
 
@@ -35,6 +35,6 @@ test('Express + express-enrouten compatibility test', { skip: isExpress5() }, fu
 
   helper.makeGetRequest('http://localhost:' + port + '/foo', function (error, res) {
     plan.equal(res.statusCode, 200, 'Second Route loaded')
-    end()
   })
+  await plan.completed
 })

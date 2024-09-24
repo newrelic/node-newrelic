@@ -1397,7 +1397,7 @@ test('AwsLambda.patchLambdaHandler', async (t) => {
     }
   )
 
-  await t.test('should record error event when error is thrown', (t, end) => {
+  await t.test('should record error event when error is thrown', async (t) => {
     const plan = tspl(t, { plan: 8 })
     const { agent, awsLambda, error, stubEvent, stubContext, stubCallback } = t.nr
 
@@ -1427,8 +1427,8 @@ test('AwsLambda.patchLambdaHandler', async (t) => {
       if (error.name !== 'SyntaxError') {
         throw error
       }
-      end()
     }
+    await plan.completed
   })
 
   await t.test('should not end transactions twice', (t, end) => {
