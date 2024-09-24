@@ -5,10 +5,12 @@
 
 'use strict'
 
-const tap = require('tap')
+const test = require('node:test')
+const assert = require('node:assert')
+
 const InstrumentationDescriptor = require('../../lib/instrumentation-descriptor')
 
-tap.test('constructs instances', async (t) => {
+test('constructs instances', async () => {
   const desc = new InstrumentationDescriptor({
     type: 'generic',
     module: 'foo',
@@ -19,17 +21,17 @@ tap.test('constructs instances', async (t) => {
     onError
   })
 
-  t.equal(desc.type, InstrumentationDescriptor.TYPE_GENERIC)
-  t.equal(desc.module, 'foo')
-  t.equal(desc.moduleName, 'foo')
-  t.equal(desc.absolutePath, '/foo')
-  t.equal(desc.resolvedName, '/opt/app/node_modules/foo')
-  t.equal(desc.onRequire, onRequire)
-  t.equal(desc.onError, onError)
-  t.equal(desc.instrumentationId, 0)
+  assert.equal(desc.type, InstrumentationDescriptor.TYPE_GENERIC)
+  assert.equal(desc.module, 'foo')
+  assert.equal(desc.moduleName, 'foo')
+  assert.equal(desc.absolutePath, '/foo')
+  assert.equal(desc.resolvedName, '/opt/app/node_modules/foo')
+  assert.equal(desc.onRequire, onRequire)
+  assert.equal(desc.onError, onError)
+  assert.equal(desc.instrumentationId, 0)
 
   const desc2 = new InstrumentationDescriptor({ moduleName: 'foo' })
-  t.equal(desc2.instrumentationId, 1)
+  assert.equal(desc2.instrumentationId, 1)
 
   function onRequire() {}
   function onError() {}
