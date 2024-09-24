@@ -22,24 +22,24 @@
         "ejs": "2.5.9"
       },
       "files": [
-        "app-use.tap.js",
-        "async-error.tap.js",
-        "async-handlers.tap.js",
-        "bare-router.tap.js",
-        "captures-params.tap.js",
-        "client-disconnect.tap.js",
-        "errors.tap.js",
-        "express-enrouten.tap.js",
-        "ignoring.tap.js",
-        "issue171.tap.js",
-        "middleware-name.tap.js",
-        "render.tap.js",
-        "require.tap.js",
-        "route-iteration.tap.js",
-        "route-param.tap.js",
-        "router-params.tap.js",
-        "segments.tap.js",
-        "transaction-naming.tap.js"
+        "app-use.test.js",
+        "async-error.test.js",
+        "async-handlers.test.js",
+        "bare-router.test.js",
+        "captures-params.test.js",
+        "client-disconnect.test.js",
+        "errors.test.js",
+        "express-enrouten.test.js",
+        "ignoring.test.js",
+        "issue171.test.js",
+        "middleware-name.test.js",
+        "render.test.js",
+        "require.test.js",
+        "route-iteration.test.js",
+        "route-param.test.js",
+        "router-params.test.js",
+        "segments.test.js",
+        "transaction-naming.test.js"
       ]
     }
   ]

@@ -4,13 +4,13 @@
  */
 
 'use strict'
-
-const tap = require('tap')
+const assert = require('node:assert')
+const test = require('node:test')
 const helper = require('../../lib/agent_helper')
-require('../../lib/metrics_helper')
 const http = require('http')
+const { assertSegments } = require('../../lib/custom-assertions')
 
-function generateApp(t) {
+function generateApp() {
   const express = require('express')
   const bodyParser = require('body-parser')
 
@@ -20,33 +20,30 @@ function generateApp(t) {
   app.post('/test', function controller(req, res) {
     const timeout = setTimeout(() => {
       const err = new Error('should not hit this as request was aborted')
-      t.error(err)
-
+      assert.ok(!err)
       res.status(200).send('OK')
     }, req.body.timeout)
 
     res.on('close', () => {
-      t.comment('cancelling setTimeout')
       clearTimeout(timeout)
     })
   })
 
-  return app
+  return app.listen(0)
 }
 
-tap.test('Client Premature Disconnection', (t) => {
-  t.setTimeout(3000)
+test('Client Premature Disconnection', { timeout: 3000 }, (t, end) => {
   const agent = helper.instrumentMockedAgent()
-  const server = generateApp(t).listen(0)
+  const server = generateApp()
   const { port } = server.address()
 
-  t.teardown(() => {
+  t.after(() => {
     server.close()
     helper.unloadAgent(agent)
   })
 
   agent.on('transactionFinished', (transaction) => {
-    t.assertSegments(
+    assertSegments(
       transaction.trace.root,
       [
         'WebTransaction/Expressjs/POST//test',
@@ -59,8 +56,8 @@ tap.test('Client Premature Disconnection', (t) => {
       { exact: false }
     )
 
-    t.equal(agent.getTransaction(), null, 'should have ended the transaction')
-    t.end()
+    assert.equal(agent.getTransaction(), null, 'should have ended the transaction')
+    end()
   })
 
   const postData = JSON.stringify({ timeout: 1500 })
@@ -77,12 +74,13 @@ tap.test('Client Premature Disconnection', (t) => {
     },
     function () {}
   )
-  request.on('error', () => t.comment('swallowing request error'))
+  request.on('error', (err) => {
+    assert.equal(err.code, 'ECONNRESET')
+  })
   request.write(postData)
   request.end()
 
   setTimeout(() => {
-    t.comment('aborting request')
     request.destroy()
   }, 100)
 })

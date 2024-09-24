@@ -4,19 +4,19 @@
  */
 
 'use strict'
-
-const test = require('tap').test
+const tsplan = require('@matteo.collina/tspl')
+const test = require('node:test')
 const helper = require('../../lib/agent_helper')
 
 test('new relic should not break route iteration', function (t) {
-  t.plan(1)
+  const plan = tsplan(t, { plan: 1 })
   const agent = helper.instrumentMockedAgent()
   const express = require('express')
   const router = new express.Router()
   const childA = new express.Router()
   const childB = new express.Router()
 
-  t.teardown(() => {
+  t.after(() => {
     helper.unloadAgent(agent)
   })
 
@@ -35,7 +35,7 @@ test('new relic should not break route iteration', function (t) {
   router.use(childA)
   router.use(childB)
 
-  t.same(findAllRoutes(router, ''), ['/get', ['/test'], ['/hello']])
+  plan.deepEqual(findAllRoutes(router, ''), ['/get', ['/test'], ['/hello']])
 })
 
 function findAllRoutes(router, path) {

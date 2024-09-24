@@ -4,15 +4,14 @@
  */
 
 'use strict'
-
-const test = require('tap').test
+const assert = require('node:assert')
+const test = require('node:test')
 const helper = require('../../lib/agent_helper')
 
-test("requiring express a bunch of times shouldn't leak listeners", function (t) {
+test("requiring express a bunch of times shouldn't leak listeners", function () {
   const agent = helper.instrumentMockedAgent()
   require('express')
   const numListeners = agent.listeners('transactionFinished').length
   require('express')
-  t.equal(agent.listeners('transactionFinished').length, numListeners)
-  t.end()
+  assert.equal(agent.listeners('transactionFinished').length, numListeners)
 })
