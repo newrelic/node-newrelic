@@ -45,7 +45,7 @@ test('using only the express router', function (t, end) {
   end()
 })
 
-test('the express router should go through a whole request lifecycle', function (t, end) {
+test('the express router should go through a whole request lifecycle', async function (t) {
   const agent = helper.instrumentMockedAgent()
   const router = require('express').Router() // eslint-disable-line new-cap
   const finalhandler = require('finalhandler')
@@ -70,9 +70,9 @@ test('the express router should go through a whole request lifecycle', function 
       server.close()
 
       plan.ok(!error)
-      end()
     })
   })
+  await plan.completed
 })
 
 test('agent instrumentation of Express', async function (t) {
@@ -167,7 +167,8 @@ test('agent instrumentation of Express', async function (t) {
     }
   )
 
-  await t.test('using EJS templates', { timeout: 1000 }, function (t, end) {
+  await t.test('using EJS templates', { timeout: 1000 }, async function (t) {
+    const plan = tsplan(t, { plan: 4 })
     const { app, agent, port } = t.nr
     app.set('views', __dirname + '/views')
     app.set('view engine', 'ejs')
@@ -178,20 +179,20 @@ test('agent instrumentation of Express', async function (t) {
 
     agent.once('transactionFinished', function () {
       const stats = agent.metrics.getMetric('View/index/Rendering')
-      assert.equal(stats.callCount, 1, 'should note the view rendering')
+      plan.equal(stats.callCount, 1, 'should note the view rendering')
     })
 
     helper.makeGetRequest(`${TEST_URL}:${port}${TEST_PATH}`, function (error, response, body) {
-      assert.ok(!error, 'should not error making request')
+      plan.ok(!error, 'should not error making request')
 
-      assert.equal(response.statusCode, 200, 'response code should be 200')
-      assert.equal(body, BODY, 'template should still render fine')
-
-      end()
+      plan.equal(response.statusCode, 200, 'response code should be 200')
+      plan.equal(body, BODY, 'template should still render fine')
     })
+    await plan.completed
   })
 
-  await t.test('should generate rum headers', { timeout: 1000 }, function (t, end) {
+  await t.test('should generate rum headers', { timeout: 1000 }, async function (t) {
+    const plan = tsplan(t, { plan: 5 })
     const { app, agent, port } = t.nr
     const api = new API(agent)
 
@@ -205,23 +206,22 @@ test('agent instrumentation of Express', async function (t) {
 
     app.get(TEST_PATH, function (req, res) {
       const rum = api.getBrowserTimingHeader()
-      assert.equal(rum.substring(0, 7), '<script')
+      plan.equal(rum.substring(0, 7), '<script')
       res.render('index', { title: 'yo dawg', rum })
     })
 
     agent.once('transactionFinished', function () {
       const stats = agent.metrics.getMetric('View/index/Rendering')
-      assert.equal(stats.callCount, 1, 'should note the view rendering')
+      plan.equal(stats.callCount, 1, 'should note the view rendering')
     })
 
     helper.makeGetRequest(`${TEST_URL}:${port}${TEST_PATH}`, function (error, response, body) {
-      assert.ok(!error, 'should not error making request')
+      plan.ok(!error, 'should not error making request')
 
-      assert.equal(response.statusCode, 200, 'response code should be 200')
-      assert.equal(body, BODY, 'template should still render fine')
-
-      end()
+      plan.equal(response.statusCode, 200, 'response code should be 200')
+      plan.equal(body, BODY, 'template should still render fine')
     })
+    await plan.completed
   })
 
   await t.test('should trap errors correctly', function (t, end) {
@@ -491,7 +491,7 @@ test('agent instrumentation of Express', async function (t) {
     })
   })
 
-  await t.test('layer wrapping', function (t, end) {
+  await t.test('layer wrapping', async function (t) {
     const { app, port } = t.nr
     const plan = tsplan(t, { plan: 1 })
     // Add our route.
@@ -507,8 +507,8 @@ test('agent instrumentation of Express', async function (t) {
     // Make our request.
     helper.makeGetRequest(`${TEST_URL}:${port}${TEST_PATH}`, function (err, response, body) {
       plan.equal(body, 'bar', 'should not fail with a proxy layer')
-      end()
     })
+    await plan.completed
   })
 })
 

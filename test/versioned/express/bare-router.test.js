@@ -16,7 +16,7 @@ test.beforeEach(async (ctx) => {
 
 test.afterEach(teardown)
 
-test('Express router introspection', function (t, end) {
+test('Express router introspection', async function (t) {
   const { agent, app, port } = t.nr
   const plan = tsplan(t, { plan: 11 })
 
@@ -53,6 +53,6 @@ test('Express router introspection', function (t, end) {
   helper.makeGetRequest(url, { json: true }, function (error, res, body) {
     plan.equal(res.statusCode, 200, 'nothing exploded')
     plan.deepEqual(body, { status: 'ok' }, 'got expected response')
-    end()
   })
+  await plan.completed
 })

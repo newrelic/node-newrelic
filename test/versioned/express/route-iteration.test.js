@@ -8,7 +8,7 @@ const tsplan = require('@matteo.collina/tspl')
 const test = require('node:test')
 const helper = require('../../lib/agent_helper')
 
-test('new relic should not break route iteration', function (t) {
+test('new relic should not break route iteration', async function (t) {
   const plan = tsplan(t, { plan: 1 })
   const agent = helper.instrumentMockedAgent()
   const express = require('express')
@@ -36,6 +36,7 @@ test('new relic should not break route iteration', function (t) {
   router.use(childB)
 
   plan.deepEqual(findAllRoutes(router, ''), ['/get', ['/test'], ['/hello']])
+  plan.end()
 })
 
 function findAllRoutes(router, path) {

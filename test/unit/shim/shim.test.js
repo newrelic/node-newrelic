@@ -1184,7 +1184,7 @@ test('Shim', async function (t) {
 
     t.afterEach(afterEach)
 
-    await t.test('should make the segment translucent when promise resolves', function (t, end) {
+    await t.test('should make the segment translucent when promise resolves', async function (t) {
       const plan = tspl(t, { plan: 4 })
       const { agent, promise, resolve, shim, toWrap } = t.nr
       const wrapped = shim.record(toWrap, function () {
@@ -1196,22 +1196,20 @@ test('Shim', async function (t) {
         const ret = wrapped()
         plan.ok(ret instanceof Object.getPrototypeOf(promise).constructor)
 
-        ret
-          .then(function (val) {
-            plan.equal(result, val)
-            plan.equal(promise.segment.opaque, false)
-            end()
-          })
-          .catch(end)
+        ret.then(function (val) {
+          plan.equal(result, val)
+          plan.equal(promise.segment.opaque, false)
+        })
       })
 
       plan.equal(promise.segment.opaque, true)
       setTimeout(function () {
         resolve(result)
       }, 5)
+      await plan.completed
     })
 
-    await t.test('should touch the segment when promise resolves', function (t, end) {
+    await t.test('should touch the segment when promise resolves', async function (t) {
       const plan = tspl(t, { plan: 3 })
       const { agent, promise, resolve, shim, toWrap } = t.nr
       const wrapped = shim.record(toWrap, function () {
@@ -1224,21 +1222,19 @@ test('Shim', async function (t) {
         const oldDur = promise.segment.timer.getDurationInMillis()
         plan.ok(ret instanceof Object.getPrototypeOf(promise).constructor)
 
-        ret
-          .then(function (val) {
-            plan.equal(result, val)
-            plan.ok(promise.segment.timer.getDurationInMillis() > oldDur)
-            end()
-          })
-          .catch(end)
+        ret.then(function (val) {
+          plan.equal(result, val)
+          plan.ok(promise.segment.timer.getDurationInMillis() > oldDur)
+        })
       })
 
       setTimeout(function () {
         resolve(result)
       }, 5)
+      await plan.completed
     })
 
-    await t.test('should make the segment translucent when promise rejects', function (t, end) {
+    await t.test('should make the segment translucent when promise rejects', async function (t) {
       const plan = tspl(t, { plan: 4 })
       const { agent, promise, reject, shim, toWrap } = t.nr
       const wrapped = shim.record(toWrap, function () {
@@ -1250,27 +1246,25 @@ test('Shim', async function (t) {
         const ret = wrapped()
         plan.ok(ret instanceof Object.getPrototypeOf(promise).constructor)
 
-        ret
-          .then(
-            function () {
-              end(new Error('Should not have resolved!'))
-            },
-            function (err) {
-              plan.equal(err, result)
-              plan.equal(promise.segment.opaque, false)
-              end()
-            }
-          )
-          .catch(end)
+        ret.then(
+          function () {
+            throw new Error('Should not have resolved!')
+          },
+          function (err) {
+            plan.equal(err, result)
+            plan.equal(promise.segment.opaque, false)
+          }
+        )
       })
 
       plan.equal(promise.segment.opaque, true)
       setTimeout(function () {
         reject(result)
       }, 5)
+      await plan.completed
     })
 
-    await t.test('should touch the segment when promise rejects', function (t, end) {
+    await t.test('should touch the segment when promise rejects', async function (t) {
       const plan = tspl(t, { plan: 3 })
       const { agent, promise, reject, shim, toWrap } = t.nr
       const wrapped = shim.record(toWrap, function () {
@@ -1288,7 +1282,6 @@ test('Shim', async function (t) {
           function (err) {
             plan.equal(err, result)
             plan.ok(promise.segment.timer.getDurationInMillis() > oldDur)
-            end()
           }
         )
       })
@@ -1296,12 +1289,12 @@ test('Shim', async function (t) {
       setTimeout(function () {
         reject(result)
       }, 5)
+      await plan.completed
     })
 
     await t.test('should not affect unhandledRejection event', async (t) => {
       const plan = tspl(t, { plan: 2 })
       const { agent, promise, reject, shim, toWrap } = t.nr
-      const { promise: testPromise, resolve: testResolve } = promiseResolvers()
       const result = new Error('unhandled rejection test')
 
       tempOverrideUncaught({
@@ -1309,7 +1302,6 @@ test('Shim', async function (t) {
         type: tempOverrideUncaught.REJECTION,
         handler(err) {
           plan.deepEqual(err, result)
-          testResolve()
         }
       })
 
@@ -1328,13 +1320,12 @@ test('Shim', async function (t) {
         reject(result)
       }, 5)
 
-      await testPromise
+      await plan.completed
     })
 
     await t.test('should call after hook when promise resolves', async (t) => {
       const plan = tspl(t, { plan: 7 })
       const { agent, promise, resolve, shim, toWrap } = t.nr
-      const { promise: testPromise, resolve: testResolve } = promiseResolvers()
       const segmentName = 'test segment'
       const expectedResult = { returned: true }
       const wrapped = shim.record(toWrap, function () {
@@ -1349,7 +1340,6 @@ test('Shim', async function (t) {
             plan.equal(error, null)
             plan.deepEqual(result, expectedResult)
             plan.equal(segment.name, segmentName)
-            testResolve()
           }
         })
       })
@@ -1363,13 +1353,12 @@ test('Shim', async function (t) {
         resolve(expectedResult)
       }, 5)
 
-      await testPromise
+      await plan.completed
     })
 
     await t.test('should call after hook when promise reject', async (t) => {
       const plan = tspl(t, { plan: 6 })
       const { agent, promise, reject, shim, toWrap } = t.nr
-      const { promise: testPromise, resolve: testResolve } = promiseResolvers()
       const segmentName = 'test segment'
       const expectedResult = new Error('should call after hook when promise rejects')
       const wrapped = shim.record(toWrap, function () {
@@ -1383,7 +1372,6 @@ test('Shim', async function (t) {
             plan.equal(name, toWrap.name)
             plan.deepEqual(error, expectedResult)
             plan.equal(segment.name, segmentName)
-            testResolve()
           }
         })
       })
@@ -1396,7 +1384,7 @@ test('Shim', async function (t) {
       setTimeout(function () {
         reject(expectedResult)
       }, 5)
-      await testPromise
+      await plan.completed
     })
   })
 

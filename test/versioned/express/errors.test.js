@@ -185,7 +185,7 @@ test('Error handling tests', async (t) => {
     })
   })
 
-  await t.test('does not error when request is aborted', function (t, end) {
+  await t.test('does not error when request is aborted', async function (t) {
     const plan = tsplan(t, { plan: 4 })
     const { app, agent, port } = t.nr
     let request = null
@@ -205,7 +205,6 @@ test('Error handling tests', async (t) => {
     app.use(function (error, req, res, next) {
       plan.equal(agent.getTransaction(), null, 'no active transaction when responding')
       res.end()
-      end()
     })
 
     request = http.request(
@@ -222,6 +221,7 @@ test('Error handling tests', async (t) => {
     request.on('error', function (err) {
       plan.equal(err.code, 'ECONNRESET')
     })
+    await plan.completed
   })
 })
 
