@@ -8,7 +8,7 @@
 const test = require('node:test')
 const assert = require('node:assert')
 
-const isAbsolutePath = require('../../lib/util/is-absolute-path')
+const isAbsolutePath = require('../../../lib/util/is-absolute-path')
 
 test('verifies paths correctly', async () => {
   const tests = [
