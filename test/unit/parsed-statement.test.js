@@ -5,30 +5,27 @@
 
 'use strict'
 
-const tap = require('tap')
+const test = require('node:test')
+const assert = require('node:assert')
 
 const helper = require('../lib/agent_helper')
+const { match } = require('../lib/custom-assertions')
+
 const Transaction = require('../../lib/transaction')
 const ParsedStatement = require('../../lib/db/parsed-statement')
 
-function checkMetric(t, metrics, name, scope) {
-  t.match(metrics.getMetric(name, scope), { total: 0.333 })
+function checkMetric(metrics, name, scope) {
+  assert.equal(match(metrics.getMetric(name, scope), { total: 0.333 }), true)
 }
 
-tap.test('recording database metrics', (t) => {
-  t.autoend()
+test('recording database metrics', async (t) => {
+  await t.test('on scoped transactions with parsed statements - with collection', async (t) => {
+    await t.test('with collection', async (t) => {
+      t.beforeEach((ctx) => {
+        ctx.nr = {}
+        const agent = helper.loadMockedAgent()
+        ctx.nr.agent = agent
 
-  let agent = null
-  let metrics = null
-
-  t.test('setup', (t) => {
-    agent = helper.loadMockedAgent()
-    t.end()
-  })
-
-  t.test('on scoped transactions with parsed statements - with collection', (t) => {
-    t.test('with collection', (t) => {
-      t.beforeEach(() => {
         const ps = new ParsedStatement('NoSQL', 'select', 'test_collection')
         const transaction = new Transaction(agent)
         const segment = transaction.trace.add('test')
@@ -38,59 +35,65 @@ tap.test('recording database metrics', (t) => {
         ps.recordMetrics(segment, 'TEST')
         transaction.end()
 
-        metrics = transaction.metrics
+        ctx.nr.metrics = transaction.metrics
       })
 
-      t.test('should find 1 scoped metric', (t) => {
-        t.equal(metrics._toScopedData().length, 1)
-        t.end()
+      t.afterEach((ctx) => {
+        helper.unloadAgent(ctx.nr.agent)
       })
 
-      t.test('should find 6 unscoped metrics', (t) => {
-        t.equal(metrics._toUnscopedData().length, 6)
-        t.end()
+      await t.test('should find 1 scoped metric', (t) => {
+        const { metrics } = t.nr
+        assert.equal(metrics._toScopedData().length, 1)
       })
 
-      t.test('should find a scoped metric on the table and operation', (t) => {
-        checkMetric(t, metrics, 'Datastore/statement/NoSQL/test_collection/select', 'TEST')
-        t.end()
+      await t.test('should find 6 unscoped metrics', (t) => {
+        const { metrics } = t.nr
+        assert.equal(metrics._toUnscopedData().length, 6)
       })
 
-      t.test('should find an unscoped metric on the table and operation', (t) => {
-        checkMetric(t, metrics, 'Datastore/statement/NoSQL/test_collection/select')
-        t.end()
+      await t.test('should find a scoped metric on the table and operation', (t) => {
+        const { metrics } = t.nr
+        checkMetric(metrics, 'Datastore/statement/NoSQL/test_collection/select', 'TEST')
       })
 
-      t.test('should find an unscoped rollup metric on the operation', (t) => {
-        checkMetric(t, metrics, 'Datastore/operation/NoSQL/select')
-        t.end()
+      await t.test('should find an unscoped metric on the table and operation', (t) => {
+        const { metrics } = t.nr
+        checkMetric(metrics, 'Datastore/statement/NoSQL/test_collection/select')
       })
 
-      t.test('should find a database rollup metric', (t) => {
-        checkMetric(t, metrics, 'Datastore/all')
-        t.end()
+      await t.test('should find an unscoped rollup metric on the operation', (t) => {
+        const { metrics } = t.nr
+        checkMetric(metrics, 'Datastore/operation/NoSQL/select')
       })
 
-      t.test('should find a database rollup metric of type `Other`', (t) => {
-        checkMetric(t, metrics, 'Datastore/allOther')
-        t.end()
+      await t.test('should find a database rollup metric', (t) => {
+        const { metrics } = t.nr
+        checkMetric(metrics, 'Datastore/all')
       })
 
-      t.test('should find a database type rollup metric of type `All`', (t) => {
-        checkMetric(t, metrics, 'Datastore/NoSQL/all')
-        t.end()
+      await t.test('should find a database rollup metric of type `Other`', (t) => {
+        const { metrics } = t.nr
+        checkMetric(metrics, 'Datastore/allOther')
       })
 
-      t.test('should find a database type rollup metric of type `Other`', (t) => {
-        checkMetric(t, metrics, 'Datastore/NoSQL/allOther')
-        t.end()
+      await t.test('should find a database type rollup metric of type `All`', (t) => {
+        const { metrics } = t.nr
+        checkMetric(metrics, 'Datastore/NoSQL/all')
       })
 
-      t.end()
+      await t.test('should find a database type rollup metric of type `Other`', (t) => {
+        const { metrics } = t.nr
+        checkMetric(metrics, 'Datastore/NoSQL/allOther')
+      })
     })
 
-    t.test('without collection', (t) => {
-      t.beforeEach(() => {
+    await t.test('without collection', async (t) => {
+      t.beforeEach((ctx) => {
+        ctx.nr = {}
+        const agent = helper.loadMockedAgent()
+        ctx.nr.agent = agent
+
         const ps = new ParsedStatement('NoSQL', 'select')
         const transaction = new Transaction(agent)
         const segment = transaction.trace.add('test')
@@ -100,64 +103,62 @@ tap.test('recording database metrics', (t) => {
         ps.recordMetrics(segment, 'TEST')
         transaction.end()
 
-        metrics = transaction.metrics
+        ctx.nr.metrics = transaction.metrics
       })
 
-      t.test('should find 1 scoped metric', (t) => {
-        t.equal(metrics._toScopedData().length, 1)
-        t.end()
+      t.afterEach((ctx) => {
+        helper.unloadAgent(ctx.nr.agent)
       })
 
-      t.test('should find 5 unscoped metrics', (t) => {
-        t.equal(metrics._toUnscopedData().length, 5)
-        t.end()
+      await t.test('should find 1 scoped metric', (t) => {
+        const { metrics } = t.nr
+        assert.equal(metrics._toScopedData().length, 1)
       })
 
-      t.test('should find a scoped metric on the operation', (t) => {
-        checkMetric(t, metrics, 'Datastore/operation/NoSQL/select', 'TEST')
-        t.end()
+      await t.test('should find 5 unscoped metrics', (t) => {
+        const { metrics } = t.nr
+        assert.equal(metrics._toUnscopedData().length, 5)
       })
 
-      t.test('should find an unscoped metric on the operation', (t) => {
-        checkMetric(t, metrics, 'Datastore/operation/NoSQL/select')
-        t.end()
+      await t.test('should find a scoped metric on the operation', (t) => {
+        const { metrics } = t.nr
+        checkMetric(metrics, 'Datastore/operation/NoSQL/select', 'TEST')
       })
 
-      t.test('should find a database rollup metric', (t) => {
-        checkMetric(t, metrics, 'Datastore/all')
-        t.end()
+      await t.test('should find an unscoped metric on the operation', (t) => {
+        const { metrics } = t.nr
+        checkMetric(metrics, 'Datastore/operation/NoSQL/select')
       })
 
-      t.test('should find a database rollup metric of type `Other`', (t) => {
-        checkMetric(t, metrics, 'Datastore/allOther')
-        t.end()
+      await t.test('should find a database rollup metric', (t) => {
+        const { metrics } = t.nr
+        checkMetric(metrics, 'Datastore/all')
       })
 
-      t.test('should find a database type rollup metric of type `All`', (t) => {
-        checkMetric(t, metrics, 'Datastore/NoSQL/all')
-        t.end()
+      await t.test('should find a database rollup metric of type `Other`', (t) => {
+        const { metrics } = t.nr
+        checkMetric(metrics, 'Datastore/allOther')
       })
 
-      t.test('should find a database type rollup metric of type `Other`', (t) => {
-        checkMetric(t, metrics, 'Datastore/NoSQL/allOther')
-        t.end()
+      await t.test('should find a database type rollup metric of type `All`', (t) => {
+        const { metrics } = t.nr
+        checkMetric(metrics, 'Datastore/NoSQL/all')
       })
 
-      t.end()
+      await t.test('should find a database type rollup metric of type `Other`', (t) => {
+        const { metrics } = t.nr
+        checkMetric(metrics, 'Datastore/NoSQL/allOther')
+      })
     })
-
-    t.end()
   })
 
-  t.test('reset', (t) => {
-    helper.unloadAgent(agent)
-    agent = helper.loadMockedAgent()
-    t.end()
-  })
+  await t.test('on unscoped transactions with parsed statements', async (t) => {
+    await t.test('with collection', async (t) => {
+      t.beforeEach((ctx) => {
+        ctx.nr = {}
+        const agent = helper.loadMockedAgent()
+        ctx.nr.agent = agent
 
-  t.test('on unscoped transactions with parsed statements', (t) => {
-    t.test('with collection', (t) => {
-      t.beforeEach(() => {
         const ps = new ParsedStatement('NoSQL', 'select', 'test_collection')
         const transaction = new Transaction(agent)
         const segment = transaction.trace.add('test')
@@ -167,54 +168,60 @@ tap.test('recording database metrics', (t) => {
         ps.recordMetrics(segment, null)
         transaction.end()
 
-        metrics = transaction.metrics
+        ctx.nr.metrics = transaction.metrics
       })
 
-      t.test('should find 0 unscoped metrics', (t) => {
-        t.equal(metrics._toScopedData().length, 0)
-        t.end()
+      t.afterEach((ctx) => {
+        helper.unloadAgent(ctx.nr.agent)
       })
 
-      t.test('should find 6 unscoped metrics', (t) => {
-        t.equal(metrics._toUnscopedData().length, 6)
-        t.end()
+      await t.test('should find 0 unscoped metrics', (t) => {
+        const { metrics } = t.nr
+        assert.equal(metrics._toScopedData().length, 0)
       })
 
-      t.test('should find an unscoped metric on the table and operation', (t) => {
-        checkMetric(t, metrics, 'Datastore/statement/NoSQL/test_collection/select')
-        t.end()
+      await t.test('should find 6 unscoped metrics', (t) => {
+        const { metrics } = t.nr
+        assert.equal(metrics._toUnscopedData().length, 6)
       })
 
-      t.test('should find an unscoped rollup metric on the operation', (t) => {
-        checkMetric(t, metrics, 'Datastore/operation/NoSQL/select')
-        t.end()
+      await t.test('should find an unscoped metric on the table and operation', (t) => {
+        const { metrics } = t.nr
+        checkMetric(metrics, 'Datastore/statement/NoSQL/test_collection/select')
       })
 
-      t.test('should find an unscoped rollup DB metric', (t) => {
-        checkMetric(t, metrics, 'Datastore/all')
-        t.end()
+      await t.test('should find an unscoped rollup metric on the operation', (t) => {
+        const { metrics } = t.nr
+        checkMetric(metrics, 'Datastore/operation/NoSQL/select')
       })
 
-      t.test('should find an unscoped rollup DB metric of type `Other`', (t) => {
-        checkMetric(t, metrics, 'Datastore/allOther')
-        t.end()
+      await t.test('should find an unscoped rollup DB metric', (t) => {
+        const { metrics } = t.nr
+        checkMetric(metrics, 'Datastore/all')
       })
 
-      t.test('should find a database type rollup metric of type `All`', (t) => {
-        checkMetric(t, metrics, 'Datastore/NoSQL/all')
-        t.end()
+      await test('should find an unscoped rollup DB metric of type `Other`', (t) => {
+        const { metrics } = t.nr
+        checkMetric(metrics, 'Datastore/allOther')
       })
 
-      t.test('should find a database type rollup metric of type `Other`', (t) => {
-        checkMetric(t, metrics, 'Datastore/NoSQL/allOther')
-        t.end()
+      await test('should find a database type rollup metric of type `All`', (t) => {
+        const { metrics } = t.nr
+        checkMetric(metrics, 'Datastore/NoSQL/all')
       })
 
-      t.end()
+      await test('should find a database type rollup metric of type `Other`', (t) => {
+        const { metrics } = t.nr
+        checkMetric(metrics, 'Datastore/NoSQL/allOther')
+      })
     })
 
-    t.test('without collection', (t) => {
-      t.beforeEach(() => {
+    await t.test('without collection', async (t) => {
+      t.beforeEach((ctx) => {
+        ctx.nr = {}
+        const agent = helper.loadMockedAgent()
+        ctx.nr.agent = agent
+
         const ps = new ParsedStatement('NoSQL', 'select')
         const transaction = new Transaction(agent)
         const segment = transaction.trace.add('test')
@@ -224,77 +231,70 @@ tap.test('recording database metrics', (t) => {
         ps.recordMetrics(segment, null)
         transaction.end()
 
-        metrics = transaction.metrics
+        ctx.nr.metrics = transaction.metrics
       })
 
-      t.test('should find 0 unscoped metrics', (t) => {
-        t.equal(metrics._toScopedData().length, 0)
-        t.end()
+      t.afterEach((ctx) => {
+        helper.unloadAgent(ctx.nr.agent)
       })
 
-      t.test('should find 5 unscoped metrics', (t) => {
-        t.equal(metrics._toUnscopedData().length, 5)
-        t.end()
+      await t.test('should find 0 unscoped metrics', (t) => {
+        const { metrics } = t.nr
+        assert.equal(metrics._toScopedData().length, 0)
       })
 
-      t.test('should find an unscoped metric on the operation', (t) => {
-        checkMetric(t, metrics, 'Datastore/operation/NoSQL/select')
-        t.end()
+      await t.test('should find 5 unscoped metrics', (t) => {
+        const { metrics } = t.nr
+        assert.equal(metrics._toUnscopedData().length, 5)
       })
 
-      t.test('should find an unscoped rollup DB metric', (t) => {
-        checkMetric(t, metrics, 'Datastore/all')
-        t.end()
+      await t.test('should find an unscoped metric on the operation', (t) => {
+        const { metrics } = t.nr
+        checkMetric(metrics, 'Datastore/operation/NoSQL/select')
       })
 
-      t.test('should find an unscoped rollup DB metric of type `Other`', (t) => {
-        checkMetric(t, metrics, 'Datastore/allOther')
-        t.end()
+      await t.test('should find an unscoped rollup DB metric', (t) => {
+        const { metrics } = t.nr
+        checkMetric(metrics, 'Datastore/all')
       })
 
-      t.test('should find a database type rollup metric of type `All`', (t) => {
-        checkMetric(t, metrics, 'Datastore/NoSQL/all')
-        t.end()
+      await t.test('should find an unscoped rollup DB metric of type `Other`', (t) => {
+        const { metrics } = t.nr
+        checkMetric(metrics, 'Datastore/allOther')
       })
 
-      t.test('should find a database type rollup metric of type `Other`', (t) => {
-        checkMetric(t, metrics, 'Datastore/NoSQL/allOther')
-        t.end()
+      await t.test('should find a database type rollup metric of type `All`', (t) => {
+        const { metrics } = t.nr
+        checkMetric(metrics, 'Datastore/NoSQL/all')
       })
 
-      t.end()
+      await t.test('should find a database type rollup metric of type `Other`', (t) => {
+        const { metrics } = t.nr
+        checkMetric(metrics, 'Datastore/NoSQL/allOther')
+      })
     })
-
-    t.end()
-  })
-
-  t.test('teardown', (t) => {
-    helper.unloadAgent(agent)
-    t.end()
   })
 })
 
-tap.test('recording slow queries', (t) => {
-  t.autoend()
-
-  t.test('with collection', (t) => {
-    let transaction
-    let segment
-    let agent
-
-    t.beforeEach(() => {
-      agent = helper.loadMockedAgent({
+test('recording slow queries', async (t) => {
+  await t.test('with collection', async (t) => {
+    t.beforeEach((ctx) => {
+      ctx.nr = {}
+      const agent = helper.loadMockedAgent({
         slow_sql: { enabled: true },
         transaction_tracer: {
           record_sql: 'obfuscated'
         }
       })
+      ctx.nr.agent = agent
 
       const ps = new ParsedStatement('MySql', 'select', 'foo', 'select * from foo where b=1')
 
-      transaction = new Transaction(agent)
+      const transaction = new Transaction(agent)
+      ctx.nr.transaction = transaction
       transaction.type = Transaction.TYPES.BG
-      segment = transaction.trace.add('test')
+      const segment = transaction.trace.add('test')
+      ctx.nr.segment = segment
 
       segment.setDurationInMillis(503)
       ps.recordMetrics(segment, 'TEST')
@@ -308,57 +308,54 @@ tap.test('recording slow queries', (t) => {
       transaction.end()
     })
 
-    t.afterEach(() => {
-      helper.unloadAgent(agent)
+    t.afterEach((ctx) => {
+      helper.unloadAgent(ctx.nr.agent)
     })
 
-    t.test('should update segment names', (t) => {
-      t.equal(segment.name, 'Datastore/statement/MySql/foo/select')
-      t.end()
+    await t.test('should update segment names', (t) => {
+      const { segment } = t.nr
+      assert.equal(segment.name, 'Datastore/statement/MySql/foo/select')
     })
 
-    t.test('should capture queries', (t) => {
-      t.equal(agent.queries.samples.size, 1)
+    await t.test('should capture queries', (t) => {
+      const { agent } = t.nr
+      assert.equal(agent.queries.samples.size, 1)
 
       const sample = agent.queries.samples.values().next().value
       const trace = sample.trace
 
-      t.equal(sample.total, 1004)
-      t.equal(sample.totalExclusive, 1004)
-      t.equal(sample.min, 501)
-      t.equal(sample.max, 503)
-      t.equal(sample.sumOfSquares, 504010)
-      t.equal(sample.callCount, 2)
-      t.equal(trace.obfuscated, 'select * from foo where b=?')
-      t.equal(trace.normalized, 'select*fromfoowhereb=?')
-      t.equal(trace.id, 75330402683074160)
-      t.equal(trace.query, 'select * from foo where b=1')
-      t.equal(trace.metric, 'Datastore/statement/MySql/foo/select')
-      t.equal(typeof trace.trace, 'string')
-
-      t.end()
+      assert.equal(sample.total, 1004)
+      assert.equal(sample.totalExclusive, 1004)
+      assert.equal(sample.min, 501)
+      assert.equal(sample.max, 503)
+      assert.equal(sample.sumOfSquares, 504010)
+      assert.equal(sample.callCount, 2)
+      assert.equal(trace.obfuscated, 'select * from foo where b=?')
+      assert.equal(trace.normalized, 'select*fromfoowhereb=?')
+      assert.equal(trace.id, 75330402683074160)
+      assert.equal(trace.query, 'select * from foo where b=1')
+      assert.equal(trace.metric, 'Datastore/statement/MySql/foo/select')
+      assert.equal(typeof trace.trace, 'string')
     })
-
-    t.end()
   })
 
-  t.test('without collection', (t) => {
-    let transaction
-    let segment
-    let agent
-
-    t.beforeEach(() => {
-      agent = helper.loadMockedAgent({
+  await t.test('without collection', async (t) => {
+    t.beforeEach((ctx) => {
+      ctx.nr = {}
+      const agent = helper.loadMockedAgent({
         slow_sql: { enabled: true },
         transaction_tracer: {
           record_sql: 'obfuscated'
         }
       })
+      ctx.nr.agent = agent
 
       const ps = new ParsedStatement('MySql', 'select', null, 'select * from foo where b=1')
 
-      transaction = new Transaction(agent)
-      segment = transaction.trace.add('test')
+      const transaction = new Transaction(agent)
+      const segment = transaction.trace.add('test')
+      ctx.nr.transaction = transaction
+      ctx.nr.segment = segment
 
       segment.setDurationInMillis(503)
       ps.recordMetrics(segment, 'TEST')
@@ -372,67 +369,62 @@ tap.test('recording slow queries', (t) => {
       transaction.end()
     })
 
-    t.afterEach(() => {
-      helper.unloadAgent(agent)
-      agent = null
+    t.afterEach((ctx) => {
+      helper.unloadAgent(ctx.nr.agent)
     })
 
-    t.test('should update segment names', (t) => {
-      t.equal(segment.name, 'Datastore/operation/MySql/select')
-      t.end()
+    await t.test('should update segment names', (t) => {
+      const { segment } = t.nr
+      assert.equal(segment.name, 'Datastore/operation/MySql/select')
     })
 
-    t.test('should have IDs that fit a signed long', (t) => {
+    await t.test('should have IDs that fit a signed long', (t) => {
+      const { agent } = t.nr
       const sample = agent.queries.samples.values().next().value
       const trace = sample.trace
 
-      t.ok(trace.id <= 2 ** 63 - 1)
-
-      t.end()
+      assert.ok(trace.id <= 2 ** 63 - 1)
     })
 
-    t.test('should capture queries', (t) => {
-      t.equal(agent.queries.samples.size, 1)
+    await t.test('should capture queries', (t) => {
+      const { agent } = t.nr
+      assert.equal(agent.queries.samples.size, 1)
 
       const sample = agent.queries.samples.values().next().value
       const trace = sample.trace
 
-      t.equal(sample.total, 1004)
-      t.equal(sample.totalExclusive, 1004)
-      t.equal(sample.min, 501)
-      t.equal(sample.max, 503)
-      t.equal(sample.sumOfSquares, 504010)
-      t.equal(sample.callCount, 2)
-      t.equal(trace.obfuscated, 'select * from foo where b=?')
-      t.equal(trace.normalized, 'select*fromfoowhereb=?')
-      t.equal(trace.id, 75330402683074160)
-      t.equal(trace.query, 'select * from foo where b=1')
-      t.equal(trace.metric, 'Datastore/operation/MySql/select')
-      t.equal(typeof trace.trace, 'string')
-
-      t.end()
+      assert.equal(sample.total, 1004)
+      assert.equal(sample.totalExclusive, 1004)
+      assert.equal(sample.min, 501)
+      assert.equal(sample.max, 503)
+      assert.equal(sample.sumOfSquares, 504010)
+      assert.equal(sample.callCount, 2)
+      assert.equal(trace.obfuscated, 'select * from foo where b=?')
+      assert.equal(trace.normalized, 'select*fromfoowhereb=?')
+      assert.equal(trace.id, 75330402683074160)
+      assert.equal(trace.query, 'select * from foo where b=1')
+      assert.equal(trace.metric, 'Datastore/operation/MySql/select')
+      assert.equal(typeof trace.trace, 'string')
     })
-
-    t.end()
   })
 
-  t.test('without query', (t) => {
-    let transaction
-    let segment
-    let agent
-
-    t.beforeEach(() => {
-      agent = helper.loadMockedAgent({
+  await t.test('without query', async (t) => {
+    t.beforeEach((ctx) => {
+      ctx.nr = {}
+      const agent = helper.loadMockedAgent({
         slow_sql: { enabled: true },
         transaction_tracer: {
           record_sql: 'obfuscated'
         }
       })
+      ctx.nr.agent = agent
 
       const ps = new ParsedStatement('MySql', 'select', null, null)
 
-      transaction = new Transaction(agent)
-      segment = transaction.trace.add('test')
+      const transaction = new Transaction(agent)
+      const segment = transaction.trace.add('test')
+      ctx.nr.transaction = transaction
+      ctx.nr.segment = segment
 
       segment.setDurationInMillis(503)
       ps.recordMetrics(segment, 'TEST')
@@ -446,20 +438,18 @@ tap.test('recording slow queries', (t) => {
       transaction.end()
     })
 
-    t.afterEach(() => {
-      helper.unloadAgent(agent)
+    t.afterEach((ctx) => {
+      helper.unloadAgent(ctx.nr.agent)
     })
 
-    t.test('should update segment names', (t) => {
-      t.equal(segment.name, 'Datastore/operation/MySql/select')
-      t.end()
+    await t.test('should update segment names', (t) => {
+      const { segment } = t.nr
+      assert.equal(segment.name, 'Datastore/operation/MySql/select')
     })
 
-    t.test('should not capture queries', (t) => {
-      t.match(agent.queries.samples.size, 0)
-      t.end()
+    await t.test('should not capture queries', (t) => {
+      const { agent } = t.nr
+      assert.equal(match(agent.queries.samples.size, 0), true)
     })
-
-    t.end()
   })
 })

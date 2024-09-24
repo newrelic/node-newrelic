@@ -5,16 +5,17 @@
 
 'use strict'
 
-const { test } = require('tap')
+const test = require('node:test')
+const assert = require('node:assert')
+
+const { match } = require('../lib/custom-assertions')
 
 const parseCpuInfo = require('../../lib/parse-proc-cpuinfo')
 
-/**
- * Most functionality is covered in-depth via cross-agent tests in
- * test/integration/pricing/proc_cpuinfo.tap.js
- */
+// Most functionality is covered in-depth via cross-agent tests in
+// test/integration/pricing/proc_cpuinfo.tap.js
 
-test('Should return object with null processor stats when data is null', (t) => {
+test('Should return object with null processor stats when data is null', () => {
   const expectedStats = {
     logical: null,
     cores: null,
@@ -23,12 +24,10 @@ test('Should return object with null processor stats when data is null', (t) => 
 
   const result = parseCpuInfo(null)
 
-  t.same(result, expectedStats)
-
-  t.end()
+  assert.equal(match(result, expectedStats), true)
 })
 
-test('Should return object with null processor stats when data is undefined', (t) => {
+test('Should return object with null processor stats when data is undefined', () => {
   const expectedStats = {
     logical: null,
     cores: null,
@@ -37,7 +36,5 @@ test('Should return object with null processor stats when data is undefined', (t
 
   const result = parseCpuInfo(undefined)
 
-  t.same(result, expectedStats)
-
-  t.end()
+  assert.equal(match(result, expectedStats), true)
 })
