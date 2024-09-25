@@ -188,8 +188,6 @@ function verifyProduce(tx, exchangeName, routingKey) {
         ]
       ]
     ]
-    // 0.9.0 flattened the segment tree
-    // See: https://github.com/amqp-node/amqplib/pull/635/files
   } else {
     segments = [
       'Channel#assertExchange',
