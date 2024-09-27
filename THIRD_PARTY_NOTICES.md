@@ -646,7 +646,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 ### import-in-the-middle
 
-This product includes source derived from [import-in-the-middle](https://github.com/nodejs/import-in-the-middle) ([v1.11.0](https://github.com/nodejs/import-in-the-middle/tree/v1.11.0)), distributed under the [Apache-2.0 License](https://github.com/nodejs/import-in-the-middle/blob/v1.11.0/LICENSE):
+This product includes source derived from [import-in-the-middle](https://github.com/nodejs/import-in-the-middle) ([v1.11.1](https://github.com/nodejs/import-in-the-middle/tree/v1.11.1)), distributed under the [Apache-2.0 License](https://github.com/nodejs/import-in-the-middle/blob/v1.11.1/LICENSE):
 
 ```
                                  Apache License
@@ -1076,7 +1076,7 @@ SOFTWARE.
 
 ### @aws-sdk/client-s3
 
-This product includes source derived from [@aws-sdk/client-s3](https://github.com/aws/aws-sdk-js-v3) ([v3.654.0](https://github.com/aws/aws-sdk-js-v3/tree/v3.654.0)), distributed under the [Apache-2.0 License](https://github.com/aws/aws-sdk-js-v3/blob/v3.654.0/LICENSE):
+This product includes source derived from [@aws-sdk/client-s3](https://github.com/aws/aws-sdk-js-v3) ([v3.658.1](https://github.com/aws/aws-sdk-js-v3/tree/v3.658.1)), distributed under the [Apache-2.0 License](https://github.com/aws/aws-sdk-js-v3/blob/v3.658.1/LICENSE):
 
 ```
                                 Apache License
@@ -1285,7 +1285,7 @@ This product includes source derived from [@aws-sdk/client-s3](https://github.co
 
 ### @aws-sdk/s3-request-presigner
 
-This product includes source derived from [@aws-sdk/s3-request-presigner](https://github.com/aws/aws-sdk-js-v3) ([v3.654.0](https://github.com/aws/aws-sdk-js-v3/tree/v3.654.0)), distributed under the [Apache-2.0 License](https://github.com/aws/aws-sdk-js-v3/blob/v3.654.0/LICENSE):
+This product includes source derived from [@aws-sdk/s3-request-presigner](https://github.com/aws/aws-sdk-js-v3) ([v3.658.1](https://github.com/aws/aws-sdk-js-v3/tree/v3.658.1)), distributed under the [Apache-2.0 License](https://github.com/aws/aws-sdk-js-v3/blob/v3.658.1/LICENSE):
 
 ```
                                 Apache License
