@@ -646,7 +646,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 ### import-in-the-middle
 
-This product includes source derived from [import-in-the-middle](https://github.com/nodejs/import-in-the-middle) ([v1.11.1](https://github.com/nodejs/import-in-the-middle/tree/v1.11.1)), distributed under the [Apache-2.0 License](https://github.com/nodejs/import-in-the-middle/blob/v1.11.1/LICENSE):
+This product includes source derived from [import-in-the-middle](https://github.com/nodejs/import-in-the-middle) ([v1.11.2](https://github.com/nodejs/import-in-the-middle/tree/v1.11.2)), distributed under the [Apache-2.0 License](https://github.com/nodejs/import-in-the-middle/blob/v1.11.2/LICENSE):
 
 ```
                                  Apache License
