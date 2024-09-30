@@ -5,36 +5,34 @@
 
 'use strict'
 
-const tap = require('tap')
+const test = require('node:test')
 const helper = require('../../lib/agent_helper')
-require('./common')
+const { afterEach, checkExternals } = require('./common')
 const { createEmptyResponseServer, FAKE_CREDENTIALS } = require('../../lib/aws-server-stubs')
 
-tap.test('RekognitionClient', (t) => {
-  t.beforeEach(async (t) => {
+test('RekognitionClient', async (t) => {
+  t.beforeEach(async (ctx) => {
+    ctx.nr = {}
     const server = createEmptyResponseServer()
     await new Promise((resolve) => {
       server.listen(0, resolve)
     })
-    t.context.server = server
-    t.context.agent = helper.instrumentMockedAgent()
+    ctx.nr.server = server
+    ctx.nr.agent = helper.instrumentMockedAgent()
     const { RekognitionClient, ...lib } = require('@aws-sdk/client-rekognition')
-    t.context.CompareFacesCommand = lib.CompareFacesCommand
+    ctx.nr.CompareFacesCommand = lib.CompareFacesCommand
     const endpoint = `http://localhost:${server.address().port}`
-    t.context.service = new RekognitionClient({
+    ctx.nr.service = new RekognitionClient({
       credentials: FAKE_CREDENTIALS,
       endpoint,
       region: 'us-east-1'
     })
   })
 
-  t.afterEach((t) => {
-    t.context.server.destroy()
-    helper.unloadAgent(t.context.agent)
-  })
+  t.afterEach(afterEach)
 
-  t.test('CompareFacesCommand', (t) => {
-    const { service, agent, CompareFacesCommand } = t.context
+  await t.test('CompareFacesCommand', (t, end) => {
+    const { service, agent, CompareFacesCommand } = t.nr
     helper.runInTransaction(agent, async (tx) => {
       const cmd = new CompareFacesCommand({
         SimilarityThreshold: 90,
@@ -53,12 +51,12 @@ tap.test('RekognitionClient', (t) => {
       })
       await service.send(cmd)
       tx.end()
-      setImmediate(t.checkExternals, {
+      setImmediate(checkExternals, {
         service: 'Rekognition',
         operations: ['CompareFacesCommand'],
-        tx
+        tx,
+        end
       })
     })
   })
-  t.end()
 })

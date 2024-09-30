@@ -4,39 +4,39 @@
  */
 
 'use strict'
-
-const tap = require('tap')
+const assert = require('node:assert')
+const test = require('node:test')
 const helper = require('../../lib/agent_helper')
 const common = require('../aws-sdk-v3/common')
 const { createEmptyResponseServer, FAKE_CREDENTIALS } = require('../../lib/aws-server-stubs')
+const { match } = require('../../lib/custom-assertions')
 
-tap.test('AWS HTTP Services', (t) => {
-  t.autoend()
-
-  t.beforeEach(async (t) => {
+test('AWS HTTP Services', async (t) => {
+  t.beforeEach(async (ctx) => {
+    ctx.nr = {}
     const server = createEmptyResponseServer()
 
     await new Promise((resolve) => {
       server.listen(0, resolve)
     })
 
-    t.context.server = server
+    ctx.nr.server = server
 
-    t.context.agent = helper.instrumentMockedAgent()
+    ctx.nr.agent = helper.instrumentMockedAgent()
     const AWS = require('aws-sdk')
     AWS.config.update({ region: 'us-east-1' })
 
-    t.context.endpoint = `http://localhost:${server.address().port}`
-    t.context.AWS = AWS
+    ctx.nr.endpoint = `http://localhost:${server.address().port}`
+    ctx.nr.AWS = AWS
   })
 
-  t.afterEach((t) => {
-    t.context.server.close()
-    helper.unloadAgent(t.context.agent)
+  t.afterEach((ctx) => {
+    ctx.nr.server.close()
+    helper.unloadAgent(ctx.nr.agent)
   })
 
-  t.test('APIGateway', (t) => {
-    const { agent, endpoint, AWS } = t.context
+  await t.test('APIGateway', (t, end) => {
+    const { agent, endpoint, AWS } = t.nr
     helper.runInTransaction(agent, (tx) => {
       const service = new AWS.APIGateway({
         credentials: FAKE_CREDENTIALS,
@@ -59,14 +59,14 @@ tap.test('AWS HTTP Services', (t) => {
         },
         () => {
           tx.end()
-          setImmediate(finish, t, 'API Gateway', 'createApiKey', tx)
+          setImmediate(finish, end, 'API Gateway', 'createApiKey', tx)
         }
       )
     })
   })
 
-  t.test('ELB', (t) => {
-    const { agent, endpoint, AWS } = t.context
+  await t.test('ELB', (t, end) => {
+    const { agent, endpoint, AWS } = t.nr
     helper.runInTransaction(agent, (tx) => {
       const service = new AWS.ELB({
         credentials: FAKE_CREDENTIALS,
@@ -88,14 +88,14 @@ tap.test('AWS HTTP Services', (t) => {
         },
         () => {
           tx.end()
-          setImmediate(finish, t, 'Elastic Load Balancing', 'addTags', tx)
+          setImmediate(finish, end, 'Elastic Load Balancing', 'addTags', tx)
         }
       )
     })
   })
 
-  t.test('ElastiCache', (t) => {
-    const { agent, endpoint, AWS } = t.context
+  await t.test('ElastiCache', (t, end) => {
+    const { agent, endpoint, AWS } = t.nr
     helper.runInTransaction(agent, (tx) => {
       const service = new AWS.ElastiCache({
         credentials: FAKE_CREDENTIALS,
@@ -114,14 +114,14 @@ tap.test('AWS HTTP Services', (t) => {
         },
         () => {
           tx.end()
-          setImmediate(finish, t, 'ElastiCache', 'addTagsToResource', tx)
+          setImmediate(finish, end, 'ElastiCache', 'addTagsToResource', tx)
         }
       )
     })
   })
 
-  t.test('Lambda', (t) => {
-    const { agent, endpoint, AWS } = t.context
+  await t.test('Lambda', (t, end) => {
+    const { agent, endpoint, AWS } = t.nr
     helper.runInTransaction(agent, (tx) => {
       const service = new AWS.Lambda({
         credentials: FAKE_CREDENTIALS,
@@ -139,14 +139,14 @@ tap.test('AWS HTTP Services', (t) => {
         },
         () => {
           tx.end()
-          setImmediate(finish, t, 'Lambda', 'addLayerVersionPermission', tx)
+          setImmediate(finish, end, 'Lambda', 'addLayerVersionPermission', tx)
         }
       )
     })
   })
 
-  t.test('RDS', (t) => {
-    const { agent, endpoint, AWS } = t.context
+  await t.test('RDS', (t, end) => {
+    const { agent, endpoint, AWS } = t.nr
     helper.runInTransaction(agent, (tx) => {
       const service = new AWS.RDS({
         credentials: FAKE_CREDENTIALS,
@@ -159,14 +159,14 @@ tap.test('AWS HTTP Services', (t) => {
         },
         () => {
           tx.end()
-          setImmediate(finish, t, 'Amazon RDS', 'addRoleToDBCluster', tx)
+          setImmediate(finish, end, 'Amazon RDS', 'addRoleToDBCluster', tx)
         }
       )
     })
   })
 
-  t.test('Redshift', (t) => {
-    const { agent, endpoint, AWS } = t.context
+  await t.test('Redshift', (t, end) => {
+    const { agent, endpoint, AWS } = t.nr
     helper.runInTransaction(agent, (tx) => {
       const service = new AWS.Redshift({
         credentials: FAKE_CREDENTIALS,
@@ -179,14 +179,14 @@ tap.test('AWS HTTP Services', (t) => {
         },
         () => {
           tx.end()
-          setImmediate(finish, t, 'Redshift', 'acceptReservedNodeExchange', tx)
+          setImmediate(finish, end, 'Redshift', 'acceptReservedNodeExchange', tx)
         }
       )
     })
   })
 
-  t.test('Rekognition', (t) => {
-    const { agent, endpoint, AWS } = t.context
+  await t.test('Rekognition', (t, end) => {
+    const { agent, endpoint, AWS } = t.nr
     helper.runInTransaction(agent, (tx) => {
       const service = new AWS.Rekognition({
         credentials: FAKE_CREDENTIALS,
@@ -210,14 +210,14 @@ tap.test('AWS HTTP Services', (t) => {
         },
         () => {
           tx.end()
-          setImmediate(finish, t, 'Rekognition', 'compareFaces', tx)
+          setImmediate(finish, end, 'Rekognition', 'compareFaces', tx)
         }
       )
     })
   })
 
-  t.test('SES', (t) => {
-    const { agent, endpoint, AWS } = t.context
+  await t.test('SES', (t, end) => {
+    const { agent, endpoint, AWS } = t.nr
     helper.runInTransaction(agent, (tx) => {
       const service = new AWS.SES({
         credentials: FAKE_CREDENTIALS,
@@ -230,28 +230,28 @@ tap.test('AWS HTTP Services', (t) => {
         },
         () => {
           tx.end()
-          setImmediate(finish, t, 'Amazon SES', 'cloneReceiptRuleSet', tx)
+          setImmediate(finish, end, 'Amazon SES', 'cloneReceiptRuleSet', tx)
         }
       )
     })
   })
 })
 
-function finish(t, service, operation, tx) {
-  const externals = common.checkAWSAttributes(t, tx.trace.root, common.EXTERN_PATTERN)
-  if (t.equal(externals.length, 1, 'should have an aws external')) {
+function finish(end, service, operation, tx) {
+  const externals = common.checkAWSAttributes(tx.trace.root, common.EXTERN_PATTERN)
+  if (assert.equal(externals.length, 1, 'should have an aws external')) {
     const attrs = externals[0].attributes.get(common.SEGMENT_DESTINATION)
-    t.match(
-      attrs,
-      {
+    assert.equal(
+      match(attrs, {
         'aws.operation': operation,
         'aws.requestId': String,
         'aws.service': service,
         'aws.region': 'us-east-1'
-      },
+      }),
+      true,
       'should have expected attributes'
     )
   }
 
-  t.end()
+  end()
 }

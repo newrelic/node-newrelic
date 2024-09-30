@@ -4,14 +4,16 @@
  */
 
 'use strict'
-
-const tap = require('tap')
-require('./common')
+const assert = require('node:assert')
+const test = require('node:test')
+const { afterEach, assertChatCompletionMessages, assertChatCompletionSummary } = require('./common')
 const helper = require('../../lib/agent_helper')
-require('../../lib/metrics_helper')
 const createAiResponseServer = require('../../lib/aws-server-stubs/ai-server')
 const { FAKE_CREDENTIALS } = require('../../lib/aws-server-stubs')
 const { DESTINATIONS } = require('../../../lib/config/attribute-filter')
+const { assertSegments, match } = require('../../lib/custom-assertions')
+const promiseResolvers = require('../../lib/promise-resolvers')
+const { tspl } = require('@matteo.collina/tspl')
 
 const requests = {
   ai21: (prompt, modelId) => ({
@@ -54,20 +56,21 @@ const requests = {
   })
 }
 
-tap.beforeEach(async (t) => {
-  t.context.agent = helper.instrumentMockedAgent({
+test.beforeEach(async (ctx) => {
+  ctx.nr = {}
+  ctx.nr.agent = helper.instrumentMockedAgent({
     ai_monitoring: {
       enabled: true
     }
   })
   const bedrock = require('@aws-sdk/client-bedrock-runtime')
-  t.context.bedrock = bedrock
+  ctx.nr.bedrock = bedrock
 
   const { server, baseUrl, responses, host, port } = await createAiResponseServer()
-  t.context.server = server
-  t.context.baseUrl = baseUrl
-  t.context.responses = responses
-  t.context.expectedExternalPath = (modelId, method = 'invoke') =>
+  ctx.nr.server = server
+  ctx.nr.baseUrl = baseUrl
+  ctx.nr.responses = responses
+  ctx.nr.expectedExternalPath = (modelId, method = 'invoke') =>
     `External/${host}:${port}/model/${encodeURIComponent(modelId)}/${method}`
 
   const client = new bedrock.BedrockRuntimeClient({
@@ -76,22 +79,10 @@ tap.beforeEach(async (t) => {
     endpoint: baseUrl,
     maxAttempts: 1
   })
-  t.context.client = client
+  ctx.nr.client = client
 })
 
-tap.afterEach(async (t) => {
-  helper.unloadAgent(t.context.agent)
-  t.context.server.destroy()
-  Object.keys(require.cache).forEach((key) => {
-    if (
-      key.includes('@smithy/smithy-client') ||
-      key.includes('@aws-sdk/smithy-client') ||
-      key.includes('@aws-sdk/client-bedrock-runtime')
-    ) {
-      delete require.cache[key]
-    }
-  })
-})
+test.afterEach(afterEach)
 ;[
   { modelId: 'ai21.j2-ultra-v1', resKey: 'ai21' },
   { modelId: 'amazon.titan-text-express-v1', resKey: 'amazon' },
@@ -101,103 +92,95 @@ tap.afterEach(async (t) => {
   { modelId: 'meta.llama2-13b-chat-v1', resKey: 'llama' },
   { modelId: 'meta.llama3-8b-instruct-v1:0', resKey: 'llama' }
 ].forEach(({ modelId, resKey }) => {
-  tap.test(`${modelId}: should properly create completion segment`, (t) => {
-    const { bedrock, client, responses, agent, expectedExternalPath } = t.context
+  test(`${modelId}: should properly create completion segment`, async (t) => {
+    const { bedrock, client, responses, agent, expectedExternalPath } = t.nr
     const prompt = `text ${resKey} ultimate question`
     const input = requests[resKey](prompt, modelId)
 
     const command = new bedrock.InvokeModelCommand(input)
 
     const expected = responses[resKey].get(prompt)
-    helper.runInTransaction(agent, async (tx) => {
+    await helper.runInTransaction(agent, async (tx) => {
       const response = await client.send(command)
       const body = JSON.parse(response.body.transformToString('utf8'))
-      t.equal(response.$metadata.requestId, expected.headers['x-amzn-requestid'])
-      t.same(body, expected.body)
-      t.assertSegments(
+      assert.equal(response.$metadata.requestId, expected.headers['x-amzn-requestid'])
+      assert.deepEqual(body, expected.body)
+      assertSegments(
         tx.trace.root,
         ['Llm/completion/Bedrock/InvokeModelCommand', [expectedExternalPath(modelId)]],
         { exact: false }
       )
       tx.end()
-      t.end()
     })
   })
 
-  tap.test(
-    `${modelId}:  properly create the LlmChatCompletionMessage(s) and LlmChatCompletionSummary events`,
-    (t) => {
-      const { bedrock, client, agent } = t.context
-      const prompt = `text ${resKey} ultimate question`
-      const input = requests[resKey](prompt, modelId)
-      const command = new bedrock.InvokeModelCommand(input)
+  test(`${modelId}:  properly create the LlmChatCompletionMessage(s) and LlmChatCompletionSummary events`, async (t) => {
+    const { bedrock, client, agent } = t.nr
+    const prompt = `text ${resKey} ultimate question`
+    const input = requests[resKey](prompt, modelId)
+    const command = new bedrock.InvokeModelCommand(input)
 
-      const api = helper.getAgentApi()
-      helper.runInTransaction(agent, async (tx) => {
-        api.addCustomAttribute('llm.conversation_id', 'convo-id')
+    const api = helper.getAgentApi()
+    await helper.runInTransaction(agent, async (tx) => {
+      api.addCustomAttribute('llm.conversation_id', 'convo-id')
+      await client.send(command)
+      const events = agent.customEventAggregator.events.toArray()
+      assert.equal(events.length, 3)
+      const chatSummary = events.filter(([{ type }]) => type === 'LlmChatCompletionSummary')[0]
+      const chatMsgs = events.filter(([{ type }]) => type === 'LlmChatCompletionMessage')
+
+      assertChatCompletionMessages({
+        modelId,
+        prompt,
+        resContent: '42',
+        tx,
+        expectedId: modelId.includes('ai21') || modelId.includes('cohere') ? '1234' : null,
+        chatMsgs
+      })
+
+      assertChatCompletionSummary({ tx, modelId, chatSummary })
+
+      tx.end()
+    })
+  })
+
+  test(`${modelId}:  supports custom attributes on LlmChatCompletionMessage(s) and LlmChatCompletionSummary events`, async (t) => {
+    const { bedrock, client, agent } = t.nr
+    const { promise, resolve } = promiseResolvers()
+    const prompt = `text ${resKey} ultimate question`
+    const input = requests[resKey](prompt, modelId)
+    const command = new bedrock.InvokeModelCommand(input)
+
+    const api = helper.getAgentApi()
+    helper.runInTransaction(agent, (tx) => {
+      api.addCustomAttribute('llm.conversation_id', 'convo-id')
+      api.withLlmCustomAttributes({ 'llm.contextAttribute': 'someValue' }, async () => {
         await client.send(command)
         const events = agent.customEventAggregator.events.toArray()
-        t.equal(events.length, 3)
+
         const chatSummary = events.filter(([{ type }]) => type === 'LlmChatCompletionSummary')[0]
-        const chatMsgs = events.filter(([{ type }]) => type === 'LlmChatCompletionMessage')
-
-        t.llmMessages({
-          modelId,
-          prompt,
-          resContent: '42',
-          tx,
-          expectedId: modelId.includes('ai21') || modelId.includes('cohere') ? '1234' : null,
-          chatMsgs
-        })
-
-        t.llmSummary({ tx, modelId, chatSummary })
+        const [, message] = chatSummary
+        assert.equal(message['llm.contextAttribute'], 'someValue')
 
         tx.end()
-        t.end()
+        resolve()
       })
-    }
-  )
+    })
+    await promise
+  })
 
-  tap.test(
-    `${modelId}:  supports custom attributes on LlmChatCompletionMessage(s) and LlmChatCompletionSummary events`,
-    (t) => {
-      const { bedrock, client, agent } = t.context
-      const prompt = `text ${resKey} ultimate question`
-      const input = requests[resKey](prompt, modelId)
-      const command = new bedrock.InvokeModelCommand(input)
-
-      const api = helper.getAgentApi()
-      helper.runInTransaction(agent, async (tx) => {
-        api.addCustomAttribute('llm.conversation_id', 'convo-id')
-        api.withLlmCustomAttributes({ 'llm.contextAttribute': 'someValue' }, async () => {
-          await client.send(command)
-          const events = agent.customEventAggregator.events.toArray()
-
-          const chatSummary = events.filter(([{ type }]) => type === 'LlmChatCompletionSummary')[0]
-          const [, message] = chatSummary
-          t.equal(message['llm.contextAttribute'], 'someValue')
-
-          tx.end()
-          t.end()
-        })
-      })
-    }
-  )
-
-  tap.test(`${modelId}: text answer (streamed)`, (t) => {
+  test(`${modelId}: text answer (streamed)`, async (t) => {
     if (modelId.includes('ai21')) {
-      t.skip('model does not support streaming')
-      t.end()
       return
     }
 
-    const { bedrock, client, agent } = t.context
+    const { bedrock, client, agent } = t.nr
     const prompt = `text ${resKey} ultimate question streamed`
     const input = requests[resKey](prompt, modelId)
     const command = new bedrock.InvokeModelWithResponseStreamCommand(input)
 
     const api = helper.getAgentApi()
-    helper.runInTransaction(agent, async (tx) => {
+    await helper.runInTransaction(agent, async (tx) => {
       api.addCustomAttribute('llm.conversation_id', 'convo-id')
 
       const response = await client.send(command)
@@ -209,9 +192,9 @@ tap.afterEach(async (t) => {
       const events = agent.customEventAggregator.events.toArray()
       const chatSummary = events.filter(([{ type }]) => type === 'LlmChatCompletionSummary')[0]
       const chatMsgs = events.filter(([{ type }]) => type === 'LlmChatCompletionMessage')
-      t.equal(events.length > 2, true)
+      assert.equal(events.length > 2, true)
 
-      t.llmMessages({
+      assertChatCompletionMessages({
         modelId,
         prompt,
         resContent: '42',
@@ -220,21 +203,20 @@ tap.afterEach(async (t) => {
         chatMsgs
       })
 
-      t.llmSummary({ tx, modelId, chatSummary, numMsgs: events.length - 1 })
+      assertChatCompletionSummary({ tx, modelId, chatSummary, numMsgs: events.length - 1 })
 
       tx.end()
-      t.end()
     })
   })
 
-  tap.test('should record feedback message accordingly', (t) => {
-    const { bedrock, client, agent } = t.context
+  test('should record feedback message accordingly', async (t) => {
+    const { bedrock, client, agent } = t.nr
     const prompt = `text ${resKey} ultimate question`
     const input = requests[resKey](prompt, modelId)
     const command = new bedrock.InvokeModelCommand(input)
 
     const api = helper.getAgentApi()
-    helper.runInTransaction(agent, async (tx) => {
+    await helper.runInTransaction(agent, async (tx) => {
       await client.send(command)
       const { traceId } = api.getTraceMetadata()
       api.recordLlmFeedbackEvent({
@@ -247,40 +229,41 @@ tap.afterEach(async (t) => {
       const recordedEvents = agent.customEventAggregator.getEvents()
       const [[, feedback]] = recordedEvents.filter(([{ type }]) => type === 'LlmFeedbackMessage')
 
-      t.match(feedback, {
-        id: /[\w\d]{32}/,
-        trace_id: traceId,
-        category: 'test-event',
-        rating: '5 star',
-        message: 'You are a mathematician.',
-        ingest_source: 'Node',
-        foo: 'foo'
-      })
+      assert.equal(
+        match(feedback, {
+          id: /[\w\d]{32}/,
+          trace_id: traceId,
+          category: 'test-event',
+          rating: '5 star',
+          message: 'You are a mathematician.',
+          ingest_source: 'Node',
+          foo: 'foo'
+        }),
+        true
+      )
 
       tx.end()
-      t.end()
     })
   })
 
-  tap.test(`${modelId}: should increment tracking metric for each chat completion event`, (t) => {
-    const { bedrock, client, agent } = t.context
+  test(`${modelId}: should increment tracking metric for each chat completion event`, async (t) => {
+    const { bedrock, client, agent } = t.nr
     const prompt = `text ${resKey} ultimate question`
     const input = requests[resKey](prompt, modelId)
     const command = new bedrock.InvokeModelCommand(input)
-    helper.runInTransaction(agent, async (tx) => {
+    await helper.runInTransaction(agent, async (tx) => {
       await client.send(command)
       const metrics = getPrefixedMetric({
         agent,
         metricPrefix: 'Supportability/Nodejs/ML/Bedrock'
       })
-      t.equal(metrics.callCount > 0, true)
+      assert.equal(metrics.callCount > 0, true)
       tx.end()
-      t.end()
     })
   })
 
-  tap.test(`${modelId}: should properly create errors on create completion`, (t) => {
-    const { bedrock, client, agent, expectedExternalPath } = t.context
+  test(`${modelId}: should properly create errors on create completion`, async (t) => {
+    const { bedrock, client, agent, expectedExternalPath } = t.nr
     const prompt = `text ${resKey} ultimate question error`
     const input = requests[resKey](prompt, modelId)
 
@@ -290,79 +273,80 @@ tap.afterEach(async (t) => {
     const expectedType = 'ValidationException'
 
     const api = helper.getAgentApi()
-    helper.runInTransaction(agent, async (tx) => {
+    await helper.runInTransaction(agent, async (tx) => {
       api.addCustomAttribute('llm.conversation_id', 'convo-id')
       try {
         await client.send(command)
       } catch (err) {
-        t.equal(err.message, expectedMsg)
-        t.equal(err.name, expectedType)
+        assert.equal(err.message, expectedMsg)
+        assert.equal(err.name, expectedType)
       }
 
-      t.equal(tx.exceptions.length, 1)
-      t.match(tx.exceptions[0], {
-        error: {
-          name: expectedType,
-          message: expectedMsg
-        },
-        customAttributes: {
-          'http.statusCode': 400,
-          'error.message': expectedMsg,
-          'error.code': expectedType,
-          'completion_id': /[\w]{8}-[\w]{4}-[\w]{4}-[\w]{4}-[\w]{12}/
-        },
-        agentAttributes: {
-          spanId: /[\w\d]+/
-        }
-      })
+      assert.equal(tx.exceptions.length, 1)
+      assert.equal(
+        match(tx.exceptions[0], {
+          error: {
+            name: expectedType,
+            message: expectedMsg
+          },
+          customAttributes: {
+            'http.statusCode': 400,
+            'error.message': expectedMsg,
+            'error.code': expectedType,
+            'completion_id': /[\w]{8}-[\w]{4}-[\w]{4}-[\w]{4}-[\w]{12}/
+          },
+          agentAttributes: {
+            spanId: /[\w\d]+/
+          }
+        }),
+        true
+      )
 
-      t.assertSegments(
+      assertSegments(
         tx.trace.root,
         ['Llm/completion/Bedrock/InvokeModelCommand', [expectedExternalPath(modelId)]],
         { exact: false }
       )
 
       const events = agent.customEventAggregator.events.toArray()
-      t.equal(events.length, 2)
+      assert.equal(events.length, 2)
       const chatSummary = events.filter(([{ type }]) => type === 'LlmChatCompletionSummary')[0]
       const chatMsgs = events.filter(([{ type }]) => type === 'LlmChatCompletionMessage')
 
-      t.llmMessages({
+      assertChatCompletionMessages({
         modelId,
         prompt,
         tx,
         chatMsgs
       })
 
-      t.llmSummary({ tx, modelId, chatSummary, error: true })
+      assertChatCompletionSummary({ tx, modelId, chatSummary, error: true })
       tx.end()
-      t.end()
     })
   })
 
-  tap.test(`{${modelId}:}: should add llm attribute to transaction`, (t) => {
-    const { bedrock, client, agent } = t.context
+  test(`{${modelId}:}: should add llm attribute to transaction`, async (t) => {
+    const { bedrock, client, agent } = t.nr
     const prompt = `text ${resKey} ultimate question`
     const input = requests[resKey](prompt, modelId)
     const command = new bedrock.InvokeModelCommand(input)
 
-    helper.runInTransaction(agent, async (tx) => {
+    await helper.runInTransaction(agent, async (tx) => {
       await client.send(command)
       const attributes = tx.trace.attributes.get(DESTINATIONS.TRANS_EVENT)
-      t.equal(attributes.llm, true)
+      assert.equal(attributes.llm, true)
 
       tx.end()
-      t.end()
     })
   })
 
-  tap.test(`${modelId}: should decorate messages with custom attrs`, (t) => {
-    const { bedrock, client, agent } = t.context
+  test(`${modelId}: should decorate messages with custom attrs`, async (t) => {
+    const { bedrock, client, agent } = t.nr
     const prompt = `text ${resKey} ultimate question`
     const input = requests[resKey](prompt, modelId)
     const command = new bedrock.InvokeModelCommand(input)
 
-    helper.runInTransaction(agent, async (tx) => {
+    await helper.runInTransaction(agent, async (tx) => {
       const api = helper.getAgentApi()
       api.addCustomAttribute('llm.foo', 'bar')
 
@@ -378,17 +362,16 @@ tap.afterEach(async (t) => {
         .map((e) => e[1])
         .pop()
 
-      t.equal(summary['llm.foo'], 'bar')
-      t.equal(completion['llm.foo'], 'bar')
+      assert.equal(summary['llm.foo'], 'bar')
+      assert.equal(completion['llm.foo'], 'bar')
 
       tx.end()
-      t.end()
     })
   })
 })
 
-tap.test(`cohere embedding streaming works`, (t) => {
-  const { bedrock, client, agent } = t.context
+test(`cohere embedding streaming works`, async (t) => {
+  const { bedrock, client, agent } = t.nr
   const prompt = `embed text cohere stream`
   const input = {
     body: JSON.stringify({
@@ -400,7 +383,7 @@ tap.test(`cohere embedding streaming works`, (t) => {
   const command = new bedrock.InvokeModelWithResponseStreamCommand(input)
 
   const api = helper.getAgentApi()
-  helper.runInTransaction(agent, async (tx) => {
+  await helper.runInTransaction(agent, async (tx) => {
     api.addCustomAttribute('llm.conversation_id', 'convo-id')
 
     const response = await client.send(command)
@@ -410,18 +393,17 @@ tap.test(`cohere embedding streaming works`, (t) => {
     }
 
     const events = agent.customEventAggregator.events.toArray()
-    t.equal(events.length, 1)
+    assert.equal(events.length, 1)
     const embedding = events.shift()[1]
-    t.equal(embedding.error, false)
-    t.equal(embedding.input, prompt)
+    assert.equal(embedding.error, false)
+    assert.equal(embedding.input, prompt)
 
     tx.end()
-    t.end()
   })
 })
 
-tap.test(`ai21: should properly create errors on create completion (streamed)`, (t) => {
-  const { bedrock, client, agent, expectedExternalPath } = t.context
+test(`ai21: should properly create errors on create completion (streamed)`, async (t) => {
+  const { bedrock, client, agent, expectedExternalPath } = t.nr
   const modelId = 'ai21.j2-mid-v1'
   const prompt = `text ai21 ultimate question error streamed`
   const input = requests.ai21(prompt, modelId)
@@ -431,33 +413,36 @@ tap.test(`ai21: should properly create errors on create completion (streamed)`, 
   const expectedType = 'ValidationException'
 
   const api = helper.getAgentApi()
-  helper.runInTransaction(agent, async (tx) => {
+  await helper.runInTransaction(agent, async (tx) => {
     api.addCustomAttribute('llm.conversation_id', 'convo-id')
     try {
       await client.send(command)
     } catch (err) {
-      t.equal(err.message, expectedMsg)
-      t.equal(err.name, expectedType)
+      assert.equal(err.message, expectedMsg)
+      assert.equal(err.name, expectedType)
     }
 
-    t.equal(tx.exceptions.length, 1)
-    t.match(tx.exceptions[0], {
-      error: {
-        name: expectedType,
-        message: expectedMsg
-      },
-      customAttributes: {
-        'http.statusCode': 400,
-        'error.message': expectedMsg,
-        'error.code': expectedType,
-        'completion_id': /[\w]{8}-[\w]{4}-[\w]{4}-[\w]{4}-[\w]{12}/
-      },
-      agentAttributes: {
-        spanId: /[\w\d]+/
-      }
-    })
+    assert.equal(tx.exceptions.length, 1)
+    assert.equal(
+      match(tx.exceptions[0], {
+        error: {
+          name: expectedType,
+          message: expectedMsg
+        },
+        customAttributes: {
+          'http.statusCode': 400,
+          'error.message': expectedMsg,
+          'error.code': expectedType,
+          'completion_id': /[\w]{8}-[\w]{4}-[\w]{4}-[\w]{4}-[\w]{12}/
+        },
+        agentAttributes: {
+          spanId: /[\w\d]+/
+        }
+      }),
+      true
+    )
 
-    t.assertSegments(
+    assertSegments(
       tx.trace.root,
       [
         'Llm/completion/Bedrock/InvokeModelWithResponseStreamCommand',
@@ -467,25 +452,24 @@ tap.test(`ai21: should properly create errors on create completion (streamed)`, 
     )
 
     const events = agent.customEventAggregator.events.toArray()
-    t.equal(events.length, 2)
+    assert.equal(events.length, 2)
     const chatSummary = events.filter(([{ type }]) => type === 'LlmChatCompletionSummary')[0]
     const chatMsgs = events.filter(([{ type }]) => type === 'LlmChatCompletionMessage')
 
-    t.llmMessages({
+    assertChatCompletionMessages({
       modelId,
       prompt,
       tx,
       chatMsgs
     })
 
-    t.llmSummary({ tx, modelId, chatSummary, error: true })
+    assertChatCompletionSummary({ tx, modelId, chatSummary, error: true })
     tx.end()
-    t.end()
   })
 })
 
-tap.test(`models that do not support streaming should be handled`, (t) => {
-  const { bedrock, client, agent, expectedExternalPath } = t.context
+test(`models that do not support streaming should be handled`, async (t) => {
+  const { bedrock, client, agent, expectedExternalPath } = t.nr
   const modelId = 'amazon.titan-embed-text-v1'
   const prompt = `embed text amazon error streamed`
   const input = requests.amazon(prompt, modelId)
@@ -495,33 +479,36 @@ tap.test(`models that do not support streaming should be handled`, (t) => {
   const expectedType = 'ValidationException'
 
   const api = helper.getAgentApi()
-  helper.runInTransaction(agent, async (tx) => {
+  await helper.runInTransaction(agent, async (tx) => {
     api.addCustomAttribute('llm.conversation_id', 'convo-id')
     try {
       await client.send(command)
     } catch (err) {
-      t.equal(err.message, expectedMsg)
-      t.equal(err.name, expectedType)
+      assert.equal(err.message, expectedMsg)
+      assert.equal(err.name, expectedType)
     }
 
-    t.equal(tx.exceptions.length, 1)
-    t.match(tx.exceptions[0], {
-      error: {
-        name: expectedType,
-        message: expectedMsg
-      },
-      customAttributes: {
-        'http.statusCode': 400,
-        'error.message': expectedMsg,
-        'error.code': expectedType,
-        'completion_id': undefined
-      },
-      agentAttributes: {
-        spanId: /[\w\d]+/
-      }
-    })
+    assert.equal(tx.exceptions.length, 1)
+    assert.equal(
+      match(tx.exceptions[0], {
+        error: {
+          name: expectedType,
+          message: expectedMsg
+        },
+        customAttributes: {
+          'http.statusCode': 400,
+          'error.message': expectedMsg,
+          'error.code': expectedType,
+          'completion_id': undefined
+        },
+        agentAttributes: {
+          spanId: /[\w\d]+/
+        }
+      }),
+      true
+    )
 
-    t.assertSegments(
+    assertSegments(
       tx.trace.root,
       [
         'Llm/embedding/Bedrock/InvokeModelWithResponseStreamCommand',
@@ -531,55 +518,56 @@ tap.test(`models that do not support streaming should be handled`, (t) => {
     )
 
     const events = agent.customEventAggregator.events.toArray()
-    t.equal(events.length, 1)
+    assert.equal(events.length, 1)
     const embedding = events.shift()[1]
-    t.equal(embedding.error, true)
+    assert.equal(embedding.error, true)
 
     tx.end()
-    t.end()
   })
 })
 
-tap.test(`models should properly create errors on stream interruption`, (t) => {
-  const { bedrock, client, agent } = t.context
+test(`models should properly create errors on stream interruption`, async (t) => {
+  const { bedrock, client, agent } = t.nr
   const modelId = 'amazon.titan-text-express-v1'
   const prompt = `text amazon bad stream`
   const input = requests.amazon(prompt, modelId)
 
   const command = new bedrock.InvokeModelWithResponseStreamCommand(input)
-  helper.runInTransaction(agent, async (tx) => {
+  await helper.runInTransaction(agent, async (tx) => {
     try {
       await client.send(command)
     } catch (error) {
-      t.match(error, {
-        code: 'ECONNRESET',
-        message: 'aborted',
-        $response: {
-          statusCode: 500
-        }
-      })
+      assert.equal(
+        match(error, {
+          code: 'ECONNRESET',
+          message: /aborted/,
+          $response: {
+            statusCode: 500
+          }
+        }),
+        true
+      )
     }
 
     const events = agent.customEventAggregator.events.toArray()
     const summary = events.find((e) => e[0].type === 'LlmChatCompletionSummary')[1]
-    t.equal(tx.exceptions.length, 1)
-    t.equal(events.length, 2)
-    t.equal(summary.error, true)
+    assert.equal(tx.exceptions.length, 1)
+    assert.equal(events.length, 2)
+    assert.equal(summary.error, true)
 
     tx.end()
-    t.end()
   })
 })
 
-tap.test('should not instrument stream when disabled', (t) => {
+test('should not instrument stream when disabled', async (t) => {
   const modelId = 'amazon.titan-text-express-v1'
-  const { bedrock, client, agent } = t.context
+  const { bedrock, client, agent } = t.nr
   agent.config.ai_monitoring.streaming.enabled = false
   const prompt = `text amazon ultimate question streamed`
   const input = requests.amazon(prompt, modelId)
   const command = new bedrock.InvokeModelWithResponseStreamCommand(input)
 
-  helper.runInTransaction(agent, async (tx) => {
+  await helper.runInTransaction(agent, async (tx) => {
     const response = await client.send(command)
     let chunk = {}
     let inputCount = null
@@ -595,7 +583,7 @@ tap.test('should not instrument stream when disabled', (t) => {
     }
     chunk.inputTextTokenCount = inputCount
     chunk.outputText = completion
-    t.same(
+    assert.deepEqual(
       chunk,
       {
         'outputText': '42',
@@ -614,52 +602,54 @@ tap.test('should not instrument stream when disabled', (t) => {
     )
 
     const events = agent.customEventAggregator.events.toArray()
-    t.equal(events.length, 0, 'should not create Llm events when streaming is disabled')
+    assert.equal(events.length, 0, 'should not create Llm events when streaming is disabled')
     const attributes = tx.trace.attributes.get(DESTINATIONS.TRANS_EVENT)
-    t.equal(attributes.llm, true, 'should assign llm attribute to transaction trace')
+    assert.equal(attributes.llm, true, 'should assign llm attribute to transaction trace')
     const metrics = getPrefixedMetric({
       agent,
       metricPrefix: 'Supportability/Nodejs/ML/Bedrock'
     })
-    t.equal(metrics.callCount > 0, true, 'should set framework metric')
+    assert.equal(metrics.callCount > 0, true, 'should set framework metric')
     const supportabilityMetrics = agent.metrics.getOrCreateMetric(
       `Supportability/Nodejs/ML/Streaming/Disabled`
     )
-    t.equal(supportabilityMetrics.callCount > 0, true, 'should increment streaming disabled metric')
+    assert.equal(
+      supportabilityMetrics.callCount > 0,
+      true,
+      'should increment streaming disabled metric'
+    )
 
     tx.end()
-    t.end()
   })
 })
 
-tap.test('should utilize tokenCountCallback when set', (t) => {
-  t.plan(5)
+test('should utilize tokenCountCallback when set', async (t) => {
+  const plan = tspl(t, { plan: 5 })
 
-  const { bedrock, client, agent } = t.context
+  const { bedrock, client, agent } = t.nr
   const prompt = 'text amazon user token count callback response'
   const input = requests.amazon(prompt, 'amazon.titan-text-express-v1')
 
   agent.config.ai_monitoring.record_content.enabled = false
   agent.llm.tokenCountCallback = function (model, content) {
-    t.equal(model, 'amazon.titan-text-express-v1')
-    t.equal([prompt, '42'].includes(content), true)
+    plan.equal(model, 'amazon.titan-text-express-v1')
+    plan.equal([prompt, '42'].includes(content), true)
     return content?.split(' ')?.length
   }
   const command = new bedrock.InvokeModelCommand(input)
 
-  helper.runInTransaction(agent, async (tx) => {
+  await helper.runInTransaction(agent, async (tx) => {
     await client.send(command)
 
     // Chat completion messages should have the correct `token_count` value.
     const events = agent.customEventAggregator.events.toArray()
     const completions = events.filter((e) => e[0].type === 'LlmChatCompletionMessage')
-    t.equal(
+    plan.equal(
       completions.some((e) => e[1].token_count === 7),
       true
     )
 
     tx.end()
-    t.end()
   })
 })
 

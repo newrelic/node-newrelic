@@ -222,7 +222,11 @@ function match(actual, expected) {
 
   for (const key in expected) {
     if (key in actual) {
-      if (typeof expected[key] === 'object' && expected[key] !== null) {
+      if (typeof expected[key] === 'function') {
+        if (!expected[key](actual[key])) {
+          return false
+        }
+      } else if (typeof expected[key] === 'object' && expected[key] !== null) {
         /* c8 ignore next 3 */
         if (!match(actual[key], expected[key])) {
           return false

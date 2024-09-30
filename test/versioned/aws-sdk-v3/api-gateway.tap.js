@@ -5,37 +5,37 @@
 
 'use strict'
 
-const tap = require('tap')
+const test = require('node:test')
 const helper = require('../../lib/agent_helper')
-require('./common')
+const { afterEach, checkExternals } = require('./common')
 const { createEmptyResponseServer, FAKE_CREDENTIALS } = require('../../lib/aws-server-stubs')
+const promiseResolvers = require('../../lib/promise-resolvers')
 
-tap.test('APIGatewayClient', (t) => {
-  t.beforeEach(async (t) => {
+test('APIGatewayClient', async (t) => {
+  t.beforeEach(async (ctx) => {
+    ctx.nr = {}
     const server = createEmptyResponseServer()
     await new Promise((resolve) => {
       server.listen(0, resolve)
     })
 
-    t.context.server = server
-    t.context.agent = helper.instrumentMockedAgent()
+    ctx.nr.server = server
+    ctx.nr.agent = helper.instrumentMockedAgent()
     const { APIGatewayClient, ...lib } = require('@aws-sdk/client-api-gateway')
-    t.context.CreateApiKeyCommand = lib.CreateApiKeyCommand
+    ctx.nr.CreateApiKeyCommand = lib.CreateApiKeyCommand
     const endpoint = `http://localhost:${server.address().port}`
-    t.context.service = new APIGatewayClient({
+    ctx.nr.service = new APIGatewayClient({
       credentials: FAKE_CREDENTIALS,
       endpoint,
       region: 'us-east-1'
     })
   })
 
-  t.afterEach((t) => {
-    t.context.server.destroy()
-    helper.unloadAgent(t.context.agent)
-  })
+  t.afterEach(afterEach)
 
-  t.test('CreateApiKeyCommand', (t) => {
-    const { agent, service, CreateApiKeyCommand } = t.context
+  await t.test('CreateApiKeyCommand', async (t) => {
+    const { agent, service, CreateApiKeyCommand } = t.nr
+    const { promise, resolve } = promiseResolvers()
     helper.runInTransaction(agent, async (tx) => {
       const cmd = new CreateApiKeyCommand({
         customerId: 'STRING_VALUE',
@@ -53,12 +53,13 @@ tap.test('APIGatewayClient', (t) => {
       })
       await service.send(cmd)
       tx.end()
-      setImmediate(t.checkExternals, {
+      setImmediate(checkExternals, {
+        end: resolve,
         service: 'API Gateway',
         operations: ['CreateApiKeyCommand'],
         tx
       })
     })
+    await promise
   })
-  t.end()
 })

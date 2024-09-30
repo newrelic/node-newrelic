@@ -5,36 +5,34 @@
 
 'use strict'
 
-const tap = require('tap')
+const test = require('node:test')
 const helper = require('../../lib/agent_helper')
-require('./common')
+const { afterEach, checkExternals } = require('./common')
 const { createResponseServer, FAKE_CREDENTIALS } = require('../../lib/aws-server-stubs')
 
-tap.test('RedshiftClient', (t) => {
-  t.beforeEach(async (t) => {
+test('RedshiftClient', async (t) => {
+  t.beforeEach(async (ctx) => {
+    ctx.nr = {}
     const server = createResponseServer()
     await new Promise((resolve) => {
       server.listen(0, resolve)
     })
-    t.context.server = server
-    t.context.agent = helper.instrumentMockedAgent()
+    ctx.nr.server = server
+    ctx.nr.agent = helper.instrumentMockedAgent()
     const { RedshiftClient, ...lib } = require('@aws-sdk/client-redshift')
-    t.context.AcceptReservedNodeExchangeCommand = lib.AcceptReservedNodeExchangeCommand
+    ctx.nr.AcceptReservedNodeExchangeCommand = lib.AcceptReservedNodeExchangeCommand
     const endpoint = `http://localhost:${server.address().port}`
-    t.context.service = new RedshiftClient({
+    ctx.nr.service = new RedshiftClient({
       credentials: FAKE_CREDENTIALS,
       endpoint,
       region: 'us-east-1'
     })
   })
 
-  t.afterEach((t) => {
-    t.context.server.destroy()
-    helper.unloadAgent(t.context.agent)
-  })
+  t.afterEach(afterEach)
 
-  t.test('AcceptReservedNodeExchangeCommand', (t) => {
-    const { agent, service, AcceptReservedNodeExchangeCommand } = t.context
+  await t.test('AcceptReservedNodeExchangeCommand', (t, end) => {
+    const { agent, service, AcceptReservedNodeExchangeCommand } = t.nr
     helper.runInTransaction(agent, async (tx) => {
       const cmd = new AcceptReservedNodeExchangeCommand({
         ReservedNodeId: 'STRING_VALUE' /* required */,
@@ -42,12 +40,12 @@ tap.test('RedshiftClient', (t) => {
       })
       await service.send(cmd)
       tx.end()
-      setImmediate(t.checkExternals, {
+      setImmediate(checkExternals, {
         service: 'Redshift',
         operations: ['AcceptReservedNodeExchangeCommand'],
-        tx
+        tx,
+        end
       })
     })
   })
-  t.end()
 })

@@ -5,36 +5,34 @@
 
 'use strict'
 
-const tap = require('tap')
+const test = require('node:test')
 const helper = require('../../lib/agent_helper')
-require('./common')
+const { afterEach, checkExternals } = require('./common')
 const { createResponseServer, FAKE_CREDENTIALS } = require('../../lib/aws-server-stubs')
 
-tap.test('SESClient', (t) => {
-  t.beforeEach(async (t) => {
+test('SESClient', async (t) => {
+  t.beforeEach(async (ctx) => {
+    ctx.nr = {}
     const server = createResponseServer()
     await new Promise((resolve) => {
       server.listen(0, resolve)
     })
-    t.context.server = server
-    t.context.agent = helper.instrumentMockedAgent()
+    ctx.nr.server = server
+    ctx.nr.agent = helper.instrumentMockedAgent()
     const { SESClient, ...lib } = require('@aws-sdk/client-ses')
-    t.context.SendEmailCommand = lib.SendEmailCommand
+    ctx.nr.SendEmailCommand = lib.SendEmailCommand
     const endpoint = `http://localhost:${server.address().port}`
-    t.context.service = new SESClient({
+    ctx.nr.service = new SESClient({
       credentials: FAKE_CREDENTIALS,
       endpoint,
       region: 'us-east-1'
     })
   })
 
-  t.afterEach((t) => {
-    t.context.server.destroy()
-    helper.unloadAgent(t.context.agent)
-  })
+  t.afterEach(afterEach)
 
-  t.test('SendEmailCommand', (t) => {
-    const { agent, service, SendEmailCommand } = t.context
+  await t.test('SendEmailCommand', (t, end) => {
+    const { agent, service, SendEmailCommand } = t.nr
     helper.runInTransaction(agent, async (tx) => {
       const cmd = new SendEmailCommand({
         Destination: 'foo@bar.com',
@@ -43,12 +41,12 @@ tap.test('SESClient', (t) => {
       })
       await service.send(cmd)
       tx.end()
-      setImmediate(t.checkExternals, {
+      setImmediate(checkExternals, {
+        end,
         service: 'SES',
         operations: ['SendEmailCommand'],
         tx
       })
     })
   })
-  t.end()
 })
