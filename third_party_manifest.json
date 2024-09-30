@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "Fri Sep 27 2024 11:07:28 GMT-0400 (Eastern Daylight Time)",
+  "lastUpdated": "Mon Sep 30 2024 10:50:22 GMT-0400 (Eastern Daylight Time)",
   "projectName": "New Relic Node Agent",
   "projectUrl": "https://github.com/newrelic/node-newrelic",
   "includeOptDeps": true,
@@ -120,15 +120,15 @@
       "email": "nathan@tootallnate.net",
       "url": "http://n8.io/"
     },
-    "import-in-the-middle@1.11.1": {
+    "import-in-the-middle@1.11.2": {
       "name": "import-in-the-middle",
-      "version": "1.11.1",
-      "range": "1.11.0",
+      "version": "1.11.2",
+      "range": "^1.11.2",
       "licenses": "Apache-2.0",
       "repoUrl": "https://github.com/nodejs/import-in-the-middle",
-      "versionedRepoUrl": "https://github.com/nodejs/import-in-the-middle/tree/v1.11.1",
+      "versionedRepoUrl": "https://github.com/nodejs/import-in-the-middle/tree/v1.11.2",
       "licenseFile": "node_modules/import-in-the-middle/LICENSE",
-      "licenseUrl": "https://github.com/nodejs/import-in-the-middle/blob/v1.11.1/LICENSE",
+      "licenseUrl": "https://github.com/nodejs/import-in-the-middle/blob/v1.11.2/LICENSE",
       "licenseTextSource": "file",
       "publisher": "Bryan English",
       "email": "bryan.english@datadoghq.com"
