@@ -103,7 +103,7 @@ test.afterEach(afterEach)
       }
 
       assert.equal(embedding[0].type, 'LlmEmbedding')
-      assert.equal(match(embedding[1], expectedEmbedding), true, 'should match embedding message')
+      match(embedding[1], expectedEmbedding)
 
       tx.end()
     })
@@ -140,24 +140,21 @@ test.afterEach(afterEach)
         assert.equal(err.name, expectedType)
       }
       assert.equal(tx.exceptions.length, 1)
-      assert.equal(
-        match(tx.exceptions[0], {
-          error: {
-            name: expectedType,
-            message: expectedMsg
-          },
-          customAttributes: {
-            'http.statusCode': 400,
-            'error.message': expectedMsg,
-            'error.code': expectedType,
-            'embedding_id': /[\w]{8}-[\w]{4}-[\w]{4}-[\w]{4}-[\w]{12}/
-          },
-          agentAttributes: {
-            spanId: /[\w\d]+/
-          }
-        }),
-        true
-      )
+      match(tx.exceptions[0], {
+        error: {
+          name: expectedType,
+          message: expectedMsg
+        },
+        customAttributes: {
+          'http.statusCode': 400,
+          'error.message': expectedMsg,
+          'error.code': expectedType,
+          'embedding_id': /[\w]{8}-[\w]{4}-[\w]{4}-[\w]{4}-[\w]{12}/
+        },
+        agentAttributes: {
+          spanId: /[\w\d]+/
+        }
+      })
 
       assertSegments(
         tx.trace.root,
@@ -183,7 +180,7 @@ test.afterEach(afterEach)
       }
 
       assert.equal(embedding[0].type, 'LlmEmbedding')
-      assert.equal(match(embedding[1], expectedEmbedding), true, 'should match embedding message')
+      match(embedding[1], expectedEmbedding)
 
       tx.end()
     })

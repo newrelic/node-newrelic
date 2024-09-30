@@ -15,7 +15,7 @@ const Transaction = require('../../lib/transaction')
 const ParsedStatement = require('../../lib/db/parsed-statement')
 
 function checkMetric(metrics, name, scope) {
-  assert.equal(match(metrics.getMetric(name, scope), { total: 0.333 }), true)
+  match(metrics.getMetric(name, scope), { total: 0.333 })
 }
 
 test('recording database metrics', async (t) => {
@@ -449,7 +449,7 @@ test('recording slow queries', async (t) => {
 
     await t.test('should not capture queries', (t) => {
       const { agent } = t.nr
-      assert.equal(match(agent.queries.samples.size, 0), true)
+      assert.equal(agent.queries.samples.size, 0)
     })
   })
 })

@@ -182,7 +182,7 @@ function finish({
 function checkName(name, action, queueName) {
   const specificName = `/${action}/Named/${queueName}`
 
-  assert.equal(match(name, specificName), true, 'should have correct name')
+  match(name, specificName)
 }
 
 function checkAttributes(segment, operation, expectedRequestId) {
@@ -195,11 +195,7 @@ function checkAttributes(segment, operation, expectedRequestId) {
     'aws.region': AWS_REGION
   }
 
-  assert.equal(
-    match(actualAttributes, expectedAttributes),
-    true,
-    `should have expected attributes for ${operation}`
-  )
+  match(actualAttributes, expectedAttributes)
 }
 
 function getRequestId(data) {

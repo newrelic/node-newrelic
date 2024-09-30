@@ -8,7 +8,6 @@
 const test = require('node:test')
 const assert = require('node:assert')
 
-const { match } = require('../lib/custom-assertions')
 const helper = require('../lib/agent_helper')
 const { Attributes } = require('../../lib/attributes')
 const AttributeFilter = require('../../lib/config/attribute-filter')
@@ -204,6 +203,6 @@ test('#reset', async (t) => {
 
     inst.reset()
 
-    assert.equal(match(inst.attributes, {}), true)
+    assert.deepEqual(inst.attributes, {})
   })
 })

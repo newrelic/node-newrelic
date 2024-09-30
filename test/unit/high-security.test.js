@@ -8,7 +8,6 @@
 const test = require('node:test')
 const assert = require('node:assert')
 
-const { match } = require('../lib/custom-assertions')
 const helper = require('../lib/agent_helper')
 const facts = require('../../lib/collector/facts')
 const API = require('../../api')
@@ -42,7 +41,7 @@ function check(key, before, after) {
   setPath(fromFile, key, before)
 
   const config = new Config(fromFile)
-  return assert.equal(match(getPath(config, key), after), true)
+  assert.deepEqual(getPath(config, key), after)
 }
 
 function checkServer(config, key, expected, server) {
@@ -50,11 +49,11 @@ function checkServer(config, key, expected, server) {
   const fromServer = { high_security: true }
   fromServer[key] = server
 
-  assert.equal(match(getPath(config, key), expected), true)
-  assert.equal(match(fromServer[key], server), true)
+  assert.equal(getPath(config, key), expected)
+  assert.equal(fromServer[key], server)
 
   config.onConnect(fromServer)
-  return assert.equal(match(getPath(config, key), expected), true)
+  assert.equal(getPath(config, key), expected)
 }
 
 test('config to be sent during connect', async (t) => {
@@ -255,7 +254,7 @@ test('coerces other settings', async (t) => {
       config.attributes.include = ['some val']
       config._applyHighSecurity()
       assert.equal(config.ssl, true)
-      assert.equal(match(config.attributes.include, []), true)
+      assert.deepEqual(config.attributes.include, [])
     })
   })
 })

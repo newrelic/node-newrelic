@@ -7,8 +7,6 @@
 
 const test = require('node:test')
 const assert = require('node:assert')
-const { match } = require('../../lib/custom-assertions')
-
 const ErrorTraceAggregator = require('../../../lib/errors/error-trace-aggregator')
 
 const RUN_ID = 1337
@@ -74,7 +72,7 @@ test('Error Trace Aggregator', async (t) => {
     assert.equal(runId, RUN_ID, 'run ID should match')
 
     const expectedTraceData = [rawErrorTrace]
-    assert.equal(match(errorTraceData, expectedTraceData), true, 'errorTraceData should match')
+    assert.deepEqual(errorTraceData, expectedTraceData, 'errorTraceData should match')
   })
 
   await t.test('toPayload() should return json format of data', (t, end) => {
@@ -89,7 +87,7 @@ test('Error Trace Aggregator', async (t) => {
       assert.equal(runId, RUN_ID, 'run ID should match')
 
       const expectedTraceData = [rawErrorTrace]
-      assert.equal(match(errorTraceData, expectedTraceData), true, 'errorTraceData should match')
+      assert.deepEqual(errorTraceData, expectedTraceData, 'errorTraceData should match')
       end()
     })
   })

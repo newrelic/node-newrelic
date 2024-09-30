@@ -10,7 +10,6 @@ const assert = require('node:assert')
 const { EventEmitter } = require('node:events')
 const sinon = require('sinon')
 
-const { match } = require('../lib/custom-assertions')
 const promiseResolvers = require('../lib/promise-resolvers')
 const Harvester = require('../../lib/harvester')
 
@@ -91,7 +90,7 @@ test('should reconfigure all aggregators', (t) => {
   harvester.update(config)
   assert.equal(aggregators[0].reconfigure.callCount, 1, 'should stop enabled aggregator')
   assert.equal(aggregators[1].reconfigure.callCount, 1, 'should stop disabled aggregator')
-  assert.equal(match(aggregators[0].reconfigure.args[0], [config]), true)
+  assert.deepEqual(aggregators[0].reconfigure.args[0], [config])
 })
 
 test('resolve when all data is sent', async (t) => {

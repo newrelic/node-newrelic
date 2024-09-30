@@ -72,18 +72,13 @@ test('amazon-dax-client', async (t) => {
         assert.equal(segment.name, 'Datastore/operation/DynamoDB/getItem')
 
         const attrs = segment.attributes.get(common.SEGMENT_DESTINATION)
-        assert.equal(
-          match(attrs, {
-            host: 'unknown',
-            port_path_or_id: 'unknown',
-            collection: 'TableDoesNotExist',
-            product: 'DynamoDB'
-          }),
-          true,
-          'should have expected attributes'
-        )
-
-        end()
+        match(attrs, {
+          host: 'unknown',
+          port_path_or_id: 'unknown',
+          collection: 'TableDoesNotExist',
+          product: 'DynamoDB'
+        }),
+          end()
       })
     })
   })

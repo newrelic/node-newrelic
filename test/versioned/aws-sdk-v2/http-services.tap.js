@@ -241,16 +241,12 @@ function finish(end, service, operation, tx) {
   const externals = common.checkAWSAttributes(tx.trace.root, common.EXTERN_PATTERN)
   if (assert.equal(externals.length, 1, 'should have an aws external')) {
     const attrs = externals[0].attributes.get(common.SEGMENT_DESTINATION)
-    assert.equal(
-      match(attrs, {
-        'aws.operation': operation,
-        'aws.requestId': String,
-        'aws.service': service,
-        'aws.region': 'us-east-1'
-      }),
-      true,
-      'should have expected attributes'
-    )
+    match(attrs, {
+      'aws.operation': operation,
+      'aws.requestId': String,
+      'aws.service': service,
+      'aws.region': 'us-east-1'
+    })
   }
 
   end()

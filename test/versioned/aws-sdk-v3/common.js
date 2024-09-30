@@ -28,7 +28,7 @@ function checkAWSAttributes(segment, pattern, markedSegments = []) {
   if (pattern.test(segment.name)) {
     markedSegments.push(segment)
     const attrs = segment.attributes.get(TRANS_SEGMENT)
-    assert.equal(match(attrs, expectedAttrs), true, 'should have aws attributes')
+    match(attrs, expectedAttrs)
   }
   segment.children.forEach((child) => {
     checkAWSAttributes(child, pattern, markedSegments)
@@ -58,18 +58,14 @@ function checkExternals({ service, operations, tx, end }) {
   )
   operations.forEach((operation, index) => {
     const attrs = externals[index].attributes.get(TRANS_SEGMENT)
-    assert.equal(
-      match(attrs, {
-        'aws.operation': operation,
-        'aws.requestId': String,
-        // in 3.1.0 they fixed service names from lower case
-        // see: https://github.com/aws/aws-sdk-js-v3/commit/0011af27a62d0d201296225e2a70276645b3231a
-        'aws.service': new RegExp(`${service}|${service.toLowerCase().replace(/ /g, '')}`),
-        'aws.region': 'us-east-1'
-      }),
-      true,
-      'should have expected attributes'
-    )
+    match(attrs, {
+      'aws.operation': operation,
+      'aws.requestId': String,
+      // in 3.1.0 they fixed service names from lower case
+      // see: https://github.com/aws/aws-sdk-js-v3/commit/0011af27a62d0d201296225e2a70276645b3231a
+      'aws.service': new RegExp(`${service}|${service.toLowerCase().replace(/ /g, '')}`),
+      'aws.region': 'us-east-1'
+    })
   })
   end()
 }
@@ -110,7 +106,7 @@ function assertChatCompletionMessages({ tx, chatMsgs, expectedId, modelId, promp
     }
 
     assert.equal(msg[0].type, 'LlmChatCompletionMessage')
-    assert.equal(match(msg[1], expectedChatMsg), true, 'should match chat completion message')
+    match(msg[1], expectedChatMsg)
   })
 }
 
@@ -135,11 +131,7 @@ function assertChatCompletionSummary({ tx, modelId, chatSummary, error = false, 
   }
 
   assert.equal(chatSummary[0].type, 'LlmChatCompletionSummary')
-  assert.equal(
-    match(chatSummary[1], expectedChatSummary),
-    true,
-    'should match chat summary message'
-  )
+  match(chatSummary[1], expectedChatSummary)
 }
 
 /**

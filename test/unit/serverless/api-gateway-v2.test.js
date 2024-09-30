@@ -10,7 +10,6 @@ const assert = require('node:assert')
 const os = require('node:os')
 
 const { tspl } = require('@matteo.collina/tspl')
-const { match } = require('../../lib/custom-assertions')
 const helper = require('../../lib/agent_helper')
 const AwsLambda = require('../../../lib/serverless/aws-lambda')
 
@@ -138,8 +137,8 @@ test('should add w3c tracecontext to transaction if not present on request heade
     const headers = {}
     tx.insertDistributedTraceHeaders(headers)
 
-    plan.equal(match(headers.traceparent, /00-[a-f0-9]{32}-[a-f0-9]{16}-\d{2}/), true)
-    plan.equal(match(headers.tracestate, /33@nr=.+AccountId1-AppId1.+/), true)
+    plan.match(headers.traceparent, /00-[a-f0-9]{32}-[a-f0-9]{16}-\d{2}/)
+    plan.match(headers.tracestate, /33@nr=.+AccountId1-AppId1.+/)
 
     callback(null, responseBody)
   })

@@ -215,17 +215,12 @@ function finish(end, tx, destName, setLibrarySpy) {
   assert.equal(externalSegments.length, 0, 'should not have any External segments')
 
   const attrs = messages[0].attributes.get(common.SEGMENT_DESTINATION)
-  assert.equal(
-    match(attrs, {
-      'aws.operation': 'PublishCommand',
-      'aws.requestId': String,
-      'aws.service': /sns|SNS/,
-      'aws.region': 'us-east-1'
-    }),
-    true,
-    'should have expected attributes for PublishCommand'
-  )
-
-  assert.equal(setLibrarySpy.callCount, 1, 'should only call setLibrary once and not per call')
+  match(attrs, {
+    'aws.operation': 'PublishCommand',
+    'aws.requestId': String,
+    'aws.service': /sns|SNS/,
+    'aws.region': 'us-east-1'
+  }),
+    assert.equal(setLibrarySpy.callCount, 1, 'should only call setLibrary once and not per call')
   end()
 }

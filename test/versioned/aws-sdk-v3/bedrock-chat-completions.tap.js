@@ -229,18 +229,15 @@ test.afterEach(afterEach)
       const recordedEvents = agent.customEventAggregator.getEvents()
       const [[, feedback]] = recordedEvents.filter(([{ type }]) => type === 'LlmFeedbackMessage')
 
-      assert.equal(
-        match(feedback, {
-          id: /[\w\d]{32}/,
-          trace_id: traceId,
-          category: 'test-event',
-          rating: '5 star',
-          message: 'You are a mathematician.',
-          ingest_source: 'Node',
-          foo: 'foo'
-        }),
-        true
-      )
+      match(feedback, {
+        id: /[\w\d]{32}/,
+        trace_id: traceId,
+        category: 'test-event',
+        rating: '5 star',
+        message: 'You are a mathematician.',
+        ingest_source: 'Node',
+        foo: 'foo'
+      })
 
       tx.end()
     })
@@ -283,24 +280,21 @@ test.afterEach(afterEach)
       }
 
       assert.equal(tx.exceptions.length, 1)
-      assert.equal(
-        match(tx.exceptions[0], {
-          error: {
-            name: expectedType,
-            message: expectedMsg
-          },
-          customAttributes: {
-            'http.statusCode': 400,
-            'error.message': expectedMsg,
-            'error.code': expectedType,
-            'completion_id': /[\w]{8}-[\w]{4}-[\w]{4}-[\w]{4}-[\w]{12}/
-          },
-          agentAttributes: {
-            spanId: /[\w\d]+/
-          }
-        }),
-        true
-      )
+      match(tx.exceptions[0], {
+        error: {
+          name: expectedType,
+          message: expectedMsg
+        },
+        customAttributes: {
+          'http.statusCode': 400,
+          'error.message': expectedMsg,
+          'error.code': expectedType,
+          'completion_id': /[\w]{8}-[\w]{4}-[\w]{4}-[\w]{4}-[\w]{12}/
+        },
+        agentAttributes: {
+          spanId: /[\w\d]+/
+        }
+      })
 
       assertSegments(
         tx.trace.root,
@@ -423,24 +417,21 @@ test(`ai21: should properly create errors on create completion (streamed)`, asyn
     }
 
     assert.equal(tx.exceptions.length, 1)
-    assert.equal(
-      match(tx.exceptions[0], {
-        error: {
-          name: expectedType,
-          message: expectedMsg
-        },
-        customAttributes: {
-          'http.statusCode': 400,
-          'error.message': expectedMsg,
-          'error.code': expectedType,
-          'completion_id': /[\w]{8}-[\w]{4}-[\w]{4}-[\w]{4}-[\w]{12}/
-        },
-        agentAttributes: {
-          spanId: /[\w\d]+/
-        }
-      }),
-      true
-    )
+    match(tx.exceptions[0], {
+      error: {
+        name: expectedType,
+        message: expectedMsg
+      },
+      customAttributes: {
+        'http.statusCode': 400,
+        'error.message': expectedMsg,
+        'error.code': expectedType,
+        'completion_id': /[\w]{8}-[\w]{4}-[\w]{4}-[\w]{4}-[\w]{12}/
+      },
+      agentAttributes: {
+        spanId: /[\w\d]+/
+      }
+    })
 
     assertSegments(
       tx.trace.root,
@@ -489,24 +480,21 @@ test(`models that do not support streaming should be handled`, async (t) => {
     }
 
     assert.equal(tx.exceptions.length, 1)
-    assert.equal(
-      match(tx.exceptions[0], {
-        error: {
-          name: expectedType,
-          message: expectedMsg
-        },
-        customAttributes: {
-          'http.statusCode': 400,
-          'error.message': expectedMsg,
-          'error.code': expectedType,
-          'completion_id': undefined
-        },
-        agentAttributes: {
-          spanId: /[\w\d]+/
-        }
-      }),
-      true
-    )
+    match(tx.exceptions[0], {
+      error: {
+        name: expectedType,
+        message: expectedMsg
+      },
+      customAttributes: {
+        'http.statusCode': 400,
+        'error.message': expectedMsg,
+        'error.code': expectedType,
+        'completion_id': undefined
+      },
+      agentAttributes: {
+        spanId: /[\w\d]+/
+      }
+    })
 
     assertSegments(
       tx.trace.root,
@@ -537,16 +525,13 @@ test(`models should properly create errors on stream interruption`, async (t) =>
     try {
       await client.send(command)
     } catch (error) {
-      assert.equal(
-        match(error, {
-          code: 'ECONNRESET',
-          message: /aborted/,
-          $response: {
-            statusCode: 500
-          }
-        }),
-        true
-      )
+      match(error, {
+        code: 'ECONNRESET',
+        message: /aborted/,
+        $response: {
+          statusCode: 500
+        }
+      })
     }
 
     const events = agent.customEventAggregator.events.toArray()

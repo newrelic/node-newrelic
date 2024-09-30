@@ -94,14 +94,10 @@ function finish(end, tx) {
 
 function checkAttrs(segment, operation) {
   const attrs = segment.attributes.get(common.SEGMENT_DESTINATION)
-  assert.equal(
-    match(attrs, {
-      'aws.operation': operation,
-      'aws.requestId': String,
-      'aws.service': 'Amazon S3',
-      'aws.region': 'us-east-1'
-    }),
-    true,
-    `should have expected attributes for ${operation}`
-  )
+  match(attrs, {
+    'aws.operation': operation,
+    'aws.requestId': String,
+    'aws.service': 'Amazon S3',
+    'aws.region': 'us-east-1'
+  })
 }

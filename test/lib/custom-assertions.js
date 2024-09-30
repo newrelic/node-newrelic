@@ -6,6 +6,10 @@
 'use strict'
 const assert = require('node:assert')
 const { isSimpleObject } = require('../../lib/util/objects')
+const typeMappings = {
+  String: 'string',
+  Number: 'number'
+}
 
 function assertExactClmAttrs(segmentStub, expectedAttrs) {
   const attrs = segmentStub.addAttribute.args
@@ -204,41 +208,24 @@ function assertSegments(parent, expected, options) {
  */
 function match(actual, expected) {
   if (typeof actual === 'string' && typeof expected === 'string') {
-    const patterns = expected
-      .trim()
-      .split(/\r?\n/)
-      .map((s) => s.trim())
-
-    let lastIndex = -1
-    for (const pattern of patterns) {
-      const index = actual.indexOf(pattern)
-      if (index === -1 || index < lastIndex) {
-        return false
-      }
-      lastIndex = index
-    }
-    return true
+    assert.ok(actual.indexOf(expected) > -1)
+    return
   }
 
   for (const key in expected) {
     if (key in actual) {
       if (typeof expected[key] === 'function') {
-        if (!expected[key](actual[key])) {
-          return false
-        }
+        const type = expected[key]
+        assert.ok(typeof actual[key] === typeMappings[type.name])
+      } else if (expected[key] instanceof RegExp) {
+        assert.ok(expected[key].test(actual[key]))
       } else if (typeof expected[key] === 'object' && expected[key] !== null) {
-        /* c8 ignore next 3 */
-        if (!match(actual[key], expected[key])) {
-          return false
-        }
-      } else if (actual[key] !== expected[key]) {
-        return false
+        match(actual[key], expected[key])
+      } else {
+        assert.equal(actual[key], expected[key])
       }
-    } else {
-      return false
     }
   }
-  return true
 }
 
 /**

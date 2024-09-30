@@ -7,9 +7,6 @@
 
 const test = require('node:test')
 const assert = require('node:assert')
-
-const { match } = require('../lib/custom-assertions')
-
 const InstrumentationTracker = require('../../lib/instrumentation-tracker')
 const InstrumentationDescriptor = require('../../lib/instrumentation-descriptor')
 
@@ -42,7 +39,7 @@ test('can get a tracked item by instrumentation', async () => {
   tracker.track('foo', inst)
   const item = tracker.getTrackedItem('foo', inst)
   assert.equal(item.instrumentation, inst)
-  assert.equal(match(item.meta, { instrumented: false, didError: undefined }), true)
+  assert.deepEqual(item.meta, { instrumented: false, didError: undefined })
 })
 
 test('sets hook failure correctly', async () => {

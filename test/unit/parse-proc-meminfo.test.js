@@ -7,9 +7,6 @@
 
 const test = require('node:test')
 const assert = require('node:assert')
-
-const { match } = require('../lib/custom-assertions')
-
 const parseMemInfo = require('../../lib/parse-proc-meminfo')
 
 // Most functionality is covered in-depth via cross-agent tests in
@@ -17,10 +14,10 @@ const parseMemInfo = require('../../lib/parse-proc-meminfo')
 
 test('Should return `null` when data is null', () => {
   const result = parseMemInfo(null)
-  assert.equal(match(result, null), true)
+  assert.equal(result, null)
 })
 
 test('Should return `null` when data is undefined', () => {
   const result = parseMemInfo(undefined)
-  assert.equal(match(result, undefined), true)
+  assert.equal(result, undefined)
 })

@@ -182,20 +182,16 @@ function finish({ commands, tx, setDatastoreSpy }) {
     const attrs = segment.attributes.get(common.SEGMENT_DESTINATION)
     attrs.port_path_or_id = parseInt(attrs.port_path_or_id, 10)
 
-    assert.equal(
-      match(attrs, {
-        'host': String,
-        'port_path_or_id': Number,
-        'product': 'DynamoDB',
-        'collection': String,
-        'aws.operation': command.constructor.name,
-        'aws.requestId': String,
-        'aws.region': 'us-east-1',
-        'aws.service': /dynamodb|DynamoDB/
-      }),
-      true,
-      'should have expected attributes'
-    )
+    match(attrs, {
+      'host': String,
+      'port_path_or_id': Number,
+      'product': 'DynamoDB',
+      'collection': String,
+      'aws.operation': command.constructor.name,
+      'aws.requestId': String,
+      'aws.region': 'us-east-1',
+      'aws.service': /dynamodb|DynamoDB/
+    })
   })
 
   assert.equal(setDatastoreSpy.callCount, 1, 'should only call setDatastore once and not per call')

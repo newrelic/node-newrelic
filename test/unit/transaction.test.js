@@ -16,7 +16,6 @@ const Transaction = require('../../lib/transaction')
 const Segment = require('../../lib/transaction/trace/segment')
 const hashes = require('../../lib/util/hashes')
 const sinon = require('sinon')
-const { match } = require('../lib/custom-assertions')
 
 test('Transaction unit tests', async (t) => {
   t.beforeEach(function (ctx) {
@@ -1473,8 +1472,8 @@ test('insertDistributedTraceHeaders', async (t) => {
     assert.equal(traceparentParts[2].length, 16, 'parentId of length 16')
     assert.equal(traceparentParts[3], '01', 'flags match')
 
-    match(traceparentParts[1], lowercaseHexRegex, 'traceId is lowercase hex')
-    match(traceparentParts[2], lowercaseHexRegex, 'parentId is lowercase hex')
+    assert.match(traceparentParts[1], lowercaseHexRegex, 'traceId is lowercase hex')
+    assert.match(traceparentParts[2], lowercaseHexRegex, 'parentId is lowercase hex')
   })
 
   await t.test('should generate new parentId when spans_events disabled', (t) => {
@@ -1494,7 +1493,7 @@ test('insertDistributedTraceHeaders', async (t) => {
 
     assert.equal(traceparentParts[2].length, 16, 'parentId has length 16')
 
-    match(traceparentParts[2], lowercaseHexRegex, 'parentId is lowercase hex')
+    assert.match(traceparentParts[2], lowercaseHexRegex, 'parentId is lowercase hex')
   })
 
   await t.test('should set traceparent sample part to 01 for sampled transaction', (t) => {
@@ -1870,7 +1869,7 @@ test('when being named with finalizeNameFromUri', async (t) => {
 
     const attrs = txn.trace.attributes.get(AttributeFilter.DESTINATIONS.TRANS_TRACE)
 
-    match(attrs, {
+    assert.deepEqual(attrs, {
       'request.parameters.foo': 'biz',
       'request.parameters.bar': 'bang'
     })
@@ -1953,7 +1952,7 @@ test('requestd', async (t) => {
 
     const segment = contextManager.getContext()
 
-    match(segment.attributes.get(AttributeFilter.DESTINATIONS.SPAN_EVENT), {
+    assert.deepEqual(segment.attributes.get(AttributeFilter.DESTINATIONS.SPAN_EVENT), {
       'request.parameters.foo': 'biz',
       'request.parameters.bar': 'bang'
     })

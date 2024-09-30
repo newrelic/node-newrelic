@@ -8,8 +8,6 @@
 const test = require('node:test')
 const assert = require('node:assert')
 
-const { match } = require('../lib/custom-assertions')
-
 const PriorityQueue = require('../../lib/priority-queue')
 
 test('#add', async (t) => {
@@ -21,10 +19,7 @@ test('#add', async (t) => {
     queue.add('right child', 5)
     queue.add('left child', 8)
 
-    assert.equal(
-      match(queue.toArray(), ['parent', 'left child', 'right child', 'left grandchild']),
-      true
-    )
+    assert.deepEqual(queue.toArray(), ['parent', 'left child', 'right child', 'left grandchild'])
   })
 
   await t.test('replaces lowest priority item if limit is met', () => {
@@ -35,17 +30,16 @@ test('#add', async (t) => {
     queue.add('right child', 5)
     queue.add('left child', 8)
 
-    assert.equal(
-      match(queue.toArray(), ['parent', 'left child', 'right child', 'left grandchild']),
-      true
-    )
+    assert.deepEqual(queue.toArray(), ['parent', 'left child', 'right child', 'left grandchild'])
 
     queue.add('new parent', 2)
 
-    assert.equal(
-      match(queue.toArray(), ['new parent', 'right child', 'left grandchild', 'left child']),
-      true
-    )
+    assert.deepEqual(queue.toArray(), [
+      'new parent',
+      'right child',
+      'left grandchild',
+      'left child'
+    ])
   })
 
   await t.test('does not insert events in the case the limit is 0', () => {
@@ -84,9 +78,9 @@ test('#setLimit', async (t) => {
     }
 
     assert.equal(queue.length, 6)
-    assert.equal(match(queue.toArray(), [0, 5, 4, 3, 2, 1]), true)
+    assert.deepEqual(queue.toArray(), [0, 5, 4, 3, 2, 1])
     queue.setLimit(5)
-    assert.equal(match(queue.toArray(), [1, 2, 3, 4, 5]), true)
+    assert.deepEqual(queue.toArray(), [1, 2, 3, 4, 5])
     assert.equal(queue.length, 5)
   })
 })
