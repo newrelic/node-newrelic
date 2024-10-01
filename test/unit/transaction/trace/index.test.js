@@ -4,84 +4,81 @@
  */
 
 'use strict'
-
-const tap = require('tap')
-
+const assert = require('node:assert')
+const test = require('node:test')
 const util = require('util')
 const sinon = require('sinon')
-const DESTINATIONS = require('../../lib/config/attribute-filter').DESTINATIONS
-const helper = require('../lib/agent_helper')
-const codec = require('../../lib/util/codec')
+const DESTINATIONS = require('../../../../lib/config/attribute-filter').DESTINATIONS
+const helper = require('../../../lib/agent_helper')
+const codec = require('../../../../lib/util/codec')
 const codecEncodeAsync = util.promisify(codec.encode)
 const codecDecodeAsync = util.promisify(codec.decode)
-const Segment = require('../../lib/transaction/trace/segment')
-const DTPayload = require('../../lib/transaction/dt-payload')
-const Trace = require('../../lib/transaction/trace')
-const Transaction = require('../../lib/transaction')
+const Segment = require('../../../../lib/transaction/trace/segment')
+const DTPayload = require('../../../../lib/transaction/dt-payload')
+const Trace = require('../../../../lib/transaction/trace')
+const Transaction = require('../../../../lib/transaction')
 
 const NEWRELIC_TRACE_HEADER = 'newrelic'
 
-tap.test('Trace', (t) => {
-  t.autoend()
-  let agent = null
-
-  t.beforeEach(() => {
-    agent = helper.loadMockedAgent()
+test('Trace', async (t) => {
+  t.beforeEach((ctx) => {
+    ctx.nr = {}
+    ctx.nr.agent = helper.loadMockedAgent()
   })
 
-  t.afterEach(() => {
-    helper.unloadAgent(agent)
+  t.afterEach((ctx) => {
+    helper.unloadAgent(ctx.nr.agent)
   })
 
-  t.test('should always be bound to a transaction', (t) => {
-    // fail
-    t.throws(() => {
+  await t.test('should always be bound to a transaction', (t) => {
+    const { agent } = t.nr
+    assert.throws(() => {
       return new Trace()
     }, /must be associated with a transaction/)
 
-    // succeed
     const transaction = new Transaction(agent)
     const tt = new Trace(transaction)
-    t.type(tt.transaction, Transaction)
-    t.end()
+    assert.ok(tt.transaction instanceof Transaction)
   })
 
-  t.test('should have the root of a Segment tree', (t) => {
+  await t.test('should have the root of a Segment tree', (t) => {
+    const { agent } = t.nr
     const tt = new Trace(new Transaction(agent))
-    t.type(tt.root, Segment)
-    t.end()
+    assert.ok(tt.root instanceof Segment)
   })
 
-  t.test('should be the primary interface for adding segments to a trace', (t) => {
+  await t.test('should be the primary interface for adding segments to a trace', (t) => {
+    const { agent } = t.nr
     const transaction = new Transaction(agent)
     const trace = transaction.trace
 
-    t.doesNotThrow(() => {
+    assert.doesNotThrow(() => {
       trace.add('Custom/Test17/Child1')
     })
-    t.end()
   })
 
-  t.test('should have DT attributes on transaction end', (t) => {
+  await t.test('should have DT attributes on transaction end', (t, end) => {
+    const { agent } = t.nr
     agent.config.distributed_tracing.enabled = true
     agent.config.primary_application_id = 'test'
     agent.config.account_id = 1
     helper.runInTransaction(agent, function (tx) {
       tx.end()
       const attributes = tx.trace.intrinsics
-      t.equal(attributes.traceId, tx.traceId)
-      t.equal(attributes.guid, tx.id)
-      t.equal(attributes.priority, tx.priority)
-      t.equal(attributes.sampled, tx.sampled)
-      t.equal(attributes.parentId, undefined)
-      t.equal(attributes.parentSpanId, undefined)
-      t.equal(tx.sampled, true)
-      t.ok(tx.priority > 1)
-      t.end()
+      assert.equal(attributes.traceId, tx.traceId)
+      assert.equal(attributes.guid, tx.id)
+      assert.equal(attributes.priority, tx.priority)
+      assert.equal(attributes.sampled, tx.sampled)
+      assert.equal(attributes.parentId, undefined)
+      assert.equal(attributes.parentSpanId, undefined)
+      assert.equal(tx.sampled, true)
+      assert.ok(tx.priority > 1)
+      end()
     })
   })
 
-  t.test('should have DT parent attributes on payload accept', (t) => {
+  await t.test('should have DT parent attributes on payload accept', (t, end) => {
+    const { agent } = t.nr
     agent.config.distributed_tracing.enabled = true
     agent.config.primary_application_id = 'test'
     agent.config.account_id = 1
@@ -91,22 +88,23 @@ tap.test('Trace', (t) => {
       tx._acceptDistributedTracePayload(payload)
       tx.end()
       const attributes = tx.trace.intrinsics
-      t.equal(attributes.traceId, tx.traceId)
-      t.equal(attributes.guid, tx.id)
-      t.equal(attributes.priority, tx.priority)
-      t.equal(attributes.sampled, tx.sampled)
-      t.equal(attributes['parent.type'], 'App')
-      t.equal(attributes['parent.app'], agent.config.primary_application_id)
-      t.equal(attributes['parent.account'], agent.config.account_id)
-      t.equal(attributes.parentId, undefined)
-      t.equal(attributes.parentSpanId, undefined)
-      t.equal(tx.sampled, true)
-      t.ok(tx.priority > 1)
-      t.end()
+      assert.equal(attributes.traceId, tx.traceId)
+      assert.equal(attributes.guid, tx.id)
+      assert.equal(attributes.priority, tx.priority)
+      assert.equal(attributes.sampled, tx.sampled)
+      assert.equal(attributes['parent.type'], 'App')
+      assert.equal(attributes['parent.app'], agent.config.primary_application_id)
+      assert.equal(attributes['parent.account'], agent.config.account_id)
+      assert.equal(attributes.parentId, undefined)
+      assert.equal(attributes.parentSpanId, undefined)
+      assert.equal(tx.sampled, true)
+      assert.ok(tx.priority > 1)
+      end()
     })
   })
 
-  t.test('should generate span events', (t) => {
+  await t.test('should generate span events', (t) => {
+    const { agent } = t.nr
     agent.config.span_events.enabled = true
     agent.config.distributed_tracing.enabled = true
 
@@ -126,46 +124,45 @@ tap.test('Trace', (t) => {
     const events = agent.spanEventAggregator.getEvents()
     const nested = events[0]
     const testSpan = events[1]
-    t.hasProp(nested, 'intrinsics')
-    t.hasProp(testSpan, 'intrinsics')
+    assert.ok(nested.intrinsics)
+    assert.ok(testSpan.intrinsics)
 
-    t.hasProp(nested.intrinsics, 'parentId')
-    t.equal(nested.intrinsics.parentId, testSpan.intrinsics.guid)
-    t.hasProp(nested.intrinsics, 'category')
-    t.equal(nested.intrinsics.category, 'generic')
-    t.hasProp(nested.intrinsics, 'priority')
-    t.equal(nested.intrinsics.priority, transaction.priority)
-    t.hasProp(nested.intrinsics, 'transactionId')
-    t.equal(nested.intrinsics.transactionId, transaction.id)
-    t.hasProp(nested.intrinsics, 'sampled')
-    t.equal(nested.intrinsics.sampled, transaction.sampled)
-    t.hasProp(nested.intrinsics, 'name')
-    t.equal(nested.intrinsics.name, 'nested')
-    t.hasProp(nested.intrinsics, 'traceId')
-    t.equal(nested.intrinsics.traceId, transaction.traceId)
-    t.hasProp(nested.intrinsics, 'timestamp')
+    assert.ok(nested.intrinsics.parentId)
+    assert.equal(nested.intrinsics.parentId, testSpan.intrinsics.guid)
+    assert.ok(nested.intrinsics.category)
+    assert.equal(nested.intrinsics.category, 'generic')
+    assert.ok(nested.intrinsics.priority)
+    assert.equal(nested.intrinsics.priority, transaction.priority)
+    assert.ok(nested.intrinsics.transactionId)
+    assert.equal(nested.intrinsics.transactionId, transaction.id)
+    assert.ok(nested.intrinsics.sampled)
+    assert.equal(nested.intrinsics.sampled, transaction.sampled)
+    assert.ok(nested.intrinsics.name)
+    assert.equal(nested.intrinsics.name, 'nested')
+    assert.ok(nested.intrinsics.traceId)
+    assert.equal(nested.intrinsics.traceId, transaction.traceId)
+    assert.ok(nested.intrinsics.timestamp)
 
-    t.hasProp(testSpan.intrinsics, 'parentId')
-    t.equal(testSpan.intrinsics.parentId, null)
-    t.hasProp(testSpan.intrinsics, 'nr.entryPoint')
-    t.ok(testSpan.intrinsics['nr.entryPoint'])
-    t.hasProp(testSpan.intrinsics, 'category')
-    t.equal(testSpan.intrinsics.category, 'generic')
-    t.hasProp(testSpan.intrinsics, 'priority')
-    t.equal(testSpan.intrinsics.priority, transaction.priority)
-    t.hasProp(testSpan.intrinsics, 'transactionId')
-    t.equal(testSpan.intrinsics.transactionId, transaction.id)
-    t.hasProp(testSpan.intrinsics, 'sampled')
-    t.equal(testSpan.intrinsics.sampled, transaction.sampled)
-    t.hasProp(testSpan.intrinsics, 'name')
-    t.equal(testSpan.intrinsics.name, 'test')
-    t.hasProp(testSpan.intrinsics, 'traceId')
-    t.equal(testSpan.intrinsics.traceId, transaction.traceId)
-    t.hasProp(testSpan.intrinsics, 'timestamp')
-    t.end()
+    assert.equal(testSpan.intrinsics.parentId, null)
+    assert.ok(testSpan.intrinsics['nr.entryPoint'])
+    assert.ok(testSpan.intrinsics['nr.entryPoint'])
+    assert.ok(testSpan.intrinsics.category)
+    assert.equal(testSpan.intrinsics.category, 'generic')
+    assert.ok(testSpan.intrinsics.priority)
+    assert.equal(testSpan.intrinsics.priority, transaction.priority)
+    assert.ok(testSpan.intrinsics.transactionId)
+    assert.equal(testSpan.intrinsics.transactionId, transaction.id)
+    assert.ok(testSpan.intrinsics.sampled)
+    assert.equal(testSpan.intrinsics.sampled, transaction.sampled)
+    assert.ok(testSpan.intrinsics.name)
+    assert.equal(testSpan.intrinsics.name, 'test')
+    assert.ok(testSpan.intrinsics.traceId)
+    assert.equal(testSpan.intrinsics.traceId, transaction.traceId)
+    assert.ok(testSpan.intrinsics.timestamp)
   })
 
-  t.test('should not generate span events on end if span_events is disabled', (t) => {
+  await t.test('should not generate span events on end if span_events is disabled', (t) => {
+    const { agent } = t.nr
     agent.config.span_events.enabled = false
     agent.config.distributed_tracing.enabled = true
 
@@ -182,11 +179,11 @@ tap.test('Trace', (t) => {
     transaction.end()
 
     const events = agent.spanEventAggregator.getEvents()
-    t.equal(events.length, 0)
-    t.end()
+    assert.equal(events.length, 0)
   })
 
-  t.test('should not generate span events on end if distributed_tracing is off', (t) => {
+  await t.test('should not generate span events on end if distributed_tracing is off', (t) => {
+    const { agent } = t.nr
     agent.config.span_events.enabled = true
     agent.config.distributed_tracing.enabled = false
 
@@ -203,11 +200,11 @@ tap.test('Trace', (t) => {
     transaction.end()
 
     const events = agent.spanEventAggregator.getEvents()
-    t.equal(events.length, 0)
-    t.end()
+    assert.equal(events.length, 0)
   })
 
-  t.test('should not generate span events on end if transaction is not sampled', (t) => {
+  await t.test('should not generate span events on end if transaction is not sampled', (t) => {
+    const { agent } = t.nr
     agent.config.span_events.enabled = true
     agent.config.distributed_tracing.enabled = false
 
@@ -227,11 +224,11 @@ tap.test('Trace', (t) => {
     transaction.end()
 
     const events = agent.spanEventAggregator.getEvents()
-    t.equal(events.length, 0)
-    t.end()
+    assert.equal(events.length, 0)
   })
 
-  t.test('parent.* attributes should be present on generated spans', (t) => {
+  await t.test('parent.* attributes should be present on generated spans', (t) => {
+    const { agent } = t.nr
     // Setup DT
     const encKey = 'gringletoes'
     agent.config.encoding_key = encKey
@@ -269,29 +266,29 @@ tap.test('Trace', (t) => {
 
     // Test that a child span event has the attributes
     const attrs = child.attributes.get(DESTINATIONS.SPAN_EVENT)
-    t.same(attrs, {
+    assert.deepEqual(attrs, {
       'parent.type': 'App',
       'parent.app': 222,
       'parent.account': 111,
       'parent.transportType': 'HTTP',
       'parent.transportDuration': 0
     })
-    t.end()
   })
 
-  t.test('should send host display name on transaction when set by user', (t) => {
+  await t.test('should send host display name on transaction when set by user', (t) => {
+    const { agent } = t.nr
     agent.config.attributes.enabled = true
     agent.config.process_host.display_name = 'test-value'
 
     const trace = new Trace(new Transaction(agent))
 
-    t.same(trace.attributes.get(DESTINATIONS.TRANS_TRACE), {
+    assert.deepEqual(trace.attributes.get(DESTINATIONS.TRANS_TRACE), {
       'host.displayName': 'test-value'
     })
-    t.end()
   })
 
-  t.test('should send host display name attribute on span', (t) => {
+  await t.test('should send host display name attribute on span', (t) => {
+    const { agent } = t.nr
     agent.config.attributes.enabled = true
     agent.config.distributed_tracing.enabled = true
     agent.config.process_host.display_name = 'test-value'
@@ -307,72 +304,77 @@ tap.test('Trace', (t) => {
 
     trace.generateSpanEvents()
 
-    t.same(child.attributes.get(DESTINATIONS.SPAN_EVENT), {
+    assert.deepEqual(child.attributes.get(DESTINATIONS.SPAN_EVENT), {
       'host.displayName': 'test-value'
     })
-    t.end()
   })
 
-  t.test('should not send host display name when not set by user', (t) => {
+  await t.test('should not send host display name when not set by user', (t) => {
+    const { agent } = t.nr
     const trace = new Trace(new Transaction(agent))
 
-    t.same(trace.attributes.get(DESTINATIONS.TRANS_TRACE), {})
-    t.end()
+    assert.deepEqual(trace.attributes.get(DESTINATIONS.TRANS_TRACE), {})
   })
 })
 
-tap.test('when serializing synchronously', (t) => {
-  t.autoend()
-  let details
-
-  let agent = null
-
-  t.beforeEach(async () => {
-    agent = helper.loadMockedAgent()
-    details = await makeTrace(t, agent)
+test('when serializing synchronously', async (t) => {
+  t.beforeEach(async (ctx) => {
+    const agent = helper.loadMockedAgent()
+    const details = await makeTrace(agent)
+    ctx.nr = {
+      agent,
+      details
+    }
   })
 
-  t.afterEach(() => {
-    helper.unloadAgent(agent)
+  t.afterEach((ctx) => {
+    helper.unloadAgent(ctx.nr.agent)
   })
 
-  t.test('should produce a transaction trace in the expected format', async (t) => {
+  await t.test('should produce a transaction trace in the expected format', async (t) => {
+    const { details } = t.nr
     const traceJSON = details.trace.generateJSONSync()
     const reconstituted = await codecDecodeAsync(traceJSON[4])
-    t.same(traceJSON, details.expectedEncoding, 'full trace JSON')
+    assert.deepEqual(traceJSON, details.expectedEncoding, 'full trace JSON')
 
-    t.same(reconstituted, details.rootNode, 'reconstituted trace segments')
-    t.end()
+    assert.deepEqual(reconstituted, details.rootNode, 'reconstituted trace segments')
   })
 
-  t.test('should send response time', (t) => {
+  await t.test('should send response time', (t) => {
+    const { details } = t.nr
     details.transaction.getResponseTimeInMillis = () => {
       return 1234
     }
 
     const json = details.trace.generateJSONSync()
-    t.equal(json[1], 1234)
-    t.end()
+    assert.equal(json[1], 1234)
   })
 
-  t.test('when `simple_compression` is `false`, should compress the segment arrays', async (t) => {
-    const json = details.trace.generateJSONSync()
+  await t.test(
+    'when `simple_compression` is `false`, should compress the segment arrays',
+    async (t) => {
+      const { details } = t.nr
+      const json = details.trace.generateJSONSync()
 
-    t.match(json[4], /^[a-zA-Z0-9\+\/]+={0,2}$/, 'should be base64 encoded')
+      assert.match(json[4], /^[a-zA-Z0-9\+\/]+={0,2}$/, 'should be base64 encoded')
 
-    const data = await codecDecodeAsync(json[4])
-    t.same(data, details.rootNode)
-    t.end()
-  })
+      const data = await codecDecodeAsync(json[4])
+      assert.deepEqual(data, details.rootNode)
+    }
+  )
 
-  t.test('when `simple_compression` is `true`, should not compress the segment arrays', (t) => {
-    agent.config.simple_compression = true
-    const json = details.trace.generateJSONSync()
-    t.same(json[4], details.rootNode)
-    t.end()
-  })
+  await t.test(
+    'when `simple_compression` is `true`, should not compress the segment arrays',
+    (t) => {
+      const { agent, details } = t.nr
+      agent.config.simple_compression = true
+      const json = details.trace.generateJSONSync()
+      assert.deepEqual(json[4], details.rootNode)
+    }
+  )
 
-  t.test('when url_obfuscation is set, should obfuscate the URL', (t) => {
+  await t.test('when url_obfuscation is set, should obfuscate the URL', (t) => {
+    const { agent, details } = t.nr
     agent.config.url_obfuscation = {
       enabled: true,
       regex: {
@@ -382,38 +384,36 @@ tap.test('when serializing synchronously', (t) => {
     }
 
     const json = details.trace.generateJSONSync()
-    t.equal(json[3], '/***')
-    t.end()
+    assert.equal(json[3], '/***')
   })
 })
 
-tap.test('when serializing asynchronously', (t) => {
-  t.autoend()
-
-  let details
-
-  let agent = null
-
-  t.beforeEach(async () => {
-    agent = helper.loadMockedAgent()
-    details = await makeTrace(t, agent)
+test('when serializing asynchronously', async (t) => {
+  t.beforeEach(async (ctx) => {
+    const agent = helper.loadMockedAgent()
+    const details = await makeTrace(agent)
+    ctx.nr = {
+      agent,
+      details
+    }
   })
 
-  t.afterEach(() => {
-    helper.unloadAgent(agent)
+  t.afterEach((ctx) => {
+    helper.unloadAgent(ctx.nr.agent)
   })
 
-  t.test('should produce a transaction trace in the expected format', async (t) => {
+  await t.test('should produce a transaction trace in the expected format', async (t) => {
+    const { details } = t.nr
     const traceJSON = await details.trace.generateJSONAsync()
     const reconstituted = await codecDecodeAsync(traceJSON[4])
 
-    t.same(traceJSON, details.expectedEncoding, 'full trace JSON')
+    assert.deepEqual(traceJSON, details.expectedEncoding, 'full trace JSON')
 
-    t.same(reconstituted, details.rootNode, 'reconstituted trace segments')
-    t.end()
+    assert.deepEqual(reconstituted, details.rootNode, 'reconstituted trace segments')
   })
 
-  t.test('should send response time', (t) => {
+  await t.test('should send response time', async (t) => {
+    const { details } = t.nr
     details.transaction.getResponseTimeInMillis = () => {
       return 1234
     }
@@ -427,75 +427,80 @@ tap.test('when serializing asynchronously', (t) => {
           reject(err)
         }
 
-        t.equal(json[1], 1234)
-        t.equal(trace, details.trace)
+        assert.equal(json[1], 1234)
+        assert.equal(trace, details.trace)
         resolve()
       })
     })
   })
 
-  t.test('when `simple_compression` is `false`, should compress the segment arrays', async (t) => {
-    const json = await details.trace.generateJSONAsync()
-    t.match(json[4], /^[a-zA-Z0-9\+\/]+={0,2}$/, 'should be base64 encoded')
+  await t.test(
+    'when `simple_compression` is `false`, should compress the segment arrays',
+    async (t) => {
+      const { details } = t.nr
+      const json = await details.trace.generateJSONAsync()
+      assert.match(json[4], /^[a-zA-Z0-9\+\/]+={0,2}$/, 'should be base64 encoded')
 
-    const data = await codecDecodeAsync(json[4])
-    t.same(data, details.rootNode)
-    t.end()
-  })
+      const data = await codecDecodeAsync(json[4])
+      assert.deepEqual(data, details.rootNode)
+    }
+  )
 
-  t.test(
+  await t.test(
     'when `simple_compression` is `true`, should not compress the segment arrays',
     async (t) => {
+      const { agent, details } = t.nr
       agent.config.simple_compression = true
       const json = await details.trace.generateJSONAsync()
-      t.same(json[4], details.rootNode)
-      t.end()
+      assert.deepEqual(json[4], details.rootNode)
     }
   )
 })
 
-tap.test('when inserting segments', (t) => {
-  t.autoend()
-  let agent
-  let trace = null
-  let transaction = null
-
-  t.beforeEach(() => {
-    agent = helper.loadMockedAgent()
-    transaction = new Transaction(agent)
-    trace = transaction.trace
+test('when inserting segments', async (t) => {
+  t.beforeEach((ctx) => {
+    const agent = helper.loadMockedAgent()
+    const transaction = new Transaction(agent)
+    const trace = transaction.trace
+    ctx.nr = {
+      agent,
+      trace,
+      transaction
+    }
   })
 
-  t.afterEach(() => {
-    helper.unloadAgent(agent)
+  t.afterEach((ctx) => {
+    helper.unloadAgent(ctx.nr.agent)
   })
 
-  t.test('should allow child segments on a trace', (t) => {
-    t.doesNotThrow(() => {
+  await t.test('should allow child segments on a trace', (t) => {
+    const { trace } = t.nr
+    assert.doesNotThrow(() => {
       trace.add('Custom/Test17/Child1')
     })
-    t.end()
   })
 
-  t.test('should return the segment', (t) => {
+  await t.test('should return the segment', (t) => {
+    const { trace } = t.nr
     let segment
-    t.doesNotThrow(() => {
+    assert.doesNotThrow(() => {
       segment = trace.add('Custom/Test18/Child1')
     })
-    t.type(segment, Segment)
-    t.end()
+    assert.ok(segment instanceof Segment)
   })
 
-  t.test('should call a function associated with the segment', (t) => {
+  await t.test('should call a function associated with the segment', (t, end) => {
+    const { trace, transaction } = t.nr
     const segment = trace.add('Custom/Test18/Child1', () => {
-      t.end()
+      end()
     })
 
     segment.end()
     transaction.end()
   })
 
-  t.test('should report total time', (t) => {
+  await t.test('should report total time', (t) => {
+    const { trace } = t.nr
     trace.setDurationInMillis(40, 0)
     const child = trace.add('Custom/Test18/Child1')
     child.setDurationInMillis(27, 0)
@@ -507,11 +512,11 @@ tap.test('when inserting segments', (t) => {
     seg.setDurationInMillis(9, 16)
     seg = child.add('UnitTest2')
     seg.setDurationInMillis(14, 16)
-    t.equal(trace.getTotalTimeDurationInMillis(), 48)
-    t.end()
+    assert.equal(trace.getTotalTimeDurationInMillis(), 48)
   })
 
-  t.test('should report total time on branched traces', (t) => {
+  await t.test('should report total time on branched traces', (t) => {
+    const { trace } = t.nr
     trace.setDurationInMillis(40, 0)
     const child = trace.add('Custom/Test18/Child1')
     child.setDurationInMillis(27, 0)
@@ -523,11 +528,11 @@ tap.test('when inserting segments', (t) => {
     seg.setDurationInMillis(9, 16)
     seg = seg1.add('UnitTest2')
     seg.setDurationInMillis(14, 16)
-    t.equal(trace.getTotalTimeDurationInMillis(), 48)
-    t.end()
+    assert.equal(trace.getTotalTimeDurationInMillis(), 48)
   })
 
-  t.test('should report the expected trees for trees with uncollected segments', (t) => {
+  await t.test('should report the expected trees for trees with uncollected segments', (t) => {
+    const { trace } = t.nr
     const expectedTrace = [
       0,
       27,
@@ -573,11 +578,11 @@ tap.test('when inserting segments', (t) => {
 
     trace.end()
 
-    t.same(child.toJSON(), expectedTrace)
-    t.end()
+    assert.deepEqual(child.toJSON(), expectedTrace)
   })
 
-  t.test('should report the expected trees for branched trees', (t) => {
+  await t.test('should report the expected trees for branched trees', (t) => {
+    const { trace } = t.nr
     const expectedTrace = [
       0,
       27,
@@ -624,21 +629,21 @@ tap.test('when inserting segments', (t) => {
 
     trace.end()
 
-    t.same(child.toJSON(), expectedTrace)
-    t.end()
+    assert.deepEqual(child.toJSON(), expectedTrace)
   })
 
-  t.test('should measure exclusive time vs total time at each level of the graph', (t) => {
+  await t.test('should measure exclusive time vs total time at each level of the graph', (t) => {
+    const { trace } = t.nr
     const child = trace.add('Custom/Test18/Child1')
 
     trace.setDurationInMillis(42)
     child.setDurationInMillis(22, 0)
 
-    t.equal(trace.getExclusiveDurationInMillis(), 20)
-    t.end()
+    assert.equal(trace.getExclusiveDurationInMillis(), 20)
   })
 
-  t.test('should accurately sum overlapping segments', (t) => {
+  await t.test('should accurately sum overlapping segments', (t) => {
+    const { trace } = t.nr
     trace.setDurationInMillis(42)
 
     const now = Date.now()
@@ -658,11 +663,11 @@ tap.test('when inserting segments', (t) => {
     const child4 = trace.add('Custom/Test19/Child4')
     child4.setDurationInMillis(4, now + 35)
 
-    t.equal(trace.getExclusiveDurationInMillis(), 5)
-    t.end()
+    assert.equal(trace.getExclusiveDurationInMillis(), 5)
   })
 
-  t.test('should accurately sum overlapping subtrees', (t) => {
+  await t.test('should accurately sum overlapping subtrees', (t) => {
+    const { trace } = t.nr
     trace.setDurationInMillis(42)
 
     const now = Date.now()
@@ -682,15 +687,15 @@ tap.test('when inserting segments', (t) => {
     const child4 = child2.add('Custom/Test20/Child3')
     child4.setDurationInMillis(11, now + 16)
 
-    t.equal(trace.getExclusiveDurationInMillis(), 9)
-    t.equal(child4.getExclusiveDurationInMillis(), 11)
-    t.equal(child3.getExclusiveDurationInMillis(), 11)
-    t.equal(child2.getExclusiveDurationInMillis(), 0)
-    t.equal(child1.getExclusiveDurationInMillis(), 11)
-    t.end()
+    assert.equal(trace.getExclusiveDurationInMillis(), 9)
+    assert.equal(child4.getExclusiveDurationInMillis(), 11)
+    assert.equal(child3.getExclusiveDurationInMillis(), 11)
+    assert.equal(child2.getExclusiveDurationInMillis(), 0)
+    assert.equal(child1.getExclusiveDurationInMillis(), 11)
   })
 
-  t.test('should accurately sum partially overlapping segments', (t) => {
+  await t.test('should accurately sum partially overlapping segments', (t) => {
+    const { trace } = t.nr
     trace.setDurationInMillis(42)
 
     const now = Date.now()
@@ -708,11 +713,11 @@ tap.test('when inserting segments', (t) => {
     const child3 = trace.add('Custom/Test20/Child3')
     child3.setDurationInMillis(33, now)
 
-    t.equal(trace.getExclusiveDurationInMillis(), 9)
-    t.end()
+    assert.equal(trace.getExclusiveDurationInMillis(), 9)
   })
 
-  t.test('should accurately sum partially overlapping, open-ranged segments', (t) => {
+  await t.test('should accurately sum partially overlapping, open-ranged segments', (t) => {
+    const { trace } = t.nr
     trace.setDurationInMillis(42)
 
     const now = Date.now()
@@ -724,33 +729,32 @@ tap.test('when inserting segments', (t) => {
     const child2 = trace.add('Custom/Test21/Child2')
     child2.setDurationInMillis(11, now + 22)
 
-    t.equal(trace.getExclusiveDurationInMillis(), 9)
-    t.end()
+    assert.equal(trace.getExclusiveDurationInMillis(), 9)
   })
 
-  t.test('should be limited to 900 children', (t) => {
+  await t.test('should be limited to 900 children', (t) => {
+    const { trace, transaction } = t.nr
     // They will be tagged as _collect = false after the limit runs out.
     for (let i = 0; i < 950; ++i) {
       const segment = trace.add(i.toString(), noop)
       if (i < 900) {
-        t.equal(segment._collect, true, `segment ${i} should be collected`)
+        assert.equal(segment._collect, true, `segment ${i} should be collected`)
       } else {
-        t.equal(segment._collect, false, `segment ${i} should not be collected`)
+        assert.equal(segment._collect, false, `segment ${i} should not be collected`)
       }
     }
 
-    t.equal(trace.root.children.length, 950)
-    t.equal(transaction._recorders.length, 950)
+    assert.equal(trace.root.children.length, 950)
+    assert.equal(transaction._recorders.length, 950)
     trace.segmentCount = 0
     trace.root.children = []
     trace.recorders = []
 
     function noop() {}
-    t.end()
   })
 })
 
-tap.test('should set URI to null when request.uri attribute is excluded globally', async (t) => {
+test('should set URI to null when request.uri attribute is excluded globally', async (t) => {
   const URL = '/test'
 
   const agent = helper.loadMockedAgent({
@@ -759,7 +763,7 @@ tap.test('should set URI to null when request.uri attribute is excluded globally
     }
   })
 
-  t.teardown(() => {
+  t.after(() => {
     helper.unloadAgent(agent)
   })
 
@@ -774,11 +778,10 @@ tap.test('should set URI to null when request.uri attribute is excluded globally
 
   const traceJSON = await trace.generateJSON()
   const { 3: requestUri } = traceJSON
-  t.notOk(requestUri)
-  t.end()
+  assert.ok(!requestUri)
 })
 
-tap.test('should set URI to null when request.uri attribute is exluded from traces', async (t) => {
+test('should set URI to null when request.uri attribute is exluded from traces', async (t) => {
   const URL = '/test'
 
   const agent = helper.loadMockedAgent({
@@ -789,7 +792,7 @@ tap.test('should set URI to null when request.uri attribute is exluded from trac
     }
   })
 
-  t.teardown(() => {
+  t.after(() => {
     helper.unloadAgent(agent)
   })
 
@@ -804,14 +807,13 @@ tap.test('should set URI to null when request.uri attribute is exluded from trac
 
   const traceJSON = await trace.generateJSON()
   const { 3: requestUri } = traceJSON
-  t.notOk(requestUri)
-  t.end()
+  assert.ok(!requestUri)
 })
 
-tap.test('should set URI to /Unknown when URL is not known/set on transaction', async (t) => {
+test('should set URI to /Unknown when URL is not known/set on transaction', async (t) => {
   const agent = helper.loadMockedAgent()
 
-  t.teardown(() => {
+  t.after(() => {
     helper.unloadAgent(agent)
   })
 
@@ -823,11 +825,10 @@ tap.test('should set URI to /Unknown when URL is not known/set on transaction', 
 
   const traceJSON = await trace.generateJSON()
   const { 3: requestUri } = traceJSON
-  t.equal(requestUri, '/Unknown')
-  t.end()
+  assert.equal(requestUri, '/Unknown')
 })
 
-tap.test('should obfuscate URI using regex when pattern is set', async (t) => {
+test('should obfuscate URI using regex when pattern is set', async (t) => {
   const URL = '/abc/123/def/456/ghi'
   const agent = helper.loadMockedAgent({
     url_obfuscation: {
@@ -840,7 +841,7 @@ tap.test('should obfuscate URI using regex when pattern is set', async (t) => {
     }
   })
 
-  t.teardown(() => {
+  t.after(() => {
     helper.unloadAgent(agent)
   })
 
@@ -855,11 +856,83 @@ tap.test('should obfuscate URI using regex when pattern is set', async (t) => {
 
   const traceJSON = await trace.generateJSON()
   const { 3: requestUri } = traceJSON
-  t.equal(requestUri, '/abc/***/def/***/ghi')
-  t.end()
+  assert.equal(requestUri, '/abc/***/def/***/ghi')
 })
 
-async function makeTrace(t, agent) {
+test('infinite tracing', async (t) => {
+  const VALID_HOST = 'infinite-tracing.test'
+  const VALID_PORT = '443'
+
+  t.beforeEach((ctx) => {
+    ctx.nr = {}
+    ctx.nr.agent = helper.loadMockedAgent({
+      distributed_tracing: {
+        enabled: true
+      },
+      span_events: {
+        enabled: true
+      },
+      infinite_tracing: {
+        trace_observer: {
+          host: VALID_HOST,
+          port: VALID_PORT
+        }
+      }
+    })
+  })
+
+  t.afterEach((ctx) => {
+    helper.unloadAgent(ctx.nr.agent)
+  })
+
+  await t.test('should generate spans if infinite configured, transaction not sampled', (t) => {
+    const { agent } = t.nr
+    const spy = sinon.spy(agent.spanEventAggregator, 'addSegment')
+
+    const transaction = new Transaction(agent)
+    transaction.priority = 0
+    transaction.sampled = false
+
+    addTwoSegments(transaction)
+
+    transaction.trace.generateSpanEvents()
+
+    assert.equal(spy.callCount, 2)
+  })
+
+  await t.test(
+    'should not generate spans if infinite not configured, transaction not sampled',
+    (t) => {
+      const { agent } = t.nr
+      agent.config.infinite_tracing.trace_observer.host = ''
+
+      const spy = sinon.spy(agent.spanEventAggregator, 'addSegment')
+
+      const transaction = new Transaction(agent)
+      transaction.priority = 0
+      transaction.sampled = false
+
+      addTwoSegments(transaction)
+
+      transaction.trace.generateSpanEvents()
+
+      assert.equal(spy.callCount, 0)
+    }
+  )
+})
+
+function addTwoSegments(transaction) {
+  const trace = transaction.trace
+  const child1 = (transaction.baseSegment = trace.add('test'))
+  child1.start()
+  const child2 = child1.add('nested')
+  child2.start()
+  child1.end()
+  child2.end()
+  trace.root.end()
+}
+
+async function makeTrace(agent) {
   const DURATION = 33
   const URL = '/test?test=value'
   agent.config.attributes.enabled = true
@@ -879,7 +952,7 @@ async function makeTrace(t, agent) {
   // and instead use async/await
   trace.generateJSONAsync = util.promisify(trace.generateJSON)
   const start = trace.root.timer.start
-  t.ok(start > 0, "root segment's start time")
+  assert.ok(start > 0, "root segment's start time")
   trace.setDurationInMillis(DURATION, 0)
 
   const web = trace.root.add(URL)
@@ -960,79 +1033,4 @@ async function makeTrace(t, agent) {
       null // syntheticsResourceId
     ]
   }
-}
-
-tap.test('infinite tracing', (t) => {
-  t.autoend()
-
-  const VALID_HOST = 'infinite-tracing.test'
-  const VALID_PORT = '443'
-
-  let agent = null
-
-  t.beforeEach(() => {
-    agent = helper.loadMockedAgent({
-      distributed_tracing: {
-        enabled: true
-      },
-      span_events: {
-        enabled: true
-      },
-      infinite_tracing: {
-        trace_observer: {
-          host: VALID_HOST,
-          port: VALID_PORT
-        }
-      }
-    })
-  })
-
-  t.afterEach(() => {
-    helper.unloadAgent(agent)
-  })
-
-  t.test('should generate spans if infinite configured, transaction not sampled', (t) => {
-    const spy = sinon.spy(agent.spanEventAggregator, 'addSegment')
-
-    const transaction = new Transaction(agent)
-    transaction.priority = 0
-    transaction.sampled = false
-
-    addTwoSegments(transaction)
-
-    transaction.trace.generateSpanEvents()
-
-    t.equal(spy.callCount, 2)
-
-    t.end()
-  })
-
-  t.test('should not generate spans if infinite not configured, transaction not sampled', (t) => {
-    agent.config.infinite_tracing.trace_observer.host = ''
-
-    const spy = sinon.spy(agent.spanEventAggregator, 'addSegment')
-
-    const transaction = new Transaction(agent)
-    transaction.priority = 0
-    transaction.sampled = false
-
-    addTwoSegments(transaction)
-
-    transaction.trace.generateSpanEvents()
-
-    t.equal(spy.callCount, 0)
-
-    t.end()
-  })
-})
-
-function addTwoSegments(transaction) {
-  const trace = transaction.trace
-  const child1 = (transaction.baseSegment = trace.add('test'))
-  child1.start()
-  const child2 = child1.add('nested')
-  child2.start()
-  child1.end()
-  child2.end()
-  trace.root.end()
 }

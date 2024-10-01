@@ -4,87 +4,79 @@
  */
 
 'use strict'
-const tap = require('tap')
+const assert = require('node:assert')
+const test = require('node:test')
 const Timer = require('../../lib/timer')
 
-tap.test('Timer', function (t) {
-  t.autoend()
-  t.test("should know when it's active", function (t) {
+test('Timer', async function (t) {
+  await t.test("should know when it's active", function () {
     const timer = new Timer()
-    t.equal(timer.isActive(), true)
-    t.end()
+    assert.equal(timer.isActive(), true)
   })
 
-  t.test("should know when it hasn't yet been started", function (t) {
+  await t.test("should know when it hasn't yet been started", function () {
     const timer = new Timer()
-    t.equal(timer.isRunning(), false)
-    t.end()
+    assert.equal(timer.isRunning(), false)
   })
 
-  t.test("should know when it's running", function (t) {
+  await t.test("should know when it's running", function () {
     const timer = new Timer()
     timer.begin()
-    t.equal(timer.isRunning(), true)
-    t.end()
+    assert.equal(timer.isRunning(), true)
   })
 
-  t.test("should know when it's not running", function (t) {
+  await t.test("should know when it's not running", function () {
     const timer = new Timer()
-    t.equal(timer.isRunning(), false)
+    assert.equal(timer.isRunning(), false)
 
     timer.begin()
     timer.end()
-    t.equal(timer.isRunning(), false)
-    t.end()
+    assert.equal(timer.isRunning(), false)
   })
 
-  t.test("should know when it hasn't yet been stopped", function (t) {
+  await t.test("should know when it hasn't yet been stopped", function () {
     const timer = new Timer()
-    t.equal(timer.isActive(), true)
+    assert.equal(timer.isActive(), true)
 
     timer.begin()
-    t.equal(timer.isActive(), true)
-    t.end()
+    assert.equal(timer.isActive(), true)
   })
 
-  t.test("should know when it's stopped", function (t) {
+  await t.test("should know when it's stopped", function () {
     const timer = new Timer()
     timer.begin()
     timer.end()
 
-    t.equal(timer.isActive(), false)
-    t.end()
+    assert.equal(timer.isActive(), false)
   })
 
-  t.test('should return the time elapsed of a running timer', function (t) {
+  await t.test('should return the time elapsed of a running timer', function (t, end) {
     const timer = new Timer()
     timer.begin()
     setTimeout(function () {
-      t.ok(timer.getDurationInMillis() > 3)
+      assert.ok(timer.getDurationInMillis() > 3)
 
-      t.end()
+      end()
     }, 5)
   })
 
-  t.test('should allow setting the start as well as the duration of the range', function (t) {
+  await t.test('should allow setting the start as well as the duration of the range', function () {
     const timer = new Timer()
     const start = Date.now()
     timer.setDurationInMillis(5, start)
 
-    t.equal(timer.start, start)
-    t.end()
+    assert.equal(timer.start, start)
   })
 
-  t.test('should return a range object', function (t) {
+  await t.test('should return a range object', function () {
     const timer = new Timer()
     const start = Date.now()
     timer.setDurationInMillis(5, start)
 
-    t.same(timer.toRange(), [start, start + 5])
-    t.end()
+    assert.deepEqual(timer.toRange(), [start, start + 5])
   })
 
-  t.test('should calculate start times relative to other timers', function (t) {
+  await t.test('should calculate start times relative to other timers', function (t, end) {
     const first = new Timer()
     first.begin()
 
@@ -95,14 +87,14 @@ tap.test('Timer', function (t) {
     second.end()
 
     let delta
-    t.doesNotThrow(function () {
+    assert.doesNotThrow(function () {
       delta = second.startedRelativeTo(first)
     })
-    t.ok(typeof delta === 'number')
-    t.end()
+    assert.ok(typeof delta === 'number')
+    end()
   })
 
-  t.test('should support updating the duration with touch', function (t) {
+  await t.test('should support updating the duration with touch', function (t, end) {
     const timer = new Timer()
     timer.begin()
 
@@ -110,88 +102,81 @@ tap.test('Timer', function (t) {
       timer.touch()
       const first = timer.getDurationInMillis()
 
-      t.ok(first > 0)
-      t.equal(timer.isActive(), true)
+      assert.ok(first > 0)
+      assert.equal(timer.isActive(), true)
 
       setTimeout(function () {
         timer.end()
 
         const second = timer.getDurationInMillis()
-        t.ok(second > first)
-        t.equal(timer.isActive(), false)
+        assert.ok(second > first)
+        assert.equal(timer.isActive(), false)
 
-        t.end()
+        end()
       }, 20)
     }, 20)
   })
 
-  t.test('endsAfter indicates whether the timer ended after another timer', (t) => {
-    t.autoend()
-    t.beforeEach(function (t) {
+  await t.test('endsAfter indicates whether the timer ended after another timer', async (t) => {
+    t.beforeEach(function (ctx) {
+      ctx.nr = {}
       const start = Date.now()
       const first = new Timer()
       first.setDurationInMillis(10, start)
-      t.context.second = new Timer()
-      t.context.start = start
-      t.context.first = first
+      ctx.nr.second = new Timer()
+      ctx.nr.start = start
+      ctx.nr.first = first
     })
 
-    t.test('with the same start and duration', function (t) {
-      const { start, second, first } = t.context
+    await t.test('with the same start and duration', function (t) {
+      const { start, second, first } = t.nr
       second.setDurationInMillis(10, start)
-      t.equal(second.endsAfter(first), false)
-      t.end()
+      assert.equal(second.endsAfter(first), false)
     })
 
-    t.test('with longer duration', function (t) {
-      const { start, second, first } = t.context
+    await t.test('with longer duration', function (t) {
+      const { start, second, first } = t.nr
       second.setDurationInMillis(11, start)
-      t.equal(second.endsAfter(first), true)
-      t.end()
+      assert.equal(second.endsAfter(first), true)
     })
 
-    t.test('with shorter duration', function (t) {
-      const { start, second, first } = t.context
+    await t.test('with shorter duration', function (t) {
+      const { start, second, first } = t.nr
       second.setDurationInMillis(9, start)
-      t.equal(second.endsAfter(first), false)
-      t.end()
+      assert.equal(second.endsAfter(first), false)
     })
 
-    t.test('with earlier start', function (t) {
-      const { start, second, first } = t.context
+    await t.test('with earlier start', function (t) {
+      const { start, second, first } = t.nr
       second.setDurationInMillis(10, start - 1)
-      t.equal(second.endsAfter(first), false)
-      t.end()
+      assert.equal(second.endsAfter(first), false)
     })
 
-    t.test('with later start', function (t) {
-      const { start, second, first } = t.context
+    await t.test('with later start', function (t) {
+      const { start, second, first } = t.nr
       second.setDurationInMillis(10, start + 1)
-      t.equal(second.endsAfter(first), true)
-      t.end()
+      assert.equal(second.endsAfter(first), true)
     })
   })
 
-  t.test('overwriteDurationInMillis', function (t) {
-    t.autoend()
-    t.test('stops the timer', function (t) {
+  await t.test('overwriteDurationInMillis', async function (t) {
+    await t.test('stops the timer', function () {
       const timer = new Timer()
       timer.begin()
-      t.equal(timer.isActive(), true)
+      assert.equal(timer.isActive(), true)
 
       timer.overwriteDurationInMillis(10)
-      t.equal(timer.isActive(), false)
-      t.end()
+      assert.equal(timer.isActive(), false)
     })
 
-    t.test('overwrites duration recorded by end() and touch()', function (t) {
+    await t.test('overwrites duration recorded by end() and touch()', function (t, end) {
       const timer = new Timer()
       timer.begin()
       setTimeout(function () {
-        t.equal(timer.getDurationInMillis() > 1, true)
+        assert.equal(timer.getDurationInMillis() > 1, true)
         timer.overwriteDurationInMillis(1)
-        t.equal(timer.getDurationInMillis(), 1)
-        t.end()
+        assert.equal(timer.getDurationInMillis(), 1)
+        end()
       }, 2)
     })
   })
