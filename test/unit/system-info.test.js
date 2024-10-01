@@ -4,23 +4,18 @@
  */
 
 'use strict'
-const tap = require('tap')
+const assert = require('node:assert')
+const test = require('node:test')
 const os = require('os')
 const proxyquire = require('proxyquire').noPreserveCache()
 const sinon = require('sinon')
 
-tap.test('getProcessorStats - darwin', (t) => {
-  t.autoend()
-
-  let platformFunction
-  let execFunction
-  let systemInfo
-
-  t.beforeEach(() => {
-    platformFunction = sinon.stub().returns('darwin')
-    execFunction = sinon.stub()
-
-    systemInfo = proxyquire('../../lib/system-info', {
+test('getProcessorStats - darwin', async (t) => {
+  t.beforeEach((ctx) => {
+    ctx.nr = {}
+    const platformFunction = sinon.stub().returns('darwin')
+    const execFunction = sinon.stub()
+    ctx.nr.systemInfo = proxyquire('../../lib/system-info', {
       os: {
         platform: platformFunction
       },
@@ -28,9 +23,11 @@ tap.test('getProcessorStats - darwin', (t) => {
         execFile: execFunction
       }
     })
+    ctx.nr.execFunction = execFunction
   })
 
-  t.test('should return default data when all lookups error', async (t) => {
+  await t.test('should return default data when all lookups error', async (t) => {
+    const { execFunction, systemInfo } = t.nr
     execFunction.yields(new Error('whoops'), { stderr: null, stdout: null })
 
     const results = await systemInfo._getProcessorStats()
@@ -39,10 +36,11 @@ tap.test('getProcessorStats - darwin', (t) => {
       cores: null,
       packages: null
     }
-    t.same(results, expected, 'should return the expected results')
+    assert.deepEqual(results, expected, 'should return the expected results')
   })
 
-  t.test('should return default data when all lookups return no data', async (t) => {
+  await t.test('should return default data when all lookups return no data', async (t) => {
+    const { execFunction, systemInfo } = t.nr
     execFunction.yields(null, { stderr: null, stdout: null })
 
     const results = await systemInfo._getProcessorStats()
@@ -51,10 +49,11 @@ tap.test('getProcessorStats - darwin', (t) => {
       cores: null,
       packages: null
     }
-    t.same(results, expected, 'should return the expected results')
+    assert.deepEqual(results, expected, 'should return the expected results')
   })
 
-  t.test('should return default data when all lookups return errors', async (t) => {
+  await t.test('should return default data when all lookups return errors', async (t) => {
+    const { execFunction, systemInfo } = t.nr
     execFunction.yields(null, { stderr: new Error('oops'), stdout: null })
 
     const results = await systemInfo._getProcessorStats()
@@ -63,10 +62,11 @@ tap.test('getProcessorStats - darwin', (t) => {
       cores: null,
       packages: null
     }
-    t.same(results, expected, 'should return the expected results')
+    assert.deepEqual(results, expected, 'should return the expected results')
   })
 
-  t.test('should return default data when all lookups return unexpected data', async (t) => {
+  await t.test('should return default data when all lookups return unexpected data', async (t) => {
+    const { execFunction, systemInfo } = t.nr
     execFunction.yields(null, { stderr: null, stdout: 'foo' })
 
     const results = await systemInfo._getProcessorStats()
@@ -75,10 +75,11 @@ tap.test('getProcessorStats - darwin', (t) => {
       cores: null,
       packages: null
     }
-    t.same(results, expected, 'should return the expected results')
+    assert.deepEqual(results, expected, 'should return the expected results')
   })
 
-  t.test('should return data when all lookups succeed', async (t) => {
+  await t.test('should return data when all lookups succeed', async (t) => {
+    const { execFunction, systemInfo } = t.nr
     execFunction.yields(null, { stderr: null, stdout: 123 })
 
     const results = await systemInfo._getProcessorStats()
@@ -87,10 +88,11 @@ tap.test('getProcessorStats - darwin', (t) => {
       cores: 123,
       packages: 123
     }
-    t.same(results, expected, 'should return the expected results')
+    assert.deepEqual(results, expected, 'should return the expected results')
   })
 
-  t.test('should return data when all lookups eventually succeed', async (t) => {
+  await t.test('should return data when all lookups eventually succeed', async (t) => {
+    const { execFunction, systemInfo } = t.nr
     execFunction
       .onCall(0)
       .yields(null, { stderr: null, stdout: 789 })
@@ -111,22 +113,17 @@ tap.test('getProcessorStats - darwin', (t) => {
       cores: 456,
       packages: 789
     }
-    t.same(results, expected, 'should return the expected results')
+    assert.deepEqual(results, expected, 'should return the expected results')
   })
 })
 
-tap.test('getProcessorStats - bsd', (t) => {
-  t.autoend()
+test('getProcessorStats - bsd', async (t) => {
+  t.beforeEach((ctx) => {
+    ctx.nr = {}
+    const platformFunction = sinon.stub().returns('bsd')
+    const execFunction = sinon.stub()
 
-  let platformFunction
-  let execFunction
-  let systemInfo
-
-  t.beforeEach(() => {
-    platformFunction = sinon.stub().returns('bsd')
-    execFunction = sinon.stub()
-
-    systemInfo = proxyquire('../../lib/system-info', {
+    ctx.nr.systemInfo = proxyquire('../../lib/system-info', {
       os: {
         platform: platformFunction
       },
@@ -134,9 +131,11 @@ tap.test('getProcessorStats - bsd', (t) => {
         execFile: execFunction
       }
     })
+    ctx.nr.execFunction = execFunction
   })
 
-  t.test('should return data', async (t) => {
+  await t.test('should return data', async (t) => {
+    const { execFunction, systemInfo } = t.nr
     execFunction.yields(null, { stderr: null, stdout: 123 })
 
     const results = await systemInfo._getProcessorStats()
@@ -145,22 +144,17 @@ tap.test('getProcessorStats - bsd', (t) => {
       cores: null,
       packages: null
     }
-    t.same(results, expected, 'should return the expected results')
+    assert.deepEqual(results, expected, 'should return the expected results')
   })
 })
 
-tap.test('getProcessorStats - linux', (t) => {
-  t.autoend()
+test('getProcessorStats - linux', async (t) => {
+  t.beforeEach((ctx) => {
+    ctx.nr = {}
+    const platformFunction = sinon.stub().returns('linux')
+    const readProcFunction = sinon.stub()
 
-  let platformFunction
-  let readProcFunction
-  let systemInfo
-
-  t.beforeEach(() => {
-    platformFunction = sinon.stub().returns('linux')
-    readProcFunction = sinon.stub()
-
-    systemInfo = proxyquire('../../lib/system-info', {
+    ctx.nr.systemInfo = proxyquire('../../lib/system-info', {
       './utilization/common': {
         readProc: readProcFunction
       },
@@ -168,9 +162,11 @@ tap.test('getProcessorStats - linux', (t) => {
         platform: platformFunction
       }
     })
+    ctx.nr.readProcFunction = readProcFunction
   })
 
-  t.test('should return data', async (t) => {
+  await t.test('should return data', async (t) => {
+    const { readProcFunction, systemInfo } = t.nr
     const exampleProcfile = `processor       : 0
     vendor_id       : GenuineIntel
     cpu family      : 6
@@ -205,10 +201,11 @@ tap.test('getProcessorStats - linux', (t) => {
       cores: 8,
       packages: 1
     }
-    t.same(results, expected, 'should return the expected results')
+    assert.deepEqual(results, expected, 'should return the expected results')
   })
 
-  t.test('should return null if readProc fails', async (t) => {
+  await t.test('should return null if readProc fails', async (t) => {
+    const { readProcFunction, systemInfo } = t.nr
     readProcFunction.yields(new Error('oops'))
 
     const results = await systemInfo._getProcessorStats()
@@ -217,48 +214,41 @@ tap.test('getProcessorStats - linux', (t) => {
       cores: null,
       packages: null
     }
-    t.same(results, expected, 'should return the expected results')
+    assert.deepEqual(results, expected, 'should return the expected results')
   })
 })
 
-tap.test('getProcessorStats - unknown', (t) => {
-  t.autoend()
+test('getProcessorStats - unknown', async (t) => {
+  t.beforeEach((ctx) => {
+    ctx.nr = {}
+    const platformFunction = sinon.stub().returns('something weird')
 
-  let platformFunction
-  let systemInfo
-
-  t.beforeEach(() => {
-    platformFunction = sinon.stub().returns('something weird')
-
-    systemInfo = proxyquire('../../lib/system-info', {
+    ctx.nr.systemInfo = proxyquire('../../lib/system-info', {
       os: {
         platform: platformFunction
       }
     })
   })
 
-  t.test('should return default data', async (t) => {
+  await t.test('should return default data', async (t) => {
+    const { systemInfo } = t.nr
     const results = await systemInfo._getProcessorStats()
     const expected = {
       logical: null,
       cores: null,
       packages: null
     }
-    t.same(results, expected, 'should return the expected results')
+    assert.deepEqual(results, expected, 'should return the expected results')
   })
 })
 
-tap.test('getMemoryStats - darwin', (t) => {
-  t.autoend()
-  let platformFunction
-  let execFunction
-  let systemInfo
+test('getMemoryStats - darwin', async (t) => {
+  t.beforeEach((ctx) => {
+    ctx.nr = {}
+    const platformFunction = sinon.stub().returns('darwin')
+    const execFunction = sinon.stub()
 
-  t.beforeEach(() => {
-    platformFunction = sinon.stub().returns('darwin')
-    execFunction = sinon.stub()
-
-    systemInfo = proxyquire('../../lib/system-info', {
+    ctx.nr.systemInfo = proxyquire('../../lib/system-info', {
       os: {
         platform: platformFunction
       },
@@ -266,26 +256,24 @@ tap.test('getMemoryStats - darwin', (t) => {
         execFile: execFunction
       }
     })
+    ctx.nr.execFunction = execFunction
   })
 
-  t.test('should return data', async (t) => {
+  await t.test('should return data', async (t) => {
+    const { execFunction, systemInfo } = t.nr
     execFunction.yields(null, { stderr: null, stdout: 1024 * 1024 })
     const results = await systemInfo._getMemoryStats()
-    t.equal(results, 1)
+    assert.equal(results, 1)
   })
 })
 
-tap.test('getMemoryStats - bsd', (t) => {
-  t.autoend()
-  let platformFunction
-  let execFunction
-  let systemInfo
+test('getMemoryStats - bsd', async (t) => {
+  t.beforeEach((ctx) => {
+    ctx.nr = {}
+    const platformFunction = sinon.stub().returns('bsd')
+    const execFunction = sinon.stub()
 
-  t.beforeEach(() => {
-    platformFunction = sinon.stub().returns('bsd')
-    execFunction = sinon.stub()
-
-    systemInfo = proxyquire('../../lib/system-info', {
+    ctx.nr.systemInfo = proxyquire('../../lib/system-info', {
       os: {
         platform: platformFunction
       },
@@ -293,26 +281,24 @@ tap.test('getMemoryStats - bsd', (t) => {
         execFile: execFunction
       }
     })
+    ctx.nr.execFunction = execFunction
   })
 
-  t.test('should return data', async (t) => {
+  await t.test('should return data', async (t) => {
+    const { execFunction, systemInfo } = t.nr
     execFunction.yields(null, { stderr: null, stdout: 1024 * 1024 })
     const results = await systemInfo._getMemoryStats()
-    t.equal(results, 1)
+    assert.equal(results, 1)
   })
 })
 
-tap.test('getMemoryStats - linux', (t) => {
-  t.autoend()
-  let platformFunction
-  let readProcFunction
-  let systemInfo
+test('getMemoryStats - linux', async (t) => {
+  t.beforeEach((ctx) => {
+    ctx.nr = {}
+    const platformFunction = sinon.stub().returns('linux')
+    const readProcFunction = sinon.stub()
 
-  t.beforeEach(() => {
-    platformFunction = sinon.stub().returns('linux')
-    readProcFunction = sinon.stub()
-
-    systemInfo = proxyquire('../../lib/system-info', {
+    ctx.nr.systemInfo = proxyquire('../../lib/system-info', {
       './utilization/common': {
         readProc: readProcFunction
       },
@@ -320,9 +306,11 @@ tap.test('getMemoryStats - linux', (t) => {
         platform: platformFunction
       }
     })
+    ctx.nr.readProcFunction = readProcFunction
   })
 
-  t.test('should return data', async (t) => {
+  await t.test('should return data', async (t) => {
+    const { readProcFunction, systemInfo } = t.nr
     const exampleProcfile = `MemTotal:        1882064 kB
     MemFree:         1376380 kB
     MemAvailable:    1535676 kB
@@ -369,42 +357,38 @@ tap.test('getMemoryStats - linux', (t) => {
     readProcFunction.yields(null, exampleProcfile)
 
     const results = await systemInfo._getMemoryStats()
-    t.equal(results, 1837.953125)
+    assert.equal(results, 1837.953125)
   })
 
-  t.test('should return null if readProc fails', async (t) => {
+  await t.test('should return null if readProc fails', async (t) => {
+    const { readProcFunction, systemInfo } = t.nr
     readProcFunction.yields(new Error('oops'))
 
     const results = await systemInfo._getMemoryStats()
-    t.equal(results, null)
+    assert.equal(results, null)
   })
 })
 
-tap.test('getProcessorStats - unknown', (t) => {
-  t.autoend()
+test('getProcessorStats - unknown', async (t) => {
+  t.beforeEach((ctx) => {
+    ctx.nr = {}
+    const platformFunction = sinon.stub().returns('something weird')
 
-  let platformFunction
-  let systemInfo
-
-  t.beforeEach(() => {
-    platformFunction = sinon.stub().returns('something weird')
-
-    systemInfo = proxyquire('../../lib/system-info', {
+    ctx.nr.systemInfo = proxyquire('../../lib/system-info', {
       os: {
         platform: platformFunction
       }
     })
   })
 
-  t.test('should return default data', async (t) => {
+  await t.test('should return default data', async (t) => {
+    const { systemInfo } = t.nr
     const results = await systemInfo._getMemoryStats()
-    t.equal(results, null)
+    assert.equal(results, null)
   })
 })
 
-tap.test('systemInfo edge cases', (t) => {
-  t.autoend()
-
+test('systemInfo edge cases', async (t) => {
   const systemInfo = proxyquire('../../lib/system-info', {
     './utilization/docker-info': {
       getBootId: (agent, callback) => callback(null)
@@ -429,9 +413,9 @@ tap.test('systemInfo edge cases', (t) => {
     })
   }
 
-  t.test(
+  await t.test(
     'should set logical_processors, total_ram_mib, and hostname if in configuration',
-    async (t) => {
+    async () => {
       const mockConfig = {
         logical_processors: '2',
         total_ram_mib: '2048',
@@ -443,27 +427,27 @@ tap.test('systemInfo edge cases', (t) => {
         hostname: 'bob_test'
       }
       const config = await callSystemInfo(mockConfig)
-      t.same(config, { processorArch: os.arch(), config: parsedConfig })
+      assert.deepEqual(config, { processorArch: os.arch(), config: parsedConfig })
     }
   )
 
-  t.test(
+  await t.test(
     'should not try to set system info config if it does not exist in configuration',
-    async (t) => {
+    async () => {
       const config = await callSystemInfo(null)
-      t.same(config, { processorArch: os.arch() })
+      assert.deepEqual(config, { processorArch: os.arch() })
     }
   )
 
-  t.test('should log error if utilization.logical_processor is a NaN', async (t) => {
+  await t.test('should log error if utilization.logical_processor is a NaN', async () => {
     const mockConfig = { logical_processors: 'bogus' }
     const config = await callSystemInfo(mockConfig)
-    t.same(config, { processorArch: os.arch() })
+    assert.deepEqual(config, { processorArch: os.arch() })
   })
 
-  t.test('should log error if utilization.total_ram_mib is a NaN', async (t) => {
+  await t.test('should log error if utilization.total_ram_mib is a NaN', async () => {
     const mockConfig = { total_ram_mib: 'bogus' }
     const config = await callSystemInfo(mockConfig)
-    t.same(config, { processorArch: os.arch() })
+    assert.deepEqual(config, { processorArch: os.arch() })
   })
 })
