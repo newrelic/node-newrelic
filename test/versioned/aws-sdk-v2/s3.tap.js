@@ -4,27 +4,28 @@
  */
 
 'use strict'
-
-const tap = require('tap')
+const assert = require('node:assert')
+const test = require('node:test')
 const helper = require('../../lib/agent_helper')
 const common = require('../aws-sdk-v3/common')
 const { createEmptyResponseServer, FAKE_CREDENTIALS } = require('../../lib/aws-server-stubs')
+const { match } = require('../../lib/custom-assertions')
+const promiseResolvers = require('../../lib/promise-resolvers')
 
-tap.test('S3 buckets', (t) => {
-  t.autoend()
-
-  t.beforeEach(async (t) => {
+test('S3 buckets', async (t) => {
+  t.beforeEach(async (ctx) => {
+    ctx.nr = {}
     const server = createEmptyResponseServer()
 
     await new Promise((resolve) => {
       server.listen(0, resolve)
     })
 
-    t.context.server = server
+    ctx.nr.server = server
 
-    t.context.agent = helper.instrumentMockedAgent()
+    ctx.nr.agent = helper.instrumentMockedAgent()
     const AWS = require('aws-sdk')
-    t.context.S3 = new AWS.S3({
+    ctx.nr.S3 = new AWS.S3({
       credentials: FAKE_CREDENTIALS,
       endpoint: `http://localhost:${server.address().port}`,
       // allows using generic endpoint, instead of needing a
@@ -34,27 +35,27 @@ tap.test('S3 buckets', (t) => {
     })
   })
 
-  t.afterEach((t) => {
-    t.context.server.close()
-    helper.unloadAgent(t.context.agent)
+  t.afterEach((ctx) => {
+    ctx.nr.server.close()
+    helper.unloadAgent(ctx.nr.agent)
   })
 
-  t.test('commands with callbacks', (t) => {
-    const { agent, S3 } = t.context
+  await t.test('commands with callbacks', (t, end) => {
+    const { agent, S3 } = t.nr
     const Bucket = 'delete-aws-sdk-test-bucket-' + Math.floor(Math.random() * 100000)
 
     helper.runInTransaction(agent, (tx) => {
       S3.headBucket({ Bucket }, (err) => {
-        t.error(err)
+        assert.ok(!err)
 
         S3.createBucket({ Bucket }, (err) => {
-          t.error(err)
+          assert.ok(!err)
 
           S3.deleteBucket({ Bucket }, (err) => {
-            t.error(err)
+            assert.ok(!err)
             tx.end()
 
-            const args = [t, tx]
+            const args = [end, tx]
             setImmediate(finish, ...args)
           })
         })
@@ -62,60 +63,41 @@ tap.test('S3 buckets', (t) => {
     })
   })
 
-  t.test('commands with promises', (t) => {
-    const { agent, S3 } = t.context
+  await t.test('commands with promises', async (t) => {
+    const { agent, S3 } = t.nr
+    const { promise, resolve } = promiseResolvers()
     const Bucket = 'delete-aws-sdk-test-bucket-' + Math.floor(Math.random() * 100000)
 
     helper.runInTransaction(agent, async (tx) => {
-      try {
-        await S3.headBucket({ Bucket }).promise()
-      } catch (err) {
-        t.error(err)
-      }
-
-      try {
-        // using pathstyle will result in the params being mutated due to this call,
-        // which is why the params are manually pasted in each call.
-        await S3.createBucket({ Bucket }).promise()
-      } catch (err) {
-        t.error(err)
-      }
-
-      try {
-        await S3.deleteBucket({ Bucket }).promise()
-      } catch (err) {
-        t.error(err)
-      }
-
+      await S3.headBucket({ Bucket }).promise()
+      await S3.createBucket({ Bucket }).promise()
+      await S3.deleteBucket({ Bucket }).promise()
       tx.end()
 
-      const args = [t, tx]
+      const args = [resolve, tx]
       setImmediate(finish, ...args)
     })
+    await promise
   })
 })
 
-function finish(t, tx) {
-  const externals = common.checkAWSAttributes(t, tx.trace.root, common.EXTERN_PATTERN)
-  t.equal(externals.length, 3, 'should have 3 aws externals')
+function finish(end, tx) {
+  const externals = common.checkAWSAttributes(tx.trace.root, common.EXTERN_PATTERN)
+  assert.equal(externals.length, 3, 'should have 3 aws externals')
   const [head, create, del] = externals
-  checkAttrs(t, head, 'headBucket')
-  checkAttrs(t, create, 'createBucket')
-  checkAttrs(t, del, 'deleteBucket')
+  checkAttrs(head, 'headBucket')
+  checkAttrs(create, 'createBucket')
+  checkAttrs(del, 'deleteBucket')
 
-  t.end()
+  end()
 }
 
-function checkAttrs(t, segment, operation) {
+function checkAttrs(segment, operation) {
   const attrs = segment.attributes.get(common.SEGMENT_DESTINATION)
-  t.match(
-    attrs,
-    {
-      'aws.operation': operation,
-      'aws.requestId': String,
-      'aws.service': 'Amazon S3',
-      'aws.region': 'us-east-1'
-    },
-    `should have expected attributes for ${operation}`
-  )
+  match(attrs, {
+    'aws.operation': operation,
+    'aws.requestId': String,
+    'aws.service': 'Amazon S3',
+    'aws.region': 'us-east-1'
+  })
 }

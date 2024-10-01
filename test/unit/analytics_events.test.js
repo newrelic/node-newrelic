@@ -8,7 +8,6 @@
 const test = require('node:test')
 const assert = require('node:assert')
 
-const { match } = require('../lib/custom-assertions')
 const Transaction = require('../../lib/transaction')
 const helper = require('../lib/agent_helper')
 
@@ -63,12 +62,9 @@ test('when host name is specified by user', async (t) => {
 
     const events = getTransactionEvents(agent)
     const firstEvent = events[first]
-    assert.equal(
-      match(firstEvent[agentAttrs], {
-        'host.displayName': 'test-value'
-      }),
-      true
-    )
+    assert.deepEqual(firstEvent[agentAttrs], {
+      'host.displayName': 'test-value'
+    })
   })
 })
 

@@ -12,16 +12,12 @@ const SQS_PATTERN = /^MessageBroker\/SQS\/Queue/
 const {
   DESTINATIONS: { TRANS_SEGMENT }
 } = require('../../../lib/config/attribute-filter')
-const tap = require('tap')
+const { match } = require('../../lib/custom-assertions')
+const assert = require('node:assert')
 const SEGMENT_DESTINATION = TRANS_SEGMENT
+const helper = require('../../lib/agent_helper')
 
-tap.Test.prototype.addAssert('checkExternals', 1, checkExternals)
-tap.Test.prototype.addAssert('llmMessages', 1, assertChatCompletionMessages)
-tap.Test.prototype.addAssert('llmSummary', 1, assertChatCompletionSummary)
-
-// TODO:  migrate to tap assertion, issue is variable number of args
-// which doesn't seem to play nice with addAssert in tap
-function checkAWSAttributes(t, segment, pattern, markedSegments = []) {
+function checkAWSAttributes(segment, pattern, markedSegments = []) {
   const expectedAttrs = {
     'aws.operation': String,
     'aws.service': String,
@@ -32,46 +28,46 @@ function checkAWSAttributes(t, segment, pattern, markedSegments = []) {
   if (pattern.test(segment.name)) {
     markedSegments.push(segment)
     const attrs = segment.attributes.get(TRANS_SEGMENT)
-    t.match(attrs, expectedAttrs, 'should have aws attributes')
+    match(attrs, expectedAttrs)
   }
   segment.children.forEach((child) => {
-    checkAWSAttributes(t, child, pattern, markedSegments)
+    checkAWSAttributes(child, pattern, markedSegments)
   })
 
   return markedSegments
 }
 
-function getMatchingSegments(t, segment, pattern, markedSegments = []) {
+function getMatchingSegments(segment, pattern, markedSegments = []) {
   if (pattern.test(segment.name)) {
     markedSegments.push(segment)
   }
 
   segment.children.forEach((child) => {
-    getMatchingSegments(t, child, pattern, markedSegments)
+    getMatchingSegments(child, pattern, markedSegments)
   })
 
   return markedSegments
 }
 
-function checkExternals({ service, operations, tx }) {
-  const externals = checkAWSAttributes(this, tx.trace.root, EXTERN_PATTERN)
-  this.equal(externals.length, operations.length, `should have ${operations.length} aws externals`)
+function checkExternals({ service, operations, tx, end }) {
+  const externals = checkAWSAttributes(tx.trace.root, EXTERN_PATTERN)
+  assert.equal(
+    externals.length,
+    operations.length,
+    `should have ${operations.length} aws externals`
+  )
   operations.forEach((operation, index) => {
     const attrs = externals[index].attributes.get(TRANS_SEGMENT)
-    this.match(
-      attrs,
-      {
-        'aws.operation': operation,
-        'aws.requestId': String,
-        // in 3.1.0 they fixed service names from lower case
-        // see: https://github.com/aws/aws-sdk-js-v3/commit/0011af27a62d0d201296225e2a70276645b3231a
-        'aws.service': new RegExp(`${service}|${service.toLowerCase().replace(/ /g, '')}`),
-        'aws.region': 'us-east-1'
-      },
-      'should have expected attributes'
-    )
+    match(attrs, {
+      'aws.operation': operation,
+      'aws.requestId': String,
+      // in 3.1.0 they fixed service names from lower case
+      // see: https://github.com/aws/aws-sdk-js-v3/commit/0011af27a62d0d201296225e2a70276645b3231a
+      'aws.service': new RegExp(`${service}|${service.toLowerCase().replace(/ /g, '')}`),
+      'aws.region': 'us-east-1'
+    })
   })
-  this.end()
+  end()
 }
 
 function assertChatCompletionMessages({ tx, chatMsgs, expectedId, modelId, prompt, resContent }) {
@@ -109,8 +105,8 @@ function assertChatCompletionMessages({ tx, chatMsgs, expectedId, modelId, promp
       expectedChatMsg.is_response = true
     }
 
-    this.equal(msg[0].type, 'LlmChatCompletionMessage')
-    this.match(msg[1], expectedChatMsg, 'should match chat completion message')
+    assert.equal(msg[0].type, 'LlmChatCompletionMessage')
+    match(msg[1], expectedChatMsg)
   })
 }
 
@@ -134,11 +130,30 @@ function assertChatCompletionSummary({ tx, modelId, chatSummary, error = false, 
     'error': error
   }
 
-  this.equal(chatSummary[0].type, 'LlmChatCompletionSummary')
-  this.match(chatSummary[1], expectedChatSummary, 'should match chat summary message')
+  assert.equal(chatSummary[0].type, 'LlmChatCompletionSummary')
+  match(chatSummary[1], expectedChatSummary)
+}
+
+/**
+ * Common afterEach hook that unloads agent, stops server, and deletes
+ * packages in require cache
+ *
+ * @param {object} ctx test context
+ */
+function afterEach(ctx) {
+  ctx.nr.server.destroy()
+  helper.unloadAgent(ctx.nr.agent)
+  Object.keys(require.cache).forEach((key) => {
+    if (key.includes('@aws-sdk') || key.includes('@smithy')) {
+      delete require.cache[key]
+    }
+  })
 }
 
 module.exports = {
+  afterEach,
+  assertChatCompletionSummary,
+  assertChatCompletionMessages,
   DATASTORE_PATTERN,
   EXTERN_PATTERN,
   SNS_PATTERN,

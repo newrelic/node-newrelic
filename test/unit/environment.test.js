@@ -15,7 +15,6 @@ const { spawn } = require('node:child_process')
 // environment when testing.
 delete process.env.NODE_ENV
 
-const { match } = require('../lib/custom-assertions')
 const { isSupportedVersion } = require('../lib/agent_helper')
 const environment = require('../../lib/environment')
 
@@ -217,13 +216,10 @@ test('should get correct version for dependencies', async () => {
     return map
   }, {})
 
-  assert.equal(
-    match(versions, {
-      'invalid-json': '<unknown>',
-      'valid-json': '1.2.3'
-    }),
-    true
-  )
+  assert.deepEqual(versions, {
+    'invalid-json': '<unknown>',
+    'valid-json': '1.2.3'
+  })
 })
 
 // TODO: remove this test when we drop support for node 18

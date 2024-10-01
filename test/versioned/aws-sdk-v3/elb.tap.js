@@ -5,36 +5,34 @@
 
 'use strict'
 
-const tap = require('tap')
+const test = require('node:test')
 const helper = require('../../lib/agent_helper')
-require('./common')
+const { afterEach, checkExternals } = require('./common')
 const { createEmptyResponseServer, FAKE_CREDENTIALS } = require('../../lib/aws-server-stubs')
 
-tap.test('ElasticLoadBalancingClient', (t) => {
-  t.beforeEach(async (t) => {
+test('ElasticLoadBalancingClient', async (t) => {
+  t.beforeEach(async (ctx) => {
+    ctx.nr = {}
     const server = createEmptyResponseServer()
     await new Promise((resolve) => {
       server.listen(0, resolve)
     })
-    t.context.server = server
-    t.context.agent = helper.instrumentMockedAgent()
+    ctx.nr.server = server
+    ctx.nr.agent = helper.instrumentMockedAgent()
     const { ElasticLoadBalancingClient, ...lib } = require('@aws-sdk/client-elastic-load-balancing')
-    t.context.AddTagsCommand = lib.AddTagsCommand
+    ctx.nr.AddTagsCommand = lib.AddTagsCommand
     const endpoint = `http://localhost:${server.address().port}`
-    t.context.service = new ElasticLoadBalancingClient({
+    ctx.nr.service = new ElasticLoadBalancingClient({
       credentials: FAKE_CREDENTIALS,
       endpoint,
       region: 'us-east-1'
     })
   })
 
-  t.afterEach((t) => {
-    t.context.server.destroy()
-    helper.unloadAgent(t.context.agent)
-  })
+  t.afterEach(afterEach)
 
-  t.test('AddTagsCommand', (t) => {
-    const { agent, service, AddTagsCommand } = t.context
+  await t.test('AddTagsCommand', (t, end) => {
+    const { agent, service, AddTagsCommand } = t.nr
     helper.runInTransaction(agent, async (tx) => {
       const cmd = new AddTagsCommand({
         LoadBalancerNames: ['my-load-balancer'],
@@ -51,12 +49,12 @@ tap.test('ElasticLoadBalancingClient', (t) => {
       })
       await service.send(cmd)
       tx.end()
-      setImmediate(t.checkExternals, {
+      setImmediate(checkExternals, {
         service: 'Elastic Load Balancing',
         operations: ['AddTagsCommand'],
-        tx
+        tx,
+        end
       })
     })
   })
-  t.end()
 })

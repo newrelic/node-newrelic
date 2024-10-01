@@ -8,7 +8,6 @@
 const test = require('node:test')
 const assert = require('node:assert')
 
-const { match } = require('../../lib/custom-assertions')
 const helper = require('../../lib/agent_helper')
 const Exception = require('../../../lib/errors').Exception
 const ErrorCollector = require('../../../lib/errors/error-collector')
@@ -118,12 +117,12 @@ test('Errors', async (t) => {
 
       const errorTraces = getErrorTraces(errors)
       let params = errorTraces[0][PARAMS]
-      assert.equal(match(params.agentAttributes, { 'request.parameters.a': 'A' }), true)
+      assert.deepEqual(params.agentAttributes, { 'request.parameters.a': 'A' })
 
       // Error events
       const errorEvents = getErrorEvents(errors)
       params = errorEvents[0][2]
-      assert.equal(match(params, { 'request.parameters.a': 'A' }), true)
+      assert.deepEqual(params, { 'request.parameters.a': 'A' })
     })
 
     await t.test('record custom parameters', (t) => {
@@ -134,11 +133,11 @@ test('Errors', async (t) => {
 
       const errorTraces = getErrorTraces(errors)
       let params = errorTraces[0][PARAMS]
-      assert.equal(match(params.userAttributes, { a: 'A' }), true)
+      assert.deepEqual(params.userAttributes, { a: 'A' })
 
       const errorEvents = getErrorEvents(errors)
       params = errorEvents[0][1]
-      assert.equal(match(params, { a: 'A' }), true)
+      assert.deepEqual(params, { a: 'A' })
     })
 
     await t.test('merge custom parameters', (t) => {
@@ -149,11 +148,11 @@ test('Errors', async (t) => {
 
       const errorTraces = getErrorTraces(errors)
       let params = errorTraces[0][PARAMS]
-      assert.equal(match(params.userAttributes, { a: 'A', b: 'B' }), true)
+      assert.deepEqual(params.userAttributes, { a: 'A', b: 'B' })
 
       const errorEvents = getErrorEvents(errors)
       params = errorEvents[0][1]
-      assert.equal(match(params, { a: 'A', b: 'B' }), true)
+      assert.deepEqual(params, { a: 'A', b: 'B' })
     })
 
     await t.test('overrides existing custom attributes with new custom attributes', (t) => {
@@ -164,11 +163,11 @@ test('Errors', async (t) => {
 
       const errorTraces = getErrorTraces(errors)
       let params = errorTraces[0][PARAMS]
-      assert.equal(match(params.userAttributes, { a: 'AA' }), true)
+      assert.deepEqual(params.userAttributes, { a: 'AA' })
 
       const errorEvents = getErrorEvents(errors)
       params = errorEvents[0][1]
-      assert.equal(match(params, { a: 'AA' }), true)
+      assert.deepEqual(params, { a: 'AA' })
     })
 
     await t.test('does not add custom attributes in high security mode', (t) => {
@@ -179,11 +178,11 @@ test('Errors', async (t) => {
 
       const errorTraces = getErrorTraces(errors)
       let params = errorTraces[0][PARAMS]
-      assert.equal(match(params.userAttributes, {}), true)
+      assert.deepEqual(params.userAttributes, {})
 
       const errorEvents = getErrorEvents(errors)
       params = errorEvents[0][1]
-      assert.equal(match(params, {}), true)
+      assert.deepEqual(params, {})
     })
 
     await t.test('redacts the error message in high security mode', (t) => {
@@ -388,7 +387,7 @@ test('Errors', async (t) => {
 
       const errorTraces = getErrorTraces(errors)
       const params = errorTraces[0][PARAMS]
-      assert.equal(match(params.agentAttributes, { 'host.displayName': 'test-value' }), true)
+      assert.deepEqual(params.agentAttributes, { 'host.displayName': 'test-value' })
     })
 
     await t.test('should not be in agent attributes if not set by user', (t) => {
@@ -399,7 +398,7 @@ test('Errors', async (t) => {
 
       const errorTraces = getErrorTraces(errors)
       const params = errorTraces[0][PARAMS]
-      assert.equal(match(params.agentAttributes, {}), true)
+      assert.deepEqual(params.agentAttributes, {})
     })
   })
 
@@ -923,7 +922,7 @@ test('Errors', async (t) => {
       const errorTraces = getErrorTraces(errors)
       const errorJSON = errorTraces[0]
       const params = errorJSON[4]
-      assert.equal(match(params.agentAttributes, { test_param: 'a value' }), true)
+      assert.deepEqual(params.agentAttributes, { test_param: 'a value' })
     })
 
     await t.test('with a thrown TypeError object and no transaction', async (t) => {
@@ -2281,7 +2280,7 @@ test('_processErrors', async (t) => {
     const errorType = 'user'
     const result = errorCollector._getIterableProperty(tx, errorType)
 
-    assert.equal(match(result, []), true)
+    assert.deepEqual(result, [])
   })
 
   await t.test('if type is transactionException, return an array of objects', (t) => {
@@ -2289,7 +2288,7 @@ test('_processErrors', async (t) => {
     const errorType = 'transactionException'
     const result = errorCollector._getIterableProperty(tx, errorType)
 
-    assert.equal(match(result, []), true)
+    assert.deepEqual(result, [])
   })
 
   await t.test(
@@ -2301,7 +2300,7 @@ test('_processErrors', async (t) => {
       const expectedErrors = 0
       const result = errorCollector._processErrors(tx, collectedErrors, expectedErrors, errorType)
 
-      assert.equal(match(result, [collectedErrors, expectedErrors]), true)
+      assert.deepEqual(result, [collectedErrors, expectedErrors])
     }
   )
 })

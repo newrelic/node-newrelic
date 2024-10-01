@@ -10,7 +10,6 @@ const assert = require('node:assert')
 
 const ErrorEventAggregator = require('../../../lib/errors/error-event-aggregator')
 const Metrics = require('../../../lib/metrics')
-const { match } = require('../../lib/custom-assertions')
 
 const RUN_ID = 1337
 const LIMIT = 5
@@ -61,8 +60,8 @@ test('Error Event Aggregator', async (t) => {
 
     const [runId, eventMetrics, errorEventData] = payload
     assert.equal(runId, RUN_ID)
-    assert.equal(match(eventMetrics, expectedMetrics), true)
-    assert.equal(match(errorEventData, [rawErrorEvent]), true)
+    assert.deepEqual(eventMetrics, expectedMetrics)
+    assert.deepEqual(errorEventData, [rawErrorEvent])
   })
 
   await t.test('toPayload() should return nothing with no error event data', (t) => {

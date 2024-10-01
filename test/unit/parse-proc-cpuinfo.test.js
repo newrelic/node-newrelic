@@ -8,8 +8,6 @@
 const test = require('node:test')
 const assert = require('node:assert')
 
-const { match } = require('../lib/custom-assertions')
-
 const parseCpuInfo = require('../../lib/parse-proc-cpuinfo')
 
 // Most functionality is covered in-depth via cross-agent tests in
@@ -24,7 +22,7 @@ test('Should return object with null processor stats when data is null', () => {
 
   const result = parseCpuInfo(null)
 
-  assert.equal(match(result, expectedStats), true)
+  assert.deepEqual(result, expectedStats)
 })
 
 test('Should return object with null processor stats when data is undefined', () => {
@@ -36,5 +34,5 @@ test('Should return object with null processor stats when data is undefined', ()
 
   const result = parseCpuInfo(undefined)
 
-  assert.equal(match(result, expectedStats), true)
+  assert.deepEqual(result, expectedStats)
 })

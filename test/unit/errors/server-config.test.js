@@ -9,8 +9,6 @@ const test = require('node:test')
 const assert = require('node:assert')
 
 const helper = require('../../lib/agent_helper')
-const { match } = require('../../lib/custom-assertions')
-
 test('Merging Server Config Values', async (t) => {
   t.beforeEach((ctx) => {
     ctx.nr = {}
@@ -28,7 +26,7 @@ test('Merging Server Config Values', async (t) => {
       const params = { 'error_collector.ignore_status_codes': ['501-505'] }
       agent.config._fromServer(params, 'error_collector.ignore_status_codes')
       const expected = [404, 501, 502, 503, 504, 505]
-      assert.equal(match(agent.config.error_collector.ignore_status_codes, expected), true)
+      assert.deepEqual(agent.config.error_collector.ignore_status_codes, expected)
       end()
     })
   })
@@ -40,7 +38,7 @@ test('Merging Server Config Values', async (t) => {
       const params = { 'error_collector.expected_status_codes': ['501-505'] }
       agent.config._fromServer(params, 'error_collector.expected_status_codes')
       const expected = [404, 501, 502, 503, 504, 505]
-      assert.equal(match(agent.config.error_collector.expected_status_codes, expected), true)
+      assert.deepEqual(agent.config.error_collector.expected_status_codes, expected)
       end()
     })
   })
@@ -52,7 +50,7 @@ test('Merging Server Config Values', async (t) => {
       const params = { 'error_collector.expected_classes': ['Bar'] }
       agent.config._fromServer(params, 'error_collector.expected_classes')
       const expected = ['Foo', 'Bar']
-      assert.equal(match(agent.config.error_collector.expected_classes, expected), true)
+      assert.deepEqual(agent.config.error_collector.expected_classes, expected)
       end()
     })
   })
@@ -64,7 +62,7 @@ test('Merging Server Config Values', async (t) => {
       const params = { 'error_collector.ignore_classes': ['Bar'] }
       agent.config._fromServer(params, 'error_collector.ignore_classes')
       const expected = ['Foo', 'Bar']
-      assert.equal(match(agent.config.error_collector.ignore_classes, expected), true)
+      assert.deepEqual(agent.config.error_collector.ignore_classes, expected)
       end()
     })
   })
@@ -78,7 +76,7 @@ test('Merging Server Config Values', async (t) => {
       const nonsense = { 'error_collector.ignore_classes': [{ this: 'isNotAClass' }] }
       agent.config._fromServer(nonsense, 'error_collector.ignore_classes')
       const expected = ['Foo', 'Bar']
-      assert.equal(match(agent.config.error_collector.ignore_classes, expected), true)
+      assert.deepEqual(agent.config.error_collector.ignore_classes, expected)
       end()
     })
   })
@@ -90,7 +88,7 @@ test('Merging Server Config Values', async (t) => {
       const params = { 'error_collector.expected_messages': { Zip: ['zap'] } }
       agent.config._fromServer(params, 'error_collector.expected_messages')
       const expected = { Foo: ['bar'], Zip: ['zap'] }
-      assert.equal(match(agent.config.error_collector.expected_messages, expected), true)
+      assert.deepEqual(agent.config.error_collector.expected_messages, expected)
       end()
     })
   })
@@ -102,7 +100,7 @@ test('Merging Server Config Values', async (t) => {
       const params = { 'error_collector.ignore_messages': { Zip: ['zap'] } }
       agent.config._fromServer(params, 'error_collector.ignore_messages')
       const expected = { Foo: ['bar'], Zip: ['zap'] }
-      assert.equal(match(agent.config.error_collector.ignore_messages, expected), true)
+      assert.deepEqual(agent.config.error_collector.ignore_messages, expected)
       end()
     })
   })
@@ -114,7 +112,7 @@ test('Merging Server Config Values', async (t) => {
       const params = { 'error_collector.ignore_messages': { Foo: ['zap'] } }
       agent.config._fromServer(params, 'error_collector.ignore_messages')
       const expected = { Foo: ['bar', 'zap'] }
-      assert.equal(match(agent.config.error_collector.ignore_messages, expected), true)
+      assert.deepEqual(agent.config.error_collector.ignore_messages, expected)
       end()
     })
   })
@@ -127,7 +125,7 @@ test('Merging Server Config Values', async (t) => {
       const params = { 'error_collector.ignore_messages': { Foo: ['zap'] } }
       agent.config._fromServer(params, 'error_collector.ignore_messages')
       const expected = { Foo: ['zap'] } // expect this to replace
-      assert.equal(match(agent.config.error_collector.ignore_messages, expected), true)
+      assert.deepEqual(agent.config.error_collector.ignore_messages, expected)
       end()
     })
   })
@@ -140,7 +138,7 @@ test('Merging Server Config Values', async (t) => {
       const params = { 'error_collector.ignore_messages': { Foo: ['zap'] } }
       agent.config._fromServer(params, 'error_collector.ignore_messages')
       const expected = { Foo: ['zap'] } // expect this to replace
-      assert.equal(match(agent.config.error_collector.ignore_messages, expected), true)
+      assert.deepEqual(agent.config.error_collector.ignore_messages, expected)
       end()
     })
   })
@@ -163,7 +161,7 @@ test('Merging Server Config Values', async (t) => {
         agent.config.error_collector.ignore_messages = expected
         const params = { 'error_collector.ignore_messages': value }
         agent.config._fromServer(params, 'error_collector.ignore_messages')
-        assert.equal(match(agent.config.error_collector.ignore_messages, expected), true)
+        assert.deepEqual(agent.config.error_collector.ignore_messages, expected)
       })
       end()
     })
@@ -187,7 +185,7 @@ test('Merging Server Config Values', async (t) => {
         agent.config.error_collector.expect_messages = expected
         const params = { 'error_collector.expect_messages': value }
         agent.config._fromServer(params, 'error_collector.expect_messages')
-        assert.equal(match(agent.config.error_collector.expect_messages, expected), true)
+        assert.deepEqual(agent.config.error_collector.expect_messages, expected)
       })
       end()
     })
@@ -211,7 +209,7 @@ test('Merging Server Config Values', async (t) => {
         agent.config.error_collector.ignore_classes = expected
         const params = { 'error_collector.ignore_classes': value }
         agent.config._fromServer(params, 'error_collector.ignore_classes')
-        assert.equal(match(agent.config.error_collector.ignore_classes, expected), true)
+        assert.deepEqual(agent.config.error_collector.ignore_classes, expected)
       })
       end()
     })
@@ -235,7 +233,7 @@ test('Merging Server Config Values', async (t) => {
         agent.config.error_collector.expect_classes = expected
         const params = { 'error_collector.expect_classes': value }
         agent.config._fromServer(params, 'error_collector.expect_classes')
-        assert.equal(match(agent.config.error_collector.expect_classes, expected), true)
+        assert.deepEqual(agent.config.error_collector.expect_classes, expected)
       })
       end()
     })
@@ -260,7 +258,7 @@ test('Merging Server Config Values', async (t) => {
         agent.config.error_collector.ignore_status_codes = toSet
         const params = { 'error_collector.ignore_status_codes': value }
         agent.config._fromServer(params, 'error_collector.ignore_status_codes')
-        assert.equal(match(agent.config.error_collector.ignore_status_codes, expected), true)
+        assert.deepEqual(agent.config.error_collector.ignore_status_codes, expected)
       })
       end()
     })
@@ -285,7 +283,7 @@ test('Merging Server Config Values', async (t) => {
         agent.config.error_collector.expected_status_codes = toSet
         const params = { 'error_collector.expected_status_codes': value }
         agent.config._fromServer(params, 'error_collector.expected_status_codes')
-        assert.equal(match(agent.config.error_collector.expected_status_codes, expected), true)
+        assert.deepEqual(agent.config.error_collector.expected_status_codes, expected)
       })
       end()
     })
@@ -299,7 +297,7 @@ test('Merging Server Config Values', async (t) => {
       const params = { 'error_collector.ignore_messages': { Foo: ['bar'] } }
       agent.config._fromServer(params, 'error_collector.ignore_messages')
       const expected = { Foo: ['zap', 'bar'] } // expect this to replace
-      assert.equal(match(agent.config.error_collector.ignore_messages, expected), true)
+      assert.deepEqual(agent.config.error_collector.ignore_messages, expected)
       end()
     })
   })

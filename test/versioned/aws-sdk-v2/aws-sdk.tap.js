@@ -4,45 +4,43 @@
  */
 
 'use strict'
-
+const assert = require('node:assert')
 const sinon = require('sinon')
-const tap = require('tap')
+const test = require('node:test')
 const helper = require('../../lib/agent_helper')
 const symbols = require('../../../lib/symbols')
-
 const { createEmptyResponseServer, FAKE_CREDENTIALS } = require('../../lib/aws-server-stubs')
 
-tap.test('aws-sdk', (t) => {
-  t.autoend()
-
-  t.beforeEach(async (t) => {
+test('aws-sdk', async (t) => {
+  t.beforeEach(async (ctx) => {
+    ctx.nr = {}
     const server = createEmptyResponseServer()
 
     await new Promise((resolve) => {
       server.listen(0, resolve)
     })
 
-    t.context.server = server
+    ctx.nr.server = server
 
-    t.context.agent = helper.instrumentMockedAgent()
+    ctx.nr.agent = helper.instrumentMockedAgent()
     const AWS = require('aws-sdk')
     AWS.config.update({ region: 'us-east-1' })
-    t.context.AWS = AWS
+    ctx.nr.AWS = AWS
 
-    t.context.endpoint = `http://localhost:${server.address().port}`
+    ctx.nr.endpoint = `http://localhost:${server.address().port}`
   })
 
-  t.afterEach((t) => {
-    t.context.server.close()
-    helper.unloadAgent(t.context.agent)
+  t.afterEach((ctx) => {
+    ctx.nr.server.close()
+    helper.unloadAgent(ctx.nr.agent)
   })
 
-  t.test('should mark requests to be dt-disabled', (t) => {
-    const { AWS, endpoint } = t.context
+  await t.test('should mark requests to be dt-disabled', (t, end) => {
+    const { AWS, endpoint } = t.nr
     // http because we've changed endpoint to be http
     const http = require('http')
     sinon.spy(http, 'request')
-    t.teardown(() => {
+    t.after(() => {
       // `afterEach` runs before `tearDown`, so the sinon spy may have already
       // been removed.
       if (http.request.restore) {
@@ -60,58 +58,51 @@ tap.test('aws-sdk', (t) => {
       params: { Bucket: 'bucket' }
     })
     s3.listObjects({ Delimiter: '/' }, (err) => {
-      t.error(err)
+      assert.ok(!err)
 
-      if (t.ok(http.request.calledOnce, 'should call http.request')) {
+      if (assert.ok(http.request.calledOnce, 'should call http.request')) {
         const args = http.request.getCall(0).args
         const headers = args[0].headers
-        t.equal(headers[symbols.disableDT], true)
+        assert.equal(headers[symbols.disableDT], true)
       }
-      t.end()
+      end()
     })
   })
 
-  t.test('should maintain transaction state in promises', (t) => {
-    const { AWS, endpoint, agent } = t.context
+  await t.test('should maintain transaction state in promises', async (t) => {
+    const { AWS, endpoint, agent } = t.nr
     const service = new AWS.SES({
       credentials: FAKE_CREDENTIALS,
       endpoint
     })
 
-    helper.runInTransaction(agent, (tx) => {
-      service
+    const req1 = helper.runInTransaction(agent, (tx) => {
+      return service
         .cloneReceiptRuleSet({
           OriginalRuleSetName: 'RuleSetToClone',
           RuleSetName: 'RuleSetToCreate'
         })
         .promise()
         .then(() => {
-          t.equal(tx.id, agent.getTransaction().id)
+          assert.equal(tx.id, agent.getTransaction().id)
           tx.end()
-          ender()
         })
     })
 
     // Run two concurrent promises to check for conflation
-    helper.runInTransaction(agent, (tx) => {
-      service
+    const req2 = helper.runInTransaction(agent, (tx) => {
+      return service
         .cloneReceiptRuleSet({
           OriginalRuleSetName: 'RuleSetToClone',
           RuleSetName: 'RuleSetToCreate'
         })
         .promise()
         .then(() => {
-          t.equal(tx.id, agent.getTransaction().id)
+          assert.equal(tx.id, agent.getTransaction().id)
           tx.end()
-          ender()
         })
     })
 
-    let count = 0
-    function ender() {
-      if (++count === 2) {
-        t.end()
-      }
-    }
+    await Promise.all([req1, req2])
   })
 })

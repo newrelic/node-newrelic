@@ -4,25 +4,26 @@
  */
 
 'use strict'
-
-const tap = require('tap')
+const assert = require('node:assert')
+const test = require('node:test')
 const helper = require('../../lib/agent_helper')
 const common = require('../aws-sdk-v3/common')
 const { createEmptyResponseServer, FAKE_CREDENTIALS } = require('../../lib/aws-server-stubs')
+const { match } = require('../../lib/custom-assertions')
+const promiseResolvers = require('../../lib/promise-resolvers')
 
-tap.test('DynamoDB', (t) => {
-  t.autoend()
-
-  t.beforeEach(async (t) => {
+test('DynamoDB', async (t) => {
+  t.beforeEach(async (ctx) => {
+    ctx.nr = {}
     const server = createEmptyResponseServer()
 
     await new Promise((resolve) => {
       server.listen(0, resolve)
     })
 
-    t.context.server = server
+    ctx.nr.server = server
 
-    t.context.agent = helper.instrumentMockedAgent()
+    ctx.nr.agent = helper.instrumentMockedAgent()
 
     const AWS = require('aws-sdk')
 
@@ -39,24 +40,21 @@ tap.test('DynamoDB', (t) => {
     })
 
     const tableName = `delete-aws-sdk-test-table-${Math.floor(Math.random() * 100000)}`
-    t.context.tests = createTests(ddb, docClient, tableName)
+    ctx.nr.tests = createTests(ddb, docClient, tableName)
   })
 
-  t.afterEach((t) => {
-    t.context.server.close()
-    helper.unloadAgent(t.context.agent)
+  t.afterEach((ctx) => {
+    ctx.nr.server.close()
+    helper.unloadAgent(ctx.nr.agent)
   })
 
-  t.test('commands with callback', (t) => {
-    const { tests, agent } = t.context
+  await t.test('commands with callback', (t, end) => {
+    const { tests, agent } = t.nr
     helper.runInTransaction(agent, async (tx) => {
       for (const test of tests) {
-        t.comment(`Testing ${test.method}`)
-
         await new Promise((resolve) => {
           test.api[test.method](test.params, (err) => {
-            t.error(err)
-
+            assert.ok(!err)
             return setImmediate(resolve)
           })
         })
@@ -64,71 +62,65 @@ tap.test('DynamoDB', (t) => {
 
       tx.end()
 
-      const args = [t, tests, tx]
+      const args = [end, tests, tx]
       setImmediate(finish, ...args)
     })
   })
 
-  t.test('commands with promises', (t) => {
-    const { tests, agent } = t.context
+  await t.test('commands with promises', async (t) => {
+    const { tests, agent } = t.nr
+    const { promise, resolve } = promiseResolvers()
     helper.runInTransaction(agent, async function (tx) {
       // Execute commands in order
       // Await works because this is in a for-loop / no callback api
-      for (let i = 0; i < tests.length; i++) {
-        const cfg = tests[i]
-
-        t.comment(`Testing ${cfg.method}`)
-
+      for (const test of tests) {
         try {
-          await cfg.api[cfg.method](cfg.params).promise()
+          await test.api[test.method](test.params).promise()
         } catch (err) {
-          t.error(err)
+          assert.ok(!err)
         }
       }
 
       tx.end()
 
-      const args = [t, tests, tx]
+      const args = [resolve, tests, tx]
       setImmediate(finish, ...args)
     })
+    await promise
   })
 })
 
-function finish(t, tests, tx) {
+function finish(end, tests, tx) {
   const root = tx.trace.root
-  const segments = common.checkAWSAttributes(t, root, common.DATASTORE_PATTERN)
+  const segments = common.checkAWSAttributes(root, common.DATASTORE_PATTERN)
 
-  t.equal(segments.length, tests.length, `should have ${tests.length} aws datastore segments`)
+  assert.equal(segments.length, tests.length, `should have ${tests.length} aws datastore segments`)
 
-  const externalSegments = common.checkAWSAttributes(t, root, common.EXTERN_PATTERN)
-  t.equal(externalSegments.length, 0, 'should not have any External segments')
+  const externalSegments = common.checkAWSAttributes(root, common.EXTERN_PATTERN)
+  assert.equal(externalSegments.length, 0, 'should not have any External segments')
 
   segments.forEach((segment, i) => {
     const operation = tests[i].operation
-    t.equal(
+    assert.equal(
       segment.name,
       `Datastore/operation/DynamoDB/${operation}`,
       'should have operation in segment name'
     )
     const attrs = segment.attributes.get(common.SEGMENT_DESTINATION)
     attrs.port_path_or_id = parseInt(attrs.port_path_or_id, 10)
-    t.match(
-      attrs,
-      {
-        'host': String,
-        'port_path_or_id': Number,
-        'product': 'DynamoDB',
-        'collection': String,
-        'aws.operation': operation,
-        'aws.requestId': String,
-        'aws.region': 'us-east-1',
-        'aws.service': 'DynamoDB'
-      },
-      'should have expected attributes'
-    )
+    match(attrs, {
+      'host': String,
+      'port_path_or_id': Number,
+      'product': 'DynamoDB',
+      'collection': String,
+      'aws.operation': operation,
+      'aws.requestId': String,
+      'aws.region': 'us-east-1',
+      'aws.service': 'DynamoDB'
+    })
   })
 
-  t.end()
+  end()
 }
 
 function createTests(ddb, docClient, tableName) {

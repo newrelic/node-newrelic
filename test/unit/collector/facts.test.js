@@ -12,7 +12,6 @@ const fs = require('node:fs')
 const net = require('node:net')
 
 const helper = require('../../lib/agent_helper')
-const { match } = require('../../lib/custom-assertions')
 const sysInfo = require('../../../lib/system-info')
 const utilTests = require('../../lib/cross_agent_tests/utilization/utilization_json')
 const bootIdTests = require('../../lib/cross_agent_tests/utilization/boot_id')
@@ -174,7 +173,7 @@ test('fun facts about apps that New Relic is interested in including', async (t)
           }
         ]
       ]
-      assert.equal(match(t.nr.logs.debug, expectedLogs), true, 'New Relic metadata logged properly')
+      assert.deepEqual(t.nr.logs.debug, expectedLogs, 'New Relic metadata logged properly')
       end()
     })
   })
@@ -182,7 +181,7 @@ test('fun facts about apps that New Relic is interested in including', async (t)
   await t.test('empty `metadata` object if no metadata env vars found', (t, end) => {
     const { agent, facts } = t.nr
     facts(agent, (result) => {
-      assert.equal(match(result.metadata, {}), true)
+      assert.deepEqual(result.metadata, {})
       end()
     })
   })
@@ -190,7 +189,7 @@ test('fun facts about apps that New Relic is interested in including', async (t)
   await t.test('only returns expected facts', (t, end) => {
     const { agent, facts } = t.nr
     facts(agent, (result) => {
-      assert.equal(match(Object.keys(result).sort(), EXPECTED_FACTS.sort()), true)
+      assert.deepEqual(Object.keys(result).sort(), EXPECTED_FACTS.sort())
       end()
     })
   })
@@ -208,7 +207,7 @@ test('fun facts about apps that New Relic is interested in including', async (t)
         { label_type: 'a', label_value: 'b' },
         { label_type: '€'.repeat(255), label_value: '𝌆'.repeat(255) }
       ]
-      assert.equal(match(result.labels, expected), true)
+      assert.deepEqual(result.labels, expected)
       end()
     })
   })
@@ -223,7 +222,7 @@ test('fun facts about apps that New Relic is interested in including', async (t)
         { label_type: 'a', label_value: 'b' },
         { label_type: '€'.repeat(255), label_value: '𝌆'.repeat(255) }
       ]
-      assert.equal(match(result.labels, expected), true)
+      assert.deepEqual(result.labels, expected)
       end()
     })
   })
@@ -252,7 +251,7 @@ test('fun facts about apps that New Relic is interested in including', async (t)
       }
 
       facts(agent, (result) => {
-        assert.equal(match(result.event_harvest_config, expectedHarvestConfig), true)
+        assert.deepEqual(result.event_harvest_config, expectedHarvestConfig)
         end()
       })
     }
@@ -441,7 +440,7 @@ test('utilization facts', async (t) => {
       }
 
       t.nr.facts(agent, (result) => {
-        assert.equal(match(result.utilization, expected), true)
+        assert.deepEqual(result.utilization, expected)
         end()
       })
 
@@ -684,15 +683,15 @@ test('display_host facts', async (t) => {
       agent.config.process_host.display_name = 'test-value2'
 
       facts(agent, (result2) => {
-        assert.equal(match(result2.display_host, displayHost1), true)
-        assert.equal(match(result2.host, host1), true)
+        assert.deepEqual(result2.display_host, displayHost1)
+        assert.deepEqual(result2.host, host1)
 
         agent.config.clearHostnameCache()
         agent.config.clearDisplayHostCache()
 
         facts(agent, (result3) => {
-          assert.equal(match(result3.display_host, 'test-value2'), true)
-          assert.equal(match(result3.host, os.hostname()), true)
+          assert.deepEqual(result3.display_host, 'test-value2')
+          assert.deepEqual(result3.host, os.hostname())
 
           end()
         })

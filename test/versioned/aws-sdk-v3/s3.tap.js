@@ -5,23 +5,24 @@
 
 'use strict'
 
-const tap = require('tap')
+const test = require('node:test')
 const helper = require('../../lib/agent_helper')
-require('./common')
+const { afterEach, checkExternals } = require('./common')
 const { createEmptyResponseServer, FAKE_CREDENTIALS } = require('../../lib/aws-server-stubs')
 
-tap.test('S3 buckets', (t) => {
-  t.beforeEach(async (t) => {
+test('S3 buckets', async (t) => {
+  t.beforeEach(async (ctx) => {
+    ctx.nr = {}
     const server = createEmptyResponseServer()
 
     await new Promise((resolve) => {
       server.listen(0, resolve)
     })
 
-    t.context.server = server
-    t.context.agent = helper.instrumentMockedAgent()
+    ctx.nr.server = server
+    ctx.nr.agent = helper.instrumentMockedAgent()
     const { S3Client, ...lib } = require('@aws-sdk/client-s3')
-    t.context.client = new S3Client({
+    ctx.nr.client = new S3Client({
       region: 'us-east-1',
       credentials: FAKE_CREDENTIALS,
       endpoint: `http://localhost:${server.address().port}`,
@@ -30,40 +31,33 @@ tap.test('S3 buckets', (t) => {
       forcePathStyle: true
     })
 
-    t.context.lib = lib
+    ctx.nr.lib = lib
   })
 
-  t.afterEach((t) => {
-    t.context.server.destroy()
-    helper.unloadAgent(t.context.agent)
-  })
+  t.afterEach(afterEach)
 
-  t.test('commands', (t) => {
+  await t.test('commands', (t, end) => {
     const {
       client,
       agent,
       lib: { HeadBucketCommand, CreateBucketCommand, DeleteBucketCommand }
-    } = t.context
+    } = t.nr
     const Bucket = 'delete-aws-sdk-test-bucket-' + Math.floor(Math.random() * 100000)
 
     helper.runInTransaction(agent, async (tx) => {
-      try {
-        await client.send(new HeadBucketCommand({ Bucket }))
-        await client.send(new CreateBucketCommand({ Bucket }))
-        await client.send(new DeleteBucketCommand({ Bucket }))
-      } catch (err) {
-        t.error(err)
-      }
+      await client.send(new HeadBucketCommand({ Bucket }))
+      await client.send(new CreateBucketCommand({ Bucket }))
+      await client.send(new DeleteBucketCommand({ Bucket }))
 
       tx.end()
 
       const args = {
+        end,
         tx,
         service: 'S3',
         operations: ['HeadBucketCommand', 'CreateBucketCommand', 'DeleteBucketCommand']
       }
-      setImmediate(t.checkExternals, args)
+      setImmediate(checkExternals, args)
     })
   })
-  t.end()
 })

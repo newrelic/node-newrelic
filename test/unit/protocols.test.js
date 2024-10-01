@@ -38,13 +38,10 @@ test('errors', async (t) => {
     const payload = agent.errors.traceAggregator._toPayloadSync()
     RemoteMethod.prototype.serialize(payload, (err, errors) => {
       assert.equal(err, null)
-      assert.equal(
-        match(
-          errors,
-          '[1,[[0,"Unknown","test","Error",{"userAttributes":{},"agentAttributes":{},' +
-            '"intrinsics":{"error.expected":false},"stack_trace":["test stack"]},null]]]'
-        ),
-        true
+      match(
+        errors,
+        '[1,[[0,"Unknown","test","Error",{"userAttributes":{},"agentAttributes":{},' +
+          '"intrinsics":{"error.expected":false},"stack_trace":["test stack"]},null]]]'
       )
       end()
     })

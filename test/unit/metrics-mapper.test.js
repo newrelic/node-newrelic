@@ -8,8 +8,6 @@
 const test = require('node:test')
 const assert = require('node:assert')
 
-const { match } = require('../lib/custom-assertions')
-
 const MetricMapper = require('../../lib/metrics/mapper.js')
 
 test("shouldn't throw if passed null", () => {
@@ -66,11 +64,8 @@ test('when loading mappings at creation', async (t) => {
 
   await t.test('should turn non-mapped metrics into specs', (t) => {
     const { mapper } = t.nr
-    assert.equal(match(mapper.map('Test/Metric1'), { name: 'Test/Metric1' }), true)
-    assert.equal(
-      match(mapper.map('Test/Metric2', 'TEST'), { name: 'Test/Metric2', scope: 'TEST' }),
-      true
-    )
+    assert.deepEqual(mapper.map('Test/Metric1'), { name: 'Test/Metric1' })
+    assert.deepEqual(mapper.map('Test/Metric2', 'TEST'), { name: 'Test/Metric2', scope: 'TEST' })
   })
 })
 
@@ -96,10 +91,7 @@ test('when adding mappings after creation', async (t) => {
 
   await t.test('should turn non-mapped metrics into specs', (t) => {
     const { mapper } = t.nr
-    assert.equal(match(mapper.map('Test/Metric1'), { name: 'Test/Metric1' }), true)
-    assert.equal(
-      match(mapper.map('Test/Metric2', 'TEST'), { name: 'Test/Metric2', scope: 'TEST' }),
-      true
-    )
+    assert.deepEqual(mapper.map('Test/Metric1'), { name: 'Test/Metric1' })
+    assert.deepEqual(mapper.map('Test/Metric2', 'TEST'), { name: 'Test/Metric2', scope: 'TEST' })
   })
 })

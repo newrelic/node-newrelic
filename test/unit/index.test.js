@@ -10,8 +10,6 @@ const assert = require('node:assert')
 
 const sinon = require('sinon')
 
-const { match } = require('../lib/custom-assertions')
-
 const proxyquire = require('proxyquire').noCallThru()
 const createLoggerMock = require('./mocks/logger')
 const createMockAgent = require('./mocks/agent')
@@ -72,13 +70,10 @@ test('loader metrics', async (t) => {
 
     assert.equal(metricCall.args.length, 1)
     assert.equal(metricCall.args[0][0], 'Supportability/Features/CJS/Require')
-    assert.equal(
-      match(
-        t.nr.loggerMock.debug.args[4][1],
-        /node -r some-cool-lib.*index\.test\.js/,
-        'should log how the agent is called'
-      ),
-      true
+    assert.match(
+      t.nr.loggerMock.debug.args[4][1],
+      /node -r some-cool-lib.*index\.test\.js/,
+      'should log how the agent is called'
     )
   })
 
@@ -115,13 +110,10 @@ test('loader metrics', async (t) => {
       assert.equal(metricCall.args.length, 2)
       assert.equal(metricCall.args[0][0], 'Supportability/Features/ESM/Loader')
       assert.equal(metricCall.args[1][0], 'Supportability/Features/CJS/Preload')
-      assert.equal(
-        match(
-          t.nr.loggerMock.debug.args[4][1],
-          /node --loader newrelic\/esm-loader.mjs -r newrelic.*index\.test\.js/,
-          'should log how the agent is called'
-        ),
-        true
+      assert.match(
+        t.nr.loggerMock.debug.args[4][1],
+        /node --loader newrelic\/esm-loader.mjs -r newrelic.*index\.test\.js/,
+        'should log how the agent is called'
       )
     }
   )
@@ -254,20 +246,17 @@ test('index tests', async (t) => {
 
   await t.test('should set api on require.cache.__NR_cache', (t) => {
     const api = loadIndex(t)
-    assert.equal(match(require.cache.__NR_cache, api), true)
+    assert.deepEqual(require.cache.__NR_cache, api)
   })
 
   await t.test('should load k2 agent if config.security.agent.enabled', (t) => {
     t.nr.mockConfig.security.agent.enabled = true
     const api = loadIndex(t)
     assert.equal(t.nr.k2Stub.start.callCount, 1, 'should register security agent')
-    assert.equal(
-      match(
-        t.nr.k2Stub.start.args[0][0],
-        api,
-        'should call start on security agent with proper args'
-      ),
-      true
+    assert.deepEqual(
+      t.nr.k2Stub.start.args[0][0],
+      api,
+      'should call start on security agent with proper args'
     )
   })
 
@@ -284,9 +273,9 @@ test('index tests', async (t) => {
     t.nr.processVersionStub.satisfies.onCall(0).returns(false)
     loadIndex(t)
     assert.equal(t.nr.loggerMock.error.callCount, 1, 'should log an error')
-    assert.equal(
-      match(t.nr.loggerMock.error.args[0][0], /New Relic for Node.js requires a version of Node/),
-      true
+    assert.match(
+      t.nr.loggerMock.error.args[0][0].message,
+      /New Relic for Node.js requires a version of Node/
     )
   })
 
@@ -296,9 +285,9 @@ test('index tests', async (t) => {
     t.nr.configMock.getOrCreateInstance.returns(null)
     loadIndex(t)
     assert.equal(t.nr.loggerMock.warn.callCount, 1, 'should log an error')
-    assert.equal(
-      match(t.nr.loggerMock.warn.args[0][0], /New Relic for Node\.js.*has not been tested on Node/),
-      true
+    assert.match(
+      t.nr.loggerMock.warn.args[0][0],
+      /New Relic for Node\.js.*has not been tested on Node/
     )
   })
 
@@ -339,9 +328,9 @@ test('index tests', async (t) => {
     t.nr.mockConfig.applications.returns([])
     loadIndex(t)
     assert.equal(t.nr.loggerMock.error.callCount, 1, 'should log an error')
-    assert.equal(
-      match(t.nr.loggerMock.error.args[0][0], /New Relic requires that you name this application!/),
-      true
+    assert.match(
+      t.nr.loggerMock.error.args[0][0].message,
+      /New Relic requires that you name this application!/
     )
   })
 

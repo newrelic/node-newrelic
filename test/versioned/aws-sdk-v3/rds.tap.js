@@ -5,36 +5,34 @@
 
 'use strict'
 
-const tap = require('tap')
+const test = require('node:test')
 const helper = require('../../lib/agent_helper')
-require('./common')
+const { afterEach, checkExternals } = require('./common')
 const { createEmptyResponseServer, FAKE_CREDENTIALS } = require('../../lib/aws-server-stubs')
 
-tap.test('RDSClient', (t) => {
-  t.beforeEach(async (t) => {
+test('RDSClient', async (t) => {
+  t.beforeEach(async (ctx) => {
+    ctx.nr = {}
     const server = createEmptyResponseServer()
     await new Promise((resolve) => {
       server.listen(0, resolve)
     })
-    t.context.server = server
-    t.context.agent = helper.instrumentMockedAgent()
+    ctx.nr.server = server
+    ctx.nr.agent = helper.instrumentMockedAgent()
     const { RDSClient, ...lib } = require('@aws-sdk/client-rds')
-    t.context.AddRoleToDBClusterCommand = lib.AddRoleToDBClusterCommand
+    ctx.nr.AddRoleToDBClusterCommand = lib.AddRoleToDBClusterCommand
     const endpoint = `http://localhost:${server.address().port}`
-    t.context.service = new RDSClient({
+    ctx.nr.service = new RDSClient({
       credentials: FAKE_CREDENTIALS,
       endpoint,
       region: 'us-east-1'
     })
   })
 
-  t.afterEach((t) => {
-    t.context.server.destroy()
-    helper.unloadAgent(t.context.agent)
-  })
+  t.afterEach(afterEach)
 
-  t.test('AddRoleToDBClusterCommand', (t) => {
-    const { service, agent, AddRoleToDBClusterCommand } = t.context
+  await t.test('AddRoleToDBClusterCommand', (t, end) => {
+    const { service, agent, AddRoleToDBClusterCommand } = t.nr
     helper.runInTransaction(agent, async (tx) => {
       const cmd = new AddRoleToDBClusterCommand({
         Action: 'lambda:GetLayerVersion' /* required */,
@@ -47,12 +45,12 @@ tap.test('RDSClient', (t) => {
       })
       await service.send(cmd)
       tx.end()
-      setImmediate(t.checkExternals, {
+      setImmediate(checkExternals, {
         service: 'RDS',
         operations: ['AddRoleToDBClusterCommand'],
-        tx
+        tx,
+        end
       })
     })
   })
-  t.end()
 })

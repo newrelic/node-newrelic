@@ -7,8 +7,6 @@
 
 const test = require('node:test')
 const assert = require('node:assert')
-const { match } = require('../../lib/custom-assertions')
-
 const helper = require('../../lib/agent_helper')
 const Transaction = require('../../../lib/transaction')
 
@@ -33,11 +31,10 @@ test('Error Group functionality', async (t) => {
 
     const errorTraces = getErrorTraces(agent.errors)
     const errorEvents = getErrorEvents(agent.errors)
-    assert.equal(
-      match(errorTraces[0][4].agentAttributes, { 'error.group.name': 'error-group-test-1' }),
-      true
-    )
-    assert.equal(match(errorEvents[0][2], { 'error.group.name': 'error-group-test-1' }), true)
+    assert.deepEqual(errorTraces[0][4].agentAttributes, {
+      'error.group.name': 'error-group-test-1'
+    })
+    assert.deepEqual(errorEvents[0][2], { 'error.group.name': 'error-group-test-1' })
 
     function myCallback() {
       return 'error-group-test-1'
@@ -55,8 +52,8 @@ test('Error Group functionality', async (t) => {
 
     const errorTraces = getErrorTraces(agent.errors)
     const errorEvents = getErrorEvents(agent.errors)
-    assert.equal(match(errorTraces[0][4].agentAttributes, {}), true)
-    assert.equal(match(errorEvents[0][2], {}), true)
+    assert.deepEqual(errorTraces[0][4].agentAttributes, {})
+    assert.deepEqual(errorEvents[0][2], {})
 
     function myCallback() {
       throw Error('boom')
@@ -76,8 +73,8 @@ test('Error Group functionality', async (t) => {
 
       const errorTraces = getErrorTraces(agent.errors)
       const errorEvents = getErrorEvents(agent.errors)
-      assert.equal(match(errorTraces[0][4].agentAttributes, {}), true)
-      assert.equal(match(errorEvents[0][2], {}), true)
+      assert.deepEqual(errorTraces[0][4].agentAttributes, {})
+      assert.deepEqual(errorEvents[0][2], {})
 
       function myCallback() {
         return ''
@@ -98,8 +95,8 @@ test('Error Group functionality', async (t) => {
 
       const errorTraces = getErrorTraces(agent.errors)
       const errorEvents = getErrorEvents(agent.errors)
-      assert.equal(match(errorTraces[0][4].agentAttributes, {}), true)
-      assert.equal(match(errorEvents[0][2], {}), true)
+      assert.deepEqual(errorTraces[0][4].agentAttributes, {})
+      assert.deepEqual(errorEvents[0][2], {})
 
       function myCallback() {
         return { 'error.group.name': 'blah' }

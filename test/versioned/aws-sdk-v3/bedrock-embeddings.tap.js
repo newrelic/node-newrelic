@@ -4,14 +4,14 @@
  */
 
 'use strict'
-
-const tap = require('tap')
-require('./common')
+const assert = require('node:assert')
+const test = require('node:test')
 const helper = require('../../lib/agent_helper')
-require('../../lib/metrics_helper')
+const { assertSegments, match } = require('../../lib/custom-assertions')
 const createAiResponseServer = require('../../lib/aws-server-stubs/ai-server')
 const { FAKE_CREDENTIALS } = require('../../lib/aws-server-stubs')
 const { DESTINATIONS } = require('../../../lib/config/attribute-filter')
+const { afterEach } = require('./common')
 const requests = {
   amazon: (prompt, modelId) => ({
     body: JSON.stringify({ inputText: prompt }),
@@ -22,81 +22,70 @@ const requests = {
     modelId
   })
 }
+const { tspl } = require('@matteo.collina/tspl')
 
-tap.beforeEach(async (t) => {
-  t.context.agent = helper.instrumentMockedAgent({
+test.beforeEach(async (ctx) => {
+  ctx.nr = {}
+  ctx.nr.agent = helper.instrumentMockedAgent({
     ai_monitoring: {
       enabled: true
     }
   })
 
   const bedrock = require('@aws-sdk/client-bedrock-runtime')
-  t.context.bedrock = bedrock
+  ctx.nr.bedrock = bedrock
 
   const { server, baseUrl, responses, host, port } = await createAiResponseServer()
-  t.context.server = server
-  t.context.baseUrl = baseUrl
-  t.context.responses = responses
-  t.context.expectedExternalPath = (modelId) => `External/${host}:${port}/model/${modelId}/invoke`
+  ctx.nr.server = server
+  ctx.nr.baseUrl = baseUrl
+  ctx.nr.responses = responses
+  ctx.nr.expectedExternalPath = (modelId) => `External/${host}:${port}/model/${modelId}/invoke`
 
   const client = new bedrock.BedrockRuntimeClient({
     region: 'us-east-1',
     credentials: FAKE_CREDENTIALS,
     endpoint: baseUrl
   })
-  t.context.client = client
+  ctx.nr.client = client
 })
 
-tap.afterEach(async (t) => {
-  helper.unloadAgent(t.context.agent)
-  t.context.server.destroy()
-  Object.keys(require.cache).forEach((key) => {
-    if (
-      key.includes('@smithy/smithy-client') ||
-      key.includes('@aws-sdk/smithy-client') ||
-      key.includes('@aws-sdk/client-bedrock-runtime')
-    ) {
-      delete require.cache[key]
-    }
-  })
-})
+test.afterEach(afterEach)
 ;[
   { modelId: 'amazon.titan-embed-text-v1', resKey: 'amazon' },
   { modelId: 'cohere.embed-english-v3', resKey: 'cohere' }
 ].forEach(({ modelId, resKey }) => {
-  tap.test(`${modelId}: should properly create embedding segment`, (t) => {
-    const { bedrock, client, responses, agent, expectedExternalPath } = t.context
+  test(`${modelId}: should properly create embedding segment`, async (t) => {
+    const { bedrock, client, responses, agent, expectedExternalPath } = t.nr
     const prompt = `text ${resKey} ultimate question`
     const input = requests[resKey](prompt, modelId)
 
     const command = new bedrock.InvokeModelCommand(input)
 
     const expected = responses[resKey].get(prompt)
-    helper.runInTransaction(agent, async (tx) => {
+    await helper.runInTransaction(agent, async (tx) => {
       const response = await client.send(command)
       const body = JSON.parse(response.body.transformToString('utf8'))
-      t.equal(response.$metadata.requestId, expected.headers['x-amzn-requestid'])
-      t.same(body, expected.body)
-      t.assertSegments(
+      assert.equal(response.$metadata.requestId, expected.headers['x-amzn-requestid'])
+      assert.deepEqual(body, expected.body)
+      assertSegments(
         tx.trace.root,
         ['Llm/embedding/Bedrock/InvokeModelCommand', [expectedExternalPath(modelId)]],
         { exact: false }
       )
       tx.end()
-      t.end()
     })
   })
 
-  tap.test(`${modelId}: should properly create the LlmEmbedding event`, (t) => {
-    const { bedrock, client, agent } = t.context
+  test(`${modelId}: should properly create the LlmEmbedding event`, async (t) => {
+    const { bedrock, client, agent } = t.nr
     const prompt = `embed text ${resKey} success`
     const input = requests[resKey](prompt, modelId)
     const command = new bedrock.InvokeModelCommand(input)
 
-    helper.runInTransaction(agent, async (tx) => {
+    await helper.runInTransaction(agent, async (tx) => {
       await client.send(command)
       const events = agent.customEventAggregator.events.toArray()
-      t.equal(events.length, 1)
+      assert.equal(events.length, 1)
       const embedding = events.filter(([{ type }]) => type === 'LlmEmbedding')[0]
       const expectedEmbedding = {
         'id': /[\w]{8}-[\w]{4}-[\w]{4}-[\w]{4}-[\w]{12}/,
@@ -113,16 +102,15 @@ tap.afterEach(async (t) => {
         'error': false
       }
 
-      t.equal(embedding[0].type, 'LlmEmbedding')
-      t.match(embedding[1], expectedEmbedding, 'should match embedding message')
+      assert.equal(embedding[0].type, 'LlmEmbedding')
+      match(embedding[1], expectedEmbedding)
 
       tx.end()
-      t.end()
     })
   })
 
-  tap.test(`${modelId}: text answer (streamed)`, async (t) => {
-    const { bedrock, client, responses } = t.context
+  test(`${modelId}: text answer (streamed)`, async (t) => {
+    const { bedrock, client, responses } = t.nr
     const prompt = `text ${resKey} ultimate question streamed`
     const input = requests[resKey](prompt, modelId)
     const command = new bedrock.InvokeModelWithResponseStreamCommand(input)
@@ -131,12 +119,12 @@ tap.afterEach(async (t) => {
     try {
       await client.send(command)
     } catch (error) {
-      t.equal(error.message, expected.body.message)
+      assert.equal(error.message, expected.body.message)
     }
   })
 
-  tap.test(`${modelId}: should properly create errors on embeddings`, (t) => {
-    const { bedrock, client, agent, expectedExternalPath } = t.context
+  test(`${modelId}: should properly create errors on embeddings`, async (t) => {
+    const { bedrock, client, agent, expectedExternalPath } = t.nr
     const prompt = `embed text ${resKey} error`
     const input = requests[resKey](prompt, modelId)
     const command = new bedrock.InvokeModelCommand(input)
@@ -144,15 +132,15 @@ tap.afterEach(async (t) => {
       'Malformed input request: 2 schema violations found, please reformat your input and try again.'
     const expectedType = 'ValidationException'
 
-    helper.runInTransaction(agent, async (tx) => {
+    await helper.runInTransaction(agent, async (tx) => {
       try {
         await client.send(command)
       } catch (err) {
-        t.equal(err.message, expectedMsg)
-        t.equal(err.name, expectedType)
+        assert.equal(err.message, expectedMsg)
+        assert.equal(err.name, expectedType)
       }
-      t.equal(tx.exceptions.length, 1)
-      t.match(tx.exceptions[0], {
+      assert.equal(tx.exceptions.length, 1)
+      match(tx.exceptions[0], {
         error: {
           name: expectedType,
           message: expectedMsg
@@ -168,13 +156,13 @@ tap.afterEach(async (t) => {
         }
       })
 
-      t.assertSegments(
+      assertSegments(
         tx.trace.root,
         ['Llm/embedding/Bedrock/InvokeModelCommand', [expectedExternalPath(modelId)]],
         { exact: false }
       )
       const events = agent.customEventAggregator.events.toArray()
-      t.equal(events.length, 1)
+      assert.equal(events.length, 1)
       const embedding = events.filter(([{ type }]) => type === 'LlmEmbedding')[0]
       const expectedEmbedding = {
         'id': /[\w]{8}-[\w]{4}-[\w]{4}-[\w]{4}-[\w]{12}/,
@@ -191,76 +179,72 @@ tap.afterEach(async (t) => {
         'error': true
       }
 
-      t.equal(embedding[0].type, 'LlmEmbedding')
-      t.match(embedding[1], expectedEmbedding, 'should match embedding message')
+      assert.equal(embedding[0].type, 'LlmEmbedding')
+      match(embedding[1], expectedEmbedding)
 
       tx.end()
-      t.end()
     })
   })
 
-  tap.test(`${modelId}: should add llm attribute to transaction`, (t) => {
-    const { bedrock, client, agent } = t.context
+  test(`${modelId}: should add llm attribute to transaction`, async (t) => {
+    const { bedrock, client, agent } = t.nr
     const prompt = `embed text ${resKey} success`
     const input = requests[resKey](prompt, modelId)
     const command = new bedrock.InvokeModelCommand(input)
 
-    helper.runInTransaction(agent, async (tx) => {
+    await helper.runInTransaction(agent, async (tx) => {
       await client.send(command)
       const attributes = tx.trace.attributes.get(DESTINATIONS.TRANS_EVENT)
-      t.equal(attributes.llm, true)
+      assert.equal(attributes.llm, true)
 
       tx.end()
-      t.end()
     })
   })
 
-  tap.test(`${modelId}: should decorate messages with custom attrs`, (t) => {
-    const { bedrock, client, agent } = t.context
+  test(`${modelId}: should decorate messages with custom attrs`, async (t) => {
+    const { bedrock, client, agent } = t.nr
     const prompt = `embed text ${resKey} success`
     const input = requests[resKey](prompt, modelId)
     const command = new bedrock.InvokeModelCommand(input)
 
-    helper.runInTransaction(agent, async (tx) => {
+    await helper.runInTransaction(agent, async (tx) => {
       const api = helper.getAgentApi()
       api.addCustomAttribute('llm.foo', 'bar')
 
       await client.send(command)
       const events = tx.agent.customEventAggregator.events.toArray()
       const msg = events[0][1]
-      t.equal(msg['llm.foo'], 'bar')
+      assert.equal(msg['llm.foo'], 'bar')
 
       tx.end()
-      t.end()
     })
   })
 })
 
-tap.test('should utilize tokenCountCallback when set', (t) => {
-  t.plan(3)
+test('should utilize tokenCountCallback when set', async (t) => {
+  const plan = tspl(t, { plan: 3 })
 
-  const { bedrock, client, agent } = t.context
+  const { bedrock, client, agent } = t.nr
   const prompt = 'embed text amazon token count callback response'
   const modelId = 'amazon.titan-embed-text-v1'
   const input = requests.amazon(prompt, modelId)
 
   agent.config.ai_monitoring.record_content.enabled = false
   agent.llm.tokenCountCallback = function (model, content) {
-    t.equal(model, modelId)
-    t.equal(content, prompt)
+    plan.equal(model, modelId)
+    plan.equal(content, prompt)
     return content?.split(' ')?.length
   }
   const command = new bedrock.InvokeModelCommand(input)
 
-  helper.runInTransaction(agent, async (tx) => {
+  await helper.runInTransaction(agent, async (tx) => {
     await client.send(command)
 
     const events = agent.customEventAggregator.events.toArray()
     const embeddings = events.filter((e) => e[0].type === 'LlmEmbedding')
     const msg = embeddings[0][1]
-    t.equal(msg.token_count, 7)
+    plan.equal(msg.token_count, 7)
 
     tx.end()
-    t.end()
   })
 })
