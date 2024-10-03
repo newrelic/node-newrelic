@@ -4,18 +4,25 @@
  */
 
 'use strict'
+
+const assert = require('node:assert')
+
 const { routesToTest, makeRequest } = require('./common')
-require('../../lib/metrics_helper')
+const { assertSegments, match } = require('../../lib/custom-assertions')
 const helper = require('../../lib/agent_helper')
 
-module.exports = function createTests(t, getExpectedSegments) {
-  routesToTest.forEach((uri) => {
-    t.test(`testing naming for ${uri} `, async (t) => {
-      const { agent, fastify, calls } = t.context
+module.exports = async function runTests(t, getExpectedSegments) {
+  // Since we have spawned these sub-tests from another sub-test we must
+  // clear out the agent before they are evaluated.
+  helper.unloadAgent(t.nr.agent)
+
+  for (const uri of routesToTest) {
+    await t.test(`testing naming for ${uri} `, async (t) => {
+      const { agent, fastify, calls } = t.nr
 
       agent.on('transactionFinished', (transaction) => {
         calls.test++
-        t.equal(
+        assert.equal(
           `WebFrameworkUri/Fastify/GET/${uri}`,
           transaction.getName(),
           `transaction name matched for ${uri}`
@@ -36,33 +43,37 @@ module.exports = function createTests(t, getExpectedSegments) {
           ]
         }
 
-        t.assertSegments(transaction.trace.root, expectedSegments)
+        assertSegments(transaction.trace.root, expectedSegments)
       })
 
       await fastify.listen({ port: 0 })
       const address = fastify.server.address()
       const result = await makeRequest(address, uri)
-      t.equal(result.called, uri, `${uri} url did not error`)
-      t.ok(calls.test > 0)
-      t.equal(calls.test, calls.middleware, 'should be the same value')
-      t.end()
+      assert.equal(result.called, uri, `${uri} url did not error`)
+      assert.ok(calls.test > 0)
+      assert.equal(calls.test, calls.middleware, 'should be the same value')
     })
-  })
+  }
 
-  t.test('should properly name transaction with parameterized routes', async (t) => {
-    const { fastify, agent } = t.context
+  await t.test('should properly name transaction with parameterized routes', async (t) => {
+    const { fastify, agent } = t.nr
 
+    let txPassed = false
     agent.on('transactionFinished', (transaction) => {
-      t.equal(
+      assert.equal(
         transaction.name,
         'WebTransaction/WebFrameworkUri/Fastify/GET//params/:id/:parent/edit'
       )
-      t.equal(transaction.url, '/params/id/parent/edit')
+      assert.equal(transaction.url, '/params/id/parent/edit')
+
+      txPassed = true
     })
+
     await fastify.listen()
     const address = fastify.server.address()
     const result = await makeRequest(address, '/params/id/parent/edit')
-    t.same(result, { id: 'id', parent: 'parent' })
-    t.end()
+    match(result, { id: 'id', parent: 'parent' })
+
+    assert.equal(txPassed, true, 'transactionFinished assertions passed')
   })
 }

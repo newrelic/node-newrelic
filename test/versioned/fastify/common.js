@@ -78,13 +78,14 @@ common.setupRoutes = (fastify) => {
    * values of params
    */
   fastify.get('/params/:id/:parent/edit', async (request) => {
+    /* eslint-disable-next-line node/no-unsupported-features/es-syntax */
     return { ...request.params }
   })
 }
 
 /**
  * Defines both a global middleware and middleware mounted at a specific
- * path. This tests the `middie`, and/or `fastify-express` plugin middlewawre
+ * path. This tests the `middie` and/or `fastify-express` plugin middleware
  * instrumentation
  */
 common.registerMiddlewares = ({ fastify, calls }) => {
