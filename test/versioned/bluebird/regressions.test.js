@@ -4,17 +4,16 @@
  */
 
 'use strict'
-const tap = require('tap')
+const test = require('node:test')
 const helper = require('../../lib/agent_helper')
 
-tap.test('bluebird', function (t) {
-  t.autoend()
-  t.test('NODE-1649 Stack overflow on recursive promise', function (t) {
+test('bluebird', async function (t) {
+  await t.test('NODE-1649 Stack overflow on recursive promise', async function (t) {
     // This was resolved in 2.6.0 as a side-effect of completely refactoring the
     // promise instrumentation.
 
     const agent = helper.loadMockedAgent()
-    t.teardown(function () {
+    t.after(function () {
       helper.unloadAgent(agent)
     })
     const Promise = require('bluebird')
@@ -41,7 +40,7 @@ tap.test('bluebird', function (t) {
       }
     }
 
-    return helper.runInTransaction(agent, function () {
+    await helper.runInTransaction(agent, function () {
       return getData(new Provider(10000))
     })
   })
