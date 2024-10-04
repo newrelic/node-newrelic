@@ -64,7 +64,7 @@
         "node": ">=18"
       },
       "dependencies": {
-        "fastify": "^5.0.0",
+        "fastify": ">=5.0.0",
         "@fastify/middie": ">=9.0.0"
       },
       "files": [
