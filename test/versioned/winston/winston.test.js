@@ -10,7 +10,6 @@ const assert = require('node:assert')
 const { Writable } = require('node:stream')
 
 const helper = require('../../lib/agent_helper')
-const { match } = require('../../lib/custom-assertions')
 const { removeMatchedModules } = require('../../lib/cache-buster')
 const { LOGGING } = require('../../../lib/metrics/names')
 const {
