@@ -4,8 +4,11 @@
  */
 
 'use strict'
+
+const assert = require('node:assert')
+
 const helpers = module.exports
-const { CONTEXT_KEYS } = require('../../lib/logging-helper')
+const { CONTEXT_KEYS, validateLogLine } = require('../../lib/logging-helper')
 
 /**
  * Provides a mocked-up writable stream that can be provided to Bunyan for easier testing
@@ -43,12 +46,10 @@ helpers.logStuff = function logStuff({ logger, helper, agent }) {
  * local log decoration is enabled.  Local log decoration asserts `NR-LINKING` string exists on msg
  *
  * @param {Object} opts
- * @param {Test} opts.t tap test
  * @param {boolean} [opts.includeLocalDecorating=false] is local log decoration enabled
  * @param {string} [opts.level=info] level to assert is on message
  */
 helpers.originalMsgAssertion = function originalMsgAssertion({
-  t,
   includeLocalDecorating = false,
   level = 30,
   logLine,
@@ -56,18 +57,22 @@ helpers.originalMsgAssertion = function originalMsgAssertion({
 }) {
   CONTEXT_KEYS.forEach((key) => {
     if (key !== 'hostname') {
-      t.notOk(logLine[key], `should not have ${key}`)
+      assert.equal(logLine[key], undefined, `should not have ${key}`)
     }
   })
 
-  t.ok(logLine.time, 'should include timestamp')
-  t.equal(logLine.level, level, `should be ${level} level`)
+  assert.ok(logLine.time, 'should include timestamp')
+  assert.equal(logLine.level, level, `should be ${level} level`)
   // bunyan by default includes hostname
-  t.equal(logLine.hostname, hostname, 'hostname should not change')
+  assert.equal(logLine.hostname, hostname, 'hostname should not change')
   if (includeLocalDecorating) {
-    t.ok(logLine.message.includes('NR-LINKING'), 'should contain NR-LINKING metadata')
+    assert.ok(logLine.message.includes('NR-LINKING'), 'should contain NR-LINKING metadata')
   } else {
-    t.notOk(logLine.msg.includes('NR-LINKING'), 'should not contain NR-LINKING metadata')
+    assert.equal(
+      logLine.msg.includes('NR-LINKING'),
+      false,
+      'should not contain NR-LINKING metadata'
+    )
   }
 }
 
@@ -75,27 +80,27 @@ helpers.originalMsgAssertion = function originalMsgAssertion({
  * Assert function to verify the log line getting added to aggregator contains NR linking
  * metadata.
  *
- * @param {Test} t
- * @param {string} msg log line
+ * @param {object} logLine log line
+ * @param {object} agent Mocked agent instance.
  */
-helpers.logForwardingMsgAssertion = function logForwardingMsgAssertion(t, logLine, agent) {
+helpers.logForwardingMsgAssertion = function logForwardingMsgAssertion(logLine, agent) {
   if (logLine.message === 'out of trans') {
-    t.validateAnnotations({
+    validateLogLine({
       line: logLine,
       message: 'out of trans',
       level: 'info',
       config: agent.config
     })
-    t.equal(logLine['trace.id'], undefined, 'msg out of trans should not have trace id')
-    t.equal(logLine['span.id'], undefined, 'msg out of trans should not have span id')
+    assert.equal(logLine['trace.id'], undefined, 'msg out of trans should not have trace id')
+    assert.equal(logLine['span.id'], undefined, 'msg out of trans should not have span id')
   } else if (logLine.message === 'in trans') {
-    t.validateAnnotations({
+    validateLogLine({
       line: logLine,
       message: 'in trans',
       level: 'info',
       config: agent.config
     })
-    t.equal(typeof logLine['trace.id'], 'string', 'msg in trans should have trace id')
-    t.equal(typeof logLine['span.id'], 'string', 'msg in trans should have span id')
+    assert.equal(typeof logLine['trace.id'], 'string', 'msg in trans should have trace id')
+    assert.equal(typeof logLine['span.id'], 'string', 'msg in trans should have span id')
   }
 }

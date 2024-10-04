@@ -14,7 +14,7 @@
         "winston-transport": ">=4.0.0"
       },
       "files": [
-        "winston.tap.mjs"
+        "winston.test.mjs"
       ]
     }
   ]

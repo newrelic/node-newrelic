@@ -4,8 +4,11 @@
  */
 
 'use strict'
+
+const assert = require('node:assert')
 const helpers = module.exports
-const { CONTEXT_KEYS } = require('../../lib/logging-helper')
+
+const { CONTEXT_KEYS, validateLogLine } = require('../../lib/logging-helper')
 
 /**
  * Stream factory for a test.  Iterates over every message and calls an assertFn.
@@ -63,25 +66,17 @@ helpers.logStuff = function logStuff({ loggers, logger, stream, helper, agent })
  * @param {DerivedLogger} opts.logger instance of winston
  * @param {Array} opts.loggers an array of winston loggers
  * @param {Stream} opts.stream stream used to end test
- * @param {Test} opts.t tap test
  * @param {object} opts.helper test helpers
  * @param {object} opts.agent new relic agent
  */
-helpers.logWithAggregator = function logWithAggregator({
-  logger,
-  loggers,
-  stream,
-  t,
-  agent,
-  helper
-}) {
+helpers.logWithAggregator = function logWithAggregator({ logger, loggers, stream, agent, helper }) {
   let aggregatorLength = 0
   loggers = loggers || [logger]
   loggers.forEach((log) => {
     // Log some stuff, both in and out of a transaction
     log.info('out of trans')
     aggregatorLength++
-    t.equal(
+    assert.equal(
       agent.logs.getEvents().length,
       aggregatorLength,
       `should only add ${aggregatorLength} log to aggregator`
@@ -89,7 +84,7 @@ helpers.logWithAggregator = function logWithAggregator({
 
     helper.runInTransaction(agent, 'test', (transaction) => {
       log.info('in trans')
-      t.equal(
+      assert.equal(
         agent.logs.getEvents().length,
         aggregatorLength,
         `should keep log aggregator at ${aggregatorLength}`
@@ -97,7 +92,7 @@ helpers.logWithAggregator = function logWithAggregator({
 
       transaction.end()
       aggregatorLength++
-      t.equal(
+      assert.equal(
         agent.logs.getEvents().length,
         aggregatorLength,
         `should only add ${aggregatorLength} log after transaction end`
@@ -114,29 +109,32 @@ helpers.logWithAggregator = function logWithAggregator({
  * local log decoration is enabled.  Local log decoration asserts `NR-LINKING` string exists on msg
  *
  * @param {Object} opts
- * @param {Test} opts.t tap test
  * @param {boolean} [opts.includeLocalDecorating=false] is local log decoration enabled
  * @param {boolean} [opts.timestamp=false] does timestamp exist on original message
  * @param {string} [opts.level=info] level to assert is on message
  */
 helpers.originalMsgAssertion = function originalMsgAssertion(
-  { t, includeLocalDecorating = false, timestamp = false, level = 'info' },
+  { includeLocalDecorating = false, timestamp = false, level = 'info' },
   msg
 ) {
   CONTEXT_KEYS.forEach((key) => {
-    t.notOk(msg[key], `should not have ${key}`)
+    assert.equal(msg[key], undefined, `should not have ${key}`)
   })
 
   if (timestamp) {
-    t.ok(msg.timestamp, 'should include timestamp')
+    assert.ok(msg.timestamp, 'should include timestamp')
   } else {
-    t.notOk(msg.timestamp, 'should not have timestamp')
+    assert.equal(msg.timestamp, undefined, 'should not have timestamp')
   }
-  t.equal(msg.level, level, `should be ${level} level`)
+  assert.equal(msg.level, level, `should be ${level} level`)
   if (includeLocalDecorating) {
-    t.ok(msg.message.includes('NR-LINKING'), 'should contain NR-LINKING metadata')
+    assert.ok(msg.message.includes('NR-LINKING'), 'should contain NR-LINKING metadata')
   } else {
-    t.notOk(msg.message.includes('NR-LINKING'), 'should not contain NR-LINKING metadata')
+    assert.equal(
+      msg.message.includes('NR-LINKING'),
+      false,
+      'should not contain NR-LINKING metadata'
+    )
   }
 }
 
@@ -144,27 +142,27 @@ helpers.originalMsgAssertion = function originalMsgAssertion(
  * Assert function to verify the log line getting added to aggregator contains NR linking
  * metadata.
  *
- * @param {Test} t
- * @param {string} msg log line
+ * @param {string} logLine log line
+ * @param {object} agent Mocked agent instance
  */
-helpers.logForwardingMsgAssertion = function logForwardingMsgAssertion(t, logLine, agent) {
+helpers.logForwardingMsgAssertion = function logForwardingMsgAssertion(logLine, agent) {
   if (logLine.message === 'out of trans') {
-    t.validateAnnotations({
+    validateLogLine({
       line: logLine,
       message: 'out of trans',
       level: 'info',
       config: agent.config
     })
-    t.equal(logLine['trace.id'], undefined, 'msg out of trans should not have trace id')
-    t.equal(logLine['span.id'], undefined, 'msg out of trans should not have span id')
+    assert.equal(logLine['trace.id'], undefined, 'msg out of trans should not have trace id')
+    assert.equal(logLine['span.id'], undefined, 'msg out of trans should not have span id')
   } else if (logLine.message === 'in trans') {
-    t.validateAnnotations({
+    validateLogLine({
       line: logLine,
       message: 'in trans',
       level: 'info',
       config: agent.config
     })
-    t.equal(typeof logLine['trace.id'], 'string', 'msg in trans should have trace id')
-    t.equal(typeof logLine['span.id'], 'string', 'msg in trans should have span id')
+    assert.equal(typeof logLine['trace.id'], 'string', 'msg in trans should have trace id')
+    assert.equal(typeof logLine['span.id'], 'string', 'msg in trans should have span id')
   }
 }
