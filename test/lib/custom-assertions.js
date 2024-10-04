@@ -6,10 +6,6 @@
 'use strict'
 const assert = require('node:assert')
 const { isSimpleObject } = require('../../lib/util/objects')
-const typeMappings = {
-  String: 'string',
-  Number: 'number'
-}
 
 function assertExactClmAttrs(segmentStub, expectedAttrs) {
   const attrs = segmentStub.addAttribute.args
@@ -177,24 +173,32 @@ function assertSegments(parent, expected, options) {
   }
 }
 
+const TYPE_MAPPINGS = {
+  String: 'string',
+  Number: 'number'
+}
+
 /**
  * Like `tap.prototype.match`. Verifies that `actual` satisfies the shape
- * provided by `expected`.
+ * provided by `expected`. This does actual assertions with `node:assert`
  *
- * This may eventually make its way into `node:assert`. See
- * https://github.com/fastify/fastify/discussions/5628#discussioncomment-10392942
+ * There is limited support for type matching
+ *
+ * @example
+ * match(obj, {
+ *  key: String,
+ *  number: Number
+ * })
  *
  * @example
  * const input = {
  *   foo: /^foo.+bar$/,
  *   bar: [1, 2, '3']
  * }
- * // true
  * match(input, {
  *   foo: 'foo is bar',
  *   bar: [1, 2, '3']
  * })
- * // false
  * match(input, {
  *   foo: 'foo is bar',
  *   bar: [1, 2, '3', 4]
@@ -203,10 +207,9 @@ function assertSegments(parent, expected, options) {
  * @param {string|object} actual The entity to verify.
  * @param {string|object} expected What the entity should match against.
  *
- * @returns {boolean} `true` if `actual` satisfies `expected`. `false`
- * otherwise.
  */
 function match(actual, expected) {
+  // match substring
   if (typeof actual === 'string' && typeof expected === 'string') {
     assert.ok(actual.indexOf(expected) > -1)
     return
@@ -216,7 +219,7 @@ function match(actual, expected) {
     if (key in actual) {
       if (typeof expected[key] === 'function') {
         const type = expected[key]
-        assert.ok(typeof actual[key] === typeMappings[type.name])
+        assert.ok(typeof actual[key] === TYPE_MAPPINGS[type.name])
       } else if (expected[key] instanceof RegExp) {
         assert.ok(expected[key].test(actual[key]))
       } else if (typeof expected[key] === 'object' && expected[key] !== null) {
