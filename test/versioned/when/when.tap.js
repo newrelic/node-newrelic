@@ -6,40 +6,14 @@
 'use strict'
 
 const helper = require('../../lib/agent_helper')
-const testPromiseSegments = require(`./legacy-promise-segments`)
-const testTransactionState = require(`../../lib/promises/transaction-state`)
+const testPromiseSegments = require('./legacy-promise-segments')
+const { runMultiple } = require('../../lib/promises/helpers')
 
 // grab process emit before tap / async-hooks-domain can mess with it
 const originalEmit = process.emit
 
 const tap = require('tap')
 const test = tap.test
-
-const runMultiple = testTransactionState.runMultiple
-
-test('Promise constructor retains all properties', function (t) {
-  let Promise = require('when').Promise
-  const originalKeys = Object.keys(Promise)
-
-  setupAgent(t)
-  Promise = require('when').Promise
-  const wrappedKeys = Object.keys(Promise)
-
-  originalKeys.forEach(function (key) {
-    if (wrappedKeys.indexOf(key) === -1) {
-      t.fail('Property ' + key + ' is not present on wrapped Promise')
-    }
-  })
-
-  t.end()
-})
-
-test('transaction state', function (t) {
-  const agent = setupAgent(t)
-  const when = require('when')
-  testTransactionState(t, agent, when.Promise, when)
-  t.autoend()
-})
 
 test('segments', function (t) {
   const agent = setupAgent(t)

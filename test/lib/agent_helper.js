@@ -250,9 +250,15 @@ helper.unloadAgent = (agent, shimmer = require('../../lib/shimmer')) => {
 
 helper.loadTestAgent = (t, conf, setState = true) => {
   const agent = helper.instrumentMockedAgent(conf, setState)
-  t.teardown(() => {
-    helper.unloadAgent(agent)
-  })
+  if (t.after) {
+    t.after(() => {
+      helper.unloadAgent(agent)
+    })
+  } else {
+    t.teardown(() => {
+      helper.unloadAgent(agent)
+    })
+  }
 
   return agent
 }

@@ -12,8 +12,8 @@
         "bluebird": ">=2.0.0"
       },
       "files": [
-        "regressions.tap.js",
-        "transaction-state.tap.js"
+        "regressions.test.js",
+        "transaction-state.test.js"
       ]
     },
     {
@@ -24,7 +24,7 @@
         "bluebird": ">=3.0.0"
       },
       "files": [
-        "methods.tap.js"
+        "methods.test.js"
       ]
     }
   ],

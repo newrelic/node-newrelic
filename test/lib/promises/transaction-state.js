@@ -6,16 +6,15 @@
 'use strict'
 
 const helper = require('../agent_helper')
+const { tspl } = require('@matteo.collina/tspl')
+const { checkTransaction } = require('./helpers')
+const initSharedTests = require('./common-tests')
 
-const COUNT = 2
-
-module.exports = runTests
-runTests.runMultiple = runMultiple
-
-function runTests(t, agent, Promise, library) {
+module.exports = async function runTests({ t, agent, Promise, library }) {
+  const performTests = initSharedTests({ t, agent, Promise })
   /* eslint-disable no-shadow, brace-style */
   if (library) {
-    performTests(
+    await performTests(
       'Library Fullfillment Factories',
       function (Promise, val) {
         return library.resolve(val)
@@ -26,7 +25,7 @@ function runTests(t, agent, Promise, library) {
     )
   }
 
-  performTests(
+  await performTests(
     'Promise Fullfillment Factories',
     function (Promise, val) {
       return Promise.resolve(val)
@@ -36,7 +35,7 @@ function runTests(t, agent, Promise, library) {
     }
   )
 
-  performTests(
+  await performTests(
     'New Synchronous',
     function (Promise, val) {
       return new Promise(function (res) {
@@ -50,7 +49,7 @@ function runTests(t, agent, Promise, library) {
     }
   )
 
-  performTests(
+  await performTests(
     'New Asynchronous',
     function (Promise, val) {
       return new Promise(function (res) {
@@ -69,7 +68,7 @@ function runTests(t, agent, Promise, library) {
   )
 
   if (Promise.method) {
-    performTests(
+    await performTests(
       'Promise.method',
       function (Promise, val) {
         return Promise.method(function () {
@@ -85,7 +84,7 @@ function runTests(t, agent, Promise, library) {
   }
 
   if (Promise.try) {
-    performTests(
+    await performTests(
       'Promise.try',
       function (Promise, val) {
         return Promise.try(function () {
@@ -99,112 +98,9 @@ function runTests(t, agent, Promise, library) {
       }
     )
   }
-  /* eslint-enable no-shadow, brace-style */
 
-  function performTests(name, resolve, reject) {
-    doPerformTests(name, resolve, reject, true)
-    doPerformTests(name, resolve, reject, false)
-  }
-
-  function doPerformTests(name, resolve, reject, inTx) {
-    name += ' ' + (inTx ? 'with' : 'without') + ' transaction'
-
-    t.test(name + ': does not cause JSON to crash', function (t) {
-      t.plan(1 * COUNT + 1)
-
-      runMultiple(
-        COUNT,
-        function (i, cb) {
-          if (inTx) {
-            helper.runInTransaction(agent, test)
-          } else {
-            test(null)
-          }
-
-          function test(transaction) {
-            const p = resolve(Promise).then(end(transaction, cb), end(transaction, cb))
-            const d = p.domain
-            delete p.domain
-            t.doesNotThrow(function () {
-              JSON.stringify(p)
-            }, 'should not cause stringification to crash')
-            p.domain = d
-          }
-        },
-        function (err) {
-          t.error(err, 'should not error')
-          t.end()
-        }
-      )
-    })
-
-    t.test(name + ': preserves transaction in resolve callback', function (t) {
-      t.plan(4 * COUNT + 1)
-
-      runMultiple(
-        COUNT,
-        function (i, cb) {
-          if (inTx) {
-            helper.runInTransaction(agent, test)
-          } else {
-            test(null)
-          }
-
-          function test(transaction) {
-            resolve(Promise)
-              .then(function step() {
-                t.pass('should not change execution profile')
-                return i
-              })
-              .then(function finalHandler(res) {
-                t.equal(res, i, 'should be the correct value')
-                checkTransaction(t, agent, transaction)
-              })
-              .then(end(transaction, cb), end(transaction, cb))
-          }
-        },
-        function (err) {
-          t.error(err, 'should not error')
-          t.end()
-        }
-      )
-    })
-
-    t.test(name + ': preserves transaction in reject callback', function (t) {
-      t.plan(3 * COUNT + 1)
-
-      runMultiple(
-        COUNT,
-        function (i, cb) {
-          if (inTx) {
-            helper.runInTransaction(agent, test)
-          } else {
-            test(null)
-          }
-
-          function test(transaction) {
-            const err = new Error('some error ' + i)
-            reject(Promise, err)
-              .then(function unusedStep() {
-                t.fail('should not change execution profile')
-              })
-              .catch(function catchHandler(reason) {
-                t.equal(reason, err, 'should be the same error')
-                checkTransaction(t, agent, transaction)
-              })
-              .then(end(transaction, cb), end(transaction, cb))
-          }
-        },
-        function (err) {
-          t.error(err, 'should not error')
-          t.end()
-        }
-      )
-    })
-  }
-
-  t.test('preserves transaction with resolved chained promises', function (t) {
-    t.plan(4)
+  await t.test('preserves transaction with resolved chained promises', async function (t) {
+    const plan = tspl(t, { plan: 4 })
 
     helper.runInTransaction(agent, function transactionWrapper(transaction) {
       Promise.resolve(0)
@@ -215,25 +111,24 @@ function runTests(t, agent, Promise, library) {
           return 2
         })
         .then(function finalHandler(res) {
-          t.equal(res, 2, 'should be the correct result')
-          checkTransaction(t, agent, transaction)
+          plan.equal(res, 2, 'should be the correct result')
+          checkTransaction(plan, agent, transaction)
           transaction.end()
         })
         .then(
           function () {
-            t.pass('should resolve cleanly')
-            t.end()
+            plan.ok(1, 'should resolve cleanly')
           },
-          function (err) {
-            t.fail(err)
-            t.end()
+          function () {
+            plan.ok(0)
           }
         )
     })
+    await plan.completed
   })
 
-  t.test('preserves transaction with rejected chained promises', function (t) {
-    t.plan(4)
+  await t.test('preserves transaction with rejected chained promises', async function (t) {
+    const plan = tspl(t, { plan: 4 })
 
     helper.runInTransaction(agent, function transactionWrapper(transaction) {
       const err = new Error('some error')
@@ -245,58 +140,22 @@ function runTests(t, agent, Promise, library) {
           throw err
         })
         .then(function unusedStep() {
-          t.fail('should not change execution profile')
+          plan.ok(0, 'should not change execution profile')
         })
         .catch(function catchHandler(reason) {
-          t.equal(reason, err, 'should be the same error')
-          checkTransaction(t, agent, transaction)
+          plan.equal(reason, err, 'should be the same error')
+          checkTransaction(plan, agent, transaction)
           transaction.end()
         })
         .then(
           function finallyHandler() {
-            t.pass('should resolve cleanly')
-            t.end()
+            plan.ok(1, 'should resolve cleanly')
           },
           function (err) {
-            t.fail(err)
-            t.end()
+            plan.ok(!err)
           }
         )
     })
+    await plan.completed
   })
-}
-
-function runMultiple(count, fn, cb) {
-  let finished = 0
-  for (let i = 0; i < count; ++i) {
-    fn(i, function runMultipleCallback() {
-      if (++finished >= count) {
-        cb()
-      }
-    })
-  }
-}
-
-function checkTransaction(t, agent, transaction) {
-  const currentTransaction = agent.getTransaction()
-
-  if (transaction) {
-    t.ok(currentTransaction, 'should be in a transaction')
-    if (!currentTransaction) {
-      return
-    }
-    t.equal(currentTransaction.id, transaction.id, 'should be the same transaction')
-  } else {
-    t.notOk(currentTransaction, 'should not be in a transaction')
-    t.pass('') // Make test count match for both branches.
-  }
-}
-
-function end(tx, cb) {
-  return function () {
-    if (tx) {
-      tx.end()
-    }
-    cb()
-  }
 }

@@ -12,6 +12,7 @@
         "when": ">=3.7.0"
       },
       "files": [
+        "when.test.js",
         "when.tap.js"
       ]
     }
