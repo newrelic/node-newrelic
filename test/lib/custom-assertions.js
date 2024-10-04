@@ -29,10 +29,18 @@ function assertCLMAttrs({ segments, enabled: clmEnabled, skipFull = false }) {
     const attrs = segment.segment.getAttributes()
     if (clmEnabled) {
       assert.equal(attrs['code.function'], segment.name, 'should have appropriate code.function')
-      assert.ok(
-        attrs['code.filepath'].endsWith(segment.filepath),
-        'should have appropriate code.filepath'
-      )
+      if (segment.filepath instanceof RegExp) {
+        assert.match(
+          attrs['code.filepath'],
+          segment.filepath,
+          'should have appropriate code.filepath'
+        )
+      } else {
+        assert.ok(
+          attrs['code.filepath'].endsWith(segment.filepath),
+          'should have appropriate code.filepath'
+        )
+      }
 
       if (!skipFull) {
         assert.equal(typeof attrs['code.lineno'], 'number', 'lineno should be a number')

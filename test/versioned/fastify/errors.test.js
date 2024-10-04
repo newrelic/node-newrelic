@@ -1,27 +1,33 @@
 /*
- * Copyright 2021 New Relic Corporation. All rights reserved.
+ * Copyright 2024 New Relic Corporation. All rights reserved.
  * SPDX-License-Identifier: Apache-2.0
  */
 
 'use strict'
 
-const tap = require('tap')
-const helper = require('../../lib/agent_helper')
+const test = require('node:test')
+const assert = require('node:assert')
 const semver = require('semver')
+
+const helper = require('../../lib/agent_helper')
 const { makeRequest } = require('./common')
 
-tap.test('Test Errors', async (test) => {
+test('Test Errors', async (t) => {
   const agent = helper.instrumentMockedAgent()
   const fastify = require('fastify')()
   const { version: pkgVersion } = require('fastify/package')
 
-  test.teardown(() => {
+  t.after(() => {
     helper.unloadAgent(agent)
     fastify.close()
   })
 
   if (semver.satisfies(pkgVersion, '>=3')) {
-    await fastify.register(require('middie'))
+    if (semver.major(pkgVersion) < 4) {
+      await fastify.register(require('middie'))
+    } else {
+      await fastify.register(require('@fastify/middie'))
+    }
   }
 
   fastify.use((req, res, next) => {
@@ -34,6 +40,5 @@ tap.test('Test Errors', async (test) => {
   await fastify.listen({ port: 0 })
   const address = fastify.server.address()
   const res = await makeRequest(address, '/404-via-reply')
-  test.equal(res.statusCode, 404)
-  test.end()
+  assert.equal(res.statusCode, 404)
 })

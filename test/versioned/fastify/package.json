@@ -1,6 +1,11 @@
 {
   "name": "fastify-tests",
-  "targets": [{"name":"fastify","minAgentVersion":"8.5.0"}],
+  "targets": [
+    {
+      "name": "fastify",
+      "minAgentVersion": "8.5.0"
+    }
+  ],
   "version": "0.0.0",
   "private": true,
   "tests": [
@@ -12,34 +17,65 @@
         "fastify": ">=2.0.0 < 3"
       },
       "files": [
-        "add-hook.tap.js",
-        "code-level-metrics-middleware.tap.js",
-        "code-level-metrics-hooks.tap.js",
-        "errors.tap.js",
-        "fastify-2-naming.tap.js",
-        "new-state-tracking.tap.js"
+        "add-hook.test.js",
+        "code-level-metrics-middleware.test.js",
+        "code-level-metrics-hooks.test.js",
+        "errors.test.js",
+        "fastify-2-naming.test.js",
+        "new-state-tracking.test.js"
       ]
     },
+
     {
       "engines": {
         "node": ">=18"
       },
       "dependencies": {
-        "fastify": ">=3.0.0",
-        "middie": "5.3.0"
+        "fastify": "^3.0.0",
+        "middie": ">=3.0.0 && <7.0.0"
       },
       "files": [
-        "add-hook.tap.js",
-        "code-level-metrics-middleware.tap.js",
-        "code-level-metrics-hooks.tap.js",
-        "errors.tap.js",
-        "fastify-3.tap.js",
-        "fastify-3-naming.tap.js",
-        "new-state-tracking.tap.js"
+        "fastify-gte3.test.js",
+        "fastify-gte3-naming.test.js"
+      ]
+    },
+
+    {
+      "engines": {
+        "node": ">=18"
+      },
+      "dependencies": {
+        "fastify": "^4.0.0",
+        "@fastify/middie": ">=7.0.0 && <9.0.0"
+      },
+      "files": [
+        "fastify-gte3.test.js",
+        "fastify-gte3-naming.test.js",
+        "add-hook.test.js",
+        "code-level-metrics-middleware.test.js",
+        "code-level-metrics-hooks.test.js",
+        "errors.test.js",
+        "new-state-tracking.test.js"
+      ]
+    },
+
+    {
+      "engines": {
+        "node": ">=18"
+      },
+      "dependencies": {
+        "fastify": ">=5.0.0",
+        "@fastify/middie": ">=9.0.0"
+      },
+      "files": [
+        "fastify-gte3.test.js",
+        "fastify-gte3-naming.test.js",
+        "add-hook.test.js",
+        "code-level-metrics-middleware.test.js",
+        "code-level-metrics-hooks.test.js",
+        "errors.test.js",
+        "new-state-tracking.test.js"
       ]
     }
-  ],
-  "engines": {
-    "node": ">=18"
-  }
+  ]
 }
