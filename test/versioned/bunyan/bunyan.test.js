@@ -40,7 +40,7 @@ test('logging enabled/disabled', async (t) => {
 
     logStuff({ logger, helper, agent })
 
-    match(agent.logs.getEvents(), [], 'should not add any logs to log aggregator')
+    assert.deepEqual(agent.logs.getEvents(), [], 'should not add any logs to log aggregator')
     const metric = agent.metrics.getMetric(LOGGING.LIBS.BUNYAN)
     assert.equal(
       metric,
@@ -98,7 +98,7 @@ test('local log decorating', async (t) => {
 
     logStuff({ logger, helper, agent })
 
-    match(agent.logs.getEvents(), [], 'should not add any logs to log aggregator')
+    assert.deepEqual(agent.logs.getEvents(), [], 'should not add any logs to log aggregator')
     stream.logs.forEach((line) => {
       originalMsgAssertion({
         includeLocalDecorating: true,

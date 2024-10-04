@@ -57,7 +57,7 @@ test('logging disabled', (t, end) => {
   const { agent, winston } = t.nr
 
   const handleMessages = makeStreamTest(() => {
-    match(agent.logs.getEvents(), [], 'should not add any logs to log aggregator')
+    assert.deepEqual(agent.logs.getEvents(), [], 'should not add any logs to log aggregator')
     const metric = agent.metrics.getMetric(LOGGING.LIBS.WINSTON)
     assert.equal(
       metric,
@@ -113,7 +113,7 @@ test('local log decorating', async (t) => {
   await t.test('should not add NR context to logs when decorating is enabled', (t, end) => {
     const { agent, winston } = t.nr
     const handleMessages = makeStreamTest(() => {
-      match(agent.logs.getEvents(), [], 'should not add any logs to log aggregator')
+      assert.deepEqual(agent.logs.getEvents(), [], 'should not add any logs to log aggregator')
       end()
     })
 
@@ -137,7 +137,7 @@ test('local log decorating', async (t) => {
   await t.test('should not double log nor instrument composed logger', (t, end) => {
     const { agent, winston } = t.nr
     const handleMessages = makeStreamTest(() => {
-      match(agent.logs.getEvents(), [], 'should not add any logs to log aggregator')
+      assert.deepEqual(agent.logs.getEvents(), [], 'should not add any logs to log aggregator')
       end()
     })
 
@@ -165,7 +165,7 @@ test('local log decorating', async (t) => {
   await t.test('should not affect the log line if formatter is not json', (t, end) => {
     const { agent, winston } = t.nr
     const handleMessages = makeStreamTest((msgs) => {
-      match(agent.logs.getEvents(), [], 'should not add any logs to log aggregator')
+      assert.deepEqual(agent.logs.getEvents(), [], 'should not add any logs to log aggregator')
       msgs.forEach((msg) => {
         assert.match(
           msg[MESSAGE],
