@@ -116,7 +116,7 @@ test('non-error hooks', async (t) => {
   await fastify.listen({ port: 0 })
   const address = fastify.server.address()
   const result = await common.makeRequest(address, '/add-hook')
-  match(result, { hello: 'world' })
+  assert.deepEqual(result, { hello: 'world' })
 
   // verify every hook was called after response
   for (const [hookName, isOk] of Object.entries(ok)) {
@@ -177,7 +177,7 @@ test('error hook', async function errorHookTest(t) {
   const address = fastify.server.address()
   const result = await common.makeRequest(address, '/error')
   assert.ok(ok)
-  match(result, {
+assert.deepEqual(result, {
     statusCode: 500,
     error: 'Internal Server Error',
     message: 'test onError hook'

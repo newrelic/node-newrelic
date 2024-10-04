@@ -76,7 +76,7 @@ async function performTest(t) {
   const address = fastify.server.address()
   const result = await common.makeRequest(address, '/add-hook')
 
-  match(result, { hello: 'world' })
+  assert.deepEqual(result, { hello: 'world' })
 
   assert.equal(txPassed, true, 'transactionFinished assertions passed')
 }

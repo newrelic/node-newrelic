@@ -72,7 +72,7 @@ module.exports = async function runTests(t, getExpectedSegments) {
     await fastify.listen()
     const address = fastify.server.address()
     const result = await makeRequest(address, '/params/id/parent/edit')
-    match(result, { id: 'id', parent: 'parent' })
+    assert.deepEqual(result, { id: 'id', parent: 'parent' })
 
     assert.equal(txPassed, true, 'transactionFinished assertions passed')
   })
