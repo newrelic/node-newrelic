@@ -88,7 +88,7 @@ test('local_decorating', (t, end) => {
       hostname: agent.config.getHostnameSafe(),
       logLine: line
     })
-    match(agent.logs.getEvents(), [], 'should not add any logs to log aggregator')
+    assert.deepEqual(agent.logs.getEvents(), [], 'should not add any logs to log aggregator')
 
     // Verify that merging object only logs get decorated:
     logger.info({ msg: message })
@@ -99,7 +99,7 @@ test('local_decorating', (t, end) => {
       hostname: agent.config.getHostnameSafe(),
       logLine: line
     })
-    match(agent.logs.getEvents(), [], 'should not add any logs to log aggregator')
+    assert.deepEqual(agent.logs.getEvents(), [], 'should not add any logs to log aggregator')
 
     end()
   })
