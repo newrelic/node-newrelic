@@ -21,7 +21,7 @@ const {
   testTryBehavior,
   testPromiseClassCastMethod,
   testPromiseInstanceCastMethod
-} = require('./fixtures')
+} = require('./common-tests')
 const {
   addTask,
   afterEach,
@@ -1179,7 +1179,7 @@ test('Promise#error', async function (t) {
       testFunc: function ({ plan, promise, name }) {
         return promise
           .error(function (err) {
-            plan.ok(!err, name + 'should not go into error from a resolved promise')
+            plan.ok(!err)
           })
           .then(function () {
             throw new OperationalError('Promise#error test error')
@@ -1805,7 +1805,7 @@ test('Promise#timeout', async function (t) {
               start = Date.now()
             },
             function (err) {
-              plan.ok(!err, name + 'should not have timed out')
+              plan.ok(!err)
             }
           )
           .delay(1000, 'never see me')

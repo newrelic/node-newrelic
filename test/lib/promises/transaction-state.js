@@ -8,10 +8,10 @@
 const helper = require('../agent_helper')
 const { tspl } = require('@matteo.collina/tspl')
 const { checkTransaction } = require('./helpers')
-const initFixtures = require('./fixtures')
+const initSharedTests = require('./common-tests')
 
 module.exports = async function runTests({ t, agent, Promise, library }) {
-  const performTests = initFixtures({ t, agent, Promise })
+  const performTests = initSharedTests({ t, agent, Promise })
   /* eslint-disable no-shadow, brace-style */
   if (library) {
     await performTests(

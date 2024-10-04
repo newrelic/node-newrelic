@@ -9,8 +9,7 @@ const { runMultiple } = require('../../lib/promises/helpers')
 const { tspl } = require('@matteo.collina/tspl')
 const symbols = require('../../../lib/symbols')
 const helper = require('../../lib/agent_helper')
-const util = require('util')
-const setImmediatePromisified = util.promisify(setImmediate)
+const { setImmediate } = require('timers/promises')
 
 async function beforeEach(ctx) {
   ctx.nr = {}
@@ -23,14 +22,14 @@ async function beforeEach(ctx) {
     }
   }, 25)
 
-  await setImmediatePromisified()
+  await setImmediate()
 }
 
 async function afterEach(ctx) {
   helper.unloadAgent(ctx.nr.agent)
   clearInterval(ctx.nr.interval)
 
-  await setImmediatePromisified()
+  await setImmediate()
 }
 
 function id(tx) {
@@ -81,12 +80,7 @@ function testPromiseMethod({ t, count, factory, end }) {
           testInTransaction()
         },
         function (err) {
-          if (err) {
-            /* eslint-disable no-console */
-            console.log(err.stack)
-            /* eslint-enable no-console */
-          }
-          plan.ok(!err, name + 'should not result in error')
+          plan.ok(!err)
           end()
         }
       )
@@ -114,13 +108,7 @@ function testPromiseMethod({ t, count, factory, end }) {
                   )
                 },
                 function (err) {
-                  if (err) {
-                    /* eslint-disable no-console */
-                    console.log(err)
-                    console.log(err.stack)
-                    /* eslint-enable no-console */
-                  }
-                  plan.ok(!err, name + 'should not result in error')
+                  plan.ok(!err)
                 }
               )
               .finally(cb)

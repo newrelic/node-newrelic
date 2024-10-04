@@ -479,7 +479,7 @@ function testAsCallbackBehavior(methodName) {
               id(inCallbackTransaction),
               name + 'should have the same transaction inside the success callback'
             )
-            plan.ok(!err, name + 'should not have an error')
+            plan.ok(!err)
             plan.deepEqual(result, [1, 2, 3, name], name + 'should have the correct result value')
           })
             .then(function () {
@@ -534,7 +534,7 @@ function testCatchBehavior(methodName) {
         count: 2,
         testFunc: function asCallbackTest({ plan, name, promise }) {
           return promise[methodName](function (err) {
-            plan.ok(!err, name + 'should not go into ' + methodName + ' from a resolved promise')
+            plan.ok(!err)
           })
             .then(function () {
               throw new Error('Promise#' + methodName + ' test error')
