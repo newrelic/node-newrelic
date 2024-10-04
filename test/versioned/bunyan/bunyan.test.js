@@ -10,7 +10,6 @@ const assert = require('node:assert')
 
 const helper = require('../../lib/agent_helper')
 const { removeMatchedModules } = require('../../lib/cache-buster')
-const { match } = require('../../lib/custom-assertions')
 const { LOGGING } = require('../../../lib/metrics/names')
 const { makeSink, logStuff, originalMsgAssertion, logForwardingMsgAssertion } = require('./helpers')
 
@@ -87,7 +86,7 @@ test('local log decorating', async (t) => {
 
       logStuff({ logger, helper, agent })
 
-      match(agent.logs.getEvents(), [], 'should not add any logs to log aggregator')
+      assert.deepEqual(agent.logs.getEvents(), [], 'should not add any logs to log aggregator')
     }
   )
 
