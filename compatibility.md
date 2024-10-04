@@ -13,8 +13,8 @@ version.
 | --- | --- | --- | --- |
 | `@apollo/gateway` | 2.3.0 | 2.9.2 | `@newrelic/apollo-server-plugin@1.0.0` |
 | `@apollo/server` | 4.0.0 | 4.11.0 | `@newrelic/apollo-server-plugin@2.1.0` |
-| `@aws-sdk/client-bedrock-runtime` | 3.474.0 | 3.664.0 | 11.13.0 |
-| `@aws-sdk/client-dynamodb` | 3.0.0 | 3.664.0 | 8.7.1 |
+| `@aws-sdk/client-bedrock-runtime` | 3.474.0 | 3.665.0 | 11.13.0 |
+| `@aws-sdk/client-dynamodb` | 3.0.0 | 3.665.0 | 8.7.1 |
 | `@aws-sdk/client-sns` | 3.0.0 | 3.664.0 | 8.7.1 |
 | `@aws-sdk/client-sqs` | 3.0.0 | 3.664.0 | 8.7.1 |
 | `@aws-sdk/lib-dynamodb` | 3.377.0 | 3.664.0 | 8.7.1 |
