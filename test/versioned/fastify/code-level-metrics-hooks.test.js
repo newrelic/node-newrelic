@@ -9,7 +9,7 @@ const test = require('node:test')
 const assert = require('node:assert')
 
 const { removeModules } = require('../../lib/cache-buster')
-const { assertCLMAttrs, match } = require('../../lib/custom-assertions')
+const { assertCLMAttrs } = require('../../lib/custom-assertions')
 const helper = require('../../lib/agent_helper')
 const common = require('./common')
 

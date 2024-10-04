@@ -8,7 +8,7 @@
 const assert = require('node:assert')
 
 const { routesToTest, makeRequest } = require('./common')
-const { assertSegments, match } = require('../../lib/custom-assertions')
+const { assertSegments } = require('../../lib/custom-assertions')
 const helper = require('../../lib/agent_helper')
 
 module.exports = async function runTests(t, getExpectedSegments) {

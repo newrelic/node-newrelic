@@ -9,7 +9,7 @@ const test = require('node:test')
 const assert = require('node:assert')
 
 const { removeModules } = require('../../lib/cache-buster')
-const { assertSegments, match } = require('../../lib/custom-assertions')
+const { assertSegments } = require('../../lib/custom-assertions')
 const helper = require('../../lib/agent_helper')
 const common = require('./common')
 
@@ -177,7 +177,7 @@ test('error hook', async function errorHookTest(t) {
   const address = fastify.server.address()
   const result = await common.makeRequest(address, '/error')
   assert.ok(ok)
-assert.deepEqual(result, {
+  assert.deepEqual(result, {
     statusCode: 500,
     error: 'Internal Server Error',
     message: 'test onError hook'
