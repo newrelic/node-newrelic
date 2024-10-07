@@ -631,11 +631,7 @@ test('shimmer', async function (t) {
 })
 
 test('Should not augment module when no instrumentation hooks provided', async (t) => {
-  const agent = helper.instrumentMockedAgent()
-
-  t.after(() => {
-    helper.unloadAgent(agent)
-  })
+  helper.loadTestAgent(t)
 
   const instrumentationOpts = {
     moduleName: TEST_MODULE_PATH,
@@ -659,19 +655,13 @@ test('Should not augment module when no instrumentation hooks provided', async (
 })
 
 test('Should not crash on empty instrumentation registration', async (t) => {
-  const agent = helper.instrumentMockedAgent()
-  t.after(() => {
-    helper.unloadAgent(agent)
-  })
+  helper.loadTestAgent(t)
 
   assert.doesNotThrow(shimmer.registerInstrumentation)
 })
 
 test('Should not register instrumentation with no name provided', async (t) => {
-  const agent = helper.instrumentMockedAgent()
-  t.after(() => {
-    helper.unloadAgent(agent)
-  })
+  helper.loadTestAgent(t)
 
   shimmer.registerInstrumentation({})
 
@@ -679,10 +669,7 @@ test('Should not register instrumentation with no name provided', async (t) => {
 })
 
 test('Should not register when no hooks provided', async (t) => {
-  const agent = helper.instrumentMockedAgent()
-  t.after(() => {
-    helper.unloadAgent(agent)
-  })
+  helper.loadTestAgent(t)
 
   const moduleName = 'test name'
   shimmer.registerInstrumentation({

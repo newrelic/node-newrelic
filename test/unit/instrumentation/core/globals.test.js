@@ -14,10 +14,7 @@ test('unhandledRejection should not report it if there is another handler', () =
 })
 
 test('should catch early throws with long chains', (t, end) => {
-  const agent = helper.instrumentMockedAgent()
-  t.after(() => {
-    helper.unloadAgent(agent)
-  })
+  const agent = helper.loadTestAgent(t)
   let segment
 
   helper.runInTransaction(agent, function (transaction) {

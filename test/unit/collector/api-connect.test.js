@@ -33,13 +33,9 @@ const baseAgentConfig = {
 }
 
 test('requires a callback', (t) => {
-  const agent = helper.loadMockedAgent(baseAgentConfig)
+  const agent = helper.loadTestAgent(t, baseAgentConfig)
   agent.reconfigure = () => {}
   agent.setState = () => {}
-  t.after(() => {
-    helper.unloadAgent(agent)
-  })
-
   const collectorApi = new CollectorApi(agent)
   assert.throws(
     () => {

@@ -370,13 +370,12 @@ test('Errors', async (t) => {
       // 9. new trace invokes getDisplayHost()
       // 10. getDisplayHost() returns the original cached value because the agent has been reused
       helper.unloadAgent(t.nr.agent)
-      const agent = helper.loadMockedAgent({
+      const agent = helper.loadTestAgent(t, {
         attributes: { enabled: true },
         process_host: {
           display_name: 'test-value'
         }
       })
-      t.after(() => helper.unloadAgent(agent))
 
       const tx = new Transaction(agent)
       tx.url = '/'
@@ -1689,8 +1688,7 @@ test('Errors', async (t) => {
 
     await t.test('not spill over reservoir size', (t) => {
       helper.unloadAgent(t.nr.agent)
-      const agent = helper.loadMockedAgent({ error_collector: { max_event_samples_stored: 10 } })
-      t.after(() => helper.unloadAgent(agent))
+      const agent = helper.loadTestAgent(t, { error_collector: { max_event_samples_stored: 10 } })
 
       for (let i = 0; i < 20; i++) {
         agent.errors.add(null, Error('some error'))
@@ -2016,8 +2014,7 @@ test('Errors', async (t) => {
 
         await t.test('includes http port if the transaction is a web transaction', (t, end) => {
           helper.unloadAgent(t.nr.agent)
-          const agent = helper.instrumentMockedAgent()
-          t.after(() => helper.unloadAgent(agent))
+          const agent = helper.loadTestAgent(t)
 
           const server = http.createServer(function createServerCb(req, res) {
             assert.ok(agent.getTransaction())

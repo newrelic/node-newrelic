@@ -10,12 +10,8 @@ const test = require('node:test')
 const assert = require('node:assert')
 
 test('agent instrumentation of memcached should not cause bootstrapping to fail', async function (t) {
-  const agent = helper.loadMockedAgent()
+  const agent = helper.loadTestAgent(t)
   const initialize = require('../../../lib/instrumentation/memcached')
-
-  t.after(function () {
-    helper.unloadAgent(agent)
-  })
 
   await t.test('when passed no module', async function () {
     assert.doesNotThrow(() => {

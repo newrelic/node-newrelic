@@ -10,12 +10,8 @@ const API = require('../../../api')
 const helper = require('../../lib/agent_helper')
 
 test('Agent API - obfuscateSql', (t, end) => {
-  const agent = helper.instrumentMockedAgent()
+  const agent = helper.loadTestAgent(t)
   const api = new API(agent)
-
-  t.after(() => {
-    helper.unloadAgent(agent)
-  })
 
   const sql = `select * from foo where a='b' and c=100;`
   const obfuscated = api.obfuscateSql(sql, 'postgres')

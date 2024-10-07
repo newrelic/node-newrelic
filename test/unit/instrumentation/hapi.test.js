@@ -12,12 +12,8 @@ const shims = require('../../../lib/shim')
 
 test('an instrumented Hapi application', async function (t) {
   await t.test("shouldn't cause bootstrapping to fail", async function (t) {
-    const agent = helper.loadMockedAgent()
+    const agent = helper.loadTestAgent(t)
     const initialize = require('../../../lib/instrumentation/@hapi/hapi')
-
-    t.after(function () {
-      helper.unloadAgent(agent)
-    })
 
     await t.test('when passed nothing', async function () {
       assert.doesNotThrow(function () {
@@ -42,7 +38,7 @@ test('an instrumented Hapi application', async function (t) {
   await t.test(
     'when stubbed should set framework to Hapi when a new app is created',
     async function (t) {
-      const agent = helper.instrumentMockedAgent()
+      const agent = helper.loadTestAgent(t)
       agent.environment.clearFramework()
 
       function Server() {}
@@ -54,10 +50,6 @@ test('an instrumented Hapi application', async function (t) {
       const shim = new shims.WebFrameworkShim(agent, 'hapi')
 
       require('../../../lib/instrumentation/@hapi/hapi')(agent, stub, 'hapi', shim)
-
-      t.after(function () {
-        helper.unloadAgent(agent)
-      })
 
       const server = new stub.Server()
       server.start()

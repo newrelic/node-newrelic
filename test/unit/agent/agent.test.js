@@ -179,11 +179,7 @@ test('when forcing transaction ignore status', async (t) => {
 })
 
 test('#harvesters.start should start all aggregators', (t) => {
-  const agent = helper.loadMockedAgent(null, false)
-  t.after(() => {
-    helper.unloadAgent(agent)
-  })
-
+  const agent = helper.loadTestAgent(t, null, false)
   agent.harvester.start()
   const aggregators = [
     agent.traces,
@@ -201,11 +197,7 @@ test('#harvesters.start should start all aggregators', (t) => {
 
 test('#harvesters.stop should stop all aggregators', (t) => {
   // Load agent with default 'stopped' state:
-  const agent = helper.loadMockedAgent(null, false)
-  t.after(() => {
-    helper.unloadAgent(agent)
-  })
-
+  const agent = helper.loadTestAgent(t, null, false)
   agent.harvester.start()
   agent.harvester.stop()
 

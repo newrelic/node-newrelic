@@ -11,10 +11,6 @@ const helper = require('../../../lib/agent_helper')
 const inspectorInstrumentation = require('../../../../lib/instrumentation/core/inspector')
 
 test('Inspector instrumentation', async (t) => {
-  const agent = helper.loadMockedAgent()
-  t.after(() => {
-    helper.unloadAgent(agent)
-  })
-
+  const agent = helper.loadTestAgent(t)
   assert.doesNotThrow(inspectorInstrumentation.bind(null, agent, null))
 })

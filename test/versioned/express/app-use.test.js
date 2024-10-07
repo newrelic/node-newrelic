@@ -13,12 +13,8 @@ const tsplan = require('@matteo.collina/tspl')
 // This test is no longer applicable in express 5 as mounting a child router does not emit the same
 // mount event
 test('app should be at top of stack when mounted', { skip: isExpress5() }, async function (t) {
-  const agent = helper.instrumentMockedAgent()
+  helper.loadTestAgent(t)
   const express = require('express')
-
-  t.after(() => {
-    helper.unloadAgent(agent)
-  })
 
   const plan = tsplan(t, { plan: 1 })
 

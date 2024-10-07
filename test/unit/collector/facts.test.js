@@ -421,11 +421,7 @@ test('utilization facts', async (t) => {
       // We don't collect full hostnames.
       delete expected.full_hostname
 
-      const agent = helper.loadMockedAgent(config)
-      t.after(() => {
-        helper.unloadAgent(agent)
-      })
-
+      const agent = helper.loadTestAgent(t, config)
       if (mockHostname) {
         agent.config.getHostnameSafe = mockHostname
       }
@@ -567,8 +563,7 @@ test('boot id facts', async (t) => {
       }
 
       const expected = testCase.expected_output_json
-      agent = helper.loadMockedAgent(structuredClone(DISABLE_ALL_DETECTIONS))
-      t.after(() => helper.unloadAgent(agent))
+      agent = helper.loadTestAgent(t, structuredClone(DISABLE_ALL_DETECTIONS))
 
       if (mockHostname) {
         agent.config.getHostnameSafe = mockHostname
