@@ -69,7 +69,7 @@ async function testSignature(testOpts) {
   const testName = names.join(', ')
 
   await t.test(testName, function (t, end) {
-    const { agent, contextManager } = t.nr
+    const { agent, tracer } = t.nr
     // If testing the options overriding the URL argument, set up nock differently
     if (swapHost) {
       nock(`${nodule}://www.google.com`).get(path).reply(200, 'Hello from Google')
@@ -79,7 +79,7 @@ async function testSignature(testOpts) {
 
     // Setup a function to test the response.
     const callbackTester = (res) => {
-      testResult({ res, headers, swapHost, end, host, port, path, contextManager })
+      testResult({ res, headers, swapHost, end, host, port, path, tracer })
     }
 
     // Add callback to the arguments, if used
@@ -101,7 +101,7 @@ async function testSignature(testOpts) {
   })
 }
 
-function testResult({ res, headers, swapHost, end, host, port, path, contextManager }) {
+function testResult({ res, headers, swapHost, end, host, port, path, tracer }) {
   let external = `External/${host}${port}${path}`
   let str = 'Hello from New Relic'
   if (swapHost) {
@@ -109,7 +109,7 @@ function testResult({ res, headers, swapHost, end, host, port, path, contextMana
     str = 'Hello from Google'
   }
 
-  const segment = contextManager.getContext()
+  const segment = tracer.getSegment()
 
   assert.equal(segment.name, external)
   assert.equal(res.statusCode, 200)

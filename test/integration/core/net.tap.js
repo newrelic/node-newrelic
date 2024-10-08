@@ -14,14 +14,14 @@ function id(tx) {
 }
 
 test('createServer', function createServerTest(t) {
-  const { agent, contextManager } = setupAgent(t)
+  const { agent, tracer } = setupAgent(t)
 
   helper.runInTransaction(agent, function transactionWrapper(transaction) {
     const server = net.createServer(handler)
 
     server.listen(4123, function listening() {
       // leave transaction
-      contextManager.setContext(null)
+      tracer.setSegment(null)
       const socket = net.connect({ port: 4123 })
       socket.write('test123')
       socket.end()
@@ -31,7 +31,7 @@ test('createServer', function createServerTest(t) {
       t.equal(id(agent.getTransaction()), id(transaction), 'should maintain tx')
       socket.end('test')
       t.equal(
-        contextManager.getContext().name,
+        tracer.getSegment().name,
         'net.Server.onconnection',
         'child segment should have correct name'
       )
@@ -135,7 +135,7 @@ test('connect', function connectTest(t) {
 })
 
 test('createServer and connect', function createServerTest(t) {
-  const { agent, contextManager } = setupAgent(t)
+  const { agent, tracer } = setupAgent(t)
 
   helper.runInTransaction(agent, function transactionWrapper(transaction) {
     const server = net.createServer(handler)
@@ -150,7 +150,7 @@ test('createServer and connect', function createServerTest(t) {
       t.equal(id(agent.getTransaction()), id(transaction), 'should maintain tx')
       socket.end('test')
       t.equal(
-        contextManager.getContext().name,
+        tracer.getSegment().name,
         'net.Server.onconnection',
         'child segment should have correct name'
       )
@@ -199,7 +199,7 @@ test('createServer and connect', function createServerTest(t) {
 
 function setupAgent(t) {
   const agent = helper.instrumentMockedAgent()
-  const contextManager = helper.getContextManager()
+  const tracer = helper.getTracer()
 
   t.teardown(function tearDown() {
     helper.unloadAgent(agent)
@@ -207,6 +207,6 @@ function setupAgent(t) {
 
   return {
     agent,
-    contextManager
+    tracer
   }
 }

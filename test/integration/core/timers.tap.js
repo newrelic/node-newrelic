@@ -289,11 +289,10 @@ tap.test('clearTimeout should not ignore parent segment when internal', (t) => {
 
 function setupAgent(t) {
   const agent = helper.instrumentMockedAgent()
-  const contextManager = helper.getContextManager()
 
   t.teardown(function tearDown() {
     helper.unloadAgent(agent)
   })
 
-  return { agent, contextManager }
+  return { agent }
 }

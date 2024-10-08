@@ -71,7 +71,7 @@ helper.FakeSegment = function FakeSegment(transaction, duration, name = 'FakeSeg
 
 helper.SSL_HOST = 'localhost'
 helper.getAgent = () => _agent
-helper.getContextManager = () => _agent && _agent._contextManager
+helper.getTracer = () => _agent?.tracer
 
 /**
  * Set up an agent that won't try to connect to the collector, but also

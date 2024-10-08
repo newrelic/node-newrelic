@@ -148,19 +148,18 @@ function step(n, rejection) {
 }
 
 function name(newName) {
-  const segment = helper.getContextManager().getContext()
+  const tracer = helper.getTracer()
+  const segment = tracer.getSegment()
   segment.name = newName
 }
 
 function checkTrace(t, tx) {
+  const tracer = helper.getTracer()
+  const expectedSegment = tracer.getSegment()
   const segment = tx.trace.root
   assert.equal(segment.name, 'a')
   assert.equal(segment.children.length, 0)
   // verify current segment is same as trace root
-  assert.deepEqual(
-    segment.name,
-    helper.getContextManager().getContext().name,
-    'current segment is same as one in async context manager'
-  )
+  assert.deepEqual(segment.name, expectedSegment.name, 'current segment is same as one in tracer')
   return Promise.resolve()
 }

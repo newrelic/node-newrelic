@@ -18,7 +18,7 @@ test('Agent API - startBackgroundTransaction', async (t) => {
   t.beforeEach((ctx) => {
     ctx.nr = {}
     const agent = helper.loadMockedAgent()
-    ctx.nr.contextManager = helper.getContextManager()
+    ctx.nr.tracer = helper.getTracer()
     ctx.nr.api = new API(agent)
     ctx.nr.agent = agent
   })
@@ -39,7 +39,7 @@ test('Agent API - startBackgroundTransaction', async (t) => {
   })
 
   await t.test('should add nested transaction as segment to parent transaction', (t, end) => {
-    const { agent, api, contextManager } = t.nr
+    const { agent, api, tracer } = t.nr
     let transaction = null
 
     api.startBackgroundTransaction('test', function () {
@@ -50,7 +50,7 @@ test('Agent API - startBackgroundTransaction', async (t) => {
       assert.equal(transaction.getFullName(), 'OtherTransaction/Nodejs/test')
       assert.ok(transaction.isActive())
 
-      const currentSegment = contextManager.getContext()
+      const currentSegment = tracer.getSegment()
       const nestedSegment = currentSegment.children[0]
       assert.equal(nestedSegment.name, 'Nodejs/nested')
     })
@@ -216,11 +216,11 @@ test('Agent API - startBackgroundTransaction', async (t) => {
       await t.test(
         `should ${enabled ? 'add' : 'not add'} CLM attributes to nested web transactions`,
         (t, end) => {
-          const { agent, api, contextManager } = t.nr
+          const { agent, api, tracer } = t.nr
           agent.config.code_level_metrics.enabled = enabled
           api.startBackgroundTransaction('nested-clm-test', function () {
             nested({ api })
-            const currentSegment = contextManager.getContext()
+            const currentSegment = tracer.getSegment()
             const nestedSegment = currentSegment.children[0]
             assertCLMAttrs({
               segments: [

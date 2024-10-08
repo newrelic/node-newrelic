@@ -1093,7 +1093,7 @@ test('_createDistributedTracePayload', async (t) => {
     agent.config.trusted_account_ids = null
 
     ctx.nr.agent = agent
-    ctx.nr.contextManager = helper.getContextManager()
+    ctx.nr.tracer = helper.getTracer()
     ctx.nr.txn = new Transaction(ctx.nr.agent)
   })
 
@@ -1140,25 +1140,25 @@ test('_createDistributedTracePayload', async (t) => {
   })
 
   await t.test('adds the current span id as the parent span id', (t) => {
-    const { agent, txn, contextManager } = t.nr
+    const { agent, txn, tracer } = t.nr
     agent.config.span_events.enabled = true
-    contextManager.setContext(txn.trace.root)
+    tracer.setSegment(txn.trace.root)
     txn.sampled = true
     const payload = JSON.parse(txn._createDistributedTracePayload().text())
     assert.equal(payload.d.id, txn.trace.root.id)
-    contextManager.setContext(null)
+    tracer.setSegment(null)
     agent.config.span_events.enabled = false
   })
 
   await t.test('does not add the span id if the transaction is not sampled', (t) => {
-    const { agent, txn, contextManager } = t.nr
+    const { agent, txn, tracer } = t.nr
     agent.config.span_events.enabled = true
     txn._calculatePriority()
     txn.sampled = false
-    contextManager.setContext(txn.trace.root)
+    tracer.setSegment(txn.trace.root)
     const payload = JSON.parse(txn._createDistributedTracePayload().text())
     assert.equal(payload.d.id, undefined)
-    contextManager.setContext(null)
+    tracer.setSegment(null)
     agent.config.span_events.enabled = false
   })
 
@@ -1377,7 +1377,7 @@ test('insertDistributedTraceHeaders', async (t) => {
   t.beforeEach(function (ctx) {
     ctx.nr = {}
     ctx.nr.agent = helper.loadMockedAgent()
-    ctx.nr.contextManager = helper.getContextManager()
+    ctx.nr.tracer = helper.getTracer()
   })
 
   t.afterEach((ctx) => {
@@ -1451,14 +1451,14 @@ test('insertDistributedTraceHeaders', async (t) => {
   )
 
   await t.test('should generate a valid new trace context traceparent header', (t) => {
-    const { agent, contextManager } = t.nr
+    const { agent, tracer } = t.nr
     agent.config.distributed_tracing.enabled = true
     agent.config.trusted_account_key = '1'
     agent.config.span_events.enabled = true
 
     const txn = new Transaction(agent)
 
-    contextManager.setContext(txn.trace.root)
+    tracer.setSegment(txn.trace.root)
 
     const outboundHeaders = createHeadersAndInsertTrace(txn)
     const traceparent = outboundHeaders.traceparent
@@ -1477,7 +1477,7 @@ test('insertDistributedTraceHeaders', async (t) => {
   })
 
   await t.test('should generate new parentId when spans_events disabled', (t) => {
-    const { agent, contextManager } = t.nr
+    const { agent, tracer } = t.nr
     agent.config.distributed_tracing.enabled = true
     agent.config.trusted_account_key = '1'
     agent.config.span_events.enabled = false
@@ -1485,7 +1485,7 @@ test('insertDistributedTraceHeaders', async (t) => {
     const txn = new Transaction(agent)
     const lowercaseHexRegex = /^[a-f0-9]+/
 
-    contextManager.setContext(txn.trace.root)
+    tracer.setSegment(txn.trace.root)
 
     const outboundHeaders = createHeadersAndInsertTrace(txn)
     const traceparent = outboundHeaders.traceparent
@@ -1497,14 +1497,14 @@ test('insertDistributedTraceHeaders', async (t) => {
   })
 
   await t.test('should set traceparent sample part to 01 for sampled transaction', (t) => {
-    const { agent, contextManager } = t.nr
+    const { agent, tracer } = t.nr
     agent.config.distributed_tracing.enabled = true
     agent.config.trusted_account_key = '1'
     agent.config.span_events.enabled = true
 
     const txn = new Transaction(agent)
 
-    contextManager.setContext(txn.trace.root)
+    tracer.setSegment(txn.trace.root)
     txn.sampled = true
 
     const outboundHeaders = createHeadersAndInsertTrace(txn)
@@ -1515,7 +1515,7 @@ test('insertDistributedTraceHeaders', async (t) => {
   })
 
   await t.test('should set traceparent traceid if traceparent exists on transaction', (t) => {
-    const { agent, contextManager } = t.nr
+    const { agent, tracer } = t.nr
     agent.config.distributed_tracing.enabled = true
     agent.config.trusted_account_key = '1'
     agent.config.span_events.enabled = true
@@ -1526,7 +1526,7 @@ test('insertDistributedTraceHeaders', async (t) => {
 
     txn.acceptTraceContextPayload(traceparent, tracestate)
 
-    contextManager.setContext(txn.trace.root)
+    tracer.setSegment(txn.trace.root)
 
     const outboundHeaders = createHeadersAndInsertTrace(txn)
     const traceparentParts = outboundHeaders.traceparent.split('-')
@@ -1796,7 +1796,7 @@ test('when being named with finalizeNameFromUri', async (t) => {
         enabled: true
       }
     })
-    ctx.nr.contextManager = helper.getContextManager()
+    ctx.nr.tracer = helper.getTracer()
     ctx.nr.txn = new Transaction(ctx.nr.agent)
   })
 
@@ -1838,10 +1838,10 @@ test('when being named with finalizeNameFromUri', async (t) => {
   })
 
   await t.test('should add finalized via rule transaction name to active span intrinsics', (t) => {
-    const { agent, txn, contextManager } = t.nr
+    const { agent, txn, tracer } = t.nr
     agent.userNormalizer.addSimple('^/config', '/foobar')
 
-    addSegmentInContext(contextManager, txn, 'test segment')
+    addSegmentInContext(tracer, txn, 'test segment')
 
     txn.finalizeNameFromUri('/config', 200)
 
@@ -1879,9 +1879,9 @@ test('when being named with finalizeNameFromUri', async (t) => {
     'when namestate populated, ' +
       'should add finalized via rule transaction name to active span intrinsics',
     (t) => {
-      const { agent, txn, contextManager } = t.nr
+      const { agent, txn, tracer } = t.nr
       setupNameState(txn)
-      addSegmentInContext(contextManager, txn, 'test segment')
+      addSegmentInContext(tracer, txn, 'test segment')
 
       txn.finalizeNameFromUri('/some/random/path', 200)
 
@@ -1934,7 +1934,7 @@ test('requestd', async (t) => {
       }
     })
 
-    ctx.nr.contextManager = helper.getContextManager()
+    ctx.nr.tracer = helper.getTracer()
     ctx.nr.txn = new Transaction(ctx.nr.agent)
   })
 
@@ -1943,14 +1943,14 @@ test('requestd', async (t) => {
   })
 
   await t.test('when namestate populated should copy parameters from the name stack', (t) => {
-    const { txn, contextManager } = t.nr
+    const { txn, tracer } = t.nr
     setupNameState(txn)
 
-    addSegmentInContext(contextManager, txn, 'test segment')
+    addSegmentInContext(tracer, txn, 'test segment')
 
     txn.finalizeNameFromUri('/some/random/path', 200)
 
-    const segment = contextManager.getContext()
+    const segment = tracer.getSegment()
 
     assert.deepEqual(segment.attributes.get(AttributeFilter.DESTINATIONS.SPAN_EVENT), {
       'request.parameters.foo': 'biz',
@@ -1972,7 +1972,7 @@ test('when being named with finalizeName', async (t) => {
       }
     })
 
-    ctx.nr.contextManager = helper.getContextManager()
+    ctx.nr.tracer = helper.getTracer()
     ctx.nr.txn = new Transaction(ctx.nr.agent)
   })
 
@@ -2013,8 +2013,8 @@ test('when being named with finalizeName', async (t) => {
   })
 
   await t.test('should add finalized transaction name to active span intrinsics', (t) => {
-    const { agent, txn, contextManager } = t.nr
-    addSegmentInContext(contextManager, txn, 'test segment')
+    const { agent, txn, tracer } = t.nr
+    addSegmentInContext(tracer, txn, 'test segment')
 
     txn.finalizeName('/config')
 
@@ -2052,9 +2052,9 @@ function createHeadersAndInsertTrace(transaction) {
   return headers
 }
 
-function addSegmentInContext(contextManager, transaction, name) {
+function addSegmentInContext(tracer, transaction, name) {
   const segment = new Segment(transaction, name)
-  contextManager.setContext(segment)
+  tracer.setSegment(segment)
 
   return segment
 }
