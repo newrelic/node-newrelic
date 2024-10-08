@@ -12,7 +12,7 @@
         "bunyan": ">=1.8.12"
       },
       "files": [
-        "bunyan.tap.js"
+        "bunyan.test.js"
       ]
     }
   ]

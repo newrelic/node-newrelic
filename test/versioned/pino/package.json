@@ -14,7 +14,7 @@
         "split2": "4.1.0"
       },
       "files": [
-        "pino.tap.js"
+        "pino.test.js"
       ]
     },
 
