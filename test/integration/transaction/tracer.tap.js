@@ -26,7 +26,7 @@ test('bind in transaction', function testBind(t) {
     t.equal(tracer.getSegment(), root, 'should start at root segment')
     let bound = tracer.bindFunction(compare)
 
-    tracer.setSegment(null)
+    tracer.setSegment({ transaction: null, segment: null })
     bound.call(context, root)
     t.equal(tracer.getSegment(), null, 'should reset segment after being called')
 
@@ -35,7 +35,7 @@ test('bind in transaction', function testBind(t) {
     bound.call(context, other)
 
     t.comment('null segment bind')
-    tracer.setSegment(root)
+    tracer.setSegment({ transaction: transaction, segment: root })
     bound = tracer.bindFunction(compare, null)
 
     t.equal(tracer.getSegment(), root, 'should be back to root segment')
@@ -89,7 +89,7 @@ test('bind + throw', function testThrows(t) {
     compare(dangerous(null, root), root)
 
     t.comment('null is active')
-    tracer.setSegment(null)
+    tracer.setSegment({ transaction: null, segment: null })
     compare(dangerous(root, root), null)
     compare(dangerous(null, null), null)
 
@@ -580,7 +580,7 @@ test('wrapFunctionNoSegment', function testwrapFunctionNoSegment(t) {
     t.equal(this, outer)
     t.equal(tracer.getSegment(), seg)
     process.nextTick(function next() {
-      tracer.setSegment(null)
+      tracer.setSegment({ transaction: null, segment: null })
       callback.apply(inner, args)
     })
   }

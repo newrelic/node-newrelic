@@ -20,6 +20,8 @@ const {
 const promiseResolvers = require('../../lib/promise-resolvers')
 const { tspl } = require('@matteo.collina/tspl')
 const tempOverrideUncaught = require('../../lib/temp-override-uncaught')
+const Transaction = require('../../../lib/transaction')
+const TraceSegment = require('../../../lib/transaction/trace/segment')
 
 test('Shim', async function (t) {
   function beforeEach(ctx) {
@@ -362,21 +364,8 @@ test('Shim', async function (t) {
     t.beforeEach(function (ctx) {
       beforeEach(ctx)
 
-      ctx.nr.segment = {
-        started: false,
-        touched: false,
-        probed: false,
-        start: function () {
-          this.started = true
-        },
-        touch: function () {
-          this.touched = true
-        },
-        probe: function () {
-          this.probed = true
-        }
-      }
-
+      const transaction = new Transaction(ctx.nr.agent)
+      ctx.nr.segment = new TraceSegment(transaction, 'test')
       ctx.nr.startingSegment = ctx.nr.tracer.getSegment()
     })
 
@@ -446,9 +435,9 @@ test('Shim', async function (t) {
       // no segment is passed in.  To get around this we set the
       // active segment to an object known not to be null then do the
       // wrapping.
-      tracer.setSegment(segment)
+      tracer.setSegment({ segment })
       const wrapped = shim.bindSegment(wrappable.getActiveSegment)
-      tracer.setSegment(startingSegment)
+      tracer.setSegment({ segment: startingSegment })
 
       assert.equal(wrapped(), segment)
       assert.equal(tracer.getSegment(), startingSegment)
@@ -459,8 +448,8 @@ test('Shim', async function (t) {
       shim.bindSegment(wrappable, 'getActiveSegment', segment)
       wrappable.getActiveSegment()
 
-      assert.equal(segment.started, false)
-      assert.equal(segment.touched, false)
+      assert.equal(segment.timer.state, 1)
+      assert.equal(segment.timer.touched, false)
     })
 
     await t.test('should start and touch the segment if `full` is `true`', function (t) {
@@ -468,13 +457,13 @@ test('Shim', async function (t) {
       shim.bindSegment(wrappable, 'getActiveSegment', segment, true)
       wrappable.getActiveSegment()
 
-      assert.equal(segment.started, true)
-      assert.equal(segment.touched, true)
+      assert.equal(segment.timer.state, 2)
+      assert.equal(segment.timer.touched, true)
     })
 
     await t.test('should default to the current segment', function (t) {
       const { tracer, segment, shim, wrappable } = t.nr
-      tracer.setSegment(segment)
+      tracer.setSegment({ segment })
       shim.bindSegment(wrappable, 'getActiveSegment')
       const activeSegment = wrappable.getActiveSegment()
       assert.equal(activeSegment, segment)
@@ -1912,7 +1901,7 @@ test('Shim', async function (t) {
 
     await t.test('should return the current segment if the function is not bound', function (t) {
       const { tracer, segment, shim } = t.nr
-      tracer.setSegment(segment)
+      tracer.setSegment({ segment })
       assert.equal(
         shim.getSegment(function () {}),
         segment
@@ -1921,7 +1910,7 @@ test('Shim', async function (t) {
 
     await t.test('should return the current segment if no object is provided', function (t) {
       const { tracer, segment, shim } = t.nr
-      tracer.setSegment(segment)
+      tracer.setSegment({ segment })
       assert.equal(shim.getSegment(), segment)
     })
   })
@@ -1954,7 +1943,7 @@ test('Shim', async function (t) {
       'should return the current segment if the function is not bound when transaction is active',
       function (t) {
         const { tracer, segment, shim } = t.nr
-        tracer.setSegment(segment)
+        tracer.setSegment({ segment })
         assert.equal(
           shim.getActiveSegment(function () {}),
           segment
@@ -1966,7 +1955,7 @@ test('Shim', async function (t) {
       'should return the current segment if no object is provided when transaction is active',
       function (t) {
         const { tracer, segment, shim } = t.nr
-        tracer.setSegment(segment)
+        tracer.setSegment({ segment })
         assert.equal(shim.getActiveSegment(), segment)
       }
     )
@@ -1986,7 +1975,7 @@ test('Shim', async function (t) {
       function (t) {
         const { tracer, segment, shim } = t.nr
         segment.transaction.active = false
-        tracer.setSegment(segment)
+        tracer.setSegment({ segment })
         assert.equal(
           shim.getActiveSegment(function () {}),
           null
@@ -1999,7 +1988,7 @@ test('Shim', async function (t) {
       function (t) {
         const { tracer, segment, shim } = t.nr
         segment.transaction.active = false
-        tracer.setSegment(segment)
+        tracer.setSegment({ segment })
         assert.equal(shim.getActiveSegment(), null)
       }
     )
@@ -2019,7 +2008,7 @@ test('Shim', async function (t) {
     await t.test('should default to the current segment', function (t) {
       const { tracer, shim, wrappable } = t.nr
       const segment = { probe: function () {} }
-      tracer.setSegment(segment)
+      tracer.setSegment({ segment })
       shim.storeSegment(wrappable)
       assert.equal(shim.getSegment(wrappable), segment)
     })
@@ -2177,20 +2166,8 @@ test('Shim', async function (t) {
   await t.test('#applySegment', async function (t) {
     t.beforeEach(function (ctx) {
       beforeEach(ctx)
-      ctx.nr.segment = {
-        name: 'segment',
-        started: false,
-        touched: false,
-        start: function () {
-          this.started = true
-        },
-        touch: function () {
-          this.touched = true
-        },
-        probe: function () {
-          this.probed = true
-        }
-      }
+      const transaction = new Transaction(ctx.nr.agent)
+      ctx.nr.segment = new TraceSegment(transaction, 'test')
     })
     t.afterEach(afterEach)
 
@@ -2238,25 +2215,25 @@ test('Shim', async function (t) {
     await t.test('should make the segment active for the duration of execution', function (t) {
       const { tracer, segment, shim, wrappable } = t.nr
       const prevSegment = { name: 'prevSegment', probe: function () {} }
-      tracer.setSegment(prevSegment)
+      tracer.setSegment({ segment: prevSegment })
 
       const activeSegment = shim.applySegment(wrappable.getActiveSegment, segment)
       assert.equal(tracer.getSegment(), prevSegment)
       assert.equal(activeSegment, segment)
-      assert.equal(segment.touched, false)
-      assert.equal(segment.started, false)
+      assert.equal(segment.timer.touched, false)
+      assert.equal(segment.timer.state, 1)
     })
 
     await t.test('should start and touch the segment if `full` is `true`', function (t) {
       const { segment, shim, wrappable } = t.nr
       shim.applySegment(wrappable.getActiveSegment, segment, true)
-      assert.equal(segment.touched, true)
-      assert.equal(segment.started, true)
+      assert.equal(segment.timer.touched, true)
+      assert.equal(segment.timer.state,  2)
     })
 
     await t.test('should not change the active segment if `segment` is `null`', function (t) {
       const { tracer, segment, shim, wrappable } = t.nr
-      tracer.setSegment(segment)
+      tracer.setSegment({ segment })
       let activeSegment = null
       assert.doesNotThrow(function () {
         activeSegment = shim.applySegment(wrappable.getActiveSegment, null)
@@ -2300,7 +2277,7 @@ test('Shim', async function (t) {
           throw new Error('test error')
         }
         const prevSegment = { name: 'prevSegment', probe: function () {} }
-        tracer.setSegment(prevSegment)
+        tracer.setSegment({ segment: prevSegment })
 
         assert.throws(function () {
           shim.applySegment(func, segment)
@@ -2320,7 +2297,7 @@ test('Shim', async function (t) {
           shim.applySegment(func, segment, true)
         }, 'Error: test error')
 
-        assert.equal(segment.touched, true)
+        assert.equal(segment.timer.touched, true)
       }
     )
   })

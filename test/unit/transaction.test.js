@@ -1142,11 +1142,11 @@ test('_createDistributedTracePayload', async (t) => {
   await t.test('adds the current span id as the parent span id', (t) => {
     const { agent, txn, tracer } = t.nr
     agent.config.span_events.enabled = true
-    tracer.setSegment(txn.trace.root)
+    tracer.setSegment({ segment: txn.trace.root, transaction: txn })
     txn.sampled = true
     const payload = JSON.parse(txn._createDistributedTracePayload().text())
     assert.equal(payload.d.id, txn.trace.root.id)
-    tracer.setSegment(null)
+    tracer.setSegment({ segment: null, transaction: null })
     agent.config.span_events.enabled = false
   })
 
@@ -1155,10 +1155,10 @@ test('_createDistributedTracePayload', async (t) => {
     agent.config.span_events.enabled = true
     txn._calculatePriority()
     txn.sampled = false
-    tracer.setSegment(txn.trace.root)
+    tracer.setSegment({ segment: txn.trace.root, transaction: txn })
     const payload = JSON.parse(txn._createDistributedTracePayload().text())
     assert.equal(payload.d.id, undefined)
-    tracer.setSegment(null)
+    tracer.setSegment({ segment: null, transaction: null })
     agent.config.span_events.enabled = false
   })
 
@@ -1458,7 +1458,7 @@ test('insertDistributedTraceHeaders', async (t) => {
 
     const txn = new Transaction(agent)
 
-    tracer.setSegment(txn.trace.root)
+    tracer.setSegment({ transaction: txn, segment: txn.trace.root })
 
     const outboundHeaders = createHeadersAndInsertTrace(txn)
     const traceparent = outboundHeaders.traceparent
@@ -1485,7 +1485,7 @@ test('insertDistributedTraceHeaders', async (t) => {
     const txn = new Transaction(agent)
     const lowercaseHexRegex = /^[a-f0-9]+/
 
-    tracer.setSegment(txn.trace.root)
+    tracer.setSegment({ transaction: txn, segment:  txn.trace.root })
 
     const outboundHeaders = createHeadersAndInsertTrace(txn)
     const traceparent = outboundHeaders.traceparent
@@ -1504,7 +1504,7 @@ test('insertDistributedTraceHeaders', async (t) => {
 
     const txn = new Transaction(agent)
 
-    tracer.setSegment(txn.trace.root)
+    tracer.setSegment({ transaction: txn, segment:  txn.trace.root })
     txn.sampled = true
 
     const outboundHeaders = createHeadersAndInsertTrace(txn)
@@ -1526,7 +1526,7 @@ test('insertDistributedTraceHeaders', async (t) => {
 
     txn.acceptTraceContextPayload(traceparent, tracestate)
 
-    tracer.setSegment(txn.trace.root)
+    tracer.setSegment({ transaction: txn, segment:  txn.trace.root })
 
     const outboundHeaders = createHeadersAndInsertTrace(txn)
     const traceparentParts = outboundHeaders.traceparent.split('-')
@@ -2054,7 +2054,7 @@ function createHeadersAndInsertTrace(transaction) {
 
 function addSegmentInContext(tracer, transaction, name) {
   const segment = new Segment(transaction, name)
-  tracer.setSegment(segment)
+  tracer.setSegment({ transaction, segment })
 
   return segment
 }
