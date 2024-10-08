@@ -13,11 +13,11 @@ version.
 | --- | --- | --- | --- |
 | `@apollo/gateway` | 2.3.0 | 2.9.2 | `@newrelic/apollo-server-plugin@1.0.0` |
 | `@apollo/server` | 4.0.0 | 4.11.0 | `@newrelic/apollo-server-plugin@2.1.0` |
-| `@aws-sdk/client-bedrock-runtime` | 3.474.0 | 3.665.0 | 11.13.0 |
-| `@aws-sdk/client-dynamodb` | 3.0.0 | 3.665.0 | 8.7.1 |
-| `@aws-sdk/client-sns` | 3.0.0 | 3.664.0 | 8.7.1 |
-| `@aws-sdk/client-sqs` | 3.0.0 | 3.664.0 | 8.7.1 |
-| `@aws-sdk/lib-dynamodb` | 3.377.0 | 3.664.0 | 8.7.1 |
+| `@aws-sdk/client-bedrock-runtime` | 3.474.0 | 3.666.0 | 11.13.0 |
+| `@aws-sdk/client-dynamodb` | 3.0.0 | 3.666.0 | 8.7.1 |
+| `@aws-sdk/client-sns` | 3.0.0 | 3.666.0 | 8.7.1 |
+| `@aws-sdk/client-sqs` | 3.0.0 | 3.666.0 | 8.7.1 |
+| `@aws-sdk/lib-dynamodb` | 3.377.0 | 3.666.0 | 8.7.1 |
 | `@aws-sdk/smithy-client` | 3.47.0 | 3.374.0 | 8.7.1 |
 | `@elastic/elasticsearch` | 7.16.0 | 8.15.0 | 11.9.0 |
 | `@grpc/grpc-js` | 1.4.0 | 1.12.0 | 8.17.0 |
@@ -48,7 +48,7 @@ version.
 | `mysql` | 2.2.0 | 2.18.1 | 1.32.0 |
 | `mysql2` | 2.0.0 | 3.11.3 | 1.32.0 |
 | `next` | 13.4.19 | 14.2.14 | 12.0.0 |
-| `openai` | 4.0.0 | 4.67.1 | 11.13.0 |
+| `openai` | 4.0.0 | 4.67.2 | 11.13.0 |
 | `pg` | 8.2.0 | 8.13.0 | 9.0.0 |
 | `pg-native` | 3.0.0 | 3.2.0 | 9.0.0 |
 | `pino` | 7.0.0 | 9.4.0 | 8.11.0 |
@@ -58,7 +58,7 @@ version.
 | `superagent` | 3.0.0 | 10.1.0 | 4.9.0 |
 | `undici` | 5.0.0 | 6.19.8 | 11.1.0 |
 | `when` | 3.7.0 | 3.7.8 | 1.26.2 |
-| `winston` | 3.0.0 | 3.14.2 | 8.11.0 |
+| `winston` | 3.0.0 | 3.15.0 | 8.11.0 |
 
 *When package is not specified, support is within the `newrelic` package.
 
