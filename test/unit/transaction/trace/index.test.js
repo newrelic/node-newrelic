@@ -113,7 +113,7 @@ test('Trace', async (t) => {
     const trace = transaction.trace
     const child1 = (transaction.baseSegment = trace.add('test'))
     child1.start()
-    const child2 = child1.add('nested')
+    const child2 = trace.add('nested', null, child1)
     child2.start()
     child1.end()
     child2.end()
@@ -171,7 +171,7 @@ test('Trace', async (t) => {
     const trace = transaction.trace
     const child1 = trace.add('test')
     child1.start()
-    const child2 = child1.add('nested')
+    const child2 = trace.add('nested', null, child1)
     child2.start()
     child1.end()
     child2.end()
@@ -192,35 +192,11 @@ test('Trace', async (t) => {
     const trace = transaction.trace
     const child1 = trace.add('test')
     child1.start()
-    const child2 = child1.add('nested')
+    const child2 = trace.add('nested', null, child1)
     child2.start()
     child1.end()
     child2.end()
     trace.root.end()
-    transaction.end()
-
-    const events = agent.spanEventAggregator.getEvents()
-    assert.equal(events.length, 0)
-  })
-
-  await t.test('should not generate span events on end if transaction is not sampled', (t) => {
-    const { agent } = t.nr
-    agent.config.span_events.enabled = true
-    agent.config.distributed_tracing.enabled = false
-
-    const transaction = new Transaction(agent)
-
-    const trace = transaction.trace
-    const child1 = trace.add('test')
-    child1.start()
-    const child2 = child1.add('nested')
-    child2.start()
-    child1.end()
-    child2.end()
-    trace.root.end()
-
-    transaction.priority = 0
-    transaction.sampled = false
     transaction.end()
 
     const events = agent.spanEventAggregator.getEvents()
@@ -258,6 +234,7 @@ test('Trace', async (t) => {
     // Create at least one segment
     const trace = new Trace(transaction)
     const child = (transaction.baseSegment = trace.add('test'))
+
     child.start()
     child.end()
 
@@ -299,6 +276,7 @@ test('Trace', async (t) => {
 
     // add a child segment
     const child = (transaction.baseSegment = trace.add('test'))
+
     child.start()
     child.end()
 
@@ -500,39 +478,91 @@ test('when inserting segments', async (t) => {
   })
 
   await t.test('should report total time', (t) => {
-    const { trace } = t.nr
+    const { agent, trace, transaction } = t.nr
+    const root = trace.root
     trace.setDurationInMillis(40, 0)
     const child = trace.add('Custom/Test18/Child1')
+
     child.setDurationInMillis(27, 0)
-    let seg = child.add('UnitTest')
+    let seg = child.add({
+      config: agent.config,
+      name: 'UnitTest',
+      collect: true,
+      traceStacks: transaction.traceStacks,
+      root
+    })
     seg.setDurationInMillis(9, 1)
-    seg = child.add('UnitTest1')
+    seg = child.add({
+      config: agent.config,
+      name: 'UnitTest1',
+      collect: true,
+      traceStacks: transaction.traceStacks,
+      root
+    })
     seg.setDurationInMillis(13, 1)
-    seg = child.add('UnitTest2')
+    seg = child.add({
+      config: agent.config,
+      name: 'UnitTest2',
+      collect: true,
+      traceStacks: transaction.traceStacks,
+      root
+    })
     seg.setDurationInMillis(9, 16)
-    seg = child.add('UnitTest2')
+    seg = child.add({
+      config: agent.config,
+      name: 'UnitTest2',
+      collect: true,
+      traceStacks: transaction.traceStacks,
+      root
+    })
     seg.setDurationInMillis(14, 16)
     assert.equal(trace.getTotalTimeDurationInMillis(), 48)
   })
 
   await t.test('should report total time on branched traces', (t) => {
-    const { trace } = t.nr
+    const { trace, transaction, agent } = t.nr
+    const root = trace.root
     trace.setDurationInMillis(40, 0)
     const child = trace.add('Custom/Test18/Child1')
     child.setDurationInMillis(27, 0)
-    const seg1 = child.add('UnitTest')
+    const seg1 = child.add({
+      config: agent.config,
+      name: 'UnitTest',
+      collect: true,
+      traceStacks: transaction.traceStacks,
+      root
+    })
     seg1.setDurationInMillis(9, 1)
-    let seg = child.add('UnitTest1')
+    let seg = child.add({
+      config: agent.config,
+      name: 'UnitTest1',
+      collect: true,
+      traceStacks: transaction.traceStacks,
+      root
+    })
     seg.setDurationInMillis(13, 1)
-    seg = seg1.add('UnitTest2')
+    seg = seg1.add({
+      config: agent.config,
+      name: 'UnitTest2',
+      collect: true,
+      traceStacks: transaction.traceStacks,
+      root
+    })
     seg.setDurationInMillis(9, 16)
-    seg = seg1.add('UnitTest2')
+    seg = seg1.add({
+      config: agent.config,
+      name: 'UnitTest2',
+      collect: true,
+      traceStacks: transaction.traceStacks,
+      root
+    })
     seg.setDurationInMillis(14, 16)
     assert.equal(trace.getTotalTimeDurationInMillis(), 48)
   })
 
   await t.test('should report the expected trees for trees with uncollected segments', (t) => {
-    const { trace } = t.nr
+    const { agent, trace, transaction } = t.nr
+    const root = trace.root
     const expectedTrace = [
       0,
       27,
@@ -561,19 +591,57 @@ test('when inserting segments', async (t) => {
 
     trace.setDurationInMillis(40, 0)
     const child = trace.add('Root')
+
     child.setDurationInMillis(27, 0)
-    const seg1 = child.add('first')
+    const seg1 = child.add({
+      config: agent.config,
+      name: 'first',
+      collect: true,
+      traceStacks: transaction.traceStacks,
+      root
+    })
+
     seg1.setDurationInMillis(9, 1)
-    const seg2 = child.add('second')
+    const seg2 = child.add({
+      config: agent.config,
+      name: 'second',
+      collect: true,
+      traceStacks: transaction.traceStacks,
+      root
+    })
     seg2.setDurationInMillis(13, 1)
-    let seg = seg1.add('first-first')
+    let seg = seg1.add({
+      config: agent.config,
+      name: 'first-first',
+      collect: true,
+      traceStacks: transaction.traceStacks,
+      root
+    })
     seg.setDurationInMillis(9, 16)
-    seg = seg1.add('first-second')
+    seg = seg1.add({
+      config: agent.config,
+      name: 'first-second',
+      collect: true,
+      traceStacks: transaction.traceStacks,
+      root
+    })
     seg.setDurationInMillis(14, 16)
     seg._collect = false
-    seg = seg2.add('second-first')
+    seg = seg2.add({
+      config: agent.config,
+      name: 'second-first',
+      collect: true,
+      traceStacks: transaction.traceStacks,
+      root
+    })
     seg.setDurationInMillis(9, 16)
-    seg = seg2.add('second-second')
+    seg = seg2.add({
+      config: agent.config,
+      name: 'second-second',
+      collect: true,
+      traceStacks: transaction.traceStacks,
+      root
+    })
     seg.setDurationInMillis(9, 16)
 
     trace.end()
@@ -582,7 +650,7 @@ test('when inserting segments', async (t) => {
   })
 
   await t.test('should report the expected trees for branched trees', (t) => {
-    const { trace } = t.nr
+    const { agent, trace, transaction } = t.nr
     const expectedTrace = [
       0,
       27,
@@ -613,18 +681,56 @@ test('when inserting segments', async (t) => {
     ]
     trace.setDurationInMillis(40, 0)
     const child = trace.add('Root')
+    const root = trace.root
+
     child.setDurationInMillis(27, 0)
-    const seg1 = child.add('first')
+    const seg1 = child.add({
+      config: agent.config,
+      name: 'first',
+      collect: true,
+      traceStacks: transaction.traceStacks,
+      root
+    })
     seg1.setDurationInMillis(9, 1)
-    const seg2 = child.add('second')
+    const seg2 = child.add({
+      config: agent.config,
+      name: 'second',
+      collect: true,
+      traceStacks: transaction.traceStacks,
+      root
+    })
     seg2.setDurationInMillis(13, 1)
-    let seg = seg1.add('first-first')
+    let seg = seg1.add({
+      config: agent.config,
+      name: 'first-first',
+      collect: true,
+      traceStacks: transaction.traceStacks,
+      root
+    })
     seg.setDurationInMillis(9, 16)
-    seg = seg1.add('first-second')
+    seg = seg1.add({
+      config: agent.config,
+      name: 'first-second',
+      collect: true,
+      traceStacks: transaction.traceStacks,
+      root
+    })
     seg.setDurationInMillis(14, 16)
-    seg = seg2.add('second-first')
+    seg = seg2.add({
+      config: agent.config,
+      name: 'second-first',
+      collect: true,
+      traceStacks: transaction.traceStacks,
+      root
+    })
     seg.setDurationInMillis(9, 16)
-    seg = seg2.add('second-second')
+    seg = seg2.add({
+      config: agent.config,
+      name: 'second-second',
+      collect: true,
+      traceStacks: transaction.traceStacks,
+      root
+    })
     seg.setDurationInMillis(9, 16)
 
     trace.end()
@@ -657,34 +763,59 @@ test('when inserting segments', async (t) => {
 
     // add another that starts within the first range but that extends beyond
     const child3 = trace.add('Custom/Test19/Child3')
+
     child3.setDurationInMillis(22, now + 11)
 
     // add a final child that's entirely disjoint
     const child4 = trace.add('Custom/Test19/Child4')
+
     child4.setDurationInMillis(4, now + 35)
 
     assert.equal(trace.getExclusiveDurationInMillis(), 5)
   })
 
   await t.test('should accurately sum overlapping subtrees', (t) => {
-    const { trace } = t.nr
+    const { agent, trace, transaction } = t.nr
     trace.setDurationInMillis(42)
 
     const now = Date.now()
+    const root = trace.root
 
     // create a long child on its own
     const child1 = trace.add('Custom/Test20/Child1')
+
     child1.setDurationInMillis(33, now)
 
     // add another, short child as a sibling
-    const child2 = child1.add('Custom/Test20/Child2')
+    const child2 = child1.add({
+      config: agent.config,
+      name: 'Custom/Test20/Child2',
+      collect: true,
+      traceStacks: transaction.traceStacks,
+      root
+    })
+
     child2.setDurationInMillis(5, now)
 
     // add two disjoint children of the second segment encompassed by the first segment
-    const child3 = child2.add('Custom/Test20/Child3')
+    const child3 = child2.add({
+      config: agent.config,
+      name: 'Custom/Test20/Child3',
+      collect: true,
+      traceStacks: transaction.traceStacks,
+      root
+    })
+
     child3.setDurationInMillis(11, now)
 
-    const child4 = child2.add('Custom/Test20/Child3')
+    const child4 = child2.add({
+      config: agent.config,
+      name: 'Custom/Test20/Child3',
+      collect: true,
+      traceStacks: transaction.traceStacks,
+      root
+    })
+
     child4.setDurationInMillis(11, now + 16)
 
     assert.equal(trace.getExclusiveDurationInMillis(), 9)
@@ -923,9 +1054,15 @@ test('infinite tracing', async (t) => {
 
 function addTwoSegments(transaction) {
   const trace = transaction.trace
+  const root = trace.root
   const child1 = (transaction.baseSegment = trace.add('test'))
   child1.start()
-  const child2 = child1.add('nested')
+  const child2 = child1.add({
+    config: transaction.agent.config,
+    name: 'nested',
+    root,
+    traceStacks: transaction.traceStacks
+  })
   child2.start()
   child1.end()
   child2.end()
@@ -947,6 +1084,7 @@ async function makeTrace(agent) {
   transaction.timer.setDurationInMillis(DURATION)
 
   const trace = transaction.trace
+  const root = trace.root
 
   // promisifying `trace.generateJSON` so tests do not have to call done
   // and instead use async/await
@@ -955,16 +1093,34 @@ async function makeTrace(agent) {
   assert.ok(start > 0, "root segment's start time")
   trace.setDurationInMillis(DURATION, 0)
 
-  const web = trace.root.add(URL)
+  const web = trace.root.add({
+    config: agent.config,
+    name: URL,
+    collect: true,
+    traceStacks: transaction.traceStacks,
+    root
+  })
   transaction.baseSegment = web
   transaction.finalizeNameFromUri(URL, 200)
   // top-level element will share a duration with the quasi-ROOT node
   web.setDurationInMillis(DURATION, 0)
 
-  const db = web.add('Database/statement/AntiSQL/select/getSome')
+  const db = web.add({
+    config: agent.config,
+    name: 'Database/statement/AntiSQL/select/getSome',
+    collect: true,
+    traceStacks: transaction.traceStacks,
+    root
+  })
   db.setDurationInMillis(14, 3)
 
-  const memcache = web.add('Datastore/operation/Memcache/lookup')
+  const memcache = web.add({
+    config: agent.config,
+    name: 'Datastore/operation/Memcache/lookup',
+    collect: true,
+    traceStacks: transaction.traceStacks,
+    root
+  })
   memcache.setDurationInMillis(20, 8)
 
   trace.end()

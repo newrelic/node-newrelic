@@ -125,7 +125,7 @@ function goldenPathRenameControllerInTransaction({ agent, api }) {
   return new Promise((resolve) => {
     agent.on('transactionFinished', function (finishedTransaction) {
       finishedTransaction.finalizeNameFromUri(TEST_URL, 200)
-      segment.markAsWeb(TEST_URL)
+      segment.markAsWeb(finishedTransaction)
 
       resolve({ transaction: finishedTransaction, segment })
     })

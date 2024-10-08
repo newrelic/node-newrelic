@@ -38,10 +38,10 @@ test.beforeEach((ctx) => {
     }
   }
 
+  ctx.nr.transaction = {
+    id: 'tx-1'
+  }
   ctx.nr.segment = {
-    transaction: {
-      id: 'tx-1'
-    },
     getDurationInMillis() {
       return 100
     }

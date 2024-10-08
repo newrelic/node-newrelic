@@ -1524,12 +1524,13 @@ API.prototype.getTraceMetadata = function getTraceMetadata() {
   const metadata = {}
 
   const segment = this.agent.tracer.getSegment()
-  if (!segment) {
+  const transaction = this.agent.tracer.getTransaction()
+  if (!(segment || transaction)) {
     logger.debug('No transaction found when calling API#getTraceMetadata')
   } else if (!this.agent.config.distributed_tracing.enabled) {
     logger.debug('Distributed tracing disabled when calling API#getTraceMetadata')
   } else {
-    metadata.traceId = segment.transaction.traceId
+    metadata.traceId = transaction.traceId
 
     const spanId = segment.getSpanId()
     if (spanId) {

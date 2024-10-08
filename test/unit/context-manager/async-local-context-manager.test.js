@@ -43,10 +43,10 @@ test('runInContext()', async (t) => {
   await t.test('should set context to active for life of callback', (t, end) => {
     const contextManager = new AsyncLocalContextManager({})
 
-    const previousContext = { name: 'previous' }
+    const previousContext = { segment: 'previous', transaction: 'tx' }
     contextManager.setContext(previousContext)
 
-    const newContext = { name: 'new' }
+    const newContext = { segment: 'new', transaction: 'tx1' }
 
     contextManager.runInContext(newContext, () => {
       const context = contextManager.getContext()
@@ -59,24 +59,24 @@ test('runInContext()', async (t) => {
   await t.test('should restore previous context when callback completes', () => {
     const contextManager = new AsyncLocalContextManager({})
 
-    const previousContext = { name: 'previous' }
+    const previousContext = { segment: 'previous', transaction: 'tx' }
     contextManager.setContext(previousContext)
 
-    const newContext = { name: 'new' }
+    const newContext = { segment: 'new', transaction: 'tx1' }
     contextManager.runInContext(newContext, () => {})
 
     const context = contextManager.getContext()
 
-    assert.equal(context, previousContext)
+    assert.deepEqual(context, previousContext)
   })
 
   await t.test('should restore previous context on exception', () => {
     const contextManager = new AsyncLocalContextManager({})
 
-    const previousContext = { name: 'previous' }
+    const previousContext = { segment: 'previous', transaction: 'tx' }
     contextManager.setContext(previousContext)
 
-    const newContext = { name: 'new' }
+    const newContext = { segment: 'new', transaction: 'tx1' }
 
     try {
       contextManager.runInContext(newContext, () => {
@@ -89,16 +89,16 @@ test('runInContext()', async (t) => {
 
     const context = contextManager.getContext()
 
-    assert.equal(context, previousContext)
+    assert.deepEqual(context, previousContext)
   })
 
   await t.test('should apply `cbThis` arg to execution', (t, end) => {
     const contextManager = new AsyncLocalContextManager({})
 
-    const previousContext = { name: 'previous' }
+    const previousContext = { segment: 'previous', transaction: 'tx' }
     contextManager.setContext(previousContext)
 
-    const newContext = { name: 'new' }
+    const newContext = { segment: 'new', transaction: 'tx1' }
     const expectedThis = () => {}
 
     contextManager.runInContext(newContext, functionRunInContext, expectedThis)
@@ -112,10 +112,10 @@ test('runInContext()', async (t) => {
   await t.test('should apply args array to execution', (t, end) => {
     const contextManager = new AsyncLocalContextManager({})
 
-    const previousContext = { name: 'previous' }
+    const previousContext = { segment: 'previous', transaction: 'tx' }
     contextManager.setContext(previousContext)
 
-    const newContext = { name: 'new' }
+    const newContext = { segment: 'new', transaction: 'tx1' }
     const expectedArg1 = 'first arg'
     const expectedArg2 = 'second arg'
     const args = [expectedArg1, expectedArg2]
@@ -132,10 +132,10 @@ test('runInContext()', async (t) => {
   await t.test('should apply arguments construct to execution', (t, end) => {
     const contextManager = new AsyncLocalContextManager({})
 
-    const previousContext = { name: 'previous' }
+    const previousContext = { segment: 'previous', transaction: 'tx' }
     contextManager.setContext(previousContext)
 
-    const newContext = { name: 'new' }
+    const newContext = { segment: 'new', transaction: 'tx1' }
     const expectedArg1 = 'first arg'
     const expectedArg2 = 'second arg'
 

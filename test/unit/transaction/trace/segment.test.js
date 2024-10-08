@@ -16,6 +16,7 @@ const Transaction = require('../../../../lib/transaction')
 function beforeEach(ctx) {
   ctx.nr = {}
   ctx.nr.agent = helper.loadMockedAgent()
+  ctx.nr.agent.config.logging.diagnostics = true
 }
 
 function afterEach(ctx) {
@@ -26,100 +27,123 @@ test('TraceSegment', async (t) => {
   t.beforeEach(beforeEach)
   t.afterEach(afterEach)
 
-  await t.test('should be bound to a Trace', (t) => {
-    const { agent } = t.nr
-    let segment = null
-    const trans = new Transaction(agent)
-    assert.throws(function noTrace() {
-      segment = new TraceSegment(null, 'UnitTest')
-    })
-    assert.equal(segment, null)
-
-    const success = new TraceSegment(trans, 'UnitTest')
-    assert.equal(success.transaction, trans)
-    trans.end()
-  })
-
   await t.test('should not add new children when marked as opaque', (t) => {
     const { agent } = t.nr
     const trans = new Transaction(agent)
-    const segment = new TraceSegment(trans, 'UnitTest')
+    const root = trans.trace.root
+    const segment = new TraceSegment({
+      config: agent.config,
+      name: 'UnitTest',
+      collect: true,
+      traceStacks: trans.traceStacks,
+      root
+    })
     assert.ok(!segment.opaque)
     segment.opaque = true
-    segment.add('child')
+    segment.add({
+      config: agent.config,
+      name: 'child',
+      collect: true,
+      traceStacks: trans.traceStacks,
+      root
+    })
     assert.equal(segment.children.length, 0)
     segment.opaque = false
-    segment.add('child')
+    segment.add({
+      config: agent.config,
+      name: 'child',
+      collect: true,
+      traceStacks: trans.traceStacks,
+      root
+    })
     assert.equal(segment.children.length, 1)
-    trans.end()
-  })
-
-  await t.test('should call an optional callback function', (t, end) => {
-    const { agent } = t.nr
-    const trans = new Transaction(agent)
-    assert.doesNotThrow(function noCallback() {
-      new TraceSegment(trans, 'UnitTest') // eslint-disable-line no-new
-    })
-    const working = new TraceSegment(trans, 'UnitTest', function () {
-      end()
-    })
-    working.end()
     trans.end()
   })
 
   await t.test('has a name', (t) => {
     const { agent } = t.nr
     const trans = new Transaction(agent)
-    const success = new TraceSegment(trans, 'UnitTest')
+    const root = trans.trace.root
+    const success = new TraceSegment({
+      config: agent.config,
+      name: 'UnitTest',
+      collect: true,
+      traceStacks: trans.traceStacks,
+      root
+    })
     assert.equal(success.name, 'UnitTest')
   })
 
   await t.test('is created with no children', (t) => {
     const { agent } = t.nr
     const trans = new Transaction(agent)
-    const segment = new TraceSegment(trans, 'UnitTest')
+    const root = trans.trace.root
+    const segment = new TraceSegment({
+      config: agent.config,
+      name: 'UnitTest',
+      collect: true,
+      traceStacks: trans.traceStacks,
+      root
+    })
     assert.equal(segment.children.length, 0)
   })
 
   await t.test('has a timer', (t) => {
     const { agent } = t.nr
     const trans = new Transaction(agent)
-    const segment = new TraceSegment(trans, 'UnitTest')
+    const root = trans.trace.root
+    const segment = new TraceSegment({
+      config: agent.config,
+      name: 'UnitTest',
+      collect: true,
+      traceStacks: trans.traceStacks,
+      root
+    })
     assert.ok(segment.timer)
   })
 
   await t.test('does not start its timer on creation', (t) => {
     const { agent } = t.nr
     const trans = new Transaction(agent)
-    const segment = new TraceSegment(trans, 'UnitTest')
+    const root = trans.trace.root
+    const segment = new TraceSegment({
+      config: agent.config,
+      name: 'UnitTest',
+      collect: true,
+      traceStacks: trans.traceStacks,
+      root
+    })
     assert.equal(segment.timer.isRunning(), false)
   })
 
   await t.test('allows the timer to be updated without ending it', (t) => {
     const { agent } = t.nr
     const trans = new Transaction(agent)
-    const segment = new TraceSegment(trans, 'UnitTest')
+    const root = trans.trace.root
+    const segment = new TraceSegment({
+      config: agent.config,
+      name: 'UnitTest',
+      collect: true,
+      traceStacks: trans.traceStacks,
+      root
+    })
     segment.start()
     segment.touch()
     assert.equal(segment.timer.isRunning(), true)
     assert.ok(segment.getDurationInMillis() > 0)
   })
 
-  await t.test('accepts a callback that records metrics for this segment', (t, end) => {
-    const { agent } = t.nr
-    const trans = new Transaction(agent)
-    const segment = new TraceSegment(trans, 'Test', (insider) => {
-      assert.equal(insider, segment)
-      end()
-    })
-    segment.end()
-    trans.end()
-  })
-
   await t.test('should return the segment id when dt and spans are enabled', (t) => {
     const { agent } = t.nr
     const trans = new Transaction(agent)
-    const segment = new TraceSegment(trans, 'Test')
+    const root = trans.trace.root
+    const segment = new TraceSegment({
+      config: agent.config,
+      name: 'Test',
+      collect: true,
+      traceStacks: trans.traceStacks,
+      root
+    })
     agent.config.distributed_tracing.enabled = true
     agent.config.span_events.enabled = true
     assert.equal(segment.getSpanId(), segment.id)
@@ -128,7 +152,14 @@ test('TraceSegment', async (t) => {
   await t.test('should return null when dt is disabled', (t) => {
     const { agent } = t.nr
     const trans = new Transaction(agent)
-    const segment = new TraceSegment(trans, 'Test')
+    const root = trans.trace.root
+    const segment = new TraceSegment({
+      config: agent.config,
+      name: 'Test',
+      collect: true,
+      traceStacks: trans.traceStacks,
+      root
+    })
     agent.config.distributed_tracing.enabled = false
     agent.config.span_events.enabled = true
     assert.equal(segment.getSpanId(), null)
@@ -137,7 +168,14 @@ test('TraceSegment', async (t) => {
   await t.test('should return null when spans are disabled', (t) => {
     const { agent } = t.nr
     const trans = new Transaction(agent)
-    const segment = new TraceSegment(trans, 'Test')
+    const root = trans.trace.root
+    const segment = new TraceSegment({
+      config: agent.config,
+      name: 'Test',
+      collect: true,
+      traceStacks: trans.traceStacks,
+      root
+    })
     agent.config.distributed_tracing.enabled = true
     agent.config.span_events.enabled = false
     assert.ok(segment.getSpanId() === null)
@@ -147,7 +185,14 @@ test('TraceSegment', async (t) => {
     const { agent } = t.nr
     const trans = new Transaction(agent)
     const trace = trans.trace
-    const segment = new TraceSegment(trans, 'Test')
+    const root = trace.root
+    const segment = new TraceSegment({
+      config: agent.config,
+      name: 'Test',
+      collect: true,
+      traceStacks: trans.traceStacks,
+      root
+    })
 
     segment.setDurationInMillis(10, 0)
 
@@ -159,43 +204,17 @@ test('TraceSegment', async (t) => {
     }, 10)
   })
 
-  await t.test('properly tracks the number of active or harvested segments', (t, end) => {
-    const { agent } = t.nr
-    assert.equal(agent.activeTransactions, 0)
-    assert.equal(agent.totalActiveSegments, 0)
-    assert.equal(agent.segmentsCreatedInHarvest, 0)
-
-    const tx = new Transaction(agent)
-    assert.equal(agent.totalActiveSegments, 1)
-    assert.equal(agent.segmentsCreatedInHarvest, 1)
-    assert.equal(tx.numSegments, 1)
-    assert.equal(agent.activeTransactions, 1)
-
-    const segment = new TraceSegment(tx, 'Test') // eslint-disable-line no-unused-vars
-    assert.equal(agent.totalActiveSegments, 2)
-    assert.equal(agent.segmentsCreatedInHarvest, 2)
-    assert.equal(tx.numSegments, 2)
-    tx.end()
-
-    assert.equal(agent.activeTransactions, 0)
-
-    setTimeout(function () {
-      assert.equal(agent.totalActiveSegments, 0)
-      assert.equal(agent.segmentsClearedInHarvest, 2)
-
-      agent.forceHarvestAll(() => {
-        assert.equal(agent.totalActiveSegments, 0)
-        assert.equal(agent.segmentsClearedInHarvest, 0)
-        assert.equal(agent.segmentsCreatedInHarvest, 0)
-        end()
-      })
-    }, 10)
-  })
-
   await t.test('toJSON should not modify attributes', (t) => {
     const { agent } = t.nr
     const transaction = new Transaction(agent)
-    const segment = new TraceSegment(transaction, 'TestSegment')
+    const root = transaction.trace.root
+    const segment = new TraceSegment({
+      config: agent.config,
+      name: 'TestSegment',
+      collect: true,
+      traceStacks: transaction.traceStacks,
+      root
+    })
     segment.toJSON()
     assert.deepEqual(segment.getAttributes(), {})
   })
@@ -203,7 +222,14 @@ test('TraceSegment', async (t) => {
   await t.test('when ended stops its timer', (t) => {
     const { agent } = t.nr
     const trans = new Transaction(agent)
-    const segment = new TraceSegment(trans, 'UnitTest')
+    const root = trans.trace.root
+    const segment = new TraceSegment({
+      config: agent.config,
+      name: 'UnitTest',
+      collect: true,
+      traceStacks: trans.traceStacks,
+      root
+    })
     segment.end()
     assert.equal(segment.timer.isRunning(), false)
   })
@@ -232,7 +258,14 @@ test('TraceSegment', async (t) => {
   await t.test('#finalize should add nr_exclusive_duration_millis attribute', (t) => {
     const { agent } = t.nr
     const transaction = new Transaction(agent)
-    const segment = new TraceSegment(transaction, 'TestSegment')
+    const root = transaction.trace.root
+    const segment = new TraceSegment({
+      config: agent.config,
+      name: 'TestSegment',
+      collect: true,
+      traceStacks: transaction.traceStacks,
+      root
+    })
 
     segment._setExclusiveDurationInMillis(1)
 
@@ -248,13 +281,18 @@ test('TraceSegment', async (t) => {
     const segmentName = 'TestSegment'
 
     const transaction = new Transaction(agent)
-    const segment = new TraceSegment(transaction, segmentName)
+    const root = transaction.trace.root
+    const segment = new TraceSegment({
+      config: agent.config,
+      name: segmentName,
+      collect: true,
+      traceStacks: transaction.traceStacks,
+      root
+    })
 
     // Force truncation
     sinon.stub(segment.timer, 'softEnd').returns(true)
     sinon.stub(segment.timer, 'endsAfter').returns(true)
-
-    const root = transaction.trace.root
 
     // Make root duration calculation predictable
     root.timer.start = 1000
@@ -277,11 +315,18 @@ test('with children created from URLs', async (t) => {
 
     const transaction = new Transaction(ctx.nr.agent)
     const trace = transaction.trace
+    const root = transaction.trace.root
     const segment = trace.add('UnitTest')
 
     const url = '/test?test1=value1&test2&test3=50&test4='
 
-    const webChild = segment.add(url)
+    const webChild = segment.add({
+      config: ctx.nr.agent,
+      name: url,
+      collect: true,
+      traceStacks: transaction.traceStacks,
+      root
+    })
     transaction.baseSegment = webChild
     transaction.finalizeNameFromUri(url, 200)
 
@@ -346,6 +391,7 @@ test('with parameters parsed out by framework', async (t) => {
 
     const transaction = new Transaction(ctx.nr.agent)
     const trace = transaction.trace
+    const root = trace.root
     trace.mer = 6
 
     const segment = trace.add('UnitTest')
@@ -358,7 +404,13 @@ test('with parameters parsed out by framework', async (t) => {
     params[1] = 'another'
     params.test3 = '50'
 
-    const webChild = segment.add(url)
+    const webChild = segment.add({
+      config: ctx.nr.agent.config,
+      name: url,
+      collect: true,
+      traceStacks: transaction.traceStacks,
+      root
+    })
     transaction.trace.attributes.addAttributes(DESTINATIONS.TRANS_SCOPE, params)
     transaction.baseSegment = webChild
     transaction.finalizeNameFromUri(url, 200)
@@ -419,10 +471,17 @@ test('with attributes.enabled set to false', async (t) => {
 
     const transaction = new Transaction(ctx.nr.agent)
     const trace = transaction.trace
-    const segment = new TraceSegment(transaction, 'UnitTest')
+    const root = trace.root
+    const segment = trace.add('UnitTest')
     const url = '/test?test1=value1&test2&test3=50&test4='
 
-    const webChild = segment.add(url)
+    const webChild = segment.add({
+      config: ctx.nr.agent.config,
+      name: url,
+      collect: true,
+      traceStacks: transaction.traceStacks,
+      root
+    })
     webChild.addAttribute('test', 'non-null value')
     transaction.baseSegment = webChild
     transaction.finalizeNameFromUri(url, 200)
@@ -463,14 +522,21 @@ test('with attributes.enabled set', async (t) => {
 
     const transaction = new Transaction(ctx.nr.agent)
     const trace = transaction.trace
+    const root = trace.root
     const segment = trace.add('UnitTest')
 
     const url = '/test?test1=value1&test2&test3=50&test4='
 
-    const webChild = segment.add(url)
+    const webChild = segment.add({
+      config: ctx.nr.agent.config,
+      name: url,
+      collect: true,
+      traceStacks: transaction.traceStacks,
+      root
+    })
     transaction.baseSegment = webChild
     transaction.finalizeNameFromUri(url, 200)
-    webChild.markAsWeb(url)
+    webChild.markAsWeb(transaction)
 
     trace.setDurationInMillis(1, 0)
     webChild.setDurationInMillis(1, 0)
@@ -528,13 +594,24 @@ test('with attributes.enabled set', async (t) => {
 test('when serialized', async (t) => {
   t.beforeEach((ctx) => {
     const agent = helper.loadMockedAgent()
-    const trans = new Transaction(agent)
-    const segment = new TraceSegment(trans, 'UnitTest')
+    const transaction = new Transaction(agent)
+    const root = transaction.trace.root
+    const segment = new TraceSegment({
+      config: agent.config,
+      name: 'UnitTest',
+      collect: true,
+      traceStacks: transaction.traceStacks,
+      root
+    })
+
     ctx.nr = {
-      agent,
+      agent: agent,
       segment,
-      trans
+      transaction,
+      root
     }
+
+    ctx.nr.agent.config.logging.diagnostics = true
   })
 
   t.afterEach((ctx) => {
@@ -559,10 +636,16 @@ test('when serialized', async (t) => {
   })
 
   await t.test('should not cause a stack overflow', { timeout: 30000 }, (t) => {
-    const { segment, trans } = t.nr
+    const { segment, transaction, agent, root } = t.nr
     let parent = segment
     for (let i = 0; i < 9000; ++i) {
-      const child = new TraceSegment(trans, 'Child ' + i)
+      const child = new TraceSegment({
+        config: agent.config,
+        name: 'Child ' + i,
+        collect: true,
+        traceStacks: transaction.traceStacks,
+        root
+      })
       parent.children.push(child)
       parent = child
     }
@@ -581,7 +664,14 @@ test('getSpanContext', async (t) => {
       }
     })
     const transaction = new Transaction(agent)
-    const segment = new TraceSegment(transaction, 'UnitTest')
+    const root = transaction.trace.root
+    const segment = new TraceSegment({
+      config: agent.config,
+      name: 'UnitTest',
+      collect: true,
+      traceStacks: transaction.traceStacks,
+      root
+    })
     ctx.nr = {
       agent,
       segment,
