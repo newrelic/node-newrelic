@@ -25,7 +25,7 @@ test('Shim', async function (t) {
   function beforeEach(ctx) {
     ctx.nr = {}
     const agent = helper.loadMockedAgent()
-    ctx.nr.contextManager = helper.getContextManager()
+    ctx.nr.tracer = helper.getTracer()
     ctx.nr.shim = new Shim(agent, 'test-module')
     ctx.nr.wrappable = {
       name: 'this is a name',
@@ -35,7 +35,7 @@ test('Shim', async function (t) {
       },
       anony: function () {},
       getActiveSegment: function () {
-        return ctx.nr.contextManager.getContext()
+        return ctx.nr.tracer.getSegment()
       }
     }
     ctx.nr.agent = agent
@@ -377,7 +377,7 @@ test('Shim', async function (t) {
         }
       }
 
-      ctx.nr.startingSegment = ctx.nr.contextManager.getContext()
+      ctx.nr.startingSegment = ctx.nr.tracer.getSegment()
     })
 
     t.afterEach(afterEach)
@@ -429,29 +429,29 @@ test('Shim', async function (t) {
     })
 
     await t.test('should make the given segment active while executing', function (t) {
-      const { contextManager, segment, shim, startingSegment, wrappable } = t.nr
+      const { tracer, segment, shim, startingSegment, wrappable } = t.nr
       assert.notEqual(startingSegment, segment, 'test should start in clean condition')
 
       shim.bindSegment(wrappable, 'getActiveSegment', segment)
-      assert.equal(contextManager.getContext(), startingSegment)
+      assert.equal(tracer.getSegment(), startingSegment)
       assert.equal(wrappable.getActiveSegment(), segment)
-      assert.equal(contextManager.getContext(), startingSegment)
+      assert.equal(tracer.getSegment(), startingSegment)
     })
 
     await t.test('should not require any arguments except a function', function (t) {
-      const { contextManager, segment, shim, startingSegment, wrappable } = t.nr
+      const { tracer, segment, shim, startingSegment, wrappable } = t.nr
       assert.notEqual(startingSegment, segment, 'test should start in clean condition')
 
       // bindSegment will not wrap if there is no segment active and
       // no segment is passed in.  To get around this we set the
       // active segment to an object known not to be null then do the
       // wrapping.
-      contextManager.setContext(segment)
+      tracer.setSegment(segment)
       const wrapped = shim.bindSegment(wrappable.getActiveSegment)
-      contextManager.setContext(startingSegment)
+      tracer.setSegment(startingSegment)
 
       assert.equal(wrapped(), segment)
-      assert.equal(contextManager.getContext(), startingSegment)
+      assert.equal(tracer.getSegment(), startingSegment)
     })
 
     await t.test('should default `full` to false', function (t) {
@@ -473,8 +473,8 @@ test('Shim', async function (t) {
     })
 
     await t.test('should default to the current segment', function (t) {
-      const { contextManager, segment, shim, wrappable } = t.nr
-      contextManager.setContext(segment)
+      const { tracer, segment, shim, wrappable } = t.nr
+      tracer.setSegment(segment)
       shim.bindSegment(wrappable, 'getActiveSegment')
       const activeSegment = wrappable.getActiveSegment()
       assert.equal(activeSegment, segment)
@@ -881,26 +881,26 @@ test('Shim', async function (t) {
     })
 
     await t.test('should not create a child segment', function (t, end) {
-      const { agent, contextManager, shim, wrappable } = t.nr
+      const { agent, tracer, shim, wrappable } = t.nr
       shim.record(wrappable, 'getActiveSegment', function () {
         return new RecorderSpec({ name: 'internal test segment', internal: true })
       })
 
       helper.runInTransaction(agent, function (tx) {
-        const startingSegment = contextManager.getContext()
+        const startingSegment = tracer.getSegment()
         startingSegment.internal = true
         startingSegment.shim = shim
         const segment = wrappable.getActiveSegment()
         assert.equal(segment, startingSegment)
         assert.equal(segment.transaction, tx)
         assert.equal(segment.name, 'ROOT')
-        assert.equal(contextManager.getContext(), startingSegment)
+        assert.equal(tracer.getSegment(), startingSegment)
         end()
       })
     })
 
     await t.test('should still bind the callback', function (t, end) {
-      const { agent, contextManager, shim } = t.nr
+      const { agent, tracer, shim } = t.nr
       const wrapped = shim.record(
         function (cb) {
           assert.equal(shim.isWrapped(cb), true)
@@ -912,7 +912,7 @@ test('Shim', async function (t) {
       )
 
       helper.runInTransaction(agent, function () {
-        const startingSegment = contextManager.getContext()
+        const startingSegment = tracer.getSegment()
         startingSegment.internal = true
         startingSegment.shim = shim
         wrapped(function () {})
@@ -1013,7 +1013,7 @@ test('Shim', async function (t) {
       beforeEach(ctx)
       const stream = new EventEmitter()
       ctx.nr.toWrap = function () {
-        stream.segment = ctx.nr.contextManager.getContext()
+        stream.segment = ctx.nr.tracer.getSegment()
         return stream
       }
       ctx.nr.stream = stream
@@ -1173,7 +1173,7 @@ test('Shim', async function (t) {
       beforeEach(ctx)
       const { promise, resolve, reject } = promiseResolvers()
       const toWrap = function () {
-        promise.segment = ctx.nr.contextManager.getContext()
+        promise.segment = ctx.nr.tracer.getSegment()
         return promise
       }
       ctx.nr.promise = promise
@@ -1456,18 +1456,18 @@ test('Shim', async function (t) {
     t.beforeEach(beforeEach)
     t.afterEach(afterEach)
     await t.test('should create a segment', function (t, end) {
-      const { agent, contextManager, shim, wrappable } = t.nr
+      const { agent, tracer, shim, wrappable } = t.nr
       shim.record(wrappable, 'getActiveSegment', function () {
         return new RecorderSpec({ name: 'test segment' })
       })
 
       helper.runInTransaction(agent, function (tx) {
-        const startingSegment = contextManager.getContext()
+        const startingSegment = tracer.getSegment()
         const segment = wrappable.getActiveSegment()
         assert.notEqual(segment, startingSegment)
         assert.equal(segment.transaction, tx)
         assert.equal(segment.name, 'test segment')
-        assert.equal(contextManager.getContext(), startingSegment)
+        assert.equal(tracer.getSegment(), startingSegment)
         end()
       })
     })
@@ -1616,13 +1616,13 @@ test('Shim', async function (t) {
     t.beforeEach(beforeEach)
     t.afterEach(afterEach)
     await t.test('should not create a segment', function (t, end) {
-      const { agent, contextManager, shim, wrappable } = t.nr
+      const { agent, tracer, shim, wrappable } = t.nr
       shim.record(wrappable, 'getActiveSegment', function () {
         return new RecorderSpec({ name: 'test segment' })
       })
 
       helper.runInTransaction(agent, function (tx) {
-        const startingSegment = contextManager.getContext()
+        const startingSegment = tracer.getSegment()
         tx.end()
         const segment = wrappable.getActiveSegment()
         assert.equal(segment, startingSegment)
@@ -1911,8 +1911,8 @@ test('Shim', async function (t) {
     })
 
     await t.test('should return the current segment if the function is not bound', function (t) {
-      const { contextManager, segment, shim } = t.nr
-      contextManager.setContext(segment)
+      const { tracer, segment, shim } = t.nr
+      tracer.setSegment(segment)
       assert.equal(
         shim.getSegment(function () {}),
         segment
@@ -1920,8 +1920,8 @@ test('Shim', async function (t) {
     })
 
     await t.test('should return the current segment if no object is provided', function (t) {
-      const { contextManager, segment, shim } = t.nr
-      contextManager.setContext(segment)
+      const { tracer, segment, shim } = t.nr
+      tracer.setSegment(segment)
       assert.equal(shim.getSegment(), segment)
     })
   })
@@ -1953,8 +1953,8 @@ test('Shim', async function (t) {
     await t.test(
       'should return the current segment if the function is not bound when transaction is active',
       function (t) {
-        const { contextManager, segment, shim } = t.nr
-        contextManager.setContext(segment)
+        const { tracer, segment, shim } = t.nr
+        tracer.setSegment(segment)
         assert.equal(
           shim.getActiveSegment(function () {}),
           segment
@@ -1965,8 +1965,8 @@ test('Shim', async function (t) {
     await t.test(
       'should return the current segment if no object is provided when transaction is active',
       function (t) {
-        const { contextManager, segment, shim } = t.nr
-        contextManager.setContext(segment)
+        const { tracer, segment, shim } = t.nr
+        tracer.setSegment(segment)
         assert.equal(shim.getActiveSegment(), segment)
       }
     )
@@ -1984,9 +1984,9 @@ test('Shim', async function (t) {
     await t.test(
       'should return null if the function is not bound when transaction is not active',
       function (t) {
-        const { contextManager, segment, shim } = t.nr
+        const { tracer, segment, shim } = t.nr
         segment.transaction.active = false
-        contextManager.setContext(segment)
+        tracer.setSegment(segment)
         assert.equal(
           shim.getActiveSegment(function () {}),
           null
@@ -1997,9 +1997,9 @@ test('Shim', async function (t) {
     await t.test(
       'should return null if no object is provided when transaction is not active',
       function (t) {
-        const { contextManager, segment, shim } = t.nr
+        const { tracer, segment, shim } = t.nr
         segment.transaction.active = false
-        contextManager.setContext(segment)
+        tracer.setSegment(segment)
         assert.equal(shim.getActiveSegment(), null)
       }
     )
@@ -2017,9 +2017,9 @@ test('Shim', async function (t) {
     })
 
     await t.test('should default to the current segment', function (t) {
-      const { contextManager, shim, wrappable } = t.nr
+      const { tracer, shim, wrappable } = t.nr
       const segment = { probe: function () {} }
-      contextManager.setContext(segment)
+      tracer.setSegment(segment)
       shim.storeSegment(wrappable)
       assert.equal(shim.getSegment(wrappable), segment)
     })
@@ -2219,7 +2219,7 @@ test('Shim', async function (t) {
     await t.test(
       'should execute the inContext callback under the produced segment',
       function (t, end) {
-        const { contextManager, segment, shim } = t.nr
+        const { tracer, segment, shim } = t.nr
         shim.applySegment(
           function () {},
           segment,
@@ -2228,7 +2228,7 @@ test('Shim', async function (t) {
           [],
           function checkSegment(activeSegment) {
             assert.equal(activeSegment, segment)
-            assert.equal(contextManager.getContext(), segment)
+            assert.equal(tracer.getSegment(), segment)
             end()
           }
         )
@@ -2236,12 +2236,12 @@ test('Shim', async function (t) {
     )
 
     await t.test('should make the segment active for the duration of execution', function (t) {
-      const { contextManager, segment, shim, wrappable } = t.nr
+      const { tracer, segment, shim, wrappable } = t.nr
       const prevSegment = { name: 'prevSegment', probe: function () {} }
-      contextManager.setContext(prevSegment)
+      tracer.setSegment(prevSegment)
 
       const activeSegment = shim.applySegment(wrappable.getActiveSegment, segment)
-      assert.equal(contextManager.getContext(), prevSegment)
+      assert.equal(tracer.getSegment(), prevSegment)
       assert.equal(activeSegment, segment)
       assert.equal(segment.touched, false)
       assert.equal(segment.started, false)
@@ -2255,13 +2255,13 @@ test('Shim', async function (t) {
     })
 
     await t.test('should not change the active segment if `segment` is `null`', function (t) {
-      const { contextManager, segment, shim, wrappable } = t.nr
-      contextManager.setContext(segment)
+      const { tracer, segment, shim, wrappable } = t.nr
+      tracer.setSegment(segment)
       let activeSegment = null
       assert.doesNotThrow(function () {
         activeSegment = shim.applySegment(wrappable.getActiveSegment, null)
       })
-      assert.equal(contextManager.getContext(), segment)
+      assert.equal(tracer.getSegment(), segment)
       assert.equal(activeSegment, segment)
     })
 
@@ -2295,18 +2295,18 @@ test('Shim', async function (t) {
     await t.test(
       'should still return the active segment to the previous one when `func` throws an exception',
       function (t) {
-        const { contextManager, segment, shim } = t.nr
+        const { tracer, segment, shim } = t.nr
         const func = function () {
           throw new Error('test error')
         }
         const prevSegment = { name: 'prevSegment', probe: function () {} }
-        contextManager.setContext(prevSegment)
+        tracer.setSegment(prevSegment)
 
         assert.throws(function () {
           shim.applySegment(func, segment)
         }, 'Error: test error')
 
-        assert.equal(contextManager.getContext(), prevSegment)
+        assert.equal(tracer.getSegment(), prevSegment)
       }
     )
     await t.test(

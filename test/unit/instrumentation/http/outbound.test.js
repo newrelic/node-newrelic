@@ -430,7 +430,7 @@ test('when working with http.request', async (t) => {
   t.beforeEach((ctx) => {
     ctx.nr = {}
     ctx.nr.agent = helper.instrumentMockedAgent()
-    ctx.nr.contextManager = helper.getContextManager()
+    ctx.nr.tracer = helper.getTracer()
 
     nock.disableNetConnect()
   })
@@ -441,14 +441,14 @@ test('when working with http.request', async (t) => {
   })
 
   await t.test('should accept port and hostname', (t, end) => {
-    const { agent, contextManager } = t.nr
+    const { agent, tracer } = t.nr
     const host = 'http://www.google.com'
     const path = '/index.html'
     nock(host).get(path).reply(200, 'Hello from Google')
 
     helper.runInTransaction(agent, function (transaction) {
       http.get('http://www.google.com/index.html', function (res) {
-        const segment = contextManager.getContext()
+        const segment = tracer.getSegment()
 
         assert.equal(segment.name, 'External/www.google.com/index.html')
         res.resume()
@@ -481,14 +481,14 @@ test('when working with http.request', async (t) => {
   })
 
   await t.test('should start and end segment', (t, end) => {
-    const { agent, contextManager } = t.nr
+    const { agent, tracer } = t.nr
     const host = 'http://www.google.com'
     const path = '/index.html'
     nock(host).get(path).delay(10).reply(200, 'Hello from Google')
 
     helper.runInTransaction(agent, function (transaction) {
       http.get('http://www.google.com/index.html', function (res) {
-        const segment = contextManager.getContext()
+        const segment = tracer.getSegment()
 
         assert.ok(segment.timer.hrstart instanceof Array)
         assert.equal(segment.timer.hrDuration, null)
@@ -505,7 +505,7 @@ test('when working with http.request', async (t) => {
   })
 
   await t.test('should not modify parent segment when parent segment opaque', (t, end) => {
-    const { agent, contextManager } = t.nr
+    const { agent, tracer } = t.nr
     const host = 'http://www.google.com'
     const paramName = 'testParam'
     const path = `/index.html?${paramName}=value`
@@ -516,10 +516,10 @@ test('when working with http.request', async (t) => {
       const parentSegment = agent.tracer.createSegment('ParentSegment')
       parentSegment.opaque = true
 
-      contextManager.setContext(parentSegment) // make the current active segment
+      tracer.setSegment(parentSegment) // make the current active segment
 
       http.get(`${host}${path}`, (res) => {
-        const segment = contextManager.getContext()
+        const segment = tracer.getSegment()
 
         assert.equal(segment, parentSegment)
         assert.equal(segment.name, 'ParentSegment')
@@ -611,7 +611,7 @@ test('Should properly handle http(s) get and request signatures', async (t) => {
   function beforeTest(ctx) {
     ctx.nr = {}
     ctx.nr.agent = helper.instrumentMockedAgent()
-    ctx.nr.contextManager = helper.getContextManager()
+    ctx.nr.tracer = helper.getTracer()
     nock.disableNetConnect()
   }
 

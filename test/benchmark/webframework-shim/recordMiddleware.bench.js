@@ -11,7 +11,7 @@ const WebFrameworkShim = require('../../../lib/shim/webframework-shim')
 const symbols = require('../../../lib/symbols')
 
 const agent = helper.loadMockedAgent()
-const contextManager = helper.getContextManager()
+const tracer = helper.getTracer()
 const shim = new WebFrameworkShim(agent, 'test-module', './')
 const { MiddlewareSpec } = require('../../../lib/shim/specs')
 const suite = benchmark.createBenchmark({ name: 'recordMiddleware' })
@@ -59,7 +59,7 @@ function addTests(name, speccer) {
   suite.add({
     name: name + ' - wrapper (no tx)    ',
     fn: function () {
-      contextManager.setContext(null)
+      tracer.setSegment(null)
       middleware(getReqd(), {}, noop)
     }
   })
@@ -67,7 +67,7 @@ function addTests(name, speccer) {
   suite.add({
     name: name + ' - wrapper (tx)       ',
     fn: function () {
-      contextManager.setContext(transaction.trace.root)
+      tracer.setSegment(transaction.trace.root)
       middleware(getReqd(), {}, noop)
     }
   })

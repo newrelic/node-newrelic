@@ -267,15 +267,15 @@ function createPromiseTests(t, config) {
   })
 
   t.test('restores context in inactive transactions', function (t) {
-    const { agent, contextManager } = setupAgent(t, config)
+    const { agent, tracer } = setupAgent(t, config)
 
     helper.runInTransaction(agent, function (txn) {
       const res = new TestResource(1)
-      const root = contextManager.getContext()
+      const root = tracer.getSegment()
       txn.end()
       res.doStuff(function () {
         t.equal(
-          contextManager.getContext(),
+          tracer.getSegment(),
           root,
           'should restore a segment when its transaction has been ended'
         )
@@ -285,32 +285,32 @@ function createPromiseTests(t, config) {
   })
 
   t.test('handles multi-entry callbacks correctly', function (t) {
-    const { agent, contextManager } = setupAgent(t, config)
+    const { agent, tracer } = setupAgent(t, config)
 
     helper.runInTransaction(agent, function () {
-      const root = contextManager.getContext()
+      const root = tracer.getSegment()
 
       const aSeg = agent.tracer.createSegment('A')
-      contextManager.setContext(aSeg)
+      tracer.setSegment(aSeg)
 
       const resA = new TestResource(1)
 
       const bSeg = agent.tracer.createSegment('B')
-      contextManager.setContext(bSeg)
+      tracer.setSegment(bSeg)
       const resB = new TestResource(2)
 
-      contextManager.setContext(root)
+      tracer.setSegment(root)
 
       resA.doStuff(() => {
         t.equal(
-          contextManager.getContext().name,
+          tracer.getSegment().name,
           aSeg.name,
           'runInAsyncScope should restore the segment active when a resource was made'
         )
 
         resB.doStuff(() => {
           t.equal(
-            contextManager.getContext().name,
+            tracer.getSegment().name,
             bSeg.name,
             'runInAsyncScope should restore the segment active when a resource was made'
           )
@@ -318,19 +318,15 @@ function createPromiseTests(t, config) {
           t.end()
         })
         t.equal(
-          contextManager.getContext().name,
+          tracer.getSegment().name,
           aSeg.name,
           'runInAsyncScope should restore the segment active when a callback was called'
         )
       })
-      t.equal(
-        contextManager.getContext().name,
-        root.name,
-        'root should be restored after we are finished'
-      )
+      t.equal(tracer.getSegment().name, root.name, 'root should be restored after we are finished')
       resA.doStuff(() => {
         t.equal(
-          contextManager.getContext().name,
+          tracer.getSegment().name,
           aSeg.name,
           'runInAsyncScope should restore the segment active when a resource was made'
         )
@@ -609,11 +605,11 @@ function setupAgent(t, config) {
     helper.unloadAgent(agent)
   })
 
-  const contextManager = helper.getContextManager()
+  const tracer = helper.getTracer()
 
   return {
     agent,
-    contextManager
+    tracer
   }
 }
 

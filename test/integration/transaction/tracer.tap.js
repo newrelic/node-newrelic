@@ -12,7 +12,7 @@ const EventEmitter = require('events').EventEmitter
 const symbols = require('../../../lib/symbols')
 
 test('bind in transaction', function testBind(t) {
-  const { agent, contextManager, tracer } = setupAgent(t)
+  const { agent, tracer } = setupAgent(t)
 
   const context = {}
   t.plan(10)
@@ -23,35 +23,35 @@ test('bind in transaction', function testBind(t) {
     t.equal(tracer.getTransaction(), transaction, 'should start in transaction')
 
     t.comment('implicit segment bind')
-    t.equal(contextManager.getContext(), root, 'should start at root segment')
+    t.equal(tracer.getSegment(), root, 'should start at root segment')
     let bound = tracer.bindFunction(compare)
 
-    contextManager.setContext(null)
+    tracer.setSegment(null)
     bound.call(context, root)
-    t.equal(contextManager.getContext(), null, 'should reset segment after being called')
+    t.equal(tracer.getSegment(), null, 'should reset segment after being called')
 
     t.comment('explicit segment bind')
     bound = tracer.bindFunction(compare, other)
     bound.call(context, other)
 
     t.comment('null segment bind')
-    contextManager.setContext(root)
+    tracer.setSegment(root)
     bound = tracer.bindFunction(compare, null)
 
-    t.equal(contextManager.getContext(), root, 'should be back to root segment')
+    t.equal(tracer.getSegment(), root, 'should be back to root segment')
     bound.call(context, root)
 
     t.end()
 
     function compare(expected) {
       t.equal(this, context, 'should pass through context')
-      t.equal(contextManager.getContext(), expected, 'should have expected segment')
+      t.equal(tracer.getSegment(), expected, 'should have expected segment')
     }
   })
 })
 
 test('bind outside transaction', function testBind(t) {
-  const { agent, contextManager, tracer } = setupAgent(t)
+  const { agent, tracer } = setupAgent(t)
 
   let root
   t.plan(5)
@@ -72,12 +72,12 @@ test('bind outside transaction', function testBind(t) {
   t.end()
 
   function compare(expected) {
-    t.equal(contextManager.getContext(), expected)
+    t.equal(tracer.getSegment(), expected)
   }
 })
 
 test('bind + throw', function testThrows(t) {
-  const { agent, contextManager, tracer } = setupAgent(t)
+  const { agent, tracer } = setupAgent(t)
 
   const error = new Error('oh no!!')
   t.plan(12)
@@ -89,7 +89,7 @@ test('bind + throw', function testThrows(t) {
     compare(dangerous(null, root), root)
 
     t.comment('null is active')
-    contextManager.setContext(null)
+    tracer.setSegment(null)
     compare(dangerous(root, root), null)
     compare(dangerous(null, null), null)
 
@@ -101,13 +101,13 @@ test('bind + throw', function testThrows(t) {
       run()
     } catch (err) {
       t.equal(err, error, 'should have expected error')
-      t.equal(contextManager.getContext(), expected, 'should catch in context')
+      t.equal(tracer.getSegment(), expected, 'should catch in context')
     }
   }
 
   function dangerous(segment, expected) {
     return tracer.bindFunction(function bound() {
-      t.equal(contextManager.getContext(), expected, 'should have expected segment')
+      t.equal(tracer.getSegment(), expected, 'should have expected segment')
       throw error
     }, segment)
   }
@@ -116,7 +116,7 @@ test('bind + throw', function testThrows(t) {
 test('bind + capture error', function testThrows(t) {
   helper.temporarilyOverrideTapUncaughtBehavior(tap, t)
 
-  const { agent, contextManager, tracer } = setupAgent(t)
+  const { agent, tracer } = setupAgent(t)
 
   const error = new Error('oh no!!')
   const name = 'some custom transaction name'
@@ -140,7 +140,7 @@ test('bind + capture error', function testThrows(t) {
     transaction.name = name
     process.once('uncaughtException', function onUncaughtException(err) {
       const logged = agent.errors.traceAggregator.errors[0]
-      t.notOk(contextManager.getContext(), 'should not leak transaction into handler')
+      t.notOk(tracer.getSegment(), 'should not leak transaction into handler')
 
       t.equal(err, error, 'should have expected error')
       t.equal(Object.keys(error).length, 0, 'error should not have extra properties')
@@ -161,7 +161,7 @@ test('bind + capture error', function testThrows(t) {
     return tracer.bindFunction(function bound() {
       // next tick to avoid tap error handler
       process.nextTick(function ohno() {
-        t.equal(contextManager.getContext(), segment)
+        t.equal(tracer.getSegment(), segment)
         throw error
       })
     }, segment)
@@ -169,7 +169,7 @@ test('bind + capture error', function testThrows(t) {
 })
 
 test('bind + full', function testThrows(t) {
-  const { agent, contextManager, tracer } = setupAgent(t)
+  const { agent, tracer } = setupAgent(t)
 
   t.plan(10)
 
@@ -192,13 +192,13 @@ test('bind + full', function testThrows(t) {
 
     function check() {
       t.ok(segment.timer.hrstart)
-      t.equal(contextManager.getContext(), segment)
+      t.equal(tracer.getSegment(), segment)
       t.notOk(segment.timer.hrDuration)
     }
 
     function checkNotStarted() {
       t.notOk(notStarted.timer.hrstart)
-      t.equal(contextManager.getContext(), notStarted)
+      t.equal(tracer.getSegment(), notStarted)
       t.notOk(notStarted.timer.hrDuration)
     }
   })
@@ -237,7 +237,7 @@ test('bind + args', function testThrows(t) {
 })
 
 test('getTransaction', function testGetTransaction(t) {
-  const { agent, contextManager, tracer } = setupAgent(t)
+  const { agent, tracer } = setupAgent(t)
 
   t.plan(5)
 
@@ -245,16 +245,16 @@ test('getTransaction', function testGetTransaction(t) {
 
   helper.runInTransaction(agent, function inTrans(transaction) {
     t.equal(tracer.getTransaction(), transaction)
-    t.equal(contextManager.getContext().transaction, transaction)
+    t.equal(tracer.getSegment().transaction, transaction)
     transaction.end()
     t.notOk(tracer.getTransaction())
-    t.equal(contextManager.getContext().transaction, transaction)
+    t.equal(tracer.getSegment().transaction, transaction)
     t.end()
   })
 })
 
 test('getSegment', function testGetTransaction(t) {
-  const { agent, contextManager, tracer } = setupAgent(t)
+  const { agent, tracer } = setupAgent(t)
 
   t.plan(5)
 
@@ -262,7 +262,7 @@ test('getSegment', function testGetTransaction(t) {
   helper.runInTransaction(agent, function inTrans(transaction) {
     const root = transaction.trace.root
     t.equal(tracer.getSegment(), root)
-    t.equal(contextManager.getContext(), tracer.getSegment())
+    t.equal(tracer.getSegment(), tracer.getSegment())
 
     setTimeout(function onTimeout() {
       const segment = root.children[0].children[0]
@@ -273,7 +273,7 @@ test('getSegment', function testGetTransaction(t) {
 })
 
 test('createSegment', function testCreateSegment(t) {
-  const { agent, contextManager, tracer } = setupAgent(t)
+  const { agent, tracer } = setupAgent(t)
 
   let root
   t.plan(10)
@@ -284,13 +284,13 @@ test('createSegment', function testCreateSegment(t) {
   helper.runInTransaction(agent, function inTrans(transaction) {
     const segment = tracer.createSegment('inside transaction')
     root = transaction.trace.root
-    t.equal(contextManager.getContext(), root)
+    t.equal(tracer.getSegment(), root)
     t.equal(segment.name, 'inside transaction')
 
     tracer.bindFunction(function bound() {
       t.equal(segment.timer.hrstart, null)
       t.equal(segment.timer.hrDuration, null)
-      t.equal(contextManager.getContext(), segment)
+      t.equal(tracer.getSegment(), segment)
     }, segment)()
   })
 
@@ -300,7 +300,7 @@ test('createSegment', function testCreateSegment(t) {
     t.equal(outerSegment.name, 'outside with parent')
     t.equal(outerSegment.timer.hrstart, null)
     t.equal(outerSegment.timer.hrDuration, null)
-    t.equal(contextManager.getContext(), outerSegment)
+    t.equal(tracer.getSegment(), outerSegment)
   }, outerSegment)()
 
   t.end()
@@ -325,7 +325,7 @@ test('createSegment + recorder', function testCreateSegment(t) {
 })
 
 test('addSegment', function addSegmentTest(t) {
-  const { agent, contextManager, tracer } = setupAgent(t)
+  const { agent, tracer } = setupAgent(t)
 
   let root
   t.plan(8)
@@ -348,13 +348,13 @@ test('addSegment', function addSegmentTest(t) {
   t.end()
 
   function check(segment) {
-    t.equal(segment, contextManager.getContext())
-    return contextManager.getContext()
+    t.equal(segment, tracer.getSegment())
+    return tracer.getSegment()
   }
 })
 
 test('addSegment + recorder', function addSegmentTest(t) {
-  const { agent, contextManager, tracer } = setupAgent(t)
+  const { agent, tracer } = setupAgent(t)
 
   let segment
   t.plan(7)
@@ -372,20 +372,20 @@ test('addSegment + recorder', function addSegmentTest(t) {
   })
 
   function check(seg) {
-    t.equal(seg, contextManager.getContext())
+    t.equal(seg, tracer.getSegment())
     t.equal(seg.timer.hrstart, null)
     t.equal(seg.timer.hrDuration, null)
-    return contextManager.getContext()
+    return tracer.getSegment()
   }
 
   function record(seg) {
     t.equal(seg, segment)
-    return contextManager.getContext()
+    return tracer.getSegment()
   }
 })
 
 test('addSegment + full', function addSegmentTest(t) {
-  const { agent, contextManager, tracer } = setupAgent(t)
+  const { agent, tracer } = setupAgent(t)
 
   t.plan(7)
 
@@ -404,15 +404,15 @@ test('addSegment + full', function addSegmentTest(t) {
   })
 
   function check(segment) {
-    t.equal(segment, contextManager.getContext())
+    t.equal(segment, tracer.getSegment())
     t.ok(segment.timer.hrstart)
     t.equal(segment.timer.hrDuration, null)
-    return contextManager.getContext()
+    return tracer.getSegment()
   }
 })
 
 test('transactionProxy', function testTransactionProxy(t) {
-  const { contextManager, tracer } = setupAgent(t)
+  const { tracer } = setupAgent(t)
 
   t.plan(10)
 
@@ -429,20 +429,20 @@ test('transactionProxy', function testTransactionProxy(t) {
 
     t.same([].slice.call(arguments), [1, 2, 3])
     t.equal(root.name, 'ROOT')
-    t.equal(root, contextManager.getContext())
+    t.equal(root, tracer.getSegment())
     t.ok(transaction)
 
     tracer.transactionProxy(handler2)()
 
     function handler2() {
       t.equal(tracer.getTransaction(), transaction)
-      t.equal(root, contextManager.getContext())
+      t.equal(root, tracer.getSegment())
     }
   }
 })
 
 test('transactionNestProxy', function testTransactionNestProxy(t) {
-  const { contextManager, tracer } = setupAgent(t)
+  const { tracer } = setupAgent(t)
 
   t.plan(20)
 
@@ -459,7 +459,7 @@ test('transactionNestProxy', function testTransactionNestProxy(t) {
 
     t.same([].slice.call(arguments), [1, 2, 3])
     t.equal(root.name, 'ROOT')
-    t.equal(root, contextManager.getContext())
+    t.equal(root, tracer.getSegment())
     t.ok(transaction)
     transaction.type = 'web'
     transaction.baseSegment = root
@@ -472,7 +472,7 @@ test('transactionNestProxy', function testTransactionNestProxy(t) {
 
     function handler2() {
       t.equal(tracer.getTransaction(), transaction)
-      t.equal(root, contextManager.getContext())
+      t.equal(root, tracer.getSegment())
     }
 
     function handler3() {
@@ -480,16 +480,16 @@ test('transactionNestProxy', function testTransactionNestProxy(t) {
       const root3 = transaction3.trace.root
 
       t.equal(root.name, 'ROOT')
-      t.equal(root3, contextManager.getContext())
+      t.equal(root3, tracer.getSegment())
       t.ok(transaction3)
       t.not(tracer.getTransaction(), transaction)
-      t.not(contextManager.getContext(), root)
+      t.not(tracer.getSegment(), root)
     }
   }
 })
 
 test('bindEmitter', function testbindEmitter(t) {
-  const { agent, contextManager, tracer } = setupAgent(t)
+  const { agent, tracer } = setupAgent(t)
 
   const emitter = new EventEmitter()
   const emitter2 = new EventEmitter()
@@ -508,7 +508,7 @@ test('bindEmitter', function testbindEmitter(t) {
   tracer.bindEmitter(emitter2, null)
 
   helper.runInTransaction(agent, function inTrans() {
-    root = contextManager.getContext()
+    root = tracer.getSegment()
     emitter.emit('before', data)
     emitter.emit('after', data)
 
@@ -533,7 +533,7 @@ test('bindEmitter', function testbindEmitter(t) {
   function check(expected) {
     return function onEvent(eventData) {
       t.equal(eventData, data, 'should pass through event data')
-      t.equal(contextManager.getContext(), expected, 'should have expected segment')
+      t.equal(tracer.getSegment(), expected, 'should have expected segment')
     }
   }
 })
@@ -555,7 +555,7 @@ test('tracer.slice', function testSlice(t) {
 })
 
 test('wrapFunctionNoSegment', function testwrapFunctionNoSegment(t) {
-  const { agent, contextManager, tracer } = setupAgent(t)
+  const { agent, tracer } = setupAgent(t)
 
   const outer = {}
   const inner = {}
@@ -578,22 +578,22 @@ test('wrapFunctionNoSegment', function testwrapFunctionNoSegment(t) {
     const args = tracer.slice(arguments)
     const callback = args.pop()
     t.equal(this, outer)
-    t.equal(contextManager.getContext(), seg)
+    t.equal(tracer.getSegment(), seg)
     process.nextTick(function next() {
-      contextManager.setContext(null)
+      tracer.setSegment(null)
       callback.apply(inner, args)
     })
   }
 
   function check(seg, expected) {
     t.same([].slice.call(arguments, 2), expected)
-    t.equal(contextManager.getContext(), seg)
+    t.equal(tracer.getSegment(), seg)
     t.equal(this, inner)
   }
 })
 
 test('wrapFunction', function testwrapFunction(t) {
-  const { agent, contextManager, tracer } = setupAgent(t)
+  const { agent, tracer } = setupAgent(t)
 
   const outer = {}
   const inner = {}
@@ -614,7 +614,7 @@ test('wrapFunction', function testwrapFunction(t) {
 
   function makeCallback(val) {
     return function callback(parent, arg) {
-      const segment = contextManager.getContext()
+      const segment = tracer.getSegment()
       t.equal(arg, val)
       t.equal(this, inner)
       if (parent) {
@@ -628,7 +628,7 @@ test('wrapFunction', function testwrapFunction(t) {
   }
 
   function callAll(name, a, b, c) {
-    const segment = contextManager.getContext()
+    const segment = tracer.getSegment()
 
     if (name) {
       t.equal(segment.name, name)
@@ -685,7 +685,7 @@ test('wrapFunction', function testwrapFunction(t) {
 })
 
 test('wrapFunctionLast', function testwrapFunctionLast(t) {
-  const { agent, contextManager, tracer } = setupAgent(t)
+  const { agent, tracer } = setupAgent(t)
 
   const outer = {}
   const inner = {}
@@ -706,7 +706,7 @@ test('wrapFunctionLast', function testwrapFunctionLast(t) {
   t.equal(wrapped.apply(outer, [null].concat(args)), returnVal)
 
   function callback(parent, callbackArgs) {
-    const segment = contextManager.getContext()
+    const segment = tracer.getSegment()
     t.same(callbackArgs, [1, 2, 3])
     t.equal(this, inner)
 
@@ -720,7 +720,7 @@ test('wrapFunctionLast', function testwrapFunctionLast(t) {
   }
 
   function takesCallback(name) {
-    const segment = contextManager.getContext()
+    const segment = tracer.getSegment()
     const cbArgs = [].slice.call(arguments, 1, -1)
     const cb = arguments[arguments.length - 1]
 
@@ -759,7 +759,7 @@ test('wrapFunctionLast', function testwrapFunctionLast(t) {
 })
 
 test('wrapFunctionFirst', function testwrapFunctionFirst(t) {
-  const { agent, contextManager, tracer } = setupAgent(t)
+  const { agent, tracer } = setupAgent(t)
 
   const outer = {}
   const inner = {}
@@ -779,7 +779,7 @@ test('wrapFunctionFirst', function testwrapFunctionFirst(t) {
   t.equal(wrapped.call(outer, callback, null, 1, 2, 3), returnVal)
 
   function callback(parent, args) {
-    const segment = contextManager.getContext()
+    const segment = tracer.getSegment()
     t.same(args, [1, 2, 3])
     t.equal(this, inner)
 
@@ -793,7 +793,7 @@ test('wrapFunctionFirst', function testwrapFunctionFirst(t) {
   }
 
   function takesCallback(cb, name) {
-    const segment = contextManager.getContext()
+    const segment = tracer.getSegment()
     const args = [].slice.call(arguments, 2)
 
     if (name) {
@@ -831,7 +831,7 @@ test('wrapFunctionFirst', function testwrapFunctionFirst(t) {
 })
 
 test('wrapSyncFunction', function testwrapSyncFunction(t) {
-  const { agent, contextManager, tracer } = setupAgent(t)
+  const { agent, tracer } = setupAgent(t)
 
   t.plan(9)
 
@@ -850,7 +850,7 @@ test('wrapSyncFunction', function testwrapSyncFunction(t) {
     t.same([].slice.call(arguments, 2), expected)
     t.equal(tracer.getTransaction(), trans)
     if (trans) {
-      t.equal(contextManager.getContext().name, 'my segment')
+      t.equal(tracer.getSegment().name, 'my segment')
     }
   }
 
@@ -863,8 +863,7 @@ test('wrapSyncFunction', function testwrapSyncFunction(t) {
 
 function setupAgent(t) {
   const agent = helper.loadTestAgent(t)
-  const contextManager = helper.getContextManager()
-  const tracer = agent.tracer
+  const tracer = helper.getTracer()
 
   t.teardown(() => {
     helper.unloadAgent(agent)
@@ -872,7 +871,6 @@ function setupAgent(t) {
 
   return {
     agent,
-    contextManager,
     tracer
   }
 }

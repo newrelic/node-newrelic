@@ -113,19 +113,19 @@ test('new Promise()', async function (t) {
       end,
       count: 3,
       testFunc: function resolveTest({ name, plan }) {
-        const contextManager = helper.getContextManager()
-        const inTx = !!contextManager.getContext()
+        const tracer = helper.getTracer()
+        const inTx = !!tracer.getSegment()
 
         return new Promise(function (resolve) {
           addTask(t.nr, function () {
-            plan.ok(!contextManager.getContext(), name + 'should lose tx')
+            plan.ok(!tracer.getSegment(), name + 'should lose tx')
             resolve('foobar ' + name)
           })
         }).then(function (res) {
           if (inTx) {
-            plan.ok(contextManager.getContext(), name + 'should return tx')
+            plan.ok(tracer.getSegment(), name + 'should return tx')
           } else {
-            plan.ok(!contextManager.getContext(), name + 'should not create tx')
+            plan.ok(!tracer.getSegment(), name + 'should not create tx')
           }
           plan.equal(res, 'foobar ' + name, name + 'should resolve with correct value')
         })
