@@ -11,13 +11,9 @@ const helper = require('../../lib/agent_helper')
 const Shim = require('../../../lib/shim/shim.js')
 
 test('agent instrumentation of generic-pool', async function (t) {
-  const agent = helper.loadMockedAgent()
+  const agent = helper.loadTestAgent(t)
   const shim = new Shim(agent, 'generic-pool')
   const initialize = require('../../../lib/instrumentation/generic-pool')
-
-  t.after(function () {
-    helper.unloadAgent(agent)
-  })
 
   await t.test("shouldn't cause bootstrapping to fail", async function (t) {
     await t.test('when passed no module', async function () {

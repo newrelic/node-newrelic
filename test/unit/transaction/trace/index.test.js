@@ -757,14 +757,10 @@ test('when inserting segments', async (t) => {
 test('should set URI to null when request.uri attribute is excluded globally', async (t) => {
   const URL = '/test'
 
-  const agent = helper.loadMockedAgent({
+  const agent = helper.loadTestAgent(t, {
     attributes: {
       exclude: ['request.uri']
     }
-  })
-
-  t.after(() => {
-    helper.unloadAgent(agent)
   })
 
   const transaction = new Transaction(agent)
@@ -784,16 +780,10 @@ test('should set URI to null when request.uri attribute is excluded globally', a
 test('should set URI to null when request.uri attribute is exluded from traces', async (t) => {
   const URL = '/test'
 
-  const agent = helper.loadMockedAgent({
-    transaction_tracer: {
-      attributes: {
-        exclude: ['request.uri']
-      }
+  const agent = helper.loadTestAgent(t, {
+    attributes: {
+      exclude: ['request.uri']
     }
-  })
-
-  t.after(() => {
-    helper.unloadAgent(agent)
   })
 
   const transaction = new Transaction(agent)
@@ -811,11 +801,7 @@ test('should set URI to null when request.uri attribute is exluded from traces',
 })
 
 test('should set URI to /Unknown when URL is not known/set on transaction', async (t) => {
-  const agent = helper.loadMockedAgent()
-
-  t.after(() => {
-    helper.unloadAgent(agent)
-  })
+  const agent = helper.loadTestAgent(t)
 
   const transaction = new Transaction(agent)
   const trace = transaction.trace
@@ -830,7 +816,7 @@ test('should set URI to /Unknown when URL is not known/set on transaction', asyn
 
 test('should obfuscate URI using regex when pattern is set', async (t) => {
   const URL = '/abc/123/def/456/ghi'
-  const agent = helper.loadMockedAgent({
+  const agent = helper.loadTestAgent(t, {
     url_obfuscation: {
       enabled: true,
       regex: {
@@ -839,10 +825,6 @@ test('should obfuscate URI using regex when pattern is set', async (t) => {
         replacement: '/***/'
       }
     }
-  })
-
-  t.after(() => {
-    helper.unloadAgent(agent)
   })
 
   const transaction = new Transaction(agent)

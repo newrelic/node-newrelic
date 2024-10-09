@@ -931,7 +931,7 @@ test('built-in http module instrumentation', async (t) => {
 
   await t.test('request headers for outbound request', async (t) => {
     await t.test('should preserve headers regardless of format', (t, end) => {
-      const agent = helper.instrumentMockedAgent({
+      const agent = helper.loadTestAgent(t, {
         cross_application_tracer: { enabled: true },
         distributed_tracing: { enabled: false },
         encoding_key: encKey,
@@ -940,9 +940,6 @@ test('built-in http module instrumentation', async (t) => {
 
       const http = require('http')
       let hadExpect = 0
-      t.after(() => {
-        helper.unloadAgent(agent)
-      })
 
       const server = http.createServer(function (req, res) {
         if (req.headers.expect) {

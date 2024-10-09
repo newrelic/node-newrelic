@@ -10,15 +10,11 @@ const helper = require('../../lib/agent_helper')
 
 test('new relic should not break route iteration', async function (t) {
   const plan = tsplan(t, { plan: 1 })
-  const agent = helper.instrumentMockedAgent()
+  helper.loadTestAgent(t)
   const express = require('express')
   const router = new express.Router()
   const childA = new express.Router()
   const childB = new express.Router()
-
-  t.after(() => {
-    helper.unloadAgent(agent)
-  })
 
   router.get('/get', function (req, res) {
     res.end()

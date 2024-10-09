@@ -3096,11 +3096,7 @@ test('Shim', async function (t) {
   })
 
   await t.test('shim.specs', (t) => {
-    const agent = helper.loadMockedAgent()
-    t.after(() => {
-      helper.unloadAgent(agent)
-    })
-
+    const agent = helper.loadTestAgent(t)
     const shim = new Shim(agent, 'test-mod')
     assert.ok(shim.specs, 'should assign specs to an instance of shim')
     assert.ok(shim.specs.ClassWrapSpec)
@@ -3120,11 +3116,7 @@ test('Shim', async function (t) {
   })
 
   await t.test('should not use functions in MessageSubscribeSpec if it is not an array', (t) => {
-    const agent = helper.loadMockedAgent()
-    t.after(() => {
-      helper.unloadAgent(agent)
-    })
-
+    const agent = helper.loadTestAgent(t)
     const shim = new Shim(agent, 'test-mod')
     const spec = new shim.specs.MessageSubscribeSpec({
       functions: 'foo-bar'
