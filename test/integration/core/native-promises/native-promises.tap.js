@@ -287,19 +287,19 @@ function createPromiseTests(t, config) {
   t.test('handles multi-entry callbacks correctly', function (t) {
     const { agent, tracer } = setupAgent(t, config)
 
-    helper.runInTransaction(agent, function () {
+    helper.runInTransaction(agent, function (tx) {
       const root = tracer.getSegment()
 
       const aSeg = agent.tracer.createSegment('A')
-      tracer.setSegment(aSeg)
+      tracer.setSegment({ segment: aSeg, transaction: tx })
 
       const resA = new TestResource(1)
 
       const bSeg = agent.tracer.createSegment('B')
-      tracer.setSegment(bSeg)
+      tracer.setSegment({ segment: bSeg, transaction: tx })
       const resB = new TestResource(2)
 
-      tracer.setSegment(root)
+      tracer.setSegment({ segment: root, transaction: tx })
 
       resA.doStuff(() => {
         t.equal(

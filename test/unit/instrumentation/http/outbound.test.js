@@ -516,7 +516,7 @@ test('when working with http.request', async (t) => {
       const parentSegment = agent.tracer.createSegment('ParentSegment')
       parentSegment.opaque = true
 
-      tracer.setSegment(parentSegment) // make the current active segment
+      tracer.setSegment({ transaction, segment: parentSegment }) // make the current active segment
 
       http.get(`${host}${path}`, (res) => {
         const segment = tracer.getSegment()
