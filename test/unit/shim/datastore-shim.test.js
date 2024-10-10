@@ -33,8 +33,9 @@ test('DatastoreShim', async function (t) {
         return agent.tracer.getSegment()
       },
       withNested: function () {
+        const transaction = agent.tracer.getTransaction()
         const segment = agent.tracer.getSegment()
-        segment.add('ChildSegment')
+        segment.add({ config: agent.config, name: 'ChildSegment', traceStacks: transaction.traceStacks, root: transaction.trace.root })
 
         return segment
       }
@@ -323,11 +324,10 @@ test('DatastoreShim', async function (t) {
           name: 'getActiveSegment'
         })
 
-        helper.runInTransaction(agent, function (tx) {
+        helper.runInTransaction(agent, function () {
           const startingSegment = agent.tracer.getSegment()
           const segment = wrappable.getActiveSegment()
           assert.notEqual(segment, startingSegment)
-          assert.equal(segment.transaction, tx)
           assert.equal(segment.name, 'getActiveSegment')
           assert.equal(agent.tracer.getSegment(), startingSegment)
           end()
@@ -344,11 +344,10 @@ test('DatastoreShim', async function (t) {
           name: 'getActiveSegment'
         })
 
-        helper.runInTransaction(agent, function (tx) {
+        helper.runInTransaction(agent, function () {
           const startingSegment = agent.tracer.getSegment()
           const segment = wrappable.getActiveSegment()
           assert.notEqual(segment, startingSegment)
-          assert.equal(segment.transaction, tx)
           assert.equal(segment.name, 'Datastore/operation/Cassandra/getActiveSegment')
           assert.equal(agent.tracer.getSegment(), startingSegment)
           end()
@@ -362,11 +361,10 @@ test('DatastoreShim', async function (t) {
         const { agent, shim, wrappable } = t.nr
         shim.recordOperation(wrappable, 'getActiveSegment', { name: 'getActiveSegment' })
 
-        helper.runInTransaction(agent, function (tx) {
+        helper.runInTransaction(agent, function () {
           const startingSegment = agent.tracer.getSegment()
           const segment = wrappable.getActiveSegment()
           assert.notEqual(segment, startingSegment)
-          assert.equal(segment.transaction, tx)
           assert.equal(segment.name, 'Datastore/operation/Cassandra/getActiveSegment')
           assert.equal(agent.tracer.getSegment(), startingSegment)
           end()
@@ -379,11 +377,10 @@ test('DatastoreShim', async function (t) {
       shim.recordOperation(wrappable, 'withNested', () => {
         return new OperationSpec({ name: 'test', opaque: false })
       })
-      helper.runInTransaction(agent, (tx) => {
+      helper.runInTransaction(agent, () => {
         const startingSegment = agent.tracer.getSegment()
         const segment = wrappable.withNested()
         assert.notEqual(segment, startingSegment)
-        assert.equal(segment.transaction, tx)
         assert.equal(segment.name, 'Datastore/operation/Cassandra/test')
         assert.equal(segment.children.length, 1)
         const [childSegment] = segment.children
@@ -397,11 +394,10 @@ test('DatastoreShim', async function (t) {
       shim.recordOperation(wrappable, 'withNested', () => {
         return new OperationSpec({ name: 'test', opaque: true })
       })
-      helper.runInTransaction(agent, (tx) => {
+      helper.runInTransaction(agent, () => {
         const startingSegment = agent.tracer.getSegment()
         const segment = wrappable.withNested()
         assert.notEqual(segment, startingSegment)
-        assert.equal(segment.transaction, tx)
         assert.equal(segment.name, 'Datastore/operation/Cassandra/test')
         assert.equal(segment.children.length, 0)
         end()
@@ -646,11 +642,10 @@ test('DatastoreShim', async function (t) {
           })
         )
 
-        helper.runInTransaction(agent, function (tx) {
+        helper.runInTransaction(agent, function () {
           const startingSegment = agent.tracer.getSegment()
           const segment = wrappable.getActiveSegment(query)
           assert.notEqual(segment, startingSegment)
-          assert.equal(segment.transaction, tx)
           assert.equal(segment.name, 'getActiveSegment')
           assert.equal(agent.tracer.getSegment(), startingSegment)
           end()
@@ -666,11 +661,10 @@ test('DatastoreShim', async function (t) {
         new QuerySpec({ query: shim.FIRST, record: true })
       )
 
-      helper.runInTransaction(agent, function (tx) {
+      helper.runInTransaction(agent, function () {
         const startingSegment = agent.tracer.getSegment()
         const segment = wrappable.getActiveSegment(query)
         assert.notEqual(segment, startingSegment)
-        assert.equal(segment.transaction, tx)
         assert.equal(segment.name, 'Datastore/statement/Cassandra/my_table/select')
         assert.equal(agent.tracer.getSegment(), startingSegment)
         end()
@@ -683,11 +677,10 @@ test('DatastoreShim', async function (t) {
         const { agent, shim, wrappable } = t.nr
         shim.recordQuery(wrappable, 'getActiveSegment', new QuerySpec({ query: shim.FIRST }))
 
-        helper.runInTransaction(agent, function (tx) {
+        helper.runInTransaction(agent, function () {
           const startingSegment = agent.tracer.getSegment()
           const segment = wrappable.getActiveSegment(query)
           assert.notEqual(segment, startingSegment)
-          assert.equal(segment.transaction, tx)
           assert.equal(segment.name, 'Datastore/statement/Cassandra/my_table/select')
           assert.equal(agent.tracer.getSegment(), startingSegment)
           end()
@@ -841,11 +834,10 @@ test('DatastoreShim', async function (t) {
       const { agent, shim, wrappable } = t.nr
       shim.recordBatchQuery(wrappable, 'getActiveSegment', new QuerySpec({ query: shim.FIRST }))
 
-      helper.runInTransaction(agent, function (tx) {
+      helper.runInTransaction(agent, function () {
         const startingSegment = agent.tracer.getSegment()
         const segment = wrappable.getActiveSegment(query)
         assert.notEqual(segment, startingSegment)
-        assert.equal(segment.transaction, tx)
         assert.equal(segment.name, 'Datastore/statement/Cassandra/my_table/select/batch')
         assert.equal(agent.tracer.getSegment(), startingSegment)
         end()

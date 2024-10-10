@@ -911,6 +911,7 @@ test('WebFrameworkShim', async function (t) {
       })
     })
 
+    // TODO: this is missing the active segment
     await t.test('should notice if the errorware errors', function (t, end) {
       const { agent, req, shim, txInfo } = t.nr
       const wrapped = shim.recordMiddleware(function () {

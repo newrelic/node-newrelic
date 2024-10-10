@@ -1485,7 +1485,7 @@ test('insertDistributedTraceHeaders', async (t) => {
     const txn = new Transaction(agent)
     const lowercaseHexRegex = /^[a-f0-9]+/
 
-    tracer.setSegment({ transaction: txn, segment:  txn.trace.root })
+    tracer.setSegment({ transaction: txn, segment: txn.trace.root })
 
     const outboundHeaders = createHeadersAndInsertTrace(txn)
     const traceparent = outboundHeaders.traceparent
@@ -1504,7 +1504,7 @@ test('insertDistributedTraceHeaders', async (t) => {
 
     const txn = new Transaction(agent)
 
-    tracer.setSegment({ transaction: txn, segment:  txn.trace.root })
+    tracer.setSegment({ transaction: txn, segment: txn.trace.root })
     txn.sampled = true
 
     const outboundHeaders = createHeadersAndInsertTrace(txn)
@@ -1526,7 +1526,7 @@ test('insertDistributedTraceHeaders', async (t) => {
 
     txn.acceptTraceContextPayload(traceparent, tracestate)
 
-    tracer.setSegment({ transaction: txn, segment:  txn.trace.root })
+    tracer.setSegment({ transaction: txn, segment: txn.trace.root })
 
     const outboundHeaders = createHeadersAndInsertTrace(txn)
     const traceparentParts = outboundHeaders.traceparent.split('-')
@@ -2027,7 +2027,7 @@ test('when being named with finalizeName', async (t) => {
 })
 
 function setupNameState(transaction) {
-  transaction.baseSegment = transaction.trace.root.add('basesegment')
+  transaction.baseSegment = transaction.trace.add('basesegment')
   transaction.nameState.setPrefix('Restify')
   transaction.nameState.setVerb('COOL')
   transaction.nameState.setDelimiter('/')

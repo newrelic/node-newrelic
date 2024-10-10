@@ -10,12 +10,12 @@ const helper = require('../../lib/agent_helper')
 const generateRecorder = require('../../../lib/metrics/recorders/http_external')
 const Transaction = require('../../../lib/transaction')
 
-function recordExternal(segment, scope) {
-  return generateRecorder('test.example.com', 'http')(segment, scope)
+function recordExternal(segment, scope, transaction) {
+  return generateRecorder('test.example.com', 'http')(segment, scope, transaction)
 }
 
 function makeSegment(options) {
-  const segment = options.transaction.trace.root.add('placeholder')
+  const segment = options.transaction.trace.add('placeholder')
   segment.setDurationInMillis(options.duration)
   segment._setExclusiveDurationInMillis(options.exclusive)
 
@@ -31,7 +31,7 @@ function record(options) {
   const transaction = options.transaction
 
   transaction.finalizeNameFromUri(options.url, options.code)
-  recordExternal(segment, options.transaction.name)
+  recordExternal(segment, options.transaction.name, options.transaction)
 }
 
 test('recordExternal', async function (t) {
@@ -56,7 +56,7 @@ test('recordExternal', async function (t) {
       exclusive: 0
     })
     assert.doesNotThrow(function () {
-      recordExternal(segment, undefined)
+      recordExternal(segment, undefined, trans)
     })
   })
 
@@ -67,7 +67,7 @@ test('recordExternal', async function (t) {
       duration: 0,
       exclusive: 0
     })
-    recordExternal(segment, undefined)
+    recordExternal(segment, undefined, trans)
 
     const result = [
       [{ name: 'External/test.example.com/http' }, [1, 0, 0, 0, 0, 0]],
@@ -108,9 +108,9 @@ test('recordExternal', async function (t) {
   await t.test('should report exclusive time correctly', function (t) {
     const { trans } = t.nr
     const root = trans.trace.root
-    const parent = root.add('/parent', recordExternal)
-    const child1 = parent.add('/child1', generateRecorder('api.twitter.com', 'https'))
-    const child2 = parent.add('/child2', generateRecorder('oauth.facebook.com', 'http'))
+    const parent = trans.trace.add('/parent', recordExternal)
+    const child1 = trans.trace.add('/child1', generateRecorder('api.twitter.com', 'https'), parent)
+    const child2 = trans.trace.add('/child2', generateRecorder('oauth.facebook.com', 'http'), parent)
 
     root.setDurationInMillis(32, 0)
     parent.setDurationInMillis(32, 0)

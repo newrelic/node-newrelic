@@ -63,8 +63,8 @@ test('TransactionShim', async function (t) {
         return 'fiz'
       },
       anony: function () {},
-      getActiveSegment: function () {
-        return agent.tracer.getSegment()
+      getActiveTransaction: function () {
+        return agent.tracer.getTransaction()
       }
     }
 
@@ -202,20 +202,20 @@ test('TransactionShim', async function (t) {
       const { shim, wrappable } = t.nr
       shim.bindCreateTransaction(
         wrappable,
-        'getActiveSegment',
+        'getActiveTransaction',
         new TransactionSpec({ type: shim.WEB })
       )
-      const segment = wrappable.getActiveSegment()
-      assert.equal(segment.transaction.type, shim.WEB)
+      const tx = wrappable.getActiveTransaction()
+      assert.equal(tx.type, shim.WEB)
 
-      shim.unwrap(wrappable, 'getActiveSegment')
+      shim.unwrap(wrappable, 'getActiveTransaction')
       shim.bindCreateTransaction(
         wrappable,
-        'getActiveSegment',
+        'getActiveTransaction',
         new TransactionSpec({ type: shim.BG })
       )
-      const bgSegment = wrappable.getActiveSegment()
-      assert.equal(bgSegment.transaction.type, shim.BG)
+      const bgTx = wrappable.getActiveTransaction()
+      assert.equal(bgTx.type, shim.BG)
     })
 
     await t.test('should not create a nested transaction when `spec.nest` is false', function (t) {
@@ -226,11 +226,11 @@ test('TransactionShim', async function (t) {
       let bgCalled = false
       const bg = shim.bindCreateTransaction(function () {
         bgCalled = true
-        bgTx = shim.getSegment().transaction
+        bgTx = shim.tracer.getTransaction()
       }, new TransactionSpec({ type: shim.BG }))
       const web = shim.bindCreateTransaction(function () {
         webCalled = true
-        webTx = shim.getSegment().transaction
+        webTx = shim.tracer.getTransaction() 
         bg()
       }, new TransactionSpec({ type: shim.WEB }))
 
@@ -266,14 +266,14 @@ test('TransactionShim', async function (t) {
       const { shim } = ctx.nr
       ctx.nr.transactions = []
       ctx.nr.web = shim.bindCreateTransaction(function (cb) {
-        ctx.nr.transactions.push(shim.getSegment().transaction)
+        ctx.nr.transactions.push(shim.tracer.getTransaction())
         if (cb) {
           cb()
         }
       }, new TransactionSpec({ type: shim.WEB, nest: true }))
 
       ctx.nr.bg = shim.bindCreateTransaction(function (cb) {
-        ctx.nr.transactions.push(shim.getSegment().transaction)
+        ctx.nr.transactions.push(shim.tracer.getTransaction())
         if (cb) {
           cb()
         }
@@ -441,7 +441,7 @@ test('TransactionShim', async function (t) {
         assert.ok(!segment.catTransaction)
         assert.ok(!segment.getAttributes().transaction_guid)
 
-        shim.handleMqTracingHeaders(headers, segment)
+        shim.handleMqTracingHeaders(headers, segment, tx)
 
         assert.ok(!tx.incomingCatId)
         assert.ok(!tx.referringTransactionGuid)
@@ -465,7 +465,7 @@ test('TransactionShim', async function (t) {
         assert.ok(!segment.catTransaction)
         assert.ok(!segment.getAttributes().transaction_guid)
 
-        shim.handleMqTracingHeaders(headers, segment)
+        shim.handleMqTracingHeaders(headers, segment, tx)
 
         assert.ok(!tx.incomingCatId)
         assert.ok(!tx.referringTransactionGuid)
@@ -488,7 +488,7 @@ test('TransactionShim', async function (t) {
         assert.ok(!segment.getAttributes().transaction_guid)
 
         assert.doesNotThrow(function () {
-          shim.handleMqTracingHeaders(null, segment)
+          shim.handleMqTracingHeaders(null, segment, tx)
         })
 
         assert.ok(!tx.incomingCatId)
@@ -516,7 +516,7 @@ test('TransactionShim', async function (t) {
 
           helper.runInTransaction(agent, shim.BG, function (tx2) {
             assert.notEqual(tx2, tx)
-            shim.handleMqTracingHeaders(headers, segment)
+            shim.handleMqTracingHeaders(headers, segment, tx)
           })
 
           assert.equal(tx.incomingCatId, '9876#id')
@@ -541,7 +541,7 @@ test('TransactionShim', async function (t) {
           assert.ok(!tx.tripId)
           assert.ok(!tx.referringPathHash)
 
-          shim.handleMqTracingHeaders(headers)
+          shim.handleMqTracingHeaders(headers, null, tx)
 
           assert.equal(tx.incomingCatId, '9876#id')
           assert.equal(tx.referringTransactionGuid, 'trans id')
@@ -568,7 +568,7 @@ test('TransactionShim', async function (t) {
 
           helper.runInTransaction(agent, shim.BG, function (tx2) {
             assert.notEqual(tx2, tx)
-            shim.handleMqTracingHeaders(headers, segment)
+            shim.handleMqTracingHeaders(headers, segment, tx)
           })
 
           assert.equal(tx.incomingCatId, '9876#id')
@@ -592,7 +592,7 @@ test('TransactionShim', async function (t) {
         helper.runInTransaction(agent, function (tx) {
           const headers = { traceparent, tracestate }
           const segment = shim.getSegment()
-          shim.handleMqTracingHeaders(headers, segment)
+          shim.handleMqTracingHeaders(headers, segment, tx)
 
           const outboundHeaders = {}
           tx.insertDistributedTraceHeaders(outboundHeaders)
@@ -615,7 +615,7 @@ test('TransactionShim', async function (t) {
         helper.runInTransaction(agent, function (tx) {
           const headers = { traceparent }
           const segment = shim.getSegment()
-          shim.handleMqTracingHeaders(headers, segment)
+          shim.handleMqTracingHeaders(headers, segment, tx)
 
           const outboundHeaders = {}
           tx.insertDistributedTraceHeaders(outboundHeaders)
@@ -638,7 +638,7 @@ test('TransactionShim', async function (t) {
         helper.runInTransaction(agent, function (tx) {
           const headers = { traceparent, tracestate }
           const segment = shim.getSegment()
-          shim.handleMqTracingHeaders(headers, segment)
+          shim.handleMqTracingHeaders(headers, segment, tx)
 
           const outboundHeaders = {}
           tx.insertDistributedTraceHeaders(outboundHeaders)
@@ -660,7 +660,7 @@ test('TransactionShim', async function (t) {
       helper.runInTransaction(agent, function (tx) {
         const headers = { traceparent, tracestate }
         const segment = shim.getSegment()
-        shim.handleMqTracingHeaders(headers, segment)
+        shim.handleMqTracingHeaders(headers, segment, tx)
 
         const outboundHeaders = {}
         tx.insertDistributedTraceHeaders(outboundHeaders)
@@ -687,7 +687,7 @@ test('TransactionShim', async function (t) {
 
           helper.runInTransaction(agent, shim.BG, function (tx2) {
             assert.notEqual(tx2, tx)
-            shim.handleMqTracingHeaders(headers, segment)
+            shim.handleMqTracingHeaders(headers, segment, tx2)
           })
 
           assert.equal(segment.catId, '6789#app')
@@ -702,7 +702,7 @@ test('TransactionShim', async function (t) {
       'should attach the CAT info to current segment if not provided - DT disabled, app data is provided',
       function (t, end) {
         const { agent, shim } = t.nr
-        helper.runInTransaction(agent, function () {
+        helper.runInTransaction(agent, function (tx) {
           const headers = createCATHeaders(agent.config)
           const segment = shim.getSegment()
           delete headers['X-NewRelic-Id']
@@ -712,7 +712,7 @@ test('TransactionShim', async function (t) {
           assert.ok(!segment.catTransaction)
           assert.ok(!segment.getAttributes().transaction_guid)
 
-          shim.handleMqTracingHeaders(headers)
+          shim.handleMqTracingHeaders(headers, null, tx)
 
           assert.equal(segment.catId, '6789#app')
           assert.equal(segment.catTransaction, 'app data transaction name')
@@ -738,7 +738,7 @@ test('TransactionShim', async function (t) {
 
           helper.runInTransaction(agent, shim.BG, function (tx2) {
             assert.notEqual(tx2, tx)
-            shim.handleMqTracingHeaders(headers, segment)
+            shim.handleMqTracingHeaders(headers, segment, tx2)
           })
 
           assert.equal(segment.catId, '6789#app')
@@ -753,7 +753,7 @@ test('TransactionShim', async function (t) {
       'should not attach any CAT data to the segment, app data is for an untrusted application',
       function (t, end) {
         const { agent, shim } = t.nr
-        helper.runInTransaction(agent, function () {
+        helper.runInTransaction(agent, function (tx) {
           const headers = createCATHeaders(agent.config)
           const segment = shim.getSegment()
           delete headers['X-NewRelic-Id']
@@ -764,7 +764,7 @@ test('TransactionShim', async function (t) {
           assert.ok(!segment.catTransaction)
           assert.ok(!segment.getAttributes().transaction_guid)
 
-          shim.handleMqTracingHeaders(headers)
+          shim.handleMqTracingHeaders(headers, null, tx)
 
           assert.ok(!segment.catId)
           assert.ok(!segment.catTransaction)
