@@ -245,20 +245,20 @@ test('with default properties', async (t) => {
       iast_test_identifier: 'test_id',
       scan_controllers: {
         iast_scan_request_rate_limit: 3600,
-        scan_instance_count: 1
+        scan_instance_count: 0
       },
       scan_schedule: {
         delay: 0,
-        duration: 300,
+        duration: 0,
         schedule: '',
         always_sample_traces: false
       },
       exclude_from_iast_scan: {
-        api: ['foo'],
+        api: [],
         http_request_parameters: {
-          header: ['header1', 'header2'],
-          query: ['q1', 'q2'],
-          body: ['a1']
+          header: [],
+          query: [],
+          body: []
         },
         iast_detection_category: {
           insecure_settings: false,
