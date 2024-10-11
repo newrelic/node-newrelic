@@ -242,7 +242,7 @@ test('with default properties', async (t) => {
         rxss: { enabled: true },
         deserialization: { enabled: true }
       },
-      iast_test_identifier: 'test_id',
+      iast_test_identifier: '',
       scan_controllers: {
         iast_scan_request_rate_limit: 3600,
         scan_instance_count: 0
