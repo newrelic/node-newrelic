@@ -12,18 +12,6 @@ const LangChainVectorSearch = require('../../../../lib/llm-events/langchain/vect
 
 test.beforeEach((ctx) => {
   ctx.nr = {}
-  ctx.nr._tx = {
-    trace: {
-      custom: {
-        get() {
-          return {
-            'llm.conversation_id': 'test-conversation'
-          }
-        }
-      }
-    }
-  }
-
   ctx.nr.agent = {
     config: {
       ai_monitoring: {
@@ -37,16 +25,25 @@ test.beforeEach((ctx) => {
     },
     tracer: {
       getTransaction() {
-        return ctx.nr._tx
+        return ctx.nr.transaction
       }
     }
   }
 
+  ctx.nr.transaction = {
+    traceId: 'trace-1',
+    trace: {
+      custom: {
+        get() {
+          return {
+            'llm.conversation_id': 'test-conversation'
+          }
+        }
+      }
+    }
+  }
   ctx.nr.segment = {
     id: 'segment-1',
-    transaction: {
-      traceId: 'trace-1'
-    },
     getDurationInMillis() {
       return 42
     }
