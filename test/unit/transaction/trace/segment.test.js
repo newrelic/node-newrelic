@@ -27,24 +27,6 @@ test('TraceSegment', async (t) => {
   t.beforeEach(beforeEach)
   t.afterEach(afterEach)
 
-  // TODO: need to get transaction
-  await t.test('should be bound to a Trace', (t) => {
-    const { agent } = t.nr
-    let segment = null
-    assert.throws(function noTrace() {
-      segment = new TraceSegment({ config: agent.config, name: 'UnitTest', collect: true, traceStacks: {}, root})
-    })
-    assert.equal(segment, null)
-
-    const trans = new Transaction(agent)
-    const root = trans.trace.root
-    const success = new TraceSegment({config: agent.config, name: 'UnitTest', collect: true, traceStacks: trans.traceStacks, root})
-
-    const successTrans = agent.tracer.getTransaction()
-    assert.equal(successTrans, trans)
-    trans.end()
-  })
-
   await t.test('should not add new children when marked as opaque', (t) => {
     const { agent } = t.nr
     const trans = new Transaction(agent)
@@ -59,22 +41,6 @@ test('TraceSegment', async (t) => {
     assert.equal(segment.children.length, 1)
     trans.end()
   })
-
-  // TODO: do we still need to test for callback?
-  // await t.test('should call an optional callback function', (t, end) => {
-  //   const { agent } = t.nr
-  //   const trans = new Transaction(agent)
-  //   assert.doesNotThrow(function noCallback() {
-  //     new TraceSegment({ config: agent.config, name: 'UnitTest', collect: true, traceStacks: trans.traceStacks, root}) // eslint-disable-line no-new
-  //   })
-
-  //   // TODO: need to handle optional callback func in trace segment
-  //   // const working = new TraceSegment(agent.config, 'UnitTest', trans, function () {
-  //   //   end()
-  //   // })
-  //   // working.end(trans)
-  //   trans.end()
-  // })
 
   await t.test('has a name', (t) => {
     const { agent } = t.nr
@@ -117,19 +83,6 @@ test('TraceSegment', async (t) => {
     segment.touch()
     assert.equal(segment.timer.isRunning(), true)
     assert.ok(segment.getDurationInMillis() > 0)
-  })
-
-  // TODO: are callbacks relevant now?
-  await t.test('accepts a callback that records metrics for this segment', (t, end) => {
-    const { agent } = t.nr
-    const trans = new Transaction(agent)
-
-    const segment = new TraceSegment(agent.config, 'Test',trans, (insider) => {
-      assert.equal(insider, segment)
-      end()
-    })
-    segment.end(trans)
-    trans.end()
   })
 
   await t.test('should return the segment id when dt and spans are enabled', (t) => {
@@ -179,7 +132,6 @@ test('TraceSegment', async (t) => {
     }, 10)
   })
 
-  // TODO: fix test - no active segments
   await t.test('properly tracks the number of active or harvested segments', (t, end) => {
     const { agent } = t.nr
     assert.equal(agent.activeTransactions, 0)
@@ -187,12 +139,14 @@ test('TraceSegment', async (t) => {
     assert.equal(agent.segmentsCreatedInHarvest, 0)
 
     const tx = new Transaction(agent)
+    const trace = tx.trace
+    // trace.add('Test')
     assert.equal(agent.totalActiveSegments, 1)
     assert.equal(agent.segmentsCreatedInHarvest, 1)
     assert.equal(tx.numSegments, 1)
     assert.equal(agent.activeTransactions, 1)
 
-    const segment = new TraceSegment({config: agent.config, name: 'Test', collect: true, traceStacks: trans.traceStacks, root}) // eslint-disable-line no-unused-vars
+    trace.add('Test')
     assert.equal(agent.totalActiveSegments, 2)
     assert.equal(agent.segmentsCreatedInHarvest, 2)
     assert.equal(tx.numSegments, 2)
@@ -231,13 +185,12 @@ test('TraceSegment', async (t) => {
     assert.equal(segment.timer.isRunning(), false)
   })
 
-  // TODO: fix missing nr_exclusive_duration_millis
   await t.test('should produce JSON that conforms to the collector spec', (t) => {
     const { agent } = t.nr
     const transaction = new Transaction(agent)
     const trace = transaction.trace
     const root = trace.root
-    const segment = new TraceSegment({config: agent.config, name: 'DB/select/getSome', collect: true, traceStacks: transaction.traceStacks, root})
+    const segment = trace.add('DB/select/getSome')
 
     trace.setDurationInMillis(17, 0)
     segment.setDurationInMillis(14, 3)
@@ -303,7 +256,7 @@ test('with children created from URLs', async (t) => {
     const transaction = new Transaction(ctx.nr.agent)
     const trace = transaction.trace
     const root = transaction.trace.root
-    const segment = new TraceSegment({config: ctx.nr.agent, name: 'UnitTest', collect: true, traceStacks: transaction.traceStacks, root})
+    const segment = trace.add('UnitTest')
 
     const url = '/test?test1=value1&test2&test3=50&test4='
 
@@ -347,7 +300,6 @@ test('with children created from URLs', async (t) => {
     assert.equal(webChild.getAttributes()['request.parameters.test4'], '')
   })
 
-  // TODO: fix missing nr_exclusive_duration_millis
   await t.test('should serialize the segment with the parameters', (t) => {
     const { webChild } = t.nr
     assert.deepEqual(webChild.toJSON(), [
@@ -376,7 +328,7 @@ test('with parameters parsed out by framework', async (t) => {
     const root = trace.root
     trace.mer = 6
 
-    const segment = new TraceSegment({ config: ctx.nr.agent.config, name: 'UnitTest', collect: true, traceStacks: transaction.traceStacks, root})
+    const segment = trace.add('UnitTest')
 
     const url = '/test'
     const params = {}
@@ -422,7 +374,6 @@ test('with parameters parsed out by framework', async (t) => {
     assert.equal(trace.attributes.get(DESTINATIONS.TRANS_TRACE)['test3'], '50')
   })
 
-  // TODO: fix missing nr_exclusive_duration_millis
   await t.test('should serialize the segment with the parameters', (t) => {
     const { webChild } = t.nr
     const expected = [
@@ -449,7 +400,7 @@ test('with attributes.enabled set to false', async (t) => {
     const transaction = new Transaction(ctx.nr.agent)
     const trace = transaction.trace
     const root = trace.root
-    const segment = new TraceSegment({config: ctx.nr.agent.config, name: 'UnitTest', collect: true, traceStacks: transaction.traceStacks, root})
+    const segment = trace.add('UnitTest')
     const url = '/test?test1=value1&test2&test3=50&test4='
 
     const webChild = segment.add({config: ctx.nr.agent.config, name: url, collect: true, traceStacks: transaction.traceStacks, root})
@@ -494,7 +445,7 @@ test('with attributes.enabled set', async (t) => {
     const transaction = new Transaction(ctx.nr.agent)
     const trace = transaction.trace
     const root = trace.root
-    const segment = new TraceSegment({config: ctx.nr.agent.config, name: 'UnitTest', collect: true, traceStacks: transaction.traceStacks, root})
+    const segment = trace.add('UnitTest')
 
     const url = '/test?test1=value1&test2&test3=50&test4='
 
@@ -540,7 +491,6 @@ test('with attributes.enabled set', async (t) => {
     assert.equal(attributes['request.parameters.test2'], true)
   })
 
-  // TODO: fix missing nr_exclusive_duration_millis
   await t.test('should serialize the segment with the parameters', (t) => {
     const { webChild } = t.nr
     assert.deepEqual(webChild.toJSON(), [

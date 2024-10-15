@@ -17,7 +17,6 @@ const Segment = require('../../../../lib/transaction/trace/segment')
 const DTPayload = require('../../../../lib/transaction/dt-payload')
 const Trace = require('../../../../lib/transaction/trace')
 const Transaction = require('../../../../lib/transaction')
-const TraceSegment = require('../../../../lib/transaction/trace/segment')
 const { transaction } = require('../../../../lib/symbols')
 
 const NEWRELIC_TRACE_HEADER = 'newrelic'
@@ -55,6 +54,7 @@ test('Trace', async (t) => {
     const trace = transaction.trace
 
     assert.doesNotThrow(() => {
+      trace.add('Custom/Test17/Child1')
       trace.add('Custom/Test17/Child1')
     })
   })
@@ -207,54 +207,55 @@ test('Trace', async (t) => {
 
   })
 
-  // await t.test('parent.* attributes should be present on generated spans', (t) => {
-  //   const { agent } = t.nr
-  //   // Setup DT
-  //   const encKey = 'gringletoes'
-  //   agent.config.encoding_key = encKey
-  //   agent.config.attributes.enabled = true
-  //   agent.config.distributed_tracing.enabled = true
-  //   agent.config.trusted_account_key = 111
+  await t.test('parent.* attributes should be present on generated spans', (t) => {
+    const { agent } = t.nr
+    // Setup DT
+    const encKey = 'gringletoes'
+    agent.config.encoding_key = encKey
+    agent.config.attributes.enabled = true
+    agent.config.distributed_tracing.enabled = true
+    agent.config.trusted_account_key = 111
 
-  //   const dtInfo = {
-  //     ty: 'App', // type
-  //     ac: 111, // accountId
-  //     ap: 222, // appId
-  //     tx: 333, // transactionId
-  //     tr: 444, // traceId
-  //     pr: 1, // priority
-  //     sa: true, // sampled
-  //     // timestamp, if in the future, duration will always be 0
-  //     ti: Date.now() + 10000
-  //   }
-  //   const dtPayload = new DTPayload(dtInfo)
-  //   const headers = { [NEWRELIC_TRACE_HEADER]: dtPayload.httpSafe() }
-  //   const transaction = new Transaction(agent)
-  //   const root = transaction.trace.root
-  //   transaction.sampled = true
+    const dtInfo = {
+      ty: 'App', // type
+      ac: 111, // accountId
+      ap: 222, // appId
+      tx: 333, // transactionId
+      tr: 444, // traceId
+      pr: 1, // priority
+      sa: true, // sampled
+      // timestamp, if in the future, duration will always be 0
+      ti: Date.now() + 10000
+    }
+    const dtPayload = new DTPayload(dtInfo)
+    const headers = { [NEWRELIC_TRACE_HEADER]: dtPayload.httpSafe() }
+    const transaction = new Transaction(agent)
+    const root = transaction.trace.root
+    transaction.sampled = true
 
-  //   // Get the parent attributes on the transaction
-  //   transaction.acceptDistributedTraceHeaders('HTTP', headers)
+    // Get the parent attributes on the transaction
+    transaction.acceptDistributedTraceHeaders('HTTP', headers)
 
-  //   // Create at least one segment
-  //   const trace = new Trace(transaction)
-  //   const child = (transaction.baseSegment = new TraceSegment({config: agent.config, name: 'test', collect: true, traceStacks: transaction.traceStacks, root}))
-  //   child.start()
-  //   child.end()
+    // Create at least one segment
+    const trace = new Trace(transaction)
+    const child = (transaction.baseSegment = trace.add('test'))
 
-  //   // This should add the parent attributes onto a child span event
-  //   trace.generateSpanEvents()
+    child.start()
+    child.end()
 
-  //   // Test that a child span event has the attributes
-  //   const attrs = child.attributes.get(DESTINATIONS.SPAN_EVENT)
-  //   assert.deepEqual(attrs, {
-  //     'parent.type': 'App',
-  //     'parent.app': 222,
-  //     'parent.account': 111,
-  //     'parent.transportType': 'HTTP',
-  //     'parent.transportDuration': 0
-  //   })
-  // })
+    // This should add the parent attributes onto a child span event
+    trace.generateSpanEvents()
+
+    // Test that a child span event has the attributes
+    const attrs = child.attributes.get(DESTINATIONS.SPAN_EVENT)
+    assert.deepEqual(attrs, {
+      'parent.type': 'App',
+      'parent.app': 222,
+      'parent.account': 111,
+      'parent.transportType': 'HTTP',
+      'parent.transportDuration': 0
+    })
+  })
 
   await t.test('should send host display name on transaction when set by user', (t) => {
     const { agent } = t.nr
@@ -268,28 +269,29 @@ test('Trace', async (t) => {
     })
   })
 
-  // await t.test('should send host display name attribute on span', (t) => {
-  //   const { agent } = t.nr
-  //   agent.config.attributes.enabled = true
-  //   agent.config.distributed_tracing.enabled = true
-  //   agent.config.process_host.display_name = 'test-value'
-  //   const transaction = new Transaction(agent)
-  //   transaction.sampled = true
+  await t.test('should send host display name attribute on span', (t) => {
+    const { agent } = t.nr
+    agent.config.attributes.enabled = true
+    agent.config.distributed_tracing.enabled = true
+    agent.config.process_host.display_name = 'test-value'
+    const transaction = new Transaction(agent)
+    transaction.sampled = true
 
-  //   const trace = new Trace(transaction)
-  //   const root = trace.root
+    const trace = new Trace(transaction)
+    const root = trace.root
 
-  //   // add a child segment
-  //   const child = (transaction.baseSegment = new TraceSegment({config: agent.config, name: 'test', collect: true, traceStacks: transaction.traceStacks, root}))
-  //   child.start()
-  //   child.end()
+    // add a child segment
+    const child = (transaction.baseSegment = trace.add('test'))
 
-  //   trace.generateSpanEvents()
+    child.start()
+    child.end()
 
-  //   assert.deepEqual(child.attributes.get(DESTINATIONS.SPAN_EVENT), {
-  //     'host.displayName': 'test-value'
-  //   })
-  // })
+    trace.generateSpanEvents()
+
+    assert.deepEqual(child.attributes.get(DESTINATIONS.SPAN_EVENT), {
+      'host.displayName': 'test-value'
+    })
+  })
 
   await t.test('should not send host display name when not set by user', (t) => {
     const { agent } = t.nr
@@ -459,7 +461,7 @@ test('when inserting segments', async (t) => {
     const { agent, trace, transaction } = t.nr
     const root = trace.root
     assert.doesNotThrow(() => {
-      new TraceSegment({ config: agent.config, name: 'Custom/Test17/Child1', collect: true, traceStacks: transaction.traceStacks, root})
+      trace.add('Custom/Test17/Child1')
     })
   })
 
@@ -468,27 +470,27 @@ test('when inserting segments', async (t) => {
     const root = trace.root
     let segment
     assert.doesNotThrow(() => {
-      segment = new TraceSegment({config: agent.config, name: 'Custom/Test18/Child1', collect: true, traceStacks: transaction.traceStacks, root})
+      segment = trace.add('Custom/Test18/Child1')
     })
     assert.ok(segment instanceof Segment)
   })
 
-  // TODO: fix test - using callback
-  // await t.test('should call a function associated with the segment', (t, end) => {
-  //   const { trace, transaction } = t.nr
-  //   const segment = trace.add('Custom/Test18/Child1', () => {
-  //     end()
-  //   })
+  //TODO: fix test - using callback
+  await t.test('should call a function associated with the segment', (t, end) => {
+    const { trace, transaction } = t.nr
+    const segment = trace.add('Custom/Test18/Child1', () => {
+      end()
+    })
 
-  //   segment.end()
-  //   transaction.end()
-  // })
+    segment.end()
+    transaction.end()
+  })
 
   await t.test('should report total time', (t) => {
     const { trace, transaction } = t.nr
     const root = trace.root
     trace.setDurationInMillis(40, 0)
-    const child = new TraceSegment({ config: agent.config, name: 'Custom/Test18/Child1', collect: true, traceStacks: transaction.traceStacks, root})
+    const child = trace.add('Custom/Test18/Child1')
 
     child.setDurationInMillis(27, 0)
     let seg = child.add({config: agent.config, name: 'UnitTest', collect: true, traceStacks: transaction.traceStacks, root})
@@ -503,10 +505,10 @@ test('when inserting segments', async (t) => {
   })
 
   await t.test('should report total time on branched traces', (t) => {
-    const { trace, transaction } = t.nr
+    const { trace, transaction, agent } = t.nr
     const root = trace.root
     trace.setDurationInMillis(40, 0)
-    const child = new TraceSegment({ config: agent.config, name: 'Custom/Test18/Child1', collect: true, traceStacks: transaction.traceStacks, root})
+    const child = trace.add('Custom/Test18/Child1')
     child.setDurationInMillis(27, 0)
     const seg1 = child.add({config: agent.config, name: 'UnitTest', collect: true, traceStacks: transaction.traceStacks, root})
     seg1.setDurationInMillis(9, 1)
@@ -549,7 +551,7 @@ test('when inserting segments', async (t) => {
     ]
 
     trace.setDurationInMillis(40, 0)
-    const child = new TraceSegment({ config: agent.config, name: 'Root', collect: true, traceStacks: transaction.traceStacks, root})
+    const child = trace.add('Root')
 
     child.setDurationInMillis(27, 0)
     const seg1 = child.add({config: agent.config, name: 'first', collect: true, traceStacks: transaction.traceStacks, root})
@@ -603,7 +605,7 @@ test('when inserting segments', async (t) => {
       ]
     ]
     trace.setDurationInMillis(40, 0)
-    const child = new TraceSegment({ config: agent.config, name: 'Root', collect: true, traceStacks: transaction.traceStacks, root})
+    const child = trace.add('Root')
 
     child.setDurationInMillis(27, 0)
     const seg1 = child.add({config: agent.config, name: 'first', collect: true, traceStacks: transaction.traceStacks, root})
@@ -627,7 +629,7 @@ test('when inserting segments', async (t) => {
   await t.test('should measure exclusive time vs total time at each level of the graph', (t) => {
     const { trace, transaction } = t.nr
     const root = trace.root
-    const child = new TraceSegment({config: agent.config, name: 'Custom/Test18/Child1', collect: true, traceStacks: transaction.traceStacks, root})
+    const child = trace.add('Custom/Test18/Child1')
 
     trace.setDurationInMillis(42)
     child.setDurationInMillis(22, 0)
@@ -642,20 +644,20 @@ test('when inserting segments', async (t) => {
 
     const now = Date.now()
 
-    const child1 = new TraceSegment({config: agent.config, name: 'Custom/Test19/Child1', collect: true, traceStacks: transaction.traceStacks, root})
+    const child1 = trace.add('Custom/Test19/Child1')
     child1.setDurationInMillis(22, now)
 
     // add another child trace completely encompassed by the first
-    const child2 = new TraceSegment({config: agent.config, name: 'Custom/Test19/Child2', collect: true, traceStacks: transaction.traceStacks, root})
+    const child2 = trace.add('Custom/Test19/Child2')
     child2.setDurationInMillis(5, now + 5)
 
     // add another that starts within the first range but that extends beyond
-    const child3 = new TraceSegment({config: agent.config, name: 'Custom/Test19/Child3', collect: true, traceStacks: transaction.traceStacks, root})
+    const child3 = trace.add('Custom/Test19/Child3')
 
     child3.setDurationInMillis(22, now + 11)
 
     // add a final child that's entirely disjoint
-    const child4 = new TraceSegment({config: agent.config, name: 'Custom/Test19/Child4', collect: true, traceStacks: transaction.traceStacks, root})
+    const child4 = trace.add('Custom/Test19/Child4')
 
     child4.setDurationInMillis(4, now + 35)
 
@@ -670,21 +672,21 @@ test('when inserting segments', async (t) => {
     const now = Date.now()
 
     // create a long child on its own
-    const child1 = new TraceSegment({config: agent.config, name: 'Custom/Test20/Child1', collect: true, traceStacks: transaction.traceStacks, root})
+    const child1 = trace.add('Custom/Test20/Child1')
 
     child1.setDurationInMillis(33, now)
 
     // add another, short child as a sibling
-    const child2 = new TraceSegment({config: agent.config, name: 'Custom/Test20/Child2', collect: true, traceStacks: transaction.traceStacks, root})
+    const child2 = trace.add('Custom/Test20/Child2')
 
     child2.setDurationInMillis(5, now)
 
     // add two disjoint children of the second segment encompassed by the first segment
-    const child3 = new TraceSegment({config: agent.config, name: 'Custom/Test20/Child3', collect: true, traceStacks: transaction.traceStacks, root})
+    const child3 = child2.add('Custom/Test20/Child3')
 
     child3.setDurationInMillis(11, now)
 
-    const child4 = new TraceSegment({config: agent.config, name: 'Custom/Test20/Child3', collect: true, traceStacks: transaction.traceStacks, root})
+    const child4 = child2.add('Custom/Test20/Child3')
 
     child4.setDurationInMillis(11, now + 16)
 
@@ -702,17 +704,17 @@ test('when inserting segments', async (t) => {
 
     const now = Date.now()
 
-    const child1 = new TraceSegment({config: agent.config, name: 'Custom/Test20/Child1', collect: true, traceStacks: transaction.traceStacks, root})
+    const child1 = trace.add('Custom/Test20/Child1')
     child1.setDurationInMillis(22, now)
 
     // add another child trace completely encompassed by the first
-    const child2 = new TraceSegment({config: agent.config, name: 'Custom/Test20/Child2', collect: true, traceStacks: transaction.traceStacks, root})
+    const child2 = trace.add('Custom/Test20/Child2')
     child2.setDurationInMillis(5, now + 5)
 
     /* add another that starts simultaneously with the first range but
      * that extends beyond
      */
-    const child3 = new TraceSegment({config: agent.config, name: 'Custom/Test20/Child3', collect: true, traceStacks: transaction.traceStacks, root})
+    const child3 = trace.add('Custom/Test20/Child3')
     child3.setDurationInMillis(33, now)
 
     assert.equal(trace.getExclusiveDurationInMillis(), 9)
@@ -725,36 +727,36 @@ test('when inserting segments', async (t) => {
 
     const now = Date.now()
 
-    const child1 = new TraceSegment({config: agent.config, name: 'Custom/Test21/Child1', collect: true, traceStacks: transaction.traceStacks, root})
+    const child1 = trace.add('Custom/Test21/Child1')
     child1.setDurationInMillis(22, now)
 
     // add a range that starts at the exact end of the first
-    const child2 = new TraceSegment({config: agent.config, name: 'Custom/Test21/Child2', collect: true, traceStacks: transaction.traceStacks, root})
+    const child2 = trace.add('Custom/Test21/Child2')
     child2.setDurationInMillis(11, now + 22)
 
     assert.equal(trace.getExclusiveDurationInMillis(), 9)
   })
 
-  // await t.test('should be limited to 900 children', (t) => {
-  //   const { trace, transaction } = t.nr
-  //   // They will be tagged as _collect = false after the limit runs out.
-  //   for (let i = 0; i < 950; ++i) {
-  //     const segment = trace.add(i.toString(), noop)
-  //     if (i < 900) {
-  //       assert.equal(segment._collect, true, `segment ${i} should be collected`)
-  //     } else {
-  //       assert.equal(segment._collect, false, `segment ${i} should not be collected`)
-  //     }
-  //   }
+  await t.test('should be limited to 900 children', (t) => {
+    const { trace, transaction } = t.nr
+    // They will be tagged as _collect = false after the limit runs out.
+    for (let i = 0; i < 950; ++i) {
+      const segment = trace.add(i.toString())
+      if (i < 900) {
+        assert.equal(segment._collect, true, `segment ${i} should be collected`)
+      } else {
+        assert.equal(segment._collect, false, `segment ${i} should not be collected`)
+      }
+    }
 
-  //   assert.equal(trace.root.children.length, 950)
-  //   assert.equal(transaction._recorders.length, 950)
-  //   trace.segmentCount = 0
-  //   trace.root.children = []
-  //   trace.recorders = []
+    assert.equal(trace.root.children.length, 950)
+    assert.equal(transaction._recorders.length, 950)
+    trace.segmentCount = 0
+    trace.root.children = []
+    trace.recorders = []
 
-  //   function noop() {}
-  // })
+    function noop() {}
+  })
 })
 
 test('should set URI to null when request.uri attribute is excluded globally', async (t) => {
@@ -927,8 +929,7 @@ test('infinite tracing', async (t) => {
 function addTwoSegments(transaction) {
   const trace = transaction.trace
   const root = trace.root
-  const child1 = (transaction.baseSegment = new TraceSegment({config: agent.config, name: 'test', collect: true, traceStacks: transaction.traceStacks, root})
-)
+  const child1 = (transaction.baseSegment = trace.add('test'))
   child1.start()
   const child2 = child1.add('nested')
   child2.start()

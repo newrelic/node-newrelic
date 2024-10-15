@@ -8,6 +8,7 @@ const assert = require('node:assert')
 const test = require('node:test')
 const helper = require('../../lib/agent_helper')
 const Segment = require('../../../lib/transaction/trace/segment')
+const Transaction = require('../../../lib/transaction')
 
 const notRunningStates = ['stopped', 'stopping', 'errored']
 function beforeEach(ctx) {
@@ -141,5 +142,40 @@ test('Tracer', async function (t) {
         })
       }
     )
+  })
+
+  await t.test('Optional callback', async (t) => {
+    t.beforeEach(beforeEach)
+    t.afterEach(afterEach)
+
+    await t.test('should call an optional callback function', (t, end) => {
+      const { tracer, agent } = t.nr
+      const trans = new Transaction(agent)
+      const trace = trans.trace
+
+      assert.doesNotThrow(function noCallback() {
+        trace.add('UnitTest', null, null) // eslint-disable-line no-new
+      })
+
+      const working = trace.add('UnitTest', function () {
+        end()
+      }, null, false, function (){})
+
+      working.end()
+      trans.end()
+    })
+
+    await t.test('accepts a callback that records metrics for this segment', (t, end) => {
+      const { agent } = t.nr
+      const trans = new Transaction(agent)
+      const trace = trans.trace
+
+      const segment = trace.add('Test', (insider) => {
+        assert.equal(insider, segment)
+        end()
+      }, null, false, function (){})
+      segment.end()
+      trans.end()
+    })
   })
 })
