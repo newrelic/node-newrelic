@@ -335,7 +335,7 @@ const runTestCase = function (testCase, parentTest) {
     const transactionType = testCase.web_transaction ? TYPES.WEB : TYPES.BG
 
     helper.runInTransaction(agent, transactionType, function (transaction) {
-      transaction.baseSegment = transaction.trace.root.add('MyBaseSegment', (segment) => {
+      transaction.baseSegment = transaction.trace.add('MyBaseSegment', (segment) => {
         recorder(
           transaction,
           testCase.web_transaction ? 'Web' : 'Other',

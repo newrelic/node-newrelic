@@ -30,6 +30,7 @@ test('should properly create a LlmChatCompletionSummary event', (t, end) => {
       const chatSummaryEvent = new LlmChatCompletionSummary({
         agent,
         segment,
+        transaction: tx,
         request: req,
         response: chatRes
       })
@@ -45,6 +46,7 @@ test('should set error to true', (ctx, end) => {
   helper.runInTransaction(agent, () => {
     const chatSummaryEvent = new LlmChatCompletionSummary({
       agent,
+      transaction: null,
       segment: null,
       request: {},
       response: {},
@@ -67,6 +69,7 @@ test('should set `llm.` attributes from custom attributes', (t, end) => {
     const chatSummaryEvent = new LlmChatCompletionSummary({
       agent,
       segment: null,
+      transaction: null,
       request: {},
       response: {}
     })

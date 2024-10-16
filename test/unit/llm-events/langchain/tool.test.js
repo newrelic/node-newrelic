@@ -11,18 +11,6 @@ const LangChainTool = require('../../../../lib/llm-events/langchain/tool')
 
 test.beforeEach((ctx) => {
   ctx.nr = {}
-  ctx.nr._tx = {
-    trace: {
-      custom: {
-        get() {
-          return {
-            'llm.conversation_id': 'test-conversation'
-          }
-        }
-      }
-    }
-  }
-
   ctx.nr.agent = {
     config: {
       ai_monitoring: {
@@ -36,7 +24,20 @@ test.beforeEach((ctx) => {
     },
     tracer: {
       getTransaction() {
-        return ctx.nr._tx
+        return ctx.nr.transaction
+      }
+    }
+  }
+
+  ctx.nr.transaction = {
+    traceId: 'trace-1',
+    trace: {
+      custom: {
+        get() {
+          return {
+            'llm.conversation_id': 'test-conversation'
+          }
+        }
       }
     }
   }
@@ -45,10 +46,7 @@ test.beforeEach((ctx) => {
     getDurationInMillis() {
       return 1.01
     },
-    id: 'segment-1',
-    transaction: {
-      traceId: 'trace-1'
-    }
+    id: 'segment-1'
   }
 
   ctx.nr.runId = 'run-1'

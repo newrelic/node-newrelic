@@ -88,6 +88,7 @@ test('undici instrumentation', async function (t) {
         }
         channels.create.publish({ request })
         assert.ok(request[symbols.parentSegment])
+        assert.ok(request[symbols.transaction])
         assert.equal(request.addHeader.callCount, 2)
         assert.deepEqual(request.addHeader.args[0], ['x-newrelic-synthetics', 'synthHeader'])
         assert.deepEqual(request.addHeader.args[1], [
@@ -146,6 +147,11 @@ test('undici instrumentation', async function (t) {
             request2[symbols.parentSegment].id,
             'parent segment should be same'
           )
+          assert.equal(
+            request[symbols.transaction].id,
+            request2[symbols.transaction].id,
+            'tx should be same'
+          )
           tx.end()
           end()
         })
@@ -165,6 +171,7 @@ test('undici instrumentation', async function (t) {
             const request2 = { path: '/request2', addHeader: sandbox.stub(), origin: HOST }
             channels.create.publish({ request: request2 })
             assert.notEqual(request[symbols.parentSegment], request2[symbols.parentSegment])
+            assert.equal(request[symbols.transaction], request2[symbols.transaction])
             tx.end()
             end()
           })
@@ -189,6 +196,11 @@ test('undici instrumentation', async function (t) {
             request[symbols.parentSegment].name,
             request2[symbols.parentSegment].name,
             'parent segment should not be same'
+          )
+          assert.equal(
+            request[symbols.transaction].id,
+            request2[symbols.transaction].id,
+            'tx should be the same'
           )
           tx.end()
           end()
@@ -365,7 +377,8 @@ test('undici instrumentation', async function (t) {
         shim.setActiveSegment(segment)
         const request = {
           [symbols.parentSegment]: parentSegment,
-          [symbols.segment]: segment
+          [symbols.segment]: segment,
+          [symbols.transaction]: tx
         }
         channels.send.publish({ request })
         assert.equal(segment.timer.state, 3, 'previous active segment timer should be stopped')
@@ -388,7 +401,8 @@ test('undici instrumentation', async function (t) {
           const error = new Error('request failed')
           const request = {
             [symbols.parentSegment]: parentSegment,
-            [symbols.segment]: segment
+            [symbols.segment]: segment,
+            [symbols.transaction]: tx
           }
           channels.error.publish({ request, error })
           assert.equal(segment.timer.state, 3, 'previous active segment timer should be stopped')

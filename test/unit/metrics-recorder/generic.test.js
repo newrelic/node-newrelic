@@ -11,7 +11,7 @@ const recordGeneric = require('../../../lib/metrics/recorders/generic')
 const Transaction = require('../../../lib/transaction')
 
 function makeSegment(options) {
-  const segment = options.transaction.trace.root.add('placeholder')
+  const segment = options.transaction.trace.add('placeholder')
   segment.setDurationInMillis(options.duration)
   segment._setExclusiveDurationInMillis(options.exclusive)
 
@@ -27,7 +27,7 @@ function record(options) {
   const transaction = options.transaction
 
   transaction.finalizeNameFromUri(options.url, options.code)
-  recordGeneric(segment, options.transaction.name)
+  recordGeneric(segment, options.transaction.name, options.transaction)
 }
 
 test('recordGeneric', async function (t) {
@@ -50,7 +50,7 @@ test('recordGeneric', async function (t) {
       exclusive: 0
     })
     assert.doesNotThrow(function () {
-      recordGeneric(segment, undefined)
+      recordGeneric(segment, undefined, trans)
     })
   })
 
@@ -61,7 +61,7 @@ test('recordGeneric', async function (t) {
       duration: 5,
       exclusive: 5
     })
-    recordGeneric(segment, undefined)
+    recordGeneric(segment, undefined, trans)
 
     const result = [[{ name: 'placeholder' }, [1, 0.005, 0.005, 0.005, 0.005, 0.000025]]]
 
@@ -93,9 +93,9 @@ test('recordGeneric', async function (t) {
   await t.test('should report exclusive time correctly', function (t) {
     const { trans } = t.nr
     const root = trans.trace.root
-    const parent = root.add('Test/Parent', recordGeneric)
-    const child1 = parent.add('Test/Child/1', recordGeneric)
-    const child2 = parent.add('Test/Child/2', recordGeneric)
+    const parent = trans.trace.add('Test/Parent', recordGeneric)
+    const child1 = trans.trace.add('Test/Child/1', recordGeneric, parent)
+    const child2 = trans.trace.add('Test/Child/2', recordGeneric, parent)
 
     root.setDurationInMillis(30, 0)
     parent.setDurationInMillis(30, 0)

@@ -70,7 +70,7 @@ test('fromSegment()', async (t) => {
         const spanContext = segment.getSpanContext()
         spanContext.addCustomAttribute('Span Lee', 'no prize')
 
-        const span = SpanEvent.fromSegment(segment, 'parent')
+        const span = SpanEvent.fromSegment(segment, transaction, 'parent')
 
         // Should have all the normal properties.
         assert.ok(span)
@@ -136,7 +136,7 @@ test('fromSegment()', async (t) => {
         res.resume()
         res.on('end', () => {
           const segment = agent.tracer.getTransaction().trace.root.children[0]
-          const span = SpanEvent.fromSegment(segment, 'parent')
+          const span = SpanEvent.fromSegment(segment, transaction, 'parent')
 
           // Should have all the normal properties.
           assert.ok(span)
@@ -238,7 +238,7 @@ test('fromSegment()', async (t) => {
       dsConn.myDbOp(longQuery, () => {
         transaction.end()
         const segment = transaction.trace.root.children[0]
-        const span = SpanEvent.fromSegment(segment, 'parent')
+        const span = SpanEvent.fromSegment(segment, transaction, 'parent')
 
         // Should have all the normal properties.
         assert.ok(span)
@@ -303,7 +303,7 @@ test('fromSegment()', async (t) => {
 
       setTimeout(() => {
         const segment = agent.tracer.getSegment()
-        const span = SpanEvent.fromSegment(segment, 'parent')
+        const span = SpanEvent.fromSegment(segment, transaction, 'parent')
 
         const serializedSpan = span.toJSON()
         const [intrinsics] = serializedSpan
@@ -336,7 +336,7 @@ test('fromSegment()', async (t) => {
         spanContext.addIntrinsicAttribute('intrinsic.1', 1)
         spanContext.addIntrinsicAttribute('intrinsic.2', 2)
 
-        const span = SpanEvent.fromSegment(segment, 'parent')
+        const span = SpanEvent.fromSegment(segment, transaction, 'parent')
 
         const serializedSpan = span.toJSON()
         const [intrinsics] = serializedSpan
@@ -360,7 +360,7 @@ test('fromSegment()', async (t) => {
           const segment = transaction.trace.root.children[0]
           assert.ok(segment.name.startsWith('Truncated'))
 
-          const span = SpanEvent.fromSegment(segment)
+          const span = SpanEvent.fromSegment(segment, transaction)
           assert.ok(span)
           assert.ok(span instanceof SpanEvent)
           assert.ok(span instanceof SpanEvent.HttpSpanEvent)
@@ -374,12 +374,12 @@ test('fromSegment()', async (t) => {
   await t.test('should handle truncated datastore spans', (t, end) => {
     const { agent } = t.nr
     helper.runInTransaction(agent, (transaction) => {
-      const segment = transaction.trace.root.add('Datastore/operation/something')
+      const segment = transaction.trace.add('Datastore/operation/something')
       transaction.end() // end before segment to trigger truncate
 
       assert.ok(segment.name.startsWith('Truncated'))
 
-      const span = SpanEvent.fromSegment(segment)
+      const span = SpanEvent.fromSegment(segment, transaction)
       assert.ok(span)
       assert.ok(span instanceof SpanEvent)
       assert.ok(span instanceof SpanEvent.DatastoreSpanEvent)
