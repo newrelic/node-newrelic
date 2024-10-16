@@ -149,7 +149,7 @@ test('Tracer', async function (t) {
     t.afterEach(afterEach)
 
     await t.test('should call an optional callback function', (t, end) => {
-      const { tracer, agent } = t.nr
+      const { agent } = t.nr
       const trans = new Transaction(agent)
       const trace = trans.trace
 
@@ -176,6 +176,43 @@ test('Tracer', async function (t) {
       }, null, false, function (){})
       segment.end()
       trans.end()
+    })
+  })
+
+  await t.test('increment segments', async (t) => {
+    t.beforeEach(beforeEach)
+    t.afterEach(afterEach)
+    await t.test('properly tracks the number of active or harvested segments', (t, end) => {
+      const { agent, tracer } = t.nr
+      assert.equal(agent.activeTransactions, 0)
+      assert.equal(agent.totalActiveSegments, 0)
+      assert.equal(agent.segmentsCreatedInHarvest, 0)
+  
+      const tx = new Transaction(agent)
+      assert.equal(agent.totalActiveSegments, 1)
+      assert.equal(agent.segmentsCreatedInHarvest, 1)
+      assert.equal(tx.numSegments, 1)
+      assert.equal(agent.activeTransactions, 1)
+  
+      tracer.createSegment('Test')
+      assert.equal(agent.totalActiveSegments, 2)
+      assert.equal(agent.segmentsCreatedInHarvest, 2)
+      assert.equal(tx.numSegments, 2)
+      tx.end()
+  
+      assert.equal(agent.activeTransactions, 0)
+  
+      setTimeout(function () {
+        assert.equal(agent.totalActiveSegments, 0)
+        assert.equal(agent.segmentsClearedInHarvest, 2)
+  
+        agent.forceHarvestAll(() => {
+          assert.equal(agent.totalActiveSegments, 0)
+          assert.equal(agent.segmentsClearedInHarvest, 0)
+          assert.equal(agent.segmentsCreatedInHarvest, 0)
+          end()
+        })
+      }, 10)
     })
   })
 })

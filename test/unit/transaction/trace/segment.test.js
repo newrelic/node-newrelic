@@ -132,41 +132,6 @@ test('TraceSegment', async (t) => {
     }, 10)
   })
 
-  await t.test('properly tracks the number of active or harvested segments', (t, end) => {
-    const { agent } = t.nr
-    assert.equal(agent.activeTransactions, 0)
-    assert.equal(agent.totalActiveSegments, 0)
-    assert.equal(agent.segmentsCreatedInHarvest, 0)
-
-    const tx = new Transaction(agent)
-    const trace = tx.trace
-    // trace.add('Test')
-    assert.equal(agent.totalActiveSegments, 1)
-    assert.equal(agent.segmentsCreatedInHarvest, 1)
-    assert.equal(tx.numSegments, 1)
-    assert.equal(agent.activeTransactions, 1)
-
-    trace.add('Test')
-    assert.equal(agent.totalActiveSegments, 2)
-    assert.equal(agent.segmentsCreatedInHarvest, 2)
-    assert.equal(tx.numSegments, 2)
-    tx.end()
-
-    assert.equal(agent.activeTransactions, 0)
-
-    setTimeout(function () {
-      assert.equal(agent.totalActiveSegments, 0)
-      assert.equal(agent.segmentsClearedInHarvest, 2)
-
-      agent.forceHarvestAll(() => {
-        assert.equal(agent.totalActiveSegments, 0)
-        assert.equal(agent.segmentsClearedInHarvest, 0)
-        assert.equal(agent.segmentsCreatedInHarvest, 0)
-        end()
-      })
-    }, 10)
-  })
-
   await t.test('toJSON should not modify attributes', (t) => {
     const { agent } = t.nr
     const transaction = new Transaction(agent)
