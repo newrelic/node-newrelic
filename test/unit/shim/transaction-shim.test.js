@@ -230,7 +230,7 @@ test('TransactionShim', async function (t) {
       }, new TransactionSpec({ type: shim.BG }))
       const web = shim.bindCreateTransaction(function () {
         webCalled = true
-        webTx = shim.tracer.getTransaction() 
+        webTx = shim.tracer.getTransaction()
         bg()
       }, new TransactionSpec({ type: shim.WEB }))
 

@@ -44,7 +44,12 @@ test('MessageShim', async function (t) {
       withNested: function () {
         const transaction = agent.tracer.getTransaction()
         const segment = agent.tracer.getSegment()
-        segment.add({ config: agent.config, name: 'ChildSegment', traceStacks: transaction.traceStacks, root: transaction.trace.root })
+        segment.add({
+          config: agent.config,
+          name: 'ChildSegment',
+          traceStacks: transaction.traceStacks,
+          root: transaction.trace.root
+        })
 
         return segment
       }
@@ -1228,7 +1233,7 @@ test('MessageShim', async function (t) {
           const segment = shim.getSegment()
           assert.notEqual(segment.name, 'Callback: consumer')
           assert.ok(childTx.id)
-          assert.notEqual(tx.id, childTx.id) 
+          assert.notEqual(tx.id, childTx.id)
           end()
         })
         assert.ok(parent)

@@ -31,13 +31,31 @@ test('TraceSegment', async (t) => {
     const { agent } = t.nr
     const trans = new Transaction(agent)
     const root = trans.trace.root
-    const segment = new TraceSegment({ config: agent.config, name: 'UnitTest', collect: true, traceStacks: trans.traceStacks, root})
+    const segment = new TraceSegment({
+      config: agent.config,
+      name: 'UnitTest',
+      collect: true,
+      traceStacks: trans.traceStacks,
+      root
+    })
     assert.ok(!segment.opaque)
     segment.opaque = true
-    segment.add({ config: agent.config, name: 'child', collect: true, traceStacks: trans.traceStacks, root})
+    segment.add({
+      config: agent.config,
+      name: 'child',
+      collect: true,
+      traceStacks: trans.traceStacks,
+      root
+    })
     assert.equal(segment.children.length, 0)
     segment.opaque = false
-    segment.add({ config: agent.config, name: 'child', collect: true, traceStacks: trans.traceStacks, root})
+    segment.add({
+      config: agent.config,
+      name: 'child',
+      collect: true,
+      traceStacks: trans.traceStacks,
+      root
+    })
     assert.equal(segment.children.length, 1)
     trans.end()
   })
@@ -46,7 +64,13 @@ test('TraceSegment', async (t) => {
     const { agent } = t.nr
     const trans = new Transaction(agent)
     const root = trans.trace.root
-    const success = new TraceSegment({ config: agent.config, name: 'UnitTest', collect: true, traceStacks: trans.traceStacks, root})
+    const success = new TraceSegment({
+      config: agent.config,
+      name: 'UnitTest',
+      collect: true,
+      traceStacks: trans.traceStacks,
+      root
+    })
     assert.equal(success.name, 'UnitTest')
   })
 
@@ -54,7 +78,13 @@ test('TraceSegment', async (t) => {
     const { agent } = t.nr
     const trans = new Transaction(agent)
     const root = trans.trace.root
-    const segment = new TraceSegment({ config: agent.config, name: 'UnitTest', collect: true, traceStacks: trans.traceStacks, root})
+    const segment = new TraceSegment({
+      config: agent.config,
+      name: 'UnitTest',
+      collect: true,
+      traceStacks: trans.traceStacks,
+      root
+    })
     assert.equal(segment.children.length, 0)
   })
 
@@ -62,7 +92,13 @@ test('TraceSegment', async (t) => {
     const { agent } = t.nr
     const trans = new Transaction(agent)
     const root = trans.trace.root
-    const segment = new TraceSegment({ config: agent.config, name: 'UnitTest', collect: true, traceStacks: trans.traceStacks, root})
+    const segment = new TraceSegment({
+      config: agent.config,
+      name: 'UnitTest',
+      collect: true,
+      traceStacks: trans.traceStacks,
+      root
+    })
     assert.ok(segment.timer)
   })
 
@@ -70,7 +106,13 @@ test('TraceSegment', async (t) => {
     const { agent } = t.nr
     const trans = new Transaction(agent)
     const root = trans.trace.root
-    const segment = new TraceSegment({ config: agent.config, name: 'UnitTest', collect: true, traceStacks: trans.traceStacks, root})
+    const segment = new TraceSegment({
+      config: agent.config,
+      name: 'UnitTest',
+      collect: true,
+      traceStacks: trans.traceStacks,
+      root
+    })
     assert.equal(segment.timer.isRunning(), false)
   })
 
@@ -78,7 +120,13 @@ test('TraceSegment', async (t) => {
     const { agent } = t.nr
     const trans = new Transaction(agent)
     const root = trans.trace.root
-    const segment = new TraceSegment({ config: agent.config, name: 'UnitTest', collect: true, traceStacks: trans.traceStacks, root})
+    const segment = new TraceSegment({
+      config: agent.config,
+      name: 'UnitTest',
+      collect: true,
+      traceStacks: trans.traceStacks,
+      root
+    })
     segment.start()
     segment.touch()
     assert.equal(segment.timer.isRunning(), true)
@@ -89,7 +137,13 @@ test('TraceSegment', async (t) => {
     const { agent } = t.nr
     const trans = new Transaction(agent)
     const root = trans.trace.root
-    const segment = new TraceSegment({config: agent.config, name: 'Test', collect: true, traceStacks: trans.traceStacks, root})
+    const segment = new TraceSegment({
+      config: agent.config,
+      name: 'Test',
+      collect: true,
+      traceStacks: trans.traceStacks,
+      root
+    })
     agent.config.distributed_tracing.enabled = true
     agent.config.span_events.enabled = true
     assert.equal(segment.getSpanId(), segment.id)
@@ -99,7 +153,13 @@ test('TraceSegment', async (t) => {
     const { agent } = t.nr
     const trans = new Transaction(agent)
     const root = trans.trace.root
-    const segment = new TraceSegment({config: agent.config, name: 'Test', collect: true, traceStacks: trans.traceStacks, root})
+    const segment = new TraceSegment({
+      config: agent.config,
+      name: 'Test',
+      collect: true,
+      traceStacks: trans.traceStacks,
+      root
+    })
     agent.config.distributed_tracing.enabled = false
     agent.config.span_events.enabled = true
     assert.equal(segment.getSpanId(), null)
@@ -109,7 +169,13 @@ test('TraceSegment', async (t) => {
     const { agent } = t.nr
     const trans = new Transaction(agent)
     const root = trans.trace.root
-    const segment = new TraceSegment({config: agent.config, name: 'Test', collect: true, traceStacks: trans.traceStacks, root})
+    const segment = new TraceSegment({
+      config: agent.config,
+      name: 'Test',
+      collect: true,
+      traceStacks: trans.traceStacks,
+      root
+    })
     agent.config.distributed_tracing.enabled = true
     agent.config.span_events.enabled = false
     assert.ok(segment.getSpanId() === null)
@@ -120,7 +186,13 @@ test('TraceSegment', async (t) => {
     const trans = new Transaction(agent)
     const trace = trans.trace
     const root = trace.root
-    const segment = new TraceSegment({config: agent.config, name: 'Test', collect: true, traceStacks: trans.traceStacks, root})
+    const segment = new TraceSegment({
+      config: agent.config,
+      name: 'Test',
+      collect: true,
+      traceStacks: trans.traceStacks,
+      root
+    })
 
     segment.setDurationInMillis(10, 0)
 
@@ -136,7 +208,13 @@ test('TraceSegment', async (t) => {
     const { agent } = t.nr
     const transaction = new Transaction(agent)
     const root = transaction.trace.root
-    const segment = new TraceSegment({ config: agent.config, name: 'TestSegment', collect: true, traceStacks: transaction.traceStacks, root})
+    const segment = new TraceSegment({
+      config: agent.config,
+      name: 'TestSegment',
+      collect: true,
+      traceStacks: transaction.traceStacks,
+      root
+    })
     segment.toJSON()
     assert.deepEqual(segment.getAttributes(), {})
   })
@@ -145,7 +223,13 @@ test('TraceSegment', async (t) => {
     const { agent } = t.nr
     const trans = new Transaction(agent)
     const root = trans.trace.root
-    const segment = new TraceSegment({ config: agent.config, name: 'UnitTest', collect: true, traceStacks: trans.traceStacks, root})
+    const segment = new TraceSegment({
+      config: agent.config,
+      name: 'UnitTest',
+      collect: true,
+      traceStacks: trans.traceStacks,
+      root
+    })
     segment.end()
     assert.equal(segment.timer.isRunning(), false)
   })
@@ -154,7 +238,6 @@ test('TraceSegment', async (t) => {
     const { agent } = t.nr
     const transaction = new Transaction(agent)
     const trace = transaction.trace
-    const root = trace.root
     const segment = trace.add('DB/select/getSome')
 
     trace.setDurationInMillis(17, 0)
@@ -176,7 +259,13 @@ test('TraceSegment', async (t) => {
     const { agent } = t.nr
     const transaction = new Transaction(agent)
     const root = transaction.trace.root
-    const segment = new TraceSegment({config: agent.config, name: 'TestSegment', collect: true, traceStacks: transaction.traceStacks, root})
+    const segment = new TraceSegment({
+      config: agent.config,
+      name: 'TestSegment',
+      collect: true,
+      traceStacks: transaction.traceStacks,
+      root
+    })
 
     segment._setExclusiveDurationInMillis(1)
 
@@ -193,7 +282,13 @@ test('TraceSegment', async (t) => {
 
     const transaction = new Transaction(agent)
     const root = transaction.trace.root
-    const segment = new TraceSegment({config: agent.config, name: segmentName, collect: true, traceStacks: transaction.traceStacks, root})
+    const segment = new TraceSegment({
+      config: agent.config,
+      name: segmentName,
+      collect: true,
+      traceStacks: transaction.traceStacks,
+      root
+    })
 
     // Force truncation
     sinon.stub(segment.timer, 'softEnd').returns(true)
@@ -225,7 +320,13 @@ test('with children created from URLs', async (t) => {
 
     const url = '/test?test1=value1&test2&test3=50&test4='
 
-    const webChild = segment.add({config: ctx.nr.agent, name: url, collect: true, traceStacks: transaction.traceStacks, root})
+    const webChild = segment.add({
+      config: ctx.nr.agent,
+      name: url,
+      collect: true,
+      traceStacks: transaction.traceStacks,
+      root
+    })
     transaction.baseSegment = webChild
     transaction.finalizeNameFromUri(url, 200)
 
@@ -303,7 +404,13 @@ test('with parameters parsed out by framework', async (t) => {
     params[1] = 'another'
     params.test3 = '50'
 
-    const webChild = segment.add({ config: ctx.nr.agent.config, name: url, collect: true, traceStacks: transaction.traceStacks, root})
+    const webChild = segment.add({
+      config: ctx.nr.agent.config,
+      name: url,
+      collect: true,
+      traceStacks: transaction.traceStacks,
+      root
+    })
     transaction.trace.attributes.addAttributes(DESTINATIONS.TRANS_SCOPE, params)
     transaction.baseSegment = webChild
     transaction.finalizeNameFromUri(url, 200)
@@ -368,7 +475,13 @@ test('with attributes.enabled set to false', async (t) => {
     const segment = trace.add('UnitTest')
     const url = '/test?test1=value1&test2&test3=50&test4='
 
-    const webChild = segment.add({config: ctx.nr.agent.config, name: url, collect: true, traceStacks: transaction.traceStacks, root})
+    const webChild = segment.add({
+      config: ctx.nr.agent.config,
+      name: url,
+      collect: true,
+      traceStacks: transaction.traceStacks,
+      root
+    })
     webChild.addAttribute('test', 'non-null value')
     transaction.baseSegment = webChild
     transaction.finalizeNameFromUri(url, 200)
@@ -414,7 +527,13 @@ test('with attributes.enabled set', async (t) => {
 
     const url = '/test?test1=value1&test2&test3=50&test4='
 
-    const webChild = segment.add({config: ctx.nr.agent.config, name: url, collect: true, traceStacks: transaction.traceStacks, root})
+    const webChild = segment.add({
+      config: ctx.nr.agent.config,
+      name: url,
+      collect: true,
+      traceStacks: transaction.traceStacks,
+      root
+    })
     transaction.baseSegment = webChild
     transaction.finalizeNameFromUri(url, 200)
     webChild.markAsWeb(transaction)
@@ -477,7 +596,13 @@ test('when serialized', async (t) => {
     const agent = helper.loadMockedAgent()
     const transaction = new Transaction(agent)
     const root = transaction.trace.root
-    const segment = new TraceSegment({config: agent.config, name: 'UnitTest', collect: true, traceStacks: transaction.traceStacks, root})
+    const segment = new TraceSegment({
+      config: agent.config,
+      name: 'UnitTest',
+      collect: true,
+      traceStacks: transaction.traceStacks,
+      root
+    })
 
     ctx.nr = {
       agent: agent,
@@ -487,7 +612,6 @@ test('when serialized', async (t) => {
     }
 
     ctx.nr.agent.config.logging.diagnostics = true
-
   })
 
   t.afterEach((ctx) => {
@@ -515,7 +639,13 @@ test('when serialized', async (t) => {
     const { segment, transaction, agent, root } = t.nr
     let parent = segment
     for (let i = 0; i < 9000; ++i) {
-      const child = new TraceSegment({config: agent.config, name: 'Child ' + i, collect: true, traceStacks: transaction.traceStacks, root})
+      const child = new TraceSegment({
+        config: agent.config,
+        name: 'Child ' + i,
+        collect: true,
+        traceStacks: transaction.traceStacks,
+        root
+      })
       parent.children.push(child)
       parent = child
     }
@@ -535,7 +665,13 @@ test('getSpanContext', async (t) => {
     })
     const transaction = new Transaction(agent)
     const root = transaction.trace.root
-    const segment = new TraceSegment({config: agent.config, name: 'UnitTest', collect: true, traceStacks: transaction.traceStacks, root})
+    const segment = new TraceSegment({
+      config: agent.config,
+      name: 'UnitTest',
+      collect: true,
+      traceStacks: transaction.traceStacks,
+      root
+    })
     ctx.nr = {
       agent,
       segment,

@@ -110,7 +110,11 @@ test('recordExternal', async function (t) {
     const root = trans.trace.root
     const parent = trans.trace.add('/parent', recordExternal)
     const child1 = trans.trace.add('/child1', generateRecorder('api.twitter.com', 'https'), parent)
-    const child2 = trans.trace.add('/child2', generateRecorder('oauth.facebook.com', 'http'), parent)
+    const child2 = trans.trace.add(
+      '/child2',
+      generateRecorder('oauth.facebook.com', 'http'),
+      parent
+    )
 
     root.setDurationInMillis(32, 0)
     parent.setDurationInMillis(32, 0)

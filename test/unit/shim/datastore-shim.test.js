@@ -35,7 +35,12 @@ test('DatastoreShim', async function (t) {
       withNested: function () {
         const transaction = agent.tracer.getTransaction()
         const segment = agent.tracer.getSegment()
-        segment.add({ config: agent.config, name: 'ChildSegment', traceStacks: transaction.traceStacks, root: transaction.trace.root })
+        segment.add({
+          config: agent.config,
+          name: 'ChildSegment',
+          traceStacks: transaction.traceStacks,
+          root: transaction.trace.root
+        })
 
         return segment
       }

@@ -24,7 +24,12 @@ const testSignatures = require('./outbound-utils')
 function addSegment({ agent }) {
   const transaction = agent.getTransaction()
   transaction.type = 'web'
-  transaction.baseSegment = new Segment({ config: agent.config, name: 'base-segment', traceStacks: transaction.traceStacks, root: transaction.trace.root })
+  transaction.baseSegment = new Segment({
+    config: agent.config,
+    name: 'base-segment',
+    traceStacks: transaction.traceStacks,
+    root: transaction.trace.root
+  })
 }
 
 test('instrumentOutbound', async (t) => {
@@ -365,7 +370,7 @@ test('should add data from cat header to segment', async (t) => {
       const port = server.address().port
       http
         .get({ host: 'localhost', port: port }, function (res) {
-          const segment = agent.tracer.getSegment() 
+          const segment = agent.tracer.getSegment()
 
           assert.equal(segment.catId, '123#456')
           assert.equal(segment.catTransaction, 'abc')

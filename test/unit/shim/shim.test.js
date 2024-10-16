@@ -365,7 +365,12 @@ test('Shim', async function (t) {
       beforeEach(ctx)
 
       const transaction = new Transaction(ctx.nr.agent)
-      ctx.nr.segment = new TraceSegment({ config: ctx.nr.agent.config, name: 'test', traceStacks: transaction.traceStacks, root: transaction.trace.root })
+      ctx.nr.segment = new TraceSegment({
+        config: ctx.nr.agent.config,
+        name: 'test',
+        traceStacks: transaction.traceStacks,
+        root: transaction.trace.root
+      })
       ctx.nr.startingSegment = ctx.nr.tracer.getSegment()
     })
 
@@ -1918,7 +1923,12 @@ test('Shim', async function (t) {
     t.beforeEach(function (ctx) {
       beforeEach(ctx)
       const transaction = new Transaction(ctx.nr.agent)
-      ctx.nr.segment = new TraceSegment({ config: ctx.nr.agent.config, name: 'test', traceStacks: transaction.traceStacks, root: transaction.trace.root })
+      ctx.nr.segment = new TraceSegment({
+        config: ctx.nr.agent.config,
+        name: 'test',
+        traceStacks: transaction.traceStacks,
+        root: transaction.trace.root
+      })
       ctx.nr.transaction = transaction
     })
     t.afterEach(afterEach)
@@ -2162,7 +2172,12 @@ test('Shim', async function (t) {
     t.beforeEach(function (ctx) {
       beforeEach(ctx)
       const transaction = new Transaction(ctx.nr.agent)
-      ctx.nr.segment = new TraceSegment({ config: ctx.nr.agent.config, name: 'test', traceStacks: transaction.traceStacks, root: transaction.trace.root })
+      ctx.nr.segment = new TraceSegment({
+        config: ctx.nr.agent.config,
+        name: 'test',
+        traceStacks: transaction.traceStacks,
+        root: transaction.trace.root
+      })
     })
     t.afterEach(afterEach)
 

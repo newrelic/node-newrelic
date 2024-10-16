@@ -654,7 +654,7 @@ test('when connected', async (t) => {
     agent.logs.add([{ key: 'bar' }])
     const tx = new helper.FakeTransaction(agent, '/path/to/fake')
     tx.metrics = { apdexT: 0 }
-    const segment = tx.trace.add('FakeSegment') 
+    const segment = tx.trace.add('FakeSegment')
     segment.setDurationInMillis(2000)
     agent.queries.add({
       transaction: tx,

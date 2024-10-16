@@ -157,9 +157,15 @@ test('Tracer', async function (t) {
         trace.add('UnitTest', null, null) // eslint-disable-line no-new
       })
 
-      const working = trace.add('UnitTest', function () {
-        end()
-      }, null, false, function (){})
+      const working = trace.add(
+        'UnitTest',
+        function () {
+          end()
+        },
+        null,
+        false,
+        function () {}
+      )
 
       working.end()
       trans.end()
@@ -170,10 +176,16 @@ test('Tracer', async function (t) {
       const trans = new Transaction(agent)
       const trace = trans.trace
 
-      const segment = trace.add('Test', (insider) => {
-        assert.equal(insider, segment)
-        end()
-      }, null, false, function (){})
+      const segment = trace.add(
+        'Test',
+        (insider) => {
+          assert.equal(insider, segment)
+          end()
+        },
+        null,
+        false,
+        function () {}
+      )
       segment.end()
       trans.end()
     })
@@ -187,25 +199,26 @@ test('Tracer', async function (t) {
       assert.equal(agent.activeTransactions, 0)
       assert.equal(agent.totalActiveSegments, 0)
       assert.equal(agent.segmentsCreatedInHarvest, 0)
-  
+
       const tx = new Transaction(agent)
+      tracer.setSegment({ transaction: tx, segment: tx.trace.root })
       assert.equal(agent.totalActiveSegments, 1)
       assert.equal(agent.segmentsCreatedInHarvest, 1)
       assert.equal(tx.numSegments, 1)
       assert.equal(agent.activeTransactions, 1)
-  
+
       tracer.createSegment('Test')
       assert.equal(agent.totalActiveSegments, 2)
       assert.equal(agent.segmentsCreatedInHarvest, 2)
       assert.equal(tx.numSegments, 2)
       tx.end()
-  
+
       assert.equal(agent.activeTransactions, 0)
-  
+
       setTimeout(function () {
         assert.equal(agent.totalActiveSegments, 0)
         assert.equal(agent.segmentsClearedInHarvest, 2)
-  
+
         agent.forceHarvestAll(() => {
           assert.equal(agent.totalActiveSegments, 0)
           assert.equal(agent.segmentsClearedInHarvest, 0)
