@@ -36,10 +36,42 @@ jobs:
           node-version: ${{ matrix.node-version }}
           architecture: ${{ matrix.arch }}
 
-      - name: Find agent version
+      - name: Get local agent version 
+        run: |
+          $env:local_agent_version = node -p "require('./package.json').version"
+          echo "AGENT_VERSION=$env:local_agent_version" | Out-File -FilePath $env:GITHUB_ENV -Append
+
+      - name: Find agent version at npm 
         run: |
           $env:npm_agent_version = npm view newrelic version 
-          echo "AGENT_VERSION=$env:npm_agent_version" | Out-File -FilePath $env:GITHUB_ENV -Append
+          echo "NPM_AGENT_VERSION=$env:npm_agent_version" | Out-File -FilePath $env:GITHUB_ENV -Append
+          
+      - name: Check NPM availability
+        if: ${{ env.NPM_AGENT_VERSION != env.AGENT_VERSION }}
+        run: |
+          $count = 0
+          $seconds = 30
+          while($count -lt 10) {
+            $seconds = ($seconds * $count)
+            echo "Sleeping $seconds ($count)"
+            Start-Sleep -s $seconds
+            $npmversion = npm view newrelic version
+            echo "Checking npm version ($count): $npmversion"
+            $test = [Version]$npmversion -match [Version]${{ env.AGENT_VERSION }}
+            if ([Version]$npmversion -match [Version]${{ env.AGENT_VERSION }}) {
+              break;
+            }
+            $count++
+          }
+          $env:npm_agent_version = npm view newrelic version 
+          echo "Done with delayed check. Published version: $env:npm_agent_version Local version: ${{env.AGENT_VERSION}}"
+          echo "NPM_AGENT_VERSION=$env:npm_agent_version" | Out-File -FilePath $env:GITHUB_ENV -Append
+
+      - name: Has the new agent been published?
+        if: ${{ env.NPM_AGENT_VERSION != env.AGENT_VERSION }}
+        run: |
+          echo "Published agent version (${{env.NPM_AGENT_VERSION }}) is behind local agent version (${{env.AGENT_VERSION}}); exiting."
+          exit 1;
 
       - name: Set package filename
         run: |
