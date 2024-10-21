@@ -1,0 +1,20 @@
+{
+  "name": "amqplib-esm-tests",
+  "version": "0.0.0",
+  "type": "module",
+  "private": true,
+  "tests": [
+    {
+      "engines": {
+        "node": ">=18"
+      },
+      "dependencies": {
+        "amqplib": ">=0.5.0"
+      },
+      "files": [
+        "issue-2663.test.mjs"
+      ]
+    }
+  ],
+  "dependencies": {}
+}
