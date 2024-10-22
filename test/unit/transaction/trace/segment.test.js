@@ -153,6 +153,8 @@ test('TraceSegment', async (t) => {
     const { agent } = t.nr
     const trans = new Transaction(agent)
     const root = trans.trace.root
+    agent.config.distributed_tracing.enabled = false
+    agent.config.span_events.enabled = true
     const segment = new TraceSegment({
       config: agent.config,
       name: 'Test',
@@ -160,8 +162,6 @@ test('TraceSegment', async (t) => {
       traceStacks: trans.traceStacks,
       root
     })
-    agent.config.distributed_tracing.enabled = false
-    agent.config.span_events.enabled = true
     assert.equal(segment.getSpanId(), null)
   })
 
@@ -169,6 +169,8 @@ test('TraceSegment', async (t) => {
     const { agent } = t.nr
     const trans = new Transaction(agent)
     const root = trans.trace.root
+    agent.config.distributed_tracing.enabled = true
+    agent.config.span_events.enabled = false
     const segment = new TraceSegment({
       config: agent.config,
       name: 'Test',
@@ -176,8 +178,6 @@ test('TraceSegment', async (t) => {
       traceStacks: trans.traceStacks,
       root
     })
-    agent.config.distributed_tracing.enabled = true
-    agent.config.span_events.enabled = false
     assert.ok(segment.getSpanId() === null)
   })
 
@@ -695,15 +695,29 @@ test('getSpanContext', async (t) => {
   })
 
   await t.test('should not create a new context when empty and DT disabled', (t) => {
-    const { agent, segment } = t.nr
+    const { agent, transaction } = t.nr
     agent.config.distributed_tracing.enabled = false
+    const segment = new TraceSegment({
+      config: agent.config,
+      name: 'UnitTest',
+      collect: true,
+      traceStacks: transaction.traceStacks,
+      root: transaction.trace.root
+    })
     const spanContext = segment.getSpanContext()
     assert.ok(!spanContext)
   })
 
   await t.test('should not create a new context when empty and Spans disabled', (t) => {
-    const { agent, segment } = t.nr
+    const { agent, transaction } = t.nr
     agent.config.span_events.enabled = false
+    const segment = new TraceSegment({
+      config: agent.config,
+      name: 'UnitTest',
+      collect: true,
+      traceStacks: transaction.traceStacks,
+      root: transaction.trace.root
+    })
     const spanContext = segment.getSpanContext()
     assert.ok(!spanContext)
   })

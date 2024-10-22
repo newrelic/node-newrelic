@@ -46,7 +46,7 @@ test('esm import does instrumentation', async () => {
     const body = msg.content.toString('utf8')
     assert.equal(body, 'hello', 'should receive expected body')
 
-    amqpUtils.verifyTransaction(tx, 'get')
+    amqpUtils.verifyTransaction(agent, tx, 'get')
     channel.ack(msg)
     tx.end()
     amqpUtils.verifyGet({

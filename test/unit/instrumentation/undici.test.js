@@ -217,7 +217,10 @@ test('undici instrumentation', async function (t) {
             origin: 'https://unittesting.com',
             path: '/foo?a=b&c=d'
           }
-          request[symbols.parentSegment] = shim.createSegment('parent')
+          request[symbols.parentSegment] = shim.createSegment({
+            name: 'parent',
+            parent: tx.trace.root
+          })
           channels.create.publish({ request })
           assert.ok(request[symbols.segment])
           const segment = shim.getSegment()
@@ -240,7 +243,10 @@ test('undici instrumentation', async function (t) {
           origin: 'http://unittesting.com',
           path: '/http'
         }
-        request[symbols.parentSegment] = shim.createSegment('parent')
+        request[symbols.parentSegment] = shim.createSegment({
+          name: 'parent',
+          parent: tx.trace.root
+        })
         channels.create.publish({ request })
         const segment = shim.getSegment()
         assert.equal(segment.name, 'External/unittesting.com/http')
@@ -258,7 +264,10 @@ test('undici instrumentation', async function (t) {
           method: 'POST',
           path: '/port-https'
         }
-        request[symbols.parentSegment] = shim.createSegment('parent')
+        request[symbols.parentSegment] = shim.createSegment({
+          name: 'parent',
+          parent: tx.trace.root
+        })
         channels.create.publish({ request })
         const segment = shim.getSegment()
         assert.equal(segment.name, 'External/unittesting.com:9999/port-https')
@@ -276,7 +285,10 @@ test('undici instrumentation', async function (t) {
           method: 'POST',
           path: '/port-http'
         }
-        request[symbols.parentSegment] = shim.createSegment('parent')
+        request[symbols.parentSegment] = shim.createSegment({
+          name: 'parent',
+          parent: tx.trace.root
+        })
         channels.create.publish({ request })
         const segment = shim.getSegment()
         assert.equal(segment.name, 'External/unittesting.com:8080/port-http')
@@ -294,7 +306,10 @@ test('undici instrumentation', async function (t) {
           method: 'POST',
           path: '/port-http'
         }
-        request[symbols.parentSegment] = shim.createSegment('parent')
+        request[symbols.parentSegment] = shim.createSegment({
+          name: 'parent',
+          parent: tx.trace.root
+        })
         channels.create.publish({ request })
         const segment = shim.getSegment()
         assert.equal(segment.name, 'ROOT', 'should not create a new segment if URL fails to parse')
@@ -324,7 +339,7 @@ test('undici instrumentation', async function (t) {
 
     await t.test('should add statusCode and statusText from response', function (t, end) {
       helper.runInTransaction(agent, function (tx) {
-        const segment = shim.createSegment('active')
+        const segment = shim.createSegment({ name: 'active', parent: tx.trace.root })
         const request = {
           [symbols.segment]: segment
         }
@@ -346,7 +361,7 @@ test('undici instrumentation', async function (t) {
       agent.config.encoding_key = 'testing-key'
       agent.config.trusted_account_ids = [111]
       helper.runInTransaction(agent, function (tx) {
-        const segment = shim.createSegment('active')
+        const segment = shim.createSegment({ name: 'active', parent: tx.trace.root })
         segment.addAttribute('url', 'https://www.unittesting.com/path')
         const request = {
           [symbols.segment]: segment
@@ -372,8 +387,8 @@ test('undici instrumentation', async function (t) {
   await t.test('request:trailers', async function (t) {
     await t.test('should end current segment and restore to parent', function (t, end) {
       helper.runInTransaction(agent, function (tx) {
-        const parentSegment = shim.createSegment('parent')
-        const segment = shim.createSegment('active')
+        const parentSegment = shim.createSegment({ name: 'parent', parent: tx.trace.root })
+        const segment = shim.createSegment({ name: 'active', parent: tx.trace.root })
         shim.setActiveSegment(segment)
         const request = {
           [symbols.parentSegment]: parentSegment,
@@ -395,8 +410,8 @@ test('undici instrumentation', async function (t) {
       function (t, end) {
         helper.runInTransaction(agent, function (tx) {
           sandbox.stub(tx.agent.errors, 'add')
-          const parentSegment = shim.createSegment('parent')
-          const segment = shim.createSegment('active')
+          const parentSegment = shim.createSegment({ name: 'parent', parent: tx.trace.root })
+          const segment = shim.createSegment({ name: 'active', parent: tx.trace.root })
           shim.setActiveSegment(segment)
           const error = new Error('request failed')
           const request = {

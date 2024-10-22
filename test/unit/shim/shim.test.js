@@ -883,7 +883,7 @@ test('Shim', async function (t) {
       helper.runInTransaction(agent, function () {
         const startingSegment = tracer.getSegment()
         startingSegment.internal = true
-        startingSegment.shim = shim
+        startingSegment.shimId = shim.id
         const segment = wrappable.getActiveSegment()
         assert.equal(segment, startingSegment)
         assert.equal(segment.name, 'ROOT')
@@ -1893,7 +1893,13 @@ test('Shim', async function (t) {
   await t.test('#getSegment', async function (t) {
     t.beforeEach(function (ctx) {
       beforeEach(ctx)
-      ctx.nr.segment = { probe: function () {} }
+      const transaction = new Transaction(ctx.nr.agent)
+      ctx.nr.segment = new TraceSegment({
+        config: ctx.nr.agent.config,
+        name: 'test',
+        traceStacks: transaction.traceStacks,
+        root: transaction.trace.root
+      })
     })
     t.afterEach(afterEach)
 
@@ -2105,7 +2111,7 @@ test('Shim', async function (t) {
       helper.runInTransaction(agent, function () {
         const args = [wrappable.getActiveSegment]
         const segment = wrappable.getActiveSegment()
-        const parent = shim.createSegment('test segment')
+        const parent = shim.createSegment({ name: 'test segment', parent: segment })
         shim.bindCallbackSegment({}, args, shim.LAST, parent)
         const cbSegment = args[0]()
 
@@ -2118,9 +2124,9 @@ test('Shim', async function (t) {
 
     await t.test('should make the `parentSegment` translucent after running', function (t, end) {
       const { agent, shim, wrappable } = t.nr
-      helper.runInTransaction(agent, function () {
+      helper.runInTransaction(agent, function (tx) {
         const args = [wrappable.getActiveSegment]
-        const parent = shim.createSegment('test segment')
+        const parent = shim.createSegment({ name: 'test segment', parent: tx.trace.root })
         parent.opaque = true
         shim.bindCallbackSegment({}, args, shim.LAST, parent)
         const cbSegment = args[0]()
@@ -2317,8 +2323,8 @@ test('Shim', async function (t) {
     t.afterEach(afterEach)
     await t.test('should create a segment with the correct name', function (t, end) {
       const { agent, shim } = t.nr
-      helper.runInTransaction(agent, function () {
-        const segment = shim.createSegment('foobar')
+      helper.runInTransaction(agent, function (tx) {
+        const segment = shim.createSegment({ name: 'foobar', parent: tx.trace.root })
         assert.equal(segment.name, 'foobar')
         end()
       })
@@ -2326,8 +2332,8 @@ test('Shim', async function (t) {
 
     await t.test('should allow `recorder` to be omitted', function (t, end) {
       const { agent, shim } = t.nr
-      helper.runInTransaction(agent, function () {
-        const parent = shim.createSegment('parent')
+      helper.runInTransaction(agent, function (tx) {
+        const parent = shim.createSegment({ name: 'parent', parent: tx.trace.root })
         const child = shim.createSegment('child', parent)
         assert.equal(child.name, 'child')
         compareSegments(parent, [child])
@@ -2337,8 +2343,8 @@ test('Shim', async function (t) {
 
     await t.test('should allow `recorder` to be null', function (t, end) {
       const { agent, shim } = t.nr
-      helper.runInTransaction(agent, function () {
-        const parent = shim.createSegment('parent')
+      helper.runInTransaction(agent, function (tx) {
+        const parent = shim.createSegment('parent', tx.trace.root)
         const child = shim.createSegment('child', null, parent)
         assert.equal(child.name, 'child')
         compareSegments(parent, [child])
@@ -2348,8 +2354,8 @@ test('Shim', async function (t) {
 
     await t.test('should not create children for opaque segments', function (t, end) {
       const { agent, shim } = t.nr
-      helper.runInTransaction(agent, function () {
-        const parent = shim.createSegment('parent')
+      helper.runInTransaction(agent, function (tx) {
+        const parent = shim.createSegment('parent', tx.trace.root)
         parent.opaque = true
         const child = shim.createSegment('child', parent)
         assert.equal(child.name, 'parent')
@@ -2360,8 +2366,8 @@ test('Shim', async function (t) {
 
     await t.test('should not modify returned parent for opaque segments', (t, end) => {
       const { agent, shim } = t.nr
-      helper.runInTransaction(agent, () => {
-        const parent = shim.createSegment('parent')
+      helper.runInTransaction(agent, (tx) => {
+        const parent = shim.createSegment('parent', tx.trace.root)
         parent.opaque = true
         parent.internal = true
 
@@ -2378,7 +2384,7 @@ test('Shim', async function (t) {
       const { agent, shim } = t.nr
       helper.runInTransaction(agent, function () {
         const parent = shim.getSegment()
-        const child = shim.createSegment('child')
+        const child = shim.createSegment('child', parent)
         compareSegments(parent, [child])
         end()
       })
@@ -2386,14 +2392,12 @@ test('Shim', async function (t) {
 
     await t.test('should not modify returned parent for opaque segments', (t, end) => {
       const { agent, shim } = t.nr
-      helper.runInTransaction(agent, () => {
-        const parent = shim.createSegment('parent')
+      helper.runInTransaction(agent, (tx) => {
+        const parent = shim.createSegment({ name: 'parent', parent: tx.trace.root })
         parent.opaque = true
         parent.internal = true
 
-        shim.setActiveSegment(parent)
-
-        const child = shim.createSegment('child')
+        const child = shim.createSegment('child', parent)
 
         assert.equal(child, parent)
         assert.equal(parent.opaque, true)
@@ -2404,8 +2408,8 @@ test('Shim', async function (t) {
 
     await t.test('should work with all parameters in an object', function (t, end) {
       const { agent, shim } = t.nr
-      helper.runInTransaction(agent, function () {
-        const parent = shim.createSegment('parent')
+      helper.runInTransaction(agent, function (tx) {
+        const parent = shim.createSegment('parent', tx.trace.root)
         const child = shim.createSegment({ name: 'child', parent })
         assert.equal(child.name, 'child')
         compareSegments(parent, [child])
@@ -2430,8 +2434,8 @@ test('Shim', async function (t) {
       agent.config.attributes.exclude = ['ignore_me', 'host', 'port_path_or_id', 'database_name']
       agent.config.emit('attributes.exclude')
       agent.config.attributes.enabled = true
-      helper.runInTransaction(agent, function () {
-        ctx.nr.segment = shim.createSegment({ name: 'child', parameters })
+      helper.runInTransaction(agent, function (tx) {
+        ctx.nr.segment = shim.createSegment({ name: 'child', parameters, parent: tx.trace.root })
       })
       ctx.nr.parameters = parameters
     })
@@ -2469,8 +2473,8 @@ test('Shim', async function (t) {
         const { agent, parameters, shim } = t.nr
         let segment
         agent.config.attributes.enabled = false
-        helper.runInTransaction(agent, function () {
-          segment = shim.createSegment({ name: 'child', parameters })
+        helper.runInTransaction(agent, function (tx) {
+          segment = shim.createSegment({ name: 'child', parameters, parent: tx.trace.root })
         })
         assert.ok(segment.attributes)
         const attributes = segment.getAttributes()

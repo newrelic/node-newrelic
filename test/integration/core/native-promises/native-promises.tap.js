@@ -36,15 +36,15 @@ test('AsyncLocalStorage based tracking', (t) => {
     helper.runInTransaction(agent, function (txn) {
       t.ok(txn, 'transaction should not be null')
 
-      const segment = txn.trace.root
-      agent.tracer.bindFunction(one, segment)()
+      const ctx = agent.tracer.getContext()
+      agent.tracer.bindFunction(one, ctx)()
 
       const wrapperTwo = agent.tracer.bindFunction(function () {
         return two()
-      }, segment)
+      }, ctx)
       const wrapperThree = agent.tracer.bindFunction(function () {
         return three()
-      }, segment)
+      }, ctx)
 
       function one() {
         return new Promise(executor).then(() => {
@@ -290,12 +290,12 @@ function createPromiseTests(t, config) {
     helper.runInTransaction(agent, function (tx) {
       const root = tracer.getSegment()
 
-      const aSeg = agent.tracer.createSegment('A')
+      const aSeg = agent.tracer.createSegment({ name: 'A', parent: root, transaction: tx })
       tracer.setSegment({ segment: aSeg, transaction: tx })
 
       const resA = new TestResource(1)
 
-      const bSeg = agent.tracer.createSegment('B')
+      const bSeg = agent.tracer.createSegment({ name: 'B', parent: root, transaction: tx })
       tracer.setSegment({ segment: bSeg, transaction: tx })
       const resB = new TestResource(2)
 
@@ -339,22 +339,22 @@ function createPromiseTests(t, config) {
 
     helper.runInTransaction(agent, function (txn) {
       t.ok(txn, 'transaction should not be null')
+      const ctx = agent.tracer.getContext()
 
-      const segment = txn.trace.root
       agent.tracer.bindFunction(function one() {
         return new Promise(executor).then(() => {
           const tx = agent.getTransaction()
           t.equal(tx ? tx.id : null, txn.id)
           t.end()
         })
-      }, segment)()
+      }, ctx)()
 
       const wrapperTwo = agent.tracer.bindFunction(function () {
         return two()
-      }, segment)
+      }, ctx)
       const wrapperThree = agent.tracer.bindFunction(function () {
         return three()
-      }, segment)
+      }, ctx)
 
       function executor(resolve) {
         setImmediate(() => {
@@ -387,22 +387,22 @@ function createPromiseTests(t, config) {
 
     helper.runInTransaction(agent, function (txn) {
       t.ok(txn, 'transaction should not be null')
+      const ctx = agent.tracer.getContext()
 
-      const segment = txn.trace.root
       agent.tracer.bindFunction(function one() {
         return new Promise(executor).then(() => {
           const tx = agent.getTransaction()
           t.equal(tx ? tx.id : null, txn.id)
           t.end()
         })
-      }, segment)()
+      }, ctx)()
 
       const wrapperTwo = agent.tracer.bindFunction(function () {
         return two()
-      }, segment)
+      }, ctx)
       const wrapperThree = agent.tracer.bindFunction(function () {
         return three()
-      }, segment)
+      }, ctx)
 
       function executor(resolve) {
         process.nextTick(() => {
@@ -435,22 +435,22 @@ function createPromiseTests(t, config) {
 
     helper.runInTransaction(agent, function (txn) {
       t.ok(txn, 'transaction should not be null')
+      const ctx = agent.tracer.getContext()
 
-      const segment = txn.trace.root
       agent.tracer.bindFunction(function one() {
         return new Promise(executor).then(() => {
           const tx = agent.getTransaction()
           t.equal(tx ? tx.id : null, txn.id)
           t.end()
         })
-      }, segment)()
+      }, ctx)()
 
       const wrapperTwo = agent.tracer.bindFunction(function () {
         return two()
-      }, segment)
+      }, ctx)
       const wrapperThree = agent.tracer.bindFunction(function () {
         return three()
-      }, segment)
+      }, ctx)
 
       function executor(resolve) {
         setTimeout(() => {
@@ -483,22 +483,22 @@ function createPromiseTests(t, config) {
 
     helper.runInTransaction(agent, function (txn) {
       t.ok(txn, 'transaction should not be null')
+      const ctx = agent.tracer.getContext()
 
-      const segment = txn.trace.root
       agent.tracer.bindFunction(function one() {
         return new Promise(executor).then(() => {
           const tx = agent.getTransaction()
           t.equal(tx ? tx.id : null, txn.id)
           t.end()
         })
-      }, segment)()
+      }, ctx)()
 
       const wrapperTwo = agent.tracer.bindFunction(function () {
         return two()
-      }, segment)
+      }, ctx)
       const wrapperThree = agent.tracer.bindFunction(function () {
         return three()
-      }, segment)
+      }, ctx)
 
       function executor(resolve) {
         const ref = setInterval(() => {

@@ -119,7 +119,10 @@ test('Tracer', async function (t) {
           }
 
           assert.throws(() => {
-            const fn = tracer.bindFunction(wrapMe, new Segment(trans, 'name'))
+            const segment = new Segment({ name: 'name', isRoot: false, root: trans.trace.root })
+            let context = tracer.getContext()
+            context = context.enterSegment({ segment })
+            const fn = tracer.bindFunction(wrapMe, context)
             fn()
           }, /Error: FIREBOMB/)
           end()
@@ -207,7 +210,7 @@ test('Tracer', async function (t) {
       assert.equal(tx.numSegments, 1)
       assert.equal(agent.activeTransactions, 1)
 
-      tracer.createSegment('Test')
+      tracer.createSegment({ name: 'Test', parent: tx.trace.root, transaction: tx })
       assert.equal(agent.totalActiveSegments, 2)
       assert.equal(agent.segmentsCreatedInHarvest, 2)
       assert.equal(tx.numSegments, 2)

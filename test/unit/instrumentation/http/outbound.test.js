@@ -518,7 +518,11 @@ test('when working with http.request', async (t) => {
     nock(host).get(path).reply(200, 'Hello from Google')
 
     helper.runInTransaction(agent, (transaction) => {
-      const parentSegment = agent.tracer.createSegment('ParentSegment')
+      const parentSegment = agent.tracer.createSegment({
+        name: 'ParentSegment',
+        parent: transaction.trace.root,
+        transaction
+      })
       parentSegment.opaque = true
 
       tracer.setSegment({ transaction, segment: parentSegment }) // make the current active segment
