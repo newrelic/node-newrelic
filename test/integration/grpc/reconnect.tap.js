@@ -16,7 +16,13 @@ const MetricMapper = require('../../../lib/metrics/mapper')
 const MetricNormalizer = require('../../../lib/metrics/normalizer')
 const StreamingSpanEvent = require('../../../lib/spans/streaming-span-event')
 
+const fakeCert = require('../../lib/fake-cert')
 const helper = require('../../lib/agent_helper')
+
+// We generate the certificate once for the whole suite because it is a CPU
+// intensive operation and would slow down tests if each test created its
+// own certificate.
+const cert = fakeCert({ commonName: 'localhost' })
 
 tap.test('test that connection class reconnects', async (t) => {
   // one assert for the initial connection
@@ -50,7 +56,7 @@ tap.test('test that connection class reconnects', async (t) => {
 
   // Currently test-only configuration
   const origEnv = process.env.NEWRELIC_GRPCCONNECTION_CA
-  process.env.NEWRELIC_GRPCCONNECTION_CA = sslOpts.ca
+  process.env.NEWRELIC_GRPCCONNECTION_CA = cert.certificate
   t.teardown(() => {
     process.env.NEWRELIC_GRPCCONNECTION_CA = origEnv
   })
@@ -133,7 +139,7 @@ tap.test('Should reconnect even when data sent back', async (t) => {
 
   // Currently test-only configuration
   const origEnv = process.env.NEWRELIC_GRPCCONNECTION_CA
-  process.env.NEWRELIC_GRPCCONNECTION_CA = sslOpts.ca
+  process.env.NEWRELIC_GRPCCONNECTION_CA = cert.certificate
   t.teardown(() => {
     process.env.NEWRELIC_GRPCCONNECTION_CA = origEnv
   })
@@ -186,13 +192,12 @@ tap.test('Should reconnect even when data sent back', async (t) => {
 })
 
 async function setupSsl() {
-  const [key, certificate, ca] = await helper.withSSL()
   return {
-    ca,
+    ca: null,
     authPairs: [
       {
-        private_key: key,
-        cert_chain: certificate
+        private_key: cert.privateKeyBuffer,
+        cert_chain: cert.certificateBuffer
       }
     ]
   }
