@@ -2,6 +2,18 @@
   "repository": "newrelic/node-newrelic",
   "entries": [
     {
+      "version": "12.5.2",
+      "changes": {
+        "security": [],
+        "bugfixes": [
+          "Fixed amqplib instrumentation via ESM"
+        ],
+        "features": [
+          "Updated shim/when instrumentation to use tracer to run in context"
+        ]
+      }
+    },
+    {
       "version": "12.5.1",
       "changes": {
         "security": [],
