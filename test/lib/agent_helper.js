@@ -376,7 +376,7 @@ helper.randomPort = (callback) => {
 helper.startServerWithRandomPortRetry = (server, maxAttempts = 5) => {
   let attempts = 0
   server.on('error', (e) => {
-    // server port not guranteed to be not in use
+    // server port not guaranteed to be not in use
     if (e.code === 'EADDRINUSE') {
       if (attempts >= maxAttempts) {
         // eslint-disable-next-line no-console
