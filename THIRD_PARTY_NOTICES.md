@@ -68,7 +68,6 @@ code, the source code can be found at [https://github.com/newrelic/node-newrelic
 * [lint-staged](#lint-staged)
 * [lockfile-lint](#lockfile-lint)
 * [nock](#nock)
-* [proxy](#proxy)
 * [proxyquire](#proxyquire)
 * [rimraf](#rimraf)
 * [self-cert](#self-cert)
@@ -93,7 +92,7 @@ code, the source code can be found at [https://github.com/newrelic/node-newrelic
 
 ### @grpc/grpc-js
 
-This product includes source derived from [@grpc/grpc-js](https://github.com/grpc/grpc-node/tree/master/packages/grpc-js) ([v1.11.3](https://github.com/grpc/grpc-node/tree/master/packages/grpc-js/tree/v1.11.3)), distributed under the [Apache-2.0 License](https://github.com/grpc/grpc-node/tree/master/packages/grpc-js/blob/v1.11.3/LICENSE):
+This product includes source derived from [@grpc/grpc-js](https://github.com/grpc/grpc-node/tree/master/packages/grpc-js) ([v1.12.2](https://github.com/grpc/grpc-node/tree/master/packages/grpc-js/tree/v1.12.2)), distributed under the [Apache-2.0 License](https://github.com/grpc/grpc-node/tree/master/packages/grpc-js/blob/v1.12.2/LICENSE):
 
 ```
                                  Apache License
@@ -1043,7 +1042,7 @@ IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ### winston-transport
 
-This product includes source derived from [winston-transport](https://github.com/winstonjs/winston-transport) ([v4.7.1](https://github.com/winstonjs/winston-transport/tree/v4.7.1)), distributed under the [MIT License](https://github.com/winstonjs/winston-transport/blob/v4.7.1/LICENSE):
+This product includes source derived from [winston-transport](https://github.com/winstonjs/winston-transport) ([v4.8.0](https://github.com/winstonjs/winston-transport/tree/v4.8.0)), distributed under the [MIT License](https://github.com/winstonjs/winston-transport/blob/v4.8.0/LICENSE):
 
 ```
 The MIT License (MIT)
@@ -1076,7 +1075,7 @@ SOFTWARE.
 
 ### @aws-sdk/client-s3
 
-This product includes source derived from [@aws-sdk/client-s3](https://github.com/aws/aws-sdk-js-v3) ([v3.658.1](https://github.com/aws/aws-sdk-js-v3/tree/v3.658.1)), distributed under the [Apache-2.0 License](https://github.com/aws/aws-sdk-js-v3/blob/v3.658.1/LICENSE):
+This product includes source derived from [@aws-sdk/client-s3](https://github.com/aws/aws-sdk-js-v3) ([v3.676.0](https://github.com/aws/aws-sdk-js-v3/tree/v3.676.0)), distributed under the [Apache-2.0 License](https://github.com/aws/aws-sdk-js-v3/blob/v3.676.0/LICENSE):
 
 ```
                                 Apache License
@@ -1285,7 +1284,7 @@ This product includes source derived from [@aws-sdk/client-s3](https://github.co
 
 ### @aws-sdk/s3-request-presigner
 
-This product includes source derived from [@aws-sdk/s3-request-presigner](https://github.com/aws/aws-sdk-js-v3) ([v3.658.1](https://github.com/aws/aws-sdk-js-v3/tree/v3.658.1)), distributed under the [Apache-2.0 License](https://github.com/aws/aws-sdk-js-v3/blob/v3.658.1/LICENSE):
+This product includes source derived from [@aws-sdk/s3-request-presigner](https://github.com/aws/aws-sdk-js-v3) ([v3.676.0](https://github.com/aws/aws-sdk-js-v3/tree/v3.676.0)), distributed under the [Apache-2.0 License](https://github.com/aws/aws-sdk-js-v3/blob/v3.676.0/LICENSE):
 
 ```
                                 Apache License
@@ -2208,7 +2207,7 @@ THE SOFTWARE.
 
 ### @slack/bolt
 
-This product includes source derived from [@slack/bolt](https://github.com/slackapi/bolt) ([v3.21.4](https://github.com/slackapi/bolt/tree/v3.21.4)), distributed under the [MIT License](https://github.com/slackapi/bolt/blob/v3.21.4/LICENSE):
+This product includes source derived from [@slack/bolt](https://github.com/slackapi/bolt) ([v3.22.0](https://github.com/slackapi/bolt/tree/v3.22.0)), distributed under the [MIT License](https://github.com/slackapi/bolt/blob/v3.22.0/LICENSE):
 
 ```
 The MIT License (MIT)
@@ -2922,7 +2921,7 @@ This product includes source derived from [aws-sdk](https://github.com/aws/aws-s
 
 ### borp
 
-This product includes source derived from [borp](https://github.com/mcollina/borp) ([v0.17.0](https://github.com/mcollina/borp/tree/v0.17.0)), distributed under the [MIT License](https://github.com/mcollina/borp/blob/v0.17.0/LICENSE):
+This product includes source derived from [borp](https://github.com/mcollina/borp) ([v0.18.0](https://github.com/mcollina/borp/tree/v0.18.0)), distributed under the [MIT License](https://github.com/mcollina/borp/blob/v0.18.0/LICENSE):
 
 ```
 MIT License
@@ -3372,7 +3371,7 @@ THE SOFTWARE.
 
 ### express
 
-This product includes source derived from [express](https://github.com/expressjs/express) ([v4.21.0](https://github.com/expressjs/express/tree/v4.21.0)), distributed under the [MIT License](https://github.com/expressjs/express/blob/v4.21.0/LICENSE):
+This product includes source derived from [express](https://github.com/expressjs/express) ([v4.21.1](https://github.com/expressjs/express/tree/v4.21.1)), distributed under the [MIT License](https://github.com/expressjs/express/blob/v4.21.1/LICENSE):
 
 ```
 (The MIT License)
@@ -3508,7 +3507,7 @@ SOFTWARE.
 
 ### jsdoc
 
-This product includes source derived from [jsdoc](https://github.com/jsdoc/jsdoc) ([v4.0.3](https://github.com/jsdoc/jsdoc/tree/v4.0.3)), distributed under the [Apache-2.0 License](https://github.com/jsdoc/jsdoc/blob/v4.0.3/LICENSE.md):
+This product includes source derived from [jsdoc](https://github.com/jsdoc/jsdoc) ([v4.0.4](https://github.com/jsdoc/jsdoc/tree/v4.0.4)), distributed under the [Apache-2.0 License](https://github.com/jsdoc/jsdoc/blob/v4.0.4/LICENSE.md):
 
 ```
 # License
@@ -3945,35 +3944,6 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
-```
-
-### proxy
-
-This product includes source derived from [proxy](https://github.com/TooTallNate/proxy-agents) ([v2.2.0](https://github.com/TooTallNate/proxy-agents/tree/v2.2.0)), distributed under the [MIT License](https://github.com/TooTallNate/proxy-agents/blob/v2.2.0/LICENSE):
-
-```
-(The MIT License)
-
-Copyright (c) 2013 Nathan Rajlich <nathan@tootallnate.net>
-
-Permission is hereby granted, free of charge, to any person obtaining
-a copy of this software and associated documentation files (the
-'Software'), to deal in the Software without restriction, including
-without limitation the rights to use, copy, modify, merge, publish,
-distribute, sublicense, and/or sell copies of the Software, and to
-permit persons to whom the Software is furnished to do so, subject to
-the following conditions:
-
-The above copyright notice and this permission notice shall be
-included in all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND,
-EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
-IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
-CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
-TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
-SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ```
 
 ### proxyquire
