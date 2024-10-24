@@ -20,8 +20,6 @@ test('createServer', function createServerTest(t) {
     const server = net.createServer(handler)
 
     server.listen(4123, function listening() {
-      // leave transaction
-      tracer.setSegment(null)
       const socket = net.connect({ port: 4123 })
       socket.write('test123')
       socket.end()
@@ -46,8 +44,8 @@ test('createServer', function createServerTest(t) {
 
     function onClose() {
       const root = agent.getTransaction().trace.root
-      t.equal(root.children.length, 1, 'should have a single child')
-      const child = root.children[0]
+      t.equal(root.children.length, 2, 'should have a single child')
+      const child = root.children[1]
       t.equal(child.name, 'net.Server.onconnection', 'child segment should have correct name')
       t.ok(child.timer.touched, 'child should started and ended')
       t.equal(child.children.length, 1, 'child should have a single child segment')

@@ -41,7 +41,7 @@ const wrapped = shim.record(getTest(), 'func', function () {
 suite.add({
   name: 'wrapper - no transaction',
   fn: function () {
-    tracer.setSegment(null)
+    tracer.setSegment({ segment: null, transaction: null })
     wrapped.func(noop)
   }
 })
@@ -49,7 +49,7 @@ suite.add({
 suite.add({
   name: 'wrapper - in transaction',
   fn: function () {
-    tracer.setSegment(transaction.trace.root)
+    tracer.setSegment({ transaction, segment: transaction.trace.root })
     wrapped.func(noop)
   }
 })

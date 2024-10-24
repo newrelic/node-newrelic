@@ -32,7 +32,13 @@ test('should properly create a LlmEmbedding event', (t, end) => {
     api.startSegment('fakeSegment', false, () => {
       const segment = api.shim.getActiveSegment()
       segment.end()
-      const embeddingEvent = new LlmEmbedding({ agent, segment, request: req, response: res })
+      const embeddingEvent = new LlmEmbedding({
+        agent,
+        segment,
+        transaction: tx,
+        request: req,
+        response: res
+      })
       const expected = getExpectedResult(tx, embeddingEvent, 'embedding')
       assert.deepEqual(embeddingEvent, expected)
       end()
@@ -62,6 +68,7 @@ test('should properly create a LlmEmbedding event', (t, end) => {
     const embeddingEvent = new LlmEmbedding({
       agent,
       segment: null,
+      transaction: null,
       request: { input: value },
       response: {}
     })

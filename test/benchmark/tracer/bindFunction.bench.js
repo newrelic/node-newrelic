@@ -14,7 +14,7 @@ const tracer = helper.getTracer()
 const tx = helper.runInTransaction(s.agent, function (_tx) {
   return _tx
 })
-tracer.setSegment(tx.root)
+tracer.setSegment({ transaction: tx, segment: tx.root })
 
 preOptBind()
 const bound = tracer.bindFunction(shared.getTest().func, tx.root, true)

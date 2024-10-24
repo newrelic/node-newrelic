@@ -54,8 +54,10 @@ test.beforeEach((ctx) => {
       'x-amzn-requestid': 'request-1'
     }
   }
+  ctx.nr.transaction = {
+    traceId: 'id'
+  }
   ctx.nr.segment = {
-    transaction: { traceId: 'id' },
     getDurationInMillis() {
       return 1.008
     }

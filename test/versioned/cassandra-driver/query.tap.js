@@ -150,6 +150,7 @@ test('Cassandra instrumentation', { timeout: 5000 }, async function testInstrume
       t.equal(tx, transaction, 'We got the same transaction')
 
       client.batch(insArr, { hints: hints }).then(function () {
+        t.ok(agent.getTransaction(), 'transaction still should be visible')
         client
           .execute(selQuery)
           .then((result) => {
