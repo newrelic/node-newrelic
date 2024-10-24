@@ -14,6 +14,9 @@ const https = require('https')
 const { version: pkgVersion } = require('undici/package')
 const semver = require('semver')
 
+const fakeCert = require('../../lib/fake-cert')
+const cert = fakeCert({ commonName: 'localhost' })
+
 tap.test('Undici request tests', (t) => {
   t.autoend()
 
@@ -97,11 +100,13 @@ tap.test('Undici request tests', (t) => {
   })
 
   t.test('should add HTTPS port to segment name when provided', async (t) => {
-    const [key, cert, ca] = await helper.withSSL()
-    const httpsServer = https.createServer({ key, cert }, (req, res) => {
-      res.write('SSL response')
-      res.end()
-    })
+    const httpsServer = https.createServer(
+      { key: cert.privateKey, cert: cert.certificate },
+      (req, res) => {
+        res.write('SSL response')
+        res.end()
+      }
+    )
 
     t.teardown(() => {
       httpsServer.close()
@@ -113,9 +118,7 @@ tap.test('Undici request tests', (t) => {
       const { port } = httpsServer.address()
 
       const client = new undici.Client(`https://localhost:${port}`, {
-        tls: {
-          ca
-        }
+        tls: { ca: cert.certificate }
       })
 
       t.teardown(() => {

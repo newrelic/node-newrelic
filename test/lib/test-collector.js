@@ -31,16 +31,18 @@ const CollectorValidators = require('./test-collector-validators')
  */
 class Collector {
   #handlers = new Map()
+  #cert
   #server
   #address
   #runId
   #validators = new CollectorValidators()
 
   constructor({ runId = 42 } = {}) {
+    this.#cert = fakeCert()
     this.#runId = runId
     this.#server = https.createServer({
-      key: fakeCert.privateKey,
-      cert: fakeCert.certificate
+      key: this.#cert.privateKey,
+      cert: this.#cert.certificate
     })
     this.#server.on('request', (req, res) => {
       const qs = querystring.decode(req.url.slice(req.url.indexOf('?') + 1))
@@ -162,7 +164,7 @@ class Collector {
    * @returns {string}
    */
   get cert() {
-    return fakeCert.certificate
+    return this.#cert.certificate
   }
 
   /**

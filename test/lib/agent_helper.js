@@ -5,8 +5,6 @@
 
 'use strict'
 
-const path = require('path')
-const fs = require('fs').promises
 const Agent = require('../../lib/agent')
 const API = require('../../api')
 const zlib = require('zlib')
@@ -23,10 +21,6 @@ const semver = require('semver')
 const crypto = require('crypto')
 const util = require('util')
 const cp = require('child_process')
-
-const KEYPATH = path.join(__dirname, 'test-key.key')
-const CERTPATH = path.join(__dirname, 'self-signed-test-certificate.crt')
-const CAPATH = path.join(__dirname, 'ca-certificate.crt')
 
 let _agent = null
 let _agentApi = null
@@ -346,10 +340,6 @@ helper.flushRedisDb = (client, dbIndex) => {
   })
 }
 
-helper.withSSL = () => {
-  return Promise.all([fs.readFile(KEYPATH), fs.readFile(CERTPATH), fs.readFile(CAPATH)])
-}
-
 helper.randomPort = (callback) => {
   const net = require('net')
   // Min port: 1024 (without root)
@@ -630,17 +620,6 @@ helper.unwrap = function unwrap(nodule, properties) {
  */
 helper.isSupportedVersion = function isSupportedVersion(version) {
   return semver.gt(process.version, version)
-}
-
-/**
- * The https-proxy-server we support finally supports keep alive
- * See: https://github.com/TooTallNate/proxy-agents/pull/147
- * In order for tap to shutdown we must destroy the https agent.
- * This assumes the agent already exists as a singleton so we can destroy
- * the active http agent
- */
-helper.destroyProxyAgent = function destroyProxyAgent() {
-  require('../../lib/collector/http-agents').proxyAgent().destroy()
 }
 
 /**

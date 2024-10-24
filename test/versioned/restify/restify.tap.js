@@ -7,6 +7,7 @@
 
 const tap = require('tap')
 
+const fakeCert = require('../../lib/fake-cert')
 const helper = require('../../lib/agent_helper')
 require('../../lib/metrics_helper')
 
@@ -75,38 +76,32 @@ tap.test('Restify', (t) => {
       t.ok(isFramework, 'should indicate that restify is a framework')
     })
 
-    helper
-      .withSSL()
-      .then(([key, certificate, ca]) => {
-        const server = restify.createServer({ key: key, certificate: certificate })
-        t.teardown(() => server.close())
+    const cert = fakeCert()
 
-        server.get('/hello/:name', function sayHello(req, res, next) {
-          t.ok(agent.getTransaction(), 'transaction should be available in handler')
-          res.send('hello ' + req.params.name)
-          next()
-        })
+    const server = restify.createServer({ key: cert.privateKey, certificate: cert.certificate })
+    t.teardown(() => server.close())
 
-        server.listen(0, function () {
-          const port = server.address().port
-          t.notOk(agent.getTransaction(), 'transaction should not leak into server')
+    server.get('/hello/:name', function sayHello(req, res, next) {
+      t.ok(agent.getTransaction(), 'transaction should be available in handler')
+      res.send('hello ' + req.params.name)
+      next()
+    })
 
-          const url = `https://${helper.SSL_HOST}:${port}/hello/friend`
-          helper.makeGetRequest(url, { ca }, function (error, response, body) {
-            if (error) {
-              t.fail(error)
-              return t.end()
-            }
+    server.listen(0, function () {
+      const port = server.address().port
+      t.notOk(agent.getTransaction(), 'transaction should not leak into server')
 
-            t.notOk(agent.getTransaction(), 'transaction should not leak into external request')
-            t.equal(body, 'hello friend', 'should return expected data')
-          })
-        })
+      const url = `https://127.0.0.1:${port}/hello/friend`
+      helper.makeGetRequest(url, { ca: cert.certificate }, function (error, response, body) {
+        if (error) {
+          t.fail(error)
+          return t.end()
+        }
+
+        t.notOk(agent.getTransaction(), 'transaction should not leak into external request')
+        t.equal(body, 'hello friend', 'should return expected data')
       })
-      .catch((error) => {
-        t.fail('unable to set up SSL: ' + error)
-        t.end()
-      })
+    })
   })
 
   t.test('should generate middleware metrics', (t) => {

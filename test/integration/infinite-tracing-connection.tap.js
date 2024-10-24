@@ -11,7 +11,13 @@ const path = require('path')
 const grpc = require('@grpc/grpc-js')
 const protoLoader = require('@grpc/proto-loader')
 
+const fakeCert = require('../lib/fake-cert')
 const helper = require('../lib/agent_helper')
+
+// We generate the certificate once for the whole suite because it is a CPU
+// intensive operation and would slow down tests if each test created its
+// own certificate.
+const cert = fakeCert({ commonName: 'localhost' })
 
 const PROTO_PATH = path.join(__dirname, '../..', '/lib/grpc/endpoints/infinite-tracing/v1.proto')
 
@@ -258,70 +264,63 @@ const infiniteTracingService = grpc.loadPackageDefinition(packageDefinition).com
       nock.disableNetConnect()
       startingEndpoints = setupConnectionEndpoints(INITIAL_RUN_ID, INITIAL_SESSION_ID)
 
-      helper
-        .withSSL()
-        .then(([key, certificate, ca]) => {
-          const sslOpts = {
-            ca,
-            authPairs: [{ private_key: key, cert_chain: certificate }]
+      const sslOpts = {
+        ca: cert.certificateBuffer,
+        authPairs: [{ private_key: cert.privateKeyBuffer, cert_chain: cert.certificateBuffer }]
+      }
+
+      const services = [
+        {
+          serviceDefinition: infiniteTracingService.IngestService.service,
+          implementation: { recordSpan, recordSpanBatch }
+        }
+      ]
+
+      server = createGrpcServer(sslOpts, services, (err, port) => {
+        t.error(err)
+
+        agent = helper.loadMockedAgent({
+          license_key: EXPECTED_LICENSE_KEY,
+          apdex_t: Number.MIN_VALUE, // force transaction traces
+          host: TEST_DOMAIN,
+          plugins: {
+            // turn off native metrics to avoid unwanted gc metrics
+            native_metrics: { enabled: false }
+          },
+          distributed_tracing: { enabled: true },
+          slow_sql: { enabled: true },
+          transaction_tracer: {
+            record_sql: 'obfuscated',
+            explain_threshold: Number.MIN_VALUE // force SQL traces
+          },
+          utilization: {
+            detect_aws: false
+          },
+          infinite_tracing: {
+            ...config,
+            span_events: {
+              queue_size: 2
+            },
+            trace_observer: {
+              host: helper.SSL_HOST,
+              port
+            }
           }
-
-          const services = [
-            {
-              serviceDefinition: infiniteTracingService.IngestService.service,
-              implementation: { recordSpan, recordSpanBatch }
-            }
-          ]
-
-          server = createGrpcServer(sslOpts, services, (err, port) => {
-            t.error(err)
-
-            agent = helper.loadMockedAgent({
-              license_key: EXPECTED_LICENSE_KEY,
-              apdex_t: Number.MIN_VALUE, // force transaction traces
-              host: TEST_DOMAIN,
-              plugins: {
-                // turn off native metrics to avoid unwanted gc metrics
-                native_metrics: { enabled: false }
-              },
-              distributed_tracing: { enabled: true },
-              slow_sql: { enabled: true },
-              transaction_tracer: {
-                record_sql: 'obfuscated',
-                explain_threshold: Number.MIN_VALUE // force SQL traces
-              },
-              utilization: {
-                detect_aws: false
-              },
-              infinite_tracing: {
-                ...config,
-                span_events: {
-                  queue_size: 2
-                },
-                trace_observer: {
-                  host: helper.SSL_HOST,
-                  port
-                }
-              }
-            })
-
-            agent.config.no_immediate_harvest = true
-
-            // Currently test-only configuration
-            const origEnv = process.env.NEWRELIC_GRPCCONNECTION_CA
-            process.env.NEWRELIC_GRPCCONNECTION_CA = ca
-            t.teardown(() => {
-              process.env.NEWRELIC_GRPCCONNECTION_CA = origEnv
-            })
-
-            if (callback) {
-              callback()
-            }
-          })
         })
-        .catch((err) => {
-          t.error(err)
+
+        agent.config.no_immediate_harvest = true
+
+        // Currently test-only configuration
+        const origEnv = process.env.NEWRELIC_GRPCCONNECTION_CA
+        process.env.NEWRELIC_GRPCCONNECTION_CA = cert.certificate
+        t.teardown(() => {
+          process.env.NEWRELIC_GRPCCONNECTION_CA = origEnv
         })
+
+        if (callback) {
+          callback()
+        }
+      })
     }
   })
 })
@@ -387,11 +386,10 @@ function createGrpcServer(sslOptions, services, callback) {
     server.addService(service.serviceDefinition, service.implementation)
   }
 
-  const { ca, authPairs } = sslOptions
-  const credentials = grpc.ServerCredentials.createSsl(ca, authPairs, false)
+  const { authPairs } = sslOptions
+  const credentials = grpc.ServerCredentials.createSsl(null, authPairs, false)
 
-  // Select a random port
-  server.bindAsync('localhost:0', credentials, (err, port) => {
+  server.bindAsync('127.0.0.1:0', credentials, (err, port) => {
     if (err) {
       callback(err)
     }
