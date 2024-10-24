@@ -170,7 +170,7 @@
     "publish-docs": "./bin/publish-docs.sh",
     "services": "DOCKER_PLATFORM=linux/$(uname -m) docker compose up -d --wait",
     "services:stop": "docker compose down",
-    "smoke": "time borp --timeout 180000 --reporter ./test/lib/test-reporter.mjs 'test/smoke/**/*.tap.js'",
+    "smoke": "time borp --timeout 180000 --reporter ./test/lib/test-reporter.mjs 'test/smoke/**/*.{test,tap}.js'",
     "sub-install": "node test/bin/install_sub_deps",
     "test": "npm run integration && npm run unit",
     "third-party-updates": "oss third-party manifest --includeOptDeps && oss third-party notices --includeOptDeps && git add THIRD_PARTY_NOTICES.md third_party_manifest.json",
