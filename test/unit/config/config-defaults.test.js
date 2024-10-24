@@ -241,6 +241,37 @@ test('with default properties', async (t) => {
         rci: { enabled: true },
         rxss: { enabled: true },
         deserialization: { enabled: true }
+      },
+      iast_test_identifier: '',
+      scan_controllers: {
+        iast_scan_request_rate_limit: 3600,
+        scan_instance_count: 0
+      },
+      scan_schedule: {
+        delay: 0,
+        duration: 0,
+        schedule: '',
+        always_sample_traces: false
+      },
+      exclude_from_iast_scan: {
+        api: [],
+        http_request_parameters: {
+          header: [],
+          query: [],
+          body: []
+        },
+        iast_detection_category: {
+          insecure_settings: false,
+          invalid_file_access: false,
+          sql_injection: false,
+          nosql_injection: false,
+          ldap_injection: false,
+          javascript_injection: false,
+          command_injection: false,
+          xpath_injection: false,
+          ssrf: false,
+          rxss: false
+        }
       }
     })
   })
