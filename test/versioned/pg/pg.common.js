@@ -8,9 +8,8 @@
 const tap = require('tap')
 const params = require('../../lib/params')
 const helper = require('../../lib/agent_helper')
-const findSegment = require('../../lib/metrics_helper').findSegment
+const { findSegment, getMetricHostName } = require('../../lib/metrics_helper')
 const test = tap.test
-const getMetricHostName = require('../../lib/metrics_helper').getMetricHostName
 
 function runCommand(client, cmd) {
   return new Promise((resolve, reject) => {
@@ -123,9 +122,14 @@ module.exports = function runTests(name, clientFactory) {
     t.ok(trace, 'trace should exist')
     t.ok(trace.root, 'root element should exist')
 
-    const setSegment = findSegment(trace.root, 'Datastore/statement/Postgres/' + TABLE + '/insert')
+    const setSegment = findSegment(
+      trace,
+      trace.root,
+      'Datastore/statement/Postgres/' + TABLE + '/insert'
+    )
 
     const getSegment = findSegment(
+      trace,
       trace.root,
       'Datastore/statement/Postgres/' + selectTable + '/select'
     )
@@ -150,7 +154,11 @@ module.exports = function runTests(name, clientFactory) {
     const agent = transaction.agent
     const trace = transaction.trace
 
-    const setSegment = findSegment(trace.root, 'Datastore/statement/Postgres/' + TABLE + '/insert')
+    const setSegment = findSegment(
+      trace,
+      trace.root,
+      'Datastore/statement/Postgres/' + TABLE + '/insert'
+    )
     const attributes = setSegment.getAttributes()
 
     const metricHostName = getMetricHostName(agent, params.postgres_host)
@@ -578,6 +586,7 @@ module.exports = function runTests(name, clientFactory) {
             }
 
             const segment = findSegment(
+              transaction.trace,
               transaction.trace.root,
               'Datastore/statement/Postgres/' + TABLE + '/insert'
             )

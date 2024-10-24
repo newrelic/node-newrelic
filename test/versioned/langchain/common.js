@@ -22,10 +22,11 @@ function filterLangchainEventsByType(events, msgType) {
 }
 
 function assertLangChainVectorSearch({ tx, vectorSearch, responseDocumentSize }) {
+  const [segment] = tx.trace.getChildren(tx.trace.root.id)
   const expectedSearch = {
     'id': /[a-f0-9]{36}/,
     'appName': 'New Relic for Node.js tests',
-    'span_id': tx.trace.root.children[0].id,
+    'span_id': segment.id,
     'trace_id': tx.traceId,
     'request.k': 1,
     'request.query': 'This is an embedding test.',
@@ -33,7 +34,7 @@ function assertLangChainVectorSearch({ tx, vectorSearch, responseDocumentSize })
     'vendor': 'langchain',
     'virtual_llm': true,
     ['response.number_of_documents']: responseDocumentSize,
-    'duration': tx.trace.root.children[0].getDurationInMillis()
+    'duration': segment.getDurationInMillis()
   }
 
   this.equal(vectorSearch[0].type, 'LlmVectorSearch')
@@ -41,11 +42,12 @@ function assertLangChainVectorSearch({ tx, vectorSearch, responseDocumentSize })
 }
 
 function assertLangChainVectorSearchResult({ tx, vectorSearchResult, vectorSearchId }) {
+  const [segment] = tx.trace.getChildren(tx.trace.root.id)
   const baseSearchResult = {
     'id': /[a-f0-9]{36}/,
     'search_id': vectorSearchId,
     'appName': 'New Relic for Node.js tests',
-    'span_id': tx.trace.root.children[0].id,
+    'span_id': segment.id,
     'trace_id': tx.traceId,
     'ingest_source': 'Node',
     'vendor': 'langchain',
@@ -69,10 +71,11 @@ function assertLangChainVectorSearchResult({ tx, vectorSearchResult, vectorSearc
 }
 
 function assertLangChainChatCompletionSummary({ tx, chatSummary, withCallback }) {
+  const [segment] = tx.trace.getChildren(tx.trace.root.id)
   const expectedSummary = {
     'id': /[a-f0-9]{36}/,
     'appName': 'New Relic for Node.js tests',
-    'span_id': tx.trace.root.children[0].id,
+    'span_id': segment.id,
     'trace_id': tx.traceId,
     'request_id': undefined,
     'ingest_source': 'Node',
@@ -82,7 +85,7 @@ function assertLangChainChatCompletionSummary({ tx, chatSummary, withCallback })
     'tags': 'tag1,tag2',
     'virtual_llm': true,
     ['response.number_of_messages']: 1,
-    'duration': tx.trace.root.children[0].getDurationInMillis()
+    'duration': segment.getDurationInMillis()
   }
 
   if (withCallback) {
@@ -102,10 +105,11 @@ function assertLangChainChatCompletionMessages({
   input = '{"topic":"scientist"}',
   output = '212 degrees Fahrenheit is equal to 100 degrees Celsius.'
 }) {
+  const [segment] = tx.trace.getChildren(tx.trace.root.id)
   const baseMsg = {
     id: /[a-f0-9]{36}/,
     appName: 'New Relic for Node.js tests',
-    span_id: tx.trace.root.children[0].id,
+    span_id: segment.id,
     trace_id: tx.traceId,
     ingest_source: 'Node',
     vendor: 'langchain',

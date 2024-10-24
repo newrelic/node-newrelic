@@ -108,8 +108,7 @@ test('Elasticsearch instrumentation', (t) => {
       t.ok(transaction, 'transaction should be visible')
       await client.indices.create({ index })
       const trace = transaction.trace
-      t.ok(trace?.root?.children?.[0], 'trace, trace root, and first child should exist')
-      const firstChild = trace.root.children[0]
+      const [firstChild] = trace.getChildren(trace.root.id)
       t.equal(
         firstChild.name,
         `Datastore/statement/ElasticSearch/${index}/index.create`,
@@ -145,8 +144,7 @@ test('Elasticsearch instrumentation', (t) => {
       await client.bulk(setBulkBody(operations, pkgVersion))
       t.ok(transaction, 'transaction should still be visible after bulk create')
       const trace = transaction.trace
-      t.ok(trace?.root?.children?.[0], 'trace, trace root, and first child should exist')
-      const firstChild = trace.root.children[0]
+      const [firstChild] = trace.getChildren(trace.root.id)
       t.equal(
         firstChild.name,
         'Datastore/statement/ElasticSearch/any/bulk.create',
@@ -184,10 +182,9 @@ test('Elasticsearch instrumentation', (t) => {
       })
       t.ok(transaction, 'transaction should still be visible after bulk create')
       const trace = transaction.trace
-      t.ok(trace?.root?.children?.[0], 'trace, trace root, and first child should exist')
-      t.ok(trace?.root?.children?.[1], 'trace, trace root, and second child should exist')
       // helper interface results in a first child of timers.setTimeout, with the second child related to the operation
-      const secondChild = trace.root.children[1]
+      const [firstChild, secondChild] = trace.getChildren(trace.root.id)
+      t.ok(firstChild)
       t.equal(
         secondChild.name,
         'Datastore/statement/ElasticSearch/any/bulk.create',
@@ -207,8 +204,7 @@ test('Elasticsearch instrumentation', (t) => {
       t.ok(search, 'search should return a result')
       t.ok(transaction, 'transaction should still be visible after search')
       const trace = transaction.trace
-      t.ok(trace?.root?.children?.[0], 'trace, trace root, and first child should exist')
-      const firstChild = trace.root.children[0]
+      const [firstChild] = trace.getChildren(trace.root.id)
       t.match(
         firstChild.name,
         `Datastore/statement/ElasticSearch/${DB_INDEX_2}/search`,
@@ -242,8 +238,7 @@ test('Elasticsearch instrumentation', (t) => {
       t.ok(search, 'search should return a result')
       t.ok(transaction, 'transaction should still be visible after search')
       const trace = transaction.trace
-      t.ok(trace?.root?.children?.[0], 'trace, trace root, and first child should exist')
-      const firstChild = trace.root.children[0]
+      const [firstChild] = trace.getChildren(trace.root.id)
       t.match(
         firstChild.name,
         `Datastore/statement/ElasticSearch/${DB_INDEX}/search`,
@@ -280,8 +275,7 @@ test('Elasticsearch instrumentation', (t) => {
       t.ok(search, 'search should return a result')
       t.ok(transaction, 'transaction should still be visible after search')
       const trace = transaction.trace
-      t.ok(trace?.root?.children?.[0], 'trace, trace root, and first child should exist')
-      const firstChild = trace.root.children[0]
+      const [firstChild] = trace.getChildren(trace.root.id)
       t.match(
         firstChild.name,
         'Datastore/statement/ElasticSearch/any/search',
@@ -327,8 +321,7 @@ test('Elasticsearch instrumentation', (t) => {
       t.equal(results?.[1]?.hits?.hits?.length, 10, 'second search should return ten results')
       t.ok(transaction, 'transaction should still be visible after search')
       const trace = transaction.trace
-      t.ok(trace?.root?.children?.[0], 'trace, trace root, and first child should exist')
-      const firstChild = trace.root.children[0]
+      const [firstChild] = trace.getChildren(trace.root.id)
       t.match(
         firstChild.name,
         'Datastore/statement/ElasticSearch/any/msearch.create',
@@ -367,8 +360,7 @@ test('Elasticsearch instrumentation', (t) => {
       t.equal(resultsB?.hits?.length, 10, 'second search should return ten results')
       t.ok(transaction, 'transaction should still be visible after search')
       const trace = transaction.trace
-      t.ok(trace?.root?.children?.[0], 'trace, trace root, and first child should exist')
-      const firstChild = trace.root.children[0]
+      const [firstChild] = trace.getChildren(trace.root.id)
       t.match(
         firstChild.name,
         'timers.setTimeout',
@@ -455,7 +447,7 @@ test('Elasticsearch instrumentation', (t) => {
         ...documentProp
       })
 
-      const createSegment = transaction.trace.root.children[0]
+      const [createSegment] = transaction.trace.getChildren(transaction.trace.root.id)
       const attributes = createSegment.getAttributes()
       t.equal(attributes.host, undefined, 'should not have host attribute')
       t.equal(attributes.port_path_or_id, undefined, 'should not have port attribute')
@@ -477,7 +469,7 @@ test('Elasticsearch instrumentation', (t) => {
       } catch (e) {
         t.ok(e, 'should not be able to create an index named _search')
       }
-      const firstChild = transaction?.trace?.root?.children[0]
+      const [firstChild] = transaction.trace.getChildren(transaction.trace.root.id)
       t.equal(
         firstChild.name,
         'Datastore/statement/ElasticSearch/_search/index.create',

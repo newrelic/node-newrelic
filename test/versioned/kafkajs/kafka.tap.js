@@ -63,8 +63,9 @@ tap.test('send records correctly', (t) => {
     if (tx.name === expectedName) {
       const name = `MessageBroker/Kafka/Topic/Produce/Named/${topic}`
       const segment = tx.agent.tracer.getSegment()
+      const children = tx.trace.getChildren(segment.id)
 
-      const foundSegment = segment.children.find((s) => s.name.endsWith(topic))
+      const foundSegment = children.find((s) => s.name.endsWith(topic))
       t.equal(foundSegment.name, name)
 
       const metric = tx.metrics.getMetric(name)
@@ -191,8 +192,9 @@ tap.test('sendBatch records correctly', (t) => {
     if (tx.name === expectedName) {
       const name = `MessageBroker/Kafka/Topic/Produce/Named/${topic}`
       const segment = tx.agent.tracer.getSegment()
+      const children = tx.trace.getChildren(segment.id)
 
-      const foundSegment = segment.children.find((s) => s.name.endsWith(topic))
+      const foundSegment = children.find((s) => s.name.endsWith(topic))
       t.equal(foundSegment.name, name)
 
       const metric = tx.metrics.getMetric(name)
@@ -301,9 +303,14 @@ tap.test('consume inside of a transaction', async (t) => {
     agent.on('transactionFinished', (tx) => {
       txCount++
       if (tx.name === expectedName) {
-        t.assertSegments(tx.trace.root, [`${SEGMENT_PREFIX}subscribe`, `${SEGMENT_PREFIX}run`], {
-          exact: false
-        })
+        t.assertSegments(
+          tx.trace,
+          tx.trace.root,
+          [`${SEGMENT_PREFIX}subscribe`, `${SEGMENT_PREFIX}run`],
+          {
+            exact: false
+          }
+        )
       } else {
         utils.verifyConsumeTransaction({ t, tx, topic, clientId })
       }
@@ -349,9 +356,14 @@ tap.test('consume batch inside of a transaction', async (t) => {
 
   const txPromise = new Promise((resolve) => {
     agent.on('transactionFinished', (tx) => {
-      t.assertSegments(tx.trace.root, [`${SEGMENT_PREFIX}subscribe`, `${SEGMENT_PREFIX}run`], {
-        exact: false
-      })
+      t.assertSegments(
+        tx.trace,
+        tx.trace.root,
+        [`${SEGMENT_PREFIX}subscribe`, `${SEGMENT_PREFIX}run`],
+        {
+          exact: false
+        }
+      )
       resolve()
     })
   })

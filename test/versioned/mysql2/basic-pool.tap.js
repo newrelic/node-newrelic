@@ -123,7 +123,9 @@ tap.test('mysql2 built-in connection pools', function (t) {
       pool.query('SELECT 1 + 1 AS solution', function (err) {
         // depending on the minor version of mysql2,
         // relevant segment is either first or second index
-        const seg = txn.trace.root.children[0].children.filter(function (trace) {
+        const [parent] = txn.trace.getChildren(txn.trace.root.id)
+        const children = txn.trace.getChildren(parent.id)
+        const seg = children.filter(function (trace) {
           return /Datastore\/statement\/MySQL/.test(trace.name)
         })[0]
         const attributes = seg.getAttributes()
@@ -146,7 +148,7 @@ tap.test('mysql2 built-in connection pools', function (t) {
     helper.runInTransaction(agent, function transactionInScope(txn) {
       agent.config.datastore_tracer.instance_reporting.enabled = false
       pool.query('SELECT 1 + 1 AS solution', function (err) {
-        const seg = getDatastoreSegment(agent.tracer.getSegment())
+        const seg = getDatastoreSegment({ trace: txn.trace, segment: agent.tracer.getSegment() })
         t.error(err, 'should not error making query')
         t.ok(seg, 'should have a segment')
 
@@ -165,7 +167,7 @@ tap.test('mysql2 built-in connection pools', function (t) {
     helper.runInTransaction(agent, function transactionInScope(txn) {
       agent.config.datastore_tracer.database_name_reporting.enabled = false
       pool.query('SELECT 1 + 1 AS solution', function (err) {
-        const seg = getDatastoreSegment(agent.tracer.getSegment())
+        const seg = getDatastoreSegment({ trace: txn.trace, segment: agent.tracer.getSegment() })
         const attributes = seg.getAttributes()
         t.notOk(err, 'no errors')
         t.ok(seg, 'there is a segment')
@@ -195,7 +197,7 @@ tap.test('mysql2 built-in connection pools', function (t) {
         // In the case where you don't have a server running on
         // localhost the data will still be correctly associated
         // with the query.
-        const seg = getDatastoreSegment(agent.tracer.getSegment())
+        const seg = getDatastoreSegment({ trace: txn.trace, segment: agent.tracer.getSegment() })
         const attributes = seg.getAttributes()
         t.ok(seg, 'there is a segment')
         t.equal(attributes.host, agent.config.getHostnameSafe(), 'set host')
@@ -214,7 +216,7 @@ tap.test('mysql2 built-in connection pools', function (t) {
     const defaultPool = mysql.createPool(defaultConfig)
     helper.runInTransaction(agent, function transactionInScope(txn) {
       defaultPool.query('SELECT 1 + 1 AS solution', function (err) {
-        const seg = getDatastoreSegment(agent.tracer.getSegment())
+        const seg = getDatastoreSegment({ trace: txn.trace, segment: agent.tracer.getSegment() })
         const attributes = seg.getAttributes()
 
         t.error(err, 'should not error making query')
@@ -258,7 +260,7 @@ tap.test('mysql2 built-in connection pools', function (t) {
     helper.runInTransaction(agent, function transactionInScope(txn) {
       pool.query('SELECT 1 + 1 AS solution123123123123', function (err) {
         const transaction = agent.getTransaction()
-        const segment = agent.tracer.getSegment().parent
+        const segment = txn.trace.getParent(agent.tracer.getSegment().parentId)
 
         t.error(err, 'no error occurred')
         t.ok(transaction, 'transaction should exist')
@@ -279,7 +281,7 @@ tap.test('mysql2 built-in connection pools', function (t) {
         t.error(err)
         t.ok(transaction, 'should not lose transaction')
         if (transaction) {
-          const segment = agent.tracer.getSegment().parent
+          const segment = txn.trace.getParent(agent.tracer.getSegment().parentId)
           t.ok(segment, 'segment should exist')
           t.ok(segment.timer.start > 0, 'starts at a positive time')
           t.ok(segment.timer.start <= Date.now(), 'starts in past')
@@ -303,7 +305,7 @@ tap.test('mysql2 built-in connection pools', function (t) {
 
         connection.query('SELECT 1 + 1 AS solution', function (err) {
           const transaction = agent.getTransaction()
-          const segment = agent.tracer.getSegment().parent
+          const segment = txn.trace.getParent(agent.tracer.getSegment().parentId)
 
           t.error(err, 'no error occurred')
           t.ok(transaction, 'transaction should exist')
@@ -332,7 +334,7 @@ tap.test('mysql2 built-in connection pools', function (t) {
           t.error(err)
           t.ok(transaction, 'should not lose transaction')
           if (transaction) {
-            const segment = agent.tracer.getSegment().parent
+            const segment = txn.trace.getParent(agent.tracer.getSegment().parentId)
             t.ok(segment, 'segment should exist')
             t.ok(segment.timer.start > 0, 'starts at a positive time')
             t.ok(segment.timer.start <= Date.now(), 'starts in past')
@@ -363,7 +365,10 @@ tap.test('mysql2 built-in connection pools', function (t) {
           socketPool.query('SELECT 1 + 1 AS solution', function (err) {
             t.error(err, 'should not error making query')
 
-            const seg = getDatastoreSegment(agent.tracer.getSegment())
+            const seg = getDatastoreSegment({
+              trace: txn.trace,
+              segment: agent.tracer.getSegment()
+            })
             const attributes = seg.getAttributes()
 
             // In the case where you don't have a server running on localhost
@@ -447,7 +452,7 @@ tap.test('poolCluster', function (t) {
           const transaction = agent.getTransaction()
           t.ok(transaction, 'transaction should exist')
           t.equal(transaction.id, txn.id, 'transaction must be same')
-          const segment = agent.tracer.getSegment().parent
+          const segment = txn.trace.getParent(agent.tracer.getSegment().parentId)
           t.ok(segment, 'segment should exist')
           t.ok(segment.timer.start > 0, 'starts at a positive time')
           t.ok(segment.timer.start <= Date.now(), 'starts in past')
@@ -483,7 +488,7 @@ tap.test('poolCluster', function (t) {
           const transaction = agent.getTransaction()
           t.ok(transaction, 'transaction should exist')
           t.equal(transaction.id, txn.id, 'transaction must be same')
-          const segment = agent.tracer.getSegment().parent
+          const segment = txn.trace.getParent(agent.tracer.getSegment().parentId)
           t.ok(segment, 'segment should exist')
           t.ok(segment.timer.start > 0, 'starts at a positive time')
           t.ok(segment.timer.start <= Date.now(), 'starts in past')
@@ -519,7 +524,7 @@ tap.test('poolCluster', function (t) {
           const transaction = agent.getTransaction()
           t.ok(transaction, 'transaction should exist')
           t.equal(transaction.id, txn.id, 'transaction must be same')
-          const segment = agent.tracer.getSegment().parent
+          const segment = txn.trace.getParent(agent.tracer.getSegment().parentId)
           t.ok(segment, 'segment should exist')
           t.ok(segment.timer.start > 0, 'starts at a positive time')
           t.ok(segment.timer.start <= Date.now(), 'starts in past')
@@ -554,7 +559,7 @@ tap.test('poolCluster', function (t) {
           const transaction = agent.getTransaction()
           t.ok(transaction, 'transaction should exist')
           t.equal(transaction.id, txn.id, 'transaction must be same')
-          const segment = agent.tracer.getSegment().parent
+          const segment = txn.trace.getParent(agent.tracer.getSegment().parentId)
           t.ok(segment, 'segment should exist')
           t.ok(segment.timer.start > 0, 'starts at a positive time')
           t.ok(segment.timer.start <= Date.now(), 'starts in past')
@@ -591,7 +596,7 @@ tap.test('poolCluster', function (t) {
           const currentTransaction = agent.getTransaction()
           t.ok(currentTransaction, 'transaction should exist')
           t.equal(currentTransaction.id, txn.id, 'transaction must be same')
-          const segment = agent.tracer.getSegment().parent
+          const segment = txn.trace.getParent(agent.tracer.getSegment().parentId)
           t.ok(segment, 'segment should exist')
           t.ok(segment.timer.start > 0, 'starts at a positive time')
           t.ok(segment.timer.start <= Date.now(), 'starts in past')
@@ -619,8 +624,8 @@ function getDomainSocketPath(callback) {
   })
 }
 
-function getDatastoreSegment(segment) {
-  return segment.parent.children.filter(function (s) {
+function getDatastoreSegment({ trace, segment }) {
+  return trace.getChildren(trace.getParent(segment.parentId).id).filter(function (s) {
     return /^Datastore/.test(s && s.name)
   })[0]
 }

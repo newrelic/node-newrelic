@@ -83,13 +83,17 @@ function isNonWritable({ obj, key, value }) {
  *  Verifies the expected length of children segments and that every
  *  id matches between a segment array and the children
  *
- *  @param {Object} parent trace
- *  @param {Array} segments list of expected segments
+ *  @param {object} params to function
+ *  @param {TraceSegment} params.parent segment
+ *  @param {Array} params.segments list of expected segments
+ *  @param {Trace} params.trace transaction trace
+
  */
-function compareSegments(parent, segments) {
-  assert.ok(parent.children.length, segments.length, 'should be the same amount of children')
+function compareSegments({ parent, segments, trace }) {
+  const parentChildren = trace.getChildren(parent.id)
+  assert.ok(parentChildren.length, segments.length, 'should be the same amount of children')
   segments.forEach((segment, index) => {
-    assert.equal(parent.children[index].id, segment.id, 'should have same ids')
+    assert.equal(parentChildren[index].id, segment.id, 'should have same ids')
   })
 }
 
@@ -107,7 +111,7 @@ function compareSegments(parent, segments) {
  *                                  segment may or may not be created by code that is not
  *                                  directly under test.  Only used when `exact` is true.
  */
-function assertSegments(parent, expected, options) {
+function assertSegments(trace, parent, expected, options) {
   let child
   let childCount = 0
 
@@ -120,7 +124,8 @@ function assertSegments(parent, expected, options) {
   }
 
   function getChildren(_parent) {
-    return _parent.children.filter(function (item) {
+    const children = trace.getChildren(_parent.id)
+    return children.filter(function (item) {
       if (exact && options && options.exclude) {
         return options.exclude.indexOf(item.name) === -1
       }
@@ -155,7 +160,7 @@ function assertSegments(parent, expected, options) {
           )
         }
       } else if (typeof sequenceItem === 'object') {
-        assertSegments(child, sequenceItem, options)
+        assertSegments(trace, child, sequenceItem, options)
       }
     }
 
@@ -167,14 +172,14 @@ function assertSegments(parent, expected, options) {
 
       if (typeof sequenceItem === 'string') {
         // find corresponding child in parent
-        for (let j = 0; j < parent.children.length; j++) {
-          if (parent.children[j].name === sequenceItem) {
-            child = parent.children[j]
+        for (let j = 0; j < children.length; j++) {
+          if (children[j].name === sequenceItem) {
+            child = children[j]
           }
         }
         assert.ok(child, 'segment "' + parent.name + '" should have child "' + sequenceItem + '"')
         if (typeof expected[i + 1] === 'object') {
-          assertSegments(child, expected[i + 1], exact)
+          assertSegments(trace, child, expected[i + 1], exact)
         }
       }
     }

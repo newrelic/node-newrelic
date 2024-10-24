@@ -49,7 +49,7 @@ test('Elasticsearch instrumentation', (t) => {
       } catch (e) {
         t.notOk(e, 'should not error')
       }
-      const firstChild = transaction?.trace?.root?.children[0]
+      const [firstChild] = transaction.trace.getChildren(transaction.trace.root.id)
       t.equal(
         firstChild.name,
         `External/localhost:9200/${DB_INDEX}`,

@@ -65,7 +65,7 @@ test('amqplib promise instrumentation', async function (t) {
     const { agent, amqplib } = t.nr
     await helper.runInTransaction(agent, async function (tx) {
       const _conn = await amqplib.connect(amqpUtils.CON_STRING)
-      const [segment] = tx.trace.root.children
+      const [segment] = tx.trace.getChildren(tx.trace.root.id)
       assert.equal(segment.name, 'amqplib.connect')
       const attrs = segment.getAttributes()
       assert.equal(attrs.host, 'localhost')

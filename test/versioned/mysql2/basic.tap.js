@@ -13,6 +13,7 @@ const helper = require('../../lib/agent_helper')
 const urltils = require('../../../lib/util/urltils')
 const params = require('../../lib/params')
 const setup = require('./setup')
+const { findSegment } = require('../../lib/metrics_helper')
 
 tap.test('Basic run through mysql functionality', { timeout: 30 * 1000 }, function (t) {
   t.autoend()
@@ -176,7 +177,7 @@ tap.test('Basic run through mysql functionality', { timeout: 30 * 1000 }, functi
 
   t.test('ensure database name changes with a use statement', function (t) {
     t.notOk(agent.getTransaction(), 'no transaction should be in play yet')
-    helper.runInTransaction(agent, function transactionInScope() {
+    helper.runInTransaction(agent, function transactionInScope(txn) {
       t.ok(agent.getTransaction(), 'we should be in a transaction')
       withRetry.getClient(function (err, client) {
         if (err) {
@@ -189,7 +190,7 @@ tap.test('Basic run through mysql functionality', { timeout: 30 * 1000 }, functi
             t.error(err, 'should not fail to set database')
 
             client.query('SELECT 1 + 1 AS solution', function (err) {
-              const seg = agent.tracer.getSegment().parent
+              const seg = txn.trace.getParent(agent.tracer.getSegment().parentId)
               const attributes = seg.getAttributes()
 
               t.notOk(err, 'no errors')
@@ -286,7 +287,11 @@ tap.test('Basic run through mysql functionality', { timeout: 30 * 1000 }, functi
           t.ok(results && ended, 'result and end events should occur')
           const traceRoot = transaction.trace.root
           const traceRootDuration = traceRoot.timer.getDurationInMillis()
-          const segment = findSegment(traceRoot, 'Datastore/statement/MySQL/unknown/select')
+          const segment = findSegment(
+            transaction.trace,
+            traceRoot,
+            'Datastore/statement/MySQL/unknown/select'
+          )
           const queryNodeDuration = segment.timer.getDurationInMillis()
 
           t.ok(
@@ -333,12 +338,13 @@ tap.test('Basic run through mysql functionality', { timeout: 30 * 1000 }, functi
             const transaction = agent.getTransaction().end()
             withRetry.release(client)
             const traceRoot = transaction.trace.root
-            const querySegment = traceRoot.children[0]
-            t.equal(querySegment.children.length, 2, 'the query segment should have two children')
+            const [querySegment] = transaction.trace.getChildren(traceRoot.id)
+            const children = transaction.trace.getChildren(querySegment.id)
+            t.equal(children.length, 2, 'the query segment should have two children')
 
-            const childSegment = querySegment.children[1]
+            const childSegment = children[1]
             t.equal(childSegment.name, 'Callback: endCallback', 'children should be callbacks')
-            const grandChildSegment = childSegment.children[0]
+            const [grandChildSegment] = transaction.trace.getChildren(childSegment.id)
             t.equal(grandChildSegment.name, 'timers.setTimeout', 'grand children should be timers')
             t.end()
           }, 100)
@@ -413,7 +419,7 @@ tap.test('Basic run through mysql functionality', { timeout: 30 * 1000 }, functi
           client.query('use test_db;', function (err) {
             t.error(err)
             client.query('SELECT 1 + 1 AS solution', function (err) {
-              const seg = agent.tracer.getSegment().parent
+              const seg = txn.trace.getParent(agent.tracer.getSegment().parentId)
               const attributes = seg.getAttributes()
               t.error(err)
               if (t.ok(seg, 'should have a segment')) {
@@ -440,12 +446,3 @@ tap.test('Basic run through mysql functionality', { timeout: 30 * 1000 }, functi
     })
   })
 })
-
-function findSegment(root, segmentName) {
-  for (let i = 0; i < root.children.length; i++) {
-    const segment = root.children[i]
-    if (segment.name === segmentName) {
-      return segment
-    }
-  }
-}

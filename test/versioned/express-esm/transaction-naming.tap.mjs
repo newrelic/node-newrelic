@@ -431,7 +431,8 @@ test('transaction naming tests', (t) => {
     const promise = new Promise((resolve) => {
       transactionHandler = function (tx) {
         const expected = 'WebTransaction/Expressjs/GET//test'
-        t.equal(tx.trace.root.children[0].name, expected)
+        const [baseSegment] = tx.trace.getChildren(tx.trace.root.id)
+        t.equal(baseSegment.name, expected)
         resolve()
       }
     })

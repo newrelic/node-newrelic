@@ -51,7 +51,7 @@ test('Agent API - startBackgroundTransaction', async (t) => {
       assert.ok(transaction.isActive())
 
       const currentSegment = tracer.getSegment()
-      const nestedSegment = currentSegment.children[0]
+      const [nestedSegment] = transaction.trace.getChildren(currentSegment.id)
       assert.equal(nestedSegment.name, 'Nodejs/nested')
     })
 
@@ -221,7 +221,8 @@ test('Agent API - startBackgroundTransaction', async (t) => {
           api.startBackgroundTransaction('nested-clm-test', function () {
             nested({ api })
             const currentSegment = tracer.getSegment()
-            const nestedSegment = currentSegment.children[0]
+            const transaction = agent.tracer.getTransaction()
+            const [nestedSegment] = transaction.trace.getChildren(currentSegment.id)
             assertCLMAttrs({
               segments: [
                 {

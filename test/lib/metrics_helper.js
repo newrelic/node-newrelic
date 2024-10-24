@@ -12,7 +12,7 @@ const { isSimpleObject } = require('../../lib/util/objects')
 exports.findSegment = findSegment
 exports.getMetricHostName = getMetricHostName
 tap.Test.prototype.addAssert('assertMetrics', 4, assertMetrics)
-tap.Test.prototype.addAssert('assertSegments', 3, assertSegments)
+tap.Test.prototype.addAssert('assertSegments', 4, assertSegments)
 tap.Test.prototype.addAssert('assertMetricValues', 3, assertMetricValues)
 
 /**
@@ -119,7 +119,7 @@ function assertMetricValues(transaction, expected, exact) {
  *                                  segment may or may not be created by code that is not
  *                                  directly under test.  Only used when `exact` is true.
  */
-function assertSegments(parent, expected, options) {
+function assertSegments(trace, parent, expected, options) {
   let child
   let childCount = 0
 
@@ -132,7 +132,8 @@ function assertSegments(parent, expected, options) {
   }
 
   function getChildren(_parent) {
-    return _parent.children.filter(function (item) {
+    const children = trace.getChildren(_parent.id)
+    return children.filter(function (item) {
       if (exact && options && options.exclude) {
         return options.exclude.indexOf(item.name) === -1
       }
@@ -167,7 +168,7 @@ function assertSegments(parent, expected, options) {
           )
         }
       } else if (typeof sequenceItem === 'object') {
-        this.assertSegments(child, sequenceItem, options)
+        this.assertSegments(trace, child, sequenceItem, options)
       }
     }
 
@@ -179,27 +180,28 @@ function assertSegments(parent, expected, options) {
 
       if (typeof sequenceItem === 'string') {
         // find corresponding child in parent
-        for (let j = 0; j < parent.children.length; j++) {
-          if (parent.children[j].name === sequenceItem) {
-            child = parent.children[j]
+        for (let j = 0; j < children.length; j++) {
+          if (children[j].name === sequenceItem) {
+            child = children[j]
           }
         }
         this.ok(child, 'segment "' + parent.name + '" should have child "' + sequenceItem + '"')
         if (typeof expected[i + 1] === 'object') {
-          this.assertSegments(child, expected[i + 1], exact)
+          this.assertSegments(trace, child, expected[i + 1], exact)
         }
       }
     }
   }
 }
 
-function findSegment(root, name) {
+function findSegment(trace, root, name) {
+  const children = trace.getChildren(root.id)
   if (root.name === name) {
     return root
-  } else if (root.children && root.children.length) {
-    for (let i = 0; i < root.children.length; i++) {
-      const child = root.children[i]
-      const found = findSegment(child, name)
+  } else if (children.length) {
+    for (let i = 0; i < children.length; i++) {
+      const child = children[i]
+      const found = findSegment(trace, child, name)
       if (found) {
         return found
       }
