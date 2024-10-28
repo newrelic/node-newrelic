@@ -737,7 +737,29 @@ test('when overriding configuration values via environment variables', async (t)
         NEW_RELIC_SECURITY_VALIDATOR_SERVICE_URL: 'new-url',
         NEW_RELIC_SECURITY_DETECTION_RCI_ENABLED: false,
         NEW_RELIC_SECURITY_DETECTION_RXSS_ENABLED: false,
-        NEW_RELIC_SECURITY_DETECTION_DESERIALIZATION_ENABLED: false
+        NEW_RELIC_SECURITY_DETECTION_DESERIALIZATION_ENABLED: false,
+        NEW_RELIC_SECURITY_IAST_TEST_IDENTIFIER: 'test_id',
+        NEW_RELIC_SECURITY_SCAN_CONTROLLERS_IAST_SCAN_REQUEST_RATE_LIMIT: 3600,
+        NEW_RELIC_SECURITY_SCAN_CONTROLLERS_SCAN_INSTANCE_COUNT: 1,
+        NEW_RELIC_SECURITY_SCAN_SCHEDULE_DELAY: 0,
+        NEW_RELIC_SECURITY_SCAN_SCHEDULE_DURATION: 300,
+        NEW_RELIC_SECURITY_SCAN_SCHEDULE_SCHEDULE: '',
+        NEW_RELIC_SECURITY_SCAN_SCHEDULE_ALWAYS_SAMPLE_TRACES: false,
+        NEW_RELIC_SECURITY_EXCLUDE_FROM_IAST_SCAN_API: 'foo',
+        NEW_RELIC_SECURITY_EXCLUDE_FROM_IAST_SCAN_HTTP_REQUEST_PARAMETERS_HEADER:
+          'header1, header2',
+        NEW_RELIC_SECURITY_EXCLUDE_FROM_IAST_SCAN_HTTP_REQUEST_PARAMETERS_QUERY: 'q1, q2',
+        NEW_RELIC_SECURITY_EXCLUDE_FROM_IAST_SCAN_HTTP_REQUEST_PARAMETERS_BODY: 'a1',
+        NEW_RELIC_SECURITY_EXCLUDE_FROM_IAST_SCAN_IAST_DETECTION_CATEGORY_INSECURE_SETTINGS: false,
+        NEW_RELIC_SECURITY_EXCLUDE_FROM_IAST_SCAN_IAST_DETECTION_CATEGORY_INVALID_FILE_ACCESS: false,
+        NEW_RELIC_SECURITY_EXCLUDE_FROM_IAST_SCAN_IAST_DETECTION_CATEGORY_SQL_INJECTION: false,
+        NEW_RELIC_SECURITY_EXCLUDE_FROM_IAST_SCAN_IAST_DETECTION_CATEGORY_NOSQL_INJECTION: false,
+        NEW_RELIC_SECURITY_EXCLUDE_FROM_IAST_SCAN_IAST_DETECTION_CATEGORY_LDAP_INJECTION: false,
+        NEW_RELIC_SECURITY_EXCLUDE_FROM_IAST_SCAN_IAST_DETECTION_CATEGORY_JAVASCRIPT_INJECTION: false,
+        NEW_RELIC_SECURITY_EXCLUDE_FROM_IAST_SCAN_IAST_DETECTION_CATEGORY_COMMAND_INJECTION: false,
+        NEW_RELIC_SECURITY_EXCLUDE_FROM_IAST_SCAN_IAST_DETECTION_CATEGORY_XPATH_INJECTION: false,
+        NEW_RELIC_SECURITY_EXCLUDE_FROM_IAST_SCAN_IAST_DETECTION_CATEGORY_SSRF: false,
+        NEW_RELIC_SECURITY_EXCLUDE_FROM_IAST_SCAN_IAST_DETECTION_CATEGORY_RXSS: false
       }
       idempotentEnv(env, (config) => {
         assert.deepStrictEqual(config.security, {
@@ -749,6 +771,37 @@ test('when overriding configuration values via environment variables', async (t)
             rci: { enabled: false },
             rxss: { enabled: false },
             deserialization: { enabled: false }
+          },
+          iast_test_identifier: 'test_id',
+          scan_controllers: {
+            iast_scan_request_rate_limit: 3600,
+            scan_instance_count: 1
+          },
+          scan_schedule: {
+            delay: 0,
+            duration: 300,
+            schedule: '',
+            always_sample_traces: false
+          },
+          exclude_from_iast_scan: {
+            api: ['foo'],
+            http_request_parameters: {
+              header: ['header1', 'header2'],
+              query: ['q1', 'q2'],
+              body: ['a1']
+            },
+            iast_detection_category: {
+              insecure_settings: false,
+              invalid_file_access: false,
+              sql_injection: false,
+              nosql_injection: false,
+              ldap_injection: false,
+              javascript_injection: false,
+              command_injection: false,
+              xpath_injection: false,
+              ssrf: false,
+              rxss: false
+            }
           }
         })
         end()
