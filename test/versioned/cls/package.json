@@ -8,15 +8,11 @@
         "node": ">=18"
       },
       "dependencies": {
-        "continuation-local-storage": ">=3.0.0",
-        "async-listener": "0.6.10"
+        "continuation-local-storage": ">=3.1.2"
       },
       "files": [
-        "cls.tap.js"
+        "cls.test.js"
       ]
     }
-  ],
-  "dependencies": {
-    "continuation-local-storage": "^3.2.1"
-  }
+  ]
 }
