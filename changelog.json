@@ -2,6 +2,17 @@
   "repository": "newrelic/node-newrelic",
   "entries": [
     {
+      "version": "12.6.0",
+      "changes": {
+        "security": [],
+        "bugfixes": [],
+        "features": [
+          "Added ARN and provider to Lambda segments",
+          "IAST configurations for scan scheduling and restrictions"
+        ]
+      }
+    },
+    {
       "version": "12.5.2",
       "changes": {
         "security": [],
