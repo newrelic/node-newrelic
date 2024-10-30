@@ -35,7 +35,6 @@ test('TraceSegment', async (t) => {
       config: agent.config,
       name: 'UnitTest',
       collect: true,
-      traceStacks: trans.traceStacks,
       root
     })
     assert.ok(!segment.opaque)
@@ -44,7 +43,6 @@ test('TraceSegment', async (t) => {
       config: agent.config,
       name: 'child',
       collect: true,
-      traceStacks: trans.traceStacks,
       root
     })
     assert.equal(segment.children.length, 0)
@@ -53,7 +51,6 @@ test('TraceSegment', async (t) => {
       config: agent.config,
       name: 'child',
       collect: true,
-      traceStacks: trans.traceStacks,
       root
     })
     assert.equal(segment.children.length, 1)
@@ -68,7 +65,6 @@ test('TraceSegment', async (t) => {
       config: agent.config,
       name: 'UnitTest',
       collect: true,
-      traceStacks: trans.traceStacks,
       root
     })
     assert.equal(success.name, 'UnitTest')
@@ -82,7 +78,6 @@ test('TraceSegment', async (t) => {
       config: agent.config,
       name: 'UnitTest',
       collect: true,
-      traceStacks: trans.traceStacks,
       root
     })
     assert.equal(segment.children.length, 0)
@@ -96,7 +91,6 @@ test('TraceSegment', async (t) => {
       config: agent.config,
       name: 'UnitTest',
       collect: true,
-      traceStacks: trans.traceStacks,
       root
     })
     assert.ok(segment.timer)
@@ -110,7 +104,6 @@ test('TraceSegment', async (t) => {
       config: agent.config,
       name: 'UnitTest',
       collect: true,
-      traceStacks: trans.traceStacks,
       root
     })
     assert.equal(segment.timer.isRunning(), false)
@@ -124,7 +117,6 @@ test('TraceSegment', async (t) => {
       config: agent.config,
       name: 'UnitTest',
       collect: true,
-      traceStacks: trans.traceStacks,
       root
     })
     segment.start()
@@ -141,7 +133,6 @@ test('TraceSegment', async (t) => {
       config: agent.config,
       name: 'Test',
       collect: true,
-      traceStacks: trans.traceStacks,
       root
     })
     agent.config.distributed_tracing.enabled = true
@@ -159,7 +150,6 @@ test('TraceSegment', async (t) => {
       config: agent.config,
       name: 'Test',
       collect: true,
-      traceStacks: trans.traceStacks,
       root
     })
     assert.equal(segment.getSpanId(), null)
@@ -175,7 +165,6 @@ test('TraceSegment', async (t) => {
       config: agent.config,
       name: 'Test',
       collect: true,
-      traceStacks: trans.traceStacks,
       root
     })
     assert.ok(segment.getSpanId() === null)
@@ -190,7 +179,6 @@ test('TraceSegment', async (t) => {
       config: agent.config,
       name: 'Test',
       collect: true,
-      traceStacks: trans.traceStacks,
       root
     })
 
@@ -212,7 +200,6 @@ test('TraceSegment', async (t) => {
       config: agent.config,
       name: 'TestSegment',
       collect: true,
-      traceStacks: transaction.traceStacks,
       root
     })
     segment.toJSON()
@@ -227,7 +214,6 @@ test('TraceSegment', async (t) => {
       config: agent.config,
       name: 'UnitTest',
       collect: true,
-      traceStacks: trans.traceStacks,
       root
     })
     segment.end()
@@ -263,7 +249,6 @@ test('TraceSegment', async (t) => {
       config: agent.config,
       name: 'TestSegment',
       collect: true,
-      traceStacks: transaction.traceStacks,
       root
     })
 
@@ -286,7 +271,6 @@ test('TraceSegment', async (t) => {
       config: agent.config,
       name: segmentName,
       collect: true,
-      traceStacks: transaction.traceStacks,
       root
     })
 
@@ -324,7 +308,6 @@ test('with children created from URLs', async (t) => {
       config: ctx.nr.agent,
       name: url,
       collect: true,
-      traceStacks: transaction.traceStacks,
       root
     })
     transaction.baseSegment = webChild
@@ -408,7 +391,6 @@ test('with parameters parsed out by framework', async (t) => {
       config: ctx.nr.agent.config,
       name: url,
       collect: true,
-      traceStacks: transaction.traceStacks,
       root
     })
     transaction.trace.attributes.addAttributes(DESTINATIONS.TRANS_SCOPE, params)
@@ -479,7 +461,7 @@ test('with attributes.enabled set to false', async (t) => {
       config: ctx.nr.agent.config,
       name: url,
       collect: true,
-      traceStacks: transaction.traceStacks,
+
       root
     })
     webChild.addAttribute('test', 'non-null value')
@@ -531,7 +513,7 @@ test('with attributes.enabled set', async (t) => {
       config: ctx.nr.agent.config,
       name: url,
       collect: true,
-      traceStacks: transaction.traceStacks,
+
       root
     })
     transaction.baseSegment = webChild
@@ -600,7 +582,6 @@ test('when serialized', async (t) => {
       config: agent.config,
       name: 'UnitTest',
       collect: true,
-      traceStacks: transaction.traceStacks,
       root
     })
 
@@ -636,14 +617,13 @@ test('when serialized', async (t) => {
   })
 
   await t.test('should not cause a stack overflow', { timeout: 30000 }, (t) => {
-    const { segment, transaction, agent, root } = t.nr
+    const { segment, agent, root } = t.nr
     let parent = segment
     for (let i = 0; i < 9000; ++i) {
       const child = new TraceSegment({
         config: agent.config,
         name: 'Child ' + i,
         collect: true,
-        traceStacks: transaction.traceStacks,
         root
       })
       parent.children.push(child)
@@ -669,7 +649,6 @@ test('getSpanContext', async (t) => {
       config: agent.config,
       name: 'UnitTest',
       collect: true,
-      traceStacks: transaction.traceStacks,
       root
     })
     ctx.nr = {
@@ -701,7 +680,6 @@ test('getSpanContext', async (t) => {
       config: agent.config,
       name: 'UnitTest',
       collect: true,
-      traceStacks: transaction.traceStacks,
       root: transaction.trace.root
     })
     const spanContext = segment.getSpanContext()
@@ -715,7 +693,6 @@ test('getSpanContext', async (t) => {
       config: agent.config,
       name: 'UnitTest',
       collect: true,
-      traceStacks: transaction.traceStacks,
       root: transaction.trace.root
     })
     const spanContext = segment.getSpanContext()

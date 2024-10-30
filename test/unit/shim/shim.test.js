@@ -368,7 +368,6 @@ test('Shim', async function (t) {
       ctx.nr.segment = new TraceSegment({
         config: ctx.nr.agent.config,
         name: 'test',
-        traceStacks: transaction.traceStacks,
         root: transaction.trace.root
       })
       ctx.nr.startingSegment = ctx.nr.tracer.getSegment()
@@ -950,7 +949,7 @@ test('Shim', async function (t) {
               name: 'test segment',
               callback: shim.LAST,
               after(args) {
-                assert.equal(Object.keys(args).length, 7, 'should have 6 args to after hook')
+                assert.equal(Object.keys(args).length, 7, 'should have 7 args to after hook')
                 const { fn, name, error, result, segment, transaction } = args
                 assert.equal(segment.name, 'test segment')
                 assert.equal(error, undefined)
@@ -1327,7 +1326,7 @@ test('Shim', async function (t) {
           name: segmentName,
           promise: true,
           after(args) {
-            plan.equal(Object.keys(args).length, 7, 'should have 6 args to after hook')
+            plan.equal(Object.keys(args).length, 7, 'should have 7 args to after hook')
             const { fn, name, error, result, segment } = args
             plan.deepEqual(fn, toWrap)
             plan.equal(name, toWrap.name)
@@ -1897,7 +1896,6 @@ test('Shim', async function (t) {
       ctx.nr.segment = new TraceSegment({
         config: ctx.nr.agent.config,
         name: 'test',
-        traceStacks: transaction.traceStacks,
         root: transaction.trace.root
       })
     })
@@ -1932,7 +1930,6 @@ test('Shim', async function (t) {
       ctx.nr.segment = new TraceSegment({
         config: ctx.nr.agent.config,
         name: 'test',
-        traceStacks: transaction.traceStacks,
         root: transaction.trace.root
       })
       ctx.nr.transaction = transaction
@@ -2181,7 +2178,6 @@ test('Shim', async function (t) {
       ctx.nr.segment = new TraceSegment({
         config: ctx.nr.agent.config,
         name: 'test',
-        traceStacks: transaction.traceStacks,
         root: transaction.trace.root
       })
     })

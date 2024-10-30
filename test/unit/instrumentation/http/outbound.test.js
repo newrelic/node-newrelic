@@ -27,7 +27,6 @@ function addSegment({ agent }) {
   transaction.baseSegment = new Segment({
     config: agent.config,
     name: 'base-segment',
-    traceStacks: transaction.traceStacks,
     root: transaction.trace.root
   })
 }

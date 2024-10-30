@@ -11,7 +11,6 @@ const helper = require('../../lib/agent_helper')
 const EventEmitter = require('events').EventEmitter
 const symbols = require('../../../lib/symbols')
 const Context = require('../../../lib/context-manager/context')
-// TODO: make sure these tests are still valid, I had to change them
 
 test('bind in transaction', function testBind(t) {
   const { agent, tracer } = setupAgent(t)

@@ -38,7 +38,6 @@ test('DatastoreShim', async function (t) {
         segment.add({
           config: agent.config,
           name: 'ChildSegment',
-          traceStacks: transaction.traceStacks,
           root: transaction.trace.root
         })
 

@@ -2055,7 +2055,6 @@ function createHeadersAndInsertTrace(transaction) {
 function addSegmentInContext(tracer, transaction, name) {
   const segment = new Segment({
     config: transaction.agent.config,
-    traceStacks: transaction.traceStacks,
     name,
     root: transaction.trace.root
   })

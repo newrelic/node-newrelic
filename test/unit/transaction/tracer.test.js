@@ -157,7 +157,7 @@ test('Tracer', async function (t) {
       const trace = trans.trace
 
       assert.doesNotThrow(function noCallback() {
-        trace.add('UnitTest', null, null) // eslint-disable-line no-new
+        trace.add('UnitTest', null, null)
       })
 
       const working = trace.add(
