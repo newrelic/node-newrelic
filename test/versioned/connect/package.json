@@ -12,12 +12,9 @@
         "connect": ">=3.0.0"
       },
       "files": [
-        "error-intercept.tap.js",
-        "route.tap.js"
+        "error-intercept.test.js",
+        "route.test.js"
       ]
     }
-  ],
-  "dependencies": {
-    "connect": "^3.6.5"
-  }
+  ]
 }
