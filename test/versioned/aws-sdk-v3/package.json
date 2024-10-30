@@ -26,7 +26,7 @@
         }
       },
       "files": [
-        "api-gateway.tap.js"
+        "api-gateway.test.js"
       ]
     },
     {
@@ -40,7 +40,7 @@
         }
       },
       "files": [
-        "elasticache.tap.js"
+        "elasticache.test.js"
       ]
     },
     {
@@ -54,7 +54,7 @@
         }
       },
       "files": [
-        "elb.tap.js"
+        "elb.test.js"
       ]
     },
     {
@@ -68,7 +68,7 @@
         }
       },
       "files": [
-        "lambda.tap.js"
+        "lambda.test.js"
       ]
     },
     {
@@ -82,7 +82,7 @@
         }
       },
       "files": [
-        "rds.tap.js"
+        "rds.test.js"
       ]
     },
     {
@@ -96,7 +96,7 @@
         }
       },
       "files": [
-        "redshift.tap.js"
+        "redshift.test.js"
       ]
     },
     {
@@ -110,7 +110,7 @@
         }
       },
       "files": [
-        "rekognition.tap.js"
+        "rekognition.test.js"
       ]
     },
     {
@@ -124,7 +124,7 @@
         }
       },
       "files": [
-        "s3.tap.js"
+        "s3.test.js"
       ]
     },
     {
@@ -138,7 +138,7 @@
         }
       },
       "files": [
-        "ses.tap.js"
+        "ses.test.js"
       ]
     },
     {
@@ -152,7 +152,7 @@
         }
       },
       "files": [
-        "sns.tap.js"
+        "sns.test.js"
       ]
     },
     {
@@ -166,7 +166,7 @@
         }
       },
       "files": [
-        "sqs.tap.js"
+        "sqs.test.js"
       ]
     },
     {
@@ -180,7 +180,7 @@
         }
       },
       "files": [
-        "client-dynamodb.tap.js"
+        "client-dynamodb.test.js"
       ]
     },
     {
@@ -194,7 +194,7 @@
         }
       },
       "files": [
-        "lib-dynamodb.tap.js"
+        "lib-dynamodb.test.js"
       ]
     },
     {
@@ -205,9 +205,9 @@
         "@aws-sdk/client-bedrock-runtime": ">=3.474.0"
       },
       "files": [
-        "bedrock-chat-completions.tap.js",
-        "bedrock-embeddings.tap.js",
-        "bedrock-negative-tests.tap.js"
+        "bedrock-chat-completions.test.js",
+        "bedrock-embeddings.test.js",
+        "bedrock-negative-tests.test.js"
       ]
     }
   ],
