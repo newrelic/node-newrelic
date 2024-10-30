@@ -3,13 +3,11 @@
 #### Features
 
 * Added ARN and provider to Lambda segments ([#2674](https://github.com/newrelic/node-newrelic/pull/2674)) ([a23294c](https://github.com/newrelic/node-newrelic/commit/a23294c2d2cc665de5df1a0f3c9099dedbfbb896))
-    * Signed-off-by: mrickard <maurice@mauricerickard.com>
-* IAST configurations for scan scheduling and restrictions ([#2645](https://github.com/newrelic/node-newrelic/pull/2645)) ([13a627a](https://github.com/newrelic/node-newrelic/commit/13a627a1a1529dd8f8c93d0b9f582457c019a63e))
+* Added IAST configurations for scan scheduling and restrictions ([#2645](https://github.com/newrelic/node-newrelic/pull/2645)) ([13a627a](https://github.com/newrelic/node-newrelic/commit/13a627a1a1529dd8f8c93d0b9f582457c019a63e))
 
 #### Documentation
 
 * Updated compatibility report ([#2673](https://github.com/newrelic/node-newrelic/pull/2673)) ([e4d0503](https://github.com/newrelic/node-newrelic/commit/e4d0503934f7de45d3cdb6dbb4640a66cf8d8421))
-    * Co-authored-by: bizob2828 <1874937+bizob2828@users.noreply.github.com>
 
 #### Miscellaneous chores
 

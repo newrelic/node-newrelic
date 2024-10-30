@@ -8,7 +8,7 @@
         "bugfixes": [],
         "features": [
           "Added ARN and provider to Lambda segments",
-          "IAST configurations for scan scheduling and restrictions"
+          "Added IAST configurations for scan scheduling and restrictions"
         ]
       }
     },
