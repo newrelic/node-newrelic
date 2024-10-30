@@ -13,7 +13,7 @@
           "parse-json": "6.0.2"
         },
         "files": [
-          "parse-json.tap.mjs"
+          "parse-json.test.mjs"
         ]
       }
     ],
