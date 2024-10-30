@@ -8,12 +8,12 @@
 const test = require('node:test')
 const assert = require('node:assert')
 
-const helper = require('../lib/agent_helper')
-const { match } = require('../lib/custom-assertions')
+const helper = require('../../lib/agent_helper')
+const { match } = require('../../lib/custom-assertions')
 
-const Transaction = require('../../lib/transaction')
-const ParsedStatement = require('../../lib/db/parsed-statement')
-const recordMetrics = require('../../lib/metrics/recorders/database')
+const Transaction = require('../../../lib/transaction')
+const ParsedStatement = require('../../../lib/db/parsed-statement')
+const recordQueryMetrics = require('../../../lib/metrics/recorders/database')
 
 function checkMetric(metrics, name, scope) {
   match(metrics.getMetric(name, scope), { total: 0.333 })
@@ -33,7 +33,7 @@ test('recording database metrics', async (t) => {
 
         transaction.type = Transaction.TYPES.BG
         segment.setDurationInMillis(333)
-        recordMetrics.bind(ps)(segment, 'TEST')
+        recordQueryMetrics.bind(ps)(segment, 'TEST')
         transaction.end()
 
         ctx.nr.metrics = transaction.metrics
@@ -101,7 +101,7 @@ test('recording database metrics', async (t) => {
 
         transaction.type = Transaction.TYPES.BG
         segment.setDurationInMillis(333)
-        recordMetrics.bind(ps)(segment, 'TEST')
+        recordQueryMetrics.bind(ps)(segment, 'TEST')
         transaction.end()
 
         ctx.nr.metrics = transaction.metrics
@@ -166,7 +166,7 @@ test('recording database metrics', async (t) => {
 
         transaction.type = Transaction.TYPES.BG
         segment.setDurationInMillis(333)
-        recordMetrics.bind(ps)(segment, null)
+        recordQueryMetrics.bind(ps)(segment, null)
         transaction.end()
 
         ctx.nr.metrics = transaction.metrics
@@ -229,7 +229,7 @@ test('recording database metrics', async (t) => {
 
         transaction.type = Transaction.TYPES.BG
         segment.setDurationInMillis(333)
-        recordMetrics.bind(ps)(segment, null)
+        recordQueryMetrics.bind(ps)(segment, null)
         transaction.end()
 
         ctx.nr.metrics = transaction.metrics
@@ -298,13 +298,13 @@ test('recording slow queries', async (t) => {
       ctx.nr.segment = segment
 
       segment.setDurationInMillis(503)
-      recordMetrics.bind(ps)(segment, 'TEST')
+      recordQueryMetrics.bind(ps)(segment, 'TEST')
 
       const ps2 = new ParsedStatement('MySql', 'select', 'foo', 'select * from foo where b=2')
 
       const segment2 = transaction.trace.add('test')
       segment2.setDurationInMillis(501)
-      recordMetrics.bind(ps2)(segment2, 'TEST')
+      recordQueryMetrics.bind(ps2)(segment2, 'TEST')
 
       transaction.end()
     })
@@ -359,13 +359,13 @@ test('recording slow queries', async (t) => {
       ctx.nr.segment = segment
 
       segment.setDurationInMillis(503)
-      recordMetrics.bind(ps)(segment, 'TEST')
+      recordQueryMetrics.bind(ps)(segment, 'TEST')
 
       const ps2 = new ParsedStatement('MySql', 'select', null, 'select * from foo where b=2')
 
       const segment2 = transaction.trace.add('test')
       segment2.setDurationInMillis(501)
-      recordMetrics.bind(ps2)(segment2, 'TEST')
+      recordQueryMetrics.bind(ps2)(segment2, 'TEST')
 
       transaction.end()
     })
@@ -428,13 +428,13 @@ test('recording slow queries', async (t) => {
       ctx.nr.segment = segment
 
       segment.setDurationInMillis(503)
-      recordMetrics.bind(ps)(segment, 'TEST')
+      recordQueryMetrics.bind(ps)(segment, 'TEST')
 
       const ps2 = new ParsedStatement('MySql', 'select', null, null)
 
       const segment2 = transaction.trace.add('test')
       segment2.setDurationInMillis(501)
-      recordMetrics.bind(ps2)(segment2, 'TEST')
+      recordQueryMetrics.bind(ps2)(segment2, 'TEST')
 
       transaction.end()
     })
