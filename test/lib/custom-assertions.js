@@ -106,11 +106,11 @@ function compareSegments(parent, segments) {
  *                                  validation.  This is useful, for example, when a
  *                                  segment may or may not be created by code that is not
  *                                  directly under test.  Only used when `exact` is true.
- * @param {object} options Set of optional parameters.
+ * @param {object} [options] Set of optional parameters.
  * @param {object} [options.assert] The assertion library to use. Defaults to
  * `node:assert`.
  */
-function assertSegments(parent, expected, options, { assert = require('node:assert') }) {
+function assertSegments(parent, expected, options, { assert = require('node:assert') } = {}) {
   let child
   let childCount = 0
 
@@ -217,12 +217,12 @@ const TYPE_MAPPINGS = {
  *
  * @param {string|object} actual The entity to verify.
  * @param {string|object} expected What the entity should match against.
- * @param {object} options Set of optional parameters.
+ * @param {object} [options] Set of optional parameters.
  * @param {object} [options.assert] The assertion library to use. Defaults to
  * `node:assert`.
  *
  */
-function match(actual, expected, { assert = require('node:assert') }) {
+function match(actual, expected, { assert = require('node:assert') } = {}) {
   // match substring
   if (typeof actual === 'string' && typeof expected === 'string') {
     assert.ok(actual.indexOf(expected) > -1)
@@ -262,7 +262,7 @@ function match(actual, expected, { assert = require('node:assert') }) {
  *                                  ]
  * @param {boolean} exclusive       When true, found and expected metric lengths should match
  * @param {boolean} assertValues    When true, metric values must match expected
- * @param {object} options Set of optional parameters.
+ * @param {object} [options] Set of optional parameters.
  * @param {object} [options.assert] The assertion library to use. Defaults to
  * `node:assert`.
  */
@@ -271,7 +271,7 @@ function assertMetrics(
   expected,
   exclusive,
   assertValues,
-  { assert = require('node:assert') }
+  { assert = require('node:assert') } = {}
 ) {
   // Assertions about arguments because maybe something returned undefined
   // unexpectedly and is passed in, or a return type changed. This will
