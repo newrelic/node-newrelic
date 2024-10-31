@@ -37,6 +37,10 @@ test('with default properties', async (t) => {
     assert.equal(configuration.license_key, '')
   })
 
+  await t.test('should have no cloud aws account id', () => {
+    assert.equal(configuration.cloud.aws.account_id, null)
+  })
+
   await t.test('should connect to the collector at collector.newrelic.com', () => {
     assert.equal(configuration.host, 'collector.newrelic.com')
   })
