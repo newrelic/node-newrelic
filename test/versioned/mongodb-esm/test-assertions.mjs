@@ -19,6 +19,7 @@ function getValidatorCallback({ t, tx, segments, metrics, end, childrenLength = 
 
     const segment = agent.tracer.getSegment()
     let current = tx.trace.root
+    let children = tx.trace.getChildren(current.id)
 
     if (childrenLength === 2) {
       // This block is for testing `collection.aggregate`. The `aggregate`
@@ -29,27 +30,29 @@ function getValidatorCallback({ t, tx, segments, metrics, end, childrenLength = 
       // on the trace root. We also added a strict flag for `aggregate` because,
       // depending on the version, there is an extra segment for the callback
       // of our test which we do not need to assert.
-      assert.equal(current.children.length, childrenLength, 'should have two children')
+      assert.equal(children.length, childrenLength, 'should have two children')
       for (const [i, expectedSegment] of segments.entries()) {
-        const child = current.children[i]
+        const child = children[i]
+        const childChildren = tx.trace.getChildren(child.id)
         assert.equal(child.name, expectedSegment, `child should be named ${expectedSegment}`)
         if (common.MONGO_SEGMENT_RE.test(child.name) === true) {
           checkSegmentParams(child, METRIC_HOST_NAME, METRIC_HOST_PORT)
           assert.equal(child.ignore, false, 'should not ignore segment')
         }
-        assert.equal(child.children.length, 0, 'should have no more children')
+        assert.equal(childChildren.length, 0, 'should have no more children')
       }
     } else {
       for (let i = 0, l = segments.length; i < l; ++i) {
-        assert.equal(current.children.length, 1, 'should have one child')
-        current = current.children[0]
+        assert.equal(children.length, 1, 'should have one child')
+        current = children[0]
+        children = tx.trace.getChildren(current.id)
         assert.equal(current.name, segments[i], 'child should be named ' + segments[i])
         if (common.MONGO_SEGMENT_RE.test(current.name) === true) {
           checkSegmentParams(current, METRIC_HOST_NAME, METRIC_HOST_PORT)
           assert.equal(current.ignore, false, 'should not ignore segment')
         }
       }
-      assert.equal(current.children.length, 0, 'should have no more children')
+      assert.equal(children.length, 0, 'should have no more children')
     }
     assert.equal(current === segment, true, 'should test to the current segment')
 

@@ -46,6 +46,7 @@ tap.test('OpenAI instrumentation - embedding', (t) => {
       test.equal(results.model, 'text-embedding-ada-002-v2')
 
       test.assertSegments(
+        tx.trace,
         tx.trace.root,
         [OPENAI.EMBEDDING, [`External/${host}:${port}/embeddings`]],
         {
@@ -85,17 +86,18 @@ tap.test('OpenAI instrumentation - embedding', (t) => {
       const events = agent.customEventAggregator.events.toArray()
       test.equal(events.length, 1, 'should create a chat completion message and summary event')
       const [embedding] = events
+      const [segment] = tx.trace.getChildren(tx.trace.root.id)
       const expectedEmbedding = {
         'id': /[a-f0-9]{36}/,
         'appName': 'New Relic for Node.js tests',
         'request_id': 'c70828b2293314366a76a2b1dcb20688',
         'trace_id': tx.traceId,
-        'span_id': tx.trace.root.children[0].id,
+        'span_id': segment.id,
         'response.model': 'text-embedding-ada-002-v2',
         'vendor': 'openai',
         'ingest_source': 'Node',
         'request.model': 'text-embedding-ada-002',
-        'duration': tx.trace.root.children[0].getDurationInMillis(),
+        'duration': segment.getDurationInMillis(),
         'response.organization': 'new-relic-nkmd8b',
         'token_count': undefined,
         'response.headers.llmVersion': '2020-10-01',

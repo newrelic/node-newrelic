@@ -54,7 +54,7 @@ tap.test('Restify router', function (t) {
       t.equal(transaction.verb, 'GET', 'HTTP method is GET')
       t.ok(transaction.trace, 'transaction has trace')
 
-      const web = transaction.trace.root.children[0]
+      const [web] = transaction.trace.getChildren(transaction.trace.root.id)
       t.ok(web, 'trace has web segment')
       t.equal(web.name, transaction.name, 'segment name and transaction name match')
       t.equal(web.partialName, 'Restify/GET//test/:id', 'should have partial name for apdex')

@@ -92,7 +92,7 @@ utils.verifyConsumeTransaction = ({ t, tx, topic, clientId }) => {
   )
 
   t.equal(tx.getFullName(), expectedName)
-  const consume = metrics.findSegment(tx.trace.root, expectedName)
+  const consume = metrics.findSegment(tx.trace, tx.trace.root, expectedName)
   t.equal(consume, tx.baseSegment)
 
   const attributes = tx.trace.attributes.get(DESTINATIONS.TRANS_SCOPE)
@@ -109,7 +109,7 @@ utils.verifyConsumeTransaction = ({ t, tx, topic, clientId }) => {
  */
 utils.verifyDistributedTrace = ({ t, consumeTxs, produceTx }) => {
   t.ok(produceTx.isDistributedTrace, 'should mark producer as distributed')
-  const produceSegment = produceTx.trace.root.children[3]
+  const [, , , produceSegment] = produceTx.trace.getChildren(produceTx.trace.root.id)
   consumeTxs.forEach((consumeTx) => {
     t.ok(consumeTx.isDistributedTrace, 'should mark consumer as distributed')
     t.equal(consumeTx.incomingCatId, null, 'should not set old CAT properties')

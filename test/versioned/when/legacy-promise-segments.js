@@ -49,9 +49,10 @@ function segmentsEnabledTests(t, agent, Promise, doSomeWork) {
     agent.config.feature_flag.promise_segments = true
 
     agent.once('transactionFinished', function (tx) {
-      t.equal(tx.trace.root.children.length, 1)
+      const children = tx.trace.getChildren(tx.trace.root.id)
+      t.equal(children.length, 1)
 
-      t.assertSegments(tx.trace.root, [
+      t.assertSegments(tx.trace, tx.trace.root, [
         'doSomeWork',
         ['Promise startSomeWork', ['Promise#then <anonymous>', ['someChildSegment']]]
       ])
@@ -83,8 +84,9 @@ function segmentsEnabledTests(t, agent, Promise, doSomeWork) {
     agent.config.feature_flag.promise_segments = false
 
     agent.once('transactionFinished', function (tx) {
-      t.equal(tx.trace.root.children.length, 1)
-      t.assertSegments(tx.trace.root, ['doWork1', ['doWork2', ['secondThen']]])
+      const children = tx.trace.getChildren(tx.trace.root.id)
+      t.equal(children.length, 1)
+      t.assertSegments(tx.trace, tx.trace.root, ['doWork1', ['doWork2', ['secondThen']]])
 
       t.end()
     })
@@ -108,9 +110,10 @@ function segmentsEnabledTests(t, agent, Promise, doSomeWork) {
     agent.config.feature_flag.promise_segments = true
 
     agent.once('transactionFinished', function (tx) {
-      t.equal(tx.trace.root.children.length, 1)
+      const children = tx.trace.getChildren(tx.trace.root.id)
+      t.equal(children.length, 1)
 
-      t.assertSegments(tx.trace.root, [
+      t.assertSegments(tx.trace, tx.trace.root, [
         'doWork1',
         ['Promise startSomeWork', ['Promise#then firstThen', ['Promise#then secondThen']]]
       ])
@@ -133,9 +136,10 @@ function segmentsEnabledTests(t, agent, Promise, doSomeWork) {
     agent.config.feature_flag.promise_segments = true
 
     agent.once('transactionFinished', function (tx) {
-      t.equal(tx.trace.root.children.length, 1)
+      const children = tx.trace.getChildren(tx.trace.root.id)
+      t.equal(children.length, 1)
 
-      t.assertSegments(tx.trace.root, [
+      t.assertSegments(tx.trace, tx.trace.root, [
         'doWork1',
         ['Promise startSomeWork', ['Promise#catch catchHandler']]
       ])
@@ -161,9 +165,10 @@ function segmentsEnabledTests(t, agent, Promise, doSomeWork) {
     agent.config.feature_flag.promise_segments = false
 
     agent.once('transactionFinished', function (tx) {
-      t.equal(tx.trace.root.children.length, 1)
+      const children = tx.trace.getChildren(tx.trace.root.id)
+      t.equal(children.length, 1)
 
-      t.assertSegments(tx.trace.root, ['doWork1', ['doWork2', ['catchHandler']]])
+      t.assertSegments(tx.trace, tx.trace.root, ['doWork1', ['doWork2', ['catchHandler']]])
 
       t.end()
     })
@@ -193,9 +198,11 @@ function segmentsEnabledTests(t, agent, Promise, doSomeWork) {
     agent.config.feature_flag.promise_segments = true
 
     agent.once('transactionFinished', function (tx) {
-      t.equal(tx.trace.root.children.length, 2)
+      const children = tx.trace.getChildren(tx.trace.root.id)
+      t.equal(children.length, 2)
 
       t.assertSegments(
+        tx.trace,
         tx.trace.root,
         ['Promise startSomeWork', ['Promise#then myThen'], 'doSomeWork'],
         true
@@ -234,9 +241,10 @@ function segmentsDisabledTests(t, agent, Promise, doSomeWork) {
     agent.config.feature_flag.promise_segments = false
 
     agent.once('transactionFinished', function (tx) {
-      t.equal(tx.trace.root.children.length, 1)
+      const children = tx.trace.getChildren(tx.trace.root.id)
+      t.equal(children.length, 1)
 
-      t.assertSegments(tx.trace.root, ['doSomeWork', ['someChildSegment']])
+      t.assertSegments(tx.trace, tx.trace.root, ['doSomeWork', ['someChildSegment']])
 
       t.end()
     })
@@ -262,9 +270,10 @@ function segmentsDisabledTests(t, agent, Promise, doSomeWork) {
     agent.config.feature_flag.promise_segments = false
 
     agent.once('transactionFinished', function (tx) {
-      t.equal(tx.trace.root.children.length, 1)
+      const children = tx.trace.getChildren(tx.trace.root.id)
+      t.equal(children.length, 1)
 
-      t.assertSegments(tx.trace.root, ['doWork1'])
+      t.assertSegments(tx.trace, tx.trace.root, ['doWork1'])
 
       t.end()
     })
@@ -286,9 +295,10 @@ function segmentsDisabledTests(t, agent, Promise, doSomeWork) {
     agent.config.feature_flag.promise_segments = false
 
     agent.once('transactionFinished', function (tx) {
-      t.equal(tx.trace.root.children.length, 1)
+      const children = tx.trace.getChildren(tx.trace.root.id)
+      t.equal(children.length, 1)
 
-      t.assertSegments(tx.trace.root, ['doWork1'])
+      t.assertSegments(tx.trace, tx.trace.root, ['doWork1'])
 
       t.end()
     })
@@ -308,9 +318,10 @@ function segmentsDisabledTests(t, agent, Promise, doSomeWork) {
     agent.config.feature_flag.promise_segments = false
 
     agent.once('transactionFinished', function (tx) {
-      t.equal(tx.trace.root.children.length, 1)
+      const children = tx.trace.getChildren(tx.trace.root.id)
+      t.equal(children.length, 1)
 
-      t.assertSegments(tx.trace.root, ['doWork1'])
+      t.assertSegments(tx.trace, tx.trace.root, ['doWork1'])
 
       t.end()
     })
@@ -330,9 +341,10 @@ function segmentsDisabledTests(t, agent, Promise, doSomeWork) {
     agent.config.feature_flag.promise_segments = false
 
     agent.once('transactionFinished', function (tx) {
-      t.equal(tx.trace.root.children.length, 1)
+      const children = tx.trace.getChildren(tx.trace.root.id)
+      t.equal(children.length, 1)
 
-      t.assertSegments(tx.trace.root, ['doWork1', ['doWork2']])
+      t.assertSegments(tx.trace, tx.trace.root, ['doWork1', ['doWork2']])
 
       t.end()
     })
@@ -353,9 +365,10 @@ function segmentsDisabledTests(t, agent, Promise, doSomeWork) {
     agent.config.feature_flag.promise_segments = false
 
     agent.once('transactionFinished', function (tx) {
-      t.equal(tx.trace.root.children.length, 1)
+      const children = tx.trace.getChildren(tx.trace.root.id)
+      t.equal(children.length, 1)
 
-      t.assertSegments(tx.trace.root, ['doSomeWork'], true)
+      t.assertSegments(tx.trace, tx.trace.root, ['doSomeWork'], true)
 
       t.end()
     })

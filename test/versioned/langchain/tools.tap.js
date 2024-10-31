@@ -42,7 +42,9 @@ tap.test('Langchain instrumentation - tools', (t) => {
     helper.runInTransaction(agent, async (tx) => {
       const result = await tool.call(input)
       t.ok(result)
-      t.assertSegments(tx.trace.root, ['Llm/tool/Langchain/node-agent-test-tool'], { exact: false })
+      t.assertSegments(tx.trace, tx.trace.root, ['Llm/tool/Langchain/node-agent-test-tool'], {
+        exact: false
+      })
       tx.end()
       t.end()
     })
@@ -73,10 +75,11 @@ tap.test('Langchain instrumentation - tools', (t) => {
       t.equal(events.length, 1, 'should create a LlmTool event')
       const [[{ type }, toolEvent]] = events
       t.equal(type, 'LlmTool')
+      const [segment] = tx.trace.getChildren(tx.trace.root.id)
       t.match(toolEvent, {
         'id': /[a-f0-9]{36}/,
         'appName': 'New Relic for Node.js tests',
-        'span_id': tx.trace.root.children[0].id,
+        'span_id': segment.id,
         'trace_id': tx.traceId,
         'ingest_source': 'Node',
         'vendor': 'langchain',
@@ -87,7 +90,7 @@ tap.test('Langchain instrumentation - tools', (t) => {
         'output': tool.fakeData[input],
         'name': tool.name,
         'description': tool.description,
-        'duration': tx.trace.root.children[0].getDurationInMillis(),
+        'duration': segment.getDurationInMillis(),
         'run_id': undefined
       })
       tx.end()

@@ -39,11 +39,9 @@ tap.test('Hapi segments', function (t) {
       }
     })
 
-    runTest(t, function (segments, transaction) {
+    runTest(t, function (baseSegment, transaction) {
       checkMetrics(t, transaction.metrics, [NAMES.HAPI.MIDDLEWARE + 'myHandler//test'])
-      t.assertSegments(transaction.trace.root.children[0], [
-        NAMES.HAPI.MIDDLEWARE + 'myHandler//test'
-      ])
+      t.assertSegments(transaction.trace, baseSegment, [NAMES.HAPI.MIDDLEWARE + 'myHandler//test'])
       t.end()
     })
   })
@@ -61,9 +59,9 @@ tap.test('Hapi segments', function (t) {
       handler: { customHandler: { key1: 'val1' } }
     })
 
-    runTest(t, function (segments, transaction) {
+    runTest(t, function (baseSegment, transaction) {
       checkMetrics(t, transaction.metrics, [NAMES.HAPI.MIDDLEWARE + 'customHandler//test'])
-      t.assertSegments(transaction.trace.root.children[0], [
+      t.assertSegments(transaction.trace, baseSegment, [
         NAMES.HAPI.MIDDLEWARE + 'customHandler//test'
       ])
       t.end()
@@ -83,12 +81,12 @@ tap.test('Hapi segments', function (t) {
       }
     })
 
-    runTest(t, function (segments, transaction) {
+    runTest(t, function (baseSegment, transaction) {
       checkMetrics(t, transaction.metrics, [
         NAMES.HAPI.MIDDLEWARE + '<anonymous>//onRequest',
         NAMES.HAPI.MIDDLEWARE + 'myHandler//test'
       ])
-      t.assertSegments(transaction.trace.root.children[0], [
+      t.assertSegments(transaction.trace, baseSegment, [
         NAMES.HAPI.MIDDLEWARE + '<anonymous>//onRequest',
         NAMES.HAPI.MIDDLEWARE + 'myHandler//test'
       ])
@@ -113,12 +111,12 @@ tap.test('Hapi segments', function (t) {
       handler: { customHandler: { key1: 'val1' } }
     })
 
-    runTest(t, function (segments, transaction) {
+    runTest(t, function (baseSegment, transaction) {
       checkMetrics(t, transaction.metrics, [
         NAMES.HAPI.MIDDLEWARE + '<anonymous>//onRequest',
         NAMES.HAPI.MIDDLEWARE + 'customHandler//test'
       ])
-      t.assertSegments(transaction.trace.root.children[0], [
+      t.assertSegments(transaction.trace, baseSegment, [
         NAMES.HAPI.MIDDLEWARE + '<anonymous>//onRequest',
         NAMES.HAPI.MIDDLEWARE + 'customHandler//test'
       ])
@@ -149,8 +147,8 @@ tap.test('Hapi segments', function (t) {
           }
         })
 
-        runTest(t, function (segments) {
-          const [onRequestSegment, handlerSegment] = segments
+        runTest(t, function (baseSegment, transaction) {
+          const [onRequestSegment, handlerSegment] = transaction.trace.getChildren(baseSegment.id)
           t.clmAttrs({
             segments: [
               {
@@ -191,7 +189,8 @@ tap.test('Hapi segments', function (t) {
           handler: { customHandler: { key1: 'val1' } }
         })
 
-        runTest(t, function ([customHandlerSegment]) {
+        runTest(t, function (baseSegment, transaction) {
+          const [customHandlerSegment] = transaction.trace.getChildren(baseSegment.id)
           t.clmAttrs({
             segments: [
               {
@@ -229,7 +228,8 @@ tap.test('Hapi segments', function (t) {
         }
 
         server.register(plugin).then(() => {
-          runTest(t, function ([pluginHandlerSegment]) {
+          runTest(t, function (baseSegment, transaction) {
+            const [pluginHandlerSegment] = transaction.trace.getChildren(baseSegment.id)
             t.clmAttrs({
               segments: [
                 {
@@ -250,8 +250,8 @@ tap.test('Hapi segments', function (t) {
 
 function runTest(t, callback) {
   agent.on('transactionFinished', function (tx) {
-    const baseSegment = tx.trace.root.children[0]
-    callback(baseSegment.children, tx)
+    const [baseSegment] = tx.trace.getChildren(tx.trace.root.id)
+    callback(baseSegment, tx)
   })
 
   server.start().then(function () {

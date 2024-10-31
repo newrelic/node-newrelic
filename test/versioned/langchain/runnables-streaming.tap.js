@@ -396,7 +396,7 @@ tap.test('Langchain instrumentation - chain streaming', (t) => {
         // no-op
       }
 
-      t.assertSegments(tx.trace.root, ['Llm/chain/Langchain/stream'], { exact: false })
+      t.assertSegments(tx.trace, tx.trace.root, ['Llm/chain/Langchain/stream'], { exact: false })
 
       tx.end()
       t.end()

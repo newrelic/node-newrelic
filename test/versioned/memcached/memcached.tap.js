@@ -9,8 +9,7 @@ const tap = require('tap')
 const test = tap.test
 const helper = require('../../lib/agent_helper')
 const params = require('../../lib/params')
-const findSegment = require('../../lib/metrics_helper').findSegment
-const getMetricHostName = require('../../lib/metrics_helper').getMetricHostName
+const { findSegment, getMetricHostName } = require('../../lib/metrics_helper')
 const util = require('util')
 
 const METRICS_ASSERTIONS = 10
@@ -63,7 +62,9 @@ test('memcached instrumentation', { timeout: 5000 }, function (t) {
           t.ok(agent.getTransaction(), 'transaction should still be visible')
 
           transaction.end()
-          verifySegments(t, transaction.trace.root, ['Datastore/operation/Memcache/touch'])
+          verifySegments(t, transaction.trace, transaction.trace.root, [
+            'Datastore/operation/Memcache/touch'
+          ])
 
           verifyMetrics(t, transaction.metrics, {
             'Datastore/all': 1,
@@ -85,7 +86,7 @@ test('memcached instrumentation', { timeout: 5000 }, function (t) {
           t.ok(agent.getTransaction(), 'transaction should still be visible')
 
           transaction.end()
-          verifySegments(t, transaction.trace.root, [
+          verifySegments(t, transaction.trace, transaction.trace.root, [
             'Datastore/operation/Memcache/get',
             ['Truncated/Callback: <anonymous>']
           ])
@@ -110,7 +111,7 @@ test('memcached instrumentation', { timeout: 5000 }, function (t) {
           t.ok(agent.getTransaction(), 'transaction should still be visible')
 
           transaction.end()
-          verifySegments(t, transaction.trace.root, [
+          verifySegments(t, transaction.trace, transaction.trace.root, [
             'Datastore/operation/Memcache/gets',
             ['Truncated/Callback: <anonymous>']
           ])
@@ -135,7 +136,7 @@ test('memcached instrumentation', { timeout: 5000 }, function (t) {
           t.ok(agent.getTransaction(), 'transaction should still be visible')
 
           transaction.end()
-          verifySegments(t, transaction.trace.root, [
+          verifySegments(t, transaction.trace, transaction.trace.root, [
             'Datastore/operation/Memcache/get',
             ['Truncated/Callback: handle']
           ])
@@ -160,7 +161,7 @@ test('memcached instrumentation', { timeout: 5000 }, function (t) {
           t.ok(agent.getTransaction(), 'transaction should still be visible')
 
           transaction.end()
-          verifySegments(t, transaction.trace.root, [
+          verifySegments(t, transaction.trace, transaction.trace.root, [
             'Datastore/operation/Memcache/set',
             ['Truncated/Callback: <anonymous>']
           ])
@@ -188,7 +189,7 @@ test('memcached instrumentation', { timeout: 5000 }, function (t) {
             t.ok(agent.getTransaction(), 'transaction should still be visible')
 
             transaction.end()
-            verifySegments(t, transaction.trace.root, [
+            verifySegments(t, transaction.trace, transaction.trace.root, [
               'Datastore/operation/Memcache/replace',
               ['Truncated/Callback: <anonymous>']
             ])
@@ -214,7 +215,7 @@ test('memcached instrumentation', { timeout: 5000 }, function (t) {
           t.ok(agent.getTransaction(), 'transaction should still be visible')
 
           transaction.end()
-          verifySegments(t, transaction.trace.root, [
+          verifySegments(t, transaction.trace, transaction.trace.root, [
             'Datastore/operation/Memcache/add',
             ['Truncated/Callback: <anonymous>']
           ])
@@ -245,7 +246,7 @@ test('memcached instrumentation', { timeout: 5000 }, function (t) {
               t.ok(agent.getTransaction(), 'transaction should still be visible')
 
               transaction.end()
-              verifySegments(t, transaction.trace.root, [
+              verifySegments(t, transaction.trace, transaction.trace.root, [
                 'Datastore/operation/Memcache/cas',
                 ['Truncated/Callback: <anonymous>']
               ])
@@ -273,7 +274,7 @@ test('memcached instrumentation', { timeout: 5000 }, function (t) {
             t.error(err)
             t.ok(agent.getTransaction(), 'transaction should still be visible')
             transaction.end()
-            verifySegments(t, transaction.trace.root, [
+            verifySegments(t, transaction.trace, transaction.trace.root, [
               'Datastore/operation/Memcache/append',
               ['Truncated/Callback: <anonymous>']
             ])
@@ -300,7 +301,7 @@ test('memcached instrumentation', { timeout: 5000 }, function (t) {
             t.error(err)
             t.ok(agent.getTransaction(), 'transaction should still be visible')
             transaction.end()
-            verifySegments(t, transaction.trace.root, [
+            verifySegments(t, transaction.trace, transaction.trace.root, [
               'Datastore/operation/Memcache/prepend',
               ['Truncated/Callback: <anonymous>']
             ])
@@ -327,7 +328,7 @@ test('memcached instrumentation', { timeout: 5000 }, function (t) {
             t.error(err)
             t.ok(agent.getTransaction(), 'transaction should still be visible')
             transaction.end()
-            verifySegments(t, transaction.trace.root, [
+            verifySegments(t, transaction.trace, transaction.trace.root, [
               'Datastore/operation/Memcache/delete',
               ['Truncated/Callback: <anonymous>']
             ])
@@ -353,7 +354,7 @@ test('memcached instrumentation', { timeout: 5000 }, function (t) {
           t.ok(agent.getTransaction(), 'transaction should still be visible')
 
           transaction.end()
-          verifySegments(t, transaction.trace.root, [
+          verifySegments(t, transaction.trace, transaction.trace.root, [
             'Datastore/operation/Memcache/incr',
             ['Truncated/Callback: <anonymous>']
           ])
@@ -378,7 +379,9 @@ test('memcached instrumentation', { timeout: 5000 }, function (t) {
           t.ok(agent.getTransaction(), 'transaction should still be visible')
 
           transaction.end()
-          verifySegments(t, transaction.trace.root, ['Datastore/operation/Memcache/decr'])
+          verifySegments(t, transaction.trace, transaction.trace.root, [
+            'Datastore/operation/Memcache/decr'
+          ])
 
           verifyMetrics(t, transaction.metrics, {
             'Datastore/all': 1,
@@ -403,7 +406,9 @@ test('memcached instrumentation', { timeout: 5000 }, function (t) {
           t.ok(agent.getTransaction(), 'transaction should still be visible')
 
           transaction.end()
-          verifySegments(t, transaction.trace.root, ['Datastore/operation/Memcache/version'])
+          verifySegments(t, transaction.trace, transaction.trace.root, [
+            'Datastore/operation/Memcache/version'
+          ])
 
           verifyMetrics(t, transaction.metrics, {
             'Datastore/all': 1,
@@ -443,7 +448,7 @@ test('memcached instrumentation', { timeout: 5000 }, function (t) {
           t.notOk(err, 'should not throw an error')
 
           transaction.end()
-          const segment = transaction.trace.root.children[0]
+          const [segment] = transaction.trace.getChildren(transaction.trace.root.id)
           t.equal(segment.getAttributes().key, '"foo"', 'should have the get key as a parameter')
         })
       })
@@ -458,7 +463,7 @@ test('memcached instrumentation', { timeout: 5000 }, function (t) {
           t.error(err)
 
           transaction.end()
-          const segment = transaction.trace.root.children[0]
+          const [segment] = transaction.trace.getChildren(transaction.trace.root.id)
           t.notOk(segment.getAttributes().key, 'should not have any attributes')
         })
       })
@@ -472,7 +477,7 @@ test('memcached instrumentation', { timeout: 5000 }, function (t) {
           t.notOk(err, 'should not throw an error')
 
           transaction.end()
-          const segment = transaction.trace.root.children[0]
+          const [segment] = transaction.trace.getChildren(transaction.trace.root.id)
           t.equal(
             segment.getAttributes().key,
             '["foo","bar"]',
@@ -490,7 +495,7 @@ test('memcached instrumentation', { timeout: 5000 }, function (t) {
           t.notOk(err, 'should not throw an error')
 
           transaction.end()
-          const segment = transaction.trace.root.children[0]
+          const [segment] = transaction.trace.getChildren(transaction.trace.root.id)
           t.equal(segment.getAttributes().key, '"foo"', 'should have the set key as a parameter')
         })
       })
@@ -520,7 +525,7 @@ test('memcached instrumentation', { timeout: 5000 }, function (t) {
           t.notOk(err, 'should not throw an error')
 
           transaction.end()
-          const segment = transaction.trace.root.children[0]
+          const [segment] = transaction.trace.getChildren(transaction.trace.root.id)
           const attributes = segment.getAttributes()
           t.equal(
             attributes.host,
@@ -548,7 +553,7 @@ test('memcached instrumentation', { timeout: 5000 }, function (t) {
           t.notOk(err, 'should not throw an error')
 
           transaction.end()
-          const segment = transaction.trace.root.children[0]
+          const [segment] = transaction.trace.getChildren(transaction.trace.root.id)
           const attributes = segment.getAttributes()
           t.equal(
             attributes.host,
@@ -595,7 +600,7 @@ test('memcached instrumentation', { timeout: 5000 }, function (t) {
           t.notOk(err, 'should not throw an error')
 
           transaction.end()
-          const segment = transaction.trace.root.children[0]
+          const [segment] = transaction.trace.getChildren(transaction.trace.root.id)
           const attributes = segment.getAttributes()
           t.equal(attributes.host, undefined, 'should not have host instance parameter')
           t.equal(
@@ -621,7 +626,7 @@ test('memcached instrumentation', { timeout: 5000 }, function (t) {
           t.notOk(err, 'should not throw an error')
 
           transaction.end()
-          const segment = transaction.trace.root.children[0]
+          const [segment] = transaction.trace.getChildren(transaction.trace.root.id)
           const attributes = segment.getAttributes()
           t.equal(attributes.host, undefined, 'should not have host instance parameter')
           t.equal(
@@ -685,13 +690,13 @@ test('memcached instrumentation', { timeout: 5000 }, function (t) {
           if (!t.error(err)) {
             return t.end()
           }
-          const firstSegment = agent.tracer.getSegment().parent
+          const firstSegment = transaction.trace.getParent(agent.tracer.getSegment().parentId)
 
           memcached.get('bar', function (err) {
             if (!t.error(err)) {
               return t.end()
             }
-            end(firstSegment, agent.tracer.getSegment().parent)
+            end(firstSegment, transaction.trace.getParent(agent.tracer.getSegment().parentId))
           })
         })
 
@@ -715,8 +720,7 @@ test('memcached instrumentation', { timeout: 5000 }, function (t) {
             return t.end()
           }
 
-          const firstGet = transaction.trace.root.children[0]
-          const secondGet = transaction.trace.root.children[1]
+          const [firstGet, secondGet] = transaction.trace.getChildren(transaction.trace.root.id)
           if (firstGet.getAttributes().host === 'server1') {
             t.comment('first get is server 1')
             checkParams(firstGet, 'server1', '1111')
@@ -733,12 +737,12 @@ test('memcached instrumentation', { timeout: 5000 }, function (t) {
   })
 })
 
-function verifySegments(t, rootSegment, expected) {
+function verifySegments(t, trace, rootSegment, expected) {
   let previous
   for (let i = 0; i < expected.length; i++) {
     const child = expected[i]
     if (typeof child === 'string') {
-      const childSegment = findSegment(rootSegment, child)
+      const childSegment = findSegment(trace, rootSegment, child)
       if (!childSegment) {
         previous = null
         t.fail(util.format('Segment %s does not have child %s', rootSegment.name, child))
@@ -746,7 +750,7 @@ function verifySegments(t, rootSegment, expected) {
         previous = childSegment
       }
     } else if (child && Array.isArray(child)) {
-      verifySegments(t, previous, child)
+      verifySegments(t, trace, previous, child)
     }
   }
 }

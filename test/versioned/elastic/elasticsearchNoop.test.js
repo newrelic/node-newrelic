@@ -46,7 +46,7 @@ test('Elasticsearch instrumentation', async (t) => {
         } catch (e) {
           assert.ok(!e, 'should not error')
         }
-        const firstChild = transaction?.trace?.root?.children[0]
+        const [firstChild] = transaction.trace.getChildren(transaction.trace.root.id)
         assert.equal(
           firstChild.name,
           `External/localhost:9200/${DB_INDEX}`,

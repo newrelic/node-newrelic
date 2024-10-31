@@ -43,11 +43,12 @@ async function performTest(t) {
 
   let txPassed = false
   agent.on('transactionFinished', (transaction) => {
-    const baseSegment = transaction.trace.root.children
-    const [onRequestSegment, handlerSegment] = helper.isSecurityAgentEnabled(agent)
-      ? baseSegment[0].children[0].children
-      : baseSegment[0].children
-    const onSendSegment = handlerSegment.children[0]
+    const [baseSegment] = transaction.trace.getChildren(transaction.trace.root.id)
+    let [onRequestSegment, handlerSegment] = transaction.trace.getChildren(baseSegment.id)
+    if (helper.isSecurityAgentEnabled(agent)) {
+      ;[onRequestSegment, handlerSegment] = transaction.trace.getChildren(onRequestSegment.id)
+    }
+    const [onSendSegment] = transaction.trace.getChildren(handlerSegment.id)
     assertCLMAttrs({
       segments: [
         {

@@ -36,11 +36,12 @@ tap.test('SuperAgent instrumentation with async/await', (t) => {
       const { request } = t.context
       await request.get(address)
 
-      const mainSegment = tx.trace.root.children[0]
+      const [mainSegment] = tx.trace.getChildren(tx.trace.root.id)
       t.ok(mainSegment)
       t.match(mainSegment.name, EXTERNAL_NAME, 'has segment matching request')
+      const mainChildren = tx.trace.getChildren(mainSegment.id)
       t.equal(
-        mainSegment.children.filter((c) => c.name === 'Callback: <anonymous>').length,
+        mainChildren.filter((c) => c.name === 'Callback: <anonymous>').length,
         1,
         'CB created by superagent is present'
       )

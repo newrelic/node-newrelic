@@ -9,8 +9,7 @@ const tap = require('tap')
 const helpers = require('./helpers')
 const nextPkg = require('next/package.json')
 const {
-  isMiddlewareInstrumentationSupported,
-  getServerSidePropsSegment
+  isMiddlewareInstrumentationSupported
 } = require('../../../lib/instrumentation/nextjs/utils')
 const middlewareSupported = isMiddlewareInstrumentationSupported(nextPkg.version)
 const agentHelper = require('../../lib/agent_helper')
@@ -196,16 +195,18 @@ tap.test('Next.js', (t) => {
         await helpers.makeRequest('/api/person/2?queryParam=queryValue')
         const [tx] = await txPromise
         const rootSegment = tx.trace.root
+        const [handler] = tx.trace.getChildren(rootSegment.id)
         const segments = [
           {
-            segment: rootSegment.children[0],
+            segment: handler,
             name: 'handler',
             filepath: 'pages/api/person/[id]'
           }
         ]
         if (middlewareSupported) {
+          const [middleware] = tx.trace.getChildren(handler.id)
           segments.push({
-            segment: rootSegment.children[0].children[0],
+            segment: middleware,
             name: 'middleware',
             filepath: 'middleware'
           })
@@ -226,20 +227,22 @@ tap.test('Next.js', (t) => {
       const [tx] = await txPromise
       const rootSegment = tx.trace.root
       const segments = []
+      const [first] = tx.trace.getChildren(rootSegment.id)
       if (middlewareSupported) {
+        const [middleware, getServerSideProps] = tx.trace.getChildren(first.id)
         segments.push({
-          segment: rootSegment.children[0].children[0],
+          segment: middleware,
           name: 'middleware',
           filepath: 'middleware'
         })
         segments.push({
-          segment: rootSegment.children[0].children[1],
+          segment: getServerSideProps,
           name: 'getServerSideProps',
           filepath: 'pages/ssr/people'
         })
       } else {
         segments.push({
-          segment: getServerSidePropsSegment(rootSegment),
+          segment: helpers.getServerSidePropsSegment(tx.trace),
           name: 'getServerSideProps',
           filepath: 'pages/ssr/people'
         })
@@ -259,21 +262,23 @@ tap.test('Next.js', (t) => {
       await helpers.makeRequest('/static/dynamic/testing?queryParam=queryValue')
       const [tx] = await txPromise
       const rootSegment = tx.trace.root
+      const [root] = tx.trace.getChildren(rootSegment.id)
 
       // The segment that names the static page will not contain CLM regardless of the
       // configuration flag
       t.clmAttrs({
-        segments: [{ segment: rootSegment.children[0] }],
+        segments: [{ segment: root }],
         enabled: false,
         skipFull: true
       })
 
       if (middlewareSupported) {
+        const [middleware] = tx.trace.getChildren(root.id)
         // this will exist when CLM is enabled
         t.clmAttrs({
           segments: [
             {
-              segment: rootSegment.children[0].children[0],
+              segment: middleware,
               name: 'middleware',
               filepath: 'middleware'
             }

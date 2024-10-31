@@ -88,9 +88,13 @@ test('Agent API - startSegment', async (t) => {
 
       const transactionScopedCustomMetric = transactionNameMetric['Custom/foobar']
       assert.ok(transactionScopedCustomMetric)
+      assert.ok(transactionScopedCustomMetric.total)
+      assert.ok(transactionScopedCustomMetric.totalExclusive)
 
       const unscopedCustomMetric = tx.metrics.unscoped['Custom/foobar']
       assert.ok(unscopedCustomMetric)
+      assert.ok(unscopedCustomMetric.total)
+      assert.ok(unscopedCustomMetric.totalExclusive)
 
       end()
     })

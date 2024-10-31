@@ -85,7 +85,7 @@ tap.test('mysql2 promises', { timeout: 30000 }, (t) => {
             const activeTx = agent.getTransaction()
             t.equal(tx.name, activeTx.name)
 
-            const segment = agent.getTransaction().trace.root.children[2]
+            const [, , segment] = tx.trace.getChildren(tx.trace.root.id)
             const attributes = segment.getAttributes()
             t.equal(
               attributes.host,

@@ -228,7 +228,7 @@ tap.test('Koa instrumentation', (t) => {
     })
 
     agent.on('transactionFinished', (tx) => {
-      t.assertSegments(tx.trace.root, [
+      t.assertSegments(tx.trace, tx.trace.root, [
         'WebTransaction/WebFrameworkUri/Koa/GET//',
         [
           'Nodejs/Middleware/Koa/one',
@@ -284,7 +284,7 @@ tap.test('Koa instrumentation', (t) => {
     })
 
     agent.on('transactionFinished', function (txn) {
-      t.assertSegments(tx.trace.root, [
+      t.assertSegments(tx.trace, tx.trace.root, [
         txn.name,
         [
           'Nodejs/Middleware/Koa/one',
@@ -400,7 +400,7 @@ tap.test('Koa instrumentation', (t) => {
 })
 
 function checkSegments(t, tx) {
-  t.assertSegments(tx.trace.root, [
+  t.assertSegments(tx.trace, tx.trace.root, [
     // Until koa-router is instrumented and transaction naming is addressed,
     // names will be inconsistent depending on whether there is an error.
     tx.name,

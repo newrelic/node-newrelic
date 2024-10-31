@@ -57,7 +57,7 @@ tap.test('Basic run through prisma functionality', { timeout: 30 * 1000 }, (t) =
     helper.runInTransaction(agent, async (tx) => {
       const users = await upsertUsers(prisma)
       t.equal(users.length, 2, 'should get two users')
-      const findManySegment = findSegment(tx.trace.root, findMany)
+      const findManySegment = findSegment(tx.trace, tx.trace.root, findMany)
       const attributes = findManySegment.getAttributes()
       t.notOk(attributes.host, 'should not have a host set')
       t.notOk(attributes.port_path_or_id, 'should not have a port set')
@@ -77,7 +77,7 @@ tap.test('Basic run through prisma functionality', { timeout: 30 * 1000 }, (t) =
         const users = await query
         t.equal(users.length, 2, 'should get two users')
         tx.end()
-        const rawSegment = findSegment(tx.trace.root, raw)
+        const rawSegment = findSegment(tx.trace, tx.trace.root, raw)
         t.ok(rawSegment, `segment named ${raw} should exist`)
       })
     }
@@ -94,7 +94,7 @@ tap.test('Basic run through prisma functionality', { timeout: 30 * 1000 }, (t) =
         const count = await query
         t.equal(count, 2, 'should modify two users')
         tx.end()
-        const rawSegment = findSegment(tx.trace.root, rawUpdate)
+        const rawSegment = findSegment(tx.trace, tx.trace.root, rawUpdate)
         t.ok(rawSegment, `segment named ${rawUpdate} should exist`)
       })
     }
