@@ -961,19 +961,21 @@ API.prototype.startWebTransaction = function startWebTransaction(url, handle) {
 
   const shim = this.shim
   const tracer = this.agent.tracer
-  const parent = tracer.getTransaction()
+  const parentTx = tracer.getTransaction()
 
   assignCLMSymbol(shim, handle)
   return tracer.transactionNestProxy('web', function startWebSegment() {
-    const tx = tracer.getTransaction()
+    const context = tracer.getContext()
+    const tx = context?.transaction
+    const parent = context?.segment
 
     if (!tx) {
       return handle.apply(this, arguments)
     }
 
-    if (tx === parent) {
+    if (tx === parentTx) {
       logger.debug('not creating nested transaction %s using transaction %s', url, tx.id)
-      return tracer.addSegment(url, null, null, true, handle)
+      return tracer.addSegment(url, null, parent, true, handle)
     }
 
     logger.debug(
@@ -985,10 +987,16 @@ API.prototype.startWebTransaction = function startWebTransaction(url, handle) {
     tx.nameState.setName(NAMES.CUSTOM, null, NAMES.ACTION_DELIMITER, url)
     tx.url = url
     tx.applyUserNamingRules(tx.url)
-    tx.baseSegment = tracer.createSegment(url, recordWeb)
+    tx.baseSegment = tracer.createSegment({
+      name: url,
+      recorder: recordWeb,
+      transaction: tx,
+      parent
+    })
+    const newContext = context.enterSegment({ transaction: tx, segment: tx.baseSegment })
     tx.baseSegment.start()
 
-    const boundHandle = tracer.bindFunction(handle, tx.baseSegment)
+    const boundHandle = tracer.bindFunction(handle, newContext)
     maybeAddCLMAttributes(handle, tx.baseSegment)
     let returnResult = boundHandle.call(this)
     if (returnResult && shim.isPromise(returnResult)) {
@@ -1061,19 +1069,21 @@ function startBackgroundTransaction(name, group, handle) {
   const tracer = this.agent.tracer
   const shim = this.shim
   const txName = group + '/' + name
-  const parent = tracer.getTransaction()
+  const parentTx = tracer.getTransaction()
 
   assignCLMSymbol(shim, handle)
   return tracer.transactionNestProxy('bg', function startBackgroundSegment() {
-    const tx = tracer.getTransaction()
+    const context = tracer.getContext()
+    const tx = context?.transaction
+    const parent = context?.segment
 
     if (!tx) {
       return handle.apply(this, arguments)
     }
 
-    if (tx === parent) {
+    if (tx === parentTx) {
       logger.debug('not creating nested transaction %s using transaction %s', txName, tx.id)
-      return tracer.addSegment(txName, null, null, true, handle)
+      return tracer.addSegment(txName, null, parent, true, handle)
     }
 
     logger.debug(
@@ -1085,11 +1095,17 @@ function startBackgroundTransaction(name, group, handle) {
     )
 
     tx._partialName = txName
-    tx.baseSegment = tracer.createSegment(name, recordBackground)
+    tx.baseSegment = tracer.createSegment({
+      name,
+      recorder: recordBackground,
+      transaction: tx,
+      parent
+    })
+    const newContext = context.enterSegment({ transaction: tx, segment: tx.baseSegment })
     tx.baseSegment.partialName = group
     tx.baseSegment.start()
 
-    const boundHandle = tracer.bindFunction(handle, tx.baseSegment)
+    const boundHandle = tracer.bindFunction(handle, newContext)
     maybeAddCLMAttributes(handle, tx.baseSegment)
     let returnResult = boundHandle.call(this)
     if (returnResult && shim.isPromise(returnResult)) {
@@ -1525,12 +1541,13 @@ API.prototype.getTraceMetadata = function getTraceMetadata() {
   const metadata = {}
 
   const segment = this.agent.tracer.getSegment()
-  if (!segment) {
+  const transaction = this.agent.tracer.getTransaction()
+  if (!(segment || transaction)) {
     logger.debug('No transaction found when calling API#getTraceMetadata')
   } else if (!this.agent.config.distributed_tracing.enabled) {
     logger.debug('Distributed tracing disabled when calling API#getTraceMetadata')
   } else {
-    metadata.traceId = segment.transaction.traceId
+    metadata.traceId = transaction.traceId
 
     const spanId = segment.getSpanId()
     if (spanId) {

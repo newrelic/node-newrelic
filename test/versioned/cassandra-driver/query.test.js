@@ -137,6 +137,7 @@ test('executeBatch - promise style', (t, end) => {
     client
       .batch(insArr, { hints })
       .then(() => {
+        assert.ok(agent.getTransaction(), 'transaction still should be visible')
         client
           .execute(selQuery)
           .then((result) => {

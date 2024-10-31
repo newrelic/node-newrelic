@@ -625,31 +625,6 @@ test('WebFrameworkShim', async function (t) {
       }
     })
 
-    await t.test('should reinstate its own context', function (t, end) {
-      const { agent, req, shim, txInfo, wrappable } = t.nr
-      testType(shim.MIDDLEWARE, 'Nodejs/Middleware/Restify/getActiveSegment')
-
-      function testType(type, expectedName) {
-        const wrapped = shim.recordMiddleware(
-          wrappable.getActiveSegment,
-          new MiddlewareSpec({
-            type,
-            route: ''
-          })
-        )
-        const tx = helper.runInTransaction(agent, function (_tx) {
-          return _tx
-        })
-        txInfo.transaction = tx
-        txInfo.segmentStack.push(tx.trace.root)
-
-        const segment = wrapped(req)
-
-        assert.equal(segment.name, expectedName)
-        end()
-      }
-    })
-
     await t.test('should capture route parameters when high_security is off', function (t, end) {
       const { agent, req, shim, txInfo, wrappable } = t.nr
       agent.config.high_security = false

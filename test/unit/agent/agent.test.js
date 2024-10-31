@@ -654,8 +654,15 @@ test('when connected', async (t) => {
     agent.logs.add([{ key: 'bar' }])
     const tx = new helper.FakeTransaction(agent, '/path/to/fake')
     tx.metrics = { apdexT: 0 }
-    const segment = new helper.FakeSegment(tx, 2_000)
-    agent.queries.add(segment, 'mysql', 'select * from foo', 'Stack\nFrames')
+    const segment = tx.trace.add('FakeSegment')
+    segment.setDurationInMillis(2000)
+    agent.queries.add({
+      transaction: tx,
+      segment,
+      type: 'mysql',
+      query: 'select * from foo',
+      trace: 'Stack\nFrames'
+    })
     agent.spanEventAggregator.add(segment)
     agent.transactionEventAggregator.add(tx)
     agent.customEventAggregator.add({ key: 'value' })
@@ -693,8 +700,15 @@ test('when connected', async (t) => {
       agent.logs.add([{ key: 'bar' }])
       const tx = new helper.FakeTransaction(agent, '/path/to/fake')
       tx.metrics = { apdexT: 0 }
-      const segment = new helper.FakeSegment(tx, 2_000)
-      agent.queries.add(segment, 'mysql', 'select * from foo', 'Stack\nFrames')
+      const segment = tx.trace.add('FakeSegment')
+      segment.setDurationInMillis(2000)
+      agent.queries.add({
+        transaction: tx,
+        segment,
+        type: 'mysql',
+        query: 'select * from foo',
+        trace: 'Stack\nFrames'
+      })
       agent.spanEventAggregator.add(segment)
       agent.transactionEventAggregator.add(tx)
       agent.customEventAggregator.add({ key: 'value' })
