@@ -12,7 +12,7 @@ const recordWeb = require('../../../lib/metrics/recorders/http')
 const Transaction = require('../../../lib/transaction')
 
 function makeSegment(options) {
-  const segment = options.transaction.trace.root.add('placeholder')
+  const segment = options.transaction.trace.add('placeholder')
   segment.setDurationInMillis(options.duration)
   segment._setExclusiveDurationInMillis(options.exclusive)
 
@@ -29,8 +29,8 @@ function record(options) {
 
   transaction.finalizeNameFromUri(options.url, options.code)
   transaction.queueTime = options.queueTime
-  segment.markAsWeb(options.url)
-  recordWeb(segment, options.transaction.name)
+  segment.markAsWeb(transaction)
+  recordWeb(segment, options.transaction.name, options.transaction)
 }
 
 test('when recording queueTime', async (t) => {

@@ -12,7 +12,7 @@ const recordDistributedTrace = require('../../../lib/metrics/recorders/distribut
 const Transaction = require('../../../lib/transaction')
 
 const makeSegment = (opts) => {
-  const segment = opts.tx.trace.root.add('placeholder')
+  const segment = opts.tx.trace.add('placeholder')
   segment.setDurationInMillis(opts.duration)
   segment._setExclusiveDurationInMillis(opts.exclusive)
 
