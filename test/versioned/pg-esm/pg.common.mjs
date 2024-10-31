@@ -127,9 +127,14 @@ export default function runTests(name, clientFactory) {
     expect.ok(trace, 'trace should exist')
     expect.ok(trace.root, 'root element should exist')
 
-    const setSegment = findSegment(trace.root, 'Datastore/statement/Postgres/' + TABLE + '/insert')
+    const setSegment = findSegment(
+      trace,
+      trace.root,
+      'Datastore/statement/Postgres/' + TABLE + '/insert'
+    )
 
     const getSegment = findSegment(
+      trace,
       trace.root,
       'Datastore/statement/Postgres/' + selectTable + '/select'
     )
@@ -154,7 +159,11 @@ export default function runTests(name, clientFactory) {
     const agent = transaction.agent
     const trace = transaction.trace
 
-    const setSegment = findSegment(trace.root, 'Datastore/statement/Postgres/' + TABLE + '/insert')
+    const setSegment = findSegment(
+      trace,
+      trace.root,
+      'Datastore/statement/Postgres/' + TABLE + '/insert'
+    )
     const attributes = setSegment.getAttributes()
 
     const metricHostName = getMetricHostName(agent, params.postgres_host)
@@ -546,6 +555,7 @@ export default function runTests(name, clientFactory) {
               plan.ifError(error)
 
               const segment = findSegment(
+                transaction.trace,
                 transaction.trace.root,
                 'Datastore/statement/Postgres/' + TABLE + '/insert'
               )

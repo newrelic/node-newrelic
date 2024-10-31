@@ -68,6 +68,7 @@ test.afterEach(afterEach)
       assert.equal(response.$metadata.requestId, expected.headers['x-amzn-requestid'])
       assert.deepEqual(body, expected.body)
       assertSegments(
+        tx.trace,
         tx.trace.root,
         ['Llm/embedding/Bedrock/InvokeModelCommand', [expectedExternalPath(modelId)]],
         { exact: false }
@@ -87,17 +88,18 @@ test.afterEach(afterEach)
       const events = agent.customEventAggregator.events.toArray()
       assert.equal(events.length, 1)
       const embedding = events.filter(([{ type }]) => type === 'LlmEmbedding')[0]
+      const [segment] = tx.trace.getChildren(tx.trace.root.id)
       const expectedEmbedding = {
         'id': /[\w]{8}-[\w]{4}-[\w]{4}-[\w]{4}-[\w]{12}/,
         'appName': 'New Relic for Node.js tests',
         'request_id': '743dd35b-744b-4ddf-b5c6-c0f3de2e3142',
         'trace_id': tx.traceId,
-        'span_id': tx.trace.root.children[0].id,
+        'span_id': segment.id,
         'response.model': modelId,
         'vendor': 'bedrock',
         'ingest_source': 'Node',
         'request.model': modelId,
-        'duration': tx.trace.root.children[0].getDurationInMillis(),
+        'duration': segment.getDurationInMillis(),
         'input': prompt,
         'error': false
       }
@@ -157,6 +159,7 @@ test.afterEach(afterEach)
       })
 
       assertSegments(
+        tx.trace,
         tx.trace.root,
         ['Llm/embedding/Bedrock/InvokeModelCommand', [expectedExternalPath(modelId)]],
         { exact: false }
@@ -164,17 +167,18 @@ test.afterEach(afterEach)
       const events = agent.customEventAggregator.events.toArray()
       assert.equal(events.length, 1)
       const embedding = events.filter(([{ type }]) => type === 'LlmEmbedding')[0]
+      const [segment] = tx.trace.getChildren(tx.trace.root.id)
       const expectedEmbedding = {
         'id': /[\w]{8}-[\w]{4}-[\w]{4}-[\w]{4}-[\w]{12}/,
         'appName': 'New Relic for Node.js tests',
         'request_id': '743dd35b-744b-4ddf-b5c6-c0f3de2e3142',
         'trace_id': tx.traceId,
-        'span_id': tx.trace.root.children[0].id,
+        'span_id': segment.id,
         'response.model': modelId,
         'vendor': 'bedrock',
         'ingest_source': 'Node',
         'request.model': modelId,
-        'duration': tx.trace.root.children[0].getDurationInMillis(),
+        'duration': segment.getDurationInMillis(),
         'input': prompt,
         'error': true
       }

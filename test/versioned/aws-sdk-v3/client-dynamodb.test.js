@@ -116,7 +116,11 @@ test('DynamoDB', async (t) => {
       }
       tx.end()
       const root = tx.trace.root
-      const segments = common.checkAWSAttributes(root, common.DATASTORE_PATTERN)
+      const segments = common.checkAWSAttributes({ 
+        trace: tx.trace, 
+        segment: root, 
+        pattern: common.DATASTORE_PATTERN
+      })
 
       segments.forEach((segment) => {
         const attrs = segment.attributes.get(common.SEGMENT_DESTINATION)
@@ -186,7 +190,11 @@ function createCommands({ lib, tableName }) {
 
 function finish({ commands, tx, setDatastoreSpy }) {
   const root = tx.trace.root
-  const segments = common.checkAWSAttributes(root, common.DATASTORE_PATTERN)
+  const segments = common.checkAWSAttributes({
+    trace: tx.trace,
+    segment: root,
+    pattern: common.DATASTORE_PATTERN
+  })
 
   assert.equal(
     segments.length,
@@ -194,7 +202,11 @@ function finish({ commands, tx, setDatastoreSpy }) {
     `should have ${commands.length} AWS datastore segments`
   )
 
-  const externalSegments = common.checkAWSAttributes(root, common.EXTERN_PATTERN)
+  const externalSegments = common.checkAWSAttributes({
+    trace: tx.trace,
+    segment: root,
+    pattern: common.EXTERN_PATTERN
+  })
   assert.equal(externalSegments.length, 0, 'should not have any External segments')
 
   segments.forEach((segment, i) => {

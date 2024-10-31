@@ -95,7 +95,7 @@ test('should create span on successful vectorstore create', (t, end) => {
   helper.runInTransaction(agent, async (tx) => {
     const result = await vs.similaritySearch('This is an embedding test.', 1)
     assert.ok(result)
-    assertSegments(tx.trace.root, ['Llm/vectorstore/Langchain/similaritySearch'], {
+    assertSegments(tx.trace, tx.trace.root, ['Llm/vectorstore/Langchain/similaritySearch'], {
       exact: false
     })
     tx.end()

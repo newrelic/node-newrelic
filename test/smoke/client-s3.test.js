@@ -41,8 +41,8 @@ test('@aws-sdk/client-s3 functionality', async (t) => {
 
     transaction.end()
 
-    const { url, procedure, ...awsAttributes } =
-      transaction.trace.root.children[1].attributes.get(TRANS_SEGMENT)
+    const [, child] = transaction.trace.getChildren(transaction.trace.root.id)
+    const { url, procedure, ...awsAttributes } = child.attributes.get(TRANS_SEGMENT)
 
     delete awsAttributes.nr_exclusive_duration_millis
 

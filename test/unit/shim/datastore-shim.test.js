@@ -33,14 +33,9 @@ test('DatastoreShim', async function (t) {
         return agent.tracer.getSegment()
       },
       withNested: function () {
-        const transaction = agent.tracer.getTransaction()
+        const tx = agent.tracer.getTransaction()
         const segment = agent.tracer.getSegment()
-        segment.add({
-          config: agent.config,
-          name: 'ChildSegment',
-          root: transaction.trace.root
-        })
-
+        tx.trace.add('ChildSegment', null, segment)
         return segment
       }
     }
@@ -381,13 +376,15 @@ test('DatastoreShim', async function (t) {
       shim.recordOperation(wrappable, 'withNested', () => {
         return new OperationSpec({ name: 'test', opaque: false })
       })
-      helper.runInTransaction(agent, () => {
+      helper.runInTransaction(agent, (tx) => {
         const startingSegment = agent.tracer.getSegment()
         const segment = wrappable.withNested()
         assert.notEqual(segment, startingSegment)
         assert.equal(segment.name, 'Datastore/operation/Cassandra/test')
-        assert.equal(segment.children.length, 1)
-        const [childSegment] = segment.children
+
+        const children = tx.trace.getChildren(segment.id)
+        assert.equal(children.length, 1)
+        const [childSegment] = children
         assert.equal(childSegment.name, 'ChildSegment')
         end()
       })
@@ -398,12 +395,13 @@ test('DatastoreShim', async function (t) {
       shim.recordOperation(wrappable, 'withNested', () => {
         return new OperationSpec({ name: 'test', opaque: true })
       })
-      helper.runInTransaction(agent, () => {
+      helper.runInTransaction(agent, (tx) => {
         const startingSegment = agent.tracer.getSegment()
         const segment = wrappable.withNested()
         assert.notEqual(segment, startingSegment)
         assert.equal(segment.name, 'Datastore/operation/Cassandra/test')
-        assert.equal(segment.children.length, 0)
+        const children = tx.trace.getChildren(segment.id)
+        assert.equal(children.length, 0)
         end()
       })
     })
@@ -778,7 +776,8 @@ test('DatastoreShim', async function (t) {
       helper.runInTransaction(agent, (tx) => {
         wrappable.bar()
         const rootSegment = agent.tracer.getSegment()
-        const attrs = rootSegment.children[0].getAttributes()
+        const [child] = tx.trace.getChildren(rootSegment.id)
+        const attrs = child.getAttributes()
         assert.equal(
           attrs['test-attr'],
           'unit-test',
@@ -923,7 +922,7 @@ test('DatastoreShim', async function (t) {
 
     await t.test('should create a new segment on the first call', function (t, end) {
       const { agent, shim, wrappable } = t.nr
-      helper.runInTransaction(agent, function () {
+      helper.runInTransaction(agent, function (tx) {
         const args = [1, 2, wrappable.getActiveSegment]
         shim.bindRowCallbackSegment(args, shim.LAST)
 
@@ -931,14 +930,15 @@ test('DatastoreShim', async function (t) {
         const segment = shim.getSegment()
         const cbSegment = args[2]()
         assert.notEqual(cbSegment, segment)
-        assert.ok(segment.children.includes(cbSegment))
+        const children = tx.trace.getChildren(segment.id)
+        assert.ok(children.includes(cbSegment))
         end()
       })
     })
 
     await t.test('should not create a new segment for calls after the first', function (t, end) {
       const { agent, shim, wrappable } = t.nr
-      helper.runInTransaction(agent, function () {
+      helper.runInTransaction(agent, function (tx) {
         const args = [1, 2, wrappable.getActiveSegment]
         shim.bindRowCallbackSegment(args, shim.LAST)
 
@@ -946,13 +946,15 @@ test('DatastoreShim', async function (t) {
         const segment = shim.getSegment()
         const cbSegment = args[2]()
         assert.notEqual(cbSegment, segment)
-        assert.ok(segment.children.includes(cbSegment))
-        assert.equal(segment.children.length, 1)
+        let children = tx.trace.getChildren(segment.id)
+        assert.ok(children.includes(cbSegment))
+        assert.equal(children.length, 1)
 
         // Call it a second time and see if we have the same segment.
         const cbSegment2 = args[2]()
         assert.equal(cbSegment2, cbSegment)
-        assert.equal(segment.children.length, 1)
+        children = tx.trace.getChildren(segment.id)
+        assert.equal(children.length, 1)
         end()
       })
     })
