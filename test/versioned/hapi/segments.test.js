@@ -30,8 +30,8 @@ test.afterEach((ctx) => {
 
 function runTest(agent, server, callback) {
   agent.on('transactionFinished', function (tx) {
-    const baseSegment = tx.trace.root.children[0]
-    callback(baseSegment.children, tx)
+    const [ baseSegment ] = tx.trace.getChildren(tx.trace.root.id)
+    callback(baseSegment, tx)
   })
 
   server.start().then(function () {
@@ -78,9 +78,9 @@ test('route handler is recorded as middleware', (t, end) => {
     }
   })
 
-  runTest(agent, server, function (segments, transaction) {
+  runTest(agent, server, function (baseSegment, transaction) {
     checkMetrics(transaction.metrics, [NAMES.HAPI.MIDDLEWARE + 'myHandler//test'])
-    assertSegments(transaction.trace.root.children[0], [NAMES.HAPI.MIDDLEWARE + 'myHandler//test'])
+    assertSegments(transaction.trace, baseSegment, [NAMES.HAPI.MIDDLEWARE + 'myHandler//test'])
     end()
   })
 })
@@ -100,9 +100,9 @@ test('custom handler type is recorded as middleware', (t, end) => {
     handler: { customHandler: { key1: 'val1' } }
   })
 
-  runTest(agent, server, function (segments, transaction) {
+  runTest(agent, server, function (baseSegment, transaction) {
     checkMetrics(transaction.metrics, [NAMES.HAPI.MIDDLEWARE + 'customHandler//test'])
-    assertSegments(transaction.trace.root.children[0], [
+    assertSegments(transaction.trace, baseSegment, [
       NAMES.HAPI.MIDDLEWARE + 'customHandler//test'
     ])
     end()
@@ -124,12 +124,12 @@ test('extensions are recorded as middleware', (t, end) => {
     }
   })
 
-  runTest(agent, server, function (segments, transaction) {
+  runTest(agent, server, function (baseSegment, transaction) {
     checkMetrics(transaction.metrics, [
       NAMES.HAPI.MIDDLEWARE + '<anonymous>//onRequest',
       NAMES.HAPI.MIDDLEWARE + 'myHandler//test'
     ])
-    assertSegments(transaction.trace.root.children[0], [
+    assertSegments(transaction.trace, baseSegment, [
       NAMES.HAPI.MIDDLEWARE + '<anonymous>//onRequest',
       NAMES.HAPI.MIDDLEWARE + 'myHandler//test'
     ])
@@ -156,12 +156,12 @@ test('custom route handler and extension recorded as middleware', (t, end) => {
     handler: { customHandler: { key1: 'val1' } }
   })
 
-  runTest(agent, server, function (segments, transaction) {
+  runTest(agent, server, function (baseSegment, transaction) {
     checkMetrics(transaction.metrics, [
       NAMES.HAPI.MIDDLEWARE + '<anonymous>//onRequest',
       NAMES.HAPI.MIDDLEWARE + 'customHandler//test'
     ])
-    assertSegments(transaction.trace.root.children[0], [
+    assertSegments(transaction.trace, baseSegment, [
       NAMES.HAPI.MIDDLEWARE + '<anonymous>//onRequest',
       NAMES.HAPI.MIDDLEWARE + 'customHandler//test'
     ])
@@ -191,8 +191,8 @@ for (const clmEnabled of [true, false]) {
       }
     })
 
-    runTest(agent, server, function (segments) {
-      const [onRequestSegment, handlerSegment] = segments
+    runTest(agent, server, function (baseSegment, transaction) {
+      const [onRequestSegment, handlerSegment] = transaction.trace.getChildren(baseSegment.id)
       assertClmAttrs({
         segments: [
           {
@@ -232,7 +232,8 @@ for (const clmEnabled of [true, false]) {
       handler: { customHandler: { key1: 'val1' } }
     })
 
-    runTest(agent, server, function ([customHandlerSegment]) {
+    runTest(agent, server, function (baseSegment, transaction) {
+      const [customHandlerSegment] = transaction.trace.getChildren(baseSegment.id)
       assertClmAttrs({
         segments: [
           {
@@ -269,7 +270,8 @@ for (const clmEnabled of [true, false]) {
     }
 
     server.register(plugin).then(() => {
-      runTest(agent, server, function ([pluginHandlerSegment]) {
+      runTest(agent, server, function (baseSegment, transaction) {
+        const [pluginHandlerSegment] = transaction.trace.getChildren(baseSegment.id)
         assertClmAttrs({
           segments: [
             {

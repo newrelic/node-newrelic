@@ -59,10 +59,10 @@ function verifyTraces(agent, transaction) {
   assert.ok(trace, 'trace should exist')
   assert.ok(trace.root, 'root element should exist')
 
-  assertSegments(trace.root, [findMany, update, update, findMany], { exact: true })
-  const findManySegment = findSegment(trace.root, findMany)
+  assertSegments(trace, trace.root, [findMany, update, update, findMany], { exact: true })
+  const findManySegment = findSegment(trace, trace.root, findMany)
   assert.ok(findManySegment.timer.hrDuration, 'findMany segment should have ended')
-  const updateSegment = findSegment(trace.root, update)
+  const updateSegment = findSegment(trace, trace.root, update)
   assert.ok(updateSegment.timer.hrDuration, 'update segment should have ended')
   for (const segment of [findManySegment, updateSegment]) {
     const attributes = segment.getAttributes()

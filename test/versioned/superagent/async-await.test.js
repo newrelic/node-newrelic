@@ -41,11 +41,12 @@ test('should maintain transaction context with promises', (t, end) => {
     const { request } = t.nr
     await request.get(address)
 
-    const mainSegment = tx.trace.root.children[0]
+    const [mainSegment] = tx.trace.getChildren(tx.trace.root.id)
     assert.ok(mainSegment)
     match(mainSegment.name, EXTERNAL_NAME, 'has segment matching request')
+    const mainChildren = tx.trace.getChildren(mainSegment.id)
     assert.equal(
-      mainSegment.children.filter((c) => c.name === 'Callback: <anonymous>').length,
+      mainChildren.filter((c) => c.name === 'Callback: <anonymous>').length,
       1,
       'CB created by superagent is present'
     )

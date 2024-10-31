@@ -142,8 +142,8 @@ util.assertExternalSegment = function assertExternalSegment(
 ) {
   const methodName = util.getRPCName(fnName)
   const segmentName = `${EXTERNAL.PREFIX}${CLIENT_ADDR}:${port}${methodName}`
-  assertSegments(tx.trace.root, [segmentName], { exact: false }, { assert })
-  const segment = metricsHelpers.findSegment(tx.trace.root, segmentName)
+  assertSegments(tx.trace, tx.trace.root, [segmentName], { exact: false }, { assert })
+  const segment = metricsHelpers.findSegment(tx.trace, tx.trace.root, segmentName)
   const attributes = segment.getAttributes()
   assert.equal(
     attributes.url,

@@ -48,7 +48,7 @@ test('Disabled PG scenarios', async (t) => {
       await collection.countDocuments()
       await redisClient.get('bar')
       tx.end()
-      assertSegments(tx.trace.root, [
+      assertSegments(tx.trace, tx.trace.root, [
         'Datastore/statement/MongoDB/disabled-inst-test/aggregate',
         'Datastore/statement/MongoDB/disabled-inst-test/next'
       ])
@@ -65,7 +65,7 @@ test('Disabled PG scenarios', async (t) => {
           redisClient.get('bar', (innerErr) => {
             tx.end()
             assert.equal(innerErr, null)
-            assertSegments(tx.trace.root, [
+            assertSegments(tx.trace, tx.trace.root, [
               'Datastore/statement/MongoDB/disabled-inst-test/aggregate',
               'Datastore/statement/MongoDB/disabled-inst-test/next'
             ])

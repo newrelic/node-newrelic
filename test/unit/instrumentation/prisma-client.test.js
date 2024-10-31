@@ -127,7 +127,7 @@ test('PrismaClient unit.tests', async (t) => {
         args: { query: 'select test from schema.unit-test;' },
         action: 'executeRaw'
       })
-      const { children } = tx.trace.root
+      const children = tx.trace.getChildren(tx.trace.root.id)
       assert.equal(children.length, 3, 'should have 3 segments')
       const [firstSegment, secondSegment, thirdSegment] = children
       assert.equal(firstSegment.name, 'Datastore/statement/Prisma/user/create')
@@ -180,7 +180,7 @@ test('PrismaClient unit.tests', async (t) => {
 
     helper.runInTransaction(agent, async (tx) => {
       await client._executeRequest({ action: 'executeRaw' })
-      const { children } = tx.trace.root
+      const children = tx.trace.getChildren(tx.trace.root.id)
       const [firstSegment] = children
       assert.equal(firstSegment.name, 'Datastore/statement/Prisma/other/other')
       end()
@@ -228,7 +228,7 @@ test('PrismaClient unit.tests', async (t) => {
         args: [['select test from unit-test;']],
         action: 'executeRaw'
       })
-      const { children } = tx.trace.root
+      const children = tx.trace.getChildren(tx.trace.root.id)
       assert.equal(children.length, 2, 'should have 3 segments')
       const [firstSegment, secondSegment] = children
       assert.equal(firstSegment.name, 'Datastore/statement/Prisma/user/create')

@@ -209,11 +209,13 @@ test('Tracer', async function (t) {
       assert.equal(agent.segmentsCreatedInHarvest, 1)
       assert.equal(tx.numSegments, 1)
       assert.equal(agent.activeTransactions, 1)
+      assert.equal(tx.trace.segments.length, 0)
 
       tracer.createSegment({ name: 'Test', parent: tx.trace.root, transaction: tx })
       assert.equal(agent.totalActiveSegments, 2)
       assert.equal(agent.segmentsCreatedInHarvest, 2)
       assert.equal(tx.numSegments, 2)
+      assert.equal(tx.trace.segments.length, 1)
       tx.end()
 
       assert.equal(agent.activeTransactions, 0)
@@ -229,6 +231,19 @@ test('Tracer', async function (t) {
           end()
         })
       }, 10)
+    })
+    await t.test('skip adding children when parent is opaque', (t) => {
+      const { agent, tracer } = t.nr
+      const tx = new Transaction(agent)
+      tracer.setSegment({ transaction: tx, segment: tx.trace.root })
+      const segment = tracer.createSegment({ name: 'Test', parent: tx.trace.root, transaction: tx })
+      segment.opaque = true
+      const segment2 = tracer.createSegment({ name: 'Test1', parent: segment, transaction: tx })
+      const segment3 = tracer.createSegment({ name: 'Test2', parent: segment, transaction: tx })
+      assert.equal(segment2.id, segment.id)
+      assert.equal(segment3.id, segment.id)
+      assert.equal(tx.trace.segments.length, 1)
+      tx.end()
     })
   })
 })
