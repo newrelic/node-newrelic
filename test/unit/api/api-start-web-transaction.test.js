@@ -49,7 +49,7 @@ test('Agent API - startWebTransaction', async (t) => {
       assert.ok(transaction.isActive())
 
       const currentSegment = tracer.getSegment()
-      const nestedSegment = currentSegment.children[0]
+      const [nestedSegment] = transaction.trace.getChildren(currentSegment.id)
       assert.equal(nestedSegment.name, 'nested')
     })
 
@@ -174,9 +174,10 @@ test('Agent API - startWebTransaction', async (t) => {
           const { agent, api, tracer } = t.nr
           agent.config.code_level_metrics.enabled = enabled
           api.startWebTransaction('clm-nested-test', function () {
+            const tx = agent.tracer.getTransaction()
             nested({ api })
             const currentSegment = tracer.getSegment()
-            const nestedSegment = currentSegment.children[0]
+            const [nestedSegment] = tx.trace.getChildren(currentSegment.id)
             assertCLMAttrs({
               segments: [
                 {

@@ -74,7 +74,7 @@ test('amqplib callback instrumentation', async function (t) {
     helper.runInTransaction(agent, function (tx) {
       amqplib.connect(amqpUtils.CON_STRING, null, function (err, _conn) {
         assert.ok(!err, 'should not break connection')
-        const [segment] = tx.trace.root.children
+        const [segment] = tx.trace.getChildren(tx.trace.root.id)
         assert.equal(segment.name, 'amqplib.connect')
         const attrs = segment.getAttributes()
         assert.equal(attrs.host, 'localhost')

@@ -94,7 +94,6 @@ suite.add({
   fn: function () {
     const test = shared.getTest()
     shim.createSegment('foo', test.func, tx.trace.root)
-    tx.trace.root.children = []
     return test
   }
 })

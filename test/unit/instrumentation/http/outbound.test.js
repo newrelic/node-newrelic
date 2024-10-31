@@ -49,7 +49,8 @@ test('instrumentOutbound', async (t) => {
       const req = new events.EventEmitter()
       helper.runInTransaction(agent, function (transaction) {
         instrumentOutbound(agent, { host: HOSTNAME, port: PORT }, makeFakeRequest)
-        assert.deepEqual(transaction.trace.root.children[0].getAttributes(), {})
+        const [child] = transaction.trace.getChildren(transaction.trace.root.id)
+        assert.deepEqual(child.getAttributes(), {})
 
         function makeFakeRequest() {
           req.path = '/asdf?a=b&another=yourself&thing&grownup=true'
@@ -66,7 +67,8 @@ test('instrumentOutbound', async (t) => {
     const req = new events.EventEmitter()
     helper.runInTransaction(agent, function (transaction) {
       instrumentOutbound(agent, { host: HOSTNAME, port: PORT }, makeFakeRequest)
-      assert.deepEqual(transaction.trace.root.children[0].getAttributes(), {
+      const [child] = transaction.trace.getChildren(transaction.trace.root.id)
+      assert.deepEqual(child.getAttributes(), {
         procedure: 'GET',
         url: `http://${HOSTNAME}:${PORT}/asdf`
       })
@@ -91,7 +93,8 @@ test('instrumentOutbound', async (t) => {
     const req = new events.EventEmitter()
     helper.runInTransaction(agent, function (transaction) {
       instrumentOutbound(agent, { host: HOSTNAME, port: PORT }, makeFakeRequest)
-      assert.deepEqual(transaction.trace.root.children[0].getAttributes(), {
+      const [child] = transaction.trace.getChildren(transaction.trace.root.id)
+      assert.deepEqual(child.getAttributes(), {
         procedure: 'GET',
         url: `http://${HOSTNAME}:${PORT}/***`
       })
@@ -112,7 +115,8 @@ test('instrumentOutbound', async (t) => {
       const name = NAMES.EXTERNAL.PREFIX + HOSTNAME + ':' + PORT + path
 
       instrumentOutbound(agent, { host: HOSTNAME, port: PORT }, makeFakeRequest)
-      assert.equal(transaction.trace.root.children[0].name, name)
+      const [child] = transaction.trace.getChildren(transaction.trace.root.id)
+      assert.equal(child.name, name)
 
       function makeFakeRequest() {
         req.path = '/asdf?a=b&another=yourself&thing&grownup=true'
@@ -128,8 +132,9 @@ test('instrumentOutbound', async (t) => {
     helper.runInTransaction(agent, function (transaction) {
       agent.config.attributes.enabled = true
       instrumentOutbound(agent, { host: HOSTNAME, port: PORT }, makeFakeRequest)
+      const [child] = transaction.trace.getChildren(transaction.trace.root.id)
       assert.deepEqual(
-        transaction.trace.root.children[0].attributes.get(DESTINATIONS.SPAN_EVENT),
+        child.attributes.get(DESTINATIONS.SPAN_EVENT),
         {
           'hostname': HOSTNAME,
           'port': PORT,
@@ -175,7 +180,8 @@ test('instrumentOutbound', async (t) => {
       const name = NAMES.EXTERNAL.PREFIX + HOSTNAME + ':' + PORT + path
       req.path = path
       instrumentOutbound(agent, { host: HOSTNAME, port: PORT }, makeFakeRequest)
-      assert.equal(transaction.trace.root.children[0].name, name)
+      const [child] = transaction.trace.getChildren(transaction.trace.root.id)
+      assert.equal(child.name, name)
       end()
     })
 
@@ -193,7 +199,8 @@ test('instrumentOutbound', async (t) => {
       const name = NAMES.EXTERNAL.PREFIX + HOSTNAME + ':' + PORT + '/newrelic'
       req.path = path
       instrumentOutbound(agent, { host: HOSTNAME, port: PORT }, makeFakeRequest)
-      assert.equal(transaction.trace.root.children[0].name, name)
+      const [child] = transaction.trace.getChildren(transaction.trace.root.id)
+      assert.equal(child.name, name)
     })
 
     function makeFakeRequest() {
@@ -473,7 +480,8 @@ test('when working with http.request', async (t) => {
       opts.method = 'POST'
 
       const req = http.request(opts, function (res) {
-        const attributes = transaction.trace.root.children[0].getAttributes()
+        const [child] = transaction.trace.getChildren(transaction.trace.root.id)
+        const attributes = child.getAttributes()
         assert.equal(attributes.url, 'http://www.google.com/index.html')
         assert.equal(attributes.procedure, 'POST')
         res.resume()

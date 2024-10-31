@@ -93,18 +93,21 @@ test('vanilla koa, no router', async (t) => {
         ctx.body = 'done'
       })
 
-      agent.on('transactionFinished', (tx) => {
-        const baseSegment = tx.trace.root.children[0]
+      agent.on('transactionFinished', (transaction) => {
+        const [baseSegment] = transaction.trace.getChildren(transaction.trace.root.id)
+        const [one] = transaction.trace.getChildren(baseSegment.id)
+        const [two] = transaction.trace.getChildren(one.id)
+
         assertClmAttrs(
           {
             segments: [
               {
-                segment: baseSegment.children[0],
+                segment: one, 
                 name: 'one',
                 filepath: 'code-level-metrics.test.js'
               },
               {
-                segment: baseSegment.children[0].children[0],
+                segment: two, 
                 name: 'two',
                 filepath: 'code-level-metrics.test.js'
               }
@@ -155,23 +158,27 @@ test('using koa-router', async (t) => {
       router.use('/:first', nestedRouter.routes())
       app.use(router.routes())
 
-      agent.on('transactionFinished', (tx) => {
-        const baseSegment = tx.trace.root.children[0]
+      agent.on('transactionFinished', (transaction) => {
+        const [baseSegment] = transaction.trace.getChildren(transaction.trace.root.id)
+        const [dispatch] = transaction.trace.getChildren(baseSegment.id)
+        const [appLevel] = transaction.trace.getChildren(dispatch.id)
+        const [secondMw] = transaction.trace.getChildren(appLevel.id)
+
         assertClmAttrs(
           {
             segments: [
               {
-                segment: baseSegment.children[0],
+                segment: dispatch, 
                 name: 'dispatch',
                 filepath: 'koa-router/lib/router.js'
               },
               {
-                segment: baseSegment.children[0].children[0],
+                segment: appLevel, 
                 name: 'appLevelMiddleware',
                 filepath: 'code-level-metrics.test.js'
               },
               {
-                segment: baseSegment.children[0].children[0].children[0],
+                segment: secondMw, 
                 name: 'secondMiddleware',
                 filepath: 'code-level-metrics.test.js'
               }
@@ -222,23 +229,27 @@ test('using @koa/router', async (t) => {
       router.use('/:first', nestedRouter.routes())
       app.use(router.routes())
 
-      agent.on('transactionFinished', (tx) => {
-        const baseSegment = tx.trace.root.children[0]
+      agent.on('transactionFinished', (transaction) => {
+        const [baseSegment] = transaction.trace.getChildren(transaction.trace.root.id)
+        const [dispatch] = transaction.trace.getChildren(baseSegment.id)
+        const [appLevel] = transaction.trace.getChildren(dispatch.id)
+        const [secondMw] = transaction.trace.getChildren(appLevel.id)
+
         assertClmAttrs(
           {
             segments: [
               {
-                segment: baseSegment.children[0],
+                segment: dispatch, 
                 name: 'dispatch',
                 filepath: '@koa/router/lib/router.js'
               },
               {
-                segment: baseSegment.children[0].children[0],
+                segment: appLevel, 
                 name: 'appLevelMiddleware',
                 filepath: 'code-level-metrics.test.js'
               },
               {
-                segment: baseSegment.children[0].children[0].children[0],
+                segment: secondMw, 
                 name: 'secondMiddleware',
                 filepath: 'code-level-metrics.test.js'
               }

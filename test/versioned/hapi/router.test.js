@@ -42,7 +42,7 @@ function verifier(verb = 'GET') {
     assert.equal(transaction.verb, verb, 'HTTP method is ' + verb)
     assert.ok(transaction.trace, 'transaction has trace')
 
-    const web = transaction.trace.root.children[0]
+    const [web] = transaction.trace.getChildren(transaction.trace.root.id)
     assert.ok(web, 'trace has web segment')
     assert.equal(web.name, transaction.name, 'segment name and transaction name match')
 
@@ -269,8 +269,9 @@ test('using custom handler defaults', (t, end) => {
 test('404 transaction is named correctly', (t, end) => {
   const { agent, server } = t.nr
   agent.on('transactionFinished', function (tx) {
+    const [segment] = tx.trace.getChildren(tx.trace.root.id)
     assert.equal(
-      tx.trace.root.children[0].name,
+      segment.name,
       'WebTransaction/Nodejs/GET/(not found)',
       '404 segment has standardized name'
     )

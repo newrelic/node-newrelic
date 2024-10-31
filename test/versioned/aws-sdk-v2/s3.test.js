@@ -82,7 +82,11 @@ test('S3 buckets', async (t) => {
 })
 
 function finish(end, tx) {
-  const externals = common.checkAWSAttributes(tx.trace.root, common.EXTERN_PATTERN)
+  const externals = common.checkAWSAttributes({
+    trace: tx.trace,
+    segment: tx.trace.root,
+    pattern: common.EXTERN_PATTERN
+  })
   assert.equal(externals.length, 3, 'should have 3 aws externals')
   const [head, create, del] = externals
   checkAttrs(head, 'headBucket')

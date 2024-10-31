@@ -158,7 +158,7 @@ function checkTrace(t, tx) {
   const expectedSegment = tracer.getSegment()
   const segment = tx.trace.root
   assert.equal(segment.name, 'a')
-  assert.equal(segment.children.length, 0)
+  assert.equal(tx.trace.getChildren(segment.id).length, 0)
   // verify current segment is same as trace root
   assert.deepEqual(segment.name, expectedSegment.name, 'current segment is same as one in tracer')
   return Promise.resolve()
