@@ -10,6 +10,7 @@ const test = tap.test
 const helper = require('../../lib/agent_helper')
 const EventEmitter = require('events').EventEmitter
 const symbols = require('../../../lib/symbols')
+const Context = require('../../../lib/context-manager/context')
 
 test('bind in transaction', function testBind(t) {
   const { agent, tracer } = setupAgent(t)
@@ -19,27 +20,28 @@ test('bind in transaction', function testBind(t) {
 
   helper.runInTransaction(agent, function inTrans(transaction) {
     const root = transaction.trace.root
-    const other = tracer.createSegment('other')
+    const ctx = tracer.getContext()
+    const other = tracer.createSegment({ name: 'other', parent: root, transaction })
+    const otherCtx = ctx.enterSegment({ segment: other })
     t.equal(tracer.getTransaction(), transaction, 'should start in transaction')
 
-    t.comment('implicit segment bind')
     t.equal(tracer.getSegment(), root, 'should start at root segment')
-    let bound = tracer.bindFunction(compare)
+    let bound = tracer.bindFunction(compare, ctx)
 
-    tracer.setSegment(null)
+    tracer.setSegment({ transaction: null, segment: null })
     bound.call(context, root)
     t.equal(tracer.getSegment(), null, 'should reset segment after being called')
 
     t.comment('explicit segment bind')
-    bound = tracer.bindFunction(compare, other)
+    bound = tracer.bindFunction(compare, otherCtx)
     bound.call(context, other)
 
     t.comment('null segment bind')
-    tracer.setSegment(root)
-    bound = tracer.bindFunction(compare, null)
+    tracer.setSegment({ transaction, segment: root })
+    bound = tracer.bindFunction(compare, new Context())
 
     t.equal(tracer.getSegment(), root, 'should be back to root segment')
-    bound.call(context, root)
+    bound.call(context, null)
 
     t.end()
 
@@ -54,18 +56,21 @@ test('bind outside transaction', function testBind(t) {
   const { agent, tracer } = setupAgent(t)
 
   let root
+  let rootCtx
   t.plan(5)
 
-  let bound = tracer.bindFunction(compare)
+  const context = tracer.getContext()
+  let bound = tracer.bindFunction(compare, context)
   compare(null)
   bound(null)
 
   helper.runInTransaction(agent, function inTrans(transaction) {
+    rootCtx = tracer.getContext()
     root = transaction.trace.root
     bound(null)
   })
 
-  bound = tracer.bindFunction(compare, root)
+  bound = tracer.bindFunction(compare, rootCtx)
   bound(root)
   compare(null)
 
@@ -85,13 +90,14 @@ test('bind + throw', function testThrows(t) {
   helper.runInTransaction(agent, function inTrans(transaction) {
     t.comment('root is active')
     const root = transaction.trace.root
-    compare(dangerous(root, root), root)
-    compare(dangerous(null, root), root)
+    const rootCtx = tracer.getContext()
+    compare(dangerous(rootCtx, root), root)
+    compare(dangerous(new Context(), null), root)
 
     t.comment('null is active')
-    tracer.setSegment(null)
-    compare(dangerous(root, root), null)
-    compare(dangerous(null, null), null)
+    tracer.setSegment({ transaction: null, segment: null })
+    compare(dangerous(rootCtx, root), null)
+    compare(dangerous(new Context(), null), null)
 
     t.end()
   })
@@ -105,11 +111,11 @@ test('bind + throw', function testThrows(t) {
     }
   }
 
-  function dangerous(segment, expected) {
+  function dangerous(ctx, expected) {
     return tracer.bindFunction(function bound() {
       t.equal(tracer.getSegment(), expected, 'should have expected segment')
       throw error
-    }, segment)
+    }, ctx)
   }
 })
 
@@ -136,7 +142,13 @@ test('bind + capture error', function testThrows(t) {
   })
 
   function inTrans(transaction) {
-    const other = tracer.createSegment('other')
+    const other = tracer.createSegment({
+      name: 'other',
+      transaction,
+      parent: transaction.trace.root
+    })
+    const context = tracer.getContext()
+    const otherCtx = context.enterSegment({ segment: other })
     transaction.name = name
     process.once('uncaughtException', function onUncaughtException(err) {
       const logged = agent.errors.traceAggregator.errors[0]
@@ -154,17 +166,17 @@ test('bind + capture error', function testThrows(t) {
       }
       t.end()
     })
-    dangerous(other)()
+    dangerous(otherCtx, other)()
   }
 
-  function dangerous(segment) {
+  function dangerous(ctx, segment) {
     return tracer.bindFunction(function bound() {
       // next tick to avoid tap error handler
       process.nextTick(function ohno() {
         t.equal(tracer.getSegment(), segment)
         throw error
       })
-    }, segment)
+    }, ctx)
   }
 })
 
@@ -173,16 +185,27 @@ test('bind + full', function testThrows(t) {
 
   t.plan(10)
 
-  helper.runInTransaction(agent, function inTrans() {
-    const segment = tracer.createSegment('segment')
-    const notStarted = tracer.createSegment('notStarted')
-    let bound = tracer.bindFunction(check, segment, true)
+  helper.runInTransaction(agent, function inTrans(transaction) {
+    const segment = tracer.createSegment({
+      name: 'segment',
+      transaction,
+      parent: transaction.trace.root
+    })
+    const context = tracer.getContext()
+    const ctx = context.enterSegment({ segment })
+    const notStarted = tracer.createSegment({
+      name: 'notStarted',
+      transaction,
+      parent: transaction.trace.root
+    })
+    const notStartedCtx = ctx.enterSegment({ segment: notStarted })
+    let bound = tracer.bindFunction(check, ctx, true)
 
     t.notOk(segment.timer.hrstart)
     bound()
     t.ok(segment.timer.hrDuration)
 
-    bound = tracer.bindFunction(checkNotStarted, notStarted, false)
+    bound = tracer.bindFunction(checkNotStarted, notStartedCtx, false)
 
     t.notOk(notStarted.timer.hrstart)
     bound()
@@ -227,9 +250,10 @@ test('bind + args', function testThrows(t) {
   t.plan(1)
 
   helper.runInTransaction(agent, function inTrans() {
+    const ctx = tracer.getContext()
     bound = tracer.bindFunction(function withArgs() {
       t.same([].slice.call(arguments), [1, 2, 3])
-    })
+    }, ctx)
   })
 
   bound(1, 2, 3)
@@ -239,16 +263,14 @@ test('bind + args', function testThrows(t) {
 test('getTransaction', function testGetTransaction(t) {
   const { agent, tracer } = setupAgent(t)
 
-  t.plan(5)
+  t.plan(3)
 
   t.notOk(tracer.getTransaction())
 
   helper.runInTransaction(agent, function inTrans(transaction) {
     t.equal(tracer.getTransaction(), transaction)
-    t.equal(tracer.getSegment().transaction, transaction)
     transaction.end()
     t.notOk(tracer.getTransaction())
-    t.equal(tracer.getSegment().transaction, transaction)
     t.end()
   })
 })
@@ -278,11 +300,17 @@ test('createSegment', function testCreateSegment(t) {
   let root
   t.plan(10)
 
-  const noSegment = tracer.createSegment('outside transaction')
+  const noSegment = tracer.createSegment({ name: 'outside transaction' })
   t.equal(noSegment, null)
 
   helper.runInTransaction(agent, function inTrans(transaction) {
-    const segment = tracer.createSegment('inside transaction')
+    const segment = tracer.createSegment({
+      name: 'inside transaction',
+      transaction,
+      parent: transaction.trace.root
+    })
+    const context = tracer.getContext()
+    const ctx = context.enterSegment({ segment })
     root = transaction.trace.root
     t.equal(tracer.getSegment(), root)
     t.equal(segment.name, 'inside transaction')
@@ -291,19 +319,24 @@ test('createSegment', function testCreateSegment(t) {
       t.equal(segment.timer.hrstart, null)
       t.equal(segment.timer.hrDuration, null)
       t.equal(tracer.getSegment(), segment)
-    }, segment)()
+    }, ctx)()
+
+    const outerSegment = tracer.createSegment({
+      name: 'outside with parent',
+      transaction: transaction,
+      parent: root
+    })
+    const outerCtx = context.enterSegment({ segment: outerSegment })
+
+    tracer.bindFunction(function bound() {
+      t.equal(outerSegment.name, 'outside with parent')
+      t.equal(outerSegment.timer.hrstart, null)
+      t.equal(outerSegment.timer.hrDuration, null)
+      t.equal(tracer.getSegment(), outerSegment)
+    }, outerCtx)()
+
+    t.end()
   })
-
-  const outerSegment = tracer.createSegment('outside with parent', null, root)
-
-  tracer.bindFunction(function bound() {
-    t.equal(outerSegment.name, 'outside with parent')
-    t.equal(outerSegment.timer.hrstart, null)
-    t.equal(outerSegment.timer.hrDuration, null)
-    t.equal(tracer.getSegment(), outerSegment)
-  }, outerSegment)()
-
-  t.end()
 })
 
 test('createSegment + recorder', function testCreateSegment(t) {
@@ -312,7 +345,12 @@ test('createSegment + recorder', function testCreateSegment(t) {
   t.plan(2)
 
   helper.runInTransaction(agent, function inTrans(transaction) {
-    const segment = tracer.createSegment('inside transaction', recorder)
+    const segment = tracer.createSegment({
+      name: 'inside transaction',
+      recorder,
+      transaction,
+      parent: transaction.trace.root
+    })
     t.equal(segment.name, 'inside transaction')
 
     transaction.end()
@@ -333,19 +371,19 @@ test('addSegment', function addSegmentTest(t) {
   t.equal(tracer.addSegment('outside', null, null, false, check), null)
 
   helper.runInTransaction(agent, function inTrans(transaction) {
-    const segment = tracer.addSegment('inside', null, null, false, check)
+    const segment = tracer.addSegment('inside', null, transaction.trace.root, false, check)
 
     t.equal(segment.name, 'inside')
     root = transaction.trace.root
     t.equal(root.children[0], segment)
+
+    const outside = tracer.addSegment('outside', null, root, false, check)
+
+    t.equal(outside.name, 'outside')
+    t.equal(root.children[1], outside)
+
+    t.end()
   })
-
-  const outside = tracer.addSegment('outside', null, root, false, check)
-
-  t.equal(outside.name, 'outside')
-  t.equal(root.children[1], outside)
-
-  t.end()
 
   function check(segment) {
     t.equal(segment, tracer.getSegment())
@@ -360,7 +398,7 @@ test('addSegment + recorder', function addSegmentTest(t) {
   t.plan(7)
 
   helper.runInTransaction(agent, function inTrans(transaction) {
-    segment = tracer.addSegment('inside', record, null, false, check)
+    segment = tracer.addSegment('inside', record, transaction.trace.root, false, check)
     const root = transaction.trace.root
 
     t.equal(segment.name, 'inside')
@@ -390,7 +428,7 @@ test('addSegment + full', function addSegmentTest(t) {
   t.plan(7)
 
   helper.runInTransaction(agent, function inTrans(transaction) {
-    const segment = tracer.addSegment('inside', null, null, true, check)
+    const segment = tracer.addSegment('inside', null, transaction.trace.root, true, check)
     const root = transaction.trace.root
 
     t.equal(segment.name, 'inside')
@@ -513,7 +551,7 @@ test('bindEmitter', function testbindEmitter(t) {
     emitter.emit('after', data)
 
     emitter2.on('before', check(root))
-    tracer.bindEmitter(emitter2)
+    tracer.bindEmitter(emitter2, root)
     emitter2.on('after', check(root))
     emitter2.emit('before', data)
     emitter2.emit('after', data)
@@ -554,44 +592,6 @@ test('tracer.slice', function testSlice(t) {
   t.end()
 })
 
-test('wrapFunctionNoSegment', function testwrapFunctionNoSegment(t) {
-  const { agent, tracer } = setupAgent(t)
-
-  const outer = {}
-  const inner = {}
-  let segment = null
-
-  t.plan(15)
-
-  const wrapped = tracer.wrapFunctionNoSegment(doSomething)
-
-  wrapped.call(outer, segment, [4], 4, check)
-
-  helper.runInTransaction(agent, function runInTransaction(transaction) {
-    segment = transaction.trace.root
-    wrapped.call(outer, segment, [1, 2, 3], 1, 2, 3, check)
-  })
-
-  wrapped.call(outer, null, [4, 5], 4, 5, check)
-
-  function doSomething(seg) {
-    const args = tracer.slice(arguments)
-    const callback = args.pop()
-    t.equal(this, outer)
-    t.equal(tracer.getSegment(), seg)
-    process.nextTick(function next() {
-      tracer.setSegment(null)
-      callback.apply(inner, args)
-    })
-  }
-
-  function check(seg, expected) {
-    t.same([].slice.call(arguments, 2), expected)
-    t.equal(tracer.getSegment(), seg)
-    t.equal(this, inner)
-  }
-})
-
 test('wrapFunction', function testwrapFunction(t) {
   const { agent, tracer } = setupAgent(t)
 
@@ -629,6 +629,7 @@ test('wrapFunction', function testwrapFunction(t) {
 
   function callAll(name, a, b, c) {
     const segment = tracer.getSegment()
+    const transaction = tracer.getTransaction()
 
     if (name) {
       t.equal(segment.name, name)
@@ -654,7 +655,7 @@ test('wrapFunction', function testwrapFunction(t) {
           t.ok(child.timer.hrDuration)
         })
         t.ok(segment.timer.hrDuration)
-        segment.transaction.end()
+        transaction.end()
       }
     })
 
@@ -721,6 +722,7 @@ test('wrapFunctionLast', function testwrapFunctionLast(t) {
 
   function takesCallback(name) {
     const segment = tracer.getSegment()
+    const transaction = tracer.getTransaction()
     const cbArgs = [].slice.call(arguments, 1, -1)
     const cb = arguments[arguments.length - 1]
 
@@ -745,7 +747,7 @@ test('wrapFunctionLast', function testwrapFunctionLast(t) {
         t.ok(segment.children[0].timer.hrstart)
         t.ok(segment.children[0].timer.hrDuration)
         t.ok(segment.timer.hrDuration)
-        segment.transaction.end()
+        transaction.end()
       }
     })
 
@@ -794,6 +796,7 @@ test('wrapFunctionFirst', function testwrapFunctionFirst(t) {
 
   function takesCallback(cb, name) {
     const segment = tracer.getSegment()
+    const transaction = tracer.getTransaction()
     const args = [].slice.call(arguments, 2)
 
     if (name) {
@@ -817,7 +820,7 @@ test('wrapFunctionFirst', function testwrapFunctionFirst(t) {
         t.ok(segment.children[0].timer.hrstart)
         t.ok(segment.children[0].timer.hrDuration)
         t.ok(segment.timer.hrDuration)
-        segment.transaction.end()
+        transaction.end()
       }
     })
 
@@ -855,7 +858,7 @@ test('wrapSyncFunction', function testwrapSyncFunction(t) {
   }
 
   function record(segment) {
-    t.equal(segment, segment.transaction.trace.root.children[0])
+    t.equal(segment, segment.root.children[0])
     t.equal(segment.name, 'my segment')
     t.end()
   }

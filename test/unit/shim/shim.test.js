@@ -20,6 +20,8 @@ const {
 const promiseResolvers = require('../../lib/promise-resolvers')
 const { tspl } = require('@matteo.collina/tspl')
 const tempOverrideUncaught = require('../../lib/temp-override-uncaught')
+const Transaction = require('../../../lib/transaction')
+const TraceSegment = require('../../../lib/transaction/trace/segment')
 
 test('Shim', async function (t) {
   function beforeEach(ctx) {
@@ -362,21 +364,12 @@ test('Shim', async function (t) {
     t.beforeEach(function (ctx) {
       beforeEach(ctx)
 
-      ctx.nr.segment = {
-        started: false,
-        touched: false,
-        probed: false,
-        start: function () {
-          this.started = true
-        },
-        touch: function () {
-          this.touched = true
-        },
-        probe: function () {
-          this.probed = true
-        }
-      }
-
+      const transaction = new Transaction(ctx.nr.agent)
+      ctx.nr.segment = new TraceSegment({
+        config: ctx.nr.agent.config,
+        name: 'test',
+        root: transaction.trace.root
+      })
       ctx.nr.startingSegment = ctx.nr.tracer.getSegment()
     })
 
@@ -446,9 +439,9 @@ test('Shim', async function (t) {
       // no segment is passed in.  To get around this we set the
       // active segment to an object known not to be null then do the
       // wrapping.
-      tracer.setSegment(segment)
+      tracer.setSegment({ segment })
       const wrapped = shim.bindSegment(wrappable.getActiveSegment)
-      tracer.setSegment(startingSegment)
+      tracer.setSegment({ segment: startingSegment })
 
       assert.equal(wrapped(), segment)
       assert.equal(tracer.getSegment(), startingSegment)
@@ -459,8 +452,8 @@ test('Shim', async function (t) {
       shim.bindSegment(wrappable, 'getActiveSegment', segment)
       wrappable.getActiveSegment()
 
-      assert.equal(segment.started, false)
-      assert.equal(segment.touched, false)
+      assert.equal(segment.timer.state, 1)
+      assert.equal(segment.timer.touched, false)
     })
 
     await t.test('should start and touch the segment if `full` is `true`', function (t) {
@@ -468,13 +461,13 @@ test('Shim', async function (t) {
       shim.bindSegment(wrappable, 'getActiveSegment', segment, true)
       wrappable.getActiveSegment()
 
-      assert.equal(segment.started, true)
-      assert.equal(segment.touched, true)
+      assert.equal(segment.timer.state, 2)
+      assert.equal(segment.timer.touched, true)
     })
 
     await t.test('should default to the current segment', function (t) {
       const { tracer, segment, shim, wrappable } = t.nr
-      tracer.setSegment(segment)
+      tracer.setSegment({ segment })
       shim.bindSegment(wrappable, 'getActiveSegment')
       const activeSegment = wrappable.getActiveSegment()
       assert.equal(activeSegment, segment)
@@ -886,13 +879,12 @@ test('Shim', async function (t) {
         return new RecorderSpec({ name: 'internal test segment', internal: true })
       })
 
-      helper.runInTransaction(agent, function (tx) {
+      helper.runInTransaction(agent, function () {
         const startingSegment = tracer.getSegment()
         startingSegment.internal = true
-        startingSegment.shim = shim
+        startingSegment.shimId = shim.id
         const segment = wrappable.getActiveSegment()
         assert.equal(segment, startingSegment)
-        assert.equal(segment.transaction, tx)
         assert.equal(segment.name, 'ROOT')
         assert.equal(tracer.getSegment(), startingSegment)
         end()
@@ -948,7 +940,7 @@ test('Shim', async function (t) {
       'should call after hook on record when function is done executing',
       function (t, end) {
         const { agent, shim } = t.nr
-        helper.runInTransaction(agent, function () {
+        helper.runInTransaction(agent, function (tx) {
           function testAfter() {
             return 'result'
           }
@@ -957,13 +949,14 @@ test('Shim', async function (t) {
               name: 'test segment',
               callback: shim.LAST,
               after(args) {
-                assert.equal(Object.keys(args).length, 6, 'should have 6 args to after hook')
-                const { fn, name, error, result, segment } = args
+                assert.equal(Object.keys(args).length, 7, 'should have 7 args to after hook')
+                const { fn, name, error, result, segment, transaction } = args
                 assert.equal(segment.name, 'test segment')
                 assert.equal(error, undefined)
                 assert.deepEqual(fn, testAfter)
                 assert.equal(name, testAfter.name)
                 assert.equal(result, 'result')
+                assert.equal(tx.id, transaction.id)
               }
             })
           })
@@ -980,7 +973,7 @@ test('Shim', async function (t) {
       function (t, end) {
         const { agent, shim } = t.nr
         const err = new Error('test err')
-        helper.runInTransaction(agent, function () {
+        helper.runInTransaction(agent, function (tx) {
           function testAfter() {
             throw err
           }
@@ -989,13 +982,14 @@ test('Shim', async function (t) {
               name: 'test segment',
               callback: shim.LAST,
               after(args) {
-                assert.equal(Object.keys(args).length, 6, 'should have 6 args to after hook')
-                const { fn, name, error, result, segment } = args
+                assert.equal(Object.keys(args).length, 7, 'should have 7 args to after hook')
+                const { fn, name, error, result, segment, transaction } = args
                 assert.equal(segment.name, 'test segment')
                 assert.deepEqual(error, err)
                 assert.equal(result, undefined)
                 assert.deepEqual(fn, testAfter)
                 assert.equal(name, testAfter.name)
+                assert.equal(tx.id, transaction.id)
               }
             })
           })
@@ -1121,17 +1115,17 @@ test('Shim', async function (t) {
         return new RecorderSpec({ name: 'test segment', stream: 'foobar' })
       })
 
-      helper.runInTransaction(agent, function () {
-        const ret = wrapped()
-        assert.equal(ret, stream)
-      })
-
       stream.on('foobar', function () {
         const emitSegment = shim.getSegment()
         assert.equal(emitSegment.parent, stream.segment)
         end()
       })
-      stream.emit('foobar')
+
+      helper.runInTransaction(agent, function () {
+        const ret = wrapped()
+        assert.equal(ret, stream)
+        stream.emit('foobar')
+      })
     })
 
     await t.test('should create an event segment if an event name is given', function (t) {
@@ -1143,28 +1137,27 @@ test('Shim', async function (t) {
       helper.runInTransaction(agent, function () {
         const ret = wrapped()
         assert.equal(ret, stream)
+        // Emit the event and check the segment name.
+        assert.equal(stream.segment.children.length, 0)
+        stream.emit('foobar')
+        assert.equal(stream.segment.children.length, 1)
+
+        const [eventSegment] = stream.segment.children
+        assert.match(eventSegment.name, /Event callback: foobar/)
+        assert.equal(eventSegment.getAttributes().count, 1)
+
+        // Emit it again and see if the name updated.
+        stream.emit('foobar')
+        assert.equal(stream.segment.children.length, 1)
+        assert.equal(stream.segment.children[0], eventSegment)
+        assert.equal(eventSegment.getAttributes().count, 2)
+
+        // Emit it once more and see if the name updated again.
+        stream.emit('foobar')
+        assert.equal(stream.segment.children.length, 1)
+        assert.equal(stream.segment.children[0], eventSegment)
+        assert.equal(eventSegment.getAttributes().count, 3)
       })
-
-      // Emit the event and check the segment name.
-      assert.equal(stream.segment.children.length, 0)
-      stream.emit('foobar')
-      assert.equal(stream.segment.children.length, 1)
-
-      const [eventSegment] = stream.segment.children
-      assert.match(eventSegment.name, /Event callback: foobar/)
-      assert.equal(eventSegment.getAttributes().count, 1)
-
-      // Emit it again and see if the name updated.
-      stream.emit('foobar')
-      assert.equal(stream.segment.children.length, 1)
-      assert.equal(stream.segment.children[0], eventSegment)
-      assert.equal(eventSegment.getAttributes().count, 2)
-
-      // Emit it once more and see if the name updated again.
-      stream.emit('foobar')
-      assert.equal(stream.segment.children.length, 1)
-      assert.equal(stream.segment.children[0], eventSegment)
-      assert.equal(eventSegment.getAttributes().count, 3)
     })
   })
 
@@ -1333,7 +1326,7 @@ test('Shim', async function (t) {
           name: segmentName,
           promise: true,
           after(args) {
-            plan.equal(Object.keys(args).length, 6, 'should have 6 args to after hook')
+            plan.equal(Object.keys(args).length, 7, 'should have 7 args to after hook')
             const { fn, name, error, result, segment } = args
             plan.deepEqual(fn, toWrap)
             plan.equal(name, toWrap.name)
@@ -1366,7 +1359,7 @@ test('Shim', async function (t) {
           name: segmentName,
           promise: true,
           after(args) {
-            plan.equal(Object.keys(args).length, 5, 'should have 6 args to after hook')
+            plan.equal(Object.keys(args).length, 6, 'should have 6 args to after hook')
             const { fn, name, error, segment } = args
             plan.deepEqual(fn, toWrap)
             plan.equal(name, toWrap.name)
@@ -1461,11 +1454,10 @@ test('Shim', async function (t) {
         return new RecorderSpec({ name: 'test segment' })
       })
 
-      helper.runInTransaction(agent, function (tx) {
+      helper.runInTransaction(agent, function () {
         const startingSegment = tracer.getSegment()
         const segment = wrappable.getActiveSegment()
         assert.notEqual(segment, startingSegment)
-        assert.equal(segment.transaction, tx)
         assert.equal(segment.name, 'test segment')
         assert.equal(tracer.getSegment(), startingSegment)
         end()
@@ -1900,7 +1892,12 @@ test('Shim', async function (t) {
   await t.test('#getSegment', async function (t) {
     t.beforeEach(function (ctx) {
       beforeEach(ctx)
-      ctx.nr.segment = { probe: function () {} }
+      const transaction = new Transaction(ctx.nr.agent)
+      ctx.nr.segment = new TraceSegment({
+        config: ctx.nr.agent.config,
+        name: 'test',
+        root: transaction.trace.root
+      })
     })
     t.afterEach(afterEach)
 
@@ -1912,7 +1909,7 @@ test('Shim', async function (t) {
 
     await t.test('should return the current segment if the function is not bound', function (t) {
       const { tracer, segment, shim } = t.nr
-      tracer.setSegment(segment)
+      tracer.setSegment({ segment })
       assert.equal(
         shim.getSegment(function () {}),
         segment
@@ -1921,7 +1918,7 @@ test('Shim', async function (t) {
 
     await t.test('should return the current segment if no object is provided', function (t) {
       const { tracer, segment, shim } = t.nr
-      tracer.setSegment(segment)
+      tracer.setSegment({ segment })
       assert.equal(shim.getSegment(), segment)
     })
   })
@@ -1929,22 +1926,21 @@ test('Shim', async function (t) {
   await t.test('#getActiveSegment', async function (t) {
     t.beforeEach(function (ctx) {
       beforeEach(ctx)
-      ctx.nr.segment = {
-        probe: function () {},
-        transaction: {
-          active: true,
-          isActive: function () {
-            return this.active
-          }
-        }
-      }
+      const transaction = new Transaction(ctx.nr.agent)
+      ctx.nr.segment = new TraceSegment({
+        config: ctx.nr.agent.config,
+        name: 'test',
+        root: transaction.trace.root
+      })
+      ctx.nr.transaction = transaction
     })
     t.afterEach(afterEach)
 
     await t.test(
       'should return the segment a function is bound to when transaction is active',
       function (t) {
-        const { segment, shim } = t.nr
+        const { segment, shim, transaction, tracer } = t.nr
+        tracer.setSegment({ transaction })
         const bound = shim.bindSegment(function () {}, segment)
         assert.equal(shim.getActiveSegment(bound), segment)
       }
@@ -1953,8 +1949,8 @@ test('Shim', async function (t) {
     await t.test(
       'should return the current segment if the function is not bound when transaction is active',
       function (t) {
-        const { tracer, segment, shim } = t.nr
-        tracer.setSegment(segment)
+        const { segment, shim, tracer, transaction } = t.nr
+        tracer.setSegment({ segment, transaction })
         assert.equal(
           shim.getActiveSegment(function () {}),
           segment
@@ -1965,8 +1961,8 @@ test('Shim', async function (t) {
     await t.test(
       'should return the current segment if no object is provided when transaction is active',
       function (t) {
-        const { tracer, segment, shim } = t.nr
-        tracer.setSegment(segment)
+        const { segment, shim, tracer, transaction } = t.nr
+        tracer.setSegment({ segment, transaction })
         assert.equal(shim.getActiveSegment(), segment)
       }
     )
@@ -1974,9 +1970,10 @@ test('Shim', async function (t) {
     await t.test(
       'should return null for a bound function when transaction is not active',
       function (t) {
-        const { segment, shim } = t.nr
-        segment.transaction.active = false
-        const bound = shim.bindSegment(function () {}, segment)
+        const { segment, shim, transaction, tracer } = t.nr
+        transaction.timer.state = 3
+        tracer.setSegment({ transaction })
+        const bound = shim.bindSegment(function () {}, { segment })
         assert.equal(shim.getActiveSegment(bound), null)
       }
     )
@@ -1984,9 +1981,9 @@ test('Shim', async function (t) {
     await t.test(
       'should return null if the function is not bound when transaction is not active',
       function (t) {
-        const { tracer, segment, shim } = t.nr
-        segment.transaction.active = false
-        tracer.setSegment(segment)
+        const { tracer, segment, shim, transaction } = t.nr
+        transaction.timer.state = 3
+        tracer.setSegment({ segment, transaction })
         assert.equal(
           shim.getActiveSegment(function () {}),
           null
@@ -1997,9 +1994,9 @@ test('Shim', async function (t) {
     await t.test(
       'should return null if no object is provided when transaction is not active',
       function (t) {
-        const { tracer, segment, shim } = t.nr
-        segment.transaction.active = false
-        tracer.setSegment(segment)
+        const { tracer, segment, shim, transaction } = t.nr
+        transaction.timer.state = 3
+        tracer.setSegment({ segment, transaction })
         assert.equal(shim.getActiveSegment(), null)
       }
     )
@@ -2019,7 +2016,7 @@ test('Shim', async function (t) {
     await t.test('should default to the current segment', function (t) {
       const { tracer, shim, wrappable } = t.nr
       const segment = { probe: function () {} }
-      tracer.setSegment(segment)
+      tracer.setSegment({ segment })
       shim.storeSegment(wrappable)
       assert.equal(shim.getSegment(wrappable), segment)
     })
@@ -2111,7 +2108,7 @@ test('Shim', async function (t) {
       helper.runInTransaction(agent, function () {
         const args = [wrappable.getActiveSegment]
         const segment = wrappable.getActiveSegment()
-        const parent = shim.createSegment('test segment')
+        const parent = shim.createSegment({ name: 'test segment', parent: segment })
         shim.bindCallbackSegment({}, args, shim.LAST, parent)
         const cbSegment = args[0]()
 
@@ -2124,9 +2121,9 @@ test('Shim', async function (t) {
 
     await t.test('should make the `parentSegment` translucent after running', function (t, end) {
       const { agent, shim, wrappable } = t.nr
-      helper.runInTransaction(agent, function () {
+      helper.runInTransaction(agent, function (tx) {
         const args = [wrappable.getActiveSegment]
-        const parent = shim.createSegment('test segment')
+        const parent = shim.createSegment({ name: 'test segment', parent: tx.trace.root })
         parent.opaque = true
         shim.bindCallbackSegment({}, args, shim.LAST, parent)
         const cbSegment = args[0]()
@@ -2177,20 +2174,12 @@ test('Shim', async function (t) {
   await t.test('#applySegment', async function (t) {
     t.beforeEach(function (ctx) {
       beforeEach(ctx)
-      ctx.nr.segment = {
-        name: 'segment',
-        started: false,
-        touched: false,
-        start: function () {
-          this.started = true
-        },
-        touch: function () {
-          this.touched = true
-        },
-        probe: function () {
-          this.probed = true
-        }
-      }
+      const transaction = new Transaction(ctx.nr.agent)
+      ctx.nr.segment = new TraceSegment({
+        config: ctx.nr.agent.config,
+        name: 'test',
+        root: transaction.trace.root
+      })
     })
     t.afterEach(afterEach)
 
@@ -2238,25 +2227,25 @@ test('Shim', async function (t) {
     await t.test('should make the segment active for the duration of execution', function (t) {
       const { tracer, segment, shim, wrappable } = t.nr
       const prevSegment = { name: 'prevSegment', probe: function () {} }
-      tracer.setSegment(prevSegment)
+      tracer.setSegment({ segment: prevSegment })
 
       const activeSegment = shim.applySegment(wrappable.getActiveSegment, segment)
       assert.equal(tracer.getSegment(), prevSegment)
       assert.equal(activeSegment, segment)
-      assert.equal(segment.touched, false)
-      assert.equal(segment.started, false)
+      assert.equal(segment.timer.touched, false)
+      assert.equal(segment.timer.state, 1)
     })
 
     await t.test('should start and touch the segment if `full` is `true`', function (t) {
       const { segment, shim, wrappable } = t.nr
       shim.applySegment(wrappable.getActiveSegment, segment, true)
-      assert.equal(segment.touched, true)
-      assert.equal(segment.started, true)
+      assert.equal(segment.timer.touched, true)
+      assert.equal(segment.timer.state, 2)
     })
 
     await t.test('should not change the active segment if `segment` is `null`', function (t) {
       const { tracer, segment, shim, wrappable } = t.nr
-      tracer.setSegment(segment)
+      tracer.setSegment({ segment })
       let activeSegment = null
       assert.doesNotThrow(function () {
         activeSegment = shim.applySegment(wrappable.getActiveSegment, null)
@@ -2300,7 +2289,7 @@ test('Shim', async function (t) {
           throw new Error('test error')
         }
         const prevSegment = { name: 'prevSegment', probe: function () {} }
-        tracer.setSegment(prevSegment)
+        tracer.setSegment({ segment: prevSegment })
 
         assert.throws(function () {
           shim.applySegment(func, segment)
@@ -2320,7 +2309,7 @@ test('Shim', async function (t) {
           shim.applySegment(func, segment, true)
         }, 'Error: test error')
 
-        assert.equal(segment.touched, true)
+        assert.equal(segment.timer.touched, true)
       }
     )
   })
@@ -2330,8 +2319,8 @@ test('Shim', async function (t) {
     t.afterEach(afterEach)
     await t.test('should create a segment with the correct name', function (t, end) {
       const { agent, shim } = t.nr
-      helper.runInTransaction(agent, function () {
-        const segment = shim.createSegment('foobar')
+      helper.runInTransaction(agent, function (tx) {
+        const segment = shim.createSegment({ name: 'foobar', parent: tx.trace.root })
         assert.equal(segment.name, 'foobar')
         end()
       })
@@ -2339,8 +2328,8 @@ test('Shim', async function (t) {
 
     await t.test('should allow `recorder` to be omitted', function (t, end) {
       const { agent, shim } = t.nr
-      helper.runInTransaction(agent, function () {
-        const parent = shim.createSegment('parent')
+      helper.runInTransaction(agent, function (tx) {
+        const parent = shim.createSegment({ name: 'parent', parent: tx.trace.root })
         const child = shim.createSegment('child', parent)
         assert.equal(child.name, 'child')
         compareSegments(parent, [child])
@@ -2350,8 +2339,8 @@ test('Shim', async function (t) {
 
     await t.test('should allow `recorder` to be null', function (t, end) {
       const { agent, shim } = t.nr
-      helper.runInTransaction(agent, function () {
-        const parent = shim.createSegment('parent')
+      helper.runInTransaction(agent, function (tx) {
+        const parent = shim.createSegment('parent', tx.trace.root)
         const child = shim.createSegment('child', null, parent)
         assert.equal(child.name, 'child')
         compareSegments(parent, [child])
@@ -2361,8 +2350,8 @@ test('Shim', async function (t) {
 
     await t.test('should not create children for opaque segments', function (t, end) {
       const { agent, shim } = t.nr
-      helper.runInTransaction(agent, function () {
-        const parent = shim.createSegment('parent')
+      helper.runInTransaction(agent, function (tx) {
+        const parent = shim.createSegment('parent', tx.trace.root)
         parent.opaque = true
         const child = shim.createSegment('child', parent)
         assert.equal(child.name, 'parent')
@@ -2373,8 +2362,8 @@ test('Shim', async function (t) {
 
     await t.test('should not modify returned parent for opaque segments', (t, end) => {
       const { agent, shim } = t.nr
-      helper.runInTransaction(agent, () => {
-        const parent = shim.createSegment('parent')
+      helper.runInTransaction(agent, (tx) => {
+        const parent = shim.createSegment('parent', tx.trace.root)
         parent.opaque = true
         parent.internal = true
 
@@ -2391,7 +2380,7 @@ test('Shim', async function (t) {
       const { agent, shim } = t.nr
       helper.runInTransaction(agent, function () {
         const parent = shim.getSegment()
-        const child = shim.createSegment('child')
+        const child = shim.createSegment('child', parent)
         compareSegments(parent, [child])
         end()
       })
@@ -2399,14 +2388,12 @@ test('Shim', async function (t) {
 
     await t.test('should not modify returned parent for opaque segments', (t, end) => {
       const { agent, shim } = t.nr
-      helper.runInTransaction(agent, () => {
-        const parent = shim.createSegment('parent')
+      helper.runInTransaction(agent, (tx) => {
+        const parent = shim.createSegment({ name: 'parent', parent: tx.trace.root })
         parent.opaque = true
         parent.internal = true
 
-        shim.setActiveSegment(parent)
-
-        const child = shim.createSegment('child')
+        const child = shim.createSegment('child', parent)
 
         assert.equal(child, parent)
         assert.equal(parent.opaque, true)
@@ -2417,8 +2404,8 @@ test('Shim', async function (t) {
 
     await t.test('should work with all parameters in an object', function (t, end) {
       const { agent, shim } = t.nr
-      helper.runInTransaction(agent, function () {
-        const parent = shim.createSegment('parent')
+      helper.runInTransaction(agent, function (tx) {
+        const parent = shim.createSegment('parent', tx.trace.root)
         const child = shim.createSegment({ name: 'child', parent })
         assert.equal(child.name, 'child')
         compareSegments(parent, [child])
@@ -2443,8 +2430,8 @@ test('Shim', async function (t) {
       agent.config.attributes.exclude = ['ignore_me', 'host', 'port_path_or_id', 'database_name']
       agent.config.emit('attributes.exclude')
       agent.config.attributes.enabled = true
-      helper.runInTransaction(agent, function () {
-        ctx.nr.segment = shim.createSegment({ name: 'child', parameters })
+      helper.runInTransaction(agent, function (tx) {
+        ctx.nr.segment = shim.createSegment({ name: 'child', parameters, parent: tx.trace.root })
       })
       ctx.nr.parameters = parameters
     })
@@ -2482,8 +2469,8 @@ test('Shim', async function (t) {
         const { agent, parameters, shim } = t.nr
         let segment
         agent.config.attributes.enabled = false
-        helper.runInTransaction(agent, function () {
-          segment = shim.createSegment({ name: 'child', parameters })
+        helper.runInTransaction(agent, function (tx) {
+          segment = shim.createSegment({ name: 'child', parameters, parent: tx.trace.root })
         })
         assert.ok(segment.attributes)
         const attributes = segment.getAttributes()

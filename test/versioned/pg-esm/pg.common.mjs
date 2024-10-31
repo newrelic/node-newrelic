@@ -64,14 +64,13 @@ export default function runTests(name, clientFactory) {
     return pg
   }
 
-  function verify(t, segment, selectTable) {
-    verifyMetrics(t, segment, selectTable)
-    verifyTrace(t, segment, selectTable)
-    verifyInstanceParameters(t, segment)
+  function verify(t, transaction, selectTable) {
+    verifyMetrics(t, transaction, selectTable)
+    verifyTrace(t, transaction, selectTable)
+    verifyInstanceParameters(t, transaction)
   }
 
-  function verifyMetrics(t, segment, selectTable) {
-    const transaction = segment.transaction
+  function verifyMetrics(t, transaction, selectTable) {
     const agent = transaction.agent
     selectTable = selectTable || TABLE
     t.equal(Object.keys(transaction.metrics.scoped).length, 0, 'should not have any scoped metrics')
@@ -115,8 +114,7 @@ export default function runTests(name, clientFactory) {
     )
   }
 
-  function verifyTrace(t, segment, selectTable) {
-    const transaction = segment.transaction
+  function verifyTrace(t, transaction, selectTable) {
     selectTable = selectTable || TABLE
     const trace = transaction.trace
 
@@ -146,8 +144,7 @@ export default function runTests(name, clientFactory) {
     t.ok(getSegment.timer.hrDuration, 'trace segment should have ended')
   }
 
-  function verifyInstanceParameters(t, segment) {
-    const transaction = segment.transaction
+  function verifyInstanceParameters(t, transaction) {
     const agent = transaction.agent
     const trace = transaction.trace
 
@@ -259,7 +256,7 @@ export default function runTests(name, clientFactory) {
               t.equal(value.rows[0][COL], colVal, 'Postgres client should still work')
 
               transaction.end()
-              verify(t, agent.tracer.getSegment())
+              verify(t, transaction)
               t.end()
             })
           })
@@ -304,7 +301,7 @@ export default function runTests(name, clientFactory) {
           t.ok(agent.getTransaction(), 'transaction should still still be visible')
           t.equal(selectResults.rows[0][COL], colVal, 'Postgres client should still work')
           transaction.end()
-          verify(t, agent.tracer.getSegment())
+          verify(t, transaction)
           t.end()
         } catch (err) {
           t.error(err)
@@ -342,13 +339,10 @@ export default function runTests(name, clientFactory) {
           })
 
           pgQuery.on('end', () => {
-            t.ok(agent.getTransaction(), 'transaction should still be visible')
+            const finalTx = agent.getTransaction()
+            t.ok(finalTx, 'transaction should still be visible')
 
             transaction.end()
-
-            const segment = agent.tracer.getSegment()
-
-            const finalTx = segment.transaction
 
             const metrics = finalTx.metrics.getMetric('Datastore/operation/Postgres/select')
 
@@ -386,13 +380,10 @@ export default function runTests(name, clientFactory) {
 
           const selectResults = await client.query(selQuery)
 
-          t.ok(agent.getTransaction(), 'transaction should still still be visible')
           t.ok(selectResults, 'Postgres client should still work')
+          const finalTx = agent.getTransaction()
+          t.ok(finalTx, 'transaction should still be visible')
           transaction.end()
-          const segment = agent.tracer.getSegment()
-
-          const finalTx = segment.transaction
-
           const metrics = finalTx.metrics.getMetric('Datastore/operation/Postgres/select')
 
           t.ok(
@@ -432,13 +423,10 @@ export default function runTests(name, clientFactory) {
               return t.end()
             }
 
-            t.ok(agent.getTransaction(), 'transaction should still be visible')
             t.ok(ok, 'everything should be peachy after setting')
-
+            const finalTx = agent.getTransaction()
+            t.ok(finalTx, 'transaction should still be visible')
             transaction.end()
-            const segment = agent.tracer.getSegment()
-
-            const finalTx = segment.transaction
 
             const metrics = finalTx.metrics.getMetric('Datastore/operation/Postgres/select')
 
@@ -487,7 +475,7 @@ export default function runTests(name, clientFactory) {
 
             transaction.end()
             pool.end()
-            verify(t, agent.tracer.getSegment())
+            verify(t, transaction)
           })
         })
       })
@@ -539,7 +527,7 @@ export default function runTests(name, clientFactory) {
               }
 
               done(true)
-              verify(t, agent.tracer.getSegment())
+              verify(t, transaction)
             })
           })
         })
