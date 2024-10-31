@@ -275,9 +275,10 @@ test('correctly records actions interspersed among middleware', async (t) => {
   const { agent, app, testShim } = t.nr
 
   app.use(function one(ctx, next) {
-    testShim.createSegment('testSegment')
+    const parent = agent.tracer.getSegment()
+    testShim.createSegment({ name: 'testSegment', parent })
     return next().then(function () {
-      testShim.createSegment('nestedSegment')
+      testShim.createSegment({ name: 'nestedSegment', parent })
     })
   })
   app.use(function two(ctx, next) {

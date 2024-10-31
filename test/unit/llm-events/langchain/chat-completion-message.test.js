@@ -11,7 +11,8 @@ const LangChainCompletionMessage = require('../../../../lib/llm-events/langchain
 
 test.beforeEach((ctx) => {
   ctx.nr = {}
-  ctx.nr._tx = {
+  ctx.nr.transaction = {
+    traceId: 'trace-1',
     trace: {
       custom: {
         get() {
@@ -36,16 +37,13 @@ test.beforeEach((ctx) => {
     },
     tracer: {
       getTransaction() {
-        return ctx.nr._tx
+        return ctx.nr.transaction
       }
     }
   }
 
   ctx.nr.segment = {
-    id: 'segment-1',
-    transaction: {
-      traceId: 'trace-1'
-    }
+    id: 'segment-1'
   }
 
   ctx.nr.runId = 'run-1'

@@ -307,8 +307,9 @@ helper.runInNamedTransaction = (agent, type, callback) => {
 
 helper.runInSegment = (agent, name, callback) => {
   const tracer = agent.tracer
+  const parent = tracer.getSegment()
 
-  return tracer.addSegment(name, null, null, null, callback)
+  return tracer.addSegment(name, null, parent, null, callback)
 }
 
 /**

@@ -12,7 +12,7 @@ const recordWeb = require('../../../lib/metrics/recorders/http')
 const Transaction = require('../../../lib/transaction')
 
 function makeSegment(options) {
-  const segment = options.transaction.trace.root.add('placeholder')
+  const segment = options.transaction.trace.add('placeholder')
   segment.setDurationInMillis(options.duration)
   segment._setExclusiveDurationInMillis(options.exclusive)
 
@@ -28,8 +28,8 @@ function record(options) {
   const transaction = options.transaction
 
   transaction.finalizeNameFromUri(options.url, options.code)
-  segment.markAsWeb(options.url)
-  recordWeb(segment, options.transaction.name)
+  segment.markAsWeb(transaction)
+  recordWeb(segment, options.transaction.name, options.transaction)
 }
 
 function beforeEach(ctx) {
